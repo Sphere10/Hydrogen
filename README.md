@@ -1,0 +1,13 @@
+# VelocityNET: A P2P Liberty Platform
+
+Copyright (c) Sphere 10 Software 
+
+Web: https://velocitynet.io
+
+VelocityNET is a P2P Liberty Platform designed to deliver digital liberty across the monetary, computational and data domains. At it's core, it is an experimental decentralized monetary-system suitable for civilization-wide adoption in the 21st century. It achieves instant, secure and uncensorable payments that scales for global adoption on consumer-grade devices for centuries to come. It implements a dynamic monetary policy system, governed by the users, that gives users the tools to stabalize value -- the first true "stablecoin". Just as the advent of "Central Banking" was intended to stabilize the value of national fiat currencies in the "horse-and-buggy era", the "Decentralized Banking" model implemented here intends to stabilize the value of VelocityCash in the post-modern era. The key difference being that the monetary policy is determined by a public, auditable and democratic vote of the many and not by the private, secret and unelected dictum of the few.
+
+At it's core, VelocityCash it is a digital currency defined as a peer-to-peer network protocol secured by Proof-of-Work and cryptography, just as Bitcoin pioneered. However, the key difference being the economic model. Whereas Bitcoin pioneered "digital gold", VelocityCash pioneers "digital fiat". It does this by allowing users to throttle the monetary variables that govern the currency (e.g. miner reward, inflation rate, transaction fees, etc) via a dynamic, decentralized governance system that ranges from autocratic to democratic models.
+
+In addition to the stablecoin currency use-case, VelocityNET offers compact extension points that facilitate Layer-2 applications in the form of smart-contracts and Dapps. These Layer-2 applications overlay and connect to Layer-1 VelocityCash for utilization as a financial settlement network and consensus authority. Since these Layer-2 applications comprise of separate networks, they scale horizontally to and independently from VelocityCash thus mutually unimpeding each other as they grow in arbitrary adoption. Examples of Layer-2 applications include decentralized finance (e.g. banking, securities, exchanges, liquidty markets, loan markets) and decentralized commerce applications (e.g. retail, transportation, supply-chain consensus, etc).
+
+In this manner, VelocityNET intends to deliver mankind an open monetary system from which a fair and equitable economic system can emerge suitable for a civilization in the 21st century and beyond.

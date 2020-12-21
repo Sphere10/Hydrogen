@@ -1,0 +1,18 @@
+
+[*]
+
+# Microsoft .NET properties
+csharp_preserve_single_line_blocks=true
+
+# ReSharper properties
+resharper_align_multiline_binary_expressions_chain=false
+resharper_blank_lines_after_block_statements=0
+resharper_blank_lines_after_start_comment=1
+resharper_blank_lines_around_region=1
+resharper_blank_lines_inside_namespace=1
+resharper_continuous_indent_multiplier=1
+resharper_csharp_alignment_tab_fill_style=use_tabs_only
+resharper_place_field_attribute_on_same_line=False
+resharper_place_simple_embedded_statement_on_same_line=False
+resharper_remove_blank_lines_near_braces_in_declarations=true
+resharper_wrap_chained_binary_expressions=chop_if_long

@@ -1,0 +1,84 @@
+//-----------------------------------------------------------------------
+// <copyright file="TextBank.cs" company="Sphere 10 Software">
+//
+// Copyright (c) Sphere 10 Software. All rights reserved. (http://www.sphere10.com)
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+//
+// <author>Herman Schoenfeld</author>
+// <date>2018</date>
+// </copyright>
+//-----------------------------------------------------------------------
+
+using System;
+using System.Collections.Generic;
+using System.Text;
+using System.Diagnostics;
+
+namespace Sphere10.Framework {
+
+    public class TextBank {
+        private List<string> _data;
+
+        public TextBank() {
+            _data = new List<string>();
+        }
+
+		public TextBank(IEnumerable<object> collection) {
+			AddObjects(collection);
+		}
+
+
+        public List<string> Data {
+            get { return _data; }
+            set { _data = value; }
+        }
+
+        public void AddObjects(IEnumerable<object> array) {
+            Debug.Assert(array != null);
+            foreach (object obj in array) {
+                _data.Add(obj.ToString());
+            }
+        }
+
+        public string[] SearchText(string subStringToMatch) {
+            Debug.Assert(subStringToMatch != null);
+            return SearchText(subStringToMatch, false);
+        }
+
+        public string[] SearchText(string subStringToMatch, bool caseSensitive) {
+            Debug.Assert(subStringToMatch != null);
+            List<string> res = new List<string>();
+            foreach (string str in _data) {
+                string strToUse = caseSensitive ? str.ToUpper() : str;
+                string strToFind = caseSensitive ? subStringToMatch.ToUpper() : subStringToMatch;
+                if (strToUse.Contains(strToFind)) {
+                    res.Add(str);
+                }
+            }
+            return res.ToArray();
+        }
+
+        public bool ContainsText(string subStringToMatch) {
+            Debug.Assert(subStringToMatch != null);
+            return ContainsText(subStringToMatch, false);
+        }
+
+        public bool ContainsText(string subStringToMatch, bool caseSensitive) {
+            Debug.Assert(subStringToMatch != null);
+            bool found = false;
+            foreach (string str in _data) {
+                string strToUse = caseSensitive ? str.ToUpper() : str;
+                string strToFind = caseSensitive ? subStringToMatch.ToUpper() : subStringToMatch;
+                if (strToUse.Contains(strToFind)) {
+                    found = true;
+                    break;
+                }
+            }
+            return found;
+        }
+
+
+    }
+}

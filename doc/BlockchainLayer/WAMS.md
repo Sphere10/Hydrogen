@@ -46,7 +46,7 @@ Definitions for all of the above are provided below.
 
 3. Bit-ordering in (2) and (3) is such that bit `i` of `arr` maps to byte `arr[i SHR 3]` and to in-byte bit-index `(i SHR 3) - (i SHL 3)`. Explained below:
 
-   ```
+```
 Bit-ordering within `ReadBits` and `WriteBits` are such that the 
    least-significant bit (LSB) is the left-most bit of that byte. 
    
@@ -62,7 +62,7 @@ Bit-ordering within `ReadBits` and `WriteBits` are such that the
      Bit 7 maps to A[0]
      Bit 8 maps to B[7]
      Bit 16 maps to B[0]
-   ```
+```
 
 ### 2.2 WAMS Parameters
 
@@ -322,10 +322,10 @@ A reference implementation can be found here [TODO - add link].
 
 [^1]: Herman Schoenfeld. "Abstracted Merkle Signatures (AMS)", 2020. 
 
-[^2]:  Crypto4A. "Hash Chains and the Winternitz One-Time Signature Scheme". URL: https://crypto4a.com/sectorization-defunct/W-OTS/. Accessed on: 2020-07-20
+[^2]:  Crypto4A. "Hash Chains and the Winternitz One-Time Signature Scheme". URL: https://crypto4a.com/sectorization-defunct/W-OTS/. Accessed on: 2020-07-20.
 
-[^3]: Ralph Merkle. "Secrecy, authentication and public key systems / A certified digital signature". Ph.D. dissertation, Dept. of Electrical Engineering, Stanford University, 1979. URL: http://www.merkle.com/papers/Certified1979.pdf
+[^3]: Ralph Merkle. "Secrecy, authentication and public key systems / A certified digital signature". Ph.D. dissertation, Dept. of Electrical Engineering, Stanford University, 1979. URL: http://www.merkle.com/papers/Certified1979.pdf.
 
-[^4]:  Herman Schoenfeld.  "W-OTS# - Shorter and Faster Winternitz Signatures". URL: https://vixra.org/abs/2007.0194. Accessed on: 2020-07-20
+[^4]:  Herman Schoenfeld.  "W-OTS# - Shorter and Faster Winternitz Signatures". URL: https://vixra.org/abs/2007.0194. Accessed on: 2020-07-20.
 
 [^5]:  L. Lamport. "Constructing digital signatures from a one-way function". Technical Report SRI-CSL-98, SRI International Computer Science Laboratory, Oct. 1979.

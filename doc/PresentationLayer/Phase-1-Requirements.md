@@ -12,7 +12,7 @@ Sphere 10 Software is building a next-generation cryptocurrency project involvin
 
 
 
-![](resources\Backend-Frontend.png)
+![](resources/Backend-Frontend.png)
 
 
 

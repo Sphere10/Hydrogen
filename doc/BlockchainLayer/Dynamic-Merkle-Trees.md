@@ -28,7 +28,7 @@ A merkle-tree is a data-structure whose nodes form a graph similar to a binary t
 
 ##### Fig 1
 
-![](..\resources\BlockchainLayer\merkle-tree-7.png)
+![](resources\merkle-tree-7.png)
 
 In [Fig 1](#Fig-1), every node in the merkle-tree can be addressed by a 2D $(x,y)$ coordinate. The $y$-dimension is called the *"level"* and the $x$-dimension the *"index"* at the level. By convention we use $L^{level}_{index}$ notation. As can be seen, a merkle-tree contains "perfect sub-trees" which are themselves merkle-trees whose leaves are subsets with cardinalities equal to powers of 2.
 
@@ -73,7 +73,7 @@ The "descendants" of a node are the set of all transitive child nodes (i.e. chil
 
 ##### Fig 2
 
-![merkle-tree-5](..\resources\BlockchainLayer\descendants-50pct.png)
+![merkle-tree-5](resources\descendants-50pct.png)
 
 
 
@@ -311,7 +311,7 @@ Most merkle-trees are imperfect and will contain at least one bubble-up node. In
 
 ##### Fig 3
 
-![merkle-tree-5](..\resources\BlockchainLayer\merkle-tree-5-75pct.png)
+![merkle-tree-5](resources\merkle-tree-5-75pct.png)
 
 
 # 3. Security Proofs
@@ -346,7 +346,7 @@ An existence proof is a proof that a node exists within a tree. Specifically, it
 
 ##### Fig 3: Existence proof example
 
-![diagram-1](..\resources\BlockchainLayer\existence-1-75pct.png)
+![diagram-1](resources\existence-1-75pct.png)
 
 
 
@@ -354,7 +354,7 @@ The existence-proof for $\text{Obj 3}$ comprises of the hash-path $D=\{L^0_2, L^
 
 ##### Fig 4: Existence proof example 2
 
-![diagram-1](..\resources\BlockchainLayer\existence-2-75pct.png)
+![diagram-1](resources\existence-2-75pct.png)
 
 
 
@@ -416,24 +416,24 @@ A ranged-update-proof extends an update-proof in much the same way that a ranged
 
 An insert-proof is a general proof of insertion into the tree leaf-set. This is a high-level proof composed of base proofs [3.2](#3.2 Existence) - [3.5](#3.5 Append). it proves that the set of leaves $I$ are inserted after $A$ and before $B$.
 
-![insert-proof](..\resources\BlockchainLayer\insert-proof.png)
+![insert-proof](resources\insert-proof.png)
 
 Proving that a tree with root $R$ had leaves $I$ inserted after $A$ and before $B$ resulting in root $R'$ is constructed as follows:
 
 1. A ranged-existence-proof of $B$ in $R$. 
-![insert-proof step 1](..\resources\BlockchainLayer\insert-proof-step1.png)
+![insert-proof step 1](resources\insert-proof-step1.png)
 
 
 2. A right-delete proof of  $\|B\|$ leaves from $R$ resulting in root $R_1$.
-![insert-proof step 2](..\resources\BlockchainLayer\insert-proof-step2.png)
+![insert-proof step 2](resources\insert-proof-step2.png)
 
 
 3. An append-proof of leaves $I$ to $R_1$ resulting root $R_2$.
-![insert-proof step 3](..\resources\BlockchainLayer\insert-proof-step3.png)
+![insert-proof step 3](resources\insert-proof-step3.png)
 
 
 4. An append-proof of $B$ to $R_2$ resulting in $R'$.
-![insert-proof step 4](..\resources\BlockchainLayer\insert-proof-step4.png)
+![insert-proof step 4](resources\insert-proof-step4.png)
 
 In practice, an insert proof would be implemented as an ordered sequence of the sub-proofs. A verifier would evaluate the proof by evaluating the sub-proofs in order, ensuring each step verifies to the root that was outputed by the preceding step (the first step verifies to to start root).
 
@@ -441,18 +441,18 @@ In practice, an insert proof would be implemented as an ordered sequence of the 
 
 A delete-proof is a general proof of deletion from the tree leaf-set. Specifically, it proves that a neighbourhood of leaves $D$ after $A$ and before $B$ was removed.
 
-![insert-proof](..\resources\BlockchainLayer\delete-proof.png)
+![insert-proof](resources\delete-proof.png)
 
 Proving that a tree with root $R$ had  leaf neighbourhood $D$ removed resulting in the neighbourhood $A$ joined to neighbourhood $B$ as follows from:
 
 1. A ranged-existence-proof of $B$ in $R$. 
-![delete-proof step1](..\resources\BlockchainLayer\delete-proof-step1.png)
+![delete-proof step1](resources\delete-proof-step1.png)
 
 2. A right-delete proof of  $\|B\|+\|D\|$ leaves from $R$ resulting in root $R_1$.
-![delete-proof step 2](..\resources\BlockchainLayer\delete-proof-step2.png)
+![delete-proof step 2](resources\delete-proof-step2.png)
 
 3. An append-proof of $B$ to $R_1$ resulting root $R'$.
-![delete-proof step 3](..\resources\BlockchainLayer\delete-proof-step3.png)
+![delete-proof step 3](resources\delete-proof-step3.png)
 
   
 
@@ -478,7 +478,7 @@ This section discusses merkle-tree implementations of relevance. A "flat-tree" i
 
 ## 4.1 Flat Coordinates
 
-![merkle-tree-5](..\resources\BlockchainLayer\flat-tree-7-75pct.png)
+![merkle-tree-5](resources\flat-tree-7-75pct.png)
 
 In this section, a system of merkle-coordinates is constructed that flatten the $(x,y)$ 2-tuple into a single positive integer value $z \in \Z_0$. The purpose of these flat coordinate addressing is to permit storage of a dynamic merkle-tree in contiguous memory. In other words, as new nodes are appended to the tree the node buffer can be expanded without affecting prior node values, and similarly when shrinking.
 

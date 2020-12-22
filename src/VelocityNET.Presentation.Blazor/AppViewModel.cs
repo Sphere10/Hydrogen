@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Reflection;
-using VelocityNET.Presentation.Blazor.WidgetsGallery;
+using VelocityNET.Presentation.Blazor.WidgetsGallery.Pages;
 
 namespace VelocityNET.Presentation.Blazor
 {
@@ -10,9 +10,11 @@ namespace VelocityNET.Presentation.Blazor
 
         public AppViewModel()
         {
-            RoutingAssemblies = new List<Assembly>()
+            
+            ///Find these based on namespaces
+            RoutingAssemblies = new List<Assembly>
             {
-               Assembly.GetAssembly(typeof(Index))
+               Assembly.GetAssembly(typeof(PagedGridExample))
             };
         }
     }

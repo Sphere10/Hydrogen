@@ -1,0 +1,26 @@
+@inherits LayoutComponentBase
+
+<div class="page">
+    <div class="container">
+        <div class="row">
+            <div class="col-1">
+                <Logo></Logo>
+            </div>
+            <div class="col-3">
+                <MainSearch></MainSearch>
+            </div>
+        </div>
+        <div class="row">
+            <MainMenu></MainMenu>
+        </div>
+        <div class="row">
+            <div class="col">
+                <BlockMenu></BlockMenu>
+                <AppBlocksMenu></AppBlocksMenu>
+            </div>
+            <div class="col">
+                @Body
+            </div>
+        </div>
+    </div>
+</div>

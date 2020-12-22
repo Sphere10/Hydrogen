@@ -17,6 +17,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VelocityNET.Presentation.Bl
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VelocityNET.Presentation.Blazor", "VelocityNET.Presentation.Blazor\VelocityNET.Presentation.Blazor.csproj", "{52E10066-E7BA-4A6D-8550-56A746CAFD7A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VelocityNET.Presentation.Blazor.Tests", "VelocityNET.Presentation.Blazor.Tests\VelocityNET.Presentation.Blazor.Tests.csproj", "{CCDC8381-37C5-410C-8287-B707BEBB896C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -111,6 +113,18 @@ Global
 		{52E10066-E7BA-4A6D-8550-56A746CAFD7A}.Release|x64.Build.0 = Release|Any CPU
 		{52E10066-E7BA-4A6D-8550-56A746CAFD7A}.Release|x86.ActiveCfg = Release|Any CPU
 		{52E10066-E7BA-4A6D-8550-56A746CAFD7A}.Release|x86.Build.0 = Release|Any CPU
+		{CCDC8381-37C5-410C-8287-B707BEBB896C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CCDC8381-37C5-410C-8287-B707BEBB896C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CCDC8381-37C5-410C-8287-B707BEBB896C}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{CCDC8381-37C5-410C-8287-B707BEBB896C}.Debug|x64.Build.0 = Debug|Any CPU
+		{CCDC8381-37C5-410C-8287-B707BEBB896C}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{CCDC8381-37C5-410C-8287-B707BEBB896C}.Debug|x86.Build.0 = Debug|Any CPU
+		{CCDC8381-37C5-410C-8287-B707BEBB896C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CCDC8381-37C5-410C-8287-B707BEBB896C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CCDC8381-37C5-410C-8287-B707BEBB896C}.Release|x64.ActiveCfg = Release|Any CPU
+		{CCDC8381-37C5-410C-8287-B707BEBB896C}.Release|x64.Build.0 = Release|Any CPU
+		{CCDC8381-37C5-410C-8287-B707BEBB896C}.Release|x86.ActiveCfg = Release|Any CPU
+		{CCDC8381-37C5-410C-8287-B707BEBB896C}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

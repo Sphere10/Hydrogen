@@ -1,0 +1,15 @@
+name: build
+on: push
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2     
+      - name: Setup .NET Core SDK
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 5.0.101
+          
+      - name: Publish .NET Core Project
+        run: dotnet build ./src/VelocityNET.sln

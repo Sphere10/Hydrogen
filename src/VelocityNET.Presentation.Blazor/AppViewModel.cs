@@ -11,10 +11,10 @@ namespace VelocityNET.Presentation.Blazor
         public AppViewModel()
         {
             
-            ///Find these based on namespaces
+            //Find these based on namespaces
             RoutingAssemblies = new List<Assembly>
             {
-               Assembly.GetAssembly(typeof(PagedGridExample))
+               Assembly.GetAssembly(typeof(DataTables))
             };
         }
     }

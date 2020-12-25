@@ -1,6 +1,6 @@
 ﻿namespace VelocityNET.Presentation.Blazor.ViewModels
 {
-    public class IndexViewModel
+    public class HomeViewModel
     {
     }
 }

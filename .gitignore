@@ -192,3 +192,7 @@ project.lock.json
 
 #Jetbrains
 **/.idea/
+
+#Client side packages
+**/src/VelocityNET.Presentation.Blazor/wwwroot/lib/
+

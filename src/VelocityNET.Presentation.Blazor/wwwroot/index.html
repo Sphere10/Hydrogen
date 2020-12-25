@@ -1,32 +1,57 @@
 ﻿<!DOCTYPE html>
 <html>
 
-<head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>VelocityNET.Presentation.Blazor</title>
-    <base href="/" />
-    <link href="css/bootstrap/bootstrap.min.css" rel="stylesheet" />
-    <link href="css/app.css" rel="stylesheet" />
-    <link href="VelocityNET.Presentation.Blazor.styles.css" rel="stylesheet" />
-    <link href="manifest.json" rel="manifest" />
-    <link rel="apple-touch-icon" sizes="512x512" href="icon-512.png" />
-</head>
+    <head>
+        <meta charset="utf-8"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+        <title>VelocityNET</title>
+        <base href="/"/>
+        <link href="lib/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet"/>
+        <link href="css/app.min.css" rel="stylesheet"/>
+        <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet" >
+        <link href="VelocityNET.Presentation.Blazor.styles.css" rel="stylesheet"/>
+        <link href="manifest.json" rel="manifest"/>
+        <link rel="apple-touch-icon" sizes="512x512" href="icon-512.png"/>
 
-<body>
-    <div id="app">
-        <div class="container-fluid">
-            <h1>VelocityNET</h1>
+        <!-- Custom fonts for this template-->
+        <link href="lib/fortawesome/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+        <link
+                href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+                rel="stylesheet">
+
+        <!-- Custom styles for this template-->
+        <link href="css/sb-admin-2.min.css" rel="stylesheet">
+        
+    </head>
+
+    <body id="page-top">
+        <app>
+           <div class="loading-page">
+               <div>
+                   <h2>VelocityNET</h2>
+               </div>
+               <div class="spinner-border" role="status">
+                   <span class="sr-only">Loading...</span>
+               </div>
+           </div>
+        </app>
+        <div id="blazor-error-ui">
+            An unhandled error has occurred.
+            <a href="" class="reload">Reload</a>
+            <a class="dismiss">🗙</a>
         </div>
-    </div>
+        
+        <script src="lib/jquery/jquery.min.js"></script>
+        <script src="lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 
-    <div id="blazor-error-ui">
-        An unhandled error has occurred.
-        <a href="" class="reload">Reload</a>
-        <a class="dismiss">🗙</a>
-    </div>
-    <script src="_framework/blazor.webassembly.js"></script>
-    <script>navigator.serviceWorker.register('service-worker.js');</script>
-</body>
+        <!-- Core plugin JavaScript-->
+        <script src="lib/jquery-easing/jquery.easing.min.js"></script>
+
+        <!-- Datatables components -->
+        <link href="lib/datatables/css/dataTables.bootstrap4.min.css" rel="stylesheet">
+
+        <script src="_framework/blazor.webassembly.js"></script>
+        <script>navigator.serviceWorker.register('service-worker.js');</script>
+    </body>
 
 </html>

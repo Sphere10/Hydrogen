@@ -25,8 +25,8 @@ namespace VelocityNET.Core.Mining {
 
 		public override uint BlockHeight => (uint)_blockTimes.Count;
 
-		public TestMiningManager(CHF hashAlgorithm, ITargetAlgorithm powAlgorithm, IDAAlgorithm daAlgorithm, IObjectSerializer<NewMinerBlock> blockSerializer, IConfiguration configuration) 
-			: base(hashAlgorithm, powAlgorithm, daAlgorithm, blockSerializer, configuration) {
+		public TestMiningManager(CHF hashAlgorithm, ITargetAlgorithm targetAlgorithm, IDAAlgorithm daAlgorithm, IObjectSerializer<NewMinerBlock> blockSerializer, TimeSpan rttInternal ) 
+			: base(hashAlgorithm, targetAlgorithm, daAlgorithm, blockSerializer, new Configuration { RTTInterval = rttInternal }) {
 			_blockTimes = new List<DateTime>();
 			AllStats = new Statistics();
 			Last5Stats = new Statistics();

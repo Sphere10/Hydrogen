@@ -10,7 +10,7 @@ using VelocityNET.Core.Maths;
 
 namespace VelocityNET.Core.Mining {
 
-	public class SingleThreadedMiner {
+	public class SingleThreadedMiner : IDisposable {
 		protected IMiningManager _miningManager;
 		private Task _miningTask;
 		private CancellationTokenSource _cancelSource;
@@ -57,6 +57,14 @@ namespace VelocityNET.Core.Mining {
 					}
 				}
 			}
+		}
+
+		public void Dispose() {
+			if (Status == MinerStatus.Mining)
+				Stop();
+			Task.WaitAll(_miningTask);
+			_miningTask?.Dispose();
+			_cancelSource?.Dispose();
 		}
 	}
 }

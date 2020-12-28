@@ -49,8 +49,8 @@ namespace Sphere10.Framework{
 			_logger.Debug(message);
 		}
 
-		public static void Debug2(string componentName, string methodName, string message) {
-			_logger.Debug2(componentName, methodName, message);
+		public static void Debug(string componentName, string methodName, string message) {
+			_logger.Debug(componentName, methodName, message);
 		}
 
 
@@ -62,8 +62,8 @@ namespace Sphere10.Framework{
 			_logger.Info(message);
 		}
 
-		public static void Info2(string componentName, string methodName, string message) {
-			_logger.Info2(componentName, methodName, message);
+		public static void Info(string componentName, string methodName, string message) {
+			_logger.Info(componentName, methodName, message);
 		}
 
 		/// <summary>
@@ -74,8 +74,8 @@ namespace Sphere10.Framework{
 			_logger.Warning(message);
 		}
 
-		public static void Warning2(string componentName, string methodName, string message) {
-			_logger.Warning2(componentName, methodName, message);
+		public static void Warning(string componentName, string methodName, string message) {
+			_logger.Warning(componentName, methodName, message);
 		}
 
 		/// <summary>
@@ -86,8 +86,8 @@ namespace Sphere10.Framework{
 			_logger.Error(message);
 		}
 
-		public static void Error2(string componentName, string methodName, string message) {
-			_logger.Error2(componentName, methodName, message);
+		public static void Error(string componentName, string methodName, string message) {
+			_logger.Error(componentName, methodName, message);
 		}
 
 		public static void Exception(Exception exception) {

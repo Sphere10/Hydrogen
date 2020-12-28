@@ -65,19 +65,19 @@ namespace Sphere10.Framework{
 		}
 
 
-		public static void Debug2(this ILogger logger, string componentName, string methodName, string message) {
+		public static void Debug(this ILogger logger, string componentName, string methodName, string message) {
 			logger.Debug($"{ComponentPrefix(componentName, methodName)} {message}");
 		}
 
-		public static  void Info2(this ILogger logger, string componentName, string methodName, string message) {
+		public static  void Info(this ILogger logger, string componentName, string methodName, string message) {
 			logger.Info($"{ComponentPrefix(componentName, methodName)} {message}");
 		}
 
-		public static void Warning2(this ILogger logger, string componentName, string methodName, string message) {
+		public static void Warning(this ILogger logger, string componentName, string methodName, string message) {
 			logger.Warning($"{ComponentPrefix(componentName, methodName)} {message}");
 		}
 
-		public static void Error2(this ILogger logger, string componentName, string methodName, string message) {
+		public static void Error(this ILogger logger, string componentName, string methodName, string message) {
 			logger.Error($"{ComponentPrefix(componentName, methodName)} {message}");
 		}
 

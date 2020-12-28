@@ -10,7 +10,7 @@ namespace Sphere10.Framework {
 	/// Memorizes the enumerable and resolves the "multiple enumeration problem".
 	/// </summary>
 	/// <typeparam name="T"></typeparam>
-	public struct MemorizingIterator<T> : IEnumerableEx<T>, ICollection<T> {
+	public struct MemorizingIterator<T> : IEnumerable<T>, ICollection<T> {
 		private readonly IEnumerable<T> _source;
 		private MemorizingEnumerator<T> _memorizingEnumerator;
 

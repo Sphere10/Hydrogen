@@ -11,12 +11,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Extensions\" />
+    <ProjectReference Include="..\Sphere10.Framework\Sphere10.Framework.csproj" />
+    <ProjectReference Include="..\VelocityNET.Processing.Core\VelocityNET.Processing.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Sphere10.Framework\Sphere10.Framework.csproj" />
-    <ProjectReference Include="..\VelocityNET.Processing.Core\VelocityNET.Processing.Core.csproj" />
+    <Folder Include="Extensions\" />
   </ItemGroup>
 
 </Project>

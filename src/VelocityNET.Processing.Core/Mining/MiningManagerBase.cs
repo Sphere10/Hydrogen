@@ -13,12 +13,12 @@ namespace VelocityNET.Core.Mining {
 		
 		public event EventHandlerEx<object, MiningPuzzle, MiningSolutionResult> SolutionSubmited;
 
-		protected MiningManagerBase(CHF hashAlgorithm, ITargetAlgorithm powAlgorithm, IDAAlgorithm daAlgorithm, IObjectSerializer<NewMinerBlock> blockSerializer, IConfiguration configuration) {
+		protected MiningManagerBase(CHF hashAlgorithm, ITargetAlgorithm powAlgorithm, IDAAlgorithm daAlgorithm, IObjectSerializer<NewMinerBlock> blockSerializer,  Configuration config) {
 			HashAlgorithm = hashAlgorithm;
 			DAAlgorithm = daAlgorithm;
 			PoWAlgorithm = powAlgorithm;
 			BlockSerializer = blockSerializer;
-			Configuration = configuration;
+			Config = config;
 			MiningTarget = DAAlgorithm.CalculateNextBlockTarget(Enumerable.Empty<DateTime>(), 0, 0);
 		}
 
@@ -34,7 +34,7 @@ namespace VelocityNET.Core.Mining {
 
 		protected ITargetAlgorithm PoWAlgorithm { get; }
 
-		protected IConfiguration Configuration { get; }
+		protected Configuration Config { get; }
 
 		protected IObjectSerializer<NewMinerBlock> BlockSerializer { get; }
 
@@ -47,7 +47,7 @@ namespace VelocityNET.Core.Mining {
 					Timestamp = (uint)DateTimeOffset.UtcNow.ToUnixTimeSeconds()
 				};
 				var now = DateTime.UtcNow;
-				return new MiningPuzzle(block, new ValueRange<DateTime>(now, now + Configuration.RTTInterval), MiningTarget, HashAlgorithm, PoWAlgorithm, BlockSerializer);
+				return new MiningPuzzle(block, new ValueRange<DateTime>(now, now + Config.RTTInterval), MiningTarget, HashAlgorithm, PoWAlgorithm, BlockSerializer);
 			}
 		}
 
@@ -79,6 +79,11 @@ namespace VelocityNET.Core.Mining {
 		private void NotifyOnSubmitSolution(MiningPuzzle puzzle, MiningSolutionResult result) {
 			OnSubmitSolution(puzzle, result);
 			SolutionSubmited?.Invoke(this, puzzle, result);
+		}
+
+
+		public class Configuration {
+			public TimeSpan RTTInterval { get; set; }
 		}
 	}
 

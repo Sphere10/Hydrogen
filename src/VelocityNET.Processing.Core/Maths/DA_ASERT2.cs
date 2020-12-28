@@ -12,14 +12,14 @@ namespace VelocityNET.Core.Maths {
 
     public class DA_ASERT2 : IDAAlgorithm {
 
-		public DA_ASERT2(ITargetAlgorithm targetAlgorithm, IConfiguration configuration) {
+		public DA_ASERT2(ITargetAlgorithm targetAlgorithm, Configuration configuration) {
             PoWAlgorithm = targetAlgorithm;
             Config = configuration;
 		}
 
         protected ITargetAlgorithm PoWAlgorithm { get; }
 
-		protected IConfiguration Config { get; }
+		protected Configuration Config { get; }
 
         public bool RealTime => false;
 
@@ -32,7 +32,7 @@ namespace VelocityNET.Core.Maths {
                previousCompactTarget,
                (int)DateTime.UtcNow.Subtract(lastBlockTime).TotalSeconds,
                (int)Config.NewMinerBlockTime.TotalSeconds,
-               (int)Config.DAAsertRelaxationTime.TotalSeconds
+               (int)Config.RelaxationTime.TotalSeconds
             );
         }
 
@@ -46,6 +46,13 @@ namespace VelocityNET.Core.Maths {
             return nextCompactTarget;
         }
 
+
+		public class Configuration {
+
+			public TimeSpan NewMinerBlockTime { get; set; }
+
+			public TimeSpan RelaxationTime { get; set; }
+        }
 
 	}
 

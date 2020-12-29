@@ -218,9 +218,10 @@ namespace VelocityNET.Presentation.Node.UI {
 
 		private static void RunApplication(Toplevel view, Func<Exception, bool> errorHandler = null) {
 			// Error-handling loop wrapper
-			while (true) {
-				var resume = false;
+			var resume = true;
+			while (resume) {
 				try {
+					resume = false;
 					var runToken = Application.Begin(view);
 					Application.RunLoop(runToken);
 					Application.End(runToken);
@@ -229,11 +230,9 @@ namespace VelocityNET.Presentation.Node.UI {
 						throw;
 					resume = errorHandler(error);
 				}
-				if (resume)
-					continue;
-				break;
 			}
 		}
+
 	}
 
 }

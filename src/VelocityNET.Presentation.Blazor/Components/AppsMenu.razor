@@ -1,16 +1,16 @@
 ﻿@using VelocityNET.Presentation.Blazor.Shared.Plugins
-@inherits ComponentWithViewModel<AppBlocksMenuViewModel>
+@inherits ComponentWithViewModel<VelocityNET.Presentation.Blazor.ViewModels.AppsMenuViewModel>
 
 <!-- Heading -->
 <div class="sidebar-heading">
     Apps
 </div>
-@foreach (IApp appBlock in ViewModel.Apps)
+@foreach (IApp app in ViewModel.Apps)
 {
     <li class="nav-item">
-        <NavLink class="nav-link" href="@appBlock.Route" Match="NavLinkMatch.Prefix">
+        <NavLink class="nav-link" href="@app.Route" Match="NavLinkMatch.Prefix">
             <i class="fas fa-fw fa-chart-area"></i>
-            <span>@appBlock.Name</span>
+            <span>@app.Name</span>
         </NavLink>
     </li>
 }

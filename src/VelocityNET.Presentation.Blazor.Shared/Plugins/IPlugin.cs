@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace VelocityNET.Presentation.Blazor.Shared.Plugins
 {
@@ -11,6 +12,12 @@ namespace VelocityNET.Presentation.Blazor.Shared.Plugins
         /// <summary>
         /// Gets the applications this plugin provides.
         /// </summary>
-        public IEnumerable<IApp> Apps { get; }
+        IEnumerable<IApp> Apps { get; }
+
+        /// <summary>
+        /// Configure the service collection with this plugin's services.
+        /// </summary>
+        /// <param name="serviceCollection"> services</param>
+        void ConfigureServices(IServiceCollection serviceCollection);
     }
 }

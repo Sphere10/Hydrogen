@@ -72,7 +72,7 @@ namespace VelocityNET.Presentation.Node.UI {
 			}
 
 			public override IEnumerable<StatusItem> BuildStatusItems() {
-				yield return new StatusItem(Terminal.Gui.Key.F1, "[F1] Start/Stop",
+				yield return new StatusItem(Terminal.Gui.Key.F1, "~[F1]~ Start/Stop",
 					() => {
 						if (Model.Started) {
 							Model.Stop();
@@ -81,7 +81,7 @@ namespace VelocityNET.Presentation.Node.UI {
 						}
 					});
 
-				yield return new StatusItem(Terminal.Gui.Key.F2, "[F2] Clear Log",
+				yield return new StatusItem(Terminal.Gui.Key.F2, "~[F2]~ Clear Log",
 					() => {
 						_log.ClearLog();
 					});
@@ -105,7 +105,7 @@ namespace VelocityNET.Presentation.Node.UI {
 			private MiningSimModel() {
 				MinerCount = 1;
 				TA = TargetAlgo.Molina;
-				DAA = DiffAlgo.ASERT;
+				DAA = DiffAlgo.ASERT2;
 				Hash = HashAlgo.SHA2_256;
 				BlockTime = 5;
 				RelaxationTime = 50;
@@ -148,8 +148,8 @@ namespace VelocityNET.Presentation.Node.UI {
 
 				
 				var algo = DAA switch {
-					DiffAlgo.ASERT => new DA_ASERT2(targetAlgo, new DA_ASERT2.Configuration { NewMinerBlockTime = TimeSpan.FromSeconds(BlockTime), RelaxationTime = TimeSpan.FromSeconds(RelaxationTime)}),
-					DiffAlgo.RTT_ASERT => throw new NotImplementedException(),
+					DiffAlgo.ASERT2 => new ASERT2(targetAlgo, new ASERTConfiguration { BlockTime = TimeSpan.FromSeconds(BlockTime), RelaxationTime = TimeSpan.FromSeconds(RelaxationTime)}),
+					DiffAlgo.RTT_ASERT => new ASERT_RTT(targetAlgo, new ASERTConfiguration { BlockTime = TimeSpan.FromSeconds(BlockTime), RelaxationTime = TimeSpan.FromSeconds(RelaxationTime) }),
 					_ => throw new ArgumentOutOfRangeException()
 				};
 
@@ -178,11 +178,11 @@ namespace VelocityNET.Presentation.Node.UI {
 
 
 		public enum DiffAlgo {
-			[Description("Real-time targeting ASERT")]
+			[Description("Real-time ASERT")]
 			RTT_ASERT,
 
-			[Description("Standard ASERT")]
-			ASERT
+			[Description("Last two block ASERT")]
+			ASERT2
 		}
 
 		public enum HashAlgo {

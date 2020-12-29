@@ -9,12 +9,17 @@
     <PackageReference Include="BuildBundlerMinifier" Version="3.2.449" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="5.0.1" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="5.0.1" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor" Version="2.2.0" />
     <PackageReference Include="Microsoft.Web.LibraryManager.Build" Version="2.1.113" />
+    <PackageReference Include="MvvmLight" Version="5.4.1.1" />
     <PackageReference Include="System.Net.Http.Json" Version="5.0.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\VelocityNET.Presentation.Blazor.WidgetsGallery\VelocityNET.Presentation.Blazor.WidgetsGallery.csproj" />
+    <ProjectReference Include="..\VelocityNET.Presentation.Blazor.Shared\VelocityNET.Presentation.Blazor.Shared.csproj" />
+    <ProjectReference Include="..\VelocityNET.Presentation.Blazor.WidgetGallery\VelocityNET.Presentation.Blazor.WidgetGallery.csproj">
+      <Private>true</Private>
+    </ProjectReference>
   </ItemGroup>
 
   <ItemGroup>
@@ -24,6 +29,12 @@
   <ItemGroup>
     <_ContentIncludedByDefault Remove="wwwroot\css\bootstrap\bootstrap.min.css" />
     <_ContentIncludedByDefault Remove="wwwroot\css\bootstrap\bootstrap.min.css.map" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Remove="wwwroot\js\sb-admin-2.min.js" />
+    <Content Remove="wwwroot\css\app.min.css" />
+    <Content Remove="wwwroot\css\sb-admin-2.min.css" />
   </ItemGroup>
 
 </Project>

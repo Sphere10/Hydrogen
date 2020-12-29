@@ -1,21 +1,26 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
-using VelocityNET.Presentation.Blazor.WidgetsGallery.Pages;
+using VelocityNET.Presentation.Blazor.Shared.Plugins;
 
 namespace VelocityNET.Presentation.Blazor
 {
+
     public class AppViewModel
     {
         public IEnumerable<Assembly> RoutingAssemblies { get; }
 
-        public AppViewModel()
+        public AppViewModel(IEnumerable<IPlugin> plugins)
         {
-            
-            //Find these based on namespaces
-            RoutingAssemblies = new List<Assembly>
+            if (plugins == null)
             {
-               Assembly.GetAssembly(typeof(DataTables))
-            };
+                throw new ArgumentNullException(nameof(plugins));
+            }
+            
+            RoutingAssemblies = plugins.Select(x => x.GetType().Assembly)
+                .Where(x => x.FullName != typeof(Program).Assembly.FullName)
+                .Distinct();
         }
     }
 }

@@ -1,11 +1,17 @@
 <Project Sdk="Microsoft.NET.Sdk.Razor">
-
+  
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <OutputType>exe</OutputType>
   </PropertyGroup>
-  
+
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="5.0.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\VelocityNET.Presentation.Blazor.Shared\VelocityNET.Presentation.Blazor.Shared.csproj" />
+  </ItemGroup>
+  
 </Project>

@@ -12,7 +12,7 @@
     ]
   },
   {
-    "outputFileName": "wwwroot/js/sb-admin-2.js",
+    "outputFileName": "wwwroot/js/sb-admin-2.min.js",
     "inputFiles": [
       "wwwroot/js/sb-admin-2.js"
     ],

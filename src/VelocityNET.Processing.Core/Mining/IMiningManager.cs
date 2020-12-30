@@ -7,11 +7,7 @@ namespace VelocityNET.Core.Mining {
 
 	public interface IMiningManager {
 
-		public event EventHandlerEx<object, MiningPuzzle, MiningSolutionResult> SolutionSubmited; 
-
-		MiningManagerStatus Status { get; }
-
-		uint MiningTarget { get; }
+		public event EventHandlerEx<object, MiningPuzzle, MiningSolutionResult> SolutionSubmited;
 
 		MiningPuzzle RequestPuzzle(string minerTag);
 
@@ -19,9 +15,5 @@ namespace VelocityNET.Core.Mining {
 
 	}
 
-	public enum MiningManagerStatus {
-		Stopped,
-		Available,
-	}
 
 }

@@ -22,6 +22,18 @@ namespace VelocityNET.Presentation.Node.UI {
 			: base(MiningSimModel.Default, new ConfigScreen(), new LogScreen()) {
 		}
 
+		protected override IEnumerable<StatusItem> BuildStatusItemsInternal() {
+			yield return new StatusItem(Terminal.Gui.Key.F1, "~[F1]~ Start/Stop",
+				() => {
+					if (Model.Started) {
+						Model.Stop();
+					} else {
+						Model.Start();
+					}
+				});
+		}
+
+
 		[Title("Config")]
 		public class ConfigScreen : FramedScreen<MiningSimModel> {
 
@@ -37,11 +49,12 @@ namespace VelocityNET.Presentation.Node.UI {
 				this.Add(labelFieldLayout);
 			}
 
-			protected override void OnAppearing() {
-				base.OnAppearing();
-
-				this.Enabled = !Model.Started;
+			public override void OnModelChanged() {
+				base.OnModelChanged();
+				this.Model.OnStarted += x => this.Enabled = false;
+				this.Model.OnStopped += x => this.Enabled = true;
 			}
+
 		}
 
 		[Title("Log")]
@@ -72,15 +85,6 @@ namespace VelocityNET.Presentation.Node.UI {
 			}
 
 			public override IEnumerable<StatusItem> BuildStatusItems() {
-				yield return new StatusItem(Terminal.Gui.Key.F1, "~[F1]~ Start/Stop",
-					() => {
-						if (Model.Started) {
-							Model.Stop();
-						} else {
-							Model.Start();
-						}
-					});
-
 				yield return new StatusItem(Terminal.Gui.Key.F2, "~[F2]~ Clear Log",
 					() => {
 						_log.ClearLog();
@@ -114,8 +118,33 @@ namespace VelocityNET.Presentation.Node.UI {
 			}
 
 			public static MiningSimModel Default => new MiningSimModel();
-			
-			public int MinerCount { get; set; }
+
+			private int _minerCount;
+
+			public int MinerCount {
+				get => _minerCount;
+				set {
+					_minerCount = value;
+					if (Started) {
+						// _miners is created, need to adjust
+						if (_miners.Count > _minerCount) {
+							// remove
+							for (var i = _minerCount - 1; i >= _minerCount; i--) {
+								_miners[i].Stop();
+								_miners[i].Dispose();
+								_miners.Remove(_miners[i]);
+							}
+						} else if (_miners.Count < _minerCount) {
+							// add
+							for (var i = _miners.Count; i < _minerCount; i++) {
+								var miner = new SingleThreadedMiner($"Miner {i + 1}", _miningManager);
+								_miners.Add(miner);
+								miner.Start();
+							}
+						}
+					}
+				}
+			}
 
 			public TargetAlgo TA { get; set; }
 
@@ -170,6 +199,7 @@ namespace VelocityNET.Presentation.Node.UI {
 					miner.Dispose();
 				}
 				_miners.Clear();
+				_miningManager = null;
 				Started = false;
 				OnStopped?.Invoke(_miningManager);
 			}

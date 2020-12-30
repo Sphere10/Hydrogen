@@ -27,15 +27,9 @@ namespace VelocityNET.Presentation.Node.UI {
 			Width = Dim.Fill();
 			Height = Dim.Fill();
 			_initialized = false;
+			
 			_enabled = true;
 			_viewCouldFocus = new Dictionary<View, bool>();
-		}
-
-		public void Load() {
-			Guard.Ensure(!_initialized, "Already loaded");
-			NotifyLoading();
-			LoadInternal();
-			NotifyLoaded();
 		}
 
 		public bool Enabled {
@@ -43,9 +37,9 @@ namespace VelocityNET.Presentation.Node.UI {
 			set {
 				if (value == _enabled)
 					return;
-				if (value) 
+				if (value)
 					EnableControls();
-				 else 
+				else
 					DisableControls();
 				_enabled = value;
 			}
@@ -53,6 +47,17 @@ namespace VelocityNET.Presentation.Node.UI {
 
 		public virtual string Title
 			=> GetType().GetCustomAttributesOfType<TitleAttribute>().SingleOrDefault()?.Title ?? "(untitled)";
+
+		public int AppearCount { get; private set; }
+
+		public int DisappearCount { get; private set; }
+
+		public void Load() {
+			Guard.Ensure(!_initialized, "Already loaded");
+			NotifyLoading();
+			LoadInternal();
+			NotifyLoaded();
+		}
 
 		public virtual IEnumerable<StatusItem> BuildStatusItems()
 			=> Enumerable.Empty<StatusItem>();
@@ -104,6 +109,7 @@ namespace VelocityNET.Presentation.Node.UI {
 		}
 
 		internal void NotifyAppearing() {
+			this.AppearCount++;
 			OnAppearing();
 			Appearing?.Invoke(this);
 		}
@@ -114,6 +120,7 @@ namespace VelocityNET.Presentation.Node.UI {
 		}
 
 		internal void NotifyDisappearing(out bool cancel) {
+			this.DisappearCount++;
 			OnDisappearing(out cancel);
 			Disappearing?.Invoke(this);
 		}
@@ -133,6 +140,7 @@ namespace VelocityNET.Presentation.Node.UI {
 				view.CanFocus = _viewCouldFocus[view];
 			_viewCouldFocus.Clear();
 			this.ColorScheme = Application.Current.ColorScheme;
+			this.SetNeedsDisplay();
 		}
 
 		private void DisableControls() {
@@ -145,6 +153,7 @@ namespace VelocityNET.Presentation.Node.UI {
 			foreach (var view in _viewCouldFocus.Keys)
 				view.CanFocus = false;
 			this.ColorScheme = Colors.Error;
+			this.SetNeedsDisplay();
 		}
 
 	}

@@ -12,6 +12,7 @@ namespace VelocityNET.Core.Mining {
 	public abstract class MiningManagerBase : ReadWriteSafeObject, IMiningManager {
 		
 		public event EventHandlerEx<object, MiningPuzzle, MiningSolutionResult> SolutionSubmited;
+		public event EventHandlerEx<object, MiningPuzzle, MiningSolutionResult> StatusChanged;
 
 		protected MiningManagerBase(CHF hashAlgorithm, ITargetAlgorithm powAlgorithm, IDAAlgorithm daAlgorithm, IObjectSerializer<NewMinerBlock> blockSerializer,  Configuration config) {
 			HashAlgorithm = hashAlgorithm;
@@ -22,7 +23,6 @@ namespace VelocityNET.Core.Mining {
 			MiningTarget = DAAlgorithm.CalculateNextBlockTarget(Enumerable.Empty<DateTime>(), 0, 0);
 		}
 
-		public virtual MiningManagerStatus Status => MiningManagerStatus.Available;
 
 		public virtual uint MiningTarget { get; private set; }
 
@@ -40,7 +40,6 @@ namespace VelocityNET.Core.Mining {
 
 		public MiningPuzzle RequestPuzzle(string minerTag) {
 			using (EnterReadScope()) {
-				Guard.Ensure(Status == MiningManagerStatus.Available, "Mining not available");
 				var block = new NewMinerBlock {
 					MinerTag = minerTag,
 					Nonce = GeneratePuzzleStartNonce(),

@@ -52,6 +52,7 @@ namespace VelocityNET.Presentation.Node.UI {
 		}
 
 		public void ClearLog() {
+			_lines.Clear();
 			_textView.Text = string.Empty;
 			Application.MainLoop.Invoke(() => _textView.SetNeedsDisplay());
 		}

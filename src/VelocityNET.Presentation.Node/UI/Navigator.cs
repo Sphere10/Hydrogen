@@ -20,26 +20,26 @@ namespace VelocityNET.Presentation.Node.UI {
 
 		public static void Start() {
 			Application.Init();
-				_activatedScreens = new Dictionary<Type, Screen>();
-				_applicationScreenTypes = ScanApplicationScreens().ToArray();
+			_activatedScreens = new Dictionary<Type, Screen>();
+			_applicationScreenTypes = ScanApplicationScreens().ToArray();
 
-				_activatedScreens =
-					_applicationScreenTypes
-						.Where(x => x.GetCustomAttributeOfType<LifetimeAttribute>().Lifetime == ScreenLifetime.Application)
-						.ToDictionary(x => x, CreateScreen);
+			_activatedScreens =
+				_applicationScreenTypes
+					.Where(x => x.GetCustomAttributeOfType<LifetimeAttribute>().Lifetime == ScreenLifetime.Application)
+					.ToDictionary(x => x, CreateScreen);
 
-				Application.Top.Add(BuildMenu());
-				Show<DashboardScreen>();
-				_statusBar = BuildStatusBar();
-				Application.Top.Add(_statusBar);
-				RunApplication(
-					Application.Top,
-					error => {
-						SystemLog.Exception(nameof(Navigator), nameof(Start), error);
-						Dialogs.Exception(error);
-						return true;
-					}
-				);
+			Application.Top.Add(BuildMenu());
+			Show<DashboardScreen>();
+			_statusBar = BuildStatusBar();
+			Application.Top.Add(_statusBar);
+			RunApplication(
+				Application.Top,
+				error => {
+					SystemLog.Exception(nameof(Navigator), nameof(Start), error);
+					Dialogs.Exception(error);
+					return true;
+				}
+			);
 		}
 
 		public static void Quit() {
@@ -84,7 +84,6 @@ namespace VelocityNET.Presentation.Node.UI {
 			}
 
 			// NOTE: should load from plugin dll's as well
-
 			var dict = new LookupEx<AppMenu, Tuple<MenuLocationAttribute, Type>>();
 
 			foreach (var screenType in screenTypes) {
@@ -94,7 +93,6 @@ namespace VelocityNET.Presentation.Node.UI {
 					SystemLog.Error(nameof(Navigator), nameof(BuildMenu), $"Screen '{screenType.FullName}' missing '{nameof(MenuLocationAttribute)}' attribute");
 					continue;
 				}
-
 
 				dict.Add(menuLoc.Menu, Tuple.Create(menuLoc, screenType));
 			}
@@ -148,32 +146,35 @@ namespace VelocityNET.Presentation.Node.UI {
 					return;
 			}
 
+			var priorScreen = _currentScreen;
+
 			// Create new screen
 			if (!_activatedScreens.TryGetValue(screenType, out var newScreen)) {
 				newScreen = CreateScreen(screenType);
 				_activatedScreens[screenType] = newScreen;
 			}
+			_currentScreen = newScreen;  // need to set current screen immediately since OnAppearing() needs to know
 			newScreen.NotifyAppearing();
 
-			if (_currentScreen != null) {
+			if (priorScreen != null) {
 				// Remove/destroy current screen
 
 				if (_screenFrame != null) {
-					_screenFrame.Subviews[0].Remove(_currentScreen); // remove for not disposing
+					_screenFrame.Subviews[0].Remove(priorScreen); // remove for not disposing
 					Application.Top.Remove(_screenFrame);
 					_screenFrame.Dispose();
 					_screenFrame = null;
 				}
-				if (_currentScreen != null) {
-					Application.Top.Remove(_currentScreen);
+				if (priorScreen != null) {
+					Application.Top.Remove(priorScreen);
 				}
-				_currentScreen.NotifyDisappeared();
+				priorScreen.NotifyDisappeared();
 
-				switch (_currentScreen.GetType().GetCustomAttributeOfType<LifetimeAttribute>().Lifetime) {
+				switch (priorScreen.GetType().GetCustomAttributeOfType<LifetimeAttribute>().Lifetime) {
 					case ScreenLifetime.WhenVisible:
-						_currentScreen.NotifyDestroying();
-						_activatedScreens.Remove(_currentScreen.GetType());
-						_currentScreen.Dispose();
+						priorScreen.NotifyDestroying();
+						_activatedScreens.Remove(priorScreen.GetType());
+						priorScreen.Dispose();
 						break;
 					case ScreenLifetime.Application:
 					case ScreenLifetime.LazyLoad:
@@ -205,14 +206,13 @@ namespace VelocityNET.Presentation.Node.UI {
 			}
 			NotifyStatusBarChanged();
 			Application.Top.LayoutSubviews();
-			_currentScreen = newScreen;
 			_currentScreen.NotifyAppeared();
 		}
 
 		private static Screen CreateScreen(Type screenType) {
 			var screen = Activator.CreateInstance(screenType) as Screen;
-			screen.Load();
 			screen.NotifyCreated();
+			screen.Load();
 			return screen;
 		}
 

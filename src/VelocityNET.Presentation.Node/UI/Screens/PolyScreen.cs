@@ -21,7 +21,7 @@ namespace VelocityNET.Presentation.Node.UI {
 			_componentScreens = componentScreens.ToArray();
 		}
 
-		public override IEnumerable<StatusItem> BuildStatusItems() 
+		public sealed override IEnumerable<StatusItem> BuildStatusItems() 
 			=> base.BuildStatusItems().Concat(BuildStatusItemsInternal()).Concat(_activeComponentScreen.BuildStatusItems());
 
 		protected virtual IEnumerable<StatusItem> BuildStatusItemsInternal()
@@ -49,10 +49,20 @@ namespace VelocityNET.Presentation.Node.UI {
 			foreach(var screen in _componentScreens)
 				screen.Load();
 
-			if (_componentScreens.Any())
-				ShowScreen(_componentScreens[0]);
-
 		}
+
+		protected override void OnAppearing() {
+			base.OnAppearing();
+			if (AppearCount == 1 && _componentScreens.Any()) {
+				_componentScreenList.FocusFirst();
+			}
+		}
+
+		protected override void OnAppeared() {
+			base.OnAppeared();
+			this.SetFocus();
+		}
+
 
 		public void ShowScreen(Screen componentScreen) {
 			if (componentScreen == _activeComponentScreen)

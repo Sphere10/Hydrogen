@@ -1,7 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
 using VelocityNET.Presentation.Blazor.Shared.Plugins;
-using VelocityNET.Presentation.Blazor.WidgetGallery.Services;
+using VelocityNET.Presentation.Blazor.WidgetGallery.Widgets.Services;
 
 namespace VelocityNET.Presentation.Blazor.WidgetGallery
 {

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using VelocityNET.Presentation.Blazor.Plugins;
 using VelocityNET.Presentation.Blazor.Shared.Plugins;
 
 namespace VelocityNET.Presentation.Blazor
@@ -11,16 +12,15 @@ namespace VelocityNET.Presentation.Blazor
     {
         public IEnumerable<Assembly> RoutingAssemblies { get; }
 
-        public AppViewModel(IEnumerable<IPlugin> plugins)
+        public AppViewModel(IPluginLocator pluginLocator)
         {
-            if (plugins == null)
-            {
-                throw new ArgumentNullException(nameof(plugins));
-            }
-            
-            RoutingAssemblies = plugins.Select(x => x.GetType().Assembly)
+            if (pluginLocator == null)
+                throw new ArgumentNullException(nameof(pluginLocator));
+
+            RoutingAssemblies = pluginLocator.LocatePlugins().Select(x => x.Assembly)
                 .Where(x => x.FullName != typeof(Program).Assembly.FullName)
                 .Distinct();
         }
     }
+
 }

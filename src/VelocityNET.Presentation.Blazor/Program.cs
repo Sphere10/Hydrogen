@@ -1,8 +1,9 @@
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
+using GalaSoft.MvvmLight.Messaging;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using VelocityNET.Presentation.Blazor.Plugins;
 using VelocityNET.Presentation.Blazor.Shared;
 
@@ -24,8 +25,12 @@ namespace VelocityNET.Presentation.Blazor
         private static void ConfigureServices(IServiceCollection serviceCollection)
         {
             serviceCollection.AddViewModelsFromAssembly(typeof(Program).Assembly);
+
             serviceCollection.AddTransient<IPluginLocator, StaticPluginLocator>();
+                
+            serviceCollection.AddSingleton<IAppManager, DefaultAppManager>();
             serviceCollection.AddSingleton<IPluginManager, DefaultPluginManager>();
+            serviceCollection.AddSingleton<IMessenger>(new Messenger());
             
             InitializePlugins(serviceCollection);
         }
@@ -36,15 +41,10 @@ namespace VelocityNET.Presentation.Blazor
         /// <param name="serviceCollection"> current service collection</param>
         private static void InitializePlugins(IServiceCollection serviceCollection)
         {
-            IServiceProvider provider = serviceCollection.BuildServiceProvider();
-            
+            ServiceProvider provider = serviceCollection.BuildServiceProvider();
             IPluginManager manager = provider.GetRequiredService<IPluginManager>();
-            manager.Initialize();
-
-            foreach (ServiceDescriptor serviceDescriptor in manager.ServiceCollection)
-            {
-                serviceCollection.Add(serviceDescriptor);
-            }
+            
+            manager.ConfigureServices(serviceCollection);
         }
     }
 }

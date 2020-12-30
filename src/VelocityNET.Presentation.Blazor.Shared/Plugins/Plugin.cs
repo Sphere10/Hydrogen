@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace VelocityNET.Presentation.Blazor.Shared.Plugins
@@ -17,10 +18,12 @@ namespace VelocityNET.Presentation.Blazor.Shared.Plugins
         /// Configure this plugin's services. Automatically configures view model services.
         /// </summary>
         /// <param name="serviceCollection"> services</param>
-        public void ConfigureServices(IServiceCollection serviceCollection)
+        public IServiceCollection ConfigureServices(IServiceCollection serviceCollection)
         {
             serviceCollection.AddViewModelsFromAssembly(GetType().Assembly);
             ConfigureServicesInternal(serviceCollection);
+
+            return serviceCollection;
         }
 
         /// <summary>

@@ -1,5 +1,4 @@
 ﻿@page "/widget-gallery"
-@inject IRandomNumberService NumberService
-
+@inherits ComponentWithViewModel<WidgetGalleryViewModel>
 <h1 class="h3 mb-2 text-gray-800">Widget Gallery</h1>
-<p>A random number: @NumberService.GetRandomNumber()</p>
+<p> A random number: @ViewModel.NumberService.GetRandomNumber()</p>

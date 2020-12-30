@@ -2,10 +2,7 @@
 @using VelocityNET.Presentation.Blazor.Shared.Plugins
 @inherits VelocityNET.Presentation.Blazor.Shared.Components.ComponentWithViewModel<BlockMenuViewModel>
 
-<!-- Divider -->
-<hr class="sidebar-divider my-0">
-
-@foreach (IAppBlock block in ViewModel.AppBlocks)
+@foreach (IAppBlock block in ViewModel.SelectedApp?.AppBlocks ?? Enumerable.Empty<IAppBlock>())
 {
     <!-- Heading -->
     <div class="sidebar-heading">

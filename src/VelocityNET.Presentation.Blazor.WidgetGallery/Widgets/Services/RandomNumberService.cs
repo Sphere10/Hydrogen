@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace VelocityNET.Presentation.Blazor.WidgetGallery.Services
+namespace VelocityNET.Presentation.Blazor.WidgetGallery.Widgets.Services
 {
 
     public class RandomNumberService : IRandomNumberService

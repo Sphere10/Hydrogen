@@ -15,13 +15,8 @@ namespace VelocityNET.Presentation.Blazor.Plugins
         IEnumerable<IPlugin> Plugins { get; }
 
         /// <summary>
-        /// Initializes the plugin manager.
+        /// Configures the service collection with services from plugins.
         /// </summary>
-        void Initialize();
-
-        /// <summary>
-        /// Gets the plugin service collection
-        /// </summary>
-        IServiceCollection ServiceCollection { get; }
+        IServiceCollection ConfigureServices(IServiceCollection serviceCollection);
     }
 }

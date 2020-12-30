@@ -1,5 +1,6 @@
 ﻿@using VelocityNET.Presentation.Blazor.Shared.Plugins
-@inherits ComponentWithViewModel<VelocityNET.Presentation.Blazor.ViewModels.AppsMenuViewModel>
+@using System.Net.Mime
+@inherits ComponentWithViewModel<AppsMenuViewModel>
 
 <!-- Heading -->
 <div class="sidebar-heading">
@@ -8,12 +9,9 @@
 @foreach (IApp app in ViewModel.Apps)
 {
     <li class="nav-item">
-        <NavLink class="nav-link" href="@app.Route" Match="NavLinkMatch.Prefix">
+        <a class="nav-link" @onclick="(() => ViewModel.NavigateToApp(app.Name))">
             <i class="fas fa-fw fa-chart-area"></i>
             <span>@app.Name</span>
-        </NavLink>
+        </a>
     </li>
 }
-
-<!-- Divider -->
-<hr class="sidebar-divider d-none d-md-block">

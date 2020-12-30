@@ -16,8 +16,8 @@ namespace VelocityNET.Presentation.Blazor.Shared.Components
         protected override Task OnInitializedAsync()
         {
             ViewModel.InitAsync();
+            ViewModel.StateHasChangedDelegate = StateHasChanged;
             return base.OnInitializedAsync();
         }
     }
-
 }

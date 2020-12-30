@@ -1,4 +1,4 @@
-﻿namespace VelocityNET.Presentation.Blazor.WidgetGallery.ViewModels
+﻿namespace VelocityNET.Presentation.Blazor.WidgetGallery.Widgets.ViewModels
 {
     public class PagedGridViewModel
     {

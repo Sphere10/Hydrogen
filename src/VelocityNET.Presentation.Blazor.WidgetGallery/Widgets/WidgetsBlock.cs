@@ -1,8 +1,7 @@
 ﻿using System.Collections.Generic;
 using VelocityNET.Presentation.Blazor.Shared.Plugins;
-using VelocityNET.Presentation.Blazor.WidgetGallery.Widgets;
 
-namespace VelocityNET.Presentation.Blazor.WidgetGallery
+namespace VelocityNET.Presentation.Blazor.WidgetGallery.Widgets
 {
 
     /// <summary>

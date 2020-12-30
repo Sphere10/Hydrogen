@@ -18,7 +18,7 @@ public static class IServiceCollectionExtensions
         /// </summary>
         /// <param name="serviceCollection"></param>
         /// <param name="assembly"></param>
-        /// <returns> service collection with new service descriptors addedzs</returns>
+        /// <returns> service collection with new service descriptors added</returns>
         public static IServiceCollection AddViewModelsFromAssembly(this IServiceCollection serviceCollection,
             Assembly assembly)
         {

@@ -18,6 +18,6 @@ namespace VelocityNET.Presentation.Blazor.Shared.Plugins
         /// Configure the service collection with this plugin's services.
         /// </summary>
         /// <param name="serviceCollection"> services</param>
-        void ConfigureServices(IServiceCollection serviceCollection);
+        IServiceCollection ConfigureServices(IServiceCollection serviceCollection);
     }
 }

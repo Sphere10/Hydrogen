@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 
 namespace VelocityNET.Presentation.Blazor.Shared
 {
@@ -7,6 +8,11 @@ namespace VelocityNET.Presentation.Blazor.Shared
     /// </summary>
     public abstract class ComponentViewModelBase
     {
+        /// <summary>
+        /// Gets or sets the state change delegate
+        /// </summary>
+        public Action StateHasChangedDelegate { get; set; }
+        
         /// <summary>
         /// Initialize the view model.
         /// </summary>

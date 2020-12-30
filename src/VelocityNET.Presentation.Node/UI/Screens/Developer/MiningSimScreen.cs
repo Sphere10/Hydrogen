@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using Sphere10.Framework;
 using Terminal.Gui;
 using Tools;
@@ -40,7 +41,7 @@ namespace VelocityNET.Presentation.Node.UI {
 			protected override void LoadInternal() {
 				base.LoadInternal();
 				var labelFieldLayout = new LabelFieldLayout(2, 2, 1, 25);
-				labelFieldLayout.AddField("Miner Count", new IntegerField(this.Model.MinerCount, 1, 100, x => { Model.MinerCount = (int)x; }), Dim.Sized(10) );
+				labelFieldLayout.AddField("Miner Count", new IntegerField(this.Model.MinerCount, MiningSimModel.MinMiners, MiningSimModel.MaxMiners, x => { Model.MinerCount = (int)x; }), Dim.Sized(10) );
 				labelFieldLayout.AddEnum("Difficulty Algorithm", "Select the difficulty algorithm which the simulation will use", () => Model.DAA, x => { Model.DAA = x; });
 				labelFieldLayout.AddEnum("Hash Algorithm", "Select the hash algorithm which the simulation will use", () => Model.Hash, x => { Model.Hash = x; });
 				labelFieldLayout.AddField("Block Time", new IntegerField(this.Model.BlockTime, 1, 10 * 60, x => { Model.BlockTime = (int)x; }), Dim.Sized(10));
@@ -96,10 +97,26 @@ namespace VelocityNET.Presentation.Node.UI {
 						Clipboard.Contents = _log.Contents;
 					});
 
+				yield return new StatusItem(Terminal.Gui.Key.F10, "~[F10]~ Add Miner",
+					() => {
+						if (Model.MinerCount < MiningSimModel.MaxMiners)
+							Model.MinerCount++;
+					});
+
+				yield return new StatusItem(Terminal.Gui.Key.F11, "~[F11]~ Remove Miner",
+					() => {
+						if (Model.MinerCount > MiningSimModel.MinMiners)
+							Model.MinerCount--;
+
+					});
+
 			}
 		}
 
 		public class MiningSimModel {
+			public const int MinMiners = 1;
+			public const int MaxMiners = 20;
+
 			private List<SingleThreadedMiner> _miners;
 			private IMiningManager _miningManager;
 
@@ -109,7 +126,7 @@ namespace VelocityNET.Presentation.Node.UI {
 			private MiningSimModel() {
 				MinerCount = 1;
 				TA = TargetAlgo.Molina;
-				DAA = DiffAlgo.ASERT2;
+				DAA = DiffAlgo.RTT_ASERT;
 				Hash = HashAlgo.SHA2_256;
 				BlockTime = 5;
 				RelaxationTime = 50;
@@ -124,16 +141,19 @@ namespace VelocityNET.Presentation.Node.UI {
 			public int MinerCount {
 				get => _minerCount;
 				set {
+					Guard.ArgumentInRange(value, MinMiners, MaxMiners, nameof(value));
 					_minerCount = value;
 					if (Started) {
 						// _miners is created, need to adjust
 						if (_miners.Count > _minerCount) {
 							// remove
-							for (var i = _minerCount - 1; i >= _minerCount; i--) {
+							for (var i = _miners.Count - 1; i >= _minerCount; i--) {
 								_miners[i].Stop();
 								_miners[i].Dispose();
 								_miners.Remove(_miners[i]);
 							}
+							Debug.Assert(_miners.Count > 0);
+							Debug.Assert(_miners[0].Status == MinerStatus.Mining);
 						} else if (_miners.Count < _minerCount) {
 							// add
 							for (var i = _miners.Count; i < _minerCount; i++) {

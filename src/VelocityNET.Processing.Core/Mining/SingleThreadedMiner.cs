@@ -62,8 +62,7 @@ namespace VelocityNET.Core.Mining {
 		public void Dispose() {
 			if (Status == MinerStatus.Mining)
 				Stop();
-			Task.WaitAll(_miningTask);
-			_miningTask?.Dispose();
+			_miningTask = null;
 			_cancelSource?.Dispose();
 		}
 	}

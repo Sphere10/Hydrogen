@@ -37,11 +37,12 @@ namespace VelocityNET.Presentation.Node.UI {
 
 		[Title("Config")]
 		public class ConfigScreen : FramedScreen<MiningSimModel> {
-
+			private IntegerField _minerCountField;
 			protected override void LoadInternal() {
 				base.LoadInternal();
 				var labelFieldLayout = new LabelFieldLayout(2, 2, 1, 25);
-				labelFieldLayout.AddField("Miner Count", new IntegerField(this.Model.MinerCount, MiningSimModel.MinMiners, MiningSimModel.MaxMiners, x => { Model.MinerCount = (int)x; }), Dim.Sized(10) );
+				_minerCountField = new IntegerField(this.Model.MinerCount, MiningSimModel.MinMiners, MiningSimModel.MaxMiners, x => { Model.MinerCount = (int)x; });
+				labelFieldLayout.AddField("Miner Count", _minerCountField, Dim.Sized(10) );
 				labelFieldLayout.AddEnum("Difficulty Algorithm", "Select the difficulty algorithm which the simulation will use", () => Model.DAA, x => { Model.DAA = x; });
 				labelFieldLayout.AddEnum("Hash Algorithm", "Select the hash algorithm which the simulation will use", () => Model.Hash, x => { Model.Hash = x; });
 				labelFieldLayout.AddField("Block Time", new IntegerField(this.Model.BlockTime, 1, 10 * 60, x => { Model.BlockTime = (int)x; }), Dim.Sized(10));
@@ -56,7 +57,12 @@ namespace VelocityNET.Presentation.Node.UI {
 				this.Model.OnStopped += x => this.Enabled = true;
 			}
 
-		}
+            protected override void OnAppearing() {
+                base.OnAppearing();
+				_minerCountField.Text = Model.MinerCount.ToString();
+            }
+
+        }
 
 		[Title("Log")]
 		public class LogScreen : Screen<MiningSimModel> {

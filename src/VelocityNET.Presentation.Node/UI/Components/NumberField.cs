@@ -18,7 +18,7 @@ namespace VelocityNET.Presentation.Node.UI.Components {
 			_max = max;
 			Value = value;
 			AutoClip = true;
-			this.Text = $"{value}";
+			this.Text = $"{Value}";
 			base.TextChanging += args => {
 				args.Cancel = !TryParse(args.NewText.ToString(), out var newText, out _);
 				if (!args.Cancel)
@@ -32,7 +32,7 @@ namespace VelocityNET.Presentation.Node.UI.Components {
 
 		public bool AutoClip { get; set; }
 
-		public long Value { get; private set; }
+		public long Value { get; private set;}
 
 		private bool TryParse(string text, out string valueText, out long value) {
 			if (long.TryParse(text, out var parsedVal)) {

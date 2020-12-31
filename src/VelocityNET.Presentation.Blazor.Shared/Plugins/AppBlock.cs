@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Components;
 
 namespace VelocityNET.Presentation.Blazor.Shared.Plugins
 {
@@ -13,10 +14,12 @@ namespace VelocityNET.Presentation.Blazor.Shared.Plugins
         /// </summary>
         /// <param name="name"> name</param>
         /// <param name="appBlockPages"> pages</param>
-        public AppBlock(string name, IEnumerable<IAppBlockPage> appBlockPages)
+        /// <param name="icon"> icon</param>
+        public AppBlock(string name, string icon, IEnumerable<IAppBlockPage> appBlockPages)
         {
             Name = name ?? throw new ArgumentNullException(nameof(name));
             AppBlockPages = appBlockPages ?? throw new ArgumentNullException(nameof(appBlockPages));
+            Icon = icon ?? throw new ArgumentNullException(nameof(icon));
         }
 
         /// <summary>
@@ -26,6 +29,10 @@ namespace VelocityNET.Presentation.Blazor.Shared.Plugins
 
         /// <inheritdoc />
         public IEnumerable<IAppBlockPage> AppBlockPages { get; }
+        
+        /// <summary>
+        /// Gets the icon font-awesome ccs classes for this app block.
+        /// </summary>
+        public string Icon { get; }
     }
-
 }

@@ -1,70 +1,80 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using GalaSoft.MvvmLight.Messaging;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Routing;
 using VelocityNET.Presentation.Blazor.Shared.Plugins;
 
 namespace VelocityNET.Presentation.Blazor.Plugins
 {
-
     /// <summary>
     /// App manager
     /// </summary>
     public class DefaultAppManager : IAppManager, IDisposable
     {
         /// <summary>
+        /// Raised when an app is selected
+        /// </summary>
+        public event EventHandler<AppSelectedEventArgs>? AppSelected;
+
+        /// <summary>
         /// Gets the available apps.
         /// </summary>
         public IEnumerable<IApp> Apps { get; }
-        
+
         /// <summary>
         /// Gets or sets the selected app.
         /// </summary>
         public IApp SelectedApp { get; private set; }
 
-        private NavigationManager NavigationManager { get; }
-        
         /// <summary>
-        /// Gets the messenger.
+        /// Gets the navigation manager
         /// </summary>
-        private IMessenger Messenger { get; }
+        private NavigationManager NavigationManager { get; }
 
-        public DefaultAppManager(IPluginManager pluginManager, NavigationManager navigationManager, IMessenger messenger)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DefaultAppManager"/> class.
+        /// </summary>
+        /// <param name="pluginManager"></param>
+        /// <param name="navigationManager"></param>
+        public DefaultAppManager(IPluginManager pluginManager, NavigationManager navigationManager)
         {
-            Apps = pluginManager.Plugins.SelectMany(x => x.Apps);
-            NavigationManager = navigationManager;
-            Messenger = messenger ?? throw new ArgumentNullException(nameof(messenger));
+            Apps = pluginManager.Plugins.SelectMany(x => x.Apps) ??
+                throw new ArgumentNullException(nameof(navigationManager));
+            NavigationManager = navigationManager ?? throw new ArgumentNullException(nameof(navigationManager));
 
             NavigationManager.LocationChanged += NavigationManagerOnLocationChanged;
 
-            SelectedApp = Apps.Single(x => x.Route == NavigationManager.ToBaseRelativePathWithSlash(NavigationManager.Uri));
+            SelectedApp = Apps.Single(x => x.Route ==
+                NavigationManager
+                    .ToBaseRelativePathWithSlash(NavigationManager.Uri)
+                    .ToAppPathFromBaseRelativePath());
         }
 
+        /// <summary>
+        /// Handles the location changed event from nav manager. 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void NavigationManagerOnLocationChanged(object? sender, LocationChangedEventArgs e)
         {
             string relativePath = NavigationManager.ToBaseRelativePathWithSlash(e.Location);
+            string appSegment = relativePath.ToAppPathFromBaseRelativePath();
+
+            SelectedApp = Apps.FirstOrDefault(x => x.Route.StartsWith(appSegment)) ??
+                throw new InvalidOperationException(
+                    $"No app with matching route found after navigating to {appSegment}");
             
-            SelectedApp = Apps.FirstOrDefault(x => x.Route.StartsWith(relativePath)) ??
-                throw new InvalidOperationException($"No app found after navigating to {relativePath}");
+            AppSelected?.Invoke(this, new AppSelectedEventArgs(SelectedApp));
         }
 
-        public void SelectApp(string name)
-        {
-            if (SelectedApp.Name != name)
-            {
-                IApp app = Apps.FirstOrDefault(x => x.Name.Equals(name, StringComparison.OrdinalIgnoreCase)) ??
-                    throw new InvalidOperationException($"No app with name {name} found");
-            
-                NavigationManager.NavigateTo(app.Route);
-                Messenger.Send(new GenericMessage<IApp>(app));
-            }
-        }
-
+        /// <summary>
+        /// Dispose.
+        /// </summary>
         public void Dispose()
         {
             NavigationManager.LocationChanged -= NavigationManagerOnLocationChanged;
+            GC.SuppressFinalize(this);
         }
     }
 }

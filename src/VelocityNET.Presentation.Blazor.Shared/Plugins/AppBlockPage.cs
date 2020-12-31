@@ -12,10 +12,12 @@ namespace VelocityNET.Presentation.Blazor.Shared.Plugins
         /// </summary>
         /// <param name="route"> route - the relative path from app to navigate to.</param>
         /// <param name="name"> page name</param>
-        public AppBlockPage(string route, string name)
+        /// <param name="icon"></param>
+        public AppBlockPage(string route, string name, string icon)
         {
             Route = route ?? throw new ArgumentNullException(nameof(route));
             Name = name ?? throw new ArgumentNullException(nameof(name));
+            Icon = icon ?? throw new ArgumentNullException(nameof(icon));
         }
 
         /// <summary>
@@ -27,6 +29,11 @@ namespace VelocityNET.Presentation.Blazor.Shared.Plugins
         /// Gets the name of the item, useful for displaying in menus or headings.
         /// </summary>
         public string Name { get; }
+
+        /// <summary>
+        /// Gets the icon font-awesome ccs classes for this app block.
+        /// </summary>
+        public string Icon { get; }
     }
 
 }

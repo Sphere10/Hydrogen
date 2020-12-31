@@ -1,9 +1,7 @@
-using System;
 using System.Threading.Tasks;
 using GalaSoft.MvvmLight.Messaging;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using VelocityNET.Presentation.Blazor.Plugins;
 using VelocityNET.Presentation.Blazor.Shared;
 

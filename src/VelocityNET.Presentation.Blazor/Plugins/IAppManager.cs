@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using VelocityNET.Presentation.Blazor.Shared.Plugins;
 
 namespace VelocityNET.Presentation.Blazor.Plugins
@@ -9,14 +10,18 @@ namespace VelocityNET.Presentation.Blazor.Plugins
     public interface IAppManager
     {
         /// <summary>
+        /// Raised when an app is selected
+        /// </summary>
+        event EventHandler<AppSelectedEventArgs> AppSelected;
+        
+        /// <summary>
         /// Gets the available apps.
         /// </summary>
         IEnumerable<IApp> Apps { get; }
-        
+
         /// <summary>
-        /// Select a new app by name, making this app active.
+        /// Gets or sets the selected app.
         /// </summary>
-        /// <param name="name"> name of app to select</param>
-        void SelectApp(string name);
+        IApp SelectedApp { get; }
     }
 }

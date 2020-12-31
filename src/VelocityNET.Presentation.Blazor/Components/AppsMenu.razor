@@ -8,10 +8,15 @@
 </div>
 @foreach (IApp app in ViewModel.Apps)
 {
-    <li class="nav-item">
-        <a class="nav-link" @onclick="(() => ViewModel.NavigateToApp(app.Name))">
-            <i class="fas fa-fw fa-chart-area"></i>
-            <span>@app.Name</span>
-        </a>
+    <li class="@NavItemClass(app.Name)">
+        <NavLink class="nav-link" ActiveClass="active" href="@app.Route" Match="NavLinkMatch.Prefix">
+                        <i class="fas fa-fw @app.Icon"></i>
+                        <span>@app.Name</span>
+        </NavLink>
     </li>
+}
+
+@code
+{
+    private string NavItemClass(string appName) => ViewModel.SelectedApp.Name == appName ? "nav-item active" : "nav-item";
 }

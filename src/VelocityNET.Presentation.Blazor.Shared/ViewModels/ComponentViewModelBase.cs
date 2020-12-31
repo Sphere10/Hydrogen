@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-namespace VelocityNET.Presentation.Blazor.Shared
+namespace VelocityNET.Presentation.Blazor.Shared.ViewModels
 {
     /// <summary>
     /// Base class for component view models.

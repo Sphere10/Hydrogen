@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using VelocityNET.Presentation.Blazor.Plugins;
-using VelocityNET.Presentation.Blazor.Shared.Plugins;
 
 namespace VelocityNET.Presentation.Blazor
 {

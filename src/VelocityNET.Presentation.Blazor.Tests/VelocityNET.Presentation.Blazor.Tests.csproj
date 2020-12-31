@@ -17,8 +17,4 @@
       <ProjectReference Include="..\VelocityNET.Presentation.Blazor\VelocityNET.Presentation.Blazor.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="PluginTests" />
-    </ItemGroup>
-
 </Project>

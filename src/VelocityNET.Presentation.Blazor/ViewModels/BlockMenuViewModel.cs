@@ -1,33 +1,52 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using GalaSoft.MvvmLight.Messaging;
-using Microsoft.AspNetCore.Components;
+using VelocityNET.Presentation.Blazor.Plugins;
 using VelocityNET.Presentation.Blazor.Shared;
 using VelocityNET.Presentation.Blazor.Shared.Plugins;
+using VelocityNET.Presentation.Blazor.Shared.ViewModels;
 
 namespace VelocityNET.Presentation.Blazor.ViewModels
 {
 
+    /// <summary>
+    /// Block menu view model
+    /// </summary>
     public class BlockMenuViewModel : ComponentViewModelBase
     {
-        private IMessenger Messenger { get; }
+        /// <summary>
+        /// Gets the app manager
+        /// </summary>
+        private IAppManager AppManager { get; }
 
-        public IApp SelectedApp { get; private set; }
+        /// <summary>
+        /// Gets or sets the selected app.
+        /// </summary>
+        private IApp SelectedApp => AppManager.SelectedApp;
 
-        public BlockMenuViewModel(IMessenger messenger)
+        /// <summary>
+        /// Gets the app blocks for the selected app
+        /// </summary>
+        public IEnumerable<IAppBlock> AppBlocks => SelectedApp.AppBlocks ?? Enumerable.Empty<IAppBlock>();
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BlockMenuViewModel"/> class.
+        /// </summary>
+        /// <param name="appManager"></param>
+        public BlockMenuViewModel(IAppManager appManager)
         {
-            Messenger = messenger ?? throw new ArgumentNullException(nameof(messenger));
-            Messenger.Register<GenericMessage<IApp>>(this, OnAppSelected);
+            AppManager = appManager ?? throw new ArgumentNullException(nameof(appManager));
+            AppManager.AppSelected += AppManagerOnAppSelected;
         }
 
         /// <summary>
-        /// Handles the IApp selected message. Updates the block menu with
-        /// the selected apps pages.
+        /// Handles app selected event
         /// </summary>
-        /// <param name="obj"></param>
-        private void OnAppSelected(GenericMessage<IApp> obj)
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void AppManagerOnAppSelected(object? sender, AppSelectedEventArgs e)
         {
-            SelectedApp = obj.Content;
             StateHasChangedDelegate?.Invoke();
         }
     }

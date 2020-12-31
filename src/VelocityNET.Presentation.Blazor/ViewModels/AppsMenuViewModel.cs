@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using VelocityNET.Presentation.Blazor.Plugins;
-using VelocityNET.Presentation.Blazor.Shared;
 using VelocityNET.Presentation.Blazor.Shared.Plugins;
+using VelocityNET.Presentation.Blazor.Shared.ViewModels;
 
 namespace VelocityNET.Presentation.Blazor.ViewModels
 {
@@ -15,6 +15,11 @@ namespace VelocityNET.Presentation.Blazor.ViewModels
         /// Gets the available apps.zs
         /// </summary>
         public IEnumerable<IApp> Apps => AppManager.Apps;
+
+        /// <summary>
+        /// Gets the selected app
+        /// </summary>
+        public IApp SelectedApp => AppManager.SelectedApp;
         
         /// <summary>
         /// Gets the navigation manager
@@ -29,15 +34,18 @@ namespace VelocityNET.Presentation.Blazor.ViewModels
             IAppManager appManager)
         {
             AppManager = appManager ?? throw new ArgumentNullException(nameof(appManager));
+            
+            AppManager.AppSelected += AppManagerOnAppSelected;
         }
 
         /// <summary>
-        /// Navigates to the selected app.
+        /// Handles the app selected event, updates the list to reflected the new selected app.
         /// </summary>
-        /// <param name="appName"> app name.</param>
-        public void NavigateToApp(string appName)
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void AppManagerOnAppSelected(object? sender, AppSelectedEventArgs e)
         {
-            AppManager.SelectApp(appName);
+            StateHasChangedDelegate?.Invoke();
         }
     }
 }

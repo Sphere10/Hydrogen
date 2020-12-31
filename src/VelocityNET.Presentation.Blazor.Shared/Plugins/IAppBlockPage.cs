@@ -3,7 +3,7 @@
     /// <summary>
     /// App block page
     /// </summary>
-    public interface IAppBlockPage : IRoutablePage, INamedItem
+    public interface IAppBlockPage : IRoutablePage, INamedItem, IIconItem
     {
     }
 }

@@ -6,6 +6,7 @@ using VelocityNET.Presentation.Blazor.WidgetGallery.Widgets.Services;
 
 namespace VelocityNET.Presentation.Blazor.WidgetGallery
 {
+
     /// <summary>
     /// Widget gallery plugin
     /// </summary>
@@ -18,14 +19,28 @@ namespace VelocityNET.Presentation.Blazor.WidgetGallery
         {
             Apps = new List<IApp>
             {
-                new App("/widget-gallery", "Widget Gallery",
+                new App("/widget-gallery", "Widget Gallery", "fa-cog",
                     new[]
                     {
                         new AppBlock("Widgets",
+                            "fa-cog",
                             new[]
                             {
-                                new AppBlockPage("/widget-gallery/entity-grid", "Entity Grid")
-                            })
+                                new AppBlockPage("/widget-gallery/", "Index", "fa-chart-area"),
+                                new AppBlockPage("/widget-gallery/data-tables", "Data Tables", "fa-chart-area")
+                            }
+                        )
+                    },
+                    new[]
+                    {
+                        new MenuItem("Widgets", String.Empty, new List<MenuItem>()
+                        {
+                            new ("Example", "/", new List<MenuItem>())
+                        }),
+                        new MenuItem("File", String.Empty, new List<MenuItem>()
+                        {
+                            new ("New Widget", "/", new List<MenuItem>())
+                        })
                     })
             };
         }

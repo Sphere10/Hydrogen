@@ -47,3 +47,15 @@ a, .btn-link {
     right: 0.75rem;
     top: 0.5rem;
 }
+
+.loading-page {
+    height: 100px;
+    top: 50%;
+    left: 50%;
+    display: block;
+    position: absolute;
+    width: 220px;
+    margin-top: -50px;
+    margin-left: -100px;
+    text-align: center;
+}

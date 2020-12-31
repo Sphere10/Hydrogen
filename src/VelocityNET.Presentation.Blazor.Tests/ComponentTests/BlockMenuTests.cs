@@ -1,4 +1,3 @@
-using GalaSoft.MvvmLight.Messaging;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using VelocityNET.Presentation.Blazor.Components;

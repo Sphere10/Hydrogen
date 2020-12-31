@@ -1,5 +1,4 @@
 using System.Threading.Tasks;
-using GalaSoft.MvvmLight.Messaging;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using VelocityNET.Presentation.Blazor.Plugins;
@@ -28,7 +27,6 @@ namespace VelocityNET.Presentation.Blazor
                 
             serviceCollection.AddSingleton<IAppManager, DefaultAppManager>();
             serviceCollection.AddSingleton<IPluginManager, DefaultPluginManager>();
-            serviceCollection.AddSingleton<IMessenger>(new Messenger());
             
             InitializePlugins(serviceCollection);
         }

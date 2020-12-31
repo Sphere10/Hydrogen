@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using GalaSoft.MvvmLight.Messaging;
 using VelocityNET.Presentation.Blazor.Plugins;
-using VelocityNET.Presentation.Blazor.Shared;
 using VelocityNET.Presentation.Blazor.Shared.Plugins;
 using VelocityNET.Presentation.Blazor.Shared.ViewModels;
 

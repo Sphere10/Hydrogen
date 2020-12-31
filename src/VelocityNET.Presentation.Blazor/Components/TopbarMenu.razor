@@ -1,0 +1,28 @@
+﻿
+@inherits ComponentWithViewModel<TopbarMenuViewModel>
+
+<ul class="navbar-nav mr-auto">
+    @foreach (MenuItem item in ViewModel.MenuItems)
+    {
+        @if (item.Children.Any())
+        {
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    @item.Heading
+                </a>
+                <div class="dropdown-menu animated--fade-in" aria-labelledby="navbarDropdown">
+                   @foreach (MenuItem child in item.Children)
+                   {
+                       <a class="dropdown-item" href="@child.Route">@child.Heading</a>
+                   }
+                </div>
+            </li>
+        }
+        else
+        {
+            <li class="nav-item">
+                <a class="nav-link" href="@item.Route">@item.Heading</a>
+            </li>
+        }
+    }
+</ul>

@@ -1,0 +1,22 @@
+﻿@using VelocityNET.Presentation.Hydrogen.Plugins
+@using System.Net.Mime
+@inherits ComponentWithViewModel<AppsMenuViewModel>
+
+<!-- Heading -->
+<div class="sidebar-heading">
+    Apps
+</div>
+@foreach (IApp app in ViewModel.Apps)
+{
+    <li class="@NavItemClass(app.Name)">
+        <NavLink class="nav-link" ActiveClass="active" href="@app.Route" Match="NavLinkMatch.Prefix">
+                        <i class="fas fa-fw @app.Icon"></i>
+                        <span>@app.Name</span>
+        </NavLink>
+    </li>
+}
+
+@code
+{
+    private string NavItemClass(string appName) => ViewModel.SelectedApp.Name == appName ? "nav-item active" : "nav-item";
+}

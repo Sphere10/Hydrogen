@@ -20,7 +20,7 @@ namespace VelocityNET.Presentation.Node.UI {
 	public class MiningSimScreen : PolyScreen<MiningSimScreen.MiningSimModel> {
 
 		public MiningSimScreen() 
-			: base(MiningSimModel.Default, new ConfigScreen(), new LogScreen()) {
+			: base(MiningSimModel.Default, new ConfigScreen(), new OutputScreen()) {
 		}
 
 		protected override IEnumerable<StatusItem> BuildStatusItemsInternal() {
@@ -64,8 +64,8 @@ namespace VelocityNET.Presentation.Node.UI {
 
         }
 
-		[Title("Log")]
-		public class LogScreen : Screen<MiningSimModel> {
+		[Title("Output")]
+		public class OutputScreen : Screen<MiningSimModel> {
 			private ILogger _outputLogger;
 			private LogView _log;
 
@@ -78,10 +78,18 @@ namespace VelocityNET.Presentation.Node.UI {
 					X = 0,
 					Y = 0,
 					Width = Dim.Fill(),
-					Height = Dim.Fill(),
+					Height = Dim.Fill(10),
 				};
 				_outputLogger = new TimestampLogger(new ActionLogger(s => _log.AppendLog(s)));
 				this.Add(_log);
+
+				var _statsFrame = new FrameView("Statistics") {
+					X = 0,
+					Y = Pos.Bottom(_log),
+					Width = Dim.Fill(),
+					Height = Dim.Fill()
+				};
+				this.Add(_statsFrame);
 			}
 
 			public override void OnModelChanged() {

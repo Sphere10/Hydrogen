@@ -22,6 +22,6 @@ namespace VelocityNET.Presentation.Hydrogen.Loader.Plugins
         /// <summary>
         /// Gets or sets the selected app.
         /// </summary>
-        IApp SelectedApp { get; }
+        IApp? SelectedApp { get; }
     }
 }

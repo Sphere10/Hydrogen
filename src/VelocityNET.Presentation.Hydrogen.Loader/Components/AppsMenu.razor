@@ -6,7 +6,7 @@
 <div class="sidebar-heading">
     Apps
 </div>
-@foreach (IApp app in ViewModel.Apps)
+@foreach (IApp app in ViewModel?.Apps!)
 {
     <li class="@NavItemClass(app.Name)">
         <NavLink class="nav-link" ActiveClass="active" href="@app.Route" Match="NavLinkMatch.Prefix">
@@ -18,5 +18,5 @@
 
 @code
 {
-    private string NavItemClass(string appName) => ViewModel.SelectedApp.Name == appName ? "nav-item active" : "nav-item";
+    private string NavItemClass(string appName) => ViewModel?.SelectedApp?.Name == appName ? "nav-item active" : "nav-item";
 }

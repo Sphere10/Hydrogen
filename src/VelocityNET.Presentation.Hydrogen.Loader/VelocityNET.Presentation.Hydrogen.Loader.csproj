@@ -25,5 +25,23 @@
   <ItemGroup>
     <ServiceWorker Include="wwwroot\service-worker.js" PublishedContent="wwwroot\service-worker.published.js" />
   </ItemGroup>
+
+  <ItemGroup>
+    <_ContentIncludedByDefault Remove="wwwroot\lib\bootstrap\dist\css\bootstrap.css" />
+    <_ContentIncludedByDefault Remove="wwwroot\lib\bootstrap\dist\css\bootstrap.css.map" />
+    <_ContentIncludedByDefault Remove="wwwroot\lib\bootstrap\dist\css\bootstrap.min.css" />
+    <_ContentIncludedByDefault Remove="wwwroot\lib\bootstrap\dist\css\bootstrap.min.css.map" />
+    <_ContentIncludedByDefault Remove="wwwroot\lib\bootstrap\dist\js\bootstrap.bundle.js" />
+    <_ContentIncludedByDefault Remove="wwwroot\lib\bootstrap\dist\js\bootstrap.bundle.js.map" />
+    <_ContentIncludedByDefault Remove="wwwroot\lib\bootstrap\dist\js\bootstrap.bundle.min.js" />
+    <_ContentIncludedByDefault Remove="wwwroot\lib\bootstrap\dist\js\bootstrap.bundle.min.js.map" />
+    <_ContentIncludedByDefault Remove="wwwroot\lib\datatables\css\dataTables.bootstrap4.min.css" />
+    <_ContentIncludedByDefault Remove="wwwroot\lib\fortawesome\fontawesome-free\css\all.min.css" />
+    <_ContentIncludedByDefault Remove="wwwroot\lib\fortawesome\fontawesome-free\webfonts\fa-solid-900.ttf" />
+    <_ContentIncludedByDefault Remove="wwwroot\lib\fortawesome\fontawesome-free\webfonts\fa-solid-900.woff" />
+    <_ContentIncludedByDefault Remove="wwwroot\lib\fortawesome\fontawesome-free\webfonts\fa-solid-900.woff2" />
+    <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-easing\jquery.easing.min.js" />
+    <_ContentIncludedByDefault Remove="wwwroot\lib\jquery\jquery.min.js" />
+  </ItemGroup>
   
 </Project>

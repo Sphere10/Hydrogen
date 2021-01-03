@@ -194,5 +194,5 @@ project.lock.json
 **/.idea/
 
 #Client side packages
-**/src/VelocityNET.Presentation.Blazor/wwwroot/lib/
-**/src/VelocityNET.Presentation.Blazor/wwwroot/**/*.min.*
+**/wwwroot/lib/
+**/wwwroot/**/*.min.*

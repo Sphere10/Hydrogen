@@ -45,6 +45,7 @@ namespace VelocityNET.Presentation.Hydrogen.Loader.ViewModels
         /// <param name="e"></param>
         private void AppManagerOnAppSelected(object? sender, AppSelectedEventArgs e)
         {
+            SelectedApp = e.SelectedApp;
             StateHasChangedDelegate?.Invoke();
         }
     }

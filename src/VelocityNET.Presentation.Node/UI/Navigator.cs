@@ -186,7 +186,7 @@ namespace VelocityNET.Presentation.Node.UI {
 			}
 
 			// Show new screen
-			if (newScreen is PolyScreen) {
+			if (newScreen is TabbedScreen) {
 				// Multi-part screens have no screen frame
 				newScreen.X = 0;
 				newScreen.Y = 1;

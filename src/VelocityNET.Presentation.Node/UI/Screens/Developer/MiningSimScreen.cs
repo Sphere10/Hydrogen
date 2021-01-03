@@ -17,7 +17,7 @@ namespace VelocityNET.Presentation.Node.UI {
 	[Title("Mining Simulator")]
 	[Lifetime(ScreenLifetime.WhenVisible)]
 	[MenuLocation(AppMenu.Development, "Mining Sim")]
-	public class MiningSimScreen : PolyScreen<MiningSimScreen.MiningSimModel> {
+	public class MiningSimScreen : TabbedScreen<MiningSimScreen.MiningSimModel> {
 
 		public MiningSimScreen() 
 			: base(MiningSimModel.Default, new ConfigScreen(), new OutputScreen()) {

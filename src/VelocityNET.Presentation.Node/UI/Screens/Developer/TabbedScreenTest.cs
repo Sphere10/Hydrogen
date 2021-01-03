@@ -7,13 +7,13 @@ using VelocityNET.Presentation.Node.UI;
 
 namespace VelocityNET.Presentation.Node.UI {
 
-	[Title("Multi Part Simulator")]
+	[Title("Tabbed Screen Test")]
 	[Lifetime(ScreenLifetime.WhenVisible)]
 	[MenuLocation(AppMenu.Development, "Multi Part", int.MaxValue)]
-	public class MultiTest : PolyScreen<MultiTest.Model> {
+	public class TabbedScreenTest : TabbedScreen<TabbedScreenTest.Model> {
 
-		public MultiTest()
-		 : base(new Model(), new Screen<Model>[] {  new LogScreen(), new OptionsScreen(), new LogScreen(), new OptionsScreen() { Enabled = false }  }) {
+		public TabbedScreenTest()
+		 : base(new Model(), new LogScreen(), new OptionsScreen(), new LogScreen(), new OptionsScreen() { Enabled = false }) {
 		}
 
 		[Title("Log")]

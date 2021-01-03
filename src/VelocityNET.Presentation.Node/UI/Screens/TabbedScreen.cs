@@ -2,21 +2,20 @@
 using System.Linq;
 using Sphere10.Framework;
 using Terminal.Gui;
-using VelocityNET.Presentation.Node.Screens;
 
 namespace VelocityNET.Presentation.Node.UI {
 
 	/// <summary>
-	/// A host screen for many component screens that are selected from a left menu.
+	/// A screen that is composed of many component screens, driven by a left menu.
 	/// </summary>
-	public abstract class PolyScreen : Screen {
+	public abstract class TabbedScreen : Screen {
 		private readonly Screen[] _componentScreens;
 		private FrameView _componentScreenFrame;
 		private ListView _componentScreenList;
 		private Screen _activeComponentScreen;
 
 
-		protected PolyScreen(IEnumerable<Screen> componentScreens) {
+		protected TabbedScreen(IEnumerable<Screen> componentScreens) {
 			Guard.ArgumentNotNull(componentScreens, nameof(componentScreens));
 			_componentScreens = componentScreens.ToArray();
 		}
@@ -88,13 +87,13 @@ namespace VelocityNET.Presentation.Node.UI {
 
 	}
 
-	public abstract class PolyScreen<T> : PolyScreen {
-		
-		protected PolyScreen(T model, params Screen<T>[] componentScreens ) 
+	public abstract class TabbedScreen<T> : TabbedScreen {
+
+		protected TabbedScreen(T model, params Screen<T>[] componentScreens)
 			: this(model, componentScreens as IEnumerable<Screen<T>>) {
 		}
 
-		protected PolyScreen(T model, IEnumerable<Screen<T>> componentScreens)
+		protected TabbedScreen(T model, IEnumerable<Screen<T>> componentScreens)
 			: base(componentScreens) {
 			Guard.ArgumentNotNull(model, nameof(model));
 			Model = model;

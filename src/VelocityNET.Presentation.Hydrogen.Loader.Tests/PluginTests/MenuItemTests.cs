@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
 using VelocityNET.Presentation.Hydrogen.Loader.Plugins;
+using VelocityNET.Presentation.Hydrogen.Plugins;
 using Xunit;
 using Assert = NUnit.Framework.Assert;
 

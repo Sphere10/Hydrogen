@@ -8,7 +8,7 @@
 //using VelocityNET.Core.Encoding;
 //using VelocityNET.Core.Maths;
 
-//namespace VelocityNET.Tests.Core {
+//namespace VelocityNET.Processing.Tests.Core {
 
 //    public class UInt256Test {
         

@@ -7,7 +7,7 @@ using NUnit.Framework;
 using Sphere10.Framework;
 using VelocityNET.Core.Storage;
 
-namespace VelocityNET.Tests.Core {
+namespace VelocityNET.Processing.Tests.Core {
     public class ZipPackageTest {
 
         [Test]

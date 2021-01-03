@@ -7,7 +7,7 @@ using Sphere10.Framework;
 using Sphere10.Framework.NUnit;
 using VelocityNET.Core.Encoding;
 
-namespace VelocityNET.Tests.Core {
+namespace VelocityNET.Processing.Tests.Core {
     public class HexEncodingTests {
 
         [Test]

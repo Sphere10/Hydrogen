@@ -5,7 +5,7 @@ VisualStudioVersion = 16.0.29215.179
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sphere10.Framework", "Sphere10.Framework\Sphere10.Framework.csproj", "{1AFEF3F6-1C08-4543-B782-3A45D95CC6D6}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VelocityNET.Tests.Core", "VelocityNET.Tests.Core\VelocityNET.Tests.Core.csproj", "{A9D9E814-80FA-4A27-AF39-61C385CA2689}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VelocityNET.Processing.Core.Tests", "VelocityNET.Processing.Core.Tests\VelocityNET.Processing.Core.Tests.csproj", "{A9D9E814-80FA-4A27-AF39-61C385CA2689}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VelocityNET.Presentation.Node", "VelocityNET.Presentation.Node\VelocityNET.Presentation.Node.csproj", "{180BB4AD-3895-4610-A923-764C72D38E2B}"
 EndProject

@@ -9,6 +9,10 @@ namespace VelocityNET.Core.Mining {
 
 		public event EventHandlerEx<object, MiningPuzzle, MiningSolutionResult> SolutionSubmited;
 
+		uint MiningTarget { get; }
+
+		uint BlockHeight { get; }
+		
 		MiningPuzzle RequestPuzzle(string minerTag);
 
 		MiningSolutionResult SubmitSolution(MiningPuzzle puzzle);

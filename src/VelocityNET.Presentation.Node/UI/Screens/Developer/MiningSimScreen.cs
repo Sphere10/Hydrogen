@@ -4,13 +4,10 @@ using System.ComponentModel;
 using System.Diagnostics;
 using Sphere10.Framework;
 using Terminal.Gui;
-using Tools;
-using VelocityNET.Core.Configuration;
 using VelocityNET.Core.Consensus.Serializers;
 using VelocityNET.Core.Maths;
 using VelocityNET.Core.Mining;
 using VelocityNET.Presentation.Node.UI.Components;
-using Key = Sphere10.Framework.Key;
 
 namespace VelocityNET.Presentation.Node.UI {
 
@@ -26,14 +23,13 @@ namespace VelocityNET.Presentation.Node.UI {
 		protected override IEnumerable<StatusItem> BuildStatusItemsInternal() {
 			yield return new StatusItem(Terminal.Gui.Key.F1, "~[F1]~ Start/Stop",
 				() => {
-					if (Model.Started) {
+					if (Model.IsStarted) {
 						Model.Stop();
 					} else {
 						Model.Start();
 					}
 				});
 		}
-
 
 		[Title("Config")]
 		public class ConfigScreen : FramedScreen<MiningSimModel> {
@@ -53,15 +49,14 @@ namespace VelocityNET.Presentation.Node.UI {
 
 			public override void OnModelChanged() {
 				base.OnModelChanged();
-				this.Model.OnStarted += x => this.Enabled = false;
-				this.Model.OnStopped += x => this.Enabled = true;
+				this.Model.Started += x => this.Enabled = false;
+				this.Model.Stopped += x => this.Enabled = true;
 			}
 
             protected override void OnAppearing() {
                 base.OnAppearing();
 				_minerCountField.Text = Model.MinerCount.ToString();
             }
-
         }
 
 		[Title("Output")]
@@ -78,24 +73,92 @@ namespace VelocityNET.Presentation.Node.UI {
 					X = 0,
 					Y = 0,
 					Width = Dim.Fill(),
-					Height = Dim.Fill(10),
+					Height = Dim.Fill(7),
 				};
 				_outputLogger = new TimestampLogger(new ActionLogger(s => _log.AppendLog(s)));
 				this.Add(_log);
 
-				var _statsFrame = new FrameView("Statistics") {
+				var statsFrame = new FrameView("Statistics") {
 					X = 0,
 					Y = Pos.Bottom(_log),
 					Width = Dim.Fill(),
 					Height = Dim.Fill()
 				};
-				this.Add(_statsFrame);
+				this.Add(statsFrame);
+
+				const int labelWidth = 15;
+				const int valueWidth = 6;
+				var targetLabel = new Label("Target: ") { X = 0, Y = 0, Width = labelWidth, TextAlignment =  TextAlignment.Right};
+				var targetValue = new Label("N/A") { X = Pos.Right(targetLabel), Y = 0, AutoSize = false, Width = valueWidth };
+				var blockCountLabel = new Label("Blocks: ") { X = Pos.Right(targetValue), Y = 0, Width = labelWidth, TextAlignment = TextAlignment.Right };
+				var blockCountValue = new Label("0") { X = Pos.Right(blockCountLabel), Y = 0, Width = valueWidth, TextAlignment = TextAlignment.Left };
+				statsFrame.Add(targetLabel, targetValue, blockCountLabel, blockCountValue);
+
+				var avgBlockTimeLabel = new Label("Avg: ") { X = 0, Y = 1, Width = labelWidth, TextAlignment = TextAlignment.Right };
+				var avgBlockTimeValue = new Label("N/A") { X = Pos.Right(avgBlockTimeLabel), Y = 1, AutoSize = false, Width = valueWidth };
+				var stdBlockTimeLabel = new Label("Std: ") { X = Pos.Right(avgBlockTimeValue), Y = 1, Width = labelWidth, TextAlignment = TextAlignment.Right };
+				var stdBlockTimeValue = new Label("N/A") { X = Pos.Right(stdBlockTimeLabel), Y = 1, AutoSize = false, Width = valueWidth };
+				var minMaxBlockTimeLabel = new Label("Min/Max: ") { X = Pos.Right(stdBlockTimeValue), Y = 1, Width = labelWidth, TextAlignment = TextAlignment.Right };
+				var minMaxBlockTimeValue = new Label("N/A") { X = Pos.Right(minMaxBlockTimeLabel), Y = 1, AutoSize = false, Width = Dim.Fill() };
+				statsFrame.Add(avgBlockTimeLabel, avgBlockTimeValue, stdBlockTimeLabel, stdBlockTimeValue, minMaxBlockTimeLabel, minMaxBlockTimeValue);
+
+				var last5AvgBlockTimeLabel = new Label("Last 5 Avg: ") { X = 0, Y = 2, Width = labelWidth, TextAlignment = TextAlignment.Right };
+				var last5AvgBlockTimeValue = new Label("N/A") { X = Pos.Right(last5AvgBlockTimeLabel), Y = 2, Width = valueWidth, TextAlignment = TextAlignment.Left };
+				var last5StdBlockTimeLabel = new Label("Std: ") { X = Pos.Right(last5AvgBlockTimeValue), Y = 2, Width = labelWidth, TextAlignment = TextAlignment.Right };
+				var last5StdBlockTimeValue = new Label("N/A") { X = Pos.Right(last5StdBlockTimeLabel), Y = 2, Width = valueWidth, TextAlignment = TextAlignment.Left };
+				var last5MinMaxBlockTimeLabel = new Label("Min/Max: ") { X = Pos.Right(last5StdBlockTimeValue), Y = 2, Width = labelWidth, TextAlignment = TextAlignment.Right };
+				var last5MinMaxBlockTimeValue = new Label("N/A") { X = Pos.Right(last5MinMaxBlockTimeLabel), Y = 2, Width = Dim.Fill(), TextAlignment = TextAlignment.Left };
+				statsFrame.Add(last5AvgBlockTimeLabel, last5AvgBlockTimeValue, last5StdBlockTimeLabel, last5StdBlockTimeValue, last5MinMaxBlockTimeLabel, last5MinMaxBlockTimeValue);
+
+				var last10AvgBlockTimeLabel = new Label("Last 10 Avg: ") { X = 0, Y = 3, Width = labelWidth, TextAlignment = TextAlignment.Right };
+				var last10AvgBlockTimeValue = new Label("N/A") { X = Pos.Right(last10AvgBlockTimeLabel), Y = 3, AutoSize = false, Width = valueWidth, TextAlignment = TextAlignment.Left };
+				var last10StdBlockTimeLabel = new Label("Std: ") { X = Pos.Right(last10AvgBlockTimeValue), Y = 3, Width = labelWidth, TextAlignment = TextAlignment.Right };
+				var last10StdBlockTimeValue = new Label("N/A") { X = Pos.Right(last10StdBlockTimeLabel), Y = 3, AutoSize = false, Width = valueWidth, TextAlignment = TextAlignment.Left };
+				var last10MinMaxBlockTimeLabel = new Label("Min/Max: ") { X = Pos.Right(last10StdBlockTimeValue), Y = 3, Width = labelWidth, TextAlignment = TextAlignment.Right };
+				var last10MinMaxBlockTimeValue = new Label("N/A") { X = Pos.Right(last10MinMaxBlockTimeLabel), Y = 3, Width = Dim.Fill(), TextAlignment = TextAlignment.Left};
+				statsFrame.Add(last10AvgBlockTimeLabel, last10AvgBlockTimeValue, last10StdBlockTimeLabel, last10StdBlockTimeValue, last10MinMaxBlockTimeLabel, last10MinMaxBlockTimeValue);
+
+				var last100AvgBlockTimeLabel = new Label("Last 100 Avg: ") { X = 0, Y = 4, Width = labelWidth, TextAlignment = TextAlignment.Right };
+				var last100AvgBlockTimeValue = new Label("N/A") { X = Pos.Right(last100AvgBlockTimeLabel), Y = 4, Width = valueWidth, TextAlignment = TextAlignment.Left };
+				var last100StdBlockTimeLabel = new Label("Std: ") { X = Pos.Right(last100AvgBlockTimeValue), Y = 4, Width = labelWidth, TextAlignment = TextAlignment.Right };
+				var last100StdBlockTimeValue = new Label("N/A") { X = Pos.Right(last100StdBlockTimeLabel), Y = 4, AutoSize = false, Width = valueWidth, TextAlignment = TextAlignment.Left };
+				var last100MinMaxBlockTimeLabel = new Label("Min/Max: ") { X = Pos.Right(last100StdBlockTimeValue), Y = 4, Width = labelWidth, TextAlignment = TextAlignment.Right };
+				var last100MinMaxBlockTimeValue = new Label("N/A") { X = Pos.Right(last100MinMaxBlockTimeLabel), Y = 4, Width = Dim.Fill(), TextAlignment = TextAlignment.Left };
+				statsFrame.Add(last100AvgBlockTimeLabel, last100AvgBlockTimeValue, last100StdBlockTimeLabel, last100StdBlockTimeValue, last100MinMaxBlockTimeLabel, last100MinMaxBlockTimeValue);
+
+				// Handlers for stats update
+				this.Model.Started += manager => {
+					manager.SolutionSubmited += (o, puzzle, arg3) => {
+						var testManager = (TestMiningManager)manager;
+						targetValue.Text = EndianBitConverter.Little.GetBytes(testManager.MiningTarget).ToHexString(true);
+						blockCountValue.Text = $"{testManager.BlockHeight}";
+						avgBlockTimeValue.Text = $"{testManager.AllStats.Mean:0.##}";
+						stdBlockTimeValue.Text = $"{testManager.AllStats.SampleStandardDeviation:0.##}";
+						minMaxBlockTimeValue.Text = $"{testManager.AllStats.Minimum:0.##} / {testManager.AllStats.Maximum:0.##}";
+
+						last5AvgBlockTimeValue.Text = $"{testManager.Last5Stats.Mean:0.##}";
+						last5StdBlockTimeValue.Text = $"{testManager.Last5Stats.SampleStandardDeviation:0.##}";
+						last5MinMaxBlockTimeValue.Text = $"{testManager.Last5Stats.Minimum:0.##} / {testManager.Last5Stats.Maximum:0.##}";
+
+						last10AvgBlockTimeValue.Text = $"{testManager.Last10Stats.Mean:0.##}";
+						last10StdBlockTimeValue.Text = $"{testManager.Last10Stats.SampleStandardDeviation:0.##}";
+						last10MinMaxBlockTimeValue.Text = $"{testManager.Last10Stats.Minimum:0.##} / {testManager.Last10Stats.Maximum:0.##}";
+
+						last100AvgBlockTimeValue.Text = $"{testManager.Last100Stats.Mean:0.##}";
+						last100StdBlockTimeValue.Text = $"{testManager.Last100Stats.SampleStandardDeviation:0.##}";
+						last100MinMaxBlockTimeValue.Text = $"{testManager.Last100Stats.Minimum:0.##} / {testManager.Last100Stats.Maximum:0.##}";
+					};
+				};
 			}
 
 			public override void OnModelChanged() {
 				base.OnModelChanged();
-				this.Model.OnStarted += manager => {
+				this.Model.Started += manager => {
+					_outputLogger.Info("Mining Started");
 					manager.SolutionSubmited += (o, puzzle, result) => _outputLogger.Info($"Miner: {puzzle.Block.MinerTag}, Block: {puzzle.ComputeWork().ToHexString(true)}, Result: {result}");
+				};
+				this.Model.Stopped += manager => {
+					_outputLogger.Info("Mining Stopped");
 				};
 			}
 
@@ -113,15 +176,18 @@ namespace VelocityNET.Presentation.Node.UI {
 
 				yield return new StatusItem(Terminal.Gui.Key.F10, "~[F10]~ Add Miner",
 					() => {
-						if (Model.MinerCount < MiningSimModel.MaxMiners)
+						if (Model.MinerCount < MiningSimModel.MaxMiners) {
 							Model.MinerCount++;
+							_outputLogger.Info($"Miner added (total: {Model.MinerCount})");
+						}
 					});
 
 				yield return new StatusItem(Terminal.Gui.Key.F11, "~[F11]~ Remove Miner",
 					() => {
-						if (Model.MinerCount > MiningSimModel.MinMiners)
+						if (Model.MinerCount > MiningSimModel.MinMiners) {
 							Model.MinerCount--;
-
+							_outputLogger.Info($"Miner removed (total: {Model.MinerCount})");
+						}
 					});
 
 			}
@@ -134,8 +200,8 @@ namespace VelocityNET.Presentation.Node.UI {
 			private List<SingleThreadedMiner> _miners;
 			private IMiningManager _miningManager;
 
-			public event EventHandlerEx<IMiningManager> OnStarted;
-			public event EventHandlerEx<IMiningManager> OnStopped; 
+			public event EventHandlerEx<IMiningManager> Started;
+			public event EventHandlerEx<IMiningManager> Stopped; 
 
 			private MiningSimModel() {
 				MinerCount = 1;
@@ -143,7 +209,7 @@ namespace VelocityNET.Presentation.Node.UI {
 				DAA = DiffAlgo.RTT_ASERT;
 				Hash = HashAlgo.SHA2_256;
 				BlockTime = 5;
-				RelaxationTime = 50;
+				RelaxationTime = 100;
 				RTTInterval = 2;
 				_miners = new List<SingleThreadedMiner>();
 			}
@@ -157,7 +223,7 @@ namespace VelocityNET.Presentation.Node.UI {
 				set {
 					Guard.ArgumentInRange(value, MinMiners, MaxMiners, nameof(value));
 					_minerCount = value;
-					if (Started) {
+					if (IsStarted) {
 						// _miners is created, need to adjust
 						if (_miners.Count > _minerCount) {
 							// remove
@@ -192,10 +258,10 @@ namespace VelocityNET.Presentation.Node.UI {
 
 			public int RTTInterval { get; set; }
 
-			public bool Started { get; private set; }
+			public bool IsStarted { get; private set; }
 
 			public void Start() {
-				Guard.Ensure(!Started, "Already Started");
+				Guard.Ensure(!IsStarted, "Already Started");
 
 				var chf = Hash switch {
 					HashAlgo.RH2 => throw new NotImplementedException(),
@@ -222,20 +288,20 @@ namespace VelocityNET.Presentation.Node.UI {
 					_miners.Add(miner);
 					miner.Start();
 				}
-				Started = true;
-				OnStarted?.Invoke(_miningManager);
+				IsStarted = true;
+				Started?.Invoke(_miningManager);
 			}
 
 			public void Stop() {
-				Guard.Ensure(Started, "Not started");
+				Guard.Ensure(IsStarted, "Not started");
 				foreach (var miner in _miners) {
 					miner.Stop();
 					miner.Dispose();
 				}
 				_miners.Clear();
 				_miningManager = null;
-				Started = false;
-				OnStopped?.Invoke(_miningManager);
+				IsStarted = false;
+				Stopped?.Invoke(_miningManager);
 			}
 
 		}

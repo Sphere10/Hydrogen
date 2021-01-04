@@ -103,10 +103,6 @@ namespace Sphere10.Framework {
 		private void CalculateTree() {
 			// note: _subRoots is always up to date
 			_subRootCoords = MerkleMath.CalculateSubRoots(_subRoots.Select(x => x.Height)).ToList();
-			//_subRootCoords.Add(0);
-			//for(var i = 1; i <_subRootLeafIndexes.Count; i++) {
-			//	_subRootLeafIndexes.Add(_subRootLeafIndexes[i-1] + (1 << _subRoots[i-1].Height));
-			//}
 			_size = MerkleSize.FromLeafCount(_subRoots.Aggregate(0, (sum, subRoot) => sum + (1 << subRoot.Height)));
 			_root = _size.LeafCount > 0 ? Hashers.Aggregate(HashAlgorithm, _subRoots.Select(x => x.Hash).Reverse(), true) : null;
 			_dirty = false;

@@ -40,10 +40,6 @@ namespace Sphere10.Framework {
 			((ObservableExtendedList<byte[]>)Leafs).EventFilter = EventTraits.Write;
 		}
 
-		private void SimpleMerkleTree_Adding(object arg1, AddingEventArgs<byte[]> arg2) {
-			throw new NotImplementedException();
-		}
-
 		public CHF HashAlgorithm { get; }
 
 		public bool Dirty { get; private set; }
@@ -63,11 +59,6 @@ namespace Sphere10.Framework {
 		}
 
 		public IExtendedList<byte[]> Leafs { get; }
-
-		public int GetLevelLength(int levelIndex) {
-			EnsureComputed();
-			return levelIndex >= _levels.Count ? 0 : _levels[levelIndex].Count;
-		}
 
 		public ReadOnlySpan<byte> GetValue(MerkleCoordinate coordinate) {
 			EnsureComputed();

@@ -16,10 +16,12 @@ namespace Sphere10.Framework {
 		}
 
 		public class BufferPage : FileSwappedMemoryPage {
-
+			
 			public BufferPage(int pageSize) 
 				: base(pageSize, new ConstantObjectSizer<byte>(sizeof(byte)), new MemoryBuffer(0, pageSize, pageSize)) {
 			}
+
+			protected new MemoryBuffer MemoryStore => (MemoryBuffer)base.MemoryStore;
 
 			protected override void SaveInternal(IEnumerable<byte> items, Stream stream) {
 				// Use byte streaming for perf

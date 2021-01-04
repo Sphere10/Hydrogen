@@ -19,8 +19,8 @@ namespace Sphere10.Framework {
 		public event EventHandlerEx<object, TPage> PageCreated;
 		public event EventHandlerEx<object, TPage> PageReading;
 		public event EventHandlerEx<object, TPage> PageRead;
-		public event EventHandlerEx<object, TPage> PageUpdating;
-		public event EventHandlerEx<object, TPage> PageUpdated;
+		public event EventHandlerEx<object, TPage> PageWriting;
+		public event EventHandlerEx<object, TPage> PageWrite;
 		public event EventHandlerEx<object, TPage> PageDeleting;
 		public event EventHandlerEx<object, TPage> PageDeleted;
 
@@ -93,10 +93,10 @@ namespace Sphere10.Framework {
 				NotifyPageAccessing(page);
 				bool fittedCompletely;
 				using (EnterOpenPageScope(page)) {
-					NotifyPageUpdating(page);
+					NotifyPageWriting(page);
 					UpdateVersion();
 					fittedCompletely = page.Write(page.EndIndex + 1, items, out remaining);
-					NotifyPageUpdated(page);
+					NotifyPageWrite(page);
 				}
 				NotifyPageAccessed(page);
 				return fittedCompletely;
@@ -125,12 +125,12 @@ namespace Sphere10.Framework {
 				var pageItems = newItems.ReadRange(pageStartIX - index, pageCount).ToArray();
 				using (EnterOpenPageScope(page)) {
 					NotifyPageAccessing(page);
-					NotifyPageUpdating(page);
+					NotifyPageWriting(page);
 					UpdateVersion();
 					if (!page.Write(pageStartIX, pageItems, out var overflow)) {
 						throw new NotSupportedException("Overflow when updating is not supported");
 					}
-					NotifyPageUpdated(page);
+					NotifyPageWrite(page);
 				}
 				NotifyPageAccessed(page);
 			}
@@ -157,11 +157,11 @@ namespace Sphere10.Framework {
 				var toRemoveCount = count > page.Count ? page.Count : count;
 				if (toRemoveCount < page.Count) {
 					NotifyPageAccessing(page);
-					NotifyPageUpdating(page);
+					NotifyPageWriting(page);
 					UpdateVersion();
 					using (EnterOpenPageScope(page)) {
 						page.EraseFromEnd(toRemoveCount);
-						NotifyPageUpdated(page);
+						NotifyPageWrite(page);
 					}
 					NotifyPageAccessed(page);
 				} else {
@@ -317,10 +317,10 @@ namespace Sphere10.Framework {
 		protected virtual void OnPageRead(TPage page) {
 		}
 
-		protected virtual void OnPageUpdating(TPage page) {
+		protected virtual void OnPageWriting(TPage page) {
 		}
 
-		protected virtual void OnPageUpdated(TPage page) {
+		protected virtual void OnPageWrite(TPage page) {
 		}
 
 		protected virtual void OnPageDeleting(TPage page) {
@@ -377,20 +377,20 @@ namespace Sphere10.Framework {
 			PageCreated?.Invoke(this, page);
 		}
 
-		private void NotifyPageUpdating(TPage page) {
+		private void NotifyPageWriting(TPage page) {
 			if (SuppressNotifications)
 				return;
 
-			OnPageUpdating(page);
-			PageUpdating?.Invoke(this, page);
+			OnPageWriting(page);
+			PageWriting?.Invoke(this, page);
 		}
 
-		private void NotifyPageUpdated(TPage page) {
+		private void NotifyPageWrite(TPage page) {
 			if (SuppressNotifications)
 				return;
 
-			OnPageUpdated(page);
-			PageUpdated?.Invoke(this, page);
+			OnPageWrite(page);
+			PageWrite?.Invoke(this, page);
 		}
 
 		private void NotifyPageReading(TPage page) {

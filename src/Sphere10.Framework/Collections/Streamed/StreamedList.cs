@@ -35,7 +35,7 @@ namespace Sphere10.Framework {
 	/// Page Header Format
 	/// ==================
 	///	Count (UINT32): number of items contained in this page
-	/// MaxItems (UINT32): max number of items contained in this page
+	/// MaxItems (UINT32): max number of items page can contain
 	/// PreviousPageOffset (UINT64): absolute position in the byte array where previous page begins
 	/// NextPageOffset (UINT64): absolute position in the byte array where next page begins
 	///	Item 0 Size (UINT32): size of first item in this page

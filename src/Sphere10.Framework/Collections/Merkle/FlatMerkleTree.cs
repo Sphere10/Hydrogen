@@ -16,7 +16,7 @@ namespace Sphere10.Framework {
 	public class FlatMerkleTree : IUpdateableMerkleTree {
 		public const int DefaultLeafGrowth = 4096;
 		public const int DefaultMaxLeaf = 1 << 24;
-		private readonly MemoryBuffer _nodebuffer;
+		private readonly MemoryBuffer _nodeBuffer;
 		private readonly BitArray _dirtyNodes;
 		private readonly int _digestSize;
 		private MerkleSize _size;
@@ -42,7 +42,7 @@ namespace Sphere10.Framework {
 			HashAlgorithm = hashAlgorithm;
 			_digestSize = Hashers.GetDigestSizeBytes(hashAlgorithm);
 			Guard.Argument(_digestSize > 0, nameof(hashAlgorithm), "Unsupported CHF");
-			_nodebuffer = new MemoryBuffer(
+			_nodeBuffer = new MemoryBuffer(
 				(int)MerkleMath.CountFlatNodes(initialLeafCapacity) * _digestSize,
 				(int)MerkleMath.CountFlatNodes(leafGrowthCapacity) * _digestSize,
 				(int)MerkleMath.CountFlatNodes(maxLeafCapacity) * _digestSize
@@ -68,7 +68,7 @@ namespace Sphere10.Framework {
 			if (MerkleMath.IsPerfectNode(_size, coordinate)) {
 				var index = coordinate.ToFlatIndex();
 				EnsureComputed(coordinate, index);
-				return _nodebuffer.ReadSpan(index * _digestSize, _digestSize);
+				return _nodeBuffer.ReadSpan(index * _digestSize, _digestSize);
 			}
 			// it's an imperfect node, so calculate it on-the-fly
 			var childNodes = MerkleMath.GetChildren(_size, coordinate);
@@ -79,9 +79,16 @@ namespace Sphere10.Framework {
 			return Hashers.JoinHash(HashAlgorithm, GetValue(childNodes.Left), GetValue(childNodes.Right));
 		}
 
+		public void SetLeafDirty(int index, bool value) {
+			SetDirty((int)MerkleMath.ToFlatIndex(MerkleCoordinate.LeafAt(index)), value);
+		}
+
 		private void EnsureComputed(MerkleCoordinate coordinate, int flatIndex) {
+			// leafs case
 			if (coordinate.Level == 0)
-				return; // leafs always calculated
+				if (IsDirty(flatIndex))
+					throw new InvalidOperationException("Leaf node was marked dirty");
+				else return;
 
 			if (!IsDirty(flatIndex))
 				return;
@@ -97,12 +104,12 @@ namespace Sphere10.Framework {
 				EnsureComputed(childs.Right, rightIX);
 			}
 
-			_nodebuffer.UpdateRange(
+			_nodeBuffer.UpdateRange(
 				flatIndex * _digestSize,
 				Hashers.JoinHash(
 					HashAlgorithm,
-					_nodebuffer.ReadSpan(leftIX * _digestSize, _digestSize),
-					_nodebuffer.ReadSpan(rightIX * _digestSize, _digestSize)
+					_nodeBuffer.ReadSpan(leftIX * _digestSize, _digestSize),
+					_nodeBuffer.ReadSpan(rightIX * _digestSize, _digestSize)
 				)
 			);
 			SetDirty(flatIndex, false);
@@ -136,10 +143,10 @@ namespace Sphere10.Framework {
 
 				// Expand node buffer for new tree nodes
 				var newLeafCount = _parent._size.LeafCount + itemsArr.Length;
-				var oldTotalFlatNodes = _parent._nodebuffer.Count / _parent._digestSize;
+				var oldTotalFlatNodes = _parent._nodeBuffer.Count / _parent._digestSize;
 				var newTotalFlatNodes = (int)MerkleMath.CountFlatNodes(newLeafCount); 
 				var newFlatNodes = newTotalFlatNodes - oldTotalFlatNodes;
-				_parent._nodebuffer.Expand(newFlatNodes * _parent._digestSize);
+				_parent._nodeBuffer.Expand(newFlatNodes * _parent._digestSize);
 
 				// Mark all those new nodes dirty
 				_parent._dirtyNodes.Length += newFlatNodes;
@@ -148,7 +155,7 @@ namespace Sphere10.Framework {
 				// Add each leaf node
 				foreach (var (item, i) in itemsArr.WithIndex()) {
 					var flatIndex = MerkleCoordinate.From(0, _parent._size.LeafCount + i).ToFlatIndex();
-					_parent._nodebuffer.UpdateRange(flatIndex * _parent._digestSize, item);
+					_parent._nodeBuffer.UpdateRange(flatIndex * _parent._digestSize, item);
 					_parent.SetDirty(flatIndex, false); // leaf node marked not dirty
 				}
 				_parent._size = MerkleSize.FromLeafCount(_parent._size.LeafCount + itemsArr.Length);
@@ -162,7 +169,7 @@ namespace Sphere10.Framework {
 				Guard.ArgumentInRange(index, 0, _parent.Size.LeafCount, nameof(index));
 				Guard.ArgumentInRange(count, 0, _parent.Size.LeafCount - index, nameof(count));
 				for (var i = index; i < index + count; i++) {
-					yield return _parent._nodebuffer.ReadSpan(MerkleCoordinate.LeafAt(i).ToFlatIndex() * _parent._digestSize, _parent._digestSize).ToArray();
+					yield return _parent._nodeBuffer.ReadSpan(MerkleCoordinate.LeafAt(i).ToFlatIndex() * _parent._digestSize, _parent._digestSize).ToArray();
 				}
 			}
 
@@ -175,7 +182,7 @@ namespace Sphere10.Framework {
 				var flatNodes = _parent._dirtyNodes.Length;
 				for (var i = 0; i < itemsArr.Length; i++) {
 					var leaf = MerkleCoordinate.LeafAt(index + i);
-					_parent._nodebuffer.UpdateRange(leaf.ToFlatIndex() * _parent._digestSize, itemsArr[i]);
+					_parent._nodeBuffer.UpdateRange(leaf.ToFlatIndex() * _parent._digestSize, itemsArr[i]);
 					// mark all parents dirty
 					foreach (var node in MerkleMath.CalculatePathToRoot(_parent.Size, leaf, false)) {
 						var nodeIX = node.ToFlatIndex();
@@ -197,17 +204,20 @@ namespace Sphere10.Framework {
 				var newTotalFlatNodes = (int)MerkleMath.CountFlatNodes(newLeafCount);
 				var newFlatNodes = newTotalFlatNodes - oldTotalFlatNodes;
 				
-
 				// Grow buffer to accomodate new nodes
-				_parent._nodebuffer.Expand(newFlatNodes * _parent._digestSize);
+				_parent._nodeBuffer.Expand(newFlatNodes * _parent._digestSize);
 
 				// Backup nodes after insert which are moved forward
 				var movedLeafs = new byte[movedLeafCount * _parent._digestSize];
-				for (var i = 0; i < movedLeafCount; i++)
+				var movedLeafsDirtyBit = new BitArray(movedLeafCount);
+				for (var i = 0; i < movedLeafCount; i++) {
+					var movedFlatIX = MerkleCoordinate.LeafAt(index + i).ToFlatIndex();
 					_parent
-						._nodebuffer
-						.ReadSpan(MerkleCoordinate.LeafAt(index + i).ToFlatIndex()*_parent._digestSize, _parent._digestSize)
+						._nodeBuffer
+						.ReadSpan(movedFlatIX * _parent._digestSize, _parent._digestSize)
 						.CopyTo(movedLeafs.AsSpan(i * _parent._digestSize, _parent._digestSize));
+					movedLeafsDirtyBit[i] = _parent._dirtyNodes[movedFlatIX];
+				}
 
 				// Mark all the flat nodes from insertion point to end as dirty
 				var flatIX = MerkleCoordinate.LeafAt(index).ToFlatIndex();
@@ -217,15 +227,15 @@ namespace Sphere10.Framework {
 				// Add the inserted nodes
 				for (var i = 0; i < itemsArr.Length; i++) {
 					var flatIndex = MerkleCoordinate.LeafAt(index + i).ToFlatIndex();
-					_parent._nodebuffer.UpdateRange(flatIndex * _parent._digestSize, itemsArr[i]);
+					_parent._nodeBuffer.UpdateRange(flatIndex * _parent._digestSize, itemsArr[i]);
 					_parent.SetDirty(flatIndex, false); // leaf node marked not dirty
 				}
 
 				// Add the moved nodes
 				for (var i = 0; i < movedLeafCount; i++) {
 					var flatIndex = MerkleCoordinate.LeafAt(index + itemsArr.Length + i).ToFlatIndex();
-					_parent._nodebuffer.UpdateRange(flatIndex * _parent._digestSize, movedLeafs.AsSpan(i * _parent._digestSize, _parent._digestSize));
-					_parent.SetDirty(flatIndex, false); // leaf node marked not dirty
+					_parent._nodeBuffer.UpdateRange(flatIndex * _parent._digestSize, movedLeafs.AsSpan(i * _parent._digestSize, _parent._digestSize));
+					_parent.SetDirty(flatIndex, movedLeafsDirtyBit[i]); // leaf node marked not dirty
 				}
 
 				_parent._size = MerkleSize.FromLeafCount(newLeafCount);
@@ -245,14 +255,18 @@ namespace Sphere10.Framework {
 
 				// Backup nodes that will be moved after remove
 				var movedLeafs = new byte[movedLeafCount * _parent._digestSize];
-				for (var i = 0; i < movedLeafCount; i++)
+				var movedLeafDirtyBit = new BitArray(movedLeafCount);
+				for (var i = 0; i < movedLeafCount; i++) {
+					var movedFlatIX = MerkleCoordinate.LeafAt(index + count + i).ToFlatIndex();
 					_parent
-						._nodebuffer
-						.ReadSpan(MerkleCoordinate.LeafAt(index + count + i).ToFlatIndex()*_parent._digestSize, _parent._digestSize)
+						._nodeBuffer
+						.ReadSpan(movedFlatIX * _parent._digestSize, _parent._digestSize)
 						.CopyTo(movedLeafs.AsSpan(i * _parent._digestSize, _parent._digestSize));
+					movedLeafDirtyBit[i] = _parent._dirtyNodes[movedFlatIX];
+				}
 
 				// Remove from index to end
-				_parent._nodebuffer.RemoveRange(_parent._nodebuffer.Count - removedFlatNodes * _parent._digestSize, removedFlatNodes * _parent._digestSize);
+				_parent._nodeBuffer.RemoveRange(_parent._nodeBuffer.Count - removedFlatNodes * _parent._digestSize, removedFlatNodes * _parent._digestSize);
 
 				// Mark all the flat nodes from index to end as dirty
 				var flatIX = MerkleCoordinate.LeafAt(index).ToFlatIndex();
@@ -262,8 +276,8 @@ namespace Sphere10.Framework {
 				// Add the moved nodes
 				for (var i = 0; i < movedLeafCount; i++) {
 					var flatIndex = MerkleCoordinate.LeafAt(index + i).ToFlatIndex();
-					_parent._nodebuffer.UpdateRange(flatIndex * _parent._digestSize, movedLeafs.AsSpan(i * _parent._digestSize, _parent._digestSize));
-					_parent.SetDirty(flatIndex, false); // leaf node marked not dirty
+					_parent._nodeBuffer.UpdateRange(flatIndex * _parent._digestSize, movedLeafs.AsSpan(i * _parent._digestSize, _parent._digestSize));
+					_parent.SetDirty(flatIndex, movedLeafDirtyBit[i]);
 				}
 
 				_parent._size = MerkleSize.FromLeafCount(newLeafCount);

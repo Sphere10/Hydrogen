@@ -120,7 +120,7 @@ namespace Sphere10.Framework {
 				file = new TransactionalBinaryFile(filename, UncomittedPageFileDirectory, fileID, pageSize, maxOpenPages, false);
 				if (file.RequiresLoad)
 					file.Load();
-				file.PageUpdated += (o, page) => {
+				file.PageWrite += (o, page) => {
 					if (Status == FileTransactionState.Unchanged) {
 						Status = FileTransactionState.HasChanges;
 						SaveHeader();

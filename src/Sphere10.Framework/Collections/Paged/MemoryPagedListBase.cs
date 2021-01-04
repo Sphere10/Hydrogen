@@ -213,12 +213,12 @@ namespace Sphere10.Framework {
 		#endregion
 
 		public abstract class MemoryPageBase : PageBase {
-			private readonly IExtendedList<TItem> _store;
 			private readonly IObjectSizer<TItem> _sizer;
+			protected readonly IExtendedList<TItem> MemoryStore;
 
 			protected MemoryPageBase(int maxSize, IObjectSizer<TItem> sizer, IExtendedList<TItem> store) {
 				MaxSize = maxSize;
-				_store = store;
+				MemoryStore = store;
 				_sizer = sizer;
 			}
 
@@ -233,13 +233,14 @@ namespace Sphere10.Framework {
 				Dirty = false;
 			}
 
+			// TODO override this method in MemoryBuffer for optimized loading into store
 			public void Load() {
 				CheckPageState(PageState.Unloaded);
 				State = PageState.Loading;
 				if (Count > 0) {
 					using (var readStream = OpenReadStream()) {
 						// load store directly, otherwise gets registered as new items
-						_store.AddRange(LoadInternal(readStream)); 
+						MemoryStore.AddRange(LoadInternal(readStream)); 
 					}
 				}
 				State = PageState.Loaded;
@@ -249,16 +250,16 @@ namespace Sphere10.Framework {
 			public virtual void Unload() {
 				CheckPageState(PageState.Loaded, PageState.Deleting);
 				State = PageState.Unloading;
-				_store.Clear();
+				MemoryStore.Clear();
 				State = PageState.Unloaded;
 				Dirty = false;
 			}
 
 			public abstract void Dispose();
 
-			public override IEnumerator<TItem> GetEnumerator() => _store.GetEnumerator();
+			public override IEnumerator<TItem> GetEnumerator() => MemoryStore.GetEnumerator();
 
-			protected override IEnumerable<TItem> ReadInternal(int index, int count) => _store.ReadRange(index - StartIndex, count);
+			protected override IEnumerable<TItem> ReadInternal(int index, int count) => MemoryStore.ReadRange(index - StartIndex, count);
 
 			protected override int AppendInternal(TItem[] items, out int newItemsSpace) {
 				TItem[] appendItems;
@@ -279,7 +280,7 @@ namespace Sphere10.Framework {
 					}).ToArray();
 					newItemsSpace = newSpace;
 				}
-				_store.AddRange(appendItems);
+				MemoryStore.AddRange(appendItems);
 				return appendItems.Length;
 			}
 
@@ -287,18 +288,18 @@ namespace Sphere10.Framework {
 				if (_sizer.IsFixedSize) {
 					oldItemsSpace = _sizer.FixedSize * items.Length;
 					newItemsSpace = oldItemsSpace;
-					_store.UpdateRange(index - StartIndex, items);
+					MemoryStore.UpdateRange(index - StartIndex, items);
 				} else {
 					oldItemsSpace = MeasureConsumedSpace(index, items.Length, false, out _);
 					newItemsSpace = items.Select(_sizer.CalculateSize).Sum();
-					_store.UpdateRange(index - StartIndex, items);
+					MemoryStore.UpdateRange(index - StartIndex, items);
 				}
 			}
 
 			protected override void EraseFromEndInternal(int count, out int oldItemsSpace) {
 				var index = EndIndex - count + 1;
 				oldItemsSpace = MeasureConsumedSpace(index, count, false, out _);
-				_store.RemoveRange(index - StartIndex, count);
+				MemoryStore.RemoveRange(index - StartIndex, count);
 			}
 
 			protected virtual int MeasureConsumedSpace(int index, int count, bool fetchIndividualSizes, out int[] sizes) {
@@ -307,7 +308,7 @@ namespace Sphere10.Framework {
 					sizes = fetchIndividualSizes ? Tools.Array.Gen(count, _sizer.FixedSize) : null;
 					return _sizer.FixedSize * count;
 				} else {
-					sizes = _store.ReadRange(index - StartIndex, count).Select(_sizer.CalculateSize).ToArray();
+					sizes = MemoryStore.ReadRange(index - StartIndex, count).Select(_sizer.CalculateSize).ToArray();
 					var totalSize = sizes.Sum();
 					if (!fetchIndividualSizes)
 						sizes = null;

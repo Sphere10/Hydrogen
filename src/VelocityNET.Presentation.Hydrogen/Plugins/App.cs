@@ -13,14 +13,13 @@ namespace VelocityNET.Presentation.Hydrogen.Plugins
         /// </summary>
         /// <param name="route"></param>
         /// <param name="name"></param>
-        /// <param name="appBlocks"></param>
         /// <param name="icon"></param>
-        public App(string route, string name, string icon, IEnumerable<IAppBlock> appBlocks, IEnumerable<MenuItem> menuItems)
+        /// <param name="appBlocks"></param>
+        public App(string route, string name, string icon, IEnumerable<IAppBlock> appBlocks)
         {
             Route = route ?? throw new ArgumentNullException(nameof(route));
             Name = name ?? throw new ArgumentNullException(nameof(name));
             AppBlocks = appBlocks ?? throw new ArgumentNullException(nameof(appBlocks));
-            MenuItems = menuItems;
             Icon = icon ?? throw new ArgumentNullException(nameof(icon));
         }
 
@@ -38,11 +37,6 @@ namespace VelocityNET.Presentation.Hydrogen.Plugins
         /// Gets the app blocks that are part of this 
         /// </summary>
         public IEnumerable<IAppBlock> AppBlocks { get; }
-
-        /// <summary>
-        /// Gets this apps menu items.
-        /// </summary>
-        public IEnumerable<MenuItem> MenuItems { get; }
 
         /// <summary>
         /// Gets the icon font-awesome ccs classes for this app block.

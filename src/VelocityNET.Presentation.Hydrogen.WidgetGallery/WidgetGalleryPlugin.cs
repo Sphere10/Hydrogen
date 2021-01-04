@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
 using VelocityNET.Presentation.Hydrogen.Plugins;
 using VelocityNET.Presentation.Hydrogen.WidgetGallery.Widgets.Services;
@@ -26,21 +27,14 @@ namespace VelocityNET.Presentation.Hydrogen.WidgetGallery
                             "fa-cog",
                             new[]
                             {
-                                new AppBlockPage("/widget-gallery/", "Index", "fa-chart-area"),
-                                new AppBlockPage("/widget-gallery/data-tables", "Data Tables", "fa-chart-area")
+                                new AppBlockPage("/widget-gallery/", "Index", "fa-chart-area",
+                                    Enumerable.Empty<MenuItem>()),
+                                new AppBlockPage("/widget-gallery/data-tables", "Data Tables", "fa-chart-area", new[]
+                                {
+                                    new MenuItem("Data tables", "/widget-gallery/data-tables", new List<MenuItem>())
+                                })
                             }
                         )
-                    },
-                    new[]
-                    {
-                        new MenuItem("Widgets", String.Empty, new List<MenuItem>()
-                        {
-                            new ("Example", "/", new List<MenuItem>())
-                        }),
-                        new MenuItem("File", String.Empty, new List<MenuItem>()
-                        {
-                            new ("New Widget", "/", new List<MenuItem>())
-                        })
                     })
             };
         }
@@ -60,4 +54,5 @@ namespace VelocityNET.Presentation.Hydrogen.WidgetGallery
             serviceCollection.AddTransient<IRandomNumberService, RandomNumberService>();
         }
     }
+
 }

@@ -7,7 +7,7 @@ using VelocityNET.Presentation.Hydrogen.Loader.ViewModels;
 namespace VelocityNET.Presentation.Hydrogen.Loader.Tests.NavigationTests
 {
 
-    public class AppMenuTests : Bunit.TestContext
+    public class AppMenuTests
     {
         [Test]
         public void AppMenuInitializedWithApps()

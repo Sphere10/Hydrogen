@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace VelocityNET.Presentation.Hydrogen.Plugins
 {
@@ -13,11 +14,13 @@ namespace VelocityNET.Presentation.Hydrogen.Plugins
         /// <param name="route"> route - the relative path from app to navigate to.</param>
         /// <param name="name"> page name</param>
         /// <param name="icon"></param>
-        public AppBlockPage(string route, string name, string icon)
+        /// <param name="menuItems"></param>
+        public AppBlockPage(string route, string name, string icon, IEnumerable<MenuItem> menuItems)
         {
             Route = route ?? throw new ArgumentNullException(nameof(route));
             Name = name ?? throw new ArgumentNullException(nameof(name));
             Icon = icon ?? throw new ArgumentNullException(nameof(icon));
+            MenuItems = menuItems ?? throw new ArgumentNullException(nameof(menuItems));
         }
 
         /// <summary>
@@ -34,6 +37,10 @@ namespace VelocityNET.Presentation.Hydrogen.Plugins
         /// Gets the icon font-awesome ccs classes for this app block.
         /// </summary>
         public string Icon { get; }
-    }
 
+        /// <summary>
+        /// Gets the menu items
+        /// </summary>
+        public IEnumerable<MenuItem> MenuItems { get; }
+    }
 }

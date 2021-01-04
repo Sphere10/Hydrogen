@@ -7,6 +7,7 @@ using VelocityNET.Presentation.Hydrogen.Plugins;
 
 namespace VelocityNET.Presentation.Hydrogen.Loader.Plugins
 {
+
     /// <summary>
     /// App manager
     /// </summary>
@@ -18,6 +19,11 @@ namespace VelocityNET.Presentation.Hydrogen.Loader.Plugins
         public event EventHandler<AppSelectedEventArgs>? AppSelected;
 
         /// <summary>
+        /// Raised when an app block page is selected
+        /// </summary>
+        public event EventHandler<AppBlockPageSelectedEventArgs>? AppBlockPageSelected;
+
+        /// <summary>
         /// Gets the available apps.
         /// </summary>
         public IEnumerable<IApp> Apps { get; }
@@ -26,6 +32,11 @@ namespace VelocityNET.Presentation.Hydrogen.Loader.Plugins
         /// Gets or sets the selected app.
         /// </summary>
         public IApp? SelectedApp { get; private set; }
+
+        /// <summary>
+        /// Gets the selected app block page
+        /// </summary>
+        public IAppBlockPage? SelectedPage { get; private set; }
 
         /// <summary>
         /// Gets the navigation manager
@@ -49,6 +60,11 @@ namespace VelocityNET.Presentation.Hydrogen.Loader.Plugins
                 NavigationManager
                     .ToBaseRelativePathWithSlash(NavigationManager.Uri)
                     .ToAppPathFromBaseRelativePath());
+
+            SelectedPage = SelectedApp?.AppBlocks
+                .SelectMany(x => x.AppBlockPages)
+                .SingleOrDefault(x => x.Route == NavigationManager.ToBaseRelativePathWithSlash(NavigationManager.Uri)
+                    .TrimQueryParameters());
         }
 
         /// <summary>
@@ -58,14 +74,24 @@ namespace VelocityNET.Presentation.Hydrogen.Loader.Plugins
         /// <param name="e"></param>
         private void NavigationManagerOnLocationChanged(object? sender, LocationChangedEventArgs e)
         {
-            string relativePath = NavigationManager.ToBaseRelativePathWithSlash(e.Location);
-            string appSegment = relativePath.ToAppPathFromBaseRelativePath();
+            SelectedApp = Apps.SingleOrDefault(x => x.Route ==
+                NavigationManager
+                    .ToBaseRelativePathWithSlash(NavigationManager.Uri)
+                    .ToAppPathFromBaseRelativePath());
 
-            SelectedApp = Apps.FirstOrDefault(x => x.Route.StartsWith(appSegment));
-
+            SelectedPage = SelectedApp?.AppBlocks
+                .SelectMany(x => x.AppBlockPages)
+                .SingleOrDefault(x => x.Route == NavigationManager.ToBaseRelativePathWithSlash(NavigationManager.Uri)
+                    .TrimQueryParameters());
+            
             if (SelectedApp is not null)
             {
                 AppSelected?.Invoke(this, new AppSelectedEventArgs(SelectedApp));
+            }
+
+            if (SelectedPage is not null)
+            {
+                AppBlockPageSelected?.Invoke(this, new AppBlockPageSelectedEventArgs(SelectedPage));
             }
         }
 

@@ -4,7 +4,6 @@ using VelocityNET.Presentation.Hydrogen.Plugins;
 
 namespace VelocityNET.Presentation.Hydrogen.Loader.Tests
 {
-
     public class TestPlugin : Plugin
     {
         public TestPlugin()
@@ -12,27 +11,25 @@ namespace VelocityNET.Presentation.Hydrogen.Loader.Tests
             Apps = new[]
             {
                 new Hydrogen.Plugins.App("/", "Home", "abc", new[]
+                {
+                    new AppBlock("test", "abc", new[]
                     {
-                        new AppBlock("test", "abc", new[]
+                        new AppBlockPage("/test", "test page", "abc", new[]
                         {
-                            new AppBlockPage("/test", "test page", "abc")
+                            new MenuItem("Test Menu", "/app1/page1", new List<MenuItem>())
                         })
-                    }
-                    , new[]
-                    {
-                        new MenuItem("Test Menu", "/test", new List<MenuItem>())
-                    }),
-                new Hydrogen.Plugins.App("/app1/", "app1", "abc", new[]
-                    {
-                        new AppBlock("app1", "abc", new[]
-                        {
-                            new AppBlockPage("/app1/page1", "app1 page", "abc")
-                        })
-                    }
-                    , new[]
-                    {
-                        new MenuItem("Test Menu", "/app1/page1", new List<MenuItem>())
                     })
+                }),
+                new Hydrogen.Plugins.App("/app1", "app1", "abc", new[]
+                {
+                    new AppBlock("app1", "abc", new[]
+                    {
+                        new AppBlockPage("/app1/page1", "app1 page", "abc", new[]
+                        {
+                            new MenuItem("Test Menu", "/app1/page1", new List<MenuItem>())
+                        })
+                    })
+                })
             };
         }
 
@@ -47,5 +44,4 @@ namespace VelocityNET.Presentation.Hydrogen.Loader.Tests
     internal class TestViewModel
     {
     }
-
 }

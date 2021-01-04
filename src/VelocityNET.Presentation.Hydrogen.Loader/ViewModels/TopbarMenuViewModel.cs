@@ -45,7 +45,7 @@ namespace VelocityNET.Presentation.Hydrogen.Loader.ViewModels
 
             MenuItems = new List<MenuItem>(DefaultMenuItems);
             
-            AppManager.AppSelected += AppManagerOnAppSelected;
+            AppManager.AppBlockPageSelected += AppManagerOnAppBlockPageSelected;
         }
 
         /// <summary>
@@ -53,9 +53,9 @@ namespace VelocityNET.Presentation.Hydrogen.Loader.ViewModels
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void AppManagerOnAppSelected(object? sender, AppSelectedEventArgs e)
+        private void AppManagerOnAppBlockPageSelected(object? sender, AppBlockPageSelectedEventArgs e)
         {
-            IEnumerable<MenuItem> newItems = DefaultMenuItems.Merge(e.SelectedApp.MenuItems);
+            IEnumerable<MenuItem> newItems = DefaultMenuItems.Merge(e.AppBlockPage.MenuItems);
             
             MenuItems.Clear();
             MenuItems.AddRange(newItems);

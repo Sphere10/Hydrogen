@@ -13,6 +13,11 @@ namespace VelocityNET.Presentation.Hydrogen.Loader.Plugins
         /// Raised when an app is selected
         /// </summary>
         event EventHandler<AppSelectedEventArgs> AppSelected;
+
+        /// <summary>
+        /// Raised when an app page is selected.
+        /// </summary>
+        event EventHandler<AppBlockPageSelectedEventArgs> AppBlockPageSelected;
         
         /// <summary>
         /// Gets the available apps.
@@ -23,5 +28,10 @@ namespace VelocityNET.Presentation.Hydrogen.Loader.Plugins
         /// Gets or sets the selected app.
         /// </summary>
         IApp? SelectedApp { get; }
+
+        /// <summary>
+        /// Selected page
+        /// </summary>
+        IAppBlockPage? SelectedPage { get; }
     }
 }

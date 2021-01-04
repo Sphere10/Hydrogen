@@ -15,11 +15,10 @@ namespace VelocityNET.Presentation.Hydrogen.Loader
                 {
                     new AppBlock("Home", "fa-home", new[]
                     {
-                        new AppBlockPage("/", "Index", "fa-home")
+                        new AppBlockPage("/", "Index", "fa-home",
+                            Enumerable.Empty<MenuItem>())
                     })
-                },
-                Enumerable.Empty<MenuItem>()
-            )
+                })
         };
 
         protected override void ConfigureServicesInternal(IServiceCollection serviceCollection)

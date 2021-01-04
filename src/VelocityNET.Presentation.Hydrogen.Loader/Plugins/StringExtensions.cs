@@ -19,6 +19,18 @@
 
             return appSegment;
         }
+
+        /// <summary>
+        /// Given a relative path to the host, removes any query parameters. 
+        /// </summary>
+        /// <param name="relativePath"></param>
+        /// <returns></returns>
+        public static string TrimQueryParameters(this string relativePath)
+        {
+            int queryIndex = relativePath.IndexOf('?');
+
+            return queryIndex > 0 ? relativePath.Substring(0, queryIndex) : relativePath;
+        }
     }
 
 }

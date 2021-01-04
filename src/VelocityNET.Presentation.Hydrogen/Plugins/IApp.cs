@@ -9,10 +9,5 @@ namespace VelocityNET.Presentation.Hydrogen.Plugins
         /// Gets the app blocks that are part of this 
         /// </summary>
         IEnumerable<IAppBlock> AppBlocks { get; }
-        
-        /// <summary>
-        /// Gets this apps menu items.
-        /// </summary>
-        IEnumerable<MenuItem> MenuItems { get; }
     }
 }

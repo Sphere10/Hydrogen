@@ -16,6 +16,7 @@ namespace VelocityNET.Presentation.Hydrogen.Loader.Tests.ComponentTests
             Services.AddTransient<IAppManager, DefaultAppManager>();
             Services.AddTransient<IPluginManager, DefaultPluginManager>();
             Services.AddTransient<IPluginLocator, StaticPluginLocator>();
+            
             Services.AddLogging();
         }
 
@@ -28,5 +29,4 @@ namespace VelocityNET.Presentation.Hydrogen.Loader.Tests.ComponentTests
             Assert.NotNull(component.Instance);
         }
     }
-
 }

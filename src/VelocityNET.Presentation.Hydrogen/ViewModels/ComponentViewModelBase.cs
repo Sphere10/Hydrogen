@@ -11,7 +11,7 @@ namespace VelocityNET.Presentation.Hydrogen.ViewModels
         /// <summary>
         /// Gets or sets the state change delegate
         /// </summary>
-        public Action StateHasChangedDelegate { get; set; } = null!;
+        public Action? StateHasChangedDelegate { get; set; }
 
         /// <summary>
         /// Initialize the view model.

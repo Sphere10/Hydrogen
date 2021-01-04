@@ -15,7 +15,7 @@ namespace VelocityNET.Presentation.Hydrogen.Components
         /// Gets the view model for this component
         /// </summary>
         [Inject]
-        protected TViewModel? ViewModel { get; set; } = null!;
+        public TViewModel? ViewModel { get; set; } = null!;
         
         /// <summary>
         /// Method invoked when the component is ready to start, having received its

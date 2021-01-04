@@ -19,7 +19,7 @@ namespace VelocityNET.Presentation.Hydrogen.Loader.ViewModels
         /// <summary>
         /// Gets the selected app
         /// </summary>
-        public IApp SelectedApp => AppManager.SelectedApp;
+        public IApp SelectedApp { get; private set; }
         
         /// <summary>
         /// Gets the navigation manager
@@ -45,7 +45,8 @@ namespace VelocityNET.Presentation.Hydrogen.Loader.ViewModels
         /// <param name="e"></param>
         private void AppManagerOnAppSelected(object? sender, AppSelectedEventArgs e)
         {
-            StateHasChangedDelegate?.Invoke();
+            SelectedApp = e.SelectedApp; 
+            StateHasChangedDelegate.Invoke();
         }
     }
 }

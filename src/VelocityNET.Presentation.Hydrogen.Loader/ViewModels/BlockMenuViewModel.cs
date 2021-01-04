@@ -21,12 +21,12 @@ namespace VelocityNET.Presentation.Hydrogen.Loader.ViewModels
         /// <summary>
         /// Gets or sets the selected app.
         /// </summary>
-        private IApp SelectedApp => AppManager.SelectedApp;
-
+        private IApp? SelectedApp { get; set; }
+        
         /// <summary>
         /// Gets the app blocks for the selected app
         /// </summary>
-        public IEnumerable<IAppBlock> AppBlocks => SelectedApp.AppBlocks ?? Enumerable.Empty<IAppBlock>();
+        public IEnumerable<IAppBlock> AppBlocks => SelectedApp?.AppBlocks ?? Enumerable.Empty<IAppBlock>();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BlockMenuViewModel"/> class.
@@ -45,6 +45,7 @@ namespace VelocityNET.Presentation.Hydrogen.Loader.ViewModels
         /// <param name="e"></param>
         private void AppManagerOnAppSelected(object? sender, AppSelectedEventArgs e)
         {
+            SelectedApp = e.SelectedApp;
             StateHasChangedDelegate?.Invoke();
         }
     }

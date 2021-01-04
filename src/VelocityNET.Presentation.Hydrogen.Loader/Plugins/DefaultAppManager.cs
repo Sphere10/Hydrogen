@@ -25,7 +25,7 @@ namespace VelocityNET.Presentation.Hydrogen.Loader.Plugins
         /// <summary>
         /// Gets or sets the selected app.
         /// </summary>
-        public IApp SelectedApp { get; private set; }
+        public IApp? SelectedApp { get; private set; }
 
         /// <summary>
         /// Gets the navigation manager
@@ -45,7 +45,7 @@ namespace VelocityNET.Presentation.Hydrogen.Loader.Plugins
 
             NavigationManager.LocationChanged += NavigationManagerOnLocationChanged;
 
-            SelectedApp = Apps.Single(x => x.Route ==
+            SelectedApp = Apps.SingleOrDefault(x => x.Route ==
                 NavigationManager
                     .ToBaseRelativePathWithSlash(NavigationManager.Uri)
                     .ToAppPathFromBaseRelativePath());
@@ -61,11 +61,12 @@ namespace VelocityNET.Presentation.Hydrogen.Loader.Plugins
             string relativePath = NavigationManager.ToBaseRelativePathWithSlash(e.Location);
             string appSegment = relativePath.ToAppPathFromBaseRelativePath();
 
-            SelectedApp = Apps.FirstOrDefault(x => x.Route.StartsWith(appSegment)) ??
-                throw new InvalidOperationException(
-                    $"No app with matching route found after navigating to {appSegment}");
-            
-            AppSelected?.Invoke(this, new AppSelectedEventArgs(SelectedApp));
+            SelectedApp = Apps.FirstOrDefault(x => x.Route.StartsWith(appSegment));
+
+            if (SelectedApp is not null)
+            {
+                AppSelected?.Invoke(this, new AppSelectedEventArgs(SelectedApp));
+            }
         }
 
         /// <summary>

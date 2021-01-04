@@ -2,7 +2,7 @@
 @using VelocityNET.Presentation.Hydrogen.Plugins
 @inherits VelocityNET.Presentation.Hydrogen.Components.ComponentWithViewModel<BlockMenuViewModel>
 
-@foreach (IAppBlock block in ViewModel.AppBlocks)
+@foreach (IAppBlock block in ViewModel?.AppBlocks!)
 {
     <!-- Heading -->
     <div class="sidebar-heading">

@@ -29,7 +29,7 @@ namespace Sphere10.Framework {
 			return new BinaryFormattedPage(this.PageSize, _sizer);
 		}
 
-		public sealed class BinaryFormattedPage : FileSwappedMemoryPage {
+		public sealed class BinaryFormattedPage : FileSwappedMemoryPage<TItem> {
 
 			public BinaryFormattedPage(int pageSize, IObjectSizer<TItem> sizer)
 				: base(pageSize, sizer, new ExtendedList<TItem>()) {

@@ -5,40 +5,25 @@ using System.Linq;
 
 namespace Sphere10.Framework {
 
-	public class MerkleizedLargeBuffer : LargeBuffer, IMerkleTree {
+	/// <summary>
+	/// An unbounded memory-paged buffer that maintains
+	/// </summary>
+	public class MerkleBuffer<TPage> : MemoryPagedListDecorator<byte, TPage> where TPage : IMemoryPage<byte>  {
 		private IUpdateableMerkleTree _merkleTreeImpl;
+		private IDictionary<TPage, bool> _merkleDirtyPages;
 
-		public MerkleizedLargeBuffer(int pageSize, int inMemoryPages, IUpdateableMerkleTree merkleTreeImpl)
-			: base(pageSize, inMemoryPages) {
+		public MerkleBuffer(IMemoryPagedList<byte, TPage> pagedList, IUpdateableMerkleTree merkleTreeImpl) 
+			: base(pagedList) {
 			_merkleTreeImpl = merkleTreeImpl;
+			_merkleDirtyPages = new Dictionary<TPage, bool>();
+
+			pagedList.PageLoaded += (c, p) => ComputeHash(p);
+			pagedList.PageWriting += (c, p) => MarkDirty(p);
+			pagedList.PageUnloading += (c, p) => ComputeHash(p);
 		}
 
 		public bool MerkleDirty => base.Pages.Cast<MerklizedBufferPage>().Any(x => x.MerkleDirty);
 
-		protected override BufferPage NewPageInstance(int pageNumber) {
-			return new MerklizedBufferPage(PageSize, _merkleTreeImpl.HashAlgorithm);
-		}
-
-		protected override void OnPageLoaded(BufferPage page) {
-			base.OnPageLoaded(page);
-			// compute merkle node
-			// note: only computes when client updates page, not during file swapping
-			((MerklizedBufferPage)page).ComputeHash();
-		}
-		
-		protected override void OnPageWriting(BufferPage page) {
-			base.OnPageWriting(page);
-			// invalidate merkle node
-			// note: only computes when client updates page, not during file swapping
-			((MerklizedBufferPage)page).MerkleDirty = true;
-
-		}
-
-		protected override void OnPageUnloading(BufferPage page) {
-			base.OnPageUnloading(page);
-			// note: only computes when client updates page, not during file swapping
-			((MerklizedBufferPage)page).ComputeHash();
-		}
 
 
 		public CHF HashAlgorithm => _merkleTreeImpl.HashAlgorithm;

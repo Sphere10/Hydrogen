@@ -87,7 +87,7 @@ namespace Sphere10.Framework {
 			}
 		}
 
-		public class Page : FilePageBase {
+		public class Page : FilePageBase<byte> {
 
 			public Page(Stream stream, int pageNumber, int pageSize)
 				: base(stream, new ConstantObjectSizer<byte>(sizeof(byte)), pageNumber, pageSize, new MemoryBuffer(0, pageSize, pageSize)) {

@@ -19,8 +19,8 @@ using System.Linq;
 
 namespace Sphere10.Framework {
 
-	public abstract class TransactionalFileBase<TItem, TPage> : PagedFileBase<TItem, TPage>, ITransactionalFile
-		where TPage : TransactionalFileBase<TItem, TPage>.TransactionalPageBase {
+    public abstract class TransactionalFileBase<TItem, TPage> : PagedFileBase<TItem, TPage>, ITransactionalFile
+		where TPage : TransactionalPageBase<TItem> {
 
 		internal readonly MarkerRepository PageMarkerRepo;
 
@@ -154,53 +154,6 @@ namespace Sphere10.Framework {
 			var requiresDeletedMarker = pageHeader.Number < GetComittedPageCount();
 			if (requiresDeletedMarker)
 				PageMarkerRepo.Add(PageMarkerType.DeletedMarker, pageHeader.Number);
-		}
-
-		public abstract class TransactionalPageBase : FilePageBase {
-
-			protected TransactionalPageBase(FileStream sourceFile, IObjectSizer<TItem> sizer, string uncommittedPageFileName, int pageNumber, int pageSize, IExtendedList<TItem> memoryStore)
-				: base(sourceFile, sizer, pageNumber, pageSize, memoryStore) {
-				UncommittedPageFileName = uncommittedPageFileName;
-				HasUncommittedData = File.Exists(UncommittedPageFileName);
-			}
-
-			public string UncommittedPageFileName { get; }
-
-			public bool HasUncommittedData { get; set; }
-
-			public Stream OpenSourceReadStream() {
-				return base.OpenReadStream();
-			}
-
-			public Stream OpenSourceWriteStream() {
-				return base.OpenWriteStream();
-			}
-
-			private void CreateUncommittedStream() {
-				// create file marker
-				if (!File.Exists(UncommittedPageFileName))
-					throw new InvalidOperationException("Uncommitted page marker not created");
-
-				// Write source data into the uncommitted page marker.
-				// This marker is also the store for Uncommitted data.
-				// When created, it contains the original source data.
-				using (var readStream = OpenSourceReadStream())
-					File.WriteAllBytes(UncommittedPageFileName, readStream.ReadBytes((int)readStream.Length));
-
-				HasUncommittedData = true;
-			}
-
-			protected override Stream OpenReadStream() {
-				return HasUncommittedData ? File.OpenRead(UncommittedPageFileName) : base.OpenReadStream();
-			}
-
-			protected override Stream OpenWriteStream() {
-				if (!HasUncommittedData)
-					CreateUncommittedStream();
-				Debug.Assert(HasUncommittedData);
-				return File.OpenWrite(UncommittedPageFileName);
-			}
-
 		}
 
 		public enum PageMarkerType {

@@ -6,7 +6,8 @@ using System.Linq;
 namespace Sphere10.Framework {
 
 	/// <summary>
-	/// An unbounded memory-paged buffer that maintains
+	/// A memory-paged byte list that maintains a merkle-tree of every page. It is a decorator since the underlying byte list could be a binary file,
+	/// transactional file, etc.
 	/// </summary>
 	public class MerkleBuffer<TPage> : MemoryPagedListDecorator<byte, TPage> where TPage : IMemoryPage<byte>  {
 		private IUpdateableMerkleTree _merkleTreeImpl;

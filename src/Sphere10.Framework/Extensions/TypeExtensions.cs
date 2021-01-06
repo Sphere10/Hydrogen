@@ -124,5 +124,36 @@ namespace Sphere10.Framework {
             return name.Length < fullName.Length ? fullName.Substring(nameSpace.Length + 1) : name;
 
         }
-    }
+
+		public static IEnumerable<PropertyInfo> GetProperties(this Type type, BindingFlags bindingFlags, bool includeInherited) {
+			var dictionary = new Dictionary<string, List<PropertyInfo>>();
+
+			Type? currType = type;
+
+			while (currType != null) {
+				var properties = 
+					currType
+						.GetProperties(bindingFlags)
+					    .Where(prop => prop.DeclaringType == currType);
+				
+				foreach (var property in properties) {
+					if (!dictionary.TryGetValue(property.Name, out var others)) {
+						others = new List<PropertyInfo>();
+						dictionary.Add(property.Name, others);
+					}
+
+					if (others.Any(other => other.GetMethod?.GetBaseDefinition() == property.GetMethod?.GetBaseDefinition())) {
+						// This is an inheritance case. We can safely ignore the value of property since
+						// we have seen a more derived value.
+						continue;
+					}
+
+					others.Add(property);
+				}
+				
+				currType = includeInherited ? currType.BaseType : null;
+			}
+			return dictionary.Values.SelectMany(p => p);
+		}
+	}
 }

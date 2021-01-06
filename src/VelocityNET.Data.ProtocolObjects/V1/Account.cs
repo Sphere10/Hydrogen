@@ -26,7 +26,7 @@ namespace VelocityNET.ProtocolObjects {
 	}
 
 
-	public class 
+	public class
 
 	public class Group : Identity {
 		IMerkleList<IFuture<Identity>> Members { get; set; }

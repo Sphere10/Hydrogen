@@ -1,0 +1,3 @@
+﻿window.showModal = () => {
+    $("#modal").modal();
+}

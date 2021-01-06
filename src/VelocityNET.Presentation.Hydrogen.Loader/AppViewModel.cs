@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using VelocityNET.Presentation.Hydrogen.Loader.Plugins;
-using VelocityNET.Presentation.Hydrogen.Plugins;
 
 namespace VelocityNET.Presentation.Hydrogen.Loader
 {

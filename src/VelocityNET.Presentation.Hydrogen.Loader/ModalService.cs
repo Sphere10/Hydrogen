@@ -1,9 +1,9 @@
 ﻿using System;
-using System.Reflection;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Mvc.Internal;
 using VelocityNET.Presentation.Hydrogen.Components;
+using VelocityNET.Presentation.Hydrogen.Components.Modal;
 using VelocityNET.Presentation.Hydrogen.Services;
 
 namespace VelocityNET.Presentation.Hydrogen.Loader
@@ -25,7 +25,7 @@ namespace VelocityNET.Presentation.Hydrogen.Loader
             ModalInstance = component ?? throw new ArgumentNullException(nameof(component));
         }
 
-        public async Task<ModalResult> ShowAsync<T>() where T : ModalComponent
+        public async Task<ModalResult> ShowAsync<T>(Dictionary<string, object>? parameters = null) where T : ModalComponentBase
         {
             if (ModalInstance is null)
             {
@@ -33,7 +33,12 @@ namespace VelocityNET.Presentation.Hydrogen.Loader
             }
 
             T component = (T)ComponentFactory.Activate(typeof(T));
-            
+            if (parameters is not null)
+            {
+                ParameterView parameterView = ParameterView.FromDictionary(parameters);
+                parameterView.SetParameterProperties(component);
+            }
+
             return await ModalInstance.ShowAsync(component);
         }
     }

@@ -1,31 +1,30 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Reflection;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Rendering;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.JSInterop;
-using VelocityNET.Presentation.Hydrogen.Services;
-using VelocityNET.Presentation.Hydrogen.ViewModels;
 
-namespace VelocityNET.Presentation.Hydrogen.Components
+namespace VelocityNET.Presentation.Hydrogen.Components.Modal
 {
-
-    public partial class Modal
+    public sealed partial class Modal
     {
-        [Parameter] public RenderFragment Content { get; set; } = null!;
+        [Parameter] 
+        public RenderFragment Content { get; set; } = null!;
         
-        [Inject] public IJSRuntime JsRuntime { get; set; } = null!;
+        [Inject] 
+        private IJSRuntime JsRuntime { get; set; } = null!;
 
-        public async Task<ModalResult> ShowAsync<T>(T component) where T : ModalComponent
+        public async Task<ModalResult> ShowAsync<T>(T component) where T : ModalComponentBase
         {
             Content = RenderComponent(component);
             StateHasChanged();
 
-            await JsRuntime.InvokeAsync<object>("showModal");
+            await JsRuntime.InvokeAsync<object>("toggleModal");
+            ModalResult result = await component.ShowAsync();
+            await JsRuntime.InvokeAsync<object>("toggleModal");
             
-            return await component.ShowAsync();
+            return result;
         }
 
         //https://stackoverflow.com/a/48551735/66988

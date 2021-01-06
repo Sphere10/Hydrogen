@@ -1,6 +1,9 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using VelocityNET.Presentation.Hydrogen.Components;
+using VelocityNET.Presentation.Hydrogen.Components.Modal;
 using VelocityNET.Presentation.Hydrogen.Services;
-using VelocityNET.Presentation.Hydrogen.WidgetGallery;
 
 namespace VelocityNET.Presentation.Hydrogen.Loader.ViewModels
 {
@@ -15,7 +18,16 @@ namespace VelocityNET.Presentation.Hydrogen.Loader.ViewModels
 
         public async Task ShowModalAsync()
         {
-           await _modalService.ShowAsync<WidgetModal>();
+           ModalResult result = await _modalService.ShowAsync<ConfirmDialog>(new Dictionary<string,object>
+           {
+               {nameof(ConfirmDialog.Title), "A confirmation dialog"},
+               {nameof(ConfirmDialog.Message), "Its working"},
+               {nameof(ConfirmDialog.ConfirmMessageText), "Ok"},
+               {nameof(ConfirmDialog.CancelMessageText), "Cancel"},
+           });
+
+           var data = result as ModalResult<string>;
+           Console.WriteLine(data);
         }
     }
 }

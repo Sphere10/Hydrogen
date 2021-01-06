@@ -1,0 +1,38 @@
+﻿@inherits ModalComponent<ConfirmDialogViewModel>
+
+<ModalTemplate>
+    <HeaderTemplate>
+        <div class="modal-header">
+            <h5 class="modal-title"></h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">@Title</span>
+            </button>
+        </div>
+    </HeaderTemplate>
+    <BodyTemplate>
+        <div class="modal-body">
+            <p>@Message</p>
+        </div>
+    </BodyTemplate>
+    <FooterTemplate>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">@CancelMessageText</button>
+            <button type="button" class="btn btn-primary">@ConfirmMessageText</button>
+        </div>
+    </FooterTemplate>
+</ModalTemplate>
+
+@code
+{
+    [Parameter]
+    public string Title { get; set; }
+
+    [Parameter]
+    public string Message { get; set; }
+
+    [Parameter]
+    public string ConfirmMessageText { get; set; }
+
+    [Parameter]
+    public string CancelMessageText { get; set; }
+}

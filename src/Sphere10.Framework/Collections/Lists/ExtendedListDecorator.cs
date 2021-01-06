@@ -15,7 +15,6 @@ namespace Sphere10.Framework {
 
 		protected IExtendedList<TItem> InternalExtendedList { get; }
 
-
 		public override int Count => InternalExtendedList.Count;
 
 		public override bool IsReadOnly => InternalExtendedList.IsReadOnly;

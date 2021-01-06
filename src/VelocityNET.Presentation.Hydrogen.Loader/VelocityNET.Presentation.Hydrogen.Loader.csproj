@@ -18,6 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Sphere10.Framework\Sphere10.Framework.csproj" />
     <ProjectReference Include="..\VelocityNET.Presentation.Hydrogen.WidgetGallery\VelocityNET.Presentation.Hydrogen.WidgetGallery.csproj" />
     <ProjectReference Include="..\VelocityNET.Presentation.Hydrogen\VelocityNET.Presentation.Hydrogen.csproj" />
   </ItemGroup>

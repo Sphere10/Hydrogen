@@ -1,9 +1,9 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.DependencyInjection;
-using VelocityNET.Presentation.Hydrogen.Plugins;
-using VelocityNET.Presentation.Hydrogen;
 using VelocityNET.Presentation.Hydrogen.Loader.Plugins;
+using VelocityNET.Presentation.Hydrogen.Loader.Services;
+using VelocityNET.Presentation.Hydrogen.Services;
 
 namespace VelocityNET.Presentation.Hydrogen.Loader
 {
@@ -28,6 +28,10 @@ namespace VelocityNET.Presentation.Hydrogen.Loader
                 
             serviceCollection.AddSingleton<IAppManager, DefaultAppManager>();
             serviceCollection.AddSingleton<IPluginManager, DefaultPluginManager>();
+            serviceCollection.AddSingleton<IModalService, ModalService>();
+
+            serviceCollection.AddSingleton<IComponentFactory, ComponentFactory>();
+            serviceCollection.AddSingleton(DefaultComponentActivator.Instance);
             
             InitializePlugins(serviceCollection);
         }

@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 
 namespace VelocityNET.Presentation.Hydrogen.ViewModels
 {
+
     /// <summary>
     /// Base class for component view models.
     /// </summary>
@@ -14,9 +15,24 @@ namespace VelocityNET.Presentation.Hydrogen.ViewModels
         public Action? StateHasChangedDelegate { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether the view model is initialized.
+        /// Set to true by calling <see cref="InitAsync"/>
+        /// </summary>
+        public bool IsInitialized { get; protected set; }
+
+        /// <summary>
         /// Initialize the view model.
         /// </summary>
         /// <returns> a task.</returns>
-        public virtual Task InitAsync() => Task.CompletedTask;
+        public virtual async Task InitAsync()
+        {
+            await InitCoreAsync();
+            IsInitialized = true;
+        }
+
+        protected virtual Task InitCoreAsync()
+        {
+            return Task.CompletedTask;
+        }
     }
 }

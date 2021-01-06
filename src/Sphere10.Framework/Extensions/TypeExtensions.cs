@@ -155,5 +155,11 @@ namespace Sphere10.Framework {
 			}
 			return dictionary.Values.SelectMany(p => p);
 		}
+
+		private static FieldInfo? GetField(this Type type, string name, BindingFlags bindingFlags, bool includeInherited) {
+			FieldInfo? fi;
+			while ((fi = type?.GetField(name, bindingFlags)) == null && (type = type?.BaseType) != null && includeInherited);
+			return fi;
+		}
 	}
 }

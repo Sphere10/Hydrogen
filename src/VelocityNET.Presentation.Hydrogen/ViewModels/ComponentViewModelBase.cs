@@ -30,6 +30,10 @@ namespace VelocityNET.Presentation.Hydrogen.ViewModels
             IsInitialized = true;
         }
 
+        /// <summary>
+        /// Called when view is initialized, override to provide custom initialization logic. 
+        /// </summary>
+        /// <returns></returns>
         protected virtual Task InitCoreAsync()
         {
             return Task.CompletedTask;

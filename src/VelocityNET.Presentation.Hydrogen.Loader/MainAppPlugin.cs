@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using VelocityNET.Presentation.Hydrogen.Plugins;
 
@@ -23,6 +24,7 @@ namespace VelocityNET.Presentation.Hydrogen.Loader
 
         protected override void ConfigureServicesInternal(IServiceCollection serviceCollection)
         {
+            serviceCollection.AddViewModelsFromAssembly(Assembly.Load("VelocityNET.Presentation.Hydrogen"));
         }
     }
 

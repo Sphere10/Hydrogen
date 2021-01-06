@@ -24,7 +24,7 @@ namespace VelocityNET.Presentation.Hydrogen.Components
         /// want the component to refresh when that operation is completed.
         /// </summary>
         /// <returns>A <see cref="T:System.Threading.Tasks.Task" /> representing any asynchronous operation.</returns>
-        protected override Task OnInitializedAsync()
+        protected override async Task OnInitializedAsync()
         {
             if (ViewModel is null)
             {
@@ -32,9 +32,9 @@ namespace VelocityNET.Presentation.Hydrogen.Components
             }
             else
             {
-                ViewModel.InitAsync();
+                await ViewModel.InitAsync();
                 ViewModel.StateHasChangedDelegate = StateHasChanged;
-                return base.OnInitializedAsync();
+                await base.OnInitializedAsync();
             }
         }
     }

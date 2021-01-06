@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using VelocityNET.Presentation.Hydrogen.ViewModels;
 
 namespace VelocityNET.Presentation.Hydrogen.Plugins
 {

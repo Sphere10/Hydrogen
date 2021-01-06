@@ -1,3 +1,3 @@
-﻿window.showModal = () => {
-    $("#modal").modal();
+﻿window.toggleModal = () => {
+    $("#modal").modal('toggle');
 }

@@ -83,13 +83,11 @@ namespace Sphere10.Framework.NUnit {
 		}
 
 
-		public static void HasLoadedPages<TItem, TPage>(PagedListBase<TItem, TPage> list, params int[] pageNos) 
-			where TPage : PagedListBase<TItem, TPage>.PageBase {
+		public static void HasLoadedPages<TItem, TPage>(PagedListBase<TItem, TPage> list, params int[] pageNos) where TPage : IPage<TItem> {
 			Assert.IsEmpty(list.Pages.Where(p => p.State == PageState.Loaded).Select(p => p.Number).Except(pageNos), "Unexpected pages were open");
 		}
 
-		public static void HasDirtyPages<TItem, TPage>(PagedListBase<TItem, TPage> list, params int[] pageNos)
-			where TPage : PagedListBase<TItem, TPage>.PageBase {
+		public static void HasDirtyPages<TItem, TPage>(PagedListBase<TItem, TPage> list, params int[] pageNos) where TPage : IPage<TItem> {
 			Assert.IsEmpty(list.Pages.Where(p => p.Dirty).Select(p => p.Number).Except(pageNos), "Unexpected pages were dirty");
 		}
 

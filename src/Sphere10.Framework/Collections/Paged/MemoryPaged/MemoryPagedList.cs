@@ -1,12 +1,9 @@
 using System;
-using System.Diagnostics;
 using System.Linq;
-using System.Runtime.Serialization.Formatters.Binary;
 
 namespace Sphere10.Framework {
 
-    public abstract class MemoryPagedListBase<TItem, TPage> : PagedListBase<TItem, TPage>, IDisposable
-		where TPage : IMemoryPage<TItem> {
+    public abstract class MemoryPagedList<TItem, TPage> : PagedListBase<TItem, TPage>, IDisposable where TPage : IMemoryPage<TItem> {
 
 		public event EventHandlerEx<object, TPage> PageLoading;
 		public event EventHandlerEx<object, TPage> PageLoaded;
@@ -19,7 +16,7 @@ namespace Sphere10.Framework {
 
 		protected bool Disposing;
 
-		protected MemoryPagedListBase(int pageSize, int maxCacheCapacity, CacheCapacityPolicy cachePolicy) {
+		protected MemoryPagedList(int pageSize, int maxCacheCapacity, CacheCapacityPolicy cachePolicy) {
 			Guard.ArgumentInRange(pageSize, 1, int.MaxValue, nameof(pageSize));
 			PageSize = pageSize;
 			switch (cachePolicy) {
@@ -211,4 +208,29 @@ namespace Sphere10.Framework {
 		#endregion
 	
 	}
+
+
+    public class MemoryPagedList<TItem> : MemoryPagedList<TItem, BinaryFormattedPage<TItem>> {
+	    private readonly IObjectSizer<TItem> _sizer;
+
+	    public MemoryPagedList(int pageSize, int maxOpenPages, int fixedItemSize)
+		    : this(pageSize, maxOpenPages, new ConstantObjectSizer<TItem>(fixedItemSize)) {
+	    }
+
+	    public MemoryPagedList(int pageSize, int maxOpenPages, Func<TItem, int> itemSizer)
+		    : this(pageSize, maxOpenPages, new ActionObjectSizer<TItem>(itemSizer)) {
+	    }
+
+	    private MemoryPagedList(int pageSize, int maxOpenPages, IObjectSizer<TItem> sizer)
+		    : base(pageSize, maxOpenPages, CacheCapacityPolicy.CapacityIsMaxOpenPages) {
+		    _sizer = sizer;
+	    }
+
+	    protected override BinaryFormattedPage<TItem> NewPageInstance(int pageNumber) {
+		    return new BinaryFormattedPage<TItem>(this.PageSize, _sizer);
+	    }
+
+	 
+    }
+
 }

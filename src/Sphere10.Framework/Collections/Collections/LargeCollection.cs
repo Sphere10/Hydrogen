@@ -19,10 +19,10 @@ using System.Linq;
 namespace Sphere10.Framework {
 
 	public class LargeCollection<TItem> : CollectionDecorator<TItem>, IDisposable {
-		public event EventHandlerEx<object, MemoryPagedList<TItem>.BinaryFormattedPage> PageLoading { add => InternalPagedList.PageLoading += value; remove => InternalPagedList.PageLoading -= value; }
-		public event EventHandlerEx<object, MemoryPagedList<TItem>.BinaryFormattedPage> PageLoaded { add => InternalPagedList.PageLoaded += value; remove => InternalPagedList.PageLoaded -= value; }
-		public event EventHandlerEx<object, MemoryPagedList<TItem>.BinaryFormattedPage> PageUnloading { add => InternalPagedList.PageUnloading += value; remove => InternalPagedList.PageUnloading -= value; }
-		public event EventHandlerEx<object, MemoryPagedList<TItem>.BinaryFormattedPage> PageUnloaded { add => InternalPagedList.PageUnloaded += value; remove => InternalPagedList.PageUnloaded -= value; }
+		public event EventHandlerEx<object, BinaryFormattedPage<TItem>> PageLoading { add => InternalPagedList.PageLoading += value; remove => InternalPagedList.PageLoading -= value; }
+		public event EventHandlerEx<object, BinaryFormattedPage<TItem>> PageLoaded { add => InternalPagedList.PageLoaded += value; remove => InternalPagedList.PageLoaded -= value; }
+		public event EventHandlerEx<object, BinaryFormattedPage<TItem>> PageUnloading { add => InternalPagedList.PageUnloading += value; remove => InternalPagedList.PageUnloading -= value; }
+		public event EventHandlerEx<object, BinaryFormattedPage<TItem>> PageUnloaded { add => InternalPagedList.PageUnloaded += value; remove => InternalPagedList.PageUnloaded -= value; }
 
 		public LargeCollection(int pageSize, int maxOpenPages)
 			: this(pageSize, maxOpenPages, null) {
@@ -34,7 +34,7 @@ namespace Sphere10.Framework {
 
 		protected MemoryPagedList<TItem> InternalPagedList => (MemoryPagedList<TItem>)base.InnerCollection;
 
-		public IList<MemoryPagedList<TItem>.BinaryFormattedPage> Pages => InternalPagedList.Pages.ToList();
+		public IList<BinaryFormattedPage<TItem>> Pages => InternalPagedList.Pages.ToList();
 
 		public void Dispose() {
 			InternalPagedList.Dispose();

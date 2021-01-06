@@ -34,7 +34,7 @@ namespace Sphere10.Framework {
 	/// In general, the more pages allowed in memory the less frequently they will be swapped to storage.
 	/// </remarks>
 	/// </summary>
-	public sealed class TransactionalBinaryFile : TransactionalFileBase<byte, TransactionalBinaryFile.TransactionalPage> {
+	public sealed class TransactionalBinaryFile : TransactionalFileMappedList<byte, TransactionalBinaryFile.TransactionalPage> {
 		
 		public TransactionalBinaryFile(string filename, int pageSize, int inMemoryPages, bool readOnly = false)
 			: this(filename, Guid.NewGuid(), pageSize, inMemoryPages, readOnly) {
@@ -113,7 +113,7 @@ namespace Sphere10.Framework {
 			);
 		}
 
-		public class TransactionalPage : TransactionalPageBase {
+		public class TransactionalPage : TransactionalFilePageBase<byte> {
 
 			public TransactionalPage(FileStream stream, string uncommittedPageFileName, int pageNumber, int pageSize)
 				: base(stream, new ConstantObjectSizer<byte>(sizeof(byte)), uncommittedPageFileName, pageNumber, pageSize, new MemoryBuffer(0, pageSize, pageSize)) {

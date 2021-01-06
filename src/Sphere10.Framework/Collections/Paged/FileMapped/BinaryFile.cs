@@ -15,7 +15,7 @@ namespace Sphere10.Framework {
 	/// In general, the more pages allowed in memory the less frequently they will be swapped to storage.
 	/// </remarks>
 	/// </summary>
-	public sealed class BinaryFile : PagedFileBase<byte, BinaryFile.Page> {
+	public sealed class BinaryFile : FileMappedList<byte, BinaryFile.Page> {
 		
 		public BinaryFile(string filename, int pageSize, int maxOpenPages, bool readOnly = false) 
 			: base(filename, pageSize, maxOpenPages, CacheCapacityPolicy.CapacityIsMaxOpenPages, readOnly) {

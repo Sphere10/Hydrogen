@@ -16,9 +16,9 @@ using System.Diagnostics;
 using System.IO;
 
 namespace Sphere10.Framework {
-    public abstract class TransactionalPageBase<TItem> : FilePageBase<TItem> {
+    public abstract class TransactionalFilePageBase<TItem> : FilePageBase<TItem> {
 
-		protected TransactionalPageBase(FileStream sourceFile, IObjectSizer<TItem> sizer, string uncommittedPageFileName, int pageNumber, int pageSize, IExtendedList<TItem> memoryStore)
+		protected TransactionalFilePageBase(FileStream sourceFile, IObjectSizer<TItem> sizer, string uncommittedPageFileName, int pageNumber, int pageSize, IExtendedList<TItem> memoryStore)
 			: base(sourceFile, sizer, pageNumber, pageSize, memoryStore) {
 			UncommittedPageFileName = uncommittedPageFileName;
 			HasUncommittedData = File.Exists(UncommittedPageFileName);

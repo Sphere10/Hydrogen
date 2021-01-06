@@ -5,11 +5,15 @@ using System.IO;
 using System.Linq;
 
 namespace Sphere10.Framework {
-
-    public abstract class PagedFileBase<TItem, TPage> : MemoryPagedListBase<TItem, TPage>, IFilePagedList<TItem, TPage>
+	/// <summary>
+	/// A list whose items are mapped onto pages of a file and file pages are cached in memory.
+	/// </summary>
+	/// <typeparam name="TItem"></typeparam>
+	/// <typeparam name="TPage"></typeparam>
+    public abstract class FileMappedList<TItem, TPage> : MemoryPagedList<TItem, TPage>, IFilePagedList<TItem, TPage>
 		where TPage : IFilePage<TItem> {
 
-		protected PagedFileBase(string filename, int pageSize, int maxCacheCapacity, CacheCapacityPolicy cachePolicy, bool readOnly = false)
+		protected FileMappedList(string filename, int pageSize, int maxCacheCapacity, CacheCapacityPolicy cachePolicy, bool readOnly = false)
 			: base(pageSize, maxCacheCapacity, cachePolicy) {
 			IsReadOnly = readOnly;
 			var fileExists = File.Exists(filename);

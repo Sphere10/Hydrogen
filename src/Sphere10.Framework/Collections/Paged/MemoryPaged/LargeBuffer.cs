@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace Sphere10.Framework {
 
-	public class LargeBuffer : MemoryPagedListBase<byte, LargeBuffer.BufferPage> {
+	public class LargeBuffer : MemoryPagedList<byte, LargeBuffer.BufferPage> {
 
 		public LargeBuffer(int pageSize, int inMemoryPages) 
 			: base(pageSize, inMemoryPages, CacheCapacityPolicy.CapacityIsMaxOpenPages) {
@@ -15,7 +15,7 @@ namespace Sphere10.Framework {
 			return new BufferPage(PageSize);
 		}
 
-		public class BufferPage : FileSwappedMemoryPage {
+		public class BufferPage : FileSwappedMemoryPage<byte> {
 			
 			public BufferPage(int pageSize) 
 				: base(pageSize, new ConstantObjectSizer<byte>(sizeof(byte)), new MemoryBuffer(0, pageSize, pageSize)) {

@@ -19,12 +19,12 @@ using System.Linq;
 
 namespace Sphere10.Framework {
 
-    public abstract class TransactionalFileBase<TItem, TPage> : PagedFileBase<TItem, TPage>, ITransactionalFile
-		where TPage : TransactionalPageBase<TItem> {
+    public abstract class TransactionalFileMappedList<TItem, TPage> : FileMappedList<TItem, TPage>, ITransactionalFile
+		where TPage : TransactionalFilePageBase<TItem> {
 
 		internal readonly MarkerRepository PageMarkerRepo;
 
-		protected TransactionalFileBase(
+		protected TransactionalFileMappedList(
 			string filename, 
 			string uncomittedPageFileDir, 
 			Guid fileID,

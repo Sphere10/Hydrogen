@@ -1,38 +1,29 @@
-﻿@inherits ModalComponent<ConfirmDialogViewModel>
+﻿@inherits ModalComponent<ModalViewModel>
 
 <ModalTemplate>
     <HeaderTemplate>
-        <div class="modal-header">
-            <h5 class="modal-title"></h5>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                <span aria-hidden="true">@Title</span>
-            </button>
-        </div>
+        <h5 class="modal-title">@Title</h5>
     </HeaderTemplate>
     <BodyTemplate>
-        <div class="modal-body">
-            <p>@Message</p>
-        </div>
+        <p>@Message</p>
     </BodyTemplate>
     <FooterTemplate>
-        <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-dismiss="modal">@CancelMessageText</button>
-            <button type="button" class="btn btn-primary">@ConfirmMessageText</button>
-        </div>
+        <a type="button" class="btn btn-secondary" @onclick="ViewModel.Cancel">@CancelMessageText</a>
+        <a type="button" class="btn btn-success" @onclick="ViewModel.Ok">@ConfirmMessageText</a>
     </FooterTemplate>
 </ModalTemplate>
 
 @code
 {
     [Parameter]
-    public string Title { get; set; }
+    public string Title { get; set; } = "Confirm";
 
     [Parameter]
     public string Message { get; set; }
 
     [Parameter]
-    public string ConfirmMessageText { get; set; }
+    public string ConfirmMessageText { get; set; } = "Confirm";
 
     [Parameter]
-    public string CancelMessageText { get; set; }
+    public string CancelMessageText { get; set; } = "Cancel";
 }

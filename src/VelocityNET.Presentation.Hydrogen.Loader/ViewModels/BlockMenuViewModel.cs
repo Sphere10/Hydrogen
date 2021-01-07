@@ -36,6 +36,9 @@ namespace VelocityNET.Presentation.Hydrogen.Loader.ViewModels
         {
             AppManager = appManager ?? throw new ArgumentNullException(nameof(appManager));
             AppManager.AppSelected += AppManagerOnAppSelected;
+
+            SelectedApp = appManager.SelectedApp;
+            StateHasChangedDelegate?.Invoke();
         }
 
         /// <summary>

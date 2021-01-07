@@ -32,6 +32,10 @@ namespace VelocityNET.Presentation.Hydrogen.WidgetGallery
                                 new AppBlockPage("/widget-gallery/data-tables", "Data Tables", "fa-chart-area", new[]
                                 {
                                     new MenuItem("Data tables", "/widget-gallery/data-tables", new List<MenuItem>())
+                                }),
+                                new AppBlockPage("/widget-gallery/modals", "Modals", "fa fa-commenting-o", new[]
+                                {
+                                    new MenuItem("Data tables", "/widget-gallery/modals", new List<MenuItem>())
                                 })
                             }
                         )

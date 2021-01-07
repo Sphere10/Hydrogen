@@ -12,7 +12,7 @@ namespace VelocityNET.Presentation.Hydrogen.Loader.Layouts
         /// <summary>
         /// Modal component reference
         /// </summary>
-        private Modal? _modal;
+        private ModalHost? _modal;
 
         // ReSharper disable once AutoPropertyCanBeMadeGetOnly.Local
         [Inject] private IModalService ModalService { get; set; } = null!;

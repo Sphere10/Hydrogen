@@ -6,6 +6,7 @@ namespace VelocityNET.Presentation.Hydrogen.Loader.Tests.PluginTests
     public class RoutingPathExtensionTests
     {
         [TestCase("/myapp/testing?test=1", ExpectedResult = "/myapp")]
+        [TestCase("/", ExpectedResult = "/")]
         [TestCase("/myapp", ExpectedResult = "/myapp")]
         [TestCase("/myapp/", ExpectedResult = "/myapp")]
         [TestCase("/myapp/testing/test-page", ExpectedResult = "/myapp")]

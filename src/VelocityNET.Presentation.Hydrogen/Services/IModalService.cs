@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using VelocityNET.Presentation.Hydrogen.Components;
 using VelocityNET.Presentation.Hydrogen.Components.Modal;
 
 namespace VelocityNET.Presentation.Hydrogen.Services
@@ -11,7 +10,7 @@ namespace VelocityNET.Presentation.Hydrogen.Services
         /// Initialize the modal service passing a reference to the modal component.
         /// </summary>
         /// <param name="component"></param>
-        void Initialize(Modal component);
+        void Initialize(ModalHost component);
 
         /// <summary>
         /// Show the modal component of type,
@@ -20,6 +19,7 @@ namespace VelocityNET.Presentation.Hydrogen.Services
         /// <typeparam name="T"></typeparam>
         /// <param name="parameters"> parameters to supply to the modal component.</param>
         /// <returns></returns>
-        Task<ModalResult> ShowAsync<T>(Dictionary<string, object>? parameters = null) where T : ModalComponentBase;
+        Task<ModalResult> ShowAsync<T>(Dictionary<string, object>? parameters = null)
+            where T : ModalComponentBase;
     }
 }

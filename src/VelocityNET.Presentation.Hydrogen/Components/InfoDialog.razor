@@ -1,0 +1,25 @@
+﻿@inherits ModalComponent<ModalViewModel>
+
+<ModalTemplate>
+    <HeaderTemplate>
+        <h5 class="modal-title">@Title</h5>
+    </HeaderTemplate>
+    <BodyTemplate>
+        <p>@Message</p>
+    </BodyTemplate>
+    <FooterTemplate>
+        <a type="button" class="btn btn-primary" @onclick="ViewModel.Ok">@ConfirmMessageText</a>
+    </FooterTemplate>
+</ModalTemplate>
+
+@code
+{
+    [Parameter]
+    public string Title { get; set; } = "Information";
+
+    [Parameter]
+    public string Message { get; set; }
+
+    [Parameter]
+    public string ConfirmMessageText { get; set; } = "OK";
+}

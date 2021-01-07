@@ -20,9 +20,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using Sphere10.Framework;
 
-namespace Sphere10.Framework.UnitTests {
+namespace Sphere10.Framework.Tests {
 
     [TestFixture]
+	[Parallelizable(ParallelScope.Children)]
     public class ProducerConsumerQueueTest {
 
         [Test]

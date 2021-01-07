@@ -17,10 +17,11 @@ using System.Linq;
 using NUnit.Framework;
 using System.IO;
 
-namespace Sphere10.Framework.UnitTests {
+namespace Sphere10.Framework.Tests {
 
     [TestFixture]
-    public class BinaryFileTests {
+	[Parallelizable(ParallelScope.Children)]
+	public class BinaryFileTests {
 
 		[Test]
 		public void SingleByteFile_Save() {

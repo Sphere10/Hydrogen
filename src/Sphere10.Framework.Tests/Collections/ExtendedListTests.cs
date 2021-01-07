@@ -21,11 +21,11 @@ using System.IO;
 using NUnit.Framework.Constraints;
 using Sphere10.Framework;
 
-namespace Sphere10.Framework.UnitTests {
+namespace Sphere10.Framework.Tests {
 
 
     [TestFixture]
-    [Parallelizable]
+	[Parallelizable(ParallelScope.Children)]
     public class ExtendedListTests {
 
         [Test]

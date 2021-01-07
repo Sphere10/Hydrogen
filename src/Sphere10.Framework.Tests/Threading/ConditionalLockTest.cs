@@ -17,9 +17,10 @@ using System.Linq;
 using NUnit.Framework;
 using System.Threading;
 
-namespace Sphere10.Framework.UnitTests {
+namespace Sphere10.Framework.Tests {
 
 	[TestFixture]
+	[Parallelizable(ParallelScope.Children)]
 	public class ConditionalLockTest {
 
 		[Test]

@@ -17,9 +17,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using NUnit.Framework;
 
-namespace Sphere10.Framework.UnitTests {
+namespace Sphere10.Framework.Tests {
 
     [TestFixture]
+	[Parallelizable(ParallelScope.Children)]
     public class SessionCacheTests {
 
         [Test]

@@ -22,9 +22,10 @@ using NUnit.Framework.Constraints;
 using Sphere10.Framework;
 using Sphere10.Framework.FastReflection;
 
-namespace Sphere10.Framework.UnitTests {
+namespace Sphere10.Framework.Tests {
 
 	[TestFixture]
+	[Parallelizable(ParallelScope.Children)]
 	public class FileTransactionScopeTests {
 
 		[Test]

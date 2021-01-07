@@ -8,9 +8,10 @@ using Sphere10.Framework;
 using Sphere10.Framework.Maths;
 using Sphere10.Framework.NUnit;
 
-namespace Sphere10.Framework.UnitTests {
+namespace Sphere10.Framework.Tests {
 
 	[TestFixture]
+	[Parallelizable(ParallelScope.Children)]
 	public class HashersTests {
 
 		[Test]

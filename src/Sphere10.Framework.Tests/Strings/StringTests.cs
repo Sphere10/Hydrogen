@@ -13,9 +13,10 @@
 
 using NUnit.Framework;
 
-namespace Sphere10.Framework.UnitTests {
+namespace Sphere10.Framework.Tests {
 
     [TestFixture]
+	[Parallelizable(ParallelScope.Children)]
     public class StringTests {
 
 

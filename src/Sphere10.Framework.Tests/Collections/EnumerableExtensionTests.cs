@@ -19,9 +19,10 @@ using System.IO;
 using System.Linq;
 using Sphere10.Framework;
 
-namespace Sphere10.Framework.UnitTests {
+namespace Sphere10.Framework.Tests {
 
     [TestFixture]
+	[Parallelizable(ParallelScope.Children)]
     public class EnumerableExtensionTests {
 
         [Test]

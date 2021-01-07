@@ -14,10 +14,11 @@
 using System;
 using NUnit.Framework;
 
-namespace Sphere10.Framework.UnitTests {
+namespace Sphere10.Framework.Tests {
 
     [TestFixture]
-    public class BitsTests {
+	[Parallelizable(ParallelScope.Children)]
+	public class BitsTests {
 
         [Test]
         public void CopyBits_L2R() {

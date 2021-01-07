@@ -21,10 +21,11 @@ using NUnit.Framework.Constraints;
 using Sphere10.Framework;
 using Sphere10.Framework.NUnit;
 
-namespace Sphere10.Framework.UnitTests {
+namespace Sphere10.Framework.Tests {
 
     [TestFixture]
-    public class BloomFilterTests {
+	[Parallelizable(ParallelScope.Children)]
+	public class BloomFilterTests {
 
 		[Test]
 		public void Test_Consistency([Values(0.01, 0.05, 0.1, 0.5)] decimal targetError,

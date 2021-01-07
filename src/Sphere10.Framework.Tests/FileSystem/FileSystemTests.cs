@@ -15,7 +15,7 @@ using System;
 using NUnit.Framework;
 using System.IO;
 
-namespace Sphere10.Framework.UnitTests {
+namespace Sphere10.Framework.Tests {
 
     [TestFixture]
     public class FileSystemTests {

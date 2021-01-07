@@ -19,10 +19,11 @@ using System.Threading;
 using Sphere10.Framework.Scheduler;
 
 
-namespace Sphere10.Framework.UnitTests {
+namespace Sphere10.Framework.Tests {
 
     [TestFixture]
-    public class SchedulerTest {
+	[Parallelizable(ParallelScope.Children)]
+	public class SchedulerTest {
 
         [Test]
         public async Task StartOn_LocalTime() {

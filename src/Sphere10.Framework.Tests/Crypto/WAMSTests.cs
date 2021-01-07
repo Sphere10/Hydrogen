@@ -5,7 +5,7 @@ using NUnit.Framework;
 using Sphere10.Framework;
 using Sphere10.Framework.NUnit;
 
-namespace Sphere10.Framework.UnitTests {
+namespace Sphere10.Framework.Tests {
 
 	[TestFixture]
 	public class WAMSTests {

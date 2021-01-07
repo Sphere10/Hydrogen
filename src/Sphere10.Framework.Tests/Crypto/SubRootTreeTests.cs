@@ -7,7 +7,7 @@
 //using Sphere10.Framework.Maths;
 //using Sphere10.Framework.NUnit;
 
-//namespace Sphere10.Framework.UnitTests {
+//namespace Sphere10.Framework.Tests {
 
 //	[TestFixture]
 //	public class SubRootTreeTests {

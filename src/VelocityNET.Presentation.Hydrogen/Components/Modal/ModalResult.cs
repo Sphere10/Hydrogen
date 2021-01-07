@@ -9,7 +9,6 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Modal
         
         public static ModalResult OkData(object data) => new (ModalResultType.Ok, data);
         
-        
         public static ModalResult Exit { get; } = new (ModalResultType.Exit);
         
         public static ModalResult Cancel { get; } = new (ModalResultType.Cancel);
@@ -27,8 +26,14 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Modal
             Data = data ?? throw new ArgumentNullException(nameof(data));
         }
 
-        public object Data { get; }
+        public object? Data { get; }
 
+        /// <summary>
+        /// Gets the data as T. 
+        /// </summary>
+        /// <typeparam name="T"> type</typeparam>
+        /// <returns></returns>
+        /// <exception cref="InvalidOperationException"> thrown if data is not t.</exception>
         public T GetData<T>()
         {
             if (Data is T data)

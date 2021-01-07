@@ -18,12 +18,14 @@
 
 @code
 {
+#nullable enable
+    
     [Parameter]
-    public RenderFragment HeaderTemplate { get; set; }
+    public RenderFragment? HeaderTemplate { get; set; }
 
     [Parameter]
-    public RenderFragment FooterTemplate { get; set; }
+    public RenderFragment? FooterTemplate { get; set; }
 
     [Parameter]
-    public RenderFragment BodyTemplate { get; set; }
+    public RenderFragment? BodyTemplate { get; set; }
 }

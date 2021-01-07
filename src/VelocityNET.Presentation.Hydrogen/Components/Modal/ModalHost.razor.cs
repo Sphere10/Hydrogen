@@ -15,7 +15,7 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Modal
         /// <summary>
         /// Gets or sets the modal host content render fragment.
         /// </summary>
-        [Parameter] private RenderFragment? Content { get; set; }
+        [Parameter] public RenderFragment? Content { get; set; }
 
         /// <summary>
         /// Gets or sets the JS runtime object.
@@ -26,11 +26,6 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Modal
         /// The hosted modal component instance.
         /// </summary>
         private ModalComponentBase? _modalComponent = null!;
-
-        /// <summary>
-        /// Gets the modal content index used by render builder.
-        /// </summary>
-        private int ContentIndex { get; set; } 
 
         /// <summary>
         /// Show the modal - modal host is made visible and an instance of component <typeparam name="T"></typeparam> is
@@ -45,8 +40,8 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Modal
         {
             Content = builder =>
             {
-                builder.OpenComponent<T>(ContentIndex++);
-                builder.AddComponentReferenceCapture(ContentIndex, o => _modalComponent = (ModalComponentBase) o);
+                builder.OpenComponent<T>(0);
+                builder.AddComponentReferenceCapture(0, o => _modalComponent = (ModalComponentBase) o);
                 builder.CloseComponent();
             };
 

@@ -10080,6 +10080,7 @@ a:focus {
 
 .dropdown .dropdown-menu {
   font-size: 0.85rem;
+  margin: 0;
 }
 
 .dropdown .dropdown-menu .dropdown-header {
@@ -10130,7 +10131,7 @@ a:focus {
 }
 
 .topbar {
-  height: 4.375rem;
+  height: 3rem;
 }
 
 .topbar #sidebarToggleTop {

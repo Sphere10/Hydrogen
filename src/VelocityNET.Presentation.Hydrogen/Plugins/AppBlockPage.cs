@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 namespace VelocityNET.Presentation.Hydrogen.Plugins
 {
+
     /// <summary>
     /// App block page.
     /// </summary>
@@ -21,6 +22,16 @@ namespace VelocityNET.Presentation.Hydrogen.Plugins
             Name = name ?? throw new ArgumentNullException(nameof(name));
             Icon = icon ?? throw new ArgumentNullException(nameof(icon));
             MenuItems = menuItems ?? throw new ArgumentNullException(nameof(menuItems));
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AppBlockPage"/> class.
+        /// </summary>
+        /// <param name="route"> route - the relative path from app to navigate to.</param>
+        /// <param name="name"> page name</param>
+        /// <param name="icon"></param>
+        public AppBlockPage(string route, string name, string icon) : this(route, name, icon, new List<MenuItem>())
+        {
         }
 
         /// <summary>
@@ -43,4 +54,5 @@ namespace VelocityNET.Presentation.Hydrogen.Plugins
         /// </summary>
         public IEnumerable<MenuItem> MenuItems { get; }
     }
+
 }

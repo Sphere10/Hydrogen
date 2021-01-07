@@ -3,16 +3,17 @@ using System.Collections.Generic;
 
 namespace VelocityNET.Presentation.Hydrogen.Plugins
 {
-/// <summary>
-/// Menu item view model
-/// </summary>
+
+    /// <summary>
+    /// Menu item view model
+    /// </summary>
     public class MenuItem
     {
         /// <summary>
         /// Gets the menu heading
         /// </summary>
         public string Heading { get; }
-        
+
         /// <summary>
         /// Gets the child menu items.
         /// </summary>
@@ -35,5 +36,15 @@ namespace VelocityNET.Presentation.Hydrogen.Plugins
             Children = children ?? throw new ArgumentNullException(nameof(children));
             Route = route ?? throw new ArgumentNullException(nameof(route));
         }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MenuItem"/> class.
+        /// </summary>
+        /// <param name="heading"></param>
+        /// <param name="route"></param>
+        public MenuItem(string heading, string route) : this(heading, route, new List<MenuItem>())
+        {
+        }
     }
+
 }

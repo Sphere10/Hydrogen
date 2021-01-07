@@ -27,15 +27,29 @@ namespace VelocityNET.Presentation.Hydrogen.WidgetGallery
                             "fa-cog",
                             new[]
                             {
-                                new AppBlockPage("/widget-gallery/", "Index", "fa-chart-area",
-                                    Enumerable.Empty<MenuItem>()),
-                                new AppBlockPage("/widget-gallery/data-tables", "Data Tables", "fa-chart-area", new[]
-                                {
-                                    new MenuItem("Data tables", "/widget-gallery/data-tables", new List<MenuItem>())
-                                }),
+                                new AppBlockPage("/widget-gallery", "Home", "fa fa-commenting-o")
+                            }
+                        ),
+                        new AppBlock("Modals",
+                            "fa-cog",
+                            new[]
+                            {
                                 new AppBlockPage("/widget-gallery/modals", "Modals", "fa fa-commenting-o", new[]
                                 {
-                                    new MenuItem("Data tables", "/widget-gallery/modals", new List<MenuItem>())
+                                    new MenuItem("File", "", new List<MenuItem>
+                                    {
+                                        new ("Modals", "/widget-gallery/modals")
+                                    })
+                                })
+                            }
+                        ),
+                        new AppBlock("Tables",
+                            "fa-cog",
+                            new[]
+                            {
+                                new AppBlockPage("/widget-gallery/data-tables", "Data Tables", "fa-chart-area", new[]
+                                {
+                                    new MenuItem("Data tables", "/widget-gallery/data-tables")
                                 })
                             }
                         )

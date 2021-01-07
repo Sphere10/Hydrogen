@@ -21,7 +21,12 @@ namespace VelocityNET.Presentation.Hydrogen.Loader.ViewModels
         /// <summary>
         /// Gets or sets the selected app.
         /// </summary>
-        private IApp? SelectedApp { get; set; }
+        public IApp? SelectedApp { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the selected app block.
+        /// </summary>
+        public IAppBlock? SelectedAppBlock { get; set; }
         
         /// <summary>
         /// Gets the app blocks for the selected app
@@ -36,8 +41,24 @@ namespace VelocityNET.Presentation.Hydrogen.Loader.ViewModels
         {
             AppManager = appManager ?? throw new ArgumentNullException(nameof(appManager));
             AppManager.AppSelected += AppManagerOnAppSelected;
+            AppManager.AppBlockPageSelected += AppManagerOnAppBlockPageSelected;
 
             SelectedApp = appManager.SelectedApp;
+            SelectedAppBlock = appManager.SelectedApp?.AppBlocks.FirstOrDefault(x =>
+                x.AppBlockPages.Any(y => y.Route == appManager.SelectedPage?.Route));
+            
+            StateHasChangedDelegate?.Invoke();
+        }
+
+        /// <summary>
+        /// Handles page selected event.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void AppManagerOnAppBlockPageSelected(object? sender, AppBlockPageSelectedEventArgs e)
+        {
+            SelectedAppBlock = AppManager.SelectedApp!.AppBlocks.First(x =>
+                x.AppBlockPages.Any(y => y.Route == e.AppBlockPage.Route));
             StateHasChangedDelegate?.Invoke();
         }
 

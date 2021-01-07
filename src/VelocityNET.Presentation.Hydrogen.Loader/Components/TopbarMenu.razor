@@ -1,12 +1,12 @@
 ﻿
 @inherits ComponentWithViewModel<TopbarMenuViewModel>
 
-<ul class="navbar-nav mr-auto">
+<ul class="navbar-nav mr-auto top-menu">
     @foreach (MenuItem item in ViewModel?.MenuItems)
     {
         @if (item.Children.Any())
         {
-            <li class="nav-item dropdown">
+            <li class="nav-item dropdown hover-dropdown">
                 <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                     @item.Heading
                 </a>
@@ -21,7 +21,7 @@
         else
         {
             <li class="nav-item">
-                <a class="nav-link" href="@item.Route">@item.Heading</a>
+                <a class="nav-link"  href="@item.Route">@item.Heading</a>
             </li>
         }
     }

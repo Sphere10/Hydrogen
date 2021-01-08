@@ -230,7 +230,9 @@ namespace Sphere10.Framework {
 		    return new BinaryFormattedPage<TItem>(this.PageSize, _sizer);
 	    }
 
-	 
-    }
+		protected override BinaryFormattedPage<TItem>[] LoadPages() {
+			throw new NotSupportedException("Pages are not loadable across runtime sessions in this implementation. See FileMappedList class."); 
+		}
+	}
 
 }

@@ -9,23 +9,32 @@
 //	/// A memory-paged byte list that maintains a merkle-tree of every page. It is a decorator since the underlying byte list could be a binary file,
 //	/// transactional file, etc.
 //	/// </summary>
-//	public class MerkleBuffer<TPage> : MemoryPagedListDecorator<byte, TPage> where TPage : IMemoryPage<byte> {
+//	public class MerkleBuffer<TPage> : MemoryPagedListDecorator<byte, TPage>, IMerkleTree where TPage : IMemoryPage<byte> {
 //		private IUpdateableMerkleTree _merkleTreeImpl;
-//		private IDictionary<TPage, bool> _merkleDirtyPages;
+//		private SynchronizedDictionary<TPage, Tuple<PageMerkleState, byte[]>> _merkleDirtyPages;
+
+//		private enum PageMerkleState {
+//			Uncomputed,
+//			Computed,
+//			Dirty
+//		}
 
 //		public MerkleBuffer(IMemoryPagedList<byte, TPage> pagedList, IUpdateableMerkleTree merkleTreeImpl)
 //			: base(pagedList) {
 //			_merkleTreeImpl = merkleTreeImpl;
-//			_merkleDirtyPages = new Dictionary<TPage, bool>();
+//			_merkleDirtyPages = new SynchronizedDictionary<TPage, Tuple<PageMerkleState, byte[]>>();
 
+//			pagedList.Loading += x => _merkleDirtyPages.Clear();
+//			pagedList.Loaded += x => ProcessLoadedPages();
 //			pagedList.PageLoaded += (c, p) => ComputeHash(p);
 //			pagedList.PageWriting += (c, p) => MarkDirty(p);
 //			pagedList.PageUnloading += (c, p) => ComputeHash(p);
+
+//			if (!pagedList.RequiresLoad)
+//				ProcessLoadedPages();
 //		}
 
-//		public bool MerkleDirty => base.Pages.Cast<MerklizedBufferPage>().Any(x => x.MerkleDirty);
-
-
+//		public bool MerkleDirty => base.Pages.Any(IsDirty);
 
 //		public CHF HashAlgorithm => _merkleTreeImpl.HashAlgorithm;
 
@@ -58,37 +67,56 @@
 //			}
 //		}
 
-//		public class MerklizedBufferPage : BufferPage {
-//			private byte[] _hash;
+//		private void ProcessLoadedPages() {
 
-//			public MerklizedBufferPage(int pageSize, CHF chf)
-//				: base(pageSize) {
-//				HashAlgorithm = chf;
-//				MerkleDirty = true;
+//		}
+
+//		private void ComputeHash(TPage page) {
+//			if (IsMerkleDirty(page)) {
+//				_hash = Hashers.Hash(HashAlgorithm, base.MemoryStore.ReadSpan(0, MemoryStore.Count));
+//				MerkleDirty = false;
+//			}
+//		}
+
+//		private bool IsDirty(TPage page) => _merkleDirtyPages.TryGetValue(page, out var x) && x.Item1;
+
+//		private void MarkDirty(TPage page) {
+//			using (_merkleDirtyPages.EnterWriteScope()) {
+//				var
+
 //			}
 
-//			public CHF HashAlgorithm { get; }
+//			//public class MerklizedBufferPage : TPage {
+//			//	private byte[] _hash;
 
-//			public bool MerkleDirty { get; internal set; }
+//			//	public MerklizedBufferPage(int pageSize, CHF chf)
+//			//		: base(pageSize) {
+//			//		HashAlgorithm = chf;
+//			//		MerkleDirty = true;
+//			//	}
 
-//			public byte[] Hash {
-//				get {
-//					ComputeHash();
-//					return _hash;
-//				}
-//			}
+//			//	public CHF HashAlgorithm { get; }
 
-//			public override void Unload() {
-//				ComputeHash();
-//				base.Unload();
-//			}
+//			//	public bool MerkleDirty { get; internal set; }
 
-//			internal void ComputeHash() {
-//				if (MerkleDirty) {
-//					_hash = Hashers.Hash(HashAlgorithm, base.MemoryStore.ReadSpan(0, MemoryStore.Count));
-//					MerkleDirty = false;
-//				}
-//			}
+//			//	public byte[] Hash {
+//			//		get {
+//			//			ComputeHash();
+//			//			return _hash;
+//			//		}
+//			//	}
+
+//			//	public override void Unload() {
+//			//		ComputeHash();
+//			//		base.Unload();
+//			//	}
+
+//			//	internal void ComputeHash() {
+//			//		if (MerkleDirty) {
+//			//			_hash = Hashers.Hash(HashAlgorithm, base.MemoryStore.ReadSpan(0, MemoryStore.Count));
+//			//			MerkleDirty = false;
+//			//		}
+//			//	}
 //		}
 //	}
 

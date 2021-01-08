@@ -12,6 +12,8 @@ namespace Sphere10.Framework {
 
 		public event EventHandlerEx<object> Accessing;
 		public event EventHandlerEx<object> Accessed;
+		public event EventHandlerEx<object> Loading;
+		public event EventHandlerEx<object> Loaded;
 		public event EventHandlerEx<object, TPage> PageAccessing;
 		public event EventHandlerEx<object, TPage> PageAccessed;
 		public event EventHandlerEx<object, int> PageCreating;
@@ -29,7 +31,7 @@ namespace Sphere10.Framework {
 		protected PagedListBase() {
 			SuppressNotifications = false;
 			RequiresLoad = false;
-			Loading = false;
+			IsLoading = false;
 			_pages = new ExtendedList<TPage>();
 		}
 
@@ -39,18 +41,20 @@ namespace Sphere10.Framework {
 
 		public bool RequiresLoad { get; protected set; }
 
-		protected bool Loading { get; private set; }
+		protected bool IsLoading { get; private set; }
 
-		public virtual void Load() {
-			// load existing file
+		public void Load() {
+			NotifyLoading();
 			RequiresLoad = false;
-			Clear();
+			IsLoading = true;
 			try {
-				Loading = true;
-				LoadPages().ForEach(_pages.Add);
+				Clear();
+				foreach (var page in LoadPages())
+					_pages.Add(page);
 			} finally {
-				Loading = false;
+				IsLoading = false;
 			}
+			NotifyLoaded();
 		}
 
 		public override IEnumerable<bool> ContainsRange(IEnumerable<TItem> items) => throw new NotSupportedException();
@@ -195,10 +199,7 @@ namespace Sphere10.Framework {
 
 		protected abstract TPage NewPageInstance(int pageNumber);
 
-		protected virtual TPage[] LoadPages() {
-			// used by certain super-classes (will override abstract in their base implementations)
-			throw new NotSupportedException(); 
-		}
+		protected abstract TPage[] LoadPages();
 
 		protected TPage CreateNextPage() {
 			TPage newPage;
@@ -296,6 +297,12 @@ namespace Sphere10.Framework {
 		protected virtual void OnAccessed() {
 		}
 
+		protected virtual void OnLoading() {
+		}
+
+		protected virtual void OnLoaded() {
+		}
+
 		protected virtual void OnPageAccessing(TPage page) {
 		}
 
@@ -340,6 +347,23 @@ namespace Sphere10.Framework {
 
 			OnAccessed();
 			Accessed?.Invoke(this);
+		}
+
+
+		protected void NotifyLoading() {
+			if (SuppressNotifications)
+				return;
+
+			OnLoading();
+			Loading?.Invoke(this);
+		}
+
+		protected void NotifyLoaded() {
+			if (SuppressNotifications)
+				return;
+
+			OnLoaded();
+			Loaded?.Invoke(this);
 		}
 
 		protected void NotifyPageAccessing(TPage page) {

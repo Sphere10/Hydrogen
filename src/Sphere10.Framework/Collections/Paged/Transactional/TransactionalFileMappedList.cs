@@ -44,18 +44,6 @@ namespace Sphere10.Framework {
 
 		public override bool Dirty => base.Dirty || PageMarkerRepo.PageMarkers.Any() || PageMarkerRepo.FileMarkers.Any();
 
-		public override void Load() {
-			base.Load();
-
-			// Resume prior commit if applicable
-			if (PageMarkerRepo.Contains(FileMarkerType.Committing))
-				Commit();
-
-			// Resume prior rollback if applicable
-			if (PageMarkerRepo.Contains(FileMarkerType.RollingBack))
-				Rollback();
-		}
-
 		public void Commit() {
 			var before = this.ToArray();
 			Flush();
@@ -107,9 +95,21 @@ namespace Sphere10.Framework {
 
 		protected abstract int GetComittedPageCount();
 
+		protected override void OnLoaded() {
+			base.OnLoaded();
+
+			// Resume prior commit if applicable
+			if (PageMarkerRepo.Contains(FileMarkerType.Committing))
+				Commit();
+
+			// Resume prior rollback if applicable
+			if (PageMarkerRepo.Contains(FileMarkerType.RollingBack))
+				Rollback();
+		}
+
 		protected override void OnPageCreating(int pageNumber) {
 			base.OnPageCreating(pageNumber);
-			if (Loading)
+			if (IsLoading)
 				return;
 
 			// If creating a new page on a previously deleted page, 

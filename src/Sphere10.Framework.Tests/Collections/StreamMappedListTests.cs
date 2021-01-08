@@ -27,7 +27,7 @@ namespace Sphere10.Framework.Tests {
 
 	[TestFixture]
 	[Parallelizable(ParallelScope.Children)]
-	public class StreamedListTests {
+	public class StreamMappedListTests {
 		
 		[Test]
 		public void V1_Add_1([Values(1, 111)] int pageSize) {

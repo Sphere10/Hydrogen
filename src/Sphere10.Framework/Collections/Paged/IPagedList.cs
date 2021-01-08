@@ -13,6 +13,8 @@ namespace Sphere10.Framework {
 
 		event EventHandlerEx<object> Accessing;
 		event EventHandlerEx<object> Accessed;
+		public event EventHandlerEx<object> Loading;
+		public event EventHandlerEx<object> Loaded;
 		event EventHandlerEx<object, TPage> PageAccessing;
 		event EventHandlerEx<object, TPage> PageAccessed;
 		event EventHandlerEx<object, int> PageCreating;

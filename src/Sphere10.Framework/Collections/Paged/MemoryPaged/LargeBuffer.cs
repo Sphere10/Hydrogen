@@ -15,6 +15,11 @@ namespace Sphere10.Framework {
 			return new BufferPage(PageSize);
 		}
 
+		protected override BufferPage[] LoadPages() {
+			throw new NotSupportedException("Pages are not loadable across runtime sessions in this implementation. See BinaryFile class.");
+		}
+
+
 		public class BufferPage : FileSwappedMemoryPage<byte> {
 			
 			public BufferPage(int pageSize) 

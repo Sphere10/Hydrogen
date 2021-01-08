@@ -1,0 +1,69 @@
+﻿.sidebar.toggled .data-source-btn {
+    display: none;
+}
+
+.sidebar .dropdown {
+    position: static;
+}
+
+.sidebar .dropdown .dropdown-menu {
+    width: calc(100% - 1.5rem);
+    right: 0.75rem;
+    
+}
+
+.sidebar .dropdown-list {
+    padding: 0;
+    border: none;
+    overflow: hidden;
+    min-width: 20rem;
+}
+
+.sidebar .dropdown-list .dropdown-header {
+    background-color: #566cbe;
+    border: 1px solid #4e73df;
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+    color: #fff;
+}
+
+.sidebar .dropdown-list .dropdown-item {
+    white-space: normal;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+    border-left: 1px solid #e3e6f0;
+    border-right: 1px solid #e3e6f0;
+    border-bottom: 1px solid #e3e6f0;
+    line-height: 1.3rem;
+}
+
+.sidebar .dropdown-list .dropdown-item .dropdown-list-image {
+    position: relative;
+    height: 2.5rem;
+    width: 2.5rem;
+}
+
+.sidebar .dropdown-list .dropdown-item .dropdown-list-image img {
+    height: 2.5rem;
+    width: 2.5rem;
+}
+
+.sidebar .dropdown-list .dropdown-item .dropdown-list-image .status-indicator {
+    background-color: #eaecf4;
+    height: 0.75rem;
+    width: 0.75rem;
+    border-radius: 100%;
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    border: 0.125rem solid #fff;
+}
+
+.sidebar .dropdown-list .dropdown-item .text-truncate {
+    max-width: 25rem;
+}
+
+.sidebar .dropdown-list .dropdown-item:active {
+    background-color: #eaecf4;
+    color: #3a3b45;
+}

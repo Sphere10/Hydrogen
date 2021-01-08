@@ -1,0 +1,60 @@
+﻿@inherits ComponentWithViewModel<DataSourceViewModel>
+
+<li class="nav-item d-flex align-items-center justify-content-center mb-4">
+    <a role="button" class="btn btn-sm btn-info shadow-sm dropdown-toggle data-source-btn"
+       data-placement="right" title="@ServerName"
+       id="datasource-dropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        <i class="fas fa-fw fa-cogs"></i>
+        <span>Connected</span>
+    </a>
+
+    <!-- Dropdown - Alerts -->
+    <div class="dropdown-list dropdown-menu shadow animated--fade-in"
+         aria-labelledby="datasource-dropdown">
+        <h6 class="dropdown-header bg-info border-info">
+            Servers
+        </h6>
+        <a class="dropdown-item d-flex align-items-center" href="#">
+            <div class="mr-3">
+                <div class="icon-circle bg-success">
+                    <i class="fas fa-plug text-white"></i>
+                </div>
+            </div>
+            <div>
+                <div class="small text-gray-500">Server 1: USA</div>
+                http://node-1.vn.com/
+            </div>
+        </a>
+        <a class="dropdown-item d-flex align-items-center" href="#">
+            <div class="mr-3">
+                <div class="icon-circle bg-success">
+                    <i class="fas fa-plug text-white"></i>
+                </div>
+            </div>
+            <div>
+                <div class="small text-gray-500">Server 2: UK</div>
+                http://node-2.vn.com/
+            </div>
+        </a>
+        <a class="dropdown-item d-flex align-items-center" href="#">
+            <div class="mr-3">
+                <div class="icon-circle bg-secondary">
+                    <i class="fas fa-plug text-white"></i>
+                </div>
+            </div>
+            <div>
+                <div class="small text-gray-500">Server 3: Australia</div>
+                http://node-3.vn.com/
+            </div>
+        </a>
+
+        <a class="dropdown-item text-center small text-gray-500" href="#">Configure</a>
+    </div>
+
+</li>
+
+
+@code
+{
+    private string ServerName { get; } = "tcp://localhost:1234";
+}

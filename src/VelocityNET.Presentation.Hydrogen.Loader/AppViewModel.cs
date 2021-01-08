@@ -16,7 +16,7 @@ namespace VelocityNET.Presentation.Hydrogen.Loader
         {
             if (pluginLocator == null)
                 throw new ArgumentNullException(nameof(pluginLocator));
-            
+
             RoutingAssemblies = pluginLocator.LocatePlugins().Select(x => x.Assembly)
                 .Where(x => x.FullName != typeof(Program).Assembly.FullName)
                 .Distinct();

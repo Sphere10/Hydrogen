@@ -7,14 +7,15 @@
     Apps
 </div>
 @foreach (IApp app in ViewModel?.Apps!)
-{
-    <li class="@NavItemClass(app.Name)">
-        <NavLink class="nav-link" ActiveClass="active" href="@app.Route" Match="NavLinkMatch.Prefix">
-                        <i class="fas fa-fw @app.Icon"></i>
-                        <span>@app.Name</span>
-        </NavLink>
-    </li>
-}
+    {
+        <li class="@NavItemClass(app.Name)">
+            <NavLink class="nav-link" ActiveClass="active" href="@app.Route" Match="NavLinkMatch.Prefix">
+                            <i class="fas fa-fw @app.Icon"></i>
+                            <span>@app.Name</span>
+            </NavLink>
+        </li>
+    }
+
 
 @code
 {

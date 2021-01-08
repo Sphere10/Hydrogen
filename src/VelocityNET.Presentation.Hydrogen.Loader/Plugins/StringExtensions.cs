@@ -14,10 +14,10 @@
         /// <returns></returns>
         public static string ToAppPathFromBaseRelativePath(this string relativePath)
         {
-            int indexOfSegment = relativePath.IndexOf('/', 1);
-            string appSegment = relativePath.Substring(0, indexOfSegment > 0 ? indexOfSegment : relativePath.Length);
+            relativePath = relativePath.TrimFragment();
 
-            return appSegment;
+            int indexOfSegment = relativePath.IndexOf('/', 1);
+            return relativePath.Substring(0, indexOfSegment > 0 ? indexOfSegment : relativePath.Length);
         }
 
         /// <summary>
@@ -27,9 +27,22 @@
         /// <returns></returns>
         public static string TrimQueryParameters(this string relativePath)
         {
+            relativePath = relativePath.TrimFragment();
+
             int queryIndex = relativePath.IndexOf('?');
 
             return queryIndex > 0 ? relativePath.Substring(0, queryIndex) : relativePath;
+        }
+
+        /// <summary>
+        /// Remove fragment from path.
+        /// </summary>
+        /// <param name="relativePath"> path</param>
+        /// <returns></returns>
+        public static string TrimFragment(this string relativePath)
+        {
+            int fragmentIndex = relativePath.IndexOf('#');
+            return fragmentIndex > 0 ? relativePath.Substring(0, fragmentIndex) : relativePath;
         }
     }
 

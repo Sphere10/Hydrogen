@@ -10,6 +10,7 @@ namespace Sphere10.Framework {
 	public class ExtendedListDecorator<TItem> : ExtendedListBase<TItem> {
 
 		protected ExtendedListDecorator(IExtendedList<TItem> internalExtendedList) {
+			Guard.ArgumentNotNull(internalExtendedList, nameof(internalExtendedList));
 			InternalExtendedList = internalExtendedList;
 		}
 

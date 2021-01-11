@@ -241,8 +241,6 @@ namespace Sphere10.Framework {
 			NotifyPageAccessed(page);
 		}
 
-		protected abstract IDisposable EnterOpenPageScope(TPage page);
-
 		protected IEnumerable<Tuple<TPage, int, int>> GetPageSegments(int startIndex, int count) {
 			if (count == 0)
 				yield break;
@@ -273,6 +271,8 @@ namespace Sphere10.Framework {
 			} while (endIndex > page.EndIndex && index < _pages.Count);
 
 		}
+
+		public abstract IDisposable EnterOpenPageScope(TPage page);
 
 		protected void CheckRequiresLoad() {
 			if (RequiresLoad)
@@ -348,7 +348,6 @@ namespace Sphere10.Framework {
 			OnAccessed();
 			Accessed?.Invoke(this);
 		}
-
 
 		protected void NotifyLoading() {
 			if (SuppressNotifications)

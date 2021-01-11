@@ -26,6 +26,8 @@ namespace Sphere10.Framework {
 		event EventHandlerEx<object, TPage> PageDeleting;
 		event EventHandlerEx<object, TPage> PageDeleted;
 
+		IDisposable EnterOpenPageScope(TPage page);
+
 		IReadOnlyList<TPage> Pages { get; }
 
 		bool RequiresLoad { get; }

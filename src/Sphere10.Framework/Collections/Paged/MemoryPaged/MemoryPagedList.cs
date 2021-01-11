@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace Sphere10.Framework {
 
-    public abstract class MemoryPagedList<TItem, TPage> : PagedListBase<TItem, TPage>, IDisposable where TPage : IMemoryPage<TItem> {
+    public abstract class MemoryPagedList<TItem, TPage> : PagedListBase<TItem, TPage>, IMemoryPagedList<TItem, TPage> where TPage : IMemoryPage<TItem> {
 
 		public event EventHandlerEx<object, TPage> PageLoading;
 		public event EventHandlerEx<object, TPage> PageLoaded;
@@ -89,6 +89,11 @@ namespace Sphere10.Framework {
 
 		public bool FlushOnDispose { get; set; }
 
+		public sealed override IDisposable EnterOpenPageScope(TPage page) {
+			var _ = _loadedPages.Get(page); // ensures page is fetched from storage if not cached
+			return new Disposables(); // dont need to do anything, cache manages life-cycle of page
+		}
+
 		public virtual void Flush() {
 			// Causes all dirty pages to be saved
 			// and all loaded pages to be unloaded
@@ -103,23 +108,18 @@ namespace Sphere10.Framework {
 			Clear();
 		}
 
-		protected sealed override IDisposable EnterOpenPageScope(TPage page) {
-			var _ = _loadedPages.Get(page); // ensures page is fetched from storage if not cached
-			return new Disposables(); // dont need to do anything, cache manages life-cycle of page
-		}
-
 		protected override void OnAccessing() {
 			base.OnAccessing();
 			CheckNotDisposed();
 		}
+
+		#region Events 
 
 		protected override void OnPageDeleting(TPage page) {
 			base.OnPageDeleting(page);
 			if (_loadedPages.ContainsCachedItem(page))
 				_loadedPages.Remove(page);
 		}
-
-		#region Events 
 
 		protected virtual void OnPageLoading(TPage page) {
 		}

@@ -10,10 +10,10 @@ namespace Sphere10.Framework {
 	/// </summary>
 	/// <typeparam name="TItem"></typeparam>
 	/// <typeparam name="TPage"></typeparam>
-    public abstract class FileMappedList<TItem, TPage> : MemoryPagedList<TItem, TPage>, IFilePagedList<TItem, TPage>
+    public abstract class FilePagedList<TItem, TPage> : MemoryPagedList<TItem, TPage>, IFilePagedList<TItem, TPage>
 		where TPage : IFilePage<TItem> {
 
-		protected FileMappedList(string filename, int pageSize, int maxCacheCapacity, CacheCapacityPolicy cachePolicy, bool readOnly = false)
+		protected FilePagedList(string filename, int pageSize, int maxCacheCapacity, CacheCapacityPolicy cachePolicy, bool readOnly = false)
 			: base(pageSize, maxCacheCapacity, cachePolicy) {
 			IsReadOnly = readOnly;
 			var fileExists = File.Exists(filename);

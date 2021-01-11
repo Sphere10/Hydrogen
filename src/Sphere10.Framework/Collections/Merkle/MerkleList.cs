@@ -8,16 +8,16 @@ using Sphere10.Framework;
 
 namespace Sphere10.Framework {
 
-	public class MerklizedList<TItem> : ExtendedListDecorator<TItem>, IMerklizedList<TItem> {
+	public class MerkleList<TItem> : ExtendedListDecorator<TItem>, IMerkleList<TItem> {
 
 		private readonly IObjectHasher<TItem> _hasher;
 		private readonly IUpdateableMerkleTree _merkleTree;
 
-		public MerklizedList(IObjectSerializer<TItem> serializer, CHF hashAlgorithm) 
+		public MerkleList(IObjectSerializer<TItem> serializer, CHF hashAlgorithm) 
 			: this(new ObjectHasher<TItem>(hashAlgorithm, serializer), new ExtendedList<TItem>(), new SimpleMerkleTree(hashAlgorithm)) {
 		}
 
-		public MerklizedList(IObjectHasher<TItem> hasher, IExtendedList<TItem> internalList, IUpdateableMerkleTree merkleTreeImpl) 
+		public MerkleList(IObjectHasher<TItem> hasher, IExtendedList<TItem> internalList, IUpdateableMerkleTree merkleTreeImpl) 
 			: base(internalList) {
 			_hasher = hasher;
 			_merkleTree = merkleTreeImpl;

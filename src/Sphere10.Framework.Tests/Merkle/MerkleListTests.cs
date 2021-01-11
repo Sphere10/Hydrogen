@@ -15,14 +15,14 @@ namespace Sphere10.Framework.Tests {
 
 		[Test]
 		public void CRUD() {
-			var expected = new MerklizedList<string>(new StringSerializer(Encoding.ASCII), CHF.SHA2_256) { 
+			var expected = new MerkleList<string>(new StringSerializer(Encoding.ASCII), CHF.SHA2_256) { 
 				"Alpha",
 				"Beta",
 				"Gamma"
 			};
 
 
-			var test = new MerklizedList<string>(new StringSerializer(Encoding.ASCII), CHF.SHA2_256) {
+			var test = new MerkleList<string>(new StringSerializer(Encoding.ASCII), CHF.SHA2_256) {
 				"Alpha",
 				"Beta",
 				"Gamma"

@@ -73,6 +73,10 @@ namespace Sphere10.Framework {
 
 		internal IObjectSerializer<TItem> Serializer { get; }
 
+		public override IDisposable EnterOpenPageScope(StreamPage<TItem> page) {
+			page.Open();
+			return Tools.Scope.ExecuteOnDispose(page.Close);
+		}
 
 		protected override StreamPage<TItem>[] LoadPages() {
 			Stream.Seek(0L, SeekOrigin.Begin);
@@ -91,11 +95,6 @@ namespace Sphere10.Framework {
 			while (Stream.Position < Stream.Length)
 				pages.Add(_pages.Any() ? new StreamPage<TItem>(this) : new StreamPage<TItem>(pages.Last()));
 			return pages.ToArray();
-		}
-
-		protected override IDisposable EnterOpenPageScope(StreamPage<TItem> page) {
-			page.Open();
-			return Tools.Scope.ExecuteOnDispose(page.Close);
 		}
 
 		protected override void OnPageCreating(int pageNumber) {

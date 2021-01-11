@@ -15,13 +15,13 @@ namespace Sphere10.Framework {
 	/// In general, the more pages allowed in memory the less frequently they will be swapped to storage.
 	/// </remarks>
 	/// </summary>
-	public sealed class BinaryFile : FileMappedList<byte, BinaryFile.Page> {
-		
-		public BinaryFile(string filename, int pageSize, int maxOpenPages, bool readOnly = false) 
+	public sealed class BinaryFile : FilePagedList<byte, BinaryFile.Page> {
+
+        public BinaryFile(string filename, int pageSize, int maxOpenPages, bool readOnly = false) 
 			: base(filename, pageSize, maxOpenPages, CacheCapacityPolicy.CapacityIsMaxOpenPages, readOnly) {
 		}
 
-		protected override Page[] LoadPages() {
+        protected override Page[] LoadPages() {
 			var fileLength = (int)Stream.Length;
 			if (fileLength == 0)
 				return new Page[0];
@@ -87,7 +87,7 @@ namespace Sphere10.Framework {
 			}
 		}
 
-		public class Page : FilePageBase<byte> {
+        public class Page : FilePageBase<byte>, IBinaryPage {
 
 			public Page(Stream stream, int pageNumber, int pageSize)
 				: base(stream, new ConstantObjectSizer<byte>(sizeof(byte)), pageNumber, pageSize, new MemoryBuffer(0, pageSize, pageSize)) {
@@ -109,6 +109,14 @@ namespace Sphere10.Framework {
 					Array.Resize(ref buff, bytesRead);
 				return buff;
 			}
-		}
-	}
+
+            public ReadOnlySpan<byte> ReadSpan(int index, int count) {
+				CheckPageState(PageState.Loaded);
+				CheckRange(index, count);
+				return ((MemoryBuffer)base.MemoryStore).ReadSpan(index, count);
+			}
+        }
+
+    
+    }
 }

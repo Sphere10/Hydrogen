@@ -19,7 +19,7 @@ using System.Linq;
 
 namespace Sphere10.Framework {
 
-    public abstract class TransactionalFileMappedList<TItem, TPage> : FileMappedList<TItem, TPage>, ITransactionalFile
+    public abstract class TransactionalFileMappedList<TItem, TPage> : FilePagedList<TItem, TPage>, ITransactionalFile
 		where TPage : TransactionalFilePageBase<TItem> {
 
 		internal readonly MarkerRepository PageMarkerRepo;

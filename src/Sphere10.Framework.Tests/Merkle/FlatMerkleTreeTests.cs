@@ -90,6 +90,7 @@ namespace Sphere10.Framework.Tests {
                     tree.Leafs.UpdateRange(range.Start, newItems);
                     expected.Leafs.UpdateRangeSequentially(range.Start, newItems);
 
+					AssertEx.AssertTreeEqual(expected, tree);
 
 					// remove a random amount
 					range = RNG.RandomRange(tree.Leafs.Count);

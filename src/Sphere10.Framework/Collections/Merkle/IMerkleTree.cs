@@ -5,7 +5,7 @@ using System.Runtime.CompilerServices;
 
 namespace Sphere10.Framework {
 
-	public interface IMerkleTree {
+    public interface IMerkleTree {
 		CHF HashAlgorithm { get; }
 		byte[] Root { get; }
 		MerkleSize Size { get; }

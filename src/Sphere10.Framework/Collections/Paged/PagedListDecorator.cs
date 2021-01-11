@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Sphere10.Framework {
     public class PagedListDecorator<TItem, TPage> : ExtendedListDecorator<TItem>, IPagedList<TItem, TPage>
@@ -21,14 +22,74 @@ namespace Sphere10.Framework {
 
         protected PagedListDecorator(IPagedList<TItem, TPage> internalPagedList)
             : base(internalPagedList) {
-        }
+			internalPagedList.Accessing += (o) => OnAccessing();
+			internalPagedList.Accessed += (o) => OnAccessed();
+			internalPagedList.Loading += (o) => OnLoading();
+			internalPagedList.Loaded += (o) => OnLoaded();
+			internalPagedList.PageAccessing += (o, p) => OnPageAccessing(p);
+			internalPagedList.PageAccessed += (o, p) => OnPageAccessed(p);
+			internalPagedList.PageCreating += (o, p) => OnPageCreating(p);
+			internalPagedList.PageCreated += (o, p) => OnPageCreated(p);
+			internalPagedList.PageReading += (o, p) => OnPageReading(p);
+			internalPagedList.PageRead += (o, p) => OnPageRead(p);
+			internalPagedList.PageWriting += (o, p) => OnPageWriting(p);
+			internalPagedList.PageWrite += (o, p) => OnPageWrite(p);
+			internalPagedList.PageDeleting += (o, p) => OnPageDeleting(p);
+			internalPagedList.PageDeleted += (o, p) => OnPageDeleted(p);
+		}
 
-        protected new IPagedList<TItem, TPage> InternalExtendedList => (IPagedList<TItem, TPage>)base.InternalExtendedList;
+		protected new IPagedList<TItem, TPage> InternalExtendedList => (IPagedList<TItem, TPage>)base.InternalExtendedList;
 
         public IReadOnlyList<TPage> Pages => InternalExtendedList.Pages;
 
         public bool RequiresLoad => InternalExtendedList.RequiresLoad;
 
         public void Load() => InternalExtendedList.Load();
-    }
+
+        public IDisposable EnterOpenPageScope(TPage page) => InternalExtendedList.EnterOpenPageScope(page);
+
+		protected virtual void OnAccessing() {
+		}
+
+		protected virtual void OnAccessed() {
+		}
+
+		protected virtual void OnLoading() {
+		}
+
+		protected virtual void OnLoaded() {
+		}
+
+		protected virtual void OnPageAccessing(TPage page) {
+		}
+
+		protected virtual void OnPageAccessed(TPage page) {
+		}
+
+		protected virtual void OnPageCreating(int pageNumber) {
+		}
+
+		protected virtual void OnPageCreated(TPage page) {
+		}
+
+		protected virtual void OnPageReading(TPage page) {
+		}
+
+		protected virtual void OnPageRead(TPage page) {
+		}
+
+		protected virtual void OnPageWriting(TPage page) {
+		}
+
+		protected virtual void OnPageWrite(TPage page) {
+		}
+
+		protected virtual void OnPageDeleting(TPage page) {
+		}
+
+		protected virtual void OnPageDeleted(TPage page) {
+		}
+
+		
+	}
 }

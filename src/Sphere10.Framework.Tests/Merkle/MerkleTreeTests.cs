@@ -54,6 +54,23 @@ namespace Sphere10.Framework.Tests {
 		}
 
 		[Test]
+		public void Update_1(
+			[Values(CHF.SHA2_256)] CHF chf,
+			[Values(MerkleTreeImpl.Simple, MerkleTreeImpl.Flat)] MerkleTreeImpl impl) {
+			var tree = CreateMerkleTree(impl, chf);
+			var rng = new Random(31337);
+			// add item
+			tree.Leafs.Add(Hashers.Hash(chf, rng.NextBytes(100)));
+			Assert.AreEqual(tree.Leafs[0], tree.Root);
+
+			// update it
+			var datum = Hashers.Hash(chf, rng.NextBytes(100));
+			tree.Leafs.Update(0, datum);
+			Assert.AreEqual(datum, tree.Leafs[0]);
+			Assert.AreEqual(datum, tree.Root);
+		}
+
+		[Test]
 		public void ExistenceProof_2(
 			[Values(CHF.SHA2_256)] CHF chf,
 			[Values(MerkleTreeImpl.Simple, MerkleTreeImpl.Flat)] MerkleTreeImpl impl) {

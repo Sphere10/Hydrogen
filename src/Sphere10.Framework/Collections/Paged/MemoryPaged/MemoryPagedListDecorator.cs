@@ -11,8 +11,35 @@ namespace Sphere10.Framework {
 
         protected MemoryPagedListDecorator(IMemoryPagedList<TItem, TPage> internalPagedList)
             : base(internalPagedList) {
+            internalPagedList.PageLoading += (o, p) => OnPageLoading(p);
+            internalPagedList.PageLoaded += (o, p) => OnPageLoaded(p);
+            internalPagedList.PageSaving += (o, p) => OnPageSaving(p);
+            internalPagedList.PageSaved += (o, p) => OnPageSaved(p);
+            internalPagedList.PageUnloading += (o, p) => OnPageUnloading(p);
+            internalPagedList.PageUnloaded += (o, p) => OnPageUnloaded(p);
+
         }
+        public void Dispose() => InternalExtendedList.Dispose();
 
         protected new IMemoryPagedList<TItem, TPage> InternalExtendedList => (IMemoryPagedList<TItem, TPage>)base.InternalExtendedList;
+
+        protected virtual void OnPageLoading(TPage page) {
+        }
+
+        protected virtual void OnPageLoaded(TPage page) {
+        }
+
+        protected virtual void OnPageSaving(TPage page) {
+        }
+
+        protected virtual void OnPageSaved(TPage page) {
+        }
+
+        protected virtual void OnPageUnloading(TPage page) {
+        }
+
+        protected virtual void OnPageUnloaded(TPage page) {
+        }
+
     }
 }

@@ -182,9 +182,11 @@ namespace Sphere10.Framework {
 				var flatNodes = _parent._dirtyNodes.Length;
 				for (var i = 0; i < itemsArr.Length; i++) {
 					var leaf = MerkleCoordinate.LeafAt(index + i);
-					_parent._nodeBuffer.UpdateRange(leaf.ToFlatIndex() * _parent._digestSize, itemsArr[i]);
-					// mark all parents dirty
-					foreach (var node in MerkleMath.CalculatePathToRoot(_parent.Size, leaf, false)) {
+					var z = leaf.ToFlatIndex();
+					_parent._nodeBuffer.UpdateRange(z * _parent._digestSize, itemsArr[i]);
+					_parent.SetDirty(z, false); // mark leaf clean
+					// mark all leaf parents dirty
+					foreach (var node in MerkleMath.CalculatePathToRoot(_parent.Size, leaf, false).Skip(1)) { // note: skip start node
 						var nodeIX = node.ToFlatIndex();
 						if (nodeIX < flatNodes)
 							_parent.SetDirty(nodeIX, true);

@@ -7,10 +7,11 @@ using VelocityNET.Presentation.Hydrogen.ViewModels;
 
 namespace VelocityNET.Presentation.Hydrogen.Loader.ViewModels
 {
+
     /// <summary>
     /// Data source view modal base
     /// </summary>
-    public class DataSourceViewModel : ComponentViewModelBase
+    public class DataSourceViewModel : ComponentViewModelBase, IDisposable
     {
         private IServerConfigService ServerConfigService { get; }
 
@@ -21,8 +22,20 @@ namespace VelocityNET.Presentation.Hydrogen.Loader.ViewModels
         public DataSourceViewModel(IServerConfigService serverConfigService)
         {
             ServerConfigService = serverConfigService ?? throw new ArgumentNullException(nameof(serverConfigService));
+            ServerConfigService.ActiveServerChanged += ServerConfigServiceOnActiveServerChanged;
+        }
+
+        private void ServerConfigServiceOnActiveServerChanged(object? sender, EventArgs e)
+        {
+            StateHasChangedDelegate?.Invoke();
         }
 
         public async Task OnSelectServerAsync(Server server) => await ServerConfigService.SetActiveServerAsync(server);
+
+        public void Dispose()
+        {
+            ServerConfigService.ActiveServerChanged -= ServerConfigServiceOnActiveServerChanged;
+        }
     }
+
 }

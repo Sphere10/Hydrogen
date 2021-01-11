@@ -32,7 +32,7 @@ namespace VelocityNET.Presentation.Hydrogen.Loader
             serviceCollection.AddSingleton<IGenericEventAggregator, BasicGenericEventAggregator>();
             serviceCollection.AddSingleton<IModalService, ModalService>();
             serviceCollection.AddSingleton<INodeService, MockNodeService>();
-            serviceCollection.AddTransient<IServerConfigService, DefaultServerConfigService>();
+            serviceCollection.AddSingleton<IServerConfigService, DefaultServerConfigService>();
             
             serviceCollection.AddBlazoredLocalStorage();
 

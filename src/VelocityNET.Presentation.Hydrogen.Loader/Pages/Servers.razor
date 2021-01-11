@@ -29,9 +29,9 @@
                             @if (!IsActive(server))
                             {
                                 <td>
-                                     <a role="button" class="btn btn-sm btn-success" @onclick="() => ViewModel!.SelectActiveServer(server)">
-                                                                        <i class="fa fa-check"></i>
-                                                                    </a> 
+                                    <a role="button" class="btn btn-sm btn-success" @onclick="() => ViewModel!.SelectActiveServer(server)">
+                                        <i class="fa fa-check"></i>
+                                    </a> 
                                 </td>
                             }
                         </tr>
@@ -39,6 +39,7 @@
                     </tbody>
                 </table>
             </div>
+               <button class="btn btn-sm btn-success mt-2" @onclick="ViewModel!.AddNewServerAsync">Add Server</button>
         </div>
     </div>
 </div>

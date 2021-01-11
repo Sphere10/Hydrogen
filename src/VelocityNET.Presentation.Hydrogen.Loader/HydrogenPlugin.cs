@@ -16,12 +16,9 @@ namespace VelocityNET.Presentation.Hydrogen.Loader
                 {
                     new AppBlock("Hydrogen", "fa-link", new []
                     {
-                        new AppBlockPage("/", "Home", "fa-home")
-                    }),
-                    new AppBlock("Configuration", "fa-cogs", new[]
-                    {
+                        new AppBlockPage("/", "Home", "fa-home"),
                         new AppBlockPage("/servers", "Servers", "fa-cogs",
-                            Enumerable.Empty<MenuItem>())
+                        Enumerable.Empty<MenuItem>())
                     })
                 })
         };

@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Components;
 using VelocityNET.Presentation.Hydrogen.Components.Modal;
 using VelocityNET.Presentation.Hydrogen.Services;
 
-namespace VelocityNET.Presentation.Hydrogen.Loader
+namespace VelocityNET.Presentation.Hydrogen.Loader.Services
 {
 
     public class ModalService : IModalService

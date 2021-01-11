@@ -7,16 +7,20 @@ using VelocityNET.Presentation.Hydrogen.Plugins;
 namespace VelocityNET.Presentation.Hydrogen.Loader
 {
 
-    public class MainAppPlugin : Plugin
+    public class HydrogenPlugin : Plugin
     {
         public override IEnumerable<IApp> Apps { get; } = new List<IApp>
         {
-            new VelocityNET.Presentation.Hydrogen.Plugins.App("/", "Home", "fa-home",
+            new VelocityNET.Presentation.Hydrogen.Plugins.App("/", "Hydrogen", "fa-link",
                 new[]
                 {
-                    new AppBlock("Home", "fa-home", new[]
+                    new AppBlock("Hydrogen", "fa-link", new []
                     {
-                        new AppBlockPage("/", "Index", "fa-home",
+                        new AppBlockPage("/", "Home", "fa-home")
+                    }),
+                    new AppBlock("Configuration", "fa-cogs", new[]
+                    {
+                        new AppBlockPage("/servers", "Servers", "fa-cogs",
                             Enumerable.Empty<MenuItem>())
                     })
                 })

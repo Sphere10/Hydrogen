@@ -17,7 +17,7 @@ namespace VelocityNET.Presentation.Hydrogen.Loader.Plugins
         /// <returns> <see cref="IPlugin"/> implementing plugin types.</returns>
         public IEnumerable<Type> LocatePlugins()
         {
-            return new[] {typeof(MainAppPlugin), typeof(WidgetGalleryPlugin)};
+            return new[] {typeof(HydrogenPlugin), typeof(WidgetGalleryPlugin)};
         }
     }
 }

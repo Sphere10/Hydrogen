@@ -9,7 +9,7 @@
 .sidebar .dropdown .dropdown-menu {
     width: calc(100% - 1.5rem);
     right: 0.75rem;
-    
+
 }
 
 .sidebar .dropdown-list {
@@ -29,23 +29,24 @@
 
 .sidebar .dropdown-list .dropdown-item {
     white-space: normal;
-    padding-top: 0.5rem;
-    padding-bottom: 0.5rem;
+    padding-top: 0.25rem;
+    padding-bottom: 0.25rem;
     border-left: 1px solid #e3e6f0;
     border-right: 1px solid #e3e6f0;
     border-bottom: 1px solid #e3e6f0;
     line-height: 1.3rem;
+    font-size: 0.80rem;
 }
 
 .sidebar .dropdown-list .dropdown-item .dropdown-list-image {
     position: relative;
-    height: 2.5rem;
-    width: 2.5rem;
+    height: 1.5rem;
+    width: 1.5rem;
 }
 
 .sidebar .dropdown-list .dropdown-item .dropdown-list-image img {
-    height: 2.5rem;
-    width: 2.5rem;
+    height: 1.5rem;
+    width: 1.5rem;
 }
 
 .sidebar .dropdown-list .dropdown-item .dropdown-list-image .status-indicator {

@@ -1,4 +1,4 @@
-﻿@inject SidebarViewModel ViewModel
+﻿@inject IJSRuntime JsRuntime
 
 <!-- Sidebar -->
 <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
@@ -13,15 +13,22 @@
 
     <div class="bottom-sidebar">
         <AppsMenu/>
-        
+
         <!-- Sidebar Toggler (Sidebar) -->
-        
+
         <div class="text-center d-flex justify-content-center align-items-center w-100">
             <button class="rounded-circle border-0" id="sidebarToggle"></button>
         </div>
     </div>
-    
-    
-
-
 </ul>
+
+@code
+{
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await JsRuntime.InvokeVoidAsync("import", "./js/sb-admin-2.min.js");
+        await JsRuntime.InvokeVoidAsync("initializeToolTips");
+
+        await base.OnAfterRenderAsync(firstRender);
+    }
+}

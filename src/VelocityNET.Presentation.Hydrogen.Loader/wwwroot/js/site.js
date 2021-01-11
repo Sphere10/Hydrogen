@@ -18,3 +18,7 @@ window.addDropdownHover = () => {
             $('.hover-dropdown > .dropdown-menu').removeClass('show');
         });
 }
+
+window.initializeToolTips = () => {
+    $('[data-toggle="tooltip"]').tooltip()
+}

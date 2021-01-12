@@ -29,18 +29,142 @@ namespace Sphere10.Framework.Tests {
     [Parallelizable(ParallelScope.Children)]
     public class MerkleBufferTest {
 
-
         [Test]
         public void SingleByte([Values(1, 2, 1 << 18)] int pageSize, [Values(CHF.SHA2_256, CHF.Blake2b_128)] CHF chf, [Values] StorageType storage) {
-
             using (CreateMerkleList(storage, chf, pageSize, out var list)) {
                 var data = new byte[] { 0 };
                 list.AddRange(data);
-
                 var dataHash = Hashers.Hash(chf, data);
-
                 Assert.AreEqual(dataHash,  list.MerkleTree.Root);
             }
+        }
+
+		[Test]
+		public void ThreePages_AddPagesManually([Values(1, 2, 1 << 18)] int pageSize, [Values(CHF.SHA2_256, CHF.Blake2b_128)] CHF chf, [Values] StorageType storage) {
+			using (CreateMerkleList(storage, chf, pageSize, out var list)) {
+				var rng = new Random(31337);
+				var page1Data = rng.NextBytes(pageSize);
+				var page2Data = rng.NextBytes(pageSize);
+				var page3Data = rng.NextBytes(pageSize);
+                list.AddRange(page1Data);
+				list.AddRange(page2Data);
+				list.AddRange(page3Data);
+
+				// build ref tree
+                var refTree = new SimpleMerkleTree(chf);
+                refTree.Leafs.Add(Hash(page1Data));
+				refTree.Leafs.Add(Hash(page2Data));
+				refTree.Leafs.Add(Hash(page3Data));
+
+                Assert.AreEqual(refTree.Root, list.MerkleTree.Root);
+			}
+
+			byte[] Hash(byte[] data) => Hashers.Hash(chf, data);
+		}
+
+		[Test]
+		public void ThreePages_AddPagesAuto([Values(1, 2, 1 << 18)] int pageSize, [Values(CHF.SHA2_256, CHF.Blake2b_128)] CHF chf, [Values] StorageType storage) {
+			using (CreateMerkleList(storage, chf, pageSize, out var list)) {
+				var rng = new Random(31337);
+				var page1Data = rng.NextBytes(pageSize);
+				var page2Data = rng.NextBytes(pageSize);
+				var page3Data = rng.NextBytes(pageSize);
+				list.AddRange(Tools.Array.Concat<byte>(page1Data, page2Data, page3Data));
+
+                // build ref tree
+				var refTree = new SimpleMerkleTree(chf);
+                refTree.Leafs.Add(Hash(page1Data));
+				refTree.Leafs.Add(Hash(page2Data));
+				refTree.Leafs.Add(Hash(page3Data));
+
+				Assert.AreEqual(refTree.Root, list.MerkleTree.Root);
+			}
+
+			byte[] Hash(byte[] data) => Hashers.Hash(chf, data);
+		}
+
+		[Test]
+		public void ThreePages_UpdatePage([Values(1, 2, 1 << 18)] int pageSize, [Values(CHF.SHA2_256, CHF.Blake2b_128)] CHF chf, [Values] StorageType storage) {
+			using (CreateMerkleList(storage, chf, pageSize, out var list)) {
+				var rng = new Random(31337);
+				var page1Data = rng.NextBytes(pageSize);
+				var page2Data_1 = rng.NextBytes(pageSize);
+				var page2Data_2 = rng.NextBytes(pageSize);
+                var page3Data = rng.NextBytes(pageSize);
+				list.AddRange(page1Data);
+				list.AddRange(page2Data_1);
+				list.AddRange(page3Data);
+                list.UpdateRange(page1Data.Length, page2Data_2);
+
+                // build ref tree
+				var refTree = new SimpleMerkleTree(chf);
+                refTree.Leafs.Add(Hash(page1Data));
+				refTree.Leafs.Add(Hash(page2Data_2));
+				refTree.Leafs.Add(Hash(page3Data));
+
+				Assert.AreEqual(refTree.Root, list.MerkleTree.Root);
+			}
+
+			byte[] Hash(byte[] data) => Hashers.Hash(chf, data);
+		}
+
+
+        [Test]
+        public void IntegrationTests_CheckEnd(
+			[Values(1, 2, 1 << 18)] int pageSize, 
+			[Values(CHF.Blake2b_128, CHF.SHA2_256)] CHF chf, 
+			[Values] StorageType storage) {
+            var expected = new List<byte>();
+            var RNG = new Random(1231);
+			var maxCapacity = pageSize * 11;
+            using (CreateMerkleList(storage, chf, pageSize, out var list)) {
+                for (var i = 0; i < 10; i++) {
+                    // add a random amount
+                    var remainingCapacity = maxCapacity - list.Count;
+                    var newItemsCount = RNG.Next(0, remainingCapacity + 1);
+                    IEnumerable<byte> newItems = RNG.NextBytes(newItemsCount);
+                    list.AddRange(newItems);
+                    expected.AddRange(newItems);
+                    Assert.AreEqual(expected, list);
+
+                    // update a random amount
+                    if (list.Count > 0) {
+                        var range = RNG.RandomRange(list.Count);
+                        newItems = RNG.NextBytes(range.End - range.Start + 1);
+                        expected.UpdateRangeSequentially(range.Start, newItems);
+                        list.UpdateRange(range.Start, newItems);
+
+                        // shuffle a random amount
+                        range = RNG.RandomRange(list.Count);
+                        newItems = list.ReadRange(range.Start, range.End - range.Start + 1);
+                        var expectedNewItems = expected.GetRange(range.Start, range.End - range.Start + 1);
+
+                        range = RNG.RandomSegment(list.Count, newItems.Count());
+                        expected.UpdateRangeSequentially(range.Start, expectedNewItems);
+                        list.UpdateRange(range.Start, newItems);
+
+
+
+                        // remove a random amount (FROM END OF LIST)
+                        range = new ValueRange<int>(RNG.Next(0, list.Count), list.Count - 1);
+                        list.RemoveRange(range.Start, range.End - range.Start + 1);
+                        expected.RemoveRange(range.Start, range.End - range.Start + 1);
+                    }
+                }
+
+				CheckRoot();
+
+                void CheckRoot() {
+					// build ref tree
+					var refTree = new SimpleMerkleTree(chf);
+					foreach (var pageData in expected.Partition(pageSize))
+						refTree.Leafs.Add(Hash(pageData.ToArray()));
+                    Assert.AreEqual(refTree.Root, list.MerkleTree.Root);
+				}
+
+            }
+
+            byte[] Hash(byte[] data) => Hashers.Hash(chf, data);
         }
 
         public enum StorageType {

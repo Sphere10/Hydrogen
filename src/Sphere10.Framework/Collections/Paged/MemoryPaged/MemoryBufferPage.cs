@@ -14,7 +14,7 @@ namespace Sphere10.Framework {
 		public ReadOnlySpan<byte> ReadSpan(int index, int count) {
 			CheckPageState(PageState.Loaded);
 			CheckRange(index, count);
-			return ((MemoryBuffer)base.MemoryStore).ReadSpan(index, count);
+			return ((MemoryBuffer)base.MemoryStore).ReadSpan(index - StartIndex, count);
 		}
 
 		protected override void SaveInternal(IEnumerable<byte> items, Stream stream) {

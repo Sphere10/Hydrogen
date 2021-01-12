@@ -12,11 +12,11 @@ namespace Sphere10.Framework {
     /// transactional file, etc.
     /// </summary>
     public class MerkleBuffer<TPage> : MemoryPagedListDecorator<byte, TPage>, IMerkleList<byte> where TPage : IMemoryPage<byte> {
-        private MerkleTreeImpl _merkleTree;
-        private BitArray _merklePagesDirty;
+        private readonly MerkleTreeImpl _merkleTree;
+        private readonly BitArray _merklePagesDirty;
         private readonly byte[] _defaultLeafValue;
 
-        public MerkleBuffer(MemoryPagedList<byte, TPage> pagedList, CHF chf)
+        public MerkleBuffer(IMemoryPagedList<byte, TPage> pagedList, CHF chf)
             : this(pagedList, new FlatMerkleTree(chf)) {
         }
 
@@ -65,14 +65,20 @@ namespace Sphere10.Framework {
             MarkMerkleDirty(page, true);
         }
 
-        protected override void OnPageWriting(TPage page) {
+		protected override void OnPageDeleted(TPage page) {
+			base.OnPageDeleted(page);
+            Guard.Ensure(page.Number == _merkleTree.Leafs.Count - 1);
+            _merkleTree.Leafs.RemoveAt(^1);
+		}
+
+		protected override void OnPageWriting(TPage page) {
             base.OnPageWriting(page);
             MarkMerkleDirty(page, true);
         }
 
         protected override void OnPageUnloading(TPage page) {
             base.OnPageUnloading(page);
-            if (IsMerkleDirty(page))
+            if (page.State != PageState.Deleting && IsMerkleDirty(page))
                 ComputePageHash(page);
         }
 
@@ -105,9 +111,9 @@ namespace Sphere10.Framework {
             Guard.Ensure(page.State == PageState.Loaded);
             Debug.Assert(IsMerkleDirty(page)); // shouldn't compute when not dirty
             if (page is IBinaryPage binPage) {
-                _merkleTree.Leafs[page.Number] = Hashers.Hash(_merkleTree.HashAlgorithm, binPage.ReadSpan(0, page.Count));
+                _merkleTree.Leafs[page.Number] = Hashers.Hash(_merkleTree.HashAlgorithm, binPage.ReadSpan(page.StartIndex, page.Count));
             } else {
-                _merkleTree.Leafs[page.Number] = Hashers.Hash(_merkleTree.HashAlgorithm, page.Read(0, page.Count).ToArray());
+                _merkleTree.Leafs[page.Number] = Hashers.Hash(_merkleTree.HashAlgorithm, page.Read(page.StartIndex, page.Count).ToArray());
             }
             MarkMerkleDirty(page, false);
         }

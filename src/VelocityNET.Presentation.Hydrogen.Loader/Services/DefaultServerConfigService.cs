@@ -15,15 +15,16 @@ namespace VelocityNET.Presentation.Hydrogen.Loader.Services
     public class DefaultServerConfigService : IServerConfigService
     {
         private readonly string _hydrogenServerKey = "hydrogen.servers";
-        private IOptions<DataSourceOptions> Configuration { get; }
 
-        private ISyncLocalStorageService SyncLocalStorageService { get; }
-
-        private ILocalStorageService LocalStorageService { get; }
-
+        /// <summary>
+        /// Raised when active server has been changed.
+        /// </summary>
         public event EventHandler<EventArgs>? ActiveServerChanged;
 
-        public event EventHandler<EventArgs>? NewServerAdded; 
+        /// <summary>
+        /// Raised when a new server is added
+        /// </summary>
+        public event EventHandler<EventArgs>? NewServerAdded;
 
         public DefaultServerConfigService(
             IOptions<DataSourceOptions> configuration,
@@ -34,11 +35,6 @@ namespace VelocityNET.Presentation.Hydrogen.Loader.Services
                 throw new ArgumentNullException(nameof(syncLocalStorageService));
             LocalStorageService = localStorageService ?? throw new ArgumentNullException(nameof(localStorageService));
 
-            Initialize();
-        }
-
-        private void Initialize()
-        {
             var configuredServers = Configuration.Value.Servers;
 
             if (SyncLocalStorageService.ContainKey(_hydrogenServerKey))
@@ -48,7 +44,7 @@ namespace VelocityNET.Presentation.Hydrogen.Loader.Services
                     .ToList();
             }
 
-            ActiveServer = configuredServers.First();;
+            ActiveServer = configuredServers.First();
             AvailableServers = configuredServers;
         }
 
@@ -61,6 +57,21 @@ namespace VelocityNET.Presentation.Hydrogen.Loader.Services
         /// Gets the available servers
         /// </summary>
         public IEnumerable<Uri> AvailableServers { get; private set; }
+
+        /// <summary>
+        /// Gets the config options
+        /// </summary>
+        private IOptions<DataSourceOptions> Configuration { get; }
+
+        /// <summary>
+        /// Gets the sync local storage service
+        /// </summary>
+        private ISyncLocalStorageService SyncLocalStorageService { get; }
+
+        /// <summary>
+        /// Gets the async local storage service
+        /// </summary>
+        private ILocalStorageService LocalStorageService { get; }
 
         /// <summary>
         /// Sets the active server
@@ -83,7 +94,7 @@ namespace VelocityNET.Presentation.Hydrogen.Loader.Services
             if (await ValidateServerAsync(server))
             {
                 List<Uri> existing = new();
-                
+
                 if (await LocalStorageService.ContainKeyAsync(_hydrogenServerKey))
                 {
                     existing = (await LocalStorageService.GetItemAsync<IEnumerable<Uri>>(_hydrogenServerKey))
@@ -116,4 +127,5 @@ namespace VelocityNET.Presentation.Hydrogen.Loader.Services
             return true;
         }
     }
+
 }

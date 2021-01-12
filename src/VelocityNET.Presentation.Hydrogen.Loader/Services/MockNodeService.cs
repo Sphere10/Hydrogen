@@ -8,19 +8,15 @@ using VelocityNET.Presentation.Hydrogen.Services;
 
 namespace VelocityNET.Presentation.Hydrogen.Loader.Services
 {
-
     /// <summary>
     /// Node service -- example data service not for real use with node.
     /// </summary>
     public sealed class MockNodeService : INodeService, IDisposable
     {
-        private IServerConfigService ConfigService { get; }
-        private IGenericEventAggregator Aggregator { get; }
 
-        public MockNodeService(IServerConfigService configService, IGenericEventAggregator aggregator)
+        public MockNodeService(IServerConfigService configService)
         {
             ConfigService = configService ?? throw new ArgumentNullException(nameof(configService));
-            Aggregator = aggregator ?? throw new ArgumentNullException(nameof(aggregator));
 
             Server = ConfigService.ActiveServer;
             ConfigService.ActiveServerChanged += ConfigServiceOnActiveServerChanged;
@@ -29,13 +25,18 @@ namespace VelocityNET.Presentation.Hydrogen.Loader.Services
         /// <summary>
         /// Gets the last block number.
         /// </summary>
-        public int LastBlockNumber { get; private set; } = 1000;
+        private int LastBlockNumber { get; set; } = 1000;
 
         /// <summary>
         /// Gets the server that is used as data source.
         /// </summary>
-        public Uri Server { get; }
-
+        private Uri Server { get; }
+        
+        /// <summary>
+        /// Gets the config service.
+        /// </summary>
+        private IServerConfigService ConfigService { get; }
+        
         /// <summary>
         /// Begin receiving new blocks, async awaiting until the next block is available. The provided
         /// enumerable does not have an end and should be handled accordingly.
@@ -60,7 +61,7 @@ namespace VelocityNET.Presentation.Hydrogen.Loader.Services
         
         private void ConfigServiceOnActiveServerChanged(object? sender, EventArgs e)
         {
-            
+            // server / node has changed, cancel stuff and reinitialize
         }
     }
 }

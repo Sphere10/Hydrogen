@@ -15,27 +15,28 @@ namespace VelocityNET.Presentation.Hydrogen.Loader.ViewModels
     {
         private IServerConfigService ServerConfigService { get; }
 
-        public Server ActiveServer => ServerConfigService.ActiveServer;
+        public Uri ActiveServer => ServerConfigService.ActiveServer;
 
-        public IEnumerable<Server> AvailableServers => ServerConfigService.AvailableServers;
+        public IEnumerable<Uri> AvailableServers => ServerConfigService.AvailableServers;
 
         public DataSourceViewModel(IServerConfigService serverConfigService)
         {
             ServerConfigService = serverConfigService ?? throw new ArgumentNullException(nameof(serverConfigService));
-            ServerConfigService.ActiveServerChanged += ServerConfigServiceOnActiveServerChanged;
+            ServerConfigService.ActiveServerChanged += ServerConfigOnEvent;
+            ServerConfigService.NewServerAdded += ServerConfigOnEvent;
         }
 
-        private void ServerConfigServiceOnActiveServerChanged(object? sender, EventArgs e)
+        private void ServerConfigOnEvent(object? sender, EventArgs e)
         {
             StateHasChangedDelegate?.Invoke();
         }
 
-        public async Task OnSelectServerAsync(Server server) => await ServerConfigService.SetActiveServerAsync(server);
+        public async Task OnSelectServerAsync(Uri server) => await ServerConfigService.SetActiveServerAsync(server);
 
         public void Dispose()
         {
-            ServerConfigService.ActiveServerChanged -= ServerConfigServiceOnActiveServerChanged;
+            ServerConfigService.ActiveServerChanged -= ServerConfigOnEvent;
+            ServerConfigService.NewServerAdded -= ServerConfigOnEvent;
         }
     }
-
 }

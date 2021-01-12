@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Blazored.LocalStorage;
 using Microsoft.Extensions.Options;
-using VelocityNET.Presentation.Hydrogen.Models;
 using VelocityNET.Presentation.Hydrogen.Services;
 
 namespace VelocityNET.Presentation.Hydrogen.Loader.Services
@@ -23,6 +22,8 @@ namespace VelocityNET.Presentation.Hydrogen.Loader.Services
         private ILocalStorageService LocalStorageService { get; }
 
         public event EventHandler<EventArgs>? ActiveServerChanged;
+
+        public event EventHandler<EventArgs>? NewServerAdded; 
 
         public DefaultServerConfigService(
             IOptions<DataSourceOptions> configuration,
@@ -43,31 +44,30 @@ namespace VelocityNET.Presentation.Hydrogen.Loader.Services
             if (SyncLocalStorageService.ContainKey(_hydrogenServerKey))
             {
                 configuredServers = configuredServers
-                    .Concat(SyncLocalStorageService.GetItem<IEnumerable<Server>>(_hydrogenServerKey))
+                    .Concat(SyncLocalStorageService.GetItem<IEnumerable<Uri>>(_hydrogenServerKey))
                     .ToList();
             }
 
-            var defaultServer = configuredServers.FirstOrDefault(x => x.IsDefault) ?? configuredServers.First();
-            ActiveServer = defaultServer;
+            ActiveServer = configuredServers.First();;
             AvailableServers = configuredServers;
         }
 
         /// <summary>
         /// Gets the active server
         /// </summary>
-        public Server ActiveServer { get; private set; }
+        public Uri ActiveServer { get; private set; }
 
         /// <summary>
         /// Gets the available servers
         /// </summary>
-        public IEnumerable<Server> AvailableServers { get; private set; }
+        public IEnumerable<Uri> AvailableServers { get; private set; }
 
         /// <summary>
         /// Sets the active server
         /// </summary>
         /// <param name="server"></param>
         /// <returns></returns>
-        public async Task SetActiveServerAsync(Server server)
+        public async Task SetActiveServerAsync(Uri server)
         {
             ActiveServer = server;
             ActiveServerChanged?.Invoke(this, EventArgs.Empty);
@@ -78,22 +78,27 @@ namespace VelocityNET.Presentation.Hydrogen.Loader.Services
         /// </summary>
         /// <param name="server"> config</param>
         /// <returns></returns>
-        public async Task AddServerAsync(Server server)
+        public async Task AddServerAsync(Uri server)
         {
             if (await ValidateServerAsync(server))
             {
-                IEnumerable<Server> existing = new List<Server>();
+                List<Uri> existing = new();
                 
                 if (await LocalStorageService.ContainKeyAsync(_hydrogenServerKey))
                 {
-                    existing = await LocalStorageService.GetItemAsync<IEnumerable<Server>>(_hydrogenServerKey);
+                    existing = (await LocalStorageService.GetItemAsync<IEnumerable<Uri>>(_hydrogenServerKey))
+                        .ToList();
                 }
-                
-                existing.ToList().Add(server);
 
-                await LocalStorageService.SetItemAsync(_hydrogenServerKey, existing);
+                if (existing.All(x => x != server))
+                {
+                    existing.Add(server);
 
-                AvailableServers = AvailableServers.Append(server);
+                    await LocalStorageService.SetItemAsync(_hydrogenServerKey, existing);
+
+                    AvailableServers = AvailableServers.Append(server);
+                    NewServerAdded?.Invoke(this, EventArgs.Empty);
+                }
             }
             else
             {
@@ -106,7 +111,7 @@ namespace VelocityNET.Presentation.Hydrogen.Loader.Services
         /// </summary>
         /// <param name="server"> server</param>
         /// <returns> whether this is a valid server</returns>
-        public async Task<bool> ValidateServerAsync(Server server)
+        public async Task<bool> ValidateServerAsync(Uri server)
         {
             return true;
         }

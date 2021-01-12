@@ -6,9 +6,9 @@ namespace VelocityNET.Presentation.Hydrogen.Events
 
     public class DataSourceChangedEventArgs : EventArgs
     {
-        private Server Server { get; }
+        private Uri Server { get; }
 
-        public DataSourceChangedEventArgs(Server server)
+        public DataSourceChangedEventArgs(Uri server)
         {
             Server = server ?? throw new ArgumentNullException(nameof(server));
         }

@@ -6,45 +6,58 @@
 <h3>Servers</h3>
 
 <div class="row">
-    <div class="col-md-auto">
+    <div class="col-md-5">
         <div class="card shadow">
 
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-primary">Available servers</h6>
+                <h6 class="m-0 text-primary">Available servers</h6>
             </div>
             <div class="card-body">
-                <table class="table">
+                <table class="table table-borderless">
                     <thead>
-                    <th scope="col">Name</th>
                     <th scope="col">URI</th>
                     <th/>
                     </thead>
                     <tbody>
-                    @foreach (Server server in ViewModel!.Servers)
+                    @foreach (Uri server in ViewModel!.Servers)
                     {
-                        
-                        <tr>
-                            <td>@server.Name</td>
-                            <td>@server.Uri</td>
-                            @if (!IsActive(server))
-                            {
-                                <td>
-                                    <a role="button" class="btn btn-sm btn-success" @onclick="() => ViewModel!.SelectActiveServer(server)">
-                                        <i class="fa fa-check"></i>
-                                    </a> 
-                                </td>
-                            }
+                        <tr class="">
+                            <td>@server</td>
+                            <td class="align-content-center">
+                                @if (!IsActive(server))
+                                {
+                                    <a role="button" class="btn btn-sm btn-primary" @onclick="() => ViewModel!.OnSelectActiveServer(server)">
+                                        Select
+                                    </a>
+                                }
+                                else
+                                {
+                                    <i class="fa fa-check text-success"></i>
+                                }
+                            </td>
                         </tr>
                     }
                     </tbody>
                 </table>
+                <EditForm Model="@ViewModel!.NewServer" OnSubmit="ViewModel!.OnAddNewServerAsync" class="ml-2 w-50">
+                    <DataAnnotationsValidator/>
+                    <ValidationSummary/>
+                    <div class="form-group">
+                        <label for="uri">New Server</label>
+                        <InputText type="url" @bind-Value="ViewModel!.NewServer.Uri" 
+                                   class="form-control form-control-sm " id="uri" aria-describedby="emailHelp" placeholder="Server Address"/>
+                        <button type="submit" class="btn btn-sm btn-primary mt-2">
+                            <i class="fa fa-plus"></i>
+                            Add
+                        </button>
+                    </div>
+                </EditForm>
             </div>
-               <button class="btn btn-sm btn-success mt-2" @onclick="ViewModel!.AddNewServerAsync">Add Server</button>
         </div>
     </div>
 </div>
 
 @code
 {
-    private bool IsActive(Server server) => ViewModel!.ActiveServer.Uri == server.Uri;
+    private bool IsActive(Uri server) => ViewModel!.ActiveServer == server;
 }

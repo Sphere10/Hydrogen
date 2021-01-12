@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using VelocityNET.Presentation.Hydrogen.Models;
+﻿using System;
+using System.Collections.Generic;
 
 namespace VelocityNET.Presentation.Hydrogen.Loader
 {
@@ -11,6 +11,6 @@ namespace VelocityNET.Presentation.Hydrogen.Loader
         /// <summary>
         /// Gets or sets the configured servers.
         /// </summary>
-        public List<Server> Servers { get; } = new ();
+        public List<Uri> Servers { get; } = new ();
     }
 }

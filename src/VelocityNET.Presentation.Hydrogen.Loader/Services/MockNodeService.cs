@@ -34,7 +34,7 @@ namespace VelocityNET.Presentation.Hydrogen.Loader.Services
         /// <summary>
         /// Gets the server that is used as data source.
         /// </summary>
-        public Server Server { get; }
+        public Uri Server { get; }
 
         /// <summary>
         /// Begin receiving new blocks, async awaiting until the next block is available. The provided

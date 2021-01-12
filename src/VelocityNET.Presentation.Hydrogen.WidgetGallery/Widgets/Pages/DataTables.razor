@@ -1,7 +1,51 @@
 ﻿@page "/widget-gallery/data-tables"
+@using VelocityNET.Presentation.Hydrogen.Models
 
 <h1 class="h3 mb-2 text-gray-800">Tables</h1>
 
-<PagedGrid>
+<PagedTableTemplate Items="Blocks" TItem="Block" PageSize="10">
+    <HeaderTemplate>
+        <thead>
+        <tr>
+            <th> Address</th>
+            <th> Number</th>
+        </tr>
+        </thead>
+    </HeaderTemplate>
+    <ItemTemplate Context="block">
+        <tr>
+            <td>@block.Address</td>
+            <td>@block.Number</td>
+        </tr>
+    </ItemTemplate>
+</PagedTableTemplate>
 
-</PagedGrid>
+
+@code
+{
+    List<Block> Blocks { get; } = new List<Block>()
+    {
+        new () {Address = "asdfasdf", Number = 1},
+        new () {Address = "asdfasdf", Number = 1},
+        new () {Address = "asdfasdf", Number = 1},
+        new () {Address = "asdfasdf", Number = 1},
+        new () {Address = "asdfasdf", Number = 1},
+        new () {Address = "asdfasdf", Number = 1},
+        new () {Address = "asdfasdf", Number = 1},
+        new () {Address = "asdfasdf", Number = 1},
+        new () {Address = "asdfasdf", Number = 1},
+        new () {Address = "asdfasdf", Number = 1},
+        new () {Address = "asdfasdf", Number = 1},
+        new () {Address = "asdfasdf", Number = 1},
+        new () {Address = "asdfasdf", Number = 1},
+        new () {Address = "asdfasdf", Number = 1},
+        new () {Address = "asdfasdf", Number = 1},
+        new () {Address = "asdfasdf", Number = 1},
+        new () {Address = "asdfasdf", Number = 1},
+        new () {Address = "asdfasdf", Number = 1},
+        new () {Address = "asdfasdf", Number = 1},
+        new () {Address = "asdfasdf", Number = 1},
+        new () {Address = "asdfasdf", Number = 1},
+        new () {Address = "asdfasdf", Number = 1}
+    };
+}

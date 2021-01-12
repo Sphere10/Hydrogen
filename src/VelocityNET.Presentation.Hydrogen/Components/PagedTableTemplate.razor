@@ -1,0 +1,49 @@
+﻿@typeparam TItem
+
+<table class="table table-borderless">
+
+    @HeaderTemplate
+
+    <tbody>
+    @foreach (TItem item in Page)
+    {
+        @ItemTemplate(item)
+    }
+    </tbody>
+    <nav aria-label="...">
+        <ul class="pagination">
+            <li class="page-item @PreviousItemClass">
+                <a class="page-link" @onclick="OnPrevPage" tabindex="-1">Previous</a>
+            </li>
+            @if (HasPrevPage)
+            {
+                <li class="page-item">
+                    <a class="page-link" @onclick="OnPrevPage"> @(CurrentPage - 1)</a>
+                </li>
+            }
+           
+            <li class="page-item active">
+                <a class="page-link">@CurrentPage <span class="sr-only">(current)</span></a>
+            </li>
+            
+            @if (HasNextPage)
+            {
+                <li class="page-item">
+                    <a class="page-link" @onclick="OnNextPage">@(CurrentPage + 1)</a>
+                </li>
+            }
+            
+            <li class="page-item @NextItemClass">
+                <a class="page-link" @onclick="OnNextPage">Next</a>
+            </li>
+        </ul>
+    </nav>
+</table>
+
+@code
+{
+    private string PreviousItemClass => HasPrevPage ? string.Empty : "disabled";
+    
+    private string NextItemClass => HasNextPage ? String.Empty : "disabled";
+    
+}

@@ -15,6 +15,7 @@ namespace VelocityNET.Presentation.Hydrogen.Components
         /// Gets the view model for this component
         /// </summary>
         [Inject]
+        // ReSharper disable once AutoPropertyCanBeMadeGetOnly.Global
         public TViewModel? ViewModel { get; set; } = null!;
         
         /// <summary>

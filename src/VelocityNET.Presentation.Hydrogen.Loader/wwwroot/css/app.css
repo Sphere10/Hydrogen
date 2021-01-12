@@ -60,6 +60,6 @@ a, .btn-link {
     text-align: center;
 }
 
-td {
-    vertical-align: middle;
+.card-body {
+    font-size: 0.80rem
 }

@@ -1,40 +1,44 @@
 ﻿@typeparam TItem
+@inherits ComponentWithViewModel<PagedTableViewModel<TItem>>
 
 <table class="table table-borderless">
 
     @HeaderTemplate
 
     <tbody>
-    @foreach (TItem item in Page)
+    @foreach (TItem item in ViewModel!.Page)
     {
-        @ItemTemplate(item)
+        if (ItemTemplate is not null)
+        {
+            @ItemTemplate(item)
+        }
     }
     </tbody>
     <nav aria-label="...">
         <ul class="pagination">
             <li class="page-item @PreviousItemClass">
-                <a class="page-link" @onclick="OnPrevPage" tabindex="-1">Previous</a>
+                <a class="page-link" @onclick="ViewModel!.PrevPage" tabindex="-1">Previous</a>
             </li>
-            @if (HasPrevPage)
+            @if (ViewModel!.HasPrevPage)
             {
                 <li class="page-item">
-                    <a class="page-link" @onclick="OnPrevPage"> @(CurrentPage - 1)</a>
+                    <a class="page-link" @onclick="ViewModel!.PrevPage"> @(ViewModel!.CurrentPage - 1)</a>
                 </li>
             }
            
             <li class="page-item active">
-                <a class="page-link">@CurrentPage <span class="sr-only">(current)</span></a>
+                <a class="page-link">@ViewModel!.CurrentPage <span class="sr-only">(current)</span></a>
             </li>
             
-            @if (HasNextPage)
+            @if (ViewModel!.HasNextPage)
             {
                 <li class="page-item">
-                    <a class="page-link" @onclick="OnNextPage">@(CurrentPage + 1)</a>
+                    <a class="page-link" @onclick="ViewModel!.NextPage">@(ViewModel!.CurrentPage + 1)</a>
                 </li>
             }
             
             <li class="page-item @NextItemClass">
-                <a class="page-link" @onclick="OnNextPage">Next</a>
+                <a class="page-link" @onclick="ViewModel!.NextPage">Next</a>
             </li>
         </ul>
     </nav>
@@ -42,8 +46,8 @@
 
 @code
 {
-    private string PreviousItemClass => HasPrevPage ? string.Empty : "disabled";
+    private string PreviousItemClass => ViewModel!.HasPrevPage ? string.Empty : "disabled";
     
-    private string NextItemClass => HasNextPage ? String.Empty : "disabled";
+    private string NextItemClass => ViewModel!.HasNextPage ? string.Empty : "disabled";
     
 }

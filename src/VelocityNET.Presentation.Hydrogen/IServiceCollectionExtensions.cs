@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Reflection;
+using System.Xml;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace VelocityNET.Presentation.Hydrogen
@@ -23,7 +24,8 @@ public static class IServiceCollectionExtensions
             Assembly assembly)
         {
             var vms = assembly.ExportedTypes
-                .Where(x => x.Name.EndsWith("ViewModel", StringComparison.OrdinalIgnoreCase));
+                .Where(x => x.Name.Contains("ViewModel", StringComparison.OrdinalIgnoreCase))
+                .Where(x => !x.IsAbstract && !x.IsInterface);
 
             foreach (Type type in vms)
             {

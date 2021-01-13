@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -8,11 +9,14 @@ using VelocityNET.Presentation.Hydrogen.Services;
 
 namespace VelocityNET.Presentation.Hydrogen.Loader.Services
 {
+
     /// <summary>
     /// Node service -- example data service not for real use with node.
     /// </summary>
     public sealed class MockNodeService : INodeService, IDisposable
     {
+        private List<Block> Blocks { get; } = Enumerable.Range(0, 1000)
+            .Select(x => new Block {Address = Guid.NewGuid().ToString(), Number = x}).ToList();
 
         public MockNodeService(IServerConfigService configService)
         {
@@ -31,12 +35,12 @@ namespace VelocityNET.Presentation.Hydrogen.Loader.Services
         /// Gets the server that is used as data source.
         /// </summary>
         private Uri Server { get; }
-        
+
         /// <summary>
         /// Gets the config service.
         /// </summary>
         private IServerConfigService ConfigService { get; }
-        
+
         /// <summary>
         /// Begin receiving new blocks, async awaiting until the next block is available. The provided
         /// enumerable does not have an end and should be handled accordingly.
@@ -54,14 +58,23 @@ namespace VelocityNET.Presentation.Hydrogen.Loader.Services
             }
         }
 
+        /// <summary>
+        /// Gets n blocks in a page given starting from index
+        /// </summary>
+        /// <returns> response</returns>
+        public Task<ItemsResponse<Block>> GetBlocksAsync(ItemRequest request)
+        {
+            return Task.FromResult(new ItemsResponse<Block>(Blocks.Skip(request.Index).Take(request.Count),
+                Blocks.Count));
+        }
+
         public void Dispose()
         {
             ConfigService.ActiveServerChanged -= ConfigServiceOnActiveServerChanged;
         }
-        
+
         private void ConfigServiceOnActiveServerChanged(object? sender, EventArgs e)
         {
-            // server / node has changed, cancel stuff and reinitialize
         }
     }
 }

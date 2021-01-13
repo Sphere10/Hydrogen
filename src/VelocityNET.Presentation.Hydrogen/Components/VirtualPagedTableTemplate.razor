@@ -1,10 +1,7 @@
 ﻿@typeparam TItem
-@inherits ComponentWithViewModel<PagedTableViewModel<TItem>>
+@inherits ComponentWithViewModel<VirtualPagedTableViewModel<TItem>>
 
 <table class="table table-borderless table-hover">
-
-    @HeaderTemplate
-
     <tbody>
     @foreach (TItem item in ViewModel!.Page)
     {
@@ -19,12 +16,12 @@
     <nav aria-label="...">
         <ul class="pagination">
             <li class="page-item @PreviousItemClass">
-                <a class="page-link" @onclick="ViewModel!.PrevPage" tabindex="-1">Previous</a>
+                <a class="page-link" @onclick="ViewModel!.PrevPageAsync" tabindex="-1">Previous</a>
             </li>
             @if (ViewModel!.HasPrevPage)
             {
                 <li class="page-item">
-                    <a class="page-link" @onclick="ViewModel!.PrevPage"> @(ViewModel!.CurrentPage - 1)</a>
+                    <a class="page-link" @onclick="ViewModel!.PrevPageAsync"> @(ViewModel!.CurrentPage - 1)</a>
                 </li>
             }
            
@@ -35,12 +32,12 @@
             @if (ViewModel!.HasNextPage)
             {
                 <li class="page-item">
-                    <a class="page-link" @onclick="ViewModel!.NextPage">@(ViewModel!.CurrentPage + 1)</a>
+                    <a class="page-link" @onclick="ViewModel!.NextPageAsync">@(ViewModel!.CurrentPage + 1)</a>
                 </li>
             }
             
             <li class="page-item @NextItemClass">
-                <a class="page-link" @onclick="ViewModel!.NextPage">Next</a>
+                <a class="page-link" @onclick="ViewModel!.NextPageAsync">Next</a>
             </li>
         </ul>
     </nav>

@@ -80,5 +80,4 @@ namespace VelocityNET.Presentation.Hydrogen.Tests
             Assert.IsTrue(vm.HasPrevPage);
         }
     }
-
 }

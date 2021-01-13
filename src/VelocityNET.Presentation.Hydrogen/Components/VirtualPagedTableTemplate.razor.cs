@@ -1,18 +1,21 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
+using VelocityNET.Presentation.Hydrogen.Models;
 
 namespace VelocityNET.Presentation.Hydrogen.Components
 {
-    public partial class PagedTableTemplate<TItem>
-    {
-        [Parameter]
-        public IEnumerable<TItem> Items
-        {
-            get => ViewModel!.Items;
-            set => ViewModel!.Items = value;
-        }
 
+    public partial class VirtualPagedTableTemplate<TItem>
+    {
+        public delegate Task<ItemsResponse<TItem>> ItemsProviderDelegate(ItemRequest request);
+        
+        [Parameter]
+        public ItemsProviderDelegate ItemsProvider
+        {
+            get => ViewModel!.ItemsProvider;
+            set => ViewModel!.ItemsProvider = value;
+        }
+        
         [Parameter]
         public int PageSize
         {

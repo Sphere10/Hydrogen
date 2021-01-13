@@ -72,5 +72,4 @@ namespace VelocityNET.Presentation.Hydrogen.WidgetGallery
             serviceCollection.AddTransient<IRandomNumberService, RandomNumberService>();
         }
     }
-
 }

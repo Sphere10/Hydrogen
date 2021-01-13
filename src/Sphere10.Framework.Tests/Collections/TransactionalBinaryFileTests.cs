@@ -41,6 +41,13 @@ namespace Sphere10.Framework.Tests {
 			Assert.AreEqual(Path.GetFileName(filename), Path.GetFileName(files[0]));
 		}
 
+
+		private static void AssertFileCount(string dir, int expectedCount) {
+			Assert.IsTrue(Directory.Exists(dir));
+			var files = Directory.GetFiles(dir);
+			Assert.AreEqual(expectedCount, files.Length);
+		}
+
 		#region Single Page
 
 		[Test]
@@ -623,6 +630,71 @@ namespace Sphere10.Framework.Tests {
 			}
 		}
 
+		[Test]
+		public void Special_NoDanglingUncomittedMarkersAfterUncomittedReload() {
+			const int pageSize = 3;
+			const int maxOpenPages = 2;
+			var RNG = new Random(RandomSeed);
+			var originalData = RNG.NextBytes(pageSize * 2); // create 2 pages of default data
+			var baseDir = Tools.FileSystem.GetTempEmptyDirectory(true);
+			var pageDir1 = Tools.FileSystem.GetTempEmptyDirectory(true);
+			var pageDir2 = Tools.FileSystem.GetTempEmptyDirectory(true);
+			var fileName = Path.Combine(baseDir, "File.dat");
+
+			Tools.FileSystem.AppendAllBytes(fileName, originalData);
+			using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectories(baseDir, pageDir1, pageDir2))) {
+				var fileID = Guid.NewGuid();
+				using (var file = new TransactionalBinaryFile(fileName, pageDir1, fileID,  pageSize, maxOpenPages)) {
+					file.Load();
+					AssertFileCount(pageDir1, 0);
+
+					file.AddRange(RNG.NextBytes(pageSize * 10)); // add 10 pages
+					file.Flush();
+
+					Tools.FileSystem.CopyDirectory(pageDir1, pageDir2);
+					AssertFileCount(pageDir1, 10); // duplicate markers 
+ 				}
+
+				using (var file = new TransactionalBinaryFile(fileName, pageDir2, fileID, pageSize, maxOpenPages)) {
+					file.Load();
+					AssertFileCount(pageDir1, 0);
+				}
+			}
+		}
+
+		[Test]
+		public void Special_NoDanglingDeleteMarkersAfterUncomittedReload() {
+			const int pageSize = 3;
+			const int maxOpenPages = 2;
+			var RNG = new Random(RandomSeed);
+			var originalData = RNG.NextBytes(pageSize * 10); // create 2 pages of default data
+			var baseDir = Tools.FileSystem.GetTempEmptyDirectory(true);
+			var pageDir1 = Tools.FileSystem.GetTempEmptyDirectory(true);
+			var pageDir2 = Tools.FileSystem.GetTempEmptyDirectory(true);
+			var fileName = Path.Combine(baseDir, "File.dat");
+
+			Tools.FileSystem.AppendAllBytes(fileName, originalData);
+			using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectories(baseDir, pageDir1, pageDir2))) {
+				var fileID = Guid.NewGuid();
+				using (var file = new TransactionalBinaryFile(fileName, pageDir1, fileID, pageSize, maxOpenPages)) {
+					file.Load();
+					AssertFileCount(pageDir1, 0);
+
+					file.RemoveRange(file.Count - pageSize * 2, pageSize * 2);
+					file.Flush();
+					AssertFileCount(pageDir1, 2);
+
+					Tools.FileSystem.CopyDirectory(pageDir1, pageDir2);
+					AssertFileCount(pageDir1, 2); // duplicate markers 
+				}
+
+				using (var file = new TransactionalBinaryFile(fileName, pageDir2, fileID, pageSize, maxOpenPages)) {
+					file.Load();
+					AssertFileCount(pageDir1, 0);
+				}
+			}
+		}
+
 		#endregion
 
 		#region Integration Tests
@@ -693,7 +765,7 @@ namespace Sphere10.Framework.Tests {
 
 		[Test]
 		[Sequential]
-		public void Interation_ResumeCommit(
+		public void Intergration_ResumeCommit(
 			[Values(1, 10, 57, 173, 1111)] int maxCapacity,
 			[Values(1, 1, 3, 31, 13)] int pageSize,
 			[Values(1, 1, 7, 2, 10000)] int maxOpenPages) {

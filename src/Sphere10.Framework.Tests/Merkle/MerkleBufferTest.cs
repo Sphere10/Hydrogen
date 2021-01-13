@@ -167,7 +167,9 @@ namespace Sphere10.Framework.Tests {
             byte[] Hash(byte[] data) => Hashers.Hash(chf, data);
         }
 
-        public enum StorageType {
+
+	
+		public enum StorageType {
             MemoryBuffer,
             BinaryFile_1InMem,
             BinaryFile_2InMem,

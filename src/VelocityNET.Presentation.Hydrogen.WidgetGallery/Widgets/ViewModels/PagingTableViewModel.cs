@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components;
 using VelocityNET.Presentation.Hydrogen.Components;
 using VelocityNET.Presentation.Hydrogen.Models;
 using VelocityNET.Presentation.Hydrogen.Services;
@@ -10,11 +10,15 @@ namespace VelocityNET.Presentation.Hydrogen.WidgetGallery.Widgets.ViewModels
 {
     public class PagingTableViewModel : ComponentViewModelBase
     {
-        [Inject]
-        public INodeService NodeService { get; set; }
+        public INodeService NodeService { get;  }
         
-        [Inject]
-        public IModalService ModalService { get; set; }
+        public IModalService ModalService { get; }
+
+        public PagingTableViewModel(IModalService modalService, INodeService nodeService)
+        {
+            ModalService = modalService ?? throw new ArgumentNullException(nameof(modalService));
+            NodeService = nodeService ?? throw new ArgumentNullException(nameof(nodeService));
+        }
         
         public async Task OnClickRowAsync(Block block)
         {

@@ -1,13 +1,19 @@
 ﻿@typeparam TItem
 @inherits ComponentWithViewModel<VirtualPagedTableViewModel<TItem>>
+@using Microsoft.AspNetCore.Components.Forms
 
-<table class="table table-borderless table-hover">
+
+<table class="table table-borderless table-hover overflow-auto">
+    <thead>
+    @HeaderTemplate
+    </thead>
+
     <tbody>
     @foreach (TItem item in ViewModel!.Page)
     {
         if (ItemTemplate is not null)
         {
-            <span @onclick="() => OnRowSelect.InvokeAsync(item)">
+            <span @onclick="() => OnRowSelect.InvokeAsync(item)" style="display: contents">
                 @ItemTemplate(item)
             </span>
         }
@@ -24,29 +30,44 @@
                     <a class="page-link" @onclick="ViewModel!.PrevPageAsync"> @(ViewModel!.CurrentPage - 1)</a>
                 </li>
             }
-           
+
             <li class="page-item active">
-                <a class="page-link">@ViewModel!.CurrentPage <span class="sr-only">(current)</span></a>
+                <a class="page-link">
+                    @ViewModel!.CurrentPage <span class="sr-only">(current)</span>
+                </a>
             </li>
-            
+
             @if (ViewModel!.HasNextPage)
             {
                 <li class="page-item">
                     <a class="page-link" @onclick="ViewModel!.NextPageAsync">@(ViewModel!.CurrentPage + 1)</a>
                 </li>
             }
-            
+
             <li class="page-item @NextItemClass">
                 <a class="page-link" @onclick="ViewModel!.NextPageAsync">Next</a>
             </li>
+
+            @* <li class="page-item @NextItemClass ml-2"> *@
+            @*     <a class="page-link" @onclick="ViewModel!.LastPageAsync">@ViewModel.TotalPages</a> *@
+            @* </li> *@
         </ul>
     </nav>
+
 </table>
+
+<EditForm Model="ViewModel">
+    <label for="pageSize">Page Size</label>
+    <InputSelect id="pageSize" class="form-control form-control-sm w-auto" Value="ViewModel.PageSize" ValueExpression="() => ViewModel.PageSize" TValue="int" ValueChanged="ViewModel!.SetPageSizeAsync">
+        <option value="10">10</option>
+        <option value="25">25</option>
+        <option value="50">50</option>
+    </InputSelect>
+</EditForm>
 
 @code
 {
     private string PreviousItemClass => ViewModel!.HasPrevPage ? string.Empty : "disabled";
-    
+
     private string NextItemClass => ViewModel!.HasNextPage ? string.Empty : "disabled";
-    
 }

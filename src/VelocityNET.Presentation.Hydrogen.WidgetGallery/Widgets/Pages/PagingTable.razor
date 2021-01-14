@@ -12,6 +12,27 @@
                     <HeaderTemplate>
                         <tr>
                             <th> Address</th>
+                            <th class="text-right"> Number</th>
+                        </tr>
+                    </HeaderTemplate>
+                    <ItemTemplate Context="block">
+                        <tr>
+                            <td>@block.Address</td>
+                            <td class="text-right">@block.Number</td>
+                        </tr>
+                    </ItemTemplate>
+                </PagedTableTemplate>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+             <div class="card-header"> Virtual paged table</div>
+            <div class="card-body">
+                <VirtualPagedTableTemplate ItemsProvider="request => ViewModel.NodeService.GetBlocksAsync(request)" OnRowSelect="@ViewModel!.OnClickRowAsync" TItem="Block" PageSize="10">
+                    <HeaderTemplate>
+                        <tr>
+                            <th> Address</th>
                             <th> Number</th>
                         </tr>
                     </HeaderTemplate>
@@ -21,31 +42,10 @@
                             <td>@block.Number</td>
                         </tr>
                     </ItemTemplate>
-                </PagedTableTemplate>
+                </VirtualPagedTableTemplate>
             </div>
         </div>
     </div>
-    @* <div class="col-md-6"> *@
-    @*     <div class="card"> *@
-    @*         <div class="card-body"> *@
-    @*             <div class="card-header"> Virtual paged table</div> *@
-    @*             <VirtualPagedTableTemplate ItemsProvider="@ViewModel!.NodeService.GetBlocksAsync" TItem="Block" PageSize="10" OnRowSelect="@ViewModel!.OnClickRowAsync"> *@
-    @*                 <HeaderTemplate> *@
-    @*                     <tr> *@
-    @*                         <th> Address</th> *@
-    @*                         <th> Number</th> *@
-    @*                     </tr> *@
-    @*                 </HeaderTemplate> *@
-    @*                 <ItemTemplate Context="block"> *@
-    @*                     <tr> *@
-    @*                         <td>@block.Address</td> *@
-    @*                         <td>@block.Number</td> *@
-    @*                     </tr> *@
-    @*                 </ItemTemplate> *@
-    @*             </VirtualPagedTableTemplate> *@
-    @*         </div> *@
-    @*     </div> *@
-    @* </div> *@
 </div>
 
 

@@ -1,16 +1,17 @@
 ﻿@typeparam TItem
 @inherits ComponentWithViewModel<PagedTableViewModel<TItem>>
 
-<table class="table table-borderless table-hover">
-
-    @HeaderTemplate
+<table class="table table-borderless table-hover overflow-auto">
+    <thead>
+        @HeaderTemplate
+    </thead>
 
     <tbody>
     @foreach (TItem item in ViewModel!.Page)
     {
         if (ItemTemplate is not null)
         {
-            <span @onclick="() => OnRowSelect.InvokeAsync(item)">
+            <span @onclick="() => OnRowSelect.InvokeAsync(item)" style="display: contents">
                 @ItemTemplate(item)
             </span>
         }
@@ -27,29 +28,41 @@
                     <a class="page-link" @onclick="ViewModel!.PrevPage"> @(ViewModel!.CurrentPage - 1)</a>
                 </li>
             }
-           
+
             <li class="page-item active">
-                <a class="page-link">@ViewModel!.CurrentPage <span class="sr-only">(current)</span></a>
+                <a class="page-link">
+                    @ViewModel!.CurrentPage <span class="sr-only">(current)</span>
+                </a>
             </li>
-            
+
             @if (ViewModel!.HasNextPage)
             {
                 <li class="page-item">
                     <a class="page-link" @onclick="ViewModel!.NextPage">@(ViewModel!.CurrentPage + 1)</a>
                 </li>
             }
-            
+
             <li class="page-item @NextItemClass">
                 <a class="page-link" @onclick="ViewModel!.NextPage">Next</a>
             </li>
+            @* <li class="page-item"> *@
+            @*                 <a class="page-link" @onclick="ViewModel!.LastPage">@ViewModel.TotalPages</a> *@
+            @*  </li> *@
         </ul>
     </nav>
 </table>
-
+<EditForm Model="ViewModel">
+        <label for="pageSize">Page Size</label>
+        <InputSelect id="pageSize" class="form-control form-control-sm w-auto" @bind-Value="PageSize">
+            <option value="10">10</option>
+            <option value="25">25</option>
+            <option value="50">50</option>
+        </InputSelect>
+    </EditForm>
 @code
 {
     private string PreviousItemClass => ViewModel!.HasPrevPage ? string.Empty : "disabled";
-    
+
     private string NextItemClass => ViewModel!.HasNextPage ? string.Empty : "disabled";
-    
+
 }

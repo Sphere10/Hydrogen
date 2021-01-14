@@ -79,5 +79,26 @@ namespace VelocityNET.Presentation.Hydrogen.Tests
             Assert.IsFalse(vm.HasNextPage);
             Assert.IsTrue(vm.HasPrevPage);
         }
+
+        [Test]
+        public void ChangePageSizeSetsPage()
+        {
+            var vm = new PagedTableViewModel<Block>
+            {
+                PageSize = 1,
+                Items = AutoFixture.CreateMany<Block>(10).ToList()
+            };
+            
+            Assert.AreEqual(10, vm.TotalPages);
+            Assert.AreEqual(1, vm.CurrentPage);
+            
+            vm.NextPage();
+            
+            Assert.AreEqual(2, vm.CurrentPage);
+
+            vm.PageSize = 3;
+            
+            Assert.AreEqual(1, vm.CurrentPage);
+        }
     }
 }

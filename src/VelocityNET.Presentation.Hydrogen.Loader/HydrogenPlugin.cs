@@ -11,7 +11,7 @@ namespace VelocityNET.Presentation.Hydrogen.Loader
     {
         public override IEnumerable<IApp> Apps { get; } = new List<IApp>
         {
-            new VelocityNET.Presentation.Hydrogen.Plugins.App("/", "Hydrogen", "fa-link",
+            new VelocityNET.Presentation.Hydrogen.Plugins.App("/", "Hydrogen", "./img/heading-solid.svg",
                 new[]
                 {
                     new AppBlock("Hydrogen", "fa-link", new []

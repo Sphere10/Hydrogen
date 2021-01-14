@@ -3,21 +3,23 @@
 @inherits ComponentWithViewModel<AppsMenuViewModel>
 
 <!-- Heading -->
-<div class="sidebar-heading">
+<div class="sidebar-heading text-center">
     Apps
 </div>
-@foreach (IApp app in ViewModel?.Apps!)
-    {
-        <li class="@NavItemClass(app.Name)">
-            <NavLink class="nav-link" ActiveClass="active" href="@app.Route" Match="NavLinkMatch.Prefix">
-                            <i class="fas fa-fw @app.Icon"></i>
-                            <span>@app.Name</span>
-            </NavLink>
-        </li>
-    }
-
+<li class="nav-item">
+    <div class="d-flex flex-wrap justify-content-center">
+        @foreach (IApp app in ViewModel?.Apps!)
+        {
+            <NavLink class="nav-link w-auto" data-toggle="tooltip" title="@app.Name" ActiveClass="active" href="@app.Route" Match="NavLinkMatch.Prefix">
+                <button class="btn btn-sm btn-primary @NavItemClass(app.Name)">
+                    <img src="@app.Icon" width="25" height="25"/>
+                </button>
+            </NavLink>            
+        }
+    </div>
+</li>
 
 @code
 {
-    private string NavItemClass(string appName) => ViewModel?.SelectedApp?.Name == appName ? "nav-item active" : "nav-item";
+    private string NavItemClass(string appName) => ViewModel!.SelectedApp?.Name == appName ? "active focus" : "";
 }

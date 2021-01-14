@@ -20,7 +20,7 @@ namespace VelocityNET.Presentation.Hydrogen.WidgetGallery
         {
             Apps = new List<IApp>
             {
-                new App("/widget-gallery", "Widget Gallery", "fa-cog",
+                new App("/widget-gallery", "Widget Gallery", "./img/boxes-solid.svg",
                     new[]
                     {
                         new AppBlock("Widgets",

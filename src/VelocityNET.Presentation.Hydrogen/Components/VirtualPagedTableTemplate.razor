@@ -56,14 +56,7 @@
 
 </table>
 
-<EditForm Model="ViewModel">
-    <label for="pageSize">Page Size</label>
-    <InputSelect id="pageSize" class="form-control form-control-sm w-auto" Value="ViewModel.PageSize" ValueExpression="() => ViewModel.PageSize" TValue="int" ValueChanged="ViewModel!.SetPageSizeAsync">
-        <option value="10">10</option>
-        <option value="25">25</option>
-        <option value="50">50</option>
-    </InputSelect>
-</EditForm>
+<PageSelector Model="@ViewModel" Value="@ViewModel.PageSize" ValueExpression="@(() => ViewModel.PageSize)" ValueChanged="@ViewModel!.SetPageSizeAsync"/>
 
 @code
 {

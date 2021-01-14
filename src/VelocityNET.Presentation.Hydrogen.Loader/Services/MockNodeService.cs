@@ -52,7 +52,7 @@ namespace VelocityNET.Presentation.Hydrogen.Loader.Services
 
             while (!ct.IsCancellationRequested)
             {
-                await Task.Delay(random.Next(5000, 10000), ct);
+                await Task.Delay(random.Next(1, 25), ct);
 
                 yield return new Block {Number = LastBlockNumber++};
             }

@@ -3,7 +3,7 @@
 
 <table class="table table-borderless table-hover overflow-auto">
     <thead>
-        @HeaderTemplate
+    @HeaderTemplate
     </thead>
 
     <tbody>
@@ -51,18 +51,12 @@
         </ul>
     </nav>
 </table>
-<EditForm Model="ViewModel">
-        <label for="pageSize">Page Size</label>
-        <InputSelect id="pageSize" class="form-control form-control-sm w-auto" @bind-Value="PageSize">
-            <option value="10">10</option>
-            <option value="25">25</option>
-            <option value="50">50</option>
-        </InputSelect>
-    </EditForm>
+
+<PageSelector Model="@ViewModel" @bind-Value="PageSize"/>
+
 @code
 {
     private string PreviousItemClass => ViewModel!.HasPrevPage ? string.Empty : "disabled";
 
     private string NextItemClass => ViewModel!.HasNextPage ? string.Empty : "disabled";
-
 }

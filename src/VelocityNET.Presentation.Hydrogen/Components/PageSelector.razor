@@ -1,0 +1,36 @@
+﻿@using System.Linq.Expressions
+
+<EditForm Model="Model">
+    <label for="pageSize">Page Size</label>
+    <InputSelect id="pageSize" class="form-control form-control-sm w-auto" Value="Value" ValueChanged="ValueChanged" ValueExpression="ValueExpression">
+        <option value="10">10</option>
+        <option value="25">25</option>
+        <option value="50">50</option>
+    </InputSelect>
+</EditForm>
+
+@code
+{
+    [Parameter]
+    public object Model { get; set; }
+    
+    /// <summary>
+    /// Gets or sets the value of the input. This should be used with two-way binding.
+    /// </summary>
+    /// <example>
+    /// @bind-Value="model.PropertyName"
+    /// </example>
+    [Parameter]
+    public int Value { get; set; }
+
+    /// <summary>
+    /// Gets or sets a callback that updates the bound value.
+    /// </summary>
+    [Parameter] public EventCallback<int> ValueChanged { get; set; }
+
+    /// <summary>
+    /// Gets or sets an expression that identifies the bound value.
+    /// </summary>
+    [Parameter] public Expression<Func<int>>? ValueExpression { get; set; }
+    
+}

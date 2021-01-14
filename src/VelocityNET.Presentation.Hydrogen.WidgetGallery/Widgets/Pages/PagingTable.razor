@@ -4,8 +4,29 @@
 
 <h1 class="h3 mb-2 text-gray-800">Tables</h1>
 <div class="row">
-    <div class="col-md-6">
-        <div class="card">
+    <div class="col-md-4">
+        <div class="card shadow">
+            <div class="card-header">Rapid Table</div>
+            <div class="card-body">
+                <TableTemplate Items="@ViewModel!.Blocks" TItem="Block" OnRowSelect="@ViewModel!.OnClickRowAsync">
+                    <HeaderTemplate>
+                        <tr>
+                            <th> Address</th>
+                            <th class="text-right"> Number</th>
+                        </tr>
+                    </HeaderTemplate>
+                    <ItemTemplate Context="block">
+                        <tr>
+                            <td>@block.Address</td>
+                            <td class="text-right">@block.Number</td>
+                        </tr>
+                    </ItemTemplate>
+                </TableTemplate>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow">
             <div class="card-header">Paged Table</div>
             <div class="card-body">
                 <PagedTableTemplate Items="Blocks" TItem="Block" PageSize="10" OnRowSelect="@ViewModel!.OnClickRowAsync">
@@ -25,9 +46,9 @@
             </div>
         </div>
     </div>
-    <div class="col-md-6">
-        <div class="card">
-             <div class="card-header"> Virtual paged table</div>
+    <div class="col-md-4">
+        <div class="card shadow">
+            <div class="card-header"> Virtual paged table</div>
             <div class="card-body">
                 <VirtualPagedTableTemplate ItemsProvider="request => ViewModel.NodeService.GetBlocksAsync(request)" OnRowSelect="@ViewModel!.OnClickRowAsync" TItem="Block" PageSize="10">
                     <HeaderTemplate>

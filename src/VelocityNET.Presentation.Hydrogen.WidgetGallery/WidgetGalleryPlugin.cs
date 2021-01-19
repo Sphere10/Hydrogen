@@ -52,6 +52,12 @@ namespace VelocityNET.Presentation.Hydrogen.WidgetGallery
                                     new MenuItem("Data tables", "/widget-gallery/paging-table")
                                 })
                             }
+                        ),new AppBlock("Wizards",
+                            "fa-cog",
+                            new[]
+                            {
+                                new AppBlockPage("/widget-gallery/wizards", "Wizard page", "fa-table")
+                            }
                         )
                     })
             };

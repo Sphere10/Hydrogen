@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using VelocityNET.Presentation.Hydrogen.Components.Modal;
 
 namespace VelocityNET.Presentation.Hydrogen.ViewModels
@@ -30,6 +31,16 @@ namespace VelocityNET.Presentation.Hydrogen.ViewModels
         public Task Ok()
         {
             ModalTaskCompletionSource.SetResult(ModalResult.Ok);
+            return Task.CompletedTask;
+        }
+        
+        /// <summary>
+        /// Modal interactions completed with OK result.
+        /// </summary>
+        /// <returns></returns>
+        public Task OkData<T>(T data)
+        {
+            ModalTaskCompletionSource.SetResult(ModalResult.OkData(data ?? throw new ArgumentNullException(nameof(data))));
             return Task.CompletedTask;
         }
 

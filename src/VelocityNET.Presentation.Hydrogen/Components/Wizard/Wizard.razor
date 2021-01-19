@@ -1,0 +1,27 @@
+﻿@typeparam TModel
+@inherits WizardComponentBase<TModel,  WizardViewModel<TModel>>
+
+<CascadingValue Value="Model">
+        @ViewModel!.CurrentStepFragment
+</CascadingValue>
+
+<div>
+    <button class="btn btn-info btn-sm" disabled="@IsDisabled()" @onclick="ViewModel!.PreviousAsync">Back</button>
+
+    @if (ViewModel.HasNext)
+    {
+        <button class="btn btn-info btn-sm" @onclick="ViewModel.NextAsync">Next</button>
+    }
+    else
+    {
+        <button class="btn btn-info btn-sm @FinishClass()" @onclick="ViewModel!.FinishAsync">Finish</button>
+    }
+
+</div>
+
+@code
+{
+    public bool IsDisabled() => !ViewModel!.HasPrevious || ViewModel!.IsFinished;
+
+    public string FinishClass() => ViewModel!.IsFinished ? "disabled" : "";
+}

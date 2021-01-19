@@ -1,0 +1,29 @@
+﻿@page "/widget-gallery/wizards"
+@inherits ComponentWithViewModel<WizardsViewModel>
+
+<button @onclick="ViewModel.ShowNewWidgetModalAsync" class="btn-primary btn btn-sm"> New Widget</button>
+
+<table class="table table-borderless">
+    <thead>
+    <tr>
+        <th>Name</th>
+        <th>Description</th>
+        <th>Price</th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var widget in ViewModel.Widgets)
+    {
+        <tr>
+            <td>@widget.Name</td>
+            <td>@widget.Description</td>
+            <td>@widget.Price</td>
+        </tr>
+    }
+    </tbody>
+</table>
+
+@code
+{
+    
+}

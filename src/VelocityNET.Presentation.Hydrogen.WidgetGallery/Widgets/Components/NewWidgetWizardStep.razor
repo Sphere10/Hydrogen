@@ -1,0 +1,50 @@
+﻿@inherits VelocityNET.Presentation.Hydrogen.Components.Wizard.WizardStep<VelocityNET.Presentation.Hydrogen.WidgetGallery.Widgets.Models.NewWidgetModel, NewWidgetWizardStepViewModel>
+
+@if (Model is not null)
+{
+    <EditForm Model="Model" @ref="Form">
+
+        <DataAnnotationsValidator/>
+        <ValidationSummary/>
+
+        <div class="form-group">
+            <label for="Name">Name</label>
+            <InputText id="Name" class="form-control form-control-sm" @bind-Value="Model.Name"/>
+        </div>
+
+        <div class="form-group">
+            <label for="Description">Description</label>
+            <InputText id="Description" class="form-control form-control-sm" @bind-Value="Model.Description"/>
+        </div>
+
+        <div class="form-group">
+            <label for="Price">Price</label>
+            <InputNumber id="Price" class="form-control" @bind-Value="Model.Price"/>
+        </div>
+
+    </EditForm>
+}
+
+@code
+{
+    private EditForm Form;
+
+    public override async Task<bool> OnNextAsync()
+    {
+        bool valid;
+        
+        if (Form.EditContext is not null)
+        {
+            Form.EditContext.Validate();
+
+            valid = !Form.EditContext.GetValidationMessages().Any();
+        }
+        else
+        {
+            return false;
+        }
+        
+        return valid && await base.OnNextAsync();
+    }
+
+}

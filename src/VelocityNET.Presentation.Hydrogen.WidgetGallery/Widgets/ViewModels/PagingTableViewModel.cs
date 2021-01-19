@@ -33,13 +33,17 @@ namespace VelocityNET.Presentation.Hydrogen.WidgetGallery.Widgets.ViewModels
             });
         }
 
-        private CancellationTokenSource TaskCanellationSource = new();
+        private CancellationTokenSource TaskCancellationSource { get; } = new();
 
+        /// <summary>
+        /// Called when view is initialized, override to provide custom initialization logic. 
+        /// </summary>
+        /// <returns></returns>
         protected override Task InitCoreAsync()
         {
             Task.Run(async () =>
             {
-                while (!TaskCanellationSource.IsCancellationRequested)
+                while (!TaskCancellationSource.IsCancellationRequested)
                 {
                     await foreach (Block block in NodeService.GetBlocksAsync())
                     {
@@ -57,9 +61,10 @@ namespace VelocityNET.Presentation.Hydrogen.WidgetGallery.Widgets.ViewModels
             return Task.CompletedTask;
         }
 
+        /// <summary>Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.</summary>
         public void Dispose()
         {
-            TaskCanellationSource.Cancel();
+            TaskCancellationSource.Cancel();
         }
     }
 }

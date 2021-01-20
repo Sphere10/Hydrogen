@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components;
 using VelocityNET.Presentation.Hydrogen.Components.Modal;
 
 namespace VelocityNET.Presentation.Hydrogen.Services

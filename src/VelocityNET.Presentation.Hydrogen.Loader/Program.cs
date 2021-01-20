@@ -29,6 +29,7 @@ namespace VelocityNET.Presentation.Hydrogen.Loader
         {
             serviceCollection.AddViewModelsFromAssembly(typeof(Program).Assembly);
 
+            serviceCollection.AddTransient<IWizardBuilder, DefaultWizardBuilder>();
             serviceCollection.AddSingleton<IGenericEventAggregator, BasicGenericEventAggregator>();
             serviceCollection.AddSingleton<IModalService, ModalService>();
             serviceCollection.AddSingleton<INodeService, MockNodeService>();

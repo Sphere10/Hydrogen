@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components;
 using VelocityNET.Presentation.Hydrogen.Components;
 using VelocityNET.Presentation.Hydrogen.Components.Modal;
 using VelocityNET.Presentation.Hydrogen.Components.Wizard;
@@ -16,11 +17,22 @@ namespace VelocityNET.Presentation.Hydrogen.WidgetGallery.Widgets.ViewModels
     {
         private IModalService ModalService { get; }
 
+        private IWizardBuilder Builder { get; }
+
+        /// <summary>
+        /// Gets list of widgets 
+        /// </summary>
         public List<NewWidgetModel> Widgets { get; } = new();
 
-        public WizardsViewModel(IModalService modalService)
+        /// <summary>
+        /// Wizards view model
+        /// </summary>
+        /// <param name="modalService"></param>
+        /// <param name="builder"></param>
+        public WizardsViewModel(IModalService modalService, IWizardBuilder builder)
         {
             ModalService = modalService;
+            Builder = builder;
         }
 
         /// <summary>
@@ -29,18 +41,17 @@ namespace VelocityNET.Presentation.Hydrogen.WidgetGallery.Widgets.ViewModels
         /// <returns></returns>
         public async Task ShowNewWidgetModalAsync()
         {
-            var result = await ModalService.ShowAsync<WizardModal<Wizard<NewWidgetModel>>>(new Dictionary<string, object>
+            RenderFragment wizard = Builder.NewWizard<Wizard>()
+                .WithModel(new NewWidgetModel())
+                .AddStep<NewWidgetWizardStep>()
+                .AddStep<NewWidgetSummaryStep>()
+                .Build();
+
+            var result = await ModalService.ShowAsync<WizardModal>(new Dictionary<string, object>
             {
-                {nameof(Wizard<NewWidgetModel>.Model), new NewWidgetModel()},
-                {
-                    nameof(Wizard<NewWidgetModel>.Steps), new List<Type>
-                    {
-                        typeof(NewWidgetWizardStep),
-                        typeof(NewWidgetSummaryStep),
-                    }
-                },
-                {nameof(WizardModal<Wizard<NewWidgetModel>>.Title), "New Widget"}
+                {nameof(WizardModal.Wizard), wizard},
             });
+
 
             if (result.ResultType is ModalResultType.Ok)
             {

@@ -1,11 +1,11 @@
-﻿@typeparam TWizard
-@inherits ModalComponent<ModalViewModel>
+﻿@inherits ModalComponent<ModalViewModel>
 
 <ModalTemplate>
-    <HeaderTemplate>
-        <h5 class="modal-title">@Title</h5>
-    </HeaderTemplate>
     <BodyTemplate>
-                 @Wizard
+        <CascadingValue  Name="OnFinished" Value="@OnFinished">
+            <CascadingValue Name="OnCancelled" Value="@OnCancelled">
+                  @Wizard
+            </CascadingValue>
+        </CascadingValue>
     </BodyTemplate>
 </ModalTemplate>

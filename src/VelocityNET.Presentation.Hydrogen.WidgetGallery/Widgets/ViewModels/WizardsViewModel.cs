@@ -23,6 +23,8 @@ namespace VelocityNET.Presentation.Hydrogen.WidgetGallery.Widgets.ViewModels
         /// Gets list of widgets 
         /// </summary>
         public List<NewWidgetModel> Widgets { get; } = new();
+        
+        private RenderFragment Wizard { get; }
 
         /// <summary>
         /// Wizards view model
@@ -33,6 +35,12 @@ namespace VelocityNET.Presentation.Hydrogen.WidgetGallery.Widgets.ViewModels
         {
             ModalService = modalService;
             Builder = builder;
+            
+            Wizard = Builder.NewWizard<Wizard>()
+                .WithModel(new NewWidgetModel())
+                .AddStep<NewWidgetWizardStep>()
+                .AddStep<NewWidgetSummaryStep>()
+                .Build();
         }
 
         /// <summary>
@@ -41,15 +49,9 @@ namespace VelocityNET.Presentation.Hydrogen.WidgetGallery.Widgets.ViewModels
         /// <returns></returns>
         public async Task ShowNewWidgetModalAsync()
         {
-            RenderFragment wizard = Builder.NewWizard<Wizard>()
-                .WithModel(new NewWidgetModel())
-                .AddStep<NewWidgetWizardStep>()
-                .AddStep<NewWidgetSummaryStep>()
-                .Build();
-
             var result = await ModalService.ShowAsync<WizardModal>(new Dictionary<string, object>
             {
-                {nameof(WizardModal.Wizard), wizard},
+                {nameof(WizardModal.Wizard), Wizard},
             });
 
 

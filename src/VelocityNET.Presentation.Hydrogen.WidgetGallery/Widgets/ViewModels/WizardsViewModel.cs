@@ -49,12 +49,11 @@ namespace VelocityNET.Presentation.Hydrogen.WidgetGallery.Widgets.ViewModels
         /// <returns></returns>
         public async Task ShowNewWidgetModalAsync()
         {
-            var result = await ModalService.ShowAsync<WizardModal>(new Dictionary<string, object>
+            ModalResult result = await ModalService.ShowAsync<WizardModal>(new Dictionary<string, object>
             {
                 {nameof(WizardModal.Wizard), Wizard},
             });
-
-
+            
             if (result.ResultType is ModalResultType.Ok)
             {
                 NewWidgetModel model = result.GetData<NewWidgetModel>();

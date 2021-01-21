@@ -42,6 +42,17 @@ namespace Sphere10.Framework {
             }
             _lastEvent = DateTime.Now;
         }
+        
+        public async Task WaitAsync() {
+            var now = DateTime.Now;
+            var duration = now.Subtract(_lastEvent);
+            
+            if (duration < _interval) {
+                await Task.Delay(_interval.Subtract(duration).ClipTo(TimeSpan.Zero, TimeSpan.MaxValue));
+            }
+            
+            _lastEvent = DateTime.Now;
+        }
 
         public void RegisterEvent() {
             _lastEvent = DateTime.Now;

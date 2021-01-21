@@ -15,4 +15,8 @@
       <PackageReference Include="Microsoft.JSInterop" Version="5.0.1" />
     </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\Sphere10.Framework\Sphere10.Framework.csproj" />
+    </ItemGroup>
+
 </Project>

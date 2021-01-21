@@ -1,4 +1,5 @@
-﻿<!-- Topbar -->
+﻿@using VelocityNET.Presentation.Hydrogen.Models
+<!-- Topbar -->
 <nav class="navbar navbar-expand bg-white topbar mb-3 static-top shadow">
 
 <!-- Sidebar Toggle (Topbar) -->
@@ -12,16 +13,9 @@
 <!-- Topbar Search -->
 <form
     class="d-none d-sm-inline-block form-inline  ml-md-3 my-2 my-md-0 mw-100 navbar-search">
-    <div class="input-group">
-        <input type="text" class="form-control bg-light border-0 small" placeholder="Search for..."
-               aria-label="Search" aria-describedby="basic-addon2">
-        <div class="input-group-append">
-            <button class="btn btn-primary" type="button">
-                <i class="fas fa-search fa-sm"></i>
-            </button>
-        </div>
-    </div>
+    <SearchInput SearchProvider="@SearchProvider"/>
 </form>
+
 
 <div class="topbar-divider d-none d-sm-block"></div>
 
@@ -214,3 +208,17 @@
 
 </nav>
 <!-- End of Topbar -->
+
+@code
+{
+
+    public Func<string, Task<IEnumerable<SearchResult>>> SearchProvider { get; set; }
+
+    protected override void OnInitialized()
+    {
+        List<SearchResult> results = Enumerable.Repeat(1, 25).Select(x => Guid.NewGuid().ToString())
+            .Select(x => new SearchResult(x, new Uri("/"))).ToList();
+
+        SearchProvider = s => Task.FromResult(results.Where(x => x.Name.Contains(s)));
+    }
+}

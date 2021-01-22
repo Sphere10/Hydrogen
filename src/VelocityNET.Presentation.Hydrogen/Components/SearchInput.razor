@@ -12,7 +12,7 @@
     <div class="dropdown-menu search-input-results animated--fade-in" aria-labelledby="dropdownMenuButton">
         @if (Results.Any())
         {
-            @foreach (SearchResult result in Results)
+            @foreach (SearchResult result in Results.Take(ResultsCount))
             {
                 <a class="dropdown-item" href="@result.Route">@result.Name</a>
             }

@@ -32,6 +32,11 @@ namespace VelocityNET.Presentation.Hydrogen.Components
         [Parameter] public int SearchFreqLimitMs { get; set; } = 100;
 
         /// <summary>
+        /// Gets or sets the number of items to show in the results.
+        /// </summary>
+        [Parameter] public int ResultsCount { get; set; } = 10;
+
+        /// <summary>
         /// Gets or sets the current search term result set.
         /// </summary>
         public IEnumerable<SearchResult> Results { get; set; } = new List<SearchResult>();
@@ -65,7 +70,7 @@ namespace VelocityNET.Presentation.Hydrogen.Components
                             await Throttle.WaitAsync();
                             
                             var results = await SearchProvider(term);
-                            Results = results.Take(10);
+                            Results = results;
                         }
                         finally
                         {

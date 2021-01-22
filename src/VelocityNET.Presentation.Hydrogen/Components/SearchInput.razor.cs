@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Sphere10.Framework;
@@ -8,6 +9,9 @@ using VelocityNET.Presentation.Hydrogen.Models;
 
 namespace VelocityNET.Presentation.Hydrogen.Components
 {
+    /// <summary>
+    /// Search input component
+    /// </summary>
     public partial class SearchInput
     {
         /// <summary>
@@ -38,6 +42,11 @@ namespace VelocityNET.Presentation.Hydrogen.Components
         private Throttle? Throttle { get; set; }
 
         /// <summary>
+        /// Gets the semaphore used to throttle requests. 
+        /// </summary>
+        private SemaphoreSlim Semaphore = new(1);
+
+        /// <summary>
         /// handles the user's request to search, probably on key press.
         /// </summary>
         /// <param name="term"> search term</param>
@@ -50,11 +59,19 @@ namespace VelocityNET.Presentation.Hydrogen.Components
                 {
                     if (Throttle is not null)
                     {
-                        await Throttle.WaitAsync();
+                        try
+                        {
+                            await Semaphore.WaitAsync();
+                            await Throttle.WaitAsync();
+                            
+                            var results = await SearchProvider(term);
+                            Results = results.Take(10);
+                        }
+                        finally
+                        {
+                            Semaphore.Release();
+                        }
                     }
-                
-                    var results = await SearchProvider(term);
-                    Results = results.Take(10);
                 }
             }
         }

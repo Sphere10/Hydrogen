@@ -31,7 +31,7 @@ namespace Sphere10.Framework.Tests {
 
         [Test]
         public void SingleByte([Values(1, 2, 1 << 18)] int pageSize, [Values(CHF.SHA2_256, CHF.Blake2b_128)] CHF chf, [Values] StorageType storage) {
-            using (CreateMerkleList(storage, chf, pageSize, out var list)) {
+            using (CreateMerkleBuffer(storage, chf, pageSize, out var list)) {
                 var data = new byte[] { 0 };
                 list.AddRange(data);
                 var dataHash = Hashers.Hash(chf, data);
@@ -41,7 +41,7 @@ namespace Sphere10.Framework.Tests {
 
 		[Test]
 		public void ThreePages_AddPagesManually([Values(1, 2, 1 << 18)] int pageSize, [Values(CHF.SHA2_256, CHF.Blake2b_128)] CHF chf, [Values] StorageType storage) {
-			using (CreateMerkleList(storage, chf, pageSize, out var list)) {
+			using (CreateMerkleBuffer(storage, chf, pageSize, out var list)) {
 				var rng = new Random(31337);
 				var page1Data = rng.NextBytes(pageSize);
 				var page2Data = rng.NextBytes(pageSize);
@@ -64,7 +64,7 @@ namespace Sphere10.Framework.Tests {
 
 		[Test]
 		public void ThreePages_AddPagesAuto([Values(1, 2, 1 << 18)] int pageSize, [Values(CHF.SHA2_256, CHF.Blake2b_128)] CHF chf, [Values] StorageType storage) {
-			using (CreateMerkleList(storage, chf, pageSize, out var list)) {
+			using (CreateMerkleBuffer(storage, chf, pageSize, out var list)) {
 				var rng = new Random(31337);
 				var page1Data = rng.NextBytes(pageSize);
 				var page2Data = rng.NextBytes(pageSize);
@@ -85,7 +85,7 @@ namespace Sphere10.Framework.Tests {
 
 		[Test]
 		public void ThreePages_UpdatePage([Values(1, 2, 1 << 18)] int pageSize, [Values(CHF.SHA2_256, CHF.Blake2b_128)] CHF chf, [Values] StorageType storage) {
-			using (CreateMerkleList(storage, chf, pageSize, out var list)) {
+			using (CreateMerkleBuffer(storage, chf, pageSize, out var list)) {
 				var rng = new Random(31337);
 				var page1Data = rng.NextBytes(pageSize);
 				var page2Data_1 = rng.NextBytes(pageSize);
@@ -117,37 +117,35 @@ namespace Sphere10.Framework.Tests {
             var expected = new List<byte>();
             var RNG = new Random(1231);
 			var maxCapacity = pageSize * 11;
-            using (CreateMerkleList(storage, chf, pageSize, out var list)) {
+            using (CreateMerkleBuffer(storage, chf, pageSize, out var merkleBuffer)) {
                 for (var i = 0; i < 10; i++) {
                     // add a random amount
-                    var remainingCapacity = maxCapacity - list.Count;
+                    var remainingCapacity = maxCapacity - merkleBuffer.Count;
                     var newItemsCount = RNG.Next(0, remainingCapacity + 1);
                     IEnumerable<byte> newItems = RNG.NextBytes(newItemsCount);
-                    list.AddRange(newItems);
+                    merkleBuffer.AddRange(newItems);
                     expected.AddRange(newItems);
-                    Assert.AreEqual(expected, list);
+                    Assert.AreEqual(expected, merkleBuffer);
 
                     // update a random amount
-                    if (list.Count > 0) {
-                        var range = RNG.RandomRange(list.Count);
+                    if (merkleBuffer.Count > 0) {
+                        var range = RNG.RandomRange(merkleBuffer.Count);
                         newItems = RNG.NextBytes(range.End - range.Start + 1);
                         expected.UpdateRangeSequentially(range.Start, newItems);
-                        list.UpdateRange(range.Start, newItems);
+                        merkleBuffer.UpdateRange(range.Start, newItems);
 
                         // shuffle a random amount
-                        range = RNG.RandomRange(list.Count);
-                        newItems = list.ReadRange(range.Start, range.End - range.Start + 1);
+                        range = RNG.RandomRange(merkleBuffer.Count);
+                        newItems = merkleBuffer.ReadRange(range.Start, range.End - range.Start + 1);
                         var expectedNewItems = expected.GetRange(range.Start, range.End - range.Start + 1);
 
-                        range = RNG.RandomSegment(list.Count, newItems.Count());
+                        range = RNG.RandomSegment(merkleBuffer.Count, newItems.Count());
                         expected.UpdateRangeSequentially(range.Start, expectedNewItems);
-                        list.UpdateRange(range.Start, newItems);
-
-
+                        merkleBuffer.UpdateRange(range.Start, newItems);
 
                         // remove a random amount (FROM END OF LIST)
-                        range = new ValueRange<int>(RNG.Next(0, list.Count), list.Count - 1);
-                        list.RemoveRange(range.Start, range.End - range.Start + 1);
+                        range = new ValueRange<int>(RNG.Next(0, merkleBuffer.Count), merkleBuffer.Count - 1);
+                        merkleBuffer.RemoveRange(range.Start, range.End - range.Start + 1);
                         expected.RemoveRange(range.Start, range.End - range.Start + 1);
                     }
                 }
@@ -159,7 +157,7 @@ namespace Sphere10.Framework.Tests {
 					var refTree = new SimpleMerkleTree(chf);
 					foreach (var pageData in expected.Partition(pageSize))
 						refTree.Leafs.Add(Hash(pageData.ToArray()));
-                    Assert.AreEqual(refTree.Root, list.MerkleTree.Root);
+                    Assert.AreEqual(refTree.Root, merkleBuffer.MerkleTree.Root);
 				}
 
             }
@@ -179,43 +177,43 @@ namespace Sphere10.Framework.Tests {
             TransactionalBinaryFile_5InMem
         }
 
-        private IDisposable CreateMerkleList(StorageType storageType, CHF chf, int pageSize, out IMerkleList<byte> list) {
+        private IDisposable CreateMerkleBuffer(StorageType storageType, CHF chf, int pageSize, out MerkleBuffer merkleBuffer) {
             var disposables = new Disposables();
             switch (storageType) {
                 case StorageType.MemoryBuffer:
-                    list = new MerkleBuffer<MemoryBufferPage>(new LargeBuffer(pageSize, int.MaxValue), chf);
+                    merkleBuffer = new MerkleBuffer(new MemoryPagedBuffer(pageSize, int.MaxValue), chf);
                     break;
                 case StorageType.BinaryFile_1InMem:
                     var tmpFile = Tools.FileSystem.GetTempFileName(false);
-                    list = new MerkleBuffer<BinaryFile.Page>(new BinaryFile(tmpFile, pageSize, 1), chf);
+                    merkleBuffer = new MerkleBuffer(new FileMappedBuffer(tmpFile, pageSize, 1), chf);
                     disposables.Add(new ActionScope(() => File.Delete(tmpFile)));
                     break;
                 case StorageType.BinaryFile_2InMem:
                     tmpFile = Tools.FileSystem.GetTempFileName(false);
-                    list = new MerkleBuffer<BinaryFile.Page>(new BinaryFile(tmpFile, pageSize, 2), chf);
+                    merkleBuffer = new MerkleBuffer(new FileMappedBuffer(tmpFile, pageSize, 2), chf);
                     disposables.Add(new ActionScope(() => File.Delete(tmpFile)));
                     break;
                 case StorageType.BinaryFile_5InMem:
                     tmpFile = Tools.FileSystem.GetTempFileName(false);
-                    list = new MerkleBuffer<BinaryFile.Page>(new BinaryFile(tmpFile, pageSize, 5), chf);
+                    merkleBuffer = new MerkleBuffer(new FileMappedBuffer(tmpFile, pageSize, 5), chf);
                     disposables.Add(new ActionScope(() => File.Delete(tmpFile)));
                     break;
                 case StorageType.TransactionalBinaryFile_1InMem:
                     var baseDir = Tools.FileSystem.GetTempEmptyDirectory(true);
                     var fileName = Path.Combine(baseDir, "File.dat");
-                    list = new MerkleBuffer<TransactionalBinaryFile.TransactionalPage>(new TransactionalBinaryFile(fileName, baseDir, Guid.NewGuid(), pageSize, 1), chf);
+                    merkleBuffer = new MerkleBuffer(new TransactionalFileMappedBuffer(fileName, baseDir, Guid.NewGuid(), pageSize, 1), chf);
                     disposables.Add(new ActionScope(() => Tools.FileSystem.DeleteDirectory(baseDir)));
                     break;
                 case StorageType.TransactionalBinaryFile_2InMem:
                     baseDir = Tools.FileSystem.GetTempEmptyDirectory(true);
                     fileName = Path.Combine(baseDir, "File.dat");
-                    list = new MerkleBuffer<TransactionalBinaryFile.TransactionalPage>(new TransactionalBinaryFile(fileName, baseDir, Guid.NewGuid(), pageSize, 2), chf);
+                    merkleBuffer = new MerkleBuffer(new TransactionalFileMappedBuffer(fileName, baseDir, Guid.NewGuid(), pageSize, 2), chf);
                     disposables.Add(new ActionScope(() => Tools.FileSystem.DeleteDirectory(baseDir)));
                     break;
                 case StorageType.TransactionalBinaryFile_5InMem:
                     baseDir = Tools.FileSystem.GetTempEmptyDirectory(true);
                     fileName = Path.Combine(baseDir, "File.dat");
-                    list = new MerkleBuffer<TransactionalBinaryFile.TransactionalPage>(new TransactionalBinaryFile(fileName, baseDir, Guid.NewGuid(), pageSize, 5), chf);
+                    merkleBuffer = new MerkleBuffer(new TransactionalFileMappedBuffer(fileName, baseDir, Guid.NewGuid(), pageSize, 5), chf);
                     disposables.Add(new ActionScope(() => Tools.FileSystem.DeleteDirectory(baseDir)));
                     break;
                 default:

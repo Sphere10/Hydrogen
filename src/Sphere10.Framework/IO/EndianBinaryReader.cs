@@ -398,7 +398,7 @@ namespace Sphere10.Framework {
                 // Stream has finished half way through. That's fine, return what we've got.
                 if (read == 0) {
                     byte[] copy = new byte[index];
-                    Buffer.BlockCopy(ret, 0, copy, 0, index);
+                    System.Buffer.BlockCopy(ret, 0, copy, 0, index);
                     return copy;
                 }
                 index += read;

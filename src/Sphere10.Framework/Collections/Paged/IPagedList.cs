@@ -8,27 +8,26 @@ using System.Threading;
 
 namespace Sphere10.Framework {
 
-    public interface IPagedList<TItem, TPage> : IExtendedList<TItem>
-		where TPage : IPage<TItem> {
+    public interface IPagedList<TItem> : IExtendedList<TItem> {
 
 		event EventHandlerEx<object> Accessing;
 		event EventHandlerEx<object> Accessed;
 		public event EventHandlerEx<object> Loading;
 		public event EventHandlerEx<object> Loaded;
-		event EventHandlerEx<object, TPage> PageAccessing;
-		event EventHandlerEx<object, TPage> PageAccessed;
+		event EventHandlerEx<object, IPage<TItem>> PageAccessing;
+		event EventHandlerEx<object, IPage<TItem>> PageAccessed;
 		event EventHandlerEx<object, int> PageCreating;
-		event EventHandlerEx<object, TPage> PageCreated;
-		event EventHandlerEx<object, TPage> PageReading;
-		event EventHandlerEx<object, TPage> PageRead;
-		event EventHandlerEx<object, TPage> PageWriting;
-		event EventHandlerEx<object, TPage> PageWrite;
-		event EventHandlerEx<object, TPage> PageDeleting;
-		event EventHandlerEx<object, TPage> PageDeleted;
+		event EventHandlerEx<object, IPage<TItem>> PageCreated;
+		event EventHandlerEx<object, IPage<TItem>> PageReading;
+		event EventHandlerEx<object, IPage<TItem>> PageRead;
+		event EventHandlerEx<object, IPage<TItem>> PageWriting;
+		event EventHandlerEx<object, IPage<TItem>> PageWrite;
+		event EventHandlerEx<object, IPage<TItem>> PageDeleting;
+		event EventHandlerEx<object, IPage<TItem>> PageDeleted;
 
-		IDisposable EnterOpenPageScope(TPage page);
+		IDisposable EnterOpenPageScope(IPage<TItem> page);
 
-		IReadOnlyList<TPage> Pages { get; }
+		IReadOnlyList<IPage<TItem>> Pages { get; }
 
 		bool RequiresLoad { get; }
 

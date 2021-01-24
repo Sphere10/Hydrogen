@@ -26,7 +26,7 @@ namespace Sphere10.Framework.Tests {
 
 	[TestFixture]
 	[Parallelizable(ParallelScope.Children)]
-	public class FileTransactionTests {
+	public class TransactionalFileMappedBufferTests {
 
 		[Test]
 		public void Sequential_CommitCommit() {
@@ -189,7 +189,7 @@ namespace Sphere10.Framework.Tests {
 		[Sequential]
 		public void Integration_Commit([Values(1, 2, 7, 11)] int numFiles) {
 			var expected = new List<List<byte>>();
-			var files = new List<TransactionalBinaryFile>();
+			var files = new List<TransactionalFileMappedBuffer>();
 			var RNG = new Random(1231);
 
 			var fileBaseDir = Tools.FileSystem.GetTempEmptyDirectory(true);
@@ -246,7 +246,7 @@ namespace Sphere10.Framework.Tests {
 		[Sequential]
 		public void Integration_ResumeCommit([Values(1, 2, 7, 11)] int numFiles) {
 			var expected = new List<List<byte>>();
-			var files = new List<TransactionalBinaryFile>();
+			var files = new List<TransactionalFileMappedBuffer>();
 			var RNG = new Random(1231);
 
 			var fileBaseDir = Tools.FileSystem.GetTempEmptyDirectory(true);
@@ -327,7 +327,7 @@ namespace Sphere10.Framework.Tests {
 		public void Integration_Rollback([Values(1, 2, 7, 11)] int numFiles) {
 			List<List<byte>> original;
 			var expected = new List<List<byte>>();
-			var files = new List<TransactionalBinaryFile>();
+			var files = new List<TransactionalFileMappedBuffer>();
 			var RNG = new Random(1231);
 
 			var fileBaseDir = Tools.FileSystem.GetTempEmptyDirectory(true);
@@ -390,7 +390,7 @@ namespace Sphere10.Framework.Tests {
 		public void Integration_ResumeRollback([Values(1, 2, 7, 11)] int numFiles) {
 			List<List<byte>> original;
 			var expected = new List<List<byte>>();
-			var files = new List<TransactionalBinaryFile>();
+			var files = new List<TransactionalFileMappedBuffer>();
 			var RNG = new Random(1231);
 
 			var fileBaseDir = Tools.FileSystem.GetTempEmptyDirectory(true);
@@ -469,7 +469,7 @@ namespace Sphere10.Framework.Tests {
 			}
 		}
 
-		private void MutateLists(List<byte> expected, TransactionalBinaryFile file, int maxCapacity, Random RNG) {
+		private void MutateLists(List<byte> expected, TransactionalFileMappedBuffer file, int maxCapacity, Random RNG) {
 			// add a random amount
 			var remainingCapacity = maxCapacity - file.Count;
 			var newItemsCount = RNG.Next(0, remainingCapacity + 1);

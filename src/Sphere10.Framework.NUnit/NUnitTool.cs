@@ -19,14 +19,12 @@ using System.Threading.Tasks;
 using NUnit.Framework;
 using Sphere10.Framework;
 
-namespace Tools
-{
+namespace Tools {
     public static class NUnit {
 
-
-        public static string Convert2DArrayToString<T>(string header, IEnumerable<IEnumerable<T>> arr2D) {
+		public static string Convert2DArrayToString<T>(string header, IEnumerable<IEnumerable<T>> arr2D) {
             var textBuilder = new StringBuilder();
-            textBuilder.AppendLine("{0}:",header);
+            textBuilder.AppendLine("{0}:", header);
             foreach (var row in arr2D) {
                 textBuilder.AppendLine("\t{0}", row.ToDelimittedString(",\t"));
             }
@@ -35,7 +33,7 @@ namespace Tools
 
         public static void IsEmpty<T>(IEnumerable<T> collection, string message = null) {
             if (!string.IsNullOrWhiteSpace(message))
-                Assert.IsEmpty(collection, message);                
+                Assert.IsEmpty(collection, message);
             else
                 Assert.IsEmpty(collection);
         }
@@ -57,5 +55,6 @@ namespace Tools
                     Console.WriteLine();
             }
         }
-	}
+
+    }
 }

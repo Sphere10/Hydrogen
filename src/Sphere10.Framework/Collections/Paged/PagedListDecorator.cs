@@ -2,26 +2,25 @@
 using System.Collections.Generic;
 
 namespace Sphere10.Framework {
-    public class PagedListDecorator<TItem, TPage> : ExtendedListDecorator<TItem>, IPagedList<TItem, TPage>
-        where TPage : IPage<TItem> {
+	public class PagedListDecorator<TItem> : ExtendedListDecorator<TItem>, IPagedList<TItem> { 
 
-        public event EventHandlerEx<object> Accessing { add => InternalExtendedList.Accessing += value; remove => InternalExtendedList.Accessing -= value; }
-        public event EventHandlerEx<object> Accessed { add => InternalExtendedList.Accessed += value; remove => InternalExtendedList.Accessed -= value; }
+		public event EventHandlerEx<object> Accessing { add => InternalExtendedList.Accessing += value; remove => InternalExtendedList.Accessing -= value; }
+		public event EventHandlerEx<object> Accessed { add => InternalExtendedList.Accessed += value; remove => InternalExtendedList.Accessed -= value;	}
 		public event EventHandlerEx<object> Loading { add => InternalExtendedList.Loading += value; remove => InternalExtendedList.Loading -= value; }
-        public event EventHandlerEx<object> Loaded { add => InternalExtendedList.Loaded += value; remove => InternalExtendedList.Loaded -= value; }
-        public event EventHandlerEx<object, TPage> PageAccessing { add => InternalExtendedList.PageAccessing += value; remove => InternalExtendedList.PageAccessing -= value; }
-        public event EventHandlerEx<object, TPage> PageAccessed { add => InternalExtendedList.PageAccessed += value; remove => InternalExtendedList.PageAccessed -= value; }
-        public event EventHandlerEx<object, int> PageCreating { add => InternalExtendedList.PageCreating += value; remove => InternalExtendedList.PageCreating -= value; }
-        public event EventHandlerEx<object, TPage> PageCreated { add => InternalExtendedList.PageCreated += value; remove => InternalExtendedList.PageCreated -= value; }
-        public event EventHandlerEx<object, TPage> PageReading { add => InternalExtendedList.PageReading += value; remove => InternalExtendedList.PageReading -= value; }
-        public event EventHandlerEx<object, TPage> PageRead { add => InternalExtendedList.PageRead += value; remove => InternalExtendedList.PageRead -= value; }
-        public event EventHandlerEx<object, TPage> PageWriting { add => InternalExtendedList.PageWriting += value; remove => InternalExtendedList.PageWriting -= value; }
-        public event EventHandlerEx<object, TPage> PageWrite { add => InternalExtendedList.PageWrite += value; remove => InternalExtendedList.PageWrite -= value; }
-        public event EventHandlerEx<object, TPage> PageDeleting { add => InternalExtendedList.PageDeleting += value; remove => InternalExtendedList.PageDeleting -= value; }
-        public event EventHandlerEx<object, TPage> PageDeleted { add => InternalExtendedList.PageDeleted += value; remove => InternalExtendedList.PageDeleted -= value; }
+		public event EventHandlerEx<object> Loaded { add => InternalExtendedList.Loaded += value;  remove => InternalExtendedList.Loaded -= value; }
+		public event EventHandlerEx<object, IPage<TItem>> PageAccessing { add => InternalExtendedList.PageAccessing += value; remove => InternalExtendedList.PageAccessing -= value; }
+		public event EventHandlerEx<object, IPage<TItem>> PageAccessed { add => InternalExtendedList.PageAccessed += value; remove => InternalExtendedList.PageAccessed -= value; }
+		public event EventHandlerEx<object, int> PageCreating {	add => InternalExtendedList.PageCreating += value; remove => InternalExtendedList.PageCreating -= value; }
+		public event EventHandlerEx<object, IPage<TItem>> PageCreated { add => InternalExtendedList.PageCreated += value; remove => InternalExtendedList.PageCreated -= value; }
+		public event EventHandlerEx<object, IPage<TItem>> PageReading { add => InternalExtendedList.PageReading += value; remove => InternalExtendedList.PageReading -= value; }
+		public event EventHandlerEx<object, IPage<TItem>> PageRead { add => InternalExtendedList.PageRead += value; remove => InternalExtendedList.PageRead -= value; }
+		public event EventHandlerEx<object, IPage<TItem>> PageWriting { add => InternalExtendedList.PageWriting += value; remove => InternalExtendedList.PageWriting -= value; }
+		public event EventHandlerEx<object, IPage<TItem>> PageWrite { add => InternalExtendedList.PageWrite += value; remove => InternalExtendedList.PageWrite -= value; }
+		public event EventHandlerEx<object, IPage<TItem>> PageDeleting { add => InternalExtendedList.PageDeleting += value; remove => InternalExtendedList.PageDeleting -= value; }
+		public event EventHandlerEx<object, IPage<TItem>> PageDeleted { add => InternalExtendedList.PageDeleted += value; remove => InternalExtendedList.PageDeleted -= value; }
 
-        protected PagedListDecorator(IPagedList<TItem, TPage> internalPagedList)
-            : base(internalPagedList) {
+		protected PagedListDecorator(IPagedList<TItem> internalPagedList)
+			: base(internalPagedList) {
 			internalPagedList.Accessing += (o) => OnAccessing();
 			internalPagedList.Accessed += (o) => OnAccessed();
 			internalPagedList.Loading += (o) => OnLoading();
@@ -38,15 +37,15 @@ namespace Sphere10.Framework {
 			internalPagedList.PageDeleted += (o, p) => OnPageDeleted(p);
 		}
 
-		protected new IPagedList<TItem, TPage> InternalExtendedList => (IPagedList<TItem, TPage>)base.InternalExtendedList;
+		protected new IPagedList<TItem> InternalExtendedList => (IPagedList<TItem>)base.InternalExtendedList;
 
-        public IReadOnlyList<TPage> Pages => InternalExtendedList.Pages;
+		public IReadOnlyList<IPage<TItem>> Pages => InternalExtendedList.Pages;
 
-        public bool RequiresLoad => InternalExtendedList.RequiresLoad;
+		public bool RequiresLoad => InternalExtendedList.RequiresLoad;
 
-        public void Load() => InternalExtendedList.Load();
+		public void Load() => InternalExtendedList.Load();
 
-        public IDisposable EnterOpenPageScope(TPage page) => InternalExtendedList.EnterOpenPageScope(page);
+		public IDisposable EnterOpenPageScope(IPage<TItem> page) => InternalExtendedList.EnterOpenPageScope(page);
 
 		protected virtual void OnAccessing() {
 		}
@@ -60,36 +59,36 @@ namespace Sphere10.Framework {
 		protected virtual void OnLoaded() {
 		}
 
-		protected virtual void OnPageAccessing(TPage page) {
+		protected virtual void OnPageAccessing(IPage<TItem> page) {
 		}
 
-		protected virtual void OnPageAccessed(TPage page) {
+		protected virtual void OnPageAccessed(IPage<TItem> page) {
 		}
 
 		protected virtual void OnPageCreating(int pageNumber) {
 		}
 
-		protected virtual void OnPageCreated(TPage page) {
+		protected virtual void OnPageCreated(IPage<TItem> page) {
 		}
 
-		protected virtual void OnPageReading(TPage page) {
+		protected virtual void OnPageReading(IPage<TItem> page) {
 		}
 
-		protected virtual void OnPageRead(TPage page) {
+		protected virtual void OnPageRead(IPage<TItem> page) {
 		}
 
-		protected virtual void OnPageWriting(TPage page) {
+		protected virtual void OnPageWriting(IPage<TItem> page) {
 		}
 
-		protected virtual void OnPageWrite(TPage page) {
+		protected virtual void OnPageWrite(IPage<TItem> page) {
 		}
 
-		protected virtual void OnPageDeleting(TPage page) {
+		protected virtual void OnPageDeleting(IPage<TItem> page) {
 		}
 
-		protected virtual void OnPageDeleted(TPage page) {
+		protected virtual void OnPageDeleted(IPage<TItem> page) {
 		}
 
-		
 	}
+
 }

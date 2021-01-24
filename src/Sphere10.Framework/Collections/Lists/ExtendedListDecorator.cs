@@ -7,7 +7,7 @@ namespace Sphere10.Framework {
 	/// Decorator for an IExtendedList, but calls to non-range get routed to the range-based methods.
 	/// </summary>
 	/// <typeparam name="TItem"></typeparam>
-	public class ExtendedListDecorator<TItem> : ExtendedListBase<TItem> {
+	public class ExtendedListDecorator<TItem> : IExtendedList<TItem> {
 
 		protected ExtendedListDecorator(IExtendedList<TItem> internalExtendedList) {
 			Guard.ArgumentNotNull(internalExtendedList, nameof(internalExtendedList));
@@ -16,85 +16,55 @@ namespace Sphere10.Framework {
 
 		protected IExtendedList<TItem> InternalExtendedList { get; }
 
-		public override int Count => InternalExtendedList.Count;
+		public virtual int Count => InternalExtendedList.Count;
 
-		public override bool IsReadOnly => InternalExtendedList.IsReadOnly;
+		public virtual bool IsReadOnly => InternalExtendedList.IsReadOnly;
 
-		public override int IndexOf(TItem item) {
-			return InternalExtendedList.IndexOf(item);
-		}
-
-		public override IEnumerable<int> IndexOfRange(IEnumerable<TItem> items) {
-			return InternalExtendedList.IndexOfRange(items);
-		}
-
-		public override bool Contains(TItem item) {
-			return InternalExtendedList.Contains(item);
-		}
-
-		public override IEnumerable<bool> ContainsRange(IEnumerable<TItem> items) {
-			return InternalExtendedList.ContainsRange(items);
-		}
-
-		public override TItem Read(int index) {
-			return InternalExtendedList.Read(index);
-		}
-
-		public override IEnumerable<TItem> ReadRange(int index, int count) {
-			return InternalExtendedList.ReadRange(index, count);
-		}
-
-		public override void Add(TItem item) {
-			InternalExtendedList.Add(item);
-		}
-
-		public override void AddRange(IEnumerable<TItem> items) {
-			InternalExtendedList.AddRange(items);
-		}
+        public virtual int IndexOf(TItem item) => InternalExtendedList.IndexOf(item);
 		
-		public override void Update(int index, TItem item) {
-			InternalExtendedList.Update(index, item);
-		}
+		public virtual IEnumerable<int> IndexOfRange(IEnumerable<TItem> items) => InternalExtendedList.IndexOfRange(items);
 
-		public override void UpdateRange(int index, IEnumerable<TItem> items) {
-			InternalExtendedList.UpdateRange(index, items);
-		}
+		public virtual bool Contains(TItem item) => InternalExtendedList.Contains(item);
 
-		public override void Insert(int index, TItem item) {
-			InternalExtendedList.Insert(index, item);
-		}
+		public virtual IEnumerable<bool> ContainsRange(IEnumerable<TItem> items) => InternalExtendedList.ContainsRange(items);
 
-		public override void InsertRange(int index, IEnumerable<TItem> items) {
-			InternalExtendedList.InsertRange(index, items);
-		}
+		public virtual TItem Read(int index) => InternalExtendedList.Read(index);
 
-		public override bool Remove(TItem item) {
-			return InternalExtendedList.Remove(item);
-		}
+		public virtual IEnumerable<TItem> ReadRange(int index, int count) => InternalExtendedList.ReadRange(index, count);
 
-		public override IEnumerable<bool> RemoveRange(IEnumerable<TItem> items) {
-			return InternalExtendedList.RemoveRange(items);
-		}
+		public virtual void Add(TItem item) => InternalExtendedList.Add(item);
 
-		public override void RemoveAt(int index) {
-			InternalExtendedList.RemoveAt(index);
-		}
+		public virtual void AddRange(IEnumerable<TItem> items) => InternalExtendedList.AddRange(items);
+		
+		public virtual void Update(int index, TItem item) => InternalExtendedList.Update(index, item);
 
-		public override void RemoveRange(int index, int count) {
-			InternalExtendedList.RemoveRange(index, count);
-		}
+		public virtual void UpdateRange(int index, IEnumerable<TItem> items) =>	InternalExtendedList.UpdateRange(index, items);
 
-		public override void Clear() {
-			InternalExtendedList.Clear();
-		}
+		public virtual void Insert(int index, TItem item) => InternalExtendedList.Insert(index, item);
+		
+		public virtual void InsertRange(int index, IEnumerable<TItem> items) => InternalExtendedList.InsertRange(index, items);
 
-		public override void CopyTo(TItem[] array, int arrayIndex) {
-			InternalExtendedList.CopyTo(array, arrayIndex);
-		}
+		public virtual bool Remove(TItem item) => InternalExtendedList.Remove(item);
 
-		public override IEnumerator<TItem> GetEnumerator() {
-			return InternalExtendedList.GetEnumerator();
-		}
+		public virtual IEnumerable<bool> RemoveRange(IEnumerable<TItem> items) => InternalExtendedList.RemoveRange(items);
+
+		public virtual void RemoveAt(int index) =>	InternalExtendedList.RemoveAt(index);
+
+		public virtual void RemoveRange(int index, int count) => InternalExtendedList.RemoveRange(index, count);
+
+		public virtual void Clear() => InternalExtendedList.Clear();
+
+		public virtual void CopyTo(TItem[] array, int arrayIndex) => InternalExtendedList.CopyTo(array, arrayIndex);
+
+		public virtual IEnumerator<TItem> GetEnumerator() => InternalExtendedList.GetEnumerator();
+
+        IEnumerator IEnumerable.GetEnumerator() => this.GetEnumerator();
+
+		public TItem this[int index] { get => this.Read(index); set => this.Update(index, value); }
+
+		TItem IWriteOnlyExtendedList<TItem>.this[int index] { set => this[index] = value; }
+
+		TItem IReadOnlyList<TItem>.this[int index] => this[index];
 
 	}
 

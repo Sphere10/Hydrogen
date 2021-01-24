@@ -7,37 +7,37 @@ using System.Threading;
 
 namespace Sphere10.Framework {
 
-    public abstract class PagedListBase<TItem, TPage> : RangedListBase<TItem>, IPagedList<TItem, TPage>
-		where TPage : IPage<TItem> {
+    public abstract class PagedListBase<TItem> : RangedListBase<TItem>, IPagedList<TItem> {
 
 		public event EventHandlerEx<object> Accessing;
 		public event EventHandlerEx<object> Accessed;
 		public event EventHandlerEx<object> Loading;
 		public event EventHandlerEx<object> Loaded;
-		public event EventHandlerEx<object, TPage> PageAccessing;
-		public event EventHandlerEx<object, TPage> PageAccessed;
+		public event EventHandlerEx<object, IPage<TItem>> PageAccessing;
+		public event EventHandlerEx<object, IPage<TItem>> PageAccessed;
 		public event EventHandlerEx<object, int> PageCreating;
-		public event EventHandlerEx<object, TPage> PageCreated;
-		public event EventHandlerEx<object, TPage> PageReading;
-		public event EventHandlerEx<object, TPage> PageRead;
-		public event EventHandlerEx<object, TPage> PageWriting;
-		public event EventHandlerEx<object, TPage> PageWrite;
-		public event EventHandlerEx<object, TPage> PageDeleting;
-		public event EventHandlerEx<object, TPage> PageDeleted;
+		public event EventHandlerEx<object, IPage<TItem>> PageCreated;
+		public event EventHandlerEx<object, IPage<TItem>> PageReading;
+		public event EventHandlerEx<object, IPage<TItem>> PageRead;
+		public event EventHandlerEx<object, IPage<TItem>> PageWriting;
+		public event EventHandlerEx<object, IPage<TItem>> PageWrite;
+		public event EventHandlerEx<object, IPage<TItem>> PageDeleting;
+		public event EventHandlerEx<object, IPage<TItem>> PageDeleted;
 
-		protected IExtendedList<TPage> _pages;
+		protected IExtendedList<IPage<TItem>> InternalPages;
+
 		protected bool SuppressNotifications;
 
 		protected PagedListBase() {
 			SuppressNotifications = false;
 			RequiresLoad = false;
 			IsLoading = false;
-			_pages = new ExtendedList<TPage>();
+			InternalPages = new ExtendedList<IPage<TItem>>();
 		}
 
-		public override int Count => _pages.Sum(p => p.Count);
+		public override int Count => InternalPages.Sum(p => p.Count);
 
-		public IReadOnlyList<TPage> Pages => _pages;
+		public virtual IReadOnlyList<IPage<TItem>> Pages => InternalPages;
 
 		public bool RequiresLoad { get; protected set; }
 
@@ -50,7 +50,7 @@ namespace Sphere10.Framework {
 			try {
 				Clear();
 				foreach (var page in LoadPages())
-					_pages.Add(page);
+					InternalPages.Add(page);
 			} finally {
 				IsLoading = false;
 			}
@@ -90,7 +90,7 @@ namespace Sphere10.Framework {
 			CheckRequiresLoad();
 			NotifyAccessing();
 
-			var page = _pages.Any() ? _pages.Last() : CreateNextPage();
+			var page = InternalPages.Any() ? InternalPages.Last() : CreateNextPage();
 
 			bool AppendToPage(out IEnumerable<TItem> remaining) {
 				NotifyPageAccessing(page);
@@ -153,7 +153,7 @@ namespace Sphere10.Framework {
 			if (count == 0)
 				return;
 			var endIndex = index + count - 1;
-			if (endIndex != _pages.Last().EndIndex)
+			if (endIndex != InternalPages.Last().EndIndex)
 				throw new NotSupportedException("Removing an inner region of items is not supported. This collection only supports removing from the end.");
 
 			foreach (var page in GetPagesInRange(index, endIndex).ToArray().Reverse()) {
@@ -178,16 +178,16 @@ namespace Sphere10.Framework {
 		public override void Clear() {
 			CheckRequiresLoad();
 			NotifyAccessing();
-			while (_pages.Count > 0)
-				DeletePage(_pages[_pages.Count - 1]);
-			_pages.Clear();
+			while (InternalPages.Count > 0)
+				DeletePage(InternalPages[InternalPages.Count - 1]);
+			InternalPages.Clear();
 			NotifyAccessed();
 		}
 
 		public override IEnumerator<TItem> GetEnumerator() {
 			var currentVersion = Version;
 			return
-				_pages
+				InternalPages
 					.SelectMany(p => {
 						using (EnterOpenPageScope(p)) {
 							return p;
@@ -197,13 +197,13 @@ namespace Sphere10.Framework {
 					.OnMoveNext(() => CheckVersion(currentVersion));
 		}
 
-		protected abstract TPage NewPageInstance(int pageNumber);
+		protected abstract IPage<TItem> NewPageInstance(int pageNumber);
 
-		protected abstract TPage[] LoadPages();
+		protected abstract IPage<TItem>[] LoadPages();
 
-		protected TPage CreateNextPage() {
-			TPage newPage;
-			if (!_pages.Any()) {
+		protected IPage<TItem> CreateNextPage() {
+			IPage<TItem> newPage;
+			if (!InternalPages.Any()) {
 				// First page
 				NotifyPageCreating(0);
 				newPage = NewPageInstance(0);
@@ -214,7 +214,7 @@ namespace Sphere10.Framework {
 				newPage.Size = 0;
 			} else {
 				// Next page
-				var lastPage = _pages.Last();
+				var lastPage = InternalPages.Last();
 				var nextPageNumber = lastPage.Number + 1;
 				NotifyPageCreating(nextPageNumber);
 				newPage = NewPageInstance(nextPageNumber);
@@ -224,24 +224,24 @@ namespace Sphere10.Framework {
 				newPage.Count = 0;
 				newPage.Size = 0;
 			};
-			_pages.Add(newPage);
+			InternalPages.Add(newPage);
 			NotifyPageCreated(newPage);
 			return newPage;
 		}
 
-		protected void DeletePage(TPage page) {
+		protected void DeletePage(IPage<TItem> page) {
 			if (page.Number != Pages.Last().Number)
 				throw new NotSupportedException("Deleting inner pages is not currently supported in this collection. Only deleting pages from the end is supported.");
 			NotifyPageAccessing(page);
 			page.State = PageState.Deleting;
 			NotifyPageDeleting(page);
-			_pages.RemoveAt(_pages.Count - 1);
+			InternalPages.RemoveAt(InternalPages.Count - 1);
 			page.State = PageState.Deleted;
 			NotifyPageDeleted(page);
 			NotifyPageAccessed(page);
 		}
 
-		protected IEnumerable<Tuple<TPage, int, int>> GetPageSegments(int startIndex, int count) {
+		protected IEnumerable<Tuple<IPage<TItem>, int, int>> GetPageSegments(int startIndex, int count) {
 			if (count == 0)
 				yield break;
 
@@ -256,23 +256,23 @@ namespace Sphere10.Framework {
 			}
 		}
 
-		protected virtual IEnumerable<TPage> GetPagesInRange(int startIndex, int endIndex) {
-			var index = _pages.BinarySearch(startIndex, (x, p) => {
+		protected virtual IEnumerable<IPage<TItem>> GetPagesInRange(int startIndex, int endIndex) {
+			var index = InternalPages.BinarySearch(startIndex, (x, p) => {
 				if (startIndex < p.StartIndex)
 					return -1;
 				if (startIndex > p.EndIndex)
 					return +1;
 				return 0;
 			});
-			TPage page;
+			IPage<TItem> page;
 			do {
-				page = _pages[index++];
+				page = InternalPages[index++];
 				yield return page;
-			} while (endIndex > page.EndIndex && index < _pages.Count);
+			} while (endIndex > page.EndIndex && index < InternalPages.Count);
 
 		}
 
-		public abstract IDisposable EnterOpenPageScope(TPage page);
+		public abstract IDisposable EnterOpenPageScope(IPage<TItem> page);
 
 		protected void CheckRequiresLoad() {
 			if (RequiresLoad)
@@ -280,10 +280,10 @@ namespace Sphere10.Framework {
 		}
 
 		protected void CheckRange(int index, int count) {
-			Guard.Argument(_pages.Count > 0, nameof(index), "No pages");
+			Guard.Argument(InternalPages.Count > 0, nameof(index), "No pages");
 			Guard.Argument(count >= 0, nameof(index), "Must be greater than or equal to 0");
-			var startIX = _pages.First().StartIndex;
-			var lastIX = _pages.Last().EndIndex;
+			var startIX = InternalPages.First().StartIndex;
+			var lastIX = InternalPages.Last().EndIndex;
 			Guard.ArgumentInRange(index, startIX, lastIX, nameof(index));
 			if (count > 0)
 				Guard.ArgumentInRange(index + count - 1, startIX, lastIX, nameof(count));
@@ -303,34 +303,34 @@ namespace Sphere10.Framework {
 		protected virtual void OnLoaded() {
 		}
 
-		protected virtual void OnPageAccessing(TPage page) {
+		protected virtual void OnPageAccessing(IPage<TItem> page) {
 		}
 
-		protected virtual void OnPageAccessed(TPage page) {
+		protected virtual void OnPageAccessed(IPage<TItem> page) {
 		}
 
 		protected virtual void OnPageCreating(int pageNumber) {
 		}
 
-		protected virtual void OnPageCreated(TPage page) {
+		protected virtual void OnPageCreated(IPage<TItem> page) {
 		}
 
-		protected virtual void OnPageReading(TPage page) {
+		protected virtual void OnPageReading(IPage<TItem> page) {
 		}
 
-		protected virtual void OnPageRead(TPage page) {
+		protected virtual void OnPageRead(IPage<TItem> page) {
 		}
 
-		protected virtual void OnPageWriting(TPage page) {
+		protected virtual void OnPageWriting(IPage<TItem> page) {
 		}
 
-		protected virtual void OnPageWrite(TPage page) {
+		protected virtual void OnPageWrite(IPage<TItem> page) {
 		}
 
-		protected virtual void OnPageDeleting(TPage page) {
+		protected virtual void OnPageDeleting(IPage<TItem> page) {
 		}
 
-		protected virtual void OnPageDeleted(TPage page) {
+		protected virtual void OnPageDeleted(IPage<TItem> page) {
 		}
 
 		protected void NotifyAccessing() {
@@ -365,7 +365,7 @@ namespace Sphere10.Framework {
 			Loaded?.Invoke(this);
 		}
 
-		protected void NotifyPageAccessing(TPage page) {
+		protected void NotifyPageAccessing(IPage<TItem> page) {
 			if (SuppressNotifications)
 				return;
 
@@ -373,7 +373,7 @@ namespace Sphere10.Framework {
 			PageAccessing?.Invoke(this, page);
 		}
 
-		protected void NotifyPageAccessed(TPage page) {
+		protected void NotifyPageAccessed(IPage<TItem> page) {
 			if (SuppressNotifications)
 				return;
 
@@ -389,7 +389,7 @@ namespace Sphere10.Framework {
 			PageCreating?.Invoke(this, pageNumber);
 		}
 
-		private void NotifyPageCreated(TPage page) {
+		private void NotifyPageCreated(IPage<TItem> page) {
 			if (SuppressNotifications)
 				return;
 
@@ -397,7 +397,7 @@ namespace Sphere10.Framework {
 			PageCreated?.Invoke(this, page);
 		}
 
-		private void NotifyPageWriting(TPage page) {
+		private void NotifyPageWriting(IPage<TItem> page) {
 			if (SuppressNotifications)
 				return;
 
@@ -405,7 +405,7 @@ namespace Sphere10.Framework {
 			PageWriting?.Invoke(this, page);
 		}
 
-		private void NotifyPageWrite(TPage page) {
+		private void NotifyPageWrite(IPage<TItem> page) {
 			if (SuppressNotifications)
 				return;
 
@@ -413,7 +413,7 @@ namespace Sphere10.Framework {
 			PageWrite?.Invoke(this, page);
 		}
 
-		private void NotifyPageReading(TPage page) {
+		private void NotifyPageReading(IPage<TItem> page) {
 			if (SuppressNotifications)
 				return;
 
@@ -421,7 +421,7 @@ namespace Sphere10.Framework {
 			PageReading?.Invoke(this, page);
 		}
 
-		private void NotifyPageRead(TPage page) {
+		private void NotifyPageRead(IPage<TItem> page) {
 			if (SuppressNotifications)
 				return;
 
@@ -429,7 +429,7 @@ namespace Sphere10.Framework {
 			PageRead?.Invoke(this, page);
 		}
 
-		private void NotifyPageDeleting(TPage page) {
+		private void NotifyPageDeleting(IPage<TItem> page) {
 			if (SuppressNotifications)
 				return;
 
@@ -437,7 +437,7 @@ namespace Sphere10.Framework {
 			PageDeleting?.Invoke(this, page);
 		}
 
-		private void NotifyPageDeleted(TPage page) {
+		private void NotifyPageDeleted(IPage<TItem> page) {
 			if (SuppressNotifications)
 				return;
 

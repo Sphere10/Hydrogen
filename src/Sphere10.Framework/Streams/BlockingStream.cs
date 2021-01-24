@@ -89,12 +89,12 @@ namespace Sphere10.Framework {
 					int bytesToCopy;
 					if (bytesAvailable > count) {
 						bytesToCopy = count;
-						Buffer.BlockCopy(_currentChunk, _currentChunkPosition,
+                        System.Buffer.BlockCopy(_currentChunk, _currentChunkPosition,
 							buffer, offset, count);
 						_currentChunkPosition += count;
 					} else {
 						bytesToCopy = bytesAvailable;
-						Buffer.BlockCopy(_currentChunk, _currentChunkPosition,
+                        System.Buffer.BlockCopy(_currentChunk, _currentChunkPosition,
 							buffer, offset, bytesToCopy);
 						_currentChunk = null;
 						_currentChunkPosition = 0;
@@ -119,7 +119,7 @@ namespace Sphere10.Framework {
 			if (count == 0) return;
 
 			var chunk = new byte[count];
-			Buffer.BlockCopy(buffer, offset, chunk, 0, count);
+            System.Buffer.BlockCopy(buffer, offset, chunk, 0, count);
 			lock (_lockForAll) {
 				if (_illegalToWrite)
 					throw new InvalidOperationException(

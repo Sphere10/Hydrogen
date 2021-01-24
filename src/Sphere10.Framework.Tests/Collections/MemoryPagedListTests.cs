@@ -633,10 +633,10 @@ namespace Sphere10.Framework.Tests {
         public void TestRandomAccess() {
             using (var collection = new MemoryPagedList<string>(50000, 1, str => str.Length*sizeof (char))) {
                 collection.PageLoaded += (largeCollection, page) => {
-                    System.Console.WriteLine("Page Loaded: {0}\t\t{1}", page.Number, ((MemoryPagedList<string>)largeCollection).Pages.Count());
+                    System.Console.WriteLine("Page Loaded: {0}\t\t{1}", page.Number, ((MemoryPagedListBase<string>)largeCollection).Pages.Count());
                 };
                 collection.PageUnloaded += (largeCollection, page) => {
-                    System.Console.WriteLine("Page Unloaded: {0}\t\t{1}", page.Number, ((MemoryPagedList<string>)largeCollection).Pages.Count());
+                    System.Console.WriteLine("Page Unloaded: {0}\t\t{1}", page.Number, ((MemoryPagedListBase<string>)largeCollection).Pages.Count());
                 };
                 for (var i = 0; i < 10000; i++) {
                     collection.Add(Tools.Text.GenerateRandomString(Tools.Maths.RNG.Next(0, 100)));
@@ -655,10 +655,10 @@ namespace Sphere10.Framework.Tests {
         public void TestGrowWhilstRandomAccess() {
             using (var collection = new MemoryPagedList<string>(5000, 1, str => str.Length*sizeof (char))) {
                 collection.PageLoaded += (largeCollection, page) => {
-                    System.Console.WriteLine("Page Loaded: {0}\t\t{1}", page.Number, ((MemoryPagedList<string>)largeCollection).Pages.Count());
+                    System.Console.WriteLine("Page Loaded: {0}\t\t{1}", page.Number, ((MemoryPagedListBase<string>)largeCollection).Pages.Count());
                 };
                 collection.PageUnloaded += (largeCollection, page) => {
-                    System.Console.WriteLine("Page Unloaded: {0}\t\t{1}", page.Number, ((MemoryPagedList<string>)largeCollection).Pages.Count());
+                    System.Console.WriteLine("Page Unloaded: {0}\t\t{1}", page.Number, ((MemoryPagedListBase<string>)largeCollection).Pages.Count());
                 };
 
 
@@ -675,10 +675,10 @@ namespace Sphere10.Framework.Tests {
         public void TestLinq() {
             using (var collection = new MemoryPagedList<string>(50000, 1, str => str.Length*sizeof (char))) {
                 collection.PageLoaded += (largeCollection, page) => {
-                    System.Console.WriteLine("Page Loaded: {0}\t\t{1}", page.Number, ((MemoryPagedList<string>)largeCollection).Pages.Count());
+                    System.Console.WriteLine("Page Loaded: {0}\t\t{1}", page.Number, ((MemoryPagedListBase<string>)largeCollection).Pages.Count());
                 };
                 collection.PageUnloaded += (largeCollection, page) => {
-                    System.Console.WriteLine("Page Unloaded: {0}\t\t{1}", page.Number, ((MemoryPagedList<string>)largeCollection).Pages.Count());
+                    System.Console.WriteLine("Page Unloaded: {0}\t\t{1}", page.Number, ((MemoryPagedListBase<string>)largeCollection).Pages.Count());
                 };
 
                 for (int i = 0; i < 100000; i++) {

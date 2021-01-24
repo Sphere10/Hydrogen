@@ -19,10 +19,10 @@ using System.Linq;
 namespace Sphere10.Framework {
 
 	public class LargeCollection<TItem> : CollectionDecorator<TItem>, IDisposable {
-		public event EventHandlerEx<object, BinaryFormattedPage<TItem>> PageLoading { add => InternalPagedList.PageLoading += value; remove => InternalPagedList.PageLoading -= value; }
-		public event EventHandlerEx<object, BinaryFormattedPage<TItem>> PageLoaded { add => InternalPagedList.PageLoaded += value; remove => InternalPagedList.PageLoaded -= value; }
-		public event EventHandlerEx<object, BinaryFormattedPage<TItem>> PageUnloading { add => InternalPagedList.PageUnloading += value; remove => InternalPagedList.PageUnloading -= value; }
-		public event EventHandlerEx<object, BinaryFormattedPage<TItem>> PageUnloaded { add => InternalPagedList.PageUnloaded += value; remove => InternalPagedList.PageUnloaded -= value; }
+		public event EventHandlerEx<object, IMemoryPage<TItem>> PageLoading { add => InternalPagedList.PageLoading += value; remove => InternalPagedList.PageLoading -= value; }
+		public event EventHandlerEx<object, IMemoryPage<TItem>> PageLoaded { add => InternalPagedList.PageLoaded += value; remove => InternalPagedList.PageLoaded -= value; }
+		public event EventHandlerEx<object, IMemoryPage<TItem>> PageUnloading { add => InternalPagedList.PageUnloading += value; remove => InternalPagedList.PageUnloading -= value; }
+		public event EventHandlerEx<object, IMemoryPage<TItem>> PageUnloaded { add => InternalPagedList.PageUnloaded += value; remove => InternalPagedList.PageUnloaded -= value; }
 
 		public LargeCollection(int pageSize, int maxOpenPages)
 			: this(pageSize, maxOpenPages, null) {
@@ -32,9 +32,9 @@ namespace Sphere10.Framework {
 			: base(new MemoryPagedList<TItem>(pageSize, maxOpenPages, itemSizer)) {
 		}
 
-		protected MemoryPagedList<TItem> InternalPagedList => (MemoryPagedList<TItem>)base.InnerCollection;
+		protected MemoryPagedListBase<TItem> InternalPagedList => (MemoryPagedListBase<TItem>)base.InnerCollection;
 
-		public IList<BinaryFormattedPage<TItem>> Pages => InternalPagedList.Pages.ToList();
+		public IReadOnlyList<IMemoryPage<TItem>> Pages => new ReadOnlyListDecorator<IPage<TItem>, IMemoryPage<TItem>>(InternalPagedList.Pages);
 
 		public void Dispose() {
 			InternalPagedList.Dispose();

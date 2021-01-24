@@ -59,7 +59,7 @@ namespace Sphere10.Framework.Tests {
 
 			Tools.FileSystem.AppendAllBytes(fileName, originalData);
 			using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectory(baseDir))) {
-				using (var file = new TransactionalBinaryFile(fileName, pageSize, 1)) {
+				using (var file = new TransactionalFileMappedBuffer(fileName, pageSize, 1)) {
 					if (file.RequiresLoad)
 						file.Load();
 
@@ -68,7 +68,7 @@ namespace Sphere10.Framework.Tests {
 						file[i] ^= file[i];
 					file[0] ^= file[0];  // page 0 should be changed, but in memory only
 
-					var pageFile = TransactionalBinaryFile.MarkerRepository.GeneratePageMarkerFileName(baseDir, file.FileID, TransactionalBinaryFile.PageMarkerType.UncommittedPage, 0);
+					var pageFile = TransactionalFileMappedBuffer.MarkerRepository.GeneratePageMarkerFileName(baseDir, file.FileID, TransactionalFileMappedBuffer.PageMarkerType.UncommittedPage, 0);
 
 					// Check pagefile for page 0 doesn't exist yet
 					Assert.IsTrue(!File.Exists(pageFile));
@@ -85,7 +85,7 @@ namespace Sphere10.Framework.Tests {
 
 			Tools.FileSystem.AppendAllBytes(fileName, originalData);
 			using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectory(baseDir))) {
-				using (var file = new TransactionalBinaryFile(fileName, pageSize, 1)) {
+				using (var file = new TransactionalFileMappedBuffer(fileName, pageSize, 1)) {
 					if (file.RequiresLoad)
 						file.Load();
 
@@ -94,7 +94,7 @@ namespace Sphere10.Framework.Tests {
 						file[i] ^= file[i];
 					file[0] ^= file[0];  // page 0 should be changed, but in memory only
 
-					var pageFile = TransactionalBinaryFile.MarkerRepository.GeneratePageMarkerFileName(baseDir, file.FileID, TransactionalBinaryFile.PageMarkerType.UncommittedPage, 0);
+					var pageFile = TransactionalFileMappedBuffer.MarkerRepository.GeneratePageMarkerFileName(baseDir, file.FileID, TransactionalFileMappedBuffer.PageMarkerType.UncommittedPage, 0);
 
 					// Cause page 0 to be flushed
 					file.Flush();
@@ -114,7 +114,7 @@ namespace Sphere10.Framework.Tests {
 
 			Tools.FileSystem.AppendAllBytes(fileName, originalData);
 			using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectory(baseDir))) {
-				using (var file = new TransactionalBinaryFile(fileName, pageSize, 1)) {
+				using (var file = new TransactionalFileMappedBuffer(fileName, pageSize, 1)) {
 					if (file.RequiresLoad)
 						file.Load();
 
@@ -123,7 +123,7 @@ namespace Sphere10.Framework.Tests {
 						file[i] ^= file[i];
 					file[0] ^= file[0];  // page 0 should be changed, but in memory only
 
-					var pageFile = TransactionalBinaryFile.MarkerRepository.GeneratePageMarkerFileName(baseDir, file.FileID, TransactionalBinaryFile.PageMarkerType.UncommittedPage, 0);
+					var pageFile = TransactionalFileMappedBuffer.MarkerRepository.GeneratePageMarkerFileName(baseDir, file.FileID, TransactionalFileMappedBuffer.PageMarkerType.UncommittedPage, 0);
 
 					// Check pagefile for page 0 doesn't exist yet
 					Assert.IsTrue(!File.Exists(pageFile));
@@ -151,7 +151,7 @@ namespace Sphere10.Framework.Tests {
 
 			Tools.FileSystem.AppendAllBytes(fileName, originalData);
 			using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectory(baseDir))) {
-				using (var file = new TransactionalBinaryFile(fileName, pageSize, 1)) {
+				using (var file = new TransactionalFileMappedBuffer(fileName, pageSize, 1)) {
 					if (file.RequiresLoad)
 						file.Load();
 
@@ -160,7 +160,7 @@ namespace Sphere10.Framework.Tests {
 						file[i] ^= file[i];
 					file[0] ^= file[0];  // page 0 should be changed, but in memory only
 
-					var pageFile = TransactionalBinaryFile.MarkerRepository.GeneratePageMarkerFileName(baseDir, file.FileID, TransactionalBinaryFile.PageMarkerType.UncommittedPage, 0);
+					var pageFile = TransactionalFileMappedBuffer.MarkerRepository.GeneratePageMarkerFileName(baseDir, file.FileID, TransactionalFileMappedBuffer.PageMarkerType.UncommittedPage, 0);
 
 					// Check pagefile for page 0 doesn't exist yet
 					Assert.IsTrue(!File.Exists(pageFile));
@@ -190,11 +190,11 @@ namespace Sphere10.Framework.Tests {
 			using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectory(baseDir))) {
 				// Write a commit header and a deleted page
 				var fileID = Guid.NewGuid();
-				var commitFile = TransactionalBinaryFile.MarkerRepository.GenerateFileMarkerFileName(baseDir, fileID, TransactionalBinaryFile.FileMarkerType.Committing);
-				var pageFile = TransactionalBinaryFile.MarkerRepository.GeneratePageMarkerFileName(baseDir, fileID, TransactionalBinaryFile.PageMarkerType.UncommittedPage, 0);
+				var commitFile = TransactionalFileMappedBuffer.MarkerRepository.GenerateFileMarkerFileName(baseDir, fileID, TransactionalFileMappedBuffer.FileMarkerType.Committing);
+				var pageFile = TransactionalFileMappedBuffer.MarkerRepository.GeneratePageMarkerFileName(baseDir, fileID, TransactionalFileMappedBuffer.PageMarkerType.UncommittedPage, 0);
 				Tools.FileSystem.CreateBlankFile(commitFile);
 				File.WriteAllBytes(pageFile, originalData.Select(b => (byte)(b ^ b)).ToArray());
-				using (var file = new TransactionalBinaryFile(fileName, fileID, pageSize, 1)) {
+				using (var file = new TransactionalFileMappedBuffer(fileName, fileID, pageSize, 1)) {
 					file.Load(); // resumes commit
 				}
 
@@ -217,11 +217,11 @@ namespace Sphere10.Framework.Tests {
 			using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectory(baseDir))) {
 				// Write a commit header and a deleted page
 				var fileID = Guid.NewGuid();
-				var rollbackFile = TransactionalBinaryFile.MarkerRepository.GenerateFileMarkerFileName(baseDir, fileID, TransactionalBinaryFile.FileMarkerType.RollingBack);
-				var pageFile = TransactionalBinaryFile.MarkerRepository.GeneratePageMarkerFileName(baseDir, fileID, TransactionalBinaryFile.PageMarkerType.UncommittedPage, 0);
+				var rollbackFile = TransactionalFileMappedBuffer.MarkerRepository.GenerateFileMarkerFileName(baseDir, fileID, TransactionalFileMappedBuffer.FileMarkerType.RollingBack);
+				var pageFile = TransactionalFileMappedBuffer.MarkerRepository.GeneratePageMarkerFileName(baseDir, fileID, TransactionalFileMappedBuffer.PageMarkerType.UncommittedPage, 0);
 				Tools.FileSystem.CreateBlankFile(rollbackFile);
 				File.WriteAllBytes(pageFile, originalData.Select(b => (byte)(b ^ b)).ToArray());
-				using (var file = new TransactionalBinaryFile(fileName, fileID, pageSize, 1)) {
+				using (var file = new TransactionalFileMappedBuffer(fileName, fileID, pageSize, 1)) {
 					file.Load();
 				}
 
@@ -242,13 +242,13 @@ namespace Sphere10.Framework.Tests {
 
 			Tools.FileSystem.AppendAllBytes(fileName, originalData);
 			using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectory(baseDir))) {
-				using (var file = new TransactionalBinaryFile(fileName, pageSize, 1)) {
+				using (var file = new TransactionalFileMappedBuffer(fileName, pageSize, 1)) {
 					if (file.RequiresLoad)
 						file.Load();
 
 					// delete data
 					file.RemoveRange(0, file.Count);
-					var markerFile = TransactionalBinaryFile.MarkerRepository.GeneratePageMarkerFileName(baseDir, file.FileID, TransactionalBinaryFile.PageMarkerType.DeletedMarker, 0);
+					var markerFile = TransactionalFileMappedBuffer.MarkerRepository.GeneratePageMarkerFileName(baseDir, file.FileID, TransactionalFileMappedBuffer.PageMarkerType.DeletedMarker, 0);
 					Assert.IsTrue(File.Exists(markerFile));
 				}
 			}
@@ -263,7 +263,7 @@ namespace Sphere10.Framework.Tests {
 
 			Tools.FileSystem.AppendAllBytes(fileName, originalData);
 			using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectory(baseDir))) {
-				using (var file = new TransactionalBinaryFile(fileName, pageSize, 1)) {
+				using (var file = new TransactionalFileMappedBuffer(fileName, pageSize, 1)) {
 					if (file.RequiresLoad)
 						file.Load();
 
@@ -274,7 +274,7 @@ namespace Sphere10.Framework.Tests {
 					var lastPage = file.Pages.Last();
 					file.RemoveRange(lastPage.StartIndex, lastPage.Count);
 					
-					var markerFile = TransactionalBinaryFile.MarkerRepository.GeneratePageMarkerFileName(baseDir, file.FileID, TransactionalBinaryFile.PageMarkerType.DeletedMarker, lastPage.Number);
+					var markerFile = TransactionalFileMappedBuffer.MarkerRepository.GeneratePageMarkerFileName(baseDir, file.FileID, TransactionalFileMappedBuffer.PageMarkerType.DeletedMarker, lastPage.Number);
 					Assert.IsFalse(File.Exists(markerFile));
 				}
 			}
@@ -289,13 +289,13 @@ namespace Sphere10.Framework.Tests {
 
 			Tools.FileSystem.AppendAllBytes(fileName, originalData);
 			using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectory(baseDir))) {
-				using (var file = new TransactionalBinaryFile(fileName, pageSize, 1)) {
+				using (var file = new TransactionalFileMappedBuffer(fileName, pageSize, 1)) {
 					if (file.RequiresLoad)
 						file.Load();
 
 					// delete data
 					file.RemoveRange(0, file.Count);
-					var markerFile = TransactionalBinaryFile.MarkerRepository.GeneratePageMarkerFileName(baseDir, file.FileID, TransactionalBinaryFile.PageMarkerType.DeletedMarker, 0);
+					var markerFile = TransactionalFileMappedBuffer.MarkerRepository.GeneratePageMarkerFileName(baseDir, file.FileID, TransactionalFileMappedBuffer.PageMarkerType.DeletedMarker, 0);
 					Assert.IsTrue(File.Exists(markerFile));
 
 					// rollback transaction
@@ -318,13 +318,13 @@ namespace Sphere10.Framework.Tests {
 
 			Tools.FileSystem.AppendAllBytes(fileName, originalData);
 			using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectory(baseDir))) {
-				using (var file = new TransactionalBinaryFile(fileName, pageSize, 1)) {
+				using (var file = new TransactionalFileMappedBuffer(fileName, pageSize, 1)) {
 					if (file.RequiresLoad)
 						file.Load();
 
 					// delete data
 					file.RemoveRange(0, file.Count);
-					var markerFile = TransactionalBinaryFile.MarkerRepository.GeneratePageMarkerFileName(baseDir, file.FileID, TransactionalBinaryFile.PageMarkerType.DeletedMarker, 0);
+					var markerFile = TransactionalFileMappedBuffer.MarkerRepository.GeneratePageMarkerFileName(baseDir, file.FileID, TransactionalFileMappedBuffer.PageMarkerType.DeletedMarker, 0);
 					Assert.IsTrue(File.Exists(markerFile));
 					// Commit transaction
 					file.Commit();
@@ -348,11 +348,11 @@ namespace Sphere10.Framework.Tests {
 			using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectory(baseDir))) {
 				// Write a commit header and a deleted page
 				var fileID = Guid.NewGuid();
-				var commitFile = TransactionalBinaryFile.MarkerRepository.GenerateFileMarkerFileName(baseDir, fileID, TransactionalBinaryFile.FileMarkerType.Committing);
-				var markerFile = TransactionalBinaryFile.MarkerRepository.GeneratePageMarkerFileName(baseDir, fileID, TransactionalBinaryFile.PageMarkerType.DeletedMarker, 0);
+				var commitFile = TransactionalFileMappedBuffer.MarkerRepository.GenerateFileMarkerFileName(baseDir, fileID, TransactionalFileMappedBuffer.FileMarkerType.Committing);
+				var markerFile = TransactionalFileMappedBuffer.MarkerRepository.GeneratePageMarkerFileName(baseDir, fileID, TransactionalFileMappedBuffer.PageMarkerType.DeletedMarker, 0);
 				Tools.FileSystem.CreateBlankFile(commitFile);
 				Tools.FileSystem.CreateBlankFile(markerFile);
-				using (var file = new TransactionalBinaryFile(fileName, fileID, pageSize, 1)) {
+				using (var file = new TransactionalFileMappedBuffer(fileName, fileID, pageSize, 1)) {
 					file.Load(); // resumes commit
 				}
 
@@ -375,11 +375,11 @@ namespace Sphere10.Framework.Tests {
 			using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectory(baseDir))) {
 				// Write a commit header and a deleted page
 				var fileID = Guid.NewGuid();
-				var commitFile = TransactionalBinaryFile.MarkerRepository.GenerateFileMarkerFileName(baseDir, fileID, TransactionalBinaryFile.FileMarkerType.RollingBack);
-				var markerFile = TransactionalBinaryFile.MarkerRepository.GeneratePageMarkerFileName(baseDir, fileID, TransactionalBinaryFile.PageMarkerType.DeletedMarker, 0);
+				var commitFile = TransactionalFileMappedBuffer.MarkerRepository.GenerateFileMarkerFileName(baseDir, fileID, TransactionalFileMappedBuffer.FileMarkerType.RollingBack);
+				var markerFile = TransactionalFileMappedBuffer.MarkerRepository.GeneratePageMarkerFileName(baseDir, fileID, TransactionalFileMappedBuffer.PageMarkerType.DeletedMarker, 0);
 				Tools.FileSystem.CreateBlankFile(commitFile);
 				Tools.FileSystem.CreateBlankFile(markerFile);
-				using (var file = new TransactionalBinaryFile(fileName, fileID, pageSize, 1)) {
+				using (var file = new TransactionalFileMappedBuffer(fileName, fileID, pageSize, 1)) {
 					file.Load(); // resumes rollback
 				}
 
@@ -404,13 +404,13 @@ namespace Sphere10.Framework.Tests {
 
 			Tools.FileSystem.AppendAllBytes(fileName, originalData);
 			using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectory(baseDir))) {
-				using (var file = new TransactionalBinaryFile(fileName, pageSize, 1)) {
+				using (var file = new TransactionalFileMappedBuffer(fileName, pageSize, 1)) {
 					if (file.RequiresLoad)
 						file.Load();
 
 					// delete data
 					file.RemoveRange(file.Pages[1].StartIndex, file.Pages[1].Count);
-					var markerFile = TransactionalBinaryFile.MarkerRepository.GeneratePageMarkerFileName(baseDir, file.FileID, TransactionalBinaryFile.PageMarkerType.DeletedMarker, 1);
+					var markerFile = TransactionalFileMappedBuffer.MarkerRepository.GeneratePageMarkerFileName(baseDir, file.FileID, TransactionalFileMappedBuffer.PageMarkerType.DeletedMarker, 1);
 					Assert.IsTrue(File.Exists(markerFile));
 					// Commit transaction
 					file.Commit();
@@ -432,7 +432,7 @@ namespace Sphere10.Framework.Tests {
 
 			Tools.FileSystem.AppendAllBytes(fileName, originalData);
 			using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectory(baseDir))) {
-				using (var file = new TransactionalBinaryFile(fileName, pageSize, 1)) {
+				using (var file = new TransactionalFileMappedBuffer(fileName, pageSize, 1)) {
 					if (file.RequiresLoad)
 						file.Load();
 
@@ -440,8 +440,8 @@ namespace Sphere10.Framework.Tests {
 					var lastPages = file.Pages.Skip(file.Pages.Count() - 2).ToArray();
 					file.RemoveRange(lastPages[0].StartIndex, lastPages[0].Count + lastPages[1].Count);
 
-					var markerFile1 = TransactionalBinaryFile.MarkerRepository.GeneratePageMarkerFileName(baseDir, file.FileID, TransactionalBinaryFile.PageMarkerType.DeletedMarker, lastPages[0].Number);
-					var markerFile2 = TransactionalBinaryFile.MarkerRepository.GeneratePageMarkerFileName(baseDir, file.FileID, TransactionalBinaryFile.PageMarkerType.DeletedMarker, lastPages[1].Number);
+					var markerFile1 = TransactionalFileMappedBuffer.MarkerRepository.GeneratePageMarkerFileName(baseDir, file.FileID, TransactionalFileMappedBuffer.PageMarkerType.DeletedMarker, lastPages[0].Number);
+					var markerFile2 = TransactionalFileMappedBuffer.MarkerRepository.GeneratePageMarkerFileName(baseDir, file.FileID, TransactionalFileMappedBuffer.PageMarkerType.DeletedMarker, lastPages[1].Number);
 					Assert.IsTrue(File.Exists(markerFile1));
 					Assert.IsTrue(File.Exists(markerFile2));
 				}
@@ -457,7 +457,7 @@ namespace Sphere10.Framework.Tests {
 
 			Tools.FileSystem.AppendAllBytes(fileName, originalData);
 			using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectory(baseDir))) {
-				using (var file = new TransactionalBinaryFile(fileName, pageSize, 1)) {
+				using (var file = new TransactionalFileMappedBuffer(fileName, pageSize, 1)) {
 					if (file.RequiresLoad)
 						file.Load();
 
@@ -468,8 +468,8 @@ namespace Sphere10.Framework.Tests {
 					var lastPages = file.Pages.Skip(file.Pages.Count() - 2).ToArray();
 					file.RemoveRange(lastPages[0].StartIndex, lastPages[0].Count + lastPages[1].Count);
 
-					var markerFile1 = TransactionalBinaryFile.MarkerRepository.GeneratePageMarkerFileName(baseDir, file.FileID, TransactionalBinaryFile.PageMarkerType.DeletedMarker, lastPages[0].Number);
-					var markerFile2 = TransactionalBinaryFile.MarkerRepository.GeneratePageMarkerFileName(baseDir, file.FileID, TransactionalBinaryFile.PageMarkerType.DeletedMarker, lastPages[1].Number);
+					var markerFile1 = TransactionalFileMappedBuffer.MarkerRepository.GeneratePageMarkerFileName(baseDir, file.FileID, TransactionalFileMappedBuffer.PageMarkerType.DeletedMarker, lastPages[0].Number);
+					var markerFile2 = TransactionalFileMappedBuffer.MarkerRepository.GeneratePageMarkerFileName(baseDir, file.FileID, TransactionalFileMappedBuffer.PageMarkerType.DeletedMarker, lastPages[1].Number);
 					Assert.IsFalse(File.Exists(markerFile1));
 					Assert.IsFalse(File.Exists(markerFile2));
 				}
@@ -492,13 +492,13 @@ namespace Sphere10.Framework.Tests {
 
 			Tools.FileSystem.AppendAllBytes(fileName, originalData);
 			using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectory(baseDir))) {
-				using (var file = new TransactionalBinaryFile(fileName, pageSize, 1)) {
+				using (var file = new TransactionalFileMappedBuffer(fileName, pageSize, 1)) {
 					if (file.RequiresLoad)
 						file.Load();
 
 					file.RemoveRange(pageSize + lastPageRemainingData, pageSize - lastPageRemainingData);
 					file.Flush();
-					var markerFile = TransactionalBinaryFile.MarkerRepository.GeneratePageMarkerFileName(baseDir, file.FileID, TransactionalBinaryFile.PageMarkerType.UncommittedPage, 1);
+					var markerFile = TransactionalFileMappedBuffer.MarkerRepository.GeneratePageMarkerFileName(baseDir, file.FileID, TransactionalFileMappedBuffer.PageMarkerType.UncommittedPage, 1);
 					Assert.IsTrue(File.Exists(markerFile));
 					Assert.AreEqual(lastPageRemainingData, Tools.FileSystem.GetFileSize(markerFile));
 
@@ -524,13 +524,13 @@ namespace Sphere10.Framework.Tests {
 
 			Tools.FileSystem.AppendAllBytes(fileName, originalData);
 			using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectory(baseDir))) {
-				using (var file = new TransactionalBinaryFile(fileName, pageSize, 1)) {
+				using (var file = new TransactionalFileMappedBuffer(fileName, pageSize, 1)) {
 					if (file.RequiresLoad)
 						file.Load();
 
 					file.RemoveRange(pageSize + lastPageRemainingData, pageSize - lastPageRemainingData);
 					file.Flush();
-					var markerFile = TransactionalBinaryFile.MarkerRepository.GeneratePageMarkerFileName(baseDir, file.FileID, TransactionalBinaryFile.PageMarkerType.UncommittedPage, 1);
+					var markerFile = TransactionalFileMappedBuffer.MarkerRepository.GeneratePageMarkerFileName(baseDir, file.FileID, TransactionalFileMappedBuffer.PageMarkerType.UncommittedPage, 1);
 					Assert.IsTrue(File.Exists(markerFile));
 					Assert.AreEqual(lastPageRemainingData, Tools.FileSystem.GetFileSize(markerFile));
 
@@ -557,7 +557,7 @@ namespace Sphere10.Framework.Tests {
 
 			Tools.FileSystem.AppendAllBytes(fileName, originalData);
 			using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectory(baseDir))) {
-				using (var file = new TransactionalBinaryFile(fileName, pageSize, maxOpenPages)) {
+				using (var file = new TransactionalFileMappedBuffer(fileName, pageSize, maxOpenPages)) {
 					if (file.RequiresLoad)
 						file.Load();
 
@@ -567,7 +567,7 @@ namespace Sphere10.Framework.Tests {
 
 					// check deleted pages 3..10 exist
 					for (var i = 2; i < 10; i++) {
-						var markerFile = TransactionalBinaryFile.MarkerRepository.GeneratePageMarkerFileName(baseDir, file.FileID, TransactionalBinaryFile.PageMarkerType.DeletedMarker, i);
+						var markerFile = TransactionalFileMappedBuffer.MarkerRepository.GeneratePageMarkerFileName(baseDir, file.FileID, TransactionalFileMappedBuffer.PageMarkerType.DeletedMarker, i);
 						Assert.IsTrue(File.Exists(markerFile));
 					}
 
@@ -594,7 +594,7 @@ namespace Sphere10.Framework.Tests {
 
 			Tools.FileSystem.AppendAllBytes(fileName, originalData);
 			using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectory(baseDir))) {
-				using (var file = new TransactionalBinaryFile(fileName, pageSize, maxOpenPages)) {
+				using (var file = new TransactionalFileMappedBuffer(fileName, pageSize, maxOpenPages)) {
 					Assert.IsTrue(file.RequiresLoad);
 					file.Load();
 
@@ -606,7 +606,7 @@ namespace Sphere10.Framework.Tests {
 
 					// check deleted pages 3..10 exist
 					for (var i = 2; i < 10; i++) {
-						var markerFile = TransactionalBinaryFile.MarkerRepository.GeneratePageMarkerFileName(baseDir, file.FileID, TransactionalBinaryFile.PageMarkerType.UncommittedPage, i);
+						var markerFile = TransactionalFileMappedBuffer.MarkerRepository.GeneratePageMarkerFileName(baseDir, file.FileID, TransactionalFileMappedBuffer.PageMarkerType.UncommittedPage, i);
 						Assert.IsTrue(File.Exists(markerFile));
 					}
 
@@ -644,7 +644,7 @@ namespace Sphere10.Framework.Tests {
 			Tools.FileSystem.AppendAllBytes(fileName, originalData);
 			using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectories(baseDir, pageDir1, pageDir2))) {
 				var fileID = Guid.NewGuid();
-				using (var file = new TransactionalBinaryFile(fileName, pageDir1, fileID,  pageSize, maxOpenPages)) {
+				using (var file = new TransactionalFileMappedBuffer(fileName, pageDir1, fileID,  pageSize, maxOpenPages)) {
 					file.Load();
 					AssertFileCount(pageDir1, 0);
 
@@ -655,7 +655,7 @@ namespace Sphere10.Framework.Tests {
 					AssertFileCount(pageDir1, 10); // duplicate markers 
  				}
 
-				using (var file = new TransactionalBinaryFile(fileName, pageDir2, fileID, pageSize, maxOpenPages)) {
+				using (var file = new TransactionalFileMappedBuffer(fileName, pageDir2, fileID, pageSize, maxOpenPages)) {
 					file.Load();
 					AssertFileCount(pageDir1, 0);
 				}
@@ -676,7 +676,7 @@ namespace Sphere10.Framework.Tests {
 			Tools.FileSystem.AppendAllBytes(fileName, originalData);
 			using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectories(baseDir, pageDir1, pageDir2))) {
 				var fileID = Guid.NewGuid();
-				using (var file = new TransactionalBinaryFile(fileName, pageDir1, fileID, pageSize, maxOpenPages)) {
+				using (var file = new TransactionalFileMappedBuffer(fileName, pageDir1, fileID, pageSize, maxOpenPages)) {
 					file.Load();
 					AssertFileCount(pageDir1, 0);
 
@@ -688,7 +688,7 @@ namespace Sphere10.Framework.Tests {
 					AssertFileCount(pageDir1, 2); // duplicate markers 
 				}
 
-				using (var file = new TransactionalBinaryFile(fileName, pageDir2, fileID, pageSize, maxOpenPages)) {
+				using (var file = new TransactionalFileMappedBuffer(fileName, pageDir2, fileID, pageSize, maxOpenPages)) {
 					file.Load();
 					AssertFileCount(pageDir1, 0);
 				}
@@ -714,7 +714,7 @@ namespace Sphere10.Framework.Tests {
 			expected.AddRange(startBytes);
 			File.WriteAllBytes(fileName, startBytes);
 			using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectories(fileBaseDir, pageBaseDir))) {
-				using (var file = new TransactionalBinaryFile(fileName, pageBaseDir, fileID, pageSize, maxOpenPages)) {
+				using (var file = new TransactionalFileMappedBuffer(fileName, pageBaseDir, fileID, pageSize, maxOpenPages)) {
 					if (file.RequiresLoad)
 						file.Load();
 
@@ -784,7 +784,7 @@ namespace Sphere10.Framework.Tests {
 				for (var j = 0; j < 10; j++) {
 					string oldPageDir;
 					// Do a bunch of operations on a transactional file and abort them, but copy the page files before abort
-					using (var file = new TransactionalBinaryFile(fileName, pageBaseDir, fileID, pageSize, maxOpenPages)) {
+					using (var file = new TransactionalFileMappedBuffer(fileName, pageBaseDir, fileID, pageSize, maxOpenPages)) {
 						if (file.RequiresLoad)
 							file.Load();
 
@@ -830,7 +830,7 @@ namespace Sphere10.Framework.Tests {
 						file.Flush(); // write all pages to disk
 
 						// Write a commiting page marker (next iteration will commit transaction when loading file)
-						var markerFile = TransactionalBinaryFile.MarkerRepository.GenerateFileMarkerFileName(pageBaseDir, file.FileID, TransactionalBinaryFile.FileMarkerType.Committing);
+						var markerFile = TransactionalFileMappedBuffer.MarkerRepository.GenerateFileMarkerFileName(pageBaseDir, file.FileID, TransactionalFileMappedBuffer.FileMarkerType.Committing);
 						Tools.FileSystem.CreateBlankFile(markerFile);
 
 						// Simulate a power-outage (copy all page markers to a new directory and abort transaction, load next
@@ -844,7 +844,7 @@ namespace Sphere10.Framework.Tests {
 				}
 
 				// Do final commit
-				using (var file = new TransactionalBinaryFile(fileName, pageBaseDir, fileID, pageSize, maxOpenPages)) {
+				using (var file = new TransactionalFileMappedBuffer(fileName, pageBaseDir, fileID, pageSize, maxOpenPages)) {
 					file.Load(); // should resume commit
 				}
 				Assert.AreEqual(expected, File.ReadAllBytes(fileName));

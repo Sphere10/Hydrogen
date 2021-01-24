@@ -4,29 +4,35 @@ using System.Collections.Generic;
 
 namespace Sphere10.Framework {
 
-	public abstract class EnumeratorDecorator<T> : IEnumerator<T> {
-		private readonly IEnumerator<T> _enumerator;
+	public class EnumeratorDecorator<TFrom, TTo> : IEnumerator<TTo> where TTo : TFrom {
 
-		protected EnumeratorDecorator(IEnumerator<T> enumerator) {
-			_enumerator = enumerator;
+		public EnumeratorDecorator(IEnumerator<TFrom> enumerator) {
+			InternalEumerator = enumerator;
 		}
 
+		protected readonly IEnumerator<TFrom> InternalEumerator;
+
 		public virtual bool MoveNext() {
-			return _enumerator.MoveNext();
+			return InternalEumerator.MoveNext();
 		}
 
 		public virtual void Reset() {
-			_enumerator.Reset(); 
+			InternalEumerator.Reset(); 
 		}
 
-		public virtual T Current => _enumerator.Current;
+		public virtual TTo Current => (TTo)InternalEumerator.Current;
 
 		object IEnumerator.Current => Current;
 
 		public virtual void Dispose() {
-			_enumerator.Dispose();
+			InternalEumerator.Dispose();
 		}
 
+	}
+
+	public class EnumeratorDecorator<T> : EnumeratorDecorator<T,T> {
+		protected EnumeratorDecorator(IEnumerator<T> enumerator) : base(enumerator) {
+		}
 	}
 
 }

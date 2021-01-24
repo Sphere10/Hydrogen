@@ -66,7 +66,7 @@ namespace Sphere10.Framework {
 
         public static byte[] SubArray(this byte[] buffer, int offset, int length) {
             byte[] middle = new byte[length];
-            Buffer.BlockCopy(buffer, offset, middle, 0, length);
+            System.Buffer.BlockCopy(buffer, offset, middle, 0, length);
             return middle;
         }
 

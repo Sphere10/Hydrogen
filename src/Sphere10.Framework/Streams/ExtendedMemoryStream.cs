@@ -68,7 +68,7 @@ namespace Sphere10.Framework {
 			var remainingBufferBytes = buffer.Length - offset;
 			var bytesRead = Math.Max(0, Math.Min(count, Math.Min(remainingBufferBytes, remainingSourceBytes)));
 			var bytes = _source.ReadRange((int)Position, (int)bytesRead).ToArray();
-			Buffer.BlockCopy(bytes, 0, buffer, offset, (int)bytesRead);
+            System.Buffer.BlockCopy(bytes, 0, buffer, offset, (int)bytesRead);
 			Position += bytesRead;
 			Debug.Assert(0 <= Position && Position <= Length);
 			return (int)bytesRead;
@@ -123,13 +123,13 @@ namespace Sphere10.Framework {
 
 			if (updateAmount > 0) {
 				var updatedBytes = new byte[updateAmount];
-				Buffer.BlockCopy(buffer, offset, updatedBytes, 0, updateAmount);
+                System.Buffer.BlockCopy(buffer, offset, updatedBytes, 0, updateAmount);
 				_source.UpdateRange((int)Position, updatedBytes);
 			}
 
 			if (addingAmount > 0) {
 				var addedBytes = new byte[addingAmount];
-				Buffer.BlockCopy(buffer, offset + updateAmount, addedBytes, 0, addingAmount);
+                System.Buffer.BlockCopy(buffer, offset + updateAmount, addedBytes, 0, addingAmount);
 				_source.AddRange(addedBytes);
 			}
 			Position += updateAmount + addingAmount;

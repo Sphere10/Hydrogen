@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Sphere10.Framework;
+using VelocityNET.Presentation.Hydrogen.Components.Wizard;
 
 namespace VelocityNET.Presentation.Hydrogen.ViewModels
 {
@@ -12,7 +13,12 @@ namespace VelocityNET.Presentation.Hydrogen.ViewModels
         /// <summary>
         /// Gets or sets the model
         /// </summary>
-        public object? Model { get; set; }
+        public object Model { get; set; } = null!;
+
+        /// <summary>
+        /// Gets or sets the parent wizard
+        /// </summary>
+        public Wizard Wizard { get; set; } = null!;
         
         /// <summary>
         /// Implement logic when the user requests the next step in the wizard. Returning

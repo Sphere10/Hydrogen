@@ -28,13 +28,19 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Wizard
         /// </summary>
         [Parameter]
         public TModel? Model { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the wizard model edit context
         /// </summary>
         [CascadingParameter]
-        public EditContext? EditContext { get; set; }
-        
+        public EditContext EditContext { get; set; } = null!;
+
+        /// <summary>
+        /// Gets or sets the wizard instance
+        /// </summary>
+        [CascadingParameter]
+        public Wizard Wizard { get; set; } = null!;
+
         /// <inheritdoc />
         public override Task<bool> OnNextAsync() => ViewModel!.OnNextAsync();
         
@@ -47,7 +53,19 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Wizard
         /// <inheritdoc />
         protected override void OnParametersSet()
         {
-            ViewModel!.Model = Model;
+            if (Model is null)
+            {
+                throw new InvalidOperationException("Wizard step requires model parameter be set.");
+            }
+
+            if (Wizard is null)
+            {
+                throw new InvalidOperationException("Wizard step requires the wizard parent parameter be set.");
+            }
+            
+            ViewModel!.Model = Model!;
+            ViewModel.Wizard = Wizard;
+            
             base.OnParametersSet();
         }
     }
@@ -106,17 +124,5 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Wizard
         /// Gets a value indicating whether the wizard / step may be cancelled.
         /// </summary>
         public virtual bool IsCancellable { get; } = true;
-        
-        /// <summary>
-        /// Gets or sets the next step, settable by this step. This is used to branch
-        /// the wizard and insert a step after this one.
-        /// </summary>
-        public virtual Type? NextStep { get; set; }
-
-        /// <summary>
-        /// Gets a value indicating whether this step will provide the next step in the wizard.
-        /// </summary>
-        public bool HasNextStep => NextStep is not null;
     }
-
 }

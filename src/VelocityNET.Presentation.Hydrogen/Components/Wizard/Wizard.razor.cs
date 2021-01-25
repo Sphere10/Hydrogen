@@ -174,11 +174,6 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Wizard
                 {
                     if (await CurrentStepInstance!.OnNextAsync())
                     {
-                        if (CurrentStepInstance.HasNextStep)
-                        {
-                            StepList.AddAfter(CurrentStep, new LinkedListNode<Type>(CurrentStepInstance!.NextStep!));
-                        }
-                        
                         CurrentStep = CurrentStep.Next!;
                     }
                 }
@@ -259,6 +254,59 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Wizard
                 builder.AddComponentReferenceCapture(0, o => CurrentStepInstance = (WizardStepBase) o);
                 builder.CloseComponent();
             };
+        }
+
+        /// <summary>
+        /// Update the steps of the wizard with one or more new steps.
+        /// </summary>
+        /// <param name="updateType"> type of operation to perform when updating the steps</param>
+        /// <param name="step"> type of step to be added</param>
+        public void UpdateSteps(StepUpdateType updateType, Type step)
+        {
+            switch (updateType)
+            {
+                case StepUpdateType.Inject:
+                {
+                    if (CurrentStep.Next?.Value != step)
+                    {
+                        StepList.AddAfter(CurrentStep, new LinkedListNode<Type>(step));
+                    }
+                   
+                    break;
+                }
+                case StepUpdateType.ReplaceAllNext:
+                {
+                    var pointer = CurrentStep;
+                   
+                    while (pointer.Next is not null)
+                    {
+                        pointer = CurrentStep.Next;
+                        StepList.Remove(CurrentStep.Next!);
+                    }
+                    
+                    StepList.AddAfter(CurrentStep, new LinkedListNode<Type>(step));
+                    break;
+                }
+                case StepUpdateType.ReplaceAll:
+                {
+                    StepList.RemoveWhere(x => x != CurrentStep.Value);
+                    StepList.AddAfter(CurrentStep, new LinkedListNode<Type>(step));
+                    break;
+                }
+                case StepUpdateType.RemoveNext:
+                {
+                    if (CurrentStep.Next is not null)
+                    {
+                        StepList.Remove(CurrentStep.Next);
+                    }
+                    
+                    StepList.AddAfter(CurrentStep, new LinkedListNode<Type>(step));
+                    break;
+                }
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(updateType), updateType, null);
+            }
+                
         }
     }
 

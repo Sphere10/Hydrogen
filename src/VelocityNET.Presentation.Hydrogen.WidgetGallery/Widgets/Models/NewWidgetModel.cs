@@ -11,6 +11,8 @@ namespace VelocityNET.Presentation.Hydrogen.WidgetGallery.Widgets.Models
         [Required(AllowEmptyStrings = false)]
         public string Description { get; set; }
 
+        public bool AreDimensionsKnown { get; set; }
+        
         [Required]
         [Range(0, double.MaxValue)]
         public decimal Price { get; set; }

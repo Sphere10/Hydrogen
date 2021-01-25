@@ -3,7 +3,9 @@
 <CascadingValue Value="EditContext">
     <ValidationSummary/>
     <DataAnnotationsValidator/>
-    @CurrentStepFragment
+    <CascadingValue Value="@this">
+        @CurrentStepFragment
+    </CascadingValue>
 </CascadingValue>
 
 @if (CurrentStepInstance is not null)

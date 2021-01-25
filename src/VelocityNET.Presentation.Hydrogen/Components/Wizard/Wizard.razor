@@ -1,20 +1,35 @@
-﻿
-@CurrentStepFragment
+﻿<CascadingValue Value="EditContext">
+    <ValidationSummary/>
+    <DataAnnotationsValidator/>
+    @CurrentStepFragment
+</CascadingValue>
 
-<div class="text-right">
-    <button class="btn btn-secondary btn-sm" @onclick="CancelAsync"> Cancel</button>
-    <button class="btn btn-info btn-sm" disabled="@IsDisabled()" @onclick="PreviousAsync">Back</button>
+@if (CurrentStepInstance is not null)
+{
+    <div class="row">
+        <div class="col-6 text-left">
+            <button class="btn btn-info btn-sm" disabled="@IsDisabled()" @onclick="PreviousAsync">@CurrentStepInstance!.BackButtonText</button>
+        </div>
 
-    @if (HasNext)
-    {
-        <button class="btn btn-info btn-sm" @onclick="NextAsync">Next</button>
-    }
-    else
-    {
-        <button class="btn btn-info btn-sm @FinishClass()" @onclick="FinishAsync">Finish</button>
-    }
+        <div class="col-6 text-right">
 
-</div>
+            @if (CurrentStepInstance!.IsCancellable)
+            {
+                <button class="btn btn-secondary btn-sm" @onclick="CancelAsync"> @CurrentStepInstance!.CancelButtonText</button>
+            }
+
+            @if (HasNext)
+            {
+                <button class="btn btn-info btn-sm" @onclick="NextAsync">@CurrentStepInstance!.NextButtonText</button>
+            }
+            else
+            {
+                <button class="btn btn-info btn-sm @FinishClass()" @onclick="FinishAsync">@CurrentStepInstance!.FinishButtonText</button>
+            }
+        </div>
+    </div>
+}
+
 
 @code
 {

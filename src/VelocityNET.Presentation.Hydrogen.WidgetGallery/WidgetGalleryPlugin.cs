@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using VelocityNET.Presentation.Hydrogen.Plugins;
+using VelocityNET.Presentation.Hydrogen.WidgetGallery.Widgets.Models;
 using VelocityNET.Presentation.Hydrogen.WidgetGallery.Widgets.Services;
+using VelocityNET.Presentation.Hydrogen.WidgetGallery.Widgets.Validators;
 
 namespace VelocityNET.Presentation.Hydrogen.WidgetGallery
 {
@@ -76,6 +79,7 @@ namespace VelocityNET.Presentation.Hydrogen.WidgetGallery
         protected override void ConfigureServicesInternal(IServiceCollection serviceCollection)
         {
             serviceCollection.AddTransient<IRandomNumberService, RandomNumberService>();
+            serviceCollection.AddTransient<IValidator<NewWidgetModel>, NewWidgetModelValidator>();
         }
     }
 }

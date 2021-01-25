@@ -1,5 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Forms;
+using Sphere10.Framework;
 using VelocityNET.Presentation.Hydrogen.ViewModels;
 
 namespace VelocityNET.Presentation.Hydrogen.Components.Wizard
@@ -26,11 +28,27 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Wizard
         [Parameter]
         public TModel? Model { get; set; }
         
+        /// <summary>
+        /// Gets or sets the wizard model edit context
+        /// </summary>
+        [CascadingParameter]
+        public EditContext EditContext { get; set; }
+        
         /// <inheritdoc />
         public override Task<bool> OnNextAsync() => ViewModel!.OnNextAsync();
         
         /// <inheritdoc />
         public override Task<bool> OnPreviousAsync() => ViewModel!.OnPreviousAsync();
+        
+        /// <inheritdoc />
+        public override Result Validate() => ViewModel!.Validate();
+
+        /// <inheritdoc />
+        protected override void OnParametersSet()
+        {
+            ViewModel!.Model = Model;
+            base.OnParametersSet();
+        }
     }
 
     /// <summary>
@@ -39,18 +57,49 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Wizard
     public abstract class WizardStepBase : ComponentBase
     {
         /// <summary>
+        /// Validate this the model at this step.  
+        /// </summary>
+        /// <returns> validation results.</returns>
+        public abstract Result Validate();
+        
+        /// <summary>
         /// Called when the wizard requests the next step. Returning true will allow
-        /// the wizard to progress. delegates to view model implementation
+        /// the wizard to progress.
         /// </summary>
         /// <returns> whether or not the step is finished and to move next</returns>
         public abstract Task<bool> OnNextAsync();
 
         /// <summary>
         /// Called when the wizard requests the prev step. Returning true will allow
-        /// the wizard to progress. delegates to view model implementation
+        /// the wizard to progress.
         /// </summary>
         /// <returns> whether or not the step is finished and to move prev</returns>
         public abstract Task<bool> OnPreviousAsync();
+
+        /// <summary>
+        /// Gets the next button text for this step.
+        /// </summary>
+        public virtual string NextButtonText { get; } = "Next";
+
+        /// <summary>
+        /// Gets the back button text for this step.
+        /// </summary>
+        public virtual string BackButtonText { get; } = "Back";
+
+        /// <summary>
+        /// Gets the cancel button text for this step.
+        /// </summary>
+        public virtual string CancelButtonText { get; } = "Cancel";
+
+        /// <summary>
+        /// Gets the finish button text.
+        /// </summary>
+        public virtual string FinishButtonText { get; } = "Finish";
+
+        /// <summary>
+        /// Gets a value indicating whether the wizard / step may be cancelled.
+        /// </summary>
+        public virtual bool IsCancellable { get; } = true;
     }
 
 }

@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using Sphere10.Framework;
 
 namespace VelocityNET.Presentation.Hydrogen.ViewModels
 {
@@ -8,6 +9,11 @@ namespace VelocityNET.Presentation.Hydrogen.ViewModels
     /// </summary>
     public abstract class WizardStepComponentViewModelBase
     {
+        /// <summary>
+        /// Gets or sets the model
+        /// </summary>
+        public object? Model { get; set; }
+        
         /// <summary>
         /// Implement logic when the user requests the next step in the wizard. Returning
         /// true will signal the step is ready to advance. false will prevent the wizard moving to next step.
@@ -21,5 +27,11 @@ namespace VelocityNET.Presentation.Hydrogen.ViewModels
         /// </summary>
         /// <returns> whether or not to progress</returns>
         public abstract Task<bool> OnPreviousAsync();
+
+        /// <summary>
+        /// Validate the model at this step of the wizard.
+        /// </summary>
+        /// <returns> validation result.</returns>
+        public abstract Result Validate();
     }
 }

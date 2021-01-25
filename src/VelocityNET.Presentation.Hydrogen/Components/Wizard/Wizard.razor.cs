@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Forms;
+using Sphere10.Framework;
 
 namespace VelocityNET.Presentation.Hydrogen.Components.Wizard
 {
@@ -58,7 +60,7 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Wizard
         /// Gets or sets the model object
         /// </summary>
         [Parameter]
-        public object Model { get; set; }
+        public object Model { get; set; } = null!;
 
         /// <summary>
         /// Gets the internal linked list of step types.
@@ -73,10 +75,10 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Wizard
         /// <summary>
         /// Gets or sets the current step of the wizard
         /// </summary>
-        public LinkedListNode<Type> CurrentStep
+        private LinkedListNode<Type> CurrentStep
         {
             get => _currentStep;
-            private set
+            set
             {
                 _currentStep = value;
                 CurrentStepFragment = CreateFragmentOfType(value.Value);
@@ -89,17 +91,73 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Wizard
         public RenderFragment CurrentStepFragment { get; private set; } = null!;
 
         /// <summary>
+        /// Current step instance backing field.
+        /// </summary>
+        private WizardStepBase? _currentStepInstance;
+
+        /// <summary>
+        /// Gets the reference to the step instance being rendered.
+        /// </summary>
+        private WizardStepBase? CurrentStepInstance
+        {
+            get => _currentStepInstance;
+            set
+            {
+                _currentStepInstance = value;
+                StateHasChanged();
+            }
+        }
+
+        /// <summary>
+        /// Gets the model edit context.
+        /// </summary>
+        private EditContext EditContext { get; set; } = null!;
+
+        /// <summary>
+        /// Gets the validation message store 
+        /// </summary>
+        private ValidationMessageStore ValidationMessageStore { get; set; } = null!;
+
+        /// <inheritdoc />
+        protected override void OnParametersSet()
+        {
+            base.OnParametersSet();
+            EditContext = new EditContext(Model);
+            ValidationMessageStore = new ValidationMessageStore(EditContext);
+
+            EditContext.OnValidationRequested += (sender, _) =>
+            {
+                Result result = CurrentStepInstance!.Validate();
+                ValidationMessageStore.Clear();
+
+                if (result.Failure)
+                {
+                    foreach (string errorMessage in result.ErrorMessages)
+                    {
+                        ValidationMessageStore.Add(new FieldIdentifier(((EditContext) sender!).Model, string.Empty),
+                            errorMessage!);
+                    }
+                }
+            };
+        }
+
+        /// <summary>
         /// Move to the next step in the wizard.
         /// </summary>
         /// <returns></returns>
         /// <exception cref="InvalidOperationException"> thrown if there is no next step</exception>
-        public async Task NextAsync()
+        private async Task NextAsync()
         {
             if (HasNext)
             {
-                if (await CurrentStepInstance.OnNextAsync())
+                bool isValid = EditContext.Validate();
+
+                if (isValid)
                 {
-                    CurrentStep = CurrentStep.Next!;
+                    if (await CurrentStepInstance!.OnNextAsync())
+                    {
+                        CurrentStep = CurrentStep.Next!;
+                    }
                 }
             }
             else
@@ -113,14 +171,14 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Wizard
         /// </summary>
         /// <returns></returns>
         /// <exception cref="InvalidOperationException"> thrown if there is no previous</exception>
-        public async Task PreviousAsync()
+        private async Task PreviousAsync()
         {
             if (!HasPrevious || IsFinished)
             {
                 throw new InvalidOperationException("Wizard cannot move to previous step.");
             }
 
-            if (await CurrentStepInstance.OnPreviousAsync())
+            if (await CurrentStepInstance!.OnPreviousAsync())
             {
                 CurrentStep = CurrentStep.Previous!;
             }
@@ -129,23 +187,23 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Wizard
         /// <summary>
         /// Gets a value indicating whether there is a next step in the wizard.
         /// </summary>
-        public bool HasNext => CurrentStep.Next is not null;
+        private bool HasNext => CurrentStep.Next is not null;
 
         /// <summary>
         /// Gets a value indicating whether there is a previous step in the wizard
         /// </summary>
-        public bool HasPrevious => CurrentStep.Previous is not null;
+        private bool HasPrevious => CurrentStep.Previous is not null;
 
         /// <summary>
         /// Gets or sets a value indicating whether the wizard has finished.
         /// </summary>
-        public bool IsFinished { get; private set; }
+        private bool IsFinished { get; set; }
 
         /// <summary>
         /// Finish the wizard workflow. 
         /// </summary>
         /// <returns></returns>
-        public Task FinishAsync()
+        private Task FinishAsync()
         {
             Finished?.Invoke(this, EventArgs.Empty);
             IsFinished = true;
@@ -157,17 +215,12 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Wizard
         /// Cancel the wizard workflow
         /// </summary>
         /// <returns></returns>
-        public Task CancelAsync()
+        private Task CancelAsync()
         {
             Cancelled?.Invoke(this, EventArgs.Empty);
             OnCancelled.InvokeAsync();
             return Task.CompletedTask;
         }
-
-        /// <summary>
-        /// Gets the reference to the step instance being rendered.
-        /// </summary>
-        public WizardStepBase CurrentStepInstance { get; set; } = null!;
 
         /// <summary>
         /// Create render fragment of wizard step type.

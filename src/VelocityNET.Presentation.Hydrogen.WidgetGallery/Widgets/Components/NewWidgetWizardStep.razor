@@ -2,10 +2,7 @@
 
 @if (Model is not null)
 {
-    <EditForm Model="Model" @ref="Form">
-
-        <DataAnnotationsValidator/>
-        <ValidationSummary/>
+    <EditForm EditContext="EditContext" >
 
         <div class="form-group">
             <label for="Name">Name</label>
@@ -27,24 +24,5 @@
 
 @code
 {
-    private EditForm Form;
-
-    public override async Task<bool> OnNextAsync()
-    {
-        bool valid;
-        
-        if (Form.EditContext is not null)
-        {
-            Form.EditContext.Validate();
-
-            valid = !Form.EditContext.GetValidationMessages().Any();
-        }
-        else
-        {
-            return false;
-        }
-        
-        return valid && await base.OnNextAsync();
-    }
-
+    public override bool IsCancellable { get; } = false;
 }

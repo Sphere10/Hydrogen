@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Sphere10.Framework;
@@ -32,7 +33,7 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Wizard
         /// Gets or sets the wizard model edit context
         /// </summary>
         [CascadingParameter]
-        public EditContext EditContext { get; set; }
+        public EditContext? EditContext { get; set; }
         
         /// <inheritdoc />
         public override Task<bool> OnNextAsync() => ViewModel!.OnNextAsync();
@@ -75,6 +76,11 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Wizard
         /// </summary>
         /// <returns> whether or not the step is finished and to move prev</returns>
         public abstract Task<bool> OnPreviousAsync();
+        
+        /// <summary>
+        /// Gets or sets the title of the wizard step.
+        /// </summary>
+        public abstract string Title { get; }
 
         /// <summary>
         /// Gets the next button text for this step.
@@ -100,6 +106,17 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Wizard
         /// Gets a value indicating whether the wizard / step may be cancelled.
         /// </summary>
         public virtual bool IsCancellable { get; } = true;
+        
+        /// <summary>
+        /// Gets or sets the next step, settable by this step. This is used to branch
+        /// the wizard and insert a step after this one.
+        /// </summary>
+        public virtual Type? NextStep { get; set; }
+
+        /// <summary>
+        /// Gets a value indicating whether this step will provide the next step in the wizard.
+        /// </summary>
+        public bool HasNextStep => NextStep is not null;
     }
 
 }

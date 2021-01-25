@@ -14,7 +14,7 @@ namespace VelocityNET.Presentation.Hydrogen.Components
         /// </summary>
         [Parameter]
         public RenderFragment Wizard { get; set; }
-
+        
         /// <summary>
         /// Gets or sets the call back the wizard will use when finished to signal the completion of the
         /// modal interaction.

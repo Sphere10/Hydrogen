@@ -2,7 +2,7 @@
 
 @if (Model is not null)
 {
-    <EditForm EditContext="EditContext" >
+    <EditForm EditContext="EditContext">
 
         <div class="form-group">
             <label for="Name">Name</label>
@@ -20,9 +20,38 @@
         </div>
 
     </EditForm>
+    <div class="form-group">
+        <label for="dimensions">Supply dimensions ? </label>
+        <input class="form-control form-control-sm" id="dimensions" type="checkbox" @bind="@KnownDimensions"/>
+    </div>
 }
 
 @code
 {
     public override bool IsCancellable { get; } = false;
+
+    public override string Title { get; } = "New Widget";
+
+    private bool _knownDimensions;
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the dimensions are known and can be supplied.
+    /// </summary>
+    private bool KnownDimensions
+    {
+        get => _knownDimensions;
+        set
+        {
+            if (value && !_knownDimensions)
+            {
+                NextStep = typeof(WidgetDimensionsStep);
+            }
+            else if (!value)
+            {
+                NextStep = null;
+            }
+
+            _knownDimensions = value;
+        }
+    }
 }

@@ -1,7 +1,7 @@
 ﻿@page "/widget-gallery/wizards"
 @inherits ComponentWithViewModel<WizardsViewModel>
 
-<button @onclick="ViewModel.ShowNewWidgetModalAsync" class="btn-primary btn btn-sm"> New Widget</button>
+<button @onclick="ViewModel!.ShowNewWidgetModalAsync" class="btn-primary btn btn-sm"> New Widget</button>
 
 <table class="table table-borderless">
     <thead>

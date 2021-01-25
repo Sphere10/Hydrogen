@@ -1,4 +1,6 @@
-﻿<CascadingValue Value="EditContext">
+﻿<h6 class="mb-3">@WizardTitle</h6>
+
+<CascadingValue Value="EditContext">
     <ValidationSummary/>
     <DataAnnotationsValidator/>
     @CurrentStepFragment
@@ -12,7 +14,6 @@
         </div>
 
         <div class="col-6 text-right">
-
             @if (CurrentStepInstance!.IsCancellable)
             {
                 <button class="btn btn-secondary btn-sm" @onclick="CancelAsync"> @CurrentStepInstance!.CancelButtonText</button>

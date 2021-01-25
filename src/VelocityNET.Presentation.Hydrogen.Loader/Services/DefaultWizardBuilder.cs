@@ -40,11 +40,17 @@ namespace VelocityNET.Presentation.Hydrogen.Services
         /// <typeparam name="TWizard"> type of wizard to build</typeparam>
         /// <returns></returns>
         /// <exception cref="InvalidOperationException"> if called more than once</exception>
-        public IWizardBuilder NewWizard<TWizard>() where TWizard : Wizard
+        public IWizardBuilder NewWizard<TWizard>(string title) where TWizard : Wizard
         {
+            Title = title;
             Wizard = typeof(TWizard);
             return this;
         }
+
+        /// <summary>
+        /// Gets or sets the wizard title
+        /// </summary>
+        private string Title { get; set; }
 
         /// <summary>
         /// Set the model instance to be used with this wizard
@@ -114,6 +120,7 @@ namespace VelocityNET.Presentation.Hydrogen.Services
                 builder.OpenComponent(0, Wizard);
                 builder.AddAttribute(0, "Steps", Steps);
                 builder.AddAttribute(0, "Model", Model);
+                builder.AddAttribute(0, "Title", Title);
 
                 if (OnFinshed is not null)
                 {

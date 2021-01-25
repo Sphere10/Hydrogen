@@ -12,7 +12,7 @@ namespace VelocityNET.Presentation.Hydrogen.WidgetGallery.Widgets.ViewModels
     public class NewWidgetWizardStepViewModel : WizardStepComponentViewModelBase
     {
         private IValidator<NewWidgetModel> Validator { get; }
-
+        
         public NewWidgetWizardStepViewModel(IValidator<NewWidgetModel> validator)
         {
             Validator = validator ?? throw new ArgumentNullException(nameof(validator));

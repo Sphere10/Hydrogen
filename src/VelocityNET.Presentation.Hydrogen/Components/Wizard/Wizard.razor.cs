@@ -63,6 +63,18 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Wizard
         public object Model { get; set; } = null!;
 
         /// <summary>
+        /// Gets or sets the wizard title
+        /// </summary>
+        [Parameter]
+        public string? Title { get; set; }
+
+        /// <summary>
+        /// Gets the title of the wizard, including the current step.
+        /// </summary>
+        private string WizardTitle =>
+            Title is null ? CurrentStepInstance?.Title! : $"{Title!} -> {CurrentStepInstance?.Title!}";
+
+        /// <summary>
         /// Gets the internal linked list of step types.
         /// </summary>
         private LinkedList<Type> StepList { get; set; } = new();
@@ -122,6 +134,12 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Wizard
         protected override void OnParametersSet()
         {
             base.OnParametersSet();
+
+            if (Model is null)
+            {
+                throw new InvalidOperationException("Model parameter must be set on wizard");
+            }
+
             EditContext = new EditContext(Model);
             ValidationMessageStore = new ValidationMessageStore(EditContext);
 
@@ -156,13 +174,18 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Wizard
                 {
                     if (await CurrentStepInstance!.OnNextAsync())
                     {
+                        if (CurrentStepInstance.HasNextStep)
+                        {
+                            StepList.AddAfter(CurrentStep, new LinkedListNode<Type>(CurrentStepInstance!.NextStep!));
+                        }
+                        
                         CurrentStep = CurrentStep.Next!;
                     }
                 }
-            }
-            else
-            {
-                throw new InvalidOperationException("No next step");
+                else
+                {
+                    throw new InvalidOperationException("No next step");
+                }
             }
         }
 

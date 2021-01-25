@@ -36,7 +36,7 @@ namespace VelocityNET.Presentation.Hydrogen.WidgetGallery.Widgets.ViewModels
             ModalService = modalService;
             Builder = builder;
             
-            Wizard = Builder.NewWizard<Wizard>()
+            Wizard = Builder.NewWizard<Wizard>("New Widget")
                 .WithModel(new NewWidgetModel())
                 .AddStep<NewWidgetWizardStep>()
                 .AddStep<NewWidgetSummaryStep>()

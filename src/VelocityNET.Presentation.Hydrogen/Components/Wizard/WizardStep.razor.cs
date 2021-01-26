@@ -64,7 +64,6 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Wizard
             }
             
             ViewModel!.Model = Model!;
-            ViewModel.Wizard = Wizard;
             
             base.OnParametersSet();
         }

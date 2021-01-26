@@ -14,11 +14,6 @@ namespace VelocityNET.Presentation.Hydrogen.ViewModels
         /// Gets or sets the model
         /// </summary>
         public object Model { get; set; } = null!;
-
-        /// <summary>
-        /// Gets or sets the parent wizard
-        /// </summary>
-        public Wizard Wizard { get; set; } = null!;
         
         /// <summary>
         /// Implement logic when the user requests the next step in the wizard. Returning

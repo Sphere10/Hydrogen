@@ -14,7 +14,7 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Wizard
     /// <typeparam name="TModel"> model type</typeparam>
     /// <typeparam name="TViewModel"> view model type</typeparam>
     public abstract partial class WizardStep<TModel, TViewModel>
-        where TViewModel : WizardStepComponentViewModelBase
+        where TViewModel : WizardStepViewModelBase
     {
         /// <summary>
         /// Gets or sets the step view model
@@ -48,7 +48,7 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Wizard
         public override Task<bool> OnPreviousAsync() => ViewModel!.OnPreviousAsync();
         
         /// <inheritdoc />
-        public override Result Validate() => ViewModel!.Validate();
+        public override Task<Result> Validate() => ViewModel!.Validate();
 
         /// <inheritdoc />
         protected override void OnParametersSet()
@@ -78,7 +78,7 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Wizard
         /// Validate this the model at this step.  
         /// </summary>
         /// <returns> validation results.</returns>
-        public abstract Result Validate();
+        public abstract Task<Result> Validate();
         
         /// <summary>
         /// Called when the wizard requests the next step. Returning true will allow

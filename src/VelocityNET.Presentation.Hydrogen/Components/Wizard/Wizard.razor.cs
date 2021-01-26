@@ -12,6 +12,7 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Wizard
     /// <summary>
     /// Wizard component.
     /// </summary>
+    // HS: almost all of this should be merged into WizardViewModel<TModel>
     public partial class Wizard
     {
         /// <summary>
@@ -77,6 +78,7 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Wizard
         /// <summary>
         /// Gets the internal linked list of step types.
         /// </summary>
+        // HS: use an IList and track a CurrentStepIndex
         private LinkedList<Type> StepList { get; set; } = new();
 
         /// <summary>
@@ -143,9 +145,9 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Wizard
             EditContext = new EditContext(Model);
             ValidationMessageStore = new ValidationMessageStore(EditContext);
 
-            EditContext.OnValidationRequested += (sender, _) =>
+            EditContext.OnValidationRequested += async (sender, _) =>
             {
-                Result result = CurrentStepInstance!.Validate();
+                Result result = await CurrentStepInstance!.Validate();
                 ValidationMessageStore.Clear();
 
                 if (result.Failure)
@@ -261,6 +263,7 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Wizard
         /// </summary>
         /// <param name="updateType"> type of operation to perform when updating the steps</param>
         /// <param name="step"> type of step to be added</param>
+        // HS: the step argument should be IEnumerable<WizardStepViewModel<TModel>> and logic updates many screens at once, not single
         public void UpdateSteps(StepUpdateType updateType, Type step)
         {
             switch (updateType)

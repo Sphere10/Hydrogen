@@ -1,12 +1,12 @@
 ﻿using System.Threading.Tasks;
 using Sphere10.Framework;
 using VelocityNET.Presentation.Hydrogen.ViewModels;
+using VelocityNET.Presentation.Hydrogen.WidgetGallery.Widgets.Models;
 
 namespace VelocityNET.Presentation.Hydrogen.WidgetGallery.Widgets.ViewModels
 {
 
-    public class WidgetDimensionsStepViewModel : WizardStepComponentViewModelBase
-    {
+    public class WidgetDimensionsStepViewModel : WizardStepViewModelBase<NewWidgetModel> {
         public override Task<bool> OnNextAsync()
         {
             return Task.FromResult(true);
@@ -17,7 +17,7 @@ namespace VelocityNET.Presentation.Hydrogen.WidgetGallery.Widgets.ViewModels
             return Task.FromResult(true);
         }
 
-        public override Result Validate()
+        public override async Task<Result> Validate()
         {
             return Result.Valid;
         }

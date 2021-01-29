@@ -2,32 +2,33 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components;
+using Sphere10.Framework;
 using VelocityNET.Presentation.Hydrogen.Components.Wizard;
+using VelocityNET.Presentation.Hydrogen.Services;
 
-namespace VelocityNET.Presentation.Hydrogen.Services
+namespace VelocityNET.Presentation.Hydrogen.Loader.Services
 {
 
     /// <summary>
     /// Wizard builder - constructs wizard component and produces render fragment delegate
     /// to be used with view / component.
     /// </summary>
-    public class DefaultWizardBuilder : IWizardBuilder
+    public class DefaultWizardBuilder<TModel> : IWizardBuilder<TModel>
     {
-        /// <summary>
-        /// Gets or sets the wizard type being built.
-        /// </summary>
-        private Type? Wizard { get; set; }
-
-        /// <summary>
+ /// <summary>
         /// Gets or sets the model 
         /// </summary>
-        private object? Model { get; set; }
+        private TModel Model { get; set; }
 
         /// <summary>
-        /// Gets or sets the on finished func[
+        /// Gets or sets the on finished func
         /// </summary>
-        private Func<object, Task>? OnFinshed { get; set; }
+        private Func<TModel, Task<Result<bool>>>? OnFinishedFunc { get; set; }
+
+        /// <summary>
+        /// Gets or sets the cancelled func.
+        /// </summary>
+        private Func<TModel, Task<Result<bool>>>? OnCancelledFunc { get; set; }
 
         /// <summary>
         /// Gets or sets the wizard steps
@@ -40,10 +41,9 @@ namespace VelocityNET.Presentation.Hydrogen.Services
         /// <typeparam name="TWizard"> type of wizard to build</typeparam>
         /// <returns></returns>
         /// <exception cref="InvalidOperationException"> if called more than once</exception>
-        public IWizardBuilder NewWizard<TWizard>(string title) where TWizard : Wizard
+        public IWizardBuilder<TModel> NewWizard(string title)
         {
             Title = title;
-            Wizard = typeof(TWizard);
             return this;
         }
 
@@ -59,7 +59,7 @@ namespace VelocityNET.Presentation.Hydrogen.Services
         /// <typeparam name="TModel"></typeparam>
         /// <returns></returns>
         /// <exception cref="ArgumentNullException"></exception>
-        public IWizardBuilder WithModel<TModel>(TModel instance)
+        public IWizardBuilder<TModel> WithModel(TModel instance)
         {
             if (instance is null)
             {
@@ -75,29 +75,30 @@ namespace VelocityNET.Presentation.Hydrogen.Services
         /// </summary>
         /// <typeparam name="TWizardStep"></typeparam>
         /// <returns></returns>
-        public IWizardBuilder AddStep<TWizardStep>() where TWizardStep : WizardStepBase
+        public IWizardBuilder<TModel> AddStep<TWizardStep>() where TWizardStep : WizardStepBase
         {
             Steps.Add(typeof(TWizardStep));
             return this;
         }
 
-        /// <summary>
-        /// Optionally add handler to receive the model back once the wizard is finished.
-        /// </summary>
-        /// <param name="onFinishedHandler"> delegate</param>
-        /// <returns> builder</returns>
-        public IWizardBuilder OnFinished(Func<object, Task> onFinishedHandler)
+        public IWizardBuilder<TModel> OnFinished(Func<TModel, Task<Result<bool>>> onFinished)
         {
-            OnFinshed = onFinishedHandler;
+            OnFinishedFunc = onFinished ?? throw new ArgumentNullException(nameof(onFinished));
             return this;
         }
 
+        public IWizardBuilder<TModel> OnCancelled(Func<TModel, Task<Result<bool>>> onCancelled)
+        {
+            OnCancelledFunc = onCancelled ?? throw new ArgumentNullException(nameof(onCancelled));
+            return this;
+        }
+        
         /// <summary>
          /// Build the wizard render fragment
          /// </summary>
          /// <returns></returns>
          /// <exception cref="InvalidOperationException"> thrown if components of the wizard have not been added using builder.</exception>
-        public RenderFragment Build()
+        public IWizard<TModel> Build()
         {
             if (Model is null)
             {
@@ -110,27 +111,7 @@ namespace VelocityNET.Presentation.Hydrogen.Services
                     "Steps have not been added to the wizard, at least one step required");
             }
 
-            if (Wizard is null)
-            {
-                throw new InvalidOperationException("Wizard type is required");
-            }
-
-            RenderFragment frag =  builder =>
-            {
-                builder.OpenComponent(0, Wizard);
-                builder.AddAttribute(0, "Steps", Steps);
-                builder.AddAttribute(0, "Model", Model);
-                builder.AddAttribute(0, "Title", Title);
-
-                if (OnFinshed is not null)
-                {
-                    builder.AddAttribute(0, "OnFinished", OnFinshed);
-                }
-
-                builder.CloseComponent();
-            };
-
-            return frag;
+            return new DefaultWizard<TModel>(Title, Steps, Model, OnFinishedFunc, OnCancelledFunc);
         }
     }
 }

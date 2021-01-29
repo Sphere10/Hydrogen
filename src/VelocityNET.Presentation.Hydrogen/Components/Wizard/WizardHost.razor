@@ -1,0 +1,47 @@
+﻿@inherits ComponentWithViewModel<WizardHostViewModel>
+
+@if (ViewModel!.ErrorMessages.Any())
+{
+    <ul class="validation-errors">
+        @foreach (var error in ViewModel.ErrorMessages)
+        {
+            <li class="validation-message"> @error</li>
+        }
+    </ul>
+}
+
+@if (ViewModel!.CurrentStep is not null)
+{
+    @ViewModel!.CurrentStep
+}
+
+@if (ViewModel.CurrentStepInstance is not null)
+{
+    <div class="row">
+        <div class="col-6 text-left">
+            <button class="btn btn-info btn-sm" disabled="@IsDisabled()" @onclick="ViewModel!.Previous">@ViewModel.CurrentStepInstance.BackButtonText</button>
+        </div>
+
+        <div class="col-6 text-right">
+            @if (ViewModel.CurrentStepInstance.IsCancellable)
+            {
+                <button class="btn btn-secondary btn-sm" @onclick="ViewModel.CancelAsync"> @ViewModel.CurrentStepInstance!.CancelButtonText</button>
+            }
+
+            @if (ViewModel.Wizard.HasNext)
+            {
+                <button class="btn btn-info btn-sm" @onclick="ViewModel.Next">@ViewModel.CurrentStepInstance!.NextButtonText</button>
+            }
+            else
+            {
+                <button class="btn btn-info btn-sm" @onclick="ViewModel!.FinishAsync">@ViewModel.CurrentStepInstance!.FinishButtonText</button>
+            }
+        </div>
+    </div>
+}
+
+
+@code
+{
+    public bool IsDisabled() => !ViewModel!.Wizard.HasPrevious;
+}

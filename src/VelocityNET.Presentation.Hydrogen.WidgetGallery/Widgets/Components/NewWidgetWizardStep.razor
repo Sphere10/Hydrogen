@@ -1,26 +1,32 @@
 ﻿@inherits WizardStep<NewWidgetModel, NewWidgetWizardStepViewModel>
 
-@if (Model is not null)
+
+
+@if (ViewModel.Model is not null)
 {
-    <EditForm EditContext="EditContext">
+    <EditForm Model="ViewModel.Model">
 
         <div class="form-group">
             <label for="Name">Name</label>
-            <InputText id="Name" class="form-control form-control-sm" @bind-Value="Model.Name"/>
+            <InputText id="Name" class="form-control form-control-sm" @bind-Value="ViewModel.Model.Name"/>
         </div>
 
         <div class="form-group">
             <label for="Description">Description</label>
-            <InputText id="Description" class="form-control form-control-sm" @bind-Value="Model.Description"/>
+            <InputText id="Description" class="form-control form-control-sm" @bind-Value="ViewModel.Model.Description"/>
         </div>
 
         <div class="form-group">
             <label for="Price">Price</label>
-            <InputNumber id="Price" class="form-control" @bind-Value="Model.Price"/>
+            <InputNumber id="Price" class="form-control" @bind-Value="ViewModel.Model.Price"/>
         </div>
         <div class="form-group">
             <label for="dimensions">Supply dimensions ? </label>
-            <InputCheckbox class="form-control form-control-sm" id="dimensions" @bind-Value="Model.AreDimensionsKnown"/>
+            <InputCheckbox class="form-control form-control-sm" id="dimensions" @bind-Value="ViewModel.Model.AreDimensionsKnown"/>
         </div>
     </EditForm>
+}
+
+@code {
+    public override string Title { get; } = "Details";
 }

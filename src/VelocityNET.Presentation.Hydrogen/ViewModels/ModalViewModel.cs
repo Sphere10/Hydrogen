@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Data.SqlTypes;
 using System.Threading.Tasks;
+using Sphere10.Framework;
 using VelocityNET.Presentation.Hydrogen.Components.Modal;
 
 namespace VelocityNET.Presentation.Hydrogen.ViewModels
@@ -55,12 +57,14 @@ namespace VelocityNET.Presentation.Hydrogen.ViewModels
         /// <summary>
         /// Modal closed result.
         /// </summary>
-        public virtual void Closed()
+        public virtual Task<bool> RequestCloseAsync()
         {
             if (!ModalTaskCompletionSource.Task.IsCompleted)
             {
                 ModalTaskCompletionSource.SetResult(ModalResult.Exit);
             }
+
+            return Task.FromResult(true);
         }
     }
 }

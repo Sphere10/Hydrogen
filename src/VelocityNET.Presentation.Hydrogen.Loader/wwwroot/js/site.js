@@ -1,12 +1,12 @@
-﻿window.toggleModal = () => {
-    $("#modal").modal('toggle');
+﻿window.showModal = () => {
+    $("#modal").modal({
+        backdrop: "static",
+        keyboard: false
+    });
 }
 
-window.initializeModal = (reference) => {
-    $('#modal').on('hidden.bs.modal', function (e) {
-        reference.invokeMethod('OnModalClosed');
-        $('#modal').modal('hide');
-    })
+window.hideModal = () => {
+    $("#modal").modal('hide')
 }
 
 window.addDropdownHover = () => {

@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
+using Sphere10.Framework;
 
 namespace VelocityNET.Presentation.Hydrogen.Components.Modal
 {
@@ -38,38 +39,36 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Modal
         public async Task<ModalResult> ShowAsync<T>(ParameterView? parameterView = null)
             where T : ModalComponentBase
         {
+            
             Content = builder =>
             {
-                builder.OpenComponent<T>(0);
-                builder.AddComponentReferenceCapture(0, o => _modalComponent = (ModalComponentBase) o);
+                int seq = 0;
+                builder.OpenComponent<T>(seq);
+
+                if (parameterView is not null)
+                {
+                    foreach (ParameterValue parameterValue in parameterView)
+                    {
+                        builder.AddAttribute(seq++, parameterValue.Name, parameterValue.Value);
+                    }
+                }
+
+                builder.AddComponentReferenceCapture(seq++, o => _modalComponent = (ModalComponentBase) o);
                 builder.CloseComponent();
             };
 
             StateHasChanged();
 
             await AwaitModalComponentRender();
-            await _modalComponent?.SetParametersAsync(parameterView ?? ParameterView.Empty)!;
-
-            await ToggleModalAsync();
+            
+            await ShowModalAsync();
             ModalResult result = await _modalComponent.ShowAsync();
-            await ToggleModalAsync();
+            await HideModalAsync();
 
             _modalComponent = null;
             Content = null;
-
+            
             return result;
-        }
-
-        /// <inheritdoc />
-        protected override async Task OnAfterRenderAsync(bool firstRender)
-        {
-            if (firstRender)
-            {
-                var objectReference = DotNetObjectReference.Create(this);
-                await JsRuntime.InvokeVoidAsync("initializeModal", objectReference);
-            }
-
-            await base.OnAfterRenderAsync(firstRender);
         }
 
         /// <summary>
@@ -78,8 +77,8 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Modal
         /// <returns> a task. modal content is rendered and ref available once complete</returns>
         private async Task AwaitModalComponentRender()
         {
-            int attempts = 10;
-            while (_modalComponent is null || attempts <= 0)
+            int attempts = 100;
+            while (_modalComponent is null && attempts >= 0)
             {
                 attempts--;
                 await Task.Delay(5);
@@ -95,22 +94,8 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Modal
             }
         }
 
-        /// <summary>
-        /// Shows or hides the modal and its content based.
-        /// </summary>
-        /// <returns></returns>
-        private async Task ToggleModalAsync() => await JsRuntime.InvokeAsync<object>("toggleModal");
-
-        /// <summary>
-        /// Event handler - when modal is closed e.g. dismiss button or click away this method is invoked
-        /// via JS event handler.
-        /// </summary>
-        [JSInvokable("OnModalClosed")]
-        public void OnModalClosed()
-        {
-            Content = null;
-            _modalComponent?.OnClose();
-            StateHasChanged();
-        }
+        private async Task ShowModalAsync() => await JsRuntime.InvokeVoidAsync("showModal");
+        
+        private async Task HideModalAsync() => await JsRuntime.InvokeVoidAsync("hideModal");
     }
 }

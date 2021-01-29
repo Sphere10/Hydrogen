@@ -1,0 +1,19 @@
+﻿@inherits ModalComponent<WizardModalViewModel>
+
+<ModalTemplate OnCloseFunc="ViewModel!.RequestCloseAsync">
+    <HeaderTemplate>
+        @if (_host is not null)
+        {
+            <h6>@_host.ViewModel!.Title</h6>
+        }
+    </HeaderTemplate>
+    <BodyTemplate>
+        <CascadingValue Value="@Wizard">
+            <CascadingValue Name="OnFinished" Value="@OnFinished">
+                <CascadingValue Name="OnCancelled" Value="@OnCancelled">
+                    <WizardHost @ref="_host"/>
+                </CascadingValue>
+            </CascadingValue>
+        </CascadingValue>
+    </BodyTemplate>
+</ModalTemplate>

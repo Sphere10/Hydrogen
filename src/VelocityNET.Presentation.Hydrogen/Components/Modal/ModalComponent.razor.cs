@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
+using Sphere10.Framework;
 using VelocityNET.Presentation.Hydrogen.ViewModels;
 
 namespace VelocityNET.Presentation.Hydrogen.Components.Modal
@@ -22,7 +23,7 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Modal
         public override Task<ModalResult> ShowAsync() => ViewModel!.ShowAsync();
 
         /// <inheritdoc />
-        public override void OnClose() => ViewModel!.Closed();
+        public override Task<bool> OnCloseAsync() => ViewModel!.RequestCloseAsync();
     }
     
     /// <summary>
@@ -51,7 +52,7 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Modal
         /// <summary>
         /// Handles the close event, such as when the user clicks away.
         /// </summary>
-        public abstract void OnClose();
+        public abstract Task<bool> OnCloseAsync();
 
         /// <inheritdoc />
         protected override Task OnAfterRenderAsync(bool firstRender)

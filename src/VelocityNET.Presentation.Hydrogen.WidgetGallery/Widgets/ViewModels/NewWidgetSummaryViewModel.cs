@@ -5,22 +5,24 @@ using VelocityNET.Presentation.Hydrogen.WidgetGallery.Widgets.Models;
 
 namespace VelocityNET.Presentation.Hydrogen.WidgetGallery.Widgets.ViewModels
 {
-    public class NewWidgetSummaryViewModel : WizardStepViewModelBase<NewWidgetModel> {
+
+    public class NewWidgetSummaryViewModel : WizardStepViewModelBase<NewWidgetModel>
+    {
         /// <inheritdoc />
-        public override Task<bool> OnNextAsync()
+        public override Task<Result> OnNextAsync()
         {
-            return Task.FromResult(true);
+            return Task.FromResult(Result.Valid);
         }
 
         /// <inheritdoc />
-        public override Task<bool> OnPreviousAsync()
+        public override Task<Result> OnPreviousAsync()
         {
-            return Task.FromResult(true);
+            return Task.FromResult(Result.Valid);
         }
 
-        public override async Task<Result> Validate()
+        public override Task<Result> ValidateAsync()
         {
-            return Result.Valid;
+            return Task.FromResult(Result.Valid);
         }
     }
 

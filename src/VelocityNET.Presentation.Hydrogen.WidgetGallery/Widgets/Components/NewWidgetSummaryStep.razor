@@ -1,10 +1,11 @@
 ﻿@inherits WizardStep<NewWidgetModel, NewWidgetSummaryViewModel>
 
+
 <h5>Summary</h5>
 
-<p>Name: @Model.Name</p>
-<p>Description: @Model.Description</p>
-<p>Price: $@Model.Price</p>
+<p>Name: @ViewModel.Model.Name</p>
+<p>Description: @ViewModel.Model.Description</p>
+<p>Price: $@ViewModel.Model.Price</p>
 
 @code {
     public override string Title { get; } = "Summary";

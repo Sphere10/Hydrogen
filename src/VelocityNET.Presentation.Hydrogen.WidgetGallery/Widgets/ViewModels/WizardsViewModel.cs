@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
+using Sphere10.Framework;
 using VelocityNET.Presentation.Hydrogen.Components;
 using VelocityNET.Presentation.Hydrogen.Components.Modal;
 using VelocityNET.Presentation.Hydrogen.Components.Wizard;
@@ -17,30 +18,22 @@ namespace VelocityNET.Presentation.Hydrogen.WidgetGallery.Widgets.ViewModels
     {
         private IModalService ModalService { get; }
 
-        private IWizardBuilder Builder { get; }
+        private IWizardBuilder<NewWidgetModel> Builder { get; }
 
         /// <summary>
         /// Gets list of widgets 
         /// </summary>
         public List<NewWidgetModel> Widgets { get; } = new();
-        
-        private RenderFragment Wizard { get; }
 
         /// <summary>
         /// Wizards view model
         /// </summary>
         /// <param name="modalService"></param>
         /// <param name="builder"></param>
-        public WizardsViewModel(IModalService modalService, IWizardBuilder builder)
+        public WizardsViewModel(IModalService modalService, IWizardBuilder<NewWidgetModel> builder)
         {
             ModalService = modalService;
             Builder = builder;
-            
-            Wizard = Builder.NewWizard<Wizard>("New Widget")
-                .WithModel(new NewWidgetModel())
-                .AddStep<NewWidgetWizardStep>()
-                .AddStep<NewWidgetSummaryStep>()
-                .Build();
         }
 
         /// <summary>
@@ -49,16 +42,22 @@ namespace VelocityNET.Presentation.Hydrogen.WidgetGallery.Widgets.ViewModels
         /// <returns></returns>
         public async Task ShowNewWidgetModalAsync()
         {
+            IWizard wizard = Builder.NewWizard("New Widget")
+                .WithModel(new NewWidgetModel())
+                .AddStep<NewWidgetWizardStep>()
+                .AddStep<NewWidgetSummaryStep>()
+                .OnCancelled(modal =>Task.FromResult<Result<bool>>(true))
+                .OnFinished(model =>
+                {
+                     Widgets.Add(model);
+                     return Task.FromResult<Result<bool>>(true);
+                })
+                .Build();
+            
             ModalResult result = await ModalService.ShowAsync<WizardModal>(new Dictionary<string, object>
             {
-                {nameof(WizardModal.Wizard), Wizard},
+                {nameof(WizardModal.Wizard), wizard},
             });
-            
-            if (result.ResultType is ModalResultType.Ok)
-            {
-                NewWidgetModel model = result.GetData<NewWidgetModel>();
-                Widgets.Add(model);
-            }
         }
     }
 

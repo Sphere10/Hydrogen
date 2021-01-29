@@ -39,7 +39,7 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Wizard
         public override Task<Result> OnPreviousAsync() => ViewModel!.OnPreviousAsync();
         
         /// <inheritdoc />
-        public override Task<Result> Validate() => ViewModel!.ValidateAsync();
+        public override Task<Result> ValidateAsync() => ViewModel!.ValidateAsync();
 
         /// <inheritdoc />
         protected override void OnParametersSet()
@@ -92,7 +92,7 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Wizard
         /// Validate this the model at this step.  
         /// </summary>
         /// <returns> validation results.</returns>
-        public abstract Task<Result> Validate();
+        public abstract Task<Result> ValidateAsync();
         
         /// <summary>
         /// Called when the wizard requests the next step. Returning true will allow

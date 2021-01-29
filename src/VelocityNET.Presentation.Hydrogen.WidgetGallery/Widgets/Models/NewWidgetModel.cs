@@ -15,7 +15,7 @@ namespace VelocityNET.Presentation.Hydrogen.WidgetGallery.Widgets.Models
         
         [Required]
         [Range(0, double.MaxValue)]
-        public decimal Price { get; set; }
+        public decimal? Price { get; set; }
 
         [Range(1, 100)]
         public int? Height { get; set; }

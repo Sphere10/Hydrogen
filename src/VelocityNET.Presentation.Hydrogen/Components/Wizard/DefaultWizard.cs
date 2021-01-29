@@ -107,12 +107,9 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Wizard
             {
                 case StepUpdateType.Inject:
                 {
-                    if (HasNext)
+                    if (Steps[CurrentStepIndex + 1] != step)
                     {
-                        if (Steps[CurrentStepIndex + 1] != step)
-                        {
-                            Steps.Insert(CurrentStepIndex + 1, step);
-                        }
+                        Steps.Insert(CurrentStepIndex + 1, step);
                     }
 
                     break;

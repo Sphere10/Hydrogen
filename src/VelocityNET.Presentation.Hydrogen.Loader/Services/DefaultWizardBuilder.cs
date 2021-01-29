@@ -15,26 +15,8 @@ namespace VelocityNET.Presentation.Hydrogen.Loader.Services
     /// </summary>
     public class DefaultWizardBuilder<TModel> : IWizardBuilder<TModel>
     {
- /// <summary>
-        /// Gets or sets the model 
-        /// </summary>
-        private TModel Model { get; set; }
-
-        /// <summary>
-        /// Gets or sets the on finished func
-        /// </summary>
-        private Func<TModel, Task<Result<bool>>>? OnFinishedFunc { get; set; }
-
-        /// <summary>
-        /// Gets or sets the cancelled func.
-        /// </summary>
-        private Func<TModel, Task<Result<bool>>>? OnCancelledFunc { get; set; }
-
-        /// <summary>
-        /// Gets or sets the wizard steps
-        /// </summary>
-        private List<Type> Steps { get; } = new();
-
+        private WizardBuilderParameters<TModel> _parameters = null!;
+        
         /// <summary>
         /// Add wizard type to builder
         /// </summary>
@@ -43,14 +25,14 @@ namespace VelocityNET.Presentation.Hydrogen.Loader.Services
         /// <exception cref="InvalidOperationException"> if called more than once</exception>
         public IWizardBuilder<TModel> NewWizard(string title)
         {
-            Title = title;
+            _parameters = new WizardBuilderParameters<TModel>()
+            {
+                Title = title
+            };
+            
             return this;
         }
-
-        /// <summary>
-        /// Gets or sets the wizard title
-        /// </summary>
-        private string Title { get; set; }
+        
 
         /// <summary>
         /// Set the model instance to be used with this wizard
@@ -66,7 +48,7 @@ namespace VelocityNET.Presentation.Hydrogen.Loader.Services
                 throw new ArgumentNullException(nameof(instance), "Model instance must not be null.");
             }
 
-            Model = instance;
+            _parameters.Model = instance;
             return this;
         }
 
@@ -77,19 +59,19 @@ namespace VelocityNET.Presentation.Hydrogen.Loader.Services
         /// <returns></returns>
         public IWizardBuilder<TModel> AddStep<TWizardStep>() where TWizardStep : WizardStepBase
         {
-            Steps.Add(typeof(TWizardStep));
+            _parameters.Steps.Add(typeof(TWizardStep));
             return this;
         }
 
         public IWizardBuilder<TModel> OnFinished(Func<TModel, Task<Result<bool>>> onFinished)
         {
-            OnFinishedFunc = onFinished ?? throw new ArgumentNullException(nameof(onFinished));
+            _parameters.OnFinishedFunc = onFinished ?? throw new ArgumentNullException(nameof(onFinished));
             return this;
         }
 
         public IWizardBuilder<TModel> OnCancelled(Func<TModel, Task<Result<bool>>> onCancelled)
         {
-            OnCancelledFunc = onCancelled ?? throw new ArgumentNullException(nameof(onCancelled));
+            _parameters.OnCancelledFunc = onCancelled ?? throw new ArgumentNullException(nameof(onCancelled));
             return this;
         }
         
@@ -100,18 +82,46 @@ namespace VelocityNET.Presentation.Hydrogen.Loader.Services
          /// <exception cref="InvalidOperationException"> thrown if components of the wizard have not been added using builder.</exception>
         public IWizard<TModel> Build()
         {
-            if (Model is null)
+            if (_parameters.Model is null)
             {
                 throw new InvalidOperationException("Model has not been set, use WithModel<TModel>(TModel instance)");
             }
 
-            if (!Steps.Any())
+            if (!_parameters.Steps.Any())
             {
                 throw new InvalidOperationException(
                     "Steps have not been added to the wizard, at least one step required");
             }
 
-            return new DefaultWizard<TModel>(Title, Steps, Model, OnFinishedFunc, OnCancelledFunc);
+            return new DefaultWizard<TModel>(_parameters.Title, _parameters.Steps, _parameters.Model, _parameters.OnFinishedFunc, _parameters.OnCancelledFunc);
         }
+    }
+
+    internal class WizardBuilderParameters<TModel>
+    {
+        /// <summary>
+        /// Gets or sets the wizard title
+        /// </summary>
+        internal string Title { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the model 
+        /// </summary>
+        internal TModel Model { get; set; }
+
+        /// <summary>
+        /// Gets or sets the on finished func
+        /// </summary>
+        internal Func<TModel, Task<Result<bool>>>? OnFinishedFunc { get; set; }
+
+        /// <summary>
+        /// Gets or sets the cancelled func.
+        /// </summary>
+        internal Func<TModel, Task<Result<bool>>>? OnCancelledFunc { get; set; }
+
+        /// <summary>
+        /// Gets or sets the wizard steps
+        /// </summary>
+        internal List<Type> Steps { get; } = new();
     }
 }

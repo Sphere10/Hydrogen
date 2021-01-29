@@ -68,6 +68,8 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Modal
             _modalComponent = null;
             Content = null;
             
+            StateHasChanged();
+            
             return result;
         }
 

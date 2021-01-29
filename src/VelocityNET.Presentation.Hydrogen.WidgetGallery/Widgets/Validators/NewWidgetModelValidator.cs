@@ -7,7 +7,9 @@ namespace VelocityNET.Presentation.Hydrogen.WidgetGallery.Widgets.Validators
     {
         public NewWidgetModelValidator()
         {
-            RuleFor(x => x.Price).GreaterThan(0);
+            RuleFor(x => x.Price).NotNull().GreaterThan(0);
+            RuleFor(x => x.Name).NotEmpty();
+            RuleFor(x => x.Description).NotEmpty();
         }
     }
 }

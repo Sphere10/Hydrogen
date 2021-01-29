@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using VelocityNET.Presentation.Hydrogen.Components.Wizard;
 
@@ -46,12 +45,6 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Modal
             {
                 throw new InvalidOperationException("Wizard parameter is required");
             }
-        }
-
-        /// <inheritdoc />
-        protected override void OnAfterRender(bool firstRender)
-        {
-            base.OnAfterRender(firstRender);
 
             OnFinished = EventCallback.Factory.Create(ViewModel, () => ViewModel!.Ok());
             OnCancelled = EventCallback.Factory.Create(ViewModel, () => ViewModel!.Cancel());

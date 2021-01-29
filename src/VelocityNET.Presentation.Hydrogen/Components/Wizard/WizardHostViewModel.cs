@@ -14,6 +14,8 @@ namespace VelocityNET.Presentation.Hydrogen.ViewModels
 
         private WizardStepBase? _currentStepInstance;
 
+        private string _title = string.Empty;
+
         /// <summary>
         /// Gets a list of error messages zzs
         /// </summary>
@@ -27,7 +29,15 @@ namespace VelocityNET.Presentation.Hydrogen.ViewModels
         /// <summary>
         /// Gets or sets the title of the current wizard and step.
         /// </summary>
-        public string Title => $"{Wizard.Title} -> {CurrentStepInstance?.Title}";
+        public string Title
+        {
+            get => _title;
+            set
+            {
+                _title = value;
+                StateHasChangedDelegate?.Invoke();
+            }
+        }
 
         /// <summary>
         /// Gets or sets the callback function supplied by parent to be run when
@@ -51,6 +61,7 @@ namespace VelocityNET.Presentation.Hydrogen.ViewModels
             {
                 _currentStepInstance = value;
                 StateHasChangedDelegate?.Invoke();
+                Title = $"{Wizard.Title} -> {_currentStepInstance?.Title}";
             }
         }
 
@@ -72,18 +83,23 @@ namespace VelocityNET.Presentation.Hydrogen.ViewModels
         /// </summary>
         /// <returns></returns>
         /// <exception cref="InvalidOperationException"> thrown if there is no next step</exception>
-        public void Next()
+        public async Task NextAsync()
         {
-            Result<bool> result = Wizard.Next();
-
-            if (result)
+            Result validationResult = await CurrentStepInstance!.ValidateAsync();
+            ErrorMessages.Clear();
+            
+            if (validationResult.Success)
             {
-                CurrentStep = CreateStepBaseFragment(Wizard.CurrentStep);
+                if (Wizard.Next())
+                {
+                    
+                    CurrentStep = CreateStepBaseFragment(Wizard.CurrentStep);
+                }
             }
             else
             {
-                ErrorMessages.Clear();
-                ErrorMessages.AddRange(result.ErrorMessages);
+                
+                ErrorMessages.AddRange(validationResult.ErrorMessages);
             }
         }
 
@@ -92,19 +108,21 @@ namespace VelocityNET.Presentation.Hydrogen.ViewModels
         /// </summary>
         /// <returns></returns>
         /// <exception cref="InvalidOperationException"> thrown if there is no previous</exception>
-        public void Previous()
+        public Task PreviousAsync()
         {
-            Result<bool> result = Wizard.Previous();
+            var prev = Wizard.Previous();
 
-            if (result)
+            if (prev)
             {
                 CurrentStep = CreateStepBaseFragment(Wizard.CurrentStep);
             }
             else
             {
                 ErrorMessages.Clear();
-                ErrorMessages.AddRange(result.ErrorMessages);
+                ErrorMessages.AddRange(prev.ErrorMessages);
             }
+
+            return Task.CompletedTask;
         }
 
         /// <summary>

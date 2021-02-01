@@ -27,7 +27,8 @@ namespace VelocityNET.Presentation.Hydrogen.Services
         /// Show a wizard modal, with the supplied wizard model.
         /// </summary>
         /// <param name="wizard"> wizard</param>
+        /// <param name="parameters"></param>
         /// <returns> modal result.</returns>
-        Task<ModalResult> ShowWizardAsync(IWizard wizard);
+        Task<ModalResult> ShowWizardAsync(IWizard wizard, Dictionary<string, object>? parameters = null);
     }
 }

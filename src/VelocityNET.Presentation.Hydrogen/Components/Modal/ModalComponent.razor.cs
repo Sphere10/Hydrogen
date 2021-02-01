@@ -17,6 +17,7 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Modal
         [Inject]
         // ReSharper disable once MemberCanBePrivate.Global
         // ReSharper disable once UnusedAutoPropertyAccessor.Global
+        // ReSharper disable once AutoPropertyCanBeMadeGetOnly.Global
         protected TViewModel? ViewModel { get; set; } = null!;
 
         /// <inheritdoc />
@@ -42,6 +43,18 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Modal
         /// Gets the task indicating whether the component has been rendered / initialized.
         /// </summary>
         public Task ModalRendered => _renderCompletionSource.Task;
+        
+        /// <summary>
+        /// Gets or sets the modal height
+        /// </summary>
+        [Parameter]
+        public (int min, int max)? Width { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the modal height
+        /// </summary>
+        [Parameter]
+        public (int min, int max)? Height { get; set; }
         
         /// <summary>
         /// Show the modal content. returns the result of modal interaction with the user.

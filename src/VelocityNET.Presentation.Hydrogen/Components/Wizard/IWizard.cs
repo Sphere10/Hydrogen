@@ -22,7 +22,7 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Wizard
         bool HasNext { get; }
 
         bool HasPrevious { get; }
-
+        
         void UpdateSteps(StepUpdateType updateType, IEnumerable<Type> steps);
 
         Result<bool> Next();

@@ -54,7 +54,11 @@ namespace VelocityNET.Presentation.Hydrogen.WidgetGallery.Widgets.ViewModels
                 })
                 .Build();
 
-            await ModalService.ShowWizardAsync(wizard);
+            await ModalService.ShowWizardAsync(wizard, new Dictionary<string, object>()
+            {
+                {nameof(ModalComponentBase.Width), (250, 1200)},
+                {nameof(ModalComponentBase.Height), (250, 1200)}
+            });
         }
     }
 

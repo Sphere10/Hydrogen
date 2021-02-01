@@ -47,17 +47,24 @@ namespace VelocityNET.Presentation.Hydrogen.Loader.Services
         /// </summary>
         /// <param name="wizard"> wizard</param>
         /// <returns> modal result.</returns>
-        public async Task<ModalResult> ShowWizardAsync(IWizard wizard)
+        public async Task<ModalResult> ShowWizardAsync(IWizard wizard, Dictionary<string, object>? parameters = null)
         {
             if (ModalInstance is null)
             {
                 throw new InvalidOperationException("Modal service is not initialized, no modal component");
             }
 
-            var parameters = new Dictionary<string, object>
+            if (parameters is null)
             {
-                {nameof(WizardModal.Wizard), wizard}
-            };
+                parameters = new Dictionary<string, object>()
+                {
+                    {nameof(WizardModal.Wizard), wizard}
+                };
+            }
+            else
+            {
+                parameters.Add(nameof(WizardModal.Wizard), wizard);
+            }
 
             return await ModalInstance.ShowAsync<WizardModal>(ParameterView.FromDictionary(parameters));
         }

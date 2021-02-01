@@ -21,7 +21,7 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Modal
             get => ViewModel.Wizard;
             set => ViewModel.Wizard = value;
         }
-
+        
         /// <summary>
         /// Gets or sets the call back the wizard will use when finished to signal the completion of the
         /// modal interaction.
@@ -38,6 +38,7 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Modal
         /// of step change.
         /// </summary>
         private EventCallback OnStepChange { get; set; }
+        
 
         /// <inheritdoc />
         protected override void OnParametersSet()

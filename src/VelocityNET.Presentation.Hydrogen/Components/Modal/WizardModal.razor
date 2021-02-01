@@ -1,6 +1,6 @@
 ﻿@inherits ModalComponent<WizardModalViewModel>
 
-<ModalTemplate OnCloseFunc="ViewModel!.RequestCloseAsync">
+<ModalTemplate OnCloseFunc="ViewModel!.RequestCloseAsync" Width="@Width" Height="@Height">
     <HeaderTemplate>
         <p> @_host?.ViewModel!.Title </p>
     </HeaderTemplate>

@@ -21,7 +21,7 @@
         ReplaceAll,
         
         /// <summary>
-        /// Replace the next step with the new step.
+        /// Removes all steps after the current step matching any of the types in the parameter collection.
         /// </summary>
         RemoveNext
     }

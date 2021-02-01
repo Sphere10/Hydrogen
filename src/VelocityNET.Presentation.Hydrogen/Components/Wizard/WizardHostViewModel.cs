@@ -3,18 +3,14 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Sphere10.Framework;
-using VelocityNET.Presentation.Hydrogen.Components.Wizard;
+using VelocityNET.Presentation.Hydrogen.ViewModels;
 
-namespace VelocityNET.Presentation.Hydrogen.ViewModels
+namespace VelocityNET.Presentation.Hydrogen.Components.Wizard
 {
 
     public class WizardHostViewModel : ComponentViewModelBase
     {
-        private RenderFragment? _currentStep;
-
         private WizardStepBase? _currentStepInstance;
-
-        private string _title = string.Empty;
 
         /// <summary>
         /// Gets a list of error messages zzs
@@ -29,15 +25,7 @@ namespace VelocityNET.Presentation.Hydrogen.ViewModels
         /// <summary>
         /// Gets or sets the title of the current wizard and step.
         /// </summary>
-        public string Title
-        {
-            get => _title;
-            set
-            {
-                _title = value;
-                StateHasChangedDelegate?.Invoke();
-            }
-        }
+        public string Title { get; private set; }
 
         /// <summary>
         /// Gets or sets the callback function supplied by parent to be run when
@@ -60,23 +48,15 @@ namespace VelocityNET.Presentation.Hydrogen.ViewModels
             private set
             {
                 _currentStepInstance = value;
-                StateHasChangedDelegate?.Invoke();
                 Title = $"{Wizard.Title} -> {_currentStepInstance?.Title}";
+                StateHasChangedDelegate?.Invoke();
             }
         }
 
         /// <summary>
         /// Gets or sets the current render fragment representation of the current step.
         /// </summary>
-        public RenderFragment? CurrentStep
-        {
-            get => _currentStep;
-            private set
-            {
-                _currentStep = value;
-                StateHasChangedDelegate?.Invoke();
-            }
-        }
+        public RenderFragment? CurrentStep { get; private set; }
 
         /// <summary>
         /// Move to the next step in the wizard.
@@ -85,22 +65,19 @@ namespace VelocityNET.Presentation.Hydrogen.ViewModels
         /// <exception cref="InvalidOperationException"> thrown if there is no next step</exception>
         public async Task NextAsync()
         {
-            Result validationResult = await CurrentStepInstance!.ValidateAsync();
-            ErrorMessages.Clear();
-            
-            if (validationResult.Success)
-            {
-                if (Wizard.Next())
-                {
+            Result result = await _currentStepInstance.OnNextAsync();
                     
-                    CurrentStep = CreateStepBaseFragment(Wizard.CurrentStep);
+                if (result.Success)
+                {
+                    if (Wizard.Next())
+                    {
+                        CurrentStep = CreateStepBaseFragment(Wizard.CurrentStep);
+                    }
                 }
-            }
-            else
-            {
-                
-                ErrorMessages.AddRange(validationResult.ErrorMessages);
-            }
+                else
+                {
+                    ErrorMessages.AddRange(result.ErrorMessages);
+                }
         }
 
         /// <summary>

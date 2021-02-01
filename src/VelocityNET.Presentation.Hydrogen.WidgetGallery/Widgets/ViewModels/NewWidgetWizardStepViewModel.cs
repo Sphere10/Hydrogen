@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Threading.Tasks;
 using FluentValidation;
+using FluentValidation.Results;
 using Sphere10.Framework;
 using VelocityNET.Presentation.Hydrogen.Components.Wizard;
-using VelocityNET.Presentation.Hydrogen.ViewModels;
 using VelocityNET.Presentation.Hydrogen.WidgetGallery.Extensions;
 using VelocityNET.Presentation.Hydrogen.WidgetGallery.Widgets.Components;
 using VelocityNET.Presentation.Hydrogen.WidgetGallery.Widgets.Models;
@@ -14,8 +14,6 @@ namespace VelocityNET.Presentation.Hydrogen.WidgetGallery.Widgets.ViewModels
     public class NewWidgetWizardStepViewModel : WizardStepViewModelBase<NewWidgetModel>
     {
         private IValidator<NewWidgetModel> Validator { get; }
-        
-        public IWizard Wizard { get; set; }
 
         public NewWidgetWizardStepViewModel(IValidator<NewWidgetModel> validator)
         {
@@ -25,17 +23,17 @@ namespace VelocityNET.Presentation.Hydrogen.WidgetGallery.Widgets.ViewModels
         /// <inheritdoc />
         public override async Task<Result> OnNextAsync()
         {
-            Result result = await ValidateAsync();
-            
-            if (result.Success)
+            ValidationResult result = await Validator.ValidateAsync(Model);
+
+            if (result.IsValid)
             {
                 if (Model.AreDimensionsKnown)
                 {
-                    Wizard.UpdateSteps(StepUpdateType.Inject, typeof(WidgetDimensionsStep));
+                    Wizard.UpdateSteps(StepUpdateType.Inject, new[] {typeof(WidgetDimensionsStep)});
                 }
             }
-            
-            return result;
+
+            return result.ToResult();
         }
 
         /// <inheritdoc />
@@ -43,11 +41,6 @@ namespace VelocityNET.Presentation.Hydrogen.WidgetGallery.Widgets.ViewModels
         {
             return Task.FromResult(Result.Valid);
         }
-
-        /// <summary>
-        /// Validate the model at this step of the wizard.
-        /// </summary>
-        /// <returns> validation result.</returns>
-        public override Task<Result> ValidateAsync() => Task.FromResult(Validator.Validate(Model).ToResult());
     }
+
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using VelocityNET.Presentation.Hydrogen.Components.Modal;
+using VelocityNET.Presentation.Hydrogen.Components.Wizard;
 using VelocityNET.Presentation.Hydrogen.Services;
 
 namespace VelocityNET.Presentation.Hydrogen.Loader.Services
@@ -39,6 +40,26 @@ namespace VelocityNET.Presentation.Hydrogen.Loader.Services
             return await ModalInstance.ShowAsync<T>(parameters is null
                 ? ParameterView.Empty
                 : ParameterView.FromDictionary(parameters));
+        }
+
+        /// <summary>
+        /// Show a wizard modal, with the supplied wizard model.
+        /// </summary>
+        /// <param name="wizard"> wizard</param>
+        /// <returns> modal result.</returns>
+        public async Task<ModalResult> ShowWizardAsync(IWizard wizard)
+        {
+            if (ModalInstance is null)
+            {
+                throw new InvalidOperationException("Modal service is not initialized, no modal component");
+            }
+
+            var parameters = new Dictionary<string, object>
+            {
+                {nameof(WizardModal.Wizard), wizard}
+            };
+
+            return await ModalInstance.ShowAsync<WizardModal>(ParameterView.FromDictionary(parameters));
         }
     }
 }

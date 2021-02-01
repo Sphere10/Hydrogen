@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Sphere10.Framework;
 
@@ -22,7 +23,7 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Wizard
 
         bool HasPrevious { get; }
 
-        void UpdateSteps(StepUpdateType updateType, Type step);
+        void UpdateSteps(StepUpdateType updateType, IEnumerable<Type> steps);
 
         Result<bool> Next();
 

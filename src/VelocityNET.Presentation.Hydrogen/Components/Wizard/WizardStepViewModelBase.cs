@@ -1,8 +1,8 @@
 ﻿using System.Threading.Tasks;
 using Sphere10.Framework;
-using VelocityNET.Presentation.Hydrogen.Components.Wizard;
+using VelocityNET.Presentation.Hydrogen.ViewModels;
 
-namespace VelocityNET.Presentation.Hydrogen.ViewModels
+namespace VelocityNET.Presentation.Hydrogen.Components.Wizard
 {
 
     public abstract class WizardStepViewModelBase<TModel> : ComponentViewModelBase
@@ -10,8 +10,8 @@ namespace VelocityNET.Presentation.Hydrogen.ViewModels
         /// <summary>
         /// Gets or sets the wizard instance
         /// </summary>
-        public IWizard<TModel> Wizard { get; set; }
-
+        public IWizard<TModel> Wizard { get; set; } 
+        
         /// <summary>
         /// Gets the model.
         /// </summary>
@@ -30,11 +30,5 @@ namespace VelocityNET.Presentation.Hydrogen.ViewModels
         /// </summary>
         /// <returns> whether or not to progress</returns>
         public abstract Task<Result> OnPreviousAsync();
-
-        /// <summary>
-        /// Validate the model at this step of the wizard.
-        /// </summary>
-        /// <returns> validation result.</returns>
-        public abstract Task<Result> ValidateAsync();
     }
 }

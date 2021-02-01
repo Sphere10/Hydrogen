@@ -10,10 +10,7 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Modal
     /// </summary>
     public partial class WizardModal
     {
-        /// <summary>
-        /// Wizard host instance
-        /// </summary>
-        private WizardHost? _host;
+        private WizardHost _host;
 
         /// <summary>
         /// Gets or sets the wizard render fragment
@@ -36,6 +33,19 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Modal
         /// </summary>
         private EventCallback OnCancelled { get; set; }
 
+        /// <summary>
+        /// Gets or sets the component reference to the wizardhost component.
+        /// </summary>
+        // private WizardHost Host
+        // {
+        //     get => _host;
+        //     set
+        //     {
+        //         _host = value;
+        //         StateHasChanged();
+        //     }
+        // }
+
         /// <inheritdoc />
         protected override void OnParametersSet()
         {
@@ -50,4 +60,5 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Modal
             OnCancelled = EventCallback.Factory.Create(ViewModel, () => ViewModel!.Cancel());
         }
     }
+
 }

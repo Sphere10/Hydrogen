@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components;
 using VelocityNET.Presentation.Hydrogen.Components.Modal;
+using VelocityNET.Presentation.Hydrogen.Components.Wizard;
 
 namespace VelocityNET.Presentation.Hydrogen.Services
 {
@@ -22,5 +22,12 @@ namespace VelocityNET.Presentation.Hydrogen.Services
         /// <returns></returns>
         Task<ModalResult> ShowAsync<T>(Dictionary<string, object>? parameters = null)
             where T : ModalComponentBase;
+
+        /// <summary>
+        /// Show a wizard modal, with the supplied wizard model.
+        /// </summary>
+        /// <param name="wizard"> wizard</param>
+        /// <returns> modal result.</returns>
+        Task<ModalResult> ShowWizardAsync(IWizard wizard);
     }
 }

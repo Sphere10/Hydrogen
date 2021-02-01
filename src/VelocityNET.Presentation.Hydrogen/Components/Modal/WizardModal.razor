@@ -2,10 +2,7 @@
 
 <ModalTemplate OnCloseFunc="ViewModel!.RequestCloseAsync">
     <HeaderTemplate>
-        @if (_host is not null)
-        {
-            <h6> @_host.ViewModel!.Title </h6>
-        }
+        <p> @_host?.ViewModel!.Title </p>
     </HeaderTemplate>
     <BodyTemplate>
         <CascadingValue Value="@Wizard">

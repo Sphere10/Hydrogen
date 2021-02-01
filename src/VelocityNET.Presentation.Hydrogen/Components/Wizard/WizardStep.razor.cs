@@ -2,7 +2,6 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Sphere10.Framework;
-using VelocityNET.Presentation.Hydrogen.ViewModels;
 
 namespace VelocityNET.Presentation.Hydrogen.Components.Wizard
 {
@@ -26,10 +25,10 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Wizard
         /// Gets or sets the wizard instance
         /// </summary>
         [Parameter]
-        public IWizard<TModel> Wizard
+        public IWizard Wizard
         {
             get => ViewModel!.Wizard;
-            set => ViewModel!.Wizard = value;
+            set => ViewModel!.Wizard = (IWizard<TModel>) value;
         }
 
         /// <inheritdoc />
@@ -39,17 +38,13 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Wizard
         public override Task<Result> OnPreviousAsync() => ViewModel!.OnPreviousAsync();
         
         /// <inheritdoc />
-        public override Task<Result> ValidateAsync() => ViewModel!.ValidateAsync();
-
-        /// <inheritdoc />
         protected override void OnParametersSet()
         {
+            base.OnParametersSet();
             if (Wizard is null)
             {
                 throw new InvalidOperationException("Wizard step requires wizard parameter be set.");
             }
-
-            base.OnParametersSet();
         }
     }
 
@@ -87,13 +82,7 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Wizard
         /// Gets a value indicating whether the wizard / step may be cancelled.
         /// </summary>
         public virtual bool IsCancellable { get; } = true;
-        
-        /// <summary>
-        /// Validate this the model at this step.  
-        /// </summary>
-        /// <returns> validation results.</returns>
-        public abstract Task<Result> ValidateAsync();
-        
+
         /// <summary>
         /// Called when the wizard requests the next step. Returning true will allow
         /// the wizard to progress.

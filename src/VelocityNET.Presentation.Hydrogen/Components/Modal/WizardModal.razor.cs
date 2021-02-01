@@ -10,7 +10,7 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Modal
     /// </summary>
     public partial class WizardModal
     {
-        private WizardHost _host;
+        private WizardHost? _host;
 
         /// <summary>
         /// Gets or sets the wizard render fragment
@@ -32,19 +32,12 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Modal
         /// Gets or sets the on cancelled call back the wizard will use when cancellation is requested.
         /// </summary>
         private EventCallback OnCancelled { get; set; }
-
+        
         /// <summary>
-        /// Gets or sets the component reference to the wizardhost component.
+        /// Gets or sets the event callback passed to child components to notify the wizard modal
+        /// of step change.
         /// </summary>
-        // private WizardHost Host
-        // {
-        //     get => _host;
-        //     set
-        //     {
-        //         _host = value;
-        //         StateHasChanged();
-        //     }
-        // }
+        private EventCallback OnStepChange { get; set; }
 
         /// <inheritdoc />
         protected override void OnParametersSet()
@@ -56,8 +49,9 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Modal
                 throw new InvalidOperationException("Wizard parameter is required");
             }
 
-            OnFinished = EventCallback.Factory.Create(ViewModel, () => ViewModel!.Ok());
-            OnCancelled = EventCallback.Factory.Create(ViewModel, () => ViewModel!.Cancel());
+            OnFinished = EventCallback.Factory.Create(ViewModel!, ViewModel!.Ok);
+            OnCancelled = EventCallback.Factory.Create(ViewModel!, ViewModel!.Cancel);
+            OnStepChange = EventCallback.Factory.Create(this, StateHasChanged);
         }
     }
 

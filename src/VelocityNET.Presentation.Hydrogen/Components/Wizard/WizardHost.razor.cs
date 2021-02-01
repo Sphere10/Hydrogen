@@ -31,6 +31,16 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Wizard
         }
         
         /// <summary>
+        /// Call back, invoked when step changes - used to notify parent component.
+        /// </summary>
+        [CascadingParameter(Name = "OnStepChange")]
+        public EventCallback OnStepChange
+        {
+            get => ViewModel!.OnStepChange;
+            set => ViewModel!.OnStepChange = value;
+        }
+        
+        /// <summary>
         /// Gets or sets the wizard model instance.
         /// </summary>
         [CascadingParameter]

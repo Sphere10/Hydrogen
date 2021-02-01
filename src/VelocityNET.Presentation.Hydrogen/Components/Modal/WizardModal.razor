@@ -8,7 +8,9 @@
         <CascadingValue Value="@Wizard">
             <CascadingValue Name="OnFinished" Value="@OnFinished">
                 <CascadingValue Name="OnCancelled" Value="@OnCancelled">
-                    <WizardHost @ref="_host"/>
+                    <CascadingValue Name="OnStepChange" Value="@OnStepChange">
+                           <WizardHost @ref="_host"/>
+                    </CascadingValue>
                 </CascadingValue>
             </CascadingValue>
         </CascadingValue>

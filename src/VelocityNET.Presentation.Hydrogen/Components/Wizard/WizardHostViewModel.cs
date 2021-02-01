@@ -50,6 +50,7 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Wizard
                 _currentStepInstance = value;
                 Title = $"{Wizard.Title} -> {_currentStepInstance?.Title}";
                 StateHasChangedDelegate?.Invoke();
+                OnStepChange.InvokeAsync();
             }
         }
 
@@ -59,25 +60,30 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Wizard
         public RenderFragment? CurrentStep { get; private set; }
 
         /// <summary>
+        /// Gets or sets the on step change event callback.
+        /// </summary>
+        public EventCallback OnStepChange { get; set; }
+
+        /// <summary>
         /// Move to the next step in the wizard.
         /// </summary>
         /// <returns></returns>
         /// <exception cref="InvalidOperationException"> thrown if there is no next step</exception>
         public async Task NextAsync()
         {
-            Result result = await _currentStepInstance.OnNextAsync();
-                    
-                if (result.Success)
+            Result result = await _currentStepInstance!.OnNextAsync();
+
+            if (result.Success)
+            {
+                if (Wizard.Next())
                 {
-                    if (Wizard.Next())
-                    {
-                        CurrentStep = CreateStepBaseFragment(Wizard.CurrentStep);
-                    }
+                    CurrentStep = CreateStepBaseFragment(Wizard.CurrentStep);
                 }
-                else
-                {
-                    ErrorMessages.AddRange(result.ErrorMessages);
-                }
+            }
+            else
+            {
+                ErrorMessages.AddRange(result.ErrorMessages);
+            }
         }
 
         /// <summary>

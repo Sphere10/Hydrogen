@@ -7,8 +7,21 @@ using Sphere10.Framework;
 namespace VelocityNET.Presentation.Hydrogen.Components.Wizard
 {
 
+    /// <summary>
+    /// Default wizard
+    /// </summary>
+    /// <typeparam name="TModel"> model type</typeparam>
     public class DefaultWizard<TModel> : IWizard<TModel>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DefaultWizard{TModel}"/> class.
+        /// </summary>
+        /// <param name="title"></param>
+        /// <param name="steps"></param>
+        /// <param name="modal"></param>
+        /// <param name="onFinish"></param>
+        /// <param name="onCancel"></param>
+        /// <exception cref="ArgumentException"></exception>
         public DefaultWizard(
             string title,
             List<Type> steps,
@@ -31,24 +44,54 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Wizard
             CurrentStep = Steps[CurrentStepIndex];
         }
 
+        /// <summary>
+        /// Gets or sets the index of the step collection the wizard is currently at.
+        /// </summary>
         private int CurrentStepIndex { get; set; }
 
+        /// <summary>
+        /// Gets or sets the step collection - types of steps that will be shown
+        /// </summary>
         private IList<Type> Steps { get; set; }
 
+        /// <summary>
+        /// Gets the on finished function to run when the wizard is finished.
+        /// </summary>
         private Func<TModel, Task<Result<bool>>>? OnFinish { get; }
 
+        /// <summary>
+        /// Gets the on cancelled function to run when the wizard is cancelled.
+        /// </summary>
         private Func<TModel, Task<Result<bool>>>? OnCancel { get; }
 
+        /// <summary>
+        /// Gets or sets the step update lookup used to track applied step updates
+        /// </summary>
         private ILookup<StepUpdateType, Type>? Updates { get; set; }
 
+        /// <summary>
+        /// Gets the wizard title
+        /// </summary>
         public string Title { get; }
 
+        /// <summary>
+        /// Gets or sets the current step
+        /// </summary>
         public Type CurrentStep { get; private set; }
 
+        /// <summary>
+        /// Gets the model
+        /// </summary>
         public TModel Model { get; }
 
+        /// <summary>
+        /// Gets a value indicating whether there is a next step
+        /// </summary>
         public bool HasNext => CurrentStepIndex < Steps.Count - 1;
 
+        /// <summary>
+        /// Gets or sets a value indicating whether there is a previous step.
+        /// </summary>
         public bool HasPrevious => CurrentStepIndex > 0;
 
         /// <inheritdoc />
@@ -150,7 +193,13 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Wizard
                 }
             }
         }
-
+    
+        /// <summary>
+        /// Determines whether the given step types have been added via a step update. Used to deduplicate step updates
+        /// </summary>
+        /// <param name="type"> step update type</param>
+        /// <param name="steps"> steps</param>
+        /// <returns> whether or not a step update of this type has been applied for these step types.</returns>
         private bool StepUpdateIsApplied(StepUpdateType type, IEnumerable<Type> steps)
         {
             if (Updates is null)

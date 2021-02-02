@@ -3,29 +3,61 @@
 namespace VelocityNET.Presentation.Hydrogen.Components.Modal
 {
 
+    /// <summary>
+    /// Modal result - the result of a modal interaction.
+    /// </summary>
     public class ModalResult
     {
+        /// <summary>
+        /// OK modal result.
+        /// </summary>
         public static ModalResult Ok { get; } = new (ModalResultType.Ok);
         
-        public static ModalResult OkData(object data) => new (ModalResultType.Ok, data);
+        /// <summary>
+        /// OK modal result with data.
+        /// </summary>
+        /// <param name="data"> data</param>
+        /// <returns> modal result</returns>
+        public static ModalResult OkData<T>(T? data) => new (ModalResultType.Ok, data);
         
+        /// <summary>
+        /// Modal exited result.
+        /// </summary>
         public static ModalResult Exit { get; } = new (ModalResultType.Exit);
         
+        /// <summary>
+        /// Modal cancelled result
+        /// </summary>
         public static ModalResult Cancel { get; } = new (ModalResultType.Cancel);
 
+        /// <summary>
+        /// Gets the result type.
+        /// </summary>
         public ModalResultType ResultType { get; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ModalResult"/> class.
+        /// </summary>
+        /// <param name="resultType"> result type</param>
         public ModalResult(ModalResultType resultType)
         {
             ResultType = resultType;
         }
 
-        public ModalResult(ModalResultType resultType, object data)
+        /// <summary>
+        /// Modal result
+        /// </summary>
+        /// <param name="resultType"> result type</param>
+        /// <param name="data"> result dat</param>
+        public ModalResult(ModalResultType resultType, object? data)
         {
             ResultType = resultType;
             Data = data ?? throw new ArgumentNullException(nameof(data));
         }
 
+        /// <summary>
+        /// Gets the result data.
+        /// </summary>
         public object? Data { get; }
 
         /// <summary>

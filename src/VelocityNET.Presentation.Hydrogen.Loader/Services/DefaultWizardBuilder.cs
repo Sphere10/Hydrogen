@@ -20,7 +20,6 @@ namespace VelocityNET.Presentation.Hydrogen.Loader.Services
         /// <summary>
         /// Add wizard type to builder
         /// </summary>
-        /// <typeparam name="TWizard"> type of wizard to build</typeparam>
         /// <returns></returns>
         /// <exception cref="InvalidOperationException"> if called more than once</exception>
         public IWizardBuilder<TModel> NewWizard(string title)
@@ -93,7 +92,7 @@ namespace VelocityNET.Presentation.Hydrogen.Loader.Services
                     "Steps have not been added to the wizard, at least one step required");
             }
 
-            return new DefaultWizard<TModel>(_parameters.Title, _parameters.Steps, _parameters.Model, _parameters.OnFinishedFunc, _parameters.OnCancelledFunc);
+            return new DefaultWizard<TModel>(_parameters.Title!, _parameters.Steps, _parameters.Model, _parameters.OnFinishedFunc, _parameters.OnCancelledFunc);
         }
     }
 
@@ -102,12 +101,12 @@ namespace VelocityNET.Presentation.Hydrogen.Loader.Services
         /// <summary>
         /// Gets or sets the wizard title
         /// </summary>
-        internal string Title { get; set; }
+        internal string? Title { get; set; }
         
         /// <summary>
         /// Gets or sets the model 
         /// </summary>
-        internal TModel Model { get; set; }
+        internal TModel? Model { get; set; }
 
         /// <summary>
         /// Gets or sets the on finished func

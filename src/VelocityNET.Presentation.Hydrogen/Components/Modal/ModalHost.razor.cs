@@ -62,7 +62,7 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Modal
             await AwaitModalComponentRender();
             
             await ShowModalAsync();
-            ModalResult result = await _modalComponent.ShowAsync();
+            ModalResult result = await _modalComponent!.ShowAsync();
             await HideModalAsync();
 
             _modalComponent = null;

@@ -10,7 +10,7 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Wizard
         /// <summary>
         /// Gets or sets the wizard instance
         /// </summary>
-        public IWizard<TModel> Wizard { get; set; } 
+        public IWizard<TModel> Wizard { get; set; } = null!;
         
         /// <summary>
         /// Gets the model.

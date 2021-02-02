@@ -8,8 +8,8 @@
         <p>@Message</p>
     </BodyTemplate>
     <FooterTemplate>
-        <a type="button" class="btn btn-secondary" @onclick="ViewModel.Cancel">@CancelMessageText</a>
-        <a type="button" class="btn btn-success" @onclick="ViewModel.Ok">@ConfirmMessageText</a>
+        <a type="button" class="btn btn-secondary" @onclick="ViewModel!.Cancel">@CancelMessageText</a>
+        <a type="button" class="btn btn-success" @onclick="ViewModel!.Ok">@ConfirmMessageText</a>
     </FooterTemplate>
 </ModalTemplate>
 
@@ -19,7 +19,7 @@
     public string Title { get; set; } = "Confirm";
 
     [Parameter]
-    public string Message { get; set; }
+    public string Message { get; set; } = string.Empty;
 
     [Parameter]
     public string ConfirmMessageText { get; set; } = "Confirm";

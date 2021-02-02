@@ -20,12 +20,12 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Wizard
         /// <summary>
         /// Gets or sets the wizard model
         /// </summary>
-        public IWizard Wizard { get; set; }
+        public IWizard Wizard { get; set; } = null!;
 
         /// <summary>
         /// Gets or sets the title of the current wizard and step.
         /// </summary>
-        public string Title { get; private set; }
+        public string Title { get; private set; } = null!;
 
         /// <summary>
         /// Gets or sets the callback function supplied by parent to be run when

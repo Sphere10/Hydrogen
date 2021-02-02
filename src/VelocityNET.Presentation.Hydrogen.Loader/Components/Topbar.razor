@@ -1,4 +1,5 @@
 ﻿@using VelocityNET.Presentation.Hydrogen.Models
+
 <!-- Topbar -->
 <nav class="navbar navbar-expand bg-white topbar mb-3 static-top shadow">
 
@@ -211,8 +212,9 @@
 
 @code
 {
+    #nullable enable
 
-    public Func<string, Task<IEnumerable<SearchResult>>> SearchProvider { get; set; }
+    private Func<string, Task<IEnumerable<SearchResult>>> SearchProvider { get; set; } = null!;
 
     protected override void OnInitialized()
     {

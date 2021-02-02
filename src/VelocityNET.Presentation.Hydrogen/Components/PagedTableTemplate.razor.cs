@@ -50,7 +50,7 @@ namespace VelocityNET.Presentation.Hydrogen.Components
         /// Gets or sets the CSS class string applied to the table element.
         /// </summary>
         [Parameter]
-        public string Class { get; set; }
+        public string? Class { get; set; }
 
         /// <inheritdoc />
         protected override void OnParametersSet()

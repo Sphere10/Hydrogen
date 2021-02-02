@@ -6,7 +6,6 @@ using VelocityNET.Presentation.Hydrogen.Models;
 
 namespace VelocityNET.Presentation.Hydrogen.Components
 {
-
     public partial class VirtualPagedTableTemplate<TItem>
     {
         /// <summary>
@@ -35,15 +34,17 @@ namespace VelocityNET.Presentation.Hydrogen.Components
             set => ViewModel!.PageSize = value;
         }
 
-        // <summary>
+        /// <summary>
         /// Gets or sets the item template
         /// </summary>
-        [Parameter] public RenderFragment<TItem>? ItemTemplate { get; set; } 
+        [Parameter]
+        public RenderFragment<TItem> ItemTemplate { get; set; } = null!;
 
         /// <summary>
         /// Gets or sets the header template
         /// </summary>
-        [Parameter] public RenderFragment? HeaderTemplate { get; set; }
+        [Parameter]
+        public RenderFragment HeaderTemplate { get; set; } = null!;
 
         /// <summary>
         /// Gets or sets the callback to call when row is clicked
@@ -51,31 +52,23 @@ namespace VelocityNET.Presentation.Hydrogen.Components
         [Parameter] public EventCallback<TItem> OnRowSelect { get; set; } = EventCallback<TItem>.Empty;
         
         /// <summary>
-        /// Gets a CSS class string that combines the <c>class</c> attribute
-        /// Derived components should typically use this value for the primary HTML element's
-        /// 'class' attribute.
+        /// Gets the css class applied to the table element.
         /// </summary>
-        private string CssClass
+        [Parameter]
+        public string? Class { get; set; }
+        
+        /// <inheritdoc />
+        protected override void OnParametersSet()
         {
-            get
+            if (ItemTemplate is null)
             {
-                if (AdditionalAttributes != null &&
-                    AdditionalAttributes.TryGetValue("class", out var @class) &&
-                    !string.IsNullOrEmpty(Convert.ToString(@class)))
-                {
-                    return (string) @class;
-                }
-                else
-                {
-                    return string.Empty;
-                }
+                throw new InvalidOperationException("Item template parameter is required.");
+            }
+        
+            if (HeaderTemplate is null)
+            {
+                throw new InvalidOperationException("Header template parameter is required.");
             }
         }
-        
-        /// <summary>
-        /// Gets or sets a collection of additional attributes that will be applied to the created element.
-        /// </summary>
-        [Parameter(CaptureUnmatchedValues = true)]
-        public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
     }
 }

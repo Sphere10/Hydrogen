@@ -2,7 +2,7 @@
 @inherits ComponentWithViewModel<TopbarMenuViewModel>
 
 <ul class="navbar-nav mr-auto top-menu">
-    @foreach (MenuItem item in ViewModel?.MenuItems)
+    @foreach (MenuItem item in ViewModel!.MenuItems)
     {
         @if (item.Children.Any())
         {

@@ -2,44 +2,43 @@
 
 <table class="table table-borderless table-hover overflow-auto">
     <thead>
-    @HeaderTemplate
+    @HeaderTemplate!
     </thead>
 
     <tbody>
-    @if (Items is not null)
-    {
-        @foreach (TItem item in Items)
+        @foreach (TItem item in Items!)
         {
-            if (ItemTemplate is not null)
+            if (ItemTemplate! is not null)
             {
                 <span @onclick="() => OnRowSelect.InvokeAsync(item)" style="display: contents">
                     @ItemTemplate(item)
                 </span>
             }
         }
-    }
     </tbody>
 </table>
 
 @code {
 
+    #nullable enable
+    
     /// <summary>
     /// Gets or sets the items being displayed in the table
     /// </summary>
     [Parameter]
-    public IEnumerable<TItem> Items { get; set; }
+    public IEnumerable<TItem>? Items { get; set; }
 
     /// <summary>
     /// Gets or sets the item template
     /// </summary>
     [Parameter]
-    public RenderFragment<TItem> ItemTemplate { get; set; }
+    public RenderFragment<TItem>? ItemTemplate { get; set; }
 
     /// <summary>
     /// Gets or sets the header template
     /// </summary>
     [Parameter]
-    public RenderFragment HeaderTemplate { get; set; }
+    public RenderFragment? HeaderTemplate { get; set; }
 
     /// <summary>
     /// Gets or sets the callback to call when row is clicked

@@ -18,8 +18,8 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Modal
         [Parameter]
         public IWizard Wizard
         {
-            get => ViewModel.Wizard;
-            set => ViewModel.Wizard = value;
+            get => ViewModel!.Wizard;
+            set => ViewModel!.Wizard = value;
         }
         
         /// <summary>

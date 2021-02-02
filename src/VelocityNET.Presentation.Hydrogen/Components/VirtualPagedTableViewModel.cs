@@ -7,10 +7,11 @@ using VelocityNET.Presentation.Hydrogen.ViewModels;
 
 namespace VelocityNET.Presentation.Hydrogen.Components
 {
-/// <summary>
-/// Virtual paged table view model
-/// </summary>
-/// <typeparam name="TItem"> item type</typeparam>
+
+    /// <summary>
+    /// Virtual paged table view model
+    /// </summary>
+    /// <typeparam name="TItem"> item type</typeparam>
     public class VirtualPagedTableViewModel<TItem> : ComponentViewModelBase
     {
         /// <summary>
@@ -22,7 +23,7 @@ namespace VelocityNET.Presentation.Hydrogen.Components
         /// Gets the current page of items being displayed
         /// </summary>
         public IEnumerable<TItem> Page { get; private set; } = new List<TItem>();
-        
+
         /// <summary>
         /// Gets or sets the size of the page to show.
         /// </summary>
@@ -116,6 +117,11 @@ namespace VelocityNET.Presentation.Hydrogen.Components
             Page = items;
         }
 
+        /// <summary>
+        /// Set the page size shown in the table.
+        /// </summary>
+        /// <param name="pageSize"> new page size</param>
+        /// <returns> task</returns>
         public async Task SetPageSizeAsync(int pageSize)
         {
             int index = (CurrentPage - 1) * PageSize + Page.Count();
@@ -132,7 +138,8 @@ namespace VelocityNET.Presentation.Hydrogen.Components
             Page = items;
         }
 
-        public override async Task InitAsync()
+        /// <inheritdoc />
+        protected override async Task InitCoreAsync()
         {
             (IEnumerable<TItem>? items, int totalItems) = await ItemsProvider.Invoke(new ItemRequest(0,
                 PageSize,

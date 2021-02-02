@@ -78,10 +78,11 @@ namespace VelocityNET.Presentation.Hydrogen.Loader.Services
         /// </summary>
         /// <param name="server"></param>
         /// <returns></returns>
-        public async Task SetActiveServerAsync(Uri server)
+        public Task SetActiveServerAsync(Uri server)
         {
             ActiveServer = server;
             ActiveServerChanged?.Invoke(this, EventArgs.Empty);
+            return Task.CompletedTask;
         }
 
         /// <summary>
@@ -122,9 +123,9 @@ namespace VelocityNET.Presentation.Hydrogen.Loader.Services
         /// </summary>
         /// <param name="server"> server</param>
         /// <returns> whether this is a valid server</returns>
-        public async Task<bool> ValidateServerAsync(Uri server)
+        public Task<bool> ValidateServerAsync(Uri server)
         {
-            return true;
+            return Task.FromResult(true);
         }
     }
 

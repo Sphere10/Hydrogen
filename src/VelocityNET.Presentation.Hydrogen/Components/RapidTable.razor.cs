@@ -8,7 +8,7 @@ namespace VelocityNET.Presentation.Hydrogen.Components
 {
 
     /// <summary>
-    /// Rapid table control / component. asyncronously enumerates an async enumerable e.g. a stream
+    /// Rapid table control / component. async enumerates an async enumerable e.g. a stream
     /// or channel until cancelled or disposed. Generates a table with thead, and tbody from templates
     /// </summary>
     public class RapidTable<TItem> : ComponentWithViewModel<RapidTableViewModel<TItem>>
@@ -17,10 +17,10 @@ namespace VelocityNET.Presentation.Hydrogen.Components
         /// Gets or sets the async item source that will be enumerated.
         /// </summary>
         [Parameter]
-        public IAsyncEnumerable<TItem> Source
+        public IAsyncEnumerable<TItem>? Source
         {
             get => ViewModel!.Source;
-            set => ViewModel!.Source = value;
+            set => ViewModel!.Source = value!;
         }
 
         /// <summary>
@@ -41,15 +41,9 @@ namespace VelocityNET.Presentation.Hydrogen.Components
         [Parameter]
         public int ItemLimit
         {
-            get => ViewModel.ItemLimit;
-            set => ViewModel.ItemLimit = value;
+            get => ViewModel!.ItemLimit;
+            set => ViewModel!.ItemLimit = value;
         }
-
-        // /// <summary>
-        // /// Gets or sets a collection of additional attributes that will be applied to the created element.
-        // /// </summary>
-        // [Parameter(CaptureUnmatchedValues = true)]
-        // public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
 
         /// <summary>
         /// Gets or sets the cancellation token used to cancel the async enumeration of the source property.
@@ -60,35 +54,16 @@ namespace VelocityNET.Presentation.Hydrogen.Components
             get => ViewModel!.CancellationToken;
             set => ViewModel!.CancellationToken = value;
         }
-        
-        /// <summary>
-        /// Gets a CSS class string that combines the <c>class</c> attribute
-        /// Derived components should typically use this value for the primary HTML element's
-        /// 'class' attribute.
-        /// </summary>
-        // protected string CssClass
-        // {
-        //     get
-        //     {
-        //         if (AdditionalAttributes != null &&
-        //             AdditionalAttributes.TryGetValue("class", out var @class) &&
-        //             !string.IsNullOrEmpty(Convert.ToString(@class)))
-        //         {
-        //             return (string) @class;
-        //         }
-        //         else
-        //         {
-        //             return string.Empty;
-        //         }
-        //     }
-        // }
-        
+
         /// <summary>
         /// Gets or sets the callback to call when row is clicked
         /// </summary>
         [Parameter] 
         public EventCallback<TItem> OnRowSelect { get; set; } = EventCallback<TItem>.Empty;
         
+        /// <summary>
+        /// Gets or sets the css class applied to the table element
+        /// </summary>
         [Parameter]
         public string? Class { get; set; }
 
@@ -118,11 +93,8 @@ namespace VelocityNET.Presentation.Hydrogen.Components
             builder.CloseElement();
             builder.CloseElement();
         }
-
-        /// <summary>
-        /// Method invoked when the component has received parameters from its parent in
-        /// the render tree, and the incoming values have been assigned to properties.
-        /// </summary>
+        
+        /// <inheritdoc />
         protected override void OnParametersSet()
         {
             if (ItemTemplate is null)

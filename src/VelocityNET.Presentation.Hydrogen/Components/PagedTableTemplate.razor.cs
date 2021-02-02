@@ -47,29 +47,28 @@ namespace VelocityNET.Presentation.Hydrogen.Components
         [Parameter] public EventCallback<TItem> OnRowSelect { get; set; } = EventCallback<TItem>.Empty;
         
         /// <summary>
-        /// Gets a CSS class string
+        /// Gets or sets the CSS class string applied to the table element.
         /// </summary>
-        private string CssClass
+        [Parameter]
+        public string Class { get; set; }
+
+        /// <inheritdoc />
+        protected override void OnParametersSet()
         {
-            get
+            if (Items is null)
             {
-                if (AdditionalAttributes != null &&
-                    AdditionalAttributes.TryGetValue("class", out var @class) &&
-                    !string.IsNullOrEmpty(Convert.ToString(@class)))
-                {
-                    return (string) @class;
-                }
-                else
-                {
-                    return string.Empty;
-                }
+                throw new InvalidOperationException("Items parameter is required.");
+            }
+            
+            if (HeaderTemplate is null)
+            {
+                throw new InvalidOperationException("Header template parameter is required.");
+            }
+            
+            if (ItemTemplate is null)
+            {
+                throw new InvalidOperationException("Item template parameter is required.");
             }
         }
-        
-        /// <summary>
-        /// Gets or sets a collection of additional attributes that will be applied to the created element.
-        /// </summary>
-        [Parameter(CaptureUnmatchedValues = true)]
-        public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
     }
 }

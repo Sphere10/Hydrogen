@@ -12,7 +12,8 @@
                     ItemLimit="10"
                     Source="@ViewModel!.NodeService.GetBlocksAsync()"
                     TItem="Block"
-                    class="table table-striped table-borderless table-hover">
+                    OnRowSelect="@ViewModel.OnClickRowAsync"
+                    Class="table table-striped table-borderless table-hover">
                     <HeaderTemplate>
                         <tr>
                             <th> Address</th>
@@ -20,12 +21,10 @@
                         </tr>
                     </HeaderTemplate>
                     <ItemTemplate Context="block">
-                        <span style="display: contents" @onclick="() => ViewModel.OnClickRowAsync(block)">
                             <tr>
                                 <td>@block.Address</td>
                                 <td class="text-right">@block.Number</td>
                             </tr>
-                        </span>
                     </ItemTemplate>
                 </RapidTable>
             </div>

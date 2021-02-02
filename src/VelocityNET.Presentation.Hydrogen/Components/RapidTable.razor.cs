@@ -45,11 +45,11 @@ namespace VelocityNET.Presentation.Hydrogen.Components
             set => ViewModel.ItemLimit = value;
         }
 
-        /// <summary>
-        /// Gets or sets a collection of additional attributes that will be applied to the created element.
-        /// </summary>
-        [Parameter(CaptureUnmatchedValues = true)]
-        public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
+        // /// <summary>
+        // /// Gets or sets a collection of additional attributes that will be applied to the created element.
+        // /// </summary>
+        // [Parameter(CaptureUnmatchedValues = true)]
+        // public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
 
         /// <summary>
         /// Gets or sets the cancellation token used to cancel the async enumeration of the source property.
@@ -66,29 +66,37 @@ namespace VelocityNET.Presentation.Hydrogen.Components
         /// Derived components should typically use this value for the primary HTML element's
         /// 'class' attribute.
         /// </summary>
-        protected string CssClass
-        {
-            get
-            {
-                if (AdditionalAttributes != null &&
-                    AdditionalAttributes.TryGetValue("class", out var @class) &&
-                    !string.IsNullOrEmpty(Convert.ToString(@class)))
-                {
-                    return (string) @class;
-                }
-                else
-                {
-                    return string.Empty;
-                }
-            }
-        }
+        // protected string CssClass
+        // {
+        //     get
+        //     {
+        //         if (AdditionalAttributes != null &&
+        //             AdditionalAttributes.TryGetValue("class", out var @class) &&
+        //             !string.IsNullOrEmpty(Convert.ToString(@class)))
+        //         {
+        //             return (string) @class;
+        //         }
+        //         else
+        //         {
+        //             return string.Empty;
+        //         }
+        //     }
+        // }
+        
+        /// <summary>
+        /// Gets or sets the callback to call when row is clicked
+        /// </summary>
+        [Parameter] 
+        public EventCallback<TItem> OnRowSelect { get; set; } = EventCallback<TItem>.Empty;
+        
+        [Parameter]
+        public string? Class { get; set; }
 
         /// <inheritdoc />
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
             builder.OpenElement(0, "table");
-            builder.AddMultipleAttributes(1, AdditionalAttributes);
-            builder.AddAttribute(2, "class", CssClass);
+            builder.AddAttribute(2, "class", Class);
 
             builder.OpenElement(3, "thead");
             HeaderTemplate(builder);
@@ -98,7 +106,13 @@ namespace VelocityNET.Presentation.Hydrogen.Components
 
             foreach (TItem item in ViewModel!.Items)
             {
+                builder.OpenElement(5, "span");
+                builder.AddAttribute(6, "style", "display: contents");
+                builder.AddAttribute(7, "onclick", EventCallback.Factory.Create(this, () => OnRowSelect.InvokeAsync(item)));
+                
                 ItemTemplate(item)(builder);
+                
+                builder.CloseElement();
             }
             
             builder.CloseElement();

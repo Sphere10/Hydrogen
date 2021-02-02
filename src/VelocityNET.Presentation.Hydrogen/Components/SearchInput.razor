@@ -1,5 +1,5 @@
 ﻿@using VelocityNET.Presentation.Hydrogen.Models
-<div class="input-group dropdown ">
+<div class="input-group dropdown">
         <input type="text" class="form-control bg-light border-0 small search-input" @bind-value="@SearchTerm" @bind-value:event="oninput" placeholder="Search for..." @onkeyup="() => OnSearchAsync(SearchTerm)"
                aria-label="Search">
     
@@ -27,5 +27,7 @@
 
 @code
 {
-    private string SearchTerm { get; set; }
+    #nullable enable
+    
+    private string? SearchTerm { get; set; }
 }

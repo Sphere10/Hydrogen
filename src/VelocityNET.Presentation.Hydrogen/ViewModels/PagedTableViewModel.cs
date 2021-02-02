@@ -14,7 +14,7 @@ namespace VelocityNET.Presentation.Hydrogen.ViewModels
         /// <summary>
         /// Gets or sets the items collection
         /// </summary>
-        public IEnumerable<TItem>? Items { get; set; }
+        public IEnumerable<TItem> Items { get; set; } = null!;
 
         /// <summary>
         /// Gets the current page of items being displayed

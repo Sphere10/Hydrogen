@@ -1,5 +1,4 @@
-﻿using VelocityNET.Presentation.Hydrogen;
-using VelocityNET.Presentation.Hydrogen.ViewModels;
+﻿using VelocityNET.Presentation.Hydrogen.ViewModels;
 using VelocityNET.Presentation.Hydrogen.WidgetGallery.Widgets.Services;
 
 namespace VelocityNET.Presentation.Hydrogen.WidgetGallery.Widgets.ViewModels

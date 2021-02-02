@@ -1,7 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Sphere10.Framework;
 using VelocityNET.Presentation.Hydrogen.Components.Wizard;
-using VelocityNET.Presentation.Hydrogen.ViewModels;
 using VelocityNET.Presentation.Hydrogen.WidgetGallery.Widgets.Models;
 
 namespace VelocityNET.Presentation.Hydrogen.WidgetGallery.Widgets.ViewModels

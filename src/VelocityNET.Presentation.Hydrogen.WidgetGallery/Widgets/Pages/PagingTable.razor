@@ -8,7 +8,7 @@
         <div class="card shadow">
             <div class="card-header">Rapid Table</div>
             <div class="card-body">
-                <TableTemplate Items="@ViewModel!.Blocks" TItem="Block" OnRowSelect="@ViewModel!.OnClickRowAsync">
+                <RapidTable ItemLimit="10" Source="@ViewModel!.NodeService.GetBlocksAsync()" class="table table-striped table-borderless">
                     <HeaderTemplate>
                         <tr>
                             <th> Address</th>
@@ -16,12 +16,12 @@
                         </tr>
                     </HeaderTemplate>
                     <ItemTemplate Context="block">
-                        <tr>
-                            <td>@block.Address</td>
-                            <td class="text-right">@block.Number</td>
-                        </tr>
-                    </ItemTemplate>
-                </TableTemplate>
+                                            <tr>
+                                                <td>@block.Address</td>
+                                                <td class="text-right">@block.Number</td>
+                                            </tr>
+                                        </ItemTemplate>
+                </RapidTable>
             </div>
         </div>
     </div>

@@ -41,23 +41,6 @@ namespace VelocityNET.Presentation.Hydrogen.WidgetGallery.Widgets.ViewModels
         /// <returns></returns>
         protected override Task InitCoreAsync()
         {
-            Task.Run(async () =>
-            {
-                while (!TaskCancellationSource.IsCancellationRequested)
-                {
-                    await foreach (Block block in NodeService.GetBlocksAsync())
-                    {
-                        if (Blocks.Count == 10)
-                        {
-                            Blocks.Dequeue();
-                        }
-                        
-                        Blocks.Enqueue(block);
-                        StateHasChangedDelegate?.Invoke();
-                    }
-                }
-            });
-
             return Task.CompletedTask;
         }
 

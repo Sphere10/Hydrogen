@@ -14,7 +14,7 @@ namespace VelocityNET.Presentation.Hydrogen.Tests.Wizard
         public void Initialized()
         {
             IWizard wizard =
-                new DefaultWizard<TestModel>("test", new List<Type> {typeof(object)}, new TestModel(), null, null);
+                new DefaultWizard<bool>("test", new List<Type> {typeof(object)}, true, null, null);
 
             Assert.NotNull(wizard.CurrentStep);
             Assert.IsFalse(wizard.HasNext);
@@ -25,8 +25,8 @@ namespace VelocityNET.Presentation.Hydrogen.Tests.Wizard
         public void NextAsync()
         {
             IWizard wizard =
-                new DefaultWizard<TestModel>("test", new List<Type> {typeof(object), typeof(object), typeof(object)},
-                    new TestModel(), null, null);
+                new DefaultWizard<bool>("test", new List<Type> {typeof(object), typeof(object), typeof(object)},
+                    true, null, null);
 
             Assert.IsTrue(wizard.HasNext);
             Assert.IsFalse(wizard.HasPrevious);

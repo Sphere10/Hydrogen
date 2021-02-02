@@ -148,8 +148,6 @@ namespace VelocityNET.Presentation.Hydrogen.Components
 
             Page = items;
             TotalItems = totalItems;
-
-            await base.InitAsync();
         }
     }
 

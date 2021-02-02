@@ -72,7 +72,8 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Wizard
         public async Task NextAsync()
         {
             Result result = await _currentStepInstance!.OnNextAsync();
-
+            ErrorMessages.Clear();
+            
             if (result.Success)
             {
                 if (Wizard.Next())
@@ -94,14 +95,14 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Wizard
         public Task PreviousAsync()
         {
             var prev = Wizard.Previous();
-
+            ErrorMessages.Clear();
+            
             if (prev)
             {
                 CurrentStep = CreateStepBaseFragment(Wizard.CurrentStep);
             }
             else
             {
-                ErrorMessages.Clear();
                 ErrorMessages.AddRange(prev.ErrorMessages);
             }
 
@@ -115,14 +116,14 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Wizard
         public async Task FinishAsync()
         {
             Result result = await Wizard.FinishAsync();
-
+            ErrorMessages.Clear();
+            
             if (result.Success)
             {
                 await OnFinished.InvokeAsync();
             }
             else
             {
-                ErrorMessages.Clear();
                 ErrorMessages.AddRange(result.ErrorMessages);
             }
         }
@@ -134,14 +135,14 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Wizard
         public async Task CancelAsync()
         {
             Result result = await Wizard.CancelAsync();
-
+            ErrorMessages.Clear();
+            
             if (result.Success)
             {
                 await OnCancelled.InvokeAsync();
             }
             else
             {
-                ErrorMessages.Clear();
                 ErrorMessages.AddRange(result.ErrorMessages);
             }
         }

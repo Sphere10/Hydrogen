@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using AutoFixture;
 using NUnit.Framework;
+using VelocityNET.Presentation.Hydrogen.Components;
 using VelocityNET.Presentation.Hydrogen.Models;
 using VelocityNET.Presentation.Hydrogen.ViewModels;
 

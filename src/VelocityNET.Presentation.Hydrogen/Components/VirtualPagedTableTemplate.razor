@@ -3,7 +3,7 @@
 @using Microsoft.AspNetCore.Components.Forms
 
 
-<table class="table table-borderless table-hover overflow-auto">
+<table class="@CssClass">
     <thead>
     @HeaderTemplate
     </thead>
@@ -47,10 +47,6 @@
             <li class="page-item @NextItemClass">
                 <a class="page-link" @onclick="ViewModel!.NextPageAsync">Next</a>
             </li>
-
-            @* <li class="page-item @NextItemClass ml-2"> *@
-            @*     <a class="page-link" @onclick="ViewModel!.LastPageAsync">@ViewModel.TotalPages</a> *@
-            @* </li> *@
         </ul>
     </nav>
 

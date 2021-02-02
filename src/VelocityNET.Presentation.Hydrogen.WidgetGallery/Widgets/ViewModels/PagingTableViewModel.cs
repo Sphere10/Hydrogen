@@ -10,13 +10,11 @@ using VelocityNET.Presentation.Hydrogen.ViewModels;
 namespace VelocityNET.Presentation.Hydrogen.WidgetGallery.Widgets.ViewModels
 {
 
-    public class PagingTableViewModel : ComponentViewModelBase, IDisposable
+    public class PagingTableViewModel : ComponentViewModelBase
     {
         public INodeService NodeService { get; }
 
-        public IModalService ModalService { get; }
-
-        public Queue<Block> Blocks { get; } = new(10);
+        private IModalService ModalService { get; }
 
         public PagingTableViewModel(IModalService modalService, INodeService nodeService)
         {
@@ -31,23 +29,6 @@ namespace VelocityNET.Presentation.Hydrogen.WidgetGallery.Widgets.ViewModels
                 {nameof(InfoDialog.Title), $"Block {block.Number}"},
                 {nameof(InfoDialog.Message), $"Viewing {block.Number}, Address {block.Address}"},
             });
-        }
-
-        private CancellationTokenSource TaskCancellationSource { get; } = new();
-
-        /// <summary>
-        /// Called when view is initialized, override to provide custom initialization logic. 
-        /// </summary>
-        /// <returns></returns>
-        protected override Task InitCoreAsync()
-        {
-            return Task.CompletedTask;
-        }
-
-        /// <summary>Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.</summary>
-        public void Dispose()
-        {
-            TaskCancellationSource.Cancel();
         }
     }
 }

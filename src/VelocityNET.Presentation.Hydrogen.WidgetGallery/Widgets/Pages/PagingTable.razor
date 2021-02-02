@@ -8,7 +8,11 @@
         <div class="card shadow">
             <div class="card-header">Rapid Table</div>
             <div class="card-body">
-                <RapidTable ItemLimit="10" Source="@ViewModel!.NodeService.GetBlocksAsync()" class="table table-striped table-borderless">
+                <RapidTable
+                    ItemLimit="10"
+                    Source="@ViewModel!.NodeService.GetBlocksAsync()"
+                    TItem="Block"
+                    class="table table-striped table-borderless table-hover">
                     <HeaderTemplate>
                         <tr>
                             <th> Address</th>
@@ -16,11 +20,13 @@
                         </tr>
                     </HeaderTemplate>
                     <ItemTemplate Context="block">
-                                            <tr>
-                                                <td>@block.Address</td>
-                                                <td class="text-right">@block.Number</td>
-                                            </tr>
-                                        </ItemTemplate>
+                        <span style="display: contents" @onclick="() => ViewModel.OnClickRowAsync(block)">
+                            <tr>
+                                <td>@block.Address</td>
+                                <td class="text-right">@block.Number</td>
+                            </tr>
+                        </span>
+                    </ItemTemplate>
                 </RapidTable>
             </div>
         </div>
@@ -29,7 +35,12 @@
         <div class="card shadow">
             <div class="card-header">Paged Table</div>
             <div class="card-body">
-                <PagedTableTemplate Items="Blocks" TItem="Block" PageSize="10" OnRowSelect="@ViewModel!.OnClickRowAsync">
+                <PagedTableTemplate
+                    class="table table-borderless table-hover overflow-auto"
+                    Items="Blocks"
+                    TItem="Block"
+                    PageSize="10"
+                    OnRowSelect="@ViewModel!.OnClickRowAsync">
                     <HeaderTemplate>
                         <tr>
                             <th> Address</th>
@@ -50,7 +61,11 @@
         <div class="card shadow">
             <div class="card-header"> Virtual paged table</div>
             <div class="card-body">
-                <VirtualPagedTableTemplate ItemsProvider="request => ViewModel.NodeService.GetBlocksAsync(request)" OnRowSelect="@ViewModel!.OnClickRowAsync" TItem="Block" PageSize="10">
+                <VirtualPagedTableTemplate class="table table-borderless table-hover overflow-auto"
+                                           ItemsProvider="request => ViewModel.NodeService.GetBlocksAsync(request)"
+                                           OnRowSelect="@ViewModel!.OnClickRowAsync"
+                                           TItem="Block"
+                                           PageSize="10">
                     <HeaderTemplate>
                         <tr>
                             <th> Address</th>

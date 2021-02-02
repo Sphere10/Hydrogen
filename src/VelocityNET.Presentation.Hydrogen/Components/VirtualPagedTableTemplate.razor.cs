@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using VelocityNET.Presentation.Hydrogen.Models;
 
@@ -47,5 +49,33 @@ namespace VelocityNET.Presentation.Hydrogen.Components
         /// Gets or sets the callback to call when row is clicked
         /// </summary>
         [Parameter] public EventCallback<TItem> OnRowSelect { get; set; } = EventCallback<TItem>.Empty;
+        
+        /// <summary>
+        /// Gets a CSS class string that combines the <c>class</c> attribute
+        /// Derived components should typically use this value for the primary HTML element's
+        /// 'class' attribute.
+        /// </summary>
+        private string CssClass
+        {
+            get
+            {
+                if (AdditionalAttributes != null &&
+                    AdditionalAttributes.TryGetValue("class", out var @class) &&
+                    !string.IsNullOrEmpty(Convert.ToString(@class)))
+                {
+                    return (string) @class;
+                }
+                else
+                {
+                    return string.Empty;
+                }
+            }
+        }
+        
+        /// <summary>
+        /// Gets or sets a collection of additional attributes that will be applied to the created element.
+        /// </summary>
+        [Parameter(CaptureUnmatchedValues = true)]
+        public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
     }
 }

@@ -83,12 +83,6 @@ namespace VelocityNET.Presentation.Hydrogen.Components
             }
         }
 
-        /// <summary>
-        /// Gets or sets the callback to call when row is clicked
-        /// </summary>
-        [Parameter]
-        public EventCallback<TItem> OnRowSelect { get; set; } = EventCallback<TItem>.Empty;
-
         /// <inheritdoc />
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
@@ -101,16 +95,12 @@ namespace VelocityNET.Presentation.Hydrogen.Components
             builder.CloseElement();
 
             builder.OpenElement(4, "tbody");
-            builder.OpenElement(5, "span");
-            builder.AddAttribute(6, "style", "display: contents");
-            builder.AddAttribute(7, "onclick", OnRowSelect);
 
             foreach (TItem item in ViewModel!.Items)
             {
                 ItemTemplate(item)(builder);
             }
-
-            builder.CloseElement();
+            
             builder.CloseElement();
             builder.CloseElement();
         }

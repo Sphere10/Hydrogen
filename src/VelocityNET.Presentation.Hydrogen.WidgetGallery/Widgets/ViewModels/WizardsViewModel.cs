@@ -43,7 +43,7 @@ namespace VelocityNET.Presentation.Hydrogen.WidgetGallery.Widgets.ViewModels
                 .WithModel(new NewWidgetModel())
                 .AddStep<NewWidgetWizardStep>()
                 .AddStep<NewWidgetSummaryStep>()
-                .OnCancelled(modal => Task.FromResult<Result<bool>>(true))
+                .OnCancelled(modal => Task.FromResult(new Result<bool>(true)))
                 .OnFinished(model =>
                 {
                     Widgets.Add(model);
@@ -51,7 +51,7 @@ namespace VelocityNET.Presentation.Hydrogen.WidgetGallery.Widgets.ViewModels
                 })
                 .Build();
 
-            await ModalService.ShowWizardAsync(wizard, new Dictionary<string, object>()
+            await ModalService.ShowWizardAsync(wizard, new Dictionary<string, object>
             {
                 {nameof(ModalComponentBase.Width), (250, 1200)},
                 {nameof(ModalComponentBase.Height), (250, 1200)}

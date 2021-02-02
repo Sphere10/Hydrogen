@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using VelocityNET.Presentation.Hydrogen.Components;
 using VelocityNET.Presentation.Hydrogen.Models;
+using VelocityNET.Presentation.Hydrogen.ViewModels;
 
-namespace VelocityNET.Presentation.Hydrogen.ViewModels
+namespace VelocityNET.Presentation.Hydrogen.Components
 {
 /// <summary>
 /// Virtual paged table view model

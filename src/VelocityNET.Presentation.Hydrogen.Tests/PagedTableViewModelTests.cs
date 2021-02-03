@@ -2,6 +2,7 @@
 using System.Linq;
 using AutoFixture;
 using NUnit.Framework;
+using VelocityNET.Presentation.Hydrogen.Components.Tables;
 using VelocityNET.Presentation.Hydrogen.Models;
 using VelocityNET.Presentation.Hydrogen.ViewModels;
 
@@ -25,15 +26,15 @@ namespace VelocityNET.Presentation.Hydrogen.Tests
 
             Assert.AreEqual(5, vm.Page.Count());
 
-            vm.NextPage();
+            vm.NextPageAsync();
             Assert.AreEqual(2, vm.CurrentPage);
             Assert.AreEqual(5, vm.Page.Count());
 
-            vm.NextPage();
+            vm.NextPageAsync();
             Assert.AreEqual(3, vm.CurrentPage);
             Assert.AreEqual(4, vm.Page.Count());
 
-            Assert.Throws<InvalidOperationException>(vm.NextPage);
+            Assert.ThrowsAsync<InvalidOperationException>(vm.NextPageAsync);
         }
 
         [Test]
@@ -49,10 +50,10 @@ namespace VelocityNET.Presentation.Hydrogen.Tests
 
             var first = vm.Page;
 
-            vm.NextPage();
-            vm.NextPage();
-            vm.PrevPage();
-            vm.PrevPage();
+            vm.NextPageAsync();
+            vm.NextPageAsync();
+            vm.PrevPageAsync();
+            vm.PrevPageAsync();
 
             Assert.AreEqual(first, vm.Page);
         }
@@ -69,12 +70,12 @@ namespace VelocityNET.Presentation.Hydrogen.Tests
             Assert.IsTrue(vm.HasNextPage);
             Assert.IsFalse(vm.HasPrevPage);
             
-            vm.NextPage();
+            vm.NextPageAsync();
             
             Assert.IsTrue(vm.HasNextPage);
             Assert.IsTrue(vm.HasPrevPage);
             
-            vm.NextPage();
+            vm.NextPageAsync();
             
             Assert.IsFalse(vm.HasNextPage);
             Assert.IsTrue(vm.HasPrevPage);
@@ -92,7 +93,7 @@ namespace VelocityNET.Presentation.Hydrogen.Tests
             Assert.AreEqual(10, vm.TotalPages);
             Assert.AreEqual(1, vm.CurrentPage);
             
-            vm.NextPage();
+            vm.NextPageAsync();
             
             Assert.AreEqual(2, vm.CurrentPage);
 

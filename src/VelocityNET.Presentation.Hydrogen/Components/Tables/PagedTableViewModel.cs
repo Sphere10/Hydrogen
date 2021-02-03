@@ -1,15 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
+using VelocityNET.Presentation.Hydrogen.ViewModels;
 
-namespace VelocityNET.Presentation.Hydrogen.ViewModels
+namespace VelocityNET.Presentation.Hydrogen.Components.Tables
 {
 
     /// <summary>
     /// View model for paged table component.
     /// </summary>
     /// <typeparam name="TItem"> type of item being displayed</typeparam>
-    public class PagedTableViewModel<TItem> : ComponentViewModelBase
+    public class PagedTableViewModel<TItem> : ComponentViewModelBase, IPagedCollectionViewModel
     {
         /// <summary>
         /// Gets or sets the items collection
@@ -36,16 +38,9 @@ namespace VelocityNET.Presentation.Hydrogen.ViewModels
             get => _pageSize;
             set
             {
-                if (Items is not null)
-                {
-                    int index = (CurrentPage - 1) * PageSize + Page.Count();
-                    _pageSize = value;
-                    CurrentPage = (int) Math.Ceiling((double) index / _pageSize);
-                }
-                else
-                {
-                    _pageSize = value;
-                }
+                int index = (CurrentPage - 1) * PageSize + Page.Count();
+                _pageSize = value;
+                CurrentPage = (int) Math.Ceiling((double) index / _pageSize);
             }
         }
 
@@ -73,7 +68,7 @@ namespace VelocityNET.Presentation.Hydrogen.ViewModels
         /// Move to next page
         /// </summary>
         /// <exception cref="InvalidOperationException"> thrown if on the last page</exception>
-        public void NextPage()
+        public Task NextPageAsync()
         {
             if (!HasNextPage)
             {
@@ -81,13 +76,14 @@ namespace VelocityNET.Presentation.Hydrogen.ViewModels
             }
 
             CurrentPage++;
+            return Task.CompletedTask;
         }
 
         /// <summary>
         /// Move to previous page
         /// </summary>
         /// <exception cref="InvalidOperationException"> thrown if on the first page</exception>
-        public void PrevPage()
+        public Task PrevPageAsync()
         {
             if (!HasPrevPage)
             {
@@ -95,6 +91,7 @@ namespace VelocityNET.Presentation.Hydrogen.ViewModels
             }
 
             CurrentPage--;
+            return Task.CompletedTask;
         }
 
         /// <summary>

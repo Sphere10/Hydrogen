@@ -1,33 +1,26 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq.Expressions;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
-using VelocityNET.Presentation.Hydrogen.Models;
+using VelocityNET.Presentation.Hydrogen.ViewModels;
 
 namespace VelocityNET.Presentation.Hydrogen.Components.Tables
 {
-
-    public class VirtualPagedTable<TItem> : ComponentWithViewModel<VirtualPagedTableViewModel<TItem>>
+    /// <summary>
+    /// Paging table - simple table with pagination 
+    /// </summary>
+    /// <typeparam name="TItem"> type of item being displayed</typeparam>
+    public class PagedTable<TItem> : ComponentWithViewModel<PagedTableViewModel<TItem>>
     {
         /// <summary>
-        /// Items provider delegate - used to page of items.
-        /// </summary>
-        /// <param name="request"> request for items</param>
-        public delegate Task<ItemsResponse<TItem>> ItemsProviderDelegate(ItemRequest request);
-
-        private string PreviousItemClass => ViewModel!.HasPrevPage ? string.Empty : "disabled";
-
-        private string NextItemClass => ViewModel!.HasNextPage ? string.Empty : "disabled";
-
-        /// <summary>
-        /// Gets or sets the items provider delegate
+        /// Gets or sets the items being displayed in the table
         /// </summary>
         [Parameter]
-        public ItemsProviderDelegate ItemsProvider
+        public IEnumerable<TItem> Items
         {
-            get => ViewModel!.ItemsProvider;
-            set => ViewModel!.ItemsProvider = value;
+            get => ViewModel!.Items;
+            set => ViewModel!.Items = value;
         }
 
         /// <summary>
@@ -55,26 +48,30 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Tables
         /// <summary>
         /// Gets or sets the callback to call when row is clicked
         /// </summary>
-        [Parameter]
-        public EventCallback<TItem> OnRowSelect { get; set; } = EventCallback<TItem>.Empty;
-
+        [Parameter] public EventCallback<TItem> OnRowSelect { get; set; } = EventCallback<TItem>.Empty;
+        
         /// <summary>
-        /// Gets the css class applied to the table element.
+        /// Gets or sets the CSS class string applied to the table element.
         /// </summary>
         [Parameter]
         public string? Class { get; set; }
-
+        
         /// <inheritdoc />
         protected override void OnParametersSet()
         {
-            if (ItemTemplate is null)
+            if (Items is null)
             {
-                throw new InvalidOperationException("Item template parameter is required.");
+                throw new InvalidOperationException("Items parameter is required.");
             }
-
+            
             if (HeaderTemplate is null)
             {
                 throw new InvalidOperationException("Header template parameter is required.");
+            }
+            
+            if (ItemTemplate is null)
+            {
+                throw new InvalidOperationException("Item template parameter is required.");
             }
         }
 
@@ -92,8 +89,8 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Tables
             foreach (TItem item in ViewModel!.Page)
             {
                 builder.OpenElement(5, "span");
-                builder.AddAttribute(6, "style", "display: contents");
-                builder.AddAttribute(7, "onclick",
+                builder.AddAttribute(5, "style", "display: contents");
+                builder.AddAttribute(5, "onclick",
                     EventCallback.Factory.Create(this, () => OnRowSelect.InvokeAsync(item)));
 
                 ItemTemplate(item)(builder);
@@ -106,19 +103,18 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Tables
             builder.OpenComponent<Pagination>(21);
             builder.AddAttribute(21, nameof(Pagination.Model), ViewModel);
             builder.CloseComponent();
-            
-            builder.CloseElement();
 
+            builder.CloseElement();
+            
             builder.OpenComponent<PageSizeSelector>(23);
             builder.AddAttribute(23, nameof(PageSizeSelector.Model), ViewModel);
             builder.AddAttribute(23, nameof(PageSizeSelector.Value), ViewModel!.PageSize);
             builder.AddAttribute(23, nameof(PageSizeSelector.ValueExpression),
                 (Expression<Func<int>>) (() => ViewModel!.PageSize));
-            builder.AddAttribute(23, nameof(PageSizeSelector.ValueChanged),
-                EventCallback.Factory.Create<int>(this, x => ViewModel!.SetPageSizeAsync(x)));
-            builder.CloseComponent();
             
+            builder.AddAttribute(23, nameof(PageSizeSelector.ValueChanged),
+                EventCallback.Factory.Create<int>(this, x => ViewModel!.PageSize = x));
+            builder.CloseComponent();
         }
     }
-
 }

@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
-using VelocityNET.Presentation.Hydrogen.Components;
+using VelocityNET.Presentation.Hydrogen.Components.Modal;
 using VelocityNET.Presentation.Hydrogen.Models;
 using VelocityNET.Presentation.Hydrogen.Services;
 using VelocityNET.Presentation.Hydrogen.ViewModels;

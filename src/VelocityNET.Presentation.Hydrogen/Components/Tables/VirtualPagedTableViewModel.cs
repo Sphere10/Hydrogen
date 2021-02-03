@@ -12,7 +12,7 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Tables
     /// Virtual paged table view model
     /// </summary>
     /// <typeparam name="TItem"> item type</typeparam>
-    public class VirtualPagedTableViewModel<TItem> : ComponentViewModelBase
+    public class VirtualPagedTableViewModel<TItem> : ComponentViewModelBase, IPagedCollectionViewModel
     {
         /// <summary>
         /// Gets or sets the item provider delegate

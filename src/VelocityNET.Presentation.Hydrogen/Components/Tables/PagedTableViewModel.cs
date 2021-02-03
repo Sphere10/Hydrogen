@@ -16,7 +16,7 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Tables
         /// <summary>
         /// Gets or sets the items collection
         /// </summary>
-        public IEnumerable<TItem> Items { get; set; } = null!;
+        public IEnumerable<TItem> Items { get; set; } = new List<TItem>();
 
         /// <summary>
         /// Gets the current page of items being displayed
@@ -38,9 +38,17 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Tables
             get => _pageSize;
             set
             {
-                int index = (CurrentPage - 1) * PageSize + Page.Count();
-                _pageSize = value;
-                CurrentPage = (int) Math.Ceiling((double) index / _pageSize);
+                if (Items.Any())
+                {
+                    int index = (CurrentPage - 1) * PageSize + Page.Count();
+                    _pageSize = value;
+                    CurrentPage = (int) Math.Ceiling((double) index / _pageSize);
+                }
+                else
+                {
+                    _pageSize = value;
+                }
+               
             }
         }
 

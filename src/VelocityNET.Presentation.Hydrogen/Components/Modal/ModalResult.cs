@@ -74,7 +74,7 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Modal
             }
             else
             {
-                throw new InvalidOperationException($"Data is not of type {typeof(T)}, type is {Data.GetType()}");
+                throw new InvalidOperationException($"Data is not of type {typeof(T)}, type is {Data?.GetType()}");
             }
         }
     }

@@ -4,7 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using VelocityNET.Presentation.Hydrogen.ViewModels;
 
-namespace VelocityNET.Presentation.Hydrogen.Components
+namespace VelocityNET.Presentation.Hydrogen.Components.Tables
 {
 
     /// <summary>
@@ -16,7 +16,7 @@ namespace VelocityNET.Presentation.Hydrogen.Components
         /// <summary>
         /// Gets or sets the async enumerable item source
         /// </summary>
-        public IAsyncEnumerable<TItem> Source { get; set; }
+        public IAsyncEnumerable<TItem> Source { get; set; } = null!;
 
         /// <summary>
         /// Gets or sets the control items source

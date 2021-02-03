@@ -4,7 +4,7 @@ using System.Threading;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 
-namespace VelocityNET.Presentation.Hydrogen.Components
+namespace VelocityNET.Presentation.Hydrogen.Components.Tables
 {
 
     /// <summary>

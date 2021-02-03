@@ -60,7 +60,7 @@
         <div class="card shadow">
             <div class="card-header"> Virtual paged table</div>
             <div class="card-body">
-                <VirtualPagedTableTemplate class="table table-borderless table-hover overflow-auto"
+                <VirtualPagedTable Class="table table-borderless table-hover overflow-auto"
                                            ItemsProvider="request => ViewModel.NodeService.GetBlocksAsync(request)"
                                            OnRowSelect="@ViewModel!.OnClickRowAsync"
                                            TItem="Block"
@@ -77,7 +77,7 @@
                             <td>@block.Number</td>
                         </tr>
                     </ItemTemplate>
-                </VirtualPagedTableTemplate>
+                </VirtualPagedTable>
             </div>
         </div>
     </div>

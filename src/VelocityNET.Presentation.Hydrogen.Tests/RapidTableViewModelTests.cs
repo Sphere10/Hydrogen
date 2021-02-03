@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using NUnit.Framework;
 using VelocityNET.Presentation.Hydrogen.Components;
+using VelocityNET.Presentation.Hydrogen.Components.Tables;
 
 namespace VelocityNET.Presentation.Hydrogen.Tests
 {

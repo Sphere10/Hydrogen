@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using VelocityNET.Presentation.Hydrogen.Models;
 using VelocityNET.Presentation.Hydrogen.ViewModels;
 
-namespace VelocityNET.Presentation.Hydrogen.Components
+namespace VelocityNET.Presentation.Hydrogen.Components.Tables
 {
 
     /// <summary>
@@ -17,7 +17,7 @@ namespace VelocityNET.Presentation.Hydrogen.Components
         /// <summary>
         /// Gets or sets the item provider delegate
         /// </summary>
-        public VirtualPagedTableTemplate<TItem>.ItemsProviderDelegate ItemsProvider { get; set; } = null!;
+        public VirtualPagedTable<TItem>.ItemsProviderDelegate ItemsProvider { get; set; } = null!;
 
         /// <summary>
         /// Gets the current page of items being displayed

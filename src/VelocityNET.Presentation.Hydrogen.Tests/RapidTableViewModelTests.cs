@@ -9,7 +9,9 @@ namespace VelocityNET.Presentation.Hydrogen.Tests
 
     public class RapidTableViewModelTests
     {
+#pragma warning disable 1998
         private async IAsyncEnumerable<bool> DataSource()
+#pragma warning restore 1998
         {
             for (int i = 0; i < 10; i++)
             {

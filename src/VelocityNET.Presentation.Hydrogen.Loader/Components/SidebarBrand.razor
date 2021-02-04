@@ -1,6 +1,39 @@
-﻿<!-- Sidebar - Brand -->
-<a class="sidebar-brand d-flex align-items-center justify-content-center"
-   href="#" id="brandDropdown" role="button"
-    aria-haspopup="true" aria-expanded="false">
-    <div class="sidebar-brand-text mx-3"> VelocityNET</div>
+﻿@inherits ComponentWithViewModel<SidebarBrandViewModel>
+
+<a class="sidebar-brand d-flex align-items-center justify-content-center dropdown-toggle"
+   href="#" role="button"
+   aria-haspopup="true" aria-expanded="false" id="datasource-dropdown" data-toggle="dropdown">
+     <i class="fa fa-project-diagram sidebar-brand-icon"></i>
+    <div class="sidebar-brand-text mx-3">
+
+        VelocityNET
+    </div>
+
+    <div class="dropdown-menu dropdown-menu-right shadow"
+         aria-labelledby="datasource-dropdown">
+        @foreach (Uri server in ViewModel!.AvailableServers)
+        {
+            bool active = IsActive(server);
+
+            <a class="dropdown-item" role="button" href="" @onclick="OnClicked">
+                @if (active)
+                {
+                    <i class="fas fa-check fa-sm fa-fw mr-2 text-success"></i>
+                }
+                else
+                {
+                    <i class="fas fa-server fa-sm fa-fw mr-2 text-gray-400"></i>
+                }
+
+                @server
+            </a>
+        }
+    </div>
 </a>
+
+@code
+{
+    private bool IsActive(Uri server) => ViewModel!.ActiveServer == server;
+
+    private void OnClicked() => Console.WriteLine("Clicked");
+}

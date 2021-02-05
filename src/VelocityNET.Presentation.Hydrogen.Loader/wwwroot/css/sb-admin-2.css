@@ -11259,3 +11259,8 @@ footer.sticky-footer .copyright {
 body.sidebar-toggled footer.sticky-footer {
   width: 100%;
 }
+
+.sidebar-brand-img {
+  width: auto;
+  height: -webkit-fill-available;
+}

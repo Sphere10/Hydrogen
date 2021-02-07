@@ -61,7 +61,7 @@
             <div class="card-header"> Virtual paged table</div>
             <div class="card-body">
                 <VirtualPagedTable Class="table table-borderless table-hover overflow-auto"
-                                           ItemsProvider="request => ViewModel.NodeService.GetBlocksAsync(request)"
+                                   ItemsProvider="request => ViewModel.NodeService.GetBlocksAsync(request)"
                                            OnRowSelect="@ViewModel!.OnClickRowAsync"
                                            TItem="Block"
                                            PageSize="10">

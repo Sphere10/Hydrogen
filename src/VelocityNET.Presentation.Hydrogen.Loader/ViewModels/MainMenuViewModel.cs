@@ -9,7 +9,7 @@ namespace VelocityNET.Presentation.Hydrogen.Loader.ViewModels
     /// <summary>
     /// View model for topbar menu
     /// </summary>
-    public class TopbarMenuViewModel : ComponentViewModelBase
+    public class MainMenuViewModel : ComponentViewModelBase
     {
         /// <summary>
         /// Gets the app manager
@@ -27,25 +27,28 @@ namespace VelocityNET.Presentation.Hydrogen.Loader.ViewModels
         public List<MenuItem> MenuItems { get; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="TopbarMenuViewModel"/> class.
+        /// Initializes a new instance of the <see cref="MainMenuViewModel"/> class.
         /// </summary>
         /// <param name="appManager"> app manager</param>
-        public TopbarMenuViewModel(IAppManager appManager)
+        public MainMenuViewModel(IAppManager appManager)
         {
             AppManager = appManager ?? throw new ArgumentNullException(nameof(appManager));
             DefaultMenuItems = new MenuItem[]
             {
-                new("File", "/", new List<MenuItem>()
-                {
-                    new("Open", "/",new List<MenuItem>()),
-                    new("Print", "/", new List<MenuItem>())
-                }),
-                new("Help", "/", new List<MenuItem>())
+                new MenuItem("File", "/", iconPath: "fa-list"),
+                new("Help", "/", new List<MenuItem>(), "fa-info")
             };
 
             MenuItems = new List<MenuItem>(DefaultMenuItems);
             
             AppManager.AppBlockPageSelected += AppManagerOnAppBlockPageSelected;
+
+            if (AppManager.SelectedPage is not null)
+            {
+                IEnumerable<MenuItem> newItems = DefaultMenuItems.Merge(AppManager.SelectedPage.MenuItems);
+                MenuItems.Clear();
+                MenuItems.AddRange(newItems);
+            }
         }
 
         /// <summary>

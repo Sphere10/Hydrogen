@@ -14,11 +14,16 @@ namespace VelocityNET.Presentation.Hydrogen.Loader
             new VelocityNET.Presentation.Hydrogen.Plugins.App("/", "Hydrogen", "./img/heading-solid.svg",
                 new[]
                 {
-                    new AppBlock("Hydrogen", "fa-link", new []
+                    new AppBlock("Hydrogen", "fa-link", new[]
                     {
-                        new AppBlockPage("/", "Home", "fa-home"),
-                        new AppBlockPage("/servers", "Servers", "fa-cogs",
-                        Enumerable.Empty<MenuItem>())
+                        new AppBlockPage("/", "Home", "fa-home", new List<MenuItem>
+                        {
+                            new("File", "#", new List<MenuItem>
+                            {
+                                new("Print", "#", "fa-print")
+                            }, "fa-list")
+                        }),
+                        new AppBlockPage("/servers", "Servers", "fa-cogs")
                     })
                 })
         };

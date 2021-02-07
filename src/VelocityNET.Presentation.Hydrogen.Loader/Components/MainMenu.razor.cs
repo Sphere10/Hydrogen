@@ -1,12 +1,10 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
 namespace VelocityNET.Presentation.Hydrogen.Loader.Components
 {
-
-    public partial class TopbarMenu
+    public partial class MainMenu
     {
         // ReSharper disable once AutoPropertyCanBeMadeGetOnly.Local
         [Inject] private IJSRuntime JsRuntime { get; set; } = null!;

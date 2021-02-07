@@ -60,11 +60,11 @@ namespace VelocityNET.Presentation.Hydrogen.Plugins
         /// <returns> copied</returns>
         public static IEnumerable<MenuItem> Copy(this IEnumerable<MenuItem> target)
         {
-            List<MenuItem> menu = new List<MenuItem>();
+            List<MenuItem> menu = new ();
 
             foreach (MenuItem item in target)
             {
-               menu.Add(new MenuItem(item.Heading, item.Route, item.Children.Copy().ToList()));   
+               menu.Add(new MenuItem(item.Heading, item.Route, item.Children.Copy().ToList(), item.IconPath));   
             }
 
             return menu;

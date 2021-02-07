@@ -21,7 +21,8 @@
                 @foreach (IAppBlockPage blockPage in block.AppBlockPages)
                 {
                     <NavLink class="collapse-item" href="@blockPage.Route" ActiveClass="active" Match="NavLinkMatch.All">
-                                          @blockPage.Name
+                        <i class="fas fa-sm fa-fw text-gray-400 mr-2 @blockPage.Icon"></i>
+                        @blockPage.Name
                     </NavLink>
                 }
             </div>

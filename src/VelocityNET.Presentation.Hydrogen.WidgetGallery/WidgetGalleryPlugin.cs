@@ -32,32 +32,32 @@ namespace VelocityNET.Presentation.Hydrogen.WidgetGallery
                             }
                         ),
                         new AppBlock("Modals",
-                            "fa-cog",
+                            "fa-info",
                             new[]
                             {
                                 new AppBlockPage("/widget-gallery/modals", "Modals", "fa fa-commenting-o", new[]
                                 {
                                     new MenuItem("File", "", new List<MenuItem>
                                     {
-                                        new ("Modals", "/widget-gallery/modals")
+                                        new ("Modals", "/widget-gallery/modals", "fa-info")
                                     })
                                 })
                             }
                         ),
                         new AppBlock("Tables",
-                            "fa-cog",
+                            "fa-table",
                             new[]
                             {
                                 new AppBlockPage("/widget-gallery/paging-table", "Paging Table", "fa-table", new[]
                                 {
-                                    new MenuItem("Data tables", "/widget-gallery/paging-table")
+                                    new MenuItem("Table demo", "/widget-gallery/paging-table")
                                 })
                             }
                         ),new AppBlock("Wizards",
-                            "fa-cog",
+                            "fa-magic",
                             new[]
                             {
-                                new AppBlockPage("/widget-gallery/wizards", "Wizard page", "fa-table")
+                                new AppBlockPage("/widget-gallery/wizards", "Demo wizard", "fa-magic")
                             }
                         )
                     })

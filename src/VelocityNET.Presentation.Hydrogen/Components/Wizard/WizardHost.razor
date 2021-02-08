@@ -14,10 +14,9 @@
     @ViewModel!.CurrentStep
 }
 
-
 @if (ViewModel.CurrentStepInstance is not null)
 {
-    <div class="row">
+    <div class="row position-absolute mb-2 w-100" style="bottom: 0">
         <div class="col-6 text-left">
             <button class="btn btn-info btn-sm" disabled="@IsDisabled()" @onclick="ViewModel!.PreviousAsync">@ViewModel.CurrentStepInstance.BackButtonText</button>
         </div>
@@ -25,7 +24,7 @@
         <div class="col-6 text-right">
             @if (ViewModel.CurrentStepInstance.IsCancellable)
             {
-                <button class="btn btn-secondary btn-sm" @onclick="ViewModel.CancelAsync"> @ViewModel.CurrentStepInstance!.CancelButtonText</button>
+                <button class="btn btn-secondary btn-sm mr-3" @onclick="@ViewModel.CancelAsync"> @ViewModel.CurrentStepInstance!.CancelButtonText</button>
             }
 
             @if (ViewModel.Wizard.HasNext)
@@ -43,5 +42,5 @@
 
 @code
 {
-    public bool IsDisabled() => !ViewModel!.Wizard.HasPrevious;
+    private bool IsDisabled() => !ViewModel!.Wizard.HasPrevious;
 }

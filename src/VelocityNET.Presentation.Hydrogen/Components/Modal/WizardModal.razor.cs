@@ -10,8 +10,6 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Modal
     /// </summary>
     public partial class WizardModal
     {
-        private WizardHost? _host;
-
         /// <summary>
         /// Gets or sets the wizard render fragment
         /// </summary>

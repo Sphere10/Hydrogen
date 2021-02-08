@@ -1,7 +1,8 @@
 ﻿@page "/widget-gallery/wizards"
+@using VelocityNET.Presentation.Hydrogen.Services
 @inherits ComponentWithViewModel<WizardsViewModel>
 
-<button @onclick="ViewModel!.ShowNewWidgetModalAsync" class="btn-primary btn btn-sm"> New Widget</button>
+<button @onclick="ShowWizardAsync" class="btn-primary btn btn-sm"> New Widget</button>
 
 <table class="table table-borderless">
     <thead>
@@ -12,7 +13,7 @@
     </tr>
     </thead>
     <tbody>
-    @foreach (var widget in ViewModel.Widgets)
+    @foreach (var widget in ViewModel!.Widgets)
     {
         <tr>
             <td>@widget.Name</td>
@@ -22,3 +23,18 @@
     }
     </tbody>
 </table>
+
+@code
+{
+    [Inject]
+    // ReSharper disable once UnusedAutoPropertyAccessor.Local
+    private IModalService ModalService { get; set; }
+    
+    private async Task ShowWizardAsync()
+    {
+        await ModalService.ShowWizardAsync(ViewModel!.NewWidetWizard(), new Dictionary<string, object>()
+        {
+            {nameof(WizardModal.Height), (375, 500)}
+        });
+    }
+}

@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Sphere10.Framework;
-using VelocityNET.Presentation.Hydrogen.Components.Modal;
 using VelocityNET.Presentation.Hydrogen.Components.Wizard;
 using VelocityNET.Presentation.Hydrogen.Services;
 using VelocityNET.Presentation.Hydrogen.ViewModels;
@@ -13,8 +12,9 @@ namespace VelocityNET.Presentation.Hydrogen.WidgetGallery.Widgets.ViewModels
 
     public class WizardsViewModel : ComponentViewModelBase
     {
-        private IModalService ModalService { get; }
-
+        /// <summary>
+        /// Gets the wizard builder.
+        /// </summary>
         private IWizardBuilder<NewWidgetModel> Builder { get; }
 
         /// <summary>
@@ -25,25 +25,28 @@ namespace VelocityNET.Presentation.Hydrogen.WidgetGallery.Widgets.ViewModels
         /// <summary>
         /// Wizards view model
         /// </summary>
-        /// <param name="modalService"></param>
         /// <param name="builder"></param>
-        public WizardsViewModel(IModalService modalService, IWizardBuilder<NewWidgetModel> builder)
+        public WizardsViewModel(IWizardBuilder<NewWidgetModel> builder)
         {
-            ModalService = modalService;
             Builder = builder;
         }
 
         /// <summary>
-        /// Display the new widget modal and add the result to the collection of widgets.
+        /// Creates a new instance of the wizard model.
         /// </summary>
-        /// <returns></returns>
-        public async Task ShowNewWidgetModalAsync()
+        /// <returns> new wizard model insteance</returns>
+        public IWizard NewWidetWizard()
         {
             IWizard wizard = Builder.NewWizard("New Widget")
                 .WithModel(new NewWidgetModel())
                 .AddStep<NewWidgetWizardStep>()
                 .AddStep<NewWidgetSummaryStep>()
-                .OnCancelled(modal => Task.FromResult(new Result<bool>(true)))
+                .OnCancelled(modal =>
+                {
+                    var result = new Result<bool>(false);
+                    result.AddError("Cancel not allowed!");
+                    return Task.FromResult(result);
+                })
                 .OnFinished(model =>
                 {
                     Widgets.Add(model);
@@ -51,11 +54,7 @@ namespace VelocityNET.Presentation.Hydrogen.WidgetGallery.Widgets.ViewModels
                 })
                 .Build();
 
-            await ModalService.ShowWizardAsync(wizard, new Dictionary<string, object>
-            {
-                {nameof(ModalComponentBase.Width), (250, 1200)},
-                {nameof(ModalComponentBase.Height), (250, 1200)}
-            });
+            return wizard;
         }
     }
 

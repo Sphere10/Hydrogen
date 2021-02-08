@@ -1,6 +1,6 @@
 ﻿@using Microsoft.JSInterop
 @using Microsoft.Extensions.Options
-<div class="modal-dialog" style="min-width: @ToPixelString(Width?.min); max-width: @ToPixelString(Width?.max); min-height: @ToPixelString(Height?.min); max-height: @ToPixelString(Height?.max);" role="document">
+<div class="modal-dialog" role="document">
     <div class="modal-content">
         <div class="modal-header">
             @HeaderTemplate
@@ -8,7 +8,7 @@
                 <span aria-hidden="true">&times;</span>
             </button>
         </div>
-        <div class="modal-body">
+        <div class="modal-body" style="min-width: @ToPixelString(Width?.min); max-width: @ToPixelString(Width?.max); min-height: @ToPixelString(Height?.min); max-height: @ToPixelString(Height?.max);">
             @BodyTemplate
         </div>
 

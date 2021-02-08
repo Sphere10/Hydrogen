@@ -2,14 +2,14 @@
 
 <ModalTemplate OnCloseFunc="ViewModel!.RequestCloseAsync" Width="@Width" Height="@Height">
     <HeaderTemplate>
-        <p> @_host?.ViewModel!.Title </p>
+        <h6> @ViewModel.WizardHost?.ViewModel!.Title </h6>
     </HeaderTemplate>
     <BodyTemplate>
         <CascadingValue Value="@Wizard">
             <CascadingValue Name="OnFinished" Value="@OnFinished">
                 <CascadingValue Name="OnCancelled" Value="@OnCancelled">
                     <CascadingValue Name="OnStepChange" Value="@OnStepChange">
-                           <WizardHost @ref="_host"/>
+                           <WizardHost @ref="@ViewModel.WizardHost"/>
                     </CascadingValue>
                 </CascadingValue>
             </CascadingValue>

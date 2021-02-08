@@ -1,7 +1,6 @@
 ﻿@inherits WizardStep<NewWidgetModel, NewWidgetWizardStepViewModel>
 
 <EditForm Model="ViewModel.Model">
-
     <div class="form-group">
         <label for="Name">Name</label>
         <InputText id="Name" class="form-control form-control-sm" @bind-Value="ViewModel.Model.Name"/>
@@ -17,8 +16,10 @@
         <InputNumber id="Price" class="form-control" @bind-Value="ViewModel.Model.Price"/>
     </div>
     <div class="form-group">
-        <label for="dimensions">Supply dimensions ? </label>
-        <InputCheckbox class="form-control form-control-sm" id="dimensions" @bind-Value="ViewModel.Model.AreDimensionsKnown"/>
+         <div class="form-inline">
+                        <InputCheckbox class="form-control form-control-sm mr-1" id="dimensions" @bind-Value="ViewModel.Model.AreDimensionsKnown"/>
+                        <label for="dimensions">Supply dimensions ? </label>
+    </div>
     </div>
 </EditForm>
 

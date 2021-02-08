@@ -17,6 +17,11 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Modal
         public IWizard Wizard { get; set; } = null!;
 
         /// <summary>
+        /// Gets or sets the wizard host component instance.
+        /// </summary>
+        public WizardHost? WizardHost;
+
+        /// <summary>
         /// Modal closed result. Passes request to the wizard instance to determine whether close OK.
         /// </summary>
         public override async Task<bool> RequestCloseAsync()
@@ -30,6 +35,10 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Modal
             }
             else
             {
+
+
+                WizardHost?.ViewModel!.ErrorMessages.Clear();
+                WizardHost?.ViewModel!.ErrorMessages.AddRange(result.ErrorMessages);
                 return result;
             }
         }

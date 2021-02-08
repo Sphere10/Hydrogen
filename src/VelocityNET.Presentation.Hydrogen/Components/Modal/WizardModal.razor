@@ -2,14 +2,24 @@
 
 <ModalTemplate OnCloseFunc="ViewModel!.RequestCloseAsync" Width="@Width" Height="@Height">
     <HeaderTemplate>
-        <h6> @ViewModel.WizardHost?.ViewModel!.Title </h6>
+        <h6> @ViewModel!.WizardHost?.ViewModel!.Title </h6>
     </HeaderTemplate>
     <BodyTemplate>
         <CascadingValue Value="@Wizard">
-            <CascadingValue Name="OnFinished" Value="@OnFinished">
-                <CascadingValue Name="OnCancelled" Value="@OnCancelled">
-                    <CascadingValue Name="OnStepChange" Value="@OnStepChange">
-                           <WizardHost @ref="@ViewModel.WizardHost"/>
+            <CascadingValue Name="@nameof(OnFinished)" Value="@OnFinished">
+                <CascadingValue Name="@nameof(OnCancelled)" Value="@OnCancelled">
+                    <CascadingValue Name="@nameof(OnStepChange)" Value="@OnStepChange">
+                        <CascadingValue Name="@nameof(NextButtonClass)" Value="NextButtonClass">
+                            <CascadingValue Name="@nameof(BackButtonClass)" Value="BackButtonClass">
+                                <CascadingValue Name="@nameof(CancelButtonClass)" Value="CancelButtonClass">
+                                    <CascadingValue Name="@nameof(FinishButtonClass)" Value="FinishButtonClass">
+
+                                        <WizardHost @ref="@ViewModel!.WizardHost"/>
+
+                                    </CascadingValue>
+                                </CascadingValue>
+                            </CascadingValue>
+                        </CascadingValue>
                     </CascadingValue>
                 </CascadingValue>
             </CascadingValue>

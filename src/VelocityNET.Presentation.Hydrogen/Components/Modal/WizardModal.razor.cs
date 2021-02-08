@@ -21,6 +21,30 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Modal
         }
         
         /// <summary>
+        /// Gets or sets the css style for the next button
+        /// </summary>
+        [Parameter]
+        public string? NextButtonClass { get; set; }
+
+        /// <summary>
+        /// Gets or sets the css style for the back button
+        /// </summary>
+        [Parameter]
+        public string? BackButtonClass { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the css style for the cancel button
+        /// </summary>
+        [Parameter]
+        public string? CancelButtonClass { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the css style for the finish button
+        /// </summary>
+        [Parameter]
+        public string? FinishButtonClass { get; set; }
+        
+        /// <summary>
         /// Gets or sets the call back the wizard will use when finished to signal the completion of the
         /// modal interaction.
         /// </summary>
@@ -36,7 +60,6 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Modal
         /// of step change.
         /// </summary>
         private EventCallback OnStepChange { get; set; }
-        
 
         /// <inheritdoc />
         protected override void OnParametersSet()

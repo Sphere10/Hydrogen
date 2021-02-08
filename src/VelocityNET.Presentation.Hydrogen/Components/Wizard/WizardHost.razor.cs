@@ -49,7 +49,31 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Wizard
             get => ViewModel!.Wizard;
             set => ViewModel!.Wizard = value;
         }
+        
+        /// <summary>
+        /// Gets or sets the css style for the next button
+        /// </summary>
+        [CascadingParameter]
+        public string? NextButtonClass { get; set; }
 
+        /// <summary>
+        /// Gets or sets the css style for the back button
+        /// </summary>
+        [CascadingParameter]
+        public string? BackButtonClass { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the css style for the cancel button
+        /// </summary>
+        [CascadingParameter]
+        public string? CancelButtonClass { get; set; }
+
+        /// <summary>
+        /// Gets or sets the css style for the finish button
+        /// </summary>
+        [CascadingParameter]
+        public string? FinishButtonClass { get; set; }
+        
         /// <inheritdoc />
         protected override void OnParametersSet()
         {

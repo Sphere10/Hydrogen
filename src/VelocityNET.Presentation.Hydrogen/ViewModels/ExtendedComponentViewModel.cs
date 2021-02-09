@@ -1,4 +1,5 @@
 ﻿using System;
+using GalaSoft.MvvmLight.Messaging;
 using VelocityNET.Presentation.Hydrogen.Services;
 
 namespace VelocityNET.Presentation.Hydrogen.ViewModels
@@ -17,9 +18,10 @@ namespace VelocityNET.Presentation.Hydrogen.ViewModels
         /// Initializes a new instance of the <see cref="ExtendedComponentViewModel"/> class.
         /// </summary>
         /// <param name="endpointManager"> endpoint manager</param>
+        /// <param name="messenger"></param>
         public ExtendedComponentViewModel(IEndpointManager endpointManager)
         {
-            EndpointManager = endpointManager;
+            EndpointManager = endpointManager ?? throw new ArgumentNullException(nameof(endpointManager));
             EndpointManager.EndpointChanged += OnEndpointChanged;
         }
 

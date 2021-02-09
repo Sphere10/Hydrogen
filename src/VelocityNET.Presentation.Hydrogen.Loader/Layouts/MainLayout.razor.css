@@ -85,3 +85,7 @@
 .main-menu {
     background-color: #C1C8E4;
 }
+
+.content {
+    position: relative;
+}

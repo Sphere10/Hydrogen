@@ -35,9 +35,22 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Tables
         public int TotalItems { get; private set; }
 
         /// <summary>
-        /// Gets the current page
+        /// Current page
         /// </summary>
-        public int CurrentPage { get; private set; } = 1;
+        private int _currentPage = 1;
+
+        /// <summary>
+        /// Gets or sets the current page
+        /// </summary>
+        public int CurrentPage
+        {
+            get => _currentPage;
+            set
+            {
+                _currentPage = value;
+                StateHasChangedDelegate?.Invoke();
+            }
+        }
 
         /// <summary>
         /// Gets the total number of pages based on total items and page size.

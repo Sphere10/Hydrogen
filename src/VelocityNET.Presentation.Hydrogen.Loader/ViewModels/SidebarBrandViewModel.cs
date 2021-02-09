@@ -9,30 +9,30 @@ namespace VelocityNET.Presentation.Hydrogen.Loader.ViewModels
 
     public class SidebarBrandViewModel : ComponentViewModelBase, IDisposable
     {
-        private IServerConfigService ServerConfigService { get; }
+        private IEndpointManager EndpointManager { get; }
 
-        public Uri ActiveServer => ServerConfigService.ActiveServer;
+        public Uri Endpoint => EndpointManager.Endpoint;
 
-        public IEnumerable<Uri> AvailableServers => ServerConfigService.AvailableServers;
+        public IEnumerable<Uri> Endpoints => EndpointManager.Endpoints;
 
-        public SidebarBrandViewModel(IServerConfigService serverConfigService)
+        public SidebarBrandViewModel(IEndpointManager endpointManager)
         {
-            ServerConfigService = serverConfigService ?? throw new ArgumentNullException(nameof(serverConfigService));
-            ServerConfigService.ActiveServerChanged += ServerConfigOnEvent;
-            ServerConfigService.NewServerAdded += ServerConfigOnEvent;
+            EndpointManager = endpointManager ?? throw new ArgumentNullException(nameof(endpointManager));
+            EndpointManager.EndpointChanged += EndpointManagerOnEvent;
+            EndpointManager.EndpointAdded += EndpointManagerOnEvent;
         }
 
-        private void ServerConfigOnEvent(object? sender, EventArgs e)
+        private void EndpointManagerOnEvent(object? sender, EventArgs e)
         {
             StateHasChangedDelegate?.Invoke();
         }
 
-        public async Task OnSelectServerAsync(Uri server) => await ServerConfigService.SetActiveServerAsync(server);
+        public async Task OnSelectEndpointAsync(Uri server) => await EndpointManager.SetCurrentEndpointAsync(server);
 
         public void Dispose()
         {
-            ServerConfigService.ActiveServerChanged -= ServerConfigOnEvent;
-            ServerConfigService.NewServerAdded -= ServerConfigOnEvent;
+            EndpointManager.EndpointChanged -= EndpointManagerOnEvent;
+            EndpointManager.EndpointAdded -= EndpointManagerOnEvent;
         }
     }
 

@@ -2,9 +2,6 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
-using VelocityNET.Presentation.Hydrogen.Components.Modal;
-using VelocityNET.Presentation.Hydrogen.Loader.Components;
-using VelocityNET.Presentation.Hydrogen.Models;
 using VelocityNET.Presentation.Hydrogen.Services;
 using VelocityNET.Presentation.Hydrogen.ViewModels;
 
@@ -19,12 +16,12 @@ namespace VelocityNET.Presentation.Hydrogen.Loader.ViewModels
         /// <summary>
         /// Gets the available servers
         /// </summary>
-        public IEnumerable<Uri> Servers => ConfigService.AvailableServers;
+        public IEnumerable<Uri> Servers => EndpointManager.Endpoints;
 
         /// <summary>
         /// Getse the server config service.
         /// </summary>
-        private IServerConfigService ConfigService { get; }
+        private IEndpointManager EndpointManager { get; }
 
         /// <summary>
         /// Gets the modal service
@@ -34,7 +31,7 @@ namespace VelocityNET.Presentation.Hydrogen.Loader.ViewModels
         /// <summary>
         /// Gets the active server
         /// </summary>
-        public Uri ActiveServer => ConfigService.ActiveServer;
+        public Uri ActiveServer => EndpointManager.Endpoint;
 
         /// <summary>
         /// Gets or sets the new server model
@@ -46,11 +43,11 @@ namespace VelocityNET.Presentation.Hydrogen.Loader.ViewModels
         /// </summary>
         /// <param name="configService"></param>
         /// <param name="modalService"></param>
-        public ServersViewModel(IServerConfigService configService, IModalService modalService)
+        public ServersViewModel(IEndpointManager configService, IModalService modalService)
         {
-            ConfigService = configService ?? throw new ArgumentNullException(nameof(configService));
+            EndpointManager = configService ?? throw new ArgumentNullException(nameof(configService));
             ModalService = modalService;
-            configService.ActiveServerChanged += ConfigServiceOnActiveServerChanged;
+            configService.EndpointChanged += EndpointManagerOnEndpointChanged;
         }
 
         /// <summary>
@@ -58,7 +55,7 @@ namespace VelocityNET.Presentation.Hydrogen.Loader.ViewModels
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void ConfigServiceOnActiveServerChanged(object? sender, EventArgs e)
+        private void EndpointManagerOnEndpointChanged(object? sender, EventArgs e)
         {
             StateHasChangedDelegate?.Invoke();
         }
@@ -70,7 +67,7 @@ namespace VelocityNET.Presentation.Hydrogen.Loader.ViewModels
         /// <returns></returns>
         public async Task OnSelectActiveServer(Uri server)
         {
-            await ConfigService.SetActiveServerAsync(server);
+            await EndpointManager.SetCurrentEndpointAsync(server);
             StateHasChangedDelegate?.Invoke();
         }
 
@@ -83,7 +80,7 @@ namespace VelocityNET.Presentation.Hydrogen.Loader.ViewModels
             if (NewServer.Uri is not null)
             {
                 Uri address = new(NewServer.Uri);
-                await ConfigService.AddServerAsync(address);
+                await EndpointManager.AddEndpointAsync(address);
                 StateHasChangedDelegate?.Invoke();
             }
         }
@@ -94,5 +91,4 @@ namespace VelocityNET.Presentation.Hydrogen.Loader.ViewModels
         [Required(AllowEmptyStrings = false)]
         public string? Uri { get; set; }
     }
-
 }

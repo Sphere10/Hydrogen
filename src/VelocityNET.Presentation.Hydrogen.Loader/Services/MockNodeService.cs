@@ -18,12 +18,16 @@ namespace VelocityNET.Presentation.Hydrogen.Loader.Services
         private List<Block> Blocks { get; } = Enumerable.Range(0, 1000)
             .Select(x => new Block {Address = Guid.NewGuid().ToString(), Number = x}).ToList();
 
-        public MockNodeService(IServerConfigService configService)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MockNodeService"/> class.
+        /// </summary>
+        /// <param name="endpointManager"></param>
+        public MockNodeService(IEndpointManager endpointManager)
         {
-            ConfigService = configService ?? throw new ArgumentNullException(nameof(configService));
+            EndpointManager = endpointManager ?? throw new ArgumentNullException(nameof(endpointManager));
 
-            Server = ConfigService.ActiveServer;
-            ConfigService.ActiveServerChanged += ConfigServiceOnActiveServerChanged;
+            Endpoint = endpointManager.Endpoint;
+            EndpointManager.EndpointChanged += EndpointManagerOnEndpointChanged;
         }
 
         /// <summary>
@@ -34,12 +38,12 @@ namespace VelocityNET.Presentation.Hydrogen.Loader.Services
         /// <summary>
         /// Gets the server that is used as data source.
         /// </summary>
-        private Uri Server { get; }
+        private Uri Endpoint { get; }
 
         /// <summary>
         /// Gets the config service.
         /// </summary>
-        private IServerConfigService ConfigService { get; }
+        private IEndpointManager EndpointManager { get; }
 
         /// <summary>
         /// Begin receiving new blocks, async awaiting until the next block is available. The provided
@@ -70,10 +74,10 @@ namespace VelocityNET.Presentation.Hydrogen.Loader.Services
 
         public void Dispose()
         {
-            ConfigService.ActiveServerChanged -= ConfigServiceOnActiveServerChanged;
+            EndpointManager.EndpointChanged -= EndpointManagerOnEndpointChanged;
         }
 
-        private void ConfigServiceOnActiveServerChanged(object? sender, EventArgs e)
+        private void EndpointManagerOnEndpointChanged(object? sender, EventArgs e)
         {
         }
     }

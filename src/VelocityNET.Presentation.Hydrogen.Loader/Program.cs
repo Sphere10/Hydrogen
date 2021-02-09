@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
@@ -33,7 +34,7 @@ namespace VelocityNET.Presentation.Hydrogen.Loader
             serviceCollection.AddSingleton<IGenericEventAggregator, BasicGenericEventAggregator>();
             serviceCollection.AddSingleton<IModalService, ModalService>();
             serviceCollection.AddSingleton<INodeService, MockNodeService>();
-            serviceCollection.AddSingleton<IServerConfigService, DefaultServerConfigService>();
+            serviceCollection.AddSingleton<IEndpointManager, DefaultEndpointManager>();
             
             serviceCollection.AddBlazoredLocalStorage();
 

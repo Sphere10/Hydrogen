@@ -48,7 +48,7 @@ namespace VelocityNET.Presentation.Hydrogen.WidgetGallery
                             "fa-table",
                             new[]
                             {
-                                new AppBlockPage("/widget-gallery/paging-table", "Paging Table", "fa-table", new[]
+                                new AppBlockPage("/widget-gallery/tables", "Tables", "fa-table", new[]
                                 {
                                     new MenuItem("Table demo", "/widget-gallery/paging-table")
                                 })

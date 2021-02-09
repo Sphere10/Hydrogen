@@ -26,6 +26,7 @@ namespace VelocityNET.Presentation.Hydrogen.ViewModels
         /// <returns> a task.</returns>
         public async Task InitAsync()
         {
+            IsInitialized = false;
             await InitCoreAsync();
             IsInitialized = true;
         }

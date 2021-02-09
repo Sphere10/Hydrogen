@@ -7,11 +7,9 @@ using VelocityNET.Presentation.Hydrogen.ViewModels;
 using VelocityNET.Presentation.Hydrogen.WidgetGallery.Widgets.Components;
 using VelocityNET.Presentation.Hydrogen.WidgetGallery.Widgets.Models;
 
-namespace VelocityNET.Presentation.Hydrogen.WidgetGallery.Widgets.ViewModels
-{
+namespace VelocityNET.Presentation.Hydrogen.WidgetGallery.Widgets.ViewModels {
 
-    public class WizardsViewModel : ComponentViewModelBase
-    {
+    public class WizardsViewModel : ComponentViewModelBase {
         /// <summary>
         /// Gets the wizard builder.
         /// </summary>
@@ -26,8 +24,7 @@ namespace VelocityNET.Presentation.Hydrogen.WidgetGallery.Widgets.ViewModels
         /// Wizards view model
         /// </summary>
         /// <param name="builder"></param>
-        public WizardsViewModel(IWizardBuilder<NewWidgetModel> builder)
-        {
+        public WizardsViewModel(IWizardBuilder<NewWidgetModel> builder) {
             Builder = builder;
         }
 
@@ -35,20 +32,17 @@ namespace VelocityNET.Presentation.Hydrogen.WidgetGallery.Widgets.ViewModels
         /// Creates a new instance of the wizard model.
         /// </summary>
         /// <returns> new wizard model insteance</returns>
-        public IWizard NewWidetWizard()
-        {
+        public IWizard NewWidetWizard() {
             IWizard wizard = Builder.NewWizard("New Widget")
                 .WithModel(new NewWidgetModel())
                 .AddStep<NewWidgetWizardStep>()
                 .AddStep<NewWidgetSummaryStep>()
-                .OnCancelled(modal =>
-                {
+                .OnCancelled(modal => {
                     var result = new Result<bool>(false);
                     result.AddError("Cancel not allowed!");
                     return Task.FromResult(result);
                 })
-                .OnFinished(model =>
-                {
+                .OnFinished(model => {
                     Widgets.Add(model);
                     return Task.FromResult<Result<bool>>(true);
                 })

@@ -4,15 +4,13 @@ using System.Linq;
 using System.Threading.Tasks;
 using VelocityNET.Presentation.Hydrogen.ViewModels;
 
-namespace VelocityNET.Presentation.Hydrogen.Components.Tables
-{
+namespace VelocityNET.Presentation.Hydrogen.Components.Tables {
 
     /// <summary>
     /// View model for paged table component.
     /// </summary>
     /// <typeparam name="TItem"> type of item being displayed</typeparam>
-    public class PagedTableViewModel<TItem> : ComponentViewModelBase, IPagedCollectionViewModel
-    {
+    public class PagedTableViewModel<TItem> : ComponentViewModelBase, IPagedCollectionViewModel {
         /// <summary>
         /// Gets or sets the items collection
         /// </summary>
@@ -33,19 +31,14 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Tables
         /// Gets or sets the size of the page to show. When set, updates the current page
         /// accordingly based on current position.
         /// </summary>
-        public int PageSize
-        {
+        public int PageSize {
             get => _pageSize;
-            set
-            {
-                if (Items.Any())
-                {
+            set {
+                if (Items.Any()) {
                     int index = (CurrentPage - 1) * PageSize + Page.Count();
                     _pageSize = value;
-                    CurrentPage = (int) Math.Ceiling((double) index / _pageSize);
-                }
-                else
-                {
+                    CurrentPage = (int)Math.Ceiling((double)index / _pageSize);
+                } else {
                     _pageSize = value;
                 }
             }
@@ -59,11 +52,9 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Tables
         /// <summary>
         /// Gets or sets the current page
         /// </summary>
-        public int CurrentPage
-        {
+        public int CurrentPage {
             get => _currentPage;
-            set
-            {
+            set {
                 _currentPage = value;
                 StateHasChangedDelegate?.Invoke();
             }
@@ -72,7 +63,7 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Tables
         /// <summary>
         /// Gets the total number of pages based on total items and page size.
         /// </summary>
-        public int TotalPages => (int) Math.Ceiling((double) Items!.Count() / PageSize);
+        public int TotalPages => (int)Math.Ceiling((double)Items!.Count() / PageSize);
 
         /// <summary>
         /// Gets a value indicating whether there is a next page.
@@ -88,10 +79,8 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Tables
         /// Move to next page
         /// </summary>
         /// <exception cref="InvalidOperationException"> thrown if on the last page</exception>
-        public Task NextPageAsync()
-        {
-            if (!HasNextPage)
-            {
+        public Task NextPageAsync() {
+            if (!HasNextPage) {
                 throw new InvalidOperationException("On last page, no next page");
             }
 
@@ -103,10 +92,8 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Tables
         /// Move to previous page
         /// </summary>
         /// <exception cref="InvalidOperationException"> thrown if on the first page</exception>
-        public Task PrevPageAsync()
-        {
-            if (!HasPrevPage)
-            {
+        public Task PrevPageAsync() {
+            if (!HasPrevPage) {
                 throw new InvalidOperationException("On first page, no previous page");
             }
 
@@ -117,8 +104,7 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Tables
         /// <summary>
         /// Move to last page. 
         /// </summary>
-        public void LastPage()
-        {
+        public void LastPage() {
             CurrentPage = TotalPages;
         }
     }

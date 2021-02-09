@@ -4,25 +4,21 @@ using VelocityNET.Presentation.Hydrogen.Loader.Components;
 using VelocityNET.Presentation.Hydrogen.Loader.Plugins;
 using VelocityNET.Presentation.Hydrogen.Loader.ViewModels;
 
-namespace VelocityNET.Presentation.Hydrogen.Loader.Tests.ComponentTests
-{
+namespace VelocityNET.Presentation.Hydrogen.Loader.Tests.ComponentTests {
 
-    public class Tests : Bunit.TestContext
-    {
+    public class Tests : Bunit.TestContext {
         [SetUp]
-        public void Setup()
-        {
+        public void Setup() {
             Services.AddTransient<BlockMenuViewModel>();
             Services.AddTransient<IAppManager, DefaultAppManager>();
             Services.AddTransient<IPluginManager, DefaultPluginManager>();
             Services.AddTransient<IPluginLocator, StaticPluginLocator>();
-            
+
             Services.AddLogging();
         }
 
         [Test]
-        public void BlockMenuRenders()
-        {
+        public void BlockMenuRenders() {
             var component = RenderComponent<BlockMenu>();
 
             Assert.AreEqual(1, component.RenderCount);

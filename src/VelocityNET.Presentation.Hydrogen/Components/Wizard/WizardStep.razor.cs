@@ -3,8 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Sphere10.Framework;
 
-namespace VelocityNET.Presentation.Hydrogen.Components.Wizard
-{
+namespace VelocityNET.Presentation.Hydrogen.Components.Wizard {
 
     /// <summary>
     /// Wizard step component base. 
@@ -12,8 +11,7 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Wizard
     /// <typeparam name="TModel"> model type</typeparam>
     /// <typeparam name="TViewModel"> view model type</typeparam>
     public abstract partial class WizardStep<TModel, TViewModel>
-        where TViewModel : WizardStepViewModelBase<TModel>
-    {
+        where TViewModel : WizardStepViewModelBase<TModel> {
         /// <summary>
         /// Gets or sets the step view model
         /// </summary>
@@ -25,24 +23,21 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Wizard
         /// Gets or sets the wizard instance
         /// </summary>
         [Parameter]
-        public IWizard Wizard
-        {
+        public IWizard Wizard {
             get => ViewModel!.Wizard;
-            set => ViewModel!.Wizard = (IWizard<TModel>) value;
+            set => ViewModel!.Wizard = (IWizard<TModel>)value;
         }
 
         /// <inheritdoc />
         public override Task<Result> OnNextAsync() => ViewModel!.OnNextAsync();
-        
+
         /// <inheritdoc />
         public override Task<Result> OnPreviousAsync() => ViewModel!.OnPreviousAsync();
-        
+
         /// <inheritdoc />
-        protected override void OnParametersSet()
-        {
+        protected override void OnParametersSet() {
             base.OnParametersSet();
-            if (Wizard is null)
-            {
+            if (Wizard is null) {
                 throw new InvalidOperationException("Wizard step requires wizard parameter be set.");
             }
         }
@@ -51,8 +46,7 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Wizard
     /// <summary>
     /// Non generic wizard step component base.
     /// </summary>
-    public abstract class WizardStepBase : ComponentBase
-    {
+    public abstract class WizardStepBase : ComponentBase {
         /// <summary>
         /// Gets or sets the title of the wizard step.
         /// </summary>

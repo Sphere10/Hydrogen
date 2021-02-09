@@ -1,7 +1,6 @@
 ﻿using System;
 
-namespace VelocityNET.Presentation.Hydrogen.Models
-{
+namespace VelocityNET.Presentation.Hydrogen.Models {
 
     /// <summary>
     /// Search result

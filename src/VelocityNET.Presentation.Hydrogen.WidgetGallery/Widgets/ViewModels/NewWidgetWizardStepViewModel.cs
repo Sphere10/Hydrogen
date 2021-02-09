@@ -8,28 +8,22 @@ using VelocityNET.Presentation.Hydrogen.WidgetGallery.Extensions;
 using VelocityNET.Presentation.Hydrogen.WidgetGallery.Widgets.Components;
 using VelocityNET.Presentation.Hydrogen.WidgetGallery.Widgets.Models;
 
-namespace VelocityNET.Presentation.Hydrogen.WidgetGallery.Widgets.ViewModels
-{
+namespace VelocityNET.Presentation.Hydrogen.WidgetGallery.Widgets.ViewModels {
 
-    public class NewWidgetWizardStepViewModel : WizardStepViewModelBase<NewWidgetModel>
-    {
+    public class NewWidgetWizardStepViewModel : WizardStepViewModelBase<NewWidgetModel> {
         private IValidator<NewWidgetModel> Validator { get; }
 
-        public NewWidgetWizardStepViewModel(IValidator<NewWidgetModel> validator)
-        {
+        public NewWidgetWizardStepViewModel(IValidator<NewWidgetModel> validator) {
             Validator = validator ?? throw new ArgumentNullException(nameof(validator));
         }
 
         /// <inheritdoc />
-        public override async Task<Result> OnNextAsync()
-        {
+        public override async Task<Result> OnNextAsync() {
             ValidationResult result = await Validator.ValidateAsync(Model);
 
-            if (result.IsValid)
-            {
-                if (Model.AreDimensionsKnown)
-                {
-                    Wizard.UpdateSteps(StepUpdateType.Inject, new[] {typeof(WidgetDimensionsStep)});
+            if (result.IsValid) {
+                if (Model.AreDimensionsKnown) {
+                    Wizard.UpdateSteps(StepUpdateType.Inject, new[] { typeof(WidgetDimensionsStep) });
                 }
             }
 
@@ -37,8 +31,7 @@ namespace VelocityNET.Presentation.Hydrogen.WidgetGallery.Widgets.ViewModels
         }
 
         /// <inheritdoc />
-        public override Task<Result> OnPreviousAsync()
-        {
+        public override Task<Result> OnPreviousAsync() {
             return Task.FromResult(Result.Valid);
         }
     }

@@ -15,6 +15,6 @@ namespace VelocityNET.Presentation.Hydrogen.WidgetGallery.Extensions {
                 return result;
             }
         }
-    
+
     }
 }

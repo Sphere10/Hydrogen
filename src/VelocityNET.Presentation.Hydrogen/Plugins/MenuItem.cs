@@ -1,14 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace VelocityNET.Presentation.Hydrogen.Plugins
-{
+namespace VelocityNET.Presentation.Hydrogen.Plugins {
 
     /// <summary>
     /// Menu item view model
     /// </summary>
-    public class MenuItem
-    {
+    public class MenuItem {
         /// <summary>
         /// Gets the menu heading
         /// </summary>
@@ -23,7 +21,7 @@ namespace VelocityNET.Presentation.Hydrogen.Plugins
         /// Gets the route / path that this menu item should navigate to.
         /// </summary>
         public string Route { get; }
-        
+
         /// <summary>
         /// Gets the icon image path for this menu item.
         /// </summary>
@@ -36,12 +34,11 @@ namespace VelocityNET.Presentation.Hydrogen.Plugins
         /// <param name="route"></param>
         /// <param name="children"></param>
         /// <param name="iconPath"></param>
-        public MenuItem(string heading, string route, List<MenuItem> children, string? iconPath = null)
-        {
+        public MenuItem(string heading, string route, List<MenuItem> children, string? iconPath = null) {
             Heading = heading ?? throw new ArgumentNullException(nameof(heading));
             Children = children ?? throw new ArgumentNullException(nameof(children));
             Route = route ?? throw new ArgumentNullException(nameof(route));
-            
+
             IconPath = iconPath;
         }
 
@@ -51,8 +48,7 @@ namespace VelocityNET.Presentation.Hydrogen.Plugins
         /// <param name="heading"></param>
         /// <param name="route"></param>
         /// <param name="iconPath"></param>
-        public MenuItem(string heading, string route, string? iconPath = null) : this(heading, route, new List<MenuItem>(), iconPath)
-        {
+        public MenuItem(string heading, string route, string? iconPath = null) : this(heading, route, new List<MenuItem>(), iconPath) {
         }
     }
 

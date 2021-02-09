@@ -3,10 +3,8 @@ using System.Threading.Tasks;
 using VelocityNET.Presentation.Hydrogen.Components.Modal;
 using VelocityNET.Presentation.Hydrogen.Components.Wizard;
 
-namespace VelocityNET.Presentation.Hydrogen.Services
-{
-    public interface IModalService
-    {
+namespace VelocityNET.Presentation.Hydrogen.Services {
+    public interface IModalService {
         /// <summary>
         /// Initialize the modal service passing a reference to the modal component.
         /// </summary>

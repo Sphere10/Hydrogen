@@ -7,19 +7,17 @@ using Microsoft.AspNetCore.Components;
 using Sphere10.Framework;
 using VelocityNET.Presentation.Hydrogen.Models;
 
-namespace VelocityNET.Presentation.Hydrogen.Components
-{
+namespace VelocityNET.Presentation.Hydrogen.Components {
     /// <summary>
     /// Search input component
     /// </summary>
-    public partial class SearchInput
-    {
+    public partial class SearchInput {
         /// <summary>
         /// Search provider delegate - 
         /// </summary>
         /// <param name="searchTerm"></param>
         public delegate Task<IEnumerable<SearchResult>> SearchProviderDelegate(string searchTerm);
-        
+
         /// <summary>
         /// Gets or sets the search provider delegate that will facilitate searching
         /// </summary>
@@ -27,8 +25,8 @@ namespace VelocityNET.Presentation.Hydrogen.Components
         public SearchProviderDelegate? SearchProvider { get; set; }
 
         /// <summary>
-         /// Gets or sets the limit in MS of search frequency - optional, default value of 10ms.
-         /// </summary>
+        /// Gets or sets the limit in MS of search frequency - optional, default value of 10ms.
+        /// </summary>
         [Parameter] public int SearchFreqLimitMs { get; set; } = 100;
 
         /// <summary>
@@ -56,24 +54,17 @@ namespace VelocityNET.Presentation.Hydrogen.Components
         /// </summary>
         /// <param name="term"> search term</param>
         /// <returns></returns>
-        public async Task OnSearchAsync(string term)
-        {
-            if (!string.IsNullOrWhiteSpace(term))
-            {
-                if (SearchProvider is not null)
-                {
-                    if (Throttle is not null)
-                    {
-                        try
-                        {
+        public async Task OnSearchAsync(string term) {
+            if (!string.IsNullOrWhiteSpace(term)) {
+                if (SearchProvider is not null) {
+                    if (Throttle is not null) {
+                        try {
                             await Semaphore.WaitAsync();
                             await Throttle.WaitAsync();
-                            
+
                             var results = await SearchProvider(term);
                             Results = results;
-                        }
-                        finally
-                        {
+                        } finally {
                             Semaphore.Release();
                         }
                     }
@@ -82,8 +73,7 @@ namespace VelocityNET.Presentation.Hydrogen.Components
         }
 
         /// <inheritdoc />
-        protected override void OnParametersSet()
-        {
+        protected override void OnParametersSet() {
             base.OnParametersSet();
             Throttle = new Throttle(TimeSpan.FromMilliseconds(SearchFreqLimitMs));
         }

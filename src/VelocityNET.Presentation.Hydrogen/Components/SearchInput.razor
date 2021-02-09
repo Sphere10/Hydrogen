@@ -1,8 +1,8 @@
 ﻿@using VelocityNET.Presentation.Hydrogen.Models
 <div class="input-group dropdown">
-        <input type="text" class="form-control bg-light border-0 small search-input" @bind-value="@SearchTerm" @bind-value:event="oninput" placeholder="Search for..." @onkeyup="() => OnSearchAsync(SearchTerm)"
-               aria-label="Search">
-    
+    <input type="text" class="form-control bg-light border-0 small search-input" @bind-value="@SearchTerm" @bind-value:event="oninput" placeholder="Search for..." @onkeyup="() => OnSearchAsync(SearchTerm)"
+           aria-label="Search">
+
     <div class="input-group-append">
         <button class="btn btn-primary" type="button">
             <i class="fas fa-search fa-sm"></i>
@@ -10,15 +10,11 @@
     </div>
 
     <div class="dropdown-menu search-input-results animated--fade-in" aria-labelledby="dropdownMenuButton">
-        @if (Results.Any())
-        {
-            @foreach (SearchResult result in Results.Take(ResultsCount))
-            {
+        @if (Results.Any()) {
+            @foreach (SearchResult result in Results.Take(ResultsCount)) {
                 <a class="dropdown-item" href="@result.Route">@result.Name</a>
             }
-        }
-        else
-        {
+        } else {
             <div class="dropdown-item small text-gray-500"> No Results</div>
         }
 
@@ -27,7 +23,7 @@
 
 @code
 {
-    #nullable enable
+#nullable enable
 
     private string SearchTerm { get; set; } = string.Empty;
 }

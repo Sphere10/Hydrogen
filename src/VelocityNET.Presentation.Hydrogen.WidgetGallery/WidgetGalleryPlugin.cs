@@ -6,21 +6,17 @@ using VelocityNET.Presentation.Hydrogen.WidgetGallery.Widgets.Models;
 using VelocityNET.Presentation.Hydrogen.WidgetGallery.Widgets.Services;
 using VelocityNET.Presentation.Hydrogen.WidgetGallery.Widgets.Validators;
 
-namespace VelocityNET.Presentation.Hydrogen.WidgetGallery
-{
+namespace VelocityNET.Presentation.Hydrogen.WidgetGallery {
 
     /// <summary>
     /// Widget gallery plugin
     /// </summary>
-    public class WidgetGalleryPlugin : Plugin
-    {
+    public class WidgetGalleryPlugin : Plugin {
         /// <summary>
         /// Initializes a new instance of the <see cref="WidgetGalleryPlugin"/> class.
         /// </summary>
-        public WidgetGalleryPlugin()
-        {
-            Apps = new List<IApp>
-            {
+        public WidgetGalleryPlugin() {
+            Apps = new List<IApp> {
                 new App("/widget-gallery", "Widget Gallery", "./img/boxes-solid.svg",
                     new[]
                     {
@@ -74,8 +70,7 @@ namespace VelocityNET.Presentation.Hydrogen.WidgetGallery
         /// the apps in this plugin.
         /// </summary>
         /// <param name="serviceCollection"> service collection</param>
-        protected override void ConfigureServicesInternal(IServiceCollection serviceCollection)
-        {
+        protected override void ConfigureServicesInternal(IServiceCollection serviceCollection) {
             serviceCollection.AddTransient<IRandomNumberService, RandomNumberService>();
             serviceCollection.AddTransient<IValidator<NewWidgetModel>, NewWidgetModelValidator>();
         }

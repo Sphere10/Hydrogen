@@ -5,15 +5,13 @@ using System.Threading.Tasks;
 using VelocityNET.Presentation.Hydrogen.Models;
 using VelocityNET.Presentation.Hydrogen.ViewModels;
 
-namespace VelocityNET.Presentation.Hydrogen.Components.Tables
-{
+namespace VelocityNET.Presentation.Hydrogen.Components.Tables {
 
     /// <summary>
     /// Virtual paged table view model
     /// </summary>
     /// <typeparam name="TItem"> item type</typeparam>
-    public class VirtualPagedTableViewModel<TItem> : ComponentViewModelBase, IPagedCollectionViewModel
-    {
+    public class VirtualPagedTableViewModel<TItem> : ComponentViewModelBase, IPagedCollectionViewModel {
         /// <summary>
         /// Gets or sets the item provider delegate
         /// </summary>
@@ -42,11 +40,9 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Tables
         /// <summary>
         /// Gets or sets the current page
         /// </summary>
-        public int CurrentPage
-        {
+        public int CurrentPage {
             get => _currentPage;
-            set
-            {
+            set {
                 _currentPage = value;
                 StateHasChangedDelegate?.Invoke();
             }
@@ -55,7 +51,7 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Tables
         /// <summary>
         /// Gets the total number of pages based on total items and page size.
         /// </summary>
-        public int TotalPages => (int) Math.Ceiling((double) TotalItems / PageSize);
+        public int TotalPages => (int)Math.Ceiling((double)TotalItems / PageSize);
 
         /// <summary>
         /// Gets a value indicating whether there is a next page.
@@ -71,10 +67,8 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Tables
         /// Move to next page, retrieving it from the data provider
         /// </summary>
         /// <exception cref="InvalidOperationException"> thrown if on the last page</exception>
-        public async Task NextPageAsync()
-        {
-            if (!HasNextPage)
-            {
+        public async Task NextPageAsync() {
+            if (!HasNextPage) {
                 throw new InvalidOperationException("On last page, no next page");
             }
 
@@ -94,10 +88,8 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Tables
         /// Move to previous page, retrieving it from the data provider
         /// </summary>
         /// <exception cref="InvalidOperationException"> thrown if on the first page</exception>
-        public async Task PrevPageAsync()
-        {
-            if (!HasPrevPage)
-            {
+        public async Task PrevPageAsync() {
+            if (!HasPrevPage) {
                 throw new InvalidOperationException("On first page, no previous page");
             }
 
@@ -116,8 +108,7 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Tables
         /// <summary>
         /// Move to last page, retrieving it from the data provider
         /// </summary>
-        public async Task LastPageAsync()
-        {
+        public async Task LastPageAsync() {
             CurrentPage = TotalPages;
 
             (IEnumerable<TItem>? items, int totalItems) = await ItemsProvider(new ItemRequest(
@@ -135,11 +126,10 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Tables
         /// </summary>
         /// <param name="pageSize"> new page size</param>
         /// <returns> task</returns>
-        public async Task SetPageSizeAsync(int pageSize)
-        {
+        public async Task SetPageSizeAsync(int pageSize) {
             int index = (CurrentPage - 1) * PageSize + Page.Count();
             PageSize = pageSize;
-            CurrentPage = (int) Math.Ceiling((double) index / PageSize);
+            CurrentPage = (int)Math.Ceiling((double)index / PageSize);
 
             (IEnumerable<TItem>? items, int totalItems) = await ItemsProvider(new ItemRequest(
                 (CurrentPage - 1) * PageSize - 1,
@@ -152,8 +142,7 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Tables
         }
 
         /// <inheritdoc />
-        protected override async Task InitCoreAsync()
-        {
+        protected override async Task InitCoreAsync() {
             (IEnumerable<TItem>? items, int totalItems) = await ItemsProvider.Invoke(new ItemRequest(0,
                 PageSize,
                 string.Empty,

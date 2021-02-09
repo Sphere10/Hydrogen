@@ -6,16 +6,13 @@ using VelocityNET.Presentation.Hydrogen.Components.Tables;
 using VelocityNET.Presentation.Hydrogen.Models;
 using VelocityNET.Presentation.Hydrogen.ViewModels;
 
-namespace VelocityNET.Presentation.Hydrogen.Tests
-{
+namespace VelocityNET.Presentation.Hydrogen.Tests {
 
-    public class PagedTableTests
-    {
-        private Fixture AutoFixture { get; } = new ();
+    public class PagedTableTests {
+        private Fixture AutoFixture { get; } = new();
 
         [Test]
-        public void ProgressThroughPagesCorrectly()
-        {
+        public void ProgressThroughPagesCorrectly() {
             var vm = new PagedTableViewModel<Block>();
 
             int pageSize = 5;
@@ -38,8 +35,7 @@ namespace VelocityNET.Presentation.Hydrogen.Tests
         }
 
         [Test]
-        public void NextAndPrevious()
-        {
+        public void NextAndPrevious() {
             var vm = new PagedTableViewModel<Block>();
 
             int pageSize = 5;
@@ -59,46 +55,42 @@ namespace VelocityNET.Presentation.Hydrogen.Tests
         }
 
         [Test]
-        public void HasNextAsExpected()
-        {
-            var vm = new PagedTableViewModel<Block>
-            {
+        public void HasNextAsExpected() {
+            var vm = new PagedTableViewModel<Block> {
                 PageSize = 3,
                 Items = AutoFixture.CreateMany<Block>(9).ToList()
             };
-            
+
             Assert.IsTrue(vm.HasNextPage);
             Assert.IsFalse(vm.HasPrevPage);
-            
+
             vm.NextPageAsync();
-            
+
             Assert.IsTrue(vm.HasNextPage);
             Assert.IsTrue(vm.HasPrevPage);
-            
+
             vm.NextPageAsync();
-            
+
             Assert.IsFalse(vm.HasNextPage);
             Assert.IsTrue(vm.HasPrevPage);
         }
 
         [Test]
-        public void ChangePageSizeSetsPage()
-        {
-            var vm = new PagedTableViewModel<Block>
-            {
+        public void ChangePageSizeSetsPage() {
+            var vm = new PagedTableViewModel<Block> {
                 PageSize = 1,
                 Items = AutoFixture.CreateMany<Block>(10).ToList()
             };
-            
+
             Assert.AreEqual(10, vm.TotalPages);
             Assert.AreEqual(1, vm.CurrentPage);
-            
+
             vm.NextPageAsync();
-            
+
             Assert.AreEqual(2, vm.CurrentPage);
 
             vm.PageSize = 3;
-            
+
             Assert.AreEqual(1, vm.CurrentPage);
         }
     }

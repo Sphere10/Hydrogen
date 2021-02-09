@@ -1,13 +1,11 @@
 ﻿using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace VelocityNET.Presentation.Hydrogen.Plugins
-{
+namespace VelocityNET.Presentation.Hydrogen.Plugins {
     /// <summary>
     /// Plugin base
     /// </summary>
-    public abstract class Plugin : IPlugin
-    {
+    public abstract class Plugin : IPlugin {
         /// <summary>
         /// Gets the applications this plugin provides.
         /// </summary>
@@ -17,8 +15,7 @@ namespace VelocityNET.Presentation.Hydrogen.Plugins
         /// Configure this plugin's services. Automatically configures view model services.
         /// </summary>
         /// <param name="serviceCollection"> services</param>
-        public IServiceCollection ConfigureServices(IServiceCollection serviceCollection)
-        {
+        public IServiceCollection ConfigureServices(IServiceCollection serviceCollection) {
             serviceCollection.AddViewModelsFromAssembly(GetType().Assembly);
             ConfigureServicesInternal(serviceCollection);
 

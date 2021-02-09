@@ -4,7 +4,7 @@
 @inherits ComponentWithViewModel<TablesViewModel>
 @inject IModalService ModalService
 
-<LoadingOverlay IsLoading="@(!ViewModel!.IsInitialized)"/>
+<LoadingOverlay IsLoading="@(!ViewModel!.IsInitialized)" />
 
 <h1 class="h3 mb-2 text-gray-800">Tables</h1>
 <div class="row">
@@ -12,12 +12,11 @@
         <div class="card shadow">
             <div class="card-header">Rapid Table</div>
             <div class="card-body">
-                <RapidTable
-                    ItemLimit="10"
-                    Source="@ViewModel!.NodeService.GetBlocksAsync()"
-                    TItem="Block"
-                    OnRowSelect="OnClickRowAsync"
-                    Class="table table-striped table-borderless table-hover">
+                <RapidTable ItemLimit="10"
+                            Source="@ViewModel!.NodeService.GetBlocksAsync()"
+                            TItem="Block"
+                            OnRowSelect="OnClickRowAsync"
+                            Class="table table-striped table-borderless table-hover">
                     <HeaderTemplate>
                         <tr>
                             <th> Address</th>
@@ -25,10 +24,10 @@
                         </tr>
                     </HeaderTemplate>
                     <ItemTemplate Context="block">
-                            <tr>
-                                <td>@block.Address</td>
-                                <td class="text-right">@block.Number</td>
-                            </tr>
+                        <tr>
+                            <td>@block.Address</td>
+                            <td class="text-right">@block.Number</td>
+                        </tr>
                     </ItemTemplate>
                 </RapidTable>
             </div>
@@ -38,12 +37,11 @@
         <div class="card shadow">
             <div class="card-header">Paged Table</div>
             <div class="card-body">
-                <PagedTable
-                    class="table table-borderless table-hover overflow-auto"
-                    Items="Blocks"
-                    TItem="Block"
-                    PageSize="10"
-                    OnRowSelect="OnClickRowAsync">
+                <PagedTable class="table table-borderless table-hover overflow-auto"
+                            Items="Blocks"
+                            TItem="Block"
+                            PageSize="10"
+                            OnRowSelect="OnClickRowAsync">
                     <HeaderTemplate>
                         <tr>
                             <th> Address</th>
@@ -66,9 +64,9 @@
             <div class="card-body">
                 <VirtualPagedTable Class="table table-borderless table-hover overflow-auto"
                                    ItemsProvider="request => ViewModel!.NodeService.GetBlocksAsync(request)"
-                                           OnRowSelect="OnClickRowAsync"
-                                           TItem="Block"
-                                           PageSize="10">
+                                   OnRowSelect="OnClickRowAsync"
+                                   TItem="Block"
+                                   PageSize="10">
                     <HeaderTemplate>
                         <tr>
                             <th> Address</th>
@@ -90,10 +88,9 @@
 
 @code
 {
-    List<Block> Blocks { get; } = Enumerable.Range(0, 100).Select(x => new Block() {Address = Guid.NewGuid().ToString(), Number = x}).ToList();
+    List<Block> Blocks { get; } = Enumerable.Range(0, 100).Select(x => new Block() { Address = Guid.NewGuid().ToString(), Number = x }).ToList();
 
-    private async Task OnClickRowAsync(Block block)
-    {
+    private async Task OnClickRowAsync(Block block) {
         await ModalService.ShowAsync<InfoDialog>(new Dictionary<string, object>
         {
             {nameof(InfoDialog.Title), $"Block {block.Number}"},

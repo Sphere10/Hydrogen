@@ -4,15 +4,13 @@ using System.Linq;
 using System.Threading.Tasks;
 using Sphere10.Framework;
 
-namespace VelocityNET.Presentation.Hydrogen.Components.Wizard
-{
+namespace VelocityNET.Presentation.Hydrogen.Components.Wizard {
 
     /// <summary>
     /// Default wizard
     /// </summary>
     /// <typeparam name="TModel"> model type</typeparam>
-    public class DefaultWizard<TModel> : IWizard<TModel>
-    {
+    public class DefaultWizard<TModel> : IWizard<TModel> {
         /// <summary>
         /// Initializes a new instance of the <see cref="DefaultWizard{TModel}"/> class.
         /// </summary>
@@ -27,8 +25,7 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Wizard
             List<Type> steps,
             TModel modal,
             Func<TModel, Task<Result<bool>>>? onFinish,
-            Func<TModel, Task<Result<bool>>>? onCancel)
-        {
+            Func<TModel, Task<Result<bool>>>? onCancel) {
             Steps = steps ?? throw new ArgumentNullException(nameof(steps));
             Title = title ?? throw new ArgumentNullException(nameof(title));
             Model = modal ?? throw new ArgumentNullException(nameof(modal));
@@ -36,8 +33,7 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Wizard
             OnFinish = onFinish;
             OnCancel = onCancel;
 
-            if (!Steps.Any())
-            {
+            if (!Steps.Any()) {
                 throw new ArgumentException("One or steps are required", nameof(steps));
             }
 
@@ -95,44 +91,34 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Wizard
         public bool HasPrevious => CurrentStepIndex > 0;
 
         /// <inheritdoc />
-        public Result<bool> Next()
-        {
-            if (HasNext)
-            {
+        public Result<bool> Next() {
+            if (HasNext) {
                 CurrentStepIndex++;
                 CurrentStep = Steps[CurrentStepIndex];
                 return new Result<bool>(true);
-            }
-            else
-            {
+            } else {
                 return Result<bool>.Error("No next step.");
             }
         }
 
         /// <inheritdoc />
-        public Result<bool> Previous()
-        {
-            if (HasPrevious)
-            {
+        public Result<bool> Previous() {
+            if (HasPrevious) {
                 CurrentStepIndex--;
                 CurrentStep = Steps[CurrentStepIndex];
                 return new Result<bool>(true);
-            }
-            else
-            {
+            } else {
                 return Result<bool>.Error("No previous step");
             }
         }
 
         /// <inheritdoc />
-        public async Task<Result<bool>> FinishAsync()
-        {
+        public async Task<Result<bool>> FinishAsync() {
             return OnFinish is not null ? await OnFinish.Invoke(Model) : true;
         }
 
         /// <inheritdoc />
-        public async Task<Result<bool>> CancelAsync()
-        {
+        public async Task<Result<bool>> CancelAsync() {
             return OnCancel is not null ? await OnCancel.Invoke(Model) : true;
         }
 
@@ -142,73 +128,58 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Wizard
         /// <param name="updateType"> type of operation to perform when updating the steps</param>
         /// <param name="steps"> type of steps to be added</param>
         // HS: the step argument should be IEnumerable<WizardStepViewModel<TModel>> and logic updates many screens at once, not single
-        public void UpdateSteps(StepUpdateType updateType, IEnumerable<Type> steps)
-        {
+        public void UpdateSteps(StepUpdateType updateType, IEnumerable<Type> steps) {
             List<Type> types = steps.ToList();
 
-            if (!StepUpdateIsApplied(updateType, types))
-            {
-                switch (updateType)
-                {
-                    case StepUpdateType.Inject:
-                    {
-                        Steps.InsertRangeSequentially(CurrentStepIndex + 1, types);
-                        break;
-                    }
-
-                    case StepUpdateType.ReplaceAllNext:
-                    {
-                        if (HasNext)
-                        {
-                            Steps.RemoveRangeSequentially(CurrentStepIndex + 1, Steps.Count - CurrentStepIndex - 1);
+            if (!StepUpdateIsApplied(updateType, types)) {
+                switch (updateType) {
+                    case StepUpdateType.Inject: {
+                            Steps.InsertRangeSequentially(CurrentStepIndex + 1, types);
+                            break;
                         }
 
-                        Steps.InsertRangeSequentially(CurrentStepIndex + 1, types);
+                    case StepUpdateType.ReplaceAllNext: {
+                            if (HasNext) {
+                                Steps.RemoveRangeSequentially(CurrentStepIndex + 1, Steps.Count - CurrentStepIndex - 1);
+                            }
 
-                        break;
-                    }
-                    case StepUpdateType.ReplaceAll:
-                    {
-                        Steps = new List<Type>(types);
-                        CurrentStep = Steps[CurrentStepIndex];
-                        break;
-                    }
-                    case StepUpdateType.RemoveNext:
-                    {
-                        foreach (Type type in types)
-                        {
-                            for (int i = CurrentStepIndex + 1; i < Steps.Count; i++)
-                            {
-                                if (Steps[i] == type)
-                                {
-                                    Steps.RemoveAt(i);
+                            Steps.InsertRangeSequentially(CurrentStepIndex + 1, types);
+
+                            break;
+                        }
+                    case StepUpdateType.ReplaceAll: {
+                            Steps = new List<Type>(types);
+                            CurrentStep = Steps[CurrentStepIndex];
+                            break;
+                        }
+                    case StepUpdateType.RemoveNext: {
+                            foreach (Type type in types) {
+                                for (int i = CurrentStepIndex + 1; i < Steps.Count; i++) {
+                                    if (Steps[i] == type) {
+                                        Steps.RemoveAt(i);
+                                    }
                                 }
                             }
-                        }
 
-                        break;
-                    }
+                            break;
+                        }
                     default:
                         throw new ArgumentOutOfRangeException(nameof(updateType), updateType, null);
                 }
             }
         }
-    
+
         /// <summary>
         /// Determines whether the given step types have been added via a step update. Used to deduplicate step updates
         /// </summary>
         /// <param name="type"> step update type</param>
         /// <param name="steps"> steps</param>
         /// <returns> whether or not a step update of this type has been applied for these step types.</returns>
-        private bool StepUpdateIsApplied(StepUpdateType type, IEnumerable<Type> steps)
-        {
-            if (Updates is null)
-            {
+        private bool StepUpdateIsApplied(StepUpdateType type, IEnumerable<Type> steps) {
+            if (Updates is null) {
                 Updates = steps.ToLookup(x => type);
                 return false;
-            }
-            else
-            {
+            } else {
                 return steps.All(x => Updates[type].Contains(x));
             }
         }

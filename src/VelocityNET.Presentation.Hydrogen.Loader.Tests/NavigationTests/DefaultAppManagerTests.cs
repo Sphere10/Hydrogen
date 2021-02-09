@@ -5,14 +5,11 @@ using VelocityNET.Presentation.Hydrogen.Loader.Plugins;
 using VelocityNET.Presentation.Hydrogen.Loader.Tests.PluginManagerTests;
 using VelocityNET.Presentation.Hydrogen.Plugins;
 
-namespace VelocityNET.Presentation.Hydrogen.Loader.Tests.NavigationTests
-{
+namespace VelocityNET.Presentation.Hydrogen.Loader.Tests.NavigationTests {
 
-    public class DefaultAppManagerTests
-    {
+    public class DefaultAppManagerTests {
         [Test]
-        public void AppManagerLoadsPluginApps()
-        {
+        public void AppManagerLoadsPluginApps() {
             TestPlugin expected = new TestPlugin();
 
             IPluginLocator locator = new TestPluginLocator();
@@ -23,8 +20,7 @@ namespace VelocityNET.Presentation.Hydrogen.Loader.Tests.NavigationTests
         }
 
         [Test]
-        public void AppManagerSelectsDefaultAppOrNone()
-        {
+        public void AppManagerSelectsDefaultAppOrNone() {
             TestPlugin expected = new TestPlugin();
 
             IPluginLocator locator = new TestPluginLocator();
@@ -32,13 +28,12 @@ namespace VelocityNET.Presentation.Hydrogen.Loader.Tests.NavigationTests
             IAppManager appManager = new DefaultAppManager(pluginManager, new TestNavigationManager());
 
             Assert.NotNull(appManager.SelectedApp);
-            
+
             Assert.AreEqual(expected.Apps.First().Name, appManager.SelectedApp.Name);
         }
 
         [Test]
-        public void AppManagerNoSelectedAppOnBadNav()
-        {
+        public void AppManagerNoSelectedAppOnBadNav() {
             var nav = new TestNavigationManager();
 
             IPluginLocator locator = new TestPluginLocator();
@@ -51,8 +46,7 @@ namespace VelocityNET.Presentation.Hydrogen.Loader.Tests.NavigationTests
         }
 
         [Test]
-        public void NavToApp()
-        {
+        public void NavToApp() {
             var nav = new TestNavigationManager();
 
             IPluginLocator locator = new TestPluginLocator();
@@ -68,8 +62,7 @@ namespace VelocityNET.Presentation.Hydrogen.Loader.Tests.NavigationTests
         }
 
         [Test]
-        public void NavToAppPage()
-        {
+        public void NavToAppPage() {
             var nav = new TestNavigationManager();
 
             IPluginLocator locator = new TestPluginLocator();
@@ -78,7 +71,7 @@ namespace VelocityNET.Presentation.Hydrogen.Loader.Tests.NavigationTests
 
             IApp app = appManager.Apps.First(x => x.Name != appManager.SelectedApp?.Name);
             IAppBlockPage page = app.AppBlocks.First().AppBlockPages.First();
-            
+
             nav.NavigateTo(page.Route);
 
             Assert.NotNull(appManager.SelectedApp);

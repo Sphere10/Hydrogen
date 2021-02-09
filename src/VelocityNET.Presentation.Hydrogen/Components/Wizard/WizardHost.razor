@@ -1,38 +1,30 @@
 ﻿@inherits ComponentWithViewModel<WizardHostViewModel>
 
-@if (ViewModel!.ErrorMessages.Any())
-{
+@if (ViewModel!.ErrorMessages.Any()) {
     <ul class="validation-errors">
-        @foreach (var error in ViewModel.ErrorMessages)
-        {
+        @foreach (var error in ViewModel.ErrorMessages) {
             <li class="validation-message"> @error</li>
         }
     </ul>
 }
-@if (ViewModel!.CurrentStep is not null)
-{
+@if (ViewModel!.CurrentStep is not null) {
     @ViewModel!.CurrentStep
 }
 
-@if (ViewModel!.CurrentStepInstance is not null)
-{
+@if (ViewModel!.CurrentStepInstance is not null) {
     <div class="row position-absolute mb-2 w-100" style="bottom: 0">
         <div class="col-6 text-left">
             <button class="@(BackButtonClass ?? "btn btn-info btn-sm")" disabled="@IsDisabled()" @onclick="ViewModel!.PreviousAsync">@ViewModel!.CurrentStepInstance!.BackButtonText</button>
         </div>
 
         <div class="col-6 text-right">
-            @if (ViewModel.CurrentStepInstance.IsCancellable)
-            {
+            @if (ViewModel.CurrentStepInstance.IsCancellable) {
                 <button class="@(CancelButtonClass ?? "btn btn-secondary btn-sm mr-3")" @onclick="@ViewModel.CancelAsync"> @ViewModel.CurrentStepInstance!.CancelButtonText</button>
             }
 
-            @if (ViewModel.Wizard.HasNext)
-            {
+            @if (ViewModel.Wizard.HasNext) {
                 <button class="@(NextButtonClass ?? "btn btn-info btn-sm")" @onclick="ViewModel.NextAsync">@ViewModel.CurrentStepInstance!.NextButtonText</button>
-            }
-            else
-            {
+            } else {
                 <button class="@(FinishButtonClass?? "btn btn-info btn-sm")" @onclick="ViewModel!.FinishAsync">@ViewModel.CurrentStepInstance!.FinishButtonText</button>
             }
         </div>

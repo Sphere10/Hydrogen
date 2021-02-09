@@ -5,11 +5,9 @@ using Microsoft.AspNetCore.Components;
 using Sphere10.Framework;
 using VelocityNET.Presentation.Hydrogen.ViewModels;
 
-namespace VelocityNET.Presentation.Hydrogen.Components.Wizard
-{
+namespace VelocityNET.Presentation.Hydrogen.Components.Wizard {
 
-    public class WizardHostViewModel : ComponentViewModelBase
-    {
+    public class WizardHostViewModel : ComponentViewModelBase {
         private WizardStepBase? _currentStepInstance;
 
         /// <summary>
@@ -42,11 +40,9 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Wizard
         /// <summary>
         /// Gets or sets the component ref instance of the current step.
         /// </summary>
-        public WizardStepBase? CurrentStepInstance
-        {
+        public WizardStepBase? CurrentStepInstance {
             get => _currentStepInstance;
-            private set
-            {
+            private set {
                 _currentStepInstance = value;
                 Title = $"{Wizard.Title} -> {_currentStepInstance?.Title}";
                 StateHasChangedDelegate?.Invoke();
@@ -69,20 +65,15 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Wizard
         /// </summary>
         /// <returns></returns>
         /// <exception cref="InvalidOperationException"> thrown if there is no next step</exception>
-        public async Task NextAsync()
-        {
+        public async Task NextAsync() {
             Result result = await _currentStepInstance!.OnNextAsync();
             ErrorMessages.Clear();
-            
-            if (result.Success)
-            {
-                if (Wizard.Next())
-                {
+
+            if (result.Success) {
+                if (Wizard.Next()) {
                     CurrentStep = CreateStepBaseFragment(Wizard.CurrentStep);
                 }
-            }
-            else
-            {
+            } else {
                 ErrorMessages.AddRange(result.ErrorMessages);
             }
         }
@@ -92,17 +83,13 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Wizard
         /// </summary>
         /// <returns></returns>
         /// <exception cref="InvalidOperationException"> thrown if there is no previous</exception>
-        public Task PreviousAsync()
-        {
+        public Task PreviousAsync() {
             var prev = Wizard.Previous();
             ErrorMessages.Clear();
-            
-            if (prev)
-            {
+
+            if (prev) {
                 CurrentStep = CreateStepBaseFragment(Wizard.CurrentStep);
-            }
-            else
-            {
+            } else {
                 ErrorMessages.AddRange(prev.ErrorMessages);
             }
 
@@ -113,17 +100,13 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Wizard
         /// Finish the wizard workflow. 
         /// </summary>
         /// <returns></returns>
-        public async Task FinishAsync()
-        {
+        public async Task FinishAsync() {
             Result result = await Wizard.FinishAsync();
             ErrorMessages.Clear();
-            
-            if (result.Success)
-            {
+
+            if (result.Success) {
                 await OnFinished.InvokeAsync();
-            }
-            else
-            {
+            } else {
                 ErrorMessages.AddRange(result.ErrorMessages);
             }
         }
@@ -132,24 +115,19 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Wizard
         /// Cancel the wizard workflow
         /// </summary>
         /// <returns></returns>
-        public async Task CancelAsync()
-        {
+        public async Task CancelAsync() {
             Result result = await Wizard.CancelAsync();
             ErrorMessages.Clear();
-            
-            if (result.Success)
-            {
+
+            if (result.Success) {
                 await OnCancelled.InvokeAsync();
-            }
-            else
-            {
+            } else {
                 ErrorMessages.AddRange(result.ErrorMessages);
             }
         }
 
         /// <inheritdoc />
-        protected override Task InitCoreAsync()
-        {
+        protected override Task InitCoreAsync() {
             CurrentStep = CreateStepBaseFragment(Wizard.CurrentStep);
             return base.InitCoreAsync();
         }
@@ -159,15 +137,13 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Wizard
         /// </summary>
         /// <param name="componentType"> type of step</param>
         /// <returns></returns>
-        private RenderFragment CreateStepBaseFragment(Type componentType)
-        {
-            return builder =>
-            {
+        private RenderFragment CreateStepBaseFragment(Type componentType) {
+            return builder => {
                 int index = 0;
 
                 builder.OpenComponent(index, componentType);
                 builder.AddAttribute(index++, nameof(Wizard), Wizard);
-                builder.AddComponentReferenceCapture(index++, o => CurrentStepInstance = (WizardStepBase) o);
+                builder.AddComponentReferenceCapture(index++, o => CurrentStepInstance = (WizardStepBase)o);
                 builder.CloseComponent();
             };
         }

@@ -3,16 +3,14 @@ using System.Threading.Tasks;
 using Sphere10.Framework;
 using VelocityNET.Presentation.Hydrogen.Components.Wizard;
 
-namespace VelocityNET.Presentation.Hydrogen.Services
-{
+namespace VelocityNET.Presentation.Hydrogen.Services {
 
     /// <summary>
     /// Wizard builder
     /// </summary>
-    public interface IWizardBuilder<TModel>
-    {
+    public interface IWizardBuilder<TModel> {
         IWizardBuilder<TModel> NewWizard(string title);
-        
+
         IWizardBuilder<TModel> WithModel(TModel instance);
 
         IWizardBuilder<TModel> AddStep<TWizardStep>() where TWizardStep : WizardStepBase;

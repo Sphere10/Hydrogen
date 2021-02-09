@@ -5,11 +5,9 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 using VelocityNET.Presentation.Hydrogen.Models;
 
-namespace VelocityNET.Presentation.Hydrogen.Components.Tables
-{
+namespace VelocityNET.Presentation.Hydrogen.Components.Tables {
 
-    public class VirtualPagedTable<TItem> : ComponentWithViewModel<VirtualPagedTableViewModel<TItem>>
-    {
+    public class VirtualPagedTable<TItem> : ComponentWithViewModel<VirtualPagedTableViewModel<TItem>> {
         /// <summary>
         /// Items provider delegate - used to page of items.
         /// </summary>
@@ -24,8 +22,7 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Tables
         /// Gets or sets the items provider delegate
         /// </summary>
         [Parameter]
-        public ItemsProviderDelegate ItemsProvider
-        {
+        public ItemsProviderDelegate ItemsProvider {
             get => ViewModel!.ItemsProvider;
             set => ViewModel!.ItemsProvider = value;
         }
@@ -34,8 +31,7 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Tables
         /// Gets or sets the size of the pages
         /// </summary>
         [Parameter]
-        public int PageSize
-        {
+        public int PageSize {
             get => ViewModel!.PageSize;
             set => ViewModel!.PageSize = value;
         }
@@ -65,21 +61,17 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Tables
         public string? Class { get; set; }
 
         /// <inheritdoc />
-        protected override void OnParametersSet()
-        {
-            if (ItemTemplate is null)
-            {
+        protected override void OnParametersSet() {
+            if (ItemTemplate is null) {
                 throw new InvalidOperationException("Item template parameter is required.");
             }
 
-            if (HeaderTemplate is null)
-            {
+            if (HeaderTemplate is null) {
                 throw new InvalidOperationException("Header template parameter is required.");
             }
         }
 
-        protected override void BuildRenderTree(RenderTreeBuilder builder)
-        {
+        protected override void BuildRenderTree(RenderTreeBuilder builder) {
             builder.OpenElement(0, "table");
             builder.AddAttribute(2, "class", Class);
 
@@ -89,8 +81,7 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Tables
 
             builder.OpenElement(4, "tbody");
 
-            foreach (TItem item in ViewModel!.Page)
-            {
+            foreach (TItem item in ViewModel!.Page) {
                 builder.OpenElement(5, "span");
                 builder.AddAttribute(6, "style", "display: contents");
                 builder.AddAttribute(7, "onclick",
@@ -106,18 +97,18 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Tables
             builder.OpenComponent<Pagination>(21);
             builder.AddAttribute(21, nameof(Pagination.Model), ViewModel);
             builder.CloseComponent();
-            
+
             builder.CloseElement();
 
             builder.OpenComponent<PageSizeSelector>(23);
             builder.AddAttribute(23, nameof(PageSizeSelector.Model), ViewModel);
             builder.AddAttribute(23, nameof(PageSizeSelector.Value), ViewModel!.PageSize);
             builder.AddAttribute(23, nameof(PageSizeSelector.ValueExpression),
-                (Expression<Func<int>>) (() => ViewModel!.PageSize));
+                (Expression<Func<int>>)(() => ViewModel!.PageSize));
             builder.AddAttribute(23, nameof(PageSizeSelector.ValueChanged),
                 EventCallback.Factory.Create<int>(this, x => ViewModel!.SetPageSizeAsync(x)));
             builder.CloseComponent();
-            
+
         }
     }
 

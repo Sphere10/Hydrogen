@@ -2,20 +2,14 @@
 using Microsoft.Extensions.DependencyInjection;
 using VelocityNET.Presentation.Hydrogen.Plugins;
 
-namespace VelocityNET.Presentation.Hydrogen.Loader.Tests
-{
-    public class TestPlugin : Plugin
-    {
-        public TestPlugin()
-        {
+namespace VelocityNET.Presentation.Hydrogen.Loader.Tests {
+    public class TestPlugin : Plugin {
+        public TestPlugin() {
             Apps = new[]
             {
-                new Hydrogen.Plugins.App("/", "Home", "abc", new[]
-                {
-                    new AppBlock("test", "abc", new[]
-                    {
-                        new AppBlockPage("/test", "test page", "abc", new[]
-                        {
+                new Hydrogen.Plugins.App("/", "Home", "abc", new[] {
+                    new AppBlock("test", "abc", new[] {
+                        new AppBlockPage("/test", "test page", "abc", new[] {
                             new MenuItem("Test Menu", "/app1/page1", new List<MenuItem>())
                         })
                     })
@@ -35,13 +29,11 @@ namespace VelocityNET.Presentation.Hydrogen.Loader.Tests
 
         public override IEnumerable<IApp> Apps { get; }
 
-        protected override void ConfigureServicesInternal(IServiceCollection serviceCollection)
-        {
+        protected override void ConfigureServicesInternal(IServiceCollection serviceCollection) {
             serviceCollection.AddTransient<TestViewModel>();
         }
     }
 
-    internal class TestViewModel
-    {
+    internal class TestViewModel {
     }
 }

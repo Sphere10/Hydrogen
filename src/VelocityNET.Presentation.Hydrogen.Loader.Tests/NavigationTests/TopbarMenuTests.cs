@@ -1,9 +1,7 @@
-﻿namespace VelocityNET.Presentation.Hydrogen.Loader.Tests.NavigationTests
-{
+﻿namespace VelocityNET.Presentation.Hydrogen.Loader.Tests.NavigationTests {
 
-    public class TopbarMenuTests
-    {
-        
+    public class TopbarMenuTests {
+
     }
 
 }

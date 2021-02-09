@@ -11,11 +11,11 @@
 
 @code
 {
-    #nullable enable
-    
+#nullable enable
+
     [Parameter]
     public object? Model { get; set; }
-    
+
     /// <summary>
     /// Gets or sets the value of the input. This should be used with two-way binding.
     /// </summary>
@@ -36,10 +36,8 @@
     [Parameter] public Expression<Func<int>>? ValueExpression { get; set; }
 
 
-    protected override void OnParametersSet()
-    {
-        if (Model is null)
-        {
+    protected override void OnParametersSet() {
+        if (Model is null) {
             throw new InvalidOperationException("Model parameter is required.");
         }
     }

@@ -3,23 +3,23 @@
 <EditForm Model="ViewModel.Model">
     <div class="form-group">
         <label for="Name">Name</label>
-        <InputText id="Name" class="form-control form-control-sm" @bind-Value="ViewModel.Model.Name"/>
+        <InputText id="Name" class="form-control form-control-sm" @bind-Value="ViewModel.Model.Name" />
     </div>
 
     <div class="form-group">
         <label for="Description">Description</label>
-        <InputText id="Description" class="form-control form-control-sm" @bind-Value="ViewModel.Model.Description"/>
+        <InputText id="Description" class="form-control form-control-sm" @bind-Value="ViewModel.Model.Description" />
     </div>
 
     <div class="form-group">
         <label for="Price">Price</label>
-        <InputNumber id="Price" class="form-control" @bind-Value="ViewModel.Model.Price"/>
+        <InputNumber id="Price" class="form-control" @bind-Value="ViewModel.Model.Price" />
     </div>
     <div class="form-group">
-         <div class="form-inline">
-                        <InputCheckbox class="form-control form-control-sm mr-1" id="dimensions" @bind-Value="ViewModel.Model.AreDimensionsKnown"/>
-                        <label for="dimensions">Supply dimensions ? </label>
-    </div>
+        <div class="form-inline">
+            <InputCheckbox class="form-control form-control-sm mr-1" id="dimensions" @bind-Value="ViewModel.Model.AreDimensionsKnown" />
+            <label for="dimensions">Supply dimensions ? </label>
+        </div>
     </div>
 </EditForm>
 

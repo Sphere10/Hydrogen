@@ -1,14 +1,12 @@
 ﻿using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace VelocityNET.Presentation.Hydrogen.Plugins
-{
+namespace VelocityNET.Presentation.Hydrogen.Plugins {
     /// <summary>
     /// VelocityNET application plugin. VelocityNET client application will locate implementations of this
     /// interface and 
     /// </summary>
-    public interface IPlugin
-    {
+    public interface IPlugin {
         /// <summary>
         /// Gets the applications this plugin provides.
         /// </summary>

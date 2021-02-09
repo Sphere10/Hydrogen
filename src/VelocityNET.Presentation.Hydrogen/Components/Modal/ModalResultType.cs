@@ -1,10 +1,8 @@
-﻿namespace VelocityNET.Presentation.Hydrogen.Components.Modal
-{
+﻿namespace VelocityNET.Presentation.Hydrogen.Components.Modal {
     /// <summary>
     /// Modal results
     /// </summary>
-    public enum ModalResultType
-    {
+    public enum ModalResultType {
         Ok,
         Cancel,
         Exit

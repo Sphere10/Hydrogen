@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace VelocityNET.Presentation.Hydrogen.Plugins
-{
+namespace VelocityNET.Presentation.Hydrogen.Plugins {
     /// <summary>
     /// App - contains one or more app blocks.
     /// </summary>
-    public class App : IApp
-    {
+    public class App : IApp {
         /// <summary>
         /// Initialize a new instance of the <see cref="App"/> class.
         /// </summary>
@@ -15,8 +13,7 @@ namespace VelocityNET.Presentation.Hydrogen.Plugins
         /// <param name="name"></param>
         /// <param name="icon"></param>
         /// <param name="appBlocks"></param>
-        public App(string route, string name, string icon, IEnumerable<IAppBlock> appBlocks)
-        {
+        public App(string route, string name, string icon, IEnumerable<IAppBlock> appBlocks) {
             Route = route ?? throw new ArgumentNullException(nameof(route));
             Name = name ?? throw new ArgumentNullException(nameof(name));
             AppBlocks = appBlocks ?? throw new ArgumentNullException(nameof(appBlocks));

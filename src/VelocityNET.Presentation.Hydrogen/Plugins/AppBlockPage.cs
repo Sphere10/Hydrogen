@@ -1,14 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace VelocityNET.Presentation.Hydrogen.Plugins
-{
+namespace VelocityNET.Presentation.Hydrogen.Plugins {
 
     /// <summary>
     /// App block page.
     /// </summary>
-    public class AppBlockPage : IAppBlockPage
-    {
+    public class AppBlockPage : IAppBlockPage {
         /// <summary>
         /// Initializes a new instance of the <see cref="AppBlockPage"/> class.
         /// </summary>
@@ -16,8 +14,7 @@ namespace VelocityNET.Presentation.Hydrogen.Plugins
         /// <param name="name"> page name</param>
         /// <param name="icon"></param>
         /// <param name="menuItems"></param>
-        public AppBlockPage(string route, string name, string icon, IEnumerable<MenuItem> menuItems)
-        {
+        public AppBlockPage(string route, string name, string icon, IEnumerable<MenuItem> menuItems) {
             Route = route ?? throw new ArgumentNullException(nameof(route));
             Name = name ?? throw new ArgumentNullException(nameof(name));
             Icon = icon ?? throw new ArgumentNullException(nameof(icon));
@@ -30,8 +27,7 @@ namespace VelocityNET.Presentation.Hydrogen.Plugins
         /// <param name="route"> route - the relative path from app to navigate to.</param>
         /// <param name="name"> page name</param>
         /// <param name="icon"></param>
-        public AppBlockPage(string route, string name, string icon) : this(route, name, icon, new List<MenuItem>())
-        {
+        public AppBlockPage(string route, string name, string icon) : this(route, name, icon, new List<MenuItem>()) {
         }
 
         /// <summary>

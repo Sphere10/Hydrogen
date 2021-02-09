@@ -5,23 +5,19 @@ using NUnit.Framework;
 using VelocityNET.Presentation.Hydrogen.Loader.Plugins;
 using VelocityNET.Presentation.Hydrogen.Loader.Tests.PluginManagerTests;
 
-namespace VelocityNET.Presentation.Hydrogen.Loader.Tests.NavigationTests
-{
+namespace VelocityNET.Presentation.Hydrogen.Loader.Tests.NavigationTests {
 
-    public class DefaultPluginManagerTests
-    {
+    public class DefaultPluginManagerTests {
         [Test]
-        public void PluginManagerLoadCorrectPlugins()
-        {
+        public void PluginManagerLoadCorrectPlugins() {
             IPluginLocator locator = new TestPluginLocator();
             IPluginManager manager = new DefaultPluginManager(locator, new NullLogger<DefaultPluginManager>());
-            
+
             Assert.AreEqual(1, manager.Plugins.Count());
         }
 
         [Test]
-        public void PluginManagerAddsPluginServices()
-        {
+        public void PluginManagerAddsPluginServices() {
             IPluginLocator locator = new TestPluginLocator();
             IPluginManager manager = new DefaultPluginManager(locator, new NullLogger<DefaultPluginManager>());
 

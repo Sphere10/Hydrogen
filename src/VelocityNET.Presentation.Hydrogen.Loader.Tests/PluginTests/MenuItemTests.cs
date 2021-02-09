@@ -5,14 +5,11 @@ using VelocityNET.Presentation.Hydrogen.Plugins;
 using Xunit;
 using Assert = NUnit.Framework.Assert;
 
-namespace VelocityNET.Presentation.Hydrogen.Loader.Tests.PluginTests
-{
+namespace VelocityNET.Presentation.Hydrogen.Loader.Tests.PluginTests {
 
-    public class MenuItemTests
-    {
+    public class MenuItemTests {
         [Test]
-        public void MergeMenuItemsDuplicateRetainsOrig()
-        {
+        public void MergeMenuItemsDuplicateRetainsOrig() {
             var menu1 = new List<MenuItem>
             {
                 new("A", "/", new List<MenuItem>
@@ -44,8 +41,7 @@ namespace VelocityNET.Presentation.Hydrogen.Loader.Tests.PluginTests
         }
 
         [Fact]
-        public void CopyMenuItemsSameButDifRef()
-        {
+        public void CopyMenuItemsSameButDifRef() {
             var menu1 = new List<MenuItem>
             {
                 new("A", "/", new List<MenuItem>
@@ -55,7 +51,7 @@ namespace VelocityNET.Presentation.Hydrogen.Loader.Tests.PluginTests
             };
 
             var copy = menu1.Copy().ToList();
-            
+
             Assert.AreNotSame(copy, menu1);
             Assert.True(menu1[0].Heading == copy[0].Heading);
             Assert.True(menu1[0].Children[0].Heading == copy[0].Children[0].Heading);

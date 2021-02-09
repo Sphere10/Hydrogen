@@ -5,20 +5,17 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 using VelocityNET.Presentation.Hydrogen.ViewModels;
 
-namespace VelocityNET.Presentation.Hydrogen.Components.Tables
-{
+namespace VelocityNET.Presentation.Hydrogen.Components.Tables {
     /// <summary>
     /// Paging table - simple table with pagination 
     /// </summary>
     /// <typeparam name="TItem"> type of item being displayed</typeparam>
-    public class PagedTable<TItem> : ComponentWithViewModel<PagedTableViewModel<TItem>>
-    {
+    public class PagedTable<TItem> : ComponentWithViewModel<PagedTableViewModel<TItem>> {
         /// <summary>
         /// Gets or sets the items being displayed in the table
         /// </summary>
         [Parameter]
-        public IEnumerable<TItem> Items
-        {
+        public IEnumerable<TItem> Items {
             get => ViewModel!.Items;
             set => ViewModel!.Items = value;
         }
@@ -27,8 +24,7 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Tables
         /// Gets or sets the size of the pages
         /// </summary>
         [Parameter]
-        public int PageSize
-        {
+        public int PageSize {
             get => ViewModel!.PageSize;
             set => ViewModel!.PageSize = value;
         }
@@ -49,34 +45,29 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Tables
         /// Gets or sets the callback to call when row is clicked
         /// </summary>
         [Parameter] public EventCallback<TItem> OnRowSelect { get; set; } = EventCallback<TItem>.Empty;
-        
+
         /// <summary>
         /// Gets or sets the CSS class string applied to the table element.
         /// </summary>
         [Parameter]
         public string? Class { get; set; }
-        
+
         /// <inheritdoc />
-        protected override void OnParametersSet()
-        {
-            if (Items is null)
-            {
+        protected override void OnParametersSet() {
+            if (Items is null) {
                 throw new InvalidOperationException("Items parameter is required.");
             }
-            
-            if (HeaderTemplate is null)
-            {
+
+            if (HeaderTemplate is null) {
                 throw new InvalidOperationException("Header template parameter is required.");
             }
-            
-            if (ItemTemplate is null)
-            {
+
+            if (ItemTemplate is null) {
                 throw new InvalidOperationException("Item template parameter is required.");
             }
         }
 
-        protected override void BuildRenderTree(RenderTreeBuilder builder)
-        {
+        protected override void BuildRenderTree(RenderTreeBuilder builder) {
             builder.OpenElement(0, "table");
             builder.AddAttribute(2, "class", Class);
 
@@ -86,8 +77,7 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Tables
 
             builder.OpenElement(4, "tbody");
 
-            foreach (TItem item in ViewModel!.Page)
-            {
+            foreach (TItem item in ViewModel!.Page) {
                 builder.OpenElement(5, "span");
                 builder.AddAttribute(5, "style", "display: contents");
                 builder.AddAttribute(5, "onclick",
@@ -105,13 +95,13 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Tables
             builder.CloseComponent();
 
             builder.CloseElement();
-            
+
             builder.OpenComponent<PageSizeSelector>(23);
             builder.AddAttribute(23, nameof(PageSizeSelector.Model), ViewModel);
             builder.AddAttribute(23, nameof(PageSizeSelector.Value), ViewModel!.PageSize);
             builder.AddAttribute(23, nameof(PageSizeSelector.ValueExpression),
-                (Expression<Func<int>>) (() => ViewModel!.PageSize));
-            
+                (Expression<Func<int>>)(() => ViewModel!.PageSize));
+
             builder.AddAttribute(23, nameof(PageSizeSelector.ValueChanged),
                 EventCallback.Factory.Create<int>(this, x => ViewModel!.PageSize = x));
             builder.CloseComponent();

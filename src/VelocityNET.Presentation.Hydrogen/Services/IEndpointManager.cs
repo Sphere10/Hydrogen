@@ -3,13 +3,11 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Sphere10.Framework;
 
-namespace VelocityNET.Presentation.Hydrogen.Services
-{
+namespace VelocityNET.Presentation.Hydrogen.Services {
     /// <summary>
     /// Endpoint manager
     /// </summary>
-    public interface IEndpointManager
-    {
+    public interface IEndpointManager {
         /// <summary>
         /// Raised when endpoint is changed
         /// </summary>
@@ -18,7 +16,7 @@ namespace VelocityNET.Presentation.Hydrogen.Services
         /// <summary>
         /// Raised when a new server is added
         /// </summary>
-        event EventHandler<EventArgs>? EndpointAdded; 
+        event EventHandler<EventArgs>? EndpointAdded;
 
         /// <summary>
         /// Gets the currently selected endpoint Uri.

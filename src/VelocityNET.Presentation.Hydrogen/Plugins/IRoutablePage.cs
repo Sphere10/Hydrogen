@@ -1,10 +1,8 @@
-﻿namespace VelocityNET.Presentation.Hydrogen.Plugins
-{
+﻿namespace VelocityNET.Presentation.Hydrogen.Plugins {
     /// <summary>
     /// Denotes an item that can be routed/navigated to.
     /// </summary>
-    public interface IRoutablePage
-    {
+    public interface IRoutablePage {
         /// <summary>
         /// Gets the routable page url for this app
         /// </summary>

@@ -1,10 +1,8 @@
 ﻿using System.Threading.Tasks;
 
-namespace VelocityNET.Presentation.Hydrogen.Components.Tables
-{
+namespace VelocityNET.Presentation.Hydrogen.Components.Tables {
 
-    public interface IPagedCollectionViewModel
-    {
+    public interface IPagedCollectionViewModel {
         /// <summary>
         /// Gets or sets the size of the page to show.
         /// </summary>
@@ -14,17 +12,17 @@ namespace VelocityNET.Presentation.Hydrogen.Components.Tables
         /// Gets a value indicating whether there is a next page.
         /// </summary>
         bool HasNextPage { get; }
-        
+
         /// <summary>
         /// Gets a value indicating whether there is a previous page
         /// </summary>
         public bool HasPrevPage { get; }
-        
+
         /// <summary>
         /// Gets the total number of pages based on total items and page size.
         /// </summary>
         int TotalPages { get; }
-        
+
         /// <summary>
         /// Gets the current page
         /// </summary>

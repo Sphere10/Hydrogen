@@ -6,21 +6,20 @@
 
 <table class="table table-borderless">
     <thead>
-    <tr>
-        <th>Name</th>
-        <th>Description</th>
-        <th>Price</th>
-    </tr>
+        <tr>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Price</th>
+        </tr>
     </thead>
     <tbody>
-    @foreach (var widget in ViewModel!.Widgets)
-    {
-        <tr>
-            <td>@widget.Name</td>
-            <td>@widget.Description</td>
-            <td>@widget.Price</td>
-        </tr>
-    }
+        @foreach (var widget in ViewModel!.Widgets) {
+            <tr>
+                <td>@widget.Name</td>
+                <td>@widget.Description</td>
+                <td>@widget.Price</td>
+            </tr>
+        }
     </tbody>
 </table>
 
@@ -29,11 +28,9 @@
     [Inject]
     // ReSharper disable once UnusedAutoPropertyAccessor.Local
     private IModalService ModalService { get; set; }
-    
-    private async Task ShowWizardAsync()
-    {
-        await ModalService.ShowWizardAsync(ViewModel!.NewWidetWizard(), new Dictionary<string, object>()
-        {
+
+    private async Task ShowWizardAsync() {
+        await ModalService.ShowWizardAsync(ViewModel!.NewWidetWizard(), new Dictionary<string, object>() {
             {nameof(WizardModal.Height), (375, 500)}
         });
     }

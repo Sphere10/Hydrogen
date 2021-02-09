@@ -1,5 +1,5 @@
 ﻿using System;
-using GalaSoft.MvvmLight.Messaging;
+//using GalaSoft.MvvmLight.Messaging;
 using VelocityNET.Presentation.Hydrogen.Services;
 
 namespace VelocityNET.Presentation.Hydrogen.ViewModels

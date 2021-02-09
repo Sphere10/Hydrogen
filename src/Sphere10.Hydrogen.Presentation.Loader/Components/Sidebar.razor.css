@@ -8,11 +8,6 @@
     width: inherit;
 }
 
-.app-block-container {
-    max-height: 275px;
-    overflow-y: auto;
-}
-
 @media (max-width: 768px) {
     .sidebar.toggled .bottom-sidebar {
         display: none

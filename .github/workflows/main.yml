@@ -11,8 +11,8 @@ jobs:
         with:
           dotnet-version: 5.0.101
           
-      - name: Publish .NET Core Project
-        run: dotnet build ./src/VelocityNET.sln
+      - name: Build Hydrogen solution
+        run: dotnet build ./src/Hydrogen.sln
   
   test:
     runs-on: ubuntu-latest
@@ -23,5 +23,5 @@ jobs:
         with:
           dotnet-version: 5.0.101
 
-      - name: Publish .NET Core Project
-        run: dotnet test ./src/VelocityNET.sln
+      - name: Run tests
+        run: dotnet test ./src/Hydrogen.sln

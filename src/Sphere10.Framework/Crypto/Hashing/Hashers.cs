@@ -180,6 +180,7 @@ namespace Sphere10.Framework {
 			Register(CHF.Blake2b_256, () => new Blake2b(Blake2b._256Config));
 			Register(CHF.Blake2b_160, () => new Blake2b(Blake2b._160Config));
 			Register(CHF.Blake2b_128, () => new Blake2b(Blake2b._128Config));
+			
 		}
 	}
 }

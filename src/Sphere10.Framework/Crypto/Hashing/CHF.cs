@@ -15,6 +15,7 @@ namespace Sphere10.Framework {
 		Blake2b_256,
 		Blake2b_160,
 		Blake2b_128,
+		RIPEMD_160,
 	}
 
 }

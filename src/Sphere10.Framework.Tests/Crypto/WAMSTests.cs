@@ -69,7 +69,7 @@ namespace Sphere10.Framework.Tests {
 			var messageDigest = Hashers.Hash(algorithm, Encoding.ASCII.GetBytes("The quick brown fox jumps over the lazy dog"));
 
 			for (var i = 0; i < 1 << privateKey.Height; i++) {
-				var sig = wams.SignDigest(privateKey, messageDigest, null, (ulong)batch, i);
+				var sig = wams.SignDigest(privateKey, messageDigest, (ulong)batch, i);
 				Assert.IsTrue(wams.VerifyDigest(sig, messageDigest, publicKey.RawBytes));
 			}
 		}

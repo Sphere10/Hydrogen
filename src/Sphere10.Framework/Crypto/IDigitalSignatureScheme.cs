@@ -10,10 +10,8 @@ namespace Sphere10.Framework {
 		IPrivateKey CreatePrivateKey(ReadOnlySpan<byte> secret256);
 		IPublicKey DerivePublicKey(IPrivateKey privateKey, ulong signerNonce);
 		bool IsPublicKey(IPrivateKey privateKey, ReadOnlySpan<byte> publicKeyBytes);
-		byte[] GenerateSalt(ReadOnlySpan<byte> message);
-		ReadOnlySpan<byte> ExtractSaltFromSignature(ReadOnlySpan<byte> signature);
-		byte[] CalculateMessageDigest(ReadOnlySpan<byte> message, ReadOnlySpan<byte> salt);
-		byte[] SignDigest(IPrivateKey privateKey, ReadOnlySpan<byte> messageDigest, ReadOnlySpan<byte> salt, ulong signerNonce);
+		byte[] CalculateMessageDigest(ReadOnlySpan<byte> message);
+		byte[] SignDigest(IPrivateKey privateKey, ReadOnlySpan<byte> messageDigest, ulong signerNonce);
 		bool VerifyDigest(ReadOnlySpan<byte> signature, ReadOnlySpan<byte> messageDigest, ReadOnlySpan<byte> publicKey);
 	}
 
@@ -25,10 +23,8 @@ namespace Sphere10.Framework {
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static byte[] Sign(this IDigitalSignatureScheme dss, IPrivateKey privateKey, ReadOnlySpan<byte> message, ulong signerNonce) {
-			var salted = dss.Traits.HasFlag(DigitalSignatureSchemeTraits.SaltedSignatures);
-			var salt = salted ? dss.GenerateSalt(message) : null;
-			var messageDigest = dss.CalculateMessageDigest(message, salt);
-			return dss.SignDigest(privateKey, messageDigest, salt, signerNonce);
+			var messageDigest = dss.CalculateMessageDigest(message);
+			return dss.SignDigest(privateKey, messageDigest, signerNonce);
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -37,7 +33,7 @@ namespace Sphere10.Framework {
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static bool Verify(this IDigitalSignatureScheme dss, ReadOnlySpan<byte> signature, ReadOnlySpan<byte> message, ReadOnlySpan<byte> publicKey) {
-			var messageDigest = dss.CalculateMessageDigest(message, dss.Traits.HasFlag(DigitalSignatureSchemeTraits.SaltedSignatures) ? dss.ExtractSaltFromSignature(signature) : null);
+			var messageDigest = dss.CalculateMessageDigest(message);
 			return dss.VerifyDigest(signature, messageDigest, publicKey);
 		}
 

@@ -37,6 +37,7 @@ namespace Sphere10.Framework {
 			: base(algorithm.Config.HashFunction) {
 			Config = config;
 			_ots = algorithm;
+			Traits = Traits & DigitalSignatureSchemeTraits.PQC;
 		}
 
 		public Configuration Config { get; }
@@ -91,17 +92,16 @@ namespace Sphere10.Framework {
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public byte[] Sign(PrivateKey privateKey, ReadOnlySpan<byte> message, ulong batchNo, int otsIndex) {
-			var salt = GenerateSalt(message);
-			var messageDigest = CalculateMessageDigest(message, salt);
-			return SignDigest(privateKey, messageDigest, salt, batchNo, otsIndex);
+			var messageDigest = CalculateMessageDigest(message);
+			return SignDigest(privateKey, messageDigest, batchNo, otsIndex);
 		}
 
-		public override byte[] SignDigest(PrivateKey privateKey, ReadOnlySpan<byte> messageDigest, ReadOnlySpan<byte> salt, ulong signerNonce) {
+		public override byte[] SignDigest(PrivateKey privateKey, ReadOnlySpan<byte> messageDigest, ulong signerNonce) {
 			var (batchNo, otsIndex) = GetOTSIndex(privateKey.Height, signerNonce);
-			return SignDigest(privateKey, messageDigest, salt, batchNo, otsIndex);
+			return SignDigest(privateKey, messageDigest, batchNo, otsIndex);
 		}
 
-		public byte[] SignDigest(PrivateKey privateKey, ReadOnlySpan<byte> messageDigest, ReadOnlySpan<byte> salt, ulong batchNo, int otsIndex) {
+		public byte[] SignDigest(PrivateKey privateKey, ReadOnlySpan<byte> messageDigest, ulong batchNo, int otsIndex) {
 			var builder = new ByteArrayBuilder();
 			// Append header
 			builder.Append(privateKey.Height);

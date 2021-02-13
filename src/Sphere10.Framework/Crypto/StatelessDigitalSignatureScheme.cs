@@ -14,8 +14,9 @@ namespace Sphere10.Framework {
 
         protected const int DefaultNonce = 0;
 
-        public StatelessDigitalSignatureScheme(CHF messageDigestCHF, int saltSizeBytes = 0) 
-            : base(messageDigestCHF, saltSizeBytes) {
+        public StatelessDigitalSignatureScheme(CHF messageDigestCHF) 
+            : base(messageDigestCHF) {
+            Traits = Traits & DigitalSignatureSchemeTraits.Stateless;
         }
 
         public sealed override TPublicKey DerivePublicKey(TPrivateKey privateKey, ulong signerNonce)
@@ -23,10 +24,10 @@ namespace Sphere10.Framework {
 
         public abstract TPublicKey DerivePublicKey(TPrivateKey privateKey);
 
-        public sealed override byte[] SignDigest(TPrivateKey privateKey, ReadOnlySpan<byte> messageDigest, ReadOnlySpan<byte> salt, ulong signerNonce)
-            => SignDigest(privateKey, messageDigest, salt);
+        public sealed override byte[] SignDigest(TPrivateKey privateKey, ReadOnlySpan<byte> messageDigest, ulong signerNonce)
+            => SignDigest(privateKey, messageDigest);
 
-        public abstract byte[] SignDigest(TPrivateKey privateKey, ReadOnlySpan<byte> messageDigest, ReadOnlySpan<byte> salt);
+        public abstract byte[] SignDigest(TPrivateKey privateKey, ReadOnlySpan<byte> messageDigest);
         
     }
 

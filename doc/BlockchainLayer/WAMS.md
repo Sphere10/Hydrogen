@@ -316,7 +316,7 @@ Throughput is normalized to the throughput of configuration `W-OTS w=256, h=0` w
 
 ## 4. Reference Implementation
 
-A reference implementation can be found here [TODO - add link].
+See [https://github.com/Sphere10/Hydrogen/tree/master/src/Sphere10.Framework/Crypto/PQC](https://github.com/Sphere10/Hydrogen/tree/master/src/Sphere10.Framework/Crypto/PQC).
 
 ## References
 

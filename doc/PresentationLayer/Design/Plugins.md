@@ -1,6 +1,6 @@
 # Plugins
 
-Plugins provide a way to add functionality to the application in a dynamic manner. The registered `IPluginLocator` (`StaticPluginLocator` currently ) instance returns the `IPlugin` implementations to be loaded and available within the application.
+Plugins provide a way to dynamic add functionality to the application. 
 
 ## Plugin Model
 
@@ -18,7 +18,7 @@ Plugins provide a way to add functionality to the application in a dynamic manne
 
 ## Plugin Services
 
-Plugin services are registered in the dependency injection container as part of the application startup. Default implementations of the plugin services are registered as singleton instances.
+Plugin services are registered in the dependency injection container as part of the application startup. The plugin services are useful within different parts of the application. Default implementations of the plugin services are registered as singleton instances.
 
 ![image-20210212143854865](..\resources\Plugin-services.png)
 

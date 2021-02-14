@@ -2,21 +2,55 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using Sphere10.Framework;
 using Sphere10.Hydrogen.Core.Maths;
 
 namespace Sphere10.Hydrogen.Core.Keys {
 
-	public sealed class BurnDigitalSignatureSchme : IDigitalSignatureScheme {
+	public sealed class BurnDigitalSignatureSchme : StatelessDigitalSignatureScheme<BurnDigitalSignatureSchme.NoOpKey, BurnDigitalSignatureSchme.NoOpKey> {
 		public DigitalSignatureSchemeTraits Traits => DigitalSignatureSchemeTraits.None;
 
+
+		public BurnDigitalSignatureSchme(CHF messageDigestCHF) : base(messageDigestCHF) {
+		}
+
+		public override bool TryParsePublicKey(ReadOnlySpan<byte> bytes, out NoOpKey publicKey) {
+			throw new NotSupportedException();
+		}
+
+		public override bool TryParsePrivateKey(ReadOnlySpan<byte> bytes, out NoOpKey privateKey) {
+			throw new NotSupportedException();
+		}
+
+		public override NoOpKey GeneratePrivateKey(ReadOnlySpan<byte> seed) {
+			throw new NotSupportedException();
+		}
+
+		public override bool IsPublicKey(NoOpKey privateKey, ReadOnlySpan<byte> publicKeyBytes) {
+			throw new NotSupportedException();
+		}
+
+
+		public override bool VerifyDigest(ReadOnlySpan<byte> signature, ReadOnlySpan<byte> messageDigest, ReadOnlySpan<byte> publicKey) {
+			throw new NotSupportedException();
+		}
+
+
+		public override NoOpKey DerivePublicKey(NoOpKey privateKey) {
+			throw new NotSupportedException();
+		}
+
+		public override byte[] SignDigest(NoOpKey privateKey, ReadOnlySpan<byte> messageDigest) {
+			throw new NotSupportedException();
+		}
 
 		public bool TryParsePublicKey(ReadOnlySpan<byte> bytes, out IPublicKey publicKey) {
 			if (!bytes.IsEmpty) {
 				publicKey = null;
 				return false;
 			}
-			publicKey = new BurnPublicKey();
+			publicKey = new NoOpKey();
 			return true;
 		}
 
@@ -25,49 +59,17 @@ namespace Sphere10.Hydrogen.Core.Keys {
 				privateKey = null;
 				return false;
 			}
-			privateKey = new BurnPrivateKey();
+			privateKey = new NoOpKey();
 			return true;
 		}
 
-		public IPrivateKey CreatePrivateKey(ReadOnlySpan<byte> secret256) {
-			throw new NotImplementedException();
+
+		
+		public class NoOpKey : IPrivateKey, IPublicKey {
+			public byte[] RawBytes { get; }
 		}
 
-		public IPublicKey DerivePublicKey(IPrivateKey privateKey, ulong signerNonce) {
-			throw new NotImplementedException();
-		}
 
-		public bool IsPublicKey(IPrivateKey privateKey, ReadOnlySpan<byte> publicKeyBytes) {
-			return false;
-		}
-
-		public byte[] GenerateSalt(ReadOnlySpan<byte> message) {
-			throw new NotSupportedException();
-		}
-
-		public ReadOnlySpan<byte> ExtractSaltFromSignature(ReadOnlySpan<byte> signature) {
-			throw new NotSupportedException();
-		}
-
-		public byte[] CalculateMessageDigest(ReadOnlySpan<byte> message, ReadOnlySpan<byte> salt) {
-			throw new NotSupportedException();
-		}
-
-		public byte[] SignDigest(IPrivateKey privateKey, ReadOnlySpan<byte> messageDigest, ReadOnlySpan<byte> salt, ulong signerNonce) {
-			throw new NotSupportedException();
-		}
-
-		public bool VerifyDigest(ReadOnlySpan<byte> signature, ReadOnlySpan<byte> messageDigest, ReadOnlySpan<byte> publicKey) {
-			return false;
-		}
-
-		public class BurnPrivateKey : IPrivateKey {
-			public byte[] RawBytes => new byte[0];
-		}
-
-		public class BurnPublicKey : IPublicKey {
-			public byte[] RawBytes => new byte[0];
-		}
 
 	}
 

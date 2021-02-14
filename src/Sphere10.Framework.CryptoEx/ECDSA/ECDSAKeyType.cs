@@ -1,4 +1,4 @@
-namespace Sphere10.Framework.CryptoEx.ECDSA
+namespace Sphere10.Framework.CryptoEx
 {
     public enum ECDSAKeyType : ushort
         {

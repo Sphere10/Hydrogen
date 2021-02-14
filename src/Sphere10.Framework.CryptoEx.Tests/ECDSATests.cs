@@ -1,7 +1,8 @@
 using System.Text;
 using NUnit.Framework;
+using Sphere10.Framework.CryptoEx;
 
-namespace Sphere10.Framework.ECDSA.Tests
+namespace Sphere10.Framework.CryptoEx.Tests
 {
 
     [TestFixture]

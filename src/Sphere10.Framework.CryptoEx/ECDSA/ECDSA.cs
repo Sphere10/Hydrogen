@@ -2,14 +2,17 @@ using System;
 using System.Linq;
 using System.Runtime.CompilerServices;
 
-namespace Sphere10.Framework.CryptoEx.ECDSA
+namespace Sphere10.Framework.CryptoEx
 {
 
     public class ECDSA : StatelessDigitalSignatureScheme<ECDSA.PrivateKey, ECDSA.PublicKey>
     {
         private readonly ECDSAKeyType _keyType;
 
-        public ECDSA(ECDSAKeyType keyType) : base(CHF.ConcatBytes) => _keyType = keyType;
+        public ECDSA(ECDSAKeyType keyType) : this(keyType, CHF.SHA2_256) {
+        }
+
+        public ECDSA(ECDSAKeyType keyType, CHF digestCHF) : base(digestCHF) => _keyType = keyType;
 
         public override bool TryParsePublicKey(ReadOnlySpan<byte> bytes, out PublicKey publicKey)
             => PublicKey.TryParse(bytes, out publicKey);

@@ -6,7 +6,7 @@ using Org.BouncyCastle.Math;
 using Org.BouncyCastle.Math.EC.Multiplier;
 using Org.BouncyCastle.Security;
 
-namespace Sphere10.Framework.CryptoEx.ECDSA
+namespace Sphere10.Framework.CryptoEx
 {
 
     public static class ECDSAUtils

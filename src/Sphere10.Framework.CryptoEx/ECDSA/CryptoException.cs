@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Sphere10.Framework
+namespace Sphere10.Framework.CryptoEx
 {
     internal class CryptoException : ApplicationException
     {

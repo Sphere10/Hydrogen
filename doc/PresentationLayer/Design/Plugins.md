@@ -1,15 +1,15 @@
-# Plugins
+Plugins
 
 Plugins provide a way to dynamic add functionality to the application. 
 
 ## Plugin Model
 
-| Interface     | Implementing class | Responsibilities                                             |
-| ------------- | ------------------ | ------------------------------------------------------------ |
-| IPlugin       | Plugin             | Top level container - contains one or more `IApp` . Provides a ConfigureServices method that will populate a given `IServicesCollection` with the plugin's dependencies / services. |
-| IApp          | App                | An application block  - selectable in the User Interface, contains one or more `IAppBlock` |
-| IAppBlock     | AppBlock           | Block menu - provides a side menu and has one or more `IAppBlockPage` shown in the menu |
-| IAppBlockPage | AppBlockPage       | A Page - represents a Blazor page user interface that can be navigated to by the browser. Displayed in the IAppBlock menu. Must have a corresponding Blazor razor page with matching `Route` value. |
+| Interface     | Implementation | Responsibilities                                             |
+| ------------- | -------------- | ------------------------------------------------------------ |
+| IPlugin       | Plugin         | Top level container - contains one or more `IApp` . Provides a ConfigureServices method that will populate a given `IServicesCollection` with the plugin's dependencies / services. |
+| IApp          | App            | An application block  - selectable in the User Interface, contains one or more `IAppBlock` |
+| IAppBlock     | AppBlock       | Block menu - provides a side menu and has one or more `IAppBlockPage` shown in the menu |
+| IAppBlockPage | AppBlockPage   | A Page - represents a Blazor page user interface that can be navigated to by the browser. Displayed in the IAppBlock menu. Must have a corresponding Blazor razor page with matching `Route` value. |
 
 ![image-20210212140645640](..\resources\Plugin-model-classes.png)
 

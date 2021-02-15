@@ -20,7 +20,7 @@ Hydrogen applications require a connection to the node data source, and this may
 
 Some components that rely on data from the endpoint will want to reinitialize when the endpoint has changed. A proof of concept of how to achieve this in an MVVM style is `ExtendedComponentViewModel` abstract base class extending from `ComponentViewModelBase` 
 
-![image-20210215150858201](..\resources\Extendedviewmodel.png)
+![image-20210215150858201](..\..\resources\Extendedviewmodel.png)
 
 `ExtendedComponentViewModel` is the base for page view models that want to automatically re-initialize on endpoint changes. A subscription is made to `IEndpointMangaer` `EndpointChanged` event, and InitAsync is triggered when the event occurs.
 

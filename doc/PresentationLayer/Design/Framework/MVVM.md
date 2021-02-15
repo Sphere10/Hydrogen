@@ -6,7 +6,7 @@ A simple, lightweight MVVM framework is implemented in a 'view first' style to e
 
 Abstract base classes for both view and view model's are used to establish the relationship between view and view model and provide an efficient developer workflow. 
 
-![image-20210212113141653](..\resources\Mvvm-abstract-classes)
+![image-20210212113141653](..\..\resources\Mvvm-abstract-classes)
 
 **ComponentWithViewModel** 
 

@@ -10,11 +10,11 @@ Simple table component with paging and page size selection. Bound to `IEnumerabl
 
 | Member         | Comments                                                     |
 | -------------- | ------------------------------------------------------------ |
-| Items          | IEnumerable<T> source of items.                              |
+| Items          | `IEnumerable<TItem>` source of items.                        |
 | Class          | An optional parameter on the component to set the CSS classes on the generated table component |
-| HeaderTemplate | RenderFragment template for table header                     |
-| ItemTemplate   | RenderFragment template applied per row                      |
-| OnRowSelect    | Action delegate executed when on row select, receives row model T as parameter. |
+| HeaderTemplate | `RenderFragment `template for table header                   |
+| ItemTemplate   | `RenderFragment<TItem>` template applied per row             |
+| OnRowSelect    | Action delegate executed when on row select, receives row model `TItem` as parameter. |
 | PageSize       | Optional parameter to set the size of pages                  |
 
 ```html
@@ -83,7 +83,7 @@ A table with fixed row size with an asynchronous enumerable data source that is 
 
 | Member    | Comment                                                      |
 | --------- | ------------------------------------------------------------ |
-| Source    | IAsyncEnumerable<TItem> data source from a stream, channel etc. |
+| Source    | `IAsyncEnumerable<TItem>` data source from a stream, channel etc |
 | ItemLimit | The number of items to persist at a time - first in first out. |
 
 ```html

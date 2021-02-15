@@ -11,7 +11,7 @@ Plugins provide a way to dynamic add functionality to the application.
 | IAppBlock     | AppBlock       | Block menu - provides a side menu and has one or more `IAppBlockPage` shown in the menu |
 | IAppBlockPage | AppBlockPage   | A Page - represents a Blazor page user interface that can be navigated to by the browser. Displayed in the IAppBlock menu. Must have a corresponding Blazor razor page with matching `Route` value. |
 
-![image-20210212140645640](..\resources\Plugin-model-classes.png)
+![image-20210212140645640](..\..\resources\Plugin-model-classes.png)
 
 ## Plugin Services
 
@@ -23,4 +23,4 @@ Plugin services are registered in the dependency injection container as part of 
 | IPluginManager | DefaultPluginManager | `IPluginManager` maintains  the collection of Plugin instances available within the application. `ConfigureServices` method is used to populate the `IServiceCollection` from the Blazor runtime with services and dependencies from each plugin. This service is useful within the application to know what Plugins are loaded and available as well as register plugin dependencies with the runtime. |
 | IAppManager    | DefaultAppManager    | `IAppManager` service provides access to the available `IApp` instances and the currently selected page. Changes to the selected app and app page are published as events for components to respond to changes. |
 
-![image-20210212143854865](..\resources\Plugin-services.png)
+![image-20210212143854865](..\..\resources\Plugin-services.png)

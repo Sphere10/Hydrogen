@@ -1,6 +1,5 @@
 using System.Text;
 using NUnit.Framework;
-using Sphere10.Framework.CryptoEx;
 
 namespace Sphere10.Framework.CryptoEx.Tests
 {
@@ -16,7 +15,7 @@ namespace Sphere10.Framework.CryptoEx.Tests
         public void SignVerify_Basic(ECDSAKeyType keyType)
         {
             var ecdsa = new ECDSA(keyType);
-            var secret = ECDSAUtils.DoGetRandomPrivateKey(keyType);
+            var secret = ECDSA.PrivateKey.DoGetRandomPrivateKey(keyType);
             var privateKey = ecdsa.GeneratePrivateKey(secret);
             var publicKey = ecdsa.DerivePublicKey(privateKey);
 
@@ -33,10 +32,29 @@ namespace Sphere10.Framework.CryptoEx.Tests
         public void IsPublicKey(ECDSAKeyType keyType)
         {
             var ecdsa = new ECDSA(keyType);
-            var secret = ECDSAUtils.DoGetRandomPrivateKey(keyType);
+            var secret = ECDSA.PrivateKey.DoGetRandomPrivateKey(keyType);
             var privateKey = ecdsa.GeneratePrivateKey(secret);
             var publicKey = ecdsa.DerivePublicKey(privateKey);
             Assert.IsTrue(ecdsa.IsPublicKey(privateKey, publicKey.RawBytes));
+        }
+
+        [Test]
+        [TestCase(new byte[] { }, ECDSAKeyType.SECP256K1)]
+        [TestCase(new byte[] {0, 0}, ECDSAKeyType.SECP256K1)]
+        [TestCase(new byte[] { }, ECDSAKeyType.SECP384R1)]
+        [TestCase(new byte[] {0, 0}, ECDSAKeyType.SECP384R1)]
+        [TestCase(new byte[] { }, ECDSAKeyType.SECP521R1)]
+        [TestCase(new byte[] {0, 0}, ECDSAKeyType.SECP521R1)]
+        [TestCase(new byte[] { }, ECDSAKeyType.SECT283K1)]
+        [TestCase(new byte[] {0, 0}, ECDSAKeyType.SECT283K1)]
+        public void VerifyThatTryParsePrivateKeyFailsEarlyForBadKeys(byte[] badRawKey, ECDSAKeyType keyType)
+        {
+            Assert.IsFalse(ECDSA.PrivateKey.TryParse(badRawKey, keyType, out var privateKey));
+            if (ECDSA.PrivateKey.KeyTypeOrders.TryGetValue(keyType, out var order))
+            {
+                Assert.IsFalse(ECDSA.PrivateKey.TryParse(order.ToByteArrayUnsigned(), keyType,
+                    out privateKey));
+            }
         }
     }
 

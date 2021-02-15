@@ -46,7 +46,7 @@ Simple table component with paging and page size selection. Bound to `IEnumerabl
 
 Paging table component whose items are provided "on demand" from an asynchronous data source. 
 
-![image-20210215141317037](C:\Users\OEM\source\repos\Hydrogen\doc\PresentationLayer\resources\Virtualpagedtable.png)
+![image-20210215141317037](..\..\resources\Virtualpagedtable.png)
 
 | Member        | Comments                                                     |
 | ------------- | ------------------------------------------------------------ |
@@ -79,7 +79,7 @@ Paging table component whose items are provided "on demand" from an asynchronous
 
 A table with fixed row size with an asynchronous enumerable data source that is iterated until completed or cancelled. Useful for live update data sources.
 
-![image-20210215142014934](C:\Users\OEM\source\repos\Hydrogen\doc\PresentationLayer\resources\Rapditable.png)
+![image-20210215142014934](..\..\resources\Rapditable.png)
 
 | Member    | Comment                                                      |
 | --------- | ------------------------------------------------------------ |

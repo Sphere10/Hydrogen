@@ -2,7 +2,7 @@
 
 Hydrogen applications require a connection to the node data source, and this may be updated by the user through the user interface. `IEndpointManager` is responsible for keeping track of the currently selected endpoint, what endpoints are available and adding or removing endpoints. Application components and services may subscribe to `IEndpointManager`'s events to refresh their state after a change.
 
-![image-20210215150043719](C:\Users\OEM\source\repos\Hydrogen\doc\PresentationLayer\resources\IEndpointManager.png)
+![image-20210215150043719](..\resources\IEndpointManager.png)
 
 | Members                 | Comments                                     |
 | ----------------------- | -------------------------------------------- |

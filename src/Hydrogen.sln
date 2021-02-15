@@ -35,6 +35,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sphere10.Framework.CryptoEx
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sphere10.Framework.CryptoEx.Tests", "Sphere10.Framework.CryptoEx.Tests\Sphere10.Framework.CryptoEx.Tests.csproj", "{657F12D9-2C8B-448D-8146-DD758D79CB18}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sphere10.Hydrogen.Presentation2.Loader", "Sphere10.Hydrogen.Presentation2.Loader\Sphere10.Hydrogen.Presentation2.Loader.csproj", "{97F87265-78F9-4A0D-8029-B9FA5F57336A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -201,6 +203,18 @@ Global
 		{657F12D9-2C8B-448D-8146-DD758D79CB18}.Release|x64.Build.0 = Release|Any CPU
 		{657F12D9-2C8B-448D-8146-DD758D79CB18}.Release|x86.ActiveCfg = Release|Any CPU
 		{657F12D9-2C8B-448D-8146-DD758D79CB18}.Release|x86.Build.0 = Release|Any CPU
+		{97F87265-78F9-4A0D-8029-B9FA5F57336A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{97F87265-78F9-4A0D-8029-B9FA5F57336A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{97F87265-78F9-4A0D-8029-B9FA5F57336A}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{97F87265-78F9-4A0D-8029-B9FA5F57336A}.Debug|x64.Build.0 = Debug|Any CPU
+		{97F87265-78F9-4A0D-8029-B9FA5F57336A}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{97F87265-78F9-4A0D-8029-B9FA5F57336A}.Debug|x86.Build.0 = Debug|Any CPU
+		{97F87265-78F9-4A0D-8029-B9FA5F57336A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{97F87265-78F9-4A0D-8029-B9FA5F57336A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{97F87265-78F9-4A0D-8029-B9FA5F57336A}.Release|x64.ActiveCfg = Release|Any CPU
+		{97F87265-78F9-4A0D-8029-B9FA5F57336A}.Release|x64.Build.0 = Release|Any CPU
+		{97F87265-78F9-4A0D-8029-B9FA5F57336A}.Release|x86.ActiveCfg = Release|Any CPU
+		{97F87265-78F9-4A0D-8029-B9FA5F57336A}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -219,6 +233,7 @@ Global
 		{9B4B061E-2F4A-43D1-B8D9-873616C19270} = {9441FD4C-B3FD-4E8B-92A4-D6E5796ADA95}
 		{237325C6-9E73-4ABB-9D74-5A37F805E42E} = {0A18EA7B-A0C3-464B-91FC-936D69B49FBB}
 		{657F12D9-2C8B-448D-8146-DD758D79CB18} = {9441FD4C-B3FD-4E8B-92A4-D6E5796ADA95}
+		{97F87265-78F9-4A0D-8029-B9FA5F57336A} = {C1D7C597-D8B3-474C-94E8-0B3BA68B32E3}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3FB0E192-E14D-409E-AE7C-B8D68AA31AE7}

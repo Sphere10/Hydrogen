@@ -135,7 +135,7 @@ namespace Sphere10.Framework {
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static void CheckIsAssignable<TType>(object @object, string parameter) {
+		public static void ArgumentIsAssignable<TType>(object @object, string parameter) {
 			Argument(@object.GetType().IsAssignableFrom(typeof(TType)), parameter, $"Not assignable from {typeof(TType).GetShortName()}");
 		}
 

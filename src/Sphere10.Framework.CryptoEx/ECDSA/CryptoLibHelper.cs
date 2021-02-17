@@ -12,6 +12,7 @@ using Org.BouncyCastle.Crypto.Signers;
 using Org.BouncyCastle.Math;
 using Org.BouncyCastle.Math.EC.Multiplier;
 using Org.BouncyCastle.Security;
+using Sphere10.Framework.CryptoEx.IES;
 
 namespace Sphere10.Framework.CryptoEx
 {

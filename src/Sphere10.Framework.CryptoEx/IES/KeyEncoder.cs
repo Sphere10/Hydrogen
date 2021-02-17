@@ -1,7 +1,7 @@
 using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Crypto.Parameters;
 
-namespace Sphere10.Framework.CryptoEx
+namespace Sphere10.Framework.CryptoEx.IES
 {
     public class KeyEncoder
     {

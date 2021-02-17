@@ -3,7 +3,7 @@ using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.Utilities.IO;
 
-namespace Sphere10.Framework.CryptoEx
+namespace Sphere10.Framework.CryptoEx.IES
 {
     public class EciesPublicKeyParser : IKeyParser
     {

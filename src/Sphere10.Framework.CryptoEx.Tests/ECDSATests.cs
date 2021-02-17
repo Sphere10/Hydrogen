@@ -14,8 +14,8 @@ namespace Sphere10.Framework.CryptoEx.Tests
         [TestCase(ECDSAKeyType.SECT283K1)]
         public void SignVerify_Basic(ECDSAKeyType keyType)
         {
-            var ecdsa = new ECDSA(keyType);
-            var secret = ECDSA.PrivateKey.DoGetRandomPrivateKey(keyType);
+            var ecdsa = new ECDSA.ECDSA(keyType);
+            var secret = ECDSA.ECDSA.PrivateKey.DoGetRandomPrivateKey(keyType);
             var privateKey = ecdsa.GeneratePrivateKey(secret);
             var publicKey = ecdsa.DerivePublicKey(privateKey);
 
@@ -31,8 +31,8 @@ namespace Sphere10.Framework.CryptoEx.Tests
         [TestCase(ECDSAKeyType.SECT283K1)]
         public void IsPublicKey(ECDSAKeyType keyType)
         {
-            var ecdsa = new ECDSA(keyType);
-            var secret = ECDSA.PrivateKey.DoGetRandomPrivateKey(keyType);
+            var ecdsa = new ECDSA.ECDSA(keyType);
+            var secret = ECDSA.ECDSA.PrivateKey.DoGetRandomPrivateKey(keyType);
             var privateKey = ecdsa.GeneratePrivateKey(secret);
             var publicKey = ecdsa.DerivePublicKey(privateKey);
             Assert.IsTrue(ecdsa.IsPublicKey(privateKey, publicKey.RawBytes));
@@ -49,10 +49,10 @@ namespace Sphere10.Framework.CryptoEx.Tests
         [TestCase(new byte[] {0, 0}, ECDSAKeyType.SECT283K1)]
         public void VerifyThatTryParsePrivateKeyFailsEarlyForBadKeys(byte[] badRawKey, ECDSAKeyType keyType)
         {
-            Assert.IsFalse(ECDSA.PrivateKey.TryParse(badRawKey, keyType, out var privateKey));
-            if (ECDSA.PrivateKey.KeyTypeOrders.TryGetValue(keyType, out var order))
+            Assert.IsFalse(ECDSA.ECDSA.PrivateKey.TryParse(badRawKey, keyType, out var privateKey));
+            if (ECDSA.ECDSA.PrivateKey.KeyTypeOrders.TryGetValue(keyType, out var order))
             {
-                Assert.IsFalse(ECDSA.PrivateKey.TryParse(order.ToByteArrayUnsigned(), keyType,
+                Assert.IsFalse(ECDSA.ECDSA.PrivateKey.TryParse(order.ToByteArrayUnsigned(), keyType,
                     out privateKey));
             }
         }

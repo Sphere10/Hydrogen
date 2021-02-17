@@ -2,12 +2,11 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using Org.BouncyCastle.Crypto;
-using Org.BouncyCastle.Crypto.Engines;
 using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.Math;
 using Org.BouncyCastle.Utilities;
 
-namespace Sphere10.Framework.CryptoEx
+namespace Sphere10.Framework.CryptoEx.IES
 {
     public class PascalCoinIesEngine : CustomIesEngine
     {

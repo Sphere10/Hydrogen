@@ -1,13 +1,11 @@
 using System;
 using System.IO;
 using Org.BouncyCastle.Crypto;
-using Org.BouncyCastle.Crypto.Generators;
 using Org.BouncyCastle.Crypto.Parameters;
-using Org.BouncyCastle.Crypto.Utilities;
 using Org.BouncyCastle.Math;
 using Org.BouncyCastle.Utilities;
 
-namespace Sphere10.Framework.CryptoEx
+namespace Sphere10.Framework.CryptoEx.IES
 {
     /**
     * support class for constructing integrated encryption ciphers

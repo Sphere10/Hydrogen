@@ -11,10 +11,10 @@ using Org.BouncyCastle.Math.EC.Multiplier;
 using Org.BouncyCastle.Security;
 using Org.BouncyCastle.Utilities.Encoders;
 
-namespace Sphere10.Framework.CryptoEx
+namespace Sphere10.Framework.CryptoEx.ECDSA
 {
 
-    public class ECDSA : StatelessDigitalSignatureScheme<ECDSA.PrivateKey, ECDSA.PublicKey>
+    public sealed class ECDSA : StatelessDigitalSignatureScheme<ECDSA.PrivateKey, ECDSA.PublicKey>
     {
         private readonly ECDSAKeyType _keyType;
 
@@ -145,9 +145,10 @@ namespace Sphere10.Framework.CryptoEx
 
         public class PrivateKey : Key, IPrivateKey
         {
-            private ECPrivateKeyParameters PrivateKeyParameters { get; }
             private ParametersWithRandom ParametersWithRandom { get; }
             private static SecureRandom SecureRandom { get; } = new();
+
+            public ECPrivateKeyParameters PrivateKeyParameters { get; }
 
             public static Dictionary<ECDSAKeyType, BigInteger> KeyTypeOrders { get; } =
                 new()
@@ -220,8 +221,9 @@ namespace Sphere10.Framework.CryptoEx
 
         public class PublicKey : Key, IPublicKey
         {
-            private ECPublicKeyParameters PublicKeyParameters { get; }
             private ECPoint Point { get; }
+
+            public ECPublicKeyParameters PublicKeyParameters { get; }
 
             internal PublicKey(byte[] rawKeyBytes, ECDSAKeyType ecdsaKeyType) : base(rawKeyBytes)
             {

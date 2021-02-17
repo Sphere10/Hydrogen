@@ -1,0 +1,11 @@
+﻿.app-block-menu {
+    position: absolute;
+    bottom: 0;
+    width: inherit;
+    margin: 1.3rem;
+}
+
+.app-block-menu-content {
+    max-height: 180px;
+    overflow-y: auto;
+}

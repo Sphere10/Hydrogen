@@ -1,0 +1,24 @@
+﻿<div class="dropdown">
+    <input type="text" class="form-control search-input" @bind-value="@SearchTerm" @bind-value:event="oninput" placeholder="Search..." @onkeyup="() => OnSearchAsync(SearchTerm)" aria-label="Search">
+    <div class="dropdown-menu dropdown-menu-left search-input-results" aria-labelledby="dropdownMenuButton">
+        @if (Results.Any())
+        {
+            @foreach (string result in Results.Take(ResultsCount))
+            {
+                <a class="dropdown-item" href="#">@result</a>
+            }
+        }
+        else
+        {
+            <div class="dropdown-item small text-gray-500"> No Results</div>
+        }
+    </div>
+</div>
+
+@code
+{
+#nullable enable
+
+    // ReSharper disable once AutoPropertyCanBeMadeGetOnly.Local
+    private string SearchTerm { get; set; } = string.Empty;
+}

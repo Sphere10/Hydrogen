@@ -13,7 +13,7 @@
 
             <form class="d-none d-sm-inline-block">
                 <div class="input-group input-group-navbar">
-                    <input type="text" class="form-control" placeholder="Search…" aria-label="Search">
+                    <SearchInput SearchProvider="@SearchProvider" SearchFreqLimitMs="100"/>
                     <div class="input-group-append">
                         <button class="btn" type="button">
                             <i class="align-middle" data-feather="search"></i>
@@ -61,5 +61,7 @@
     {
         await JsRuntime.InvokeVoidAsync("dispatchContentLoadedEvent");
     }
+
+    public SearchInput.SearchProviderDelegate SearchProvider { get; } = term => Task.FromResult(Enumerable.Repeat(term, 5));
 
 }

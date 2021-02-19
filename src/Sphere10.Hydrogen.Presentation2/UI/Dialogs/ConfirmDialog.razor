@@ -1,0 +1,29 @@
+﻿@inherits ModalComponent
+
+<ModalTemplate Options="@Options">
+    <HeaderTemplate>
+        <h5 class="modal-title">@Title</h5>
+    </HeaderTemplate>
+    <BodyTemplate>
+        <p>@Message</p>
+    </BodyTemplate>
+    <FooterTemplate>
+        <a type="button" class="btn btn-secondary btn-sm" @onclick="Cancel">@CancelMessageText</a>
+        <a type="button" class="btn btn-success btn-sm" @onclick="Ok">@ConfirmMessageText</a>
+    </FooterTemplate>
+</ModalTemplate>
+
+@code
+{
+    [Parameter]
+    public string Title { get; set; } = "Confirm";
+
+    [Parameter]
+    public string Message { get; set; } = "Are you sure ?";
+
+    [Parameter]
+    public string ConfirmMessageText { get; set; } = "Confirm";
+
+    [Parameter]
+    public string CancelMessageText { get; set; } = "Cancel";
+}

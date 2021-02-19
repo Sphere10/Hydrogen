@@ -1,2 +1,66 @@
 ﻿@page "/"
-<h1>Index</h1>
+@using Sphere10.Hydrogen.Presentation2.Logic.Modal
+@using Sphere10.Hydrogen.Presentation2.Logic.Wizard
+@using Sphere10.Hydrogen.Presentation2.UI.Wizard
+@using Sphere10.Framework
+
+<div class="row">
+    <div class="col-3">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title"> Dialogs</h5>
+            </div>
+            <div class="card-body">
+                <button class="btn btn-primary btn-sm" @onclick="Confirm"> Confirm</button>
+                <button class="btn btn-info btn-sm" @onclick="Info"> Info</button>
+                <button class="btn btn-warning btn-sm" @onclick="Warning"> Warning</button>
+            </div>
+        </div>
+    </div>
+    <div class="col-3">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title"> Wizard</h5>
+            </div>
+            <div class="card-body">
+                <button class="btn btn-info btn-sm" @onclick="Wizard"> Wizard</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+
+    private async Task Confirm()
+    {
+        await ViewService.ConfirmDialogAsync("Confirm", "Are you sure you want to do that ?", "Affirmative");
+    }
+
+    private async Task Info()
+    {
+        await ViewService.InfoDialogAsync("Information", "Something important has happened.", "Dismiss");
+    }
+
+    private async Task Warning()
+    {
+        await ViewService.InfoDialogAsync("An error occured", "Something went wrong", "Dismiss");
+    }
+
+    private async Task Wizard()
+    {
+        var builder = new DefaultWizardBuilder<ExampleModel>();
+        var wizard = builder.NewWizard("Example wizard")
+            .AddStep<ExampleWizardStep>()
+            .WithModel(new ExampleModel())
+            .OnFinished(x =>
+            {
+                Console.WriteLine(x.EvenNumber);
+
+                return Task.FromResult<Result<bool>>(true);
+            })
+            .Build();
+
+        await ViewService.WizardDialogAsync(wizard);
+    }
+
+}

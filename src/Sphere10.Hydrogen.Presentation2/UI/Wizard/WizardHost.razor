@@ -1,0 +1,42 @@
+﻿<ul class="validation-errors">
+    @foreach (var error in ErrorMessages)
+    {
+        <li class="validation-message"> @error</li>
+    }
+</ul>
+
+@if (CurrentStep is not null)
+{
+    @CurrentStep
+}
+
+@if (CurrentStepInstance is not null)
+{
+    <div class="row position-absolute mb-2 w-100" style="bottom: 0">
+        <div class="col-6 text-left">
+            <button class="@(Wizard.Options.BackButtonClass ?? "btn btn-info btn-sm")" disabled="@IsDisabled()" @onclick="PreviousAsync">@CurrentStepInstance!.BackButtonText</button>
+        </div>
+
+        <div class="col-6 text-right">
+            @if (CurrentStepInstance.IsCancellable)
+            {
+                <button class="@(Wizard.Options.CancelButtonClass ?? "btn btn-secondary btn-sm mr-3")" @onclick="@CancelAsync"> @CurrentStepInstance!.CancelButtonText</button>
+            }
+
+            @if (Wizard.HasNext)
+            {
+                <button class="@(Wizard.Options.NextButtonClass ?? "btn btn-info btn-sm")" @onclick="NextAsync">@CurrentStepInstance!.NextButtonText</button>
+            }
+            else
+            {
+                <button class="@(Wizard.Options.FinishButtonClass ?? "btn btn-info btn-sm")" @onclick="FinishAsync">@CurrentStepInstance!.FinishButtonText</button>
+            }
+        </div>
+    </div>
+}
+
+
+@code
+{
+    private bool IsDisabled() => !Wizard.HasPrevious;
+}

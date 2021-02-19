@@ -3,6 +3,17 @@
     cancelable: true
 }));
 
+window.showModal = () => {
+    $("#modal").modal({
+        backdrop: "static",
+        keyboard: false
+    });
+}
+
+window.hideModal = () => {
+    $("#modal").modal('hide')
+}
+
 document.addEventListener("DOMContentLoaded", () => {
     let input = $('.search-input');
 

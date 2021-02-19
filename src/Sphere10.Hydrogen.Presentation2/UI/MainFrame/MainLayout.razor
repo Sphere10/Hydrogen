@@ -1,6 +1,8 @@
 ﻿@using Microsoft.JSInterop
+@using Sphere10.Hydrogen.Presentation2.Logic.Modal
 @inherits LayoutComponentBase
 @inject IJSRuntime JsRuntime
+
 
 <div class="wrapper">
     <Sidebar/>
@@ -52,14 +54,19 @@
         <Footer/>
     </div>
 </div>
+<ModalHost @ref="_modalHost"/>
 
 @code {
+    
+    private ModalHost _modalHost;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         await JsRuntime.InvokeVoidAsync("dispatchContentLoadedEvent");
+        ModalService.Initialize(_modalHost);
     }
 
     public SearchInput.SearchProviderDelegate SearchProvider { get; } = term => Task.FromResult(Enumerable.Repeat(term, 5));
 
+    
 }

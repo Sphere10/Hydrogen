@@ -1,0 +1,42 @@
+﻿@using Sphere10.Framework
+@inherits WizardStep<Sphere10.Hydrogen.Presentation2.Logic.Wizard.ExampleModel>
+
+<div class="row mb-5">
+    <div class="col-6">
+        <h5>Wizard example</h5>
+        <form>
+            <div class="form-group">
+                <label class="form-label">An even number:</label>
+                <input type="number" @bind-value="@Model.EvenNumber" class="form-control" placeholder="number">
+            </div>
+        </form>
+    </div>
+</div>
+
+
+@code {
+
+    public override string Title { get; } = "Even number";
+
+    public override Task<Result> OnNextAsync()
+    {
+        if (Model.EvenNumber == 0)
+        {
+            return Task.FromResult(Result.Error("Number must be greater than 0"));
+        }
+        if (Model.EvenNumber % 2 != 0)
+        {
+            return Task.FromResult(Result.Error("Number must be even"));
+        }
+        else
+        {
+            return Task.FromResult(Result.Valid);
+        }
+    }
+
+    public override async Task<Result> OnPreviousAsync()
+    {
+        return Result.Valid;
+    }
+
+}

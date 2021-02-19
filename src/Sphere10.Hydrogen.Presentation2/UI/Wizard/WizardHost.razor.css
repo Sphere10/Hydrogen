@@ -1,0 +1,10 @@
+﻿.validation-message {
+    color: red;
+}
+
+.validation-errors {
+    min-height: 50px;
+    max-height: 50px;
+    overflow: auto;
+    margin: 0;
+}

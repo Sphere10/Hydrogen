@@ -5,7 +5,6 @@ using System.Text;
 using NUnit.Framework;
 using Sphere10.Framework;
 using Sphere10.Framework.NUnit;
-using Sphere10.Hydrogen.Core.Encoding;
 
 namespace VelocityNET.Processing.Tests.Core {
     public class HexEncodingTests {

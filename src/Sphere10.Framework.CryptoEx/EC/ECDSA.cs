@@ -29,6 +29,7 @@ namespace Sphere10.Framework.CryptoEx.EC {
 			_curveParams = CustomNamedCurves.GetByName(keyType.ToString());
 			_domainParams = new ECDomainParameters(_curveParams.Curve, _curveParams.G, _curveParams.N, _curveParams.H, _curveParams.GetSeed());
 			_secureRandom = new SecureRandom();
+			Traits = Traits & DigitalSignatureSchemeTraits.ECDSA & DigitalSignatureSchemeTraits.SupportsIES;
 		}
 
 		public override IIESAlgorithm IES => new ECIES();  // defaults to a pascalcoin style ECIES

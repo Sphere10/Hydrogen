@@ -7,7 +7,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using Sphere10.Framework;
 
-namespace Sphere10.Hydrogen.Core.Encoding {
+namespace Sphere10.Framework {
 	public class HexEncoding {
 		public const string CharSet = "0123456789abcdefABCDEF";
 		public const string NibblePattern = @"[0-9a-fA-F]";

@@ -9,11 +9,13 @@ using Sphere10.Hydrogen.Core.Maths;
 namespace Sphere10.Hydrogen.Core.Keys {
 
 	public sealed class BurnDigitalSignatureSchme : StatelessDigitalSignatureScheme<BurnDigitalSignatureSchme.NoOpKey, BurnDigitalSignatureSchme.NoOpKey> {
-		public DigitalSignatureSchemeTraits Traits => DigitalSignatureSchemeTraits.None;
-
-
+		
 		public BurnDigitalSignatureSchme(CHF messageDigestCHF) : base(messageDigestCHF) {
+			Traits = DigitalSignatureSchemeTraits.None;
 		}
+
+		public override IIESAlgorithm IES => throw new NotSupportedException();
+
 
 		public override bool TryParsePublicKey(ReadOnlySpan<byte> bytes, out NoOpKey publicKey) {
 			throw new NotSupportedException();

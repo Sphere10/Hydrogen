@@ -5,8 +5,11 @@ using Org.BouncyCastle.Crypto.Engines;
 using Org.BouncyCastle.Crypto.Modes;
 using Org.BouncyCastle.Crypto.Paddings;
 using Org.BouncyCastle.Security;
+using Sphere10.Framework.CryptoEx.EC;
+using Sphere10.Framework.CryptoEx.IES;
+using Sphere10.Framework.CryptoEx.PascalCoin;
 
-namespace Sphere10.Framework.CryptoEx.IES {
+namespace Sphere10.Framework.CryptoEx.EC.IES {
 
 	public sealed class ECIES : IIESAlgorithm {
 
@@ -15,7 +18,7 @@ namespace Sphere10.Framework.CryptoEx.IES {
 		public byte[] Encrypt(ReadOnlySpan<byte> message, IPublicKey publicKey) {
 			// Encryption
 			var cipherEncrypt = new IesCipher(GetEciesPascalCoinCompatibilityEngine());
-			cipherEncrypt.Init(true, ((ECDSA.ECDSA.PublicKey)publicKey).PublicKeyParameters, GetPascalCoinIesParameterSpec(), SecureRandom);
+			cipherEncrypt.Init(true, ((ECDSA.PublicKey)publicKey).Parameters.Value, GetPascalCoinIesParameterSpec(), SecureRandom);
 			return cipherEncrypt.DoFinal(message.ToArray());
 		}
 
@@ -23,7 +26,7 @@ namespace Sphere10.Framework.CryptoEx.IES {
 			try {
 				// Decryption
 				var cipherDecrypt = new IesCipher(GetEciesPascalCoinCompatibilityEngine());
-				cipherDecrypt.Init(false, ((ECDSA.ECDSA.PrivateKey)privateKey).PrivateKeyParameters, GetPascalCoinIesParameterSpec(), SecureRandom);
+				cipherDecrypt.Init(false, ((ECDSA.PrivateKey)privateKey).Parameters.Value, GetPascalCoinIesParameterSpec(), SecureRandom);
 				decryptedMessage = cipherDecrypt.DoFinal(encryptedMessage.ToArray());
 				return true;
 			} catch (Exception) {
@@ -37,21 +40,14 @@ namespace Sphere10.Framework.CryptoEx.IES {
 			// Set up IES Cipher Engine For Compatibility With PascalCoin
 
 			var ecdhBasicAgreementInstance = new ECDHBasicAgreement();
-
-			var kdfInstance = new PascalCoinEciesKdfBytesGenerator
-				(DigestUtilities.GetDigest("SHA-512"));
-
+			var kdfInstance = new PascalCoinEciesKdfBytesGenerator(DigestUtilities.GetDigest("SHA-512"));
 			var digestMacInstance = MacUtilities.GetMac("HMAC-MD5");
 
 			// Set Up Block Cipher
 			var aesEngine = new AesEngine(); // AES Engine
+			BufferedBlockCipher cipher = new PaddedBufferedBlockCipher(new CbcBlockCipher(aesEngine), new ZeroBytePadding()); // AES-256 CBC ZeroBytePadding
 
-			BufferedBlockCipher cipher =
-				new PaddedBufferedBlockCipher(new CbcBlockCipher(aesEngine),
-					new ZeroBytePadding()); // AES-256 CBC ZeroBytePadding
-
-			return new PascalCoinIesEngine(ecdhBasicAgreementInstance, kdfInstance,
-				digestMacInstance, cipher);
+			return new PascalCoinIesEngine(ecdhBasicAgreementInstance, kdfInstance, digestMacInstance, cipher);
 		}
 
 		private static IesParameterSpec GetPascalCoinIesParameterSpec() {

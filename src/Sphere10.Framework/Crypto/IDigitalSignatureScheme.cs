@@ -17,11 +17,24 @@ namespace Sphere10.Framework {
 
 	}
 
-	public static class IDigitalSignatureSchemeExtensins {
+	public static class IDigitalSignatureSchemeExtensions {
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static IPrivateKey GeneratePrivateKey(this IDigitalSignatureScheme dss)
 			=> dss.CreatePrivateKey(Tools.Crypto.GenerateCryptographicallyRandomBytes(32));
+
+		public static IPublicKey ParsePublicKey(this IDigitalSignatureScheme dss, ReadOnlySpan<byte> bytes) {
+			if (!dss.TryParsePublicKey(bytes, out var key))
+				throw new ArgumentException("Not a valid public key", nameof(bytes));
+			return key;
+		}
+
+		public static IPrivateKey ParsePrivateKey(this IDigitalSignatureScheme dss, ReadOnlySpan<byte> bytes) {
+			if (!dss.TryParsePrivateKey(bytes, out var key))
+				throw new ArgumentException("Not a valid private key", nameof(bytes));
+			return key;
+		}
+
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static byte[] Sign(this IDigitalSignatureScheme dss, IPrivateKey privateKey, ReadOnlySpan<byte> message, ulong signerNonce) {

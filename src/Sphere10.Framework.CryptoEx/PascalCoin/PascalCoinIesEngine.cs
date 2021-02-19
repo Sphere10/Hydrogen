@@ -5,9 +5,9 @@ using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.Math;
 using Org.BouncyCastle.Utilities;
+using Sphere10.Framework.CryptoEx.IES;
 
-namespace Sphere10.Framework.CryptoEx.IES
-{
+namespace Sphere10.Framework.CryptoEx.PascalCoin {
     public class PascalCoinIesEngine : CustomIesEngine
     {
         // Structure for Compatibility with PascalCoin Original Implementation.

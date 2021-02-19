@@ -21,6 +21,10 @@ namespace Sphere10.Framework {
 
 	public static class EnumExtensions {
 
+		public static T GetAttribute<T>(this Enum enumVal) where T : Attribute {
+			return Tools.Enums.GetAttribute<T>(enumVal);
+		}
+
 		public static IEnumerable<T> GetAttributes<T>(this Enum enumVal) where T : Attribute {
 			return Tools.Enums.GetAttributes<T>(enumVal);
 		}

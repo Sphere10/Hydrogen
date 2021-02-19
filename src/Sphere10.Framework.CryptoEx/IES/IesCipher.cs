@@ -5,6 +5,7 @@ using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Crypto.Generators;
 using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.Security;
+using Sphere10.Framework.CryptoEx.EC.IES;
 
 namespace Sphere10.Framework.CryptoEx.IES {
 
@@ -119,7 +120,7 @@ namespace Sphere10.Framework.CryptoEx.IES {
 			} else {
 				// Decrypt the buffer
 				try {
-					_customIesEngine.Init(_key, @params, new EciesPublicKeyParser(ecParams));
+					_customIesEngine.Init(_key, @params, new ECIESPublicKeyParser(ecParams));
 
 					return _customIesEngine.ProcessBlock(@in, 0, @in.Length);
 				} catch (InvalidCipherTextException e) {

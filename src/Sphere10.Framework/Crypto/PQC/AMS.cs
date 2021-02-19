@@ -42,6 +42,8 @@ namespace Sphere10.Framework {
 
 		public Configuration Config { get; }
 
+		public override IIESAlgorithm IES => throw new NotSupportedException("PQC algorithms have no known IES algorithms");
+
 		public override bool TryParsePublicKey(ReadOnlySpan<byte> bytes, out PublicKey publicKey) 
 			=> PublicKey.TryParse(bytes, _ots.Config.HashFunction, out publicKey);
 

@@ -13,8 +13,10 @@ namespace Sphere10.Framework {
         }
 
         public virtual DigitalSignatureSchemeTraits Traits => Internal.Traits;
-        
-        public virtual IPrivateKey CreatePrivateKey(ReadOnlySpan<byte> secret256) {
+
+		public virtual IIESAlgorithm IES => Internal.IES;
+
+		public virtual IPrivateKey CreatePrivateKey(ReadOnlySpan<byte> secret256) {
             return Internal.CreatePrivateKey(secret256);
         }
 

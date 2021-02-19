@@ -5,6 +5,7 @@ namespace Sphere10.Framework {
 
 	public interface IDigitalSignatureScheme {
 		DigitalSignatureSchemeTraits Traits { get; }
+		IIESAlgorithm IES { get; }
 		bool TryParsePublicKey(ReadOnlySpan<byte> bytes, out IPublicKey publicKey);
 		bool TryParsePrivateKey(ReadOnlySpan<byte> bytes, out IPrivateKey privateKey);
 		IPrivateKey CreatePrivateKey(ReadOnlySpan<byte> secret256);
@@ -13,6 +14,7 @@ namespace Sphere10.Framework {
 		byte[] CalculateMessageDigest(ReadOnlySpan<byte> message);
 		byte[] SignDigest(IPrivateKey privateKey, ReadOnlySpan<byte> messageDigest, ulong signerNonce);
 		bool VerifyDigest(ReadOnlySpan<byte> signature, ReadOnlySpan<byte> messageDigest, ReadOnlySpan<byte> publicKey);
+
 	}
 
 	public static class IDigitalSignatureSchemeExtensins {

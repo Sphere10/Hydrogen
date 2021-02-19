@@ -6,84 +6,73 @@ using Org.BouncyCastle.Crypto.Modes;
 using Org.BouncyCastle.Crypto.Paddings;
 using Org.BouncyCastle.Security;
 
-namespace Sphere10.Framework.CryptoEx.IES
-{
+namespace Sphere10.Framework.CryptoEx.IES {
 
-    public sealed class ECIES : IIntegratedEncryptionStandard
-    {
-        private static SecureRandom SecureRandom { get; } = new();
+	public sealed class ECIES : IIESAlgorithm {
 
-        private static PascalCoinIesEngine GetEciesPascalCoinCompatibilityEngine()
-        {
-            // Set up IES Cipher Engine For Compatibility With PascalCoin
+		private static SecureRandom SecureRandom { get; } = new();
 
-            var ecdhBasicAgreementInstance = new ECDHBasicAgreement();
+		public byte[] Encrypt(ReadOnlySpan<byte> message, IPublicKey publicKey) {
+			// Encryption
+			var cipherEncrypt = new IesCipher(GetEciesPascalCoinCompatibilityEngine());
+			cipherEncrypt.Init(true, ((ECDSA.ECDSA.PublicKey)publicKey).PublicKeyParameters, GetPascalCoinIesParameterSpec(), SecureRandom);
+			return cipherEncrypt.DoFinal(message.ToArray());
+		}
 
-            var kdfInstance = new PascalCoinEciesKdfBytesGenerator
-                (DigestUtilities.GetDigest("SHA-512"));
+		public bool TryDecrypt(ReadOnlySpan<byte> encryptedMessage, out byte[] decryptedMessage, IPrivateKey privateKey) {
+			try {
+				// Decryption
+				var cipherDecrypt = new IesCipher(GetEciesPascalCoinCompatibilityEngine());
+				cipherDecrypt.Init(false, ((ECDSA.ECDSA.PrivateKey)privateKey).PrivateKeyParameters, GetPascalCoinIesParameterSpec(), SecureRandom);
+				decryptedMessage = cipherDecrypt.DoFinal(encryptedMessage.ToArray());
+				return true;
+			} catch (Exception) {
+				// should only happen if decryption fails
+				decryptedMessage = default;
+				return false;
+			}
+		}
 
-            var digestMacInstance = MacUtilities.GetMac("HMAC-MD5");
+		private static PascalCoinIesEngine GetEciesPascalCoinCompatibilityEngine() {
+			// Set up IES Cipher Engine For Compatibility With PascalCoin
 
-            // Set Up Block Cipher
-            var aesEngine = new AesEngine(); // AES Engine
+			var ecdhBasicAgreementInstance = new ECDHBasicAgreement();
 
-            BufferedBlockCipher cipher =
-                new PaddedBufferedBlockCipher(new CbcBlockCipher(aesEngine),
-                    new ZeroBytePadding()); // AES-256 CBC ZeroBytePadding
+			var kdfInstance = new PascalCoinEciesKdfBytesGenerator
+				(DigestUtilities.GetDigest("SHA-512"));
 
-            return new PascalCoinIesEngine(ecdhBasicAgreementInstance, kdfInstance,
-                digestMacInstance, cipher);
-        }
+			var digestMacInstance = MacUtilities.GetMac("HMAC-MD5");
 
-        private static IesParameterSpec GetPascalCoinIesParameterSpec()
-        {
-            // Set up IES Parameter Spec For Compatibility With PascalCoin Current Implementation
+			// Set Up Block Cipher
+			var aesEngine = new AesEngine(); // AES Engine
 
-            // The derivation and encoding vectors are used when initialising the KDF and MAC.
-            // They're optional but if used then they need to be known by the other user so that
-            // they can decrypt the cipher text and verify the MAC correctly. The security is based
-            // on the shared secret coming from the (static-ephemeral) ECDH key agreement.
+			BufferedBlockCipher cipher =
+				new PaddedBufferedBlockCipher(new CbcBlockCipher(aesEngine),
+					new ZeroBytePadding()); // AES-256 CBC ZeroBytePadding
 
-            var ivBytes = new byte[16]; // using Zero Initialized IV for compatibility
+			return new PascalCoinIesEngine(ecdhBasicAgreementInstance, kdfInstance,
+				digestMacInstance, cipher);
+		}
 
-            const int macKeySizeInBits = 32 * 8;
+		private static IesParameterSpec GetPascalCoinIesParameterSpec() {
+			// Set up IES Parameter Spec For Compatibility With PascalCoin Current Implementation
 
-            // Since we are using AES256_CBC for compatibility
-            const int cipherKeySizeInBits = 32 * 8;
+			// The derivation and encoding vectors are used when initialising the KDF and MAC.
+			// They're optional but if used then they need to be known by the other user so that
+			// they can decrypt the cipher text and verify the MAC correctly. The security is based
+			// on the shared secret coming from the (static-ephemeral) ECDH key agreement.
 
-            return new IesParameterSpec(null, null, macKeySizeInBits,
-                cipherKeySizeInBits, ivBytes, true);
-        }
+			var ivBytes = new byte[16]; // using Zero Initialized IV for compatibility
 
-        public byte[] Encrypt(ReadOnlySpan<byte> message, IPublicKey publicKey)
-        {
-            // Encryption
-            var cipherEncrypt = new IesCipher(GetEciesPascalCoinCompatibilityEngine());
-            cipherEncrypt.Init(true, ((ECDSA.ECDSA.PublicKey) publicKey).PublicKeyParameters,
-                GetPascalCoinIesParameterSpec(), SecureRandom);
-            return cipherEncrypt.DoFinal(message.ToArray());
-        }
+			const int macKeySizeInBits = 32 * 8;
 
-        public bool TryDecrypt(ReadOnlySpan<byte> encryptedMessage, out ReadOnlySpan<byte> decryptedMessage,
-            IPrivateKey privateKey)
-        {
-            try
-            {
-                // Decryption
-                var cipherDecrypt = new IesCipher(GetEciesPascalCoinCompatibilityEngine());
-                cipherDecrypt.Init(false, ((ECDSA.ECDSA.PrivateKey) privateKey).PrivateKeyParameters,
-                    GetPascalCoinIesParameterSpec(), SecureRandom);
+			// Since we are using AES256_CBC for compatibility
+			const int cipherKeySizeInBits = 32 * 8;
 
-                decryptedMessage = cipherDecrypt.DoFinal(encryptedMessage.ToArray());
-                return true;
-            }
-            catch (Exception)
-            {
-                // should only happen if decryption fails
-                decryptedMessage = default;
-                return false;
-            }
-        }
-    }
+			return new IesParameterSpec(null, null, macKeySizeInBits, cipherKeySizeInBits, ivBytes, true);
+		}
+
+
+	}
 
 }

@@ -17,8 +17,10 @@ namespace Sphere10.Framework {
         public CHF MessageDigestCHF { get; }
 
         public DigitalSignatureSchemeTraits Traits { get; protected set; }
+		
+		public abstract IIESAlgorithm IES { get; }
 
-        public abstract bool TryParsePublicKey(ReadOnlySpan<byte> bytes, out TPublicKey publicKey);
+		public abstract bool TryParsePublicKey(ReadOnlySpan<byte> bytes, out TPublicKey publicKey);
 
         public abstract bool TryParsePrivateKey(ReadOnlySpan<byte> bytes, out TPrivateKey privateKey);
 

@@ -14,8 +14,7 @@ namespace Sphere10.Framework {
 
         protected const int DefaultNonce = 0;
 
-        public StatelessDigitalSignatureScheme(CHF messageDigestCHF) 
-            : base(messageDigestCHF) {
+		protected StatelessDigitalSignatureScheme(CHF messageDigestCHF) : base(messageDigestCHF) {
             Traits = Traits & DigitalSignatureSchemeTraits.Stateless;
         }
 

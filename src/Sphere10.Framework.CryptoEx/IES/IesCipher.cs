@@ -6,163 +6,132 @@ using Org.BouncyCastle.Crypto.Generators;
 using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.Security;
 
-namespace Sphere10.Framework.CryptoEx.IES
-{
-    public class IesCipher
-    {
-        private readonly CustomIesEngine _customIesEngine;
-        private readonly int _ivLength;
-        private bool _forEncryption;
-        private readonly MemoryStream _buffer;
-        private IesParameterSpec _engineSpec;
-        private AsymmetricKeyParameter _key;
-        private SecureRandom _random;
+namespace Sphere10.Framework.CryptoEx.IES {
 
-        public IesCipher(CustomIesEngine customIesEngine, int ivLength = 0)
-        {
-            _customIesEngine = customIesEngine;
-            _ivLength = ivLength;
-            _buffer = new MemoryStream();
-        }
+	public class IesCipher {
+		private readonly CustomIesEngine _customIesEngine;
+		private readonly int _ivLength;
+		private bool _forEncryption;
+		private readonly MemoryStream _buffer;
+		private IesParameterSpec _engineSpec;
+		private AsymmetricKeyParameter _key;
+		private SecureRandom _random;
 
-        public void Init(bool forEncryption, ICipherParameters key, IAlgorithmParameterSpec engineSpec,
-            SecureRandom random)
-        {
-            _forEncryption = forEncryption;
+		public IesCipher(CustomIesEngine customIesEngine, int ivLength = 0) {
+			_customIesEngine = customIesEngine;
+			_ivLength = ivLength;
+			_buffer = new MemoryStream();
+		}
 
-            if (engineSpec == null)
-            {
-                throw new ArgumentNullException(string.Format("{0}", "Engine Spec Cannot Be Nil"));
-            }
+		public void Init(bool forEncryption, ICipherParameters key, IAlgorithmParameterSpec engineSpec, SecureRandom random) {
+			_forEncryption = forEncryption;
 
-            if (engineSpec is IesParameterSpec)
-            {
-                _engineSpec = (IesParameterSpec) engineSpec;
-            }
-            else
-            {
-                throw new InvalidParameterException("Must be Passed IES Parameter Spec");
-            }
+			if (engineSpec == null) {
+				throw new ArgumentNullException(string.Format("{0}", "Engine Spec Cannot Be Nil"));
+			}
 
-            byte[] nonce = _engineSpec.GetNonce();
+			if (engineSpec is IesParameterSpec) {
+				_engineSpec = (IesParameterSpec)engineSpec;
+			} else {
+				throw new InvalidParameterException("Must be Passed IES Parameter Spec");
+			}
 
-            if ((_ivLength != 0) && (nonce == null || nonce.Length != _ivLength))
-            {
-                throw new InvalidParameterException("NONCE in IES Parameters needs to be " + _ivLength + " bytes long");
-            }
+			byte[] nonce = _engineSpec.GetNonce();
 
-            // Parse the recipient's key
-            if (forEncryption)
-            {
-                if (!(key is AsymmetricKeyParameter) || ((AsymmetricKeyParameter) key).IsPrivate)
-                {
-                    throw new InvalidKeyException("Must be Passed Recipient's Public EC Key for Encryption");
-                }
+			if ((_ivLength != 0) && (nonce == null || nonce.Length != _ivLength)) {
+				throw new InvalidParameterException("NONCE in IES Parameters needs to be " + _ivLength + " bytes long");
+			}
 
-                _key = (AsymmetricKeyParameter) key;
-            }
-            else
-            {
-                if (key is ParametersWithRandom)
-                {
-                    key = ((ParametersWithRandom) key).Parameters;
-                }
+			// Parse the recipient's key
+			if (forEncryption) {
+				if (!(key is AsymmetricKeyParameter) || ((AsymmetricKeyParameter)key).IsPrivate) {
+					throw new InvalidKeyException("Must be Passed Recipient's Public EC Key for Encryption");
+				}
 
-                if (!(key is AsymmetricKeyParameter) || !((AsymmetricKeyParameter) key).IsPrivate)
-                {
-                    throw new InvalidKeyException("Must be Passed Recipient's Private EC Key for Decryption");
-                }
+				_key = (AsymmetricKeyParameter)key;
+			} else {
+				if (key is ParametersWithRandom) {
+					key = ((ParametersWithRandom)key).Parameters;
+				}
 
-                _key = (AsymmetricKeyParameter) key;
-            }
+				if (!(key is AsymmetricKeyParameter) || !((AsymmetricKeyParameter)key).IsPrivate) {
+					throw new InvalidKeyException("Must be Passed Recipient's Private EC Key for Decryption");
+				}
 
-            _random = random;
-            _buffer.Flush();
-            _buffer.SetLength(0);
-        }
+				_key = (AsymmetricKeyParameter)key;
+			}
 
-        public void ProcessBytes(byte[] input)
-        {
-            ProcessBytes(input, 0, input.Length);
-        }
+			_random = random;
+			_buffer.Flush();
+			_buffer.SetLength(0);
+		}
 
-        public void ProcessBytes(byte[] input, int inOff, int inLen)
-        {
-            _buffer.Write(input, inOff, inLen);
-        }
+		public void ProcessBytes(byte[] input) {
+			ProcessBytes(input, 0, input.Length);
+		}
 
-        public byte[] DoFinal(byte[] input)
-        {
-            return DoFinal(input, 0, input.Length);
-        }
+		public void ProcessBytes(byte[] input, int inOff, int inLen) {
+			_buffer.Write(input, inOff, inLen);
+		}
 
-        public byte[] DoFinal(byte[] input, int inOff, int inLen)
-        {
-            if (inLen != 0)
-            {
-                _buffer.Write(input, inOff, inLen);
-            }
+		public byte[] DoFinal(byte[] input) {
+			return DoFinal(input, 0, input.Length);
+		}
 
-            byte[] @in = _buffer.ToArray();
-            _buffer.Flush();
-            _buffer.SetLength(0);
+		public byte[] DoFinal(byte[] input, int inOff, int inLen) {
+			if (inLen != 0) {
+				_buffer.Write(input, inOff, inLen);
+			}
 
-            // Convert parameters for use in IESEngine
-            ICipherParameters @params = new IesWithCipherParameters(_engineSpec.GetDerivationV(),
-                _engineSpec.GetEncodingV(),
-                _engineSpec.GetMacKeySize(),
-                _engineSpec.GetCipherKeySize());
+			byte[] @in = _buffer.ToArray();
+			_buffer.Flush();
+			_buffer.SetLength(0);
 
-            if (_engineSpec.GetNonce() != null)
-            {
-                @params = new ParametersWithIV(@params, _engineSpec.GetNonce());
-            }
+			// Convert parameters for use in IESEngine
+			ICipherParameters @params = new IesWithCipherParameters(_engineSpec.GetDerivationV(),
+				_engineSpec.GetEncodingV(),
+				_engineSpec.GetMacKeySize(),
+				_engineSpec.GetCipherKeySize());
 
-            ECDomainParameters ecParams = ((ECKeyParameters) _key).Parameters;
+			if (_engineSpec.GetNonce() != null) {
+				@params = new ParametersWithIV(@params, _engineSpec.GetNonce());
+			}
 
-            if (_forEncryption)
-            {
-                // Generate the ephemeral key pair
-                ECKeyPairGenerator gen = new ECKeyPairGenerator();
-                gen.Init(new ECKeyGenerationParameters(ecParams, _random));
+			ECDomainParameters ecParams = ((ECKeyParameters)_key).Parameters;
 
-                bool usePointCompression = _engineSpec.GetPointCompression();
-                EphemeralKeyPairGenerator
-                    kGen = new EphemeralKeyPairGenerator(gen, new KeyEncoder(usePointCompression));
+			if (_forEncryption) {
+				// Generate the ephemeral key pair
+				ECKeyPairGenerator gen = new ECKeyPairGenerator();
+				gen.Init(new ECKeyGenerationParameters(ecParams, _random));
 
-                // Encrypt the buffer
-                try
-                {
-                    _customIesEngine.Init(_key, @params, kGen);
+				bool usePointCompression = _engineSpec.GetPointCompression();
+				EphemeralKeyPairGenerator
+					kGen = new EphemeralKeyPairGenerator(gen, new KeyEncoder(usePointCompression));
 
-                    return _customIesEngine.ProcessBlock(@in, 0, @in.Length);
-                }
-                catch (Exception e)
-                {
-                    throw new DataException("unable to process block", e);
-                }
-            }
-            else
-            {
-                // Decrypt the buffer
-                try
-                {
-                    _customIesEngine.Init(_key, @params, new EciesPublicKeyParser(ecParams));
+				// Encrypt the buffer
+				try {
+					_customIesEngine.Init(_key, @params, kGen);
 
-                    return _customIesEngine.ProcessBlock(@in, 0, @in.Length);
-                }
-                catch (InvalidCipherTextException e)
-                {
-                    throw new DataException("unable to process block", e);
-                }
-            }
-        }
+					return _customIesEngine.ProcessBlock(@in, 0, @in.Length);
+				} catch (Exception e) {
+					throw new DataException("unable to process block", e);
+				}
+			} else {
+				// Decrypt the buffer
+				try {
+					_customIesEngine.Init(_key, @params, new EciesPublicKeyParser(ecParams));
 
-        public int DoFinal(byte[] input, int inOff, int inLen, byte[] output, int outOff)
-        {
-            byte[] buf = DoFinal(input, inOff, inLen);
-            Array.Copy(buf, 0, output, outOff, buf.Length);
-            return buf.Length;
-        }
-    }
+					return _customIesEngine.ProcessBlock(@in, 0, @in.Length);
+				} catch (InvalidCipherTextException e) {
+					throw new DataException("unable to process block", e);
+				}
+			}
+		}
+
+		public int DoFinal(byte[] input, int inOff, int inLen, byte[] output, int outOff) {
+			byte[] buf = DoFinal(input, inOff, inLen);
+			Array.Copy(buf, 0, output, outOff, buf.Length);
+			return buf.Length;
+		}
+	}
 }

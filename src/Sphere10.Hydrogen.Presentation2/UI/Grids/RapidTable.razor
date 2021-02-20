@@ -1,0 +1,21 @@
+﻿@typeparam TItem
+
+<table class="@Class">
+    <thead>
+    @HeaderTemplate
+    </thead>
+    
+    <tbody>
+    @foreach (TItem item in Items)
+    {
+        <span style="display: contents" onclick="@OnRowSelect">
+            @ItemTemplate(item)
+        </span>
+    }
+    </tbody>
+    
+</table>
+
+@code {
+    
+}

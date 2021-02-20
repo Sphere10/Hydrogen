@@ -1,0 +1,53 @@
+﻿@typeparam TItem
+
+<table class="@Class">
+    <thead>
+    @HeaderTemplate
+    </thead>
+    
+    <tbody>
+    @foreach (TItem item in Page)
+    {
+        <span style="display: contents" onclick="@OnRowSelect">
+            @ItemTemplate(item)
+        </span>
+    }
+    </tbody>
+    
+    <PageSizeSelector Value="PageSize" ValueChanged="SetPageSizeAsync" ValueExpression="() => PageSize"/>
+</table>
+
+<nav aria-label="...">
+    <ul class="pagination">
+        <li class="page-item @PreviousItemClass">
+            <a class="page-link" @onclick="PrevPageAsync" tabindex="-1">Previous</a>
+        </li>
+        @if (HasPrevPage) {
+            <li class="page-item">
+                <a class="page-link" @onclick="PrevPageAsync"> @(CurrentPage - 1)</a>
+            </li>
+        }
+
+        <li class="page-item active">
+            <a class="page-link">
+                @CurrentPage <span class="sr-only">(current)</span>
+            </a>
+        </li>
+
+        @if (HasNextPage) {
+            <li class="page-item">
+                <a class="page-link" @onclick="NextPageAsync">@(CurrentPage + 1)</a>
+            </li>
+        }
+
+        <li class="page-item @NextItemClass">
+            <a class="page-link" @onclick="NextPageAsync">Next</a>
+        </li>
+    </ul>
+</nav>
+
+@code {
+    private string PreviousItemClass => HasPrevPage ? string.Empty : "disabled";
+
+    private string NextItemClass => HasNextPage ? string.Empty : "disabled";
+}

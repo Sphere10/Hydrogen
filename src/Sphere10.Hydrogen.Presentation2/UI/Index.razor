@@ -28,6 +28,25 @@
         </div>
     </div>
 </div>
+<div>
+    <div class="col-6">
+        <div class="card mx-2">
+            <div class="card-header">
+                <h5 class="card-title"> Paged Table</h5>
+            </div>
+                <PagedTable Items="Enumerable.Range(1, 50)" PageSize="10" Class="table table-striped table-hover">
+                    <HeaderTemplate>
+                        <th> Number</th>
+                    </HeaderTemplate>
+                    <ItemTemplate Context="number">
+                        <tr>
+                            <td>@number</td>
+                        </tr>
+                    </ItemTemplate>
+                </PagedTable>
+        </div>
+    </div>
+</div>
 
 @code {
 
@@ -62,5 +81,5 @@
 
         await ViewService.WizardDialogAsync(wizard);
     }
-
+    
 }

@@ -1,8 +1,7 @@
 ﻿@using System.Linq.Expressions
 
 <EditForm Model="@(new object())">
-    <label for="pageSize">Page Size</label>
-    <InputSelect id="pageSize" class="form-control form-control-sm w-auto" Value="Value" ValueChanged="ValueChanged" ValueExpression="ValueExpression">
+    <InputSelect id="pageSize" class="custom-select custom-select-sm form-control form-control-sm w-auto" Value="Value" ValueChanged="ValueChanged" ValueExpression="ValueExpression">
         <option value="10">10</option>
         <option value="25">25</option>
         <option value="50">50</option>

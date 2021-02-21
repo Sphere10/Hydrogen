@@ -1,21 +1,29 @@
 ﻿@typeparam TItem
 
-<table class="@Class">
-    <thead>
-    @HeaderTemplate
-    </thead>
+<div class="row mb-1">
+    <label>
+        <p class="mr-1">Page Size</p>
+    </label>
+    <PageSizeSelector Value="PageSize" ValueExpression="() => PageSize" ValueChanged="i => PageSize = i"/>
+</div>
+<div class="row">
+    <table class="@Class">
+        <thead>
+        @HeaderTemplate
+        </thead>
 
-    <tbody>
-    @foreach (TItem item in Page)
-    {
-        <span style="display: contents" onclick="@OnRowSelect">
-            @ItemTemplate(item)
-        </span>
-    }
-    </tbody>
-
-
-    <nav aria-label="...">
+        <tbody>
+        @foreach (TItem item in Page)
+        {
+            <span style="display: contents" onclick="@OnRowSelect">
+                @ItemTemplate(item)
+            </span>
+        }
+        </tbody>
+    </table>
+</div>
+<div class="row">
+    <nav>
         <ul class="pagination">
             <li class="page-item @PreviousItemClass">
                 <a class="page-link" @onclick="PrevPageAsync" tabindex="-1">Previous</a>
@@ -45,11 +53,7 @@
             </li>
         </ul>
     </nav>
-
-</table>
-
-<PageSizeSelector Value="PageSize" ValueExpression="() => PageSize" ValueChanged="i => PageSize = i"/>
-
+</div>
 
 @code {
     private string PreviousItemClass => HasPrevPage ? string.Empty : "disabled";

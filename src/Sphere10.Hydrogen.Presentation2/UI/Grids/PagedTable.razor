@@ -1,62 +1,30 @@
-﻿@typeparam TItem
+﻿@using Microsoft.JSInterop
+@typeparam TItem
+@inject IJSRuntime JsRuntime
+<table class="@Class" id="@Id">
+    <thead>
+    @HeaderTemplate
+    </thead>
 
-<div class="row mb-1">
-    <label>
-        <p class="mr-1">Page Size</p>
-    </label>
-    <PageSizeSelector Value="PageSize" ValueExpression="() => PageSize" ValueChanged="i => PageSize = i"/>
-</div>
-<div class="row">
-    <table class="@Class">
-        <thead>
-        @HeaderTemplate
-        </thead>
+    <tbody>
+    @foreach (TItem item in Items)
+    {
+             @ItemTemplate(item)
+    }
+    </tbody>
+</table>
 
-        <tbody>
-        @foreach (TItem item in Page)
+@code
+{
+    int Id { get; } = new Random().Next();
+    
+    protected override Task OnAfterRenderAsync(bool firstRender)
+    {
+        JsRuntime.InvokeVoidAsync("initDataTableById", Id, new
         {
-            <span style="display: contents" onclick="@OnRowSelect">
-                @ItemTemplate(item)
-            </span>
-        }
-        </tbody>
-    </table>
-</div>
-<div class="row">
-    <nav>
-        <ul class="pagination">
-            <li class="page-item @PreviousItemClass">
-                <a class="page-link" @onclick="PrevPageAsync" tabindex="-1">Previous</a>
-            </li>
-            @if (HasPrevPage)
-            {
-                <li class="page-item">
-                    <a class="page-link" @onclick="PrevPageAsync"> @(CurrentPage - 1)</a>
-                </li>
-            }
-
-            <li class="page-item active">
-                <a class="page-link">
-                    @CurrentPage <span class="sr-only">(current)</span>
-                </a>
-            </li>
-
-            @if (HasNextPage)
-            {
-                <li class="page-item">
-                    <a class="page-link" @onclick="NextPageAsync">@(CurrentPage + 1)</a>
-                </li>
-            }
-
-            <li class="page-item @NextItemClass">
-                <a class="page-link" @onclick="NextPageAsync">Next</a>
-            </li>
-        </ul>
-    </nav>
-</div>
-
-@code {
-    private string PreviousItemClass => HasPrevPage ? string.Empty : "disabled";
-
-    private string NextItemClass => HasNextPage ? string.Empty : "disabled";
+            responsive = true,
+            paging = true
+        });
+        return base.OnAfterRenderAsync(firstRender);
+    }
 }

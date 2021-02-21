@@ -14,6 +14,10 @@ window.hideModal = () => {
     $("#modal").modal('hide')
 }
 
+window.initDataTableById = (id, options) => {
+    $('#' + id).DataTable(options);
+}
+
 document.addEventListener("DOMContentLoaded", () => {
     let input = $('.search-input');
 

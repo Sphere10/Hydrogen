@@ -33,20 +33,22 @@
         <div class="card">
             <div class="card-header">
                 <h5 class="card-title">Paged Table</h5>
+                <p class="text-muted"> DataTables - sorting, paging, search and responsive</p>
             </div>
             <div class="card-body">
-                <PagedTable Items="Enumerable.Range(1, 50)" PageSize="10" Class="table table-striped table-hover">
+                <PagedTable Items="@Enumerable.Range(1, 100)" Class="dataTable table table-hover table-striped w-100">
                     <HeaderTemplate>
-                        <th> Number</th>
-                    </HeaderTemplate>
-                    <ItemTemplate Context="number">
                         <tr>
-                            <td>@number</td>
+                            <th>i</th>
+                        </tr>
+                    </HeaderTemplate>
+                    <ItemTemplate Context="i">
+                        <tr>
+                            <td>@i</td>
                         </tr>
                     </ItemTemplate>
                 </PagedTable>
             </div>
-
         </div>
     </div>
 </div>
@@ -83,6 +85,11 @@
             .Build();
 
         await ViewService.WizardDialogAsync(wizard);
+    }
+
+    private async Task OnRowSelectAsync(int i)
+    {
+        await ViewService.InfoDialogAsync("Number", i.ToString());
     }
 
 }

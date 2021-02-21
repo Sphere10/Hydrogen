@@ -5,13 +5,15 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 
-namespace Sphere10.Hydrogen.Presentation2.UI.Grids {
+namespace Sphere10.Hydrogen.Presentation2.UI.Grids
+{
 
     /// <summary>
     /// Rapid table control / component. async enumerates an async enumerable e.g. a stream
     /// or channel until cancelled or disposed. Generates a table with thead, and tbody from templates
     /// </summary>
-    public partial class RapidTable<TItem> : IDisposable {
+    public partial class RapidTable<TItem> : IDisposable
+    {
         /// <summary>
         /// Gets or sets the async item source that will be enumerated.
         /// </summary>
@@ -55,32 +57,44 @@ namespace Sphere10.Hydrogen.Presentation2.UI.Grids {
         public string Class { get; set; }
 
         /// <inheritdoc />
-        protected override void OnParametersSet() {
-            if (ItemTemplate is null) {
+        protected override void OnParametersSet()
+        {
+            if (ItemTemplate is null)
+            {
                 throw new InvalidOperationException("Item template parameter is required.");
             }
 
-            if (HeaderTemplate is null) {
+            if (HeaderTemplate is null)
+            {
                 throw new InvalidOperationException("Header template parameter is required.");
             }
 
-            if (Source is null) {
+            if (Source is null)
+            {
                 throw new InvalidOperationException("Source parameter is required.");
             }
-            
-            EnumeratorTask = Task.Run(async () => {
-                await foreach (var item in Source.WithCancellation(CancellationToken)) {
-                    if (Items.Count >= ItemLimit) {
-                        Items.RemoveAt(0);
-                    }
-
-                    Items.Add(item);
-                    StateHasChanged();
-                }
-
-            }, CancellationToken);
 
             base.OnParametersSet();
+        }
+
+        protected override void OnAfterRender(bool firstRender)
+        {
+            if (firstRender)
+            {
+                EnumeratorTask = Task.Run(async () =>
+                {
+                    await foreach (var item in Source.WithCancellation(CancellationToken))
+                    {
+                        if (Items.Count >= ItemLimit)
+                        {
+                            Items.RemoveAt(0);
+                        }
+
+                        Items.Add(item);
+                        StateHasChanged();
+                    }
+                }, CancellationToken);
+            }
         }
 
         /// <summary>
@@ -97,7 +111,8 @@ namespace Sphere10.Hydrogen.Presentation2.UI.Grids {
         /// <summary>
         /// Dispose.
         /// </summary>
-        public void Dispose() {
+        public void Dispose()
+        {
             EnumeratorTask.Dispose();
         }
     }

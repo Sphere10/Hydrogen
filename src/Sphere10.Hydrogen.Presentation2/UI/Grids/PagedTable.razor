@@ -1,30 +1,63 @@
 ﻿@using Microsoft.JSInterop
 @typeparam TItem
 @inject IJSRuntime JsRuntime
-<table class="@Class" id="@Id">
+
+<label>
+    Show
+    <PageSizeSelector Value="PageSize" ValueChanged="i => PageSize = i" ValueExpression="() => PageSize"/>
+    entries
+</label>
+
+<table class="@Class">
     <thead>
     @HeaderTemplate
     </thead>
-
+    
     <tbody>
-    @foreach (TItem item in Items)
+    @foreach (TItem item in Page)
     {
-             @ItemTemplate(item)
+        <span style="display: contents" onclick="@EventCallback.Factory.Create(this, () => OnRowSelect.InvokeAsync(item))">
+            @ItemTemplate(item)
+        </span>
     }
     </tbody>
 </table>
 
-@code
-{
-    int Id { get; } = new Random().Next();
-    
-    protected override Task OnAfterRenderAsync(bool firstRender)
-    {
-        JsRuntime.InvokeVoidAsync("initDataTableById", Id, new
-        {
-            responsive = true,
-            paging = true
-        });
-        return base.OnAfterRenderAsync(firstRender);
-    }
-}
+<div class="row">
+    <div class="col-md-5 text-left">
+        Showing @((CurrentPage - 1) * PageSize == 0 ? 1 : (CurrentPage - 1) * PageSize) 
+        to @((CurrentPage - 1) * PageSize + Page.Count()) of @Items.Count() entries
+    </div>
+    <div class="col-md-7 text-right">
+        <nav>
+            <ul class="pagination justify-content-end">
+                <li class="page-item @(HasPrevPage ? string.Empty : "disabled")">
+                    <a class="page-link" @onclick="PrevPageAsync" tabindex="-1">Previous</a>
+                </li>
+                @if (HasPrevPage)
+                {
+                    <li class="page-item">
+                        <a class="page-link" @onclick="PrevPageAsync"> @(CurrentPage - 1)</a>
+                    </li>
+                }
+
+                <li class="page-item active">
+                    <a class="page-link">
+                        @CurrentPage <span class="sr-only">(current)</span>
+                    </a>
+                </li>
+
+                @if (HasNextPage)
+                {
+                    <li class="page-item">
+                        <a class="page-link" @onclick="NextPageAsync">@(CurrentPage + 1)</a>
+                    </li>
+                }
+
+                <li class="page-item @(HasNextPage ? string.Empty : "disabled")">
+                    <a class="page-link" @onclick="NextPageAsync">Next</a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</div>

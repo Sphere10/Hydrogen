@@ -5,6 +5,56 @@
 @using Sphere10.Framework
 
 <div class="row">
+    <div class="col-6">
+        <div class="card">
+            <div class="card-header">
+                <ul class="nav nav-tabs card-header-tabs pull-right" role="tablist">
+                    <li class="nav-item">
+                        <a class="nav-link active" data-toggle="tab" href="#tab-1">Table</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-toggle="tab" href="#tab-2">Virtual table</a>
+                    </li>
+                </ul>
+            </div>
+            <div class="card-body">
+                <div class="tab-content">
+                    <div class="tab-pane fade active show" id="tab-1">
+                        <h5 class="card-title">Paged table</h5>
+                        <PagedTable Items="Enumerable.Range(1, 100)" Class="table table-hover table-striped w-100">
+                            <HeaderTemplate>
+                                <tr>
+                                    <th>i</th>
+                                </tr>
+                            </HeaderTemplate>
+                            <ItemTemplate Context="i">
+                                <tr>
+                                    <td>@i</td>
+                                </tr>
+                            </ItemTemplate>
+                        </PagedTable>
+                    </div>
+                    <div class="tab-pane fade" id="tab-2">
+                        <h5 class="card-title">Virtual data source</h5>
+                        <p> Items retrieved from data source on demand.</p>
+                        <VirtualPagedTable ItemsProvider="ItemsProvider" TItem="int" OnRowSelect="OnRowSelectAsync" Class="table table-hover table-striped w-100">
+                            <HeaderTemplate>
+                                <tr>
+                                    <th>i</th>
+                                </tr>
+                            </HeaderTemplate>
+                            <ItemTemplate Context="i">
+                                <tr>
+                                    <td>@i</td>
+                                </tr>
+                            </ItemTemplate>
+                        </VirtualPagedTable>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
     <div class="col-3">
         <div class="card">
             <div class="card-header">
@@ -14,43 +64,12 @@
                 <button class="btn btn-primary btn-sm" @onclick="Confirm"> Confirm</button>
                 <button class="btn btn-info btn-sm" @onclick="Info"> Info</button>
                 <button class="btn btn-warning btn-sm" @onclick="Warning"> Warning</button>
+                     <button class="btn btn-success btn-sm" @onclick="Wizard"> Wizard</button>
+                    
             </div>
         </div>
     </div>
-    <div class="col-3">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="card-title"> Wizard</h5>
-            </div>
-            <div class="card-body">
-                <button class="btn btn-info btn-sm" @onclick="Wizard"> Wizard</button>
-            </div>
-        </div>
-    </div>
-</div>
-<div>
-    <div class="col-6">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="card-title">Paged Table</h5>
-                <p class="text-muted"> DataTables - sorting, paging, search and responsive</p>
-            </div>
-            <div class="card-body">
-                <PagedTable Items="@Enumerable.Range(1, 100)" Class="dataTable table table-hover table-striped w-100">
-                    <HeaderTemplate>
-                        <tr>
-                            <th>i</th>
-                        </tr>
-                    </HeaderTemplate>
-                    <ItemTemplate Context="i">
-                        <tr>
-                            <td>@i</td>
-                        </tr>
-                    </ItemTemplate>
-                </PagedTable>
-            </div>
-        </div>
-    </div>
+   
 </div>
 
 @code {
@@ -79,7 +98,6 @@
             .OnFinished(x =>
             {
                 Console.WriteLine(x.EvenNumber);
-
                 return Task.FromResult<Result<bool>>(true);
             })
             .Build();
@@ -90,6 +108,14 @@
     private async Task OnRowSelectAsync(int i)
     {
         await ViewService.InfoDialogAsync("Number", i.ToString());
+    }
+
+
+    List<int> Items = new(Enumerable.Range(1, 9999));
+
+    private Task<ItemsResponse<int>> ItemsProvider(ItemRequest request)
+    {
+        return Task.FromResult(new ItemsResponse<int>(Items.Skip(request.Index).Take(request.Count), Items.Count));
     }
 
 }

@@ -75,6 +75,7 @@ namespace Sphere10.Hydrogen.Presentation2.UI.Grids {
                     }
 
                     Items.Add(item);
+                    StateHasChanged();
                 }
 
             }, CancellationToken);

@@ -8,14 +8,10 @@
     <tbody>
     @foreach (TItem item in Items)
     {
-        <span style="display: contents" onclick="@OnRowSelect">
+        <span style="display: contents" onclick="@EventCallback.Factory.Create(this, () => OnRowSelect.InvokeAsync(item))">
             @ItemTemplate(item)
         </span>
     }
     </tbody>
     
 </table>
-
-@code {
-    
-}

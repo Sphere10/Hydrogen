@@ -3,6 +3,8 @@
 @using Sphere10.Hydrogen.Presentation2.Logic.Wizard
 @using Sphere10.Hydrogen.Presentation2.UI.Wizard
 @using Sphere10.Framework
+@using System.Threading
+@implements IDisposable
 
 <div class="row">
     <div class="col-6">
@@ -13,7 +15,10 @@
                         <a class="nav-link active" data-toggle="tab" href="#tab-1">Table</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" data-toggle="tab" href="#tab-2">Virtual table</a>
+                        <a class="nav-link" data-toggle="tab" href="#tab-2">Virtual</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-toggle="tab" href="#tab-3">Rapid</a>
                     </li>
                 </ul>
             </div>
@@ -50,6 +55,22 @@
                             </ItemTemplate>
                         </VirtualPagedTable>
                     </div>
+                    <div class="tab-pane fade" id="tab-3">
+                        <h5 class="card-title">Rapid table</h5>
+                        <p> Update table continously from stream source</p>
+                        <RapidTable Source="GetIntAsync()" ItemLimit="10" TItem="int" OnRowSelect="OnRowSelectAsync" Class="table table-hover table-striped w-100">
+                            <HeaderTemplate>
+                                <tr>
+                                    <th>i</th>
+                                </tr>
+                            </HeaderTemplate>
+                            <ItemTemplate Context="i">
+                                <tr>
+                                    <td>@i</td>
+                                </tr>
+                            </ItemTemplate>
+                        </RapidTable>
+                    </div>
                 </div>
 
             </div>
@@ -64,12 +85,12 @@
                 <button class="btn btn-primary btn-sm" @onclick="Confirm"> Confirm</button>
                 <button class="btn btn-info btn-sm" @onclick="Info"> Info</button>
                 <button class="btn btn-warning btn-sm" @onclick="Warning"> Warning</button>
-                     <button class="btn btn-success btn-sm" @onclick="Wizard"> Wizard</button>
-                    
+                <button class="btn btn-success btn-sm" @onclick="Wizard"> Wizard</button>
+
             </div>
         </div>
     </div>
-   
+
 </div>
 
 @code {
@@ -116,6 +137,25 @@
     private Task<ItemsResponse<int>> ItemsProvider(ItemRequest request)
     {
         return Task.FromResult(new ItemsResponse<int>(Items.Skip(request.Index).Take(request.Count), Items.Count));
+    }
+
+    private CancellationTokenSource EnumeratorCts { get; } = new ();
+    
+    private async IAsyncEnumerable<int> GetIntAsync()
+    {
+        int last = 0;
+        Random rand = new();
+        
+        while (!EnumeratorCts.IsCancellationRequested)
+        {
+            await Task.Delay(rand.Next(1000, 3000));
+            yield return last++;;
+        }
+    }
+
+    public void Dispose()
+    {
+        EnumeratorCts.Cancel();
     }
 
 }

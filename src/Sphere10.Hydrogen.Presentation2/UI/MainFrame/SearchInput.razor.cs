@@ -58,12 +58,15 @@ namespace Sphere10.Hydrogen.Presentation2.UI.MainFrame {
             if (!string.IsNullOrWhiteSpace(term)) {
                 if (SearchProvider is not null) {
                     if (Throttle is not null) {
-                        try {
+                        try
+                        {
+                            string latest = term;
+                            
                             if (Semaphore.CurrentCount != 1)
                             {
                                 await Throttle.WaitAsync();
 
-                                var results = await SearchProvider(term);
+                                var results = await SearchProvider(latest);
                                 Results = results;
                             }
                         } finally {

@@ -1,0 +1,15 @@
+﻿@using Sphere10.Framework
+<p>
+    @Exception.ToDisplayString()
+</p>
+<a class="collapsed" data-toggle="collapse" data-target="#details">Details</a>
+<div class="collapse" id="details">
+    @Exception.ToDiagnosticString()
+</div>
+
+@code {
+
+    [Parameter]
+    public Exception Exception { get; set; }
+
+}

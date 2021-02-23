@@ -1,8 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Sphere10.Hydrogen.Presentation2.Logic.Wizard;
 using Sphere10.Hydrogen.Presentation2.UI.Dialogs;
+using Sphere10.Hydrogen.Presentation2.UI.Dialogs.Content;
 using Sphere10.Hydrogen.Presentation2.UI.Wizard;
 
 namespace Sphere10.Hydrogen.Presentation2.Logic.Modal
@@ -41,35 +43,89 @@ namespace Sphere10.Hydrogen.Presentation2.Logic.Modal
         {
             Dictionary<string, object> parameters = new Dictionary<string, object>
             {
-                {nameof(ConfirmDialog.Title), title},
-                {nameof(ConfirmDialog.Message), message},
-                {nameof(ConfirmDialog.ConfirmMessageText), confirmText}
+                {nameof(Confirm.Title), title},
+                {nameof(Confirm.Message), message},
+                {nameof(Confirm.ConfirmMessageText), confirmText}
             };
 
-            var result = await ModalService.ShowAsync<ConfirmDialog>(ParameterView.FromDictionary(parameters),
+            var result = await ModalService.ShowAsync<Confirm>(ParameterView.FromDictionary(parameters),
                 new ModalOptions {Size = ModalSize.Small});
-            
+
             return result.ResultType == ModalResultType.Ok;
         }
 
         /// <summary>
-        /// Show info dialog
+        /// Show a dialog with content
         /// </summary>
-        /// <param name="title"> title of dialog</param>
-        /// <param name="message"> message </param>
-        /// <param name="confirmText"> optional confirm button text</param>
-        /// <returns>a task that is complete once the user has dismissed the modal</returns>
-        public static async Task
-            InfoDialogAsync(string title, string message, string confirmText = "OK")
+        /// <param name="level"> dialog content inforative level, differing template may be used for different level</param>
+        /// <param name="title"> dialog title</param>
+        /// <param name="message"> message content</param>
+        /// <param name="confirmText"> optionally set confirm button text</param>
+        /// <returns> a task that is complete once modal is dismissed</returns>
+        public static async Task DialogAsync(Severity level, string title, string message, string confirmText = "Close")
+        {
+            Type body = level switch
+            {
+                Severity.Info => typeof(MessageContent),
+                Severity.Error => typeof(MessageContent),
+                Severity.Warning => typeof(MessageContent),
+                _ => throw new ArgumentOutOfRangeException(nameof(level), level, null)
+            };
+
+            Dictionary<string, object> parameters = new Dictionary<string, object>
+            {
+                {nameof(Dialog.Title), title},
+                {nameof(Dialog.Message), message},
+                {nameof(Dialog.ConfirmMessageText), confirmText},
+                {
+                    nameof(Dialog.Body), (RenderFragment) (builder =>
+                    {
+                        builder.OpenComponent(0, body);
+                        builder.CloseComponent();
+                    })
+                }
+            };
+
+            await ModalService.ShowAsync<Dialog>(ParameterView.FromDictionary(parameters));
+        }
+
+        /// <summary>
+        /// Show a dialog with custom render fragment content
+        /// </summary>
+        /// <param name="content"> a render fragment to be displayed in the dialog.</param>
+        /// <param name="title"> dialog title</param>
+        /// <param name="confirmText"> optionally set confirm button text</param>
+        /// <returns> a task that is complete once modal is dismissed</returns>
+        public static async Task DialogAsync(RenderFragment content, string title, string confirmText = "Close")
         {
             Dictionary<string, object> parameters = new Dictionary<string, object>
             {
-                {nameof(InfoDialog.Title), title},
-                {nameof(InfoDialog.Message), message},
-                {nameof(InfoDialog.ConfirmMessageText), confirmText}
+                {nameof(Dialog.Title), title},
+                {nameof(Dialog.ConfirmMessageText), confirmText},
+                {nameof(Dialog.Body), content}
             };
 
-           await ModalService.ShowAsync<InfoDialog>(ParameterView.FromDictionary(parameters));
+            await ModalService.ShowAsync<Dialog>(ParameterView.FromDictionary(parameters));
+        }
+
+        public static async Task ExceptionDialogAsync(Exception exception, string title)
+        {
+            RenderFragment body = builder =>
+            {
+                builder.OpenComponent<ExceptionContent>(0);
+                builder.AddAttribute(0, nameof(ExceptionContent.Exception), exception);
+                builder.CloseComponent();
+            };
+
+            var parameters = new Dictionary<string, object>
+            {
+                {nameof(Dialog.Title), title},
+                {nameof(Dialog.ConfirmMessageText), "Close"},
+                {nameof(Dialog.Body), body}
+            };
+
+            await ModalService.ShowAsync<Dialog>(ParameterView.FromDictionary(parameters));
         }
     }
+
 }

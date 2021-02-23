@@ -26,7 +26,11 @@
                 <div class="tab-content">
                     <div class="tab-pane fade active show" id="tab-1">
                         <h5 class="card-title">Paged table</h5>
-                        <PagedTable Items="Enumerable.Range(1, 100)" TItem="int" OnRowSelect="OnRowSelectAsync" Class="table table-hover table-striped w-100">
+                        <PagedTable
+                            Items="Enumerable.Range(1, 100)"
+                            TItem="int"
+                            OnRowSelect="OnRowSelectAsync"
+                            Class="table table-hover table-striped w-100">
                             <HeaderTemplate>
                                 <tr>
                                     <th>i</th>
@@ -42,7 +46,11 @@
                     <div class="tab-pane fade" id="tab-2">
                         <h5 class="card-title">Virtual data source</h5>
                         <p> Items retrieved from data source on demand.</p>
-                        <VirtualPagedTable ItemsProvider="ItemsProvider" TItem="int" OnRowSelect="OnRowSelectAsync" Class="table table-hover table-striped w-100">
+                        <VirtualPagedTable
+                            ItemsProvider="ItemsProvider"
+                            TItem="int"
+                            OnRowSelect="OnRowSelectAsync"
+                            Class="table table-hover table-striped w-100">
                             <HeaderTemplate>
                                 <tr>
                                     <th>i</th>
@@ -58,7 +66,11 @@
                     <div class="tab-pane fade" id="tab-3">
                         <h5 class="card-title">Rapid table</h5>
                         <p> Update table continously from stream source</p>
-                        <RapidTable Source="GetIntAsync()" ItemLimit="10" TItem="int" OnRowSelect="OnRowSelectAsync" Class="table table-hover table-striped w-100">
+                        <RapidTable Source="GetIntAsync()"
+                                    ItemLimit="10"
+                                    TItem="int"
+                                    OnRowSelect="OnRowSelectAsync"
+                                    Class="table table-hover table-striped w-100">
                             <HeaderTemplate>
                                 <tr>
                                     <th>i</th>
@@ -76,22 +88,34 @@
             </div>
         </div>
     </div>
-    <div class="col-3">
+    <div class="col-4">
         <div class="card">
             <div class="card-header">
                 <h5 class="card-title"> Dialogs</h5>
+                <p class="text-muted"> Show messages, prompt for yes/no, or show custom content</p>
             </div>
             <div class="card-body">
-                <button class="btn btn-primary btn-sm" @onclick="Confirm"> Confirm</button>
-                <button class="btn btn-info btn-sm" @onclick="Info"> Info</button>
-                <button class="btn btn-warning btn-sm" @onclick="Warning"> Warning</button>
-                <button class="btn btn-success btn-sm" @onclick="Wizard"> Wizard</button>
+                    <button class="btn btn-primary btn-sm mx-1" @onclick="Confirm"> Confirm</button>
+                    <button class="btn btn-info btn-sm mx-1" @onclick="Info"> Info</button>
+                    <button class="btn btn-warning btn-sm mx-1" @onclick="Warning"> Warning</button>
+                    <button class="btn btn-danger btn-sm mx-1" @onclick="Exception"> Exception</button>
+                    <button class="btn btn-secondary btn-sm mx-1" @onclick="Custom"> Custom</button>
 
             </div>
-        </div>
-    </div>
 
+        </div>
+         <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title"> Wizards</h5>
+                </div>
+                <div class="card-body">
+                    <button class="btn btn-success btn-sm" @onclick="Wizard"> Boring wizard</button>
+                </div>
+            </div>
+    </div>
+   
 </div>
+
 
 @code {
 
@@ -102,12 +126,48 @@
 
     private async Task Info()
     {
-        await ViewService.InfoDialogAsync("Information", "Something important has happened.", "Dismiss");
+        await ViewService.DialogAsync(Severity.Info, "Information", "Something important has happened.", "Dismiss");
     }
 
     private async Task Warning()
     {
-        await ViewService.InfoDialogAsync("An error occured", "Something went wrong", "Dismiss");
+        await ViewService.DialogAsync(Severity.Warning, "An error occured", "Something went wrong", "Dismiss");
+    }
+
+    private async Task Exception()
+    {
+        try
+        {
+            decimal zero = decimal.Zero;
+            decimal snafu = 1 / zero;
+        }
+        catch (Exception e)
+        {
+            await ViewService.ExceptionDialogAsync(e, "Error");
+        }
+    }
+
+    private async Task Custom()
+    {
+    //Build a custom render fragment to show in the dialog. Could be a prebuilt component in another file as well. 
+
+        RenderFragment frag = builder =>
+        {
+            builder.OpenElement(0, "div");
+            builder.AddAttribute(0, "class", "text-center");
+            builder.OpenElement(1, "img");
+            builder.AddAttribute(1, "src", "https://www.coinbuzz.com/wp-content/uploads/2015/03/bitcoin-logo-plain.png");
+            builder.AddAttribute(1, "height", 100);
+            builder.AddAttribute(1, "width", 100);
+            builder.CloseElement();
+
+            builder.OpenElement(2, "p");
+            builder.AddContent(2, "Bitcoin");
+            builder.CloseElement();
+            builder.CloseElement();
+        };
+
+        await ViewService.DialogAsync(frag, "A custom dialog", "Got it");
     }
 
     private async Task Wizard()
@@ -128,7 +188,7 @@
 
     private async Task OnRowSelectAsync(int i)
     {
-        await ViewService.InfoDialogAsync("Number", i.ToString());
+        await ViewService.DialogAsync(Severity.Info, "Number", i.ToString());
     }
 
 
@@ -139,17 +199,18 @@
         return Task.FromResult(new ItemsResponse<int>(Items.Skip(request.Index).Take(request.Count), Items.Count));
     }
 
-    private CancellationTokenSource EnumeratorCts { get; } = new ();
-    
+    private CancellationTokenSource EnumeratorCts { get; } = new();
+
     private async IAsyncEnumerable<int> GetIntAsync()
     {
         int last = 0;
         Random rand = new();
-        
+
         while (!EnumeratorCts.IsCancellationRequested)
         {
             await Task.Delay(rand.Next(1000, 3000));
-            yield return last++;;
+            yield return last++;
+            ;
         }
     }
 

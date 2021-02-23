@@ -1,0 +1,40 @@
+﻿@inherits ModalComponent
+
+<ModalTemplate Options="@Options">
+    <HeaderTemplate>
+        <h5 class="modal-title">@Title</h5>
+    </HeaderTemplate>
+    <BodyTemplate>
+        <CascadingValue Value="Message">
+            @Body
+        </CascadingValue>
+    </BodyTemplate>
+    <FooterTemplate>
+        <a type="button" class="btn btn-primary btn-sm modal-btn" @onclick="Ok">@ConfirmMessageText</a>
+    </FooterTemplate>
+</ModalTemplate>
+
+@code
+{
+#nullable enable
+
+    [Parameter]
+    public string Title { get; set; } = "Information";
+
+    [Parameter]
+    public string? Message { get; set; }
+
+    [Parameter]
+    public RenderFragment? Body { get; set; }
+
+    [Parameter]
+    public string ConfirmMessageText { get; set; } = "OK";
+
+    protected override void OnParametersSet()
+    {
+        if (Body is null)
+        {
+            throw new InvalidOperationException("Body parameter is required.");
+        }
+    }
+}

@@ -20,10 +20,5 @@
         /// Gets or sets the css style for the cancel button
         /// </summary>
         public string CancelButtonClass { get; set; }
-
-        /// <summary>
-        /// Gets or sets the css style for the finish button
-        /// </summary>
-        public string FinishButtonClass { get; set; }
     }
 }

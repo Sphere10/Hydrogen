@@ -48,11 +48,6 @@ namespace Sphere10.Hydrogen.Presentation2.UI.Wizard {
         public virtual string CancelButtonText { get; } = "Cancel";
 
         /// <summary>
-        /// Gets the finish button text.
-        /// </summary>
-        public virtual string FinishButtonText { get; } = "Finish";
-
-        /// <summary>
         /// Gets a value indicating whether the wizard / step may be cancelled.
         /// </summary>
         public virtual bool IsCancellable { get; } = true;

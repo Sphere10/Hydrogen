@@ -1,0 +1,18 @@
+﻿@using Sphere10.Framework
+@inherits WizardStep<NewWalletModel>
+
+<div>
+    <h5 class="h6 card-title">Summary</h5>
+    <p> Name: @Model.Name</p>
+</div>
+
+@code {
+    public override string Title { get; } = "Summary";
+
+    public override string NextButtonText { get; } = "Create";
+
+    public override async Task<Result> OnNextAsync() => Result.Valid;
+
+    public override async Task<Result> OnPreviousAsync() => Result.Valid;
+
+}

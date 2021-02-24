@@ -155,70 +155,48 @@ namespace Sphere10.Hydrogen.Presentation2.Logic.Wizard
         {
             List<Type> types = steps.ToList();
 
-            if (!StepUpdateIsApplied(updateType, types))
+            switch (updateType)
             {
-                switch (updateType)
+                case StepUpdateType.Inject:
                 {
-                    case StepUpdateType.Inject:
+                    Steps.InsertRangeSequentially(CurrentStepIndex + 1, types);
+                    break;
+                }
+
+                case StepUpdateType.ReplaceAllNext:
+                {
+                    if (HasNext)
                     {
-                        Steps.InsertRangeSequentially(CurrentStepIndex + 1, types);
-                        break;
+                        Steps.RemoveRangeSequentially(CurrentStepIndex + 1, Steps.Count - CurrentStepIndex - 1);
                     }
 
-                    case StepUpdateType.ReplaceAllNext:
+                    Steps.InsertRangeSequentially(CurrentStepIndex + 1, types);
+
+                    break;
+                }
+                case StepUpdateType.ReplaceAll:
+                {
+                    Steps = new List<Type>(types);
+                    CurrentStep = Steps[CurrentStepIndex];
+                    break;
+                }
+                case StepUpdateType.RemoveNext:
+                {
+                    foreach (Type type in types)
                     {
-                        if (HasNext)
+                        for (int i = CurrentStepIndex + 1; i < Steps.Count; i++)
                         {
-                            Steps.RemoveRangeSequentially(CurrentStepIndex + 1, Steps.Count - CurrentStepIndex - 1);
-                        }
-
-                        Steps.InsertRangeSequentially(CurrentStepIndex + 1, types);
-
-                        break;
-                    }
-                    case StepUpdateType.ReplaceAll:
-                    {
-                        Steps = new List<Type>(types);
-                        CurrentStep = Steps[CurrentStepIndex];
-                        break;
-                    }
-                    case StepUpdateType.RemoveNext:
-                    {
-                        foreach (Type type in types)
-                        {
-                            for (int i = CurrentStepIndex + 1; i < Steps.Count; i++)
+                            if (Steps[i] == type)
                             {
-                                if (Steps[i] == type)
-                                {
-                                    Steps.RemoveAt(i);
-                                }
+                                Steps.RemoveAt(i);
                             }
                         }
-
-                        break;
                     }
-                    default:
-                        throw new ArgumentOutOfRangeException(nameof(updateType), updateType, null);
-                }
-            }
-        }
 
-        /// <summary>
-        /// Determines whether the given step types have been added via a step update. Used to deduplicate step updates
-        /// </summary>
-        /// <param name="type"> step update type</param>
-        /// <param name="steps"> steps</param>
-        /// <returns> whether or not a step update of this type has been applied for these step types.</returns>
-        private bool StepUpdateIsApplied(StepUpdateType type, IEnumerable<Type> steps)
-        {
-            if (Updates is null)
-            {
-                Updates = steps.ToLookup(x => type);
-                return false;
-            }
-            else
-            {
-                return steps.All(x => Updates[type].Contains(x));
+                    break;
+                }
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(updateType), updateType, null);
             }
         }
     }

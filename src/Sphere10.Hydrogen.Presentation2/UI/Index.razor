@@ -4,6 +4,7 @@
 @using Sphere10.Hydrogen.Presentation2.UI.Wizard
 @using Sphere10.Framework
 @using System.Threading
+@using Sphere10.Hydrogen.Presentation2.UI.Wizard.Examples
 @implements IDisposable
 
 <div class="row">
@@ -92,28 +93,29 @@
         <div class="card">
             <div class="card-header">
                 <h5 class="card-title"> Dialogs</h5>
-                <p class="text-muted"> Show messages, prompt for yes/no, or show custom content</p>
             </div>
             <div class="card-body">
+                <div>
                     <button class="btn btn-primary btn-sm mx-1" @onclick="Confirm"> Confirm</button>
                     <button class="btn btn-info btn-sm mx-1" @onclick="Info"> Info</button>
                     <button class="btn btn-warning btn-sm mx-1" @onclick="Warning"> Warning</button>
                     <button class="btn btn-danger btn-sm mx-1" @onclick="Exception"> Exception</button>
-                    <button class="btn btn-secondary btn-sm mx-1" @onclick="Custom"> Custom</button>
+                     <button class="btn btn-secondary btn-sm mx-1" @onclick="Custom"> Custom</button>
+                </div>
 
             </div>
 
         </div>
-         <div class="card">
-                <div class="card-header">
-                    <h5 class="card-title"> Wizards</h5>
-                </div>
-                <div class="card-body">
-                    <button class="btn btn-success btn-sm" @onclick="Wizard"> Boring wizard</button>
-                </div>
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title"> Wizards</h5>
             </div>
+            <div class="card-body">
+                <button class="btn btn-primary btn-sm" @onclick="Wizard"> New Wallet</button>
+            </div>
+        </div>
     </div>
-   
+
 </div>
 
 
@@ -121,7 +123,7 @@
 
     private async Task Confirm()
     {
-        await ViewService.ConfirmDialogAsync("Confirm", "Are you sure you want to do that ?", "Affirmative");
+        await ViewService.ConfirmDialogAsync("Confirm", "Are you sure you want to do that ?", "Yes");
     }
 
     private async Task Info()
@@ -172,15 +174,12 @@
 
     private async Task Wizard()
     {
-        var builder = new DefaultWizardBuilder<ExampleModel>();
-        var wizard = builder.NewWizard("Example wizard")
-            .AddStep<ExampleWizardStep>()
-            .WithModel(new ExampleModel())
-            .OnFinished(x =>
-            {
-                Console.WriteLine(x.EvenNumber);
-                return Task.FromResult<Result<bool>>(true);
-            })
+        var builder = new DefaultWizardBuilder<NewWalletModel>();
+        var wizard = builder.NewWizard("New Wallet")
+            .AddStep<WalletNameStep>()
+            .AddStep<WalletTypeStep>()
+            .WithModel(new NewWalletModel())
+            .OnFinished(x => Task.FromResult<Result<bool>>(true))
             .Build();
 
         await ViewService.WizardDialogAsync(wizard);
@@ -210,7 +209,6 @@
         {
             await Task.Delay(rand.Next(1000, 3000));
             yield return last++;
-            ;
         }
     }
 

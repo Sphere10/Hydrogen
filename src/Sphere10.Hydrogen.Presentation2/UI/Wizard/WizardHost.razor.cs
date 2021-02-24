@@ -95,9 +95,13 @@ namespace Sphere10.Hydrogen.Presentation2.UI.Wizard
 
             if (result.Success)
             {
-                if (Wizard.Next())
+                if (Wizard.HasNext && Wizard.Next())
                 {
                     CurrentStep = CreateStepBaseFragment(Wizard.CurrentStep);
+                }
+                else if (await Wizard.FinishAsync())
+                {
+                    await FinishAsync();
                 }
             }
             else
@@ -136,7 +140,7 @@ namespace Sphere10.Hydrogen.Presentation2.UI.Wizard
         {
             ErrorMessages.Clear();
             Result stepResult = await CurrentStepInstance!.OnNextAsync();
-            
+
             if (stepResult.Success)
             {
                 Result result = await Wizard.FinishAsync();
@@ -154,7 +158,6 @@ namespace Sphere10.Hydrogen.Presentation2.UI.Wizard
             {
                 ErrorMessages.AddRange(stepResult.ErrorMessages);
             }
-
         }
 
         /// <summary>

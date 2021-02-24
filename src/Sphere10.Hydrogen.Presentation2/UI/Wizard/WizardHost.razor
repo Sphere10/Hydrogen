@@ -23,17 +23,13 @@
                 <button class="@(Wizard.Options.CancelButtonClass ?? "btn btn-secondary btn-sm mr-3 modal-btn")" @onclick="@CancelAsync"> @CurrentStepInstance!.CancelButtonText</button>
             }
 
-            @if (Wizard.HasNext)
-            {
-                <button class="@(Wizard.Options.NextButtonClass ?? "btn btn-info btn-sm modal-btn")" @onclick="NextAsync">@CurrentStepInstance!.NextButtonText</button>
-            }
-            else
-            {
-                <button class="@(Wizard.Options.FinishButtonClass ?? "btn btn-info btn-sm modal-btn")" @onclick="FinishAsync">@CurrentStepInstance!.FinishButtonText</button>
-            }
+            <button class="@(Wizard.Options.NextButtonClass ?? "btn btn-info btn-sm modal-btn")" @onclick="NextAsync">@CurrentStepInstance!.NextButtonText</button>
+
         </div>
     </div>
 }
+
+<div class="validation-errors"/>
 
 
 @code

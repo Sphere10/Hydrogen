@@ -1,11 +1,10 @@
-﻿@using Sphere10.Hydrogen.Presentation2.UI.Wizard
-@using Sphere10.Hydrogen.Presentation2.Logic.Wizard
+﻿@using Sphere10.Hydrogen.Presentation2.Logic.Wizard
 @using Sphere10.Framework
 @inherits ModalComponent
 
 <ModalTemplate OnCloseFunc="RequestCloseAsync" Options="@Options">
     <HeaderTemplate>
-        <h6> @_wizardHost?.Title </h6>
+        <h6 class="card-title"> @_wizardHost?.Title </h6>
     </HeaderTemplate>
     <BodyTemplate>
         <CascadingValue Value="@Wizard">

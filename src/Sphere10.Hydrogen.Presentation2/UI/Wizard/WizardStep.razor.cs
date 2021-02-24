@@ -57,13 +57,13 @@ namespace Sphere10.Hydrogen.Presentation2.UI.Wizard {
         /// the wizard to progress.
         /// </summary>
         /// <returns> whether or not the step is finished and to move next</returns>
-        public abstract Task<Result> OnNextAsync();
+        public virtual Task<Result> OnNextAsync() => Task.FromResult(Result.Valid);
 
         /// <summary>
         /// Called when the wizard requests the prev step. Returning true will allow
         /// the wizard to progress.
         /// </summary>
         /// <returns> whether or not the step is finished and to move prev</returns>
-        public abstract Task<Result> OnPreviousAsync();
+        public virtual Task<Result> OnPreviousAsync() => Task.FromResult(Result.Valid);
     }
 }

@@ -62,31 +62,44 @@ namespace Sphere10.Hydrogen.Presentation2.Logic.Modal
         /// <param name="message"> message content</param>
         /// <param name="confirmText"> optionally set confirm button text</param>
         /// <returns> a task that is complete once modal is dismissed</returns>
-        public static async Task DialogAsync(Severity level, string title, string message, string confirmText = "Close")
+        public static async Task DialogAsync(string title, string message)
         {
-            Type body = level switch
-            {
-                Severity.Info => typeof(MessageContent),
-                Severity.Error => typeof(MessageContent),
-                Severity.Warning => typeof(MessageContent),
-                _ => throw new ArgumentOutOfRangeException(nameof(level), level, null)
-            };
-
             Dictionary<string, object> parameters = new Dictionary<string, object>
             {
                 {nameof(Dialog.Title), title},
                 {nameof(Dialog.Message), message},
-                {nameof(Dialog.ConfirmMessageText), confirmText},
+                {nameof(Dialog.ButtonsText), new[] {"Close"}},
                 {
                     nameof(Dialog.Body), (RenderFragment) (builder =>
                     {
-                        builder.OpenComponent(0, body);
+                        builder.OpenComponent(0, typeof(MessageContent));
                         builder.CloseComponent();
                     })
                 }
             };
 
             await ModalService.ShowAsync<Dialog>(ParameterView.FromDictionary(parameters));
+        }
+
+        public static async Task<int> DialogAsync(string title, string message, params string[] buttonText)
+        {
+            Dictionary<string, object> parameters = new Dictionary<string, object>
+            {
+                {nameof(Dialog.Title), title},
+                {nameof(Dialog.Message), message},
+                {nameof(Dialog.ButtonsText), buttonText},
+                {
+                    nameof(Dialog.Body), (RenderFragment) (builder =>
+                    {
+                        builder.OpenComponent(0, typeof(MessageContent));
+                        builder.CloseComponent();
+                    })
+                }
+            };
+
+            ModalResult result = await ModalService.ShowAsync<Dialog>(ParameterView.FromDictionary(parameters));
+            
+            return result.GetData<int>();
         }
 
         /// <summary>
@@ -101,14 +114,14 @@ namespace Sphere10.Hydrogen.Presentation2.Logic.Modal
             Dictionary<string, object> parameters = new Dictionary<string, object>
             {
                 {nameof(Dialog.Title), title},
-                {nameof(Dialog.ConfirmMessageText), confirmText},
+                {nameof(Dialog.ButtonsText), new[] {confirmText}},
                 {nameof(Dialog.Body), content}
             };
 
             await ModalService.ShowAsync<Dialog>(ParameterView.FromDictionary(parameters));
         }
 
-        public static async Task ExceptionDialogAsync(Exception exception, string title)
+        public static async Task DialogAsync(Exception exception, string title)
         {
             RenderFragment body = builder =>
             {
@@ -120,7 +133,7 @@ namespace Sphere10.Hydrogen.Presentation2.Logic.Modal
             var parameters = new Dictionary<string, object>
             {
                 {nameof(Dialog.Title), title},
-                {nameof(Dialog.ConfirmMessageText), "Close"},
+                {nameof(Dialog.ButtonsText), new[] {"Close"}},
                 {nameof(Dialog.Body), body}
             };
 

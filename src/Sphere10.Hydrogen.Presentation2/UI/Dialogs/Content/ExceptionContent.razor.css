@@ -1,0 +1,6 @@
+﻿.exception-details {
+    max-height: 300px;
+    overflow-x: auto;
+    overflow-y: auto;
+    font-size: .65rem;
+}

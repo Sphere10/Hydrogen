@@ -30,6 +30,12 @@
 @code {
     public override string Title { get; } = "Wallet Type";
 
+    protected override void OnParametersSet()
+    {
+        IsCancellable = false;
+        base.OnParametersSet();
+    }
+
     public override Task<Result> OnNextAsync()
     {
         if (Model.Type is WalletType.Standard)

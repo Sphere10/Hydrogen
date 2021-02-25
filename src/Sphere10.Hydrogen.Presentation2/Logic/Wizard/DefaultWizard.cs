@@ -56,7 +56,7 @@ namespace Sphere10.Hydrogen.Presentation2.Logic.Wizard
         /// <summary>
         /// Gets or sets the step collection - types of steps that will be shown
         /// </summary>
-        private IList<Type> Steps { get; set; }
+        private List<Type> Steps { get; set; }
 
         /// <summary>
         /// Gets the on finished function to run when the wizard is finished.
@@ -159,10 +159,13 @@ namespace Sphere10.Hydrogen.Presentation2.Logic.Wizard
             {
                 case StepUpdateType.Inject:
                 {
-                    Steps.InsertRangeSequentially(CurrentStepIndex + 1, types);
+                    if (Steps.GetRange(CurrentStepIndex + 1, types.Count) != types)
+                    {
+                        Steps.InsertRangeSequentially(CurrentStepIndex + 1, types);
+                    }
+
                     break;
                 }
-
                 case StepUpdateType.ReplaceAllNext:
                 {
                     if (HasNext)
@@ -200,5 +203,4 @@ namespace Sphere10.Hydrogen.Presentation2.Logic.Wizard
             }
         }
     }
-
 }

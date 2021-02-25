@@ -1,4 +1,5 @@
-﻿@inherits ModalComponent
+﻿@using Sphere10.Framework
+@inherits ModalComponent
 
 <ModalTemplate Options="@Options">
     <HeaderTemplate>
@@ -10,13 +11,17 @@
         </CascadingValue>
     </BodyTemplate>
     <FooterTemplate>
-        <a type="button" class="btn btn-primary btn-sm modal-btn" @onclick="Ok">@ConfirmMessageText</a>
+        @foreach ((string buttonText, int i) in ButtonsText.WithIndex())
+        {
+            <div class="btn-group">
+                <a type="button" class="btn btn-primary btn-sm" @onclick="() => OkData(i)">@buttonText</a>
+            </div>
+        }
     </FooterTemplate>
 </ModalTemplate>
 
 @code
 {
-#nullable enable
 
     [Parameter]
     public string Title { get; set; } = "Information";
@@ -28,7 +33,7 @@
     public RenderFragment? Body { get; set; }
 
     [Parameter]
-    public string ConfirmMessageText { get; set; } = "OK";
+    public string[] ButtonsText { get; set; }
 
     protected override void OnParametersSet()
     {

@@ -25,6 +25,7 @@
 
     <ItemGroup>
       <Folder Include="UI\Dialogs\Example" />
+      <Folder Include="UI\Wizard\Examples\Send" />
     </ItemGroup>
 
 </Project>

@@ -50,7 +50,7 @@ namespace Sphere10.Hydrogen.Presentation2.UI.Wizard {
         /// <summary>
         /// Gets a value indicating whether the wizard / step may be cancelled.
         /// </summary>
-        public virtual bool IsCancellable { get; } = true;
+        public bool IsCancellable { get; protected set; } = true;
 
         /// <summary>
         /// Called when the wizard requests the next step. Returning true will allow

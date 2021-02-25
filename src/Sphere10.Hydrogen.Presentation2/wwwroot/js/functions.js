@@ -18,6 +18,15 @@ window.initDataTableById = (id, options) => {
     $('#' + id).DataTable(options);
 }
 
+window.clipboardCopy = {
+    copyText: function(text) {
+        navigator.clipboard.writeText(text)
+            .catch(function (error) {
+                alert(error);
+            });
+    }
+};
+
 document.addEventListener("DOMContentLoaded", () => {
     let input = $('.search-input');
 

@@ -5,6 +5,7 @@
 @using Sphere10.Framework
 @using System.Threading
 @using Sphere10.Hydrogen.Presentation2.UI.Wizard.Examples
+@using Sphere10.Hydrogen.Presentation2.UI.Wizard.Examples.NewWallet
 @implements IDisposable
 
 <div class="row">
@@ -123,17 +124,19 @@
 
     private async Task Confirm()
     {
-        await ViewService.ConfirmDialogAsync("Confirm", "Are you sure you want to do that ?", "Yes");
+       bool result = await ViewService.ConfirmDialogAsync("Confirm", "Are you sure you want to do that ?", "Yes");
     }
 
     private async Task Info()
     {
-        await ViewService.DialogAsync(Severity.Info, "Information", "Something important has happened.", "Dismiss");
+        int i = await ViewService.DialogAsync("Information", "Something important has happened.", "Ignore", "Decline", "Accept");
+        
+        Console.WriteLine(i);
     }
 
     private async Task Warning()
     {
-        await ViewService.DialogAsync(Severity.Warning, "An error occured", "Something went wrong", "Dismiss");
+        await ViewService.DialogAsync("An error occured", "Something went wrong", "Dismiss");
     }
 
     private async Task Exception()
@@ -145,7 +148,7 @@
         }
         catch (Exception e)
         {
-            await ViewService.ExceptionDialogAsync(e, "Error");
+            await ViewService.DialogAsync(e, "Error");
         }
     }
 
@@ -169,7 +172,7 @@
             builder.CloseElement();
         };
 
-        await ViewService.DialogAsync(frag, "A custom dialog", "Got it");
+        await ViewService.DialogAsync(frag, "A custom dialog");
     }
 
     private async Task Wizard()
@@ -187,7 +190,7 @@
 
     private async Task OnRowSelectAsync(int i)
     {
-        await ViewService.DialogAsync(Severity.Info, "Number", i.ToString());
+        await ViewService.DialogAsync("Number", i.ToString());
     }
 
 

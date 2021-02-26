@@ -16,8 +16,7 @@ A  3-tier architecture decomposes a system into 3 primary tiers.
 
 **5.** **System**: general-purpose code that with no dependencies that can be used at any tier.
 
-![3-Tier Architecture](resources\3-Tier Architecture-75pct.png)
-
+![3-Tier Architecture](resources/3-Tier Architecture-75pct.png)
 
 
 ## Domains
@@ -26,7 +25,7 @@ A domain is an aspect of the application which spans across all the tiers. It is
 
 Domains in an an crypto-exchange application may include Users, Accounts, Markets, Blockchain-integration.
 
-![Domains](resources\Domains-75pct.png)
+![Domains](resources/Domains-75pct.png)
 
 
 
@@ -36,7 +35,7 @@ Whereas a domain is a vertical-slice across multiple-tiers, a  module is a horiz
 
 A module is synonymous with a "project" and in Hydrogen, a module **is a ** single .NET project. The naming convention for modules is
 
-![Modules](resources\Modules-75pct.png)
+![Modules](resources/Modules-75pct.png)
 
 ### Naming Convention
 
@@ -62,5 +61,5 @@ Sphere10.Hydrogen.Core     ; "Core" can be used as a "catch all" for the core ti
 
 A framework is a collection of modules structured and organized into a 3-tier architecture. Frameworks offer domains of functionality which are used to construct applications.
 
-![Framework](resources\Framework-75pct.png)
+![Framework](resources/Framework-75pct.png)
 

@@ -16,7 +16,7 @@ A  3-tier architecture decomposes a system into 3 primary tiers.
 
 **5.** **System**: general-purpose code that with no dependencies that can be used at any tier.
 
-![3-Tier Architecture](resources/3-Tier Architecture-75pct.png)
+![3-Tier Architecture](resources/3-Tier-Architecture-75pct.png)
 
 
 ## Domains

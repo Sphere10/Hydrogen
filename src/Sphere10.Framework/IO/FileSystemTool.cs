@@ -14,12 +14,14 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Sphere10.Framework;
+using Sphere10.Framework.FastReflection;
 
 // ReSharper disable CheckNamespace
 namespace Tools {
@@ -27,6 +29,8 @@ namespace Tools {
 
     public static class FileSystem {
 		public readonly static string DirectorySeparatorString;
+
+        
 
 
         static FileSystem() {
@@ -109,52 +113,8 @@ namespace Tools {
 				case "\\":
 				case "/":
 					return DirectorySeparatorString;
-				case "Programs":
-					return Environment.GetFolderPath(Environment.SpecialFolder.Programs);
-				case "Favorites":
-					return Environment.GetFolderPath(Environment.SpecialFolder.Favorites);
-				case "ApplicationData":
-					return Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-				case "Personal":
-					return Environment.GetFolderPath(Environment.SpecialFolder.Personal);
-				case "StartMenu":
-					return Environment.GetFolderPath(Environment.SpecialFolder.StartMenu);
-				case "Startup":
-					return Environment.GetFolderPath(Environment.SpecialFolder.Startup);
-				case "CommonApplicationData":
-					return Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData);
-				case "CommonProgramFiles":
-					return Environment.GetFolderPath(Environment.SpecialFolder.CommonProgramFiles);
-				case "Cookies":
-					return Environment.GetFolderPath(Environment.SpecialFolder.Cookies);
-				case "Desktop":
-					return Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-				case "DesktopDirectory":
-					return Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
-				case "History":
-					return Environment.GetFolderPath(Environment.SpecialFolder.History);
-				case "InternetCache":
-					return Environment.GetFolderPath(Environment.SpecialFolder.InternetCache);
-				case "LocalApplicationData":
-					return Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-				case "MyComputer":
-					return Environment.GetFolderPath(Environment.SpecialFolder.MyComputer);
-				case "MyDocuments":
-					return Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-				case "MyMusic":
-					return Environment.GetFolderPath(Environment.SpecialFolder.MyMusic);
-				case "MyPictures":
-					return Environment.GetFolderPath(Environment.SpecialFolder.MyPictures);
-				case "ProgramFiles":
-					return Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
-				case "Recent":
-					return Environment.GetFolderPath(Environment.SpecialFolder.Recent);
-				case "SendTo":
-					return Environment.GetFolderPath(Environment.SpecialFolder.SendTo);
-				case "System":
-					return Environment.GetFolderPath(Environment.SpecialFolder.System);
-				case "Templates":
-					return Environment.GetFolderPath(Environment.SpecialFolder.Templates);
+				case string specialFolder when typeof(Environment.SpecialFolder).FastGetEnumNames().Contains(specialFolder): 
+					return Environment.GetFolderPath(Enum.Parse<Environment.SpecialFolder>(specialFolder));
 			}
 			return token;
 		}

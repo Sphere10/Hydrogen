@@ -39,5 +39,10 @@ namespace Sphere10.Framework.FastReflection {
         public static object FastInvoke(this ConstructorInfo constructorInfo, params object[] parameters) {
             return FastReflectionCaches.ConstructorInvokerCache.Get(constructorInfo).Invoke(parameters);
         }
+
+		public static string[] FastGetEnumNames(this Type type) {
+			return FastReflectionCaches.EnumNamesCache[type];
+		}
+
     }
 }

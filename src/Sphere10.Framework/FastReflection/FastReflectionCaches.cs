@@ -22,11 +22,14 @@ namespace Sphere10.Framework.FastReflection {
 
     public static class FastReflectionCaches {
         static FastReflectionCaches() {
+            EnumNamesCache = new ActionCache<Type, string[]>( t => t.GetEnumNames());
             MethodInvokerCache = new ActionCache<MethodInfo, MethodInvoker>(mi => new MethodInvoker(mi));
             PropertyAccessorCache = new ActionCache<PropertyInfo, PropertyAccessor>(pi => new PropertyAccessor(pi));
             FieldAccessorCache = new ActionCache<FieldInfo, FieldAccessor>(fi => new FieldAccessor(fi));
             ConstructorInvokerCache = new ActionCache<ConstructorInfo, ConstructorInvoker>( ci => new ConstructorInvoker(ci));
         }
+
+		public static ICache<Type, string[]> EnumNamesCache { get; set; }
 
         public static ICache<MethodInfo, MethodInvoker> MethodInvokerCache { get; set; }
 

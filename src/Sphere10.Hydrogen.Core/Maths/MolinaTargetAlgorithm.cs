@@ -29,7 +29,7 @@ namespace Sphere10.Hydrogen.Core.Maths {
     /// Of note, the CompactTarget represents a UInt32 version of target but retains orderable properties, such that
     /// the higher the CompactTarget the "more difficult" it is. Bitcoin's nBits does not retain this property.
     /// </summary>
-    public class MolinaTargetAlgorithm : ITargetAlgorithm {
+    public class MolinaTargetAlgorithm : ICompactTargetAlgorithm {
 		readonly uint _bitmask;
 		readonly uint _minZeros;
 		readonly uint _maxZeros;
@@ -111,7 +111,7 @@ namespace Sphere10.Hydrogen.Core.Maths {
 		}
 
 		public uint AggregateWork(uint aggregation, uint newBlockCompactTarget) {
-			throw new NotImplementedException();
+			return FromTarget(ToTarget(aggregation) + ToTarget(newBlockCompactTarget));
 		}
 
 	}

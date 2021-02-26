@@ -25,7 +25,7 @@ namespace Sphere10.Hydrogen.Core.Mining {
 
 		public override uint BlockHeight => (uint)_blockTimes.Count;
 
-		public TestMiningManager(CHF hashAlgorithm, ITargetAlgorithm targetAlgorithm, IDAAlgorithm daAlgorithm, IObjectSerializer<NewMinerBlock> blockSerializer, TimeSpan rttInternal ) 
+		public TestMiningManager(CHF hashAlgorithm, ICompactTargetAlgorithm targetAlgorithm, IDAAlgorithm daAlgorithm, IObjectSerializer<NewMinerBlock> blockSerializer, TimeSpan rttInternal ) 
 			: base(hashAlgorithm, targetAlgorithm, daAlgorithm, blockSerializer, new Configuration { RTTInterval = rttInternal }) {
 			_blockTimes = new List<DateTime>();
 			AllStats = new Statistics();

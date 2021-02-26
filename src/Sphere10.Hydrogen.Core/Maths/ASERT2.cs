@@ -12,13 +12,13 @@ namespace Sphere10.Hydrogen.Core.Maths {
 
     public class ASERT2 : ASERT_RTT {
 
-		public ASERT2(ITargetAlgorithm targetAlgorithm, ASERTConfiguration configuration) 
+		public ASERT2(ICompactTargetAlgorithm targetAlgorithm, ASERTConfiguration configuration) 
             : base(targetAlgorithm, configuration) {
 		}
 
 		public override uint CalculateNextBlockTarget(IEnumerable<DateTime> previousBlockTimestamps, uint previousCompactTarget, uint blockNumber) {
             if (previousBlockTimestamps.Count() < 2)
-                return PoWAlgorithm.MinCompactTarget; // start at minimum
+                return TargetAlgorithm.MinCompactTarget; // start at minimum
 
             var lastBlockTimes = previousBlockTimestamps.Take(2).ToArray();
             return CalculateNextBlockTarget(

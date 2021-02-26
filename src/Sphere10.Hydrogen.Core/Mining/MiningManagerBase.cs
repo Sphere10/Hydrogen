@@ -14,7 +14,7 @@ namespace Sphere10.Hydrogen.Core.Mining {
 		public event EventHandlerEx<object, MiningPuzzle, MiningSolutionResult> SolutionSubmited;
 		public event EventHandlerEx<object, MiningPuzzle, MiningSolutionResult> StatusChanged;
 
-		protected MiningManagerBase(CHF hashAlgorithm, ITargetAlgorithm powAlgorithm, IDAAlgorithm daAlgorithm, IObjectSerializer<NewMinerBlock> blockSerializer,  Configuration config) {
+		protected MiningManagerBase(CHF hashAlgorithm, ICompactTargetAlgorithm powAlgorithm, IDAAlgorithm daAlgorithm, IObjectSerializer<NewMinerBlock> blockSerializer,  Configuration config) {
 			HashAlgorithm = hashAlgorithm;
 			DAAlgorithm = daAlgorithm;
 			PoWAlgorithm = powAlgorithm;
@@ -32,7 +32,7 @@ namespace Sphere10.Hydrogen.Core.Mining {
 
 		protected IDAAlgorithm DAAlgorithm { get; }
 
-		protected ITargetAlgorithm PoWAlgorithm { get; }
+		protected ICompactTargetAlgorithm PoWAlgorithm { get; }
 
 		protected Configuration Config { get; }
 

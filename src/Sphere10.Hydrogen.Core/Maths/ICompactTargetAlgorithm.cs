@@ -3,7 +3,7 @@ using System.Numerics;
 
 namespace Sphere10.Hydrogen.Core.Maths {
 
-	public interface ITargetAlgorithm {
+	public interface ICompactTargetAlgorithm {
 
 		uint MinCompactTarget { get; }
 
@@ -22,15 +22,15 @@ namespace Sphere10.Hydrogen.Core.Maths {
 		uint AggregateWork(uint compactAggregation, uint newBlockCompactWork);
 	}
 
-	public static class ITargetAlgorithmExtensions {
-		public static byte[] ToDigest(this ITargetAlgorithm alg, uint compactTaget) {
+	public static class ICompactTargetAlgorithmExtensions {
+		public static byte[] ToDigest(this ICompactTargetAlgorithm alg, uint compactTaget) {
 			var bytes = new byte[32];
 			alg.ToDigest(compactTaget, bytes);
 			return bytes;
 
 		}
 
-		public static byte[] ToDigest(this ITargetAlgorithm alg, BigInteger target) {
+		public static byte[] ToDigest(this ICompactTargetAlgorithm alg, BigInteger target) {
 			var bytes = new byte[32];
 			alg.ToDigest(target, bytes);
 			return bytes;

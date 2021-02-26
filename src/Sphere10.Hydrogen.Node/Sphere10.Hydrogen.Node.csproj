@@ -6,6 +6,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Properties\node.ini" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Properties\node.ini" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="NStack.Core" Version="0.16.0" />
     <PackageReference Include="Terminal.Gui" Version="1.0.0-pre.6" />
   </ItemGroup>

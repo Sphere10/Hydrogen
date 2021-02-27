@@ -15,8 +15,4 @@
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.5.0" />
     </ItemGroup>
 
-    <ItemGroup>
-      <ProjectReference Include="..\Sphere10.Hydrogen.Presentation.Loader\Sphere10.Hydrogen.Presentation.Loader.csproj" />
-    </ItemGroup>
-
 </Project>

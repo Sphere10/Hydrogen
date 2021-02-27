@@ -20,7 +20,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Sphere10.Framework\Sphere10.Framework.csproj" />
-    <ProjectReference Include="..\Sphere10.Hydrogen.Core\Sphere10.Hydrogen.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup>

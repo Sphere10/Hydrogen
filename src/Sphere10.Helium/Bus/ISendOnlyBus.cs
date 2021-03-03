@@ -21,10 +21,7 @@ namespace Sphere10.Helium.Bus
 
         ICallback Send(string destination, string correlationId, object message);
 
-        ICallback Send<T>(
-          string destination,
-          string correlationId,
-          Action<T> messageConstructor);
+        ICallback Send<T>(string destination, string correlationId, Action<T> messageConstructor);
 
         IDictionary<string, string> OutgoingHeaders { get; }
     }

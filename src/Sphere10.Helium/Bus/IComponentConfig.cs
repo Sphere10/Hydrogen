@@ -10,8 +10,6 @@ namespace Sphere10.Helium.Bus
 
     public interface IComponentConfig<T>
     {
-        IComponentConfig<T> ConfigureProperty(
-            Expression<Func<T, object>> property,
-            object value);
+        IComponentConfig<T> ConfigureProperty(Expression<Func<T, object>> property, object value);
     }
 }

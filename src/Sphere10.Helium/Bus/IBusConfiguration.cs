@@ -3,6 +3,7 @@
     public interface IBusConfiguration
     {
         public string EndpointName { get; set; }
+
         public EnumEndpointType EndpointType { get; set; }
     }
 }

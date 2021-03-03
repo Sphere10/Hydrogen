@@ -25,6 +25,5 @@ namespace Sphere10.Helium.Bus
         IMessageContext CurrentMessageContext { get; }
 
         void SetMessageHeader(object message, string headerName, string headerValue);
-
     }
 }

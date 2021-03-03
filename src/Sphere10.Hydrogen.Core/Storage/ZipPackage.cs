@@ -18,15 +18,15 @@ namespace Sphere10.Hydrogen.Core.Storage {
         protected ZipArchive _archive;
 
         public ZipPackage(string filename) {
-            Filename = filename;
+            FilePath = filename;
         }
         
         public virtual string Name {
-            get => Path.GetFileNameWithoutExtension(Filename);
-            set => Tools.FileSystem.RenameFile(Filename, value);
+            get => Path.GetFileName(FilePath);
+            set => Tools.FileSystem.RenameFile(FilePath, value);
         }
 
-        public string Filename { get; set; }
+        public string FilePath { get; set; }
 
         public void ExtractTo(string directory, bool overwrite = false) {
             EnsureReadable();
@@ -64,16 +64,16 @@ namespace Sphere10.Hydrogen.Core.Storage {
 
         protected override void OnSetupRead() {
             base.OnSetupRead();
-            if (!File.Exists(Filename))
-                throw new FileNotFoundException("Package not found", Filename);
-            _stream = File.OpenRead(Filename);
+            if (!File.Exists(FilePath))
+                throw new FileNotFoundException("Package not found", FilePath);
+            _stream = File.OpenRead(FilePath);
             _archive = new ZipArchive(_stream, ZipArchiveMode.Read);
         }
 
         protected override void OnSetupWrite() {
             base.OnSetupWrite();
-            var exists = File.Exists(Filename);
-            _stream = File.Open(Filename, FileMode.OpenOrCreate);
+            var exists = File.Exists(FilePath);
+            _stream = File.Open(FilePath, FileMode.OpenOrCreate);
             _archive = new ZipArchive(_stream, exists ? ZipArchiveMode.Update : ZipArchiveMode.Create);
         }
 

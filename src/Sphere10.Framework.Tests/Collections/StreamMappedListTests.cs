@@ -37,7 +37,17 @@ namespace Sphere10.Framework.Tests {
 			list.Add("item1");
 			Assert.AreEqual(1, list.Count);
 		}
+		
+		[Test]
+		public void V1_Update_1([Values(1, 111)] int pageSize) {
+			var stream = new MemoryStream();
+			var list = new StreamMappedList<string>(pageSize, new StringSerializer(Encoding.ASCII), stream);
 
+			list.Add("item1");
+			list.Update(0, "item2");
+			
+			Assert.AreEqual("item2", list[0]);
+		}
 
 		[Test]
 		public void V1_Add_2([Values(1, 2, 111)] int pageSize) {

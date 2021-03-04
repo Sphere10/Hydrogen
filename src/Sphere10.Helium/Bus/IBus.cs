@@ -1,29 +1,28 @@
 ﻿using System;
+using Sphere10.Helium.MessageType;
 
 namespace Sphere10.Helium.Bus
 {
     public interface IBus : ISendOnlyBus, IDisposable
     {
-        void Subscribe<T>();
+        void Subscribe<TK>();
 
-        void Unsubscribe<T>();
+        void Unsubscribe<TK>();
 
-        ICallback SendLocal<T>(Action<T> messageConstructor);
+        ICallback SendLocal<TK>(IMessage message);
 
-        ICallback Defer(TimeSpan delay, object message);
+        ICallback RegisterTimeout(TimeSpan delay, IMessage message);
 
-        ICallback Defer(DateTime processAt, object message);
+        ICallback RegisterTimeout(TimeSpan delay, IMessage message, IMessageHeader messageHeader);
 
-        void Reply<T>(Action<T> messageConstructor);
+        ICallback RegisterTimeout(DateTime processAt, IMessage message);
 
-        void Return<T>(T errorEnum);
+        ICallback RegisterTimeout(DateTime processAt, IMessageHeader messageHeader);
 
-        void HandleCurrentMessageLater();
+        void Reply<TK>(Action<TK> messageConstructor);
 
-        void ForwardCurrentMessageTo(string destination);
+        void Return<TK>(TK errorEnum);
 
-        IMessageContext CurrentMessageContext { get; }
-
-        void SetMessageHeader(object message, string headerName, string headerValue);
+        IMessageHeader GetCurrentMessageHeader { get; }
     }
 }

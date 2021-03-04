@@ -1,5 +1,6 @@
 ﻿using System;
 using Sphere10.Helium.Bus;
+using Sphere10.Helium.MessageType;
 
 namespace Sphere10.Helium.Saga
 {
@@ -28,42 +29,27 @@ namespace Sphere10.Helium.Saga
             }
         }
 
-        protected void RequestTimeout<TTimeoutMessageType>(DateTime at) where TTimeoutMessageType : new() => RequestTimeout<TTimeoutMessageType>(at, new TTimeoutMessageType());
-
-        protected void RequestTimeout<TTimeoutMessageType>(DateTime at, TTimeoutMessageType timeoutMessage)
+        protected void RequestTimeout<TTimeoutMessageType>(DateTime at, IMessage timeoutMessage)
         {
             if (at.Kind == DateTimeKind.Unspecified) throw new InvalidOperationException("The Kind for DateTime 'at' must be specified. Cannot Proceed!");
 
             VerifySagaCanHandleTimeout(timeoutMessage);
 
-            SetTimeoutHeaders(timeoutMessage);
-
-            Bus.Defer(at, timeoutMessage);
+            Bus.RegisterTimeout(at, timeoutMessage);
         }
 
-        protected void RequestTimeout<TTimeoutMessageType>(TimeSpan within) where TTimeoutMessageType : new() => this.RequestTimeout<TTimeoutMessageType>(within, new TTimeoutMessageType());
+        protected void RequestTimeout<IMessage>(TimeSpan within, IMessage timeoutMessage)
+        {
+            VerifySagaCanHandleTimeout<IMessage>(timeoutMessage);
+            var callback = Bus.RegisterTimeout(within, timeoutMessage as MessageType.IMessage);
+        }
         
-        protected void RequestTimeout<TTimeoutMessageType>(TimeSpan within, TTimeoutMessageType timeoutMessage)
-        {
-            VerifySagaCanHandleTimeout<TTimeoutMessageType>(timeoutMessage);
-            SetTimeoutHeaders(timeoutMessage);
-            Bus.Defer(within, timeoutMessage);
-        }
-
-        private void SetTimeoutHeaders(object toSend)
-        {
-            Bus.SetMessageHeader(toSend, "SagaId", Entity.Id.ToString());
-            Bus.SetMessageHeader(toSend, "IsSagaTimeoutMessage", bool.TrueString);
-            Bus.SetMessageHeader(toSend, "SagaType", GetType().AssemblyQualifiedName);
-        }
-
-        protected virtual void ReplyToOriginator(object message)
+        protected virtual void ReplyToOriginator(IMessage message)
         {
             if (string.IsNullOrEmpty(this.Entity.Originator))
                 throw new Exception("Cannot proceed! Entity.Originator is null.");
             
-            Bus.SetMessageHeader(message, "$.temporary.ReplyToOriginator", nameof(ReplyToOriginator));
-            Bus.Send(Entity.Originator, Entity.OriginalMessageId, message);
+            //Bus.SendAndForget(Entity.Originator, message, new NotI{} as IMessageHeader );
         }
 
         protected virtual void MarkAsComplete() => Completed = true;

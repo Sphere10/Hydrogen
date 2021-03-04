@@ -2,7 +2,7 @@
 
 namespace Sphere10.Helium.Bus
 {
-    public interface IMessageContext
+    public interface IMessageHeader
     {
         string Id { get; }
 

@@ -2,5 +2,6 @@
 {
     public interface IMessage
     {
+        public string Id { get; set; }
     }
 }

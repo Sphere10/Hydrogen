@@ -4,7 +4,7 @@
     {
         public BusConfiguration() { }
 
-        public string EndpointName { get; set; }
+        public string SourceEndpointName { get; set; }
 
         public EnumEndpointType EndpointType { get; set; }
     }

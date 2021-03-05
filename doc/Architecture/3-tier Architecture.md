@@ -2,28 +2,29 @@
 
 A  3-tier architecture decomposes a system into 3 primary tiers.
 
-**1.**  **Presentation**: responsible for all aspects of the User Interface (UI). Includes graphical, console and service application executables. Contains all presentation-oriented modules that may depend on processing-tier modules for acquiring their data models defined in the Data Objects tier.
+1. **Presentation**: responsible for all aspects of the User Interface (UI). Includes graphical, console and service application executables. Contains all presentation-oriented modules that may depend on processing-tier modules for acquiring their data models defined in the Data Objects tier.
 
-**2.**  **Processing**: responsible for computational and algorithmic modules. Includes application logic, business logic, consensus rules, security, cryptography.  This tier contains computational-oriented projects which do not depend on user interaction, but may on data tier.
+2. **Processing**: responsible for computational and algorithmic modules. Includes application logic, business logic, consensus rules, security, cryptography.  This tier contains computational-oriented projects which do not depend on user interaction, but may on data tier.
 
-**3.A.**  **Data**: responsible for storage-oriented modules. Includes database drivers, blockchain databases, relational databases, file-based storage formats.
+3. **Data**: responsible for storage-oriented modules. Includes database drivers, blockchain databases, relational databases, file-based storage formats.
 
-**3.B.** **Communications**: responsible for all communication modules in the application. These modules include TCP/IP libraries, JSON API clients and services, Web Sockets libraries for the application.
 
 ### Ancillary-tiers
 
-**4.** **Data Objects**: a collection of modules that define data objects used throughout the 3 primary tiers. These include light-weight data objects, POCO, file format definitions, database entities, blockchain objects, data-transfer objects (DTOs).
+4. **Communications**: responsible for all communication modules in the application. These modules include TCP/IP libraries, JSON API clients and services, Web Sockets libraries for the application. This tier is contained within the Data-tier.
 
-**5.** **System**: general-purpose code that with no dependencies that can be used at any tier.
+5. **Data Objects**: a collection of modules that define data objects used throughout the 3 primary tiers. These include light-weight data objects, POCO, file format definitions, database entities, blockchain objects, data-transfer objects (DTOs).
+
+6. **System**: general-purpose code that with no dependencies that can be used at any tier.
 
 ![3-Tier Architecture](resources/3-Tier-Architecture-75pct.png)
 
 
 ## Domains
 
-A domain is an aspect of the application which spans across all the tiers. It is essentially a vertical slice of the tiers which models a logical group of abstractions.
+A domain is an aspect of the application which spans across some (or all) the tiers. It is essentially a vertical slice through the architecture which models models a logically related set of abstractions. For example, in a "School" model the domains may include Teachers, Students, Admin, Classes, Subjects, Exams, etc.  Each of those domains has modules in the presentation, processing and data tiers respectively (as well as ancillary tiers). However, some domains may only have modules in one or two tiers.
 
-Domains in an an crypto-exchange application may include Users, Accounts, Markets, Blockchain-integration.
+
 
 ![Domains](resources/Domains-75pct.png)
 
@@ -31,15 +32,13 @@ Domains in an an crypto-exchange application may include Users, Accounts, Market
 
 ## Modules
 
-Whereas a domain is a vertical-slice across multiple-tiers, a  module is a horizontal slice of a single tier. These include code-libraries (a .net project), executable code (GUI, console, plugin), resources packages (graphics, sounds, etc). 
-
-A module is synonymous with a "project" and in Hydrogen, a module **is a ** single .NET project. The naming convention for modules is
+Whereas a domain is a vertical-slice across multiple-tiers, a  module is a horizontal slice within single tier. A module is synonymous with a "code-library" and a ".NET project". A module can also consist of the executable project (GUI, console, plugin), resources packages for graphics, sounds, etc.   
 
 ![Modules](resources/Modules-75pct.png)
 
-### Naming Convention
+#### Naming Convention
 
-Modules are named according to the following convention `Company.Product.Tier.Domain`.
+The naming convention for modules is: `Company.Product.Tier.Domain`.
 
 **Examples**
 

@@ -3,7 +3,7 @@ using Sphere10.Helium.Message;
 
 namespace Sphere10.Helium.Timeout
 {
-    public interface ITimeoutManager
+    public interface ITimeout
     {
         protected string TimeoutMessageId { get; set; }
 

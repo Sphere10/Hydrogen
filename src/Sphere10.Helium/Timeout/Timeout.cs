@@ -4,13 +4,13 @@ using Sphere10.Helium.Queue;
 
 namespace Sphere10.Helium.Timeout
 {
-    public class TimeoutManager : ITimeoutManager
+    public class Timeout : ITimeout
     {
-        string ITimeoutManager.TimeoutMessageId { get; set; } = Config.Config.TimeoutMessageId;
+        string ITimeout.TimeoutMessageId { get; set; } = Config.Config.TimeoutMessageId;
         
         private readonly IQueueManager _queueManager;
         
-        public TimeoutManager(IQueueManager queueManager)
+        public Timeout(IQueueManager queueManager)
         {
             _queueManager = queueManager;
         }

@@ -1,9 +1,9 @@
 ﻿using System;
-using Sphere10.Helium.MessageType;
+using Sphere10.Helium.Message;
 
 namespace Sphere10.Helium.Bus
 {
-    public interface IBus : ISendOnlyBus, IDisposable
+    public interface IBus : ISendOnlyBus
     {
         void Subscribe<TK>();
 
@@ -23,6 +23,5 @@ namespace Sphere10.Helium.Bus
 
         void Return<TK>(TK errorEnum);
 
-        IMessageHeader GetCurrentMessageHeader { get; }
     }
 }

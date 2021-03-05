@@ -1,5 +1,5 @@
 ﻿using Sphere10.Helium.Handler;
-using Sphere10.Helium.MessageType;
+using Sphere10.Helium.Message;
 
 namespace Sphere10.Helium.Saga
 {

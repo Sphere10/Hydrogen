@@ -1,6 +1,6 @@
 ﻿using System;
 using Sphere10.Helium.Bus;
-using Sphere10.Helium.MessageType;
+using Sphere10.Helium.Message;
 
 namespace Sphere10.Helium.Saga
 {
@@ -41,7 +41,7 @@ namespace Sphere10.Helium.Saga
         protected void RequestTimeout<IMessage>(TimeSpan within, IMessage timeoutMessage)
         {
             VerifySagaCanHandleTimeout<IMessage>(timeoutMessage);
-            var callback = Bus.RegisterTimeout(within, timeoutMessage as MessageType.IMessage);
+            var callback = Bus.RegisterTimeout(within, timeoutMessage as Message.IMessage);
         }
         
         protected virtual void ReplyToOriginator(IMessage message)
@@ -49,7 +49,7 @@ namespace Sphere10.Helium.Saga
             if (string.IsNullOrEmpty(this.Entity.Originator))
                 throw new Exception("Cannot proceed! Entity.Originator is null.");
             
-            //Bus.SendAndForget(Entity.Originator, message, new NotI{} as IMessageHeader );
+            //BusSetup.SendAndForget(Entity.Originator, message, new NotI{} as IMessageHeader );
         }
 
         protected virtual void MarkAsComplete() => Completed = true;

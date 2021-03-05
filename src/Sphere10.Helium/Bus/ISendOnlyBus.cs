@@ -1,9 +1,9 @@
 ﻿using System;
-using Sphere10.Helium.MessageType;
+using Sphere10.Helium.Message;
 
 namespace Sphere10.Helium.Bus
 {
-    public interface ISendOnlyBus : IDisposable
+    public interface ISendOnlyBus
     {
         void SendAndForget(string destination, IMessage message);
 

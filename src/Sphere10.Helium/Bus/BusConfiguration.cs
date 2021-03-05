@@ -2,10 +2,10 @@
 {
     public class BusConfiguration : IBusConfiguration
     {
-        public BusConfiguration() { }
-
         public string SourceEndpointName { get; set; }
 
         public EnumEndpointType EndpointType { get; set; }
+
+        public bool IsPersisted { get; set; } = true;
     }
 }

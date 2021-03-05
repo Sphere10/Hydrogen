@@ -1,10 +1,20 @@
 ﻿using System;
 using Sphere10.Helium.Message;
+using Sphere10.Helium.Queue;
 
 namespace Sphere10.Helium.Timeout
 {
     public class TimeoutManager : ITimeoutManager
     {
+        string ITimeoutManager.TimeoutMessageId { get; set; } = Config.Config.TimeoutMessageId;
+        
+        private readonly IQueueManager _queueManager;
+        
+        public TimeoutManager(IQueueManager queueManager)
+        {
+            _queueManager = queueManager;
+        }
+        
         public void PutTimeoutMessageInQueue(IMessage message)
         {
             throw new NotImplementedException();

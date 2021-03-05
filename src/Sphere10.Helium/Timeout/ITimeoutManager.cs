@@ -5,14 +5,16 @@ namespace Sphere10.Helium.Timeout
 {
     public interface ITimeoutManager
     {
-        void PutTimeoutMessageInQueue(IMessage message);
+        protected string TimeoutMessageId { get; set; }
 
-        IMessage GetTimeoutMessageFromQueue();
+        public void PutTimeoutMessageInQueue(IMessage message);
 
-        void AddTimeout(TimeSpan delay, string messageId);
+        public IMessage GetTimeoutMessageFromQueue();
 
-        void AddTimeout(DateTime processAt, string messageId);
+        public void AddTimeout(TimeSpan delay, string messageId);
+        
+        public void AddTimeout(DateTime processAt, string messageId);
 
-        void RemoveTimeout(string messageId);
+        public void RemoveTimeout(string messageId);
     }
 }

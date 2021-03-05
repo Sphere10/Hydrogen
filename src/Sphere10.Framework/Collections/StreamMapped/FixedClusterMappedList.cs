@@ -28,6 +28,10 @@ namespace Sphere10.Framework.Collections
             Stream stream)
         {
             _clusters = new StreamMappedList<Cluster>(1, new ClusterSerializer(clusterSize), stream);
+            if (_clusters.RequiresLoad)
+            {
+                _clusters.Load();
+            }
 
             _clusterSize = clusterSize;
             _listingClusterCount = listingClusterCount;
@@ -174,8 +178,10 @@ namespace Sphere10.Framework.Collections
             {
                 StorageItemListing listing = _listingSector.GetItem(index + i);
                 IEnumerable<int> numbers = RemoveDataFromClusters(listing.StartIndex);
-                removedItems.Add((index + 1, numbers));
+                removedItems.Add((index + i, numbers));
             }
+            
+            _listingSector.RemoveItemRange(removedItems);
 
             UpdateListingSector();
         }

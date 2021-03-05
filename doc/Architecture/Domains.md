@@ -2,6 +2,27 @@
 
 Hydrogen is composed of the following domains.
 
+
+
+| Domain       | Sub-Domain        | Modules                                                      | Notes |
+| ------------ | ----------------- | ------------------------------------------------------------ | ----- |
+| Framework    | IoC               | [Sphere10.Framework/IoC](https://github.com/Sphere10/Hydrogen/tree/master/src/Sphere10.Framework/IoC)<br />[Sphere10.Framework.Application/ComponentRegistry](https://github.com/Sphere10/Hydrogen/tree/master/src/Sphere10.Framework.Application/ComponentRegistry) |       |
+| Framework    | Collections       | [Sphere10.Framework/Collections](https://github.com/Sphere10/Hydrogen/tree/master/src/Sphere10.Framework/Collections) |       |
+| Cryptography | Base Abstractions |                                                              |       |
+| Cryptography | Logging           |                                                              |       |
+| Cryptography | Serialization     |                                                              |       |
+| Consensus    | Blockchain        |                                                              |       |
+| Consensus    | Merkle Trees      |                                                              |       |
+| Consensus    |                   |                                                              |       |
+| Consensus    |                   |                                                              |       |
+| Consensus    |                   |                                                              |       |
+| Consensus    |                   |                                                              |       |
+|              |                   |                                                              |       |
+
+
+
+
+
 ## Sphere 10 Framework
 
 1. IoC

@@ -5,17 +5,17 @@ namespace Sphere10.Helium.Queue
 {
     public class QueueManager : IQueueManager
     {
-        public void PutMessageInQueue(IMessage message)
+        public void FirstIn(IMessage message)
         {
             throw new NotImplementedException();
         }
 
-        public void TakeMessageFromQueue(IMessage message)
+        public void LastOut(IMessage message)
         {
             throw new NotImplementedException();
         }
 
-        public void TakeThisMessageFromQueue(IMessage message)
+        public void TakeThisMessageOffQueue(IMessage message)
         {
             throw new NotImplementedException();
         }

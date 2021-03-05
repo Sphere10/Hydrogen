@@ -4,11 +4,11 @@ namespace Sphere10.Helium.Queue
 {
     public interface IQueueManager
     {
-        void PutMessageInQueue(IMessage message);
+        void FirstIn(IMessage message);
 
-        void TakeMessageFromQueue(IMessage message);
+        void LastOut(IMessage message);
 
-        void TakeThisMessageFromQueue(IMessage message);
+        void TakeThisMessageOffQueue(IMessage message);
 
         void PersistQueue();
     }

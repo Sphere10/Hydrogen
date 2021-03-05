@@ -22,6 +22,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Sphere10.Hydrogen.Presentation.WidgetGallery\Sphere10.Hydrogen.Presentation.WidgetGallery.csproj" />
+    <ProjectReference Include="..\Sphere10.Hydrogen.Presentation\Sphere10.Hydrogen.Presentation.csproj" />
   </ItemGroup>
 
   <ItemGroup>

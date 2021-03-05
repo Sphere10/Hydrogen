@@ -18,22 +18,17 @@ namespace Sphere10.Helium.Bus
             _queueManager = queueManager;
         }
 
+        public ICallback SendLocal<TK>(IMessage message, IMessageHeader missingName)
+        {
+            throw new NotImplementedException();
+        }
+
         public ICallback RegisterTimeout(TimeSpan delay, IMessage message)
         {
             throw new NotImplementedException();
         }
 
-        public ICallback RegisterTimeout(TimeSpan delay, IMessage message, IMessageHeader messageHeader)
-        {
-            throw new NotImplementedException();
-        }
-
         public ICallback RegisterTimeout(DateTime processAt, IMessage message)
-        {
-            throw new NotImplementedException();
-        }
-
-        public ICallback RegisterTimeout(DateTime processAt, IMessageHeader messageHeader)
         {
             throw new NotImplementedException();
         }

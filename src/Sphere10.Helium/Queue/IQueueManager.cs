@@ -10,6 +10,6 @@ namespace Sphere10.Helium.Queue
 
         void TakeThisMessageFromQueue(IMessage message);
 
-        void PerssitQueue();
+        void PersistQueue();
     }
 }

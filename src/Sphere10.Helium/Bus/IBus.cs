@@ -11,13 +11,11 @@ namespace Sphere10.Helium.Bus
 
         ICallback SendLocal<TK>(IMessage message);
 
+        ICallback SendLocal<TK>(IMessage message, IMessageHeader messageHeader);
+
         ICallback RegisterTimeout(TimeSpan delay, IMessage message);
 
-        ICallback RegisterTimeout(TimeSpan delay, IMessage message, IMessageHeader messageHeader);
-
         ICallback RegisterTimeout(DateTime processAt, IMessage message);
-
-        ICallback RegisterTimeout(DateTime processAt, IMessageHeader messageHeader);
 
         void Reply<TK>(Action<TK> messageConstructor);
 

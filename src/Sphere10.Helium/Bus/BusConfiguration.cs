@@ -1,4 +1,6 @@
-﻿namespace Sphere10.Helium.Bus
+﻿using Sphere10.Helium.Queue;
+
+namespace Sphere10.Helium.Bus
 {
     public class BusConfiguration : IBusConfiguration
     {
@@ -9,17 +11,11 @@
         public bool IsPersisted { get; set; } = true;
 
         public string FilePathForLocalQueuePersistence { get; set; }
+        
+        public string FileName { get; set; }
+
+        public QueueConfigDto QueueConfigDto { get; set; }
 
         public int PageSize { get; set; }
-
-        public int InMemoryPages { get; set; }
-
-        public int ClusterSize { get; set; }
-
-        public int ListingClusterCount { get; set; }
-
-        public int StorageClusterCount { get; set; }
-
-        public string FileNameForLocalQueue { get; set; }
     }
 }

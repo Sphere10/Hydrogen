@@ -12,7 +12,7 @@ namespace Sphere10.Helium.Usage
         }
     }
 
-    public class BlueHandlerMessage : IMessage
+    public record BlueHandlerMessage : IMessage
     {
         public string Id { get; set; }
     }

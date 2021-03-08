@@ -10,6 +10,11 @@ namespace Sphere10.Helium.Saga
 
         public ISagaDataForSaga Entity { get; set; }
 
+        protected Saga(IBus bus)
+        {
+            _bus = bus;
+        }
+
         protected internal abstract void ConfigureHowToFindSaga(IFindSaga sagaFindMap);
 
         public IBus Bus

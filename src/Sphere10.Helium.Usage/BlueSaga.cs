@@ -12,11 +12,11 @@ namespace Sphere10.Helium.Usage
         IHandleMessage<BlueSagaWorkflow1>,
         IHandleMessage<BlueSagaWorkflow2>
     {
-        public new IBus Bus;
-        
-        public BlueSaga(IBus bus)
+        private readonly IBus _bus;
+
+        public BlueSaga(IBus bus) : base(bus)
         {
-            Bus = bus;
+            _bus = bus;
         }
         
         protected override void ConfigureHowToFindSaga(SagaPropertyMapper<BlueSagaData> mapper)
@@ -29,7 +29,9 @@ namespace Sphere10.Helium.Usage
         public void Handle(BlueSagaStart message)
         {
             Data.Id = Guid.NewGuid();
-            
+
+            _bus.SendLocal<BlueSagaStart>(message);
+
             throw new NotImplementedException();
         }
 
@@ -49,6 +51,8 @@ namespace Sphere10.Helium.Usage
         }
     }
 
+    //////////////////////////////////////////////////////////////////////
+
     public class BlueSagaData : ISagaDataForSaga
     {
         public Guid Id { get; set; }
@@ -56,22 +60,22 @@ namespace Sphere10.Helium.Usage
         public string OriginalMessageId { get; set; }
     }
 
-    public class BlueSagaStart : ICommand
+    public record BlueSagaStart : ICommand
     {
         public string Id { get; set; }
     }
 
-    public class BlueSagaEnd : ICommand
+    public record BlueSagaEnd : ICommand
     {
         public string Id { get; set; }
     }
 
-    public class BlueSagaWorkflow1 : IMessage
+    public record BlueSagaWorkflow1 : IMessage
     {
         public string Id { get; set; }
     }
 
-    public class BlueSagaWorkflow2 : IMessage
+    public record BlueSagaWorkflow2 : IMessage
     {
         public string Id { get; set; }
     }

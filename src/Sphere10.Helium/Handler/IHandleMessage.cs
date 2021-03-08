@@ -1,5 +1,4 @@
-﻿
-using Sphere10.Helium.Message;
+﻿using Sphere10.Helium.Message;
 
 namespace Sphere10.Helium.Handler
 {

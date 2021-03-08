@@ -56,102 +56,157 @@ namespace Sphere10.Framework.Collections
             }
         }
 
-        public IEnumerable<Cluster> AddItem(byte[] data)
+        public IEnumerable<Cluster> AddItems(List<byte[]> data)
         {
-            return InsertItem(StorageListings
-                    .WithIndex()
-                    .First(x => x.Item1.Size == 0)
-                    .Item2
-                , data);
-        }
-
-        public IEnumerable<Cluster> InsertItem(int index, byte[] data)
-        {
-            if (Count == Capacity)
+            if (data.Count + Count > Capacity)
             {
                 throw new InvalidOperationException("Item limit reached, no available listing cluster space.");
             }
             
-            List<IEnumerable<byte>> segments = data.PartitionBySize(x => 1, _clusterSize)
-                .ToList();
+            var free = StorageListings
+                    .WithIndex()
+                    .FirstOrDefault(x => x.Item1.Size == 0)
+                ?? throw new InvalidOperationException("Item limit reached, no available listing cluster space.");
+            
+                
+            return InsertItemRange(free.Item2
+                , data);
+        }
 
-            int[] numbers = StorageClusterStatus.Cast<bool>()
-                .WithIndex()
-                .Where(x => x.Item1)
-                .Take(segments.Count)
-                .Select(x => x.Item2 + _storageClusterStart)
-                .ToArray();
-
-            if (numbers.Length < segments.Count)
+        public IEnumerable<Cluster> InsertItemRange(int index, IEnumerable<byte[]> items)
+        {
+            if (StorageListings.Count(x => x.Size == 0) < items.Count())
             {
-                throw new InvalidOperationException("Item limit reached, no available storage cluster space.");
+                throw new InvalidOperationException("Item limit reached, no available listing cluster space.");
             }
-
+            
+            List<StorageItemListing> listings = new List<StorageItemListing>();
             List<Cluster> clusters = new List<Cluster>();
-            for (var i = 0; i < segments.Count; i++)
+            
+            foreach (byte[] data in items)
             {
-                byte[] segment = segments[i].ToArray();
-                byte[] clusterData = new byte[_clusterSize];
-                segment.CopyTo(clusterData, 0);
+                List<IEnumerable<byte>> segments = data.PartitionBySize(x => 1, _clusterSize)
+                    .ToList();
 
-                clusters.Add(new Cluster
+                int[] numbers = StorageClusterStatus.Cast<bool>()
+                    .WithIndex()
+                    .Where(x => x.Item1)
+                    .Take(segments.Count)
+                    .Select(x => x.Item2 + _storageClusterStart)
+                    .ToArray();
+
+                if (numbers.Length < segments.Count)
                 {
-                    Number = numbers[i],
-                    Data = clusterData,
-                    Next = segments.Count - 1 == i ? -1 : numbers[i + 1]
+                    throw new InvalidOperationException("Item limit reached, no available storage cluster space.");
+                }
+                
+                for (var i = 0; i < segments.Count; i++)
+                {
+                    byte[] segment = segments[i].ToArray();
+                    byte[] clusterData = new byte[_clusterSize];
+                    segment.CopyTo(clusterData, 0);
+
+                    clusters.Add(new Cluster
+                    {
+                        Number = numbers[i],
+                        Data = clusterData,
+                        Next = segments.Count - 1 == i ? -1 : numbers[i + 1]
+                    });
+                }
+            
+                foreach (var cluster in clusters)
+                {
+                    StorageClusterStatus[cluster.Number - _storageClusterStart] = false;
+                } 
+                
+                listings.Add(new StorageItemListing
+                {
+                    Size = data.Length,
+                    StartIndex = numbers[0]
                 });
             }
 
-            StorageListings.Remove(StorageListings.First(x => x.Size == 0));
-            StorageListings.Insert(index, new StorageItemListing
-            {
-                Size = data.Length,
-                StartIndex = numbers[0]
-            });
-
-            foreach (var cluster in clusters)
-            {
-                StorageClusterStatus[cluster.Number - _storageClusterStart] = false;
-            }
-
+            var end = StorageListings.WithIndex().First(x => x.Item1.Size == 0);
+            StorageListings.RemoveRange(end.Item2, listings.Count);
+            StorageListings.InsertRange(index, listings);
+            
             return clusters;
         }
 
-        public void RemoveItem(int index, IEnumerable<int> clusterNumbers)
+        public IEnumerable<Cluster> UpdateItemRange(int index, IEnumerable<byte[]> items, IEnumerable<int> currentClusters)
         {
-            var array = clusterNumbers as int[] ??
-                clusterNumbers
-                    .Select(x => x - _storageClusterStart)
+            List<StorageItemListing> listings = new List<StorageItemListing>();
+            List<Cluster> clusters = new List<Cluster>();
+            
+            foreach (int item in currentClusters.Select(x => x - _storageClusterStart))
+            {
+                StorageClusterStatus[item] = true;
+            }
+            
+            foreach (byte[] data in items)
+                
+            {
+                List<IEnumerable<byte>> segments = data.PartitionBySize(x => 1, _clusterSize)
+                    .ToList();
+
+                int[] numbers = StorageClusterStatus.Cast<bool>()
+                    .WithIndex()
+                    .Where(x => x.Item1)
+                    .Take(segments.Count)
+                    .Select(x => x.Item2 + _storageClusterStart)
                     .ToArray();
 
-            StorageListings.RemoveAt(index);
-            StorageListings.Add(default);
+                if (numbers.Length < segments.Count)
+                {
+                    throw new InvalidOperationException("Item limit reached, no available storage cluster space.");
+                }
+                
+                for (var i = 0; i < segments.Count; i++)
+                {
+                    byte[] segment = segments[i].ToArray();
+                    byte[] clusterData = new byte[_clusterSize];
+                    segment.CopyTo(clusterData, 0);
+
+                    clusters.Add(new Cluster
+                    {
+                        Number = numbers[i],
+                        Data = clusterData,
+                        Next = segments.Count - 1 == i ? -1 : numbers[i + 1]
+                    });
+                }
             
-            foreach (int clusterNumber in array)
-            {
-                StorageClusterStatus[clusterNumber] = true;
+                foreach (var cluster in clusters)
+                {
+                    StorageClusterStatus[cluster.Number - _storageClusterStart] = false;
+                } 
+                
+                listings.Add(new StorageItemListing
+                {
+                    Size = data.Length,
+                    StartIndex = numbers[0]
+                });
             }
+
+            for (int i = 0; i < listings.Count; i++)
+            {
+                StorageListings[index + i] = listings[i];
+            }
+            
+            return clusters;
         }
 
-        public void RemoveItemRange(IEnumerable<(int index, IEnumerable<int> clusters)> items)
+        public void RemoveItemRange(int index, int count, IEnumerable<int> clusterNumbers)
         {
-            (int index, IEnumerable<int> clusters)[] itemArray = items as (int index, IEnumerable<int> clusters)[] ?? items.ToArray();
+            int[] itemArray = clusterNumbers as int[] ?? clusterNumbers.ToArray();
+            itemArray = itemArray.Select(x => x - _storageClusterStart).ToArray();
             
-            foreach (var item in itemArray)
+            foreach (int item in itemArray)
             {
-                var array = item.clusters as int[] ??
-                    item.clusters
-                        .Select(x => x - _storageClusterStart)
-                        .ToArray();
-                
-                foreach (int clusterNumber in array)
-                {
-                    StorageClusterStatus[clusterNumber] = true;
-                }
+              StorageClusterStatus[item] = true;
             }
 
-            StorageListings.RemoveRange(itemArray.First().index, itemArray.Length);
-            StorageListings.AddRange(Enumerable.Repeat<StorageItemListing>(default, itemArray.Length));
+            StorageListings.RemoveRange(index, count);
+            StorageListings.AddRange(Enumerable.Repeat<StorageItemListing>(default, count));
         }
 
         public StorageItemListing GetItem(int index)

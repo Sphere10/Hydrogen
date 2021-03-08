@@ -97,7 +97,6 @@ namespace Sphere10.Framework.Tests
         }
 
         [Test]
-        [Ignore("foobaz")]
         [Pairwise]
         public void IntegrationTests()
         {
@@ -108,11 +107,11 @@ namespace Sphere10.Framework.Tests
 
             int capacity = list.Capacity;
             
-            for (var i = 0; i < 100; i++)
+            for (var i = 0; i < 25; i++)
             {
                 // add a random amount
                 var remainingCapacity = capacity - list.Count;
-                var newItemsCount = RNG.Next(0, remainingCapacity + 1);
+                var newItemsCount = RNG.Next(1, remainingCapacity);
                 IEnumerable<int> newItems = RNG.NextInts(newItemsCount);
                 list.AddRange(newItems);
                 expected.AddRange(newItems);
@@ -147,7 +146,7 @@ namespace Sphere10.Framework.Tests
 
                 // insert a random amount
                 remainingCapacity = capacity - list.Count;
-                newItemsCount = RNG.Next(0, remainingCapacity + 1);
+                newItemsCount = RNG.Next(0, remainingCapacity);
                 newItems = RNG.NextInts(newItemsCount);
                 var insertIX = RNG.Next(0, list.Count);
                 list.InsertRange(insertIX, newItems);

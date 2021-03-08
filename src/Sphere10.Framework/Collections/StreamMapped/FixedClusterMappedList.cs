@@ -49,33 +49,41 @@ namespace Sphere10.Framework.Collections
 
         public override void AddRange(IEnumerable<T> items)
         {
+            if (!items.Any())
+            {
+                return;
+            }
+            
+            List<byte[]> newData = new List<byte[]>();
+
             foreach (T item in items)
             {
-                byte[] data = _serializer.SerializeLE(item);
-                var clusters = _listingSector.AddItem(data);
+                newData.Add(_serializer.SerializeLE(item));
+            }
 
-                foreach (Cluster cluster in clusters)
+            var clusters = _listingSector.AddItems(newData);
+
+            foreach (Cluster cluster in clusters)
+            {
+                if (_clusters.Count == cluster.Number)
                 {
-                    if (_clusters.Count == cluster.Number)
+                    _clusters.Add(cluster);
+                }
+                else
+                {
+                    if (cluster.Number < _clusters.Count)
                     {
-                        _clusters.Add(cluster);
+                        _clusters.Update(cluster.Number, cluster);
                     }
                     else
                     {
-                        if (cluster.Number < _clusters.Count)
-                        {
-                            _clusters.Update(cluster.Number, cluster);
-                        }
-                        else
-                        {
-                            throw new InvalidOperationException(
-                                $"Unable to add cluster number {cluster.Number}, append next only, current cluster number {_clusters.Count - 1}");
-                        }
+                        throw new InvalidOperationException(
+                            $"Unable to add cluster number {cluster.Number}, append next only, current cluster number {_clusters.Count - 1}");
                     }
                 }
-
-                UpdateListingSector();
             }
+
+            UpdateListingSector();
         }
 
         public override IEnumerable<int> IndexOfRange(IEnumerable<T> items)
@@ -120,34 +128,24 @@ namespace Sphere10.Framework.Collections
         {
             T[] itemsArray = items.ToArray();
 
+            List<int> removedClusters = new List<int>();
+            List<byte[]> updatedData = new List<byte[]>();
+
             for (int i = 0; i < itemsArray.Length; i++)
             {
                 StorageItemListing listing = _listingSector.GetItem(index + i);
                 IEnumerable<int> numbers = RemoveDataFromClusters(listing.StartIndex);
-                _listingSector.RemoveItem(index + i, numbers);
-
+                removedClusters.AddRange(numbers);
                 byte[] data = _serializer.SerializeLE(itemsArray[i]);
-                var clusters = _listingSector.InsertItem(index + i, data);
 
-                foreach (Cluster cluster in clusters)
-                {
-                    if (_clusters.Count == cluster.Number)
-                    {
-                        _clusters.Add(cluster);
-                    }
-                    else
-                    {
-                        if (cluster.Number < _clusters.Count)
-                        {
-                            _clusters.Update(cluster.Number, cluster);
-                        }
-                        else
-                        {
-                            throw new InvalidOperationException(
-                                $"Unable to add cluster number {cluster.Number}, append next only current cluster number {_clusters.Count - 1}");
-                        }
-                    }
-                }
+                updatedData.Add(data);
+            }
+
+            var updatedClusters = _listingSector.UpdateItemRange(index, updatedData, removedClusters);
+
+            foreach (Cluster cluster in updatedClusters)
+            {
+                _clusters[cluster.Number] = cluster;
             }
 
             UpdateListingSector();
@@ -155,14 +153,37 @@ namespace Sphere10.Framework.Collections
 
         public override void InsertRange(int index, IEnumerable<T> items)
         {
+            if (!items.Any())
+            {
+                return;
+            }
+            
+            List<byte[]> newData = new List<byte[]>();
+
             foreach (T item in items)
             {
-                byte[] data = _serializer.SerializeLE(item);
-                var clusters = _listingSector.InsertItem(index, data);
+                newData.Add(_serializer.SerializeLE(item));
+            }
 
-                foreach (Cluster sectorCluster in clusters)
+            var clusters = _listingSector.InsertItemRange(index, newData);
+
+            foreach (Cluster sectorCluster in clusters)
+            {
+                if (_clusters.Count == sectorCluster.Number)
                 {
-                    _clusters[sectorCluster.Number] = sectorCluster;
+                    _clusters.Add(sectorCluster);
+                }
+                else
+                {
+                    if (sectorCluster.Number < _clusters.Count)
+                    {
+                        _clusters.Update(sectorCluster.Number, sectorCluster);
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException(
+                            $"Unable to add cluster number {sectorCluster.Number}, append next only, current cluster number {_clusters.Count - 1}");
+                    }
                 }
             }
 
@@ -171,17 +192,16 @@ namespace Sphere10.Framework.Collections
 
         public override void RemoveRange(int index, int count)
         {
-            List<(int index, IEnumerable<int> clusters)> removedItems =
-                new List<(int index, IEnumerable<int> clusters)>();
+            List<int> removedItems = new List<int>();
 
             for (int i = 0; i < count; i++)
             {
                 StorageItemListing listing = _listingSector.GetItem(index + i);
                 IEnumerable<int> numbers = RemoveDataFromClusters(listing.StartIndex);
-                removedItems.Add((index + i, numbers));
+                removedItems.AddRange(numbers);
             }
-            
-            _listingSector.RemoveItemRange(removedItems);
+
+            _listingSector.RemoveItemRange(index, count, removedItems);
 
             UpdateListingSector();
         }

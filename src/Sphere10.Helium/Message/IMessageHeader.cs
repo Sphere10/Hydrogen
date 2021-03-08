@@ -17,6 +17,6 @@ namespace Sphere10.Helium.Message
 
         MessageHeaderDto GetDefaultMessageHeader();
 
-
+        IMessage AddHeadersToMessage(IMessage message);
     }
 }

@@ -5,7 +5,10 @@ namespace Sphere10.Helium.Queue
 {
     public class QueueManager : IQueueManager
     {
-        public void FirstIn(IMessage message)
+
+
+
+        public void FirstIn(string destination, IMessage message)
         {
             throw new NotImplementedException();
         }

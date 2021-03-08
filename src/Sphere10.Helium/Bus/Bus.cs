@@ -50,7 +50,9 @@ namespace Sphere10.Helium.Bus
 
         public void SendAndForget(string destination, IMessage message)
         {
-            throw new NotImplementedException();
+            var headerMessage = _messageHeader.AddHeadersToMessage(message);
+
+            _queueManager.FirstIn(destination, headerMessage);
         }
 
         public void SendAndForget(string destination, IMessage message, IMessageHeader messageHeader)

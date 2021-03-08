@@ -7,5 +7,7 @@
         public EnumEndpointType EndpointType { get; set; }
 
         public bool IsPersisted { get; set; }
+
+        public string FilePathForLocalQueuePersistence { get; set; }
     }
 }

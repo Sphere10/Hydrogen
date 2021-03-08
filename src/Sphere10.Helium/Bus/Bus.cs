@@ -52,7 +52,7 @@ namespace Sphere10.Helium.Bus
         {
             var headerMessage = _messageHeader.AddHeadersToMessage(message);
 
-            _queueManager.FirstIn(destination, headerMessage);
+            _queueManager.FirstIn(destination, headerMessage, "ToDo");
         }
 
         public void SendAndForget(string destination, IMessage message, IMessageHeader messageHeader)

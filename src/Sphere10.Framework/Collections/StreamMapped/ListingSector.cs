@@ -45,15 +45,11 @@ namespace Sphere10.Framework.Collections
         /// <returns></returns>
         private static int CalculateMaximumItems(int clusterSize, int listingClusterCount, int storageClusterCount)
         {
-            unsafe
-            {
-                int totalSpace = listingClusterCount * clusterSize;
-                int statusSize = (int) Math.Ceiling((decimal) storageClusterCount / 8);
-                int listingCount = sizeof(int);
+            int totalSpace = listingClusterCount * clusterSize;
+            int statusSize = (int)Math.Ceiling((decimal)storageClusterCount / 8);
+            int listingCount = sizeof(int);
 
-                return (int) Math.Floor((decimal) (totalSpace - statusSize - listingCount) /
-                    sizeof(StorageItemListing));
-            }
+            return (int)Math.Floor((decimal)(totalSpace - statusSize - listingCount) / (sizeof(int) + sizeof(int) /*sizeof(StorageItemListing)*/)); 
         }
 
         public IEnumerable<Cluster> AddItems(List<byte[]> data)
@@ -69,8 +65,7 @@ namespace Sphere10.Framework.Collections
                 ?? throw new InvalidOperationException("Item limit reached, no available listing cluster space.");
             
                 
-            return InsertItemRange(free.Item2
-                , data);
+            return InsertItemRange(free.Item2, data);
         }
 
         public IEnumerable<Cluster> InsertItemRange(int index, IEnumerable<byte[]> items)

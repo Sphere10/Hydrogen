@@ -1,4 +1,5 @@
 ﻿using System;
+using Sphere10.Helium.Configuration;
 using Sphere10.Helium.Message;
 using Sphere10.Helium.Queue;
 
@@ -6,7 +7,7 @@ namespace Sphere10.Helium.Timeout
 {
     public class Timeout : ITimeout
     {
-        string ITimeout.TimeoutMessageId { get; set; } = Config.Config.TimeoutMessageId;
+        string ITimeout.TimeoutMessageId { get; set; } = Global.TimeoutMessageId;
         
         private readonly IQueueManager _queueManager;
         

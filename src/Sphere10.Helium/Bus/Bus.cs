@@ -18,6 +18,11 @@ namespace Sphere10.Helium.Bus
             _queueManager = queueManager;
         }
 
+        public ICallback SendLocal<TK>(IMessage message)
+        {
+            throw new NotImplementedException();
+        }
+
         public ICallback SendLocal<TK>(IMessage message, IMessageHeader missingName)
         {
             throw new NotImplementedException();
@@ -59,11 +64,6 @@ namespace Sphere10.Helium.Bus
         }
 
         public ICallback SendAndResponse(string destination, IMessage message, IMessageHeader messageHeader)
-        {
-            throw new NotImplementedException();
-        }
-
-        public ICallback SendLocal<TK>(IMessage message)
         {
             throw new NotImplementedException();
         }

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Sphere10.Helium.Queue
 {
-    internal class LocalQueue : ILocalQueue
+    public class LocalQueue : ILocalQueue
     {
 
     }

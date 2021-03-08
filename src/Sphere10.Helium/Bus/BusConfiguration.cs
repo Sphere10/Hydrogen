@@ -10,6 +10,16 @@
 
         public string FilePathForLocalQueuePersistence { get; set; }
 
+        public int PageSize { get; set; }
+
+        public int InMemoryPages { get; set; }
+
+        public int ClusterSize { get; set; }
+
+        public int ListingClusterCount { get; set; }
+
+        public int StorageClusterCount { get; set; }
+
         public string FileNameForLocalQueue { get; set; }
     }
 }

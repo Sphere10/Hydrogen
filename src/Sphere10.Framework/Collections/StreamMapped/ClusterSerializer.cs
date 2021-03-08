@@ -3,7 +3,7 @@
 namespace Sphere10.Framework.Collections
 {
 
-    public class ClusterSerializer : ConstantObjectSerializer<Cluster>
+    public class ClusterSerializer : FixedSizeObjectSerializer<Cluster>
     {
         private readonly int _clusterDataSize;
 

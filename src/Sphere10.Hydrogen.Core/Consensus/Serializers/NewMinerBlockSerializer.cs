@@ -4,7 +4,7 @@ using System.Text;
 using Sphere10.Framework;
 
 namespace Sphere10.Hydrogen.Core.Consensus.Serializers {
-	public class NewMinerBlockSerializer : ConstantObjectSerializer<NewMinerBlock> {
+	public class NewMinerBlockSerializer : FixedSizeObjectSerializer<NewMinerBlock> {
 		
 		public NewMinerBlockSerializer() : base(4 + 64 + 4) {
 		}

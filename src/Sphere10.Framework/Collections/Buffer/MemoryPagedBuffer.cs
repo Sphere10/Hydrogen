@@ -38,7 +38,7 @@ namespace Sphere10.Framework {
 		public sealed class BufferPage : FileSwappedMemoryPage<byte>, IBufferPage {
 
 			public BufferPage(int pageSize)
-				: base(pageSize, new ConstantObjectSizer<byte>(sizeof(byte)), new MemoryBuffer(0, pageSize, pageSize)) {
+				: base(pageSize, new FixedSizeObjectSizer<byte>(sizeof(byte)), new MemoryBuffer(0, pageSize, pageSize)) {
 			}
 
 			public ReadOnlySpan<byte> ReadSpan(int index, int count) {

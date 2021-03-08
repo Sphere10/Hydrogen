@@ -127,7 +127,7 @@ namespace Sphere10.Framework {
 		private class PageImpl : TransactionalFilePageBase<byte>, IBufferPage {
 
 			public PageImpl(FileStream stream, string uncommittedPageFileName, int pageNumber, int pageSize)
-				: base(stream, new ConstantObjectSizer<byte>(sizeof(byte)), uncommittedPageFileName, pageNumber, pageSize, new MemoryBuffer(0, pageSize, pageSize)) {
+				: base(stream, new FixedSizeObjectSizer<byte>(sizeof(byte)), uncommittedPageFileName, pageNumber, pageSize, new MemoryBuffer(0, pageSize, pageSize)) {
 			}
 
 			//protected override void SaveInternal(IEnumerable<byte> items, Stream stream) {

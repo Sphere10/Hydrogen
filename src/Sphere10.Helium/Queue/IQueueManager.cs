@@ -4,7 +4,7 @@ namespace Sphere10.Helium.Queue
 {
     public interface IQueueManager
     {
-        void FirstIn(string destination, IMessage message, string fileName);
+        void FirstIn(string destination, IMessage message);
 
         void LastOut(IMessage message);
 

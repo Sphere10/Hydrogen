@@ -45,8 +45,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sphere10.Helium", "Sphere10
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sphere10.Helium.Loader", "Sphere10.Helium.Loader\Sphere10.Helium.Loader.csproj", "{3821739A-6429-4256-9357-ED9D01787169}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Doc", "Doc", "{C499399B-6DB5-4595-94E5-347D15EF2BE8}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "UI Iteration 1", "UI Iteration 1", "{35CD2743-23F8-4994-844F-6A67A86AD147}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sphere10.Helium.Usage", "Sphere10.Helium.Usage\Sphere10.Helium.Usage.csproj", "{95A319B0-E2B6-4F91-BB2D-D4D292E9C9B6}"

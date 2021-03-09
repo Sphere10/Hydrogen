@@ -14,12 +14,12 @@ namespace Sphere10.Framework {
 		protected bool OwnsStream { get; }
 
 		public virtual Stream OpenReadStream() {
-			Stream.Seek(Stream.MinPosition, SeekOrigin.Begin);
+			Stream.Seek(Stream.MinAbsolutePosition, SeekOrigin.Begin);
 			return new NonClosingStream( Stream );
 		}
 
 		public virtual Stream OpenWriteStream() {
-			Stream.Seek(Stream.MinPosition, SeekOrigin.Begin);
+			Stream.Seek(Stream.MinAbsolutePosition, SeekOrigin.Begin);
 			return new NonClosingStream( Stream );
 		}
 

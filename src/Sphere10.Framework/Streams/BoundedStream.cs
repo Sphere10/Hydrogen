@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -13,16 +14,29 @@ namespace Sphere10.Framework {
 
 		public BoundedStream(Stream innerStream, long minPosition, long maxPosition)
 			: base(innerStream) {
-			MinPosition = minPosition;
-			MaxPosition = maxPosition;
+			MinAbsolutePosition = minPosition;
+			MaxAbsolutePosition = maxPosition;
+			UseRelativeOffset = false;
 		}
 
-		public long MinPosition { get; }
+		public long MinAbsolutePosition { get; }
 
-		public long MaxPosition { get; }
+		public long MaxAbsolutePosition { get; }
+
+		public override long Position {
+			get => FromAbsoluteOffset(AbsolutePosition); 
+			set => AbsolutePosition = ToAbsoluteOffset(value);
+		}
+
+		protected long AbsolutePosition {
+			get => base.Position;
+			set => base.Position = value;
+		}
+
+		public bool UseRelativeOffset { get; set; }
 
 		public override long Seek(long offset, SeekOrigin origin) {
-			switch(origin) {
+			switch (origin) {
 				case SeekOrigin.Begin:
 					CheckPosition(offset);
 					break;
@@ -36,24 +50,26 @@ namespace Sphere10.Framework {
 				default:
 					throw new ArgumentOutOfRangeException(nameof(origin), origin, null);
 			}
-			return base.Seek(offset, origin);
+			var absoluteOffset = ToAbsoluteOffset(offset);
+			return base.Seek(absoluteOffset, origin);
 		}
+
 
 		public override long Length {
 			get {
-				if (MaxPosition < MinPosition)
+				if (MaxAbsolutePosition < MinAbsolutePosition)
 					return 0;
 
 				var streamEndIX = InnerStream.Length - 1;
 				if (streamEndIX < 0)
 					return 0;
 
-				if (MinPosition > streamEndIX)
+				if (MinAbsolutePosition > streamEndIX)
 					return 0;
 
-				var actualEndPosition = MaxPosition <= streamEndIX ? MaxPosition : streamEndIX;
+				var actualEndPosition = MaxAbsolutePosition <= streamEndIX ? MaxAbsolutePosition : streamEndIX;
 
-				return actualEndPosition - MinPosition + 1;
+				return actualEndPosition - MinAbsolutePosition + 1;
 			}
 		} 
 
@@ -111,9 +127,18 @@ namespace Sphere10.Framework {
 
 		protected void CheckRange(long start, long end) {
 			Guard.Argument(end >= start, nameof(end), $"Must be greater than or equal to {nameof(start)}");
-			if (start < MinPosition || end > MaxPosition)
+			var absoluteStart = ToAbsoluteOffset(start);
+			var absoluteEnd = ToAbsoluteOffset(end);
+			if (absoluteStart < MinAbsolutePosition || absoluteEnd > MaxAbsolutePosition)
 				throw new StreamOutOfBoundsException();
 		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		private long ToAbsoluteOffset(long offset) => UseRelativeOffset ? offset + MinAbsolutePosition : offset;
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		private long FromAbsoluteOffset(long offset) => UseRelativeOffset ? offset - MinAbsolutePosition : offset;
+
 	}
 
 }

@@ -36,12 +36,12 @@ namespace Sphere10.Framework {
 		}
 
 		protected override Stream OpenReadStream() {
-			Stream.Seek(Stream.MinPosition, SeekOrigin.Begin);
+			Stream.Seek(Stream.MinAbsolutePosition, SeekOrigin.Begin);
 			return new NonClosingStream(Stream);
 		}
 
 		protected override Stream OpenWriteStream() {
-			Stream.Seek(Stream.MinPosition, SeekOrigin.Begin);
+			Stream.Seek(Stream.MinAbsolutePosition, SeekOrigin.Begin);
 			return new NonClosingStream(Stream);
 		}
 	}

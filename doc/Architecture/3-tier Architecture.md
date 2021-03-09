@@ -1,12 +1,12 @@
-# 3-tier Architecture
+# What is a 3-tier Architecture?
 
-A  3-tier architecture decomposes a system into 3 primary tiers.
+A  3-tier architecture is a method for structuring the code of a non-trivial software system. It typically decomposes a system into 3 primary tiers.
 
-1. **Presentation**: responsible for all aspects of the User Interface (UI). Includes graphical, console and service application executables. Contains all presentation-oriented modules that may depend on processing-tier modules for acquiring their data models defined in the Data Objects tier.
+1. **Presentation**: responsible for all aspects that interface with the user. This tier contains all presentation-oriented modules of which may depend on other tiers (primarily, the processing-tier). Modules in this tier include graphical, console and background executables as well as libraries that support    that functionality.
 
-2. **Processing**: responsible for computational and algorithmic modules. Includes application logic, business logic, consensus rules, security, cryptography.  This tier contains computational-oriented projects which do not depend on user interaction, but may on data tier.
+2. **Processing**: responsible for things computational and algorithmic. Modules in the processing tier are also known as "business logic" modules that contains logic which process data. Modules in the processing tier includes application logic, business logic, blockchain consensus rules, cryptographic security, cryptography.  This tier contains computational-oriented projects which do not depend on user interaction, but may on data tier.
 
-3. **Data**: responsible for storage-oriented modules. Includes database drivers, blockchain databases, relational databases, file-based storage formats.
+3. **Data**: responsible for all things related to data storage-oriented modules. Includes database drivers, blockchain databases, relational databases, file-based storage formats.
 
 
 ### Ancillary-tiers
@@ -22,7 +22,9 @@ A  3-tier architecture decomposes a system into 3 primary tiers.
 
 ## Domains
 
-A domain is an aspect of the application which spans across some (or all) the tiers. It is essentially a vertical slice through the architecture which models models a logically related set of abstractions. For example, in a "School" model the domains may include Teachers, Students, Admin, Classes, Subjects, Exams, etc.  Each of those domains has modules in the presentation, processing and data tiers respectively (as well as ancillary tiers). However, some domains may only have modules in one or two tiers.
+A domain is a collection of classes that are all logically related in the functionality they provide. The classes in a domain define the object model for a particular abstraction. As a result, a domain may span across multiple tiers of the 3-tier architecture and is often a vertical slice through it (see diagram below).
+
+In the solution space for modelling a "School", examples of domains include Teachers, Students, Admin, Classes, Subjects, Exams.  Each of those domains have classes contained within modules contained within the tiers. Often, domains may be contained within a single tier and thus are found within a single module.
 
 
 
@@ -32,7 +34,7 @@ A domain is an aspect of the application which spans across some (or all) the ti
 
 ## Modules
 
-Whereas a domain is a vertical-slice across multiple-tiers, a  module is a horizontal slice within single tier. A module is synonymous with a "code-library" and a ".NET project". A module can also consist of the executable project (GUI, console, plugin), resources packages for graphics, sounds, etc.   
+Whereas a domain is a vertical-slice across multiple-tiers, a  module is a horizontal slice within single tier. Most modules take the form of a code-library that live within a tier  (e.g. a single "project" in a .NET solution). However, modules in the presentation-tier can also generate an executable artefact that is run within an operating system. These types of "executable modules" include GUI executables targeting a host GUI framework  (i.e WinForms,  QT, WPF, Blazor, WPF, WinForms, Blazor, ASP.NET, etc),  console-based executables and background-running executables (i.e. daemons, services). Modules can also inc.  can also consist of the executable project (GUI, console, plugin), resources packages for graphics, sounds, etc.   
 
 ![Modules](resources/Modules-75pct.png)
 

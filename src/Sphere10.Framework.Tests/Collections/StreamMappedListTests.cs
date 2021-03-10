@@ -21,6 +21,7 @@ using NUnit.Framework;
 using System.IO;
 using NUnit.Framework.Constraints;
 using Sphere10.Framework;
+using Sphere10.Framework.Collections.StreamMapped;
 using Sphere10.Framework.NUnit;
 
 namespace Sphere10.Framework.Tests {
@@ -143,6 +144,60 @@ namespace Sphere10.Framework.Tests {
 				Assert.AreEqual(0, list.Count);
 
 				Assert.AreEqual(len0, stream.Length);
+			}
+		}
+
+		[Test]
+		public void V1_Integration_FixedSize()
+		{
+			var serializer = new IntSerializer();
+			int pageSize = 1000;
+			int capacity = serializer.FixedSize / pageSize;
+
+			var RNG = new Random(1231);
+			var list = new StreamMappedList<int>(1000, serializer, new MemoryStream())
+			{
+				IncludeListHeader = false
+			};
+
+			var expected = new List<int>();
+			for (var i = 0; i < 100; i++)
+			{
+
+				// add a random amount
+				var remainingCapacity = capacity - list.Count;
+				var newItemsCount = RNG.Next(0, remainingCapacity + 1);
+				IEnumerable<int> newItems = RNG.NextInts(newItemsCount);
+				list.AddRange(newItems);
+				expected.AddRange(newItems);
+				Assert.AreEqual(expected, list);
+
+				if (list.Count > 0)
+				{
+					// update a random amount
+					var range = RNG.RandomRange(list.Count);
+					newItems = RNG.NextInts(range.End - range.Start + 1);
+					list.UpdateRange(range.Start, newItems);
+					expected.UpdateRangeSequentially(range.Start, newItems);
+					Assert.AreEqual(expected, list);
+
+					// shuffle a random amount
+					range = RNG.RandomRange(list.Count);
+					newItems = list.ReadRange(range.Start, range.End - range.Start + 1);
+					var expectedNewItems = expected.GetRange(range.Start, range.End - range.Start + 1);
+					range = RNG.RandomSegment(list.Count, newItems.Count());
+					expected.UpdateRangeSequentially(range.Start, expectedNewItems);
+					list.UpdateRange(range.Start, newItems);
+
+					Assert.AreEqual(expected.Count, list.Count);
+					Assert.AreEqual(expected, list);
+
+					// remove a random amount
+					range = RNG.RandomRange(list.Count);
+					list.RemoveRange(range.Start, range.End - range.Start + 1);
+					expected.RemoveRange(range.Start, range.End - range.Start + 1);
+					Assert.AreEqual(expected, list);
+				}
 			}
 		}
 

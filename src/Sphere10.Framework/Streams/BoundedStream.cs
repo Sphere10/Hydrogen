@@ -45,12 +45,13 @@ namespace Sphere10.Framework {
 					break;
 				case SeekOrigin.End:
 					Guard.ArgumentInRange(offset, long.MinValue, 0, nameof(offset));
-					CheckPosition(this.Length + offset);
+					CheckPosition(Length == 0 ? 0 : Length -1 + offset);
 					break;
 				default:
 					throw new ArgumentOutOfRangeException(nameof(origin), origin, null);
 			}
 			var absoluteOffset = ToAbsoluteOffset(offset);
+			
 			return base.Seek(absoluteOffset, origin);
 		}
 

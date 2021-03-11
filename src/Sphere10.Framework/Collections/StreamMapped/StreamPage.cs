@@ -132,7 +132,7 @@ namespace Sphere10.Framework {
 			// Calculate the object offsets (this array is nullified on close to save memory 
 			// in cases when many page headers exist).
 			State = PageState.Loading;
-			_offsets = new long[MaxItems];
+			_offsets = new long[MaxItems]; 
 			CalculateOffsets(0);
 			State = PageState.Loaded;
 		}
@@ -140,7 +140,7 @@ namespace Sphere10.Framework {
 		public void Close() {
 			State = PageState.Unloading;
 			// Unload cached offsets array (makes a mem difference when large numbers of pages loaded)
-			_offsets = null;
+			//_offsets = null; //TODO: bug when enumerating, page is closed when enumeration is evaluated 
 			State = PageState.Loaded;
 		}
 

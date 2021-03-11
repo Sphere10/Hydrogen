@@ -56,6 +56,8 @@ namespace Sphere10.Framework {
 		public const byte FormatVersion = 1;
 		public const int ListHeaderSize = 256;
 
+		private bool _includeListHeader = true;
+
 		public StreamMappedList(int pageSize, IObjectSerializer<TItem> serializer, Stream stream)
 		{
 			PageSize = pageSize;
@@ -70,7 +72,22 @@ namespace Sphere10.Framework {
 
 		public int PageSize { get; }
 
-		public bool IncludeListHeader { get; set; }
+		public bool IncludeListHeader
+		{
+			get => _includeListHeader;
+			set
+			{
+				if (Stream.Length != 0)
+				{
+					throw new InvalidOperationException(
+						$"{nameof(IncludeListHeader)} cannot be adjusted once stream has been written to.");
+				}
+				else
+				{
+					_includeListHeader = value;
+				}
+			}
+		}
 
 		public StreamMappedListType Type { get; }
 
@@ -104,7 +121,6 @@ namespace Sphere10.Framework {
 
 		protected override IPage<TItem>[] LoadPages()
 		{
-
 			if (IncludeListHeader)
 			{
 				Stream.Seek(0L, SeekOrigin.Begin);
@@ -173,6 +189,18 @@ namespace Sphere10.Framework {
 						$"{nameof(StreamMappedListType.Fixed)} only supports a single page."),
 				_ => throw new ArgumentOutOfRangeException()
 			};
+
+		public override void InsertRange(int index, IEnumerable<TItem> items)
+		{
+			if (Type is StreamMappedListType.Fixed)
+			{
+				
+			}
+			else
+			{
+				base.InsertRange(index, items);
+			}
+		}
 
 		private void CreateListHeader() {
 			Stream.Seek(0, SeekOrigin.Begin);

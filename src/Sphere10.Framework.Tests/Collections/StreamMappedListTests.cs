@@ -217,7 +217,6 @@ namespace Sphere10.Framework.Tests {
 			var expected = new List<int>();
 			for (var i = 0; i < 100; i++)
 			{
-
 				// add a random amount
 				var remainingCapacity = capacity - list.Count;
 				var newItemsCount = RNG.Next(0, remainingCapacity + 1);
@@ -253,6 +252,22 @@ namespace Sphere10.Framework.Tests {
 					Assert.AreEqual(expected, list);
 				}
 			}
+		}
+
+
+		[Test]
+		public void V1_IncludeListHeaderThrowsAfterInit()
+		{
+			var stream = new MemoryStream();
+			var list = new StreamMappedList<string>(100, new StringSerializer(Encoding.ASCII), stream)
+			{
+				IncludeListHeader = false
+			};
+
+			Assert.DoesNotThrow(() => list.IncludeListHeader = true);
+			list.Add("baz");
+
+			Assert.Throws<InvalidOperationException>(() => list.IncludeListHeader = true);
 		}
 
 		public enum StorageType {
@@ -323,7 +338,5 @@ namespace Sphere10.Framework.Tests {
 			}
 			return disposables;
 		}
-
-
 	}
 }

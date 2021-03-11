@@ -60,10 +60,12 @@ namespace Sphere10.Framework.Collections.StreamMapped
 
         protected override IEnumerable<TItem> ReadInternal(int index, int count)
         {
-            index = index * ItemSize + _item0Offset;
-            Stream.Seek(index, SeekOrigin.Begin);
-
-            yield return Serializer.Deserialize(ItemSize, Reader);
+            for (int i = 0; i < count; i++)
+            {
+                index = (index + i) * ItemSize + _item0Offset;
+                Stream.Seek(index, SeekOrigin.Begin);
+                yield return Serializer.Deserialize(ItemSize, Reader);
+            }
         }
 
         protected override int AppendInternal(TItem[] items, out int newItemsSize)

@@ -6,16 +6,14 @@ namespace Sphere10.Helium.Queue
 {
     public class QueueManager : IQueueManager
     {
-        private readonly IBusConfiguration _busConfiguration;
         private readonly ILocalQueue _localQueue;
 
-        public QueueManager(IBusConfiguration busConfiguration, ILocalQueue localQueue)
+        public QueueManager(IEndpointConfiguration endpointConfiguration, ILocalQueue localQueue)
         {
-            _busConfiguration = busConfiguration;
             _localQueue = localQueue;
-            _localQueue.FileName = _busConfiguration.FileName;
+            _localQueue.FileName = endpointConfiguration.FileName;
         }
-        
+
         public void FirstIn(string destination, IMessage message)
         {
             _localQueue.FirstIn(destination, message);

@@ -1,6 +1,8 @@
 ﻿namespace Sphere10.Helium.Route
 {
-    internal interface IRoute
+    public interface IRoute
     {
+        public void ReadLastMessageFromQueue();
+
     }
 }

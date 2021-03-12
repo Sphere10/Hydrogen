@@ -12,13 +12,16 @@
 
         public int StorageClusterCount { get; init; }
 
-        public QueueConfigDto(int pageSize, int inMemoryPages, int clusterSize, int listingClusterCount, int storageClusterCount)
+        public int InputQueueReadRatePerMinute { get; init; }
+
+        public QueueConfigDto(int pageSize, int inMemoryPages, int clusterSize, int listingClusterCount, int storageClusterCount, int inputQueueReadRatePerMinute)
         {
             PageSize = pageSize;
             InMemoryPages = inMemoryPages;
             ClusterSize = clusterSize;
             ListingClusterCount = listingClusterCount;
             StorageClusterCount = storageClusterCount;
+            InputQueueReadRatePerMinute = inputQueueReadRatePerMinute;
         }
     }
 }

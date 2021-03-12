@@ -2,6 +2,6 @@
 {
     public interface INeedInitialization
     {
-        void Customize(BusConfiguration configuration);
+        void Customize(EndpointConfiguration configuration);
     }
 }

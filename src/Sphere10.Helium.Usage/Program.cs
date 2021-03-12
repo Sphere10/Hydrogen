@@ -9,7 +9,7 @@ namespace Sphere10.Helium.Usage
         {
             var message = new TestMessage1 { FirstName = "stuff", Id = "1234" };
 
-            var config = new BusConfiguration
+            var config = new EndpointConfiguration
             {
                 EndpointType = EnumEndpointType.SendAndForget,
                 IsPersisted = false

@@ -4,19 +4,19 @@ namespace Sphere10.Helium.Bus
 {
     public class BusSetup
     {
-        public IBus Create(BusConfiguration busConfiguration)
+        public IBus Create(EndpointConfiguration endpointConfiguration)
         {
-            if (busConfiguration.EndpointType == EnumEndpointType.SendAndForget)
+            if (endpointConfiguration.EndpointType == EnumEndpointType.SendAndForget)
             {
                 ISendOnlyBus sendOnlyBus = new SendOnlyBus(null, null);
 
                 return sendOnlyBus as IBus;
             }
 
-            if (busConfiguration.EndpointType == EnumEndpointType.SendAndResponse)
+            if (endpointConfiguration.EndpointType == EnumEndpointType.SendAndResponse)
             {
-                if (string.IsNullOrEmpty(busConfiguration.SourceEndpointName))
-                    throw new ArgumentNullException(busConfiguration.SourceEndpointName.GetType().FullName,
+                if (string.IsNullOrEmpty(endpointConfiguration.SourceEndpointName))
+                    throw new ArgumentNullException(endpointConfiguration.SourceEndpointName.GetType().FullName,
                         "Cannot proceed! Need a return address for the Response.");
 
                 ISendOnlyBus sendOnlyBus = new SendOnlyBus(null, null);
@@ -24,14 +24,14 @@ namespace Sphere10.Helium.Bus
                 return sendOnlyBus as IBus;
             }
 
-            if (busConfiguration.EndpointType == EnumEndpointType.PublishAndSubscribe)
+            if (endpointConfiguration.EndpointType == EnumEndpointType.PublishAndSubscribe)
             {
                 IBus bus = new Bus(null, null, null);
 
                 return bus;
             }
 
-            throw new ArgumentOutOfRangeException(busConfiguration.SourceEndpointName.GetType().FullName,
+            throw new ArgumentOutOfRangeException(endpointConfiguration.SourceEndpointName.GetType().FullName,
                 "Cannot proceed! CRITICAL error no bus specified.");
         }
     }

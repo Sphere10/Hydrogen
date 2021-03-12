@@ -9,10 +9,8 @@ namespace Sphere10.Helium.Queue
     /// CRITICAL:
     /// 1) This is a local queue for a Helium Service.
     /// 2) Every Helium Service has it's own local queue.
-    /// 3) This local queue is the Input into a Helium Service from external or internal Helium Services that sends messages to a Helium Service.
+    /// 3) This local queue is the Input into a Helium Service from other external or other internal Helium Services that sends messages to this Helium Service.
     /// 4) The local queue is also used for Send-Local messages.
-    ///   
-    /// 
     /// 
     /// </summary>
 

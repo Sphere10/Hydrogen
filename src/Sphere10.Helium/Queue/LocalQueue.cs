@@ -4,6 +4,18 @@ using Sphere10.Helium.Message;
 
 namespace Sphere10.Helium.Queue
 {
+    /// <summary>
+    ///
+    /// CRITICAL:
+    /// 1) This is a local queue for a Helium Service.
+    /// 2) Every Helium Service has it's own local queue.
+    /// 3) This local queue is the Input into a Helium Service from external or internal Helium Services that sends messages to a Helium Service.
+    /// 4) The local queue is also used for Send-Local messages.
+    ///   
+    /// 
+    /// 
+    /// </summary>
+
     public class LocalQueue : ILocalQueue
     {
         private readonly QueueConfigDto _queueConfigDto;

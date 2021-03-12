@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Sphere10.Framework.Collections.StreamMapped;
 
 namespace Sphere10.Framework.Collections
 {
@@ -17,30 +18,31 @@ namespace Sphere10.Framework.Collections
         private readonly int _listingSectorSize;
 
         private readonly IObjectSerializer<T> _serializer;
-        private readonly StreamMappedList<Cluster> _clusters;
+        private readonly Stream _stream;
+        private StreamMappedList<Cluster> _clusters;
 
         private ListingSector _listingSector;
+        private int _maxItems;
 
         public FixedClusterMappedList(int clusterSize,
-            int listingClusterCount,
+            int maxItems,
             int storageClusterCount,
             IObjectSerializer<T> serializer,
             Stream stream)
         {
-            _clusters = new StreamMappedList<Cluster>(1, new ClusterSerializer(clusterSize), stream);
-            if (_clusters.RequiresLoad)
-            {
-                _clusters.Load();
-            }
-
             _clusterSize = clusterSize;
-            _listingClusterCount = listingClusterCount;
             _storageClusterCount = storageClusterCount;
-            _listingSectorSize = (int) Math.Ceiling((decimal) _listingClusterCount / _clusterSize);
+            _maxItems = maxItems;
 
             _serializer = serializer;
+            _stream = stream;
 
-            InitializeListingSector();
+            if (!_serializer.IsFixedSize)
+            {
+                throw new ArgumentException("Non fixed sized items not supported");
+            }
+            
+            Initialize();
         }
 
         public override int Count => _listingSector.Count;
@@ -82,8 +84,6 @@ namespace Sphere10.Framework.Collections
                     }
                 }
             }
-
-            UpdateListingSector();
         }
 
         public override IEnumerable<int> IndexOfRange(IEnumerable<T> items)
@@ -133,7 +133,7 @@ namespace Sphere10.Framework.Collections
 
             for (int i = 0; i < itemsArray.Length; i++)
             {
-                StorageItemListing listing = _listingSector.GetItem(index + i);
+                ItemListing listing = _listingSector.GetItem(index + i);
                 IEnumerable<int> numbers = RemoveDataFromClusters(listing.StartIndex);
                 removedClusters.AddRange(numbers);
                 byte[] data = _serializer.SerializeLE(itemsArray[i]);
@@ -147,8 +147,6 @@ namespace Sphere10.Framework.Collections
             {
                 _clusters[cluster.Number] = cluster;
             }
-
-            UpdateListingSector();
         }
 
         public override void InsertRange(int index, IEnumerable<T> items)
@@ -157,7 +155,7 @@ namespace Sphere10.Framework.Collections
             {
                 return;
             }
-            
+
             List<byte[]> newData = new List<byte[]>();
 
             foreach (T item in items)
@@ -186,8 +184,6 @@ namespace Sphere10.Framework.Collections
                     }
                 }
             }
-
-            UpdateListingSector();
         }
 
         public override void RemoveRange(int index, int count)
@@ -196,14 +192,12 @@ namespace Sphere10.Framework.Collections
 
             for (int i = 0; i < count; i++)
             {
-                StorageItemListing listing = _listingSector.GetItem(index + i);
+                ItemListing listing = _listingSector.GetItem(index + i);
                 IEnumerable<int> numbers = RemoveDataFromClusters(listing.StartIndex);
                 removedItems.AddRange(numbers);
             }
 
             _listingSector.RemoveItemRange(index, count, removedItems);
-
-            UpdateListingSector();
         }
 
         private byte[] ReadDataFromClusters(int startCluster, int size)
@@ -250,116 +244,28 @@ namespace Sphere10.Framework.Collections
             return numbers;
         }
 
-        private void UpdateListingSector()
+        private void Initialize()
         {
-            RemoveDataFromClusters(0);
+            int listingSize = sizeof(int) + sizeof(int);
+            int listingTotalSize = listingSize * _maxItems;
+            int statusTotalSize = sizeof(bool) * _storageClusterCount;
+            int clusterTotalSize = _clusterSize * _storageClusterCount;
 
-            byte[] data = SerializeListingSector(_listingSector);
-            IEnumerable<byte>[] partitions = data.PartitionBySize(x => 1, _clusterSize)
-                .ToArray();
+            BoundedStream listingsStream = new BoundedStream(_stream, 0, listingTotalSize - 1)
+                {UseRelativeOffset = true};
+            BoundedStream statusStream = new BoundedStream(_stream, listingsStream.MaxAbsolutePosition + 1,
+                listingsStream.MaxAbsolutePosition + statusTotalSize) {UseRelativeOffset = true};
+            BoundedStream clusterStream = new BoundedStream(_stream, statusStream.MaxAbsolutePosition + 1,
+                statusStream.MaxAbsolutePosition + clusterTotalSize) { UseRelativeOffset = true};
 
-            List<Cluster> sectorClusters = new List<Cluster>();
-
-            for (int i = 0; i < partitions.Length; i++)
-            {
-                byte[] clusterData = new byte[_clusterSize];
-                partitions[i].ToArray().CopyTo(clusterData, 0);
-
-                sectorClusters.Add(new Cluster
-                {
-                    Data = clusterData,
-                    Number = i,
-                    Next = partitions.Length - 1 == i ? -1 : i + 1
-                });
-            }
-
-            foreach (Cluster sectorCluster in sectorClusters)
-            {
-                _clusters[sectorCluster.Number] = sectorCluster;
-            }
-        }
-
-        private void InitializeListingSector()
-        {
-            if (!_clusters.Any())
-            {
-                ListingSector sector = new ListingSector(_clusterSize, _listingClusterCount, _storageClusterCount);
-                byte[] sectorBytes = SerializeListingSector(sector);
-                IEnumerable<byte>[] partitions = sectorBytes.PartitionBySize(x => 1, _clusterSize)
-                    .ToArray();
-
-                List<Cluster> sectorClusters = new List<Cluster>();
-
-                for (int i = 0; i < partitions.Length; i++)
-                {
-                    byte[] clusterData = new byte[_clusterSize];
-                    partitions[i].ToArray().CopyTo(clusterData, 0);
-
-                    sectorClusters.Add(new Cluster
-                    {
-                        Data = clusterData,
-                        Number = i,
-                        Next = partitions.Length - 1 == i ? -1 : i + 1
-                    });
-                }
-
-                _clusters.AddRange(sectorClusters);
-                _listingSector = sector;
-            }
-            else
-            {
-                byte[] bytes = ReadDataFromClusters(0, _listingSectorSize);
-                ListingSector sector = DeserializeListingSector(bytes);
-                _listingSector = sector;
-            }
-        }
-
-        private byte[] SerializeListingSector(ListingSector sector)
-        {
-            MemoryBuffer sectorBytes = new MemoryBuffer();
-
-            byte[] BitArrayToByteArray(BitArray bits)
-            {
-                byte[] ret = new byte[(bits.Length - 1) / 8 + 1];
-                bits.CopyTo(ret, 0);
-                return ret;
-            }
-
-            sectorBytes.AddRange(BitArrayToByteArray(sector.StorageClusterStatus));
-
-            foreach (StorageItemListing sectorListing in sector.StorageListings)
-            {
-                sectorBytes.AddRange(EndianBitConverter.Little.GetBytes(sectorListing.StartIndex));
-                sectorBytes.AddRange(EndianBitConverter.Little.GetBytes(sectorListing.Size));
-            }
-
-            return sectorBytes.ToArray();
-        }
-
-        private ListingSector DeserializeListingSector(byte[] bytes)
-        {
-            MemoryStream stream = new MemoryStream(bytes);
-            EndianBinaryReader reader = new EndianBinaryReader(EndianBitConverter.Little, stream);
-
-            byte[] statusBytes = reader.ReadBytes((int) Math.Ceiling((decimal) _storageClusterCount / 8));
-            BitArray status = new BitArray(statusBytes);
-            List<StorageItemListing> listings = new List<StorageItemListing>();
-
-            while (true)
-            {
-                try
-                {
-                    int index = reader.ReadInt32();
-                    int size = reader.ReadInt32();
-                    listings.Add(new StorageItemListing {Size = size, StartIndex = index});
-                }
-                catch (EndOfStreamException)
-                {
-                    break;
-                }
-            }
-
-            return new ListingSector(_clusterSize, status, listings);
+            _listingSector = new ListingSector(_clusterSize,
+                _maxItems,
+                _storageClusterCount,
+                new StreamMappedList<ItemListing>( new ItemListingSerializer(), listingsStream) { IncludeListHeader = false},
+                new StreamMappedList<bool>( new BoolSerializer(), statusStream)
+                    {IncludeListHeader = false});
+            
+            _clusters = new StreamMappedList<Cluster>(new ClusterSerializer(_clusterSize), clusterStream, _clusterSize);
         }
     }
 

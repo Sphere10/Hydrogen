@@ -55,15 +55,20 @@ namespace Sphere10.Framework.Collections.StreamMapped
                     throw new InvalidOperationException("Page was changed during enumeration");
             }
 
-            return ReadInternal(StartIndex, Count).GetEnumerator().OnMoveNext(CheckVersion);
+            return ReadInternal(StartIndex, Count)
+                .GetEnumerator()
+                .OnMoveNext(CheckVersion);
         }
 
         protected override IEnumerable<TItem> ReadInternal(int index, int count)
         {
+            int startPosition = index + _item0Offset;
+
             for (int i = 0; i < count; i++)
             {
-                index = (index + i) * ItemSize + _item0Offset;
-                Stream.Seek(index, SeekOrigin.Begin);
+                int itemIndex = startPosition + i * ItemSize;
+                Stream.Seek(itemIndex, SeekOrigin.Begin);
+                
                 yield return Serializer.Deserialize(ItemSize, Reader);
             }
         }
@@ -90,8 +95,14 @@ namespace Sphere10.Framework.Collections.StreamMapped
         {
             int itemsSize = items.Length * ItemSize;
             index = index * ItemSize + _item0Offset;
-            Stream.Seek(index, SeekOrigin.Begin);
             
+            Stream.Seek(index, SeekOrigin.Begin);
+
+            foreach (TItem item in items)
+            {
+                Serializer.Serialize(item, Writer);
+            }
+
             newItemsSize = itemsSize;
             oldItemsSize = itemsSize;
         }

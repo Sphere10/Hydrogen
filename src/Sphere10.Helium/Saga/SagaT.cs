@@ -2,11 +2,11 @@
 
 namespace Sphere10.Helium.Saga
 {
-    public abstract class Saga<TSagaData> : Saga where TSagaData : ISagaDataForSaga, new()
+    public abstract class Saga<T> : Saga where T : ISagaDataForSaga, new()
     {
-        public TSagaData Data
+        public T Data
         {
-            get => (TSagaData)Entity;
+            get => (T)Entity;
             set => Entity = (ISagaDataForSaga)value;
         }
 
@@ -16,9 +16,9 @@ namespace Sphere10.Helium.Saga
 
         protected internal override void ConfigureHowToFindSaga(IFindSaga sagaFindMap)
         {
-            ConfigureHowToFindSaga(new SagaPropertyMapper<TSagaData>(sagaFindMap));
+            ConfigureHowToFindSaga(new SagaPropertyMapper<T>(sagaFindMap));
         }
 
-        protected abstract void ConfigureHowToFindSaga(SagaPropertyMapper<TSagaData> mapper);
+        protected abstract void ConfigureHowToFindSaga(SagaPropertyMapper<T> mapper);
     }
 }

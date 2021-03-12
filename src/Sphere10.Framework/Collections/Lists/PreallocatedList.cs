@@ -3,11 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-<<<<<<< HEAD
-namespace Sphere10.Framework.Collections.Lists {
-=======
 namespace Sphere10.Framework.Collections {
->>>>>>> 31261811913d43c84cbc72ce9ab75c6658c08004
 
 	/// <summary>
 	/// A list implementation that implements inserts/deletes/adds as updates over an underlying fixed-size list. This list maintains

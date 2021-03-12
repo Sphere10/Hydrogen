@@ -3,7 +3,7 @@
 namespace Sphere10.Framework.Collections
 {
     [StructLayout(LayoutKind.Sequential)]
-    public struct StorageItemListing
+    public struct ItemListing
     {
         public int StartIndex { get; set; }
 

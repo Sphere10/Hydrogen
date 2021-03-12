@@ -55,10 +55,11 @@ namespace Sphere10.Framework {
 		public const uint MagicID = 31337;
 		public const byte FormatVersion = 1;
 		public const int ListHeaderSize = 256;
+		public const int DefaultPageSize = 100;
 
 		private bool _includeListHeader = true;
 
-		public StreamMappedList(int pageSize, IObjectSerializer<TItem> serializer, Stream stream)
+		public StreamMappedList(StreamMappedListType type, IObjectSerializer<TItem> serializer, Stream stream, int pageSize)
 		{
 			PageSize = pageSize;
 			Serializer = serializer;
@@ -67,7 +68,20 @@ namespace Sphere10.Framework {
 			Writer = new EndianBinaryWriter(EndianBitConverter.Little, Stream);
 			RequiresLoad = Stream.Length > 0;
 
-			Type = serializer.IsFixedSize ? StreamMappedListType.Fixed : StreamMappedListType.Dynamic;
+			Type = type;
+		}
+
+		public StreamMappedList(IObjectSerializer<TItem> serializer, Stream stream) : this(
+			serializer.IsFixedSize ? StreamMappedListType.FixedSize : StreamMappedListType.Dynamic,
+			 serializer,
+			stream, serializer.IsFixedSize ? int.MaxValue : DefaultPageSize)
+		{
+		}
+
+		public StreamMappedList(IObjectSerializer<TItem> serializer, Stream stream, int pageSize)
+			: this(serializer.IsFixedSize ? StreamMappedListType.FixedSize : StreamMappedListType.Dynamic, serializer,
+				stream, pageSize)
+		{
 		}
 
 		public int PageSize { get; }
@@ -110,7 +124,7 @@ namespace Sphere10.Framework {
 
 					return Tools.Scope.ExecuteOnDispose(streamedPage.Close);
 				}
-				case StreamMappedListType.Fixed:
+				case StreamMappedListType.FixedSize:
 				{
 					return Tools.Scope.ExecuteOnDispose(() => { }); //no-op
 				}
@@ -183,16 +197,16 @@ namespace Sphere10.Framework {
 				StreamMappedListType.Dynamic => pageNumber == 0
 					? new StreamPage<TItem>(this)
 					: new StreamPage<TItem>((StreamPage<TItem>) InternalPages.Last()),
-				StreamMappedListType.Fixed => pageNumber == 0
+				StreamMappedListType.FixedSize => pageNumber == 0
 					? new FixedSizeStreamPage<TItem>(this)
 					: throw new InvalidOperationException(
-						$"{nameof(StreamMappedListType.Fixed)} only supports a single page."),
+						$"{nameof(StreamMappedListType.FixedSize)} only supports a single page."),
 				_ => throw new ArgumentOutOfRangeException()
 			};
 
 		public override void InsertRange(int index, IEnumerable<TItem> items)
 		{
-			if (Type is StreamMappedListType.Fixed)
+			if (Type is StreamMappedListType.FixedSize)
 			{
 				
 			}

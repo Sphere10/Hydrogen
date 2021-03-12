@@ -3,6 +3,6 @@
     public enum StreamMappedListType
     {
         Dynamic,
-        Fixed
+        FixedSize
     }
 }

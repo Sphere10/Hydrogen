@@ -6,8 +6,9 @@ using System.Text;
 namespace Sphere10.Framework.Collections {
 
 	/// <summary>
-	/// A list implementation that implements inserts/deletes/adds as updates over an underlying fixed-size list. This list maintains
-	/// it's own count and shuffles objects around using updates.
+	/// A list implementation that implements inserts/deletes/adds as updates over an underlying fixed-size list. It works by shuffling
+	/// objects around and maintaining it's own count. The only mutation methods called on the decorated inner list are <seealso  cref="IExtendedList{T}.Update"/> and <see cref="IExtendedList{T}.UpdateRange"/>
+	/// it's own count and shuffles objects around using updates. The algorithms are optimized to avoid loading objects in memory.
 	/// </summary>
 	/// <remarks>
 	/// <see cref="Contains"/> and <see cref="ContainsRange"/> are overriden and implemented based on <see cref="IndexOf"/> and <see cref="IndexOfRange"/> in order to ensure only
@@ -75,9 +76,34 @@ namespace Sphere10.Framework.Collections {
 			CheckIndex(index);
 			if (_count + itemsArr.Length > MaxCount)
 				throw new ArgumentException("Insufficient space");
-			var itemsToMove = ReadRange(index, itemsArr.Length).ToArray();
+
+
+			// shuffle the items forward
+
+			// aaaa            ;; _count = 4  max = 10   fromStartIndex = 2   fromEndIndex = _count - 1 
+			// 0123456789
+			// insert 3 b's at index 2
+			// aabbbaa         ;; _count = 7  max = 10   toStartIndex = fromStartIndex + itemsArr.Length   toEndIndex = fromEndIndex + itemsArr.Length   
+			// 0123456789
+
+			var fromStartIndex = index;
+			var fromEndIndex = _count - 1;
+			var toStartIndex = fromStartIndex + itemsArr.Length;
+			var toEndIndex =  fromEndIndex + itemsArr.Length;
+
+			// abcdefg
+			// 0123456789
+			// abcdefg
+			// abczzzdefg
+			// abczzzdefg
+
+			for (var i = toEndIndex; i >= toStartIndex; i--) {
+				var toCopy = base.Read(i - itemsArr.Length);
+				base.Update(i, toCopy);
+			}
+
+			// finally, save the new items
 			base.UpdateRange(index, itemsArr);
-			base.UpdateRange(index+itemsArr.Length, itemsToMove);
 		}
 
 		public override bool Remove(TItem item) => this.RemoveRange(new[] { item }).First();

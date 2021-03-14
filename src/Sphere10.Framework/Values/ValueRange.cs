@@ -38,8 +38,8 @@ namespace Sphere10.Framework {
 		/// Constructs a new range, including or excluding each end as specified,
 		/// with the given comparer.
 		/// </summary>
-		public ValueRange(T start, T end, IComparer<T> comparer, bool includeStart, bool includeEnd) {
-			if (comparer.Compare(start, end) > 0) {
+		public ValueRange(T start, T end, IComparer<T> comparer, bool includeStart, bool includeEnd, bool checkOrder = true) {
+			if (checkOrder && comparer.Compare(start, end) > 0) {
 				throw new ArgumentOutOfRangeException(nameof(end), "start must be lower than end according to comparer");
 			}
 

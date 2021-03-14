@@ -16,6 +16,7 @@ using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
 using System.IO;
+using Sphere10.Framework.NUnit;
 
 namespace Sphere10.Framework.Tests {
 
@@ -147,48 +148,10 @@ namespace Sphere10.Framework.Tests {
 		[Test]
 		public void IntegrationTests([Values] StorageType storageType, [Values(1, 10, 57, 173, 1111)] int pageSize, [Values(1,2,100)] int maxOpenPages) {
 			var expected = new List<byte>();
-			var RNG = new Random(31337);
 			var maxCapacity = pageSize * maxOpenPages*2;
 			using (CreateBuffer(storageType, pageSize, maxOpenPages, out var buffer)) {
-				for (var i = 0; i < 100; i++) {
-
-					// add a random amount
-					var remainingCapacity = maxCapacity - buffer.Count;
-					var newItemsCount = RNG.Next(0, remainingCapacity + 1);
-					byte[] newItems = RNG.NextBytes(newItemsCount);
-					buffer.AddRange(newItems.AsSpan());
-					expected.AddRange(newItems);
-					Assert.AreEqual(expected, buffer);
-
-					// update a random amount
-					if (buffer.Count > 0) {
-						var range = RNG.RandomRange(buffer.Count);
-						newItems = RNG.NextBytes(range.End - range.Start + 1);
-						expected.UpdateRangeSequentially(range.Start, newItems);
-						buffer.UpdateRange(range.Start, newItems.AsSpan());
-						Assert.AreEqual(expected, buffer);
-
-						// shuffle a random amount
-						range = RNG.RandomRange(buffer.Count);
-						newItems = buffer.ReadSpan(range.Start, range.End - range.Start + 1).ToArray();
-						var expectedNewItems = expected.GetRange(range.Start, range.End - range.Start + 1);
-
-						range = RNG.RandomSegment(buffer.Count, newItems.Count());
-						expected.UpdateRangeSequentially(range.Start, expectedNewItems);
-						buffer.UpdateRange(range.Start, newItems.AsSpan());
-
-						Assert.AreEqual(expected.Count, buffer.Count);
-						Assert.AreEqual(expected, buffer);
-
-						// remove a random amount (FROM END OF LIST)
-						range = new ValueRange<int>(RNG.Next(0, buffer.Count), buffer.Count - 1);
-						buffer.RemoveRange(range.Start, range.End - range.Start + 1);
-						expected.RemoveRange(range.Start, range.End - range.Start + 1);
-
-						var buff = buffer.ToArray();
-						Assert.AreEqual(expected, buffer);
-					}
-				}
+				var mutateFromEndOnly = buffer is not MemoryBuffer;
+				AssertEx.BufferIntegrationTest(buffer, maxCapacity, mutateFromEndOnly);
 			}
 		}
 

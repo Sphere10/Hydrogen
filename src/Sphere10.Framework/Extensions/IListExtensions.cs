@@ -57,6 +57,12 @@ namespace Sphere10.Framework {
 		}
 
 
+		public static IEnumerable<T> ReadRangeSequentially<T>(this IList<T> list, int index, int count) {
+			for (var offset = 0; offset < count; offset++) {
+				yield return list[index + offset];
+			}
+		}
+
 		/// <summary>
 		/// Binary searches an ordered list of Ranged  
 		/// </summary>

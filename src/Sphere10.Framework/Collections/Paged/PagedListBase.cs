@@ -141,7 +141,9 @@ namespace Sphere10.Framework {
 		}
 
 		public override void InsertRange(int index, IEnumerable<TItem> items) {
-			throw new NotSupportedException();
+			if (index == Count)
+				AddRange(items);
+			else throw new NotSupportedException("This collection can only be mutated from the end");
 		}
 
 		public override IEnumerable<bool> RemoveRange(IEnumerable<TItem> items) => throw new NotSupportedException();
@@ -284,6 +286,7 @@ namespace Sphere10.Framework {
 			Guard.Argument(count >= 0, nameof(index), "Must be greater than or equal to 0");
 			var startIX = InternalPages.First().StartIndex;
 			var lastIX = InternalPages.Last().EndIndex;
+			if (index == lastIX + 1 && count == 0) return;  // special case: at index of "next item" with no count, this is valid
 			Guard.ArgumentInRange(index, startIX, lastIX, nameof(index));
 			if (count > 0)
 				Guard.ArgumentInRange(index + count - 1, startIX, lastIX, nameof(count));

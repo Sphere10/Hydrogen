@@ -7,7 +7,7 @@ namespace Sphere10.Framework {
 	/// Converts an IList to IExtendedList. 
 	/// </summary>
 	/// <typeparam name="TItem"></typeparam>
-	public sealed class ExtendedListAdapter<TItem> : SingularListBase<TItem> {
+	public class ExtendedListAdapter<TItem> : SingularListBase<TItem> {
 
 		private readonly IList<TItem> _endpoint;
 

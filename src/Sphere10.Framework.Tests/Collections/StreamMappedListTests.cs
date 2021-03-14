@@ -18,316 +18,239 @@ using System.Text;
 using NUnit.Framework;
 using System.IO;
 using Sphere10.Framework.Collections.StreamMapped;
+using Sphere10.Framework.NUnit;
 
 namespace Sphere10.Framework.Tests {
 
-	[TestFixture]
-	[Parallelizable(ParallelScope.Children)]
-	public class StreamMappedListTests {
-		
-		[Test]
-		public void V1_Add_1([Values(1, 111)] int pageSize) {
-			var stream = new MemoryStream();
-			var list = new StreamMappedList<string>(new StringSerializer(Encoding.ASCII), stream, pageSize);
+    [TestFixture]
+    [Parallelizable(ParallelScope.Children)]
+    public class StreamMappedListTests {
 
-			list.Add("item1");
-			Assert.AreEqual(1, list.Count);
-		}
-		
-		[Test]
-		public void V1_Update_1([Values(1, 111)] int pageSize) {
-			var stream = new MemoryStream();
-			var list = new StreamMappedList<string>(new StringSerializer(Encoding.ASCII), stream, pageSize);
+        [Test]
+        public void V1_Add_1([Values(1, 111)] int pageSize) {
+            var stream = new MemoryStream();
+            var list = new StreamMappedList<string>(new StringSerializer(Encoding.ASCII), stream, pageSize);
 
-			list.Add("item1");
-			list.Update(0, "item2");
-			
-			Assert.AreEqual("item2", list[0]);
-		}
+            list.Add("item1");
+            Assert.AreEqual(1, list.Count);
+        }
 
-		[Test]
-		public void V1_Add_2([Values(1, 2, 111)] int pageSize) {
-			var stream = new MemoryStream();
-			var list = new StreamMappedList<string>(new StringSerializer(Encoding.ASCII), stream, pageSize);
+        [Test]
+        public void V1_Update_1([Values(1, 111)] int pageSize) {
+            var stream = new MemoryStream();
+            var list = new StreamMappedList<string>(new StringSerializer(Encoding.ASCII), stream, pageSize);
 
-			list.Add("item1");
-			list.Add("the second item");
-			Assert.AreEqual(2, list.Count);
-		}
+            list.Add("item1");
+            list.Update(0, "item2");
 
-		[Test]
-		public void V1_Add_3([Values(1, 2, 111)] int pageSize) {
-			var stream = new MemoryStream();
-			var list = new StreamMappedList<string>(new StringSerializer(Encoding.ASCII), stream, pageSize);
+            Assert.AreEqual("item2", list[0]);
+        }
 
-			list.Add("item1");
-			list.AddRange("the second item", "33333333333333333333333333");
-			Assert.AreEqual(3, list.Count);
-		}
+        [Test]
+        public void V1_Add_2([Values(1, 2, 111)] int pageSize) {
+            var stream = new MemoryStream();
+            var list = new StreamMappedList<string>(new StringSerializer(Encoding.ASCII), stream, pageSize);
 
-		[Test]
-		public void V1_Read_1([Values(1, 2)] int pageSize) {
-			var stream = new MemoryStream();
-			var list = new StreamMappedList<string>(new StringSerializer(Encoding.ASCII), stream, pageSize);
+            list.Add("item1");
+            list.Add("the second item");
+            Assert.AreEqual(2, list.Count);
+        }
 
-			list.Add("item1");
-			Assert.AreEqual("item1", list[0]);
-		}
+        [Test]
+        public void V1_Add_3([Values(1, 2, 111)] int pageSize) {
+            var stream = new MemoryStream();
+            var list = new StreamMappedList<string>(new StringSerializer(Encoding.ASCII), stream, pageSize);
 
-		[Test]
-		public void V1_Read_2([Values(1, 2)] int pageSize) {
-			var stream = new MemoryStream();
-			var list = new StreamMappedList<string>(new StringSerializer(Encoding.ASCII), stream, pageSize);
+            list.Add("item1");
+            list.AddRange("the second item", "33333333333333333333333333");
+            Assert.AreEqual(3, list.Count);
+        }
 
-			list.AddRange("item1", "item2");
-			Assert.AreEqual("item1", list[0]);
-			Assert.AreEqual("item2", list[1]);
-		}
+        [Test]
+        public void V1_Read_1([Values(1, 2)] int pageSize) {
+            var stream = new MemoryStream();
+            var list = new StreamMappedList<string>(new StringSerializer(Encoding.ASCII), stream, pageSize);
 
-		[Test]
-		public void V1_FixedSize_Read_NoHeader()
-		{
-			var stream = new MemoryStream();
-			var list = new StreamMappedList<int>(new IntSerializer(), stream) {IncludeListHeader = false};
+            list.Add("item1");
+            Assert.AreEqual("item1", list[0]);
+        }
 
-			var added = new[] {1, 2, 3, 4};
-			list.AddRange(added);
-			var read = list.ReadRange(0, 4);
-			Assert.AreEqual(added, read);
-		}
+        [Test]
+        public void V1_Read_2([Values(1, 2)] int pageSize) {
+            var stream = new MemoryStream();
+            var list = new StreamMappedList<string>(new StringSerializer(Encoding.ASCII), stream, pageSize);
 
-		[Test]
-		public void V1_Integration_SimpleRun([Values(1,2,3,5)] int pageSize, [Values] StorageType storage) {
+            list.AddRange("item1", "item2");
+            Assert.AreEqual("item1", list[0]);
+            Assert.AreEqual("item2", list[1]);
+        }
 
-			using (CreateStream(storage, 14, out var stream)) {
-				var list = new StreamMappedList<string>(new StringSerializer(Encoding.ASCII), stream, pageSize);
+        [Test]
+        public void V1_FixedSize_Read_NoHeader() {
+            var stream = new MemoryStream();
+            var list = new StreamMappedList<int>(new IntSerializer(), stream) { IncludeListHeader = false };
 
-				var len0 = stream.Length;
+            var added = new[] { 1, 2, 3, 4 };
+            list.AddRange(added);
+            var read = list.ReadRange(0, 4);
+            Assert.AreEqual(added, read);
+        }
 
-				list.Add("test");
-				Assert.AreEqual(1, list.Count);
-				Assert.AreEqual("test", list[0]);
+        [Test]
+        public void V1_Integration_SimpleRun([Values(1, 2, 3, 5)] int pageSize, [Values] StorageType storage) {
 
-				var len1 = stream.Length;
+            using (CreateStream(storage, 14, out var stream)) {
+                var list = new StreamMappedList<string>(new StringSerializer(Encoding.ASCII), stream, pageSize);
 
-				list.Add("test2");
-				Assert.AreEqual(2, list.Count);
-				Assert.AreEqual("test", list[0]);
-				Assert.AreEqual("test2", list[1]);
+                var len0 = stream.Length;
 
-				var len2 = stream.Length;
+                list.Add("test");
+                Assert.AreEqual(1, list.Count);
+                Assert.AreEqual("test", list[0]);
 
-				list.Add("test33");
-				Assert.AreEqual(3, list.Count);
-				Assert.AreEqual("test", list[0]);
-				Assert.AreEqual("test33", list[2]);
-				Assert.AreEqual("test2", list[1]);
+                var len1 = stream.Length;
 
-				var len3 = stream.Length;
+                list.Add("test2");
+                Assert.AreEqual(2, list.Count);
+                Assert.AreEqual("test", list[0]);
+                Assert.AreEqual("test2", list[1]);
 
-				// Illegal removes
-				Assert.That(() => list.RemoveAt(0), Throws.Exception);
-				Assert.That(() => list.RemoveAt(1), Throws.Exception);
+                var len2 = stream.Length;
 
-				// Remove tip
-				list.RemoveAt(2);
-				Assert.AreEqual(2, list.Count);
-				Assert.AreEqual("test", list[0]);
-				Assert.AreEqual("test2", list[1]);
+                list.Add("test33");
+                Assert.AreEqual(3, list.Count);
+                Assert.AreEqual("test", list[0]);
+                Assert.AreEqual("test33", list[2]);
+                Assert.AreEqual("test2", list[1]);
 
-				Assert.AreEqual(len2, stream.Length);
+                var len3 = stream.Length;
 
-				// Illegal remove
-				Assert.That(() => list.RemoveAt(0), Throws.Exception);
+                // Illegal removes
+                Assert.That(() => list.RemoveAt(0), Throws.Exception);
+                Assert.That(() => list.RemoveAt(1), Throws.Exception);
 
-				// Remove rest
-				list.RemoveAt(1);
-				Assert.AreEqual(1, list.Count);
-				Assert.AreEqual("test", list[0]);
+                // Remove tip
+                list.RemoveAt(2);
+                Assert.AreEqual(2, list.Count);
+                Assert.AreEqual("test", list[0]);
+                Assert.AreEqual("test2", list[1]);
 
-				Assert.AreEqual(len1, stream.Length);
+                Assert.AreEqual(len2, stream.Length);
 
-				list.RemoveAt(0);
-				Assert.AreEqual(0, list.Count);
+                // Illegal remove
+                Assert.That(() => list.RemoveAt(0), Throws.Exception);
 
-				Assert.AreEqual(len0, stream.Length);
-			}
-		}
+                // Remove rest
+                list.RemoveAt(1);
+                Assert.AreEqual(1, list.Count);
+                Assert.AreEqual("test", list[0]);
 
-		[Test]
-		public void V1_Integration_FixedSize()
-		{
-			var serializer = new IntSerializer();
-			int capacity = 100;
+                Assert.AreEqual(len1, stream.Length);
 
-			var RNG = new Random(1231);
-			var list = new StreamMappedList<int>(serializer, new MemoryStream())
-			{
-				IncludeListHeader = false
-			};
+                list.RemoveAt(0);
+                Assert.AreEqual(0, list.Count);
 
-			var expected = new List<int>();
-			for (var i = 0; i < 100; i++)
-			{
-				// add a random amount
-				var remainingCapacity = capacity - list.Count;
-				var newItemsCount = RNG.Next(0, remainingCapacity + 1);
-				IEnumerable<int> newItems = RNG.NextInts(newItemsCount);
-				list.AddRange(newItems); 
-				expected.AddRange(newItems);
-				Assert.AreEqual(expected, list);
+                Assert.AreEqual(len0, stream.Length);
+            }
+        }
 
-				if (list.Count > 0)
-				{
-					// update a random amount
-					var range = RNG.RandomRange(list.Count);
-					newItems = RNG.NextInts(range.End - range.Start + 1);
-					list.UpdateRange(range.Start, newItems);
-					expected.UpdateRangeSequentially(range.Start, newItems);
-					Assert.AreEqual(expected, list);
+        [Test]
+        public void V1_Integration_FixedSize([Values(1000)] int maxCapacity) {
+            using (var stream = new MemoryStream()) {
+                var list = new StreamMappedList<int>(new IntSerializer(), stream) { IncludeListHeader = false };
+                AssertEx.ListIntegrationTest<int>(list, maxCapacity, (rng, i) => rng.NextInts(i), mutateFromEndOnly: true);
+            }
+        }
 
-					// shuffle a random amount
-					range = RNG.RandomRange(list.Count);
-					newItems = list.ReadRange(range.Start, range.End - range.Start + 1);
-					var expectedNewItems = expected.GetRange(range.Start, range.End - range.Start + 1);
-					range = RNG.RandomSegment(list.Count, newItems.Count());
-					expected.UpdateRangeSequentially(range.Start, newItems);
-					list.UpdateRange(range.Start, newItems);
-
-					Assert.AreEqual(expected.Count, list.Count);
-					Assert.AreEqual(expected, list);
-				}
-			}
-		}
-		
-		[Test]
-		public void V1_Integration_FixedSizeWithHeader()
-		{
-			int capacity = 1000;
-
-			var RNG = new Random(1231);
-			var list = new StreamMappedList<int>(new IntSerializer(), new MemoryStream())
-			{
-				IncludeListHeader = true
-			};
-
-			var expected = new List<int>();
-			for (var i = 0; i < 100; i++)
-			{
-				// add a random amount
-				var remainingCapacity = capacity - list.Count;
-				var newItemsCount = RNG.Next(0, remainingCapacity + 1);
-				IEnumerable<int> newItems = RNG.NextInts(newItemsCount);
-				list.AddRange(newItems);
-				expected.AddRange(newItems);
-				Assert.AreEqual(expected, list);
-
-				if (list.Count > 0)
-				{
-					// update a random amount
-					var range = RNG.RandomRange(list.Count);
-					newItems = RNG.NextInts(range.End - range.Start + 1);
-					list.UpdateRange(range.Start, newItems);
-					expected.UpdateRangeSequentially(range.Start, newItems);
-					Assert.AreEqual(expected, list);
-
-					// shuffle a random amount
-					range = RNG.RandomRange(list.Count);
-					newItems = list.ReadRange(range.Start, range.End - range.Start + 1);
-					
-					range = RNG.RandomSegment(list.Count, newItems.Count());
-					expected.UpdateRangeSequentially(range.Start, newItems);
-					list.UpdateRange(range.Start, newItems);
-
-					Assert.AreEqual(expected.Count, list.Count);
-					Assert.AreEqual(expected, list);
-				}
-			}
-		}
+        [Test]
+        public void V1_Integration_FixedSizeWithHeader([Values(1000)] int maxCapacity) {
+            using (var stream = new MemoryStream()) {
+                var list = new StreamMappedList<int>(new IntSerializer(), stream) { IncludeListHeader = true };
+                AssertEx.ListIntegrationTest<int>(list, maxCapacity, (rng, i) => rng.NextInts(i), mutateFromEndOnly: true);
+            }
+        }
 
 
-		[Test]
-		public void V1_IncludeListHeaderThrowsAfterInit()
-		{
-			var stream = new MemoryStream();
-			var list = new StreamMappedList<string>(new StringSerializer(Encoding.ASCII), stream)
-			{
-				IncludeListHeader = false
-			};
+        [Test]
+        public void V1_IncludeListHeaderThrowsAfterInit() {
+            var stream = new MemoryStream();
+            var list = new StreamMappedList<string>(new StringSerializer(Encoding.ASCII), stream) {
+                IncludeListHeader = false
+            };
 
-			Assert.DoesNotThrow(() => list.IncludeListHeader = true);
-			list.Add("baz");
+            Assert.DoesNotThrow(() => list.IncludeListHeader = true);
+            list.Add("baz");
 
-			Assert.Throws<InvalidOperationException>(() => list.IncludeListHeader = true);
-		}
+            Assert.Throws<InvalidOperationException>(() => list.IncludeListHeader = true);
+        }
 
-		public enum StorageType {
-			MemoryStream,
-			List,
-			ExtendedList,
-			MemoryBuffer,
-			BinaryFile_1Page_1InMem,
-			BinaryFile_2Page_1InMem,
-			BinaryFile_10Page_5InMem,
-			TransactionalBinaryFile_1Page_1InMem,
-			TransactionalBinaryFile_2Page_1InMem,
-			TransactionalBinaryFile_10Page_5InMem
-		}
+        public enum StorageType {
+            MemoryStream,
+            List,
+            ExtendedList,
+            MemoryBuffer,
+            BinaryFile_1Page_1InMem,
+            BinaryFile_2Page_1InMem,
+            BinaryFile_10Page_5InMem,
+            TransactionalBinaryFile_1Page_1InMem,
+            TransactionalBinaryFile_2Page_1InMem,
+            TransactionalBinaryFile_10Page_5InMem
+        }
 
-		private IDisposable CreateStream(StorageType storageType, int estimatedMaxByteSize, out Stream stream) {
-			var disposables = new Disposables();
+        private IDisposable CreateStream(StorageType storageType, int estimatedMaxByteSize, out Stream stream) {
+            var disposables = new Disposables();
 
-			switch (storageType) {
-				case StorageType.MemoryStream:
-					stream = new MemoryStream();
-					break;
-				case StorageType.List:
-					stream = new ExtendedMemoryStream(new ExtendedListAdapter<byte>(new List<byte>()));
-					break;
-				case StorageType.ExtendedList:
-					stream = new ExtendedMemoryStream(new ExtendedList<byte>());
-					break;
-				case StorageType.MemoryBuffer:
-					stream = new ExtendedMemoryStream(new MemoryBuffer());
-					break;
-				case StorageType.BinaryFile_1Page_1InMem:
-					var tmpFile = Tools.FileSystem.GetTempFileName(false);
-					stream = new ExtendedMemoryStream(new FileMappedBuffer(tmpFile, Math.Max(1, estimatedMaxByteSize), 1));
-					disposables.Add(new ActionScope(() => File.Delete(tmpFile)));
-					break;
-				case StorageType.BinaryFile_2Page_1InMem:
-					tmpFile = Tools.FileSystem.GetTempFileName(false);
-					stream = new ExtendedMemoryStream(new FileMappedBuffer(tmpFile, Math.Max(1, estimatedMaxByteSize / 2), 2));
-					disposables.Add(new ActionScope(() => File.Delete(tmpFile)));
-					break;
-				case StorageType.BinaryFile_10Page_5InMem:
-					tmpFile = Tools.FileSystem.GetTempFileName(false);
-					stream = new ExtendedMemoryStream(new FileMappedBuffer(tmpFile, Math.Max(1, estimatedMaxByteSize / 10), 5));
-					disposables.Add(new ActionScope(() => File.Delete(tmpFile)));
-					break;
-				case StorageType.TransactionalBinaryFile_1Page_1InMem:
-					var baseDir = Tools.FileSystem.GetTempEmptyDirectory(true);
-					var fileName = Path.Combine(baseDir, "File.dat");
-					stream = new ExtendedMemoryStream(new TransactionalFileMappedBuffer(fileName, baseDir, Guid.NewGuid(), Math.Max(1, estimatedMaxByteSize), 1));
-					disposables.Add(new ActionScope(() => Tools.FileSystem.DeleteDirectory(baseDir)));
-					break;
-				case StorageType.TransactionalBinaryFile_2Page_1InMem:
-					baseDir = Tools.FileSystem.GetTempEmptyDirectory(true);
-					fileName = Path.Combine(baseDir, "File.dat");
-					stream = new ExtendedMemoryStream(new TransactionalFileMappedBuffer(fileName, baseDir, Guid.NewGuid(), Math.Max(1, estimatedMaxByteSize / 2), 2));
-					disposables.Add(new ActionScope(() => Tools.FileSystem.DeleteDirectory(baseDir)));
-					break;
+            switch (storageType) {
+                case StorageType.MemoryStream:
+                    stream = new MemoryStream();
+                    break;
+                case StorageType.List:
+                    stream = new ExtendedMemoryStream(new ExtendedListAdapter<byte>(new List<byte>()));
+                    break;
+                case StorageType.ExtendedList:
+                    stream = new ExtendedMemoryStream(new ExtendedList<byte>());
+                    break;
+                case StorageType.MemoryBuffer:
+                    stream = new ExtendedMemoryStream(new MemoryBuffer());
+                    break;
+                case StorageType.BinaryFile_1Page_1InMem:
+                    var tmpFile = Tools.FileSystem.GetTempFileName(false);
+                    stream = new ExtendedMemoryStream(new FileMappedBuffer(tmpFile, Math.Max(1, estimatedMaxByteSize), 1));
+                    disposables.Add(new ActionScope(() => File.Delete(tmpFile)));
+                    break;
+                case StorageType.BinaryFile_2Page_1InMem:
+                    tmpFile = Tools.FileSystem.GetTempFileName(false);
+                    stream = new ExtendedMemoryStream(new FileMappedBuffer(tmpFile, Math.Max(1, estimatedMaxByteSize / 2), 2));
+                    disposables.Add(new ActionScope(() => File.Delete(tmpFile)));
+                    break;
+                case StorageType.BinaryFile_10Page_5InMem:
+                    tmpFile = Tools.FileSystem.GetTempFileName(false);
+                    stream = new ExtendedMemoryStream(new FileMappedBuffer(tmpFile, Math.Max(1, estimatedMaxByteSize / 10), 5));
+                    disposables.Add(new ActionScope(() => File.Delete(tmpFile)));
+                    break;
+                case StorageType.TransactionalBinaryFile_1Page_1InMem:
+                    var baseDir = Tools.FileSystem.GetTempEmptyDirectory(true);
+                    var fileName = Path.Combine(baseDir, "File.dat");
+                    stream = new ExtendedMemoryStream(new TransactionalFileMappedBuffer(fileName, baseDir, Guid.NewGuid(), Math.Max(1, estimatedMaxByteSize), 1));
+                    disposables.Add(new ActionScope(() => Tools.FileSystem.DeleteDirectory(baseDir)));
+                    break;
+                case StorageType.TransactionalBinaryFile_2Page_1InMem:
+                    baseDir = Tools.FileSystem.GetTempEmptyDirectory(true);
+                    fileName = Path.Combine(baseDir, "File.dat");
+                    stream = new ExtendedMemoryStream(new TransactionalFileMappedBuffer(fileName, baseDir, Guid.NewGuid(), Math.Max(1, estimatedMaxByteSize / 2), 2));
+                    disposables.Add(new ActionScope(() => Tools.FileSystem.DeleteDirectory(baseDir)));
+                    break;
 
-				case StorageType.TransactionalBinaryFile_10Page_5InMem:
-					baseDir = Tools.FileSystem.GetTempEmptyDirectory(true);
-					fileName = Path.Combine(baseDir, "File.dat");
-					stream = new ExtendedMemoryStream(new TransactionalFileMappedBuffer(fileName, baseDir, Guid.NewGuid(), Math.Max(1, estimatedMaxByteSize / 10), 5));
-					disposables.Add(new ActionScope(() => Tools.FileSystem.DeleteDirectory(baseDir)));
-					break;
-				default:
-					throw new ArgumentOutOfRangeException(nameof(storageType), storageType, null);
-			}
-			return disposables;
-		}
-	}
+                case StorageType.TransactionalBinaryFile_10Page_5InMem:
+                    baseDir = Tools.FileSystem.GetTempEmptyDirectory(true);
+                    fileName = Path.Combine(baseDir, "File.dat");
+                    stream = new ExtendedMemoryStream(new TransactionalFileMappedBuffer(fileName, baseDir, Guid.NewGuid(), Math.Max(1, estimatedMaxByteSize / 10), 5));
+                    disposables.Add(new ActionScope(() => Tools.FileSystem.DeleteDirectory(baseDir)));
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(storageType), storageType, null);
+            }
+            return disposables;
+        }
+    }
 }

@@ -16,6 +16,7 @@ using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
 using System.IO;
+using Sphere10.Framework.NUnit;
 
 namespace Sphere10.Framework.Tests {
 
@@ -277,53 +278,14 @@ namespace Sphere10.Framework.Tests {
 			[Values(1, 10, 57, 173, 1111)] int maxCapacity, 
 			[Values(1, 1, 3, 31, 13)] int pageSize,
 			[Values(1, 1, 7, 2,  19)] int maxOpenPages) {
-			var expected = new List<byte>();
-			var RNG = new Random(1231);
 			var fileName = Tools.FileSystem.GetTempFileName(true);
 			using (Tools.Scope.ExecuteOnDispose(() => File.Delete(fileName))) {
 				using (var binaryFile = new FileMappedBuffer(fileName, pageSize, maxOpenPages, false)) {
 					if (binaryFile.RequiresLoad)
 						binaryFile.Load();
 
-					for (var i = 0; i < 100; i++) {
-
-						// add a random amount
-						var remainingCapacity = maxCapacity - binaryFile.Count;
-						var newItemsCount = RNG.Next(0, remainingCapacity + 1);
-						IEnumerable<byte> newItems = RNG.NextBytes(newItemsCount);
-						binaryFile.AddRange(newItems);
-						expected.AddRange(newItems);
-						Assert.AreEqual(expected, binaryFile);
-
-						// update a random amount
-						if (binaryFile.Count > 0) {
-							var range = RNG.RandomRange(binaryFile.Count);
-							newItems = RNG.NextBytes(range.End - range.Start + 1);
-							expected.UpdateRangeSequentially(range.Start, newItems);
-							binaryFile.UpdateRange(range.Start, newItems);
-							Assert.AreEqual(expected, binaryFile);
-
-							// shuffle a random amount
-							range = RNG.RandomRange(binaryFile.Count);
-							newItems = binaryFile.ReadRange(range.Start, range.End - range.Start + 1);
-							var expectedNewItems = expected.GetRange(range.Start, range.End - range.Start + 1);
-
-							range = RNG.RandomSegment(binaryFile.Count, newItems.Count());
-							expected.UpdateRangeSequentially(range.Start, expectedNewItems);
-							binaryFile.UpdateRange(range.Start, newItems);
-
-							Assert.AreEqual(expected.Count, binaryFile.Count);
-							Assert.AreEqual(expected, binaryFile);
-
-							// remove a random amount (FROM END OF LIST)
-							range = new ValueRange<int>(RNG.Next(0, binaryFile.Count), binaryFile.Count - 1);
-							binaryFile.RemoveRange(range.Start, range.End - range.Start + 1);
-							expected.RemoveRange(range.Start, range.End - range.Start + 1);
-							Assert.AreEqual(expected, binaryFile);
-						}
-					}
+					AssertEx.ListIntegrationTest<byte>(binaryFile, maxCapacity, (rng, i) => rng.NextBytes(i), mutateFromEndOnly: true);
 				}
-				Assert.AreEqual(expected, File.ReadAllBytes(fileName));
 			}
 		}
 	}

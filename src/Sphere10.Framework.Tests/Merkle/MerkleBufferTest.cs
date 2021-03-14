@@ -129,17 +129,17 @@ namespace Sphere10.Framework.Tests {
 
                     // update a random amount
                     if (merkleBuffer.Count > 0) {
-                        var range = RNG.RandomRange(merkleBuffer.Count);
+                        var range = RNG.NextRange(merkleBuffer.Count);
                         newItems = RNG.NextBytes(range.End - range.Start + 1);
                         expected.UpdateRangeSequentially(range.Start, newItems);
                         merkleBuffer.UpdateRange(range.Start, newItems);
 
                         // shuffle a random amount
-                        range = RNG.RandomRange(merkleBuffer.Count);
+                        range = RNG.NextRange(merkleBuffer.Count);
                         newItems = merkleBuffer.ReadRange(range.Start, range.End - range.Start + 1);
                         var expectedNewItems = expected.GetRange(range.Start, range.End - range.Start + 1);
 
-                        range = RNG.RandomSegment(merkleBuffer.Count, newItems.Count());
+                        range = RNG.NextRange(merkleBuffer.Count, newItems.Count());
                         expected.UpdateRangeSequentially(range.Start, expectedNewItems);
                         merkleBuffer.UpdateRange(range.Start, newItems);
 

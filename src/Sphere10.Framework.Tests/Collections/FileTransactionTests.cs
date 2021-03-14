@@ -479,17 +479,17 @@ namespace Sphere10.Framework.Tests {
 
 			// update a random amount
 			if (file.Count > 0) {
-				var range = RNG.RandomRange(file.Count);
+				var range = RNG.NextRange(file.Count);
 				newItems = RNG.NextBytes(range.End - range.Start + 1);
 				expected.UpdateRangeSequentially(range.Start, newItems);
 				file.UpdateRange(range.Start, newItems);
 
 				// shuffle a random amount
-				range = RNG.RandomRange(file.Count);
+				range = RNG.NextRange(file.Count);
 				newItems = file.ReadRange(range.Start, range.End - range.Start + 1);
 				var expectedNewItems = expected.GetRange(range.Start, range.End - range.Start + 1);
 
-				range = RNG.RandomSegment(file.Count, newItems.Count());
+				range = RNG.NextRange(file.Count, rangeLength: newItems.Count());
 				expected.UpdateRangeSequentially(range.Start, expectedNewItems);
 				file.UpdateRange(range.Start, newItems);
 

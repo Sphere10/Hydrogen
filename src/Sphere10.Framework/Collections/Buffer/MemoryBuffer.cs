@@ -153,6 +153,8 @@ namespace Sphere10.Framework {
 		public Span<byte> AsSpan(int index) => AsSpan(index, _length - index);
 
 		public Span<byte> AsSpan(int index, int count) {
+			if (index == _length && count == 0)
+				return Span<byte>.Empty;
 			Guard.ArgumentInRange(index, 0, Math.Max(_length - 1, 0), nameof(index));
 			Guard.ArgumentInRange(count, 0, Math.Max(_length - index, 0), nameof(count));
 			return _internalArray.AsSpan(index, count);

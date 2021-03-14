@@ -703,45 +703,8 @@ namespace Sphere10.Framework.Tests {
         [Values(1, 10, 57, 173, 1111)] int maxCapacity,
         [Values(1, 1, 3, 31, 13)] int pageSize,
         [Values(1, 1, 7, 2, 19)] int maxOpenPages) {
-            var expected = new List<byte>();
-            var RNG = new Random(1231);
             using (var list = new MemoryPagedList<byte>(pageSize, maxOpenPages, sizeof(byte))) {
-                for (var i = 0; i < 100; i++) {
-                    // add a random amount
-                    var remainingCapacity = maxCapacity - list.Count;
-                    var newItemsCount = RNG.Next(0, remainingCapacity + 1);
-                    IEnumerable<byte> newItems = RNG.NextBytes(newItemsCount);
-                    list.AddRange(newItems);
-                    expected.AddRange(newItems);
-                    Assert.AreEqual(expected, list);
-
-                    // update a random amount
-                    if (list.Count > 0) {
-                        var range = RNG.RandomRange(list.Count);
-                        newItems = RNG.NextBytes(range.End - range.Start + 1);
-                        expected.UpdateRangeSequentially(range.Start, newItems);
-                        list.UpdateRange(range.Start, newItems);
-                        Assert.AreEqual(expected, list);
-
-                        // shuffle a random amount
-                        range = RNG.RandomRange(list.Count);
-                        newItems = list.ReadRange(range.Start, range.End - range.Start + 1);
-                        var expectedNewItems = expected.GetRange(range.Start, range.End - range.Start + 1);
-
-                        range = RNG.RandomSegment(list.Count, newItems.Count());
-                        expected.UpdateRangeSequentially(range.Start, expectedNewItems);
-                        list.UpdateRange(range.Start, newItems);
-
-                        Assert.AreEqual(expected.Count, list.Count);
-                        Assert.AreEqual(expected, list);
-
-                        // remove a random amount (FROM END OF LIST)
-                        range = new ValueRange<int>(RNG.Next(0, list.Count), list.Count - 1);
-                        list.RemoveRange(range.Start, range.End - range.Start + 1);
-                        expected.RemoveRange(range.Start, range.End - range.Start + 1);
-                        Assert.AreEqual(expected, list);
-                    }
-                }
+                AssertEx.ListIntegrationTest<byte>(list, maxCapacity, (rng, i) => rng.NextBytes(i), mutateFromEndOnly: true);
             }
         }
     }

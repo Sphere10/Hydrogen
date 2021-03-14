@@ -63,11 +63,11 @@ namespace Sphere10.Framework.Tests {
                 var arr2 = Tools.Array.Clone(arr1);
                 var bitLength = arr1.Length * 8;
                 for (var j = 0; j < Rounds; j++) {
-                    var range = rng.RandomRange(bitLength);
+                    var range = rng.NextRange(bitLength);
                     var dir = rng.NextBool() ? IterateDirection.LeftToRight : IterateDirection.RightToLeft;
                     Bits.CopyBits(arr1, range.Start, arr2, range.Start, range.End - range.Start + 1, dir, dir);
 
-					range = rng.RandomRange(bitLength);
+					range = rng.NextRange(bitLength);
 					dir = rng.NextBool() ? IterateDirection.LeftToRight : IterateDirection.RightToLeft;
 					Bits.CopyBits(arr2, range.Start, arr1, range.Start, range.End - range.Start + 1, dir, dir);
 
@@ -86,7 +86,7 @@ namespace Sphere10.Framework.Tests {
 				var bitLength = bytes.Length * 8;
 				for (var j = 0; j < Rounds; j++) {
 					var bitsInNumber = rng.Next(16) + 1;
-					var segment = rng.RandomSegment(bitLength, bitsInNumber);
+					var segment = rng.NextRange(bitLength, bitsInNumber);
 					var dir = rng.NextBool() ? IterateDirection.LeftToRight : IterateDirection.RightToLeft;
 					var offset = dir == IterateDirection.LeftToRight ? segment.Start : segment.End;
 					

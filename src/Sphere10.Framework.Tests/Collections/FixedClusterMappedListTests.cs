@@ -119,17 +119,17 @@ namespace Sphere10.Framework.Tests
                 if (list.Count > 0)
                 {
                     // update a random amount
-                    var range = RNG.RandomRange(list.Count);
+                    var range = RNG.NextRange(list.Count);
                     newItems = RNG.NextInts(range.End - range.Start + 1);
                     list.UpdateRange(range.Start, newItems);
                     expected.UpdateRangeSequentially(range.Start, newItems);
                     Assert.AreEqual(expected, list.ToList());
 
                     // shuffle a random amount
-                    range = RNG.RandomRange(list.Count);
+                    range = RNG.NextRange(list.Count);
                     newItems = list.ReadRange(range.Start, range.End - range.Start + 1);
                     var expectedNewItems = expected.GetRange(range.Start, range.End - range.Start + 1);
-                    range = RNG.RandomSegment(list.Count, newItems.Count());
+                    range = RNG.NextRange(list.Count, rangeLength: newItems.Count());
                     expected.UpdateRangeSequentially(range.Start, expectedNewItems);
                     list.UpdateRange(range.Start, newItems);
 
@@ -137,7 +137,7 @@ namespace Sphere10.Framework.Tests
                     Assert.AreEqual(expected, list.ToList());
 
                     // remove a random amount
-                    range = RNG.RandomRange(list.Count);
+                    range = RNG.NextRange(list.Count);
                     list.RemoveRange(range.Start, range.End - range.Start + 1);
                     expected.RemoveRange(range.Start, range.End - range.Start + 1);
                     Assert.AreEqual(expected, list.ToList());
@@ -155,29 +155,19 @@ namespace Sphere10.Framework.Tests
         }
     }
 
-    internal class IntSerializer : IObjectSerializer<int>
-    {
-        public bool IsFixedSize { get; } = true;
-
-        public int FixedSize { get; } = BitConverter.GetBytes(0).Length;
-
-        public int CalculateTotalSize(IEnumerable<int> items, bool calculateIndividualItems, out int[] itemSizes)
-        {
-            throw new NotSupportedException();
+    internal class IntSerializer : FixedSizeObjectSerializer<int> {
+        public IntSerializer() : base(4) {
         }
 
-        public int CalculateSize(int item) => FixedSize;
-
-        public int Serialize(int @object, EndianBinaryWriter writer)
-        {
+        public override int Serialize(int @object, EndianBinaryWriter writer) {
             writer.Write(BitConverter.GetBytes(@object));
             return sizeof(int);
         }
 
-        public int Deserialize(int size, EndianBinaryReader reader)
-        {
+        public override int Deserialize(int size, EndianBinaryReader reader) {
             return reader.ReadInt32();
         }
+
     }
 
 }

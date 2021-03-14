@@ -41,10 +41,10 @@ namespace Sphere10.Framework {
 		}
 
 		public static byte[] NextBytes(this Random random, int count) {
-            var buff = new byte[count];
-            random.NextBytes(buff);
-            return buff;
-        }
+			var buff = new byte[count];
+			random.NextBytes(buff);
+			return buff;
+		}
 
 		/// <summary>
 		/// 
@@ -54,10 +54,10 @@ namespace Sphere10.Framework {
 		/// <param name="minCount"></param>
 		/// <param name="maxCount">Exclusive upper bound</param>
 		/// <returns></returns>
-		public static byte[][] NextByteArrays(this Random random, int size, int minCount, int maxCount) 
+		public static byte[][] NextByteArrays(this Random random, int size, int minCount, int maxCount)
 			=> NextByteArrays(random, size, random.Next(minCount, maxCount));
 
-		public static byte[][] NextByteArrays(this Random random, int size, int count) 
+		public static byte[][] NextByteArrays(this Random random, int size, int count)
 			=> Tools.Collection.Generate(() => random.NextBytes(size)).Take(count).ToArray();
 
 		public static int[] NextInts(this Random random, int count) {
@@ -70,22 +70,37 @@ namespace Sphere10.Framework {
 			return result;
 		}
 
-
-		public static ValueRange<int> RandomRange(this Random rng, int count) {
-			var index1 = rng.Next(0, count);
-			var index2 = rng.Next(0, count);
-			return new ValueRange<int>(Math.Min(index1, index2), Math.Max(index1, index2), Comparer<int>.Default, true, true);
+		public static ValueRange<int> NextRange(this Random rng, int maxLength, bool fromEndOnly = false, int? rangeLength = null) {
+			Guard.ArgumentInRange(maxLength, 1, int.MaxValue, nameof(maxLength));
+			return NextRange(rng, 0, maxLength - 1, fromEndOnly, rangeLength);
 		}
 
-		public static ValueRange<int> RandomSegment(this Random rng, int collectionSize, int segmentSize) {
-			if (collectionSize < 0)
-				throw new ArgumentOutOfRangeException(nameof(collectionSize), collectionSize, "Must be positive");
-			var size = collectionSize - segmentSize;
-			if (size < 0)
-				throw new ArgumentOutOfRangeException(nameof(segmentSize), segmentSize, "Cannot fit in collection size");
-			var index = rng.Next(0, size);
-		
-			return new ValueRange<int>(index, index + segmentSize - 1);
+		public static ValueRange<int> NextRange(this Random rng, int minIndex, int maxIndex, bool fromEndOnly = false, int? rangeLength = null) {
+			Guard.Ensure(minIndex <= maxIndex, $"{nameof(minIndex)} nust be smaller than or equal to {nameof(maxIndex)}");
+			var length = maxIndex - minIndex + 1;
+
+			if (!rangeLength.HasValue)
+				rangeLength = rng.Next(0, length);
+			else
+				Guard.Ensure(rangeLength <= length, $"{nameof(rangeLength)} must be null or less than or equal to the length min the range");
+
+
+			//    s       x********************y                 e
+			//    <--A--->                     <-------B--------->
+			//    s = minIndex  e = maxIndex   x = range start index     y = range end index
+			//    A = x - s      B = e - y     A + B = length - rangeLength
+
+
+			var remainingLength = length - rangeLength.Value;
+			var A = rng.Next(0, remainingLength+1);
+			var B = remainingLength - A;
+
+			var endIX = fromEndOnly ? maxIndex : minIndex + A + rangeLength.Value - 1;
+			var startIX = endIX - rangeLength.Value + 1;
+
+			return new ValueRange<int>(startIX, endIX, Comparer<int>.Default, true, true, checkOrder: false); 
+			;
 		}
+
 	}
 }

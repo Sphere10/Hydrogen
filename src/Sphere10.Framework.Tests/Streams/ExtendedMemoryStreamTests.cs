@@ -106,7 +106,7 @@ namespace Sphere10.Framework.Tests {
 					var fromBufferSize = RNG.Next(1, remainingCapacity * 2);  // allow from buffer to be 0..2*remaining
 					var fromBuffer = RNG.NextBytes(fromBufferSize);
 					// Copy from a random segment of fromBuffer into stream
-					var segment = RNG.RandomSegment(fromBufferSize, RNG.Next(1, Math.Min(fromBufferSize, remainingCapacity)));
+					var segment = RNG.NextRange(fromBufferSize, RNG.Next(1, Math.Min(fromBufferSize, remainingCapacity)));
 					if (segment.End >= segment.Start) {
 						expected.Write(fromBuffer, segment.Start, segment.End - segment.Start + 1);
 						stream.Write(fromBuffer, segment.Start, segment.End - segment.Start + 1);
@@ -119,7 +119,7 @@ namespace Sphere10.Framework.Tests {
 
 				// 3. random read
 				if (stream.Length > 0) {
-					var segment = RNG.RandomSegment((int)stream.Length, Math.Max(1, RNG.Next(0, (int)stream.Length)));
+					var segment = RNG.NextRange((int)stream.Length, Math.Max(1, RNG.Next(0, (int)stream.Length)));
 					var count = segment.End - segment.Start + 1;
 					expected.Seek(segment.Start, SeekOrigin.Begin);
 					stream.Seek(segment.Start, SeekOrigin.Begin);

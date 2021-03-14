@@ -85,7 +85,7 @@ namespace Sphere10.Framework.Tests {
 
 				if (tree.Leafs.Count > 0) {
                     // update a random amount
-                    var range = RNG.RandomRange(tree.Leafs.Count);
+                    var range = RNG.NextRange(tree.Leafs.Count);
 					newItems = RNG.NextByteArrays(Hashers.GetDigestSizeBytes(CHF.SHA2_256), range.End - range.Start + 1);
                     tree.Leafs.UpdateRange(range.Start, newItems);
                     expected.Leafs.UpdateRangeSequentially(range.Start, newItems);
@@ -93,7 +93,7 @@ namespace Sphere10.Framework.Tests {
 					AssertEx.AssertTreeEqual(expected, tree);
 
 					// remove a random amount
-					range = RNG.RandomRange(tree.Leafs.Count);
+					range = RNG.NextRange(tree.Leafs.Count);
                     tree.Leafs.RemoveRange(range.Start, range.End - range.Start + 1);
                     expected.Leafs.RemoveRange(range.Start, range.End - range.Start + 1);
 
@@ -127,13 +127,13 @@ namespace Sphere10.Framework.Tests {
 
 				if (tree.Leafs.Count > 0) {
 					// update a random amount
-					var range = RNG.RandomRange(tree.Leafs.Count);
+					var range = RNG.NextRange(tree.Leafs.Count);
 					newItems = RNG.NextByteArrays(Hashers.GetDigestSizeBytes(CHF.SHA2_256), range.End - range.Start + 1);
 					tree.Leafs.UpdateRange(range.Start, newItems);
 					expected.Leafs.UpdateRangeSequentially(range.Start, newItems);
 
 					// remove a random amount
-					range = RNG.RandomRange(tree.Leafs.Count);
+					range = RNG.NextRange(tree.Leafs.Count);
 					tree.Leafs.RemoveRange(range.Start, range.End - range.Start + 1);
 					expected.Leafs.RemoveRange(range.Start, range.End - range.Start + 1);
 				}

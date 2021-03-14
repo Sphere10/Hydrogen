@@ -10,5 +10,15 @@ The hydrogen framework is composed of 3 sub-frameworks.
 
 Each sub-framework within the Hydrogen framework addresses a specific set of [domains](3-tier Architecture.md#Domains) relevant to the applications.  Many of these domains primarily exist to support other domains in the frameworks. Some domains are specifically intended for consumption by framework consumers. Technically, all domains in all the sub-frameworks are available for consumption by developers if they so choose.
 
-1. 
+1. [Sphere 10 Framework Domains](Domains.md#Sphere-10-Framework-Domains)
+2. [Helium Domains](Domains.md#Hydrogen-Domains)
+3. [Hydrogen Domains](Domains.md#hydrogen-domains)
+
+
+
+
+
+
+
+
 

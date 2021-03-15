@@ -14,20 +14,21 @@ The Hydrogen framework offers the following features:
 - **Extensible**: in addition to plugins, the the framework offers extension points at various layers of the architecture.
 - **Cross-platform**: runs on any OS that supports .NET 5 framework.
 
+[What is a 3-tier Architecture?](/doc/Guidelines/3-tier-Architecture.md)
 
+[What is the Hydrogen Framework?](/doc/Architecture/Hydrogen.md)
 
-## Subsystem composition
+[Framework Domains](/doc/Architecture/Domains.md)
 
+#### Subsystem composition
 ![](doc/Architecture/resources/Hydrogen-Deployment-SubSystems.png)
 
+#### Application Lifecycle
+![](doc/Architecture/resources/HAP-Lifecycle.png)
 
-
-## Runtime 
-
+#### Runtime Model
 ![](doc/Architecture/resources/Hydrogen-Deployment-Host-AppPackage.png)
 
+#### Code Structuring (3-tier)
+![](doc/Guidelines/resources/Framework-75pct.png)
 
-
-## Code Structuring (3-tier)
-
-![](doc/Architecture/resources/Framework-75pct.png)

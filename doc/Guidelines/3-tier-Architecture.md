@@ -1,4 +1,4 @@
-# What is a 3-tier Architecture?
+# 3-tier Architecture
 
 A  3-tier architecture is a method for structuring the code of a software system. It typically decomposes a system into 3 primary tiers.
 

@@ -204,18 +204,6 @@ namespace Sphere10.Framework {
 				_ => throw new ArgumentOutOfRangeException()
 			};
 
-		public override void InsertRange(int index, IEnumerable<TItem> items)
-		{
-			if (Type is StreamMappedListType.FixedSize)
-			{
-				
-			}
-			else
-			{
-				base.InsertRange(index, items);
-			}
-		}
-
 		private void CreateListHeader() {
 			Stream.Seek(0, SeekOrigin.Begin);
 			Writer.Write((uint)MagicID);

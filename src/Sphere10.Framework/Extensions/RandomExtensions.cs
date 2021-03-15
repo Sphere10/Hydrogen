@@ -76,7 +76,7 @@ namespace Sphere10.Framework {
 		}
 
 		public static ValueRange<int> NextRange(this Random rng, int minIndex, int maxIndex, bool fromEndOnly = false, int? rangeLength = null) {
-			Guard.Ensure(minIndex <= maxIndex, $"{nameof(minIndex)} nust be smaller than or equal to {nameof(maxIndex)}");
+			Guard.Ensure(minIndex <= maxIndex, $"{nameof(minIndex)} must be smaller than or equal to {nameof(maxIndex)}");
 			var length = maxIndex - minIndex + 1;
 
 			if (!rangeLength.HasValue)

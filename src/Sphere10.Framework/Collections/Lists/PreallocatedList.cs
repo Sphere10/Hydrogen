@@ -104,6 +104,8 @@ namespace Sphere10.Framework.Collections {
 
 			// finally, save the new items
 			base.UpdateRange(index, itemsArr);
+
+			_count += itemsArr.Length;
 		}
 
 		public override bool Remove(TItem item) => this.RemoveRange(new[] { item }).First();
@@ -150,6 +152,7 @@ namespace Sphere10.Framework.Collections {
 		private void CheckRange(int index, int count) {
 			var startIX = 0;
 			var lastIX = startIX + (_count - 1).ClipTo(startIX, int.MaxValue);
+			if (index == lastIX + 1 && count == 0) return;  // special case: at index of "next item" with no count, this is valid
 			Guard.ArgumentInRange(index, startIX, lastIX, nameof(index));
 			if (count > 0)
 				Guard.ArgumentInRange(index + count - 1, startIX, lastIX, nameof(count));

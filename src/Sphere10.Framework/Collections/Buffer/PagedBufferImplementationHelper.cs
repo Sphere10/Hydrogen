@@ -10,36 +10,30 @@ namespace Sphere10.Framework {
         {
             Guard.ArgumentInRange(index, 0, buffer.Count - 1, nameof(index));
             Guard.ArgumentInRange(count, 0, buffer.Count - index, nameof(count));
+            var bufferAsList = Guard.ArgumentCast<PagedListBase<byte>>(buffer, nameof(buffer));
            
             ByteArrayBuilder builder = new ByteArrayBuilder();
-            int pageSize = buffer.Count / buffer.Pages.Count;
-            int startPage = (int) Math.Floor((decimal)index / pageSize);
 
-            for (int i = startPage; i < buffer.Pages.Count; i++)
+            bufferAsList.CheckRequiresLoad();
+            bufferAsList.NotifyAccessing();
+            bufferAsList.CheckRange(index, count);
+           
+            foreach (var pageSegment in bufferAsList.GetPageSegments(index, count))
             {
-                IBufferPage page = buffer.Pages[i];
-
-                if (index <= page.EndIndex)
-                {
-                    int spanIndex = page.StartIndex;
-                    int toRead = Math.Min(count, page.Count);
-                    
-                    if (builder.Length == 0)
-                    {
-                        spanIndex = index;
-                        toRead = page.Count - (spanIndex - page.StartIndex);
-                    }
-
-                    ReadOnlySpan<byte> pageSpan = page.ReadSpan(spanIndex, toRead);
-                    builder.Append(pageSpan);
-                    count -= toRead;
+                var page = pageSegment.Item1 as IBufferPage ??
+                    throw new InvalidOperationException("ReadSpan not supported by page type");
+                
+                var pageStartIndex = pageSegment.Item2;
+                var pageItemCount = pageSegment.Item3;
+                bufferAsList.NotifyPageAccessing(page);
+                using (bufferAsList.EnterOpenPageScope(page)) {
+                    bufferAsList.NotifyPageReading(page);
+                    builder.Append(page.ReadSpan(pageStartIndex, pageItemCount));
+                    bufferAsList.NotifyPageRead(page);
                 }
-
-                if (count == 0)
-                {
-                    break;
-                }
+                bufferAsList.NotifyPageAccessed(page);
             }
+            bufferAsList.NotifyAccessed();
 
             return builder.ToArray();
         }

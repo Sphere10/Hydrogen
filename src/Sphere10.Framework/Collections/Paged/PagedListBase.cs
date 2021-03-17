@@ -243,7 +243,7 @@ namespace Sphere10.Framework {
 			NotifyPageAccessed(page);
 		}
 
-		protected IEnumerable<Tuple<IPage<TItem>, int, int>> GetPageSegments(int startIndex, int count) {
+		protected internal IEnumerable<Tuple<IPage<TItem>, int, int>> GetPageSegments(int startIndex, int count) {
 			if (count == 0)
 				yield break;
 
@@ -276,12 +276,12 @@ namespace Sphere10.Framework {
 
 		public abstract IDisposable EnterOpenPageScope(IPage<TItem> page);
 
-		protected void CheckRequiresLoad() {
+		protected internal void CheckRequiresLoad() {
 			if (RequiresLoad)
 				throw new InvalidOperationException("File exists but has not been loaded");
 		}
 
-		protected void CheckRange(int index, int count) {
+		protected internal void CheckRange(int index, int count) {
 			Guard.Argument(InternalPages.Count > 0, nameof(index), "No pages");
 			Guard.Argument(count >= 0, nameof(index), "Must be greater than or equal to 0");
 			var startIX = InternalPages.First().StartIndex;
@@ -336,7 +336,7 @@ namespace Sphere10.Framework {
 		protected virtual void OnPageDeleted(IPage<TItem> page) {
 		}
 
-		protected void NotifyAccessing() {
+		protected internal void NotifyAccessing() {
 			if (SuppressNotifications)
 				return;
 
@@ -344,7 +344,7 @@ namespace Sphere10.Framework {
 			Accessing?.Invoke(this);
 		}
 
-		protected void NotifyAccessed() {
+		protected internal void NotifyAccessed() {
 			if (SuppressNotifications)
 				return;
 
@@ -368,7 +368,7 @@ namespace Sphere10.Framework {
 			Loaded?.Invoke(this);
 		}
 
-		protected void NotifyPageAccessing(IPage<TItem> page) {
+		protected internal void NotifyPageAccessing(IPage<TItem> page) {
 			if (SuppressNotifications)
 				return;
 
@@ -376,7 +376,7 @@ namespace Sphere10.Framework {
 			PageAccessing?.Invoke(this, page);
 		}
 
-		protected void NotifyPageAccessed(IPage<TItem> page) {
+		protected internal void NotifyPageAccessed(IPage<TItem> page) {
 			if (SuppressNotifications)
 				return;
 
@@ -416,7 +416,7 @@ namespace Sphere10.Framework {
 			PageWrite?.Invoke(this, page);
 		}
 
-		private void NotifyPageReading(IPage<TItem> page) {
+		internal void NotifyPageReading(IPage<TItem> page) {
 			if (SuppressNotifications)
 				return;
 
@@ -424,7 +424,7 @@ namespace Sphere10.Framework {
 			PageReading?.Invoke(this, page);
 		}
 
-		private void NotifyPageRead(IPage<TItem> page) {
+		internal void NotifyPageRead(IPage<TItem> page) {
 			if (SuppressNotifications)
 				return;
 

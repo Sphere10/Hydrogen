@@ -14,7 +14,7 @@ namespace Sphere10.Framework.Tests
         public void AddAndGet()
         {
             var stream = new MemoryStream();
-            var list = new FixedClusterMappedList<int>(32, 100, 100, new IntSerializer(), stream);
+            var list = new ClusteredStreamMappedList<int>(32, 100, 100, new IntSerializer(), stream);
 
             list.Add(999);
 
@@ -26,11 +26,11 @@ namespace Sphere10.Framework.Tests
         public void RestoreAndGet()
         {
             var stream = new MemoryStream();
-            var list = new FixedClusterMappedList<int>(32, 100, 100, new IntSerializer(), stream);
+            var list = new ClusteredStreamMappedList<int>(32, 100, 100, new IntSerializer(), stream);
 
             list.Add(999);
 
-            var secondlist = new FixedClusterMappedList<int>(32, 100, 100, new IntSerializer(), stream);
+            var secondlist = new ClusteredStreamMappedList<int>(32, 100, 100, new IntSerializer(), stream);
 
             Assert.AreEqual(999, secondlist[0]);
         }
@@ -39,7 +39,7 @@ namespace Sphere10.Framework.Tests
         public void Update()
         {
             var stream = new MemoryStream();
-            var list = new FixedClusterMappedList<int>(32, 100, 100, new IntSerializer(), stream);
+            var list = new ClusteredStreamMappedList<int>(32, 100, 100, new IntSerializer(), stream);
 
             list.Add(999);
             list.Add(1000);
@@ -56,7 +56,7 @@ namespace Sphere10.Framework.Tests
         public void Remove()
         {
             var stream = new MemoryStream();
-            var list = new FixedClusterMappedList<int>(32, 100, 100, new IntSerializer(), stream);
+            var list = new ClusteredStreamMappedList<int>(32, 100, 100, new IntSerializer(), stream);
 
             list.Add(999);
             list.Add(1000);
@@ -69,7 +69,7 @@ namespace Sphere10.Framework.Tests
         public void IndexOf()
         {
             var stream = new MemoryStream();
-            var list = new FixedClusterMappedList<int>(32, 100, 100, new IntSerializer(), stream);
+            var list = new ClusteredStreamMappedList<int>(32, 100, 100, new IntSerializer(), stream);
 
             list.Add(998);
             list.Add(999);
@@ -85,7 +85,7 @@ namespace Sphere10.Framework.Tests
         public void Count()
         {
             var stream = new MemoryStream();
-            var list = new FixedClusterMappedList<int>(32, 100, 100, new IntSerializer(), stream);
+            var list = new ClusteredStreamMappedList<int>(32, 100, 100, new IntSerializer(), stream);
 
             list.Add(998);
             list.Add(999);
@@ -101,7 +101,7 @@ namespace Sphere10.Framework.Tests
         {
             var serializer = new IntSerializer();
             var RNG = new Random(1231);
-            var list = new FixedClusterMappedList<int>(16, 100, 10000, serializer, new MemoryStream());
+            var list = new ClusteredStreamMappedList<int>(16, 100, 10000, serializer, new MemoryStream());
             var expected = new List<int>();
 
             int capacity = list.Capacity;

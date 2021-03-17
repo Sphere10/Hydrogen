@@ -19,7 +19,7 @@ namespace Sphere10.Helium.Queue
         private readonly QueueConfigDto _queueConfigDto;
         private readonly TransactionalFileMappedBuffer _txnFile;
         private readonly ExtendedMemoryStream _stream;
-        private readonly FixedClusterMappedList<IMessage> _list;
+        private readonly ClusteredStreamMappedList<IMessage> _list;
 
         public string FileName { get; set; }
 
@@ -35,7 +35,7 @@ namespace Sphere10.Helium.Queue
 
             _stream = new ExtendedMemoryStream(_txnFile);
 
-            _list = new FixedClusterMappedList<IMessage>(
+            _list = new ClusteredStreamMappedList<IMessage>(
                 _queueConfigDto.ClusterSize,
                 _queueConfigDto.ListingClusterCount,
                 _queueConfigDto.StorageClusterCount,

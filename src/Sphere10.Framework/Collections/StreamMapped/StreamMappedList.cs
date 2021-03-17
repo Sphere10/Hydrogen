@@ -119,7 +119,7 @@ namespace Sphere10.Framework {
 			{
 				case StreamMappedListType.Dynamic:
 				{
-					var streamedPage = (StreamPage<TItem>) page;
+					var streamedPage = (DynamicStreamPage<TItem>) page;
 					streamedPage.Open();
 
 					return Tools.Scope.ExecuteOnDispose(streamedPage.Close);
@@ -156,8 +156,8 @@ namespace Sphere10.Framework {
 			{
 				while (Stream.Position < Stream.Length)
 					pages.Add(InternalPages.Any()
-						? new StreamPage<TItem>(this)
-						: new StreamPage<TItem>((StreamPage<TItem>) pages.Last()));
+						? new DynamicStreamPage<TItem>(this)
+						: new DynamicStreamPage<TItem>((DynamicStreamPage<TItem>) pages.Last()));
 
 			}
 			else
@@ -181,12 +181,11 @@ namespace Sphere10.Framework {
 
 		protected override void OnPageDeleted(IPage<TItem> page)
 		{
-
 			base.OnPageDeleted(page);
 
 			if (Type is StreamMappedListType.Dynamic)
 			{
-				var streamedPage = (StreamPage<TItem>) page;
+				var streamedPage = (DynamicStreamPage<TItem>) page;
 				Stream.SetLength(page.Number > 0 ? streamedPage.StartPosition : 0L);
 			}
 		}
@@ -195,8 +194,8 @@ namespace Sphere10.Framework {
 			Type switch
 			{
 				StreamMappedListType.Dynamic => pageNumber == 0
-					? new StreamPage<TItem>(this)
-					: new StreamPage<TItem>((StreamPage<TItem>) InternalPages.Last()),
+					? new DynamicStreamPage<TItem>(this)
+					: new DynamicStreamPage<TItem>((DynamicStreamPage<TItem>) InternalPages.Last()),
 				StreamMappedListType.FixedSize => pageNumber == 0
 					? new FixedSizeStreamPage<TItem>(this)
 					: throw new InvalidOperationException(

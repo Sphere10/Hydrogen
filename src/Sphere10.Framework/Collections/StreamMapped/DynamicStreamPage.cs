@@ -13,7 +13,7 @@ namespace Sphere10.Framework {
 	///	Object 1 Size
 	///	...
 	///	Object N Size
-	public class StreamPage<TItem> : PageBase<TItem> {
+	internal class DynamicStreamPage<TItem> : PageBase<TItem> {
 		private const int Page0Offset = 256;
 		private const int CountFieldOffset = 0;
 		private const int CountFieldSize = sizeof(uint);
@@ -33,15 +33,15 @@ namespace Sphere10.Framework {
 		private long _nextPagePosition;
 		private long[] _offsets;
 
-		public StreamPage(StreamMappedList<TItem> parent)
+		public DynamicStreamPage(StreamMappedList<TItem> parent)
 			: this(Page0Offset, Page0Offset, parent) {
 		}
 
-		public StreamPage(StreamPage<TItem> previousPage)
+		public DynamicStreamPage(DynamicStreamPage<TItem> previousPage)
 			: this(previousPage.StartPosition, previousPage.NextPagePosition, previousPage._parent) {
 		}
 
-		private StreamPage(long previousPagePosition, long startPosition, StreamMappedList<TItem> parent) {
+		private DynamicStreamPage(long previousPagePosition, long startPosition, StreamMappedList<TItem> parent) {
 			Guard.ArgumentNotNull(parent, nameof(parent));
 			Guard.ArgumentNotNull(parent.Stream, nameof(parent.Stream));
 			Guard.ArgumentInRange(startPosition, Page0Offset, parent.Stream.Length, nameof(startPosition));

@@ -5,7 +5,7 @@ using System.IO;
 namespace Sphere10.Framework.Collections.StreamMapped
 {
 
-    public class FixedSizeStreamPage<TItem> : PageBase<TItem>
+    internal class FixedSizeStreamPage<TItem> : PageBase<TItem>
     {
         private readonly StreamMappedList<TItem> _parent;
         private readonly int _item0Offset;
@@ -79,7 +79,7 @@ namespace Sphere10.Framework.Collections.StreamMapped
                 throw new InvalidOperationException("Unable to append items, Max Items of page will be exceeded.");
             }
             
-            Stream.Seek(0, SeekOrigin.End);
+            Stream.Seek(_item0Offset + Count * ItemSize, SeekOrigin.Begin);
 
             foreach (TItem item in items)
             {

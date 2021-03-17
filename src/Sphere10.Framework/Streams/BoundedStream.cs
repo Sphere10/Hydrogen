@@ -122,7 +122,7 @@ namespace Sphere10.Framework {
 		}
 
 		protected void CheckRange(int count) {
-			var position = this.Position;
+			var position = Position;
 			CheckRange(position, Math.Max(position, position + count - 1));
 		}
 

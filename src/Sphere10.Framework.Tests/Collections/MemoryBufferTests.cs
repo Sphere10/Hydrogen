@@ -29,9 +29,7 @@ namespace Sphere10.Framework.Tests {
 			[Values(0, 3, 111)] int startCapacity,
 			[Values(1, 391)] int growCapacity,
 			[Values(71, 2177)] int maxCapacity) {
-			var RNG = new Random(startCapacity + growCapacity);
 			var list = new MemoryBuffer(startCapacity, growCapacity, maxCapacity);
-			var expected = new List<byte>();
 			AssertEx.ListIntegrationTest<byte>(list, maxCapacity, (rng, i) => rng.NextBytes(i), mutateFromEndOnly: true);
 		}
 	}

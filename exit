@@ -1,0 +1,538 @@
+[33mcommit 14db00f9ed441d77e2bc0fc6df4282135f215434[m[33m ([m[1;36mHEAD -> [m[1;32mmaster[m[33m, [m[1;31morigin/master[m[33m, [m[1;31morigin/HEAD[m[33m)[m
+Author: Herman Schoenfeld <herman@sphere10.com>
+Date:   Fri Mar 12 18:05:50 2021 +1000
+
+    SP10: Work in progress commit (resume at home) -- sorry for unprofessional commit
+
+[1mdiff --git a/src/Sphere10.Framework/Collections/Lists/PreallocatedList.cs b/src/Sphere10.Framework/Collections/Lists/PreallocatedList.cs[m
+[1mindex 31c110e..7235971 100644[m
+[1m--- a/src/Sphere10.Framework/Collections/Lists/PreallocatedList.cs[m
+[1m+++ b/src/Sphere10.Framework/Collections/Lists/PreallocatedList.cs[m
+[36m@@ -6,8 +6,9 @@[m [musing System.Text;[m
+ namespace Sphere10.Framework.Collections {[m
+ [m
+ 	/// <summary>[m
+[31m-	/// A list implementation that implements inserts/deletes/adds as updates over an underlying fixed-size list. This list maintains[m
+[31m-	/// it's own count and shuffles objects around using updates.[m
+[32m+[m	[32m/// A list implementation that implements inserts/deletes/adds as updates over an underlying fixed-size list. It works by shuffling[m
+[32m+[m	[32m/// objects around and maintaining it's own count. The only mutation methods called on the decorated inner list are <seealso  cref="IExtendedList{T}.Update"/> and <see cref="IExtendedList{T}.UpdateRange"/>[m
+[32m+[m	[32m/// it's own count and shuffles objects around using updates. The algorithms are optimized to avoid loading objects in memory.[m
+ 	/// </summary>[m
+ 	/// <remarks>[m
+ 	/// <see cref="Contains"/> and <see cref="ContainsRange"/> are overriden and implemented based on <see cref="IndexOf"/> and <see cref="IndexOfRange"/> in order to ensure only[m
+[36m@@ -75,9 +76,34 @@[m [mnamespace Sphere10.Framework.Collections {[m
+ 			CheckIndex(index);[m
+ 			if (_count + itemsArr.Length > MaxCount)[m
+ 				throw new ArgumentException("Insufficient space");[m
+[31m-			var itemsToMove = ReadRange(index, itemsArr.Length).ToArray();[m
+[32m+[m
+[32m+[m
+[32m+[m			[32m// shuffle the items forward[m
+[32m+[m
+[32m+[m			[32m// aaaa            ;; _count = 4  max = 10   fromStartIndex = 2   fromEndIndex = _count - 1[m[41m [m
+[32m+[m			[32m// 0123456789[m
+[32m+[m			[32m// insert 3 b's at index 2[m
+[32m+[m			[32m// aabbbaa         ;; _count = 7  max = 10   toStartIndex = fromStartIndex + itemsArr.Length   toEndIndex = fromEndIndex + itemsArr.Length[m[41m   [m
+[32m+[m			[32m// 0123456789[m
+[32m+[m
+[32m+[m			[32mvar fromStartIndex = index;[m
+[32m+[m			[32mvar fromEndIndex = _count - 1;[m
+[32m+[m			[32mvar toStartIndex = fromStartIndex + itemsArr.Length;[m
+[32m+[m			[32mvar toEndIndex =  fromEndIndex + itemsArr.Length;[m
+[32m+[m
+[32m+[m			[32m// abcdefg[m
+[32m+[m			[32m// 0123456789[m
+[32m+[m			[32m// abcdefg[m
+[32m+[m			[32m// abczzzdefg[m
+[32m+[m			[32m// abczzzdefg[m
+[32m+[m
+[32m+[m			[32mfor (var i = toEndIndex; i >= toStartIndex; i--) {[m
+[32m+[m				[32mvar toCopy = base.Read(i - itemsArr.Length);[m
+[32m+[m				[32mbase.Update(i, toCopy);[m
+[32m+[m			[32m}[m
+[32m+[m
+[32m+[m			[32m// finally, save the new items[m
+ 			base.UpdateRange(index, itemsArr);[m
+[31m-			base.UpdateRange(index+itemsArr.Length, itemsToMove);[m
+ 		}[m
+ [m
+ 		public override bool Remove(TItem item) => this.RemoveRange(new[] { item }).First();[m
+
+[33mcommit 94bfedfc104e9244e7fb13fa57ae1d1349003b59[m
+Author: hamish-rose <hamishr@protonmail.com>
+Date:   Fri Mar 12 21:01:30 2021 +1300
+
+    Update PreallocatedList.cs
+    
+    fix merge conflict
+
+[1mdiff --git a/src/Sphere10.Framework/Collections/Lists/PreallocatedList.cs b/src/Sphere10.Framework/Collections/Lists/PreallocatedList.cs[m
+[1mindex 9ecf390..31c110e 100644[m
+[1m--- a/src/Sphere10.Framework/Collections/Lists/PreallocatedList.cs[m
+[1m+++ b/src/Sphere10.Framework/Collections/Lists/PreallocatedList.cs[m
+[36m@@ -3,11 +3,7 @@[m [musing System.Collections.Generic;[m
+ using System.Linq;[m
+ using System.Text;[m
+ [m
+[31m-<<<<<<< HEAD[m
+[31m-namespace Sphere10.Framework.Collections.Lists {[m
+[31m-=======[m
+ namespace Sphere10.Framework.Collections {[m
+[31m->>>>>>> 31261811913d43c84cbc72ce9ab75c6658c08004[m
+ [m
+ 	/// <summary>[m
+ 	/// A list implementation that implements inserts/deletes/adds as updates over an underlying fixed-size list. This list maintains[m
+
+[33mcommit 93dbb5a16d0ff653220bcf9d635d128a034ed83f[m
+Merge: d747894 3126181
+Author: cobanicuss <79815312+cobanicuss@users.noreply.github.com>
+Date:   Fri Mar 12 17:53:57 2021 +1000
+
+    Merge branch 'master' of https://github.com/Sphere10/Hydrogen
+    
+    # Conflicts:
+    #       src/Sphere10.Framework/Collections/Lists/PreallocatedList.cs
+
+[33mcommit d7478945e78fe537b1578bd9ca15835b93a5ec10[m
+Author: cobanicuss <79815312+cobanicuss@users.noreply.github.com>
+Date:   Fri Mar 12 17:18:14 2021 +1000
+
+    Minor change to Saga's T name.
+
+[1mdiff --git a/src/Sphere10.Helium/Saga/SagaT.cs b/src/Sphere10.Helium/Saga/SagaT.cs[m
+[1mindex 0b6fd7e..07fe8f0 100644[m
+[1m--- a/src/Sphere10.Helium/Saga/SagaT.cs[m
+[1m+++ b/src/Sphere10.Helium/Saga/SagaT.cs[m
+[36m@@ -2,11 +2,11 @@[m
+ [m
+ namespace Sphere10.Helium.Saga[m
+ {[m
+[31m-    public abstract class Saga<TSagaData> : Saga where TSagaData : ISagaDataForSaga, new()[m
+[32m+[m[32m    public abstract class Saga<T> : Saga where T : ISagaDataForSaga, new()[m
+     {[m
+[31m-        public TSagaData Data[m
+[32m+[m[32m        public T Data[m
+         {[m
+[31m-            get => (TSagaData)Entity;[m
+[32m+[m[32m            get => (T)Entity;[m
+             set => Entity = (ISagaDataForSaga)value;[m
+         }[m
+ [m
+[36m@@ -16,9 +16,9 @@[m [mnamespace Sphere10.Helium.Saga[m
+ [m
+         protected internal override void ConfigureHowToFindSaga(IFindSaga sagaFindMap)[m
+         {[m
+[31m-            ConfigureHowToFindSaga(new SagaPropertyMapper<TSagaData>(sagaFindMap));[m
+[32m+[m[32m            ConfigureHowToFindSaga(new SagaPropertyMapper<T>(sagaFindMap));[m
+         }[m
+ [m
+[31m-        protected abstract void ConfigureHowToFindSaga(SagaPropertyMapper<TSagaData> mapper);[m
+[32m+[m[32m        protected abstract void ConfigureHowToFindSaga(SagaPropertyMapper<T> mapper);[m
+     }[m
+ }[m
+
+[33mcommit 31261811913d43c84cbc72ce9ab75c6658c08004[m
+Author: hamish-rose <hamishr@protonmail.com>
+Date:   Fri Mar 12 17:13:58 2021 +1300
+
+    Framework: fix bugs with FixedSizeStreamPage, add new ctors to streamappedlist
+    
+    new constructors for list type options. fixed some bugs and integration tests
+
+[1mdiff --git a/src/Sphere10.Framework.Tests/Collections/StreamMappedListTests.cs b/src/Sphere10.Framework.Tests/Collections/StreamMappedListTests.cs[m
+[1mindex ed8db10..a8eba68 100644[m
+[1m--- a/src/Sphere10.Framework.Tests/Collections/StreamMappedListTests.cs[m
+[1m+++ b/src/Sphere10.Framework.Tests/Collections/StreamMappedListTests.cs[m
+[36m@@ -12,17 +12,12 @@[m
+ //-----------------------------------------------------------------------[m
+ [m
+ using System;[m
+[31m-using System.CodeDom;[m
+ using System.Collections.Generic;[m
+[31m-using System.Collections.ObjectModel;[m
+ using System.Linq;[m
+ using System.Text;[m
+ using NUnit.Framework;[m
+ using System.IO;[m
+[31m-using NUnit.Framework.Constraints;[m
+[31m-using Sphere10.Framework;[m
+ using Sphere10.Framework.Collections.StreamMapped;[m
+[31m-using Sphere10.Framework.NUnit;[m
+ [m
+ namespace Sphere10.Framework.Tests {[m
+ [m
+[36m@@ -33,7 +28,7 @@[m [mnamespace Sphere10.Framework.Tests {[m
+ 		[Test][m
+ 		public void V1_Add_1([Values(1, 111)] int pageSize) {[m
+ 			var stream = new MemoryStream();[m
+[31m-			var list = new StreamMappedList<string>(pageSize, new StringSerializer(Encoding.ASCII), stream);[m
+[32m+[m			[32mvar list = new StreamMappedList<string>(new StringSerializer(Encoding.ASCII), stream, pageSize);[m
+ [m
+ 			list.Add("item1");[m
+ 			Assert.AreEqual(1, list.Count);[m
+[36m@@ -42,7 +37,7 @@[m [mnamespace Sphere10.Framework.Tests {[m
+ 		[Test][m
+ 		public void V1_Update_1([Values(1, 111)] int pageSize) {[m
+ 			var stream = new MemoryStream();[m
+[31m-			var list = new StreamMappedList<string>(pageSize, new StringSerializer(Encoding.ASCII), stream);[m
+[32m+[m			[32mvar list = new StreamMappedList<string>(new StringSerializer(Encoding.ASCII), stream, pageSize);[m
+ [m
+ 			list.Add("item1");[m
+ 			list.Update(0, "item2");[m
+[36m@@ -53,7 +48,7 @@[m [mnamespace Sphere10.Framework.Tests {[m
+ 		[Test][m
+ 		public void V1_Add_2([Values(1, 2, 111)] int pageSize) {[m
+ 			var stream = new MemoryStream();[m
+[31m-			var list = new StreamMappedList<string>(pageSize, new StringSerializer(Encoding.ASCII), stream);[m
+[32m+[m			[32mvar list = new StreamMappedList<string>(new StringSerializer(Encoding.ASCII), stream, pageSize);[m
+ [m
+ 			list.Add("item1");[m
+ 			list.Add("the second item");[m
+[36m@@ -63,7 +58,7 @@[m [mnamespace Sphere10.Framework.Tests {[m
+ 		[Test][m
+ 		public void V1_Add_3([Values(1, 2, 111)] int pageSize) {[m
+ 			var stream = new MemoryStream();[m
+[31m-			var list = new StreamMappedList<string>(pageSize, new StringSerializer(Encoding.ASCII), stream);[m
+[32m+[m			[32mvar list = new StreamMappedList<string>(new StringSerializer(Encoding.ASCII), stream, pageSize);[m
+ [m
+ 			list.Add("item1");[m
+ 			list.AddRange("the second item", "33333333333333333333333333");[m
+[36m@@ -73,7 +68,7 @@[m [mnamespace Sphere10.Framework.Tests {[m
+ 		[Test][m
+ 		public void V1_Read_1([Values(1, 2)] int pageSize) {[m
+ 			var stream = new MemoryStream();[m
+[31m-			var list = new StreamMappedList<string>(pageSize, new StringSerializer(Encoding.ASCII), stream);[m
+[32m+[m			[32mvar list = new StreamMappedList<string>(new StringSerializer(Encoding.ASCII), stream, pageSize);[m
+ [m
+ 			list.Add("item1");[m
+ 			Assert.AreEqual("item1", list[0]);[m
+[36m@@ -82,18 +77,30 @@[m [mnamespace Sphere10.Framework.Tests {[m
+ 		[Test][m
+ 		public void V1_Read_2([Values(1, 2)] int pageSize) {[m
+ 			var stream = new MemoryStream();[m
+[31m-			var list = new StreamMappedList<string>(pageSize, new StringSerializer(Encoding.ASCII), stream);[m
+[32m+[m			[32mvar list = new StreamMappedList<string>(new StringSerializer(Encoding.ASCII), stream, pageSize);[m
+ [m
+ 			list.AddRange("item1", "item2");[m
+ 			Assert.AreEqual("item1", list[0]);[m
+ 			Assert.AreEqual("item2", list[1]);[m
+ 		}[m
+ [m
+[32m+[m		[32m[Test][m
+[32m+[m		[32mpublic void V1_FixedSize_Read_NoHeader()[m
+[32m+[m		[32m{[m
+[32m+[m			[32mvar stream = new MemoryStream();[m
+[32m+[m			[32mvar list = new StreamMappedList<int>(new IntSerializer(), stream) {IncludeListHeader = false};[m
+[32m+[m
+[32m+[m			[32mvar added = new[] {1, 2, 3, 4};[m
+[32m+[m			[32mlist.AddRange(added);[m
+[32m+[m			[32mvar read = list.ReadRange(0, 4);[m
+[32m+[m			[32mAssert.AreEqual(added, read);[m
+[32m+[m		[32m}[m
+[32m+[m
+ 		[Test][m
+ 		public void V1_Integration_SimpleRun([Values(1,2,3,5)] int pageSize, [Values] StorageType storage) {[m
+ [m
+ 			using (CreateStream(storage, 14, out var stream)) {[m
+[31m-				var list = new StreamMappedList<string>(pageSize, new StringSerializer(Encoding.ASCII), stream);[m
+[32m+[m				[32mvar list = new StreamMappedList<string>(new StringSerializer(Encoding.ASCII), stream, pageSize);[m
+ [m
+ 				var len0 = stream.Length;[m
+ [m
+[36m@@ -151,11 +158,10 @@[m [mnamespace Sphere10.Framework.Tests {[m
+ 		public void V1_Integration_FixedSize()[m
+ 		{[m
+ 			var serializer = new IntSerializer();[m
+[31m-			int pageSize = 1000;[m
+[31m-			int capacity = serializer.FixedSize / pageSize;[m
+[32m+[m			[32mint capacity = 100;[m
+ [m
+ 			var RNG = new Random(1231);[m
+[31m-			var list = new StreamMappedList<int>(pageSize, serializer, new MemoryStream())[m
+[32m+[m			[32mvar list = new StreamMappedList<int>(serializer, new MemoryStream())[m
+ 			{[m
+ 				IncludeListHeader = false[m
+ 			};[m
+[36m@@ -163,12 +169,11 @@[m [mnamespace Sphere10.Framework.Tests {[m
+ 			var expected = new List<int>();[m
+ 			for (var i = 0; i < 100; i++)[m
+ 			{[m
+[31m-[m
+ 				// add a random amount[m
+ 				var remainingCapacity = capacity - list.Count;[m
+ 				var newItemsCount = RNG.Next(0, remainingCapacity + 1);[m
+ 				IEnumerable<int> newItems = RNG.NextInts(newItemsCount);[m
+[31m-				list.AddRange(newItems);[m
+[32m+[m				[32mlist.AddRange(newItems);[m[41m [m
+ 				expected.AddRange(newItems);[m
+ 				Assert.AreEqual(expected, list);[m
+ [m
+[36m@@ -186,17 +191,11 @@[m [mnamespace Sphere10.Framework.Tests {[m
+ 					newItems = list.ReadRange(range.Start, range.End - range.Start + 1);[m
+ 					var expectedNewItems = expected.GetRange(range.Start, range.End - range.Start + 1);[m
+ 					range = RNG.RandomSegment(list.Count, newItems.Count());[m
+[31m-					expected.UpdateRangeSequentially(range.Start, expectedNewItems);[m
+[32m+[m					[32mexpected.UpdateRangeSequentially(range.Start, newItems);[m
+ 					list.UpdateRange(range.Start, newItems);[m
+ [m
+ 					Assert.AreEqual(expected.Count, list.Count);[m
+ 					Assert.AreEqual(expected, list);[m
+[31m-[m
+[31m-					// remove a random amount[m
+[31m-					range = RNG.RandomRange(list.Count);[m
+[31m-					list.RemoveRange(range.Start, range.End - range.Start + 1);[m
+[31m-					expected.RemoveRange(range.Start, range.End - range.Start + 1);[m
+[31m-					Assert.AreEqual(expected, list);[m
+ 				}[m
+ 			}[m
+ 		}[m
+[36m@@ -204,12 +203,10 @@[m [mnamespace Sphere10.Framework.Tests {[m
+ 		[Test][m
+ 		public void V1_Integration_FixedSizeWithHeader()[m
+ 		{[m
+[31m-			var serializer = new IntSerializer();[m
+[31m-			int pageSize = 1000;[m
+[31m-			int capacity = serializer.FixedSize / pageSize;[m
+[32m+[m			[32mint capacity = 1000;[m
+ [m
+ 			var RNG = new Random(1231);[m
+[31m-			var list = new StreamMappedList<int>(pageSize, serializer, new MemoryStream())[m
+[32m+[m			[32mvar list = new StreamMappedList<int>(new IntSerializer(), new MemoryStream())[m
+ 			{[m
+ 				IncludeListHeader = true[m
+ 			};[m
+[36m@@ -237,19 +234,13 @@[m [mnamespace Sphere10.Framework.Tests {[m
+ 					// shuffle a random amount[m
+ 					range = RNG.RandomRange(list.Count);[m
+ 					newItems = list.ReadRange(range.Start, range.End - range.Start + 1);[m
+[31m-					var expectedNewItems = expected.GetRange(range.Start, range.End - range.Start + 1);[m
+[32m+[m[41m					[m
+ 					range = RNG.RandomSegment(list.Count, newItems.Count());[m
+[31m-					expected.UpdateRangeSequentially(range.Start, expectedNewItems);[m
+[32m+[m					[32mexpected.UpdateRangeSequentially(range.Start, newItems);[m
+ 					list.UpdateRange(range.Start, newItems);[m
+ [m
+ 					Assert.AreEqual(expected.Count, list.Count);[m
+ 					Assert.AreEqual(expected, list);[m
+[31m-[m
+[31m-					// remove a random amount[m
+[31m-					range = RNG.RandomRange(list.Count);[m
+[31m-					list.RemoveRange(range.Start, range.End - range.Start + 1);[m
+[31m-					expected.RemoveRange(range.Start, range.End - range.Start + 1);[m
+[31m-					Assert.AreEqual(expected, list);[m
+ 				}[m
+ 			}[m
+ 		}[m
+[36m@@ -259,7 +250,7 @@[m [mnamespace Sphere10.Framework.Tests {[m
+ 		public void V1_IncludeListHeaderThrowsAfterInit()[m
+ 		{[m
+ 			var stream = new MemoryStream();[m
+[31m-			var list = new StreamMappedList<string>(100, new StringSerializer(Encoding.ASCII), stream)[m
+[32m+[m			[32mvar list = new StreamMappedList<string>(new StringSerializer(Encoding.ASCII), stream)[m
+ 			{[m
+ 				IncludeListHeader = false[m
+ 			};[m
+[1mdiff --git a/src/Sphere10.Framework/Collections/StreamMapped/BoolSerializer.cs b/src/Sphere10.Framework/Collections/StreamMapped/BoolSerializer.cs[m
+[1mnew file mode 100644[m
+[1mindex 0000000..2fa2aca[m
+[1m--- /dev/null[m
+[1m+++ b/src/Sphere10.Framework/Collections/StreamMapped/BoolSerializer.cs[m
+[36m@@ -0,0 +1,35 @@[m
+[32m+[m[32m﻿using System.Collections.Generic;[m
+[32m+[m[32musing System.Linq;[m
+[32m+[m
+[32m+[m[32mnamespace Sphere10.Framework.Collections.StreamMapped[m
+[32m+[m[32m{[m
+[32m+[m
+[32m+[m[32m    public class BoolSerializer : IObjectSerializer<bool>[m
+[32m+[m[32m    {[m
+[32m+[m[32m        public bool IsFixedSize { get; } = true;[m
+[32m+[m[32m        public int FixedSize { get; } = sizeof(bool);[m
+[32m+[m[32m        public int CalculateTotalSize(IEnumerable<bool> items, bool calculateIndividualItems, out int[] itemSizes)[m
+[32m+[m[32m        {[m
+[32m+[m[32m            var enumerable = items as bool[] ?? items.ToArray();[m
+[32m+[m[32m            int sum = enumerable.Length * FixedSize;[m
+[32m+[m
+[32m+[m[32m            itemSizes = Enumerable.Repeat(FixedSize, enumerable.Length).ToArray();[m
+[32m+[m[32m            return sum;[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        public int CalculateSize(bool item) => FixedSize;[m
+[32m+[m
+[32m+[m[32m        public int Serialize(bool @object, EndianBinaryWriter writer)[m
+[32m+[m[32m        {[m
+[32m+[m[32m            writer.Write(@object);[m
+[32m+[m
+[32m+[m[32m            return sizeof(bool);[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        public bool Deserialize(int size, EndianBinaryReader reader)[m
+[32m+[m[32m        {[m
+[32m+[m[32m            return reader.ReadBoolean();[m
+[32m+[m[32m        }[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m}[m
+\ No newline at end of file[m
+[1mdiff --git a/src/Sphere10.Framework/Collections/StreamMapped/FixedClusterMappedList.cs b/src/Sphere10.Framework/Collections/StreamMapped/FixedClusterMappedList.cs[m
+[1mindex 3a66ed9..bbb83ed 100644[m
+[1m--- a/src/Sphere10.Framework/Collections/StreamMapped/FixedClusterMappedList.cs[m
+[1m+++ b/src/Sphere10.Framework/Collections/StreamMapped/FixedClusterMappedList.cs[m
+[36m@@ -3,6 +3,7 @@[m [musing System.Collections;[m
+ using System.Collections.Generic;[m
+ using System.IO;[m
+ using System.Linq;[m
+[32m+[m[32musing Sphere10.Framework.Collections.StreamMapped;[m
+ [m
+ namespace Sphere10.Framework.Collections[m
+ {[m
+[36m@@ -17,30 +18,31 @@[m [mnamespace Sphere10.Framework.Collections[m
+         private readonly int _listingSectorSize;[m
+ [m
+         private readonly IObjectSerializer<T> _serializer;[m
+[31m-        private readonly StreamMappedList<Cluster> _clusters;[m
+[32m+[m[32m        private readonly Stream _stream;[m
+[32m+[m[32m        private StreamMappedList<Cluster> _clusters;[m
+ [m
+         private ListingSector _listingSector;[m
+[32m+[m[32m        private int _maxItems;[m
+ [m
+         public FixedClusterMappedList(int clusterSize,[m
+[31m-            int listingClusterCount,[m
+[32m+[m[32m            int maxItems,[m
+             int storageClusterCount,[m
+             IObjectSerializer<T> serializer,[m
+             Stream stream)[m
+         {[m
+[31m-            _clusters = new StreamMappedList<Cluster>(1, new ClusterSerializer(clusterSize), stream);[m
+[31m-            if (_clusters.RequiresLoad)[m
+[31m-            {[m
+[31m-                _clusters.Load();[m
+[31m-            }[m
+[31m-[m
+             _clusterSize = clusterSize;[m
+[31m-            _listingClusterCount = listingClusterCount;[m
+             _storageClusterCount = storageClusterCount;[m
+[31m-            _listingSectorSize = (int) Math.Ceiling((decimal) _listingClusterCount / _clusterSize);[m
+[32m+[m[32m            _maxItems = maxItems;[m
+ [m
+             _serializer = serializer;[m
+[32m+[m[32m            _stream = stream;[m
+ [m
+[31m-            InitializeListingSector();[m
+[32m+[m[32m            if (!_serializer.IsFixedSize)[m
+[32m+[m[32m            {[m
+[32m+[m[32m                throw new ArgumentException("Non fixed sized items not supported");[m
+[32m+[m[32m            }[m
+[32m+[m[41m            [m
+[32m+[m[32m            Initialize();[m
+         }[m
+ [m
+         public override int Count => _listingSector.Count;[m
+[36m@@ -82,8 +84,6 @@[m [mnamespace Sphere10.Framework.Collections[m
+                     }[m
+                 }[m
+             }[m
+[31m-[m
+[31m-            UpdateListingSector();[m
+         }[m
+ [m
+         public override IEnumerable<int> IndexOfRange(IEnumerable<T> items)[m
+[36m@@ -133,7 +133,7 @@[m [mnamespace Sphere10.Framework.Collections[m
+ [m
+             for (int i = 0; i < itemsArray.Length; i++)[m
+             {[m
+[31m-                StorageItemListing listing = _listingSector.GetItem(index + i);[m
+[32m+[m[32m                ItemListing listing = _listingSector.GetItem(index + i);[m
+                 IEnumerable<int> numbers = RemoveDataFromClusters(listing.StartIndex);[m
+                 removedClusters.AddRange(numbers);[m
+                 byte[] data = _serializer.SerializeLE(itemsArray[i]);[m
+[36m@@ -147,8 +147,6 @@[m [mnamespace Sphere10.Framework.Collections[m
+             {[m
+                 _clusters[cluster.Number] = cluster;[m
+             }[m
+[31m-[m
+[31m-            UpdateListingSector();[m
+         }[m
+ [m
+         public override void InsertRange(int index, IEnumerable<T> items)[m
+[36m@@ -157,7 +155,7 @@[m [mnamespace Sphere10.Framework.Collections[m
+             {[m
+                 return;[m
+             }[m
+[31m-            [m
+[32m+[m
+             List<byte[]> newData = new List<byte[]>();[m
+ [m
+             foreach (T item in items)[m
+[36m@@ -186,8 +184,6 @@[m [mnamespace Sphere10.Framework.Collections[m
+                     }[m
+                 }[m
+             }[m
+[31m-[m
+[31m-            UpdateListingSector();[m
+         }[m
+ [m
+         public override void RemoveRange(int index, int count)[m
+[36m@@ -196,14 +192,12 @@[m [mnamespace Sphere10.Framework.Collections[m
+ [m
+             for (int i = 0; i < count; i++)[m
+             {[m
+[31m-                StorageItemListing listing = _listingSector.GetItem(index + i);[m
+[32m+[m[32m                ItemListing listing = _listingSector.GetItem(index + i);[m
+                 IEnumerable<int> numbers = RemoveDataFromClusters(listing.StartIndex);[m
+                 removedItems.AddRange(numbers);[m
+             }[m
+ [m
+             _listingSector.RemoveItemRange(index, count, removedItems);[m
+[31m-[m
+[31m-            UpdateListingSector();[m
+         }[m
+ [m
+         private byte[] ReadDataFromClusters(int startCluster, int size)[m
+[36m@@ -250,116 +244,28 @@[m [mnamespace Sphere10.Framework.Collections[m
+             return numbers;[m
+         }[m
+ [m
+[31m-        private void UpdateListingSector()[m
+[31m-        {[m
+[31m-            RemoveDataFromClusters(0);[m
+[31m-[m
+[31m-            byte[] data = SerializeListingSector(_listingSector);[m
+[31m-            IEnumerable<byte>[] partitions = data.PartitionBySize(x => 1, _clusterSize)[m
+[31m-                .ToArray();[m
+[31m-[m
+[31m-            List<Cluster> sectorClusters = new List<Cluster>();[m
+[31m-[m
+[31m-            for (int i = 0; i < partitions.Length; i++)[m
+[31m-            {[m
+[31m-                byte[] clusterData = new byte[_clusterSize];[m
+[31m-                partitions[i].ToArray().CopyTo(clusterData, 0);[m
+[31m-[m
+[31m-                sectorClusters.Add(new Cluster[m
+[31m-                {[m
+[31m-                    Data = clusterData,[m
+[31m-                    Number = i,[m
+[31m-                    Next = partitions.Length - 1 == i ? -1 : i + 1[m
+[31m-                });[m
+[31m-            }[m
+[31m-[m
+[31m-            foreach (Cluster sectorCluster in sectorClusters)[m
+[31m-            {[m
+[31m-                _clusters[sectorCluster.Number] = sectorCluster;[m
+[31m-            }[m
+[31m-        }[m
+[31m-[m
+[31m-        private void InitializeListingSector()[m
+[31m-        {[m
+[31m-            if (!_clusters.Any())[m
+[31m-            {[m
+[31m-                ListingSector sector = new ListingSector(_clusterSize, _listingClusterCount, _storageClusterCount);[m
+[31m-                byte[] sectorBytes = SerializeListingSector(sector);[m
+[31m-                IEnumerable<byte>[] partitions = sectorBytes.PartitionBySize(x => 1, _clusterSize)[m
+[31m-                    .ToArray();[m
+[31m-[m
+[31m-                List<Cluster> sectorClusters = new List<Cluster>();[m
+[31m-[m
+[31m-                for (int i = 0; i < partitions.Length; i++)[m
+

@@ -12,8 +12,10 @@ namespace Sphere10.Framework {
             Guard.ArgumentInRange(count, 0, buffer.Count - index, nameof(count));
            
             ByteArrayBuilder builder = new ByteArrayBuilder();
+            int pageSize = buffer.Count / buffer.Pages.Count;
+            int startPage = (int) Math.Floor((decimal)index / pageSize);
 
-            for (int i = 0; i < buffer.Pages.Count; i++)
+            for (int i = startPage; i < buffer.Pages.Count; i++)
             {
                 IBufferPage page = buffer.Pages[i];
 

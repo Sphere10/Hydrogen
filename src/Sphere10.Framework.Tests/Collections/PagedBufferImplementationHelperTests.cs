@@ -15,7 +15,7 @@ namespace Sphere10.Framework.Tests
             var rand = new Random();
             byte[] input = rand.NextBytes(1000);
             
-            IMemoryPagedBuffer buffer = new MemoryPagedBuffer(10, 100);
+            using IMemoryPagedBuffer buffer = new MemoryPagedBuffer(10, 100);
             buffer.AddRange(input);
 
             int endIndex = startIndex + count;

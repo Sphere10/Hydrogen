@@ -95,7 +95,7 @@ namespace Sphere10.Framework {
 
 		protected abstract void EraseFromEndInternal(int count, out int oldItemsSize);
 
-		protected void CheckRange(int index, int count) {
+		internal void CheckRange(int index, int count) {
 			var startIX = StartIndex;
 			var lastIX = startIX + (Count - 1).ClipTo(startIX, int.MaxValue);
 			Guard.ArgumentInRange(index, startIX, lastIX, nameof(index));
@@ -103,7 +103,7 @@ namespace Sphere10.Framework {
 				Guard.ArgumentInRange(index + count - 1, startIX, lastIX, nameof(count));
 		}
 
-		protected void CheckPageState(PageState status) {
+		internal void CheckPageState(PageState status) {
 			if (State != status)
 				throw new InvalidOperationException($"Page not {status}");
 		}

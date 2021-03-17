@@ -5,7 +5,7 @@ using System.Linq;
 namespace Sphere10.Framework {
     public abstract class MemoryPageBase<TItem> : PageBase<TItem>, IMemoryPage<TItem> {
 		private readonly IObjectSizer<TItem> _sizer;
-		protected readonly IExtendedList<TItem> MemoryStore;
+		internal readonly IExtendedList<TItem> MemoryStore;
 
 		protected MemoryPageBase(int maxSize, IObjectSizer<TItem> sizer, IExtendedList<TItem> store) {
 			MaxSize = maxSize;

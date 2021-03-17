@@ -49,7 +49,7 @@ namespace Sphere10.Framework {
 
 		public new IReadOnlyList<IBufferPage> Pages => new ReadOnlyListDecorator<IPage<byte>, IBufferPage>(InternalPages);
 
-		public ReadOnlySpan<byte> ReadSpan(int index, int count) => PagedBufferImplementationHelper.ReadSpan(this, index, count);
+		public ReadOnlySpan<byte> ReadSpan(int index, int count) => PagedBufferImplementationHelper.ReadSpan(this, this, index, count);
 
 		public void AddRange(ReadOnlySpan<byte> span) => PagedBufferImplementationHelper.AddRange(this, span);
 
@@ -130,22 +130,11 @@ namespace Sphere10.Framework {
 				: base(stream, new FixedSizeObjectSizer<byte>(sizeof(byte)), uncommittedPageFileName, pageNumber, pageSize, new MemoryBuffer(0, pageSize, pageSize)) {
 			}
 
-			//protected override void SaveInternal(IEnumerable<byte> items, Stream stream) {
-			//	// Use byte streaming for perf
-			//	using (var writer = new BinaryWriter(stream)) {
-			//		var itemsArr = items as byte[] ?? items.ToArray();
-			//		writer.Write(itemsArr);
-			//	}
-			//}
+			public ReadOnlySpan<byte> ReadSpan(int index, int count)
+				=> PagedBufferImplementationHelper.ReadPageSpan(this, (MemoryBuffer)MemoryStore, index, count);
 
-			//protected override IEnumerable<byte> LoadInternal(Stream stream) {
-			//	// Use byte streaming for perf
-			//	var buff = new byte[stream.Length];
-			//	var bytesRead = stream.Read(buff, 0, (int)stream.Length);
-			//	if (bytesRead != buff.Length)
-			//		Array.Resize(ref buff, bytesRead);
-			//	return buff;
-			//}
+			public void WriteSpan(int index, ReadOnlySpan<byte> items, out ReadOnlySpan<byte> overflow)
+				=> PagedBufferImplementationHelper.WriteSpan(this, index, items, out overflow);
 
 			protected override void SaveInternal(IExtendedList<byte> memoryPage, Stream stream) {
 				var memBuff = (MemoryBuffer)memoryPage;
@@ -164,11 +153,7 @@ namespace Sphere10.Framework {
 				Guard.Ensure(bytesRead == stream.Length, "Read less bytes than expected");
 			}
 
-			public ReadOnlySpan<byte> ReadSpan(int index, int count) {
-				CheckPageState(PageState.Loaded);
-				CheckRange(index, count);
-				return ((MemoryBuffer)base.MemoryStore).ReadSpan(index - StartIndex, count);
-			}
+
 		}
 	}
 }

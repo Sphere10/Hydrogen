@@ -21,7 +21,7 @@ namespace Sphere10.Framework {
 			throw new NotSupportedException("Pages are not loadable across runtime sessions in this implementation. See BinaryFile class.");
 		}
 
-        public ReadOnlySpan<byte> ReadSpan(int index, int count) => PagedBufferImplementationHelper.ReadSpan(this, index, count);
+        public ReadOnlySpan<byte> ReadSpan(int index, int count) => PagedBufferImplementationHelper.ReadSpan(this, this, index, count);
 
         public void AddRange(ReadOnlySpan<byte> span) => PagedBufferImplementationHelper.AddRange(this, span);
 
@@ -41,11 +41,11 @@ namespace Sphere10.Framework {
 				: base(pageSize, new FixedSizeObjectSizer<byte>(sizeof(byte)), new MemoryBuffer(0, pageSize, pageSize)) {
 			}
 
-			public ReadOnlySpan<byte> ReadSpan(int index, int count) {
-				CheckPageState(PageState.Loaded);
-				CheckRange(index, count);
-				return ((MemoryBuffer)MemoryStore).ReadSpan(index - StartIndex, count);
-			}
+			public ReadOnlySpan<byte> ReadSpan(int index, int count) 
+				=> PagedBufferImplementationHelper.ReadPageSpan(this, (MemoryBuffer)MemoryStore, index, count);
+
+			public void WriteSpan(int index, ReadOnlySpan<byte> items, out ReadOnlySpan<byte> overflow)
+				=> PagedBufferImplementationHelper.WriteSpan(this, index, items, out overflow);
 
 			protected override void SaveInternal(IExtendedList<byte> memoryPage, Stream stream) {
 				var memBuff = (MemoryBuffer)memoryPage;

@@ -6,11 +6,10 @@ namespace Sphere10.Framework {
     // PagedBuffer span operations implemented in a not-so-great way. Relying on page operations to do the bulk insertions/
     internal static class PagedBufferImplementationHelper {
 
-        public static ReadOnlySpan<byte> ReadSpan(IMemoryPagedBuffer buffer, int index, int count)
+        public static ReadOnlySpan<byte> ReadSpan(IMemoryPagedBuffer buffer, PagedListBase<byte> bufferAsList, int index, int count)
         {
             Guard.ArgumentInRange(index, 0, buffer.Count - 1, nameof(index));
             Guard.ArgumentInRange(count, 0, buffer.Count - index, nameof(count));
-            var bufferAsList = Guard.ArgumentCast<PagedListBase<byte>>(buffer, nameof(buffer));
            
             ByteArrayBuilder builder = new ByteArrayBuilder();
 
@@ -57,6 +56,59 @@ namespace Sphere10.Framework {
             throw new NotSupportedException();
         }
 
+		public static ReadOnlySpan<byte> ReadPageSpan(IBufferPage bufferPage, MemoryBuffer memoryStore, int index, int count) {
+			var bufferAsMemoryPage = bufferPage as MemoryPageBase<byte>;
+			bufferAsMemoryPage.CheckPageState(PageState.Loaded);
+			bufferAsMemoryPage.CheckRange(index, count);
+			return memoryStore.ReadSpan(index - bufferAsMemoryPage.StartIndex, count);
+		}
+
+
+        public static bool WriteSpan(IBufferPage bufferPage, int index, ReadOnlySpan<byte> items, out ReadOnlySpan<byte> overflow) {
+			overflow = null;
+			return false;
+			/*   Guard.ArgumentNotNull(items, nameof(items));
+				var itemsArr = items as TItem[] ?? items.ToArray();
+				CheckPageState(PageState.Loaded);
+				Guard.ArgumentInRange(index, StartIndex, Math.Max(StartIndex, EndIndex) + 1, nameof(index));
+	
+				// Nothing to write case
+				if (itemsArr.Length == 0) {
+					overflow = Enumerable.Empty<TItem>();
+					return true;
+				}
+	
+				// Update segment
+				var updateCount = Math.Min(StartIndex + Count - index, itemsArr.Length);
+				if (updateCount > 0) {
+					var updateItems = itemsArr.Take(updateCount).ToArray();
+					UpdateInternal(index, updateItems, out var oldItemsSpace, out var newItemsSpace);
+					if (oldItemsSpace != newItemsSpace)
+						// TODO: support this scenario if ever needed, lots of complexity in ensuring updated page doesn't overflow max size from superclasses.
+						// Can lead to cascading page updates. 
+						// For constant sized objects (like byte arrays) this will never fail since the updated regions will always remain the same size.
+						throw new NotSupportedException("Updated a page with different sized objects is not supported in this collection.");
+					Size = Size - oldItemsSpace + newItemsSpace;
+				}
+	
+				// Append segment
+				var appendItems = updateCount > 0 ? itemsArr.Skip(updateCount).ToArray() : itemsArr;
+				var appendCount = AppendInternal(appendItems, out var appendedItemsSpace);
+				Count += appendCount;
+				EndIndex += appendCount;
+				Size += appendedItemsSpace;
+	
+				var totalWriteCount = updateCount + appendCount;
+				if (Count == 0 && totalWriteCount == 0) {
+					// Was unable to write the first element in an empty page, item too large
+					throw new InvalidOperationException($"Item '{itemsArr[0]?.ToString() ?? "(NULL)"}' cannot be fitted onto a page of this collection");
+				}
+				if (totalWriteCount > 0)
+					Dirty = true;
+				overflow = totalWriteCount < itemsArr.Length ? itemsArr.Skip(totalWriteCount).ToArray() : Enumerable.Empty<TItem>();
+				Debug.Assert(totalWriteCount <= itemsArr.Length);
+				return totalWriteCount == itemsArr.Length;*/
+		}
     }
 
 }

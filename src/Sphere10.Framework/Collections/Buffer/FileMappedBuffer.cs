@@ -23,7 +23,7 @@ namespace Sphere10.Framework {
 
 		public new IReadOnlyList<IBufferPage> Pages => new ReadOnlyListDecorator<IPage<byte>, IBufferPage>(InternalPages);
 
-		public ReadOnlySpan<byte> ReadSpan(int index, int count) => PagedBufferImplementationHelper.ReadSpan(this, index, count);
+		public ReadOnlySpan<byte> ReadSpan(int index, int count) => PagedBufferImplementationHelper.ReadSpan(this, this, index, count);
 
 		public void AddRange(ReadOnlySpan<byte> span) => PagedBufferImplementationHelper.AddRange(this, span);
 
@@ -125,12 +125,12 @@ namespace Sphere10.Framework {
 				Guard.Ensure(bytesRead == stream.Length, "Read less bytes than expected");
 			}
 
-            public ReadOnlySpan<byte> ReadSpan(int index, int count) {
-				CheckPageState(PageState.Loaded);
-				CheckRange(index, count);
-				return ((MemoryBuffer)base.MemoryStore).ReadSpan(index - StartIndex, count);
-			}
-        }
+            public ReadOnlySpan<byte> ReadSpan(int index, int count) 
+				=> PagedBufferImplementationHelper.ReadPageSpan(this, (MemoryBuffer)MemoryStore, index, count);
+
+			public void WriteSpan(int index, ReadOnlySpan<byte> items, out ReadOnlySpan<byte> overflow)
+				=> PagedBufferImplementationHelper.WriteSpan(this, index, items, out overflow);
+		}
 
     
     }

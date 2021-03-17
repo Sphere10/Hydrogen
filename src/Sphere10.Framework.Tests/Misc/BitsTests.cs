@@ -86,7 +86,7 @@ namespace Sphere10.Framework.Tests {
 				var bitLength = bytes.Length * 8;
 				for (var j = 0; j < Rounds; j++) {
 					var bitsInNumber = rng.Next(16) + 1;
-					var segment = rng.NextRange(bitLength, bitsInNumber);
+					var segment = rng.NextRange(bitLength, rangeLength: bitsInNumber);
 					var dir = rng.NextBool() ? IterateDirection.LeftToRight : IterateDirection.RightToLeft;
 					var offset = dir == IterateDirection.LeftToRight ? segment.Start : segment.End;
 					

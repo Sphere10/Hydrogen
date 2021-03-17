@@ -139,7 +139,7 @@ namespace Sphere10.Framework.Tests {
                         newItems = merkleBuffer.ReadRange(range.Start, range.End - range.Start + 1);
                         var expectedNewItems = expected.GetRange(range.Start, range.End - range.Start + 1);
 
-                        range = RNG.NextRange(merkleBuffer.Count, newItems.Count());
+                        range = RNG.NextRange(merkleBuffer.Count, rangeLength: newItems.Count());
                         expected.UpdateRangeSequentially(range.Start, expectedNewItems);
                         merkleBuffer.UpdateRange(range.Start, newItems);
 

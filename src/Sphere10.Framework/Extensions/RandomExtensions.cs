@@ -72,10 +72,10 @@ namespace Sphere10.Framework {
 
 		public static ValueRange<int> NextRange(this Random rng, int maxLength, bool fromEndOnly = false, int? rangeLength = null) {
 			Guard.ArgumentInRange(maxLength, 1, int.MaxValue, nameof(maxLength));
-			return NextRange(rng, 0, maxLength - 1, fromEndOnly, rangeLength);
+			return NextRangeBetween(rng, 0, maxLength - 1, fromEndOnly, rangeLength);
 		}
 
-		public static ValueRange<int> NextRange(this Random rng, int minIndex, int maxIndex, bool fromEndOnly = false, int? rangeLength = null) {
+		public static ValueRange<int> NextRangeBetween(this Random rng, int minIndex, int maxIndex, bool fromEndOnly = false, int? rangeLength = null) {
 			Guard.Ensure(minIndex <= maxIndex, $"{nameof(minIndex)} must be smaller than or equal to {nameof(maxIndex)}");
 			var length = maxIndex - minIndex + 1;
 
@@ -96,7 +96,7 @@ namespace Sphere10.Framework {
 			var B = remainingLength - A;
 
 			var endIX = fromEndOnly ? maxIndex : minIndex + A + rangeLength.Value - 1;
-			var startIX = endIX - rangeLength.Value + 1;
+			var startIX = (endIX - rangeLength.Value + 1);//.ClipTo(minIndex, endIX);
 
 			return new ValueRange<int>(startIX, endIX, Comparer<int>.Default, true, true, checkOrder: false); 
 			;

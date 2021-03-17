@@ -169,18 +169,10 @@ namespace Sphere10.Framework.Tests {
         }
 
         [Test]
-        public void V1_Integration_FixedSize([Values(1000)] int maxCapacity) {
+        public void V1_IntegrationTests([Values(0,1,17,1000)] int maxCapacity, [Values] bool includeListHeader) {
             using (var stream = new MemoryStream()) {
-                var list = new StreamMappedList<int>(new IntSerializer(), stream) { IncludeListHeader = false };
-                AssertEx.ListIntegrationTest<int>(list, maxCapacity, (rng, i) => rng.NextInts(i), mutateFromEndOnly: true);
-            }
-        }
-
-        [Test]
-        public void V1_Integration_FixedSizeWithHeader([Values(1000)] int maxCapacity) {
-            using (var stream = new MemoryStream()) {
-                var list = new StreamMappedList<int>(new IntSerializer(), stream) { IncludeListHeader = true };
-                AssertEx.ListIntegrationTest<int>(list, maxCapacity, (rng, i) => rng.NextInts(i), mutateFromEndOnly: true);
+                var list = new StreamMappedList<int>(new IntSerializer(), stream) { IncludeListHeader = includeListHeader };
+                AssertEx.ListIntegrationTest(list, maxCapacity, (rng, i) => rng.NextInts(i), mutateFromEndOnly: true);
             }
         }
         

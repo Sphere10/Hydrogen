@@ -23,15 +23,15 @@ namespace Sphere10.Framework.Tests {
         [Test]
         public void Range_0() {
             var rng = new Random(31337);
-            Assert.Throws<ArgumentException>(() => rng.NextRange(0, false));
-            Assert.Throws<ArgumentException>(() => rng.NextRange(0, true));
-            Assert.Throws<ArgumentException>(() => rng.NextRange(0));
+            Assert.Throws<ArgumentOutOfRangeException>(() => rng.NextRange(0, false));
+            Assert.Throws<ArgumentOutOfRangeException>(() => rng.NextRange(0, true));
+            Assert.Throws<ArgumentOutOfRangeException>(() => rng.NextRange(0));
         }
 
         [Test]
         public void Range_1() {
             var rng = new Random(31337);
-            var range = rng.NextRange(1);
+            var range = rng.NextRange(1, rangeLength:1);
             Assert.AreEqual(0, range.Start);
             Assert.AreEqual(0, range.End);
         }
@@ -39,11 +39,11 @@ namespace Sphere10.Framework.Tests {
         [Test]
         public void Range_2() {
             var rng = new Random(31337);
-            var range = rng.NextRange(2, true);
+            var range = rng.NextRange(2, true, rangeLength:2);
             Assert.AreEqual(0, range.Start);
             Assert.AreEqual(1, range.End);
 
-            range = rng.NextRange(2, false);
+            range = rng.NextRange(2, false, rangeLength:2);
             Assert.AreEqual(0, range.Start);
             Assert.AreEqual(1, range.End);
 

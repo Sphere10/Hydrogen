@@ -14,7 +14,7 @@ namespace Sphere10.Framework.Collections {
 	/// <see cref="Contains"/> and <see cref="ContainsRange"/> are overriden and implemented based on <see cref="IndexOf"/> and <see cref="IndexOfRange"/> in order to ensure only
 	/// the logical objects are searched (avoids false positives). Same for <see cref="Remove"/> and <see cref="RemoveRange(int,int)"/>.
 	/// </remarks>
-	public class PreallocatedList<TItem> : ExtendedListDecorator<TItem> {
+	public class AllocatedList<TItem> : ExtendedListDecorator<TItem> {
 
 		private int _count;
 
@@ -22,7 +22,7 @@ namespace Sphere10.Framework.Collections {
 		/// Constructor.
 		/// </summary>
 		/// <param name="fixedSizeStore">The underlying list which remains same size. List operations are implemented as updates of <see cref="fixedSizeStore"/>.</param>
-		public PreallocatedList(IExtendedList<TItem> fixedSizeStore)
+		public AllocatedList(IExtendedList<TItem> fixedSizeStore)
 			: base(fixedSizeStore) {
 			_count = 0;
 		}
@@ -73,7 +73,7 @@ namespace Sphere10.Framework.Collections {
 		public override void InsertRange(int index, IEnumerable<TItem> items) {
 			Guard.ArgumentNotNull(items, nameof(items));
 			var itemsArr = items as TItem[] ?? items.ToArray();
-			CheckIndex(index);
+			CheckIndex(index, true);
 			if (_count + itemsArr.Length > MaxCount)
 				throw new ArgumentException("Insufficient space");
 
@@ -86,18 +86,12 @@ namespace Sphere10.Framework.Collections {
 			// aabbbaa         ;; _count = 7  max = 10   toStartIndex = fromStartIndex + itemsArr.Length   toEndIndex = fromEndIndex + itemsArr.Length   
 			// 0123456789
 
-			var fromStartIndex = index;
-			var fromEndIndex = _count - 1;
-			var toStartIndex = fromStartIndex + itemsArr.Length;
-			var toEndIndex =  fromEndIndex + itemsArr.Length;
+			var movedRegionFromStartIX = index;
+			var movedRegionFromEndIX = _count - 1;
+			var movedRegionToStartIX = movedRegionFromStartIX + itemsArr.Length;
+			var movedRegionToEndIX = movedRegionFromEndIX + itemsArr.Length;
 
-			// abcdefg
-			// 0123456789
-			// abcdefg
-			// abczzzdefg
-			// abczzzdefg
-
-			for (var i = toEndIndex; i >= toStartIndex; i--) {
+			for (var i = movedRegionToEndIX; i >= movedRegionToStartIX; i--) {
 				var toCopy = base.Read(i - itemsArr.Length);
 				base.Update(i, toCopy);
 			}
@@ -117,15 +111,20 @@ namespace Sphere10.Framework.Collections {
 			throw new NotImplementedException();
 		}
 
-		public override void RemoveAt(int index) => this.RemoveRange(index,1);
+		public override void RemoveAt(int index) => this.RemoveRange(index, 1);
 
 		public override void RemoveRange(int index, int count) {
 			CheckRange(index, count);
 
-			var toMoveIX = index + count;
-			var toMoveCount = _count - toMoveIX;
-			var itemsToMove = ReadRange(toMoveIX, toMoveCount).ToArray();
-			base.UpdateRange(index, itemsToMove);
+			var movedRegionFromStartIX = index + count;
+			var movedRegionFromEndIX = _count - 1;
+			var movedRegionToStartIX = index;
+			var movedRegionToEndIX = index + (movedRegionFromEndIX - movedRegionFromStartIX);
+
+			for (var i = movedRegionToStartIX; i <= movedRegionToEndIX; i++) {
+				var toCopy = base.Read(i + count);
+				base.Update(i, toCopy);
+			}
 			_count -= count;
 		}
 
@@ -144,7 +143,8 @@ namespace Sphere10.Framework.Collections {
 			return -1;
 		}
 
-		private int CheckIndex(int index) {
+		private int CheckIndex(int index, bool allowAtEnd = false) {
+			if (allowAtEnd && index == _count) return index;
 			Guard.ArgumentInRange(index, 0, Math.Max(0, _count - 1), nameof(index));
 			return index;
 		}

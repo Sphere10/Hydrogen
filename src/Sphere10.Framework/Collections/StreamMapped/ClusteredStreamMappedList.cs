@@ -255,13 +255,13 @@ namespace Sphere10.Framework.Collections
             var listings = new StreamMappedList<ItemListing>(new ItemListingSerializer(), listingsStream)
                 {IncludeListHeader = false};
             listings.AddRange(Enumerable.Repeat(default(ItemListing), _maxItems));
-            _listings = new PreallocatedList<ItemListing>(listings);
+            _listings = new AllocatedList<ItemListing>(listings);
 
             var status = new StreamMappedList<bool>(new BoolSerializer(), statusStream)
                 {IncludeListHeader = false};
             status.AddRange(Enumerable.Repeat(false, _storageClusterCount));
             
-            _clusterStatus = new PreallocatedList<bool>(status);
+            _clusterStatus = new AllocatedList<bool>(status);
 
             _clusters = new StreamMappedList<Cluster>(new ClusterSerializer(_clusterSize), clusterStream, _clusterSize);
         }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Sphere10.Framework {
 
@@ -8,15 +9,17 @@ namespace Sphere10.Framework {
 
         public static ReadOnlySpan<byte> ReadSpan(IMemoryPagedBuffer buffer, PagedListBase<byte> bufferAsList, int index, int count)
         {
-            Guard.ArgumentInRange(index, 0, buffer.Count - 1, nameof(index));
-            Guard.ArgumentInRange(count, 0, buffer.Count - index, nameof(count));
-           
-            ByteArrayBuilder builder = new ByteArrayBuilder();
+			var endIndex = Math.Min(index + count - 1, buffer.Count - 1);
+			var readCount = endIndex - index + 1;
+			if (readCount <= 0)
+				return new byte[0];
+
+			ByteArrayBuilder builder = new ByteArrayBuilder();
 
             bufferAsList.CheckRequiresLoad();
             bufferAsList.NotifyAccessing();
             bufferAsList.CheckRange(index, count);
-           
+
             foreach (var pageSegment in bufferAsList.GetPageSegments(index, count))
             {
                 var page = pageSegment.Item1 as IBufferPage ??

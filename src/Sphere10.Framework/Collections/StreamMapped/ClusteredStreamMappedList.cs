@@ -129,7 +129,7 @@ namespace Sphere10.Framework.Collections
 
             int[] numbers = _clusterStatus
                 .WithIndex()
-                .Where(x => x.Item1)
+                .Where(x => !x.Item1)
                 .Take(segments.Count)
                 .Select(x => x.Item2)
                 .ToArray();

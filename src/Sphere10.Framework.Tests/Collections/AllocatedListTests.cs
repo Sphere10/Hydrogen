@@ -53,6 +53,15 @@ namespace Sphere10.Framework.Tests
             Assert.IsTrue(preallocatedList.All(x => x == default));
         }
 
+        [Test]
+        public void Enumerate()
+        {
+            ExtendedList<int> list = new ExtendedList<int>(Enumerable.Repeat(9, 100).ToArray());
+            AllocatedList<int> allocatedList = new AllocatedList<int>(list);
+            Assert.AreEqual(allocatedList.ToList(), list);
+            
+        }
+
 
         [Test]
         [Pairwise]

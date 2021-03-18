@@ -1,5 +1,4 @@
-﻿using Sphere10.Helium.Bus;
-using Sphere10.Helium.Queue;
+﻿using Sphere10.Helium.Queue;
 
 namespace Sphere10.Helium.Endpoint
 {
@@ -18,5 +17,9 @@ namespace Sphere10.Helium.Endpoint
         public QueueConfigDto QueueConfigDto { get; set; }
 
         public int RouteQueueReadRatePerMinute { get; set; } = 60;
+
+        public string ErrorQueueName { get; set; } = "ErrorQueue";
+
+        public string AuditLogQueueName { get; set; } = "AuditLogQueue";
     }
 }

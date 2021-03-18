@@ -17,5 +17,9 @@ namespace Sphere10.Helium.Endpoint
         public QueueConfigDto QueueConfigDto { get; set; }
 
         public int RouteQueueReadRatePerMinute { get; set; }
+
+        public string ErrorQueueName { get; set; }
+
+        public string AuditLogQueueName { get; set; }
     }
 }

@@ -23,9 +23,9 @@ namespace Sphere10.Framework {
 
 		public new IReadOnlyList<IBufferPage> Pages => new ReadOnlyListDecorator<IPage<byte>, IBufferPage>(InternalPages);
 
-		public ReadOnlySpan<byte> ReadSpan(int index, int count) => PagedBufferImplementationHelper.ReadSpan(this, this, index, count);
+		public ReadOnlySpan<byte> ReadSpan(int index, int count) => PagedBufferImplementationHelper.ReadSpan(this, InternalMethods, index, count);
 
-		public void AddRange(ReadOnlySpan<byte> span) => PagedBufferImplementationHelper.AddRange(this, span);
+		public void AddRange(ReadOnlySpan<byte> span) => PagedBufferImplementationHelper.AddRange(this, InternalMethods, span);
 
 		public void UpdateRange(int index, ReadOnlySpan<byte> items) => PagedBufferImplementationHelper.UpdateRange(this, index, items);
 

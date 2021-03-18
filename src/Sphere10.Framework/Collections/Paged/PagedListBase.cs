@@ -33,6 +33,10 @@ namespace Sphere10.Framework {
 			RequiresLoad = false;
 			IsLoading = false;
 			InternalPages = new ExtendedList<IPage<TItem>>();
+
+			InternalMethods = new PagedListInternalMethods<TItem>(CheckRequiresLoad, CheckRange, EnterOpenPageScope,
+				GetPageSegments, NotifyAccessing, NotifyAccessed, NotifyPageAccessing, NotifyPageAccessed,
+				NotifyPageReading, NotifyPageRead);
 		}
 
 		public override int Count => InternalPages.Sum(p => p.Count);
@@ -42,6 +46,8 @@ namespace Sphere10.Framework {
 		public bool RequiresLoad { get; protected set; }
 
 		protected bool IsLoading { get; private set; }
+
+		protected internal IPagedListInternalMethods<TItem> InternalMethods { get; }
 
 		public void Load() {
 			NotifyLoading();

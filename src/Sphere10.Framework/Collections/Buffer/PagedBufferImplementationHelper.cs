@@ -7,36 +7,63 @@ namespace Sphere10.Framework {
     // PagedBuffer span operations implemented in a not-so-great way. Relying on page operations to do the bulk insertions/
     internal static class PagedBufferImplementationHelper {
 
-        public static ReadOnlySpan<byte> ReadSpan(IMemoryPagedBuffer buffer, PagedListBase<byte> bufferAsList, int index, int count)
+        public static ReadOnlySpan<byte> ReadSpan(IMemoryPagedBuffer buffer, IPagedListInternalMethods<byte> internalMethods, int index, int count)
         {
 			ByteArrayBuilder builder = new ByteArrayBuilder();
 
-            bufferAsList.CheckRequiresLoad();
-            bufferAsList.NotifyAccessing();
-            bufferAsList.CheckRange(index, count);
+			internalMethods.CheckRequiresLoad();
+			internalMethods.NotifyAccessing();
+			internalMethods.CheckRange(index, count);
 
-            foreach (var pageSegment in bufferAsList.GetPageSegments(index, count))
+            foreach (var pageSegment in internalMethods.GetPageSegments(index, count))
             {
                 var page = pageSegment.Item1 as IBufferPage ??
                     throw new InvalidOperationException("ReadSpan not supported by page type");
                 
                 var pageStartIndex = pageSegment.Item2;
                 var pageItemCount = pageSegment.Item3;
-                bufferAsList.NotifyPageAccessing(page);
-                using (bufferAsList.EnterOpenPageScope(page)) {
-                    bufferAsList.NotifyPageReading(page);
+				internalMethods.NotifyPageAccessing(page);
+                using (internalMethods.EnterOpenPageScope(page)) {
+					internalMethods.NotifyPageReading(page);
                     builder.Append(page.ReadSpan(pageStartIndex, pageItemCount));
-                    bufferAsList.NotifyPageRead(page);
+					internalMethods.NotifyPageRead(page);
                 }
-                bufferAsList.NotifyPageAccessed(page);
+				internalMethods.NotifyPageAccessed(page);
             }
-            bufferAsList.NotifyAccessed();
+			internalMethods.NotifyAccessed();
 
             return builder.ToArray();
         }
 
-        public static void AddRange(IMemoryPagedBuffer buffer, ReadOnlySpan<byte> span) {
-            // TODO: add optimized implementation
+        public static void AddRange(IMemoryPagedBuffer buffer, IPagedListInternalMethods<byte> internalMethods, ReadOnlySpan<byte> span) {
+			
+			if (span.IsEmpty)
+				return;
+			
+			internalMethods.CheckRequiresLoad();
+			internalMethods.NotifyAccessing();
+
+			// var page = InternalPages.Any() ? InternalPages.Last() : CreateNextPage();
+			//
+			// bool AppendToPage(out IEnumerable<TItem> remaining) {
+			// 	NotifyPageAccessing(page);
+			// 	bool fittedCompletely;
+			// 	using (EnterOpenPageScope(page)) {
+			// 		NotifyPageWriting(page);
+			// 		UpdateVersion();
+			// 		fittedCompletely = page.Write(page.EndIndex + 1, items, out remaining);
+			// 		NotifyPageWrite(page);
+			// 	}
+			// 	NotifyPageAccessed(page);
+			// 	return fittedCompletely;
+			// }
+			//
+			// while (!AppendToPage(out var remaining)) {
+			// 	page = CreateNextPage();
+			// 	items = remaining;
+			// }
+			// NotifyAccessed();
+			
             buffer.AddRange((IEnumerable<byte>)span.ToArray());
         }
 

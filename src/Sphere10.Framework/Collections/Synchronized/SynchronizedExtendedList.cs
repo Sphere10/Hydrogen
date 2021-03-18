@@ -20,9 +20,9 @@ using System.Threading;
 
 namespace Sphere10.Framework {
 
-	public class SynchronizedExtendedList<T> : ExtendedListDecorator<T>, IReadWriteSafeObject {
+	public class SynchronizedExtendedList<T> : ExtendedListDecorator<T>, IThreadSafeObject {
 
-		private readonly ReadWriteSafeObject _lock;
+		private readonly ThreadSafeObject _lock;
 
 		public SynchronizedExtendedList() 
 			: this(new ExtendedList<T>()) {
@@ -30,7 +30,7 @@ namespace Sphere10.Framework {
 
 		public SynchronizedExtendedList(IExtendedList<T> internalList) 
 			: base(internalList){
-			_lock = new ReadWriteSafeObject();
+			_lock = new ThreadSafeObject();
 		}
 
 		public ReaderWriterLockSlim ThreadLock => _lock.ThreadLock;

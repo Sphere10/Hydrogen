@@ -25,9 +25,9 @@ namespace Sphere10.Framework {
 	/// race conditions. Beware of it's use. 
 	/// </summary>
 	/// <typeparam name="T"></typeparam>
-	public class SynchronizedList<T> : ListDecorator<T>, IReadWriteSafeObject {
+	public class SynchronizedList<T> : ListDecorator<T>, IThreadSafeObject {
 
-		private readonly ReadWriteSafeObject _lock;
+		private readonly ThreadSafeObject _lock;
 
 		public SynchronizedList()
 			: this(new List<T>()) {
@@ -36,7 +36,7 @@ namespace Sphere10.Framework {
 		public SynchronizedList(IList<T> internalList) {
 			if (internalList is T[])
 				throw new ArgumentException("provided internalList was an array", nameof(internalList));
-			_lock = new ReadWriteSafeObject();
+			_lock = new ThreadSafeObject();
 		}
 
 		public override T this[int index] {

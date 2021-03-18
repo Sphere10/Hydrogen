@@ -17,7 +17,7 @@ using System.Linq;
 using System.Text;
 
 namespace Sphere10.Framework {
-	class BackgroundProcessor {
+	public class BackgroundProcessor {
 
 		private readonly SynchronizedCollection<Action> _queue;
 
@@ -34,7 +34,6 @@ namespace Sphere10.Framework {
 				_queue.Add(action);
 				if (_queue.Count == 1)
 					Tools.Threads.QueueAction(RunActions);
-				
 			}
 		}
 

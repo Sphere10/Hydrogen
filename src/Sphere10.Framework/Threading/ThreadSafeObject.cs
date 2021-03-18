@@ -17,23 +17,23 @@ using System.Threading;
 
 namespace Sphere10.Framework {
 
-    public class ReadWriteSafeObject : ReadWriteSafeObject<Scope, Scope>, IReadWriteSafeObject {
-        public ReadWriteSafeObject() : this(LockRecursionPolicy.SupportsRecursion) {
+    public class ThreadSafeObject : ThreadSafeObject<Scope, Scope>, IThreadSafeObject {
+        public ThreadSafeObject() : this(LockRecursionPolicy.SupportsRecursion) {
         }
 
-        protected ReadWriteSafeObject(LockRecursionPolicy policy) 
+        protected ThreadSafeObject(LockRecursionPolicy policy) 
             : base(policy) {
         }
     }
 
-    public class ReadWriteSafeObject<TReadScope, TWriteScope> : IReadWriteSafeObject<TReadScope, TWriteScope>
+    public class ThreadSafeObject<TReadScope, TWriteScope> : IThreadSafeObject<TReadScope, TWriteScope>
         where TReadScope : IScope, new()
         where TWriteScope : IScope, new() {
 
-        protected ReadWriteSafeObject() : this(LockRecursionPolicy.SupportsRecursion) {
+        protected ThreadSafeObject() : this(LockRecursionPolicy.SupportsRecursion) {
         }
 
-        protected ReadWriteSafeObject(LockRecursionPolicy policy) {
+        protected ThreadSafeObject(LockRecursionPolicy policy) {
             ThreadLock = new ReaderWriterLockSlim(policy);
         }
 
@@ -78,7 +78,7 @@ namespace Sphere10.Framework {
 				throw new SoftwareException("Resource has not entered a read scope");
 		}
 
-		protected virtual void EnsureWriteable() {
+		protected virtual void EnsureWritable() {
 			if (!ThreadLock.IsWriteLockHeld)
 				throw new SoftwareException("Resource has not entered a write scope");
 		}

@@ -50,8 +50,7 @@ namespace Sphere10.Framework {
 	///  - page headers to be slimmed down depending on traits
 	///  - indexing
 	/// </remarks>
-	public class StreamMappedList<TItem> : PagedListBase<TItem>
-	{
+	public class StreamMappedList<TItem> : PagedListBase<TItem> {
 		public const uint MagicID = 31337;
 		public const byte FormatVersion = 1;
 		public const int ListHeaderSize = 256;
@@ -59,8 +58,7 @@ namespace Sphere10.Framework {
 
 		private bool _includeListHeader = true;
 
-		public StreamMappedList(StreamMappedListType type, IObjectSerializer<TItem> serializer, Stream stream, int pageSize)
-		{
+		public StreamMappedList(StreamMappedListType type, IObjectSerializer<TItem> serializer, Stream stream, int pageSize) {
 			PageSize = pageSize;
 			Serializer = serializer;
 			Stream = stream;
@@ -74,30 +72,23 @@ namespace Sphere10.Framework {
 		public StreamMappedList(IObjectSerializer<TItem> serializer, Stream stream) : this(
 			serializer.IsFixedSize ? StreamMappedListType.FixedSize : StreamMappedListType.Dynamic,
 			 serializer,
-			stream, serializer.IsFixedSize ? int.MaxValue : DefaultPageSize)
-		{
+			stream, serializer.IsFixedSize ? int.MaxValue : DefaultPageSize) {
 		}
 
 		public StreamMappedList(IObjectSerializer<TItem> serializer, Stream stream, int pageSize)
 			: this(serializer.IsFixedSize ? StreamMappedListType.FixedSize : StreamMappedListType.Dynamic, serializer,
-				stream, pageSize)
-		{
+				stream, pageSize) {
 		}
 
 		public int PageSize { get; }
 
-		public bool IncludeListHeader
-		{
+		public bool IncludeListHeader {
 			get => _includeListHeader;
-			set
-			{
-				if (Stream.Length != 0)
-				{
+			set {
+				if (Stream.Length != 0) {
 					throw new InvalidOperationException(
 						$"{nameof(IncludeListHeader)} cannot be adjusted once stream has been written to.");
-				}
-				else
-				{
+				} else {
 					_includeListHeader = value;
 				}
 			}
@@ -113,30 +104,24 @@ namespace Sphere10.Framework {
 
 		internal IObjectSerializer<TItem> Serializer { get; }
 
-		public override IDisposable EnterOpenPageScope(IPage<TItem> page)
-		{
-			switch (Type)
-			{
-				case StreamMappedListType.Dynamic:
-				{
-					var streamedPage = (DynamicStreamPage<TItem>) page;
-					streamedPage.Open();
+		public override IDisposable EnterOpenPageScope(IPage<TItem> page) {
+			switch (Type) {
+				case StreamMappedListType.Dynamic: {
+						var streamedPage = (DynamicStreamPage<TItem>)page;
+						streamedPage.Open();
 
-					return Tools.Scope.ExecuteOnDispose(streamedPage.Close);
-				}
-				case StreamMappedListType.FixedSize:
-				{
-					return Tools.Scope.ExecuteOnDispose(() => { }); //no-op
-				}
+						return Tools.Scope.ExecuteOnDispose(streamedPage.Close);
+					}
+				case StreamMappedListType.FixedSize: {
+						return Tools.Scope.ExecuteOnDispose(() => { }); //no-op
+					}
 				default:
 					throw new ArgumentOutOfRangeException();
 			}
 		}
 
-		protected override IPage<TItem>[] LoadPages()
-		{
-			if (IncludeListHeader)
-			{
+		protected override IPage<TItem>[] LoadPages() {
+			if (IncludeListHeader) {
 				Stream.Seek(0L, SeekOrigin.Begin);
 				var magic = Reader.ReadUInt32();
 				if (magic != MagicID)
@@ -152,49 +137,40 @@ namespace Sphere10.Framework {
 			// Load pages if any
 			var pages = new List<IPage<TItem>>();
 
-			if (Type is StreamMappedListType.Dynamic)
-			{
+			if (Type is StreamMappedListType.Dynamic) {
 				while (Stream.Position < Stream.Length)
 					pages.Add(InternalPages.Any()
 						? new DynamicStreamPage<TItem>(this)
-						: new DynamicStreamPage<TItem>((DynamicStreamPage<TItem>) pages.Last()));
+						: new DynamicStreamPage<TItem>((DynamicStreamPage<TItem>)pages.Last()));
 
-			}
-			else
-			{
+			} else {
 				pages.Add(new FixedSizeStreamPage<TItem>(this));
 			}
 
 			return pages.ToArray();
 		}
 
-		protected override void OnPageCreating(int pageNumber)
-		{
+		protected override void OnPageCreating(int pageNumber) {
 			base.OnPageCreating(pageNumber);
 			// Create list header if not created
-			
-			if (IncludeListHeader && Stream.Length == 0)
-			{
+			if (IncludeListHeader && Stream.Length == 0) {
 				CreateListHeader();
 			}
 		}
 
-		protected override void OnPageDeleted(IPage<TItem> page)
-		{
+		protected override void OnPageDeleted(IPage<TItem> page) {
 			base.OnPageDeleted(page);
 
 			if (page is StreamPageBase<TItem> streamPage)
-			{
 				Stream.SetLength(page.Number > 0 ? streamPage.StartPosition : 0L);
-			}
+			
 		}
 
 		protected override IPage<TItem> NewPageInstance(int pageNumber) =>
-			Type switch
-			{
+			Type switch {
 				StreamMappedListType.Dynamic => pageNumber == 0
 					? new DynamicStreamPage<TItem>(this)
-					: new DynamicStreamPage<TItem>((DynamicStreamPage<TItem>) InternalPages.Last()),
+					: new DynamicStreamPage<TItem>((DynamicStreamPage<TItem>)InternalPages.Last()),
 				StreamMappedListType.FixedSize => pageNumber == 0
 					? new FixedSizeStreamPage<TItem>(this)
 					: throw new InvalidOperationException(

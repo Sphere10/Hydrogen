@@ -20,7 +20,7 @@ using System.Threading;
 
 namespace Sphere10.Framework {
 
-    public class SynchronizedQueue<T> : ReadWriteSafeObject, ICollection<T>, IReadOnlyCollection<T> {
+    public class SynchronizedQueue<T> : ThreadSafeObject, ICollection<T>, IReadOnlyCollection<T> {
 		private readonly Queue<T> _internalQueue;
 
 		public SynchronizedQueue()

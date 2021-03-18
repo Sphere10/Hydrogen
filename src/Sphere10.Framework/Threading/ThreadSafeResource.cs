@@ -16,19 +16,19 @@ using System.Threading;
 
 namespace Sphere10.Framework {
 
-    public abstract class ReadWriteSafeResource : ReadWriteSafeResource<Scope, Scope> {
+    public abstract class ThreadSafeResource : ThreadSafeResource<Scope, Scope> {
     }
 
-    public abstract class ReadWriteSafeResource<TReadScope, TWriteScope> : ReadWriteSafeObject<TReadScope, TWriteScope>
+    public abstract class ThreadSafeResource<TReadScope, TWriteScope> : ThreadSafeObject<TReadScope, TWriteScope>
         where TReadScope : IScope, new()
         where TWriteScope : IScope, new() {
-        private readonly ReadWritable<ScopeTracker> _scopeTracker;
+        private readonly ThreadSafe<ScopeTracker> _scopeTracker;
 
-        protected ReadWriteSafeResource() : this(LockRecursionPolicy.SupportsRecursion) {
+        protected ThreadSafeResource() : this(LockRecursionPolicy.SupportsRecursion) {
         }
 
-        protected ReadWriteSafeResource(LockRecursionPolicy policy) : base(policy) {
-            _scopeTracker = new ReadWritable<ScopeTracker>(ScopeTracker.Zero);
+        protected ThreadSafeResource(LockRecursionPolicy policy) : base(policy) {
+            _scopeTracker = new ThreadSafe<ScopeTracker>(ScopeTracker.Zero);
         }
 
         protected virtual void OnSetupRead() {
@@ -100,14 +100,14 @@ namespace Sphere10.Framework {
                     throw new SoftwareException("Resource has not entered a read scope");
         }
 
-        protected override void EnsureWriteable() {
+        protected override void EnsureWritable() {
             using (_scopeTracker.EnterReadScope())
                 if (_scopeTracker.Value.Writes <= 0)
                     throw new SoftwareException("Resource has not entered a write scope");
         }
 
 
-        public class ScopeTracker {
+        private class ScopeTracker {
             public int Reads;
             public int Writes;
             public static ScopeTracker Zero => new ScopeTracker { Reads = 0, Writes = 0 };

@@ -19,9 +19,9 @@ using System.Threading;
 
 namespace Sphere10.Framework {
 
-	public class SynchronizedSet<T> : SetDecorator<T>, IReadWriteSafeObject {
+	public class SynchronizedSet<T> : SetDecorator<T>, IThreadSafeObject {
 
-		private readonly ReadWriteSafeObject _lock;
+		private readonly ThreadSafeObject _lock;
 
 		public SynchronizedSet()
 			: this(new HashSet<T>()) {
@@ -33,7 +33,7 @@ namespace Sphere10.Framework {
 
 		public SynchronizedSet(ISet<T> internalSet)
 			: base(internalSet) {
-			_lock = new ReadWriteSafeObject();
+			_lock = new ThreadSafeObject();
 		}
 
 		public ReaderWriterLockSlim ThreadLock => _lock.ThreadLock;

@@ -25,8 +25,8 @@ namespace Sphere10.Framework {
 	/// race conditions. Beware of it's use. 
 	/// </summary>
 	/// <typeparam name="T"></typeparam>
-	public class SynchronizedCollection<T> : CollectionDecorator<T>, IReadWriteSafeObject {
-		private readonly ReadWriteSafeObject _lock;
+	public class SynchronizedCollection<T> : CollectionDecorator<T>, IThreadSafeObject {
+		private readonly ThreadSafeObject _lock;
 
 		public SynchronizedCollection() 
 			: this(new List<T>()) {
@@ -34,7 +34,7 @@ namespace Sphere10.Framework {
 
 		public SynchronizedCollection(ICollection<T> internalList) 
 			: base(internalList) {
-			_lock = new ReadWriteSafeObject();
+			_lock = new ThreadSafeObject();
 		}
 
 		public override void Add(T item) { using (EnterWriteScope()) base.Add(item); }

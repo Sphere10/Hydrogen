@@ -16,10 +16,10 @@ using System.Threading;
 
 namespace Sphere10.Framework {
 
-    public interface IReadWriteSafeObject : IReadWriteSafeObject<Scope, Scope> {
+    public interface IThreadSafeObject : IThreadSafeObject<Scope, Scope> {
 	}
 
-    public interface IReadWriteSafeObject<out TReadScope, out TWriteScope> 
+    public interface IThreadSafeObject<out TReadScope, out TWriteScope> 
         where TReadScope : IScope
         where TWriteScope : IScope {
         ReaderWriterLockSlim ThreadLock { get; }

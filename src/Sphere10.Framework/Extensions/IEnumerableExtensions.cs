@@ -24,6 +24,25 @@ namespace Sphere10.Framework {
 
 	public static class IEnumerableExtensions {
 
+
+		/// <summary>
+		/// Enumerates as pairs  [0,1,2] becomes => [(0,1), (1,2)]
+		/// </summary>
+		/// <typeparam name="T"></typeparam>
+		/// <param name="source"></param>
+		/// <returns></returns>
+		public static IEnumerable<(T, T)> AsPairwise<T>(this IEnumerable<T> source) {
+			var previous = default(T);
+			using (var it = source.GetEnumerator()) {
+				if (it.MoveNext())
+					previous = it.Current;
+
+				while (it.MoveNext())
+					yield return (previous, previous = it.Current);
+			}
+		}
+
+	
 		public static IEnumerable<T> Head<T>(this IEnumerable<T> enumerables, out T head) {
 			var arr = enumerables.ToArray();
 			head = Tools.Array.Head(ref arr);

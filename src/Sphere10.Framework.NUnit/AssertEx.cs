@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -15,12 +16,80 @@ namespace Sphere10.Framework.NUnit {
 		public static void ListIntegrationTest<T>(IExtendedList<T> list, int maxCapacity, Func<Random, int, T[]> randomItemGenerator, bool mutateFromEndOnly = false, int iterations = 100, IList<T> expected = null) {
 			var RNG = new Random(31337);
 			expected ??= new List<T>();
+
+			// Test 1: Add nothing
+			expected.AddRangeSequentially(Enumerable.Empty<T>());
+			list.AddRange(Enumerable.Empty<T>());
+			Assert.AreEqual(expected, list);
+
+			// Test 2: Insert nothing
+			expected.InsertRangeSequentially(0, Enumerable.Empty<T>());
+			list.InsertRange(0, Enumerable.Empty<T>());
+			Assert.AreEqual(expected, list);
+
+			if (maxCapacity >= 1) {
+				// Test 2: Insert at 0 when empty 
+				var item = randomItemGenerator(RNG, 1).Single();
+				expected.Insert(0, item);
+				list.Insert(0, item);
+				Assert.AreEqual(expected, list);
+			}
+
+			if (maxCapacity >= 2) {
+				// Test 3: Insert at end of list (same as add)
+				var item = randomItemGenerator(RNG, 1).Single();
+				expected.Insert(1, item);
+				list.Insert(1, item);
+				Assert.AreEqual(expected, list);
+
+				// Test 4: Delete from beginning of list
+				if (!mutateFromEndOnly) {
+					expected.RemoveAt(0);
+					list.RemoveAt(0);
+					Assert.AreEqual(expected, list);
+				}
+			}
+
+			if (maxCapacity >= 1) {
+				// Test 5: Delete from end of list
+				expected.RemoveAt(^1);
+				list.RemoveAt(^1);
+				Assert.AreEqual(expected, list);
+			}
+
+			// Test 6: AddRange half capacity
+			T[] newItems = randomItemGenerator(RNG, maxCapacity / 2);
+			expected.AddRangeSequentially(newItems);
+			list.AddRange(newItems);
+			Assert.AreEqual(expected, list);
+
+			// Test 7: Enumerator consistency
+			using (var expectedEnumerator = expected.GetEnumerator())
+			using (var enumerator = list.GetEnumerator()) {
+
+				Assert.AreEqual(expectedEnumerator.Current, enumerator.Current);
+				bool expectedMoveNext;
+				do {
+					expectedMoveNext = expectedEnumerator.MoveNext();
+					var moveNext = enumerator.MoveNext();
+					Assert.AreEqual(expectedMoveNext, moveNext);
+					if (expectedMoveNext)
+						Assert.AreEqual(expectedEnumerator.Current, enumerator.Current);
+				} while (expectedMoveNext);
+			}
+
+			// Test 7: Clear
+			expected.Clear();
+			list.Clear();
+			Assert.AreEqual(expected, list);
+
+			// Test 8: Iterate with random mutations
 			for (var i = 0; i < iterations; i++) {
 
 				// add a random amount
 				var remainingCapacity = maxCapacity - list.Count;
 				var newItemsCount = RNG.Next(0, remainingCapacity + 1);
-				T[] newItems = randomItemGenerator(RNG, newItemsCount);
+				newItems = randomItemGenerator(RNG, newItemsCount);
 				list.AddRange(newItems);
 				expected.AddRangeSequentially(newItems);
 				Assert.AreEqual(expected, list);

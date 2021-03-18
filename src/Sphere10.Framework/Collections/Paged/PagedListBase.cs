@@ -194,15 +194,22 @@ namespace Sphere10.Framework {
 
 		public override IEnumerator<TItem> GetEnumerator() {
 			var currentVersion = Version;
+			IDisposable lastScope = default;
 			return
 				InternalPages
 					.SelectMany(p => {
-						using (EnterOpenPageScope(p)) {
-							return p;
-						}
+						lastScope?.Dispose();
+						lastScope = EnterOpenPageScope(p);
+						return p;
 					})
 					.GetEnumerator()
-					.OnMoveNext(() => CheckVersion(currentVersion));
+					.OnMoveNext(
+						preMoveNextAction:() => CheckVersion(currentVersion),
+						postMoveNextAction: (result) => {
+							if (!result)
+								lastScope?.Dispose(); // last scope
+						}
+					);
 		}
 
 		protected abstract IPage<TItem> NewPageInstance(int pageNumber);

@@ -5,41 +5,31 @@ using System.IO;
 namespace Sphere10.Framework.Collections.StreamMapped
 {
 
-    internal class FixedSizeStreamPage<TItem> : PageBase<TItem>
+    internal class FixedSizeStreamPage<TItem> : StreamPageBase<TItem>
     {
-        private readonly StreamMappedList<TItem> _parent;
         private readonly int _item0Offset;
         private int _version;
 
-        public FixedSizeStreamPage(StreamMappedList<TItem> parent)
+        public FixedSizeStreamPage(StreamMappedList<TItem> parent) : base(parent)
         {
-            _parent = parent;
             _version = 0;
 
-            if (!_parent.Serializer.IsFixedSize)
+            if (!Serializer.IsFixedSize)
             {
                 throw new ArgumentException(
                     $"Parent list's serializer is not fixed size. {nameof(FixedSizeStreamPage<TItem>)} only supports fixed sized items.",
                     nameof(parent));
             }
 
-            _item0Offset = _parent.IncludeListHeader ? StreamMappedList<TItem>.ListHeaderSize : 0;
+            _item0Offset = Parent.IncludeListHeader ? StreamMappedList<TItem>.ListHeaderSize : 0;
+            
             base.State = PageState.Loaded;
             base.StartIndex = 0;
-            base.EndIndex = MaxItems - 1;
+            
+            StartPosition = _item0Offset;
         }
-
-        protected Stream Stream => _parent.Stream;
-
-        protected EndianBinaryReader Reader => _parent.Reader;
-
-        protected int ItemSize => _parent.Serializer.FixedSize;
-
-        protected IObjectSerializer<TItem> Serializer => _parent.Serializer;
-
-        protected EndianBinaryWriter Writer => _parent.Writer;
-
-        protected int MaxItems => _parent.PageSize / ItemSize;
+        
+        protected int MaxItems => Parent.PageSize / ItemSize;
         
         public override int Count => (int)(Stream.Length - _item0Offset) / ItemSize;
 

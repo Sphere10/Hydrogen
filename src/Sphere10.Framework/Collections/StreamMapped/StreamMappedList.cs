@@ -183,10 +183,9 @@ namespace Sphere10.Framework {
 		{
 			base.OnPageDeleted(page);
 
-			if (Type is StreamMappedListType.Dynamic)
+			if (page is StreamPageBase<TItem> streamPage)
 			{
-				var streamedPage = (DynamicStreamPage<TItem>) page;
-				Stream.SetLength(page.Number > 0 ? streamedPage.StartPosition : 0L);
+				Stream.SetLength(page.Number > 0 ? streamPage.StartPosition : 0L);
 			}
 		}
 

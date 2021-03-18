@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Sphere10.Framework.Collections.StreamMapped;
 
 namespace Sphere10.Framework {
 	/// Page Header Format
@@ -13,7 +14,7 @@ namespace Sphere10.Framework {
 	///	Object 1 Size
 	///	...
 	///	Object N Size
-	internal class DynamicStreamPage<TItem> : PageBase<TItem> {
+	internal class DynamicStreamPage<TItem> : StreamPageBase<TItem> {
 		private const int Page0Offset = 256;
 		private const int CountFieldOffset = 0;
 		private const int CountFieldSize = sizeof(uint);
@@ -41,7 +42,7 @@ namespace Sphere10.Framework {
 			: this(previousPage.StartPosition, previousPage.NextPagePosition, previousPage._parent) {
 		}
 
-		private DynamicStreamPage(long previousPagePosition, long startPosition, StreamMappedList<TItem> parent) {
+		private DynamicStreamPage(long previousPagePosition, long startPosition, StreamMappedList<TItem> parent) : base(parent) {
 			Guard.ArgumentNotNull(parent, nameof(parent));
 			Guard.ArgumentNotNull(parent.Stream, nameof(parent.Stream));
 			Guard.ArgumentInRange(startPosition, Page0Offset, parent.Stream.Length, nameof(startPosition));
@@ -76,7 +77,6 @@ namespace Sphere10.Framework {
 
 		}
 
-		public long StartPosition { get; }
 
 		public override int Count {
 			get => base.Count;
@@ -119,14 +119,6 @@ namespace Sphere10.Framework {
 				Writer.Write((ulong)value);
 			}
 		}
-
-		protected Stream Stream => _parent.Stream;
-
-		protected EndianBinaryReader Reader => _parent.Reader;
-
-		protected EndianBinaryWriter Writer => _parent.Writer;
-
-		protected IObjectSerializer<TItem> Serializer => _parent.Serializer;
 
 		public void Open() {
 			// Calculate the object offsets (this array is nullified on close to save memory 

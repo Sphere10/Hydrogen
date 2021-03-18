@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Sphere10.Framework.Collections {
+namespace Sphere10.Framework {
 
 	/// <summary>
 	/// A list implementation that implements inserts/deletes/adds as updates over an underlying fixed-size list. It works by shuffling
@@ -14,15 +14,25 @@ namespace Sphere10.Framework.Collections {
 	/// <see cref="Contains"/> and <see cref="ContainsRange"/> are overriden and implemented based on <see cref="IndexOf"/> and <see cref="IndexOfRange"/> in order to ensure only
 	/// the logical objects are searched (avoids false positives). Same for <see cref="Remove"/> and <see cref="RemoveRange(int,int)"/>.
 	/// </remarks>
-	public class AllocatedList<TItem> : ExtendedListDecorator<TItem> {
+	public class PreAllocatedList<TItem> : ExtendedListDecorator<TItem> {
 
 		private int _count;
+
+
+		/// <summary>
+		/// Creates a PreAllocatedList.
+		/// </summary>
+		/// <param name="maxCount">Number of items to pre-allocate.</param>
+		public PreAllocatedList(int maxCount)
+			: this(new ExtendedList<TItem>(Tools.Array.Gen<TItem>(maxCount, default))) {
+		}
+
 
 		/// <summary>
 		/// Constructor.
 		/// </summary>
-		/// <param name="fixedSizeStore">The underlying list which remains same size. List operations are implemented as updates of <see cref="fixedSizeStore"/>.</param>
-		public AllocatedList(IExtendedList<TItem> fixedSizeStore)
+		/// <param name="fixedSizeStore">This is the pre-allocated list that is used to add/update/insert/remote from. This list is never changed and only mutated via update operations.</param>
+		public PreAllocatedList(IExtendedList<TItem> fixedSizeStore)
 			: base(fixedSizeStore) {
 			_count = 0;
 		}

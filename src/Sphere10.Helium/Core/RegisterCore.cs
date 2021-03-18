@@ -24,8 +24,14 @@ namespace Sphere10.Helium.Core
 
         public InitResultDto InitializeHelium()
         {
+            if ($"Error in Registering and Instantiating types" is string)
+            {
+                return new InitResultDto(false, "All the errors go here.");
+            }
 
 
+
+            return new InitResultDto(true, string.Empty);
 
             throw new NotImplementedException();
         }

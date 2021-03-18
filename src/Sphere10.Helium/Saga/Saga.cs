@@ -9,6 +9,8 @@ namespace Sphere10.Helium.Saga
         private IBus _bus;
 
         public ISagaDataForSaga Entity { get; set; }
+        
+        public bool Completed { get; private set; }
 
         protected Saga(IBus bus)
         {
@@ -23,30 +25,29 @@ namespace Sphere10.Helium.Saga
             set => _bus = value;
         }
 
-        public bool Completed { get; private set; }
-
-        private void VerifySagaCanHandleTimeout<TTimeoutMessageType>(TTimeoutMessageType timeoutMessage)
+        private void VerifySagaCanHandleTimeout<T>(T timeoutMessage) where T : IMessage
         {
-            if (!(timeoutMessage is IHandleTimeout<TTimeoutMessageType>))
+            if (!(timeoutMessage is IHandleTimeout<T>))
             {
                 throw new Exception(
-                    $"'{(object)GetType().Name}' Cannot proceed! Timeout for '{(object)timeoutMessage}' must implement 'IHandleTimeouts<{(object)typeof(TTimeoutMessageType).FullName}>'");
+                    $"'{(object)GetType().Name}' Cannot proceed! Timeout for '{(object)timeoutMessage}' must implement 'IHandleTimeouts<{(object)typeof(T).FullName}>'");
             }
         }
 
-        protected void RequestTimeout<TTimeoutMessageType>(DateTime at, IMessage timeoutMessage)
+        protected void RequestTimeout<T>(DateTime at, IMessage timeoutMessage) where T: IMessage
         {
-            if (at.Kind == DateTimeKind.Unspecified) throw new InvalidOperationException("The Kind for DateTime 'at' must be specified. Cannot Proceed!");
+            if (at.Kind == DateTimeKind.Unspecified) throw new InvalidOperationException("The DateTime 'at' must be specified: Local, UTC etc. Cannot Proceed!");
 
             VerifySagaCanHandleTimeout(timeoutMessage);
 
             Bus.RegisterTimeout(at, timeoutMessage);
         }
 
-        protected void RequestTimeout<IMessage>(TimeSpan within, IMessage timeoutMessage)
+        protected void RequestTimeout<T>(TimeSpan within, T timeoutMessage) where T : IMessage
         {
-            VerifySagaCanHandleTimeout<IMessage>(timeoutMessage);
-            var callback = Bus.RegisterTimeout(within, timeoutMessage as Message.IMessage);
+            VerifySagaCanHandleTimeout(timeoutMessage);
+            
+            Bus.RegisterTimeout(within, timeoutMessage);
         }
         
         protected virtual void ReplyToOriginator(IMessage message)
@@ -57,6 +58,6 @@ namespace Sphere10.Helium.Saga
             //BusSetup.SendAndForget(Entity.Originator, message, new NotI{} as IMessageHeader );
         }
 
-        protected virtual void MarkAsComplete() => Completed = true;
+        protected void MarkAsComplete() => Completed = true;
     }
 }

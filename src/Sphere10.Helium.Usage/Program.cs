@@ -1,4 +1,5 @@
 ﻿using Sphere10.Helium.Bus;
+using Sphere10.Helium.Endpoint;
 using Sphere10.Helium.Message;
 
 namespace Sphere10.Helium.Usage

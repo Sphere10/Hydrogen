@@ -3,7 +3,7 @@ using System.Linq.Expressions;
 
 namespace Sphere10.Helium.Saga
 {
-    public class SagaPropertyMapper<TSagaData> where TSagaData : ISagaDataForSaga
+    public class SagaPropertyMapper<T> where T : ISagaDataForSaga
     {
         private readonly IFindSaga _sagaFindMap;
 
@@ -12,9 +12,9 @@ namespace Sphere10.Helium.Saga
             _sagaFindMap = sagaFindMap;
         }
 
-        public ToSagaExpression<TSagaData, TMessage> ConfigureMapping<TMessage>(Expression<Func<TMessage, object>> messageProperty)
+        public ToSagaExpression<T, TMessage> ConfigureMapping<TMessage>(Expression<Func<TMessage, object>> messageProperty)
         {
-            return new ToSagaExpression<TSagaData, TMessage>(_sagaFindMap, messageProperty);
+            return new ToSagaExpression<T, TMessage>(_sagaFindMap, messageProperty);
         }
     }
 }

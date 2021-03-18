@@ -10,7 +10,8 @@ namespace Sphere10.Helium.Usage
         IStartSaga<BlueSagaStart>,
         IEndSaga<BlueSagaEnd>,
         IHandleMessage<BlueSagaWorkflow1>,
-        IHandleMessage<BlueSagaWorkflow2>
+        IHandleMessage<BlueSagaWorkflow2>,
+        IHandleTimeout<BlueSagaWorkflow3>
     {
         private readonly IBus _bus;
 
@@ -18,7 +19,7 @@ namespace Sphere10.Helium.Usage
         {
             _bus = bus;
         }
-        
+
         protected override void ConfigureHowToFindSaga(SagaPropertyMapper<BlueSagaData> mapper)
         {
             mapper.ConfigureMapping<BlueSagaStart>(m => m.Id).ToSaga(s => s.Id);
@@ -37,6 +38,8 @@ namespace Sphere10.Helium.Usage
 
         public void Handle(BlueSagaEnd message)
         {
+            MarkAsComplete();
+
             throw new NotImplementedException();
         }
 
@@ -46,6 +49,11 @@ namespace Sphere10.Helium.Usage
         }
 
         public void Handle(BlueSagaWorkflow2 message)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Timeout(BlueSagaWorkflow3 state)
         {
             throw new NotImplementedException();
         }
@@ -76,6 +84,11 @@ namespace Sphere10.Helium.Usage
     }
 
     public record BlueSagaWorkflow2 : IMessage
+    {
+        public string Id { get; set; }
+    }
+
+    public record BlueSagaWorkflow3 : IMessage
     {
         public string Id { get; set; }
     }

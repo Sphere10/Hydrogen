@@ -1,6 +1,6 @@
 ﻿using Sphere10.Helium.Queue;
 
-namespace Sphere10.Helium.Bus
+namespace Sphere10.Helium.Endpoint
 {
     public interface IEndpointConfiguration
     {
@@ -15,6 +15,7 @@ namespace Sphere10.Helium.Bus
         public string FileName { get; set; }
 
         public QueueConfigDto QueueConfigDto { get; set; }
-        
+
+        public int RouteQueueReadRatePerMinute { get; set; }
     }
 }

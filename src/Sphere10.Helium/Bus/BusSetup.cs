@@ -1,4 +1,5 @@
 ﻿using System;
+using Sphere10.Helium.Endpoint;
 
 namespace Sphere10.Helium.Bus
 {

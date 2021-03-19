@@ -6,9 +6,9 @@ using System.Text;
 namespace Sphere10.Framework {
 
 	/// <summary>
-	/// A list implementation that implements inserts/deletes/adds as updates over an underlying fixed-size list. It works by shuffling
-	/// objects around and maintaining it's own count. The only mutation methods called on the decorated inner list are <seealso  cref="IExtendedList{T}.Update"/> and <see cref="IExtendedList{T}.UpdateRange"/>
-	/// it's own count and shuffles objects around using updates. The algorithms are optimized to avoid loading objects in memory.
+	/// A list implementation that implements inserts/deletes/appends as updates over an underlying pre-allocated list. This class
+	/// converts an update-only list into an appendable, insertable and deletable list. The algorithms are optimized to avoid loading objects in memory
+	/// and thus suitable for arbitrarily large lists.
 	/// </summary>
 	/// <remarks>
 	/// <see cref="Contains"/> and <see cref="ContainsRange"/> are overriden and implemented based on <see cref="IndexOf"/> and <see cref="IndexOfRange"/> in order to ensure only

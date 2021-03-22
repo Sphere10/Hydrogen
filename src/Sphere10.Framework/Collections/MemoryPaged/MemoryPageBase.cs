@@ -4,16 +4,17 @@ using System.Linq;
 
 namespace Sphere10.Framework {
     public abstract class MemoryPageBase<TItem> : PageBase<TItem>, IMemoryPage<TItem> {
-		private readonly IObjectSizer<TItem> _sizer;
 		internal readonly IExtendedList<TItem> MemoryStore;
 
 		protected MemoryPageBase(int maxSize, IObjectSizer<TItem> sizer, IExtendedList<TItem> store) {
 			MaxSize = maxSize;
 			MemoryStore = store;
-			_sizer = sizer;
+			Sizer = sizer;
 		}
 
 		public int MaxSize { get; set; }
+		
+		public IObjectSizer<TItem> Sizer { get; }
 
 		public void Save() {
 			CheckPageState(PageState.Loaded);
@@ -56,16 +57,16 @@ namespace Sphere10.Framework {
 
 		protected override int AppendInternal(TItem[] items, out int newItemsSpace) {
 			TItem[] appendItems;
-			if (_sizer.IsFixedSize) {
+			if (Sizer.IsFixedSize) {
 				// Optimized for constant sized objects (primitive types like bytes)
-				var maxAppendCount = (MaxSize - Size) / _sizer.FixedSize;
+				var maxAppendCount = (MaxSize - Size) / Sizer.FixedSize;
 				appendItems = items.Take(maxAppendCount).ToArray();
-				newItemsSpace = appendItems.Length * _sizer.FixedSize;
+				newItemsSpace = appendItems.Length * Sizer.FixedSize;
 			} else {
 				// Used for variable length objects
 				var newSpace = 0;
 				appendItems = items.TakeWhile(item => {
-					var itemSize = _sizer.CalculateSize(item);
+					var itemSize = Sizer.CalculateSize(item);
 					if (Size + newSpace + itemSize > MaxSize)
 						return false;
 					newSpace += itemSize;
@@ -78,13 +79,13 @@ namespace Sphere10.Framework {
 		}
 
 		protected override void UpdateInternal(int index, TItem[] items, out int oldItemsSpace, out int newItemsSpace) {
-			if (_sizer.IsFixedSize) {
-				oldItemsSpace = _sizer.FixedSize * items.Length;
+			if (Sizer.IsFixedSize) {
+				oldItemsSpace = Sizer.FixedSize * items.Length;
 				newItemsSpace = oldItemsSpace;
 				MemoryStore.UpdateRange(index - StartIndex, items);
 			} else {
 				oldItemsSpace = MeasureConsumedSpace(index, items.Length, false, out _);
-				newItemsSpace = items.Select(_sizer.CalculateSize).Sum();
+				newItemsSpace = items.Select(Sizer.CalculateSize).Sum();
 				MemoryStore.UpdateRange(index - StartIndex, items);
 			}
 		}
@@ -97,11 +98,11 @@ namespace Sphere10.Framework {
 
 		protected virtual int MeasureConsumedSpace(int index, int count, bool fetchIndividualSizes, out int[] sizes) {
 			CheckRange(index, count);
-			if (_sizer.IsFixedSize) {
-				sizes = fetchIndividualSizes ? Tools.Array.Gen(count, _sizer.FixedSize) : null;
-				return _sizer.FixedSize * count;
+			if (Sizer.IsFixedSize) {
+				sizes = fetchIndividualSizes ? Tools.Array.Gen(count, Sizer.FixedSize) : null;
+				return Sizer.FixedSize * count;
 			} else {
-				sizes = MemoryStore.ReadRange(index - StartIndex, count).Select(_sizer.CalculateSize).ToArray();
+				sizes = MemoryStore.ReadRange(index - StartIndex, count).Select(Sizer.CalculateSize).ToArray();
 				var totalSize = sizes.Sum();
 				if (!fetchIndividualSizes)
 					sizes = null;

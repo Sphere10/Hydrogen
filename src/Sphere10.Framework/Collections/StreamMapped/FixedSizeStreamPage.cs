@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace Sphere10.Framework.Collections.StreamMapped
 {
@@ -64,6 +65,12 @@ namespace Sphere10.Framework.Collections.StreamMapped
 
         protected override int AppendInternal(TItem[] items, out int newItemsSize)
         {
+            if (!items.Any())
+            {
+                newItemsSize = items.Length;
+                return items.Length;
+            }
+            
             if (items.Length + Count > MaxItems)
             {
                 throw new InvalidOperationException("Unable to append items, Max Items of page will be exceeded.");
@@ -82,6 +89,9 @@ namespace Sphere10.Framework.Collections.StreamMapped
 
         protected override void UpdateInternal(int index, TItem[] items, out int oldItemsSize, out int newItemsSize)
         {
+            CheckPageState(PageState.Loaded);
+            Guard.Ensure(index + items.Length <= Count, "Update outside bounds of list"); 
+            
             int itemsSize = items.Length * ItemSize;
             index = index * ItemSize + _item0Offset;
             

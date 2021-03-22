@@ -44,8 +44,8 @@ namespace Sphere10.Framework {
 			public ReadOnlySpan<byte> ReadSpan(int index, int count) 
 				=> PagedBufferImplementationHelper.ReadPageSpan(this, (MemoryBuffer)MemoryStore, index, count);
 
-			public void WriteSpan(int index, ReadOnlySpan<byte> items, out ReadOnlySpan<byte> overflow)
-				=> PagedBufferImplementationHelper.WriteSpan(this, index, items, out overflow);
+			public bool WriteSpan(int index, ReadOnlySpan<byte> items, out ReadOnlySpan<byte> overflow)
+				=> PagedBufferImplementationHelper.WriteSpan(this, MemoryStore as MemoryBuffer, index, items, out overflow);
 
 			protected override void SaveInternal(IExtendedList<byte> memoryPage, Stream stream) {
 				var memBuff = (MemoryBuffer)memoryPage;

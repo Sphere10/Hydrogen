@@ -34,9 +34,9 @@ namespace Sphere10.Framework {
 			IsLoading = false;
 			InternalPages = new ExtendedList<IPage<TItem>>();
 
-			InternalMethods = new PagedListInternalMethods<TItem>(CheckRequiresLoad, CheckRange, EnterOpenPageScope,
-				GetPageSegments, NotifyAccessing, NotifyAccessed, NotifyPageAccessing, NotifyPageAccessed,
-				NotifyPageReading, NotifyPageRead);
+			InternalMethods = new PagedListInternalMethods<TItem>(UpdateVersion, CheckRequiresLoad, CheckRange, EnterOpenPageScope,
+				GetPageSegments, () => InternalPages, CreateNextPage, NotifyAccessing, NotifyAccessed, NotifyPageAccessing, NotifyPageAccessed, 
+				NotifyPageReading, NotifyPageRead, NotifyPageWriting, NotifyPageWrite);
 		}
 
 		public override int Count => InternalPages.Sum(p => p.Count);
@@ -47,7 +47,7 @@ namespace Sphere10.Framework {
 
 		protected bool IsLoading { get; private set; }
 
-		protected internal IPagedListInternalMethods<TItem> InternalMethods { get; }
+		protected IPagedListInternalMethods<TItem> InternalMethods { get; }
 
 		public void Load() {
 			NotifyLoading();
@@ -256,7 +256,7 @@ namespace Sphere10.Framework {
 			NotifyPageAccessed(page);
 		}
 
-		protected internal IEnumerable<Tuple<IPage<TItem>, int, int>> GetPageSegments(int startIndex, int count) {
+		protected IEnumerable<Tuple<IPage<TItem>, int, int>> GetPageSegments(int startIndex, int count) {
 			if (count == 0)
 				yield break;
 
@@ -289,12 +289,12 @@ namespace Sphere10.Framework {
 
 		public abstract IDisposable EnterOpenPageScope(IPage<TItem> page);
 
-		protected internal void CheckRequiresLoad() {
+		protected void CheckRequiresLoad() {
 			if (RequiresLoad)
 				throw new InvalidOperationException("File exists but has not been loaded");
 		}
 
-		protected internal void CheckRange(int index, int count) {
+		protected void CheckRange(int index, int count) {
 			Guard.Argument(InternalPages.Count > 0, nameof(index), "No pages");
 			Guard.Argument(count >= 0, nameof(index), "Must be greater than or equal to 0");
 			var startIX = InternalPages.First().StartIndex;
@@ -349,7 +349,7 @@ namespace Sphere10.Framework {
 		protected virtual void OnPageDeleted(IPage<TItem> page) {
 		}
 
-		protected internal void NotifyAccessing() {
+		protected void NotifyAccessing() {
 			if (SuppressNotifications)
 				return;
 
@@ -357,7 +357,7 @@ namespace Sphere10.Framework {
 			Accessing?.Invoke(this);
 		}
 
-		protected internal void NotifyAccessed() {
+		protected void NotifyAccessed() {
 			if (SuppressNotifications)
 				return;
 
@@ -381,7 +381,7 @@ namespace Sphere10.Framework {
 			Loaded?.Invoke(this);
 		}
 
-		protected internal void NotifyPageAccessing(IPage<TItem> page) {
+		protected void NotifyPageAccessing(IPage<TItem> page) {
 			if (SuppressNotifications)
 				return;
 
@@ -389,7 +389,7 @@ namespace Sphere10.Framework {
 			PageAccessing?.Invoke(this, page);
 		}
 
-		protected internal void NotifyPageAccessed(IPage<TItem> page) {
+		protected void NotifyPageAccessed(IPage<TItem> page) {
 			if (SuppressNotifications)
 				return;
 
@@ -429,7 +429,7 @@ namespace Sphere10.Framework {
 			PageWrite?.Invoke(this, page);
 		}
 
-		internal void NotifyPageReading(IPage<TItem> page) {
+		protected void NotifyPageReading(IPage<TItem> page) {
 			if (SuppressNotifications)
 				return;
 
@@ -437,7 +437,7 @@ namespace Sphere10.Framework {
 			PageReading?.Invoke(this, page);
 		}
 
-		internal void NotifyPageRead(IPage<TItem> page) {
+		protected void NotifyPageRead(IPage<TItem> page) {
 			if (SuppressNotifications)
 				return;
 

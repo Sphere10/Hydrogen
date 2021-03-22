@@ -95,6 +95,20 @@ namespace Sphere10.Framework {
 			_length += span.Length;
 		}
 
+		public void Write(int index, ReadOnlySpan<byte> span)
+		{
+			int newBytesCount = _length - index + span.Length;
+			
+			GrowSpaceIfRequired(newBytesCount);
+			UpdateVersion();
+			if (span.Length == 1)
+				// single access optimization
+				_internalArray[_length] = span[0];
+			span.CopyTo(_internalArray.AsSpan(index, span.Length));
+			
+			_length += newBytesCount;
+		}
+
 		public void ExpandTo(int totalBytes) {
 			Guard.ArgumentInRange(totalBytes, _length, MaxCapacity, nameof(totalBytes), "Allocated space would either not contain existing items or exceed max capacity");
 			var newBytes = totalBytes - _internalArray.Length;

@@ -22,7 +22,7 @@ namespace Sphere10.Framework.Collections.StreamMapped
         public int Serialize(ItemListing @object, EndianBinaryWriter writer)
         {
             writer.Write(@object.Size);
-            writer.Write(@object.StartIndex);
+            writer.Write(@object.ClusterStartIndex);
 
             return sizeof(int) + sizeof(int);
         }
@@ -34,7 +34,7 @@ namespace Sphere10.Framework.Collections.StreamMapped
 
             return new ItemListing
             {
-                StartIndex = startIndex,
+                ClusterStartIndex = startIndex,
                 Size = itemSize
             };
         }

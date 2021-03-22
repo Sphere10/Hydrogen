@@ -114,7 +114,7 @@ namespace Sphere10.Framework.Collections
                 listings.Add(new ItemListing
                 {
                     Size = data.Length,
-                    StartIndex = numbers[0]
+                    ClusterStartIndex = numbers[0]
                 });
             }
 
@@ -176,7 +176,7 @@ namespace Sphere10.Framework.Collections
                 listings.Add(new ItemListing
                 {
                     Size = data.Length,
-                    StartIndex = numbers[0]
+                    ClusterStartIndex = numbers[0]
                 });
             }
 
@@ -215,7 +215,7 @@ namespace Sphere10.Framework.Collections
         {
             return _listings.OrderByDescending(x => x.Size)
                 .Where(x => x.Size != 0)
-                .Select(x => (x.StartIndex, x.Size));
+                .Select(x => (StartIndex: x.ClusterStartIndex, x.Size));
         }
     }
 

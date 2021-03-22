@@ -54,16 +54,6 @@ namespace Sphere10.Framework.Tests
         }
 
         [Test]
-        public void Enumerate()
-        {
-            ExtendedList<int> list = new ExtendedList<int>(Enumerable.Repeat(9, 100).ToArray());
-            PreAllocatedList<int> allocatedList = new PreAllocatedList<int>(list);
-            Assert.AreEqual(list, allocatedList.ToList());
-            
-        }
-
-
-        [Test]
         [Pairwise]
         public void IntegrationTests([Values(0, 1, 793, 2000)] int maxCapacity) {
             var fixedStore = new ExtendedList<int>(Tools.Array.Gen(maxCapacity, 0));

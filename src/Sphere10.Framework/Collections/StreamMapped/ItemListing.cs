@@ -1,13 +1,12 @@
 ﻿using System.Runtime.InteropServices;
 
-namespace Sphere10.Framework.Collections
-{
-    [StructLayout(LayoutKind.Sequential)]
-    public struct ItemListing
-    {
-        public int ClusterStartIndex { get; set; }
+namespace Sphere10.Framework.Collections {
 
-        public int Size { get; set; }
-    }
+	[StructLayout(LayoutKind.Sequential)]
+	public struct ItemListing {
+		public int ClusterStartIndex { get; set; }
+
+		public int Size { get; set; }
+	}
 
 }

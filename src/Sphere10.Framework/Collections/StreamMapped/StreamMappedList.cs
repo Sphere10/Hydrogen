@@ -69,13 +69,16 @@ namespace Sphere10.Framework {
 
 		public StreamMappedList(IObjectSerializer<TItem> serializer, Stream stream) : this(
 			serializer.IsFixedSize ? StreamMappedListType.FixedSize : StreamMappedListType.Dynamic,
-			 serializer,
-			stream, serializer.IsFixedSize ? int.MaxValue : DefaultPageSize) {
+			serializer,
+			stream,
+			serializer.IsFixedSize ? int.MaxValue : DefaultPageSize) {
 		}
 
 		public StreamMappedList(IObjectSerializer<TItem> serializer, Stream stream, int pageSize)
-			: this(serializer.IsFixedSize ? StreamMappedListType.FixedSize : StreamMappedListType.Dynamic, serializer,
-				stream, pageSize) {
+			: this(serializer.IsFixedSize ? StreamMappedListType.FixedSize : StreamMappedListType.Dynamic,
+				serializer,
+				stream,
+				pageSize) {
 		}
 
 		public int PageSize { get; }
@@ -94,15 +97,17 @@ namespace Sphere10.Framework {
 
 		public override IDisposable EnterOpenPageScope(IPage<TItem> page) {
 			switch (Type) {
-				case StreamMappedListType.Dynamic: {
-						var streamedPage = (DynamicStreamPage<TItem>)page;
-						streamedPage.Open();
+				case StreamMappedListType.Dynamic:
+				{
+					var streamedPage = (DynamicStreamPage<TItem>)page;
+					streamedPage.Open();
 
-						return Tools.Scope.ExecuteOnDispose(streamedPage.Close);
-					}
-				case StreamMappedListType.FixedSize: {
-						return Tools.Scope.ExecuteOnDispose(() => { }); //no-op
-					}
+					return Tools.Scope.ExecuteOnDispose(streamedPage.Close);
+				}
+				case StreamMappedListType.FixedSize:
+				{
+					return Tools.Scope.ExecuteOnDispose(() => { }); //no-op
+				}
 				default:
 					throw new ArgumentOutOfRangeException();
 			}
@@ -110,16 +115,16 @@ namespace Sphere10.Framework {
 
 		protected override IPage<TItem>[] LoadPages() {
 			if (IncludeListHeader) {
-                    				Stream.Seek(0L, SeekOrigin.Begin);
-                    				var magic = Reader.ReadUInt32();
-                    				if (magic != MagicID)
-                    					throw new InvalidDataFormatException($"Incorrect or missing MagicID field");
-                    				var version = Reader.ReadUInt16();
-                    				if (version != 1)
-                    					throw new NotSupportedException($"Version {version} data format not supported");
-                    				var traits = Reader.ReadUInt32();
-                    				if (traits != 0)
-                    					throw new NotSupportedException($"Unrecognized traits {traits}");
+				Stream.Seek(0L, SeekOrigin.Begin);
+				var magic = Reader.ReadUInt32();
+				if (magic != MagicID)
+					throw new InvalidDataFormatException($"Incorrect or missing MagicID field");
+				var version = Reader.ReadUInt16();
+				if (version != 1)
+					throw new NotSupportedException($"Version {version} data format not supported");
+				var traits = Reader.ReadUInt32();
+				if (traits != 0)
+					throw new NotSupportedException($"Unrecognized traits {traits}");
 			}
 
 			// Load pages if any
@@ -151,7 +156,7 @@ namespace Sphere10.Framework {
 
 			if (page is StreamPageBase<TItem> streamPage)
 				Stream.SetLength(page.Number > 0 ? streamPage.StartPosition : 0L);
-			
+
 		}
 
 		protected override IPage<TItem> NewPageInstance(int pageNumber) =>
@@ -174,7 +179,6 @@ namespace Sphere10.Framework {
 			Writer.Write(Tools.Array.Gen(ListHeaderSize - (int)Stream.Position, (byte)0)); // padding
 			Debug.Assert(Stream.Position == ListHeaderSize);
 		}
-
 	}
 
 }

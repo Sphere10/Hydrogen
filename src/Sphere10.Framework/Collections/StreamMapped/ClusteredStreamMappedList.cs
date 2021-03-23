@@ -4,349 +4,301 @@ using System.IO;
 using System.Linq;
 using Sphere10.Framework.Collections.StreamMapped;
 
-namespace Sphere10.Framework.Collections
-{
+namespace Sphere10.Framework.Collections {
 
-    // this is like a StreamMappedList except it maps the object over non-contiguous sectors instead of a contiguous stream.
-    // It uses a StreamMappedList of sectors under the hood.
-    public class ClusteredStreamMappedList<T> : RangedListBase<T>
-    {
-        private const int HeaderSize = 256;
-        
-        private readonly int _clusterSize;
-        private readonly int _storageClusterCount;
-        private readonly int _maxItems;
-        private readonly IObjectSerializer<T> _serializer;
-        private readonly Stream _stream;
+	// this is like a StreamMappedList except it maps the object over non-contiguous sectors instead of a contiguous stream.
+	// It uses a StreamMappedList of sectors under the hood.
+	public class ClusteredStreamMappedList<T> : RangedListBase<T> {
+		private const int HeaderSize = 256;
 
-        private StreamMappedList<Cluster> _clusters;
-        private IExtendedList<bool> _clusterStatus;
-        private IExtendedList<ItemListing> _listings;
+		private readonly int _clusterSize;
+		private readonly int _storageClusterCount;
+		private readonly int _maxItems;
+		private readonly IObjectSerializer<T> _serializer;
+		private readonly Stream _stream;
 
-        public ClusteredStreamMappedList(int clusterSize,
-            int maxItems,
-            int storageClusterCount,
-            IObjectSerializer<T> serializer,
-            Stream stream)
-        {
-            _clusterSize = clusterSize;
-            _storageClusterCount = storageClusterCount;
-            _maxItems = maxItems;
+		private StreamMappedList<Cluster> _clusters;
+		private IExtendedList<bool> _clusterStatus;
+		private IExtendedList<ItemListing> _listings;
 
-            _serializer = serializer;
-            _stream = stream;
+		public ClusteredStreamMappedList(int clusterSize,
+			int maxItems,
+			int storageClusterCount,
+			IObjectSerializer<T> serializer,
+			Stream stream) {
+			_clusterSize = clusterSize;
+			_storageClusterCount = storageClusterCount;
+			_maxItems = maxItems;
 
-            if (!_serializer.IsFixedSize)
-            {
-                throw new ArgumentException("Non fixed sized items not supported");
-            }
+			_serializer = serializer;
+			_stream = stream;
 
-            Initialize();
-        }
+			if (!_serializer.IsFixedSize) {
+				throw new ArgumentException("Non fixed sized items not supported");
+			}
 
-        public override int Count => _listings.Count;
+			Initialize();
+		}
 
-        public int Capacity => _maxItems;
+		public override int Count => _listings.Count;
 
-        public override void AddRange(IEnumerable<T> items)
-        {
-            var itemsArray = items as T[] ?? items.ToArray();
-            
-            if (!itemsArray.Any())
-            {
-                return;
-            }
+		public int Capacity => _maxItems;
 
-            foreach (T item in itemsArray)
-            {
-                int clusterStartIndex  = AddItemToClusters(item);
+		public override void AddRange(IEnumerable<T> items) {
+			var itemsArray = items as T[] ?? items.ToArray();
 
-                _listings.Add(new ItemListing
-                {
-                    Size = _serializer.CalculateSize(item),
-                    ClusterStartIndex = clusterStartIndex
-                });
-            }
+			if (!itemsArray.Any()) {
+				return;
+			}
 
-            UpdateCountHeader();
-        }
+			foreach (T item in itemsArray) {
+				int clusterStartIndex = AddItemToClusters(item);
 
-        public override IEnumerable<int> IndexOfRange(IEnumerable<T> items)
-        {
-            T[] itemsArray = items as T[] ?? items.ToArray();
-            int[] results = new int[itemsArray.Length];
+				_listings.Add(new ItemListing {
+					Size = _serializer.CalculateSize(item),
+					ClusterStartIndex = clusterStartIndex
+				});
+			}
 
-            foreach ((ItemListing listing, int i) in _listings.WithIndex().Where(x => x.Item1.Size != 0))
-            {
-                T item = ReadItemFromClusters(listing.ClusterStartIndex, listing.Size);
-                
-                foreach (var (t, index) in itemsArray.WithIndex())
-                {
-                    if (EqualityComparer<T>.Default.Equals(t, item))
-                    {
-                        results[index] = i;
-                    }
-                }
-            }
+			UpdateCountHeader();
+		}
 
-            return results;
-        }
+		public override IEnumerable<int> IndexOfRange(IEnumerable<T> items) {
+			T[] itemsArray = items as T[] ?? items.ToArray();
+			int[] results = new int[itemsArray.Length];
 
-        public override IEnumerable<T> ReadRange(int index, int count)
-        {
-            for (int i = 0; i < count; i++)
-            {
-                var listing = _listings[index + i];
-                yield return ReadItemFromClusters(listing.ClusterStartIndex, listing.Size);
-            }
-        }
+			foreach ((ItemListing listing, int i) in _listings.WithIndex().Where(x => x.Item1.Size != 0)) {
+				T item = ReadItemFromClusters(listing.ClusterStartIndex, listing.Size);
 
-        public override void UpdateRange(int index, IEnumerable<T> items)
-        {
-            T[] itemsArray = items.ToArray();
+				foreach (var (t, index) in itemsArray.WithIndex()) {
+					if (EqualityComparer<T>.Default.Equals(t, item)) {
+						results[index] = i;
+					}
+				}
+			}
 
-            List<ItemListing> itemListings = new List<ItemListing>();
-            for (int i = 0; i < itemsArray.Length; i++)
-            {
-                ItemListing listing = _listings[index + i];
-                RemoveItemFromClusters(listing.ClusterStartIndex);
-                int startIndex = AddItemToClusters(itemsArray[i]);
-                
-                itemListings.Add(new ItemListing { 
-                    Size = _serializer.CalculateSize(itemsArray[i]), 
-                    ClusterStartIndex = startIndex});
-            }
+			return results;
+		}
 
-            _listings.UpdateRange(index, itemListings);
-        }
+		public override IEnumerable<T> ReadRange(int index, int count) {
+			for (int i = 0; i < count; i++) {
+				var listing = _listings[index + i];
+				yield return ReadItemFromClusters(listing.ClusterStartIndex, listing.Size);
+			}
+		}
 
-        public override void InsertRange(int index, IEnumerable<T> items)
-        {
-            var itemsArray = items as T[] ?? items.ToArray();
-            
-            if (_listings.Count + itemsArray.Length > _maxItems)
-                throw new ArgumentException("Insufficient space");
-            
-            if (!itemsArray.Any())
-            {
-                return;
-            }
+		public override void UpdateRange(int index, IEnumerable<T> items) {
+			T[] itemsArray = items.ToArray();
 
-            List<ItemListing> listings = new List<ItemListing>();
+			List<ItemListing> itemListings = new List<ItemListing>();
+			for (int i = 0; i < itemsArray.Length; i++) {
+				ItemListing listing = _listings[index + i];
+				RemoveItemFromClusters(listing.ClusterStartIndex);
+				int startIndex = AddItemToClusters(itemsArray[i]);
 
-            foreach (T item in itemsArray)
-            {
-                int clusterIndex = AddItemToClusters(item);
-                
-                listings.Add(new ItemListing
-                {
-                    Size = _serializer.CalculateSize(item),
-                    ClusterStartIndex = clusterIndex
-                });
-            }
-            
-            _listings.InsertRange(index, listings);
+				itemListings.Add(new ItemListing {
+					Size = _serializer.CalculateSize(itemsArray[i]),
+					ClusterStartIndex = startIndex
+				});
+			}
 
-            UpdateCountHeader();
-        }
+			_listings.UpdateRange(index, itemListings);
+		}
 
-        public override void RemoveRange(int index, int count)
-        {
-            for (int i = 0; i < count; i++)
-            {
-                ItemListing listing = _listings[index + i];
-                RemoveItemFromClusters(listing.ClusterStartIndex);
-            }
+		public override void InsertRange(int index, IEnumerable<T> items) {
+			var itemsArray = items as T[] ?? items.ToArray();
 
-            _listings.RemoveRange(index,  count);
-            
-            UpdateCountHeader();
-        }
+			if (_listings.Count + itemsArray.Length > _maxItems)
+				throw new ArgumentException("Insufficient space");
 
-        private T ReadItemFromClusters(int startCluster, int size)
-        {
-            int? next = startCluster;
-            int remaining = size;
+			if (!itemsArray.Any()) {
+				return;
+			}
 
-            ByteArrayBuilder builder = new ByteArrayBuilder();
+			List<ItemListing> listings = new List<ItemListing>();
 
-            while (next != -1)
-            {
-                Cluster cluster = _clusters[next.Value];
-                next = cluster.Next;
+			foreach (T item in itemsArray) {
+				int clusterIndex = AddItemToClusters(item);
 
-                if (cluster.Next < 0)
-                {
-                    builder.Append(cluster.Data.Take(remaining).ToArray());
-                }
-                else
-                {
-                    builder.Append(cluster.Data);
-                    remaining -= cluster.Data.Length;
-                }
-            }
+				listings.Add(new ItemListing {
+					Size = _serializer.CalculateSize(item),
+					ClusterStartIndex = clusterIndex
+				});
+			}
 
-            return _serializer.Deserialize(size,
-                new EndianBinaryReader(EndianBitConverter.Little, new MemoryStream(builder.ToArray())));
-        }
+			_listings.InsertRange(index, listings);
 
-        private void RemoveItemFromClusters(int startCluster)
-        {
-            int next = startCluster;
+			UpdateCountHeader();
+		}
 
-            while (next != -1)
-            {
-                Cluster cluster = _clusters[next];
-                _clusterStatus[cluster.Number] = false;
-                next = cluster.Next;
-            }
-        }
-        
-        private int AddItemToClusters(T item)
-        {
-            List<Cluster> clusters = new List<Cluster>();
+		public override void RemoveRange(int index, int count) {
+			for (int i = 0; i < count; i++) {
+				ItemListing listing = _listings[index + i];
+				RemoveItemFromClusters(listing.ClusterStartIndex);
+			}
 
-            using var stream = new MemoryStream();
-            _serializer.Serialize(item, new EndianBinaryWriter(EndianBitConverter.Little, stream));
-            byte[] data = stream.ToArray();
+			_listings.RemoveRange(index, count);
 
-            List<IEnumerable<byte>> segments = data.PartitionBySize(x => 1, _clusterSize)
-                .ToList();
+			UpdateCountHeader();
+		}
 
-            int[] numbers = _clusterStatus
-                .WithIndex()
-                .Where(x => !x.Item1)
-                .Take(segments.Count)
-                .Select(x => x.Item2)
-                .ToArray();
+		private T ReadItemFromClusters(int startCluster, int size) {
+			int? next = startCluster;
+			int remaining = size;
 
-            for (var i = 0; i < segments.Count; i++)
-            {
-                byte[] segment = segments[i].ToArray();
-                byte[] clusterData = new byte[_clusterSize];
-                segment.CopyTo(clusterData, 0);
+			ByteArrayBuilder builder = new ByteArrayBuilder();
 
-                clusters.Add(new Cluster
-                {
-                    Number = numbers[i],
-                    Data = clusterData,
-                    Next = segments.Count - 1 == i ? -1 : numbers[i + 1]
-                });
-            }
+			while (next != -1) {
+				Cluster cluster = _clusters[next.Value];
+				next = cluster.Next;
 
-            foreach (var cluster in clusters)
-            {
-                _clusterStatus[cluster.Number] = true;
-            }
+				if (cluster.Next < 0) {
+					builder.Append(cluster.Data.Take(remaining).ToArray());
+				} else {
+					builder.Append(cluster.Data);
+					remaining -= cluster.Data.Length;
+				}
+			}
 
-            foreach (Cluster cluster in clusters)
-            {
-                if (!_clusters.Any())
-                {
-                    _clusters.Add(cluster);
-                }
-                else if (cluster.Number >= _clusters.Count)
-                {
-                    _clusters.Add(cluster);
-                }
-                else
-                {
-                    _clusters[cluster.Number] = cluster;
-                }
-            }
+			return _serializer.Deserialize(size,
+				new EndianBinaryReader(EndianBitConverter.Little, new MemoryStream(builder.ToArray())));
+		}
 
-            return clusters.First().Number;
-        }
+		private void RemoveItemFromClusters(int startCluster) {
+			int next = startCluster;
 
-        private void Initialize()
-        {
-            int listingSize = sizeof(int) + sizeof(int);
-            int listingTotalSize = listingSize * _maxItems;
-            int statusTotalSize = sizeof(bool) * _storageClusterCount;
-            int clusterTotalSize = _clusterSize * _storageClusterCount;
-            
-            BoundedStream listingsStream = new BoundedStream(_stream, HeaderSize, HeaderSize + listingTotalSize - 1)
-                {UseRelativeOffset = true};
-            BoundedStream statusStream = new BoundedStream(_stream, listingsStream.MaxAbsolutePosition + 1,
-                listingsStream.MaxAbsolutePosition + statusTotalSize) {UseRelativeOffset = true};
-            BoundedStream clusterStream = new BoundedStream(_stream, statusStream.MaxAbsolutePosition + 1,
-                statusStream.MaxAbsolutePosition + clusterTotalSize) {UseRelativeOffset = true};
+			while (next != -1) {
+				Cluster cluster = _clusters[next];
+				_clusterStatus[cluster.Number] = false;
+				next = cluster.Next;
+			}
+		}
 
-            if (_stream.Length == 0)
-            {
-                WriteHeader();
-            }
-            else
-            {
-                ReadHeader();
-            }
-            
-            var preAllocatedListingStore = new StreamMappedList<ItemListing>(new ItemListingSerializer(), listingsStream)
-                {IncludeListHeader = false};
+		private int AddItemToClusters(T item) {
+			List<Cluster> clusters = new List<Cluster>();
 
-            if (preAllocatedListingStore.RequiresLoad)
-            {
-                preAllocatedListingStore.Load();
-            }
-            else
-            {
-                preAllocatedListingStore.AddRange(Enumerable.Repeat(default(ItemListing), _maxItems));
-            }
-            
-            _listings = new PreAllocatedList<ItemListing>(preAllocatedListingStore);
-            
-            var status = new StreamMappedList<bool>(new BoolSerializer(), statusStream)
-                {IncludeListHeader = false};
+			using var stream = new MemoryStream();
+			_serializer.Serialize(item, new EndianBinaryWriter(EndianBitConverter.Little, stream));
+			byte[] data = stream.ToArray();
 
-            if (status.RequiresLoad)
-            {
-                status.Load();
-            }
-            else
-            {
-                status.AddRange(Enumerable.Repeat(false, _storageClusterCount));
-            }
-            _clusterStatus = new PreAllocatedList<bool>(status);
+			List<IEnumerable<byte>> segments = data.PartitionBySize(x => 1, _clusterSize)
+				.ToList();
 
-            if (!_clusterStatus.Any())
-            {
-                _clusterStatus.AddRange(status);
-            }
+			int[] numbers = _clusterStatus
+				.WithIndex()
+				.Where(x => !x.Item1)
+				.Take(segments.Count)
+				.Select(x => x.Item2)
+				.ToArray();
 
-            _clusters = new StreamMappedList<Cluster>(StreamMappedListType.FixedSize,
-                new ClusterSerializer(_clusterSize), clusterStream, _clusterSize * _storageClusterCount);
+			for (var i = 0; i < segments.Count; i++) {
+				byte[] segment = segments[i].ToArray();
+				byte[] clusterData = new byte[_clusterSize];
+				segment.CopyTo(clusterData, 0);
 
-            if (_clusters.RequiresLoad)
-            {
-                _clusters.Load();
-            }
-        }
+				clusters.Add(new Cluster {
+					Number = numbers[i],
+					Data = clusterData,
+					Next = segments.Count - 1 == i ? -1 : numbers[i + 1]
+				});
+			}
 
-        private void WriteHeader()
-        {
-            var writer = new EndianBinaryWriter(EndianBitConverter.Little, _stream);
+			foreach (var cluster in clusters) {
+				_clusterStatus[cluster.Number] = true;
+			}
 
-            _stream.Seek(0, SeekOrigin.Begin);
-            
-            writer.Write(0);
-            writer.Write(Tools.Array.Gen(HeaderSize - (int)_stream.Position, (byte)0)); // padding
-        }
-        
-        private int ReadHeader()
-        {
-            var reader = new EndianBinaryReader(EndianBitConverter.Little, _stream);
-            _stream.Seek(0, SeekOrigin.Begin);
+			foreach (Cluster cluster in clusters) {
+				if (!_clusters.Any()) {
+					_clusters.Add(cluster);
+				} else if (cluster.Number >= _clusters.Count) {
+					_clusters.Add(cluster);
+				} else {
+					_clusters[cluster.Number] = cluster;
+				}
+			}
 
-            var count = reader.ReadInt32();
-            return count;
-        }
+			return clusters.First().Number;
+		}
 
-        private void UpdateCountHeader()
-        {
-            var writer = new EndianBinaryWriter(EndianBitConverter.Little, _stream);
-            _stream.Seek(0, SeekOrigin.Begin);
-            
-            writer.Write(_listings.Count);
-        }
-    }
+		private void Initialize() {
+			int listingSize = sizeof(int) + sizeof(int);
+			int listingTotalSize = listingSize * _maxItems;
+			int statusTotalSize = sizeof(bool) * _storageClusterCount;
+			int clusterTotalSize = _clusterSize * _storageClusterCount;
+
+			BoundedStream listingsStream = new BoundedStream(_stream, HeaderSize, HeaderSize + listingTotalSize - 1)
+				{ UseRelativeOffset = true };
+			BoundedStream statusStream = new BoundedStream(_stream,
+				listingsStream.MaxAbsolutePosition + 1,
+				listingsStream.MaxAbsolutePosition + statusTotalSize) { UseRelativeOffset = true };
+			BoundedStream clusterStream = new BoundedStream(_stream,
+				statusStream.MaxAbsolutePosition + 1,
+				statusStream.MaxAbsolutePosition + clusterTotalSize) { UseRelativeOffset = true };
+
+			if (_stream.Length == 0) {
+				WriteHeader();
+			} else {
+				ReadHeader();
+			}
+
+			var preAllocatedListingStore = new StreamMappedList<ItemListing>(new ItemListingSerializer(), listingsStream)
+				{ IncludeListHeader = false };
+
+			if (preAllocatedListingStore.RequiresLoad) {
+				preAllocatedListingStore.Load();
+			} else {
+				preAllocatedListingStore.AddRange(Enumerable.Repeat(default(ItemListing), _maxItems));
+			}
+
+			_listings = new PreAllocatedList<ItemListing>(preAllocatedListingStore);
+
+			var status = new StreamMappedList<bool>(new BoolSerializer(), statusStream)
+				{ IncludeListHeader = false };
+
+			if (status.RequiresLoad) {
+				status.Load();
+			} else {
+				status.AddRange(Enumerable.Repeat(false, _storageClusterCount));
+			}
+			_clusterStatus = new PreAllocatedList<bool>(status);
+
+			if (!_clusterStatus.Any()) {
+				_clusterStatus.AddRange(status);
+			}
+
+			_clusters = new StreamMappedList<Cluster>(StreamMappedListType.FixedSize,
+				new ClusterSerializer(_clusterSize),
+				clusterStream,
+				_clusterSize * _storageClusterCount);
+
+			if (_clusters.RequiresLoad) {
+				_clusters.Load();
+			}
+		}
+
+		private void WriteHeader() {
+			var writer = new EndianBinaryWriter(EndianBitConverter.Little, _stream);
+
+			_stream.Seek(0, SeekOrigin.Begin);
+
+			writer.Write(0);
+			writer.Write(Tools.Array.Gen(HeaderSize - (int)_stream.Position, (byte)0)); // padding
+		}
+
+		private int ReadHeader() {
+			var reader = new EndianBinaryReader(EndianBitConverter.Little, _stream);
+			_stream.Seek(0, SeekOrigin.Begin);
+
+			var count = reader.ReadInt32();
+			return count;
+		}
+
+		private void UpdateCountHeader() {
+			var writer = new EndianBinaryWriter(EndianBitConverter.Little, _stream);
+			_stream.Seek(0, SeekOrigin.Begin);
+
+			writer.Write(_listings.Count);
+		}
+	}
+
 }

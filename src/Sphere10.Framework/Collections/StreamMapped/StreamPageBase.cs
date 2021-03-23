@@ -1,28 +1,25 @@
 ﻿using System.IO;
 
-namespace Sphere10.Framework.Collections.StreamMapped
-{
+namespace Sphere10.Framework.Collections.StreamMapped {
 
-    public abstract class StreamPageBase<TItem> : PageBase<TItem>
-    {
-        protected StreamPageBase(StreamMappedList<TItem> parent)
-        {
-            Parent = parent;
-        }
-        
-        public long StartPosition { get; protected set; }
+	public abstract class StreamPageBase<TItem> : PageBase<TItem> {
+		protected StreamPageBase(StreamMappedList<TItem> parent) {
+			Parent = parent;
+		}
 
-        protected StreamMappedList<TItem> Parent { get; }
-        
-        protected Stream Stream => Parent.Stream;
+		public long StartPosition { get; protected set; }
 
-        protected EndianBinaryReader Reader => Parent.Reader;
+		protected StreamMappedList<TItem> Parent { get; }
 
-        protected int ItemSize => Parent.Serializer.FixedSize;
+		protected Stream Stream => Parent.Stream;
 
-        protected IObjectSerializer<TItem> Serializer => Parent.Serializer;
+		protected EndianBinaryReader Reader => Parent.Reader;
 
-        protected EndianBinaryWriter Writer => Parent.Writer;
-    }
+		protected int ItemSize => Parent.Serializer.FixedSize;
+
+		protected IObjectSerializer<TItem> Serializer => Parent.Serializer;
+
+		protected EndianBinaryWriter Writer => Parent.Writer;
+	}
 
 }

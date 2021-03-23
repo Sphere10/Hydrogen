@@ -49,11 +49,11 @@ namespace Sphere10.Framework {
 
 		public new IReadOnlyList<IBufferPage> Pages => new ReadOnlyListDecorator<IPage<byte>, IBufferPage>(InternalPages);
 
-		public ReadOnlySpan<byte> ReadSpan(int index, int count) => PagedBufferImplementationHelper.ReadSpan( this, InternalMethods, index, count);
+		public ReadOnlySpan<byte> ReadSpan(int index, int count) => PagedBufferImplementationHelper.ReadSpan( InternalMethods, index, count);
 
-		public void AddRange(ReadOnlySpan<byte> span) => PagedBufferImplementationHelper.AddRange(this, InternalMethods, span);
+		public void AddRange(ReadOnlySpan<byte> span) => PagedBufferImplementationHelper.AddRange(InternalMethods, span);
 
-		public void UpdateRange(int index, ReadOnlySpan<byte> items) => PagedBufferImplementationHelper.UpdateRange(this, index, items);
+		public void UpdateRange(int index, ReadOnlySpan<byte> items) => PagedBufferImplementationHelper.UpdateRange(InternalMethods, index, items);
 
 		public void InsertRange(int index, ReadOnlySpan<byte> items) => PagedBufferImplementationHelper.InsertRange(this, index, items);
 
@@ -131,10 +131,13 @@ namespace Sphere10.Framework {
 			}
 
 			public ReadOnlySpan<byte> ReadSpan(int index, int count)
-				=> PagedBufferImplementationHelper.ReadPageSpan(this, (MemoryBuffer)MemoryStore, index, count);
+				=> PagedBufferImplementationHelper.ReadSpan(this, (MemoryBuffer)MemoryStore, index, count);
 
-			public bool WriteSpan(int index, ReadOnlySpan<byte> items, out ReadOnlySpan<byte> overflow)
-				=> PagedBufferImplementationHelper.WriteSpan(this, MemoryStore as MemoryBuffer, index, items, out overflow);
+			public bool AppendSpan(ReadOnlySpan<byte> items, out ReadOnlySpan<byte> overflow)
+				=> PagedBufferImplementationHelper.AppendPageSpan(this, MemoryStore as MemoryBuffer, items, out overflow);
+
+			public void UpdateSpan(int index, ReadOnlySpan<byte> items) =>
+				PagedBufferImplementationHelper.UpdatePageSpan(this, MemoryStore as MemoryBuffer, index, items);
 
 			protected override void SaveInternal(IExtendedList<byte> memoryPage, Stream stream) {
 				var memBuff = (MemoryBuffer)memoryPage;

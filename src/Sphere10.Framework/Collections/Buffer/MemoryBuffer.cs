@@ -97,15 +97,20 @@ namespace Sphere10.Framework {
 
 		public void Write(int index, ReadOnlySpan<byte> span)
 		{
-			int newBytesCount = _length - index + span.Length;
+			int newBytesCount = Math.Max(index + span.Length, _length) - _length;
 			
 			GrowSpaceIfRequired(newBytesCount);
 			UpdateVersion();
-			if (span.Length == 1)
-				// single access optimization
-				_internalArray[_length] = span[0];
-			span.CopyTo(_internalArray.AsSpan(index, span.Length));
 			
+			if (span.Length == 1)
+			{
+				_internalArray[index] = span[0];
+			}
+			else
+			{
+				span.CopyTo(_internalArray.AsSpan(index, span.Length));
+			}
+
 			_length += newBytesCount;
 		}
 

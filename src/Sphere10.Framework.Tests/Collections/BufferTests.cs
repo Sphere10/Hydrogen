@@ -154,8 +154,7 @@ namespace Sphere10.Framework.Tests {
 				AssertEx.BufferIntegrationTest(buffer, maxCapacity, mutateFromEndOnly);
 			}
 		}
-
-
+		
 		public enum StorageType {
 			MemoryBuffer,
 			MemoryPagedBuffer,

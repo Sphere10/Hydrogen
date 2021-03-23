@@ -1,6 +1,6 @@
 # Domains
 
-A [domain](3-tier-Architecture.md#domain) consists of a collection of [modules](#3-tier-Architecture.md#module) that are all logically related in the abstraction they model. A domain can span across multiple tiers depending on the functionality they provide (i.e. user interface, business component, etc). A domain can be visualized as a vertical slice through the [3-tier architecture](../guidelines/3-tier-Architecture.md). Modules are a .NET project that typically contain multiple domains each under a sub-folder.  Below are domains available in the Hydrogen framework.
+A [domain](../Guidelines/3-tier-Architecture.md#domain) consists of a collection of [modules](../Guidelines/3-tier-Architecture.md#module) that are all logically related in the abstraction they model. A domain can span across multiple tiers depending on the functionality they provide (i.e. user interface, business component, etc). A domain can be visualized as a vertical slice through the [3-tier architecture](../Guidelines/3-tier-Architecture.md). Modules are a .NET project that typically contain multiple domains each under a sub-folder.  Below are domains available in the Hydrogen framework.
 
 ## Sphere 10 Framework Domains
 

@@ -65,7 +65,7 @@ A HAP lifecycle can be in one of the following states.
 
 ## Code Structuring
 
-The Hydrogen codebase is structured into a [3-tier architecture](../guidelines/3-tier-Architecture.md) and styled according to the these [code styling guidelines](../guidelines/codestyle.md).
+The Hydrogen codebase is structured into a [3-tier architecture](../Guidelines/3-tier-Architecture.md) and styled according to the the [code styling guidelines](../Guidelines/Code-Styling.md).
 
 
 

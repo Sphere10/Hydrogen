@@ -1,6 +1,6 @@
 # Hydrogen: P2P Framework
 
-Copyright (c) Sphere 10 Software 
+Copyright © Sphere 10 Software 2018 - Present
 
 Hydrogen is a .NET-based framework for building scalable P2P blockchain applications. It is a broad framework that can be used for building  layer-1 blockchain-based systems as well as layer-2 extensions to those systems. 
 
@@ -14,21 +14,31 @@ The Hydrogen framework offers the following features:
 - **Extensible**: in addition to plugins, the the framework offers extension points at various layers of the architecture.
 - **Cross-platform**: runs on any OS that supports .NET 5 framework.
 
-[What is a 3-tier Architecture?](/doc/Guidelines/3-tier-Architecture.md)
 
-[What is the Hydrogen Framework?](/doc/Architecture/Hydrogen.md)
 
-[Framework Domains](/doc/Architecture/Domains.md)
+## Links
 
-#### Subsystem composition
-![](doc/Architecture/resources/Hydrogen-Deployment-SubSystems.png)
+[What is a 3-tier Architecture?](doc/Guidelines/3-tier-Architecture.md)
 
-#### Application Lifecycle
-![](doc/Architecture/resources/HAP-Lifecycle.png)
+[What is the Hydrogen Framework?](doc/Architecture/Hydrogen.md)
+
+[Framework Domains](doc/Architecture/Domains.md)
+
+[Code-Styling Guidelines](doc/Guidelines/Code-Styling.md)
+
+
+
+## Overview
 
 #### Runtime Model
-![](doc/Architecture/resources/Hydrogen-Deployment-Host-AppPackage.png)
+![Hydrogen application runtime-model](doc/Architecture/resources/Hydrogen-Deployment-Host-AppPackage.png)
+
+#### Application Lifecycle
+![Hydrogen application life-cycle](doc/Architecture/resources/HAP-Lifecycle.png)
+
+#### Subsystem composition
+![Hydrogen sub-system decomposition](doc/Architecture/resources/Hydrogen-Deployment-SubSystems.png)
 
 #### Code Structuring (3-tier)
-![](doc/Guidelines/resources/Framework-75pct.png)
+![Sphere 10 methodology for Framework structuring](doc/Guidelines/resources/Framework-75pct.png)
 

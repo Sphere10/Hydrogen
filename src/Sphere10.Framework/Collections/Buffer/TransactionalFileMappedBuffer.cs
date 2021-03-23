@@ -11,15 +11,9 @@
 //-----------------------------------------------------------------------
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-
 
 namespace Sphere10.Framework {
 
@@ -49,15 +43,15 @@ namespace Sphere10.Framework {
 
 		public new IReadOnlyList<IBufferPage> Pages => new ReadOnlyListDecorator<IPage<byte>, IBufferPage>(InternalPages);
 
-		public ReadOnlySpan<byte> ReadSpan(int index, int count) => PagedBufferImplementationHelper.ReadSpan( InternalMethods, index, count);
+		public ReadOnlySpan<byte> ReadSpan(int index, int count) => PagedBufferImplementationHelper.ReadRange( InternalMethods, index, count);
 
 		public void AddRange(ReadOnlySpan<byte> span) => PagedBufferImplementationHelper.AddRange(InternalMethods, span);
 
 		public void UpdateRange(int index, ReadOnlySpan<byte> items) => PagedBufferImplementationHelper.UpdateRange(InternalMethods, index, items);
 
-		public void InsertRange(int index, ReadOnlySpan<byte> items) => PagedBufferImplementationHelper.InsertRange(this, index, items);
+		public void InsertRange(int index, ReadOnlySpan<byte> items) => PagedBufferImplementationHelper.InsertRange(InternalMethods, Count, index, items);
 
-		public Span<byte> AsSpan(int index, int count) => PagedBufferImplementationHelper.AsSpan(this, index, count);
+		public Span<byte> AsSpan(int index, int count) => PagedBufferImplementationHelper.AsSpan(InternalMethods, index, count);
 
 		protected override IPage<byte>[] LoadPages() {
 			var lowestDeletedPageNumber = PageMarkerRepo.LowestDeletedPageNumber ?? int.MaxValue;

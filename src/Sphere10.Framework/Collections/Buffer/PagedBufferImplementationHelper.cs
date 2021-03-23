@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.Design;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.InteropServices;
 
 namespace Sphere10.Framework
 {
@@ -10,7 +11,7 @@ namespace Sphere10.Framework
     // PagedBuffer span operations implemented in a not-so-great way. Relying on page operations to do the bulk insertions/
     internal static class PagedBufferImplementationHelper
     {
-        public static ReadOnlySpan<byte> ReadSpan(IPagedListInternalMethods<byte> internalMethods, int index, int count)
+        public static ReadOnlySpan<byte> ReadRange(IPagedListInternalMethods<byte> internalMethods, int index, int count)
         {
             ByteArrayBuilder builder = new ByteArrayBuilder();
 
@@ -111,15 +112,21 @@ namespace Sphere10.Framework
 
             internalMethods.NotifyAccessed();
         }
-
-        public static void InsertRange(IMemoryPagedBuffer buffer, int index, ReadOnlySpan<byte> items) {
-            // TODO: add optimized implementation
-            buffer.InsertRange(index, (IEnumerable<byte>) items.ToArray());
+        
+        public static void InsertRange(IPagedListInternalMethods<byte> internalMethods, in int count, in int index, in ReadOnlySpan<byte> items)
+        {
+            if (index == count)
+                AddRange(internalMethods, items);
+            else throw new NotSupportedException("This collection can only be mutated from the end");
         }
 
-        public static Span<byte> AsSpan(IMemoryPagedBuffer buffer, int index, int count)
+        public static Span<byte> AsSpan(IPagedListInternalMethods<byte> internalMethods,
+            int index, int count)
         {
-            throw new NotSupportedException();
+            var readOnlySpan =  ReadRange(internalMethods, index, count);
+            
+            // https://github.com/dotnet/runtime/issues/23494#issuecomment-648290373
+            return MemoryMarshal.CreateSpan(ref MemoryMarshal.GetReference(readOnlySpan), readOnlySpan.Length);
         }
 
         public static ReadOnlySpan<byte> ReadPageSpan(MemoryPageBase<byte> page, MemoryBuffer memoryStore, int index, int count) {

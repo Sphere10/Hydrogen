@@ -56,8 +56,6 @@ namespace Sphere10.Framework {
 		public const int ListHeaderSize = 256;
 		public const int DefaultPageSize = 100;
 
-		private bool _includeListHeader = true;
-
 		public StreamMappedList(StreamMappedListType type, IObjectSerializer<TItem> serializer, Stream stream, int pageSize) {
 			PageSize = pageSize;
 			Serializer = serializer;
@@ -82,12 +80,7 @@ namespace Sphere10.Framework {
 
 		public int PageSize { get; }
 
-		public bool IncludeListHeader {
-			get => _includeListHeader;
-			set {
-				_includeListHeader = value;
-			}
-		}
+		public bool IncludeListHeader { get; set; } = true;
 
 		public StreamMappedListType Type { get; }
 
@@ -179,6 +172,9 @@ namespace Sphere10.Framework {
 			Writer.Write((byte)FormatVersion);
 			Writer.Write((uint)0U); // traits (used in v2)
 			Writer.Write(Tools.Array.Gen(ListHeaderSize - (int)Stream.Position, (byte)0)); // padding
+
+			_headerWritten = true;
+			
 			Debug.Assert(Stream.Position == ListHeaderSize);
 		}
 

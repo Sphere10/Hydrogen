@@ -175,19 +175,6 @@ namespace Sphere10.Framework.Tests {
                 AssertEx.ListIntegrationTest(list, maxCapacity, (rng, i) => rng.NextInts(i), mutateFromEndOnly: true);
             }
         }
-        
-        [Test]
-        public void V1_IncludeListHeaderThrowsAfterInit() {
-            var stream = new MemoryStream();
-            var list = new StreamMappedList<string>(new StringSerializer(Encoding.ASCII), stream) {
-                IncludeListHeader = false
-            };
-
-            Assert.DoesNotThrow(() => list.IncludeListHeader = true);
-            list.Add("baz");
-
-            Assert.Throws<InvalidOperationException>(() => list.IncludeListHeader = true);
-        }
 
         public enum StorageType {
             MemoryStream,

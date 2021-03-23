@@ -172,9 +172,6 @@ namespace Sphere10.Framework {
 			Writer.Write((byte)FormatVersion);
 			Writer.Write((uint)0U); // traits (used in v2)
 			Writer.Write(Tools.Array.Gen(ListHeaderSize - (int)Stream.Position, (byte)0)); // padding
-
-			_headerWritten = true;
-			
 			Debug.Assert(Stream.Position == ListHeaderSize);
 		}
 

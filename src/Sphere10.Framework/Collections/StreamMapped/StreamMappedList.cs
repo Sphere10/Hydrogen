@@ -85,12 +85,7 @@ namespace Sphere10.Framework {
 		public bool IncludeListHeader {
 			get => _includeListHeader;
 			set {
-				if (Stream.Length != 0) {
-					throw new InvalidOperationException(
-						$"{nameof(IncludeListHeader)} cannot be adjusted once stream has been written to.");
-				} else {
-					_includeListHeader = value;
-				}
+				_includeListHeader = value;
 			}
 		}
 
@@ -122,16 +117,16 @@ namespace Sphere10.Framework {
 
 		protected override IPage<TItem>[] LoadPages() {
 			if (IncludeListHeader) {
-				Stream.Seek(0L, SeekOrigin.Begin);
-				var magic = Reader.ReadUInt32();
-				if (magic != MagicID)
-					throw new InvalidDataFormatException($"Incorrect or missing MagicID field");
-				var version = Reader.ReadUInt16();
-				if (version != 1)
-					throw new NotSupportedException($"Version {version} data format not supported");
-				var traits = Reader.ReadUInt32();
-				if (traits != 0)
-					throw new NotSupportedException($"Unrecognized traits {traits}");
+                    				Stream.Seek(0L, SeekOrigin.Begin);
+                    				var magic = Reader.ReadUInt32();
+                    				if (magic != MagicID)
+                    					throw new InvalidDataFormatException($"Incorrect or missing MagicID field");
+                    				var version = Reader.ReadUInt16();
+                    				if (version != 1)
+                    					throw new NotSupportedException($"Version {version} data format not supported");
+                    				var traits = Reader.ReadUInt32();
+                    				if (traits != 0)
+                    					throw new NotSupportedException($"Unrecognized traits {traits}");
 			}
 
 			// Load pages if any

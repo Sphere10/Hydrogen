@@ -26,6 +26,7 @@ namespace Sphere10.Framework.Collections.StreamMapped
             
             base.State = PageState.Loaded;
             base.StartIndex = 0;
+            base.EndIndex = (int)(Stream.Length - _item0Offset);
             
             StartPosition = _item0Offset;
         }

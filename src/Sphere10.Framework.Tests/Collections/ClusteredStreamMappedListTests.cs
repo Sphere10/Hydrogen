@@ -27,7 +27,6 @@ namespace Sphere10.Framework.Tests
         }
 
         [Test]
-        [Ignore("snafu")]
         public void LoadFromExistingStream()
         {
             var fileName = Tools.FileSystem.GetTempFileName(true);

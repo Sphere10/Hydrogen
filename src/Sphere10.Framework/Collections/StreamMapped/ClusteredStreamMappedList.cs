@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -121,62 +120,6 @@ namespace Sphere10.Framework.Collections
             _listings.UpdateRange(index, itemListings);
         }
 
-        private int AddItemToClusters(T item)
-        {
-            List<Cluster> clusters = new List<Cluster>();
-
-            using var stream = new MemoryStream();
-            _serializer.Serialize(item, new EndianBinaryWriter(EndianBitConverter.Little, stream));
-            byte[] data = stream.ToArray();
-
-            List<IEnumerable<byte>> segments = data.PartitionBySize(x => 1, _clusterSize)
-                .ToList();
-
-            int[] numbers = _clusterStatus
-                .WithIndex()
-                .Where(x => !x.Item1)
-                .Take(segments.Count)
-                .Select(x => x.Item2)
-                .ToArray();
-
-            for (var i = 0; i < segments.Count; i++)
-            {
-                byte[] segment = segments[i].ToArray();
-                byte[] clusterData = new byte[_clusterSize];
-                segment.CopyTo(clusterData, 0);
-
-                clusters.Add(new Cluster
-                {
-                    Number = numbers[i],
-                    Data = clusterData,
-                    Next = segments.Count - 1 == i ? -1 : numbers[i + 1]
-                });
-            }
-
-            foreach (var cluster in clusters)
-            {
-                _clusterStatus[cluster.Number] = true;
-            }
-
-            foreach (Cluster cluster in clusters)
-            {
-                if (!_clusters.Any())
-                {
-                    _clusters.Add(cluster);
-                }
-                else if (cluster.Number >= _clusters.Count)
-                {
-                    _clusters.Add(cluster);
-                }
-                else
-                {
-                    _clusters[cluster.Number] = cluster;
-                }
-            }
-
-            return clusters.First().Number;
-        }
-
         public override void InsertRange(int index, IEnumerable<T> items)
         {
             var itemsArray = items as T[] ?? items.ToArray();
@@ -258,6 +201,62 @@ namespace Sphere10.Framework.Collections
                 next = cluster.Next;
             }
         }
+        
+        private int AddItemToClusters(T item)
+        {
+            List<Cluster> clusters = new List<Cluster>();
+
+            using var stream = new MemoryStream();
+            _serializer.Serialize(item, new EndianBinaryWriter(EndianBitConverter.Little, stream));
+            byte[] data = stream.ToArray();
+
+            List<IEnumerable<byte>> segments = data.PartitionBySize(x => 1, _clusterSize)
+                .ToList();
+
+            int[] numbers = _clusterStatus
+                .WithIndex()
+                .Where(x => !x.Item1)
+                .Take(segments.Count)
+                .Select(x => x.Item2)
+                .ToArray();
+
+            for (var i = 0; i < segments.Count; i++)
+            {
+                byte[] segment = segments[i].ToArray();
+                byte[] clusterData = new byte[_clusterSize];
+                segment.CopyTo(clusterData, 0);
+
+                clusters.Add(new Cluster
+                {
+                    Number = numbers[i],
+                    Data = clusterData,
+                    Next = segments.Count - 1 == i ? -1 : numbers[i + 1]
+                });
+            }
+
+            foreach (var cluster in clusters)
+            {
+                _clusterStatus[cluster.Number] = true;
+            }
+
+            foreach (Cluster cluster in clusters)
+            {
+                if (!_clusters.Any())
+                {
+                    _clusters.Add(cluster);
+                }
+                else if (cluster.Number >= _clusters.Count)
+                {
+                    _clusters.Add(cluster);
+                }
+                else
+                {
+                    _clusters[cluster.Number] = cluster;
+                }
+            }
+
+            return clusters.First().Number;
+        }
 
         private void Initialize()
         {
@@ -272,12 +271,6 @@ namespace Sphere10.Framework.Collections
                 listingsStream.MaxAbsolutePosition + statusTotalSize) {UseRelativeOffset = true};
             BoundedStream clusterStream = new BoundedStream(_stream, statusStream.MaxAbsolutePosition + 1,
                 statusStream.MaxAbsolutePosition + clusterTotalSize) {UseRelativeOffset = true};
-            
-            var preAllocatedListingStore = new StreamMappedList<ItemListing>(new ItemListingSerializer(), listingsStream)
-                {IncludeListHeader = false};
-            preAllocatedListingStore.AddRange(Enumerable.Repeat(default(ItemListing), _maxItems));
-                
-            _listings = new PreAllocatedList<ItemListing>(preAllocatedListingStore);
 
             if (_stream.Length == 0)
             {
@@ -285,18 +278,48 @@ namespace Sphere10.Framework.Collections
             }
             else
             {
-               var itemListingsCount = ReadHeader();
+                ReadHeader();
             }
+            
+            var preAllocatedListingStore = new StreamMappedList<ItemListing>(new ItemListingSerializer(), listingsStream)
+                {IncludeListHeader = false};
+
+            if (preAllocatedListingStore.RequiresLoad)
+            {
+                preAllocatedListingStore.Load();
+            }
+            else
+            {
+                preAllocatedListingStore.AddRange(Enumerable.Repeat(default(ItemListing), _maxItems));
+            }
+            
+            _listings = new PreAllocatedList<ItemListing>(preAllocatedListingStore);
             
             var status = new StreamMappedList<bool>(new BoolSerializer(), statusStream)
                 {IncludeListHeader = false};
-            status.AddRange(Enumerable.Repeat(false, _storageClusterCount));
-            
+
+            if (status.RequiresLoad)
+            {
+                status.Load();
+            }
+            else
+            {
+                status.AddRange(Enumerable.Repeat(false, _storageClusterCount));
+            }
             _clusterStatus = new PreAllocatedList<bool>(status);
-            _clusterStatus.AddRange(Enumerable.Repeat(false, _storageClusterCount));
+
+            if (!_clusterStatus.Any())
+            {
+                _clusterStatus.AddRange(status);
+            }
 
             _clusters = new StreamMappedList<Cluster>(StreamMappedListType.FixedSize,
                 new ClusterSerializer(_clusterSize), clusterStream, _clusterSize * _storageClusterCount);
+
+            if (_clusters.RequiresLoad)
+            {
+                _clusters.Load();
+            }
         }
 
         private void WriteHeader()
@@ -305,7 +328,7 @@ namespace Sphere10.Framework.Collections
 
             _stream.Seek(0, SeekOrigin.Begin);
             
-            writer.Write(_listings.Count);
+            writer.Write(0);
             writer.Write(Tools.Array.Gen(HeaderSize - (int)_stream.Position, (byte)0)); // padding
         }
         
@@ -325,13 +348,5 @@ namespace Sphere10.Framework.Collections
             
             writer.Write(_listings.Count);
         }
-
-        public void Load()
-        {
-            
-        }
-
-        public bool RequiresLoad { get; private set; }
-        
     }
 }

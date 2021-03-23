@@ -131,7 +131,7 @@ namespace Sphere10.Framework {
 			}
 
 			public ReadOnlySpan<byte> ReadSpan(int index, int count)
-				=> PagedBufferImplementationHelper.ReadSpan(this, (MemoryBuffer)MemoryStore, index, count);
+				=> PagedBufferImplementationHelper.ReadPageSpan(this, (MemoryBuffer)MemoryStore, index, count);
 
 			public bool AppendSpan(ReadOnlySpan<byte> items, out ReadOnlySpan<byte> overflow)
 				=> PagedBufferImplementationHelper.AppendPageSpan(this, MemoryStore as MemoryBuffer, items, out overflow);

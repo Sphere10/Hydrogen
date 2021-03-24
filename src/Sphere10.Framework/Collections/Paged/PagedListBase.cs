@@ -33,10 +33,6 @@ namespace Sphere10.Framework {
 			RequiresLoad = false;
 			IsLoading = false;
 			InternalPages = new ExtendedList<IPage<TItem>>();
-
-			InternalMethods = new PagedListInternalMethods<TItem>(UpdateVersion, CheckRequiresLoad, CheckRange, EnterOpenPageScope,
-				GetPageSegments, () => InternalPages, CreateNextPage, NotifyAccessing, NotifyAccessed, NotifyPageAccessing, NotifyPageAccessed, 
-				NotifyPageReading, NotifyPageRead, NotifyPageWriting, NotifyPageWrite);
 		}
 
 		public override int Count => InternalPages.Sum(p => p.Count);
@@ -46,8 +42,6 @@ namespace Sphere10.Framework {
 		public bool RequiresLoad { get; protected set; }
 
 		protected bool IsLoading { get; private set; }
-
-		protected IPagedListInternalMethods<TItem> InternalMethods { get; }
 
 		public void Load() {
 			NotifyLoading();
@@ -304,6 +298,25 @@ namespace Sphere10.Framework {
 			if (count > 0)
 				Guard.ArgumentInRange(index + count - 1, startIX, lastIX, nameof(count));
 		}
+
+		// Needed since C# lacks "friend" modifier
+		protected IPagedListInternalMethods<TItem> CreateFriendDelegate() => new PagedListFriendDelegate<TItem>(
+			UpdateVersion,
+			CheckRequiresLoad,
+			CheckRange,
+			EnterOpenPageScope,
+			GetPageSegments,
+			() => InternalPages,
+			CreateNextPage,
+			NotifyAccessing,
+			NotifyAccessed,
+			NotifyPageAccessing,
+			NotifyPageAccessed,
+			NotifyPageReading,
+			NotifyPageRead,
+			NotifyPageWriting,
+			NotifyPageWrite
+		);
 
 		#region Events 
 

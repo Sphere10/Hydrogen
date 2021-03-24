@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.Design;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -10,16 +8,14 @@ namespace Sphere10.Framework {
 	// PagedBuffer span operations implemented in a not-so-great way. Relying on page operations to do the bulk insertions/
 	internal static class PagedBufferImplementationHelper {
 		public static ReadOnlySpan<byte> ReadRange(IPagedListInternalMethods<byte> internalMethods, int index, int count) {
-			ByteArrayBuilder builder = new ByteArrayBuilder();
+			var builder = new ByteArrayBuilder();
 
 			internalMethods.CheckRequiresLoad();
 			internalMethods.NotifyAccessing();
 			internalMethods.CheckRange(index, count);
 
 			foreach (var pageSegment in internalMethods.GetPageSegments(index, count)) {
-				var page = pageSegment.Item1 as IBufferPage ??
-					throw new InvalidOperationException("ReadSpan not supported by page type");
-
+				var page = (IBufferPage)pageSegment.Item1;
 				var pageStartIndex = pageSegment.Item2;
 				var pageItemCount = pageSegment.Item3;
 				internalMethods.NotifyPageAccessing(page);
@@ -38,19 +34,12 @@ namespace Sphere10.Framework {
 		public static void AddRange(IPagedListInternalMethods<byte> internalMethods, ReadOnlySpan<byte> span) {
 			if (span.IsEmpty)
 				return;
-
 			internalMethods.CheckRequiresLoad();
 			internalMethods.NotifyAccessing();
-
-			var page = internalMethods.InternalPages().Any()
-				? internalMethods.InternalPages().Last()
-				: internalMethods.CreateNextPage();
-			IBufferPage bufferPage = Guard.ArgumentCast<IBufferPage>(page, nameof(page));
-
+			var page = internalMethods.InternalPages().Any() ? internalMethods.InternalPages().Last() : internalMethods.CreateNextPage();
+			var bufferPage = (IBufferPage)page;
 			internalMethods.NotifyPageAccessing(page);
-
-			bool fittedCompletely = false;
-
+			var fittedCompletely = false;
 			while (!fittedCompletely) {
 				using (internalMethods.EnterOpenPageScope(page)) {
 					internalMethods.NotifyPageWriting(page);
@@ -58,20 +47,16 @@ namespace Sphere10.Framework {
 					fittedCompletely = bufferPage.AppendSpan(span, out span);
 					internalMethods.NotifyPageWrite(page);
 				}
-
 				internalMethods.NotifyPageAccessed(page);
-
 				if (!fittedCompletely) {
 					page = internalMethods.CreateNextPage() as IBufferPage;
-					bufferPage = Guard.ArgumentCast<IBufferPage>(page, nameof(page));
+					bufferPage = (IBufferPage)page;
 				}
 			}
-
 			internalMethods.NotifyAccessed();
 		}
 
-		public static void UpdateRange(IPagedListInternalMethods<byte> internalMethods, int index,
-			ReadOnlySpan<byte> items) {
+		public static void UpdateRange(IPagedListInternalMethods<byte> internalMethods, int index, ReadOnlySpan<byte> items) {
 			internalMethods.CheckRequiresLoad();
 			internalMethods.NotifyAccessing();
 
@@ -79,37 +64,30 @@ namespace Sphere10.Framework {
 				return;
 
 			foreach (var pageSegment in internalMethods.GetPageSegments(index, items.Length)) {
-				IPage<byte> page = pageSegment.Item1;
-				IBufferPage bufferPage = Guard.ArgumentCast<IBufferPage>(page, nameof(pageSegment));
-
+				var page = pageSegment.Item1;
+				var bufferPage = (IBufferPage)page;
 				var pageStartIx = pageSegment.Item2;
 				var pageCount = pageSegment.Item3;
-				ReadOnlySpan<byte> pageSpan = items.Slice(pageStartIx - index, pageCount);
-
+				var pageSpan = items.Slice(pageStartIx - index, pageCount);
 				using (internalMethods.EnterOpenPageScope(page)) {
 					internalMethods.NotifyPageAccessing(page);
 					internalMethods.NotifyPageWriting(page);
 					internalMethods.UpdateVersion();
-
 					bufferPage.UpdateSpan(pageStartIx, pageSpan);
-
 					internalMethods.NotifyPageWrite(page);
 				}
 				internalMethods.NotifyPageAccessed(page);
 			}
-
 			internalMethods.NotifyAccessed();
 		}
 
-		public static void InsertRange(IPagedListInternalMethods<byte> internalMethods, in int count, in int index,
-			in ReadOnlySpan<byte> items) {
+		public static void InsertRange(IPagedListInternalMethods<byte> internalMethods, in int count, in int index, in ReadOnlySpan<byte> items) {
 			if (index == count)
 				AddRange(internalMethods, items);
 			else throw new NotSupportedException("This collection can only be mutated from the end");
 		}
 
-		public static Span<byte> AsSpan(IPagedListInternalMethods<byte> internalMethods,
-			int index, int count) {
+		public static Span<byte> AsSpan(IPagedListInternalMethods<byte> internalMethods, int index, int count) {
 			var readOnlySpan = ReadRange(internalMethods, index, count);
 
 			// https://github.com/dotnet/runtime/issues/23494#issuecomment-648290373
@@ -122,8 +100,7 @@ namespace Sphere10.Framework {
 			return memoryStore.ReadSpan(index - page.StartIndex, count);
 		}
 
-		public static bool AppendPageSpan(MemoryPageBase<byte> page, MemoryBuffer memoryStore, ReadOnlySpan<byte> items,
-			out ReadOnlySpan<byte> overflow) {
+		public static bool AppendPageSpan(MemoryPageBase<byte> page, MemoryBuffer memoryStore, ReadOnlySpan<byte> items, out ReadOnlySpan<byte> overflow) {
 			page.CheckPageState(PageState.Loaded);
 
 			// Nothing to write case
@@ -132,8 +109,8 @@ namespace Sphere10.Framework {
 				return true;
 			}
 
-			int remainingPageBytes = page.MaxSize - page.Size;
-			ReadOnlySpan<byte> writeSpan = items.Slice(0, Math.Min(remainingPageBytes, items.Length));
+			var remainingPageBytes = page.MaxSize - page.Size;
+			var writeSpan = items.Slice(0, Math.Min(remainingPageBytes, items.Length));
 
 			memoryStore.Write(page.Size, writeSpan);
 
@@ -143,32 +120,26 @@ namespace Sphere10.Framework {
 
 			var totalWriteCount = writeSpan.Length;
 
-			if (page.Count == 0 && totalWriteCount == 0) {
-				// Was unable to write the first element in an empty page, item too large
-				throw new InvalidOperationException($"Span cannot be fitted onto a page of this collection");
-			}
+			if (page.Count == 0 && totalWriteCount == 0) // Was unable to write the first element in an empty page, item too large
+				throw new InvalidOperationException("Span cannot be fitted onto a page of this collection");
 			if (totalWriteCount > 0)
 				page.Dirty = true;
-			overflow = totalWriteCount < items.Length
-				? items.Slice(totalWriteCount).ToArray()
-				: ReadOnlySpan<byte>.Empty;
+			overflow = totalWriteCount < items.Length ? items.Slice(totalWriteCount) : ReadOnlySpan<byte>.Empty;
 
 			Debug.Assert(totalWriteCount <= items.Length);
 			return totalWriteCount == items.Length;
 		}
 
-		public static void UpdatePageSpan(MemoryPageBase<byte> page, MemoryBuffer memoryStore, in int index,
-			in ReadOnlySpan<byte> items) {
+		public static void UpdatePageSpan(MemoryPageBase<byte> page, MemoryBuffer memoryStore, in int index, in ReadOnlySpan<byte> items) {
 			page.CheckPageState(PageState.Loaded);
 			Guard.ArgumentInRange(index, page.StartIndex, Math.Max(page.StartIndex, page.EndIndex) + 1, nameof(index));
 			Guard.Ensure(index - page.StartIndex + items.Length - 1 <= page.MaxSize, "Update span would not fit on page.");
 
 			// Nothing to write case
-			if (items.Length == 0) {
+			if (items.Length == 0)
 				return;
-			}
 
-			int newBytesCount = Math.Max(index - page.StartIndex + items.Length - 1, page.Size) - page.Size;
+			var newBytesCount = Math.Max(index - page.StartIndex + items.Length - 1, page.Size) - page.Size;
 
 			memoryStore.Write(index - page.StartIndex, items);
 

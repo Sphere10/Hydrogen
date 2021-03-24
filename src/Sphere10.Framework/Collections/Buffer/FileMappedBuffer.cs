@@ -17,21 +17,21 @@ namespace Sphere10.Framework {
 	/// </summary>
 	public sealed class FileMappedBuffer : FilePagedListBase<byte>, IMemoryPagedBuffer {
 
-        public FileMappedBuffer(string filename, int pageSize, int maxOpenPages, bool readOnly = false) 
+		public FileMappedBuffer(string filename, int pageSize, int maxOpenPages, bool readOnly = false)
 			: base(filename, pageSize, maxOpenPages, CacheCapacityPolicy.CapacityIsMaxOpenPages, readOnly) {
 		}
 
 		public new IReadOnlyList<IBufferPage> Pages => new ReadOnlyListDecorator<IPage<byte>, IBufferPage>(InternalPages);
 
-		public ReadOnlySpan<byte> ReadSpan(int index, int count) => PagedBufferImplementationHelper.ReadRange(InternalMethods, index, count);
+		public ReadOnlySpan<byte> ReadSpan(int index, int count) => PagedBufferImplementationHelper.ReadRange(CreateFriendDelegate(), index, count);
 
-		public void AddRange(ReadOnlySpan<byte> span) => PagedBufferImplementationHelper.AddRange(InternalMethods, span);
+		public void AddRange(ReadOnlySpan<byte> span) => PagedBufferImplementationHelper.AddRange(CreateFriendDelegate(), span);
 
-		public void UpdateRange(int index, ReadOnlySpan<byte> items) => PagedBufferImplementationHelper.UpdateRange(InternalMethods, index, items);
+		public void UpdateRange(int index, ReadOnlySpan<byte> items) => PagedBufferImplementationHelper.UpdateRange(CreateFriendDelegate(), index, items);
 
-		public void InsertRange(int index, ReadOnlySpan<byte> items) => PagedBufferImplementationHelper.InsertRange(InternalMethods, Count, index, items);
+		public void InsertRange(int index, ReadOnlySpan<byte> items) => PagedBufferImplementationHelper.InsertRange(CreateFriendDelegate(), Count, index, items);
 
-		public Span<byte> AsSpan(int index, int count) => PagedBufferImplementationHelper.AsSpan(InternalMethods, index, count);
+		public Span<byte> AsSpan(int index, int count) => PagedBufferImplementationHelper.AsSpan(CreateFriendDelegate(), index, count);
 
 		protected override IPage<byte> NewPageInstance(int pageNumber) {
 			return new PageImpl(Stream, pageNumber, PageSize);
@@ -53,14 +53,14 @@ namespace Sphere10.Framework {
 					   StartPosition = i * sizeof(byte) * PageSize,
 					   StartIndex = i * PageSize,
 					   EndIndex = (i + 1) * PageSize - 1,
-					   EndPosition = (i+1) * sizeof(byte) * PageSize - 1,
+					   EndPosition = (i + 1) * sizeof(byte) * PageSize - 1,
 					   Count = PageSize,
 					   Size = PageSize,
 					   State = PageState.Unloaded,
 				   }
 				).Concat(
 					// Last page
-					new PageImpl(Stream, numPages - 1, PageSize) { 
+					new PageImpl(Stream, numPages - 1, PageSize) {
 						Number = numPages - 1,
 						StartPosition = (numPages - 1) * sizeof(byte) * PageSize,
 						StartIndex = (numPages - 1) * PageSize,
@@ -75,7 +75,7 @@ namespace Sphere10.Framework {
 		}
 
 
-        protected override void OnPageSaving(IMemoryPage<byte> page) {
+		protected override void OnPageSaving(IMemoryPage<byte> page) {
 			// Always ensure file-stream is long enough to save this page
 			base.OnPageSaving(page);
 			var requiredLen = ((PageImpl)page).EndIndex + 1;
@@ -87,7 +87,7 @@ namespace Sphere10.Framework {
 			// Always ensure file-stream is never larger than last page
 			base.OnPageSaved(page);
 			if (page.Number == InternalPages.Count - 1) {
-				TruncateFile();				
+				TruncateFile();
 			}
 		}
 
@@ -103,7 +103,7 @@ namespace Sphere10.Framework {
 		/// <summary>
 		/// The page is mapped to a section of a single file
 		/// </summary>
-        public class PageImpl : FilePageBase<byte>, IBufferPage {
+		public class PageImpl : FilePageBase<byte>, IBufferPage {
 
 			public PageImpl(Stream stream, int pageNumber, int pageSize)
 				: base(stream, new FixedSizeObjectSizer<byte>(sizeof(byte)), pageNumber, pageSize, new MemoryBuffer(0, pageSize, pageSize)) {
@@ -125,18 +125,16 @@ namespace Sphere10.Framework {
 				Guard.Ensure(bytesRead == stream.Length, "Read less bytes than expected");
 			}
 
-            public ReadOnlySpan<byte> ReadSpan(int index, int count) 
+			public ReadOnlySpan<byte> ReadSpan(int index, int count)
 				=> PagedBufferImplementationHelper.ReadPageSpan(this, (MemoryBuffer)MemoryStore, index, count);
 
-			public void UpdateSpan(int index, ReadOnlySpan<byte> items)
-			{
+			public void UpdateSpan(int index, ReadOnlySpan<byte> items) {
 				int beforeUpdateSize = Size;
 				PagedBufferImplementationHelper.UpdatePageSpan(this, MemoryStore as MemoryBuffer, index, items);
 				EndPosition += Size - beforeUpdateSize;
 			}
 
-			public bool AppendSpan(ReadOnlySpan<byte> items, out ReadOnlySpan<byte> overflow)
-			{
+			public bool AppendSpan(ReadOnlySpan<byte> items, out ReadOnlySpan<byte> overflow) {
 				var fittedCompletely = PagedBufferImplementationHelper.AppendPageSpan(this, MemoryStore as MemoryBuffer, items, out overflow);
 				EndPosition += items.Length - overflow.Length;
 

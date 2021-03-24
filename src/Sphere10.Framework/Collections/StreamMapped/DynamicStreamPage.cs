@@ -29,13 +29,13 @@ namespace Sphere10.Framework {
 		private const int ObjectSizeFieldSize = sizeof(uint);
 
 		private volatile int _version;
-		private readonly StreamMappedList<TItem> _parent;
+		private readonly StreamMappedPagedList<TItem> _parent;
 		private int[] _itemSizes;
 		private long _previousPagePosition;
 		private long _nextPagePosition;
 		private long[] _offsets;
 
-		public DynamicStreamPage(StreamMappedList<TItem> parent)
+		public DynamicStreamPage(StreamMappedPagedList<TItem> parent)
 			: this(Page0Offset, Page0Offset, parent) {
 		}
 
@@ -43,7 +43,7 @@ namespace Sphere10.Framework {
 			: this(previousPage.StartPosition, previousPage.NextPagePosition, previousPage._parent) {
 		}
 
-		private DynamicStreamPage(long previousPagePosition, long startPosition, StreamMappedList<TItem> parent) 
+		private DynamicStreamPage(long previousPagePosition, long startPosition, StreamMappedPagedList<TItem> parent) 
 			: base(parent) {
 			Guard.ArgumentNotNull(parent, nameof(parent));
 			Guard.ArgumentNotNull(parent.Stream, nameof(parent.Stream));

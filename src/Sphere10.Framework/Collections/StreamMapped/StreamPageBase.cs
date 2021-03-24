@@ -2,14 +2,14 @@
 
 namespace Sphere10.Framework {
 
-	public abstract class StreamPageBase<TItem> : PageBase<TItem> {
-		protected StreamPageBase(StreamMappedList<TItem> parent) {
+	internal abstract class StreamPageBase<TItem> : PageBase<TItem> {
+		protected StreamPageBase(StreamMappedPagedList<TItem> parent) {
 			Parent = parent;
 		}
 
 		public long StartPosition { get; protected set; }
 
-		protected StreamMappedList<TItem> Parent { get; }
+		protected StreamMappedPagedList<TItem> Parent { get; }
 
 		protected Stream Stream => Parent.Stream;
 

@@ -2,57 +2,54 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Sphere10.Framework.Collections.StreamMapped;
 
-namespace Sphere10.Framework.Collections {
+namespace Sphere10.Framework {
 
-	// this is like a StreamMappedList except it maps the object over non-contiguous sectors instead of a contiguous stream.
-	// It uses a StreamMappedList of sectors under the hood.
-	public class ClusteredStreamMappedList<T> : RangedListBase<T> {
+
+	/// <summary>
+	/// A list implementation which is mapped onto a stream via clusters. Items can added/removed anywhere, and they are stored
+	/// in a non-contiguous manner via clusters of data (similar in principle to a file system format). The limitation here is that the
+	/// the list is inherantly bounded from construction and cannot grow past the pre-determined maximum number of items. This uses
+	/// <see cref="StreamMappedPagedList{TItem}"/> under the hood.
+	/// </summary>
+	public class StreamMappedFixedClusteredList<T> : RangedListBase<T> {
 		private const int HeaderSize = 256;
 
 		private readonly int _clusterSize;
-		private readonly int _storageClusterCount;
-		private readonly int _maxItems;
 		private readonly IObjectSerializer<T> _serializer;
+		private readonly int _storageClusterCount;
 		private readonly Stream _stream;
 
-		private StreamMappedList<Cluster> _clusters;
+		private StreamMappedPagedList<Cluster> _clusters;
 		private IExtendedList<bool> _clusterStatus;
 		private IExtendedList<ItemListing> _listings;
 
-		public ClusteredStreamMappedList(int clusterSize,
-			int maxItems,
-			int storageClusterCount,
-			IObjectSerializer<T> serializer,
-			Stream stream) {
+		public StreamMappedFixedClusteredList(int clusterSize, int maxItems, int storageClusterCount, IObjectSerializer<T> serializer, Stream stream) {
 			_clusterSize = clusterSize;
 			_storageClusterCount = storageClusterCount;
-			_maxItems = maxItems;
+			Capacity = maxItems;
 
 			_serializer = serializer;
 			_stream = stream;
 
-			if (!_serializer.IsFixedSize) {
+			if (!_serializer.IsFixedSize)
 				throw new ArgumentException("Non fixed sized items not supported");
-			}
 
 			Initialize();
 		}
 
 		public override int Count => _listings.Count;
 
-		public int Capacity => _maxItems;
+		public int Capacity { get; }
 
 		public override void AddRange(IEnumerable<T> items) {
 			var itemsArray = items as T[] ?? items.ToArray();
 
-			if (!itemsArray.Any()) {
+			if (!itemsArray.Any())
 				return;
-			}
 
-			foreach (T item in itemsArray) {
-				int clusterStartIndex = AddItemToClusters(item);
+			foreach (var item in itemsArray) {
+				var clusterStartIndex = AddItemToClusters(item);
 
 				_listings.Add(new ItemListing {
 					Size = _serializer.CalculateSize(item),
@@ -64,37 +61,35 @@ namespace Sphere10.Framework.Collections {
 		}
 
 		public override IEnumerable<int> IndexOfRange(IEnumerable<T> items) {
-			T[] itemsArray = items as T[] ?? items.ToArray();
-			int[] results = new int[itemsArray.Length];
+			var itemsArray = items as T[] ?? items.ToArray();
+			var results = new int[itemsArray.Length];
 
-			foreach ((ItemListing listing, int i) in _listings.WithIndex().Where(x => x.Item1.Size != 0)) {
-				T item = ReadItemFromClusters(listing.ClusterStartIndex, listing.Size);
+			foreach ((var listing, var i) in _listings.WithIndex().Where(x => x.Item1.Size != 0)) {
+				var item = ReadItemFromClusters(listing.ClusterStartIndex, listing.Size);
 
-				foreach (var (t, index) in itemsArray.WithIndex()) {
-					if (EqualityComparer<T>.Default.Equals(t, item)) {
+				foreach (var (t, index) in itemsArray.WithIndex())
+					if (EqualityComparer<T>.Default.Equals(t, item))
 						results[index] = i;
-					}
-				}
 			}
 
 			return results;
 		}
 
 		public override IEnumerable<T> ReadRange(int index, int count) {
-			for (int i = 0; i < count; i++) {
+			for (var i = 0; i < count; i++) {
 				var listing = _listings[index + i];
 				yield return ReadItemFromClusters(listing.ClusterStartIndex, listing.Size);
 			}
 		}
 
 		public override void UpdateRange(int index, IEnumerable<T> items) {
-			T[] itemsArray = items.ToArray();
+			var itemsArray = items.ToArray();
 
-			List<ItemListing> itemListings = new List<ItemListing>();
-			for (int i = 0; i < itemsArray.Length; i++) {
-				ItemListing listing = _listings[index + i];
+			var itemListings = new List<ItemListing>();
+			for (var i = 0; i < itemsArray.Length; i++) {
+				var listing = _listings[index + i];
 				RemoveItemFromClusters(listing.ClusterStartIndex);
-				int startIndex = AddItemToClusters(itemsArray[i]);
+				var startIndex = AddItemToClusters(itemsArray[i]);
 
 				itemListings.Add(new ItemListing {
 					Size = _serializer.CalculateSize(itemsArray[i]),
@@ -108,17 +103,16 @@ namespace Sphere10.Framework.Collections {
 		public override void InsertRange(int index, IEnumerable<T> items) {
 			var itemsArray = items as T[] ?? items.ToArray();
 
-			if (_listings.Count + itemsArray.Length > _maxItems)
+			if (_listings.Count + itemsArray.Length > Capacity)
 				throw new ArgumentException("Insufficient space");
 
-			if (!itemsArray.Any()) {
+			if (!itemsArray.Any())
 				return;
-			}
 
-			List<ItemListing> listings = new List<ItemListing>();
+			var listings = new List<ItemListing>();
 
-			foreach (T item in itemsArray) {
-				int clusterIndex = AddItemToClusters(item);
+			foreach (var item in itemsArray) {
+				var clusterIndex = AddItemToClusters(item);
 
 				listings.Add(new ItemListing {
 					Size = _serializer.CalculateSize(item),
@@ -132,8 +126,8 @@ namespace Sphere10.Framework.Collections {
 		}
 
 		public override void RemoveRange(int index, int count) {
-			for (int i = 0; i < count; i++) {
-				ItemListing listing = _listings[index + i];
+			for (var i = 0; i < count; i++) {
+				var listing = _listings[index + i];
 				RemoveItemFromClusters(listing.ClusterStartIndex);
 			}
 
@@ -144,12 +138,12 @@ namespace Sphere10.Framework.Collections {
 
 		private T ReadItemFromClusters(int startCluster, int size) {
 			int? next = startCluster;
-			int remaining = size;
+			var remaining = size;
 
-			ByteArrayBuilder builder = new ByteArrayBuilder();
+			var builder = new ByteArrayBuilder();
 
 			while (next != -1) {
-				Cluster cluster = _clusters[next.Value];
+				var cluster = _clusters[next.Value];
 				next = cluster.Next;
 
 				if (cluster.Next < 0) {
@@ -165,26 +159,26 @@ namespace Sphere10.Framework.Collections {
 		}
 
 		private void RemoveItemFromClusters(int startCluster) {
-			int next = startCluster;
+			var next = startCluster;
 
 			while (next != -1) {
-				Cluster cluster = _clusters[next];
+				var cluster = _clusters[next];
 				_clusterStatus[cluster.Number] = false;
 				next = cluster.Next;
 			}
 		}
 
 		private int AddItemToClusters(T item) {
-			List<Cluster> clusters = new List<Cluster>();
+			var clusters = new List<Cluster>();
 
 			using var stream = new MemoryStream();
 			_serializer.Serialize(item, new EndianBinaryWriter(EndianBitConverter.Little, stream));
-			byte[] data = stream.ToArray();
+			var data = stream.ToArray();
 
-			List<IEnumerable<byte>> segments = data.PartitionBySize(x => 1, _clusterSize)
+			var segments = data.PartitionBySize(x => 1, _clusterSize)
 				.ToList();
 
-			int[] numbers = _clusterStatus
+			var numbers = _clusterStatus
 				.WithIndex()
 				.Where(x => !x.Item1)
 				.Take(segments.Count)
@@ -192,8 +186,8 @@ namespace Sphere10.Framework.Collections {
 				.ToArray();
 
 			for (var i = 0; i < segments.Count; i++) {
-				byte[] segment = segments[i].ToArray();
-				byte[] clusterData = new byte[_clusterSize];
+				var segment = segments[i].ToArray();
+				var clusterData = new byte[_clusterSize];
 				segment.CopyTo(clusterData, 0);
 
 				clusters.Add(new Cluster {
@@ -203,76 +197,59 @@ namespace Sphere10.Framework.Collections {
 				});
 			}
 
-			foreach (var cluster in clusters) {
+			foreach (var cluster in clusters)
 				_clusterStatus[cluster.Number] = true;
-			}
 
-			foreach (Cluster cluster in clusters) {
-				if (!_clusters.Any()) {
+			foreach (var cluster in clusters)
+				if (!_clusters.Any())
 					_clusters.Add(cluster);
-				} else if (cluster.Number >= _clusters.Count) {
+				else if (cluster.Number >= _clusters.Count)
 					_clusters.Add(cluster);
-				} else {
+				else
 					_clusters[cluster.Number] = cluster;
-				}
-			}
 
 			return clusters.First().Number;
 		}
 
 		private void Initialize() {
-			int listingSize = sizeof(int) + sizeof(int);
-			int listingTotalSize = listingSize * _maxItems;
-			int statusTotalSize = sizeof(bool) * _storageClusterCount;
-			int clusterTotalSize = _clusterSize * _storageClusterCount;
+			var listingSize = sizeof(int) + sizeof(int);
+			var listingTotalSize = listingSize * Capacity;
+			var statusTotalSize = sizeof(bool) * _storageClusterCount;
+			var clusterTotalSize = _clusterSize * _storageClusterCount;
 
-			BoundedStream listingsStream = new BoundedStream(_stream, HeaderSize, HeaderSize + listingTotalSize - 1)
-				{ UseRelativeOffset = true };
-			BoundedStream statusStream = new BoundedStream(_stream,
-				listingsStream.MaxAbsolutePosition + 1,
-				listingsStream.MaxAbsolutePosition + statusTotalSize) { UseRelativeOffset = true };
-			BoundedStream clusterStream = new BoundedStream(_stream,
-				statusStream.MaxAbsolutePosition + 1,
-				statusStream.MaxAbsolutePosition + clusterTotalSize) { UseRelativeOffset = true };
+			var listingsStream = new BoundedStream(_stream, HeaderSize, HeaderSize + listingTotalSize - 1) { UseRelativeOffset = true };
+			var statusStream = new BoundedStream(_stream, listingsStream.MaxAbsolutePosition + 1, listingsStream.MaxAbsolutePosition + statusTotalSize) { UseRelativeOffset = true };
+			var clusterStream = new BoundedStream(_stream, statusStream.MaxAbsolutePosition + 1, statusStream.MaxAbsolutePosition + clusterTotalSize) { UseRelativeOffset = true };
 
-			if (_stream.Length == 0) {
+			if (_stream.Length == 0)
 				WriteHeader();
-			} else {
+			else
 				ReadHeader();
-			}
 
-			var preAllocatedListingStore = new StreamMappedList<ItemListing>(new ItemListingSerializer(), listingsStream)
-				{ IncludeListHeader = false };
+			var preAllocatedListingStore = new StreamMappedPagedList<ItemListing>(new ItemListingSerializer(), listingsStream) { IncludeListHeader = false };
 
-			if (preAllocatedListingStore.RequiresLoad) {
+			if (preAllocatedListingStore.RequiresLoad)
 				preAllocatedListingStore.Load();
-			} else {
-				preAllocatedListingStore.AddRange(Enumerable.Repeat(default(ItemListing), _maxItems));
-			}
+			else
+				preAllocatedListingStore.AddRange(Enumerable.Repeat(default(ItemListing), Capacity));
 
 			_listings = new PreAllocatedList<ItemListing>(preAllocatedListingStore);
-			var status = new StreamMappedList<bool>(new BoolSerializer(), statusStream)
-				{ IncludeListHeader = false };
+			var status = new StreamMappedPagedList<bool>(new BoolSerializer(), statusStream) { IncludeListHeader = false };
 
-			if (status.RequiresLoad) {
+			if (status.RequiresLoad)
 				status.Load();
-			} else {
+			else
 				status.AddRange(Enumerable.Repeat(false, _storageClusterCount));
-			}
 			_clusterStatus = new PreAllocatedList<bool>(status);
 
-			if (!_clusterStatus.Any()) {
+			if (!_clusterStatus.Any())
 				_clusterStatus.AddRange(status);
-			}
 
-			_clusters = new StreamMappedList<Cluster>(StreamMappedListType.FixedSize,
-				new ClusterSerializer(_clusterSize),
-				clusterStream,
-				_clusterSize * _storageClusterCount);
+			_clusters = new StreamMappedPagedList<Cluster>(StreamMappedPagedListType.FixedSize, new ClusterSerializer(_clusterSize), clusterStream, _clusterSize * _storageClusterCount);
 
-			if (_clusters.RequiresLoad) {
+			if (_clusters.RequiresLoad)
 				_clusters.Load();
-			}
+
 		}
 
 		private void WriteHeader() {

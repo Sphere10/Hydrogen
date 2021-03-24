@@ -17,19 +17,18 @@ using System.Linq;
 using System.Text;
 using NUnit.Framework;
 using System.IO;
-using Sphere10.Framework.Collections.StreamMapped;
 using Sphere10.Framework.NUnit;
 
 namespace Sphere10.Framework.Tests {
 
     [TestFixture]
     [Parallelizable(ParallelScope.Children)]
-    public class StreamMappedListTests {
+    public class StreamMappedPagedListTests {
 
         [Test]
         public void V1_Add_1([Values(1, 111)] int pageSize) {
             using var stream = new MemoryStream();
-            var list = new StreamMappedList<string>(new StringSerializer(Encoding.ASCII), stream, pageSize);
+            var list = new StreamMappedPagedList<string>(new StringSerializer(Encoding.ASCII), stream, pageSize);
 
             list.Add("item1");
             Assert.AreEqual(1, list.Count);
@@ -38,7 +37,7 @@ namespace Sphere10.Framework.Tests {
         [Test]
         public void V1_Update_1([Values(1, 111)] int pageSize) {
             using var stream = new MemoryStream();
-            var list = new StreamMappedList<string>(new StringSerializer(Encoding.ASCII), stream, pageSize);
+            var list = new StreamMappedPagedList<string>(new StringSerializer(Encoding.ASCII), stream, pageSize);
 
             list.Add("item1");
             list.Update(0, "item2");
@@ -49,7 +48,7 @@ namespace Sphere10.Framework.Tests {
         [Test]
         public void V1_Add_2([Values(1, 2, 111)] int pageSize) {
             using var stream = new MemoryStream();
-            var list = new StreamMappedList<string>(new StringSerializer(Encoding.ASCII), stream, pageSize);
+            var list = new StreamMappedPagedList<string>(new StringSerializer(Encoding.ASCII), stream, pageSize);
 
             list.Add("item1");
             list.Add("the second item");
@@ -59,7 +58,7 @@ namespace Sphere10.Framework.Tests {
         [Test]
         public void V1_Add_3([Values(1, 2, 111)] int pageSize) {
             using var stream = new MemoryStream();
-            var list = new StreamMappedList<string>(new StringSerializer(Encoding.ASCII), stream, pageSize);
+            var list = new StreamMappedPagedList<string>(new StringSerializer(Encoding.ASCII), stream, pageSize);
 
             list.Add("item1");
             list.AddRange("the second item", "33333333333333333333333333");
@@ -69,7 +68,7 @@ namespace Sphere10.Framework.Tests {
         [Test]
         public void V1_Read_1([Values(1, 2)] int pageSize) {
             using var stream = new MemoryStream();
-            var list = new StreamMappedList<string>(new StringSerializer(Encoding.ASCII), stream, pageSize);
+            var list = new StreamMappedPagedList<string>(new StringSerializer(Encoding.ASCII), stream, pageSize);
 
             list.Add("item1");
             Assert.AreEqual("item1", list[0]);
@@ -78,7 +77,7 @@ namespace Sphere10.Framework.Tests {
         [Test]
         public void V1_Read_2([Values(1, 2)] int pageSize) {
             using var stream = new MemoryStream();
-            var list = new StreamMappedList<string>(new StringSerializer(Encoding.ASCII), stream, pageSize);
+            var list = new StreamMappedPagedList<string>(new StringSerializer(Encoding.ASCII), stream, pageSize);
 
             list.AddRange("item1", "item2");
             Assert.AreEqual("item1", list[0]);
@@ -87,9 +86,9 @@ namespace Sphere10.Framework.Tests {
 
         [Test]
         public void V1_FixedSize_Read_NoHeader() {
-            StreamMappedList<int> list;
+            StreamMappedPagedList<int> list;
             using var stream = new MemoryStream();
-            list = new StreamMappedList<int>(new IntSerializer(), stream) {IncludeListHeader = false};
+            list = new StreamMappedPagedList<int>(new IntSerializer(), stream) {IncludeListHeader = false};
             var added = new[] { 1, 2, 3, 4 };
             list.AddRange(added);
             var read = list.ReadRange(2, 2);
@@ -100,7 +99,7 @@ namespace Sphere10.Framework.Tests {
         public void V1_FixedSize_Update()
         {
             using var stream = new MemoryStream();
-            StreamMappedList<int> list = new StreamMappedList<int>(new IntSerializer(), stream) {IncludeListHeader = false};
+            StreamMappedPagedList<int> list = new StreamMappedPagedList<int>(new IntSerializer(), stream) {IncludeListHeader = false};
             var added = new[] { 1, 2, 3, 4 };
             list.AddRange(added);
             var read = list.ReadRange(0, added.Length);
@@ -114,7 +113,7 @@ namespace Sphere10.Framework.Tests {
         public void V1_Integration_SimpleRun([Values(1, 2, 3, 5)] int pageSize, [Values] StorageType storage) {
 
             using (CreateStream(storage, 14, out var stream)) {
-                var list = new StreamMappedList<string>(new StringSerializer(Encoding.ASCII), stream, pageSize);
+                var list = new StreamMappedPagedList<string>(new StringSerializer(Encoding.ASCII), stream, pageSize);
 
                 var len0 = stream.Length;
 
@@ -171,7 +170,7 @@ namespace Sphere10.Framework.Tests {
         [Test]
         public void V1_IntegrationTests([Values(0,1,17,1000)] int maxCapacity, [Values] bool includeListHeader) {
             using (var stream = new MemoryStream()) {
-                var list = new StreamMappedList<int>(new IntSerializer(), stream) { IncludeListHeader = includeListHeader };
+                var list = new StreamMappedPagedList<int>(new IntSerializer(), stream) { IncludeListHeader = includeListHeader };
                 AssertEx.ListIntegrationTest(list, maxCapacity, (rng, i) => rng.NextInts(i), mutateFromEndOnly: true);
             }
         }

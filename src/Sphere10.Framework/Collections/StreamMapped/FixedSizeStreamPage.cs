@@ -10,21 +10,13 @@ namespace Sphere10.Framework {
 		private readonly int _item0Offset;
 		private volatile int _version;
 
-		public FixedSizeStreamPage(StreamMappedList<TItem> parent) : base(parent) {
+		public FixedSizeStreamPage(StreamMappedPagedList<TItem> parent) : base(parent) {
+			Guard.Argument(parent.Serializer.IsFixedSize, nameof(parent), $"Parent list's serializer is not fixed size. {nameof(FixedSizeStreamPage<TItem>)} only supports fixed sized items.");
 			_version = 0;
-
-			if (!Serializer.IsFixedSize)
-				throw new ArgumentException(
-					$"Parent list's serializer is not fixed size. {nameof(FixedSizeStreamPage<TItem>)} only supports fixed sized items.",
-					nameof(parent)
-				);
-
-			_item0Offset = Parent.IncludeListHeader ? StreamMappedList<TItem>.ListHeaderSize : 0;
-
+			_item0Offset = Parent.IncludeListHeader ? StreamMappedPagedList<TItem>.ListHeaderSize : 0;
 			base.State = PageState.Loaded;
 			base.StartIndex = 0;
 			base.EndIndex = (int)(Stream.Length - _item0Offset);
-
 			StartPosition = _item0Offset;
 		}
 

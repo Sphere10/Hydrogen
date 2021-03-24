@@ -2,7 +2,7 @@
 
 namespace Sphere10.Framework {
 
-	public class ClusterSerializer : FixedSizeObjectSerializer<Cluster> {
+	internal class ClusterSerializer : FixedSizeObjectSerializer<Cluster> {
 		private readonly int _clusterDataSize;
 
 		public ClusterSerializer(int clusterSize) : base(clusterSize + sizeof(int) + sizeof(int)) {
@@ -18,12 +18,12 @@ namespace Sphere10.Framework {
 		}
 
 		public override Cluster Deserialize(int size, EndianBinaryReader reader) {
-			var sector = new Cluster {
+			var cluster = new Cluster {
 				Number = reader.ReadInt32(),
 				Data = reader.ReadBytes(_clusterDataSize),
 				Next = reader.ReadInt32()
 			};
-			return sector;
+			return cluster;
 		}
 	}
 

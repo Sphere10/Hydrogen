@@ -50,7 +50,7 @@ namespace Sphere10.Framework.ObjectSpace {
             var stream = new ExtendedMemoryStream(file);
             txnFile = file;
             storageMerkleTree = merkleFile.MerkleTree;
-            return new StreamMappedList<T>(serializer, stream, logicalPageSize);
+            return new StreamMappedPagedList<T>(serializer, stream, logicalPageSize);
         }
 
     }

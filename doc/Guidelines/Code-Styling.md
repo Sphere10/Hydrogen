@@ -132,6 +132,30 @@ public Constructor(int arg1, string arg2)
 
 
 
+### Use `var` 
+
+Explicit type declarations should be avoided where possible in preference of `var`.
+
+**Example**:
+
+```csharp
+IEnumerable<ISomeInterface<string>> sequence = GetSequence();
+foreach(ISomeInterface<string> item in sequence) {
+    //...
+}
+```
+
+becomes
+
+```csharp
+var sequence = GetSequence();
+foreach(var item in sequence) {
+    //...
+}
+```
+
+
+
 ### Avoid Unnecessary Braces
 
 Single-line scopes should avoid using begin/end braces.
@@ -209,6 +233,38 @@ should be
 ```
 
 **unless** the argument count was gratuitously long then it can be 1-arg per line.
+
+
+
+### Parenthesis Wrapping
+
+When wrapping a line after an open-parenthesis `(` ensure the close-parenthesis `)` is placed on new line at the indentation of the line which originated the `(` (i.e. as if it were begin/end braces `{` `}`). 
+
+**Example:**
+
+```csharp
+if (condition) {
+	SomeComplexMethod(
+		SomeArgument1,
+        SomeOtherMethod(
+			SomeArgument2, 
+			SomeArgument3));            
+}
+```
+
+becomes
+
+```csharp
+if (condition) {
+	SomeComplexMethod(
+		SomeArgument1,
+        SomeOtherMethod(
+			SomeArgument2, 
+			SomeArgument3
+		)
+	);
+}
+```
 
 
 

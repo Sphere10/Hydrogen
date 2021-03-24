@@ -1,4 +1,4 @@
-﻿namespace Sphere10.Framework.Collections.StreamMapped
+﻿namespace Sphere10.Framework
 {
     public enum StreamMappedListType
     {

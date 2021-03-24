@@ -1,6 +1,6 @@
 ﻿using System.IO;
 
-namespace Sphere10.Framework.Collections.StreamMapped {
+namespace Sphere10.Framework {
 
 	public abstract class StreamPageBase<TItem> : PageBase<TItem> {
 		protected StreamPageBase(StreamMappedList<TItem> parent) {

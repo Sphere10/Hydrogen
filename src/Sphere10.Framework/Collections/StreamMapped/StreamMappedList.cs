@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
-using Sphere10.Framework.Collections.StreamMapped;
 
 namespace Sphere10.Framework {
 
@@ -97,17 +96,14 @@ namespace Sphere10.Framework {
 
 		public override IDisposable EnterOpenPageScope(IPage<TItem> page) {
 			switch (Type) {
-				case StreamMappedListType.Dynamic:
-				{
-					var streamedPage = (DynamicStreamPage<TItem>)page;
-					streamedPage.Open();
+				case StreamMappedListType.Dynamic: {
+						var streamedPage = (DynamicStreamPage<TItem>)page;
+						streamedPage.Open();
 
-					return Tools.Scope.ExecuteOnDispose(streamedPage.Close);
-				}
+						return Tools.Scope.ExecuteOnDispose(streamedPage.Close);
+					}
 				case StreamMappedListType.FixedSize:
-				{
 					return Tools.Scope.ExecuteOnDispose(() => { }); //no-op
-				}
 				default:
 					throw new ArgumentOutOfRangeException();
 			}
@@ -129,16 +125,10 @@ namespace Sphere10.Framework {
 
 			// Load pages if any
 			var pages = new List<IPage<TItem>>();
-
 			if (Type is StreamMappedListType.Dynamic) {
 				while (Stream.Position < Stream.Length)
-					pages.Add(InternalPages.Any()
-						? new DynamicStreamPage<TItem>(this)
-						: new DynamicStreamPage<TItem>((DynamicStreamPage<TItem>)pages.Last()));
-
-			} else {
-				pages.Add(new FixedSizeStreamPage<TItem>(this));
-			}
+					pages.Add(InternalPages.Any() ? new DynamicStreamPage<TItem>(this) : new DynamicStreamPage<TItem>((DynamicStreamPage<TItem>)pages.Last()));
+			} else pages.Add(new FixedSizeStreamPage<TItem>(this));
 
 			return pages.ToArray();
 		}
@@ -161,13 +151,8 @@ namespace Sphere10.Framework {
 
 		protected override IPage<TItem> NewPageInstance(int pageNumber) =>
 			Type switch {
-				StreamMappedListType.Dynamic => pageNumber == 0
-					? new DynamicStreamPage<TItem>(this)
-					: new DynamicStreamPage<TItem>((DynamicStreamPage<TItem>)InternalPages.Last()),
-				StreamMappedListType.FixedSize => pageNumber == 0
-					? new FixedSizeStreamPage<TItem>(this)
-					: throw new InvalidOperationException(
-						$"{nameof(StreamMappedListType.FixedSize)} only supports a single page."),
+				StreamMappedListType.Dynamic => pageNumber == 0 ? new DynamicStreamPage<TItem>(this) : new DynamicStreamPage<TItem>((DynamicStreamPage<TItem>)InternalPages.Last()),
+				StreamMappedListType.FixedSize => pageNumber == 0 ? new FixedSizeStreamPage<TItem>(this) : throw new InvalidOperationException($"{nameof(StreamMappedListType.FixedSize)} only supports a single page."),
 				_ => throw new ArgumentOutOfRangeException()
 			};
 

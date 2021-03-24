@@ -2,9 +2,10 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Sphere10.Framework.Collections.StreamMapped;
+using System.Threading;
 
 namespace Sphere10.Framework {
+
 	/// Page Header Format
 	/// ===================
 	///	Count (UINT16)
@@ -27,7 +28,7 @@ namespace Sphere10.Framework {
 		private const int Object0SizeFieldOffset = NextPageOffsetFieldOffset + NextPageOffsetFieldSize;
 		private const int ObjectSizeFieldSize = sizeof(uint);
 
-		private volatile uint _version;
+		private volatile int _version;
 		private readonly StreamMappedList<TItem> _parent;
 		private int[] _itemSizes;
 		private long _previousPagePosition;
@@ -42,7 +43,8 @@ namespace Sphere10.Framework {
 			: this(previousPage.StartPosition, previousPage.NextPagePosition, previousPage._parent) {
 		}
 
-		private DynamicStreamPage(long previousPagePosition, long startPosition, StreamMappedList<TItem> parent) : base(parent) {
+		private DynamicStreamPage(long previousPagePosition, long startPosition, StreamMappedList<TItem> parent) 
+			: base(parent) {
 			Guard.ArgumentNotNull(parent, nameof(parent));
 			Guard.ArgumentNotNull(parent.Stream, nameof(parent.Stream));
 			Guard.ArgumentInRange(startPosition, Page0Offset, parent.Stream.Length, nameof(startPosition));
@@ -76,7 +78,6 @@ namespace Sphere10.Framework {
 			}
 
 		}
-
 
 		public override int Count {
 			get => base.Count;
@@ -124,7 +125,7 @@ namespace Sphere10.Framework {
 			// Calculate the object offsets (this array is nullified on close to save memory 
 			// in cases when many page headers exist).
 			State = PageState.Loading;
-			_offsets = new long[MaxItems]; 
+			_offsets = new long[MaxItems];
 			CalculateOffsets(0);
 			State = PageState.Loaded;
 		}
@@ -132,7 +133,7 @@ namespace Sphere10.Framework {
 		public void Close() {
 			State = PageState.Unloading;
 			// Unload cached offsets array (makes a mem difference when large numbers of pages loaded)
-			_offsets = null; 
+			_offsets = null;
 			State = PageState.Loaded;
 		}
 
@@ -187,7 +188,7 @@ namespace Sphere10.Framework {
 			newItemsSize = itemSizes.Sum();
 			SetItemSizes(index, itemSizes, out oldItemsSize);
 			NextPagePosition += newItemsSize - oldItemsSize;
-			_version++;
+			Interlocked.Increment(ref _version);
 		}
 
 		protected override void EraseFromEndInternal(int count, out int oldItemsSize) {
@@ -195,7 +196,7 @@ namespace Sphere10.Framework {
 			var removeFrom = this.Count - count;
 			SetItemSizes(removeFrom, Enumerable.Repeat(0, count).ToArray(), out oldItemsSize);
 			Stream.SetLength(Stream.Length - oldItemsSize);
-			_version++;
+			Interlocked.Increment(ref _version);
 		}
 
 		private long GetItem0DataOffset() {

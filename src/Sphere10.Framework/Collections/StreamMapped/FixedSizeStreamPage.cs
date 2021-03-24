@@ -2,21 +2,22 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 
-namespace Sphere10.Framework.Collections.StreamMapped {
+namespace Sphere10.Framework {
 
 	internal class FixedSizeStreamPage<TItem> : StreamPageBase<TItem> {
 		private readonly int _item0Offset;
-		private int _version;
+		private volatile int _version;
 
 		public FixedSizeStreamPage(StreamMappedList<TItem> parent) : base(parent) {
 			_version = 0;
 
-			if (!Serializer.IsFixedSize) {
+			if (!Serializer.IsFixedSize)
 				throw new ArgumentException(
 					$"Parent list's serializer is not fixed size. {nameof(FixedSizeStreamPage<TItem>)} only supports fixed sized items.",
-					nameof(parent));
-			}
+					nameof(parent)
+				);
 
 			_item0Offset = Parent.IncludeListHeader ? StreamMappedList<TItem>.ListHeaderSize : 0;
 
@@ -27,7 +28,7 @@ namespace Sphere10.Framework.Collections.StreamMapped {
 			StartPosition = _item0Offset;
 		}
 
-		protected int MaxItems => Parent.PageSize / ItemSize;
+		public int MaxItems => Parent.PageSize / ItemSize;
 
 		public override int Count => (int)(Stream.Length - _item0Offset) / ItemSize;
 
@@ -47,9 +48,9 @@ namespace Sphere10.Framework.Collections.StreamMapped {
 		}
 
 		protected override IEnumerable<TItem> ReadInternal(int index, int count) {
-			int startIndex = index * ItemSize + _item0Offset;
+			var startIndex = index * ItemSize + _item0Offset;
 
-			for (int i = 0; i < count; i++) {
+			for (var i = 0; i < count; i++) {
 				Stream.Seek(startIndex + i * ItemSize, SeekOrigin.Begin);
 
 				yield return Serializer.Deserialize(ItemSize, Reader);
@@ -62,18 +63,16 @@ namespace Sphere10.Framework.Collections.StreamMapped {
 				return items.Length;
 			}
 
-			if (items.Length + Count > MaxItems) {
+			if (items.Length + Count > MaxItems)
 				throw new InvalidOperationException("Unable to append items, Max Items of page will be exceeded.");
-			}
 
 			Stream.Seek(_item0Offset + Count * ItemSize, SeekOrigin.Begin);
 
-			foreach (TItem item in items) {
+			foreach (var item in items)
 				Serializer.Serialize(item, Writer);
-			}
 
 			newItemsSize = items.Length * ItemSize;
-			_version++;
+			Interlocked.Increment(ref _version);
 
 			return items.Length;
 		}
@@ -82,25 +81,24 @@ namespace Sphere10.Framework.Collections.StreamMapped {
 			CheckPageState(PageState.Loaded);
 			Guard.Ensure(index + items.Length <= Count, "Update outside bounds of list");
 
-			int itemsSize = items.Length * ItemSize;
+			var itemsSize = items.Length * ItemSize;
 			index = index * ItemSize + _item0Offset;
 
 			Stream.Seek(index, SeekOrigin.Begin);
 
-			foreach (TItem item in items) {
+			foreach (var item in items)
 				Serializer.Serialize(item, Writer);
-			}
 
 			newItemsSize = itemsSize;
 			oldItemsSize = itemsSize;
-			_version++;
+			Interlocked.Increment(ref _version);
 		}
 
 		protected override void EraseFromEndInternal(int count, out int oldItemsSize) {
-			int erasedBytes = ItemSize * count;
+			var erasedBytes = ItemSize * count;
 			Stream.SetLength(Stream.Length - erasedBytes);
 			oldItemsSize = erasedBytes;
-			_version++;
+			Interlocked.Increment(ref _version);
 		}
 	}
 

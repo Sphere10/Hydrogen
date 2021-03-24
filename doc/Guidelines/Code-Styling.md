@@ -115,6 +115,37 @@ Sphere10.Hydrogen.Presentation.UI
 
 
 
+### Tool Pattern
+
+Sphere 10 framework employs a syntactic naming convention for providing "tool" classes to framework consumers.  Tools are static classes that provide functionality in a specific domain. What makes them different is that tool classes are always defined in the  `global::Tools` namespace and never imported directly. 
+
+The reason it is done this way is to that framework consumers can always pull up tools by simply relying on intellisense and by typing `Tools.`. Since "Tools" is a global namespace, all classes defined in Tools will appear. This makes it very easy for a developer to pull up the toolbox whenever it is needed. Sphere 10 and Hydrogen framework Since knowing and remembering all tools is an unrealistic thing, tools can **always** be brought up by intellisense.
+
+To use tools, simply ensure the assembly is referenced and type `Tools.` in the code editor:
+
+![Tools-Example](resources/Tools-Example.jpg)
+
+
+
+To create a tool, simply create a static class anywhere in the module and ensure it's namespace is simply `Tools`. Example:
+
+```csharp
+namespace Tools {
+
+	public static class Enums {
+
+		public static IEnumerable<T> GetValues<T>() {
+			return Enum.GetValues(typeof(T)).Cast<T>();
+		}
+
+		/// add more static methods here
+}
+```
+
+
+
+
+
 ### Constructors calls
 
 Invocation of base or sibling constructor should always be on the next line

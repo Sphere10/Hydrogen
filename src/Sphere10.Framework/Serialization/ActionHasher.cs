@@ -10,7 +10,7 @@ namespace Sphere10.Framework {
 		}
 
 		public byte[] Hash(T @object) => _hasher.Invoke(@object);
-		
+
 	}
 
 }

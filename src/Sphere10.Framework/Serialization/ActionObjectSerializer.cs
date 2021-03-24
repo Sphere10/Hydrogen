@@ -8,7 +8,7 @@ namespace Sphere10.Framework {
 		private readonly Func<T, EndianBinaryWriter, int> _serializer;
 		private readonly Func<int, EndianBinaryReader, T> _deserializer;
 
-		public ActionObjectSerializer(Func<T, int> sizer, Func<T, EndianBinaryWriter, int> serializer, Func<int, EndianBinaryReader, T> deserializer) 
+		public ActionObjectSerializer(Func<T, int> sizer, Func<T, EndianBinaryWriter, int> serializer, Func<int, EndianBinaryReader, T> deserializer)
 			: base(sizer) {
 			Guard.ArgumentNotNull(serializer, nameof(serializer));
 			Guard.ArgumentNotNull(deserializer, nameof(deserializer));

@@ -25,7 +25,7 @@ namespace Sphere10.Framework {
 			itemSizes = calculateIndividualItems ? Tools.Array.Gen(itemsCount, val) : null;
 			return size;
 		}
-	
+
 		public int CalculateSize(TItem item) => FixedSize;
 	}
 

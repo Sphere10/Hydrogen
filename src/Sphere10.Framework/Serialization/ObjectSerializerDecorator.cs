@@ -5,7 +5,7 @@
 		public ObjectSerializerDecorator(IObjectSerializer<TItem> internalSerializer) : base(internalSerializer) {
 		}
 
-		protected new IObjectSerializer<TItem> Internal => (IObjectSerializer<TItem>) base.Internal;
+		protected new IObjectSerializer<TItem> Internal => (IObjectSerializer<TItem>)base.Internal;
 
 		public virtual int Serialize(TItem @object, EndianBinaryWriter writer) => Internal.Serialize(@object, writer);
 

@@ -187,7 +187,7 @@ namespace Sphere10.Framework {
 			CheckRequiresLoad();
 			NotifyAccessing();
 			while (InternalPages.Count > 0)
-				DeletePage(InternalPages[InternalPages.Count - 1]);
+				DeletePage(InternalPages[^1]);
 			InternalPages.Clear();
 			NotifyAccessed();
 		}

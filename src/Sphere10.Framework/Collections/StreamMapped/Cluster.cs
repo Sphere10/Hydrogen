@@ -1,4 +1,4 @@
-﻿namespace Sphere10.Framework.Collections {
+﻿namespace Sphere10.Framework {
 
 	public class Cluster {
 		public int Number { get; set; }

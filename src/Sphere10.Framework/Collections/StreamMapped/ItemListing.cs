@@ -1,6 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 
-namespace Sphere10.Framework.Collections {
+namespace Sphere10.Framework {
 
 	[StructLayout(LayoutKind.Sequential)]
 	public struct ItemListing {

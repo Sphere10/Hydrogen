@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 
-namespace Sphere10.Framework.Collections {
+namespace Sphere10.Framework {
 
 	public class ClusterSerializer : FixedSizeObjectSerializer<Cluster> {
 		private readonly int _clusterDataSize;

@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace Sphere10.Framework.Collections.StreamMapped {
+namespace Sphere10.Framework {
 
 	public class ItemListingSerializer : IObjectSerializer<ItemListing> {
 		public bool IsFixedSize { get; } = true;

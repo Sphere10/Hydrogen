@@ -251,7 +251,6 @@ namespace Sphere10.Framework.Collections {
 			}
 
 			_listings = new PreAllocatedList<ItemListing>(preAllocatedListingStore);
-
 			var status = new StreamMappedList<bool>(new BoolSerializer(), statusStream)
 				{ IncludeListHeader = false };
 

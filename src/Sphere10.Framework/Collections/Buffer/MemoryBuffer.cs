@@ -86,13 +86,7 @@ namespace Sphere10.Framework {
 		}
 
 		public void AddRange(ReadOnlySpan<byte> span) {
-			GrowSpaceIfRequired(span.Length);
-			UpdateVersion();
-			if (span.Length == 1)
-				// single access optimization
-				_internalArray[_length] = span[0];
-			span.CopyTo(_internalArray.AsSpan(_length, span.Length));
-			_length += span.Length;
+			Write(_length, span);
 		}
 
 		public void Write(int index, ReadOnlySpan<byte> span)

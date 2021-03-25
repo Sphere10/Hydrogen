@@ -38,7 +38,6 @@ namespace Sphere10.Helium.Queue
             _list = new StreamMappedFixedClusteredList<IMessage>(
                 _queueConfigDto.ClusterSize,
                 _queueConfigDto.ListingClusterCount,
-                _queueConfigDto.StorageClusterCount,
                 new MessageSerializer(),
                 _stream);
         }

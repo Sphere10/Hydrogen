@@ -15,7 +15,7 @@ namespace Sphere10.Framework {
 	public class StreamMappedFixedClusteredList<T> : RangedListBase<T> {
 		private const int HeaderSize = 256;
 
-		private readonly int _clusterSize;
+		private readonly int _clusterDataSize;
 		private readonly IObjectSerializer<T> _serializer;
 		private readonly int _storageClusterCount;
 		private readonly Stream _stream;
@@ -24,17 +24,18 @@ namespace Sphere10.Framework {
 		private IExtendedList<bool> _clusterStatus;
 		private IExtendedList<ItemListing> _listings;
 
-		public StreamMappedFixedClusteredList(int clusterSize, int maxItems, int storageClusterCount, IObjectSerializer<T> serializer, Stream stream) {
-			_clusterSize = clusterSize;
-			_storageClusterCount = storageClusterCount;
+		public StreamMappedFixedClusteredList(int clusterDataSize, int maxItems, IObjectSerializer<T> serializer, Stream stream) {
+			_clusterDataSize = clusterDataSize;
 			Capacity = maxItems;
 
 			_serializer = serializer;
 			_stream = stream;
-
+			
 			if (!_serializer.IsFixedSize)
 				throw new ArgumentException("Non fixed sized items not supported");
 
+			_storageClusterCount = (int)Math.Ceiling(_serializer.FixedSize / (double)clusterDataSize) * maxItems;
+			
 			Initialize();
 		}
 
@@ -175,7 +176,7 @@ namespace Sphere10.Framework {
 			_serializer.Serialize(item, new EndianBinaryWriter(EndianBitConverter.Little, stream));
 			var data = stream.ToArray();
 
-			var segments = data.PartitionBySize(x => 1, _clusterSize)
+			var segments = data.PartitionBySize(x => 1, _clusterDataSize)
 				.ToList();
 
 			var numbers = _clusterStatus
@@ -187,7 +188,7 @@ namespace Sphere10.Framework {
 
 			for (var i = 0; i < segments.Count; i++) {
 				var segment = segments[i].ToArray();
-				var clusterData = new byte[_clusterSize];
+				var clusterData = new byte[_clusterDataSize];
 				segment.CopyTo(clusterData, 0);
 
 				clusters.Add(new Cluster {
@@ -212,10 +213,12 @@ namespace Sphere10.Framework {
 		}
 
 		private void Initialize() {
+
+			var clusterSerializer = new ClusterSerializer(_clusterDataSize);
 			var listingSize = sizeof(int) + sizeof(int);
 			var listingTotalSize = listingSize * Capacity;
 			var statusTotalSize = sizeof(bool) * _storageClusterCount;
-			var clusterTotalSize = _clusterSize * _storageClusterCount;
+			var clusterTotalSize = clusterSerializer.FixedSize * _storageClusterCount;
 
 			var listingsStream = new BoundedStream(_stream, HeaderSize, HeaderSize + listingTotalSize - 1) { UseRelativeOffset = true };
 			var statusStream = new BoundedStream(_stream, listingsStream.MaxAbsolutePosition + 1, listingsStream.MaxAbsolutePosition + statusTotalSize) { UseRelativeOffset = true };
@@ -231,7 +234,7 @@ namespace Sphere10.Framework {
 			if (preAllocatedListingStore.RequiresLoad)
 				preAllocatedListingStore.Load();
 			else
-				preAllocatedListingStore.AddRange(Enumerable.Repeat(default(ItemListing), Capacity));
+				preAllocatedListingStore.AddRange(Tools.Array.Gen(Capacity, default(ItemListing)));
 
 			_listings = new PreAllocatedList<ItemListing>(preAllocatedListingStore);
 			var status = new StreamMappedPagedList<bool>(new BoolSerializer(), statusStream) { IncludeListHeader = false };
@@ -239,13 +242,15 @@ namespace Sphere10.Framework {
 			if (status.RequiresLoad)
 				status.Load();
 			else
-				status.AddRange(Enumerable.Repeat(false, _storageClusterCount));
+				status.AddRange(Tools.Array.Gen(_storageClusterCount, false));
 			_clusterStatus = new PreAllocatedList<bool>(status);
 
 			if (!_clusterStatus.Any())
 				_clusterStatus.AddRange(status);
 
-			_clusters = new StreamMappedPagedList<Cluster>(StreamMappedPagedListType.FixedSize, new ClusterSerializer(_clusterSize), clusterStream, _clusterSize * _storageClusterCount);
+			_clusters = new StreamMappedPagedList<Cluster>(StreamMappedPagedListType.FixedSize, clusterSerializer , clusterStream, clusterSerializer.FixedSize * _storageClusterCount) {
+				IncludeListHeader = false
+			};
 
 			if (_clusters.RequiresLoad)
 				_clusters.Load();

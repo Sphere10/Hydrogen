@@ -108,6 +108,33 @@ namespace Sphere10.Framework.Tests {
             
             Assert.AreEqual(added, list);
         }
+		
+		[Test]
+		[TestCase(StreamMappedPagedListType.FixedSize, int.MaxValue)]
+		[TestCase(StreamMappedPagedListType.Dynamic, 12)]
+		public void ReadItemRaw(StreamMappedPagedListType type, int pageSize) {
+			var random = new Random();
+			using var stream = new MemoryStream();
+			var mappedList = new StreamMappedPagedList<int>(type, new IntSerializer(), stream, pageSize);
+			
+			mappedList.AddRange(random.NextInts(10));
+			int read = mappedList.ReadItemRaw(1, 1, 3, out var span);
+			
+			Assert.AreEqual(read, span.Length);
+			Assert.AreEqual(3, span.Length);
+			Assert.AreEqual(BitConverter.GetBytes(mappedList[1])[1..], span.ToArray());
+		}
+		
+		[Test]
+		public void ReadItemRawInvalidIndex() {
+			var random = new Random();
+			using var stream = new MemoryStream();
+			var mappedList = new StreamMappedPagedList<int>(StreamMappedPagedListType.FixedSize, new IntSerializer(), stream, int.MaxValue);
+			
+			mappedList.AddRange(random.NextInts(1));
+			Assert.Throws<ArgumentOutOfRangeException>(() => mappedList.ReadItemRaw(5, 1, 1, out var span));
+			
+		}
 
         [Test]
         public void V1_Integration_SimpleRun([Values(1, 2, 3, 5)] int pageSize, [Values] StorageType storage) {

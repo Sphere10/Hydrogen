@@ -147,6 +147,13 @@ namespace Sphere10.Framework {
 			return ReadInternal(StartIndex, Count).GetEnumerator().OnMoveNext(CheckVersion);
 		}
 
+		public override int ReadItemRaw(int itemIndex, int byteOffset, int byteLength, out Span<byte> result) {
+			Stream.Seek(_offsets[itemIndex] + byteOffset, SeekOrigin.Begin);
+			result = Reader.ReadBytes(byteLength).AsSpan();
+			
+			return result.Length;
+		}
+
 		protected override IEnumerable<TItem> ReadInternal(int index, int count) {
 			CheckPageState(PageState.Loaded);
 			// Transform list index into page index

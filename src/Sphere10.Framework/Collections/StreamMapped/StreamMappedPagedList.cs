@@ -56,7 +56,10 @@ namespace Sphere10.Framework {
 		public const int DefaultPageSize = 100;
 
 		public StreamMappedPagedList(IObjectSerializer<TItem> serializer, Stream stream) : this(
-			serializer.IsFixedSize ? StreamMappedPagedListType.FixedSize : StreamMappedPagedListType.Dynamic, serializer, stream, serializer.IsFixedSize ? int.MaxValue : DefaultPageSize) {
+			serializer.IsFixedSize ? StreamMappedPagedListType.FixedSize : StreamMappedPagedListType.Dynamic,
+			serializer,
+			stream,
+			serializer.IsFixedSize ? int.MaxValue : DefaultPageSize) {
 		}
 
 		public StreamMappedPagedList(IObjectSerializer<TItem> serializer, Stream stream, int pageSize)
@@ -90,16 +93,54 @@ namespace Sphere10.Framework {
 		public override IDisposable EnterOpenPageScope(IPage<TItem> page) {
 			switch (Type) {
 				case StreamMappedPagedListType.Dynamic: {
-						var streamedPage = (DynamicStreamPage<TItem>)page;
-						streamedPage.Open();
+					var streamedPage = (DynamicStreamPage<TItem>)page;
+					streamedPage.Open();
 
-						return Tools.Scope.ExecuteOnDispose(streamedPage.Close);
-					}
+					return Tools.Scope.ExecuteOnDispose(streamedPage.Close);
+				}
 				case StreamMappedPagedListType.FixedSize:
 					return Tools.Scope.ExecuteOnDispose(() => { }); //no-op
 				default:
 					throw new ArgumentOutOfRangeException();
 			}
+		}
+
+		public int ReadItemRaw(int itemIndex, int byteOffset, int byteLength, out Span<byte> result) {
+			CheckRequiresLoad();
+			NotifyAccessing();
+			CheckRange(itemIndex, 1);
+
+			var pageSegment = GetPageSegments(itemIndex, 1).Single();
+			var page = (StreamPageBase<TItem>)pageSegment.Item1;
+			NotifyPageAccessing(page);
+			using (EnterOpenPageScope(page)) {
+				NotifyPageReading(page);
+				page.ReadItemRaw(itemIndex, byteOffset, byteLength, out result);
+				NotifyPageRead(page);
+			}
+			NotifyPageAccessed(page);
+			NotifyAccessed();
+
+			return result.Length;
+		}
+
+		public virtual IEnumerable<IEnumerable<TItem>> ReadRangeByPage(int index, int count) {
+			CheckRequiresLoad();
+			NotifyAccessing();
+			CheckRange(index, count);
+			foreach (var pageSegment in GetPageSegments(index, count)) {
+				var page = pageSegment.Item1;
+				var pageStartIndex = pageSegment.Item2;
+				var pageItemCount = pageSegment.Item3;
+				NotifyPageAccessing(page);
+				using (EnterOpenPageScope(page)) {
+					NotifyPageReading(page);
+					yield return page.Read(pageStartIndex, pageItemCount);
+					NotifyPageRead(page);
+				}
+				NotifyPageAccessed(page);
+			}
+			NotifyAccessed();
 		}
 
 		protected override IPage<TItem>[] LoadPages() {
@@ -145,7 +186,9 @@ namespace Sphere10.Framework {
 		protected override IPage<TItem> NewPageInstance(int pageNumber) =>
 			Type switch {
 				StreamMappedPagedListType.Dynamic => pageNumber == 0 ? new DynamicStreamPage<TItem>(this) : new DynamicStreamPage<TItem>((DynamicStreamPage<TItem>)InternalPages.Last()),
-				StreamMappedPagedListType.FixedSize => pageNumber == 0 ? new FixedSizeStreamPage<TItem>(this) : throw new InvalidOperationException($"{nameof(StreamMappedPagedListType.FixedSize)} only supports a single page."),
+				StreamMappedPagedListType.FixedSize => pageNumber == 0
+					? new FixedSizeStreamPage<TItem>(this)
+					: throw new InvalidOperationException($"{nameof(StreamMappedPagedListType.FixedSize)} only supports a single page."),
 				_ => throw new ArgumentOutOfRangeException()
 			};
 

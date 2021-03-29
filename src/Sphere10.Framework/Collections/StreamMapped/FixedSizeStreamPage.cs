@@ -92,6 +92,24 @@ namespace Sphere10.Framework {
 			oldItemsSize = erasedBytes;
 			Interlocked.Increment(ref _version);
 		}
+		
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="itemIndex">Global index of the item (not the index within page)</param>
+		/// <param name="byteOffset"></param>
+		/// <param name="byteLength"></param>
+		/// <param name="result"></param>
+		/// <returns>Number of bytes actually read</returns>
+		public override int ReadItemRaw(int itemIndex, int byteOffset, int byteLength, out Span<byte> result) {
+			Guard.ArgumentInRange(itemIndex, 0, Count - 1, nameof(itemIndex));
+
+			int offset = itemIndex * ItemSize + _item0Offset + byteOffset;
+
+			Stream.Seek(offset, SeekOrigin.Begin);
+			result = Reader.ReadBytes(byteLength).AsSpan();
+			return result.Length;
+		}
 	}
 
 }

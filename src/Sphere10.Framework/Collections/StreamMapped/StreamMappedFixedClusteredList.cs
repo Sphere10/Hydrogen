@@ -215,8 +215,9 @@ namespace Sphere10.Framework {
 		private void Initialize() {
 
 			var clusterSerializer = new ClusterSerializer(_clusterDataSize);
-			var listingSize = sizeof(int) + sizeof(int);
-			var listingTotalSize = listingSize * Capacity;
+			var listingSerializer = new ItemListingSerializer();
+			
+			var listingTotalSize = listingSerializer.FixedSize * Capacity;
 			var statusTotalSize = sizeof(bool) * _storageClusterCount;
 			var clusterTotalSize = clusterSerializer.FixedSize * _storageClusterCount;
 
@@ -229,7 +230,7 @@ namespace Sphere10.Framework {
 			else
 				ReadHeader();
 
-			var preAllocatedListingStore = new StreamMappedPagedList<ItemListing>(new ItemListingSerializer(), listingsStream) { IncludeListHeader = false };
+			var preAllocatedListingStore = new StreamMappedPagedList<ItemListing>(listingSerializer, listingsStream) { IncludeListHeader = false };
 
 			if (preAllocatedListingStore.RequiresLoad)
 				preAllocatedListingStore.Load();

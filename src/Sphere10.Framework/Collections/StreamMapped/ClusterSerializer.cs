@@ -6,7 +6,7 @@ namespace Sphere10.Framework {
 	internal class ClusterSerializer : FixedSizeObjectSerializer<Cluster> {
 		private readonly int _clusterDataSize;
 
-		public ClusterSerializer(int clusterSize) : base(clusterSize + sizeof(int) + sizeof(int)) {
+		public ClusterSerializer(int clusterSize) : base(clusterSize + sizeof(int) + sizeof(int)  + sizeof(int)) {
 			_clusterDataSize = clusterSize;
 		}
 
@@ -18,7 +18,7 @@ namespace Sphere10.Framework {
 			writer.Write(cluster.Data);
 			writer.Write(cluster.Next);
 			
-			return sizeof(int) + _clusterDataSize + sizeof(int);
+			return sizeof(int) + _clusterDataSize + sizeof(int)  + sizeof(int);
 		}
 
 		public override Cluster Deserialize(int size, EndianBinaryReader reader) {

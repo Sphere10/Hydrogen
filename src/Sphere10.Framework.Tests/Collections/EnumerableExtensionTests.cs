@@ -61,7 +61,17 @@ namespace Sphere10.Framework.Tests {
 
         }
 
-    
-    }
+		[Test]
+		[TestCase(1, 1, 1)]
+		[TestCase(10, 3, 4)]
+		public void PartitionBySize(int length, int partSize, int expectedParts) {
+			var rando = new Random();
 
+			var input = rando.NextBytes(length);
+			var parts = input.PartitionBySize(x => 1, partSize);
+			
+			Assert.AreEqual(expectedParts, parts.Count());
+			Assert.AreEqual(input, parts.Aggregate((x, y) => x.Concat(y)));
+		}
+    }
 }

@@ -23,6 +23,10 @@ namespace Sphere10.Framework {
     /// </summary>
     public class Disposables : ListDecorator<IDisposable>, IDisposable {
 
+		static Disposables() {
+			None = new Disposables();
+		}
+
         public Disposables(params IDisposable[] disposals) {
             if (disposals.Any())
                 this.AddRangeSequentially(disposals);
@@ -35,5 +39,8 @@ namespace Sphere10.Framework {
         public void Add(Action disposeAction) {
             base.Add(new ActionScope(disposeAction));
 		}
-    }
+
+		public static Disposables None { get; }
+
+	}
 }

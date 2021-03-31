@@ -67,8 +67,7 @@ namespace Sphere10.Framework {
 			var remainingSourceBytes = _source.Count - Position;
 			var remainingBufferBytes = buffer.Length - offset;
 			var bytesRead = Math.Max(0, Math.Min(count, Math.Min(remainingBufferBytes, remainingSourceBytes)));
-			var bytes = _source.ReadRange((int)Position, (int)bytesRead).ToArray();
-            System.Buffer.BlockCopy(bytes, 0, buffer, offset, (int)bytesRead);
+			SourceReadRange(buffer, offset, (int)Position, (int)bytesRead);
 			Position += bytesRead;
 			Debug.Assert(0 <= Position && Position <= Length);
 			return (int)bytesRead;
@@ -104,11 +103,11 @@ namespace Sphere10.Framework {
 		public override void SetLength(long value) {
 			Guard.ArgumentInRange(value, 0, int.MaxValue, nameof(value));
 			if (value < Length) {
-				_source.RemoveRange((int)value, (int)(Length - value));
+				SourceRemoveRange((int)value, (int)(Length - value));
 				if (Position > value)
 					Position = value;
 			} else if (value > Length) {
-				_source.AddRange(Tools.Array.Gen((int)(value - Length), (byte)0)); 
+				SourceAddRange(Tools.Array.Gen((int)(value - Length), (byte)0)); 
 			}
 		}
 
@@ -124,13 +123,13 @@ namespace Sphere10.Framework {
 			if (updateAmount > 0) {
 				var updatedBytes = new byte[updateAmount];
                 System.Buffer.BlockCopy(buffer, offset, updatedBytes, 0, updateAmount);
-				_source.UpdateRange((int)Position, updatedBytes);
+				SourceUpdateRange((int)Position, updatedBytes);
 			}
 
 			if (addingAmount > 0) {
 				var addedBytes = new byte[addingAmount];
                 System.Buffer.BlockCopy(buffer, offset + updateAmount, addedBytes, 0, addingAmount);
-				_source.AddRange(addedBytes);
+				SourceAddRange(addedBytes);
 			}
 			Position += updateAmount + addingAmount;
 			Debug.Assert(Position <= Length);
@@ -139,5 +138,36 @@ namespace Sphere10.Framework {
 		public virtual byte[] ToArray() {
 			return _source.ToArray();
 		}
+
+		private void SourceReadRange(byte[] buffer, int offset, int index, int count) {
+			if (_source is IBuffer buff) {
+				var bytes = buff.ReadSpan(index, count);
+				bytes.CopyTo(buffer.AsSpan(offset, count));
+			} else {
+				var bytes = _source.ReadRange(index, count).ToArray();
+				Buffer.BlockCopy(bytes, 0, buffer, offset, count);
+			}
+		}
+
+		private void SourceAddRange(byte[] bytes) {
+			if (_source is IBuffer buff) {
+				buff.AddRange(bytes.AsSpan());
+			} else {
+				_source.AddRange(bytes);
+			}
+		}
+
+		private void SourceUpdateRange(int index, byte[] bytes) {
+			if (_source is IBuffer buff) {
+				buff.UpdateRange(index, bytes.AsSpan());
+			} else {
+				_source.UpdateRange(index, bytes);
+			}
+		}
+
+		private void SourceRemoveRange(int index, int count) {
+			_source.RemoveRange(index, count);
+		}
+		
 	}
 }

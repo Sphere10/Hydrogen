@@ -8,6 +8,8 @@ namespace Sphere10.Framework {
 
 		Guid FileID { get; }
 
+		TransactionalFileMappedBuffer AsBuffer { get; }
+
 	}
 
 }

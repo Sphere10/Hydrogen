@@ -32,6 +32,8 @@ namespace Tools {
 			}
 		}
 
+		public static int ToBytes(int quantityUOM, MemoryMetric UOM) => (int)Math.Round(ConvertMemoryMetric(quantityUOM, UOM, MemoryMetric.Byte), 0);
+
 		public static string GetBytesReadable(long i) {
 			var absolute_i = (i < 0 ? -i : i);
 			string suffix;

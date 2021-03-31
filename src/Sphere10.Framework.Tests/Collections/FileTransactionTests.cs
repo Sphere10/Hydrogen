@@ -26,7 +26,7 @@ namespace Sphere10.Framework.Tests {
 
 	[TestFixture]
 	[Parallelizable(ParallelScope.Children)]
-	public class TransactionalFileMappedBufferTests {
+	public class FileTransactionTests {
 
 		[Test]
 		public void Sequential_CommitCommit() {

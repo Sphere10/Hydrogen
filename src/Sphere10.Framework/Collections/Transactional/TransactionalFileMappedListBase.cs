@@ -40,6 +40,8 @@ namespace Sphere10.Framework {
 		}
 
 		public Guid FileID { get; }
+		
+		public abstract TransactionalFileMappedBuffer AsBuffer { get; }
 
 		public override bool Dirty => base.Dirty || PageMarkerRepo.PageMarkers.Any() || PageMarkerRepo.FileMarkers.Any();
 

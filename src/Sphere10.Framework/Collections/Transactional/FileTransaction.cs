@@ -106,7 +106,6 @@ namespace Sphere10.Framework {
 				filename = Tools.FileSystem.GetCaseCorrectFilePath(filename);
 			}
 
-			TransactionalFileMappedBuffer file;
 			using (GloballyEnlistedFiles.EnterWriteScope()) {
 				// validate not already enlisted here
 				if (_enlistedFiles.ContainsKey(filename))
@@ -116,8 +115,23 @@ namespace Sphere10.Framework {
 				if (GloballyEnlistedFiles.ContainsKey(filename))
 					throw new InvalidOperationException($"File already enlisted in other transaction: {filename})");
 
+				return  EnlistFile(new TransactionalFileMappedBuffer(filename, UncomittedPageFileDirectory, fileID, pageSize, maxOpenPages, false));
+			}
+		}
+
+		public TransactionalFileMappedBuffer EnlistFile(ITransactionalFile transactionalFile) {
+			TransactionalFileMappedBuffer file;
+			using (GloballyEnlistedFiles.EnterWriteScope()) {
+				// validate not already enlisted here
+				if (_enlistedFiles.ContainsKey(transactionalFile.Path))
+					throw new InvalidOperationException($"File already enlisted: {transactionalFile.Path})");
+
+				// check not globally enlisted
+				if (GloballyEnlistedFiles.ContainsKey(transactionalFile.Path))
+					throw new InvalidOperationException($"File already enlisted in other transaction: {transactionalFile.Path})");
+
 				// Open the file
-				file = new TransactionalFileMappedBuffer(filename, UncomittedPageFileDirectory, fileID, pageSize, maxOpenPages, false);
+				file = transactionalFile.AsBuffer;
 				if (file.RequiresLoad)
 					file.Load();
 				file.PageWrite += (o, page) => {
@@ -128,13 +142,12 @@ namespace Sphere10.Framework {
 				};
 
 				// Register file
-				_enlistedFiles.Add(filename, file);
-				GloballyEnlistedFiles.Add(filename, file);
+				_enlistedFiles.Add(transactionalFile.Path, file);
+				GloballyEnlistedFiles.Add(transactionalFile.Path, file);
 			}
 			// Save txn update
 			SaveHeader();
 			return file;
-
 		}
 
 		public void DelistFile(string filename) {

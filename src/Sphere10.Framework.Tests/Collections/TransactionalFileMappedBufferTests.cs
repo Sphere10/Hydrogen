@@ -26,7 +26,7 @@ namespace Sphere10.Framework.Tests {
 
 	[TestFixture]
 	[Parallelizable(ParallelScope.Children)]
-	public class TransactionalBinaryFileTests {
+	public class TransactionalFileMappedBufferTests {
 		private const int RandomSeed = 123292;
 
 		private static void AssertEmptyDir(string dir) {

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using NUnit.Framework;
 using Sphere10.Framework.Collections;
 using Sphere10.Framework.NUnit;
@@ -100,11 +101,21 @@ namespace Sphere10.Framework.Tests {
 
 		[Test]
 		[Pairwise]
-		public void IntegrationTests() {
+		public void IntegrationTestsFixedItemSize() {
 			using var stream = new MemoryStream();
 			var list = new StreamMappedFixedClusteredList<int>(16, 100, new IntSerializer(), stream);
 
 			AssertEx.ListIntegrationTest(list, 100, (rng, i) => rng.NextInts(i));
+		}
+		
+		[Test]
+		public void IntegrationTestsDynamicItemSize() {
+			using var stream = new MemoryStream();
+			var list = new StreamMappedDynamicClusteredList<string>(32, new StringSerializer(Encoding.UTF8), stream);
+			AssertEx.ListIntegrationTest(list, 100, 
+				(rng, i) => Enumerable.Range(0, i)
+					.Select(x =>  rng.NextString(1, 100))
+					.ToArray());
 		}
 	}
 

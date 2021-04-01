@@ -31,9 +31,6 @@ namespace Sphere10.Framework {
 			_serializer = serializer;
 			_stream = stream;
 			
-			if (!_serializer.IsFixedSize)
-				throw new ArgumentException("Non fixed sized items not supported");
-
 			_storageClusterCount = (int)Math.Ceiling(_serializer.FixedSize / (double)clusterDataSize) * maxItems;
 			
 			Initialize();
@@ -219,11 +216,10 @@ namespace Sphere10.Framework {
 			
 			var listingTotalSize = listingSerializer.FixedSize * Capacity;
 			var statusTotalSize = sizeof(bool) * _storageClusterCount;
-			var clusterTotalSize = clusterSerializer.FixedSize * _storageClusterCount;
 
 			var listingsStream = new BoundedStream(_stream, HeaderSize, HeaderSize + listingTotalSize - 1) { UseRelativeOffset = true };
 			var statusStream = new BoundedStream(_stream, listingsStream.MaxAbsolutePosition + 1, listingsStream.MaxAbsolutePosition + statusTotalSize) { UseRelativeOffset = true };
-			var clusterStream = new BoundedStream(_stream, statusStream.MaxAbsolutePosition + 1, statusStream.MaxAbsolutePosition + clusterTotalSize) { UseRelativeOffset = true };
+			var clusterStream = new BoundedStream(_stream, statusStream.MaxAbsolutePosition + 1, long.MaxValue) { UseRelativeOffset = true };
 
 			if (_stream.Length == 0)
 				WriteHeader();
@@ -249,7 +245,9 @@ namespace Sphere10.Framework {
 			if (!_clusterStatus.Any())
 				_clusterStatus.AddRange(status);
 
-			_clusters = new StreamMappedPagedList<Cluster>(StreamMappedPagedListType.FixedSize, clusterSerializer , clusterStream, clusterSerializer.FixedSize * _storageClusterCount) {
+			int pageSize = _serializer.IsFixedSize ? clusterSerializer.FixedSize * _storageClusterCount : int.MaxValue;
+			
+			_clusters = new StreamMappedPagedList<Cluster>(StreamMappedPagedListType.FixedSize, clusterSerializer, clusterStream, pageSize) {
 				IncludeListHeader = false
 			};
 

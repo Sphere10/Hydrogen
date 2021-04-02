@@ -6,9 +6,10 @@ using System.Text;
 namespace Sphere10.Framework {
 
 	/// <summary>
-	/// A list implementation that implements inserts/deletes/appends as updates over an underlying pre-allocated list. This class
-	/// converts an update-only list into an appendable, insertable and deletable list. The algorithms are optimized to avoid loading objects in memory
-	/// and thus suitable for arbitrarily large lists.
+	/// A list implementation that implements inserts/deletes/appends as updates over an underlying list using Update only operations. This requires the underlying
+	/// list to be "pre-allocated". This class is useful for converting a list that can only be updated into a list that supports inserts/updates/deletes. It
+	/// achieves this by maintaining it's own <see cref="Count"/> and by copy/pasting items as needed. When shuffling objects around via copy/paste the algorithms
+	/// are optimized for 1-to-1 copy/paste to avoid exhausting memory. Thus this class is suitable for wrapping arbitrarily large lists.
 	/// </summary>
 	/// <remarks>
 	/// <see cref="Contains"/> and <see cref="ContainsRange"/> are overriden and implemented based on <see cref="IndexOf"/> and <see cref="IndexOfRange"/> in order to ensure only
@@ -18,7 +19,6 @@ namespace Sphere10.Framework {
 
 		private int _count;
 
-
 		/// <summary>
 		/// Creates a PreAllocatedList.
 		/// </summary>
@@ -27,19 +27,18 @@ namespace Sphere10.Framework {
 			: this(new ExtendedList<TItem>(Tools.Array.Gen<TItem>(maxCount, default))) {
 		}
 
-
 		/// <summary>
 		/// Constructor.
 		/// </summary>
-		/// <param name="fixedSizeStore">This is the pre-allocated list that is used to add/update/insert/remote from. This list is never changed and only mutated via update operations.</param>
-		public PreAllocatedList(IExtendedList<TItem> fixedSizeStore)
-			: base(fixedSizeStore) {
+		/// <param name="preAllocatedStore">This is the pre-allocated list that is used to add/update/insert/remote from. This list is never changed and only mutated via update operations.</param>
+		public PreAllocatedList(IExtendedList<TItem> preAllocatedStore)
+			: base(preAllocatedStore) {
 			_count = 0;
 		}
 
 		public override int Count => _count;
 
-		public virtual int MaxCount => base.Count;
+		public virtual int Capacity => base.Count;
 
 		public override int IndexOf(TItem item) => ToLogicalIndex(base.IndexOf(item));
 
@@ -61,7 +60,7 @@ namespace Sphere10.Framework {
 		public override void AddRange(IEnumerable<TItem> items) {
 			Guard.ArgumentNotNull(items, nameof(items));
 			var itemsArr = items as TItem[] ?? items.ToArray();
-			var remaining = MaxCount - Count;
+			var remaining = Capacity - Count;
 			Guard.ArgumentInRange(itemsArr.Length, 0, remaining, nameof(items), "Insufficient space");
 			base.UpdateRange(_count, itemsArr);
 			_count += itemsArr.Length;
@@ -84,7 +83,7 @@ namespace Sphere10.Framework {
 			Guard.ArgumentNotNull(items, nameof(items));
 			var itemsArr = items as TItem[] ?? items.ToArray();
 			CheckIndex(index, true);
-			if (_count + itemsArr.Length > MaxCount)
+			if (_count + itemsArr.Length > Capacity)
 				throw new ArgumentException("Insufficient space");
 
 

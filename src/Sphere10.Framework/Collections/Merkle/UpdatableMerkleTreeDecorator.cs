@@ -1,12 +1,14 @@
 ﻿namespace Sphere10.Framework {
-    public abstract class UpdatableMerkleTreeDecorator : MerkleTreeDecorator, IUpdateableMerkleTree {
-
-        protected UpdatableMerkleTreeDecorator(IUpdateableMerkleTree internalMerkleTree)
+    public abstract class UpdatableMerkleTreeDecorator<TMerkleTree> : MerkleTreeDecorator<TMerkleTree>, IUpdateableMerkleTree where TMerkleTree : IUpdateableMerkleTree {
+        protected UpdatableMerkleTreeDecorator(TMerkleTree internalMerkleTree)
             : base(internalMerkleTree) {
         }
-
-        protected new IUpdateableMerkleTree InternalMerkleTree => (IUpdateableMerkleTree)base.InternalMerkleTree;
-
         public IExtendedList<byte[]> Leafs => InternalMerkleTree.Leafs;
     }
+
+	public abstract class UpdatableMerkleTreeDecorator : UpdatableMerkleTreeDecorator<IUpdateableMerkleTree> {
+		protected UpdatableMerkleTreeDecorator(IUpdateableMerkleTree internalMerkleTree)
+			: base(internalMerkleTree) {
+		}
+	}
 }

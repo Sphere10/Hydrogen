@@ -23,18 +23,17 @@ namespace Sphere10.Framework {
 	/// Decorator for the <see cref="TextWriter"/> class. Applies a functor to the message before sending it to the underlying TextWriter.
 	/// </summary>
 	/// <remarks></remarks>
-	public abstract class TextWriterDecorator : TextWriter {
-		private readonly TextWriter _decoratedTextWriter;
+	public abstract class TextWriterDecorator<TTextWriter> : TextWriter where TTextWriter : TextWriter {
+		protected readonly TextWriter InternalTextWriter;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="TextWriterDecorator"/> class.
 		/// </summary>
 		/// <param name="decoratedTextWriter">The decorated text writer.</param>
 		/// <remarks></remarks>
-		public TextWriterDecorator(TextWriter decoratedTextWriter) {
-			_decoratedTextWriter = decoratedTextWriter;
+		public TextWriterDecorator(TTextWriter decoratedTextWriter) {
+			InternalTextWriter = decoratedTextWriter;
 		}
-
 
 		protected abstract string DecorateText(string text);
 
@@ -68,7 +67,7 @@ namespace Sphere10.Framework {
 		/// <exception cref="T:System.IO.IOException">An I/O error occurs. </exception>
 		/// <remarks></remarks>
 		public override void Write(string value) {
-			_decoratedTextWriter.Write( DecorateText(value) );
+			InternalTextWriter.Write(DecorateText(value));
 		}
 
 		/// <summary>
@@ -77,7 +76,13 @@ namespace Sphere10.Framework {
 		/// <returns>The Encoding in which the output is written.</returns>
 		/// <remarks></remarks>
 		public override Encoding Encoding {
-			get { return _decoratedTextWriter.Encoding; }
+			get { return InternalTextWriter.Encoding; }
+		}
+	}
+
+	public abstract class TextWriterDecorator : TextWriterDecorator<TextWriter> {
+		public TextWriterDecorator(TextWriter internalWriter)
+			: base(internalWriter) {
 		}
 	}
 

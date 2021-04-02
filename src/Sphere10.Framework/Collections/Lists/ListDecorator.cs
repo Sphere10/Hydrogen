@@ -15,64 +15,67 @@ using System.Collections.Generic;
 
 namespace Sphere10.Framework {
 
-    public abstract class ListDecorator<T> : IList<T> {
-        protected readonly IList<T> InternalList;
+	public abstract class ListDecorator<TItem, TList> : IList<TItem> where TList : IList<TItem> {
+		protected readonly IList<TItem> InternalList;
 
-        protected ListDecorator() 
-            : this(new List<T>()) {
-        }
+		protected ListDecorator(TList internalList) {
+			InternalList = internalList;
+		}
 
-        protected ListDecorator(IList<T> internalList) {
-            InternalList = internalList;
-        }
+		public virtual int IndexOf(TItem item) {
+			return InternalList.IndexOf(item);
+		}
 
-        public virtual int IndexOf(T item) {
-            return InternalList.IndexOf(item);
-        }
+		public virtual void Insert(int index, TItem item) {
+			InternalList.Insert(index, item);
+		}
 
-        public virtual void Insert(int index, T item) {
-            InternalList.Insert(index, item);
-        }
-
-		public virtual bool Remove(T item) {
+		public virtual bool Remove(TItem item) {
 			return InternalList.Remove(item);
 		}
 
-        public virtual void RemoveAt(int index) {
-            InternalList.RemoveAt(index);
-        }
+		public virtual void RemoveAt(int index) {
+			InternalList.RemoveAt(index);
+		}
 
-        public virtual T this[int index] {
-            get => InternalList[index];
-            set => InternalList[index] = value;
-        }
+		public virtual TItem this[int index] {
+			get => InternalList[index];
+			set => InternalList[index] = value;
+		}
 
-        public virtual void Add(T item) {
-            InternalList.Add(item);
-        }
+		public virtual void Add(TItem item) {
+			InternalList.Add(item);
+		}
 
-        public virtual void Clear() {
-            InternalList.Clear();
-        }
+		public virtual void Clear() {
+			InternalList.Clear();
+		}
 
-        public virtual bool Contains(T item) {
-            return InternalList.Contains(item);
-        }
+		public virtual bool Contains(TItem item) {
+			return InternalList.Contains(item);
+		}
 
-        public virtual void CopyTo(T[] array, int arrayIndex) {
-            InternalList.CopyTo(array, arrayIndex);
-        }
+		public virtual void CopyTo(TItem[] array, int arrayIndex) {
+			InternalList.CopyTo(array, arrayIndex);
+		}
 
-        public virtual int Count => InternalList.Count;
+		public virtual int Count => InternalList.Count;
 
-        public virtual bool IsReadOnly => InternalList.IsReadOnly;
+		public virtual bool IsReadOnly => InternalList.IsReadOnly;
 
-        public virtual IEnumerator<T> GetEnumerator() {
-            return InternalList.GetEnumerator();
-        }
+		public virtual IEnumerator<TItem> GetEnumerator() {
+			return InternalList.GetEnumerator();
+		}
 
-        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() {
-            return InternalList.GetEnumerator();
-        }
-    }
+		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() {
+			return InternalList.GetEnumerator();
+		}
+	}
+
+	public abstract class ListDecorator<TItem> : ListDecorator<TItem, IList<TItem>> {
+		protected ListDecorator(IList<TItem> internalList)
+			: base(internalList) {
+		}
+
+	}
 }

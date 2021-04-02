@@ -84,11 +84,11 @@ namespace Sphere10.Framework {
 			}
 		}
 
-		public static StreamDecorator OnDispose(this Stream stream, Action action) {
+		public static Stream OnDispose(this Stream stream, Action action) {
 			return new OnDisposeStream(stream, action);
 		}
 
-		public static StreamDecorator OnDispose(this Stream stream, Action<Stream> action) {
+		public static Stream OnDispose(this Stream stream, Action<Stream> action) {
 			return new OnDisposeStream(stream, action);
 		}
 

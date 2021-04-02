@@ -19,43 +19,49 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Sphere10.Framework {
-    public abstract class CollectionDecorator<T> : ICollection<T> {
-        protected readonly ICollection<T> InnerCollection;
+	public abstract class CollectionDecorator<TItem, TCollection> : ICollection<TItem> where TCollection : ICollection<TItem> {
+		protected readonly TCollection InnerCollection;
 
-		protected CollectionDecorator(ICollection<T> innerCollection) {
-            InnerCollection = innerCollection;
-        }
+		protected CollectionDecorator(TCollection innerCollection) {
+			InnerCollection = innerCollection;
+		}
 
-        public virtual IEnumerator<T> GetEnumerator() {
-            return InnerCollection.GetEnumerator();
-        }
+		public virtual IEnumerator<TItem> GetEnumerator() {
+			return InnerCollection.GetEnumerator();
+		}
 
-        IEnumerator IEnumerable.GetEnumerator() {
-            return GetEnumerator();
-        }
+		IEnumerator IEnumerable.GetEnumerator() {
+			return GetEnumerator();
+		}
 
-        public virtual void Add(T item) {
-            InnerCollection.Add(item);
-        }
+		public virtual void Add(TItem item) {
+			InnerCollection.Add(item);
+		}
 
-        public virtual void Clear() {
-            InnerCollection.Clear();
-        }
+		public virtual void Clear() {
+			InnerCollection.Clear();
+		}
 
-        public virtual bool Contains(T item) {
-            return InnerCollection.Contains(item);
-        }
+		public virtual bool Contains(TItem item) {
+			return InnerCollection.Contains(item);
+		}
 
-        public virtual void CopyTo(T[] array, int arrayIndex) {
-            InnerCollection.CopyTo(array, arrayIndex);
-        }
+		public virtual void CopyTo(TItem[] array, int arrayIndex) {
+			InnerCollection.CopyTo(array, arrayIndex);
+		}
 
-        public virtual bool Remove(T item) {
-            return InnerCollection.Remove(item);
-        }
+		public virtual bool Remove(TItem item) {
+			return InnerCollection.Remove(item);
+		}
 
-        public virtual int Count => InnerCollection.Count;
+		public virtual int Count => InnerCollection.Count;
 
 		public virtual bool IsReadOnly => InnerCollection.IsReadOnly;
+	}
+
+	public abstract class CollectionDecorator<TItem> : CollectionDecorator<TItem, ICollection<TItem>> {
+		protected CollectionDecorator(ICollection<TItem> innerCollection)
+			: base(innerCollection) {
+		}
 	}
 }

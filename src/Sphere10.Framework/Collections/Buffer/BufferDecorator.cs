@@ -1,13 +1,11 @@
 ﻿using System;
 
 namespace Sphere10.Framework {
-    public class BufferDecorator : ExtendedListDecorator<byte>, IBuffer {
+    public abstract class BufferDecorator<TBuffer> : ExtendedListDecorator<byte, TBuffer>, IBuffer where TBuffer : IBuffer {
 
-        public BufferDecorator(IBuffer internalBuffer)
+        public BufferDecorator(TBuffer internalBuffer)
             : base(internalBuffer) {
         }
-
-        protected new IBuffer InternalExtendedList => (IBuffer)base.InternalExtendedList;
 
         public virtual void AddRange(ReadOnlySpan<byte> span) => InternalExtendedList.AddRange(span);
 

@@ -20,15 +20,12 @@ using System.Threading;
 
 namespace Sphere10.Framework {
 
-	public class SynchronizedExtendedList<T> : ExtendedListDecorator<T>, IThreadSafeObject {
+	public class SynchronizedExtendedList<TItem, TInternalList> : ExtendedListDecorator<TItem, TInternalList>, IThreadSafeObject 
+		where TInternalList : IExtendedList<TItem> {
 
 		private readonly ThreadSafeObject _lock;
 
-		public SynchronizedExtendedList() 
-			: this(new ExtendedList<T>()) {
-		}
-
-		public SynchronizedExtendedList(IExtendedList<T> internalList) 
+		public SynchronizedExtendedList(TInternalList internalList) 
 			: base(internalList){
 			_lock = new ThreadSafeObject();
 		}
@@ -57,68 +54,68 @@ namespace Sphere10.Framework {
 			return _lock.EnterWriteScope();
 		}
 
-		public override int IndexOf(T item) {
+		public override int IndexOf(TItem item) {
 			using (EnterReadScope())
 				return base.IndexOf(item);
 		}
 
-		public override IEnumerable<int> IndexOfRange(IEnumerable<T> items) {
+		public override IEnumerable<int> IndexOfRange(IEnumerable<TItem> items) {
 			using (EnterReadScope())
 				return base.IndexOfRange(items);
 		}
 
 
-		public override bool Contains(T item) {
+		public override bool Contains(TItem item) {
 			using (EnterReadScope())
 				return base.Contains(item);
 		}
 
-		public override IEnumerable<bool> ContainsRange(IEnumerable<T> items) {
+		public override IEnumerable<bool> ContainsRange(IEnumerable<TItem> items) {
 			using (EnterReadScope())
 				return base.ContainsRange(items);
 		}
 
-		public override T Read(int index) {
+		public override TItem Read(int index) {
 			using (EnterReadScope())
 				return base.Read(index);
 		}
 
-		public override IEnumerable<T> ReadRange(int index, int count) {
+		public override IEnumerable<TItem> ReadRange(int index, int count) {
 			using (EnterReadScope())
 				return base.ReadRange(index, count);
 		}
 
-		public override void Add(T item) {
+		public override void Add(TItem item) {
 			using (EnterWriteScope())
 				base.Add(item);
 		}
 
-		public override void AddRange(IEnumerable<T> items) {
+		public override void AddRange(IEnumerable<TItem> items) {
 			using (EnterWriteScope())
 				base.AddRange(items);
 		}
 
-		public override void Update(int index, T item) {
+		public override void Update(int index, TItem item) {
 			using (EnterWriteScope())
 				base.Update(index, item);
 		}
 
-		public override void UpdateRange(int index, IEnumerable<T> items) {
+		public override void UpdateRange(int index, IEnumerable<TItem> items) {
 			using (EnterWriteScope()) 
 				base.UpdateRange(index, items);
 		}
 
-		public override void Insert(int index, T item) {
+		public override void Insert(int index, TItem item) {
 			using (EnterWriteScope())
 				base.Insert(index, item);
 		}
 
-		public override void InsertRange(int index, IEnumerable<T> items) {
+		public override void InsertRange(int index, IEnumerable<TItem> items) {
 			using (EnterWriteScope()) 
 				base.InsertRange(index, items);
 		}
 
-		public override bool Remove(T item) {
+		public override bool Remove(TItem item) {
 			using (EnterWriteScope())
 				return base.Remove(item);
 		}
@@ -128,7 +125,7 @@ namespace Sphere10.Framework {
 				base.RemoveAt(index);
 		}
 
-		public override IEnumerable<bool> RemoveRange(IEnumerable<T> items) {
+		public override IEnumerable<bool> RemoveRange(IEnumerable<TItem> items) {
 			using (EnterWriteScope())
 				return base.RemoveRange(items);
 		}
@@ -143,14 +140,25 @@ namespace Sphere10.Framework {
 				base.Clear();
 		}
 
-		public override void CopyTo(T[] array, int arrayIndex) {
+		public override void CopyTo(TItem[] array, int arrayIndex) {
 			using (EnterReadScope())
 				base.CopyTo(array, arrayIndex);
 		}
 
-		public override IEnumerator<T> GetEnumerator() {
+		public override IEnumerator<TItem> GetEnumerator() {
 			var readScope = EnterReadScope(); 
 			return base.GetEnumerator().OnDispose(readScope.Dispose);
+		}
+	}
+
+	public class SynchronizedExtendedList<TItem> : SynchronizedExtendedList<TItem, IExtendedList<TItem>> {
+
+		public SynchronizedExtendedList()
+			: this(new ExtendedList<TItem>()) {
+		}
+
+		public SynchronizedExtendedList(IExtendedList<TItem> internalList)
+			: base(internalList) {
 		}
 	}
 }

@@ -24,27 +24,27 @@ namespace Sphere10.Framework {
 	/// This class uses a read writer lock to provide data synchronization, but the design of the IList interface itself can lead to
 	/// race conditions. Beware of it's use. 
 	/// </summary>
-	/// <typeparam name="T"></typeparam>
-	public class SynchronizedCollection<T> : CollectionDecorator<T>, IThreadSafeObject {
+	/// <typeparam name="TItem"></typeparam>
+	public class SynchronizedCollection<TItem> : CollectionDecorator<TItem>, IThreadSafeObject {
 		private readonly ThreadSafeObject _lock;
 
 		public SynchronizedCollection() 
-			: this(new List<T>()) {
+			: this(new List<TItem>()) {
 		}
 
-		public SynchronizedCollection(ICollection<T> internalList) 
+		public SynchronizedCollection(ICollection<TItem> internalList) 
 			: base(internalList) {
 			_lock = new ThreadSafeObject();
 		}
 
-		public override void Add(T item) { using (EnterWriteScope()) base.Add(item); }
+		public override void Add(TItem item) { using (EnterWriteScope()) base.Add(item); }
 		public override void Clear() { using (EnterWriteScope()) base.Clear(); }
-		public override bool Contains(T item) { using (EnterReadScope()) return base.Contains(item); }
+		public override bool Contains(TItem item) { using (EnterReadScope()) return base.Contains(item); }
 		public override int Count { get { using (EnterReadScope()) return base.Count; } }
 		public override bool IsReadOnly { get { using (EnterReadScope()) return base.IsReadOnly; } }
-		public override void CopyTo(T[] array, int arrayIndex) { using (EnterReadScope()) base.CopyTo(array, arrayIndex); }
-		public override bool Remove(T item) { using (EnterWriteScope()) return base.Remove(item); }
-		public override IEnumerator<T> GetEnumerator() { var readScope = EnterReadScope(); return base.GetEnumerator().OnDispose(readScope.Dispose); }
+		public override void CopyTo(TItem[] array, int arrayIndex) { using (EnterReadScope()) base.CopyTo(array, arrayIndex); }
+		public override bool Remove(TItem item) { using (EnterWriteScope()) return base.Remove(item); }
+		public override IEnumerator<TItem> GetEnumerator() { var readScope = EnterReadScope(); return base.GetEnumerator().OnDispose(readScope.Dispose); }
 
 		public ReaderWriterLockSlim ThreadLock => _lock.ThreadLock;
 

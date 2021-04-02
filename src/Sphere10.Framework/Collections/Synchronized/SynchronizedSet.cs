@@ -19,19 +19,11 @@ using System.Threading;
 
 namespace Sphere10.Framework {
 
-	public class SynchronizedSet<T> : SetDecorator<T>, IThreadSafeObject {
+	public class SynchronizedSet<TItem, TSet> : SetDecorator<TItem, TSet>, IThreadSafeObject where TSet : ISet<TItem> {
 
 		private readonly ThreadSafeObject _lock;
 
-		public SynchronizedSet()
-			: this(new HashSet<T>()) {
-		}
-
-		public SynchronizedSet(IEqualityComparer<T> equalityComparer)
-			: this(new HashSet<T>(equalityComparer)) {
-		}
-
-		public SynchronizedSet(ISet<T> internalSet)
+		public SynchronizedSet(TSet internalSet)
 			: base(internalSet) {
 			_lock = new ThreadSafeObject();
 		}
@@ -46,7 +38,7 @@ namespace Sphere10.Framework {
 			return _lock.EnterWriteScope();
 		}
 
-		public override IEnumerator<T> GetEnumerator() {
+		public override IEnumerator<TItem> GetEnumerator() {
 			var readScope = EnterReadScope();
 			return
 				InternalSet
@@ -54,47 +46,47 @@ namespace Sphere10.Framework {
 				.OnDispose(readScope.Dispose);
 		}
 
-		public override bool Add(T item) {
+		public override bool Add(TItem item) {
 			return InternalSet.Add(item);
 		}
 
-		public override void ExceptWith(IEnumerable<T> other) {
+		public override void ExceptWith(IEnumerable<TItem> other) {
 			InternalSet.ExceptWith(other);
 		}
 
-		public override void IntersectWith(IEnumerable<T> other) {
+		public override void IntersectWith(IEnumerable<TItem> other) {
 			InternalSet.IntersectWith(other);
 		}
 
-		public override bool IsProperSubsetOf(IEnumerable<T> other) {
+		public override bool IsProperSubsetOf(IEnumerable<TItem> other) {
 			return InternalSet.IsProperSubsetOf(other);
 		}
 
-		public override bool IsProperSupersetOf(IEnumerable<T> other) {
+		public override bool IsProperSupersetOf(IEnumerable<TItem> other) {
 			return InternalSet.IsProperSupersetOf(other);
 		}
 
-		public override bool IsSubsetOf(IEnumerable<T> other) {
+		public override bool IsSubsetOf(IEnumerable<TItem> other) {
 			return InternalSet.IsSubsetOf(other);
 		}
 
-		public override bool IsSupersetOf(IEnumerable<T> other) {
+		public override bool IsSupersetOf(IEnumerable<TItem> other) {
 			return InternalSet.IsSupersetOf(other);
 		}
 
-		public override bool Overlaps(IEnumerable<T> other) {
+		public override bool Overlaps(IEnumerable<TItem> other) {
 			return InternalSet.Overlaps(other);
 		}
 
-		public override bool SetEquals(IEnumerable<T> other) {
+		public override bool SetEquals(IEnumerable<TItem> other) {
 			return InternalSet.SetEquals(other);
 		}
 
-		public override void SymmetricExceptWith(IEnumerable<T> other) {
+		public override void SymmetricExceptWith(IEnumerable<TItem> other) {
 			InternalSet.SymmetricExceptWith(other);
 		}
 
-		public override void UnionWith(IEnumerable<T> other) {
+		public override void UnionWith(IEnumerable<TItem> other) {
 			InternalSet.UnionWith(other);
 		}
 
@@ -102,15 +94,15 @@ namespace Sphere10.Framework {
 			InternalSet.Clear();
 		}
 
-		public override bool Contains(T item) {
+		public override bool Contains(TItem item) {
 			return InternalSet.Contains(item);
 		}
 
-		public override void CopyTo(T[] array, int arrayIndex) {
+		public override void CopyTo(TItem[] array, int arrayIndex) {
 			InternalSet.CopyTo(array, arrayIndex);
 		}
 
-		public override bool Remove(T item) {
+		public override bool Remove(TItem item) {
 			return InternalSet.Remove(item);
 		}
 
@@ -119,5 +111,19 @@ namespace Sphere10.Framework {
 		public override bool IsReadOnly => InternalSet.IsReadOnly;
 	}
 
+	public sealed class SynchronizedSet<TItem> : SetDecorator<TItem, ISet<TItem>> {
+
+		public SynchronizedSet()
+			: this(EqualityComparer<TItem>.Default) {
+		}
+
+		public SynchronizedSet(IEqualityComparer<TItem> equalityComparer)
+			: this(new HashSet<TItem>(equalityComparer)) {
+		}
+
+		public SynchronizedSet(ISet<TItem> internalSet)
+			: base(internalSet) {
+		}
+	}
 }
 

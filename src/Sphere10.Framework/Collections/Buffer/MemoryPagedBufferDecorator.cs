@@ -2,13 +2,11 @@
 using System.Collections.Generic;
 
 namespace Sphere10.Framework {
-    public class MemoryPagedBufferDecorator : MemoryPagedListDecorator<byte>, IMemoryPagedBuffer {
+    public abstract class MemoryPagedBufferDecorator<TMemoryPagedBuffer> : MemoryPagedListDecorator<byte, TMemoryPagedBuffer>, IMemoryPagedBuffer where TMemoryPagedBuffer : IMemoryPagedBuffer {
 
-        public MemoryPagedBufferDecorator(IMemoryPagedBuffer internalBuffer)
+        public MemoryPagedBufferDecorator(TMemoryPagedBuffer internalBuffer)
             : base(internalBuffer) {
         }
-
-        protected new IMemoryPagedBuffer InternalExtendedList => (IMemoryPagedBuffer)base.InternalExtendedList;
 
         IReadOnlyList<IBufferPage> IMemoryPagedBuffer.Pages => InternalExtendedList.Pages;
 
@@ -22,5 +20,11 @@ namespace Sphere10.Framework {
 
         public virtual void UpdateRange(int index, ReadOnlySpan<byte> items) => InternalExtendedList.UpdateRange(index, items);
     }
+
+	public abstract class MemoryPagedBufferDecorator : MemoryPagedBufferDecorator<IMemoryPagedBuffer> {
+		public MemoryPagedBufferDecorator(IMemoryPagedBuffer internalBuffer)
+			: base(internalBuffer) {
+		}
+	}
 
 }

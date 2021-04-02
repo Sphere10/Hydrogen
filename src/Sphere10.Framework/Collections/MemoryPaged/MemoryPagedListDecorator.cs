@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 
 namespace Sphere10.Framework {
-    public class MemoryPagedListDecorator<TItem> : PagedListDecorator<TItem>, IMemoryPagedList<TItem> { 
+    public class MemoryPagedListDecorator<TItem, TMemoryPagedList> : PagedListDecorator<TItem, TMemoryPagedList>, IMemoryPagedList<TItem> where TMemoryPagedList : IMemoryPagedList<TItem> { 
         public event EventHandlerEx<object, IMemoryPage<TItem>> PageLoading { add => InternalExtendedList.PageLoading += value; remove => InternalExtendedList.PageLoading -= value; }
         public event EventHandlerEx<object, IMemoryPage<TItem>> PageLoaded { add => InternalExtendedList.PageLoaded += value; remove => InternalExtendedList.PageLoaded -= value; }
         public event EventHandlerEx<object, IMemoryPage<TItem>> PageSaving { add => InternalExtendedList.PageSaving += value; remove => InternalExtendedList.PageSaving -= value; }
@@ -9,7 +9,7 @@ namespace Sphere10.Framework {
         public event EventHandlerEx<object, IMemoryPage<TItem>> PageUnloading { add => InternalExtendedList.PageUnloading += value; remove => InternalExtendedList.PageUnloading -= value; }
         public event EventHandlerEx<object, IMemoryPage<TItem>> PageUnloaded { add => InternalExtendedList.PageUnloaded += value; remove => InternalExtendedList.PageUnloaded -= value; }
 
-        public MemoryPagedListDecorator(IMemoryPagedList<TItem> internalPagedList)
+        public MemoryPagedListDecorator(TMemoryPagedList internalPagedList)
             : base(internalPagedList) {
             internalPagedList.PageLoading += (o, p) => OnPageLoading(p);
             internalPagedList.PageLoaded += (o, p) => OnPageLoaded(p);
@@ -18,8 +18,6 @@ namespace Sphere10.Framework {
             internalPagedList.PageUnloading += (o, p) => OnPageUnloading(p);
             internalPagedList.PageUnloaded += (o, p) => OnPageUnloaded(p);
         }
-
-        protected new IMemoryPagedList<TItem> InternalExtendedList => (IMemoryPagedList<TItem>)base.InternalExtendedList;
 
         public void Dispose() => InternalExtendedList.Dispose();
 
@@ -42,5 +40,10 @@ namespace Sphere10.Framework {
         }
 
     }
+	public abstract class MemoryPagedListDecorator<TItem> : MemoryPagedListDecorator<TItem, IMemoryPagedList<TItem>> {
 
+		protected MemoryPagedListDecorator(IMemoryPagedList<TItem> internalPagedList)
+			: base(internalPagedList) {
+		}
+	}
 }

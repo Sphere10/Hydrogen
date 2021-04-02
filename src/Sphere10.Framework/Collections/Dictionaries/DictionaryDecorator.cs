@@ -23,36 +23,46 @@ using System.Reflection;
 namespace Sphere10.Framework {
 
 
-	public abstract class DictionaryDecorator<K, V> : IDictionary<K, V> {
-		protected readonly IDictionary<K,V> InternalDictionary;
+	public abstract class DictionaryDecorator<TKey, TValue, TDictionary> : IDictionary<TKey, TValue> where TDictionary : IDictionary<TKey, TValue> {
+		protected readonly TDictionary InternalDictionary;
 
-		protected DictionaryDecorator() : this(new Dictionary<K, V>()) {
-        }
-
-		protected DictionaryDecorator(IDictionary<K, V> internalDictionary) {
+		protected DictionaryDecorator(TDictionary internalDictionary) {
 			InternalDictionary = internalDictionary;
         }
 
 		#region IDictionary Implementation
-		public virtual void Add(K key, V value) { InternalDictionary.Add(key, value); }
-		public virtual bool ContainsKey(K key) { return InternalDictionary.ContainsKey(key); }
-		public virtual ICollection<K> Keys => InternalDictionary.Keys;
-		public virtual bool TryGetValue(K key, out V value) { return InternalDictionary.TryGetValue(key, out value); }
-		public virtual ICollection<V> Values => InternalDictionary.Values;
-		public virtual V this[K key] {
+		public virtual void Add(TKey key, TValue value) { InternalDictionary.Add(key, value); }
+		public virtual bool ContainsKey(TKey key) { return InternalDictionary.ContainsKey(key); }
+		public virtual ICollection<TKey> Keys => InternalDictionary.Keys;
+		public virtual bool TryGetValue(TKey key, out TValue value) { return InternalDictionary.TryGetValue(key, out value); }
+		public virtual ICollection<TValue> Values => InternalDictionary.Values;
+		public virtual TValue this[TKey key] {
 			get => InternalDictionary[key];
 			set => InternalDictionary[key] = value;
 		}
-		public virtual void Add(KeyValuePair<K, V> item) { InternalDictionary.Add(item); }
-		public virtual bool Contains(KeyValuePair<K, V> item) { return InternalDictionary.Contains(item); }
-		public virtual void CopyTo(KeyValuePair<K, V>[] array, int arrayIndex) { InternalDictionary.CopyTo(array, arrayIndex); }
-		public virtual bool Remove(KeyValuePair<K, V> item) { return InternalDictionary.Remove(item); }
-		public virtual bool Remove(K item) { return InternalDictionary.Remove(item); }
+		public virtual void Add(KeyValuePair<TKey, TValue> item) { InternalDictionary.Add(item); }
+		public virtual bool Contains(KeyValuePair<TKey, TValue> item) { return InternalDictionary.Contains(item); }
+		public virtual void CopyTo(KeyValuePair<TKey, TValue>[] array, int arrayIndex) { InternalDictionary.CopyTo(array, arrayIndex); }
+		public virtual bool Remove(KeyValuePair<TKey, TValue> item) { return InternalDictionary.Remove(item); }
+		public virtual bool Remove(TKey item) { return InternalDictionary.Remove(item); }
 		public virtual void Clear() { InternalDictionary.Clear(); }
 		public virtual int Count => InternalDictionary.Count;
 		public virtual bool IsReadOnly => InternalDictionary.IsReadOnly;
-		public virtual IEnumerator<KeyValuePair<K, V>> GetEnumerator() { return InternalDictionary.GetEnumerator(); }
+		public virtual IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator() { return InternalDictionary.GetEnumerator(); }
 		IEnumerator IEnumerable.GetEnumerator() { return (InternalDictionary as IEnumerable).GetEnumerator(); }
 		#endregion
     }
+
+	public abstract class DictionaryDecorator<TKey, TValue> : DictionaryDecorator<TKey, TValue, IDictionary<TKey, TValue>> {
+	
+		protected DictionaryDecorator()
+			: this(new Dictionary<TKey, TValue>()) {
+		}
+
+		protected DictionaryDecorator(IDictionary<TKey, TValue> internalDictionary) 
+			: base(internalDictionary) {
+		}
+
+	}
+
 }

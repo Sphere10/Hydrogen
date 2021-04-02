@@ -23,7 +23,7 @@ namespace Sphere10.Framework {
 	/// Decorates a TextWriter by applying time-stamp to the message.
 	/// </summary>
 	/// <remarks></remarks>
-	public class TimeStampTextWriterDecorator : TextWriterDecorator {
+	public class TimeStampTextWriterDecorator : TextWriterDecorator<TextWriter> {
 		public const string DefaultDateFormat = "yyyy-MM-dd HH:mm:ss";
 
 		/// <summary>

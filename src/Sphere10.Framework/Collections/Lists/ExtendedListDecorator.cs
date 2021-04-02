@@ -7,21 +7,21 @@ namespace Sphere10.Framework {
 	/// Decorator for an IExtendedList, but calls to non-range get routed to the range-based methods.
 	/// </summary>
 	/// <typeparam name="TItem"></typeparam>
-	public class ExtendedListDecorator<TItem> : IExtendedList<TItem> {
+	public abstract class ExtendedListDecorator<TItem, TInternalList> : IExtendedList<TItem> where TInternalList : IExtendedList<TItem> {
 
-		protected ExtendedListDecorator(IExtendedList<TItem> internalExtendedList) {
+		protected ExtendedListDecorator(TInternalList internalExtendedList) {
 			Guard.ArgumentNotNull(internalExtendedList, nameof(internalExtendedList));
 			InternalExtendedList = internalExtendedList;
 		}
 
-		protected IExtendedList<TItem> InternalExtendedList { get; }
+		protected TInternalList InternalExtendedList { get; }
 
 		public virtual int Count => InternalExtendedList.Count;
 
 		public virtual bool IsReadOnly => InternalExtendedList.IsReadOnly;
 
-        public virtual int IndexOf(TItem item) => InternalExtendedList.IndexOf(item);
-		
+		public virtual int IndexOf(TItem item) => InternalExtendedList.IndexOf(item);
+
 		public virtual IEnumerable<int> IndexOfRange(IEnumerable<TItem> items) => InternalExtendedList.IndexOfRange(items);
 
 		public virtual bool Contains(TItem item) => InternalExtendedList.Contains(item);
@@ -35,20 +35,20 @@ namespace Sphere10.Framework {
 		public virtual void Add(TItem item) => InternalExtendedList.Add(item);
 
 		public virtual void AddRange(IEnumerable<TItem> items) => InternalExtendedList.AddRange(items);
-		
+
 		public virtual void Update(int index, TItem item) => InternalExtendedList.Update(index, item);
 
-		public virtual void UpdateRange(int index, IEnumerable<TItem> items) =>	InternalExtendedList.UpdateRange(index, items);
+		public virtual void UpdateRange(int index, IEnumerable<TItem> items) => InternalExtendedList.UpdateRange(index, items);
 
 		public virtual void Insert(int index, TItem item) => InternalExtendedList.Insert(index, item);
-		
+
 		public virtual void InsertRange(int index, IEnumerable<TItem> items) => InternalExtendedList.InsertRange(index, items);
 
 		public virtual bool Remove(TItem item) => InternalExtendedList.Remove(item);
 
 		public virtual IEnumerable<bool> RemoveRange(IEnumerable<TItem> items) => InternalExtendedList.RemoveRange(items);
 
-		public virtual void RemoveAt(int index) =>	InternalExtendedList.RemoveAt(index);
+		public virtual void RemoveAt(int index) => InternalExtendedList.RemoveAt(index);
 
 		public virtual void RemoveRange(int index, int count) => InternalExtendedList.RemoveRange(index, count);
 
@@ -58,7 +58,7 @@ namespace Sphere10.Framework {
 
 		public virtual IEnumerator<TItem> GetEnumerator() => InternalExtendedList.GetEnumerator();
 
-        IEnumerator IEnumerable.GetEnumerator() => this.GetEnumerator();
+		IEnumerator IEnumerable.GetEnumerator() => this.GetEnumerator();
 
 		public TItem this[int index] { get => this.Read(index); set => this.Update(index, value); }
 
@@ -68,5 +68,9 @@ namespace Sphere10.Framework {
 
 	}
 
+	public abstract class ExtendedListDecorator<TItem> : ExtendedListDecorator<TItem, IExtendedList<TItem>> {
+		protected ExtendedListDecorator(IExtendedList<TItem> internalExtendedList) 
+			: base(internalExtendedList) {
+		}
+	}
 }
-

@@ -1,14 +1,14 @@
 ﻿using System;
 
 namespace Sphere10.Framework {
-    public abstract class MerkleTreeDecorator : IMerkleTree {
+    public abstract class MerkleTreeDecorator<TMerkleTree> : IMerkleTree where TMerkleTree : IMerkleTree {
 
-        protected MerkleTreeDecorator(IMerkleTree internalMerkleTree) {
+        protected MerkleTreeDecorator(TMerkleTree internalMerkleTree) {
             Guard.ArgumentNotNull(internalMerkleTree, nameof(internalMerkleTree));
             InternalMerkleTree = internalMerkleTree;
         }
 
-        protected IMerkleTree InternalMerkleTree { get; }
+        protected TMerkleTree InternalMerkleTree { get; }
 
         public virtual CHF HashAlgorithm => InternalMerkleTree.HashAlgorithm;
 

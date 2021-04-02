@@ -2,12 +2,13 @@
 using System.Runtime.CompilerServices;
 
 namespace Sphere10.Framework {
-    public class SaltedSignatureScheme<TPrivateKey, TPublicKey> : DigitalSignatureSchemeDecorator<TPrivateKey, TPublicKey>
+    public class SaltedSignatureScheme<TPrivateKey, TPublicKey, TScheme> : DigitalSignatureSchemeDecorator<TPrivateKey, TPublicKey, TScheme>
     where TPrivateKey : IPrivateKey
-    where TPublicKey : IPublicKey {
+    where TPublicKey : IPublicKey
+	where TScheme : IDigitalSignatureScheme {
         private readonly int _saltSizeBytes;
 
-        public SaltedSignatureScheme(CHF saltingCHF, int saltSizeBytes, IDigitalSignatureScheme internalScheme)
+        public SaltedSignatureScheme(CHF saltingCHF, int saltSizeBytes, TScheme internalScheme)
             : base(internalScheme) {
             SaltingCHF = saltingCHF;
             _saltSizeBytes = saltSizeBytes;

@@ -2,13 +2,14 @@
 
 namespace Sphere10.Framework {
 
-    public abstract class DigitalSignatureSchemeDecorator<TPrivateKey, TPublicKey> : IDigitalSignatureScheme
+    public abstract class DigitalSignatureSchemeDecorator<TPrivateKey, TPublicKey, TScheme> : IDigitalSignatureScheme
     where TPrivateKey : IPrivateKey
-    where TPublicKey : IPublicKey {
+    where TPublicKey : IPublicKey
+	where TScheme : IDigitalSignatureScheme {
 
-        protected IDigitalSignatureScheme Internal;
+        protected readonly IDigitalSignatureScheme Internal;
 
-        protected DigitalSignatureSchemeDecorator(IDigitalSignatureScheme internalScheme) {
+        protected DigitalSignatureSchemeDecorator(TScheme internalScheme) {
             Internal = internalScheme;
         }
 

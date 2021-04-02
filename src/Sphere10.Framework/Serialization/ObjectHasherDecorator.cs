@@ -1,13 +1,15 @@
 ﻿namespace Sphere10.Framework {
 
-	public class ObjectHasherDecorator<TItem> : ObjectSerializerDecorator<TItem>, IObjectHasher<TItem> {
+	public class ObjectHasherDecorator<TItem, TObjectHasher> : IObjectHasher<TItem> 
+		where TObjectHasher : IObjectHasher<TItem> {
 
-		public ObjectHasherDecorator(IObjectSerializer<TItem> internalHasher) : base(internalHasher) {
+		protected readonly TObjectHasher InternalHasher;
+
+		public ObjectHasherDecorator(TObjectHasher internalHasher) {
+			InternalHasher = internalHasher;
 		}
 
-		protected new IObjectHasher<TItem> Internal => (IObjectHasher<TItem>)base.Internal;
-
-		public virtual byte[] Hash(TItem @object) => Internal.Hash(@object);
+		public virtual byte[] Hash(TItem @object) => InternalHasher.Hash(@object);
 	}
 
 }

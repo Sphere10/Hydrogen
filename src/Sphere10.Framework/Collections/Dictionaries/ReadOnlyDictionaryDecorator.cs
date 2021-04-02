@@ -12,47 +12,33 @@
 //-----------------------------------------------------------------------
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 
 namespace Sphere10.Framework {
 
-    public class ReadOnlyDictionaryDecorator<K,V> : DictionaryDecorator<K,V> {
+    public class ReadOnlyDictionaryDecorator<TKey, TValue, TReadOnlyDictionary> : IReadOnlyDictionary<TKey, TValue> 
+		where TReadOnlyDictionary : IReadOnlyDictionary<TKey, TValue> {
 
-        public ReadOnlyDictionaryDecorator(IDictionary<K,V> dictionary ) : base(dictionary) {
-                
-        }
-        public override void Add(K key, V value) {
-            ThrowError();
-            
-        }
-
-        public override void Add(KeyValuePair<K, V> item) {
-            ThrowError();
-        }
-
-        public override void Clear() {
-            ThrowError();
-        }
-
-        public override bool Remove(K item) {
-            ThrowError();
-            return false;
-        }
-
-        public override bool Remove(KeyValuePair<K, V> item) {
-            ThrowError();
-            return false;
-        }
-
-        public override V this[K key] {
-            get => base[key];
-			set => ThrowError();
+		protected readonly TReadOnlyDictionary Internal;
+        public ReadOnlyDictionaryDecorator(TReadOnlyDictionary internalDictionary) { 
+			Internal = internalDictionary;
 		}
 
-        public override bool IsReadOnly => true;
+		public virtual TValue this[TKey key] => Internal[key];
 
-		private static void ThrowError() {
-            throw new Exception("Dictionary is readonly");
-        }
-    }
+		public virtual IEnumerable<TKey> Keys => Internal.Keys;
+
+		public virtual IEnumerable<TValue> Values => Internal.Values;
+
+		public virtual int Count => Internal.Count;
+
+		public virtual bool ContainsKey(TKey key) => Internal.ContainsKey(key);
+
+		public virtual IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator() => Internal.GetEnumerator();
+		IEnumerator IEnumerable.GetEnumerator() => this.GetEnumerator();
+
+		public virtual bool TryGetValue(TKey key, out TValue value) => Internal.TryGetValue(key, out value);
+
+	}
 }

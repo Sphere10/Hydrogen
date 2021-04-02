@@ -27,7 +27,8 @@ namespace Sphere10.Framework {
 			None = new Disposables();
 		}
 
-        public Disposables(params IDisposable[] disposals) {
+        public Disposables(params IDisposable[] disposals) 
+			: base(new List<IDisposable>()) {
             if (disposals.Any())
                 this.AddRangeSequentially(disposals);
         }

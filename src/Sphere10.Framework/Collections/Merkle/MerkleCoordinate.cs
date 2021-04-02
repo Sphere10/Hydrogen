@@ -2,7 +2,7 @@
 
 namespace Sphere10.Framework {
 
-	public readonly struct MerkleCoordinate : IEquatable<MerkleCoordinate> {
+	public record MerkleCoordinate : IEquatable<MerkleCoordinate> {
 		public readonly int Level;
 		public readonly int Index;
 
@@ -48,14 +48,6 @@ namespace Sphere10.Framework {
 			return (int)MerkleMath.ToFlatIndex(this);
 		}
 
-		public bool Equals(MerkleCoordinate other) {
-			return Level == other.Level && Index == other.Index;
-		}
-
-		public override bool Equals(object obj) {
-			return obj is MerkleCoordinate other && Equals(other);
-		}
-
 		public override int GetHashCode() {
 			unchecked {
 				return (Level * 397) ^ Index;
@@ -65,16 +57,7 @@ namespace Sphere10.Framework {
 		public override string ToString() {
 			return $"(L:{Level}, IX:{Index})";
 		}
-
-		public static bool operator ==(MerkleCoordinate obj1, MerkleCoordinate obj2) {
-			return obj1.Equals(obj2);
-		}
-
-		public static bool operator !=(MerkleCoordinate obj1, MerkleCoordinate obj2) {
-			return !(obj1 == obj2);
-		}
-
-		
+	
 	}
 
 }

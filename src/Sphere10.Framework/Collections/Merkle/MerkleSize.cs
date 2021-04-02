@@ -1,6 +1,6 @@
 ﻿namespace Sphere10.Framework {
 
-	public struct MerkleSize {
+	public record MerkleSize {
 		public int LeafCount;
 		public int Height;
 

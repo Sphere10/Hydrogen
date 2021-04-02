@@ -23,8 +23,8 @@ using Sphere10.Framework.Collections;
 namespace Sphere10.Framework {
 	public static class DictionaryExtensions {
 
-	    public static IDictionary<K,V> AsReadOnly<K, V>(this IDictionary<K, V> dictionary) {
-	        return new ReadOnlyDictionaryDecorator<K, V>(dictionary);
+	    public static IReadOnlyDictionary<K,V> AsReadOnly<K, V>(this IDictionary<K, V> dictionary) {
+	        return new ReadOnlyDictionaryAdapter<K, V>(dictionary);
 	    }
 
 	    public static SynchronizedDictionary<K, V> AsSynchronized<K,V>(this IDictionary<K, V> dictionary) {

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Sphere10.Framework {
 
-	public readonly struct MerkleSubRoot {
+	public record MerkleSubRoot {
 		public readonly int Height;
 		public readonly byte[] Hash;
 

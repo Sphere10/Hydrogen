@@ -19,8 +19,6 @@ namespace Sphere10.Framework {
 	public class SimpleMerkleTree : IUpdateableMerkleTree {
 		private readonly IExtendedList<IExtendedList<byte[]>> _levels;
 		private MerkleSize _size;
-		private int _digestSize;
-		
 
 		public SimpleMerkleTree(CHF hasher, IEnumerable<byte[]> leafs = null)  {
 			Leafs = new ObservableExtendedList<byte[]>(new ExtendedList<byte[]>());

@@ -37,9 +37,13 @@ namespace Sphere10.Framework {
 			internalPagedList.PageDeleted += (o, p) => OnPageDeleted(p);
 		}
 
-		public IReadOnlyList<IPage<TItem>> Pages => InternalExtendedList.Pages;
+		internal IReadOnlyList<IPage<TItem>> Pages => InternalExtendedList.Pages;
+	
+		IReadOnlyList<IPage<TItem>> IPagedList<TItem>.Pages => this.Pages;
 
 		public bool RequiresLoad => InternalExtendedList.RequiresLoad;
+
+		
 
 		public void Load() => InternalExtendedList.Load();
 

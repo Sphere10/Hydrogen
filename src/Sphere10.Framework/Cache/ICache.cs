@@ -44,7 +44,7 @@ namespace Sphere10.Framework {
 
         void BulkLoad(IEnumerable<KeyValuePair<TKey, TValue>> bulkLoadedValues);
 
-	    IDictionary<TKey, CachedItem<TValue>> GetCachedItems();
+	    IReadOnlyDictionary<TKey, CachedItem<TValue>> GetCachedItems();
 
 	    void Invalidate(TKey key);
 	    

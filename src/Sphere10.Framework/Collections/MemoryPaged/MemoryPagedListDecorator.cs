@@ -18,8 +18,9 @@ namespace Sphere10.Framework {
             internalPagedList.PageUnloading += (o, p) => OnPageUnloading(p);
             internalPagedList.PageUnloaded += (o, p) => OnPageUnloaded(p);
         }
+		public virtual void Flush() => InternalExtendedList.Flush();
 
-        public void Dispose() => InternalExtendedList.Dispose();
+		public virtual void Dispose() => InternalExtendedList.Dispose();
 
         protected virtual void OnPageLoading(IMemoryPage<TItem> page) {
         }
@@ -38,8 +39,7 @@ namespace Sphere10.Framework {
 
         protected virtual void OnPageUnloaded(IMemoryPage<TItem> page) {
         }
-
-    }
+	}
 	public abstract class MemoryPagedListDecorator<TItem> : MemoryPagedListDecorator<TItem, IMemoryPagedList<TItem>> {
 
 		protected MemoryPagedListDecorator(IMemoryPagedList<TItem> internalPagedList)

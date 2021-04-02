@@ -31,34 +31,34 @@ namespace Sphere10.Framework.Tests {
 
 		[Test]
 		[Pairwise]
-		public void IntegrationTests_Commit([Values(0, 1, 793, 2000)] int maxCapacity) {
+		public void IntegrationTests_Commit([Values(0, 1, 200)] int maxCapacity) {
 			const int StringMinSize = 0;
 			const int StringMaxSize = 100;
 			var file = Tools.FileSystem.GenerateTempFilename();
 			var dir = Tools.FileSystem.GetTempEmptyDirectory(true);
 			using (Tools.Scope.ExecuteOnDispose(() => File.Delete(file)))
-			using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectory(dir))) {
-				using (var txnFile = new TransactionalFile<string>(new StringSerializer(Encoding.ASCII), file, dir, Guid.NewGuid(), Tools.Memory.ToBytes(1, MemoryMetric.Megabyte), maxCapacity)) {
-					AssertEx.ListIntegrationTest(txnFile, maxCapacity, (rng, i) => Tools.Array.Gen(i, rng.NextString(StringMinSize, StringMaxSize)));
-					txnFile.Commit();
-				}
+			using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectory(dir)))
+			using (var txnFile = new TransactionalFile<string>(new StringSerializer(Encoding.ASCII), file, dir, Guid.NewGuid(), Tools.Memory.ToBytes(10, MemoryMetric.Megabyte), Tools.Memory.ToBytes(10, MemoryMetric.Megabyte), maxCapacity)) {
+				AssertEx.ListIntegrationTest(txnFile, maxCapacity, (rng, i) => Tools.Array.Gen(i, rng.NextString(StringMinSize, StringMaxSize)));
+				txnFile.Commit();
 			}
+
 		}
 
 		[Test]
 		[Pairwise]
-		public void IntegrationTests_Rollback([Values(0, 1, 793, 2000)] int maxCapacity) {
+		public void IntegrationTests_Rollback([Values(0, 1, 200)] int maxCapacity) {
 			const int StringMinSize = 0;
 			const int StringMaxSize = 100;
 			var file = Tools.FileSystem.GenerateTempFilename();
 			var dir = Tools.FileSystem.GetTempEmptyDirectory(true);
 			using (Tools.Scope.ExecuteOnDispose(() => File.Delete(file)))
-			using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectory(dir))) {
-				using (var txnFile = new TransactionalFile<string>(new StringSerializer(Encoding.ASCII), file, dir, Guid.NewGuid(), Tools.Memory.ToBytes(1, MemoryMetric.Megabyte), maxCapacity)) {
-					AssertEx.ListIntegrationTest(txnFile, maxCapacity, (rng, i) => Tools.Array.Gen(i, rng.NextString(StringMinSize, StringMaxSize)));
-					txnFile.Rollback();
-				}
+			using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectory(dir)))
+			using (var txnFile = new TransactionalFile<string>(new StringSerializer(Encoding.ASCII), file, dir, Guid.NewGuid(), Tools.Memory.ToBytes(10, MemoryMetric.Megabyte), Tools.Memory.ToBytes(10, MemoryMetric.Megabyte), maxCapacity)) {
+				AssertEx.ListIntegrationTest(txnFile, maxCapacity, (rng, i) => Tools.Array.Gen(i, rng.NextString(StringMinSize, StringMaxSize)));
+				txnFile.Rollback();
 			}
+
 		}
 
 	}

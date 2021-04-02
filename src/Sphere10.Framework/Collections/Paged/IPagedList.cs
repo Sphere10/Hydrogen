@@ -27,7 +27,7 @@ namespace Sphere10.Framework {
 
 		IDisposable EnterOpenPageScope(IPage<TItem> page);
 
-		IReadOnlyList<IPage<TItem>> Pages { get; }
+		internal IReadOnlyList<IPage<TItem>> Pages { get; }
 
 		bool RequiresLoad { get; }
 

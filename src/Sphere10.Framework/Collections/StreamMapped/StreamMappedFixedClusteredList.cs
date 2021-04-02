@@ -30,6 +30,7 @@ namespace Sphere10.Framework {
 			int maxStorageBytes,
 			IObjectSerializer<T> serializer,
 			Stream stream) {
+			Guard.ArgumentInRange(maxStorageBytes, 0, int.MaxValue, nameof(maxStorageBytes));
 			_clusterDataSize = clusterDataSize;
 			Capacity = maxItems;
 

@@ -64,7 +64,7 @@ namespace Sphere10.Framework {
 
         public virtual TValue this[TKey key] => Get(key);
 
-	    public virtual IDictionary<TKey, CachedItem<TValue>> GetCachedItems() {
+	    public virtual IReadOnlyDictionary<TKey, CachedItem<TValue>> GetCachedItems() {
             return new Dictionary<TKey, CachedItem<TValue>>(InternalStorage).AsReadOnly();
         }
 

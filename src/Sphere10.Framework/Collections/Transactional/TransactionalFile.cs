@@ -5,7 +5,7 @@ namespace Sphere10.Framework {
 
 	public class TransactionalFile<T> : ExtendedListDecorator<T>, ITransactionalFile, IDisposable {
 		public const int DefaultTransactionalPageSize = 1 << 17;  // 128kb
-		public const int DefaultClusterSize = 1 << 11; // 2kb
+		public const int DefaultClusterSize = 128;  //1 << 11; // 2kb
 	
 		private readonly TransactionalFileMappedBuffer _buffer;
 
@@ -55,13 +55,13 @@ namespace Sphere10.Framework {
 							Math.Max(1, memoryCacheBytes / transactionalPageSizeBytes),
 							readOnly,
 							out var buffer
-						)
+						),
+						disposeSource: true
 					)
 				)
 			) {
 			_buffer = buffer;
 		}
-
 		
 		public void Commit() => _buffer.Commit();
 
@@ -81,13 +81,15 @@ namespace Sphere10.Framework {
 			int inMemPages,
 			bool readOnly,
 			out TransactionalFileMappedBuffer result) {
-			result = new TransactionalFileMappedBuffer(filename, uncommittedPageFileDir, fileID, transactionalPageSizeBytes, inMemPages, readOnly);
+			result = new TransactionalFileMappedBuffer(filename, uncommittedPageFileDir, fileID, transactionalPageSizeBytes, inMemPages, readOnly) {
+				FlushOnDispose = false
+			};
 			return result;
 		}
 
 		public void Dispose() {
-			_buffer?.Dispose();
 			AsBuffer?.Dispose();
+			_buffer?.Dispose();
 		}
 	}
 

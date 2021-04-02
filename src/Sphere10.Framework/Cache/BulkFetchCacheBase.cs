@@ -65,7 +65,7 @@ namespace Sphere10.Framework {
 			return 0;
 		}
 
-		public override IDictionary<TKey, CachedItem<TValue>> GetCachedItems() {
+		public override IReadOnlyDictionary<TKey, CachedItem<TValue>> GetCachedItems() {
 			return base.GetCachedItems();
 		}
 

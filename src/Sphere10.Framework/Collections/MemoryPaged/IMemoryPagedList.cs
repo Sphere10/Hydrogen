@@ -8,7 +8,7 @@ using System.Threading;
 
 namespace Sphere10.Framework {
 
-    public interface IMemoryPagedList<TItem> : IPagedList<TItem>, IDisposable { 
+	public interface IMemoryPagedList<TItem> : IPagedList<TItem>, IDisposable {
 
 		event EventHandlerEx<object, IMemoryPage<TItem>> PageLoading;
 		event EventHandlerEx<object, IMemoryPage<TItem>> PageLoaded;
@@ -17,5 +17,6 @@ namespace Sphere10.Framework {
 		event EventHandlerEx<object, IMemoryPage<TItem>> PageUnloading;
 		event EventHandlerEx<object, IMemoryPage<TItem>> PageUnloaded;
 
+		void Flush();
 	}
 }

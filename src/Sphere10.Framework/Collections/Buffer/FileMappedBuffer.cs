@@ -21,7 +21,9 @@ namespace Sphere10.Framework {
 			: base(filename, pageSize, maxOpenPages, CacheCapacityPolicy.CapacityIsMaxOpenPages, readOnly) {
 		}
 
-		public new IReadOnlyList<IBufferPage> Pages => new ReadOnlyListDecorator<IPage<byte>, IBufferPage>(InternalPages);
+		internal new IReadOnlyList<IBufferPage> Pages => new ReadOnlyListDecorator<IPage<byte>, IBufferPage>(InternalPages);
+
+		IReadOnlyList<IBufferPage> IMemoryPagedBuffer.Pages => this.Pages;
 
 		public ReadOnlySpan<byte> ReadSpan(int index, int count) => PagedBufferImplementationHelper.ReadRange(CreateFriendDelegate(), index, count);
 
@@ -99,6 +101,7 @@ namespace Sphere10.Framework {
 				TruncateFile();
 			}
 		}
+
 
 		/// <summary>
 		/// The page is mapped to a section of a single file

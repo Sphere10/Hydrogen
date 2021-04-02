@@ -41,7 +41,11 @@ namespace Sphere10.Framework {
 			: base(filename, uncomittedPageFileDir, fileID, pageSize, inMemoryPages, CacheCapacityPolicy.CapacityIsMaxOpenPages, readOnly) {
 		}
 
-		public new IReadOnlyList<IBufferPage> Pages => new ReadOnlyListDecorator<IPage<byte>, IBufferPage>(InternalPages);
+		internal new IReadOnlyList<IBufferPage> Pages => new ReadOnlyListDecorator<IPage<byte>, IBufferPage>(InternalPages);
+
+		IReadOnlyList<IBufferPage> IMemoryPagedBuffer.Pages => this.Pages;
+
+		public override TransactionalFileMappedBuffer AsBuffer => this;
 
 		public ReadOnlySpan<byte> ReadSpan(int index, int count) => PagedBufferImplementationHelper.ReadRange(CreateFriendDelegate(), index, count);
 
@@ -104,8 +108,6 @@ namespace Sphere10.Framework {
 					)
 					.ToArray();
 		}
-
-		public override TransactionalFileMappedBuffer AsBuffer { get; }
 
 		protected override int GetComittedPageCount() {
 			return (int)Math.Ceiling(Stream.Length / (double)PageSize);

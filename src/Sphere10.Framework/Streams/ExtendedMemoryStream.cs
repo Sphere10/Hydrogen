@@ -26,15 +26,17 @@ namespace Sphere10.Framework {
 	public class ExtendedMemoryStream : Stream {
 
 		private long _position;
+		private bool _disposeSource;
 		private readonly IExtendedList<byte> _source;
 
 		public ExtendedMemoryStream() 
 			: this(new MemoryBuffer()) {
 		}
 
-		public ExtendedMemoryStream(IExtendedList<byte> source) {
+		public ExtendedMemoryStream(IExtendedList<byte> source, bool disposeSource = false) {
 			_source = source;
 			_position = 0;
+			_disposeSource = disposeSource;
 		}
 
 		public override bool CanRead => true;
@@ -44,6 +46,8 @@ namespace Sphere10.Framework {
 		public override bool CanWrite => true;
 
 		public override void Flush() {
+			if (_source is IMemoryPagedList<byte> memPagedList)
+				memPagedList.Flush();
 		}
 
 		public override long Length => _source.Count;
@@ -168,6 +172,12 @@ namespace Sphere10.Framework {
 		private void SourceRemoveRange(int index, int count) {
 			_source.RemoveRange(index, count);
 		}
-		
+
+		protected override void Dispose(bool disposing) {
+			base.Dispose(disposing);
+			if (disposing && _disposeSource && _source is IDisposable disposable)
+				disposable.Dispose();
+		}
+
 	}
 }

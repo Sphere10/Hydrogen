@@ -11,9 +11,11 @@ namespace Sphere10.Framework {
 			: base(pageSize, inMemoryPages, CacheCapacityPolicy.CapacityIsMaxOpenPages) {
 		}
 
-		public new IReadOnlyList<IBufferPage> Pages => new ReadOnlyListDecorator<IPage<byte>, IBufferPage>(InternalPages);
+		internal new IReadOnlyList<IBufferPage> Pages => new ReadOnlyListDecorator<IPage<byte>, IBufferPage>(InternalPages);
 
-        protected override IPage<byte> NewPageInstance(int pageNumber) {
+		IReadOnlyList<IBufferPage> IMemoryPagedBuffer.Pages => this.Pages;
+
+		protected override IPage<byte> NewPageInstance(int pageNumber) {
 			return new BufferPage(PageSize);
 		}
 
@@ -30,7 +32,7 @@ namespace Sphere10.Framework {
         public void InsertRange(int index, ReadOnlySpan<byte> items) =>  PagedBufferImplementationHelper.InsertRange(CreateFriendDelegate(), Count,  index, items);
 
         public Span<byte> AsSpan(int index, int count) => PagedBufferImplementationHelper.AsSpan(CreateFriendDelegate(), index, count);
-		
+
 		/// <summary>
 		/// The page is mapped to it's own page file.
 		/// </summary>

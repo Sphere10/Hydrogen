@@ -37,7 +37,9 @@ namespace Sphere10.Framework {
 
 		public override int Count => InternalPages.Sum(p => p.Count);
 
-		public virtual IReadOnlyList<IPage<TItem>> Pages => InternalPages;
+		internal virtual IReadOnlyList<IPage<TItem>> Pages => InternalPages;
+
+		IReadOnlyList<IPage<TItem>> IPagedList<TItem>.Pages => this.Pages;
 
 		public bool RequiresLoad { get; protected set; }
 
@@ -472,6 +474,14 @@ namespace Sphere10.Framework {
 
 			OnPageDeleted(page);
 			PageDeleted?.Invoke(this, page);
+		}
+
+		IDisposable IPagedList<TItem>.EnterOpenPageScope(IPage<TItem> page) {
+			throw new NotImplementedException();
+		}
+
+		void IPagedList<TItem>.Load() {
+			throw new NotImplementedException();
 		}
 
 		#endregion

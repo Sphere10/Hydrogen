@@ -2,6 +2,6 @@
 
 namespace Sphere10.Framework {
     public interface IMemoryPagedBuffer : IMemoryPagedList<byte>, IBuffer {
-        new IReadOnlyList<IBufferPage> Pages { get; }
+        internal new IReadOnlyList<IBufferPage> Pages { get; }
     }
 }

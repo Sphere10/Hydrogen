@@ -20,7 +20,6 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Sphere10.Framework {
-
 	
 
     public class ByteArrayComparer : IComparer<byte[]> {

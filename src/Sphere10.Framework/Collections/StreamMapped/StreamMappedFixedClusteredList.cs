@@ -221,11 +221,17 @@ namespace Sphere10.Framework {
 
 			var clusterSerializer = new ClusterSerializer(_clusterDataSize);
 			var listingSerializer = new ItemListingSerializer();
-			var storageClusterCount = _maxStorageBytes / clusterSerializer.FixedSize;
 			
-			var listingTotalSize = listingSerializer.FixedSize * Capacity;
-			var statusTotalSize = sizeof(bool) * storageClusterCount;
+			int listingTotalSize = listingSerializer.FixedSize * Capacity;
+			int availableClusterStorageBytes = _maxStorageBytes - HeaderSize - listingTotalSize;
+			int bytesPerCluster = clusterSerializer.FixedSize + sizeof(bool);
 
+			if (availableClusterStorageBytes < bytesPerCluster) 
+				throw new InvalidOperationException("Max storage bytes is insufficient for list.");
+			
+			int storageClusterCount = availableClusterStorageBytes / (clusterSerializer.FixedSize + sizeof(bool));
+			int statusTotalSize = storageClusterCount * sizeof(bool);
+			
 			var listingsStream = new BoundedStream(_stream, HeaderSize, HeaderSize + listingTotalSize - 1) { UseRelativeOffset = true };
 			var statusStream = new BoundedStream(_stream, listingsStream.MaxAbsolutePosition + 1, listingsStream.MaxAbsolutePosition + statusTotalSize) { UseRelativeOffset = true };
 			var clusterStream = new BoundedStream(_stream, statusStream.MaxAbsolutePosition + 1, long.MaxValue) { UseRelativeOffset = true };

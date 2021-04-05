@@ -181,6 +181,11 @@ namespace Sphere10.Framework {
 			var segments = data.Partition(_clusterDataSize)
 				.ToList();
 
+			if (!segments.Any()) {
+				//default case - serializer produced 0 bytes.
+				segments.Add(new byte[0]);
+			}
+			
 			var numbers = _clusterStatus
 				.WithIndex()
 				.Where(x => !x.Item1)
@@ -191,7 +196,7 @@ namespace Sphere10.Framework {
 			if (numbers.Length != segments.Count) {
 				throw new InvalidOperationException("Insufficient free storage clusters to store item");
 			}
-
+			
 			for (var i = 0; i < segments.Count; i++) {
 				var segment = segments[i].ToArray();
 				var clusterData = new byte[_clusterDataSize];

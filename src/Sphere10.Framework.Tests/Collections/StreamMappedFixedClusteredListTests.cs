@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using NUnit.Framework;
-using Sphere10.Framework.Collections;
 using Sphere10.Framework.NUnit;
 
 namespace Sphere10.Framework.Tests {
@@ -22,6 +21,20 @@ namespace Sphere10.Framework.Tests {
 			Assert.AreEqual(999, read[0]);
 			Assert.AreEqual(1000, read[1]);
 			Assert.AreEqual(1001, read[2]);
+		}
+
+		[Test]
+		public void Add0BytesString() {
+			using var stream = new MemoryStream();
+			var list = new StreamMappedFixedClusteredList<string>(32, 100, 4000, new StringSerializer(Encoding.UTF8), stream);
+			
+			list.AddRange( string.Empty);
+
+			Assert.AreEqual(1, list.Count);
+
+			var read = list.ReadRange(0, 1).ToArray();
+
+			Assert.AreEqual(string.Empty, read[0]);
 		}
 
 		[Test]
@@ -103,18 +116,19 @@ namespace Sphere10.Framework.Tests {
 		[Pairwise]
 		public void IntegrationTestsFixedItemSize() {
 			using var stream = new MemoryStream();
-			var list = new StreamMappedFixedClusteredList<int>(16, 100, 4000,new IntSerializer(), stream);
+			var list = new StreamMappedFixedClusteredList<int>(16, 100, 4000, new IntSerializer(), stream);
 
 			AssertEx.ListIntegrationTest(list, 100, (rng, i) => rng.NextInts(i));
 		}
-		
+
 		[Test]
 		public void IntegrationTestsDynamicItemSize() {
 			using var stream = new MemoryStream();
 			var list = new StreamMappedFixedClusteredList<string>(64, 1000, 1000000, new StringSerializer(Encoding.ASCII), stream);
-			AssertEx.ListIntegrationTest(list, 100, 
+			AssertEx.ListIntegrationTest(list,
+				100,
 				(rng, i) => Enumerable.Range(0, i)
-					.Select(x =>  rng.NextString(1, 100))
+					.Select(x => rng.NextString(1, 100))
 					.ToArray());
 		}
 	}

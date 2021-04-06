@@ -60,12 +60,7 @@ namespace Sphere10.Framework {
 				return;
 
 			foreach (var item in itemsArray) {
-				var clusterStartIndex = AddItemToClusters(item);
-
-				_listings.Add(new ItemListing {
-					Size = _serializer.CalculateSize(item),
-					ClusterStartIndex = clusterStartIndex
-				});
+				_listings.Add(AddItemToClusters(item));
 			}
 
 			UpdateCountHeader();
@@ -105,12 +100,7 @@ namespace Sphere10.Framework {
 			for (var i = 0; i < itemsArray.Length; i++) {
 				var listing = _listings[index + i];
 				RemoveItemFromClusters(listing.ClusterStartIndex);
-				var startIndex = AddItemToClusters(itemsArray[i]);
-
-				itemListings.Add(new ItemListing {
-					Size = _serializer.CalculateSize(itemsArray[i]),
-					ClusterStartIndex = startIndex
-				});
+				itemListings.Add(AddItemToClusters(itemsArray[i]));
 			}
 
 			_listings.UpdateRange(index, itemListings);
@@ -130,12 +120,7 @@ namespace Sphere10.Framework {
 			var listings = new List<ItemListing>();
 
 			foreach (var item in itemsArray) {
-				var clusterIndex = AddItemToClusters(item);
-
-				listings.Add(new ItemListing {
-					Size = _serializer.CalculateSize(item),
-					ClusterStartIndex = clusterIndex
-				});
+				listings.Add(AddItemToClusters(item));
 			}
 
 			_listings.InsertRange(index, listings);
@@ -157,9 +142,13 @@ namespace Sphere10.Framework {
 		}
 
 		private T ReadItemFromClusters(int startCluster, int size) {
+		
+			if (size == -1 && startCluster == -1) 
+				return default;
+
 			int? next = startCluster;
 			var remaining = size;
-
+			
 			var builder = new ByteArrayBuilder();
 
 			while (next != -1) {
@@ -188,7 +177,15 @@ namespace Sphere10.Framework {
 			}
 		}
 
-		private int AddItemToClusters(T item) {
+		private ItemListing AddItemToClusters(T item) {
+
+			if (item is null) {
+				return new ItemListing {
+					Size = -1,
+					ClusterStartIndex = -1
+				};
+			}
+			
 			var clusters = new List<Cluster>();
 
 			using var stream = new MemoryStream();
@@ -198,11 +195,6 @@ namespace Sphere10.Framework {
 			var segments = data.Partition(_clusterDataSize)
 				.ToList();
 
-			if (!segments.Any()) {
-				//default case - serializer produced 0 bytes.
-				segments.Add(new byte[0]);
-			}
-			
 			var numbers = _clusterStatus
 				.WithIndex()
 				.Where(x => !x.Item1)
@@ -237,9 +229,11 @@ namespace Sphere10.Framework {
 				else
 					_clusters[cluster.Number] = cluster;
 
-			return clusters.First().Number;
+			return new ItemListing {
+				Size = data.Length,
+				ClusterStartIndex = clusters.FirstOrDefault()?.Number ?? -1
+			};
 		}
-
 		private void Initialize() {
 
 			var clusterSerializer = new ClusterSerializer(_clusterDataSize);

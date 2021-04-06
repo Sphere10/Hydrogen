@@ -24,17 +24,15 @@ namespace Sphere10.Framework.Tests {
 		}
 
 		[Test]
-		public void Add0BytesString() {
+		public void AddEmptyNullString() {
 			using var stream = new MemoryStream();
 			var list = new StreamMappedFixedClusteredList<string>(32, 100, 4000, new StringSerializer(Encoding.UTF8), stream);
+			string[] input = new[] { string.Empty, null, string.Empty, null };
+			list.AddRange(input);
+			Assert.AreEqual(4, list.Count);
 
-			list.AddRange(string.Empty);
-
-			Assert.AreEqual(1, list.Count);
-
-			var read = list.ReadRange(0, 1).ToArray();
-
-			Assert.AreEqual(string.Empty, read[0]);
+			var read = list.ReadRange(0, 4);
+			Assert.AreEqual(input, read);
 		}
 
 		[Test]

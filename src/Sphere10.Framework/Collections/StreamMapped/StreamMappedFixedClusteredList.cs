@@ -30,7 +30,13 @@ namespace Sphere10.Framework {
 			int maxStorageBytes,
 			IObjectSerializer<T> serializer,
 			Stream stream) {
+			
+			Guard.ArgumentInRange(clusterDataSize, 0, int.MaxValue, nameof(clusterDataSize));
+			Guard.ArgumentInRange(maxItems, 0, int.MaxValue, nameof(maxItems));
 			Guard.ArgumentInRange(maxStorageBytes, 0, int.MaxValue, nameof(maxStorageBytes));
+			Guard.ArgumentNotNull(serializer, nameof(serializer));
+			Guard.ArgumentNotNull(stream, nameof(stream));
+			
 			_clusterDataSize = clusterDataSize;
 			Capacity = maxItems;
 
@@ -46,6 +52,8 @@ namespace Sphere10.Framework {
 		public int Capacity { get; }
 
 		public override void AddRange(IEnumerable<T> items) {
+			Guard.ArgumentNotNull(items, nameof(items));
+			
 			var itemsArray = items as T[] ?? items.ToArray();
 
 			if (!itemsArray.Any())
@@ -64,6 +72,8 @@ namespace Sphere10.Framework {
 		}
 
 		public override IEnumerable<int> IndexOfRange(IEnumerable<T> items) {
+			Guard.ArgumentNotNull(items, nameof(items));
+			
 			var itemsArray = items as T[] ?? items.ToArray();
 			var results = new int[itemsArray.Length];
 
@@ -79,6 +89,8 @@ namespace Sphere10.Framework {
 		}
 
 		public override IEnumerable<T> ReadRange(int index, int count) {
+			CheckRange(index, count);
+			
 			for (var i = 0; i < count; i++) {
 				var listing = _listings[index + i];
 				yield return ReadItemFromClusters(listing.ClusterStartIndex, listing.Size);
@@ -87,7 +99,8 @@ namespace Sphere10.Framework {
 
 		public override void UpdateRange(int index, IEnumerable<T> items) {
 			var itemsArray = items.ToArray();
-
+			CheckRange(index, itemsArray.Length);
+			
 			var itemListings = new List<ItemListing>();
 			for (var i = 0; i < itemsArray.Length; i++) {
 				var listing = _listings[index + i];
@@ -104,6 +117,8 @@ namespace Sphere10.Framework {
 		}
 
 		public override void InsertRange(int index, IEnumerable<T> items) {
+			Guard.ArgumentNotNull(items, nameof(items));
+			
 			var itemsArray = items as T[] ?? items.ToArray();
 
 			if (_listings.Count + itemsArray.Length > Capacity)
@@ -129,6 +144,8 @@ namespace Sphere10.Framework {
 		}
 
 		public override void RemoveRange(int index, int count) {
+			CheckRange(index, count);
+			
 			for (var i = 0; i < count; i++) {
 				var listing = _listings[index + i];
 				RemoveItemFromClusters(listing.ClusterStartIndex);
@@ -242,19 +259,23 @@ namespace Sphere10.Framework {
 			var statusStream = new BoundedStream(_stream, listingsStream.MaxAbsolutePosition + 1, listingsStream.MaxAbsolutePosition + statusTotalSize) { UseRelativeOffset = true };
 			var clusterStream = new BoundedStream(_stream, statusStream.MaxAbsolutePosition + 1, long.MaxValue) { UseRelativeOffset = true };
 
+			int itemCount = 0;
 			if (_stream.Length == 0)
 				WriteHeader();
 			else
-				ReadHeader();
-
+				itemCount = ReadHeader();
+			
 			var preAllocatedListingStore = new StreamMappedPagedList<ItemListing>(listingSerializer, listingsStream) { IncludeListHeader = false };
 
-			if (preAllocatedListingStore.RequiresLoad)
+			if (preAllocatedListingStore.RequiresLoad) {
 				preAllocatedListingStore.Load();
-			else
+				_listings = new PreAllocatedList<ItemListing>(preAllocatedListingStore);
+				_listings.AddRange(preAllocatedListingStore.Take(itemCount));
+			} else {
 				preAllocatedListingStore.AddRange(Tools.Array.Gen(Capacity, default(ItemListing)));
-
-			_listings = new PreAllocatedList<ItemListing>(preAllocatedListingStore);
+				_listings = new PreAllocatedList<ItemListing>(preAllocatedListingStore);
+			}
+		
 			var status = new StreamMappedPagedList<bool>(new BoolSerializer(), statusStream) { IncludeListHeader = false };
 
 			if (status.RequiresLoad)
@@ -299,6 +320,14 @@ namespace Sphere10.Framework {
 			_stream.Seek(0, SeekOrigin.Begin);
 
 			writer.Write(_listings.Count);
+		}
+		
+		private void CheckRange(int index, int count) {
+			Guard.Argument(count >= 0, nameof(index), "Must be greater than or equal to 0");
+			if (index == Count && count == 0) return;  // special case: at index of "next item" with no count, this is valid
+			Guard.ArgumentInRange(index, 0, Count - 1, nameof(index));
+			if (count > 0)
+				Guard.ArgumentInRange(index + count - 1, 0, Count - 1, nameof(count));
 		}
 	}
 

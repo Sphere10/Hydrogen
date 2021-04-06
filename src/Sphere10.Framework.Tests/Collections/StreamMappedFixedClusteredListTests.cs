@@ -27,8 +27,8 @@ namespace Sphere10.Framework.Tests {
 		public void Add0BytesString() {
 			using var stream = new MemoryStream();
 			var list = new StreamMappedFixedClusteredList<string>(32, 100, 4000, new StringSerializer(Encoding.UTF8), stream);
-			
-			list.AddRange( string.Empty);
+
+			list.AddRange(string.Empty);
 
 			Assert.AreEqual(1, list.Count);
 
@@ -48,6 +48,7 @@ namespace Sphere10.Framework.Tests {
 
 				using (var fileStream = new FileStream(fileName, FileMode.Open)) {
 					var list = new StreamMappedFixedClusteredList<int>(32, 100, 4000, new IntSerializer(), fileStream);
+					Assert.AreEqual(1, list.Count);
 					Assert.AreEqual(999, list[0]);
 				}
 			}

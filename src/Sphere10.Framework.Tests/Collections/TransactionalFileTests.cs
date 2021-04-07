@@ -42,7 +42,6 @@ namespace Sphere10.Framework.Tests {
 				AssertEx.ListIntegrationTest(txnFile, maxCapacity, (rng, i) => Tools.Array.Gen(i, rng.NextString(StringMinSize, StringMaxSize)));
 				txnFile.Commit();
 			}
-
 		}
 
 		[Test]

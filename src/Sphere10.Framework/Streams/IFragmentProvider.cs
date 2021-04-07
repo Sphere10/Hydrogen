@@ -2,6 +2,12 @@
 
 namespace Sphere10.Framework {
 	public interface IFragmentProvider {
+		
+		/// <summary>
+		/// Length of fragment bytes
+		/// </summary>
+		int Length { get; }
+		
 		/// <summary>
 		/// Fragment count
 		/// </summary>
@@ -13,6 +19,14 @@ namespace Sphere10.Framework {
 		/// <param name="index"></param>
 		/// <returns></returns>
 		Span<byte> GetFragment(int index);
+
+		/// <summary>
+		/// Retrieves the fragment which the global position / index corresponds to. 
+		/// </summary>
+		/// <param name="position"> index of position in total fragment space</param>
+		/// <param name="fragment"> the fragment that</param>
+		/// <returns> fragment index, or -1 if index outside of fragment space. if valid fragment, the corresponding position in fragment also returned.</returns>
+		(int fragmentIndex, int fragmentPosition) GetFragment(long position, out Span<byte> fragment);
 
 		/// <summary>
 		/// Requests new fragments for the requested space. Guaranteed allocation if returns true;

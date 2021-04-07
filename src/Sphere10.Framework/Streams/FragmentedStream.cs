@@ -1,7 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 
 namespace Sphere10.Framework {
 	public class FragmentedStream : Stream {
@@ -9,17 +9,10 @@ namespace Sphere10.Framework {
 		private readonly IFragmentProvider _fragmentProvider;
 
 		private long _position;
-		private int _fragmentIndex;
-		private int _fragmentPosition;
-
-		public FragmentedStream(IEnumerable<byte[]> fragments)
-			: this(new ByteArrayFragmentProvider(fragments)) {
-		}
 
 		public FragmentedStream(IFragmentProvider fragmentProvider) {
 			_fragmentProvider = fragmentProvider;
 			_position = 0;
-			_fragmentIndex = 0;
 		}
 
 		public override void Flush() {
@@ -41,21 +34,22 @@ namespace Sphere10.Framework {
 			int bufferIndex = offset;
 			int remaining = (int)bytesToRead;
 
+			(int fragmentIndex, int fragmentPosition) = _fragmentProvider.GetFragment(Position, out var fragment);
+			
 			while (remaining > 0) {
-				Span<byte> fragment = _fragmentProvider.GetFragment(_fragmentIndex);
-				int fromFragmentCount = Math.Min(fragment.Length - _fragmentPosition, remaining);
-				Span<byte> fragmentSlice = fragment.Slice(_fragmentPosition, fromFragmentCount);
+				int fromFragmentCount = Math.Min(fragment.Length - fragmentPosition, remaining);
+				Span<byte> fragmentSlice = fragment.Slice(fragmentPosition, fromFragmentCount);
 
 				Span<byte> bufferSlice = bufferAsSpan.Slice(bufferIndex, fromFragmentCount);
 				fragmentSlice.CopyTo(bufferSlice);
 
 				bufferIndex += fromFragmentCount;
 				remaining -= fromFragmentCount;
-				_fragmentPosition += fromFragmentCount;
 
 				if (remaining > 0) {
-					_fragmentIndex++;
-					_fragmentPosition = 0;
+					fragmentIndex++;
+					fragmentPosition = 0;
+					fragment = _fragmentProvider.GetFragment(fragmentIndex);
 				}
 			}
 
@@ -69,31 +63,32 @@ namespace Sphere10.Framework {
 			switch (origin) {
 				case SeekOrigin.Begin:
 					Guard.ArgumentInRange(offset, 0, Math.Max(0, Length), nameof(offset));
-					SeekInternal(offset);
+					Position = offset;
 					break;
 
 				case SeekOrigin.Current:
 					Guard.ArgumentInRange(offset, -Position, Math.Max(0, Length - Position), nameof(offset));
-					SeekInternal(_position + offset);
+					Position += offset;
 					break;
 
 				case SeekOrigin.End:
 					Guard.ArgumentInRange(offset, -Length, 0, nameof(offset));
-					SeekInternal(Length + offset);
+					Position = Length + offset;
 					break;
 			}
 			
-			return _position;
+			return Position;
 		}
 
 		public override void SetLength(long value) {
 			Guard.ArgumentInRange(value, 0, int.MaxValue, nameof(value));
 			if (value < Length) {
-				_fragmentProvider.ReleaseSpace((int)Length - (int)value, out var released);
-				if (_position > value)
+				_fragmentProvider.ReleaseSpace((int)Length - (int)value, out _);
+				if (_position > value) {
 					_position = value;
+				}
 			} else if (value > Length) {
-				if (!_fragmentProvider.TryRequestSpace((int)value - (int)Length, out var newFragmentIndexes)) {
+				if (!_fragmentProvider.TryRequestSpace((int)value - (int)Length, out _)) {
 					throw new InvalidOperationException("Request for space from fragment provider was not successful.");
 				}
 			}
@@ -108,6 +103,8 @@ namespace Sphere10.Framework {
 			var addingAmount = (int)Math.Max(0, count - updateAmount);
 			Debug.Assert(updateAmount + addingAmount == count);
 
+			(int fragmentIndex, int fragmentPosition) = _fragmentProvider.GetFragment(Position, out var fragment);
+			
 			int remaining = updateAmount;
 			if (remaining > 0) {
 				var updatedBytes = new byte[remaining];
@@ -116,10 +113,7 @@ namespace Sphere10.Framework {
 				int updateIndex = 0;
 
 				while (remaining > 0) {
-					var fragment = _fragmentProvider.GetFragment(_fragmentIndex);
-
-					var updateSlice = fragment.Slice(_fragmentPosition);
-
+					var updateSlice = fragment.Slice(fragmentPosition);
 					int sliceBytesCount = Math.Min(remaining, updateSlice.Length);
 
 					updatedBytes[updateIndex..(updateIndex + sliceBytesCount)].CopyTo(updateSlice);
@@ -127,8 +121,9 @@ namespace Sphere10.Framework {
 					remaining -= sliceBytesCount;
 
 					if (remaining > 0) {
-						_fragmentIndex++;
-						_fragmentPosition = 0;
+						fragmentIndex++;
+						fragment = _fragmentProvider.GetFragment(fragmentIndex);
+						fragmentPosition = 0;
 					}
 				}
 			}
@@ -137,32 +132,26 @@ namespace Sphere10.Framework {
 			if (remaining > 0) {
 				var addedBytes = new byte[remaining];
 				Buffer.BlockCopy(buffer, offset + updateAmount, addedBytes, 0, remaining);
-
-				_fragmentIndex = _fragmentProvider.Count - 1;
+				
 				int addIndex = 0;
 
-				if (_fragmentProvider.TryRequestSpace(remaining, out int[] spanIndexes)) {
+				if (_fragmentProvider.TryRequestSpace(remaining, out int[] newFragmentIndexes)) {
 
-					for (int i = 0; i < spanIndexes.Length; i++) {
-
-						Span<byte> currentFragment = _fragmentProvider.GetFragment(spanIndexes[i]);
-						_fragmentPosition = 0;
-
+					for (int i = 0; i < newFragmentIndexes.Length; i++) {
+						Span<byte> currentFragment = _fragmentProvider.GetFragment(newFragmentIndexes[i]);
+						
 						int toAddAmount = Math.Min(currentFragment.Length, remaining);
 
 						addedBytes[addIndex..(addIndex + toAddAmount)].CopyTo(currentFragment);
 						addIndex += toAddAmount;
 						remaining -= toAddAmount;
-
-						_fragmentPosition += toAddAmount;
-						_fragmentIndex++;
 					}
 				} else {
 					throw new InvalidOperationException("Request for space from fragment provider was not successful.");
 				}
 			}
 
-			_position += count;
+			Position += count;
 
 			Debug.Assert(Position <= Length);
 		}
@@ -173,16 +162,7 @@ namespace Sphere10.Framework {
 
 		public override bool CanWrite => true;
 
-		public override long Length {
-			get {
-				int length = 0;
-				for (int i = 0; i < _fragmentProvider.Count; i++) {
-					length += _fragmentProvider.GetFragment(i).Length;
-				}
-
-				return length;
-			}
-		}
+		public override long Length => _fragmentProvider.Length;
 
 		public override long Position {
 			get => _position;
@@ -198,47 +178,6 @@ namespace Sphere10.Framework {
 				builder.Append(_fragmentProvider.GetFragment(i));
 			}
 			return builder.ToArray();
-		}
-
-
-		private void SeekInternal(long newPosition) {
-
-			if (newPosition == 0) {
-				_fragmentIndex = 0;
-				_fragmentPosition = 0;
-				_position = newPosition;
-				return;
-			}
-			
-			long toMove = newPosition - _position;
-			
-			if (toMove > 0) {
-				while (toMove > 0) {
-					Span<byte> currentFragment = _fragmentProvider.GetFragment(_fragmentIndex);
-					int fragmentMoveCount = (int)Math.Min(toMove, currentFragment.Length - _fragmentPosition);
-					toMove -= fragmentMoveCount;
-					_fragmentPosition += fragmentMoveCount;
-
-					if (toMove > 0) {
-						_fragmentIndex++;
-						_fragmentPosition = 0;
-					}
-				}
-			} else if (toMove < 0) {
-				while (toMove < 0) {
-					int fragmentMoveCount = (int)Math.Min(-toMove, _fragmentPosition);
-					toMove += fragmentMoveCount;
-					_fragmentPosition -= fragmentMoveCount;
-
-					if (toMove < 0) {
-						_fragmentIndex--;
-						Span<byte> next = _fragmentProvider.GetFragment(_fragmentIndex);
-						_fragmentPosition = next.Length;
-					}
-				}
-			}
-
-			_position = newPosition;
 		}
 	}
 }

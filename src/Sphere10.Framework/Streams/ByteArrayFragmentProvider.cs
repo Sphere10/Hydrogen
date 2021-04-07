@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Array = Tools.Array;
 
 namespace Sphere10.Framework {
 	public class ByteArrayFragmentProvider : IFragmentProvider {
@@ -15,35 +14,82 @@ namespace Sphere10.Framework {
 			_fragments = fragments.ToList();
 		}
 
+		public ByteArrayFragmentProvider() {
+			_fragments = new List<byte[]>();
+		}
+
 		public int Count => _fragments.Count;
 
-		public Span<byte> GetFragment(int index) => _fragments[index];
+		public int Length => _fragments.Sum(x => x.Length);
+
+		public Span<byte> GetFragment(int index) {
+			return _fragments[index];
+		}
+
+		public (int fragmentIndex, int fragmentPosition) GetFragment(long position, out Span<byte> fragment) {
+			fragment = null;
+			long remaining = position;
+			
+			if (position > Length - 1)
+				remaining = 0;
+			
+			for (int i = 0; i < _fragments.Count; i++) {
+				var frag = _fragments[i];
+
+				if (frag.Length > remaining) {
+					fragment = frag;
+					return (i, (int)remaining);
+				} 
+				
+				remaining -= frag.Length;
+			}
+			
+			return (-1, -1);
+		}
 
 		public bool TryRequestSpace(int bytes, out int[] newFragmentIndexes) {
+			int fragmentsRequired = (int)Math.Floor((decimal)bytes / _newFragmentSize);
+			int partial = bytes % _newFragmentSize;
 
-			int fragmentsRequired = (int)Math.Ceiling((decimal)bytes / _newFragmentSize);
-			newFragmentIndexes = Enumerable.Range(Count, fragmentsRequired).ToArray();
+			var newIndexes = Enumerable.Range(Count, fragmentsRequired).ToList();
 
 			for (int i = 0; i < fragmentsRequired; i++) {
 				_fragments.Add(new byte[_newFragmentSize]);
 			}
 
+			if (partial > 0) {
+				_fragments.Add(new byte[partial]);
+				newIndexes.Add(Count - 1);
+			}
+
+			newFragmentIndexes = newIndexes.ToArray();
+
 			return true;
 		}
 
 		public int ReleaseSpace(int bytes, out int[] releasedFragmentIndexes) {
-			int toRemove = (int)Math.Floor((decimal)bytes / _newFragmentSize);
-			releasedFragmentIndexes = Enumerable.Range(_fragments.Count - toRemove - 1, toRemove).ToArray();
-			int remainder = bytes % _newFragmentSize;
+			int remaining = bytes;
+			List<int> releasedFragments = new List<int>();
 			
-			_fragments.RemoveRange(Count - toRemove, toRemove);
+			while (remaining > 0) {
+				var last = _fragments[^1];
+				int removeFragmentCount = Math.Min(last.Length, remaining);
 
-			if (remainder > 0) {
-				byte[] trimmed = new byte[_newFragmentSize - remainder];
-				Buffer.BlockCopy(_fragments[^0], 0, trimmed, 0, trimmed.Length);
-				_fragments[^0] = trimmed;
+				if (removeFragmentCount >= last.Length) {
+					releasedFragments.Add(_fragments.Count - 1);
+					_fragments.RemoveAt(_fragments.Count - 1);
+				}
+				
+				else {
+					byte[] trimmed = new byte[last.Length - removeFragmentCount];
+					Buffer.BlockCopy(last, 0, trimmed, 0, trimmed.Length);
+					_fragments[^1] = trimmed;
+				}
+				
+				remaining -= removeFragmentCount;
 			}
 
+			releasedFragmentIndexes = releasedFragments.ToArray();
 			return bytes;
 		}
 	}

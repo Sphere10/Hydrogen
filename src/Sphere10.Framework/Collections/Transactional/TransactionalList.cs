@@ -3,14 +3,14 @@ using System.IO;
 
 namespace Sphere10.Framework {
 
-	public class TransactionalFile<T> : ExtendedListDecorator<T>, ITransactionalFile, IDisposable {
+	public class TransactionalList<T> : ExtendedListDecorator<T>, ITransactionalList<T> {
 		public const int DefaultTransactionalPageSize = 1 << 17;  // 128kb
 		public const int DefaultClusterSize = 128;  //1 << 11; // 2kb
 	
 		private readonly TransactionalFileMappedBuffer _buffer;
 
 		/// <summary>
-		/// Creates a <see cref="TransactionalFile{T}"/>.
+		/// Creates a <see cref="TransactionalList{T}"/>.
 		/// </summary>
 		/// <param name="serializer">Serializer for the objects</param>
 		/// <param name="filename">File which will contain the serialized objects.</param>
@@ -20,14 +20,14 @@ namespace Sphere10.Framework {
 		/// <param name="memoryCacheBytes">How much of the file is cached in memory. <remarks>This value should (roughly) be a factor of <see cref="transactionalPageSizeBytes"/></remarks></param>
 		/// <param name="maxItems">The maximum number of items this file will ever support. <remarks>Avoid <see cref="Int32.MaxValue"/> and give lowest number possible.</remarks> </param>
 		/// <param name="readOnly">Whether or not file is opened in readonly mode.</param>
-		public TransactionalFile(IObjectSerializer<T> serializer, string filename, string uncommittedPageFileDir, Guid fileID, int maxStorageBytes, int memoryCacheBytes, int maxItems, bool readOnly = false)
+		public TransactionalList(IObjectSerializer<T> serializer, string filename, string uncommittedPageFileDir, Guid fileID, int maxStorageBytes, int memoryCacheBytes, int maxItems, bool readOnly = false)
 			: this(serializer, filename, uncommittedPageFileDir, fileID, DefaultTransactionalPageSize, maxStorageBytes, memoryCacheBytes, DefaultClusterSize, maxItems, readOnly) {
 		}
 
 
 
 		/// <summary>
-		/// Creates a <see cref="TransactionalFile{T}"/>.
+		/// Creates a <see cref="TransactionalList{T}"/>.
 		/// </summary>
 		/// <param name="serializer">Serializer for the objects</param>
 		/// <param name="filename">File which will contain the serialized objects.</param>
@@ -39,7 +39,7 @@ namespace Sphere10.Framework {
 		/// <param name="clusterSize">To support random access reads/writes the file is broken into discontinuous clusters of this size (similar to how disk storage) works. <remarks>Try to fit your average object in 1 cluster for performance. However, spare space in a cluster cannot be used.</remarks> </param>
 		/// <param name="maxItems">The maximum count of items this file will ever support. <remarks>Avoid <see cref="Int32.MaxValue"/> and give lowest number possible.</remarks> </param>
 		/// <param name="readOnly">Whether or not file is opened in readonly mode.</param>
-		public TransactionalFile(IObjectSerializer<T> serializer, string filename, string uncommittedPageFileDir, Guid fileID, int transactionalPageSizeBytes, int maxStorageBytes, int memoryCacheBytes, int clusterSize, int maxItems, bool readOnly = false)
+		public TransactionalList(IObjectSerializer<T> serializer, string filename, string uncommittedPageFileDir, Guid fileID, int transactionalPageSizeBytes, int maxStorageBytes, int memoryCacheBytes, int clusterSize, int maxItems, bool readOnly = false)
 			: base(
 				new StreamMappedFixedClusteredList<T>(
 					clusterSize,

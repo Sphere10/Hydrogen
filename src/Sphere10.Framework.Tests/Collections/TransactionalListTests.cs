@@ -27,7 +27,7 @@ namespace Sphere10.Framework.Tests {
 
 	[TestFixture]
 	[Parallelizable(ParallelScope.Children)]
-	public class TransactionalFileTests {
+	public class TransactionalListTests {
 
 		[Test]
 		[Pairwise]
@@ -38,7 +38,7 @@ namespace Sphere10.Framework.Tests {
 			var dir = Tools.FileSystem.GetTempEmptyDirectory(true);
 			using (Tools.Scope.ExecuteOnDispose(() => File.Delete(file)))
 			using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectory(dir)))
-			using (var txnFile = new TransactionalFile<string>(new StringSerializer(Encoding.ASCII), file, dir, Guid.NewGuid(), Tools.Memory.ToBytes(10, MemoryMetric.Megabyte), Tools.Memory.ToBytes(10, MemoryMetric.Megabyte), maxCapacity)) {
+			using (var txnFile = new TransactionalList<string>(new StringSerializer(Encoding.ASCII), file, dir, Guid.NewGuid(), Tools.Memory.ToBytes(10, MemoryMetric.Megabyte), Tools.Memory.ToBytes(10, MemoryMetric.Megabyte), maxCapacity)) {
 				AssertEx.ListIntegrationTest(txnFile, maxCapacity, (rng, i) => Tools.Array.Gen(i, rng.NextString(StringMinSize, StringMaxSize)));
 				txnFile.Commit();
 			}
@@ -53,7 +53,7 @@ namespace Sphere10.Framework.Tests {
 			var dir = Tools.FileSystem.GetTempEmptyDirectory(true);
 			using (Tools.Scope.ExecuteOnDispose(() => File.Delete(file)))
 			using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectory(dir)))
-			using (var txnFile = new TransactionalFile<string>(new StringSerializer(Encoding.ASCII), file, dir, Guid.NewGuid(), Tools.Memory.ToBytes(10, MemoryMetric.Megabyte), Tools.Memory.ToBytes(10, MemoryMetric.Megabyte), maxCapacity)) {
+			using (var txnFile = new TransactionalList<string>(new StringSerializer(Encoding.ASCII), file, dir, Guid.NewGuid(), Tools.Memory.ToBytes(10, MemoryMetric.Megabyte), Tools.Memory.ToBytes(10, MemoryMetric.Megabyte), maxCapacity)) {
 				AssertEx.ListIntegrationTest(txnFile, maxCapacity, (rng, i) => Tools.Array.Gen(i, rng.NextString(StringMinSize, StringMaxSize)));
 				txnFile.Rollback();
 			}

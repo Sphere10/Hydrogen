@@ -46,7 +46,7 @@ namespace Sphere10.Framework.Tests {
 				var chunk3 = new byte[] { 7, 8, 9 };
 				using (var scope1 = new FileTransactionScope(txnFile)) {
 					scope1.BeginTransaction();
-					var file = scope1.EnlistFile(filePath, 100, 1);
+					var file = scope1.EnlistFile(filePath, 100, 1) as TransactionalFileMappedBuffer;
 					file.AddRange(chunk1);
 
 					using (var scope2 = new FileTransactionScope(txnFile)) {
@@ -90,7 +90,7 @@ namespace Sphere10.Framework.Tests {
 				var chunk3 = new byte[] { 7, 8, 9 };
 				using (var scope1 = new FileTransactionScope(txnFile)) {
 					scope1.BeginTransaction();
-					var file = scope1.EnlistFile(filePath, 100, 1);
+					var file = scope1.EnlistFile(filePath, 100, 1) as TransactionalFileMappedBuffer;
 					file.AddRange(chunk1);
 
 					using (var scope2 = new FileTransactionScope(txnFile)) {
@@ -135,7 +135,7 @@ namespace Sphere10.Framework.Tests {
 				var chunk3 = new byte[] { 7, 8, 9 };
 				using (var scope1 = new FileTransactionScope(txnFile)) {
 					scope1.BeginTransaction();
-					var file = scope1.EnlistFile(filePath, 100, 1);
+					var file = scope1.EnlistFile(filePath, 100, 1) as TransactionalFileMappedBuffer;
 					file.AddRange(chunk1);
 
 					using (var scope2 = new FileTransactionScope(txnFile)) {
@@ -179,7 +179,7 @@ namespace Sphere10.Framework.Tests {
 				var chunk3 = new byte[] { 7, 8, 9 };
 				using (var scope1 = new FileTransactionScope(txnFile)) {
 					scope1.BeginTransaction();
-					var file = scope1.EnlistFile(filePath, 100, 1);
+					var file = scope1.EnlistFile(filePath, 100, 1) as TransactionalFileMappedBuffer;
 					file.AddRange(chunk1);
 
 					using (var scope2 = new FileTransactionScope(txnFile)) {

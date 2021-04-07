@@ -3,8 +3,9 @@
 	public abstract class ObjectSerializerBase<TItem> : ObjectSizer<TItem>, IObjectSerializer<TItem> {
 		public abstract TItem Deserialize(int size, EndianBinaryReader reader);
 
-		public abstract int Serialize(TItem @object, EndianBinaryWriter writer);
+		public abstract int Serialize(TItem item, EndianBinaryWriter writer);
 
 	}
+
 
 }

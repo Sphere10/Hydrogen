@@ -12,7 +12,7 @@ namespace Sphere10.Helium.Queue
         public QueueManager(IEndpointConfiguration endpointConfiguration, ILocalQueue localQueue)
         {
             _localQueue = localQueue;
-            _localQueue.FileName = endpointConfiguration.FileName;
+            //_localQueue.FileName = endpointConfiguration.FileName;
         }
 
         public void FirstIn(string destination, IMessage message)

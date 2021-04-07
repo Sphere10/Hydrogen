@@ -115,7 +115,7 @@ namespace Sphere10.Framework {
 				if (GloballyEnlistedFiles.ContainsKey(filename))
 					throw new InvalidOperationException($"File already enlisted in other transaction: {filename})");
 
-				return  EnlistFile(new TransactionalFileMappedBuffer(filename, UncomittedPageFileDirectory, fileID, pageSize, maxOpenPages, false));
+				return EnlistFile(new TransactionalFileMappedBuffer(filename, UncomittedPageFileDirectory, fileID, pageSize, maxOpenPages, false));
 			}
 		}
 

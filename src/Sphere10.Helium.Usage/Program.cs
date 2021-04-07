@@ -4,7 +4,8 @@ using Sphere10.Helium.Message;
 
 namespace Sphere10.Helium.Usage
 {
-    public class Program
+
+	public class Program
     {
         public static void Main(string[] args)
         {

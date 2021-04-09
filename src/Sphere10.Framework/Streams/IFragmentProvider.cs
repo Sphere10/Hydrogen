@@ -6,7 +6,7 @@ namespace Sphere10.Framework {
 		/// <summary>
 		/// Length of fragment bytes
 		/// </summary>
-		int Length { get; }
+		long Length { get; }
 		
 		/// <summary>
 		/// Fragment count
@@ -43,5 +43,13 @@ namespace Sphere10.Framework {
 		/// <param name="releasedFragmentIndexes">Index of fragments released (should be right-most neighbourhood)</param>
 		/// <returns>Number of bytes actually released</returns>
 		int ReleaseSpace(int bytes, out int[] releasedFragmentIndexes);
+
+		/// <summary>
+		/// Update an existing fragment with the span bytes from the specified position.
+		/// </summary>
+		/// <param name="fragmentIndex"> fragment index</param>
+		/// <param name="fragmentPosition"> fragment position</param>
+		/// <param name="updateSpan"> span of bytes to update the fragment with</param>
+		void UpdateFragment(int fragmentIndex, int fragmentPosition, Span<byte> updateSpan);
 	}
 }

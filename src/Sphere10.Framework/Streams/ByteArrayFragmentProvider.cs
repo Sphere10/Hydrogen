@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.Linq;
 
 namespace Sphere10.Framework {
@@ -20,7 +21,7 @@ namespace Sphere10.Framework {
 
 		public int Count => _fragments.Count;
 
-		public int Length => _fragments.Sum(x => x.Length);
+		public long Length => _fragments.Sum(x => x.Length);
 
 		public Span<byte> GetFragment(int index) {
 			return _fragments[index];
@@ -91,6 +92,10 @@ namespace Sphere10.Framework {
 
 			releasedFragmentIndexes = releasedFragments.ToArray();
 			return bytes;
+		}
+
+		public void UpdateFragment(int fragmentIndex, int fragmentPosition, Span<byte> updateSpan) {
+			updateSpan.CopyTo(_fragments[fragmentIndex].AsSpan(fragmentPosition)); 
 		}
 	}
 }

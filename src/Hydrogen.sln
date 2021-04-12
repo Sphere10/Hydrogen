@@ -51,6 +51,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sphere10.Hydrogen.Presentat
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sphere10.Hydrogen.Presentation.Tests", "tests\Sphere10.Hydrogen.Presentation.Tests\Sphere10.Hydrogen.Presentation.Tests.csproj", "{DACD24AA-91EE-4E12-AD4D-ACF9792E17AF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sphere10.Hydrogen.Host", "Sphere10.Hydrogen.Host\Sphere10.Hydrogen.Host.csproj", "{EC73BAB1-53FF-42B3-9935-56F91B0ACE7E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -289,6 +291,18 @@ Global
 		{DACD24AA-91EE-4E12-AD4D-ACF9792E17AF}.Release|x64.Build.0 = Release|Any CPU
 		{DACD24AA-91EE-4E12-AD4D-ACF9792E17AF}.Release|x86.ActiveCfg = Release|Any CPU
 		{DACD24AA-91EE-4E12-AD4D-ACF9792E17AF}.Release|x86.Build.0 = Release|Any CPU
+		{EC73BAB1-53FF-42B3-9935-56F91B0ACE7E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EC73BAB1-53FF-42B3-9935-56F91B0ACE7E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EC73BAB1-53FF-42B3-9935-56F91B0ACE7E}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{EC73BAB1-53FF-42B3-9935-56F91B0ACE7E}.Debug|x64.Build.0 = Debug|Any CPU
+		{EC73BAB1-53FF-42B3-9935-56F91B0ACE7E}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{EC73BAB1-53FF-42B3-9935-56F91B0ACE7E}.Debug|x86.Build.0 = Debug|Any CPU
+		{EC73BAB1-53FF-42B3-9935-56F91B0ACE7E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EC73BAB1-53FF-42B3-9935-56F91B0ACE7E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EC73BAB1-53FF-42B3-9935-56F91B0ACE7E}.Release|x64.ActiveCfg = Release|Any CPU
+		{EC73BAB1-53FF-42B3-9935-56F91B0ACE7E}.Release|x64.Build.0 = Release|Any CPU
+		{EC73BAB1-53FF-42B3-9935-56F91B0ACE7E}.Release|x86.ActiveCfg = Release|Any CPU
+		{EC73BAB1-53FF-42B3-9935-56F91B0ACE7E}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -313,6 +327,7 @@ Global
 		{90C29B96-B3FE-414C-9734-358450A32849} = {9441FD4C-B3FD-4E8B-92A4-D6E5796ADA95}
 		{BC0E9594-2FD5-4C7B-A5BB-C2B6C1BC1A18} = {9441FD4C-B3FD-4E8B-92A4-D6E5796ADA95}
 		{DACD24AA-91EE-4E12-AD4D-ACF9792E17AF} = {9441FD4C-B3FD-4E8B-92A4-D6E5796ADA95}
+		{EC73BAB1-53FF-42B3-9935-56F91B0ACE7E} = {C1D7C597-D8B3-474C-94E8-0B3BA68B32E3}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3FB0E192-E14D-409E-AE7C-B8D68AA31AE7}

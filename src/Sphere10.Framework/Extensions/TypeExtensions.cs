@@ -27,7 +27,26 @@ namespace Sphere10.Framework {
 	/// <remarks></remarks>
 	public static class TypeExtensions {
 
-	    public static Type GetInterface(this Type type, string name) {
+		/// <summary>
+		/// Determines whether <paramref name="type"/> is a constructed type of <paramref name="genericTypeDefinition"/>.
+		/// </summary>
+		/// <param name="type">The type.</param>
+		/// <param name="genericTypeDefinition">The generic type definition.</param>
+		/// <returns><see langword="true" /> if <paramref name="type"/> is a constructed type of <paramref name="genericTypeDefinition"/>; otherwise, <see langword="false" />.</returns>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static bool IsConstructedGenericTypeOf(this Type type, Type genericTypeDefinition)
+			=> type.IsConstructedGenericType && type.GetGenericTypeDefinition() == genericTypeDefinition;
+
+		/// <summary>
+		/// Determines whether <paramref name="type"/> is a nullable value type.
+		/// </summary>
+		/// <param name="type">The self.</param>
+		/// <returns><see langword="true" /> if <paramref name="type"/> is a nullable value type; otherwise, <see langword="false" />.</returns>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static bool IsNullable(this Type type)
+			=> type.IsValueType && type.IsConstructedGenericTypeOf(typeof(Nullable<>));
+
+		public static Type GetInterface(this Type type, string name) {
 	        return type.GetInterface(name, true);
 	    }
 
@@ -92,15 +111,6 @@ namespace Sphere10.Framework {
 					return false;
 			}
 			return false;
-		}
-
-		/// <summary>
-		/// Determines whether this type is nullable.
-		/// </summary>
-		/// <returns><c>true</c> if the specified source is nullable; otherwise, <c>false</c>.</returns>
-		/// <remarks></remarks>
-		public static bool IsNullable(this Type source) {
-			return source.IsGenericType && source.GetGenericTypeDefinition() == typeof(Nullable<>);			
 		}
 
         public static bool IsAnonymousType(this Type t) {

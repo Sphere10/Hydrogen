@@ -101,13 +101,13 @@ namespace Sphere10.Framework {
 		/// <param name="byteLength"></param>
 		/// <param name="result"></param>
 		/// <returns>Number of bytes actually read</returns>
-		public override int ReadItemRaw(int itemIndex, int byteOffset, int byteLength, out Span<byte> result) {
+		public override int ReadItemRaw(int itemIndex, int byteOffset, int byteLength, out byte[] result) {
 			Guard.ArgumentInRange(itemIndex, 0, Count - 1, nameof(itemIndex));
 
 			int offset = itemIndex * ItemSize + _item0Offset + byteOffset;
 
 			Stream.Seek(offset, SeekOrigin.Begin);
-			result = Reader.ReadBytes(byteLength).AsSpan();
+			result = Reader.ReadBytes(byteLength);
 			return result.Length;
 		}
 	}

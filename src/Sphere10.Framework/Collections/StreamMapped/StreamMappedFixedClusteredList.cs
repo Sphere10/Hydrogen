@@ -98,9 +98,8 @@ namespace Sphere10.Framework {
 
 			var itemListings = new List<ItemListing>();
 			for (var i = 0; i < itemsArray.Length; i++) {
-				var listing = _listings[index + i];
-				RemoveItemFromClusters(listing.ClusterStartIndex);
-				itemListings.Add(AddItemToClusters(itemsArray[i]));
+				ItemListing listing = _listings[index + i];
+				itemListings.Add(UpdateItemInClusters(listing, itemsArray[i]));
 			}
 
 			_listings.UpdateRange(index, itemListings);
@@ -135,31 +134,12 @@ namespace Sphere10.Framework {
 
 			for (var i = 0; i < count; i++) {
 				var listing = _listings[index + i];
-				RemoveItemFromClusters(listing.ClusterStartIndex);
+				RemoveItemFromClusters(listing.ClusterStartIndex, listing.Size);
 			}
 
 			_listings.RemoveRange(index, count);
 
 			UpdateCountHeader();
-		}
-
-		protected override IEnumerable<int> GetFreeClusterNumbers(int numberRequired) {
-			var numbers = _clusterStatus
-				.WithIndex()
-				.Where(x => !x.Item1)
-				.Take(numberRequired)
-				.Select(x => x.Item2)
-				.ToArray();
-
-			if (numbers.Length != numberRequired) {
-				throw new InvalidOperationException("Insufficient free storage clusters to store item");
-			}
-
-			foreach (var clusterNumber in numbers) {
-				_clusterStatus[clusterNumber] = true;
-			}
-
-			return numbers;
 		}
 
 		public override void Load() {
@@ -199,16 +179,27 @@ namespace Sphere10.Framework {
 			Clusters.Load();
 			Loaded = true;
 		}
-			
-		private void RemoveItemFromClusters(int startCluster) {
-			var next = startCluster;
+		
+		protected override IEnumerable<int> GetFreeClusterNumbers(int numberRequired) {
+			var numbers = _clusterStatus
+				.WithIndex()
+				.Where(x => !x.Item1)
+				.Take(numberRequired)
+				.Select(x => x.Item2)
+				.ToArray();
 
-			while (next != -1) {
-				var cluster = Clusters[next];
-				_clusterStatus[cluster.Number] = false;
-				next = cluster.Next;
+			if (numbers.Length != numberRequired) {
+				throw new InvalidOperationException("Insufficient free storage clusters to store item");
 			}
+
+			foreach (var clusterNumber in numbers) {
+				_clusterStatus[clusterNumber] = true;
+			}
+
+			return numbers;
 		}
+		
+		protected override void MarkClusterFree(int clusterNumber) => _clusterStatus[clusterNumber] = false;
 
 		private void Initialize() {
 			var clusterSerializer = new ClusterSerializer(ClusterDataSize);

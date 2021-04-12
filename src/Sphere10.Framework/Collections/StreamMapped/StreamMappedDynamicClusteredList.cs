@@ -28,11 +28,11 @@ namespace Sphere10.Framework {
 				_listingStore = new StreamMappedPagedList<ItemListing>(new ItemListingSerializer(), new FragmentedStream(new FragmentProvider(this))) { IncludeListHeader = false };
 				_listings = new PreAllocatedList<ItemListing>(_listingStore);
 				WriteHeader();
+				
+				// listing store capacity set to 1, reserving cluster 0 as item listing.
 				_listingStore.Add(default);
 				Loaded = true;
 			}
-
-
 		}
 
 		public override int Count => _listings?.Count ?? 0;
@@ -59,18 +59,17 @@ namespace Sphere10.Framework {
 
 		public override IEnumerable<int> IndexOfRange(IEnumerable<T> items) {
 			CheckLoaded();
-			
+
 			var itemsArray = items as T[] ?? items.ToArray();
-			
+
 			if (!itemsArray.Any()) {
 				return new List<int>();
 			}
-			
+
 			var results = new int[itemsArray.Length];
 
 			foreach (var (listing, i) in _listings.WithIndex().Where(x => x.Item1.Size != 0)) {
 				var item = ReadItemFromClusters(listing.ClusterStartIndex, listing.Size);
-
 				foreach (var (t, index) in itemsArray.WithIndex())
 					if (EqualityComparer<T>.Default.Equals(t, item))
 						results[index] = i;
@@ -82,24 +81,25 @@ namespace Sphere10.Framework {
 		public override IEnumerable<T> ReadRange(int index, int count) {
 			CheckLoaded();
 			CheckRange(index, count);
-			
+
 			for (var i = 0; i < count; i++) {
 				var listing = _listings[index + i];
-				yield return ReadItemFromClusters(listing.ClusterStartIndex, listing.Size);
+				T item = ReadItemFromClusters(listing.ClusterStartIndex, listing.Size);
+				yield return item;
 			}
 		}
 
 		public override void UpdateRange(int index, IEnumerable<T> items) {
 			var itemsArray = items.ToArray();
-			
+
 			CheckLoaded();
 			CheckRange(index, itemsArray.Length);
-			
+
+
 			var itemListings = new List<ItemListing>();
 			for (var i = 0; i < itemsArray.Length; i++) {
-				var listing = _listings[index + i];
-				RemoveItemFromClusters(listing.ClusterStartIndex);
-				itemListings.Add( AddItemToClusters(itemsArray[i]));
+				var listing = _listings[i + index];
+				itemListings.Add(UpdateItemInClusters(listing, itemsArray[i]));
 			}
 
 			_listings.UpdateRange(index, itemListings);
@@ -107,10 +107,10 @@ namespace Sphere10.Framework {
 
 		public override void InsertRange(int index, IEnumerable<T> items) {
 			var itemsArray = items as T[] ?? items.ToArray();
-			
+
 			if (!itemsArray.Any())
 				return;
-			
+
 			var listings = new List<ItemListing>();
 
 			foreach (var item in itemsArray) {
@@ -129,10 +129,10 @@ namespace Sphere10.Framework {
 		public override void RemoveRange(int index, int count) {
 			CheckLoaded();
 			CheckRange(index, count);
-			
+
 			for (var i = 0; i < count; i++) {
 				var listing = _listings[index + i];
-				RemoveItemFromClusters(listing.ClusterStartIndex);
+				RemoveItemFromClusters(listing.ClusterStartIndex, listing.Size);
 			}
 
 			_listings.RemoveRange(index, count);
@@ -163,6 +163,8 @@ namespace Sphere10.Framework {
 
 			Loaded = true;
 		}
+
+		protected override void MarkClusterFree(int clusterNumber) => _freeClusters.Add(clusterNumber);
 
 		protected override IEnumerable<int> GetFreeClusterNumbers(int numberRequired) {
 			List<int> clusterNumbers = _freeClusters.Take(numberRequired)
@@ -197,16 +199,6 @@ namespace Sphere10.Framework {
 			_headerWriter.Write(headerBytes);
 		}
 
-		private void RemoveItemFromClusters(int startCluster) {
-			var next = startCluster;
-
-			while (next != -1) {
-				var cluster = Clusters[next];
-				_freeClusters.Add(cluster.Number);
-				next = cluster.Next;
-			}
-		}
-
 		private void UpdateCountHeader() {
 			_headerStream.Seek(0, SeekOrigin.Begin);
 			_headerWriter.Write(_listings.Count);
@@ -218,11 +210,14 @@ namespace Sphere10.Framework {
 			return reader.ReadInt32();
 		}
 
+
 		private class FragmentProvider : IFragmentProvider {
 
 			private readonly StreamMappedDynamicClusteredList<T> _parent;
 
 			private readonly int _nextClusterOffset;
+
+			private IDictionary<int, int> _fragmentClusterMap;
 
 			public FragmentProvider(StreamMappedDynamicClusteredList<T> parent) : this(0, parent) {
 			}
@@ -232,6 +227,18 @@ namespace Sphere10.Framework {
 				_nextClusterOffset = sizeof(int) + sizeof(int) + _parent.ClusterDataSize;
 				Length = length;
 				Count = (int)Math.Ceiling((decimal)length / ClusterDataSize);
+				_fragmentClusterMap = new Dictionary<int, int>();
+
+				if (Count > 0) {
+					int next = 0;
+					int fragmentIndex = 0;
+
+					while (next >= 0) {
+						_fragmentClusterMap.Add(fragmentIndex, next);
+						next = ReadClusterNext(next);
+						fragmentIndex++;
+					}
+				}
 			}
 
 			private StreamMappedPagedList<Cluster> Clusters => _parent.Clusters;
@@ -253,7 +260,7 @@ namespace Sphere10.Framework {
 				} else
 					fragmentLength = Length;
 
-				int clusterNumber = GetClusterNumberOfFragment(index);
+				int clusterNumber = _fragmentClusterMap[index];
 
 				return Clusters[clusterNumber]
 					.Data[..(int)fragmentLength];
@@ -261,7 +268,7 @@ namespace Sphere10.Framework {
 
 			public (int fragmentIndex, int fragmentPosition) GetFragment(long position, out Span<byte> fragment) {
 				int fragmentIndex = (int)Math.Floor((decimal)position / ClusterDataSize);
-				int lastCluster = GetClusterNumberOfFragment(fragmentIndex);
+				int lastCluster = _fragmentClusterMap[fragmentIndex];
 
 				var fragmentLength = Length > ClusterDataSize
 					? Math.Min(Length - fragmentIndex * ClusterDataSize, ClusterDataSize)
@@ -292,7 +299,8 @@ namespace Sphere10.Framework {
 				var numberRequired = (int)Math.Ceiling(((decimal)bytes - remainingAvailableSpace) / ClusterDataSize);
 				int[] clusterNumbers = _parent.GetFreeClusterNumbers(numberRequired).ToArray();
 				newFragmentIndexes = Enumerable.Range(Count, numberRequired).ToArray();
-
+				int lastCluster = _fragmentClusterMap.Any() ? _fragmentClusterMap.Last().Value : -1;
+				
 				for (var i = 0; i < clusterNumbers.Length; i++) {
 					var cluster = new Cluster {
 						Next = i == clusterNumbers.Length - 1 ? -1 : clusterNumbers[i + 1],
@@ -309,11 +317,10 @@ namespace Sphere10.Framework {
 						Clusters[cluster.Number] = cluster;
 
 					Count++;
+					_fragmentClusterMap.Add(newFragmentIndexes[i], clusterNumbers[i]);
 				}
 
-				int lastCluster = GetClusterNumberOfFragment(Count - 1);
-
-				if (Count != 0) {
+				if (lastCluster >= 0) {
 					var last = Clusters[lastCluster];
 					last.Next = clusterNumbers.First();
 					Clusters.Update(lastCluster, last);
@@ -329,17 +336,27 @@ namespace Sphere10.Framework {
 				int fragmentIndex = Count - numberOfClustersToBeReleased - 1;
 
 				if (numberOfClustersToBeReleased > 0) {
-					int newTailCluster = GetClusterNumberOfFragment(fragmentIndex);
+					int newTailCluster = _fragmentClusterMap[fragmentIndex];
 					Cluster cluster = Clusters[newTailCluster];
 					int next = cluster.Next;
 					cluster.Next = -1;
 					Clusters.Update(newTailCluster, cluster);
 
-					_parent.RemoveItemFromClusters(next);
+					while (next != -1) {
+						var nextCluster = Clusters[next];
+						_parent.MarkClusterFree(nextCluster.Number);
+						next = nextCluster.Next;
+					}
+					
 					Count -= numberOfClustersToBeReleased;
 				}
 
 				releasedFragmentIndexes = Enumerable.Range(fragmentIndex, numberOfClustersToBeReleased).ToArray();
+
+				foreach (int releasedFragmentIndex in releasedFragmentIndexes) {
+					_fragmentClusterMap.Remove(releasedFragmentIndex);
+				}
+
 				Length -= bytes;
 
 				return bytes;
@@ -348,31 +365,15 @@ namespace Sphere10.Framework {
 			public void UpdateFragment(int fragmentIndex, int fragmentPosition, Span<byte> updateSpan) {
 				Guard.ArgumentInRange(fragmentIndex, 0, Count - 1, nameof(fragmentIndex));
 
-				int clusterNumber = GetClusterNumberOfFragment(fragmentIndex);
+				int clusterNumber = _fragmentClusterMap[fragmentIndex];
 
 				var cluster = Clusters[clusterNumber];
 				updateSpan.CopyTo(cluster.Data.AsSpan(fragmentPosition));
 				Clusters.Update(clusterNumber, cluster);
 			}
 
-			private int GetClusterNumberOfFragment(int fragmentIndex) {
-				int clusterNumber = 0;
-				while (fragmentIndex > 0) {
-
-					int nextCluster = ReadClusterNext(clusterNumber);
-
-					if (nextCluster != -1) {
-						clusterNumber = nextCluster;
-					}
-
-					fragmentIndex--;
-				}
-
-				return clusterNumber;
-			}
-
 			private int ReadClusterNext(int clusterNumber) {
-				Clusters.ReadItemRaw(clusterNumber, _nextClusterOffset, sizeof(int), out Span<byte> next);
+				Clusters.ReadItemRaw(clusterNumber, _nextClusterOffset, sizeof(int), out byte[] next);
 				return BitConverter.ToInt32(next);
 			}
 		}

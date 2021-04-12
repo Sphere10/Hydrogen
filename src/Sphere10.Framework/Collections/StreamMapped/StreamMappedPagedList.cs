@@ -105,7 +105,7 @@ namespace Sphere10.Framework {
 			}
 		}
 
-		public int ReadItemRaw(int itemIndex, int byteOffset, int byteLength, out Span<byte> result) {
+		public int ReadItemRaw(int itemIndex, int byteOffset, int byteLength, out byte[] result) {
 			CheckRequiresLoad();
 			NotifyAccessing();
 			CheckRange(itemIndex, 1);

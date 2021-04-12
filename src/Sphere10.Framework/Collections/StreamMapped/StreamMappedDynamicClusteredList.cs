@@ -20,18 +20,19 @@ namespace Sphere10.Framework {
 			_headerStream = new BoundedStream(stream, 0, HeaderSize - 1);
 			_headerWriter = new EndianBinaryWriter(EndianBitConverter.Little, _headerStream);
 			_freeClusters = new List<int>();
-
+			
 			Clusters = new StreamMappedPagedList<Cluster>(new ClusterSerializer(clusterDataSize),
 				new NonClosingStream(new BoundedStream(stream, _headerStream.MaxAbsolutePosition + 1, long.MaxValue) { UseRelativeOffset = true }));
 
 			if (!RequiresLoad) {
 				_listingStore = new StreamMappedPagedList<ItemListing>(new ItemListingSerializer(), new FragmentedStream(new FragmentProvider(this))) { IncludeListHeader = false };
 				_listings = new PreAllocatedList<ItemListing>(_listingStore);
-				_listingStore.Add(default);
-
 				WriteHeader();
+				_listingStore.Add(default);
 				Loaded = true;
 			}
+
+
 		}
 
 		public override int Count => _listings?.Count ?? 0;

@@ -6,11 +6,9 @@ namespace Sphere10.Framework {
 	public class TransactionalList<T> : ExtendedListDecorator<T>, ITransactionalList<T> {
 		public const int DefaultTransactionalPageSize = 1 << 17;  // 128kb
 		public const int DefaultClusterSize = 128;  //1 << 11; // 2kb
-	
-		private readonly TransactionalFileMappedBuffer _buffer;
 
 		/// <summary>
-		/// Creates a <see cref="TransactionalList{T}"/>.
+		/// Creates a <see cref="TransactionalList{T}" /> based on a <see cref="StreamMappedFixedClusteredList{T}"/>/>.
 		/// </summary>
 		/// <param name="serializer">Serializer for the objects</param>
 		/// <param name="filename">File which will contain the serialized objects.</param>
@@ -24,10 +22,8 @@ namespace Sphere10.Framework {
 			: this(serializer, filename, uncommittedPageFileDir, fileID, DefaultTransactionalPageSize, maxStorageBytes, memoryCacheBytes, DefaultClusterSize, maxItems, readOnly) {
 		}
 
-
-
 		/// <summary>
-		/// Creates a <see cref="TransactionalList{T}"/>.
+		/// Creates a <see cref="TransactionalList{T}" /> based on a <see cref="StreamMappedFixedClusteredList{T}"/>/>.
 		/// </summary>
 		/// <param name="serializer">Serializer for the objects</param>
 		/// <param name="filename">File which will contain the serialized objects.</param>
@@ -60,18 +56,64 @@ namespace Sphere10.Framework {
 					)
 				)
 			) {
-			_buffer = buffer;
+			AsBuffer = buffer;
 		}
-		
-		public void Commit() => _buffer.Commit();
 
-		public void Rollback() => _buffer.Rollback();
+		/// <summary>
+		/// Creates a <see cref="TransactionalList{T}" /> based on a <see cref="StreamMappedDynamicClusteredList{T}"/>/>.
+		/// </summary>
+		/// <param name="filename">File which will contain the serialized objects.</param>
+		/// <param name="uncommittedPageFileDir">A working directory which stores transactional pages before comitted. Must be same across system restart.</param>
+		/// <param name="fileID">A unique ID for this file. Must be the same across system restarts.</param>
+		/// <param name="memoryCacheBytes">How much of the file is cached in memory. <remarks>This value should (roughly) be a factor of <see cref="transactionalPageSizeBytes"/></remarks></param>
+		/// <param name="serializer">Serializer for the objects</param>
+		/// <param name="readOnly">Whether or not file is opened in readonly mode.</param>
+		public TransactionalList(string filename, string uncommittedPageFileDir, Guid fileID, int memoryCacheBytes, IObjectSerializer<T> serializer, bool readOnly = false)
+			: this(filename, uncommittedPageFileDir, fileID, DefaultTransactionalPageSize, memoryCacheBytes, DefaultClusterSize, serializer, readOnly) {
+		}
 
-		public string Path => _buffer.Path;
+		/// <summary>
+		/// Creates a <see cref="TransactionalList{T}" /> based on a <see cref="StreamMappedDynamicClusteredList{T}"/>/>.
+		/// </summary>
+		/// <param name="filename">File which will contain the serialized objects.</param>
+		/// <param name="uncommittedPageFileDir">A working directory which stores transactional pages before comitted. Must be same across system restart.</param>
+		/// <param name="fileID">A unique ID for this file. Must be the same across system restarts.</param>
+		/// <param name="transactionalPageSizeBytes">Size of transactional page</param>
+		/// <param name="memoryCacheBytes">How much of the file is cached in memory. <remarks>This value should (roughly) be a factor of <see cref="transactionalPageSizeBytes"/></remarks></param>
+		/// <param name="clusterSize">To support random access reads/writes the file is broken into discontinuous clusters of this size (similar to how disk storage) works. <remarks>Try to fit your average object in 1 cluster for performance. However, spare space in a cluster cannot be used.</remarks> </param>
+		/// <param name="serializer">Serializer for the objects</param>
+		/// <param name="readOnly">Whether or not file is opened in readonly mode.</param>
+		public TransactionalList(string filename, string uncommittedPageFileDir, Guid fileID, int transactionalPageSizeBytes, int memoryCacheBytes, int clusterSize, IObjectSerializer<T> serializer, bool readOnly = false)
+			: base(
+				new StreamMappedDynamicClusteredList<T>(
+					clusterSize,
+					serializer,
+					new ExtendedMemoryStream(
+						NewTransactionalFileMappedBuffer(
+							filename,
+							uncommittedPageFileDir,
+							fileID,
+							transactionalPageSizeBytes,
+							Math.Max(1, memoryCacheBytes / transactionalPageSizeBytes),
+							readOnly,
+							out var buffer
+						),
+						disposeSource: true
+					)
+				)
+			) {
+			AsBuffer = buffer;
+		}
 
-		public Guid FileID => _buffer.FileID;
+		public void Commit() => AsBuffer.Commit();
 
-		public TransactionalFileMappedBuffer AsBuffer => _buffer;
+		public void Rollback() => AsBuffer.Rollback();
+
+		public string Path => AsBuffer.Path;
+
+		public Guid FileID => AsBuffer.FileID;
+
+		public TransactionalFileMappedBuffer AsBuffer { get; }
 
 		private static TransactionalFileMappedBuffer NewTransactionalFileMappedBuffer(
 			string filename,
@@ -87,9 +129,9 @@ namespace Sphere10.Framework {
 			return result;
 		}
 
+
 		public void Dispose() {
 			AsBuffer?.Dispose();
-			_buffer?.Dispose();
 		}
 	}
 

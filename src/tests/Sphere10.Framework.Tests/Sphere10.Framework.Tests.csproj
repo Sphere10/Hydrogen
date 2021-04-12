@@ -24,7 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Sphere10.Framework.NUnit\Sphere10.Framework.NUnit.csproj" />
+    <ProjectReference Include="..\..\Sphere10.Framework.NUnit\Sphere10.Framework.NUnit.csproj" />
   </ItemGroup>
 
 </Project>

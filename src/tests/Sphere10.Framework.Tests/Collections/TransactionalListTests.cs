@@ -73,7 +73,6 @@ namespace Sphere10.Framework.Tests {
 				txnFile.Commit();
 			}
 		}
-		
 
 		[Test]
 		[Pairwise]

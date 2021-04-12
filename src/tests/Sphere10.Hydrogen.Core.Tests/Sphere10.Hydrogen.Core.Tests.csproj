@@ -13,9 +13,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Sphere10.Framework.NUnit\Sphere10.Framework.NUnit.csproj" />
-    <ProjectReference Include="..\Sphere10.Framework\Sphere10.Framework.csproj" />
-    <ProjectReference Include="..\Sphere10.Hydrogen.Core\Sphere10.Hydrogen.Core.csproj" />
+    <ProjectReference Include="..\..\Sphere10.Framework.NUnit\Sphere10.Framework.NUnit.csproj" />
+    <ProjectReference Include="..\..\Sphere10.Framework\Sphere10.Framework.csproj" />
+    <ProjectReference Include="..\..\Sphere10.Hydrogen.Core\Sphere10.Hydrogen.Core.csproj" />
   </ItemGroup>
 
 </Project>

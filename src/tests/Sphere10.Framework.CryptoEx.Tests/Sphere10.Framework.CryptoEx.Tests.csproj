@@ -13,7 +13,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Sphere10.Framework.CryptoEx\Sphere10.Framework.CryptoEx.csproj" />
+      <ProjectReference Include="..\..\Sphere10.Framework.CryptoEx\Sphere10.Framework.CryptoEx.csproj" />
     </ItemGroup>
 
 </Project>

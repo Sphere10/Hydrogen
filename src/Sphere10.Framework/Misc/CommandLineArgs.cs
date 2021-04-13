@@ -32,6 +32,27 @@ using System.Text.RegularExpressions;
 
 namespace Sphere10.Framework {
 
+	//public enum CommandLineArgState {
+	//	// Valid states
+	//	Specified,
+	//	NotSpecified,
+
+	//	// error states
+	//	Missing,
+	//}
+
+
+	//public record CommandLineArg<T> {
+
+	//	public string Key;
+
+	//	public string StringValue;
+
+	//	public T Value;
+
+	//	public string
+	//}
+
 
 	public class CommandLineArgs : Dictionary<string, string> {
 

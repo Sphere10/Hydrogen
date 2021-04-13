@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 
 namespace Sphere10.Framework {
-	public class StreamMappedDynamicClusteredList<T> : StreamMappedClusteredListBase<T> {
+	public abstract class StreamMappedDynamicClusteredList<T, TListing> : StreamMappedClusteredListBase<T, TListing> where TListing : IItemListing {
 
 		private const int HeaderSize = 256;
 
@@ -13,22 +13,25 @@ namespace Sphere10.Framework {
 		private readonly BoundedStream _headerStream;
 
 		private readonly List<int> _freeClusters;
-		private StreamMappedPagedList<ItemListing> _listingStore;
-		private PreAllocatedList<ItemListing> _listings;
+		private StreamMappedPagedList<TListing> _listingStore;
+		private PreAllocatedList<TListing> _listings;
 
-		public StreamMappedDynamicClusteredList(int clusterDataSize, IObjectSerializer<T> serializer, Stream stream) : base(clusterDataSize, serializer, stream) {
+		public StreamMappedDynamicClusteredList(int clusterDataSize, Stream stream, IObjectSerializer<T> itemSerializer, IObjectSerializer<TListing> listingSerializer, IEqualityComparer<T> itemComparer = null)
+			: base(clusterDataSize, stream, itemSerializer, listingSerializer, itemComparer) {
 			_headerStream = new BoundedStream(stream, 0, HeaderSize - 1);
 			_headerWriter = new EndianBinaryWriter(EndianBitConverter.Little, _headerStream);
 			_freeClusters = new List<int>();
-			
+
 			Clusters = new StreamMappedPagedList<Cluster>(new ClusterSerializer(clusterDataSize),
 				new NonClosingStream(new BoundedStream(stream, _headerStream.MaxAbsolutePosition + 1, long.MaxValue) { UseRelativeOffset = true }));
 
 			if (!RequiresLoad) {
-				_listingStore = new StreamMappedPagedList<ItemListing>(new ItemListingSerializer(), new FragmentedStream(new FragmentProvider(this))) { IncludeListHeader = false };
-				_listings = new PreAllocatedList<ItemListing>(_listingStore);
+				_listingStore = new StreamMappedPagedList<TListing>(ListingSerializer, new FragmentedStream(new FragmentProvider(this))) {
+					IncludeListHeader = false
+				};
+				_listings = new PreAllocatedList<TListing>(_listingStore);
 				WriteHeader();
-				
+
 				// listing store capacity set to 1, reserving cluster 0 as item listing.
 				_listingStore.Add(default);
 				Loaded = true;
@@ -42,15 +45,15 @@ namespace Sphere10.Framework {
 		public override void AddRange(IEnumerable<T> items) {
 			CheckLoaded();
 
-			var listings = new List<ItemListing>();
+			var listings = new List<TListing>();
 
 			foreach (T item in items) {
-				listings.Add(AddItemToClusters(item));
+				listings.Add(AddItemToClusters(Count, item));
 			}
 
 			if (_listings.Capacity < _listings.Count + listings.Count) {
 				int required = _listings.Capacity - listings.Count + _listings.Count;
-				_listingStore.AddRange(Tools.Array.Gen(required, default(ItemListing)));
+				_listingStore.AddRange(Tools.Array.Gen(required, default(TListing)));
 			}
 
 			_listings.AddRange(listings);
@@ -68,10 +71,10 @@ namespace Sphere10.Framework {
 
 			var results = new int[itemsArray.Length];
 
-			foreach (var (listing, i) in _listings.WithIndex().Where(x => x.Item1.Size != 0)) {
-				var item = ReadItemFromClusters(listing.ClusterStartIndex, listing.Size);
+			foreach (var (listing, i) in _listings.WithIndex()) {
+				var item = ReadItemFromClusters(i, listing);
 				foreach (var (t, index) in itemsArray.WithIndex())
-					if (EqualityComparer<T>.Default.Equals(t, item))
+					if (ItemComparer.Equals(t, item))
 						results[index] = i;
 			}
 
@@ -84,7 +87,7 @@ namespace Sphere10.Framework {
 
 			for (var i = 0; i < count; i++) {
 				var listing = _listings[index + i];
-				T item = ReadItemFromClusters(listing.ClusterStartIndex, listing.Size);
+				T item = ReadItemFromClusters(index + i, listing);
 				yield return item;
 			}
 		}
@@ -96,10 +99,10 @@ namespace Sphere10.Framework {
 			CheckRange(index, itemsArray.Length);
 
 
-			var itemListings = new List<ItemListing>();
+			var itemListings = new List<TListing>();
 			for (var i = 0; i < itemsArray.Length; i++) {
 				var listing = _listings[i + index];
-				itemListings.Add(UpdateItemInClusters(listing, itemsArray[i]));
+				itemListings.Add(UpdateItemInClusters(index + i, listing, itemsArray[i]));
 			}
 
 			_listings.UpdateRange(index, itemListings);
@@ -111,15 +114,16 @@ namespace Sphere10.Framework {
 			if (!itemsArray.Any())
 				return;
 
-			var listings = new List<ItemListing>();
-
-			foreach (var item in itemsArray) {
-				listings.Add(AddItemToClusters(item));
+			var listings = new List<TListing>();
+			// Add item data 
+			foreach (var (item, i) in itemsArray.WithIndex()) {
+				listings.Add(AddItemToClusters(index + i, item));
 			}
 
+			// Add listings
 			if (_listings.Capacity < _listings.Count + listings.Count) {
 				int required = _listings.Capacity - _listings.Count + listings.Count;
-				_listingStore.AddRange(Tools.Array.Gen(required, default(ItemListing)));
+				_listingStore.AddRange(Tools.Array.Gen(required, default(TListing)));
 			}
 
 			_listings.InsertRange(index, listings);
@@ -132,7 +136,7 @@ namespace Sphere10.Framework {
 
 			for (var i = 0; i < count; i++) {
 				var listing = _listings[index + i];
-				RemoveItemFromClusters(listing.ClusterStartIndex, listing.Size);
+				RemoveItemFromClusters(index + i, listing);
 			}
 
 			_listings.RemoveRange(index, count);
@@ -141,15 +145,16 @@ namespace Sphere10.Framework {
 
 		public override void Load() {
 			int count = ReadHeader();
-			ItemListingSerializer serializer = new ItemListingSerializer();
-			int listingsBytesLength = count * serializer.FixedSize;
+			int listingsBytesLength = count * ListingSerializer.FixedSize;
 
 			Clusters.Load();
 
-			_listingStore = new StreamMappedPagedList<ItemListing>(serializer, new FragmentedStream(new FragmentProvider(listingsBytesLength, this))) { IncludeListHeader = false };
+			_listingStore = new StreamMappedPagedList<TListing>(ListingSerializer, new FragmentedStream(new FragmentProvider(listingsBytesLength, this))) {
+				IncludeListHeader = false
+			};
 			_listingStore.Load();
 
-			_listings = new PreAllocatedList<ItemListing>(_listingStore);
+			_listings = new PreAllocatedList<TListing>(_listingStore);
 			_listings.AddRange(_listingStore);
 
 			for (int i = 0; i < Clusters.Count; i++) {
@@ -213,16 +218,16 @@ namespace Sphere10.Framework {
 
 		private class FragmentProvider : IFragmentProvider {
 
-			private readonly StreamMappedDynamicClusteredList<T> _parent;
+			private readonly StreamMappedDynamicClusteredList<T, TListing> _parent;
 
 			private readonly int _nextClusterOffset;
 
 			private IDictionary<int, int> _fragmentClusterMap;
 
-			public FragmentProvider(StreamMappedDynamicClusteredList<T> parent) : this(0, parent) {
+			public FragmentProvider(StreamMappedDynamicClusteredList<T, TListing> parent) : this(0, parent) {
 			}
 
-			public FragmentProvider(long length, StreamMappedDynamicClusteredList<T> parent) {
+			public FragmentProvider(long length, StreamMappedDynamicClusteredList<T, TListing> parent) {
 				_parent = parent;
 				_nextClusterOffset = sizeof(int) + sizeof(int) + _parent.ClusterDataSize;
 				Length = length;
@@ -300,7 +305,7 @@ namespace Sphere10.Framework {
 				int[] clusterNumbers = _parent.GetFreeClusterNumbers(numberRequired).ToArray();
 				newFragmentIndexes = Enumerable.Range(Count, numberRequired).ToArray();
 				int lastCluster = _fragmentClusterMap.Any() ? _fragmentClusterMap.Last().Value : -1;
-				
+
 				for (var i = 0; i < clusterNumbers.Length; i++) {
 					var cluster = new Cluster {
 						Next = i == clusterNumbers.Length - 1 ? -1 : clusterNumbers[i + 1],
@@ -347,7 +352,7 @@ namespace Sphere10.Framework {
 						_parent.MarkClusterFree(nextCluster.Number);
 						next = nextCluster.Next;
 					}
-					
+
 					Count -= numberOfClustersToBeReleased;
 				}
 
@@ -376,6 +381,20 @@ namespace Sphere10.Framework {
 				Clusters.ReadItemRaw(clusterNumber, _nextClusterOffset, sizeof(int), out byte[] next);
 				return BitConverter.ToInt32(next);
 			}
+		}
+	}
+
+	public class StreamMappedDynamicClusteredList<T> : StreamMappedDynamicClusteredList<T, ItemListing> {
+
+		public StreamMappedDynamicClusteredList(int clusterDataSize, Stream stream, IObjectSerializer<T> itemSerializer, IEqualityComparer<T> itemComparer = null)
+			: base(clusterDataSize, stream, itemSerializer, new ItemListingSerializer(), itemComparer) {
+		}
+
+		protected override ItemListing NewListingInstance(int itemSizeBytes, int clusterStartIndex) {
+			return new ItemListing {
+				Size = itemSizeBytes,
+				ClusterStartIndex = clusterStartIndex
+			};
 		}
 	}
 }

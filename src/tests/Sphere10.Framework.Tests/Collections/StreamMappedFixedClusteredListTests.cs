@@ -12,7 +12,7 @@ namespace Sphere10.Framework.Tests {
 		[Test]
 		public void ReadRange() {
 			using var stream = new MemoryStream();
-			var list = new StreamMappedFixedClusteredList<int>(32, 100, 4000, new IntSerializer(), stream);
+			var list = new StreamMappedFixedClusteredList<int>(32, 100, 4000, stream, new IntSerializer());
 
 			list.AddRange(999, 1000, 1001, 1002);
 
@@ -26,7 +26,7 @@ namespace Sphere10.Framework.Tests {
 		[Test]
 		public void AddEmptyNullString() {
 			using var stream = new MemoryStream();
-			var list = new StreamMappedFixedClusteredList<string>(32, 100, 4000, new StringSerializer(Encoding.UTF8), stream);
+			var list = new StreamMappedFixedClusteredList<string>(32, 100, 4000, stream, new StringSerializer(Encoding.UTF8));
 			string[] input = new[] { string.Empty, null, string.Empty, null };
 			list.AddRange(input);
 			Assert.AreEqual(4, list.Count);
@@ -41,12 +41,12 @@ namespace Sphere10.Framework.Tests {
 			
 			using (Tools.Scope.ExecuteOnDispose(() => File.Delete(fileName))) {
 				using (var fileStream = new FileStream(fileName, FileMode.Open)) {
-					var list = new StreamMappedFixedClusteredList<int>(32, 100, 4000, new IntSerializer(), fileStream);
+					var list = new StreamMappedFixedClusteredList<int>(32, 100, 4000, fileStream, new IntSerializer());
 					list.Add(999);
 				}
 
 				using (var fileStream = new FileStream(fileName, FileMode.Open)) {
-					var list = new StreamMappedFixedClusteredList<int>(32, 100, 4000, new IntSerializer(), fileStream);
+					var list = new StreamMappedFixedClusteredList<int>(32, 100, 4000, fileStream, new IntSerializer());
 					
 					list.Load();
 					
@@ -59,7 +59,7 @@ namespace Sphere10.Framework.Tests {
 		[Test]
 		public void UpdateRange() {
 			using var stream = new MemoryStream();
-			var list = new StreamMappedFixedClusteredList<int>(32, 100, 4000, new IntSerializer(), stream);
+			var list = new StreamMappedFixedClusteredList<int>(32, 100, 4000, stream, new IntSerializer());
 
 			list.AddRange(999, 1000, 1001, 1002);
 			list.UpdateRange(0, new[] { 998 });
@@ -72,7 +72,7 @@ namespace Sphere10.Framework.Tests {
 		[Test]
 		public void RemoveRange() {
 			using var stream = new MemoryStream();
-			var list = new StreamMappedFixedClusteredList<int>(32, 100, 4000, new IntSerializer(), stream);
+			var list = new StreamMappedFixedClusteredList<int>(32, 100, 4000, stream, new IntSerializer());
 
 			list.Add(999);
 			list.Add(1000);
@@ -84,7 +84,7 @@ namespace Sphere10.Framework.Tests {
 		[Test]
 		public void IndexOf() {
 			using var stream = new MemoryStream();
-			var list = new StreamMappedFixedClusteredList<int>(32, 100, 4000, new IntSerializer(), stream);
+			var list = new StreamMappedFixedClusteredList<int>(32, 100, 4000, stream, new IntSerializer());
 
 			list.AddRange(999, 1000, 1001, 1002);
 
@@ -96,7 +96,7 @@ namespace Sphere10.Framework.Tests {
 		[Test]
 		public void Count() {
 			using var stream = new MemoryStream();
-			var list = new StreamMappedFixedClusteredList<int>(32, 100, 4000, new IntSerializer(), stream);
+			var list = new StreamMappedFixedClusteredList<int>(32, 100, 4000, stream, new IntSerializer());
 
 			list.AddRange(999, 1000, 1001, 1002);
 
@@ -106,7 +106,7 @@ namespace Sphere10.Framework.Tests {
 		[Test]
 		public void InsertRange() {
 			using var stream = new MemoryStream();
-			var list = new StreamMappedFixedClusteredList<int>(32, 100, 4000, new IntSerializer(), stream);
+			var list = new StreamMappedFixedClusteredList<int>(32, 100, 4000, stream, new IntSerializer());
 
 			list.AddRange(999, 1000, 1001, 1002);
 			list.InsertRange(2, new[] { 1003 });
@@ -119,7 +119,7 @@ namespace Sphere10.Framework.Tests {
 		[Pairwise]
 		public void IntegrationTestsFixedItemSize() {
 			using var stream = new MemoryStream();
-			var list = new StreamMappedFixedClusteredList<int>(16, 100, 4000, new IntSerializer(), stream);
+			var list = new StreamMappedFixedClusteredList<int>(16, 100, 4000, stream, new IntSerializer());
 
 			AssertEx.ListIntegrationTest(list, 100, (rng, i) => rng.NextInts(i));
 		}
@@ -127,7 +127,7 @@ namespace Sphere10.Framework.Tests {
 		[Test]
 		public void IntegrationTestsDynamicItemSize() {
 			using var stream = new MemoryStream();
-			var list = new StreamMappedFixedClusteredList<string>(64, 1000, 1000000, new StringSerializer(Encoding.ASCII), stream);
+			var list = new StreamMappedFixedClusteredList<string>(64, 1000, 1000000, stream, new StringSerializer(Encoding.ASCII));
 			AssertEx.ListIntegrationTest(list,
 				100,
 				(rng, i) => Enumerable.Range(0, i)

@@ -41,7 +41,6 @@ namespace Sphere10.Framework {
 					clusterSize,
 					maxItems,
 					maxStorageBytes,
-					serializer,
 					new ExtendedMemoryStream(
 						NewTransactionalFileMappedBuffer(
 							filename,
@@ -53,7 +52,8 @@ namespace Sphere10.Framework {
 							out var buffer
 						),
 						disposeSource: true
-					)
+					),
+					serializer
 				)
 			) {
 			AsBuffer = buffer;
@@ -87,7 +87,6 @@ namespace Sphere10.Framework {
 			: base(
 				new StreamMappedDynamicClusteredList<T>(
 					clusterSize,
-					serializer,
 					new ExtendedMemoryStream(
 						NewTransactionalFileMappedBuffer(
 							filename,
@@ -99,7 +98,8 @@ namespace Sphere10.Framework {
 							out var buffer
 						),
 						disposeSource: true
-					)
+					),
+					serializer
 				)
 			) {
 			AsBuffer = buffer;

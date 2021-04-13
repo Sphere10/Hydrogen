@@ -4,22 +4,32 @@ using System.IO;
 using System.Linq;
 
 namespace Sphere10.Framework {
-	public abstract class StreamMappedClusteredListBase<T> : RangedListBase<T> {
 
-		protected readonly IObjectSerializer<T> Serializer;
+	public class StreamMappedItemAccessedArgs<TItem, TListing> : EventArgs where TListing : IItemListing {
+		public ListOperationType OperationType { get; init; }
+		public int ListingIndex { get; init; }
+		public TListing Listing { get; init; }
+		public TItem Item { get; init; }
+		public byte[] SerializedItem { get; init; }
+	}
+
+	public abstract class StreamMappedClusteredListBase<TItem, TListing> : RangedListBase<TItem> where TListing : IItemListing {
+
+		protected readonly IObjectSerializer<TListing> ListingSerializer;
+		protected readonly IObjectSerializer<TItem> ItemSerializer;
+		protected readonly IEqualityComparer<TItem> ItemComparer;
 		protected readonly Stream InnerStream;
 		protected readonly int ClusterDataSize;
+		
+		public event EventHandlerEx<object, StreamMappedItemAccessedArgs<TItem, TListing>> ItemAccess;
+	
 
-		public event EventHandlerEx<object, byte[]> ItemRead;
-
-		public event EventHandlerEx<object, byte[]> ItemWrite;
-
-		public event EventHandlerEx<object, byte[]> ItemRemove;
-
-		public event EventHandlerEx<object, byte[]> ItemUpdate;
-
-		public StreamMappedClusteredListBase(int clusterDataSize, IObjectSerializer<T> serializer, Stream stream) {
-			Serializer = serializer;
+		public StreamMappedClusteredListBase(int clusterDataSize, Stream stream, IObjectSerializer<TItem> itemSerializer, IObjectSerializer<TListing> listingSerializer,  IEqualityComparer<TItem> itemComparer = null) {
+			Guard.ArgumentNotNull(listingSerializer, nameof(listingSerializer));
+			Guard.Argument(listingSerializer.IsFixedSize, nameof(listingSerializer), "Listing objects must be fixed size");
+			ItemSerializer = itemSerializer;
+			ListingSerializer = listingSerializer;
+			ItemComparer = itemComparer ?? EqualityComparer<TItem>.Default;
 			InnerStream = stream;
 			ClusterDataSize = clusterDataSize;
 		}
@@ -36,28 +46,33 @@ namespace Sphere10.Framework {
 
 		public abstract void Load();
 
+		protected abstract TListing NewListingInstance(int itemSizeBytes, int clusterStartIndex);
+
 		protected abstract void MarkClusterFree(int clusterNumber);
 
-		protected ItemListing AddItemToClusters(T item) {
+		protected TListing AddItemToClusters(int listingIndex, TItem item) {
 			if (item is null) {
-				return new ItemListing {
-					Size = -1,
-					ClusterStartIndex = -1
-				};
+				return NewListingInstance(-1, -1);
 			}
 			
 			byte[] data = SerializeItem(item);
-			return AddItemInternal(data);
+			var listing = AddItemInternal(data);
+			NotifyItemAccess(ListOperationType.Add, listingIndex, listing, item, data);
+			return listing;
 		}
 
-		protected ItemListing UpdateItemInClusters(ItemListing itemListing, T update) {
-			RemoveItemFromClusters(itemListing.ClusterStartIndex, itemListing.Size);
+		protected TListing UpdateItemInClusters(int listingIndex, TListing itemListing, TItem update) {
+			RemoveItemFromClusters(listingIndex, itemListing);
+			//NotifyItemAccess(ListOperationType.Remove, itemListing, default, default);   // an update does not mean old item was removed, it means overwritten
 			byte[] updatedData = SerializeItem(update);
-			NotifyItemUpdate(updatedData);
-			return AddItemInternal(updatedData);
+			var listing = AddItemInternal(updatedData);
+			NotifyItemAccess(ListOperationType.Update, listingIndex, listing, update, updatedData);
+			return listing;
 		}
 
-		protected T ReadItemFromClusters(int startCluster, int size) {
+		protected TItem ReadItemFromClusters(int listingIndex, TListing listing) {
+			var size = listing.Size;
+			var startCluster = listing.ClusterStartIndex;
 			if (size == -1 && startCluster == -1)
 				return default;
 
@@ -79,33 +94,36 @@ namespace Sphere10.Framework {
 			}
 
 			var data = builder.ToArray();
-			NotifyItemRead(data);
 
-			T item = Serializer.Deserialize(size,
+			var item = ItemSerializer.Deserialize(size,
 				new EndianBinaryReader(EndianBitConverter.Little, new MemoryStream(data)));
+
+			NotifyItemAccess(ListOperationType.Read, listingIndex, listing, item, data);
 
 			return item;
 		}
 
-		protected void RemoveItemFromClusters(int startClusterNumber, int size) {
+		protected void RemoveItemFromClusters(int listingIndex, TListing listing) {
+			var startClusterNumber = listing.ClusterStartIndex;
+			var size = listing.Size;
 			var next = startClusterNumber;
 
-			ByteArrayBuilder builder = new ByteArrayBuilder();
 
 			while (next != -1) {
 				var cluster = Clusters[next];
-				var data = cluster.Data.Take(Math.Min(size, cluster.Data.Length)).ToArray();
-				builder.Append(data);
-				size -= data.Length;
+				// Removed since old data is unnecessary burden (for now)
+				//var data = cluster.Data.Take(Math.Min(size, cluster.Data.Length)).ToArray();
+				//builder.Append(data);
+				//size -= data.Length;
 
 				MarkClusterFree(cluster.Number);
 				next = cluster.Next;
 			}
 
-			NotifyItemRemove(builder.ToArray());
+			NotifyItemAccess(ListOperationType.Remove, listingIndex, listing, default, default);
 		}
 
-		private ItemListing AddItemInternal(byte[] data) {
+		private TListing AddItemInternal(byte[] data) {
 			var clusters = new List<Cluster>();
 			var segments = data.Partition(ClusterDataSize)
 				.ToList();
@@ -132,17 +150,12 @@ namespace Sphere10.Framework {
 				else
 					Clusters[cluster.Number] = cluster;
 
-			NotifyItemWrite(data);
-
-			return new ItemListing {
-				Size = data.Length,
-				ClusterStartIndex = clusters.FirstOrDefault()?.Number ?? -1
-			};
+			return NewListingInstance(data.Length, clusters.FirstOrDefault()?.Number ?? -1);
 		}
 
-		private byte[] SerializeItem(T item) {
+		private byte[] SerializeItem(TItem item) {
 			using var stream = new MemoryStream();
-			Serializer.Serialize(item, new EndianBinaryWriter(EndianBitConverter.Little, stream));
+			ItemSerializer.Serialize(item, new EndianBinaryWriter(EndianBitConverter.Little, stream));
 			return stream.ToArray();
 		}
 
@@ -160,49 +173,19 @@ namespace Sphere10.Framework {
 			}
 		}
 
-		protected virtual void OnItemRead(byte[] item) {
+		protected virtual void OnItemAccess(ListOperationType operationType, int listingIndex, TListing listing, TItem item, byte[] serializedItem) {
 		}
 
-		protected virtual void OnItemWrite(byte[] item) {
-		}
-
-		protected virtual void OnItemRemove(byte[] item) {
-		}
-
-		protected virtual void OnItemUpdate(byte[] item) {
-		}
-
-
-		protected void NotifyItemRead(byte[] item) {
+		protected void NotifyItemAccess(ListOperationType operationType, int listingIndex, TListing listing, TItem item, byte[] serializedItem) {
 			if (SuppressNotifications)
 				return;
 
-			OnItemRead(item);
-			ItemRead?.Invoke(this, item);
+
+
+			OnItemAccess(operationType, listingIndex, listing, item, serializedItem);
+			var args = new StreamMappedItemAccessedArgs<TItem, TListing>() { ListingIndex = listingIndex, Listing = listing, Item = item, SerializedItem = serializedItem };
+			ItemAccess?.Invoke(this, args);
 		}
 
-		protected void NotifyItemWrite(byte[] item) {
-			if (SuppressNotifications)
-				return;
-
-			OnItemWrite(item);
-			ItemWrite?.Invoke(this, item);
-		}
-
-		protected void NotifyItemUpdate(byte[] item) {
-			if (SuppressNotifications)
-				return;
-
-			OnItemUpdate(item);
-			ItemUpdate?.Invoke(this, item);
-		}
-
-		protected void NotifyItemRemove(byte[] item) {
-			if (SuppressNotifications)
-				return;
-
-			OnItemRemove(item);
-			ItemRemove?.Invoke(this, item);
-		}
 	}
 }

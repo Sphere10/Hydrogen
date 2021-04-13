@@ -5,32 +5,32 @@ using System.Linq;
 
 namespace Sphere10.Framework {
 
-
 	/// <summary>
 	/// A list implementation which is mapped onto a stream via clusters. Items can added/removed anywhere, and they are stored
 	/// in a non-contiguous manner via clusters of data (similar in principle to a file system format). The limitation here is that the
 	/// the list is inherantly bounded from construction and cannot grow past the pre-determined maximum number of items. This uses
 	/// <see cref="StreamMappedPagedList{TItem}"/> under the hood.
 	/// </summary>
-	public class StreamMappedFixedClusteredList<T> : StreamMappedClusteredListBase<T> {
+	public abstract class StreamMappedFixedClusteredList<T, TListing> : StreamMappedClusteredListBase<T, TListing> where TListing : IItemListing {
 		private const int HeaderSize = 256;
 
 		private readonly int _maxStorageBytes;
 		private IExtendedList<bool> _clusterStatus;
-		private IExtendedList<ItemListing> _listings;
+		private IExtendedList<TListing> _listings;
 
 		public StreamMappedFixedClusteredList(
 			int clusterDataSize,
 			int maxItems,
 			int maxStorageBytes,
-			IObjectSerializer<T> serializer,
-			Stream stream)
-			: base(clusterDataSize, serializer, stream) {
-
+			Stream stream,
+			IObjectSerializer<T> itemSerializer,
+			IObjectSerializer<TListing> listingSerializer,
+			IEqualityComparer<T> itemComparer = null)
+			: base(clusterDataSize, stream, itemSerializer, listingSerializer, itemComparer) {
 			Guard.ArgumentInRange(clusterDataSize, 0, int.MaxValue, nameof(clusterDataSize));
 			Guard.ArgumentInRange(maxItems, 0, int.MaxValue, nameof(maxItems));
 			Guard.ArgumentInRange(maxStorageBytes, 0, int.MaxValue, nameof(maxStorageBytes));
-			Guard.ArgumentNotNull(serializer, nameof(serializer));
+			Guard.ArgumentNotNull(itemSerializer, nameof(itemSerializer));
 			Guard.ArgumentNotNull(stream, nameof(stream));
 
 			Capacity = maxItems;
@@ -57,7 +57,7 @@ namespace Sphere10.Framework {
 				return;
 
 			foreach (var item in itemsArray) {
-				_listings.Add(AddItemToClusters(item));
+				_listings.Add(AddItemToClusters(Count, item));
 			}
 
 			UpdateCountHeader();
@@ -70,11 +70,11 @@ namespace Sphere10.Framework {
 			var itemsArray = items as T[] ?? items.ToArray();
 			var results = new int[itemsArray.Length];
 
-			foreach ((var listing, var i) in _listings.WithIndex().Where(x => x.Item1.Size != 0)) {
-				var item = ReadItemFromClusters(listing.ClusterStartIndex, listing.Size);
+			foreach (var (listing, i) in _listings.WithIndex()) {
+				var item = ReadItemFromClusters(i, listing);
 
 				foreach (var (t, index) in itemsArray.WithIndex())
-					if (EqualityComparer<T>.Default.Equals(t, item))
+					if (ItemComparer.Equals(t, item))
 						results[index] = i;
 			}
 
@@ -87,7 +87,7 @@ namespace Sphere10.Framework {
 
 			for (var i = 0; i < count; i++) {
 				var listing = _listings[index + i];
-				yield return ReadItemFromClusters(listing.ClusterStartIndex, listing.Size);
+				yield return ReadItemFromClusters(index + i, listing);
 			}
 		}
 
@@ -96,10 +96,10 @@ namespace Sphere10.Framework {
 			var itemsArray = items.ToArray();
 			CheckRange(index, itemsArray.Length);
 
-			var itemListings = new List<ItemListing>();
+			var itemListings = new List<TListing>();
 			for (var i = 0; i < itemsArray.Length; i++) {
-				ItemListing listing = _listings[index + i];
-				itemListings.Add(UpdateItemInClusters(listing, itemsArray[i]));
+				var listing = _listings[index + i];
+				itemListings.Add(UpdateItemInClusters(index + i, listing, itemsArray[i]));
 			}
 
 			_listings.UpdateRange(index, itemListings);
@@ -117,10 +117,10 @@ namespace Sphere10.Framework {
 			if (!itemsArray.Any())
 				return;
 
-			var listings = new List<ItemListing>();
+			var listings = new List<TListing>();
 
-			foreach (var item in itemsArray) {
-				listings.Add(AddItemToClusters(item));
+			foreach (var (item, i) in itemsArray.WithIndex()) {
+				listings.Add(AddItemToClusters(index + i, item));
 			}
 
 			_listings.InsertRange(index, listings);
@@ -134,7 +134,7 @@ namespace Sphere10.Framework {
 
 			for (var i = 0; i < count; i++) {
 				var listing = _listings[index + i];
-				RemoveItemFromClusters(listing.ClusterStartIndex, listing.Size);
+				RemoveItemFromClusters(index + i, listing);
 			}
 
 			_listings.RemoveRange(index, count);
@@ -144,9 +144,9 @@ namespace Sphere10.Framework {
 
 		public override void Load() {
 			var clusterSerializer = new ClusterSerializer(ClusterDataSize);
-			var listingSerializer = new ItemListingSerializer();
+			//var listingSerializer = new ItemListingSerializer();
 			
-			int listingTotalSize = listingSerializer.FixedSize * Capacity;
+			int listingTotalSize = ListingSerializer.FixedSize * Capacity;
 			int availableClusterStorageBytes = _maxStorageBytes - HeaderSize - listingTotalSize;
 			int bytesPerCluster = clusterSerializer.FixedSize + sizeof(bool);
 			if (availableClusterStorageBytes < bytesPerCluster) 
@@ -160,9 +160,9 @@ namespace Sphere10.Framework {
 			var clusterStream = new BoundedStream(InnerStream, statusStream.MaxAbsolutePosition + 1, long.MaxValue) { UseRelativeOffset = true };
 			
 			int itemCount = ReadHeader();
-			var preAllocatedListingStore = new StreamMappedPagedList<ItemListing>(listingSerializer, listingsStream) { IncludeListHeader = false };
+			var preAllocatedListingStore = new StreamMappedPagedList<TListing>(ListingSerializer, listingsStream) { IncludeListHeader = false };
 			preAllocatedListingStore.Load();
-			_listings = new PreAllocatedList<ItemListing>(preAllocatedListingStore);
+			_listings = new PreAllocatedList<TListing>(preAllocatedListingStore);
 			_listings.AddRange(preAllocatedListingStore.Take(itemCount));
 			
 			var status = new StreamMappedPagedList<bool>(new BoolSerializer(), statusStream) { IncludeListHeader = false };
@@ -170,7 +170,7 @@ namespace Sphere10.Framework {
 			_clusterStatus = new PreAllocatedList<bool>(status);
 			_clusterStatus.AddRange(status);
 			
-			int pageSize = Serializer.IsFixedSize ? clusterSerializer.FixedSize * storageClusterCount : int.MaxValue;
+			int pageSize = ItemSerializer.IsFixedSize ? clusterSerializer.FixedSize * storageClusterCount : int.MaxValue;
 			
 			Clusters = new StreamMappedPagedList<Cluster>(StreamMappedPagedListType.FixedSize, clusterSerializer, clusterStream, pageSize) {
 				IncludeListHeader = false
@@ -203,9 +203,8 @@ namespace Sphere10.Framework {
 
 		private void Initialize() {
 			var clusterSerializer = new ClusterSerializer(ClusterDataSize);
-			var listingSerializer = new ItemListingSerializer();
 
-			int listingTotalSize = listingSerializer.FixedSize * Capacity;
+			int listingTotalSize = ListingSerializer.FixedSize * Capacity;
 			int availableClusterStorageBytes = _maxStorageBytes - HeaderSize - listingTotalSize;
 			int bytesPerCluster = clusterSerializer.FixedSize + sizeof(bool);
 
@@ -223,16 +222,16 @@ namespace Sphere10.Framework {
 			if (InnerStream.Length == 0)
 				WriteHeader();
 
-			var preAllocatedListingStore = new StreamMappedPagedList<ItemListing>(listingSerializer, listingsStream) { IncludeListHeader = false };
-			preAllocatedListingStore.AddRange(Tools.Array.Gen(Capacity, default(ItemListing)));
-			_listings = new PreAllocatedList<ItemListing>(preAllocatedListingStore);
+			var preAllocatedListingStore = new StreamMappedPagedList<TListing>(ListingSerializer, listingsStream) { IncludeListHeader = false };
+			preAllocatedListingStore.AddRange(Tools.Array.Gen(Capacity, default(TListing)));
+			_listings = new PreAllocatedList<TListing>(preAllocatedListingStore);
 
 			var status = new StreamMappedPagedList<bool>(new BoolSerializer(), statusStream) { IncludeListHeader = false };
 			status.AddRange(Tools.Array.Gen(storageClusterCount, false));
 			_clusterStatus = new PreAllocatedList<bool>(status);
 			_clusterStatus.AddRange(status);
 
-			int pageSize = Serializer.IsFixedSize ? clusterSerializer.FixedSize * storageClusterCount : int.MaxValue;
+			int pageSize = ItemSerializer.IsFixedSize ? clusterSerializer.FixedSize * storageClusterCount : int.MaxValue;
 
 			Clusters = new StreamMappedPagedList<Cluster>(StreamMappedPagedListType.FixedSize, clusterSerializer, clusterStream, pageSize) {
 				IncludeListHeader = false
@@ -263,6 +262,30 @@ namespace Sphere10.Framework {
 			InnerStream.Seek(0, SeekOrigin.Begin);
 
 			writer.Write(_listings.Count);
+		}
+	}
+
+	/// <summary>
+	/// A list implementation which is mapped onto a stream via clusters. Items can added/removed anywhere, and they are stored
+	/// in a non-contiguous manner via clusters of data (similar in principle to a file system format). The limitation here is that the
+	/// the list is inherantly bounded from construction and cannot grow past the pre-determined maximum number of items. This uses
+	/// <see cref="StreamMappedPagedList{TItem}"/> under the hood.
+	/// </summary>
+	public class StreamMappedFixedClusteredList<T> : StreamMappedFixedClusteredList<T, ItemListing> {
+		public StreamMappedFixedClusteredList(
+					int clusterDataSize,
+					int maxItems,
+					int maxStorageBytes,
+					Stream stream,
+					IObjectSerializer<T> itemSerializer,
+					IEqualityComparer<T> itemComparer = null)
+			: base(clusterDataSize, maxItems, maxStorageBytes, stream, itemSerializer, new ItemListingSerializer(), itemComparer) {
+		}
+		protected override ItemListing NewListingInstance(int itemSizeBytes, int clusterStartIndex) {
+			return new ItemListing {
+				Size = itemSizeBytes,
+				ClusterStartIndex = clusterStartIndex
+			};
 		}
 	}
 }

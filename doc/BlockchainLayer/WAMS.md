@@ -50,7 +50,7 @@ Definitions for all of the above are provided below.
 Bit-ordering within `ReadBits` and `WriteBits` are such that the 
    least-significant bit (LSB) is the left-most bit of that byte. 
    
-   For example, consider an array of two bytes C = [a,b]:
+   For example, consider an array of two bytes C = [A,B]:
    
    Memory layout of C=[a,b] with their in-byte indexes marked.
    A:[7][6][5][4][3][2][1][0]  B:[7][6][5][4][3][2][1][0]

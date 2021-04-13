@@ -13,6 +13,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -169,6 +170,35 @@ namespace Sphere10.Framework {
 				bitsCopied++;
 			}
 			return bitsCopied;
+		}
+
+		// TODO: needs testing
+		public static void SetBit(Span<byte> dest, int index, bool value) {
+			byte valueByte = value ? 1 : 0;
+			// 00000000   (false)
+			// 00000001   (true)
+
+			// [ byte1  ] [ bytes 2] [byte 3  ]         (bytes) 
+			// [76543210] [76543210] [76543210]         (in-byte bit index)
+			//  01234567   89ABCDEF   .....             (bit index)
+
+			CopyBits(new[] { valueByte }, 0, dest, index, 1);
+
+		}
+
+		// TODO: needs testing
+		public static bool ReadBit(Span<byte> source, int index) {
+			// 00000000   (false)
+			// 00000001   (true)
+
+			// [ byte1  ] [ bytes 2] [byte 3  ]         (bytes) 
+			// [76543210] [76543210] [76543210]         (in-byte bit index)
+			//  01234567   89ABCDEF   .....             (bit index)
+			var valueByte = new byte[1];
+			CopyBits(source, index, valueByte, 0, 1);
+			Debug.Assert(valueByte[0].IsIn((byte)0, (byte)1));
+			return valueByte[0] == 1 ? true : false;
+
 		}
 	}
 }

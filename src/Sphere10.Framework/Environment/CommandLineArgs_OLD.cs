@@ -21,9 +21,6 @@
 // Version:		1.1
 // Original NameSpace.ClassName: Mozzarella.Utility.Arguments
 
-
-
-
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -32,35 +29,13 @@ using System.Text.RegularExpressions;
 
 namespace Sphere10.Framework {
 
-	//public enum CommandLineArgState {
-	//	// Valid states
-	//	Specified,
-	//	NotSpecified,
+	public class CommandLineArgs_OLD : Dictionary<string, string> {
 
-	//	// error states
-	//	Missing,
-	//}
-
-
-	//public record CommandLineArg<T> {
-
-	//	public string Key;
-
-	//	public string StringValue;
-
-	//	public T Value;
-
-	//	public string
-	//}
-
-
-	public class CommandLineArgs : Dictionary<string, string> {
-
-		public CommandLineArgs(string[] args) {
+		public CommandLineArgs_OLD(string[] args) {
 			Extract(args);
 		}
 		
-		public CommandLineArgs(string args) {
+		public CommandLineArgs_OLD(string args) {
 			if (!string.IsNullOrEmpty(args)) {
 				var extractor = new Regex(@"(['""][^""]+['""])\s*|([^\s]+)\s*", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 

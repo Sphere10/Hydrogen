@@ -4,11 +4,6 @@ using System.Linq;
 
 namespace Sphere10.Hydrogen.Host {
 
-	public enum Gender {
-		Male,
-		Female
-	}
-
 	class Program {
 
 		public static CommandLineArgs Arguments = new CommandLineArgs {

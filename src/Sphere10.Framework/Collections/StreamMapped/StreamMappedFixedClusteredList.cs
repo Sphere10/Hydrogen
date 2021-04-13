@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -222,11 +223,14 @@ namespace Sphere10.Framework {
 			if (InnerStream.Length == 0)
 				WriteHeader();
 
+			
+
 			var preAllocatedListingStore = new StreamMappedPagedList<TListing>(ListingSerializer, listingsStream) { IncludeListHeader = false };
 			preAllocatedListingStore.AddRange(Tools.Array.Gen(Capacity, default(TListing)));
 			_listings = new PreAllocatedList<TListing>(preAllocatedListingStore);
 
 			var status = new StreamMappedPagedList<bool>(new BoolSerializer(), statusStream) { IncludeListHeader = false };
+			//var status = new BitList(statusStream); TODO
 			status.AddRange(Tools.Array.Gen(storageClusterCount, false));
 			_clusterStatus = new PreAllocatedList<bool>(status);
 			_clusterStatus.AddRange(status);

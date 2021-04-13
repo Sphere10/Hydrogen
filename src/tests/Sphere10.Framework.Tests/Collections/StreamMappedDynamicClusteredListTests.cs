@@ -98,15 +98,15 @@ namespace Sphere10.Framework.Tests {
 		[Test]
 		public void InsertRange() {
 			var rand = new Random();
-			string[] inputs = Enumerable.Range(0, rand.Next(1, 100)).Select(x => rand.NextString(1, 100)).ToArray();
+			string[] inputs = Enumerable.Range(1, rand.Next(1, 5)).Select(x => rand.NextString(1, 5)).ToArray();
 			using var stream = new MemoryStream();
 			var list = new StreamMappedDynamicClusteredList<string>(32, stream, new StringSerializer(Encoding.UTF8));
 
 			list.AddRange(inputs);
-			list.InsertRange(2, new[] { rand.NextString(1, 100) });
+			list.InsertRange(0, new[] { rand.NextString(1, 100) });
 
 			Assert.AreEqual(inputs.Length + 1, list.Count);
-			Assert.AreEqual(inputs[2], list[3]);
+			Assert.AreEqual(inputs[0], list[1]);
 		}
 
 		[Test]

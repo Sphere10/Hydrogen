@@ -52,7 +52,7 @@ namespace Sphere10.Framework {
 			}
 
 			if (_listings.Capacity < _listings.Count + listings.Count) {
-				int required = _listings.Capacity - listings.Count + _listings.Count;
+				int required = _listings.Capacity - _listings.Count + listings.Count;
 				_listingStore.AddRange(Tools.Array.Gen(required, default(TListing)));
 			}
 

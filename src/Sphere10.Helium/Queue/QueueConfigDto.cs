@@ -26,15 +26,19 @@ namespace Sphere10.Helium.Queue
 
         public int InputQueueReadRatePerMinute { get; init; }
 
-        //public QueueConfigDto(int pageSize, int inMemoryPages, int clusterSize, int listingClusterCount, int storageClusterCount, int inputQueueReadRatePerMinute)
-        //{
+		public string ErrorQueueName { get; set; } = "ErrorQueue";
+
+		public string AuditLogQueueName { get; set; } = "AuditLogQueue";
+
+		//public QueueConfigDto(int pageSize, int inMemoryPages, int clusterSize, int listingClusterCount, int storageClusterCount, int inputQueueReadRatePerMinute)
+		//{
 		//    //TODO UPDATE WITH NEW PROPS
-        //    PageSize = pageSize;
-        //    InMemoryPages = inMemoryPages;
-        //    ClusterSize = clusterSize;
-        //    ListingClusterCount = listingClusterCount;
-        //    StorageClusterCount = storageClusterCount;
-        //    InputQueueReadRatePerMinute = inputQueueReadRatePerMinute;
-        //}
-    }
+		//    PageSize = pageSize;
+		//    InMemoryPages = inMemoryPages;
+		//    ClusterSize = clusterSize;
+		//    ListingClusterCount = listingClusterCount;
+		//    StorageClusterCount = storageClusterCount;
+		//    InputQueueReadRatePerMinute = inputQueueReadRatePerMinute;
+		//}
+	}
 }

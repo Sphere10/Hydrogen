@@ -13,9 +13,9 @@ namespace Sphere10.Helium.Route
 
     public class Route : IRoute
     {
-        private readonly IEndpointConfiguration _endpointConfiguration;
+        private readonly IConfigureThisEndpoint _endpointConfiguration;
 
-        public Route(IEndpointConfiguration endpointConfiguration)
+        public Route(IConfigureThisEndpoint endpointConfiguration)
         {
             _endpointConfiguration = endpointConfiguration;
         }

@@ -19,7 +19,7 @@ namespace Sphere10.Helium.Core
 
         public IBus Bus { get; set; }
 
-        public IEndpointConfiguration EndpointConfiguration { get; set; }
+        public IConfigureThisEndpoint EndpointConfiguration { get; set; }
 
         public InitResultDto InitializeHelium();
     }

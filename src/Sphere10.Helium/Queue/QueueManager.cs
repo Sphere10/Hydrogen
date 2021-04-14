@@ -9,7 +9,7 @@ namespace Sphere10.Helium.Queue
     {
         private readonly ILocalQueue _localQueue;
 
-        public QueueManager(IEndpointConfiguration endpointConfiguration, ILocalQueue localQueue)
+        public QueueManager(BusConfiguration endpointConfiguration, ILocalQueue localQueue)
         {
             _localQueue = localQueue;
             //_localQueue.FileName = endpointConfiguration.FileName;

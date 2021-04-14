@@ -5,7 +5,7 @@ namespace Sphere10.Helium.Bus
 {
     public class BusSetup
     {
-        public IBus Create(EndpointConfiguration endpointConfiguration)
+        public IBus Create(BusConfiguration endpointConfiguration)
         {
             if (endpointConfiguration.EndpointType == EnumEndpointType.SendAndForget)
             {

@@ -53,6 +53,36 @@ namespace Sphere10.Framework.Tests {
 			Assert.AreEqual(bytes, dest);
 		}
 
+		[Test]
+		public void SetBit_1() {
+			
+			var buffer = new byte[2];
+			Bits.SetBit(buffer, 7, true);
+			Bits.SetBit(buffer, 15, true);
+			
+			Assert.AreEqual(buffer[1], buffer[0]);
+		}
+		
+		[Test]
+		public void SetBit_2() {
+
+			var buffer = new byte[] { 1, 1 };
+			Bits.SetBit(buffer, 7, false);
+			Bits.SetBit(buffer, 15, false);
+			
+			Assert.AreEqual(buffer[1], buffer[0]);
+		}
+		
+		[Test]
+		public void SetBit_3() {
+
+			var buffer = new byte[] { 128, 128 };
+			Bits.SetBit(buffer, 0, false);
+			Bits.SetBit(buffer, 8, false);
+			
+			Assert.AreEqual(buffer[1], buffer[0]);
+		}
+
         [Test]
 		public void CopyBits_Integration_2() {
             const int Iterations = 100;

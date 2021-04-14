@@ -174,7 +174,7 @@ namespace Sphere10.Framework {
 
 		// TODO: needs testing
 		public static void SetBit(Span<byte> dest, int index, bool value) {
-			byte valueByte = value ? 1 : 0;
+			byte valueByte = value ? (byte)1 : (byte)0;
 			// 00000000   (false)
 			// 00000001   (true)
 

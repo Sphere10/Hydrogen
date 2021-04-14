@@ -4,14 +4,13 @@ using Sphere10.Helium.Endpoint;
 using Sphere10.Helium.Queue;
 
 namespace Sphere10.Helium.BlueService.Config {
-	public class EndpointConfiguration : IConfigureThisEndpoint 
-	{
-		public void SetupEndpoint(BusConfiguration busConfiguration) 
-		{
+	public class EndpointConfiguration : IConfigureThisEndpoint {
+		public void SetupEndpoint(BusConfiguration busConfiguration) {
 			busConfiguration.IsPersisted = false;
 			busConfiguration.EndpointType = EnumEndpointType.SendAndForget;
 			busConfiguration.FileName = "BlueQueue1";
 			busConfiguration.FilePathForLocalQueuePersistence = "C:\\Users\\jake\\Desktop\\temp";
+
 			busConfiguration.QueueConfigDto = new QueueConfigDto {
 				ClusterSize = 12,
 				ListingClusterCount = 12,
@@ -27,6 +26,7 @@ namespace Sphere10.Helium.BlueService.Config {
 				TransactionalPageSize = 12,
 				ID = Guid.NewGuid()
 			};
+
 			busConfiguration.RouteQueueReadRatePerMinute = 12;
 			busConfiguration.SourceEndpointName = "DoNotKnowYet";
 		}

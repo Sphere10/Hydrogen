@@ -1,16 +1,14 @@
 ﻿using System;
 
-namespace Sphere10.Helium.Queue
-{
-    public record QueueConfigDto
-    {
+namespace Sphere10.Helium.Queue {
+	public record QueueConfigDto {
 		public Guid ID { get; init; }
 
 		public string FilePath { get; init; }
 
 		public string TempDirectoryPath { get; init; }
 
-		public int MaxItems { get; init; }       
+		public int MaxItems { get; init; }
 
 		public int MaxSizeBytes { get; init; }
 
@@ -18,13 +16,13 @@ namespace Sphere10.Helium.Queue
 
 		public int TransactionalPageSize { get; init; }
 
-        public int ClusterSize { get; init; }
+		public int ClusterSize { get; init; }
 
-        public int ListingClusterCount { get; init; }
+		public int ListingClusterCount { get; init; }
 
-        public int StorageClusterCount { get; init; }
+		public int StorageClusterCount { get; init; }
 
-        public int InputQueueReadRatePerMinute { get; init; }
+		public int InputQueueReadRatePerMinute { get; init; }
 
 		public string ErrorQueueName { get; set; } = "ErrorQueue";
 

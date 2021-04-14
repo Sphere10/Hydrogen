@@ -5,22 +5,20 @@ using Sphere10.Helium.Handler;
 using Sphere10.Helium.Message;
 using Sphere10.Helium.Saga;
 
-namespace Sphere10.Helium.Core
-{
-    public interface IRegisterCoreTypes
-    {
-        public IList<IHandleMessage<IMessage>> HandlerList { get; set; }
+namespace Sphere10.Helium.Core {
+	public interface IRegisterCoreTypes {
+		public IList<IHandleMessage<IMessage>> HandlerList { get; set; }
 
-        public IList<IHandleTimeout<IMessage>> TimeoutList { get; set; }
+		public IList<IHandleTimeout<IMessage>> TimeoutList { get; set; }
 
-        public IList<IStartSaga<IMessage>> StartSagaList { get; set; }
+		public IList<IStartSaga<IMessage>> StartSagaList { get; set; }
 
-        public IList<IEndSaga<IMessage>> EndSagaList { get; set; }
+		public IList<IEndSaga<IMessage>> EndSagaList { get; set; }
 
-        public IBus Bus { get; set; }
+		public IBus Bus { get; set; }
 
-        public IConfigureThisEndpoint EndpointConfiguration { get; set; }
+		public IConfigureThisEndpoint EndpointConfiguration { get; set; }
 
-        public InitResultDto InitializeHelium();
-    }
+		public InitResultDto InitializeHelium();
+	}
 }

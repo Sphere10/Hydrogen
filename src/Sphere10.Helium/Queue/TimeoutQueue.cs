@@ -4,9 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Sphere10.Helium.Queue
-{
-    public class TimeoutQueue : ITimeoutQueue
-    {
-    }
+namespace Sphere10.Helium.Queue {
+	public class TimeoutQueue : ITimeoutQueue {
+	}
 }

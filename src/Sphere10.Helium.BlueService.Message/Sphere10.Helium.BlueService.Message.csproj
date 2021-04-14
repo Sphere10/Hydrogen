@@ -5,7 +5,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Sphere10.Helium.BlueService.Message\Sphere10.Helium.BlueService.Message.csproj" />
     <ProjectReference Include="..\Sphere10.Helium\Sphere10.Helium.csproj" />
   </ItemGroup>
 

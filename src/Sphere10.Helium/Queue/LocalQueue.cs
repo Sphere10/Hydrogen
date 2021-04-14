@@ -1,8 +1,7 @@
 ﻿using Sphere10.Framework;
 using Sphere10.Helium.Message;
 
-namespace Sphere10.Helium.Queue
-{
+namespace Sphere10.Helium.Queue {
 	/// <summary>
 	///
 	/// CRITICAL:
@@ -18,7 +17,7 @@ namespace Sphere10.Helium.Queue
 
 		public LocalQueue(QueueConfigDto queueConfigDto)
 			: base(
-				new BinaryFormattedSerializer<IMessage>(), 
+				new BinaryFormattedSerializer<IMessage>(),
 				queueConfigDto.FilePath,
 				queueConfigDto.TempDirectoryPath,
 				queueConfigDto.ID,

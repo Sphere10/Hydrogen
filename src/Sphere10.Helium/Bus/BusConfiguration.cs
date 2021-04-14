@@ -2,8 +2,7 @@
 using Sphere10.Helium.Queue;
 
 namespace Sphere10.Helium.Bus {
-	public record BusConfiguration 
-	{
+	public record BusConfiguration {
 		public string SourceEndpointName { get; set; }
 
 		public EnumEndpointType EndpointType { get; set; }

@@ -1,11 +1,9 @@
-﻿namespace Sphere10.Helium.Endpoint
-{
-    public enum EnumEndpointType
-    {
-        SendAndForget,
+﻿namespace Sphere10.Helium.Endpoint {
+	public enum EnumEndpointType {
+		SendAndForget,
 
-        SendAndResponse,
+		SendAndResponse,
 
-        PublishAndSubscribe
-    }
+		PublishAndSubscribe
+	}
 }

@@ -1,6 +1,4 @@
-﻿namespace Sphere10.Helium.Message
-{
-    public interface IEvent : IMessage
-    {
-    }
+﻿namespace Sphere10.Helium.Message {
+	public interface IEvent : IMessage {
+	}
 }

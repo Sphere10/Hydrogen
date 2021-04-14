@@ -3,21 +3,21 @@ using Sphere10.Helium.Message;
 
 namespace Sphere10.Helium.Bus {
 	public interface IBus : ISendOnlyBus {
-		void Subscribe<TK>();
+		void Subscribe<Tk>();
 
-		void Unsubscribe<TK>();
+		void Unsubscribe<Tk>();
 
-		ICallback SendLocal<TK>(IMessage message);
+		ICallback SendLocal<Tk>(IMessage message);
 
-		ICallback SendLocal<TK>(IMessage message, IMessageHeader messageHeader);
+		ICallback SendLocal<Tk>(IMessage message, IMessageHeader messageHeader);
 
 		ICallback RegisterTimeout(TimeSpan delay, IMessage message);
 
 		ICallback RegisterTimeout(DateTime processAt, IMessage message);
 
-		void Reply<TK>(Action<TK> messageConstructor);
+		void Reply<Tk>(Action<Tk> messageConstructor);
 
-		void Return<TK>(TK errorEnum);
+		void Return<Tk>(Tk errorEnum);
 
 	}
 }

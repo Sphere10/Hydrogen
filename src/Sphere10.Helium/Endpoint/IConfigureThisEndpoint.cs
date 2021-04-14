@@ -5,7 +5,5 @@ namespace Sphere10.Helium.Endpoint {
 
 		public void SetupEndpoint(BusConfiguration busConfiguration);
 
-
-
 	}
 }

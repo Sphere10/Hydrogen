@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 
 namespace Sphere10.Framework {
 	public class FragmentedStream : Stream {
@@ -110,8 +111,7 @@ namespace Sphere10.Framework {
 				int updateIndex = 0;
 
 				while (remaining > 0) {
-					var updateSlice = fragment.Slice(fragmentPosition);
-					int sliceBytesCount = Math.Min(remaining, updateSlice.Length);
+					int sliceBytesCount = Math.Min(remaining, fragment.Length - fragmentPosition);
 
 					_fragmentProvider.UpdateFragment(fragmentIndex, fragmentPosition,updatedBytes[updateIndex..(updateIndex + sliceBytesCount)]);
 					updateIndex += sliceBytesCount;
@@ -123,6 +123,8 @@ namespace Sphere10.Framework {
 						fragmentPosition = 0;
 					}
 				}
+
+				Position += updateAmount;
 			}
 
 			remaining = addingAmount;
@@ -134,16 +136,16 @@ namespace Sphere10.Framework {
 
 				if (_fragmentProvider.TryRequestSpace(remaining, out int[] newFragmentIndexes)) {
 					
-					(int _, int fragmentPosition) = _fragmentProvider.GetFragment(Position, out var fragment);
+					(int currentFragmentIndex, int fragmentPosition) = _fragmentProvider.GetFragment(Position, out var fragment);
 
-					if (fragmentPosition != fragment.Length - 1) {
+					if (fragmentPosition != fragment.Length - 1 && !newFragmentIndexes.Contains(currentFragmentIndex)) {
 						int currentFragmentRemainingBytes = fragment.Length - fragmentPosition;
 						var slice = fragment[fragmentPosition..];
 						addedBytes[addIndex..(currentFragmentRemainingBytes - 1)].CopyTo(slice);
 						addIndex += slice.Length;
 						remaining -= slice.Length;
 					}
-
+					
 					if (remaining > 0) {
 						foreach (var i in newFragmentIndexes) {
 							Span<byte> currentFragment = _fragmentProvider.GetFragment(i);
@@ -157,13 +159,13 @@ namespace Sphere10.Framework {
 					}
 					
 					Debug.Assert(remaining == 0);
-
+					Position += addingAmount;
+					
 				} else {
 					throw new InvalidOperationException("Request for space from fragment provider was not successful.");
 				}
 			}
-
-			Position += count;
+			
 
 			Debug.Assert(Position <= Length);
 		}

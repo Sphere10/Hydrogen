@@ -1,17 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.Design;
 using System.Linq;
 
 namespace Sphere10.Framework {
 	public class ByteArrayFragmentProvider : IFragmentProvider {
 
 		private readonly int _newFragmentSize = 10;
-		private List<byte[]> _fragments;
+		private readonly List<byte[]> _fragments;
 
 		public ByteArrayFragmentProvider(IEnumerable<byte[]> fragments) {
 			Guard.ArgumentNotNull(fragments, nameof(fragments));
-
 			_fragments = fragments.ToList();
 		}
 

@@ -195,7 +195,7 @@ namespace Sphere10.Framework {
 			// [76543210] [76543210] [76543210]         (in-byte bit index)
 			//  01234567   89ABCDEF   .....             (bit index)
 			var valueByte = new byte[1];
-			CopyBits(source, index, valueByte, 0, 1);
+			CopyBits(source, index, valueByte, 7, 1);
 			Debug.Assert(valueByte[0].IsIn((byte)0, (byte)1));
 			return valueByte[0] == 1 ? true : false;
 

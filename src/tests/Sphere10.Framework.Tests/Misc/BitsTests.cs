@@ -12,6 +12,7 @@
 //-----------------------------------------------------------------------
 
 using System;
+using System.Linq;
 using NUnit.Framework;
 
 namespace Sphere10.Framework.Tests {
@@ -83,7 +84,23 @@ namespace Sphere10.Framework.Tests {
 			Assert.AreEqual(buffer[1], buffer[0]);
 		}
 
-        [Test]
+		[Test]
+		public void ReadBit_1() {
+			var buffer = new byte[] { 129, 128, 255 };
+			
+			Assert.True(Bits.ReadBit(buffer, 0));
+			Assert.True(Bits.ReadBit(buffer, 7));
+			Assert.True(Bits.ReadBit(buffer, 8));
+			Assert.False(Bits.ReadBit(buffer, 15));
+
+			bool allTrue = Enumerable.Range(16, 7)
+				.Select(x => Bits.ReadBit(buffer, x))
+				.All(x => x);
+			
+			Assert.True(allTrue);
+		}
+
+		[Test]
 		public void CopyBits_Integration_2() {
             const int Iterations = 100;
             const int Rounds = 100;

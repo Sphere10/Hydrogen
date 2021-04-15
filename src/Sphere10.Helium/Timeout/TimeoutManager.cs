@@ -5,13 +5,13 @@ using Sphere10.Helium.Queue;
 
 namespace Sphere10.Helium.Timeout
 {
-    public class Timeout : ITimeout
+    public class TimeoutManager : ITimeoutManager
     {
-        string ITimeout.TimeoutMessageId { get; set; } = Global.TimeoutMessageId;
+        string ITimeoutManager.TimeoutMessageId { get; set; } = Global.TimeoutMessageId;
         
         private readonly IQueueManager _queueManager;
         
-        public Timeout(IQueueManager queueManager)
+        public TimeoutManager(IQueueManager queueManager)
         {
             _queueManager = queueManager;
         }

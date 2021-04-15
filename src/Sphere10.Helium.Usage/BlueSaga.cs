@@ -52,7 +52,7 @@ namespace Sphere10.Helium.Usage {
 
 	//////////////////////////////////////////////////////////////////////
 
-	public class BlueSagaData : ISagaDataForSaga {
+	public class BlueSagaData : ISagaData {
 		public Guid Id { get; set; }
 		public string Originator { get; set; }
 		public string OriginalMessageId { get; set; }

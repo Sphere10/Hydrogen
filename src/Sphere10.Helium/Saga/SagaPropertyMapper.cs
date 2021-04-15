@@ -2,7 +2,7 @@
 using System.Linq.Expressions;
 
 namespace Sphere10.Helium.Saga {
-	public class SagaPropertyMapper<T> where T : ISagaDataForSaga {
+	public class SagaPropertyMapper<T> where T : ISagaData {
 		private readonly IFindSaga _sagaFindMap;
 
 		internal SagaPropertyMapper(IFindSaga sagaFindMap) {

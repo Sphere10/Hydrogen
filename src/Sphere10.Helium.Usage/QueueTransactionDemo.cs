@@ -6,8 +6,8 @@ namespace Sphere10.Helium.Usage {
 	public class QueueTransactionDemo {
 		public const string TempDir = "C:/temp/tests";
 
-		private ILocalQueue _queue1;
-		private ILocalQueue _queue2;
+		private IHeliumQueue _queue1;
+		private IHeliumQueue _queue2;
 
 		public void PopFrom1PushTo2() {
 			// multi-threaded
@@ -25,7 +25,7 @@ namespace Sphere10.Helium.Usage {
 			}
 		}
 
-		public ILocalQueue Queue1 {
+		public IHeliumQueue Queue1 {
 			get {
 				if (_queue1 == null) {
 					var configDTO = new QueueConfigDto(); // TODO
@@ -37,7 +37,7 @@ namespace Sphere10.Helium.Usage {
 			}
 		}
 
-		public ILocalQueue Queue2 {
+		public IHeliumQueue Queue2 {
 			get {
 				if (_queue2 == null) {
 					var configDTO = new QueueConfigDto(); // TODO

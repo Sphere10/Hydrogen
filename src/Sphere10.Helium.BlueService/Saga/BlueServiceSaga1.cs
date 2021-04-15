@@ -27,6 +27,8 @@ namespace Sphere10.Helium.BlueService.Saga {
 		}
 
 		public void Handle(BlueServiceSaga1Start message) {
+			var testDataProperty = Data.MyUniqueSagaIdToFindSaga.ToString();
+			
 			throw new NotImplementedException();
 		}
 

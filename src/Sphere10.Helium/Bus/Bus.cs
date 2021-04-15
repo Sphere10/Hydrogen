@@ -6,12 +6,12 @@ using Sphere10.Helium.Timeout;
 namespace Sphere10.Helium.Bus {
 	public class Bus : IBus {
 		private readonly IMessageHeader _messageHeader;
-		private readonly ITimeout _timeoutManager;
+		private readonly ITimeoutManager _timeoutManagerManager;
 		private readonly IQueueManager _queueManager;
 
-		public Bus(IQueueManager queueManager, IMessageHeader messageHeader, ITimeout timeoutManager) {
+		public Bus(IQueueManager queueManager, IMessageHeader messageHeader, ITimeoutManager timeoutManagerManager) {
 			_messageHeader = messageHeader;
-			_timeoutManager = timeoutManager;
+			_timeoutManagerManager = timeoutManagerManager;
 			_queueManager = queueManager;
 		}
 

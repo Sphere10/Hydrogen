@@ -12,7 +12,7 @@ namespace Sphere10.Helium.Queue {
 	/// 
 	/// </summary>
 
-	public class LocalQueue : TransactionalList<IMessage>, ILocalQueue {
+	public class LocalQueue : TransactionalList<IMessage>, IHeliumQueue {
 		private readonly QueueConfigDto _queueConfigDto;
 
 		public LocalQueue(QueueConfigDto queueConfigDto)

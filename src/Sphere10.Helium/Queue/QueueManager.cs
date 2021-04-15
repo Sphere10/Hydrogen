@@ -5,15 +5,15 @@ using Sphere10.Helium.Message;
 
 namespace Sphere10.Helium.Queue {
 	public class QueueManager : IQueueManager {
-		private readonly ILocalQueue _localQueue;
+		private readonly IHeliumQueue _heliumQueue;
 
-		public QueueManager(BusConfiguration endpointConfiguration, ILocalQueue localQueue) {
-			_localQueue = localQueue;
-			//_localQueue.FileName = endpointConfiguration.FileName;
+		public QueueManager(BusConfiguration endpointConfiguration, IHeliumQueue heliumQueue) {
+			_heliumQueue = heliumQueue;
+			//_heliumQueue.FileName = endpointConfiguration.FileName;
 		}
 
 		public void FirstIn(string destination, IMessage message) {
-			_localQueue.FirstIn(destination, message);
+			_heliumQueue.FirstIn(destination, message);
 		}
 
 		public void LastOut(IMessage message) {

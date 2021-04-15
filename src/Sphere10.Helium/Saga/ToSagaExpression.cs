@@ -2,7 +2,8 @@
 using System.Linq.Expressions;
 
 namespace Sphere10.Helium.Saga {
-	public class ToSagaExpression<TSagaData, TMessage> where TSagaData : ISagaDataForSaga {
+	public class ToSagaExpression<TSagaData, TMessage> where TSagaData : ISagaData {
+
 		private readonly IFindSaga _sagaMessageFindingConfiguration;
 		private readonly Expression<Func<TMessage, object>> _messageProperty;
 

@@ -6,7 +6,12 @@ namespace Sphere10.Helium.Saga {
 	public abstract class Saga {
 		private IBus _bus;
 
-		public ISagaDataForSaga Entity { get; set; }
+		protected ISagaData SagaDataBase { get; set; }
+
+		public IBus Bus {
+			get => _bus ?? throw new InvalidOperationException("Cannot proceed! IBus not instantiated. Do NOT use your own bus here!");
+			set => _bus = value;
+		}
 
 		public bool Completed { get; private set; }
 
@@ -16,15 +21,10 @@ namespace Sphere10.Helium.Saga {
 
 		protected internal abstract void ConfigureHowToFindSaga(IFindSaga sagaFindMap);
 
-		public IBus Bus {
-			get => _bus ?? throw new InvalidOperationException("Cannot proceed! IBus not instantiated. Do NOT use your own bus here!");
-			set => _bus = value;
-		}
-
 		private void VerifySagaCanHandleTimeout<T>(T timeoutMessage) where T : IMessage {
 			if (!(timeoutMessage is IHandleTimeout<T>)) {
 				throw new Exception(
-					$"'{(object)GetType().Name}' Cannot proceed! Timeout for '{(object)timeoutMessage}' must implement 'IHandleTimeouts<{(object)typeof(T).FullName}>'");
+					$"'{(object)GetType().Name}' Cannot proceed! TimeoutManager for '{(object)timeoutMessage}' must implement 'IHandleTimeouts<{(object)typeof(T).FullName}>'");
 			}
 		}
 
@@ -43,10 +43,10 @@ namespace Sphere10.Helium.Saga {
 		}
 
 		protected virtual void ReplyToOriginator(IMessage message) {
-			if (string.IsNullOrEmpty(this.Entity.Originator))
-				throw new Exception("Cannot proceed! Entity.Originator is null.");
+			if (string.IsNullOrEmpty(this.SagaDataBase.Originator))
+				throw new Exception("Cannot proceed! SagaDataBase.Originator is null.");
 
-			//BusSetup.SendAndForget(Entity.Originator, message, new NotI{} as IMessageHeader );
+			//BusSetup.SendAndForget(SagaDataBase.Originator, message, new NotI{} as IMessageHeader );
 		}
 
 		protected void MarkAsComplete() => Completed = true;

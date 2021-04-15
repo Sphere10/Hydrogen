@@ -1,10 +1,11 @@
 ﻿using Sphere10.Helium.Bus;
 
 namespace Sphere10.Helium.Saga {
-	public abstract class Saga<T> : Saga where T : ISagaDataForSaga, new() {
+	public abstract class Saga<T> : Saga where T : ISagaData, new() {
+		
 		public T Data {
-			get => (T)Entity;
-			set => Entity = (ISagaDataForSaga)value;
+			get => (T)SagaDataBase;
+			set => SagaDataBase = (ISagaData)value;
 		}
 
 		protected Saga(IBus bus) : base(bus) {

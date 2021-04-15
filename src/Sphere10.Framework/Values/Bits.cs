@@ -68,7 +68,7 @@ namespace Sphere10.Framework {
 		/// and bit 8 from bit 7 of byte 1, etc.  
 		/// </summary>
 		/// <param name="source"></param>
-		/// <param name="sourceBitOffset"></param>
+		/// <param name="bitOffset"></param>
 		/// <param name="bitCount"></param>
 		/// <param name="dest"></param>
 		/// <returns></returns>
@@ -88,8 +88,8 @@ namespace Sphere10.Framework {
 		/// <param name="bitCount">Number of bits to copy</param>
 		/// <param name="dest">Byte array to copy to </param>
 		/// <param name="destBitOffset">Bit offset when writing</param>
-		/// <param name="readRightToLeft">Reads backwards when true</param>
-		/// <param name="writeRightToLeft">Writes backwards when true</param>
+		/// <param name="readDirection">Reads backwards when true</param>
+		/// <param name="writeDirection">Writes backwards when true</param>
 		/// <returns>Number of bits copied</returns>
 		public static int CopyBits(ReadOnlySpan<byte> source, int sourceBitOffset, Span<byte> dest, int destBitOffset, int bitCount, IterateDirection readDirection = IterateDirection.LeftToRight, IterateDirection writeDirection = IterateDirection.LeftToRight) {
 			// Base-case
@@ -182,7 +182,7 @@ namespace Sphere10.Framework {
 			// [76543210] [76543210] [76543210]         (in-byte bit index)
 			//  01234567   89ABCDEF   .....             (bit index)
 
-			CopyBits(new[] { valueByte }, 0, dest, index, 1);
+			CopyBits(new[] { valueByte }, 7, dest, index, 1);
 
 		}
 

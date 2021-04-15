@@ -1,12 +1,15 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Text;
 
 namespace Sphere10.Framework {
 
 	// NOTES: use Bits as a guide
+
 
 	/*
 	 
@@ -35,21 +38,37 @@ namespace Sphere10.Framework {
 
 		private readonly Stream _stream;
 		private int _count;
+		private int _bitPosition;
 
-		public StreamMappedBitVector(IExtendedList<byte> bytes, int? initialBitCount = null) 
-			: this(new ExtendedMemoryStream(bytes), initialBitCount) {
+		public StreamMappedBitVector(IExtendedList<byte> bytes, int? initialBitCount = null, int? initialBitPosition = null)
+			: this(new ExtendedMemoryStream(bytes), initialBitCount, initialBitPosition) {
 		}
 
-		public StreamMappedBitVector(Stream stream, int? initialBitCount = null) {
+		public StreamMappedBitVector(Stream stream, int? initialBitCount = null, int? initialBitPosition = null) {
 			_stream = stream;
 			_count = initialBitCount ?? (int)(stream.Length / 8);
+			_bitPosition = initialBitPosition ?? 0;
 		}
 
 
 		public override int Count => _count;
 
 		public override void AddRange(IEnumerable<bool> items) {
-			throw new NotImplementedException();
+			_stream.Seek(0, SeekOrigin.End);
+			_bitPosition = _count - 1;
+
+			var itemsArray = items.ToArray();
+			int bytesCount = (int)Math.Ceiling((decimal)itemsArray.Length / 8);
+
+			byte[] buffer = Tools.Array.Gen(bytesCount, (byte)0);
+
+			for (int i = 0; i < itemsArray.Length; i++) {
+				Bits.SetBit(buffer, i, itemsArray[i]);
+			}
+
+			_stream.Write(buffer);
+			_count += itemsArray.Length;
+			_bitPosition += itemsArray.Length;
 		}
 
 		public override IEnumerable<int> IndexOfRange(IEnumerable<bool> items) {
@@ -64,7 +83,16 @@ namespace Sphere10.Framework {
 		}
 
 		public override IEnumerable<bool> ReadRange(int index, int count) {
-			throw new NotImplementedException();
+			int byteCount = (int)Math.Ceiling((decimal)count / 8);
+			int byteIndex = (int)Math.Ceiling((decimal)index / 8);
+			
+			_stream.Seek(byteIndex, SeekOrigin.Begin);
+			var bytes = _stream.ReadBytes(byteCount);
+			int read = Bits.ReadBits(bytes, 0, count, out var readBytes);
+
+			for (int i = 0; i < read; i++) {
+				yield return Bits.ReadBit(readBytes, i);
+			}
 		}
 
 		public override void RemoveRange(int index, int count) {

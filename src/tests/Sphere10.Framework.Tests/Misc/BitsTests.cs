@@ -61,29 +61,30 @@ namespace Sphere10.Framework.Tests {
 			Bits.SetBit(buffer, 7, true);
 			Bits.SetBit(buffer, 15, true);
 			
-			Assert.AreEqual(buffer[1], buffer[0]);
+			Assert.AreEqual(1, buffer[0]);
+			Assert.AreEqual(1, buffer[1]);
 		}
 		
 		[Test]
 		public void SetBit_2() {
-
-			var buffer = new byte[] { 1, 1 };
+			var buffer = new byte[] { 1, 128};
 			Bits.SetBit(buffer, 7, false);
-			Bits.SetBit(buffer, 15, false);
+			Bits.SetBit(buffer, 0, true);
 			
-			Assert.AreEqual(buffer[1], buffer[0]);
+			Bits.SetBit(buffer, 8, false);
+			Bits.SetBit(buffer, 15, true);
+
+			Assert.AreEqual(128, buffer[0]);
+			Assert.AreEqual(1, buffer[1]);
 		}
 		
 		[Test]
 		public void SetBit_3() {
-
-			var buffer = new byte[] { 128, 128 };
-			Bits.SetBit(buffer, 0, false);
-			Bits.SetBit(buffer, 8, false);
-			
-			Assert.AreEqual(buffer[1], buffer[0]);
+			var buffer = new byte[1];
+			Bits.SetBit(buffer, 0, true);
+			Assert.AreEqual(128, (int)buffer[0]);
 		}
-
+		
 		[Test]
 		public void ReadBit_1() {
 			var buffer = new byte[] { 129, 128, 255 };

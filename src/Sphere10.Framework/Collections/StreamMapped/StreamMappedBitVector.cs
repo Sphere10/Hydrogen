@@ -38,16 +38,14 @@ namespace Sphere10.Framework {
 
 		private readonly Stream _stream;
 		private int _count;
-		private int _bitPosition;
 
-		public StreamMappedBitVector(IExtendedList<byte> bytes, int? initialBitCount = null, int? initialBitPosition = null)
-			: this(new ExtendedMemoryStream(bytes), initialBitCount, initialBitPosition) {
+		public StreamMappedBitVector(IExtendedList<byte> bytes, int? initialBitCount = null)
+			: this(new ExtendedMemoryStream(bytes), initialBitCount) {
 		}
 
-		public StreamMappedBitVector(Stream stream, int? initialBitCount = null, int? initialBitPosition = null) {
+		public StreamMappedBitVector(Stream stream, int? initialBitCount = null) {
 			_stream = stream;
 			_count = initialBitCount ?? (int)(stream.Length / 8);
-			_bitPosition = initialBitPosition ?? 0;
 		}
 
 
@@ -55,9 +53,8 @@ namespace Sphere10.Framework {
 
 		public override void AddRange(IEnumerable<bool> items) {
 			_stream.Seek(0, SeekOrigin.End);
-			_bitPosition = _count - 1;
-
-			var itemsArray = items.ToArray();
+			
+			var itemsArray = items as bool[] ?? items.ToArray();
 			int bytesCount = (int)Math.Ceiling((decimal)itemsArray.Length / 8);
 
 			byte[] buffer = Tools.Array.Gen(bytesCount, (byte)0);
@@ -68,11 +65,35 @@ namespace Sphere10.Framework {
 
 			_stream.Write(buffer);
 			_count += itemsArray.Length;
-			_bitPosition += itemsArray.Length;
 		}
 
 		public override IEnumerable<int> IndexOfRange(IEnumerable<bool> items) {
-			throw new NotImplementedException();
+			var itemsArray = items as bool[] ?? items.ToArray();
+			if (!itemsArray.Any()) {
+				return new List<int>();
+			}
+
+			int bitsToRead = _count;
+			var results = new int[itemsArray.Length];
+			_stream.Seek(0, SeekOrigin.Begin);
+
+			for (int i = 0; i < _stream.Length; i++) {
+				byte[] current = _stream.ReadBytes(1);
+				int bitsLength = Math.Min(8, _count - i * 8);
+				
+				for (int j = 0; j < bitsLength; j++) {
+					bool value = Bits.ReadBit(current, j);
+					
+					bitsToRead--;
+
+					foreach (var (t, index)  in itemsArray.WithIndex()) {
+						if (value == t)
+							results[index] = i * 8 + j;
+					}
+				}
+			}
+
+			return results;
 		}
 
 		public override void InsertRange(int index, IEnumerable<bool> items) {
@@ -98,7 +119,8 @@ namespace Sphere10.Framework {
 		public override void RemoveRange(int index, int count) {
 			if (index + count != Count)
 				throw new NotSupportedException("This collection can only be removed from the end");
-			throw new NotImplementedException();
+			
+			
 		}
 
 		public override void UpdateRange(int index, IEnumerable<bool> items) {

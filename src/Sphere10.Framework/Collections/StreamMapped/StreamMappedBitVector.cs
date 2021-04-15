@@ -83,12 +83,11 @@ namespace Sphere10.Framework {
 				
 				for (int j = 0; j < bitsLength; j++) {
 					bool value = Bits.ReadBit(current, j);
-					
 					bitsToRead--;
-
 					foreach (var (t, index)  in itemsArray.WithIndex()) {
-						if (value == t)
+						if (value == t) {
 							results[index] = i * 8 + j;
+						}
 					}
 				}
 			}
@@ -105,7 +104,7 @@ namespace Sphere10.Framework {
 
 		public override IEnumerable<bool> ReadRange(int index, int count) {
 			int byteCount = (int)Math.Ceiling((decimal)count / 8);
-			int byteIndex = (int)Math.Ceiling((decimal)index / 8);
+			int byteIndex = (int)Math.Floor((decimal)index / 8);
 			
 			_stream.Seek(byteIndex, SeekOrigin.Begin);
 			var bytes = _stream.ReadBytes(byteCount);
@@ -119,8 +118,11 @@ namespace Sphere10.Framework {
 		public override void RemoveRange(int index, int count) {
 			if (index + count != Count)
 				throw new NotSupportedException("This collection can only be removed from the end");
-			
-			
+			else {
+				long bytesToRemove = _stream.Length - (int)Math.Ceiling((decimal)(_count - count) / 8);
+				_stream.SetLength(_stream.Length - bytesToRemove);
+				_count -= count;
+			}
 		}
 
 		public override void UpdateRange(int index, IEnumerable<bool> items) {

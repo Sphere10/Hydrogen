@@ -5,6 +5,7 @@ using Sphere10.Helium.Message;
 
 namespace Sphere10.Helium.Queue {
 	public class QueueManager : IQueueManager {
+
 		private readonly IHeliumQueue _heliumQueue;
 
 		public QueueManager(BusConfiguration endpointConfiguration, IHeliumQueue heliumQueue) {
@@ -13,7 +14,7 @@ namespace Sphere10.Helium.Queue {
 		}
 
 		public void FirstIn(string destination, IMessage message) {
-			_heliumQueue.FirstIn(destination, message);
+			_heliumQueue.AddMessageToQueue(message);
 		}
 
 		public void LastOut(IMessage message) {

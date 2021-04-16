@@ -16,15 +16,13 @@ namespace Sphere10.Helium.Timeout
             _queueManager = queueManager;
         }
         
-        public void PutTimeoutMessageInQueue(IMessage message)
-        {
-            throw new NotImplementedException();
-        }
+		public void PutTimeoutMessageInQueue(ITimeout message) {
+			throw new NotImplementedException();
+		}
 
-        public IMessage GetTimeoutMessageFromQueue()
-        {
-            throw new NotImplementedException();
-        }
+		ITimeout ITimeoutManager.GetTimeoutMessageFromQueue() {
+			throw new NotImplementedException();
+		}
 
         public void AddTimeout(TimeSpan delay, string messageId)
         {

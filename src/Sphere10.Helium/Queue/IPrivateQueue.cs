@@ -5,6 +5,6 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Sphere10.Helium.Queue {
-	public interface ITimeoutQueue {
+	public interface IPrivateQueue : IHeliumQueue {
 	}
 }

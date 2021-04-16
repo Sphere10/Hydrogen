@@ -11,7 +11,7 @@ namespace Sphere10.Helium.Queue {
 	/// 5) The local queue is also used for Send-Local messages.
 	/// </summary>
 
-	public class LocalQueue : TransactionalList<IMessage>, IHeliumQueue {
+	public class LocalQueue : TransactionalList<IMessage>, ILocalQueue {
 		
 		private readonly QueueConfigDto _queueConfigDto;
 

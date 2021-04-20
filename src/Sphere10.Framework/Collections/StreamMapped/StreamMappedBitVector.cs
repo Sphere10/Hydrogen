@@ -56,50 +56,27 @@ namespace Sphere10.Framework {
 			if (!itemsArray.Any())
 				return;
 
-			int bytesCount = (int)Math.Ceiling((decimal)itemsArray.Length / 8);
-			byte[] writeBuffer;
+			int startBitIndex = _count % 8;
+			int remainingBits = startBitIndex > 0 ? itemsArray.Length - (8 - startBitIndex) : itemsArray.Length;
+			int bytesCount = (int)Math.Ceiling((decimal)remainingBits / 8);
+			int byteIndex = (int)Math.Floor((decimal)_count / 8);
+			
+			if (startBitIndex > 0)
+				bytesCount++;
 
-			if (_count == 0) {
-				writeBuffer = Tools.Array.Gen(bytesCount, (byte)0);
-
-				for (int i = 0; i < itemsArray.Length; i++) {
-					Bits.SetBit(writeBuffer, i, itemsArray[i]);
-				}
-
-				_stream.Seek(0, SeekOrigin.Begin);
-				_stream.Write(writeBuffer);
-			} else {
-				int writeBitIndex = 0;
-				if (_count > 0) {
-					writeBitIndex = _count % 8;
-				}
-
-				long streamByteOffsetFromBegin = writeBitIndex > 0 ? _stream.Length - 1 : _stream.Length;
-
-				if (writeBitIndex > 0) {
-					// determine whether an additional byte is required, or if existing byte being added to is enough.
-					int withoutOffsetByteCount = (int)Math.Ceiling(((decimal)itemsArray.Length - (8 - writeBitIndex)) / 8);
-
-					if (withoutOffsetByteCount == bytesCount) {
-						bytesCount++;
-					}
-
-					writeBuffer = Tools.Array.Gen(bytesCount, (byte)0);
-
-					_stream.Seek(streamByteOffsetFromBegin, SeekOrigin.Begin);
-					_stream.Read(writeBuffer, 0, 1);
-				} else {
-					writeBuffer = Tools.Array.Gen(bytesCount, (byte)0);
-				}
-
-				for (int i = 0; i < itemsArray.Length; i++) {
-					Bits.SetBit(writeBuffer, i + writeBitIndex, itemsArray[i]);
-				}
-
-				_stream.Seek(streamByteOffsetFromBegin, SeekOrigin.Begin);
-				_stream.Write(writeBuffer);
-
+			var buffer = Tools.Array.Gen(bytesCount, (byte)0);
+			
+			if (startBitIndex > 0) {
+				_stream.Seek(byteIndex, SeekOrigin.Begin);
+				_stream.Read(buffer, 0, 1);
+			} 
+			
+			for (int i = 0; i < itemsArray.Length; i++) {
+				Bits.SetBit(buffer, i + startBitIndex, itemsArray[i]);
 			}
+
+			_stream.Seek(byteIndex, SeekOrigin.Begin);
+			_stream.Write(buffer);
 
 			_count += itemsArray.Length;
 		}
@@ -173,33 +150,35 @@ namespace Sphere10.Framework {
 			var endIndex = index + itemsArray.Length;
 			if (endIndex > _count)
 				throw new ArgumentOutOfRangeException(nameof(index), "Update range is out of bounds");
-
+			
+			int startBitIndex = index % 8;
+			int remainingBits = startBitIndex > 0 ? itemsArray.Length - (8 - startBitIndex) : itemsArray.Length;
+			int finalBitIndex = remainingBits % 8;
+			int nonPartialBytes = remainingBits - finalBitIndex;
+			
 			int byteIndex = (int)Math.Floor((decimal)index / 8);
-			int bitIndex = index % 8;
-			int bytesCount = (int)Math.Ceiling((decimal)itemsArray.Length / 8);
+			int bytesCount = nonPartialBytes / 8;
 
-			byte[] buffer;
-			if (bitIndex > 0) {
-				int afterOffsetBytes = (int)Math.Ceiling(((decimal)itemsArray.Length - (8 - bitIndex)) / 8);
+			if (startBitIndex > 0)
+				bytesCount++;
 
-				if (afterOffsetBytes == bytesCount) {
-					bytesCount++;
-				}
+			if (finalBitIndex > 0)
+				bytesCount++;
 
-				buffer = Tools.Array.Gen(bytesCount, (byte)0);
+			byte[] buffer = Tools.Array.Gen(bytesCount, (byte)0);
 
+			if (startBitIndex > 0) {
 				_stream.Seek(byteIndex, SeekOrigin.Begin);
 				_stream.Read(buffer, 0, 1);
-
-				_stream.Seek(byteIndex + bytesCount - 1, SeekOrigin.Begin);
-				_stream.Read(buffer, buffer.Length - 1, 1);
-
-			} else {
-				buffer = Tools.Array.Gen(bytesCount, (byte)0);
 			}
 
+			if (finalBitIndex > 0) {
+				_stream.Seek(byteIndex + bytesCount - 1, SeekOrigin.Begin);
+				_stream.Read(buffer, buffer.Length - 1, 1);
+			}
+			
 			for (int i = 0; i < itemsArray.Length; i++) {
-				Bits.SetBit(buffer, i + bitIndex, itemsArray[i]);
+				Bits.SetBit(buffer, i + startBitIndex, itemsArray[i]);
 			}
 
 			_stream.Seek(byteIndex, SeekOrigin.Begin);

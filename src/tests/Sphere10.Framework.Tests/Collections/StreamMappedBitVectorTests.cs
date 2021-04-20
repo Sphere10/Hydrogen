@@ -117,6 +117,23 @@ namespace Sphere10.Framework.Tests {
 		}
 
 		[Test]
+		public void NoOffsetOverlap() {
+			using var memoryStream = new MemoryStream();
+			var list = new StreamMappedBitVector(memoryStream);
+			var expected = new ExtendedList<bool>();
+
+			var inputs = Random.NextBools(24);
+			list.AddRange(inputs);
+			expected.AddRange(inputs);
+			Assert.AreEqual(expected, list);
+
+			var update = Random.NextBools(9);
+			list.UpdateRange(8, update);
+			expected.UpdateRangeSequentially(8, update);
+			Assert.AreEqual(expected, list);
+		}
+
+		[Test]
 		public void IntegrationTest() {
 			using var memoryStream = new MemoryStream();
 			var list = new StreamMappedBitVector(memoryStream);

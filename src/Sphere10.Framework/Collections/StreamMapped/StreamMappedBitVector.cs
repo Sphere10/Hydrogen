@@ -52,18 +52,55 @@ namespace Sphere10.Framework {
 		public override int Count => _count;
 
 		public override void AddRange(IEnumerable<bool> items) {
-			_stream.Seek(0, SeekOrigin.End);
-			
 			var itemsArray = items as bool[] ?? items.ToArray();
+			if (!itemsArray.Any())
+				return;
+
 			int bytesCount = (int)Math.Ceiling((decimal)itemsArray.Length / 8);
+			byte[] writeBuffer;
 
-			byte[] buffer = Tools.Array.Gen(bytesCount, (byte)0);
+			if (_count == 0) {
+				writeBuffer = Tools.Array.Gen(bytesCount, (byte)0);
 
-			for (int i = 0; i < itemsArray.Length; i++) {
-				Bits.SetBit(buffer, i, itemsArray[i]);
+				for (int i = 0; i < itemsArray.Length; i++) {
+					Bits.SetBit(writeBuffer, i, itemsArray[i]);
+				}
+
+				_stream.Seek(0, SeekOrigin.Begin);
+				_stream.Write(writeBuffer);
+			} else {
+				int writeBitIndex = 0;
+				if (_count > 0) {
+					writeBitIndex = _count % 8;
+				}
+
+				long streamByteOffsetFromBegin = writeBitIndex > 0 ? _stream.Length - 1 : _stream.Length;
+
+				if (writeBitIndex > 0) {
+					// determine whether an additional byte is required, or if existing byte being added to is enough.
+					int withoutOffsetByteCount = (int)Math.Ceiling(((decimal)itemsArray.Length - (8 - writeBitIndex)) / 8);
+
+					if (withoutOffsetByteCount == bytesCount) {
+						bytesCount++;
+					}
+
+					writeBuffer = Tools.Array.Gen(bytesCount, (byte)0);
+
+					_stream.Seek(streamByteOffsetFromBegin, SeekOrigin.Begin);
+					_stream.Read(writeBuffer, 0, 1);
+				} else {
+					writeBuffer = Tools.Array.Gen(bytesCount, (byte)0);
+				}
+
+				for (int i = 0; i < itemsArray.Length; i++) {
+					Bits.SetBit(writeBuffer, i + writeBitIndex, itemsArray[i]);
+				}
+
+				_stream.Seek(streamByteOffsetFromBegin, SeekOrigin.Begin);
+				_stream.Write(writeBuffer);
+
 			}
 
-			_stream.Write(buffer);
 			_count += itemsArray.Length;
 		}
 
@@ -73,18 +110,16 @@ namespace Sphere10.Framework {
 				return new List<int>();
 			}
 
-			int bitsToRead = _count;
 			var results = new int[itemsArray.Length];
 			_stream.Seek(0, SeekOrigin.Begin);
 
 			for (int i = 0; i < _stream.Length; i++) {
 				byte[] current = _stream.ReadBytes(1);
 				int bitsLength = Math.Min(8, _count - i * 8);
-				
+
 				for (int j = 0; j < bitsLength; j++) {
 					bool value = Bits.ReadBit(current, j);
-					bitsToRead--;
-					foreach (var (t, index)  in itemsArray.WithIndex()) {
+					foreach (var (t, index) in itemsArray.WithIndex()) {
 						if (value == t) {
 							results[index] = i * 8 + j;
 						}
@@ -96,37 +131,85 @@ namespace Sphere10.Framework {
 		}
 
 		public override void InsertRange(int index, IEnumerable<bool> items) {
+			var itemsArray = items as bool[] ?? items.ToArray();
+			if (!itemsArray.Any())
+				return;
+
 			if (index == Count)
-				AddRange(items);
+				AddRange(itemsArray);
 			else
 				throw new NotSupportedException("This collection can only be inserted from the end");
 		}
 
 		public override IEnumerable<bool> ReadRange(int index, int count) {
-			int byteCount = (int)Math.Ceiling((decimal)count / 8);
-			int byteIndex = (int)Math.Floor((decimal)index / 8);
-			
-			_stream.Seek(byteIndex, SeekOrigin.Begin);
-			var bytes = _stream.ReadBytes(byteCount);
-			int read = Bits.ReadBits(bytes, 0, count, out var readBytes);
+			int offset = index % 8;
 
-			for (int i = 0; i < read; i++) {
-				yield return Bits.ReadBit(readBytes, i);
+			int byteCount = Math.Max(1, (int)Math.Ceiling(((decimal)count - (8 - offset)) / 8));
+			int byteIndex = (int)Math.Floor((decimal)index / 8);
+
+			if (offset > 0) {
+				byteCount++;
+			}
+
+			_stream.Seek(byteIndex, SeekOrigin.Begin);
+			byte[] bytes = _stream.ReadBytes(byteCount);
+
+			for (int i = 0; i < count; i++) {
+				yield return Bits.ReadBit(bytes, i + offset);
 			}
 		}
 
 		public override void RemoveRange(int index, int count) {
 			if (index + count != Count)
 				throw new NotSupportedException("This collection can only be removed from the end");
-			else {
-				long bytesToRemove = _stream.Length - (int)Math.Ceiling((decimal)(_count - count) / 8);
-				_stream.SetLength(_stream.Length - bytesToRemove);
-				_count -= count;
-			}
+
+			long bytesToRemove = _stream.Length - (int)Math.Ceiling((decimal)(_count - count) / 8);
+			_stream.SetLength(_stream.Length - bytesToRemove);
+			_count -= count;
 		}
 
 		public override void UpdateRange(int index, IEnumerable<bool> items) {
-			throw new NotImplementedException();
+			var itemsArray = items as bool[] ?? items.ToArray();
+			var endIndex = index + itemsArray.Length;
+			if (endIndex > _count)
+				throw new ArgumentOutOfRangeException(nameof(index), "Update range is out of bounds");
+
+			int byteIndex = (int)Math.Floor((decimal)index / 8);
+			int bitIndex = index % 8;
+			int bytesCount = (int)Math.Ceiling((decimal)itemsArray.Length / 8);
+
+			byte[] buffer;
+			if (bitIndex > 0) {
+				int afterOffsetBytes = (int)Math.Ceiling(((decimal)itemsArray.Length - (8 - bitIndex)) / 8);
+
+				if (afterOffsetBytes == bytesCount) {
+					bytesCount++;
+				}
+
+				buffer = Tools.Array.Gen(bytesCount, (byte)0);
+
+				_stream.Seek(byteIndex, SeekOrigin.Begin);
+				_stream.Read(buffer, 0, 1);
+
+				_stream.Seek(byteIndex + bytesCount - 1, SeekOrigin.Begin);
+				_stream.Read(buffer, buffer.Length - 1, 1);
+
+			} else {
+				buffer = Tools.Array.Gen(bytesCount, (byte)0);
+			}
+
+			for (int i = 0; i < itemsArray.Length; i++) {
+				Bits.SetBit(buffer, i + bitIndex, itemsArray[i]);
+			}
+
+			_stream.Seek(byteIndex, SeekOrigin.Begin);
+			_stream.Write(buffer);
+		}
+
+		public override void Clear() {
+			_count = 0;
+			_stream.SetLength(0);
+			base.Clear();
 		}
 	}
 }

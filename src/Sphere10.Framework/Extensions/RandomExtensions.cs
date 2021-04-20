@@ -70,6 +70,12 @@ namespace Sphere10.Framework {
 			return result;
 		}
 
+		public static bool[] NextBools(this Random random, int count) =>
+			Enumerable.Range(0, count)
+            				.Select(x => random.Next(0, 2))
+            				.Select(x => x == 1)
+            				.ToArray();
+
 		public static ValueRange<int> NextRange(this Random rng, int maxLength, bool fromEndOnly = false, int? rangeLength = null) {
 			Guard.ArgumentInRange(maxLength, 1, int.MaxValue, nameof(maxLength));
 			return NextRangeBetween(rng, 0, maxLength - 1, fromEndOnly, rangeLength);

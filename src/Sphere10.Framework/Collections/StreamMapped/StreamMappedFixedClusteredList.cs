@@ -211,7 +211,7 @@ namespace Sphere10.Framework {
 				throw new InvalidOperationException("Max storage bytes is insufficient for list.");
 
 			int storageClusterCount = availableClusterStorageBytes / (clusterSerializer.FixedSize + sizeof(bool));
-			int statusTotalSize = storageClusterCount * sizeof(bool);
+			int statusTotalSize = (int)Math.Ceiling((decimal)storageClusterCount / 8); 
 
 			var listingsStream = new BoundedStream(InnerStream, HeaderSize, HeaderSize + listingTotalSize - 1) { UseRelativeOffset = true };
 			var statusStream = new BoundedStream(InnerStream, listingsStream.MaxAbsolutePosition + 1, listingsStream.MaxAbsolutePosition + statusTotalSize) { UseRelativeOffset = true };

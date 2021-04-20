@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using NUnit.Framework;
@@ -7,17 +8,17 @@ using Sphere10.Framework.NUnit;
 namespace Sphere10.Framework.Tests {
 	public class StreamMappedBitVectorTests {
 
-		private Random Random { get; } = new();
+		private Random Random { get; } = new(31337);
 
 		[Test]
 		public void InsertRangeEnd() {
 			using var memoryStream = new MemoryStream();
 			var list = new StreamMappedBitVector(memoryStream);
 
-			var inputs = Enumerable.Repeat(true, 20);
+			var inputs = Enumerable.Repeat(true, 20).ToArray();
 			list.AddRange(inputs);
 
-			var insert = Enumerable.Repeat(false, 20);
+			var insert = Enumerable.Repeat(false, 20).ToArray();
 			list.InsertRange(20, insert);
 
 			Assert.AreEqual(inputs.Concat(insert), list);
@@ -93,51 +94,10 @@ namespace Sphere10.Framework.Tests {
 		}
 
 		[Test]
-		public void UpdateRangeOverlap() {
-			using var memoryStream = new MemoryStream();
-			var list = new StreamMappedBitVector(memoryStream);
-			var expected = new ExtendedList<bool>();
-
-			var inputs = Random.NextBools(935);
-			list.AddRange(inputs);
-			expected.AddRange(inputs);
-			Assert.AreEqual(expected, list);
-
-			var firstUpdate = Random.NextBools(505);
-			list.UpdateRange(26, firstUpdate);
-			expected.UpdateRangeSequentially(26, firstUpdate);
-			Assert.AreEqual(expected, list);
-
-			var copyUpdate = list.ReadRange(15, 901);
-			var expectedUpdate = expected.ReadRangeSequentially(15, 901);
-			list.UpdateRange(15, copyUpdate);
-			expected.UpdateRangeSequentially(15, expectedUpdate);
-
-			Assert.AreEqual(expected, list);
-		}
-
-		[Test]
-		public void NoOffsetOverlap() {
-			using var memoryStream = new MemoryStream();
-			var list = new StreamMappedBitVector(memoryStream);
-			var expected = new ExtendedList<bool>();
-
-			var inputs = Random.NextBools(24);
-			list.AddRange(inputs);
-			expected.AddRange(inputs);
-			Assert.AreEqual(expected, list);
-
-			var update = Random.NextBools(9);
-			list.UpdateRange(8, update);
-			expected.UpdateRangeSequentially(8, update);
-			Assert.AreEqual(expected, list);
-		}
-
-		[Test]
 		public void IntegrationTest() {
 			using var memoryStream = new MemoryStream();
 			var list = new StreamMappedBitVector(memoryStream);
-			AssertEx.ListIntegrationTest(list, 1000, (rng, i) => rng.NextBools(i), true);
+			AssertEx.ListIntegrationTest(list, 1000, (Random, i) => Random.NextBools(i), true);
 		}
 	}
 }

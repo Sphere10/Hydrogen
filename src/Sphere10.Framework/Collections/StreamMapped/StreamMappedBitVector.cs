@@ -109,6 +109,7 @@ namespace Sphere10.Framework {
 
 		public override void InsertRange(int index, IEnumerable<bool> items) {
 			var itemsArray = items as bool[] ?? items.ToArray();
+		
 			if (!itemsArray.Any())
 				return;
 
@@ -119,20 +120,25 @@ namespace Sphere10.Framework {
 		}
 
 		public override IEnumerable<bool> ReadRange(int index, int count) {
-			int offset = index % 8;
+			int startBitIndex = index % 8;
+			int remainingBits = startBitIndex > 0 ? count - (8 - startBitIndex) : count;
+			int finalBitIndex = remainingBits % 8;
+			int nonPartialBits = remainingBits - finalBitIndex;
 
-			int byteCount = Math.Max(1, (int)Math.Ceiling(((decimal)count - (8 - offset)) / 8));
+			int byteCount = nonPartialBits / 8;
 			int byteIndex = (int)Math.Floor((decimal)index / 8);
 
-			if (offset > 0) {
+			if (startBitIndex > 0) 
 				byteCount++;
-			}
+
+			if (finalBitIndex > 0)
+				byteCount++;
 
 			_stream.Seek(byteIndex, SeekOrigin.Begin);
 			byte[] bytes = _stream.ReadBytes(byteCount);
 
 			for (int i = 0; i < count; i++) {
-				yield return Bits.ReadBit(bytes, i + offset);
+				yield return Bits.ReadBit(bytes, i + startBitIndex);
 			}
 		}
 
@@ -154,10 +160,10 @@ namespace Sphere10.Framework {
 			int startBitIndex = index % 8;
 			int remainingBits = startBitIndex > 0 ? itemsArray.Length - (8 - startBitIndex) : itemsArray.Length;
 			int finalBitIndex = remainingBits % 8;
-			int nonPartialBytes = remainingBits - finalBitIndex;
+			int nonPartialBits = remainingBits - finalBitIndex;
 			
 			int byteIndex = (int)Math.Floor((decimal)index / 8);
-			int bytesCount = nonPartialBytes / 8;
+			int bytesCount = nonPartialBits / 8;
 
 			if (startBitIndex > 0)
 				bytesCount++;

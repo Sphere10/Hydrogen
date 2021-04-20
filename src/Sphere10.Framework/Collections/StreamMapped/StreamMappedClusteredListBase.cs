@@ -1,17 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
 namespace Sphere10.Framework {
-
-	public class StreamMappedItemAccessedArgs<TItem, TListing> : EventArgs where TListing : IItemListing {
-		public ListOperationType OperationType { get; init; }
-		public int ListingIndex { get; init; }
-		public TListing Listing { get; init; }
-		public TItem Item { get; init; }
-		public byte[] SerializedItem { get; init; }
-	}
 
 	public abstract class StreamMappedClusteredListBase<TItem, TListing> : RangedListBase<TItem> where TListing : IItemListing {
 
@@ -20,11 +13,11 @@ namespace Sphere10.Framework {
 		protected readonly IEqualityComparer<TItem> ItemComparer;
 		protected readonly Stream InnerStream;
 		protected readonly int ClusterDataSize;
-		
-		public event EventHandlerEx<object, StreamMappedItemAccessedArgs<TItem, TListing>> ItemAccess;
-	
+		protected StreamMappedPagedList<Cluster> Clusters;
 
-		public StreamMappedClusteredListBase(int clusterDataSize, Stream stream, IObjectSerializer<TItem> itemSerializer, IObjectSerializer<TListing> listingSerializer,  IEqualityComparer<TItem> itemComparer = null) {
+		public event EventHandlerEx<object, StreamMappedItemAccessedArgs<TItem, TListing>> ItemAccess;
+
+		protected StreamMappedClusteredListBase(int clusterDataSize, Stream stream, IObjectSerializer<TItem> itemSerializer, IObjectSerializer<TListing> listingSerializer,  IEqualityComparer<TItem> itemComparer = null) {
 			Guard.ArgumentNotNull(listingSerializer, nameof(listingSerializer));
 			Guard.Argument(listingSerializer.IsFixedSize, nameof(listingSerializer), "Listing objects must be fixed size");
 			ItemSerializer = itemSerializer;
@@ -41,8 +34,6 @@ namespace Sphere10.Framework {
 		protected abstract IEnumerable<int> GetFreeClusterNumbers(int numberRequired);
 
 		protected bool SuppressNotifications;
-
-		internal abstract StreamMappedPagedList<Cluster> Clusters { get; set; }
 
 		public abstract void Load();
 
@@ -108,7 +99,6 @@ namespace Sphere10.Framework {
 			var size = listing.Size;
 			var next = startClusterNumber;
 
-
 			while (next != -1) {
 				var cluster = Clusters[next];
 				// Removed since old data is unnecessary burden (for now)
@@ -125,9 +115,7 @@ namespace Sphere10.Framework {
 
 		private TListing AddItemInternal(byte[] data) {
 			var clusters = new List<Cluster>();
-			var segments = data.Partition(ClusterDataSize)
-				.ToList();
-
+			var segments = data.Partition(ClusterDataSize).ToList();
 			var numbers = GetFreeClusterNumbers(segments.Count).ToArray();
 
 			for (var i = 0; i < segments.Count; i++) {
@@ -180,11 +168,53 @@ namespace Sphere10.Framework {
 			if (SuppressNotifications)
 				return;
 
-
-
 			OnItemAccess(operationType, listingIndex, listing, item, serializedItem);
 			var args = new StreamMappedItemAccessedArgs<TItem, TListing>() { ListingIndex = listingIndex, Listing = listing, Item = item, SerializedItem = serializedItem };
 			ItemAccess?.Invoke(this, args);
+		}
+
+		public class Cluster {
+			public ClusterTraits Traits { get; set; }
+			public int Number { get; set; }
+			public byte[] Data { get; set; }
+			public int Next { get; set; }
+		}
+
+		public class ClusterSerializer : FixedSizeObjectSerializer<Cluster> {
+			private readonly int _clusterDataSize;
+
+			public ClusterSerializer(int clusterSize) : base(clusterSize + sizeof(int) + sizeof(int) + sizeof(int)) {
+				_clusterDataSize = clusterSize;
+			}
+
+			public override int Serialize(Cluster cluster, EndianBinaryWriter writer) {
+				Debug.Assert(cluster.Data.Length == _clusterDataSize);
+
+				writer.Write((int)cluster.Traits);
+				writer.Write(cluster.Number);
+				writer.Write(cluster.Data);
+				writer.Write(cluster.Next);
+
+				return sizeof(int) + _clusterDataSize + sizeof(int) + sizeof(int);
+			}
+
+			public override Cluster Deserialize(int size, EndianBinaryReader reader) {
+				var cluster = new Cluster {
+					Traits = (ClusterTraits)reader.ReadInt32(),
+					Number = reader.ReadInt32(),
+					Data = reader.ReadBytes(_clusterDataSize),
+					Next = reader.ReadInt32()
+				};
+				return cluster;
+			}
+		}
+
+		[Flags]
+		public enum ClusterTraits {
+			Used = 1 << 0, // 00000001
+			Listing = 1 << 1,
+			Data = 1 << 2,
+			Free = 1 << 3
 		}
 
 	}

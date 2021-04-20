@@ -5,25 +5,24 @@ using System.Linq;
 
 namespace Sphere10.Framework {
 	public abstract class StreamMappedDynamicClusteredList<T, TListing> : StreamMappedClusteredListBase<T, TListing> where TListing : IItemListing {
-
 		private const int HeaderSize = 256;
 
 		private readonly EndianBinaryWriter _headerWriter;
-
 		private readonly BoundedStream _headerStream;
-
 		private readonly List<int> _freeClusters;
 		private StreamMappedPagedList<TListing> _listingStore;
 		private PreAllocatedList<TListing> _listings;
 
-		public StreamMappedDynamicClusteredList(int clusterDataSize, Stream stream, IObjectSerializer<T> itemSerializer, IObjectSerializer<TListing> listingSerializer, IEqualityComparer<T> itemComparer = null)
+		protected StreamMappedDynamicClusteredList(int clusterDataSize, Stream stream, IObjectSerializer<T> itemSerializer, IObjectSerializer<TListing> listingSerializer, IEqualityComparer<T> itemComparer = null)
 			: base(clusterDataSize, stream, itemSerializer, listingSerializer, itemComparer) {
 			_headerStream = new BoundedStream(stream, 0, HeaderSize - 1);
 			_headerWriter = new EndianBinaryWriter(EndianBitConverter.Little, _headerStream);
 			_freeClusters = new List<int>();
 
-			Clusters = new StreamMappedPagedList<Cluster>(new ClusterSerializer(clusterDataSize),
-				new NonClosingStream(new BoundedStream(stream, _headerStream.MaxAbsolutePosition + 1, long.MaxValue) { UseRelativeOffset = true }));
+			Clusters = new StreamMappedPagedList<Cluster>(
+				new ClusterSerializer(clusterDataSize),
+				new NonClosingStream(new BoundedStream(stream, _headerStream.MaxAbsolutePosition + 1, long.MaxValue) { UseRelativeOffset = true })
+			);
 
 			if (!RequiresLoad) {
 				_listingStore = new StreamMappedPagedList<TListing>(ListingSerializer, new FragmentedStream(new FragmentProvider(this))) {
@@ -39,8 +38,6 @@ namespace Sphere10.Framework {
 		}
 
 		public override int Count => _listings?.Count ?? 0;
-
-		internal override StreamMappedPagedList<Cluster> Clusters { get; set; }
 
 		public override void AddRange(IEnumerable<T> items) {
 			CheckLoaded();
@@ -216,13 +213,13 @@ namespace Sphere10.Framework {
 		}
 
 
-		private class FragmentProvider : IFragmentProvider {
+		private class FragmentProvider : IStreamFragmentProvider {
 
 			private readonly StreamMappedDynamicClusteredList<T, TListing> _parent;
 
 			private readonly int _nextClusterOffset;
 
-			private IDictionary<int, int> _fragmentClusterMap;
+			private readonly IDictionary<int, int> _fragmentClusterMap;
 
 			public FragmentProvider(StreamMappedDynamicClusteredList<T, TListing> parent) : this(0, parent) {
 			}

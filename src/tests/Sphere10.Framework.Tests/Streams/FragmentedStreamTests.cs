@@ -12,7 +12,7 @@ namespace Sphere10.Framework.Tests {
 
 		[Test]
 		public void Empty() {
-			var fragments = new ByteArrayFragmentProvider(Enumerable.Empty<byte[]>());
+			var fragments = new ByteArrayStreamFragmentProvider(Enumerable.Empty<byte[]>());
 			var stream = new FragmentedStream(fragments);
 			var expected = new MemoryStream();
 
@@ -23,7 +23,7 @@ namespace Sphere10.Framework.Tests {
 
 		[Test]
 		public void ReadAll() {
-			var fragments = new ByteArrayFragmentProvider();
+			var fragments = new ByteArrayStreamFragmentProvider();
 			var stream = new FragmentedStream(fragments);
 			var expected = new MemoryStream();
 			var data = Random.NextBytes(299);
@@ -43,7 +43,7 @@ namespace Sphere10.Framework.Tests {
 
 		[Test]
 		public void WriteUpdateAndAdd() {
-			var fragments = new ByteArrayFragmentProvider();
+			var fragments = new ByteArrayStreamFragmentProvider();
 			var stream = new FragmentedStream(fragments);
 			var expected = new MemoryStream();
 			var data = Random.NextBytes(4);
@@ -75,7 +75,7 @@ namespace Sphere10.Framework.Tests {
 		[TestCase(SeekOrigin.End, -11)]
 		[TestCase(SeekOrigin.Current, 11)]
 		public void SeekAndRead(SeekOrigin origin, int offset) {
-			var fragments = new ByteArrayFragmentProvider();
+			var fragments = new ByteArrayStreamFragmentProvider();
 			var stream = new FragmentedStream(fragments);
 			var expected = new MemoryStream();
 			var data = Random.NextBytes(50);
@@ -94,7 +94,7 @@ namespace Sphere10.Framework.Tests {
 		
 		[Test]
 		public void RemoveAll() {
-			var fragments = new ByteArrayFragmentProvider();
+			var fragments = new ByteArrayStreamFragmentProvider();
 			var stream = new FragmentedStream(fragments);
 			var expected = new MemoryStream();
 			var data = Random.NextBytes(50);
@@ -112,7 +112,7 @@ namespace Sphere10.Framework.Tests {
 
 		[Test]
 		public void IncreaseSize() {
-			var fragments = new ByteArrayFragmentProvider();
+			var fragments = new ByteArrayStreamFragmentProvider();
 			var stream = new FragmentedStream(fragments);
 			var expected = new MemoryStream();
 			var data = Random.NextBytes(Random.Next(1, 99));
@@ -131,7 +131,7 @@ namespace Sphere10.Framework.Tests {
 
 		[Test]
 		public void DecreaseSize() {
-			var fragments = new ByteArrayFragmentProvider();
+			var fragments = new ByteArrayStreamFragmentProvider();
 			var stream = new FragmentedStream(fragments);
 			var expected = new MemoryStream();
 			var data = Random.NextBytes(Random.Next(1, 99));
@@ -154,7 +154,7 @@ namespace Sphere10.Framework.Tests {
 		[Test]
 		public void IntegrationTests([Values(0, 3, 111, 9371)] int maxSize) {
 			var RNG = new Random(maxSize);
-			var stream = new FragmentedStream(new ByteArrayFragmentProvider());
+			var stream = new FragmentedStream(new ByteArrayStreamFragmentProvider());
 			var expected = new MemoryStream();
 			for (var i = 0; i < 100; i++) {
 				Assert.AreEqual(expected.Position, stream.Position);

@@ -1,7 +1,8 @@
 ﻿using System;
 
 namespace Sphere10.Framework {
-	public interface IFragmentProvider {
+	
+	public interface IStreamFragmentProvider {
 		
 		/// <summary>
 		/// Length of fragment bytes
@@ -40,7 +41,7 @@ namespace Sphere10.Framework {
 		/// Defensive release of space from fragments. Not guaranteed to release requested bytes.
 		/// </summary>
 		/// <param name="bytes">Number of bytes to release</param>
-		/// <param name="releasedFragmentIndexes">Index of fragments released (should be right-most neighbourhood)</param>
+		/// <param name="releasedFragmentIndexes">Index of fragments released (should be right-most neighborhood)</param>
 		/// <returns>Number of bytes actually released</returns>
 		int ReleaseSpace(int bytes, out int[] releasedFragmentIndexes);
 

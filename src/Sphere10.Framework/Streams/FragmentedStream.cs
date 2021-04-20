@@ -4,12 +4,16 @@ using System.IO;
 using System.Linq;
 
 namespace Sphere10.Framework {
+
+	/// <summary>
+	/// A stream implementation that connects multiple disparate byte fragments into one logical stream. The fragments are managed through a <see cref="IStreamFragmentProvider"/>.
+	/// </summary>
 	public class FragmentedStream : Stream {
 		
-		private readonly IFragmentProvider _fragmentProvider;
+		private readonly IStreamFragmentProvider _fragmentProvider;
 		private long _position;
 
-		public FragmentedStream(IFragmentProvider fragmentProvider) {
+		public FragmentedStream(IStreamFragmentProvider fragmentProvider) {
 			_fragmentProvider = fragmentProvider;
 			_position = 0;
 		} 

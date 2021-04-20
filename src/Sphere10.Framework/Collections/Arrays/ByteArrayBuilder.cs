@@ -54,7 +54,6 @@ namespace Sphere10.Framework {
                 _buffer = IncreaseCapacity(_buffer, _buffer.Length + buffer.Length + DefaultCapacity);
             }
             buffer.CopyTo(_buffer.AsSpan(Length));
-            //Array.Copy(buffer, 0, _buffer, Length, buffer.Length);
             Length += buffer.Length;
             return this;
         }
@@ -65,7 +64,7 @@ namespace Sphere10.Framework {
                 return _buffer;
             }
             var result = new byte[Length];
-            Array.Copy(_buffer, result, result.Length);
+			_buffer.AsSpan(0, Length).CopyTo(result);
             return result;
         }
 

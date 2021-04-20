@@ -46,8 +46,6 @@ namespace Sphere10.Framework {
 
 		public int Capacity { get; }
 
-		internal override StreamMappedPagedList<Cluster> Clusters { get; set; }
-
 		public override void AddRange(IEnumerable<T> items) {
 			Guard.ArgumentNotNull(items, nameof(items));
 			CheckLoaded();

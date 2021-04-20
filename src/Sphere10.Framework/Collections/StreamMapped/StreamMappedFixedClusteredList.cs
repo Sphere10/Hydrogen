@@ -220,15 +220,13 @@ namespace Sphere10.Framework {
 			WriteHeader();
 			if (InnerStream.Length == 0)
 				WriteHeader();
-
 			
-
 			var preAllocatedListingStore = new StreamMappedPagedList<TListing>(ListingSerializer, listingsStream) { IncludeListHeader = false };
 			preAllocatedListingStore.AddRange(Tools.Array.Gen(Capacity, default(TListing)));
 			_listings = new PreAllocatedList<TListing>(preAllocatedListingStore);
 
-			var status = new StreamMappedPagedList<bool>(new BoolSerializer(), statusStream) { IncludeListHeader = false };
-			//var status = new BitList(statusStream); TODO
+			//var status = new StreamMappedPagedList<bool>(new BoolSerializer(), statusStream) { IncludeListHeader = false };
+			var status = new StreamMappedBitVector(statusStream);
 			status.AddRange(Tools.Array.Gen(storageClusterCount, false));
 			_clusterStatus = new PreAllocatedList<bool>(status);
 			_clusterStatus.AddRange(status);

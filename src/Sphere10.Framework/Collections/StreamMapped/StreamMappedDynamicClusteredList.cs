@@ -135,8 +135,9 @@ namespace Sphere10.Framework {
 		}
 
 		public override void RemoveRange(int index, int count) {
-			CheckLoaded();
 			CheckRange(index, count);
+			CheckLoaded();
+			
 
 			for (var i = 0; i < count; i++) {
 				var listing = _listings[index + i];

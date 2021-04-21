@@ -18,9 +18,13 @@ namespace Sphere10.Framework {
 		public event EventHandlerEx<object, StreamMappedItemAccessedArgs<TItem, TListing>> ItemAccess;
 
 		protected StreamMappedClusteredListBase(int clusterDataSize, Stream stream, IObjectSerializer<TItem> itemSerializer, IObjectSerializer<TListing> listingSerializer,  IEqualityComparer<TItem> itemComparer = null) {
+			Guard.ArgumentInRange(clusterDataSize, 1, int.MaxValue, nameof(clusterDataSize));
+			Guard.ArgumentNotNull(stream, nameof(stream));
+			Guard.ArgumentNotNull(itemSerializer, nameof(itemSerializer));
 			Guard.ArgumentNotNull(listingSerializer, nameof(listingSerializer));
 			Guard.Argument(listingSerializer.IsFixedSize, nameof(listingSerializer), "Listing objects must be fixed size");
-			Guard.ArgumentInRange(clusterDataSize, 1, int.MaxValue, nameof(clusterDataSize));
+			Guard.ArgumentNotNull(itemComparer, nameof(itemComparer));
+			
 			ItemSerializer = itemSerializer;
 			ListingSerializer = listingSerializer;
 			ItemComparer = itemComparer ?? EqualityComparer<TItem>.Default;

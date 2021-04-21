@@ -61,9 +61,9 @@ namespace Sphere10.Framework {
 		}
 
 		public override IEnumerable<int> IndexOfRange(IEnumerable<T> items) {
-			CheckLoaded();
 			Guard.ArgumentNotNull(items, nameof(items));
-
+			CheckLoaded();
+			
 			var itemsArray = items as T[] ?? items.ToArray();
 
 			if (!itemsArray.Any()) {
@@ -83,8 +83,8 @@ namespace Sphere10.Framework {
 		}
 
 		public override IEnumerable<T> ReadRange(int index, int count) {
-			CheckLoaded();
 			CheckRange(index, count);
+			CheckLoaded();
 
 			for (var i = 0; i < count; i++) {
 				var listing = _listings[index + i];

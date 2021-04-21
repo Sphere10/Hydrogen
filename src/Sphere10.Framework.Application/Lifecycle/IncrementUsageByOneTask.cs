@@ -24,7 +24,6 @@ namespace Sphere10.Framework.Application {
 
 	public class IncrementUsageByOneTask : IApplicationInitializeTask {
 
-
 		public IncrementUsageByOneTask(IProductUsageServices productUsageServices) {
 			ProductUsageServices = productUsageServices;
 		}
@@ -36,9 +35,7 @@ namespace Sphere10.Framework.Application {
 		}
 
 		// Critical to run this early on
-		public int Sequence {
-			get { return 1; }
-		}
+		public int Priority => 1;
 	}
 }
 

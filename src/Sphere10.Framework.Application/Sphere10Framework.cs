@@ -19,14 +19,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Sphere10.Framework;
-using Tools;
 
 namespace Sphere10.Framework.Application {
     public class Sphere10Framework {
         private readonly object _threadLock;
         private bool _registeredConfig;
-        private bool _registeredModuleConfig;
-        private volatile IModuleConfiguration[] _moduleConfigurations;
+        private bool _registeredModuleComponents;
 
 
         static Sphere10Framework() {
@@ -35,10 +33,21 @@ namespace Sphere10.Framework.Application {
 
         public Sphere10Framework() {
             _threadLock = new object();
-            _moduleConfigurations = null;
-        }
+            ModuleConfigurations = Tools.Values.LazyLoad( () =>
+				AppDomain
+					.CurrentDomain
+					.GetNonFrameworkAssemblies()
+					//.Apply(a => System.IO.File.AppendAllText("c:\\temp\\log.txt", a.FullName + Environment.NewLine))
+					.SelectMany(a => a.GetTypes())
+					.Where(t => t.IsClass && !t.IsAbstract && typeof(IModuleConfiguration).IsAssignableFrom(t))
+					.Select(TypeActivator.Create)
+					.Cast<IModuleConfiguration>()
+					.OrderByDescending(x => x.Priority)
+					.ToArray()
+			);
+		}
 
-        public static Sphere10Framework Instance { get; }
+		public static Sphere10Framework Instance { get; }
 
         public void RegisterAppConfig(string configSectionName = "ComponentRegistry") {
             if (_registeredConfig)
@@ -46,66 +55,74 @@ namespace Sphere10.Framework.Application {
 
             lock (_threadLock) {
                 if (_registeredConfig) return;
-                var section = ConfigurationManager.GetSection(configSectionName) as ComponentRegistryDefinition;
-                if (section != null) {
-                    ComponentRegistry.Instance.RegisterDefinition(section);
+				if (ConfigurationManager.GetSection(configSectionName) is ComponentRegistryDefinition definition) {
+                    ComponentRegistry.Instance.RegisterDefinition(definition);
                 }                
                 _registeredConfig = true;
             }
         }
 
-        public void RegisterAllModuleConfig() {
-            if (_registeredModuleConfig)
+        public void RegisterAllModuleComponents() {
+            if (_registeredModuleComponents)
                 throw new SoftwareException("All modules have already been initialized, cannot initialize again.");
 
             lock (_threadLock) {
-                if (_registeredModuleConfig) return;
-                RegisterAllModuleComponents(ComponentRegistry.Instance);
-                _registeredModuleConfig = true;
+                if (_registeredModuleComponents) return;
+				ModuleConfigurations.Value.Update(mconf => mconf.RegisterComponents(ComponentRegistry.Instance));
+                _registeredModuleComponents = true;
             }
         }
 
-        public void StartFramework() {
+		public void DeregisterAllModuleComponents() {
+			if (!_registeredModuleComponents) return;
+
+			lock (_threadLock) {
+				ModuleConfigurations.Value.Update(mconf => mconf.DeregisterComponents(ComponentRegistry.Instance));
+				_registeredModuleComponents = false;
+			}
+		}
+
+		public void StartFramework() {
 			// Register App/Web Config components
 
 			if (!_registeredConfig)
                 RegisterAppConfig();
 
-			if (!_registeredModuleConfig)
-                RegisterAllModuleConfig();
+			if (!_registeredModuleComponents)
+                RegisterAllModuleComponents();
 
-	        // Execute all the initialization tasks syncronously and in sequence
-            ComponentRegistry
-                .Instance
-                .ResolveAll<IApplicationInitializeTask>()
-                .OrderBy(initTask => initTask.Sequence)
-                .ForEach(
-                    initTask => Exceptions.ExecuteIgnoringException(initTask.Initialize)
-                );
+			// Initialize Modules
+			ModuleConfigurations.Value.Update(mconf => Tools.Exceptions.ExecuteIgnoringException(mconf.OnInitialize));
 
-            // Execute all the start tasks asyncronously
-            ComponentRegistry
-                .Instance
-                .ResolveAll<IApplicationStartTask>()
-                .ForEach(
-                    startTask => Lambda.ActionAsAsyncronous(startTask.Start).IgnoringExceptions().Invoke()
-                );
 
-            StartAllModules();
-        }
+			// Execute all the application initialization tasks synchronously and in sequence
+			ComponentRegistry
+				.Instance
+				.ResolveAll<IApplicationInitializeTask>()
+				.OrderBy(initTask => initTask.Priority)
+				.ForEach(
+					initTask => Tools.Exceptions.ExecuteIgnoringException(initTask.Initialize)
+				);
+
+			// Execute all the start tasks asynchronously
+			ComponentRegistry
+				.Instance
+				.ResolveAll<IApplicationStartTask>()
+				.ForEach(
+					startTask => Tools.Lambda.ActionAsAsyncronous(startTask.Start).IgnoringExceptions().Invoke()
+				);
+		}
 
         public void EndFramework(out bool abort, out string abortReason) {
             abortReason = String.Empty;
             abort = false;
-
-            EndAllModules();
 
             var results = new List<Result>();
             ComponentRegistry
                 .Instance
                 .ResolveAll<IApplicationEndTask>()
                 .ForEach(
-                    endTask => Exceptions.ExecuteIgnoringException(() => results.Add(endTask.End()))
+                    endTask => Tools.Exceptions.ExecuteIgnoringException(() => results.Add(endTask.End()))
                 );
 
             if (results.Any(r => r.Failure)) {
@@ -121,44 +138,15 @@ namespace Sphere10.Framework.Application {
                 abortReason = textBuilder.ToString();
             }
 
-            EndAllModules();
-            ComponentRegistry.Instance.Dispose();
-        }
+			// Finalize modules
+			ModuleConfigurations.Value.Update(mconf => Tools.Exceptions.ExecuteIgnoringException(mconf.OnFinalize));
 
-        private void RegisterAllModuleComponents(ComponentRegistry registry) {
-            ModuleConfigurations.Update(mconf => mconf.RegisterComponents(registry));
-        }
+			DeregisterAllModuleComponents();
 
-        private void StartAllModules() {
-            ModuleConfigurations.Update(mconf => Exceptions.ExecuteIgnoringException(mconf.OnApplicationStart));
+			ComponentRegistry.Instance.Dispose();
         }
+		
 
-        private void EndAllModules() {
-            ModuleConfigurations.Update(mconf => Exceptions.ExecuteIgnoringException(mconf.OnApplicationEnd));
-        }
-
-
-        private IEnumerable<IModuleConfiguration> ModuleConfigurations {
-            get {
-                if (_moduleConfigurations == null) {
-                    lock (_threadLock) {
-                        if (_moduleConfigurations == null) {
-                            _moduleConfigurations =
-                                AppDomain
-                                    .CurrentDomain
-                                    .GetNonFrameworkAssemblies()
-									//.Apply(a => System.IO.File.AppendAllText("c:\\temp\\log.txt", a.FullName + Environment.NewLine))
-                                    .SelectMany(a => a.GetTypes())
-                                    .Where(t => t.IsClass && !t.IsAbstract && typeof(IModuleConfiguration).IsAssignableFrom(t))
-                                    .Select(TypeActivator.Create)
-                                    .Cast<IModuleConfiguration>()
-	                                .OrderByDescending(x => x.Priority)
-                                    .ToArray();
-                        }
-                    }
-                }
-                return _moduleConfigurations;
-            }
-        }
+        private IFuture<IModuleConfiguration[]> ModuleConfigurations { get; set; }
     }
 }

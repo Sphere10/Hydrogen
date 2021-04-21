@@ -17,7 +17,9 @@ using System.Linq;
 using System.Text;
 
 namespace Sphere10.Framework.Application {
+
 	public interface IApplicationStartTask {
+		// TODO add properties to start async/sync and priority
 		void Start();
 	}
 }

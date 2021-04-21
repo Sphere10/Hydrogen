@@ -29,7 +29,15 @@ namespace Sphere10.Framework.Application {
             );
         }
 
-        public static bool HasInitializationTask<TApplicationInitializeTask>(this ComponentRegistry componentRegistry) 
+		public static void DeregisterInitializationTask<TApplicationInitializeTask>(this ComponentRegistry componentRegistry)
+			where TApplicationInitializeTask : class, IApplicationInitializeTask {
+			componentRegistry.DeregisterComponent<TApplicationInitializeTask>(
+				typeof(TApplicationInitializeTask).FullName
+			);
+		}
+
+
+		public static bool HasInitializationTask<TApplicationInitializeTask>(this ComponentRegistry componentRegistry) 
             where TApplicationInitializeTask : class, IApplicationInitializeTask {
             return componentRegistry.HasImplementationFor<IApplicationInitializeTask>(
                 typeof(TApplicationInitializeTask).FullName
@@ -43,14 +51,29 @@ namespace Sphere10.Framework.Application {
             );
         }
 
-        public static void RegisterEndTask<TApplicationEndTask>(this ComponentRegistry componentRegistry)
+
+		public static void DeregisterStartTask<TApplicationStartTask>(this ComponentRegistry componentRegistry)
+			where TApplicationStartTask : class, IApplicationStartTask {
+			componentRegistry.DeregisterComponent<TApplicationStartTask>(
+				typeof(TApplicationStartTask).FullName
+			);
+		}
+
+		public static void RegisterEndTask<TApplicationEndTask>(this ComponentRegistry componentRegistry)
             where TApplicationEndTask : class, IApplicationEndTask {
             componentRegistry.RegisterComponent<IApplicationEndTask, TApplicationEndTask>(
                 typeof(TApplicationEndTask).FullName
             );
         }
 
-        public static bool HasStartTask<TApplicationStartTask>(this ComponentRegistry componentRegistry) 
+		public static void DeregisterEndTask<TApplicationEndTask>(this ComponentRegistry componentRegistry)
+			where TApplicationEndTask : class, IApplicationEndTask {
+			componentRegistry.DeregisterComponent<TApplicationEndTask>(
+				typeof(TApplicationEndTask).FullName
+			);
+		}
+
+		public static bool HasStartTask<TApplicationStartTask>(this ComponentRegistry componentRegistry) 
             where TApplicationStartTask : class, IApplicationStartTask {
             return componentRegistry.HasImplementationFor<IApplicationStartTask>(
                 typeof(TApplicationStartTask).FullName

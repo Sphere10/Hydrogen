@@ -20,8 +20,9 @@ namespace Sphere10.Framework.Application {
 
 	public interface IApplicationInitializeTask {
 
-		int Sequence { get; }
+		int Priority { get; }
 
 		void Initialize();
 	}
+
 }

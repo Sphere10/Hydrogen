@@ -22,8 +22,9 @@ namespace Sphere10.Framework.Application {
     public interface IModuleConfiguration {
 		int Priority { get; }
         void RegisterComponents(ComponentRegistry registry);
-        void OnApplicationStart();
-        void OnApplicationEnd();
+		void DeregisterComponents(ComponentRegistry registry);
+        void OnInitialize();
+        void OnFinalize();
         
     }
 }

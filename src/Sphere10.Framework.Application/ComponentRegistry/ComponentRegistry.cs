@@ -83,32 +83,32 @@ namespace Sphere10.Framework.Application {
         public ComponentRegistry CreateChildRegistry() {
             return new ComponentRegistry(this);
         }
-
+		
         public void RegisterDefinition(ComponentRegistryDefinition componentRegistryDefinition) {
             if (componentRegistryDefinition.RegistrationsDefinition == null)
                 return;
             foreach (var registration in componentRegistryDefinition.RegistrationsDefinition) {
                 TypeSwitch.Do(registration,
                     TypeSwitch.Case<ComponentRegistryDefinition.AssemblyRegistrationDefinition>(assemblyRegistration =>
-                        RegisterAssemblyRegistration(
+                        RegisterInternalAssemblyRegistration(
                             componentRegistryDefinition,
                             assemblyRegistration
                         )
                     ),
                     TypeSwitch.Case<ComponentRegistryDefinition.ComponentRegistrationDefinition>(componentRegistration =>
-                        RegisterComponentRegistration(
+                        RegisterInternalComponentRegistration(
                             componentRegistryDefinition,
                             componentRegistration
                         )
                     ),
                     TypeSwitch.Case<ComponentRegistryDefinition.ProxyInterfaceRegistrationDefinition>(proxyRegistration =>
-                        RegisterProxyRegistration(
+                        RegisterInternalProxyRegistration(
                             componentRegistryDefinition,
                             proxyRegistration
                         )
                     ),
                     TypeSwitch.Case<ComponentRegistryDefinition.ComponentSetRegistrationDefinition>(multipleComponentsRegistration =>
-                        RegisterMultipleComponentsRegistration(
+                        RegisterInternalMultipleComponentsRegistration(
                             componentRegistryDefinition,
                             multipleComponentsRegistration
                         )
@@ -122,7 +122,7 @@ namespace Sphere10.Framework.Application {
             where TInterface : class {
             lock (_threadLock) {
                 _tinyIoCContainer.Register(instance, name ?? string.Empty);
-                Register(Registration.From(instance, name ?? string.Empty));
+                RegisterInternal(Registration.From(instance, name ?? string.Empty));
             }
         }
 
@@ -136,21 +136,21 @@ namespace Sphere10.Framework.Application {
             where TInterface : class
             where TImplementation : class, TInterface {
             lock (_threadLock) {
-                var tinyOptions = _tinyIoCContainer.Register<TInterface, TImplementation>(resolveKey ?? string.Empty);
-                switch (activation) {
-                    case ActivationType.Instance:
-                        tinyOptions.AsMultiInstance();
-                        break;
-                    case ActivationType.Singleton:
-                        tinyOptions.AsSingleton();
-                        break;
-                    case ActivationType.PerRequest:
-                        tinyOptions.AsPerRequestSingleton();
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException(nameof(activation), activation, null);
-                }
-                Register(Registration.From<TInterface, TImplementation>(resolveKey ?? string.Empty, activation));
+				var tinyOptions = _tinyIoCContainer.Register<TInterface, TImplementation>(resolveKey ?? string.Empty);
+				switch (activation) {
+					case ActivationType.Instance:
+						tinyOptions.AsMultiInstance();
+						break;
+					case ActivationType.Singleton:
+						tinyOptions.AsSingleton();
+						break;
+					case ActivationType.PerRequest:
+						tinyOptions.AsPerRequestSingleton();
+						break;
+					default:
+						throw new ArgumentOutOfRangeException(nameof(activation), activation, null);
+				}
+				RegisterInternal(Registration.From<TInterface, TImplementation>(resolveKey ?? string.Empty, activation));
             }
         }
 
@@ -170,16 +170,29 @@ namespace Sphere10.Framework.Application {
                     default:
                         throw new ArgumentOutOfRangeException(nameof(options), options, null);
                 }
-                Register(Registration.From(interfaceType, componentType, resolveKey ?? string.Empty, options));
+                RegisterInternal(Registration.From(interfaceType, componentType, resolveKey ?? string.Empty, options));
             }
         }
+
+
+		public void DeregisterComponent<TImplementation>(string resolveKey = null)
+			=> DeregisterComponent(typeof(TImplementation), resolveKey);
+
+		public void DeregisterComponent(Type type, string resolveKey = null) {
+			lock (_threadLock) {
+				_tinyIoCContainer.Unregister(type, resolveKey);
+				var registration = _registrations.SingleOrDefault(r => r.ImplementationType == type);
+				if (registration != null)
+					DeregisterInternal(registration);
+			}
+		}
 
         public void RegisterProxyComponent<TInterface, TProxy>(string resolveKey = null) 
             where TInterface : class 
             where TProxy : class {
             lock (_threadLock) {
                 _tinyIoCContainer.Register((container, overloads) => container.Resolve<TProxy>(overloads) as TInterface, resolveKey ?? string.Empty);
-                Register(Registration.FromProxy<TInterface, TProxy>(resolveKey ?? string.Empty));
+                RegisterInternal(Registration.FromProxy<TInterface, TProxy>(resolveKey ?? string.Empty));
             }
         }
 
@@ -188,7 +201,7 @@ namespace Sphere10.Framework.Application {
                 if (!proxyType.IsAssignableFrom(proxyType))
                     throw new SoftwareException("Unable to register proxy component '{0}' as it is not a sub-type of '{1}'", proxyType.FullName, interfaceType.FullName);
                 _tinyIoCContainer.Register(interfaceType, (container, overloads) => container.Resolve(proxyType, overloads), resolveKey ?? string.Empty);
-                Register(Registration.FromProxy(interfaceType, proxyType, resolveKey ?? string.Empty));
+                RegisterInternal(Registration.FromProxy(interfaceType, proxyType, resolveKey ?? string.Empty));
 
             }
         }
@@ -258,11 +271,11 @@ namespace Sphere10.Framework.Application {
 
         #region Private Methods
 
-        private void RegisterAssemblyRegistration(ComponentRegistryDefinition componentRegistryDefinition, ComponentRegistryDefinition.AssemblyRegistrationDefinition assemblyRegistrationDefinition) {
+        private void RegisterInternalAssemblyRegistration(ComponentRegistryDefinition componentRegistryDefinition, ComponentRegistryDefinition.AssemblyRegistrationDefinition assemblyRegistrationDefinition) {
             TypeResolver.LoadAssembly(assemblyRegistrationDefinition.Dll, componentRegistryDefinition.PluginFolder);
         }
 
-        private void RegisterComponentRegistration( ComponentRegistryDefinition componentRegistryDefinition, ComponentRegistryDefinition.ComponentRegistrationDefinition componentRegistrationDefinition) {
+        private void RegisterInternalComponentRegistration( ComponentRegistryDefinition componentRegistryDefinition, ComponentRegistryDefinition.ComponentRegistrationDefinition componentRegistrationDefinition) {
 			if (string.IsNullOrWhiteSpace(componentRegistrationDefinition.Implementation))
 				throw new ArgumentException("No implementation field provided in component registry definition");
             var interfaceType = TypeResolver.Resolve(componentRegistrationDefinition.Interface, assemblyHint: componentRegistrationDefinition.Dll);
@@ -277,7 +290,7 @@ namespace Sphere10.Framework.Application {
             );
         }
 
-        private void RegisterProxyRegistration(ComponentRegistryDefinition componentRegistryDefinition, ComponentRegistryDefinition.ProxyInterfaceRegistrationDefinition proxyInterfaceRegistrationDefinition) {
+        private void RegisterInternalProxyRegistration(ComponentRegistryDefinition componentRegistryDefinition, ComponentRegistryDefinition.ProxyInterfaceRegistrationDefinition proxyInterfaceRegistrationDefinition) {
             var interfaceType = TypeResolver.Resolve(proxyInterfaceRegistrationDefinition.Interface);
             var implementationType = TypeResolver.Resolve(proxyInterfaceRegistrationDefinition.Proxy);
 
@@ -287,7 +300,7 @@ namespace Sphere10.Framework.Application {
             );
         }
 
-        private void RegisterMultipleComponentsRegistration(ComponentRegistryDefinition componentRegistryDefinition, ComponentRegistryDefinition.ComponentSetRegistrationDefinition componentSetRegistrationDefinition) {
+        private void RegisterInternalMultipleComponentsRegistration(ComponentRegistryDefinition componentRegistryDefinition, ComponentRegistryDefinition.ComponentSetRegistrationDefinition componentSetRegistrationDefinition) {
             if (componentSetRegistrationDefinition.RegistrationsDefinition == null)
                 return;
 
@@ -295,25 +308,25 @@ namespace Sphere10.Framework.Application {
                 TypeSwitch.Do(registration,
                     TypeSwitch.Case<ComponentRegistryDefinition.ComponentRegistrationDefinition>(componentRegistration => {
                         componentRegistration.Interface = componentSetRegistrationDefinition.Interface;
-                        RegisterMutipleComponentComponentRegistration(
+                        RegisterInternalMutipleComponentComponentRegistration(
                             componentRegistryDefinition,
                             componentRegistration
                         );
                     }),
                     TypeSwitch.Case<ComponentRegistryDefinition.ProxyInterfaceRegistrationDefinition>(proxyRegistration => {
                         proxyRegistration.Interface = componentSetRegistrationDefinition.Interface;
-                        RegisterMultipleComponentProxyRegistration(
+                        RegisterInternalMultipleComponentProxyRegistration(
                             componentRegistryDefinition,
                             proxyRegistration
                         );
                     }),
-                    TypeSwitch.Default(() => { throw new NotSupportedException(registration.GetType().FullName); })
+                    TypeSwitch.Default(() => throw new NotSupportedException(registration.GetType().FullName))
                 );
 
             }
         }
 
-        private void RegisterMutipleComponentComponentRegistration(ComponentRegistryDefinition componentRegistryDefinition, ComponentRegistryDefinition.ComponentRegistrationDefinition componentRegistrationDefinition) {
+        private void RegisterInternalMutipleComponentComponentRegistration(ComponentRegistryDefinition componentRegistryDefinition, ComponentRegistryDefinition.ComponentRegistrationDefinition componentRegistrationDefinition) {
             var interfaceType = TypeResolver.Resolve(componentRegistrationDefinition.Interface, assemblyHint: componentRegistrationDefinition.Dll);
             var implementationType = TypeResolver.Resolve(componentRegistrationDefinition.Implementation, componentRegistrationDefinition.Dll, componentRegistryDefinition.PluginFolder);
             RegisterComponent(
@@ -324,7 +337,7 @@ namespace Sphere10.Framework.Application {
             );
         }
 
-        private void RegisterMultipleComponentProxyRegistration(ComponentRegistryDefinition componentRegistryDefinition, ComponentRegistryDefinition.ProxyInterfaceRegistrationDefinition proxyInterfaceRegistrationDefinition) {
+        private void RegisterInternalMultipleComponentProxyRegistration(ComponentRegistryDefinition componentRegistryDefinition, ComponentRegistryDefinition.ProxyInterfaceRegistrationDefinition proxyInterfaceRegistrationDefinition) {
             var interfaceType = TypeResolver.Resolve(proxyInterfaceRegistrationDefinition.Interface);
             var implementationType = TypeResolver.Resolve(proxyInterfaceRegistrationDefinition.Proxy);
             RegisterProxyComponent(
@@ -334,7 +347,7 @@ namespace Sphere10.Framework.Application {
             );
         }
 
-        private void Register(Registration registration) {
+        private void RegisterInternal(Registration registration) {
             lock (_threadLock) {
                 _registrations.Add(registration);
                 _registrationsByInterfaceType.Add(registration.InterfaceType, registration);
@@ -342,6 +355,14 @@ namespace Sphere10.Framework.Application {
                 State++;
             }
         }
+
+		private void DeregisterInternal(Registration registration) {
+			lock (_threadLock) {
+				_registrations.Remove(registration);
+				_registrationsByInterfaceType.Remove(registration.InterfaceType, registration);
+				_registrationsByImplementationType.Add(registration.ImplementationType, registration);
+			}
+		}
 
         #endregion
 

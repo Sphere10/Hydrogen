@@ -1,6 +1,11 @@
 ﻿using Sphere10.Framework;
 using System;
+using System.IO;
 using System.Linq;
+using System.Net.Sockets;
+using System.Reflection;
+using Sphere10.Framework.Application;
+using Sphere10.Hydrogen.Node.UI;
 
 namespace Sphere10.Hydrogen.Host {
 
@@ -9,13 +14,12 @@ namespace Sphere10.Hydrogen.Host {
 		public static CommandLineArgs Arguments = new CommandLineArgs {
 			Header = new[] {
 				"Hydrogen Host v1.0",
-				"Copright (c) Sphere 10 Software 2021"
+				"Copyright (c) Sphere 10 Software 2021 - {CurrentYear}"
 			},
 
 			Arguments = new CommandLineArg[] {
-				new CommandLineArg("filename", "The full path to the filename", traits: CommandLineArgTraits.Optional | CommandLineArgTraits.Multiple),
-				new CommandLineArg("age",      "The age of the person", traits: CommandLineArgTraits.Mandatory, dependencies: "filename"),
-				new CommandLineArg("gender",   "The gender of the person. Allowable values are Male and Female.", dependencies:  "age, filename" )
+				new("development", "Used during development only"),
+				new("node", "Path to the node assembly which is started by the host"),
 			},
 
 			Options = CommandLineArgOptions.CaseSensitive | CommandLineArgOptions.DoubleDash | CommandLineArgOptions.PrintHelpOnH | CommandLineArgOptions.PrintHelpOnHelp
@@ -23,20 +27,46 @@ namespace Sphere10.Hydrogen.Host {
 		};
 
 
-		// --filename "c:\my folder with spaces\my file.txt" --age 28 --gender male 
-		static void Main(string[] args) {
-			if (args.Length == 1) {
-				Arguments.Print();
-				Environment.Exit(0);
+		public static void DoDevelopmentFlow() {
+			// Load up the Node in sibling folder on dev environment
+			var nodeAssemblyPath = GetNodeAssemblyPath();
+
+			var nodeAssembly = Assembly.LoadFrom(nodeAssemblyPath);
+
+			
+
+			string GetNodeAssemblyPath() {
+				var hostExecutable = Assembly.GetEntryAssembly().Location;
+
+				if (!Path.IsPathFullyQualified(hostExecutable))
+					throw new SoftwareException("Development mode can only be executed from a file-system");
+
+				
+				var srcDir = Tools.FileSystem.GetParentDirectoryPath(hostExecutable, 5); 
+				var nodeDir = Path.Combine(srcDir, "Sphere10.Hydrogen.Node", "bin", "Debug","net5.0", "Sphere10.Hydrogen.Node.dll");
+
+				return nodeDir;
 			}
 
-			if (!Arguments.TryParse(args, out var results))      // TryParse will print error
-				Environment.Exit(-1);
+		}
 
-			var allFiles = results["filename"].ToArray();  // was optional/multiple, so could be multiple values
-			var age = results["age"].Single();  // was mandatory, so Single()
-			var gender = results["gender"].SingleOrDefault();   // was optional but not multiple, so SingleOrDefault();
+		static void Main(string[] args) {
+			//if (args.Length == 1) {
+			//	Arguments.Print();
+			//	Environment.Exit(0);
+			//}
 
+			//if (!Arguments.TryParse(args, out var results))      // TryParse will print error
+			//	Environment.Exit(-1);
+			try {
+
+				DoDevelopmentFlow();
+				Sphere10Framework.Instance.StartFramework();
+			}
+			catch (Exception error) {
+				Console.WriteLine($"Hydrogen host terminated abnormally.");
+				Console.Write(error.ToDiagnosticString());
+			}
 
 		}
 	}

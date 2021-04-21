@@ -25,10 +25,13 @@ namespace Sphere10.Framework.Application {
 	    public virtual void RegisterComponents(ComponentRegistry registry) {
         }
 
-        public virtual void OnApplicationStart() {            
+		public virtual void DeregisterComponents(ComponentRegistry registry) {
+		}
+
+		public virtual void OnInitialize() {            
         }
 
-        public virtual void OnApplicationEnd() {
+        public virtual void OnFinalize() {
             
         }
 

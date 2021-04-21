@@ -60,11 +60,15 @@ namespace Tools {
 			return true;
 		}
 
-		public static string GetParentDirectory(string path) {
+		public static string GetParentDirectoryPath(string path, int parentLevel = 1) {
+			for (var i = 0; i < parentLevel; i++)
+				path = Path.GetDirectoryName(path);
+			return path;
+		}
+
+		public static string GetParentDirectoryName(string path) {
 			var splits = path.Split(Path.DirectorySeparatorChar);
-			if (splits.Length < 2)
-				return null;
-			return splits[splits.Length - 2];
+			return splits.Length < 2 ? null : splits[^2];
 		}
 
 		public static string GetRelativePath(string basePath, string absolutePath) {
@@ -211,7 +215,7 @@ namespace Tools {
             Directory.GetFiles(sourceDir).ForEach(f => CopyFile(f, Path.Combine(destDirectory, Path.GetFileName(f)), true));
 
             if (copySubDirectories) {
-                Directory.GetDirectories(sourceDir).ForEach(d => CopyDirectory(d, Path.Combine(destDirectory, GetParentDirectory(d)), true, true, false));
+                Directory.GetDirectories(sourceDir).ForEach(d => CopyDirectory(d, Path.Combine(destDirectory, GetParentDirectoryName(d)), true, true, false));
             }
         }
 

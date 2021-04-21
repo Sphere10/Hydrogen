@@ -25,7 +25,7 @@ namespace Sphere10.Framework.Tests {
 		[Test]
 		public void ReadRange() {
 			var rand = new Random();
-			string[] inputs = Enumerable.Range(0, rand.Next(1, 100)).Select(x => rand.NextString(1, 100)).ToArray();
+			string[] inputs = Enumerable.Range(0, rand.Next(5, 10)).Select(x => rand.NextString(1, 100)).ToArray();
 			using var stream = new MemoryStream();
 			var list = new StreamMappedDynamicClusteredList<string>(32, stream, new StringSerializer(Encoding.UTF8));
 
@@ -72,15 +72,15 @@ namespace Sphere10.Framework.Tests {
 		[Test]
 		public void IndexOf() {
 			var rand = new Random();
-			string[] inputs = Enumerable.Range(0, rand.Next(1, 100)).Select(x => rand.NextString(1, 100)).ToArray();
+			string[] inputs = Enumerable.Range(1, 10).Select(x => rand.NextString(1, 100)).ToArray();
 			using var stream = new MemoryStream();
 			var list = new StreamMappedDynamicClusteredList<string>(32, stream, new StringSerializer(Encoding.UTF8));
 
 			list.AddRange(inputs);
+			
+			IEnumerable<int> indexes = list.IndexOfRange(inputs[..5]);
 
-			IEnumerable<int> indexes = list.IndexOfRange(inputs[..4]);
-
-			Assert.AreEqual(new[] { 0, 1, 2, 3 }, indexes);
+			Assert.AreEqual(new [] {0, 1, 2, 3, 4}, indexes);
 		}
 
 		[Test]

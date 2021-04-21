@@ -20,6 +20,7 @@ namespace Sphere10.Framework {
 		protected StreamMappedClusteredListBase(int clusterDataSize, Stream stream, IObjectSerializer<TItem> itemSerializer, IObjectSerializer<TListing> listingSerializer,  IEqualityComparer<TItem> itemComparer = null) {
 			Guard.ArgumentNotNull(listingSerializer, nameof(listingSerializer));
 			Guard.Argument(listingSerializer.IsFixedSize, nameof(listingSerializer), "Listing objects must be fixed size");
+			Guard.ArgumentInRange(clusterDataSize, 1, int.MaxValue, nameof(clusterDataSize));
 			ItemSerializer = itemSerializer;
 			ListingSerializer = listingSerializer;
 			ItemComparer = itemComparer ?? EqualityComparer<TItem>.Default;

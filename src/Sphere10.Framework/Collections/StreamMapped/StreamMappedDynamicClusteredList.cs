@@ -10,6 +10,7 @@ namespace Sphere10.Framework {
 		private readonly EndianBinaryWriter _headerWriter;
 		private readonly BoundedStream _headerStream;
 		private readonly List<int> _freeClusters;
+		private readonly LittleEndianBitConverter _bitConverter;
 		private StreamMappedPagedList<TListing> _listingStore;
 		private PreAllocatedList<TListing> _listings;
 
@@ -18,6 +19,7 @@ namespace Sphere10.Framework {
 			_headerStream = new BoundedStream(stream, 0, HeaderSize - 1);
 			_headerWriter = new EndianBinaryWriter(EndianBitConverter.Little, _headerStream);
 			_freeClusters = new List<int>();
+			_bitConverter = EndianBitConverter.Little;
 
 			Clusters = new StreamMappedPagedList<Cluster>(
 				new ClusterSerializer(clusterDataSize),
@@ -31,7 +33,7 @@ namespace Sphere10.Framework {
 				_listings = new PreAllocatedList<TListing>(_listingStore);
 				WriteHeader();
 
-				// listing store capacity set to 1, reserving cluster 0 as item listing.
+				// listing store capacity set to 1, reserving cluster 0 as item listing. 
 				_listingStore.Add(default);
 				Loaded = true;
 			}
@@ -40,6 +42,7 @@ namespace Sphere10.Framework {
 		public override int Count => _listings?.Count ?? 0;
 
 		public override void AddRange(IEnumerable<T> items) {
+			Guard.ArgumentNotNull(items, nameof(items));
 			CheckLoaded();
 
 			var listings = new List<TListing>();
@@ -59,6 +62,7 @@ namespace Sphere10.Framework {
 
 		public override IEnumerable<int> IndexOfRange(IEnumerable<T> items) {
 			CheckLoaded();
+			Guard.ArgumentNotNull(items, nameof(items));
 
 			var itemsArray = items as T[] ?? items.ToArray();
 
@@ -90,11 +94,11 @@ namespace Sphere10.Framework {
 		}
 
 		public override void UpdateRange(int index, IEnumerable<T> items) {
-			var itemsArray = items.ToArray();
+			Guard.ArgumentNotNull(items, nameof(items));
+			var itemsArray = items as T[] ?? items.ToArray();
 
 			CheckLoaded();
 			CheckRange(index, itemsArray.Length);
-
 
 			var itemListings = new List<TListing>();
 			for (var i = 0; i < itemsArray.Length; i++) {
@@ -106,6 +110,9 @@ namespace Sphere10.Framework {
 		}
 
 		public override void InsertRange(int index, IEnumerable<T> items) {
+			Guard.ArgumentNotNull(items, nameof(items));
+			Guard.ArgumentInRange(index, 0, Math.Max(0, Count), nameof(index));
+
 			var itemsArray = items as T[] ?? items.ToArray();
 
 			if (!itemsArray.Any())
@@ -156,7 +163,7 @@ namespace Sphere10.Framework {
 
 			for (int i = 0; i < Clusters.Count; i++) {
 				Clusters.ReadItemRaw(i, 0, sizeof(int), out var bytes);
-				ClusterTraits traits = (ClusterTraits)BitConverter.ToInt32(bytes);
+				ClusterTraits traits = (ClusterTraits)_bitConverter.ToInt32(bytes);
 
 				if (traits is ClusterTraits.Free) {
 					_freeClusters.Add(i);
@@ -178,7 +185,7 @@ namespace Sphere10.Framework {
 			int nextCluster = 0;
 			if (Clusters.Any()) {
 				Clusters.ReadItemRaw(Clusters.Count - 1, 4, 4, out var numberBytes);
-				nextCluster = BitConverter.ToInt32(numberBytes) + 1;
+				nextCluster = _bitConverter.ToInt32(numberBytes) + 1;
 			}
 
 			for (int i = 0; i < newClustersRequired; i++) {
@@ -193,7 +200,7 @@ namespace Sphere10.Framework {
 			byte[] headerBytes = Tools.Array.Gen(HeaderSize, default(byte));
 
 			new ByteArrayBuilder()
-				.Append(EndianBitConverter.Little.GetBytes(_listings.Count))
+				.Append(_bitConverter.GetBytes(_listings.Count))
 				.ToArray()
 				.CopyTo(headerBytes, 0);
 
@@ -207,7 +214,7 @@ namespace Sphere10.Framework {
 		}
 
 		private int ReadHeader() {
-			var reader = new EndianBinaryReader(EndianBitConverter.Little, _headerStream);
+			var reader = new EndianBinaryReader(_bitConverter, _headerStream);
 			_headerStream.Seek(0, SeekOrigin.Begin);
 			return reader.ReadInt32();
 		}
@@ -231,6 +238,8 @@ namespace Sphere10.Framework {
 				Count = (int)Math.Ceiling((decimal)length / ClusterDataSize);
 				_fragmentClusterMap = new Dictionary<int, int>();
 
+				//Fragment provider assumes cluster 0 has been reserved for item listings. fill
+				// existing cluster map for quick listing lookup. 
 				if (Count > 0) {
 					int next = 0;
 					int fragmentIndex = 0;
@@ -376,10 +385,11 @@ namespace Sphere10.Framework {
 
 			private int ReadClusterNext(int clusterNumber) {
 				Clusters.ReadItemRaw(clusterNumber, _nextClusterOffset, sizeof(int), out byte[] next);
-				return BitConverter.ToInt32(next);
+				return EndianBitConverter.Little.ToInt32(next);
 			}
 		}
 	}
+
 
 	public class StreamMappedDynamicClusteredList<T> : StreamMappedDynamicClusteredList<T, ItemListing> {
 

@@ -34,16 +34,17 @@ namespace Sphere10.Framework {
 			var bytesToRead = Math.Max(0, Math.Min(count, Math.Min(remainingBufferBytes, remainingSourceBytes)));
 
 			var bufferAsSpan = buffer.AsSpan();
-			int bufferIndex = offset;
-			int remaining = (int)bytesToRead;
+			var bufferIndex = offset;
+			var remaining = (int)bytesToRead;
 
-			(int fragmentIndex, int fragmentPosition) = _fragmentProvider.GetFragment(Position, out var fragment);
+			// Starting with the current position's fragment, read bytes from fragment and move to the next until no further bytes remain
+			var (fragmentIndex, fragmentPosition) = _fragmentProvider.GetFragment(Position, out var fragment);
 
 			while (remaining > 0) {
-				int fromFragmentCount = Math.Min(fragment.Length - fragmentPosition, remaining);
-				Span<byte> fragmentSlice = fragment.Slice(fragmentPosition, fromFragmentCount);
+				var fromFragmentCount = Math.Min(fragment.Length - fragmentPosition, remaining);
+				var fragmentSlice = fragment.Slice(fragmentPosition, fromFragmentCount);
 
-				Span<byte> bufferSlice = bufferAsSpan.Slice(bufferIndex, fromFragmentCount);
+				var bufferSlice = bufferAsSpan.Slice(bufferIndex, fromFragmentCount);
 				fragmentSlice.CopyTo(bufferSlice);
 
 				bufferIndex += fromFragmentCount;
@@ -106,16 +107,17 @@ namespace Sphere10.Framework {
 			var addingAmount = Math.Max(0, count - updateAmount);
 			Debug.Assert(updateAmount + addingAmount == count);
 
-			int remaining = updateAmount;
+			//Update existing fragments, starting with the current position's fragment.
+			var remaining = updateAmount;
 			if (remaining > 0) {
-				(int fragmentIndex, int fragmentPosition) = _fragmentProvider.GetFragment(Position, out var fragment);
+				var (fragmentIndex, fragmentPosition) = _fragmentProvider.GetFragment(Position, out var fragment);
 				var updatedBytes = new byte[remaining];
 				Buffer.BlockCopy(buffer, offset, updatedBytes, 0, remaining);
 
-				int updateIndex = 0;
+				var updateIndex = 0;
 
 				while (remaining > 0) {
-					int sliceBytesCount = Math.Min(remaining, fragment.Length - fragmentPosition);
+					var sliceBytesCount = Math.Min(remaining, fragment.Length - fragmentPosition);
 
 					_fragmentProvider.UpdateFragment(fragmentIndex, fragmentPosition,updatedBytes[updateIndex..(updateIndex + sliceBytesCount)]);
 					updateIndex += sliceBytesCount;
@@ -131,19 +133,20 @@ namespace Sphere10.Framework {
 				Position += updateAmount;
 			}
 
+			// Request new space from the fragment provider, and write the new bytes.
 			remaining = addingAmount;
 			if (remaining > 0) {
 				var addedBytes = new byte[remaining];
 				Buffer.BlockCopy(buffer, offset + updateAmount, addedBytes, 0, remaining);
 
-				int addIndex = 0;
+				var addIndex = 0;
 
-				if (_fragmentProvider.TryRequestSpace(remaining, out int[] newFragmentIndexes)) {
+				if (_fragmentProvider.TryRequestSpace(remaining, out var newFragmentIndexes)) {
 					
-					(int currentFragmentIndex, int fragmentPosition) = _fragmentProvider.GetFragment(Position, out var fragment);
-
+					var (currentFragmentIndex, fragmentPosition) = _fragmentProvider.GetFragment(Position, out var fragment);
+					// if the current fragment isn't new and has space available, fill it first.
 					if (fragmentPosition != fragment.Length - 1 && !newFragmentIndexes.Contains(currentFragmentIndex)) {
-						int currentFragmentRemainingBytes = fragment.Length - fragmentPosition;
+						var currentFragmentRemainingBytes = fragment.Length - fragmentPosition;
 						var slice = fragment[fragmentPosition..];
 						addedBytes[addIndex..(currentFragmentRemainingBytes - 1)].CopyTo(slice);
 						addIndex += slice.Length;
@@ -152,8 +155,8 @@ namespace Sphere10.Framework {
 					
 					if (remaining > 0) {
 						foreach (var i in newFragmentIndexes) {
-							Span<byte> currentFragment = _fragmentProvider.GetFragment(i);
-							int toAddAmount = Math.Min(currentFragment.Length, remaining);
+							var currentFragment = _fragmentProvider.GetFragment(i);
+							var toAddAmount = Math.Min(currentFragment.Length, remaining);
 							addedBytes[addIndex..(addIndex + toAddAmount)].CopyTo(currentFragment);
 							_fragmentProvider.UpdateFragment(i, 0, currentFragment);
 							
@@ -169,7 +172,6 @@ namespace Sphere10.Framework {
 					throw new InvalidOperationException("Request for space from fragment provider was not successful.");
 				}
 			}
-			
 
 			Debug.Assert(Position <= Length);
 		}
@@ -191,8 +193,8 @@ namespace Sphere10.Framework {
 		}
 
 		public virtual byte[] ToArray() {
-			ByteArrayBuilder builder = new ByteArrayBuilder();
-			for (int i = 0; i < _fragmentProvider.Count; i++) {
+			var builder = new ByteArrayBuilder();
+			for (var i = 0; i < _fragmentProvider.Count; i++) {
 				builder.Append(_fragmentProvider.GetFragment(i));
 			}
 			return builder.ToArray();

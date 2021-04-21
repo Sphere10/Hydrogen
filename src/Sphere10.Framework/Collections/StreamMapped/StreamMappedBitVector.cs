@@ -38,17 +38,12 @@ namespace Sphere10.Framework {
 
 		private readonly Stream _stream;
 		private int _count;
-
-		public StreamMappedBitVector(IExtendedList<byte> bytes, int? initialBitCount = null)
-			: this(new ExtendedMemoryStream(bytes), initialBitCount) {
-		}
-
-		public StreamMappedBitVector(Stream stream, int? initialBitCount = null) {
+		
+		public StreamMappedBitVector(Stream stream) {
 			_stream = stream;
-			_count = initialBitCount ?? (int)(stream.Length / 8);
+			_count = (int)(stream.Length / 8);
 		}
-
-
+		
 		public override int Count => _count;
 
 		public override void AddRange(IEnumerable<bool> items) {
@@ -56,10 +51,10 @@ namespace Sphere10.Framework {
 			if (!itemsArray.Any())
 				return;
 
-			int startBitIndex = _count % 8;
-			int remainingBits = startBitIndex > 0 ? itemsArray.Length - (8 - startBitIndex) : itemsArray.Length;
-			int bytesCount = (int)Math.Ceiling((decimal)remainingBits / 8);
-			int byteIndex = (int)Math.Floor((decimal)_count / 8);
+			var startBitIndex = _count % 8;
+			var remainingBits = startBitIndex > 0 ? itemsArray.Length - (8 - startBitIndex) : itemsArray.Length;
+			var bytesCount = (int)Math.Ceiling((decimal)remainingBits / 8);
+			var byteIndex = (int)Math.Floor((decimal)_count / 8);
 			
 			if (startBitIndex > 0)
 				bytesCount++;
@@ -71,7 +66,7 @@ namespace Sphere10.Framework {
 				_stream.Read(buffer, 0, 1);
 			} 
 			
-			for (int i = 0; i < itemsArray.Length; i++) {
+			for (var i = 0; i < itemsArray.Length; i++) {
 				Bits.SetBit(buffer, i + startBitIndex, itemsArray[i]);
 			}
 
@@ -90,12 +85,12 @@ namespace Sphere10.Framework {
 			var results = new int[itemsArray.Length];
 			_stream.Seek(0, SeekOrigin.Begin);
 
-			for (int i = 0; i < _stream.Length; i++) {
-				byte[] current = _stream.ReadBytes(1);
-				int bitsLength = Math.Min(8, _count - i * 8);
+			for (var i = 0; i < _stream.Length; i++) {
+				var current = _stream.ReadBytes(1);
+				var bitsLength = Math.Min(8, _count - i * 8);
 
-				for (int j = 0; j < bitsLength; j++) {
-					bool value = Bits.ReadBit(current, j);
+				for (var j = 0; j < bitsLength; j++) {
+					var value = Bits.ReadBit(current, j);
 					foreach (var (t, index) in itemsArray.WithIndex()) {
 						if (value == t) {
 							results[index] = i * 8 + j;
@@ -120,13 +115,13 @@ namespace Sphere10.Framework {
 		}
 
 		public override IEnumerable<bool> ReadRange(int index, int count) {
-			int startBitIndex = index % 8;
-			int remainingBits = startBitIndex > 0 ? count - (8 - startBitIndex) : count;
-			int finalBitIndex = remainingBits % 8;
-			int nonPartialBits = remainingBits - finalBitIndex;
+			var startBitIndex = index % 8;
+			var remainingBits = startBitIndex > 0 ? count - (8 - startBitIndex) : count;
+			var finalBitIndex = remainingBits % 8;
+			var nonPartialBits = remainingBits - finalBitIndex;
 
-			int byteCount = nonPartialBits / 8;
-			int byteIndex = (int)Math.Floor((decimal)index / 8);
+			var byteCount = nonPartialBits / 8;
+			var byteIndex = (int)Math.Floor((decimal)index / 8);
 
 			if (startBitIndex > 0) 
 				byteCount++;
@@ -135,9 +130,9 @@ namespace Sphere10.Framework {
 				byteCount++;
 
 			_stream.Seek(byteIndex, SeekOrigin.Begin);
-			byte[] bytes = _stream.ReadBytes(byteCount);
+			var bytes = _stream.ReadBytes(byteCount);
 
-			for (int i = 0; i < count; i++) {
+			for (var i = 0; i < count; i++) {
 				yield return Bits.ReadBit(bytes, i + startBitIndex);
 			}
 		}
@@ -146,24 +141,26 @@ namespace Sphere10.Framework {
 			if (index + count != Count)
 				throw new NotSupportedException("This collection can only be removed from the end");
 
-			long bytesToRemove = _stream.Length - (int)Math.Ceiling((decimal)(_count - count) / 8);
+			var bytesToRemove = _stream.Length - (int)Math.Ceiling((decimal)(_count - count) / 8);
 			_stream.SetLength(_stream.Length - bytesToRemove);
 			_count -= count;
 		}
 
 		public override void UpdateRange(int index, IEnumerable<bool> items) {
+			Guard.ArgumentNotNull(items, nameof(items));
+			
 			var itemsArray = items as bool[] ?? items.ToArray();
 			var endIndex = index + itemsArray.Length;
 			if (endIndex > _count)
 				throw new ArgumentOutOfRangeException(nameof(index), "Update range is out of bounds");
 			
-			int startBitIndex = index % 8;
-			int remainingBits = startBitIndex > 0 ? itemsArray.Length - (8 - startBitIndex) : itemsArray.Length;
-			int finalBitIndex = remainingBits % 8;
-			int nonPartialBits = remainingBits - finalBitIndex;
+			var startBitIndex = index % 8;
+			var remainingBits = startBitIndex > 0 ? itemsArray.Length - (8 - startBitIndex) : itemsArray.Length;
+			var finalBitIndex = remainingBits % 8;
+			var nonPartialBits = remainingBits - finalBitIndex;
 			
-			int byteIndex = (int)Math.Floor((decimal)index / 8);
-			int bytesCount = nonPartialBits / 8;
+			var byteIndex = (int)Math.Floor((decimal)index / 8);
+			var bytesCount = nonPartialBits / 8;
 
 			if (startBitIndex > 0)
 				bytesCount++;
@@ -171,7 +168,7 @@ namespace Sphere10.Framework {
 			if (finalBitIndex > 0)
 				bytesCount++;
 
-			byte[] buffer = Tools.Array.Gen(bytesCount, (byte)0);
+			var buffer = Tools.Array.Gen(bytesCount, (byte)0);
 
 			if (startBitIndex > 0) {
 				_stream.Seek(byteIndex, SeekOrigin.Begin);
@@ -183,7 +180,7 @@ namespace Sphere10.Framework {
 				_stream.Read(buffer, buffer.Length - 1, 1);
 			}
 			
-			for (int i = 0; i < itemsArray.Length; i++) {
+			for (var i = 0; i < itemsArray.Length; i++) {
 				Bits.SetBit(buffer, i + startBitIndex, itemsArray[i]);
 			}
 

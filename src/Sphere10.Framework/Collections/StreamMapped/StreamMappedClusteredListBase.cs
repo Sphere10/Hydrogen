@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 
@@ -17,14 +18,13 @@ namespace Sphere10.Framework {
 
 		public event EventHandlerEx<object, StreamMappedItemAccessedArgs<TItem, TListing>> ItemAccess;
 
-		protected StreamMappedClusteredListBase(int clusterDataSize, Stream stream, IObjectSerializer<TItem> itemSerializer, IObjectSerializer<TListing> listingSerializer,  IEqualityComparer<TItem> itemComparer = null) {
+		protected StreamMappedClusteredListBase(int clusterDataSize, Stream stream, IObjectSerializer<TItem> itemSerializer, IObjectSerializer<TListing> listingSerializer, IEqualityComparer<TItem> itemComparer = null) {
 			Guard.ArgumentInRange(clusterDataSize, 1, int.MaxValue, nameof(clusterDataSize));
 			Guard.ArgumentNotNull(stream, nameof(stream));
 			Guard.ArgumentNotNull(itemSerializer, nameof(itemSerializer));
 			Guard.ArgumentNotNull(listingSerializer, nameof(listingSerializer));
 			Guard.Argument(listingSerializer.IsFixedSize, nameof(listingSerializer), "Listing objects must be fixed size");
-			Guard.ArgumentNotNull(itemComparer, nameof(itemComparer));
-			
+
 			ItemSerializer = itemSerializer;
 			ListingSerializer = listingSerializer;
 			ItemComparer = itemComparer ?? EqualityComparer<TItem>.Default;
@@ -189,10 +189,14 @@ namespace Sphere10.Framework {
 			private readonly int _clusterDataSize;
 
 			public ClusterSerializer(int clusterSize) : base(clusterSize + sizeof(int) + sizeof(int) + sizeof(int)) {
+				Guard.ArgumentInRange(clusterSize, 1, int.MaxValue, nameof(clusterSize));
 				_clusterDataSize = clusterSize;
 			}
 
 			public override int Serialize(Cluster cluster, EndianBinaryWriter writer) {
+				Guard.ArgumentNotNull(cluster, nameof(cluster));
+				Guard.ArgumentNotNull(writer, nameof(writer));
+				
 				Debug.Assert(cluster.Data.Length == _clusterDataSize);
 
 				writer.Write((int)cluster.Traits);
@@ -204,6 +208,8 @@ namespace Sphere10.Framework {
 			}
 
 			public override Cluster Deserialize(int size, EndianBinaryReader reader) {
+				Guard.ArgumentNotNull(reader, nameof(reader));
+				
 				var cluster = new Cluster {
 					Traits = (ClusterTraits)reader.ReadInt32(),
 					Number = reader.ReadInt32(),

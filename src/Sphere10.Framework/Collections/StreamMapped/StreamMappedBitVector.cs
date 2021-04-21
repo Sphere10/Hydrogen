@@ -40,6 +40,8 @@ namespace Sphere10.Framework {
 		private int _count;
 		
 		public StreamMappedBitVector(Stream stream) {
+			Guard.ArgumentNotNull(stream, nameof(stream));
+			
 			_stream = stream;
 			_count = (int)(stream.Length / 8);
 		}
@@ -47,6 +49,8 @@ namespace Sphere10.Framework {
 		public override int Count => _count;
 
 		public override void AddRange(IEnumerable<bool> items) {
+			Guard.ArgumentNotNull(items, nameof(items));
+			
 			var itemsArray = items as bool[] ?? items.ToArray();
 			if (!itemsArray.Any())
 				return;
@@ -77,6 +81,8 @@ namespace Sphere10.Framework {
 		}
 
 		public override IEnumerable<int> IndexOfRange(IEnumerable<bool> items) {
+			Guard.ArgumentNotNull(items, nameof(items));
+			
 			var itemsArray = items as bool[] ?? items.ToArray();
 			if (!itemsArray.Any()) {
 				return new List<int>();
@@ -103,6 +109,9 @@ namespace Sphere10.Framework {
 		}
 
 		public override void InsertRange(int index, IEnumerable<bool> items) {
+			Guard.ArgumentNotNull(items, nameof(items));
+			Guard.ArgumentInRange(index, 0, Math.Max(0, _count), nameof(index));
+			
 			var itemsArray = items as bool[] ?? items.ToArray();
 		
 			if (!itemsArray.Any())
@@ -115,6 +124,8 @@ namespace Sphere10.Framework {
 		}
 
 		public override IEnumerable<bool> ReadRange(int index, int count) {
+			CheckRange(index, count);
+
 			var startBitIndex = index % 8;
 			var remainingBits = startBitIndex > 0 ? count - (8 - startBitIndex) : count;
 			var finalBitIndex = remainingBits % 8;
@@ -148,8 +159,9 @@ namespace Sphere10.Framework {
 
 		public override void UpdateRange(int index, IEnumerable<bool> items) {
 			Guard.ArgumentNotNull(items, nameof(items));
-			
 			var itemsArray = items as bool[] ?? items.ToArray();
+			CheckRange(index, itemsArray.Length);
+			
 			var endIndex = index + itemsArray.Length;
 			if (endIndex > _count)
 				throw new ArgumentOutOfRangeException(nameof(index), "Update range is out of bounds");
@@ -192,6 +204,14 @@ namespace Sphere10.Framework {
 			_count = 0;
 			_stream.SetLength(0);
 			base.Clear();
+		}
+		
+		private void CheckRange(int index, int count) {
+			Guard.Argument(count >= 0, nameof(index), "Must be greater than or equal to 0");
+			if (index == Count && count == 0) return; // special case: at index of "next item" with no count, this is valid
+			Guard.ArgumentInRange(index, 0, Count - 1, nameof(index));
+			if (count > 0)
+				Guard.ArgumentInRange(index + count - 1, 0, Count - 1, nameof(count));
 		}
 	}
 }

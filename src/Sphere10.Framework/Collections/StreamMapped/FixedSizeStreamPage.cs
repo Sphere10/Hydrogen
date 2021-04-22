@@ -16,7 +16,7 @@ namespace Sphere10.Framework {
 			_item0Offset = Parent.IncludeListHeader ? StreamMappedPagedList<TItem>.ListHeaderSize : 0;
 			base.State = PageState.Loaded;
 			base.StartIndex = 0;
-			base.EndIndex = (int)(Stream.Length - _item0Offset);
+			base.EndIndex = (int)(Stream.Length - _item0Offset) / ItemSize - 1;
 			StartPosition = _item0Offset;
 		}
 

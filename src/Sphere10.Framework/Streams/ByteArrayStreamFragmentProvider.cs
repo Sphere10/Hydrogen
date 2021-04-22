@@ -18,9 +18,9 @@ namespace Sphere10.Framework {
 			_fragments = new List<byte[]>();
 		}
 
-		public int Count => _fragments.Count;
+		public int FragmentCount => _fragments.Count;
 
-		public long Length => _fragments.Sum(x => x.Length);
+		public long ByteCount => _fragments.Sum(x => x.Length);
 
 		public Span<byte> GetFragment(int index) {
 			return _fragments[index];
@@ -30,7 +30,7 @@ namespace Sphere10.Framework {
 			fragment = null;
 			long remaining = position;
 
-			if (position > Length - 1)
+			if (position > ByteCount - 1)
 				remaining = 0;
 
 			for (int i = 0; i < _fragments.Count; i++) {
@@ -51,7 +51,7 @@ namespace Sphere10.Framework {
 			int fragmentsRequired = (int)Math.Floor((decimal)bytes / _newFragmentSize);
 			int partial = bytes % _newFragmentSize;
 
-			var newIndexes = Enumerable.Range(Count, fragmentsRequired).ToList();
+			var newIndexes = Enumerable.Range(FragmentCount, fragmentsRequired).ToList();
 
 			for (int i = 0; i < fragmentsRequired; i++) {
 				_fragments.Add(new byte[_newFragmentSize]);
@@ -59,7 +59,7 @@ namespace Sphere10.Framework {
 
 			if (partial > 0) {
 				_fragments.Add(new byte[partial]);
-				newIndexes.Add(Count - 1);
+				newIndexes.Add(FragmentCount - 1);
 			}
 
 			newFragmentIndexes = newIndexes.ToArray();

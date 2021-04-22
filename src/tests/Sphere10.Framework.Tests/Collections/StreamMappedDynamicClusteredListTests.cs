@@ -163,6 +163,10 @@ namespace Sphere10.Framework.Tests {
 					list.Load();
 					Assert.AreEqual(input.Length, list.Count);
 					Assert.AreEqual(input, list);
+					
+					var secondInput =  Enumerable.Range(0, rand.Next(1, 100)).Select(x => rand.NextString(1, 100)).ToArray();
+					list.AddRange(secondInput);
+					Assert.AreEqual(input.Concat(secondInput), list);
 				}
 			}
 		}

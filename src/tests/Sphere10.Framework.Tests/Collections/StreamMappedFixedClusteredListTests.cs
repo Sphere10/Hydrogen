@@ -38,7 +38,7 @@ namespace Sphere10.Framework.Tests {
 		[Test]
 		public void LoadFromExistingStream() {
 			var fileName = Tools.FileSystem.GetTempFileName(true);
-			
+
 			using (Tools.Scope.ExecuteOnDispose(() => File.Delete(fileName))) {
 				using (var fileStream = new FileStream(fileName, FileMode.Open)) {
 					var list = new StreamMappedFixedClusteredList<int>(32, 100, 4000, fileStream, new IntSerializer());
@@ -47,11 +47,15 @@ namespace Sphere10.Framework.Tests {
 
 				using (var fileStream = new FileStream(fileName, FileMode.Open)) {
 					var list = new StreamMappedFixedClusteredList<int>(32, 100, 4000, fileStream, new IntSerializer());
-					
+
 					list.Load();
-					
+
 					Assert.AreEqual(1, list.Count);
 					Assert.AreEqual(999, list[0]);
+
+					list.Add(1000);
+					Assert.AreEqual(2, list.Count);
+					Assert.AreEqual(1000, list[1]);
 				}
 			}
 		}

@@ -182,7 +182,7 @@ namespace Sphere10.Framework {
 
 		public override bool CanWrite => true;
 
-		public override long Length => _fragmentProvider.Length;
+		public override long Length => _fragmentProvider.ByteCount;
 
 		public override long Position {
 			get => _position;
@@ -194,7 +194,7 @@ namespace Sphere10.Framework {
 
 		public virtual byte[] ToArray() {
 			var builder = new ByteArrayBuilder();
-			for (var i = 0; i < _fragmentProvider.Count; i++) {
+			for (var i = 0; i < _fragmentProvider.FragmentCount; i++) {
 				builder.Append(_fragmentProvider.GetFragment(i));
 			}
 			return builder.ToArray();

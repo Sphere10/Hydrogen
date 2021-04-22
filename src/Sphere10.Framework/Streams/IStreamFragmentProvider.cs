@@ -5,14 +5,14 @@ namespace Sphere10.Framework {
 	public interface IStreamFragmentProvider {
 		
 		/// <summary>
-		/// Length of fragment bytes
+		/// Number of bytes in all fragments.
 		/// </summary>
-		long Length { get; }
+		long ByteCount { get; }
 		
 		/// <summary>
 		/// Fragment count
 		/// </summary>
-		int Count { get; }
+		int FragmentCount { get; }
 
 		/// <summary>
 		/// Retrieve fragment at index

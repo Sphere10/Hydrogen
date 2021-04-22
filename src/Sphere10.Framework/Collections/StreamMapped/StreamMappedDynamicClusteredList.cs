@@ -230,16 +230,15 @@ namespace Sphere10.Framework {
 			public FragmentProvider(StreamMappedDynamicClusteredList<T, TListing> parent) : this(0, parent) {
 			}
 
-			public FragmentProvider(long length, StreamMappedDynamicClusteredList<T, TListing> parent) {
+			public FragmentProvider(long byteCount, StreamMappedDynamicClusteredList<T, TListing> parent) {
 				_parent = parent;
 				_nextClusterOffset = sizeof(int) + sizeof(int) + _parent.ClusterDataSize;
-				Length = length;
-				Count = (int)Math.Ceiling((decimal)length / ClusterDataSize);
+				ByteCount = byteCount;
 				_fragmentClusterMap = new Dictionary<int, int>();
 
 				//Fragment provider assumes cluster 0 has been reserved for item listings. fill
 				// existing cluster map for quick listing lookup. 
-				if (Count > 0) {
+				if (ByteCount > 0) {
 					int next = 0;
 					int fragmentIndex = 0;
 
@@ -255,20 +254,20 @@ namespace Sphere10.Framework {
 
 			private int ClusterDataSize => _parent.ClusterDataSize;
 
-			public long Length { get; private set; }
+			public long ByteCount { get; private set; }
 
-			public int Count { get; private set; }
+			public int FragmentCount => _fragmentClusterMap.Count;
 
 			public Span<byte> GetFragment(int index) {
-				Guard.ArgumentInRange(index, 0, Count - 1, nameof(index));
+				Guard.ArgumentInRange(index, 0, FragmentCount - 1, nameof(index));
 
 				long fragmentLength;
-				if (Length > ClusterDataSize) {
-					fragmentLength = index * ClusterDataSize <= Length
+				if (ByteCount > ClusterDataSize) {
+					fragmentLength = index * ClusterDataSize <= ByteCount
 						? ClusterDataSize
-						: index * ClusterDataSize - Length;
+						: index * ClusterDataSize - ByteCount;
 				} else
-					fragmentLength = Length;
+					fragmentLength = ByteCount;
 
 				int clusterNumber = _fragmentClusterMap[index];
 
@@ -280,9 +279,9 @@ namespace Sphere10.Framework {
 				int fragmentIndex = (int)Math.Floor((decimal)position / ClusterDataSize);
 				int lastCluster = _fragmentClusterMap[fragmentIndex];
 
-				var fragmentLength = Length > ClusterDataSize
-					? Math.Min(Length - fragmentIndex * ClusterDataSize, ClusterDataSize)
-					: Length;
+				var fragmentLength = ByteCount > ClusterDataSize
+					? Math.Min(ByteCount - fragmentIndex * ClusterDataSize, ClusterDataSize)
+					: ByteCount;
 
 				fragment = Clusters[lastCluster].Data[..(int)fragmentLength];
 
@@ -293,22 +292,22 @@ namespace Sphere10.Framework {
 				long remainingAvailableSpace;
 
 				if (Clusters.Any()) {
-					if (Length > ClusterDataSize)
-						remainingAvailableSpace = Count * ClusterDataSize - Length;
+					if (ByteCount > ClusterDataSize)
+						remainingAvailableSpace = FragmentCount * ClusterDataSize - ByteCount;
 					else
-						remainingAvailableSpace = ClusterDataSize - Length;
+						remainingAvailableSpace = ClusterDataSize - ByteCount;
 				} else
 					remainingAvailableSpace = 0;
 
 				if (remainingAvailableSpace >= bytes) {
-					Length += bytes;
+					ByteCount += bytes;
 					newFragmentIndexes = new int[0];
 					return true;
 				}
 
 				var numberRequired = (int)Math.Ceiling(((decimal)bytes - remainingAvailableSpace) / ClusterDataSize);
 				int[] clusterNumbers = _parent.GetFreeClusterNumbers(numberRequired).ToArray();
-				newFragmentIndexes = Enumerable.Range(Count, numberRequired).ToArray();
+				newFragmentIndexes = Enumerable.Range(FragmentCount, numberRequired).ToArray();
 				int lastCluster = _fragmentClusterMap.Any() ? _fragmentClusterMap.Last().Value : -1;
 
 				for (var i = 0; i < clusterNumbers.Length; i++) {
@@ -325,8 +324,7 @@ namespace Sphere10.Framework {
 						Clusters.Add(cluster);
 					else
 						Clusters[cluster.Number] = cluster;
-
-					Count++;
+					
 					_fragmentClusterMap.Add(newFragmentIndexes[i], clusterNumbers[i]);
 				}
 
@@ -336,14 +334,14 @@ namespace Sphere10.Framework {
 					Clusters.Update(lastCluster, last);
 				}
 
-				Length += bytes;
+				ByteCount += bytes;
 
 				return true;
 			}
 
 			public int ReleaseSpace(int bytes, out int[] releasedFragmentIndexes) {
 				int numberOfClustersToBeReleased = (int)Math.Floor((decimal)bytes / ClusterDataSize);
-				int fragmentIndex = Count - numberOfClustersToBeReleased - 1;
+				int fragmentIndex = FragmentCount - numberOfClustersToBeReleased - 1;
 
 				if (numberOfClustersToBeReleased > 0) {
 					int newTailCluster = _fragmentClusterMap[fragmentIndex];
@@ -357,8 +355,6 @@ namespace Sphere10.Framework {
 						_parent.MarkClusterFree(nextCluster.Number);
 						next = nextCluster.Next;
 					}
-
-					Count -= numberOfClustersToBeReleased;
 				}
 
 				releasedFragmentIndexes = Enumerable.Range(fragmentIndex, numberOfClustersToBeReleased).ToArray();
@@ -367,13 +363,13 @@ namespace Sphere10.Framework {
 					_fragmentClusterMap.Remove(releasedFragmentIndex);
 				}
 
-				Length -= bytes;
+				ByteCount -= bytes;
 
 				return bytes;
 			}
 
 			public void UpdateFragment(int fragmentIndex, int fragmentPosition, Span<byte> updateSpan) {
-				Guard.ArgumentInRange(fragmentIndex, 0, Count - 1, nameof(fragmentIndex));
+				Guard.ArgumentInRange(fragmentIndex, 0, FragmentCount - 1, nameof(fragmentIndex));
 
 				int clusterNumber = _fragmentClusterMap[fragmentIndex];
 

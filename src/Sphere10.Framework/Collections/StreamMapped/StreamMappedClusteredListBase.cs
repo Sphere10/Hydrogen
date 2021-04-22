@@ -33,7 +33,9 @@ namespace Sphere10.Framework {
 		}
 
 		public virtual bool RequiresLoad => InnerStream.Length > 0 && !Loaded;
-
+		
+		// TODO: Herman requested further investigation.
+		// error: "List is not loaded"
 		public bool Loaded { get; protected set; }
 
 		protected abstract IEnumerable<int> GetFreeClusterNumbers(int numberRequired);

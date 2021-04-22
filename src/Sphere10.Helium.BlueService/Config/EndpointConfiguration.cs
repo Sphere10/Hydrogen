@@ -18,13 +18,13 @@ namespace Sphere10.Helium.BlueService.Config {
 				AllocatedMemory = 12,
 				AuditLogQueueName = "AuditLogQueue",
 				ErrorQueueName = "ErrorQueue",
-				FilePath = "DonNotKnowYet",
+				LocalQueueFilePath = "DonNotKnowYet",
 				InputQueueReadRatePerMinute = 12,
 				MaxItems = 12,
-				MaxSizeBytes = 12,
-				TempDirectoryPath = "C:\\Users\\jake\\Desktop\\temp\\temp",
-				TransactionalPageSize = 12,
-				ID = Guid.NewGuid()
+				MaxStorageSizeBytes = 12,
+				TempQueueFilePath = "C:\\Users\\jake\\Desktop\\temp\\temp",
+				TransactionalPageSizeBytes = 12,
+				FileId = Guid.NewGuid()
 			};
 
 			busConfiguration.RouteQueueReadRatePerMinute = 12;

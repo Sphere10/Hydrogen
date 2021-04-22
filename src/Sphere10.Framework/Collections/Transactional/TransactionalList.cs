@@ -105,6 +105,10 @@ namespace Sphere10.Framework {
 			AsBuffer = buffer;
 		}
 
+		public bool RequiresLoad => AsBuffer.RequiresLoad;
+
+		public void Load() => AsBuffer.Load();
+
 		public void Commit() => AsBuffer.Commit();
 
 		public void Rollback() => AsBuffer.Rollback();
@@ -126,6 +130,12 @@ namespace Sphere10.Framework {
 			result = new TransactionalFileMappedBuffer(filename, uncommittedPageFileDir, fileID, transactionalPageSizeBytes, inMemPages, readOnly) {
 				FlushOnDispose = false
 			};
+
+			//TODO: Herman said he will refactor
+			if (result.RequiresLoad) {
+				result.Load();
+			}
+
 			return result;
 		}
 

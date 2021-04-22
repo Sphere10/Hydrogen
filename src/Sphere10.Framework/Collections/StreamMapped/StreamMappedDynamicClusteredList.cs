@@ -25,18 +25,6 @@ namespace Sphere10.Framework {
 				new ClusterSerializer(clusterDataSize),
 				new NonClosingStream(new BoundedStream(stream, _headerStream.MaxAbsolutePosition + 1, long.MaxValue) { UseRelativeOffset = true })
 			);
-
-			if (!RequiresLoad) {
-				_listingStore = new StreamMappedPagedList<TListing>(ListingSerializer, new FragmentedStream(new FragmentProvider(this))) {
-					IncludeListHeader = false
-				};
-				_listings = new PreAllocatedList<TListing>(_listingStore);
-				WriteHeader();
-
-				// listing store capacity set to 1, reserving cluster 0 as item listing. 
-				_listingStore.Add(default);
-				Loaded = true;
-			}
 		}
 
 		public override int Count => _listings?.Count ?? 0;
@@ -149,6 +137,7 @@ namespace Sphere10.Framework {
 		}
 
 		public override void Load() {
+			base.Load();
 			int count = ReadHeader();
 			int listingsBytesLength = count * ListingSerializer.FixedSize;
 
@@ -170,8 +159,6 @@ namespace Sphere10.Framework {
 					_freeClusters.Add(i);
 				}
 			}
-
-			Loaded = true;
 		}
 
 		protected override void MarkClusterFree(int clusterNumber) => _freeClusters.Add(clusterNumber);
@@ -197,6 +184,18 @@ namespace Sphere10.Framework {
 			return clusterNumbers;
 		}
 
+		protected override void Initialize() {
+			base.Initialize();
+			_listingStore = new StreamMappedPagedList<TListing>(ListingSerializer, new FragmentedStream(new FragmentProvider(this))) {
+				IncludeListHeader = false
+			};
+			_listings = new PreAllocatedList<TListing>(_listingStore);
+			WriteHeader();
+
+			// listing store capacity set to 1, reserving cluster 0 as item listing. 
+			_listingStore.Add(default);
+		}
+
 		private void WriteHeader() {
 			byte[] headerBytes = Tools.Array.Gen(HeaderSize, default(byte));
 
@@ -219,7 +218,6 @@ namespace Sphere10.Framework {
 			_headerStream.Seek(0, SeekOrigin.Begin);
 			return reader.ReadInt32();
 		}
-
 
 		private class FragmentProvider : IStreamFragmentProvider {
 

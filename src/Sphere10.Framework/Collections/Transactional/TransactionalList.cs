@@ -105,9 +105,9 @@ namespace Sphere10.Framework {
 			AsBuffer = buffer;
 		}
 
-		public bool RequiresLoad => AsBuffer.RequiresLoad;
+		public bool RequiresLoad => ((ILoadable)InternalExtendedList).RequiresLoad;
 
-		public void Load() => AsBuffer.Load();
+		public void Load() => ((ILoadable)InternalExtendedList).Load();
 
 		public void Commit() => AsBuffer.Commit();
 
@@ -130,12 +130,6 @@ namespace Sphere10.Framework {
 			result = new TransactionalFileMappedBuffer(filename, uncommittedPageFileDir, fileID, transactionalPageSizeBytes, inMemPages, readOnly) {
 				FlushOnDispose = false
 			};
-
-			//TODO: Herman said he will refactor
-			if (result.RequiresLoad) {
-				result.Load();
-			}
-
 			return result;
 		}
 

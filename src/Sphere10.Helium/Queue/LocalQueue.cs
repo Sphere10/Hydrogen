@@ -18,8 +18,8 @@ namespace Sphere10.Helium.Queue {
 		public LocalQueue(QueueConfigDto queueConfigDto)
 			: base(
 				new BinaryFormattedSerializer<IMessage>(),
-				queueConfigDto.LocalQueueFilePath,
-				queueConfigDto.TempQueueFilePath,
+				queueConfigDto.Path,
+				queueConfigDto.TempDirPath,
 				queueConfigDto.FileId,
 				queueConfigDto.TransactionalPageSizeBytes,
 				queueConfigDto.MaxStorageSizeBytes,

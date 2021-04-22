@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using Sphere10.Helium.Bus;
 using Sphere10.Helium.Endpoint;
 using Sphere10.Helium.Message;
@@ -24,9 +25,13 @@ namespace Sphere10.Helium.Usage {
 				Aa4 = "Hello please work! 4"
 			};
 
+			var queueTempPath = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "a");
+			if (!Directory.Exists(queueTempPath))
+				Directory.CreateDirectory(queueTempPath);
+
 			var queueConfig = new QueueConfigDto {
-				LocalQueueFilePath = $"C:\\Users\\jake\\AppData\\Local\\Temp\\{tempQueueName}",
-				TempQueueFilePath = $"C:\\Users\\jake\\AppData\\Local\\Temp\\a",
+				Path = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), tempQueueName),
+				TempDirPath = queueTempPath,
 				FileId = sameGuid,
 				TransactionalPageSizeBytes = 1 << 17, /*DefaultTransactionalPageSize = 1 << 17; => 132071 ~ 128 KB*/
 				MaxStorageSizeBytes = 1 << 21, /*2097152 ~ 2MB*/

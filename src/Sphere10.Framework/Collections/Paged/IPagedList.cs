@@ -8,7 +8,7 @@ using System.Threading;
 
 namespace Sphere10.Framework {
 
-    public interface IPagedList<TItem> : IExtendedList<TItem> {
+    public interface IPagedList<TItem> : IExtendedList<TItem>, ILoadable {
 
 		event EventHandlerEx<object> Accessing;
 		event EventHandlerEx<object> Accessed;
@@ -29,8 +29,5 @@ namespace Sphere10.Framework {
 
 		internal IReadOnlyList<IPage<TItem>> Pages { get; }
 
-		bool RequiresLoad { get; }
-
-		void Load();
 	}
 }

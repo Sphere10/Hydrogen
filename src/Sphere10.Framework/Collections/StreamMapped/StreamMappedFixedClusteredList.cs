@@ -19,7 +19,7 @@ namespace Sphere10.Framework {
 		private IExtendedList<bool> _clusterStatus;
 		private IExtendedList<TListing> _listings;
 
-		public StreamMappedFixedClusteredList(
+		protected StreamMappedFixedClusteredList(
 			int clusterDataSize,
 			int maxItems,
 			int maxStorageBytes,
@@ -37,9 +37,6 @@ namespace Sphere10.Framework {
 			Capacity = maxItems;
 			_maxStorageBytes = maxStorageBytes;
 
-			if (!RequiresLoad) {
-				Initialize();
-			}
 		}
 
 		public override int Count => _listings?.Count ?? 0;
@@ -142,6 +139,7 @@ namespace Sphere10.Framework {
 		}
 
 		public override void Load() {
+			base.Load();
 			var clusterSerializer = new ClusterSerializer(ClusterDataSize);
 
 			int listingTotalSize = ListingSerializer.FixedSize * Capacity;
@@ -175,7 +173,6 @@ namespace Sphere10.Framework {
 			};
 			
 			Clusters.Load();
-			Loaded = true;
 		}
 		
 		protected override IEnumerable<int> GetFreeClusterNumbers(int numberRequired) {
@@ -199,7 +196,8 @@ namespace Sphere10.Framework {
 		
 		protected override void MarkClusterFree(int clusterNumber) => _clusterStatus[clusterNumber] = false;
 
-		private void Initialize() {
+		protected override void Initialize() {
+			base.Initialize();
 			var clusterSerializer = new ClusterSerializer(ClusterDataSize);
 
 			int listingTotalSize = ListingSerializer.FixedSize * Capacity;
@@ -235,8 +233,6 @@ namespace Sphere10.Framework {
 			Clusters = new StreamMappedPagedList<Cluster>(StreamMappedPagedListType.FixedSize, clusterSerializer, clusterStream, pageSize) {
 				IncludeListHeader = false
 			};
-			
-			Loaded = true;
 		}
 
 		private void WriteHeader() {
@@ -267,7 +263,7 @@ namespace Sphere10.Framework {
 	/// <summary>
 	/// A list implementation which is mapped onto a stream via clusters. Items can added/removed anywhere, and they are stored
 	/// in a non-contiguous manner via clusters of data (similar in principle to a file system format). The limitation here is that the
-	/// the list is inherantly bounded from construction and cannot grow past the pre-determined maximum number of items. This uses
+	/// the list is inherently bounded from construction and cannot grow past the pre-determined maximum number of items. This uses
 	/// <see cref="StreamMappedPagedList{TItem}"/> under the hood.
 	/// </summary>
 	public class StreamMappedFixedClusteredList<T> : StreamMappedFixedClusteredList<T, ItemListing> {
@@ -281,7 +277,7 @@ namespace Sphere10.Framework {
 			: base(clusterDataSize, maxItems, maxStorageBytes, stream, itemSerializer, new ItemListingSerializer(), itemComparer) {
 		}
 		protected override ItemListing NewListingInstance(int itemSizeBytes, int clusterStartIndex) {
-			return new ItemListing {
+			return new() {
 				Size = itemSizeBytes,
 				ClusterStartIndex = clusterStartIndex
 			};

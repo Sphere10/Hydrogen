@@ -23,10 +23,10 @@ namespace Sphere10.Framework {
 	/// <summary>
 	/// A memory stream that writes to an IExtendedList of bytes.
 	/// </summary>
-	public class ExtendedMemoryStream : Stream {
+	public class ExtendedMemoryStream : Stream, ILoadable {
 
 		private long _position;
-		private bool _disposeSource;
+		private readonly bool _disposeSource;
 		private readonly IExtendedList<byte> _source;
 
 		public ExtendedMemoryStream() 
@@ -37,6 +37,13 @@ namespace Sphere10.Framework {
 			_source = source;
 			_position = 0;
 			_disposeSource = disposeSource;
+		}
+
+		public bool RequiresLoad => _source is ILoadable { RequiresLoad: true };
+
+		public void Load() {
+			if (_source is ILoadable { RequiresLoad: true } loadable)
+				loadable.Load();
 		}
 
 		public override bool CanRead => true;
@@ -50,7 +57,7 @@ namespace Sphere10.Framework {
 				memPagedList.Flush();
 		}
 
-		public override long Length => _source.Count;
+		public override long Length => RequiresLoad ? -1 : _source.Count;
 
 		public override long Position {
 			get => _position;

@@ -3,9 +3,8 @@
 namespace Sphere10.Helium.Queue {
 	public record QueueConfigDto {
 		public Guid FileId { get; init; }
-		public string FileName { get; init; }
-		public string LocalQueueFilePath { get; init; }
-		public string TempQueueFilePath { get; init; }
+		public string Path { get; init; }
+		public string TempDirPath { get; init; }
 		public int MaxItems { get; init; }
 		public int MaxStorageSizeBytes { get; init; }
 		public int AllocatedMemory { get; init; }

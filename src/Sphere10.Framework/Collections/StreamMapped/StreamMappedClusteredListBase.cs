@@ -7,7 +7,7 @@ using System.Linq;
 
 namespace Sphere10.Framework {
 
-	public abstract class StreamMappedClusteredListBase<TItem, TListing> : RangedListBase<TItem> where TListing : IItemListing {
+	public abstract class StreamMappedClusteredListBase<TItem, TListing> : RangedListBase<TItem>, ILoadable where TListing : IItemListing {
 
 		protected readonly IObjectSerializer<TListing> ListingSerializer;
 		protected readonly IObjectSerializer<TItem> ItemSerializer;
@@ -30,19 +30,24 @@ namespace Sphere10.Framework {
 			ItemComparer = itemComparer ?? EqualityComparer<TItem>.Default;
 			InnerStream = stream;
 			ClusterDataSize = clusterDataSize;
+			RequiresLoad = stream.Length != 0;  // stream length may be -1 if it's an ExtendedStream of an unloaded ILoadableList
 		}
 
-		public virtual bool RequiresLoad => InnerStream.Length > 0 && !Loaded;
-		
-		// TODO: Herman requested further investigation.
-		// error: "List is not loaded"
-		public bool Loaded { get; protected set; }
-
+		public bool RequiresLoad { get; protected set; }
+	
 		protected abstract IEnumerable<int> GetFreeClusterNumbers(int numberRequired);
 
 		protected bool SuppressNotifications;
 
-		public abstract void Load();
+		public virtual void Load() {
+			if (InnerStream is ILoadable { RequiresLoad: true } loadable)
+				loadable.Load();
+			RequiresLoad = false;
+		}
+
+		protected virtual void Initialize() {
+			RequiresLoad = false;
+		}
 
 		protected abstract TListing NewListingInstance(int itemSizeBytes, int clusterStartIndex);
 
@@ -163,10 +168,14 @@ namespace Sphere10.Framework {
 		}
 
 		protected void CheckLoaded() {
+			if (InnerStream.Length == 0)
+				Initialize(); // only initialize when stream is empty
+
 			if (RequiresLoad) {
 				throw new InvalidOperationException("List requires loading as stream contains existing data.");
 			}
 		}
+
 
 		protected virtual void OnItemAccess(ListOperationType operationType, int listingIndex, TListing listing, TItem item, byte[] serializedItem) {
 		}

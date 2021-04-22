@@ -476,14 +476,6 @@ namespace Sphere10.Framework {
 			PageDeleted?.Invoke(this, page);
 		}
 
-		IDisposable IPagedList<TItem>.EnterOpenPageScope(IPage<TItem> page) {
-			throw new NotImplementedException();
-		}
-
-		void IPagedList<TItem>.Load() {
-			throw new NotImplementedException();
-		}
-
 		#endregion
 
 	}

@@ -10,10 +10,21 @@ namespace Sphere10.Framework.Tests {
 	public class StreamMappedDynamicClusteredListTests {
 
 		[Test]
-		public void RequiresLoad() {
+		public void RequiresLoad_1() {
 			using var stream = new MemoryStream();
 			var list = new StreamMappedDynamicClusteredList<string>(32, stream, new StringSerializer(Encoding.UTF8));
 			Assert.IsFalse(list.RequiresLoad);
+
+			var secondList = new StreamMappedDynamicClusteredList<string>(32, stream, new StringSerializer(Encoding.UTF8));
+			Assert.IsFalse(secondList.RequiresLoad);  // since nothing was written, should still be empty
+		}
+
+		[Test]
+		public void RequiresLoad_2() {
+			using var stream = new MemoryStream();
+			var list = new StreamMappedDynamicClusteredList<string>(32, stream, new StringSerializer(Encoding.UTF8));
+			Assert.IsFalse(list.RequiresLoad);
+			list.Add("data");
 
 			var secondList = new StreamMappedDynamicClusteredList<string>(32, stream, new StringSerializer(Encoding.UTF8));
 			Assert.IsTrue(secondList.RequiresLoad);
@@ -21,6 +32,7 @@ namespace Sphere10.Framework.Tests {
 			secondList.Load();
 			Assert.IsFalse(secondList.RequiresLoad);
 		}
+
 
 		[Test]
 		public void ReadRange() {

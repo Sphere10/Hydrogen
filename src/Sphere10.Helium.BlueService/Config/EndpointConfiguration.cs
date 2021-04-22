@@ -18,7 +18,7 @@ namespace Sphere10.Helium.BlueService.Config {
 				AllocatedMemory = 12,
 				AuditLogQueueName = "AuditLogQueue",
 				ErrorQueueName = "ErrorQueue",
-				LocalQueueFilePath = "DonNotKnowYet",
+				FilePath = "DonNotKnowYet",
 				InputQueueReadRatePerMinute = 12,
 				MaxItems = 12,
 				MaxStorageSizeBytes = 12,

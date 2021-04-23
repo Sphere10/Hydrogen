@@ -147,7 +147,7 @@ namespace Sphere10.Framework {
 			if (availableClusterStorageBytes < bytesPerCluster) 
 				throw new InvalidOperationException("Max storage bytes is insufficient for list.");
 			
-			int storageClusterCount = availableClusterStorageBytes / (clusterSerializer.FixedSize + sizeof(bool));
+			int storageClusterCount = (int)Math.Floor(availableClusterStorageBytes / (clusterSerializer.FixedSize + 0.125));
 			int statusTotalSize = (int)Math.Ceiling((decimal)storageClusterCount / 8);
 			
 			var listingsStream = new BoundedStream(InnerStream, HeaderSize, HeaderSize + listingTotalSize - 1) { UseRelativeOffset = true };
@@ -160,8 +160,7 @@ namespace Sphere10.Framework {
 			_listings = new PreAllocatedList<TListing>(preAllocatedListingStore);
 			_listings.AddRange(preAllocatedListingStore.Take(itemCount));
 			
-			var status = new StreamMappedPagedList<bool>(new BoolSerializer(), statusStream) { IncludeListHeader = false };
-			status.Load();
+			var status = new StreamMappedBitVector(statusStream);
 			_clusterStatus = new PreAllocatedList<bool>(status);
 			_clusterStatus.AddRange(status);
 			
@@ -206,22 +205,21 @@ namespace Sphere10.Framework {
 			if (availableClusterStorageBytes < bytesPerCluster)
 				throw new InvalidOperationException("Max storage bytes is insufficient for list.");
 
-			int storageClusterCount = availableClusterStorageBytes / (clusterSerializer.FixedSize + sizeof(bool));
+			//total available bytes divided by the size of data required per cluster - the cluster size plus one bit per cluster.
+			int storageClusterCount = (int)Math.Floor(availableClusterStorageBytes / (clusterSerializer.FixedSize + 0.125));
 			int statusTotalSize = (int)Math.Ceiling((decimal)storageClusterCount / 8); 
 
 			var listingsStream = new BoundedStream(InnerStream, HeaderSize, HeaderSize + listingTotalSize - 1) { UseRelativeOffset = true };
 			var statusStream = new BoundedStream(InnerStream, listingsStream.MaxAbsolutePosition + 1, listingsStream.MaxAbsolutePosition + statusTotalSize) { UseRelativeOffset = true };
 			var clusterStream = new BoundedStream(InnerStream, statusStream.MaxAbsolutePosition + 1, long.MaxValue) { UseRelativeOffset = true };
 			
-			WriteHeader();
 			if (InnerStream.Length == 0)
 				WriteHeader();
 			
 			var preAllocatedListingStore = new StreamMappedPagedList<TListing>(ListingSerializer, listingsStream) { IncludeListHeader = false };
 			preAllocatedListingStore.AddRange(Tools.Array.Gen(Capacity, default(TListing)));
 			_listings = new PreAllocatedList<TListing>(preAllocatedListingStore);
-
-			//var status = new StreamMappedPagedList<bool>(new BoolSerializer(), statusStream) { IncludeListHeader = false };
+			
 			var status = new StreamMappedBitVector(statusStream);
 			status.AddRange(Tools.Array.Gen(storageClusterCount, false));
 			_clusterStatus = new PreAllocatedList<bool>(status);

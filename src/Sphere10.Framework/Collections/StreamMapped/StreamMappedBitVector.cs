@@ -43,7 +43,7 @@ namespace Sphere10.Framework {
 			Guard.ArgumentNotNull(stream, nameof(stream));
 			
 			_stream = stream;
-			_count = (int)(stream.Length / 8);
+			_count = (int)(stream.Length * 8);
 		}
 		
 		public override int Count => _count;

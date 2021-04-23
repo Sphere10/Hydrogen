@@ -35,12 +35,12 @@ namespace Sphere10.Framework {
 
 			var listings = new List<TListing>();
 
-			foreach (T item in items) {
+			foreach (var item in items) {
 				listings.Add(AddItemToClusters(Count, item));
 			}
 
 			if (_listings.Capacity < _listings.Count + listings.Count) {
-				int required = _listings.Capacity - _listings.Count + listings.Count;
+				var required = _listings.Capacity - _listings.Count + listings.Count;
 				_listingStore.AddRange(Tools.Array.Gen(required, default(TListing)));
 			}
 
@@ -76,7 +76,7 @@ namespace Sphere10.Framework {
 
 			for (var i = 0; i < count; i++) {
 				var listing = _listings[index + i];
-				T item = ReadItemFromClusters(index + i, listing);
+				var item = ReadItemFromClusters(index + i, listing);
 				yield return item;
 			}
 		}
@@ -114,7 +114,7 @@ namespace Sphere10.Framework {
 
 			// Add listings
 			if (_listings.Capacity < _listings.Count + listings.Count) {
-				int required = _listings.Capacity - _listings.Count + listings.Count;
+				var required = _listings.Capacity - _listings.Count + listings.Count;
 				_listingStore.AddRange(Tools.Array.Gen(required, default(TListing)));
 			}
 
@@ -138,8 +138,8 @@ namespace Sphere10.Framework {
 
 		public override void Load() {
 			base.Load();
-			int count = ReadHeader();
-			int listingsBytesLength = count * ListingSerializer.FixedSize;
+			var count = ReadHeader();
+			var listingsBytesLength = count * ListingSerializer.FixedSize;
 
 			Clusters.Load();
 
@@ -151,9 +151,9 @@ namespace Sphere10.Framework {
 			_listings = new PreAllocatedList<TListing>(_listingStore);
 			_listings.AddRange(_listingStore);
 
-			for (int i = 0; i < Clusters.Count; i++) {
+			for (var i = 0; i < Clusters.Count; i++) {
 				Clusters.ReadItemRaw(i, 0, sizeof(int), out var bytes);
-				ClusterTraits traits = (ClusterTraits)_bitConverter.ToInt32(bytes);
+				var traits = (ClusterTraits)_bitConverter.ToInt32(bytes);
 
 				if (traits is ClusterTraits.Free) {
 					_freeClusters.Add(i);
@@ -164,19 +164,19 @@ namespace Sphere10.Framework {
 		protected override void MarkClusterFree(int clusterNumber) => _freeClusters.Add(clusterNumber);
 
 		protected override IEnumerable<int> GetFreeClusterNumbers(int numberRequired) {
-			List<int> clusterNumbers = _freeClusters.Take(numberRequired)
+			var clusterNumbers = _freeClusters.Take(numberRequired)
 				.ToList();
 
 			_freeClusters.RemoveRangeSequentially(0, clusterNumbers.Count);
 
-			int newClustersRequired = numberRequired - clusterNumbers.Count;
-			int nextCluster = 0;
+			var newClustersRequired = numberRequired - clusterNumbers.Count;
+			var nextCluster = 0;
 			if (Clusters.Any()) {
 				Clusters.ReadItemRaw(Clusters.Count - 1, 4, 4, out var numberBytes);
 				nextCluster = _bitConverter.ToInt32(numberBytes) + 1;
 			}
 
-			for (int i = 0; i < newClustersRequired; i++) {
+			for (var i = 0; i < newClustersRequired; i++) {
 				clusterNumbers.Add(nextCluster);
 				nextCluster++;
 			}
@@ -197,7 +197,7 @@ namespace Sphere10.Framework {
 		}
 
 		private void WriteHeader() {
-			byte[] headerBytes = Tools.Array.Gen(HeaderSize, default(byte));
+			var headerBytes = Tools.Array.Gen(HeaderSize, default(byte));
 
 			new ByteArrayBuilder()
 				.Append(_bitConverter.GetBytes(_listings.Count))
@@ -239,8 +239,8 @@ namespace Sphere10.Framework {
 				//Fragment provider assumes cluster 0 has been reserved for item listings. fill
 				// existing cluster map for quick listing lookup. 
 				if (ByteCount > 0) {
-					int next = 0;
-					int fragmentIndex = 0;
+					var next = 0;
+					var fragmentIndex = 0;
 
 					while (next >= 0) {
 						_fragmentClusterMap.Add(fragmentIndex, next);
@@ -269,15 +269,15 @@ namespace Sphere10.Framework {
 				} else
 					fragmentLength = ByteCount;
 
-				int clusterNumber = _fragmentClusterMap[index];
+				var clusterNumber = _fragmentClusterMap[index];
 
 				return Clusters[clusterNumber]
 					.Data[..(int)fragmentLength];
 			}
 
 			public (int fragmentIndex, int fragmentPosition) GetFragment(long position, out Span<byte> fragment) {
-				int fragmentIndex = (int)Math.Floor((decimal)position / ClusterDataSize);
-				int lastCluster = _fragmentClusterMap[fragmentIndex];
+				var fragmentIndex = (int)Math.Floor((decimal)position / ClusterDataSize);
+				var lastCluster = _fragmentClusterMap[fragmentIndex];
 
 				var fragmentLength = ByteCount > ClusterDataSize
 					? Math.Min(ByteCount - fragmentIndex * ClusterDataSize, ClusterDataSize)
@@ -306,9 +306,9 @@ namespace Sphere10.Framework {
 				}
 
 				var numberRequired = (int)Math.Ceiling(((decimal)bytes - remainingAvailableSpace) / ClusterDataSize);
-				int[] clusterNumbers = _parent.GetFreeClusterNumbers(numberRequired).ToArray();
+				var clusterNumbers = _parent.GetFreeClusterNumbers(numberRequired).ToArray();
 				newFragmentIndexes = Enumerable.Range(FragmentCount, numberRequired).ToArray();
-				int lastCluster = _fragmentClusterMap.Any() ? _fragmentClusterMap.Last().Value : -1;
+				var lastCluster = _fragmentClusterMap.Any() ? _fragmentClusterMap.Last().Value : -1;
 
 				for (var i = 0; i < clusterNumbers.Length; i++) {
 					var cluster = new Cluster {
@@ -340,13 +340,13 @@ namespace Sphere10.Framework {
 			}
 
 			public int ReleaseSpace(int bytes, out int[] releasedFragmentIndexes) {
-				int numberOfClustersToBeReleased = (int)Math.Floor((decimal)bytes / ClusterDataSize);
-				int fragmentIndex = FragmentCount - numberOfClustersToBeReleased - 1;
+				var numberOfClustersToBeReleased = (int)Math.Floor((decimal)bytes / ClusterDataSize);
+				var fragmentIndex = FragmentCount - numberOfClustersToBeReleased - 1;
 
 				if (numberOfClustersToBeReleased > 0) {
-					int newTailCluster = _fragmentClusterMap[fragmentIndex];
-					Cluster cluster = Clusters[newTailCluster];
-					int next = cluster.Next;
+					var newTailCluster = _fragmentClusterMap[fragmentIndex];
+					var cluster = Clusters[newTailCluster];
+					var next = cluster.Next;
 					cluster.Next = -1;
 					Clusters.Update(newTailCluster, cluster);
 
@@ -359,7 +359,7 @@ namespace Sphere10.Framework {
 
 				releasedFragmentIndexes = Enumerable.Range(fragmentIndex, numberOfClustersToBeReleased).ToArray();
 
-				foreach (int releasedFragmentIndex in releasedFragmentIndexes) {
+				foreach (var releasedFragmentIndex in releasedFragmentIndexes) {
 					_fragmentClusterMap.Remove(releasedFragmentIndex);
 				}
 
@@ -371,7 +371,7 @@ namespace Sphere10.Framework {
 			public void UpdateFragment(int fragmentIndex, int fragmentPosition, Span<byte> updateSpan) {
 				Guard.ArgumentInRange(fragmentIndex, 0, FragmentCount - 1, nameof(fragmentIndex));
 
-				int clusterNumber = _fragmentClusterMap[fragmentIndex];
+				var clusterNumber = _fragmentClusterMap[fragmentIndex];
 
 				var cluster = Clusters[clusterNumber];
 				updateSpan.CopyTo(cluster.Data.AsSpan(fragmentPosition));
@@ -379,7 +379,7 @@ namespace Sphere10.Framework {
 			}
 
 			private int ReadClusterNext(int clusterNumber) {
-				Clusters.ReadItemRaw(clusterNumber, _nextClusterOffset, sizeof(int), out byte[] next);
+				Clusters.ReadItemRaw(clusterNumber, _nextClusterOffset, sizeof(int), out var next);
 				return EndianBitConverter.Little.ToInt32(next);
 			}
 		}

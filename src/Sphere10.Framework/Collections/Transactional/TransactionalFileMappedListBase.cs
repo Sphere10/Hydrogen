@@ -46,6 +46,7 @@ namespace Sphere10.Framework {
 		public override bool Dirty => base.Dirty || PageMarkerRepo.PageMarkers.Any() || PageMarkerRepo.FileMarkers.Any();
 
 		public void Commit() {
+			CheckScopeInStatusIfExists(FileTransactionState.Committing);
 			var before = this.ToArray();
 			Flush();
 			var afterflush = this.ToArray();
@@ -78,6 +79,7 @@ namespace Sphere10.Framework {
 		}
 
 		public void Rollback() {
+			CheckScopeInStatusIfExists(FileTransactionState.RollingBack);
 			Flush();
 			PageMarkerRepo.Add(FileMarkerType.RollingBack);
 			foreach (ITransactionalFilePage<TItem> page in InternalPages)
@@ -94,7 +96,7 @@ namespace Sphere10.Framework {
 			base.Dispose();
 		}
 
-		protected abstract int GetComittedPageCount();
+		protected abstract int GetCommittedPageCount();
 
 		protected override void OnLoaded() {
 			base.OnLoaded();
@@ -152,9 +154,20 @@ namespace Sphere10.Framework {
 				return;
 			// Create marker
 			PageMarkerRepo.Remove(PageMarkerType.UncommittedPage, pageHeader.Number); // deletes uncommitted data
-			var requiresDeletedMarker = pageHeader.Number < GetComittedPageCount();
+			var requiresDeletedMarker = pageHeader.Number < GetCommittedPageCount();
 			if (requiresDeletedMarker)
 				PageMarkerRepo.Add(PageMarkerType.DeletedMarker, pageHeader.Number);
+		}
+
+		private void CheckScopeInStatusIfExists(FileTransactionState status) {
+			var txnScope = FileTransactionScope.GetCurrent();
+			if (txnScope?.Transaction is null)
+				return;
+
+			// checks that if this is enlisted, that the scope triggered the commit
+			if (FileTransaction.IsEnlisted(Path) && txnScope.Transaction.Status != status) {
+				throw new InvalidOperationException($"Commit or Rollback of a file enlisted in a {nameof(FileTransactionScope)} is prohibited. Call Commit/Rollback from the scope directly.");
+			}
 		}
 
 		public enum PageMarkerType {

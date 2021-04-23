@@ -4,26 +4,24 @@ using System.IO;
 namespace Sphere10.Framework {
 
 	public class FileTransactionScope : TransactionalScope<FileTransactionScope, FileTransaction> {
-		private const string ContextIDPrefix = "FileTransactionContext:";
+		private const string ContextIDPrefix = "FileTransactionContext:71C280A0-7DEA-41C0-BCE6-CC34DD99BD64";
 
-		public FileTransactionScope(string baseDir, bool removeme, ScopeContextPolicy policy = ScopeContextPolicy.None) 
+		public FileTransactionScope(string baseDir, ScopeContextPolicy policy = ScopeContextPolicy.None) 
 		   : this(GenTransactionFileName(), baseDir, policy) {
-			
 		}
 
-		public FileTransactionScope(string transactionFile, ScopeContextPolicy policy = ScopeContextPolicy.None)
-			: this(transactionFile, Path.GetDirectoryName(transactionFile), policy) {
-		}
-
-		public FileTransactionScope(string transactionFile, string uncomittedPageDir, ScopeContextPolicy policy = ScopeContextPolicy.None)
+		private FileTransactionScope(string transactionFile, string uncommittedPageDir, ScopeContextPolicy policy)
 			: base(policy,
-				  ToContextName(transactionFile),
-				  (scope) => new FileTransaction(transactionFile, uncomittedPageDir),
+				ContextIDPrefix,
+				  (scope) => new FileTransaction(transactionFile, uncommittedPageDir),
 				  (scope, txn) => txn.Commit(),
 				  (scope, txn) => txn.Rollback(),
 				  (scope, txn) => txn.Dispose(),
 				  TransactionAction.Rollback) {
+			TransactionFile = this.IsRootScope ? transactionFile : RootScope.TransactionFile;
 		}
+
+		public string TransactionFile { get; }
 
 		public ITransactionalFile EnlistFile(string filename, int pageSize, int maxOpenPages) {
 			CheckTransactionExists();
@@ -55,21 +53,20 @@ namespace Sphere10.Framework {
 			Transaction.DelistFile(file);
 		}
 
-		public new static FileTransactionScope GetCurrent(string transactionFile) {
-			return ScopeContext<FileTransactionScope>.GetCurrent(ToContextName(transactionFile));
+		public static FileTransactionScope GetCurrent() {
+			//return ScopeContext<FileTransactionScope>.GetCurrent(ToContextName(transactionFile));
+			return ScopeContext<FileTransactionScope>.GetCurrent(ContextIDPrefix);
 		}
 
 		public static void ProcessDanglingTransactions(string baseDir) {
 			// this will load up all dangling transaction found in a directory, and complete them
 			// TODO
-
+			
 		}
 
-		private static string ToContextName(string transactionFile) {
-			return $"{ContextIDPrefix}{transactionFile}";
-		}
+		//private static string ToContextName(Guid guid) => $"{ContextIDPrefix}{guid.ToStrictAlphaString()}";
 
-		private static string GenTransactionFileName() => $"{Guid.NewGuid().ToStrictAlphaString()}.txn";
+		private static string GenTransactionFileName() => $"FTXN_{Guid.NewGuid().ToStrictAlphaString()}.txn";
 	}
 
 }

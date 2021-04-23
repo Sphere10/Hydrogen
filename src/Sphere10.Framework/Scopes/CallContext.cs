@@ -10,7 +10,7 @@ namespace Sphere10.Framework {
 	/// async context of a test or invocation.
 	/// </summary>
 	public static class CallContext {
-		private static readonly SynchronizedDictionary<string, AsyncLocal<object>> State = new SynchronizedDictionary<string, AsyncLocal<object>>();
+		private static readonly SynchronizedDictionary<string, AsyncLocal<object>> State = new();
 
 		/// <summary>
 		/// Stores a given object and associates it with the specified name.
@@ -33,14 +33,14 @@ namespace Sphere10.Framework {
 		/// <param name="name">The name of the item in the call context.</param>
 		/// <returns>The object in the call context associated with the specified name, or <see langword="null"/> if not found.</returns>
 		public static object LogicalGetData(string name) =>
-			State.TryGetValue(name, out AsyncLocal<object> data) ? data.Value : null;
+			State.TryGetValue(name, out var data) ? data.Value : null;
 
 
 		public static IEnumerable<object> LogicalSearchData(string prefix) {
 			using (State.EnterReadScope()) {
-				foreach(var kvp in State) {
-					if (kvp.Key.StartsWith(prefix))
-						yield return kvp.Key;
+				foreach(var (key, _) in State) {
+					if (key.StartsWith(prefix))
+						yield return key;
 				}
 			}
 		}

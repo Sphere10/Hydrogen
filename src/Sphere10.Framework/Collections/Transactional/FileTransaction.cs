@@ -229,6 +229,13 @@ namespace Sphere10.Framework {
 			}
 		}
 
+		public static bool IsEnlisted(string path) {
+			Guard.ArgumentNotNull(path, nameof(path));
+			Guard.FileExists(path);
+			path = Tools.FileSystem.GetCaseCorrectFilePath(path);
+			return GloballyEnlistedFiles.ContainsKey(path);
+		}
+
 		#region Serializable Surrogates
 
 		[Serializable]

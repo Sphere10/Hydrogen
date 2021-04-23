@@ -60,7 +60,7 @@ namespace Sphere10.Framework {
 		protected override IPage<byte>[] LoadPages() {
 			var lowestDeletedPageNumber = PageMarkerRepo.LowestDeletedPageNumber ?? int.MaxValue;
 			var highestChangedPageNumber = PageMarkerRepo.HighestChangedPageNumber ?? int.MinValue;
-			var committedPageCount = GetComittedPageCount();
+			var committedPageCount = GetCommittedPageCount();
 			var logicalPageCount = Math.Min(lowestDeletedPageNumber, Math.Max(highestChangedPageNumber + 1, committedPageCount));
 			var lastLogicalPageNumber = logicalPageCount - 1;
 
@@ -109,7 +109,7 @@ namespace Sphere10.Framework {
 					.ToArray();
 		}
 
-		protected override int GetComittedPageCount() {
+		protected override int GetCommittedPageCount() {
 			return (int)Math.Ceiling(Stream.Length / (double)PageSize);
 		}
 

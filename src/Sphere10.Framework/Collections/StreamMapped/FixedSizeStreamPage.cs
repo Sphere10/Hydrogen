@@ -12,6 +12,8 @@ namespace Sphere10.Framework {
 
 		public FixedSizeStreamPage(StreamMappedPagedList<TItem> parent) : base(parent) {
 			Guard.Argument(parent.Serializer.IsFixedSize, nameof(parent), $"Parent list's serializer is not fixed size. {nameof(FixedSizeStreamPage<TItem>)} only supports fixed sized items.");
+			Guard.Ensure(parent.Serializer.FixedSize > 0, "parent.Serializer.FixedSize > 0");
+			
 			_version = 0;
 			_item0Offset = Parent.IncludeListHeader ? StreamMappedPagedList<TItem>.ListHeaderSize : 0;
 			base.State = PageState.Loaded;

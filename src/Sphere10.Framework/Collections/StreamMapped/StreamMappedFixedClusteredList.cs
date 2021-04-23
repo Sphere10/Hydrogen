@@ -36,7 +36,6 @@ namespace Sphere10.Framework {
 
 			Capacity = maxItems;
 			_maxStorageBytes = maxStorageBytes;
-
 		}
 
 		public override int Count => _listings?.Count ?? 0;

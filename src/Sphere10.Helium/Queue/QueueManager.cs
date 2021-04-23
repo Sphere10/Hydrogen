@@ -14,7 +14,7 @@ namespace Sphere10.Helium.Queue {
 		}
 
 		public void FirstIn(string destination, IMessage message) {
-			_heliumQueue.AddMessageToQueue(message);
+			_heliumQueue.AddMessage(message);
 		}
 
 		public void LastOut(IMessage message) {

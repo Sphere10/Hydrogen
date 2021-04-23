@@ -13,9 +13,13 @@ namespace Sphere10.Helium.BlueService.Saga {
 		IHandleMessage<BlueServiceSaga1Workflow1>,
 		IHandleMessage<BlueServiceSaga1Workflow2>,
 		IHandleTimeout<BlueServiceSaga1Workflow3> {
+		
+		private readonly IBus _bus;
 
 		public BlueServiceSaga1(IBus bus) 
 			: base(bus) {
+
+			_bus = bus;
 		}
 
 		protected override void ConfigureHowToFindSaga(SagaPropertyMapper<BlueServiceSaga1SagaData> mapper) {
@@ -28,8 +32,12 @@ namespace Sphere10.Helium.BlueService.Saga {
 
 		public void Handle(BlueServiceSaga1Start message) {
 			var testDataProperty = Data.MyUniqueSagaIdToFindSaga.ToString();
-			
-			throw new NotImplementedException();
+
+			var blueServiceSaga1Workflow1 = new BlueServiceSaga1Workflow1 {
+				Id = Guid.NewGuid().ToString()
+			};
+
+			_bus.SendLocal(blueServiceSaga1Workflow1);
 		}
 
 		public void Handle(BlueServiceSaga1End message) {

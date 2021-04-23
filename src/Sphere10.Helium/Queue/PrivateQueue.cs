@@ -183,11 +183,15 @@ namespace Sphere10.Helium.Queue {
 			throw new NotImplementedException();
 		}
 
-		public void AddMessageToQueue(IMessage message) {
+		public void AddMessage(IMessage message) {
 			throw new NotImplementedException();
 		}
 
-		public void RemoveMessageFromQueue(IMessage message) {
+		public void DeleteMessage(IMessage message) {
+			throw new NotImplementedException();
+		}
+
+		public IMessage RetrieveMessage() {
 			throw new NotImplementedException();
 		}
 

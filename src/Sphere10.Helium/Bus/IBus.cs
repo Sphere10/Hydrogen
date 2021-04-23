@@ -7,7 +7,7 @@ namespace Sphere10.Helium.Bus {
 
 		void Unsubscribe<Tk>();
 
-		ICallback SendLocal<Tk>(IMessage message);
+		ICallback SendLocal(IMessage message);
 
 		ICallback SendLocal<Tk>(IMessage message, IMessageHeader messageHeader);
 

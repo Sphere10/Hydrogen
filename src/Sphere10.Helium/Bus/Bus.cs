@@ -15,11 +15,11 @@ namespace Sphere10.Helium.Bus {
 			_queueManager = queueManager;
 		}
 
-		public ICallback SendLocal<TK>(IMessage message) {
+		public ICallback SendLocal(IMessage message) {
 			throw new NotImplementedException();
 		}
 
-		public ICallback SendLocal<TK>(IMessage message, IMessageHeader missingName) {
+		public ICallback SendLocal<Tk>(IMessage message, IMessageHeader missingName) {
 			throw new NotImplementedException();
 		}
 
@@ -31,11 +31,11 @@ namespace Sphere10.Helium.Bus {
 			throw new NotImplementedException();
 		}
 
-		public void Reply<TK>(Action<TK> messageConstructor) {
+		public void Reply<Tk>(Action<Tk> messageConstructor) {
 			throw new NotImplementedException();
 		}
 
-		public void Return<TK>(TK errorEnum) {
+		public void Return<Tk>(Tk errorEnum) {
 			throw new NotImplementedException();
 		}
 

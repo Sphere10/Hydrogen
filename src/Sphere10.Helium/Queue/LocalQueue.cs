@@ -30,14 +30,29 @@ namespace Sphere10.Helium.Queue {
 			_queueConfigDto = queueConfigDto;
 		}
 
-		public void AddMessageToQueue(IMessage message) {
+		public void AddMessage(IMessage message) {
 			Add(message);
 			Commit();
 		}
 
-		public void RemoveMessageFromQueue(IMessage message) {
+		public void DeleteMessage(IMessage message) {
 			Remove(message);
 			Commit();
+		}
+
+
+		public IMessage RetrieveMessage() {
+			//No transaction-scope required here.
+			//At any stage during catastrophic failure the message shall remain on the queue.
+			//That is critical because the next time the service runs (after recovery, fixing the problem)
+			//it will just process the message as per normal.
+			//So the message MUST remain in the queue during a catastrophic failure.
+
+			var message = Read(0);
+			Remove(message);
+			Commit();
+
+			return message;
 		}
 	}
 }

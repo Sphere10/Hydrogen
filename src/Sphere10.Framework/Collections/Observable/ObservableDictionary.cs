@@ -40,7 +40,7 @@ namespace Sphere10.Framework {
 
 		public ObservableDictionary(IDictionary<TKey, TValue> internalDictionary)
 			: base(internalDictionary) {
-			InnerCollection = (IDictionary<TKey, TValue>)base.InnerCollection;
+			InnerCollection = (IDictionary<TKey, TValue>)base.InternalCollection;
 		}
 
 

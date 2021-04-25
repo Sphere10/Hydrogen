@@ -28,7 +28,7 @@ namespace Sphere10.Framework {
 			: base(internalList) {
 		}
 
-		protected IList<T> InternalList => (IList<T>)base.InnerCollection;
+		protected IList<T> InternalList => (IList<T>)base.InternalCollection;
 
 		public override void Add(T item) {
 			var index = InternalList.BinarySearch(item);

@@ -30,10 +30,7 @@ namespace Sphere10.Hydrogen.Host {
 		public static void DoDevelopmentFlow() {
 			// Load up the Node in sibling folder on dev environment
 			var nodeAssemblyPath = GetNodeAssemblyPath();
-
 			var nodeAssembly = Assembly.LoadFrom(nodeAssemblyPath);
-
-			
 
 			string GetNodeAssemblyPath() {
 				var hostExecutable = Assembly.GetEntryAssembly().Location;

@@ -44,10 +44,12 @@ namespace Sphere10.Helium.Usage {
 			if (localQueue.RequiresLoad)
 				localQueue.Load();
 
+			
+
 			localQueue.DeleteMessage(inMessage);
 			
 			localQueue.AddMessage(inMessage);
-			
+						
 			var outMessage = localQueue.RetrieveMessage();
 
 			localQueue.DeleteMessage(inMessage);

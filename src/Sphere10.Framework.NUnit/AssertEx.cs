@@ -17,6 +17,8 @@ namespace Sphere10.Framework.NUnit {
 			var RNG = new Random(31337);
 			expected ??= new List<T>();
 
+			
+
 			// Test 1: Add nothing
 			expected.AddRangeSequentially(Enumerable.Empty<T>());
 			list.AddRange(Enumerable.Empty<T>());
@@ -28,7 +30,7 @@ namespace Sphere10.Framework.NUnit {
 			Assert.AreEqual(expected, list);
 
 			if (maxCapacity >= 1) {
-				// Test 2: Insert at 0 when empty 
+				// Test 3: Insert at 0 when empty 
 				var item = randomItemGenerator(RNG, 1).Single();
 				expected.Insert(0, item);
 				list.Insert(0, item);
@@ -36,13 +38,13 @@ namespace Sphere10.Framework.NUnit {
 			}
 
 			if (maxCapacity >= 2) {
-				// Test 3: Insert at end of list (same as add)
+				// Test 4: Insert at end of list (same as add)
 				var item = randomItemGenerator(RNG, 1).Single();
 				expected.Insert(1, item);
 				list.Insert(1, item);
 				Assert.AreEqual(expected, list);
 
-				// Test 4: Delete from beginning of list
+				// Test 5: Delete from beginning of list
 				if (!mutateFromEndOnly) {
 					expected.RemoveAt(0);
 					list.RemoveAt(0);
@@ -51,19 +53,19 @@ namespace Sphere10.Framework.NUnit {
 			}
 
 			if (maxCapacity >= 1) {
-				// Test 5: Delete from end of list
+				// Test 6: Delete from end of list
 				expected.RemoveAt(^1);
 				list.RemoveAt(^1);
 				Assert.AreEqual(expected, list);
 			}
 
-			// Test 6: AddRange half capacity
+			// Test 7: AddRange half capacity
 			T[] newItems = randomItemGenerator(RNG, maxCapacity / 2);
 			expected.AddRangeSequentially(newItems);
 			list.AddRange(newItems);
 			Assert.AreEqual(expected, list);
 
-			// Test 7: Enumerator consistency
+			// Test 8: Enumerator consistency
 			using (var expectedEnumerator = expected.GetEnumerator())
 			using (var enumerator = list.GetEnumerator()) {
 
@@ -78,12 +80,12 @@ namespace Sphere10.Framework.NUnit {
 				} while (expectedMoveNext);
 			}
 
-			// Test 7: Clear
+			// Test 9: Clear
 			expected.Clear();
 			list.Clear();
 			Assert.AreEqual(expected, list);
 
-			// Test 8: Iterate with random mutations
+			// Test 10: Iterate with random mutations
 			for (var i = 0; i < iterations; i++) {
 
 				// add a random amount

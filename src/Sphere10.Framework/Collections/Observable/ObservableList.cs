@@ -40,7 +40,7 @@ namespace Sphere10.Framework {
 
 		public ObservableList(IList<TItem> internalList)
 			: base(internalList) {
-			InnerCollection = (IList<TItem>)base.InnerCollection;
+			InnerCollection = (IList<TItem>)base.InternalCollection;
 		}
 
 		public int IndexOf(TItem item) => DoOperation(

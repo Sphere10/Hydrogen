@@ -40,7 +40,7 @@ namespace Sphere10.Framework {
 
 		public ObservableExtendedList(IExtendedList<TItem> internalExtendedList)
 			: base(internalExtendedList) {
-			InnerCollection = (IExtendedList<TItem>)base.InnerCollection;
+			InnerCollection = (IExtendedList<TItem>)base.InternalCollection;
 		}
 
 

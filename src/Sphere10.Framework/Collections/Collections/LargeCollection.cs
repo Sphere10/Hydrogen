@@ -32,7 +32,7 @@ namespace Sphere10.Framework {
 			: base(new MemoryPagedList<TItem>(pageSize, maxOpenPages, itemSizer)) {
 		}
 
-		protected MemoryPagedListBase<TItem> InternalPagedList => (MemoryPagedListBase<TItem>)base.InnerCollection;
+		protected MemoryPagedListBase<TItem> InternalPagedList => (MemoryPagedListBase<TItem>)base.InternalCollection;
 
 		public IReadOnlyList<IMemoryPage<TItem>> Pages => new ReadOnlyListDecorator<IPage<TItem>, IMemoryPage<TItem>>(InternalPagedList.Pages);
 

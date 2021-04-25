@@ -21,7 +21,7 @@ namespace Sphere10.Framework {
 
 
 	public class ObservableExtendedCollection<TItem> : ObservableCollection<TItem>, IExtendedCollection<TItem> {
-		protected new readonly IExtendedCollection<TItem> InnerCollection;
+		protected new readonly IExtendedCollection<TItem> InternalCollection;
 
 		public ObservableExtendedCollection()
 			: this(new ExtendedList<TItem>()) {
@@ -29,13 +29,13 @@ namespace Sphere10.Framework {
 
 		public ObservableExtendedCollection(IExtendedCollection<TItem> internalCollection)
 			: base(internalCollection) {
-			InnerCollection = (IExtendedCollection<TItem>)base.InnerCollection;
+			InternalCollection = (IExtendedCollection<TItem>)base.InternalCollection;
 		}
 
 		public virtual IEnumerable<bool> ContainsRange(IEnumerable<TItem> items) =>
 			DoOperation(
 				EventTraits.Search,
-				() => InnerCollection.ContainsRange(items),
+				() => InternalCollection.ContainsRange(items),
 				() => new SearchingMembershipEventArgs<TItem> { CallArgs = new ItemsCallArgs<TItem>(items) },
 				result => new SearchedMembershipEventArgs<TItem> { Result = result },
 				(preEventArgs) => {
@@ -52,7 +52,7 @@ namespace Sphere10.Framework {
 			DoOperation(
 				EventTraits.Add,
 				() => {
-					InnerCollection.AddRange(items);
+					InternalCollection.AddRange(items);
 					return 0;
 				},
 				() => new AddingEventArgs<TItem> { CallArgs = new ItemsCallArgs<TItem>(items) },
@@ -70,7 +70,7 @@ namespace Sphere10.Framework {
 		public virtual IEnumerable<bool> RemoveRange(IEnumerable<TItem> items) =>
 			DoOperation(
 				EventTraits.Remove,
-				() => InnerCollection.RemoveRange(items),
+				() => InternalCollection.RemoveRange(items),
 				() => new RemovingItemsEventArgs<TItem> { CallArgs = new ItemsCallArgs<TItem>(items) },
 				result => new RemovedItemsEventArgs<TItem>(),
 				(preEventArgs) => {

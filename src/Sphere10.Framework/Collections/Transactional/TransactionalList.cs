@@ -3,7 +3,7 @@ using System.IO;
 
 namespace Sphere10.Framework {
 
-	public class TransactionalList<T> : ExtendedListDecorator<T>, ITransactionalList<T> {
+	public class TransactionalList<T> : ObservableExtendedList<T>, ITransactionalList<T> {
 		public const int DefaultTransactionalPageSize = 1 << 17;  // 128kb
 		public const int DefaultClusterSize = 128;  //1 << 11; // 2kb
 
@@ -105,9 +105,9 @@ namespace Sphere10.Framework {
 			AsBuffer = buffer;
 		}
 
-		public bool RequiresLoad => ((ILoadable)InternalExtendedList).RequiresLoad;
+		public bool RequiresLoad => ((ILoadable)base.InnerCollection).RequiresLoad;
 
-		public void Load() => ((ILoadable)InternalExtendedList).Load();
+		public void Load() => ((ILoadable)InnerCollection).Load();
 
 		public void Commit() => AsBuffer.Commit();
 

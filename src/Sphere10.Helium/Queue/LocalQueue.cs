@@ -40,6 +40,29 @@ namespace Sphere10.Helium.Queue {
 			Commit();
 		}
 
+		protected override void OnAdding(AddingEventArgs<IMessage> args) {
+			base.OnAdding(args);
+			
+		}
+
+		protected override void OnAdded(AddedEventArgs<IMessage> args) {
+			base.OnAdded(args);
+
+		}
+
+		protected override void OnRemovedItems(RemovedItemsEventArgs<IMessage> args) {
+			base.OnRemovedItems(args);
+		}
+
+		protected override void OnInserted(InsertedEventArgs<IMessage> args) {
+			base.OnInserted(args);
+		}
+
+
+		protected override void OnMutated(EventTraits eventType) {
+			base.OnMutated(eventType);
+
+		}
 
 		public IMessage RetrieveMessage() {
 			//No transaction-scope required here.

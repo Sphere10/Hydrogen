@@ -20,14 +20,14 @@ using System.Threading.Tasks;
 
 namespace Sphere10.Framework {
 	public abstract class CollectionDecorator<TItem, TCollection> : ICollection<TItem> where TCollection : ICollection<TItem> {
-		protected readonly TCollection InnerCollection;
+		protected readonly TCollection InternalCollection;
 
 		protected CollectionDecorator(TCollection innerCollection) {
-			InnerCollection = innerCollection;
+			InternalCollection = innerCollection;
 		}
 
 		public virtual IEnumerator<TItem> GetEnumerator() {
-			return InnerCollection.GetEnumerator();
+			return InternalCollection.GetEnumerator();
 		}
 
 		IEnumerator IEnumerable.GetEnumerator() {
@@ -35,28 +35,28 @@ namespace Sphere10.Framework {
 		}
 
 		public virtual void Add(TItem item) {
-			InnerCollection.Add(item);
+			InternalCollection.Add(item);
 		}
 
 		public virtual void Clear() {
-			InnerCollection.Clear();
+			InternalCollection.Clear();
 		}
 
 		public virtual bool Contains(TItem item) {
-			return InnerCollection.Contains(item);
+			return InternalCollection.Contains(item);
 		}
 
 		public virtual void CopyTo(TItem[] array, int arrayIndex) {
-			InnerCollection.CopyTo(array, arrayIndex);
+			InternalCollection.CopyTo(array, arrayIndex);
 		}
 
 		public virtual bool Remove(TItem item) {
-			return InnerCollection.Remove(item);
+			return InternalCollection.Remove(item);
 		}
 
-		public virtual int Count => InnerCollection.Count;
+		public virtual int Count => InternalCollection.Count;
 
-		public virtual bool IsReadOnly => InnerCollection.IsReadOnly;
+		public virtual bool IsReadOnly => InternalCollection.IsReadOnly;
 	}
 
 	public abstract class CollectionDecorator<TItem> : CollectionDecorator<TItem, ICollection<TItem>> {

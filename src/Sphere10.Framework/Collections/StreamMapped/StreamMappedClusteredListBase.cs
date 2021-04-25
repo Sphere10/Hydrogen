@@ -160,11 +160,11 @@ namespace Sphere10.Framework {
 		}
 
 		protected void CheckRange(int index, int count) {
-			Guard.Argument(count >= 0, nameof(index), "Must be greater than or equal to 0");
-			if (index == Count && count == 0) return; // special case: at index of "next item" with no count, this is valid
-			Guard.ArgumentInRange(index, 0, Count - 1, nameof(index));
+			var startIX = 0;
+			var lastIX = startIX + (Count - 1).ClipTo(startIX, int.MaxValue);
+			Guard.ArgumentInRange(index, startIX, lastIX, nameof(index));
 			if (count > 0)
-				Guard.ArgumentInRange(index + count - 1, 0, Count - 1, nameof(count));
+				Guard.ArgumentInRange(index + count - 1, startIX, lastIX, nameof(count));
 		}
 
 		protected void CheckLoaded() {

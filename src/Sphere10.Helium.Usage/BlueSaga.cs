@@ -26,7 +26,7 @@ namespace Sphere10.Helium.Usage {
 		public void Handle(BlueSagaStart message) {
 			Data.Id = Guid.NewGuid();
 
-			_bus.SendLocal<BlueSagaStart>(message);
+			_bus.SendLocal(message);
 
 			throw new NotImplementedException();
 		}

@@ -36,7 +36,7 @@ namespace Sphere10.Framework.Tests {
 		}
 
 		[Test]
-		public void LoadFromExistingStream() {
+		public void LoadAndUseExistingStream() {
 			var fileName = Tools.FileSystem.GetTempFileName(true);
 
 			using (Tools.Scope.ExecuteOnDispose(() => File.Delete(fileName))) {
@@ -56,6 +56,11 @@ namespace Sphere10.Framework.Tests {
 					list.Add(1000);
 					Assert.AreEqual(2, list.Count);
 					Assert.AreEqual(1000, list[1]);
+					Assert.AreEqual(list.ReadRange(0, 2), new[] { 999, 1000 });
+					list.RemoveAt(1);
+					list.RemoveAt(0);
+
+					Assert.IsEmpty(list);
 				}
 			}
 		}

@@ -9,6 +9,8 @@ using Sphere10.Framework.NUnit;
 namespace Sphere10.Framework.Tests {
 	public class StreamMappedDynamicClusteredListTests {
 
+		private Random Random { get; } = new (31337);
+		
 		[Test]
 		public void RequiresLoad_1() {
 			using var stream = new MemoryStream();
@@ -36,8 +38,7 @@ namespace Sphere10.Framework.Tests {
 
 		[Test]
 		public void ReadRange() {
-			var rand = new Random();
-			string[] inputs = Enumerable.Range(0, rand.Next(5, 10)).Select(x => rand.NextString(1, 100)).ToArray();
+			string[] inputs = Enumerable.Range(0, Random.Next(5, 10)).Select(x => Random.NextString(1, 100)).ToArray();
 			using var stream = new MemoryStream();
 			var list = new StreamMappedDynamicClusteredList<string>(32, stream, new StringSerializer(Encoding.UTF8));
 
@@ -53,14 +54,13 @@ namespace Sphere10.Framework.Tests {
 
 		[Test]
 		public void UpdateRange() {
-			var rand = new Random();
-			string[] inputs = Enumerable.Range(0, rand.Next(1, 100)).Select(x => rand.NextString(1, 100)).ToArray();
+			string[] inputs = Enumerable.Range(0, Random.Next(1, 100)).Select(x => Random.NextString(1, 100)).ToArray();
 			using var stream = new MemoryStream();
 			var list = new StreamMappedDynamicClusteredList<string>(32, stream, new StringSerializer(Encoding.UTF8));
 
 			list.AddRange(inputs);
 
-			string update = rand.NextString(0, 100);
+			string update = Random.NextString(0, 100);
 			list.UpdateRange(0, new[] { update });
 
 			Assert.AreEqual(update, list[0]);
@@ -69,8 +69,7 @@ namespace Sphere10.Framework.Tests {
 
 		[Test]
 		public void RemoveRange() {
-			var rand = new Random();
-			string[] inputs = Enumerable.Range(0, rand.Next(1, 100)).Select(x => rand.NextString(1, 100)).ToArray();
+			string[] inputs = Enumerable.Range(0, Random.Next(1, 100)).Select(x => Random.NextString(1, 100)).ToArray();
 			using var stream = new MemoryStream();
 			var list = new StreamMappedDynamicClusteredList<string>(32, stream, new StringSerializer(Encoding.UTF8));
 
@@ -83,8 +82,7 @@ namespace Sphere10.Framework.Tests {
 
 		[Test]
 		public void IndexOf() {
-			var rand = new Random();
-			string[] inputs = Enumerable.Range(1, 10).Select(x => rand.NextString(1, 100)).ToArray();
+			string[] inputs = Enumerable.Range(1, 10).Select(x => Random.NextString(1, 100)).ToArray();
 			using var stream = new MemoryStream();
 			var list = new StreamMappedDynamicClusteredList<string>(32, stream, new StringSerializer(Encoding.UTF8));
 
@@ -97,8 +95,7 @@ namespace Sphere10.Framework.Tests {
 
 		[Test]
 		public void Count() {
-			var rand = new Random();
-			string[] inputs = Enumerable.Range(0, rand.Next(1, 100)).Select(x => rand.NextString(1, 100)).ToArray();
+			string[] inputs = Enumerable.Range(0, Random.Next(1, 100)).Select(x => Random.NextString(1, 100)).ToArray();
 			using var stream = new MemoryStream();
 			var list = new StreamMappedDynamicClusteredList<string>(32, stream, new StringSerializer(Encoding.UTF8));
 
@@ -109,13 +106,12 @@ namespace Sphere10.Framework.Tests {
 
 		[Test]
 		public void InsertRange() {
-			var rand = new Random();
-			string[] inputs = Enumerable.Range(1, rand.Next(1, 5)).Select(x => rand.NextString(1, 5)).ToArray();
+			string[] inputs = Enumerable.Range(1, Random.Next(1, 5)).Select(x => Random.NextString(1, 5)).ToArray();
 			using var stream = new MemoryStream();
 			var list = new StreamMappedDynamicClusteredList<string>(32, stream, new StringSerializer(Encoding.UTF8));
 
 			list.AddRange(inputs);
-			list.InsertRange(0, new[] { rand.NextString(1, 100) });
+			list.InsertRange(0, new[] { Random.NextString(1, 100) });
 
 			Assert.AreEqual(inputs.Length + 1, list.Count);
 			Assert.AreEqual(inputs[0], list[1]);
@@ -123,8 +119,7 @@ namespace Sphere10.Framework.Tests {
 
 		[Test]
 		public void Clear() {
-			var rand = new Random();
-			string[] inputs = Enumerable.Range(0, rand.Next(1, 100)).Select(x => rand.NextString(1, 100)).ToArray();
+			string[] inputs = Enumerable.Range(0, Random.Next(1, 100)).Select(x => Random.NextString(1, 100)).ToArray();
 			using var stream = new MemoryStream();
 			var list = new StreamMappedDynamicClusteredList<string>(32, stream, new StringSerializer(Encoding.UTF8));
 
@@ -148,9 +143,8 @@ namespace Sphere10.Framework.Tests {
 		}
 
 		[Test]
-		public void LoadFromExistingStream() {
-			var rand = new Random();
-			var input = Enumerable.Range(0, rand.Next(1, 100)).Select(x => rand.NextString(1, 100)).ToArray();
+		public void LoadAndUseExistingStream() {
+			var input = Enumerable.Range(0, Random.Next(1, 100)).Select(x => Random.NextString(1, 100)).ToArray();
 			var fileName = Tools.FileSystem.GetTempFileName(true);
 			using (Tools.Scope.ExecuteOnDispose(() => File.Delete(fileName))) {
 				using (var fileStream = new FileStream(fileName, FileMode.Open)) {
@@ -164,9 +158,11 @@ namespace Sphere10.Framework.Tests {
 					Assert.AreEqual(input.Length, list.Count);
 					Assert.AreEqual(input, list);
 					
-					var secondInput =  Enumerable.Range(0, rand.Next(1, 100)).Select(x => rand.NextString(1, 100)).ToArray();
+					var secondInput =  Enumerable.Range(0, Random.Next(1, 100)).Select(x => Random.NextString(1, 100)).ToArray();
 					list.AddRange(secondInput);
-					Assert.AreEqual(input.Concat(secondInput), list);
+					Assert.AreEqual(input.Concat(secondInput), list.ReadRange(0, list.Count));
+					list.RemoveRange(0, list.Count);
+					Assert.IsEmpty(list);
 				}
 			}
 		}

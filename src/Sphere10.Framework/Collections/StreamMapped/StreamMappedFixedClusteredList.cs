@@ -153,8 +153,11 @@ namespace Sphere10.Framework {
 			var listingsStream = new BoundedStream(InnerStream, HeaderSize, HeaderSize + listingTotalSize - 1) { UseRelativeOffset = true };
 			var statusStream = new BoundedStream(InnerStream, listingsStream.MaxAbsolutePosition + 1, listingsStream.MaxAbsolutePosition + statusTotalSize) { UseRelativeOffset = true };
 			var clusterStream = new BoundedStream(InnerStream, statusStream.MaxAbsolutePosition + 1, long.MaxValue) { UseRelativeOffset = true };
+
+			int itemCount = 0;
+			if (InnerStream.Length > 0)
+				itemCount = ReadHeader();
 			
-			int itemCount = ReadHeader();
 			var preAllocatedListingStore = new StreamMappedPagedList<TListing>(ListingSerializer, listingsStream) { IncludeListHeader = false };
 			preAllocatedListingStore.Load();
 			_listings = new PreAllocatedList<TListing>(preAllocatedListingStore);

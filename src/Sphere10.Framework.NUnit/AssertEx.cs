@@ -1,40 +1,34 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 using NUnit.Framework;
-using NUnit.Framework.Internal;
-using Sphere10.Framework;
-using Tools;
 
 namespace Sphere10.Framework.NUnit {
 
 	public static class AssertEx {
 
-		public static void ListIntegrationTest<T>(IExtendedList<T> list, int maxCapacity, Func<Random, int, T[]> randomItemGenerator, bool mutateFromEndOnly = false, int iterations = 100, IList<T> expected = null) {
+		public static void ListIntegrationTest<T>(IExtendedList<T> list, int maxCapacity, Func<Random, int, T[]> randomItemGenerator, bool mutateFromEndOnly = false, int iterations = 100, IList<T> expected = null, IEqualityComparer<T> comparer = null) {
 			var RNG = new Random(31337);
 			expected ??= new List<T>();
-
-			
+			comparer ??= EqualityComparer<T>.Default;
 
 			// Test 1: Add nothing
 			expected.AddRangeSequentially(Enumerable.Empty<T>());
 			list.AddRange(Enumerable.Empty<T>());
-			Assert.AreEqual(expected, list);
+			Assert.That(expected, Is.EqualTo(list).Using(comparer));
 
 			// Test 2: Insert nothing
 			expected.InsertRangeSequentially(0, Enumerable.Empty<T>());
 			list.InsertRange(0, Enumerable.Empty<T>());
-			Assert.AreEqual(expected, list);
+			Assert.That(expected, Is.EqualTo(list).Using(comparer));
 
 			if (maxCapacity >= 1) {
 				// Test 3: Insert at 0 when empty 
 				var item = randomItemGenerator(RNG, 1).Single();
 				expected.Insert(0, item);
 				list.Insert(0, item);
-				Assert.AreEqual(expected, list);
+				Assert.That(expected, Is.EqualTo(list).Using(comparer));
 			}
 
 			if (maxCapacity >= 2) {
@@ -42,13 +36,13 @@ namespace Sphere10.Framework.NUnit {
 				var item = randomItemGenerator(RNG, 1).Single();
 				expected.Insert(1, item);
 				list.Insert(1, item);
-				Assert.AreEqual(expected, list);
+				Assert.That(expected, Is.EqualTo(list).Using(comparer));
 
 				// Test 5: Delete from beginning of list
 				if (!mutateFromEndOnly) {
 					expected.RemoveAt(0);
 					list.RemoveAt(0);
-					Assert.AreEqual(expected, list);
+					Assert.That(expected, Is.EqualTo(list).Using(comparer));
 				}
 			}
 
@@ -56,34 +50,34 @@ namespace Sphere10.Framework.NUnit {
 				// Test 6: Delete from end of list
 				expected.RemoveAt(^1);
 				list.RemoveAt(^1);
-				Assert.AreEqual(expected, list);
+				Assert.That(expected, Is.EqualTo(list).Using(comparer));
 			}
 
 			// Test 7: AddRange half capacity
 			T[] newItems = randomItemGenerator(RNG, maxCapacity / 2);
 			expected.AddRangeSequentially(newItems);
 			list.AddRange(newItems);
-			Assert.AreEqual(expected, list);
+			Assert.That(expected, Is.EqualTo(list).Using(comparer));
 
 			// Test 8: Enumerator consistency
 			using (var expectedEnumerator = expected.GetEnumerator())
 			using (var enumerator = list.GetEnumerator()) {
-
-				Assert.AreEqual(expectedEnumerator.Current, enumerator.Current);
+				
+				Assert.That(expectedEnumerator.Current, Is.EqualTo(enumerator.Current).Using(comparer));
 				bool expectedMoveNext;
 				do {
 					expectedMoveNext = expectedEnumerator.MoveNext();
 					var moveNext = enumerator.MoveNext();
-					Assert.AreEqual(expectedMoveNext, moveNext);
+					Assert.That(expectedMoveNext, Is.EqualTo(moveNext).Using(comparer));
 					if (expectedMoveNext)
-						Assert.AreEqual(expectedEnumerator.Current, enumerator.Current);
+						Assert.That(expectedEnumerator.Current, Is.EqualTo(enumerator.Current).Using(comparer));
 				} while (expectedMoveNext);
 			}
 
 			// Test 9: Clear
 			expected.Clear();
 			list.Clear();
-			Assert.AreEqual(expected, list);
+			Assert.That(expected, Is.EqualTo(list).Using(comparer));
 
 			// Test 10: Iterate with random mutations
 			for (var i = 0; i < iterations; i++) {
@@ -94,7 +88,7 @@ namespace Sphere10.Framework.NUnit {
 				newItems = randomItemGenerator(RNG, newItemsCount);
 				list.AddRange(newItems);
 				expected.AddRangeSequentially(newItems);
-				Assert.AreEqual(expected, list);
+				Assert.That(expected, Is.EqualTo(list).Using(comparer));
 
 				if (list.Count > 0) {
 					// update a random range
@@ -103,7 +97,7 @@ namespace Sphere10.Framework.NUnit {
 					newItems = randomItemGenerator(RNG, rangeLen);
 					list.UpdateRange(range.Start, newItems);
 					expected.UpdateRangeSequentially(range.Start, newItems);
-					Assert.AreEqual(expected, list);
+					Assert.That(expected, Is.EqualTo(list).Using(comparer));
 
 					// copy/paste a random range
 					range = RNG.NextRange(list.Count);
@@ -114,14 +108,14 @@ namespace Sphere10.Framework.NUnit {
 					range = RNG.NextRange(list.Count, rangeLength: newItems.Count());
 					expected.UpdateRangeSequentially(range.Start, expectedNewItems);
 					list.UpdateRange(range.Start, newItems);
-					Assert.AreEqual(expected, list);
+					Assert.That(expected, Is.EqualTo(list).Using(comparer));
 
 					// remove a random amount
 					range = RNG.NextRange(list.Count, fromEndOnly: mutateFromEndOnly);
 					rangeLen = Math.Max(0, range.End - range.Start + 1);
 					list.RemoveRange(range.Start, rangeLen);
 					expected.RemoveRangeSequentially(range.Start, rangeLen);
-					Assert.AreEqual(expected, list);
+					Assert.That(expected, Is.EqualTo(list).Using(comparer));
 				}
 
 				// insert a random amount
@@ -131,11 +125,11 @@ namespace Sphere10.Framework.NUnit {
 				var insertIX = mutateFromEndOnly ? list.Count : RNG.Next(0, list.Count);
 				list.InsertRange(insertIX, newItems);
 				expected.InsertRangeSequentially(insertIX, newItems);
-				Assert.AreEqual(expected, list);
+				Assert.That(expected, Is.EqualTo(list).Using(comparer));
 
 			}
 		}
-
+		
 		/// <summary>
 		/// Same as <see cref="ListIntegrationTest{T}(IExtendedList{T}, int, Func{Random, int, T[]}, bool, int, IList{T})"/> but using span mutator methods
 		/// </summary>

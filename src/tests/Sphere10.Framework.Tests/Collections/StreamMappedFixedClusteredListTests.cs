@@ -34,7 +34,7 @@ namespace Sphere10.Framework.Tests {
 		}
 
 		[Test]
-		public void ReadRangeInvalidAzsrguments() {
+		public void ReadRangeInvalidArguments() {
 			using var stream = new MemoryStream();
 			var list = new StreamMappedFixedClusteredList<int>(32, 100, 4000, stream, new IntSerializer());
 
@@ -191,8 +191,8 @@ namespace Sphere10.Framework.Tests {
 
 			using (Tools.Scope.ExecuteOnDispose(() => File.Delete(fileName))) {
 				using (var fileStream = new FileStream(fileName, FileMode.Open)) {
-					var list = new StreamMappedFixedClusteredList<int>(32, 100, 4000, fileStream, new IntSerializer());
-					list.Add(999);
+					new StreamMappedFixedClusteredList<int>(32, 100, 4000, fileStream, new IntSerializer())
+						.Add(999);
 				}
 
 				using (var fileStream = new FileStream(fileName, FileMode.Open)) {
@@ -216,7 +216,19 @@ namespace Sphere10.Framework.Tests {
 		}
 		
 		[Test]
-		[Pairwise]
+		public void ObjectIntegrationTest() {
+			using var stream = new MemoryStream();
+			var list = new StreamMappedFixedClusteredList<StreamMappedDynamicClusteredListTests.TestObject>(100, 100, 50000, stream, new StreamMappedDynamicClusteredListTests.TestObjectSerializer(), new StreamMappedDynamicClusteredListTests.TestObjectComparer());
+			AssertEx.ListIntegrationTest(list,
+				100,
+				(rng, i) => Enumerable.Range(0, i).Select(x => new StreamMappedDynamicClusteredListTests.TestObject()).ToArray(),
+				false,
+				100,
+				null,
+				new StreamMappedDynamicClusteredListTests.TestObjectComparer());
+		}
+		
+		[Test]
 		public void IntegrationTestsFixedItemSize() {
 			using var stream = new MemoryStream();
 			var list = new StreamMappedFixedClusteredList<int>(16, 100, 4000, stream, new IntSerializer());
@@ -235,8 +247,7 @@ namespace Sphere10.Framework.Tests {
 					.ToArray());
 		}
 	}
-
-
+	
 	internal class IntSerializer : FixedSizeObjectSerializer<int> {
 		public IntSerializer() : base(4) {
 		}
@@ -250,5 +261,4 @@ namespace Sphere10.Framework.Tests {
 			return reader.ReadInt32();
 		}
 	}
-
 }

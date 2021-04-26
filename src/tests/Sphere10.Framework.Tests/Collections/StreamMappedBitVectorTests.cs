@@ -6,11 +6,10 @@ using Sphere10.Framework.NUnit;
 
 namespace Sphere10.Framework.Tests {
 	public class StreamMappedBitVectorTests {
-
-		private Random Random { get; } = new(31337);
-
+		
 		[Test]
 		public void InsertRangeEnd() {
+			var random = new Random(31337);
 			using var memoryStream = new MemoryStream();
 			var list = new StreamMappedBitVector(memoryStream);
 
@@ -25,10 +24,11 @@ namespace Sphere10.Framework.Tests {
 
 		[Test]
 		public void ReadRange() {
+			var random = new Random(31337);
 			using var memoryStream = new MemoryStream();
 			var list = new StreamMappedBitVector(memoryStream);
 
-			var inputs = Random.NextBools(16);
+			var inputs = random.NextBools(16);
 			list.AddRange(inputs);
 			Assert.AreEqual(inputs, list);
 
@@ -40,6 +40,7 @@ namespace Sphere10.Framework.Tests {
 
 		[Test]
 		public void IndexOfRange() {
+			var random = new Random(31337);
 			using var memoryStream = new MemoryStream();
 			var list = new StreamMappedBitVector(memoryStream);
 
@@ -68,12 +69,13 @@ namespace Sphere10.Framework.Tests {
 
 		[Test]
 		public void UpdateRange() {
+			var random = new Random(31337);
 			using var memoryStream = new MemoryStream();
 			var list = new StreamMappedBitVector(memoryStream);
 			var expected = new ExtendedList<bool>();
 
-			var inputs = Random.NextBools(100);
-			var update = Random.NextBools(inputs.Length);
+			var inputs = random.NextBools(100);
+			var update = random.NextBools(inputs.Length);
 
 			list.AddRange(inputs);
 			expected.AddRange(inputs);
@@ -83,8 +85,8 @@ namespace Sphere10.Framework.Tests {
 
 			Assert.AreEqual(expected, list);
 
-			int randomIndex = Random.Next(0, list.Count - 1);
-			var randomUpdate = Random.NextBools(list.Count - randomIndex);
+			int randomIndex = random.Next(0, list.Count - 1);
+			var randomUpdate = random.NextBools(list.Count - randomIndex);
 
 			list.UpdateRange(randomIndex, randomUpdate);
 			expected.UpdateRange(randomIndex, randomUpdate);

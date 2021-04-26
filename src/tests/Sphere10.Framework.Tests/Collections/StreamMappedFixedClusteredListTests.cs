@@ -16,9 +16,10 @@ namespace Sphere10.Framework.Tests {
 
 			Assert.Throws<ArgumentNullException>(() => new StreamMappedFixedClusteredList<int>(32, 100, 40, null, new IntSerializer()));
 			Assert.Throws<ArgumentNullException>(() => new StreamMappedFixedClusteredList<int>(32, 100, 40, new MemoryStream(), null));
-			Assert.Throws<ArgumentOutOfRangeException>(() => new StreamMappedFixedClusteredList<int>(0, 100, 40, new MemoryStream(), new IntSerializer()));
+			Assert.Throws<ArgumentOutOfRangeException>(() =>
+				new StreamMappedFixedClusteredList<int>(0, 100, 40, new MemoryStream(), new IntSerializer()));
 		}
-		
+
 		[Test]
 		public void ReadRange() {
 			using var stream = new MemoryStream();
@@ -41,7 +42,7 @@ namespace Sphere10.Framework.Tests {
 			list.AddRange(999, 1000, 1001, 1002);
 
 			Assert.Throws<ArgumentOutOfRangeException>(() => _ = list.ReadRange(-1, 1).ToList());
-			Assert.Throws<ArgumentOutOfRangeException>(() => _ = list.ReadRange(0,5).ToList());
+			Assert.Throws<ArgumentOutOfRangeException>(() => _ = list.ReadRange(0, 5).ToList());
 		}
 
 		[Test]
@@ -50,7 +51,8 @@ namespace Sphere10.Framework.Tests {
 			var list = new StreamMappedFixedClusteredList<int>(32, 100, 4000, stream, new IntSerializer());
 
 			list.AddRange(999, 1000, 1001, 1002);
-			Assert.IsEmpty(list.ReadRange(0 , 0));;
+			Assert.IsEmpty(list.ReadRange(0, 0));
+			;
 			list.Clear();
 			Assert.IsEmpty(list.ReadRange(0, 0));
 		}
@@ -94,7 +96,7 @@ namespace Sphere10.Framework.Tests {
 			var list = new StreamMappedFixedClusteredList<int>(32, 100, 4000, stream, new IntSerializer());
 
 			list.AddRange(999, 1000, 1001, 1002);
-			
+
 			Assert.Throws<ArgumentNullException>(() => list.UpdateRange(0, null));
 			Assert.Throws<ArgumentOutOfRangeException>(() => list.UpdateRange(4, new int[1]));
 			Assert.Throws<ArgumentOutOfRangeException>(() => list.UpdateRange(3, new int[2]));
@@ -119,12 +121,12 @@ namespace Sphere10.Framework.Tests {
 			var list = new StreamMappedFixedClusteredList<int>(32, 100, 4000, stream, new IntSerializer());
 
 			list.Add(999);
-			
-			Assert.Throws<ArgumentOutOfRangeException>(() =>list.RemoveRange(1, 1));
-			Assert.Throws<ArgumentOutOfRangeException>(() =>list.RemoveRange(-1, 1));
-			Assert.Throws<ArgumentOutOfRangeException>(() =>list.RemoveRange(0, -1));
-			
-			Assert.DoesNotThrow(() =>list.RemoveRange(0, 0));
+
+			Assert.Throws<ArgumentOutOfRangeException>(() => list.RemoveRange(1, 1));
+			Assert.Throws<ArgumentOutOfRangeException>(() => list.RemoveRange(-1, 1));
+			Assert.Throws<ArgumentOutOfRangeException>(() => list.RemoveRange(0, -1));
+
+			Assert.DoesNotThrow(() => list.RemoveRange(0, 0));
 		}
 
 		[Test]
@@ -178,13 +180,13 @@ namespace Sphere10.Framework.Tests {
 			var list = new StreamMappedFixedClusteredList<int>(32, 100, 4000, stream, new IntSerializer());
 
 			list.AddRange(999, 1000, 1001, 1002);
-			
+
 			Assert.Throws<ArgumentNullException>(() => list.InsertRange(0, null));
 			Assert.Throws<ArgumentOutOfRangeException>(() => list.InsertRange(5, new int[0]));
 			Assert.Throws<ArgumentOutOfRangeException>(() => list.InsertRange(-1, new int[0]));
 			Assert.DoesNotThrow(() => list.InsertRange(0, Array.Empty<int>()));
 		}
-		
+
 		[Test]
 		public void LoadAndUseExistingStream() {
 			var fileName = Tools.FileSystem.GetTempFileName(true);
@@ -214,20 +216,24 @@ namespace Sphere10.Framework.Tests {
 				}
 			}
 		}
-		
+
 		[Test]
-		public void ObjectIntegrationTest() {
-			using var stream = new MemoryStream();
-			var list = new StreamMappedFixedClusteredList<StreamMappedDynamicClusteredListTests.TestObject>(100, 100, 50000, stream, new StreamMappedDynamicClusteredListTests.TestObjectSerializer(), new StreamMappedDynamicClusteredListTests.TestObjectComparer());
-			AssertEx.ListIntegrationTest(list,
-				100,
-				(rng, i) => Enumerable.Range(0, i).Select(x => new StreamMappedDynamicClusteredListTests.TestObject()).ToArray(),
-				false,
-				100,
-				null,
-				new StreamMappedDynamicClusteredListTests.TestObjectComparer());
+		public void ObjectIntegrationTest([Values] StreamMappedDynamicClusteredListTests.StorageType storage) {
+			using (CreateStream(storage, 5000, out Stream stream)) {
+				var list = new StreamMappedDynamicClusteredList<StreamMappedDynamicClusteredListTests.TestObject>(100,
+					stream,
+					new StreamMappedDynamicClusteredListTests.TestObjectSerializer(),
+					new StreamMappedDynamicClusteredListTests.TestObjectComparer());
+				AssertEx.ListIntegrationTest(list,
+					100,
+					(rng, i) => Enumerable.Range(0, i).Select(x => new StreamMappedDynamicClusteredListTests.TestObject()).ToArray(),
+					false,
+					10,
+					null,
+					new StreamMappedDynamicClusteredListTests.TestObjectComparer());
+			}
 		}
-		
+
 		[Test]
 		public void IntegrationTestsFixedItemSize() {
 			using var stream = new MemoryStream();
@@ -246,6 +252,62 @@ namespace Sphere10.Framework.Tests {
 					.Select(x => rng.NextString(1, 100))
 					.ToArray());
 		}
+		
+		private IDisposable CreateStream(StreamMappedDynamicClusteredListTests.StorageType storageType, int estimatedMaxByteSize, out Stream stream) {
+            var disposables = new Disposables();
+
+            switch (storageType) {
+                case StreamMappedDynamicClusteredListTests.StorageType.MemoryStream:
+                    stream = new MemoryStream();
+                    break;
+                case StreamMappedDynamicClusteredListTests.StorageType.List:
+                    stream = new ExtendedMemoryStream(new ExtendedListAdapter<byte>(new List<byte>()));
+                    break;
+                case StreamMappedDynamicClusteredListTests.StorageType.ExtendedList:
+                    stream = new ExtendedMemoryStream(new ExtendedList<byte>());
+                    break;
+                case StreamMappedDynamicClusteredListTests.StorageType.MemoryBuffer:
+                    stream = new ExtendedMemoryStream(new MemoryBuffer());
+                    break;
+                case StreamMappedDynamicClusteredListTests.StorageType.BinaryFile_1Page_1InMem:
+                    var tmpFile = Tools.FileSystem.GetTempFileName(false);
+                    stream = new ExtendedMemoryStream(new FileMappedBuffer(tmpFile, Math.Max(1, estimatedMaxByteSize), 1));
+                    disposables.Add(new ActionScope(() => File.Delete(tmpFile)));
+                    break;
+                case StreamMappedDynamicClusteredListTests.StorageType.BinaryFile_2Page_1InMem:
+                    tmpFile = Tools.FileSystem.GetTempFileName(false);
+                    stream = new ExtendedMemoryStream(new FileMappedBuffer(tmpFile, Math.Max(1, estimatedMaxByteSize / 2), 2));
+                    disposables.Add(new ActionScope(() => File.Delete(tmpFile)));
+                    break;
+                case StreamMappedDynamicClusteredListTests.StorageType.BinaryFile_10Page_5InMem:
+                    tmpFile = Tools.FileSystem.GetTempFileName(false);
+                    stream = new ExtendedMemoryStream(new FileMappedBuffer(tmpFile, Math.Max(1, estimatedMaxByteSize / 10), 5));
+                    disposables.Add(new ActionScope(() => File.Delete(tmpFile)));
+                    break;
+                case StreamMappedDynamicClusteredListTests.StorageType.TransactionalBinaryFile_1Page_1InMem:
+                    var baseDir = Tools.FileSystem.GetTempEmptyDirectory(true);
+                    var fileName = Path.Combine(baseDir, "File.dat");
+                    stream = new ExtendedMemoryStream(new TransactionalFileMappedBuffer(fileName, baseDir, Guid.NewGuid(), Math.Max(1, estimatedMaxByteSize), 1));
+                    disposables.Add(new ActionScope(() => Tools.FileSystem.DeleteDirectory(baseDir)));
+                    break;
+                case StreamMappedDynamicClusteredListTests.StorageType.TransactionalBinaryFile_2Page_1InMem:
+                    baseDir = Tools.FileSystem.GetTempEmptyDirectory(true);
+                    fileName = Path.Combine(baseDir, "File.dat");
+                    stream = new ExtendedMemoryStream(new TransactionalFileMappedBuffer(fileName, baseDir, Guid.NewGuid(), Math.Max(1, estimatedMaxByteSize / 2), 2));
+                    disposables.Add(new ActionScope(() => Tools.FileSystem.DeleteDirectory(baseDir)));
+                    break;
+
+                case StreamMappedDynamicClusteredListTests.StorageType.TransactionalBinaryFile_10Page_5InMem:
+                    baseDir = Tools.FileSystem.GetTempEmptyDirectory(true);
+                    fileName = Path.Combine(baseDir, "File.dat");
+                    stream = new ExtendedMemoryStream(new TransactionalFileMappedBuffer(fileName, baseDir, Guid.NewGuid(), Math.Max(1, estimatedMaxByteSize / 10), 5));
+                    disposables.Add(new ActionScope(() => Tools.FileSystem.DeleteDirectory(baseDir)));
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(storageType), storageType, null);
+            }
+            return disposables;
+        }
 	}
 	
 	internal class IntSerializer : FixedSizeObjectSerializer<int> {

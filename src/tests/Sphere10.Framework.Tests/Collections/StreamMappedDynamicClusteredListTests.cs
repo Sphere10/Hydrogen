@@ -243,16 +243,18 @@ namespace Sphere10.Framework.Tests {
 		}
 
 		[Test]
-		public void ObjectIntegrationTest() {
-			using var stream = new MemoryStream();
-			var list = new StreamMappedDynamicClusteredList<TestObject>(100, stream, new TestObjectSerializer(), new TestObjectComparer());
-			AssertEx.ListIntegrationTest(list,
-				100,
-				(rng, i) => Enumerable.Range(0, i).Select(x => new TestObject()).ToArray(),
-				false,
-				100,
-				null,
-				new TestObjectComparer());
+		public void ObjectIntegrationTest([Values] StorageType storage) {
+			using(CreateStream(storage, 5000, out Stream stream))
+			{
+				var list = new StreamMappedDynamicClusteredList<TestObject>(100, stream, new TestObjectSerializer(), new TestObjectComparer());
+				AssertEx.ListIntegrationTest(list,
+					100,
+					(rng, i) => Enumerable.Range(0, i).Select(x => new TestObject()).ToArray(),
+					false,
+					10,
+					null,
+					new TestObjectComparer());
+			}
 		}
 
 		[Test]
@@ -279,8 +281,7 @@ namespace Sphere10.Framework.Tests {
 				}
 			}
 		}
-
-
+		
 		internal class TestObject {
 
 			public TestObject() {
@@ -303,8 +304,7 @@ namespace Sphere10.Framework.Tests {
 			public bool C { get; }
 
 		}
-
-
+		
 		internal class TestObjectSerializer : IObjectSerializer<TestObject> {
 
 			private IObjectSerializer<string> StringSerializer { get; } = new StringSerializer(Encoding.UTF8);
@@ -357,5 +357,74 @@ namespace Sphere10.Framework.Tests {
 				return HashCode.Combine(obj.A, obj.B, obj.C);
 			}
 		}
+		
+		public enum StorageType {
+            MemoryStream,
+            List,
+            ExtendedList,
+            MemoryBuffer,
+            BinaryFile_1Page_1InMem,
+            BinaryFile_2Page_1InMem,
+            BinaryFile_10Page_5InMem,
+            TransactionalBinaryFile_1Page_1InMem,
+            TransactionalBinaryFile_2Page_1InMem,
+            TransactionalBinaryFile_10Page_5InMem
+        }
+
+        private IDisposable CreateStream(StorageType storageType, int estimatedMaxByteSize, out Stream stream) {
+            var disposables = new Disposables();
+
+            switch (storageType) {
+                case StorageType.MemoryStream:
+                    stream = new MemoryStream();
+                    break;
+                case StorageType.List:
+                    stream = new ExtendedMemoryStream(new ExtendedListAdapter<byte>(new List<byte>()));
+                    break;
+                case StorageType.ExtendedList:
+                    stream = new ExtendedMemoryStream(new ExtendedList<byte>());
+                    break;
+                case StorageType.MemoryBuffer:
+                    stream = new ExtendedMemoryStream(new MemoryBuffer());
+                    break;
+                case StorageType.BinaryFile_1Page_1InMem:
+                    var tmpFile = Tools.FileSystem.GetTempFileName(false);
+                    stream = new ExtendedMemoryStream(new FileMappedBuffer(tmpFile, Math.Max(1, estimatedMaxByteSize), 1));
+                    disposables.Add(new ActionScope(() => File.Delete(tmpFile)));
+                    break;
+                case StorageType.BinaryFile_2Page_1InMem:
+                    tmpFile = Tools.FileSystem.GetTempFileName(false);
+                    stream = new ExtendedMemoryStream(new FileMappedBuffer(tmpFile, Math.Max(1, estimatedMaxByteSize / 2), 2));
+                    disposables.Add(new ActionScope(() => File.Delete(tmpFile)));
+                    break;
+                case StorageType.BinaryFile_10Page_5InMem:
+                    tmpFile = Tools.FileSystem.GetTempFileName(false);
+                    stream = new ExtendedMemoryStream(new FileMappedBuffer(tmpFile, Math.Max(1, estimatedMaxByteSize / 10), 5));
+                    disposables.Add(new ActionScope(() => File.Delete(tmpFile)));
+                    break;
+                case StorageType.TransactionalBinaryFile_1Page_1InMem:
+                    var baseDir = Tools.FileSystem.GetTempEmptyDirectory(true);
+                    var fileName = Path.Combine(baseDir, "File.dat");
+                    stream = new ExtendedMemoryStream(new TransactionalFileMappedBuffer(fileName, baseDir, Guid.NewGuid(), Math.Max(1, estimatedMaxByteSize), 1));
+                    disposables.Add(new ActionScope(() => Tools.FileSystem.DeleteDirectory(baseDir)));
+                    break;
+                case StorageType.TransactionalBinaryFile_2Page_1InMem:
+                    baseDir = Tools.FileSystem.GetTempEmptyDirectory(true);
+                    fileName = Path.Combine(baseDir, "File.dat");
+                    stream = new ExtendedMemoryStream(new TransactionalFileMappedBuffer(fileName, baseDir, Guid.NewGuid(), Math.Max(1, estimatedMaxByteSize / 2), 2));
+                    disposables.Add(new ActionScope(() => Tools.FileSystem.DeleteDirectory(baseDir)));
+                    break;
+
+                case StorageType.TransactionalBinaryFile_10Page_5InMem:
+                    baseDir = Tools.FileSystem.GetTempEmptyDirectory(true);
+                    fileName = Path.Combine(baseDir, "File.dat");
+                    stream = new ExtendedMemoryStream(new TransactionalFileMappedBuffer(fileName, baseDir, Guid.NewGuid(), Math.Max(1, estimatedMaxByteSize / 10), 5));
+                    disposables.Add(new ActionScope(() => Tools.FileSystem.DeleteDirectory(baseDir)));
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(storageType), storageType, null);
+            }
+            return disposables;
+        }
 	}
 }

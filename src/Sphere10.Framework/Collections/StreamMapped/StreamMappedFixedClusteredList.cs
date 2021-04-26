@@ -28,6 +28,7 @@ namespace Sphere10.Framework {
 			IObjectSerializer<TListing> listingSerializer,
 			IEqualityComparer<T> itemComparer = null)
 			: base(clusterDataSize, stream, itemSerializer, listingSerializer, itemComparer) {
+			
 			Guard.ArgumentInRange(clusterDataSize, 0, int.MaxValue, nameof(clusterDataSize));
 			Guard.ArgumentInRange(maxItems, 0, int.MaxValue, nameof(maxItems));
 			Guard.ArgumentInRange(maxStorageBytes, 0, int.MaxValue, nameof(maxStorageBytes));
@@ -103,6 +104,7 @@ namespace Sphere10.Framework {
 		public override void InsertRange(int index, IEnumerable<T> items) {
 			CheckLoaded();
 			Guard.ArgumentNotNull(items, nameof(items));
+			Guard.ArgumentInRange(index, 0, Count, nameof(index));
 
 			var itemsArray = items as T[] ?? items.ToArray();
 

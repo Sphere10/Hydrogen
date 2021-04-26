@@ -160,11 +160,11 @@ namespace Sphere10.Framework {
 		}
 
 		protected void CheckRange(int index, int count) {
-			var startIX = 0;
-			var lastIX = startIX + (Count - 1).ClipTo(startIX, int.MaxValue);
-			Guard.ArgumentInRange(index, startIX, lastIX, nameof(index));
+			var startIx = 0;
+			var lastIx = (Count - 1).ClipTo(startIx, int.MaxValue);
+			Guard.ArgumentInRange(index, startIx, lastIx, nameof(index));
 			if (count > 0)
-				Guard.ArgumentInRange(index + count - 1, startIX, lastIX, nameof(count));
+				Guard.ArgumentInRange(index + count - 1, startIx, lastIx, nameof(count));
 		}
 
 		protected void CheckLoaded() {

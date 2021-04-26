@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Text;
 using NUnit.Framework;
 using Sphere10.Framework.NUnit;
@@ -9,6 +10,15 @@ using Sphere10.Framework.NUnit;
 namespace Sphere10.Framework.Tests {
 
 	public class StreamMappedFixedClusteredListTests {
+
+		[Test]
+		public void ConstructorArgumentsAreGuarded() {
+
+			Assert.Throws<ArgumentNullException>(() => new StreamMappedFixedClusteredList<int>(32, 100, 40, null, new IntSerializer()));
+			Assert.Throws<ArgumentNullException>(() => new StreamMappedFixedClusteredList<int>(32, 100, 40, new MemoryStream(), null));
+			Assert.Throws<ArgumentOutOfRangeException>(() => new StreamMappedFixedClusteredList<int>(0, 100, 40, new MemoryStream(), new IntSerializer()));
+		}
+		
 		[Test]
 		public void ReadRange() {
 			using var stream = new MemoryStream();
@@ -24,7 +34,29 @@ namespace Sphere10.Framework.Tests {
 		}
 
 		[Test]
-		public void AddEmptyNullString() {
+		public void ReadRangeInvalidAzsrguments() {
+			using var stream = new MemoryStream();
+			var list = new StreamMappedFixedClusteredList<int>(32, 100, 4000, stream, new IntSerializer());
+
+			list.AddRange(999, 1000, 1001, 1002);
+
+			Assert.Throws<ArgumentOutOfRangeException>(() => _ = list.ReadRange(-1, 1).ToList());
+			Assert.Throws<ArgumentOutOfRangeException>(() => _ = list.ReadRange(0,5).ToList());
+		}
+
+		[Test]
+		public void ReadRangeEmpty() {
+			using var stream = new MemoryStream();
+			var list = new StreamMappedFixedClusteredList<int>(32, 100, 4000, stream, new IntSerializer());
+
+			list.AddRange(999, 1000, 1001, 1002);
+			Assert.IsEmpty(list.ReadRange(0 , 0));;
+			list.Clear();
+			Assert.IsEmpty(list.ReadRange(0, 0));
+		}
+
+		[Test]
+		public void AddRangeEmptyNullStrings() {
 			using var stream = new MemoryStream();
 			var list = new StreamMappedFixedClusteredList<string>(32, 100, 4000, stream, new StringSerializer(Encoding.UTF8));
 			string[] input = new[] { string.Empty, null, string.Empty, null };
@@ -35,6 +67,124 @@ namespace Sphere10.Framework.Tests {
 			Assert.AreEqual(input, read);
 		}
 
+		[Test]
+		public void AddRangeNullEmptyCollections() {
+			using var stream = new MemoryStream();
+			var list = new StreamMappedFixedClusteredList<string>(32, 100, 4000, stream, new StringSerializer(Encoding.UTF8));
+			Assert.Throws<ArgumentNullException>(() => list.AddRange(null));
+			Assert.DoesNotThrow(() => list.AddRange(new string[0]));
+		}
+
+		[Test]
+		public void UpdateRange() {
+			using var stream = new MemoryStream();
+			var list = new StreamMappedFixedClusteredList<int>(32, 100, 4000, stream, new IntSerializer());
+
+			list.AddRange(999, 1000, 1001, 1002);
+			list.UpdateRange(0, new[] { 998 });
+			int read = list[0];
+
+			Assert.AreEqual(998, read);
+			Assert.AreEqual(4, list.Count);
+		}
+
+		[Test]
+		public void UpdateRangeInvalidArguments() {
+			using var stream = new MemoryStream();
+			var list = new StreamMappedFixedClusteredList<int>(32, 100, 4000, stream, new IntSerializer());
+
+			list.AddRange(999, 1000, 1001, 1002);
+			
+			Assert.Throws<ArgumentNullException>(() => list.UpdateRange(0, null));
+			Assert.Throws<ArgumentOutOfRangeException>(() => list.UpdateRange(4, new int[1]));
+			Assert.Throws<ArgumentOutOfRangeException>(() => list.UpdateRange(3, new int[2]));
+			Assert.Throws<ArgumentOutOfRangeException>(() => list.UpdateRange(-1, new int[2]));
+		}
+
+		[Test]
+		public void RemoveRange() {
+			using var stream = new MemoryStream();
+			var list = new StreamMappedFixedClusteredList<int>(32, 100, 4000, stream, new IntSerializer());
+
+			list.Add(999);
+			list.Add(1000);
+			list.RemoveRange(0, 1);
+
+			Assert.AreEqual(1000, list[0]);
+		}
+
+		[Test]
+		public void RemoveRangeInvalidArguments() {
+			using var stream = new MemoryStream();
+			var list = new StreamMappedFixedClusteredList<int>(32, 100, 4000, stream, new IntSerializer());
+
+			list.Add(999);
+			
+			Assert.Throws<ArgumentOutOfRangeException>(() =>list.RemoveRange(1, 1));
+			Assert.Throws<ArgumentOutOfRangeException>(() =>list.RemoveRange(-1, 1));
+			Assert.Throws<ArgumentOutOfRangeException>(() =>list.RemoveRange(0, -1));
+			
+			Assert.DoesNotThrow(() =>list.RemoveRange(0, 0));
+		}
+
+		[Test]
+		public void IndexOf() {
+			using var stream = new MemoryStream();
+			var list = new StreamMappedFixedClusteredList<int>(32, 100, 4000, stream, new IntSerializer());
+
+			list.AddRange(999, 1000, 1001, 1002);
+
+			IEnumerable<int> indexes = list.IndexOfRange(new[] { 1000, 1001 });
+
+			Assert.AreEqual(new[] { 1, 2 }, indexes);
+		}
+
+		[Test]
+		public void IndexOfInvalidArguments() {
+			using var stream = new MemoryStream();
+			var list = new StreamMappedFixedClusteredList<int>(32, 100, 4000, stream, new IntSerializer());
+			list.AddRange(999, 1000, 1001, 1002);
+
+			Assert.Throws<ArgumentNullException>(() => list.IndexOfRange(null));
+			Assert.DoesNotThrow(() => list.IndexOfRange(Array.Empty<int>()));
+		}
+
+		[Test]
+		public void Count() {
+			using var stream = new MemoryStream();
+			var list = new StreamMappedFixedClusteredList<int>(32, 100, 4000, stream, new IntSerializer());
+
+			Assert.AreEqual(0, list.Count);
+			list.AddRange(999, 1000, 1001, 1002);
+
+			Assert.AreEqual(4, list.Count);
+		}
+
+		[Test]
+		public void InsertRange() {
+			using var stream = new MemoryStream();
+			var list = new StreamMappedFixedClusteredList<int>(32, 100, 4000, stream, new IntSerializer());
+
+			list.AddRange(999, 1000, 1001, 1002);
+			list.InsertRange(2, new[] { 1003 });
+
+			Assert.AreEqual(5, list.Count);
+			Assert.AreEqual(1001, list[3]);
+		}
+
+		[Test]
+		public void InsertRangeInvalidArguments() {
+			using var stream = new MemoryStream();
+			var list = new StreamMappedFixedClusteredList<int>(32, 100, 4000, stream, new IntSerializer());
+
+			list.AddRange(999, 1000, 1001, 1002);
+			
+			Assert.Throws<ArgumentNullException>(() => list.InsertRange(0, null));
+			Assert.Throws<ArgumentOutOfRangeException>(() => list.InsertRange(5, new int[0]));
+			Assert.Throws<ArgumentOutOfRangeException>(() => list.InsertRange(-1, new int[0]));
+			Assert.DoesNotThrow(() => list.InsertRange(0, Array.Empty<int>()));
+		}
+		
 		[Test]
 		public void LoadAndUseExistingStream() {
 			var fileName = Tools.FileSystem.GetTempFileName(true);
@@ -64,66 +214,7 @@ namespace Sphere10.Framework.Tests {
 				}
 			}
 		}
-
-		[Test]
-		public void UpdateRange() {
-			using var stream = new MemoryStream();
-			var list = new StreamMappedFixedClusteredList<int>(32, 100, 4000, stream, new IntSerializer());
-
-			list.AddRange(999, 1000, 1001, 1002);
-			list.UpdateRange(0, new[] { 998 });
-			int read = list[0];
-
-			Assert.AreEqual(998, read);
-			Assert.AreEqual(4, list.Count);
-		}
-
-		[Test]
-		public void RemoveRange() {
-			using var stream = new MemoryStream();
-			var list = new StreamMappedFixedClusteredList<int>(32, 100, 4000, stream, new IntSerializer());
-
-			list.Add(999);
-			list.Add(1000);
-			list.RemoveRange(0, 1);
-
-			Assert.AreEqual(1000, list[0]);
-		}
-
-		[Test]
-		public void IndexOf() {
-			using var stream = new MemoryStream();
-			var list = new StreamMappedFixedClusteredList<int>(32, 100, 4000, stream, new IntSerializer());
-
-			list.AddRange(999, 1000, 1001, 1002);
-
-			IEnumerable<int> indexes = list.IndexOfRange(new[] { 1000, 1001 });
-
-			Assert.AreEqual(new[] { 1, 2 }, indexes);
-		}
-
-		[Test]
-		public void Count() {
-			using var stream = new MemoryStream();
-			var list = new StreamMappedFixedClusteredList<int>(32, 100, 4000, stream, new IntSerializer());
-
-			list.AddRange(999, 1000, 1001, 1002);
-
-			Assert.AreEqual(4, list.Count);
-		}
-
-		[Test]
-		public void InsertRange() {
-			using var stream = new MemoryStream();
-			var list = new StreamMappedFixedClusteredList<int>(32, 100, 4000, stream, new IntSerializer());
-
-			list.AddRange(999, 1000, 1001, 1002);
-			list.InsertRange(2, new[] { 1003 });
-
-			Assert.AreEqual(5, list.Count);
-			Assert.AreEqual(1001, list[3]);
-		}
-
+		
 		[Test]
 		[Pairwise]
 		public void IntegrationTestsFixedItemSize() {

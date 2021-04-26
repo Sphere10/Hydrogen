@@ -49,6 +49,9 @@ namespace Sphere10.Framework {
 		public string[] Header { get; init; }
 		public CommandLineArgOptions Options { get; init; }
 		public CommandLineArg[] Arguments { get; init; }
+		public string[] Footer { get; init; }
+
+
 
 		public bool TryParse(string[] args, out ILookup<string, string> results) {
 			// Implementation note: you can use a LookupEx for arguments

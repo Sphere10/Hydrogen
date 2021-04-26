@@ -25,20 +25,19 @@ namespace Sphere10.Hydrogen.Node {
 		public override void RegisterComponents(ComponentRegistry registry) {
 			// Init tasks
 			registry.RegisterInitializationTask<HydrogenInitializer>();
-
-
 			// Start Tasks
-			registry.RegisterStartTask<StartNodeTask>();
-
-
+			// none
 			// End Tasks
+			// none
 
+			// Components
+			
 		}
-
 
 		public override void DeregisterComponents(ComponentRegistry registry) {
 			registry.DeregisterInitializationTask<HydrogenInitializer>();
-			registry.DeregisterStartTask<StartNodeTask>();
+			
+			
 		}
 
 	}

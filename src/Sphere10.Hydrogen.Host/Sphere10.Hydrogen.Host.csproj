@@ -6,9 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Sphere10.Framework.Application\Sphere10.Framework.Application.csproj" />
     <ProjectReference Include="..\Sphere10.Framework\Sphere10.Framework.csproj" />
-    <ProjectReference Include="..\Sphere10.Hydrogen.Node\Sphere10.Hydrogen.Node.csproj" />
   </ItemGroup>
 
 </Project>

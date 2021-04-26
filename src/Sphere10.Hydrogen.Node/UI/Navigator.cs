@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Net.Http.Headers;
 using System.Reflection;
+using System.Threading;
 using Sphere10.Framework;
 using Terminal.Gui;
 
@@ -18,8 +19,9 @@ namespace Sphere10.Hydrogen.Node.UI {
 		private static Type[] _applicationScreenTypes;
 		private static IDictionary<Type, Screen> _activatedScreens;
 
-		public static void Start() {
+		public static void Start(CancellationToken stopRunningToken) {
 			Application.Init();
+			stopRunningToken.Register(Quit);
 			_activatedScreens = new Dictionary<Type, Screen>();
 			_applicationScreenTypes = ScanApplicationScreens().ToArray();
 

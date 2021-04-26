@@ -81,6 +81,16 @@ namespace Sphere10.Framework{
 			logger.Error($"{ComponentPrefix(componentName, methodName)} {message}");
 		}
 
+		public static void Result(this ILogger logger, string componentName, string methodName, Result result) {
+			if (result.HasInformation) {
+				foreach(var info in result.InformationMessages) 
+					logger.Info(componentName, methodName, info);
+
+				foreach (var error in result.ErrorMessages)
+					logger.Info(componentName, methodName, error);
+			}
+		}
+
 		public static IDisposable LogDuration(this ILogger logger, string messagePrefix) {
             var start = DateTime.Now;
             return new ActionScope(

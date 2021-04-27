@@ -13,25 +13,23 @@ using Sphere10.Hydrogen.Node;
 using Sphere10.Hydrogen.Node.UI;
 
 
-
 namespace Sphere10.Hydrogen.Node {
 
 	class Program {
 
-		public static CommandLineArgs Arguments = new CommandLineArgs {
-			Header = new[] {
+		public static CommandLineArgs Arguments = new CommandLineArgs(
+			new[] {
 				"Hydrogen Node v1.0",
 				"Copyright (c) Sphere 10 Software 2021 - {CurrentYear}"
 			},
-
-			Arguments = new CommandLineArg[] {
+			new string[0],
+			new CommandLineArg[] {
 				new("service", "Run the node in the background"),
 				new("host", "The handle provided by the host process for anonymous pipe IPC"),
 			},
+			CommandLineArgOptions.CaseSensitive | CommandLineArgOptions.DoubleDash | CommandLineArgOptions.PrintHelpOnH |
+			CommandLineArgOptions.PrintHelpOnHelp);
 
-			Options = CommandLineArgOptions.CaseSensitive | CommandLineArgOptions.DoubleDash | CommandLineArgOptions.PrintHelpOnH | CommandLineArgOptions.PrintHelpOnHelp
-
-		};
 
 		private static void ListenToHostCommands(string pipeHandleAsString, CancellationTokenSource cts) {
 			using var pipeClient = new AnonymousPipeClientStream(PipeDirection.In, pipeHandleAsString);
@@ -46,7 +44,9 @@ namespace Sphere10.Hydrogen.Node {
 		}
 
 		static void Main(string[] args) {
-			// Use CommandLineArgs to get host arguments
+
+			bool parsed = Arguments.TryParse(args, out var results, out var messages);
+			
 			var hasHost = args.Length > 0;
 			var hostHandle = hasHost ? args[0] : null;
 			try {
@@ -54,7 +54,8 @@ namespace Sphere10.Hydrogen.Node {
 				var stopNodeTokenSource = new CancellationTokenSource();
 				var stopListeningToHostTokenSource = new CancellationTokenSource();
 				if (hasHost) {
-					var hostListenTask = new Task(() => ListenToHostCommands(args[0], stopNodeTokenSource), stopListeningToHostTokenSource.Token);
+					var hostListenTask = new Task(() => ListenToHostCommands(args[0], stopNodeTokenSource),
+						stopListeningToHostTokenSource.Token);
 					hostListenTask.Start();
 				}
 				Navigator.Start(stopNodeTokenSource.Token);

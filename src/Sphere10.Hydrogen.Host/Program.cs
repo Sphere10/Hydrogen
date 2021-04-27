@@ -11,23 +11,20 @@ using System.Threading;
 namespace Sphere10.Hydrogen.Host {
 
 	class Program {
-		public static CommandLineArgs Arguments = new CommandLineArgs {
-			Header = new[] {
+		public static CommandLineArgs Arguments = new CommandLineArgs(
+			new[] {
 				"Hydrogen Host v1.0",
 				"Copyright (c) Sphere 10 Software 2021 - {CurrentYear}"
 			},
-
-			Arguments = new CommandLineArg[] {
+			new[] {
+				"NOTE: The Hydrogen Host will forward all arguments marked [N] above to the Hydrogen Node which is launched as a child-process."
+			},
+			new CommandLineArg[] {
 				new("development", "Used during development only"),
 				new("node", "Path to the node assembly which is started by the host"),
 			},
-
-			Options = CommandLineArgOptions.CaseSensitive | CommandLineArgOptions.DoubleDash | CommandLineArgOptions.PrintHelpOnH | CommandLineArgOptions.PrintHelpOnHelp,
-
-			Footer = new[] {
-				"NOTE: The Hydrogen Host will forward all arguments marked [N] above to the Hydrogen Node which is launched as a child-process."
-			}
-		};
+			CommandLineArgOptions.CaseSensitive | CommandLineArgOptions.DoubleDash | CommandLineArgOptions.PrintHelpOnH |
+			CommandLineArgOptions.PrintHelpOnHelp);
 
 		private static void RunNode(string nodeExecutable, CancellationToken stopNodeToken) {
 			var nodeProcess = new Process();
@@ -67,12 +64,13 @@ namespace Sphere10.Hydrogen.Host {
 			var srcDir = Tools.FileSystem.GetParentDirectoryPath(hostExecutable, 5);
 			return Path.Combine(srcDir, nodeProject, "bin", buildConfiguration, "net5.0", nodeExecutable);
 		}
-
-
+		
 		static void Main(string[] args) {
 			var stopNodeCancellationTokenSource = new CancellationTokenSource();
 			try {
-				// Note: use CommandLineArgs
+				
+				bool parsed = Arguments.TryParse(args, out var results, out var messages);
+				
 				var nodeExecutable = GetDevelopmentNodeExecutable();
 				RunNode(nodeExecutable, stopNodeCancellationTokenSource.Token);
 			}
@@ -80,7 +78,6 @@ namespace Sphere10.Hydrogen.Host {
 				Console.WriteLine($"Hydrogen host terminated abnormally.");
 				Console.Write(error.ToDiagnosticString());
 			}
-
 		}
 	}
 }

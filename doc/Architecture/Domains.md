@@ -67,4 +67,4 @@ Sphere 10 Framework provides modules across all 3 tiers of the architecture. Of 
 **Conceptual Overview (Technical)**
 
 This is a technial overview that shows the basic internal components of the Helium system.
-![ConceptualOverview](https://user-images.githubusercontent.com/79815312/114967596-1812fa00-9eb8-11eb-8c24-c35fcff5cc6b.jpeg)
+![ConceptualOverview](https://user-images.githubusercontent.com/79815312/116169619-79548c00-a748-11eb-8448-ff332d33b445.jpeg)

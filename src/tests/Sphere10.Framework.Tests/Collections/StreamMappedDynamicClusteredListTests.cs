@@ -292,7 +292,7 @@ namespace Sphere10.Framework.Tests {
 
 			public TestObject() {
 				var random = new Random();
-				A = random.NextString(100);
+				A = random.NextString(random.Next(0,101));
 				B = random.Next(0, 1000);
 				C = random.NextBool();
 			}

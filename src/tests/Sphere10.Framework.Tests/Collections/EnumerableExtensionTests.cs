@@ -65,7 +65,7 @@ namespace Sphere10.Framework.Tests {
 		[TestCase(1, 1, 1)]
 		[TestCase(10, 3, 4)]
 		public void PartitionBySize(int length, int partSize, int expectedParts) {
-			var rando = new Random();
+			var rando = new Random(31337);
 
 			var input = rando.NextBytes(length);
 			var parts = input.PartitionBySize(x => 1, partSize);

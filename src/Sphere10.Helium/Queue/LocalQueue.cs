@@ -1,4 +1,5 @@
-﻿using Sphere10.Framework;
+﻿using System;
+using Sphere10.Framework;
 using Sphere10.Helium.Message;
 
 namespace Sphere10.Helium.Queue {
@@ -14,6 +15,8 @@ namespace Sphere10.Helium.Queue {
 	public class LocalQueue : TransactionalList<IMessage>, ILocalQueue {
 		
 		private readonly QueueConfigDto _queueConfigDto;
+
+		public event EventHandler MessageAdded;
 
 		public LocalQueue(QueueConfigDto queueConfigDto)
 			: base(
@@ -35,9 +38,11 @@ namespace Sphere10.Helium.Queue {
 			Commit();
 		}
 
-		public void DeleteMessage(IMessage message) {
-			Remove(message);
+		public bool DeleteMessage(IMessage message) {
+			var result =Remove(message);
 			Commit();
+
+			return result;
 		}
 
 		protected override void OnAdding(AddingEventArgs<IMessage> args) {
@@ -48,6 +53,8 @@ namespace Sphere10.Helium.Queue {
 		protected override void OnAdded(AddedEventArgs<IMessage> args) {
 			base.OnAdded(args);
 
+			var handler = MessageAdded;
+			handler?.Invoke(this, args);
 		}
 
 		protected override void OnRemovedItems(RemovedItemsEventArgs<IMessage> args) {

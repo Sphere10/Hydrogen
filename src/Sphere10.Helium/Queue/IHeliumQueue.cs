@@ -24,7 +24,7 @@ namespace Sphere10.Helium.Queue {
 		/// The message must be taken off the "front" of the queue.
 		/// </summary>
 		/// <param name="message"></param>
-		public void DeleteMessage(IMessage message);
+		public bool DeleteMessage(IMessage message);
 
 		/// <summary>
 		/// RETRIEVES a message FROM the queue.

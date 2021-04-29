@@ -22,7 +22,7 @@ namespace Sphere10.Helium.Queue {
 			throw new NotImplementedException();
 		}
 
-		public void DeleteMessage(IMessage message) {
+		public bool DeleteMessage(IMessage message) {
 			throw new NotImplementedException();
 		}
 

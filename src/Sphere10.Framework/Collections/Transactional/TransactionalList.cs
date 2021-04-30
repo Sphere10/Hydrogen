@@ -63,6 +63,12 @@ namespace Sphere10.Framework {
 				)
 			) {
 			AsBuffer = buffer;
+			AsBuffer.Committing += _ => OnCommitting();
+			AsBuffer.Committed += _ => OnCommitted();
+			AsBuffer.Committing += _ => OnCommitting();
+			AsBuffer.Committed += _ => OnCommitted();
+			AsBuffer.RollingBack += _ => OnRollingBack();
+			AsBuffer.RolledBack += _ => OnRolledBack();
 		}
 
 		/// <summary>
@@ -109,6 +115,12 @@ namespace Sphere10.Framework {
 				)
 			) {
 			AsBuffer = buffer;
+			AsBuffer.Committing += _ => OnCommitting();
+			AsBuffer.Committed += _ => OnCommitted();
+			AsBuffer.Committing += _ => OnCommitting();
+			AsBuffer.Committed += _ => OnCommitted();
+			AsBuffer.RollingBack += _ => OnRollingBack();
+			AsBuffer.RolledBack += _ => OnRolledBack();
 		}
 
 		public bool RequiresLoad => ((ILoadable)base.InnerCollection).RequiresLoad;
@@ -123,7 +135,7 @@ namespace Sphere10.Framework {
 
 		public Guid FileID => AsBuffer.FileID;
 
-		public TransactionalFileMappedBuffer AsBuffer { get; }
+		public TransactionalFileMappedBuffer AsBuffer { get;  }
 
 		private static TransactionalFileMappedBuffer NewTransactionalFileMappedBuffer(
 			string filename,
@@ -139,10 +151,22 @@ namespace Sphere10.Framework {
 			return result;
 		}
 
-
 		public void Dispose() {
 			AsBuffer?.Dispose();
 		}
+
+		protected virtual void OnCommitting() {
+		}
+
+		protected virtual void OnCommitted() {
+		}
+
+		protected virtual void OnRollingBack() {
+		}
+
+		protected virtual void OnRolledBack() {
+		}
+
 	}
 
 }

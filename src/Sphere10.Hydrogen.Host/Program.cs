@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net.Sockets;
 using System.Reflection;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Sphere10.Hydrogen.Host {
 
@@ -21,7 +22,9 @@ namespace Sphere10.Hydrogen.Host {
 			},
 			new CommandLineArg[] {
 				new("development", "Used during development only"),
-				new("node", "Path to the node assembly which is started by the host"),
+				new("config", "Path to the HydrogenHostConfig.ini file used to launch a Hydrogen Node"),
+				new("app", "Path to the Hydrogen Application Package (HAP)"),
+				new("update", "Path to a  which Hydrogen Application Package (HAP)  HydrogenNode executable to host"),
 			},
 			CommandLineArgOptions.CaseSensitive | CommandLineArgOptions.DoubleDash | CommandLineArgOptions.PrintHelpOnH |
 			CommandLineArgOptions.PrintHelpOnHelp);
@@ -38,6 +41,8 @@ namespace Sphere10.Hydrogen.Host {
 				AutoFlush = true
 			};
 			stopNodeToken.Register(() => streamWriter.WriteLine("ABORT"));
+			//Thread.Sleep(5000);
+			//streamWriter.WriteLine("ABORT");
 			nodeProcess.WaitForExit();
 			nodeProcess.Close();
 		}

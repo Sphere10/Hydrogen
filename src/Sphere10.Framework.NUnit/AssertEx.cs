@@ -103,9 +103,9 @@ namespace Sphere10.Framework.NUnit {
 					range = RNG.NextRange(list.Count);
 					rangeLen = Math.Max(0, range.End - range.Start + 1);
 					newItems = list.ReadRange(range.Start, rangeLen).ToArray();
-					T[] expectedNewItems = expected.ReadRangeSequentially(range.Start, rangeLen).ToArray();
+					var expectedNewItems = expected.ReadRangeSequentially(range.Start, rangeLen).ToArray();
 
-					range = RNG.NextRange(list.Count, rangeLength: newItems.Count());
+					range = RNG.NextRange(list.Count, rangeLength: newItems.Length);
 					expected.UpdateRangeSequentially(range.Start, expectedNewItems);
 					list.UpdateRange(range.Start, newItems);
 					Assert.That(expected, Is.EqualTo(list).Using(comparer));
@@ -122,7 +122,7 @@ namespace Sphere10.Framework.NUnit {
 				remainingCapacity = maxCapacity - list.Count;
 				newItemsCount = RNG.Next(0, remainingCapacity + 1);
 				newItems = randomItemGenerator(RNG, newItemsCount);
-				var insertIX = mutateFromEndOnly ? list.Count : RNG.Next(0, list.Count);
+				var insertIX = mutateFromEndOnly ? list.Count : RNG.Next(0, list.Count + 1);  // + 1 allows inserting from end (same as add)
 				list.InsertRange(insertIX, newItems);
 				expected.InsertRangeSequentially(insertIX, newItems);
 				Assert.That(expected, Is.EqualTo(list).Using(comparer));

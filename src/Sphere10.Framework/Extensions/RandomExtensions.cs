@@ -100,11 +100,10 @@ namespace Sphere10.Framework {
 			var A = rng.Next(0, remainingLength+1);
 			var B = remainingLength - A;
 
-			var endIX = fromEndOnly ? maxIndex : minIndex + A + rangeLength.Value - 1;
-			var startIX = (endIX - rangeLength.Value + 1);//.ClipTo(minIndex, endIX);
-
+			var endIX = fromEndOnly ? maxIndex : Math.Max(minIndex + A + rangeLength.Value - 1, 0);
+			var startIX = (endIX - rangeLength.Value + 1).ClipTo(minIndex, endIX);
+		
 			return new ValueRange<int>(startIX, endIX, Comparer<int>.Default, true, true, checkOrder: false); 
-			;
 		}
 
 	}

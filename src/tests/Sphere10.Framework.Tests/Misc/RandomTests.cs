@@ -49,5 +49,13 @@ namespace Sphere10.Framework.Tests {
 
         }
 
-    }
+        [Test]
+        public void Range_Empty() {
+	        var rng = new Random(31337);
+	        var range = rng.NextRange(1, rangeLength: 0);
+	        Assert.AreEqual(0, range.Start);
+	        Assert.AreEqual(0, range.End);
+        }
+
+	}
 }

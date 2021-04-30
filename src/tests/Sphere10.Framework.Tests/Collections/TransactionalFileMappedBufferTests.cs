@@ -41,7 +41,6 @@ namespace Sphere10.Framework.Tests {
 			Assert.AreEqual(Path.GetFileName(filename), Path.GetFileName(files[0]));
 		}
 
-
 		private static void AssertFileCount(string dir, int expectedCount) {
 			Assert.IsTrue(Directory.Exists(dir));
 			var files = Directory.GetFiles(dir);
@@ -77,7 +76,7 @@ namespace Sphere10.Framework.Tests {
 		}
 
 		[Test]
-		public void ExistingFile_EditSinglePage_UncomittedPageCreated([Values(1, 17, 7173)] int pageSize) {
+		public void ExistingFile_EditSinglePage_UncommittedPageCreated([Values(1, 17, 7173)] int pageSize) {
 			var RNG = new Random(RandomSeed);
 			var originalData = RNG.NextBytes(pageSize);
 			var baseDir = Tools.FileSystem.GetTempEmptyDirectory(true);
@@ -631,7 +630,7 @@ namespace Sphere10.Framework.Tests {
 		}
 
 		[Test]
-		public void Special_NoDanglingUncomittedMarkersAfterUncomittedReload() {
+		public void Special_NoDanglingUncommittedMarkersAfterUncommittedReload() {
 			const int pageSize = 3;
 			const int maxOpenPages = 2;
 			var RNG = new Random(RandomSeed);
@@ -663,7 +662,7 @@ namespace Sphere10.Framework.Tests {
 		}
 
 		[Test]
-		public void Special_NoDanglingDeleteMarkersAfterUncomittedReload() {
+		public void Special_NoDanglingDeleteMarkersAfterUncommittedReload() {
 			const int pageSize = 3;
 			const int maxOpenPages = 2;
 			var RNG = new Random(RandomSeed);
@@ -691,6 +690,69 @@ namespace Sphere10.Framework.Tests {
 				using (var file = new TransactionalFileMappedBuffer(fileName, pageDir2, fileID, pageSize, maxOpenPages)) {
 					file.Load();
 					AssertFileCount(pageDir1, 0);
+				}
+			}
+		}
+
+		#endregion
+
+		#region Event Tests
+		
+		[Test]
+		public void Commitvents() {
+			var baseDir = Tools.FileSystem.GetTempEmptyDirectory(true);
+			var fileName = Path.Combine(baseDir, "File.dat");
+			using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectory(baseDir))) {
+				using (var file = new TransactionalFileMappedBuffer(fileName, 100, 1)) {
+					var committingCount = 0;
+					var committedCount = 0;
+					var rollingBackCount = 0;
+					var rolledBackCount = 0;
+
+					file.Committing += _ => committingCount++;
+					file.Committed += _ => committedCount++;
+					file.AddRange(new Random(31337).NextBytes(100));
+					Assert.AreEqual(0, committingCount);
+					Assert.AreEqual(0, committedCount);
+					Assert.AreEqual(0, rollingBackCount);
+					Assert.AreEqual(0, rolledBackCount);
+
+					// Commit transaction
+					file.Commit();
+					Assert.AreEqual(1, committingCount);
+					Assert.AreEqual(1, committedCount);
+					Assert.AreEqual(0, rollingBackCount);
+					Assert.AreEqual(0, rolledBackCount);
+
+				}
+			}
+		}
+
+		[Test]
+		public void RollbackEvents() {
+			var baseDir = Tools.FileSystem.GetTempEmptyDirectory(true);
+			var fileName = Path.Combine(baseDir, "File.dat");
+			using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectory(baseDir))) {
+				using (var file = new TransactionalFileMappedBuffer(fileName, 100, 1)) {
+					var committingCount = 0;
+					var committedCount = 0;
+
+					var rollingBackCount = 0;
+					var rolledBackCount = 0;
+					file.RollingBack += _ => rollingBackCount++;
+					file.RolledBack += _ => rolledBackCount++;
+					file.AddRange(new Random(31337).NextBytes(100));
+					Assert.AreEqual(0, committingCount);
+					Assert.AreEqual(0, committedCount);
+
+					Assert.AreEqual(0, rollingBackCount);
+					Assert.AreEqual(0, rolledBackCount);
+					// Commit transaction
+					file.Rollback();
+					Assert.AreEqual(0, committingCount);
+					Assert.AreEqual(0, committedCount);
+					Assert.AreEqual(1, rollingBackCount);
+					Assert.AreEqual(1, rolledBackCount);
 				}
 			}
 		}

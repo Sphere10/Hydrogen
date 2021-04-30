@@ -7,6 +7,12 @@ namespace Sphere10.Framework {
 		public const int DefaultTransactionalPageSize = 1 << 17;  // 128kb
 		public const int DefaultClusterSize = 128;  //1 << 11; // 2kb
 
+		public event EventHandlerEx<object> Committing { add => AsBuffer.Committing += value; remove => AsBuffer.Committing -= value; }
+		public event EventHandlerEx<object> Committed { add => AsBuffer.Committed += value; remove => AsBuffer.Committed -= value; }
+		public event EventHandlerEx<object> RollingBack { add => AsBuffer.RollingBack += value; remove => AsBuffer.RollingBack -= value; }
+		public event EventHandlerEx<object> RolledBack { add => AsBuffer.RolledBack += value; remove => AsBuffer.RolledBack -= value; }
+
+
 		/// <summary>
 		/// Creates a <see cref="TransactionalList{T}" /> based on a <see cref="StreamMappedFixedClusteredList{T}"/>/>.
 		/// </summary>

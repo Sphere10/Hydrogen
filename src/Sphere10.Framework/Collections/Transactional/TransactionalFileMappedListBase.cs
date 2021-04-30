@@ -20,8 +20,13 @@ using System.Linq;
 namespace Sphere10.Framework {
 
 	public abstract class TransactionalFileMappedListBase<TItem> : FilePagedListBase<TItem>,  ITransactionalFile {
+		public event EventHandlerEx<object> Committing;
+		public event EventHandlerEx<object> Committed;
+		public event EventHandlerEx<object> RollingBack;
+		public event EventHandlerEx<object> RolledBack;
 
 		internal readonly MarkerRepository PageMarkerRepo;
+
 
 		protected TransactionalFileMappedListBase(
 			string filename, 
@@ -47,14 +52,11 @@ namespace Sphere10.Framework {
 
 		public void Commit() {
 			CheckScopeInStatusIfExists(FileTransactionState.Committing);
-			var before = this.ToArray();
 			Flush();
-			var afterflush = this.ToArray();
-			Debug.Assert(Enumerable.SequenceEqual(before, afterflush));
+			NotifyCommitting();
 			PageMarkerRepo.Add(FileMarkerType.Committing);
 			// All page files are manually copied
 			Stream.SetLength(this.Count);
-
 			foreach (var pageMarkers in PageMarkerRepo.PageMarkers) {
 				var pageNumber = pageMarkers.Key;
 				foreach (var marker in pageMarkers) {
@@ -69,17 +71,16 @@ namespace Sphere10.Framework {
 					}
 				}
 			}
-
 			Clear();
 			PageMarkerRepo.RemoveAllPageMarkers();
 			PageMarkerRepo.RemoveAllFileMarkers();
 			Load();
-			var afterLoad = this.ToArray();
-			Debug.Assert(Enumerable.SequenceEqual(before, afterLoad));
+			NotifyCommitted();
 		}
 
 		public void Rollback() {
 			CheckScopeInStatusIfExists(FileTransactionState.RollingBack);
+			NotifyRollingBack();
 			Flush();
 			PageMarkerRepo.Add(FileMarkerType.RollingBack);
 			foreach (ITransactionalFilePage<TItem> page in InternalPages)
@@ -88,6 +89,7 @@ namespace Sphere10.Framework {
 			PageMarkerRepo.RemoveAllPageMarkers();
 			PageMarkerRepo.RemoveAllFileMarkers();
 			Load();
+			NotifyRolledBack();
 		}
 
 		public override void Dispose() {
@@ -157,6 +159,38 @@ namespace Sphere10.Framework {
 			var requiresDeletedMarker = pageHeader.Number < GetCommittedPageCount();
 			if (requiresDeletedMarker)
 				PageMarkerRepo.Add(PageMarkerType.DeletedMarker, pageHeader.Number);
+		}
+
+		protected virtual void OnCommitting() {
+		}
+
+		protected virtual void OnCommitted() {
+		}
+
+		protected virtual void OnRollingBack() {
+		}
+
+		protected virtual void OnRolledBack() {
+		}
+
+		private void NotifyCommitting() {
+			OnCommitting();
+			Committing?.Invoke(this);
+		}
+
+		private void NotifyCommitted() {
+			OnCommitted();
+			Committed?.Invoke(this);
+		}
+
+		private void NotifyRollingBack() {
+			OnRollingBack();
+			RollingBack?.Invoke(this);
+		}
+
+		private void NotifyRolledBack() {
+			OnRolledBack();
+			RolledBack?.Invoke(this);
 		}
 
 		private void CheckScopeInStatusIfExists(FileTransactionState status) {

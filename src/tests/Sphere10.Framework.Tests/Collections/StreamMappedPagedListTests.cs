@@ -113,7 +113,7 @@ namespace Sphere10.Framework.Tests {
 		[TestCase(StreamMappedPagedListType.FixedSize, int.MaxValue)]
 		[TestCase(StreamMappedPagedListType.Dynamic, 12)]
 		public void ReadItemRaw(StreamMappedPagedListType type, int pageSize) {
-			var random = new Random();
+			var random = new Random(31337);
 			using var stream = new MemoryStream();
 			var mappedList = new StreamMappedPagedList<int>(type, new IntSerializer(), stream, pageSize);
 			
@@ -127,7 +127,7 @@ namespace Sphere10.Framework.Tests {
 		
 		[Test]
 		public void ReadItemRawInvalidIndex() {
-			var random = new Random();
+			var random = new Random(31337);
 			using var stream = new MemoryStream();
 			var mappedList = new StreamMappedPagedList<int>(StreamMappedPagedListType.FixedSize, new IntSerializer(), stream, int.MaxValue);
 			

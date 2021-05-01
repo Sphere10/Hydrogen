@@ -291,7 +291,7 @@ namespace Sphere10.Framework.Tests {
 		internal class TestObject {
 
 			public TestObject() {
-				var random = new Random();
+				var random = new Random(31337);
 				A = random.NextString(random.Next(0,101));
 				B = random.Next(0, 1000);
 				C = random.NextBool();

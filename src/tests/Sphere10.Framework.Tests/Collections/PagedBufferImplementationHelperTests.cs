@@ -12,7 +12,7 @@ namespace Sphere10.Framework.Tests
         [TestCase(1, 9)]
         public void ReadSpan(int startIndex, int count)
         {
-            var rand = new Random();
+            var rand = new Random(31337);
             byte[] input = rand.NextBytes(1000);
             
             using IMemoryPagedBuffer buffer = new MemoryPagedBuffer(10, 100);

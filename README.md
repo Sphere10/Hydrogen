@@ -36,7 +36,7 @@ The Hydrogen framework offers the following features:
 
 [Post-Quantum Cryptography: Winternitz Abstracted Merkle Signatures (WAMS)](doc/Blockchain/WAMS.md)
 
-[Post-Quantum Cryptography: Faster and Smaller Winternitz  Signatures](doc/Blockchain/W-OTS#.md)
+[Post-Quantum Cryptography: Faster and Smaller Winternitz  Signatures](doc/Blockchain/W-OTS-Sharp.md)
 
 
 

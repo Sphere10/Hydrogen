@@ -26,6 +26,18 @@ The Hydrogen framework offers the following features:
 
 [Code-Styling Guidelines](doc/Guidelines/Code-Styling.md)
 
+#### New Technology
+
+[Blockchain: Dynamic Merkle Trees](doc/Blockchain/Dynamic-Merkle-Trees.md) [(PDF)](doc/Blockchain/dynamic-merkle-trees.pdf)
+
+[Blockchain: Real-Time Targeted Difficulty Adjustment Algorithm](doc/Blockchain/rtt-asert.pdf)
+
+[Post-Quantum Cryptography: Abstract Merkle Signatures (AMS)](doc/Blockchain/AMS.md)
+
+[Post-Quantum Cryptography: Winternitz Abstracted Merkle Signatures (WAMS)](doc/Blockchain/WAMS.md)
+
+[Post-Quantum Cryptography: Faster and Smaller Winternitz  Signatures](doc/Blockchain/W-OTS#.md)
+
 
 
 ## Overview

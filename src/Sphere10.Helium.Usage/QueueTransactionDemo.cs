@@ -19,7 +19,11 @@ namespace Sphere10.Helium.Usage {
 				txnScope.EnlistFile(Queue1);
 				txnScope.EnlistFile(Queue2);
 				var poppedItem = Queue1[^1];
-				Queue2.Add(poppedItem);
+				using (Queue2.EnterWriteScope()) {
+					Queue2.Add(poppedItem);
+					//Queue2.RemoveAt(0);
+				}
+
 				Queue1.RemoveAt(^1);
 				txnScope.Commit();   // if crashes here, will be fixed on app restart when calling ProcessDanglingTransactions(TempDir)
 			}

@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 
 namespace Sphere10.Framework {
 
@@ -12,6 +14,8 @@ namespace Sphere10.Framework {
 		public event EventHandlerEx<object> RollingBack { add => AsBuffer.RollingBack += value; remove => AsBuffer.RollingBack -= value; }
 		public event EventHandlerEx<object> RolledBack { add => AsBuffer.RolledBack += value; remove => AsBuffer.RolledBack -= value; }
 
+		private readonly SynchronizedExtendedList<T> _synchronizedList;
+		private readonly StreamMappedClusteredListBase<T, ItemListing> _clusteredList;
 
 		/// <summary>
 		/// Creates a <see cref="TransactionalList{T}" /> based on a <see cref="StreamMappedFixedClusteredList{T}"/>/>.
@@ -43,25 +47,32 @@ namespace Sphere10.Framework {
 		/// <param name="readOnly">Whether or not file is opened in readonly mode.</param>
 		public TransactionalList(IObjectSerializer<T> serializer, string filename, string uncommittedPageFileDir, Guid fileID, int transactionalPageSizeBytes, int maxStorageBytes, int memoryCacheBytes, int clusterSize, int maxItems, bool readOnly = false)
 			: base(
-				new StreamMappedFixedClusteredList<T>(
-					clusterSize,
-					maxItems,
-					maxStorageBytes,
-					new ExtendedMemoryStream(
-						NewTransactionalFileMappedBuffer(
-							filename,
-							uncommittedPageFileDir,
-							fileID,
-							transactionalPageSizeBytes,
-							Math.Max(1, memoryCacheBytes / transactionalPageSizeBytes),
-							readOnly,
-							out var buffer
+				NewSynchronizedExtendedList(
+					NewStreamMappedFixedClusteredList(
+						clusterSize,
+						maxItems,
+						maxStorageBytes,
+						new ExtendedMemoryStream(
+							NewTransactionalFileMappedBuffer(
+								filename,
+								uncommittedPageFileDir,
+								fileID,
+								transactionalPageSizeBytes,
+								Math.Max(1, memoryCacheBytes / transactionalPageSizeBytes),
+								readOnly,
+								out var buffer
+							),
+							disposeSource: true
 						),
-						disposeSource: true
+						serializer,
+						null, // ItemComparer
+						out var clusteredList
 					),
-					serializer
+					out var synchronizedList
 				)
 			) {
+			_clusteredList = clusteredList;
+			_synchronizedList = synchronizedList;
 			AsBuffer = buffer;
 			AsBuffer.Committing += _ => OnCommitting();
 			AsBuffer.Committed += _ => OnCommitted();
@@ -97,23 +108,29 @@ namespace Sphere10.Framework {
 		/// <param name="readOnly">Whether or not file is opened in readonly mode.</param>
 		public TransactionalList(string filename, string uncommittedPageFileDir, Guid fileID, int transactionalPageSizeBytes, int memoryCacheBytes, int clusterSize, IObjectSerializer<T> serializer, bool readOnly = false)
 			: base(
-				new StreamMappedDynamicClusteredList<T>(
-					clusterSize,
-					new ExtendedMemoryStream(
-						NewTransactionalFileMappedBuffer(
-							filename,
-							uncommittedPageFileDir,
-							fileID,
-							transactionalPageSizeBytes,
-							Math.Max(1, memoryCacheBytes / transactionalPageSizeBytes),
-							readOnly,
-							out var buffer
+				NewSynchronizedExtendedList(
+					NewStreamMappedDynamicClusteredList(
+						clusterSize,
+						new ExtendedMemoryStream(
+							NewTransactionalFileMappedBuffer(
+								filename,
+								uncommittedPageFileDir,
+								fileID,
+								transactionalPageSizeBytes,
+								Math.Max(1, memoryCacheBytes / transactionalPageSizeBytes),
+								readOnly,
+								out var buffer
+							),
+							disposeSource: true
 						),
-						disposeSource: true
+						serializer,
+						null, // ItemComparer
+						out var clusteredList
 					),
-					serializer
-				)
+					out var synchronizedList)
 			) {
+			_clusteredList = clusteredList;
+			_synchronizedList = synchronizedList;
 			AsBuffer = buffer;
 			AsBuffer.Committing += _ => OnCommitting();
 			AsBuffer.Committed += _ => OnCommitted();
@@ -123,33 +140,25 @@ namespace Sphere10.Framework {
 			AsBuffer.RolledBack += _ => OnRolledBack();
 		}
 
-		public bool RequiresLoad => ((ILoadable)base.InnerCollection).RequiresLoad;
+		public bool RequiresLoad => _clusteredList.RequiresLoad;
 
-		public void Load() => ((ILoadable)InnerCollection).Load();
-
-		public void Commit() => AsBuffer.Commit();
-
-		public void Rollback() => AsBuffer.Rollback();
+		public ReaderWriterLockSlim ThreadLock => _synchronizedList.ThreadLock;
 
 		public string Path => AsBuffer.Path;
 
 		public Guid FileID => AsBuffer.FileID;
 
-		public TransactionalFileMappedBuffer AsBuffer { get;  }
+		public TransactionalFileMappedBuffer AsBuffer { get; }
 
-		private static TransactionalFileMappedBuffer NewTransactionalFileMappedBuffer(
-			string filename,
-			string uncommittedPageFileDir,
-			Guid fileID,
-			int transactionalPageSizeBytes,
-			int inMemPages,
-			bool readOnly,
-			out TransactionalFileMappedBuffer result) {
-			result = new TransactionalFileMappedBuffer(filename, uncommittedPageFileDir, fileID, transactionalPageSizeBytes, inMemPages, readOnly) {
-				FlushOnDispose = false
-			};
-			return result;
-		}
+		public void Load() => _clusteredList.Load();
+
+		public Scope EnterReadScope() => _synchronizedList.EnterReadScope();
+
+		public Scope EnterWriteScope() => _synchronizedList.EnterWriteScope();
+
+		public void Commit() => AsBuffer.Commit();
+
+		public void Rollback() => AsBuffer.Rollback();
 
 		public void Dispose() {
 			AsBuffer?.Dispose();
@@ -167,6 +176,33 @@ namespace Sphere10.Framework {
 		protected virtual void OnRolledBack() {
 		}
 
-	}
+		private static SynchronizedExtendedList<T> NewSynchronizedExtendedList(IExtendedList<T> internalList, out SynchronizedExtendedList<T> result) {
+			result = new SynchronizedExtendedList<T>(internalList);
+			return result;
+		}
 
+		private static StreamMappedFixedClusteredList<T> NewStreamMappedFixedClusteredList(int clusterDataSize, int maxItems, int maxStorageBytes, Stream stream, IObjectSerializer<T> itemSerializer, IEqualityComparer<T> itemComparer, out StreamMappedFixedClusteredList<T> result) {
+			result = new StreamMappedFixedClusteredList<T>(clusterDataSize, maxItems, maxStorageBytes, stream, itemSerializer, itemComparer);
+			return result;
+		}
+
+		private static StreamMappedDynamicClusteredList<T> NewStreamMappedDynamicClusteredList(int clusterDataSize, Stream stream, IObjectSerializer<T> itemSerializer, IEqualityComparer<T> itemComparer, out StreamMappedDynamicClusteredList<T> result) {
+			result = new StreamMappedDynamicClusteredList<T>(clusterDataSize, stream, itemSerializer, itemComparer);
+			return result;
+		}
+
+		private static TransactionalFileMappedBuffer NewTransactionalFileMappedBuffer(
+			string filename,
+			string uncommittedPageFileDir,
+			Guid fileID,
+			int transactionalPageSizeBytes,
+			int inMemPages,
+			bool readOnly,
+			out TransactionalFileMappedBuffer result) {
+			result = new TransactionalFileMappedBuffer(filename, uncommittedPageFileDir, fileID, transactionalPageSizeBytes, inMemPages, readOnly) {
+				FlushOnDispose = false
+			};
+			return result;
+		}
+	}
 }

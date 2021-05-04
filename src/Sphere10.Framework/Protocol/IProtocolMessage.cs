@@ -1,14 +1,16 @@
 ﻿namespace Sphere10.Framework.Protocol {
-	public interface IProtocolMessage<out TEndpoint, out TMessageID, out TMessageType, out TNonce, out TPayload> {
+	public interface IProtocolMessage<TEndpoint, TMessageID, TMessageType, TNonce, TPayload> {
 
-		TMessageID ID { get; }
+		TMessageID ID { get; init; }
 
-		TEndpoint Sender { get; }
+		TEndpoint Sender { get; init; }
 
-		TMessageType MessageType { get; }
+		TMessageType MessageType { get; init; }
 
-		TNonce Nonce { get; }
+		TNonce Nonce { get; init; }
 
-		TPayload Payload { get; }
+		TPayload Payload { get; init; }
 	}
+
+
 }

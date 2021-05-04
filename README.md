@@ -1,3 +1,5 @@
+![hydrogen-logo](resources/branding/hydrogen-logo.png)
+
 # Hydrogen: P2P Framework
 
 Copyright © Sphere 10 Software 2018 - Present

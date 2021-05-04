@@ -5,62 +5,58 @@ using Sphere10.Framework.Protocol;
 
 namespace Sphere10.Framework {
 
-	public class AnonymousPipeHub<TMessageType> : ProtocolHub<string, uint, TMessageType, uint, string, AnonymousPipeMessage<TMessageType>, AnonymousPipeCommand<TMessageType>, AnonymousPipeRequest<TMessageType>, AnonymousPipeResponse<TMessageType>,
-		AnonymousPipeHandshake<TMessageType>, AnonymousPipeChannel<TMessageType>> {
+	public class AnonymousPipeHub<TMessageType> : ProtocolHub<string, uint, TMessageType, uint, string, AnonymousPipeHub<TMessageType>.AnonymousPipeMessage, AnonymousPipeHub<TMessageType>.AnonymousPipeCommand, AnonymousPipeHub<TMessageType>.AnonymousPipeRequest, AnonymousPipeHub<TMessageType>.AnonymousPipeResponse,
+		AnonymousPipeHub<TMessageType>.AnonymousPipeHandshake, AnonymousPipeHub<TMessageType>.AnonymousPipeChannel> {
 
-		public override AnonymousPipeChannel<TMessageType> ReceiveConnection(AnonymousPipeHandshake<TMessageType> handshake) {
+		public override AnonymousPipeChannel ReceiveConnection(AnonymousPipeHandshake handshake) {
 			throw new NotImplementedException();
 		}
 
-		public override AnonymousPipeChannel<TMessageType> InitiateConnection(AnonymousPipeHandshake<TMessageType> handshake) {
+		public override AnonymousPipeChannel InitiateConnection(AnonymousPipeHandshake handshake) {
 			throw new NotImplementedException();
+		}
+
+		public class AnonymousPipeChannel : ProtocolChannel<string, uint, TMessageType, uint, string, AnonymousPipeMessage, AnonymousPipeCommand, AnonymousPipeRequest,
+		AnonymousPipeResponse> {
+
+			public override void SendMessage(AnonymousPipeMessage message) {
+				throw new NotImplementedException();
+			}
+
+			public override void SendCommand(AnonymousPipeCommand command) {
+				throw new NotImplementedException();
+			}
+
+			public override void SendRequest(AnonymousPipeRequest request) {
+				throw new NotImplementedException();
+			}
+
+			public override void ReceiveCommand(AnonymousPipeCommand command) {
+				throw new NotImplementedException();
+			}
+
+			public override AnonymousPipeResponse ReceiveRequest(AnonymousPipeRequest request) {
+				throw new NotImplementedException();
+			}
+
+			public override void ReceiveResponse(AnonymousPipeRequest sentRequest, AnonymousPipeResponse response) {
+				throw new NotImplementedException();
+			}
+		}
+
+		public class AnonymousPipeMessage : ProtocolMessage<string, uint, TMessageType, uint, string> {
+		}
+
+		public class AnonymousPipeCommand : ProtocolCommand<string, uint, TMessageType, uint, string> {
+		}
+
+		public class AnonymousPipeHandshake : ProtocolHandshake<string, uint, TMessageType, uint, string> {
+		}
+
+		public class AnonymousPipeRequest : ProtocolRequest<string, uint, TMessageType, uint, string> {
+		}
+
+		public class AnonymousPipeResponse : ProtocolResponse<string, uint, TMessageType, uint, string> {
 		}
 	}
-
-
-	public class AnonymousPipeChannel<TMessageType> : ProtocolChannel<string, uint, TMessageType, uint, string, AnonymousPipeMessage<TMessageType>, AnonymousPipeCommand<TMessageType>, AnonymousPipeRequest<TMessageType>,
-		AnonymousPipeResponse<TMessageType>> {
-
-		public override void SendMessage(AnonymousPipeMessage<TMessageType> message) {
-			throw new NotImplementedException();
-		}
-
-		public override void SendCommand(AnonymousPipeCommand<TMessageType> command) {
-			throw new NotImplementedException();
-		}
-
-		public override void SendRequest(AnonymousPipeRequest<TMessageType> request) {
-			throw new NotImplementedException();
-		}
-
-		public override void ReceiveCommand(AnonymousPipeCommand<TMessageType> command) {
-			throw new NotImplementedException();
-		}
-
-		public override AnonymousPipeResponse<TMessageType> ReceiveRequest(AnonymousPipeRequest<TMessageType> request) {
-			throw new NotImplementedException();
-		}
-
-		public override void ReceiveResponse(AnonymousPipeRequest<TMessageType> sentRequest, AnonymousPipeResponse<TMessageType> response) {
-			throw new NotImplementedException();
-		}
-	}
-
-	public class AnonymousPipeMessage<TMessageType> : ProtocolMessage<string, uint, TMessageType, uint, string> {
-	}
-
-
-	public class AnonymousPipeCommand<TMessageType> : ProtocolCommand<string, uint, TMessageType, uint, string> {
-	}
-
-	public class AnonymousPipeHandshake<TMessageType> : ProtocolHandshake<string, uint, TMessageType, uint, string> {
-	}
-
-	public class AnonymousPipeRequest<TMessageType> : ProtocolRequest<string, uint, TMessageType, uint, string> {
-	}
-
-	public class AnonymousPipeResponse<TMessageType> : ProtocolResponse<string, uint, TMessageType, uint, string> {
-	}
-
-
 }

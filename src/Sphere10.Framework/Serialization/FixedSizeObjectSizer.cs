@@ -5,9 +5,9 @@ namespace Sphere10.Framework {
 
 	// ReSharper disable PossibleInvalidOperationException
 
-	public class FixedSizeObjectSizer<TItem> : IObjectSizer<TItem> {
+	public class FixedSizeItemtSizer<TItem> : IItemSizer<TItem> {
 
-		public FixedSizeObjectSizer(int fixedSize) {
+		public FixedSizeItemtSizer(int fixedSize) {
 			FixedSize = fixedSize;
 		}
 

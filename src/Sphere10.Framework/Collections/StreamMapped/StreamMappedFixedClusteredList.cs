@@ -24,8 +24,8 @@ namespace Sphere10.Framework {
 			int maxItems,
 			int maxStorageBytes,
 			Stream stream,
-			IObjectSerializer<T> itemSerializer,
-			IObjectSerializer<TListing> listingSerializer,
+			IItemSerializer<T> itemSerializer,
+			IItemSerializer<TListing> listingSerializer,
 			IEqualityComparer<T> itemComparer = null)
 			: base(clusterDataSize, stream, itemSerializer, listingSerializer, itemComparer) {
 			
@@ -274,7 +274,7 @@ namespace Sphere10.Framework {
 					int maxItems,
 					int maxStorageBytes,
 					Stream stream,
-					IObjectSerializer<T> itemSerializer,
+					IItemSerializer<T> itemSerializer,
 					IEqualityComparer<T> itemComparer = null)
 			: base(clusterDataSize, maxItems, maxStorageBytes, stream, itemSerializer, new ItemListingSerializer(), itemComparer) {
 		}

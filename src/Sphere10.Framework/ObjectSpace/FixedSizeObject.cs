@@ -25,7 +25,7 @@ namespace Sphere10.Framework.ObjectSpace {
 
     public class ObjectBox<T> : ExtendedListDecorator<T> where T : FixedSizeObject {
 
-        public ObjectBox(string filename, Guid fileID, string pageDir, int logicalPageSize, int merklePageSize, IObjectSerializer<T> serializer, CHF merkleCHF, int memoryCacheBytes, bool readOnly)
+        public ObjectBox(string filename, Guid fileID, string pageDir, int logicalPageSize, int merklePageSize, IItemSerializer<T> serializer, CHF merkleCHF, int memoryCacheBytes, bool readOnly)
             : base(CreateInternalList(filename, fileID, pageDir, logicalPageSize, merklePageSize, serializer, merkleCHF, memoryCacheBytes, readOnly, out var txnFile, out var merkleTree)) {
             TransactionalFile = txnFile;
             StorageMerkleTree = merkleTree;
@@ -36,7 +36,7 @@ namespace Sphere10.Framework.ObjectSpace {
         public IMerkleTree StorageMerkleTree { get; }
 
 
-        public static IExtendedList<T> CreateInternalList(string filename, Guid fileID, string pageDir, int logicalPageSize, int merklePageSize, IObjectSerializer<T> serializer, CHF merkleCHF, int memoryCacheBytes, bool readOnly, out ITransactionalFile txnFile, out IMerkleTree storageMerkleTree) {
+        public static IExtendedList<T> CreateInternalList(string filename, Guid fileID, string pageDir, int logicalPageSize, int merklePageSize, IItemSerializer<T> serializer, CHF merkleCHF, int memoryCacheBytes, bool readOnly, out ITransactionalFile txnFile, out IMerkleTree storageMerkleTree) {
             var file = new TransactionalFileMappedBuffer(
                 filename, 
                 pageDir, 

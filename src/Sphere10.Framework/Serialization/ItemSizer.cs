@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace Sphere10.Framework {
 
-	public abstract class ObjectSizer<TItem> : IObjectSizer<TItem> {
+	public abstract class ItemSizer<TItem> : IItemSizer<TItem> {
 
 		public bool IsFixedSize => false;
 

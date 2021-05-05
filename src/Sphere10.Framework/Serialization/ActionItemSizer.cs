@@ -3,11 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 
 namespace Sphere10.Framework {
-
-	public class ActionObjectSizer<T> : IObjectSizer<T> {
+	public class ActionItemSizer<T> : IItemSizer<T> {
 		private readonly Func<T, int> _sizer;
 
-		public ActionObjectSizer(Func<T, int> sizer) {
+		public ActionItemSizer(Func<T, int> sizer) {
 			Guard.ArgumentNotNull(sizer, nameof(sizer));
 			_sizer = sizer;
 		}

@@ -10,14 +10,14 @@ namespace Sphere10.Framework {
 
 	public class MerkleList<TItem> : ExtendedListDecorator<TItem>, IMerkleList<TItem> {
 
-		private readonly IObjectHasher<TItem> _hasher;
+		private readonly IItemHasher<TItem> _hasher;
 		private readonly IUpdateableMerkleTree _merkleTree;
 
-		public MerkleList(IObjectSerializer<TItem> serializer, CHF hashAlgorithm) 
-			: this(new ObjectHasher<TItem>(hashAlgorithm, serializer), new ExtendedList<TItem>(), new SimpleMerkleTree(hashAlgorithm)) {
+		public MerkleList(IItemSerializer<TItem> serializer, CHF hashAlgorithm) 
+			: this(new ItemHasher<TItem>(hashAlgorithm, serializer), new ExtendedList<TItem>(), new SimpleMerkleTree(hashAlgorithm)) {
 		}
 
-		public MerkleList(IObjectHasher<TItem> hasher, IExtendedList<TItem> internalList, IUpdateableMerkleTree merkleTreeImpl) 
+		public MerkleList(IItemHasher<TItem> hasher, IExtendedList<TItem> internalList, IUpdateableMerkleTree merkleTreeImpl) 
 			: base(internalList) {
 			_hasher = hasher;
 			_merkleTree = merkleTreeImpl;

@@ -8,7 +8,7 @@ using System.Runtime.Serialization.Formatters.Binary;
 namespace Sphere10.Framework {
 	public sealed class BinaryFormattedPage<TItem> : FileSwappedMemoryPage<TItem> {
 
-		public BinaryFormattedPage(int pageSize, IObjectSizer<TItem> sizer)
+		public BinaryFormattedPage(int pageSize, IItemSizer<TItem> sizer)
 			: base(pageSize, sizer, new ExtendedList<TItem>()) {
 		}
 

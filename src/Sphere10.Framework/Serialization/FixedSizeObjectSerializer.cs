@@ -1,6 +1,6 @@
 ﻿namespace Sphere10.Framework {
 
-	public abstract class FixedSizeObjectSerializer<TItem> : FixedSizeObjectSizer<TItem>, IObjectSerializer<TItem> {
+	public abstract class FixedSizeObjectSerializer<TItem> : FixedSizeItemtSizer<TItem>, IItemSerializer<TItem> {
 		protected FixedSizeObjectSerializer(int fixedSize) : base(fixedSize) {
 		}
 

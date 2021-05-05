@@ -11,14 +11,14 @@ namespace Sphere10.Framework {
 	/// </summary>
 	public sealed class MurMur3BloomFilter<TItem> : BloomFilterBase<TItem> {
 
-		private readonly IObjectSerializer<TItem> _objectSerializer;
+		private readonly IItemSerializer<TItem> _objectSerializer;
 
-		public MurMur3BloomFilter(decimal targetError, int maximumExpectedItems, int hashRounds, IObjectSerializer<TItem> objectSerializer)
+		public MurMur3BloomFilter(decimal targetError, int maximumExpectedItems, int hashRounds, IItemSerializer<TItem> objectSerializer)
 			: base(targetError, maximumExpectedItems, hashRounds) {
 			_objectSerializer = objectSerializer;
 		}
 
-		public MurMur3BloomFilter(int messageLength, int hashRounds, IObjectSerializer<TItem> objectSerializer) 
+		public MurMur3BloomFilter(int messageLength, int hashRounds, IItemSerializer<TItem> objectSerializer) 
 			: base(messageLength, hashRounds) {
 			_objectSerializer = objectSerializer;
 		}

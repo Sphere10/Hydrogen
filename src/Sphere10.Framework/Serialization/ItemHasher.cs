@@ -4,14 +4,14 @@ using System.Security.Cryptography;
 
 namespace Sphere10.Framework {
 
-	public class ObjectHasher<TItem> : ObjectSerializerDecorator<TItem>, IObjectHasher<TItem> {
+	public class ItemHasher<TItem> : ItemSerializerDecorator<TItem>, IItemHasher<TItem> {
 		private readonly CHF _hashAlgorithm;
 
-		public ObjectHasher(IObjectSerializer<TItem> internalSerializer)
+		public ItemHasher(IItemSerializer<TItem> internalSerializer)
 			: this(CHF.SHA2_256, internalSerializer) {
 		}
 
-		public ObjectHasher(CHF hashAlgorithm, IObjectSerializer<TItem> internalSerializer)
+		public ItemHasher(CHF hashAlgorithm, IItemSerializer<TItem> internalSerializer)
 			: base(internalSerializer) {
 			_hashAlgorithm = hashAlgorithm;
 		}

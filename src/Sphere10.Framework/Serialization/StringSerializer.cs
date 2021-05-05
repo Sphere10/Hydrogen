@@ -2,7 +2,7 @@
 
 namespace Sphere10.Framework {
 
-	public class StringSerializer : StringSizer, IObjectSerializer<string> {
+	public class StringSerializer : StringSizer, IItemSerializer<string> {
 		public StringSerializer(Encoding encoding)
 			: base(encoding) {
 		}

@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace Sphere10.Framework {
 
-	public class BoolSerializer : IObjectSerializer<bool> {
+	public class BoolSerializer : IItemSerializer<bool> {
 		public bool IsFixedSize { get; } = true;
 		public int FixedSize { get; } = sizeof(bool);
 		public int CalculateTotalSize(IEnumerable<bool> items, bool calculateIndividualItems, out int[] itemSizes) {

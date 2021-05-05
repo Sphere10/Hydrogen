@@ -55,18 +55,18 @@ namespace Sphere10.Framework {
 		public const int ListHeaderSize = 256;
 		public const int DefaultPageSize = 100;
 
-		public StreamMappedPagedList(IObjectSerializer<TItem> serializer, Stream stream) : this(
+		public StreamMappedPagedList(IItemSerializer<TItem> serializer, Stream stream) : this(
 			serializer.IsFixedSize ? StreamMappedPagedListType.FixedSize : StreamMappedPagedListType.Dynamic,
 			serializer,
 			stream,
 			serializer.IsFixedSize ? int.MaxValue : DefaultPageSize) {
 		}
 
-		public StreamMappedPagedList(IObjectSerializer<TItem> serializer, Stream stream, int pageSize)
+		public StreamMappedPagedList(IItemSerializer<TItem> serializer, Stream stream, int pageSize)
 			: this(serializer.IsFixedSize ? StreamMappedPagedListType.FixedSize : StreamMappedPagedListType.Dynamic, serializer, stream, pageSize) {
 		}
 
-		public StreamMappedPagedList(StreamMappedPagedListType type, IObjectSerializer<TItem> serializer, Stream stream, int pageSize) {
+		public StreamMappedPagedList(StreamMappedPagedListType type, IItemSerializer<TItem> serializer, Stream stream, int pageSize) {
 			PageSize = pageSize;
 			Serializer = serializer;
 			Stream = stream;
@@ -88,7 +88,7 @@ namespace Sphere10.Framework {
 
 		internal EndianBinaryWriter Writer { get; }
 
-		internal IObjectSerializer<TItem> Serializer { get; }
+		internal IItemSerializer<TItem> Serializer { get; }
 
 		public override IDisposable EnterOpenPageScope(IPage<TItem> page) {
 			switch (Type) {

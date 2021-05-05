@@ -11,16 +11,16 @@ namespace Sphere10.Framework {
 	/// </summary>
 	public class HashedBloomFilter<TItem> : BloomFilterBase<TItem> {
 		private readonly CHF _hashAlgorithm;
-		private readonly IObjectSerializer<TItem> _serializer;
+		private readonly IItemSerializer<TItem> _serializer;
 
-		public HashedBloomFilter(decimal targetError, int maximumExpectedItems, int hashRounds, CHF hashAlgorithm, IObjectSerializer<TItem> serializer)
+		public HashedBloomFilter(decimal targetError, int maximumExpectedItems, int hashRounds, CHF hashAlgorithm, IItemSerializer<TItem> serializer)
 			: base(targetError, maximumExpectedItems, hashRounds) {
 			Guard.ArgumentInRange(hashRounds, 1, 5, nameof(hashRounds));
 			_hashAlgorithm = hashAlgorithm;
 			_serializer = serializer;
 		}
 
-		public HashedBloomFilter(int messageLength, int hashRounds, CHF hashAlgorithm, IObjectSerializer<TItem> serializer) 
+		public HashedBloomFilter(int messageLength, int hashRounds, CHF hashAlgorithm, IItemSerializer<TItem> serializer) 
 			: base(messageLength, hashRounds) {
 			_hashAlgorithm = hashAlgorithm;
 			_serializer = serializer;

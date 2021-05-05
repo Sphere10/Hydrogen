@@ -6,7 +6,7 @@ namespace Sphere10.Framework {
     public abstract class MemoryPageBase<TItem> : PageBase<TItem>, IMemoryPage<TItem> {
 		internal readonly IExtendedList<TItem> MemoryStore;
 
-		protected MemoryPageBase(int maxSize, IObjectSizer<TItem> sizer, IExtendedList<TItem> store) {
+		protected MemoryPageBase(int maxSize, IItemSizer<TItem> sizer, IExtendedList<TItem> store) {
 			MaxSize = maxSize;
 			MemoryStore = store;
 			Sizer = sizer;
@@ -14,7 +14,7 @@ namespace Sphere10.Framework {
 
 		public int MaxSize { get; set; }
 		
-		public IObjectSizer<TItem> Sizer { get; }
+		public IItemSizer<TItem> Sizer { get; }
 
 		public void Save() {
 			CheckPageState(PageState.Loaded);

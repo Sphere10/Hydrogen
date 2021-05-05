@@ -8,7 +8,7 @@ namespace Sphere10.Hydrogen.Core.Mining {
 
 	public class MiningPuzzle {
 
-		public MiningPuzzle(NewMinerBlock block, ValueRange<DateTime> timeRange, uint target, CHF hashAlgorithm, ICompactTargetAlgorithm powAlgorithm, IObjectSerializer<NewMinerBlock> blockSerializer) {
+		public MiningPuzzle(NewMinerBlock block, ValueRange<DateTime> timeRange, uint target, CHF hashAlgorithm, ICompactTargetAlgorithm powAlgorithm, IItemSerializer<NewMinerBlock> blockSerializer) {
 			PoWAlgorithm = powAlgorithm;
 			HashAlgorithm = hashAlgorithm;
 			BlockSerializer = blockSerializer;
@@ -21,7 +21,7 @@ namespace Sphere10.Hydrogen.Core.Mining {
 
 		protected ICompactTargetAlgorithm PoWAlgorithm { get; }
 
-		protected IObjectSerializer<NewMinerBlock> BlockSerializer { get; }
+		protected IItemSerializer<NewMinerBlock> BlockSerializer { get; }
 
 		public ValueRange<DateTime> AcceptableTimeStampRange { get; }
 

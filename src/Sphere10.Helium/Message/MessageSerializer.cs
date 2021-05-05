@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Sphere10.Framework;
 
 namespace Sphere10.Helium.Message {
-	internal class MessageSerializer : ObjectSerializerBase<IMessage> {
+	internal class MessageSerializer : ItemSerializerBase<IMessage> {
 		public override int CalculateSize(IMessage item) {
 			throw new NotImplementedException();
 		}

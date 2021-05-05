@@ -2,7 +2,7 @@
 
 namespace Sphere10.Framework {
 
-	public interface IObjectHasher<in TItem> {
+	public interface IItemHasher<in TItem> {
 		byte[] Hash(TItem @object);
 	}
 

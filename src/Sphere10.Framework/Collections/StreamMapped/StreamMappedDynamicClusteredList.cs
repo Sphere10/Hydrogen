@@ -14,7 +14,7 @@ namespace Sphere10.Framework {
 		private StreamMappedPagedList<TListing> _listingStore;
 		private PreAllocatedList<TListing> _listings;
 
-		protected StreamMappedDynamicClusteredList(int clusterDataSize, Stream stream, IObjectSerializer<T> itemSerializer, IObjectSerializer<TListing> listingSerializer, IEqualityComparer<T> itemComparer = null)
+		protected StreamMappedDynamicClusteredList(int clusterDataSize, Stream stream, IItemSerializer<T> itemSerializer, IItemSerializer<TListing> listingSerializer, IEqualityComparer<T> itemComparer = null)
 			: base(clusterDataSize, stream, itemSerializer, listingSerializer, itemComparer) {
 			_headerStream = new BoundedStream(stream, 0, HeaderSize - 1);
 			_headerWriter = new EndianBinaryWriter(EndianBitConverter.Little, _headerStream);
@@ -388,7 +388,7 @@ namespace Sphere10.Framework {
 
 	public class StreamMappedDynamicClusteredList<T> : StreamMappedDynamicClusteredList<T, ItemListing> {
 
-		public StreamMappedDynamicClusteredList(int clusterDataSize, Stream stream, IObjectSerializer<T> itemSerializer, IEqualityComparer<T> itemComparer = null)
+		public StreamMappedDynamicClusteredList(int clusterDataSize, Stream stream, IItemSerializer<T> itemSerializer, IEqualityComparer<T> itemComparer = null)
 			: base(clusterDataSize, stream, itemSerializer, new ItemListingSerializer(), itemComparer) {
 		}
 

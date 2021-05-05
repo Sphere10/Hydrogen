@@ -3,7 +3,7 @@
 namespace Sphere10.Framework {
     public abstract class FilePageBase<TItem> : MemoryPageBase<TItem>, IFilePage<TItem> {
 
-		protected FilePageBase(Stream stream, IObjectSizer<TItem> sizer, int pageNumber, int pageSize, IExtendedList<TItem> memoryStore)
+		protected FilePageBase(Stream stream, IItemSizer<TItem> sizer, int pageNumber, int pageSize, IExtendedList<TItem> memoryStore)
 			: base(pageSize, sizer, memoryStore) {
 			Stream = new BoundedStream(stream, (long)pageNumber * pageSize, (long)(pageNumber + 1) * pageSize - 1);
 		}

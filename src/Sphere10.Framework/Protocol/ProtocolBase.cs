@@ -12,7 +12,7 @@ namespace Sphere10.Framework.Protocol {
 		where TResponse : TMessage, IProtocolResponse<TEndpoint, TMessageID, TMessageType>
 		where TChannel : IProtocolChannel<TEndpoint, TMessageID, TMessageType, TMessage, THandshake, TCommand, TRequest, TResponse> {
 
-		public IObjectSerializer<TMessage> Serializer { get; init; }
+		public IItemSerializer<TMessage> Serializer { get; init; }
 
 		public IList<TMessage> MessageHandlers { get; init; }
 

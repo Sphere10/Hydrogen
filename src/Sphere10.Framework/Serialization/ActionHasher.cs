@@ -2,7 +2,7 @@
 
 namespace Sphere10.Framework {
 
-	public class ActionHasher<T> : IObjectHasher<T> {
+	public class ActionHasher<T> : IItemHasher<T> {
 		private readonly Func<T, byte[]> _hasher;
 
 		public ActionHasher(Func<T, byte[]> hasher) {

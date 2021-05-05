@@ -12,11 +12,11 @@
 //	public class HashedBloomFilter<TItem> : HashedBloomFilterBase<TItem> {
 //		private readonly Func<TItem, byte[]> _hashFunc;
 
-//		public HashedBloomFilter(decimal targetError, int maximumExpectedItems, int hashRounds, IObjectSerializer<TItem> serializer)
+//		public HashedBloomFilter(decimal targetError, int maximumExpectedItems, int hashRounds, IItemSerializer<TItem> serializer)
 //			: this(targetError, maximumExpectedItems, hashRounds, serializer, SupportedAlgorithm.SHA2_256) {
 //		}
 
-//		public HashedBloomFilter(decimal targetError, int maximumExpectedItems, int hashRounds, IObjectSerializer<TItem> serializer, SupportedAlgorithm hashAlgorithm)
+//		public HashedBloomFilter(decimal targetError, int maximumExpectedItems, int hashRounds, IItemSerializer<TItem> serializer, SupportedAlgorithm hashAlgorithm)
 //			: this(targetError, maximumExpectedItems, hashRounds, (item) => rawHasher(serializer.SerializeLE(item))) {
 //		}
 

@@ -311,9 +311,9 @@ namespace Sphere10.Framework.Tests {
 
 		}
 		
-		internal class TestObjectSerializer : IObjectSerializer<TestObject> {
+		internal class TestObjectSerializer : IItemSerializer<TestObject> {
 
-			private IObjectSerializer<string> StringSerializer { get; } = new StringSerializer(Encoding.UTF8);
+			private IItemSerializer<string> StringSerializer { get; } = new StringSerializer(Encoding.UTF8);
 			public bool IsFixedSize => false;
 			public int FixedSize => -1;
 

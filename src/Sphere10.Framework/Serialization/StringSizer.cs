@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Sphere10.Framework {
 
-	public class StringSizer : ObjectSizer<string> {
+	public class StringSizer : ItemSizer<string> {
 		protected Encoding Encoding;
 
 		public StringSizer(Encoding encoding) {

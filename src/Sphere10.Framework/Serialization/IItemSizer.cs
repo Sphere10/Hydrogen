@@ -2,7 +2,7 @@
 
 namespace Sphere10.Framework {
 
-	public interface IObjectSizer<T> {
+	public interface IItemSizer<T> {
 
 		bool IsFixedSize { get; }
 

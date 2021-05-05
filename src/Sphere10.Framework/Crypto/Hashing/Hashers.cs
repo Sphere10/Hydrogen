@@ -42,7 +42,7 @@ namespace Sphere10.Framework {
 			=> DigestByteSizes[(int)algorithm];
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static byte[] Hash<TItem>(CHF algorithm, TItem item, IObjectSerializer<TItem> serializer)
+		public static byte[] Hash<TItem>(CHF algorithm, TItem item, IItemSerializer<TItem> serializer)
 			=> Hash(algorithm, serializer.SerializeLE(item));
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]

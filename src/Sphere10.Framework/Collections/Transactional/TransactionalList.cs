@@ -28,7 +28,7 @@ namespace Sphere10.Framework {
 		/// <param name="memoryCacheBytes">How much of the file is cached in memory. <remarks>This value should (roughly) be a factor of <see cref="transactionalPageSizeBytes"/></remarks></param>
 		/// <param name="maxItems">The maximum number of items this file will ever support. <remarks>Avoid <see cref="Int32.MaxValue"/> and give lowest number possible.</remarks> </param>
 		/// <param name="readOnly">Whether or not file is opened in readonly mode.</param>
-		public TransactionalList(IObjectSerializer<T> serializer, string filename, string uncommittedPageFileDir, Guid fileID, int maxStorageBytes, int memoryCacheBytes, int maxItems, bool readOnly = false)
+		public TransactionalList(IItemSerializer<T> serializer, string filename, string uncommittedPageFileDir, Guid fileID, int maxStorageBytes, int memoryCacheBytes, int maxItems, bool readOnly = false)
 			: this(serializer, filename, uncommittedPageFileDir, fileID, DefaultTransactionalPageSize, maxStorageBytes, memoryCacheBytes, DefaultClusterSize, maxItems, readOnly) {
 		}
 
@@ -45,7 +45,7 @@ namespace Sphere10.Framework {
 		/// <param name="clusterSize">To support random access reads/writes the file is broken into discontinuous clusters of this size (similar to how disk storage) works. <remarks>Try to fit your average object in 1 cluster for performance. However, spare space in a cluster cannot be used.</remarks> </param>
 		/// <param name="maxItems">The maximum count of items this file will ever support. <remarks>Avoid <see cref="Int32.MaxValue"/> and give lowest number possible.</remarks> </param>
 		/// <param name="readOnly">Whether or not file is opened in readonly mode.</param>
-		public TransactionalList(IObjectSerializer<T> serializer, string filename, string uncommittedPageFileDir, Guid fileID, int transactionalPageSizeBytes, int maxStorageBytes, int memoryCacheBytes, int clusterSize, int maxItems, bool readOnly = false)
+		public TransactionalList(IItemSerializer<T> serializer, string filename, string uncommittedPageFileDir, Guid fileID, int transactionalPageSizeBytes, int maxStorageBytes, int memoryCacheBytes, int clusterSize, int maxItems, bool readOnly = false)
 			: base(
 				NewSynchronizedExtendedList(
 					NewStreamMappedFixedClusteredList(
@@ -91,7 +91,7 @@ namespace Sphere10.Framework {
 		/// <param name="memoryCacheBytes">How much of the file is cached in memory. <remarks>This value should (roughly) be a factor of <see cref="transactionalPageSizeBytes"/></remarks></param>
 		/// <param name="serializer">Serializer for the objects</param>
 		/// <param name="readOnly">Whether or not file is opened in readonly mode.</param>
-		public TransactionalList(string filename, string uncommittedPageFileDir, Guid fileID, int memoryCacheBytes, IObjectSerializer<T> serializer, bool readOnly = false)
+		public TransactionalList(string filename, string uncommittedPageFileDir, Guid fileID, int memoryCacheBytes, IItemSerializer<T> serializer, bool readOnly = false)
 			: this(filename, uncommittedPageFileDir, fileID, DefaultTransactionalPageSize, memoryCacheBytes, DefaultClusterSize, serializer, readOnly) {
 		}
 
@@ -106,7 +106,7 @@ namespace Sphere10.Framework {
 		/// <param name="clusterSize">To support random access reads/writes the file is broken into discontinuous clusters of this size (similar to how disk storage) works. <remarks>Try to fit your average object in 1 cluster for performance. However, spare space in a cluster cannot be used.</remarks> </param>
 		/// <param name="serializer">Serializer for the objects</param>
 		/// <param name="readOnly">Whether or not file is opened in readonly mode.</param>
-		public TransactionalList(string filename, string uncommittedPageFileDir, Guid fileID, int transactionalPageSizeBytes, int memoryCacheBytes, int clusterSize, IObjectSerializer<T> serializer, bool readOnly = false)
+		public TransactionalList(string filename, string uncommittedPageFileDir, Guid fileID, int transactionalPageSizeBytes, int memoryCacheBytes, int clusterSize, IItemSerializer<T> serializer, bool readOnly = false)
 			: base(
 				NewSynchronizedExtendedList(
 					NewStreamMappedDynamicClusteredList(
@@ -181,12 +181,12 @@ namespace Sphere10.Framework {
 			return result;
 		}
 
-		private static StreamMappedFixedClusteredList<T> NewStreamMappedFixedClusteredList(int clusterDataSize, int maxItems, int maxStorageBytes, Stream stream, IObjectSerializer<T> itemSerializer, IEqualityComparer<T> itemComparer, out StreamMappedFixedClusteredList<T> result) {
+		private static StreamMappedFixedClusteredList<T> NewStreamMappedFixedClusteredList(int clusterDataSize, int maxItems, int maxStorageBytes, Stream stream, IItemSerializer<T> itemSerializer, IEqualityComparer<T> itemComparer, out StreamMappedFixedClusteredList<T> result) {
 			result = new StreamMappedFixedClusteredList<T>(clusterDataSize, maxItems, maxStorageBytes, stream, itemSerializer, itemComparer);
 			return result;
 		}
 
-		private static StreamMappedDynamicClusteredList<T> NewStreamMappedDynamicClusteredList(int clusterDataSize, Stream stream, IObjectSerializer<T> itemSerializer, IEqualityComparer<T> itemComparer, out StreamMappedDynamicClusteredList<T> result) {
+		private static StreamMappedDynamicClusteredList<T> NewStreamMappedDynamicClusteredList(int clusterDataSize, Stream stream, IItemSerializer<T> itemSerializer, IEqualityComparer<T> itemComparer, out StreamMappedDynamicClusteredList<T> result) {
 			result = new StreamMappedDynamicClusteredList<T>(clusterDataSize, stream, itemSerializer, itemComparer);
 			return result;
 		}

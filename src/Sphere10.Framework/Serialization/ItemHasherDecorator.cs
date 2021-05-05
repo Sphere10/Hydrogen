@@ -1,11 +1,11 @@
 ﻿namespace Sphere10.Framework {
 
-	public class ObjectHasherDecorator<TItem, TObjectHasher> : IObjectHasher<TItem> 
-		where TObjectHasher : IObjectHasher<TItem> {
+	public class ItemHasherDecorator<TItem, TObjectHasher> : IItemHasher<TItem> 
+		where TObjectHasher : IItemHasher<TItem> {
 
 		protected readonly TObjectHasher InternalHasher;
 
-		public ObjectHasherDecorator(TObjectHasher internalHasher) {
+		public ItemHasherDecorator(TObjectHasher internalHasher) {
 			InternalHasher = internalHasher;
 		}
 

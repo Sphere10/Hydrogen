@@ -19,7 +19,7 @@ namespace Sphere10.Framework {
 
 		protected int ItemSize => Parent.Serializer.FixedSize;
 
-		protected IObjectSerializer<TItem> Serializer => Parent.Serializer;
+		protected IItemSerializer<TItem> Serializer => Parent.Serializer;
 
 		protected EndianBinaryWriter Writer => Parent.Writer;
 	}

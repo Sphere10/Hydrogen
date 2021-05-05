@@ -2,10 +2,10 @@
 
 namespace Sphere10.Framework {
 
-	public class ObjectSizerDecorator<TItem, TObjectSizer> : IObjectSizer<TItem> where TObjectSizer : IObjectSizer<TItem> {
+	public class ItemSizerDecorator<TItem, TObjectSizer> : IItemSizer<TItem> where TObjectSizer : IItemSizer<TItem> {
 		protected readonly TObjectSizer Internal;
 
-		public ObjectSizerDecorator(TObjectSizer internalSizer) {
+		public ItemSizerDecorator(TObjectSizer internalSizer) {
 			Internal = internalSizer;
 		}
 

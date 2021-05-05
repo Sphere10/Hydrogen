@@ -9,8 +9,8 @@ namespace Sphere10.Framework {
 
 	public abstract class StreamMappedClusteredListBase<TItem, TListing> : RangedListBase<TItem>, ILoadable where TListing : IItemListing {
 
-		protected readonly IObjectSerializer<TListing> ListingSerializer;
-		protected readonly IObjectSerializer<TItem> ItemSerializer;
+		protected readonly IItemSerializer<TListing> ListingSerializer;
+		protected readonly IItemSerializer<TItem> ItemSerializer;
 		protected readonly IEqualityComparer<TItem> ItemComparer;
 		protected readonly Stream InnerStream;
 		protected readonly int ClusterDataSize;
@@ -18,7 +18,7 @@ namespace Sphere10.Framework {
 
 		public event EventHandlerEx<object, StreamMappedItemAccessedArgs<TItem, TListing>> ItemAccess;
 
-		protected StreamMappedClusteredListBase(int clusterDataSize, Stream stream, IObjectSerializer<TItem> itemSerializer, IObjectSerializer<TListing> listingSerializer, IEqualityComparer<TItem> itemComparer = null) {
+		protected StreamMappedClusteredListBase(int clusterDataSize, Stream stream, IItemSerializer<TItem> itemSerializer, IItemSerializer<TListing> listingSerializer, IEqualityComparer<TItem> itemComparer = null) {
 			Guard.ArgumentInRange(clusterDataSize, 1, int.MaxValue, nameof(clusterDataSize));
 			Guard.ArgumentNotNull(stream, nameof(stream));
 			Guard.ArgumentNotNull(itemSerializer, nameof(itemSerializer));

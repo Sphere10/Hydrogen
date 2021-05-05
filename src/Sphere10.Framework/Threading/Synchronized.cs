@@ -1,8 +1,8 @@
 namespace Sphere10.Framework {
-    public sealed class ThreadSafe<T> : ThreadSafeObject {
+    public sealed class Synchronized<T> : SynchronizedObject {
 		private T _value;
 
-		public ThreadSafe(T @object) {
+		public Synchronized(T @object) {
             _value = @object;
         }
 

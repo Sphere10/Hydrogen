@@ -17,7 +17,7 @@ using System.Threading.Tasks;
 
 namespace Sphere10.Framework {
 
-	public interface ICache<TKey, TValue> : IThreadSafeObject {
+	public interface ICache<TKey, TValue> : ISynchronizedObject {
 
         event EventHandlerEx<TKey, TValue> ItemFetched;
 	    event EventHandlerEx<TKey, CachedItem<TValue>>  ItemRemoved;

@@ -18,7 +18,7 @@ using System.Threading;
 
 namespace Sphere10.Framework {
 
-    public sealed class Throttle : ThreadSafeObject {
+    public sealed class Throttle : SynchronizedObject {
         public readonly TimeSpan _interval;
         public DateTime _lastEvent;
         private bool _waitingForStampede;

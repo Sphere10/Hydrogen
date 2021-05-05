@@ -1,5 +1,5 @@
 ﻿namespace Sphere10.Framework.Protocol {
-	public interface IProtocolMessage<TEndpoint, TMessageID, TMessageType, TNonce, TPayload> {
+	public interface IProtocolMessage<TEndpoint, TMessageID, TMessageType> {
 
 		TMessageID ID { get; init; }
 
@@ -7,9 +7,6 @@
 
 		TMessageType MessageType { get; init; }
 
-		TNonce Nonce { get; init; }
-
-		TPayload Payload { get; init; }
 	}
 
 

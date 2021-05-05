@@ -19,7 +19,7 @@ using System.Threading.Tasks;
 
 namespace Sphere10.Framework {
 
-    public abstract class CacheBase<TKey, TValue> : ThreadSafeObject, ICache<TKey, TValue>, IDisposable {
+    public abstract class CacheBase<TKey, TValue> : SynchronizedObject, ICache<TKey, TValue>, IDisposable {
         public event EventHandlerEx<TKey, TValue> ItemFetched; 
         public event EventHandlerEx<TKey, CachedItem<TValue>> ItemRemoved;
         protected IDictionary<TKey, CachedItem<TValue>> InternalStorage;

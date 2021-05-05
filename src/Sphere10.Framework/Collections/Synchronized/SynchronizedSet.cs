@@ -19,13 +19,13 @@ using System.Threading;
 
 namespace Sphere10.Framework {
 
-	public class SynchronizedSet<TItem, TSet> : SetDecorator<TItem, TSet>, IThreadSafeObject where TSet : ISet<TItem> {
+	public class SynchronizedSet<TItem, TSet> : SetDecorator<TItem, TSet>, ISynchronizedObject where TSet : ISet<TItem> {
 
-		private readonly ThreadSafeObject _lock;
+		private readonly SynchronizedObject _lock;
 
 		public SynchronizedSet(TSet internalSet)
 			: base(internalSet) {
-			_lock = new ThreadSafeObject();
+			_lock = new SynchronizedObject();
 		}
 
 		public ReaderWriterLockSlim ThreadLock => _lock.ThreadLock;

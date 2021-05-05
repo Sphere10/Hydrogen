@@ -18,9 +18,9 @@ using System.Threading;
 
 namespace Sphere10.Framework {
 
-    public class SynchronizedDictionary<TKey, TValue> : DictionaryDecorator<TKey, TValue>, IThreadSafeObject {
+    public class SynchronizedDictionary<TKey, TValue> : DictionaryDecorator<TKey, TValue>, ISynchronizedObject {
 
-		private readonly ThreadSafeObject _lock;
+		private readonly SynchronizedObject _lock;
 
 		public SynchronizedDictionary()
 			: this(new Dictionary<TKey, TValue>()) {
@@ -28,7 +28,7 @@ namespace Sphere10.Framework {
 
 		public SynchronizedDictionary(IDictionary<TKey, TValue> internalDictionary)
 			: base(internalDictionary) {
-			_lock = new ThreadSafeObject();
+			_lock = new SynchronizedObject();
 		}
 
 		public override void Add(TKey key, TValue value) {

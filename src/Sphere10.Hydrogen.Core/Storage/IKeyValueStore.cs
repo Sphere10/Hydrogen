@@ -7,7 +7,7 @@ using Sphere10.Framework;
 
 namespace Sphere10.Hydrogen.Core.Storage {
 
-    public interface IKeyValueStore<T> : IThreadSafeObject {
+    public interface IKeyValueStore<T> : ISynchronizedObject {
         IQueryable<T> GetKeys();
         Stream OpenRead(T key);
         Stream OpenWrite(T key);

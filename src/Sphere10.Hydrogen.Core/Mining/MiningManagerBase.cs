@@ -9,7 +9,7 @@ using Sphere10.Hydrogen.Core.Maths;
 namespace Sphere10.Hydrogen.Core.Mining {
 
 	
-	public abstract class MiningManagerBase : ThreadSafeObject, IMiningManager {
+	public abstract class MiningManagerBase : SynchronizedObject, IMiningManager {
 		
 		public event EventHandlerEx<object, MiningPuzzle, MiningSolutionResult> SolutionSubmited;
 		public event EventHandlerEx<object, MiningPuzzle, MiningSolutionResult> StatusChanged;

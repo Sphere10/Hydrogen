@@ -5,7 +5,7 @@ using Sphere10.Framework;
 
 namespace Sphere10.Hydrogen.Core.Storage {
 
-    public abstract class KeyValueStoreBase<T> : ThreadSafeResource, IKeyValueStore<T> {
+    public abstract class KeyValueStoreBase<T> : SynchronizedResource, IKeyValueStore<T> {
 
         public Stream OpenRead(T key) {
             using (EnterReadScope()) {

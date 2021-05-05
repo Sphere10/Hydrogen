@@ -17,23 +17,23 @@ using System.Threading;
 
 namespace Sphere10.Framework {
 
-    public class ThreadSafeObject : ThreadSafeObject<Scope, Scope>, IThreadSafeObject {
-        public ThreadSafeObject() : this(LockRecursionPolicy.SupportsRecursion) {
+    public class SynchronizedObject : SynchronizedObject<Scope, Scope>, ISynchronizedObject {
+        public SynchronizedObject() : this(LockRecursionPolicy.SupportsRecursion) {
         }
 
-        protected ThreadSafeObject(LockRecursionPolicy policy) 
+        protected SynchronizedObject(LockRecursionPolicy policy) 
             : base(policy) {
         }
     }
 
-    public class ThreadSafeObject<TReadScope, TWriteScope> : IThreadSafeObject<TReadScope, TWriteScope>
+    public class SynchronizedObject<TReadScope, TWriteScope> : ISynchronizedObject<TReadScope, TWriteScope>
         where TReadScope : IScope, new()
         where TWriteScope : IScope, new() {
 
-        protected ThreadSafeObject() : this(LockRecursionPolicy.SupportsRecursion) {
+        protected SynchronizedObject() : this(LockRecursionPolicy.SupportsRecursion) {
         }
 
-        protected ThreadSafeObject(LockRecursionPolicy policy) {
+        protected SynchronizedObject(LockRecursionPolicy policy) {
             ThreadLock = new ReaderWriterLockSlim(policy);
         }
 

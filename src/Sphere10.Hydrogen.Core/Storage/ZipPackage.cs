@@ -62,29 +62,25 @@ namespace Sphere10.Hydrogen.Core.Storage {
             return entry.Open();
         }
 
-        protected override void OnSetupRead() {
-            base.OnSetupRead();
+        protected override void InitializeReadScope() {
             if (!File.Exists(FilePath))
                 throw new FileNotFoundException("Package not found", FilePath);
             _stream = File.OpenRead(FilePath);
             _archive = new ZipArchive(_stream, ZipArchiveMode.Read);
         }
 
-        protected override void OnSetupWrite() {
-            base.OnSetupWrite();
+        protected override void InitializeWriteScope() {
             var exists = File.Exists(FilePath);
             _stream = File.Open(FilePath, FileMode.OpenOrCreate);
             _archive = new ZipArchive(_stream, exists ? ZipArchiveMode.Update : ZipArchiveMode.Create);
         }
 
-        protected override void OnCleanupRead() {
-            base.OnCleanupRead();
+        protected override void FinalizeReadScope() {
             _archive.Dispose();
             _stream.Dispose();
         }
 
-        protected override void OnCleanupWrite() {
-            base.OnCleanupRead();
+        protected override void FinalizeWriteScope() {
             _stream.Flush(true);
             _archive.Dispose();
             _stream.Dispose();

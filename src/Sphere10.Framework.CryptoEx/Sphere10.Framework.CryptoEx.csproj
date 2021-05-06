@@ -10,6 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="HashLib4CSharp" Version="1.5.0" />
     <PackageReference Include="Portable.BouncyCastle" Version="1.8.10" />
   </ItemGroup>
 

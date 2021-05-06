@@ -1,23 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Threading;
 
 namespace Sphere10.Framework.Protocol {
-	public interface IProtocol<TEndpoint, TMessageID, TMessageType, TMessage, THandshake, TCommand, TRequest, TResponse, TChannel>
-		where TMessage : IProtocolMessage<TEndpoint, TMessageID, TMessageType>
-		where THandshake : TMessage, IProtocolHandshake<TEndpoint, TMessageID, TMessageType>
-		where TCommand : TMessage, IProtocolCommand<TEndpoint, TMessageID, TMessageType>
-		where TRequest : TMessage, IProtocolRequest<TEndpoint, TMessageID, TMessageType>
-		where TResponse : TMessage, IProtocolResponse<TEndpoint, TMessageID, TMessageType>
-		where TChannel : IProtocolChannel<TEndpoint, TMessageID, TMessageType, TMessage, THandshake, TCommand, TRequest, TResponse> {
-
+	public interface IProtocol<TEndpoint, TMessageType, TMessage, TCommandHandler, TRequestHandler>
+		where TCommandHandler : ICommandHandler<TEndpoint, TMessage>
+		where TRequestHandler : IRequestHandler<TEndpoint, TMessage> {
+		
 		IItemSerializer<TMessage> Serializer { get; init; }
 
-		IList<TMessage> MessageHandlers { get; init; }
+		IDictionary<TMessageType, TCommandHandler> CommandHandlers { get; init; }
 
-		IDictionary<TMessageType, TCommand> CommandHandlers { get; init; }
-
-		IDictionary<TMessageType, Func<TRequest, TResponse>> RequestHandlers { get; init; }
+		IDictionary<TMessageType, TRequestHandler> RequestHandlers { get; init; }
 
 	}
 

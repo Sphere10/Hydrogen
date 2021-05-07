@@ -16,7 +16,7 @@ namespace Sphere10.Hydrogen.Core.Maths {
 
 		public Statistics MemStats { get; }
 
-		private RandomHash2Fast() {
+		public RandomHash2Fast() {
 			EnableCaching = false;
 			CacheInstance = new Cache();
 			MemStats = new Statistics();

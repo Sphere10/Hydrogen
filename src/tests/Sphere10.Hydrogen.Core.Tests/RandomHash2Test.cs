@@ -179,7 +179,7 @@ namespace Sphere10.Hydrogen.Core.Tests {
 		public void TestReferenceConsistency_RandomHash() {
 			var input = ParseBytes(DATA_BYTES);
 			var randomHash2 = RandomHash2.RandomHash2Instance();
-			var randomHash2Fast = RandomHash2Fast.RandomHash2FastInstance();
+			var randomHash2Fast = new RandomHash2Fast();
 
 			for (var idx = 0; idx <= 100; idx++) {
 				input = RandomHash2.Compute(input);
@@ -190,7 +190,7 @@ namespace Sphere10.Hydrogen.Core.Tests {
 		[Test]
 		public void TestCacheConsistency() {
 			var input = ParseBytes(DATA_BYTES);
-			var randomHash2Fast = RandomHash2Fast.RandomHash2FastInstance();
+			var randomHash2Fast = new RandomHash2Fast();
 
 			for (var idx = 0; idx <= 100; idx++) {
 				input = RandomHash2.Compute(input);
@@ -204,7 +204,7 @@ namespace Sphere10.Hydrogen.Core.Tests {
 		[Test]
 		public void TestRandomHash2FastStressTest() {
 			var input = ParseBytes(DATA_BYTES);
-			var randomHash2Fast = RandomHash2Fast.RandomHash2FastInstance();
+			var randomHash2Fast = new RandomHash2Fast();
 			const int NUM_ITER = 1000;
 			for (var idx = 0; idx <= NUM_ITER; idx++) {
 				Assert.DoesNotThrow(() => input = randomHash2Fast.Hash(input));

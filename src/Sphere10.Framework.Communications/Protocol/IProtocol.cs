@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Sphere10.Framework.Protocol {
+namespace Sphere10.Framework.Communications.Protocol {
 	public interface IProtocol<TEndpoint, TMessageType, TMessage, TCommandHandler, TRequestHandler>
 		where TCommandHandler : ICommandHandler<TEndpoint, TMessage>
 		where TRequestHandler : IRequestHandler<TEndpoint, TMessage> {

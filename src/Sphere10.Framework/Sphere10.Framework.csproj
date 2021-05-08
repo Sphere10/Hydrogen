@@ -18,4 +18,8 @@
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Folder Include="Protocol\" />
+  </ItemGroup>
+
 </Project>

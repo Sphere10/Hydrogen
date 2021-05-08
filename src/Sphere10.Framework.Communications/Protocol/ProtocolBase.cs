@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading;
 
-namespace Sphere10.Framework.Protocol {
+namespace Sphere10.Framework.Communications.Protocol {
 
 	public abstract class ProtocolBase<TEndpoint, TMessageType, TMessage, TCommandHandler, TRequestHandler> : IProtocol<TEndpoint, TMessageType, TMessage, TCommandHandler, TRequestHandler>
 		where TCommandHandler : ICommandHandler<TEndpoint, TMessage>

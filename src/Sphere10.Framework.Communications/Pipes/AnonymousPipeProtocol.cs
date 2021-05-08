@@ -3,7 +3,7 @@
 //using System.IO;
 //using System.IO.Pipes;
 //using System.Text;
-//using Sphere10.Framework.Protocol;
+//using Sphere10.Framework.Communications.Protocol;
 
 //namespace Sphere10.Framework {
 

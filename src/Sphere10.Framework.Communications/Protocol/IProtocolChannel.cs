@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Sphere10.Framework.Protocol {
+namespace Sphere10.Framework.Communications.Protocol {
 	public interface IProtocolChannel<TEndpoint, TMessageType, TMessage> : IDisposable {
 		public event EventHandlerEx<object> Opening;
 		public event EventHandlerEx<object> Opened;

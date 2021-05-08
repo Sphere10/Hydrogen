@@ -1,6 +1,6 @@
 ﻿using System.Threading;
 
-namespace Sphere10.Framework.Protocol {
+namespace Sphere10.Framework.Communications.Protocol {
 	public interface IProtocolHub<TEndpoint, TMessageType, TMessage, TCommandHandler, TRequestHandler,  TChannel, TProtocol>
 		where TCommandHandler : ICommandHandler<TEndpoint, TMessage>
 		where TRequestHandler : IRequestHandler<TEndpoint, TMessage>

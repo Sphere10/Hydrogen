@@ -1,7 +1,6 @@
-using System;
-using System.Text;
 using NUnit.Framework;
 using Sphere10.Framework.CryptoEx.EC;
+using System.Text;
 
 namespace Sphere10.Framework.CryptoEx.Tests {
 

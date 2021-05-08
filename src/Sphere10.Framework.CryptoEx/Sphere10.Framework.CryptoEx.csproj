@@ -14,8 +14,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\HashLib4CSharp\HashLib4CSharp.csproj" />
     <ProjectReference Include="..\Sphere10.Framework\Sphere10.Framework.csproj" />
-    <ProjectReference Include="..\Sphere10.HashLib4CSharp\Sphere10.HashLib4CSharp.csproj" />
   </ItemGroup>
 
 </Project>

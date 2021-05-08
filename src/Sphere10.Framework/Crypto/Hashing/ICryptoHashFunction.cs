@@ -14,7 +14,7 @@ namespace Sphere10.Framework {
 		void GetResult(Span<byte> result);
 	}
 
-	public static class ICryptoHashFunctionExtensions {
+	public static class IHashFunctionExtensions {
 	
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static byte[] GetResult(this IHashFunction chf) {

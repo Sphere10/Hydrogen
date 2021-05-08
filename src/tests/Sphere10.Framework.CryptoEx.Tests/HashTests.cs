@@ -30,6 +30,26 @@ namespace Sphere10.Framework.CryptoEx.Tests {
 		const string DATA_BYTES =
 			"0x4f550200ca022000bb718b4b00d6f74478c332f5fb310507e55a9ef9b38551f63858e3f7c86dbd00200006f69afae8a6b0735b6acfcc58b7865fc8418897c530211f19140c9f95f24532102700000000000003000300a297fd17506f6c796d696e65722e506f6c796d696e65722e506f6c796d6939303030303030302184d63666eb166619e925cef2a306549bbc4d6f4da3bdf28b4393d5c1856f0ee3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855000000006d68295b00000000";
 
+		protected static readonly TestItem<int, string>[] DATA_SHA2_224 = {
+			// NOTE: Input denotes the number of bytes to take from DATA_BYTES when executing test
+			new() { Input = 17, Expected = "0x869cfeac56d43d426e0bd2785b8c20126ae7c983250a812131904b77" },
+			new() { Input = 31, Expected = "0xa6b11c2eb7179530827899bcb80cd527723bb11bcef1d39aca6e5891" },
+			new() { Input = 32, Expected = "0xa87194e797f003637206b54a60c79980ace0718f033ccc6b8b6bbba3" },
+			new() { Input = 33, Expected = "0xea9caa4460b7156e9d552ed04ebf5717484af73ca8c4b2e92a625bc3" },
+			new() { Input = 34, Expected = "0x95fca03fba53a6ec3276aee6ff7feb9a39cb444d734fc57d191c7bd5" },
+			new() { Input = 63, Expected = "0x867ab82bf05d985a1d94b52cad97c9b0391288aaded4e4725ddc4445" },
+			new() { Input = 64, Expected = "0x3622dc46f016fea7aeeefc2e93c81cc42944658e1c9d20b2f366c322" },
+			new() { Input = 65, Expected = "0xa500a02d8a062490b3acc41185045df59b5a4e60ffc4a76419ae2e9f" },
+			new() { Input = 117, Expected = "0x584ff177b0c24d989e5eb8f769024696ffc2e930f5b0200ed8035e25" },
+			new() { Input = 100, Expected = "0x6ac04f82d86fd241bed3fe0621ac191957520251f654241a3eabf1fd" },
+			new() { Input = 127, Expected = "0x3eceec70509157838b88bc107d625d2aeb6484c7ef5f92b8f240d51d" },
+			new() { Input = 128, Expected = "0x9ca3d82bc27f56d5c1bdd1f90ddf3b823b86133c9d6c00dd1379f933" },
+			new() { Input = 129, Expected = "0x3bce24c01916e2eb0a7bb0c9cfe9aa86fa64055f49ab0e85e655aa7b" },
+			new() { Input = 178, Expected = "0x554eb0b30d67d9e6465b4d98377750b495f8c265f6aae8ddb2983460" },
+			new() { Input = 199, Expected = "0xcee26fccb1f901675ebe31780778230806fc8fbc2c25131766ca5c83" },
+			new() { Input = 200, Expected = "0x8d9dc116544184744c67ff62335090bdf46bc03e9be2e7180f97c1bb" }
+		};
+
 		protected readonly TestItem<int, string>[] DATA_SHA2_256 = {
 			// NOTE: Input denotes the number of bytes to take from DATA_BYTES when executing test
 			new() { Input = 17, Expected = "0x0fd3f87ae8963c1ac8aabc0706d2ad5a66c2d88b50f57821b864b093263a7a05" },
@@ -90,6 +110,108 @@ namespace Sphere10.Framework.CryptoEx.Tests {
 			new() { Input = 200, Expected = "0x5a9aee4aed39dd405980b29984dccc6b520b685c6beb6e42c3450b858e1cc45de9d235849fa743738a06514b30522180d06f98185a49919191e86374a79df3b9" }
 		};
 
+		protected static readonly TestItem<int, string>[] DATA_SHA2_512_224 = {
+			// NOTE: Input denotes the number of bytes to take from DATA_BYTES when executing test
+			new() { Input = 17, Expected = "0x4846bb2631c431152f50e9d953879d2e8dd0b5c269cf3adf2fabda1c" },
+			new() { Input = 31, Expected = "0x0ca9ed8697815c00879139b2f33d41ec0a847883db5f5b5e7eeab54f" },
+			new() { Input = 32, Expected = "0xc2f367157013a6258bd0753972ce564b897ddadde28e00e73eaabfe6" },
+			new() { Input = 33, Expected = "0x16969daf39bc1000dbea1b75fffad0041d5701a49d89afd59b4c8aaa" },
+			new() { Input = 34, Expected = "0xda2a0e540a2c766df7f6947f386cbf7e8cb3973a0ad121f00305cd62" },
+			new() { Input = 63, Expected = "0x1fa0dd121ea2ec2bf42b1129be65d77429155235a1508ea099e5184b" },
+			new() { Input = 64, Expected = "0xd58f565a4167fea1c806929f9b721989c06c839e966c8bdc9dbbe4f6" },
+			new() { Input = 65, Expected = "0x67ab11a7aa72ce3bfefa7ea4a8a4fb33be011bfbca9508a226597f5a" },
+			new() { Input = 117, Expected = "0xa5aaf3fdbd5e45368fa4641cb833da3b613705b94733a40ff152c738" },
+			new() { Input = 100, Expected = "0x3ede9bba66ecb29f4559e6f81901090ef5cd0f222e0268be446d1bef" },
+			new() { Input = 127, Expected = "0x8274a43a288313f4bbdb4143b618c840377f097e77e5f05520c509f7" },
+			new() { Input = 128, Expected = "0xd83e6f8db0fbe873ab1df76db481bb4c3c88ceb38308a7c3376c7824" },
+			new() { Input = 129, Expected = "0xf65099cf64497bc93719e9ffe933d1a4501e106f0f75575f8c44486e" },
+			new() { Input = 178, Expected = "0xbc5a3540c403d93ab1669b4ad75da366a100f9063131c7f9a17250ee" },
+			new() { Input = 199, Expected = "0x2c58eb005441bc5dc5e4dd869dbbc705e9fe8490a4798c3c60fe1b0d" },
+			new() { Input = 200, Expected = "0x1a7e56a2bdaff2335068ab04dc3780a7892754422ad37a28b08c659e" }
+		};
+
+		protected static readonly TestItem<int, string>[] DATA_SHA2_512_256 = {
+			// NOTE: Input denotes the number of bytes to take from DATA_BYTES when executing test
+			new() { Input = 17, Expected = "0x04130f0c464373fcb0bc93d112ab700f21c2d444ee0a6b40768c38b2149b2433" },
+			new() { Input = 31, Expected = "0x7572a6bbfbae6df08915f5a0b51dd4725118920a3c604fa860bd811c72e38c49" },
+			new() { Input = 32, Expected = "0x75c693f7ba26912024b3ec751140112bd07d5092b3b8b231e2ba7491abdeceff" },
+			new() { Input = 33, Expected = "0x8ad6db5fa09f8c51d7366d6222d7f847aefc66c6eaa27f06f365ba90507cf814" },
+			new() { Input = 34, Expected = "0x1df568b6cc787bb3ca2fbc4cb87a7ca8fb0a241eac24c40ac3814a19b12c6be1" },
+			new() { Input = 63, Expected = "0x18fc0c80956a8ad32f64262d29fc6003b2327db14f2c36087cbfc7e6789f2545" },
+			new() { Input = 64, Expected = "0xfa80e2986700af9c2872bb18a580c65a10456842c82df19c38761e475b38b355" },
+			new() { Input = 65, Expected = "0xcf5421cf033b3e739bf46f7ac4408661ec45f850b527e06ca82f60629ca1caf2" },
+			new() { Input = 117, Expected = "0x24e7bb55dc160fb0cf6cf5b70d19db9f52eb3b0a85f41da693b2b10c8ef4dfab" },
+			new() { Input = 100, Expected = "0x6ccd786cce564faee1f4bedad4fb07e66834d6b814ae2fa2c56effa02a8bb662" },
+			new() { Input = 127, Expected = "0x2b4fee91d9f575419513199df156b1746d9040d7c37d0d16db0f795e85aeddc1" },
+			new() { Input = 128, Expected = "0xe62bc7de3bd602dab41e571d660d41d0c200c05270af77c64a58bfb74e1a73a2" },
+			new() { Input = 129, Expected = "0xa199d5defea788fe69a47119d0a5a1246ed922144769dd3ff45f6b6063298609" },
+			new() { Input = 178, Expected = "0xa36521aebb17176d82c9ad7ca21ad983ccc84705fdb338cb4eb9aaa8e9cc3030" },
+			new() { Input = 199, Expected = "0x8c0c7a127b552dcfbe5afd3491c44d3a2e844a503c3c40bf5174a3fd8cb6a185" },
+			new() { Input = 200, Expected = "0xdb6933549c8e47196fa38c1371b98a3da217ede8845b46b8f431ed24d1d41a98" }
+		};
+
+		protected static readonly TestItem<int, string>[] DATA_SHA0 = {
+			// NOTE: Input denotes the number of bytes to take from DATA_BYTES when executing test
+			new() { Input = 17, Expected = "0x58d746a49b7c66182d2b0a3de6b3cea9570478bf" },
+			new() { Input = 31, Expected = "0x0c77f16ad91b6bf9205b7d5c17932db903cb65de" },
+			new() { Input = 32, Expected = "0x9ba2e43c9380328723f9ae4117e0c97e7cc47873" },
+			new() { Input = 33, Expected = "0xb0a9818e4736af5cc1383d4d0ebd9ef51db79ac5" },
+			new() { Input = 34, Expected = "0xe4788dfcba1f4c44863d1cfa1df8f730881f2ed6" },
+			new() { Input = 63, Expected = "0xb4ec5d267abed1b4f01e3a16e35c1d1c95ba5364" },
+			new() { Input = 64, Expected = "0xb1c666df938f8960f94b346b32c29a29bef38583" },
+			new() { Input = 65, Expected = "0xb8fbd2f077c0ecaf3d9fb2880262458c6e73f47b" },
+			new() { Input = 117, Expected = "0x17f0802abd5a546b633ac001f597dd2eddfff749" },
+			new() { Input = 100, Expected = "0x96bb42741cbae4679e0d35870358e746eae2ae79" },
+			new() { Input = 127, Expected = "0x704e7554ccf7443fbb6b42aa7f02c4ff7004f48a" },
+			new() { Input = 128, Expected = "0x5bf6422be153fa9fbf7458d912a064ad0243c9e6" },
+			new() { Input = 129, Expected = "0xc0e3e2956e24dd5ce94908b777037284487be358" },
+			new() { Input = 178, Expected = "0xa3ec09bcf28e3eef2dd841816b1aab4d290f8315" },
+			new() { Input = 199, Expected = "0xce56f5d8b0641be06c6baf1e4da20e22afd461d5" },
+			new() { Input = 200, Expected = "0x4d071fd25625c9e0cd464a464544d11462e42037" }
+		};
+
+
+		protected readonly TestItem<int, string>[] DATA_SHA1_160 = {
+			// NOTE: Input denotes the number of bytes to take from DATA_BYTES when executing test
+			new() { Input = 17, Expected = "0xa96776b1ebac72819ed9460a79ca95fee5157ef4" },
+			new() { Input = 31, Expected = "0x12a27fbb27caa2aa543f532387112de2c02c22f5" },
+			new() { Input = 32, Expected = "0xb07e26220aa339c876a9d7447f1f6e007605fe4e" },
+			new() { Input = 33, Expected = "0xf0b72467af9526525713107c95adfd06a940e216" },
+			new() { Input = 34, Expected = "0xd48d3738ee1951b16b353a5899082ea722ec4cac" },
+			new() { Input = 63, Expected = "0x9b3dce9e98dad9e8ffa08125010b606fcfde925b" },
+			new() { Input = 64, Expected = "0x9864ce90af0ea8aaaf2e2f5fa280d5d7508f1d51" },
+			new() { Input = 65, Expected = "0x52063ffd94354bf08221e9d7e51f4280eb41cfc9" },
+			new() { Input = 117, Expected = "0x447fe81cb06fa0d1742b160ec262e1c41be6aa3e" },
+			new() { Input = 100, Expected = "0x9a8af7b7861bd8d6edc41d620138586016a23abf" },
+			new() { Input = 127, Expected = "0x7cad901b4dc525fb74aab345b61f507c34518e53" },
+			new() { Input = 128, Expected = "0x55d8e062b1cd400c57c3f1a799c4ec0aae75a0f9" },
+			new() { Input = 129, Expected = "0xaef5a27d651680bd9befc52bba81a9b56e03211b" },
+			new() { Input = 178, Expected = "0xb910353e0c40f90294cbdc6d89c8dab2fccb2325" },
+			new() { Input = 199, Expected = "0x48d1a8132ce4352b5c14ab8c08d7d7c15e5d8a79" },
+			new() { Input = 200, Expected = "0x368fcfea12ac5db4964ed7897caf3dfaf6d2ae38" }
+		};
+
+		protected readonly TestItem<int, string>[] DATA_SHA3_224 = {
+			// NOTE: Input denotes the number of bytes to take from DATA_BYTES when executing test
+			new() { Input = 17, Expected = "0x7730f0ef02ba83614514808ae2728fb6d089e5cc60440f568836b216" },
+			new() { Input = 31, Expected = "0x00d0b20e7b22756c0603201e58c8df8d7a5b7532ccaaa11dbe41ffee" },
+			new() { Input = 32, Expected = "0x98210936602200db9c058cef6dae33314b2952c5769c93c19e692149" },
+			new() { Input = 33, Expected = "0x17e3bbe10a6325b88e7dd15539f08597eeba629ed6a915616021e071" },
+			new() { Input = 34, Expected = "0xa1a0db03f757dfd84a62864556988801e328cc449748ea6985daadcc" },
+			new() { Input = 63, Expected = "0x20b2b6e3aec9110ca2b0de08db01b6517d40131b424860c844c5e93b" },
+			new() { Input = 64, Expected = "0x7a771ffc0003021bd275b2fdd9579fc4ae14348420b01ef7e4d6bafb" },
+			new() { Input = 65, Expected = "0x0226f4c1ea8b5fe23c79d3f17e249de8cd2023d9c7b3117f270e2894" },
+			new() { Input = 117, Expected = "0x661c35c558e4c5bf3596cc50145ef880e17cedcdab37237b6b39eef6" },
+			new() { Input = 100, Expected = "0x8843e5e01af499d6af98c25b7c26fe1e0c9a880ea37d11f4ec93d1ca" },
+			new() { Input = 127, Expected = "0x0a1160c16e94fb1bc4018308fd1774b9a4b1efaa4fb6b12dc1edfcc3" },
+			new() { Input = 128, Expected = "0x466ca95ec19554fb6ec249f2bcd1fefb4c81933047f3783a3867cc88" },
+			new() { Input = 129, Expected = "0x739196e95833dfcdb5cb15691816c39412d9388dc9b61f95384a01dc" },
+			new() { Input = 178, Expected = "0x21115bb24ba5f07295bda0b91fc63aaacc5c8bae90fe79bb87b9c168" },
+			new() { Input = 199, Expected = "0x2ef98a1711d88db9c915c80c2450342ed90c570334baa298df1f1e17" },
+			new() { Input = 200, Expected = "0xd53776471a002f4f8d132a896d2a7dd7577c3029d3468fa28f94e8f2" }
+		};
+
+
 		protected readonly TestItem<int, string>[] DATA_SHA3_256 = {
 			// NOTE: Input denotes the number of bytes to take from DATA_BYTES when executing test
 			new() { Input = 17, Expected = "0x84b6a1cf6df74b3a54da73cf2ae3bca8426fba94908199bba45ba1ccc8f680d8" },
@@ -148,6 +270,26 @@ namespace Sphere10.Framework.CryptoEx.Tests {
 			new() { Input = 178, Expected = "0x3f71cc9ed5acf47e4b994fb36bdc306c7e777a400532e0c0ec7e2ac1796c4471d39a09d7e32473e7bf804e4b342813a87f8f11c85da3b08f50cfe8af3f690d12" },
 			new() { Input = 199, Expected = "0xe2e4d8eadf49edf7c0b81c97e0c115064a6788eda531df390b88d09586dd2f33f551c6fe4f930caaf3e6d24e7f3dce49c9ecfedb5ceeef796c1afa1776157736" },
 			new() { Input = 200, Expected = "0xd62ed867af9fee338bc1cc712fdbc0da15afa40b4a5dcc3e76d74f1770c5a7ca88638f0cc8bce685cae8d68a2aa8717c84bc3e146100aff25c3326355b1735aa" }
+		};
+
+		protected static readonly TestItem<int, string>[] DATA_RIPEMD = {
+			// NOTE: Input denotes the number of bytes to take from DATA_BYTES when executing test
+			new() { Input = 17, Expected = "0xbfdc1db3335fd40c6fcc745196095daa" },
+			new() { Input = 31, Expected = "0x407c88ce6996902f3c0494fb12e6f997" },
+			new() { Input = 32, Expected = "0x0140e0c8caaecb37a6b85b11be585876" },
+			new() { Input = 33, Expected = "0x1993f0152058eafef8e714435e9a25f1" },
+			new() { Input = 34, Expected = "0x7b081119355014700e8862bb5a6fe154" },
+			new() { Input = 63, Expected = "0x985584ca8e46e4760d81a8a59e6489a7" },
+			new() { Input = 64, Expected = "0xe7d34cd24ef82c527cab3d8ef2b72571" },
+			new() { Input = 65, Expected = "0x3b67767584326eb649bfa58fed154900" },
+			new() { Input = 117, Expected = "0xc89a71c44530331d76d7ccf61ea01b39" },
+			new() { Input = 100, Expected = "0x85263382da7bab1e7ded9eafefd83d99" },
+			new() { Input = 127, Expected = "0xeb53d82d2028a94cf2abebda49cc3988" },
+			new() { Input = 128, Expected = "0x0d33e8b984fda75f525449ff706675c5" },
+			new() { Input = 129, Expected = "0xd7e7e34f26a717a82dd09184c336965e" },
+			new() { Input = 178, Expected = "0x66f56cdfa628da7ad1e9c9fa129edaa9" },
+			new() { Input = 199, Expected = "0x0c475e8a48a90ffd93dfe1549e36c129" },
+			new() { Input = 200, Expected = "0x78f3f537566884f84e157a5ad7062463" }
 		};
 
 		protected readonly TestItem<int, string>[] DATA_RIPEMD_160 = {
@@ -210,6 +352,87 @@ namespace Sphere10.Framework.CryptoEx.Tests {
 			new() { Input = 200, Expected = "0xc56063dd1fb318af5a0910ed3993c3ea3f746be8ef65661af0fb4c7451f44dfcabfe7e5db469d9b3" }
 		};
 
+		protected static readonly TestItem<int, string>[] DATA_BLAKE2B_128 = {
+			// NOTE: Input denotes the number of bytes to take from DATA_BYTES when executing test
+			new() { Input = 17, Expected = "0x49a48254e908ccda9ba18ccad8db5b65" },
+			new() { Input = 31, Expected = "0xad02b381eedd0dcaa786b6c909c54058" },
+			new() { Input = 32, Expected = "0x3eca051ea634a54e0bb85cba642e76a5" },
+			new() { Input = 33, Expected = "0x785a9bb07259445048a3b7bc91dd4e6f" },
+			new() { Input = 34, Expected = "0x88b51265c8e06e3d89507d71d0dd022b" },
+			new() { Input = 63, Expected = "0x16d2ab174a37539fef72e687913d674b" },
+			new() { Input = 64, Expected = "0xbff3913f314c7e06b1940df82890a46b" },
+			new() { Input = 65, Expected = "0xcc8e88bcbca0345789e9181e469003c9" },
+			new() { Input = 117, Expected = "0xb34ed87577f9f0f588e88b27c30b032f" },
+			new() { Input = 100, Expected = "0xf5e0dc00a2d19abbf2345d3ba9141777" },
+			new() { Input = 127, Expected = "0x2688275b5d937e3c3f4d89d3c5608ddb" },
+			new() { Input = 128, Expected = "0x643cb87592cb195b31a23de152e368b5" },
+			new() { Input = 129, Expected = "0xf9de2bd56e1ef7c0d1f63c84bbf5dc1a" },
+			new() { Input = 178, Expected = "0xc9d17d0bc9633a267d3024c40558d109" },
+			new() { Input = 199, Expected = "0xffd123448e81f72b79e009d982d1c3a0" },
+			new() { Input = 200, Expected = "0x9fb45b39900680e48ff3b112d30463b6" }
+		};
+
+
+		protected static readonly TestItem<int, string>[] DATA_BLAKE2B_160 = {
+			// NOTE: Input denotes the number of bytes to take from DATA_BYTES when executing test
+			new() { Input = 17, Expected = "0xe2fb03613eb98655c07b1c7562f551576e4b7fa3" },
+			new() { Input = 31, Expected = "0xe4c219445e5d612d2ad8b5f671f028c60793edc1" },
+			new() { Input = 32, Expected = "0x8b2449771869d52ff7f12d83abb75286b0282f30" },
+			new() { Input = 33, Expected = "0x1ff4862a308b42145d3cf1c03811e5ea07c32e04" },
+			new() { Input = 34, Expected = "0x8bec0ddea1b2eb142d8048b2d39b7a251bf50e28" },
+			new() { Input = 63, Expected = "0x522e511c8069bc751de1903e4cab1e4a636ee3dc" },
+			new() { Input = 64, Expected = "0x16b24086bf23aef29d4acf21f2be775edc476399" },
+			new() { Input = 65, Expected = "0xa934178370b82563fe2d9a90a61f680e1fdeb4a6" },
+			new() { Input = 117, Expected = "0x169bee3bd993d8213e035b13c26d545ebefa3316" },
+			new() { Input = 100, Expected = "0xb35a97cd753f23ae99ae1bb1d0d6fea5bd01b4d0" },
+			new() { Input = 127, Expected = "0x51e2b6f22cfa20492fb5fad409209d78e1263b27" },
+			new() { Input = 128, Expected = "0x693c44aee624f04c29f0302b859f18c936dd0ab4" },
+			new() { Input = 129, Expected = "0xe4c520f9cb52076ac58c62c24553405fc080ed8f" },
+			new() { Input = 178, Expected = "0x8a173499f67a3161298e8dbdd28619425c733461" },
+			new() { Input = 199, Expected = "0x95dcb3eee502de3e925dfcf9f54c81ad55cc8a3e" },
+			new() { Input = 200, Expected = "0xed3bf2f3da87df37ca1aa0d1453d275156f5b0a9" }
+		};
+
+		protected static readonly TestItem<int, string>[] DATA_BLAKE2B_256 = {
+			// NOTE: Input denotes the number of bytes to take from DATA_BYTES when executing test
+			new() { Input = 17, Expected = "0x2d27da7ef41e06ac1bc860203acdb4d5590f8e1cbd4ebde7173993319b96942f" },
+			new() { Input = 31, Expected = "0x22016ccee234cf60a8edddd56be2601e0d9991e2c0809b4d6a7bd7e3e0e4b77e" },
+			new() { Input = 32, Expected = "0x57f5cf50f21cf5b467d3ab35383dda675c669928cadea7e28ace0c99490ed1a0" },
+			new() { Input = 33, Expected = "0x569019bd21af6737c4223259c95bf21c2b64a451995ad2823c287636c72bde51" },
+			new() { Input = 34, Expected = "0x6b6a9e9ab4491f7a3223f99c4759158fcfc1ac3ceff9643e5357a5b6aba51cb6" },
+			new() { Input = 63, Expected = "0xba36d6a19fd75a24b6408f1235d7d070cacd0ad06eeeddc6aa84d529d9d77d42" },
+			new() { Input = 64, Expected = "0x1741b27f5c6a50c3cee00ce8e6e70c1362ae18665a57c9d5454e8b6266e84de5" },
+			new() { Input = 65, Expected = "0xa741f85ac3e389e47b099554c1de21be49a2a1eb80691bc56fdf943fc5c4ef18" },
+			new() { Input = 117, Expected = "0x3e50481ac95b202f5b03bbd5b5544acb0e1dcc9ef0c42e58cf2e31448ff5c45f" },
+			new() { Input = 100, Expected = "0xeee72bedf3cb104e8b832ca03cd1b3bc640024f9398f658187cac64549d3e544" },
+			new() { Input = 127, Expected = "0x7b10d0d1e7da93c0a8476e1369276a7f589641a762119a7807891fa404440e59" },
+			new() { Input = 128, Expected = "0xa4b538b61e04f65302648fe3f432f21a225a038c010e66e8a079bb054fd362d2" },
+			new() { Input = 129, Expected = "0x2c9c22d727eeec63c6b509849bf61526588a00f99687a5914a8152e767c1e6ac" },
+			new() { Input = 178, Expected = "0xa74e225cf53d645319f7cc3af025788e227ce02eef8fbea8dbe11b645e5a11c6" },
+			new() { Input = 199, Expected = "0x24c97ac78bc75efc9ac72af9e3415ab46e7e60ee49d9de8f40b995b2bcacb0d4" },
+			new() { Input = 200, Expected = "0xb34964c00d9b467409239b3e190fcf16c9109b8084b42be6f4e1cf36136a7d57" }
+		};
+
+		protected static readonly TestItem<int, string>[] DATA_BLAKE2B_384 = {
+			// NOTE: Input denotes the number of bytes to take from DATA_BYTES when executing test
+			new() { Input = 17, Expected = "0x3a08da334a4b328d75f123417a05022cac73535f4aa4bea3f31d86f862250f37425281120c97d687a95bece75c28a0d2" },
+			new() { Input = 31, Expected = "0x26ce23c0dcf7b0e5dc93f815a86f2cdcc7daee8a5a216937f4a8d32b5cf1072d4c9462f761084f5c1638b50b86ce11e7" },
+			new() { Input = 32, Expected = "0x8f7993befdce4f8212b33dffdd4ea347eb6fd964a909e3b3431cc6b372da31d8eeae54ab04f6d9410f279d7bee217905" },
+			new() { Input = 33, Expected = "0xe4e5fc14e25f7a2767ca428672a2e51ebbda7f578ebc0ee35d1d2cf553a65bcd8e638a638f27d77e125913feaacd95e7" },
+			new() { Input = 34, Expected = "0x993ba14777ab02a9299f78351bf5a0f21765f58c3e33b918f7818fa1fd50a81fd344207e767290379fc300ac4a113732" },
+			new() { Input = 63, Expected = "0x094c5aafc4ec999e561ae81a61c996fc2ac96994125f02997f7737822e6250a173fbc8f3843285745e9c6c0102c1ecdd" },
+			new() { Input = 64, Expected = "0xca0a50ca7b449eabfc2b2a914fe7ef949e0c7fed344e05d4608f1ae09eb47584b837649875b2cf0e7994b2a2d27a2607" },
+			new() { Input = 65, Expected = "0xdae08237f92b7209c3e1020383bee9aa59f63daaea278978068716313fde91aa590a74c670a8dce4f25511252e7f680b" },
+			new() { Input = 117, Expected = "0xcba5beca96118dbfd3868a6e6ffacdced14546f6fb522028c1ce4e44131c1d690ce247da550578b05ce7825533fe919f" },
+			new() { Input = 100, Expected = "0xe5ec9bccbc2d0f0f8cc2e096c0728ab87179846ca568611a1e546beccbab002ac22eb227965e64501417b8e9e8093f81" },
+			new() { Input = 127, Expected = "0xdeb4c6603653dc82e1372aa5f7291e9ae298011a4fab1f1590ca7c638757b5683607901bb814a80317440f7ca895357b" },
+			new() { Input = 128, Expected = "0x91aa66364949c079711591c2efce3d02a87ee366e6d3aabacd04760ea58b9aed3809800de69cf44c90aea96eb37ffc70" },
+			new() { Input = 129, Expected = "0xf38dd8a035d9bfaf681ffe6350719734e35fc8d6ca087f801afdeb802a9eb6357ae3efecb67237e9105972436f1d01a6" },
+			new() { Input = 178, Expected = "0x92146005b2c0d64af849f9a2f714f0febf1700b6d5ab8a87af46483b90b8fde9abbd09e578c96368af10e069257e2cdd" },
+			new() { Input = 199, Expected = "0x5435eb9cf7541bf264ca320880abf31a6edda9bb9ecad48e70115a650cf10cccec0f70fbbbda0844bbb8c2707547eb5c" },
+			new() { Input = 200, Expected = "0xf01dc700d658aff83165888cfba018d930f1b30063e1143e02ab7b39b1219af952a36b3de8161ee25cc0f9134b1e1ebe" }
+		};
+
 		protected readonly TestItem<int, string>[] DATA_BLAKE2B_512 = {
 			// NOTE: Input denotes the number of bytes to take from DATA_BYTES when executing test
 			new() { Input = 17, Expected = "0x8f8a1cf77aad3d0421db8ae7b2a4752b811059d3a3a5cc3b00454ecd918f39936e2f8e23c5a96c6f4519f76e73981da24d2f8c4d3ef4e7002a17eef80e2a9514" },
@@ -229,6 +452,67 @@ namespace Sphere10.Framework.CryptoEx.Tests {
 			new() { Input = 199, Expected = "0x33074a6aa23c6117037b426d16211bc41a29e38bf94bba4c2dce6659b0c4e5b63555a8b08a214905e1f795282a0a427cb90de7d3967d7ba975b58a7eb550eb3c" },
 			new() { Input = 200, Expected = "0x6c5117105a9cf47347e5e59aeeacf833e503c3e537e75020c9363cdebafeab00dd478e96c3a0e11e4c2615284fddf47a079c2b49d650f0bbc167ba10f5bf25e8" }
 		};
+
+		protected static readonly TestItem<int, string>[] DATA_BLAKE2S_128 = {
+			// NOTE: Input denotes the number of bytes to take from DATA_BYTES when executing test
+			new() { Input = 17, Expected = "0x772747b25c0b178250c2c25f34ba4180" },
+			new() { Input = 31, Expected = "0x8a5f58395b7234260e78f0a037521516" },
+			new() { Input = 32, Expected = "0x6376fa4f07891623a403467aea22a31b" },
+			new() { Input = 33, Expected = "0x88b4a975fc6641bb468add2147a43fb4" },
+			new() { Input = 34, Expected = "0xe85a4e2b095e2a197a1967c103260ff4" },
+			new() { Input = 63, Expected = "0x22cb94bbcdcc849f43fd1c0961333b9e" },
+			new() { Input = 64, Expected = "0xd5ef1298f40486c99be7d9d65e153a23" },
+			new() { Input = 65, Expected = "0x88968a23d93f07fafeccc8fea9b91ed9" },
+			new() { Input = 117, Expected = "0xd2d25839c72fe40b76f93c6c5918685b" },
+			new() { Input = 100, Expected = "0x55175439e7ab7478450e0b8c823e73ac" },
+			new() { Input = 127, Expected = "0xa6ba2f65874f99865a0a2e00eff25b57" },
+			new() { Input = 128, Expected = "0xe16f48c3d7d0c931e26de2f507e8ee82" },
+			new() { Input = 129, Expected = "0xeb1d515fcb44ddd0b7527fd21ec63be6" },
+			new() { Input = 178, Expected = "0x1dfce172b5c4cf063a415d63513a7025" },
+			new() { Input = 199, Expected = "0xe8c9db1d1b769eece915b9ddc7b0b68a" },
+			new() { Input = 200, Expected = "0xb0af3e10726f90cd07b71fc103f2b556" }
+		};
+
+		protected static readonly TestItem<int, string>[] DATA_BLAKE2S_160 = {
+			// NOTE: Input denotes the number of bytes to take from DATA_BYTES when executing test
+			new() { Input = 17, Expected = "0xf6ba42985394bab8bd51ce760a39b3a298bd3a11" },
+			new() { Input = 31, Expected = "0xb90703b03ef5f531535633ea1151c82cf9660353" },
+			new() { Input = 32, Expected = "0x88dc5f24a3c4f34ec08a00565a9209507209df78" },
+			new() { Input = 33, Expected = "0x27c495c0e3aa90bfa7aaf20d27afc275560d9f9f" },
+			new() { Input = 34, Expected = "0xe67f177a3a5e1b7b1cd15dd8a00da63d6b344b33" },
+			new() { Input = 63, Expected = "0xb162319a5bcb2733409d97375e18ce059771f2be" },
+			new() { Input = 64, Expected = "0x17a263a124a1740011d0639832c6125f16d0687e" },
+			new() { Input = 65, Expected = "0x75819b8ecd75e87ade0e349d55ce59ddb91847b3" },
+			new() { Input = 117, Expected = "0x31ae1311494728fff3c5e7f1a405b4cbd0657b1f" },
+			new() { Input = 100, Expected = "0xf36c72419513a7cfec06a00c12beeace98364f40" },
+			new() { Input = 127, Expected = "0x5a5b2da33b993b2aec06afa2bbed3950efacc317" },
+			new() { Input = 128, Expected = "0x6e20a41da31f44b34456ce482a97845d9ff3bc95" },
+			new() { Input = 129, Expected = "0xe2e3decb7017b4814507176f011cd4d5048a3ec6" },
+			new() { Input = 178, Expected = "0xfc822079244ce74fa6b2e2e23e7ca83ba058da46" },
+			new() { Input = 199, Expected = "0x601a8bb6597717cf97abec19230713424504f160" },
+			new() { Input = 200, Expected = "0xc3f2b5858a230ac4876733cce7b9211539c0c1ab" }
+		};
+
+		protected static readonly TestItem<int, string>[] DATA_BLAKE2S_224 = {
+			// NOTE: Input denotes the number of bytes to take from DATA_BYTES when executing test
+			new() { Input = 17, Expected = "0x234e1c6a3df37a27d74cff1df04ce21a22366937fa2063ea1e750da1" },
+			new() { Input = 31, Expected = "0xfd958963a6cff7aa4a7306a3d896333b32c65039dacb79b3aac58d0c" },
+			new() { Input = 32, Expected = "0xf72aed3ea7c81e26769c9b130db582b81cc5e59a19df551541d93f09" },
+			new() { Input = 33, Expected = "0x761642484e4db018890f9560885142137c7d51ad5c05797d60c4dd04" },
+			new() { Input = 34, Expected = "0x74f3a6c0d6cc0a618ed081a5804e5d4b5c23f980ab24595ec07b404d" },
+			new() { Input = 63, Expected = "0x69c95720ff5aa3de8ae0bad02ec493661de32890159b443e87de34ea" },
+			new() { Input = 64, Expected = "0xa7caa1321d083fc62c4f5505c272015a087e44d412698d62f6d23ad1" },
+			new() { Input = 65, Expected = "0x950077d6f8630b82900c9843a72da552e95db0da1d8718ca64b7d462" },
+			new() { Input = 117, Expected = "0x822ed98f12194c0857940c85641864f22867ca2b2b110c6167d8c916" },
+			new() { Input = 100, Expected = "0x0e71c342a698f9af3c9584c5c3522245013883788367debdf864ad0c" },
+			new() { Input = 127, Expected = "0x19e9915753c42292e38a258b40f68f72955ffcf9ac335ae8208980d1" },
+			new() { Input = 128, Expected = "0x27c72565492e38e1fb96ff646e2f8ae0710d5ee633984272bd70053b" },
+			new() { Input = 129, Expected = "0x1d01481a6f01ae00b9cfa7a7db627e2145140024d651d510d8a75e7e" },
+			new() { Input = 178, Expected = "0xd5018b2b23da0a7ea6b742a78a81fa84ec3a3a3a751a3619c9300251" },
+			new() { Input = 199, Expected = "0x2fe0ce44cc1ae3608606d5b38f8d5ca0471c792855220b5a70fbf2f7" },
+			new() { Input = 200, Expected = "0x1b8211ad5a170d6e2fb831b0355b461d85ee62155cd1796d439f627f" }
+		};
+
 
 		protected readonly TestItem<int, string>[] DATA_BLAKE2S_256 = {
 			// NOTE: Input denotes the number of bytes to take from DATA_BYTES when executing test
@@ -250,6 +534,356 @@ namespace Sphere10.Framework.CryptoEx.Tests {
 			new() { Input = 200, Expected = "0xc83b8ea4503d8a8d470c0ba7f977c2ea773e844d36d9a9e866a953c1338259ee" }
 		};
 
+		protected static readonly TestItem<int, string>[] DATA_TIGER_3_128 = {
+			// NOTE: Input denotes the number of bytes to take from DATA_BYTES when executing test
+			new() { Input = 17, Expected = "0xbd564f151427e8377f9065fdcda99861" },
+			new() { Input = 31, Expected = "0x21440858538e69caaf978163edacb045" },
+			new() { Input = 32, Expected = "0x39046c6e2891f723547a5bbf2d0e114a" },
+			new() { Input = 33, Expected = "0x966b716020a4b06b6359da36c8c611fd" },
+			new() { Input = 34, Expected = "0x7362b78770ee021ad562f003fcbb7558" },
+			new() { Input = 63, Expected = "0x97c9942645a6bada29dbcd0a6cf0eab1" },
+			new() { Input = 64, Expected = "0x47aac7a78a9f808e45e499d6a9d17b2c" },
+			new() { Input = 65, Expected = "0x984c30cd9df19bd9fa76429a59a32983" },
+			new() { Input = 117, Expected = "0x785090a0e9a16a7c79a05be1675a02b5" },
+			new() { Input = 100, Expected = "0x782a571f065b3ad553699dd09634c4a3" },
+			new() { Input = 127, Expected = "0xecb4f404eefc8a4ba2d70a412a7f55ac" },
+			new() { Input = 128, Expected = "0x0fd6b2ed965ba12c64944e96c383356b" },
+			new() { Input = 129, Expected = "0x717767568da81f68406c53867f288a93" },
+			new() { Input = 178, Expected = "0x772d7f6e54cdb791041d35bad1ae8bd7" },
+			new() { Input = 199, Expected = "0x2f7642269536cc6418f303a41b2db98e" },
+			new() { Input = 200, Expected = "0x0274d4de9b94787fd4d7d350ecc8551b" }
+		};
+
+		protected static readonly TestItem<int, string>[] DATA_TIGER_3_160 = {
+			// NOTE: Input denotes the number of bytes to take from DATA_BYTES when executing test
+			new() { Input = 17, Expected = "0xbd564f151427e8377f9065fdcda99861404a29c8" },
+			new() { Input = 31, Expected = "0x21440858538e69caaf978163edacb0453de24844" },
+			new() { Input = 32, Expected = "0x39046c6e2891f723547a5bbf2d0e114a34770e30" },
+			new() { Input = 33, Expected = "0x966b716020a4b06b6359da36c8c611fdb9f32110" },
+			new() { Input = 34, Expected = "0x7362b78770ee021ad562f003fcbb755885cd6e58" },
+			new() { Input = 63, Expected = "0x97c9942645a6bada29dbcd0a6cf0eab16fc8fa0e" },
+			new() { Input = 64, Expected = "0x47aac7a78a9f808e45e499d6a9d17b2ca5fc6544" },
+			new() { Input = 65, Expected = "0x984c30cd9df19bd9fa76429a59a329833d4fc487" },
+			new() { Input = 117, Expected = "0x785090a0e9a16a7c79a05be1675a02b5359dde15" },
+			new() { Input = 100, Expected = "0x782a571f065b3ad553699dd09634c4a37c289c20" },
+			new() { Input = 127, Expected = "0xecb4f404eefc8a4ba2d70a412a7f55ac795beb03" },
+			new() { Input = 128, Expected = "0x0fd6b2ed965ba12c64944e96c383356be4f76194" },
+			new() { Input = 129, Expected = "0x717767568da81f68406c53867f288a9370e8819a" },
+			new() { Input = 178, Expected = "0x772d7f6e54cdb791041d35bad1ae8bd75d51c87c" },
+			new() { Input = 199, Expected = "0x2f7642269536cc6418f303a41b2db98e3e37a479" },
+			new() { Input = 200, Expected = "0x0274d4de9b94787fd4d7d350ecc8551b5a2dbdd9" }
+		};
+
+
+		protected static readonly TestItem<int, string>[] DATA_TIGER_3_192 = {
+			// NOTE: Input denotes the number of bytes to take from DATA_BYTES when executing test
+			new() { Input = 17, Expected = "0xbd564f151427e8377f9065fdcda99861404a29c8b7866940" },
+			new() { Input = 31, Expected = "0x21440858538e69caaf978163edacb0453de24844c6f65f46" },
+			new() { Input = 32, Expected = "0x39046c6e2891f723547a5bbf2d0e114a34770e3024047a84" },
+			new() { Input = 33, Expected = "0x966b716020a4b06b6359da36c8c611fdb9f32110c9781d1c" },
+			new() { Input = 34, Expected = "0x7362b78770ee021ad562f003fcbb755885cd6e586d4ab383" },
+			new() { Input = 63, Expected = "0x97c9942645a6bada29dbcd0a6cf0eab16fc8fa0ef33bb651" },
+			new() { Input = 64, Expected = "0x47aac7a78a9f808e45e499d6a9d17b2ca5fc654468a5e2b3" },
+			new() { Input = 65, Expected = "0x984c30cd9df19bd9fa76429a59a329833d4fc487f6436b0b" },
+			new() { Input = 117, Expected = "0x785090a0e9a16a7c79a05be1675a02b5359dde15233ced5f" },
+			new() { Input = 100, Expected = "0x782a571f065b3ad553699dd09634c4a37c289c20ae075fa8" },
+			new() { Input = 127, Expected = "0xecb4f404eefc8a4ba2d70a412a7f55ac795beb03c764b7c4" },
+			new() { Input = 128, Expected = "0x0fd6b2ed965ba12c64944e96c383356be4f7619431a59a77" },
+			new() { Input = 129, Expected = "0x717767568da81f68406c53867f288a9370e8819a7c390de4" },
+			new() { Input = 178, Expected = "0x772d7f6e54cdb791041d35bad1ae8bd75d51c87cd7094695" },
+			new() { Input = 199, Expected = "0x2f7642269536cc6418f303a41b2db98e3e37a479f45f8176" },
+			new() { Input = 200, Expected = "0x0274d4de9b94787fd4d7d350ecc8551b5a2dbdd9e5ed13ce" }
+		};
+
+		protected static readonly TestItem<int, string>[] DATA_TIGER_4_128 = {
+			// NOTE: Input denotes the number of bytes to take from DATA_BYTES when executing test
+			new() { Input = 17, Expected = "0x89dd708bf4c224634e4a7f72a3d04fb0" },
+			new() { Input = 31, Expected = "0xdc079dab739165a4caf8ab9e11d7f76c" },
+			new() { Input = 32, Expected = "0xcc84e85beac7cf301fbf9b7f9ad498c6" },
+			new() { Input = 33, Expected = "0x317048229fdb6bc6bb38e3c94e10fbcf" },
+			new() { Input = 34, Expected = "0xc2157572f48736eab9095bc2549c4ecf" },
+			new() { Input = 63, Expected = "0x3c930cda98a84c66eaeb7eaa4f778a0f" },
+			new() { Input = 64, Expected = "0x131c4cc96ffcb8e860c01473e0349cc8" },
+			new() { Input = 65, Expected = "0x2fb969ae2d36061d514d0f9fc72649e4" },
+			new() { Input = 117, Expected = "0x13dd0222acafbf6ded56f355fe80fbed" },
+			new() { Input = 100, Expected = "0x856a967796045e1ce28d1b3456f2f118" },
+			new() { Input = 127, Expected = "0x0db0247178c24838f03272978efaf875" },
+			new() { Input = 128, Expected = "0x55565869f15d4806533e4bd2f2251fc5" },
+			new() { Input = 129, Expected = "0x834f7aa5d8ac5c91dc95e40ff78d4212" },
+			new() { Input = 178, Expected = "0xf7f4737536721e49c488b4bb837abc82" },
+			new() { Input = 199, Expected = "0x39b4c65c3a4338e29a5a159d66881bdf" },
+			new() { Input = 200, Expected = "0x7e1d42ab76af98cceec74c3ff11953f5" }
+		};
+
+
+		protected static readonly TestItem<int, string>[] DATA_TIGER_4_160 = {
+			// NOTE: Input denotes the number of bytes to take from DATA_BYTES when executing test
+			new() { Input = 17, Expected = "0x89dd708bf4c224634e4a7f72a3d04fb05b7c2568" },
+			new() { Input = 31, Expected = "0xdc079dab739165a4caf8ab9e11d7f76c223dc0d8" },
+			new() { Input = 32, Expected = "0xcc84e85beac7cf301fbf9b7f9ad498c68e4e3e03" },
+			new() { Input = 33, Expected = "0x317048229fdb6bc6bb38e3c94e10fbcf8bd0fcf7" },
+			new() { Input = 34, Expected = "0xc2157572f48736eab9095bc2549c4ecf87e84692" },
+			new() { Input = 63, Expected = "0x3c930cda98a84c66eaeb7eaa4f778a0f0e818cd7" },
+			new() { Input = 64, Expected = "0x131c4cc96ffcb8e860c01473e0349cc83e70630a" },
+			new() { Input = 65, Expected = "0x2fb969ae2d36061d514d0f9fc72649e499a2809c" },
+			new() { Input = 117, Expected = "0x13dd0222acafbf6ded56f355fe80fbed35d52098" },
+			new() { Input = 100, Expected = "0x856a967796045e1ce28d1b3456f2f1188cde6164" },
+			new() { Input = 127, Expected = "0x0db0247178c24838f03272978efaf87552a0c334" },
+			new() { Input = 128, Expected = "0x55565869f15d4806533e4bd2f2251fc539f52067" },
+			new() { Input = 129, Expected = "0x834f7aa5d8ac5c91dc95e40ff78d42122d0f5229" },
+			new() { Input = 178, Expected = "0xf7f4737536721e49c488b4bb837abc82c0d93072" },
+			new() { Input = 199, Expected = "0x39b4c65c3a4338e29a5a159d66881bdfc31cd9d4" },
+			new() { Input = 200, Expected = "0x7e1d42ab76af98cceec74c3ff11953f550652fb0" }
+		};
+
+
+		protected static readonly TestItem<int, string>[] DATA_TIGER_4_192 = {
+			// NOTE: Input denotes the number of bytes to take from DATA_BYTES when executing test
+			new() { Input = 17, Expected = "0x89dd708bf4c224634e4a7f72a3d04fb05b7c25684e8985a7" },
+			new() { Input = 31, Expected = "0xdc079dab739165a4caf8ab9e11d7f76c223dc0d8a5f5e262" },
+			new() { Input = 32, Expected = "0xcc84e85beac7cf301fbf9b7f9ad498c68e4e3e0306fec93f" },
+			new() { Input = 33, Expected = "0x317048229fdb6bc6bb38e3c94e10fbcf8bd0fcf78efc44a9" },
+			new() { Input = 34, Expected = "0xc2157572f48736eab9095bc2549c4ecf87e84692bb9aaf03" },
+			new() { Input = 63, Expected = "0x3c930cda98a84c66eaeb7eaa4f778a0f0e818cd7db309afa" },
+			new() { Input = 64, Expected = "0x131c4cc96ffcb8e860c01473e0349cc83e70630a43df4a30" },
+			new() { Input = 65, Expected = "0x2fb969ae2d36061d514d0f9fc72649e499a2809c115fc1b3" },
+			new() { Input = 117, Expected = "0x13dd0222acafbf6ded56f355fe80fbed35d52098cfe2558e" },
+			new() { Input = 100, Expected = "0x856a967796045e1ce28d1b3456f2f1188cde61645647f0d5" },
+			new() { Input = 127, Expected = "0x0db0247178c24838f03272978efaf87552a0c334c17eea01" },
+			new() { Input = 128, Expected = "0x55565869f15d4806533e4bd2f2251fc539f5206772ea441a" },
+			new() { Input = 129, Expected = "0x834f7aa5d8ac5c91dc95e40ff78d42122d0f5229f1a787e2" },
+			new() { Input = 178, Expected = "0xf7f4737536721e49c488b4bb837abc82c0d930723e5d981e" },
+			new() { Input = 199, Expected = "0x39b4c65c3a4338e29a5a159d66881bdfc31cd9d42dbb1d88" },
+			new() { Input = 200, Expected = "0x7e1d42ab76af98cceec74c3ff11953f550652fb097e5355c" }
+		};
+
+		protected static readonly TestItem<int, string>[] DATA_TIGER_5_128 = {
+			// NOTE: Input denotes the number of bytes to take from DATA_BYTES when executing test
+			new() { Input = 17, Expected = "0xead95fb917754d70e6ad081b4802477d" },
+			new() { Input = 31, Expected = "0x7a9251c37ab59076647ead0a4fd72487" },
+			new() { Input = 32, Expected = "0xa4ed370415226b714761f69dbb3b1c32" },
+			new() { Input = 33, Expected = "0xc8fdb6752d5ea086f561c1812707ce12" },
+			new() { Input = 34, Expected = "0x0c4a7a3cb849fcffdf07cee11925e03a" },
+			new() { Input = 63, Expected = "0x7ac1d39986e15d22ea188bd0250e7443" },
+			new() { Input = 64, Expected = "0xfeb688b42fc0f91731da3f5aa2c0652c" },
+			new() { Input = 65, Expected = "0x3af3ab878d66b31b8805362d3ff05182" },
+			new() { Input = 117, Expected = "0x794e8635105d8e8a1074faca1f384566" },
+			new() { Input = 100, Expected = "0xf4cd888c82b7fe90c176f05ca805f560" },
+			new() { Input = 127, Expected = "0x08301d132f09cb1eaadce79c579ca682" },
+			new() { Input = 128, Expected = "0xa27992166ac827beb1f13960e8f8c6e5" },
+			new() { Input = 129, Expected = "0x0fde0fc4da784bf268672a9d94eaa610" },
+			new() { Input = 178, Expected = "0xb9e4e14555c5bd887db0e9183c336200" },
+			new() { Input = 199, Expected = "0xf9c2bffc2cffb1b742bda3e11b77f140" },
+			new() { Input = 200, Expected = "0x3a4734eeef2faedcba1e726360a6e706" }
+		};
+
+
+		protected static readonly TestItem<int, string>[] DATA_TIGER_5_160 = {
+			// NOTE: Input denotes the number of bytes to take from DATA_BYTES when executing test
+			new() { Input = 17, Expected = "0xead95fb917754d70e6ad081b4802477d8af8a949" },
+			new() { Input = 31, Expected = "0x7a9251c37ab59076647ead0a4fd724877fd6c4c2" },
+			new() { Input = 32, Expected = "0xa4ed370415226b714761f69dbb3b1c32c11c5ef1" },
+			new() { Input = 33, Expected = "0xc8fdb6752d5ea086f561c1812707ce127b193d3f" },
+			new() { Input = 34, Expected = "0x0c4a7a3cb849fcffdf07cee11925e03aea3db15a" },
+			new() { Input = 63, Expected = "0x7ac1d39986e15d22ea188bd0250e744386921d33" },
+			new() { Input = 64, Expected = "0xfeb688b42fc0f91731da3f5aa2c0652cc36bb2b4" },
+			new() { Input = 65, Expected = "0x3af3ab878d66b31b8805362d3ff05182ef8e9eb2" },
+			new() { Input = 117, Expected = "0x794e8635105d8e8a1074faca1f3845666b774540" },
+			new() { Input = 100, Expected = "0xf4cd888c82b7fe90c176f05ca805f560d6e0a956" },
+			new() { Input = 127, Expected = "0x08301d132f09cb1eaadce79c579ca68250091237" },
+			new() { Input = 128, Expected = "0xa27992166ac827beb1f13960e8f8c6e5d854591d" },
+			new() { Input = 129, Expected = "0x0fde0fc4da784bf268672a9d94eaa61044f5abe2" },
+			new() { Input = 178, Expected = "0xb9e4e14555c5bd887db0e9183c336200fe749eff" },
+			new() { Input = 199, Expected = "0xf9c2bffc2cffb1b742bda3e11b77f140a3b685d7" },
+			new() { Input = 200, Expected = "0x3a4734eeef2faedcba1e726360a6e706ee658012" }
+		};
+
+
+		protected static readonly TestItem<int, string>[] DATA_TIGER_5_192 = {
+			// NOTE: Input denotes the number of bytes to take from DATA_BYTES when executing test
+			new() { Input = 17, Expected = "0xead95fb917754d70e6ad081b4802477d8af8a949b5e119ea" },
+			new() { Input = 31, Expected = "0x7a9251c37ab59076647ead0a4fd724877fd6c4c2e0ef4a25" },
+			new() { Input = 32, Expected = "0xa4ed370415226b714761f69dbb3b1c32c11c5ef166b1b745" },
+			new() { Input = 33, Expected = "0xc8fdb6752d5ea086f561c1812707ce127b193d3f39c8a885" },
+			new() { Input = 34, Expected = "0x0c4a7a3cb849fcffdf07cee11925e03aea3db15a9ff25896" },
+			new() { Input = 63, Expected = "0x7ac1d39986e15d22ea188bd0250e744386921d33b6c1a285" },
+			new() { Input = 64, Expected = "0xfeb688b42fc0f91731da3f5aa2c0652cc36bb2b4e69de154" },
+			new() { Input = 65, Expected = "0x3af3ab878d66b31b8805362d3ff05182ef8e9eb298394fb1" },
+			new() { Input = 117, Expected = "0x794e8635105d8e8a1074faca1f3845666b7745402769fad9" },
+			new() { Input = 100, Expected = "0xf4cd888c82b7fe90c176f05ca805f560d6e0a956e20814a6" },
+			new() { Input = 127, Expected = "0x08301d132f09cb1eaadce79c579ca68250091237e9767384" },
+			new() { Input = 128, Expected = "0xa27992166ac827beb1f13960e8f8c6e5d854591dcf0a8ef3" },
+			new() { Input = 129, Expected = "0x0fde0fc4da784bf268672a9d94eaa61044f5abe29c1cdd3c" },
+			new() { Input = 178, Expected = "0xb9e4e14555c5bd887db0e9183c336200fe749eff4471b6f7" },
+			new() { Input = 199, Expected = "0xf9c2bffc2cffb1b742bda3e11b77f140a3b685d77c8120c2" },
+			new() { Input = 200, Expected = "0x3a4734eeef2faedcba1e726360a6e706ee6580124bf8ed26" }
+		};
+
+		protected readonly TestItem<int, string>[] DATA_TIGER2_3_128 = {
+			// NOTE: Input denotes the number of bytes to take from DATA_BYTES when executing test
+			new() { Input = 17, Expected = "0x194e85c692547aedf4f3ea99f789e0dc" },
+			new() { Input = 31, Expected = "0xd7818bb5ec794ea95623b8a0e756b276" },
+			new() { Input = 32, Expected = "0x6406da069393867ab46916e9a5863c45" },
+			new() { Input = 33, Expected = "0xca710c7054a81bd33a3a4ee28b74b528" },
+			new() { Input = 34, Expected = "0x78040c5a25d4d620f68f47528708adda" },
+			new() { Input = 63, Expected = "0x69cdffa520350ca8fa856a03799bc74d" },
+			new() { Input = 64, Expected = "0x4aaa17f4ed086ea108a74922b1a136ac" },
+			new() { Input = 65, Expected = "0xf3780b12da9f5e69c720c4be5558481f" },
+			new() { Input = 117, Expected = "0x3d8970a9f4030895057b6d28aaf13f59" },
+			new() { Input = 100, Expected = "0x47b8fbe40794378ce5641aaaefb8f74d" },
+			new() { Input = 127, Expected = "0xd699f861340ff17c8acbaf682597366e" },
+			new() { Input = 128, Expected = "0x176524e67b5919fd609ac749be84bace" },
+			new() { Input = 129, Expected = "0x97f7db1c52ff20d7ff43248460a211ca" },
+			new() { Input = 178, Expected = "0x6aa13076eef9215ce43631502f65a5f5" },
+			new() { Input = 199, Expected = "0x9111ec922a45107511588a78edc585e7" },
+			new() { Input = 200, Expected = "0x687f368248f5cd5ad9c0a412877b92be" }
+		};
+
+
+		protected readonly TestItem<int, string>[] DATA_TIGER2_3_160 = {
+			// NOTE: Input denotes the number of bytes to take from DATA_BYTES when executing test
+			new() { Input = 17, Expected = "0x194e85c692547aedf4f3ea99f789e0dc394f15d5" },
+			new() { Input = 31, Expected = "0xd7818bb5ec794ea95623b8a0e756b2769ce83ec2" },
+			new() { Input = 32, Expected = "0x6406da069393867ab46916e9a5863c45f6d91abf" },
+			new() { Input = 33, Expected = "0xca710c7054a81bd33a3a4ee28b74b5284a81a9ac" },
+			new() { Input = 34, Expected = "0x78040c5a25d4d620f68f47528708addad9f44b2f" },
+			new() { Input = 63, Expected = "0x69cdffa520350ca8fa856a03799bc74df3a05a25" },
+			new() { Input = 64, Expected = "0x4aaa17f4ed086ea108a74922b1a136acc61236d9" },
+			new() { Input = 65, Expected = "0xf3780b12da9f5e69c720c4be5558481f8ecfe1b2" },
+			new() { Input = 117, Expected = "0x3d8970a9f4030895057b6d28aaf13f5945a7427b" },
+			new() { Input = 100, Expected = "0x47b8fbe40794378ce5641aaaefb8f74d8d6b17ea" },
+			new() { Input = 127, Expected = "0xd699f861340ff17c8acbaf682597366e0b51e1bd" },
+			new() { Input = 128, Expected = "0x176524e67b5919fd609ac749be84bace82c5ca17" },
+			new() { Input = 129, Expected = "0x97f7db1c52ff20d7ff43248460a211ca98a231ad" },
+			new() { Input = 178, Expected = "0x6aa13076eef9215ce43631502f65a5f5019d9149" },
+			new() { Input = 199, Expected = "0x9111ec922a45107511588a78edc585e7f5516717" },
+			new() { Input = 200, Expected = "0x687f368248f5cd5ad9c0a412877b92bebc6b8a9c" }
+		};
+
+
+		protected readonly TestItem<int, string>[] DATA_TIGER2_3_192 = {
+			// NOTE: Input denotes the number of bytes to take from DATA_BYTES when executing test
+			new() { Input = 17, Expected = "0x194e85c692547aedf4f3ea99f789e0dc394f15d52dbf0cac" },
+			new() { Input = 31, Expected = "0xd7818bb5ec794ea95623b8a0e756b2769ce83ec2f78733cb" },
+			new() { Input = 32, Expected = "0x6406da069393867ab46916e9a5863c45f6d91abf2adf2ebf" },
+			new() { Input = 33, Expected = "0xca710c7054a81bd33a3a4ee28b74b5284a81a9aca7622586" },
+			new() { Input = 34, Expected = "0x78040c5a25d4d620f68f47528708addad9f44b2f38f0e469" },
+			new() { Input = 63, Expected = "0x69cdffa520350ca8fa856a03799bc74df3a05a25cbbb21af" },
+			new() { Input = 64, Expected = "0x4aaa17f4ed086ea108a74922b1a136acc61236d9083d6935" },
+			new() { Input = 65, Expected = "0xf3780b12da9f5e69c720c4be5558481f8ecfe1b27d7d89f9" },
+			new() { Input = 117, Expected = "0x3d8970a9f4030895057b6d28aaf13f5945a7427b7ba31dbe" },
+			new() { Input = 100, Expected = "0x47b8fbe40794378ce5641aaaefb8f74d8d6b17eae94f9dea" },
+			new() { Input = 127, Expected = "0xd699f861340ff17c8acbaf682597366e0b51e1bd80d9020c" },
+			new() { Input = 128, Expected = "0x176524e67b5919fd609ac749be84bace82c5ca177edb7eac" },
+			new() { Input = 129, Expected = "0x97f7db1c52ff20d7ff43248460a211ca98a231adf111d9a2" },
+			new() { Input = 178, Expected = "0x6aa13076eef9215ce43631502f65a5f5019d914995c51428" },
+			new() { Input = 199, Expected = "0x9111ec922a45107511588a78edc585e7f5516717313539e4" },
+			new() { Input = 200, Expected = "0x687f368248f5cd5ad9c0a412877b92bebc6b8a9c772cba93" }
+		};
+
+		protected readonly TestItem<int, string>[] DATA_TIGER2_4_128 = {
+			// NOTE: Input denotes the number of bytes to take from DATA_BYTES when executing test
+			new() { Input = 17, Expected = "0x585ed93d3356ad51eaa81fb9f593fa60" },
+			new() { Input = 31, Expected = "0x8e6c6ca98cc24271944bbeb901fa9a2c" },
+			new() { Input = 32, Expected = "0x741a642e6d04d7d305a80853ac0bb6b5" },
+			new() { Input = 33, Expected = "0x3f1a5b2219f9fbb4709e3274aa739a17" },
+			new() { Input = 34, Expected = "0xbe6b53f8c9f3778c7fc37f3713a4603e" },
+			new() { Input = 63, Expected = "0x88f2e1b9d26d830b155b20c8ec565b96" },
+			new() { Input = 64, Expected = "0x0aefe4707e1453b3db2dbef66735e74a" },
+			new() { Input = 65, Expected = "0x38f60e320b275e40c6e4e92c42aa0d16" },
+			new() { Input = 117, Expected = "0xc77b3db4100910fe03768313a13ab54e" },
+			new() { Input = 100, Expected = "0x32788806b1e1176ccf3dd1a47265c038" },
+			new() { Input = 127, Expected = "0x66588aa446630c43281fa7eaa662c2e2" },
+			new() { Input = 128, Expected = "0x7b81b41483b630070180a275f352cdf4" },
+			new() { Input = 129, Expected = "0x5c50e0745fcf53dc512f7dc56c815224" },
+			new() { Input = 178, Expected = "0xeeb062c6c9f87c91fe4865a5b73c8172" },
+			new() { Input = 199, Expected = "0x668679ce5ac3d88a72a5bdb18ca33d44" },
+			new() { Input = 200, Expected = "0x127130828d6278ac9e47b6c20babd0b4" }
+		};
+
+
+		protected readonly TestItem<int, string>[] DATA_TIGER2_4_160 = {
+			// NOTE: Input denotes the number of bytes to take from DATA_BYTES when executing test
+			new() { Input = 17, Expected = "0x585ed93d3356ad51eaa81fb9f593fa60a6484208" },
+			new() { Input = 31, Expected = "0x8e6c6ca98cc24271944bbeb901fa9a2ceb7ab361" },
+			new() { Input = 32, Expected = "0x741a642e6d04d7d305a80853ac0bb6b5bbf12ba5" },
+			new() { Input = 33, Expected = "0x3f1a5b2219f9fbb4709e3274aa739a177b709e39" },
+			new() { Input = 34, Expected = "0xbe6b53f8c9f3778c7fc37f3713a4603ed6c72fef" },
+			new() { Input = 63, Expected = "0x88f2e1b9d26d830b155b20c8ec565b9691f8475c" },
+			new() { Input = 64, Expected = "0x0aefe4707e1453b3db2dbef66735e74a409a9384" },
+			new() { Input = 65, Expected = "0x38f60e320b275e40c6e4e92c42aa0d161a3299c6" },
+			new() { Input = 117, Expected = "0xc77b3db4100910fe03768313a13ab54e54d8cc87" },
+			new() { Input = 100, Expected = "0x32788806b1e1176ccf3dd1a47265c038c761ce33" },
+			new() { Input = 127, Expected = "0x66588aa446630c43281fa7eaa662c2e2a3abb825" },
+			new() { Input = 128, Expected = "0x7b81b41483b630070180a275f352cdf4f915fec5" },
+			new() { Input = 129, Expected = "0x5c50e0745fcf53dc512f7dc56c8152246703b7a0" },
+			new() { Input = 178, Expected = "0xeeb062c6c9f87c91fe4865a5b73c8172ea2080ac" },
+			new() { Input = 199, Expected = "0x668679ce5ac3d88a72a5bdb18ca33d44bdb4c42d" },
+			new() { Input = 200, Expected = "0x127130828d6278ac9e47b6c20babd0b4b3dca071" }
+		};
+
+		protected readonly TestItem<int, string>[] DATA_TIGER2_4_192 = {
+			// NOTE: Input denotes the number of bytes to take from DATA_BYTES when executing test
+			new() { Input = 17, Expected = "0x585ed93d3356ad51eaa81fb9f593fa60a64842084f0063d5" },
+			new() { Input = 31, Expected = "0x8e6c6ca98cc24271944bbeb901fa9a2ceb7ab361e682faab" },
+			new() { Input = 32, Expected = "0x741a642e6d04d7d305a80853ac0bb6b5bbf12ba519e0abcc" },
+			new() { Input = 33, Expected = "0x3f1a5b2219f9fbb4709e3274aa739a177b709e397124e3a0" },
+			new() { Input = 34, Expected = "0xbe6b53f8c9f3778c7fc37f3713a4603ed6c72fefedbe4c0f" },
+			new() { Input = 63, Expected = "0x88f2e1b9d26d830b155b20c8ec565b9691f8475cf5a36ac5" },
+			new() { Input = 64, Expected = "0x0aefe4707e1453b3db2dbef66735e74a409a9384710dee14" },
+			new() { Input = 65, Expected = "0x38f60e320b275e40c6e4e92c42aa0d161a3299c6cdf33b3f" },
+			new() { Input = 117, Expected = "0xc77b3db4100910fe03768313a13ab54e54d8cc870c1a2699" },
+			new() { Input = 100, Expected = "0x32788806b1e1176ccf3dd1a47265c038c761ce336d5086e4" },
+			new() { Input = 127, Expected = "0x66588aa446630c43281fa7eaa662c2e2a3abb8255684d419" },
+			new() { Input = 128, Expected = "0x7b81b41483b630070180a275f352cdf4f915fec59acf6e5b" },
+			new() { Input = 129, Expected = "0x5c50e0745fcf53dc512f7dc56c8152246703b7a039b28925" },
+			new() { Input = 178, Expected = "0xeeb062c6c9f87c91fe4865a5b73c8172ea2080ac0be31d6a" },
+			new() { Input = 199, Expected = "0x668679ce5ac3d88a72a5bdb18ca33d44bdb4c42dcb1fa08a" },
+			new() { Input = 200, Expected = "0x127130828d6278ac9e47b6c20babd0b4b3dca0716e0713b4" }
+		};
+
+		protected readonly TestItem<int, string>[] DATA_TIGER2_5_128 = {
+			// NOTE: Input denotes the number of bytes to take from DATA_BYTES when executing test
+			new() { Input = 17, Expected = "0x31f8163acae71a73f662828258b8506f" },
+			new() { Input = 31, Expected = "0x4c3a22c2d96ab29ad12100b1f2cf6c52" },
+			new() { Input = 32, Expected = "0x5072d1575f95f75eb22169647a0f5b77" },
+			new() { Input = 33, Expected = "0x3fb8ab4e655028dbf2aab6ebeee5996a" },
+			new() { Input = 34, Expected = "0x026780bd79297995ef4b5e0d9cbdb1fd" },
+			new() { Input = 63, Expected = "0xc45fc6510ee3ff3503c4c8795d3d27da" },
+			new() { Input = 64, Expected = "0x7e056bc56de5385d47eb3e3a218b5cab" },
+			new() { Input = 65, Expected = "0x6b6e1f82c0ea6b6a4b40678c8fd1d8eb" },
+			new() { Input = 117, Expected = "0xc15eba0aa26d3668b97f9abfa4bfa051" },
+			new() { Input = 100, Expected = "0xcf38de0d363bb17ee67f510900a48f15" },
+			new() { Input = 127, Expected = "0x24b3fec9a6235309ae17ee5a972503b6" },
+			new() { Input = 128, Expected = "0x61485315bdca303a54a23b3fdf5ab410" },
+			new() { Input = 129, Expected = "0x742c2dc251630e13016a4f968e640156" },
+			new() { Input = 178, Expected = "0xeac22e2e763c29b07346c531917a0fcb" },
+			new() { Input = 199, Expected = "0x2b173dfd8256085aa6b8336b5ce6fbb3" },
+			new() { Input = 200, Expected = "0xc2eee732fdbcdc4b0c8f57187a69b701" }
+		};
+
+
+		protected readonly TestItem<int, string>[] DATA_TIGER2_5_160 = {
+			// NOTE: Input denotes the number of bytes to take from DATA_BYTES when executing test
+			new() { Input = 17, Expected = "0x31f8163acae71a73f662828258b8506f2d8d6506" },
+			new() { Input = 31, Expected = "0x4c3a22c2d96ab29ad12100b1f2cf6c52b0f75f4c" },
+			new() { Input = 32, Expected = "0x5072d1575f95f75eb22169647a0f5b774bdc21dd" },
+			new() { Input = 33, Expected = "0x3fb8ab4e655028dbf2aab6ebeee5996a93fe0b4b" },
+			new() { Input = 34, Expected = "0x026780bd79297995ef4b5e0d9cbdb1fdb4f6df4a" },
+			new() { Input = 63, Expected = "0xc45fc6510ee3ff3503c4c8795d3d27da2fd4f81e" },
+			new() { Input = 64, Expected = "0x7e056bc56de5385d47eb3e3a218b5cab1894449b" },
+			new() { Input = 65, Expected = "0x6b6e1f82c0ea6b6a4b40678c8fd1d8ebdd49f3dc" },
+			new() { Input = 117, Expected = "0xc15eba0aa26d3668b97f9abfa4bfa0513057f358" },
+			new() { Input = 100, Expected = "0xcf38de0d363bb17ee67f510900a48f156fc9e842" },
+			new() { Input = 127, Expected = "0x24b3fec9a6235309ae17ee5a972503b60a3e8017" },
+			new() { Input = 128, Expected = "0x61485315bdca303a54a23b3fdf5ab410092824c0" },
+			new() { Input = 129, Expected = "0x742c2dc251630e13016a4f968e640156e44bf3c6" },
+			new() { Input = 178, Expected = "0xeac22e2e763c29b07346c531917a0fcb93fbc72d" },
+			new() { Input = 199, Expected = "0x2b173dfd8256085aa6b8336b5ce6fbb3d383c595" },
+			new() { Input = 200, Expected = "0xc2eee732fdbcdc4b0c8f57187a69b7017f9ad877" }
+		};
+
+
 		protected readonly TestItem<int, string>[] DATA_TIGER2_5_192 = {
 			// NOTE: Input denotes the number of bytes to take from DATA_BYTES when executing test
 			new() { Input = 17, Expected = "0x31f8163acae71a73f662828258b8506f2d8d65062b550d71" },
@@ -268,6 +902,27 @@ namespace Sphere10.Framework.CryptoEx.Tests {
 			new() { Input = 178, Expected = "0xeac22e2e763c29b07346c531917a0fcb93fbc72daab36681" },
 			new() { Input = 199, Expected = "0x2b173dfd8256085aa6b8336b5ce6fbb3d383c59547e5547c" },
 			new() { Input = 200, Expected = "0xc2eee732fdbcdc4b0c8f57187a69b7017f9ad8771fc5ae36" }
+		};
+
+
+		protected static readonly TestItem<int, string>[] DATA_SNEFRU_8_128 = {
+			// NOTE: Input denotes the number of bytes to take from DATA_BYTES when executing test
+			new() { Input = 17, Expected = "0xa6fbc846e328931dc88705fb073ea10c" },
+			new() { Input = 31, Expected = "0xb836d32d1d3c5ed7e2de5d3a87ac7f32" },
+			new() { Input = 32, Expected = "0xd79dfce45f664afbbb9b133e14d965d8" },
+			new() { Input = 33, Expected = "0xf7456483726d2fc1336b19b71424ce90" },
+			new() { Input = 34, Expected = "0x4b9581a6ebd925eb7f25b8786c323418" },
+			new() { Input = 63, Expected = "0x58ac92660f7aecb7089afeeb64007403" },
+			new() { Input = 64, Expected = "0x574a2dc17d079111c4d8cffdbc280034" },
+			new() { Input = 65, Expected = "0xab3371a260714517f2d3f207d355efec" },
+			new() { Input = 117, Expected = "0x6d531a02a716e0cbffcac3bd9feb0f02" },
+			new() { Input = 100, Expected = "0x2ebc34caf07c26ce6c6b8328c494a41d" },
+			new() { Input = 127, Expected = "0x462b8ab20fdcf40ec008c77057d49558" },
+			new() { Input = 128, Expected = "0x533d112dfe6131b7fd77974173fa9eb0" },
+			new() { Input = 129, Expected = "0x39d7eade9df9220e6d000bbc5ec4751d" },
+			new() { Input = 178, Expected = "0x14aab77f4365e07e130496f9630ffe67" },
+			new() { Input = 199, Expected = "0xacf0b01a6d8a144ac809a2b48b081b76" },
+			new() { Input = 200, Expected = "0x771de333337d9171141b01eb93305d2d" }
 		};
 
 		protected readonly TestItem<int, string>[] DATA_SNEFRU_8_256 = {
@@ -290,6 +945,27 @@ namespace Sphere10.Framework.CryptoEx.Tests {
 			new() { Input = 200, Expected = "0x8ba028b1ad51b06d8a92cf3541c817a22c483fb8aa9c4341345faddb8e166867" }
 		};
 
+		protected static readonly TestItem<int, string>[] DATA_GRINDAHL256 = {
+			// NOTE: Input denotes the number of bytes to take from DATA_BYTES when executing test
+			new() { Input = 17, Expected = "0xa8bbfc051b52541e458334bc7f3c947270558b3bc9ba916095dddea6759b7f71" },
+			new() { Input = 31, Expected = "0x184a3132f23468a76be67cd1a22cdc8dba62a07fdca77aaec1226c277472581d" },
+			new() { Input = 32, Expected = "0x2f994998d00236fb3c9aef653fe88265480f2b2d1ff2d18083f1d2276a31bf59" },
+			new() { Input = 33, Expected = "0x69dba37bd0878b57dd717c3be6c38a0791b7794c5df31ccbca4765aa1dcfdb01" },
+			new() { Input = 34, Expected = "0x0a47bb3ad99b342e78b4c310aae5f2788b99ecd4c8f2b1f6602b8403a565aeb2" },
+			new() { Input = 63, Expected = "0xb4786a17ee4f43ebf426b012834ed534227ae6a3e437a65c6f2ec144e71c3a7f" },
+			new() { Input = 64, Expected = "0xda816d00d496dc5b51d344e8688446b437406dc5edac71adebe3677055e48f3c" },
+			new() { Input = 65, Expected = "0x81c5dbf4e7e9e75aec198e2f8c0d349c41e497ad111925ef686c051af22bbec8" },
+			new() { Input = 117, Expected = "0x68f327d9c4d7bd73b4e5cf1d690dbb13f2f90e52c40eb8b9ee5adc8178aae9bf" },
+			new() { Input = 100, Expected = "0x017fdf33b5ff4119f4c4fdd168ceff5374e1389e79b7cbfa1ddea030379b9725" },
+			new() { Input = 127, Expected = "0x458f0fe1fb3032dbef2cbce09bdcec534d4ca7410578a0be936c0eea110a65e2" },
+			new() { Input = 128, Expected = "0xfcb6b55ebae2fa2b30192ceb744266109974a622da4f90d77359c095ce3e3521" },
+			new() { Input = 129, Expected = "0xd468965f4fdb02af048b2acda9171117ef1f66baddddf5020026968172ef3a67" },
+			new() { Input = 178, Expected = "0xac5bfdeb639d86c47a02ad1474fc8be022e0859ae89fda0a0d228aae015e460a" },
+			new() { Input = 199, Expected = "0x19841ef667fbc743e2b9436c249598b63b2fcdcf80329a93bab531077d4ff09a" },
+			new() { Input = 200, Expected = "0xabab0cce36096acf5eae869fbe13e0427d5953664439e81578f1d406ed878364" }
+		};
+
+
 		protected readonly TestItem<int, string>[] DATA_GRINDAHL512 = {
 			// NOTE: Input denotes the number of bytes to take from DATA_BYTES when executing test
 			new() { Input = 17, Expected = "0x0b25b53c3812cb38fee71eae043331d5486154d4277d63f571ed7621ba1f38816163c16e6445568cde5dd4926249a2293b4c96f1e99d7f0697e9b0be24987fd9" },
@@ -308,6 +984,306 @@ namespace Sphere10.Framework.CryptoEx.Tests {
 			new() { Input = 178, Expected = "0xbe7c6b085ccfa21344e46415a3bb139ee2ac1b87ae569e3f751a563280e879cc7910c357416101495cca5442d6260bf993e11ba1d5aedccad75afd130d4346fa" },
 			new() { Input = 199, Expected = "0xeeefc607804883a8e4e24d349297380a7be6789f877d6edfd017b054d6dff6a7fcb1386c5695b76ff9997332125a2e7aadb9533761a2d9fd960f6be4646fbaf3" },
 			new() { Input = 200, Expected = "0x13771dd2bd4e1d046acd57457b0cddd6c535d91923677315ad89f7bf2fd3573b31d5eff98eb88798a5383b90d36efabc5b4127eb6e592adceb6a0749bae01869" }
+		};
+
+		protected static readonly TestItem<int, string>[] DATA_HAS160 = {
+			// NOTE: Input denotes the number of bytes to take from DATA_BYTES when executing test
+			new() { Input = 17, Expected = "0x0de9c9930e0c81ffee14d2abdfd5e8dc1060cc1a" },
+			new() { Input = 31, Expected = "0x5dcb6006f815009bbe8cfddd87da6fe7983e9af0" },
+			new() { Input = 32, Expected = "0xa7677c37c73e855702f19c6d56890244cbbb9973" },
+			new() { Input = 33, Expected = "0xf81874f5136d7110b2e7e6ba22bc2f7c332abace" },
+			new() { Input = 34, Expected = "0xf4a72a1ea4450b9b6c7e4f9998b4ecfafcea3c2d" },
+			new() { Input = 63, Expected = "0x10dd4268805f64d0648e8a2e43a3d245c3ba098e" },
+			new() { Input = 64, Expected = "0x07489b7925ca7f7b6c82eb5e0699533c1cd10e1c" },
+			new() { Input = 65, Expected = "0x9f5f5b31ecec7dfb56b4abddf4b2fa069cb829d6" },
+			new() { Input = 117, Expected = "0x51482c56b4fc39f7d3c0f2e062b1ed033301882e" },
+			new() { Input = 100, Expected = "0x70bb6cd7c1dfcf3ec6af4b730b173b2c63c1c266" },
+			new() { Input = 127, Expected = "0xae4386955b6177101a4128319eb882f406ab9c84" },
+			new() { Input = 128, Expected = "0x766d4a08848c1edd6b97b46c0e017241d3500093" },
+			new() { Input = 129, Expected = "0xca9a79ffefadc5f7b0b72e672bd0910212d4e3b4" },
+			new() { Input = 178, Expected = "0x98ebda126d905ecb3632a0ba8e194282965b2f15" },
+			new() { Input = 199, Expected = "0xae48dd3f1ab7cbe77c4491e8df070e44afbc8408" },
+			new() { Input = 200, Expected = "0x0d36b4643f321bff1151ff9493a1870f5bbd57c0" }
+		};
+
+		protected static readonly TestItem<int, string>[] DATA_HAVAL_3_128 = {
+			// NOTE: Input denotes the number of bytes to take from DATA_BYTES when executing test
+			new() { Input = 17, Expected = "0x120b5fe0e400b4fbc3fabf2b80e5372a" },
+			new() { Input = 31, Expected = "0x20bc70c3a272cd97de3cb1743a851502" },
+			new() { Input = 32, Expected = "0x5a903d96ef73c8fa5cd6a0adf7ee0b67" },
+			new() { Input = 33, Expected = "0x898873919b823e4bd68c0cc0263f4044" },
+			new() { Input = 34, Expected = "0xf1358e2e87e9d920545980c7c6da79c8" },
+			new() { Input = 63, Expected = "0xa7d84433f80946d79c73082b08985f5f" },
+			new() { Input = 64, Expected = "0x04cf0e38ecc38c4c78e37f4cdadee762" },
+			new() { Input = 65, Expected = "0x71a69f39c02d7de696a8f81ff9db2232" },
+			new() { Input = 117, Expected = "0xf63939bfc4c7b4e49fc7c390ba9e3d36" },
+			new() { Input = 100, Expected = "0x147e0c350e847be8634b4bdf1264959c" },
+			new() { Input = 127, Expected = "0xdbfa321e640b26c794513b06e8cd52d2" },
+			new() { Input = 128, Expected = "0xc14ebd6b36ec68ef80418bd2bb550093" },
+			new() { Input = 129, Expected = "0xcf2411c1e150346f57a69f9ec1e4e9bd" },
+			new() { Input = 178, Expected = "0x082cd44fd909ec66b9638d84912419ac" },
+			new() { Input = 199, Expected = "0x5ddd90bd9fc9cd7c6e5ab0d0860b3f3e" },
+			new() { Input = 200, Expected = "0x2ab953630cc93f74d0ec5ed61b54337a" }
+		};
+
+		protected static readonly TestItem<int, string>[] DATA_HAVAL_3_160 = {
+			// NOTE: Input denotes the number of bytes to take from DATA_BYTES when executing test
+			new() { Input = 17, Expected = "0x3f751d4ff295f00fe0843524efe86fe19c82c30c" },
+			new() { Input = 31, Expected = "0xeb4cfd6634af3e7afbb3c29baf3b8e8d25782760" },
+			new() { Input = 32, Expected = "0xb3cb0658582cf3beef824bd8512ce017df84da9d" },
+			new() { Input = 33, Expected = "0x88a67d89609fcb0e6c3bc65b48ca501bea9589a0" },
+			new() { Input = 34, Expected = "0xba1e3ea228f2ae5a1661dd480a8749dc51589575" },
+			new() { Input = 63, Expected = "0x7a3372fb4b6e168b03c47664b8b1eeec3b39c5a5" },
+			new() { Input = 64, Expected = "0x3d45e785e65d1865acf898848bdfd711acc4cbe7" },
+			new() { Input = 65, Expected = "0xde074ad40f7968415a1e91c70e39b66d5641b3cc" },
+			new() { Input = 117, Expected = "0x79e28b419ba7d965569ba46f9a85ba7a3b28c5da" },
+			new() { Input = 100, Expected = "0xfbfb171f344b0b329b58123eaca450d53f6c879f" },
+			new() { Input = 127, Expected = "0xf6318c15b3da5e97a5b62872860dcc779b1fec64" },
+			new() { Input = 128, Expected = "0x5bf49c0977f083f33d0e7f533ed6206bfc25a37f" },
+			new() { Input = 129, Expected = "0x34778872661cceb2be324ebfbc8d499b1c19899e" },
+			new() { Input = 178, Expected = "0xc666076d77b23cea30d3f831bb2b4c32bb5a6980" },
+			new() { Input = 199, Expected = "0xb5fbd50ab784e393d002a4c6143f0b070566d996" },
+			new() { Input = 200, Expected = "0xc23e38081df498e07ef09691ae249155ee12e66b" }
+		};
+
+		protected static readonly TestItem<int, string>[] DATA_HAVAL_3_192 = {
+			// NOTE: Input denotes the number of bytes to take from DATA_BYTES when executing test
+			new() { Input = 17, Expected = "0x84d6e8f7bf3e4b816980313f8a5a7e959d07a3f9450b8226" },
+			new() { Input = 31, Expected = "0xe3269d7a0523ac9b3c30c563ce1c417ac5cbc11f2cfff4a8" },
+			new() { Input = 32, Expected = "0x584d2a34508319b6f1dbfa3f7ecabb5daca4a174d95cf0c4" },
+			new() { Input = 33, Expected = "0x88d1a648e1f50d94a690759c9f8e22030f755eacc98c4c77" },
+			new() { Input = 34, Expected = "0x951c12c281405cdbaaf4591a4968eeea63e84c25cbcf9f10" },
+			new() { Input = 63, Expected = "0xfcd96c38e35ecee836a3c5eb27d408f2d0f2cf2f6e097289" },
+			new() { Input = 64, Expected = "0x5908688556e3906cb950a3b6ad6717e12830a8fa1124c3b6" },
+			new() { Input = 65, Expected = "0xf55462ad249e96ef343221227148ec32dd575c20edf9846a" },
+			new() { Input = 117, Expected = "0x06eb6b7aa258c657b717b489de9373d694e0eea1927a28b0" },
+			new() { Input = 100, Expected = "0xa46860969eee93313ff917a315f0273c7add402aa8de1c50" },
+			new() { Input = 127, Expected = "0xd45ebf883ecdb41cfad58fa9ab0ce7ccbe44f8763de97922" },
+			new() { Input = 128, Expected = "0x143ea5e89e8c3d07858a6ab92b46856835327541fb6ef1ae" },
+			new() { Input = 129, Expected = "0x33422455b5caa91c4fc502d3d457e27a8facc3183a4b1bc9" },
+			new() { Input = 178, Expected = "0x08042828db88e63be739f886944a3b2935eec9d5ec77c6e1" },
+			new() { Input = 199, Expected = "0x9842587b4b0f889d1276cbb34501d90dd032793cbeab361e" },
+			new() { Input = 200, Expected = "0xf99e78d3f99f4c30c34178eb9c5d80eb45c71943bf7445b3" }
+		};
+
+		protected static readonly TestItem<int, string>[] DATA_HAVAL_3_224 = {
+			// NOTE: Input denotes the number of bytes to take from DATA_BYTES when executing test
+			new() { Input = 17, Expected = "0x6a1fa67f6aff73c436741eb25a48b8ef74cf1ea293e31a9d1f9f68d9" },
+			new() { Input = 31, Expected = "0x7ab8c84e8d64aefc08964c6e7ed50fed30ac936ff2c2548393aff6b9" },
+			new() { Input = 32, Expected = "0x5d57febb52ff020b6cb59c1163e907973472d2b5ba06f4e906264068" },
+			new() { Input = 33, Expected = "0xae97caf3bd5f727edf1a63574ca7f114af3df2bfb7b41914335347b4" },
+			new() { Input = 34, Expected = "0xf6551b9925d609655ef5cd2dd7ecc0da2bb9aad28a4bbaa9bb9a82f5" },
+			new() { Input = 63, Expected = "0xd057ad4b2b24beb4f08163c37e6e7e7621ea003e99b6615250d92b0f" },
+			new() { Input = 64, Expected = "0xa51dc4f500afea871c789c8b0086b392478ce2ff999b52e0afd850df" },
+			new() { Input = 65, Expected = "0x80d232e3394d73efd9bf69d7a2928f5aa704587bf45c90cb8a51c7de" },
+			new() { Input = 117, Expected = "0xf0cb30ab478b024fe637cb5405c977bbb17a6d745d7971cfed099687" },
+			new() { Input = 100, Expected = "0x2c8de21311bfa5ed0e1576ea8a12c35d64f7d88543f087b669f11a56" },
+			new() { Input = 127, Expected = "0xe1ebd7a5494916b844b0cfd6466c9af0f7ba0873fbc7e096cb81350d" },
+			new() { Input = 128, Expected = "0x1f72e7fc701bae656f463d086aa3cadeb622dad0ef4070927e577d6d" },
+			new() { Input = 129, Expected = "0x87d9a105f5e0d241e4e76dddb85829b45db0e2b570c1dae9804e055c" },
+			new() { Input = 178, Expected = "0x877f5d3f0e4ba7e507096f7a5d05fd84b7ac8885331c3e0faf5f53ae" },
+			new() { Input = 199, Expected = "0x517e323e80a949643f26e1bc670acaa606b6699200a35062f66ddb6e" },
+			new() { Input = 200, Expected = "0x756472897fdf3ea86c7d14bafc34c7d0e1726fd7b966149f58e9cd26" }
+		};
+
+		protected static readonly TestItem<int, string>[] DATA_HAVAL_3_256 = {
+			// NOTE: Input denotes the number of bytes to take from DATA_BYTES when executing test
+			new() { Input = 17, Expected = "0x9488b37c6caf093a8b8c2a7e5ecd353ef0b7d0450daeeeef24e06236b30452c3" },
+			new() { Input = 31, Expected = "0x38fbdcd7408c65be6d4badf8888802b8c1127851be217e6d8d8211abd111dfd9" },
+			new() { Input = 32, Expected = "0x0aaa1f36755af0d849e1ba53a810df8a5360233e6f715791aeec9d144ec85cb9" },
+			new() { Input = 33, Expected = "0x3772869d16577a8540f311e52816e2e717e6df00e5ad593b45024404120a15fd" },
+			new() { Input = 34, Expected = "0xd9d660be2accb7b97c37fee503cab755b873691fa1e6355047c580db46c3fdc5" },
+			new() { Input = 63, Expected = "0x069cf07c33738d4c1b637e5e25497c932abd0f4cb239c2a7a73382de6ef66486" },
+			new() { Input = 64, Expected = "0x452f7bcfc177df3606e9717557ded37071c3b7081dd23261b08545ec3cdf9252" },
+			new() { Input = 65, Expected = "0x714e9cad0f3bb4911ac6b7661cd942d656cdeab296460fac6b1c05e749c5dd16" },
+			new() { Input = 117, Expected = "0x53800e41b5ce5ddf5f2aeb849176b5a9f62c29353f1329a5813727a080ab748e" },
+			new() { Input = 100, Expected = "0xd6891d08d252ba82002ec4b0753d091541b9454ec41f6071480e7d48c423195a" },
+			new() { Input = 127, Expected = "0x2081551256107a4df00ad156c8adc09b8f13297d070f0c7bd632d38abe6564e6" },
+			new() { Input = 128, Expected = "0x48e3d0bf4c2b82050577803d7b0c7626f7bde3d14330d6d7aad61b978b8138ec" },
+			new() { Input = 129, Expected = "0x2a79132fd162f9a2c9d3ee844e5a37b1bd4835804d8ceac5311a47a92c6c3eae" },
+			new() { Input = 178, Expected = "0x4a1ad196fc572888d2728cfe2b65a4be871435017d08adf04a20d4de2e0a2b52" },
+			new() { Input = 199, Expected = "0x0c2bf9e4f95019e9d7d2d21e9f51bfe9aad0b25211ff884363b4b28c3c5d4211" },
+			new() { Input = 200, Expected = "0xbe14cba7ea7da26e8a94233963c750228b4be0be6173a576f7e8a5749ce6e16a" }
+		};
+
+		protected static readonly TestItem<int, string>[] DATA_HAVAL_4_128 = {
+			// NOTE: Input denotes the number of bytes to take from DATA_BYTES when executing test
+			new() { Input = 17, Expected = "0xdca2a0a49b0fb1c05b61ba54e3182913" },
+			new() { Input = 31, Expected = "0x52bffe827d7f6e9e37d9eeadce6703b5" },
+			new() { Input = 32, Expected = "0x805207dd9b4b8b2b5797a2a5b980a7c7" },
+			new() { Input = 33, Expected = "0x58231f3d1e54cfd8377eef566cc0d042" },
+			new() { Input = 34, Expected = "0x26ac2a913fb53b8483fadd9b1d3bdc64" },
+			new() { Input = 63, Expected = "0x12014e6927053a628b6ccc0db96668e8" },
+			new() { Input = 64, Expected = "0x8f496aa4c81de307c400eb80b2526952" },
+			new() { Input = 65, Expected = "0xc0d4e6a3fdce54b7f2942b051c8131f0" },
+			new() { Input = 117, Expected = "0x9d347fe1e465c405a28b8ef27ca3a02f" },
+			new() { Input = 100, Expected = "0xadd5b2dc8be36e661d83afebd51b80fe" },
+			new() { Input = 127, Expected = "0x864088f0d2e70110a0ece707ad597832" },
+			new() { Input = 128, Expected = "0x3da1dd6e543512ea7d940fb35b621335" },
+			new() { Input = 129, Expected = "0x5f3d38ca76f4da33fb25ab330192e689" },
+			new() { Input = 178, Expected = "0x8d45bf644ff24a479c6119decfdc1e89" },
+			new() { Input = 199, Expected = "0x8b98002b4aed5428eba355df5e2d3b78" },
+			new() { Input = 200, Expected = "0x16d42536dc88c0fd21ec2ae8954a88e1" }
+		};
+
+		protected static readonly TestItem<int, string>[] DATA_HAVAL_4_160 = {
+			// NOTE: Input denotes the number of bytes to take from DATA_BYTES when executing test
+			new() { Input = 17, Expected = "0x12c7d969d0a7397d9b2a851af1c6cddf3edf79a1" },
+			new() { Input = 31, Expected = "0x4d69d6b82e94aecac369e721fab4a5f2540400fa" },
+			new() { Input = 32, Expected = "0x5d4da94d89587527e2e7b2808a53d38b4ea3c524" },
+			new() { Input = 33, Expected = "0xa40d4e52f0a5ddde3982bef9e6541edb2fe9913d" },
+			new() { Input = 34, Expected = "0xc469dc1a1b4018ce4ffe3e300acd6da9003ffbd9" },
+			new() { Input = 63, Expected = "0x428037e464756ece444647b8ac243e5d8a2cf52e" },
+			new() { Input = 64, Expected = "0x1c27f892ba903e92e7dc9980174bac49ab347d65" },
+			new() { Input = 65, Expected = "0x6a19cac8b93b6cb2c6101a6c821f0c43f2dc8bfb" },
+			new() { Input = 117, Expected = "0x15b94a9d014d1f49818cadc19eb34884ce8825d3" },
+			new() { Input = 100, Expected = "0x4a3099ddf93cc105d4981f9f050fac1099b4e8fc" },
+			new() { Input = 127, Expected = "0xe4b2a8ead2b4271a9eb17222587dfbe89cc7ecde" },
+			new() { Input = 128, Expected = "0xd3bfcc2f2b471e9f5cfc3561701374a4b4ce151f" },
+			new() { Input = 129, Expected = "0x2ceff11a80c74f061e82b4c921d4dd583976c9ca" },
+			new() { Input = 178, Expected = "0xf355ca6a1c2c25674a9680204c0a82f80d813354" },
+			new() { Input = 199, Expected = "0x3e9b62a383be357d7e8c0a84c84aff1118696818" },
+			new() { Input = 200, Expected = "0x6f5f6542584ba856bb69cf33a52e0f6c6689b490" }
+		};
+
+		protected static readonly TestItem<int, string>[] DATA_HAVAL_4_192 = {
+			// NOTE: Input denotes the number of bytes to take from DATA_BYTES when executing test
+			new() { Input = 17, Expected = "0x99eaa62fee298c9901d9b8c9e5bb494b3df5a41700a86384" },
+			new() { Input = 31, Expected = "0xa70947f5537b924403b74bcdbc6a6afbe91f2dc6e4013df2" },
+			new() { Input = 32, Expected = "0xe8b5115afca4237746d7a3282e230f93d47fb89ad4a42dd9" },
+			new() { Input = 33, Expected = "0x5ab64fc1163bb9dea8cf5646658b657fed5e67be4d2c5894" },
+			new() { Input = 34, Expected = "0xe6a16a2f823a70075f71a183bef47ffe7fd70f82f14d4aa3" },
+			new() { Input = 63, Expected = "0x4f0c8d7a4f24a2964dde343b4924f5a74aaa89d6555a6f96" },
+			new() { Input = 64, Expected = "0x749f8a1aed9387dab5d272e79b8287f1d2de6f874fa931b3" },
+			new() { Input = 65, Expected = "0x9bb110770244c582e41603ec7da55fe61fa60704c73eadd0" },
+			new() { Input = 117, Expected = "0xc7084fcebb726613361a19db17383bf3f8b4686b174ba529" },
+			new() { Input = 100, Expected = "0x159df5d409ee6aa6bfe59f1c98dc8609edd9ea488bf54a3f" },
+			new() { Input = 127, Expected = "0x19bf93b65039bfb6ba462259c80f5654bdfca75e68abb991" },
+			new() { Input = 128, Expected = "0xd786674b2732ad498341ba352fec631b19dc8eee8f054075" },
+			new() { Input = 129, Expected = "0x2a4a2dde39bddd32ad7bb40b51bada769dba3310a6773db1" },
+			new() { Input = 178, Expected = "0x7e963d667873b0e8cde3b7d34bbb77c2149c4f9b0d153a7e" },
+			new() { Input = 199, Expected = "0x97af585b2385476fb5382773e1d83d51839cce60786457cc" },
+			new() { Input = 200, Expected = "0x718a89ed7b121d4ff6a0e1188e50e53451f8c3e936036ce4" }
+		};
+
+		protected static readonly TestItem<int, string>[] DATA_HAVAL_4_224 = {
+			// NOTE: Input denotes the number of bytes to take from DATA_BYTES when executing test
+			new() { Input = 17, Expected = "0x5fe77e369d99d4eda48689d2f758a734ffc5fc003ef4d4c686fe6134" },
+			new() { Input = 31, Expected = "0x0ba7d1b3a6ca28819a1ad6d7e0853b2ea9369eff5a6d34837022bf1c" },
+			new() { Input = 32, Expected = "0x7c7b63873c920a266582192efc501748b664860252ed6635cb521005" },
+			new() { Input = 33, Expected = "0x0214db26cf61cd5a8525bb80403530bc4acbde40c3d6f963d60b2a91" },
+			new() { Input = 34, Expected = "0xbe03cc76307c3afb33f3e3aa33e657273fdb4267a4a72e02a9a1f3ce" },
+			new() { Input = 63, Expected = "0x9e36d956daa979e1aca4ea4a2bc2a7cf77eb78131ba1834d1e038f20" },
+			new() { Input = 64, Expected = "0x131f5f8c06adbff363d44e68759f4f75fa43b5903a1b37bd9226b7a0" },
+			new() { Input = 65, Expected = "0x304bd9d4aa72150e9d2b48071355859175b5aa9c3694bad506d32480" },
+			new() { Input = 117, Expected = "0x71d7d789e77942833836675d98ec65e1d16dc8e02aad5bd847b72220" },
+			new() { Input = 100, Expected = "0xadf867d248bfe34af82ffbd9065fe7090e67db8c05a119a2257c801d" },
+			new() { Input = 127, Expected = "0xe082599737d085150423546ef7b8c921458d10b13e5d4fbf96ac37c2" },
+			new() { Input = 128, Expected = "0x5a1520003337e7e13025ba552e4f93d40c3bb4ead7e37187ac745d38" },
+			new() { Input = 129, Expected = "0x67a37c1c9b25051ed998c05d4490708427e2b2e84dacdd494f280b3c" },
+			new() { Input = 178, Expected = "0xe58401cb5a43e1249da74438f70164e7986130d1f2adaf9656f39dff" },
+			new() { Input = 199, Expected = "0xd7ea3b79cbe0368d53830d31f68c2118a6990b0f6c413c3ab1000a73" },
+			new() { Input = 200, Expected = "0x9c67b3e1beb1c3ff4a3d9b0d51682389a254c821d572d14fe870e79e" }
+		};
+
+		protected static readonly TestItem<int, string>[] DATA_HAVAL_4_256 = {
+			// NOTE: Input denotes the number of bytes to take from DATA_BYTES when executing test
+			new() { Input = 17, Expected = "0x05ebec6e852bf7512c2bda21f44c52f850374e312737c34b06bee6575f43bfcf" },
+			new() { Input = 31, Expected = "0x82189fbae31134114fa623dd4bbb0ce02bfea9c2e6373bff56e4cf6ef0dd3227" },
+			new() { Input = 32, Expected = "0x5a6e6c868effe8df7ae60a789d6b6df89b41b9b77b9ed51796424556e8147746" },
+			new() { Input = 33, Expected = "0x581f59b7b98fa7607642a145b638b84b40179ad5e6509c727b1af234db6a03f7" },
+			new() { Input = 34, Expected = "0xdf3f0fa30b99e0ce010a17f7dc8629d7c1263414c39ee7465ec24a3705a8ba08" },
+			new() { Input = 63, Expected = "0x6d49b91ecf0964a0bf3ecd30dccf84ce4860fdbf5d53e98d755f9410a1ee84b5" },
+			new() { Input = 64, Expected = "0xae6b654546e2fb648e814d4271e46c8a979fead9fef4cb673c1d9fd432c3de59" },
+			new() { Input = 65, Expected = "0x6f2aff7517a74c90cb2208e259aa74097cbce776268ece5add3f03d908b157e2" },
+			new() { Input = 117, Expected = "0x13c5cffccf0a3d858afb4a0ddf5cfaf7f7defafcea0989dedf1f8a9c970fc065" },
+			new() { Input = 100, Expected = "0x796529ae52c35a8ae2bac7d4e51cc6daf1d72f49d621fa373e91e438a101acb4" },
+			new() { Input = 127, Expected = "0xe6d938d79ee1967718cbb07ed356fab1628f0f507b7cbb7bf6ec166e3abca5e5" },
+			new() { Input = 128, Expected = "0x6aead7a0e80eeb7ec82def7aa9e094d7b8d88edb37ff307ba45fcd890f5f47f7" },
+			new() { Input = 129, Expected = "0x0d6a4c5bbb8ee8a2270ece0e5811a21cc1a8f71479572599fff182f19a39a668" },
+			new() { Input = 178, Expected = "0x6de3a437b6f7ecc066fbfbce65a178d79834916be4e17aea3c5ad28584454637" },
+			new() { Input = 199, Expected = "0xa1c3208ab02ce3e276f5332cc8f1b1258c1f11225ba9d2c1885e934e0fe28d51" },
+			new() { Input = 200, Expected = "0x4da9abfb07d05da6db4398b04f7d3fb9fb816f1b53427cd34945b93164744d9e" }
+		};
+
+		protected static readonly TestItem<int, string>[] DATA_HAVAL_5_128 = {
+			// NOTE: Input denotes the number of bytes to take from DATA_BYTES when executing test
+			new() { Input = 17, Expected = "0x5c36785f3a4c8680469cdc31a755c954" },
+			new() { Input = 31, Expected = "0x0871eef2ffcb68a821b0ad9c769d306a" },
+			new() { Input = 32, Expected = "0x7fc2474f032dcd23f27a52a43dba4108" },
+			new() { Input = 33, Expected = "0x0e82bc03b53f6f24441e5966315503ca" },
+			new() { Input = 34, Expected = "0xa8ff6a58ce8a74b7725b0e96d77723b7" },
+			new() { Input = 63, Expected = "0x2ccecb866635f2853b9718dde9a182e2" },
+			new() { Input = 64, Expected = "0x1915e1b50e1ad1df36d79261ae641060" },
+			new() { Input = 65, Expected = "0xb73826215f83796b8d59c78081ee90ac" },
+			new() { Input = 117, Expected = "0xe6de37211798258836e678dbb1575e5d" },
+			new() { Input = 100, Expected = "0x8ec0296bd84e40f5da6e8c7397bcf3e9" },
+			new() { Input = 127, Expected = "0xf5fa972cf7185839469c3701513a37e2" },
+			new() { Input = 128, Expected = "0x2c261e45788712f1588bc72b404f0524" },
+			new() { Input = 129, Expected = "0x35acb344ed18902787c12ab8a8376d30" },
+			new() { Input = 178, Expected = "0x4784db607b199274e8e6e157331a463a" },
+			new() { Input = 199, Expected = "0x6708cf09a216b4bf020fcbca8f6af541" },
+			new() { Input = 200, Expected = "0x53260c9977582901509fd95e969ae3f6" }
+		};
+
+		protected static readonly TestItem<int, string>[] DATA_HAVAL_5_160 = {
+			// NOTE: Input denotes the number of bytes to take from DATA_BYTES when executing test
+			new() { Input = 17, Expected = "0xc8f4a3717c7ae970dd343ea6fd8cf2a17d099818" },
+			new() { Input = 31, Expected = "0xc6afd4b452705ee36370cfd9ec0fc3b40303f468" },
+			new() { Input = 32, Expected = "0x2a140cdeca4322db86a6164e7e972693ffbf0783" },
+			new() { Input = 33, Expected = "0x374e76edf0c852735daa5bdeb437e10083916c2c" },
+			new() { Input = 34, Expected = "0x4bbf730e316b75ee5588d3100c40138a4cb394b7" },
+			new() { Input = 63, Expected = "0x058f724747643655df9fe0fa8ae8df117d137eb3" },
+			new() { Input = 64, Expected = "0x1130cc363c6b8b3a81fa8214814b82fa26adecc0" },
+			new() { Input = 65, Expected = "0x1aa37c5b1e0795eaa86ade17b5f4c28533f157e5" },
+			new() { Input = 117, Expected = "0x559b3a404f58854d450724d9da7f4198b05c07db" },
+			new() { Input = 100, Expected = "0x61f4d70f3f94a1b63c8c71b3a238ab4be46e5557" },
+			new() { Input = 127, Expected = "0xc756a7e6a02f7ca38661bb88968b99322185f5c5" },
+			new() { Input = 128, Expected = "0x4779da21617c154c3f0d9936f84cf84c85138f5f" },
+			new() { Input = 129, Expected = "0x6a8c7279be3bd1b80e1cf52d46ba2baa297e4cd8" },
+			new() { Input = 178, Expected = "0xbea651ecce3ad71665a1f4d99028c3c2eb63bbf1" },
+			new() { Input = 199, Expected = "0x6e2dec45f7319361e69001a6da311d84697dc480" },
+			new() { Input = 200, Expected = "0x96a177296ed0d67014e2fe73628f737dcf314cce" }
+		};
+
+		protected static readonly TestItem<int, string>[] DATA_HAVAL_5_192 = {
+			// NOTE: Input denotes the number of bytes to take from DATA_BYTES when executing test
+			new() { Input = 17, Expected = "0xde071aea15eb7709a9cdababcd06c15718ccfc9089f4a0a9" },
+			new() { Input = 31, Expected = "0x48bdd6654d320b4dbaa5390d07c4536472181330320d11c6" },
+			new() { Input = 32, Expected = "0xe6842b0c87c9bf82c89a9b62ed23ae97730cf85f24a0c371" },
+			new() { Input = 33, Expected = "0x4067bcaf2dd05d2f056a9f7292352f881170a19896536636" },
+			new() { Input = 34, Expected = "0x8a03c5d18701f8a9ece7655a225e3dd8b54609712a9e05a3" },
+			new() { Input = 63, Expected = "0xcf462e462b4cd4ad95d9eff4eac9aa8336703cc13c78f003" },
+			new() { Input = 64, Expected = "0xa3951743623a3e452b81a8c21b80390c254bb7515d4c5b92" },
+			new() { Input = 65, Expected = "0xb3bd91c00640be13b06d435e5a0e2a14f6301ac7bfa1e763" },
+			new() { Input = 117, Expected = "0x41b708afb8e7706aec02ea741d0e17bfcf69e8f6e65cb5ea" },
+			new() { Input = 100, Expected = "0xdd00942cd65261e275136fb3e62336adf5af1bc90246c828" },
+			new() { Input = 127, Expected = "0xf92ac30dcaf5658896c5b4f3fb1682e42e69a2d577032480" },
+			new() { Input = 128, Expected = "0x52af2e7944cc70b0026d375470cc9178ea5877bc2125a21f" },
+			new() { Input = 129, Expected = "0x78fd59c64b55081d42291311646d8527e3e5d9bf440c39de" },
+			new() { Input = 178, Expected = "0xad5a46ad1b08d6492f9bf7eeb5dd2cc931e7e2b04827e023" },
+			new() { Input = 199, Expected = "0xdf9c163d6c839398348aee11c78cb9a9afdd7b157a852b02" },
+			new() { Input = 200, Expected = "0x75bae49f70c0e27ad6e840cb64c819d98be5976160878dda" }
+		};
+
+		protected static readonly TestItem<int, string>[] DATA_HAVAL_5_224 = {
+			// NOTE: Input denotes the number of bytes to take from DATA_BYTES when executing test
+			new() { Input = 17, Expected = "0x097075ac2d6828cb27caac4df862f4d450573c6f6c545bf42e42ba7e" },
+			new() { Input = 31, Expected = "0xe1e40eeb2f0c93057ab548d77f81e268a3d92dea2f33728c4673600d" },
+			new() { Input = 32, Expected = "0x28d197f51bcec28e7b8f93979c070634d77e090f52966de3e8fae395" },
+			new() { Input = 33, Expected = "0xe333926d4ce7e43c48769d52a3db5f9305d31f5c8901c51f215e7067" },
+			new() { Input = 34, Expected = "0xe56b2c6aa146a14bad393ae274ec90c3226218c6092e823e36b6d9f9" },
+			new() { Input = 63, Expected = "0x7a77e4be141facf3b5fbfd641e1c077f9d211112ec9d7e08043542ae" },
+			new() { Input = 64, Expected = "0x4e3135e613e837a7d57758cfdaafcfc3bb26f832f07ebc466b2ad905" },
+			new() { Input = 65, Expected = "0x6350baca686e0e20914e3f99b63f90eba8e4f95dfe7b06072bf9cb18" },
+			new() { Input = 117, Expected = "0x6779fd851dcc38583fd516720a9b4a8e26ce686244a79f733558638d" },
+			new() { Input = 100, Expected = "0x423a392c0a92d5d7fd2f500e907d4433a3c6f23b49ca3de57107015a" },
+			new() { Input = 127, Expected = "0x1e2ec33103cef66409e5cd65852c81cddce1c55b4d9fdabae7631940" },
+			new() { Input = 128, Expected = "0x77c9c5b359f40d7aefe309e14208b0ec96fe2b87235680030c0d6f7c" },
+			new() { Input = 129, Expected = "0xd77bf5e0a98a4b150f1a5390e2cd6c58a5983252d6d621e376fc426d" },
+			new() { Input = 178, Expected = "0x6dde5baf5a88dece5a582c390153f735b63b1c06f1a96e332db5f5de" },
+			new() { Input = 199, Expected = "0xc934124bc9edfcb2120a6b5338731bdf8f6b2759af67716e2ac1d9fa" },
+			new() { Input = 200, Expected = "0x915da86942b18e0cf0261c13ef6be9a755928ec609b65177e7b15358" }
 		};
 
 		protected readonly TestItem<int, string>[] DATA_HAVAL_5_256 = {
@@ -330,6 +1306,146 @@ namespace Sphere10.Framework.CryptoEx.Tests {
 			new() { Input = 200, Expected = "0x5e1e2503132805abbdd447a5428dc9ddf7071da09fc5bede1a2db78731177fee" }
 		};
 
+		protected static readonly TestItem<int, string>[] DATA_KECCAK_224 = {
+			// NOTE: Input denotes the number of bytes to take from DATA_BYTES when executing test
+			new() { Input = 17, Expected = "0xb528a498c3cf62dee1642dcea4aaa47d8f11d6826a61a6aed0dc2272" },
+			new() { Input = 31, Expected = "0x24ad1ab7a57969f3322cbf88637c2063ab9f72fbb358565ab45ab41b" },
+			new() { Input = 32, Expected = "0x13c9101dd1f472fcf484c20962fa65401724fd9c4cbd926c0a7ad2b0" },
+			new() { Input = 33, Expected = "0x61992904211eb47398ebca0f6867aad611d973242a4013a0ac725283" },
+			new() { Input = 34, Expected = "0x4f0e46a5050685e52771a1785d2558cb8232f6e2bc1613aa7fa86852" },
+			new() { Input = 63, Expected = "0x1f8793dedee6209952a48234851435f8c8a3fa032996bb9f477a7a20" },
+			new() { Input = 64, Expected = "0xcf6419899b2113aadfc0ffaa26d0bdc85e42538e69e61d791142a473" },
+			new() { Input = 65, Expected = "0x3f96bfb7d91cced8aac8e21b2e129821b04b648be52915fa5c47b0d1" },
+			new() { Input = 117, Expected = "0x3bb3f9905a04657de657b4abe225dbd4f93cce2f52945f7c6adaaef9" },
+			new() { Input = 100, Expected = "0xb0a4a937cc6b60b408f2711ff5f1df05a48ced882ac8ba99d7119645" },
+			new() { Input = 127, Expected = "0xcc9c824bc2780bf304470de750ad086397f2b05bbc38e6fc4f47731b" },
+			new() { Input = 128, Expected = "0xf45b8f21210090b7acc0186a64da6e5b7f944415660eb07531fe36d8" },
+			new() { Input = 129, Expected = "0x3aa8909a7466c00dbdc61d3a55df173531239eb16d556bccbbe00ee4" },
+			new() { Input = 178, Expected = "0xe5ccfc343fb077917579bb14ce3c31c935e032b674e6bc0ab957d23b" },
+			new() { Input = 199, Expected = "0x39cb4117c98a5071b34c43a81a76d712be15ba63c6105d2c6f1784b3" },
+			new() { Input = 200, Expected = "0x2861c1e403dc473709e495aa3bf7769f287c7fa49187f291c1cd8816" }
+		};
+
+		protected static readonly TestItem<int, string>[] DATA_KECCAK_256 = {
+			// NOTE: Input denotes the number of bytes to take from DATA_BYTES when executing test
+			new() { Input = 17, Expected = "0x2445c06e529bfac7e8af2a7384c598f2fe6f5af9a44cc1e7810f3d00be0e7e5a" },
+			new() { Input = 31, Expected = "0x138d8a8faa38a561dd023e085359c2e5d808e2692d8c4263fd1569f681dcd451" },
+			new() { Input = 32, Expected = "0x0a850d8ec0e9f36d3c75edc47f1e08da693924b665648a51024abfb943096306" },
+			new() { Input = 33, Expected = "0x7da3e291fd354f138a2e2bef20999ae90910a112e280ecd4d1eb0e829bc8a2de" },
+			new() { Input = 34, Expected = "0x430dca71ea93ab23c179753977057fdcdaa8c17652cc6855cf9365cb8124f6b8" },
+			new() { Input = 63, Expected = "0x761f730b4574867fa52f2aaab532b2eec5b3ed1d775067f3175604a0144a4a52" },
+			new() { Input = 64, Expected = "0x30264a5a832e703a50c52b41f62771cab58669fd4a71d0d3b651d9e72655ca58" },
+			new() { Input = 65, Expected = "0xb7227663352d9021bec515b24abc78b2d749408c3e8e0a6ec8040d90fbee10f1" },
+			new() { Input = 117, Expected = "0x1e1b9782f4f489b6227cc50288d66fd67df79d0ff07abba875b8d29832b9c45e" },
+			new() { Input = 100, Expected = "0xce57f19397fe81b90281492149d81fa6b6bca9b9943e0f9792e0b27a8776e95b" },
+			new() { Input = 127, Expected = "0x783d9c05516307b2568392a8f67612a7839a7cf1185902f231f352187c7e78c2" },
+			new() { Input = 128, Expected = "0xb5225ef73855a031085fbc6fbef320fa691fccf8de9d28b6cfcd68a6b6518e10" },
+			new() { Input = 129, Expected = "0xeb4c031cfdadcd3ff6b9cf32371c8386f96875cd24da562bfc7d727a5da95f12" },
+			new() { Input = 178, Expected = "0xd0465275d67cecc303cd5793c14692d760a3b95b672daab065409d277888b574" },
+			new() { Input = 199, Expected = "0xbfcf47ec0ea749f22f391a9315a8b5f4af8fc7cc5a2b634fc92619462d935019" },
+			new() { Input = 200, Expected = "0x3f5d661c9277e8068bd1c3baeb791feacd1c1d431fe86fda43ac96ae2e7bfd7e" }
+		};
+
+		protected static readonly TestItem<int, string>[] DATA_KECCAK_288 = {
+			// NOTE: Input denotes the number of bytes to take from DATA_BYTES when executing test
+			new() { Input = 17, Expected = "0xaf71a3271ef161236c1a1dd24518fa721de7b1158ea5a728fed80d43c95d557d16ed5706" },
+			new() { Input = 31, Expected = "0x90b4167d693f4b184ddbac0666b3c85d8d747499c50f1ef17b0e0d64a685c19fd9f6ed6c" },
+			new() { Input = 32, Expected = "0x27505e2d430a543aad7fefa637c2df22509b0ffda41380bc258b0cd8bb4a1b0b156f3db1" },
+			new() { Input = 33, Expected = "0x01eec7fa88ee34fa459aac0f19f971a12126e0a4c7a2bdc378e9a741dfdf50c4963249d9" },
+			new() { Input = 34, Expected = "0x16bc58943ae64aa75e17c6526c3e71f6006e1c48fa4fd3fb0105b4f43398c485d7e2e7b3" },
+			new() { Input = 63, Expected = "0xa965e13d39848b524e7cf886c71c694eb83fc8522e83bd82f7de0bf3f68aa1876e1dd6e8" },
+			new() { Input = 64, Expected = "0x17b5ecfa246d4bb5a5bccceb8a74941d6da1ef35c7785ad4059649b1ac6535f0224a0f77" },
+			new() { Input = 65, Expected = "0xc0dd11a972482251731d16d52931a263b5b400f09a9982e6e8cdbf10749b9f1a25fe8469" },
+			new() { Input = 117, Expected = "0x31e41e1c22f23be8e579e149b90e58c18717e086a26306614265c1ff5287000c0a21f4b1" },
+			new() { Input = 100, Expected = "0x2cb32d240e5d57d6511ba2db4ad6713377faac779052e19a425869d3189f37b49af3cc9a" },
+			new() { Input = 127, Expected = "0x8c5da2c308e75f4d2b99a9a039b0d33b03cc08310418433571933e7e53f160e3ae33fa28" },
+			new() { Input = 128, Expected = "0x7bc32cce595946fbdf4936f4ff913b5a07670c508313c46c2ca370bb53d686485f55ea6b" },
+			new() { Input = 129, Expected = "0x8873323a395262224d18ea068124ca3f208241c61d0de2e753f94db2ddd7062e1d654c9f" },
+			new() { Input = 178, Expected = "0x07cd6d165247575bf0f0bdf6595aca98b3381cbbb3aa9e763d3798db2e578497e643d67c" },
+			new() { Input = 199, Expected = "0x0d3ec6ff8438a51da2ac4cb8d0add686f5c44a9ecf3de3a927123c6548392db0cf19cf8a" },
+			new() { Input = 200, Expected = "0x5b60e4054d6706fb135ccd781a645e6f60c2f7776924096e8ddb1322877776e54119df26" }
+		};
+
+		protected static readonly TestItem<int, string>[] DATA_KECCAK_384 = {
+			// NOTE: Input denotes the number of bytes to take from DATA_BYTES when executing test
+			new() { Input = 17, Expected = "0x1e55d4e7d87bdb059670fc0b5d4d83b4a9437f1a4a71b576b3109d3d2986cbc181647994f6b1b2fb982849dc4e675374" },
+			new() { Input = 31, Expected = "0x25af1628a3a252c9506f600dbd4f9c2b56f4282fe7511843d5f90dd54a0505845cf992042398bc0d69442dbda399f219" },
+			new() { Input = 32, Expected = "0xa7a9ba391aaee75414e5008cb35002db1fa2c6741fddf339211b46920740b0a0c43e9d0ebcc61f697fe73ed76ef7466b" },
+			new() { Input = 33, Expected = "0x01e4b1bda5d6d9b078886777de3e07656b4f691ca22fa1e037a9106f120fa66472753474e283069a526361d436f29bcf" },
+			new() { Input = 34, Expected = "0xbb307ae8d39c1cfa8bb59c62c1e3bed1ca00cb085eadc7de7e94c22b29a3a5deb754d9083121436ccfa0061e0041205f" },
+			new() { Input = 63, Expected = "0x4b2e3ece4da5fb3e4be569b6f8d1b2396b78fa5bce0a8dbd696c653c55970f9fbc99f63def1d4c43f6efcfeaba505c69" },
+			new() { Input = 64, Expected = "0xa7a19c6e4a259d4aba1b31848a0acd11f4c4495e959981fa41ccd99a16f92d5c71b680ffbeb1c05ab22bd518dadb1873" },
+			new() { Input = 65, Expected = "0xed02b920d964ea30c995908932251291d8a58705b55a54b507dd77208ec7b34d5070b86b3abf716b8111a93a2725db5d" },
+			new() { Input = 117, Expected = "0xce7a7c0593492e66b9956d3a6a1aebc89ebabf66c6471ac87773012d28b9971d07a2c25f4ea800164bb6132a1aec2fbe" },
+			new() { Input = 100, Expected = "0x7b7e87750b7a74f42e24461aa3182fe1028a4523ea6c192f7c8700e330955acd608b6799829a5f346296458ddd71e0b0" },
+			new() { Input = 127, Expected = "0xfe3b99f20ab78640547850c49173a98d12ca0feaa39f7434a475462c8d262e896827c9d3f8b2b53b8532be18cad8f875" },
+			new() { Input = 128, Expected = "0x8748ec03174d77248853138a53d4d0c52678f997057e346c3d756960a30ea8e6cbe87388b9e7fe51b75325188361dbc8" },
+			new() { Input = 129, Expected = "0x08b32294fd2806948ffd1cc63b24fe8aea6a6145629a66def9f8a3b6c25374fdad0c46d2600402f850df469cf93c3b71" },
+			new() { Input = 178, Expected = "0x235a4cb6928ac901d89ca27c6e6be2bee4f3f2eddc70f92d37a742d400d809ea4e894361d5a3234ad42a79074483398c" },
+			new() { Input = 199, Expected = "0x917e4351df67587f53ea904a1f6bd104f5d52d867eb900fe342dc442f67512d5d35d78c7ae776a682ad059c43e6f9101" },
+			new() { Input = 200, Expected = "0x583f86d7747ec35ae6c269d9274c24a471a4ef94a752b330d36c8891c247a40e61f08937bc5e00531e62a5512fcd6a2f" }
+		};
+
+		protected static readonly TestItem<int, string>[] DATA_KECCAK_512 = {
+			// NOTE: Input denotes the number of bytes to take from DATA_BYTES when executing test
+			new() { Input = 17, Expected = "0x33a2b5778497d950418def75b86f31fe72ab3ef91d529d4b0c9ec099e1d73ef1ee3483f142fe533ed28e3eafd3908b19821fe3ea298bd948088781b21e55fce4" },
+			new() { Input = 31, Expected = "0x16673011339dfc4fb91592717a3d9a9b87ea079bf9617f4a2efb3dc34d5ad4b9b6abc92b24aa04753ff160ebc5444061a5b29823f0b74307975eedbb2788dbdd" },
+			new() { Input = 32, Expected = "0x2cda2cbe332a6270386e999e55b32a5f5954537a6312b722139125a73c015a50d254f6f90ab3aedc3b88b457723f9a2f0a079d0882bef5c1fe7e8c2c6150621a" },
+			new() { Input = 33, Expected = "0x8e2914e34bdc819d7eb4ecf2ec35637d5f36660a3ff33996598f5ca5399c3d1b5da6fed3e115509063f4c25418e5a011f699ce6bc6070ed02ff915dbada86633" },
+			new() { Input = 34, Expected = "0x371154907f5672c76ffec9d30c342a9e334b1d951f6f2d06b5145e18a2641bcca600a3c901c3182efe1d72c2ef4a7c8907f2267a79b411ac2be463dd15d029a6" },
+			new() { Input = 63, Expected = "0x07920c74b21fa46654ee686a4c1aeea04b99ed23219144d74c3ddccd83713b2c32fab5225642ef4ee94c6dfb916fbd4fa769e0c303e69bfbfddd1939867f46c8" },
+			new() { Input = 64, Expected = "0xf3777e6c020fb53b4a6dd57ac7d34218b8f7c2e612aa425ff8741d0f260e0be388eff79df477da3f9bc6e0dcaa1f1394c808cc5f8ea7edd4a06723e70ab007b7" },
+			new() { Input = 65, Expected = "0xe028717d8f536d4b47599030122bb2f91ce09c029a2458a3b6a16036dab2938ec92355531201a07743610aeb521191bee86be60219e6dc8078bad0ddca794223" },
+			new() { Input = 117, Expected = "0xf50aef9b368e7e3cda0e8f743f49cbb73630280d89365357dede39d6181b9f87d673e6765b7755e27f574e7f1a8e15c0ef24c516e7eea9e0dbcd29f18968889d" },
+			new() { Input = 100, Expected = "0xc0b70b4eb9657b87b68c8a383ca5b3b1d625192a1181f1a7be117ddaddaa330831bd4e213dd8964dd423b7921ec6d8e7c71cec833c3819305ca8c7db024e30f0" },
+			new() { Input = 127, Expected = "0x0d7af38a059b06cdb69747f7c427167c17059aae3af2770b1358551a1b76f87f874ad7de98d391e8ed2bbd4836d099605c05a98d93fca920ce73b0fd699aca8b" },
+			new() { Input = 128, Expected = "0xcfb70c5901e286d4c5fbd55da006cf09e6232ceeeaea10055e19013531a5e39c9ce16d8f8a5a58d9ad95f0015e33fb99b7059bae97cfd2a1a8c879161d84fc72" },
+			new() { Input = 129, Expected = "0xdc940335ffeb88002e1cafa1d4b6d740e16d81099d4b014048b8792f046e9b37907a599324a8fde48cb1f9d18930f4d67939fe2b97ca991ffdd9613419ee4be3" },
+			new() { Input = 178, Expected = "0x379502aa0a3ef35f35b46c00b336031a09cad9ba9108165064a855be60ce10400f88558dae834a4eaaaa498afd6a7d634524668f6b8a4693bb291d228c67f329" },
+			new() { Input = 199, Expected = "0x6bff209d9a7eeeeb1f3782b55e8e46311d70ad9584b3fa878169c630b652ed1ba9a5fc6e86b2a6768192485eec61d4061e26ba3110b3eb191dd11a3bec196c76" },
+			new() { Input = 200, Expected = "0xf89f667e77e4ebe01c48c9143b31a71be4780bcf61d50f2bb1a2ab8b23d2448d16257838536007cdb13953ac9f949fd27d34149a2d09fc03f9e43c39c69707d9" }
+		};
+
+		protected static readonly TestItem<int, string>[] DATA_MD2 = {
+			// NOTE: Input denotes the number of bytes to take from DATA_BYTES when executing test
+			new() { Input = 17, Expected = "0x5f5025f38c961ca9b7c0f03dd7410529" },
+			new() { Input = 31, Expected = "0x0f61682487e2b54fed39840be0592d78" },
+			new() { Input = 32, Expected = "0x3a9bbbbbb6e36d19ce4623649e4f90d1" },
+			new() { Input = 33, Expected = "0x911c373ed0f5087fdfe801438d684d3c" },
+			new() { Input = 34, Expected = "0x9ff77c1a799ae2f7cca7c7bc5175090c" },
+			new() { Input = 63, Expected = "0x348a479fbbc1b1129e8cddc31ccaea79" },
+			new() { Input = 64, Expected = "0x3380b27b8ab2d10b5a5589ae877ca64b" },
+			new() { Input = 65, Expected = "0xd5b65e7f5cb45a5c4846001a9afed3ae" },
+			new() { Input = 117, Expected = "0x94a4b4935e313fbc92e91ac963d66968" },
+			new() { Input = 100, Expected = "0xaf995f320df97154688d71878a73550d" },
+			new() { Input = 127, Expected = "0xfb5de403f13012d883a603ddc8be60fb" },
+			new() { Input = 128, Expected = "0x1f59c2e552a17e7f60deca12340199ba" },
+			new() { Input = 129, Expected = "0x62ab5eddb71d32f99501ec896e1325ec" },
+			new() { Input = 178, Expected = "0xb3f438e163a86f153cc2124f33f96fd3" },
+			new() { Input = 199, Expected = "0x8f7ba656fb867696568c4fa3cd262d63" },
+			new() { Input = 200, Expected = "0x556117769860bb73130af54af2f2e11e" }
+		};
+
+		protected static readonly TestItem<int, string>[] DATA_MD4 = {
+			// NOTE: Input denotes the number of bytes to take from DATA_BYTES when executing test
+			new() { Input = 17, Expected = "0x09f516249b098afea9ad449f112b3a37" },
+			new() { Input = 31, Expected = "0xeb6db17c1e1760e2af652efb8baf7b15" },
+			new() { Input = 32, Expected = "0x2dda8ef911b2f3749d0d43ad8c63dedd" },
+			new() { Input = 33, Expected = "0x5f06b2a25e3fa5bf42258467a90198a3" },
+			new() { Input = 34, Expected = "0xda2aa7ba8f28b5bc0a508d95e7cbcda6" },
+			new() { Input = 63, Expected = "0x16f97893e239b42ea7f1ac9bc8802d6d" },
+			new() { Input = 64, Expected = "0x8c9107942d009e78eaed0b774efcd249" },
+			new() { Input = 65, Expected = "0xfe8ee693928e453560fae8e06572b316" },
+			new() { Input = 117, Expected = "0x2b5c503c1f318bb5c0161cdbefd16f25" },
+			new() { Input = 100, Expected = "0xc1220933ed4a2eb892f736c7e32d6564" },
+			new() { Input = 127, Expected = "0x53675dac941577189c270454963b7bd7" },
+			new() { Input = 128, Expected = "0x467faea31ec0c4ad6a94fa57ece3da56" },
+			new() { Input = 129, Expected = "0xb25a79ce4ccfac99e22066e0c53d4c82" },
+			new() { Input = 178, Expected = "0x3de1d9b99dce9f17ca9d9d1ed6272ede" },
+			new() { Input = 199, Expected = "0xeba1d5694b49d9bb203b9dca515c3bcf" },
+			new() { Input = 200, Expected = "0xa15b8a5f14c2263a1dd9addb238bc4f9" }
+		};
+
 		protected readonly TestItem<int, string>[] DATA_MD5 = {
 			// NOTE: Input denotes the number of bytes to take from DATA_BYTES when executing test
 			new() { Input = 17, Expected = "0x990d2e3e54e0d540e17e28bf089cbc8f" },
@@ -350,6 +1466,27 @@ namespace Sphere10.Framework.CryptoEx.Tests {
 			new() { Input = 200, Expected = "0x9242480e2630061d3eccb16821e98d30" }
 		};
 
+		protected static readonly TestItem<int, string>[] DATA_PANAMA = {
+			// NOTE: Input denotes the number of bytes to take from DATA_BYTES when executing test
+			new() { Input = 17, Expected = "0x9e5d1af956350bb7c899bb9b0ea5db8cef53dd0b791256409d22703b0290db8e" },
+			new() { Input = 31, Expected = "0x51b66d2ef4d8643de83d84488bfd93ed88457d18ff2399bcd676d70a6c308a10" },
+			new() { Input = 32, Expected = "0x86f67b292bbab6f6bb708b43ed4a9fa9afb519b85d1cb14472f0208efbf25762" },
+			new() { Input = 33, Expected = "0x877c54585feb0d942af19529241528d7a289976adee08eb9ad3d2ff4454778b1" },
+			new() { Input = 34, Expected = "0x9c7a2d94e36050f06e19a16275f28ef9fb9feb545962593c934bf1f49986b000" },
+			new() { Input = 63, Expected = "0xb51550135fe12876bd811f03cd22530067200b0ab58c38e32d4cc62388fc5e61" },
+			new() { Input = 64, Expected = "0xb4c19c1a1353cc956ff663413fb2a7fcd07c23d6fff63a62637f4958b5928660" },
+			new() { Input = 65, Expected = "0x4dd97dc79e0ff2b4e1fd4c9d376c3d828ea489fc4bb70e153aa75f6b03101209" },
+			new() { Input = 117, Expected = "0x27573fad54ec2b8d3076ca1555535e97c151b06a81b9fc76bf2da96a5e98afd9" },
+			new() { Input = 100, Expected = "0x64eb145168b0a822c6ac066548f5f6f90990fed92f7671c174c76c855aeb66ef" },
+			new() { Input = 127, Expected = "0x5fcb44ce2628fca33c93f76fb2db70eab277d769e20a1bd050e6f088ee1878e0" },
+			new() { Input = 128, Expected = "0x93ffd82e8f1b28ef6066874f3fdd233fe97841364fdd6a274a774db7bb0796e3" },
+			new() { Input = 129, Expected = "0xdcb73c5d710e18a3dc8f0142f312a87e57071ec71a8baf923108040ecdf135b4" },
+			new() { Input = 178, Expected = "0x259633707f91035c5dcde7a3121aeafcbf986780f8e918e9eed9e79f50b44669" },
+			new() { Input = 199, Expected = "0xcd20a23cd1c17554f9045c4746a230bbfeb4fcc3f9440f22652910eadc0698d3" },
+			new() { Input = 200, Expected = "0xdbc5ced7f203a814d985a992e0ed07d81a3d47d0dfc65493afb58ee48b0d863b" }
+		};
+
+
 		protected readonly TestItem<int, string>[] DATA_RADIOGATUN32 = {
 			// NOTE: Input denotes the number of bytes to take from DATA_BYTES when executing test
 			new() { Input = 17, Expected = "0x65024d09e2b8a46d8b6a2aa87af2445a9d640a74081e5d7a33062307a1c47b0d" },
@@ -369,6 +1506,67 @@ namespace Sphere10.Framework.CryptoEx.Tests {
 			new() { Input = 199, Expected = "0xb76be67d94ce6014e5a125c371c22abfce3bbccc86f92dac31c394226b0c7912" },
 			new() { Input = 200, Expected = "0x16696fe96e850fce272f90b59e9114e55098c03ee0d3e40e0d0616a1926a8ed8" }
 		};
+
+		protected static readonly TestItem<int, string>[] DATA_GOST = {
+			// NOTE: Input denotes the number of bytes to take from DATA_BYTES when executing test
+			new() { Input = 17, Expected = "0xbe1624f6d74a04b038e317e3bb3943611e8afadd64ca0b9d2871a0f2c2a67a94" },
+			new() { Input = 31, Expected = "0x593a349119478e323958dcf4dcb2d9a866087cdd2312d0fb6d8efbf0fb93ea41" },
+			new() { Input = 32, Expected = "0xadd5e68dc66fc83be85ed4b5bcf497904a2132ffe5b06a2d9ded16064d711dd2" },
+			new() { Input = 33, Expected = "0xf67785a257fbba2b3882e0fb71e5a269bd99c952135a4aa2440c11a0d59909fb" },
+			new() { Input = 34, Expected = "0x01d9221eb3868ce57cbd9e17fa7322ad42df0330bf7d34a506b354c692aed3d7" },
+			new() { Input = 63, Expected = "0x563bac0e170d99ff7517cd1bf1ac0656d754cd23adf146889c61fae20dcd4eb4" },
+			new() { Input = 64, Expected = "0x2380f3405241b40f7ea6a1f8da5370fe37e7c30d317451623fd6b863d1613793" },
+			new() { Input = 65, Expected = "0x1f1cbb904ed7418805100f213a5ec5a719c583db2ad9f5b762c1a307cf572e56" },
+			new() { Input = 117, Expected = "0xa8043e9ddc73979e9891ac244d2122858700cca6f94590602dc318b163fd9e27" },
+			new() { Input = 100, Expected = "0x9f3faed24d0b77532e67a39b9e1901eca64b5a429c288d871f264e3f35f5c2c2" },
+			new() { Input = 127, Expected = "0x1fd15380a671d5a56c6924b226e9ab0464ecb26fcd21b3f440efc5d501af7d6b" },
+			new() { Input = 128, Expected = "0xe0d20b403ce9b292531a65299388e46281f04b0edccba71b01a50ebe06cd589b" },
+			new() { Input = 129, Expected = "0x25cd57dafc7f73be61deb7884baf970e9258cc2dc81011111d25bc712bbe55d9" },
+			new() { Input = 178, Expected = "0xdc7b3cad1e054783b4a63ec3def98c2883dc2944d3efe332c422ebf436c91463" },
+			new() { Input = 199, Expected = "0xb0f1aa576af8eeb0cebfd4945704eddae4031784ef8768dc530ee5b37ed8433c" },
+			new() { Input = 200, Expected = "0x4c3c2005aa872b3fe3fb516c91d38c8c6da5740b52037159a2fdf04b0afb60f4" }
+		};
+
+		protected static readonly TestItem<int, string>[] DATA_GOST_3411_2012_256 = {
+			// NOTE: Input denotes the number of bytes to take from DATA_BYTES when executing test
+			new() { Input = 17, Expected = "0xbd425c0e2198b9e11b24094304c25c42883f5204d80b2e372f2fb17c5c84b0a4" },
+			new() { Input = 31, Expected = "0x872638d0fb9274a3d10a081a508c89d2078ff8f4dff541c34904317d65fcde8a" },
+			new() { Input = 32, Expected = "0x698bc0b87d736d69f5381d6db2e7ddd6e820cf2b2b590e3ed882e9ce5d5b639a" },
+			new() { Input = 33, Expected = "0x2ed954fc835b019200ba6eb50c4c1399302a789b77ed18a295b8bc37df4a4cf1" },
+			new() { Input = 34, Expected = "0xf19736bdf5703090ecd41bfc48a92079a4c3fc5065b5fd6885b5f0a419a23e59" },
+			new() { Input = 63, Expected = "0x7b82c3434252f0477537ff26befdaa5406e1c2cf07cdf94c769dcc453833a3a9" },
+			new() { Input = 64, Expected = "0x926c54dbcb9cf6e4c578b7dd212981b0ec214483ddd33553367621cd30d7446c" },
+			new() { Input = 65, Expected = "0xb1c8283c46bfb09d1202b47f98b02943f660ede624b045c7e027d44736779cf0" },
+			new() { Input = 117, Expected = "0x2d0007c9f8f4445738756c437bce8066830dca12be5d3e49318c9ebc79ab2795" },
+			new() { Input = 100, Expected = "0x9ddedddc5862e4fb0bf8586af4d61c138d2c05b454e882cec77efa5708b373e7" },
+			new() { Input = 127, Expected = "0xa73c3c56ff0dd1893c20d80d364ee465f4caad775417c8f2942c15f157f73040" },
+			new() { Input = 128, Expected = "0xc3525deb3adf295ea2b4c8bbc55f4c5362c1dffa330faca02b7b0cca69db63e5" },
+			new() { Input = 129, Expected = "0x24a462c684e5ddca7003de34c69a194e6a5962ec0907e2afd305047b99c487b0" },
+			new() { Input = 178, Expected = "0x788f8c9df5ea1b6a2ac63b624ea9650d55274cc312ec948334964c589ea31138" },
+			new() { Input = 199, Expected = "0xdc24828eb4ffa2d706e81f0db9a54c687c256ac8262f5781e6ee2e27b7380e5a" },
+			new() { Input = 200, Expected = "0x83394ab99f92a8ab8b0ea2d68094c36736dbf70cad00ac2431730a6d00913360" }
+		};
+
+		protected static readonly TestItem<int, string>[] DATA_GOST_3411_2012_512 = {
+			// NOTE: Input denotes the number of bytes to take from DATA_BYTES when executing test
+			new() { Input = 17, Expected = "0x83a884684383fc33089029012873f965e29241d876aebf551293e702b4c132fea5e258fd089ac19b32410fc399e6a154ea0ef3a7de90e6367581dfa6710f2e2c" },
+			new() { Input = 31, Expected = "0x5102dde1850e44b901eae5c313230d88cb326238d3f8e4e5682375fe9cf2a7e6df8797bbfa3557dd469fcc8499f6eccc3dbaaffec04a972cb254e8dca1bb8d15" },
+			new() { Input = 32, Expected = "0x1e0a2a3c8c092e5f8239ca02091d8c498801043c545f01257a9185664e16f8acd6fce530aff6f40e1ebb7011551a6b4a794f9176d1ae0ce27e595dc47975a680" },
+			new() { Input = 33, Expected = "0x056cddcfc264498692b961958f1f16b308a46b1ff920d10e872e6274971ad5ac0879e553391db9ac434bffa6897d2cd5bb26bbc2a23934fad99d7b61ca35463b" },
+			new() { Input = 34, Expected = "0xa38810182a4a687be2f3a6a79ebb810b861fb1f613dbb301e9a433f6c36a93a7eb95c3ddba90226ff97fd7e2f05601e140c60bba26a253364b37403193fc3bc5" },
+			new() { Input = 63, Expected = "0xe45dbea75dcda099ef6466d2fb2570bf0a4941dde19bc8980dcb281a0e9b56575096d7a58282b29ea4143e5970c1d20ff5527fc4bb748ef3c5ccd2373ffc031a" },
+			new() { Input = 64, Expected = "0xa9b4fa08248fab25fa89d82d68b8322b44d4729ffacaa515da210378c50b03bdd1110d47b2d0bebd0fe41e0702e9a71d958a786c1e2d62d3328c7e3f1d98649c" },
+			new() { Input = 65, Expected = "0x68a46f580c2b5b80e05b1150fc5e79a81ad5bdeed492b29ac6684c2171959c58643fb6f83b84f3e9cae7c9baec93f7c078a95a8b539ae7136c674fa566330423" },
+			new() { Input = 117, Expected = "0x3faf6282aaadffcf32577c25bb7b77ffa81be6ac8ad8abbfc67eeb2b54690ddb14802bd17afe324dac2678ffa41246e559c0136f36e371ad5017cc1776cda553" },
+			new() { Input = 100, Expected = "0x9613f8940055005d0408df5799eafb1252a2eb27c3e119e53450268192047862aeb301615a16ae4ac0538eb61e2edbb0d603c56018e1f57bb1599564cd50d52e" },
+			new() { Input = 127, Expected = "0x044f5f254b0189082de63bb25140191b2e1ac91033c84b455e264969a54f3886d2e0b431fbaa446c1cefa70ff9dc58288fae236b1db88b6953e2da011fbc6365" },
+			new() { Input = 128, Expected = "0xb9a84a87bce0fb8e094bdec66ac75c350d45d3e6e3bbdfcc5e4718e215b8e33a2865d5046f63c8cb56d10a47fefece1986585f7b8c7b06082887da868ad0dec7" },
+			new() { Input = 129, Expected = "0xed6a10af5c1d497ea4ce27e36be4a2054f6ca1b55533749a29872a693a744e4e71729159612494281668728bb5a553457f534be107ead89ab76a21e6eb7b5aa7" },
+			new() { Input = 178, Expected = "0xa34b76d2709e7da134c24cbca49f520e0b0cf57d29bb27c3be0cb15420be37669cbe04bc2d77a001e79477c9233b3ee8436cf91fa929fefdb9cd6d98eb66c0f0" },
+			new() { Input = 199, Expected = "0x94ba065ef1953d69c9c739b07f8df76147f8c2c49c7976deb47abb33419249f30736ab70ca89fbeb8d5c85071e78403251c5e022239575b503c831c3841f28ea" },
+			new() { Input = 200, Expected = "0x1f68356adc79e5a5708de190af0126f829d1a886336700a3ab5037944a600b4dce972049651d30f8206038b844bf4274582ae2ba5794446d49146c2e6d9559a4" }
+		};
+
 
 		protected readonly TestItem<int, string>[] DATA_WHIRLPOOL = {
 			// NOTE: Input denotes the number of bytes to take from DATA_BYTES when executing test
@@ -399,6 +1597,11 @@ namespace Sphere10.Framework.CryptoEx.Tests {
 	internal class HashTests : HashTestBase {
 
 		[Test]
+		public void TestSHA2_224() {
+			TestHash(x => Hashers.Hash(CHF.SHA2_224, x).ToHexString(), DATA_SHA2_224);
+		}
+
+		[Test]
 		public void TestSHA2_256() {
 			TestHash(x => Hashers.Hash(CHF.SHA2_256, x).ToHexString(), DATA_SHA2_256);
 		}
@@ -411,6 +1614,31 @@ namespace Sphere10.Framework.CryptoEx.Tests {
 		[Test]
 		public void TestSHA2_512() {
 			TestHash(x => Hashers.Hash(CHF.SHA2_512, x).ToHexString(), DATA_SHA2_512);
+		}
+
+		[Test]
+		public void TestSHA2_512_224() {
+			TestHash(x => Hashers.Hash(CHF.SHA2_512_224, x).ToHexString(), DATA_SHA2_512_224);
+		}
+
+		[Test]
+		public void TestSHA2_512_256() {
+			TestHash(x => Hashers.Hash(CHF.SHA2_512_256, x).ToHexString(), DATA_SHA2_512_256);
+		}
+
+		[Test]
+		public void TestSHA0() {
+			TestHash(x => Hashers.Hash(CHF.SHA0, x).ToHexString(), DATA_SHA0);
+		}
+
+		[Test]
+		public void TestSHA1_160() {
+			TestHash(x => Hashers.Hash(CHF.SHA1_160, x).ToHexString(), DATA_SHA1_160);
+		}
+
+		[Test]
+		public void TestSHA3_224() {
+			TestHash(x => Hashers.Hash(CHF.SHA3_224, x).ToHexString(), DATA_SHA3_224);
 		}
 
 		[Test]
@@ -429,6 +1657,11 @@ namespace Sphere10.Framework.CryptoEx.Tests {
 		}
 
 		[Test]
+		public void TestRIPEMD() {
+			TestHash(x => Hashers.Hash(CHF.RIPEMD, x).ToHexString(), DATA_RIPEMD);
+		}
+
+		[Test]
 		public void TestRIPEMD_160() {
 			TestHash(x => Hashers.Hash(CHF.RIPEMD_160, x).ToHexString(), DATA_RIPEMD_160);
 		}
@@ -444,13 +1677,133 @@ namespace Sphere10.Framework.CryptoEx.Tests {
 		}
 
 		[Test]
-		public void TestBLAKE2B_512() {
+		public void TestBlake2b_128() {
+			TestHash(x => Hashers.Hash(CHF.Blake2b_128, x).ToHexString(), DATA_BLAKE2B_128);
+		}
+
+		[Test]
+		public void TestBlake2b_160() {
+			TestHash(x => Hashers.Hash(CHF.Blake2b_160, x).ToHexString(), DATA_BLAKE2B_160);
+		}
+
+		[Test]
+		public void TestBlake2b_256() {
+			TestHash(x => Hashers.Hash(CHF.Blake2b_256, x).ToHexString(), DATA_BLAKE2B_256);
+		}
+
+		[Test]
+		public void TestBlake2b_384() {
+			TestHash(x => Hashers.Hash(CHF.Blake2b_384, x).ToHexString(), DATA_BLAKE2B_384);
+		}
+
+		[Test]
+		public void TestBlake2b_512() {
 			TestHash(x => Hashers.Hash(CHF.Blake2b_512, x).ToHexString(), DATA_BLAKE2B_512);
 		}
 
 		[Test]
-		public void TestBLAKE2S_256() {
+		public void TestBlake2s_128() {
+			TestHash(x => Hashers.Hash(CHF.Blake2s_128, x).ToHexString(), DATA_BLAKE2S_128);
+		}
+
+		[Test]
+		public void TestBlake2s_160() {
+			TestHash(x => Hashers.Hash(CHF.Blake2s_160, x).ToHexString(), DATA_BLAKE2S_160);
+		}
+
+		[Test]
+		public void TestBlake2s_224() {
+			TestHash(x => Hashers.Hash(CHF.Blake2s_224, x).ToHexString(), DATA_BLAKE2S_224);
+		}
+
+		[Test]
+		public void TestBlake2s_256() {
 			TestHash(x => Hashers.Hash(CHF.Blake2s_256, x).ToHexString(), DATA_BLAKE2S_256);
+		}
+
+		[Test]
+		public void TestTiger_3_128() {
+			TestHash(x => Hashers.Hash(CHF.Tiger_3_128, x).ToHexString(), DATA_TIGER_3_128);
+		}
+
+		[Test]
+		public void TestTiger_3_160() {
+			TestHash(x => Hashers.Hash(CHF.Tiger_3_160, x).ToHexString(), DATA_TIGER_3_160);
+		}
+
+		[Test]
+		public void TestTiger_3_192() {
+			TestHash(x => Hashers.Hash(CHF.Tiger_3_192, x).ToHexString(), DATA_TIGER_3_192);
+		}
+
+		[Test]
+		public void TestTiger_4_128() {
+			TestHash(x => Hashers.Hash(CHF.Tiger_4_128, x).ToHexString(), DATA_TIGER_4_128);
+		}
+
+		[Test]
+		public void TestTiger_4_160() {
+			TestHash(x => Hashers.Hash(CHF.Tiger_4_160, x).ToHexString(), DATA_TIGER_4_160);
+		}
+
+		[Test]
+		public void TestTiger_4_192() {
+			TestHash(x => Hashers.Hash(CHF.Tiger_4_192, x).ToHexString(), DATA_TIGER_4_192);
+		}
+
+		[Test]
+		public void TestTiger_5_128() {
+			TestHash(x => Hashers.Hash(CHF.Tiger_5_128, x).ToHexString(), DATA_TIGER_5_128);
+		}
+
+		[Test]
+		public void TestTiger_5_160() {
+			TestHash(x => Hashers.Hash(CHF.Tiger_5_160, x).ToHexString(), DATA_TIGER_5_160);
+		}
+
+		[Test]
+		public void TestTiger_5_192() {
+			TestHash(x => Hashers.Hash(CHF.Tiger_5_192, x).ToHexString(), DATA_TIGER_5_192);
+		}
+
+		[Test]
+		public void TestTiger2_3_128() {
+			TestHash(x => Hashers.Hash(CHF.Tiger2_3_128, x).ToHexString(), DATA_TIGER2_3_128);
+		}
+
+		[Test]
+		public void TestTiger2_3_160() {
+			TestHash(x => Hashers.Hash(CHF.Tiger2_3_160, x).ToHexString(), DATA_TIGER2_3_160);
+		}
+
+		[Test]
+		public void TestTiger2_3_192() {
+			TestHash(x => Hashers.Hash(CHF.Tiger2_3_192, x).ToHexString(), DATA_TIGER2_3_192);
+		}
+
+		[Test]
+		public void TestTiger2_4_128() {
+			TestHash(x => Hashers.Hash(CHF.Tiger2_4_128, x).ToHexString(), DATA_TIGER2_4_128);
+		}
+
+		[Test]
+		public void TestTiger2_4_160() {
+			TestHash(x => Hashers.Hash(CHF.Tiger2_4_160, x).ToHexString(), DATA_TIGER2_4_160);
+		}
+
+		[Test]
+		public void TestTiger2_4_192() {
+			TestHash(x => Hashers.Hash(CHF.Tiger2_4_192, x).ToHexString(), DATA_TIGER2_4_192);
+		}
+
+		[Test]
+		public void TestTiger2_5_128() {
+			TestHash(x => Hashers.Hash(CHF.Tiger2_5_128, x).ToHexString(), DATA_TIGER2_5_128);
+		}
+
+		[Test]
+		public void TestTiger2_5_160() {
+			TestHash(x => Hashers.Hash(CHF.Tiger2_5_160, x).ToHexString(), DATA_TIGER2_5_160);
 		}
 
 		[Test]
@@ -459,8 +1812,18 @@ namespace Sphere10.Framework.CryptoEx.Tests {
 		}
 
 		[Test]
+		public void TestSnefru8_128() {
+			TestHash(x => Hashers.Hash(CHF.Snefru_8_128, x).ToHexString(), DATA_SNEFRU_8_128);
+		}
+
+		[Test]
 		public void TestSnefru8_256() {
 			TestHash(x => Hashers.Hash(CHF.Snefru_8_256, x).ToHexString(), DATA_SNEFRU_8_256);
+		}
+
+		[Test]
+		public void TestGrindahl256() {
+			TestHash(x => Hashers.Hash(CHF.Grindahl256, x).ToHexString(), DATA_GRINDAHL256);
 		}
 
 		[Test]
@@ -469,13 +1832,143 @@ namespace Sphere10.Framework.CryptoEx.Tests {
 		}
 
 		[Test]
-		public void TestHaval5_256() {
+		public void TestHas160() {
+			TestHash(x => Hashers.Hash(CHF.Has160, x).ToHexString(), DATA_HAS160);
+		}
+
+		[Test]
+		public void TestHaval_3_128() {
+			TestHash(x => Hashers.Hash(CHF.Haval_3_128, x).ToHexString(), DATA_HAVAL_3_128);
+		}
+
+		[Test]
+		public void TestHaval_3_160() {
+			TestHash(x => Hashers.Hash(CHF.Haval_3_160, x).ToHexString(), DATA_HAVAL_3_160);
+		}
+
+		[Test]
+		public void TestHaval_3_192() {
+			TestHash(x => Hashers.Hash(CHF.Haval_3_192, x).ToHexString(), DATA_HAVAL_3_192);
+		}
+
+		[Test]
+		public void TestHaval_3_224() {
+			TestHash(x => Hashers.Hash(CHF.Haval_3_224, x).ToHexString(), DATA_HAVAL_3_224);
+		}
+
+		[Test]
+		public void TestHaval_3_256() {
+			TestHash(x => Hashers.Hash(CHF.Haval_3_256, x).ToHexString(), DATA_HAVAL_3_256);
+		}
+
+		[Test]
+		public void TestHaval_4_128() {
+			TestHash(x => Hashers.Hash(CHF.Haval_4_128, x).ToHexString(), DATA_HAVAL_4_128);
+		}
+
+		[Test]
+		public void TestHaval_4_160() {
+			TestHash(x => Hashers.Hash(CHF.Haval_4_160, x).ToHexString(), DATA_HAVAL_4_160);
+		}
+
+		[Test]
+		public void TestHaval_4_192() {
+			TestHash(x => Hashers.Hash(CHF.Haval_4_192, x).ToHexString(), DATA_HAVAL_4_192);
+		}
+
+		[Test]
+		public void TestHaval_4_224() {
+			TestHash(x => Hashers.Hash(CHF.Haval_4_224, x).ToHexString(), DATA_HAVAL_4_224);
+		}
+
+		[Test]
+		public void TestHaval_4_256() {
+			TestHash(x => Hashers.Hash(CHF.Haval_4_256, x).ToHexString(), DATA_HAVAL_4_256);
+		}
+
+		[Test]
+		public void TestHaval_5_128() {
+			TestHash(x => Hashers.Hash(CHF.Haval_5_128, x).ToHexString(), DATA_HAVAL_5_128);
+		}
+
+		[Test]
+		public void TestHaval_5_160() {
+			TestHash(x => Hashers.Hash(CHF.Haval_5_160, x).ToHexString(), DATA_HAVAL_5_160);
+		}
+
+		[Test]
+		public void TestHaval_5_192() {
+			TestHash(x => Hashers.Hash(CHF.Haval_5_192, x).ToHexString(), DATA_HAVAL_5_192);
+		}
+
+		[Test]
+		public void TestHaval_5_224() {
+			TestHash(x => Hashers.Hash(CHF.Haval_5_224, x).ToHexString(), DATA_HAVAL_5_224);
+		}
+
+		[Test]
+		public void TestHaval_5_256() {
 			TestHash(x => Hashers.Hash(CHF.Haval_5_256, x).ToHexString(), DATA_HAVAL_5_256);
+		}
+
+		[Test]
+		public void TestKeccak_224() {
+			TestHash(x => Hashers.Hash(CHF.Keccak_224, x).ToHexString(), DATA_KECCAK_224);
+		}
+
+		[Test]
+		public void TestKeccak_256() {
+			TestHash(x => Hashers.Hash(CHF.Keccak_256, x).ToHexString(), DATA_KECCAK_256);
+		}
+
+		[Test]
+		public void TestKeccak_288() {
+			TestHash(x => Hashers.Hash(CHF.Keccak_288, x).ToHexString(), DATA_KECCAK_288);
+		}
+
+		[Test]
+		public void TestKeccak_384() {
+			TestHash(x => Hashers.Hash(CHF.Keccak_384, x).ToHexString(), DATA_KECCAK_384);
+		}
+
+		[Test]
+		public void TestKeccak_512() {
+			TestHash(x => Hashers.Hash(CHF.Keccak_512, x).ToHexString(), DATA_KECCAK_512);
+		}
+
+		[Test]
+		public void TestMD2() {
+			TestHash(x => Hashers.Hash(CHF.MD2, x).ToHexString(), DATA_MD2);
+		}
+
+		[Test]
+		public void TestMD4() {
+			TestHash(x => Hashers.Hash(CHF.MD4, x).ToHexString(), DATA_MD4);
 		}
 
 		[Test]
 		public void TestMD5() {
 			TestHash(x => Hashers.Hash(CHF.MD5, x).ToHexString(), DATA_MD5);
+		}
+
+		[Test]
+		public void TestPanama() {
+			TestHash(x => Hashers.Hash(CHF.Panama, x).ToHexString(), DATA_PANAMA);
+		}
+
+		[Test]
+		public void TestGost() {
+			TestHash(x => Hashers.Hash(CHF.Gost, x).ToHexString(), DATA_GOST);
+		}
+
+		[Test]
+		public void TestGost_3411_2012_256() {
+			TestHash(x => Hashers.Hash(CHF.Gost3411_2012_256, x).ToHexString(), DATA_GOST_3411_2012_256);
+		}
+
+		[Test]
+		public void TestGost_3411_2012_512() {
+			TestHash(x => Hashers.Hash(CHF.Gost3411_2012_512, x).ToHexString(), DATA_GOST_3411_2012_512);
 		}
 
 		[Test]

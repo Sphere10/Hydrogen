@@ -12,13 +12,11 @@
 //-----------------------------------------------------------------------
 
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Reflection;
 
 namespace Sphere10.Framework.Application {
 
-    [Obfuscation(Exclude = true)]
+	[Obfuscation(Exclude = true)]
     [Flags]
     public enum ProductLicenseFlags {
         DoesNotExpire				= 0,

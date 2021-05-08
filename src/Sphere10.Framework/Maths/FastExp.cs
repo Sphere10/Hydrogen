@@ -12,13 +12,9 @@
 //-----------------------------------------------------------------------
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Sphere10.Framework {
-    public static class FastExp {
+	public static class FastExp {
         static readonly double[] ExpAdjustment = new double[256] {
             1.040389835,
             1.039159306,

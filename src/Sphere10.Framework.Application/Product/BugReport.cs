@@ -14,17 +14,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Xml.Serialization;
 using System.Reflection;
-
-using System.Runtime.Serialization;
-using Sphere10.Framework;
 
 
 namespace Sphere10.Framework.Application {
 
-    [Obfuscation(Exclude = true)]
+	[Obfuscation(Exclude = true)]
     public class BugReport : ClientRequest {
         public BugReport()
             : base() {

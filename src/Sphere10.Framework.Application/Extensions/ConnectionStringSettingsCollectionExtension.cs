@@ -11,15 +11,10 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using System;
-using System.Collections.Generic;
 using System.Configuration;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Sphere10.Framework.Application {
-    public static class Extension {
+	public static class Extension {
         public static bool HasConnectionString(this ConnectionStringSettingsCollection value, string key) {
             try {
                 return value[key].ConnectionString.Length > 0;

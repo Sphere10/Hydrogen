@@ -1,11 +1,9 @@
 using System;
 using Org.BouncyCastle.Crypto;
-using Org.BouncyCastle.Crypto.Utilities;
 using Org.BouncyCastle.Utilities;
 
-namespace Sphere10.Framework.CryptoEx
-{
-    public class Grindahl512Digest
+namespace Sphere10.Framework.CryptoEx {
+	public class Grindahl512Digest
         : IDigest, IMemoable
     {
         #region Consts

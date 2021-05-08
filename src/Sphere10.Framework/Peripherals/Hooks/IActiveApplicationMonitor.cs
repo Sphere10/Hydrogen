@@ -12,12 +12,9 @@
 //-----------------------------------------------------------------------
 
 using System;
-using System.Reflection;
-using System.Threading;
-using System.Diagnostics;
 
 
-namespace Sphere10.Framework  {
+namespace Sphere10.Framework {
 
 	public interface IActiveApplicationMonitor  {
 		event EventHandler<ApplicationChangedEvent> ApplicationChanged;

@@ -17,7 +17,7 @@ using System.Linq;
 
 namespace Sphere10.Framework {
 
-    public class CollectionGroup<TKey, TElement, TCollection> : IGrouping<TKey, TElement> where TCollection : ICollection<TElement>, new(){
+	public class CollectionGroup<TKey, TElement, TCollection> : IGrouping<TKey, TElement> where TCollection : ICollection<TElement>, new(){
         
         public CollectionGroup(TKey key, IEnumerable<TElement> elements) {
             Key = key;

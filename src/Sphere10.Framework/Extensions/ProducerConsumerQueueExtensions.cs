@@ -11,15 +11,12 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Sphere10.Framework {
 
-    public static class ProducerConsumerQueueExtensions {
+	public static class ProducerConsumerQueueExtensions {
         public static void Put<T>(this ProducerConsumerQueue<T> producerConsumer, T item) {
             producerConsumer.PutMany(new[] { item });
         }

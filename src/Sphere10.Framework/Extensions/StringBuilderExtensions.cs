@@ -11,14 +11,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-
-using System.Security.Cryptography;
-using System.Text.RegularExpressions;
 using System.Text;
-using System.Collections.Specialized;
 
 namespace Sphere10.Framework {
 	public static class StringBuilderExtensions {

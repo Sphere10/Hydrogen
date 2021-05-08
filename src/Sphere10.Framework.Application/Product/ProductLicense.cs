@@ -12,18 +12,12 @@
 //-----------------------------------------------------------------------
 
 using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Runtime.InteropServices;
-using System.Collections;
-using System.ComponentModel;
 using System.Reflection;
 
 
-namespace Sphere10.Framework.Application
-{
+namespace Sphere10.Framework.Application {
 
-    [Obfuscation(Exclude = true)]
+	[Obfuscation(Exclude = true)]
     public class ProductLicense {
 
         public ProductLicense () : this(ProductLicenseFlags.DoesNotExpire, 0, DateTime.UtcNow, 0, 0, 0) {

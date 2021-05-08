@@ -12,13 +12,9 @@
 //-----------------------------------------------------------------------
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Sphere10.Framework {
-    public class ByteArrayBuilder {
+	public class ByteArrayBuilder {
         private const int DefaultCapacity = 4096;
         private readonly int _initialCapacity;
         private byte[] _buffer;

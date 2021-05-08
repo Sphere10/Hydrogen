@@ -11,15 +11,11 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Reflection;
 
 namespace Sphere10.Framework {
 
-    public sealed class PreloadedCache<TKey, TValue> : BulkFetchCacheBase<TKey, TValue> {
+	public sealed class PreloadedCache<TKey, TValue> : BulkFetchCacheBase<TKey, TValue> {
 		private readonly IDictionary<TKey, TValue> _preloadedValues = null;
 		public PreloadedCache(
             IDictionary<TKey,TValue> preloadedValues,

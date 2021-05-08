@@ -11,13 +11,8 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using Sphere10.Framework.FastReflection;
 
 namespace Sphere10.Framework {
 	public abstract class ObjectWithDefaultValues : object {

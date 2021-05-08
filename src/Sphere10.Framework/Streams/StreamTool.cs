@@ -12,12 +12,9 @@
 //-----------------------------------------------------------------------
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Security.Cryptography;
-using System.Text;
 using System.IO.Compression;
 using Sphere10.Framework;
 
@@ -25,7 +22,7 @@ using Sphere10.Framework;
 namespace Tools {
 
 
-    public static class Streams {
+	public static class Streams {
         public const int DefaultBufferReadBlockSize = 32768;
         public const int OptimalCompressWriteBlockSize = 8192;
 

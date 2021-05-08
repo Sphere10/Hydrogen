@@ -4,7 +4,7 @@ using System.Numerics;
 using System.Security.Cryptography;
 
 namespace Sphere10.Framework {
-    public static class BigIntegerExtensions {
+	public static class BigIntegerExtensions {
 
         // primes smaller than 2000 to test the generated prime number
         public static readonly int[] PrimesBelow2000 = {

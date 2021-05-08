@@ -11,15 +11,9 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-
 namespace Sphere10.Framework.Application {
-	
-	
+
+
 	public abstract class BaseApplicationInitializeTask : IApplicationInitializeTask {
 		public const int DefaultPriority = 100;
 

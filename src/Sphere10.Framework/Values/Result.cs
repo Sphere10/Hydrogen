@@ -16,7 +16,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
-using System.Security.Cryptography;
 using System.Xml.Serialization;
 using System.Text;
 using Sphere10.Framework.Collections;

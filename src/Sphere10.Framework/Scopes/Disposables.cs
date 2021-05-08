@@ -17,11 +17,11 @@ using System.Linq;
 
 namespace Sphere10.Framework {
 
-    /// <summary>
-    /// A scope that carries with it a collection of disposable items. If not salvaged, the items are
-    /// disposed at the end of the DisposalScope.
-    /// </summary>
-    public class Disposables : ListDecorator<IDisposable>, IDisposable {
+	/// <summary>
+	/// A scope that carries with it a collection of disposable items. If not salvaged, the items are
+	/// disposed at the end of the DisposalScope.
+	/// </summary>
+	public class Disposables : ListDecorator<IDisposable>, IDisposable {
 
 		static Disposables() {
 			None = new Disposables();

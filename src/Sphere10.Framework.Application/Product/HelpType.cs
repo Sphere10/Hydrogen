@@ -11,15 +11,11 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Reflection;
 
 namespace Sphere10.Framework.Application {
 
-    [Obfuscation(Exclude = true)]
+	[Obfuscation(Exclude = true)]
     public enum HelpType : uint
     {
         None = 0x00000000,

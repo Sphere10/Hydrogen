@@ -11,13 +11,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace Sphere10.Framework
-{
+namespace Sphere10.Framework {
 	public static class NullableExtensions
 	{
 		public static bool IsZeroOrEmpty(this int? val)

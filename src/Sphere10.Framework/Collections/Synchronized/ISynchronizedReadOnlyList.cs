@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 
 namespace Sphere10.Framework {
 	public interface ISynchronizedReadOnlyList<T> : IReadOnlyList<T>, ISynchronizedObject {

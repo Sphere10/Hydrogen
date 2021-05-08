@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 namespace Sphere10.Framework {
-    public class BufferAdapter : ExtendedListAdapter<byte>, IBuffer {
+	public class BufferAdapter : ExtendedListAdapter<byte>, IBuffer {
 
         public BufferAdapter()
             : this(new List<byte>()) {

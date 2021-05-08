@@ -12,12 +12,10 @@
 //-----------------------------------------------------------------------
 
 using System;
-using System.Runtime.InteropServices;
 
-namespace Sphere10.Framework
-{
+namespace Sphere10.Framework {
 
-    public class MouseEvent : EventArgs
+	public class MouseEvent : EventArgs
     {
         // Methods
         public MouseEvent(string processName, int x, int y, DateTime time) {

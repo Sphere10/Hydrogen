@@ -11,13 +11,11 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using System;
-using System.Runtime.ConstrainedExecution;
 using System.Threading;
 
 namespace Sphere10.Framework {
 
-    public class SynchronizedObject : SynchronizedObject<Scope, Scope>, ISynchronizedObject {
+	public class SynchronizedObject : SynchronizedObject<Scope, Scope>, ISynchronizedObject {
         public SynchronizedObject() : this(LockRecursionPolicy.SupportsRecursion) {
         }
 

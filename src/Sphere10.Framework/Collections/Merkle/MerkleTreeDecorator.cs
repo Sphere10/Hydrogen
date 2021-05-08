@@ -1,7 +1,7 @@
 ﻿using System;
 
 namespace Sphere10.Framework {
-    public abstract class MerkleTreeDecorator<TMerkleTree> : IMerkleTree where TMerkleTree : IMerkleTree {
+	public abstract class MerkleTreeDecorator<TMerkleTree> : IMerkleTree where TMerkleTree : IMerkleTree {
 
         protected MerkleTreeDecorator(TMerkleTree internalMerkleTree) {
             Guard.ArgumentNotNull(internalMerkleTree, nameof(internalMerkleTree));

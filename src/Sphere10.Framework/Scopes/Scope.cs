@@ -1,7 +1,7 @@
 using System;
 
 namespace Sphere10.Framework {
-    public class Scope : IScope {
+	public class Scope : IScope {
         public event EventHandler ScopeEnd;
 
         protected virtual void OnScopeEnd() {

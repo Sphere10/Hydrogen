@@ -1,7 +1,7 @@
 ﻿using System.IO;
 
 namespace Sphere10.Framework {
-    public abstract class FileSwappedMemoryPage<TItem> : MemoryPageBase<TItem> {
+	public abstract class FileSwappedMemoryPage<TItem> : MemoryPageBase<TItem> {
 		private readonly string _file;
 
 		protected FileSwappedMemoryPage(int pageSize, IItemSizer<TItem> sizer, IExtendedList<TItem> memoryStore)

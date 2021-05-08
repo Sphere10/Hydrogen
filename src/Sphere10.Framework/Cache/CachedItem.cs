@@ -12,13 +12,10 @@
 //-----------------------------------------------------------------------
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace Sphere10.Framework {
 
-    public class CachedItem<T> : IDisposable {
+	public class CachedItem<T> : IDisposable {
 
         public bool Invalidated { get; set; }
 

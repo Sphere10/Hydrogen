@@ -12,13 +12,12 @@
 //-----------------------------------------------------------------------
 
 using System;
-using System.Linq;
 using System.Runtime.InteropServices;
 
 // ReSharper disable CheckNamespace
 namespace Tools {
 
-    public static class Array {
+	public static class Array {
 
 		public static T Head<T>(ref T[] arr) {
 			if (arr.Length == 0)

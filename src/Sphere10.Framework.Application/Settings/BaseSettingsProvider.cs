@@ -12,11 +12,6 @@
 //-----------------------------------------------------------------------
 
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Text;
 
 namespace Sphere10.Framework.Application {
 	public abstract class BaseSettingsProvider : ISettingsProvider {

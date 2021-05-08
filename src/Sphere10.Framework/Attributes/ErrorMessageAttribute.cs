@@ -12,12 +12,11 @@
 //-----------------------------------------------------------------------
 
 using System;
-using System.Collections.Generic;
 using System.Text;
 using System.Reflection;
 
 namespace Sphere10.Framework {
-    public class ErrorMessageAttribute  : Attribute {
+	public class ErrorMessageAttribute  : Attribute {
         private string _errMsg;
 
          public ErrorMessageAttribute(string errMsg) {

@@ -14,12 +14,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Sphere10.Framework.Collections {
 
-    public class EnumerableSequenceEqualComparer<T> : IEqualityComparer<IEnumerable<T>> {
+	public class EnumerableSequenceEqualComparer<T> : IEqualityComparer<IEnumerable<T>> {
         public bool Equals(IEnumerable<T> x, IEnumerable<T> y) {
             return Object.ReferenceEquals(x, y) || (x != null && y != null && x.SequenceEqual(y));
         }

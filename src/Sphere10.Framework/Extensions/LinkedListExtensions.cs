@@ -13,12 +13,11 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 
 namespace Sphere10.Framework {
 
-    public static class LinkedListExtensions {
+	public static class LinkedListExtensions {
 
         public static LinkedListNode<T> Find<T>(this LinkedList<T> linkedList, Predicate<T> predicate) {
             if (linkedList.Count > 0) {

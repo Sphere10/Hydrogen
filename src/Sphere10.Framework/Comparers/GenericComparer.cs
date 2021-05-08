@@ -11,17 +11,15 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Collections;
 using System.ComponentModel;
 
 namespace Sphere10.Framework {
-    
-    /// <summary>
-    /// From Marc Clifton codeproject article.
-    /// </summary>
-    public class GenericComparer {
+
+	/// <summary>
+	/// From Marc Clifton codeproject article.
+	/// </summary>
+	public class GenericComparer {
         protected Regex regex;
 
         protected List<string> precedence = new List<string>(new string[]

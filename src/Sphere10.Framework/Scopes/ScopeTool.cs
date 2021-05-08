@@ -12,14 +12,11 @@
 //-----------------------------------------------------------------------
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Sphere10.Framework;
 
 // ReSharper disable CheckNamespace
 namespace Tools {
-    public static class Scope {
+	public static class Scope {
 
         public static IDisposable ExecuteOnDispose(Action action) {
             return new ActionScope(action);

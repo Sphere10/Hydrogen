@@ -11,14 +11,12 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
 
 namespace Sphere10.Framework {
 
-    public class SynchronizedDictionary<TKey, TValue> : DictionaryDecorator<TKey, TValue>, ISynchronizedObject {
+	public class SynchronizedDictionary<TKey, TValue> : DictionaryDecorator<TKey, TValue>, ISynchronizedObject {
 
 		private readonly SynchronizedObject _lock;
 

@@ -11,14 +11,8 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading;
-using System.Diagnostics;
-
 namespace Sphere10.Framework {
-    public class FileAlreadyExistsException : SoftwareException {
+	public class FileAlreadyExistsException : SoftwareException {
         public FileAlreadyExistsException(string filename) 
             : this($"File already exists", filename) {
 

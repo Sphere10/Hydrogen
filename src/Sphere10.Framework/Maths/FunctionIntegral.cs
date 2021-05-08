@@ -14,7 +14,7 @@
 #if !__MOBILE__
 namespace Sphere10.Framework.Maths {
 
-    public class FunctionIntegral {
+	public class FunctionIntegral {
         private IFunction _function = null;
         private double _from;
 

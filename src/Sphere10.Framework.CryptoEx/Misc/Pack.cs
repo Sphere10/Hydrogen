@@ -1,10 +1,9 @@
-namespace Sphere10.Framework.CryptoEx
-{
-    /* This class is property of the BouncyCastle Cryptographic Library Project and was borrowed from 
+namespace Sphere10.Framework.CryptoEx {
+	/* This class is property of the BouncyCastle Cryptographic Library Project and was borrowed from 
     <a href="https://github.com/bcgit/bc-csharp/blob/master/crypto/src/crypto/util/Pack.cs">https://github.com/bcgit/bc-csharp/blob/master/crypto/src/crypto/util/Pack.cs</a>
      for internal use.
     */
-    internal sealed class Pack
+	internal sealed class Pack
     {
         private Pack()
         {

@@ -13,13 +13,9 @@
 
 #if !__MOBILE__
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using System.Text;
 
-namespace Sphere10.Framework.Application.Components
-{
+namespace Sphere10.Framework.Application.Components {
 	[Obfuscation(Feature = "encryptmethod", Exclude = false)]
 	internal static class StandardLicenseCodecTools
 	{

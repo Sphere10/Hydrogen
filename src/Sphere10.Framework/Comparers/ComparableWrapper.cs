@@ -12,10 +12,7 @@
 //-----------------------------------------------------------------------
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace Sphere10.Framework {
 	public class ComparableWrapper<T> : IComparable<T>, IComparable, IEquatable<T> {

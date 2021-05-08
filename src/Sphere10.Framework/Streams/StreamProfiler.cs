@@ -14,13 +14,9 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Sphere10.Framework {
-    public class StreamProfiler : StreamDecorator {
+	public class StreamProfiler : StreamDecorator {
         private volatile bool _peeking;
         private readonly Stack<List<byte>> _captureScopes;
         private readonly bool _allowNestedListeningScopes;

@@ -1,16 +1,15 @@
 ﻿using System.Collections.Generic;
-namespace Sphere10.Framework
-{
+namespace Sphere10.Framework {
 
-    /// <summary>
-    /// Utility class providing a number of singleton instances of
-    /// Range&lt;char&gt; to indicate the various ranges of unicode characters,
-    /// as documented at http://msdn.microsoft.com/en-us/library/20bw873z.aspx.
-    /// Note that this does not indicate the Unicode category of a character,
-    /// merely which range it's in.
-    /// TODO: Work out how to include names. Can't derive from Range[char].
-    /// </summary>
-    public static class UnicodeRange
+	/// <summary>
+	/// Utility class providing a number of singleton instances of
+	/// Range&lt;char&gt; to indicate the various ranges of unicode characters,
+	/// as documented at http://msdn.microsoft.com/en-us/library/20bw873z.aspx.
+	/// Note that this does not indicate the Unicode category of a character,
+	/// merely which range it's in.
+	/// TODO: Work out how to include names. Can't derive from Range[char].
+	/// </summary>
+	public static class UnicodeRange
     {
 
         static readonly List<ValueRange<char>> allRanges = new List<ValueRange<char>>();

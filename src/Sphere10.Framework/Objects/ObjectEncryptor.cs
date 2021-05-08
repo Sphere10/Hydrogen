@@ -11,9 +11,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using System.Collections.Generic;
 using System;
-using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 
@@ -22,7 +20,7 @@ using System.Reflection;
 namespace Sphere10.Framework {
 
 
-    public static class ObjectEncryptor {
+	public static class ObjectEncryptor {
 
         public static void DecryptMembers(object obj) {
             ApplyInternal(obj, (attr, val) => attr.Decrypt(val), "decrypt");

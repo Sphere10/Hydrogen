@@ -11,13 +11,11 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace Sphere10.Framework {
-    public static class ICacheExtensions {
+	public static class ICacheExtensions {
 
         public static TVal Get<TKey, TVal>(this ICache<TKey, TVal> cache, TKey key) {
             return cache[key];

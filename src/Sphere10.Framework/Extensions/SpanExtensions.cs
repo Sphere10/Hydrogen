@@ -12,13 +12,12 @@
 //-----------------------------------------------------------------------
 
 using System;
-using System.Collections.Generic;
 
 using System.Runtime.CompilerServices;
 
 namespace Sphere10.Framework {
 
-    public static class SpanExtensions {
+	public static class SpanExtensions {
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static ReadOnlySpan<T> Slice<T>(this ReadOnlySpan<T> span, Index index) 

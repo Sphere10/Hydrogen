@@ -12,11 +12,6 @@
 //-----------------------------------------------------------------------
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Globalization;
 using System.Threading;
 using System.Linq.Expressions;
 using Sphere10.Framework;
@@ -24,7 +19,7 @@ using Sphere10.Framework;
 // ReSharper disable CheckNamespace
 namespace Tools {
 
-    public static class Lambda {
+	public static class Lambda {
 
         public static Action Action(Action action) {
             return action;

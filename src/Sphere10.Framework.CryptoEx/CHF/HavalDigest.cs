@@ -1,11 +1,9 @@
 using System;
 using Org.BouncyCastle.Crypto;
-using Org.BouncyCastle.Crypto.Utilities;
 using Org.BouncyCastle.Utilities;
 
-namespace Sphere10.Framework.CryptoEx
-{
-    public abstract class HavalDigest
+namespace Sphere10.Framework.CryptoEx {
+	public abstract class HavalDigest
         : IDigest, IMemoable
     {
         #region Consts

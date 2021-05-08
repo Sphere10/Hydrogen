@@ -12,14 +12,11 @@
 //-----------------------------------------------------------------------
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
 
 namespace Sphere10.Framework {
 
-    public class ObservableDictionary<TKey, TValue> : ObservableCollection<KeyValuePair<TKey, TValue>>, IDictionary<TKey, TValue> {
+	public class ObservableDictionary<TKey, TValue> : ObservableCollection<KeyValuePair<TKey, TValue>>, IDictionary<TKey, TValue> {
 		protected new readonly IDictionary<TKey, TValue> InnerCollection;
 		public event EventHandlerEx<object, SearchingMembershipEventArgs<TKey>> SearchingKeyMembership;
 		public event EventHandlerEx<object, SearchedMembershipEventArgs<TKey>> SearchedKeyMembership;

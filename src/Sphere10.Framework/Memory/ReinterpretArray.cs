@@ -11,15 +11,10 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Sphere10.Framework {
-    [StructLayout(LayoutKind.Explicit)]
+	[StructLayout(LayoutKind.Explicit)]
     public struct ReinterpretArray {
 
         [FieldOffset(0)]

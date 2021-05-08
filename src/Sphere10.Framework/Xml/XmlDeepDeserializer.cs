@@ -21,19 +21,17 @@
 // -----------------------------------------------------------------------------------
 using System;
 using System.IO;
-using System.Text;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
 using System.Xml;
 
-namespace Sphere10.Framework
-{
-  /// <summary>
-  /// Deserializes complex objects serialized with the XmlSerializer.
-  /// </summary>
-  public class XmlDeepDeserializer : IDisposable
+namespace Sphere10.Framework {
+	/// <summary>
+	/// Deserializes complex objects serialized with the XmlSerializer.
+	/// </summary>
+	public class XmlDeepDeserializer : IDisposable
   {
     private bool ignorecreationerrors = false;
     private Hashtable typedictionary = new Hashtable(); // Parsed Types

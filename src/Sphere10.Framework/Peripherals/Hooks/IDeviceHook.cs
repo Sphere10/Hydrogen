@@ -12,10 +12,9 @@
 //-----------------------------------------------------------------------
 
 using System;
-using System.Reflection;
 
 
-namespace Sphere10.Framework  {
+namespace Sphere10.Framework {
 
 	public interface IDeviceHook : IDisposable  {
 		DeviceHookStatus Status { get; }

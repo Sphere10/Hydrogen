@@ -13,14 +13,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Reflection;
-using Sphere10.Framework;
 
 namespace Sphere10.Framework {
 
-    public sealed class ActionCache<TKey, TValue> : CacheBase<TKey, TValue> {
+	public sealed class ActionCache<TKey, TValue> : CacheBase<TKey, TValue> {
 
         private readonly Func<TKey, TValue> _fetchFunc = null;
         private readonly Func<TValue, uint> _estimateSizeFunc = null;

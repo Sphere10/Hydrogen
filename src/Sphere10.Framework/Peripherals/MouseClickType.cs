@@ -11,15 +11,13 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using System;
 using System.Reflection;
 
-namespace Sphere10.Framework
-{
-    /// <summary>
-    /// Summary description for MouseClickType.
-    /// </summary>
-    [Obfuscation(Exclude = true)]
+namespace Sphere10.Framework {
+	/// <summary>
+	/// Summary description for MouseClickType.
+	/// </summary>
+	[Obfuscation(Exclude = true)]
     public enum MouseClickType
     {
 		None = 0,

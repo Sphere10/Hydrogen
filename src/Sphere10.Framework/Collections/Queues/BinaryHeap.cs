@@ -14,7 +14,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Sphere10.Framework {
 	public class BinaryHeap<T> : ICollection<T>, IHeap<T> where T : IComparable<T> {

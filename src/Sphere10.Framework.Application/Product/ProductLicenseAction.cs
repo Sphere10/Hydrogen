@@ -14,14 +14,11 @@
 /// WARNING: Make sure that these two files are synchronized
 ///     SchoenfeldSoftware.Application/Licensing/ProductLicenseAction.cs
 ///     www.sphere10.com/OnlineServices/ProductLicenseAction.cs
-using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Reflection;
 
 namespace Sphere10.Framework.Application {
 
-    [Obfuscation(Exclude = true)]
+	[Obfuscation(Exclude = true)]
     public enum ProductLicenseAction {
         Enable=0,
         DisableSoftware=1,

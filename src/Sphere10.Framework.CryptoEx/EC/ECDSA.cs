@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using Org.BouncyCastle.Asn1.X9;
@@ -9,9 +8,7 @@ using Org.BouncyCastle.Math;
 using Org.BouncyCastle.Math.EC;
 using Org.BouncyCastle.Math.EC.Multiplier;
 using Org.BouncyCastle.Security;
-using Org.BouncyCastle.Utilities.Encoders;
 using Sphere10.Framework.CryptoEx.EC.IES;
-using Sphere10.Framework.CryptoEx.IES;
 
 namespace Sphere10.Framework.CryptoEx.EC {
 

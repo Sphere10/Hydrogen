@@ -16,7 +16,7 @@ using System;
 
 namespace Sphere10.Framework.Application {
 
-    [ComVisible(true)]
+	[ComVisible(true)]
     [AttributeUsage(AttributeTargets.Assembly, Inherited = false)]
     public sealed class AssemblyDefaultProductKeyAttribute : Attribute {
 

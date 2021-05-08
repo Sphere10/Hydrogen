@@ -13,14 +13,8 @@
 
 #if !__MOBILE__
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Sphere10.Framework.Application.Components;
-
-using System.Diagnostics;
 using System.Reflection;
-using Sphere10.Framework;
 
 namespace Sphere10.Framework.Application {
 

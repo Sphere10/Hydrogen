@@ -11,11 +11,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Sphere10.Framework.Collections;
 
 namespace Sphere10.Framework {
 

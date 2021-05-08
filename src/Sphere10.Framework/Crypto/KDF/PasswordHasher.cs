@@ -11,14 +11,13 @@
 //-----------------------------------------------------------------------
 
 using System;
-using System.Text;
 
 namespace Sphere10.Framework {
 
-    /// <summary>
-    /// Password hashing based on PBKDF2-SHA1,
+	/// <summary>
+	/// Password hashing based on PBKDF2-SHA1,
 	/// </summary>
-    public class PasswordHasher {
+	public class PasswordHasher {
         // The following constants may be changed without breaking existing hashes.
         public const int SALT_BYTE_SIZE = 24;
         public const int HASH_BYTE_SIZE = 24;

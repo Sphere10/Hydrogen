@@ -12,16 +12,11 @@
 //-----------------------------------------------------------------------
 
 #if !__MOBILE__
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Diagnostics;
-using System.IO;
-using System.Reflection;
 
 namespace Sphere10.Framework.Application {
-	
+
 	public class StandardDuplicateProcessDetector : IDuplicateProcessDetector {
 		
 		public int CountRunningInstancesOfThisApplication() {

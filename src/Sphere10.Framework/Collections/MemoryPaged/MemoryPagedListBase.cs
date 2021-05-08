@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace Sphere10.Framework {
 
-    public abstract class MemoryPagedListBase<TItem> : PagedListBase<TItem>, IMemoryPagedList<TItem>  {
+	public abstract class MemoryPagedListBase<TItem> : PagedListBase<TItem>, IMemoryPagedList<TItem>  {
 
 		public event EventHandlerEx<object, IMemoryPage<TItem>> PageLoading;
 		public event EventHandlerEx<object, IMemoryPage<TItem>> PageLoaded;

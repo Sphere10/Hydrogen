@@ -13,15 +13,12 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Reflection;
 using System.Linq.Expressions;
-using Sphere10.Framework;
 
 namespace Sphere10.Framework.FastReflection {
 
-    public class MethodInvoker {
+	public class MethodInvoker {
         private readonly Func<object, object[], object> _mInvoker;
 
         public MethodInfo MethodInfo { get; private set; }

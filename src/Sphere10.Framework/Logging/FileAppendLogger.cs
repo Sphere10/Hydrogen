@@ -11,14 +11,10 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
 
 namespace Sphere10.Framework {
-    public class FileAppendLogger : TextWriterLogger {
+	public class FileAppendLogger : TextWriterLogger {
         public FileAppendLogger(string file) : this(file, false) {
         }
  

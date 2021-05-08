@@ -12,14 +12,9 @@
 //-----------------------------------------------------------------------
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Diagnostics;
 
 
-namespace Sphere10.Framework
-{
+namespace Sphere10.Framework {
 	/// <summary>
 	/// Extension methods for <see cref="DataTime"/>
 	/// </summary>

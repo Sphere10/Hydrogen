@@ -12,17 +12,15 @@
 //-----------------------------------------------------------------------
 
 #if !__WP8__
-using System;
-using System.Collections.Generic;
 using System.Text;
 using System.Collections;
 
 namespace Sphere10.Framework {
 
-    /// <summary>
-    /// A class that breaks a string into tokens
-    /// </summary>
-    public class StringTokenizer {
+	/// <summary>
+	/// A class that breaks a string into tokens
+	/// </summary>
+	public class StringTokenizer {
         /// <summary>
         /// The index of the current token
         /// </summary>

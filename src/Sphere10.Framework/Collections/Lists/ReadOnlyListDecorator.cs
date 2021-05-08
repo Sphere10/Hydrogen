@@ -16,7 +16,7 @@ using System.Collections.Generic;
 
 namespace Sphere10.Framework {
 
-    public class ReadOnlyListDecorator<TFrom, TTo> : IReadOnlyList<TTo>  where TTo : TFrom {
+	public class ReadOnlyListDecorator<TFrom, TTo> : IReadOnlyList<TTo>  where TTo : TFrom {
 
         public ReadOnlyListDecorator(IReadOnlyList<TFrom> internalList) {
             InternalList = internalList;

@@ -11,13 +11,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Collections.Specialized;
 using System.Configuration;
-using Sphere10.Framework;
 
 // ReSharper disable CheckNamespace
 namespace Tools {

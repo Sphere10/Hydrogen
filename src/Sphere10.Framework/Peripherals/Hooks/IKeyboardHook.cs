@@ -12,9 +12,8 @@
 //-----------------------------------------------------------------------
 
 using System;
-using System.Reflection;
 using System.Collections.Generic;
-namespace Sphere10.Framework  {
+namespace Sphere10.Framework {
 
 	public interface IKeyboardHook : IDeviceHook  {
 		 event EventHandler<KeyEvent> KeyDown;

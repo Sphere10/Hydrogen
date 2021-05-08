@@ -20,22 +20,19 @@
 // http://www.codeproject.com/KB/XML/deepserializer.aspx
 // -----------------------------------------------------------------------------------
 using System;
-using System.Text;
 using System.IO;
 using System.Collections;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
 using System.Xml;
 using System.Diagnostics;
 
-namespace Sphere10.Framework
-{
+namespace Sphere10.Framework {
 
-  /// <summary>
-  /// Serializes arbitrary objects to XML.
-  /// </summary>
-  public class XmlDeepSerializer : IDisposable
+	/// <summary>
+	/// Serializes arbitrary objects to XML.
+	/// </summary>
+	public class XmlDeepSerializer : IDisposable
   {
 #region Members
 

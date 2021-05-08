@@ -94,17 +94,15 @@
 using System.Runtime.Serialization;
 #endif
 
-namespace TinyIoC
-{
-    using System;
-    using System.Collections.Generic;
-    using System.Collections.ObjectModel;
-    using System.Linq;
-    using System.Reflection;
+namespace TinyIoC {
+	using System;
+	using System.Collections.Generic;
+	using System.Linq;
+	using System.Reflection;
 
 #if EXPRESSIONS
-    using System.Linq.Expressions;
-    using System.Threading;
+	using System.Linq.Expressions;
+	using System.Threading;
 
 #endif
 
@@ -115,12 +113,12 @@ namespace TinyIoC
 	using Windows.UI.Xaml.Shapes;
 #endif
 
-    #region SafeDictionary
+	#region SafeDictionary
 #if READER_WRITER_LOCK_SLIM
 #if TINYIOC_INTERNAL
     internal
 #else
-    public
+	public
 #endif
     class SafeDictionary<TKey, TValue> : IDisposable
     {

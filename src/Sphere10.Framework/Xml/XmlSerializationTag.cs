@@ -18,18 +18,13 @@
 // Email  : code@yaowi.com
 // http://www.codeproject.com/KB/XML/deepserializer.aspx
 // -----------------------------------------------------------------------------------
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Reflection;
 
-namespace Sphere10.Framework
-{
-  /// <summary>
-  /// This class supports the Yaowi Framework infrastructure and is not intended to be used directly from your code. 
-  /// <P>These constants are used to parse the XmlNodes.
-  /// </summary>
-  public class XmlSerializationTag : IXmlSerializationTag
+namespace Sphere10.Framework {
+	/// <summary>
+	/// This class supports the Yaowi Framework infrastructure and is not intended to be used directly from your code. 
+	/// <P>These constants are used to parse the XmlNodes.
+	/// </summary>
+	public class XmlSerializationTag : IXmlSerializationTag
   {
     private string OBJECT = "object";
     private string NAME = "name";

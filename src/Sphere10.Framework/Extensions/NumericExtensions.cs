@@ -16,7 +16,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 namespace Sphere10.Framework {
-    public static class NumericExtensions {
+	public static class NumericExtensions {
 
 		public static UInt64 Sum(this IEnumerable<UInt64> source) {
 			return source.Aggregate((x, y) => x + y);

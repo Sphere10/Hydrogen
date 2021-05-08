@@ -12,19 +12,13 @@
 //-----------------------------------------------------------------------
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
-using System.Threading.Tasks;
-using System.Collections.Concurrent;
 
 
 
 namespace Sphere10.Framework {
 
-    public static class SemaphoreSlimExtensions {
+	public static class SemaphoreSlimExtensions {
         public static IDisposable EnterWaitScope(this SemaphoreSlim semaphore) {
             semaphore.Wait();
             return new ActionScope(() => semaphore.Release());

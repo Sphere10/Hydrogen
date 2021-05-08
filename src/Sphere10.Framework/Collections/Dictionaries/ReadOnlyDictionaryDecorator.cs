@@ -11,13 +11,12 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using System;
 using System.Collections;
 using System.Collections.Generic;
 
 namespace Sphere10.Framework {
 
-    public class ReadOnlyDictionaryDecorator<TKey, TValue, TReadOnlyDictionary> : IReadOnlyDictionary<TKey, TValue> 
+	public class ReadOnlyDictionaryDecorator<TKey, TValue, TReadOnlyDictionary> : IReadOnlyDictionary<TKey, TValue> 
 		where TReadOnlyDictionary : IReadOnlyDictionary<TKey, TValue> {
 
 		protected readonly TReadOnlyDictionary Internal;

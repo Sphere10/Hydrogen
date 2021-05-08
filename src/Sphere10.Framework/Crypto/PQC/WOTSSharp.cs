@@ -1,19 +1,13 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices.ComTypes;
-using System.Security.Cryptography;
-using System.Text;
 
 namespace Sphere10.Framework {
-	
+
 	/// <summary>
 	/// W-OTS# scheme, a salt-hardened W-OTS variant that facilitates shorter/faster hash functions.
 	/// </summary>
-    public class WOTSSharp : WOTS {
+	public class WOTSSharp : WOTS {
 
 		public WOTSSharp() 
 			: this(WOTSSharp.Configuration.Default) {

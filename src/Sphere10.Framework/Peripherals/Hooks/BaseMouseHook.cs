@@ -12,11 +12,10 @@
 //-----------------------------------------------------------------------
 
 using System;
-using System.Reflection;
 using System.Threading;
 
 
-namespace Sphere10.Framework  {
+namespace Sphere10.Framework {
 
 	public abstract class BaseMouseHook : BaseDeviceHook, IMouseHook  {
 		

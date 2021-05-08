@@ -13,10 +13,10 @@
 
 // Source originates from http://jonskeet.uk/csharp/miscutil/
 namespace Sphere10.Framework {
-    /// <summary>
-    /// Endianness of a converter
-    /// </summary>
-    public enum Endianness {
+	/// <summary>
+	/// Endianness of a converter
+	/// </summary>
+	public enum Endianness {
         /// <summary>
         /// Little endian - least significant byte first
         /// </summary>

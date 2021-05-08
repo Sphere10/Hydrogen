@@ -13,10 +13,9 @@
 
 using System;
 
-namespace Sphere10.Framework
-{
+namespace Sphere10.Framework {
 
-    public class MouseWheelEvent : MouseEvent
+	public class MouseWheelEvent : MouseEvent
     {
 
 		public MouseWheelEvent(

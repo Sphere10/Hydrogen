@@ -11,27 +11,24 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace Sphere10.Framework.Misc {
-    /// <summary>
-    /// Compares two sequences.
-    /// </summary>
-    /// <typeparam name="T">Type of item in the sequences.</typeparam>
-    /// <remarks>
-    /// Compares elements from the two input sequences in turn. If we
-    /// run out of list before finding unequal elements, then the shorter
-    /// list is deemed to be the lesser list.
-    /// 
-    /// Based on code by Ian Griffiths, Interact Software Ltd.
-    /// http://www.interact-sw.co.uk/iangblog/2007/12/13/natural-sorting
-    /// Used under the MIT License.
-    /// http://opensource.org/licenses/mit-license.php
-    /// </remarks>
-    public class EnumerableComparer<T> : IComparer<IEnumerable<T>> {
+	/// <summary>
+	/// Compares two sequences.
+	/// </summary>
+	/// <typeparam name="T">Type of item in the sequences.</typeparam>
+	/// <remarks>
+	/// Compares elements from the two input sequences in turn. If we
+	/// run out of list before finding unequal elements, then the shorter
+	/// list is deemed to be the lesser list.
+	/// 
+	/// Based on code by Ian Griffiths, Interact Software Ltd.
+	/// http://www.interact-sw.co.uk/iangblog/2007/12/13/natural-sorting
+	/// Used under the MIT License.
+	/// http://opensource.org/licenses/mit-license.php
+	/// </remarks>
+	public class EnumerableComparer<T> : IComparer<IEnumerable<T>> {
         /// <summary>
         /// Create a sequence comparer using the default comparer for T.
         /// </summary>

@@ -14,10 +14,9 @@
 using System.Runtime.InteropServices;
 using System;
 
-namespace Sphere10.Framework.Application
-{
+namespace Sphere10.Framework.Application {
 
-    [ComVisible(true)]
+	[ComVisible(true)]
     [AttributeUsage(AttributeTargets.Assembly, Inherited = false)]
     public sealed class AssemblyCompanyNumberAttribute : Attribute
     {

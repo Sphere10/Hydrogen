@@ -16,7 +16,7 @@ using System.Collections.Generic;
 
 namespace Sphere10.Framework {
 
-    public class ReadOnlyListAdapter<TItem> : IReadOnlyList<TItem> {
+	public class ReadOnlyListAdapter<TItem> : IReadOnlyList<TItem> {
 		private readonly IList<TItem> _internalList;
 		public ReadOnlyListAdapter(IList<TItem> internalList) {
 			_internalList = internalList;

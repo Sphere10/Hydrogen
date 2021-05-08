@@ -15,10 +15,10 @@ using System;
 
 namespace Sphere10.Framework {
 
-    /// <summary>
-    /// Summary description for Statistics.
-    /// </summary>
-    [Serializable]
+	/// <summary>
+	/// Summary description for Statistics.
+	/// </summary>
+	[Serializable]
     public class Statistics {
 
         public const double EPSILON = 0.00001;

@@ -13,10 +13,9 @@
 
 using System;
 
-namespace Sphere10.Framework
-{
+namespace Sphere10.Framework {
 
-    public class MouseClickEvent : MouseEvent
+	public class MouseClickEvent : MouseEvent
     {
 
 		public MouseClickEvent(string processName, int x, int y, MouseButton clickedButtons, MouseButtonState buttonState, MouseClickType clickType, DateTime time)

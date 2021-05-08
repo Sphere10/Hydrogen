@@ -12,13 +12,11 @@
 //-----------------------------------------------------------------------
 
 using System;
-using System.Collections.Generic;
-using System.Text;
 using Sphere10.Framework.Maths;
 
 namespace Sphere10.Framework {
 
-    public class ArcLengthDerivativeFunction : IFunction {
+	public class ArcLengthDerivativeFunction : IFunction {
         private readonly IFunction _derivativeFunction = null;
 
         public ArcLengthDerivativeFunction(IFunction function) {

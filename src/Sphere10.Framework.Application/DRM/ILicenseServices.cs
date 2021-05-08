@@ -13,21 +13,14 @@
 
 #if !__MOBILE__
 
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading;
-using System.Diagnostics;
-using System.Collections;
-using System.Reflection;
 
 namespace Sphere10.Framework.Application {
 
 
-    /// <summary>
-    /// Provides all the licensing services for the application. 
-    /// </summary>
-    public interface ILicenseServices {
+	/// <summary>
+	/// Provides all the licensing services for the application. 
+	/// </summary>
+	public interface ILicenseServices {
 
 		void RegisterLicenseKey(string key);
 

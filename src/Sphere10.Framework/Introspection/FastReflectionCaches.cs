@@ -12,15 +12,11 @@
 //-----------------------------------------------------------------------
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Reflection;
-using Sphere10.Framework;
 
 namespace Sphere10.Framework.FastReflection {
 
-    public static class FastReflectionCaches {
+	public static class FastReflectionCaches {
         static FastReflectionCaches() {
             EnumNamesCache = new ActionCache<Type, string[]>( t => t.GetEnumNames());
             MethodInvokerCache = new ActionCache<MethodInfo, MethodInvoker>(mi => new MethodInvoker(mi));

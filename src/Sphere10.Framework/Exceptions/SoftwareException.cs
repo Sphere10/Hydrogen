@@ -12,14 +12,11 @@
 //-----------------------------------------------------------------------
 
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading;
 using System.Diagnostics;
-using System.Net;
 
 namespace Sphere10.Framework {
-    public class SoftwareException : ApplicationException {
+	public class SoftwareException : ApplicationException {
 
         private int _threadID = -1;
         private int _terminalServicesSessionID = -1;

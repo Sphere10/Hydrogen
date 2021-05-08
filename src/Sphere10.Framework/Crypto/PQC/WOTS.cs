@@ -1,19 +1,13 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices.ComTypes;
-using System.Security.Cryptography;
-using System.Text;
 
 namespace Sphere10.Framework {
-	
+
 	/// <summary>
 	/// Winternitz One-Time Signature scheme (W-OTS).
 	/// </summary>
-    public class WOTS : IOTSAlgorithm {
+	public class WOTS : IOTSAlgorithm {
 
 		public WOTS() 
 			: this(Configuration.Default) {

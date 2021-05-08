@@ -19,10 +19,10 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace Sphere10.Framework {
-    /// <summary>
-    /// Equivalent of System.BitConverter, but with either endianness.
-    /// </summary>
-    public abstract class EndianBitConverter {
+	/// <summary>
+	/// Equivalent of System.BitConverter, but with either endianness.
+	/// </summary>
+	public abstract class EndianBitConverter {
         #region Endianness of this converter
 
         /// <summary>

@@ -15,14 +15,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Sphere10.Framework;
 
 
 // ReSharper disable CheckNamespace
 namespace Tools {
 
 
-    public static class Exceptions {
+	public static class Exceptions {
 
         public static void ExecuteIgnoringException(Action action, Action<Exception> handler = null) {
             Exception discard;

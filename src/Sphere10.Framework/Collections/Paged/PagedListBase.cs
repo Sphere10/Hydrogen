@@ -1,13 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Threading;
 
 namespace Sphere10.Framework {
 
-    public abstract class PagedListBase<TItem> : RangedListBase<TItem>, IPagedList<TItem> {
+	public abstract class PagedListBase<TItem> : RangedListBase<TItem>, IPagedList<TItem> {
 
 		public event EventHandlerEx<object> Accessing;
 		public event EventHandlerEx<object> Accessed;

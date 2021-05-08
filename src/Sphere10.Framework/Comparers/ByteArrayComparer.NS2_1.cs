@@ -15,14 +15,11 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Sphere10.Framework {
-	
 
-    public class ByteArrayComparer : IComparer<byte[]> {
+
+	public class ByteArrayComparer : IComparer<byte[]> {
         public static readonly ByteArrayComparer Instance = new ByteArrayComparer();
 
         public int Compare(byte[] x, byte[] y, int length) {

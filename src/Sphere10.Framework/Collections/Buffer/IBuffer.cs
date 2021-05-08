@@ -1,7 +1,7 @@
 ﻿using System;
 
 namespace Sphere10.Framework {
-    public interface IBuffer : IExtendedList<byte> {
+	public interface IBuffer : IExtendedList<byte> {
 
 		ReadOnlySpan<byte> ReadSpan(int index, int count);
 

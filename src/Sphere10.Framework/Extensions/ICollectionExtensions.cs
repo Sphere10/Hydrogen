@@ -14,15 +14,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Collections.Concurrent;
 
 
 
 namespace Sphere10.Framework {
 
-    public static class ICollectionExtensions {
+	public static class ICollectionExtensions {
 
 
         public static void AddRangeSequentially<T>(this ICollection<T> collection, IEnumerable<T> items) {

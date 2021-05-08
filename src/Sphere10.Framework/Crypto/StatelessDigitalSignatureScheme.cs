@@ -2,13 +2,13 @@
 
 namespace Sphere10.Framework {
 
-    /// <summary>
-    /// Represents a stateless digital signature scheme. One where knowledge of nonces from prior signatures are not ever needed. These
-    /// are mainly ECDSA, Schnorr and SPHINCS+.
-    /// </summary>
-    /// <typeparam name="TPrivateKey"></typeparam>
-    /// <typeparam name="TPublicKey"></typeparam>
-    public abstract class StatelessDigitalSignatureScheme<TPrivateKey, TPublicKey> : DigitalSignatureSchemeBase<TPrivateKey, TPublicKey>
+	/// <summary>
+	/// Represents a stateless digital signature scheme. One where knowledge of nonces from prior signatures are not ever needed. These
+	/// are mainly ECDSA, Schnorr and SPHINCS+.
+	/// </summary>
+	/// <typeparam name="TPrivateKey"></typeparam>
+	/// <typeparam name="TPublicKey"></typeparam>
+	public abstract class StatelessDigitalSignatureScheme<TPrivateKey, TPublicKey> : DigitalSignatureSchemeBase<TPrivateKey, TPublicKey>
         where TPrivateKey : IPrivateKey
         where TPublicKey : IPublicKey {
 

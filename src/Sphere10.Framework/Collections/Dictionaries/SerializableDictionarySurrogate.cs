@@ -11,16 +11,14 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Xml.Serialization;
 using System.Diagnostics;
 using System.Reflection;
 
 namespace Sphere10.Framework {
-    
-    [Obfuscation(Exclude = true)]
+
+	[Obfuscation(Exclude = true)]
     [XmlRoot("DicionarySurrogate")]
     public class SerializableDictionarySurrogate<TKey, TValue> {
 		public SerializableDictionarySurrogate() {

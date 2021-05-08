@@ -12,13 +12,8 @@
 //-----------------------------------------------------------------------
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.IO;
-using System.Reflection;
 
-namespace Sphere10.Framework{
+namespace Sphere10.Framework {
 
 	/// <summary>
 	/// Loggers are used to process debug, information, warning and error messages.

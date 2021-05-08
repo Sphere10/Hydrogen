@@ -16,24 +16,21 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Net.Mail;
 using System.Net;
 using System.Text.RegularExpressions;
 using System.Diagnostics;
-using System.Security.Cryptography.X509Certificates;
-using System.Net.Security;
 using Sphere10.Framework;
 
 // ReSharper disable CheckNamespace
 namespace Tools {
 
 
-		/// <summary>
-		/// Tools for mailing.
-		/// </summary>
+	/// <summary>
+	/// Tools for mailing.
+	/// </summary>
 
-		public static class Mail {
+	public static class Mail {
 			public const int SMTPPort = 25;
 			public const int SMTPSubmissionPort = 587;
 			public const int SMTPAlternatePort = 2525;

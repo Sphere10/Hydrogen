@@ -1,16 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Sphere10.Framework.ObjectSpace {
 
-    // TODO:
-    // - ObjectSpace registers object mappers, that maps objects to their boxes
-    // - ObjectSpace maps object to their object boxes
-    // - ObjectBox is a StreamMappedList for F
-    // - Composite objects re
+	// TODO:
+	// - ObjectSpace registers object mappers, that maps objects to their boxes
+	// - ObjectSpace maps object to their object boxes
+	// - ObjectBox is a StreamMappedList for F
+	// - Composite objects re
 
-    public abstract class FixedSizeObject {
+	public abstract class FixedSizeObject {
         public ulong ID { get; protected set; }  // typically is the offset in the stored stream
         public abstract int Size { get; }
 

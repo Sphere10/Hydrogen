@@ -19,7 +19,7 @@ using Sphere10.Framework;
 
 // ReSharper disable CheckNamespace
 namespace Tools {
-    public static class Memory {
+	public static class Memory {
 
         private static readonly string[] MemoryUnitStrings;
 

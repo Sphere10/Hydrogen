@@ -13,12 +13,11 @@
 
 using System;
 
-namespace Sphere10.Framework
-{
-    /// <summary>
-    /// Summary description for MouseStoppedEvent.
-    /// </summary>
-    public class MouseMoveEvent : MouseEvent
+namespace Sphere10.Framework {
+	/// <summary>
+	/// Summary description for MouseStoppedEvent.
+	/// </summary>
+	public class MouseMoveEvent : MouseEvent
     {
 
         public MouseMoveEvent(

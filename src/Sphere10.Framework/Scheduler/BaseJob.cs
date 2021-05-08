@@ -11,10 +11,8 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace Sphere10.Framework.Scheduler {
 	public abstract class BaseJob : IJob {

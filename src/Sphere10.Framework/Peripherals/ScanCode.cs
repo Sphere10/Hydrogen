@@ -11,10 +11,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using System;
-
-namespace Sphere10.Framework
-{
+namespace Sphere10.Framework {
 	public enum ScanCode : short {
 		LBUTTON = 0,
 		RBUTTON = 0,

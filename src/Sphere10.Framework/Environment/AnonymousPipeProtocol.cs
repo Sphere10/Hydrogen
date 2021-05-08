@@ -42,7 +42,7 @@
 //				_writer?.Dispose();
 //				_reader?.Dispose();
 //				_pipeClient?.Dispose();
-				
+
 //			}
 
 //			public override void SendMessage(AnonymousPipeMessage message) {

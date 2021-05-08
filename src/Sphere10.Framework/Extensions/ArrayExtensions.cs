@@ -13,17 +13,11 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.IO;
-using System.Runtime.Serialization;
-
-using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
 namespace Sphere10.Framework {
 
-    public static class ArrayExtensions {
+	public static class ArrayExtensions {
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T[] Copy<T>(this T[] array)

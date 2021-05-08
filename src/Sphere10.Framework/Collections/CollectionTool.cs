@@ -12,14 +12,13 @@
 //-----------------------------------------------------------------------
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
 // ReSharper disable CheckNamespace
 namespace Tools {
 
-		public static class Collection {
+	public static class Collection {
 
 			public static IEnumerable<object> Infinity {
 				get {

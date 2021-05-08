@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 
 namespace Sphere10.Framework {
-    public interface IPage<TItem> : IEnumerable<TItem> {
+	public interface IPage<TItem> : IEnumerable<TItem> {
 		int Number { get; set; }
 		int StartIndex { get; set; }
 		int EndIndex { get; set; }

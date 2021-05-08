@@ -1,7 +1,7 @@
 ﻿using System;
 
 namespace Sphere10.Framework {
-    internal interface IBufferPage : IMemoryPage<byte> {
+	internal interface IBufferPage : IMemoryPage<byte> {
         ReadOnlySpan<byte> ReadSpan(int index, int count);
         
 		bool AppendSpan(ReadOnlySpan<byte> items, out ReadOnlySpan<byte> overflow);

@@ -12,16 +12,12 @@
 //-----------------------------------------------------------------------
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Reflection;
 using System.Linq.Expressions;
-using Sphere10.Framework;
 
 namespace Sphere10.Framework.FastReflection {
 
-    public class FieldAccessor {
+	public class FieldAccessor {
         private Func<object, object> _getter;
 
         public FieldInfo FieldInfo { get; private set; }

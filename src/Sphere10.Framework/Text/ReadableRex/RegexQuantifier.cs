@@ -11,10 +11,8 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using System;
-
 namespace Sphere10.Framework {
-    public class RegexQuantifier {
+	public class RegexQuantifier {
         readonly RegexPattern _quantifiedExpression;
 
         internal RegexQuantifier(RegexPattern quantifiedExpression) {

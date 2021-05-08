@@ -11,16 +11,12 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using System.Collections.Generic;
 using System;
-using System.ComponentModel;
 using System.Linq;
-using System.Reflection;
-using Sphere10.Framework.FastReflection;
 
 
 namespace Sphere10.Framework {
-    public static class TypeActivator {
+	public static class TypeActivator {
 
         public static object Create(string typeName, params object[] parameters) {
             // resolve the type

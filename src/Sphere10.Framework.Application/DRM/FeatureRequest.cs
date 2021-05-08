@@ -11,15 +11,11 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using System;
-using System.Configuration;
-using System.Xml.Serialization;
 using System.Reflection;
-using System.Runtime.Serialization;
 
 namespace Sphere10.Framework.Application {
 
-    [Obfuscation(Exclude = true)]
+	[Obfuscation(Exclude = true)]
     public class FeatureRequest : ClientRequest {
         public FeatureRequest() : base () {
         }

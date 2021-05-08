@@ -1,15 +1,13 @@
 ﻿// from : https://github.com/asik/FixedMath.Net
 using System;
-using System.IO;
-using System.Reflection;
 using System.Runtime.CompilerServices;
 
 namespace Sphere10.Framework {
 
-    /// <summary>
-    /// Represents a Q31.32 fixed-point number.
-    /// </summary>
-    public partial struct FixedPoint : IEquatable<FixedPoint>, IComparable<FixedPoint> {
+	/// <summary>
+	/// Represents a Q31.32 fixed-point number.
+	/// </summary>
+	public partial struct FixedPoint : IEquatable<FixedPoint>, IComparable<FixedPoint> {
 		const long MAX_VALUE = long.MaxValue;
 		const long MIN_VALUE = long.MinValue;
 		const int NUM_BITS = 64;

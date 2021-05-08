@@ -16,7 +16,7 @@ using System.Text;
 
 namespace Sphere10.Framework {
 
-    public sealed class Base32Converter {
+	public sealed class Base32Converter {
 
         // the valid chars for the encoding
         private static string ValidChars = "QAZ2WSX3" + "EDC4RFV5" + "TGB6YHN7" + "UJM8K9LP";

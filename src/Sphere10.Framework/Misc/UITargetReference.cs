@@ -11,15 +11,12 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using System;
-using System.Collections.Generic;
 using System.Runtime.Serialization;
 using System.Xml.Serialization;
-using System.Text;
 
 namespace Sphere10.Framework {
-	
-    /// <summary>
+
+	/// <summary>
 	///  A cross-platform reference to a target, typically a UI object. On some platforms the target and it's owner
 	/// are needed, in others not. This object should be used in cross-platform code to referencing such targets.
 	/// </summary>

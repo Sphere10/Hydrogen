@@ -12,13 +12,11 @@
 //-----------------------------------------------------------------------
 
 using System;
-using System.Runtime.InteropServices;
 
-namespace Sphere10.Framework
-{
+namespace Sphere10.Framework {
 
 
-    public class KeyEvent : EventArgs
+	public class KeyEvent : EventArgs
     {
 		public const char UnknownASCIICharacter = (char)0;
 

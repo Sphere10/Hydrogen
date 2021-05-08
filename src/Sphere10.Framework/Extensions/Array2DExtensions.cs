@@ -14,17 +14,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.IO;
-using System.Runtime.Serialization;
-
-using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace Sphere10.Framework {
 
-    public static class Array2DExtensions {
+	public static class Array2DExtensions {
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static Span<T> GetRow<T>(this T[,] array2D, int row) 

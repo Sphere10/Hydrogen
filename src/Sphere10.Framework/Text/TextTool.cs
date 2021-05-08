@@ -24,7 +24,7 @@ using Sphere10.Framework;
 namespace Tools {
 
 
-    public static class Text {
+	public static class Text {
         private static readonly char[] TokenTrimDelimitters;
 
         static Text() {

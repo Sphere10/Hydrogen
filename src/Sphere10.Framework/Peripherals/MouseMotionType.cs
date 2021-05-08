@@ -11,14 +11,11 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using System;
-
-namespace Sphere10.Framework
-{
-    /// <summary>
-    /// Summary description for MouseMoveType.
-    /// </summary>
-    public enum MouseMotionType
+namespace Sphere10.Framework {
+	/// <summary>
+	/// Summary description for MouseMoveType.
+	/// </summary>
+	public enum MouseMotionType
     {
         Started,
 		Move,

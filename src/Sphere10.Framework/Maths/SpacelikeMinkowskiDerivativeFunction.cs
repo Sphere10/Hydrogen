@@ -11,9 +11,6 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using System;
-using System.Collections.Generic;
-using System.Text;
 using Sphere10.Framework.Maths;
 
 namespace Sphere10.Framework {

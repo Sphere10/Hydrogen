@@ -1,7 +1,5 @@
-﻿using System.Collections.Generic;
-
-namespace Sphere10.Framework {
-    public class MemoryPagedListDecorator<TItem, TMemoryPagedList> : PagedListDecorator<TItem, TMemoryPagedList>, IMemoryPagedList<TItem> where TMemoryPagedList : IMemoryPagedList<TItem> { 
+﻿namespace Sphere10.Framework {
+	public class MemoryPagedListDecorator<TItem, TMemoryPagedList> : PagedListDecorator<TItem, TMemoryPagedList>, IMemoryPagedList<TItem> where TMemoryPagedList : IMemoryPagedList<TItem> { 
         public event EventHandlerEx<object, IMemoryPage<TItem>> PageLoading { add => InternalExtendedList.PageLoading += value; remove => InternalExtendedList.PageLoading -= value; }
         public event EventHandlerEx<object, IMemoryPage<TItem>> PageLoaded { add => InternalExtendedList.PageLoaded += value; remove => InternalExtendedList.PageLoaded -= value; }
         public event EventHandlerEx<object, IMemoryPage<TItem>> PageSaving { add => InternalExtendedList.PageSaving += value; remove => InternalExtendedList.PageSaving -= value; }

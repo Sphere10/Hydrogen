@@ -17,7 +17,7 @@ using System.IO;
 
 namespace Sphere10.Framework {
 
-    public abstract class TransactionalFilePageBase<TItem> : FilePageBase<TItem>, ITransactionalFilePage<TItem> {
+	public abstract class TransactionalFilePageBase<TItem> : FilePageBase<TItem>, ITransactionalFilePage<TItem> {
 
 		protected TransactionalFilePageBase(FileStream sourceFile, IItemSizer<TItem> sizer, string uncommittedPageFileName, int pageNumber, int pageSize, IExtendedList<TItem> memoryStore)
 			: base(sourceFile, sizer, pageNumber, pageSize, memoryStore) {

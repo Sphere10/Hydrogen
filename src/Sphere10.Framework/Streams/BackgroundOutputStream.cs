@@ -13,14 +13,12 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.IO;
 using System.Threading;
 
 namespace Sphere10.Framework {
 
-    public class BackgroundOutputStream : Stream {
+	public class BackgroundOutputStream : Stream {
         private readonly Queue<byte[]> _writeQueue = new Queue<byte[]>();
         private readonly EventWaitHandle _idleEvent = new EventWaitHandle(true, EventResetMode.ManualReset);
         private bool _writing;

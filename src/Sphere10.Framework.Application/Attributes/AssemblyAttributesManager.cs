@@ -14,7 +14,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Reflection;
 
 using System.IO;
@@ -23,7 +22,7 @@ using Tools;
 
 namespace Sphere10.Framework.Application {
 
-    public class AssemblyAttributesManager {
+	public class AssemblyAttributesManager {
 		public const string DefaultLink = "www.sphere10.com";
 
         public AssemblyAttributesManager() {

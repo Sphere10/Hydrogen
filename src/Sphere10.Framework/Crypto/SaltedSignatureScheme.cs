@@ -2,7 +2,7 @@
 using System.Runtime.CompilerServices;
 
 namespace Sphere10.Framework {
-    public class SaltedSignatureScheme<TPrivateKey, TPublicKey, TScheme> : DigitalSignatureSchemeDecorator<TPrivateKey, TPublicKey, TScheme>
+	public class SaltedSignatureScheme<TPrivateKey, TPublicKey, TScheme> : DigitalSignatureSchemeDecorator<TPrivateKey, TPublicKey, TScheme>
     where TPrivateKey : IPrivateKey
     where TPublicKey : IPublicKey
 	where TScheme : IDigitalSignatureScheme {

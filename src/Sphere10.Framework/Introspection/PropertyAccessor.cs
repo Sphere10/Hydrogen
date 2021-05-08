@@ -12,16 +12,12 @@
 //-----------------------------------------------------------------------
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Linq.Expressions;
 using System.Reflection;
-using Sphere10.Framework;
 
 namespace Sphere10.Framework.FastReflection {
 
-    public class PropertyAccessor {
+	public class PropertyAccessor {
         private Func<object, object> _mGetter;
         private MethodInvoker _mSetMethodInvoker;
 

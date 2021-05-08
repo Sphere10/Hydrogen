@@ -12,32 +12,30 @@
 //-----------------------------------------------------------------------
 
 using System;
-using System.CodeDom;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Cryptography;
 using System.Xml.Serialization;
 using Sphere10.Framework;
 using TinyIoC;
 
 namespace Sphere10.Framework.Application {
 
-    /// <summary>
-    /// Sphere 10 one stop shop for all IoC and Service Locator functionality.
-    /// <remarks>
-    /// Under root configuration element add
-    ///   &lt;configSections&gt;
-    ///    &lt;section name = "ComponentRegistry" type ="Sphere10.Framework.GenericSectionHandler, Sphere10.Framework"/&gt;
-    ///  &lt;/configSections&gt;
-    /// 
-    /// In Program.cs or Web startup, use
-    ///  ...
-    ///  ComponentRegistry.Instance.RegisterAppConfig();
-    /// 
-    /// if using application framework, this this is called automatically on start
-    /// </remarks>
-    /// </summary>
-    [XmlRoot]
+	/// <summary>
+	/// Sphere 10 one stop shop for all IoC and Service Locator functionality.
+	/// <remarks>
+	/// Under root configuration element add
+	///   &lt;configSections&gt;
+	///    &lt;section name = "ComponentRegistry" type ="Sphere10.Framework.GenericSectionHandler, Sphere10.Framework"/&gt;
+	///  &lt;/configSections&gt;
+	/// 
+	/// In Program.cs or Web startup, use
+	///  ...
+	///  ComponentRegistry.Instance.RegisterAppConfig();
+	/// 
+	/// if using application framework, this this is called automatically on start
+	/// </remarks>
+	/// </summary>
+	[XmlRoot]
     public class ComponentRegistry : IDisposable {
         private readonly object _threadLock;
         private readonly TinyIoCContainer _tinyIoCContainer;

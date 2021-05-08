@@ -12,14 +12,10 @@
 //-----------------------------------------------------------------------
 
 using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading;
-using System.Diagnostics;
 
 namespace Sphere10.Framework {
 
-    public class InvalidDataFormatException : SoftwareException {
+	public class InvalidDataFormatException : SoftwareException {
 
         public InvalidDataFormatException() 
          : this("Invalid data format") {

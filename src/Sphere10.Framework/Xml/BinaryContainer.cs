@@ -20,19 +20,17 @@
 // -----------------------------------------------------------------------------------
 using System;
 using System.IO;
-using System.Collections.Generic;
-using System.Text;
 using System.Runtime.Serialization;
 using System.ComponentModel;
 using System.Globalization;
 using System.Reflection;
 
 namespace Sphere10.Framework {
-    /// <summary>
-    /// Container for binary data.
-    /// This class can be used to encapsulate binary data for serialization or transportation purposes.
-    /// </summary>
-    [Obfuscation(Exclude = true)]
+	/// <summary>
+	/// Container for binary data.
+	/// This class can be used to encapsulate binary data for serialization or transportation purposes.
+	/// </summary>
+	[Obfuscation(Exclude = true)]
     [Serializable]
     [TypeConverter(typeof(BinaryContainerTypeConverter))]
     public class BinaryContainer : ISerializable, IObjectReference {

@@ -5,14 +5,14 @@ using System.Linq;
 
 namespace Sphere10.Framework {
 
-    /// <summary>
-    /// A memory buffer whose entire contents reside in a contiguous block of memory. Operations are batch optimized thus suitable for image/data manipulations of small - mid size.
+	/// <summary>
+	/// A memory buffer whose entire contents reside in a contiguous block of memory. Operations are batch optimized thus suitable for image/data manipulations of small - mid size.
 	/// For larger buffers whose contents should be paged use <see cref="MemoryPagedBuffer"/>.
-    /// <remarks>
-    /// All enumerable results are implemented as arrays and arguments are not checked for performance.
-    /// </remarks>
-    /// </summary>
-    public sealed class MemoryBuffer : RangedListBase<byte>, IBuffer {
+	/// <remarks>
+	/// All enumerable results are implemented as arrays and arguments are not checked for performance.
+	/// </remarks>
+	/// </summary>
+	public sealed class MemoryBuffer : RangedListBase<byte>, IBuffer {
 		public const int DefaultBlockGrowth = 4096;
 		public const int DefaultMaxSize = int.MaxValue;
 		private byte[] _internalArray;

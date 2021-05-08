@@ -12,7 +12,7 @@
 //-----------------------------------------------------------------------
 
 namespace Sphere10.Framework.Application {
-    public class LoggingConfiguration {		
+	public class LoggingConfiguration {		
 		public string Directory { get; set; }
 		public string ApplicationName { get; set; }
 		public int MaxLogFiles { get; set; }

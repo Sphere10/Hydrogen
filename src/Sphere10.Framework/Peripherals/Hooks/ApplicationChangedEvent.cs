@@ -13,8 +13,7 @@
 
 using System;
 
-namespace Sphere10.Framework
-{
+namespace Sphere10.Framework {
 	/// <summary>
 	/// Summary description for ApplicationEvent.
 	/// </summary>

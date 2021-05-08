@@ -12,22 +12,14 @@
 //-----------------------------------------------------------------------
 
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics;
-using System.Globalization;
-using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.Runtime.InteropServices;
-using System.Text;
 using Sphere10.Framework;
-using Sphere10.Framework.FastReflection;
 
 // ReSharper disable CheckNamespace
 namespace Tools {
 
-    public static class Runtime {
+	public static class Runtime {
         private static readonly object _threadLock = new object();
         private static bool _hasDeterminedDesignMode = false;
         private static bool _isDesignMode = false;

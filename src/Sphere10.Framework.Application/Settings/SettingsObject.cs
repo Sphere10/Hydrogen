@@ -12,14 +12,11 @@
 //-----------------------------------------------------------------------
 
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
-using System.Text;
 using System.Xml.Serialization;
 
 namespace Sphere10.Framework.Application {
-	
+
 	[XmlRoot]
 	[Serializable]
 	public abstract class SettingsObject : ObjectWithDefaultValues {

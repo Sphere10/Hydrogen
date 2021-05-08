@@ -11,12 +11,10 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using System;
 using System.Reflection;
 
-namespace Sphere10.Framework
-{
-    [Obfuscation(Exclude = true)]
+namespace Sphere10.Framework {
+	[Obfuscation(Exclude = true)]
     public enum Key
     {
         Modifiers,

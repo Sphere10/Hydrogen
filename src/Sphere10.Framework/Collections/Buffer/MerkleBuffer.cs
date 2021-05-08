@@ -1,17 +1,15 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 
 namespace Sphere10.Framework {
 
-    /// <summary>
-    /// A memory-paged byte list that maintains a merkle-tree of every page. It is a decorator since the underlying byte list could be a binary file,
-    /// transactional file, etc.
-    /// </summary>
-    public class MerkleBuffer : MemoryPagedBufferDecorator, IMerkleList<byte> {
+	/// <summary>
+	/// A memory-paged byte list that maintains a merkle-tree of every page. It is a decorator since the underlying byte list could be a binary file,
+	/// transactional file, etc.
+	/// </summary>
+	public class MerkleBuffer : MemoryPagedBufferDecorator, IMerkleList<byte> {
         private readonly MerkleTreeImpl _merkleTree;
         private readonly BitArray _merklePagesDirty;
         private readonly byte[] _defaultLeafValue;

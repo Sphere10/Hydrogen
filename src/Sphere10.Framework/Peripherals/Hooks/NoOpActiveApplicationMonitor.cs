@@ -13,9 +13,8 @@
 
 using System;
 
-namespace Sphere10.Framework
-{
-    public class NoOpActiveApplicationMonitor : IActiveApplicationMonitor
+namespace Sphere10.Framework {
+	public class NoOpActiveApplicationMonitor : IActiveApplicationMonitor
     {
         public event EventHandler<ApplicationChangedEvent> ApplicationChanged;
 

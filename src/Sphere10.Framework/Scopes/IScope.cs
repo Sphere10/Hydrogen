@@ -1,7 +1,7 @@
 using System;
 
 namespace Sphere10.Framework {
-    public interface IScope : IDisposable {
+	public interface IScope : IDisposable {
         event EventHandler ScopeEnd;
     }
 

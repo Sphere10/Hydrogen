@@ -11,12 +11,6 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Timers;
-
 namespace Sphere10.Framework.Scheduler {
 
 	public enum ReschedulePolicy {

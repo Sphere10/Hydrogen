@@ -13,14 +13,12 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using NUnit.Framework;
 using Sphere10.Framework;
 
 namespace Tools {
-    public static class NUnit {
+	public static class NUnit {
 
 		public static string Convert2DArrayToString<T>(string header, IEnumerable<IEnumerable<T>> arr2D) {
             var textBuilder = new StringBuilder();

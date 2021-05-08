@@ -11,16 +11,11 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Xml.Serialization;
 using System.Reflection;
-using System.Runtime.Serialization;
 
 namespace Sphere10.Framework.Application {
 
-    [Obfuscation(Exclude = true)]
+	[Obfuscation(Exclude = true)]
     public class ProductComment : ClientRequest {
         public ProductComment()
             : base() {

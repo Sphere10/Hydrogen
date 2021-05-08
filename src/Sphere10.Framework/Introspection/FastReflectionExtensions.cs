@@ -12,14 +12,10 @@
 //-----------------------------------------------------------------------
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Reflection;
-using Sphere10.Framework;
 
 namespace Sphere10.Framework.FastReflection {
-    public static class FastReflectionExtensions {
+	public static class FastReflectionExtensions {
         public static object FastInvoke(this MethodInfo methodInfo, object instance, params object[] parameters) {
             return FastReflectionCaches.MethodInvokerCache.Get(methodInfo).Invoke(instance, parameters);
         }

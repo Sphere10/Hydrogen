@@ -3,7 +3,7 @@ using System.IO;
 using System.Linq;
 
 namespace Sphere10.Framework {
-    public abstract class MemoryPageBase<TItem> : PageBase<TItem>, IMemoryPage<TItem> {
+	public abstract class MemoryPageBase<TItem> : PageBase<TItem>, IMemoryPage<TItem> {
 		internal readonly IExtendedList<TItem> MemoryStore;
 
 		protected MemoryPageBase(int maxSize, IItemSizer<TItem> sizer, IExtendedList<TItem> store) {

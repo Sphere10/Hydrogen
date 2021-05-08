@@ -12,27 +12,24 @@
 //-----------------------------------------------------------------------
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
 
 namespace Sphere10.Framework {
 
-    /// <summary>
-    /// A FIFO queue used to block calls into a region of code based on a condition. Conceptually, this is like
-    /// a lock using a condition.
-    /// </summary>
-    /// <remarks>
-    /// lock(obj AND CONDITION) { 
-    ///     ... code has exclusive lock on obj and condition is true
-    /// }
-    /// </remarks>
-    
+	/// <summary>
+	/// A FIFO queue used to block calls into a region of code based on a condition. Conceptually, this is like
+	/// a lock using a condition.
+	/// </summary>
+	/// <remarks>
+	/// lock(obj AND CONDITION) { 
+	///     ... code has exclusive lock on obj and condition is true
+	/// }
+	/// </remarks>
+
 #warning Needs to be reviewed, implementation possibly faulty
-    public class ConditionalLock : IDisposable {
+	public class ConditionalLock : IDisposable {
         private readonly object _lock;
         private bool _disposed;
         private readonly SemaphoreSlim _semaphore;

@@ -11,15 +11,8 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Sphere10.Framework.Application;
-
 namespace Sphere10.Framework.Application {
-    public interface IModuleConfiguration {
+	public interface IModuleConfiguration {
 		int Priority { get; }
         void RegisterComponents(ComponentRegistry registry);
 		void DeregisterComponents(ComponentRegistry registry);

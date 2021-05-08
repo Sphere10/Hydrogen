@@ -11,8 +11,6 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using System;
-
 namespace Sphere10.Framework.Scheduler {
 
 	public enum JobStatus {

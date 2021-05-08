@@ -1,12 +1,11 @@
 using System;
 using Org.BouncyCastle.Utilities;
 
-namespace Sphere10.Framework.CryptoEx.IES
-{
-    /**
+namespace Sphere10.Framework.CryptoEx.IES {
+	/**
     * Parameter spec for an integrated encryptor, as in IEEE P1363a
     */
-    public class IesParameterSpec : IAlgorithmParameterSpec
+	public class IesParameterSpec : IAlgorithmParameterSpec
     {
         private readonly byte[] _derivation;
         private readonly byte[] _encoding;

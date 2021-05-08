@@ -1,14 +1,9 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Threading;
 
 namespace Sphere10.Framework {
 
-    public interface IPagedList<TItem> : IExtendedList<TItem>, ILoadable {
+	public interface IPagedList<TItem> : IExtendedList<TItem>, ILoadable {
 
 		event EventHandlerEx<object> Accessing;
 		event EventHandlerEx<object> Accessed;

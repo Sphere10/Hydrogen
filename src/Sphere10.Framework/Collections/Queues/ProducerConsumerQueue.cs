@@ -13,18 +13,12 @@
 
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
-using Sphere10.Framework.Collections;
 
 namespace Sphere10.Framework {
-    public class ProducerConsumerQueue<T> : Disposable {
+	public class ProducerConsumerQueue<T> : Disposable {
         private readonly object _threadLock;
         private readonly Func<T, long> _sizeEstimator;
         private readonly long _maxCapacity;

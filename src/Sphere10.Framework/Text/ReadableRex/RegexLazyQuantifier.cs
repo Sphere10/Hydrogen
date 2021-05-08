@@ -14,7 +14,7 @@
 using System;
 
 namespace Sphere10.Framework {
-    public class RegexLazyQuantifier : RegexQuantifier {
+	public class RegexLazyQuantifier : RegexQuantifier {
         public RegexLazyQuantifier(RegexPattern quantifiedExpression) : base(quantifiedExpression) { }
 
         public override RegexPattern ZeroOrMore => base.ZeroOrMore.RegEx("?");

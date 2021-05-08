@@ -1,10 +1,9 @@
 ﻿using System;
-using System.Runtime.CompilerServices;
 
 namespace Sphere10.Framework {
 
 
-    public abstract class DigitalSignatureSchemeBase<TPrivateKey, TPublicKey> : IDigitalSignatureScheme
+	public abstract class DigitalSignatureSchemeBase<TPrivateKey, TPublicKey> : IDigitalSignatureScheme
     where TPrivateKey : IPrivateKey
     where TPublicKey : IPublicKey {
 

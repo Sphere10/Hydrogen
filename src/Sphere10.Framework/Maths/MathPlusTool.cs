@@ -13,12 +13,6 @@
 
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Globalization;
-using System.Threading;
 using Sphere10.Framework;
 
 // ReSharper disable CheckNamespace

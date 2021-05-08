@@ -14,15 +14,12 @@
 /// WARNING: Make sure that these two files are synchronized
 ///     SchoenfeldSoftware.Application/Licensing/ProductLicenseCommand.cs
 ///     www.sphere10.com/OnlineServices/ProductLicenseCommand.cs
-using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Xml.Serialization;
 using System.Reflection;
 
 namespace Sphere10.Framework.Application {
 
-    [Obfuscation(Exclude = true)]
+	[Obfuscation(Exclude = true)]
     [XmlRoot("ProductLicenseCommand")]
     public class ProductLicenseCommand {
 

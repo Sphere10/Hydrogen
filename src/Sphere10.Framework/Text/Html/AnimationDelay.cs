@@ -4,7 +4,7 @@
 
 namespace Sphere10.Framework.Html {
 
-    public enum AnimationDelay {
+	public enum AnimationDelay {
         [Description("")]
         Seconds_0_0,
 

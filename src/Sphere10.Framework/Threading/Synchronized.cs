@@ -1,5 +1,5 @@
 namespace Sphere10.Framework {
-    public sealed class Synchronized<T> : SynchronizedObject {
+	public sealed class Synchronized<T> : SynchronizedObject {
 		private T _value;
 
 		public Synchronized(T @object) {

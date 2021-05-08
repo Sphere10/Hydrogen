@@ -14,17 +14,12 @@
 using System;
 using System.Linq;
 using System.Collections.Generic;
-using System.Text;
 using System.Reflection;
-using System.Xml;
-using System.Xml.Serialization;
-using System.Runtime.Serialization;
-using Sphere10.Framework;
 
 
 namespace Sphere10.Framework.Application {
 
-    [Obfuscation(Exclude = true)]
+	[Obfuscation(Exclude = true)]
     public class ProductInformation {
 		public string CompanyName { get; set; }
         public string CompanyNumber { get; set; }

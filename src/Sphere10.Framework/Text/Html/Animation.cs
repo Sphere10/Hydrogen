@@ -3,7 +3,7 @@
 
 namespace Sphere10.Framework.Html {
 
-    public enum Animation {
+	public enum Animation {
         // Attenion Seekers
         [Description("bounce")]
         bounce,

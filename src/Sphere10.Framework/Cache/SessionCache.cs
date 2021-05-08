@@ -16,7 +16,7 @@ using System.Linq;
 using Sphere10.Framework.Scheduler;
 
 namespace Sphere10.Framework {
-    public class SessionCache<K,T> : CacheBase<K,T> {
+	public class SessionCache<K,T> : CacheBase<K,T> {
         private readonly Scheduler<IJob> _cleaner; 
 
         public SessionCache(TimeSpan sessionTimeoutInterval) 

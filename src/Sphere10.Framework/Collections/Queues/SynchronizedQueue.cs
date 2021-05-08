@@ -13,14 +13,11 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Collections;
-using System.Threading;
 
 namespace Sphere10.Framework {
 
-    public class SynchronizedQueue<T> : SynchronizedObject, ICollection<T>, IReadOnlyCollection<T> {
+	public class SynchronizedQueue<T> : SynchronizedObject, ICollection<T>, IReadOnlyCollection<T> {
 		private readonly Queue<T> _internalQueue;
 
 		public SynchronizedQueue()

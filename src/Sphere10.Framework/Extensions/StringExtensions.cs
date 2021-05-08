@@ -14,16 +14,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Cryptography;
 using System.Text.RegularExpressions;
 using System.Text;
-using System.Collections.Specialized;
 using System.IO;
 using System.Diagnostics;
 using System.Threading;
 
-namespace Sphere10.Framework
-{
+namespace Sphere10.Framework {
 	public static class StringExtensions {
 		private static readonly char[] InvalidFilePathChars = ("*?/\\:" + Path.GetInvalidPathChars().ToDelimittedString(string.Empty)).ToCharArray();
 		private static readonly Regex AlphabetCheckRegex = new Regex("^[a-zA-Z0-9]*$");

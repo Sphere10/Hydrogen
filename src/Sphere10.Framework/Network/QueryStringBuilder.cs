@@ -17,7 +17,7 @@ using System.Linq;
 
 namespace Sphere10.Framework {
 
-    public class QueryStringBuilder {
+	public class QueryStringBuilder {
         private readonly List<KeyValuePair<string, string>> _list;
 
         public QueryStringBuilder() {

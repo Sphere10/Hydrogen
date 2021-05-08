@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Sphere10.Framework
-{
+namespace Sphere10.Framework {
 
-    public interface IPagedListInternalMethods<TItem>
+	public interface IPagedListInternalMethods<TItem>
     {
         Action UpdateVersion { get; }
         

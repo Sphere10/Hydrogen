@@ -12,13 +12,9 @@
 //-----------------------------------------------------------------------
 
 #if !__MOBILE__
-using System;
-using System.Collections.Generic;
-using System.Text;
-using Sphere10.Framework.Maths;
 
 namespace Sphere10.Framework.Maths {
-    public class FunctionDerivative : IFunction {
+	public class FunctionDerivative : IFunction {
         private IFunction _function = null;
 
         public FunctionDerivative(IFunction function) {

@@ -14,14 +14,10 @@
 using System;
 using System.Collections.Generic;
 using System.Configuration;
-using System.Diagnostics;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Sphere10.Framework;
 
 namespace Sphere10.Framework.Application {
-    public class Sphere10Framework {
+	public class Sphere10Framework {
         private readonly object _threadLock;
         private bool _registeredConfig;
         private bool _registeredModuleComponents;

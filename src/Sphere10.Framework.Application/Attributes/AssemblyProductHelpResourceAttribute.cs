@@ -12,13 +12,10 @@
 //-----------------------------------------------------------------------
 
 using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Runtime.InteropServices;
 
 namespace Sphere10.Framework.Application {
 
-    [AttributeUsage(AttributeTargets.Assembly, Inherited = false)]
+	[AttributeUsage(AttributeTargets.Assembly, Inherited = false)]
     public abstract class AssemblyProductHelpResourceAttribute : Attribute {
 
         public AssemblyProductHelpResourceAttribute(HelpType helpType, string path)

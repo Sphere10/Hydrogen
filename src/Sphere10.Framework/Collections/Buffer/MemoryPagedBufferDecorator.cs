@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 
 namespace Sphere10.Framework {
-    public abstract class MemoryPagedBufferDecorator<TMemoryPagedBuffer> : MemoryPagedListDecorator<byte, TMemoryPagedBuffer>, IMemoryPagedBuffer where TMemoryPagedBuffer : IMemoryPagedBuffer {
+	public abstract class MemoryPagedBufferDecorator<TMemoryPagedBuffer> : MemoryPagedListDecorator<byte, TMemoryPagedBuffer>, IMemoryPagedBuffer where TMemoryPagedBuffer : IMemoryPagedBuffer {
 
         public MemoryPagedBufferDecorator(TMemoryPagedBuffer internalBuffer)
             : base(internalBuffer) {

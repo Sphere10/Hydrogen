@@ -11,14 +11,12 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Diagnostics;
 
 namespace Sphere10.Framework {
 
-    public class TextBank {
+	public class TextBank {
         private List<string> _data;
 
         public TextBank() {

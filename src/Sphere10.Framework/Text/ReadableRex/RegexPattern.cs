@@ -15,7 +15,7 @@ using System;
 using System.Text;
 
 namespace Sphere10.Framework {
-    public class RegexPattern {
+	public class RegexPattern {
         readonly StringBuilder _content;
 
         /// <summary>

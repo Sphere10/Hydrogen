@@ -5,7 +5,6 @@ using Org.BouncyCastle.Crypto.Engines;
 using Org.BouncyCastle.Crypto.Modes;
 using Org.BouncyCastle.Crypto.Paddings;
 using Org.BouncyCastle.Security;
-using Sphere10.Framework.CryptoEx.EC;
 using Sphere10.Framework.CryptoEx.IES;
 using Sphere10.Framework.CryptoEx.PascalCoin;
 

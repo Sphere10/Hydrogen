@@ -18,21 +18,17 @@
 
 using System.Collections.Generic;
 using System;
-using System.ComponentModel;
 using System.IO;
-using System.Linq;
-using System.Reflection;
 using System.Runtime.Serialization.Formatters.Binary;
 using Sphere10.Framework;
 
 #if USE_FAST_REFLECTION
-using Sphere10.Framework.FastReflection;
 #endif
 
 // ReSharper disable CheckNamespace
 namespace Tools {
 
-    public static class Object {
+	public static class Object {
 
         public static object Create(string typeName, params object[] args) {
             return TypeActivator.Create(typeName, args);

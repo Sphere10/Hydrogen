@@ -11,15 +11,8 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Sphere10.Framework.Application;
-
 namespace Sphere10.Framework.Application {
-    public abstract class ModuleConfigurationBase : IModuleConfiguration {
+	public abstract class ModuleConfigurationBase : IModuleConfiguration {
 		public virtual int Priority => 0;
 
 	    public virtual void RegisterComponents(ComponentRegistry registry) {

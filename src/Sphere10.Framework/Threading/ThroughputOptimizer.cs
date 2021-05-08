@@ -12,14 +12,9 @@
 //-----------------------------------------------------------------------
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Sphere10.Framework;
 
 namespace Sphere10.Framework {
-    public class ThroughputOptimizer {
+	public class ThroughputOptimizer {
         private readonly long _minimumBatchSize;
         private readonly long _maximumBatchSize;
         private readonly double _adjustmentFactor;

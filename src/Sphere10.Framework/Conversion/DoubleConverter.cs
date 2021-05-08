@@ -16,12 +16,12 @@ using System;
 using System.Globalization;
 
 namespace Sphere10.Framework {
-    /// <summary>
-    /// A class to allow the conversion of doubles to string representations of
-    /// their exact decimal values. The implementation aims for readability over
-    /// efficiency.
-    /// </summary>
-    public class DoubleConverter {
+	/// <summary>
+	/// A class to allow the conversion of doubles to string representations of
+	/// their exact decimal values. The implementation aims for readability over
+	/// efficiency.
+	/// </summary>
+	public class DoubleConverter {
         /// <summary>
         /// Converts the given double to a string representation of its
         /// exact decimal value.

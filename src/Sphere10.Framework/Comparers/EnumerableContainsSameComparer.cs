@@ -14,12 +14,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Sphere10.Framework.Collections {
 
-    public class EnumerableContainsSameComparer<T> : IEqualityComparer<IEnumerable<T>> {
+	public class EnumerableContainsSameComparer<T> : IEqualityComparer<IEnumerable<T>> {
         public bool Equals(IEnumerable<T> x, IEnumerable<T> y) {
             var xArray = x as T[] ?? x.ToArray();
             var yArray = y as T[] ?? y.ToArray();

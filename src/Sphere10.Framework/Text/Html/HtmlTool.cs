@@ -12,8 +12,6 @@
 //-----------------------------------------------------------------------
 
 using System;
-using System.Linq;
-using System.Globalization;
 using Sphere10.Framework;
 using Sphere10.Framework.Html;
 

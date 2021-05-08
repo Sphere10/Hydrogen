@@ -13,9 +13,8 @@
 
 using System;
 
-namespace Sphere10.Framework
-{
-    [Flags]
+namespace Sphere10.Framework {
+	[Flags]
     public enum MouseButtonState
     {
 		None = 0,

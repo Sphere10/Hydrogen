@@ -1,11 +1,10 @@
 using System;
-using System.Linq;
 using System.Collections.Generic;
 using System.IO;
 
 namespace Sphere10.Framework {
 
-    public class MemoryPagedBuffer : MemoryPagedListBase<byte>, IMemoryPagedBuffer {
+	public class MemoryPagedBuffer : MemoryPagedListBase<byte>, IMemoryPagedBuffer {
 
         public MemoryPagedBuffer(int pageSize, int inMemoryPages) 
 			: base(pageSize, inMemoryPages, CacheCapacityPolicy.CapacityIsMaxOpenPages) {

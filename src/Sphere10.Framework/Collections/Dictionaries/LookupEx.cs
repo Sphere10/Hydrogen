@@ -11,14 +11,12 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace Sphere10.Framework {
-    public sealed class LookupEx<TKey, TValue> : ILookup<TKey, TValue> {
+	public sealed class LookupEx<TKey, TValue> : ILookup<TKey, TValue> {
         private readonly Dictionary<TKey, List<TValue>> _map;
 
         public LookupEx() 

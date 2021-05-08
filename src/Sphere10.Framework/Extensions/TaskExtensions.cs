@@ -17,7 +17,7 @@ using System.Threading.Tasks;
 
 namespace Sphere10.Framework {
 
-    public static class TaskExtensions {
+	public static class TaskExtensions {
         public static void WaitSafe(this Task task) {
             Task.Run(() => task.Wait());
         }

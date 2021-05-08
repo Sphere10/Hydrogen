@@ -12,17 +12,11 @@
 //-----------------------------------------------------------------------
 
 using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Runtime.InteropServices;
-using System.Collections;
-using System.ComponentModel;
 using System.Reflection;
 
 
-namespace Sphere10.Framework.Application
-{
-    [Obfuscation(Exclude = true)]
+namespace Sphere10.Framework.Application {
+	[Obfuscation(Exclude = true)]
     public class ProductRights {
 		private static ProductRights _none;
 

@@ -18,14 +18,9 @@
 // Email  : code@yaowi.com
 // http://www.codeproject.com/KB/XML/deepserializer.aspx
 // -----------------------------------------------------------------------------------
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Reflection;
 
-namespace Sphere10.Framework
-{
-  public interface IXmlSerializationTag
+namespace Sphere10.Framework {
+	public interface IXmlSerializationTag
   {
     string ASSEMBLY_TAG { get; }
     string INDEX_TAG { get; }

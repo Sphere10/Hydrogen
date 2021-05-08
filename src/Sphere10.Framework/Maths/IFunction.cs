@@ -12,7 +12,7 @@
 //-----------------------------------------------------------------------
 
 namespace Sphere10.Framework {
-    public interface IFunction {
+	public interface IFunction {
         double Eval(double x);
     }
 

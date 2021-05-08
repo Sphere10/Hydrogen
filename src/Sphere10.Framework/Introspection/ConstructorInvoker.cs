@@ -13,15 +13,12 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Reflection;
 using System.Linq.Expressions;
-using Sphere10.Framework;
 
 namespace Sphere10.Framework.FastReflection {
 
-    public class ConstructorInvoker {
+	public class ConstructorInvoker {
         private readonly Func<object[], object> _mInvoker;
 
         public ConstructorInfo ConstructorInfo { get; private set; }

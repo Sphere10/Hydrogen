@@ -16,7 +16,7 @@ using System.Threading;
 
 namespace Sphere10.Framework {
 
-    public interface ISynchronizedObject : ISynchronizedObject<Scope, Scope> {
+	public interface ISynchronizedObject : ISynchronizedObject<Scope, Scope> {
 	}
 
     public interface ISynchronizedObject<out TReadScope, out TWriteScope> 

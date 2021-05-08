@@ -12,14 +12,10 @@
 //-----------------------------------------------------------------------
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Sphere10.Framework {
-    public static class FastLog {
+	public static class FastLog {
         [StructLayout(LayoutKind.Explicit)]
         private struct Ieee754 {
             [FieldOffset(0)]

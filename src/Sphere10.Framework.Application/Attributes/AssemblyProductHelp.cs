@@ -12,13 +12,11 @@
 //-----------------------------------------------------------------------
 
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Runtime.InteropServices;
 
 namespace Sphere10.Framework.Application {
 
-    [ComVisible(true)]
+	[ComVisible(true)]
     [AttributeUsage(AttributeTargets.Assembly, Inherited = false)]
     public sealed class AssemblyProductHelp : Attribute {
 

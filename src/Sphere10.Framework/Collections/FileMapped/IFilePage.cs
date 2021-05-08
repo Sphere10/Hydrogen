@@ -1,8 +1,6 @@
-﻿using System;
+﻿namespace Sphere10.Framework {
 
-namespace Sphere10.Framework {
-
-    public interface IFilePage<TItem> : IMemoryPage<TItem> {
+	public interface IFilePage<TItem> : IMemoryPage<TItem> {
         
         long StartPosition { get; set; }
         

@@ -14,7 +14,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
@@ -27,7 +26,7 @@ using Sphere10.Framework.FastReflection;
 namespace Tools {
 
 
-    public static class FileSystem {
+	public static class FileSystem {
 		public readonly static string DirectorySeparatorString;
 
         

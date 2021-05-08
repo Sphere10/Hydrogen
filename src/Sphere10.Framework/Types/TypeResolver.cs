@@ -13,18 +13,17 @@
 
 using System.Collections.Generic;
 using System;
-using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 
 namespace Sphere10.Framework {
-    
-    /// <summary>
-    /// Used to resolve types by their names. Can supply short name, full names or fully qualified names. Intelligently
-    /// loads assemblies as needed. Inner classes are pre-fixed by "ParentClass+" in both short and long names.
-    /// </summary>
-    public static class TypeResolver {
+
+	/// <summary>
+	/// Used to resolve types by their names. Can supply short name, full names or fully qualified names. Intelligently
+	/// loads assemblies as needed. Inner classes are pre-fixed by "ParentClass+" in both short and long names.
+	/// </summary>
+	public static class TypeResolver {
 
         private static readonly ICache<Assembly, AssemblyInfo> AssemblyLoader;
 

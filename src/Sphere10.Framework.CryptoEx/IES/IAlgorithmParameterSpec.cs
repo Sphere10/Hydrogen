@@ -1,6 +1,5 @@
-namespace Sphere10.Framework.CryptoEx.IES
-{
-    public interface IAlgorithmParameterSpec
+namespace Sphere10.Framework.CryptoEx.IES {
+	public interface IAlgorithmParameterSpec
     {
         
     }

@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.ComponentModel;
-using System.Threading;
+﻿using System.Threading;
 
 namespace Sphere10.Framework.Protocol {
 	public interface IProtocolHub<TEndpoint, TMessageType, TMessage, TCommandHandler, TRequestHandler,  TChannel, TProtocol>

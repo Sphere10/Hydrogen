@@ -13,10 +13,9 @@
 
 using System.Configuration;
 using System.IO;
-using Sphere10.Framework;
 
 namespace Sphere10.Framework.Application {
-    public class RollingFileLogger : DecoratedLogger {
+	public class RollingFileLogger : DecoratedLogger {
 
 	    public RollingFileLogger() : base(CreateLogger("Logging")) {		    
 	    }

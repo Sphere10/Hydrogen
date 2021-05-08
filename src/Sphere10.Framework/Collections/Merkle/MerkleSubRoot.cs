@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace Sphere10.Framework {
+﻿namespace Sphere10.Framework {
 
 	public record MerkleSubRoot {
 		public readonly int Height;

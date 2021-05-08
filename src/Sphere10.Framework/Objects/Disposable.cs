@@ -12,23 +12,20 @@
 //-----------------------------------------------------------------------
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace Sphere10.Framework {
 
-    // This class shows how to use a disposable resource.
-    // The resource is first initialized and passed to
-    // the constructor, but it could also be
-    // initialized in the constructor.
-    // The lifetime of the resource does not 
-    // exceed the lifetime of this instance.
-    // This type does not need a finalizer because it does not
-    // directly create a native resource like a file handle
-    // or memory in the unmanaged heap.
+	// This class shows how to use a disposable resource.
+	// The resource is first initialized and passed to
+	// the constructor, but it could also be
+	// initialized in the constructor.
+	// The lifetime of the resource does not 
+	// exceed the lifetime of this instance.
+	// This type does not need a finalizer because it does not
+	// directly create a native resource like a file handle
+	// or memory in the unmanaged heap.
 
-    public abstract class Disposable : IDisposable {
+	public abstract class Disposable : IDisposable {
         private bool _disposed;
 
         public void Dispose() {

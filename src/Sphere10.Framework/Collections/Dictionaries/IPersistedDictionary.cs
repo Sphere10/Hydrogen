@@ -11,18 +11,11 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Text;
-using System.IO;
-using System.Diagnostics;
-using System.Xml.Serialization;
-using System.Reflection;
 
 namespace Sphere10.Framework {
 
-    public interface IPersistedDictionary<T1, T2> : IDictionary<T1, T2> {
+	public interface IPersistedDictionary<T1, T2> : IDictionary<T1, T2> {
 		void Load();
 		void Save();
 		void Delete();

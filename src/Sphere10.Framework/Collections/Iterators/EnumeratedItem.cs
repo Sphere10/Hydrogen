@@ -11,14 +11,9 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
 namespace Sphere10.Framework {
 
-    public class EnumeratedItem<T> {
+	public class EnumeratedItem<T> {
         public int Index { get; private set; }
         public T Item { get; private set; }
         public EnumeratedItemDescription Description { get; private set; }

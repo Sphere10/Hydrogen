@@ -1,5 +1,4 @@
-﻿namespace Sphere10.Framework
-{
+﻿namespace Sphere10.Framework {
 	/// <summary>
 	/// Extension methods to do with ranges.
 	/// </summary>

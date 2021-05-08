@@ -14,7 +14,7 @@
 using System.IO;
 
 namespace Sphere10.Framework {
-    public interface ITransactionalFilePage<TItem> : IFilePage<TItem> {
+	public interface ITransactionalFilePage<TItem> : IFilePage<TItem> {
 		string UncommittedPageFileName { get; }
 
 		bool HasUncommittedData { get; set; }

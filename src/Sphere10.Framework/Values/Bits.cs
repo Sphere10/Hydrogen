@@ -12,20 +12,15 @@
 //-----------------------------------------------------------------------
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Sphere10.Framework {
 
 	/// <summary>
-    /// Utility that read and write binary bits to and from byte arrays
-    /// </summary>
-    public class Bits  {
+	/// Utility that read and write binary bits to and from byte arrays
+	/// </summary>
+	public class Bits  {
 
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]

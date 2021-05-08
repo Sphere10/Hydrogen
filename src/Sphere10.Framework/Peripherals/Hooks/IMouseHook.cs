@@ -12,10 +12,8 @@
 //-----------------------------------------------------------------------
 
 using System;
-using System.Reflection;
-using System.Threading;
 
-namespace Sphere10.Framework  {
+namespace Sphere10.Framework {
 
 	public interface IMouseHook : IDeviceHook  {
 		event EventHandler<MouseMoveEvent> MotionStart;

@@ -2,17 +2,15 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Text;
 
 namespace Sphere10.Framework {
 
-    /// <summary>
-    /// Class used to guard against unexpected argument values
-    /// or operations by throwing an appropriate exception.
-    /// </summary>
-    public static class Guard {
+	/// <summary>
+	/// Class used to guard against unexpected argument values
+	/// or operations by throwing an appropriate exception.
+	/// </summary>
+	public static class Guard {
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static void FileExists(string path) {

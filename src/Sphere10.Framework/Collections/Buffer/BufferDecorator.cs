@@ -1,7 +1,7 @@
 ﻿using System;
 
 namespace Sphere10.Framework {
-    public abstract class BufferDecorator<TBuffer> : ExtendedListDecorator<byte, TBuffer>, IBuffer where TBuffer : IBuffer {
+	public abstract class BufferDecorator<TBuffer> : ExtendedListDecorator<byte, TBuffer>, IBuffer where TBuffer : IBuffer {
 
         public BufferDecorator(TBuffer internalBuffer)
             : base(internalBuffer) {

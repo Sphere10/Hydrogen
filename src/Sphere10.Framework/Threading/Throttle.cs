@@ -13,12 +13,11 @@
 
 using System;
 using System.Threading.Tasks;
-using Sphere10.Framework;
 using System.Threading;
 
 namespace Sphere10.Framework {
 
-    public sealed class Throttle : SynchronizedObject {
+	public sealed class Throttle : SynchronizedObject {
         public readonly TimeSpan _interval;
         public DateTime _lastEvent;
         private bool _waitingForStampede;

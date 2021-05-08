@@ -22,18 +22,17 @@ using System;
 using System.Reflection;
 using System.IO;
 using System.Collections;
-using System.Text;
 using System.Runtime.CompilerServices;
 
 namespace Sphere10.Framework {
-    /// <summary>
-    /// This struct supports the Yaowi Framework infrastructure and is not intended to be used directly from your code. 
-    /// <P>This struct records relevant object information.
-    /// </summary>
-    /// <remarks>
-    /// Strings in a struct? Strings are reference types and structs should not contain types like this. TODO!
-    /// </remarks>
-    internal struct ObjectInfo {
+	/// <summary>
+	/// This struct supports the Yaowi Framework infrastructure and is not intended to be used directly from your code. 
+	/// <P>This struct records relevant object information.
+	/// </summary>
+	/// <remarks>
+	/// Strings in a struct? Strings are reference types and structs should not contain types like this. TODO!
+	/// </remarks>
+	internal struct ObjectInfo {
         // Members
         public string Name;
         public string Type;

@@ -1,16 +1,9 @@
 ﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Security.Cryptography;
-using System.Text;
-using Sphere10.Framework;
 
 
 namespace Sphere10.Framework {
-	
+
 	/// <summary>
 	/// Fast, thread-safe static hash methods.
 	/// </summary>

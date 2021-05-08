@@ -14,8 +14,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Globalization;
 using Sphere10.Framework;
@@ -24,7 +22,7 @@ using Sphere10.Framework;
 namespace Tools {
 
 
-    public static class Parser {
+	public static class Parser {
 
         private static readonly Regex GuidMatchPattern = new Regex("^[A-Fa-f0-9]{32}$|^({|\\()?[A-Fa-f0-9]{8}-([A-Fa-f0-9]{4}-){3}[A-Fa-f0-9]{12}(}|\\))?$|^({)?[0xA-Fa-f0-9]{3,10}(, {0,1}[0xA-Fa-f0-9]{3,6}){2}, {0,1}({)([0xA-Fa-f0-9]{3,4}, {0,1}){7}[0xA-Fa-f0-9]{3,4}(}})$");
 

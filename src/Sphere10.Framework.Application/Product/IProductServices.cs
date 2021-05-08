@@ -12,14 +12,10 @@
 //-----------------------------------------------------------------------
 
 #if !__MOBILE__
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 
 namespace Sphere10.Framework.Application {
-	
+
 	public interface IProductServices : IProductInformationServices, IProductUsageServices, IProductInstancesCounter  {
 		string ProcessString(string str);
 	}

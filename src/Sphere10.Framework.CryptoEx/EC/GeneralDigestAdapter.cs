@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Security.Cryptography;
 using Org.BouncyCastle.Crypto.Digests;
 
 namespace Sphere10.Framework.CryptoEx {

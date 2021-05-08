@@ -18,11 +18,11 @@ using System.Text;
 
 
 namespace Sphere10.Framework {
-    /// <summary>
-    /// Equivalent of System.IO.BinaryWriter, but with either endianness, depending on
-    /// the EndianBitConverter it is constructed with.
-    /// </summary>
-    public class EndianBinaryWriter : IDisposable {
+	/// <summary>
+	/// Equivalent of System.IO.BinaryWriter, but with either endianness, depending on
+	/// the EndianBitConverter it is constructed with.
+	/// </summary>
+	public class EndianBinaryWriter : IDisposable {
         #region Fields not directly related to properties
 
         /// <summary>

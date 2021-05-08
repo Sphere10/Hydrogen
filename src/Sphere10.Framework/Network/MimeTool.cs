@@ -11,18 +11,14 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
 
 // ReSharper disable CheckNamespace
 namespace Tools {
 
 
 
-		public static class Mime {
+	public static class Mime {
 
 			public static string MimeType(string strFileName) {
 				string retval = "";

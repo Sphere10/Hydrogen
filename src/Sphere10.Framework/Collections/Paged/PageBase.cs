@@ -5,7 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 
 namespace Sphere10.Framework {
-    public abstract class PageBase<TItem> : IEnumerable<TItem>, IPage<TItem> {
+	public abstract class PageBase<TItem> : IEnumerable<TItem>, IPage<TItem> {
 
 		protected PageBase() {
 			State = PageState.Unloaded;

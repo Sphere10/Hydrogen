@@ -11,13 +11,11 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using System;
-using System.Linq;
 
 // ReSharper disable CheckNamespace
 namespace Tools {
 
-    public static class Spans {
+	public static class Spans {
 
       
 	}

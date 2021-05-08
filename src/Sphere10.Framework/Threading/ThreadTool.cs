@@ -14,9 +14,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using Sphere10.Framework;
@@ -24,7 +21,7 @@ using Sphere10.Framework;
 // ReSharper disable CheckNamespace
 namespace Tools {
 
-    public static class Threads {
+	public static class Threads {
 
         public static Task CreateAwaitTask(Func<Task> invokeAsyncMethod) {
             //return new Task( async () => await invokeAsyncMethod() );

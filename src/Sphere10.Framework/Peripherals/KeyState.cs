@@ -11,11 +11,8 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using System;
-
-namespace Sphere10.Framework
-{
-    public enum KeyState
+namespace Sphere10.Framework {
+	public enum KeyState
     {
         Down,
         Up,

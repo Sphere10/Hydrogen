@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
@@ -9,7 +6,7 @@ namespace Sphere10.Framework {
 	/// A list whose items are mapped onto pages of a file and file pages are cached in memory.
 	/// </summary>
 	/// <typeparam name="TItem"></typeparam>
-    public abstract class FilePagedListBase<TItem> : MemoryPagedListBase<TItem>, IFilePagedList<TItem> {
+	public abstract class FilePagedListBase<TItem> : MemoryPagedListBase<TItem>, IFilePagedList<TItem> {
 
 		protected FilePagedListBase(string filename, int pageSize, int maxCacheCapacity, CacheCapacityPolicy cachePolicy, bool readOnly = false)
 			: base(pageSize, maxCacheCapacity, cachePolicy) {

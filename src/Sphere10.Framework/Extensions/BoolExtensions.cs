@@ -11,13 +11,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-
-
-namespace Sphere10.Framework
-{
+namespace Sphere10.Framework {
 	public static class BoolExtensions
 	{
 		public static string YesNo(this bool value)

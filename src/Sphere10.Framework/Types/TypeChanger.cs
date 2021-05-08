@@ -11,15 +11,11 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using System.Collections.Generic;
 using System;
-using System.ComponentModel;
-using System.Linq;
-using System.Reflection;
 
 namespace Sphere10.Framework {
 
-    public static class TypeChanger {
+	public static class TypeChanger {
 
         public static object SanitizeObject(object obj) {
             switch (Type.GetTypeCode(obj.GetType())) {

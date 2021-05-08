@@ -11,12 +11,9 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-
-using System.Threading;
-
 namespace Sphere10.Framework {
 
-    public interface ISynchronizedResource : ISynchronizedResource<Scope, Scope>, ISynchronizedObject {
+	public interface ISynchronizedResource : ISynchronizedResource<Scope, Scope>, ISynchronizedObject {
 	}
 
     public interface ISynchronizedResource<out TReadScope, out TWriteScope> : ISynchronizedObject<TReadScope, TWriteScope>

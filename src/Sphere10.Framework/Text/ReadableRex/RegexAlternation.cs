@@ -12,10 +12,9 @@
 //-----------------------------------------------------------------------
 
 using System;
-using System.Text;
 
 namespace Sphere10.Framework {
-    public class RegexAlternation {
+	public class RegexAlternation {
         readonly RegexPattern _precedingRegexPattern;
         internal RegexAlternation(RegexPattern precedingRegexPattern) {
             _precedingRegexPattern = precedingRegexPattern;

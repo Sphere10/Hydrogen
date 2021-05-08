@@ -12,13 +12,9 @@
 //-----------------------------------------------------------------------
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Sphere10.Framework {
-    public class UrlID {
+	public class UrlID {
 
         public static string Generate(uint id, Format format = Format.Base62) {
 	        var permutedID = PermuteId(id);

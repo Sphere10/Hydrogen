@@ -14,9 +14,8 @@
 using System;
 using System.Reflection;
 
-namespace Sphere10.Framework
-{
-    [Obfuscation(Exclude = true)]
+namespace Sphere10.Framework {
+	[Obfuscation(Exclude = true)]
     [Flags]
     public enum MouseButton
     {

@@ -1,7 +1,7 @@
 ﻿using System;
 
 namespace Sphere10.Framework {
-    public class MemoryPagedList<TItem> : MemoryPagedListBase<TItem> {
+	public class MemoryPagedList<TItem> : MemoryPagedListBase<TItem> {
 	    private readonly IItemSizer<TItem> _sizer;
 
 	    public MemoryPagedList(int pageSize, int maxOpenPages, int fixedItemSize)

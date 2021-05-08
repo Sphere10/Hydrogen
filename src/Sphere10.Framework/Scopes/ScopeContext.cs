@@ -11,17 +11,9 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading;
-
 namespace Sphere10.Framework {
 
-    public abstract class ScopeContext<T> : Disposable where T : ScopeContext<T> {
+	public abstract class ScopeContext<T> : Disposable where T : ScopeContext<T> {
 
 		protected ScopeContext(string contextName, ScopeContextPolicy policy) {
 			Policy = policy;

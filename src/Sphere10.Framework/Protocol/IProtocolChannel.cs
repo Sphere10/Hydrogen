@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 
 namespace Sphere10.Framework.Protocol {
 	public interface IProtocolChannel<TEndpoint, TMessageType, TMessage> : IDisposable {

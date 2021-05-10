@@ -45,7 +45,7 @@ namespace Sphere10.Hydrogen.Node {
 
 		static void Main(string[] args) {
 
-			bool parsed = Arguments.TryParse(args, out var results, out var messages);
+			Result<ILookup<string, string>> parsed = Arguments.TryParse(args);
 			
 			var hasHost = args.Length > 0;
 			var hostHandle = hasHost ? args[0] : null;

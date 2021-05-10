@@ -34,63 +34,7 @@ namespace Sphere10.Framework {
 			Arguments = arguments;
 		}
 
-		public bool TryParse(string[] args, out ILookup<string, string> results, out string[] messages) {
-			var parsedArgs = ParseArgsToLookup(args);
-			var validArgs = new LookupEx<string, string>();
-			var messagesList = new List<string>();
-
-			if (Options.HasFlag(CommandLineArgOptions.PrintHelpOnH)) {
-				if (parsedArgs.Contains("H")) {
-					PrintHelp();
-					messages = new string[0];
-					results = default;
-					return false;
-				}
-			}
-
-			if (Options.HasFlag(CommandLineArgOptions.PrintHelpOnHelp)) {
-				if (parsedArgs.Contains("Help")) {
-					PrintHelp();
-					messages = new string[0];
-					results = default;
-					return false;
-				}
-			}
-
-			foreach (var argument in Arguments) {
-				var isValid = true;
-
-				if (argument.Dependencies.Any()) {
-					foreach (var dependency in argument.Dependencies) {
-						if (!parsedArgs.Contains(dependency)) {
-							messagesList.Add($"Argument {argument.Name} has unmet dependency {dependency}.");
-							isValid = false;
-						}
-					}
-				}
-
-				if (argument.Traits.HasFlag(CommandLineArgTraits.Mandatory))
-					if (!parsedArgs.Contains(argument.Name)) {
-						messagesList.Add($"Argument {argument.Name} is required.");
-						isValid = false;
-					}
-
-				if (!argument.Traits.HasFlag(CommandLineArgTraits.Multiple))
-					if (parsedArgs.CountForKey(argument.Name) > 1) {
-						messagesList.Add($"Argument {argument.Name} supplied more than once but does not support multiple values.");
-						isValid = false;
-					}
-
-				if (isValid && parsedArgs.Contains(argument.Name))
-					validArgs.AddRange(argument.Name, parsedArgs[argument.Name]);
-			}
-
-			messages = messagesList.ToArray();
-			results = validArgs;
-			return !messages.Any();
-		}
-
-		public Result<ILookup<string, string>> TryParse2(string[] args) {
+		public Result<ILookup<string, string>> TryParse(string[] args) {
 			var result = Result<ILookup<string, string>>.Default;
 			var parsedArgs = ParseArgsToLookup(args);
 			var validArgs = new LookupEx<string, string>();

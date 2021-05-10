@@ -28,25 +28,21 @@ namespace Sphere10.Framework.Tests.Environment {
 					"/test test",
 					"-test test",
 					"--test test"
-				},
-				out var results,
-				out var messages);
+				});
 
 			var parsedEquals = args.TryParse(new[] {
 					"/test=test",
 					"-test=test",
 					"--test=test"
-				},
-				out var results2,
-				out var messages2);
+				});
 
-			Assert.IsTrue(parsedSpace);
-			Assert.AreEqual(1, results["test"].Count());
-			Assert.AreEqual("test", results["test"].Single());
+			Assert.IsTrue(parsedSpace.Success);
+			Assert.AreEqual(1, parsedSpace.Value["test"].Count());
+			Assert.AreEqual("test", parsedSpace.Value["test"].Single());
 
-			Assert.IsTrue(parsedEquals);
-			Assert.AreEqual(1, results2["test"].Count());
-			Assert.AreEqual("test", results2["test"].Single());
+			Assert.IsTrue(parsedEquals.Success);
+			Assert.AreEqual(1, parsedEquals.Value["test"].Count());
+			Assert.AreEqual("test", parsedEquals.Value["test"].Single());
 		}
 
 		[Test]
@@ -61,12 +57,10 @@ namespace Sphere10.Framework.Tests.Environment {
 					"/multi a",
 					"-multi b",
 					"--multi c"
-				},
-				out var results,
-				out var messages);
+				});
 
-			Assert.IsTrue(parsed);
-			Assert.AreEqual(new[] { "a", "b", "c" }, results["multi"]);
+			Assert.IsTrue(parsed.Success);
+			Assert.AreEqual(new[] { "a", "b", "c" }, parsed.Value["multi"]);
 		}
 
 		[Test]
@@ -81,23 +75,18 @@ namespace Sphere10.Framework.Tests.Environment {
 					"/single a",
 					"-single:b",
 					"--single=c"
-				},
-				out var results,
-				out var messages);
+				});
 
-			Assert.IsFalse(invalid);
-			Assert.AreEqual(1, messages.Length);
-			Assert.IsEmpty(results);
+			Assert.IsFalse(invalid.Success);
+			Assert.AreEqual(1, invalid.ErrorMessages.Count());
+			Assert.IsEmpty(invalid.Value);
 
 			var valid = args.TryParse(new[] {
 					"--single=c"
-				},
-				out var results2,
-				out var messages2);
+				});
 
-			Assert.IsTrue(valid);
-			Assert.IsEmpty(messages2);
-			Assert.AreEqual("c", results2["single"].Single());
+			Assert.IsTrue(valid.Success);
+			Assert.AreEqual("c", valid.Value["single"].Single());
 		}
 
 		[Test]
@@ -112,23 +101,18 @@ namespace Sphere10.Framework.Tests.Environment {
 
 			var invalid = args.TryParse(new[] {
 					"/argumentA test",
-				},
-				out var results,
-				out var messages);
+				});
 
-			Assert.IsFalse(invalid);
-			Assert.AreEqual(1, messages.Length);
-			Assert.IsEmpty(results);
+			Assert.IsFalse(invalid.Success);
+			Assert.AreEqual(1, invalid.ErrorMessages.Count());
+			Assert.IsEmpty(invalid.Value);
 
 			var valid = args.TryParse(new[] {
 					"/mandatory test",
-				},
-				out var results2,
-				out var messages2);
+				});
 
-			Assert.IsTrue(valid);
-			Assert.IsEmpty(messages2);
-			Assert.AreEqual("test", results2["mandatory"].Single());
+			Assert.IsTrue(valid.Success);
+			Assert.AreEqual("test", valid.Value["mandatory"].Single());
 		}
 
 		[Test]
@@ -144,23 +128,18 @@ namespace Sphere10.Framework.Tests.Environment {
 
 			var invalid = args.TryParse(new[] {
 					"/mandatory test",
-				},
-				out var results,
-				out var messages);
+				});
 
-			Assert.IsFalse(invalid);
-			Assert.AreEqual(1, messages.Length);
-			Assert.IsEmpty(results);
+			Assert.IsFalse(invalid.Success);
+			Assert.AreEqual(1, invalid.ErrorMessages.Count());
+			Assert.IsEmpty(invalid.Value);
 
 			var valid = args.TryParse(new[] {
 					"/mAnDaToRy test",
-				},
-				out var results2,
-				out var messages2);
+				});
 
-			Assert.IsTrue(valid);
-			Assert.IsEmpty(messages2);
-			Assert.AreEqual("test", results2["mAnDaToRy"].Single());
+			Assert.IsTrue(valid.Success);
+			Assert.AreEqual("test", valid.Value["mAnDaToRy"].Single());
 		}
 
 		[Test]
@@ -177,13 +156,9 @@ namespace Sphere10.Framework.Tests.Environment {
 			var help = args.TryParse(new[] {
 					"/parameter test",
 					"--h"
-				},
-				out var results,
-				out var messages);
+				});
 
-			Assert.IsFalse(help);
-			Assert.IsEmpty(messages);
-			Assert.IsEmpty(results);
+			Assert.IsFalse(help.Success);
 		}
 
 		[Test]
@@ -200,13 +175,9 @@ namespace Sphere10.Framework.Tests.Environment {
 			var help = args.TryParse(new[] {
 					"/parameter test",
 					"--help"
-				},
-				out var results,
-				out var messages);
+				});
 
-			Assert.IsFalse(help);
-			Assert.IsEmpty(messages);
-			Assert.IsEmpty(results);
+			Assert.IsFalse(help.Success);
 		}
 
 		[Test]
@@ -223,25 +194,21 @@ namespace Sphere10.Framework.Tests.Environment {
 
 			var invalid = args.TryParse(new[] {
 					"/mandatoryWithDependency test"
-				},
-				out var results,
-				out var messages);
+				});
 
-			Assert.IsFalse(invalid);
-			Assert.AreEqual(1, messages.Length);
-			Assert.IsEmpty(results);
+			Assert.IsFalse(invalid.Success);
+			Assert.AreEqual(1, invalid.ErrorMessages.Count());
+			Assert.IsEmpty(invalid.Value);
 
 			var valid = args.TryParse(new[] {
 					"/mandatoryWithDependency test",
 					"/test test"
-				},
-				out var results2,
-				out var messages2);
+				});
 
-			Assert.IsTrue(valid);
-			Assert.IsEmpty(messages2);
-			Assert.AreEqual("test", results2["mandatoryWithDependency"].Single());
-			Assert.AreEqual("test", results2["test"].Single());
+			Assert.IsTrue(valid.Success);
+			Assert.IsEmpty(valid.ErrorMessages);
+			Assert.AreEqual("test", valid.Value["mandatoryWithDependency"].Single());
+			Assert.AreEqual("test", valid.Value["test"].Single());
 		}
 
 		[Test]
@@ -265,11 +232,11 @@ namespace Sphere10.Framework.Tests.Environment {
 					new("param5", "5", CommandLineArgTraits.Mandatory)
 				});
 
-			var parsed = args.TryParse(input, out var results, out var messages);
+			var parsed = args.TryParse(input);
 
-			Assert.IsTrue(parsed);
-			Assert.AreEqual(5, results.Count());
-			Assert.IsEmpty(messages);
+			Assert.IsTrue(parsed.Success);
+			Assert.AreEqual(5,parsed.Value.Count());
+			Assert.IsEmpty(parsed.ErrorMessages);
 		}
 	}
 }

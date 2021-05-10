@@ -43,7 +43,7 @@ namespace Sphere10.Framework {
 				if (parsedArgs.Contains("H")) {
 					PrintHelp();
 					messages = new string[0];
-					results = validArgs;
+					results = default;
 					return false;
 				}
 			}
@@ -52,7 +52,7 @@ namespace Sphere10.Framework {
 				if (parsedArgs.Contains("Help")) {
 					PrintHelp();
 					messages = new string[0];
-					results = validArgs;
+					results = default;
 					return false;
 				}
 			}
@@ -90,12 +90,83 @@ namespace Sphere10.Framework {
 			return !messages.Any();
 		}
 
+		public Result<ILookup<string, string>> TryParse2(string[] args) {
+			var result = Result<ILookup<string, string>>.Default;
+			var parsedArgs = ParseArgsToLookup(args);
+			var validArgs = new LookupEx<string, string>();
+
+			if (Options.HasFlag(CommandLineArgOptions.PrintHelpOnH)) {
+				if (parsedArgs.Contains("H")) {
+					PrintHelp();
+					return Result<ILookup<string, string>>.Error("Wrong for some reason");
+				}
+			}
+
+			if (Options.HasFlag(CommandLineArgOptions.PrintHelpOnHelp)) {
+				if (parsedArgs.Contains("Help")) {
+					PrintHelp();
+					return Result<ILookup<string, string>>.Error("Wrong for some reason");
+				}
+			}
+
+			foreach (var argument in Arguments) {
+				if (argument.Dependencies.Any()) {
+					foreach (var dependency in argument.Dependencies) {
+						if (!parsedArgs.Contains(dependency)) {
+							result.AddError($"Argument {argument.Name} has unmet dependency {dependency}.");
+						}
+					}
+				}
+
+				if (argument.Traits.HasFlag(CommandLineArgTraits.Mandatory))
+					if (!parsedArgs.Contains(argument.Name)) {
+						result.AddError($"Argument {argument.Name} is required.");
+					}
+
+				if (!argument.Traits.HasFlag(CommandLineArgTraits.Multiple))
+					if (parsedArgs.CountForKey(argument.Name) > 1) {
+						result.AddError($"Argument {argument.Name} supplied more than once but does not support multiple values.");
+					}
+
+				if (result.Success && parsedArgs.Contains(argument.Name))
+					validArgs.AddRange(argument.Name, parsedArgs[argument.Name]);
+			}
+			result.Value = validArgs;
+			return result;
+		}
+
 		public void PrintHelp() {
+			//   Header
+			//
+			//   Arguments:
+			//      --print                    This will print to the device
+			//      --delete                   This will print to the device
+			//      --remote                   This will print to the device
+			//
+			//   Sub-Commands:
+			//		remote	                    This subcommand deals with remotes
+			//         --add                    This will print to the device
+			//         --remove                 This will print to the device
+			//         --print                  This will print to the device
+			//
+			//		push                        This subcommand deals with push
+			//         --add                    This will print to the device
+			//         --remove                 This will print to the device
+			//         --print                  This will print to the device
+			//
+			//		push                        This subcommand deals with push
+			//         --add                    This will print to the device
+			//         --print                  This will print to the device
+			//	   	   special                  This subcommand deals with push
+			//           --add                    This will print to the device
+			//           --remove                 This will print to the device
+
 			foreach (var line in Header)
 				Console.WriteLine(line);
 
 			foreach (var arg in Arguments)
 				Console.WriteLine(arg.Description);
+
 
 			foreach (var line in Footer) {
 				Console.WriteLine(line);
@@ -153,5 +224,7 @@ namespace Sphere10.Framework {
 
 			return lookupEx;
 		}
+
+
 	}
 }

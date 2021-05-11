@@ -1,242 +1,275 @@
-﻿using System.Linq;
-using NUnit.Framework;
+﻿//using System.Linq;
+//using NUnit.Framework;
 
-namespace Sphere10.Framework.Tests.Environment {
+//namespace Sphere10.Framework.Tests.Environment {
 
-	public class CommandLineArgsTests {
+//	public class CommandLineArgsTests {
 
-		private string[] Header { get; } = {
-			"Unit Testing",
-			"CommandLineArgsTest"
-		};
+//		private string[] Header { get; } = {
+//			"Unit Testing",
+//			"CommandLineArgsTest"
+//		};
 
-		private string[] Footer { get; } = {
-			"Footer"
-		};
+//		private string[] Footer { get; } = {
+//			"Footer"
+//		};
 
-		[Test]
-		[TestCase(CommandLineArgOptions.ForwardSlash)]
-		[TestCase(CommandLineArgOptions.SingleDash)]
-		[TestCase(CommandLineArgOptions.DoubleDash)]
-		public void ArgNameMatchOptions(CommandLineArgOptions options) {
-			var args = new CommandLineArgs(Header,
-				Footer,
-				new CommandLineArg[] { new("test", "test", CommandLineArgTraits.Mandatory) },
-				options);
+//		[Test]
+//		[TestCase(CommandLineArgOptions.ForwardSlash)]
+//		[TestCase(CommandLineArgOptions.SingleDash)]
+//		[TestCase(CommandLineArgOptions.DoubleDash)]
+//		public void ArgNameMatchOptions(CommandLineArgOptions options) {
+//			var args = new CommandLineArgs(Header,
+//				Footer,
+//				new CommandLineArg[] { new("test", "test", CommandLineArgTraits.Mandatory) },
+//				options);
 
-			var parsedSpace = args.TryParse(new[] {
-					"/test test",
-					"-test test",
-					"--test test"
-				});
+//			var parsedSpace = args.TryParse(new[] {
+//					"/test test",
+//					"-test test",
+//					"--test test"
+//				},
+//				out var results,
+//				out var messages);
 
-			var parsedEquals = args.TryParse(new[] {
-					"/test=test",
-					"-test=test",
-					"--test=test"
-				});
+//			var parsedEquals = args.TryParse(new[] {
+//					"/test=test",
+//					"-test=test",
+//					"--test=test"
+//				},
+//				out var results2,
+//				out var messages2);
 
-			Assert.IsTrue(parsedSpace.Success);
-			Assert.AreEqual(1, parsedSpace.Value["test"].Count());
-			Assert.AreEqual("test", parsedSpace.Value["test"].Single());
+//			Assert.IsTrue(parsedSpace);
+//			Assert.AreEqual(1, results["test"].Count());
+//			Assert.AreEqual("test", results["test"].Single());
 
-			Assert.IsTrue(parsedEquals.Success);
-			Assert.AreEqual(1, parsedEquals.Value["test"].Count());
-			Assert.AreEqual("test", parsedEquals.Value["test"].Single());
-		}
+//			Assert.IsTrue(parsedEquals);
+//			Assert.AreEqual(1, results2["test"].Count());
+//			Assert.AreEqual("test", results2["test"].Single());
+//		}
 
-		[Test]
-		public void ArgTraitMulti() {
-			var args = new CommandLineArgs(
-				Header,
-				Footer,
-				new CommandLineArg[] { new("multi", "multiple trait", CommandLineArgTraits.Multiple) },
-				CommandLineArgOptions.DoubleDash | CommandLineArgOptions.SingleDash | CommandLineArgOptions.ForwardSlash);
+//		[Test]
+//		public void ArgTraitMulti() {
+//			var args = new CommandLineArgs(
+//				Header,
+//				Footer,
+//				new CommandLineArg[] { new("multi", "multiple trait", CommandLineArgTraits.Multiple) },
+//				CommandLineArgOptions.DoubleDash | CommandLineArgOptions.SingleDash | CommandLineArgOptions.ForwardSlash);
 
-			var parsed = args.TryParse(new[] {
-					"/multi a",
-					"-multi b",
-					"--multi c"
-				});
+//			var parsed = args.TryParse(new[] {
+//					"/multi a",
+//					"-multi b",
+//					"--multi c"
+//				},
+//				out var results,
+//				out var messages);
 
-			Assert.IsTrue(parsed.Success);
-			Assert.AreEqual(new[] { "a", "b", "c" }, parsed.Value["multi"]);
-		}
+//			Assert.IsTrue(parsed);
+//			Assert.AreEqual(new[] { "a", "b", "c" }, results["multi"]);
+//		}
 
-		[Test]
-		public void ArgTraitSingle() {
-			var args = new CommandLineArgs(
-				Header,
-				Footer,
-				new CommandLineArg[] { new("single", "single trait") },
-				CommandLineArgOptions.DoubleDash | CommandLineArgOptions.SingleDash | CommandLineArgOptions.ForwardSlash);
+//		[Test]
+//		public void ArgTraitSingle() {
+//			var args = new CommandLineArgs(
+//				Header,
+//				Footer,
+//				new CommandLineArg[] { new("single", "single trait") },
+//				CommandLineArgOptions.DoubleDash | CommandLineArgOptions.SingleDash | CommandLineArgOptions.ForwardSlash);
 
-			var invalid = args.TryParse(new[] {
-					"/single a",
-					"-single:b",
-					"--single=c"
-				});
+//			var invalid = args.TryParse(new[] {
+//					"/single a",
+//					"-single:b",
+//					"--single=c"
+//				},
+//				out var results,
+//				out var messages);
 
-			Assert.IsFalse(invalid.Success);
-			Assert.AreEqual(1, invalid.ErrorMessages.Count());
-			Assert.IsEmpty(invalid.Value);
+//			Assert.IsFalse(invalid);
+//			Assert.AreEqual(1, messages.Length);
+//			Assert.IsEmpty(results);
 
-			var valid = args.TryParse(new[] {
-					"--single=c"
-				});
+//			var valid = args.TryParse(new[] {
+//					"--single=c"
+//				},
+//				out var results2,
+//				out var messages2);
 
-			Assert.IsTrue(valid.Success);
-			Assert.AreEqual("c", valid.Value["single"].Single());
-		}
+//			Assert.IsTrue(valid);
+//			Assert.IsEmpty(messages2);
+//			Assert.AreEqual("c", results2["single"].Single());
+//		}
 
-		[Test]
-		public void ArgTraitMandatory() {
-			var args = new CommandLineArgs(
-				Header,
-				Footer,
-				new CommandLineArg[] {
-					new("mandatory", "mandatory trait", CommandLineArgTraits.Mandatory)
-				},
-				CommandLineArgOptions.DoubleDash | CommandLineArgOptions.SingleDash | CommandLineArgOptions.ForwardSlash);
+//		[Test]
+//		public void ArgTraitMandatory() {
+//			var args = new CommandLineArgs(
+//				Header,
+//				Footer,
+//				new CommandLineArg[] {
+//					new("mandatory", "mandatory trait", CommandLineArgTraits.Mandatory)
+//				},
+//				CommandLineArgOptions.DoubleDash | CommandLineArgOptions.SingleDash | CommandLineArgOptions.ForwardSlash);
 
-			var invalid = args.TryParse(new[] {
-					"/argumentA test",
-				});
+//			var invalid = args.TryParse(new[] {
+//					"/argumentA test",
+//				},
+//				out var results,
+//				out var messages);
 
-			Assert.IsFalse(invalid.Success);
-			Assert.AreEqual(1, invalid.ErrorMessages.Count());
-			Assert.IsEmpty(invalid.Value);
+//			Assert.IsFalse(invalid);
+//			Assert.AreEqual(1, messages.Length);
+//			Assert.IsEmpty(results);
 
-			var valid = args.TryParse(new[] {
-					"/mandatory test",
-				});
+//			var valid = args.TryParse(new[] {
+//					"/mandatory test",
+//				},
+//				out var results2,
+//				out var messages2);
 
-			Assert.IsTrue(valid.Success);
-			Assert.AreEqual("test", valid.Value["mandatory"].Single());
-		}
+//			Assert.IsTrue(valid);
+//			Assert.IsEmpty(messages2);
+//			Assert.AreEqual("test", results2["mandatory"].Single());
+//		}
 
-		[Test]
-		public void ArgCaseSensitive() {
-			var args = new CommandLineArgs(
-				Header,
-				Footer,
-				new CommandLineArg[] {
-					new("mAnDaToRy", "mandatory trait", CommandLineArgTraits.Mandatory)
-				},
-				CommandLineArgOptions.DoubleDash | CommandLineArgOptions.SingleDash | CommandLineArgOptions.ForwardSlash |
-				CommandLineArgOptions.CaseSensitive);
+//		[Test]
+//		public void ArgCaseSensitive() {
+//			var args = new CommandLineArgs(
+//				Header,
+//				Footer,
+//				new CommandLineArg[] {
+//					new("mAnDaToRy", "mandatory trait", CommandLineArgTraits.Mandatory)
+//				},
+//				CommandLineArgOptions.DoubleDash | CommandLineArgOptions.SingleDash | CommandLineArgOptions.ForwardSlash |
+//				CommandLineArgOptions.CaseSensitive);
 
-			var invalid = args.TryParse(new[] {
-					"/mandatory test",
-				});
+//			var invalid = args.TryParse(new[] {
+//					"/mandatory test",
+//				},
+//				out var results,
+//				out var messages);
 
-			Assert.IsFalse(invalid.Success);
-			Assert.AreEqual(1, invalid.ErrorMessages.Count());
-			Assert.IsEmpty(invalid.Value);
+//			Assert.IsFalse(invalid);
+//			Assert.AreEqual(1, messages.Length);
+//			Assert.IsEmpty(results);
 
-			var valid = args.TryParse(new[] {
-					"/mAnDaToRy test",
-				});
+//			var valid = args.TryParse(new[] {
+//					"/mAnDaToRy test",
+//				},
+//				out var results2,
+//				out var messages2);
 
-			Assert.IsTrue(valid.Success);
-			Assert.AreEqual("test", valid.Value["mAnDaToRy"].Single());
-		}
+//			Assert.IsTrue(valid);
+//			Assert.IsEmpty(messages2);
+//			Assert.AreEqual("test", results2["mAnDaToRy"].Single());
+//		}
 
-		[Test]
-		public void NoParseOnH() {
-			var args = new CommandLineArgs(
-				Header,
-				Footer,
-				new CommandLineArg[] {
-					new("parameter", "mandatory", CommandLineArgTraits.Mandatory)
-				},
-				CommandLineArgOptions.DoubleDash | CommandLineArgOptions.SingleDash | CommandLineArgOptions.ForwardSlash |
-				CommandLineArgOptions.PrintHelpOnH | CommandLineArgOptions.PrintHelpOnHelp);
+//		[Test]
+//		public void NoParseOnH() {
+//			var args = new CommandLineArgs(
+//				Header,
+//				Footer,
+//				new CommandLineArg[] {
+//					new("parameter", "mandatory", CommandLineArgTraits.Mandatory)
+//				},
+//				CommandLineArgOptions.DoubleDash | CommandLineArgOptions.SingleDash | CommandLineArgOptions.ForwardSlash |
+//				CommandLineArgOptions.PrintHelpOnH | CommandLineArgOptions.PrintHelpOnHelp);
 
-			var help = args.TryParse(new[] {
-					"/parameter test",
-					"--h"
-				});
+//			var help = args.TryParse(new[] {
+//					"/parameter test",
+//					"--h"
+//				},
+//				out var results,
+//				out var messages);
 
-			Assert.IsFalse(help.Success);
-		}
+//			Assert.IsFalse(help);
+//			Assert.IsEmpty(messages);
+//			Assert.IsEmpty(results);
+//		}
 
-		[Test]
-		public void NoParseOnHelp() {
-			var args = new CommandLineArgs(
-				Header,
-				Footer,
-				new CommandLineArg[] {
-					new("parameter", "mandatory", CommandLineArgTraits.Mandatory)
-				},
-				CommandLineArgOptions.DoubleDash | CommandLineArgOptions.SingleDash | CommandLineArgOptions.ForwardSlash |
-				CommandLineArgOptions.PrintHelpOnH | CommandLineArgOptions.PrintHelpOnHelp);
+//		[Test]
+//		public void NoParseOnHelp() {
+//			var args = new CommandLineArgs(
+//				Header,
+//				Footer,
+//				new CommandLineArg[] {
+//					new("parameter", "mandatory", CommandLineArgTraits.Mandatory)
+//				},
+//				CommandLineArgOptions.DoubleDash | CommandLineArgOptions.SingleDash | CommandLineArgOptions.ForwardSlash |
+//				CommandLineArgOptions.PrintHelpOnH | CommandLineArgOptions.PrintHelpOnHelp);
 
-			var help = args.TryParse(new[] {
-					"/parameter test",
-					"--help"
-				});
+//			var help = args.TryParse(new[] {
+//					"/parameter test",
+//					"--help"
+//				},
+//				out var results,
+//				out var messages);
 
-			Assert.IsFalse(help.Success);
-		}
+//			Assert.IsFalse(help);
+//			Assert.IsEmpty(messages);
+//			Assert.IsEmpty(results);
+//		}
 
-		[Test]
-		public void ArgDependencies() {
-			var args = new CommandLineArgs(
-				Header,
-				Footer,
-				new CommandLineArg[] {
-					new("mandatoryWithDependency", "mandatory", CommandLineArgTraits.Mandatory, "test"),
-					new("test", "optional", CommandLineArgTraits.Optional)
-				},
-				CommandLineArgOptions.DoubleDash | CommandLineArgOptions.SingleDash | CommandLineArgOptions.ForwardSlash |
-				CommandLineArgOptions.PrintHelpOnH | CommandLineArgOptions.PrintHelpOnHelp);
+//		[Test]
+//		public void ArgDependencies() {
+//			var args = new CommandLineArgs(
+//				Header,
+//				Footer,
+//				new CommandLineArg[] {
+//					new("mandatoryWithDependency", "mandatory", CommandLineArgTraits.Mandatory, "test"),
+//					new("test", "optional", CommandLineArgTraits.Optional)
+//				},
+//				CommandLineArgOptions.DoubleDash | CommandLineArgOptions.SingleDash | CommandLineArgOptions.ForwardSlash |
+//				CommandLineArgOptions.PrintHelpOnH | CommandLineArgOptions.PrintHelpOnHelp);
 
-			var invalid = args.TryParse(new[] {
-					"/mandatoryWithDependency test"
-				});
+//			var invalid = args.TryParse(new[] {
+//					"/mandatoryWithDependency test"
+//				},
+//				out var results,
+//				out var messages);
 
-			Assert.IsFalse(invalid.Success);
-			Assert.AreEqual(1, invalid.ErrorMessages.Count());
-			Assert.IsEmpty(invalid.Value);
+//			Assert.IsFalse(invalid);
+//			Assert.AreEqual(1, messages.Length);
+//			Assert.IsEmpty(results);
 
-			var valid = args.TryParse(new[] {
-					"/mandatoryWithDependency test",
-					"/test test"
-				});
+//			var valid = args.TryParse(new[] {
+//					"/mandatoryWithDependency test",
+//					"/test test"
+//				},
+//				out var results2,
+//				out var messages2);
 
-			Assert.IsTrue(valid.Success);
-			Assert.IsEmpty(valid.ErrorMessages);
-			Assert.AreEqual("test", valid.Value["mandatoryWithDependency"].Single());
-			Assert.AreEqual("test", valid.Value["test"].Single());
-		}
+//			Assert.IsTrue(valid);
+//			Assert.IsEmpty(messages2);
+//			Assert.AreEqual("test", results2["mandatoryWithDependency"].Single());
+//			Assert.AreEqual("test", results2["test"].Single());
+//		}
 
-		[Test]
-		public void ParseComplexArg() {
-			string[] input = {
-				"-param1 value1",
-				"--param2",
-				"/param3:\"Test-:-work\"",
-				"/param4=happy",
-				"-param5 '--=nice=--'"
-			};
+//		[Test]
+//		public void ParseComplexArg() {
+//			string[] input = {
+//				"-param1 value1",
+//				"--param2",
+//				"/param3:\"Test-:-work\"",
+//				"/param4=happy",
+//				"-param5 '--=nice=--'"
+//			};
 
-			var args = new CommandLineArgs(
-				Header,
-				Footer,
-				new CommandLineArg[] {
-					new("param1", "1", CommandLineArgTraits.Mandatory),
-					new("param2", "2", CommandLineArgTraits.Mandatory),
-					new("param3", "3", CommandLineArgTraits.Mandatory),
-					new("param4", "4", CommandLineArgTraits.Mandatory),
-					new("param5", "5", CommandLineArgTraits.Mandatory)
-				});
+//			var args = new CommandLineArgs(
+//				Header,
+//				Footer,
+//				new CommandLineArg[] {
+//					new("param1", "1", CommandLineArgTraits.Mandatory),
+//					new("param2", "2", CommandLineArgTraits.Mandatory),
+//					new("param3", "3", CommandLineArgTraits.Mandatory),
+//					new("param4", "4", CommandLineArgTraits.Mandatory),
+//					new("param5", "5", CommandLineArgTraits.Mandatory)
+//				});
 
-			var parsed = args.TryParse(input);
+//			var parsed = args.TryParse(input, out var results, out var messages);
 
-			Assert.IsTrue(parsed.Success);
-			Assert.AreEqual(5,parsed.Value.Count());
-			Assert.IsEmpty(parsed.ErrorMessages);
-		}
-	}
-}
+//			Assert.IsTrue(parsed);
+//			Assert.AreEqual(5, results.Count());
+//			Assert.IsEmpty(messages);
+//		}
+//	}
+//}

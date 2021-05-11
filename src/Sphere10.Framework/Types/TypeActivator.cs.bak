@@ -18,12 +18,6 @@ using System.Linq;
 namespace Sphere10.Framework {
 	public static class TypeActivator {
 
-        public static object Create(string typeName, string assemblyHint, params object[] parameters) { 
-            // resolve the type
-            var targetType = TypeResolver.Resolve(typeName, assemblyHint);
-            return Create(targetType, parameters);
-        }
-
         public static object Create(string typeName, params object[] parameters) {
             // resolve the type
             var targetType = TypeResolver.Resolve(typeName);

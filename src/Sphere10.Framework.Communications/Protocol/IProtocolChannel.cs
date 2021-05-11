@@ -14,7 +14,7 @@ namespace Sphere10.Framework.Communications.Protocol {
 
 		ProtocolChannelInitiator Initiator { get; init; }
 
-		void Open(TMessage handshake);
+		void Open(TMessage message);
 
 		void Close();
 

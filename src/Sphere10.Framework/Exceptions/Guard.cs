@@ -120,16 +120,20 @@ namespace Sphere10.Framework {
         }
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static void ArgumentCast<TType>(object @object, out TType castedObject, string parameter) {
-			if (!(@object is TType cobj))
-				throw new ArgumentException($"Cannot be cast to {typeof(TType)}", parameter);
-			castedObject = cobj;
-		}
-
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static TType ArgumentCast<TType>(object @object, string parameter) {
 			ArgumentCast<TType>(@object, out var result, parameter);
 			return result;
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static void ArgumentCast<TType>(object @object, out TType castedObject, string parameter)
+			=> ArgumentCast(@object, out castedObject, parameter, $"Cannot be cast to {typeof(TType)}");
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static void ArgumentCast<TType>(object @object, out TType castedObject, string parameter, string message) {
+			if (!(@object is TType cobj))
+				throw new ArgumentException(message, parameter);
+			castedObject = cobj;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]

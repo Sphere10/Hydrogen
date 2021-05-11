@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 
 namespace Sphere10.Framework.Communications.Protocol {
@@ -40,7 +41,7 @@ namespace Sphere10.Framework.Communications.Protocol {
 			public TEndpoint Remote { get; init; }
 			public ProtocolChannelInitiator Initiator { get; init; }
 
-			public abstract void Open(TMessage handshake);
+			public abstract void Open(TMessage message);
 
 			public abstract void Close();
 

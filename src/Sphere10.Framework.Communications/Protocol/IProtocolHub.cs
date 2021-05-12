@@ -9,6 +9,8 @@ namespace Sphere10.Framework.Communications.Protocol {
 
 		event EventHandlerEx<object, TMessage, TChannel> ReceivedConnection;
 			
+		TEndpoint HubEndpoint { get; init; }
+
 		int MaxChannels { get; init; }
 
 		ISynchronizedReadOnlyList<TChannel> Channels { get; }

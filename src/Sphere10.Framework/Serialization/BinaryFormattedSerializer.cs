@@ -9,7 +9,7 @@ namespace Sphere10.Framework {
 	/// </summary>
 	/// <remarks>Due to limitations of <see cref="BinaryFormatter"/> this class performs a serialization on <see cref="CalculateSize"/>.</remarks>
 	/// <typeparam name="TItem"></typeparam>
-	public sealed class BinaryFormattedSerializer<TItem> : ItemSerializerBase<TItem> {
+	public class BinaryFormattedSerializer<TItem> : ItemSerializerBase<TItem> {
 
 		public override int CalculateSize(TItem item) {
 			var formatter = new BinaryFormatter();

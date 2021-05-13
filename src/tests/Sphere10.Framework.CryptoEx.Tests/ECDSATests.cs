@@ -116,7 +116,7 @@ namespace Sphere10.Framework.CryptoEx.Tests {
 			};
 
 			var sig = CallPascalOpenSSL(args).ToHexByteArray();
-			Assert.IsTrue(ecdsa.Verify(sig, message, publicKey));
+			Assert.IsTrue(ecdsa.VerifyDigest(sig, messageDigest.ToHexByteArray(), publicKey));
 		}
 
 		[Test]

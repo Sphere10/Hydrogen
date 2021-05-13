@@ -6,15 +6,15 @@ namespace Sphere10.Framework.Communications {
 		private AnonymousPipeClientStream _writePipe;
 		private AnonymousPipeClientStream _readPipe;
 		private IChannelMediator _channelMediatorImplementation;
-		private FactorySerializer<IAnonymousPipeMessage> _serializer;
+		private readonly FactorySerializer<IAnonymousPipeMessage> _serializer;
 
 		public AnonymousPipeServer(FactorySerializer<IAnonymousPipeMessage> serializer) {
 			_serializer = serializer;
 		}
 
 		public AnonymousPipeChannel InitiateConnection(AnonymousPipeEndpoint serverEndpoint) {
-			_writePipe = new AnonymousPipeClientStream(PipeDirection.In, serverEndpoint.ReaderHandle);
-			_readPipe = new AnonymousPipeClientStream(PipeDirection.In, serverEndpoint.WriterHandle);
+			_writePipe = new AnonymousPipeClientStream(PipeDirection.In, serverEndpoint.WriterHandle);
+			_readPipe = new AnonymousPipeClientStream(PipeDirection.Out, serverEndpoint.ReaderHandle);
 			return new AnonymousPipeChannel(_writePipe, _readPipe, _serializer, CommunicationRole.Client, CommunicationRole.Client, this);
 		}
 

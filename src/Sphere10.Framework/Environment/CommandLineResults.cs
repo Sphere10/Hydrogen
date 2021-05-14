@@ -2,17 +2,15 @@
 
 namespace Sphere10.Framework {
 	public class CommandLineResults {
-		public CommandLineResults(ILookup<string, string> arguments, ILookup<string, CommandLineResults> subCommands) {
-			Guard.ArgumentNotNull(arguments, nameof(arguments));
+		public CommandLineResults(LookupEx<string, CommandLineResults> subCommands, LookupEx<string, string> arguments) {
 			Guard.ArgumentNotNull(subCommands, nameof(subCommands));
-			
-			Arguments = arguments;
+			Guard.ArgumentNotNull(arguments, nameof(arguments));
+
 			SubCommands = subCommands;
+			Arguments = arguments;
 		}
+		public LookupEx<string, string> Arguments { get; }
 
-		public ILookup<string, string> Arguments { get; }
-
-		public ILookup<string, CommandLineResults> SubCommands { get; }
-
+		public LookupEx<string, CommandLineResults> SubCommands { get; }
 	}
 }

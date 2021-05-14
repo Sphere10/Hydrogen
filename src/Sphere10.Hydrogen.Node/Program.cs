@@ -23,12 +23,10 @@ namespace Sphere10.Hydrogen.Node {
 				"Copyright (c) Sphere 10 Software 2021 - {CurrentYear}"
 			},
 			new string[0],
-			new CommandLineArg[] {
-				new("service", "Run the node in the background"),
-				new("host", "The handle provided by the host process for anonymous pipe IPC"),
-			},
-			CommandLineArgOptions.CaseSensitive | CommandLineArgOptions.DoubleDash | CommandLineArgOptions.PrintHelpOnH |
-			CommandLineArgOptions.PrintHelpOnHelp);
+			new SubCommand[] {
+				new SubCommand("service", "Run the node in the background", new CommandLineArg[0], new SubCommand[0]),
+				new SubCommand("host", "The handle provided by the host process for anonymous pipe IPC", new CommandLineArg[0], new SubCommand[0])
+			}, new CommandLineArg[0]);
 
 
 		private static void ListenToHostCommands(string pipeHandleAsString, CancellationTokenSource cts) {
@@ -45,7 +43,7 @@ namespace Sphere10.Hydrogen.Node {
 
 		static void Main(string[] args) {
 
-			Result<ILookup<string, string>> parsed = Arguments.TryParse(args);
+			Result<CommandLineResults> parsed = Arguments.TryParse(args);
 			
 			var hasHost = args.Length > 0;
 			var hostHandle = hasHost ? args[0] : null;

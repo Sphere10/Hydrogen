@@ -13,6 +13,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 
@@ -31,6 +32,14 @@ namespace Sphere10.Framework {
 			"Microsoft.",
 			"SMDiagnostics,",
 		};
+
+
+		public static void ExtractEmbeddedResource(this Assembly assembly, string resourceName, string filePath, bool createDirectories = false) {
+			using var stream = assembly.GetManifestResourceStream(resourceName);
+			if (!File.Exists(filePath))
+				Tools.FileSystem.CreateBlankFile(filePath, createDirectories);
+			Tools.FileSystem.AppendAllBytes(filePath, stream);
+		}
 
 		public static IEnumerable<Assembly> GetNonFrameworkAssemblies(this AppDomain domain) {
 			return domain.GetAssemblies().Where(x =>  !FrameworkPrefixes.Any(p => x.FullName.StartsWith(p)));

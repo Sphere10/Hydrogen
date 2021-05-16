@@ -17,6 +17,7 @@ namespace Sphere10.Framework {
 
 
 		public void Compute(ReadOnlySpan<byte> input, Span<byte> output) {
+			// Some .NET HashAlgorithm's default to native vectorized extern's (FAST)
 			if (_needsFinalBlock)
 				throw new InvalidOperationException("Complete prior transformations before starting a new one");
 
@@ -25,7 +26,7 @@ namespace Sphere10.Framework {
 		}
 
 		public void Transform(ReadOnlySpan<byte> part) {
-			// Slow
+			// Will always use managed transform (Slower)
 			_needsFinalBlock = true;
 			var arr = part.ToArray();
 			_hashAlgorithm.TransformBlock(arr, 0, arr.Length, null, 0);

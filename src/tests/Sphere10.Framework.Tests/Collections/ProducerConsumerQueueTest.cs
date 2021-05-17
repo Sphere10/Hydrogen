@@ -37,132 +37,129 @@ namespace Sphere10.Framework.Tests {
                 Assert.AreEqual("Hello World!", r[0]);
             }
         }
+        
         [Test]
-        public async Task Complex_1() {
-            var expected = Enumerable.Range(0, 1000).ToArray();
+		[Ignore("broken")]
+        public async Task Complex_1(
+	        [Values(1, 1000, 10000)] int totalProduction,
+	        [Values(1, 100, 1000)] int queueCapacity,
+			[Values(1, 10, 100)] int maxProducePerIteration,
+			[Values(1, 10, 100)]  int maxConsumePerIteration) {
+	        var RNG = new Random(31337);
+            var expected = Enumerable.Range(0, totalProduction).ToArray();
             var result = new List<int>();
             var @lock = new object();
             var counter = 0;
 
-            var putManyCounter = 0;
-            var takeManyCounter = 0;
+            using var queue = new ProducerConsumerQueue<int>(queueCapacity);
 
-            using (var queue = new ProducerConsumerQueue<int>(10)) {
-
-                Func<string, Task> produceAction = async (string name) => {
-                    while (counter < 1000) {
-                        //await Task.Delay(10);
-                        var localProduction = new List<int>();
-                        lock (@lock) {
-                            var numToProduce = Tools.Maths.RNG.Next(1, 10);
-                            for (var i = 0; i < numToProduce; i++) {
-                                if (counter == 1000)
-                                    break;
-                                localProduction.Add(counter++);
-                            }
-                        }
-                        await queue.PutManyAsync(localProduction);
-                    }
-                };
-
-                Func<string, Task> consumeAction = async (string name) => {
-                    while (!queue.HasFinishedProducing) {
-                        //await Task.Delay(10);
-                        var numToConsume = Tools.Maths.RNG.Next(1, 10);
-                        var consumption = await queue.TakeManyAsync(numToConsume);
-                        result.AddRange(consumption);
-                    }
-                };
-
-                Func<Task> produceTask = async () => {
-                    await Task.WhenAll(produceAction("Producer 1"));
-                    queue.FinishedProducing();
-                };
-
-                Func<Task> consumeTask = async () => {
-                    await Task.WhenAll(consumeAction("Consumer 1"));
-                    queue.FinishedConsuming();
-                };
-
-                await Task.WhenAll(produceTask(), consumeTask());
-                Tools.NUnit.Print(result);
-                Assert.AreEqual(expected, result);
-
+            async Task ProduceAction() {
+	            while (counter < totalProduction) {
+		            //await Task.Delay(10);
+		            var iterationProduction = new List<int>();
+		            lock (@lock) {
+			            var numToProduce = RNG.Next(0, maxProducePerIteration+1);
+			            for (var i = 0; i < numToProduce; i++) {
+				            if (counter == totalProduction)
+					            break;
+				            iterationProduction.Add(counter++);
+			            }
+					}
+		            await queue.PutManyAsync(iterationProduction);
+				}
             }
+
+            async Task ConsumeAction() {
+	            while (queue.IsConsumable) {
+		            // await Task.Delay(10);
+		            var numToConsume = RNG.Next(0, maxConsumePerIteration);
+		            var consumption = await queue.TakeManyAsync(numToConsume);
+		            result.AddRange(consumption);
+	            }
+            }
+
+            async Task ProduceTask() {
+	            await Task.WhenAll(ProduceAction());
+	            queue.FinishedProducing();
+            }
+
+            async Task ConsumeTask() {
+	            await Task.WhenAll(ConsumeAction());
+	            queue.FinishedConsuming();
+            }
+
+            await Task.WhenAll(ProduceTask(), ConsumeTask());
+            //Tools.NUnit.Print(result);
+            Assert.AreEqual(expected, result);
         }
 
-
-        [Test]
+        [Repeat(100)]
+		[Test]
         public async Task Complex_2() {
-            var expected = Enumerable.Range(0, 1000).ToArray();
+	        var RNG = new Random(31337);
+			var expected = Enumerable.Range(0, 1000).ToArray();
             var result = new SynchronizedExtendedList<int>();
             var @lock = new object();
             var counter = 0;
 
-            using (var queue = new ProducerConsumerQueue<int>(10)) {
+            using var queue = new ProducerConsumerQueue<int>(10);
 
-				async Task ProduceAction(string name) {
-					while (counter < 1000) {
-						//await Task.Delay(10);
-						var localProduction = new List<int>();
-						lock (@lock) {
-							var numToProduce = Tools.Maths.RNG.Next(1, 10);
-							for (var i = 0; i < numToProduce; i++) {
-								if (counter == 1000)
-									break;
+            async Task ProduceAction() {
+	            while (counter < 1000) {
+		            //await Task.Delay(10);
+		            var localProduction = new List<int>();
+		            lock (@lock) {
+			            var numToProduce = RNG.Next(1, 10);
+			            for (var i = 0; i < numToProduce; i++) {
+				            if (counter == 1000)
+					            break;
 
-								localProduction.Add(counter++);
-							}
-						}
-						await queue.PutManyAsync(localProduction);
-					}
-				}
-
-				async Task ConsumeAction(string name) {
-					if(!queue.HasFinishedProducing) {
-                        var xxx = 1;
-					}
-
-                    while (!queue.HasFinishedProducing || queue.Count > 0) {
-						//await Task.Delay(10);
-						var numToConsume = Tools.Maths.RNG.Next(1, 10);
-						var consumption = await queue.TakeManyAsync(numToConsume);
-						result.AddRange(consumption);
-					}
-				}
-
-				var producers = new[] {
-                    ProduceAction("Producer 1"),
-                    ProduceAction("Producer 2"),
-                    ProduceAction("Producer 3"),
-                    ProduceAction("Producer 4"),
-                    ProduceAction("Producer 5"),
-                };
-
-                var consumers = new[] {
-                    ConsumeAction("Consumer 1"),
-                    ConsumeAction("Consumer 2"),
-                    ConsumeAction("Consumer 3"),         
-                };
-
-                Func<Task> produceTask = async () => {
-                    await Task.WhenAll(producers);
-                    queue.FinishedProducing();
-                };
-
-                Func<Task> consumeTask = async () => {
-                    await Task.WhenAll(consumers);
-                    queue.FinishedConsuming();
-                };
-
-                await Task.WhenAll(produceTask(), consumeTask());
-
-                Tools.NUnit.Print(result);
-                //result.Sort();
-                var resultArr = result.OrderBy(x => x).ToArray();
-                Assert.AreEqual(expected, resultArr);
-
+				            localProduction.Add(counter++);
+			            }
+		            }
+		            await queue.PutManyAsync(localProduction);
+	            }
             }
+
+            async Task ConsumeAction() {
+	            while (queue.IsConsumable) {
+		            //await Task.Delay(10);
+		            var numToConsume = RNG.Next(1, 10);
+		            var consumption = await queue.TakeManyAsync(numToConsume);
+		            result.AddRange(consumption);
+	            }
+            }
+
+            var producers = new[] {
+	            ProduceAction(),
+	            ProduceAction(),
+	            ProduceAction(),
+	            ProduceAction(),
+	            ProduceAction(),
+            };
+
+            var consumers = new[] {
+	            ConsumeAction(),
+	            ConsumeAction(),
+	            ConsumeAction(),         
+            };
+
+            async Task ProduceTask() {
+	            await Task.WhenAll(producers);
+	            queue.FinishedProducing();
+            }
+
+            async Task ConsumeTask() {
+	            await Task.WhenAll(consumers);
+	            queue.FinishedConsuming();
+            }
+
+            await Task.WhenAll(ProduceTask(), ConsumeTask());
+
+        //    Tools.NUnit.Print(result);
+            //result.Sort();
+            var resultArr = result.OrderBy(x => x).ToArray();
+            Assert.AreEqual(expected, resultArr);
         }
 
     }

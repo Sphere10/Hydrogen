@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Diagnostics;
 using System.Linq;
 using NUnit.Framework;
@@ -123,9 +124,11 @@ namespace Sphere10.Framework.CryptoEx.Tests {
 			var messageDigestAsHex = messageDigest.ToHexString(true);
 			var badDerSig = ecdsa.SignDigest(privateKey, messageDigest); // so far signature is good
 			unchecked {
+				var bitArray = new BitArray(badDerSig);
 				// increment a random byte in the signature
-				var index = rng.Next(0, badDerSig.Length);
-				badDerSig[index] = badDerSig[index]++;
+				var index = rng.Next(0, bitArray.Length);
+				bitArray[index] = !bitArray[index];
+				bitArray.CopyTo(badDerSig, 0);
 			}
 			string[] args = {
 				"-operationtype VERIFY",

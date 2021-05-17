@@ -42,13 +42,16 @@ namespace Sphere10.Framework {
 		}
 
 		public Result<CommandLineResults> TryParse(string[] args) {
+			Guard.ArgumentNotNull(args, nameof(args));
+			
 			var parseResults = Result<CommandLineResults>.Default;
 			var argResults = new LookupEx<string, string>();
 			var lastResult = new CommandLineResults(new LookupEx<string, CommandLineResults>(), argResults);
 			parseResults.Value = lastResult;
 
 			if (!args.Any()) {
-				return Result<CommandLineResults>.Error("At least one command required.");
+				parseResults.AddError("At least one command required.");
+				return parseResults;
 			}
 
 			var parsedCommands = ParseCommands(args);
@@ -144,32 +147,7 @@ namespace Sphere10.Framework {
 		}
 
 		public void PrintHelp() {
-			//   Header
-			//
-			//   Arguments:
-			//      --print
-			// This will print to the device
-			//      --delete                   This will print to the device
-			//      --remote                   This will print to the device
-			//
-			//   Sub-Commands:
-			//		remote	                    This subcommand deals with remotes
-			//         --add                    This will print to the device
-			//         --remove                 This will print to the device
-			//         --print                  This will print to the device
-			//
-			//		push                        This subcommand deals with push
-			//         --add                    This will print to the device
-			//         --remove                 This will print to the device
-			//         --print                  This will print to the device
-			//
-			//		push                        This subcommand deals with push
-			//         --add                    This will print to the device
-			//         --print                  This will print to the device
-			//	   	   special                  This subcommand deals with push
-			//           --add                    This will print to the device
-			//           --remove                 This will print to the device
-
+			
 			void PrintCommands(IEnumerable<CommandLineArgCommand> commands, int level = 1) {
 				string itemIndentation = string.Empty.PadRight(level * 2);
 				
@@ -189,13 +167,14 @@ namespace Sphere10.Framework {
 				}
 			}
 
-			foreach (var line in Header)
-				Console.WriteLine(line);
-
+			PrintHeader();
+			
+			Console.WriteLine(string.Empty);
+			
 			if (Arguments.Any()) {
 				Console.WriteLine("Arguments:");
 				foreach (var arg in Arguments) {
-					string line = (" " + "--" + arg.Name).PadRight(ArgumentLineLengthPadded) + "\t\t" + arg.Description;
+					string line = ("  " + "--" + arg.Name).PadRight(ArgumentLineLengthPadded) + "\t\t" + arg.Description;
 					Console.WriteLine(line);
 				}
 			}
@@ -208,6 +187,11 @@ namespace Sphere10.Framework {
 			}
 		}
 
+		public void PrintHeader() {
+			foreach (var line in Header)
+				Console.WriteLine(line);
+		}
+		
 		private string BuildArgNameMatchPattern() {
 			var builder = new StringBuilder();
 			builder.Append("(");

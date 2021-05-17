@@ -11,7 +11,7 @@ using System.IO;
 namespace Sphere10.Framework.CryptoEx.Tests {
 
 	[TestFixture]
-	//[Platform("Windows", Reason = "PascalOpenSSL is only supported on Windows platforms")]
+	[Platform("Win, Win32, Win32S, Win32Windows, Win32NT, WinCE, Win95, Win98, WinMe, Win2K, WinXP, Win2003Server, Win2008Server", Reason = "PascalOpenSSL is only supported on Windows platforms")]
 	public class OpenSSLConsistencyTests {
 		private string _pascalOpenSSLFolder;
 		private string _pascalOpenSslFilePath;
@@ -59,14 +59,8 @@ namespace Sphere10.Framework.CryptoEx.Tests {
 
 
 		[Test]
-		[Ignore("Ignore this test till we are able to embed the PascalOpenSSL exe in resources and get a definite path for it.")]
-		[Repeat(1000)]
-		[TestCase(ECDSAKeyType.SECP256K1)]
-		[TestCase(ECDSAKeyType.SECP384R1)]
-		[TestCase(ECDSAKeyType.SECP521R1)]
-		[TestCase(ECDSAKeyType.SECT283K1)]
-		public void TestThatWeCanVerifyOpenSSLSignatures(ECDSAKeyType keyType) {
-			var rng = new Random(31337);
+		public void TestThatWeCanVerifyOpenSSLSignatures([Values] ECDSAKeyType keyType, [Range(1, 100)] int seed) {
+			var rng = new Random(seed * 31337);
 			var ecdsa = new ECDSA(keyType);
 			var secret = Crypto.GenerateCryptographicallyRandomBytes(rng.Next(5, 64));
 			var privateKey = ecdsa.GeneratePrivateKey(secret);
@@ -87,14 +81,8 @@ namespace Sphere10.Framework.CryptoEx.Tests {
 		}
 
 		[Test]
-		[Ignore("Ignore this test till we are able to embed the PascalOpenSSL exe in resources and get a definite path for it.")]
-		[Repeat(1000)]
-		[TestCase(ECDSAKeyType.SECP256K1)]
-		[TestCase(ECDSAKeyType.SECP384R1)]
-		[TestCase(ECDSAKeyType.SECP521R1)]
-		[TestCase(ECDSAKeyType.SECT283K1)]
-		public void TestThatOpenSSLCanVerifyOurSignatures(ECDSAKeyType keyType) {
-			var rng = new Random(31337);
+		public void TestThatOpenSSLCanVerifyOurSignatures([Values] ECDSAKeyType keyType, [Range(1, 100)] int seed) {
+			var rng = new Random(seed * 31337);
 			var ecdsa = new ECDSA(keyType);
 			var secret = Crypto.GenerateCryptographicallyRandomBytes(rng.Next(5, 64));
 			var privateKey = ecdsa.GeneratePrivateKey(secret);
@@ -119,15 +107,10 @@ namespace Sphere10.Framework.CryptoEx.Tests {
 			Assert.IsTrue(isValidSig.ToBool());
 		}
 
+
 		[Test]
-		[Ignore("Ignore this test till we are able to embed the PascalOpenSSL exe in resources and get a definite path for it.")]
-		[Repeat(1000)]
-		[TestCase(ECDSAKeyType.SECP256K1)]
-		[TestCase(ECDSAKeyType.SECP384R1)]
-		[TestCase(ECDSAKeyType.SECP521R1)]
-		[TestCase(ECDSAKeyType.SECT283K1)]
-		public void TestThatOpenSSLDoesNotVerifyBadSignatures(ECDSAKeyType keyType) {
-			var rng = new Random(31337);
+		public void TestThatOpenSSLDoesNotVerifyBadSignatures([Values] ECDSAKeyType keyType, [Range(1, 100)] int seed) {
+			var rng = new Random(seed * 31337);
 			var ecdsa = new ECDSA(keyType);
 			var secret = Crypto.GenerateCryptographicallyRandomBytes(rng.Next(5, 64));
 			var privateKey = ecdsa.GeneratePrivateKey(secret);
@@ -138,7 +121,12 @@ namespace Sphere10.Framework.CryptoEx.Tests {
 			var message = Encoding.ASCII.GetBytes(RandomString(rng.Next(1, 1000)));
 			var messageDigest = Hashers.Hash(CHF.SHA2_256, message);
 			var messageDigestAsHex = messageDigest.ToHexString(true);
-			var badDerSig = Crypto.GenerateCryptographicallyRandomBytes(rng.Next(1, 254));
+			var badDerSig = ecdsa.SignDigest(privateKey, messageDigest); // so far signature is good
+			unchecked {
+				// increment a random byte in the signature
+				var index = rng.Next(0, badDerSig.Length);
+				badDerSig[index] = badDerSig[index]++;
+			}
 			string[] args = {
 				"-operationtype VERIFY",
 				$"-curvetype {curveName}",

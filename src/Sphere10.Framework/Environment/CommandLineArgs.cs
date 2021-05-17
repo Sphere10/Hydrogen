@@ -7,11 +7,14 @@ using System.Text.RegularExpressions;
 namespace Sphere10.Framework {
 
 	public class CommandLineArgs {
+
+		private const int ArgumentLineLengthPadded = 15;
+
 		public string[] Header { get; }
 
 		public string[] Footer { get; }
 
-		public SubCommand[] SubCommands { get; }
+		public CommandLineArgCommand[] Commands { get; }
 
 		public CommandLineArgOptions Options { get; } =
 			CommandLineArgOptions.DoubleDash | CommandLineArgOptions.SingleDash | CommandLineArgOptions.PrintHelpOnHelp |
@@ -19,7 +22,7 @@ namespace Sphere10.Framework {
 
 		public CommandLineArg[] Arguments { get; }
 
-		public CommandLineArgs(string[] header, string[] footer, SubCommand[] subCommands,
+		public CommandLineArgs(string[] header, string[] footer, CommandLineArgCommand[] subCommands,
 		                       CommandLineArg[] arguments, CommandLineArgOptions? options = null) {
 			Guard.ArgumentNotNull(header, nameof(header));
 			Guard.ArgumentNotNull(arguments, nameof(arguments));
@@ -34,7 +37,7 @@ namespace Sphere10.Framework {
 
 			Header = header;
 			Footer = footer;
-			SubCommands = subCommands;
+			Commands = subCommands;
 			Arguments = arguments;
 		}
 
@@ -44,28 +47,29 @@ namespace Sphere10.Framework {
 			var lastResult = new CommandLineResults(new LookupEx<string, CommandLineResults>(), argResults);
 			parseResults.Value = lastResult;
 
-			var parsedSubCommands = ParseSubCommands(args);
+			if (!args.Any()) {
+				return Result<CommandLineResults>.Error("At least one command required.");
+			}
+
+			var parsedCommands = ParseCommands(args);
 			var parsedArgs = ParseArgsToLookup(args);
 
 			if (Options.HasFlag(CommandLineArgOptions.PrintHelpOnH)) {
 				if (parsedArgs.Contains("H")) {
-					PrintHelp();
-					return Result<CommandLineResults>.Error("Wrong for some reason");
+					argResults.Add("Help", string.Empty);
 				}
 			}
 
 			if (Options.HasFlag(CommandLineArgOptions.PrintHelpOnHelp)) {
 				if (parsedArgs.Contains("Help")) {
-					PrintHelp();
-					return Result<CommandLineResults>.Error("Wrong for some reason");
+					argResults.Add("Help", string.Empty);
 				}
 			}
 
-			if (!parsedSubCommands.Any()) {
-				PrintHelp();
+			if (!parsedCommands.Any()) {
 				return Result<CommandLineResults>.Error("Command is required.");
 			}
-			
+
 			foreach (var argument in Arguments) {
 				if (argument.Dependencies.Any()) {
 					foreach (var dependency in argument.Dependencies) {
@@ -85,23 +89,23 @@ namespace Sphere10.Framework {
 						parseResults.AddError($"Argument {argument.Name} supplied more than once but does not support multiple values.");
 					}
 
-				if (parseResults.Success && parsedArgs.Contains(argument.Name)) 
+				if (parseResults.Success && parsedArgs.Contains(argument.Name))
 					argResults.AddRange(argument.Name, parsedArgs[argument.Name]);
 			}
 
-			SubCommand command = null;
+			CommandLineArgCommand command = null;
 
-			foreach (var commandName in parsedSubCommands) {
+			foreach (var commandName in parsedCommands) {
 				string name = commandName;
-				command = command?.SubCommands
-					           .FirstOrDefault(x => x.Name == name)
-				           ?? SubCommands.FirstOrDefault(x => x.Name == commandName);
+				command = command?.Commands
+					          .FirstOrDefault(x => x.Name == name)
+				          ?? Commands.FirstOrDefault(x => x.Name == commandName);
 
 				if (command is null) {
 					parseResults.AddError($"Unknown command {commandName}.");
 					break;
 				}
-				
+
 				var commandArgResults = new LookupEx<string, string>();
 				var commandResult = new LookupEx<string, CommandLineResults>();
 
@@ -132,7 +136,7 @@ namespace Sphere10.Framework {
 					break;
 
 				var result = new CommandLineResults(commandResult, commandArgResults);
-				lastResult.SubCommands.Add(commandName, result);
+				lastResult.Commands.Add(commandName, result);
 				lastResult = result;
 			}
 
@@ -143,7 +147,8 @@ namespace Sphere10.Framework {
 			//   Header
 			//
 			//   Arguments:
-			//      --print                    This will print to the device
+			//      --print
+			// This will print to the device
 			//      --delete                   This will print to the device
 			//      --remote                   This will print to the device
 			//
@@ -165,12 +170,38 @@ namespace Sphere10.Framework {
 			//           --add                    This will print to the device
 			//           --remove                 This will print to the device
 
+			void PrintCommands(IEnumerable<CommandLineArgCommand> commands, int level = 1) {
+				string itemIndentation = string.Empty.PadRight(level * 2);
+				
+				foreach (var command in commands) {
+					string line = (itemIndentation + command.Name).PadRight(ArgumentLineLengthPadded) + "\t\t" + command.Description;
+					Console.WriteLine(line);
+					
+					foreach (var arg in command.Args) {
+						string argLine = (itemIndentation + "--" + arg.Name).PadRight(ArgumentLineLengthPadded) + "\t\t" + arg.Description;
+						Console.WriteLine(argLine);
+					}
+
+					if (command.Commands.Any()) {
+						level++;
+						PrintCommands(command.Commands, level);
+					}
+				}
+			}
+
 			foreach (var line in Header)
 				Console.WriteLine(line);
 
-			foreach (var arg in Arguments)
-				Console.WriteLine(arg.Description);
+			if (Arguments.Any()) {
+				Console.WriteLine("Arguments:");
+				foreach (var arg in Arguments) {
+					string line = (" " + "--" + arg.Name).PadRight(ArgumentLineLengthPadded) + "\t\t" + arg.Description;
+					Console.WriteLine(line);
+				}
+			}
 
+			Console.WriteLine("Commands:");
+			PrintCommands(Commands);
 
 			foreach (var line in Footer) {
 				Console.WriteLine(line);
@@ -229,21 +260,19 @@ namespace Sphere10.Framework {
 			return lookupEx;
 		}
 
-		private string[] ParseSubCommands(string[] args) {
-			bool remaining = true;
-			int index = 0;
+		private string[] ParseCommands(string[] args) {
 			var results = new List<string>();
-			while (remaining) {
-				string arg = args[index];
+
+			for (int i = 0; i < args.Length; i++) {
+				string arg = args[i];
+
 				if (!(arg.StartsWith("-") || arg.StartsWith("/"))) {
 					results.Add(arg);
-					index++;
 				} else
-					remaining = false;
+					break;
 			}
 
 			return results.ToArray();
 		}
-
 	}
 }

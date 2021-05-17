@@ -20,11 +20,11 @@ namespace Sphere10.Hydrogen.Host {
 			new[] {
 				"NOTE: The Hydrogen Host will forward all arguments marked [N] above to the Hydrogen Node which is launched as a child-process."
 			},
-			new SubCommand[] {
-				new("development", "Used during development only", new CommandLineArg[0], new SubCommand[0]),
-				new("config", "Path to the HydrogenHostConfig.ini file used to launch a Hydrogen Node", new CommandLineArg[0], new SubCommand[0]),
-				new("app", "Path to the Hydrogen Application Package (HAP)", new CommandLineArg[0], new SubCommand[0]),
-				new("update", "Path to a  which Hydrogen Application Package (HAP)  HydrogenNode executable to host", new CommandLineArg[0], new SubCommand[0]),
+			new CommandLineArgCommand[] {
+				new("development", "Used during development only", new CommandLineArg[0], new CommandLineArgCommand[0]),
+				new("config", "Path to the HydrogenHostConfig.ini file used to launch a Hydrogen Node", new CommandLineArg[0], new CommandLineArgCommand[0]),
+				new("app", "Path to the Hydrogen Application Package (HAP)", new CommandLineArg[0], new CommandLineArgCommand[0]),
+				new("update", "Path to a  which Hydrogen Application Package (HAP)  HydrogenNode executable to host", new CommandLineArg[0], new CommandLineArgCommand[0]),
 			},
 			new CommandLineArg[0],
 			CommandLineArgOptions.CaseSensitive | CommandLineArgOptions.DoubleDash | CommandLineArgOptions.PrintHelpOnH |

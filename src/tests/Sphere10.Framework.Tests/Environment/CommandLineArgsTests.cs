@@ -17,16 +17,16 @@ namespace Sphere10.Framework.Tests.Environment {
 
 
 		[Test]
-		public void AtLeastOneSubCommandIsRequired() {
+		public void AtLeastOneCommandIsRequired() {
 			Assert.Throws<ArgumentOutOfRangeException>(() =>_ = new CommandLineArgs(Header,
-				Footer,new SubCommand[0],
+				Footer,new CommandLineArgCommand[0],
 				new CommandLineArg[0]));
 		}
 
 		[Test]
-		public void AtLeastOneSubCommandMustMatch() {
+		public void AtLeastOneCommandMustMatch() {
 			var args = new CommandLineArgs(Header,
-				Footer,new[] { new SubCommand("test", "testing command", new CommandLineArg[0], new SubCommand[0])},
+				Footer,new[] { new CommandLineArgCommand("test", "testing command", new CommandLineArg[0], new CommandLineArgCommand[0])},
 				new CommandLineArg[0]);
 
 			Result<CommandLineResults> result = args.TryParse(new[] { "test2", "--baz" });
@@ -36,7 +36,7 @@ namespace Sphere10.Framework.Tests.Environment {
 		[Test]
 		public void FailMultipleCommandsMatched() {
 			var args = new CommandLineArgs(Header,
-				Footer,new[] { new SubCommand("test", "testing command", new CommandLineArg[0], new SubCommand[0])},
+				Footer,new[] { new CommandLineArgCommand("test", "testing command", new CommandLineArg[0], new CommandLineArgCommand[0])},
 				new CommandLineArg[0]);
 
 			Result<CommandLineResults> result = args.TryParse(new[] { "test", "test2", "--baz" });
@@ -47,10 +47,10 @@ namespace Sphere10.Framework.Tests.Environment {
 		public void MatchMultipleCommand() {
 			var args = new CommandLineArgs(Header,
 				Footer,new[] {
-					new SubCommand("test", "testing command", new CommandLineArg[0], new [] {
-						new SubCommand("test-2", "sub command", new [] {
+					new CommandLineArgCommand("test", "testing command", new CommandLineArg[0], new [] {
+						new CommandLineArgCommand("test-2", "sub command", new [] {
 							new CommandLineArg("foo", "baz description")
-						}, new SubCommand[0])
+						}, new CommandLineArgCommand[0])
 					}),
 				},
 				new CommandLineArg[0]);
@@ -59,9 +59,9 @@ namespace Sphere10.Framework.Tests.Environment {
 			Assert.IsTrue(result.Success);
 			
 			
-			Assert.AreEqual("test", result.Value.SubCommands.Single().Key);
-			CommandLineResults testResult = result.Value.SubCommands["test"].Single();
-			CommandLineResults test2Results = testResult.SubCommands["test-2"].Single();
+			Assert.AreEqual("test", result.Value.Commands.Single().Key);
+			CommandLineResults testResult = result.Value.Commands["test"].Single();
+			CommandLineResults test2Results = testResult.Commands["test-2"].Single();
 			
 			Assert.AreEqual("baz", test2Results.Arguments["foo"].Single());
 		}
@@ -70,16 +70,32 @@ namespace Sphere10.Framework.Tests.Environment {
 		public void CommandArgumentMandatory() {
 			var args = new CommandLineArgs(Header,
 				Footer,new[] {
-					new SubCommand("test", "testing command", new CommandLineArg[0], new [] {
-						new SubCommand("test-2", "sub command", new [] {
+					new CommandLineArgCommand("test", "testing command", new CommandLineArg[0], new [] {
+						new CommandLineArgCommand("test-2", "sub command", new [] {
 							new CommandLineArg("foo", "baz description", CommandLineArgTraits.Mandatory)
-						}, new SubCommand[0])
+						}, new CommandLineArgCommand[0])
 					}),
 				},
 				new CommandLineArg[0]);
 
 			Result<CommandLineResults> result = args.TryParse(new[] { "test", "test-2", "--fo0 baz" });
 			Assert.IsTrue(result.Failure);
+		}
+
+		[Test]
+		public void CommandOnly() {
+			var args = new CommandLineArgs(Header,
+				Footer,new[] {
+					new CommandLineArgCommand("test", "testing command", new CommandLineArg[0], new [] {
+						new CommandLineArgCommand("test-2", "sub command", new [] {
+							new CommandLineArg("foo", "baz description", CommandLineArgTraits.Optional)
+						}, new CommandLineArgCommand[0])
+					}),
+				},
+				new CommandLineArg[0]);
+
+			Result<CommandLineResults> result = args.TryParse(new[] { "test" });
+			Assert.IsTrue(result.Success);
 		}
 		
 
@@ -89,7 +105,7 @@ namespace Sphere10.Framework.Tests.Environment {
 		[TestCase(CommandLineArgOptions.DoubleDash)]
 		public void ArgNameMatchOptions(CommandLineArgOptions options) {
 			var args = new CommandLineArgs(Header,
-				Footer,new[] { new SubCommand("test", "testing command", new CommandLineArg[0], new SubCommand[0])},
+				Footer,new[] { new CommandLineArgCommand("test", "testing command", new CommandLineArg[0], new CommandLineArgCommand[0])},
 				new CommandLineArg[] { new("test", "test", CommandLineArgTraits.Mandatory) },
 				options);
 
@@ -120,7 +136,7 @@ namespace Sphere10.Framework.Tests.Environment {
 		public void ArgTraitMulti() {
 			var args = new CommandLineArgs(
 				Header,
-				Footer,new[] { new SubCommand("test", "testing command", new CommandLineArg[0], new SubCommand[0])},
+				Footer,new[] { new CommandLineArgCommand("test", "testing command", new CommandLineArg[0], new CommandLineArgCommand[0])},
 				new CommandLineArg[] { new("multi", "multiple trait", CommandLineArgTraits.Multiple) },
 				CommandLineArgOptions.DoubleDash | CommandLineArgOptions.SingleDash | CommandLineArgOptions.ForwardSlash);
 
@@ -139,7 +155,7 @@ namespace Sphere10.Framework.Tests.Environment {
 		public void ArgTraitSingle() {
 			var args = new CommandLineArgs(
 				Header,
-				Footer,new[] { new SubCommand("test", "testing command", new CommandLineArg[0], new SubCommand[0])},
+				Footer,new[] { new CommandLineArgCommand("test", "testing command", new CommandLineArg[0], new CommandLineArgCommand[0])},
 				new CommandLineArg[] { new("single", "single trait") },
 				CommandLineArgOptions.DoubleDash | CommandLineArgOptions.SingleDash | CommandLineArgOptions.ForwardSlash);
 
@@ -167,7 +183,7 @@ namespace Sphere10.Framework.Tests.Environment {
 		public void ArgTraitMandatory() {
 			var args = new CommandLineArgs(
 				Header,
-				Footer,new[] { new SubCommand("test", "testing command", new CommandLineArg[0], new SubCommand[0])},
+				Footer,new[] { new CommandLineArgCommand("test", "testing command", new CommandLineArg[0], new CommandLineArgCommand[0])},
 				new CommandLineArg[] {
 					new("mandatory", "mandatory trait", CommandLineArgTraits.Mandatory)
 				},
@@ -195,7 +211,7 @@ namespace Sphere10.Framework.Tests.Environment {
 		public void ArgCaseSensitive() {
 			var args = new CommandLineArgs(
 				Header,
-				Footer,new[] { new SubCommand("test", "testing command", new CommandLineArg[0], new SubCommand[0])},
+				Footer,new[] { new CommandLineArgCommand("test", "testing command", new CommandLineArg[0], new CommandLineArgCommand[0])},
 				new CommandLineArg[] {
 					new("mAnDaToRy", "mandatory trait", CommandLineArgTraits.Mandatory)
 				},
@@ -221,10 +237,10 @@ namespace Sphere10.Framework.Tests.Environment {
 		}
 
 		[Test]
-		public void NoParseOnH() {
+		public void SuccessParseH() {
 			var args = new CommandLineArgs(
 				Header,
-				Footer,new[] { new SubCommand("test", "testing command", new CommandLineArg[0], new SubCommand[0])},
+				Footer,new[] { new CommandLineArgCommand("test", "testing command", new CommandLineArg[0], new CommandLineArgCommand[0])},
 				new CommandLineArg[] {
 					new("parameter", "mandatory", CommandLineArgTraits.Mandatory)
 				},
@@ -237,14 +253,15 @@ namespace Sphere10.Framework.Tests.Environment {
 					"--h"
 				});
 
-			Assert.IsFalse(help.Success);
+			Assert.IsTrue(help.Success);
+			Assert.IsTrue(help.Value.HelpRequested);
 		}
 
 		[Test]
-		public void NoParseOnHelp() {
+		public void SuccessParseHelp() {
 			var args = new CommandLineArgs(
 				Header,
-				Footer,new[] { new SubCommand("test", "testing command", new CommandLineArg[0], new SubCommand[0])},
+				Footer,new[] { new CommandLineArgCommand("test", "testing command", new CommandLineArg[0], new CommandLineArgCommand[0])},
 				new CommandLineArg[] {
 					new("parameter", "mandatory", CommandLineArgTraits.Mandatory)
 				},
@@ -257,14 +274,15 @@ namespace Sphere10.Framework.Tests.Environment {
 					"--help"
 				});
 
-			Assert.IsFalse(help.Success);
+			Assert.IsTrue(help.Success);
+			Assert.IsTrue(help.Value.HelpRequested);
 		}
 
 		[Test]
 		public void ArgDependencies() {
 			var args = new CommandLineArgs(
 				Header,
-				Footer,new[] { new SubCommand("test", "testing command", new CommandLineArg[0], new SubCommand[0])},
+				Footer,new[] { new CommandLineArgCommand("test", "testing command", new CommandLineArg[0], new CommandLineArgCommand[0])},
 				new CommandLineArg[] {
 					new("mandatoryWithDependency", "mandatory", CommandLineArgTraits.Mandatory, "test"),
 					new("test", "optional", CommandLineArgTraits.Optional)
@@ -306,7 +324,7 @@ namespace Sphere10.Framework.Tests.Environment {
 
 			var args = new CommandLineArgs(
 				Header,
-				Footer,new[] { new SubCommand("test", "testing command", new CommandLineArg[0], new SubCommand[0])},
+				Footer,new[] { new CommandLineArgCommand("test", "testing command", new CommandLineArg[0], new CommandLineArgCommand[0])},
 				new CommandLineArg[] {
 					new("param1", "1", CommandLineArgTraits.Mandatory),
 					new("param2", "2", CommandLineArgTraits.Mandatory),

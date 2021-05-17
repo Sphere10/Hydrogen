@@ -1,16 +1,16 @@
-﻿using System.Linq;
-
-namespace Sphere10.Framework {
+﻿namespace Sphere10.Framework {
 	public class CommandLineResults {
-		public CommandLineResults(LookupEx<string, CommandLineResults> subCommands, LookupEx<string, string> arguments) {
-			Guard.ArgumentNotNull(subCommands, nameof(subCommands));
+		public CommandLineResults(LookupEx<string, CommandLineResults> commands, LookupEx<string, string> arguments) {
+			Guard.ArgumentNotNull(commands, nameof(commands));
 			Guard.ArgumentNotNull(arguments, nameof(arguments));
 
-			SubCommands = subCommands;
+			Commands = commands;
 			Arguments = arguments;
 		}
 		public LookupEx<string, string> Arguments { get; }
 
-		public LookupEx<string, CommandLineResults> SubCommands { get; }
+		public LookupEx<string, CommandLineResults> Commands { get; }
+
+		public bool HelpRequested => Arguments.Contains("Help");
 	}
 }

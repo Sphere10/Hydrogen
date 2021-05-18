@@ -12,6 +12,7 @@
 //-----------------------------------------------------------------------
 
 using System;
+using Sphere10.Framework.Scheduler.Serializable;
 
 namespace Sphere10.Framework.Scheduler {
 
@@ -25,5 +26,6 @@ namespace Sphere10.Framework.Scheduler {
 		uint IterationsExecuted { get; }
 		void NotifyStart(DateTime start);
 		void NotifyExecution(DateTime start, DateTime end);
+		JobScheduleSerializableSurrogate ToSerializableSurrogate();
 	}
 }

@@ -34,6 +34,8 @@ namespace Sphere10.Framework {
             _map = new Dictionary<TKey, List<TValue>>(values.ToDictionary(v => v.Key, v => v.ToList()), comparer);
         }
 
+        public IEnumerable<TKey> Keys => _map.Keys;
+
         public void Add(TKey key, TValue value) {
             FetchMap(key).Add(value);
         }

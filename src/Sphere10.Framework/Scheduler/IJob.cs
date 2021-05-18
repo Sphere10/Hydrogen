@@ -12,6 +12,7 @@
 //-----------------------------------------------------------------------
 
 using System.Collections.Generic;
+using Sphere10.Framework.Scheduler.Serializable;
 
 namespace Sphere10.Framework.Scheduler {
 	public interface IJob {
@@ -21,6 +22,6 @@ namespace Sphere10.Framework.Scheduler {
 		JobStatus Status { get; set; }
 		IEnumerable<IJobSchedule> Schedules { get; }
 		void Execute();
-
+		JobSerializableSurrogate ToSerializableSurrogate();
 	}
 }

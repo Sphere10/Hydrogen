@@ -12,6 +12,7 @@
 //-----------------------------------------------------------------------
 
 using System;
+using Sphere10.Framework.Scheduler.Serializable;
 
 namespace Sphere10.Framework.Scheduler {
 	public class ActionJob : BaseJob  {
@@ -24,6 +25,10 @@ namespace Sphere10.Framework.Scheduler {
 
 		public override void Execute() {
 			_action();
+		}
+
+		public override JobSerializableSurrogate ToSerializableSurrogate() {
+			throw new NotSupportedException("Cannot serialize action jobs");
 		}
 	}
 }

@@ -28,19 +28,17 @@ namespace Sphere10.Framework.Tests {
 
         [Test]
         public async Task Simple() {
-            using (var queue = new ProducerConsumerQueue<string>(10)) {
-                await queue.PutAsync("Hello World!");
-                Assert.AreEqual(1, queue.Count);
-                var r = await queue.TakeManyAsync(1);
-                Assert.AreEqual(0, queue.Count);
-                Assert.AreEqual(1, r.Length);
-                Assert.AreEqual("Hello World!", r[0]);
-            }
+	        using var queue = new ProducerConsumerQueue<string>(10);
+	        await queue.PutAsync("Hello World!");
+	        Assert.AreEqual(1, queue.Count);
+	        var r = await queue.TakeManyAsync(1);
+	        Assert.AreEqual(0, queue.Count);
+	        Assert.AreEqual(1, r.Length);
+	        Assert.AreEqual("Hello World!", r[0]);
         }
         
         [Test]
-		[Ignore("broken")]
-        public async Task Complex_1(
+		public async Task Complex_1(
 	        [Values(1, 1000, 10000)] int totalProduction,
 	        [Values(1, 100, 1000)] int queueCapacity,
 			[Values(1, 10, 100)] int maxProducePerIteration,
@@ -72,7 +70,7 @@ namespace Sphere10.Framework.Tests {
             async Task ConsumeAction() {
 	            while (queue.IsConsumable) {
 		            // await Task.Delay(10);
-		            var numToConsume = RNG.Next(0, maxConsumePerIteration);
+		            var numToConsume = RNG.Next(0, maxConsumePerIteration+1);
 		            var consumption = await queue.TakeManyAsync(numToConsume);
 		            result.AddRange(consumption);
 	            }
@@ -93,25 +91,29 @@ namespace Sphere10.Framework.Tests {
             Assert.AreEqual(expected, result);
         }
 
-        [Repeat(100)]
+        
 		[Test]
-        public async Task Complex_2() {
+        public async Task Complex_2(
+	        [Values(1, 1000, 10000)] int totalProduction,
+	        [Values(1, 100, 1000)] int queueCapacity,
+	        [Values(1, 10, 100)] int maxProducePerIteration,
+	        [Values(1, 10, 100)] int maxConsumePerIteration) {
 	        var RNG = new Random(31337);
-			var expected = Enumerable.Range(0, 1000).ToArray();
+			var expected = Enumerable.Range(0, totalProduction).ToArray();
             var result = new SynchronizedExtendedList<int>();
             var @lock = new object();
             var counter = 0;
 
-            using var queue = new ProducerConsumerQueue<int>(10);
+            using var queue = new ProducerConsumerQueue<int>(queueCapacity);
 
             async Task ProduceAction() {
-	            while (counter < 1000) {
+	            while (counter < totalProduction) {
 		            //await Task.Delay(10);
 		            var localProduction = new List<int>();
 		            lock (@lock) {
-			            var numToProduce = RNG.Next(1, 10);
+			            var numToProduce = RNG.Next(0, maxProducePerIteration+1);
 			            for (var i = 0; i < numToProduce; i++) {
-				            if (counter == 1000)
+				            if (counter == totalProduction)
 					            break;
 
 				            localProduction.Add(counter++);
@@ -124,7 +126,7 @@ namespace Sphere10.Framework.Tests {
             async Task ConsumeAction() {
 	            while (queue.IsConsumable) {
 		            //await Task.Delay(10);
-		            var numToConsume = RNG.Next(1, 10);
+		            var numToConsume = RNG.Next(0, maxConsumePerIteration+1);
 		            var consumption = await queue.TakeManyAsync(numToConsume);
 		            result.AddRange(consumption);
 	            }

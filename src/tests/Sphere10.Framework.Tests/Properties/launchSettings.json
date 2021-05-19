@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Sphere10.Framework.Tests": {
+      "commandName": "Project",
+      "commandLineArgs": "/include:RPC"
+    }
+  }
+}

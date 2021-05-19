@@ -42,6 +42,9 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sphere10.Hydrogen.Presentation2.Loader", "Sphere10.Hydrogen.Presentation2.Loader\Sphere10.Hydrogen.Presentation2.Loader.csproj", "{05BC5880-DB99-4BCD-AD24-51D3D4A6CB3C}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sphere10.Framework.Tests", "tests\Sphere10.Framework.Tests\Sphere10.Framework.Tests.csproj", "{F142C65F-BA06-4883-8DFE-4630BCB363D7}"
+	ProjectSection(ProjectDependencies) = postProject
+		{3D516397-7897-4812-A7A7-BED00BE3F8A2} = {3D516397-7897-4812-A7A7-BED00BE3F8A2}
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sphere10.Hydrogen.Core.Tests", "tests\Sphere10.Hydrogen.Core.Tests\Sphere10.Hydrogen.Core.Tests.csproj", "{90C29B96-B3FE-414C-9734-358450A32849}"
 EndProject
@@ -64,6 +67,9 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sphere10.Framework.Communications", "Sphere10.Framework.Communications\Sphere10.Framework.Communications.csproj", "{3D516397-7897-4812-A7A7-BED00BE3F8A2}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sphere10.Framework.CryptoEx.Tests", "tests\Sphere10.Framework.CryptoEx.Tests\Sphere10.Framework.CryptoEx.Tests.csproj", "{547B917B-4284-42DE-B832-E9EED5F17AFD}"
+	ProjectSection(ProjectDependencies) = postProject
+		{3D516397-7897-4812-A7A7-BED00BE3F8A2} = {3D516397-7897-4812-A7A7-BED00BE3F8A2}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

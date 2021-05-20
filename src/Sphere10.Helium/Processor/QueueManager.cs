@@ -1,9 +1,9 @@
 ﻿using System;
 using Sphere10.Helium.Bus;
-using Sphere10.Helium.Endpoint;
 using Sphere10.Helium.Message;
+using Sphere10.Helium.Queue;
 
-namespace Sphere10.Helium.Queue {
+namespace Sphere10.Helium.Processor {
 	public class QueueManager : IQueueManager {
 
 		private readonly IHeliumQueue _heliumQueue;

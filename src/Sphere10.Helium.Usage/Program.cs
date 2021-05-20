@@ -14,52 +14,6 @@ namespace Sphere10.Helium.Usage {
 		public static void Main(string[] args) {
 			Console.WriteLine("Hello World!");
 
-			//var tempQueueName = "Temp_AB3CB3F9-3EBC-46B3-877D-14AB5A7A7FD2_1";
-
-			//var strGuid = "997D1367-E7B0-46F0-B0A1-686DC0F15945";
-			//var sameGuid = new Guid(strGuid);
-
-			//var inMessage = new TestMessage1 {
-			//	Id = strGuid,
-			//	Aa1 = "Hello please work! 1",
-			//	Aa2 = "Hello please work! 2",
-			//	Aa3 = "Hello please work! 3",
-			//	Aa4 = "Hello please work! 4"
-			//};
-
-			//var queueTempPath = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "a");
-			//if (!Directory.Exists(queueTempPath))
-			//	Directory.CreateDirectory(queueTempPath);
-
-			//var queueConfig = new QueueConfigDto {
-			//	Path = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), tempQueueName),
-			//	TempDirPath = queueTempPath,
-			//	FileId = sameGuid,
-			//	TransactionalPageSizeBytes = 1 << 17, /*DefaultTransactionalPageSize = 1 << 17; => 132071 ~ 128 KB*/
-			//	MaxStorageSizeBytes = 1 << 21, /*2097152 ~ 2MB*/
-			//	FileMemoryCacheBytes = 1 << 20, /*1048576 ~ 1MB*/
-			//	ClusterSize = 1 << 9, /*512 ~ 500 KB*/
-			//	MaxItems = 5,
-			//	ReadOnly = false
-			//};
-
-			//var localQueue = new LocalQueue(queueConfig); //10 params (TransactionalList) -1 for serializer  = 9 params
-			//if (localQueue.RequiresLoad)
-			//	localQueue.Load();
-
-			//localQueue.MessageAdded += MessageAdded;
-
-
-
-			////localQueue.AddMessage(inMessage);
-
-			////var outMessage = localQueue.RetrieveMessage();
-
-			////localQueue.DeleteMessage(inMessage);
-
-			//localQueue.DeleteMessage(inMessage);
-
-
 			var bat = new Bat();
 
 			ConsoleKeyInfo cki;
@@ -69,10 +23,10 @@ namespace Sphere10.Helium.Usage {
 				if ((cki.Modifiers & ConsoleModifiers.Alt) != 0 && (cki.KeyChar == 'b' || cki.KeyChar == 'B')) {
 					Console.WriteLine("=>");
 					var message = CreateMessage();
+					Console.WriteLine($"Id={message.Id}");
 					bat.AddMessageToQueue(message);
 				}
 			} while (cki.Key != ConsoleKey.Escape);
-
 
 			Console.WriteLine("END!");
 		}
@@ -164,8 +118,7 @@ namespace Sphere10.Helium.Usage {
 				Console.WriteLine($"Id={message.Id}");
 				Console.WriteLine($"Aa1={message.Aa1}");
 			}
-
-			Console.WriteLine("Message is null.");
+			else Console.WriteLine("Message is null.");
 		}
 	}
 }

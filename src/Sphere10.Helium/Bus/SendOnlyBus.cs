@@ -1,6 +1,7 @@
 ﻿using Sphere10.Helium.Message;
 using Sphere10.Helium.Queue;
 using System;
+using Sphere10.Helium.Processor;
 
 namespace Sphere10.Helium.Bus {
 	public class SendOnlyBus : ISendOnlyBus {

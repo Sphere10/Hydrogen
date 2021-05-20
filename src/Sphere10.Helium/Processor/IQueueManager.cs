@@ -1,6 +1,6 @@
 ﻿using Sphere10.Helium.Message;
 
-namespace Sphere10.Helium.Queue {
+namespace Sphere10.Helium.Processor {
 	public interface IQueueManager {
 		void FirstIn(string destination, IMessage message);
 

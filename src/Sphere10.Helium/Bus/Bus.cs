@@ -1,5 +1,6 @@
 ﻿using Sphere10.Helium.Message;
 using System;
+using Sphere10.Helium.Processor;
 using Sphere10.Helium.Queue;
 using Sphere10.Helium.Timeout;
 

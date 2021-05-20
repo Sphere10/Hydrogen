@@ -1,24 +1,16 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using Sphere10.Framework;
 using Sphere10.Helium.Message;
 
 namespace Sphere10.Helium.Queue {
-	public class PrivateQueue : IPrivateQueue {
-		private readonly int _count;
-		private readonly int _count1;
-		private readonly int _count2;
-		public PrivateQueue(int count, int count1, int count2) {
-			_count = count;
-			_count1 = count1;
-			_count2 = count2;
-		}
-		public IEnumerator<IMessage> GetEnumerator() {
+	public class ProcessingQueue : TransactionalList<IMessage>, IProcessingQueue {
+		private readonly int _count = 1;
+		private readonly int _count1 = 1;
+		private readonly int _count2 = 1;
+
+		public override IEnumerator<IMessage> GetEnumerator() {
 			throw new NotImplementedException();
 		}
 
@@ -50,7 +42,7 @@ namespace Sphere10.Helium.Queue {
 			throw new NotImplementedException();
 		}
 
-		public void AddRange(IEnumerable<IMessage> items) {
+		public override void AddRange(IEnumerable<IMessage> items) {
 			throw new NotImplementedException();
 		}
 
@@ -60,7 +52,7 @@ namespace Sphere10.Helium.Queue {
 
 		int IExtendedCollection<IMessage>.Count => _count2;
 
-		public IEnumerable<bool> RemoveRange(IEnumerable<IMessage> items) {
+		public override IEnumerable<bool> RemoveRange(IEnumerable<IMessage> items) {
 			throw new NotImplementedException();
 		}
 
@@ -76,7 +68,7 @@ namespace Sphere10.Helium.Queue {
 			throw new NotImplementedException();
 		}
 
-		public IEnumerable<bool> ContainsRange(IEnumerable<IMessage> items) {
+		public override IEnumerable<bool> ContainsRange(IEnumerable<IMessage> items) {
 			throw new NotImplementedException();
 		}
 
@@ -102,7 +94,7 @@ namespace Sphere10.Helium.Queue {
 
 		int ICollection<IMessage>.Count => _count;
 
-		public bool IsReadOnly { get; }
+		public override bool IsReadOnly { get; }
 
 		int IReadOnlyCollection<IMessage>.Count => _count1;
 
@@ -122,23 +114,23 @@ namespace Sphere10.Helium.Queue {
 			throw new NotImplementedException();
 		}
 
-		public IEnumerable<int> IndexOfRange(IEnumerable<IMessage> items) {
+		public new IEnumerable<int> IndexOfRange(IEnumerable<IMessage> items) {
 			throw new NotImplementedException();
 		}
 
-		public IMessage Read(int index) {
+		public new IMessage Read(int index) {
 			throw new NotImplementedException();
 		}
 
-		public IEnumerable<IMessage> ReadRange(int index, int count) {
+		public new IEnumerable<IMessage> ReadRange(int index, int count) {
 			throw new NotImplementedException();
 		}
 
-		public void Update(int index, IMessage item) {
+		public override void Update(int index, IMessage item) {
 			throw new NotImplementedException();
 		}
 
-		public void UpdateRange(int index, IEnumerable<IMessage> items) {
+		public override void UpdateRange(int index, IEnumerable<IMessage> items) {
 			throw new NotImplementedException();
 		}
 
@@ -146,7 +138,7 @@ namespace Sphere10.Helium.Queue {
 			throw new NotImplementedException();
 		}
 
-		public void InsertRange(int index, IEnumerable<IMessage> items) {
+		public override void InsertRange(int index, IEnumerable<IMessage> items) {
 			throw new NotImplementedException();
 		}
 
@@ -154,7 +146,7 @@ namespace Sphere10.Helium.Queue {
 			throw new NotImplementedException();
 		}
 
-		public void RemoveRange(int index, int count) {
+		public override void RemoveRange(int index, int count) {
 			throw new NotImplementedException();
 		}
 
@@ -166,7 +158,7 @@ namespace Sphere10.Helium.Queue {
 			throw new NotImplementedException();
 		}
 
-		public IMessage this[int index] {
+		public new IMessage this[int index] {
 			get => throw new NotImplementedException();
 			set => throw new NotImplementedException();
 		}
@@ -175,39 +167,19 @@ namespace Sphere10.Helium.Queue {
 			throw new NotImplementedException();
 		}
 
-		public event EventHandlerEx<object> Committing;
-		public event EventHandlerEx<object> Committed;
-		public event EventHandlerEx<object> RollingBack;
-		public event EventHandlerEx<object> RolledBack;
-		
-		public void Commit() {
+		public new void Commit() {
 			throw new NotImplementedException();
 		}
 
-		public void Rollback() {
+		public new void Rollback() {
 			throw new NotImplementedException();
 		}
 
-		public string Path { get; }
-		public Guid FileID { get; }
-		public TransactionalFileMappedBuffer AsBuffer { get; }
-		public bool RequiresLoad { get; }
+		public new string Path { get; }
+		public new Guid FileID { get; }
+		public new TransactionalFileMappedBuffer AsBuffer { get; }
 
-		public void Load() {
-			throw new NotImplementedException();
-		}
-
-		public ReaderWriterLockSlim ThreadLock { get; }
-
-		public Scope EnterReadScope() {
-			throw new NotImplementedException();
-		}
-
-		public Scope EnterWriteScope() {
-			throw new NotImplementedException();
-		}
-
-		public void Dispose() {
+		public new void Dispose() {
 			throw new NotImplementedException();
 		}
 
@@ -221,6 +193,22 @@ namespace Sphere10.Helium.Queue {
 
 		public IMessage RetrieveMessage() {
 			throw new NotImplementedException();
+		}
+
+		public ProcessingQueue(IItemSerializer<IMessage> serializer, string filename, string uncommittedPageFileDir, Guid fileID, int maxStorageBytes, int memoryCacheBytes, int maxItems, TransactionalFileMappedBuffer asBuffer, bool readOnly = false) : base(serializer, filename, uncommittedPageFileDir, fileID, maxStorageBytes, memoryCacheBytes, maxItems, readOnly) {
+			AsBuffer = asBuffer;
+		}
+
+		public ProcessingQueue(IItemSerializer<IMessage> serializer, string filename, string uncommittedPageFileDir, Guid fileID, int transactionalPageSizeBytes, int maxStorageBytes, int memoryCacheBytes, int clusterSize, int maxItems, TransactionalFileMappedBuffer asBuffer, bool readOnly = false) : base(serializer, filename, uncommittedPageFileDir, fileID, transactionalPageSizeBytes, maxStorageBytes, memoryCacheBytes, clusterSize, maxItems, readOnly) {
+			AsBuffer = asBuffer;
+		}
+
+		public ProcessingQueue(string filename, string uncommittedPageFileDir, Guid fileID, int memoryCacheBytes, IItemSerializer<IMessage> serializer, TransactionalFileMappedBuffer asBuffer, bool readOnly = false) : base(filename, uncommittedPageFileDir, fileID, memoryCacheBytes, serializer, readOnly) {
+			AsBuffer = asBuffer;
+		}
+
+		public ProcessingQueue(string filename, string uncommittedPageFileDir, Guid fileID, int transactionalPageSizeBytes, int memoryCacheBytes, int clusterSize, IItemSerializer<IMessage> serializer, TransactionalFileMappedBuffer asBuffer, bool readOnly = false) : base(filename, uncommittedPageFileDir, fileID, transactionalPageSizeBytes, memoryCacheBytes, clusterSize, serializer, readOnly) {
+			AsBuffer = asBuffer;
 		}
 	}
 }

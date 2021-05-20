@@ -40,7 +40,7 @@ namespace Sphere10.Helium.Queue {
 
 		public bool DeleteMessage(IMessage message) {
 			var result =Remove(message);
-			Commit();
+			//Commit();
 
 			return result;
 		}
@@ -93,7 +93,7 @@ namespace Sphere10.Helium.Queue {
 
 			var message = Read(0);
 			Remove(message);
-			Commit();
+			//Commit();
 
 			return message;
 		}

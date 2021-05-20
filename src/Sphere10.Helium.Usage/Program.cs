@@ -9,8 +9,6 @@ using Sphere10.Helium.Queue;
 namespace Sphere10.Helium.Usage {
 	public class Program {
 
-		private static int i = 0;
-
 		public static void Main(string[] args) {
 			Console.WriteLine("Hello World!");
 
@@ -20,11 +18,23 @@ namespace Sphere10.Helium.Usage {
 			do {
 				cki = Console.ReadKey();
 
-				if ((cki.Modifiers & ConsoleModifiers.Alt) != 0 && (cki.KeyChar == 'b' || cki.KeyChar == 'B')) {
-					Console.WriteLine("=>");
+				if ((cki.Modifiers & ConsoleModifiers.Alt) != 0 && (cki.KeyChar == 'a' || cki.KeyChar == 'A')) {
+
+					Console.WriteLine("Create Message");
 					var message = CreateMessage();
+
 					Console.WriteLine($"Id={message.Id}");
 					bat.AddMessageToQueue(message);
+				}
+				if ((cki.Modifiers & ConsoleModifiers.Alt) != 0 && (cki.KeyChar == 'b' || cki.KeyChar == 'B')) {
+					var message = (TestMessage1)bat.RetrieveMessageFromQueue();
+
+					Console.WriteLine($"Id={message.Id}");
+					Console.WriteLine($"Aa1={message.Aa1}");
+				}
+				if ((cki.Modifiers & ConsoleModifiers.Alt) != 0 && (cki.KeyChar == 'c' || cki.KeyChar == 'C')) {
+					Console.WriteLine("ClearAll");
+					bat.ClearAll();
 				}
 			} while (cki.Key != ConsoleKey.Escape);
 
@@ -35,13 +45,12 @@ namespace Sphere10.Helium.Usage {
 
 			var inMessage = new TestMessage1 {
 				Id = Guid.NewGuid().ToString(),
-				Aa1 = $"Hello please work! {i}",
-				Aa2 = $"Hello please work! {i}",
-				Aa3 = $"Hello please work! {i}",
-				Aa4 = $"Hello please work! {i}"
+				Aa1 = $"Hello please work! 1",
+				Aa2 = $"Hello please work! 2",
+				Aa3 = $"Hello please work! 3",
+				Aa4 = $"Hello please work! 4"
 			};
 
-			i++;
 			return inMessage;
 		}
 
@@ -88,8 +97,13 @@ namespace Sphere10.Helium.Usage {
 
 			if (_localQueue.RequiresLoad)
 				_localQueue.Load();
+			
+			_localQueue.Committed += MessageAdded;
+			//_localQueue.Added += MessageAdded; this event fires when a message is added. Cannot use it in the context of a Transaction-Scope Commit//
+		}
 
-			_localQueue.Added += MessageAdded;
+		public void ClearAll() {
+			_localQueue.Clear();
 		}
 
 		public void AddMessageToQueue(IMessage message) {
@@ -110,15 +124,14 @@ namespace Sphere10.Helium.Usage {
 			return outMessage;
 		}
 
-		private void MessageAdded(object sender, EventArgs e) {
-			Console.WriteLine("New message has been ADDED.");
-			var message = (TestMessage1)RetrieveMessageFromQueue();
-			
-			if (message is not null) {
-				Console.WriteLine($"Id={message.Id}");
-				Console.WriteLine($"Aa1={message.Aa1}");
-			}
-			else Console.WriteLine("Message is null.");
+		private void MessageAdded(object sender) {
+			Console.WriteLine("Commit event has fired.");
+			//var message = (TestMessage1)RetrieveMessageFromQueue();
+
+			//if (message is not null) {
+			//	Console.WriteLine($"Id={message.Id}");
+			//	Console.WriteLine($"Aa1={message.Aa1}");
+			//} else Console.WriteLine("Message is null.");
 		}
 	}
 }

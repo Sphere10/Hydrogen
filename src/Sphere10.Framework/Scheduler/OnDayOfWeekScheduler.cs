@@ -12,6 +12,7 @@
 //-----------------------------------------------------------------------
 
 using System;
+using Sphere10.Framework.Scheduler.Serializable;
 
 namespace Sphere10.Framework.Scheduler {
 
@@ -30,6 +31,20 @@ namespace Sphere10.Framework.Scheduler {
         }
 
 		public override ReschedulePolicy ReschedulePolicy => ReschedulePolicy.OnStart;
+
+
+		public override JobScheduleSerializableSurrogate ToSerializableSurrogate() {
+			return new DayOfWeekScheduleSerializableSurrogate {
+				DayOfWeek = this._dayOfWeek,
+				IterationsExecuted = this.IterationsExecuted,
+				IterationsRemaining = this.IterationsRemaining,
+				LastEndTime = this.LastEndTime?.ToString("yyyy-MM-dd HH:mm:ss"),
+				LastStartTime = this.LastStartTime?.ToString("yyyy-MM-dd HH:mm:ss"),
+				NextStartTime = this.NextStartTime.ToString("yyyy-MM-dd HH:mm:ss"),
+				ReschedulePolicy = this.ReschedulePolicy,
+				TimeOfDay = DateTime.Now.ToMidnight().Add(this._timeOfDay).ToString("HH:mm:ss")
+			};
+		}
 
 		protected override DateTime CalculateNextRunTime() {
             return Tools.Time.CalculateNextDayOfWeek(DateTime.UtcNow, _dayOfWeek, _timeOfDay);

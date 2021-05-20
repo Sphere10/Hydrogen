@@ -1,0 +1,1 @@
+This folder contains educational resources

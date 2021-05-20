@@ -60,7 +60,7 @@ namespace Sphere10.Framework {
             }
         }
 
-        public virtual bool HasFinishedConsuming {
+		public virtual bool HasFinishedConsuming {
             get {
                 lock (_threadLock) {
                     return _finishedConsuming;
@@ -68,7 +68,16 @@ namespace Sphere10.Framework {
             }
         }
 
-        public virtual int Count {
+		public virtual bool IsConsumable {
+			get {
+				lock (_threadLock) {
+					return Count > 0 || !_finishedProducing;
+				}
+			}
+		}
+
+
+		public virtual int Count {
             get {
                 lock (_threadLock)
                     return _itemQueue.Count;

@@ -13,6 +13,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using Sphere10.Framework.Scheduler.Serializable;
 
 namespace Sphere10.Framework.Scheduler {
 	public abstract class BaseJob : IJob {
@@ -38,6 +39,8 @@ namespace Sphere10.Framework.Scheduler {
 		}
 
 		public abstract void Execute();
-		
+
+		public abstract JobSerializableSurrogate ToSerializableSurrogate();
+
 	}
 }

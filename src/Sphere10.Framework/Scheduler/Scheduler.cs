@@ -15,6 +15,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Timers;
+using Sphere10.Framework.Scheduler.Serializable;
 using Timer = System.Timers.Timer;
 
 namespace Sphere10.Framework.Scheduler {
@@ -234,6 +235,19 @@ namespace Sphere10.Framework.Scheduler {
 		#endregion
 
 		#region Auxillary methods
+
+		public SchedulerSerializableSurrogate ToSerializableSurrogate() {
+			using (_timeLine.EnterReadScope()) {
+				return new SchedulerSerializableSurrogate {
+					Jobs = 
+						_timeLine
+						.Select(t => t.Job)
+						.Distinct()
+						.Select(j => j.ToSerializableSurrogate())
+						.ToArray()
+				};
+			}
+		}
 
 		protected void RunPendingJobs() {
 			Log.Debug($"Scheduler RunPendingJobs");

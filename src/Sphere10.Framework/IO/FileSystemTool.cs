@@ -263,18 +263,22 @@ namespace Tools {
         }
 
         public static void AppendAllBytes(string path, byte[] bytes) {
-            if (path == null)
-                throw new ArgumentNullException("path");
-
-            if (bytes == null)
-                throw new ArgumentNullException("bytes");
-
+			Guard.ArgumentNotNull(path, nameof(path));
+			Guard.ArgumentNotNull(bytes, nameof(bytes));
             using (var stream = new FileStream(path, FileMode.Append)) {
                 stream.Write(bytes, 0, bytes.Length);
             }
         }
 
-        public static byte[] GetFilePart(string filePath, long offset, int fetchSize) {
+		public static void AppendAllBytes(string path, Stream bytes) {
+			Guard.ArgumentNotNull(path, nameof(path));
+			Guard.ArgumentNotNull(bytes, nameof(bytes));
+			using (var stream = new FileStream(path, FileMode.Append)) {
+				bytes.RouteTo(stream);
+			}
+		}
+
+		public static byte[] GetFilePart(string filePath, long offset, int fetchSize) {
             if (!File.Exists(filePath))
                 throw new FileNotFoundException("File not found", filePath);
 

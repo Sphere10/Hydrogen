@@ -12,6 +12,8 @@
 //-----------------------------------------------------------------------
 
 using System;
+using System.Xml.Serialization;
+using Sphere10.Framework.Scheduler.Serializable;
 
 namespace Sphere10.Framework.Scheduler {
 
@@ -65,6 +67,8 @@ namespace Sphere10.Framework.Scheduler {
 			LastEndTime = end.ToUniversalTime();
 			unchecked { IterationsExecuted++; }
 		}
+
+		public abstract JobScheduleSerializableSurrogate ToSerializableSurrogate();
 
 		protected abstract DateTime CalculateNextRunTime();
 

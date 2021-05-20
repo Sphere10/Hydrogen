@@ -10,7 +10,8 @@ namespace Sphere10.Framework.CryptoEx.Tests {
 	[TestFixture]
 	public class ECIESTests {
 
-		private static readonly Random Random = new();
+		private static readonly Random Random = new(31337);
+
 		private static string RandomString(int length) {
 			const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 			return new string(Enumerable.Repeat(chars, length)

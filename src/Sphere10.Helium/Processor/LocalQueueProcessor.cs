@@ -4,11 +4,11 @@ using Sphere10.Helium.Message;
 using Sphere10.Helium.Queue;
 
 namespace Sphere10.Helium.Processor {
-	public class QueueManager : IQueueManager {
+	public class LocalQueueProcessor : ILocalQueueProcessor {
 
 		private readonly IHeliumQueue _heliumQueue;
 
-		public QueueManager(BusConfiguration endpointConfiguration, IHeliumQueue heliumQueue) {
+		public LocalQueueProcessor(BusConfiguration endpointConfiguration, IHeliumQueue heliumQueue) {
 			_heliumQueue = heliumQueue;
 			//_heliumQueue.FileName = endpointConfiguration.FileName;
 		}

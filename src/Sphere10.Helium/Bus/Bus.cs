@@ -8,9 +8,9 @@ namespace Sphere10.Helium.Bus {
 	public class Bus : IBus {
 		private readonly IMessageHeader _messageHeader;
 		private readonly ITimeoutManager _timeoutManagerManager;
-		private readonly IQueueManager _queueManager;
+		private readonly ILocalQueueProcessor _queueManager;
 
-		public Bus(IQueueManager queueManager, IMessageHeader messageHeader, ITimeoutManager timeoutManagerManager) {
+		public Bus(ILocalQueueProcessor queueManager, IMessageHeader messageHeader, ITimeoutManager timeoutManagerManager) {
 			_messageHeader = messageHeader;
 			_timeoutManagerManager = timeoutManagerManager;
 			_queueManager = queueManager;

@@ -6,9 +6,9 @@ using Sphere10.Helium.Processor;
 namespace Sphere10.Helium.Bus {
 	public class SendOnlyBus : ISendOnlyBus {
 		private readonly IMessageHeader _messageHeader;
-		private readonly IQueueManager _queueManager;
+		private readonly ILocalQueueProcessor _queueManager;
 
-		public SendOnlyBus(IQueueManager queueManager, IMessageHeader messageHeader) {
+		public SendOnlyBus(ILocalQueueProcessor queueManager, IMessageHeader messageHeader) {
 			_messageHeader = messageHeader;
 			_queueManager = queueManager;
 		}

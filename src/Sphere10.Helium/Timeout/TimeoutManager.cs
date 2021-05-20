@@ -10,9 +10,9 @@ namespace Sphere10.Helium.Timeout
     {
         string ITimeoutManager.TimeoutMessageId { get; set; } = Global.TimeoutMessageId;
         
-        private readonly IQueueManager _queueManager;
+        private readonly ILocalQueueProcessor _queueManager;
         
-        public TimeoutManager(IQueueManager queueManager)
+        public TimeoutManager(ILocalQueueProcessor queueManager)
         {
             _queueManager = queueManager;
         }

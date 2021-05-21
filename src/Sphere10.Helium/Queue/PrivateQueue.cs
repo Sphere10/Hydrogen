@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -221,6 +222,21 @@ namespace Sphere10.Helium.Queue {
 
 		public IMessage RetrieveMessage() {
 			throw new NotImplementedException();
+		}
+
+		//TODO: Jake REMEMBER to remove this//
+		private void ThisIsToRemoveTheNotUsedWarning() {
+			Debug.Assert(Committing != null, nameof(Committing) + " != null");
+			var x = Committing.ToString();
+
+			Debug.Assert(Committing != null, nameof(Committing) + " != null");
+			var y = Committed.ToString();
+
+			Debug.Assert(Committing != null, nameof(Committing) + " != null");
+			var z = RollingBack.ToString();
+
+			Debug.Assert(Committing != null, nameof(Committing) + " != null");
+			var a = RolledBack.ToString();
 		}
 	}
 }

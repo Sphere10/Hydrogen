@@ -43,7 +43,7 @@ namespace Sphere10.Helium.Bus {
 		public void SendAndForget(string destination, IMessage message) {
 			var headerMessage = _messageHeader.AddHeadersToMessage(message);
 
-			_queueManager.FirstIn(destination, headerMessage);
+			//_queueManager.FirstIn(destination, headerMessage);
 		}
 
 		public void SendAndForget(string destination, IMessage message, IMessageHeader messageHeader) {

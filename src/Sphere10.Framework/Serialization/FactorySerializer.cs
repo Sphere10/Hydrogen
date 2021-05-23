@@ -7,13 +7,16 @@ namespace Sphere10.Framework {
 	/// </summary>
 	/// <typeparam name="TBase"></typeparam>
 	public class FactorySerializer<TBase> : ItemSerializerBase<TBase> {
+		private readonly IDictionary<uint, IItemSerializer<TBase>> _concreteLookup;
+		private readonly Func<TBase, uint> _getTypeCode;
 
-		public IDictionary<uint, IItemSerializer<TBase>> ConcreteLookup { get; init; }
-
-		public Func<TBase, uint> GetTypeCode { get; init; }
+		public FactorySerializer(Func<TBase, uint> getTypeCode) {
+			_concreteLookup = new Dictionary<uint, IItemSerializer<TBase>>();
+			_getTypeCode = getTypeCode;
+		}
 
 		public void RegisterSerializer<TConcrete>(uint typeCode, IItemSerializer<TConcrete> concreteSerializer) where TConcrete : TBase {
-			ConcreteLookup.Add(typeCode, new CastedSerializer<TBase,TConcrete>(concreteSerializer));
+			_concreteLookup.Add(typeCode, new CastedSerializer<TBase,TConcrete>(concreteSerializer));
 		}
 
 		public override int CalculateSize(TBase item)
@@ -26,17 +29,17 @@ namespace Sphere10.Framework {
 		}
 
 		public override int Serialize(TBase item, EndianBinaryWriter writer) {
-			var typeCode = GetTypeCode(item);
+			var typeCode = _getTypeCode(item);
 			writer.Write(typeCode);
 			return GetConcreteSerializer(typeCode).Serialize(item, writer);
 		}
 
 		private IItemSerializer<TBase> GetConcreteSerializer(TBase item) 
-			=> GetConcreteSerializer(GetTypeCode(item));
+			=> GetConcreteSerializer(_getTypeCode(item));
 		
 
 		private IItemSerializer<TBase> GetConcreteSerializer(uint typeCode) 
-			=> ConcreteLookup[typeCode];
+			=> _concreteLookup[typeCode];
 		
 	}
 

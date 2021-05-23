@@ -12,42 +12,66 @@
 //-----------------------------------------------------------------------
 
 using System;
-using System.Xml.Serialization;
 using Sphere10.Framework.Scheduler.Serializable;
 
 namespace Sphere10.Framework.Scheduler {
 
 	public class OnDayOfMonthScheduler <T> : BaseJobSchedule<T> where T : class, IJob {
-        private readonly int _dayOfMonth;
-	    private readonly TimeSpan _timeOfDay;
-	
-		public OnDayOfMonthScheduler(int dayOfMonth, TimeSpan timeOfDay, bool repeat = false)
-            : this(dayOfMonth, timeOfDay, repeat ? (uint?)null : 1) {
-		}
+        private int DayOfMonth { get; set; }
+	    private TimeSpan TimeOfDay { get; set; }
 
-        public OnDayOfMonthScheduler(int dayOfMonth, TimeSpan timeOfDay, uint? totalTimesToRun)
-            : base(Tools.Time.CalculateNextDayOfMonth(DateTime.UtcNow, dayOfMonth, timeOfDay), totalTimesToRun) {
-            _dayOfMonth = dayOfMonth;
-            _timeOfDay = timeOfDay;
+		public OnDayOfMonthScheduler()
+        {
         }
 
-		public override ReschedulePolicy ReschedulePolicy => ReschedulePolicy.OnStart;
+		public OnDayOfMonthScheduler(int dayOfMonth, TimeSpan timeOfDay, bool repeat = false, DateTime? endDate = null)
+            : this(dayOfMonth, timeOfDay, repeat ? (uint?)null : 1, endDate) {
+		}
+
+        public OnDayOfMonthScheduler(int dayOfMonth, TimeSpan timeOfDay, uint? totalTimesToRun, DateTime? endDate)
+            : base(Tools.Time.CalculateNextDayOfMonth(DateTime.UtcNow, dayOfMonth, timeOfDay), totalTimesToRun, endDate) {
+            DayOfMonth = dayOfMonth;
+            TimeOfDay = timeOfDay;
+        }
+
+		public override ReschedulePolicy ReschedulePolicy { get; protected set; } = ReschedulePolicy.OnStart;
 
 		public override JobScheduleSerializableSurrogate ToSerializableSurrogate() {
 			return new DayOfMonthScheduleSerializableSurrogate {
-				DayOfMonth = this._dayOfMonth,
+				TotalIterations = TotalIterations?.ToString(),
+				InitialStartTime = InitialStartTime?.ToString("yyyy-MM-dd HH:mm:ss"),
+
+				DayOfMonth = this.DayOfMonth,
 				IterationsExecuted = this.IterationsExecuted,
 				IterationsRemaining = this.IterationsRemaining,
 				LastEndTime = this.LastEndTime?.ToString("yyyy-MM-dd HH:mm:ss"),
 				LastStartTime = this.LastStartTime?.ToString("yyyy-MM-dd HH:mm:ss"),
-				NextStartTime = this.NextStartTime.ToString("yyyy-MM-dd HH:mm:ss"),
+				EndDate = EndDate?.ToString("yyyy-MM-dd HH:mm:ss"),
 				ReschedulePolicy = this.ReschedulePolicy,
-				TimeOfDay = DateTime.Now.ToMidnight().Add(this._timeOfDay).ToString("HH:mm:ss")
+				TimeOfDay = (long)Math.Round(TimeOfDay.TotalMilliseconds, 0)
 			};
 		}
 
+        public override void FromSerializableSurrogate(JobScheduleSerializableSurrogate scheduleSurrogate)
+        {
+			var surrogate = (DayOfMonthScheduleSerializableSurrogate)scheduleSurrogate;
+
+			TotalIterations = surrogate.TotalIterations.ToUintOrDefault();
+			InitialStartTime = surrogate.InitialStartTime.ToDateTimeOrDefault();
+
+			IterationsExecuted = surrogate.IterationsExecuted;
+			IterationsRemaining = surrogate.IterationsRemaining;
+			LastEndTime = surrogate.LastEndTime.ToDateTimeOrDefault();
+			LastStartTime = surrogate.LastStartTime.ToDateTimeOrDefault();
+			EndDate = surrogate.EndDate.ToDateTimeOrDefault();
+			ReschedulePolicy = surrogate.ReschedulePolicy;
+
+			DayOfMonth = surrogate.DayOfMonth;
+			TimeOfDay = TimeSpan.FromMilliseconds(surrogate.TimeOfDay);
+		}
+
 		protected override DateTime CalculateNextRunTime() {
-            return Tools.Time.CalculateNextDayOfMonth(DateTime.UtcNow, _dayOfMonth, _timeOfDay);
+            return Tools.Time.CalculateNextDayOfMonth(DateTime.UtcNow, DayOfMonth, TimeOfDay);
 		}
 	}
 

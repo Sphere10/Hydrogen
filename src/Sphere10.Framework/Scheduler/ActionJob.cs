@@ -27,8 +27,13 @@ namespace Sphere10.Framework.Scheduler {
 			_action();
 		}
 
-		public override JobSerializableSurrogate ToSerializableSurrogate() {
+        public override JobSerializableSurrogate ToSerializableSurrogate() {
 			throw new NotSupportedException("Cannot serialize action jobs");
+		}
+
+		public override void FromSerializableSurrogate(JobSerializableSurrogate jobSurrogate)
+		{
+			throw new NotSupportedException("Cannot deserialize action jobs");
 		}
 	}
 }

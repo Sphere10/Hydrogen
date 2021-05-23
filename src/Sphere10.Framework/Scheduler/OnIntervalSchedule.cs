@@ -17,29 +17,54 @@ using Sphere10.Framework.Scheduler.Serializable;
 namespace Sphere10.Framework.Scheduler {
 
 	public class OnIntervalSchedule <T> : BaseJobSchedule<T> where T : class, IJob {
-		private readonly TimeSpan _repeatInterval;
-	
-		public OnIntervalSchedule(DateTime start, TimeSpan repeatEvery, ReschedulePolicy reschedulePolicy = ReschedulePolicy.OnFinish, uint? totalTimesToRun = null)
-			: base(start, totalTimesToRun) {
-			_repeatInterval = repeatEvery;
+		private TimeSpan RepeatInterval { get; set; }
+
+		public OnIntervalSchedule()
+        {
+        }
+
+		public OnIntervalSchedule(DateTime start, TimeSpan repeatEvery, ReschedulePolicy reschedulePolicy = ReschedulePolicy.OnFinish, uint? totalTimesToRun = null,
+			DateTime? endDate = null)
+			: base(start, totalTimesToRun, endDate) {
+			RepeatInterval = repeatEvery;
 			ReschedulePolicy = reschedulePolicy;
 		}
 
-		public override ReschedulePolicy ReschedulePolicy { get; }
+		public override ReschedulePolicy ReschedulePolicy { get; protected set; }
 
 		public override JobScheduleSerializableSurrogate ToSerializableSurrogate() {
 			return new IntervalScheduleSerializableSurrogate {
+				TotalIterations = TotalIterations?.ToString(),
+				InitialStartTime = InitialStartTime?.ToString("yyyy-MM-dd HH:mm:ss"),
+
 				IterationsExecuted = this.IterationsExecuted,
 				IterationsRemaining = this.IterationsRemaining,
 				LastEndTime = this.LastEndTime?.ToString("yyyy-MM-dd HH:mm:ss"),
 				LastStartTime = this.LastStartTime?.ToString("yyyy-MM-dd HH:mm:ss"),
-				NextStartTime = this.NextStartTime.ToString("yyyy-MM-dd HH:mm:ss"),
+				EndDate = EndDate?.ToString("yyyy-MM-dd HH:mm:ss"),
 				ReschedulePolicy = this.ReschedulePolicy,
-				RepeatIntervalMS = (long)Math.Round(_repeatInterval.TotalMilliseconds, 0)
+				RepeatIntervalMS = (long)Math.Round(RepeatInterval.TotalMilliseconds, 0),
 			};
 		}
 
-		protected override DateTime CalculateNextRunTime() {
+        public override void FromSerializableSurrogate(JobScheduleSerializableSurrogate scheduleSurrogate)
+        {
+			var surrogate = (IntervalScheduleSerializableSurrogate)scheduleSurrogate;
+
+			TotalIterations = surrogate.TotalIterations.ToUintOrDefault();
+			InitialStartTime = surrogate.InitialStartTime.ToDateTimeOrDefault();
+
+			IterationsExecuted = surrogate.IterationsExecuted;
+			IterationsRemaining = surrogate.IterationsRemaining;
+			LastEndTime = surrogate.LastEndTime.ToDateTimeOrDefault();
+			LastStartTime = surrogate.LastStartTime.ToDateTimeOrDefault();
+			EndDate = surrogate.EndDate.ToDateTimeOrDefault();
+			ReschedulePolicy = surrogate.ReschedulePolicy;
+
+			RepeatInterval = TimeSpan.FromMilliseconds(surrogate.RepeatIntervalMS);
+		}
+
+        protected override DateTime CalculateNextRunTime() {
 			DateTime originTime;
 			switch (ReschedulePolicy) {
 				case ReschedulePolicy.OnStart:			
@@ -56,7 +81,7 @@ namespace Sphere10.Framework.Scheduler {
 					throw new ArgumentOutOfRangeException(nameof(ReschedulePolicy));
 			}
 
-			return originTime.Add(_repeatInterval).ToUniversalTime().ClipTo(DateTime.UtcNow, DateTime.UtcNow + _repeatInterval);
+			return originTime.Add(RepeatInterval).ToUniversalTime().ClipTo(DateTime.UtcNow, DateTime.UtcNow + RepeatInterval);
 		}
 	}
 

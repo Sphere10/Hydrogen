@@ -23,5 +23,7 @@ namespace Sphere10.Framework.Scheduler {
 		IEnumerable<IJobSchedule> Schedules { get; }
 		void Execute();
 		JobSerializableSurrogate ToSerializableSurrogate();
+
+		ILogger Log { get; set; }
 	}
 }

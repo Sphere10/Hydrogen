@@ -11,13 +11,14 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Sphere10.Framework.Scheduler.Serializable;
 
 namespace Sphere10.Framework.Scheduler {
 	public abstract class BaseJob : IJob {
-		private readonly IList<IJobSchedule> _schedules;
+		private IList<IJobSchedule> _schedules;
 
 		protected BaseJob(JobPolicy policy = JobPolicy.Asyncronous) {
 			Status = JobStatus.Uninitalized;
@@ -31,9 +32,14 @@ namespace Sphere10.Framework.Scheduler {
 
 		public virtual JobPolicy Policy { get; set; }
 
-		public IEnumerable<IJobSchedule> Schedules => _schedules.Select(x => x);
+		public IEnumerable<IJobSchedule> Schedules {
+			get => _schedules.Select(x => x);
+			set => _schedules = value.ToList();
+		}
 
-		public virtual void AddSchedule(BaseJobSchedule schedule)  {
+        public ILogger Log { get; set; }
+
+        public virtual void AddSchedule(BaseJobSchedule schedule)  {
 			schedule.Job = this;
 			_schedules.Add(schedule);
 		}
@@ -42,5 +48,6 @@ namespace Sphere10.Framework.Scheduler {
 
 		public abstract JobSerializableSurrogate ToSerializableSurrogate();
 
+		public abstract void FromSerializableSurrogate(JobSerializableSurrogate jobSurrogate);
 	}
 }

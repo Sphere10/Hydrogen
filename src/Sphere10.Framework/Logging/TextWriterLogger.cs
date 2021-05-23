@@ -11,6 +11,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
+using System;
 using System.IO;
 
 namespace Sphere10.Framework {
@@ -105,7 +106,7 @@ namespace Sphere10.Framework {
 	    /// <remarks></remarks>
 	    protected virtual void LogMessage(TextWriter writer, string message) {
 	        try {
-	            writer.WriteLine(message);
+	            writer.Write(message + Environment.NewLine);
 	        } catch {
 	            // errors do not propagate outside logging framework
 	        }

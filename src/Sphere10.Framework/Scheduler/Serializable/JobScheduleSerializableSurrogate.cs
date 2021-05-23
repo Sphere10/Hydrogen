@@ -11,7 +11,7 @@ namespace Sphere10.Framework.Scheduler.Serializable {
 		public string LastEndTime { get; set; }
 
 		[XmlAttribute]
-		public string NextStartTime { get; set; }
+		public string EndDate { get; set; }
 
 		[XmlAttribute]
 		public ReschedulePolicy ReschedulePolicy { get; set; }
@@ -21,5 +21,11 @@ namespace Sphere10.Framework.Scheduler.Serializable {
 
 		[XmlAttribute]
 		public uint IterationsExecuted { get; set; }
+
+		[XmlAttribute]
+		public string TotalIterations { get; set; }
+
+		[XmlAttribute]
+		public string InitialStartTime { get; set; }
 	}
 }

@@ -703,5 +703,21 @@ namespace Sphere10.Framework {
 			return a.AddDays( 7- (int)a.DayOfWeek ).Date.Equals(b.AddDays( -(int)b.DayOfWeek ).Date);
 		}
 
+		/// <summary>
+		/// Try to convert a string into a nullable DateTime. If the string cannot be converted
+		/// the default value is returned.
+		/// </summary>
+		/// <param name="value">The string to parse.</param>
+		/// <param name="defaultValue">The value to return if the string could not be converted.</param>
+		/// <returns>A nullable DateTime if the input was valid; otherwise, defaultValue.</returns>
+		public static DateTime? ToDateTimeOrDefault(this string value, DateTime? defaultValue = null)
+        {
+			if (!string.IsNullOrWhiteSpace(value) && DateTime.TryParse(value, out var result))
+			{
+				return result;
+			}
+
+			return defaultValue;
+		}
 	}
 }

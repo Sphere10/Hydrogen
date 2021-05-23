@@ -13,9 +13,9 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\Sphere10.Framework.CryptoEx\Sphere10.Framework.CryptoEx.csproj" />
-      <ProjectReference Include="..\..\Sphere10.Framework.NUnit\Sphere10.Framework.NUnit.csproj" />
-      <ProjectReference Include="..\..\Sphere10.Framework\Sphere10.Framework.csproj" />
+      <ProjectReference Include="..\..\src\Sphere10.Framework.CryptoEx\Sphere10.Framework.CryptoEx.csproj" />
+      <ProjectReference Include="..\..\src\Sphere10.Framework.NUnit\Sphere10.Framework.NUnit.csproj" />
+      <ProjectReference Include="..\..\src\Sphere10.Framework\Sphere10.Framework.csproj" />
     </ItemGroup>
 
     <ItemGroup>

@@ -72,6 +72,11 @@ namespace Sphere10.Framework {
 
         }
 
+        public static Type ResolveTypeInAllAssemblies(string typeName)
+        {
+            return ResolveTypeInAssemblies(AppDomain.CurrentDomain.GetAssemblies(), typeName);
+        }
+
         public static Type ResolveTypeInAssembly(Assembly assembly, string typeName) {
             return ResolveTypeInAssemblies(new[] {assembly}, typeName);
         }

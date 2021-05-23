@@ -14,7 +14,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\Sphere10.Hydrogen.Presentation\Sphere10.Hydrogen.Presentation.csproj" />
+      <ProjectReference Include="..\..\src\Sphere10.Hydrogen.Presentation\Sphere10.Hydrogen.Presentation.csproj" />
     </ItemGroup>
 
 </Project>

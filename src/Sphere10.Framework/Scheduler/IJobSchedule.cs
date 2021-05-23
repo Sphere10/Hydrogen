@@ -21,11 +21,13 @@ namespace Sphere10.Framework.Scheduler {
 		DateTime? LastStartTime { get; }
 		DateTime? LastEndTime { get; }
 		DateTime NextStartTime { get; }
+		DateTime? EndDate { get; }
 		ReschedulePolicy ReschedulePolicy { get; }
 		uint IterationsRemaining { get; }
 		uint IterationsExecuted { get; }
 		void NotifyStart(DateTime start);
 		void NotifyExecution(DateTime start, DateTime end);
 		JobScheduleSerializableSurrogate ToSerializableSurrogate();
+		void FromSerializableSurrogate(JobScheduleSerializableSurrogate scheduleSurrogate);
 	}
 }

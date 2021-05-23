@@ -8,7 +8,7 @@ namespace Sphere10.Framework.Scheduler.Serializable {
 		public DayOfWeek DayOfWeek { get; set; }
 
 		[XmlAttribute]
-		public string TimeOfDay;   // HH:mm:ss
+		public long TimeOfDay;
 
 	}
 }

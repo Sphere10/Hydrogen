@@ -150,5 +150,21 @@ namespace Sphere10.Framework {
             }
         }
 
+        /// <summary>
+        /// Try to convert a string into a nullable uint. If the string cannot be converted
+        /// the default value is returned.
+        /// </summary>
+        /// <param name="value">The string to parse.</param>
+        /// <param name="defaultValue">The value to return if the string could not be converted.</param>
+        /// <returns>A nullable uint if the input was valid; otherwise, defaultValue.</returns>
+        public static uint? ToUintOrDefault(this string value, uint? defaultValue = null)
+        {
+            if (!string.IsNullOrWhiteSpace(value) && uint.TryParse(value, out var result))
+            {
+                return result;
+            }
+
+            return defaultValue;
+        }
     }
 }

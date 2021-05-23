@@ -22,22 +22,22 @@ namespace Sphere10.Framework.Scheduler {
 			_jobBuilder = jobBuilder;
 			
 		}
-		public JobBuilder<T> OnInterval(TimeSpan interval, ReschedulePolicy reschedulePolicy = ReschedulePolicy.OnFinish, uint? totalIterations = null) {
-			return OnInterval(DateTime.UtcNow.Add(interval), interval, reschedulePolicy, totalIterations);
+		public JobBuilder<T> OnInterval(TimeSpan interval, ReschedulePolicy reschedulePolicy = ReschedulePolicy.OnFinish, uint? totalIterations = null, DateTime? endDate = null) {
+			return OnInterval(DateTime.UtcNow.Add(interval), interval, reschedulePolicy, totalIterations, endDate);
 		}
 
-		public JobBuilder<T> OnInterval(DateTime startOn, TimeSpan interval, ReschedulePolicy reschedulePolicy = ReschedulePolicy.OnFinish,  uint? totalIterations = null) {
-			_jobBuilder.Job.AddSchedule(new OnIntervalSchedule<T>(startOn, interval, reschedulePolicy, totalIterations)); 
+		public JobBuilder<T> OnInterval(DateTime startOn, TimeSpan interval, ReschedulePolicy reschedulePolicy = ReschedulePolicy.OnFinish,  uint? totalIterations = null, DateTime? endDate = null) {
+			_jobBuilder.Job.AddSchedule(new OnIntervalSchedule<T>(startOn, interval, reschedulePolicy, totalIterations, endDate)); 
 			return _jobBuilder;
 		}
 
-	    public JobBuilder<T> OnDayOfWeek(DayOfWeek dayOfWeek, TimeSpan timeOfDay, uint? totalIterations = null) {            
-            _jobBuilder.Job.AddSchedule(new OnDayOfWeekScheduler<T>(dayOfWeek, timeOfDay, totalIterations)); 
+	    public JobBuilder<T> OnDayOfWeek(DayOfWeek dayOfWeek, TimeSpan timeOfDay, uint? totalIterations = null, DateTime? endDate = null) {            
+            _jobBuilder.Job.AddSchedule(new OnDayOfWeekScheduler<T>(dayOfWeek, timeOfDay, totalIterations, endDate)); 
             return _jobBuilder;
 	    }
 
-        public JobBuilder<T> OnDayOfMonth(int dayOfMonth, TimeSpan timeOfDay, uint? totalIterations = null) {            
-            _jobBuilder.Job.AddSchedule(new OnDayOfMonthScheduler<T>(dayOfMonth, timeOfDay, totalIterations));
+        public JobBuilder<T> OnDayOfMonth(int dayOfMonth, TimeSpan timeOfDay, uint? totalIterations = null, DateTime? endDate = null) {            
+            _jobBuilder.Job.AddSchedule(new OnDayOfMonthScheduler<T>(dayOfMonth, timeOfDay, totalIterations, endDate));
             return _jobBuilder;
         }
 

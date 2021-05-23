@@ -43,13 +43,7 @@ namespace Sphere10.Framework {
 
 		protected abstract void InternalWrite(string value);
 
-		public override Encoding Encoding {
-#if __WP8__
-            get { return System.Text.Encoding.Unicode; }
-#else
-			get { return System.Text.Encoding.Default; }
-#endif
-		}
-	}
+        public override Encoding Encoding => Encoding.Default;
+    }
 
 }

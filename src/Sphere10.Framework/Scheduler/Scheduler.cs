@@ -59,6 +59,12 @@ namespace Sphere10.Framework.Scheduler {
 
 		protected ILogger Log { get; }
 
+		public Action<TJob> OnBeforeJobBegin { get; set; }
+
+		public Action<TJob> OnAfterJobEnd { get; set; }
+
+		public Action<TJob, Exception> OnJobError { get; set; }
+
 		#endregion
 
 		#region Methods
@@ -73,8 +79,27 @@ namespace Sphere10.Framework.Scheduler {
 		public virtual void AddJob(TJob job) {
 			Guard.ArgumentNotNull(job, "job");
 			Guard.ArgumentNotNull(job.Schedules, "job.Schedules");
+
+			// Check asychronous/sychronous jobs. Make sure:
+			// - Asychronous jobs can't be added to a sychronous scheduler; and
+			// - Sychronous jobs can't be added to an asychronous scheduler.
+			var jobIsAsynchronus = job.Policy.HasFlag(JobPolicy.Asyncronous);
+			var schedulerIsAsynchronous = !Policy.HasFlag(SchedulerPolicy.ForceSyncronous);
+
+			if ((jobIsAsynchronus && !schedulerIsAsynchronous) || (!jobIsAsynchronus && schedulerIsAsynchronous))
+            {
+				var jobText = jobIsAsynchronus ? "asychronous" : "sychronous";
+				var schedulerText = schedulerIsAsynchronous ? "asychronous" : "sychronous";
+				throw new InvalidOperationException($"Cannot run {jobText} job on {schedulerText} scheduler (check job and scheduler policies)");
+			}
+
 			Log.Debug($"Scheduler Added {job.Name}");
 			try {
+				if (job.Log == null)
+                {
+					job.Log = Log;
+				}
+
 				_timer.Stop();
 				UpdateJobStatus(job, JobStatus.Initialized);
 				// Add all the schedules to the timeline
@@ -249,6 +274,17 @@ namespace Sphere10.Framework.Scheduler {
 			}
 		}
 
+		public void FromSerializableSurrogate(SchedulerSerializableSurrogate schedulerSurrogate)
+        {
+			foreach (var jobSurrogate in schedulerSurrogate.Jobs)
+            {
+				var job = new SchedulerJob();
+				job.FromSerializableSurrogate(jobSurrogate);
+
+				AddJob(job as TJob);
+			}
+		}
+
 		protected void RunPendingJobs() {
 			Log.Debug($"Scheduler RunPendingJobs");
 			var currentStatus = Status;
@@ -305,14 +341,20 @@ namespace Sphere10.Framework.Scheduler {
 		private void ExecuteJob(TJob job) {
 			Log.Debug($"Scheduler ExecuteJob ${job.Name}");
 			Guard.ArgumentNotNull(job, "job");
-			var result = true;
+			
 			try {
 				if (!job.Status.IsIn(JobStatus.Scheduled, JobStatus.Completed))
 					return;
 
 				UpdateJobStatus(job, JobStatus.Started);
+
+				OnBeforeJobBegin?.Invoke(job);
 				job.Execute();
-			} catch (Exception error) {
+				OnAfterJobEnd?.Invoke(job);
+			}
+			catch (Exception error) {
+				OnJobError?.Invoke(job, error);
+
 				Log.Error(error.ToDiagnosticString());
 				if (Policy.HasFlag(SchedulerPolicy.RemoveJobOnError)) {
 					RemoveJob(job);
@@ -328,7 +370,7 @@ namespace Sphere10.Framework.Scheduler {
 
 		protected void RestartTimer() {
 			Log.Debug($"Scheduler RestartTimer");
-			if (Status == SchedulerStatus.Off)
+			if (Status == SchedulerStatus.Off || Status == SchedulerStatus.On)
 				return;
 
 			var shouldDispose = false;
@@ -405,11 +447,15 @@ namespace Sphere10.Framework.Scheduler {
 	}
 
 	public class Scheduler : Scheduler<IJob, IJobSchedule> {
-		private static volatile Scheduler _globalScheduler;
+		private static volatile Scheduler _asynchronousScheduler;
+		private static volatile Scheduler _synchronousScheduler;
 
 		static Scheduler() {
-			_globalScheduler = new Scheduler(SchedulerPolicy.DontThrow | SchedulerPolicy.RemoveJobOnError);
-			_globalScheduler.Start();
+			_asynchronousScheduler = new Scheduler(SchedulerPolicy.DontThrow | SchedulerPolicy.RemoveJobOnError);
+			_asynchronousScheduler.Start();
+
+			_synchronousScheduler = new Scheduler(SchedulerPolicy.DontThrow | SchedulerPolicy.RemoveJobOnError | SchedulerPolicy.ForceSyncronous);
+			_synchronousScheduler.Start();
 		}
 
 		public Scheduler() : base() {
@@ -418,7 +464,8 @@ namespace Sphere10.Framework.Scheduler {
 		public Scheduler(SchedulerPolicy policy, ILogger logger = null) : base(policy, logger) {
 		}
 
-		public static Scheduler Global => _globalScheduler;
+		public static Scheduler Asynchronous => _asynchronousScheduler;
+		public static Scheduler Synchronous => _synchronousScheduler;
 	}
 }
 

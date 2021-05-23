@@ -12,40 +12,49 @@
 //-----------------------------------------------------------------------
 
 using System;
-using System.Xml.Serialization;
 using Sphere10.Framework.Scheduler.Serializable;
 
 namespace Sphere10.Framework.Scheduler {
 
 	public abstract class BaseJobSchedule : IJobSchedule {
-		private readonly uint? _totalIterations;
-		private readonly DateTime? _initialStartTime;
-		protected BaseJobSchedule(DateTime? startOn, uint? numIterations = null) {
+		protected uint? TotalIterations { get; set; }
+		protected DateTime? InitialStartTime { get; set; }
+
+		protected BaseJobSchedule()
+        {
+        }
+
+		protected BaseJobSchedule(DateTime? startOn, uint? numIterations = null, DateTime? endDate = null) {
 			LastStartTime = null;
 			LastEndTime = null;
-			_initialStartTime = startOn?.ToUniversalTime();
-			_totalIterations = numIterations;
+			EndDate = endDate;
+			InitialStartTime = startOn?.ToUniversalTime();
+			TotalIterations = numIterations;
 			IterationsExecuted = 0;
-			IterationsRemaining = _totalIterations ?? uint.MaxValue;
+			IterationsRemaining = TotalIterations ?? uint.MaxValue;
 		}
 
 		public IJob Job { get; internal set; }	
 		public DateTime? LastStartTime { get; protected set; }
 		public DateTime? LastEndTime { get; protected set; }
+		public DateTime? EndDate { get; protected set; }
 
 		public DateTime NextStartTime {
 			get {
+				if (EndDate.HasValue && DateTime.Now >= EndDate.Value)
+					return DateTime.MaxValue;
+	
 				if (IterationsRemaining == 0)
 					return DateTime.MaxValue;
 
-				if (IterationsExecuted == 0 && _initialStartTime != null)
-					return _initialStartTime.Value;
+				if (IterationsExecuted == 0 && InitialStartTime != null)
+					return InitialStartTime.Value;
 
 				return CalculateNextRunTime();
 			}
 		}
 
-		public abstract ReschedulePolicy ReschedulePolicy { get; }
+		public abstract ReschedulePolicy ReschedulePolicy { get; protected set; }
 
 		public uint IterationsRemaining { get; protected set; }
 
@@ -56,7 +65,7 @@ namespace Sphere10.Framework.Scheduler {
 				throw new SoftwareException("Job Schedule has no more scheduled iterations, yet is being called");
 
 			LastStartTime = start.ToUniversalTime();
-			if (_totalIterations != null && _totalIterations > 0) {
+			if (TotalIterations != null && TotalIterations > 0) {
 
 				IterationsRemaining--;
 			}
@@ -70,6 +79,8 @@ namespace Sphere10.Framework.Scheduler {
 
 		public abstract JobScheduleSerializableSurrogate ToSerializableSurrogate();
 
+		public abstract void FromSerializableSurrogate(JobScheduleSerializableSurrogate scheduleSurrogate);
+
 		protected abstract DateTime CalculateNextRunTime();
 
 		public int CompareTo(IJobSchedule other) {
@@ -78,7 +89,11 @@ namespace Sphere10.Framework.Scheduler {
 	}
 
 	public abstract class BaseJobSchedule<T> : BaseJobSchedule where T : class, IJob {
-		protected BaseJobSchedule(DateTime? startOn, uint? numIterations = null) : base(startOn, numIterations) {			
+		protected BaseJobSchedule()
+        {
+        }
+
+		protected BaseJobSchedule(DateTime? startOn, uint? numIterations = null, DateTime? endDate = null) : base(startOn, numIterations, endDate) {			
 		}
 
 		public new T Job {  get { return (T)base.Job; } set { base.Job = value; } }		

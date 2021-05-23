@@ -51,7 +51,7 @@ namespace Sphere10.Framework.Scheduler {
 		public T Build() {
 			return Job;
 		}
-		
+
 	}
 
 
@@ -64,5 +64,9 @@ namespace Sphere10.Framework.Scheduler {
 			return new JobBuilder(new ActionJob(action));
 		}
 
+		public static JobBuilder<BaseJob> For(Type jobType)
+		{
+			return new JobBuilder(new SchedulerJob(jobType));
+		}
 	}
 }

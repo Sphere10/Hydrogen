@@ -19,13 +19,18 @@ using Sphere10.Framework;
 // ReSharper disable CheckNamespace
 namespace Tools {
 
-	public static class Runtime {
+    public static class Runtime {
         private static readonly object _threadLock = new object();
         private static bool _hasDeterminedDesignMode = false;
         private static bool _isDesignMode = false;
         private static Assembly _entryAssembly = null;
         private static bool? _isWebApp = null;
 
+
+        public static string GetExecutablePath() {
+            // https://stackoverflow.com/questions/64581054/how-do-i-get-the-name-of-the-current-executable-in-c-net-5-edition
+            return Process.GetCurrentProcess().MainModule.FileName;
+        }
 
         public static bool IsWebApp {
             get {

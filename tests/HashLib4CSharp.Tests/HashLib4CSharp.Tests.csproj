@@ -20,7 +20,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\HashLib4CSharp\HashLib4CSharp.csproj" />
+      <ProjectReference Include="..\..\src\HashLib4CSharp\HashLib4CSharp.csproj" />
     </ItemGroup>
 
 </Project>

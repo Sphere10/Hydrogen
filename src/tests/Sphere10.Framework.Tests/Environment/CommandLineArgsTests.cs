@@ -17,10 +17,17 @@ namespace Sphere10.Framework.Tests.Environment {
 
 
 		[Test]
-		public void AtLeastOneCommandIsRequired() {
-			Assert.Throws<ArgumentOutOfRangeException>(() =>_ = new CommandLineArgs(Header,
-				Footer,new CommandLineArgCommand[0],
-				new CommandLineArg[0]));
+		public void NoCommandOrArgIsValid() {
+			var args = new CommandLineArgs(Header,
+				Footer,new [] { new CommandLineArgCommand("test", "test", Array.Empty<CommandLineArg>(), Array.Empty<CommandLineArgCommand>()) },
+				new CommandLineArg[0]);
+
+			var result = args.TryParse(Array.Empty<string>());
+			
+			Assert.IsTrue(result.Success);
+			Assert.IsEmpty(result.Value.Commands);
+			Assert.IsEmpty(result.Value.Arguments);
+			
 		}
 
 		[Test]

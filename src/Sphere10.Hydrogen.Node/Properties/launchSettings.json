@@ -5,7 +5,7 @@
       "commandName": "Project",
       "environmentVariables": {
       },
-      "commandLineArgs": ""
+      "commandLineArgs": "--help"
     }
   }
 }

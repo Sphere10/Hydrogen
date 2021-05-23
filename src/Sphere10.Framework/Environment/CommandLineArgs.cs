@@ -29,7 +29,7 @@ namespace Sphere10.Framework {
 			Guard.ArgumentNotNull(footer, nameof(footer));
 
 			Guard.ArgumentInRange(header.Length, 1, Int32.MaxValue, nameof(header));
-			Guard.ArgumentInRange(subCommands.Length, 1, Int32.MaxValue, nameof(subCommands));
+			Guard.Argument(Options > 0, nameof(options), "Argument options must allow at least one argument format option.");
 
 			if (options is not null) {
 				Options = options.Value;
@@ -43,16 +43,11 @@ namespace Sphere10.Framework {
 
 		public Result<CommandLineResults> TryParse(string[] args) {
 			Guard.ArgumentNotNull(args, nameof(args));
-			
+
 			var parseResults = Result<CommandLineResults>.Default;
 			var argResults = new LookupEx<string, string>();
 			var lastResult = new CommandLineResults(new LookupEx<string, CommandLineResults>(), argResults);
 			parseResults.Value = lastResult;
-
-			if (!args.Any()) {
-				parseResults.AddError("At least one command required.");
-				return parseResults;
-			}
 
 			var parsedCommands = ParseCommands(args);
 			var parsedArgs = ParseArgsToLookup(args);
@@ -67,10 +62,6 @@ namespace Sphere10.Framework {
 				if (parsedArgs.Contains("Help")) {
 					argResults.Add("Help", string.Empty);
 				}
-			}
-
-			if (!parsedCommands.Any()) {
-				return Result<CommandLineResults>.Error("Command is required.");
 			}
 
 			foreach (var argument in Arguments) {
@@ -147,17 +138,37 @@ namespace Sphere10.Framework {
 		}
 
 		public void PrintHelp() {
-			
+
+			List<string> GetNameOptions(CommandLineArg arg) {
+				var nameOptions = new List<string>();
+
+				if (Options.HasFlag(CommandLineArgOptions.SingleDash))
+					nameOptions.Add($"-{arg.Name}");
+
+				if (Options.HasFlag(CommandLineArgOptions.DoubleDash))
+					nameOptions.Add($"--{arg.Name}");
+
+				if (Options.HasFlag(CommandLineArgOptions.ForwardSlash))
+					nameOptions.Add($"/{arg.Name}");
+
+				return nameOptions;
+			}
+
 			void PrintCommands(IEnumerable<CommandLineArgCommand> commands, int level = 1) {
 				string itemIndentation = string.Empty.PadRight(level * 2);
-				
+
 				foreach (var command in commands) {
 					string line = (itemIndentation + command.Name).PadRight(ArgumentLineLengthPadded) + "\t\t" + command.Description;
 					Console.WriteLine(line);
-					
+
 					foreach (var arg in command.Args) {
-						string argLine = (itemIndentation + "--" + arg.Name).PadRight(ArgumentLineLengthPadded) + "\t\t" + arg.Description;
-						Console.WriteLine(argLine);
+						var nameOptions = GetNameOptions(arg);
+						for (int i = 0; i < nameOptions.Count; i++) {
+							if (i < nameOptions.Count - 1)
+								Console.WriteLine(itemIndentation + nameOptions[i]);
+							else
+								Console.WriteLine((itemIndentation + nameOptions[i]).PadRight(ArgumentLineLengthPadded) + "\t\t" + arg.Description);
+						}
 					}
 
 					if (command.Commands.Any()) {
@@ -168,14 +179,19 @@ namespace Sphere10.Framework {
 			}
 
 			PrintHeader();
-			
+
 			Console.WriteLine(string.Empty);
-			
+
 			if (Arguments.Any()) {
 				Console.WriteLine("Arguments:");
 				foreach (var arg in Arguments) {
-					string line = ("  " + "--" + arg.Name).PadRight(ArgumentLineLengthPadded) + "\t\t" + arg.Description;
-					Console.WriteLine(line);
+					var nameOptions = GetNameOptions(arg);
+					for (int i = 0; i < nameOptions.Count; i++) {
+						if (i < nameOptions.Count - 1)
+							Console.WriteLine("  " + nameOptions[i]);
+						else
+							Console.WriteLine(("  " + nameOptions[i]).PadRight(ArgumentLineLengthPadded) + "\t\t" + arg.Description);
+					}
 				}
 			}
 
@@ -191,7 +207,7 @@ namespace Sphere10.Framework {
 			foreach (var line in Header)
 				Console.WriteLine(line);
 		}
-		
+
 		private string BuildArgNameMatchPattern() {
 			var builder = new StringBuilder();
 			builder.Append("(");

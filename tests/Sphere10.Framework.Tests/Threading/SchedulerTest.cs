@@ -17,6 +17,9 @@ using System.Threading.Tasks;
 using NUnit.Framework;
 using System.Threading;
 using Sphere10.Framework.Scheduler;
+using System.Linq;
+using System.IO;
+using Sphere10.Framework.Scheduler.Serializable;
 
 
 namespace Sphere10.Framework.Tests {
@@ -181,6 +184,282 @@ namespace Sphere10.Framework.Tests {
 			Assert.AreEqual(1, count);   // Starts straight away
 		}
 
-	}
+		[Test]
+		public async Task ScheduleJob_OnIntervalJobWithEndDate_ShouldCompleteByEndDate()
+		{
+			// Schedule a job:
+			// - to run for 1 second, then repeat each second (no iteration count specified).
+			// - with an end date 4 seconds from now.
+			//
+			// Job should run for 4 seconds and be executed 4 times (once each second).
+			const int intervalCount = 3;
+			const int intervalSeconds = 1;
 
+			var executionCount = intervalCount + 1;
+			var endDate = DateTime.Now.Add(TimeSpan.FromSeconds(executionCount * intervalSeconds));
+
+			var count = 0;
+			var job = JobBuilder
+				.For(() => count++)
+				.RunOnce(DateTime.Now)
+				.Repeat
+				.OnInterval(TimeSpan.FromSeconds(intervalSeconds), endDate: endDate)
+				.Build();
+
+			var scheduler = new Scheduler.Scheduler();
+			scheduler.AddJob(job);
+
+			scheduler.Start();
+			await Task.Delay(TimeSpan.FromSeconds((executionCount * intervalSeconds) + 1));
+			Assert.AreEqual(JobStatus.Completed, job.Status);
+			scheduler.Stop();
+
+			Assert.AreEqual(executionCount, count);
+		}
+
+		[Test]
+		public async Task ScheduleJob_OnIntervalJobWithEndDate_ShouldCompleteByInterval()
+		{
+			// Schedule a job:
+			// - to run for 1 second, then repeat 2 times (1 second between each execution).
+			// - with an end date 1 day from now.
+			//
+			// Job should run for 3 seconds and be executed 3 times (once each second).
+			const int intervalSeconds = 1;
+			const int totalIterations = 2;
+
+			var executionCount = totalIterations + 1;
+			var endDate = DateTime.Now.Add(TimeSpan.FromDays(1));
+
+			var count = 0;
+			var job = JobBuilder
+				.For(() => count++)
+				.RunOnce(DateTime.Now)
+				.Repeat
+				.OnInterval(TimeSpan.FromSeconds(intervalSeconds), totalIterations: totalIterations, endDate: endDate)
+				.Build();
+
+			var scheduler = new Scheduler.Scheduler();
+			scheduler.AddJob(job);
+
+			scheduler.Start();
+			await Task.Delay(TimeSpan.FromSeconds((executionCount * intervalSeconds) + 1));
+			Assert.AreEqual(JobStatus.Completed, job.Status);
+			scheduler.Stop();
+
+			Assert.AreEqual(executionCount, count);
+		}
+
+		[Test]
+		public void ScheduleJob_WithIncompatiblePolicies_ShouldFail()
+		{
+			var asyncJob1 = JobBuilder
+				.For(() => { })
+				.Called("AsyncJob1")
+				.RunOnce(DateTime.Now)
+				.RunAsyncronously()
+				.Repeat
+				.OnInterval(TimeSpan.FromSeconds(1))
+				.Build();
+
+			var syncJob1 = JobBuilder
+				.For(() => { })
+				.Called("SyncJob1")
+				.RunOnce(DateTime.Now)
+				.RunSyncronously()
+				.Repeat
+				.OnInterval(TimeSpan.FromSeconds(1))
+				.Build();
+
+			var asynchronousScheduler = new Scheduler.Scheduler();
+			var synchronousScheduler = new Scheduler.Scheduler(SchedulerPolicy.ForceSyncronous);
+
+			// Adding sync job to async scheduler - should fail.
+			Assert.Throws<InvalidOperationException>(() =>
+			{
+				asynchronousScheduler.AddJob(syncJob1);
+			});
+
+			// Adding async job to sync scheduler - should fail.
+			Assert.Throws<InvalidOperationException>(() =>
+			{
+				synchronousScheduler.AddJob(asyncJob1);
+			});
+		}
+
+		[Test]
+		public async Task ScheduleJob_JobThrowsException_ShouldCallErrorHandler()
+		{
+			Exception failException = null;
+
+			var job = JobBuilder
+				.For(typeof(SchedulerTestErrorJob))
+				.RunOnce(DateTime.Now)
+				.Build();
+
+			var scheduler = new Scheduler.Scheduler();
+			scheduler.OnJobError = (job, ex) => failException = ex;
+			scheduler.AddJob(job);
+			scheduler.Start();
+
+			await Task.Delay(TimeSpan.FromSeconds(2));
+			scheduler.Stop();
+
+			Assert.IsTrue(failException != null && failException.Message == SchedulerTestErrorJob.Errormessage);
+		}
+
+		[Test]
+		public void SerializeScheduler_ToFromSurrogate_ShouldBeEqual()
+		{
+			var schedulerPolicy = SchedulerPolicy.ForceSyncronous;
+
+			// Create a scheduler and add jobs to it.
+			var scheduler = new Scheduler.Scheduler(schedulerPolicy);
+
+			var job1 = JobBuilder
+				.For(typeof(SchedulerTestNopJob))
+				.Called("SyncJob1")
+				.RunOnce(DateTime.Now.AddMinutes(1))
+				.RunSyncronously()
+				.Build();
+			scheduler.AddJob(job1);
+
+			var job2 = JobBuilder
+				.For(typeof(SchedulerTestNopJob))
+				.Called("SyncJob2")
+				.RunOnce(DateTime.Now.AddMinutes(1))
+				.RunSyncronously()
+				.Repeat
+				.OnInterval(TimeSpan.FromSeconds(1), endDate: DateTime.Now.AddMinutes(2))
+				.Build();
+			scheduler.AddJob(job2);
+
+			// Convert the scheduler to a surrogate.
+			var surrogate = scheduler.ToSerializableSurrogate();
+
+			// Convert the surrogate back to the scheduler.
+			var convertedScheduler = new Scheduler.Scheduler(schedulerPolicy);
+			convertedScheduler.FromSerializableSurrogate(surrogate);
+
+			// Compare the two schedulers - should be the same.
+			CompareSchedulers(scheduler, convertedScheduler);
+		}
+
+		[Test]
+		public void SerializeScheduler_ToFromXmlFile_ShouldBeEqual()
+        {
+			var schedulerPolicy = SchedulerPolicy.ForceSyncronous;
+
+			// Create a scheduler and add jobs to it.
+			var scheduler = new Scheduler.Scheduler(schedulerPolicy);
+
+			var job1 = JobBuilder
+				.For(typeof(SchedulerTestNopJob))
+				.Called("SyncJob1")
+				.RunOnce(DateTime.Now.AddMinutes(1))
+				.RunSyncronously()
+				.Build();
+			scheduler.AddJob(job1);
+
+			var job2 = JobBuilder
+				.For(typeof(SchedulerTestNopJob))
+				.Called("SyncJob2")
+				.RunOnce(DateTime.Now.AddMinutes(1))
+				.RunSyncronously()
+				.Repeat
+				.OnInterval(TimeSpan.FromSeconds(1), endDate: DateTime.Now.AddMinutes(2))
+				.Build();
+			scheduler.AddJob(job2);
+
+			var path = Path.GetTempFileName();
+			try
+			{
+				var serializer = new XmlSchedulerSerializer(path);
+
+				// Convert scheduler to XML and save to a file.
+				var surrogate = scheduler.ToSerializableSurrogate();
+				serializer.Serialize(surrogate);
+
+				// Load the XML from the file into a surrogate.
+				var convertedSurrogate = serializer.Deserialize();
+
+				// Convert the surrogate back to the scheduler.
+				var convertedScheduler = new Scheduler.Scheduler(schedulerPolicy);
+				convertedScheduler.FromSerializableSurrogate(convertedSurrogate);
+
+				// Compare the two schedulers - should be the same.
+				CompareSchedulers(scheduler, convertedScheduler);
+			}
+			finally
+			{
+				if (!string.IsNullOrEmpty(path) && File.Exists(path))
+				{
+					File.Delete(path);
+				}
+			}
+		}
+
+		private static void CompareSchedulers(Scheduler.Scheduler scheduler, Scheduler.Scheduler convertedScheduler)
+		{
+			// Compare the two schedulers.
+			foreach (var job in scheduler.GetJobs())
+            {
+				// Compare jobs.
+				var convertedJob = convertedScheduler.GetJobs().FirstOrDefault(x => x.Name == job.Name);
+				Assert.IsNotNull(convertedJob);
+				Assert.AreEqual(job.Policy, convertedJob.Policy);
+				Assert.AreEqual(job.Status, convertedJob.Status);
+				Assert.AreEqual(job.Schedules.Count(), convertedJob.Schedules.Count());
+
+				// Compare schedules.
+				var schedules = job.Schedules.ToList();
+				var convertedSchedules = convertedJob.Schedules.ToList();
+
+				for (var i = 0; i < schedules.Count; i++)
+                {
+					var schedule = schedules[i];
+					var convertedSchedule = convertedSchedules[i];
+
+					Assert.IsNotNull(convertedSchedule);
+					Assert.AreEqual(Truncate(schedule.LastStartTime), Truncate(convertedSchedule.LastStartTime));
+					Assert.AreEqual(Truncate(schedule.LastEndTime), Truncate(convertedSchedule.LastEndTime));
+					Assert.AreEqual(Truncate(schedule.EndDate), Truncate(convertedSchedule.EndDate));
+					Assert.AreEqual(schedule.ReschedulePolicy, convertedSchedule.ReschedulePolicy);
+					Assert.AreEqual(schedule.IterationsRemaining, convertedSchedule.IterationsRemaining);
+					Assert.AreEqual(schedule.IterationsExecuted, convertedSchedule.IterationsExecuted);
+				}
+			}
+
+			// Removes frational seconds from a DateTime (e.g. 2000-01-01 00:00:00.12345 becomes 2000-01-01 00:00:00).
+			static DateTime? Truncate(DateTime? date)
+			{
+                return date.HasValue
+					? new DateTime(date.Value.Ticks - (date.Value.Ticks % TimeSpan.TicksPerSecond), date.Value.Kind)
+					: null;
+            }
+        }
+
+		/// <summary>
+		/// Scheduler job that will throw an exception when executed.
+		/// </summary>
+		public class SchedulerTestErrorJob : ISchedulerJob
+		{
+			public const string Errormessage = "FAIL";
+
+			public void Execute(IJob job)
+			{
+				throw new Exception(Errormessage);
+			}
+		}
+
+		/// <summary>
+		/// Scheduler job that does nothing when executed.
+		/// </summary>
+		public class SchedulerTestNopJob : ISchedulerJob
+		{
+			public void Execute(IJob job)
+			{
+			}
+		}
+	}
 }

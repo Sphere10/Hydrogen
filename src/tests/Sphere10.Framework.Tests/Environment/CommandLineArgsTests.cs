@@ -15,6 +15,25 @@ namespace Sphere10.Framework.Tests.Environment {
 			"Footer"
 		};
 
+		[Test]
+		public void DefaultConstructorParse() {
+			var args = new CommandLineArgs();
+			var result =args.TryParse(Array.Empty<string>());
+			Assert.IsTrue(result.Success);
+		}
+		
+		[Test]
+		public void InitArgParse() {
+			var args = new CommandLineArgs() {
+				Arguments = new[] { new CommandLineArg("test", "unit testing", CommandLineArgTraits.Mandatory) },
+				Commands = new []{ new CommandLineArgCommand("unittest", "unit testing command")}
+			};
+			
+			var result =args.TryParse(new string[] {"unittest", "--test valid"});
+			Assert.IsTrue(result.Success);
+			Assert.Contains("unittest", result.Value.Commands.Keys);
+			Assert.AreEqual("valid", result.Value.Arguments["test"].Single());
+		}
 
 		[Test]
 		public void NoCommandOrArgIsValid() {
@@ -67,8 +86,8 @@ namespace Sphere10.Framework.Tests.Environment {
 			
 			
 			Assert.AreEqual("test", result.Value.Commands.Single().Key);
-			CommandLineResults testResult = result.Value.Commands["test"].Single();
-			CommandLineResults test2Results = testResult.Commands["test-2"].Single();
+			CommandLineResults testResult = result.Value.Commands["test"];
+			CommandLineResults test2Results = testResult.Commands["test-2"];
 			
 			Assert.AreEqual("baz", test2Results.Arguments["foo"].Single());
 		}

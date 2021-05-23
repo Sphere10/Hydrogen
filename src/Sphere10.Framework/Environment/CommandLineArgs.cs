@@ -10,25 +10,32 @@ namespace Sphere10.Framework {
 
 		private const int ArgumentLineLengthPadded = 15;
 
-		public string[] Header { get; }
+		public string[] Header { get; init; } = Array.Empty<string>();
 
-		public string[] Footer { get; }
+		public string[] Footer { get; init; } = Array.Empty<string>();
 
-		public CommandLineArgCommand[] Commands { get; }
+		public CommandLineArgCommand[] Commands { get; init; } = Array.Empty<CommandLineArgCommand>();
 
-		public CommandLineArgOptions Options { get; } =
+		public CommandLineArgOptions Options { get; init; } =
 			CommandLineArgOptions.DoubleDash | CommandLineArgOptions.SingleDash | CommandLineArgOptions.PrintHelpOnHelp |
 			CommandLineArgOptions.ForwardSlash | CommandLineArgOptions.PrintHelpOnH;
 
-		public CommandLineArg[] Arguments { get; }
+		public CommandLineArg[] Arguments { get; init; } = Array.Empty<CommandLineArg>();
+
+		public CommandLineArgs() {
+		}
+
+		public CommandLineArgs(string[] header, string[] footer,
+		                       CommandLineArg[] arguments, CommandLineArgOptions? options = null) : this(header, footer, new CommandLineArgCommand[0], arguments, options) {
+		}
 
 		public CommandLineArgs(string[] header, string[] footer, CommandLineArgCommand[] subCommands,
 		                       CommandLineArg[] arguments, CommandLineArgOptions? options = null) {
 			Guard.ArgumentNotNull(header, nameof(header));
 			Guard.ArgumentNotNull(arguments, nameof(arguments));
+			Guard.ArgumentNotNull(subCommands, nameof(subCommands));
 			Guard.ArgumentNotNull(footer, nameof(footer));
 
-			Guard.ArgumentInRange(header.Length, 1, Int32.MaxValue, nameof(header));
 			Guard.Argument(Options > 0, nameof(options), "Argument options must allow at least one argument format option.");
 
 			if (options is not null) {
@@ -43,10 +50,10 @@ namespace Sphere10.Framework {
 
 		public Result<CommandLineResults> TryParse(string[] args) {
 			Guard.ArgumentNotNull(args, nameof(args));
-
+			
 			var parseResults = Result<CommandLineResults>.Default;
 			var argResults = new LookupEx<string, string>();
-			var lastResult = new CommandLineResults(new LookupEx<string, CommandLineResults>(), argResults);
+			var lastResult = new CommandLineResults(new Dictionary<string, CommandLineResults>(), argResults);
 			parseResults.Value = lastResult;
 
 			var parsedCommands = ParseCommands(args);
@@ -101,7 +108,7 @@ namespace Sphere10.Framework {
 				}
 
 				var commandArgResults = new LookupEx<string, string>();
-				var commandResult = new LookupEx<string, CommandLineResults>();
+				var commandResult = new Dictionary<string, CommandLineResults>();
 
 				foreach (var argument in command.Args) {
 					if (argument.Dependencies.Any()) {

@@ -4,6 +4,8 @@ using NUnit.Framework;
 
 namespace Sphere10.Framework.Tests.Environment {
 
+	[TestFixture]
+	[Parallelizable(ParallelScope.Children)]
 	public class CommandLineArgsTests {
 
 		private string[] Header { get; } = {
@@ -16,32 +18,44 @@ namespace Sphere10.Framework.Tests.Environment {
 		};
 
 		[Test]
+		public void Basic() {
+			var args = new CommandLineParameters() {
+				Arguments = new[] { new CommandLineParameter("read", "unit testing", CommandLineParameterOptions.Mandatory) },
+			};
+
+			var result = args.TryParseArguments(new string[] { "--read", "12345" });
+			Assert.IsTrue(result.Success);
+			Assert.Contains("read", result.Value.Commands.Keys.ToArray());
+			Assert.AreEqual("12345", result.Value.Arguments["read"].Single());
+		}
+
+		[Test]
 		public void DefaultConstructorParse() {
-			var args = new CommandLineArgs();
-			var result =args.TryParse(Array.Empty<string>());
+			var args = new CommandLineParameters();
+			var result =args.TryParseArguments(Array.Empty<string>());
 			Assert.IsTrue(result.Success);
 		}
 		
 		[Test]
 		public void InitArgParse() {
-			var args = new CommandLineArgs() {
-				Arguments = new[] { new CommandLineArg("test", "unit testing", CommandLineArgTraits.Mandatory) },
-				Commands = new []{ new CommandLineArgCommand("unittest", "unit testing command")}
+			var args = new CommandLineParameters() {
+				Arguments = new[] { new CommandLineParameter("test", "unit testing", CommandLineParameterOptions.Mandatory) },
+				Commands = new []{ new CommandLineCommand("unittest", "unit testing command")}
 			};
 			
-			var result =args.TryParse(new string[] {"unittest", "--test valid"});
+			var result =args.TryParseArguments(new string[] {"unittest", "--test valid"});
 			Assert.IsTrue(result.Success);
-			Assert.Contains("unittest", result.Value.Commands.Keys);
+			Assert.Contains("unittest", result.Value.Commands.Keys.ToArray());
 			Assert.AreEqual("valid", result.Value.Arguments["test"].Single());
 		}
 
 		[Test]
 		public void NoCommandOrArgIsValid() {
-			var args = new CommandLineArgs(Header,
-				Footer,new [] { new CommandLineArgCommand("test", "test", Array.Empty<CommandLineArg>(), Array.Empty<CommandLineArgCommand>()) },
-				new CommandLineArg[0]);
+			var args = new CommandLineParameters(Header,
+                Footer, new CommandLineParameter[0],
+                new[] { new CommandLineCommand("test", "test", Array.Empty<CommandLineParameter>(), Array.Empty<CommandLineCommand>()) });
 
-			var result = args.TryParse(Array.Empty<string>());
+			var result = args.TryParseArguments(Array.Empty<string>());
 			
 			Assert.IsTrue(result.Success);
 			Assert.IsEmpty(result.Value.Commands);
@@ -51,98 +65,98 @@ namespace Sphere10.Framework.Tests.Environment {
 
 		[Test]
 		public void AtLeastOneCommandMustMatch() {
-			var args = new CommandLineArgs(Header,
-				Footer,new[] { new CommandLineArgCommand("test", "testing command", new CommandLineArg[0], new CommandLineArgCommand[0])},
-				new CommandLineArg[0]);
+			var args = new CommandLineParameters(Header,
+                Footer, new CommandLineParameter[0],
+                new[] { new CommandLineCommand("test", "testing command", new CommandLineParameter[0], new CommandLineCommand[0]) });
 
-			Result<CommandLineResults> result = args.TryParse(new[] { "test2", "--baz" });
+			Result<CommandLineArguments> result = args.TryParseArguments(new[] { "test2", "--baz" });
 			Assert.IsTrue(result.Failure);
 		}
 
 		[Test]
 		public void FailMultipleCommandsMatched() {
-			var args = new CommandLineArgs(Header,
-				Footer,new[] { new CommandLineArgCommand("test", "testing command", new CommandLineArg[0], new CommandLineArgCommand[0])},
-				new CommandLineArg[0]);
+			var args = new CommandLineParameters(Header,
+                Footer, new CommandLineParameter[0],
+                new[] { new CommandLineCommand("test", "testing command", new CommandLineParameter[0], new CommandLineCommand[0]) });
 
-			Result<CommandLineResults> result = args.TryParse(new[] { "test", "test2", "--baz" });
+			Result<CommandLineArguments> result = args.TryParseArguments(new[] { "test", "test2", "--baz" });
 			Assert.IsTrue(result.Failure);
 		}
 
 		[Test]
 		public void MatchMultipleCommand() {
-			var args = new CommandLineArgs(Header,
-				Footer,new[] {
-					new CommandLineArgCommand("test", "testing command", new CommandLineArg[0], new [] {
-						new CommandLineArgCommand("test-2", "sub command", new [] {
-							new CommandLineArg("foo", "baz description")
-						}, new CommandLineArgCommand[0])
-					}),
-				},
-				new CommandLineArg[0]);
+			var args = new CommandLineParameters(Header,
+                Footer, new CommandLineParameter[0],
+                new[] {
+                    new CommandLineCommand("test", "testing command", new CommandLineParameter[0], new [] {
+                        new CommandLineCommand("test-2", "sub command", new [] {
+                            new CommandLineParameter("foo", "baz description")
+                        }, new CommandLineCommand[0])
+                    }),
+                });
 
-			Result<CommandLineResults> result = args.TryParse(new[] { "test", "test-2", "--foo baz" });
+			Result<CommandLineArguments> result = args.TryParseArguments(new[] { "test", "test-2", "--foo baz" });
 			Assert.IsTrue(result.Success);
 			
 			
 			Assert.AreEqual("test", result.Value.Commands.Single().Key);
-			CommandLineResults testResult = result.Value.Commands["test"];
-			CommandLineResults test2Results = testResult.Commands["test-2"];
+			CommandLineArguments testResult = result.Value.Commands["test"];
+			CommandLineArguments test2Results = testResult.Commands["test-2"];
 			
 			Assert.AreEqual("baz", test2Results.Arguments["foo"].Single());
 		}
 
 		[Test]
 		public void CommandArgumentMandatory() {
-			var args = new CommandLineArgs(Header,
-				Footer,new[] {
-					new CommandLineArgCommand("test", "testing command", new CommandLineArg[0], new [] {
-						new CommandLineArgCommand("test-2", "sub command", new [] {
-							new CommandLineArg("foo", "baz description", CommandLineArgTraits.Mandatory)
-						}, new CommandLineArgCommand[0])
-					}),
-				},
-				new CommandLineArg[0]);
+			var args = new CommandLineParameters(Header,
+                Footer, new CommandLineParameter[0],
+                new[] {
+                    new CommandLineCommand("test", "testing command", new CommandLineParameter[0], new [] {
+                        new CommandLineCommand("test-2", "sub command", new [] {
+                            new CommandLineParameter("foo", "baz description", CommandLineParameterOptions.Mandatory)
+                        }, new CommandLineCommand[0])
+                    }),
+                });
 
-			Result<CommandLineResults> result = args.TryParse(new[] { "test", "test-2", "--fo0 baz" });
+			Result<CommandLineArguments> result = args.TryParseArguments(new[] { "test", "test-2", "--fo0 baz" });
 			Assert.IsTrue(result.Failure);
 		}
 
 		[Test]
 		public void CommandOnly() {
-			var args = new CommandLineArgs(Header,
-				Footer,new[] {
-					new CommandLineArgCommand("test", "testing command", new CommandLineArg[0], new [] {
-						new CommandLineArgCommand("test-2", "sub command", new [] {
-							new CommandLineArg("foo", "baz description", CommandLineArgTraits.Optional)
-						}, new CommandLineArgCommand[0])
-					}),
-				},
-				new CommandLineArg[0]);
+			var args = new CommandLineParameters(Header,
+                Footer, new CommandLineParameter[0],
+                new[] {
+                    new CommandLineCommand("test", "testing command", new CommandLineParameter[0], new [] {
+                        new CommandLineCommand("test-2", "sub command", new [] {
+                            new CommandLineParameter("foo", "baz description", CommandLineParameterOptions.Optional)
+                        }, new CommandLineCommand[0])
+                    }),
+                });
 
-			Result<CommandLineResults> result = args.TryParse(new[] { "test" });
+			Result<CommandLineArguments> result = args.TryParseArguments(new[] { "test" });
 			Assert.IsTrue(result.Success);
 		}
 		
 
 		[Test]
-		[TestCase(CommandLineArgOptions.ForwardSlash)]
-		[TestCase(CommandLineArgOptions.SingleDash)]
-		[TestCase(CommandLineArgOptions.DoubleDash)]
-		public void ArgNameMatchOptions(CommandLineArgOptions options) {
-			var args = new CommandLineArgs(Header,
-				Footer,new[] { new CommandLineArgCommand("test", "testing command", new CommandLineArg[0], new CommandLineArgCommand[0])},
-				new CommandLineArg[] { new("test", "test", CommandLineArgTraits.Mandatory) },
-				options);
+		[TestCase(CommandLineArgumentOptions.ForwardSlash)]
+		[TestCase(CommandLineArgumentOptions.SingleDash)]
+		[TestCase(CommandLineArgumentOptions.DoubleDash)]
+		public void ArgNameMatchOptions(CommandLineArgumentOptions options) {
+			var args = new CommandLineParameters(Header,
+                Footer, new CommandLineParameter[] { new("test", "test", CommandLineParameterOptions.Mandatory) },
+                new[] { new CommandLineCommand("test", "testing command", new CommandLineParameter[0], new CommandLineCommand[0]) },
+                options);
 
-			var parsedSpace = args.TryParse(new[] {
+			var parsedSpace = args.TryParseArguments(new[] {
 				"test",
 					"/test test",
 					"-test test",
 					"--test test"
 				});
 
-			var parsedEquals = args.TryParse(new[] {
+			var parsedEquals = args.TryParseArguments(new[] {
 				"test",
 					"/test=test",
 					"-test=test",
@@ -160,13 +174,13 @@ namespace Sphere10.Framework.Tests.Environment {
 
 		[Test]
 		public void ArgTraitMulti() {
-			var args = new CommandLineArgs(
-				Header,
-				Footer,new[] { new CommandLineArgCommand("test", "testing command", new CommandLineArg[0], new CommandLineArgCommand[0])},
-				new CommandLineArg[] { new("multi", "multiple trait", CommandLineArgTraits.Multiple) },
-				CommandLineArgOptions.DoubleDash | CommandLineArgOptions.SingleDash | CommandLineArgOptions.ForwardSlash);
+			var args = new CommandLineParameters(
+                Header,
+                Footer, new CommandLineParameter[] { new("multi", "multiple trait", CommandLineParameterOptions.Multiple) },
+                new[] { new CommandLineCommand("test", "testing command", new CommandLineParameter[0], new CommandLineCommand[0]) },
+                CommandLineArgumentOptions.DoubleDash | CommandLineArgumentOptions.SingleDash | CommandLineArgumentOptions.ForwardSlash);
 
-			var parsed = args.TryParse(new[] {
+			var parsed = args.TryParseArguments(new[] {
 				"test",
 					"/multi a",
 					"-multi b",
@@ -179,13 +193,13 @@ namespace Sphere10.Framework.Tests.Environment {
 
 		[Test]
 		public void ArgTraitSingle() {
-			var args = new CommandLineArgs(
-				Header,
-				Footer,new[] { new CommandLineArgCommand("test", "testing command", new CommandLineArg[0], new CommandLineArgCommand[0])},
-				new CommandLineArg[] { new("single", "single trait") },
-				CommandLineArgOptions.DoubleDash | CommandLineArgOptions.SingleDash | CommandLineArgOptions.ForwardSlash);
+			var args = new CommandLineParameters(
+                Header,
+                Footer, new CommandLineParameter[] { new("single", "single trait") },
+                new[] { new CommandLineCommand("test", "testing command", new CommandLineParameter[0], new CommandLineCommand[0]) },
+                CommandLineArgumentOptions.DoubleDash | CommandLineArgumentOptions.SingleDash | CommandLineArgumentOptions.ForwardSlash);
 
-			var invalid = args.TryParse(new[] {
+			var invalid = args.TryParseArguments(new[] {
 				"test",
 					"/single a",
 					"-single:b",
@@ -196,7 +210,7 @@ namespace Sphere10.Framework.Tests.Environment {
 			Assert.AreEqual(1, invalid.ErrorMessages.Count());
 			Assert.IsEmpty(invalid.Value.Arguments);
 
-			var valid = args.TryParse(new[] {
+			var valid = args.TryParseArguments(new[] {
 				"test",
 					"--single=c"
 				});
@@ -207,15 +221,15 @@ namespace Sphere10.Framework.Tests.Environment {
 
 		[Test]
 		public void ArgTraitMandatory() {
-			var args = new CommandLineArgs(
-				Header,
-				Footer,new[] { new CommandLineArgCommand("test", "testing command", new CommandLineArg[0], new CommandLineArgCommand[0])},
-				new CommandLineArg[] {
-					new("mandatory", "mandatory trait", CommandLineArgTraits.Mandatory)
-				},
-				CommandLineArgOptions.DoubleDash | CommandLineArgOptions.SingleDash | CommandLineArgOptions.ForwardSlash);
+			var args = new CommandLineParameters(
+                Header,
+                Footer, new CommandLineParameter[] {
+                    new("mandatory", "mandatory trait", CommandLineParameterOptions.Mandatory)
+                },
+                new[] { new CommandLineCommand("test", "testing command", new CommandLineParameter[0], new CommandLineCommand[0]) },
+                CommandLineArgumentOptions.DoubleDash | CommandLineArgumentOptions.SingleDash | CommandLineArgumentOptions.ForwardSlash);
 
-			var invalid = args.TryParse(new[] {
+			var invalid = args.TryParseArguments(new[] {
 				"test",
 					"/argumentA test",
 				});
@@ -224,7 +238,7 @@ namespace Sphere10.Framework.Tests.Environment {
 			Assert.AreEqual(1, invalid.ErrorMessages.Count());
 			Assert.IsEmpty(invalid.Value.Arguments);
 
-			var valid = args.TryParse(new[] {
+			var valid = args.TryParseArguments(new[] {
 				"test",
 					"/mandatory test",
 				});
@@ -235,16 +249,16 @@ namespace Sphere10.Framework.Tests.Environment {
 
 		[Test]
 		public void ArgCaseSensitive() {
-			var args = new CommandLineArgs(
-				Header,
-				Footer,new[] { new CommandLineArgCommand("test", "testing command", new CommandLineArg[0], new CommandLineArgCommand[0])},
-				new CommandLineArg[] {
-					new("mAnDaToRy", "mandatory trait", CommandLineArgTraits.Mandatory)
-				},
-				CommandLineArgOptions.DoubleDash | CommandLineArgOptions.SingleDash | CommandLineArgOptions.ForwardSlash |
-				CommandLineArgOptions.CaseSensitive);
+			var args = new CommandLineParameters(
+                Header,
+                Footer, new CommandLineParameter[] {
+                    new("mAnDaToRy", "mandatory trait", CommandLineParameterOptions.Mandatory)
+                },
+                new[] { new CommandLineCommand("test", "testing command", new CommandLineParameter[0], new CommandLineCommand[0]) },
+                CommandLineArgumentOptions.DoubleDash | CommandLineArgumentOptions.SingleDash | CommandLineArgumentOptions.ForwardSlash |
+                CommandLineArgumentOptions.CaseSensitive);
 
-			var invalid = args.TryParse(new[] {
+			var invalid = args.TryParseArguments(new[] {
 				"test",
 					"/mandatory test",
 				});
@@ -253,7 +267,7 @@ namespace Sphere10.Framework.Tests.Environment {
 			Assert.AreEqual(1, invalid.ErrorMessages.Count());
 			Assert.IsEmpty(invalid.Value.Arguments);
 
-			var valid = args.TryParse(new[] {
+			var valid = args.TryParseArguments(new[] {
 				"test",
 					"/mAnDaToRy test",
 				});
@@ -264,16 +278,16 @@ namespace Sphere10.Framework.Tests.Environment {
 
 		[Test]
 		public void SuccessParseH() {
-			var args = new CommandLineArgs(
-				Header,
-				Footer,new[] { new CommandLineArgCommand("test", "testing command", new CommandLineArg[0], new CommandLineArgCommand[0])},
-				new CommandLineArg[] {
-					new("parameter", "mandatory", CommandLineArgTraits.Mandatory)
-				},
-				CommandLineArgOptions.DoubleDash | CommandLineArgOptions.SingleDash | CommandLineArgOptions.ForwardSlash |
-				CommandLineArgOptions.PrintHelpOnH | CommandLineArgOptions.PrintHelpOnHelp);
+			var args = new CommandLineParameters(
+                Header,
+                Footer, new CommandLineParameter[] {
+                    new("parameter", "mandatory", CommandLineParameterOptions.Mandatory)
+                },
+                new[] { new CommandLineCommand("test", "testing command", new CommandLineParameter[0], new CommandLineCommand[0]) },
+                CommandLineArgumentOptions.DoubleDash | CommandLineArgumentOptions.SingleDash | CommandLineArgumentOptions.ForwardSlash |
+                CommandLineArgumentOptions.PrintHelpOnH | CommandLineArgumentOptions.PrintHelpOnHelp);
 
-			var help = args.TryParse(new[] {
+			var help = args.TryParseArguments(new[] {
 				"test",
 					"/parameter test",
 					"--h"
@@ -285,16 +299,16 @@ namespace Sphere10.Framework.Tests.Environment {
 
 		[Test]
 		public void SuccessParseHelp() {
-			var args = new CommandLineArgs(
-				Header,
-				Footer,new[] { new CommandLineArgCommand("test", "testing command", new CommandLineArg[0], new CommandLineArgCommand[0])},
-				new CommandLineArg[] {
-					new("parameter", "mandatory", CommandLineArgTraits.Mandatory)
-				},
-				CommandLineArgOptions.DoubleDash | CommandLineArgOptions.SingleDash | CommandLineArgOptions.ForwardSlash |
-				CommandLineArgOptions.PrintHelpOnH | CommandLineArgOptions.PrintHelpOnHelp);
+			var args = new CommandLineParameters(
+                Header,
+                Footer, new CommandLineParameter[] {
+                    new("parameter", "mandatory", CommandLineParameterOptions.Mandatory)
+                },
+                new[] { new CommandLineCommand("test", "testing command", new CommandLineParameter[0], new CommandLineCommand[0]) },
+                CommandLineArgumentOptions.DoubleDash | CommandLineArgumentOptions.SingleDash | CommandLineArgumentOptions.ForwardSlash |
+                CommandLineArgumentOptions.PrintHelpOnH | CommandLineArgumentOptions.PrintHelpOnHelp);
 
-			var help = args.TryParse(new[] {
+			var help = args.TryParseArguments(new[] {
 				"test",
 					"/parameter test",
 					"--help"
@@ -306,17 +320,17 @@ namespace Sphere10.Framework.Tests.Environment {
 
 		[Test]
 		public void ArgDependencies() {
-			var args = new CommandLineArgs(
-				Header,
-				Footer,new[] { new CommandLineArgCommand("test", "testing command", new CommandLineArg[0], new CommandLineArgCommand[0])},
-				new CommandLineArg[] {
-					new("mandatoryWithDependency", "mandatory", CommandLineArgTraits.Mandatory, "test"),
-					new("test", "optional", CommandLineArgTraits.Optional)
-				},
-				CommandLineArgOptions.DoubleDash | CommandLineArgOptions.SingleDash | CommandLineArgOptions.ForwardSlash |
-				CommandLineArgOptions.PrintHelpOnH | CommandLineArgOptions.PrintHelpOnHelp);
+			var args = new CommandLineParameters(
+                Header,
+                Footer, new CommandLineParameter[] {
+                    new("mandatoryWithDependency", "mandatory", CommandLineParameterOptions.Mandatory, "test"),
+                    new("test", "optional", CommandLineParameterOptions.Optional)
+                },
+                new[] { new CommandLineCommand("test", "testing command", new CommandLineParameter[0], new CommandLineCommand[0]) },
+                CommandLineArgumentOptions.DoubleDash | CommandLineArgumentOptions.SingleDash | CommandLineArgumentOptions.ForwardSlash |
+                CommandLineArgumentOptions.PrintHelpOnH | CommandLineArgumentOptions.PrintHelpOnHelp);
 
-			var invalid = args.TryParse(new[] {
+			var invalid = args.TryParseArguments(new[] {
 				"test",
 					"/mandatoryWithDependency test"
 				});
@@ -325,7 +339,7 @@ namespace Sphere10.Framework.Tests.Environment {
 			Assert.AreEqual(1, invalid.ErrorMessages.Count());
 			Assert.IsEmpty(invalid.Value.Arguments);
 
-			var valid = args.TryParse(new[] {
+			var valid = args.TryParseArguments(new[] {
 				"test",
 					"/mandatoryWithDependency test",
 					"/test test"
@@ -348,18 +362,18 @@ namespace Sphere10.Framework.Tests.Environment {
 				"-param5 '--=nice=--'"
 			};
 
-			var args = new CommandLineArgs(
-				Header,
-				Footer,new[] { new CommandLineArgCommand("test", "testing command", new CommandLineArg[0], new CommandLineArgCommand[0])},
-				new CommandLineArg[] {
-					new("param1", "1", CommandLineArgTraits.Mandatory),
-					new("param2", "2", CommandLineArgTraits.Mandatory),
-					new("param3", "3", CommandLineArgTraits.Mandatory),
-					new("param4", "4", CommandLineArgTraits.Mandatory),
-					new("param5", "5", CommandLineArgTraits.Mandatory)
-				});
+			var args = new CommandLineParameters(
+                Header,
+                Footer, new CommandLineParameter[] {
+                    new("param1", "1", CommandLineParameterOptions.Mandatory),
+                    new("param2", "2", CommandLineParameterOptions.Mandatory),
+                    new("param3", "3", CommandLineParameterOptions.Mandatory),
+                    new("param4", "4", CommandLineParameterOptions.Mandatory),
+                    new("param5", "5", CommandLineParameterOptions.Mandatory)
+                },
+                new[] { new CommandLineCommand("test", "testing command", new CommandLineParameter[0], new CommandLineCommand[0]) });
 
-			var parsed = args.TryParse(input);
+			var parsed = args.TryParseArguments(input);
 
 			Assert.IsTrue(parsed.Success);
 			Assert.AreEqual(5,parsed.Value.Arguments.Count());

@@ -12,7 +12,7 @@ using System.IO;
 namespace Sphere10.Framework.CryptoEx.Tests {
 
 	[TestFixture]
-	[Platform("Win, Win32, Win32S, Win32Windows, Win32NT, Win95, Win98, WinMe, Win2K, WinXP, Win2003Server, Win2008Server", Reason = "PascalOpenSSL is only supported on Windows platforms")]
+	[Platform("Win, Win32, Win32S, Win32Windows, Win32NT, WinCE, Win95, Win98, WinMe, Win2K, WinXP, Win2003Server, Win2008Server", Reason = "PascalOpenSSL is only supported on Windows platforms")]
 	public class OpenSSLConsistencyTests {
 		private string _pascalOpenSSLFolder;
 		private string _pascalOpenSslFilePath;
@@ -123,11 +123,13 @@ namespace Sphere10.Framework.CryptoEx.Tests {
 			var messageDigest = Hashers.Hash(CHF.SHA2_256, message);
 			var messageDigestAsHex = messageDigest.ToHexString(true);
 			var badDerSig = ecdsa.SignDigest(privateKey, messageDigest); // so far signature is good
-			// flip a random bit in signature to make it bad
-			var bitArray = new BitArray(badDerSig);
-			var index = rng.Next(0, bitArray.Length);
-			bitArray[index] = !bitArray[index];
-			bitArray.CopyTo(badDerSig, 0);
+			unchecked {
+				var bitArray = new BitArray(badDerSig);
+				// increment a random byte in the signature
+				var index = rng.Next(0, bitArray.Length);
+				bitArray[index] = !bitArray[index];
+				bitArray.CopyTo(badDerSig, 0);
+			}
 			string[] args = {
 				"-operationtype VERIFY",
 				$"-curvetype {curveName}",

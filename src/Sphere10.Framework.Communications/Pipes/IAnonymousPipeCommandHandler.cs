@@ -2,4 +2,6 @@
 	public interface IAnonymousPipeCommandHandler {
 		void Execute(AnonymousPipeChannel channel, IAnonymousPipeMessage command);
 	}
+
+
 }

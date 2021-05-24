@@ -3,8 +3,10 @@ using System.Collections.Generic;
 
 namespace Sphere10.Framework.Communications {
 	public class AnonymousPipeProtocol  {
-		FactorySerializer<IAnonymousPipeMessage> MessageSerializer { get; init; }
-		IDictionary<Type, IAnonymousPipeCommandHandler> CommandHandlers { get; init; }
-		IDictionary<Type, IAnonymousPipeRequestHandler> RequestHandlers { get; init; }
+		public FactorySerializer<IAnonymousPipeMessage> MessageSerializer { get; init; }
+		public IDictionary<Type, IAnonymousPipeCommandHandler> CommandHandlers { get; init; }
+		public IDictionary<Type, IAnonymousPipeRequestHandler> RequestHandlers { get; init; }
 	}
+
+
 }

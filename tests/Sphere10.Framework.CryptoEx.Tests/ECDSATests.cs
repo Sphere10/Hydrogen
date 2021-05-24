@@ -11,6 +11,7 @@ using System.IO;
 namespace Sphere10.Framework.CryptoEx.Tests {
 
 	[TestFixture]
+	[Parallelizable(ParallelScope.Children)]
 	public class ECDSATests {
 		private static string RandomString(int length) {
 			var rng = new Random(31337);

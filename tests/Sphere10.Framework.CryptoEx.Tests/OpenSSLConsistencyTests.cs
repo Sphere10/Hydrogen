@@ -12,7 +12,8 @@ using System.IO;
 namespace Sphere10.Framework.CryptoEx.Tests {
 
 	[TestFixture]
-	[Platform("Win, Win32, Win32S, Win32Windows, Win32NT, WinCE, Win95, Win98, WinMe, Win2K, WinXP, Win2003Server, Win2008Server", Reason = "PascalOpenSSL is only supported on Windows platforms")]
+	[Parallelizable(ParallelScope.Children)]
+	[Platform("Win, Win32, Win32S, Win32Windows, Win32NT, Win95, Win98, WinMe, Win2K, WinXP, Win2003Server, Win2008Server", Reason = "PascalOpenSSL is only supported on Windows platforms")]
 	public class OpenSSLConsistencyTests {
 		private string _pascalOpenSSLFolder;
 		private string _pascalOpenSslFilePath;

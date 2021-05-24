@@ -7,6 +7,10 @@ using System;
 using System.Linq;
 
 namespace Sphere10.Framework.CryptoEx {
+
+
+	[TestFixture]
+	[Parallelizable(ParallelScope.Children)]
 	public class PascalAsciiEncodingTests {
 
 		#region PascalAsciiChar 

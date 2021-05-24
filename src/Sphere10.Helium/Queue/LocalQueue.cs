@@ -32,25 +32,17 @@ namespace Sphere10.Helium.Queue {
 		}
 
 		public void AddMessage(IMessage message) {
-
 			Add(message);
-			//Commit();
 		}
 
 		public bool DeleteMessage(IMessage message) {
 			var result =Remove(message);
-			//Commit();
 
 			return result;
 		}
 
 		protected override void OnCommitted() {
-
 			var handler = MessageCommitted;
-
-			//if (handler != null) {
-			//	handler.;
-			//}
 
 			base.OnCommitted();
 		}
@@ -92,7 +84,6 @@ namespace Sphere10.Helium.Queue {
 
 			var message = Read(0);
 			Remove(message);
-			//Commit();
 
 			return message;
 		}

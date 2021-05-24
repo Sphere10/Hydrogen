@@ -1,12 +1,7 @@
 ﻿using Sphere10.Helium.Message;
-using Sphere10.Helium.Queue;
 
 namespace Sphere10.Helium.Processor {
 	public interface ILocalQueueProcessor {
-
-		protected ILocalQueue LocalQueue { get; set; }
-
-		protected IProcessingQueue ProcessingQueue { get; set; }
 
 		/// <summary>
 		/// This event handler fires when a message is put in the LocalQueue by the Bus.
@@ -25,7 +20,10 @@ namespace Sphere10.Helium.Processor {
 		/// </summary>
 		/// <param name="message"></param>
 		/// <returns></returns>
-		public bool MoveMessageFromLocalToProcessing(IMessage message);
-		
+		public void MoveFirstMessageFromLocalToProcessing();
+
+		public void InsertMessageInLocalQueue(IMessage message);
+
+		public IMessage TakeFirstMessageOutOfLocalQueue();
 	}
 }

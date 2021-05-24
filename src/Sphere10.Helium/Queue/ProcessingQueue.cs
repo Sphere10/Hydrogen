@@ -5,10 +5,12 @@ using Sphere10.Framework;
 using Sphere10.Helium.Message;
 
 namespace Sphere10.Helium.Queue {
-	public class ProcessingQueue : TransactionalList<IMessage>, IProcessingQueue {
+	public class ProcessingQueue : TransactionalList<IMessage>, IHeliumQueue {
 		private readonly int _count = 1;
 		private readonly int _count1 = 1;
 		private readonly int _count2 = 1;
+
+
 
 		public override IEnumerator<IMessage> GetEnumerator() {
 			throw new NotImplementedException();
@@ -193,6 +195,20 @@ namespace Sphere10.Helium.Queue {
 
 		public IMessage RetrieveMessage() {
 			throw new NotImplementedException();
+		}
+
+		public ProcessingQueue(QueueConfigDto queueConfigDto)
+			: base(
+				new BinaryFormattedSerializer<IMessage>(),
+				queueConfigDto.Path,
+				queueConfigDto.TempDirPath,
+				queueConfigDto.FileId,
+				queueConfigDto.TransactionalPageSizeBytes,
+				queueConfigDto.MaxStorageSizeBytes,
+				queueConfigDto.AllocatedMemory,
+				queueConfigDto.ClusterSize,
+				queueConfigDto.MaxItems
+			) {
 		}
 
 		public ProcessingQueue(IItemSerializer<IMessage> serializer, string filename, string uncommittedPageFileDir, Guid fileID, int maxStorageBytes, int memoryCacheBytes, int maxItems, TransactionalFileMappedBuffer asBuffer, bool readOnly = false) : base(serializer, filename, uncommittedPageFileDir, fileID, maxStorageBytes, memoryCacheBytes, maxItems, readOnly) {

@@ -134,7 +134,7 @@ namespace Sphere10.Framework {
 			State = PageState.Unloading;
 			// Unload cached offsets array (makes a mem difference when large numbers of pages loaded)
 			_offsets = null;
-			State = PageState.Loaded;
+			State = PageState.Unloaded;
 		}
 
 		public override IEnumerator<TItem> GetEnumerator() {

@@ -33,12 +33,12 @@ namespace Sphere10.Framework {
 		}
 
 		public ITransactionalFile EnlistFile(ITransactionalFile file) {
+			CheckTransactionExists();
 			Guard.Argument(
-				Tools.FileSystem.GetCaseCorrectFilePath(file.AsBuffer.PageMarkerRepo.BaseDir) == Tools.FileSystem.GetCaseCorrectFilePath(Transaction.UncomittedPageFileDirectory), 
+			Tools.FileSystem.GetCaseCorrectFilePath(file.AsBuffer.PageMarkerRepo.BaseDir) == Tools.FileSystem.GetCaseCorrectFilePath(Transaction.UncomittedPageFileDirectory), 
 				nameof(file),
 				"Enlisted file's transactional page directory did not match transactions page directory"
 			);
-			CheckTransactionExists();
 			return Transaction.EnlistFile(file);
 		}
 

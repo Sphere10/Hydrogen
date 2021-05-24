@@ -61,7 +61,5 @@ namespace Sphere10.Framework {
 			Debug.Assert(HasUncommittedData);
 			return File.OpenWrite(UncommittedPageFileName);
 		}
-
 	}
-
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using Sphere10.Framework;
 using Sphere10.Helium.Message;
 
@@ -12,10 +13,8 @@ namespace Sphere10.Helium.Queue {
 	/// 5) The local queue is also used for Send-Local messages.
 	/// </summary>
 
-	public class LocalQueue : TransactionalList<IMessage>, ILocalQueue {
+	public class LocalQueue : TransactionalList<IMessage>, IHeliumQueue {
 		
-		private readonly QueueConfigDto _queueConfigDto;
-
 		public event EventHandler MessageCommitted;
 
 		public LocalQueue(QueueConfigDto queueConfigDto)
@@ -30,12 +29,12 @@ namespace Sphere10.Helium.Queue {
 				queueConfigDto.ClusterSize,
 				queueConfigDto.MaxItems
 			) {
-			_queueConfigDto = queueConfigDto;
 		}
 
 		public void AddMessage(IMessage message) {
+
 			Add(message);
-			Commit();
+			//Commit();
 		}
 
 		public bool DeleteMessage(IMessage message) {

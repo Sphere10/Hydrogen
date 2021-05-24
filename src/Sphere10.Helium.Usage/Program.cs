@@ -172,7 +172,7 @@ namespace Sphere10.Helium.Usage {
 
 			using var txnScope = new FileTransactionScope(_queueConfigDto.TempDirPath, ScopeContextPolicy.None);
 			txnScope.BeginTransaction();
-			txnScope.EnlistFile(_localQueue);
+			txnScope.EnlistFile(_localQueue, false);
 
 			using (_localQueue.EnterWriteScope()) {
 				_localQueue.Add(message);
@@ -206,7 +206,7 @@ namespace Sphere10.Helium.Usage {
 
 			using var txnScope = new FileTransactionScope(_queueConfigDto.TempDirPath, ScopeContextPolicy.None);
 			txnScope.BeginTransaction();
-			txnScope.EnlistFile(_localQueue);
+			txnScope.EnlistFile(_localQueue, false);
 
 			var localQueueMessage = _localQueue[^1];
 

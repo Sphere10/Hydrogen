@@ -16,8 +16,8 @@ namespace Sphere10.Helium.Usage {
 				throw new InvalidOperationException("Nothing in Queue1");
 
 			using (var txnScope = new FileTransactionScope(TempDir, ScopeContextPolicy.None)) {
-				txnScope.EnlistFile(Queue1);
-				txnScope.EnlistFile(Queue2);
+				txnScope.EnlistFile(Queue1, false);
+				txnScope.EnlistFile(Queue2, false);
 				var poppedItem = Queue1[^1];
 				using (Queue2.EnterWriteScope()) {
 					Queue2.Add(poppedItem);

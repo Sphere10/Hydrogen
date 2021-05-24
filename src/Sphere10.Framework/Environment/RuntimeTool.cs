@@ -27,7 +27,8 @@ namespace Tools {
         private static bool? _isWebApp = null;
 
 
-        public static string GetExecutablePath() {
+		public static bool BreakCondition { get; set; }
+		public static string GetExecutablePath() {
             // https://stackoverflow.com/questions/64581054/how-do-i-get-the-name-of-the-current-executable-in-c-net-5-edition
             return Process.GetCurrentProcess().MainModule.FileName;
         }

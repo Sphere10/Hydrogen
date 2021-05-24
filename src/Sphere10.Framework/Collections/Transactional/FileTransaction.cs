@@ -8,7 +8,7 @@ namespace Sphere10.Framework {
 
 	public class FileTransaction : IDisposable {
 		private static readonly SynchronizedDictionary<string, TransactionalFileMappedBuffer> GloballyEnlistedFiles;
-		private readonly IDictionary<string, TransactionalFileMappedBuffer> _enlistedFiles;
+		private readonly IDictionary<string, FileDescriptor> _enlistedFiles;
 
 		static FileTransaction() {
 			GloballyEnlistedFiles = new SynchronizedDictionary<string, TransactionalFileMappedBuffer>();
@@ -19,7 +19,7 @@ namespace Sphere10.Framework {
 		}
 
 		public FileTransaction(string transactionHeaderFilePath, string uncomittedPageFileDirectory) {
-			_enlistedFiles = new Dictionary<string, TransactionalFileMappedBuffer>();
+			_enlistedFiles = new Dictionary<string, FileDescriptor>();
 
 			// Resume prior transaction if already exists, resume
 			if (File.Exists(transactionHeaderFilePath)) {
@@ -47,7 +47,7 @@ namespace Sphere10.Framework {
 
 		public string TransactionHeaderFile { get; private set; }
 
-		public TransactionalFileMappedBuffer[] EnlistedFiles => _enlistedFiles.Values.ToArray();
+		public TransactionalFileMappedBuffer[] EnlistedFiles => _enlistedFiles.Values.Select(x => x.Buffer).ToArray();
 
 		public FileTransactionState Status { get; private set; }
 
@@ -55,7 +55,7 @@ namespace Sphere10.Framework {
 
 		public void Flush() {
 			foreach (var file in _enlistedFiles.Values) {
-				file.Flush();
+				file.Buffer.Flush();
 			}
 		}
 
@@ -112,12 +112,12 @@ namespace Sphere10.Framework {
 				if (GloballyEnlistedFiles.ContainsKey(filename))
 					throw new InvalidOperationException($"File already enlisted in other transaction: {filename})");
 
-				return EnlistFile(new TransactionalFileMappedBuffer(filename, UncomittedPageFileDirectory, fileID, pageSize, maxOpenPages, false));
+				return EnlistFile(new TransactionalFileMappedBuffer(filename, UncomittedPageFileDirectory, fileID, pageSize, maxOpenPages, false), true);
 			}
 		}
 
-		public TransactionalFileMappedBuffer EnlistFile(ITransactionalFile transactionalFile) {
-			TransactionalFileMappedBuffer file;
+		public TransactionalFileMappedBuffer EnlistFile(ITransactionalFile transactionalFile, bool ownsFile) {
+			TransactionalFileMappedBuffer transactionalBuffer;
 			using (GloballyEnlistedFiles.EnterWriteScope()) {
 				// validate not already enlisted here
 				if (_enlistedFiles.ContainsKey(transactionalFile.Path))
@@ -128,10 +128,10 @@ namespace Sphere10.Framework {
 					throw new InvalidOperationException($"File already enlisted in other transaction: {transactionalFile.Path})");
 
 				// Open the file
-				file = transactionalFile.AsBuffer;
-				if (file.RequiresLoad)
-					file.Load();
-				file.PageWrite += (o, page) => {
+				transactionalBuffer = transactionalFile.AsBuffer;
+				if (transactionalBuffer.RequiresLoad)
+					transactionalBuffer.Load();
+				transactionalBuffer.PageWrite += (o, page) => {
 					if (Status == FileTransactionState.Unchanged) {
 						Status = FileTransactionState.HasChanges;
 						SaveHeader();
@@ -139,12 +139,12 @@ namespace Sphere10.Framework {
 				};
 
 				// Register file
-				_enlistedFiles.Add(transactionalFile.Path, file);
-				GloballyEnlistedFiles.Add(transactionalFile.Path, file);
+				_enlistedFiles.Add(transactionalFile.Path, new FileDescriptor { Buffer = transactionalBuffer, ShouldDispose = ownsFile });
+				GloballyEnlistedFiles.Add(transactionalFile.Path, transactionalBuffer);
 			}
 			// Save txn update
 			SaveHeader();
-			return file;
+			return transactionalBuffer;
 		}
 
 		public void DelistFile(string filename) {
@@ -152,14 +152,16 @@ namespace Sphere10.Framework {
 			Guard.FileExists(filename);
 			filename = Tools.FileSystem.GetCaseCorrectFilePath(filename);
 			Guard.Argument(_enlistedFiles.ContainsKey(filename), nameof(filename), $"File not enlisted: {filename}");
-			DelistFile(_enlistedFiles[filename]);
+			DelistFile(_enlistedFiles[filename].Buffer);
 		}
 
 		public void DelistFile(TransactionalFileMappedBuffer file) {
 			Guard.ArgumentNotNull(file, nameof(file));
+			var shouldDispose = _enlistedFiles[file.Path].ShouldDispose;
 			GloballyEnlistedFiles.Remove(file.Path);
 			_enlistedFiles.Remove(file.Path);
-			file.Dispose();
+			if (shouldDispose)
+				file.Dispose();
 		}
 
 		public void Dispose() {
@@ -171,7 +173,7 @@ namespace Sphere10.Framework {
 			Status = FileTransactionState.Committing;
 			SaveHeader();
 			foreach (var file in _enlistedFiles.Values) {
-				file.Commit();
+				file.Buffer.Commit();
 			}
 			Status = FileTransactionState.Unchanged;
 			SaveHeader();
@@ -181,7 +183,7 @@ namespace Sphere10.Framework {
 			Status = FileTransactionState.RollingBack;
 			SaveHeader();
 			foreach (var file in _enlistedFiles.Values) {
-				file.Rollback();
+				file.Buffer.Rollback();
 			}
 			Status = FileTransactionState.Unchanged;
 			SaveHeader();
@@ -232,6 +234,15 @@ namespace Sphere10.Framework {
 			path = Tools.FileSystem.GetCaseCorrectFilePath(path);
 			return GloballyEnlistedFiles.ContainsKey(path);
 		}
+
+		#region Internal Classes
+
+		private record FileDescriptor {
+			public TransactionalFileMappedBuffer Buffer { get; init; }
+			public bool ShouldDispose { get; init; }
+		}
+
+		#endregion
 
 		#region Serializable Surrogates
 

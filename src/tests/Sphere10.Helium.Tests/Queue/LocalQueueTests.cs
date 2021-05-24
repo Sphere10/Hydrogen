@@ -21,17 +21,19 @@ namespace Sphere10.Helium.Tests.Queue {
 		public void MultipleMessageInsertedSynchronouslyIntoLocalQueue() {
 			_localQueueProcessor.ClearAll();
 
-			for (var i = 0; i < 10; i++) 
+			for (var i = 0; i < 10; i++) {
 				_localQueueProcessor.AddMultipleMessagesSynchronouslyToQueue();
+			}
 		}
 
 		[TearDown]
 		public void Cleanup() {
 			_localQueueProcessor.DeleteFileAndFolder();
+			_localQueueProcessor.Dispose();
 		}
 	}
 	
-	public class LocalQueueProcessor {
+	public class LocalQueueProcessor : IDisposable {
 		private readonly QueueConfigDto _queueConfigDto;
 
 		private const string StrGuid = "997D1367-E7B0-46F0-B0A1-686DC0F15945";
@@ -84,7 +86,7 @@ namespace Sphere10.Helium.Tests.Queue {
 
 			using var txnScope = new FileTransactionScope(_queueConfigDto.TempDirPath, ScopeContextPolicy.None);
 			txnScope.BeginTransaction();
-			txnScope.EnlistFile(_localQueue);
+			txnScope.EnlistFile(_localQueue, false);
 
 			using (_localQueue.EnterWriteScope()) {
 				_localQueue.Add(CreateMessage());
@@ -112,7 +114,7 @@ namespace Sphere10.Helium.Tests.Queue {
 
 			using var txnScope = new FileTransactionScope(_queueConfigDto.TempDirPath, ScopeContextPolicy.None);
 			txnScope.BeginTransaction();
-			txnScope.EnlistFile(_localQueue);
+			txnScope.EnlistFile(_localQueue, false);
 
 			var localQueueMessage = _localQueue[^1];
 
@@ -145,12 +147,18 @@ namespace Sphere10.Helium.Tests.Queue {
 		}
 
 		public void DeleteFileAndFolder() {
+			_localQueue?.Dispose(); // Need to dispose the queue which is using that file and folder
+			_localQueue = null;
 			var queuePath = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), TempQueueName);
 
 			if (File.Exists(queuePath)) File.Delete(queuePath);
 
 			if (Directory.Exists(_queueTempDir))
 				Directory.Delete(_queueTempDir);
+		}
+
+		public void Dispose() {
+			_localQueue?.Dispose();
 		}
 	}
 

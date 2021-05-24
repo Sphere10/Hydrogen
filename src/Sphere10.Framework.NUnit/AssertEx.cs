@@ -75,9 +75,20 @@ namespace Sphere10.Framework.NUnit {
 			}
 
 			// Test 9: Clear
-			expected.Clear();
-			list.Clear();
-			Assert.That(expected, Is.EqualTo(list).Using(comparer));
+			for (var i = 0; i < 3; i++) {
+				Assert.That(expected, Is.EqualTo(list).Using(comparer));
+				// add a random amount
+				var remainingCapacity = maxCapacity - list.Count;
+				var newItemsCount = RNG.Next(0, remainingCapacity + 1);
+				newItems = randomItemGenerator(RNG, newItemsCount);
+				expected.AddRangeSequentially(newItems);
+				list.AddRange(newItems);
+
+				expected.Clear();
+				list.Clear();
+			}
+
+
 
 			// Test 10: Iterate with random mutations
 			for (var i = 0; i < iterations; i++) {

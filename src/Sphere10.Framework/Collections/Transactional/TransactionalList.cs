@@ -16,6 +16,7 @@ namespace Sphere10.Framework {
 
 		private readonly SynchronizedExtendedList<T> _synchronizedList;
 		private readonly StreamMappedClusteredListBase<T, ItemListing> _clusteredList;
+		private bool _disposed;
 
 		/// <summary>
 		/// Creates a <see cref="TransactionalList{T}" /> based on a <see cref="StreamMappedFixedClusteredList{T}"/>/>.
@@ -71,6 +72,7 @@ namespace Sphere10.Framework {
 					out var synchronizedList
 				)
 			) {
+			_disposed = false;
 			_clusteredList = clusteredList;
 			_synchronizedList = synchronizedList;
 			AsBuffer = buffer;
@@ -129,6 +131,7 @@ namespace Sphere10.Framework {
 					),
 					out var synchronizedList)
 			) {
+			_disposed = false;
 			_clusteredList = clusteredList;
 			_synchronizedList = synchronizedList;
 			AsBuffer = buffer;
@@ -162,6 +165,12 @@ namespace Sphere10.Framework {
 
 		public void Dispose() {
 			AsBuffer?.Dispose();
+			_disposed = true;
+		}
+
+		protected override void OnAccessing(EventTraits eventType) {
+			if (_disposed)
+				throw new InvalidOperationException("Queue has been disposed");
 		}
 
 		protected virtual void OnCommitting() {

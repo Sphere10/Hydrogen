@@ -87,7 +87,7 @@ namespace Sphere10.Framework.Tests {
 						Guid.NewGuid(),
 						100,
 						1); // note: filePageDir != txnBaseDir
-					Assert.Throws<ArgumentException>(() => scope.EnlistFile(file));
+					Assert.Throws<ArgumentException>(() => scope.EnlistFile(file, true));
 				}
 			}
 		}
@@ -110,7 +110,7 @@ namespace Sphere10.Framework.Tests {
 						Guid.NewGuid(),
 						100,
 						1); // note: filePageDir == txnBaseDir
-					Assert.DoesNotThrow(() => scope.EnlistFile(file));
+					Assert.DoesNotThrow(() => scope.EnlistFile(file, true));
 				}
 			}
 		}

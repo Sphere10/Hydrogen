@@ -62,6 +62,12 @@ namespace Sphere10.Framework {
 			
 			_loadedPages.ItemRemoved += (page, key) => {
 				var memPage = (IMemoryPage<TItem>)InternalPages[page];
+
+				// Uncaching a deleted page, do nothing
+				if (memPage.State == PageState.Deleted) 
+					return;
+
+				// Uncaching a dirty page, ensure saved
 				if (memPage.Dirty && memPage.State != PageState.Deleting) {
 					NotifyPageSaving(memPage);
 					memPage.Save();
@@ -95,6 +101,7 @@ namespace Sphere10.Framework {
 		public bool FlushOnDispose { get; set; }
 
 		public sealed override IDisposable EnterOpenPageScope(IPage<TItem> page) {
+			CheckNotDisposed();
 			var _ = _loadedPages.Get(page.Number); // ensures page is fetched from storage if not cached
 			return new Disposables(); // dont need to do anything, cache manages life-cycle of page
 		}
@@ -111,6 +118,7 @@ namespace Sphere10.Framework {
 			SuppressNotifications = true;
 			Disposing = true;
 			Clear();
+			_loadedPages.Flush(); // clear cache (should be clear except obscure flows)
 		}
 
 		protected override void OnAccessing() {

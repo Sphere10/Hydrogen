@@ -122,8 +122,8 @@ namespace Sphere10.Helium.Usage {
 		private readonly Guid _sameGuid = new Guid(StrGuid);
 		private readonly string _queueTempDir = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "a");
 
-		private IHeliumQueue _localQueue;
-		private IHeliumQueue _processingQueue;
+		public IHeliumQueue _localQueue;
+		public IHeliumQueue _processingQueue;
 
 		public AsLocalQueueProcessor() {
 

@@ -14,7 +14,7 @@ namespace Sphere10.Helium.Tests.Queue
 	{
 		private LocalQueueProcessor _localQueueProcessor;
 		private const int MessageInsertAttempts = 10;
-		private const int MessageBatchSize = 10;
+		private const int MessageBatchSize = 40;
 
 		[SetUp]
 		public void InitializeLocalQueue()

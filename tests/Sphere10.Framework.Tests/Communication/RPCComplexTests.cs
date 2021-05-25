@@ -22,10 +22,10 @@ namespace Sphere10.Framework.Tests {
 		public uint foundNonce;
 	}
 
-	//Server Apiservice Example
+	//Example: Server Apiservice Example
 	[RpcAPIService("Mining")]
 	public class StratumServerService : JsonRpcServer {
-		public StratumServerService(IEndPoint ep) : base(ep) { }
+		public StratumServerService(IEndPoint ep) : base(ep, true) { }
 
 		//Stratum mining.subscribe
 		[RpcAPIMethod]
@@ -61,15 +61,15 @@ namespace Sphere10.Framework.Tests {
 	public class EXAMPLE_Client_Side_GetWork {
 		void Test() {
 			//Client Side for GetWork:
-			var client = new JsonRpcClient(new TcpEndPoint("127.0.0.1", 27000));
+			var client = new JsonRpcClient(new TcpEndPoint("127.0.0.1", 27000), true);
 			WorkPackage work = client.RemoteCall<WorkPackage>("GetWork", DateTime.Now);
 		}
 	}
 
-	//Client Side for Stratum:
+	//Example: Client Side for Stratum:
 	[RpcAPIService("Mining")]
 	public class StratumClientService : JsonRpcServer {
-		public StratumClientService(string server, int port) : base(new TcpEndPoint(server, port)) { }
+		public StratumClientService(string server, int port) : base(new TcpEndPoint(server, port), true) { }
 
 		public override void Start() {
 			EndPoint.Start();

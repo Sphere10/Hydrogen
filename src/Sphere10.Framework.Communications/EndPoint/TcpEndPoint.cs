@@ -8,15 +8,25 @@ namespace Sphere10.Framework.Communications.RPC {
 	//Implement a TCP communication endpoint
 	public class TcpEndPoint : IEndPoint {
 		protected TcpClient tcpSocket;
-		protected int		port;
-		protected string	address;
-		public int			MaxMessageSize { get; set; } = 4096;
+		protected int port;
+		protected string address;
+		public int MaxMessageSize { get; set; } = 4096;
+
 		public TcpEndPoint(string remoteAddress, int remotePort) {
 			port = remotePort;
 			address = remoteAddress;
 		}
+
 		public TcpEndPoint(TcpClient clientSocket) {
 			tcpSocket = clientSocket;
+		} 
+
+		public string GetDescription() {
+			return tcpSocket != null ? $"{((IPEndPoint)tcpSocket.Client.RemoteEndPoint).Address.ToString()}:{((IPEndPoint)tcpSocket.Client.RemoteEndPoint).Port}" : "";
+		}
+
+		public IEndPoint WaitForMessage() {
+			return this;
 		}
 
 		public virtual EndpointMessage ReadMessage() {
@@ -26,6 +36,8 @@ namespace Sphere10.Framework.Communications.RPC {
 			int bytesRead = 0;
 			byte[] messageBytes = new byte[MaxMessageSize];
 			bytesRead = tcpSocket.GetStream().Read(messageBytes, 0, MaxMessageSize);
+			TcpSecurityPolicies.ValidateJsonQuality(messageBytes, bytesRead);
+			Array.Resize<byte>(ref messageBytes, bytesRead);
 			return new EndpointMessage(messageBytes, this);
 		}
 
@@ -33,7 +45,7 @@ namespace Sphere10.Framework.Communications.RPC {
 			if (!IsOpened())
 				Start();
 
-			message.streamContext = this;
+			message.stream = this;
 			tcpSocket.GetStream().Write(message.messageData, 0, message.messageData.Length);
 		}
 
@@ -45,7 +57,7 @@ namespace Sphere10.Framework.Communications.RPC {
 			if (address != null) {
 				tcpSocket = new TcpClient();
 				tcpSocket.Connect(address, port);
-			}				
+			}
 		}
 
 		public virtual void Stop() {

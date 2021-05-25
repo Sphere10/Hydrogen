@@ -58,7 +58,7 @@ namespace Sphere10.Framework.Communications.RPC {
 							delegatArgType.Add(t.Item2);
 
 						delegatArgType.Add(method.ReturnType);
-						apiMethodDescr.CallPoint = Delegate.CreateDelegate(System.Linq.Expressions.Expression.GetDelegateType(delegatArgType.ToArray()), instance, method);
+						apiMethodDescr.CallPoint = Delegate.CreateDelegate(System.Linq.Expressions.Expression.GetDelegateType(delegatArgType.ToArray()), instance, method); 
 
 						ApiBindings.Add(rpcMethodName, apiMethodDescr);
 					}
@@ -116,9 +116,13 @@ namespace Sphere10.Framework.Communications.RPC {
 
 			try {
 				for (int i = 0; i < method.Arguments.Count; i++) {
-					var argObj = arguments[i] as JValue;
-					arguments[i] = argObj.ToObject(method.Arguments[i].Item2);
+					if (arguments[i] is JToken) {
+						var argObj = arguments[i] as JToken;
+						arguments[i] = argObj.ToObject(method.Arguments[i].Item2);
+					} else
+						return new JsonResponse { Result = null, Error = new JsonRpcException(-8, $"Agument #{i} is incompatible in method {methodName}.") };
 				}
+
 			} catch (Exception ex) {
 				return new JsonResponse { Result = null, Error = new JsonRpcException(-5, $"Wrong argument type in method {methodName}.") };
 			}
@@ -133,7 +137,7 @@ namespace Sphere10.Framework.Communications.RPC {
 				else
 					return new JsonResponse { Result = ret, Error = null };
 			} catch (Exception ex) {
-				return new JsonResponse { Result = null, Error = new JsonRpcException(-5, $"Call exception cought : {ex.Message}") };
+				return new JsonResponse { Result = null, Error = new JsonRpcException(-9, $"Call exception cought : {ex.Message}") };
 			}
 		}
 	}

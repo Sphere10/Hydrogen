@@ -7,15 +7,15 @@ namespace Sphere10.Framework.Communications.RPC {
 	//Implement a communication endpoint message with bytes or strings
 	public class EndpointMessage {
 		public byte[] messageData;
-		public IEndPoint streamContext;
+		public IEndPoint stream;
 
-		public EndpointMessage(string message, IEndPoint stream = null) {
+		public EndpointMessage(string message, IEndPoint targetStream = null) {
 			FromString(message);
-			streamContext = stream;
+			stream = targetStream;
 		}
-		public EndpointMessage(byte[] message, IEndPoint stream = null) {
+		public EndpointMessage(byte[] message, IEndPoint targetStream = null) {
 			messageData = message;
-			streamContext = stream;
+			stream = targetStream;
 		}
 		public override string ToString() {
 			ASCIIEncoding encoder = new ASCIIEncoding();

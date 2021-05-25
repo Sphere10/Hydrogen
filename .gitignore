@@ -196,3 +196,4 @@ project.lock.json
 #Client side packages
 **/wwwroot/lib/
 **/wwwroot/**/*.min.*
+*.DS_Store

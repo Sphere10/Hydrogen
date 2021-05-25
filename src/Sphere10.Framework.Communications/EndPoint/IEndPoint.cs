@@ -7,10 +7,12 @@ using System.Linq;
 namespace Sphere10.Framework.Communications.RPC {
 	//Declare a communication endpoint for simmple messaging
 	public interface IEndPoint {
-		public EndpointMessage ReadMessage();
-		public void			   WriteMessage(EndpointMessage message);
-		public bool IsOpened();
-		public void Start();
-		public void Stop();
+		public string			GetDescription();
+		public IEndPoint		WaitForMessage();
+		public EndpointMessage	ReadMessage(); 
+		public void				WriteMessage(EndpointMessage message);
+		public bool				IsOpened();
+		public void				Start();
+		public void				Stop();
 	}
 }

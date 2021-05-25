@@ -13,5 +13,7 @@ namespace Sphere10.Framework.Communications.RPC {
 		public abstract void RemoteCall(string methodName, params object[] arguments);
 		//Call RPC function with a return value
 		public abstract TReturnType RemoteCall<TReturnType>(string methodName, params object[] arguments);
+		//Call RPC function in batch
+		public abstract object[] RemoteCall(ApiBatchCallDescriptor batchOfCalls);
 	}
 }

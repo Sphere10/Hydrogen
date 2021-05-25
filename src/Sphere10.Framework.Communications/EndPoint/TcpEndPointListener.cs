@@ -16,22 +16,34 @@ namespace Sphere10.Framework.Communications.RPC {
 			maxConnections = maxConnection;
 		}
 
-		private EndpointMessage ReadInternal(TcpClient stream) {
-			int bytesRead = 0;
-			byte[] messageBytes = new byte[MaxMessageSize];
-			bytesRead = stream.GetStream().Read(messageBytes, 0, MaxMessageSize);
-			return new EndpointMessage(messageBytes, new TcpEndPoint(stream));
+		public string GetDescription() { 
+			return tcpListener != null ? $"{((IPEndPoint)tcpListener.LocalEndpoint).Address.ToString()}:{((IPEndPoint)tcpListener.LocalEndpoint).Port}" : "";
 		}
-		//Readmessage create a message with client stream so WriteMessage can reply back to it
+
+		//wait for connection and return client's endpoint
+		public IEndPoint WaitForMessage() {
+			TcpEndPoint newClient = null;
+			try {
+				TcpClient client = tcpListener.AcceptTcpClient();
+				newClient = new TcpEndPoint(client);
+			}
+			catch(Exception e) {
+				throw;
+			}
+
+			return newClient;
+		}
+
+		//Implement single-thread blocking Listen+Read of an EndPointMessage
 		public EndpointMessage ReadMessage() {
-			TcpClient client = tcpListener.AcceptTcpClient();
-			return ReadInternal(client);
+			IEndPoint client = WaitForMessage();
+			return client.ReadMessage();
 		}
 
 		//Write a message to a specific client (not to the Listening socket).
 		public void WriteMessage(EndpointMessage message) {
-			Debug.Assert(message.streamContext != null);
-			message.streamContext.WriteMessage(message);
+			Debug.Assert(message.stream != null);
+			message.stream.WriteMessage(message);
 		}
 
 		public bool IsOpened() {

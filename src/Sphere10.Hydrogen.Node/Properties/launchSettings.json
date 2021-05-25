@@ -5,7 +5,7 @@
       "commandName": "Project",
       "environmentVariables": {
       },
-      "commandLineArgs": "--help"
+      "commandLineArgs": "service --loglevel info"
     }
   }
 }

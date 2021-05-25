@@ -17,19 +17,19 @@ namespace Sphere10.Hydrogen.Node {
 
 	class Program {
 
-		public static CommandLineArgs Arguments = new(
+		public static CommandLineParameters Arguments = new(
 			new[] {
 				"Hydrogen Node v1.0",
 				"Copyright (c) Sphere 10 Software 2021 - {CurrentYear}"
 			},
 			new string[0],
-			new CommandLineArgCommand[] {
+			new[] { new CommandLineParameter("quiet", "No console output") },
+			new CommandLineCommand[] {
 				new("service", "Run the node in the background",
-					new CommandLineArg[] { new("loglevel", "Service log level - info, warn, error") },
-					new CommandLineArgCommand[] { new("install", "install as service", new CommandLineArg[0], new CommandLineArgCommand[0]) }),
-				new("host", "The handle provided by the host process for anonymous pipe IPC", new CommandLineArg[0], new CommandLineArgCommand[0]),
-			},
-			new[] { new CommandLineArg("quiet", "No console output") });
+					new CommandLineParameter[] { new("loglevel", "Service log level - info, warn, error") },
+					new CommandLineCommand[] { new("install", "install as service") }),
+				new("host", "The handle provided by the host process for anonymous pipe IPC"),
+			});
 
 		private static void ListenToHostCommands(string pipeHandleAsString, CancellationTokenSource cts) {
 			using var pipeClient = new AnonymousPipeClientStream(PipeDirection.In, pipeHandleAsString);
@@ -44,7 +44,7 @@ namespace Sphere10.Hydrogen.Node {
 		}
 
 		static void Main(string[] args) {
-			Result<CommandLineResults> parsed = Arguments.TryParse(args);
+			Result<CommandLineArguments> parsed = Arguments.TryParseArguments(args);
 
 			if (parsed.Failure) {
 				Arguments.PrintHeader();

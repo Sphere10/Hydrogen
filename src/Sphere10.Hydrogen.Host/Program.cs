@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 namespace Sphere10.Hydrogen.Host {
 
 	class Program {
-		public static CommandLineArgs Arguments = new CommandLineArgs(
+		public static CommandLineParameters Arguments = new CommandLineParameters(
 			new[] {
 				"Hydrogen Host v1.0",
 				"Copyright (c) Sphere 10 Software 2021 - {CurrentYear}"
@@ -20,15 +20,12 @@ namespace Sphere10.Hydrogen.Host {
 			new[] {
 				"NOTE: The Hydrogen Host will forward all arguments marked [N] above to the Hydrogen Node which is launched as a child-process."
 			},
-			new CommandLineArgCommand[] {
-				new("development", "Used during development only", new CommandLineArg[0], new CommandLineArgCommand[0]),
-				new("config", "Path to the HydrogenHostConfig.ini file used to launch a Hydrogen Node", new CommandLineArg[0], new CommandLineArgCommand[0]),
-				new("app", "Path to the Hydrogen Application Package (HAP)", new CommandLineArg[0], new CommandLineArgCommand[0]),
-				new("update", "Path to a  which Hydrogen Application Package (HAP)  HydrogenNode executable to host", new CommandLineArg[0], new CommandLineArgCommand[0]),
-			},
-			new CommandLineArg[0],
-			CommandLineArgOptions.CaseSensitive | CommandLineArgOptions.DoubleDash | CommandLineArgOptions.PrintHelpOnH |
-			                    CommandLineArgOptions.PrintHelpOnHelp);
+			new CommandLineCommand[] {
+				new("development", "Used during development only"),
+				new("config", "Path to the HydrogenHostConfig.ini file used to launch a Hydrogen Node"),
+				new("app", "Path to the Hydrogen Application Package (HAP)"),
+				new("update", "Path to a  which Hydrogen Application Package (HAP)  HydrogenNode executable to host"),
+			});
 
 		private static void RunNode(string nodeExecutable, CancellationToken stopNodeToken) {
 			var nodeProcess = new Process();
@@ -75,7 +72,7 @@ namespace Sphere10.Hydrogen.Host {
 			var stopNodeCancellationTokenSource = new CancellationTokenSource();
 			try {
 				
-				Result<CommandLineResults> parsed = Arguments.TryParse(args);
+				Result<CommandLineArguments> parsed = Arguments.TryParseArguments(args);
 				
 				var nodeExecutable = GetDevelopmentNodeExecutable();
 				RunNode(nodeExecutable, stopNodeCancellationTokenSource.Token);

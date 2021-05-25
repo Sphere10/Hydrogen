@@ -10,6 +10,8 @@ namespace Sphere10.Framework {
 
 		private const int ArgumentLineLengthPadded = 15;
 
+		private readonly string[] _parameterPrefixes = new[] { "-", "--", "/" };
+
 		public CommandLineParameters() : this(null, null, null, null) {
 		}
 
@@ -29,7 +31,7 @@ namespace Sphere10.Framework {
 			Arguments = arguments;
 			Commands = commands;
 		}
-		
+
 		public string[] Header { get; init; } = Array.Empty<string>();
 
 		public string[] Footer { get; init; } = Array.Empty<string>();
@@ -44,7 +46,7 @@ namespace Sphere10.Framework {
 
 		public Result<CommandLineArguments> TryParseArguments(string[] args) {
 			Guard.ArgumentNotNull(args, nameof(args));
-			
+
 			var parseResults = Result<CommandLineArguments>.Default;
 			var argResults = new LookupEx<string, string>();
 			var lastResult = new CommandLineArguments(new Dictionary<string, CommandLineArguments>(), argResults);
@@ -240,23 +242,57 @@ namespace Sphere10.Framework {
 		}
 
 		private LookupEx<string, string> ParseArgsToLookup(string[] args) {
+			var parameterPrefixes = new List<string>();
+
+			if (Options.HasFlag(CommandLineArgumentOptions.DoubleDash))
+				parameterPrefixes.Add("--");
+
+			if (Options.HasFlag(CommandLineArgumentOptions.SingleDash))
+				parameterPrefixes.Add("-");
+
+			if (Options.HasFlag(CommandLineArgumentOptions.ForwardSlash))
+				parameterPrefixes.Add("/");
+
+			bool TryExtractParameter(string arg, out string name) {
+				name = null;
+				foreach (var prefix in parameterPrefixes) {
+					if (arg.StartsWith(prefix)) {
+						name = arg.TrimStart(prefix);
+
+						return true;
+					}
+				}
+
+				return false;
+			}
+
 			var lookupEx = new LookupEx<string, string>(Options.HasFlag(CommandLineArgumentOptions.CaseSensitive)
 				? StringComparer.Ordinal
 				: StringComparer.OrdinalIgnoreCase);
-			var parameterMatchPattern = BuildArgNameMatchPattern();
 
-			var regex = new Regex("^" + parameterMatchPattern + @"{1}(?<name>\w+)([:=])?(?<value>.+)?$",
-				RegexOptions.IgnoreCase | RegexOptions.Compiled);
-			char[] trimChars = { '"', '\'', ' ' };
+			string parameter = null;
 
 			foreach (var arg in args) {
-				var part = regex.Match(arg);
+				if (IsParameter(arg)) {
 
-				if (part.Success) {
-					var parameter = part.Groups["name"].Value;
-					lookupEx.Add(parameter, part.Groups["value"].Value.Trim(trimChars));
+					if (parameter is not null && lookupEx.CountForKey(parameter) == 0)
+						lookupEx.Add(parameter, null);
+
+					parameter = null;
+					if (TryExtractParameter(arg, out var parsedParameter)) {
+						if (TryParseValueWithParameter(parsedParameter, out var parameterWithoutValue, out var value))
+							lookupEx.Add(parameterWithoutValue, value);
+
+						parameter = parsedParameter;
+					}
+				} else {
+					if (parameter is not null)
+						lookupEx.Add(parameter, arg);
 				}
 			}
+			
+			if (parameter is not null && lookupEx.CountForKey(parameter) == 0)
+				lookupEx.Add(parameter, null);
 
 			return lookupEx;
 		}
@@ -267,7 +303,7 @@ namespace Sphere10.Framework {
 			for (int i = 0; i < args.Length; i++) {
 				string arg = args[i];
 
-				if (!(arg.StartsWith("-") || arg.StartsWith("/"))) {
+				if (!IsParameter(arg)) {
 					results.Add(arg);
 				} else
 					break;
@@ -275,5 +311,24 @@ namespace Sphere10.Framework {
 
 			return results.ToArray();
 		}
+
+		private bool TryParseValueWithParameter(string arg, out string parameter, out string value) {
+			var regex = new Regex(@"^(?<name>\w+)([:=])?(?<value>.+)?$");
+			var match = regex.Match(arg);
+
+			value = null;
+			parameter = null;
+
+			if (match.Success) {
+				char[] trimChars = { '"', '\'', ' ' };
+				parameter = match.Groups["name"].Value;
+				var valueGroup = match.Groups["value"].Value;
+				value = string.IsNullOrEmpty(valueGroup) ? null : valueGroup.Trim(trimChars);
+			}
+
+			return parameter is not null && value is not null;
+		}
+
+		private bool IsParameter(string arg) => _parameterPrefixes.Any(arg.StartsWith);
 	}
 }

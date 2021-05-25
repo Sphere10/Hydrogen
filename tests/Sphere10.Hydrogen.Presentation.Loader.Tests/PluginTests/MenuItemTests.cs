@@ -2,7 +2,6 @@
 using System.Linq;
 using NUnit.Framework;
 using Sphere10.Hydrogen.Presentation.Plugins;
-using Xunit;
 using Assert = NUnit.Framework.Assert;
 
 namespace Sphere10.Hydrogen.Presentation.Loader.Tests.PluginTests {
@@ -40,7 +39,7 @@ namespace Sphere10.Hydrogen.Presentation.Loader.Tests.PluginTests {
             Assert.AreEqual(1, merged[1].Children.Count);
         }
 
-        [Fact]
+        [Test]
         public void CopyMenuItemsSameButDifRef() {
             var menu1 = new List<MenuItem>
             {

@@ -28,7 +28,6 @@ namespace Sphere10.Helium.Tests.Queue
 			_localQueueProcessor.ClearAll();
 
 			var totalMessageList = InsertMessagesInQueue();
-
 			Assert.AreEqual(totalMessageList.Count, _localQueueProcessor.CountLocal());
 		}
 
@@ -41,7 +40,6 @@ namespace Sphere10.Helium.Tests.Queue
 			Assert.AreEqual(totalMessageList.Count, _localQueueProcessor.CountLocal());
 
 			_localQueueProcessor.ClearAll();
-
 			Assert.AreEqual(_localQueueProcessor.CountLocal(), 0);
 
 			_localQueueProcessor.ClearAll();
@@ -57,13 +55,10 @@ namespace Sphere10.Helium.Tests.Queue
 			_localQueueProcessor.ClearAll();
 
 			var totalMessageList = InsertMessagesInQueue();
-
 			Assert.AreEqual(totalMessageList.Count, _localQueueProcessor.CountLocal());
 
 			foreach (var message in totalMessageList)
-			{
 				_localQueueProcessor.DeleteMessageFromQueue(message);
-			}
 
 			Assert.AreEqual(_localQueueProcessor.CountLocal(), 0);
 		}
@@ -74,7 +69,6 @@ namespace Sphere10.Helium.Tests.Queue
 			_localQueueProcessor.ClearAll();
 
 			var totalMessageList = InsertMessagesInQueue();
-
 			IList<IMessage> readFromQueueList = totalMessageList.Select(_ => _localQueueProcessor.RetrieveMessageFromQueue()).ToList();
 
 			Assert.AreEqual(totalMessageList.Count, readFromQueueList.Count);
@@ -91,10 +85,9 @@ namespace Sphere10.Helium.Tests.Queue
 			IList<IMessage> totalMessageList = new List<IMessage>();
 
 			for (var i = 0; i < MessageInsertAttempts; i++)
-			{
 				_localQueueProcessor.AddMultipleMessagesSynchronouslyToQueue().ForEach(x => totalMessageList.Add(x));
-			}
-			return totalMessageList;
+			
+            return totalMessageList;
 		}
 	}
 
@@ -102,12 +95,10 @@ namespace Sphere10.Helium.Tests.Queue
 	{
 		private readonly int _batchSize;
 		private readonly QueueConfigDto _queueConfigDto;
-
 		private const string StrGuid = "997D1367-E7B0-46F0-B0A1-686DC0F15945";
 		private const string TempQueueName = "Temp_AB3CB3F9-3EBC-46B3-877D-14AB5A7A7FD2_1";
 		private readonly Guid _sameGuid = new Guid(StrGuid);
 		private readonly string _queueTempDir = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "a");
-
 		private IHeliumQueue _localQueue;
 
 		public LocalQueueProcessor(int batchSize)
@@ -135,7 +126,6 @@ namespace Sphere10.Helium.Tests.Queue
 			};
 
 			_queueConfigDto = queueConfig;
-
 			_localQueue = SetupLocalQueue();
 
 			if (_localQueue.RequiresLoad)
@@ -166,32 +156,14 @@ namespace Sphere10.Helium.Tests.Queue
 			using (_localQueue.EnterWriteScope())
 			{
 				foreach (var message in messageList)
-				{
 					_localQueue.AddMessage(message);
-				}
 			}
 
 			txnScope.Commit();
 
 			return messageList;
 		}
-
-		private IList<IMessage> GetMessageList()
-		{
-
-			IList<IMessage> messageList = new List<IMessage>();
-
-			for (var i = 0; i < _batchSize; i++)
-				messageList.Add(CreateMessage());
-
-			return messageList;
-		}
-
-		public void DeleteMessageFromQueue(IMessage message)
-		{
-			_localQueue.DeleteMessage(message);
-		}
-
+		
 		public IMessage RetrieveMessageFromQueue()
 		{
 			using var txnScope = new FileTransactionScope(_queueConfigDto.TempDirPath);
@@ -199,13 +171,40 @@ namespace Sphere10.Helium.Tests.Queue
 			txnScope.EnlistFile(_localQueue, false);
 
 			var localQueueMessage = _localQueue[^1];
-
 			_localQueue.RemoveAt(^1);
 
 			txnScope.Commit();
 
 			return localQueueMessage;
 		}
+
+		public void DeleteFileAndFolder()
+        {
+            _localQueue?.Dispose(); // Need to dispose the queue which is using that file and folder
+            _localQueue = null;
+            var queuePath = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), TempQueueName);
+
+            if (File.Exists(queuePath)) File.Delete(queuePath);
+
+            if (Directory.Exists(_queueTempDir))
+                Directory.Delete(_queueTempDir);
+        }
+
+		public void DeleteMessageFromQueue(IMessage message)
+        {
+            _localQueue.DeleteMessage(message);
+        }
+
+        private IList<IMessage> GetMessageList()
+        {
+
+            IList<IMessage> messageList = new List<IMessage>();
+
+            for (var i = 0; i < _batchSize; i++)
+                messageList.Add(CreateMessage());
+
+            return messageList;
+        }
 
 		private static void MessageAdded(object sender)
 		{
@@ -219,7 +218,6 @@ namespace Sphere10.Helium.Tests.Queue
 
 		private static IMessage CreateMessage()
 		{
-
 			var inMessage = new TestMessage1
 			{
 				Id = Guid.NewGuid().ToString(),
@@ -230,18 +228,6 @@ namespace Sphere10.Helium.Tests.Queue
 			};
 
 			return inMessage;
-		}
-
-		public void DeleteFileAndFolder()
-		{
-            _localQueue?.Dispose(); // Need to dispose the queue which is using that file and folder
-            _localQueue = null;
-			var queuePath = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), TempQueueName);
-
-			if (File.Exists(queuePath)) File.Delete(queuePath);
-
-			if (Directory.Exists(_queueTempDir))
-				Directory.Delete(_queueTempDir);
 		}
 	}
 

@@ -2,6 +2,8 @@ using System;
 using System.Threading;
 using NUnit.Framework;
 using System.IO;
+using System.Net.Sockets;
+using System.Net;
 using System.Linq;
 using System.Text;
 using Sphere10.Framework;
@@ -457,7 +459,7 @@ namespace Sphere10.Framework.Tests {
 		public void TestTcpSecurityPoliciy_TooManyConnections()
 		{
 			const int TestMaxConnections = 8;
-			const int TestMaxThreads = 32;
+			const int TestMaxThreads = TestMaxConnections*3;
 
 			// Server side
 			var apiTest = new TestApi();
@@ -487,9 +489,12 @@ namespace Sphere10.Framework.Tests {
 					threadsArray[i] = new Thread((i) =>
 					{
 						Thread.CurrentThread.Name = $"test{i}";
-						try { 
-							var client = new JsonRpcClient(new TcpEndPoint("127.0.0.1", 27000));
+						try {
+							var socket = new TcpClient("127.0.0.1", 27000);
+							socket.Client.ReceiveTimeout = 5000;
+							var client = new JsonRpcClient(new TcpEndPoint(socket));
 							Assert.AreEqual(client.RemoteCall<uint>("api.Add2Diff", 199, -9), 190);
+							Thread.Sleep(250);
 						}
 						catch (Exception e) {
 							Interlocked.Increment(ref failed);
@@ -500,8 +505,8 @@ namespace Sphere10.Framework.Tests {
 				for (int i = 0; i < TestMaxThreads; i++)
 					threadsArray[i].Join();
 
-				//no need for a big number here. On fast computer, it can be very low. 1 is enought to tell the policy works.
-				Assert.IsTrue(failed > 2); 
+				//must all occur under 250 ms
+				Assert.Greater(failed, TestMaxConnections*2); 
 			}
 			catch (Exception e) {
 				Assert.Fail(e.ToString());

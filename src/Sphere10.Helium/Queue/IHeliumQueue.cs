@@ -27,10 +27,17 @@ namespace Sphere10.Helium.Queue {
 		public bool DeleteMessage(IMessage message);
 
 		/// <summary>
+		/// Make a COPY of the message.
+		/// The copy is made from the front of the queue.
+		/// </summary>
+		/// <returns></returns>
+		public IMessage ReadMessage();
+
+		/// <summary>
 		/// RETRIEVES a message FROM the queue.
 		/// The message must be taken off the "front" of the queue.
 		/// </summary>
 		/// <param name="message"></param>
-		public IMessage RetrieveMessage();
+		public IMessage RemoveMessage();
 	}
 }

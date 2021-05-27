@@ -192,7 +192,7 @@ namespace Sphere10.Helium.Usage {
 
 			//////localQueue.DeleteMessage(inMessage);
 			//_localQueue.AddMessage(message);
-			//////var outMessage = localQueue.RetrieveMessage();
+			//////var outMessage = localQueue.ReadMessage();
 			//////localQueue.DeleteMessage(inMessage);
 		}
 
@@ -216,7 +216,7 @@ namespace Sphere10.Helium.Usage {
 
 			return localQueueMessage;
 
-			//var outMessage = _localQueue.RetrieveMessage();
+			//var outMessage = _localQueue.ReadMessage();
 			//return outMessage;
 		}
 

@@ -165,7 +165,7 @@
 
 //			////localQueue.DeleteMessage(inMessage);
 //			_localQueue.AddMessage(message);
-//			////var outMessage = localQueue.RetrieveMessage();
+//			////var outMessage = localQueue.ReadMessage();
 //			////localQueue.DeleteMessage(inMessage);
 //		}
 
@@ -189,7 +189,7 @@
 
 //			return localQueueMessage;
 
-//			var outMessage = _localQueue.RetrieveMessage();
+//			var outMessage = _localQueue.ReadMessage();
 //			return outMessage;
 //		}
 
@@ -367,7 +367,7 @@
 
 //			//////localQueue.DeleteMessage(inMessage);
 //			_localQueue.AddMessage(message);
-//			//////var outMessage = localQueue.RetrieveMessage();
+//			//////var outMessage = localQueue.ReadMessage();
 //			//////localQueue.DeleteMessage(inMessage);
 //		}
 
@@ -376,7 +376,7 @@
 //		}
 
 //		public IMessage RetrieveMessageFromQueue() {
-//			var outMessage = _localQueue.RetrieveMessage();
+//			var outMessage = _localQueue.ReadMessage();
 
 //			return outMessage;
 //		}

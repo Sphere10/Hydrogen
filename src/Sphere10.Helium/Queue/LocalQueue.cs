@@ -31,60 +31,29 @@ namespace Sphere10.Helium.Queue {
 			) {
 		}
 
-		public void AddMessage(IMessage message) {
-			Add(message);
-		}
-
-		public bool DeleteMessage(IMessage message) {
-			var result =Remove(message);
-
-			return result;
-		}
-
 		protected override void OnCommitted() {
 			var handler = MessageCommitted;
 
 			base.OnCommitted();
 		}
 
-		//protected override void OnAdding(AddingEventArgs<IMessage> args) {
-		//	base.OnAdding(args);
-			
-		//}
+		public void AddMessage(IMessage message) {
+			Add(message);
+		}
 
-		//protected override void OnAdded(AddedEventArgs<IMessage> args) {
-		//	base.OnAdded(args);
-
-		//	var handler = MessageAdded;
-		//	handler?.Invoke(this, args);
-		//}
-
-		//protected override void OnRemovedItems(RemovedItemsEventArgs<IMessage> args) {
-		//	base.OnRemovedItems(args);
-		//}
-
-		//protected override void OnInserted(InsertedEventArgs<IMessage> args) {
-		//	base.OnInserted(args);
-		//}
-
-
-		//protected override void OnMutated(EventTraits eventType) {
-		//	base.OnMutated(eventType);
-
-		//}
-
-
-
-		public IMessage RetrieveMessage() {
-			//No transaction-scope required here.
-			//At any stage during catastrophic failure the message shall remain on the queue.
-			//That is critical because the next time the service runs (after recovery, fixing the problem)
-			//it will just process the message as per normal.
-			//So the message MUST remain in the queue during a catastrophic failure.
-
+		public bool DeleteMessage(IMessage message) {
+			var result =Remove(message);
+			return result;
+		}
+		
+		public IMessage ReadMessage() {
 			var message = Read(0);
-			Remove(message);
+			return message;
+		}
 
+		public IMessage RemoveMessage() {
+			var message = this[^1];
+			this.RemoveAt(^1);
 			return message;
 		}
 	}

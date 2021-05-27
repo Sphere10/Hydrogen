@@ -220,7 +220,11 @@ namespace Sphere10.Helium.Queue {
 			throw new NotImplementedException();
 		}
 
-		public IMessage RetrieveMessage() {
+		public IMessage ReadMessage() {
+			throw new NotImplementedException();
+		}
+
+		public IMessage RemoveMessage() {
 			throw new NotImplementedException();
 		}
 

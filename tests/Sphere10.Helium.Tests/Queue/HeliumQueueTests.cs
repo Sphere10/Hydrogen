@@ -234,7 +234,7 @@ namespace Sphere10.Helium.Tests.Queue
 
         public IMessage ReadMessageFromQueue()
         {
-            var message = _localQueue.RemoveMessage();
+            var message = _localQueue.ReadMessage();
 
             return message;
         }

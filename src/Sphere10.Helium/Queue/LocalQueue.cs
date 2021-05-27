@@ -6,11 +6,9 @@ using Sphere10.Helium.Message;
 namespace Sphere10.Helium.Queue {
 	/// <summary>
 	/// CRITICAL:
-	/// 1) This is a FIFO queue.
-	/// 2) This is a local queue for a Helium Service.
-	/// 3) Every Helium Service has it's own local queue.
-	/// 4) ALL input into a Helium Service goes into this queue.
-	/// 5) The local queue is also used for Send-Local messages.
+	/// 1) The LocalQueue is a FIFO queue for a Helium Service.
+	/// 2) Every Helium Service has it's own LocalQueue.
+	/// 3) ALL input messages goes into a Helium Service goes into this queue.
 	/// </summary>
 
 	public class LocalQueue : TransactionalList<IMessage>, IHeliumQueue {

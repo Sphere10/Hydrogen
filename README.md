@@ -1,4 +1,6 @@
-![hydrogen-logo](resources/branding/hydrogen-logo.png)
+<p align="center">
+  <img  src="resources/branding/hydrogen-white-bg.gif" alt="HydrogenP2P logo">
+</p>
 
 # Hydrogen: P2P Framework
 

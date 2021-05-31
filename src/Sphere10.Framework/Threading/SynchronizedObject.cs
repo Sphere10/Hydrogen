@@ -41,7 +41,7 @@ namespace Sphere10.Framework {
             ThreadLock.EnterReadLock();
             OnReadScopeOpen();
             var scope = new TReadScope();
-            scope.ScopeEnd += (sender, args) => {
+            scope.ScopeEnd += () => {
                 ThreadLock.ExitReadLock();
                 OnReadScopeClosed();
             };
@@ -52,7 +52,7 @@ namespace Sphere10.Framework {
             ThreadLock.EnterWriteLock();
             OnWriteScopeOpen();
             var scope = new TWriteScope();
-            scope.ScopeEnd += (sender, args) => {
+            scope.ScopeEnd += () => {
                 ThreadLock.ExitWriteLock();
                 OnWriteScopeClosed();
             };

@@ -2,7 +2,7 @@ using System;
 
 namespace Sphere10.Framework {
 	public class Scope : IScope {
-        public event EventHandler ScopeEnd;
+        public event EventHandlerEx ScopeEnd;
 
         protected virtual void OnScopeEnd() {
         }

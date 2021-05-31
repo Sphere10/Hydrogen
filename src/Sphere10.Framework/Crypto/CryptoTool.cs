@@ -21,6 +21,14 @@ using Sphere10.Framework;
 namespace Tools {
 
 	public class Crypto {
+
+		/// <summary>
+		/// Coverup <see cref="bytes"/> with cryptographically random bytes. This stops any forensic analysis of the processes memory from retrieving sensitive <see cref="bytes"/>.
+		/// </summary>
+		/// <param name="bytes">The sensitive byte array to overwrite</param>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static void SecureErase(byte[] bytes) =>	GenerateCryptographicallyRandomBytes(bytes.Length).CopyTo(bytes.AsSpan());
+	
 		
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static Guid NewCryptographicGuid() => CryptographicallySecureGUIDGenerator.NewCryptographicGuid();

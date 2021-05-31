@@ -18,6 +18,43 @@ using System.Threading.Tasks;
 namespace Sphere10.Framework {
 
 	public static class TaskExtensions {
+
+        /// <summary>
+        /// Makes a non-cancellable task cancellable.
+        /// </summary>
+        /// <typeparam name="T">Type of task's result</typeparam>
+        /// <param name="task">The long-running task</param>
+        /// <param name="cancellationToken">The cancellation token which triggers the cancel.</param>
+        /// <returns>The task result</returns>
+        /// <remarks>Inspired by https://johnthiriet.com/cancel-asynchronous-operation-in-csharp/</remarks>
+        public static async Task<T> WithCancellationToken<T>(this Task<T> task, CancellationToken cancellationToken) {
+            // We create a TaskCompletionSource of decimal
+            var taskCompletionSource = new TaskCompletionSource<T>();
+
+            // Registering a lambda into the cancellationToken
+            cancellationToken.Register(() =>
+            {
+                // We received a cancellation message, cancel the TaskCompletionSource.Task
+                taskCompletionSource.TrySetCanceled();
+            });
+
+            // Wait for the first task to finish among the two
+            var completedTask = await Task.WhenAny(task, taskCompletionSource.Task);
+
+            // If the completed task is our long running operation we set its result.
+            if (completedTask == task) {
+                // Extract the result, the task is finished and the await will return immediately
+                var result = await task;
+
+                // Set the taskCompletionSource result
+                taskCompletionSource.TrySetResult(result);
+            } 
+            // Note a cancellation exception is thrown if the completedTask was the taskCompletionSource
+
+            // Return the result of the TaskCompletionSource.Task
+            return await taskCompletionSource.Task;
+        }
+
         public static void WaitSafe(this Task task) {
             Task.Run(() => task.Wait());
         }

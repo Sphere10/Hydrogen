@@ -94,7 +94,7 @@ namespace Sphere10.Framework {
 
 			foreach (var commandName in parsedCommands) {
 				string name = commandName;
-				command = command?.Commands
+				command = command?.SubCommands
 					          .FirstOrDefault(x => x.Name == name)
 				          ?? Commands.FirstOrDefault(x => x.Name == commandName);
 
@@ -106,7 +106,7 @@ namespace Sphere10.Framework {
 				var commandArgResults = new LookupEx<string, string>();
 				var commandResult = new Dictionary<string, CommandLineArguments>();
 
-				foreach (var argument in command.Args) {
+				foreach (var argument in command.Parameters) {
 					if (argument.Dependencies.Any()) {
 						foreach (var dependency in argument.Dependencies) {
 							if (!parsedArgs.Contains(dependency)) {
@@ -164,7 +164,7 @@ namespace Sphere10.Framework {
 					string line = (itemIndentation + command.Name).PadRight(ArgumentLineLengthPadded) + "\t\t" + command.Description;
 					Console.WriteLine(line);
 
-					foreach (var arg in command.Args) {
+					foreach (var arg in command.Parameters) {
 						var nameOptions = GetNameOptions(arg);
 						for (int i = 0; i < nameOptions.Count; i++) {
 							if (i < nameOptions.Count - 1)
@@ -174,9 +174,9 @@ namespace Sphere10.Framework {
 						}
 					}
 
-					if (command.Commands.Any()) {
+					if (command.SubCommands.Any()) {
 						level++;
-						PrintCommands(command.Commands, level);
+						PrintCommands(command.SubCommands, level);
 					}
 				}
 			}

@@ -11,7 +11,20 @@ namespace Sphere10.Framework {
 		}
 		public ILookup<string, string> Arguments { get; }
 
+
+		// NOTE: This should be refactored out since sibling commands is conceptually not possible
 		public IDictionary<string, CommandLineArguments> Commands { get; }
+
+		public (string Name, CommandLineArguments Arguments) Command {
+			get {
+				if (Commands.Count == 0)
+					return default;
+				var singleCommand = Commands.Single();
+				return (singleCommand.Key, singleCommand.Value);
+			}
+		}
+
+
 
 		public bool HelpRequested => Arguments.Contains("Help") || Arguments.Contains("help");
 	}

@@ -9,7 +9,7 @@ namespace Sphere10.Framework {
 
         private void NotifyScopeEnd() {
             OnScopeEnd();
-            ScopeEnd?.Invoke(this, EventArgs.Empty);
+            ScopeEnd?.Invoke();
         }
 
         public void Dispose() {

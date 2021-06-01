@@ -2,7 +2,7 @@
 
 namespace Sphere10.Framework.Communications {
 	public class NoOpChannelMediator : IChannelMediator {
-		public void ReportBadData(BadDataType badDataType, AnonymousPipeChannel channel, string additionData = null) {
+		public void ReportBadData(BadDataType badDataType, AnonymousPipe channel, string additionData = null) {
 			// Do nothing			
 		}
 	}

@@ -72,7 +72,7 @@ namespace Sphere10.Hydrogen.Host {
 			var stopNodeCancellationTokenSource = new CancellationTokenSource();
 			try {
 				
-				Result<CommandLineArguments> parsed = Arguments.TryParseArguments(args);
+				Result<CommandLineResults> parsed = Arguments.TryParseArguments(args);
 				
 				var nodeExecutable = GetDevelopmentNodeExecutable();
 				RunNode(nodeExecutable, stopNodeCancellationTokenSource.Token);

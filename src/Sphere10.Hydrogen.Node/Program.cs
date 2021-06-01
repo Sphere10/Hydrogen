@@ -17,7 +17,7 @@ namespace Sphere10.Hydrogen.Node {
 
 	class Program {
 
-		public static CommandLineParameters Arguments = new(
+		public static CommandLineParameters Parameters = new(
 			new[] {
 				"Hydrogen Node v1.0",
 				"Copyright (c) Sphere 10 Software 2021 - {CurrentYear}"
@@ -44,17 +44,20 @@ namespace Sphere10.Hydrogen.Node {
 		}
 
 		static void Main(string[] args) {
-			Result<CommandLineArguments> parsed = Arguments.TryParseArguments(args);
+			Result<CommandLineResults> parsed = Parameters.TryParseArguments(args);
 
-			if (parsed.Failure) {
-				Arguments.PrintHeader();
+			if (parsed.Success) {
+				parsed.Value.
+
+			} else if (parsed.Failure) {
+				Parameters.PrintHeader();
 				foreach (string errorMessage in parsed.ErrorMessages) {
 					Console.WriteLine(errorMessage);
 				}
 			}
-
+			
 			if (parsed.Value.HelpRequested) {
-				Arguments.PrintHelp();
+				Parameters.PrintHelp();
 			}
 
 			//

@@ -15,20 +15,20 @@ namespace Sphere10.Framework {
 		public CommandLineParameters() : this(null, null, null, null) {
 		}
 
-		public CommandLineParameters(string[] header, string[] footer, CommandLineParameter[] arguments, CommandLineArgumentOptions options = CommandLineArgumentOptions.Default)
-			: this(header, footer, arguments, null, options) {
+		public CommandLineParameters(string[] header, string[] footer, CommandLineParameter[] parameters, CommandLineArgumentOptions options = CommandLineArgumentOptions.Default)
+			: this(header, footer, parameters, null, options) {
 		}
 
-		public CommandLineParameters(string[] header, string[] footer, CommandLineParameter[] arguments, CommandLineCommand[] commands, CommandLineArgumentOptions options = CommandLineArgumentOptions.Default) {
+		public CommandLineParameters(string[] header, string[] footer, CommandLineParameter[] parameters, CommandLineCommand[] commands, CommandLineArgumentOptions options = CommandLineArgumentOptions.Default) {
 			Guard.Argument(options > 0, nameof(options), "Argument options must allow at least one argument format option.");
 			header ??= new string[0];
 			footer ??= new string[0];
 			commands ??= new CommandLineCommand[0];
-			arguments ??= new CommandLineParameter[0];
+			parameters ??= new CommandLineParameter[0];
 			Options = options;
 			Header = header;
 			Footer = footer;
-			Arguments = arguments;
+			Parameters = parameters;
 			Commands = commands;
 		}
 
@@ -36,7 +36,7 @@ namespace Sphere10.Framework {
 
 		public string[] Footer { get; init; } = Array.Empty<string>();
 
-		public CommandLineParameter[] Arguments { get; init; } = Array.Empty<CommandLineParameter>();
+		public CommandLineParameter[] Parameters { get; init; } = Array.Empty<CommandLineParameter>();
 
 		public CommandLineCommand[] Commands { get; init; } = Array.Empty<CommandLineCommand>();
 
@@ -44,12 +44,12 @@ namespace Sphere10.Framework {
 			CommandLineArgumentOptions.DoubleDash | CommandLineArgumentOptions.SingleDash | CommandLineArgumentOptions.PrintHelpOnHelp |
 			CommandLineArgumentOptions.ForwardSlash | CommandLineArgumentOptions.PrintHelpOnH;
 
-		public Result<CommandLineArguments> TryParseArguments(string[] args) {
+		public Result<CommandLineResults> TryParseArguments(string[] args) {
 			Guard.ArgumentNotNull(args, nameof(args));
 
-			var parseResults = Result<CommandLineArguments>.Default;
+			var parseResults = Result<CommandLineResults>.Default;
 			var argResults = new LookupEx<string, string>();
-			var lastResult = new CommandLineArguments(new Dictionary<string, CommandLineArguments>(), argResults);
+			var lastResult = new CommandLineResults(new Dictionary<string, CommandLineResults>(), argResults);
 			parseResults.Value = lastResult;
 
 			var parsedCommands = ParseCommands(args);
@@ -67,7 +67,7 @@ namespace Sphere10.Framework {
 				}
 			}
 
-			foreach (var argument in Arguments) {
+			foreach (var argument in Parameters) {
 				if (argument.Dependencies.Any()) {
 					foreach (var dependency in argument.Dependencies) {
 						if (!parsedArgs.Contains(dependency)) {
@@ -95,8 +95,8 @@ namespace Sphere10.Framework {
 			foreach (var commandName in parsedCommands) {
 				string name = commandName;
 				command = command?.SubCommands
-					          .FirstOrDefault(x => x.Name == name)
-				          ?? Commands.FirstOrDefault(x => x.Name == commandName);
+							  .FirstOrDefault(x => x.Name == name)
+						  ?? Commands.FirstOrDefault(x => x.Name == commandName);
 
 				if (command is null) {
 					parseResults.AddError($"Unknown command {commandName}.");
@@ -104,7 +104,7 @@ namespace Sphere10.Framework {
 				}
 
 				var commandArgResults = new LookupEx<string, string>();
-				var commandResult = new Dictionary<string, CommandLineArguments>();
+				var commandResult = new Dictionary<string, CommandLineResults>();
 
 				foreach (var argument in command.Parameters) {
 					if (argument.Dependencies.Any()) {
@@ -132,7 +132,7 @@ namespace Sphere10.Framework {
 				if (parseResults.Failure)
 					break;
 
-				var result = new CommandLineArguments(commandResult, commandArgResults);
+				var result = new CommandLineResults(commandResult, commandArgResults);
 				lastResult.Commands.Add(commandName, result);
 				lastResult = result;
 			}
@@ -144,15 +144,15 @@ namespace Sphere10.Framework {
 
 			List<string> GetNameOptions(CommandLineParameter arg) {
 				var nameOptions = new List<string>();
-
+				var hasValue = arg.Traits.HasFlag(CommandLineParameterOptions.RequiresValue);
 				if (Options.HasFlag(CommandLineArgumentOptions.SingleDash))
-					nameOptions.Add($"-{arg.Name}");
+					nameOptions.Add($"-{arg.Name}{(hasValue ? " <value>" : "")}");
 
 				if (Options.HasFlag(CommandLineArgumentOptions.DoubleDash))
-					nameOptions.Add($"--{arg.Name}");
+					nameOptions.Add($"--{arg.Name}{(hasValue ? " <value>" : "")}");
 
 				if (Options.HasFlag(CommandLineArgumentOptions.ForwardSlash))
-					nameOptions.Add($"/{arg.Name}");
+					nameOptions.Add($"/{arg.Name}{(hasValue ? " <value>" : "")}");
 
 				return nameOptions;
 			}
@@ -185,9 +185,9 @@ namespace Sphere10.Framework {
 
 			Console.WriteLine(string.Empty);
 
-			if (Arguments.Any()) {
+			if (Parameters.Any()) {
 				Console.WriteLine("Arguments:");
-				foreach (var arg in Arguments) {
+				foreach (var arg in Parameters) {
 					var nameOptions = GetNameOptions(arg);
 					for (int i = 0; i < nameOptions.Count; i++) {
 						if (i < nameOptions.Count - 1)
@@ -290,7 +290,7 @@ namespace Sphere10.Framework {
 						lookupEx.Add(parameter, arg);
 				}
 			}
-			
+
 			if (parameter is not null && lookupEx.CountForKey(parameter) == 0)
 				lookupEx.Add(parameter, null);
 

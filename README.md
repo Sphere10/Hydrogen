@@ -22,39 +22,39 @@ The Hydrogen framework offers the following features:
 
 ## Links
 
-[What is a 3-tier Architecture?](doc/Guidelines/3-tier-Architecture.md)
+[What is a 3-tier Architecture?](docs/Guidelines/3-tier-Architecture.md)
 
-[What is the Hydrogen Framework?](doc/Architecture/Hydrogen.md)
+[What is the Hydrogen Framework?](docs/Architecture/Hydrogen.md)
 
-[Framework Domains](doc/Architecture/Domains.md)
+[Framework Domains](docs/Architecture/Domains.md)
 
-[Code-Styling Guidelines](doc/Guidelines/Code-Styling.md)
+[Code-Styling Guidelines](docs/Guidelines/Code-Styling.md)
 
 #### New Technology
 
-[Blockchain: Dynamic Merkle Trees](doc/Blockchain/Dynamic-Merkle-Trees.md) [(PDF)](doc/Blockchain/dynamic-merkle-trees.pdf)
+[Blockchain: Dynamic Merkle Trees](docs/Blockchain/Dynamic-Merkle-Trees.md) [(PDF)](docs/Blockchain/dynamic-merkle-trees.pdf)
 
-[Blockchain: Real-Time Targeted Difficulty Adjustment Algorithm](doc/Blockchain/rtt-asert.pdf)
+[Blockchain: Real-Time Targeted Difficulty Adjustment Algorithm](docs/Blockchain/rtt-asert.pdf)
 
-[Post-Quantum Cryptography: Abstract Merkle Signatures (AMS)](doc/Blockchain/AMS.md)
+[Post-Quantum Cryptography: Abstract Merkle Signatures (AMS)](docs/Blockchain/AMS.md)
 
-[Post-Quantum Cryptography: Winternitz Abstracted Merkle Signatures (WAMS)](doc/Blockchain/WAMS.md)
+[Post-Quantum Cryptography: Winternitz Abstracted Merkle Signatures (WAMS)](docs/Blockchain/WAMS.md)
 
-[Post-Quantum Cryptography: Faster and Smaller Winternitz  Signatures](doc/Blockchain/W-OTS-Sharp.md)
+[Post-Quantum Cryptography: Faster and Smaller Winternitz  Signatures](docs/Blockchain/W-OTS-Sharp.md)
 
 
 
 ## Overview
 
 #### Runtime Model
-![Hydrogen application runtime-model](doc/Architecture/resources/Hydrogen-Deployment-Host-AppPackage.png)
+![Hydrogen application runtime-model](docs/Architecture/resources/Hydrogen-Deployment-Host-AppPackage.png)
 
 #### Application Lifecycle
-![Hydrogen application life-cycle](doc/Architecture/resources/HAP-Lifecycle.png)
+![Hydrogen application life-cycle](docs/Architecture/resources/HAP-Lifecycle.png)
 
 #### Subsystem composition
-![Hydrogen sub-system decomposition](doc/Architecture/resources/Hydrogen-Deployment-SubSystems.png)
+![Hydrogen sub-system decomposition](docs/Architecture/resources/Hydrogen-Deployment-SubSystems.png)
 
 #### Code Structuring (3-tier)
-![Sphere 10 methodology for Framework structuring](doc/Guidelines/resources/Framework-75pct.png)
+![Sphere 10 methodology for Framework structuring](docs/Guidelines/resources/Framework-75pct.png)
 

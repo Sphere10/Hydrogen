@@ -17,7 +17,7 @@
 * [Public Key](#Public-Key)
 * [Private Key](#Private-Key)
 * [What are Digital Signatures?](#What-are-Digital-Signatures?)
-* [What is a Double Spend?](#What-is-a-Double Spend)
+* [What is a Double Spend?](#What-is-a-Double-Spend)
 * [Custody Solutions](#Custody-Solutions)
 * [Cold Wallets](#Cold-Wallets)
 * [Hot Wallets](#Hot-Wallets)

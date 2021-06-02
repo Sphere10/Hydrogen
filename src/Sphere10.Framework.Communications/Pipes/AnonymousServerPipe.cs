@@ -44,26 +44,17 @@ namespace Sphere10.Framework.Communications {
                 StartInfo = {
                     FileName = _processPath,
                     Arguments = _argInjectorFunc(_arguments, endpoint.ReaderHandle, endpoint.WriterHandle),
-                    UseShellExecute = false
+                    UseShellExecute = false  // note: MUST be false or won't work (Win64)
                 }
             };
-            //await Task.Run(() => childProcess.Start());
-            childProcess.Start();
-
-            //await Task.Delay(5000);
+            await Task.Run(() => childProcess.Start());
 
             // Dispose pipe handles (owned by child process now)
-            //readPipe.DisposeLocalCopyOfClientHandle();
-            //writePipe.DisposeLocalCopyOfClientHandle();
-            XXXX = () => {
-                readPipe.DisposeLocalCopyOfClientHandle();
-                writePipe.DisposeLocalCopyOfClientHandle();
-            };
+            readPipe.DisposeLocalCopyOfClientHandle();
+            writePipe.DisposeLocalCopyOfClientHandle();
 
             return (endpoint, readPipe, writePipe);
         }
-
-        public Action XXXX { get; private set; }
 
     }
 

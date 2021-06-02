@@ -13,19 +13,19 @@ using System.Threading.Tasks;
 namespace Sphere10.Framework.Communications {
 
     public abstract class AnonymousPipe : ProtocolChannel<AnonymousPipeEndpoint, IAnonymousPipeMessage>, IDisposable {
+	    public static readonly byte[] MessageMagicID = { 0, 0, 0, 1 };
 
-	    public event EventHandlerEx<object, string> ReceivedString;
+        public event EventHandlerEx<object, string> ReceivedString;
         public event EventHandlerEx<object, string> SentString;
 
         private PipeStream _readStream;
         private PipeStream _writeStream;
         private StreamReader _reader;
         private StreamWriter _writer;
-        private readonly CancellationTokenSource _cancelConnection;
-        private bool _tmpVal;
 
-        protected AnonymousPipe() {
-            _cancelConnection = new CancellationTokenSource();
+        protected AnonymousPipe() 
+	        : base(MessageMagicID){
+	        
         }
 
         /// <summary>
@@ -37,14 +37,16 @@ namespace Sphere10.Framework.Communications {
         /// <param name="mediator">Handles bad messages.</param>
         /// <returns>A channel used to send messages backwards and forwards</returns>
         /// <remarks>If <paramref name="argInjectorFunc"/> is null the read pipe handle and write pipe handle are passed consequtively.</remarks>
-        public static AnonymousPipe ToChildProcess(string processPath, FactorySerializer<IAnonymousPipeMessage> serializer, string arguments = "", Func<string, string, string, string> argInjectorFunc = null)
+        public static AnonymousPipe ToChildProcess(string processPath, IItemSerializer<IAnonymousPipeMessage> serializer, string arguments = "", Func<string, string, string, string> argInjectorFunc = null)
             => new AnonymousServerPipe(processPath, arguments, argInjectorFunc) {
                 MessageSerializer = serializer,
+                MessageSerializationEnabled = true
             };
 
-		public static AnonymousPipe FromChildProcess(AnonymousPipeEndpoint serverEndpoint, FactorySerializer<IAnonymousPipeMessage> serializer) 
+		public static AnonymousPipe FromChildProcess(AnonymousPipeEndpoint serverEndpoint, IItemSerializer<IAnonymousPipeMessage> serializer) 
 			=> new AnonymousClientPipe(serverEndpoint) {
 				MessageSerializer = serializer,
+                MessageSerializationEnabled = true
 			};
 
         public override int MinMessageLength => 0;
@@ -52,59 +54,64 @@ namespace Sphere10.Framework.Communications {
         public override int MaxMessageLength => 1 << 16;
 
         public async Task SendString(string @string) {
-            //await _writer.WriteLineAsync(@string);
-            _writer.WriteLine(@string);
-            _writeStream.WaitForPipeDrain();
+	        CheckState(ProtocolChannelState.Open);
+	        if (!IsConnectionAlive())
+		        return;
+	        try {
+		        await Task.Run(() => _writeStream.WaitForPipeDrain()); // ensure last message was read before new sent
+	        } catch {
+                // Pipe broken, abort gracefully
+	        }
+	        await _writer.WriteLineAsync(@string);
+            
             NotifySentString(@string);
         }
 
         public void Dispose() {
-            _writer?.Flush();
             _writeStream?.Dispose();
             _readStream?.Dispose();
         }
 
         protected override async Task OpenInternal() {
 	        (Endpoint, _readStream, _writeStream) = await OpenPipeInternal();
-	        _writer = new StreamWriter(_writeStream);
+	        _writer = new StreamWriter(_writeStream) { AutoFlush = true };
 	        _reader = new StreamReader(_readStream);
-            _tmpVal = MessageSerializationEnabled;
-            MessageSerializationEnabled = false;
         }
 
         protected override async Task WaitHandshake() {
-            try {
-                //switch (LocalRole) {
-                //    case CommunicationRole.Server:
-                //        await SendSYNC();
-                //        await ReceiveSYNC();
-                //        break;
-                //    case CommunicationRole.Client:
-                //        await ReceiveSYNC();
-                //        await SendSYNC();
-                //        break;
-                //}
-            } finally {
-                MessageSerializationEnabled = _tmpVal;
-            }
-        }
+			switch (LocalRole) {
+				case CommunicationRole.Server:
+				await SendString("SYNC");
+				await WaitForString("SYNC");
+				break;
+				case CommunicationRole.Client:
+				await WaitForString("SYNC");
+				await SendString("SYNC");
+				break;
+			}
+		}
 
         protected abstract Task<(AnonymousPipeEndpoint endpoint, PipeStream readStream, PipeStream writeStream)> OpenPipeInternal();
 
         protected override async Task CloseInternal() {
-	        //_readStream.Close();
-	        //_writeStream.Close();
-	        await _readStream.DisposeAsync();
-	        await _writeStream.DisposeAsync();
 	        await _writer.DisposeAsync();
 	        _reader.Dispose();
+            await _readStream.DisposeAsync();
+	        await _writeStream.DisposeAsync();
         }
 
         protected override Task SendBytesInternal(ReadOnlySpan<byte> bytes) 
             => SendString(Convert.ToBase64String(bytes));
 
-        protected override async Task<byte[]> ReceiveBytesInternal(CancellationToken cancellationToken) 
-            => Convert.FromBase64String(await ReceiveString(cancellationToken));
+        protected override async Task<byte[]> ReceiveBytesInternal(CancellationToken cancellationToken) {
+	        var str = await ReceiveString(cancellationToken);
+	        if (string.IsNullOrEmpty(str))
+		        return Array.Empty<byte>();
+
+            return Convert.FromBase64String(str);
+        }
+
+        protected override bool IsConnectionAlive() => _readStream.IsConnected && _writeStream.IsConnected;
 
         protected virtual void OnReceivedString(string @string) {
         }
@@ -112,12 +119,10 @@ namespace Sphere10.Framework.Communications {
         protected virtual void OnSentString(string @string) {
         }
 
-        public Task SendSYNC() => SendString("SYNC");
-
-        public async Task ReceiveSYNC() {
+        public async Task WaitForString(string value) {
             var task = new TaskCompletionSource();
             void MonitorSync(object sender, string @string) {
-                if (@string == "SYNC")
+                if (@string == value)
                     task.TrySetResult();
                 this.ReceivedString -= MonitorSync;
             }
@@ -125,20 +130,11 @@ namespace Sphere10.Framework.Communications {
             await task.Task;
         }
 
-
-        public async Task<string> ReceiveString(CancellationToken cancellationToken) {
-            //var @string = await _reader.ReadLineAsync();//.WithCancellationToken(cancellationToken);
-            //var @string = await Task.Run( () => _reader.ReadLine());//.WithCancellationToken(cancellationToken);
-            //var @string = _reader.ReadLine();//.WithCancellationToken(cancellationToken);
-            //NotifyReceivedString(@string);
-            //return @string;
-
-            while (true) {
-                var str = _reader.ReadLine();
-                NotifyReceivedString(str);
-            }
+        private async Task<string> ReceiveString(CancellationToken cancellationToken) {
+            var @string = await _reader.ReadLineAsync().WithCancellationToken(cancellationToken);
+            NotifyReceivedString(@string);
+            return @string;
         }
-
 
         private void NotifyReceivedString(string str) {
             OnReceivedString(str);

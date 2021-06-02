@@ -47,7 +47,7 @@ namespace Sphere10.Hydrogen.Node {
 			Result<CommandLineResults> parsed = Parameters.TryParseArguments(args);
 
 			if (parsed.Success) {
-				parsed.Value.
+
 
 			} else if (parsed.Failure) {
 				Parameters.PrintHeader();

@@ -1,13 +1,31 @@
-# What is Blockchain
-
-Lessons: 21
-Tags: Basics
-
 ![resources/diagrams10.svg](resources/diagrams10.svg)
 
-**What you'll learn in this section:**
+# What is Blockchain
 
-# **What is Bitcoin and Proof of Work?**
+### Topics
+
+[What is Bitcoin and Proof of Work?](#What-is-Bitcoin-and-Proof-of-Work?)
+[Difficulty Targeting](#Difficulty-Targeting)
+[Hash power and hash rate](#Hash-power-and-hash-rate)
+[Nonce](#Nonce)
+[Merkle Root](#Merkle-Root)
+[Block Header](#Block-Header)
+[UTXO Model](#UTXO-Model)
+[Account Model](#Account-Model)
+[Game Theory](#Game-Theory)
+[What is Byzantine Fault Tolerance?](#What-is-Byzantine-Fault-Tolerance?)
+[Public Key](#Public-Key)
+[Private Key](#Private-Key)
+[What are Digital Signatures?](#What-are-Digital-Signatures?)
+[What is a Double Spend?](#What-is-a-Double Spend?)
+[Custody Solutions](#Custody-Solutions)
+[Cold Wallets](#Cold-Wallets)
+[Hot Wallets](#Hot-Wallets)
+[DDOS Attack](#DDOS-Attack)
+[DDOS Mitigation Strategies](#DDOS-Mitigation-Strategies)
+
+
+## What is Bitcoin and Proof of Work?
 
 Bitcoin can be thought of simply as a digital ledger which lists accounts and the amounts of money that have been sent back and forth between those accounts, the same way as an accounting ledger tracks debits and credits. A copy of this file is maintained on every computer (or node) in the Bitcoin network, and anyone is able to add a transaction to the ledger, provided they sign the transaction.
 
@@ -31,7 +49,8 @@ The second point is where the “Work” in Proof of Work comes in – miners re
 
 Over time, miners with more computing power will succeed and the more mining power the network has, the harder or more difficult it becomes to solve the mathematical computation. In other words, the more miners join the network, the more difficult the problem becomes to solve.
 
-# **What is Proof of Stake**
+
+## What is Proof of Stake
 
 Many opponents of Proof of Work consensus point to the fact that it is incredibly energy intensive and as a result very inefficient.
 
@@ -47,7 +66,8 @@ While Bitcoin, which uses the Proof of Work model, awards a block reward every t
 
 Most Proof of Stake blockchains also provide the opportunity for stakers to receive additional rewards by allowing them to propose and participate in governance proposals. In order for participants to do so they must hold a pre-specified amount of coins in their wallet so as to be eligible for submitting proposals and for voting.
 
-# **Mempool**
+
+## Mempool
 
 The mempool can be thought of as a list of unconfirmed transactions waiting to be mined in the next block, in other words it is a list of “pending” transactions that are yet to be validated and finalized by miners in the blockchain network. As previously discussed, when a user submits a transaction, it is broadcasted to the network of miners/nodes across the entire blockchain network who then run computational code to validate the transaction.
 
@@ -57,7 +77,8 @@ Confirmations – in order for a transaction to be “finalized” they generall
 
 Transaction processing time – during times of peak activity and high network traffic, miners will prioritize the processing of transactions with the highest fees, as a result this can cause a build up of unconfirmed transactions in the mempool. The number of unconfirmed transactions in the mempool can be used as a key indicator or gauge of overall network traffic as well as estimating network fees.
 
-# **Difficulty Targeting**
+
+## Difficulty Targeting
 
 Before we discuss mining difficulty, we must first explain what a “Hash” is. A hash is another word for a uniquely and randomly generated string of letters and numbers representing a transaction on the blockchain network, based on a pre-determined set of rules that are fed into an algorithm. Different blockchains use different cryptographic hashing algorithms to generate this string, each with specific rules about where each letter and number is sourced from in order to construct the string. The most common and widely used hashing algorithm is Bitcoin’s SHA256 algorithm.
 
@@ -75,7 +96,8 @@ To illustrate simply, if miners are finding it easy to solve cryptographic puzzl
 
 ![resources/diagrams10_(4).svg](resources/diagrams10_(4).svg)
 
-# **Hash power and hash rate**
+
+## Hash power and hash rate
 
 As mentioned in previous sections, miners must compete to win the right to validate a transaction on the blockchain network. In order to do this, they require powerful computers to solve the cryptographic hashing puzzle, and as and when the difficulty of solving those puzzles increases, more computational power is required to solve puzzles faster than other miners.
 
@@ -83,7 +105,8 @@ The hash rate is simply the number of cryptographic puzzles (hashes) that the mi
 
 ![resources/diagrams10_(5).svg](resources/diagrams10_(5).svg)
 
-# **Nonce**
+
+## Nonce
 
 A nonce is short for “number only used once” and can be thought of as a randomly generated set of characters which enables a transaction to be uniquely identifiable on the network and that a user has only submitted that transaction once.
 
@@ -93,7 +116,8 @@ One way of comparing a nonce’s functionality is to think about the way that ca
 
 The same concept applies in the nonce model, in that a nonce specific to each transaction needs to be generated before a user can finalize a transaction. More on this in the DDOS mitigation strategies section.
 
-# **Merkle Root**
+
+## Merkle Root
 
 A Merkle root can be thought of as a combination of all historical transactions mined in one specific block into one inter-connected tree.
 
@@ -103,7 +127,8 @@ The tree is made up of previous transaction hashes and their respective metadata
 
 Merkle Roots are a fundamental aspect of blockchain as they allow critical data is passed down from the previous block (Parent) to the next block (Child) so as to ensure the security and integrity of the network. They also allow for the checking and verification of historical states of transactions, as well as facilitating novel decentralized app development by enabling protocols to refer to specific metadata contained in transactions. Smart contracts make use of this metadata for enforcing rule-based computations when users interact with the app or protocol, such as payment verifications or access to specific app features based on one’s wallet balance of coins.
 
-# **Block Header**
+
+## Block Header
 
 The Block Header forms the backbone of how transaction metadata is collected and constructed to determine how a block was mined and the transactions that were included in that block. This data includes;
 
@@ -120,29 +145,31 @@ As a result of the above combination, each block header is cryptographically uni
 
 ![resources/diagrams10_(8).svg](resources/diagrams10_(8).svg)
 
-# **UTXO Model**
+
+## UTXO Model
 
 The fundamental concept behind the Unspent Transaction Output (UTXO) model is that all inputs must equal all outputs for any transaction transmitted to the network and is an additional way of ensuring the security and validity of the network by performing checks for double spends. Simply put, it is a method for determining the number of coins a user has remaining in their wallet account balance after submitting a transaction to the blockchain network.
 
-An easy way to think about this is the number of denominations of dollars someone has in their physical wallet. Let us say for instance Gabriel has $50 in his wallet, made up of the following notes;
+An easy way to think about this is the number of denominations of dollars someone has in their physical wallet. Let us say for instance Gabriel has \$50 in his wallet, made up of the following notes;
 
-- $20
-- $10
-- $10
-- $5
-- $5
+- \$20
+- \$10
+- \$10
+- \$5
+- \$5
 
-Gabriel wants to buy a t-shirt from Julian which costs $27, however Gabriel doesn’t have the exact change, so Gabriel decides to pay Julian $30 for a t-shirt using 1 x $20 note and 1 x $10 note.
+Gabriel wants to buy a t-shirt from Julian which costs \$27, however Gabriel doesn’t have the exact change, so Gabriel decides to pay Julian \$30 for a t-shirt using 1 x \$20 note and 1 x \$10 note.
 
-Julian then gives Gabriel back $3 change in the form of 3 x $1 coins. After this transaction is complete Gabriel takes the $3 in change and puts it back into his wallet.
+Julian then gives Gabriel back \$3 change in the form of 3 x \$1 coins. After this transaction is complete Gabriel takes the \$3 in change and puts it back into his wallet.
 
-The leftover $3 coins from the transaction are “unspent” and thus can be compared to the unspent bitcoins that a user has in their wallet after submitting a transaction to the blockchain network. Subsequent transactions must reflect the current state of the unspent bitcoins in the wallet because previous transactions (and blocks) cannot be edited or changed.
+The leftover \$3 coins from the transaction are “unspent” and thus can be compared to the unspent bitcoins that a user has in their wallet after submitting a transaction to the blockchain network. Subsequent transactions must reflect the current state of the unspent bitcoins in the wallet because previous transactions (and blocks) cannot be edited or changed.
 
 In the case of the bitcoin blockchain network, Gabriel needs to specify (in the same transaction message) the number of coins to send to Julian and the number of coins that will be leftover in Gabriel’s wallet as change. Bitcoin further facilitates this via its own denomination system via decimals called satoshis, which are fractions of bitcoins.
 
 ![resources/diagrams10_(9).svg](resources/diagrams10_(9).svg)
 
-# **Account Model**
+
+## Account Model
 
 The account model, as it states, lists the balances of coins across accounts (or wallets). In other words, it is similar to a bank account in that it is a record of how many coins a user has in their wallet at any point in time (also known as the “state” of the blockchain).
 
@@ -154,7 +181,8 @@ A simple way to think about the “state” of the blockchain is to navigate to 
 
 In the account-based model, when a user submits a transaction to the network, the nodes on the network run code to debit the sender’s account balance and credit the receiver’s account balance. In order to prevent double spends in this model, something called a “nonce” is attached to each and every transaction.
 
-# **Game Theory**
+
+## Game Theory
 
 Game Theory is a theoretical framework for assessing decision making in group settings where different players have competing interests or motives, in other words, it is the science of assessing the different strategies that players can potentially implement in order to arrive at an optimal outcome. The theory was introduced in the 1960’s by American economist Thomas Schelling – Schelling describes this optimal outcome as a “focal point” or default solution that people diverge towards given the same information yet not being able to communicate with each other.
 
@@ -175,7 +203,8 @@ Gabriel has 2 options:
 
 As a result of the above, both Gabriel and Julian (being friends) assess the options available to them and would choose the option with the lowest possible sentence beneficial to each of them, making the optimal outcome or “focal point” 2 years. Game theory is a core concept which helps form the basis of byzantine fault tolerance in blockchains and helps to mitigate against malicious actors within a blockchain network.
 
-# **What is Byzantine Fault Tolerance?**
+
+## What is Byzantine Fault Tolerance?
 
 The Byzantine General’s Problem was first referenced in a paper published in 1982, it is a principle based on game theory which seeks to answer the following question:
 
@@ -191,7 +220,8 @@ The latter problem is one which blockchain solves by providing a system whereby 
 
 ![resources/diagrams10_(12).svg](resources/diagrams10_(12).svg)
 
-# Public Key
+
+## Public Key
 
 A public key is a randomly generated cryptographic string of numbers and letters which represents a digital wallet address on the blockchain network. Its function is similar to that of a bank account in that it holds the balance of coins in the wallet and is used for the sending and receiving of coins between wallets, amongst other functions such as interacting with smart contracts.
 
@@ -199,7 +229,8 @@ In order for someone to be able to create and access a public key, they require 
 
 ![resources/public_key.svg](resources/public_key.svg)
 
-# Private Key
+
+## Private Key
 
 A private key grants a user access to a public key and subsequently grants access and control to the assets stored in a digital wallet. It can be compared to a complex password for a bank account and different blockchains utilise different methods for generating a private key.
 
@@ -209,7 +240,8 @@ For added security, some wallet infrastructure providers also require the use of
 
 ![resources/private_key.svg](resources/private_key.svg)
 
-# **What are Digital Signatures?**
+
+## What are Digital Signatures?
 
 Digital signatures are immutable cryptographic proofs that someone has sent or received money to someone else. It is immutable in the sense that it is impossible for someone else to forge that signature as each sender and receiver has what is called a “Private Key / Public Key” combination which they use to sign transactions.
 
@@ -225,7 +257,8 @@ This transaction record (also known as a “state”) is then permanently record
 
 Because of this unique combination of Public and Private Key signatures for both sender and receiver, no two transactions will be the same and as a result signatures cannot be duplicated, modified or re-used.
 
-# **What is a Double Spend?**
+
+## What is a Double Spend?
 
 Digital Signatures allow us to verify the originator of the transaction and that they have sufficient money to spend when sending the transaction. This however does not solve for the potential of double spends, particularly if a blockchain network becomes compromised via a 51% attack and leading to the potential for transaction data to be manipulated.
 
@@ -239,7 +272,8 @@ How does Bitcoin solve for this? Via the mathematical race that is Proof of Work
 
 Winning transactions are then taken out of the pool and undergo a validity check against Account States (Confirmations) to ensure they reconcile prior to being added to the finalized block. More about the Unconfirmed Transactions Pool, Confirmations and Account States in later sections.
 
-# Custody Solutions
+
+## Custody Solutions
 
 Custody solutions refer to the many options and methods available for users or institutions to safely store their digital assets. An alternative way of viewing this is what is termed “operational security”, in other words, ensuring that as a blockchain user there are processes in place to ensure the security of one’s assets.
 
@@ -257,7 +291,8 @@ From a blockchain purist perspective, the general rule of thumb applies that “
 
 That said, there are blockchain projects (such as the Gnosis Network) which offer something called a “multi-signature” wallet which requires two or more private keys to sign and send a transaction – it is usually recommended that multi-sig wallets also be 2/3 byzantine fault tolerant in terms of the number of private keys required to sign a transaction.
 
-# Cold Wallets
+
+## Cold Wallets
 
 Cold wallets usually refer to physical devices which store cryptographic assets and as a result provide a higher level of security (so long as the physical devices themselves are stored in a secret place).
 
@@ -267,7 +302,8 @@ The most common type of cold wallets is “Hardware wallets” and come in the f
 
 ![resources/coldhot.svg](resources/coldhot.svg)
 
-# **Hot Wallets**
+
+## Hot Wallets
 
 Hot wallets are generally held online either via a browser or mobile phone device. They are termed hot wallets as they can be setup and accessed very quickly and easily due to the user-friendly interfaces. Whilst hot wallets have several advantages and also increase the speed in which users can send/receive funds and interact with smart contract protocols, the risks involved with using them are greater due to the following reasons;
 
@@ -282,7 +318,8 @@ In general, it is highly recommended to use a combination of either the followin
 
 In the case of the Browser + Mobile wallet combination, the TrustWallet mobile app can be used in conjunction with the WalletConnect browser extension to provide a secure way of unlocking a hot wallet via the use of a QR code. This is a novel way of unlocking a hot wallet as the user controls access to their wallet via their mobile app, and unlocks their browser extension wallet by scanning a QR code displayed inside the browser using the mobile app – this means the user does not have to enter or copy/paste a password and as a result reducing the likelihood of their wallet being compromised.
 
-# DDOS Attack
+
+## DDOS Attack
 
 A distributed denial of service attack (or DDOS for short) is a coordinated cyber attack conducted by malicious actors to attempt to take a website or webapp offline by directing a large amount of traffic towards the server on which the website is hosted. 
 
@@ -292,7 +329,8 @@ It is important to understand the concept of DDOS attacks in the context of cryp
 
 ![resources/DDOS_attack.svg](resources/DDOS_attack.svg)
 
-# **DDOS Mitigation Strategies**
+
+## DDOS Mitigation Strategies
 
 In order to combat DDOS attacks, most large scale applications and websites deploy several strategies to prevent an increase in traffic in the first instance - this is commonly referred to as "rate limiting" whereby a user has to go through several steps and checks prior to gaining access to a website.
 
@@ -304,5 +342,5 @@ Once a user has successfully passed through the WAF they are then taken through 
 
 ---
 
-[See all topics of this Lesson]()
+[See all topics of this Lesson](#topics)
 

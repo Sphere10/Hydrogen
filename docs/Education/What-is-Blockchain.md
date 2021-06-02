@@ -4,43 +4,25 @@
 
 ### Topics
 
-[What is Bitcoin and Proof of Work?](#What-is-Bitcoin-and-Proof-of-Work)
-
-[Difficulty Targeting](#Difficulty-Targeting)
-
-[Hash power and hash rate](#Hash-power-and-hash-rate)
-
-[Nonce](#Nonce)
-
-[Merkle Root](#Merkle-Root)
-
-[Block Header](#Block-Header)
-
-[UTXO Model](#UTXO-Model)
-
-[Account Model](#Account-Model)
-
-[Game Theory](#Game-Theory)
-
-[What is Byzantine Fault Tolerance?](#What-is-Byzantine-Fault-Tolerance?)
-
-[Public Key](#Public-Key)
-
-[Private Key](#Private-Key)
-
-[What are Digital Signatures?](#What-are-Digital-Signatures?)
-
-[What is a Double Spend?](#What-is-a-Double Spend?)
-
-[Custody Solutions](#Custody-Solutions)
-
-[Cold Wallets](#Cold-Wallets)
-
-[Hot Wallets](#Hot-Wallets)
-
-[DDOS Attack](#DDOS-Attack)
-
-[DDOS Mitigation Strategies](#DDOS-Mitigation-Strategies)
+* [What is Bitcoin and Proof of Work?](#What-is-Bitcoin-and-Proof-of-Work)
+* [Difficulty Targeting](#Difficulty-Targeting)
+* [Hash power and hash rate](#Hash-power-and-hash-rate)
+* [Nonce](#Nonce)
+* [Merkle Root](#Merkle-Root)
+* [Block Header](#Block-Header)
+* [UTXO Model](#UTXO-Model)
+* [Account Model](#Account-Model)
+* [Game Theory](#Game-Theory)
+* [What is Byzantine Fault Tolerance?](#What-is-Byzantine-Fault-Tolerance)
+* [Public Key](#Public-Key)
+* [Private Key](#Private-Key)
+* [What are Digital Signatures?](#What-are-Digital-Signatures?)
+* [What is a Double Spend?](#What-is-a-Double Spend)
+* [Custody Solutions](#Custody-Solutions)
+* [Cold Wallets](#Cold-Wallets)
+* [Hot Wallets](#Hot-Wallets)
+* [DDOS Attack](#DDOS-Attack)
+* [DDOS Mitigation Strategies](#DDOS-Mitigation-Strategies)
 
 
 

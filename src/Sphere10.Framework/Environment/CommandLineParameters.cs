@@ -68,6 +68,8 @@ namespace Sphere10.Framework {
 
 					var paramOptions = command is null ? Parameters : command.Parameters;
 					if (TryParseParameterWithValue(parameterName, out var name, out var value)) {
+						//parameter with value, add to results.
+						
 						parameter = paramOptions.SingleOrDefault(x => string.Equals(x.Name, name, NameComparisonCasing));
 						if (parameter is null) {
 							parseResults.AddError($"Unknown argument {arg}");
@@ -77,6 +79,8 @@ namespace Sphere10.Framework {
 						parameters.Add(parameter.Name, value);
 						parameter = null;
 					} else {
+						//parameter only, if requires a value set parameter var, else add to results.
+						
 						var paramName = parameterName;
 						parameter = paramOptions.SingleOrDefault(x => string.Equals(x.Name, paramName, NameComparisonCasing));
 						if (parameter is null) {
@@ -90,29 +94,15 @@ namespace Sphere10.Framework {
 						}
 					}
 				} else {
+					// not a parameter
 					if (parameter is not null) {
-						if (!parameter.Traits.HasFlag(CommandLineParameterOptions.RequiresValue)) {
-							command = command is null
-								? Commands.SingleOrDefault(x => string.Equals(x.Name, arg, NameComparisonCasing))
-								: command.SubCommands.SingleOrDefault(x => string.Equals(x.Name, arg, NameComparisonCasing));
-
-							if (command is null) {
-								parseResults.AddError($"Unknown argument {arg}");
-								break;
-							}
-
-							parameter = null;
-							parameters = new LookupEx<string, string>();
-							SetSubCommandResult(currentResults,
-								new CommandLineResults {
-									Parameters = parameters,
-									CommandName = command.Name
-								});
-						} else {
-							parameters.Add(parameter.Name, arg);
-							parameter = null;
-						}
+						//value for parameter
+						
+						parameters.Add(parameter.Name, arg);
+						parameter = null;
 					} else {
+						//command
+						
 						command = command is null
 							? Commands.SingleOrDefault(x => string.Equals(x.Name, arg, NameComparisonCasing))
 							: command.SubCommands.SingleOrDefault(x => string.Equals(x.Name, arg, NameComparisonCasing));

@@ -10,7 +10,9 @@ namespace Sphere10.Framework {
 
 		private const int ArgumentLineLengthPadded = 15;
 
-		private readonly string[] _parameterPrefixes = new[] { "-", "--", "/" };
+		private readonly string[] _parameterPrefixes = { "-", "--", "/" };
+
+		private StringComparison NameComparisonCasing => Options.HasFlag(CommandLineArgumentOptions.CaseSensitive) ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
 
 		public CommandLineParameters() : this(null, null, null, null) {
 		}
@@ -47,97 +49,167 @@ namespace Sphere10.Framework {
 		public Result<CommandLineResults> TryParseArguments(string[] args) {
 			Guard.ArgumentNotNull(args, nameof(args));
 
-			var parseResults = Result<CommandLineResults>.Default;
-			var argResults = new LookupEx<string, string>();
-			var lastResult = new CommandLineResults(new Dictionary<string, CommandLineResults>(), argResults);
-			parseResults.Value = lastResult;
-
-			var parsedCommands = ParseCommands(args);
-			var parsedArgs = ParseArgsToLookup(args);
-
-			if (Options.HasFlag(CommandLineArgumentOptions.PrintHelpOnH)) {
-				if (parsedArgs.Contains("H") || parsedArgs.Contains("h")) {
-					argResults.Add("Help", string.Empty);
-				}
-			}
-
-			if (Options.HasFlag(CommandLineArgumentOptions.PrintHelpOnHelp)) {
-				if (parsedArgs.Contains("Help") || parsedArgs.Contains("help")) {
-					argResults.Add("Help", string.Empty);
-				}
-			}
-
-			foreach (var argument in Parameters) {
-				if (argument.Dependencies.Any()) {
-					foreach (var dependency in argument.Dependencies) {
-						if (!parsedArgs.Contains(dependency)) {
-							parseResults.AddError($"Argument {argument.Name} has unmet dependency {dependency}.");
-						}
-					}
-				}
-
-				if (argument.Traits.HasFlag(CommandLineParameterOptions.Mandatory))
-					if (!parsedArgs.Contains(argument.Name)) {
-						parseResults.AddError($"Argument {argument.Name} is required.");
-					}
-
-				if (!argument.Traits.HasFlag(CommandLineParameterOptions.Multiple))
-					if (parsedArgs.CountForKey(argument.Name) > 1) {
-						parseResults.AddError($"Argument {argument.Name} supplied more than once but does not support multiple values.");
-					}
-
-				if (parseResults.Success && parsedArgs.Contains(argument.Name))
-					argResults.AddRange(argument.Name, parsedArgs[argument.Name]);
-			}
+			var parameters = new LookupEx<string, string>();
+			CommandLineResults currentResults = new CommandLineResults {
+				Parameters = parameters
+			};
+			var parseResults = new Result<CommandLineResults>(currentResults);
 
 			CommandLineCommand command = null;
+			CommandLineParameter parameter = null;
+			foreach (var arg in args) {
+				if (IsParameter(arg)) {
 
-			foreach (var commandName in parsedCommands) {
-				string name = commandName;
-				command = command?.SubCommands
-							  .FirstOrDefault(x => x.Name == name)
-						  ?? Commands.FirstOrDefault(x => x.Name == commandName);
-
-				if (command is null) {
-					parseResults.AddError($"Unknown command {commandName}.");
-					break;
-				}
-
-				var commandArgResults = new LookupEx<string, string>();
-				var commandResult = new Dictionary<string, CommandLineResults>();
-
-				foreach (var argument in command.Parameters) {
-					if (argument.Dependencies.Any()) {
-						foreach (var dependency in argument.Dependencies) {
-							if (!parsedArgs.Contains(dependency)) {
-								parseResults.AddError($"Argument {argument.Name} has unmet dependency {dependency}.");
-							}
-						}
+					string parameterName = TrimParameterPrefix(arg);
+					if (IsHelp(parameterName)) {
+						currentResults.HelpRequested = true;
+						break;
 					}
 
-					if (argument.Traits.HasFlag(CommandLineParameterOptions.Mandatory))
-						if (!parsedArgs.Contains(argument.Name)) {
-							parseResults.AddError($"Argument {argument.Name} is required.");
+					var paramOptions = command is null ? Parameters : command.Parameters;
+					if (TryParseParameterWithValue(parameterName, out var name, out var value)) {
+						parameter = paramOptions.SingleOrDefault(x => string.Equals(x.Name, name, NameComparisonCasing));
+						if (parameter is null) {
+							parseResults.AddError($"Unknown argument {arg}");
+							break;
 						}
 
-					if (!argument.Traits.HasFlag(CommandLineParameterOptions.Multiple))
-						if (parsedArgs.CountForKey(argument.Name) > 1) {
-							parseResults.AddError($"Argument {argument.Name} supplied more than once but does not support multiple values.");
+						parameters.Add(parameter.Name, value);
+						parameter = null;
+					} else {
+						var paramName = parameterName;
+						parameter = paramOptions.SingleOrDefault(x => string.Equals(x.Name, paramName, NameComparisonCasing));
+						if (parameter is null) {
+							parseResults.AddError($"Unknown argument {paramName}");
+							break;
 						}
 
-					if (parseResults.Success && parsedArgs.Contains(argument.Name))
-						commandArgResults.AddRange(argument.Name, parsedArgs[argument.Name]);
+						if (!parameter.Traits.HasFlag(CommandLineParameterOptions.RequiresValue)) {
+							parameters.Add(parameter.Name, null);
+							parameter = null;
+						}
+					}
+				} else {
+					if (parameter is not null) {
+						if (!parameter.Traits.HasFlag(CommandLineParameterOptions.RequiresValue)) {
+							command = command is null
+								? Commands.SingleOrDefault(x => string.Equals(x.Name, arg, NameComparisonCasing))
+								: command.SubCommands.SingleOrDefault(x => string.Equals(x.Name, arg, NameComparisonCasing));
+
+							if (command is null) {
+								parseResults.AddError($"Unknown argument {arg}");
+								break;
+							}
+
+							parameter = null;
+							parameters = new LookupEx<string, string>();
+							SetSubCommandResult(currentResults,
+								new CommandLineResults {
+									Parameters = parameters,
+									CommandName = command.Name
+								});
+						} else {
+							parameters.Add(parameter.Name, arg);
+							parameter = null;
+						}
+					} else {
+						command = command is null
+							? Commands.SingleOrDefault(x => string.Equals(x.Name, arg, NameComparisonCasing))
+							: command.SubCommands.SingleOrDefault(x => string.Equals(x.Name, arg, NameComparisonCasing));
+						if (command is null) {
+							parseResults.AddError($"Unknown argument {arg}");
+							break;
+						}
+
+						parameters = new LookupEx<string, string>();
+						SetSubCommandResult(currentResults,
+							new CommandLineResults {
+								Parameters = parameters,
+								CommandName = command.Name
+							});
+					}
 				}
 
 				if (parseResults.Failure)
 					break;
-
-				var result = new CommandLineResults(commandResult, commandArgResults);
-				lastResult.Commands.Add(commandName, result);
-				lastResult = result;
 			}
 
+			ValidateParameters(parseResults);
+
 			return parseResults;
+		}
+
+		private bool IsHelp(string arg) {
+			return Options.HasFlag(CommandLineArgumentOptions.PrintHelpOnHelp) && string.Equals(arg, "Help", NameComparisonCasing)
+			       || Options.HasFlag(CommandLineArgumentOptions.PrintHelpOnH) && string.Equals(arg, "H", NameComparisonCasing);
+		}
+
+		private void ValidateParameters(Result<CommandLineResults> parseResults) {
+			if (parseResults.Success)
+				ValidateMandatoryParameters(parseResults);
+
+			if (parseResults.Success)
+				ValidateParameterOptions(parseResults);
+		}
+
+		private void ValidateParameterOptions(Result<CommandLineResults> parseResults) {
+			var results = parseResults.Value;
+			ValidateParameterOptionsInner(results);
+
+			void ValidateParameterOptionsInner(CommandLineResults resultsItem) {
+				foreach (var parameter in resultsItem.Parameters.Select(x => x.Key)) {
+
+					if (IsHelp(parameter))
+						continue;
+
+					CommandLineCommand command;
+					TryMatchCommandByName(resultsItem.CommandName, out command);
+
+					CommandLineParameter paramDef = command is null
+						? Parameters.Single(x => string.Equals(parameter, x.Name, NameComparisonCasing))
+						: command.Parameters.Single(x => string.Equals(parameter, x.Name, NameComparisonCasing));
+
+					foreach (var dependency in paramDef.Dependencies) {
+						if (!resultsItem.Parameters.Contains(dependency))
+							parseResults.AddError($"Parameter {paramDef.Name} has unmet dependency {dependency}.");
+					}
+
+					if (!paramDef.Traits.HasFlag(CommandLineParameterOptions.Multiple)) {
+						LookupEx<string, string> lookupEx = results.Parameters as LookupEx<string, string>;
+						if (lookupEx!.CountForKey(paramDef.Name) > 1)
+							parseResults.AddError($"Parameter {paramDef.Name} supplied more than once but does not support multiple values.");
+					}
+
+					if (resultsItem.SubCommand is not null)
+						ValidateParameterOptionsInner(resultsItem.SubCommand);
+				}
+			}
+		}
+
+		private void ValidateMandatoryParameters(Result<CommandLineResults> parseResults) {
+			var results = parseResults.Value;
+			var mandatoryParameters = Parameters.Where(x => x.Traits.HasFlag(CommandLineParameterOptions.Mandatory));
+			foreach (var param in mandatoryParameters) {
+				if (!results.Parameters.Contains(param.Name)) {
+					parseResults.AddError($"Parameter {param.Name} is required.");
+				}
+			}
+
+			var commandToValidate = results.SubCommand;
+			CommandLineCommand commandDef = null;
+			while (commandToValidate is not null) {
+				commandDef = commandDef is null
+					? Commands.Single(x => x.Name == commandToValidate.CommandName)
+					: commandDef.SubCommands.Single(x => x.Name == commandToValidate.CommandName);
+
+				foreach (var param in commandDef.Parameters.Where(x => x.Traits.HasFlag(CommandLineParameterOptions.Mandatory))) {
+					if (!commandToValidate.Parameters.Contains(param.Name)) {
+						parseResults.AddError($"Command {commandToValidate.CommandName} parameter {param.Name} is required.");
+					}
+				}
+
+				commandToValidate = commandToValidate.SubCommand;
+			}
 		}
 
 		public void PrintHelp() {
@@ -211,108 +283,42 @@ namespace Sphere10.Framework {
 				Console.WriteLine(line);
 		}
 
-		private string BuildArgNameMatchPattern() {
-			var builder = new StringBuilder();
-			builder.Append("(");
-
-			var hasSingle = Options.HasFlag(CommandLineArgumentOptions.SingleDash);
-			var hasSlash = Options.HasFlag(CommandLineArgumentOptions.ForwardSlash);
-			var hasDouble = Options.HasFlag(CommandLineArgumentOptions.DoubleDash);
-
-			if (hasSingle || hasSlash) {
-				builder.Append("[");
-
-				if (Options.HasFlag(CommandLineArgumentOptions.ForwardSlash))
-					builder.Append("/");
-
-				if (Options.HasFlag(CommandLineArgumentOptions.SingleDash))
-					builder.Append("-");
-
-				builder.Append("]");
-
-				if (hasDouble)
-					builder.Append("|");
+		/// <summary>
+		/// Sets SubCommand property of the first <see cref="CommandLineResults"/> with no subcommand
+		/// result, descending into nested results to find the first unset.
+		/// </summary>
+		/// <param name="parent"> parent results item</param>
+		/// <param name="newResult"> new result to be assigned</param>
+		private void SetSubCommandResult(CommandLineResults parent, CommandLineResults newResult) {
+			var current = parent;
+			while (current.SubCommand is not null) {
+				current = current.SubCommand;
 			}
 
-			if (hasDouble)
-				builder.Append("--");
+			current.SubCommand = newResult;
+		}
 
-			builder.Append(")");
+		/// <summary>
+		/// Removes parameter prefix from the given parameter e.g. -- or / and returns result.
+		/// </summary>
+		/// <param name="parameter"></param>
+		/// <returns></returns>
+		private string TrimParameterPrefix(string parameter) {
+			StringBuilder builder = new StringBuilder(parameter);
+			_parameterPrefixes.ForEach(x => builder.Replace(x, string.Empty));
 			return builder.ToString();
 		}
 
-		private LookupEx<string, string> ParseArgsToLookup(string[] args) {
-			var parameterPrefixes = new List<string>();
-
-			if (Options.HasFlag(CommandLineArgumentOptions.DoubleDash))
-				parameterPrefixes.Add("--");
-
-			if (Options.HasFlag(CommandLineArgumentOptions.SingleDash))
-				parameterPrefixes.Add("-");
-
-			if (Options.HasFlag(CommandLineArgumentOptions.ForwardSlash))
-				parameterPrefixes.Add("/");
-
-			bool TryExtractParameter(string arg, out string name) {
-				name = null;
-				foreach (var prefix in parameterPrefixes) {
-					if (arg.StartsWith(prefix)) {
-						name = arg.TrimStart(prefix);
-
-						return true;
-					}
-				}
-
-				return false;
-			}
-
-			var lookupEx = new LookupEx<string, string>(Options.HasFlag(CommandLineArgumentOptions.CaseSensitive)
-				? StringComparer.Ordinal
-				: StringComparer.OrdinalIgnoreCase);
-
-			string parameter = null;
-
-			foreach (var arg in args) {
-				if (IsParameter(arg)) {
-
-					if (parameter is not null && lookupEx.CountForKey(parameter) == 0)
-						lookupEx.Add(parameter, null);
-
-					parameter = null;
-					if (TryExtractParameter(arg, out var parsedParameter)) {
-						if (TryParseValueWithParameter(parsedParameter, out var parameterWithoutValue, out var value))
-							lookupEx.Add(parameterWithoutValue, value);
-
-						parameter = parsedParameter;
-					}
-				} else {
-					if (parameter is not null)
-						lookupEx.Add(parameter, arg);
-				}
-			}
-
-			if (parameter is not null && lookupEx.CountForKey(parameter) == 0)
-				lookupEx.Add(parameter, null);
-
-			return lookupEx;
-		}
-
-		private string[] ParseCommands(string[] args) {
-			var results = new List<string>();
-
-			for (int i = 0; i < args.Length; i++) {
-				string arg = args[i];
-
-				if (!IsParameter(arg)) {
-					results.Add(arg);
-				} else
-					break;
-			}
-
-			return results.ToArray();
-		}
-
-		private bool TryParseValueWithParameter(string arg, out string parameter, out string value) {
+		/// <summary>
+		/// Attempts to determine whether given arg is a combination of parameter and its value
+		/// separated by space or colon e.g. "parameter=value". return value is whether it is param with value,
+		/// and splits into out params.
+		/// </summary>
+		/// <param name="arg"></param>
+		/// <param name="parameter"></param>
+		/// <param name="value"></param>
+		/// <returns></returns>
+		private bool TryParseParameterWithValue(string arg, out string parameter, out string value) {
 			var regex = new Regex(@"^(?<name>\w+)([:=])?(?<value>.+)?$");
 			var match = regex.Match(arg);
 
@@ -329,6 +335,33 @@ namespace Sphere10.Framework {
 			return parameter is not null && value is not null;
 		}
 
+		/// <summary>
+		/// Whether or not the given arg is a parameter denoted by its prefix
+		/// </summary>
+		/// <param name="arg"></param>
+		/// <returns></returns>
 		private bool IsParameter(string arg) => _parameterPrefixes.Any(arg.StartsWith);
+
+		/// <summary>
+		/// Attempts to locate a command definition by name. Starts at top most commands, and descends into
+		/// nested subcommands until located or no more options.
+		/// </summary>
+		/// <param name="name"></param>
+		/// <param name="command"></param>
+		/// <returns></returns>
+		private bool TryMatchCommandByName(string name, out CommandLineCommand command) {
+
+			CommandLineCommand[] commands = Commands;
+			command = null;
+
+			while (commands.Any() && command is null) {
+				command = commands.SingleOrDefault(x => string.Equals(name, x.Name, NameComparisonCasing));
+
+				if (command is null)
+					commands = commands.SelectMany(x => x.SubCommands).ToArray();
+			}
+
+			return command is null;
+		}
 	}
 }

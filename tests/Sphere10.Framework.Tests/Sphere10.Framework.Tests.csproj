@@ -26,6 +26,8 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Sphere10.Framework.Communications\Sphere10.Framework.Communications.csproj" />
     <ProjectReference Include="..\..\src\Sphere10.Framework.NUnit\Sphere10.Framework.NUnit.csproj" />
+    <ProjectReference Include="..\..\src\Sphere10.Hydrogen.Core\Sphere10.Hydrogen.Core.csproj" />
+    <ProjectReference Include="..\..\src\Sphere10.Hydrogen.Node\Sphere10.Hydrogen.Node.csproj" />
   </ItemGroup>
 
 </Project>

@@ -8,6 +8,8 @@ using Sphere10.Framework.Communications.RPC;
 
 namespace Sphere10.Framework.Tests {
 
+	//This is just code samples, Complex UT are note coded yet.
+
 	public class WorkPackage {
 		public string coinbase1;
 		public string coinbase2;

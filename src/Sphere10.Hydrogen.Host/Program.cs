@@ -55,7 +55,7 @@ namespace Sphere10.Hydrogen.Host {
 #if DEBUG
 			const string buildConfiguration = "Debug";
 #elif RELEASE
-			const string BuildConfiguration = "Release";
+			const string buildConfiguration = "Release";
 #else
 #error Unrecognized build configuration
 #endif

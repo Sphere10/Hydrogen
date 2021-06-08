@@ -19,7 +19,11 @@ namespace Sphere10.Framework.Communications.RPC {
 
 		public TcpEndPoint(TcpClient clientSocket) {
 			tcpSocket = clientSocket;
-		} 
+		}
+
+		public ulong GetUID() {
+			return tcpSocket != null ? (ulong)tcpSocket.Client.Handle.ToInt64() : 0;
+		}
 
 		public string GetDescription() {
 			return tcpSocket != null ? $"{((IPEndPoint)tcpSocket.Client.RemoteEndPoint).Address.ToString()}:{((IPEndPoint)tcpSocket.Client.RemoteEndPoint).Port}" : "";
@@ -62,6 +66,7 @@ namespace Sphere10.Framework.Communications.RPC {
 
 		public virtual void Stop() {
 			tcpSocket?.Close();
+			tcpSocket = null;
 		}
 	}
 }

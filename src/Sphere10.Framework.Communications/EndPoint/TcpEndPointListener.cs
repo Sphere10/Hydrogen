@@ -9,15 +9,18 @@ namespace Sphere10.Framework.Communications.RPC {
 	//Implement a TCP communication endpoint listnener
 	public class TcpEndPointListener : IEndPoint {
 		private TcpListener		tcpListener;
-		private int				maxConnections = 5;
+		private int				maxListeners = 5;
 		public int				MaxMessageSize { get; set; } = 4096;
-		public TcpEndPointListener(bool isLocal, int port, int maxConnection) {
+		public TcpEndPointListener(bool isLocal, int port, int maxListener) {
 			tcpListener = new TcpListener(isLocal ? IPAddress.Loopback : IPAddress.Any, port);
-			maxConnections = maxConnection;
+			maxListeners = maxListener;
 		}
 
 		public string GetDescription() { 
 			return tcpListener != null ? $"{((IPEndPoint)tcpListener.LocalEndpoint).Address.ToString()}:{((IPEndPoint)tcpListener.LocalEndpoint).Port}" : "";
+		}
+		public ulong GetUID() {
+			return tcpListener != null ? (ulong)tcpListener.Server.Handle.ToInt64() : 0;
 		}
 
 		//wait for connection and return client's endpoint
@@ -51,7 +54,7 @@ namespace Sphere10.Framework.Communications.RPC {
 		}
 
 		public void Start() {
-			tcpListener.Start(maxConnections);
+			tcpListener.Start(maxListeners);
 		}
 
 		public void Stop() {

@@ -6,10 +6,16 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sphere10.Framework", "Sphere10.Framework\Sphere10.Framework.csproj", "{1AFEF3F6-1C08-4543-B782-3A45D95CC6D6}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sphere10.Hydrogen.Node", "Sphere10.Hydrogen.Node\Sphere10.Hydrogen.Node.csproj", "{180BB4AD-3895-4610-A923-764C72D38E2B}"
+	ProjectSection(ProjectDependencies) = postProject
+		{3D516397-7897-4812-A7A7-BED00BE3F8A2} = {3D516397-7897-4812-A7A7-BED00BE3F8A2}
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sphere10.Framework.NUnit", "Sphere10.Framework.NUnit\Sphere10.Framework.NUnit.csproj", "{A43683C2-B18A-45C1-811E-50EDBA09FAE3}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sphere10.Hydrogen.Core", "Sphere10.Hydrogen.Core\Sphere10.Hydrogen.Core.csproj", "{A2D03F71-AA5B-4BA9-A7DC-DF245D1A66B3}"
+	ProjectSection(ProjectDependencies) = postProject
+		{3D516397-7897-4812-A7A7-BED00BE3F8A2} = {3D516397-7897-4812-A7A7-BED00BE3F8A2}
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sphere10.Hydrogen.Presentation.WidgetGallery", "Sphere10.Hydrogen.Presentation.WidgetGallery\Sphere10.Hydrogen.Presentation.WidgetGallery.csproj", "{6812DE41-120F-4624-85AA-3C8CFEFCC0BB}"
 EndProject
@@ -58,6 +64,9 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sphere10.Framework.CryptoEx.Tests", "..\tests\Sphere10.Framework.CryptoEx.Tests\Sphere10.Framework.CryptoEx.Tests.csproj", "{0123F02D-42E6-4837-B7B7-9B6AD1F51CE9}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sphere10.Framework.Tests", "..\tests\Sphere10.Framework.Tests\Sphere10.Framework.Tests.csproj", "{DAC035D6-123E-4072-9BB8-CFAB74270425}"
+	ProjectSection(ProjectDependencies) = postProject
+		{A2D03F71-AA5B-4BA9-A7DC-DF245D1A66B3} = {A2D03F71-AA5B-4BA9-A7DC-DF245D1A66B3}
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sphere10.Hydrogen.Core.Tests", "..\tests\Sphere10.Hydrogen.Core.Tests\Sphere10.Hydrogen.Core.Tests.csproj", "{AF306101-8DA4-4CE9-A2DD-F241480E3845}"
 EndProject

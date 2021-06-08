@@ -1,13 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.ComponentModel;
 using System.Diagnostics;
 using Sphere10.Framework;
 using Terminal.Gui;
-using Sphere10.Hydrogen.Core.Consensus.Serializers;
 using Sphere10.Hydrogen.Core.Maths;
 using Sphere10.Hydrogen.Core.Mining;
+using Sphere10.Hydrogen.Core.Consensus;
 using Sphere10.Hydrogen.Node.UI.Components;
+
 
 namespace Sphere10.Hydrogen.Node.UI {
 
@@ -237,7 +239,7 @@ namespace Sphere10.Hydrogen.Node.UI {
 						} else if (_miners.Count < _minerCount) {
 							// add
 							for (var i = _miners.Count; i < _minerCount; i++) {
-								var miner = new SingleThreadedMiner($"Miner {i + 1}", _miningManager);
+								var miner = new SingleThreadedMiner($"Miner {i + 1}", "127.0.0.1", 27000);
 								_miners.Add(miner);
 								miner.Start();
 							}
@@ -276,15 +278,15 @@ namespace Sphere10.Hydrogen.Node.UI {
 				};
 
 				
-				var algo = DAA switch {
+				var powAlgo = DAA switch {
 					DiffAlgo.ASERT2 => new ASERT2(targetAlgo, new ASERTConfiguration { BlockTime = TimeSpan.FromSeconds(BlockTime), RelaxationTime = TimeSpan.FromSeconds(RelaxationTime)}),
 					DiffAlgo.RTT_ASERT => new ASERT_RTT(targetAlgo, new ASERTConfiguration { BlockTime = TimeSpan.FromSeconds(BlockTime), RelaxationTime = TimeSpan.FromSeconds(RelaxationTime) }),
 					_ => throw new ArgumentOutOfRangeException()
 				};
 
-				_miningManager = new TestMiningManager(chf, targetAlgo, algo, new NewMinerBlockSerializer(), TimeSpan.FromSeconds(RTTInterval));
+				_miningManager = new TestMiningManager(chf, targetAlgo, powAlgo, TimeSpan.FromSeconds(RTTInterval));
 				for (var i = 0; i < MinerCount; i++) {
-					var miner = new SingleThreadedMiner($"Miner {i + 1}", _miningManager);
+					var miner = new SingleThreadedMiner($"Miner {i + 1}", "127.0.0.1", 27000);
 					_miners.Add(miner);
 					miner.Start();
 				}

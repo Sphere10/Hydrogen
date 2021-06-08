@@ -19,7 +19,7 @@ namespace Sphere10.Hydrogen.Core.Maths {
 
         protected ICompactTargetAlgorithm TargetAlgorithm { get; }
 
-		protected ASERTConfiguration Config { get; }
+		public ASERTConfiguration Config { get; }
 
         public bool RealTime => true;
 
@@ -46,9 +46,6 @@ namespace Sphere10.Hydrogen.Core.Maths {
             var nextCompactTarget = TargetAlgorithm.FromTarget(nextTarget);
             return nextCompactTarget;
         }
-
-
-
 
 	}
 

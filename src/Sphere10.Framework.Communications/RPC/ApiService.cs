@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Reflection;
 using System.Collections.Generic;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace Sphere10.Framework.Communications.RPC {
@@ -118,7 +117,13 @@ namespace Sphere10.Framework.Communications.RPC {
 				for (int i = 0; i < method.Arguments.Count; i++) {
 					if (arguments[i] is JToken) {
 						var argObj = arguments[i] as JToken;
-						arguments[i] = argObj.ToObject(method.Arguments[i].Item2);
+
+						//special case for byte[] xfer as a hexstring
+						if (method.Arguments[i].Item2 == typeof(byte[]))
+							arguments[i] = ByteArrayHexConverter.ToByteArray(argObj.ToObject<String>());
+						else
+							arguments[i] = argObj.ToObject(method.Arguments[i].Item2);
+
 					} else
 						return new JsonResponse { Result = null, Error = new JsonRpcException(-8, $"Agument #{i} is incompatible in method {methodName}.") };
 				}

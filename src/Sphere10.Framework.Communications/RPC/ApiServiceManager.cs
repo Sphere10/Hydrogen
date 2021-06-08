@@ -9,6 +9,7 @@ namespace Sphere10.Framework.Communications.RPC {
 	//Service Manager Singleton
 	public class ApiServiceManager {
 		private static Dictionary<string, ApiService> Services = new Dictionary<string, ApiService>();     //TODO: threadsafe this
+		//TODO: use SynchronizedObject
 		static protected object _mutex = new object();
 
 		//Register an object with RpcAPIService attribute.

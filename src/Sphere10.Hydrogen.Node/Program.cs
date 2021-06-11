@@ -44,41 +44,9 @@ namespace Sphere10.Hydrogen.Node {
 		}
 
 		static void Main(string[] args) {
-			Result<CommandLineResults> parsed = Parameters.TryParseArguments(args);
 
-			if (parsed.Success) {
-
-
-			} else if (parsed.Failure) {
-				Parameters.PrintHeader();
-				foreach (string errorMessage in parsed.ErrorMessages) {
-					Console.WriteLine(errorMessage);
-				}
-			}
-			
-			if (parsed.Value.HelpRequested) {
-				Parameters.PrintHelp();
-			}
-
-			//
-			// var hasHost = args.Length > 0;
-			// var hostHandle = hasHost ? args[0] : null;
-			// try {
-			// 	Sphere10Framework.Instance.StartFramework();
-			// 	var stopNodeTokenSource = new CancellationTokenSource();
-			// 	var stopListeningToHostTokenSource = new CancellationTokenSource();
-			// 	if (hasHost) {
-			// 		var hostListenTask = new Task(() => ListenToHostCommands(args[0], stopNodeTokenSource),
-			// 			stopListeningToHostTokenSource.Token);
-			// 		hostListenTask.Start();
-			// 	}
-			// 	Navigator.Start(stopNodeTokenSource.Token);
-			// 	if (hasHost)
-			// 		stopListeningToHostTokenSource.Cancel();
-			// } catch (Exception error) {
-			// 	SystemLog.Info("Hydrogen Node terminated abnormally");
-			// 	SystemLog.Exception(error);
-			// }
+			var stopNodeTokenSource = new CancellationTokenSource();
+			Navigator.Start(stopNodeTokenSource.Token);
 		}
 	}
 }

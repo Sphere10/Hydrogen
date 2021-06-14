@@ -14,6 +14,7 @@
 using System;
 using System.Threading;
 using System.Linq.Expressions;
+using System.Threading.Tasks;
 using Sphere10.Framework;
 
 // ReSharper disable CheckNamespace
@@ -37,7 +38,6 @@ namespace Tools {
         public static Action<T> ActionIgnoringExceptions<T>(Action<T> action) {
             return ActionWithExceptionHandler(action, (e) => { });
         }
-
 
         /// <summary>
         /// Wraps the action with an exception handler.

@@ -156,7 +156,7 @@ namespace Tools {
                 return "NULL";
 
             var value = string.Empty;
-            TypeSwitch.Do(obj,
+            TypeSwitch.For(obj,
                 TypeSwitch.Case<string>(s => value = string.Format("'{0}'", s.EscapeSQL())),
                 TypeSwitch.Case<Guid>(g => value = "'" + g.ToString().ToUpper() + "'"),
                 TypeSwitch.Case<char[]>(s => value = string.Format("'{0}'", s.ToString())),

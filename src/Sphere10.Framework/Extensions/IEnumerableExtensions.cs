@@ -328,16 +328,16 @@ namespace Sphere10.Framework {
 			return dict;
 		}
 
-		public static MultiKeyDictionary2<K, T> ToMultiKeyDictionary2<K, T>(this IEnumerable<T> source, params Func<T, K>[] keySelectors) {
+		public static EnumerableKeyDictionary<K, T> ToMultiKeyDictionary2<K, T>(this IEnumerable<T> source, params Func<T, K>[] keySelectors) {
 			return ToMultiKeyDictionary2(source, (IEnumerable<Func<T, K>>)keySelectors);
 		}
 
-		public static MultiKeyDictionary2<K, T> ToMultiKeyDictionary2<K, T>(this IEnumerable<T> source, IEnumerable<Func<T, K>> keySelectors) {
+		public static EnumerableKeyDictionary<K, T> ToMultiKeyDictionary2<K, T>(this IEnumerable<T> source, IEnumerable<Func<T, K>> keySelectors) {
 			return ToMultiKeyDictionary2Ex(source, keySelectors, (x) => x);
 		}
 
-		public static MultiKeyDictionary2<K, V> ToMultiKeyDictionary2Ex<T, K, V>(this IEnumerable<T> source, IEnumerable<Func<T, K>> keySelectors, Func<T, V> valueSelector) {
-			var result = new MultiKeyDictionary2<K, V>();
+		public static EnumerableKeyDictionary<K, V> ToMultiKeyDictionary2Ex<T, K, V>(this IEnumerable<T> source, IEnumerable<Func<T, K>> keySelectors, Func<T, V> valueSelector) {
+			var result = new EnumerableKeyDictionary<K, V>();
 			var keySelectorArr = keySelectors as Func<T, K>[] ?? keySelectors.ToArray();
 			foreach (var item in source) {
 				var key = keySelectorArr.Select(keySelector => keySelector(item));

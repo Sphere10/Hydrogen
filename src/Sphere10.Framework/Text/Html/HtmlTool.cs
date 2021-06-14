@@ -150,7 +150,7 @@ namespace Tools {
 
 			var val = string.Empty;
 			if (obj != null) {
-				TypeSwitch.Do(obj,
+				TypeSwitch.For(obj,
 					TypeSwitch.Case<string>(s => val = s),
 					TypeSwitch.Case<DateTime?>(dt => val = string.Format("{0:yyyy-MM-dd HH:mm:ss}", dt)),
 					TypeSwitch.Case<DateTime>(dt => val = string.Format("{0:yyyy-MM-dd HH:mm:ss}", dt)),

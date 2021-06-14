@@ -86,7 +86,7 @@ namespace Sphere10.Framework.Application {
             if (componentRegistryDefinition.RegistrationsDefinition == null)
                 return;
             foreach (var registration in componentRegistryDefinition.RegistrationsDefinition) {
-                TypeSwitch.Do(registration,
+                TypeSwitch.For(registration,
                     TypeSwitch.Case<ComponentRegistryDefinition.AssemblyRegistrationDefinition>(assemblyRegistration =>
                         RegisterInternalAssemblyRegistration(
                             componentRegistryDefinition,
@@ -303,7 +303,7 @@ namespace Sphere10.Framework.Application {
                 return;
 
             foreach (var registration in componentSetRegistrationDefinition.RegistrationsDefinition) {
-                TypeSwitch.Do(registration,
+                TypeSwitch.For(registration,
                     TypeSwitch.Case<ComponentRegistryDefinition.ComponentRegistrationDefinition>(componentRegistration => {
                         componentRegistration.Interface = componentSetRegistrationDefinition.Interface;
                         RegisterInternalMutipleComponentComponentRegistration(

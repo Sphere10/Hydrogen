@@ -144,12 +144,6 @@ namespace Sphere10.Framework {
             return value;
         }
 
-        public static void Repeat(this int times, Action action) {
-            for (int i = 0; i < times; i++) {
-                action();
-            }
-        }
-
         /// <summary>
         /// Try to convert a string into a nullable uint. If the string cannot be converted
         /// the default value is returned.

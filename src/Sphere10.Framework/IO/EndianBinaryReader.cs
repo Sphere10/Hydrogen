@@ -279,6 +279,63 @@ namespace Sphere10.Framework {
             }
         }
 
+        public T ReadOrThrow<T>(Func<Exception> exceptionActivator)
+            => (T)ReadOrThrow(typeof(T), exceptionActivator);
+
+        public object ReadOrThrow(Type type, Func<Exception> exceptionActivator) {
+            Guard.ArgumentNotNull(exceptionActivator, nameof(exceptionActivator));
+            if (type == typeof(char)) {
+                if (!stream.CanRead(sizeof(char)))
+                    throw exceptionActivator();
+                return Read();
+            } else if (type == typeof(byte)) {
+                if (!stream.CanRead(sizeof(byte)))
+                    throw exceptionActivator();
+                return ReadByte();
+            } else if (type == typeof(ushort)) {
+                if (!stream.CanRead(sizeof(ushort)))
+                    throw exceptionActivator();
+                return ReadUInt16();
+            } else if (type == typeof(short)) {
+                if (!stream.CanRead(sizeof(short)))
+                    throw exceptionActivator();
+                return ReadInt16();
+            } else if (type == typeof(uint)) {
+                if (!stream.CanRead(sizeof(uint)))
+                    throw exceptionActivator();
+                return ReadUInt32();
+            } else if (type == typeof(int)) {
+                if (!stream.CanRead(sizeof(int)))
+                    throw exceptionActivator();
+                return ReadInt32();
+            } else if (type == typeof(ulong)) {
+                if (!stream.CanRead(sizeof(ulong)))
+                    throw exceptionActivator();
+                return ReadUInt64();
+            } else if (type == typeof(long)) {
+                if (!stream.CanRead(sizeof(long)))
+                    throw exceptionActivator();
+                return ReadInt64();
+            } else if (type == typeof(float)) {
+                if (!stream.CanRead(sizeof(float)))
+                    throw exceptionActivator();
+                return ReadSingle();
+            } else if (type == typeof(double)) {
+                if (!stream.CanRead(sizeof(double)))
+                    throw exceptionActivator();
+                return ReadDouble();
+            } else if (type == typeof(decimal)) {
+                if (!stream.CanRead(sizeof(decimal)))
+                    throw exceptionActivator();
+                return ReadDecimal();
+            } else if (type.HasSubType(typeof(Enum))) {
+                var enumNumericType = type.GetEnumUnderlyingType();
+                var result = ReadOrThrow(enumNumericType, exceptionActivator);
+                return Enum.Parse(type, result.ToString());
+            }
+            throw new InvalidOperationException($"Cannot read type '{type.Name}'");
+        }
+
         /// <summary>
         /// Reads the specified number of characters into the given buffer, starting at
         /// the given index.

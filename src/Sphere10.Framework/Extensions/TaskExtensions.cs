@@ -19,6 +19,25 @@ namespace Sphere10.Framework {
 
 	public static class TaskExtensions {
 
+
+		public static Task<T> IgnoringCancellationException<T>(this Task<T> task)
+			=> IgnoringException<T, OperationCanceledException>(task);
+
+
+		public static Task<T> IgnoringExceptions<T>(this Task<T> task)
+			=> IgnoringException<T, Exception>(task);
+
+		public static async Task<T> IgnoringException<T, TException>(this Task<T> task) where TException : Exception {
+			Guard.ArgumentNotNull(task, nameof(task));
+			T result;
+			try {
+				result = await task;
+			} catch (TException) {
+				result = default;
+			}
+			return result;
+		}
+
         /// <summary>
         /// Makes a non-cancellable task cancellable.
         /// </summary>

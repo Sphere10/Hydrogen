@@ -54,6 +54,33 @@ namespace Sphere10.Framework {
 		}
 
 		/// <summary>
+		/// Returns the action to run asyncronously (queued in the ThreadPool).
+		/// </summary>
+		/// <param name="action">The action</param>
+		/// <returns>Wrapped action.</returns>
+		public static Action<T1> AsAsyncronous<T1>(this Action<T1> action) {
+			return Tools.Lambda.ActionAsAsyncronous(action);
+		}
+
+		/// <summary>
+		/// Returns the action to run asyncronously (queued in the ThreadPool).
+		/// </summary>
+		/// <param name="action">The action</param>
+		/// <returns>Wrapped action.</returns>
+		public static Action<T1, T2> AsAsyncronous<T1, T2>(this Action<T1, T2> action) {
+			return Tools.Lambda.ActionAsAsyncronous(action);
+		}
+
+		/// <summary>
+		/// Returns the action to run asyncronously (queued in the ThreadPool).
+		/// </summary>
+		/// <param name="action">The action</param>
+		/// <returns>Wrapped action.</returns>
+		public static Action<T1, T2, T3> AsAsyncronous<T1, T2, T3>(this Action<T1, T2, T3> action) {
+			return Tools.Lambda.ActionAsAsyncronous(action);
+		}
+
+		/// <summary>
 		/// Wraps an action with retry failover code.
 		/// </summary>
 		/// <param name="action">The action</param>

@@ -21,7 +21,7 @@ using Sphere10.Framework;
 // ReSharper disable CheckNamespace
 namespace Tools {
 
-	public static class Threads {
+    public static class Threads {
 
         public static Task CreateAwaitTask(Func<Task> invokeAsyncMethod) {
             //return new Task( async () => await invokeAsyncMethod() );
@@ -38,6 +38,14 @@ namespace Tools {
                 }
             );
         }
+
+        public static void RaiseAsync(EventHandlerEx handler) => Task.Factory.StartNew(() => handler?.Invoke());
+
+        public static void RaiseAsync<T>(EventHandlerEx<T> handler, T arg) => Task.Factory.StartNew(() => handler?.Invoke(arg));
+
+        public static void RaiseAsync<T1, T2>(EventHandlerEx<T1, T2> handler, T1 arg1, T2 arg2) => Task.Factory.StartNew(() => handler?.Invoke(arg1, arg2));
+
+        public static void RaiseAsync<T1, T2, T3>(EventHandlerEx<T1, T2, T3> handler, T1 arg1, T2 arg2, T3 arg3) => Task.Factory.StartNew(() => handler?.Invoke(arg1, arg2, arg3));
 
         public static void ExecuteAsync(Action action) {
             action.AsAsyncronous().Invoke();
@@ -68,19 +76,18 @@ namespace Tools {
                 var waitHandler = new AutoResetEvent(false);
                 waitHandlers[i] = waitHandler;
 
-				void Callback(object state) {
-					try {
-						action();
-					}
-					catch (Exception error) {
-						using (errors.EnterWriteScope()) {
-							errors.Add(error);
-						}
-					}
-					waitHandler.Set();
-				}
+                void Callback(object state) {
+                    try {
+                        action();
+                    } catch (Exception error) {
+                        using (errors.EnterWriteScope()) {
+                            errors.Add(error);
+                        }
+                    }
+                    waitHandler.Set();
+                }
 
-				ThreadPool.QueueUserWorkItem(Callback);
+                ThreadPool.QueueUserWorkItem(Callback);
             }
 
             WaitHandle.WaitAll(waitHandlers);
@@ -95,18 +102,18 @@ namespace Tools {
                 action();
         }
 
-		public static void QueueAction<TArg>(Action<TArg> action, TArg arg) {
-			ThreadPool.QueueUserWorkItem((o) => action((TArg)o), arg);
-		}
+        public static void QueueAction<TArg>(Action<TArg> action, TArg arg) {
+            ThreadPool.QueueUserWorkItem((o) => action((TArg)o), arg);
+        }
 
-		public static void QueueAction(Action action) {
-			ThreadPool.QueueUserWorkItem((o) => action());
-		}
+        public static void QueueAction(Action action) {
+            ThreadPool.QueueUserWorkItem((o) => action());
+        }
 
-		public static void QueueActionIgnoringException(Action action) {
-			ThreadPool.QueueUserWorkItem((o) => Tools.Exceptions.ExecuteIgnoringException(action));
-		}
+        public static void QueueActionIgnoringException(Action action) {
+            ThreadPool.QueueUserWorkItem((o) => Tools.Exceptions.ExecuteIgnoringException(action));
+        }
 
-	}
+    }
 }
 

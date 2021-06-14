@@ -81,12 +81,13 @@ namespace Tools {
         /// <param name="action">The action</param>
         /// <param name="dismissExceptions">Whether or not to propagate exceptions</param>
         /// <returns></returns>
-        public static Action ActionAsAsyncronous(Action action) {
-            return
-                () => {
-                    ThreadPool.QueueUserWorkItem(o => action());
-                };
-        }
+        public static Action ActionAsAsyncronous(Action action) => () => Task.Factory.StartNew(action.Invoke);
+
+        public static Action<T1> ActionAsAsyncronous<T1>(Action<T1> action) => (a1) => Task.Factory.StartNew(() => action.Invoke(a1));
+
+        public static Action<T1, T2> ActionAsAsyncronous<T1, T2>(Action<T1, T2> action) => (a1, a2) => Task.Factory.StartNew(() => action.Invoke(a1, a2));
+
+        public static Action<T1, T2, T3> ActionAsAsyncronous<T1, T2, T3>(Action<T1, T2, T3> action) => (a1, a2, a3) => Task.Factory.StartNew(() => action.Invoke(a1, a2, a3));
 
         /// <summary>
         /// Wraps an action with retry failover code.

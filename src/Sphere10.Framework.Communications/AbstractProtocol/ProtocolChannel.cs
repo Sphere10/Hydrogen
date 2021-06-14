@@ -261,47 +261,47 @@ namespace Sphere10.Framework.Communications {
 
         private void NotifyOpening() {
             OnOpening();
-            Opening?.Invoke();
+            Tools.Threads.RaiseAsync(Opening);
         }
 
         private void NotifyOpened() {
             OnOpened();
-            Opened?.Invoke();
+            Tools.Threads.RaiseAsync(Opened);
         }
 
         private void NotifyClosing() {
             OnClosing();
-            Closing?.Invoke();
+            Tools.Threads.RaiseAsync(Closing);
         }
 
         private void NotifyClosed() {
             OnClosed();
-            Closed?.Invoke();
+            Tools.Threads.RaiseAsync(Closed);
         }
 
         private void NotifyHandshake() {
             OnHandshake();
-            Handshake?.Invoke();
+            Tools.Threads.RaiseAsync(Handshake);
         }
 
         private void NotifyReceivedBytes(byte[] bytes) {
             OnReceivedBytes(bytes);
-            ReceivedBytes?.Invoke(bytes);
+            Tools.Threads.RaiseAsync(ReceivedBytes, bytes);
         }
 
         private void NotifySentBytes(byte[] bytes) {
             OnSentBytes(bytes);
-            SentBytes?.Invoke(bytes);
+            Tools.Threads.RaiseAsync(SentBytes, bytes);
         }
 
         private void NotifyReceivedMessage(ProtocolMessageEnvelope messageEnvelope) {
             OnReceivedMessage(messageEnvelope);
-            ReceivedMessage?.Invoke(messageEnvelope);
+            Tools.Threads.RaiseAsync(ReceivedMessage, messageEnvelope);
         }
 
         private void NotifySentMessage(ProtocolMessageEnvelope messageEnvelope) {
             OnSentMessage(messageEnvelope);
-            SentMessage?.Invoke(messageEnvelope);
+            Tools.Threads.RaiseAsync(SentMessage, messageEnvelope);
         }
 
         #endregion

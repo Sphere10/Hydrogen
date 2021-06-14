@@ -54,7 +54,7 @@ namespace Sphere10.Framework.Communications.RPC {
 		//handle 'methodname' or 'service.methodname'
 		public static ApiService GetServiceFromMethod(string methodName) {
 			lock (_mutex) {
-				string[] sm = methodName.Split('.', 2, System.StringSplitOptions.TrimEntries);
+				string[] sm = methodName.Split('.', 2).Select(x => x.Trim()).ToArray();
 				if (sm.Length == 2)
 					return GetService(sm[0]);
 

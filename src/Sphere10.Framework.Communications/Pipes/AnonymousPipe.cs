@@ -3,8 +3,7 @@ using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
-using System.Threading.Channels;
-using Sphere10.Framework.Communications.Protocol;
+
 using Sphere10.Framework;
 using Sphere10.Framework.Scheduler;
 using System.IO.Pipes;
@@ -12,20 +11,19 @@ using System.Threading.Tasks;
 
 namespace Sphere10.Framework.Communications {
 
-    public abstract class AnonymousPipe : ProtocolChannel<AnonymousPipeEndpoint, IAnonymousPipeMessage>, IDisposable {
-	    public static readonly byte[] MessageMagicID = { 0, 0, 0, 1 };
+    public abstract class AnonymousPipe : ProtocolChannel, IDisposable {
+	    public new static readonly byte[] MessageEnvelopeMarker = { 0, 0, 0, 1 };
 
-        public event EventHandlerEx<object, string> ReceivedString;
-        public event EventHandlerEx<object, string> SentString;
+        public event EventHandlerEx<string> ReceivedString;
+        public event EventHandlerEx<string> SentString;
 
         private PipeStream _readStream;
         private PipeStream _writeStream;
         private StreamReader _reader;
         private StreamWriter _writer;
 
-        protected AnonymousPipe() 
-	        : base(MessageMagicID){
-	        
+        protected AnonymousPipe() {
+            base.MessageEnvelopeMarker = MessageEnvelopeMarker;
         }
 
         /// <summary>
@@ -37,13 +35,13 @@ namespace Sphere10.Framework.Communications {
         /// <param name="mediator">Handles bad messages.</param>
         /// <returns>A channel used to send messages backwards and forwards</returns>
         /// <remarks>If <paramref name="argInjectorFunc"/> is null the read pipe handle and write pipe handle are passed consequtively.</remarks>
-        public static AnonymousPipe ToChildProcess(string processPath, IItemSerializer<IAnonymousPipeMessage> serializer, string arguments = "", Func<string, string, string, string> argInjectorFunc = null)
+        public static AnonymousPipe ToChildProcess(string processPath, IItemSerializer<object> serializer, string arguments = "", Func<string, string, string, string> argInjectorFunc = null)
             => new AnonymousServerPipe(processPath, arguments, argInjectorFunc) {
                 MessageSerializer = serializer,
                 MessageSerializationEnabled = true
             };
 
-		public static AnonymousPipe FromChildProcess(AnonymousPipeEndpoint serverEndpoint, IItemSerializer<IAnonymousPipeMessage> serializer) 
+		public static AnonymousPipe FromChildProcess(AnonymousPipeEndpoint serverEndpoint, IItemSerializer<object> serializer) 
 			=> new AnonymousClientPipe(serverEndpoint) {
 				MessageSerializer = serializer,
                 MessageSerializationEnabled = true
@@ -53,18 +51,20 @@ namespace Sphere10.Framework.Communications {
 
         public override int MaxMessageLength => 1 << 16;
 
-        public async Task SendString(string @string) {
-	        CheckState(ProtocolChannelState.Open);
-	        if (!IsConnectionAlive())
-		        return;
+        public AnonymousPipeEndpoint Endpoint { get; protected set; }
+
+        public async Task<bool> TrySendString(string @string, CancellationToken cancellationToken) {
+            Guard.ArgumentNotNull(@string, nameof(@string));
+	        if (!State.IsIn(ProtocolChannelState.Opening, ProtocolChannelState.Open) || !IsConnectionAlive())
+		        return false;
 	        try {
-		        await Task.Run(() => _writeStream.WaitForPipeDrain()); // ensure last message was read before new sent
+		        await Task.Run(_writeStream.WaitForPipeDrain, cancellationToken); // ensure last message was read before new sent
+		        await _writer.WriteLineAsync(@string.AsMemory(), cancellationToken);
+		        NotifySentString(@string);
+		        return true;
 	        } catch {
-                // Pipe broken, abort gracefully
 	        }
-	        await _writer.WriteLineAsync(@string);
-            
-            NotifySentString(@string);
+	        return false;
         }
 
         public void Dispose() {
@@ -78,40 +78,34 @@ namespace Sphere10.Framework.Communications {
 	        _reader = new StreamReader(_readStream);
         }
 
-        protected override async Task WaitHandshake() {
-			switch (LocalRole) {
-				case CommunicationRole.Server:
-				await SendString("SYNC");
-				await WaitForString("SYNC");
-				break;
-				case CommunicationRole.Client:
-				await WaitForString("SYNC");
-				await SendString("SYNC");
-				break;
-			}
-		}
-
         protected abstract Task<(AnonymousPipeEndpoint endpoint, PipeStream readStream, PipeStream writeStream)> OpenPipeInternal();
 
         protected override async Task CloseInternal() {
 	        await _writer.DisposeAsync();
 	        _reader.Dispose();
-            await _readStream.DisposeAsync();
+	        await _readStream.DisposeAsync();
 	        await _writeStream.DisposeAsync();
         }
 
-        protected override Task SendBytesInternal(ReadOnlySpan<byte> bytes) 
-            => SendString(Convert.ToBase64String(bytes));
+        protected override bool IsConnectionAlive() => _readStream.IsConnected && _writeStream.IsConnected;
+
+        protected override async Task<bool> TryWaitHandshake(CancellationToken cancellationToken) {
+	        return LocalRole switch {
+		        CommunicationRole.Server => await TrySendString("SYNC", cancellationToken) && await TryWaitForString("SYNC", cancellationToken),
+		        CommunicationRole.Client => await TryWaitForString("SYNC", cancellationToken) && await TrySendString("SYNC", cancellationToken),
+		        _ => false
+	        };
+        }
+
+        protected override Task<bool> TrySendBytesInternal(ReadOnlySpan<byte> bytes, CancellationToken cancellationToken) 
+            => TrySendString(Convert.ToBase64String(bytes), cancellationToken);
 
         protected override async Task<byte[]> ReceiveBytesInternal(CancellationToken cancellationToken) {
 	        var str = await ReceiveString(cancellationToken);
 	        if (string.IsNullOrEmpty(str))
 		        return Array.Empty<byte>();
-
             return Convert.FromBase64String(str);
         }
-
-        protected override bool IsConnectionAlive() => _readStream.IsConnected && _writeStream.IsConnected;
 
         protected virtual void OnReceivedString(string @string) {
         }
@@ -119,31 +113,37 @@ namespace Sphere10.Framework.Communications {
         protected virtual void OnSentString(string @string) {
         }
 
-        public async Task WaitForString(string value) {
-            var task = new TaskCompletionSource();
-            void MonitorSync(object sender, string @string) {
+        public async Task<bool> TryWaitForString(string value, CancellationToken cancellationToken) {
+            var taskCompletionSource = new TaskCompletionSource<bool>();
+            cancellationToken.Register(() => {
+	            taskCompletionSource.TrySetResult(false);
+            });
+
+            void MonitorSync(string @string) {
                 if (@string == value)
-                    task.TrySetResult();
+                    taskCompletionSource.TrySetResult(true);
                 this.ReceivedString -= MonitorSync;
             }
             this.ReceivedString += MonitorSync;
-            await task.Task;
+            
+            return await taskCompletionSource.Task;
         }
 
         private async Task<string> ReceiveString(CancellationToken cancellationToken) {
-            var @string = await _reader.ReadLineAsync().WithCancellationToken(cancellationToken);
-            NotifyReceivedString(@string);
+            var @string = await _reader.ReadLineAsync().WithCancellationToken(cancellationToken).IgnoringCancellationException();
+            if (!string.IsNullOrEmpty(@string))
+				NotifyReceivedString(@string);
             return @string;
         }
 
         private void NotifyReceivedString(string str) {
             OnReceivedString(str);
-            ReceivedString?.Invoke(this, str);
+            ReceivedString?.Invoke(str);
         }
 
         private void NotifySentString(string str) {
             OnSentString(str);
-            SentString?.Invoke(this, str);
+            SentString?.Invoke(str);
         }
 
     }

@@ -15,7 +15,7 @@ namespace Sphere10.Framework.Communications.RPC {
 	//Simple implementation of remote call to Json server
 
 	public class JsonRpcClient : ApiRemoteService {
-		protected static uint callID = 1;
+		protected static int callID = 1;
 		protected bool KeepAlive = false;
 		protected JsonSerializerSettings jsonSettings = new JsonSerializerSettings {/*Formatting = Formatting.Indented,*/ Converters = { { new ByteArrayHexConverter() } } };
 

@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Text;
 using Sphere10.Framework;
 using Newtonsoft.Json;
+using Sphere10.Framework.Communications;
 
 namespace Sphere10.Hydrogen.Core.Consensus {
 

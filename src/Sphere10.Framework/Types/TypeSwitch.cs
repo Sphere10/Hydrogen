@@ -29,7 +29,7 @@ namespace Sphere10.Framework {
 			public Action<object> Action { get; set; }
 		}
 
-		public static void Do(object source, params CaseInfo[] cases) {
+		public static void For(object source, params CaseInfo[] cases) {
 			var type = source.GetType();
 			foreach (var entry in cases) {
 				if (entry.IsDefault || entry.Target.IsAssignableFrom(type)) {
@@ -39,18 +39,9 @@ namespace Sphere10.Framework {
 			}
 		}
 
-		public static void DoType(Type type, params CaseInfo[] cases) {
-			foreach (var entry in cases) {
-				if (entry.IsDefault || entry.Target.IsAssignableFrom(type)) {
-					entry.Action(type);
-					break;
-				}
-			}
-		}
-
 		public static void ForType(Type type, params CaseInfo[] cases) {
 			foreach (var entry in cases) {
-				if (entry.IsDefault || entry.Target == type) {
+				if (entry.IsDefault || entry.Target.IsAssignableFrom(type)) {
 					entry.Action(type);
 					break;
 				}

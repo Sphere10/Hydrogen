@@ -4,5 +4,7 @@
 		int Serialize(TItem @object, EndianBinaryWriter writer);
 
 		TItem Deserialize(int size, EndianBinaryReader reader);
+
 	}
+
 }

@@ -2,6 +2,12 @@
 using System.Linq;
 
 namespace Sphere10.Framework {
+
+	/// <summary>
+	/// Converts a serializer for <see cref="TConcrete"/> to a serializer of it's base-type <see cref="TBase"/>
+	/// </summary>
+	/// <typeparam name="TBase">The type that this serializer will serialize</typeparam>
+	/// <typeparam name="TConcrete">The concrete type of the supplied serializer which is converted</typeparam>
 	public class CastedSerializer<TBase, TConcrete> : IItemSerializer<TBase> where TConcrete : TBase {
 		private readonly IItemSerializer<TConcrete> _concreteSerializer;
 

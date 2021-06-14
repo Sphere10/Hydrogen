@@ -17,26 +17,26 @@ using System.Linq;
 
 namespace Sphere10.Framework {
 
-	public class MultiKeyDictionary2<K, V> : IDictionary<IEnumerable<K>, V> {
+	public class EnumerableKeyDictionary<K, V> : IDictionary<IEnumerable<K>, V> {
 
 		#region Fields
 		private readonly TreeHeader _tree;
 		private volatile uint _surrogateKey;
 		private bool _hasValue;
-		private IDictionary<K, MultiKeyDictionary2<K, V>> _childNodes;
+		private IDictionary<K, EnumerableKeyDictionary<K, V>> _childNodes;
 		#endregion
 
 		#region Constructors
 
-		public MultiKeyDictionary2() : this(EqualityComparer<K>.Default) {
+		public EnumerableKeyDictionary() : this(EqualityComparer<K>.Default) {
 		}
 
-		public MultiKeyDictionary2(IEqualityComparer<K> keyComparer) {
+		public EnumerableKeyDictionary(IEqualityComparer<K> keyComparer) {
 			_tree = new TreeHeader(this, keyComparer);
 			Initialize();
 		}
 
-		private MultiKeyDictionary2(MultiKeyDictionary2<K,V> parent) {
+		private EnumerableKeyDictionary(EnumerableKeyDictionary<K,V> parent) {
 			_tree = parent._tree;
 			Initialize();
 		}
@@ -151,7 +151,7 @@ namespace Sphere10.Framework {
 		#region Auxillary
 
 		private void Initialize() {
-			_childNodes = new Dictionary<K, MultiKeyDictionary2<K, V>>(_tree.KeyComparer);
+			_childNodes = new Dictionary<K, EnumerableKeyDictionary<K, V>>(_tree.KeyComparer);
 			_hasValue = false;
 			_surrogateKey = _tree.NextSurrogateID();
 		}
@@ -186,11 +186,11 @@ namespace Sphere10.Framework {
             }
 			var tail = keys.Skip(1);
 
-			MultiKeyDictionary2<K, V> childNode;
+			EnumerableKeyDictionary<K, V> childNode;
 			if (_childNodes.ContainsKey(head)) {
 				childNode = _childNodes[head];
 			} else {
-				childNode = new MultiKeyDictionary2<K, V>(this);
+				childNode = new EnumerableKeyDictionary<K, V>(this);
 				_childNodes.Add(head, childNode);
 			}
 			traversalList.Enqueue(head);
@@ -240,7 +240,7 @@ namespace Sphere10.Framework {
 		#region TreeHeader inner class
 
 		private class TreeHeader {
-			public readonly MultiKeyDictionary2<K, V> RootNode;
+			public readonly EnumerableKeyDictionary<K, V> RootNode;
 			public readonly IEqualityComparer<K> KeyComparer;
 			public readonly IDictionary<uint, V> ValueMap;
 			public readonly IDictionary<uint, IEnumerable<K>> KeyMap;
@@ -248,7 +248,7 @@ namespace Sphere10.Framework {
 			private readonly object _threadLock;
 
 
-			public TreeHeader(MultiKeyDictionary2<K, V> rootNode, IEqualityComparer<K> keyComparer) {
+			public TreeHeader(EnumerableKeyDictionary<K, V> rootNode, IEqualityComparer<K> keyComparer) {
 				RootNode = rootNode;
 				KeyComparer = keyComparer;
 				ValueMap = new Dictionary<uint, V>();

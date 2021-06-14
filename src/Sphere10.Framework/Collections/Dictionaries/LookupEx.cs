@@ -36,10 +36,6 @@ namespace Sphere10.Framework {
 
         public IEnumerable<TKey> Keys => _map.Keys;
 
-		public void Add(TKey key) {
-			FetchMap(key);
-		}
-
         public void Add(TKey key, TValue value) {
             FetchMap(key).Add(value);
         }

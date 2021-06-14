@@ -11,10 +11,15 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
+using System.Collections.Generic;
+
 namespace Sphere10.Framework {
 
 	public class NotPersistedDictionary<T1, T2> : DictionaryDecorator<T1, T2>, IPersistedDictionary<T1, T2> {
 
+        public NotPersistedDictionary() : base(new Dictionary<T1, T2>()){
+
+        }
 		public void Load() {
 		}
 

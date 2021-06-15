@@ -14,7 +14,7 @@ namespace Sphere10.Framework.Communications.RPC {
 		public void AddApi(object instance) {
 			//Get api name if any
 			var apiNameAttr = instance.GetType().GetCustomAttribute(typeof(RpcAPIServiceAttribute));
-			string apiName = apiNameAttr == null ? "" : (apiNameAttr as RpcAPIServiceAttribute).apiName;
+			string apiName = apiNameAttr == null ? "" : (apiNameAttr as RpcAPIServiceAttribute).ApiName;
 
 			var methods = instance.GetType().GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
 			foreach (var method in methods) {
@@ -27,7 +27,7 @@ namespace Sphere10.Framework.Communications.RPC {
 						object[] nameOverride = parameter.GetCustomAttributes(typeof(RpcAPIArgumentAttribute), false);
 						string argName;
 						if (nameOverride.Length > 0)
-							argName = (nameOverride[0] as RpcAPIArgumentAttribute).explicitArgumentName;
+							argName = (nameOverride[0] as RpcAPIArgumentAttribute).ExplicitArgumentName;
 						else
 							argName = parameter.Name;
 						if (string.IsNullOrEmpty(argName))
@@ -36,7 +36,7 @@ namespace Sphere10.Framework.Communications.RPC {
 					}
 
 					for (int i = 0; i < rpcMethods.Length; i++) {
-						string rpcMethodName = (rpcMethods[i] as RpcAPIMethodAttribute).methodName == string.Empty ? method.Name : (rpcMethods[i] as RpcAPIMethodAttribute).methodName;
+						string rpcMethodName = (rpcMethods[i] as RpcAPIMethodAttribute).MethodName == string.Empty ? method.Name : (rpcMethods[i] as RpcAPIMethodAttribute).MethodName;
 
 						//prepend the api name to the method with dot separator
 						if (!string.IsNullOrEmpty(apiName))

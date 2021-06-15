@@ -6,24 +6,24 @@ using System.Text;
 namespace Sphere10.Framework.Communications.RPC {
 	//Implement a communication endpoint message with bytes or strings
 	public class EndpointMessage {
-		public byte[] messageData;
-		public IEndPoint stream;
+		public byte[] MessageData;
+		public IEndPoint Stream;
 
 		public EndpointMessage(string message, IEndPoint targetStream = null) {
 			FromString(message);
-			stream = targetStream;
+			Stream = targetStream;
 		}
 		public EndpointMessage(byte[] message, IEndPoint targetStream = null) {
-			messageData = message;
-			stream = targetStream;
+			MessageData = message;
+			Stream = targetStream;
 		}
 		public override string ToString() {
 			ASCIIEncoding encoder = new ASCIIEncoding();
-			return encoder.GetString(messageData, 0, messageData.Length);
+			return encoder.GetString(MessageData, 0, MessageData.Length);
 		}
 		public void FromString(string message) {
 			ASCIIEncoding encoder = new ASCIIEncoding();
-			messageData = encoder.GetBytes(message);
+			MessageData = encoder.GetBytes(message);
 		}
 	}
 }

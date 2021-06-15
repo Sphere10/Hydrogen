@@ -8,16 +8,16 @@ using System.Threading.Tasks;
 namespace Sphere10.Framework.Communications.RPC {
 	//Service Manager Singleton
 	public class ApiServiceManager {
-		private static Dictionary<string, ApiService> Services = new Dictionary<string, ApiService>();     //TODO: threadsafe this
+		private static Dictionary<string, ApiService> Services = new Dictionary<string, ApiService>();
 		//TODO: use SynchronizedObject
-		static protected object _mutex = new object();
+		static private object _mutex = new object();
 
 		//Register an object with RpcAPIService attribute.
 		//If the object is not an APIService, the manager will create one as a placeholder.
 		public static void RegisterService(object service) {
 			lock (_mutex) {
 				var apiNameAttr = service.GetType().GetCustomAttribute(typeof(RpcAPIServiceAttribute));
-				string apiName = apiNameAttr == null ? "" : (apiNameAttr as RpcAPIServiceAttribute).apiName;
+				string apiName = apiNameAttr == null ? "" : (apiNameAttr as RpcAPIServiceAttribute).ApiName;
 				apiName = apiName.ToLower();
 
 				ApiService api = null;

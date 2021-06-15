@@ -1,20 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Sphere10.Framework;
 using Sphere10.Framework.Communications.RPC;
 using Sphere10.Hydrogen.Core.Configuration;
-using Sphere10.Hydrogen.Core.Consensus;
+using Sphere10.Hydrogen.Core.Consensus.Serializers;
 using Sphere10.Hydrogen.Core.Maths;
+using Sphere10.Hydrogen.Core.Mining;
 
-namespace Sphere10.Hydrogen.Core.Mining {
+namespace Sphere10.Hydrogen.Node.RPC {
+
 	public class RpcSingleThreadedMiner : IDisposable {
-		protected JsonRpcClient _rpcClient;
+		private JsonRpcClient _rpcClient;
 		private Task _miningTask;
 		private CancellationTokenSource _cancelSource;
+
 		//Temporary placeholder for proper stats
 		private Dictionary<string, uint> _stats;
 
@@ -25,6 +27,13 @@ namespace Sphere10.Hydrogen.Core.Mining {
 			_stats = new Dictionary<string, uint>();
 			MinerTag = minerTag;
 			Status = MinerStatus.Idle;
+		}
+
+		public void Dispose() {
+			if (Status == MinerStatus.Mining)
+				Stop();
+			_miningTask = null;
+			_cancelSource?.Dispose();
 		}
 
 		public string MinerTag { get; }
@@ -56,13 +65,15 @@ namespace Sphere10.Hydrogen.Core.Mining {
 
 		protected virtual void Mine() {
 			try {
+				var blockSerializer = new NewMinerBlockSerializer();
 				while (Status != MinerStatus.Idle) {
-					NewMinerBlock work = _rpcClient.RemoteCall<NewMinerBlock>("getwork", MinerTag);
-					DateTimeOffset maxTime = (DateTime)work.Config["maxtime"];
-					Debug.WriteLine($"Miner: New work packagewith target {work.CompactTarget}");
+					var work = _rpcClient.RemoteCall<NewMinerBlockSurogate>("getwork", MinerTag).ToNonSurrogate();
+					var maxTime = (DateTimeOffset)work.Config["maxtime"];
+					var hashAlgoName = (string)work.Config["hashalgo"];
+					Debug.WriteLine($"Miner: New work packagewith target {work.CompactTarget}. Hashing with {hashAlgoName}");
 
 					//for R&D purpose, we send hash-algo and pow-algo in Block.Config
-					CHF HashAlgorithm = StringExtensions.ParseEnum<CHF>((string)work.Config["hashalgo"]);
+					var HashAlgorithm = StringExtensions.ParseEnum<CHF>(hashAlgoName);
 					//ignore ["powalgo"], it's alwys monilaAlgo for now
 					var PoWAlgorithm = new MolinaTargetAlgorithm();
 					//ICompactTargetAlgorithm DAAlgorithm;
@@ -72,16 +83,16 @@ namespace Sphere10.Hydrogen.Core.Mining {
 					//	DAAlgorithm = (ICompactTargetAlgorithm)new ASERT_RTT(PoWAlgorithm, new ASERTConfiguration { BlockTime = TimeSpan.Parse((string)work.Config["daaalgo.blocktime"]), RelaxationTime = TimeSpan.Parse((string)work.Config["daaalgo.relaxtime"]) });
 
 					//Ignore suggested nonce and extra-nonce
-					work.NoncePlane = (uint)Tools.Maths.RNG.Next();
+					work.ExtraNonce = (ulong)Tools.Maths.RNG.Next();
 					work.Nonce = (uint)Tools.Maths.RNG.Next();
 
 					uint shareCount = 0;
 					while (Status == MinerStatus.Mining && (uint)DateTimeOffset.UtcNow.ToUnixTimeSeconds() <= maxTime.ToUnixTimeSeconds()) {
-						unchecked { work.Nonce++; }
-						var proofOfWork = Hashers.Hash(HashAlgorithm, work.GetWorkHeader());
+						unchecked { work.Nonce++; }						
+						var proofOfWork = Hashers.Hash(HashAlgorithm, blockSerializer.SerializeLE(work));
 						var pow = PoWAlgorithm.FromDigest(proofOfWork);
 						if (pow > work.CompactTarget) {
-							MiningSolutionResult res = _rpcClient.RemoteCall<MiningSolutionResult>("submit", MinerTag, work.Timestamp, work.NonceSpace, work.NoncePlane, work.Nonce);
+							MiningSolutionResult res = _rpcClient.RemoteCall<MiningSolutionResult>("submit", work.MinerNonce, MinerTag, work.Timestamp, work.ExtraNonce, work.Nonce);
 							if (res == MiningSolutionResult.Accepted)
 								_stats["accepted"]++;
 							else
@@ -94,16 +105,9 @@ namespace Sphere10.Hydrogen.Core.Mining {
 					_stats["shares"] += shareCount;
 				}
 			}
-			catch(Exception e) {
+			catch(Exception ) {
 				throw;
 			}
-		}
-
-		public void Dispose() {
-			if (Status == MinerStatus.Mining)
-				Stop();
-			_miningTask = null;
-			_cancelSource?.Dispose();
 		}
 	}
 }

@@ -2,7 +2,7 @@
 
 namespace Sphere10.Framework {
     public abstract class FactorySerializerBuilderBase<TBase, TFactorySerializerBuilder> where TFactorySerializerBuilder : FactorySerializerBuilderBase<TBase, TFactorySerializerBuilder> {
-		protected readonly IFactorySerializer<TBase> Serializer;
+		protected IFactorySerializer<TBase> Serializer;
 		protected ushort TypeCode;
 
 		public FactorySerializerBuilderBase(IFactorySerializer<TBase> serializer) {

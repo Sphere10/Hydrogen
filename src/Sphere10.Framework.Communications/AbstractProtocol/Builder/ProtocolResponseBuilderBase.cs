@@ -42,14 +42,14 @@ namespace Sphere10.Framework.Communications {
 				_parent = parent;
 			}
 
-			public TProtocolResponseBuilder HandleWith(Action<TChannel, TRequest, TResponse> handler) {
-				_parent.ResponseHandlers.Add(typeof(TRequest), typeof(TResponse), new ActionResponseHandler<TChannel, TRequest, TResponse>(handler));
+			public TProtocolResponseBuilder HandleWith(Action<TChannel, TRequest, TResponse> handler) 
+				=> HandleWith(new ActionResponseHandler<TChannel, TRequest, TResponse>(handler));
+
+			public TProtocolResponseBuilder HandleWith(IResponseHandler<TChannel, TRequest, TResponse> handler) {
+				_parent.ResponseHandlers.Add(typeof(TRequest), typeof(TResponse), handler);
 				return _parent;
 			}
 		}
-
-		
+	
 	}
-
-
 }

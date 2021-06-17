@@ -25,6 +25,18 @@ namespace Sphere10.Framework {
 		}
 
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static void DirectoryExists(string path) {
+			if (!Directory.Exists(path))
+				throw new DirectoryNotFoundException($"Directory not found: '{path}'");
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static void DirectoryNotExists(string path) {
+			if (Directory.Exists(path))
+				throw new DirectoryNotFoundException($"Directory already exists: '{path}'");
+		}
+
 		/// <summary>
 		/// Throws an exception if an argument is null
 		/// </summary>

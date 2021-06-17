@@ -42,7 +42,6 @@ namespace Tools {
             return TypeResolver.Resolve(fullName);
         }
 
-
         public static object ChangeType(object value, Type targetType) {
             return TypeChanger.ChangeType(value, targetType);
         }
@@ -54,7 +53,6 @@ namespace Tools {
         public static object SanitizeObject(object obj) {
             return TypeChanger.SanitizeObject(obj);
         }
-
 
         public static T Clone<T>(T obj, bool deepClone = false, IEnumerable<Type> dontClone = null) {
             return (T) CloneObject(obj, deepClone, dontClone);

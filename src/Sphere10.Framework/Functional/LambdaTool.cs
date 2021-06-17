@@ -151,9 +151,10 @@ namespace Tools {
 	    public static void NoOp() {
         }
 
-        public static object NoOp(object o) {
-            return o;
-        }
+		public static void NoOp<T1, T2>(T1 t1, T2 t2) {
+		}
+
+		public static object NoOp<T>(T o) => o;
 
         public static T ExceptionExpression<T>(string errorMessage, params object[] formatArgs) {
             throw new Exception(string.Format(errorMessage, formatArgs));

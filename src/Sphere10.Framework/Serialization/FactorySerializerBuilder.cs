@@ -7,7 +7,7 @@ namespace Sphere10.Framework {
 		public FactorySerializerBuilder() : this(new FactorySerializer<TBase>()) {
         }
 
-		public FactorySerializerBuilder(IFactorySerializer<TBase> serializer) 
+		internal FactorySerializerBuilder(IFactorySerializer<TBase> serializer) 
 			: base(serializer) {
         }
 

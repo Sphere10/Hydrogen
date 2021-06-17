@@ -30,10 +30,14 @@ namespace Sphere10.Framework.Communications {
 				_parent = parent;
 			}
 
-			public TProtocolCommandBuilder Execute(Action<TChannel, TMessage> action) {
-				_parent.Add(typeof(TMessage), new ActionCommandHandler<TChannel, TMessage>(action));
+			public TProtocolCommandBuilder Execute(Action<TChannel, TMessage> action) 
+				=> Execute(new ActionCommandHandler<TChannel, TMessage>(action));
+
+			public TProtocolCommandBuilder Execute(ICommandHandler<TChannel, TMessage> handler) {
+				_parent.Add(typeof(TMessage), handler);
 				return _parent;
 			}
+			
 		}
 	}
 }

@@ -39,7 +39,6 @@ namespace Tools {
             return value == null || value.All(c => !Char.IsLetterOrDigit(c));
         }
 
-
         public static bool TryNewRegex(string pattern, out Regex regex)
             => TryNewRegex(pattern, RegexOptions.None, 30, out regex);
 

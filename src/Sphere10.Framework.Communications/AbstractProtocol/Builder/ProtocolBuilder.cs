@@ -56,6 +56,7 @@ namespace Sphere10.Framework.Communications {
             public MessageBuilder Messages => _parent.Messages;
 
             public Protocol Build() => _parent.Build();
+
         }
 
         public class RequestBuilder : ProtocolRequestBuilderBase<TChannel, RequestBuilder> {
@@ -104,6 +105,13 @@ namespace Sphere10.Framework.Communications {
             public ResponseBuilder Responses { get; }
 
             public Protocol Build() => _parent.Build();
-        }
+
+			public MessageBuilder Use(IFactorySerializer<object> serializer) {
+				Guard.ArgumentNotNull(serializer, nameof(serializer));
+				base.Serializer = serializer;
+				return this;
+			}
+
+		}
     }
 }

@@ -19,7 +19,7 @@ namespace Sphere10.Framework {
 
 		public const string DefaultDateFormat = "yyyy-MM-dd HH:mm:ss";
 
-		public TimestampLogger(ILogger decoratedLogger, string dateFormat = null) : base(decoratedLogger) {
+		public TimestampLogger(ILogger decoratedLogger, string dateFormat = default) : base(decoratedLogger) {
 			TimestampFormat = dateFormat ?? DefaultDateFormat;
 		}
 

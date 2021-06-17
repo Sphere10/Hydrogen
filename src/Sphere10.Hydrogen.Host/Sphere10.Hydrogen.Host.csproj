@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -6,7 +6,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Sphere10.Framework.Application\Sphere10.Framework.Application.csproj" />
     <ProjectReference Include="..\Sphere10.Framework\Sphere10.Framework.csproj" />
+    <ProjectReference Include="..\Sphere10.Hydrogen.Core\Sphere10.Hydrogen.Core.csproj" />
   </ItemGroup>
 
 </Project>

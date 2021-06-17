@@ -6,6 +6,4 @@
 		public abstract int Serialize(TItem item, EndianBinaryWriter writer);
 
 	}
-
-
 }

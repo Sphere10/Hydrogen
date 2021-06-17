@@ -11,11 +11,6 @@ namespace Sphere10.Helium.Route {
 	/// ALL input and output to and from the Node goes through the Router.
 	/// </summary>
 	public interface IRouter {
-		
-		/// <summary>
-		/// This is the Router's main and ONLY queue.
-		/// </summary>
-		protected IRouterQueue RouterQueue { get; set; }
 
 		/// <summary>
 		/// In code configuration for Router parameters.

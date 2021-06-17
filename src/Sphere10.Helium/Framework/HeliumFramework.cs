@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Sphere10.Framework.Application;
-using Sphere10.Helium.Route;
+using Sphere10.Helium.Router;
 
 namespace Sphere10.Helium.Framework {
 	public class HeliumFramework {
@@ -14,8 +14,6 @@ namespace Sphere10.Helium.Framework {
 
 		public IRouter Router { get; set; }
 
-		public IList<PluginAssemblyHandler> PluginAssemblyHandlerList { get; set; }
-
 		public void StartHeliumFramework() {
 			var heliumAssembly = typeof(ModuleConfiguration).Assembly;
 			var moduleConfiguration = (ModuleConfiguration)heliumAssembly.CreateInstance("Sphere10.Helium.ModuleConfiguration");
@@ -25,10 +23,15 @@ namespace Sphere10.Helium.Framework {
 
 			moduleConfiguration.RegisterComponents(ComponentRegistry.Instance);
 
-			Router = ComponentRegistry.Instance.Resolve<Route.Router>();
+			Router = ComponentRegistry.Instance.Resolve<Router.Router>();
 
 			if (Router == null)
 				throw new ArgumentNullException($"Router");
+		}
+
+		public void LoadHandlerTypes(IList<PluginAssemblyHandler> handlerTypeList) {
+			var handlerInstigator = ComponentRegistry.Instance.Resolve<InstantiateHandler>();
+			handlerInstigator.PluginAssemblyHandlerList = handlerTypeList;
 		}
 	}
 }

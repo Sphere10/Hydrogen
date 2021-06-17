@@ -1,11 +1,9 @@
 ﻿using System.Collections.Generic;
 using Sphere10.Helium.Endpoint;
 using Sphere10.Helium.Message;
-using Sphere10.Helium.Queue;
 using Sphere10.Helium.Retry;
-using Sphere10.Helium.Router;
 
-namespace Sphere10.Helium.Route {
+namespace Sphere10.Helium.Router {
 
 	public class Router : IRouter {
 		private readonly IRetryManager _retryManager;

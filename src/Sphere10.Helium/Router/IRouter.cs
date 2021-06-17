@@ -4,7 +4,7 @@ using Sphere10.Helium.Message;
 using Sphere10.Helium.Queue;
 using Sphere10.Helium.Router;
 
-namespace Sphere10.Helium.Route {
+namespace Sphere10.Helium.Router {
 
 	/// <summary>
 	/// The Router is single point of contact for the Node.

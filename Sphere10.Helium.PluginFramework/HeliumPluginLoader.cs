@@ -31,7 +31,7 @@ namespace Sphere10.Helium.PluginFramework
                 GetHandlers(pluginAssembly);
             }
 
-            HeliumFramework.Instance.PluginAssemblyHandlerList = PluginAssemblyHandlerList;
+            HeliumFramework.Instance.LoadHandlerTypes(PluginAssemblyHandlerList);
         }
 
         private static Assembly LoadPluginAssembly(string relativePath)
@@ -52,7 +52,7 @@ namespace Sphere10.Helium.PluginFramework
 
         private static void GetHandlers(Assembly assembly)
         {
-            var count = assembly.GetTypes().Aggregate(0, (current, type) => CheckIfInterfaceIsHandler(type, current));
+            var count = assembly.GetTypes().Aggregate(0, (current, type) => CheckIfInterfaceIsHandler(type, current, assembly.FullName));
 
             if (count != 0) return;
 
@@ -64,7 +64,7 @@ namespace Sphere10.Helium.PluginFramework
             Console.WriteLine(typeString);
         }
 
-        private static int CheckIfInterfaceIsHandler(Type type, int count) {
+        private static int CheckIfInterfaceIsHandler(Type type, int count, string assemblyFullName) {
 
             foreach (var i in type.GetInterfaces()) {
                 //TODO: Jake: do not compare string but rather compare Type. How the bleep am I going to that?
@@ -74,6 +74,7 @@ namespace Sphere10.Helium.PluginFramework
                 count++;
 
                 var handlerType = new PluginAssemblyHandler {
+                    AssemblyFullName = assemblyFullName,
                     Handler = i,
                     Message = i.GetGenericArguments()[0]
                 };

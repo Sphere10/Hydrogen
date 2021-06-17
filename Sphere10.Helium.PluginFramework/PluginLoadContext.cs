@@ -17,7 +17,6 @@ namespace Sphere10.Helium.PluginFramework
 
         protected override Assembly Load(AssemblyName assemblyName)
         {
-
             if (DefaultLoadedAssemblies.Contains(assemblyName.Name))
             {
                 // ReSharper disable once ConditionIsAlwaysTrueOrFalse

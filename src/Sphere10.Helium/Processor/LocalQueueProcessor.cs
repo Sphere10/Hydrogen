@@ -1,6 +1,7 @@
 ﻿using System;
 using Sphere10.Framework;
 using Sphere10.Helium.Bus;
+using Sphere10.Helium.Framework;
 using Sphere10.Helium.Message;
 using Sphere10.Helium.Queue;
 
@@ -8,18 +9,20 @@ namespace Sphere10.Helium.Processor {
 	public class LocalQueueProcessor : ILocalQueueProcessor {
 		private readonly BusConfiguration _endpointConfiguration;
 		private readonly QueueConfigDto _queueConfigDto;
+		private readonly IInstantiateHandler _instantiateHandler;
 
-		private IHeliumQueue _localQueue;
-		private IHeliumQueue _processingQueue;
+		public IHeliumQueue LocalQueue { get; set; }
+		public IHeliumQueue ProcessingQueue { get; set; }
 
-		public LocalQueueProcessor(BusConfiguration endpointConfiguration, QueueConfigDto queueConfigDto) {
+		public LocalQueueProcessor(BusConfiguration endpointConfiguration, QueueConfigDto queueConfigDto, IInstantiateHandler instantiateHandler) {
 			_endpointConfiguration = endpointConfiguration;
 			_queueConfigDto = queueConfigDto;
+			_instantiateHandler = instantiateHandler;
 
-			_localQueue = SetupLocalQueue();
-			_processingQueue = SetupProcessingQueue();
+			LocalQueue = SetupLocalQueue();
+			ProcessingQueue = SetupProcessingQueue();
 		}
-
+		
 		public void OnCommittedLocalQueue(object sender) {
 			throw new NotImplementedException();
 		}
@@ -29,21 +32,21 @@ namespace Sphere10.Helium.Processor {
 		}
 
 		public void MoveFirstMessageFromLocalToProcessing() {
-			if (_localQueue.Count == 0)
+			if (LocalQueue.Count == 0)
 				throw new InvalidOperationException("CRITICAL ERROR: LocalQueue is empty and should not be empty. Message missing cannot proceed.");
 
 			using var txnScope = new FileTransactionScope(_queueConfigDto.TempDirPath, ScopeContextPolicy.None);
 
-			txnScope.EnlistFile(_localQueue, false);
-			txnScope.EnlistFile(_processingQueue, false);
+			txnScope.EnlistFile(LocalQueue, false);
+			txnScope.EnlistFile(ProcessingQueue, false);
 			
-			var localQueueMessage = _localQueue[^1];
+			var localQueueMessage = LocalQueue[^1];
 				
-			using (_processingQueue.EnterWriteScope()) {
-				_processingQueue.Add(localQueueMessage);
+			using (ProcessingQueue.EnterWriteScope()) {
+				ProcessingQueue.Add(localQueueMessage);
 			}
 
-			_localQueue.RemoveAt(^1);
+			LocalQueue.RemoveAt(^1);
 			txnScope.Commit();
 		}
 
@@ -51,26 +54,26 @@ namespace Sphere10.Helium.Processor {
 
 			using var txnScope = new FileTransactionScope(_queueConfigDto.TempDirPath, ScopeContextPolicy.None);
 
-			txnScope.EnlistFile(_localQueue, false);
+			txnScope.EnlistFile(LocalQueue, false);
 
-			using (_localQueue.EnterWriteScope()) {
-				_localQueue.Add(message);
+			using (LocalQueue.EnterWriteScope()) {
+				LocalQueue.Add(message);
 			}
 
 			txnScope.Commit();
 		}
 
 		public IMessage TakeFirstMessageOutOfLocalQueue() {
-			if (_localQueue.Count == 0)
+			if (LocalQueue.Count == 0)
 				throw new InvalidOperationException("CRITICAL ERROR: LocalQueue is empty and should not be empty. Message missing cannot proceed.");
 
 			using var txnScope = new FileTransactionScope(_queueConfigDto.TempDirPath, ScopeContextPolicy.None);
 
-			txnScope.EnlistFile(_localQueue, false);
+			txnScope.EnlistFile(LocalQueue, false);
 
-			var localQueueMessage = _localQueue[^1];
+			var localQueueMessage = LocalQueue[^1];
 
-			_localQueue.RemoveAt(^1);
+			LocalQueue.RemoveAt(^1);
 
 			txnScope.Commit();
 
@@ -78,12 +81,11 @@ namespace Sphere10.Helium.Processor {
 		}
 
 		private IHeliumQueue SetupLocalQueue() {
-			return _localQueue ??= new LocalQueue(_queueConfigDto);
+			return LocalQueue ??= new LocalQueue(_queueConfigDto);
 		}
 
 		private IHeliumQueue SetupProcessingQueue() {
-			return _processingQueue ??= new ProcessingQueue(_queueConfigDto);
+			return ProcessingQueue ??= new ProcessingQueue(_queueConfigDto);
 		}
-
 	}
 }

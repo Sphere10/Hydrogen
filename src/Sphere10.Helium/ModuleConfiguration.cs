@@ -1,7 +1,9 @@
 ﻿using Sphere10.Framework.Application;
+using Sphere10.Helium.Framework;
+using Sphere10.Helium.Processor;
 using Sphere10.Helium.Queue;
 using Sphere10.Helium.Retry;
-using Sphere10.Helium.Route;
+using Sphere10.Helium.Router;
 
 namespace Sphere10.Helium {
 	public class ModuleConfiguration : ModuleConfigurationBase {
@@ -19,7 +21,14 @@ namespace Sphere10.Helium {
 				registry.RegisterComponent<IRetryManager, RetryManager>(ActivationType.Singleton);
 
 			if (!registry.HasImplementationFor<IRouter>())
-				registry.RegisterComponent<IRouter, Route.Router>(ActivationType.Singleton);
+				registry.RegisterComponent<IRouter, Router.Router>(ActivationType.Singleton);
+
+			if (!registry.HasImplementationFor<ILocalQueueProcessor>())
+				registry.RegisterComponent<ILocalQueueProcessor, LocalQueueProcessor>(ActivationType.Singleton);
+
+			if (!registry.HasImplementationFor<IInstantiateHandler>())
+				registry.RegisterComponent<IInstantiateHandler, InstantiateHandler>(ActivationType.Singleton);
+
 		}
 	}
 }

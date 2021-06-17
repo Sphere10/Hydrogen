@@ -7,17 +7,18 @@ namespace Sphere10.Helium.Loader {
 	/// This Project will be deleted once Helium is integrated into Hydrogen.
 	/// </summary>
 	public class Program {
-		public static Route.IRouter Router;
+		private static Router.IRouter _router;
 
 		public static void Main(string[] args) {
 			var heliumPluginLoader = new HeliumPluginLoader();
-
 			var heliumFramework = heliumPluginLoader.GetHeliumFramework();
 			heliumFramework.StartHeliumFramework();
 
-			Router = heliumFramework.Router;
+			_router = heliumFramework.Router;
 
 			heliumPluginLoader.LoadPlugins(GetRelativeAssemblyPathNameList());
+
+			Test_SendTestMessage1ToRouter();
 		}
 
 		private static string[] GetRelativeAssemblyPathNameList() {
@@ -25,6 +26,10 @@ namespace Sphere10.Helium.Loader {
 					@"Sphere10.Helium.BlueService\bin\Debug\net5.0\Sphere10.Helium.BlueService.dll",
 					@"Sphere10.Helium.Usage\bin\Debug\net5.0\Sphere10.Helium.Usage.dll"
 			};
+		}
+
+		private static void Test_SendTestMessage1ToRouter() {
+			//_router.InputMessage()
 		}
 	}
 }

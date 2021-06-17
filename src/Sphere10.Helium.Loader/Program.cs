@@ -3,7 +3,8 @@
 namespace Sphere10.Helium.Loader {
 
 	/// <summary>
-	/// IMPORTANT: This is the Sphere10 node.
+	/// IMPORTANT: This simulates is the Sphere10 node.
+	/// This Project will be deleted once Helium is integrated into Hydrogen.
 	/// </summary>
 	public class Program {
 		public static Route.IRouter Router;
@@ -25,6 +26,5 @@ namespace Sphere10.Helium.Loader {
 					@"Sphere10.Helium.Usage\bin\Debug\net5.0\Sphere10.Helium.Usage.dll"
 			};
 		}
-
 	}
 }

@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 namespace Sphere10.Framework.Communications {
     public sealed class AnonymousClientPipe : AnonymousPipe {
 
-
         public AnonymousClientPipe(AnonymousPipeEndpoint endpoint) {
             Guard.ArgumentNotNull(endpoint, nameof(endpoint));
             this.Endpoint = endpoint;

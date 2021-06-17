@@ -18,5 +18,9 @@ namespace Sphere10.Framework {
 			return serializer.Deserialize(bytes.Length, reader);
 		}
 
+		public static IItemSerializer<TBase> AsBaseSerializer<TItem, TBase>(this IItemSerializer<TItem> serializer) where TItem : TBase
+			=> new CastedSerializer<TBase, TItem>(serializer);
+
+
 	}
 }

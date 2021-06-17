@@ -89,7 +89,7 @@ namespace Sphere10.Framework {
 						}
 
 						if (!parameter.Traits.HasFlag(CommandLineParameterOptions.RequiresValue)) {
-							parameters.Add(parameter.Name, null);
+							parameters.Add(parameter.Name);
 							parameter = null;
 						}
 					}

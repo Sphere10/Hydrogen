@@ -5,10 +5,10 @@ namespace Sphere10.Framework.Communications.RPC {
 
 	//batch object for batch of remote function calls
 	public class ApiBatchCallDescriptor {
-		public List<Tuple<System.Type, string, object[]>> functionCalls = new List<Tuple<System.Type, string, object[]>>();
+		public List<Tuple<System.Type, string, object[]>> FunctionCalls = new List<Tuple<System.Type, string, object[]>>();
+
 		//helper to avoid mega initializer with many new inside of them
-		public void Call<T>(string methodName, params object[] arguments) { functionCalls.Add(new Tuple<System.Type, string, object[]>(typeof(T), methodName, arguments)); }
-		public void Call(string methodName, params object[] arguments) { functionCalls.Add(new Tuple<System.Type, string, object[]>(typeof(Void), methodName, arguments)); }
-	}
-		
+		public void Call<T>(string methodName, params object[] arguments) => FunctionCalls.Add(new Tuple<System.Type, string, object[]>(typeof(T), methodName, arguments)); 
+		public void Call(string methodName, params object[] arguments) => FunctionCalls.Add(new Tuple<System.Type, string, object[]>(typeof(Void), methodName, arguments)); 
+	}		
 }

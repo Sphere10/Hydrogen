@@ -20,7 +20,7 @@ namespace Sphere10.Framework.Communications.RPC {
 		public static int MaxClientConnectionPerSecondOccurencesBeforeTotalBan = 3;
 
 		//Handle global MaxConnectionCount
-		protected static int _connectionCount = 0;
+		private static int _connectionCount = 0;
 		public enum MaxConnecitonPolicy { ConnectionOpen, ConnectionClose}
 		//TODO: use ent/delegates on TcpClients
 		static public void ValidateConnectionCount(MaxConnecitonPolicy policyAction) {

@@ -16,7 +16,7 @@ using System.Collections.Generic;
 namespace Sphere10.Framework {
 
 
-	public class MultiKeyMap<K, V, C> : MultiKeyDictionary2<K, C> where C : ICollection<V>, new() {
+	public class MultiKeyMap<K, V, C> : EnumerableKeyDictionary<K, C> where C : ICollection<V>, new() {
 
 		public MultiKeyMap() {
 		}

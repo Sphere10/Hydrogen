@@ -49,10 +49,6 @@ namespace Sphere10.Framework {
 
 	public abstract class DictionaryDecorator<TKey, TValue> : DictionaryDecorator<TKey, TValue, IDictionary<TKey, TValue>> {
 	
-		protected DictionaryDecorator()
-			: this(new Dictionary<TKey, TValue>()) {
-		}
-
 		protected DictionaryDecorator(IDictionary<TKey, TValue> internalDictionary) 
 			: base(internalDictionary) {
 		}

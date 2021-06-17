@@ -27,7 +27,7 @@ namespace Sphere10.Framework.Tests {
 
         [Test]
         public void TestSimple() {
-            var dict = new MultiKeyDictionary2<string, int>();
+            var dict = new EnumerableKeyDictionary<string, int>();
             dict.Add(11, "1", "1");
             dict.Add(12, "1", "2");
             dict.Add(21, "2", "1");
@@ -47,7 +47,7 @@ namespace Sphere10.Framework.Tests {
 
         [Test]
         public void LookupObjectKey_SameNumericTypeCode() {
-            var dict = new MultiKeyDictionary2<object, string>();
+            var dict = new EnumerableKeyDictionary<object, string>();
             dict.Add("magic", (int)1);
             Assert.True(dict.ContainsKey((int)1));
         }
@@ -55,28 +55,28 @@ namespace Sphere10.Framework.Tests {
 
         [Test]
         public void LookupObjectKey_VaryingNumericTypeCode_1() {
-            var dict = new MultiKeyDictionary2<object, string>();
+            var dict = new EnumerableKeyDictionary<object, string>();
             dict.Add("magic", (int)1);
             Assert.True(dict.ContainsKey((uint)1));
         }
 
         [Test]
         public void LookupObjectKey_VaryingNumericTypeCode_2() {
-            var dict = new MultiKeyDictionary2<object, string>();
+            var dict = new EnumerableKeyDictionary<object, string>();
             dict.Add("magic", (sbyte)1);
             Assert.True(dict.ContainsKey((ulong)1));
         }
 
         [Test]
         public void LookupObjectKey_VaryingNumericTypeCode_3() {
-            var dict = new MultiKeyDictionary2<object, string>();
+            var dict = new EnumerableKeyDictionary<object, string>();
             dict.Add("magic", (int)1);
             Assert.True(dict.ContainsKey((long)1));
         }
 
         [Test]
         public void LookupObjectKey_VaryingNumericTypeCode_4() {
-            var dict = new MultiKeyDictionary2<object, string>();
+            var dict = new EnumerableKeyDictionary<object, string>();
             dict.Add("magic", (float)1);
             Assert.True(dict.ContainsKey((double)1));
         }

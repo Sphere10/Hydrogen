@@ -23,6 +23,7 @@ namespace Sphere10.Hydrogen.Core.Maths {
 
         public bool RealTime => true;
 
+        //ASERT Head time to current time
 		public virtual uint CalculateNextBlockTarget(IEnumerable<DateTime> previousBlockTimestamps, uint previousCompactTarget, uint blockNumber) {
             if (!previousBlockTimestamps.Any())
                 return TargetAlgorithm.MinCompactTarget; // start at minimum
@@ -37,6 +38,7 @@ namespace Sphere10.Hydrogen.Core.Maths {
         }
 
         public uint CalculateNextBlockTarget (uint previousCompactTarget, int timestampDelta, int blockTimeSec, int relaxationTime) {
+
             const int FloatingPointResolution = 6;
             var prevBlockTarget = TargetAlgorithm.ToTarget(previousCompactTarget);
             var exp = FixedPoint.Exp((timestampDelta - blockTimeSec) / (FixedPoint)relaxationTime);
@@ -46,8 +48,6 @@ namespace Sphere10.Hydrogen.Core.Maths {
             var nextCompactTarget = TargetAlgorithm.FromTarget(nextTarget);
             return nextCompactTarget;
         }
-
 	}
-
 
 }

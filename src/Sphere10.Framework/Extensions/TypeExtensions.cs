@@ -25,6 +25,8 @@ namespace Sphere10.Framework {
 	/// <remarks></remarks>
 	public static class TypeExtensions {
 
+		public static bool HasSubType(this Type type, Type otherType) => otherType.IsAssignableFrom(type);
+
 		/// <summary>
 		/// Determines whether <paramref name="type"/> is a constructed type of <paramref name="genericTypeDefinition"/>.
 		/// </summary>

@@ -42,6 +42,11 @@ namespace Sphere10.Framework {
 			return base.ContainsKey(key1) && this[key1].ContainsKey(key2);
 		}
 
+		public bool TryGetValue(K1 key1, K2 key2, out V value) {
+			value = default;
+			return TryGetValue(key1, out var dict) && dict.TryGetValue(key2, out value);
+        }
+
 		public new IEnumerable<V> Values =>
 			from baseDict in base.Values
 			from baseKey in baseDict.Keys
@@ -67,6 +72,12 @@ namespace Sphere10.Framework {
 		public bool ContainsKey(K1 key1, K2 key2, K3 key3) {
 			return base.ContainsKey(key1) && this[key1].ContainsKey(key2, key3);
 		}
+
+		public bool TryGetValue(K1 key1, K2 key2, K3 key3, out V value) {
+			value = default;
+			return TryGetValue(key1, out var dict) && dict.TryGetValue(key2, key3, out value);
+		}
+
 	}
 
 	public class MultiKeyDictionary<K1, K2, K3, K4, V> : Dictionary<K1, MultiKeyDictionary<K2, K3, K4, V>> {
@@ -87,6 +98,11 @@ namespace Sphere10.Framework {
 
 		public bool ContainsKey(K1 key1, K2 key2, K3 key3, K4 key4) {
 			return base.ContainsKey(key1) && this[key1].ContainsKey(key2, key3, key4);
+		}
+
+		public bool TryGetValue(K1 key1, K2 key2, K3 key3, K4 key4, out V value) {
+			value = default;
+			return TryGetValue(key1, out var dict) && dict.TryGetValue(key2, key3, key4, out value);
 		}
 	}
 
@@ -109,6 +125,11 @@ namespace Sphere10.Framework {
 		public bool ContainsKey(K1 key1, K2 key2, K3 key3, K4 key4, K5 key5) {
 			return base.ContainsKey(key1) && this[key1].ContainsKey(key2, key3, key4, key5);
 		}
+
+		public bool TryGetValue(K1 key1, K2 key2, K3 key3, K4 key4, K5 key5, out V value) {
+			value = default;
+			return TryGetValue(key1, out var dict) && dict.TryGetValue(key2, key3, key4, key5, out value);
+		}
 	}
 
 	public class MultiKeyDictionary<K1, K2, K3, K4, K5, K6, V> : Dictionary<K1, MultiKeyDictionary<K2, K3, K4, K5, K6, V>> {
@@ -129,6 +150,11 @@ namespace Sphere10.Framework {
 
 		public bool ContainsKey(K1 key1, K2 key2, K3 key3, K4 key4, K5 key5, K6 key6) {
 			return base.ContainsKey(key1) && this[key1].ContainsKey(key2, key3, key4, key5, key6);
+		}
+
+		public bool TryGetValue(K1 key1, K2 key2, K3 key3, K4 key4, K5 key5, K6 key6, out V value) {
+			value = default;
+			return TryGetValue(key1, out var dict) && dict.TryGetValue(key2, key3, key4, key5, key6, out value);
 		}
 	}
 
@@ -151,6 +177,11 @@ namespace Sphere10.Framework {
 		public bool ContainsKey(K1 key1, K2 key2, K3 key3, K4 key4, K5 key5, K6 key6, K7 key7) {
 			return base.ContainsKey(key1) && this[key1].ContainsKey(key2, key3, key4, key5, key6, key7);
 		}
+
+		public bool TryGetValue(K1 key1, K2 key2, K3 key3, K4 key4, K5 key5, K6 key6, K7 key7, out V value) {
+			value = default;
+			return TryGetValue(key1, out var dict) && dict.TryGetValue(key2, key3, key4, key5, key6, key7, out value);
+		}
 	}
 
 	public class MultiKeyDictionary<K1, K2, K3, K4, K5, K6, K7, K8, V> : Dictionary<K1, MultiKeyDictionary<K2, K3, K4, K5, K6, K7, K8, V>> {
@@ -171,6 +202,11 @@ namespace Sphere10.Framework {
 
 		public bool ContainsKey(K1 key1, K2 key2, K3 key3, K4 key4, K5 key5, K6 key6, K7 key7, K8 key8) {
 			return base.ContainsKey(key1) && this[key1].ContainsKey(key2, key3, key4, key5, key6, key7, key8);
+		}
+
+		public bool TryGetValue(K1 key1, K2 key2, K3 key3, K4 key4, K5 key5, K6 key6, K7 key7, K8 key8, out V value) {
+			value = default;
+			return TryGetValue(key1, out var dict) && dict.TryGetValue(key2, key3, key4, key5, key6, key7, key8, out value);
 		}
 	}
 
@@ -193,6 +229,11 @@ namespace Sphere10.Framework {
 		public bool ContainsKey(K1 key1, K2 key2, K3 key3, K4 key4, K5 key5, K6 key6, K7 key7, K8 key8, K9 key9) {
 			return base.ContainsKey(key1) && this[key1].ContainsKey(key2, key3, key4, key5, key6, key7, key8, key9);
 		}
+
+		public bool TryGetValue(K1 key1, K2 key2, K3 key3, K4 key4, K5 key5, K6 key6, K7 key7, K8 key8, K9 key9, out V value) {
+			value = default;
+			return TryGetValue(key1, out var dict) && dict.TryGetValue(key2, key3, key4, key5, key6, key7, key8, key9, out value);
+		}
 	}
 
 	public class MultiKeyDictionary<K1, K2, K3, K4, K5, K6, K7, K8, K9, K10, V> : Dictionary<K1, MultiKeyDictionary<K2, K3, K4, K5, K6, K7, K8, K9, K10, V>> {
@@ -214,6 +255,11 @@ namespace Sphere10.Framework {
 		public bool ContainsKey(K1 key1, K2 key2, K3 key3, K4 key4, K5 key5, K6 key6, K7 key7, K8 key8, K9 key9, K10 key10) {
 			return base.ContainsKey(key1) && this[key1].ContainsKey(key2, key3, key4, key5, key6, key7, key8, key9, key10);
 		}
+
+		public bool TryGetValue(K1 key1, K2 key2, K3 key3, K4 key4, K5 key5, K6 key6, K7 key7, K8 key8, K9 key9, K10 key10, out V value) {
+			value = default;
+			return TryGetValue(key1, out var dict) && dict.TryGetValue(key2, key3, key4, key5, key6, key7, key8, key9, key10, out value);
+		}
 	}
 
 	public class MultiKeyDictionary<K1, K2, K3, K4, K5, K6, K7, K8, K9, K10, K11, V> : Dictionary<K1, MultiKeyDictionary<K2, K3, K4, K5, K6, K7, K8, K9, K10, K11, V>> {
@@ -234,6 +280,11 @@ namespace Sphere10.Framework {
 
 		public bool ContainsKey(K1 key1, K2 key2, K3 key3, K4 key4, K5 key5, K6 key6, K7 key7, K8 key8, K9 key9, K10 key10, K11 key11) {
 			return base.ContainsKey(key1) && this[key1].ContainsKey(key2, key3, key4, key5, key6, key7, key8, key9, key10, key11);
+		}
+
+		public bool TryGetValue(K1 key1, K2 key2, K3 key3, K4 key4, K5 key5, K6 key6, K7 key7, K8 key8, K9 key9, K10 key10, K11 key11, out V value) {
+			value = default;
+			return TryGetValue(key1, out var dict) && dict.TryGetValue(key2, key3, key4, key5, key6, key7, key8, key9, key10, key11, out value);
 		}
 	}
 }

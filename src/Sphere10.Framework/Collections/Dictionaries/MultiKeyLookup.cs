@@ -19,10 +19,10 @@ namespace Sphere10.Framework {
 
 	public class MultiKeyLookup<K, V> : ILookup<IEnumerable<K>, V> {
 
-		protected readonly MultiKeyDictionary2<K, List<V>> InternalLookup;
+		protected readonly EnumerableKeyDictionary<K, List<V>> InternalLookup;
 
 		internal MultiKeyLookup(IEqualityComparer<K> comparer) {
-			InternalLookup = new MultiKeyDictionary2<K, List<V>>(comparer);
+			InternalLookup = new EnumerableKeyDictionary<K, List<V>>(comparer);
 		}
 
 		#region ILookup Implementation

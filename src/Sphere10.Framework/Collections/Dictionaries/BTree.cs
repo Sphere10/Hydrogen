@@ -19,16 +19,9 @@ using System.Reflection;
 
 namespace Sphere10.Framework {
 
-	[Obfuscation(Exclude = true)]
 	public class BTree<K, V> : IDictionary<K, V> where K : IComparable<K> {
 		private readonly int order;
 	    private BTreeNode _root;
-
-	    public int Count { get; private set; }
-
-	    public TreeTraversalType TraversalType { get; set; }
-
-		public bool IsReadOnly => false;
 
 		public BTree(int order) {
 			if (order < 2) {
@@ -37,6 +30,36 @@ namespace Sphere10.Framework {
 
 			this.order = order;
 			this._root = null;
+		}
+
+		public int Count { get; private set; }
+
+	    public TreeTraversalType TraversalType { get; set; }
+
+		public bool IsReadOnly => false;
+
+		public ICollection<K> Keys {
+			get {
+				List<K> keysList = new List<K>();
+
+				foreach (KeyValuePair<K, V> thisOne in this) {
+					keysList.Add(thisOne.Key);
+				}
+
+				return keysList;
+			}
+		}
+
+		public ICollection<V> Values {
+			get {
+				List<V> valuesList = new List<V>();
+
+				foreach (KeyValuePair<K, V> thisOne in this) {
+					valuesList.Add(thisOne.Value);
+				}
+
+				return valuesList;
+			}
 		}
 
 		public void Add(KeyValuePair<K, V> item) {
@@ -79,6 +102,135 @@ namespace Sphere10.Framework {
 					currentNode.Records.Add(new BTreeNodeRecord(key, value));
 					currentNode.Records.Sort();
 					this.Count++;
+				}
+			}
+		}
+
+		public bool Remove(KeyValuePair<K, V> item) {
+			return this.Remove(item.Key);
+		}
+
+		public bool Remove(K key) {
+			if (this._root == null) {
+				return false;
+			}
+
+			BTreeNode foundNode = this.FindNode(this._root, key, -1, true);
+
+			if (foundNode == null) {
+				return false;
+			}
+
+			if (foundNode.ClosestRecord(key).Item.Key.Equals(key)) {
+				this.FixPathSingles(key);
+
+				foundNode = this.FindNode(this._root, key, -1, true);
+
+				if (foundNode.IsLeaf) {
+					if (foundNode.Records.Count > 1) {
+						this.RemoveLeaf(key);
+					} else {
+						this._root = null;
+						this.Count = 0;
+					}
+				} else {
+					this.RemoveInternal(key);
+				}
+
+				return true;
+			}
+
+			return false;
+		}
+
+		public void Clear() {
+			this._root = null;
+			this.Count = 0;
+		}
+
+		public bool TryGetValue(K key, out V value) {
+			value = default(V);
+
+			BTreeNodeRecord found = this.FindRecord(this._root, key, -1, true);
+
+			if (found != null) {
+				value = found.Item.Value;
+				return true;
+			}
+
+			return false;
+		}
+
+		public V this[K key] {
+			get {
+				V value = default(V);
+				if (this.TryGetValue(key, out value)) {
+					return value;
+				} else {
+					throw new KeyNotFoundException();
+				}
+			}
+			set {
+				this.Add(key, value);
+			}
+		}
+
+		public bool ContainsKey(K key) {
+			V val = default(V);
+
+			bool found = this.TryGetValue(key, out val);
+
+			if (found) {
+				return true;
+			}
+
+			return false;
+		}
+
+		public bool Contains(KeyValuePair<K, V> item) {
+			V val = default(V);
+
+			bool found = this.TryGetValue(item.Key, out val);
+
+			if (found && val.Equals(item.Value)) {
+				return true;
+			}
+
+			return false;
+		}
+
+		public void CopyTo(KeyValuePair<K, V>[] array, int arrayIndex) {
+			int copySpots = array.Length - arrayIndex;
+
+			if (this.Count > copySpots) {
+				throw new IndexOutOfRangeException();
+			}
+
+			foreach (KeyValuePair<K, V> rec in this) {
+				array[arrayIndex++] = rec;
+			}
+		}
+
+		public IEnumerator GetEnumerator() {
+			if (this._root == null) {
+				yield break;
+			}
+
+			if (TraversalType == TreeTraversalType.PostOrder) {
+				foreach (KeyValuePair<K, V> thisOne in this.EnumeratePostOrder(this._root)) {
+					yield return thisOne;
+				}
+			} else if (TraversalType == TreeTraversalType.PreOrder) {
+				foreach (KeyValuePair<K, V> thisOne in this.EnumeratePreOrder(this._root)) {
+					yield return thisOne;
+				}
+			} else if (TraversalType == TreeTraversalType.LevelOrder) {
+				foreach (KeyValuePair<K, V> thisOne in this.EnumerateLevelOrder()) {
+					yield return thisOne;
+				}
+			} else {
+				foreach (KeyValuePair<K, V> thisOne in this.EnumerateInOrder(this._root)) {
+					yield return thisOne;
 				}
 			}
 		}
@@ -139,43 +291,6 @@ namespace Sphere10.Framework {
 			}
 
 			return parentNode;
-		}
-
-		public bool Remove(KeyValuePair<K, V> item) {
-			return this.Remove(item.Key);
-		}
-
-		public bool Remove(K key) {
-			if (this._root == null) {
-				return false;
-			}
-
-			BTreeNode foundNode = this.FindNode(this._root, key, -1, true);
-
-			if (foundNode == null) {
-				return false;
-			}
-
-			if (foundNode.ClosestRecord(key).Item.Key.Equals(key)) {
-				this.FixPathSingles(key);
-
-				foundNode = this.FindNode(this._root, key, -1, true);
-
-				if (foundNode.IsLeaf) {
-					if (foundNode.Records.Count > 1) {
-						this.RemoveLeaf(key);
-					} else {
-						this._root = null;
-						this.Count = 0;
-					}
-				} else {
-					this.RemoveInternal(key);
-				}
-
-				return true;
-			}
-
-			return false;
 		}
 
 		private void RemoveLeaf(K key) {
@@ -383,11 +498,6 @@ namespace Sphere10.Framework {
 			return this._root;
 		}
 
-		public void Clear() {
-			this._root = null;
-			this.Count = 0;
-		}
-
 		private BTreeNode FindNode(BTreeNode start, K key, int depthRestriction, bool exactMatch) {
 			if (this._root == null) {
 				return null;
@@ -454,117 +564,6 @@ namespace Sphere10.Framework {
 			}
 
 			return null;
-		}
-
-		public bool TryGetValue(K key, out V value) {
-			value = default(V);
-
-			BTreeNodeRecord found = this.FindRecord(this._root, key, -1, true);
-
-			if (found != null) {
-				value = found.Item.Value;
-				return true;
-			}
-
-			return false;
-		}
-
-		public V this[K key] {
-			get {
-				V value = default(V);
-				if (this.TryGetValue(key, out value)) {
-					return value;
-				} else {
-					throw new KeyNotFoundException();
-				}
-			}
-			set {
-				this.Add(key, value);
-			}
-		}
-
-		public bool ContainsKey(K key) {
-			V val = default(V);
-
-			bool found = this.TryGetValue(key, out val);
-
-			if (found) {
-				return true;
-			}
-
-			return false;
-		}
-
-		public bool Contains(KeyValuePair<K, V> item) {
-			V val = default(V);
-
-			bool found = this.TryGetValue(item.Key, out val);
-
-			if (found && val.Equals(item.Value)) {
-				return true;
-			}
-
-			return false;
-		}
-
-		public void CopyTo(KeyValuePair<K, V>[] array, int arrayIndex) {
-			int copySpots = array.Length - arrayIndex;
-
-			if (this.Count > copySpots) {
-				throw new IndexOutOfRangeException();
-			}
-
-			foreach (KeyValuePair<K, V> rec in this) {
-				array[arrayIndex++] = rec;
-			}
-		}
-
-		public ICollection<K> Keys {
-			get {
-				List<K> keysList = new List<K>();
-
-				foreach (KeyValuePair<K, V> thisOne in this) {
-					keysList.Add(thisOne.Key);
-				}
-
-				return keysList;
-			}
-		}
-
-		public ICollection<V> Values {
-			get {
-				List<V> valuesList = new List<V>();
-
-				foreach (KeyValuePair<K, V> thisOne in this) {
-					valuesList.Add(thisOne.Value);
-				}
-
-				return valuesList;
-			}
-		}
-
-		public IEnumerator GetEnumerator() {
-			if (this._root == null) {
-				yield break;
-			}
-
-			if (TraversalType == TreeTraversalType.PostOrder) {
-				foreach (KeyValuePair<K, V> thisOne in this.EnumeratePostOrder(this._root)) {
-					yield return thisOne;
-				}
-			} else if (TraversalType == TreeTraversalType.PreOrder) {
-				foreach (KeyValuePair<K, V> thisOne in this.EnumeratePreOrder(this._root)) {
-					yield return thisOne;
-				}
-			} else if (TraversalType == TreeTraversalType.LevelOrder) {
-				foreach (KeyValuePair<K, V> thisOne in this.EnumerateLevelOrder()) {
-					yield return thisOne;
-				}
-			} else {
-				foreach (KeyValuePair<K, V> thisOne in this.EnumerateInOrder(this._root)) {
-					yield return thisOne;
-				}
-			}
 		}
 
 		IEnumerator<KeyValuePair<K, V>> IEnumerable<KeyValuePair<K, V>>.GetEnumerator() {
@@ -668,14 +667,14 @@ namespace Sphere10.Framework {
 		}
 
 		protected class BTreeNodeRecord : IComparable, IComparable<BTreeNodeRecord> {
-			public KeyValuePair<K, V> Item { get; set; }
-			public BTreeNode Left { get; set; }
-			public BTreeNode Right { get; set; }
-
 			public BTreeNodeRecord(K key, V value) {
 				this.Item = new KeyValuePair<K, V>(key, value);
 			}
 
+			public BTreeNode Left { get; set; }
+			public BTreeNode Right { get; set; }
+
+			public KeyValuePair<K, V> Item { get; set; }
 			public int CompareTo(BTreeNodeRecord other) {
 				return this.Item.Key.CompareTo(other.Item.Key);
 			}
@@ -690,69 +689,43 @@ namespace Sphere10.Framework {
 		}
 
 		protected class BTreeNode {
-			private int treeOrder;
+			private int _treeOrder;
+
+			public BTreeNode(int treeOrder) {
+				this._treeOrder = treeOrder;
+				this.Records = new List<BTreeNodeRecord>();
+			}
+
+			public BTreeNode(int treeOrder, K key, V value) {
+				this._treeOrder = treeOrder;
+				this.Records = new List<BTreeNodeRecord>();
+				this.Records.Add(new BTreeNodeRecord(key, value));
+			}
 
 			public List<BTreeNodeRecord> Records { get; set; }
 
 			public bool IsLeaf {
 				get {
-					foreach (BTreeNodeRecord thisRecord in this.Records) {
-						if (thisRecord.Left != null || thisRecord.Right != null) {
+					foreach (var thisRecord in this.Records) 
+                        if (thisRecord.Left != null || thisRecord.Right != null) 
 							return false;
-						}
-					}
-
 					return true;
 				}
 			}
 
-			public bool HasRoom {
-				get {
-					if (this.Records.Count < (this.treeOrder - 1)) {
-						return true;
-					}
+            public bool HasRoom => Records.Count < (_treeOrder - 1);
 
-					return false;
-				}
-			}
+            public bool VulnerableToTheft => Records.Count > 1;
 
-			public bool VulnerableToTheft {
-				get {
-					if (this.Records.Count > 1) {
-						return true;
-					}
-
-					return false;
-				}
-			}
-
-			public BTreeNode(int treeOrder) {
-				this.treeOrder = treeOrder;
-				this.Records = new List<BTreeNodeRecord>();
-			}
-
-			public BTreeNode(int treeOrder, K key, V value) {
-				this.treeOrder = treeOrder;
-				this.Records = new List<BTreeNodeRecord>();
-				this.Records.Add(new BTreeNodeRecord(key, value));
-			}
-
-			public BTreeNodeRecord LeftOf(BTreeNodeRecord rec) {
-				if (!this.Records.Contains(rec)) {
+            public BTreeNodeRecord LeftOf(BTreeNodeRecord rec) {
+				if (!Records.Contains(rec)) 
 					return null;
-				}
-
-				int idxOf = this.Records.IndexOf(rec);
-
-				if (this.IndexIsInRange(idxOf - 1)) {
-					return this.Records[idxOf - 1];
-				} else {
-					return null;
-				}
-			}
+				int idxOf = Records.IndexOf(rec);
+                return IndexIsInRange(idxOf - 1) ? Records[idxOf - 1] : null;
+            }
 
 			public BTreeNodeRecord RightOf(BTreeNodeRecord rec) {
-				BTreeNodeRecord recFound = this.ClosestRecord(rec.Item.Key);
+                BTreeNodeRecord recFound = this.ClosestRecord(rec.Item.Key);
 
 				if (recFound.Item.Key.CompareTo(rec.Item.Key) != 0) {
 					return null;

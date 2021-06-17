@@ -81,7 +81,7 @@ namespace Sphere10.Framework.Tests {
 			if (!authorised)
 				base.Stop();
 			else {
-				serverThread.Start();
+				ServerThread.Start();
 			}
 		}
 

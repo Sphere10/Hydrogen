@@ -8,26 +8,27 @@ using System.Net;
 namespace Sphere10.Framework.Communications.RPC {
 	//Implement a TCP communication endpoint listnener
 	public class TcpEndPointListener : IEndPoint {
-		private TcpListener		tcpListener;
-		private int				maxListeners = 5;
+		private TcpListener		TcpListener;
+		private int				MaxListeners = 5;
 		public int				MaxMessageSize { get; set; } = 4096;
+
 		public TcpEndPointListener(bool isLocal, int port, int maxListener) {
-			tcpListener = new TcpListener(isLocal ? IPAddress.Loopback : IPAddress.Any, port);
-			maxListeners = maxListener;
+			TcpListener = new TcpListener(isLocal ? IPAddress.Loopback : IPAddress.Any, port);
+			MaxListeners = maxListener;
 		}
 
 		public string GetDescription() { 
-			return tcpListener != null ? $"{((IPEndPoint)tcpListener.LocalEndpoint).Address.ToString()}:{((IPEndPoint)tcpListener.LocalEndpoint).Port}" : "";
+			return TcpListener != null ? $"{((IPEndPoint)TcpListener.LocalEndpoint).Address.ToString()}:{((IPEndPoint)TcpListener.LocalEndpoint).Port}" : "";
 		}
 		public ulong GetUID() {
-			return tcpListener != null ? (ulong)tcpListener.Server.Handle.ToInt64() : 0;
+			return TcpListener != null ? (ulong)TcpListener.Server.Handle.ToInt64() : 0;
 		}
 
 		//wait for connection and return client's endpoint
 		public IEndPoint WaitForMessage() {
 			TcpEndPoint newClient = null;
 			try {
-				TcpClient client = tcpListener.AcceptTcpClient();
+				TcpClient client = TcpListener.AcceptTcpClient();
 				newClient = new TcpEndPoint(client);
 			}
 			catch(Exception e) {
@@ -45,20 +46,20 @@ namespace Sphere10.Framework.Communications.RPC {
 
 		//Write a message to a specific client (not to the Listening socket).
 		public void WriteMessage(EndpointMessage message) {
-			Debug.Assert(message.stream != null);
-			message.stream.WriteMessage(message);
+			Debug.Assert(message.Stream != null);
+			message.Stream.WriteMessage(message);
 		}
 
 		public bool IsOpened() {
-			return tcpListener.Server.IsBound;
+			return TcpListener.Server.IsBound;
 		}
 
 		public void Start() {
-			tcpListener.Start(maxListeners);
+			TcpListener.Start(MaxListeners);
 		}
 
 		public void Stop() {
-			tcpListener.Stop();
+			TcpListener.Stop();
 		}
 	}
 }

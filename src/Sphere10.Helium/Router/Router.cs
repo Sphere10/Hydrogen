@@ -1,27 +1,28 @@
 ﻿using System.Collections.Generic;
 using Sphere10.Helium.Endpoint;
 using Sphere10.Helium.Message;
-using Sphere10.Helium.Queue;
-using Sphere10.Helium.Router;
+using Sphere10.Helium.Retry;
 
-namespace Sphere10.Helium.Route {
+namespace Sphere10.Helium.Router {
 
 	public class Router : IRouter {
+		private readonly IRetryManager _retryManager;
+		//private readonly IHeliumQueue _routerQueue;
+		//private readonly IHeliumQueue _localQueue;
 
-		private readonly IConfigureThisEndpoint _endpointConfiguration;
-		private readonly IHeliumQueue _routerQueue;
+		//public Router(IHeliumQueue routerQueue, IHeliumQueue localQueue) {
+		//	_routerQueue = routerQueue;
+		//	_localQueue = localQueue;
+		//}
 
-		public Router(IConfigureThisEndpoint endpointConfiguration, IHeliumQueue routerQueue) {
-			_endpointConfiguration = endpointConfiguration;
-			_routerQueue = routerQueue;
+		public Router(IRetryManager retryManager) {
+			_retryManager = retryManager;
+
 		}
-
-		IRouterQueue IRouter.RouterQueue { get; set; }
 
 		RouterConfigDto IRouter.RouterConfigDto { get; set; }
 
 		bool IRouter.OutputMessage(IMessage message) {
-			var x = _routerQueue.Count; //TODO: Jake remove this. Done to get rid of Not Used warning.//
 
 			throw new System.NotImplementedException();
 		}

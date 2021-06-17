@@ -4,18 +4,13 @@ using Sphere10.Helium.Message;
 using Sphere10.Helium.Queue;
 using Sphere10.Helium.Router;
 
-namespace Sphere10.Helium.Route {
+namespace Sphere10.Helium.Router {
 
 	/// <summary>
 	/// The Router is single point of contact for the Node.
 	/// ALL input and output to and from the Node goes through the Router.
 	/// </summary>
 	public interface IRouter {
-		
-		/// <summary>
-		/// This is the Router's main and ONLY queue.
-		/// </summary>
-		protected IRouterQueue RouterQueue { get; set; }
 
 		/// <summary>
 		/// In code configuration for Router parameters.

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Diagnostics;
 using Sphere10.Framework;
 using Sphere10.Hydrogen.Core.Consensus;
@@ -12,12 +13,12 @@ namespace Sphere10.Hydrogen.Core.Mining {
 		
 		public event EventHandlerEx<object, MiningPuzzle, MiningSolutionResult> SolutionSubmited;
 		public event EventHandlerEx<object, MiningPuzzle, MiningSolutionResult> StatusChanged;
-		protected uint _nonceSpace = (uint)Tools.Maths.RNG.Next();
 
-		protected MiningManagerBase(CHF hashAlgorithm, ICompactTargetAlgorithm powAlgorithm, IDAAlgorithm daAlgorithm, Configuration config) {
+		protected MiningManagerBase(CHF hashAlgorithm, ICompactTargetAlgorithm powAlgorithm, IDAAlgorithm daAlgorithm, IItemSerializer<NewMinerBlock> blockSerializer,  Configuration config) {
 			HashAlgorithm = hashAlgorithm;
 			DAAlgorithm = daAlgorithm;
 			PoWAlgorithm = powAlgorithm;
+			BlockSerializer = blockSerializer;
 			Config = config;
 			MiningTarget = DAAlgorithm.CalculateNextBlockTarget(Enumerable.Empty<DateTime>(), 0, 0);
 		}
@@ -34,6 +35,8 @@ namespace Sphere10.Hydrogen.Core.Mining {
 
 		protected Configuration Config { get; }
 
+		protected IItemSerializer<NewMinerBlock> BlockSerializer { get; }
+
 		public MiningPuzzle RequestPuzzle(string minerTag) {
 			using (EnterReadScope()) {
 				var now = DateTime.UtcNow;
@@ -41,23 +44,16 @@ namespace Sphere10.Hydrogen.Core.Mining {
 				var block = new NewMinerBlock {
 					Timestamp = (uint)DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
 					MinerTag = minerTag,
-					Nonce = GeneratePuzzleStartNonce(),
-					NoncePlane = GeneratePuzzleStartNonce(),
-					NonceSpace = _nonceSpace,
+					Nonce = (uint)Tools.Maths.RNG.Next(),
+					ExtraNonce = (ulong)Tools.Maths.RNG.Next(),
+					MinerNonce = (uint)Tools.Maths.RNG.Next(),
+					NodeNonce = (uint)Tools.Maths.RNG.Next(),
 					MerkelRoot = "   Put MerkelRoot Here ".PadLeft(32).ToAsciiByteArray(),
 					PreviousBlockHash = "   Put Previous Block Hash here ".PadLeft(32).ToAsciiByteArray(),
 					CompactTarget = MiningTarget,
-					Config = new Dictionary<string, object> {
-						{"maxtime", ((DateTime)timeRange.End) },
-						{"hashalgo", HashAlgorithm.ToString() },
-						{"powalgo", PoWAlgorithm.GetType().Name },
-						{"daaalgo", DAAlgorithm.GetType().Name },
-						{"daaalgo.blocktime", (DAAlgorithm as ASERT_RTT).Config.BlockTime},
-						{"daaalgo.relaxtime", (DAAlgorithm as ASERT_RTT).Config.RelaxationTime},
-					}
 				};
 
-				return new MiningPuzzle(block, timeRange, MiningTarget, HashAlgorithm, PoWAlgorithm);
+				return new MiningPuzzle(block, timeRange, MiningTarget, HashAlgorithm, PoWAlgorithm, BlockSerializer );
 			}
 		}
 
@@ -74,7 +70,7 @@ namespace Sphere10.Hydrogen.Core.Mining {
 						result = MiningSolutionResult.RejectedStale;
 					}
 				}
-				Debug.WriteLine("Testing Result " + result.ToString());
+				
 				NotifyOnSubmitSolution(puzzle, result);
 				return result;
 			}

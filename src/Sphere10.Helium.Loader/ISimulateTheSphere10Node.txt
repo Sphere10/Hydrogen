@@ -1,0 +1,2 @@
+﻿This is just a reminder that this project simmulates the Sphere10 Node while building Helium.
+This file will be deleted once Helium is integrated into Hydrogen.

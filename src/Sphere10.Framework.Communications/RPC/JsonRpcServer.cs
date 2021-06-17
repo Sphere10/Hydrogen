@@ -14,22 +14,27 @@ namespace Sphere10.Framework.Communications.RPC {
 	//Json server as an ApiService 
 
 	public class JsonRpcServer : JsonRpcClient {
-		protected bool cancelThread = false;
-		protected int clientCallID = 1;
-		protected Thread serverThread;
-		protected static ThreadLocal<ulong> clientContext = new ThreadLocal<ulong>(() => 0);
-
-		//For now, ClientContext is the client's UID
-		public static ulong ClientContext { get { return clientContext.Value; } }
+		private static ThreadLocal<ulong> _clientContext = new ThreadLocal<ulong>(() => 0);
+		protected bool CancelThread = false;
+		protected int ClientCallID = 1;
+		protected Thread ServerThread;
+		public ILogger Logger { get; set; }
 
 		//KeepAlive will not disconnect client at every call.
 		public JsonRpcServer(IEndPoint endpoint, bool keepAlive = false) : base(endpoint) {
 			KeepAlive = keepAlive;
-			serverThread = new Thread(() => { this.Run(); });
+			ServerThread = new Thread(() => { this.Run(); });
+
+#if DEBUG
+			Logger = new TimestampLogger(new ActionLogger(s => Debug.WriteLine(s)));
+#endif
 		}
 
+		//For now, ClientContext is the client's UID
+		public static ulong ClientContext { get { return _clientContext.Value; } }
+
 		// Convert 'param' into a list of objects. NOTE: will support taking param names into account later. 
-		List<object> ParseArguments(JsonRequest jreq) {
+		protected List<object> ParseArguments(JsonRequest jreq) {
 			List<object> arguments = new List<object>();
 			if (jreq.Params is Newtonsoft.Json.Linq.JArray) {
 				IEnumerable<object> enumerable = jreq.Params as IEnumerable<object>;
@@ -49,7 +54,7 @@ namespace Sphere10.Framework.Communications.RPC {
 		public virtual void Start() {
 			Debug.Assert(EndPoint is TcpEndPointListener);
 			EndPoint.Start();
-			serverThread.Start();
+			ServerThread.Start();
 		}
 
 		protected JsonResponse ExecuteFunction(JsonRequest jsonReq) {
@@ -78,24 +83,23 @@ namespace Sphere10.Framework.Communications.RPC {
 		}
 
 		public int ClientRun(IEndPoint clientEndPoint) {
-			clientContext.Value = clientEndPoint.GetUID();
+			_clientContext.Value = clientEndPoint.GetUID();
 			EndpointMessage jsonMessage = null;
 			try {
-				//TODO: use log system here
-				Debug.WriteLine($"Server. processing message from {clientEndPoint.GetDescription()}");
+				Logger?.Info($"Server. processing messages from {clientEndPoint.GetDescription()}");
 				TcpSecurityPolicies.ValidateConnectionCount(TcpSecurityPolicies.MaxConnecitonPolicy.ConnectionOpen);
 				TcpSecurityPolicies.MonitorPotentialAttack(TcpSecurityPolicies.AttackType.ConnectionFlod, clientEndPoint);
 
 				jsonMessage = clientEndPoint.ReadMessage();
-#if DEBUG
-				//Debug.WriteLine("Server received :" + jsonMessage.ToString());
-#endif
+
+				Logger?.Debug("Server received :" + jsonMessage.ToString());
+
 				List<JsonRequest> requests = new List<JsonRequest>();
 				List<JsonResponse> jresults = new List<JsonResponse>();
-				if (jsonMessage.messageData[0] == '[' && jsonMessage.messageData.Last() == ']')
-					requests = JsonConvert.DeserializeObject<JsonRequest[]>(jsonMessage.ToString(), jsonSettings).ToList();
+				if (jsonMessage.MessageData[0] == '[' && jsonMessage.MessageData.Last() == ']')
+					requests = JsonConvert.DeserializeObject<JsonRequest[]>(jsonMessage.ToString(), JsonSettings).ToList();
 				else
-					requests.Add(JsonConvert.DeserializeObject<JsonRequest>(jsonMessage.ToString(), jsonSettings));
+					requests.Add(JsonConvert.DeserializeObject<JsonRequest>(jsonMessage.ToString(), JsonSettings));
 
 				//pre-init return value with error msg in case of unexpected exception
 				for(int i=0; i < requests.Count; i++)
@@ -104,21 +108,21 @@ namespace Sphere10.Framework.Communications.RPC {
 				//execute rpc
 				for(int i=0; i < requests.Count; i++) {
 					jresults[i] = ExecuteFunction(requests[i]);
-					jresults[i].Id = Interlocked.Increment(ref clientCallID);
+					jresults[i].Id = Interlocked.Increment(ref ClientCallID);
 				}
 
 				//answer back to remote peer
 				if (jresults.Count == 1)
-					jsonMessage.FromString(JsonConvert.SerializeObject(jresults[0], jsonSettings));
+					jsonMessage.FromString(JsonConvert.SerializeObject(jresults[0], JsonSettings));
 				else
-					jsonMessage.FromString(JsonConvert.SerializeObject(jresults, jsonSettings));
+					jsonMessage.FromString(JsonConvert.SerializeObject(jresults, JsonSettings));
 				EndPoint.WriteMessage(jsonMessage);
 
 				if (KeepAlive)
 					jsonMessage = EndPoint.ReadMessage();
 				else {
-					jsonMessage.stream.Stop();
-					jsonMessage.stream = null;
+					jsonMessage.Stream.Stop();
+					jsonMessage.Stream = null;
 				}
 
 			} catch (SocketException e) {
@@ -136,8 +140,8 @@ namespace Sphere10.Framework.Communications.RPC {
 			try {
 				//it must be  socket exception. Then close it. 
 				if (jsonMessage != null) {
-					jsonMessage.stream?.Stop();
-					jsonMessage.stream = null;
+					jsonMessage.Stream?.Stop();
+					jsonMessage.Stream = null;
 				}
 			} catch (Exception) {
 				throw;
@@ -149,20 +153,19 @@ namespace Sphere10.Framework.Communications.RPC {
 
 		public virtual void Run() {
 			Thread.CurrentThread.Name = "JsonRpcServer";
-			while (!cancelThread) {
+			while (!CancelThread) {
 				try {
 					//deserialize received client text in a Task.
 					IEndPoint jsonClient = EndPoint.WaitForMessage(); 
-					if (cancelThread == false)
+					if (CancelThread == false)
 						Task<int>.Factory.StartNew((_jsonClient) => {
 							return ClientRun((IEndPoint)_jsonClient);
 						}, jsonClient);
 
 				} catch (Exception e) {
-					if (cancelThread == false) {
+					if (CancelThread == false) {
 						//handle network lost ...
-						//TODO: Use log system here
-						Debug.WriteLine($"Json server exception '{e.ToString()}'");
+						Logger?.Error($"Json server exception '{e.ToString()}'");
 						Thread.Sleep(20);
 					}
 				}
@@ -170,7 +173,7 @@ namespace Sphere10.Framework.Communications.RPC {
 		}
 
 		public virtual void Stop() {
-			cancelThread = true;
+			CancelThread = true;
 			EndPoint.Stop();
 			Thread.Sleep(50);
 		}

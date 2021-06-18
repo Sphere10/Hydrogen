@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using Sphere10.Framework;
 using Sphere10.Helium.Framework;
 using Sphere10.Helium.Handler;
 
@@ -10,10 +11,12 @@ namespace Sphere10.Helium.PluginFramework
 {
     public class HeliumPluginLoader : IHeliumPluginLoader
     {
+        private readonly ILogger _logger;
         private static IList<PluginAssemblyHandler> PluginAssemblyHandlerList { get; set; }
 
-        public HeliumPluginLoader()
+        public HeliumPluginLoader(ILogger logger)
         {
+            _logger = logger;
             PluginAssemblyHandlerList = new List<PluginAssemblyHandler>();
         }
 
@@ -21,7 +24,10 @@ namespace Sphere10.Helium.PluginFramework
 
         public HeliumFramework GetHeliumFramework()
         {
-            return HeliumFramework.Instance;
+            var heliumFrameworkInstance = HeliumFramework.Instance;
+            heliumFrameworkInstance.Logger = _logger;
+
+            return heliumFrameworkInstance;
         }
 
         public void LoadPlugins(string[] relativeAssemblyPathList)
@@ -86,6 +92,8 @@ namespace Sphere10.Helium.PluginFramework
 
         public string[] GetEnabledPlugins()
         {
+            _logger.Info("I am in GetEnabledPlugins.");
+
             var result = PluginAssemblyHandlerList.Where(y => y.IsEnabled).
                 Select(y => y.AssemblyFullName).Distinct().ToArray();
 
@@ -116,7 +124,7 @@ namespace Sphere10.Helium.PluginFramework
             return assembly;
         }
 
-        private static void GetHandlers(Assembly assembly, string relativePath)
+        private void GetHandlers(Assembly assembly, string relativePath)
         {
             var count = assembly.GetTypes().Aggregate(0, (current, type) => CheckIfInterfaceIsHandler(type, current, assembly.FullName, relativePath));
 
@@ -124,8 +132,8 @@ namespace Sphere10.Helium.PluginFramework
 
             var availableTypes = string.Join(",", assembly.GetTypes().Select(t => t.FullName));
             var typeString = $"Can't find any type which implements IHandleMessage<IMessage> in {assembly} from {assembly.Location}.\nAvailable types: {availableTypes}";
+            _logger.Error(typeString);
 
-            //TODO: Jake: typeString needs to be written to a log file. ILogger needs to be injected somehow? One miracle at a time.
             typeString = typeString.Replace(",", "\n");
             Console.WriteLine(typeString);
         }
@@ -134,7 +142,6 @@ namespace Sphere10.Helium.PluginFramework
         {
             foreach (var i in type.GetInterfaces())
             {
-                //TODO: Jake: do not compare string but rather compare Type. How the bleep am I going to that?
                 if (!i.IsGenericType || !string.Equals(i.GetGenericTypeDefinition().AssemblyQualifiedName, typeof(IHandleMessage<>).AssemblyQualifiedName))
                     continue;
 

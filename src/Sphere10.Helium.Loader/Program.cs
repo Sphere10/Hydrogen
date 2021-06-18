@@ -1,5 +1,7 @@
-﻿using Sphere10.Helium.PluginFramework;
-using EnumModeOfOperationType = Sphere10.Helium.Framework.EnumModeOfOperationType;
+﻿using Sphere10.Framework;
+using Sphere10.Framework.Application;
+using Sphere10.Helium.Framework;
+using Sphere10.Helium.PluginFramework;
 
 namespace Sphere10.Helium.Loader {
 
@@ -12,14 +14,17 @@ namespace Sphere10.Helium.Loader {
 
 		public static void Main(string[] args) {
 
-			IHeliumPluginLoader heliumPluginLoader = new HeliumPluginLoader();
+			var logger = new ConsoleLogger();
+
+			IHeliumPluginLoader heliumPluginLoader = new HeliumPluginLoader(logger);
+			heliumPluginLoader.LoadPlugins(GetPluginRelativePathNameList());
 
 			var heliumFramework = heliumPluginLoader.GetHeliumFramework();
 			heliumFramework.ModeOfOperation = EnumModeOfOperationType.HydrogenMode;
 			heliumFramework.StartHeliumFramework();
 			_router = heliumFramework.Router;
 
-			heliumPluginLoader.LoadPlugins(GetPluginRelativePathNameList());
+			var x = heliumPluginLoader.GetEnabledPlugins();
 
 			SimulateMessagesBeingSentToThisNode();
 		}

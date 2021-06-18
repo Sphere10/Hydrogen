@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\src\Sphere10.Helium\Sphere10.Helium.csproj" />
+    <ProjectReference Include="..\Sphere10.Helium\Sphere10.Helium.csproj" />
   </ItemGroup>
 
 </Project>

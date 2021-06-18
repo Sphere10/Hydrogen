@@ -1,16 +1,16 @@
 ﻿using Sphere10.Framework;
-using Sphere10.Framework.Application;
 using Sphere10.Helium.Framework;
 using Sphere10.Helium.PluginFramework;
+using Sphere10.Helium.Router;
 
 namespace Sphere10.Helium.Loader {
 
 	/// <summary>
-	/// IMPORTANT: This simulates the Sphere10 node.
+	/// IMPORTANT: This simulates the Sphere10 node and shows how the HeliumFrame is used.
 	/// This Project will be deleted once Helium is integrated into Hydrogen.
 	/// </summary>
 	public class Program {
-		private static Router.IRouter _router;
+		private static IRouter _router;
 
 		public static void Main(string[] args) {
 
@@ -32,7 +32,10 @@ namespace Sphere10.Helium.Loader {
 		private static string[] GetPluginRelativePathNameList() {
 			return new[] {
 					@"Sphere10.Helium.BlueService\bin\Debug\net5.0\Sphere10.Helium.BlueService.dll",
-					@"Sphere10.Helium.Usage\bin\Debug\net5.0\Sphere10.Helium.Usage.dll"
+					@"Sphere10.Helium.Usage\bin\Debug\net5.0\Sphere10.Helium.Usage.dll",
+					@"Sphere10.Helium.TestPlugin1\bin\Debug\net5.0\Sphere10.Helium.TestPlugin1.dll",
+					@"Sphere10.Helium.TestPlugin2\bin\Debug\net5.0\Sphere10.Helium.TestPlugin2.dll",
+					@"Sphere10.Helium.TestPlugin3\bin\Debug\net5.0\Sphere10.Helium.TestPlugin3.dll"
 			};
 		}
 

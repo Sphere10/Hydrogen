@@ -1,13 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
     <TargetFramework>net5.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Sphere10.Framework\Sphere10.Framework.csproj" />
-    <ProjectReference Include="..\Sphere10.Helium.PluginFramework\Sphere10.Helium.PluginFramework.csproj" />
+    <ProjectReference Include="..\Sphere10.Helium.TestPlugin3.Message\Sphere10.Helium.TestPlugin3.Message.csproj" />
     <ProjectReference Include="..\Sphere10.Helium\Sphere10.Helium.csproj" />
   </ItemGroup>
 

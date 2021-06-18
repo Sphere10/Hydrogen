@@ -11,7 +11,7 @@ namespace Sphere10.Helium.Framework {
 		}
 
 		public static HeliumFramework Instance { get; }
-
+		public EnumModeOfOperationType ModeOfOperation { get; set; }
 		public IRouter Router { get; set; }
 
 		public void StartHeliumFramework() {

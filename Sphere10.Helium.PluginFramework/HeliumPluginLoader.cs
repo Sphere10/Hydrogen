@@ -8,7 +8,7 @@ using Sphere10.Helium.Handler;
 
 namespace Sphere10.Helium.PluginFramework
 {
-    public class HeliumPluginLoader
+    public class HeliumPluginLoader : IHeliumPluginLoader
     {
         private static IList<PluginAssemblyHandler> PluginAssemblyHandlerList { get; set; }
 
@@ -16,6 +16,8 @@ namespace Sphere10.Helium.PluginFramework
         {
             PluginAssemblyHandlerList = new List<PluginAssemblyHandler>();
         }
+
+        public bool AllPluginsEnabled { get; private set; } = true;
 
         public HeliumFramework GetHeliumFramework()
         {
@@ -28,10 +30,74 @@ namespace Sphere10.Helium.PluginFramework
             {
                 var pluginAssembly = LoadPluginAssembly(path);
 
-                GetHandlers(pluginAssembly);
+                GetHandlers(pluginAssembly, path);
             }
 
             HeliumFramework.Instance.LoadHandlerTypes(PluginAssemblyHandlerList);
+        }
+
+        public void EnableThesePlugins(string[] relativePathList)
+        {
+            if (relativePathList == null || relativePathList.Length == 0)
+                return;
+
+            var listToUpdate = from relativePath in relativePathList.ToList()
+                        join assemblyHandler in PluginAssemblyHandlerList
+                    on relativePath.ToUpperInvariant() equals assemblyHandler.RelativePath.ToUpperInvariant()
+                        select new { relativePath, assemblyHandler };
+
+            foreach (var item in listToUpdate)
+                item.assemblyHandler.IsEnabled = true;
+        }
+
+        public void DisableThesePlugins(string[] relativePathList)
+        {
+            if (relativePathList == null || relativePathList.Length == 0)
+                return;
+
+            var listToUpdate = from relativePath in relativePathList.ToList()
+                        join assemblyHandler in PluginAssemblyHandlerList
+                            on relativePath.ToUpperInvariant() equals assemblyHandler.RelativePath.ToUpperInvariant()
+                        select new { relativePath, assemblyHandler };
+
+            foreach (var item in listToUpdate)
+                item.assemblyHandler.IsEnabled = false;
+        }
+
+        public void DisableAllPlugins()
+        {
+            AllPluginsEnabled = false;
+
+            if (PluginAssemblyHandlerList == null || PluginAssemblyHandlerList.Count == 0) return;
+
+            foreach (var x in PluginAssemblyHandlerList)
+                if (x.IsEnabled) x.IsEnabled = false;
+        }
+
+        public void EnableAllPlugins()
+        {
+            AllPluginsEnabled = true;
+
+            if (PluginAssemblyHandlerList == null || PluginAssemblyHandlerList.Count == 0) return;
+
+            foreach (var x in PluginAssemblyHandlerList)
+                if (x.IsEnabled == false) x.IsEnabled = true;
+        }
+
+        public string[] GetEnabledPlugins()
+        {
+            var result = PluginAssemblyHandlerList.Where(y => y.IsEnabled).
+                Select(y => y.AssemblyFullName).Distinct().ToArray();
+
+            return result;
+        }
+
+        public string[] GetDisabledPlugins()
+        {
+            var result = PluginAssemblyHandlerList.Where(y => y.IsEnabled == false).
+                Select(y => y.AssemblyFullName).Distinct().ToArray();
+
+            return result;
         }
 
         private static Assembly LoadPluginAssembly(string relativePath)
@@ -50,30 +116,33 @@ namespace Sphere10.Helium.PluginFramework
             return assembly;
         }
 
-        private static void GetHandlers(Assembly assembly)
+        private static void GetHandlers(Assembly assembly, string relativePath)
         {
-            var count = assembly.GetTypes().Aggregate(0, (current, type) => CheckIfInterfaceIsHandler(type, current, assembly.FullName));
+            var count = assembly.GetTypes().Aggregate(0, (current, type) => CheckIfInterfaceIsHandler(type, current, assembly.FullName, relativePath));
 
             if (count != 0) return;
 
             var availableTypes = string.Join(",", assembly.GetTypes().Select(t => t.FullName));
             var typeString = $"Can't find any type which implements IHandleMessage<IMessage> in {assembly} from {assembly.Location}.\nAvailable types: {availableTypes}";
 
-            //TODO: Jake: typeString needs to be written to a log file. ILogger needs to be injected somehow?
+            //TODO: Jake: typeString needs to be written to a log file. ILogger needs to be injected somehow? One miracle at a time.
             typeString = typeString.Replace(",", "\n");
             Console.WriteLine(typeString);
         }
 
-        private static int CheckIfInterfaceIsHandler(Type type, int count, string assemblyFullName) {
-
-            foreach (var i in type.GetInterfaces()) {
+        private static int CheckIfInterfaceIsHandler(Type type, int count, string assemblyFullName, string relativePath)
+        {
+            foreach (var i in type.GetInterfaces())
+            {
                 //TODO: Jake: do not compare string but rather compare Type. How the bleep am I going to that?
                 if (!i.IsGenericType || !string.Equals(i.GetGenericTypeDefinition().AssemblyQualifiedName, typeof(IHandleMessage<>).AssemblyQualifiedName))
                     continue;
 
                 count++;
 
-                var handlerType = new PluginAssemblyHandler {
+                var handlerType = new PluginAssemblyHandler
+                {
+                    RelativePath = relativePath,
                     AssemblyFullName = assemblyFullName,
                     Handler = i,
                     Message = i.GetGenericArguments()[0]

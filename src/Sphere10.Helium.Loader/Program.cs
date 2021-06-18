@@ -18,7 +18,7 @@ namespace Sphere10.Helium.Loader {
 
 			heliumPluginLoader.LoadPlugins(GetRelativeAssemblyPathNameList());
 
-			Test_SendTestMessage1ToRouter();
+			SimulateMessagesBeingSentToThisNode();
 		}
 
 		private static string[] GetRelativeAssemblyPathNameList() {
@@ -28,7 +28,34 @@ namespace Sphere10.Helium.Loader {
 			};
 		}
 
+		private static void SimulateMessagesBeingSentToThisNode() {
+			Test_SendTestMessage1ToRouter();
+			Test_SendTestMessage2ToRouter();
+			Test_SendTestMessage3ToRouter();
+			Test_SendTestMessage4ToRouter();
+			Test_SendTestMessage5ToRouter();
+		}
+
 		private static void Test_SendTestMessage1ToRouter() {
+
+
+
+			//_router.InputMessage()
+		}
+
+		private static void Test_SendTestMessage2ToRouter() {
+			//_router.InputMessage()
+		}
+
+		private static void Test_SendTestMessage3ToRouter() {
+			//_router.InputMessage()
+		}
+
+		private static void Test_SendTestMessage4ToRouter() {
+			//_router.InputMessage()
+		}
+
+		private static void Test_SendTestMessage5ToRouter() {
 			//_router.InputMessage()
 		}
 	}

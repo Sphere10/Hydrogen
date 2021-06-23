@@ -22,18 +22,22 @@ namespace Sphere10.Hydrogen.Core.HAP {
 	///  %root%/temp
 	///  %root%/archive
 	/// </remarks>
-	public class HydrogenApplicationFolders {
+	public class HydrogenApplicationPaths {
 		private const string AppDirName = "hap";
+		private const string NodeExecutableFile = "Sphere10.Hydrogen.Node.exe";
 		private const string NodeDirName = "node";
 		private const string GuiDirName = "gui";
 		private const string ChainDirName = "chain";
 		private const string LogsDirName = "logs";
 		private const string TempDirName = "temp";
 		private const string ArchiveDirName = "archive";
+		private const string HostLogFileName = "host.log";
+		private const string NodeLogFileName = "node.log";
+		private const string GUILogFileName = "gui.log";
 
 		private readonly string _root;
 
-		public HydrogenApplicationFolders(string root, bool createIfNotExists = false) {
+		public HydrogenApplicationPaths(string root, bool createIfNotExists = false) {
 			_root = root;
 			if (createIfNotExists)
 				CreateDirectoriesIfMissing();
@@ -42,45 +46,50 @@ namespace Sphere10.Hydrogen.Core.HAP {
 		}
 
 		public string Root => _root;
-		public string HapPath => Path.Combine(Root, AppDirName);
-		public string NodePath => Path.Combine(HapPath, NodeDirName);
-		public string GuiPath => Path.Combine(HapPath, NodeDirName);
-		public string ChainPath => Path.Combine(Root, ChainDirName);
-		public string LogsPath => Path.Combine(Root, LogsDirName);
-		public string TempPath => Path.Combine(Root, TempDirName);
-		public string ArchivePath => Path.Combine(Root, ArchiveDirName);
+		public string HapFolder => Path.Combine(Root, AppDirName);
+		public string NodeFolder => Path.Combine(HapFolder, NodeDirName);
+		public string GuiFolder => Path.Combine(HapFolder, NodeDirName);
+		public string ChainFolder => Path.Combine(Root, ChainDirName);
+		public string LogsFolder => Path.Combine(Root, LogsDirName);
+		public string TempFolder => Path.Combine(Root, TempDirName);
+		public string ArchivesFolder => Path.Combine(Root, ArchiveDirName);
+
+		public string NodeExecutable => Path.Combine(NodeFolder, NodeExecutableFile);
+		public string HostLog => Path.Combine(LogsFolder, HostLogFileName);
+		public string NodeLog => Path.Combine(LogsFolder, NodeLogFileName);
+		public string GUILog => Path.Combine(LogsFolder, GUILogFileName);
 
 		private void CreateDirectoriesIfMissing() {
 			if (!Directory.Exists(_root))
 				Directory.CreateDirectory(_root);
 
-			if (!Directory.Exists(HapPath))
-				Directory.CreateDirectory(HapPath);
+			if (!Directory.Exists(HapFolder))
+				Directory.CreateDirectory(HapFolder);
 
-			if (!Directory.Exists(NodePath))
-				Directory.CreateDirectory(NodePath);
+			if (!Directory.Exists(NodeFolder))
+				Directory.CreateDirectory(NodeFolder);
 
-			if (!Directory.Exists(GuiPath))
-				Directory.CreateDirectory(GuiPath);
+			if (!Directory.Exists(GuiFolder))
+				Directory.CreateDirectory(GuiFolder);
 
-			if (!Directory.Exists(LogsPath))
-				Directory.CreateDirectory(LogsPath);
+			if (!Directory.Exists(LogsFolder))
+				Directory.CreateDirectory(LogsFolder);
 
-			if (!Directory.Exists(TempPath))
-				Directory.CreateDirectory(TempPath);
+			if (!Directory.Exists(TempFolder))
+				Directory.CreateDirectory(TempFolder);
 
-			if (!Directory.Exists(ArchivePath))
-				Directory.CreateDirectory(ArchivePath);
+			if (!Directory.Exists(ArchivesFolder))
+				Directory.CreateDirectory(ArchivesFolder);
 		}
 
 		private void EnsureDirectoriesExist() {
-			Guard.DirectoryExists(HapPath);
-			Guard.DirectoryExists(NodePath);
-			Guard.DirectoryExists(GuiPath);
-			Guard.DirectoryExists(ChainPath);
-			Guard.DirectoryExists(LogsPath);
-			Guard.DirectoryExists(TempPath);
-			Guard.DirectoryExists(ArchivePath);
+			Guard.DirectoryExists(HapFolder);
+			Guard.DirectoryExists(NodeFolder);
+			Guard.DirectoryExists(GuiFolder);
+			Guard.DirectoryExists(ChainFolder);
+			Guard.DirectoryExists(LogsFolder);
+			Guard.DirectoryExists(TempFolder);
+			Guard.DirectoryExists(ArchivesFolder);
 		}
 	}
 }

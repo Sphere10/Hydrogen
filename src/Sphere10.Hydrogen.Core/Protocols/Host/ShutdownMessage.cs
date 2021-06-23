@@ -2,6 +2,8 @@
 
 namespace Sphere10.Hydrogen.Core.Protocols.Host {
 	[Serializable]
-	public class Rollback {
+	public class ShutdownMessage {
+
 	}
+
 }

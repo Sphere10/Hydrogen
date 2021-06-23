@@ -1,53 +1,113 @@
 ﻿using Sphere10.Framework;
+using Sphere10.Framework.Communications;
+using Sphere10.Hydrogen.Core.HAP;
+using Sphere10.Hydrogen.Core.Storage;
 using System;
+using System.Configuration;
 using System.Diagnostics;
 using System.IO;
-using System.IO.Pipes;
 using System.Linq;
 using System.Net.Sockets;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Sphere10.Hydrogen.Core.Protocols.Host;
 
 namespace Sphere10.Hydrogen.Host {
 
+
 	class Program {
-		public static CommandLineParameters Arguments = new CommandLineParameters(
-			new[] {
-				"Hydrogen Host v1.0",
+		private static CommandLineParameters Arguments = new CommandLineParameters() {
+			Header = new[] {
+				"HydrogenP2P Host {CurrentVersion}",
 				"Copyright (c) Sphere 10 Software 2021 - {CurrentYear}"
 			},
-			new[] {
+
+			Footer = new[] {
 				"NOTE: The Hydrogen Host will forward all arguments marked [N] above to the Hydrogen Node which is launched as a child-process."
 			},
-			new CommandLineCommand[] {
-				new("development", "Used during development only"),
-				new("config", "Path to the HydrogenHostConfig.ini file used to launch a Hydrogen Node"),
-				new("app", "Path to the Hydrogen Application Package (HAP)"),
-				new("update", "Path to a  which Hydrogen Application Package (HAP)  HydrogenNode executable to host"),
-			});
 
-		private static void RunNode(string nodeExecutable, CancellationToken stopNodeToken) {
-			var nodeProcess = new Process();
-			using var pipeServer = new AnonymousPipeServerStream(PipeDirection.Out, HandleInheritability.Inheritable);
-			nodeProcess.StartInfo.FileName = nodeExecutable;
-			nodeProcess.StartInfo.Arguments = pipeServer.GetClientHandleAsString();
-			nodeProcess.StartInfo.UseShellExecute = false;
-			nodeProcess.Start();
-			pipeServer.DisposeLocalCopyOfClientHandle();
-			using var streamWriter = new StreamWriter(pipeServer) {
-				AutoFlush = true
+			Parameters = new CommandLineParameter[] {
+				new("path", "Root path for Hydrogen Application and location of where deployments occur", CommandLineParameterOptions.Optional | CommandLineParameterOptions.RequiresValue),
+				new("deploy", "Path to an Hydrogen Application Package (HAP) to deploy ", CommandLineParameterOptions.Optional | CommandLineParameterOptions.RequiresValue),
+				new("development", "Used for development and internal use only", CommandLineParameterOptions.Optional),
+			},
+
+			Options = CommandLineArgumentOptions.DoubleDash | CommandLineArgumentOptions.PrintHelpOnH
+		};
+
+		private static ILogger Logger { get; set; }
+
+		private static Protocol NodeProtocol { get; set; }
+
+		private static AnonymousPipe NodePipe { get; set; }
+
+		private static HydrogenApplicationPaths Folders { get; set; }
+
+		private static bool DevelopmentMode { get; set; }
+
+		private static bool Upgrading { get; set; }
+
+		private static Protocol BuildProtocol(ILogger logger)
+			=> new ProtocolBuilder<AnonymousPipe>()
+				.Requests
+					.ForRequest<PingMessage>().RespondWith(() => new PongMessage())
+				.Responses
+					.ForResponse<PongMessage>().ToRequest<PingMessage>().HandleWith(() => Logger.Info("Received Pong"))
+				.Commands
+					.ForCommand<UpgradeMessage>().Execute(async upgradeMessage => await UpgradeNode(upgradeMessage.HydrogenApplicationPackagePath))
+					.ForCommand<ShutdownMessage>().Execute(async () => await NodePipe.Close())
+				.Messages
+					.Use(HostProtocolHelper.BuildMessageSerializer())
+				.Build();
+
+		private static async Task RunHost() {
+			var tcs = new TaskCompletionSource<bool>();
+			NodePipe.Closed += () => {
+				if (!Upgrading)
+					tcs.SetResult(true);
 			};
-			stopNodeToken.Register(() => streamWriter.WriteLine("ABORT"));
-			//Thread.Sleep(5000);
-			//streamWriter.WriteLine("ABORT");
-			nodeProcess.WaitForExit();
-			nodeProcess.Close();
+			await StartNode();
+			var protocolOrchestrator = new ProtocolOrchestrator(NodePipe, NodeProtocol);
+			var protocolRunner = protocolOrchestrator.Run();
+			await Task.WhenAll(tcs.Task, protocolRunner);
 		}
 
-		private static void MonitorHydrogenApplicationUpdate(CancellationTokenSource stopNodeCancellationTokenSource) {
-
+		private static async Task StartNode() {
+			Logger.Info("Starting node");
+			NodePipe?.Dispose();
+			NodePipe = AnonymousPipe.ToChildProcess(Folders.NodeExecutable, NodeProtocol.MessageSerializer, "-hostread {0} -hostwrite {1}", string.Format);
+			await NodePipe.Open();
 		}
+
+		private static async Task StopNode() {
+			Logger.Info("Requesting node shutdown");
+			await NodePipe.SendMessage(ProtocolMessageType.Command, new ShutdownMessage());
+			if (!await NodePipe.TryWaitClose(TimeSpan.FromMinutes(1)))
+				throw new HostException("Node failed to shutdown");
+		}
+
+		private static async Task UpgradeNode(string hapPath) {
+			Logger.Info($"Upgrading application with: {hapPath}");
+			try {
+				Upgrading = true;
+				await StopNode();
+				await DeployHAP(hapPath);
+				await StartNode();
+			} finally {
+				Upgrading = false;
+			}
+		}
+
+		private static async Task DeployHAP(string newHapPath) {
+			Guard.Ensure(!DevelopmentMode, "Cannot deploy HAP in development mode");
+			Guard.FileExists(newHapPath);
+			await Tools.FileSystem.DeleteAllFilesAsync(Folders.HapFolder, true);
+			var zipPackage = new ZipPackage(newHapPath);
+			zipPackage.ExtractTo(Folders.HapFolder);
+		}
+
 
 		private static string GetDevelopmentNodeExecutable() {
 			const string nodeProject = "Sphere10.Hydrogen.Node";
@@ -67,17 +127,41 @@ namespace Sphere10.Hydrogen.Host {
 			var srcDir = Tools.FileSystem.GetParentDirectoryPath(hostExecutable, 5);
 			return Path.Combine(srcDir, nodeProject, "bin", buildConfiguration, "net5.0", nodeExecutable);
 		}
-		
-		static void Main(string[] args) {
-			var stopNodeCancellationTokenSource = new CancellationTokenSource();
+
+		static async Task Main(string[] args) {
 			try {
-				
-				Result<CommandLineResults> parsed = Arguments.TryParseArguments(args);
-				
-				var nodeExecutable = GetDevelopmentNodeExecutable();
-				RunNode(nodeExecutable, stopNodeCancellationTokenSource.Token);
-			}
-			catch (Exception error) {
+				var defaultDeployPath = ConfigurationManager.AppSettings["DefaultDeployPath"];
+				var userArgsResult = Arguments.TryParseArguments(args);
+				if (userArgsResult.Failure) {
+					userArgsResult.ErrorMessages.ForEach(Console.WriteLine);
+					return;
+				}
+				var userArgs = userArgsResult.Value;
+				if (userArgs.HelpRequested) {
+					Arguments.PrintHelp();
+					return;
+				}
+
+				// Get user override deployment path (if applicable)
+				if (userArgs.Parameters.Contains("path"))
+					defaultDeployPath = userArgs.Parameters["path"].Single();
+
+				// setup folders
+				var appRoot = userArgs.Parameters.Contains("path") ? userArgs.Parameters["path"].Single() : Tools.Text.FormatEx(ConfigurationManager.AppSettings["AppRoot"]);
+
+				// setup logger
+				Logger = new MulticastLogger(new FileAppendLogger(Folders.HostLog));
+
+				// Build HostProtocol from the hosts perspective
+				NodeProtocol = BuildProtocol(Logger);
+
+				// Deploy user specified HAP (if applicable)
+				if (userArgs.Parameters.Contains("deploy")) {
+					await Task.Run(() => DeployHAP(defaultDeployPath));
+				}
+
+				await RunHost();
+			} catch (Exception error) {
 				Console.WriteLine($"Hydrogen host terminated abnormally.");
 				Console.Write(error.ToDiagnosticString());
 			}

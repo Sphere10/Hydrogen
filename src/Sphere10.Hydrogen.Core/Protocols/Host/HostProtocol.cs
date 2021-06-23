@@ -4,32 +4,25 @@ using System.Collections.Generic;
 
 namespace Sphere10.Hydrogen.Core.Protocols.Host {
 
-
 	public static class HostProtocolHelper {
 
-
-
-		public static Protocol BuildForNode<TChannel>(ICommandHandler<TChannel, Upgrade> upgradeNodeHandler) where TChannel : ProtocolChannel
+		public static Protocol BuildForNode<TChannel>(ICommandHandler<TChannel, UpgradeMessage> upgradeNodeHandler) where TChannel : ProtocolChannel
 			=> new ProtocolBuilder<TChannel>()
 				.Requests
-					.ForRequest<Ping>().RespondWith((_, _) => new Pong())
+					.ForRequest<PingMessage>().RespondWith((_, _) => new PongMessage())
 				.Commands
-					.ForCommand<Upgrade>().Execute(upgradeNodeHandler)
+					.ForCommand<UpgradeMessage>().Execute(upgradeNodeHandler)
 				.Messages
 					.Use(BuildMessageSerializer())
 				.Build();
 
-
-
 		public static IFactorySerializer<object> BuildMessageSerializer()
 			=> new FactorySerializerBuilder<object>()
-				.For<Ping>(HostProtocolMessageType.Ping).SerializeWith(new BinaryFormattedSerializer<Ping>())
-				.For<Pong>(HostProtocolMessageType.Pong).SerializeWith(new BinaryFormattedSerializer<Pong>())
-				.For<Rollback>(HostProtocolMessageType.Rollback).SerializeWith(new BinaryFormattedSerializer<Rollback>())
-				.For<Shutdown>(HostProtocolMessageType.Shutdown).SerializeWith(new BinaryFormattedSerializer<Shutdown>())
-				.For<Upgrade>(HostProtocolMessageType.Upgrade).SerializeWith(new BinaryFormattedSerializer<Upgrade>())
+				.For<PingMessage>(HostProtocolMessageType.Ping).SerializeWith(new BinaryFormattedSerializer<PingMessage>())
+				.For<PongMessage>(HostProtocolMessageType.Pong).SerializeWith(new BinaryFormattedSerializer<PongMessage>())
+				.For<RollbackMessage>(HostProtocolMessageType.Rollback).SerializeWith(new BinaryFormattedSerializer<RollbackMessage>())
+				.For<ShutdownMessage>(HostProtocolMessageType.Shutdown).SerializeWith(new BinaryFormattedSerializer<ShutdownMessage>())
+				.For<UpgradeMessage>(HostProtocolMessageType.Upgrade).SerializeWith(new BinaryFormattedSerializer<UpgradeMessage>())
 				.Build();
-
-
 	}
 }

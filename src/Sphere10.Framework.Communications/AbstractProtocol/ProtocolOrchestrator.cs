@@ -16,8 +16,8 @@ namespace Sphere10.Framework.Communications {
             _unfulfilledRequests = new SynchronizedDictionary<int, object>();
             Channel = channel;
             Protocol = protocol;
-            Channel.ReceivedMessage += (message) => ProcessReceivedMessage(message);
-            Channel.SentMessage += (message) => ProcessSentMessage(message);
+            Channel.ReceivedMessage += ProcessReceivedMessage;
+            Channel.SentMessage += ProcessSentMessage;
         }
 
         public ProtocolChannel Channel { get; }
@@ -26,7 +26,15 @@ namespace Sphere10.Framework.Communications {
 
         public ILogger Logger { get; init; } = new NoOpLogger();
 
-        public async Task Run(CancellationToken cancellationToken) {
+
+		public static async Task Run(ProtocolChannel channel, Protocol protocol, CancellationToken cancellationToken, ILogger logger = null) {
+	        var orchestrator = new ProtocolOrchestrator(channel, protocol) { Logger = logger ?? new NoOpLogger() };
+	        await orchestrator.Run(cancellationToken);
+        }
+
+		public Task Run() => Run(new CancellationTokenSource().Token);
+
+		public async Task Run(CancellationToken cancellationToken) {
 			var tcs = new TaskCompletionSource<bool>();
             cancellationToken.Register(async () => {
                 if (Channel.State == ProtocolChannelState.Open)
@@ -35,11 +43,6 @@ namespace Sphere10.Framework.Communications {
             });
             Channel.Closed += () => tcs.SetResult(false);
             await tcs.Task;
-        }
-
-        public static async Task Run(ProtocolChannel channel, Protocol protocol, CancellationToken cancellationToken, ILogger logger = null) {
-            var orchestrator = new ProtocolOrchestrator(channel, protocol) { Logger = logger ?? new NoOpLogger() };
-            await orchestrator.Run(cancellationToken);
         }
 
         protected virtual void ProcessReceivedMessage(ProtocolMessageEnvelope envelope) {
@@ -109,7 +112,7 @@ namespace Sphere10.Framework.Communications {
             IResponseHandler responseHandler;
             using (_unfulfilledRequests.EnterWriteScope()) {
                 if (!_unfulfilledRequests.TryGetValue(requestID, out request))
-                    throw new ProtocolException($"No unfullfilled Request with ID {requestID} was found");
+                    throw new ProtocolException($"No unfulfilled Request with ID {requestID} was found");
                 var requestType = request.GetType();
                 if (!Protocol.ResponseHandlers.TryGetValue(requestType, responseType, out responseHandler))
                     throw new ProtocolException($"Response handler for '{responseType}' for Request '{requestType}' not found");

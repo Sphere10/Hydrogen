@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -123,6 +124,11 @@ namespace Sphere10.Framework.Communications {
             return true;
         }
 
+		public async Task SendMessage(ProtocolMessageType messageType, object message) {
+			if (!await TrySendMessage(messageType, message))
+				throw new ProtocolException($"Failed to send message: '{message}'");
+		}
+
         public virtual Task<bool> TrySendMessage(ProtocolMessageType messageType, object message)
             => TrySendMessage(messageType, message, DefaultTimeout);
 
@@ -141,6 +147,16 @@ namespace Sphere10.Framework.Communications {
                 Message = message
             };
             return await TrySendEnvelope(envelope, cancellationToken);
+        }
+
+        public virtual Task<bool> TryWaitClose(TimeSpan timeout)
+	        => TryWaitClose(new CancellationTokenSource(timeout).Token);
+
+        public virtual Task<bool> TryWaitClose(CancellationToken token) {
+	        var tcs = new TaskCompletionSource<bool>();
+	        token.Register(() => tcs.SetResult(false));
+	        this.Closed += () => tcs.SetResult(true);
+	        return tcs.Task;
         }
 
         internal virtual async Task<bool> TrySendEnvelope(ProtocolMessageEnvelope envelope, CancellationToken cancellationToken) {
@@ -169,7 +185,7 @@ namespace Sphere10.Framework.Communications {
         protected abstract Task CloseInternal();
 
         protected virtual async Task<bool> TryWaitHandshake(CancellationToken cancellationToken) => true;
-
+		
         protected virtual async Task ReceiveLoop(CancellationToken cancellationToken) {
             CheckState(ProtocolChannelState.Opening, ProtocolChannelState.Open);
             while (State.IsIn(ProtocolChannelState.Opening, ProtocolChannelState.Open) && IsConnectionAlive() && !cancellationToken.IsCancellationRequested) {

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Sphere10.Framework.Communications {
 
-    public abstract class ProtocolChannel : IAsyncDisposable {
+    public abstract class ProtocolChannel : IDisposable, IAsyncDisposable {
         public const int DefaultTimeoutMS = 5000;
         private const int DefaultMinMessageLength = 0;
         private const int DefaultMaxMessageLength = 65536;
@@ -172,6 +172,10 @@ namespace Sphere10.Framework.Communications {
                 return true;
             }
             return false;
+        }
+
+        public void Dispose() {
+			DisposeAsync().AsTask().WaitSafe();
         }
 
         public async ValueTask DisposeAsync() {

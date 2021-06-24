@@ -6,6 +6,9 @@
 @using System.Threading
 @using Sphere10.Hydrogen.Presentation2.UI.Wizard.Examples
 @using Sphere10.Hydrogen.Presentation2.UI.Wizard.Examples.NewWallet
+
+@using Sphere10.Hydrogen.Presentation2.UI.Controls;
+
 @implements IDisposable
 
 <div class="row">
@@ -22,17 +25,20 @@
                     <li class="nav-item">
                         <a class="nav-link" data-toggle="tab" href="#tab-3">Rapid</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-toggle="tab" href="#tab-4">New Grid</a>
+                    </li>
+
                 </ul>
             </div>
             <div class="card-body">
                 <div class="tab-content">
                     <div class="tab-pane fade active show" id="tab-1">
                         <h5 class="card-title">Paged table</h5>
-                        <PagedTable
-                            Items="Enumerable.Range(1, 100)"
-                            TItem="int"
-                            OnRowSelect="OnRowSelectAsync"
-                            Class="table table-hover table-striped w-100">
+                        <PagedTable Items="Enumerable.Range(1, 100)"
+                                    TItem="int"
+                                    OnRowSelect="OnRowSelectAsync"
+                                    Class="table table-hover table-striped w-100">
                             <HeaderTemplate>
                                 <tr>
                                     <th>i</th>
@@ -48,11 +54,10 @@
                     <div class="tab-pane fade" id="tab-2">
                         <h5 class="card-title">Virtual data source</h5>
                         <p> Items retrieved from data source on demand.</p>
-                        <VirtualPagedTable
-                            ItemsProvider="ItemsProvider"
-                            TItem="int"
-                            OnRowSelect="OnRowSelectAsync"
-                            Class="table table-hover table-striped w-100">
+                        <VirtualPagedTable ItemsProvider="ItemsProvider"
+                                           TItem="int"
+                                           OnRowSelect="OnRowSelectAsync"
+                                           Class="table table-hover table-striped w-100">
                             <HeaderTemplate>
                                 <tr>
                                     <th>i</th>
@@ -85,6 +90,26 @@
                             </ItemTemplate>
                         </RapidTable>
                     </div>
+
+
+
+
+
+
+                    <div class="tab-pane fade" id="tab-4">
+                        <h5 class="card-title">Grid New</h5>
+                        <p>Testing of new Grid</p>
+
+                        <GridNew Id="TestGrid"></GridNew>
+
+                    </div>
+
+
+
+
+
+
+
                 </div>
 
             </div>

@@ -1,0 +1,129 @@
+﻿<h3>Grid New</h3>
+
+@using Microsoft.JSInterop
+@using UI.Controls.Classes;
+
+@inject IJSRuntime JSRuntime
+
+<button @onclick="ButtonClick">Load</button>
+
+<table class="TableClass" style="" id="@Id">
+    <thead>
+        <tr>
+            @foreach (var headerCell in Header) 
+             {
+                <th width="@headerCell.Width"> @headerCell.Name<br />
+                    <div class="ResizableClass">
+                        <input class="ResizableClass" type="search" />
+                    </div>
+                </th>
+             }
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var row in Rows)
+        {
+        <tr @onmousedown="@(e => OnTableRowMouseDown())" style="@GetTableRowStyle()">
+            @foreach (var cell in row)
+            {
+                @*<td width="@cell.Width" class="">*@
+                <td class="ResizableClass">
+                    @cell.Data
+                </td>
+            }
+        </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+
+    [Parameter] public string Id { get; set; }
+    [Parameter] public IEnumerable<Type> Data { get; set; }
+
+    List<Cell> Header { get; set; } = new List<Cell>();
+    List<List<Cell>> Rows { get; set; } = new List<List<Cell>>();
+
+    protected override async Task OnInitializedAsync()
+    //protected override void OnInitialized()
+    {
+        // set up the UI data for frawing the grid from the Data passed in
+
+        LoadData();
+    }
+
+    void LoadData()
+    {
+        Header.Clear();
+        Rows.Clear();
+
+        var testHeader = new string[] { "First Name", "Second Name", "Age", "Suburb" };
+
+        foreach (var header in testHeader) {
+            Header.Add(new Cell(new HeaderData(header, 50), new RowData(20), typeof(int), string.Empty));
+        }
+
+        var testData = new string[2][];
+        testData[0] = new string[] { "1", "2", "3", "4" };
+        testData[1] = new string[] { "5", "6", "7", "8" };
+
+        int rowIndex = 0;
+        foreach (var row in testData)
+        {
+            var rowData = new List<Cell>();
+
+            int columnIndex = 0;
+            foreach (var cell in row)
+            {
+                var cellData = new Cell(Header[columnIndex].Header, Header[columnIndex].Row, typeof(string), cell);
+
+                rowData.Add(cellData);
+                columnIndex++;
+            }
+            Rows.Add(rowData);
+
+            rowIndex++;
+        }
+
+        JSRuntime.InvokeAsync<object>("ResizableColumnTable", new object[] { Id }, DotNetObjectReference.Create<GridNew>(this));
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+        {
+            await JSRuntime.InvokeAsync<object>("ResizableColumnTable", new object[] { Id });
+
+
+
+            // this is needed because the "Add an Item" input keeps the typed in value after a page is refreshed, even though it can be given a blank value
+            //            await jsRuntime.InvokeAsync<object>("ClearNewCheckListText", new object[] { });
+            //            await jsRuntime.InvokeAsync<object>("LoadWorkAssignmentsCheckList", new object[] { });
+        }
+    }
+
+    void OnChange(object data, Type item) {
+
+    }
+
+    void OnTableRowMouseDown() {
+
+    }
+
+    void OnMouseDown(Type item) {
+
+    }
+
+    string GetTableRowStyle() {
+        return string.Empty;
+    }
+
+    void ButtonClick()
+    {
+        LoadData();
+
+
+
+        //JSRuntime.InvokeAsync<object>("ConsoleWrite", "Hello");
+    }
+}

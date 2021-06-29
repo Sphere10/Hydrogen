@@ -6,7 +6,6 @@
 	</PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="JSON\" />
     <Folder Include="Kademlia\" />
     <Folder Include="UDP\" />
     <Folder Include="TCP\" />

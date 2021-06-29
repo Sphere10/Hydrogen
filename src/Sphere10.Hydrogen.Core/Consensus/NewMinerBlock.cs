@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace Sphere10.Hydrogen.Core.Consensus {
 
 	[Serializable]
-	public class NewMinerBlock:BlockBase {
+	public class NewMinerBlock: BlockBase {
 		//version following Major.Minor.SoftFork.00 format
 		public uint Version = 0x00010100;
 		public uint BlockNumber { get; set; }

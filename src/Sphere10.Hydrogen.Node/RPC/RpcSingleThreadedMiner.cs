@@ -65,17 +65,17 @@ namespace Sphere10.Hydrogen.Node.RPC {
 
 		protected virtual void Mine() {
 			try {
-				var blockSerializer = new NewMinerBlockSerializer();
+				var blockSerializer = new NewMinerBlockSerializer(64);
 				while (Status != MinerStatus.Idle) {
-					var work = _rpcClient.RemoteCall<NewMinerBlockSurogate>("getwork", MinerTag).ToNonSurrogate();
+					//ignore ["powalgo"], it's alwys monilaAlgo for now
+					var PoWAlgorithm = new MolinaTargetAlgorithm();
+					var work = _rpcClient.RemoteCall<NewMinerBlockSurogate>("getwork", MinerTag).ToNonSurrogate(PoWAlgorithm);
 					var maxTime = (DateTimeOffset)work.Config["maxtime"];
 					var hashAlgoName = (string)work.Config["hashalgo"];
 					Debug.WriteLine($"Miner: New work packagewith target {work.CompactTarget}. Hashing with {hashAlgoName}");
 
 					//for R&D purpose, we send hash-algo and pow-algo in Block.Config
 					var HashAlgorithm = StringExtensions.ParseEnum<CHF>(hashAlgoName);
-					//ignore ["powalgo"], it's alwys monilaAlgo for now
-					var PoWAlgorithm = new MolinaTargetAlgorithm();
 					//ICompactTargetAlgorithm DAAlgorithm;
 					//if ((string)work.Config["daaalgo"] == "ASERT2")
 					//	DAAlgorithm = (ICompactTargetAlgorithm)new ASERT2(PoWAlgorithm, new ASERTConfiguration { BlockTime = TimeSpan.Parse((string)work.Config["daaalgo.blocktime"]), RelaxationTime = TimeSpan.Parse((string)work.Config["daaalgo.relaxtime"]) });

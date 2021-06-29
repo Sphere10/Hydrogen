@@ -265,9 +265,9 @@ namespace Sphere10.Hydrogen.Node.UI {
 			public void Start() {
 				Guard.Ensure(!IsStarted, "Already Started");
 
-				var chf = Hash switch {
-					HashAlgo.RH2 => throw new NotImplementedException(),
-					HashAlgo.SHA2_256 => CHF.SHA2_256,
+				IMiningHasher hasher = Hash switch {
+					HashAlgo.SHA2_256 => new CHFhasher { Algo = CHF.SHA2_256 },
+					HashAlgo.RH2 => new RandomHash2Hasher(),
 					_ => throw new ArgumentOutOfRangeException()
 				};
 
@@ -277,14 +277,26 @@ namespace Sphere10.Hydrogen.Node.UI {
 					_ => throw new ArgumentOutOfRangeException()
 				};
 
-				
+
 				var daaAlgo = DAA switch {
-					DiffAlgo.ASERT2 => new ASERT2(targetAlgo, new ASERTConfiguration { BlockTime = TimeSpan.FromSeconds(BlockTime), RelaxationTime = TimeSpan.FromSeconds(RelaxationTime)}),
+					DiffAlgo.ASERT2 => new ASERT2(targetAlgo, new ASERTConfiguration { BlockTime = TimeSpan.FromSeconds(BlockTime), RelaxationTime = TimeSpan.FromSeconds(RelaxationTime) }),
 					DiffAlgo.RTT_ASERT => new ASERT_RTT(targetAlgo, new ASERTConfiguration { BlockTime = TimeSpan.FromSeconds(BlockTime), RelaxationTime = TimeSpan.FromSeconds(RelaxationTime) }),
 					_ => throw new ArgumentOutOfRangeException()
 				};
 
-				_miningManager = new TestMiningManager(chf, targetAlgo, daaAlgo, new NewMinerBlockSerializer(), TimeSpan.FromSeconds(RTTInterval));
+				var minerTagSize = 64;
+
+				_miningManager = new TestMiningManager(
+					new MiningConfig { 
+						MinerTagSize = minerTagSize, 
+						Hasher = hasher, 
+						TargetAlgorithm = targetAlgo, 
+						DAAlgorithm = daaAlgo 
+					}, 
+					new NewMinerBlockSerializer(minerTagSize), 
+					TimeSpan.FromSeconds(RTTInterval)
+				);
+
 				for (var i = 0; i < MinerCount; i++) {
 					var miner = new SingleThreadedMiner($"Miner {i + 1}", _miningManager);
 					_miners.Add(miner);

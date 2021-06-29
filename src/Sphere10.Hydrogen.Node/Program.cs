@@ -8,10 +8,18 @@ using System.Reflection;
 using System.Security.Policy;
 using System.Threading;
 using System.Threading.Tasks;
-using Sphere10.Framework.Application;
 using Sphere10.Hydrogen.Node;
+using Sphere10.Framework.Application;
 using Sphere10.Hydrogen.Node.UI;
+//Mining test inclusion
+using Sphere10.Hydrogen.Node.RPC;
+using Sphere10.Hydrogen.Core.Maths;
+using Sphere10.Hydrogen.Core.Mining;
+using Sphere10.Hydrogen.Core.Consensus.Serializers;
+using Sphere10.Hydrogen.Node.UI.Components;
 
+//TEMP
+using Sphere10.Framework.CryptoEx;
 
 namespace Sphere10.Hydrogen.Node {
 
@@ -44,6 +52,9 @@ namespace Sphere10.Hydrogen.Node {
 		}
 
 		static void Main(string[] args) {
+			//NOTE: Until HydrogenInitializer gets called automaticaly, do the equivalent initializations manually.
+			SystemLog.RegisterLogger(new TimestampLogger(new DebugLogger()));
+			Sphere10.Framework.CryptoEx.ModuleConfiguration.Initialize();
 
 			var stopNodeTokenSource = new CancellationTokenSource();
 			Navigator.Start(stopNodeTokenSource.Token);

@@ -1,6 +1,5 @@
 ﻿using Sphere10.Framework;
 using Sphere10.Framework.Application;
-using Sphere10.Hydrogen.Core.Mining;
 using Sphere10.Hydrogen.Node.RPC;
 
 namespace Sphere10.Hydrogen.Node {

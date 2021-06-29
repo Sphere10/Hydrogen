@@ -17,6 +17,12 @@ namespace Sphere10.Framework.Communications.RPC {
 			MessageData = message;
 			Stream = targetStream;
 		}
+		public string ToSafeString() {
+			ASCIIEncoding encoder = new ASCIIEncoding();
+			var safeArray = TcpSecurityPolicies.RemoveControlCharacters(MessageData, MessageData.Length);
+			var trimed = encoder.GetString(MessageData, 0, MessageData.Length).Trim();
+			return trimed;
+		}
 		public override string ToString() {
 			ASCIIEncoding encoder = new ASCIIEncoding();
 			return encoder.GetString(MessageData, 0, MessageData.Length);

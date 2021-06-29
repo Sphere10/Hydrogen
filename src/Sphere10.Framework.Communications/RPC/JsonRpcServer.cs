@@ -18,7 +18,6 @@ namespace Sphere10.Framework.Communications.RPC {
 		protected bool CancelThread = false;
 		protected int ClientCallID = 1;
 		protected Thread ServerThread;
-		public ILogger Logger { get; set; }
 
 		//KeepAlive will not disconnect client at every call.
 		public JsonRpcServer(IEndPoint endpoint, bool keepAlive = false) : base(endpoint) {
@@ -91,19 +90,20 @@ namespace Sphere10.Framework.Communications.RPC {
 				TcpSecurityPolicies.MonitorPotentialAttack(TcpSecurityPolicies.AttackType.ConnectionFlod, clientEndPoint);
 
 				jsonMessage = clientEndPoint.ReadMessage();
+				var message = jsonMessage.ToSafeString();
 
-				Logger?.Debug("Server received :" + jsonMessage.ToString());
+				Logger?.Debug("Server received :" + message);
 
 				List<JsonRequest> requests = new List<JsonRequest>();
 				List<JsonResponse> jresults = new List<JsonResponse>();
-				if (jsonMessage.MessageData[0] == '[' && jsonMessage.MessageData.Last() == ']')
-					requests = JsonConvert.DeserializeObject<JsonRequest[]>(jsonMessage.ToString(), JsonSettings).ToList();
+				if (message[0] == '[' && message.Last() == ']')
+					requests = JsonConvert.DeserializeObject<JsonRequest[]>(message, JsonSettings).ToList();
 				else
-					requests.Add(JsonConvert.DeserializeObject<JsonRequest>(jsonMessage.ToString(), JsonSettings));
+					requests.Add(JsonConvert.DeserializeObject<JsonRequest>(message, JsonSettings));
 
 				//pre-init return value with error msg in case of unexpected exception
 				for(int i=0; i < requests.Count; i++)
-					jresults.Add(new JsonResponse { Error = new JsonRpcException(-8, "Could not execute") });
+					jresults.Add(new JsonResponse { Error = new JsonRpcException(-10, "Could not execute") });
 
 				//execute rpc
 				for(int i=0; i < requests.Count; i++) {
@@ -113,9 +113,9 @@ namespace Sphere10.Framework.Communications.RPC {
 
 				//answer back to remote peer
 				if (jresults.Count == 1)
-					jsonMessage.FromString(JsonConvert.SerializeObject(jresults[0], JsonSettings));
+					jsonMessage.FromString(JsonConvert.SerializeObject(jresults[0], JsonSettings) + "\n");
 				else
-					jsonMessage.FromString(JsonConvert.SerializeObject(jresults, JsonSettings));
+					jsonMessage.FromString(JsonConvert.SerializeObject(jresults, JsonSettings) + "\n");
 				EndPoint.WriteMessage(jsonMessage);
 
 				if (KeepAlive)
@@ -127,13 +127,17 @@ namespace Sphere10.Framework.Communications.RPC {
 
 			} catch (SocketException e) {
 				//capture communication exceptions here (pipe, tcp,...)
+				Logger?.Error("JsonRpcServer Exception :" + e.ToString());
 			} catch (TooManyConnectionsException e) {
-				//capture too many connections exceptoin
+				//capture too many connections exception
+				Logger?.Error("JsonRpcServer Exception :" + e.ToString());
 			} catch (IllegalValueException e) {
 				//capture badly crafted json text exception
 				TcpSecurityPolicies.MonitorPotentialAttack(TcpSecurityPolicies.AttackType.MessageSpoof, clientEndPoint);
+				Logger?.Error("JsonRpcServer Exception :" + e.ToString());
 			} catch (Exception e) {
 				//do someting, maybe !
+				Logger?.Error("JsonRpcServer Exception :" + e.ToString());
 			}
 
 			//send to peer any call exception error

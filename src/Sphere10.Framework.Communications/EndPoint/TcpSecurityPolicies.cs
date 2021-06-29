@@ -40,17 +40,20 @@ namespace Sphere10.Framework.Communications.RPC {
 			//TODO: implement policy for too many spoof and flood attack
 		}
 
+		//Remove all control characters
+		static public byte[] RemoveControlCharacters(byte[] bytes, int bytesRead) {
+			return Array.FindAll(bytes, c => c >= 32 );
+		}
 
 		//Detect spoofed buffer attack.
-		//TODO: ajust the list of allowed control chars as we go...
 		static public void ValidateJsonQuality(byte[] bytes, int bytesRead) {
 			for (int i = 0; i < bytesRead; i++) {
 				byte c = bytes[i];
 				//allowed control chars
 				if (c == 9 || c == 10 || c == 13)
 					continue;
-				//illegal control chars and non-ascii chars
-				if (c < 32 || c >= 127 )
+				//illegal control chars
+				if (c < 32)
 					throw new IllegalValueException("Json text contain illegal characters");
 			}
 		}

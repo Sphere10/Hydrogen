@@ -19,6 +19,7 @@ namespace Sphere10.Framework.Communications.RPC {
 		protected bool KeepAlive = false;
 		//NOTE: to have all byte[] properties serialized using hexa strings, you must also add this attribute to them : JsonConverter(typeof(ByteArrayHexConverter))] on byte array property 
 		protected JsonSerializerSettings JsonSettings = new JsonSerializerSettings {/*Formatting = Formatting.Indented,*/ Converters = { { new ByteArrayHexConverter() } } };
+		public ILogger Logger { get; set; }
 
 		public JsonRpcClient(IEndPoint endPoint, bool keepAlive = false) : base(endPoint) {
 			KeepAlive = keepAlive;
@@ -31,15 +32,18 @@ namespace Sphere10.Framework.Communications.RPC {
 				EndPoint.Stop();
 
 			var messagesJson = new List<JsonRequest>();
-			foreach (var func in batchCalls.FunctionCalls) {
+			foreach (var func in batchCalls.FunctionCalls) { 
 				var id = Interlocked.Increment(ref CallID);
 				messagesJson.Add(new JsonRequest { Method = func.Item2, Params = func.Item3, Id = id });
 			}
-			var messageStr = JsonConvert.SerializeObject(messagesJson, JsonSettings);
+			var messageStr = JsonConvert.SerializeObject(messagesJson, JsonSettings) + "\n";
 			EndPoint.WriteMessage(new EndpointMessage(messageStr));
-			var resultStr = EndPoint.ReadMessage().ToString();
+			var resultStr = EndPoint.ReadMessage().ToSafeString();
+			if (String.IsNullOrEmpty(resultStr))
+				throw new JsonRpcException(-11, $"RPC function cannot be decoded");
+
 #if DEBUG
-			//Debug.WriteLine("Client received :" + resultStr.ToString());
+			Logger?.Debug("Client received :" + resultStr.ToString());
 #endif
 
 			JsonResponse[] result = JsonConvert.DeserializeObject<JsonResponse[]>(resultStr, JsonSettings);
@@ -122,12 +126,14 @@ namespace Sphere10.Framework.Communications.RPC {
 
 			var id = Interlocked.Increment(ref CallID);
 			var messageJson = new JsonRequest { Method = methodName, Params = arguments, Id = id };
-			var messageStr = JsonConvert.SerializeObject(messageJson, JsonSettings);
+			var messageStr = JsonConvert.SerializeObject(messageJson, JsonSettings) + "\n";
 
 			EndPoint.WriteMessage(new EndpointMessage(messageStr));
-			var resultStr = EndPoint.ReadMessage().ToString();
+			var resultStr = EndPoint.ReadMessage().ToSafeString();
+			if (String.IsNullOrEmpty(resultStr))
+				throw new JsonRpcException(-11, $"RPC function cannot be decoded");
 #if DEBUG
-			Debug.WriteLine("Client received :" + resultStr.ToString());
+			Logger?.Debug("Client received :" + resultStr.ToString());
 #endif
 			return resultStr;
 		}

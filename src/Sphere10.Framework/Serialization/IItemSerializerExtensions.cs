@@ -9,7 +9,9 @@ namespace Sphere10.Framework {
 			using var stream = new MemoryStream();
 			using var writer = new EndianBinaryWriter(EndianBitConverter.Little, stream);
 			serializer.Serialize(@object, writer);
-			return stream.GetBuffer();
+			stream.Flush();
+			//NOTE: Dont call stream.GetBuffer() because it returns the entire workbuffer and not just the serialization result.
+			return stream.ToArray();
 		}
 
 		public static TItem DeSerializeLE<TItem>(this IItemSerializer<TItem> serializer, byte[] bytes) {

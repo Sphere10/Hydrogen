@@ -1,11 +1,10 @@
-﻿{
+{
   "$schema": "http://json.schemastore.org/launchsettings.json",
   "profiles": {
     "Sphere10.Hydrogen.Node": {
       "commandName": "Project",
-      "environmentVariables": {
-      },
-      "commandLineArgs": "service --loglevel info"
+      "commandLineArgs": "service --loglevel info",
+      "nativeDebugging": true
     }
   }
 }

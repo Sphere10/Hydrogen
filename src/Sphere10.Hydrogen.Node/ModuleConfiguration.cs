@@ -20,6 +20,9 @@ using Sphere10.Framework;
 using Sphere10.Framework.Application;
 
 namespace Sphere10.Hydrogen.Node {
+
+	 
+
 	public class ModuleConfiguration : ModuleConfigurationBase {
 
 		public override void RegisterComponents(ComponentRegistry registry) {

@@ -27,6 +27,8 @@
 	<ItemGroup>
 		<Folder Include="Attributes\" />
 		<Folder Include="Encoding\" />
+		<Folder Include="Host\" />
+		<Folder Include="Node\" />
 	</ItemGroup>
 
 </Project>

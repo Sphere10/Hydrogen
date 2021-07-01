@@ -2,6 +2,7 @@
   "profiles": {
     "Sphere10.Hydrogen.Host": {
       "commandName": "Project",
+      "commandLineArgs": "--development",
       "nativeDebugging": true
     }
   }

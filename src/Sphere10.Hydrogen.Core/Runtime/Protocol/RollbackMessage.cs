@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Sphere10.Hydrogen.Core.Protocols.Host {
+namespace Sphere10.Hydrogen.Core.Runtime {
 	[Serializable]
 	public class RollbackMessage {
 	}

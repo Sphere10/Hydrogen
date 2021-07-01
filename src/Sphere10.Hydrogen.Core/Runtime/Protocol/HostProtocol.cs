@@ -2,7 +2,7 @@
 using Sphere10.Framework.Communications;
 using System.Collections.Generic;
 
-namespace Sphere10.Hydrogen.Core.Protocols.Host {
+namespace Sphere10.Hydrogen.Core.Runtime {
 
 	public static class HostProtocolHelper {
 

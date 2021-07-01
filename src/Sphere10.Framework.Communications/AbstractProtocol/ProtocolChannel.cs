@@ -57,11 +57,16 @@ namespace Sphere10.Framework.Communications {
 
         protected byte[] MessageEnvelopeMarker { get; init; }
 
-        #endregion
+		#endregion
 
-        #region Methods
+		#region Methods
 
-        public async Task Open() {
+		public async Task Open() {
+			if (!await TryOpen())
+				throw new ProtocolException("Protocol channel could not be opened (endpoint and/or handshake problem)");
+		}
+		
+        public async Task<bool> TryOpen() {
             CheckState(ProtocolChannelState.Closed);
             SetState(ProtocolChannelState.Opening);
             NotifyOpening();
@@ -79,7 +84,9 @@ namespace Sphere10.Framework.Communications {
                 NotifyClosing();
                 _cancelReceiveLoop.Cancel(false);
                 await CloseInternal();
+				return false;
             }
+			return true;
         }
 
         public async Task Close() {
@@ -132,13 +139,10 @@ namespace Sphere10.Framework.Communications {
         public virtual Task<bool> TrySendMessage(ProtocolMessageType messageType, object message)
             => TrySendMessage(messageType, message, DefaultTimeout);
 
-        public virtual Task<bool> TrySendMessage(ProtocolMessageType messageType, object message, TimeSpan timeout) {
-            var canceller = new CancellationTokenSource(timeout);
-            return TrySendMessage(messageType, message, canceller.Token);
-        }
+        public virtual Task<bool> TrySendMessage(ProtocolMessageType messageType, object message, TimeSpan timeout) 
+			=> TrySendMessage(messageType, message, new CancellationTokenSource(timeout).Token);
 
         public virtual async Task<bool> TrySendMessage(ProtocolMessageType messageType, object message, CancellationToken cancellationToken) {
-
             Guard.Ensure(MessageSerializationEnabled, "Message Serialization is not enabled");
             Guard.Ensure(MessageSerializer != null, "Message Serializer is not set");
             var envelope = new ProtocolMessageEnvelope {
@@ -167,7 +171,7 @@ namespace Sphere10.Framework.Communications {
             writer.Write(envelope.RequestID);
             writer.Write((uint)MessageSerializer.CalculateSize(envelope.Message));
             MessageSerializer.Serialize(envelope.Message, writer);
-            if (await TrySendBytes(memStream.GetBuffer(), cancellationToken)) {
+            if (await TrySendBytes(memStream.ToArray(), cancellationToken)) {
                 NotifySentMessage(envelope);
                 return true;
             }

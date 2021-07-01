@@ -1,0 +1,167 @@
+﻿<h3>Blazor Grid</h3>
+
+@using Microsoft.JSInterop
+@using UI.Controls.BlazorGrid.Classes;
+@using System.Collections.Generic;
+@using System.Reflection;
+
+@inject IJSRuntime JSRuntime
+
+<div class="ResizableClass">
+    <button @onclick="ButtonClick">Load</button>
+
+    <table class="TableClass" style="width:100%" id="@Id">
+        <thead>
+            <tr>
+                @foreach (var headerCell in Header)
+                {
+                    <th style="width:@headerCell.Width.ToString()px">
+                        @headerCell.Name<br />
+                        <div class="ResizableClass">
+                            <input class="ResizableClass" type="search" />
+                        </div>
+                    </th>
+                }
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var row in Rows)
+            {
+                <tr @onmousedown="@(e => OnTableRowMouseDown())" style="@GetTableRowStyle()">
+                    @foreach (var cell in row)
+                    {
+                        <td style="width:@cell.Width.ToString()px">
+                            @cell.Data
+                        </td>
+                    }
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <footer>
+        <div>
+            <button>First Page</button>
+
+
+
+
+            <button>Last Page</button>
+        </div>
+    </footer>
+
+</div>
+
+@code {
+
+    @typeparam TItem
+
+    [Parameter] public string Id { get; set; }
+    [Parameter] public IEnumerable<TItem> Data { get; set; }
+    [Parameter] public int PageSize { get; set; }
+
+    List<Cell> Header { get; set; } = new List<Cell>();
+    List<List<Cell>> Rows { get; set; } = new List<List<Cell>>();
+
+    //protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
+    {
+        LoadData();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        Alert($"OnAfterRenderAsync FirstRender: {firstRender}");
+
+        if (!firstRender)
+        {
+            LoadData();
+            await JSRuntime.InvokeAsync<object>("ResizableColumnTable", new object[] { Id });
+        }
+    }
+
+    void LoadData()
+    {
+        Alert("LoadData");
+
+        Header.Clear();
+        Rows.Clear();
+
+        if (Data.Any())
+        {
+            var first = Data.First();
+            var type = first.GetType();
+            var properties = type.GetProperties();
+
+            foreach (var property in properties)
+            {
+                var name = Utility.AddSpacesForCamelCase(property.Name);
+                var width = 40;
+                var height = 20;
+                Header.Add(new Cell(new HeaderData(name, width), new RowData(height), property.PropertyType, name));
+            }
+
+            foreach (var dataObject in Data)
+            {
+                var rowData = new List<Cell>();
+                int columnIndex = 0;
+                foreach (var property in properties)
+                {
+                    var cellText = GetCellText(dataObject, property);
+                    var cellData = new Cell(Header[columnIndex].Header, Header[columnIndex].Row, property.PropertyType, cellText);
+                    rowData.Add(cellData);
+                    columnIndex++;
+                }
+
+                Rows.Add(rowData);
+            }
+        }
+
+        JSRuntime.InvokeAsync<object>("ResizableColumnTable", new object[] { Id }, DotNetObjectReference.Create<BlazorGrid<TItem>>(this));
+    }
+
+    #region Javascript
+
+    void Alert(string text)
+    {
+        JSRuntime.InvokeAsync<object>("AlertWrite", text);
+    }
+
+    #endregion
+
+    string GetCellText(object cellData, PropertyInfo property)
+    {
+        var value = property.GetValue(cellData);
+        var typeName = property.PropertyType.Name.ToString();
+        switch (typeName)
+        {
+            case "DateTime": return ((DateTime)value).ToShortDateString();
+            default: return value.ToString();
+        }
+    }
+
+    void OnChange(object data, Type item)
+    {
+
+    }
+
+    void OnTableRowMouseDown()
+    {
+
+    }
+
+    void OnMouseDown(Type item)
+    {
+
+    }
+
+    string GetTableRowStyle()
+    {
+        return string.Empty;
+    }
+
+    void ButtonClick()
+    {
+        LoadData();
+    }
+}

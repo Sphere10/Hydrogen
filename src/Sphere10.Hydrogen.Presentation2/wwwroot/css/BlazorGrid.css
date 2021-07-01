@@ -1,0 +1,25 @@
+﻿tr, .TableClass {
+    border-bottom: 0px;
+    table-layout: fixed;
+    width: 100px;
+}
+
+.TableHeaderClass {
+}
+
+.TableDataClass {
+    padding: 0px 0px 0px 0px !important;
+    height: auto;
+}
+
+.TableCellClass {
+    padding: 0px;
+    border: 0px;
+    width: inherit;
+    background-color: inherit;
+    color: black;
+}
+
+.ResizableClass {
+    width: -webkit-fill-available;
+}

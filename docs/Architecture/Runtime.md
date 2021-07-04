@@ -37,7 +37,7 @@ A HAP lifecycle can be in one of the following states.
 * Started: the node and GUI are running.
 * Archiving: the hap is being zipped and archived.
 
-![HAP  Lifecycle](resources/HAP-lifecycle.png)
+![Hydrogen Application (HAP) Lifecycle](resources/HAP-Lifecycle.png)
 
 ### Application Folder Structure
 

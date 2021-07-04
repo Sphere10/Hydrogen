@@ -37,7 +37,7 @@ A HAP lifecycle can be in one of the following states.
 * Started: the node and GUI are running.
 * Archiving: the hap is being zipped and archived.
 
-![Hydrogen Application (HAP) Lifecycle](resources/HAP-lifecycle.png)
+![HAP  Lifecycle](resources/HAP-lifecycle.png)
 
 ### Application Folder Structure
 
@@ -65,8 +65,6 @@ The protocol which governs a HAP lifecycle is called the Host Protocol. It compr
 
 ![Hydrogen Application (HAP) Lifecycle](resources/host-protocol.svg)
 
-
-## References
 
 [1]: https://github.com/Sphere10/Hydrogen/tree/master/src/Sphere10.Hydrogen.Core/Runtime "Hydrogen Host Protocol source-code"
 

@@ -5,13 +5,7 @@
 		<TargetFramework>net5.0</TargetFramework>
 		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
 	</PropertyGroup>
-
-	<ItemGroup>
-		<Compile Remove="Extensions\**" />
-		<EmbeddedResource Remove="Extensions\**" />
-		<None Remove="Extensions\**" />
-	</ItemGroup>
-
+	
 	<ItemGroup>
 		<None Remove="Properties\node.ini" />
 	</ItemGroup>
@@ -21,6 +15,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.2" />
 		<PackageReference Include="NStack.Core" Version="0.16.0" />
 		<PackageReference Include="Terminal.Gui" Version="1.1.1" />
 	</ItemGroup>

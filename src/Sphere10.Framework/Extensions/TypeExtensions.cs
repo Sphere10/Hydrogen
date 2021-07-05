@@ -12,6 +12,7 @@
 //-----------------------------------------------------------------------
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -170,6 +171,10 @@ namespace Sphere10.Framework {
 			FieldInfo? fi;
 			while ((fi = type?.GetField(name, bindingFlags)) == null && (type = type?.BaseType) != null && includeInherited);
 			return fi;
+		}
+		
+		public static bool IsCollection(this Type type) {
+			return typeof(IEnumerable).IsAssignableFrom(type);
 		}
 	}
 }

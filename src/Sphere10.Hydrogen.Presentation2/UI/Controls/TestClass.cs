@@ -20,8 +20,10 @@ namespace Sphere10.Hydrogen.Presentation2.UI.Controls {
 		static TestEnum[] Colors = (TestEnum[])Enum.GetValues(typeof(TestEnum));
 
 
-		public void FillWithTestData(int id) {
-			var random = new Random();
+		public void FillWithTestData(int id) 
+		{
+			var seed = (int)DateTime.Now.Ticks;
+			var random = new Random(seed);
 
 			Id = id;
 			Name = Names[random.Next(Names.Length - 1)];

@@ -53,37 +53,45 @@
 @code {
     @typeparam TItem
 
-    public enum GridType { DataSupplied, DataOnDemand }
+    public enum GridTypes { DataSupplied, DataOnDemand }
 
-    public delegate List<TItem> GetPageData(string dataSource, int pageNumber, int pageSize);
-    public delegate bool SetItemData(string dataSource, TItem item);
-    public delegate void ItemDataChanged(string dataSource, TItem item);
+    public delegate List<TestClass> GetPageData(int pageNumber, int pageSize);
+    public delegate int GetDataCount();
+    //    public delegate bool SetItemData<TItem>(string dataSource, TItem item);
+    //    public delegate void ItemDataChanged<TItem>(string dataSource, TItem item);
 
     [Parameter] public string Id { get; set; }
-    [Parameter] public GridType Type { get; set; }
-    [Parameter] public IEnumerable<TItem> Data { get; set; }
+    [Parameter] public string DataSource { get; set; }
     [Parameter] public int PageSize { get; set; }
+    [Parameter] public GridTypes GridType { get; set; }
     [Parameter] public GetPageData GetPageDataFunction { get; set; }
-    //[Parameter] public SetItemData SetItemDataFunction { get; set; }
-    //[Parameter] public ItemDataChanged ItemDataChangedFunction { get; set; }
+    [Parameter] public GetDataCount GetDataCountFunction { get; set; }
+
+    [Parameter] public EventCallback<string> DataChanged { get; set; }
+
+    //[Parameter] public SetItemData<TItem> SetItemDataFunction { get; set; }
+    //[Parameter] public ItemDataChanged<TItem> ItemDataChangedFunction { get; set; }
 
     List<Cell> Header { get; set; } = new List<Cell>();
     List<List<Cell>> Rows { get; set; } = new List<List<Cell>>();
 
+    IEnumerable<TItem> Data { get; set; }
     int CurrentPage { get; set; }
 
     protected override void OnInitialized()
     {
-        LoadData();
+        ControlCheck();
+
+        PagingFirst();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        Alert($"OnAfterRenderAsync FirstRender: {firstRender}");
+//        Alert($"OnAfterRenderAsync FirstRender: {firstRender}");
 
         if (!firstRender)
         {
-            //    LoadData();
+            PagingFirst();
 
             await JSRuntime.InvokeAsync<object>("ResizableColumnTable", new object[] { Id });
         }
@@ -94,10 +102,25 @@
         await JSRuntime.InvokeAsync<object>("ResizableColumnTable", new object[] { Id });
     }
 
+    void ControlCheck()
+    {
+        //Id 
+        //GridType 
+        //Data 
+        //PageSize 
+        if (GetPageDataFunction == null) throw new Exception("GetPageDataFunction == null");
+        if (GetDataCountFunction == null) throw new Exception("GetDataCountFunction == null");
+        //if (SetItemDataFunction == null) throw new Exception("SetItemDataFunction == null");
+        //if (ItemDataChangedFunction == null) throw new Exception("ItemDataChangedFunction == null");
+    }
+
     void LoadData()
     {
         //Alert($"BlazorGrid LoadData {Data.Count()}");
         //Alert($"Type: {Type}");
+
+        // Load the first page of data
+        //PagingFirst();
 
         Header.Clear();
         Rows.Clear();
@@ -184,27 +207,38 @@
 
     void PagingFirst()
     {
+        //        if (CurrentPage == 0) return;
         CurrentPage = 0;
-        Data = GetPageDataFunction("dataSource", CurrentPage, PageSize);
-        LoadData();
+        GetPageAndDisplayData();
     }
 
     void PagingNext()
     {
         CurrentPage++;
-        GetPageDataFunction("dataSource", CurrentPage, PageSize);
-        LoadData();
+        GetPageAndDisplayData();
     }
 
     void PagingPrevious()
     {
-
+        if (CurrentPage == 0) return;
+        CurrentPage--;
+        GetPageAndDisplayData();
     }
 
     void PagingLast()
     {
+        // callback to the server
+        var total = GetDataCountFunction();
+        CurrentPage = total / PageSize;
+        GetPageAndDisplayData();
+    }
 
+    void GetPageAndDisplayData()
+    {
+        // callback to the server
+        Data = (IEnumerable<TItem>)GetPageDataFunction(CurrentPage, PageSize);
+        LoadData();
     }
 
     #endregion
-}
+    }

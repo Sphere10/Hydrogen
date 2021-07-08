@@ -10,6 +10,7 @@
 @using Sphere10.Hydrogen.Presentation2.UI.Controls
 @using Sphere10.Hydrogen.Presentation2.UI.Controls.BlazorGrid;
 
+@using System.Threading;
 @using System.Linq;
 @using Microsoft.JSInterop
 
@@ -100,13 +101,17 @@
                     <div class="tab-pane fade" id="tab-4">
                         <h5 class="card-title">Grid New</h5>
                         <p>Testing of new Grid</p>
-                        <BlazorGrid 
-                                    Id="TestGrid" 
-                                    Type="BlazorGrid<object>.GridType.DataOnDemand" 
-                                    Data="TestGridData" 
+                        <BlazorGrid Id="TestGrid"
+                                    DataSource="Hydrogen-Node-1"
                                     PageSize="10"
-                                    GetPageDataFunction="GetPageDataFunction">
-                        </BlazorGrid >
+                                    GridType="BlazorGrid<object>.GridTypes.DataOnDemand"
+                                    GetPageDataFunction="GetPageDataFunction"
+                                    GetDataCountFunction="GetDataCountFunction">
+                            @*
+                                SetItemDataFunction="SetItemDataFunction"
+                                ItemDataChangedFunction="ItemDataChangedFunction"*@
+
+                        </BlazorGrid>
                     </div>
                 </div>
             </div>
@@ -143,7 +148,6 @@
 
 @code {
 
-
     #region Javascript
 
     void Alert(string text)
@@ -160,27 +164,31 @@
     //        new TestClass(){ Id = 4, Name = "Litecoin", Color = TestClass.TestEnum.White, CreationDate = new DateTime(2017, 3, 3), Age = 457.34m, Details = "transactions in the same way", Note = "forgeries of those signatures, it does permit an attacker "  }
     //    };
 
-    BlazorGrid<TestClass> TestGrid { get; set; }
+    //    BlazorGrid<TestClass> GridInstance { get; set; }
     List<TestClass> TestGridData { get; set; }
-
+    System.Timers.Timer Timer { get; set; }
 
     //   { Id = , Name = "", Color = TestClass.TestEnum, CreationDate = new DateTime(), Age = m, Details = "", Note = "" }
 
+    protected override void OnInitialized()
+    {
+        TestGridData = LoadData(73);
+        Timer = new System.Timers.Timer(10000);
+        Timer.Elapsed += CountDownTimer;
+        Timer.Start();
+    }
 
-    protected override void OnInitialized() {
-        //        Alert("OnInitialized Index");
-
-        TestGridData = LoadData(55);
-
-        //        Alert($"DataSize: {TestGridData.Count()}");
+    public void CountDownTimer(Object source, System.Timers.ElapsedEventArgs e)
+    {
+        TestGridData = LoadData(73);
+        StateHasChanged();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        TestGrid.LoadJavascript();
-        //       Alert("OnAfterRenderAsync Index");
+        //        TestGrid.LoadJavascript();
+        //        Alert("OnAfterRenderAsync Index");
     }
-
 
     static List<TestClass> LoadData(int size)
     {
@@ -204,16 +212,26 @@
         //        };
     }
 
-    List<TestClass> GetPageDataFunction(string dataSource, int pageNumber, int pageSize)
+    // Grid Callback Functions
+    List<TestClass> GetPageDataFunction(int pageNumber, int pageSize)
     {
-        return TestGridData.Skip(pageNumber).Take(pageSize).ToList();
+        return TestGridData.Skip(pageNumber * pageSize).Take(pageSize).ToList();
     }
 
+    int GetDataCountFunction()
+    {
+        return TestGridData.Count;
+    }
 
+    bool SetItemDataFunction(TestClass item)
+    {
+        return true;
+    }
 
+    void ItemDataChangedFunction(TestClass item)
+    {
 
-
-
+    }
 
     private async Task Confirm()
     {
@@ -311,5 +329,4 @@
     {
         EnumeratorCts.Cancel();
     }
-
 }

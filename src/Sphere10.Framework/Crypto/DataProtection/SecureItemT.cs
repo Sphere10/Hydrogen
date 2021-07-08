@@ -20,7 +20,7 @@ namespace Sphere10.Framework {
 				_unencrypted = default;
 			};
 			_secureBytes.Decrypted += () => {
-				_unencrypted = _serializer.DeSerializeLE(_secureBytes.Item);
+				_unencrypted = _serializer.DeserializeLE(_secureBytes.Item);
 			};
 		}
 

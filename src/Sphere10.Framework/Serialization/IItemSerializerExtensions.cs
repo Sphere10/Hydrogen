@@ -14,7 +14,7 @@ namespace Sphere10.Framework {
 			return stream.ToArray();
 		}
 
-		public static TItem DeSerializeLE<TItem>(this IItemSerializer<TItem> serializer, byte[] bytes) {
+		public static TItem DeserializeLE<TItem>(this IItemSerializer<TItem> serializer, byte[] bytes) {
 			using var stream = new MemoryStream(bytes);
 			using var reader = new EndianBinaryReader(EndianBitConverter.Little, stream);
 			return serializer.Deserialize(bytes.Length, reader);
@@ -22,7 +22,5 @@ namespace Sphere10.Framework {
 
 		public static IItemSerializer<TBase> AsBaseSerializer<TItem, TBase>(this IItemSerializer<TItem> serializer) where TItem : TBase
 			=> new CastedSerializer<TBase, TItem>(serializer);
-
-
 	}
 }

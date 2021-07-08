@@ -10,6 +10,11 @@
 @using Sphere10.Hydrogen.Presentation2.UI.Controls
 @using Sphere10.Hydrogen.Presentation2.UI.Controls.BlazorGrid;
 
+@using System.Linq;
+@using Microsoft.JSInterop
+
+@inject IJSRuntime JSRuntime
+
 @implements IDisposable
 
 <div class="row">
@@ -95,7 +100,13 @@
                     <div class="tab-pane fade" id="tab-4">
                         <h5 class="card-title">Grid New</h5>
                         <p>Testing of new Grid</p>
-                        <BlazorGrid Id="TestGrid" Data="TestGridData" PageSize="10"></BlazorGrid>
+                        <BlazorGrid 
+                                    Id="TestGrid" 
+                                    Type="BlazorGrid<object>.GridType.DataOnDemand" 
+                                    Data="TestGridData" 
+                                    PageSize="10"
+                                    GetPageDataFunction="GetPageDataFunction">
+                        </BlazorGrid >
                     </div>
                 </div>
             </div>
@@ -130,40 +141,79 @@
 
 </div>
 
-
 @code {
 
-    List<TestClass> TestGridData = LoadData(100);
 
-    // { get; set; } = new List<TestClass>() {
-    //    new TestClass() { Id = 1, Name = "Bitcoin", Color = TestClass.TestEnum.Black, CreationDate = new DateTime(2010, 4, 24), Age = 203.4m, Details = "In a cryptocurrency such as Bitcoin", Note = "The fingerprint is unique " },
-    //    new TestClass(){ Id = 2, Name = "Ethereum", Color = TestClass.TestEnum.Brown, CreationDate = new DateTime(2015, 2, 18), Age = 103.2m, Details = "transactions propagate", Note = "Malleability is the ability to change" },
-    //    new TestClass(){ Id = 3, Name = "Polkadot", Color = TestClass.TestEnum.Purple, CreationDate = new DateTime(2013, 4, 18), Age = 167.354m, Details = "able to distinguish", Note = "how the math"  },
-    //    new TestClass(){ Id = 4, Name = "Litecoin", Color = TestClass.TestEnum.White, CreationDate = new DateTime(2017, 3, 3), Age = 457.34m, Details = "transactions in the same way", Note = "forgeries of those signatures, it does permit an attacker "  }
-    //};
+    #region Javascript
+
+    void Alert(string text)
+    {
+        JSRuntime.InvokeAsync<object>("AlertWrite", text);
+    }
+
+    #endregion
+
+    //    List<TestClass> TestGridData { get; set; } = new List<TestClass>() {
+    //        new TestClass() { Id = 1, Name = "Bitcoin", Color = TestClass.TestEnum.Black, CreationDate = new DateTime(2010, 4, 24), Age = 203.4m, Details = "In a cryptocurrency such as Bitcoin", Note = "The fingerprint is unique " },
+    //        new TestClass(){ Id = 2, Name = "Ethereum", Color = TestClass.TestEnum.Brown, CreationDate = new DateTime(2015, 2, 18), Age = 103.2m, Details = "transactions propagate", Note = "Malleability is the ability to change" },
+    //        new TestClass(){ Id = 3, Name = "Polkadot", Color = TestClass.TestEnum.Purple, CreationDate = new DateTime(2013, 4, 18), Age = 167.354m, Details = "able to distinguish", Note = "how the math"  },
+    //        new TestClass(){ Id = 4, Name = "Litecoin", Color = TestClass.TestEnum.White, CreationDate = new DateTime(2017, 3, 3), Age = 457.34m, Details = "transactions in the same way", Note = "forgeries of those signatures, it does permit an attacker "  }
+    //    };
+
+    BlazorGrid<TestClass> TestGrid { get; set; }
+    List<TestClass> TestGridData { get; set; }
+
+
     //   { Id = , Name = "", Color = TestClass.TestEnum, CreationDate = new DateTime(), Age = m, Details = "", Note = "" }
 
-    static List<TestClass> LoadData(int size) {
 
+    protected override void OnInitialized() {
+        //        Alert("OnInitialized Index");
+
+        TestGridData = LoadData(55);
+
+        //        Alert($"DataSize: {TestGridData.Count()}");
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        TestGrid.LoadJavascript();
+        //       Alert("OnAfterRenderAsync Index");
+    }
+
+
+    static List<TestClass> LoadData(int size)
+    {
         var testData = new List<TestClass>();
 
-        for (int i = 0; i < size; i++) 
+        for (int i = 0; i < size; i++)
         {
             var testObject = new TestClass();
-     //       testObject.FillWithTestData(i);
+            testObject.FillWithTestData(i);
 
             testData.Add(testObject);
         }
 
         return testData;
 
-//            return new List<TestClass>() {
-//            new TestClass() { Id = 1, Name = "Bitcoin", Color = TestClass.TestEnum.Black, CreationDate = new DateTime(2010, 4, 24), Age = 203.4m, Details = "In a cryptocurrency such as Bitcoin", Note = "The fingerprint is unique " },
-//            new TestClass(){ Id = 2, Name = "Ethereum", Color = TestClass.TestEnum.Brown, CreationDate = new DateTime(2015, 2, 18), Age = 103.2m, Details = "transactions propagate", Note = "Malleability is the ability to change" },
-//            new TestClass(){ Id = 3, Name = "Polkadot", Color = TestClass.TestEnum.Purple, CreationDate = new DateTime(2013, 4, 18), Age = 167.354m, Details = "able to distinguish", Note = "how the math"  },
-//            new TestClass(){ Id = 4, Name = "Litecoin", Color = TestClass.TestEnum.White, CreationDate = new DateTime(2017, 3, 3), Age = 457.34m, Details = "transactions in the same way", Note = "forgeries of those signatures, it does permit an attacker "  }
-//        };
+        //            return new List<TestClass>() {
+        //            new TestClass() { Id = 1, Name = "Bitcoin", Color = TestClass.TestEnum.Black, CreationDate = new DateTime(2010, 4, 24), Age = 203.4m, Details = "In a cryptocurrency such as Bitcoin", Note = "The fingerprint is unique " },
+        //            new TestClass(){ Id = 2, Name = "Ethereum", Color = TestClass.TestEnum.Brown, CreationDate = new DateTime(2015, 2, 18), Age = 103.2m, Details = "transactions propagate", Note = "Malleability is the ability to change" },
+        //            new TestClass(){ Id = 3, Name = "Polkadot", Color = TestClass.TestEnum.Purple, CreationDate = new DateTime(2013, 4, 18), Age = 167.354m, Details = "able to distinguish", Note = "how the math"  },
+        //            new TestClass(){ Id = 4, Name = "Litecoin", Color = TestClass.TestEnum.White, CreationDate = new DateTime(2017, 3, 3), Age = 457.34m, Details = "transactions in the same way", Note = "forgeries of those signatures, it does permit an attacker "  }
+        //        };
     }
+
+    List<TestClass> GetPageDataFunction(string dataSource, int pageNumber, int pageSize)
+    {
+        return TestGridData.Skip(pageNumber).Take(pageSize).ToList();
+    }
+
+
+
+
+
+
 
     private async Task Confirm()
     {

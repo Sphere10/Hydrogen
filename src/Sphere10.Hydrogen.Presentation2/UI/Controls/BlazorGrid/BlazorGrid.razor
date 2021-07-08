@@ -1,9 +1,9 @@
 ﻿<h3>Blazor Grid</h3>
 
 @using Microsoft.JSInterop
-@using UI.Controls.BlazorGrid.Classes;
 @using System.Collections.Generic;
 @using System.Reflection;
+@using UI.Controls.BlazorGrid.Classes; @*Fix This*@
 
 @inject IJSRuntime JSRuntime
 
@@ -41,29 +41,37 @@
 
     <footer>
         <div>
-            <button>First Page</button>
-
-
-
-
-            <button>Last Page</button>
+            <button @onclick="PagingFirst">First</button>
+            <button @onclick="PagingNext">Next</button>
+            <button @onclick="PagingPrevious">Previous</button>
+            <button @onclick="PagingLast">Last</button>
         </div>
     </footer>
 
 </div>
 
 @code {
-
     @typeparam TItem
 
+    public enum GridType { DataSupplied, DataOnDemand }
+
+    public delegate List<TItem> GetPageData(string dataSource, int pageNumber, int pageSize);
+    public delegate bool SetItemData(string dataSource, TItem item);
+    public delegate void ItemDataChanged(string dataSource, TItem item);
+
     [Parameter] public string Id { get; set; }
+    [Parameter] public GridType Type { get; set; }
     [Parameter] public IEnumerable<TItem> Data { get; set; }
     [Parameter] public int PageSize { get; set; }
+    [Parameter] public GetPageData GetPageDataFunction { get; set; }
+    //[Parameter] public SetItemData SetItemDataFunction { get; set; }
+    //[Parameter] public ItemDataChanged ItemDataChangedFunction { get; set; }
 
     List<Cell> Header { get; set; } = new List<Cell>();
     List<List<Cell>> Rows { get; set; } = new List<List<Cell>>();
 
-    //protected override async Task OnInitializedAsync()
+    int CurrentPage { get; set; }
+
     protected override void OnInitialized()
     {
         LoadData();
@@ -75,14 +83,21 @@
 
         if (!firstRender)
         {
-            LoadData();
+            //    LoadData();
+
             await JSRuntime.InvokeAsync<object>("ResizableColumnTable", new object[] { Id });
         }
     }
 
+    public async void LoadJavascript()
+    {
+        await JSRuntime.InvokeAsync<object>("ResizableColumnTable", new object[] { Id });
+    }
+
     void LoadData()
     {
-        Alert("LoadData");
+        //Alert($"BlazorGrid LoadData {Data.Count()}");
+        //Alert($"Type: {Type}");
 
         Header.Clear();
         Rows.Clear();
@@ -164,4 +179,32 @@
     {
         LoadData();
     }
+
+    #region Paging
+
+    void PagingFirst()
+    {
+        CurrentPage = 0;
+        Data = GetPageDataFunction("dataSource", CurrentPage, PageSize);
+        LoadData();
+    }
+
+    void PagingNext()
+    {
+        CurrentPage++;
+        GetPageDataFunction("dataSource", CurrentPage, PageSize);
+        LoadData();
+    }
+
+    void PagingPrevious()
+    {
+
+    }
+
+    void PagingLast()
+    {
+
+    }
+
+    #endregion
 }

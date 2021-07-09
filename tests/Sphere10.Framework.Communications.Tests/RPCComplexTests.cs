@@ -3,111 +3,195 @@ using NUnit.Framework;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Collections.Generic;
+using System.Diagnostics;
 using Sphere10.Framework;
 using Sphere10.Framework.Communications.RPC;
+using System.Threading;
 
-namespace Sphere10.Framework.Tests {
+namespace Sphere10.Framework.Tests
+{
 
-	//This is just code samples, Complex UT are note coded yet.
 
-	public class WorkPackage {
-		public string coinbase1;
-		public string coinbase2;
-		public string merkels;
-		public uint nTime;
-		public uint foundNonce;
-	}
-	public class StratumWork {
+	public class StratumWork
+	{
 		public string coinbase1;
 		public string nonce1;
 		public uint nTime;
-		public uint foundNonce;
+		public int nonce;
 	}
 
-	//Example: Server Apiservice Example
+	//Example: StratumServer Apiservice Example
 	[RpcAPIService("Mining")]
-	public class StratumServerService : JsonRpcServer {
-		public StratumServerService(IEndPoint ep) : base(ep, true) { }
+	public class MiningManager : IDisposable
+	{
+		public SimpleStratumServer MiningServer { get; set; }
+		public MiningManager(SimpleStratumServer miningServer)
+		{
+			MiningServer = miningServer;
+			ApiServiceManager.RegisterService(this);
+		}
+		public void Dispose()
+		{
+			ApiServiceManager.UnregisterService(this);
+		}
 
-		//Stratum mining.subscribe
+		//simulate sending block to mine to all connected clients
+		public void SimulateBlockCreation(int TestRoundCount)
+		{
+
+			//active wait for a clients. Thelazyway
+			if (MiningServer.ActiveClientsCount == 0)
+				Thread.Sleep(50);
+
+			const int BlockTimeMs = 1000;
+			for (int i = 0; i < TestRoundCount; i++)
+			{
+				Debug.WriteLine($"Mining round #{i}");
+				MiningServer.NotifyNewBlock();
+				Thread.Sleep(BlockTimeMs);
+			}
+		}
+
+		//return accepted every other calls
 		[RpcAPIMethod]
-		public void Subscribe([RpcAPIArgument("agent")] string userAgent, [RpcAPIArgument("session")] string sessionID) { }
-
-		//Stratum mining.authorize
-		[RpcAPIMethod]
-		public void Authorize(string user, string passwd) { }
-
-		//Stratum mining.authorize
-		[RpcAPIMethod]
-		public void SubmitNonce(uint nonce) { }
-
-		//Stratum mining.notify (send to peer)
-		public void Notify(StratumWork work) { }
-
-		//getWork or mining.getwork
-		[RpcAPIMethod("GetWork")]
-		[RpcAPIMethod]
-		public WorkPackage GetWork(uint uxTime) { return null; }
-	}
-
-	public class EXAMPLE_ServerSide {
-		//Server Side:
-		public void StartMiningServer() {
-			var server = (StratumServerService)ApiServiceManager.GetService("mining");
-			server?.Stop();
-			server = new StratumServerService(new TcpEndPointListener(true, 27000, 5));
-			server.Start();
-			ApiServiceManager.RegisterService(server);
+		public bool SubmitNonce(int nonce)
+		{
+			return ((nonce % 2) == 0);
 		}
 	}
-	public class EXAMPLE_Client_Side_GetWork {
-		void Test() {
-			//Client Side for GetWork:
-			var client = new JsonRpcClient(new TcpEndPoint("127.0.0.1", 27000), true);
-			WorkPackage work = client.RemoteCall<WorkPackage>("GetWork", DateTime.Now);
+
+	public class SimpleStratumServer : JsonRpcServer
+	{
+		public SimpleStratumServer(IEndPoint ep) : base(ep, new JsonRpcConfig() { ConnectionMode = JsonRpcConfig.ConnectionModeEnum.Persistant, IgnoreEmptyReturnValue = true }) { }
+
+		public void NotifyNewBlock()
+		{
+			foreach (var client in ActiveClients)
+			{
+				client.RemoteCall("miner.notify", "123456789abcdef", "1999999", (uint)DateTimeOffset.UtcNow.ToUnixTimeSeconds());
+			}
 		}
 	}
 
 	//Example: Client Side for Stratum:
-	[RpcAPIService("Mining")]
-	public class StratumClientService : JsonRpcServer {
-		public StratumClientService(string server, int port) : base(new TcpEndPoint(server, port), true) { }
+	[RpcAPIService("Miner")]
+	public class RhMinerMock : JsonRpcClientHandler
+	{
+		protected string Name;
+		static public uint Accepted = 0;
+		//A typical stratum server is not interested in external miner's json 2.0 responses from RPC calls.
+		public RhMinerMock(string name, string StratumServer, int port) : base(new TcpEndPoint(StratumServer, port), new JsonRpcConfig() { ConnectionMode = JsonRpcConfig.ConnectionModeEnum.Persistant, IgnoreEmptyReturnValue = true, Logger = new TimestampLogger(new ActionLogger((s) => Debug.WriteLine(s))) })
+		{
+			Name = name;
+		}
 
-		public override void Start() {
-			EndPoint.Start();
-
-			RemoteCall("mining.subscribe", "rhminer.v3.0", "1");
-			bool authorised = RemoteCall<bool>("mining.authorize", "guest", "bob@mining.com");
-			if (!authorised)
-				base.Stop();
-			else {
-				ServerThread.Start();
-			}
+		public override void Start()
+		{
+			ApiServiceManager.RegisterService(this);
+			base.Start();
+			Debug.WriteLine($"{Name} Started");
+		}
+		public override void Stop()
+		{
+			Debug.WriteLine($"{Name} Stopped");
+			ApiServiceManager.UnregisterService(this);
+			base.Stop();
 		}
 
 		//mining.notify
 		[RpcAPIMethod]
-		public void Notify(string coinbase1, string nonce1, uint nTime) {
-			var work = new StratumWork { coinbase1 = coinbase1, nonce1 = nonce1, nTime = nTime };
-			if (Process(work)) {
-				bool succeded = RemoteCall<bool>("mining.submitnonce", work.foundNonce);
-				if (succeded)
-					Console.WriteLine("Nonce found !!!");
-			}
+		public void Notify(string coinbase1, string nonce1, uint nTime)
+		{
+			Debug.WriteLine($"Miner.Notify: Mining Notify {Name}");
+			ThreadPool.QueueUserWorkItem(_ => {
+				var work = new StratumWork { coinbase1 = coinbase1, nonce1 = nonce1, nTime = nTime };
+				Debug.WriteLine($"Miner.Notify: Mining 4 round : {Name}");
+				//mine for 4x100ms
+				for (int nonce = 0; nonce < 4; nonce++)
+				{
+					if (ProcessRound(work, nonce))
+					{
+						Debug.WriteLine($"{Name} submiting nonce {nonce}");
+						bool succeded = RemoteCall<bool>("mining.submitnonce", nonce);
+						if (succeded)
+						{
+							Interlocked.Increment(ref Accepted);
+							Debug.WriteLine($"Nonce {nonce} accepted !!!");
+						}
+					}
+				}
+				Debug.WriteLine($"Miner.Notify: Done  {Name}");
+			});
 		}
-		protected bool Process(StratumWork w) { return true; }
+		protected bool ProcessRound(StratumWork w, int nonce)
+		{
+			w.nonce = nonce;
+			//simulate round work
+			Thread.Sleep(100);
+			return ((nonce % 2) == 0);
+		}
 	}
 
-	public class EXAMPLE_Client_Side_Stratum {
-		//Client Side -> Stratum client:
-		public void StartMiningClient() {
-			var client = (StratumClientService)ApiServiceManager.GetService("mining");
-			client?.Stop();
-			client = new StratumClientService("velocitymining.com", 27000);
+
+	[TestFixture]
+	public class StratumServerTest
+	{
+		protected SimpleStratumServer StratumServer { get; set; }
+		public MiningManager MiningManager { get; set; }
+
+		public void StartStratumServer()
+		{
+			StratumServer?.Stop();
+			StratumServer = new SimpleStratumServer(new TcpEndPointListener(true, 27001, 5));
+			StratumServer.Start();
+		}
+
+		public void StopStratumServer()
+		{
+			StratumServer?.Stop();
+			StratumServer = null;
+		}
+
+		public void StartMiningManager()
+		{
+			MiningManager = new MiningManager(StratumServer);
+		}
+		public void StopMiningManager()
+		{
+			MiningManager = null;
+		}
+
+		[Test]
+		public void SimpleStratumRun()
+		{
+			//setup : Init StratumServer and manager
+			StartStratumServer();
+			StartMiningManager();
+			//start 4 remote clients
+			var client = new RhMinerMock($"Miner abc", "127.0.0.1", 27001);
 			client.Start();
-			ApiServiceManager.RegisterService(client);
+
+			//test for 5 seonds
+			int TestRoundCount = 5;
+			MiningManager.SimulateBlockCreation(TestRoundCount);
+			Assert.AreEqual(RhMinerMock.Accepted, TestRoundCount * 4 / 2);
+
+			StopStratumServer();
+			StopMiningManager();
+		}
+
+		[Test]
+		//Test StratumServer with clients that closes every time
+		public void ClientsManualyCloses()
+		{
+		}
+
+		[Test]
+		//Test StratumServer big numbers of clients
+		public void ManyClients()
+		{
 		}
 	}
-
 
 }

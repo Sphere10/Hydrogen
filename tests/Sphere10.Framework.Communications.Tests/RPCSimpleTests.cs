@@ -12,6 +12,7 @@ using Sphere10.Framework.Communications.RPC;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Sphere10.Framework.Communications;
+using Newtonsoft.Json.Converters;
 
 namespace Sphere10.Framework.Tests {
 	public enum FreeEnum { First, Second, Third };
@@ -38,6 +39,8 @@ namespace Sphere10.Framework.Tests {
 		[JsonConverter(typeof(ByteArrayHexConverter))]
 		public byte[] bytesArray;
 		public FreeEnum enumVal = FreeEnum.First;
+		[JsonConverter(typeof(StringEnumConverter))]
+		public FreeEnum enumVal2 = FreeEnum.First;
 		public Dictionary<string, int> dictionary;
 	}
 
@@ -97,6 +100,7 @@ namespace Sphere10.Framework.Tests {
 				fArray = bp.fArray.Append(1).ToArray(),
 				sVal = bp.sVal + "1",
 				enumVal = bp.enumVal,
+				enumVal2 = bp.enumVal2,
 				bytesArray = bp.bytesArray.ToArray(),
 				dictionary = new Dictionary<string, int>(bp.dictionary)
 			}; 
@@ -376,7 +380,7 @@ namespace Sphere10.Framework.Tests {
 				ApiServiceManager.RegisterService(apiTest);
 				ApiServiceManager.RegisterService(arrayClass);
 				//Start server()	
-				server = new JsonRpcServer(new TcpEndPointListener(true, 27001, 5));
+				server = new JsonRpcServer(new TcpEndPointListener(true, 27001, 5), JsonRpcConfig.Default);
 				server.Start();
 				Thread.Sleep(250);
 			} catch (Exception e) {
@@ -387,7 +391,7 @@ namespace Sphere10.Framework.Tests {
 			// Client side
 			try
 			{
-				var client = new JsonRpcClient(new TcpEndPoint("127.0.0.1", 27001));
+				var client = new JsonRpcClient(new TcpEndPoint("127.0.0.1", 27001), JsonRpcConfig.Default);
 
 				//Test objects and array of objects
 				TestObject to = client.RemoteCall<TestObject>("ClassMember.GetTestObject", new TestObject
@@ -397,12 +401,14 @@ namespace Sphere10.Framework.Tests {
 					sVal = "allo",
 					bytesArray = new byte[] { 9, 2, 3, 8, 9, 4, 5, 6, 7, 8, 1, 9, 3, 7, 6, 5 },
 					enumVal = FreeEnum.Third,
+					enumVal2 = FreeEnum.Second,
 					dictionary = new Dictionary<string, int> { { "zzz", 111 }, { "YYY", 222 }, { "TTT", 333 } },
 				});
 				Assert.AreEqual(to.iVal, 199 + 1);
 				Assert.AreEqual(to.fArray, new float[] { 8, 1 });
 				Assert.AreEqual(to.sVal, "allo1");
 				Assert.AreEqual(to.enumVal, FreeEnum.Third);
+				Assert.AreEqual(to.enumVal2, FreeEnum.Second);
 				Assert.AreEqual(to.bytesArray, new byte[] { 9, 2, 3, 8, 9, 4, 5, 6, 7, 8, 1, 9, 3, 7, 6, 5 });
 				Assert.AreEqual(to.dictionary, new Dictionary<string, int> { { "zzz", 111 }, { "YYY", 222 }, { "TTT", 333 } });
 				Assert.AreEqual(client.RemoteCall<Dictionary<string, int>>("classMember.GetTestDictionary", new Dictionary<string, int> { { "a", 8 }, { "b", 10 } }), new Dictionary<string, int> { { "8", 10 }, { "88", 20 }, { "888", 30 } });
@@ -566,7 +572,7 @@ namespace Sphere10.Framework.Tests {
 				ApiServiceManager.RegisterService(apiTest);
 				ApiServiceManager.RegisterService(classMemberTest.classMember);
 				//Start server()	
-				server = new JsonRpcServer(new TcpEndPointListener(true, 27001, 5));
+				server = new JsonRpcServer(new TcpEndPointListener(true, 27001, 5), JsonRpcConfig.Default);
 				server.Start();
 				Thread.Sleep(250);
 			}
@@ -616,6 +622,7 @@ namespace Sphere10.Framework.Tests {
 			//close everything
 			server.Stop();
 			ApiServiceManager.UnregisterService(apiTest);
+			ApiServiceManager.UnregisterService(classMemberTest.classMember);
 			ApiServiceManager.UnregisterService(classMemberTest);
 			ApiServiceManager.UnregisterService("");
 		}
@@ -636,7 +643,7 @@ namespace Sphere10.Framework.Tests {
 				ApiServiceManager.RegisterService(apiTest);
 				//Start server()
 				TcpSecurityPolicies.MaxSimultanousConnecitons = TestMaxConnections;
-				server = new JsonRpcServer(new TcpEndPointListener(true, 27001, 5));
+				server = new JsonRpcServer(new TcpEndPointListener(true, 27001, 5), JsonRpcConfig.Default);
 				server.Start();
 				Thread.Sleep(250);
 			}
@@ -651,6 +658,7 @@ namespace Sphere10.Framework.Tests {
 			{
 				int failed = 0;
 				Thread[] threadsArray = new Thread[TestMaxThreads];
+				//creating 3x more clients/connection than the limit
 				for (int i = 0; i < TestMaxThreads; i++)
 					threadsArray[i] = new Thread((i) =>
 					{
@@ -658,7 +666,7 @@ namespace Sphere10.Framework.Tests {
 						try {
 							var socket = new TcpClient("127.0.0.1", 27001);
 							socket.Client.ReceiveTimeout = 5000;
-							var client = new JsonRpcClient(new TcpEndPoint(socket));
+							var client = new JsonRpcClient(new TcpEndPoint(socket), JsonRpcConfig.Default);
 							Assert.AreEqual(client.RemoteCall<uint>("api.Add2Diff", 199, -9), 190);
 							Thread.Sleep(250);
 						}

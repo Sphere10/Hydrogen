@@ -6,9 +6,9 @@ using System.Collections.Generic;
 namespace Sphere10.Framework {
 	public abstract class GenericItemSerializer {
 		
-		protected static readonly ConcurrentDictionary<Type, int> Registrations = new ();
+		protected static readonly SynchronizedDictionary<Type, int> Registrations = new ();
 		
-		protected static readonly ConcurrentDictionary<Type, IItemSerializer<object>> Serializers = new ();
+		protected static readonly SynchronizedDictionary<Type, IItemSerializer<object>> Serializers = new ();
 		
 		public GenericItemSerializer() {
 			
@@ -17,6 +17,7 @@ namespace Sphere10.Framework {
 			Registrations.TryAdd(typeof(CircularReference), Registrations.Count + 1);
 			
 			// built-in .NET types registered, no custom serializer required.
+			Registrations.TryAdd(typeof(Dictionary<,>), Registrations.Count + 1);
 			Registrations.TryAdd(typeof(List<>), Registrations.Count + 1);
 			Registrations.TryAdd(typeof(ArrayList), Registrations.Count + 1);
 			Registrations.TryAdd(typeof(Array), Registrations.Count + 1);

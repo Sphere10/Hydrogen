@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using AutoFixture;
@@ -172,6 +173,10 @@ namespace Sphere10.Framework.Tests
         public ArrayList B { get; set; }
         
         public PrimitiveTestObject[] C { get; set; }
+
+        public Dictionary<int, PrimitiveTestObject> D { get; set; }
+        
+        public Dictionary<int, NullTestObject> E { get; set; }
     }
 
     internal class NullTestObject

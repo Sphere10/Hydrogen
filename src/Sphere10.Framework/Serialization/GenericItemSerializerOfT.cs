@@ -126,11 +126,10 @@ namespace Sphere10.Framework {
 
 		private object DeserializeCollection(EndianBinaryReader reader) {
 			var collectionType = ReadTypeHeader(reader);
-			var elementType = ReadTypeHeader(reader);
-
 			object list;
 
 			if (collectionType == typeof(Array)) {
+				var elementType = ReadTypeHeader(reader);
 				var count = reader.ReadInt32();
 
 				object[] elements = new object[count];
@@ -142,7 +141,28 @@ namespace Sphere10.Framework {
 				var array = Array.CreateInstance(elementType, elements.Length);
 				elements.CopyTo(array, 0);
 				list = array;
+			} else if (typeof(IDictionary).IsAssignableFrom(collectionType)) {
+				var keyType = ReadTypeHeader(reader);
+				var valType = ReadTypeHeader(reader);
+				IDictionary dictionary;
+
+				if (collectionType.IsGenericType)
+					dictionary = (IDictionary)Activator.CreateInstance(collectionType.MakeGenericType(keyType, valType));
+				else
+					dictionary = (IDictionary)Activator.CreateInstance(collectionType);
+
+				var count = reader.ReadInt32();
+				for (var i = 0; i < count; i++) {
+					var itemKeyType = ReadTypeHeader(reader);
+					var itemValueType = ReadTypeHeader(reader);
+					var key = DeserializeMember(itemKeyType, reader);
+					var val = DeserializeMember(itemValueType, reader);
+					dictionary.Add(key, val);
+				}
+
+				list = dictionary;
 			} else {
+				var elementType = ReadTypeHeader(reader);
 				MethodInfo addMethod;
 				if (collectionType.IsGenericType) {
 					list = Activator.CreateInstance(collectionType.MakeGenericType(elementType));
@@ -151,7 +171,7 @@ namespace Sphere10.Framework {
 					list = Activator.CreateInstance(collectionType);
 					addMethod = collectionType.GetMethod("Add") ?? throw new InvalidOperationException($"list {collectionType.Name} doesn't support Add method, cannot deserialize");
 				}
-				
+
 				var count = reader.ReadInt32();
 
 				for (int i = 0; i < count; i++) {
@@ -312,10 +332,44 @@ namespace Sphere10.Framework {
 		}
 
 		private byte[] SerializeCollectionType(object memberValue) {
-			using MemoryStream headerStream = new MemoryStream();
-			using EndianBinaryWriter headerStreamWriter = new EndianBinaryWriter(_bitConverter, headerStream);
+
+			if (memberValue is IDictionary dictionary) {
+				var stream = new MemoryStream();
+				var writer = new EndianBinaryWriter(EndianBitConverter.Little, stream);
+				var type = dictionary.GetType();
+
+				if (type.IsGenericType) {
+					var arguments = dictionary.GetType().GetGenericArguments();
+					var keyType = arguments[0];
+					var valueType = arguments[1];
+
+					writer.Write(GetTypeIndex(type.GetGenericTypeDefinition()));
+					writer.Write(GetTypeIndex(keyType));
+					writer.Write(GetTypeIndex(valueType));
+				} else {
+					writer.Write(GetTypeIndex(type));
+					writer.Write(GetTypeIndex(typeof(object)));
+					writer.Write(GetTypeIndex(typeof(object)));
+				}
+
+				writer.Write(dictionary.Count);
+				var enumerator = dictionary.GetEnumerator();
+
+				while (enumerator.MoveNext()) {
+					var key = enumerator.Key;
+					var val = enumerator.Value;
+					writer.Write(GetTypeIndex(key!.GetType()));
+					writer.Write(GetTypeIndex(val!.GetType()));
+					writer.Write(SerializeMember(key));
+					writer.Write(SerializeMember(val));
+				}
+
+				return stream.ToArray();
+			}
 
 			if (memberValue is IEnumerable enumerable) {
+				using MemoryStream headerStream = new MemoryStream();
+				using EndianBinaryWriter headerStreamWriter = new EndianBinaryWriter(_bitConverter, headerStream);
 				var listType = memberValue.GetType();
 				Type elementType;
 
@@ -331,9 +385,9 @@ namespace Sphere10.Framework {
 					elementType = typeof(object);
 					headerStreamWriter.Write(GetTypeIndex(listType));
 				}
-				
+
 				headerStreamWriter.Write(GetTypeIndex(elementType));
-				
+
 				var enumerator = enumerable.GetEnumerator();
 				var count = 0;
 

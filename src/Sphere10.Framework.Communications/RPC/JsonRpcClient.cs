@@ -12,22 +12,22 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace Sphere10.Framework.Communications.RPC {
-	//Simple implementation of remote call to Json server
-
+	//Makes remote calls on a server
 	public class JsonRpcClient : ApiRemoteService {
 		protected static int CallID = 1;
-		protected bool KeepAlive = false;
-		//NOTE: to have all byte[] properties serialized using hexa strings, you must also add this attribute to them : JsonConverter(typeof(ByteArrayHexConverter))] on byte array property 
-		protected JsonSerializerSettings JsonSettings = new JsonSerializerSettings {/*Formatting = Formatting.Indented,*/ Converters = { { new ByteArrayHexConverter() } } };
-		public ILogger Logger { get; set; }
+		protected SynchronizedDictionary<int, Tuple<AutoResetEvent, string>> persistantCallResults = new SynchronizedDictionary<int, Tuple<AutoResetEvent, string>>();
+		protected JsonRpcConfig Config;
 
-		public JsonRpcClient(IEndPoint endPoint, bool keepAlive = false) : base(endPoint) {
-			KeepAlive = keepAlive;
+		//NOTE: to have all byte[] properties serialized using hexa strings, you must also add this attribute to them : JsonConverter(typeof(ByteArrayHexConverter))] on byte array property 
+		public static JsonSerializerSettings JsonSettings { get => new JsonSerializerSettings {/*Formatting = Formatting.Indented,*/ Converters = { { new ByteArrayHexConverter() } } }; private set { } }
+
+		public JsonRpcClient(IEndPoint endPoint, JsonRpcConfig config) : base(endPoint) {
+			Config = config;
 		}
 
 		//Call RPC functions in batch. Return array of return-values OR exception object for every array item.
 		public override object[] RemoteCall(ApiBatchCallDescriptor batchCalls) {
-			if (!KeepAlive)
+			if (Config.ConnectionMode == JsonRpcConfig.ConnectionModeEnum.Pulsed)
 				//Reconnect at every call, as per standard.
 				EndPoint.Stop();
 
@@ -38,12 +38,13 @@ namespace Sphere10.Framework.Communications.RPC {
 			}
 			var messageStr = JsonConvert.SerializeObject(messagesJson, JsonSettings) + "\n";
 			EndPoint.WriteMessage(new EndpointMessage(messageStr));
+
 			var resultStr = EndPoint.ReadMessage().ToSafeString();
 			if (String.IsNullOrEmpty(resultStr))
 				throw new JsonRpcException(-11, $"RPC function cannot be decoded");
 
 #if DEBUG
-			Logger?.Debug("Client received :" + resultStr.ToString());
+			Config.Logger?.Debug("Client received batch :" + resultStr.ToString());
 #endif
 
 			JsonResponse[] result = JsonConvert.DeserializeObject<JsonResponse[]>(resultStr, JsonSettings);
@@ -119,37 +120,62 @@ namespace Sphere10.Framework.Communications.RPC {
 			return value;
 		}
 
-		protected string CallInternal(string methodName, params object[] arguments) {
-			if (!KeepAlive)
+		protected string CallInternal(string methodName, bool noReturnType, params object[] arguments) {
+			if (Config.ConnectionMode == JsonRpcConfig.ConnectionModeEnum.Pulsed)
 				//Reconnect at every call, as per standard.
 				EndPoint.Stop();
 
 			var id = Interlocked.Increment(ref CallID);
 			var messageJson = new JsonRequest { Method = methodName, Params = arguments, Id = id };
 			var messageStr = JsonConvert.SerializeObject(messageJson, JsonSettings) + "\n";
+			var resultStr = "";
 
-			EndPoint.WriteMessage(new EndpointMessage(messageStr));
-			var resultStr = EndPoint.ReadMessage().ToSafeString();
-			if (String.IsNullOrEmpty(resultStr))
-				throw new JsonRpcException(-11, $"RPC function cannot be decoded");
-#if DEBUG
-			Logger?.Debug("Client received :" + resultStr.ToString());
-#endif
+			if (!(Config.IgnoreEmptyReturnValue == false || noReturnType == false)) {
+				//ignore result
+				EndPoint.WriteMessage(new EndpointMessage(messageStr));
+			} else {
+				if (Config.ConnectionMode == JsonRpcConfig.ConnectionModeEnum.Pulsed) {
+					//Reading the result in Pulse mode 
+					EndPoint.WriteMessage(new EndpointMessage(messageStr));
+					resultStr = EndPoint.ReadMessage().ToSafeString();
+				} else {
+					//reading the result in Persistant mode : wait for the ClientHandler loop to reveice the answer.
+					Debug.Assert(persistantCallResults.ContainsKey(id) == false);
+					var waitForAnswer = new Tuple<AutoResetEvent, string>(new AutoResetEvent(false), "");
+					var res = persistantCallResults[id] = waitForAnswer;
+
+					EndPoint.WriteMessage(new EndpointMessage(messageStr));
+
+					waitForAnswer.Item1.WaitOne(Config.MaxTimeWaitingForResult);
+					Debug.Assert(persistantCallResults.ContainsKey(id) == true);
+					persistantCallResults.TryGetValue(id, out waitForAnswer);
+					resultStr = waitForAnswer.Item2;
+					persistantCallResults.Remove(id);
+				}
+
+				if (String.IsNullOrEmpty(resultStr))
+					throw new JsonRpcException(-11, $"RPC function cannot be decoded");
+			}
+			
 			return resultStr;
 		}
 
 		//Call RPC function with no return value
 		public override void RemoteCall(string methodName, params object[] arguments) {
-			var resultStr = CallInternal(methodName, arguments);
-			JsonResponse result = JsonConvert.DeserializeObject<JsonResponse>(resultStr, JsonSettings);
-			if (result.Error != null)
-				throw result.Error;
+			var resultStr = CallInternal(methodName, true, arguments);
+			
+			//RPC without return types are allowed to have null string as a return value
+			if (resultStr.Length != 0) {
+				JsonResponse result = JsonConvert.DeserializeObject<JsonResponse>(resultStr, JsonSettings);
+				if (result.Error != null)
+					throw result.Error;
+			}
 		}
 
 		//Call RPC function with a return value.
 		//NOTE: Special case for arrays of 32 bits integer (int[] and uint[]). Because of a limitation in Newtonsoft.Json, you MUST give a template type of Int64[] and Uint64[] respectively.
 		public override TReturnType RemoteCall<TReturnType>(string methodName, params object[] arguments) {
-			var resultStr = CallInternal(methodName, arguments);
+			var resultStr = CallInternal(methodName, false, arguments);
 			JsonResponse result = JsonConvert.DeserializeObject<JsonResponse>(resultStr, JsonSettings);
 			if (result.Error != null)
 				throw new Exception(result.Error.ToString());

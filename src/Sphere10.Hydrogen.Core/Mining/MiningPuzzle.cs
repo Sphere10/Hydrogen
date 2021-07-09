@@ -27,6 +27,8 @@ namespace Sphere10.Hydrogen.Core.Mining {
 
 		public NewMinerBlock Block { get; }
 
+		public SynchronizedList<BlockChainTransaction> Transactions;
+
 		public byte[] ComputeWork()
 			=> _miningConfig.Hasher.Hash(BlockSerializer.SerializeLE(Block));
 		

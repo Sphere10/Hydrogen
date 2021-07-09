@@ -23,7 +23,7 @@ namespace Sphere10.Hydrogen.Node.RPC {
 		public RpcSingleThreadedMiner(string minerTag, string serverIP, int serverPort) {
 			_miningTask = null;
 			_cancelSource = null;
-			_rpcClient = new JsonRpcClient(new TcpEndPoint(serverIP, serverPort));
+			_rpcClient = new JsonRpcClient(new TcpEndPoint(serverIP, serverPort), JsonRpcConfig.Default);
 			_stats = new Dictionary<string, uint>();
 			MinerTag = minerTag;
 			Status = MinerStatus.Idle;
@@ -72,7 +72,6 @@ namespace Sphere10.Hydrogen.Node.RPC {
 					var work = _rpcClient.RemoteCall<NewMinerBlockSurogate>("getwork", MinerTag).ToNonSurrogate(PoWAlgorithm);
 					var maxTime = (DateTimeOffset)work.Config["maxtime"];
 					var hashAlgoName = (string)work.Config["hashalgo"];
-					Debug.WriteLine($"Miner: New work packagewith target {work.CompactTarget}. Hashing with {hashAlgoName}");
 
 					//for R&D purpose, we send hash-algo and pow-algo in Block.Config
 					var HashAlgorithm = StringExtensions.ParseEnum<CHF>(hashAlgoName);

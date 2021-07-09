@@ -12,9 +12,14 @@ namespace Sphere10.Hydrogen.Node {
 
 		public void Initialize() {
 			SystemLog.RegisterLogger(new TimestampLogger(new ConsoleLogger()));
-			
+
+			//NOTE: Until HydrogenInitializer gets to properly reference CryptoEx module, we init it here.
+			Sphere10.Framework.CryptoEx.ModuleConfiguration.Initialize();
+			//SystemLog.RegisterLogger(new TimestampLogger(new DebugLogger()));
+
+
 			//TODO: fetch server's init values from some global config module
-			RpcMiningJsonServer.Start(true, 27000, 5);
+			RpcServer.Start(true, 27000, 32);
 		}
 	}
 

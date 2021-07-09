@@ -8,6 +8,7 @@ using System.Net;
 namespace Sphere10.Framework.Communications.RPC {
 	//Implement a TCP communication endpoint listnener
 	public class TcpEndPointListener : IEndPoint {
+		private ulong _uid = (ulong)Tools.Maths.RNG.Next();
 		private TcpListener		TcpListener;
 		private int				MaxListeners = 5;
 		public int				MaxMessageSize { get; set; } = 4096;
@@ -20,21 +21,13 @@ namespace Sphere10.Framework.Communications.RPC {
 		public string GetDescription() { 
 			return TcpListener != null ? $"{((IPEndPoint)TcpListener.LocalEndpoint).Address.ToString()}:{((IPEndPoint)TcpListener.LocalEndpoint).Port}" : "";
 		}
-		public ulong GetUID() {
-			return TcpListener != null ? (ulong)TcpListener.Server.Handle.ToInt64() : 0;
-		}
+		public ulong GetUID() { return _uid; }
 
 		//wait for connection and return client's endpoint
 		public IEndPoint WaitForMessage() {
 			TcpEndPoint newClient = null;
-			try {
-				TcpClient client = TcpListener.AcceptTcpClient();
-				newClient = new TcpEndPoint(client);
-			}
-			catch(Exception e) {
-				throw;
-			}
-
+			TcpClient client = TcpListener.AcceptTcpClient();
+			newClient = new TcpEndPoint(client);
 			return newClient;
 		}
 

@@ -3,10 +3,12 @@ using System.IO;
 using System.Collections.Generic;
 using System.Net.Sockets;
 using System.Net;
+using System.Threading;
 
 namespace Sphere10.Framework.Communications.RPC {
 	//Implement a TCP communication endpoint
 	public class TcpEndPoint : IEndPoint {
+		private ulong _uid = (ulong)Tools.Maths.RNG.Next();
 		protected TcpClient TcpSocket;
 		protected int Port;
 		protected string Address;
@@ -20,10 +22,7 @@ namespace Sphere10.Framework.Communications.RPC {
 		public TcpEndPoint(TcpClient clientSocket) {
 			TcpSocket = clientSocket;
 		}
-
-		public ulong GetUID() {
-			return TcpSocket != null ? (ulong)TcpSocket.Client.Handle.ToInt64() : 0;
-		}
+		public ulong GetUID() { return _uid; }
 
 		public string GetDescription() {
 			return TcpSocket != null ? $"{((IPEndPoint)TcpSocket.Client.RemoteEndPoint).Address.ToString()}:{((IPEndPoint)TcpSocket.Client.RemoteEndPoint).Port}" : "";
@@ -50,11 +49,19 @@ namespace Sphere10.Framework.Communications.RPC {
 				Start();
 
 			message.Stream = this;
-			TcpSocket.GetStream().Write(message.MessageData, 0, message.MessageData.Length);
+			if (message.MessageData.Length > 0)
+				TcpSocket.GetStream().Write(message.MessageData, 0, message.MessageData.Length);
 		}
 
 		public virtual bool IsOpened() {
-			return TcpSocket != null && TcpSocket.Client != null && (TcpSocket.Client.Poll(0, SelectMode.SelectWrite) && !TcpSocket.Client.Poll(0, SelectMode.SelectError));
+			if (TcpSocket == null || TcpSocket.Client == null)
+				return false;
+			
+			bool part1 = TcpSocket.Client.Poll(1000, SelectMode.SelectRead);
+			bool part2 = (TcpSocket.Client.Available == 0);
+			bool isConnected = !(part1 && part2);
+			bool isOpen = (TcpSocket.Client.Poll(0, SelectMode.SelectWrite) && !TcpSocket.Client.Poll(0, SelectMode.SelectError));
+			return isOpen && isConnected;
 		}
 
 		public virtual void Start() {

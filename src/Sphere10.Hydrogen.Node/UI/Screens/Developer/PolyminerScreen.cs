@@ -103,8 +103,8 @@ namespace Sphere10.Hydrogen.Node.UI {
 				base.OnModelChanged();
 				this.Model.Started += manager => {
 					_outputLogger.Info($"RPC mining server started on port {Model.RpcServerPort}");
+					manager.SolutionSubmited += (o, puzzle, result) => _outputLogger.Info($"Miner: '{puzzle.Block.MinerTag}', Block: {puzzle.ComputeWork().ToHexString(true)}, Result: {result}");
 					(manager as RpcMiningManager).Logger = _outputLogger;
-					RpcMiningJsonServer.SetLogger(_outputLogger);
 				};
 
 				this.Model.Stopped += manager => {
@@ -113,6 +113,7 @@ namespace Sphere10.Hydrogen.Node.UI {
 				};
 			}
 		}
+
 		//TODO: maybe bring that logger to Sphere10.Framework.Logging
 		public class MainThreadActionLogger : ActionLogger {
 			public MainThreadActionLogger(Action<string> action)
@@ -120,6 +121,9 @@ namespace Sphere10.Hydrogen.Node.UI {
 			}
 			protected override void LogMessage(Action<string> action, string message) {
 				try {
+#if DEBUG
+					System.Diagnostics.Debug.WriteLine(message);
+#endif
 					Application.MainLoop.Invoke(() => action(message));
 				} catch {
 				}
@@ -128,16 +132,18 @@ namespace Sphere10.Hydrogen.Node.UI {
 
 		//management code
 		public class MiningServerModel {
+			//private const int DefaultBlockTime = 120;
+			private const int DefaultBlockTime = 20;
 			private IMiningManager _miningManager;
 
 			public event EventHandlerEx<IMiningManager> Started;
 			public event EventHandlerEx<IMiningManager> Stopped;
 
-			public int RpcServerPort { get; set; } = 27000;
+			public int RpcServerPort { get; set; } = 27001;
 			public HashAlgo Hash { get; set; } = HashAlgo.RH2;
-			public int BlockTime { get; set; } = 120;
+			public int BlockTime { get; set; } = DefaultBlockTime;
 
-			public int RelaxationTime { get; set; } = 20 * 120;
+			public int RelaxationTime { get; set; } = 20 * DefaultBlockTime;
 
 			public int RTTInterval { get; set; } = 5;
 
@@ -149,7 +155,6 @@ namespace Sphere10.Hydrogen.Node.UI {
 			public void Start() {
 				Guard.Ensure(!IsStarted, "Already Started");
 
-				RpcMiningJsonServer.Start(true, RpcServerPort, 5);
 				IMiningHasher hasher = Hash switch {
 					HashAlgo.SHA2_256 => new CHFhasher { Algo = CHF.SHA2_256 },
 					HashAlgo.RH2 => new RandomHash2Hasher(),
@@ -166,9 +171,13 @@ namespace Sphere10.Hydrogen.Node.UI {
 						TargetAlgorithm = targetAlgo,
 						DAAlgorithm = new ASERT_RTT(targetAlgo, new ASERTConfiguration { BlockTime = TimeSpan.FromSeconds(BlockTime), RelaxationTime = TimeSpan.FromSeconds(RelaxationTime) })
 					},
+					new RpcServerConfig { IsLocal = true, Port = RpcServerPort, MaxListeners = 12 },
 					new NewMinerBlockSerializer(minerTagSize),
+					BlockTime,
 					TimeSpan.FromSeconds(RTTInterval)
 				);
+
+				miningManager.StartMiningServer("PolyminerTAG");
 
 				_miningManager = miningManager;
 				IsStarted = true;
@@ -177,7 +186,7 @@ namespace Sphere10.Hydrogen.Node.UI {
 
 			public void Stop() {
 				Guard.Ensure(IsStarted, "Not started");
-				RpcMiningJsonServer.Stop();
+				(_miningManager as RpcMiningManager).StopMiningServer();
 				IsStarted = false;
 				Stopped?.Invoke(_miningManager);
 				(_miningManager as RpcMiningManager).Dispose();

@@ -3,7 +3,6 @@
   "profiles": {
     "Sphere10.Hydrogen.Node": {
       "commandName": "Project",
-      "commandLineArgs": "service --loglevel info",
       "nativeDebugging": true
     }
   }

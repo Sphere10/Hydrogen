@@ -17,15 +17,15 @@ namespace Sphere10.Framework {
 			Registrations.TryAdd(typeof(CircularReference), Registrations.Count + 1);
 			
 			// built-in .NET types registered, no custom serializer required.
-			Registrations.TryAdd(typeof(Dictionary<,>), Registrations.Count + 1);
-			Registrations.TryAdd(typeof(List<>), Registrations.Count + 1);
-			Registrations.TryAdd(typeof(ArrayList), Registrations.Count + 1);
-			Registrations.TryAdd(typeof(Array), Registrations.Count + 1);
-			Registrations.TryAdd(typeof(object), Registrations.Count + 1);
-			Registrations.TryAdd(typeof(string), Registrations.Count + 1);
-			Registrations.TryAdd(typeof(int), Registrations.Count + 1);
-			Registrations.TryAdd(typeof(decimal), Registrations.Count + 1);
-			Registrations.TryAdd(typeof(double), Registrations.Count + 1);
+			Register(typeof(Dictionary<,>));
+			Register(typeof(List<>));
+			Register(typeof(ArrayList));
+			Register(typeof(Array));
+			Register(typeof(object));
+			Register(typeof(string));
+			Register(typeof(int));
+			Register(typeof(decimal));
+			Register(typeof(double));
 			
 			Register(new DateTimeSerializer());
 			Register(new DateTimeOffsetSerializer());
@@ -40,17 +40,28 @@ namespace Sphere10.Framework {
 
 		public static void Register(Type type, IItemSerializer<object> serializer) => Register(type, serializer, Registrations.Count + 1);
 		
+		public static void Register(Type type) => Register(type,  Registrations.Count + 1);
+		
 		public static void Register<T>(IItemSerializer<T> serializer, int typeCode) => Register(typeof(T), serializer.AsBaseSerializer<T, object>(), typeCode);
-
+		
 		protected static void Register(Type type, IItemSerializer<object> serializer, int typeCode) {
 			Registrations.TryAdd(type, typeCode);
 			Serializers.TryAdd(type, serializer);
+		}
+
+		protected static void Register(Type type, int typecode) {
+			Registrations.TryAdd(type, typecode);
 		}
 		
 		protected struct NullValue {
 		}
 		
 		protected struct CircularReference {
+		}
+
+
+		protected int GetTypeIndex(Type type) {
+			return Registrations.ContainsKey(type) ? Registrations[type] : throw new InvalidOperationException($"Type {type.Name} is not registered, add using Register<T>()");
 		}
 	}
 }

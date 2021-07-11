@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using AutoFixture;
@@ -38,6 +37,7 @@ namespace Sphere10.Framework.Tests
             _fixture.Customize<NullTestObject>(x => x.FromFactory(CreateNullTestObj));
             _fixture.Customize<CollectionTestObject>(x => x.FromFactory(CreateCollectionTestObj));
             
+            GenericItemSerializer.Register(typeof(GenericReferenceTypeObj<,>));
             GenericItemSerializer.Register<ReferenceTypeObject>();
             GenericItemSerializer.Register<PrimitiveTestObject>();
             GenericItemSerializer.Register<ValueTypeTestObject>();
@@ -136,7 +136,27 @@ namespace Sphere10.Framework.Tests
             var reader = new EndianBinaryReader(EndianBitConverter.Little, memoryStream);
             var deserializedItem = serializer.Deserialize(byteCount, reader);
 
-            item.Should().BeEquivalentTo(deserializedItem);
+            deserializedItem.Should().BeEquivalentTo(item);
+        }
+        
+        [Test]
+        public void GenericReferenceTypeSerializeDeserialize()
+        {
+            var item = _fixture.Create<GenericReferenceTypeObj<PrimitiveTestObject, ReferenceTypeObject>>();
+
+            var serializer = GenericItemSerializer<GenericReferenceTypeObj<PrimitiveTestObject, ReferenceTypeObject>>.Default;
+            
+            using var memoryStream = new MemoryStream();
+            var writer = new EndianBinaryWriter(EndianBitConverter.Little, memoryStream);
+            var byteCount = serializer.Serialize(item, writer);
+
+            Assert.AreEqual(memoryStream.Length, byteCount);
+
+            memoryStream.Seek(0, SeekOrigin.Begin);
+            var reader = new EndianBinaryReader(EndianBitConverter.Little, memoryStream);
+            var deserializedItem = serializer.Deserialize(byteCount, reader);
+
+            deserializedItem.Should().BeEquivalentTo(item);
         }
     }
 
@@ -193,5 +213,12 @@ namespace Sphere10.Framework.Tests
         public CollectionTestObject Y { get; set; }
         
         public NullTestObject Z { get; set; }
+    }
+
+    internal class GenericReferenceTypeObj<T1, T2>
+    {
+        public T1 A { get; set; }
+        
+        public T2 B { get; set; }
     }
 }

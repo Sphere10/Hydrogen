@@ -185,17 +185,17 @@ namespace Sphere10.Framework {
 		}
 
 		private object DeserializeValueType(Type memberType, EndianBinaryReader reader) {
-
 			if (memberType.IsGenericType && memberType.GetGenericTypeDefinition() == typeof(Nullable<>)) {
 				memberType = memberType.GetField("value", BindingFlags.NonPublic | BindingFlags.Instance)!.FieldType;
 				return DeserializeMember(memberType, reader);
 			}
-
+			
 			if (memberType == typeof(decimal))
 				return reader.ReadDecimal();
 
 			if (Serializers.TryGetValue(memberType, out var serializer))
 				return serializer.Deserialize(-1, reader);
+			
 			var instance = Activator.CreateInstance(memberType);
 
 			foreach (var field in GetSerializableProperties(memberType)) {
@@ -213,16 +213,24 @@ namespace Sphere10.Framework {
 
 			if (Serializers.TryGetValue(valueType, out var serializer))
 				return serializer.Deserialize(-1, reader);
-			var instance = Activator.CreateInstance(valueType);
-			if (memberType.IsAssignableFrom(valueType)) {
 
+			object instance;
+			if (valueType.IsGenericType) {
+				List<Type> genericArgs = new List<Type>();
+				foreach (var _ in valueType.GetGenericArguments()) {
+					genericArgs.Add(ReadTypeHeader(reader));
+				}
+				instance = Activator.CreateInstance(valueType.MakeGenericType(genericArgs.ToArray()));
+			} else 
+				instance = Activator.CreateInstance(valueType);
+			
+			if (memberType.IsAssignableFrom(valueType)) {
 				foreach (var field in GetSerializableProperties(valueType)) {
 					field.FastSetValue(instance, DeserializeMember(field.PropertyType, reader));
 				}
-
 				return instance;
-			}
-			throw new InvalidOperationException($"Found type {valueType.Name} to deserialize, but target property {memberType.Name} is not assignable from {memberType.Name}");
+			} else
+				throw new InvalidOperationException($"Found type {valueType.Name} to deserialize, but target property {memberType.Name} is not assignable from {memberType.Name}");
 		}
 
 		private byte[] SerializeMember(object value) {
@@ -248,7 +256,7 @@ namespace Sphere10.Framework {
 			if (valueType.IsValueType)
 				return SerializeValueType(value);
 
-			return SerializeReferenceType(valueType, value);
+			return SerializeReferenceType(value);
 		}
 
 		private byte[] SerializeNullValue() {
@@ -278,17 +286,27 @@ namespace Sphere10.Framework {
 			};
 		}
 
-		private byte[] SerializeReferenceType(Type memberType, object memberValue) {
+		private byte[] SerializeReferenceType(object value) {
 			using MemoryStream stream = new MemoryStream();
 			using EndianBinaryWriter writer = new EndianBinaryWriter(_bitConverter, stream);
-
-			writer.Write(GetTypeIndex(memberValue.GetType()));
-
-			if (Serializers.TryGetValue(memberType, out var serializer))
-				serializer.Serialize(memberValue, writer);
+			var type = value.GetType();
+			
+			if (type.IsGenericType) {
+				var genericType = type.GetGenericTypeDefinition();
+				var args = genericType.GetGenericArguments();
+				writer.Write(GetTypeIndex(genericType));
+				foreach (var arg in args) {
+					writer.Write(GetTypeIndex(arg));
+				}
+			} else {
+				writer.Write(GetTypeIndex(type));
+			}
+			
+			if (Serializers.TryGetValue(type, out var serializer))
+				serializer.Serialize(value, writer);
 			else {
-				foreach (var property in GetSerializableProperties(memberType)) {
-					writer.Write(SerializeMember(property.FastGetValue(memberValue)));
+				foreach (var property in GetSerializableProperties(type)) {
+					writer.Write(SerializeMember(property.FastGetValue(value)));
 				}
 			}
 
@@ -302,11 +320,7 @@ namespace Sphere10.Framework {
 
 			if (memberType == typeof(decimal))
 				return _bitConverter.GetBytes((decimal)memberValue);
-
-			if (memberType.IsGenericType && memberType.GetGenericTypeDefinition() == typeof(Nullable<>)) {
-				return SerializeMember(memberValue);
-			}
-
+			
 			if (Serializers.TryGetValue(memberType, out var serializer))
 				serializer.Serialize(memberValue, writer);
 			else {
@@ -331,9 +345,10 @@ namespace Sphere10.Framework {
 			return stream.ToArray();
 		}
 
-		private byte[] SerializeCollectionType(object memberValue) {
+		private byte[] SerializeCollectionType(object value) {
+			var listType = value.GetType();
 
-			if (memberValue is IDictionary dictionary) {
+			if (value is IDictionary dictionary) {
 				var stream = new MemoryStream();
 				var writer = new EndianBinaryWriter(EndianBitConverter.Little, stream);
 				var type = dictionary.GetType();
@@ -352,25 +367,26 @@ namespace Sphere10.Framework {
 					writer.Write(GetTypeIndex(typeof(object)));
 				}
 
-				writer.Write(dictionary.Count);
-				var enumerator = dictionary.GetEnumerator();
+				if (Serializers.TryGetValue(listType, out var serializer))
+					serializer.Serialize(value, writer);
+				else {
+					writer.Write(dictionary.Count);
+					var enumerator = dictionary.GetEnumerator();
 
-				while (enumerator.MoveNext()) {
-					var key = enumerator.Key;
-					var val = enumerator.Value;
-					writer.Write(GetTypeIndex(key!.GetType()));
-					writer.Write(GetTypeIndex(val!.GetType()));
-					writer.Write(SerializeMember(key));
-					writer.Write(SerializeMember(val));
+					while (enumerator.MoveNext()) {
+						var key = enumerator.Key;
+						var val = enumerator.Value;
+						writer.Write(GetTypeIndex(key!.GetType()));
+						writer.Write(GetTypeIndex(val!.GetType()));
+						writer.Write(SerializeMember(key));
+						writer.Write(SerializeMember(val));
+					}
 				}
 
 				return stream.ToArray();
-			}
-
-			if (memberValue is IEnumerable enumerable) {
+			} else if (value is IEnumerable enumerable) {
 				using MemoryStream headerStream = new MemoryStream();
 				using EndianBinaryWriter headerStreamWriter = new EndianBinaryWriter(_bitConverter, headerStream);
-				var listType = memberValue.GetType();
 				Type elementType;
 
 				if (listType.IsGenericType) {
@@ -388,31 +404,29 @@ namespace Sphere10.Framework {
 
 				headerStreamWriter.Write(GetTypeIndex(elementType));
 
-				var enumerator = enumerable.GetEnumerator();
-				var count = 0;
-
 				using MemoryStream itemStream = new MemoryStream();
 				using EndianBinaryWriter itemStreamWriter = new EndianBinaryWriter(_bitConverter, itemStream);
 
-				while (enumerator.MoveNext()) {
-					var itemType = enumerator.Current!.GetType();
+				if (Serializers.TryGetValue(listType, out var serializer))
+					serializer.Serialize(value, itemStreamWriter);
+				else {
+					var enumerator = enumerable.GetEnumerator();
+					var count = 0;
 
-					if (!itemType.IsClass)
-						itemStreamWriter.Write(GetTypeIndex(itemType));
+					while (enumerator.MoveNext()) {
+						var itemType = enumerator.Current!.GetType();
 
-					itemStreamWriter.Write(SerializeMember(enumerator.Current));
-					count++;
+						if (!itemType.IsClass)
+							itemStreamWriter.Write(GetTypeIndex(itemType));
+
+						itemStreamWriter.Write(SerializeMember(enumerator.Current));
+						count++;
+					}
+					headerStreamWriter.Write(count);
 				}
-
-				headerStreamWriter.Write(count);
-
 				return Tools.Array.Concat<byte>(headerStream.ToArray(), itemStream.ToArray());
-			}
-			throw new InvalidOperationException("Could not serialize object as it doesn't implement IEnumerable.");
-		}
-
-		private int GetTypeIndex(Type type) {
-			return Registrations.ContainsKey(type) ? Registrations[type] : throw new InvalidOperationException($"Type {type.Name} is not registered, add using Register<T>()");
+			} else
+				throw new InvalidOperationException("Could not serialize object as it doesn't implement IEnumerable.");
 		}
 
 		private Type ReadTypeHeader(EndianBinaryReader reader) {

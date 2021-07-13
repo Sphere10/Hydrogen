@@ -17,7 +17,7 @@ namespace Sphere10.Framework.Tests
         {
             NullTestObject CreateNullTestObj()
             {
-                return new ()
+                return new()
                 {
                     U = null,
                     V = null
@@ -29,15 +29,18 @@ namespace Sphere10.Framework.Tests
                 return new()
                 {
                     A = _fixture.Create<List<DateTime>>(),
-                    B = _fixture.Build<ArrayList>().FromFactory(() => new ArrayList(_fixture.CreateMany<PrimitiveTestObject>().ToArray())).Create(),
+                    B = _fixture.Build<ArrayList>()
+                        .FromFactory(() => new ArrayList(_fixture.CreateMany<PrimitiveTestObject>().ToArray()))
+                        .Create(),
                     C = _fixture.Create<PrimitiveTestObject[]>()
                 };
             }
 
             _fixture.Customize<NullTestObject>(x => x.FromFactory(CreateNullTestObj));
             _fixture.Customize<CollectionTestObject>(x => x.FromFactory(CreateCollectionTestObj));
-            
-            GenericItemSerializer.Register(typeof(GenericReferenceTypeObj<,>));
+
+            GenericItemSerializer.Register(typeof(GenericTypeObj<,>));
+            GenericItemSerializer.Register<GenericTypeObj>();
             GenericItemSerializer.Register<ReferenceTypeObject>();
             GenericItemSerializer.Register<PrimitiveTestObject>();
             GenericItemSerializer.Register<ValueTypeTestObject>();
@@ -103,7 +106,7 @@ namespace Sphere10.Framework.Tests
         public void NullObjectSerializeDeserialize()
         {
             var item = _fixture.Create<NullTestObject>();
-            
+
             var serializer = GenericItemSerializer<NullTestObject>.Default;
 
             using var memoryStream = new MemoryStream();
@@ -118,14 +121,14 @@ namespace Sphere10.Framework.Tests
 
             item.Should().BeEquivalentTo(deserializedItem);
         }
-        
+
         [Test]
         public void ReferenceTypeSerializeDeserialize()
         {
             var item = _fixture.Create<ReferenceTypeObject>();
 
             var serializer = GenericItemSerializer<ReferenceTypeObject>.Default;
-            
+
             using var memoryStream = new MemoryStream();
             var writer = new EndianBinaryWriter(EndianBitConverter.Little, memoryStream);
             var byteCount = serializer.Serialize(item, writer);
@@ -138,14 +141,13 @@ namespace Sphere10.Framework.Tests
 
             deserializedItem.Should().BeEquivalentTo(item);
         }
-        
+
         [Test]
         public void GenericReferenceTypeSerializeDeserialize()
         {
-            var item = _fixture.Create<GenericReferenceTypeObj<PrimitiveTestObject, ReferenceTypeObject>>();
+            var item = _fixture.Create<GenericTypeObj>();
+            var serializer = GenericItemSerializer<GenericTypeObj>.Default;
 
-            var serializer = GenericItemSerializer<GenericReferenceTypeObj<PrimitiveTestObject, ReferenceTypeObject>>.Default;
-            
             using var memoryStream = new MemoryStream();
             var writer = new EndianBinaryWriter(EndianBitConverter.Little, memoryStream);
             var byteCount = serializer.Serialize(item, writer);
@@ -189,36 +191,41 @@ namespace Sphere10.Framework.Tests
     internal class CollectionTestObject
     {
         public List<DateTime> A { get; set; }
-        
+
         public ArrayList B { get; set; }
-        
+
         public PrimitiveTestObject[] C { get; set; }
 
         public Dictionary<int, PrimitiveTestObject> D { get; set; }
-        
+
         public Dictionary<int, NullTestObject> E { get; set; }
     }
 
     internal class NullTestObject
     {
         public object U { get; set; }
-        
+
         public string V { get; set; }
     }
 
     internal class ReferenceTypeObject
     {
         public PrimitiveTestObject X { get; set; }
-        
+
         public CollectionTestObject Y { get; set; }
-        
+
         public NullTestObject Z { get; set; }
     }
 
-    internal class GenericReferenceTypeObj<T1, T2>
+    internal class GenericTypeObj
+    {
+        public GenericTypeObj<ReferenceTypeObject, CollectionTestObject> A { get; set; }
+    }
+
+    internal class GenericTypeObj<T1, T2>
     {
         public T1 A { get; set; }
-        
+
         public T2 B { get; set; }
     }
 }

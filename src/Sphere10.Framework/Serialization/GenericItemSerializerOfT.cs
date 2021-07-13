@@ -30,7 +30,7 @@ namespace Sphere10.Framework {
 		public int Serialize(T @object, EndianBinaryWriter writer) {
 			_bitConverter = writer.BitConverter;
 
-			int byteCount = 0;
+			var byteCount = 0;
 
 			foreach (var field in GetSerializableProperties(@object.GetType())) {
 				var value = field.FastGetValue(@object);
@@ -44,7 +44,7 @@ namespace Sphere10.Framework {
 
 		public T Deserialize(int size, EndianBinaryReader reader) {
 			_bitConverter = reader.BitConverter;
-			T instance = new T();
+			var instance = new T();
 
 			var properties = GetSerializableProperties(typeof(T));
 			foreach (var propertyInfo in properties) {
@@ -114,7 +114,7 @@ namespace Sphere10.Framework {
 		}
 
 		private string DeserializeString(EndianBinaryReader reader) {
-			Type type = ReadTypeHeader(reader);
+			var type = ReadTypeHeader(reader);
 
 			if (type == typeof(NullValue))
 				return null;
@@ -132,8 +132,8 @@ namespace Sphere10.Framework {
 				var elementType = ReadTypeHeader(reader);
 				var count = reader.ReadInt32();
 
-				object[] elements = new object[count];
-				for (int i = 0; i < count; i++) {
+				var elements = new object[count];
+				for (var i = 0; i < count; i++) {
 					var obj = DeserializeMember(elementType, reader);
 					elements[i] = obj;
 				}
@@ -174,7 +174,7 @@ namespace Sphere10.Framework {
 
 				var count = reader.ReadInt32();
 
-				for (int i = 0; i < count; i++) {
+				for (var i = 0; i < count; i++) {
 					var itemType = ReadTypeHeader(reader);
 					var obj = DeserializeMember(itemType, reader);
 					addMethod.Invoke(list, new[] { obj });
@@ -192,12 +192,11 @@ namespace Sphere10.Framework {
 			
 			if (memberType == typeof(decimal))
 				return reader.ReadDecimal();
-
+			
 			if (Serializers.TryGetValue(memberType, out var serializer))
 				return serializer.Deserialize(-1, reader);
-			
-			var instance = Activator.CreateInstance(memberType);
 
+			var instance = Activator.CreateInstance(memberType);
 			foreach (var field in GetSerializableProperties(memberType)) {
 				field.FastSetValue(instance, DeserializeMember(field.PropertyType, reader));
 			}
@@ -206,26 +205,27 @@ namespace Sphere10.Framework {
 		}
 
 		private object DeserializeReferenceType(Type memberType, EndianBinaryReader reader) {
-			Type valueType = ReadTypeHeader(reader);
-
+			var valueType = ReadTypeHeader(reader);
+			
 			if (valueType == typeof(NullValue))
 				return null;
-
-			if (Serializers.TryGetValue(valueType, out var serializer))
-				return serializer.Deserialize(-1, reader);
-
-			object instance;
+			
 			if (valueType.IsGenericType) {
-				List<Type> genericArgs = new List<Type>();
+				var genericArgs = new List<Type>();
 				foreach (var _ in valueType.GetGenericArguments()) {
 					genericArgs.Add(ReadTypeHeader(reader));
 				}
-				instance = Activator.CreateInstance(valueType.MakeGenericType(genericArgs.ToArray()));
-			} else 
-				instance = Activator.CreateInstance(valueType);
+
+				valueType = valueType.MakeGenericType(genericArgs.ToArray());
+			}
 			
-			if (memberType.IsAssignableFrom(valueType)) {
-				foreach (var field in GetSerializableProperties(valueType)) {
+			if (Serializers.TryGetValue(valueType, out var serializer))
+				return serializer.Deserialize(-1, reader);
+
+			var instance = Activator.CreateInstance(valueType);
+
+			if (memberType.IsInstanceOfType(instance)) {
+				foreach (var field in GetSerializableProperties(instance.GetType())) {
 					field.FastSetValue(instance, DeserializeMember(field.PropertyType, reader));
 				}
 				return instance;
@@ -287,13 +287,13 @@ namespace Sphere10.Framework {
 		}
 
 		private byte[] SerializeReferenceType(object value) {
-			using MemoryStream stream = new MemoryStream();
-			using EndianBinaryWriter writer = new EndianBinaryWriter(_bitConverter, stream);
+			using var stream = new MemoryStream();
+			using var writer = new EndianBinaryWriter(_bitConverter, stream);
 			var type = value.GetType();
 			
 			if (type.IsGenericType) {
 				var genericType = type.GetGenericTypeDefinition();
-				var args = genericType.GetGenericArguments();
+				var args = type.GetGenericArguments();
 				writer.Write(GetTypeIndex(genericType));
 				foreach (var arg in args) {
 					writer.Write(GetTypeIndex(arg));
@@ -313,19 +313,20 @@ namespace Sphere10.Framework {
 			return stream.ToArray();
 		}
 
-		private byte[] SerializeValueType(object memberValue) {
-			using MemoryStream stream = new MemoryStream();
-			using EndianBinaryWriter writer = new EndianBinaryWriter(_bitConverter, stream);
-			var memberType = memberValue.GetType();
+		private byte[] SerializeValueType(object value) {
+			using var stream = new MemoryStream();
+			using var writer = new EndianBinaryWriter(_bitConverter, stream);
+			var valueType = value.GetType();
+			var type = valueType;
 
-			if (memberType == typeof(decimal))
-				return _bitConverter.GetBytes((decimal)memberValue);
+			if (type == typeof(decimal))
+				return _bitConverter.GetBytes((decimal)value);
 			
-			if (Serializers.TryGetValue(memberType, out var serializer))
-				serializer.Serialize(memberValue, writer);
+			if (Serializers.TryGetValue(type, out var serializer))
+				serializer.Serialize(value, writer);
 			else {
-				foreach (var property in GetSerializableProperties(memberType)) {
-					writer.Write(SerializeMember(property.FastGetValue(memberValue)));
+				foreach (var property in GetSerializableProperties(type)) {
+					writer.Write(SerializeMember(property.FastGetValue(value)));
 				}
 			}
 
@@ -385,8 +386,8 @@ namespace Sphere10.Framework {
 
 				return stream.ToArray();
 			} else if (value is IEnumerable enumerable) {
-				using MemoryStream headerStream = new MemoryStream();
-				using EndianBinaryWriter headerStreamWriter = new EndianBinaryWriter(_bitConverter, headerStream);
+				using var headerStream = new MemoryStream();
+				using var headerStreamWriter = new EndianBinaryWriter(_bitConverter, headerStream);
 				Type elementType;
 
 				if (listType.IsGenericType) {
@@ -404,8 +405,8 @@ namespace Sphere10.Framework {
 
 				headerStreamWriter.Write(GetTypeIndex(elementType));
 
-				using MemoryStream itemStream = new MemoryStream();
-				using EndianBinaryWriter itemStreamWriter = new EndianBinaryWriter(_bitConverter, itemStream);
+				using var itemStream = new MemoryStream();
+				using var itemStreamWriter = new EndianBinaryWriter(_bitConverter, itemStream);
 
 				if (Serializers.TryGetValue(listType, out var serializer))
 					serializer.Serialize(value, itemStreamWriter);

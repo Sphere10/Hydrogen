@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 
 namespace Sphere10.Framework {
@@ -33,8 +32,7 @@ namespace Sphere10.Framework {
 		
 		public static void Register<T>() where T : new() => Register<T>(Registrations.Count + 1);
 
-		public static void Register<T>(int typeCode) where T : new() => Register(GenericItemSerializer<T>.Default
-			, typeCode);
+		public static void Register<T>(int typeCode) where T : new() => Register( typeof(T), typeCode);
 
 		public static void Register<T>(IItemSerializer<T> serializer) where T : new() => Register(serializer, Registrations.Count + 1);
 

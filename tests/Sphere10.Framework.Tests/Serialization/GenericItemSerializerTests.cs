@@ -39,6 +39,7 @@ namespace Sphere10.Framework.Tests
             _fixture.Customize<NullTestObject>(x => x.FromFactory(CreateNullTestObj));
             _fixture.Customize<CollectionTestObject>(x => x.FromFactory(CreateCollectionTestObj));
 
+            GenericItemSerializer.Register(typeof(CircularReferenceObj));
             GenericItemSerializer.Register(typeof(GenericTypeObj<,>));
             GenericItemSerializer.Register<GenericTypeObj>();
             GenericItemSerializer.Register<ReferenceTypeObject>();
@@ -105,7 +106,11 @@ namespace Sphere10.Framework.Tests
         [Test]
         public void NullObjectSerializeDeserialize()
         {
-            var item = _fixture.Create<NullTestObject>();
+            var item = new NullTestObject()
+            {
+                U = null,
+                V = null
+            };
 
             var serializer = GenericItemSerializer<NullTestObject>.Default;
 
@@ -158,6 +163,61 @@ namespace Sphere10.Framework.Tests
             var reader = new EndianBinaryReader(EndianBitConverter.Little, memoryStream);
             var deserializedItem = serializer.Deserialize(byteCount, reader);
 
+            deserializedItem.Should().BeEquivalentTo(item);
+        }
+
+        [Test]
+        public void CircularReferenceObj()
+        {
+            var parent = new CircularReferenceObj();
+            var child = new CircularReferenceObj();
+
+            parent.A = child;
+            child.A = new CircularReferenceObj
+            {
+                A = parent
+            };
+            
+            var serializer = GenericItemSerializer<CircularReferenceObj>.Default;
+
+            using var memoryStream = new MemoryStream();
+            var writer = new EndianBinaryWriter(EndianBitConverter.Little, memoryStream);
+            var byteCount = serializer.Serialize(parent, writer);
+
+            Assert.AreEqual(memoryStream.Length, byteCount);
+
+            memoryStream.Seek(0, SeekOrigin.Begin);
+            var reader = new EndianBinaryReader(EndianBitConverter.Little, memoryStream);
+            var deserializedItem = serializer.Deserialize(byteCount, reader);
+
+            deserializedItem
+                .Should()
+                .BeEquivalentTo(parent, x => x.IgnoringCyclicReferences());
+        }
+        
+        [Test]
+        public void ObjectTypePropertiesSerialized()
+        {
+            var item = new ObjectObj
+            {
+                A = new List<int> {1, 2, 3, 4},
+                B = null,
+                C = _fixture.Create<ReferenceTypeObject>(),
+                D = false
+            };
+            
+            var serializer = GenericItemSerializer<ObjectObj>.Default;
+
+            using var memoryStream = new MemoryStream();
+            var writer = new EndianBinaryWriter(EndianBitConverter.Little, memoryStream);
+            var byteCount = serializer.Serialize(item, writer);
+
+            Assert.AreEqual(memoryStream.Length, byteCount);
+
+            memoryStream.Seek(0, SeekOrigin.Begin);
+            var reader = new EndianBinaryReader(EndianBitConverter.Little, memoryStream);
+            var deserializedItem = serializer.Deserialize(byteCount, reader);
+            
             deserializedItem.Should().BeEquivalentTo(item);
         }
     }
@@ -227,5 +287,19 @@ namespace Sphere10.Framework.Tests
         public T1 A { get; set; }
 
         public T2 B { get; set; }
+    }
+
+    internal class CircularReferenceObj
+    {
+        public CircularReferenceObj A { get; set; }
+        public CircularReferenceObj B { get; set; }
+    }
+    
+    internal class ObjectObj
+    {
+        public object A { get; set; }
+        public object B { get; set; }
+        public object C { get; set; }
+        public object D { get; set; }
     }
 }

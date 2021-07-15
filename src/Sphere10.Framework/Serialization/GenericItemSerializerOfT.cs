@@ -29,32 +29,18 @@ namespace Sphere10.Framework {
 
 		public int Serialize(T @object, EndianBinaryWriter writer) {
 			_bitConverter = writer.BitConverter;
-
-			var byteCount = 0;
-
-			var context = new SerializationContext();
-			foreach (var property in GetSerializableProperties(@object.GetType())) {
-				var value = property.FastGetValue(@object);
-				var bytes = SerializeMember(property.PropertyType, value, context);
-				writer.Write(bytes);
-				byteCount += bytes.Length;
-			}
-
-			return byteCount;
+			
+			var bytes = SerializeMember(typeof(T), @object, new SerializationContext());
+			writer.Write(bytes);
+			return bytes.Length;
 		}
 
 		public T Deserialize(int size, EndianBinaryReader reader) {
 			_bitConverter = reader.BitConverter;
-			var instance = new T();
 
 			var context = new SerializationContext();
-			var properties = GetSerializableProperties(typeof(T));
-			foreach (var propertyInfo in properties) {
-				var value = DeserializeMember(propertyInfo.PropertyType, reader, context);
-				propertyInfo.FastSetValue(instance, value);
-			}
 
-			return instance;
+			return (T)DeserializeMember(typeof(T), reader, context);
 		}
 
 		private object DeserializeMember(Type propertyType, EndianBinaryReader reader, SerializationContext context) {
@@ -220,12 +206,14 @@ namespace Sphere10.Framework {
 		}
 
 		private byte[] SerializeMember(Type propertyType, object value, SerializationContext context) {
-
 			if (value is null)
 				return SerializeNullValue();
 
 			var valueType = value.GetType();
 			var builder = new ByteArrayBuilder();
+
+			if (IsCircularReference(valueType, value, context, out var reference))
+				return SerializeMember(typeof(CircularReference), reference, context);
 
 			if (RequiresTypeHeader(propertyType)) {
 				builder.Append(CreateTypeHeader(valueType));
@@ -244,26 +232,7 @@ namespace Sphere10.Framework {
 
 			return builder.ToArray();
 		}
-
-		private byte[] CreateTypeHeader(Type valueType) {
-			var stream = new MemoryStream();
-			var writer = new EndianBinaryWriter(EndianBitConverter.Little, stream);
-
-			if (valueType.IsArray) {
-				writer.Write(GetTypeIndex(typeof(Array)));
-				writer.Write(GetTypeIndex(valueType.GetElementType()));
-			} else
-				writer.Write(GetTypeIndex(valueType.IsGenericType ? valueType.GetGenericTypeDefinition() : valueType));
-
-			if (valueType.IsGenericType) {
-				foreach (var typeArgument in valueType.GenericTypeArguments) {
-					writer.Write(GetTypeIndex(typeArgument));
-				}
-			}
-
-			return stream.ToArray();
-		}
-
+		
 		private byte[] SerializeNullValue() {
 			using var memoryStream = new MemoryStream();
 			using var writer = new EndianBinaryWriter(EndianBitConverter.Little, memoryStream);
@@ -295,12 +264,6 @@ namespace Sphere10.Framework {
 			using var stream = new MemoryStream();
 			using var writer = new EndianBinaryWriter(_bitConverter, stream);
 			var type = value.GetType();
-
-			if (context.TryGetObjectIndex(value, out var index)) {
-				writer.Write(GetTypeIndex(typeof(CircularReference)));
-				writer.Write(SerializeValueType(new CircularReference { Index = index, TypeIndex = GetTypeIndex(type) }, context));
-				return stream.ToArray();
-			}
 
 			context.AddSerializedObject(value);
 
@@ -417,6 +380,40 @@ namespace Sphere10.Framework {
 				.ToArray();
 		}
 
-		private bool RequiresTypeHeader(Type type) => !type.IsNullable() && type.IsGenericType || type.IsClass || type == typeof(string);
+		private bool RequiresTypeHeader(Type type) => !type.IsNullable() && type.IsGenericType || type.IsClass || type == typeof(string) || type == typeof(CircularReference);
+		
+		private bool IsCircularReference(Type valueType, object value, SerializationContext context, out CircularReference? circularReference) {
+			circularReference = default;
+			if (valueType.IsClass) {
+				if (context.TryGetObjectIndex(value, out var index)) {
+					circularReference = new CircularReference {
+						Index = index,
+						TypeIndex = GetTypeIndex(valueType)
+					};
+					return true;
+				} else
+					return false;
+			} else
+				return false;
+		}
+
+		private byte[] CreateTypeHeader(Type valueType) {
+			var stream = new MemoryStream();
+			var writer = new EndianBinaryWriter(EndianBitConverter.Little, stream);
+
+			if (valueType.IsArray) {
+				writer.Write(GetTypeIndex(typeof(Array)));
+				writer.Write(GetTypeIndex(valueType.GetElementType()));
+			} else
+				writer.Write(GetTypeIndex(valueType.IsGenericType ? valueType.GetGenericTypeDefinition() : valueType));
+
+			if (valueType.IsGenericType) {
+				foreach (var typeArgument in valueType.GenericTypeArguments) {
+					writer.Write(GetTypeIndex(typeArgument));
+				}
+			}
+
+			return stream.ToArray();
+		}
 	}
 }

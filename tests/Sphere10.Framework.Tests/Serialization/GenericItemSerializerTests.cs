@@ -41,6 +41,7 @@ namespace Sphere10.Framework.Tests
 
             GenericItemSerializer.Register(typeof(CircularReferenceObj));
             GenericItemSerializer.Register(typeof(GenericTypeObj<,>));
+            GenericItemSerializer.Register<ObjectObj>();
             GenericItemSerializer.Register<GenericTypeObj>();
             GenericItemSerializer.Register<ReferenceTypeObject>();
             GenericItemSerializer.Register<PrimitiveTestObject>();
@@ -169,14 +170,17 @@ namespace Sphere10.Framework.Tests
         [Test]
         public void CircularReferenceObj()
         {
-            var parent = new CircularReferenceObj();
-            var child = new CircularReferenceObj();
-
-            parent.A = child;
-            child.A = new CircularReferenceObj
+            var parent = new CircularReferenceObj
             {
-                A = parent
+                A = new CircularReferenceObj
+              {
+                  B = _fixture.Create<PrimitiveTestObject>()
+              },
+                B = _fixture.Create<PrimitiveTestObject>()
             };
+
+            parent.A.A = parent;
+            
             
             var serializer = GenericItemSerializer<CircularReferenceObj>.Default;
 
@@ -292,7 +296,8 @@ namespace Sphere10.Framework.Tests
     internal class CircularReferenceObj
     {
         public CircularReferenceObj A { get; set; }
-        public CircularReferenceObj B { get; set; }
+        
+        public PrimitiveTestObject B { get; set; }
     }
     
     internal class ObjectObj

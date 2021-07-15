@@ -6,60 +6,67 @@ using Sphere10.Hydrogen.Core.Mining;
 
 namespace Sphere10.Hydrogen.Core.Consensus.Serializers {
 	public class NewMinerBlockSerializer : FixedSizeObjectSerializer<NewMinerBlock> {
-		private int _minerTagSize;
-		public NewMinerBlockSerializer(int minerTagSize) : base(
-			 4 +				//NewMinerBlock.Version
-			 4 +				//NewMinerBlock.BlockNumber
-			 32 +				//NewMinerBlock.MerkelRoot
-			 4 +				//NewMinerBlock.MinerNonce
-			 4 +                //NewMinerBlock.VotingBitMask
-			 minerTagSize +		//NewMinerBlock.MinerTag
-			 8 +				//NewMinerBlock.ExtraNonce
-			 32 +				//NewMinerBlock.PreviousBlockHash
-			 4 +				//NewMinerBlock.NodeNonce
-			 4 +				//NewMinerBlock.Timestamp
-			 4					//NewMinerBlock.Nonce
-			){ 
-			_minerTagSize = minerTagSize; 
+		public NewMinerBlockSerializer() : base(
+			4 + //Version
+			32 + //PrevMinerElectionHeader
+			2 + //PreviousMinerMicroBlockNumber
+			4 + //CompactTarget
+			Constants.BlockHeaderPaddingSize + //PADDING
+			32 + //BlockPolicy
+			32 + //KernelID
+			8 + //MinerRewardAccount
+			8 + //DevRewardAccount
+			8 + //InfrastructureRewardAccount
+			32 + //Signature
+			Constants.MinerTagSize + //MinerTag
+			4 + //UnixTime
+			4 //Nonce
+			) {
 		}
-
 		public override int Serialize(NewMinerBlock @object, EndianBinaryWriter writer) {
 			writer.Write(@object.Version);
-			writer.Write(@object.BlockNumber);
-			writer.Write(@object.MerkelRoot);
-			writer.Write(@object.MinerNonce);
-			writer.Write(@object.VotingBitMask);
+			writer.Write(@object.PrevMinerElectionHeader);
+			writer.Write(@object.PreviousMinerMicroBlockNumber);
+			writer.Write(@object.CompactTarget);
+			var PADDING = new byte[Constants.BlockHeaderPaddingSize];
+			writer.Write(@PADDING); 
+			writer.Write(@object.BlockPolicy);
+			writer.Write(@object.KernelID);
+			writer.Write(@object.MinerRewardAccount);
+			writer.Write(@object.DevRewardAccount);
+			writer.Write(@object.InfrastructureRewardAccount);
+			writer.Write(@object.Signature);
 			writer.Write(SanitizeTag(@object.MinerTag));
-			writer.Write(@object.ExtraNonce);
-			writer.Write(@object.PreviousBlockHash);
-			writer.Write(@object.NodeNonce);
-			writer.Write(@object.Timestamp);
+			writer.Write(@object.UnixTime);
 			writer.Write(@object.Nonce);
 			return FixedSize;
 		}
-
 		public override NewMinerBlock Deserialize(int size, EndianBinaryReader reader) {
 			var block = new NewMinerBlock();
 			block.Version = reader.ReadUInt32();
-			block.BlockNumber = reader.ReadUInt32();
-			block.MerkelRoot = reader.ReadBytes(32);
-			block.MinerNonce = reader.ReadUInt32();
-			block.VotingBitMask = reader.ReadUInt32();
-			block.MinerTag = System.Text.Encoding.ASCII.GetString(reader.ReadBytes(_minerTagSize)).TrimEnd(' ');
-			block.ExtraNonce= reader.ReadUInt64();
-			block.PreviousBlockHash = reader.ReadBytes(32);
-			block.NodeNonce = reader.ReadUInt32();
-			block.Timestamp = reader.ReadUInt32();
+			block.PrevMinerElectionHeader = reader.ReadBytes(32);
+			block.PreviousMinerMicroBlockNumber = reader.ReadUInt16();
+			block.CompactTarget = reader.ReadUInt32();
+			//NOTE: we serialize the extranonce here for a better entropy when mining
+			var PADDING = reader.ReadBytes(Constants.BlockHeaderPaddingSize);
+			block.BlockPolicy = reader.ReadBytes(32);
+			block.KernelID = reader.ReadBytes(32);
+			block.MinerRewardAccount = reader.ReadUInt64();
+			block.DevRewardAccount = reader.ReadUInt64();
+			block.InfrastructureRewardAccount = reader.ReadUInt64();
+			block.Signature = reader.ReadBytes(32);
+			block.MinerTag = System.Text.Encoding.ASCII.GetString(reader.ReadBytes(Constants.MinerTagSize)).TrimEnd(' ');
+			block.UnixTime = reader.ReadUInt32();
 			block.Nonce = reader.ReadUInt32();
 			return block;
 		}
 
 		private byte[] SanitizeTag(string tag) {
 			var newTag = tag;
-			if (tag.Length > _minerTagSize)
-				newTag = tag.Substring(0, _minerTagSize);
-			if (tag.Length < _minerTagSize)
-				newTag = tag + System.Text.Encoding.ASCII.GetString(System.Text.Encoding.ASCII.GetBytes(Tools.Array.Gen(_minerTagSize - tag.Length, ' ')));
+			if (tag.Length > Constants.MinerTagSize)
+				newTag = tag.Substring(0, Constants.MinerTagSize);
+			if (tag.Length < Constants.MinerTagSize)
+				newTag = tag + System.Text.Encoding.ASCII.GetString(System.Text.Encoding.ASCII.GetBytes(Tools.Array.Gen(Constants.MinerTagSize - tag.Length, ' ')));
 			return System.Text.Encoding.ASCII.GetBytes(newTag);
 		}
 	}

@@ -24,6 +24,7 @@ namespace Sphere10.Hydrogen.Core.Mining {
 		protected ulong TransactionCountNotifyLastThresold = 0;
 		//Note: this mock aggregator does not sent new work when there is no new transactions after a certain amount of time
 		//		And it does not stop accepting transactions ever.
+		//public ulong TransactionCountNotifyThresold { get; set; } = 100;
 		public ulong TransactionCountNotifyThresold { get; set; } = 7;
 		public TransactionAggregatorMock(int blockTime, IMiningBlockProducer blockProducer) {
 			BlockProducer = blockProducer;
@@ -40,16 +41,7 @@ namespace Sphere10.Hydrogen.Core.Mining {
 			FakeTRansactionTimer.Dispose();
 		}
 
-		public byte[] ComputeMerkelRoot(SynchronizedList<BlockChainTransaction> list) {
-			var merkelMock = "random stuff";
-			foreach(var t in list)
-				//NOTE: THIS IS A MOCK OF SERIALIZATION. NOT THE REAL DEAL.
-				merkelMock += (t.From + t.From);
-			return Hashers.Hash(CHF.SHA2_256, StringExtensions.ToAsciiByteArray(merkelMock)); 
-		}
-
 		public void PublishedTransactions(SynchronizedList<BlockChainTransaction> publishedTrx) {
-
 			var _oldCnt = Pendings.Count;
 			//purge published transaction from pending list
 			foreach(var pt in publishedTrx) {
@@ -74,7 +66,7 @@ namespace Sphere10.Hydrogen.Core.Mining {
 			trx.TimeStamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
 			Pendings.Add(trx);
 
-			var nextTrxTime = Tools.Maths.RNG.Next(100, 500);
+			var nextTrxTime = Tools.Maths.RNG.Next(100, 300);
 			//Debug.WriteLine(string.Format("{0:yyyy-MM-dd HH:mm:ss}: ", DateTime.Now) + $": New transaction {Pendings.Count}. Next in {nextTrxTime} ms");
 			if (currentSequence - TransactionCountNotifyLastThresold > TransactionCountNotifyThresold) {
 				TransactionCountNotifyLastThresold = currentSequence;

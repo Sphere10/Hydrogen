@@ -36,14 +36,11 @@ namespace Sphere10.Hydrogen.Core.Mining {
 				var now = DateTime.UtcNow;
 				var timeRange = new ValueRange<DateTime>(now, now + Config.RTTInterval);
 				var block = new NewMinerBlock {
-					Timestamp = (uint)DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
+					UnixTime = (uint)DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
 					MinerTag = minerTag,
 					Nonce = (uint)Tools.Maths.RNG.Next(),
-					ExtraNonce = (ulong)Tools.Maths.RNG.Next(),
-					MinerNonce = (uint)Tools.Maths.RNG.Next(),
-					NodeNonce = (uint)Tools.Maths.RNG.Next(),
-					MerkelRoot = "   Put MerkelRoot Here ".PadLeft(32).ToAsciiByteArray(),
-					PreviousBlockHash = "   Put Previous Block Hash here ".PadLeft(32).ToAsciiByteArray(),
+					PrevMinerElectionHeader = "   Put MerkelRoot Here ".PadLeft(32).ToAsciiByteArray(),
+					PreviousMinerMicroBlockNumber = (UInt16)DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
 					CompactTarget = MiningTarget,
 				};
 

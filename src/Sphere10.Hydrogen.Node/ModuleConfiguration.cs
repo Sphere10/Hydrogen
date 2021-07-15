@@ -34,14 +34,10 @@ namespace Sphere10.Hydrogen.Node {
 			// none
 
 			// Components
-			
 		}
 
 		public override void DeregisterComponents(ComponentRegistry registry) {
 			registry.DeregisterInitializationTask<HydrogenInitializer>();
-			
-			
 		}
-
 	}
 }

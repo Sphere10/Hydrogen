@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using Sphere10.Framework;
 using Sphere10.Hydrogen.Core.Consensus;
 using Sphere10.Hydrogen.Core.Maths;
@@ -23,13 +24,13 @@ namespace Sphere10.Hydrogen.Core.Mining {
 
 		public ValueRange<DateTime> AcceptableTimeStampRange { get; }
 
-		public uint CompactTarget { get; }
+		public uint CompactTarget { get; set; }
 
 		public NewMinerBlock Block { get; }
 
 		public SynchronizedList<BlockChainTransaction> Transactions;
 
-		public byte[] ComputeWork()
+		public byte[] ComputeWork()			
 			=> _miningConfig.Hasher.Hash(BlockSerializer.SerializeLE(Block));
 		
 		public uint ComputeCompactWork() {
@@ -39,8 +40,6 @@ namespace Sphere10.Hydrogen.Core.Mining {
 		}
 
 		public bool IsSolved() => ComputeCompactWork() > CompactTarget;
-		
 
 	}
-
 }

@@ -11,6 +11,7 @@ using Sphere10.Hydrogen.Core.Consensus.Serializers;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Sphere10.Hydrogen.Core.Consensus;
 
 namespace Sphere10.Hydrogen.Node.UI {
 
@@ -161,18 +162,16 @@ namespace Sphere10.Hydrogen.Node.UI {
 					_ => throw new ArgumentOutOfRangeException()
 				};
 
-				var minerTagSize = 64;
 				var targetAlgo = new MolinaTargetAlgorithm();
 
 				var miningManager = new RpcMiningManager(
 					new MiningConfig {
-						MinerTagSize = minerTagSize,
 						Hasher = hasher,
 						TargetAlgorithm = targetAlgo,
 						DAAlgorithm = new ASERT_RTT(targetAlgo, new ASERTConfiguration { BlockTime = TimeSpan.FromSeconds(BlockTime), RelaxationTime = TimeSpan.FromSeconds(RelaxationTime) })
 					},
 					new RpcServerConfig { IsLocal = true, Port = RpcServerPort, MaxListeners = 12 },
-					new NewMinerBlockSerializer(minerTagSize),
+					new NewMinerBlockSerializer(),
 					BlockTime,
 					TimeSpan.FromSeconds(RTTInterval)
 				);

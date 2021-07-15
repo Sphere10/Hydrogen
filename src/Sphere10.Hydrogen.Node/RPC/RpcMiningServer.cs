@@ -12,13 +12,22 @@ namespace Sphere10.Hydrogen.Node.RPC {
 		public RpcMiningServer(RpcServerConfig config, IMiningBlockProducer blockProvider) : base(new TcpEndPointListener(config.IsLocal, config.Port, config.MaxListeners), new JsonRpcConfig() { ConnectionMode = JsonRpcConfig.ConnectionModeEnum.Persistant, IgnoreEmptyReturnValue = true }) {
 			OnNewClient += HandleNewClient;
 			BlockProvider = blockProvider;
-		}		
+		}
 
 		//Send new block to ALL connected peers
 		public void NotifyNewBlock() {
 			foreach (var client in ActiveClients) {
 				try {
 					client.RemoteCall("miner.notify", BlockProvider.GenerateNewMiningBlock());
+				} catch (Exception e) {
+					Config.Logger.Error("NotifyNewBlock exception " + e.ToString());
+				}
+			}
+		}
+		public void NotifyNewDiff(MiningBlockUpdates updates) {
+			foreach (var client in ActiveClients) {
+				try {
+					client.RemoteCall("miner.update_difficulty", updates);
 				} catch (Exception e) {
 					Config.Logger.Error("NotifyNewBlock exception " + e.ToString());
 				}

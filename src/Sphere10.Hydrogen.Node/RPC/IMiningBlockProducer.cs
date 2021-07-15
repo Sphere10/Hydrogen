@@ -10,8 +10,14 @@ namespace Sphere10.Hydrogen.Node.RPC {
 	public interface IMiningBlockProducer {
 		public event EventHandlerEx<SynchronizedList<BlockChainTransaction>> OnBlockAccepted;
 
+		public byte[] GetPrevMinerElectionHeader();
+		public byte[] GetBlockPolicy();
+		public byte[] GetKernelID();
+		public byte[] GetSignature();
 		NewMinerBlockSurogate GenerateNewMiningBlock();
-		void NotifyNewBlock();
+		public void NotifyNewBlock();
+
+		public void NotifyNewDiff();
 	}
 
 }

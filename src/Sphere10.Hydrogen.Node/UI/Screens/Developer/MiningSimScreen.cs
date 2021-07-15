@@ -9,7 +9,7 @@ using Sphere10.Hydrogen.Core.Maths;
 using Sphere10.Hydrogen.Core.Mining;
 using Sphere10.Hydrogen.Core.Consensus.Serializers;
 using Sphere10.Hydrogen.Node.UI.Components;
-
+using Sphere10.Hydrogen.Core.Consensus;
 
 namespace Sphere10.Hydrogen.Node.UI {
 
@@ -283,17 +283,13 @@ namespace Sphere10.Hydrogen.Node.UI {
 					DiffAlgo.RTT_ASERT => new ASERT_RTT(targetAlgo, new ASERTConfiguration { BlockTime = TimeSpan.FromSeconds(BlockTime), RelaxationTime = TimeSpan.FromSeconds(RelaxationTime) }),
 					_ => throw new ArgumentOutOfRangeException()
 				};
-
-				var minerTagSize = 64;
-
 				_miningManager = new TestMiningManager(
 					new MiningConfig { 
-						MinerTagSize = minerTagSize, 
 						Hasher = hasher, 
 						TargetAlgorithm = targetAlgo, 
 						DAAlgorithm = daaAlgo 
 					}, 
-					new NewMinerBlockSerializer(minerTagSize), 
+					new NewMinerBlockSerializer(), 
 					TimeSpan.FromSeconds(RTTInterval)
 				);
 

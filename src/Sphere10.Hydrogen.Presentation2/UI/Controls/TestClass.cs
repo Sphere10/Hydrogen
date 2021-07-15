@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 
 namespace Sphere10.Hydrogen.Presentation2.UI.Controls {
 	public class TestClass {
@@ -19,7 +18,6 @@ namespace Sphere10.Hydrogen.Presentation2.UI.Controls {
 		static string[] Names = { "Bitcoin", "Ethereum", "Polkadot", "Litecoin" };
 		static TestEnum[] Colors = (TestEnum[])Enum.GetValues(typeof(TestEnum));
 
-
 		public void FillWithTestData(int id) 
 		{
 			var seed = (int)DateTime.Now.Ticks;
@@ -32,6 +30,11 @@ namespace Sphere10.Hydrogen.Presentation2.UI.Controls {
 			Age = random.Next(1, 100);
 			Details = "Test Details";
 			Note = "Test Note";
+		}
+
+		public override string ToString() 
+		{
+			return $"Id: {Id} Name: {Name} Color: {Color} CreationDate: {CreationDate.ToShortDateString()} Age: {Age} Details: {Details} Note: {Note}";
 		}
 	}
 }

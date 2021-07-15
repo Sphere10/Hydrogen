@@ -1,7 +1,14 @@
 ﻿tr, .TableClass {
     border-bottom: 0px;
-    table-layout: fixed;
+    table-layout: fixed !important;
     width: 100px;
+}
+
+th, td {
+
+    white-space: nowrap;
+    overflow-x:hidden;
+    text-overflow: ellipsis;
 }
 
 .TableHeaderClass {
@@ -22,4 +29,11 @@
 
 .ResizableClass {
     width: -webkit-fill-available;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+/*    background: none;*/
+    padding: 0;
+    width:20px;
+    height:20px;
 }

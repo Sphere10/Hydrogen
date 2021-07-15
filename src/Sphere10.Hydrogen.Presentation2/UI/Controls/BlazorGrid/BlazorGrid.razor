@@ -28,11 +28,11 @@
             @foreach (var row in Rows)
             {
                 <tr @onmousedown="@(e => OnTableRowMouseDown())" style="@GetTableRowStyle()">
-                    @foreach (var cell in row)
+                    @foreach (var cell in row) 
                     {
-                        <td style="width:@cell.Width.ToString()px">
-                            @cell.Data
-                        </td>
+                    <td style="width:@cell.Width.ToString()px">
+                        <input class="ResizableClass" type="@GetCellInputType(cell)" value="@cell.Data" @onchange="@(e => CellDataChanged(e.Value, cell.Name, cell))" />
+                    </td>
                     }
                 </tr>
             }
@@ -57,8 +57,8 @@
 
     public delegate List<TestClass> GetPageData(int pageNumber, int pageSize);
     public delegate int GetDataCount();
-    //    public delegate bool SetItemData<TItem>(string dataSource, TItem item);
-    //    public delegate void ItemDataChanged<TItem>(string dataSource, TItem item);
+    public delegate bool SetItemData(string dataSource, string newValue, string dataName, object originalItem);
+    //public delegate void ItemDataChanged<TItem>(string dataSource, TItem item);
 
     [Parameter] public string Id { get; set; }
     [Parameter] public string DataSource { get; set; }
@@ -66,10 +66,9 @@
     [Parameter] public GridTypes GridType { get; set; }
     [Parameter] public GetPageData GetPageDataFunction { get; set; }
     [Parameter] public GetDataCount GetDataCountFunction { get; set; }
+    [Parameter] public SetItemData SetItemDataFunction { get; set; }
 
-    [Parameter] public EventCallback<string> DataChanged { get; set; }
-
-    //[Parameter] public SetItemData<TItem> SetItemDataFunction { get; set; }
+    //[Parameter] public EventCallback<string> DataChanged { get; set; }
     //[Parameter] public ItemDataChanged<TItem> ItemDataChangedFunction { get; set; }
 
     List<Cell> Header { get; set; } = new List<Cell>();
@@ -87,7 +86,7 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-//        Alert($"OnAfterRenderAsync FirstRender: {firstRender}");
+        //        Alert($"OnAfterRenderAsync FirstRender: {firstRender}");
 
         if (!firstRender)
         {
@@ -136,7 +135,7 @@
                 var name = Utility.AddSpacesForCamelCase(property.Name);
                 var width = 40;
                 var height = 20;
-                Header.Add(new Cell(new HeaderData(name, width), new RowData(height), property.PropertyType, name));
+                Header.Add(new Cell(new HeaderData(name, width), new RowData(height), property.PropertyType, name, name));
             }
 
             foreach (var dataObject in Data)
@@ -146,7 +145,7 @@
                 foreach (var property in properties)
                 {
                     var cellText = GetCellText(dataObject, property);
-                    var cellData = new Cell(Header[columnIndex].Header, Header[columnIndex].Row, property.PropertyType, cellText);
+                    var cellData = new Cell(Header[columnIndex].Header, Header[columnIndex].Row, property.PropertyType, cellText, dataObject);
                     rowData.Add(cellData);
                     columnIndex++;
                 }
@@ -173,9 +172,46 @@
         var typeName = property.PropertyType.Name.ToString();
         switch (typeName)
         {
-            case "DateTime": return ((DateTime)value).ToShortDateString();
+            //case "DateTime": return ((DateTime)value).ToShortDateString();
+            case "DateTime": return ((DateTime)value).ToString("yyyy-MM-dd");
             default: return value.ToString();
         }
+    }
+
+    //string GetCellInput(Cell cell)
+    //{
+    //    switch (cell.DataType.ToString())
+    //    {
+    //        case "DateTime":    return $"<input type=\"date\" value=\"{cell.Data}\" />";
+    //        case "decimal":
+    //        case "double":
+    //        case "float":
+    //        case "long":        return $"<input type=\"number\" value=\"{cell.Data}\" />";
+    //        default:            return $"<input type=\"text\" value=\"{cell.Data}\" />";
+    //    }
+    //}
+
+    string GetCellInputType(Cell cell)
+    {
+        switch (cell.DataType.Name)
+        {
+            case "DateTime":    return "date";
+            case "decimal":
+            case "Decimal":
+            case "double":
+            case "float":
+            case "long":
+            case "Int32":
+            case "Int64":       return "number";
+            default:            return "text";
+        }
+    }
+
+    private void CellDataChanged(object valueObject, string dataName, Cell cell)
+    {
+        var newValue = valueObject.ToString();
+
+        SetItemDataFunction(DataSource, newValue, dataName, cell.Tag);
     }
 
     void OnChange(object data, Type item)
@@ -207,7 +243,7 @@
 
     void PagingFirst()
     {
-        //        if (CurrentPage == 0) return;
+        //if (CurrentPage == 0) return;
         CurrentPage = 0;
         GetPageAndDisplayData();
     }

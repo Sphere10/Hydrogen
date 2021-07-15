@@ -7,15 +7,18 @@ function AlertWrite(data) {
 }
 
 var MinimumColumWidth = 10;
-var Table = null;
+var TableId = "";
+//var Table = null;
 var CSharpInstance = null;
-function ResizableColumnTable(id, csharpInstance) {
-    Table = document.getElementById(id);
+function ResizableColumnTable(id, csharpInstance)
+{
+    TableId = id;
+    var table = document.getElementById(TableId);
 
-    if (Table === null) return;
+    if (table === null) return;
 
     CSharpInstance = csharpInstance;
-    ResizableTable(Table);
+    ResizableTable(table);
 }
 
 function ResizableTable(table) {
@@ -63,30 +66,28 @@ function ResizableTable(table) {
             e.target.style.borderRight = '';
         })
 
-        document.addEventListener('mousemove', function (e) {
-            if (curCol) {
-                var diffX = e.pageX - pageX - 24;
-                newWidth = curColWidth + diffX;
+        document.addEventListener('mousemove', function (e)
+        {
+            if (curCol)
+            {
+                var mouseX = e.pageX;
+                var table = document.getElementById(TableId);
+                var tableLeft = table.getBoundingClientRect().left;
+                var inBetweenColumnsWidth = 0;
+                if (curColIndex > 0) { inBetweenColumnsWidth = table.rows[0].cells[curColIndex - 1].offsetWidth; }
 
+                var newWidth = (mouseX - tableLeft) - inBetweenColumnsWidth;
                 if (newWidth < MinimumColumWidth) newWidth = MinimumColumWidth;
 
-console.log('mouse move: Column: ' + curColIndex.toString() + ' width: ' + newWidth.toString());
-
-                //nxtCol.style.width = (nxtColWidth - diffX) + 'px';
+console.log("mouseX: " + mouseX + " Table left: " + tableLeft + " inBetweenColumnsWidth: " + inBetweenColumnsWidth + " newWidth: " + newWidth);
 
                 // set every row's cell's width
-                for (var i = 0; row = Table.rows[i]; i++) {
-                    Table.rows[i].cells[curColIndex].style.width = newWidth + 'px';
+                for (var i = 0; row = table.rows[i]; i++)
+                {
+                    table.rows[i].cells[curColIndex].style.width = newWidth + 'px';
                 }
 
-                ////set the header column width
-                //curCol.style.width = (curColWidth + diffX) + 'px';
-                //
-                ////set every row's cell's width
-                //for (var i = 0; row = WorkAssignmentsTable.rows[i]; i++)
-                //{
-                //    WorkAssignmentsTable.rows[i].cells[curColIndex - 1].style.width = newWidth + 'px';
-                //}
+                curColWidth = newWidth;
             }
         });
 
@@ -97,7 +98,7 @@ console.log('mouse move: Column: ' + curColIndex.toString() + ' width: ' + newWi
             //DotNet.invokeMethodAsync("SystemX", "SaveColumnWidth", curColTitle, newWidth);
 
             // call an instance C# function
-            //            CSharpInstance.invokeMethodAsync("SaveColumnWidth", curColTitle, newWidth);
+            // CSharpInstance.invokeMethodAsync("SaveColumnWidth", curColTitle, newWidth);
 
             newWidth = undefined;
             curCol = undefined;
@@ -136,6 +137,6 @@ console.log('mouse move: Column: ' + curColIndex.toString() + ' width: ' + newWi
     }
 
     function getStyleVal(elm, css) {
-        return (window.getComputedStyle(elm, null).getPropertyValue(css))
+        return (window.getComputedStyle(elm, null).getPropertyValue(css));
     }
 }

@@ -106,10 +106,10 @@
                                     PageSize="10"
                                     GridType="BlazorGrid<object>.GridTypes.DataOnDemand"
                                     GetPageDataFunction="GetPageDataFunction"
-                                    GetDataCountFunction="GetDataCountFunction">
-                            @*
-                                SetItemDataFunction="SetItemDataFunction"
-                                ItemDataChangedFunction="ItemDataChangedFunction"*@
+                                    GetDataCountFunction="GetDataCountFunction"
+                                    SetItemDataFunction="SetItemDataFunction">
+
+                                @*ItemDataChangedFunction="ItemDataChangedFunction"*@
 
                         </BlazorGrid>
                     </div>
@@ -173,7 +173,7 @@
     protected override void OnInitialized()
     {
         TestGridData = LoadData(73);
-        Timer = new System.Timers.Timer(10000);
+        Timer = new System.Timers.Timer(30000);
         Timer.Elapsed += CountDownTimer;
         Timer.Start();
     }
@@ -223,14 +223,13 @@
         return TestGridData.Count;
     }
 
-    bool SetItemDataFunction(TestClass item)
+    bool SetItemDataFunction(string dataSource, string newValue, string dataName, object originalItem)
     {
+        var item = (TestClass)originalItem;
+
+        Alert($"Id: {item.Id} newValue: {newValue}");
+
         return true;
-    }
-
-    void ItemDataChangedFunction(TestClass item)
-    {
-
     }
 
     private async Task Confirm()

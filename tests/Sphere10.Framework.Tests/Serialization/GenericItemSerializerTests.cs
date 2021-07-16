@@ -173,15 +173,15 @@ namespace Sphere10.Framework.Tests
             var parent = new CircularReferenceObj
             {
                 A = new CircularReferenceObj
-              {
-                  B = _fixture.Create<PrimitiveTestObject>()
-              },
+                {
+                    B = _fixture.Create<PrimitiveTestObject>()
+                },
                 B = _fixture.Create<PrimitiveTestObject>()
             };
 
             parent.A.A = parent;
-            
-            
+
+
             var serializer = GenericItemSerializer<CircularReferenceObj>.Default;
 
             using var memoryStream = new MemoryStream();
@@ -198,7 +198,7 @@ namespace Sphere10.Framework.Tests
                 .Should()
                 .BeEquivalentTo(parent, x => x.IgnoringCyclicReferences());
         }
-        
+
         [Test]
         public void ObjectTypePropertiesSerialized()
         {
@@ -209,7 +209,7 @@ namespace Sphere10.Framework.Tests
                 C = _fixture.Create<ReferenceTypeObject>(),
                 D = false
             };
-            
+
             var serializer = GenericItemSerializer<ObjectObj>.Default;
 
             using var memoryStream = new MemoryStream();
@@ -221,7 +221,7 @@ namespace Sphere10.Framework.Tests
             memoryStream.Seek(0, SeekOrigin.Begin);
             var reader = new EndianBinaryReader(EndianBitConverter.Little, memoryStream);
             var deserializedItem = serializer.Deserialize(byteCount, reader);
-            
+
             deserializedItem.Should().BeEquivalentTo(item);
         }
     }
@@ -262,7 +262,11 @@ namespace Sphere10.Framework.Tests
 
         public Dictionary<int, PrimitiveTestObject> D { get; set; }
 
-        public Dictionary<int, NullTestObject> E { get; set; }
+        public List<int> E { get; set; }
+
+        public byte[] F { get; set; }
+
+        public List<PrimitiveTestObject> G { get; set; }
     }
 
     internal class NullTestObject
@@ -296,10 +300,10 @@ namespace Sphere10.Framework.Tests
     internal class CircularReferenceObj
     {
         public CircularReferenceObj A { get; set; }
-        
+
         public PrimitiveTestObject B { get; set; }
     }
-    
+
     internal class ObjectObj
     {
         public object A { get; set; }

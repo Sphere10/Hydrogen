@@ -27,15 +27,18 @@ namespace Sphere10.Framework {
 			Register(typeof(decimal));
 			Register(typeof(double));
 			Register(typeof(bool));
+			Register(typeof(byte));
+			
 			Register(new DateTimeSerializer());
 			Register(new DateTimeOffsetSerializer());
+			Register(new ByteArraySerializer());
 		}
 
 		public static void Register<T>() where T : new() => Register<T>(Registrations.Count + 1);
 
 		public static void Register<T>(int typeCode) where T : new() => Register(typeof(T), typeCode);
 
-		public static void Register<T>(IItemSerializer<T> serializer) where T : new() => Register(serializer, Registrations.Count + 1);
+		public static void Register<T>(IItemSerializer<T> serializer) => Register(serializer, Registrations.Count + 1);
 
 		public static void Register(Type type, IItemSerializer<object> serializer) => Register(type, serializer, Registrations.Count + 1);
 

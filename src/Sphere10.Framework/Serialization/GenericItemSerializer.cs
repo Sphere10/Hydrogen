@@ -63,7 +63,7 @@ namespace Sphere10.Framework {
 		protected struct CircularReference {
 			public int TypeIndex { get; set; }
 
-			public int Index { get; set; }
+			public ushort Index { get; set; }
 		}
 
 

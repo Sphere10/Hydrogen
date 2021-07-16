@@ -223,25 +223,32 @@ namespace Sphere10.Framework {
 				return SerializeNullValue();
 
 			var valueType = value.GetType();
-			var builder = new ByteArrayBuilder();
 
 			if (IsCircularReference(valueType, value, context, out var reference))
 				return SerializeMember(typeof(CircularReference), reference, context);
 
+			var builder = new ByteArrayBuilder();
 			if (RequiresTypeHeader(propertyType)) {
 				builder.Append(CreateTypeHeader(valueType));
 			}
 
-			if (valueType.IsPrimitive)
-				builder.Append(SerializePrimitive(value));
-			else if (valueType == typeof(string))
-				builder.Append(SerializeString(value as string));
-			else if (valueType.IsValueType)
-				builder.Append(SerializeValueType(value, context));
-			else if (valueType.IsCollection())
-				builder.Append(SerializeCollectionType(value, context));
-			else
-				builder.Append(SerializeReferenceType(value, context));
+			if (Serializers.TryGetValue(valueType, out var serializer)) {
+				var stream = new MemoryStream();
+				var writer = new EndianBinaryWriter(EndianBitConverter.Little, stream);
+				serializer.Serialize(value, writer);
+				builder.Append(stream.ToArray());
+			} else {
+				if (valueType.IsPrimitive)
+					builder.Append(SerializePrimitive(value));
+				else if (valueType == typeof(string))
+					builder.Append(SerializeString(value as string));
+				else if (valueType.IsValueType)
+					builder.Append(SerializeValueType(value, context));
+				else if (valueType.IsCollection())
+					builder.Append(SerializeCollectionType(value, context));
+				else
+					builder.Append(SerializeReferenceType(value, context));
+			}
 
 			return builder.ToArray();
 		}
@@ -280,12 +287,8 @@ namespace Sphere10.Framework {
 
 			context.AddSerializedObject(value);
 
-			if (Serializers.TryGetValue(type, out var serializer))
-				serializer.Serialize(value, writer);
-			else {
-				foreach (var property in GetSerializableProperties(type)) {
-					writer.Write(SerializeMember(property.PropertyType, property.FastGetValue(value), context));
-				}
+			foreach (var property in GetSerializableProperties(type)) {
+				writer.Write(SerializeMember(property.PropertyType, property.FastGetValue(value), context));
 			}
 
 			return stream.ToArray();
@@ -299,12 +302,8 @@ namespace Sphere10.Framework {
 			if (valueType == typeof(decimal))
 				return _bitConverter.GetBytes((decimal)value);
 
-			if (Serializers.TryGetValue(valueType, out var serializer))
-				serializer.Serialize(value, writer);
-			else {
-				foreach (var property in GetSerializableProperties(valueType)) {
-					writer.Write(SerializeMember(property.PropertyType, property.FastGetValue(value), context));
-				}
+			foreach (var property in GetSerializableProperties(valueType)) {
+				writer.Write(SerializeMember(property.PropertyType, property.FastGetValue(value), context));
 			}
 
 			return stream.ToArray();
@@ -319,14 +318,7 @@ namespace Sphere10.Framework {
 
 		private byte[] SerializeCollectionType(object value, SerializationContext context) {
 			var listType = value.GetType();
-
-			if (Serializers.TryGetValue(listType, out var serializer)) {
-				var stream = new MemoryStream();
-				var writer = new EndianBinaryWriter(EndianBitConverter.Little, stream);
-				serializer.Serialize(value, writer);
-				return stream.ToArray();
-			}
-
+			
 			if (value is IDictionary dictionary) {
 				var stream = new MemoryStream();
 				var writer = new EndianBinaryWriter(EndianBitConverter.Little, stream);
@@ -349,7 +341,6 @@ namespace Sphere10.Framework {
 
 				//Use generic type arg as element type when deserializing except when more info required.
 				var itemType = list!.GetType().GenericTypeArguments[0];
-
 				var enumerator = list.GetEnumerator();
 				while (enumerator.MoveNext()) {
 					itemStreamWriter.Write(SerializeMember(itemType, enumerator.Current, context));
@@ -415,7 +406,7 @@ namespace Sphere10.Framework {
 			if (valueType.IsClass) {
 				if (context.TryGetObjectIndex(value, out var index)) {
 					circularReference = new CircularReference {
-						Index = index,
+						Index = (ushort)index,
 						TypeIndex = GetTypeIndex(valueType)
 					};
 					return true;

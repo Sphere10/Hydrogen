@@ -39,8 +39,10 @@ namespace Sphere10.Framework.Tests
             _fixture.Customize<NullTestObject>(x => x.FromFactory(CreateNullTestObj));
             _fixture.Customize<CollectionTestObject>(x => x.FromFactory(CreateCollectionTestObj));
 
+            GenericItemSerializer.Register<SubClassObj>();
             GenericItemSerializer.Register(typeof(CircularReferenceObj));
             GenericItemSerializer.Register(typeof(GenericTypeObj<,>));
+            GenericItemSerializer.Register(typeof(SortedSet<>));
             GenericItemSerializer.Register<ObjectObj>();
             GenericItemSerializer.Register<GenericTypeObj>();
             GenericItemSerializer.Register<ReferenceTypeObject>();
@@ -224,6 +226,41 @@ namespace Sphere10.Framework.Tests
 
             deserializedItem.Should().BeEquivalentTo(item);
         }
+
+        [Test]
+        public void SubClassInCollectionTest()
+        {
+            List<PrimitiveTestObject> list = new List<PrimitiveTestObject>()
+            {
+                _fixture.Create<PrimitiveTestObject>(),
+                _fixture.Create<SubClassObj>()
+            };
+            
+            var serializer = GenericItemSerializer<List<PrimitiveTestObject>>.Default;
+            
+            var stream = new MemoryStream();
+            serializer.Serialize(list, new EndianBinaryWriter(EndianBitConverter.Little, stream));
+            stream.Seek(0, SeekOrigin.Begin);
+            var reader = new EndianBinaryReader(EndianBitConverter.Little, stream);
+            var item = serializer.Deserialize(0, reader);
+
+            item.Should().BeEquivalentTo(list);
+        }
+        
+        [Test]
+        public void SubClassSerializeDeserialize()
+        {
+            var serializer = GenericItemSerializer<PrimitiveTestObject>.Default;
+            var item = _fixture.Create<SubClassObj>();
+            
+            var stream = new MemoryStream();
+            serializer.Serialize(item, new EndianBinaryWriter(EndianBitConverter.Little, stream));
+            stream.Seek(0, SeekOrigin.Begin);
+            var reader = new EndianBinaryReader(EndianBitConverter.Little, stream);
+            var deserialized = serializer.Deserialize(0, reader);
+
+            deserialized.Should().BeEquivalentTo(item);
+        }
     }
 
     internal class PrimitiveTestObject
@@ -267,6 +304,8 @@ namespace Sphere10.Framework.Tests
         public byte[] F { get; set; }
 
         public List<PrimitiveTestObject> G { get; set; }
+        
+        public SortedSet<bool> H { get; set; }
     }
 
     internal class NullTestObject
@@ -310,5 +349,10 @@ namespace Sphere10.Framework.Tests
         public object B { get; set; }
         public object C { get; set; }
         public object D { get; set; }
+    }
+
+    internal class SubClassObj : PrimitiveTestObject
+    {
+        public int  X { get; set; }
     }
 }

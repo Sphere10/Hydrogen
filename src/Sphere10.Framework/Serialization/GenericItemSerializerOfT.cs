@@ -182,7 +182,7 @@ namespace Sphere10.Framework {
 
 			if (propertyType == typeof(CircularReference)) {
 				var type = ReadTypeHeader(reader);
-				var index = (int)DeserializePrimitive(typeof(int), reader);
+				var index = (ushort)DeserializePrimitive(typeof(ushort), reader);
 				return context.GetObjectByIndex(type, index);
 			}
 

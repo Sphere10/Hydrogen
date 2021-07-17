@@ -41,10 +41,9 @@ namespace Sphere10.Framework.Communications.RPC {
 		}
 
 		public virtual void Stop() {
-			var toStop = new List<JsonRpcClientHandler>();
-			ActiveClients.ForEach(x => toStop.Add(x));
-			toStop.ForEach(x => x.Stop());
-
+			using (ActiveClients.EnterReadScope()) {
+				ActiveClients.ForEach(x => x.Stop());
+			}
 			CancelThread = true;
 			EndPoint.Stop();
 			Thread.Sleep(50);

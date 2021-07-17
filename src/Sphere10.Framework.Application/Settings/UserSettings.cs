@@ -27,7 +27,8 @@ namespace Sphere10.Framework.Application {
 			get {
 				CheckProvider();
 				return _provider;
-			} set => _provider = value;
+			} 
+			set => _provider = value;
 		}
 
 		public static bool Has<T>(object id = null) where T : SettingsObject, new() {
@@ -43,13 +44,9 @@ namespace Sphere10.Framework.Application {
 			Provider.ClearSettings();
 		}
 
-		public static ISettingsProvider CreateDefaultProvider () {
-			return new DirectorySettingsProvider(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), AppDomain.CurrentDomain.FriendlyName));
-		}
-
 		private static void CheckProvider() {
 			if (_provider == null)
-				throw new SoftwareException("User Settings Provider has not been initialized");
+				_provider = ComponentRegistry.Instance.Resolve<ISettingsProvider>("UserSettings");
 		}
 	}
 }

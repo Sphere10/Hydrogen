@@ -1,5 +1,5 @@
-//-----------------------------------------------------------------------
-// <copyright file="IDuplicateProcessDetector.cs" company="Sphere 10 Software">
+﻿//-----------------------------------------------------------------------
+// <copyright file="DirectorySettingsProvider.cs" company="Sphere 10 Software">
 //
 // Copyright (c) Sphere 10 Software. All rights reserved. (http://www.sphere10.com)
 //
@@ -11,9 +11,13 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
+using System;
+
 namespace Sphere10.Framework.Application {
-	public interface IDuplicateProcessDetector  {
-		int CountRunningInstancesOfThisApplication();
-	
+    [Flags]
+	public enum DirectorySettingsProviderPolicy {
+		CreateDirectoryIfNotExists				= 1 << 0,
+		UseFullyQualifiedTypeNameInFilename		= 1 << 1,
+		Default									= CreateDirectoryIfNotExists
 	}
 }

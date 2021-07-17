@@ -11,7 +11,6 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-#if !__MOBILE__
 using System.Linq;
 using System.Diagnostics;
 
@@ -25,4 +24,3 @@ namespace Sphere10.Framework.Application {
 
 	}
 }
-#endif

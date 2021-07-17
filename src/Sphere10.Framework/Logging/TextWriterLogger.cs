@@ -21,15 +21,9 @@ namespace Sphere10.Framework {
 	/// Logger which simply appends a file.
 	/// </summary>
 	/// <remarks></remarks>
-	public class TextWriterLogger : ILogger {
+	public class TextWriterLogger : LoggerBase {
 
 		private readonly TextWriter _writer;
-
-
-		/// <summary>
-		/// Can enable/disable logging levels
-		/// </summary>
-		public LogOptions Options { get; set; }
 
 	    /// <summary>
 	    /// Initializes a new instance of the <see cref="T:System.Object"/> class.
@@ -46,57 +40,10 @@ namespace Sphere10.Framework {
 	    /// <remarks></remarks>
 	    public TextWriterLogger(TextWriter writer) {
 		    _writer = writer;
-		    this.Options = LogOptions.DebugBuildDefaults;
+		    Options = LogOptions.DebugBuildDefaults;
 		}
 
-		/// <summary>
-		/// Logs a debug message.
-		/// </summary>
-		/// <param name="message">The message.</param>
-		/// <param name="formatOptions">The format options (if any)</param>
-		/// <remarks></remarks>
-		public void Debug(string message) {
-			if (Options.HasFlag(LogOptions.DebugEnabled)) {
-                LogMessage(_writer, message);
-			}
-		}
-
-		/// <summary>
-		/// Logs an information message.
-		/// </summary>
-		/// <param name="message">The message.</param>
-		/// <param name="formatOptions">The format options (if any)</param>
-		/// <remarks></remarks>
-		public void Info(string message) {
-		    if (Options.HasFlag(LogOptions.InfoEnabled)) {
-                LogMessage(_writer, message);
-		    }
-		}
-
-		/// <summary>
-		/// Logs a warning message.
-		/// </summary>
-		/// <param name="message">The message.</param>
-		/// <param name="formatOptions">The format options (if any)</param>
-		/// <remarks></remarks>
-		public void Warning(string message) {
-		    if (Options.HasFlag(LogOptions.WarningEnabled)) {
-                LogMessage(_writer, message);
-		    }
-		}
-
-		/// <summary>
-		/// Logs an error message.
-		/// </summary>
-		/// <param name="message">The message.</param>
-		/// <param name="formatOptions">The format options (if any)</param>
-		/// <remarks></remarks>
-		public void Error(string message) {
-		    if (Options.HasFlag(LogOptions.ErrorEnabled)) {
-                LogMessage(_writer, message);
-		    }
-		}
-
+	
 	    /// <summary>
 	    /// Logs the message.
 	    /// </summary>
@@ -104,9 +51,9 @@ namespace Sphere10.Framework {
 	    /// <param name="message">The message.</param>
 	    /// <param name="formatOptions">The format options.</param>
 	    /// <remarks></remarks>
-	    protected virtual void LogMessage(TextWriter writer, string message) {
+	    protected override void Log(LogLevel level, string message) {
 	        try {
-	            writer.Write(message + Environment.NewLine);
+	            _writer.Write(message + Environment.NewLine);
 	        } catch {
 	            // errors do not propagate outside logging framework
 	        }

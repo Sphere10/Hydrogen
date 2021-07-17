@@ -11,9 +11,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-#if !__MOBILE__
 using System;
-
 
 namespace Sphere10.Framework.Application {
 
@@ -40,6 +38,3 @@ namespace Sphere10.Framework.Application {
 		}
 	}
 }
-
-
-#endif

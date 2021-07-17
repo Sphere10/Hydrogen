@@ -51,7 +51,7 @@ namespace Sphere10.Framework {
 
 			var parameters = new LookupEx<string, string>();
 			CommandLineResults currentResults = new CommandLineResults {
-				Parameters = parameters
+				Arguments = parameters
 			};
 			var parseResults = new Result<CommandLineResults>(currentResults);
 
@@ -114,7 +114,7 @@ namespace Sphere10.Framework {
 						parameters = new LookupEx<string, string>();
 						SetSubCommandResult(currentResults,
 							new CommandLineResults {
-								Parameters = parameters,
+								Arguments = parameters,
 								CommandName = command.Name
 							});
 					}
@@ -147,7 +147,7 @@ namespace Sphere10.Framework {
 			ValidateParameterOptionsInner(results);
 
 			void ValidateParameterOptionsInner(CommandLineResults resultsItem) {
-				foreach (var parameter in resultsItem.Parameters.Select(x => x.Key)) {
+				foreach (var parameter in resultsItem.Arguments.Select(x => x.Key)) {
 
 					if (IsHelp(parameter))
 						continue;
@@ -160,12 +160,12 @@ namespace Sphere10.Framework {
 						: command.Parameters.Single(x => string.Equals(parameter, x.Name, NameComparisonCasing));
 
 					foreach (var dependency in paramDef.Dependencies) {
-						if (!resultsItem.Parameters.Contains(dependency))
+						if (!resultsItem.Arguments.Contains(dependency))
 							parseResults.AddError($"Parameter {paramDef.Name} has unmet dependency {dependency}.");
 					}
 
 					if (!paramDef.Traits.HasFlag(CommandLineParameterOptions.Multiple)) {
-						LookupEx<string, string> lookupEx = results.Parameters as LookupEx<string, string>;
+						LookupEx<string, string> lookupEx = results.Arguments as LookupEx<string, string>;
 						if (lookupEx!.CountForKey(paramDef.Name) > 1)
 							parseResults.AddError($"Parameter {paramDef.Name} supplied more than once but does not support multiple values.");
 					}
@@ -180,7 +180,7 @@ namespace Sphere10.Framework {
 			var results = parseResults.Value;
 			var mandatoryParameters = Parameters.Where(x => x.Traits.HasFlag(CommandLineParameterOptions.Mandatory));
 			foreach (var param in mandatoryParameters) {
-				if (!results.Parameters.Contains(param.Name)) {
+				if (!results.Arguments.Contains(param.Name)) {
 					parseResults.AddError($"Parameter {param.Name} is required.");
 				}
 			}
@@ -193,7 +193,7 @@ namespace Sphere10.Framework {
 					: commandDef.SubCommands.Single(x => x.Name == commandToValidate.CommandName);
 
 				foreach (var param in commandDef.Parameters.Where(x => x.Traits.HasFlag(CommandLineParameterOptions.Mandatory))) {
-					if (!commandToValidate.Parameters.Contains(param.Name)) {
+					if (!commandToValidate.Arguments.Contains(param.Name)) {
 						parseResults.AddError($"Command {commandToValidate.CommandName} parameter {param.Name} is required.");
 					}
 				}

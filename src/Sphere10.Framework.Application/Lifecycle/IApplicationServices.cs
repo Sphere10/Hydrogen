@@ -11,11 +11,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-#if !__MOBILE__
-
-
 namespace Sphere10.Framework.Application {
-
 
 	/// <summary>
 	/// Facade class for the application framework. Basically wraps all the services into one class.
@@ -23,4 +19,3 @@ namespace Sphere10.Framework.Application {
 	public interface IApplicationServices : IProductServices, IConfigurationServices,  ILicenseServices, ILicenseEnforcer, 	IHelpServices, 	IUserInterfaceServices,	IUserNotificationServices, 	IWebsiteLauncher, IAutoRunServices {
 	}	
 }
-#endif

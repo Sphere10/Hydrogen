@@ -26,60 +26,52 @@ namespace Tools {
         private static Assembly _entryAssembly = null;
         private static bool? _isWebApp = null;
 
-
-		public static bool BreakCondition { get; set; }
-		public static string GetExecutablePath() {
+        public static bool BreakCondition { get; set; }
+        public static string GetExecutablePath() {
             // https://stackoverflow.com/questions/64581054/how-do-i-get-the-name-of-the-current-executable-in-c-net-5-edition
             return Process.GetCurrentProcess().MainModule.FileName;
         }
 
-        public static bool IsWebApp {
+        public static bool IsDebugBuild {
             get {
-#warning IsWebApp needs testing for NET_CORE and NET STANDARD apps
-				return false;
-
-	            //#if __MOBILE__
-	            //            return false;
-	            //#else
-	            //                if (_isWebApp == null) {
-	            //                    lock (_threadLock) {
-	            //                        if (_isWebApp == null) {
-	            //                            _isWebApp = Path.GetFileName(AppDomain.CurrentDomain.SetupInformation.ConfigurationFile).EndsWith("web.config", true, CultureInfo.InvariantCulture);
-	            //                        }
-	            //                    }
-	            //                }
-	            //#endif
-	            //                return _isWebApp.Value;
+#if DEBUG
+                return true;
+#else
+                return false;
+#endif
             }
-		}
+        }
 
-        public static Assembly GetEntryAssembly() {
-            if (_entryAssembly == null) {
-                lock (_threadLock) {
-                    if (_entryAssembly == null) {
-                        _entryAssembly = IsWebApp ? GetWebEntryAssembly() : Assembly.GetEntryAssembly();
-                        if (_entryAssembly == null)
-                            throw new SoftwareException("Unable to determine entry assembly");
-                    }
-                }
+        public static bool IsReleaseBuild {
+            get {
+#if RELEASE
+                return true;
+#else
+                return false;
+#endif
             }
-            return _entryAssembly;
         }
 
 
-        private static Assembly GetWebEntryAssembly() {
-	        throw new NotImplementedException();
-			////return Assembly.GetExecutingAssembly();
-			//var httpContextType = TypeResolver.Resolve("System.Web.HttpContext");
-			//var httpContextCurrent = httpContextType.GetProperty("Current").FastGetValue(null);
-			////var httpContextCurrentHandler = httpContextCurrent.GetType().GetProperty("Handler").FastGetValue(httpContextCurrent);
-			//var httpContextCurrentApplicationInstance = httpContextCurrent.GetType().GetProperty("ApplicationInstance").FastGetValue(httpContextCurrent);
-			//return httpContextCurrentApplicationInstance.GetType().BaseType.Assembly;
-			////if ((System.Web.HttpContext.Current == null) || (System.Web.HttpContext.Current.Handler == null))
-			////    return Tools.Runtime.GetEntryAssembly(); // Not a web application
-			////return System.Web.HttpContext.Current.Handler.GetType().BaseType.Assembly;
-		}
+        public static bool IsWebApp {
+            get {
+#warning IsWebApp needs testing for NET_CORE and NET STANDARD apps
+                return false;
 
+                //#if __MOBILE__
+                //            return false;
+                //#else
+                //                if (_isWebApp == null) {
+                //                    lock (_threadLock) {
+                //                        if (_isWebApp == null) {
+                //                            _isWebApp = Path.GetFileName(AppDomain.CurrentDomain.SetupInformation.ConfigurationFile).EndsWith("web.config", true, CultureInfo.InvariantCulture);
+                //                        }
+                //                    }
+                //                }
+                //#endif
+                //                return _isWebApp.Value;
+            }
+        }
 
         public static bool IsDesignMode {
             get {
@@ -95,6 +87,33 @@ namespace Tools {
                 return _isDesignMode;
             }
         }
+
+        public static Assembly GetEntryAssembly() {
+            if (_entryAssembly == null) {
+                lock (_threadLock) {
+                    if (_entryAssembly == null) {
+                        _entryAssembly = IsWebApp ? GetWebEntryAssembly() : Assembly.GetEntryAssembly();
+                        if (_entryAssembly == null)
+                            throw new SoftwareException("Unable to determine entry assembly");
+                    }
+                }
+            }
+            return _entryAssembly;
+        }
+
+        private static Assembly GetWebEntryAssembly() {
+            throw new NotImplementedException();
+            ////return Assembly.GetExecutingAssembly();
+            //var httpContextType = TypeResolver.Resolve("System.Web.HttpContext");
+            //var httpContextCurrent = httpContextType.GetProperty("Current").FastGetValue(null);
+            ////var httpContextCurrentHandler = httpContextCurrent.GetType().GetProperty("Handler").FastGetValue(httpContextCurrent);
+            //var httpContextCurrentApplicationInstance = httpContextCurrent.GetType().GetProperty("ApplicationInstance").FastGetValue(httpContextCurrent);
+            //return httpContextCurrentApplicationInstance.GetType().BaseType.Assembly;
+            ////if ((System.Web.HttpContext.Current == null) || (System.Web.HttpContext.Current.Handler == null))
+            ////    return Tools.Runtime.GetEntryAssembly(); // Not a web application
+            ////return System.Web.HttpContext.Current.Handler.GetType().BaseType.Assembly;
+        }
+
     }
 }
 

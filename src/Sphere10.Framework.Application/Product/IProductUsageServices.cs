@@ -11,8 +11,6 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-#if !__MOBILE__
-
 namespace Sphere10.Framework.Application {
 
 	public interface IProductUsageServices {
@@ -23,5 +21,3 @@ namespace Sphere10.Framework.Application {
 
 	 }
 }
-
-#endif

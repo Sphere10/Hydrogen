@@ -1,4 +1,4 @@
-//-----------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------
 // <copyright file="RollingFileLogger.cs" company="Sphere 10 Software">
 //
 // Copyright (c) Sphere 10 Software. All rights reserved. (http://www.sphere10.com)
@@ -15,24 +15,25 @@ using System.Configuration;
 using System.IO;
 
 namespace Sphere10.Framework.Application {
-	public class RollingFileLogger : DecoratedLogger {
+	public class ApplicationLogger : DecoratedLogger {
 
-	    public RollingFileLogger() : base(CreateLogger("Logging")) {		    
-	    }
+		public ApplicationLogger() : base(CreateLogger("Logging")) {
+		}
 
-	    public static ILogger CreateLogger(string sectionName) {
-		    var section = ConfigurationManager.GetSection("LoggingConfiguration") as LoggingConfiguration;
-		    if (section == null) return new NoOpLogger();
-		    var logger = new FileAppendLogger(Path.Combine(section.Directory, section.ApplicationName + ".log"), true) {Options = 0};
-		    if (section.EnableDebug)
+		public static ILogger CreateLogger(string sectionName) {
+			var section = ConfigurationManager.GetSection("LoggingConfiguration") as LoggingConfiguration;
+			if (section == null)
+				return new NoOpLogger();
+			var logger = new RollingFileLogger(section.Directory, section.LogNameTemplate, section.MaxLogFiles, section.MaxLogFileSize);
+			if (section.EnableDebug)
 				logger.Options = logger.Options | LogOptions.DebugEnabled;
 			if (section.EnableInfo)
-			    logger.Options = logger.Options | LogOptions.InfoEnabled;
+				logger.Options = logger.Options | LogOptions.InfoEnabled;
 			if (section.EnableWarning)
 				logger.Options = logger.Options | LogOptions.WarningEnabled;
 			if (section.EnableError)
 				logger.Options = logger.Options | LogOptions.ErrorEnabled;
-		    return logger;
-	    }
+			return logger;
+		}
 	}
 }

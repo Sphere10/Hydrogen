@@ -11,9 +11,6 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-#if !__MOBILE__
-
-
 namespace Sphere10.Framework.Application {
 	public interface IBackgroundLicenseVerifier {
 
@@ -21,5 +18,3 @@ namespace Sphere10.Framework.Application {
 
 	}
 }
-
-#endif

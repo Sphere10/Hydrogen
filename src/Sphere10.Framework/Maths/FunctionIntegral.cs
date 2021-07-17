@@ -11,7 +11,6 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-#if !__MOBILE__
 namespace Sphere10.Framework.Maths {
 
 	public class FunctionIntegral {
@@ -30,4 +29,3 @@ namespace Sphere10.Framework.Maths {
 
     }
 }
-#endif

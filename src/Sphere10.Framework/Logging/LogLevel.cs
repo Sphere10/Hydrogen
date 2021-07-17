@@ -1,5 +1,5 @@
-//-----------------------------------------------------------------------
-// <copyright file="IHelpServices.cs" company="Sphere 10 Software">
+﻿//-----------------------------------------------------------------------
+// <copyright file="LogLevel.cs" company="Sphere 10 Software">
 //
 // Copyright (c) Sphere 10 Software. All rights reserved. (http://www.sphere10.com)
 //
@@ -11,13 +11,12 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace Sphere10.Framework.Application {
-	public interface IHelpServices  {
+namespace Sphere10.Framework {
 
-		void ShowContextHelp(IHelpableObject helpableObject);
-
-		void ShowHelp();
-
+	public enum LogLevel {
+		Debug,
+		Info,
+		Warning,
+		Error
 	}
 }
-

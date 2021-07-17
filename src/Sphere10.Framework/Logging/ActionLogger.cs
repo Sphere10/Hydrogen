@@ -15,18 +15,12 @@ using System;
 
 namespace Sphere10.Framework {
 
-	public class ActionLogger : ILogger {
+	public class ActionLogger : LoggerBase {
 
 		private readonly Action<string> _debugAction;
 		private readonly Action<string> _infoAction;
 		private readonly Action<string> _warningAction;
 		private readonly Action<string> _errorAction;
-
-
-		/// <summary>
-		/// Can enable/disable logging levels
-		/// </summary>
-		public LogOptions Options { get; set; }
 
 		/// <summary>
 		/// 
@@ -52,61 +46,26 @@ namespace Sphere10.Framework {
 		}
 
 
-		/// <summary>
-		/// Logs a debug message.
-		/// </summary>
-		/// <param name="message">The message.</param>
-		/// <param name="formatOptions">The format options (if any)</param>
-		/// <remarks></remarks>
-		public void Debug(string message) {
-			if (Options.HasFlag(LogOptions.DebugEnabled)) {
-                LogMessage(_debugAction, message);
+	    protected override void Log(LogLevel level, string message) {
+			try {
+                switch (level) {
+                    case LogLevel.Debug:
+						_debugAction(message);
+                        break;
+                    case LogLevel.Info:
+						_infoAction(message);
+                        break;
+                    case LogLevel.Warning:
+						_warningAction(message);
+                        break;
+                    case LogLevel.Error:
+						_errorAction(message);
+                        break;
+                }
+            } catch {
+				// errors do not propagate outside logging framework
 			}
-		}
+        }
 
-		/// <summary>
-		/// Logs an information message.
-		/// </summary>
-		/// <param name="message">The message.</param>
-		/// <param name="formatOptions">The format options (if any)</param>
-		/// <remarks></remarks>
-		public void Info(string message) {
-		    if (Options.HasFlag(LogOptions.InfoEnabled)) {
-                LogMessage(_infoAction, message);
-		    }
-		}
-
-		/// <summary>
-		/// Logs a warning message.
-		/// </summary>
-		/// <param name="message">The message.</param>
-		/// <param name="formatOptions">The format options (if any)</param>
-		/// <remarks></remarks>
-		public void Warning(string message) {
-		    if (Options.HasFlag(LogOptions.WarningEnabled)) {
-                LogMessage(_warningAction, message);
-		    }
-		}
-
-		/// <summary>
-		/// Logs an error message.
-		/// </summary>
-		/// <param name="message">The message.</param>
-		/// <param name="formatOptions">The format options (if any)</param>
-		/// <remarks></remarks>
-		public void Error(string message) {
-		    if (Options.HasFlag(LogOptions.ErrorEnabled)) {
-                LogMessage(_errorAction, message);
-		    }
-		}
-
-	    protected virtual void LogMessage(Action<string> action, string message) {
-	        try {
-	            action(message);
-	        } catch {
-	            // errors do not propagate outside logging framework
-	        }
-	    }
-
-	}
+    }
 }

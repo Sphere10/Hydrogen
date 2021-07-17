@@ -11,7 +11,6 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-#if !__MOBILE__
 using System;
 using System.Reflection;
 
@@ -40,5 +39,3 @@ namespace Sphere10.Framework.Application.Components {
 		}
 	}
 }
-
-#endif

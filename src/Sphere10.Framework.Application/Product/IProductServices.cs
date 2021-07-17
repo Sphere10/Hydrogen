@@ -11,15 +11,9 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-#if !__MOBILE__
-
-
 namespace Sphere10.Framework.Application {
 
 	public interface IProductServices : IProductInformationServices, IProductUsageServices, IProductInstancesCounter  {
 		string ProcessString(string str);
 	}
 }
-
-#endif
-

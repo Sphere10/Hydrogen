@@ -11,11 +11,8 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-#if !__MOBILE__
-
 namespace Sphere10.Framework.Application {
 	public interface IProductInstancesCounter {
 		int CountNumberOfRunningInstances();
 	}
 }
-#endif

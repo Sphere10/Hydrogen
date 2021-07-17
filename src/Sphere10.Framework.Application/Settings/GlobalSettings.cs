@@ -44,13 +44,9 @@ namespace Sphere10.Framework.Application {
 			Provider.ClearSettings();
 		}
 
-		public static ISettingsProvider CreateDefaultProvider() {
-			return new DirectorySettingsProvider(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), AppDomain.CurrentDomain.FriendlyName));
-		}
-
 		private static void CheckProvider() {
 			if (_provider == null)
-				throw new SoftwareException("Global Settings Provider has not been initialized");
+				_provider = ComponentRegistry.Instance.Resolve<ISettingsProvider>("SystemSettings");
 		}
 	}
 }

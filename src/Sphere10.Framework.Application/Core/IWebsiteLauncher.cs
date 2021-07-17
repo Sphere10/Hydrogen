@@ -11,9 +11,6 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-#if !__MOBILE__
-
-
 namespace Sphere10.Framework.Application {
 
 	public interface IWebsiteLauncher {
@@ -28,5 +25,3 @@ namespace Sphere10.Framework.Application {
 
 	}
 }
-
-#endif

@@ -3,13 +3,13 @@ using System.Linq;
 
 namespace Sphere10.Framework {
 	public class VarInt {
-		
-		public ulong Value { get; }
+
+		private readonly ulong _value;
 		
 		private static readonly EndianBitConverter BitConverter = EndianBitConverter.Little;
 		
 		public VarInt(ulong value) {
-			Value = value;
+			_value = value;
 		}
 
 		public static VarInt FromStream(Stream stream) {
@@ -33,23 +33,25 @@ namespace Sphere10.Framework {
 
 			var builder = new ByteArrayBuilder();
 
-			if (Value < 0xFD)
-				builder.Append((byte)Value);
-			else if (Value <= 0xFFFF) {
+			if (_value < 0xFD)
+				builder.Append((byte)_value);
+			else if (_value <= 0xFFFF) {
 				builder.Append(0xFD);
-				builder.Append(BitConverter.GetBytes((ushort)Value));
+				builder.Append(BitConverter.GetBytes((ushort)_value));
 			} 
-			else if (Value <= 0xFFFFFFFF) {
+			else if (_value <= 0xFFFFFFFF) {
 				builder.Append(0xFE);
-				builder.Append(BitConverter.GetBytes((uint)Value));
+				builder.Append(BitConverter.GetBytes((uint)_value));
 			} else {
 				builder.Append(0xFF);
-				builder.Append(BitConverter.GetBytes(Value));
+				builder.Append(BitConverter.GetBytes(_value));
 			}
 
 			return builder.ToArray();
 		}
 
-		public static implicit operator ulong(VarInt v) => v.Value;
+		public static implicit operator ulong(VarInt v) => v._value;
+		
+		public ulong ToLong() => _value;
 	}
 }

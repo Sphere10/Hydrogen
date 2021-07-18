@@ -18,7 +18,7 @@ namespace Sphere10.Framework.Tests.Values
         public void WriteAndRead(ulong value, int expectedByteLength)
         {
             var stream = new MemoryStream();
-            VarInt a = new VarInt(value);
+            var a = new VarInt(value);
             stream.Write(a.ToBytes());
             Assert.AreEqual(expectedByteLength, stream.Length);
 

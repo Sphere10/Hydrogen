@@ -53,12 +53,12 @@ namespace Sphere10.Hydrogen.Host {
 				}
 
 				// Check no custom path or deployable HAP in development mode
-				if (userArgs.Parameters.Contains("development")) {
-					if (userArgs.Parameters.Contains("path")) {
+				if (userArgs.Arguments.Contains("development")) {
+					if (userArgs.Arguments.Contains("path")) {
 						Console.WriteLine("Error: Cannot specify an override 'path' in 'development' mode");
 						return;
 					}
-					if (userArgs.Parameters.Contains("deploy")) {
+					if (userArgs.Arguments.Contains("deploy")) {
 						Console.WriteLine("Error: Cannot deploy a HAP in 'development' mode");
 						return;
 					}
@@ -66,30 +66,30 @@ namespace Sphere10.Hydrogen.Host {
 
 				// Determine Hydrogen Application Paths
 				IApplicationPaths applicationPaths;
-				if (userArgs.Parameters.Contains("development")) {
+				if (userArgs.Arguments.Contains("development")) {
 					applicationPaths = new DevelopmentApplicationPaths();
-				} else if (userArgs.Parameters.Contains("path")) {
-					applicationPaths = new ApplicationPaths(userArgs.Parameters["path"].Single(), true);
+				} else if (userArgs.Arguments.Contains("path")) {
+					applicationPaths = new ApplicationPaths(userArgs.Arguments["path"].Single(), true);
 				} else {
 					applicationPaths = new ApplicationPaths(Tools.Text.FormatEx(ConfigurationManager.AppSettings["AppRoot"]));
 				}
 
 				// Setup the logger
 				ILogger logger = new MulticastLogger(new FileAppendLogger(applicationPaths.HostLog)) {
-					Options = userArgs.Parameters.Contains("verbose")
+					Options = userArgs.Arguments.Contains("verbose")
 						? LogOptions.DebugEnabled | LogOptions.InfoEnabled | LogOptions.WarningEnabled | LogOptions.ErrorEnabled
 						: LogOptions.WarningEnabled | LogOptions.ErrorEnabled
 				};
 
 
 				// Setup the host
-				IHost host = userArgs.Parameters.Contains("development")
+				IHost host = userArgs.Arguments.Contains("development")
 					? new DevelopmentHost(logger, applicationPaths)
 					: new Sphere10.Hydrogen.Core.Runtime.Host(logger, applicationPaths);
 
 
 				// Deploy user specified HAP (if applicable)
-				if (userArgs.Parameters.Contains("deploy")) {
+				if (userArgs.Arguments.Contains("deploy")) {
 					await Task.Run(() => host.DeployHAP(defaultDeployPath));
 				}
 

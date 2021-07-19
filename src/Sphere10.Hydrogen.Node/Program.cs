@@ -58,8 +58,8 @@ namespace Sphere10.Hydrogen.Node {
 
 			INode hostedNode = default;
 			Task hostedNodeRunner = default;
-			if (userArgs.Parameters.Contains("host")) {
-				var hostParams = userArgs.Parameters["host"].Single();
+			if (userArgs.Arguments.Contains("host")) {
+				var hostParams = userArgs.Arguments["host"].Single();
 				var splits = hostParams.Split(':', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 				if (splits.Length != 2 || !int.TryParse(splits[0], out var readPort) || !int.TryParse(splits[1], out var writePort)) {
 					Console.WriteLine("Invalid format for host read/write port");

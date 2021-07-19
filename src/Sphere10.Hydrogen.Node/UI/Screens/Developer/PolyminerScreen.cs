@@ -120,7 +120,7 @@ namespace Sphere10.Hydrogen.Node.UI {
 			public MainThreadActionLogger(Action<string> action)
 				: base(action) {
 			}
-			protected override void LogMessage(Action<string> action, string message) {
+			protected void LogMessage(Action<string> action, string message) {
 				try {
 #if DEBUG
 					System.Diagnostics.Debug.WriteLine(message);

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Sphere10.Framework {
 	public class ByteArraySerializer : IItemSerializer<byte[]> {
@@ -14,16 +15,28 @@ namespace Sphere10.Framework {
 			throw new System.NotImplementedException();
 		}
 
-		public int Serialize(byte[] @object, EndianBinaryWriter writer) {
-			writer.Write(@object.Length);
-			writer.Write(@object);
+		public bool TrySerialize(byte[] item, EndianBinaryWriter writer, out int bytesWritten) {
+			try {
+				writer.Write(item.Length);
+				writer.Write(item);
 
-			return sizeof(int) + @object.Length;
+				bytesWritten = sizeof(int) + item.Length;
+				return true;
+			} catch (Exception) {
+				bytesWritten = 0;
+				return false;
+			}
 		}
 
-		public byte[] Deserialize(int size, EndianBinaryReader reader) {
-			int length = reader.ReadInt32();
-			return reader.ReadBytes(length);
+		public bool TryDeserialize(int byteSize, EndianBinaryReader reader, out byte[] item) {
+			try {
+				int length = reader.ReadInt32();
+				item = reader.ReadBytes(length);
+				return true;
+			} catch (Exception) {
+				item = default;
+				return false;
+			}
 		}
 	}
 }

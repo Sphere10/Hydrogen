@@ -23,42 +23,57 @@ namespace Sphere10.Hydrogen.Core.Consensus.Serializers {
 			4 //Nonce
 			) {
 		}
-		public override int Serialize(NewMinerBlock @object, EndianBinaryWriter writer) {
-			writer.Write(@object.Version);
-			writer.Write(@object.PrevMinerElectionHeader);
-			writer.Write(@object.PreviousMinerMicroBlockNumber);
-			writer.Write(@object.CompactTarget);
-			var PADDING = new byte[Constants.BlockHeaderPaddingSize];
-			writer.Write(@PADDING); 
-			writer.Write(@object.BlockPolicy);
-			writer.Write(@object.KernelID);
-			writer.Write(@object.MinerRewardAccount);
-			writer.Write(@object.DevRewardAccount);
-			writer.Write(@object.InfrastructureRewardAccount);
-			writer.Write(@object.Signature);
-			writer.Write(SanitizeTag(@object.MinerTag));
-			writer.Write(@object.UnixTime);
-			writer.Write(@object.Nonce);
-			return FixedSize;
+
+		public override bool TrySerialize(NewMinerBlock item, EndianBinaryWriter writer, out int bytesWritten) {
+			try {
+				writer.Write(item.Version);
+				writer.Write(item.PrevMinerElectionHeader);
+				writer.Write(item.PreviousMinerMicroBlockNumber);
+				writer.Write(item.CompactTarget);
+				var PADDING = new byte[Constants.BlockHeaderPaddingSize];
+				writer.Write(@PADDING); 
+				writer.Write(item.BlockPolicy);
+				writer.Write(item.KernelID);
+				writer.Write(item.MinerRewardAccount);
+				writer.Write(item.DevRewardAccount);
+				writer.Write(item.InfrastructureRewardAccount);
+				writer.Write(item.Signature);
+				writer.Write(SanitizeTag(item.MinerTag));
+				writer.Write(item.UnixTime);
+				writer.Write(item.Nonce);
+				bytesWritten = FixedSize;
+				return true;
+			} catch (Exception e) {
+				bytesWritten = 0;
+				return false;
+			}
 		}
-		public override NewMinerBlock Deserialize(int size, EndianBinaryReader reader) {
-			var block = new NewMinerBlock();
-			block.Version = reader.ReadUInt32();
-			block.PrevMinerElectionHeader = reader.ReadBytes(32);
-			block.PreviousMinerMicroBlockNumber = reader.ReadUInt16();
-			block.CompactTarget = reader.ReadUInt32();
-			//NOTE: we serialize the extranonce here for a better entropy when mining
-			var PADDING = reader.ReadBytes(Constants.BlockHeaderPaddingSize);
-			block.BlockPolicy = reader.ReadBytes(32);
-			block.KernelID = reader.ReadBytes(32);
-			block.MinerRewardAccount = reader.ReadUInt64();
-			block.DevRewardAccount = reader.ReadUInt64();
-			block.InfrastructureRewardAccount = reader.ReadUInt64();
-			block.Signature = reader.ReadBytes(32);
-			block.MinerTag = System.Text.Encoding.ASCII.GetString(reader.ReadBytes(Constants.MinerTagSize)).TrimEnd(' ');
-			block.UnixTime = reader.ReadUInt32();
-			block.Nonce = reader.ReadUInt32();
-			return block;
+
+		public override bool TryDeserialize(int byteSize, EndianBinaryReader reader, out NewMinerBlock item) {
+			try {
+				var block = new NewMinerBlock();
+				block.Version = reader.ReadUInt32();
+				block.PrevMinerElectionHeader = reader.ReadBytes(32);
+				block.PreviousMinerMicroBlockNumber = reader.ReadUInt16();
+				block.CompactTarget = reader.ReadUInt32();
+				//NOTE: we serialize the extranonce here for a better entropy when mining
+				var PADDING = reader.ReadBytes(Constants.BlockHeaderPaddingSize);
+				block.BlockPolicy = reader.ReadBytes(32);
+				block.KernelID = reader.ReadBytes(32);
+				block.MinerRewardAccount = reader.ReadUInt64();
+				block.DevRewardAccount = reader.ReadUInt64();
+				block.InfrastructureRewardAccount = reader.ReadUInt64();
+				block.Signature = reader.ReadBytes(32);
+				block.MinerTag = System.Text.Encoding.ASCII.GetString(reader.ReadBytes(Constants.MinerTagSize)).TrimEnd(' ');
+				block.UnixTime = reader.ReadUInt32();
+				block.Nonce = reader.ReadUInt32();
+				item = block;
+
+				return true;
+			} catch (Exception) {
+				item = default;
+				return false;
+			}
 		}
 
 		private byte[] SanitizeTag(string tag) {

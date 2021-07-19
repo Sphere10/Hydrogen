@@ -332,18 +332,39 @@ namespace Sphere10.Framework.Tests {
 
 			public int CalculateSize(TestObject item) =>
 				StringSerializer.CalculateSize(item.A) + sizeof(int) + sizeof(bool);
+			
 
-			public int Serialize(TestObject @object, EndianBinaryWriter writer) {
-				int stringBytesCount = StringSerializer.Serialize(@object.A, writer);
-				writer.Write(@object.B);
-				writer.Write(@object.C);
+			public bool TrySerialize(TestObject item, EndianBinaryWriter writer, out int bytesWritten)
+			{
+				try
+				{
+					int stringBytesCount = StringSerializer.Serialize(item.A, writer);
+					writer.Write(item.B);
+					writer.Write(item.C);
 
-				return stringBytesCount + sizeof(int) + sizeof(bool);
+					bytesWritten= stringBytesCount + sizeof(int) + sizeof(bool);
+					return true;
+				}
+				catch (Exception)
+				{
+					bytesWritten = 0;
+					return false;
+				}
 			}
 
-			public TestObject Deserialize(int size, EndianBinaryReader reader) {
-				int stringSize = size - sizeof(int) - sizeof(bool);
-				return new(StringSerializer.Deserialize(stringSize, reader), reader.ReadInt32(), reader.ReadBoolean());
+			public bool TryDeserialize(int byteSize, EndianBinaryReader reader, out TestObject item)
+			{
+				try
+				{
+					int stringSize = byteSize - sizeof(int) - sizeof(bool);
+					item = new(StringSerializer.Deserialize(stringSize, reader), reader.ReadInt32(), reader.ReadBoolean());
+					return true;
+				}
+				catch (Exception)
+				{
+					item = default;
+					return false;
+				}
 			}
 		}
 		

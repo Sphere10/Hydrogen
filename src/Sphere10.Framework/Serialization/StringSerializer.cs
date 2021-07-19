@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System;
+using System.Text;
 
 namespace Sphere10.Framework {
 
@@ -6,16 +7,29 @@ namespace Sphere10.Framework {
 		public StringSerializer(Encoding encoding)
 			: base(encoding) {
 		}
-
-		public int Serialize(string @object, EndianBinaryWriter writer) {
-			var stringBytes = Encoding.GetBytes(@object);
-			writer.Write(stringBytes);
-			return stringBytes.Length;
+		
+		public bool TrySerialize(string item, EndianBinaryWriter writer, out int bytesWritten) {
+			try {
+				var stringBytes = Encoding.GetBytes(item);
+				writer.Write(stringBytes);
+				bytesWritten = stringBytes.Length;
+				
+				return true;
+			} catch (Exception) {
+				bytesWritten = 0;
+				return false;
+			}
 		}
 
-		public string Deserialize(int size, EndianBinaryReader reader) {
-			var stringBytes = reader.ReadBytes(size);
-			return Encoding.GetString(stringBytes);
+		public bool TryDeserialize(int byteSize, EndianBinaryReader reader, out string item) {
+			try {
+				var stringBytes = reader.ReadBytes(byteSize);
+				item = Encoding.GetString(stringBytes);
+				return true;
+			} catch (Exception) {
+				item = default;
+				return false;
+			}
 		}
 	}
 

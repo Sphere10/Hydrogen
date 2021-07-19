@@ -8,6 +8,14 @@ namespace Sphere10.Helium.Message {
 			throw new NotImplementedException();
 		}
 
+		public override bool TrySerialize(IMessage item, EndianBinaryWriter writer, out int bytesWritten) {
+			throw new NotImplementedException();
+		}
+
+		public override bool TryDeserialize(int byteSize, EndianBinaryReader reader, out IMessage item) {
+			throw new NotImplementedException();
+		}
+
 		public override IMessage Deserialize(int size, EndianBinaryReader reader) {
 			throw new NotImplementedException();
 		}

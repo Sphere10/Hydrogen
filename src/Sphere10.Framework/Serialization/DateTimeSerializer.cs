@@ -14,7 +14,7 @@ namespace Sphere10.Framework {
 		public int CalculateTotalSize(IEnumerable<DateTime> items, bool calculateIndividualItems, out int[] itemSizes) {
 			itemSizes = Array.Empty<int>();
 			var count = items.Count();
-				
+
 			if (calculateIndividualItems)
 				itemSizes = Enumerable.Repeat(FixedSize, count).ToArray();
 
@@ -25,21 +25,34 @@ namespace Sphere10.Framework {
 			return sizeof(ulong);
 		}
 
-		public int Serialize(DateTime @object, EndianBinaryWriter writer) {
-			var property = typeof(DateTime).GetProperty("Ticks", BindingFlags.Public | BindingFlags.Instance);
-			var dateData = (long)property.FastGetValue(@object);
-			byte[] bytes = writer.BitConverter.GetBytes(dateData);
-			writer.Write(bytes);
-			
-			return bytes.Length;
+		public bool TrySerialize(DateTime item, EndianBinaryWriter writer, out int bytesWritten) {
+			try {
+				var property = typeof(DateTime).GetProperty("Ticks", BindingFlags.Public | BindingFlags.Instance);
+				var dateData = (long)property.FastGetValue(item);
+				byte[] bytes = writer.BitConverter.GetBytes(dateData);
+				writer.Write(bytes);
+
+				bytesWritten = bytes.Length;
+				return true;
+			} catch (Exception) {
+				bytesWritten = 0;
+				return false;
+			}
 		}
 
-		public DateTime Deserialize(int size, EndianBinaryReader reader) {
-			long ticks = reader.ReadInt64();
-			return new DateTime(ticks);
+		public bool TryDeserialize(int byteSize, EndianBinaryReader reader, out DateTime item) {
+			try {
+				long ticks = reader.ReadInt64();
+				item = new DateTime(ticks);
+				return true;
+			} catch (Exception) {
+				item = default;
+				return false;
+			}
 		}
 	}
-	
+
+
 	public class DateTimeOffsetSerializer : IItemSerializer<DateTimeOffset> {
 		public bool IsFixedSize => true;
 		public int FixedSize => _dateTimeSerializer.FixedSize + sizeof(int);
@@ -48,7 +61,7 @@ namespace Sphere10.Framework {
 		public int CalculateTotalSize(IEnumerable<DateTimeOffset> items, bool calculateIndividualItems, out int[] itemSizes) {
 			itemSizes = Array.Empty<int>();
 			var count = items.Count();
-				
+
 			if (calculateIndividualItems)
 				itemSizes = Enumerable.Repeat(FixedSize, count).ToArray();
 
@@ -59,23 +72,35 @@ namespace Sphere10.Framework {
 			throw new NotImplementedException();
 		}
 
-		public int Serialize(DateTimeOffset @object, EndianBinaryWriter writer) {
-			var dateTimeField = typeof(DateTimeOffset).GetField("_dateTime", BindingFlags.NonPublic | BindingFlags.Instance);
-			var offsetMinutesField = typeof(DateTimeOffset).GetField("_offsetMinutes", BindingFlags.NonPublic | BindingFlags.Instance);
+		public bool TrySerialize(DateTimeOffset item, EndianBinaryWriter writer, out int bytesWritten) {
+			try {
+				var dateTimeField = typeof(DateTimeOffset).GetField("_dateTime", BindingFlags.NonPublic | BindingFlags.Instance);
+				var offsetMinutesField = typeof(DateTimeOffset).GetField("_offsetMinutes", BindingFlags.NonPublic | BindingFlags.Instance);
 
-			DateTime dateTime = (DateTime)dateTimeField.FastGetValue(@object);
-			short offsetMinutes = (short)offsetMinutesField.FastGetValue(@object);
-			
-			_dateTimeSerializer.Serialize(dateTime, writer);
-			writer.Write(offsetMinutes);
+				DateTime dateTime = (DateTime)dateTimeField.FastGetValue(item);
+				var offsetMinutes = (short)offsetMinutesField.FastGetValue(item);
 
-			return sizeof(int) + _dateTimeSerializer.FixedSize;
+				_dateTimeSerializer.Serialize(dateTime, writer);
+				writer.Write(offsetMinutes);
+
+				bytesWritten = sizeof(int) + _dateTimeSerializer.FixedSize;
+				return true;
+			} catch (Exception e) {
+				Console.WriteLine(e);
+				throw;
+			}
 		}
 
-		public DateTimeOffset Deserialize(int size, EndianBinaryReader reader) {
-			DateTime datetime = _dateTimeSerializer.Deserialize(size, reader);
-			short offsetMinutes = reader.ReadInt16();
-			return new DateTimeOffset(datetime.AddMinutes(offsetMinutes), TimeSpan.FromMinutes(offsetMinutes));
+		public bool TryDeserialize(int byteSize, EndianBinaryReader reader, out DateTimeOffset item) {
+			try {
+				DateTime datetime = _dateTimeSerializer.Deserialize(byteSize, reader);
+				short offsetMinutes = reader.ReadInt16();
+				item = new DateTimeOffset(datetime.AddMinutes(offsetMinutes), TimeSpan.FromMinutes(offsetMinutes));
+				return true;
+			} catch (Exception) {
+				item = default;
+				return false;
+			}
 		}
 	}
 }

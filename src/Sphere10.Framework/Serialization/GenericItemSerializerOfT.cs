@@ -27,20 +27,31 @@ namespace Sphere10.Framework {
 			throw new NotImplementedException();
 		}
 
-		public int Serialize(T @object, EndianBinaryWriter writer) {
-			_bitConverter = writer.BitConverter;
 
-			var bytes = SerializeMember(typeof(T), @object, new SerializationContext());
-			writer.Write(bytes);
-			return bytes.Length;
+		public bool TrySerialize(T item, EndianBinaryWriter writer, out int bytesWritten) {
+			try {
+				_bitConverter = writer.BitConverter;
+
+				var bytes = SerializeMember(typeof(T), item, new SerializationContext());
+				writer.Write(bytes);
+				bytesWritten = bytes.Length;
+				return true;
+			} catch (Exception) {
+				bytesWritten = 0;
+				return false; 
+			}
 		}
 
-		public T Deserialize(int size, EndianBinaryReader reader) {
-			_bitConverter = reader.BitConverter;
-
-			var context = new SerializationContext();
-
-			return (T)DeserializeMember(typeof(T), reader, context);
+		public bool TryDeserialize(int byteSize, EndianBinaryReader reader, out T item) {
+			try {
+				_bitConverter = reader.BitConverter;
+				var context = new SerializationContext();
+				item = (T)DeserializeMember(typeof(T), reader, context);
+				return true;
+			} catch (Exception) {
+				item = default;
+				return false;
+			}
 		}
 
 		private object DeserializeMember(Type propertyType, EndianBinaryReader reader, SerializationContext context) {

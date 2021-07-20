@@ -4,12 +4,24 @@ using System.Linq;
 
 namespace Sphere10.Framework {
 	public class SerializationContext {
+		
+		
 
-		private readonly Dictionary<Reference<object>, int> _referenceDictionary;
+		private readonly Dictionary<Reference<object>, int> _referenceDictionary = new ();
 
-		public SerializationContext() {
-			_referenceDictionary = new Dictionary<Reference<object>, int>();
+		public SerializationContext(EndianBinaryReader reader) {
+			Reader = reader ?? throw new ArgumentNullException(nameof(reader));
 		}
+
+		public SerializationContext(EndianBinaryWriter writer) {
+			Writer = writer ?? throw new ArgumentNullException(nameof(writer));
+		}
+
+		public EndianBinaryWriter Writer { get; }
+
+		public EndianBinaryReader Reader { get; }
+
+		public EndianBitConverter BitConverter => Writer.BitConverter ?? Reader.BitConverter;
 		
 		public object GetObjectByIndex(Type type, int index) {
 			return _referenceDictionary.FirstOrDefault(x => x.Key.Object.GetType() == type && x.Value == index).Key.Object

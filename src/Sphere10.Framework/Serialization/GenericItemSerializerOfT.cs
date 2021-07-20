@@ -32,21 +32,21 @@ namespace Sphere10.Framework {
 			try {
 				_bitConverter = writer.BitConverter;
 
-				var bytes = SerializeMember(typeof(T), item, new SerializationContext());
+				var bytes = SerializeMember(typeof(T), item, new SerializationContext(writer));
 				writer.Write(bytes);
 				bytesWritten = bytes.Length;
 				return true;
 			} catch (Exception) {
 				bytesWritten = 0;
-				return false; 
+				return false;
 			}
 		}
 
 		public bool TryDeserialize(int byteSize, EndianBinaryReader reader, out T item) {
 			try {
 				_bitConverter = reader.BitConverter;
-				var context = new SerializationContext();
-				item = (T)DeserializeMember(typeof(T), reader, context);
+				var context = new SerializationContext(reader);
+				item = (T)DeserializeMember(typeof(T), context);
 				return true;
 			} catch (Exception) {
 				item = default;
@@ -54,32 +54,33 @@ namespace Sphere10.Framework {
 			}
 		}
 
-		private object DeserializeMember(Type propertyType, EndianBinaryReader reader, SerializationContext context) {
+		private object DeserializeMember(Type propertyType, SerializationContext context) {
 			var propertyValueType = propertyType;
 
 			if (RequiresTypeHeader(propertyType))
-				propertyValueType = ReadTypeHeader(reader);
+				propertyValueType = ReadTypeHeader(context);
 
 			if (Serializers.TryGetValue(propertyValueType, out var serializer))
-				return serializer.Deserialize(0, reader);
+				return serializer.Deserialize(0, context.Reader);
 
 			if (propertyValueType.IsPrimitive)
-				return DeserializePrimitive(propertyValueType, reader);
+				return DeserializePrimitive(propertyValueType, context);
 
 			if (propertyValueType == typeof(string))
-				return DeserializeString(reader);
+				return DeserializeString(context);
 
 			if (propertyValueType.IsValueType)
-				return DeserializeValueType(propertyValueType, reader, context);
+				return DeserializeValueType(propertyValueType, context);
 
 			if (propertyValueType.IsCollection())
-				return DeserializeCollection(propertyValueType, reader, context);
+				return DeserializeCollection(propertyValueType, context);
 
-			return DeserializeReferenceType(propertyValueType, reader, context);
+			return DeserializeReferenceType(propertyValueType, context);
 		}
 
-		private object DeserializePrimitive(Type t, EndianBinaryReader reader) {
+		private object DeserializePrimitive(Type t, SerializationContext context) {
 
+			var reader = context.Reader;
 			if (t == typeof(sbyte))
 				return reader.ReadSByte();
 
@@ -119,12 +120,13 @@ namespace Sphere10.Framework {
 			throw new InvalidOperationException($"Exception while deserializing, unknown primitive type {t.Name}");
 		}
 
-		private string DeserializeString(EndianBinaryReader reader) {
-			return reader.ReadString();
+		private string DeserializeString(SerializationContext context) {
+			return context.Reader.ReadString();
 		}
 
-		private object DeserializeCollection(Type collectionType, EndianBinaryReader reader, SerializationContext context) {
+		private object DeserializeCollection(Type collectionType, SerializationContext context) {
 			object list;
+			var reader = context.Reader;
 
 			if (Serializers.TryGetValue(collectionType, out var serializer)) {
 				return serializer.Deserialize(-1, reader);
@@ -144,8 +146,8 @@ namespace Sphere10.Framework {
 
 				var count = reader.ReadInt32();
 				for (var i = 0; i < count; i++) {
-					var key = DeserializeMember(itemKeyType, reader, context);
-					var val = DeserializeMember(itemValueType, reader, context);
+					var key = DeserializeMember(itemKeyType, context);
+					var val = DeserializeMember(itemValueType, context);
 					dictionary.Add(key, val);
 				}
 
@@ -156,7 +158,7 @@ namespace Sphere10.Framework {
 				var count = reader.ReadInt32();
 
 				for (var i = 0; i < count; i++) {
-					var obj = DeserializeMember(collectionType.GenericTypeArguments[0], reader, context);
+					var obj = DeserializeMember(collectionType.GenericTypeArguments[0],  context);
 					addMethod.Invoke(list, new[] { obj });
 				}
 			} else if (collectionType.IsArray) {
@@ -165,7 +167,7 @@ namespace Sphere10.Framework {
 				var elementType = collectionType.GetElementType() ?? typeof(object);
 
 				for (var i = 0; i < count; i++) {
-					var obj = DeserializeMember(elementType, reader, context);
+					var obj = DeserializeMember(elementType,  context);
 					elements[i] = obj;
 				}
 
@@ -178,8 +180,8 @@ namespace Sphere10.Framework {
 				var count = reader.ReadInt32();
 
 				for (var i = 0; i < count; i++) {
-					var itemType = ReadTypeHeader(reader);
-					var obj = DeserializeMember(itemType, reader, context);
+					var itemType = ReadTypeHeader(context);
+					var obj = DeserializeMember(itemType, context);
 					addMethod.Invoke(list, new[] { obj });
 				}
 			}
@@ -187,19 +189,21 @@ namespace Sphere10.Framework {
 			return list;
 		}
 
-		private object DeserializeValueType(Type propertyType, EndianBinaryReader reader, SerializationContext context) {
+		private object DeserializeValueType(Type propertyType, SerializationContext context) {
+			var reader = context.Reader;
+			
 			if (propertyType == typeof(NullValue))
 				return null;
 
 			if (propertyType == typeof(CircularReference)) {
-				var type = ReadTypeHeader(reader);
-				var index = (ushort)DeserializePrimitive(typeof(ushort), reader);
+				var type = ReadTypeHeader(context);
+				var index = (ushort)DeserializePrimitive(typeof(ushort), context);
 				return context.GetObjectByIndex(type, index);
 			}
 
 			if (propertyType.IsNullable()) {
 				propertyType = propertyType.GetField("value", BindingFlags.NonPublic | BindingFlags.Instance)!.FieldType;
-				return DeserializeMember(propertyType, reader, context);
+				return DeserializeMember(propertyType, context);
 			}
 
 			if (propertyType == typeof(decimal))
@@ -210,21 +214,19 @@ namespace Sphere10.Framework {
 
 			var instance = Activator.CreateInstance(propertyType);
 			foreach (var field in GetSerializableProperties(propertyType)) {
-				field.FastSetValue(instance, DeserializeMember(field.PropertyType, reader, context));
+				field.FastSetValue(instance, DeserializeMember(field.PropertyType, context));
 			}
 
 			return instance;
 		}
 
-		private object DeserializeReferenceType(Type propertyValueType, EndianBinaryReader reader, SerializationContext context) {
+		private object DeserializeReferenceType(Type propertyValueType,  SerializationContext context) {
 			if (Serializers.TryGetValue(propertyValueType, out var serializer))
-				return serializer.Deserialize(-1, reader);
-
-			var instance = Activator.CreateInstance(propertyValueType);
+				return serializer.Deserialize(-1, context.Reader); var instance = Activator.CreateInstance(propertyValueType);
 			context.AddSerializedObject(instance);
 
 			foreach (var property in GetSerializableProperties(instance.GetType()))
-				property.FastSetValue(instance, DeserializeMember(property.PropertyType, reader, context));
+				property.FastSetValue(instance, DeserializeMember(property.PropertyType, context));
 
 			return instance;
 		}
@@ -329,7 +331,7 @@ namespace Sphere10.Framework {
 
 		private byte[] SerializeCollectionType(object value, SerializationContext context) {
 			var listType = value.GetType();
-			
+
 			if (value is IDictionary dictionary) {
 				var stream = new MemoryStream();
 				var writer = new EndianBinaryWriter(EndianBitConverter.Little, stream);
@@ -380,8 +382,8 @@ namespace Sphere10.Framework {
 				throw new InvalidOperationException("Could not serialize object as it doesn't implement IEnumerable.");
 		}
 
-		private Type ReadTypeHeader(EndianBinaryReader reader) {
-			var typeIndex = reader.ReadInt32();
+		private Type ReadTypeHeader(SerializationContext context) {
+			var typeIndex = context.Reader.ReadInt32();
 
 			Type type;
 			if (Registrations.Any(x => x.Value == typeIndex)) {
@@ -393,11 +395,11 @@ namespace Sphere10.Framework {
 			if (type.IsGenericType)
 				type = type.MakeGenericType(
 					type.GetGenericArguments()
-						.Select(_ => ReadTypeHeader(reader))
+						.Select(_ => ReadTypeHeader(context))
 						.ToArray());
 
 			if (type == typeof(Array)) {
-				var elementType = ReadTypeHeader(reader);
+				var elementType = ReadTypeHeader(context);
 				type = elementType.MakeArrayType(1);
 			}
 
@@ -432,8 +434,12 @@ namespace Sphere10.Framework {
 			var writer = new EndianBinaryWriter(EndianBitConverter.Little, stream);
 
 			if (valueType.IsArray) {
+				if (valueType.GetArrayRank() > 1)
+					throw new InvalidOperationException("Multi-dimension arrays are not supported.");
+
 				writer.Write(GetTypeIndex(typeof(Array)));
 				writer.Write(GetTypeIndex(valueType.GetElementType()));
+
 			} else
 				writer.Write(GetTypeIndex(valueType.IsGenericType ? valueType.GetGenericTypeDefinition() : valueType));
 

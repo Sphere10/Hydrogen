@@ -17,13 +17,14 @@ namespace Sphere10.Hydrogen.Node.RPC {
 	public class RpcMiningManager : MiningManagerBase, IMiningBlockProducer {
 		private ILogger _logger;
 		private uint CurrentMinerMicroBlockNumber = 0;
-		protected Timer FakeUpdateHeaderTimer;
-		protected const uint FakeUpdateHeaderTimerTimeMs = 1 * 1000 + 20;
+		protected Timer UpdateHeaderTimer;
+		protected Timer ResendHeaderTimer;
+		protected const uint FakeUpdateHeaderTimerTimeMs = 1 * 1000;
 		//TODO: Replace this by actual access to THE BlockChain interface
 		protected readonly SynchronizedList<BlockChainLogItem> BlockChainLog = new SynchronizedList<BlockChainLogItem>();
 		//TODO: Will be set by Fiber layer later on
 		protected SynchronizedList<MiningWork> MiningWorkHistory = new SynchronizedList<MiningWork>();
-		protected readonly SynchronizedObject MiningSubmitLock;
+		private readonly object MiningSubmitLock;
 		protected RpcMiningServer StratumMiningServer;
 		protected TransactionAggregatorMock TransactionAggregator;
 
@@ -49,18 +50,15 @@ namespace Sphere10.Hydrogen.Node.RPC {
 			: base(miningConfig, blockSerializer, new Configuration { RTTInterval = rttInterval }) {
 			BlockTime = blockTimeSec;
 			StratumMiningServer = new RpcMiningServer(rpcConfig, this);
-			MiningSubmitLock = new SynchronizedObject();
 			//register as a RPC service provider
 			ApiServiceManager.RegisterService(this);
 
-			FakeUpdateHeaderTimer = new Timer(this.OnFakeUpdateHeaderTimer, this, FakeUpdateHeaderTimerTimeMs, FakeUpdateHeaderTimerTimeMs * 30);
-
+			MiningSubmitLock = new object();
 			_blockTimes = new List<DateTime>();
 			AllStats = new Statistics();
 			Last5Stats = new Statistics();
 			Last10Stats = new Statistics();
 			Last100Stats = new Statistics();
-
 		}
 
 		public void StartMiningServer(string minerTag) {
@@ -143,8 +141,6 @@ namespace Sphere10.Hydrogen.Node.RPC {
 			_logger?.Info($"Miner {MinerTag} Sending work for block #{miningWork.BlockNumber} with target {ByteArrayExtensions.ToHexString(miningBlock.TargetPOW)}");
 			MiningWorkHistory.Add(miningWork);
 
-			//Restart fake timer
-			FakeUpdateHeaderTimer.Change(FakeUpdateHeaderTimerTimeMs, FakeUpdateHeaderTimerTimeMs * 30);
 			return miningBlock;
 		}
 
@@ -152,17 +148,24 @@ namespace Sphere10.Hydrogen.Node.RPC {
 			//NOTE: This is for testing purpose, CurrentMinerMicroBlockNumber should be updated according to incomming micro blocks
 			CurrentMinerMicroBlockNumber = (CurrentMinerMicroBlockNumber + 1) % 120;
 			StratumMiningServer.NotifyNewBlock();
+
+			if (UpdateHeaderTimer == null)
+				UpdateHeaderTimer = new Timer(this.OnFakeUpdateHeaderTimer, this, FakeUpdateHeaderTimerTimeMs, FakeUpdateHeaderTimerTimeMs);
+			else
+				//Restart fake timer
+				UpdateHeaderTimer.Change(FakeUpdateHeaderTimerTimeMs, FakeUpdateHeaderTimerTimeMs);
 		}
 
 		public void NotifyNewDiff() {
-			using (MiningSubmitLock.EnterWriteScope()) {
+			lock (MiningSubmitLock) {
 				if (MiningWorkHistory.Count > 0) {
+					/*
 					uint currentBlockNumber = CurrentMinerMicroBlockNumber;
 					uint newTime = (uint)DateTimeOffset.UtcNow.ToUnixTimeSeconds();
 					uint newTarget = MiningConfig.DAAlgorithm.CalculateNextBlockTarget(GetPreviousBlockTimeStamps(), MiningWorkHistory.LastOrDefault().Puzzle.CompactTarget, BlockHeight);
 					byte[] newTargetPOW = MiningConfig.TargetAlgorithm.ToDigest(MiningTarget);
 					//Update work history
-					using (MiningWorkHistory.EnterReadScope()) {
+					using (MiningWorkHistory.EnterWriteScope()) {
 						foreach (var work in MiningWorkHistory) {
 							work.Puzzle.CompactTarget = newTarget;
 							work.Puzzle.Block.UnixTime = newTime;
@@ -171,6 +174,11 @@ namespace Sphere10.Hydrogen.Node.RPC {
 					}
 
 					StratumMiningServer.NotifyNewDiff(new MiningBlockUpdates { TargetPOW = newTargetPOW, TimeStamp = newTime, MicroBlockNumber = currentBlockNumber });
+					*/
+					StratumMiningServer.NotifyNewBlock();
+				} else {
+					UpdateHeaderTimer.Dispose();
+					UpdateHeaderTimer = null;
 				}
 			}
 		}
@@ -181,14 +189,15 @@ namespace Sphere10.Hydrogen.Node.RPC {
 		//MinerID, Tag, Nonce, Time
 		[RpcAPIMethod("submit")]
 		public virtual MiningSolutionResultJsonSurogate SubmitNonce(MiningSolutionJsonSurogate solution) {
-			using (MiningSubmitLock.EnterWriteScope()) {
+			MiningSolutionResultJsonSurogate result;
+			lock (MiningSubmitLock) {
 				MiningWork miningWork = null;
 
 				//Filter invalid characters
 				var minerTagBytes = StringExtensions.ToHexByteArray(solution.MinerTag);
 				foreach (var c in minerTagBytes)
 					if (c < 32)
-						return new MiningSolutionResultJsonSurogate { SolutionResult = MiningSolutionResult.RejectedInvalid, TimeStamp = solution.Time };
+						return new MiningSolutionResultJsonSurogate { SolutionResult = MiningSolutionResult.RejectedNotAccepting, TimeStamp = solution.Time };
 
 				uint ut = (uint)DateTimeOffset.UtcNow.ToUnixTimeSeconds();
 				//_logger?.Info($"Miner '{solution.MinerTag}' submiting nonce 0x{solution.Nonce:x} at exact timestamp {ut}");
@@ -205,11 +214,17 @@ namespace Sphere10.Hydrogen.Node.RPC {
 						}
 				}
 
-				if (miningWork != null)
-					return new MiningSolutionResultJsonSurogate { SolutionResult = SubmitSolution(miningWork.Puzzle), BlockNumber = miningWork.BlockNumber, TimeStamp = solution.Time };
-				else
-					return new MiningSolutionResultJsonSurogate { SolutionResult = MiningSolutionResult.RejectedNotAccepting, BlockNumber = 0, TimeStamp = (uint)DateTimeOffset.UtcNow.ToUnixTimeSeconds() };
+				if (miningWork != null) {
+					//Logger.Debug($"New solution for id {solution.WorkID}: time {miningWork.Puzzle.Block.UnixTime} min {DateTimeExtensions.ToUnixTime(miningWork.Puzzle.AcceptableTimeStampRange.Start)} max {DateTimeExtensions.ToUnixTime(miningWork.Puzzle.AcceptableTimeStampRange.End)}");
+					result = new MiningSolutionResultJsonSurogate { SolutionResult = SubmitSolution(miningWork.Puzzle), BlockNumber = miningWork.BlockNumber, TimeStamp = solution.Time };
+				} else
+					result = new MiningSolutionResultJsonSurogate { SolutionResult = MiningSolutionResult.RejectedNotAccepting, BlockNumber = 0, TimeStamp = (uint)DateTimeOffset.UtcNow.ToUnixTimeSeconds() };
 			}
+
+			if (result.SolutionResult == MiningSolutionResult.Accepted)
+				NotifyNewBlock();
+
+			return result;
 		}
 
 		protected override List<DateTime> GetPreviousBlockTimeStamps() {

@@ -167,7 +167,7 @@ namespace Sphere10.Hydrogen.Node.UI {
 			public override void OnModelChanged() {
 				base.OnModelChanged();
 				this.Model.Started += manager => {
-					_outputLogger.Info($"RPC mining server started on port {Model.RpcServerPort}");
+					_outputLogger.Info($"RPC mining server started on port {Model.RpcServerPort} with BlockTime {this.Model.BlockTime}");
 					manager.SolutionSubmited += (o, puzzle, result) => _outputLogger.Info($"Miner: '{puzzle.Block.MinerTag}', Block: {puzzle.ComputeWork().ToHexString(true)}, Result: {result}");
 					(manager as RpcMiningManager).Logger = _outputLogger;
 				};
@@ -197,8 +197,7 @@ namespace Sphere10.Hydrogen.Node.UI {
 
 		//management code
 		public class MiningServerModel {
-			//private const int DefaultBlockTime = 120;
-			private const int DefaultBlockTime = 20;
+			private const int DefaultBlockTime = 10;
 			private IMiningManager _miningManager;
 
 			public event EventHandlerEx<IMiningManager> Started;
@@ -210,7 +209,7 @@ namespace Sphere10.Hydrogen.Node.UI {
 
 			public int RelaxationTime { get; set; } = 20 * DefaultBlockTime;
 
-			public int RTTInterval { get; set; } = 5;
+			public int RTTInterval { get; set; } = 2;
 
 			public bool IsStarted { get; private set; }
 

@@ -43,6 +43,9 @@ namespace Sphere10.Framework {
 		public static uint MilliSecondsSince1979Jan1(this DateTime toDate) {
 			return Tools.Values.ClipValue((uint)(toDate - new DateTime(1970, 1, 1)).TotalMilliseconds, 0, uint.MaxValue);
 		}
+		public static uint ToUnixTime(this DateTime toDate) {
+			return Tools.Values.ClipValue((uint)(toDate - new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)).TotalSeconds, 0, uint.MaxValue);
+		}
 
 		public static string ToShortDateString(this DateTime? dateTime)
 		{

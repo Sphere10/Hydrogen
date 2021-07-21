@@ -31,7 +31,7 @@ namespace Sphere10.Framework {
 			
 			Register(new DateTimeSerializer());
 			Register(new DateTimeOffsetSerializer());
-			Register(new ByteArraySerializer());
+			Register(new DecimalSerializer());
 		}
 
 		public static void Register<T>() where T : new() => Register<T>(Registrations.Count + 1);

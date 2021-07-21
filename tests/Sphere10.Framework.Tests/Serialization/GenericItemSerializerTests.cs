@@ -182,8 +182,7 @@ namespace Sphere10.Framework.Tests
             };
 
             parent.A.A = parent;
-
-
+            
             var serializer = GenericItemSerializer<CircularReferenceObj>.Default;
 
             using var memoryStream = new MemoryStream();

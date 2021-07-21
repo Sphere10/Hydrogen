@@ -197,7 +197,7 @@ namespace Sphere10.Hydrogen.Node.UI {
 
 		//management code
 		public class MiningServerModel {
-			private const int DefaultBlockTime = 10;
+			private const int DefaultBlockTime = 5;
 			private IMiningManager _miningManager;
 
 			public event EventHandlerEx<IMiningManager> Started;

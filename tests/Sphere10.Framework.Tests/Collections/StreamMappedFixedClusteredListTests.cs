@@ -67,7 +67,7 @@ namespace Sphere10.Framework.Tests
         {
             using var stream = new MemoryStream();
             var list = new StreamMappedFixedClusteredList<string>(32, 100, 4000, stream,
-                new StringSerializer(Encoding.UTF8));
+                new StringSerializer());
             string[] input = new[] {string.Empty, null, string.Empty, null};
             list.AddRange(input);
             Assert.AreEqual(4, list.Count);
@@ -81,7 +81,7 @@ namespace Sphere10.Framework.Tests
         {
             using var stream = new MemoryStream();
             var list = new StreamMappedFixedClusteredList<string>(32, 100, 4000, stream,
-                new StringSerializer(Encoding.UTF8));
+                new StringSerializer());
             Assert.Throws<ArgumentNullException>(() => list.AddRange(null));
             Assert.DoesNotThrow(() => list.AddRange(new string[0]));
         }
@@ -273,7 +273,7 @@ namespace Sphere10.Framework.Tests
         {
             using var stream = new MemoryStream();
             var list = new StreamMappedFixedClusteredList<string>(64, 1000, 1000000, stream,
-                new StringSerializer(Encoding.ASCII));
+                new StringSerializer());
             AssertEx.ListIntegrationTest(list,
                 100,
                 (rng, i) => Enumerable.Range(0, i)

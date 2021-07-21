@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
@@ -22,14 +21,18 @@ namespace Sphere10.Framework {
 		}
 
 		public int CalculateSize(T item) {
-			throw new NotImplementedException();
+			var context = new SerializationContext();
+			SerializeInternal(typeof(T), item, context);
+
+			return (int)context.SizeBytes;
 		}
 
 		public bool TrySerialize(T item, EndianBinaryWriter writer, out int bytesWritten) {
 			try {
-				var bytes = SerializeInternal(typeof(T), item, new SerializationContext(writer));
-				writer.Write(bytes);
-				bytesWritten = bytes.Length;
+				var context = new SerializationContext(writer);
+				SerializeInternal(typeof(T), item, context);
+				bytesWritten = (int)context.SizeBytes;
+
 				return true;
 			} catch (Exception) {
 				bytesWritten = 0;
@@ -60,8 +63,8 @@ namespace Sphere10.Framework {
 			if (propertyValueType.IsPrimitive)
 				return DeserializePrimitive(propertyValueType, context);
 
-			if (propertyValueType == typeof(string))
-				return DeserializeString(context);
+			if (propertyType.IsEnum)
+				return DeserializeEnum(propertyValueType, context);
 
 			if (propertyValueType.IsValueType)
 				return DeserializeValueType(propertyValueType, context);
@@ -114,8 +117,6 @@ namespace Sphere10.Framework {
 			throw new InvalidOperationException($"Exception while deserializing, unknown primitive type {t.Name}");
 		}
 
-		private string DeserializeString(SerializationContext context) => context.Reader.ReadString();
-
 		private object DeserializeCollection(Type collectionType, SerializationContext context) {
 			object list;
 			var reader = context.Reader;
@@ -138,6 +139,7 @@ namespace Sphere10.Framework {
 
 			return list;
 		}
+
 		private Array DeserializeArray(Type collectionType, SerializationContext context) {
 			var count = context.Reader.ReadInt32();
 			var elements = new object[count];
@@ -199,6 +201,7 @@ namespace Sphere10.Framework {
 
 			return instance;
 		}
+
 		private object DeserializeCircularReference(SerializationContext context) {
 			var referenceType = ReadTypeHeader(context);
 			var index = (ushort)DeserializePrimitive(typeof(ushort), context);
@@ -215,138 +218,161 @@ namespace Sphere10.Framework {
 			return instance;
 		}
 
-		private byte[] SerializeInternal(Type propertyType, object value, SerializationContext context) {
-			if (value is null)
-				return SerializeNullValue();
+		private object DeserializeEnum(Type propertyValueType, SerializationContext context) {
+			var enumUnderlyingType = Enum.GetUnderlyingType(propertyValueType);
+			var value = DeserializePrimitive(enumUnderlyingType, context);
+			return Enum.ToObject(propertyValueType, value);
+		}
 
-			var valueType = value.GetType();
+		private void SerializeInternal(Type propertyType, object propertyValue, SerializationContext context) {
+			if (propertyValue is null)
+				SerializePrimitive(Registrations[typeof(NullValue)], context);
+			else {
+				var valueType = propertyValue.GetType();
 
-			if (IsCircularReference(valueType, value, context, out var reference))
-				return SerializeInternal(typeof(CircularReference), reference, context);
+				if (IsCircularReference(valueType, propertyValue, context, out var reference)) {
+					propertyValue = reference;
+					valueType = typeof(CircularReference);
+				}
 
-			var builder = new ByteArrayBuilder();
-			if (RequiresTypeHeader(propertyType)) {
-				builder.Append(CreateTypeHeader(valueType));
+				if (RequiresTypeHeader(propertyType))
+					CreateTypeHeader(valueType, context);
+
+				if (Serializers.TryGetValue(valueType, out var serializer)) {
+					if (context.IsSizing)
+						context.SizeBytes += serializer.CalculateSize(propertyValue);
+					else
+						serializer.Serialize(propertyValue, context.Writer);
+				} else if (valueType.IsEnum)
+					SerializePrimitive(Convert.ChangeType(propertyValue, propertyType.GetEnumUnderlyingType()), context);
+				else if (valueType.IsPrimitive)
+					SerializePrimitive(propertyValue, context);
+				else if (valueType.IsValueType)
+					SerializeValueType(propertyValue, context);
+				else if (valueType.IsCollection())
+					SerializeCollectionType(propertyValue, context);
+				else
+					SerializeReferenceType(propertyValue, context);
+
 			}
+		}
 
-			if (Serializers.TryGetValue(valueType, out var serializer)) {
-				using var stream = new MemoryStream();
-				using var writer = new EndianBinaryWriter(EndianBitConverter.Little, stream);
-				serializer.Serialize(value, writer);
-				return stream.ToArray();
+		private void SerializePrimitive(object boxedPrimitive, SerializationContext context) {
+			if (context.IsSizing) {
+				int size = boxedPrimitive switch {
+					sbyte => sizeof(sbyte),
+					byte => sizeof(byte),
+					short => sizeof(short),
+					ushort => sizeof(ushort),
+					int => sizeof(int),
+					uint => sizeof(uint),
+					long => sizeof(long),
+					ulong => sizeof(ulong),
+					float => sizeof(float),
+					double => sizeof(double),
+					decimal => sizeof(decimal),
+					bool => sizeof(bool),
+					char => sizeof(char),
+					_ => throw new InvalidOperationException("Unknown primitive type")
+				};
+				context.SizeBytes += size;
+			} else {
+				switch (boxedPrimitive) {
+					case sbyte x:
+						context.Writer.Write(x);
+						break;
+					case byte x:
+						context.Writer.Write(x);
+						break;
+					case short x:
+						context.Writer.Write(x);
+						break;
+					case ushort x:
+						context.Writer.Write(x);
+						break;
+					case int x:
+						context.Writer.Write(x);
+						break;
+					case uint x:
+						context.Writer.Write(x);
+						break;
+					case long x:
+						context.Writer.Write(x);
+						break;
+					case ulong x:
+						context.Writer.Write(x);
+						break;
+					case float x:
+						context.Writer.Write(x);
+						break;
+					case double x:
+						context.Writer.Write(x);
+						break;
+					case decimal x:
+						context.Writer.Write(x);
+						break;
+					case bool x:
+						context.Writer.Write(x);
+						break;
+					case char x:
+						context.Writer.Write(x);
+						break;
+					default:
+						throw new InvalidOperationException("Unknown primitive type");
+				}
 			}
-
-			if (valueType.IsPrimitive)
-				builder.Append(SerializePrimitive(value, context));
-			else if (valueType == typeof(string))
-				builder.Append(SerializeString(value as string));
-			else if (valueType.IsValueType)
-				builder.Append(SerializeValueType(value, context));
-			else if (valueType.IsCollection())
-				builder.Append(SerializeCollectionType(value, context));
-			else
-				builder.Append(SerializeReferenceType(value, context));
-
-			return builder.ToArray();
 		}
 
-
-		private byte[] SerializeNullValue() {
-			using var memoryStream = new MemoryStream();
-			using var writer = new EndianBinaryWriter(EndianBitConverter.Little, memoryStream);
-			writer.Write(Registrations[typeof(NullValue)]);
-			return memoryStream.ToArray();
-		}
-
-		private byte[] SerializePrimitive(object boxedPrimitive, SerializationContext context) {
-			return boxedPrimitive switch {
-				sbyte x => Array.ConvertAll(new[] { x }, input => (byte)input),
-				byte x => new[] { x },
-				short x => context.BitConverter.GetBytes(x),
-				ushort x => context.BitConverter.GetBytes(x),
-				int x => context.BitConverter.GetBytes(x),
-				uint x => context.BitConverter.GetBytes(x),
-				long x => context.BitConverter.GetBytes(x),
-				ulong x => context.BitConverter.GetBytes(x),
-				float x => context.BitConverter.GetBytes(x),
-				double x => context.BitConverter.GetBytes(x),
-				decimal x => context.BitConverter.GetBytes(x),
-				bool x => context.BitConverter.GetBytes(x),
-				char x => context.BitConverter.GetBytes(x),
-				_ => throw new InvalidOperationException("Unknown primitive type")
-			};
-		}
-
-		private byte[] SerializeReferenceType(object value, SerializationContext context) {
-			using var stream = new MemoryStream();
-			using var writer = new EndianBinaryWriter(context.BitConverter, stream);
+		private void SerializeReferenceType(object value, SerializationContext context) {
 			var type = value.GetType();
-
 			context.AddSerializedObject(value);
-
 			foreach (var property in GetSerializableProperties(type)) {
-				writer.Write(SerializeInternal(property.PropertyType, property.FastGetValue(value), context));
+				SerializeInternal(property.PropertyType, property.FastGetValue(value), context);
 			}
-
-			return stream.ToArray();
 		}
 
-		private byte[] SerializeValueType(object value, SerializationContext context) {
-			using var stream = new MemoryStream();
-			using var writer = new EndianBinaryWriter(context.BitConverter, stream);
+		private void SerializeValueType(object value, SerializationContext context) {
 			var valueType = value.GetType();
-
 			foreach (var property in GetSerializableProperties(valueType)) {
-				writer.Write(SerializeInternal(property.PropertyType, property.FastGetValue(value), context));
+				SerializeInternal(property.PropertyType, property.FastGetValue(value), context);
 			}
-
-			return stream.ToArray();
 		}
 
-		private byte[] SerializeString(string value) {
-			using var stream = new MemoryStream();
-			using var writer = new EndianBinaryWriter(EndianBitConverter.Little, stream);
-			writer.Write(value);
-			return stream.ToArray();
-		}
-
-		private byte[] SerializeCollectionType(object value, SerializationContext context) {
+		private void SerializeCollectionType(object value, SerializationContext context) {
 			var listType = value.GetType();
 
 			if (value is IDictionary dictionary) {
-				return SerializeDictionary(dictionary, context);
-			}
-			
-			if (value is IEnumerable list) {
-				using var itemStream = new MemoryStream();
-				using var itemStreamWriter = new EndianBinaryWriter(context.BitConverter, itemStream);
-				var count = 0;
+				SerializeDictionary(dictionary, context);
+			} else if (value is IEnumerable list) {
 				var enumerator = list.GetEnumerator();
+
+				int count = 0;
+				while (enumerator.MoveNext())
+					count++;
+
+				SerializePrimitive(count, context);
+
+				enumerator.Reset();
 				while (enumerator.MoveNext()) {
 					var itemType = listType.IsGenericType ? listType.GenericTypeArguments[0] : enumerator.Current!.GetType();
-					itemStreamWriter.Write(SerializeInternal(itemType, enumerator.Current, context));
-					count++;
+					SerializeInternal(itemType, enumerator.Current, context);
 				}
-
-				return Tools.Array.Concat<byte>(SerializePrimitive(count, context), itemStream.ToArray());
 			} else
 				throw new InvalidOperationException("Could not serialize object as it doesn't implement IEnumerable.");
 		}
-		private byte[] SerializeDictionary(IDictionary dictionary, SerializationContext context) {
 
-			var stream = new MemoryStream();
-			var writer = new EndianBinaryWriter(EndianBitConverter.Little, stream);
-			writer.Write(dictionary.Count);
+		private void SerializeDictionary(IDictionary dictionary, SerializationContext context) {
+			SerializePrimitive(dictionary.Count, context);
+
 			var enumerator = dictionary.GetEnumerator();
 
 			while (enumerator.MoveNext()) {
 				var key = enumerator.Key;
 				var val = enumerator.Value;
 
-				writer.Write(SerializeInternal(key!.GetType(), key, context));
-				writer.Write(SerializeInternal(val.GetType(), val, context));
+				SerializeInternal(key!.GetType(), key, context);
+				SerializeInternal(val.GetType(), val, context);
 			}
-			return stream.ToArray();
 		}
 
 		private Type ReadTypeHeader(SerializationContext context) {
@@ -387,6 +413,16 @@ namespace Sphere10.Framework {
 			       || propertyType == typeof(CircularReference);
 		}
 
+		/// <summary>
+		/// Determines whether <paramref name="value"/> is a reference to an object that has already been
+		/// seen during serialization. If so, out value contains a CircularReference struct to be serialized instead.
+		/// returns false if object has not been serialized already.
+		/// </summary>
+		/// <param name="valueType"></param>
+		/// <param name="value"></param>
+		/// <param name="context"></param>
+		/// <param name="circularReference"></param>
+		/// <returns></returns>
 		private bool IsCircularReference(Type valueType, object value, SerializationContext context, out CircularReference? circularReference) {
 			circularReference = default;
 			if (valueType.IsClass) {
@@ -402,48 +438,114 @@ namespace Sphere10.Framework {
 				return false;
 		}
 
-		private byte[] CreateTypeHeader(Type valueType) {
-			var stream = new MemoryStream();
-			var writer = new EndianBinaryWriter(EndianBitConverter.Little, stream);
-
+		private void CreateTypeHeader(Type valueType, SerializationContext context) {
 			if (valueType.IsArray) {
 				if (valueType.GetArrayRank() > 1)
 					throw new InvalidOperationException("Multi-dimension arrays are not supported.");
 
-				writer.Write(GetTypeIndex(typeof(Array)));
-				writer.Write(GetTypeIndex(valueType.GetElementType()));
+				SerializePrimitive(GetTypeIndex(typeof(Array)), context);
+				SerializePrimitive(GetTypeIndex(valueType.GetElementType()), context);
 
 			} else
-				writer.Write(GetTypeIndex(valueType.IsGenericType ? valueType.GetGenericTypeDefinition() : valueType));
+				SerializePrimitive(GetTypeIndex(valueType.IsGenericType ? valueType.GetGenericTypeDefinition() : valueType), context);
 
 			if (valueType.IsGenericType) {
 				foreach (var typeArgument in valueType.GenericTypeArguments) {
-					writer.Write(GetTypeIndex(typeArgument));
+					SerializePrimitive(GetTypeIndex(typeArgument), context);
 				}
 			}
-
-			return stream.ToArray();
 		}
 
 
 		private class SerializationContext {
 
+			/// <summary>
+			/// backing field for length property used when calculating item size.
+			/// </summary>
+			private long _size;
+
+			/// <summary>
+			/// the writer's inner stream start position used to determine how many bytes have been written.
+			/// </summary>
+			private long _startPosition;
+
+			/// <summary>
+			/// ref dictionary.
+			/// </summary>
 			private readonly Dictionary<Reference<object>, int> _referenceDictionary = new();
 
+			/// <summary>
+			/// Init new context with reader for deserialization.
+			/// </summary>
+			/// <param name="reader"></param>
+			/// <exception cref="ArgumentNullException"></exception>
 			public SerializationContext(EndianBinaryReader reader) {
 				Reader = reader ?? throw new ArgumentNullException(nameof(reader));
 			}
 
+			/// <summary>
+			/// Init new context with writer for serialization.
+			/// </summary>
+			/// <param name="writer"></param>
+			/// <exception cref="ArgumentNullException"></exception>
 			public SerializationContext(EndianBinaryWriter writer) {
 				Writer = writer ?? throw new ArgumentNullException(nameof(writer));
+				_startPosition = writer.BaseStream.Position;
 			}
 
+			/// <summary>
+			/// Init without reader/writer, count bytes only.
+			/// </summary>
+			public SerializationContext() {
+			}
+
+			/// <summary>
+			/// Gets the stream writer, null during deserialization.
+			/// </summary>
 			public EndianBinaryWriter Writer { get; }
 
+			/// <summary>
+			/// Gets the stream reader, null during serialization. 
+			/// </summary>
 			public EndianBinaryReader Reader { get; }
 
+			/// <summary>
+			/// Gets the bit converter for the supplied reader/writer.
+			/// </summary>
 			public EndianBitConverter BitConverter => Writer.BitConverter ?? Reader.BitConverter;
 
+			/// <summary>
+			/// Gets a value indicating whether this serialization context is for sizing only.
+			/// </summary>
+			public bool IsSizing => Writer is null && Reader is null;
+
+			/// <summary>
+			/// Gets the size of the item being serialized in bytes.
+			/// </summary>
+			public long SizeBytes {
+				get {
+					if (IsSizing)
+						return _size;
+					else
+						return Writer?.BaseStream.Position - _startPosition ?? 0;
+				}
+				set {
+					if (IsSizing)
+						_size = value;
+					else
+						throw new InvalidOperationException("Setting size is not supported during serialization");
+				}
+			}
+
+
+			/// <summary>
+			/// Retrieve an object stored in the reference dictionary. Objects that have already been serialized or deserialized are in the reference
+			/// dictionary and may be resolved by their type and their logical index for use in circular reference scenarios.
+			/// </summary>
+			/// <param name="type"> the object type</param>
+			/// <param name="index"> the objects index, the order its been added</param>
+			/// <returns></returns>
+			/// <exception cref="InvalidOperationException"> thrown if no object of the supplied type with the supplied index is stored in the ref dict.</exception>
 			public object GetObjectByIndex(Type type, int index) {
 				return _referenceDictionary.FirstOrDefault(x => x.Key.Object.GetType() == type && x.Value == index).Key.Object
 				       ?? throw new InvalidOperationException($"No reference stored for type {type.Name} with index {index}");

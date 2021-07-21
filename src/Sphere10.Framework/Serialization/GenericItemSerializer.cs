@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Text;
 
 namespace Sphere10.Framework {
 	public abstract class GenericItemSerializer {
@@ -32,6 +33,7 @@ namespace Sphere10.Framework {
 			Register(new DateTimeSerializer());
 			Register(new DateTimeOffsetSerializer());
 			Register(new DecimalSerializer());
+			Register(new StringSerializer());
 		}
 
 		public static void Register<T>() where T : new() => Register<T>(Registrations.Count + 1);

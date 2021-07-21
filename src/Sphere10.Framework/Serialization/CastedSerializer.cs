@@ -39,12 +39,10 @@ namespace Sphere10.Framework {
 			try {
 				item = _concreteSerializer.Deserialize(byteSize, reader);
 				return true;
-
-			} catch (Exception e) {
+			} catch (Exception) {
 				item = default;
 				return false;
 			}
 		}
 	}
-
 }

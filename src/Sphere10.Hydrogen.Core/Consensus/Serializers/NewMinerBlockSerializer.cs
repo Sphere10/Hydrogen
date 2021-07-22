@@ -49,6 +49,7 @@ namespace Sphere10.Hydrogen.Core.Consensus.Serializers {
 			}
 		}
 
+
 		public override bool TryDeserialize(int byteSize, EndianBinaryReader reader, out NewMinerBlock item) {
 			try {
 				var block = new NewMinerBlock();

@@ -1,7 +1,12 @@
 ﻿using System.IO;
-using System.Linq;
 
 namespace Sphere10.Framework {
+	
+	/// <summary>
+	/// Variable-sized integer. A given ulong when converted to bytes, will take only the required
+	/// number of bytes plus a header. Values less than 0xFC will require only a single byte and no header. Use when
+	/// serializing variable ulong values.
+	/// </summary>
 	public class VarInt {
 
 		private readonly ulong _value;
@@ -12,6 +17,11 @@ namespace Sphere10.Framework {
 			_value = value;
 		}
 
+		/// <summary>
+		/// Read a <see cref="VarInt"/> value from a stream.
+		/// </summary>
+		/// <param name="stream"> a stream</param>
+		/// <returns> new var int with value from the stream</returns>
 		public static VarInt FromStream(Stream stream) {
 			var reader = new EndianBinaryReader(BitConverter, stream);
 			var prefix = stream.ReadByte();
@@ -29,6 +39,10 @@ namespace Sphere10.Framework {
 			return new VarInt(reader.ReadUInt64());
 		}
 
+		/// <summary>
+		/// Encodes the current value into a byte array. 
+		/// </summary>
+		/// <returns> varint as bytes</returns>
 		public byte[] ToBytes() {
 
 			var builder = new ByteArrayBuilder();
@@ -52,6 +66,10 @@ namespace Sphere10.Framework {
 
 		public static implicit operator ulong(VarInt v) => v._value;
 		
+		/// <summary>
+		/// Returns varint as ulong.
+		/// </summary>
+		/// <returns></returns>
 		public ulong ToLong() => _value;
 	}
 }

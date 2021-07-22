@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using AutoFixture;
 using FluentAssertions;
 using NUnit.Framework;
@@ -15,30 +14,7 @@ namespace Sphere10.Framework.Tests
 
         public GenericItemSerializerTests()
         {
-            NullTestObject CreateNullTestObj()
-            {
-                return new()
-                {
-                    U = null,
-                    V = null
-                };
-            }
-
-            CollectionTestObject CreateCollectionTestObj()
-            {
-                return new()
-                {
-                    A = _fixture.Create<List<DateTime>>(),
-                    B = _fixture.Build<ArrayList>()
-                        .FromFactory(() => new ArrayList(_fixture.CreateMany<PrimitiveTestObject>().ToArray()))
-                        .Create(),
-                    C = _fixture.Create<PrimitiveTestObject[]>()
-                };
-            }
-
-            _fixture.Customize<NullTestObject>(x => x.FromFactory(CreateNullTestObj));
-            _fixture.Customize<CollectionTestObject>(x => x.FromFactory(CreateCollectionTestObj));
-
+            GenericItemSerializer.Register<EnumObj>();
             GenericItemSerializer.Register<SubClassObj>();
             GenericItemSerializer.Register(typeof(CircularReferenceObj));
             GenericItemSerializer.Register(typeof(GenericTypeObj<,>));
@@ -95,9 +71,11 @@ namespace Sphere10.Framework.Tests
             var serializer = GenericItemSerializer<CollectionTestObject>.Default;
             using var memoryStream = new MemoryStream();
             var writer = new EndianBinaryWriter(EndianBitConverter.Little, memoryStream);
+            var size = serializer.CalculateSize(item);
             var byteCount = serializer.Serialize(item, writer);
 
             Assert.AreEqual(memoryStream.Length, byteCount);
+            Assert.AreEqual(size, byteCount);
 
             memoryStream.Seek(0, SeekOrigin.Begin);
             var reader = new EndianBinaryReader(EndianBitConverter.Little, memoryStream);
@@ -109,7 +87,7 @@ namespace Sphere10.Framework.Tests
         [Test]
         public void NullObjectSerializeDeserialize()
         {
-            var item = new NullTestObject()
+            var item = new NullTestObject
             {
                 U = null,
                 V = null
@@ -183,7 +161,6 @@ namespace Sphere10.Framework.Tests
 
             parent.A.A = parent;
 
-
             var serializer = GenericItemSerializer<CircularReferenceObj>.Default;
 
             using var memoryStream = new MemoryStream();
@@ -235,9 +212,9 @@ namespace Sphere10.Framework.Tests
                 _fixture.Create<PrimitiveTestObject>(),
                 _fixture.Create<SubClassObj>()
             };
-            
+
             var serializer = GenericItemSerializer<List<PrimitiveTestObject>>.Default;
-            
+
             var stream = new MemoryStream();
             serializer.Serialize(list, new EndianBinaryWriter(EndianBitConverter.Little, stream));
             stream.Seek(0, SeekOrigin.Begin);
@@ -246,13 +223,13 @@ namespace Sphere10.Framework.Tests
 
             item.Should().BeEquivalentTo(list);
         }
-        
+
         [Test]
         public void SubClassSerializeDeserialize()
         {
             var serializer = GenericItemSerializer<PrimitiveTestObject>.Default;
             var item = _fixture.Create<SubClassObj>();
-            
+
             var stream = new MemoryStream();
             serializer.Serialize(item, new EndianBinaryWriter(EndianBitConverter.Little, stream));
             stream.Seek(0, SeekOrigin.Begin);
@@ -260,6 +237,34 @@ namespace Sphere10.Framework.Tests
             var deserialized = serializer.Deserialize(0, reader);
 
             deserialized.Should().BeEquivalentTo(item);
+        }
+
+        [Test]
+        public void CalculateSizeOfObject()
+        {
+            var item = _fixture.Create<PrimitiveTestObject>();
+            var serializer = GenericItemSerializer<PrimitiveTestObject>.Default;
+
+            using var memoryStream = new MemoryStream();
+            var writer = new EndianBinaryWriter(EndianBitConverter.Little, memoryStream);
+            var size = serializer.CalculateSize(item);
+            Assert.AreEqual(0, memoryStream.Length);
+            var serializedSize = serializer.Serialize(item, writer);
+            Assert.AreEqual(serializedSize, size);
+        }
+
+        [Test]
+        public void EnumSerializeDeserialize()
+        {
+            var item = _fixture.Create<EnumObj>();
+            var serializer = GenericItemSerializer<EnumObj>.Default;
+
+            using var memoryStream = new MemoryStream();
+            var writer = new EndianBinaryWriter(EndianBitConverter.Little, memoryStream);
+            var size = serializer.CalculateSize(item);
+            Assert.AreEqual(0, memoryStream.Length);
+            var serializedSize = serializer.Serialize(item, writer);
+            Assert.AreEqual(serializedSize, size);
         }
     }
 
@@ -293,9 +298,9 @@ namespace Sphere10.Framework.Tests
     {
         public List<DateTime> A { get; set; }
 
-        public ArrayList B { get; set; }
-
-        public PrimitiveTestObject[] C { get; set; }
+         public ArrayList B { get; set; }
+        
+         public PrimitiveTestObject[] C { get; set; }
 
         public Dictionary<int, PrimitiveTestObject> D { get; set; }
 
@@ -304,7 +309,7 @@ namespace Sphere10.Framework.Tests
         public byte[] F { get; set; }
 
         public List<PrimitiveTestObject> G { get; set; }
-        
+
         public SortedSet<bool> H { get; set; }
     }
 
@@ -353,6 +358,23 @@ namespace Sphere10.Framework.Tests
 
     internal class SubClassObj : PrimitiveTestObject
     {
-        public int  X { get; set; }
+        public int X { get; set; }
+    }
+
+    
+    internal class EnumObj
+    {
+        [Flags]
+        internal enum TestEnum : byte
+        {
+            A = 1,
+            B = 2,
+            C = 3,
+            D = 4
+        }
+
+        public TestEnum A { get; set; }
+        
+        public TestEnum B { get; set; }
     }
 }

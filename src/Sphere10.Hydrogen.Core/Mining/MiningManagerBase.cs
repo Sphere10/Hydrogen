@@ -36,6 +36,10 @@ namespace Sphere10.Hydrogen.Core.Mining {
 				var now = DateTime.UtcNow;
 				var timeRange = new ValueRange<DateTime>(now, now + Config.RTTInterval);
 				var block = new NewMinerBlock {
+					Version = 0x00010100,
+					BlockPolicy = new byte[32],
+					KernelID = new byte[32],
+					Signature = new byte[32],
 					UnixTime = (uint)DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
 					MinerTag = minerTag,
 					Nonce = (uint)Tools.Maths.RNG.Next(),

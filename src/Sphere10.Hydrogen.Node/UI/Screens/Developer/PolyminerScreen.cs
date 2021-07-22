@@ -98,12 +98,76 @@ namespace Sphere10.Hydrogen.Node.UI {
 					Height = Dim.Fill()
 				};
 				this.Add(statsFrame);
+
+				const int labelWidth = 15;
+				const int valueWidth = 6;
+				var targetLabel = new Label("Target: ") { X = 0, Y = 0, Width = labelWidth, TextAlignment = TextAlignment.Right };
+				var targetValue = new Label("N/A") { X = Pos.Right(targetLabel), Y = 0, AutoSize = false, Width = valueWidth };
+				var blockCountLabel = new Label("Blocks: ") { X = Pos.Right(targetValue), Y = 0, Width = labelWidth, TextAlignment = TextAlignment.Right };
+				var blockCountValue = new Label("0") { X = Pos.Right(blockCountLabel), Y = 0, Width = valueWidth, TextAlignment = TextAlignment.Left };
+				statsFrame.Add(targetLabel, targetValue, blockCountLabel, blockCountValue);
+
+				var avgBlockTimeLabel = new Label("Avg: ") { X = 0, Y = 1, Width = labelWidth, TextAlignment = TextAlignment.Right };
+				var avgBlockTimeValue = new Label("N/A") { X = Pos.Right(avgBlockTimeLabel), Y = 1, AutoSize = false, Width = valueWidth };
+				var stdBlockTimeLabel = new Label("Std: ") { X = Pos.Right(avgBlockTimeValue), Y = 1, Width = labelWidth, TextAlignment = TextAlignment.Right };
+				var stdBlockTimeValue = new Label("N/A") { X = Pos.Right(stdBlockTimeLabel), Y = 1, AutoSize = false, Width = valueWidth };
+				var minMaxBlockTimeLabel = new Label("Min/Max: ") { X = Pos.Right(stdBlockTimeValue), Y = 1, Width = labelWidth, TextAlignment = TextAlignment.Right };
+				var minMaxBlockTimeValue = new Label("N/A") { X = Pos.Right(minMaxBlockTimeLabel), Y = 1, AutoSize = false, Width = Dim.Fill() };
+				statsFrame.Add(avgBlockTimeLabel, avgBlockTimeValue, stdBlockTimeLabel, stdBlockTimeValue, minMaxBlockTimeLabel, minMaxBlockTimeValue);
+
+				var last5AvgBlockTimeLabel = new Label("Last 5 Avg: ") { X = 0, Y = 2, Width = labelWidth, TextAlignment = TextAlignment.Right };
+				var last5AvgBlockTimeValue = new Label("N/A") { X = Pos.Right(last5AvgBlockTimeLabel), Y = 2, Width = valueWidth, TextAlignment = TextAlignment.Left };
+				var last5StdBlockTimeLabel = new Label("Std: ") { X = Pos.Right(last5AvgBlockTimeValue), Y = 2, Width = labelWidth, TextAlignment = TextAlignment.Right };
+				var last5StdBlockTimeValue = new Label("N/A") { X = Pos.Right(last5StdBlockTimeLabel), Y = 2, Width = valueWidth, TextAlignment = TextAlignment.Left };
+				var last5MinMaxBlockTimeLabel = new Label("Min/Max: ") { X = Pos.Right(last5StdBlockTimeValue), Y = 2, Width = labelWidth, TextAlignment = TextAlignment.Right };
+				var last5MinMaxBlockTimeValue = new Label("N/A") { X = Pos.Right(last5MinMaxBlockTimeLabel), Y = 2, Width = Dim.Fill(), TextAlignment = TextAlignment.Left };
+				statsFrame.Add(last5AvgBlockTimeLabel, last5AvgBlockTimeValue, last5StdBlockTimeLabel, last5StdBlockTimeValue, last5MinMaxBlockTimeLabel, last5MinMaxBlockTimeValue);
+
+				var last10AvgBlockTimeLabel = new Label("Last 10 Avg: ") { X = 0, Y = 3, Width = labelWidth, TextAlignment = TextAlignment.Right };
+				var last10AvgBlockTimeValue = new Label("N/A") { X = Pos.Right(last10AvgBlockTimeLabel), Y = 3, AutoSize = false, Width = valueWidth, TextAlignment = TextAlignment.Left };
+				var last10StdBlockTimeLabel = new Label("Std: ") { X = Pos.Right(last10AvgBlockTimeValue), Y = 3, Width = labelWidth, TextAlignment = TextAlignment.Right };
+				var last10StdBlockTimeValue = new Label("N/A") { X = Pos.Right(last10StdBlockTimeLabel), Y = 3, AutoSize = false, Width = valueWidth, TextAlignment = TextAlignment.Left };
+				var last10MinMaxBlockTimeLabel = new Label("Min/Max: ") { X = Pos.Right(last10StdBlockTimeValue), Y = 3, Width = labelWidth, TextAlignment = TextAlignment.Right };
+				var last10MinMaxBlockTimeValue = new Label("N/A") { X = Pos.Right(last10MinMaxBlockTimeLabel), Y = 3, Width = Dim.Fill(), TextAlignment = TextAlignment.Left };
+				statsFrame.Add(last10AvgBlockTimeLabel, last10AvgBlockTimeValue, last10StdBlockTimeLabel, last10StdBlockTimeValue, last10MinMaxBlockTimeLabel, last10MinMaxBlockTimeValue);
+
+				var last100AvgBlockTimeLabel = new Label("Last 100 Avg: ") { X = 0, Y = 4, Width = labelWidth, TextAlignment = TextAlignment.Right };
+				var last100AvgBlockTimeValue = new Label("N/A") { X = Pos.Right(last100AvgBlockTimeLabel), Y = 4, Width = valueWidth, TextAlignment = TextAlignment.Left };
+				var last100StdBlockTimeLabel = new Label("Std: ") { X = Pos.Right(last100AvgBlockTimeValue), Y = 4, Width = labelWidth, TextAlignment = TextAlignment.Right };
+				var last100StdBlockTimeValue = new Label("N/A") { X = Pos.Right(last100StdBlockTimeLabel), Y = 4, AutoSize = false, Width = valueWidth, TextAlignment = TextAlignment.Left };
+				var last100MinMaxBlockTimeLabel = new Label("Min/Max: ") { X = Pos.Right(last100StdBlockTimeValue), Y = 4, Width = labelWidth, TextAlignment = TextAlignment.Right };
+				var last100MinMaxBlockTimeValue = new Label("N/A") { X = Pos.Right(last100MinMaxBlockTimeLabel), Y = 4, Width = Dim.Fill(), TextAlignment = TextAlignment.Left };
+				statsFrame.Add(last100AvgBlockTimeLabel, last100AvgBlockTimeValue, last100StdBlockTimeLabel, last100StdBlockTimeValue, last100MinMaxBlockTimeLabel, last100MinMaxBlockTimeValue);
+
+				// Handlers for stats update
+				this.Model.Started += manager => {
+					manager.SolutionSubmited += (o, puzzle, arg3) => {
+						var testManager = (RpcMiningManager)manager;
+						targetValue.Text = EndianBitConverter.Little.GetBytes(testManager.MiningTarget).ToHexString(true);
+						blockCountValue.Text = $"{testManager.BlockHeight}";
+						avgBlockTimeValue.Text = $"{testManager.AllStats.Mean:0.##}";
+						stdBlockTimeValue.Text = $"{testManager.AllStats.SampleStandardDeviation:0.##}";
+						minMaxBlockTimeValue.Text = $"{testManager.AllStats.Minimum:0.##} / {testManager.AllStats.Maximum:0.##}";
+
+						last5AvgBlockTimeValue.Text = $"{testManager.Last5Stats.Mean:0.##}";
+						last5StdBlockTimeValue.Text = $"{testManager.Last5Stats.SampleStandardDeviation:0.##}";
+						last5MinMaxBlockTimeValue.Text = $"{testManager.Last5Stats.Minimum:0.##} / {testManager.Last5Stats.Maximum:0.##}";
+
+						last10AvgBlockTimeValue.Text = $"{testManager.Last10Stats.Mean:0.##}";
+						last10StdBlockTimeValue.Text = $"{testManager.Last10Stats.SampleStandardDeviation:0.##}";
+						last10MinMaxBlockTimeValue.Text = $"{testManager.Last10Stats.Minimum:0.##} / {testManager.Last10Stats.Maximum:0.##}";
+
+						last100AvgBlockTimeValue.Text = $"{testManager.Last100Stats.Mean:0.##}";
+						last100StdBlockTimeValue.Text = $"{testManager.Last100Stats.SampleStandardDeviation:0.##}";
+						last100MinMaxBlockTimeValue.Text = $"{testManager.Last100Stats.Minimum:0.##} / {testManager.Last100Stats.Maximum:0.##}";
+					};
+				};
 			}
 
 			public override void OnModelChanged() {
 				base.OnModelChanged();
 				this.Model.Started += manager => {
-					_outputLogger.Info($"RPC mining server started on port {Model.RpcServerPort}");
+					_outputLogger.Info($"RPC mining server started on port {Model.RpcServerPort} with BlockTime {this.Model.BlockTime}");
 					manager.SolutionSubmited += (o, puzzle, result) => _outputLogger.Info($"Miner: '{puzzle.Block.MinerTag}', Block: {puzzle.ComputeWork().ToHexString(true)}, Result: {result}");
 					(manager as RpcMiningManager).Logger = _outputLogger;
 				};
@@ -133,8 +197,7 @@ namespace Sphere10.Hydrogen.Node.UI {
 
 		//management code
 		public class MiningServerModel {
-			//private const int DefaultBlockTime = 120;
-			private const int DefaultBlockTime = 20;
+			private const int DefaultBlockTime = 5;
 			private IMiningManager _miningManager;
 
 			public event EventHandlerEx<IMiningManager> Started;
@@ -146,7 +209,7 @@ namespace Sphere10.Hydrogen.Node.UI {
 
 			public int RelaxationTime { get; set; } = 20 * DefaultBlockTime;
 
-			public int RTTInterval { get; set; } = 5;
+			public int RTTInterval { get; set; } = 2;
 
 			public bool IsStarted { get; private set; }
 

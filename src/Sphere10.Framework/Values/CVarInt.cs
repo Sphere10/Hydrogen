@@ -3,7 +3,9 @@ using System.IO;
 
 namespace Sphere10.Framework.Values {
 	
-	//Based on CompactVarInt LEB128 compression from NBitcoin.
+	//Compact Variable integer - LEB128 compression based on NBitcoin CompactVarInt. Useful for 
+	// serializing small integers in a single byte. Larger integers may also be encoded but will be 
+	// less efficient than other formats.
 	public class CVarInt {
 		private readonly ulong _value;
 		private readonly int _size;
@@ -13,6 +15,12 @@ namespace Sphere10.Framework.Values {
 			_size = size;
 		}
 
+		/// <summary>
+		/// Read <see cref="CVarInt"/> from stream.
+		/// </summary>
+		/// <param name="size"> value size e.g. sizeof(uint)</param>
+		/// <param name="stream"> stream to read value from</param>
+		/// <returns> cvarint</returns>
 		public static CVarInt FromStream(int size, Stream stream) {
 			ulong n = 0;
 			while (true)
@@ -29,6 +37,10 @@ namespace Sphere10.Framework.Values {
 			return new CVarInt(n, size);
 		}
 
+		/// <summary>
+		/// encodes the cvarint value as bytes.
+		/// </summary>
+		/// <returns></returns>
 		public byte[] ToBytes() {
 			var n = _value;
 			Span<byte> tmp = stackalloc byte[(_size * 8 + 6) / 7];

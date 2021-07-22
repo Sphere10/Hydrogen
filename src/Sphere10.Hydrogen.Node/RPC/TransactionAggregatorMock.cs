@@ -17,23 +17,18 @@ namespace Sphere10.Hydrogen.Core.Mining {
 	public class TransactionAggregatorMock : IDisposable {
 		//protected Timer NotifyTimeTimer;
 		protected Timer FakeTRansactionTimer;
+		protected Timer DelayNotify;
 		protected UInt64 TransactionSequence = 0;
 		protected SynchronizedList<BlockChainTransaction> Pendings = new SynchronizedList<BlockChainTransaction>();
 		protected IMiningBlockProducer BlockProducer;
-		protected TimeSpan NotifyTimeSpan;
 		protected ulong TransactionCountNotifyLastThresold = 0;
-		//Note: this mock aggregator does not sent new work when there is no new transactions after a certain amount of time
-		//		And it does not stop accepting transactions ever.
-		//public ulong TransactionCountNotifyThresold { get; set; } = 100;
+		protected int BlockTime { get; set; } = 10;
 		public ulong TransactionCountNotifyThresold { get; set; } = 7;
-		public TransactionAggregatorMock(int blockTime, IMiningBlockProducer blockProducer) {
+		public TransactionAggregatorMock(int blockTimeSec, IMiningBlockProducer blockProducer) {
 			BlockProducer = blockProducer;
-			NotifyTimeSpan = TimeSpan.FromSeconds(blockTime/10);
+			BlockTime = blockTimeSec;
 
-			if (NotifyTimeSpan.TotalSeconds < 5)
-				NotifyTimeSpan = TimeSpan.FromSeconds(5);
-
-			FakeTRansactionTimer = new Timer(this.FakeOnNewTransaction, this, 50, 30000);
+			FakeTRansactionTimer = new Timer(this.FakeOnNewTransaction, this, 1000, 30000);
 			blockProducer.OnBlockAccepted += (trxs) => PublishedTransactions(trxs);
 		}
 
@@ -42,13 +37,7 @@ namespace Sphere10.Hydrogen.Core.Mining {
 		}
 
 		public void PublishedTransactions(SynchronizedList<BlockChainTransaction> publishedTrx) {
-			var _oldCnt = Pendings.Count;
-			//purge published transaction from pending list
-			foreach(var pt in publishedTrx) {
-				var idx = Pendings.IndexOf(pt);
-				if (idx != -1)
-					Pendings.RemoveAt(idx);
-			}
+			//OnResendBlock(this);
 		}
 
 		public SynchronizedList<BlockChainTransaction> TakeSnapshot() {
@@ -66,21 +55,23 @@ namespace Sphere10.Hydrogen.Core.Mining {
 			trx.TimeStamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
 			Pendings.Add(trx);
 
-			var nextTrxTime = Tools.Maths.RNG.Next(100, 300);
-			//Debug.WriteLine(string.Format("{0:yyyy-MM-dd HH:mm:ss}: ", DateTime.Now) + $": New transaction {Pendings.Count}. Next in {nextTrxTime} ms");
-			if (currentSequence - TransactionCountNotifyLastThresold > TransactionCountNotifyThresold) {
-				TransactionCountNotifyLastThresold = currentSequence;
-				NotifyNewBlock();
-			}
+			NotifyNewBlock();
 
 			//randomly spitt the next transaction
-			FakeTRansactionTimer.Change((int)nextTrxTime, (int)30000);
+			FakeTRansactionTimer.Change((int)BlockTime * 1000, (int)30000);
 		}
 
 		protected void NotifyNewBlock() {
 			BlockProducer.NotifyNewBlock();
 		}
 
+		protected void OnResendBlock(Object _this) {
+			if (DelayNotify != null) {
+				BlockProducer.NotifyNewBlock();
+				DelayNotify?.Dispose();
+				DelayNotify = null;
+			}
+		}
 		protected void FakeOnNewTransaction(Object _this) {
 			(_this as TransactionAggregatorMock).OnNewTransaction(new BlockChainTransaction { From = Tools.Text.GenerateRandomString(32), To = Tools.Text.GenerateRandomString(32), Amount = (ulong)Tools.Maths.RNG.Next(), Fees = (ulong)Tools.Maths.RNG.Next() });
 		}

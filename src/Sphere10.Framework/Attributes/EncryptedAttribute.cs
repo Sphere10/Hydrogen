@@ -13,15 +13,12 @@
 
 using System;
 using System.IO;
-using System.Reflection;
 using System.Text;
-
-
 
 namespace Sphere10.Framework {
 	public class EncryptedAttribute : Attribute {
-		[Obfuscation]
-		private const string SharedSecret = "92748AC3-7B85-4B56-8672-FBB616022BA0";
+
+		public static string ApplicationSharedSecret = null;
 
 		public EncryptedAttribute() {
 			Policy = EncryptionSaltPolicy.Custom;
@@ -33,15 +30,21 @@ namespace Sphere10.Framework {
 		public string Pepper { get; set; }
 
 		public virtual string Encrypt(string value) {
+			if (string.IsNullOrEmpty(ApplicationSharedSecret))
+				throw new InvalidOperationException("Application secret was not set");
+
 			var salt = CalculateSalt() ?? string.Empty;
 			var pepper = Pepper ?? string.Empty;
-			return Tools.Crypto.EncryptStringAES(value, SharedSecret, salt + pepper);
+			return Tools.Crypto.EncryptStringAES(value, ApplicationSharedSecret, salt + pepper);
 		}
 
 		public virtual string Decrypt(string value) {
+			if (string.IsNullOrEmpty(ApplicationSharedSecret))
+				throw new InvalidOperationException("Application secret was not set");
+
 			var salt = CalculateSalt() ?? string.Empty;
 			var pepper = Pepper ?? string.Empty;
-			return Tools.Crypto.DecryptStringAES(value, SharedSecret, salt + pepper);
+			return Tools.Crypto.DecryptStringAES(value, ApplicationSharedSecret, salt + pepper);
 		}
 
 		protected string CalculateSalt() {
@@ -106,7 +109,7 @@ namespace Sphere10.Framework {
 		}
 
 		protected virtual string GetCustomSaltValue() {
-			return Pepper ?? string.Empty;
+			return Pepper;
 		}
 		
 	}

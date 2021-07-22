@@ -11,26 +11,27 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
+
+#define USE_FAST_REFLECTION 
+
+using Sphere10.Framework.FastReflection;
 using System;
 using System.Linq;
 using System.Reflection;
 
-
-
 namespace Sphere10.Framework {
-
 
 	public static class ObjectEncryptor {
 
         public static void DecryptMembers(object obj) {
-            ApplyInternal(obj, (attr, val) => attr.Decrypt(val), "decrypt");
+            ApplyInternal(obj, (attr, val) => attr.Decrypt(val));
         }
 
         public static void EncryptMembers(object obj) {
-            ApplyInternal(obj, (attr, val) => attr.Encrypt(val), "encrypt");
+            ApplyInternal(obj, (attr, val) => attr.Encrypt(val));
         }
 
-        private static void ApplyInternal(object obj, Func<EncryptedAttribute, string, string> func, string action) {
+        private static void ApplyInternal(object obj, Func<EncryptedAttribute, string, string> func) {
             var bindingFlags = BindingFlags.Instance | BindingFlags.FlattenHierarchy | BindingFlags.Public | BindingFlags.SetField;
 	        // HS: Removed 2019-02-19, .NET Standard 2.0 assume has unrestricted
 	        //if (Tools.CodeAccessSecurity.HasUnrestrictedFeatureSet)
@@ -42,10 +43,10 @@ namespace Sphere10.Framework {
                 if (!encryptionAttributes.Any())
                     continue;
                 if (encryptionAttributes.Count() != 1)
-                    throw new SoftwareException("Unable to {0} field '{1}.{2}' as it specified multiple encryption attributes. Class members can only have 0 or 1 EncryptionAttributes.", action, field.DeclaringType.FullName, field.Name);
+                    throw new SoftwareException("Unable to encrypt/decrypt field '{0}.{1}' as it specified multiple encryption attributes. Class members can only have 0 or 1 EncryptionAttributes.", field.DeclaringType.FullName, field.Name);
 
                 if (!field.FieldType.IsAssignableFrom(typeof(string)))
-                    throw new SoftwareException("Unable to {0} field '{1}.{2}' as its type is not assignable from String", action, field.DeclaringType.FullName, field.Name);
+                    throw new SoftwareException("Unable to encrypt/decrypt field '{0}.{1}' as its type is not assignable from String", field.DeclaringType.FullName, field.Name);
 
                 var encryptionAttribute = encryptionAttributes.Single();
 
@@ -67,10 +68,10 @@ namespace Sphere10.Framework {
                 if (!encryptionAttributes.Any())
                     continue;
                 if (encryptionAttributes.Count() != 1)
-                    throw new SoftwareException("Unable to {0} property '{1}.{2}' as it specified multiple encryption attributes. Class members can only have 0 or 1 EncryptionAttribute.", action, property.DeclaringType.FullName, property.Name);
+                    throw new SoftwareException("Unable to encrypt/decrypt property '{0}.{1}' as it specified multiple encryption attributes. Class members can only have 0 or 1 EncryptionAttribute.", property.DeclaringType.FullName, property.Name);
 
                 if (!property.PropertyType.IsAssignableFrom(typeof(string)))
-                    throw new SoftwareException("Unable to {0} property '{1}.{2}' as its type is not assignable from String", action, property.DeclaringType.FullName, property.Name);
+                    throw new SoftwareException("Unable to encrypt/decrypt property '{0}.{1}' as its type is not assignable from String", property.DeclaringType.FullName, property.Name);
 
                 var encryptionAttribute = encryptionAttributes.Single();
 

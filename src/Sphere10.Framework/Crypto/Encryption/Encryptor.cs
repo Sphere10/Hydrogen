@@ -19,7 +19,11 @@ using System.Security.Cryptography;
 // ReSharper disable CheckNamespace
 namespace Sphere10.Framework {
 
-	public static class Encrypter {
+	// TODO: Requires major refactoring and improvements
+	// - unify string/byte[]/stream encryption
+	// - unify IV/salt prepending
+	// - not backwards compatible
+	public static class Encryptor {
 
 		public static string EncryptStringAES(string plainText, string sharedSecret, string salt) {
 			return EncryptStringAES(plainText, sharedSecret, Encoding.UTF8.GetBytes(salt));
@@ -50,20 +54,21 @@ namespace Sphere10.Framework {
 				aesAlg.Key = key.GetBytes(aesAlg.KeySize / 8);
 
 				// Create a decryptor to perform the stream transform.
-				ICryptoTransform encryptor = aesAlg.CreateEncryptor(aesAlg.Key, aesAlg.IV);
+				var encryptor = aesAlg.CreateEncryptor(aesAlg.Key, aesAlg.IV);
 
 				// Create the streams used for encryption.
-				using (MemoryStream msEncrypt = new MemoryStream()) {
-					// prepend the IV
-					msEncrypt.Write(BitConverter.GetBytes(aesAlg.IV.Length), 0, sizeof(int));
-					msEncrypt.Write(aesAlg.IV, 0, aesAlg.IV.Length);
-					using (CryptoStream csEncrypt = new CryptoStream(msEncrypt, encryptor, CryptoStreamMode.Write)) {
-						using (StreamWriter swEncrypt = new StreamWriter(csEncrypt)) {
+				using (var memStream = new MemoryStream()) {
+					// prepend the IV (length + bytes)
+					memStream.Write(EndianBitConverter.Little.GetBytes(aesAlg.IV.Length), 0, sizeof(int));
+					memStream.Write(aesAlg.IV, 0, aesAlg.IV.Length);
+
+					using (CryptoStream encryptedStream = new CryptoStream(memStream, encryptor, CryptoStreamMode.Write)) {
+						using (StreamWriter encryptedWriter = new StreamWriter(encryptedStream)) {
 							//Write all data to the stream.
-							swEncrypt.Write(plainText);
+							encryptedWriter.Write(plainText);
 						}
 					}
-					outStr = Convert.ToBase64String(msEncrypt.ToArray());
+					outStr = Convert.ToBase64String(memStream.ToArray());
 				}
 			} finally {
 				// Clear the RijndaelManaged object.

@@ -18,7 +18,19 @@ using System.Diagnostics;
 using Sphere10.Framework.Collections;
 
 namespace Sphere10.Framework {
-	public static class DictionaryExtensions {
+	public static class IDictionaryExtensions {
+
+		public static bool TrySearchKeyByValue<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TValue value, out TKey key, IEqualityComparer<TValue> comparer = null) {
+			comparer ??= EqualityComparer<TValue>.Default;
+			foreach(var kvp in dictionary) {
+				if (comparer.Equals(kvp.Value, value)) {
+					key = kvp.Key;
+					return true;
+                }
+            }
+			key = default;
+			return false;
+        }
 
 	    public static IReadOnlyDictionary<K,V> AsReadOnly<K, V>(this IDictionary<K, V> dictionary) {
 	        return new ReadOnlyDictionaryAdapter<K, V>(dictionary);

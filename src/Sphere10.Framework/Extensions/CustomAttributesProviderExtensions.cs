@@ -38,5 +38,14 @@ namespace Sphere10.Framework {
 			return attributes.Single();
 		}
 
+		public static bool TryGetCustomAttributeOfType<T>(this ICustomAttributeProvider attributesProvider, bool inherited, out T attribute) where T : Attribute {
+			var attributes = attributesProvider.GetCustomAttributesOfType<T>(inherited).ToArray();
+			attribute = default;
+			if (attributes.Length != 1)
+				return false;
+			attribute = attributes[0];
+			return true;
+		}
+
 	}
 }

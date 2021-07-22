@@ -32,8 +32,13 @@ th, td {
 }
 
 input[type="date"]::-webkit-calendar-picker-indicator {
-/*    background: none;*/
     padding: 0;
-    width:20px;
-    height:20px;
+    margin: 0;
+    border: 0;
+    width: 20px;
+    height: 20px;
+}
+
+input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
 }

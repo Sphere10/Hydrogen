@@ -104,7 +104,7 @@
                         <BlazorGrid Id="TestGrid"
                                     DataSource="Hydrogen-Node-1"
                                     PageSize="10"
-                                    GridType="BlazorGrid<object>.GridTypes.DataOnDemand"
+                                    GridType="BlazorGrid<object>.GridTypes.ActionColumn"
                                     GetPageDataFunction="GetPageDataFunction"
                                     GetDataCountFunction="GetDataCountFunction"
                                     SetItemDataFunction="SetItemDataFunction">
@@ -173,7 +173,7 @@
     protected override void OnInitialized()
     {
         TestGridData = LoadData(73);
-        Timer = new System.Timers.Timer(30000);
+        Timer = new System.Timers.Timer(10000); // 10 seconds
         Timer.Elapsed += CountDownTimer;
         Timer.Start();
     }

@@ -74,7 +74,7 @@ function ResizableTable(table) {
                 var table = document.getElementById(TableId);
                 var tableLeft = table.getBoundingClientRect().left;
                 var inBetweenColumnsWidth = 0;
-                if (curColIndex > 0) { inBetweenColumnsWidth = table.rows[0].cells[curColIndex - 1].offsetWidth; }
+                if (curColIndex > 0) { inBetweenColumnsWidth = table.rows[1].cells[curColIndex - 1].offsetWidth; }
 
                 var newWidth = (mouseX - tableLeft) - inBetweenColumnsWidth;
                 if (newWidth < MinimumColumWidth) newWidth = MinimumColumWidth;

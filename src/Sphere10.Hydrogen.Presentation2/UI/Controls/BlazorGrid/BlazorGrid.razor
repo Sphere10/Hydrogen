@@ -13,6 +13,17 @@
     <table class="TableClass" style="width:100%" id="@Id">
         <thead>
             <tr>
+
+                @if (GridType == GridTypes.ActionColumn)
+                {
+                    <th style="width:20px">
+                        Actions<br />
+                        <div class="ResizableClass">
+                            @*<input class="ResizableClass" type="search" />*@
+                        </div>
+                    </th>
+                }
+
                 @foreach (var headerCell in Header)
                 {
                     <th style="width:@headerCell.Width.ToString()px">
@@ -27,14 +38,22 @@
         <tbody>
             @foreach (var row in Rows)
             {
-                <tr @onmousedown="@(e => OnTableRowMouseDown())" style="@GetTableRowStyle()">
-                    @foreach (var cell in row) 
-                    {
-                    <td style="width:@cell.Width.ToString()px">
-                        <input class="ResizableClass" type="@GetCellInputType(cell)" value="@cell.Data" @onchange="@(e => CellDataChanged(e.Value, cell.Name, cell))" />
+            <tr @onmousedown="@(e => OnTableRowMouseDown())" style="@GetTableRowStyle()">
+
+                @if (GridType == GridTypes.ActionColumn)
+                {
+                    <td style="width:20px">
+                        <input class="ResizableClass" Type(cell)" />
                     </td>
-                    }
-                </tr>
+                }
+
+                @foreach (var cell in row)
+                {
+                    <td style="width:@cell.Width.ToString()px">
+                        <input class="ResizableClass" type="@GetCellInputType(cell)" list="@GetListName(cell)" value="@cell.Data" @onchange="@(e => CellDataChanged(e.Value, cell.Name, cell))" />
+                    </td>
+                }
+            </tr>
             }
         </tbody>
     </table>
@@ -48,12 +67,25 @@
         </div>
     </footer>
 
+    @foreach (var headerCell in Header)
+    {
+        if (headerCell.TypeInfo.IsEnum)
+        {
+            <datalist id="@headerCell.Name">
+                @foreach (var enumValue in headerCell.TypeInfo.EnumValues)
+                {
+                    <option value="@enumValue">@enumValue</option>
+                }
+            </datalist>
+        }
+    }
+
 </div>
 
 @code {
     @typeparam TItem
 
-    public enum GridTypes { DataSupplied, DataOnDemand }
+    public enum GridTypes { DataSupplied, DataOnDemand, ActionColumn }
 
     public delegate List<TestClass> GetPageData(int pageNumber, int pageSize);
     public delegate int GetDataCount();
@@ -129,13 +161,18 @@
             var first = Data.First();
             var type = first.GetType();
             var properties = type.GetProperties();
+            var typeInfos = new List<ObjectTypeInfo>();
 
             foreach (var property in properties)
             {
                 var name = Utility.AddSpacesForCamelCase(property.Name);
                 var width = 40;
                 var height = 20;
-                Header.Add(new Cell(new HeaderData(name, width), new RowData(height), property.PropertyType, name, name));
+
+                var typeInfo = new ObjectTypeInfo(property);
+                typeInfos.Add(typeInfo);
+
+                Header.Add(new Cell(new HeaderData(name, width), new RowData(height), typeInfo, name, name));
             }
 
             foreach (var dataObject in Data)
@@ -145,7 +182,7 @@
                 foreach (var property in properties)
                 {
                     var cellText = GetCellText(dataObject, property);
-                    var cellData = new Cell(Header[columnIndex].Header, Header[columnIndex].Row, property.PropertyType, cellText, dataObject);
+                    var cellData = new Cell(Header[columnIndex].Header, Header[columnIndex].Row, typeInfos[columnIndex], cellText, dataObject);
                     rowData.Add(cellData);
                     columnIndex++;
                 }
@@ -193,7 +230,7 @@
 
     string GetCellInputType(Cell cell)
     {
-        switch (cell.DataType.Name)
+        switch (cell.TypeInfo.Type.Name)
         {
             case "DateTime":    return "date";
             case "decimal":
@@ -206,6 +243,17 @@
             default:            return "text";
         }
     }
+
+    string GetListName(Cell cell) 
+    {
+        if (cell.TypeInfo.IsEnum) 
+        {
+            return cell.Name;
+        }
+
+        return string.Empty;
+    }
+
 
     private void CellDataChanged(object valueObject, string dataName, Cell cell)
     {

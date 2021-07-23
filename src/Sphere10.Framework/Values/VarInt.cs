@@ -7,7 +7,7 @@ namespace Sphere10.Framework {
 	/// number of bytes plus a header. Values less than 0xFC will require only a single byte and no header. Use when
 	/// serializing variable ulong values.
 	/// </summary>
-	public class VarInt {
+	public readonly struct VarInt {
 
 		private readonly ulong _value;
 		
@@ -16,6 +16,22 @@ namespace Sphere10.Framework {
 		public VarInt(ulong value) {
 			_value = value;
 		}
+		public VarInt(byte[] bytes) {
+			Guard.ArgumentNotNull(bytes, nameof(bytes));
+			
+			if (bytes.Length == 1)
+				_value = bytes[0];
+			else {
+				var prefix = bytes[0];
+				if (prefix == 0xFD)
+					_value = BitConverter.ToUInt16(bytes[1..]);
+				else if (prefix == 0xFE)
+					_value = BitConverter.ToUInt32(bytes[1..]);
+				else {
+					_value = BitConverter.ToUInt64(bytes[1..]);
+				}
+			}
+		}
 
 		/// <summary>
 		/// Read a <see cref="VarInt"/> value from a stream.
@@ -23,6 +39,7 @@ namespace Sphere10.Framework {
 		/// <param name="stream"> a stream</param>
 		/// <returns> new var int with value from the stream</returns>
 		public static VarInt FromStream(Stream stream) {
+			Guard.ArgumentNotNull(stream, nameof(stream));
 			var reader = new EndianBinaryReader(BitConverter, stream);
 			var prefix = stream.ReadByte();
 

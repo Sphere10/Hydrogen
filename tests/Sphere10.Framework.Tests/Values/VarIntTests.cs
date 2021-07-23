@@ -26,5 +26,21 @@ namespace Sphere10.Framework.Tests.Values
             ulong b = VarInt.FromStream(stream);
             b.Should().Be(a).And.Be(value);
         }
+
+        [Test]
+        [TestCase(ulong.MinValue)]
+        [TestCase((ulong)0xFC)]
+        [TestCase((ulong)0xFD)]
+        [TestCase((ulong)0xFFFF)]
+        [TestCase((ulong)0xFFFFF)]
+        [TestCase((ulong)0xFFFFFFFF)]
+        [TestCase((ulong)0xFFFFFFFFF)]
+        [TestCase(ulong.MaxValue)]
+        public void ConstructFromByteArray(ulong value)
+        {
+            byte[] bytes = new VarInt(value).ToBytes();
+            ulong varint = new VarInt(bytes);
+            varint.Should().Be(value);
+        }
     }
 }

@@ -38,7 +38,7 @@ namespace Sphere10.Framework {
 		/// </summary>
 		/// <param name="stream"> a stream</param>
 		/// <returns> new var int with value from the stream</returns>
-		public static VarInt FromStream(Stream stream) {
+		public static VarInt Read(Stream stream) {
 			Guard.ArgumentNotNull(stream, nameof(stream));
 			var reader = new EndianBinaryReader(BitConverter, stream);
 			var prefix = stream.ReadByte();
@@ -57,28 +57,33 @@ namespace Sphere10.Framework {
 		}
 
 		/// <summary>
+		/// Write the value of this varint to given stream.
+		/// </summary>
+		/// <param name="stream"></param>
+		public void Write(Stream stream) {
+			if (_value < 0xFD)
+				stream.WriteByte((byte)_value);
+			else if (_value <= 0xFFFF) {
+				stream.WriteByte(0xFD);
+				stream.Write(BitConverter.GetBytes((ushort)_value));
+			} 
+			else if (_value <= 0xFFFFFFFF) {
+				stream.WriteByte(0xFE);
+				stream.Write(BitConverter.GetBytes((uint)_value));
+			} else {
+				stream.WriteByte(0xFF);
+				stream.Write(BitConverter.GetBytes(_value));
+			}
+		}
+
+		/// <summary>
 		/// Encodes the current value into a byte array. 
 		/// </summary>
 		/// <returns> varint as bytes</returns>
 		public byte[] ToBytes() {
-
-			var builder = new ByteArrayBuilder();
-
-			if (_value < 0xFD)
-				builder.Append((byte)_value);
-			else if (_value <= 0xFFFF) {
-				builder.Append(0xFD);
-				builder.Append(BitConverter.GetBytes((ushort)_value));
-			} 
-			else if (_value <= 0xFFFFFFFF) {
-				builder.Append(0xFE);
-				builder.Append(BitConverter.GetBytes((uint)_value));
-			} else {
-				builder.Append(0xFF);
-				builder.Append(BitConverter.GetBytes(_value));
-			}
-
-			return builder.ToArray();
+			using var memoryStream = new MemoryStream();
+			Write(memoryStream);
+			return memoryStream.ToArray();
 		}
 
 		public static implicit operator ulong(VarInt v) => v._value;

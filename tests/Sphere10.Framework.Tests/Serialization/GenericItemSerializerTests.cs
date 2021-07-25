@@ -244,7 +244,6 @@ namespace Sphere10.Framework.Tests
         {
             var item = _fixture.Create<ReferenceTypeObject>();
             var serializer = GenericItemSerializer<ReferenceTypeObject>.Default;
-
             using var memoryStream = new MemoryStream();
             var writer = new EndianBinaryWriter(EndianBitConverter.Little, memoryStream);
             
@@ -253,6 +252,7 @@ namespace Sphere10.Framework.Tests
             
             var serializedSize = serializer.Serialize(item, writer);
             Assert.AreEqual(serializedSize, calculatedSize);
+            Assert.AreEqual(memoryStream.Length, calculatedSize);
         }
 
         [Test]

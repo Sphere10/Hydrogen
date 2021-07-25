@@ -242,15 +242,17 @@ namespace Sphere10.Framework.Tests
         [Test]
         public void CalculateSizeOfObject()
         {
-            var item = _fixture.Create<PrimitiveTestObject>();
-            var serializer = GenericItemSerializer<PrimitiveTestObject>.Default;
+            var item = _fixture.Create<ReferenceTypeObject>();
+            var serializer = GenericItemSerializer<ReferenceTypeObject>.Default;
 
             using var memoryStream = new MemoryStream();
             var writer = new EndianBinaryWriter(EndianBitConverter.Little, memoryStream);
-            var size = serializer.CalculateSize(item);
+            
+            var calculatedSize = serializer.CalculateSize(item);
             Assert.AreEqual(0, memoryStream.Length);
+            
             var serializedSize = serializer.Serialize(item, writer);
-            Assert.AreEqual(serializedSize, size);
+            Assert.AreEqual(serializedSize, calculatedSize);
         }
 
         [Test]
@@ -322,6 +324,10 @@ namespace Sphere10.Framework.Tests
 
     internal class ReferenceTypeObject
     {
+        public ValueTypeTestObject V { get; set; }
+        
+        public EnumObj W { get; set; }
+        
         public PrimitiveTestObject X { get; set; }
 
         public CollectionTestObject Y { get; set; }

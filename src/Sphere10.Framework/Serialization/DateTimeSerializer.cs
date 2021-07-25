@@ -22,7 +22,7 @@ namespace Sphere10.Framework {
 		}
 
 		public int CalculateSize(DateTime item) {
-			return sizeof(ulong);
+			return sizeof(long);
 		}
 
 		public bool TrySerialize(DateTime item, EndianBinaryWriter writer, out int bytesWritten) {
@@ -55,7 +55,7 @@ namespace Sphere10.Framework {
 
 	public class DateTimeOffsetSerializer : IItemSerializer<DateTimeOffset> {
 		public bool IsFixedSize => true;
-		public int FixedSize => _dateTimeSerializer.FixedSize + sizeof(int);
+		public int FixedSize => _dateTimeSerializer.FixedSize + sizeof(short);
 
 		public readonly IItemSerializer<DateTime> _dateTimeSerializer = new DateTimeSerializer();
 		public int CalculateTotalSize(IEnumerable<DateTimeOffset> items, bool calculateIndividualItems, out int[] itemSizes) {
@@ -69,7 +69,7 @@ namespace Sphere10.Framework {
 		}
 
 		public int CalculateSize(DateTimeOffset item) {
-			throw new NotImplementedException();
+			return FixedSize;
 		}
 
 		public bool TrySerialize(DateTimeOffset item, EndianBinaryWriter writer, out int bytesWritten) {
@@ -83,7 +83,7 @@ namespace Sphere10.Framework {
 				_dateTimeSerializer.Serialize(dateTime, writer);
 				writer.Write(offsetMinutes);
 
-				bytesWritten = sizeof(int) + _dateTimeSerializer.FixedSize;
+				bytesWritten = sizeof(short) + _dateTimeSerializer.FixedSize;
 				return true;
 			} catch (Exception e) {
 				Console.WriteLine(e);

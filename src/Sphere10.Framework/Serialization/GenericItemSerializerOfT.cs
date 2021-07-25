@@ -17,7 +17,18 @@ namespace Sphere10.Framework {
 		public static IItemSerializer<T> Default => DefaultInstance.Value;
 
 		public int CalculateTotalSize(IEnumerable<T> items, bool calculateIndividualItems, out int[] itemSizes) {
-			throw new NotImplementedException();
+
+			var itemsArray = items as T[] ?? items.ToArray();
+
+			var sizes = new int[itemsArray.Length];
+
+			for (int i = 0; i < itemsArray.Length; i++) {
+				sizes[i] = CalculateSize(itemsArray[i]);
+			}
+
+			itemSizes = calculateIndividualItems ? sizes : null;
+
+			return sizes.Sum(x => x);
 		}
 
 		public int CalculateSize(T item) {
@@ -467,7 +478,7 @@ namespace Sphere10.Framework {
 			/// <summary>
 			/// the writer's inner stream start position used to determine how many bytes have been written.
 			/// </summary>
-			private long _startPosition;
+			private readonly long _startPosition;
 
 			/// <summary>
 			/// ref dictionary.
@@ -508,11 +519,6 @@ namespace Sphere10.Framework {
 			/// Gets the stream reader, null during serialization. 
 			/// </summary>
 			public EndianBinaryReader Reader { get; }
-
-			/// <summary>
-			/// Gets the bit converter for the supplied reader/writer.
-			/// </summary>
-			public EndianBitConverter BitConverter => Writer.BitConverter ?? Reader.BitConverter;
 
 			/// <summary>
 			/// Gets a value indicating whether this serialization context is for sizing only.

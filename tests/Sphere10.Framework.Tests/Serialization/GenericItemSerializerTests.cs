@@ -2,8 +2,10 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using AutoFixture;
 using FluentAssertions;
+using Microsoft.Diagnostics.Tracing.Parsers.IIS_Trace;
 using NUnit.Framework;
 
 namespace Sphere10.Framework.Tests
@@ -253,6 +255,30 @@ namespace Sphere10.Framework.Tests
             var serializedSize = serializer.Serialize(item, writer);
             Assert.AreEqual(serializedSize, calculatedSize);
             Assert.AreEqual(memoryStream.Length, calculatedSize);
+        }
+
+        [Test]
+        public void CalculateTotalSize()
+        {
+            var items = _fixture.CreateMany<ReferenceTypeObject>();
+            var serializer = GenericItemSerializer<ReferenceTypeObject>.Default;
+            using var memoryStream = new MemoryStream();
+            var writer = new EndianBinaryWriter(EndianBitConverter.Little, memoryStream);
+            
+            var calculatedTotalSize = serializer.CalculateTotalSize(items, true, out var sizes);
+            Assert.AreEqual(0, memoryStream.Length);
+
+            int serializedTotal = 0;
+            foreach (var item in items)
+            {
+                serializedTotal += serializer.Serialize(item, writer);
+            }
+            
+          
+            Assert.AreEqual(serializedTotal, calculatedTotalSize);
+            Assert.AreEqual(memoryStream.Length, calculatedTotalSize);
+            Assert.AreEqual(items.Count(), sizes.Length);
+            Assert.AreEqual(calculatedTotalSize, sizes.Sum(x => x));
         }
 
         [Test]

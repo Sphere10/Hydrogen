@@ -5,7 +5,6 @@ using System.IO;
 using System.Linq;
 using AutoFixture;
 using FluentAssertions;
-using Microsoft.Diagnostics.Tracing.Parsers.IIS_Trace;
 using NUnit.Framework;
 
 namespace Sphere10.Framework.Tests
@@ -188,7 +187,8 @@ namespace Sphere10.Framework.Tests
                 A = new List<int> {1, 2, 3, 4},
                 B = null,
                 C = _fixture.Create<ReferenceTypeObject>(),
-                D = false
+                D = false,
+                E = _fixture.Create<byte[]>()
             };
 
             var serializer = GenericItemSerializer<ObjectObj>.Default;
@@ -248,10 +248,10 @@ namespace Sphere10.Framework.Tests
             var serializer = GenericItemSerializer<ReferenceTypeObject>.Default;
             using var memoryStream = new MemoryStream();
             var writer = new EndianBinaryWriter(EndianBitConverter.Little, memoryStream);
-            
+
             var calculatedSize = serializer.CalculateSize(item);
             Assert.AreEqual(0, memoryStream.Length);
-            
+
             var serializedSize = serializer.Serialize(item, writer);
             Assert.AreEqual(serializedSize, calculatedSize);
             Assert.AreEqual(memoryStream.Length, calculatedSize);
@@ -264,7 +264,7 @@ namespace Sphere10.Framework.Tests
             var serializer = GenericItemSerializer<ReferenceTypeObject>.Default;
             using var memoryStream = new MemoryStream();
             var writer = new EndianBinaryWriter(EndianBitConverter.Little, memoryStream);
-            
+
             var calculatedTotalSize = serializer.CalculateTotalSize(items, true, out var sizes);
             Assert.AreEqual(0, memoryStream.Length);
 
@@ -273,8 +273,8 @@ namespace Sphere10.Framework.Tests
             {
                 serializedTotal += serializer.Serialize(item, writer);
             }
-            
-          
+
+
             Assert.AreEqual(serializedTotal, calculatedTotalSize);
             Assert.AreEqual(memoryStream.Length, calculatedTotalSize);
             Assert.AreEqual(items.Count(), sizes.Length);
@@ -326,9 +326,9 @@ namespace Sphere10.Framework.Tests
     {
         public List<DateTime> A { get; set; }
 
-         public ArrayList B { get; set; }
-        
-         public PrimitiveTestObject[] C { get; set; }
+        public ArrayList B { get; set; }
+
+        public PrimitiveTestObject[] C { get; set; }
 
         public Dictionary<int, PrimitiveTestObject> D { get; set; }
 
@@ -351,9 +351,9 @@ namespace Sphere10.Framework.Tests
     internal class ReferenceTypeObject
     {
         public ValueTypeTestObject V { get; set; }
-        
+
         public EnumObj W { get; set; }
-        
+
         public PrimitiveTestObject X { get; set; }
 
         public CollectionTestObject Y { get; set; }
@@ -386,6 +386,8 @@ namespace Sphere10.Framework.Tests
         public object B { get; set; }
         public object C { get; set; }
         public object D { get; set; }
+        
+        public object E { get; set; }
     }
 
     internal class SubClassObj : PrimitiveTestObject
@@ -393,7 +395,6 @@ namespace Sphere10.Framework.Tests
         public int X { get; set; }
     }
 
-    
     internal class EnumObj
     {
         [Flags]
@@ -406,7 +407,7 @@ namespace Sphere10.Framework.Tests
         }
 
         public TestEnum A { get; set; }
-        
+
         public TestEnum B { get; set; }
     }
 }

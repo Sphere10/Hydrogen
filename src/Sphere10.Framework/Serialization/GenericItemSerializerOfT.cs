@@ -270,7 +270,7 @@ namespace Sphere10.Framework {
 
 		private void SerializePrimitive(object boxedPrimitive, SerializationContext context) {
 			if (context.IsSizing) {
-				int size = boxedPrimitive switch {
+				var size = boxedPrimitive switch {
 					sbyte => sizeof(sbyte),
 					byte => sizeof(byte),
 					short => sizeof(short),
@@ -352,9 +352,9 @@ namespace Sphere10.Framework {
 		private void SerializeCollectionType(object value, SerializationContext context) {
 			var listType = value.GetType();
 
-			if (value is IDictionary dictionary) {
+			if (value is IDictionary dictionary)
 				SerializeDictionary(dictionary, context);
-			} else if (value is IEnumerable list) {
+			else if (value is IEnumerable list) {
 				var enumerator = list.GetEnumerator();
 
 				int count = 0;
@@ -404,7 +404,7 @@ namespace Sphere10.Framework {
 
 			if (type == typeof(Array)) {
 				var elementType = ReadTypeHeader(context);
-				type = elementType.MakeArrayType(1);
+				type = elementType.MakeArrayType();
 			}
 
 			return type;
@@ -419,7 +419,7 @@ namespace Sphere10.Framework {
 		private bool RequiresTypeHeader(Type propertyType) {
 			return !propertyType.IsNullable()
 			       && propertyType.IsGenericType
-			       || propertyType.IsClass
+			       || propertyType.IsClass && !propertyType.IsArray
 			       || propertyType == typeof(string)
 			       || propertyType == typeof(CircularReference);
 		}

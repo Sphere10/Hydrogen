@@ -80,6 +80,8 @@ namespace Sphere10.Framework {
 
 		/// <inheritdoc />
 		protected override void Log(LogLevel logLevel, string message) {
+			Guard.ArgumentNotNull(message, nameof(message));
+			
 			if (TextEncoding.GetByteCount(message) > MaxFileSize)
 				throw new InvalidOperationException("Log message is larger than MaxFileSize, splitting message over multiple files is not supported.");
 
@@ -91,6 +93,7 @@ namespace Sphere10.Framework {
 		/// </summary>
 		/// <param name="message"></param>
 		private void LogInternal(string message) {
+			Guard.ArgumentNotNull(message, nameof(message));
 			message += Environment.NewLine;
 			var bytesRequired = TextEncoding.GetByteCount(message);
 			

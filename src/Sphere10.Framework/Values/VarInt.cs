@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 
 namespace Sphere10.Framework {
 	
@@ -16,6 +17,7 @@ namespace Sphere10.Framework {
 		public VarInt(ulong value) {
 			_value = value;
 		}
+		
 		public VarInt(byte[] bytes) {
 			Guard.ArgumentNotNull(bytes, nameof(bytes));
 			
@@ -93,5 +95,25 @@ namespace Sphere10.Framework {
 		/// </summary>
 		/// <returns></returns>
 		public ulong ToLong() => _value;
+		
+		public static VarInt operator +(VarInt a, VarInt b) => new (a._value + b._value);
+
+		public static VarInt operator +(VarInt a, ulong b) => new (a._value + b);
+
+		public static VarInt operator -(VarInt a, VarInt b) => new (a._value - b._value);
+
+		public static VarInt operator -(VarInt a, ulong b) => new (a._value - b);
+		
+		public static VarInt operator *(VarInt a, VarInt b) => new (a._value * b._value);
+
+		public static VarInt operator *(VarInt a, ulong b) => new (a._value * b);
+		
+		public static VarInt operator /(VarInt a, VarInt b) => b._value == 0 ? throw new DivideByZeroException() : new VarInt(a._value / b._value);
+
+		public static VarInt operator /(VarInt a, ulong b) => b == 0 ? throw new DivideByZeroException() : new VarInt(a._value / b);
+
+		public static VarInt operator ++(VarInt a) => new VarInt(a._value + 1);
+		
+		public static VarInt operator --(VarInt a) => new VarInt(a._value - 1);
 	}
 }

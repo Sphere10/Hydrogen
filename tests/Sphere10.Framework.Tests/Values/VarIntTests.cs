@@ -45,5 +45,17 @@ namespace Sphere10.Framework.Tests.Values
             ulong b = new VarInt(bytes);
             b.Should().Be(a);
         }
+
+        [Test]
+        public void ArithmeticOperatorOverloads()
+        {
+            ((ulong)(new VarInt(1) + new VarInt(1))).Should().Be(2);
+            ((ulong)(new VarInt(1) + 1)).Should().Be(2);
+            ((ulong)(new VarInt(1) - new VarInt(1))).Should().Be(0);
+            ((ulong)(new VarInt(1) - 1)).Should().Be(0);
+            ((ulong)(new VarInt(10) / new VarInt(3))).Should().Be(3);
+            ((ulong)(new VarInt(10) / 3)).Should().Be(3);
+            ((ulong)(new VarInt(1) * 2)).Should().Be(2);
+        }
     }
 }

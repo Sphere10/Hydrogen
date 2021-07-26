@@ -38,7 +38,7 @@ namespace Sphere10.Framework.Tests {
 			var dir = Tools.FileSystem.GetTempEmptyDirectory(true);
 			using (Tools.Scope.ExecuteOnDispose(() => Tools.Lambda.ActionIgnoringExceptions(() => File.Delete(file))))
 			using (Tools.Scope.ExecuteOnDispose(() => Tools.Lambda.ActionIgnoringExceptions(() => Tools.FileSystem.DeleteDirectory(dir))))
-			using (var txnFile = new TransactionalList<string>(new StringSerializer(), file, dir, Guid.NewGuid(), Tools.Memory.ToBytes(10, MemoryMetric.Megabyte), Tools.Memory.ToBytes(5, MemoryMetric.Megabyte), maxCapacity)) {
+			using (var txnFile = new TransactionalList<string>(new StringSerializer(Encoding.UTF8), file, dir, Guid.NewGuid(), Tools.Memory.ToBytes(10, MemoryMetric.Megabyte), Tools.Memory.ToBytes(5, MemoryMetric.Megabyte), maxCapacity)) {
 				AssertEx.ListIntegrationTest(txnFile, maxCapacity, (rng, i) => Tools.Array.Gen(i, rng.NextString(StringMinSize, StringMaxSize)));
 				txnFile.Commit();
 			}
@@ -53,7 +53,7 @@ namespace Sphere10.Framework.Tests {
 			var dir = Tools.FileSystem.GetTempEmptyDirectory(true);
 			using (Tools.Scope.ExecuteOnDispose(() => Tools.Lambda.ActionIgnoringExceptions(() => File.Delete(file))))
 			using (Tools.Scope.ExecuteOnDispose(() => Tools.Lambda.ActionIgnoringExceptions(() => Tools.FileSystem.DeleteDirectory(dir))))
-			using (var txnFile = new TransactionalList<string>(new StringSerializer(), file, dir, Guid.NewGuid(), Tools.Memory.ToBytes(10, MemoryMetric.Megabyte), Tools.Memory.ToBytes(5, MemoryMetric.Megabyte), maxCapacity)) {
+			using (var txnFile = new TransactionalList<string>(new StringSerializer(Encoding.UTF8), file, dir, Guid.NewGuid(), Tools.Memory.ToBytes(10, MemoryMetric.Megabyte), Tools.Memory.ToBytes(5, MemoryMetric.Megabyte), maxCapacity)) {
 				AssertEx.ListIntegrationTest(txnFile, maxCapacity, (rng, i) => Tools.Array.Gen(i, rng.NextString(StringMinSize, StringMaxSize)));
 				txnFile.Rollback();
 			}
@@ -68,7 +68,7 @@ namespace Sphere10.Framework.Tests {
 			var dir = Tools.FileSystem.GetTempEmptyDirectory(true);
 			using (Tools.Scope.ExecuteOnDispose(() => Tools.Lambda.ActionIgnoringExceptions(() => File.Delete(file))))
 			using (Tools.Scope.ExecuteOnDispose(() => Tools.Lambda.ActionIgnoringExceptions(() => Tools.FileSystem.DeleteDirectory(dir))))
-			using (var txnFile = new TransactionalList<string>(file, dir, Guid.NewGuid(), Tools.Memory.ToBytes(1, MemoryMetric.Megabyte), new StringSerializer())) {
+			using (var txnFile = new TransactionalList<string>(file, dir, Guid.NewGuid(), Tools.Memory.ToBytes(1, MemoryMetric.Megabyte), new StringSerializer(Encoding.UTF8))) {
 				AssertEx.ListIntegrationTest(txnFile, maxCapacity, (rng, i) => Tools.Array.Gen(i, rng.NextString(StringMinSize, StringMaxSize)));
 				txnFile.Commit();
 			}
@@ -83,7 +83,7 @@ namespace Sphere10.Framework.Tests {
 			var dir = Tools.FileSystem.GetTempEmptyDirectory(true);
 			using (Tools.Scope.ExecuteOnDispose(() => Tools.Lambda.ActionIgnoringExceptions(() => File.Delete(file))))
 			using (Tools.Scope.ExecuteOnDispose(() => Tools.Lambda.ActionIgnoringExceptions(() => Tools.FileSystem.DeleteDirectory(dir))))
-			using (var txnFile = new TransactionalList<string>(file, dir, Guid.NewGuid(), Tools.Memory.ToBytes(1, MemoryMetric.Megabyte), new StringSerializer())) {
+			using (var txnFile = new TransactionalList<string>(file, dir, Guid.NewGuid(), Tools.Memory.ToBytes(1, MemoryMetric.Megabyte), new StringSerializer(Encoding.UTF8))) {
 				AssertEx.ListIntegrationTest(txnFile, maxCapacity, (rng, i) => Tools.Array.Gen(i, rng.NextString(StringMinSize, StringMaxSize)));
 				txnFile.Rollback();
 			}

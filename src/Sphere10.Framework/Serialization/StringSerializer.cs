@@ -2,20 +2,28 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
+using Sphere10.Framework.Values;
+using Tools;
 
 namespace Sphere10.Framework {
 
 	public class StringSerializer : IItemSerializer<string> {
+		public Encoding TextEncoding { get; }
 
+		public StringSerializer(Encoding textEncoding) {
+			Guard.ArgumentNotNull(textEncoding, nameof(textEncoding));
+			TextEncoding = textEncoding;
+		}
+		
 		public bool TrySerialize(string item, EndianBinaryWriter writer, out int bytesWritten) {
 			try {
-				using var stream = new MemoryStream();
-				using var innerWriter = new EndianBinaryWriter(EndianBitConverter.Little, stream);
-				innerWriter.Write(item);
-				writer.Write(stream.ToArray());
+				var bytes = TextEncoding.GetBytes(item);
+				var lengthBytes = new CVarInt((ulong)bytes.Length, sizeof(int)).ToBytes();
+				writer.Write(lengthBytes);
+				writer.Write(bytes);
 
-				bytesWritten = (int)stream.Length;
-				
+				bytesWritten = bytes.Length + lengthBytes.Length;
 				return true;
 			} catch (Exception) {
 				bytesWritten = 0;
@@ -25,7 +33,8 @@ namespace Sphere10.Framework {
 
 		public bool TryDeserialize(int byteSize, EndianBinaryReader reader, out string item) {
 			try {
-				item = reader.ReadString();
+				var count = CVarInt.Read(sizeof(int), reader.BaseStream);
+				item = TextEncoding.GetString(reader.ReadBytes((int)count.ToLong()));
 				return true;
 			} catch (Exception) {
 				item = default;
@@ -36,31 +45,29 @@ namespace Sphere10.Framework {
 		public int FixedSize => -1;
 
 		public int CalculateTotalSize(IEnumerable<string> items, bool calculateIndividualItems, out int[] itemSizes) {
-
 			var arr = items as string[] ?? items.ToArray();
 			var sizes = new int[arr.Length];
 
-			for (int i = 0; i < sizes.Length; i++) {
+			for (var i = 0; i < sizes.Length; i++) {
 				sizes[i] = CalculateSize(arr[i]);
 			}
 
 			itemSizes = calculateIndividualItems ? sizes : null;
-			
+
 			return sizes.Sum(x => x);
 		}
 
 		/// <summary>
-			/// Calculate size - serializes the string to calculate the size since we need to determine the 7bit encoded int
-			/// for length. 
-			/// </summary>
-			/// <param name="item"> string to be sized</param>
-			/// <returns> size in bytes.</returns>
-			public int CalculateSize(string item) {
-				using var stream = new MemoryStream();
-				using var innerWriter = new EndianBinaryWriter(EndianBitConverter.Little, stream);
-				innerWriter.Write(item);
-
-				return (int)stream.Length;
-			}
+		/// Calculate size - serializes the string to calculate the size since we need to determine the 7bit encoded int
+		/// for length. 
+		/// </summary>
+		/// <param name="item"> string to be sized</param>
+		/// <returns> size in bytes.</returns>
+		public int CalculateSize(string item) {
+			int count = new CVarInt((ulong)item.Length, sizeof(int)).ToBytes().Length;
+			int charBytes = TextEncoding.GetByteCount(item);
+			
+			return count + charBytes;
 		}
+	}
 }

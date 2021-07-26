@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using Sphere10.Framework.Values;
 
 namespace Sphere10.Framework {
 	public class ByteArraySerializer : IItemSerializer<byte[]> {
@@ -8,19 +10,29 @@ namespace Sphere10.Framework {
 		public int FixedSize => -1;
 
 		public int CalculateTotalSize(IEnumerable<byte[]> items, bool calculateIndividualItems, out int[] itemSizes) {
-			throw new System.NotImplementedException();
+			var itemsArray = items as byte[][] ?? items.ToArray();
+			var sizes = new int[itemsArray.Length];
+			for (var i = 0; i < itemsArray.Length; i++) {
+				sizes[i] = CalculateSize(itemsArray[i]);
+			}
+
+			itemSizes = calculateIndividualItems ? sizes : default;
+			return sizes.Sum(x => x);
 		}
 
 		public int CalculateSize(byte[] item) {
-			return sizeof(int) + item.Length;
+			int lengthByteCount = new CVarInt((ulong)item.Length, sizeof(int)).ToBytes().Length;
+			return lengthByteCount + item.Length;
 		}
 
 		public bool TrySerialize(byte[] item, EndianBinaryWriter writer, out int bytesWritten) {
 			try {
-				writer.Write(item.Length);
+				byte[] lengthBytes = new CVarInt((ulong)item.Length, sizeof(int)).ToBytes();
+					
+				writer.Write(lengthBytes);
 				writer.Write(item);
 				
-				bytesWritten = sizeof(int) + item.Length;
+				bytesWritten = lengthBytes.Length + item.Length;
 				return true;
 			} catch (Exception) {
 				bytesWritten = 0;
@@ -30,8 +42,8 @@ namespace Sphere10.Framework {
 
 		public bool TryDeserialize(int byteSize, EndianBinaryReader reader, out byte[] item) {
 			try {
-				var length = reader.ReadInt32();
-				item = reader.ReadBytes(length);
+				var length = CVarInt.Read(sizeof(int), reader.BaseStream);
+				item = reader.ReadBytes((int)length.ToLong());
 				return true;
 			} catch (Exception) {
 				item = default;

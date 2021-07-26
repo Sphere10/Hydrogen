@@ -8,17 +8,15 @@ namespace Sphere10.Framework.Values {
 	// less efficient than other formats.
 	public readonly struct CVarInt  {
 		private readonly ulong _value;
-		private readonly int _size;
 		
-		public CVarInt(ulong value, int size) {
+		public CVarInt(ulong value) {
 			_value = value;
-			_size = size;
 		}
 
-		public CVarInt(byte[] bytes, int size) {
+		public CVarInt(byte[] bytes) {
 			ulong n = 0;
 			
-			for (int i = 0; i < bytes.Length; i++) {
+			for (var i = 0; i < bytes.Length; i++) {
 				var chData = bytes[i];
 				var a = n << 7;
 				var b = (byte)(chData & 0x7F);
@@ -30,7 +28,6 @@ namespace Sphere10.Framework.Values {
 			}
 			
 			_value = n;
-			_size = size;
 		} 
 
 		/// <summary>
@@ -52,7 +49,7 @@ namespace Sphere10.Framework.Values {
 				else
 					break;
 			}
-			return new CVarInt(n, size);
+			return new CVarInt(n);
 		}
 
 		/// <summary>
@@ -61,7 +58,7 @@ namespace Sphere10.Framework.Values {
 		/// <param name="stream"></param>
 		public void Write(Stream stream) {
 			var n = _value;
-			Span<byte> tmp = stackalloc byte[(_size * 8 + 6) / 7];
+			Span<byte> tmp = stackalloc byte[(sizeof(long) * 8 + 6) / 7];
 
 			var len = 0;
 			while (true)
@@ -91,6 +88,25 @@ namespace Sphere10.Framework.Values {
 		
 		public static implicit operator ulong(CVarInt v) => v._value;
 
+		public static implicit operator CVarInt(ulong v) => new (v);
+		
 		public ulong ToLong() => _value;
+
+		/// <summary>
+		/// Returns the number of bytes the value will require when encoded as <see cref="CVarInt"/>
+		/// </summary>
+		/// <param name="value"></param>
+		/// <returns> size in bytes</returns>
+		public static int SizeOf(ulong value) {
+			var len = 1;
+			var n = value;
+			while (n > 0x7F)
+			{
+				n = (n >> 7) - 1;
+				len++;
+			}
+
+			return len;
+		}
 	}
 }

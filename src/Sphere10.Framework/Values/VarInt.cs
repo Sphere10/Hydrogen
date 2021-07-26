@@ -89,7 +89,7 @@ namespace Sphere10.Framework {
 		}
 
 		public static implicit operator ulong(VarInt v) => v._value;
-		
+
 		/// <summary>
 		/// Returns varint as ulong.
 		/// </summary>

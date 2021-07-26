@@ -17,7 +17,7 @@ namespace Sphere10.Framework.Tests.Values
         public void WriteAndRead(ulong value, int size, int expectedByteLength)
         {
             var stream = new MemoryStream();
-            var a = new CVarInt(value, size);
+            var a = new CVarInt(value);
             a.Write(stream);
             Assert.AreEqual(expectedByteLength, stream.Length);
 
@@ -36,12 +36,23 @@ namespace Sphere10.Framework.Tests.Values
         public void ToAndFromBytes(ulong value, int size, int expectedByteLength)
         {
             var stream = new MemoryStream();
-            var a = new CVarInt(value, size);
+            var a = new CVarInt(value);
             stream.Write(a.ToBytes());
             Assert.AreEqual(expectedByteLength, stream.Length);
             
-            ulong b = new CVarInt(stream.ToArray(), size);
+            ulong b = new CVarInt(stream.ToArray());
             b.Should().Be(a).And.Be(value);
+        }
+        
+        [TestCase(ushort.MinValue, 1)]
+        [TestCase((ulong)0x7F, 1)]
+        [TestCase((ulong)0xFF, 2)]
+        [TestCase(ushort.MaxValue, 3)]
+        [TestCase(uint.MaxValue, 5)]
+        [TestCase(ulong.MaxValue, 10)]
+        public void SizeOf(ulong value, int expectedByteLength)
+        {
+            CVarInt.SizeOf(value).Should().Be(expectedByteLength);
         }
     }
 }

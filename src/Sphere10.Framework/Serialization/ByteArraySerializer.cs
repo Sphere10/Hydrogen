@@ -21,13 +21,13 @@ namespace Sphere10.Framework {
 		}
 
 		public int CalculateSize(byte[] item) {
-			int lengthByteCount = new CVarInt((ulong)item.Length, sizeof(int)).ToBytes().Length;
+			int lengthByteCount = new CVarInt((ulong)item.Length).ToBytes().Length;
 			return lengthByteCount + item.Length;
 		}
 
 		public bool TrySerialize(byte[] item, EndianBinaryWriter writer, out int bytesWritten) {
 			try {
-				byte[] lengthBytes = new CVarInt((ulong)item.Length, sizeof(int)).ToBytes();
+				byte[] lengthBytes = new CVarInt((ulong)item.Length).ToBytes();
 					
 				writer.Write(lengthBytes);
 				writer.Write(item);

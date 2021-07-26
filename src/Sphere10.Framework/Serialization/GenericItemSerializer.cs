@@ -29,7 +29,7 @@ namespace Sphere10.Framework {
 			Register(typeof(double));
 			Register(typeof(bool));
 			Register(typeof(byte));
-			
+
 			Register(new DateTimeSerializer());
 			Register(new DateTimeOffsetSerializer());
 			Register(new DecimalSerializer());

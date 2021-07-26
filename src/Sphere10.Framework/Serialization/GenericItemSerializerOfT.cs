@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using Sphere10.Framework.FastReflection;
+using Sphere10.Framework.Values;
 
 namespace Sphere10.Framework {
 	public class GenericItemSerializer<T> : GenericItemSerializer, IItemSerializer<T> where T : new() {
@@ -99,19 +100,19 @@ namespace Sphere10.Framework {
 				return reader.ReadInt16();
 
 			if (t == typeof(ushort))
-				return reader.ReadUInt16();
+				return (ushort)CVarInt.Read(sizeof(ushort), context.Reader.BaseStream);
 
 			if (t == typeof(int))
 				return reader.ReadInt32();
 
 			if (t == typeof(uint))
-				return reader.ReadUInt32();
+				return (uint)CVarInt.Read(sizeof(uint), context.Reader.BaseStream);
 
 			if (t == typeof(long))
 				return reader.ReadInt64();
 
 			if (t == typeof(ulong))
-				return reader.ReadUInt64();
+				return (ulong)CVarInt.Read(sizeof(ulong), context.Reader.BaseStream);
 
 			if (t == typeof(double))
 				return reader.ReadDouble();
@@ -264,7 +265,6 @@ namespace Sphere10.Framework {
 					SerializeCollectionType(propertyValue, context);
 				else
 					SerializeReferenceType(propertyValue, context);
-
 			}
 		}
 
@@ -274,11 +274,11 @@ namespace Sphere10.Framework {
 					sbyte => sizeof(sbyte),
 					byte => sizeof(byte),
 					short => sizeof(short),
-					ushort => sizeof(ushort),
+					ushort primitive => CVarInt.SizeOf(primitive),
 					int => sizeof(int),
-					uint => sizeof(uint),
+					uint primitive => CVarInt.SizeOf(primitive),
 					long => sizeof(long),
-					ulong => sizeof(ulong),
+					ulong primitive => CVarInt.SizeOf(primitive),
 					float => sizeof(float),
 					double => sizeof(double),
 					decimal => sizeof(decimal),
@@ -299,19 +299,19 @@ namespace Sphere10.Framework {
 						context.Writer.Write(x);
 						break;
 					case ushort x:
-						context.Writer.Write(x);
+						context.Writer.Write(new CVarInt(x).ToBytes());
 						break;
 					case int x:
 						context.Writer.Write(x);
 						break;
 					case uint x:
-						context.Writer.Write(x);
+						context.Writer.Write(new CVarInt(x).ToBytes());
 						break;
 					case long x:
 						context.Writer.Write(x);
 						break;
 					case ulong x:
-						context.Writer.Write(x);
+						context.Writer.Write(new CVarInt(x).ToBytes());
 						break;
 					case float x:
 						context.Writer.Write(x);
@@ -386,6 +386,14 @@ namespace Sphere10.Framework {
 			}
 		}
 
+		private bool RequiresTypeHeader(Type propertyType) {
+			return !propertyType.IsNullable()
+			       && propertyType.IsGenericType
+			       || propertyType.IsClass && !propertyType.IsArray
+			       || propertyType == typeof(string)
+			       || propertyType == typeof(CircularReference);
+		}
+		
 		private Type ReadTypeHeader(SerializationContext context) {
 			var typeIndex = context.Reader.ReadInt32();
 
@@ -409,21 +417,31 @@ namespace Sphere10.Framework {
 
 			return type;
 		}
+		
+		private void CreateTypeHeader(Type valueType, SerializationContext context) {
+			if (valueType.IsArray) {
+				if (valueType.GetArrayRank() > 1)
+					throw new InvalidOperationException("Multi-dimension arrays are not supported.");
 
+				SerializePrimitive(GetTypeIndex(typeof(Array)), context);
+				SerializePrimitive(GetTypeIndex(valueType.GetElementType()), context);
+
+			} else
+				SerializePrimitive(GetTypeIndex(valueType.IsGenericType ? valueType.GetGenericTypeDefinition() : valueType), context);
+
+			if (valueType.IsGenericType) {
+				foreach (var typeArgument in valueType.GenericTypeArguments) {
+					SerializePrimitive(GetTypeIndex(typeArgument), context);
+				}
+			}
+		}
+		
 		private PropertyInfo[] GetSerializableProperties(Type type) {
 			return type.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static)
 				.Where(x => x.CanRead && x.CanWrite)
 				.ToArray();
 		}
-
-		private bool RequiresTypeHeader(Type propertyType) {
-			return !propertyType.IsNullable()
-			       && propertyType.IsGenericType
-			       || propertyType.IsClass && !propertyType.IsArray
-			       || propertyType == typeof(string)
-			       || propertyType == typeof(CircularReference);
-		}
-
+		
 		/// <summary>
 		/// Determines whether <paramref name="value"/> is a reference to an object that has already been
 		/// seen during serialization. If so, out value contains a CircularReference struct to be serialized instead.
@@ -448,26 +466,7 @@ namespace Sphere10.Framework {
 			} else
 				return false;
 		}
-
-		private void CreateTypeHeader(Type valueType, SerializationContext context) {
-			if (valueType.IsArray) {
-				if (valueType.GetArrayRank() > 1)
-					throw new InvalidOperationException("Multi-dimension arrays are not supported.");
-
-				SerializePrimitive(GetTypeIndex(typeof(Array)), context);
-				SerializePrimitive(GetTypeIndex(valueType.GetElementType()), context);
-
-			} else
-				SerializePrimitive(GetTypeIndex(valueType.IsGenericType ? valueType.GetGenericTypeDefinition() : valueType), context);
-
-			if (valueType.IsGenericType) {
-				foreach (var typeArgument in valueType.GenericTypeArguments) {
-					SerializePrimitive(GetTypeIndex(typeArgument), context);
-				}
-			}
-		}
-
-
+		
 		private class SerializationContext {
 
 			/// <summary>
@@ -542,7 +541,6 @@ namespace Sphere10.Framework {
 						throw new InvalidOperationException("Setting size is not supported during serialization");
 				}
 			}
-
 
 			/// <summary>
 			/// Retrieve an object stored in the reference dictionary. Objects that have already been serialized or deserialized are in the reference

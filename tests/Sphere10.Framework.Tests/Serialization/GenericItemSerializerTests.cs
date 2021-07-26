@@ -72,11 +72,9 @@ namespace Sphere10.Framework.Tests
             var serializer = GenericItemSerializer<CollectionTestObject>.Default;
             using var memoryStream = new MemoryStream();
             var writer = new EndianBinaryWriter(EndianBitConverter.Little, memoryStream);
-            var size = serializer.CalculateSize(item);
             var byteCount = serializer.Serialize(item, writer);
 
             Assert.AreEqual(memoryStream.Length, byteCount);
-            Assert.AreEqual(size, byteCount);
 
             memoryStream.Seek(0, SeekOrigin.Begin);
             var reader = new EndianBinaryReader(EndianBitConverter.Little, memoryStream);
@@ -273,7 +271,6 @@ namespace Sphere10.Framework.Tests
             {
                 serializedTotal += serializer.Serialize(item, writer);
             }
-
 
             Assert.AreEqual(serializedTotal, calculatedTotalSize);
             Assert.AreEqual(memoryStream.Length, calculatedTotalSize);

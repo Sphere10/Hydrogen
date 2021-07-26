@@ -19,7 +19,7 @@ namespace Sphere10.Framework {
 		public bool TrySerialize(string item, EndianBinaryWriter writer, out int bytesWritten) {
 			try {
 				var bytes = TextEncoding.GetBytes(item);
-				var lengthBytes = new CVarInt((ulong)bytes.Length, sizeof(int)).ToBytes();
+				var lengthBytes = new CVarInt((ulong)bytes.Length).ToBytes();
 				writer.Write(lengthBytes);
 				writer.Write(bytes);
 
@@ -64,7 +64,7 @@ namespace Sphere10.Framework {
 		/// <param name="item"> string to be sized</param>
 		/// <returns> size in bytes.</returns>
 		public int CalculateSize(string item) {
-			int count = new CVarInt((ulong)item.Length, sizeof(int)).ToBytes().Length;
+			int count = new CVarInt((ulong)item.Length).ToBytes().Length;
 			int charBytes = TextEncoding.GetByteCount(item);
 			
 			return count + charBytes;

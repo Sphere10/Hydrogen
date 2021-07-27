@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using AutoFixture;
+using AutoFixture.Kernel;
 using FluentAssertions;
 using NUnit.Framework;
 
@@ -10,7 +12,7 @@ namespace Sphere10.Framework.Tests.Logging
 {
     public class RollingFileLoggerTests
     {
-        private Random _random = new(31337);
+        private readonly Random _random = new(31337);
 
         [Test]
         public void ArgumentsAreValidated()
@@ -30,30 +32,32 @@ namespace Sphere10.Framework.Tests.Logging
 
                 Action a4 = () => new RollingFileLogger(dir, string.Empty, 0, 1);
                 a4.Should().Throw<ArgumentOutOfRangeException>("Max file counts must be greater than 0");
+                
+                Action a5 = () => new RollingFileLogger(dir, new string(Path.GetInvalidFileNameChars()), 1, 1);
+                a5.Should().Throw<ArgumentException>(
+                    "Log file name template contains invalid file name / path characters");
             }
         }
 
         [Test]
-        public void NewLogFileCreatedWithNameTemplate()
+        [TestCase("logfile", "logfile1.log")]
+        [TestCase("log##file", "log01file.log")]
+        [TestCase("logfile###", "logfile001.log")]
+        [TestCase("log file #", "log file 1.log")]
+        public void NewLogFileCreatedWithNameTemplate(string fileNameTemplate, string expectedFileName)
         {
             var dir = Tools.FileSystem.GetTempEmptyDirectory();
             using (Tools.Scope.ExecuteOnDispose(() =>
                 Tools.Lambda.ActionIgnoringExceptions(() => Tools.FileSystem.DeleteDirectory(dir))))
             {
-                var logger = new RollingFileLogger(dir, "testlogger_###_debug", 1, 100);
-
+                var logger = new RollingFileLogger(dir, fileNameTemplate, 1, 100);
                 var message = _random.NextString(1, 10);
-
                 logger.Info(message);
 
                 var directoryInfo = new DirectoryInfo(dir);
-                var files = directoryInfo.GetFiles("testlogger*");
-                var fileNames = files.Select(x => x.Name);
-                fileNames.Should().Contain("testlogger_001_debug.log");
-
-                using var textReader = new StreamReader(files.Single().FullName);
-                var loggedMessage = textReader.ReadLine();
-                loggedMessage.Should().Be(message);
+                var files = directoryInfo.GetFiles("*.log");
+                var fileNames = files.Select(x => x.Name).Single();
+                fileNames.Should().Be(expectedFileName);
             }
         }
 
@@ -67,19 +71,22 @@ namespace Sphere10.Framework.Tests.Logging
                 string fileNamePattern = "testlogger###_debug";
                 string fileName = "testlogger";
                 var message = _random.NextString(1, 10);
-                int messageSize = Encoding.Unicode.GetByteCount(message);
-                var logger = new RollingFileLogger(dir, fileNamePattern, 3, messageSize);
+                int messageSize = RollingFileLogger.TextEncoding.GetByteCount(message + System.Environment.NewLine);
+                var logger = new RollingFileLogger(dir, fileNamePattern, 3, messageSize*2);
 
-                logger.Info(message);
-                logger.Info(message);
-                logger.Info(message);
-                logger.Info(message);
+                // max file size is twice message size. resulting 3 files should be numbered half of log count
+                int logCount = 100;
+                for (int i = 0; i < logCount; i++)
+                {
+                    logger.Info(message);
+                }
 
                 var directoryInfo = new DirectoryInfo(dir);
-                var files = directoryInfo.GetFiles(fileName + "*");
+                var files = directoryInfo.GetFiles("*.log");
                 var fileNames = files.Select(x => x.Name);
-               
-                fileNames.Should().BeEquivalentTo($"{fileName}002_debug.log", $"{fileName}003_debug.log", $"{fileName}004_debug.log");
+
+                fileNames.Should().BeEquivalentTo($"{fileName}048_debug.log", $"{fileName}049_debug.log",
+                    $"{fileName}050_debug.log");
             }
         }
 
@@ -110,21 +117,21 @@ namespace Sphere10.Framework.Tests.Logging
                 {
                     logger.Info(messages[i]);
                 }
-                
+
                 var directoryInfo = new DirectoryInfo(dir);
                 var files = directoryInfo.GetFiles(fileName + "*");
                 var fileNames = files.Select(x => x.Name);
-               
-               fileNames.Should().BeEquivalentTo($"{fileName}001_debug.log");
+
+                fileNames.Should().BeEquivalentTo($"{fileName}001_debug.log");
 
 
-               var contents = messages.Aggregate((x, y) => x + System.Environment.NewLine + y);
-               
-               using var textReader = new StreamReader(files.Single().FullName);
-               var fileContents = textReader.ReadToEnd();
-               
-               //contents from file has a whitespace at the end for some reason, trim it
-               fileContents.Trim().Should().Be(contents);
+                var contents = messages.Aggregate((x, y) => x + System.Environment.NewLine + y);
+
+                using var textReader = new StreamReader(files.Single().FullName);
+                var fileContents = textReader.ReadToEnd();
+
+                //contents from file has a whitespace at the end for some reason, trim it
+                fileContents.Trim().Should().Be(contents);
             }
         }
     }

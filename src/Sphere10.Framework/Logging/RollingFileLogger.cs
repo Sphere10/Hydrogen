@@ -25,6 +25,7 @@ namespace Sphere10.Framework {
 		private readonly string _extension = ".log";
 		private FileAppendTextWriter _textWriter;
 		private FileInfo _currentFile;
+		private int _currentFileSizeBytes;
 		
 		/// <summary>
 		/// It is necessary to have an encoding specified so that the number of bytes a message will require can be calculated to maintain
@@ -41,10 +42,13 @@ namespace Sphere10.Framework {
 		/// <param name="maxFileSize">The maximum byte-size of a log-file before further logging is rolled-over into a new log-file.</param>
 		/// <remarks>A <paramref name="logFileNameTemplate"/> parameter value of "ImageStudio_####.log" would result in log-files with paths "%Directory%/ImageStudio_0001.log", "%Directory%/ImageStudio_0002.log", etc</remarks>
 		public RollingFileLogger(string directoryPath, string logFileNameTemplate, int maxFiles, int maxFileSize) {
-			Guard.Argument(Directory.Exists(directoryPath), directoryPath, "Directory does not exist");
+			Guard.Argument(Tools.FileSystem.IsWellFormedDirectoryPath(directoryPath), nameof(directoryPath), "Directory path is not well formed.");
+			Guard.Argument(Directory.Exists(directoryPath), directoryPath, "Directory does not exist.");
 			Guard.ArgumentInRange(maxFiles, 1, 9999, nameof(maxFiles));
 			Guard.ArgumentInRange(maxFileSize, 1, int.MaxValue, nameof(maxFileSize));
+			
 			Guard.ArgumentNotNullOrEmpty(logFileNameTemplate, nameof(logFileNameTemplate));
+			Guard.Argument(Tools.FileSystem.IsWellFormedFileName(logFileNameTemplate), logFileNameTemplate, "Log file name template contains invalid characters.");
 
 			DirectoryPath = directoryPath;
 			LogFileNameTemplate = logFileNameTemplate;
@@ -97,17 +101,20 @@ namespace Sphere10.Framework {
 			message += Environment.NewLine;
 			var bytesRequired = TextEncoding.GetByteCount(message);
 			
-			_currentFile?.Refresh();
-			if (_currentFile is null || !_currentFile.Exists || _currentFile.Length + bytesRequired > MaxFileSize) {
-				_textWriter?.Close();
+			if (_currentFile is null 
+			    || !_currentFile.Exists 
+			    || _currentFileSizeBytes + bytesRequired > MaxFileSize) {
 				
+				_textWriter?.Close();
 				var logfile = GetNewLogFileInfo();
 				_textWriter = new FileAppendTextWriter(logfile.FullName, TextEncoding, true);
 				_currentFile = logfile;
+				_currentFileSizeBytes = 0;
 			}
 			
 			_textWriter.Write(message);
 			_textWriter.Flush();
+			_currentFileSizeBytes += bytesRequired;
 		}
 
 		/// <summary>

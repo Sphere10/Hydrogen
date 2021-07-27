@@ -55,6 +55,17 @@ namespace Tools {
             return true;
         }
 
+        public static bool IsWellFormedFileName(string fileName) {
+	        var invalidFIleNameChars = new string(Path.GetInvalidFileNameChars());
+	        invalidFIleNameChars += @":/?*" + "\"";
+	        var containsABadCharacter = new Regex("[" + Regex.Escape(invalidFIleNameChars) + "]");
+	        
+	        if (containsABadCharacter.IsMatch(fileName))
+		        return false;
+	        else 
+				return true;
+        }
+
         public static string GetParentDirectoryPath(string path, int parentLevel = 1) {
             for (var i = 0; i < parentLevel; i++)
                 path = Path.GetDirectoryName(path);

@@ -92,9 +92,9 @@ namespace Sphere10.Framework.Tests {
 		private IBloomFilter<string> CreateFilter(decimal targetError, int maxExpectedItems, int hashRounds, BloomFilterType bloomFilterType) {
 			switch (bloomFilterType) {
 				case BloomFilterType.MurMur3:
-					return new MurMur3BloomFilter<string>(targetError, maxExpectedItems, hashRounds, new StringSerializer(Encoding.Unicode));
+					return new MurMur3BloomFilter<string>(targetError, maxExpectedItems, hashRounds, new StringSerializer(Encoding.ASCII));
 				case BloomFilterType.HashBased_SHA2_256:
-					return new HashedBloomFilter<string>(targetError, maxExpectedItems, hashRounds, CHF.SHA2_256, new StringSerializer(Encoding.Unicode));
+					return new HashedBloomFilter<string>(targetError, maxExpectedItems, hashRounds, CHF.SHA2_256, new StringSerializer(Encoding.ASCII));
 				default:
 					throw new ArgumentOutOfRangeException(nameof(bloomFilterType), bloomFilterType, null);
 			}

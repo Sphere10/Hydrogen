@@ -1,77 +1,115 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using System.Text;
 
 namespace Sphere10.Framework {
 	public abstract class GenericItemSerializer {
 
-		protected static readonly SynchronizedDictionary<Type, int> Registrations = new();
+		protected readonly SynchronizedDictionary<Type, int> Registrations = new();
 
-		protected static readonly SynchronizedDictionary<Type, IItemSerializer<object>> Serializers = new();
+		protected readonly SynchronizedDictionary<Type, IItemSerializer<object>> Serializers = new();
 
 		public GenericItemSerializer() {
-			// special type headers
-			Register(typeof(NullValue));
-			Register(typeof(CircularReference));
-
-			// built-in .NET types registered, no custom serializer required.
-			Register(typeof(Nullable<>));
-			Register(typeof(Dictionary<,>));
-			Register(typeof(List<>));
-			Register(typeof(ArrayList));
-			Register(typeof(Array));
-			Register(typeof(object));
-			Register(typeof(string));
-			Register(typeof(int));
-			Register(typeof(char));
-			Register(typeof(decimal));
-			Register(typeof(double));
-			Register(typeof(bool));
-			Register(typeof(byte));
-
-			Register(new DateTimeSerializer());
-			Register(new DateTimeOffsetSerializer());
-			Register(new DecimalSerializer());
-			Register(new StringSerializer(Encoding.UTF8));
-			Register(new ByteArraySerializer());
+			
+			RegisterType<NullValue>();
+			RegisterType<CircularReference>();
+			
+			RegisterSerializer(new DateTimeSerializer());
+			RegisterSerializer(new DateTimeOffsetSerializer());
+			RegisterSerializer(new DecimalSerializer());
+			RegisterSerializer(new StringSerializer(Encoding.UTF8));
+			RegisterSerializer(new ByteArraySerializer());
 		}
 
-		public static void Register<T>() where T : new() => Register<T>(Registrations.Count + 1);
+		/// <summary>
+		/// Registers the type with the serializer. Required to serialize and deserialize types.
+		/// </summary>
+		/// <typeparam name="T"> type to register.</typeparam>
+		public void RegisterType<T>() where T : new() => RegisterType(typeof(T));
 
-		public static void Register<T>(int typeCode) where T : new() => Register(typeof(T), typeCode);
+		/// <summary>
+		/// Registers the type with the serializer. Required to serialize and deserialize types.
+		/// </summary>
+		/// <param name="type"> type to register</param>
+		public void RegisterType(Type type) => RegisterTypeInternal(type);
 
-		public static void Register<T>(IItemSerializer<T> serializer) => Register(serializer, Registrations.Count + 1);
+		public void RegisterSerializer<T>(IItemSerializer<T> serializer) => RegisterSerializer(typeof(T), serializer.AsBaseSerializer<T, object>());
 
-		public static void Register(Type type, IItemSerializer<object> serializer) => Register(type, serializer, Registrations.Count + 1);
-
-		public static void Register(Type type) => Register(type, Registrations.Count + 1);
-
-		public static void Register<T>(IItemSerializer<T> serializer, int typeCode) => Register(typeof(T), serializer.AsBaseSerializer<T, object>(), typeCode);
-
-		protected static void Register(Type type, IItemSerializer<object> serializer, int typeCode) {
-			Registrations.TryAdd(type, typeCode);
+		protected void RegisterSerializer(Type type, IItemSerializer<object> serializer) {
+			RegisterType(type);
 			Serializers.TryAdd(type, serializer);
 		}
 
-		protected static void Register(Type type, int typecode) {
-			Registrations.TryAdd(type, typecode);
+		/// <summary>
+		/// Gets the type code for type. If the type has not been registered, it is added to known type
+		/// registrations.
+		/// </summary>
+		/// <param name="type"></param>
+		/// <returns></returns>
+		protected int GetTypeCode(Type type) {
+			if (Registrations.ContainsKey(type))
+				return Registrations[type];
+			else {
+				var code = CreateTypeCodeForType(type);
+				Registrations.Add(type, code);
+				return code;
+			}
+		}
+		
+		private int CreateTypeCodeForType(Type type) {
+			var nameHash = Hashers.Hash(CHF.SHA2_256, Encoding.UTF8.GetBytes(type.AssemblyQualifiedName));
+			return EndianBitConverter.Little.ToInt32(nameHash[..4]);
+		}
+
+		/// <summary>
+		/// Registers the type and its properties' types, recursively. 
+		/// </summary>
+		/// <param name="type"></param>
+		private void RegisterTypeInternal(Type type) {
+			if (type.IsGenericType) {
+				var genericDef = type.GetGenericTypeDefinition();
+				Registrations.TryAdd(genericDef, CreateTypeCodeForType(genericDef));
+				foreach (var argument in type.GetGenericArguments())
+					Registrations.TryAdd(argument, CreateTypeCodeForType(argument));
+			} else if (type.IsArray) {
+				Registrations.TryAdd(typeof(Array), CreateTypeCodeForType(typeof(Array)));
+				Registrations.TryAdd(type.GetElementType(), CreateTypeCodeForType(type.GetElementType()));
+			} else
+				Registrations.TryAdd(type, CreateTypeCodeForType(type));
+
+			foreach (var property in GetSerializableProperties(type)) {
+				if (!Registrations.ContainsKey(property.PropertyType))
+					RegisterTypeInternal(property.PropertyType);
+			}
+		}
+
+		/// <summary>
+		/// Get <see cref="PropertyInfo"/> of a given type that can be serialized. 
+		/// </summary>
+		/// <param name="type"></param>
+		/// <returns></returns>
+		protected PropertyInfo[] GetSerializableProperties(Type type) {
+			return type.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static)
+				.Where(x => x.CanRead && x.CanWrite)
+				.ToArray();
 		}
 
 
+		/// <summary>
+		/// Internal struct used by the generic serializer to indicate null. 
+		/// </summary>
 		protected struct NullValue {
 		}
 
-
+		/// <summary>
+		/// Internal struct used by the generic serializer to indicate a circular reference
+		/// </summary>
 		protected struct CircularReference {
-			public int TypeIndex { get; set; }
+			public int TypeCode { get; set; }
 
 			public ushort Index { get; set; }
-		}
-
-
-		protected int GetTypeIndex(Type type) {
-			return Registrations.ContainsKey(type) ? Registrations[type] : throw new InvalidOperationException($"Type {type.Name} is not registered, add using Register<T>()");
 		}
 	}
 }

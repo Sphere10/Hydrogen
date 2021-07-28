@@ -13,6 +13,14 @@ namespace Sphere10.Framework {
 
 		public int FixedSize => -1;
 
+		/// <summary>
+		/// Initialize a new instance of <see cref="GenericItemSerializer"/>. Registers generic type param
+		/// in type registrations.
+		/// </summary>
+		public GenericItemSerializer() {
+			RegisterType<T>();
+		}
+
 		private static Lazy<GenericItemSerializer<T>> DefaultInstance { get; } = new(() => new GenericItemSerializer<T>(), LazyThreadSafetyMode.ExecutionAndPublication);
 
 		public static IItemSerializer<T> Default => DefaultInstance.Value;
@@ -20,15 +28,12 @@ namespace Sphere10.Framework {
 		public int CalculateTotalSize(IEnumerable<T> items, bool calculateIndividualItems, out int[] itemSizes) {
 
 			var itemsArray = items as T[] ?? items.ToArray();
-
 			var sizes = new int[itemsArray.Length];
 
-			for (int i = 0; i < itemsArray.Length; i++) {
+			for (int i = 0; i < itemsArray.Length; i++)
 				sizes[i] = CalculateSize(itemsArray[i]);
-			}
 
 			itemSizes = calculateIndividualItems ? sizes : null;
-
 			return sizes.Sum(x => x);
 		}
 
@@ -67,7 +72,7 @@ namespace Sphere10.Framework {
 			var propertyValueType = propertyType;
 
 			if (RequiresTypeHeader(propertyType))
-				propertyValueType = ReadTypeHeader(context);
+				propertyValueType = ReadTypeHeader(propertyType, context);
 
 			if (Serializers.TryGetValue(propertyValueType, out var serializer))
 				return serializer.Deserialize(0, context.Reader);
@@ -143,7 +148,7 @@ namespace Sphere10.Framework {
 				var count = reader.ReadInt32();
 
 				for (var i = 0; i < count; i++) {
-					var itemType = collectionType.IsGenericType ? collectionType.GenericTypeArguments[0] : ReadTypeHeader(context);
+					var itemType = collectionType.IsGenericType ? collectionType.GenericTypeArguments[0] : ReadTypeHeader(typeof(object), context);
 					var obj = DeserializeInternal(itemType, context);
 					addMethod.FastInvoke(list, new[] { obj });
 				}
@@ -207,15 +212,14 @@ namespace Sphere10.Framework {
 			}
 
 			var instance = Tools.Object.Create(propertyType);
-			foreach (var field in GetSerializableProperties(propertyType)) {
+			foreach (var field in GetSerializableProperties(propertyType))
 				field.FastSetValue(instance, DeserializeInternal(field.PropertyType, context));
-			}
 
 			return instance;
 		}
 
 		private object DeserializeCircularReference(SerializationContext context) {
-			var referenceType = ReadTypeHeader(context);
+			var referenceType = ReadTypeHeader(typeof(object), context);
 			var index = (ushort)DeserializePrimitive(typeof(ushort), context);
 			return context.GetObjectByIndex(referenceType, index);
 		}
@@ -238,7 +242,7 @@ namespace Sphere10.Framework {
 
 		private void SerializeInternal(Type propertyType, object propertyValue, SerializationContext context) {
 			if (propertyValue is null)
-				SerializePrimitive(Registrations[typeof(NullValue)], context);
+				SerializePrimitive(GetTypeCode(typeof(NullValue)), context);
 			else {
 				var valueType = propertyValue.GetType();
 
@@ -393,55 +397,71 @@ namespace Sphere10.Framework {
 			       || propertyType == typeof(string)
 			       || propertyType == typeof(CircularReference);
 		}
-		
-		private Type ReadTypeHeader(SerializationContext context) {
-			var typeIndex = context.Reader.ReadInt32();
+
+		private Type ReadTypeHeader(Type propertyType, SerializationContext context) {
+			var serializedTypeCode = context.Reader.ReadInt32();
 
 			Type type;
-			if (Registrations.Any(x => x.Value == typeIndex)) {
+			if (Registrations.Any(x => x.Value == serializedTypeCode)) {
 				// Performance, iterating dictionary to match value.
-				type = Registrations.Single(x => x.Value == typeIndex).Key;
-			} else
-				throw new InvalidOperationException($"Unknown type index {typeIndex} found while reading type header");
+				type = Registrations.Single(x => x.Value == serializedTypeCode).Key;
+			} else {
+				// serialized type code is not known - either not serialized by this instance or not yet deserialized.
+				// in polymorphic scenarios where the property type does not match the value type then deserialization
+				// will fail here as the real type must be pre-registered.
+				var knownType = propertyType.IsGenericType ? propertyType.GetGenericTypeDefinition() : propertyType;
+				var propertyTypeCode = GetTypeCode(knownType);
 
-			if (type.IsGenericType)
-				type = type.MakeGenericType(
-					type.GetGenericArguments()
-						.Select(_ => ReadTypeHeader(context))
-						.ToArray());
+				if (propertyTypeCode == serializedTypeCode)
+					type = knownType;
+				else
+					throw new InvalidOperationException($"Unknown serialized type code {propertyTypeCode} for property type {propertyType}, register type.");
+			}
+
+			if (type.IsGenericType) {
+
+				Type[] genericArgs;
+				if (propertyType.IsGenericType)
+					genericArgs = propertyType.GetGenericArguments()
+						.Select(x => ReadTypeHeader(x, context))
+						.ToArray();
+				else {
+					// property value is generic, but property type is not (e.g. object). See if generic param type is registered.
+					genericArgs = type.GetGenericArguments()
+						.Select(x => ReadTypeHeader(typeof(object), context))
+						.ToArray();
+				}
+
+				type = type.MakeGenericType(genericArgs);
+			}
+
 
 			if (type == typeof(Array)) {
-				var elementType = ReadTypeHeader(context);
+				var elementType = ReadTypeHeader(propertyType.GetElementType(), context);
 				type = elementType.MakeArrayType();
 			}
 
 			return type;
 		}
-		
+
 		private void CreateTypeHeader(Type valueType, SerializationContext context) {
 			if (valueType.IsArray) {
 				if (valueType.GetArrayRank() > 1)
 					throw new InvalidOperationException("Multi-dimension arrays are not supported.");
 
-				SerializePrimitive(GetTypeIndex(typeof(Array)), context);
-				SerializePrimitive(GetTypeIndex(valueType.GetElementType()), context);
+				SerializePrimitive(GetTypeCode(typeof(Array)), context);
+				SerializePrimitive(GetTypeCode(valueType.GetElementType()), context);
 
 			} else
-				SerializePrimitive(GetTypeIndex(valueType.IsGenericType ? valueType.GetGenericTypeDefinition() : valueType), context);
+				SerializePrimitive(GetTypeCode(valueType.IsGenericType ? valueType.GetGenericTypeDefinition() : valueType), context);
 
 			if (valueType.IsGenericType) {
 				foreach (var typeArgument in valueType.GenericTypeArguments) {
-					SerializePrimitive(GetTypeIndex(typeArgument), context);
+					SerializePrimitive(GetTypeCode(typeArgument), context);
 				}
 			}
 		}
-		
-		private PropertyInfo[] GetSerializableProperties(Type type) {
-			return type.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static)
-				.Where(x => x.CanRead && x.CanWrite)
-				.ToArray();
-		}
-		
+
 		/// <summary>
 		/// Determines whether <paramref name="value"/> is a reference to an object that has already been
 		/// seen during serialization. If so, out value contains a CircularReference struct to be serialized instead.
@@ -458,7 +478,7 @@ namespace Sphere10.Framework {
 				if (context.TryGetObjectRefIndex(value, out var index)) {
 					circularReference = new CircularReference {
 						Index = (ushort)index,
-						TypeIndex = GetTypeIndex(valueType)
+						TypeCode = GetTypeCode(valueType)
 					};
 					return true;
 				} else
@@ -466,7 +486,8 @@ namespace Sphere10.Framework {
 			} else
 				return false;
 		}
-		
+
+
 		private class SerializationContext {
 
 			/// <summary>

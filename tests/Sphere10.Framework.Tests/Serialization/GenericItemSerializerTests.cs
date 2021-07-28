@@ -12,23 +12,7 @@ namespace Sphere10.Framework.Tests
     public class GenericItemSerializerTests
     {
         private readonly IFixture _fixture = new Fixture();
-
-        public GenericItemSerializerTests()
-        {
-            GenericItemSerializer.Register<EnumObj>();
-            GenericItemSerializer.Register<SubClassObj>();
-            GenericItemSerializer.Register(typeof(CircularReferenceObj));
-            GenericItemSerializer.Register(typeof(GenericTypeObj<,>));
-            GenericItemSerializer.Register(typeof(SortedSet<>));
-            GenericItemSerializer.Register<ObjectObj>();
-            GenericItemSerializer.Register<GenericTypeObj>();
-            GenericItemSerializer.Register<ReferenceTypeObject>();
-            GenericItemSerializer.Register<PrimitiveTestObject>();
-            GenericItemSerializer.Register<ValueTypeTestObject>();
-            GenericItemSerializer.Register<CollectionTestObject>();
-            GenericItemSerializer.Register<NullTestObject>();
-        }
-
+        
         [Test]
         public void PrimitiveSerializeDeserialize()
         {
@@ -112,7 +96,7 @@ namespace Sphere10.Framework.Tests
         {
             var item = _fixture.Create<ReferenceTypeObject>();
 
-            var serializer = GenericItemSerializer<ReferenceTypeObject>.Default;
+            IItemSerializer<ReferenceTypeObject> serializer = new GenericItemSerializer<ReferenceTypeObject>();
 
             using var memoryStream = new MemoryStream();
             var writer = new EndianBinaryWriter(EndianBitConverter.Little, memoryStream);
@@ -122,7 +106,8 @@ namespace Sphere10.Framework.Tests
 
             memoryStream.Seek(0, SeekOrigin.Begin);
             var reader = new EndianBinaryReader(EndianBitConverter.Little, memoryStream);
-            var deserializedItem = serializer.Deserialize(byteCount, reader);
+            IItemSerializer<ReferenceTypeObject> deserializer = new GenericItemSerializer<ReferenceTypeObject>();
+            var deserializedItem = deserializer.Deserialize(byteCount, reader);
 
             deserializedItem.Should().BeEquivalentTo(item);
         }
@@ -131,7 +116,7 @@ namespace Sphere10.Framework.Tests
         public void GenericReferenceTypeSerializeDeserialize()
         {
             var item = _fixture.Create<GenericTypeObj>();
-            var serializer = GenericItemSerializer<GenericTypeObj>.Default;
+            IItemSerializer<GenericTypeObj> serializer = new GenericItemSerializer<GenericTypeObj>();
 
             using var memoryStream = new MemoryStream();
             var writer = new EndianBinaryWriter(EndianBitConverter.Little, memoryStream);
@@ -141,7 +126,8 @@ namespace Sphere10.Framework.Tests
 
             memoryStream.Seek(0, SeekOrigin.Begin);
             var reader = new EndianBinaryReader(EndianBitConverter.Little, memoryStream);
-            var deserializedItem = serializer.Deserialize(byteCount, reader);
+            IItemSerializer<GenericTypeObj> deserializer = new GenericItemSerializer<GenericTypeObj>();
+            var deserializedItem = deserializer.Deserialize(byteCount, reader);
 
             deserializedItem.Should().BeEquivalentTo(item);
         }
@@ -160,7 +146,7 @@ namespace Sphere10.Framework.Tests
 
             parent.A.A = parent;
 
-            var serializer = GenericItemSerializer<CircularReferenceObj>.Default;
+            IItemSerializer<CircularReferenceObj> serializer = new GenericItemSerializer<CircularReferenceObj>();
 
             using var memoryStream = new MemoryStream();
             var writer = new EndianBinaryWriter(EndianBitConverter.Little, memoryStream);
@@ -170,7 +156,9 @@ namespace Sphere10.Framework.Tests
 
             memoryStream.Seek(0, SeekOrigin.Begin);
             var reader = new EndianBinaryReader(EndianBitConverter.Little, memoryStream);
-            var deserializedItem = serializer.Deserialize(byteCount, reader);
+            
+            IItemSerializer<CircularReferenceObj> deserializer = new GenericItemSerializer<CircularReferenceObj>();
+            var deserializedItem = deserializer.Deserialize(byteCount, reader);
 
             deserializedItem
                 .Should()
@@ -189,17 +177,25 @@ namespace Sphere10.Framework.Tests
                 E = _fixture.Create<byte[]>()
             };
 
-            var serializer = GenericItemSerializer<ObjectObj>.Default;
-
+            var serializer = GenericItemSerializer<ObjectObj>.Default as GenericItemSerializer<ObjectObj>;
+            serializer.RegisterType<List<int>>();
+            serializer.RegisterType<ReferenceTypeObject>();
+            serializer.RegisterType<bool>();
             using var memoryStream = new MemoryStream();
             var writer = new EndianBinaryWriter(EndianBitConverter.Little, memoryStream);
-            var byteCount = serializer.Serialize(item, writer);
+            serializer.TrySerialize(item, writer, out var byteCount);
 
             Assert.AreEqual(memoryStream.Length, byteCount);
 
             memoryStream.Seek(0, SeekOrigin.Begin);
             var reader = new EndianBinaryReader(EndianBitConverter.Little, memoryStream);
-            var deserializedItem = serializer.Deserialize(byteCount, reader);
+            
+            var newSerializer = new GenericItemSerializer<ObjectObj>();
+            newSerializer.RegisterType<ObjectObj>();
+            newSerializer.RegisterType<List<int>>();
+            newSerializer.RegisterType<ReferenceTypeObject>();
+            newSerializer.RegisterType<bool>();
+            newSerializer.TryDeserialize(byteCount, reader, out var deserializedItem);
 
             deserializedItem.Should().BeEquivalentTo(item);
         }
@@ -213,13 +209,17 @@ namespace Sphere10.Framework.Tests
                 _fixture.Create<SubClassObj>()
             };
 
-            var serializer = GenericItemSerializer<List<PrimitiveTestObject>>.Default;
+            IItemSerializer<List<PrimitiveTestObject>> serializer = new GenericItemSerializer<List<PrimitiveTestObject>>();
 
             var stream = new MemoryStream();
             serializer.Serialize(list, new EndianBinaryWriter(EndianBitConverter.Little, stream));
             stream.Seek(0, SeekOrigin.Begin);
             var reader = new EndianBinaryReader(EndianBitConverter.Little, stream);
-            var item = serializer.Deserialize(0, reader);
+            IItemSerializer<List<PrimitiveTestObject>> deserializer = new GenericItemSerializer<List<PrimitiveTestObject>>();
+            
+            // Subclass instance must be registered
+            ((GenericItemSerializer<List<PrimitiveTestObject>>)deserializer).RegisterType<SubClassObj>();
+            var item = deserializer.Deserialize(0, reader);
 
             item.Should().BeEquivalentTo(list);
         }
@@ -227,14 +227,19 @@ namespace Sphere10.Framework.Tests
         [Test]
         public void SubClassSerializeDeserialize()
         {
-            var serializer = GenericItemSerializer<PrimitiveTestObject>.Default;
+            IItemSerializer<PrimitiveTestObject> serializer = new GenericItemSerializer<PrimitiveTestObject>();
             var item = _fixture.Create<SubClassObj>();
 
             var stream = new MemoryStream();
             serializer.Serialize(item, new EndianBinaryWriter(EndianBitConverter.Little, stream));
             stream.Seek(0, SeekOrigin.Begin);
+            
             var reader = new EndianBinaryReader(EndianBitConverter.Little, stream);
-            var deserialized = serializer.Deserialize(0, reader);
+            IItemSerializer<PrimitiveTestObject> deserializer = new GenericItemSerializer<PrimitiveTestObject>();
+            
+            //Subclass instance must be registered during deserialization. 
+            ((GenericItemSerializer<PrimitiveTestObject>)deserializer).RegisterType<SubClassObj>();
+            var deserialized = deserializer.Deserialize(0, reader);
 
             deserialized.Should().BeEquivalentTo(item);
         }
@@ -282,13 +287,15 @@ namespace Sphere10.Framework.Tests
         public void EnumSerializeDeserialize()
         {
             var item = _fixture.Create<EnumObj>();
-            var serializer = GenericItemSerializer<EnumObj>.Default;
+            IItemSerializer<EnumObj> serializer = new GenericItemSerializer<EnumObj>();
 
             using var memoryStream = new MemoryStream();
             var writer = new EndianBinaryWriter(EndianBitConverter.Little, memoryStream);
             var size = serializer.CalculateSize(item);
             Assert.AreEqual(0, memoryStream.Length);
-            var serializedSize = serializer.Serialize(item, writer);
+            
+            IItemSerializer<EnumObj> deserializer = new GenericItemSerializer<EnumObj>();
+            var serializedSize = deserializer.Serialize(item, writer);
             Assert.AreEqual(serializedSize, size);
         }
     }

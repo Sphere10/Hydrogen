@@ -70,15 +70,27 @@ namespace Sphere10.Framework {
 		private void RegisterTypeInternal(Type type) {
 			if (type.IsGenericType) {
 				var genericDef = type.GetGenericTypeDefinition();
-				Registrations.TryAdd(genericDef, CreateTypeCodeForType(genericDef));
-				foreach (var argument in type.GetGenericArguments())
-					Registrations.TryAdd(argument, CreateTypeCodeForType(argument));
-			} else if (type.IsArray) {
-				Registrations.TryAdd(typeof(Array), CreateTypeCodeForType(typeof(Array)));
-				Registrations.TryAdd(type.GetElementType(), CreateTypeCodeForType(type.GetElementType()));
-			} else
-				Registrations.TryAdd(type, CreateTypeCodeForType(type));
+				if (!Registrations.ContainsKey(genericDef))
+					Registrations.TryAdd(genericDef, CreateTypeCodeForType(genericDef));
 
+				foreach (var argument in type.GetGenericArguments()) {
+					if (!Registrations.ContainsKey(argument))
+						Registrations.TryAdd(argument, CreateTypeCodeForType(argument));
+				}
+					
+			} else if (type.IsArray) {
+				if (!Registrations.ContainsKey(typeof(Array)))
+					Registrations.TryAdd(typeof(Array), CreateTypeCodeForType(typeof(Array)));
+
+				var elementType = type.GetElementType();
+				if (!Registrations.ContainsKey(elementType))
+					Registrations.TryAdd(elementType, CreateTypeCodeForType(elementType));
+			} else {
+				if (!Registrations.ContainsKey(type)) {
+					Registrations.TryAdd(type, CreateTypeCodeForType(type));
+				}
+			}
+			
 			foreach (var property in GetSerializableProperties(type)) {
 				if (!Registrations.ContainsKey(property.PropertyType))
 					RegisterTypeInternal(property.PropertyType);

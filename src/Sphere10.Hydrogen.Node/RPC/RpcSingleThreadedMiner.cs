@@ -23,7 +23,7 @@ namespace Sphere10.Hydrogen.Node.RPC {
 		public RpcSingleThreadedMiner(string minerTag, string serverIP, int serverPort) {
 			_miningTask = null;
 			_cancelSource = null;
-			_rpcClient = new JsonRpcClient(new TcpEndPoint(serverIP, serverPort));
+			_rpcClient = new JsonRpcClient(new TcpEndPoint(serverIP, serverPort), JsonRpcConfig.Default);
 			_stats = new Dictionary<string, uint>();
 			MinerTag = minerTag;
 			Status = MinerStatus.Idle;
@@ -67,15 +67,15 @@ namespace Sphere10.Hydrogen.Node.RPC {
 			try {
 				var blockSerializer = new NewMinerBlockSerializer();
 				while (Status != MinerStatus.Idle) {
-					var work = _rpcClient.RemoteCall<NewMinerBlockSurogate>("getwork", MinerTag).ToNonSurrogate();
-					var maxTime = (DateTimeOffset)work.Config["maxtime"];
-					var hashAlgoName = (string)work.Config["hashalgo"];
-					Debug.WriteLine($"Miner: New work packagewith target {work.CompactTarget}. Hashing with {hashAlgoName}");
+					//ignore ["powalgo"], it's alwys monilaAlgo for now
+					var PoWAlgorithm = new MolinaTargetAlgorithm();
+					var miningWork = _rpcClient.RemoteCall<NewMinerBlockSurogate>("getwork", MinerTag);
+					var work = miningWork.ToNonSurrogate(PoWAlgorithm);
+					var maxTime = (DateTimeOffset)miningWork.Config["maxtime"];
+					var hashAlgoName = (string)miningWork.Config["hashalgo"];
 
 					//for R&D purpose, we send hash-algo and pow-algo in Block.Config
 					var HashAlgorithm = StringExtensions.ParseEnum<CHF>(hashAlgoName);
-					//ignore ["powalgo"], it's alwys monilaAlgo for now
-					var PoWAlgorithm = new MolinaTargetAlgorithm();
 					//ICompactTargetAlgorithm DAAlgorithm;
 					//if ((string)work.Config["daaalgo"] == "ASERT2")
 					//	DAAlgorithm = (ICompactTargetAlgorithm)new ASERT2(PoWAlgorithm, new ASERTConfiguration { BlockTime = TimeSpan.Parse((string)work.Config["daaalgo.blocktime"]), RelaxationTime = TimeSpan.Parse((string)work.Config["daaalgo.relaxtime"]) });
@@ -83,7 +83,6 @@ namespace Sphere10.Hydrogen.Node.RPC {
 					//	DAAlgorithm = (ICompactTargetAlgorithm)new ASERT_RTT(PoWAlgorithm, new ASERTConfiguration { BlockTime = TimeSpan.Parse((string)work.Config["daaalgo.blocktime"]), RelaxationTime = TimeSpan.Parse((string)work.Config["daaalgo.relaxtime"]) });
 
 					//Ignore suggested nonce and extra-nonce
-					work.ExtraNonce = (ulong)Tools.Maths.RNG.Next();
 					work.Nonce = (uint)Tools.Maths.RNG.Next();
 
 					uint shareCount = 0;
@@ -92,7 +91,7 @@ namespace Sphere10.Hydrogen.Node.RPC {
 						var proofOfWork = Hashers.Hash(HashAlgorithm, blockSerializer.SerializeLE(work));
 						var pow = PoWAlgorithm.FromDigest(proofOfWork);
 						if (pow > work.CompactTarget) {
-							MiningSolutionResult res = _rpcClient.RemoteCall<MiningSolutionResult>("submit", work.MinerNonce, MinerTag, work.Timestamp, work.ExtraNonce, work.Nonce);
+							MiningSolutionResult res = _rpcClient.RemoteCall<MiningSolutionResult>("submit", miningWork.WorkID, MinerTag, work.UnixTime, work.Nonce);
 							if (res == MiningSolutionResult.Accepted)
 								_stats["accepted"]++;
 							else

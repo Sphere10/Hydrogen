@@ -49,13 +49,13 @@ namespace Sphere10.Framework.Tests.Environment {
             Assert.IsTrue(result.Success);
             var results = result.Value;
 
-            Assert.IsTrue(results.Parameters.Contains("p1"));
-            Assert.IsEmpty(results.Parameters["p1"]);
+            Assert.IsTrue(results.Arguments.Contains("p1"));
+            Assert.IsEmpty(results.Arguments["p1"]);
             Assert.AreEqual("c1", results.SubCommand.CommandName);
-            Assert.AreEqual("p2value", results.SubCommand.Parameters["p2"].Single());
+            Assert.AreEqual("p2value", results.SubCommand.Arguments["p2"].Single());
             Assert.AreEqual("c2", results.SubCommand.SubCommand.CommandName);
-            Assert.AreEqual("p3value", results.SubCommand.SubCommand.Parameters["p3"].First());
-            Assert.AreEqual("p3value2", results.SubCommand.SubCommand.Parameters["p3"].Skip(1).First());
+            Assert.AreEqual("p3value", results.SubCommand.SubCommand.Arguments["p3"].First());
+            Assert.AreEqual("p3value2", results.SubCommand.SubCommand.Arguments["p3"].Skip(1).First());
         }
 
         [Test]
@@ -75,9 +75,9 @@ namespace Sphere10.Framework.Tests.Environment {
             };
 
             var result = args.TryParseArguments(new[] { "--p1", "--p2", "p2value", "--p3", "c1" });
-            Assert.IsEmpty(result.Value.Parameters["p1"]);
-            Assert.AreEqual("p2value", result.Value.Parameters["p2"].Single());
-            Assert.IsEmpty(result.Value.Parameters["p3"]);
+            Assert.IsEmpty(result.Value.Arguments["p1"]);
+            Assert.AreEqual("p2value", result.Value.Arguments["p2"].Single());
+            Assert.IsEmpty(result.Value.Arguments["p3"]);
             Assert.AreEqual("c1", result.Value.SubCommand.CommandName);
         }
 
@@ -102,7 +102,7 @@ namespace Sphere10.Framework.Tests.Environment {
             var result = args.TryParseArguments(new string[] { "--test", "valid", "unittest" });
             Assert.IsTrue(result.Success);
             Assert.AreEqual("unittest", result.Value.SubCommand.CommandName);
-            Assert.AreEqual("valid", result.Value.Parameters["test"].Single());
+            Assert.AreEqual("valid", result.Value.Arguments["test"].Single());
         }
 
         [Test]
@@ -119,7 +119,7 @@ namespace Sphere10.Framework.Tests.Environment {
 
             Assert.IsTrue(result.Success);
             Assert.IsNull(result.Value.SubCommand);
-            Assert.IsEmpty(result.Value.Parameters);
+            Assert.IsEmpty(result.Value.Arguments);
         }
 
         [Test]
@@ -171,7 +171,7 @@ namespace Sphere10.Framework.Tests.Environment {
             var testResult = result.Value.SubCommand;
             var test2Results = testResult.SubCommand;
 
-            Assert.AreEqual("baz", test2Results.Parameters["foo"].Single());
+            Assert.AreEqual("baz", test2Results.Arguments["foo"].Single());
         }
 
         [Test]
@@ -239,8 +239,8 @@ namespace Sphere10.Framework.Tests.Environment {
             var parsed = p.TryParseArguments(args);
 
             Assert.IsTrue(parsed.Success);
-            Assert.AreEqual(1, parsed.Value.Parameters["test"].Count());
-            Assert.AreEqual("test", parsed.Value.Parameters["test"].Single());
+            Assert.AreEqual(1, parsed.Value.Arguments["test"].Count());
+            Assert.AreEqual("test", parsed.Value.Arguments["test"].Single());
         }
 
         [Test]
@@ -264,7 +264,7 @@ namespace Sphere10.Framework.Tests.Environment {
             });
 
             Assert.IsTrue(parsed.Success);
-            Assert.AreEqual(new[] { "a", "b", "c" }, parsed.Value.Parameters["multi"]);
+            Assert.AreEqual(new[] { "a", "b", "c" }, parsed.Value.Arguments["multi"]);
         }
 
         [Test]
@@ -292,7 +292,7 @@ namespace Sphere10.Framework.Tests.Environment {
             });
 
             Assert.IsTrue(valid.Success);
-            Assert.AreEqual("c", valid.Value.Parameters["single"].Single());
+            Assert.AreEqual("c", valid.Value.Arguments["single"].Single());
         }
 
         [Test]
@@ -314,7 +314,7 @@ namespace Sphere10.Framework.Tests.Environment {
 
             Assert.IsFalse(invalid.Success);
             Assert.AreEqual(1, invalid.ErrorMessages.Count());
-            Assert.IsEmpty(invalid.Value.Parameters);
+            Assert.IsEmpty(invalid.Value.Arguments);
 
             var valid = args.TryParseArguments(new[]
             {
@@ -322,7 +322,7 @@ namespace Sphere10.Framework.Tests.Environment {
             });
 
             Assert.IsTrue(valid.Success);
-            Assert.AreEqual("test", valid.Value.Parameters["mandatory"].Single());
+            Assert.AreEqual("test", valid.Value.Arguments["mandatory"].Single());
         }
 
         [Test]
@@ -346,7 +346,7 @@ namespace Sphere10.Framework.Tests.Environment {
 
             Assert.IsFalse(invalid.Success);
             Assert.AreEqual(1, invalid.ErrorMessages.Count());
-            Assert.IsEmpty(invalid.Value.Parameters);
+            Assert.IsEmpty(invalid.Value.Arguments);
 
             var valid = args.TryParseArguments(new[]
             {
@@ -354,7 +354,7 @@ namespace Sphere10.Framework.Tests.Environment {
             });
 
             Assert.IsTrue(valid.Success);
-            Assert.AreEqual("test", valid.Value.Parameters["mAnDaToRy"].Single());
+            Assert.AreEqual("test", valid.Value.Arguments["mAnDaToRy"].Single());
         }
 
         [Test]
@@ -423,8 +423,8 @@ namespace Sphere10.Framework.Tests.Environment {
 
             Assert.IsTrue(valid.Success);
             Assert.IsEmpty(valid.ErrorMessages);
-            Assert.AreEqual("test", valid.Value.Parameters["mandatoryWithDependency"].Single());
-            Assert.AreEqual("test", valid.Value.Parameters["test"].Single());
+            Assert.AreEqual("test", valid.Value.Arguments["mandatoryWithDependency"].Single());
+            Assert.AreEqual("test", valid.Value.Arguments["test"].Single());
         }
 
         [Test]
@@ -455,7 +455,7 @@ namespace Sphere10.Framework.Tests.Environment {
             var parsed = args.TryParseArguments(input);
 
             Assert.IsTrue(parsed.Success);
-            Assert.AreEqual(5, parsed.Value.Parameters.Count());
+            Assert.AreEqual(5, parsed.Value.Arguments.Count());
             Assert.IsEmpty(parsed.ErrorMessages);
         }
     }

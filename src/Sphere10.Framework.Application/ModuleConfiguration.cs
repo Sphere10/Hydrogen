@@ -11,6 +11,9 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
+using System;
+using System.IO;
+
 namespace Sphere10.Framework.Application {
 	public class ModuleConfiguration : ModuleConfigurationBase {
 
@@ -22,10 +25,10 @@ namespace Sphere10.Framework.Application {
 				registry.RegisterComponent<IBackgroundLicenseVerifier, NoOpBackgroundLicenseVerifier>();
 
 			if (!registry.HasImplementationFor<ISettingsProvider>("UserSettings"))
-				registry.RegisterComponentInstance<ISettingsProvider>(UserSettings.CreateDefaultProvider(), "UserSettings");
+				registry.RegisterComponentInstance<ISettingsProvider>(new DirectorySettingsProvider(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), AppDomain.CurrentDomain.FriendlyName)), "UserSettings");
 
 			if (!registry.HasImplementationFor<ISettingsProvider>("SystemSettings"))
-				registry.RegisterComponentInstance<ISettingsProvider>(GlobalSettings.CreateDefaultProvider(), "SystemSettings");
+				registry.RegisterComponentInstance<ISettingsProvider>(new DirectorySettingsProvider(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), AppDomain.CurrentDomain.FriendlyName)), "SystemSettings");
 
 			if (!registry.HasImplementationFor<IConfigurationServices>())
 				registry.RegisterComponent<IConfigurationServices, StandardConfigurationServices>(activation: ActivationType.Singleton);
@@ -73,12 +76,9 @@ namespace Sphere10.Framework.Application {
 			if (!registry.HasImplementationFor<IWebsiteLauncher>())
 				registry.RegisterComponent<IWebsiteLauncher, StandardWebsiteLauncher>();
 
-			if (!registry.HasInitializationTask<IncrementUsageByOneTask>())
-				registry.RegisterInitializationTask<IncrementUsageByOneTask>();
-
-			// Set singleton settings provider
-			UserSettings.Provider = ComponentRegistry.Instance.Resolve<ISettingsProvider>("UserSettings");
-			GlobalSettings.Provider = ComponentRegistry.Instance.Resolve<ISettingsProvider>("SystemSettings");
+			// HS 2021-07-12: top-level application should register this, since it is optional
+			//if (!registry.HasInitializationTask<IncrementUsageByOneTask>())
+			//	registry.RegisterInitializationTask<IncrementUsageByOneTask>();
 
 
 			// Start Tasks

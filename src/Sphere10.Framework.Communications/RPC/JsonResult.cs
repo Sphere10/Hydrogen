@@ -6,7 +6,6 @@ namespace Sphere10.Framework.Communications.RPC {
 
 	[JsonObject(MemberSerialization.OptIn)]
 
-	//public class JsonResponse<T> {
 	public class JsonResponse {
 		[JsonProperty(NullValueHandling = NullValueHandling.Ignore, PropertyName = "jsonrpc")]
 		public string JsonRpc { get; set; } = "2.0";

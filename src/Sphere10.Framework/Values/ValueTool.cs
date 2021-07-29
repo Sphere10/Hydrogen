@@ -29,7 +29,7 @@ namespace Tools {
 		public const string UNDEFINED_STRING = "undef";
 
 
-		public static IFuture<T> LazyLoad<T>(Func<T> valueLoader) => new LazyLoad<T>(valueLoader);
+		public static LazyLoad<T> LazyLoad<T>(Func<T> valueLoader) => new LazyLoad<T>(valueLoader);
 
 		/// <summary>
 		/// Converts an integer into into another base. 

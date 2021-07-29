@@ -12,6 +12,7 @@ using Sphere10.Framework.Communications.RPC;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Sphere10.Framework.Communications;
+using Newtonsoft.Json.Converters;
 
 namespace Sphere10.Framework.Tests {
 	public enum FreeEnum { First, Second, Third };
@@ -38,7 +39,21 @@ namespace Sphere10.Framework.Tests {
 		[JsonConverter(typeof(ByteArrayHexConverter))]
 		public byte[] bytesArray;
 		public FreeEnum enumVal = FreeEnum.First;
+		[JsonConverter(typeof(StringEnumConverter))]
+		public FreeEnum enumVal2 = FreeEnum.First;
 		public Dictionary<string, int> dictionary;
+	}
+
+	public class TestObjectHex
+	{
+		[JsonConverter(typeof(HexadecimalValueConverterReader))]
+		public int hexInt = 0;
+		[JsonConverter(typeof(HexadecimalValueConverterReader))]
+		public uint hexUInt = 0;
+		[JsonConverter(typeof(HexadecimalValueConverterReader))]
+		public UInt64 hexUInt64 = 0;
+		[JsonConverter(typeof(HexadecimalValueConverterReader))]
+		public Int64 hexInt64 = 0;
 	}
 
 	public class TestObjectWithBytesArray
@@ -85,6 +100,7 @@ namespace Sphere10.Framework.Tests {
 				fArray = bp.fArray.Append(1).ToArray(),
 				sVal = bp.sVal + "1",
 				enumVal = bp.enumVal,
+				enumVal2 = bp.enumVal2,
 				bytesArray = bp.bytesArray.ToArray(),
 				dictionary = new Dictionary<string, int>(bp.dictionary)
 			}; 
@@ -173,8 +189,12 @@ namespace Sphere10.Framework.Tests {
 
 		[RpcAPIMethod]
 		public string DirtyJson() { return "BadJson{\a\v{"; }
-	}
 
+		[RpcAPIMethod]
+		public TestObjectHex GetTestObjectHex() { return new TestObjectHex { hexUInt = 999999, hexInt = 88888, hexInt64 = 0x75553333999CCCC1, hexUInt64 = 0xFFFFAAAABBBB3333 }; }
+		[RpcAPIMethod]
+		public TestObjectHex GetTestObjectHex2(TestObjectHex o) { return new TestObjectHex { hexUInt = o.hexUInt+1, hexInt = o.hexInt+1, hexInt64 = o.hexInt64+1, hexUInt64 = o.hexUInt64 +1}; }
+	}
 
 	[TestFixture]
 	[Category("RPC")]
@@ -360,7 +380,7 @@ namespace Sphere10.Framework.Tests {
 				ApiServiceManager.RegisterService(apiTest);
 				ApiServiceManager.RegisterService(arrayClass);
 				//Start server()	
-				server = new JsonRpcServer(new TcpEndPointListener(true, 27000, 5));
+				server = new JsonRpcServer(new TcpEndPointListener(true, 27001, 5), JsonRpcConfig.Default);
 				server.Start();
 				Thread.Sleep(250);
 			} catch (Exception e) {
@@ -371,7 +391,8 @@ namespace Sphere10.Framework.Tests {
 			// Client side
 			try
 			{
-				var client = new JsonRpcClient(new TcpEndPoint("127.0.0.1", 27000));
+				var client = new JsonRpcClient(new TcpEndPoint("127.0.0.1", 27001), JsonRpcConfig.Default);
+
 				//Test objects and array of objects
 				TestObject to = client.RemoteCall<TestObject>("ClassMember.GetTestObject", new TestObject
 				{
@@ -380,15 +401,16 @@ namespace Sphere10.Framework.Tests {
 					sVal = "allo",
 					bytesArray = new byte[] { 9, 2, 3, 8, 9, 4, 5, 6, 7, 8, 1, 9, 3, 7, 6, 5 },
 					enumVal = FreeEnum.Third,
+					enumVal2 = FreeEnum.Second,
 					dictionary = new Dictionary<string, int> { { "zzz", 111 }, { "YYY", 222 }, { "TTT", 333 } },
 				});
 				Assert.AreEqual(to.iVal, 199 + 1);
 				Assert.AreEqual(to.fArray, new float[] { 8, 1 });
 				Assert.AreEqual(to.sVal, "allo1");
 				Assert.AreEqual(to.enumVal, FreeEnum.Third);
+				Assert.AreEqual(to.enumVal2, FreeEnum.Second);
 				Assert.AreEqual(to.bytesArray, new byte[] { 9, 2, 3, 8, 9, 4, 5, 6, 7, 8, 1, 9, 3, 7, 6, 5 });
 				Assert.AreEqual(to.dictionary, new Dictionary<string, int> { { "zzz", 111 }, { "YYY", 222 }, { "TTT", 333 } });
-
 				Assert.AreEqual(client.RemoteCall<Dictionary<string, int>>("classMember.GetTestDictionary", new Dictionary<string, int> { { "a", 8 }, { "b", 10 } }), new Dictionary<string, int> { { "8", 10 }, { "88", 20 }, { "888", 30 } });
 				Assert.AreEqual(client.RemoteCall<Tuple<string, int>[]>("classMember.GetTestArrayOfTuple", "x", 1), new Tuple<string, int>[] { new Tuple<string, int>("x", 1), new Tuple<string, int>("xx", 2), new Tuple<string, int>("xxx", 3) });
 
@@ -451,6 +473,18 @@ namespace Sphere10.Framework.Tests {
 				Assert.AreEqual(client.RemoteCall<TestApi.FixedEnum>("api.TestEnum", FreeEnum.First), TestApi.FixedEnum.Big);
 				Assert.AreEqual(client.RemoteCall<TestApi.FixedEnum>("api.TestEnum", FreeEnum.Second), TestApi.FixedEnum.Medium);
 				Assert.AreEqual(client.RemoteCall<TestApi.FixedEnum>("api.TestEnum", FreeEnum.Third), TestApi.FixedEnum.Small);
+
+				//Test int as hex
+				var ohx = client.RemoteCall<TestObjectHex>("api.GetTestObjectHex");
+				Assert.AreEqual(ohx.hexUInt, 999999);
+				Assert.AreEqual(ohx.hexInt, 88888);
+				Assert.AreEqual(ohx.hexInt64, 0x75553333999CCCC1);
+				Assert.AreEqual(ohx.hexUInt64, 0xFFFFAAAABBBB3333);
+				var ohx2 = client.RemoteCall<TestObjectHex>("api.GetTestObjectHex2", new TestObjectHex { hexUInt = 1234567891, hexInt = 2147483641, hexInt64 = 163245617943825, hexUInt64 = 0xFFFFFFFFFFFFFFF });
+				Assert.AreEqual(ohx2.hexUInt, 1234567891 + 1);
+				Assert.AreEqual(ohx2.hexInt, 2147483641 + 1);
+				Assert.AreEqual(ohx2.hexInt64, 163245617943825 + 1);
+				Assert.AreEqual(ohx2.hexUInt64, 0xFFFFFFFFFFFFFFF + 1);
 
 				//Test batch calls
 				classMemberTest.classMember.TestValue = 156;
@@ -524,6 +558,75 @@ namespace Sphere10.Framework.Tests {
 			ApiServiceManager.UnregisterService("");
 		}
 
+		[Test]
+		public void TestRPC_from_curl()
+		{
+			//----------------------------------------------------
+			// Server side
+			var apiTest = new TestApi();
+			var classMemberTest = new TestClass(); 
+			JsonRpcServer server = null;
+			try
+			{
+				//Register various apis
+				ApiServiceManager.RegisterService(apiTest);
+				ApiServiceManager.RegisterService(classMemberTest.classMember);
+				//Start server()	
+				server = new JsonRpcServer(new TcpEndPointListener(true, 27001, 5), JsonRpcConfig.Default);
+				server.Start();
+				Thread.Sleep(250);
+			}
+			catch (Exception e)
+			{
+				Assert.Fail(e.ToString());
+			}
+
+			Func<string, string> curl = argStr => { 
+				var clientTcp = new TcpEndPoint("127.0.0.1", 27001);
+				var curlMessage = new EndpointMessage("", clientTcp);
+				var result = new EndpointMessage("");
+
+				curlMessage.FromString(argStr);
+				clientTcp.WriteMessage(curlMessage);
+				return clientTcp.ReadMessage().ToString();
+			};
+
+			//----------------------------------------------------
+			// Client side - Simulate calls with curl
+			try
+			{
+				//test HexadecimalValueConverterReader reading/writing
+				string curlRes = curl("    {\"jsonrpc\":\"2.0\",\"method\":\"api.GetTestObjectHex2\",\"params\":[{\"hexInt\":0x7ffffff9,\"hexUInt\":\"0x499602d3\",\"hexUInt64\":\"0xfffffffffffffff\",\"hexInt64\":\"0x947895119511\"}],\"id\":2}   \n  ");
+				JsonResponse jres = JsonConvert.DeserializeObject<JsonResponse>(curlRes, new JsonSerializerSettings { Converters = { { new ByteArrayHexConverter() } } });
+				Assert.AreEqual(jres.Error, null);
+				int hexInt = (int)(jres.Result as JObject)["hexInt"];
+				uint hexUInt = (uint)(jres.Result as JObject)["hexUInt"];
+				Int64 hexInt64 = (Int64)(jres.Result as JObject)["hexInt64"];
+				UInt64 hexUInt64 = (UInt64)(jres.Result as JObject)["hexUInt64"];
+				Assert.AreEqual(hexInt, 0x7ffffff9 + 1);
+				Assert.AreEqual(hexUInt, 0x499602d3 + 1);
+				Assert.AreEqual(hexInt64, 0x947895119511 + 1);
+				Assert.AreEqual(hexUInt64, 0xfffffffffffffff + 1);
+
+				//test Newtonsoft.Json implicit hex reading
+				curlRes = curl("\n{ \"jsonrpc\":\"2.0\",\"method\":\"ClassMember.addint\",\"params\":[0xd,7],\"id\":1}\n");
+				jres = JsonConvert.DeserializeObject<JsonResponse>(curlRes, new JsonSerializerSettings { Converters = { { new ByteArrayHexConverter() } } });
+				Assert.AreEqual(jres.Error, null);
+				Assert.AreEqual((long)jres.Result, 20);
+			}
+			catch (Exception e)
+			{
+				Assert.Fail(e.ToString());
+			}
+
+			//close everything
+			server.Stop();
+			ApiServiceManager.UnregisterService(apiTest);
+			ApiServiceManager.UnregisterService(classMemberTest.classMember);
+			ApiServiceManager.UnregisterService(classMemberTest);
+			ApiServiceManager.UnregisterService("");
+		}
+
 
 		[Test]
 		public void TestTcpRPCSecurityPoliciy_TooManyConnections()
@@ -540,7 +643,7 @@ namespace Sphere10.Framework.Tests {
 				ApiServiceManager.RegisterService(apiTest);
 				//Start server()
 				TcpSecurityPolicies.MaxSimultanousConnecitons = TestMaxConnections;
-				server = new JsonRpcServer(new TcpEndPointListener(true, 27000, 5));
+				server = new JsonRpcServer(new TcpEndPointListener(true, 27001, 5), JsonRpcConfig.Default);
 				server.Start();
 				Thread.Sleep(250);
 			}
@@ -555,14 +658,15 @@ namespace Sphere10.Framework.Tests {
 			{
 				int failed = 0;
 				Thread[] threadsArray = new Thread[TestMaxThreads];
+				//creating 3x more clients/connection than the limit
 				for (int i = 0; i < TestMaxThreads; i++)
 					threadsArray[i] = new Thread((i) =>
 					{
 						Thread.CurrentThread.Name = $"test{i}";
 						try {
-							var socket = new TcpClient("127.0.0.1", 27000);
+							var socket = new TcpClient("127.0.0.1", 27001);
 							socket.Client.ReceiveTimeout = 5000;
-							var client = new JsonRpcClient(new TcpEndPoint(socket));
+							var client = new JsonRpcClient(new TcpEndPoint(socket), JsonRpcConfig.Default);
 							Assert.AreEqual(client.RemoteCall<uint>("api.Add2Diff", 199, -9), 190);
 							Thread.Sleep(250);
 						}

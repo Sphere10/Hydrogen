@@ -11,8 +11,6 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-#if !__PCL__
-
 using System;
 using System.Security.Permissions;
 using System.Threading;
@@ -120,9 +118,7 @@ namespace Sphere10.Framework.Threading {
 		/// Dynamically invokes (late-bound) the method represented by this callback.
 		/// </summary>
 		/// <param name="state">An object containing information to be used by the callback method.</param>
-#if !__MOBILE__
-        [SecurityPermissionAttribute(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.ControlEvidence | SecurityPermissionFlag.ControlPolicy)]
-#endif
+        [SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.ControlEvidence | SecurityPermissionFlag.ControlPolicy)]
 		public void Invoke() {
 			Invoke(null);
 		}
@@ -131,9 +127,7 @@ namespace Sphere10.Framework.Threading {
 		/// Dynamically invokes (late-bound) the method represented by this callback with the given user state object.
 		/// </summary>
 		/// <param name="state">An object containing information to be used by the callback method.</param>
-#if !__MOBILE__
-        [SecurityPermissionAttribute(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.ControlEvidence | SecurityPermissionFlag.ControlPolicy)]
-#endif
+        [SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.ControlEvidence | SecurityPermissionFlag.ControlPolicy)]
 		public void Invoke(object state) {
 			SynchronizationContext current = SynchronizationContext.Current;
 			SynchronizationContext.SetSynchronizationContext(Context);
@@ -342,5 +336,3 @@ namespace Sphere10.Framework.Threading {
 		}
 	}
 }
-
-#endif

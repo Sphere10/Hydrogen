@@ -30,6 +30,12 @@ namespace Sphere10.Framework.Communications {
 				_parent = parent;
 			}
 
+			public TProtocolRequestBuilder RespondWith<TResponse>(Func<TResponse> handler)
+				=> RespondWith(_ => handler());
+
+			public TProtocolRequestBuilder RespondWith<TResponse>(Func<TRequest, TResponse> handler)
+				=> RespondWith((_, request) => handler(request));
+
 			public TProtocolRequestBuilder RespondWith<TResponse>(Func<TChannel, TRequest, TResponse> handler) {
 				_parent.RequestHandlers.Add(typeof(TRequest), new ActionRequestHandler<TChannel, TRequest, TResponse>(handler));
 				return _parent;

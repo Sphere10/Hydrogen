@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Sphere10.Framework;
 using Sphere10.Framework.Application;
 using Sphere10.Helium.Router;
 
@@ -11,8 +12,9 @@ namespace Sphere10.Helium.Framework {
 		}
 
 		public static HeliumFramework Instance { get; }
-
+		public EnumModeOfOperationType ModeOfOperation { get; set; }
 		public IRouter Router { get; set; }
+		public ILogger Logger { get; set; }
 
 		public void StartHeliumFramework() {
 			var heliumAssembly = typeof(ModuleConfiguration).Assembly;

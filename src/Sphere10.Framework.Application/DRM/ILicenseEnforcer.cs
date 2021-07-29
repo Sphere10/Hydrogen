@@ -11,9 +11,6 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-#if !__MOBILE__
-
-
 namespace Sphere10.Framework.Application {
 	public interface ILicenseEnforcer {
 		int CountAppliedLicense { get; }
@@ -23,5 +20,3 @@ namespace Sphere10.Framework.Application {
 		ProductRights Rights { get; }
 	}
 }
-
-#endif

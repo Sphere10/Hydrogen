@@ -11,9 +11,6 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-#if !__MOBILE__
-
-
 namespace Sphere10.Framework.Application {
 
 	public interface ILicenseKeyServices {
@@ -40,5 +37,3 @@ namespace Sphere10.Framework.Application {
 
 	}
 }
-
-#endif

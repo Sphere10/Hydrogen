@@ -19,6 +19,10 @@ namespace Sphere10.Hydrogen.Core {
 
 		public const int HashLength = 32;
 
+		public const int MinerTagSize = 20;
+		
+		public const int BlockHeaderPaddingSize = 66;
+
 		public const int Winternitz_W_Param = 8;
 		
 	}

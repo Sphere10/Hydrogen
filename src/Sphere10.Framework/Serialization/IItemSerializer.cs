@@ -1,10 +1,22 @@
-﻿namespace Sphere10.Framework {
+﻿using System;
+
+namespace Sphere10.Framework {
 	public interface IItemSerializer<TItem> : IItemSizer<TItem> {
 
-		int Serialize(TItem @object, EndianBinaryWriter writer);
+		bool TrySerialize(TItem item, EndianBinaryWriter writer, out int bytesWritten);
 
-		TItem Deserialize(int size, EndianBinaryReader reader);
+		bool TryDeserialize(int byteSize, EndianBinaryReader reader, out TItem item);
 
+		public TItem Deserialize(int byteSize, EndianBinaryReader reader) {
+			if (!TryDeserialize(byteSize, reader, out var item))
+				throw new InvalidOperationException("Unable to deserialize object");
+			return item;
+		}
+
+		public int Serialize(TItem @object, EndianBinaryWriter writer) {
+			if (!TrySerialize(@object, writer, out var bytesWritten))
+				throw new InvalidOperationException("Unable to serialize object");
+			return bytesWritten;
+		}
 	}
-
 }

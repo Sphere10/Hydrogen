@@ -60,33 +60,20 @@ namespace Tools {
 
         public static object CloneObject(object obj, bool deepClone = false, IEnumerable<Type> dontClone = null) {
             IObjectCloner cloner;
-#if __MOBILE__
-            if (deepClone)
-                throw new SoftwareException("Deep copying not supoprted in mobile platforms");
-            cloner = new MobileCompatibleObjectCloner();
-#else
             cloner = deepClone ? (IObjectCloner) new DeepObjectCloner(dontClone) : new ShallowObjectCloner();
-#endif
             return cloner.Clone(obj);
         }
 
         public static void CopyMembers(object source, object dest, bool deepCopy = false) {
-            IObjectCloner cloner;
-#if __MOBILE__
-            if (deepCopy)
-                throw new SoftwareException("Deep copying not supoprted in mobile platforms");
-            cloner = new MobileCompatibleObjectCloner();
-#else
-            cloner = deepCopy ? (IObjectCloner) new DeepObjectCloner() : new ShallowObjectCloner();
-#endif
-            cloner.Copy(source, dest);
+           IObjectCloner cloner;
+           cloner = deepCopy ? (IObjectCloner) new DeepObjectCloner() : new ShallowObjectCloner();
+           cloner.Copy(source, dest);
         }
 
         public static bool Compare(object obj1, object obj2) {
             var comparer = new DeepObjectComparer();
             return comparer.Equals(obj1, obj2);
         }
-
 
         public static void DecryptMembers(object obj) {
             ObjectEncryptor.DecryptMembers(obj);
@@ -95,7 +82,6 @@ namespace Tools {
         public static void EncryptMembers(object obj) {
             ObjectEncryptor.EncryptMembers(obj);
         }
-
 
         public static int CombineHashCodes(int hashCode1, int hashCode2) {
             unchecked {

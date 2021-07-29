@@ -22,39 +22,28 @@ The Hydrogen framework offers the following features:
 
 ## Links
 
-[What is a 3-tier Architecture?](docs/Guidelines/3-tier-Architecture.md)
+#### Architecture
 
-[What is the Hydrogen Framework?](docs/Architecture/Hydrogen.md)
+1. [What is the Hydrogen Framework?](docs/Architecture/Hydrogen.md)
 
-[Framework Domains](docs/Architecture/Domains.md)
+2. [Hydrogen Runtime](docs/Architecture/Runtime.md)
 
-[Code-Styling Guidelines](docs/Guidelines/Code-Styling.md)
+3. [Framework Domains](docs/Architecture/Domains.md)
 
-#### New Technology
+#### Blockchain Technology
 
-[Blockchain: Dynamic Merkle Trees](docs/Blockchain/Dynamic-Merkle-Trees.md) [(PDF)](docs/Blockchain/dynamic-merkle-trees.pdf)
+4. [Blockchain: Dynamic Merkle Trees](docs/Blockchain/Dynamic-Merkle-Trees.md) [(PDF)](docs/Blockchain/dynamic-merkle-trees.pdf)
 
-[Blockchain: Real-Time Targeted Difficulty Adjustment Algorithm](docs/Blockchain/rtt-asert.pdf)
+5. [Blockchain: Real-Time Targeted Difficulty Adjustment Algorithm](docs/Blockchain/rtt-asert.pdf)
 
-[Post-Quantum Cryptography: Abstract Merkle Signatures (AMS)](docs/Blockchain/AMS.md)
+6. [Post-Quantum Cryptography: Abstract Merkle Signatures (AMS)](docs/Blockchain/AMS.md)
 
-[Post-Quantum Cryptography: Winternitz Abstracted Merkle Signatures (WAMS)](docs/Blockchain/WAMS.md)
+7. [Post-Quantum Cryptography: Winternitz Abstracted Merkle Signatures (WAMS)](docs/Blockchain/WAMS.md)
 
-[Post-Quantum Cryptography: Faster and Smaller Winternitz  Signatures](docs/Blockchain/W-OTS-Sharp.md)
+8. [Post-Quantum Cryptography: Faster and Smaller Winternitz  Signatures](docs/Blockchain/W-OTS-Sharp.md)
 
+#### Guidelines
 
+9. [What is a 3-tier Architecture?](docs/Guidelines/3-tier-Architecture.md)
 
-## Overview
-
-#### Runtime Model
-![Hydrogen application runtime-model](docs/Architecture/resources/Hydrogen-Deployment-Host-AppPackage.png)
-
-#### Application Lifecycle
-![Hydrogen application life-cycle](docs/Architecture/resources/HAP-Lifecycle.png)
-
-#### Subsystem composition
-![Hydrogen sub-system decomposition](docs/Architecture/resources/Hydrogen-Deployment-SubSystems.png)
-
-#### Code Structuring (3-tier)
-![Sphere 10 methodology for Framework structuring](docs/Guidelines/resources/Framework-75pct.png)
-
+10. [Code-Styling Guidelines](docs/Guidelines/Code-Styling.md)

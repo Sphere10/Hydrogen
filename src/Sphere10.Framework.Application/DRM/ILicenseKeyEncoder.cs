@@ -11,13 +11,8 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-#if !__MOBILE__
-
-
 namespace Sphere10.Framework.Application {
 	public interface ILicenseKeyEncoder {
 		string GenerateKey(ProductLicense license);
 	}
 }
-
-#endif

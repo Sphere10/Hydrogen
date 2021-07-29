@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Sphere10.Framework {
@@ -16,22 +17,35 @@ namespace Sphere10.Framework {
 
 		public int CalculateSize(ItemListing item) => FixedSize;
 
-		public int Serialize(ItemListing @object, EndianBinaryWriter writer) {
-			writer.Write(@object.Size);
-			writer.Write(@object.ClusterStartIndex);
+		public bool TrySerialize(ItemListing item, EndianBinaryWriter writer, out int bytesWritten) {
+			try {
+				writer.Write(item.Size);
+				writer.Write(item.ClusterStartIndex);
 
-			return sizeof(int) + sizeof(int);
+				bytesWritten = sizeof(int) + sizeof(int);
+
+				return true;
+			} catch (Exception) {
+				bytesWritten = 0;
+				return false;
+			}
 		}
 
-		public ItemListing Deserialize(int size, EndianBinaryReader reader) {
-			int itemSize = reader.ReadInt32();
-			int startIndex = reader.ReadInt32();
+		public bool TryDeserialize(int byteSize, EndianBinaryReader reader, out ItemListing item) {
+			try {
+				var itemSize = reader.ReadInt32();
+				var startIndex = reader.ReadInt32();
 
-			return new ItemListing {
-				ClusterStartIndex = startIndex,
-				Size = itemSize
-			};
+				item = new ItemListing {
+					ClusterStartIndex = startIndex,
+					Size = itemSize
+				};
+
+				return true;
+			} catch (Exception) {
+				item = default;
+				return false;
+			}
 		}
 	}
-
 }

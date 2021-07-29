@@ -94,7 +94,6 @@ namespace Sphere10.Framework {
 			_logger.LogException(componentName, methodName, exception);
 		}
 
-
 		/// <summary>
 		/// Registers a logger which will receive all debug, info, warning and error messages.
 		/// </summary>
@@ -115,8 +114,6 @@ namespace Sphere10.Framework {
 		public static void DeregisterLogger(ILogger logger) {
 			_logger.Remove(logger);
 		}
-
-		
 
 		/// <summary>
 		/// Deregisters a previously registered logger.

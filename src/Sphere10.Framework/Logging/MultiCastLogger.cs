@@ -75,7 +75,7 @@ namespace Sphere10.Framework {
 				if (_multiThreaded)
 					Parallel.ForEach(_loggers, (logger) => Tools.Exceptions.ExecuteIgnoringException(() => logger.Info(message)));
 				else
-					_loggers.ForEach((logger) => Tools.Exceptions.ExecuteIgnoringException(() => logger.Debug(message)));
+					_loggers.ForEach((logger) => Tools.Exceptions.ExecuteIgnoringException(() => logger.Info(message)));
 
 			}
 		}
@@ -85,7 +85,7 @@ namespace Sphere10.Framework {
 				if (_multiThreaded)
 					Parallel.ForEach(_loggers, (logger) => Tools.Exceptions.ExecuteIgnoringException(() => logger.Warning(message)));
 				else
-					_loggers.ForEach((logger) => Tools.Exceptions.ExecuteIgnoringException(() => logger.Debug(message)));
+					_loggers.ForEach((logger) => Tools.Exceptions.ExecuteIgnoringException(() => logger.Warning(message)));
 			}
 		}
 
@@ -94,7 +94,7 @@ namespace Sphere10.Framework {
 				if (_multiThreaded)
 					Parallel.ForEach(_loggers, (logger) => Tools.Exceptions.ExecuteIgnoringException(() => logger.Error(message)));
 				else
-					_loggers.ForEach((logger) => Tools.Exceptions.ExecuteIgnoringException(() => logger.Debug(message)));
+					_loggers.ForEach((logger) => Tools.Exceptions.ExecuteIgnoringException(() => logger.Error(message)));
 			}
 		}
 

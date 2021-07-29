@@ -202,31 +202,44 @@ namespace Sphere10.Framework {
 				Guard.ArgumentInRange(clusterSize, 1, int.MaxValue, nameof(clusterSize));
 				_clusterDataSize = clusterSize;
 			}
-
-			public override int Serialize(Cluster cluster, EndianBinaryWriter writer) {
-				Guard.ArgumentNotNull(cluster, nameof(cluster));
-				Guard.ArgumentNotNull(writer, nameof(writer));
+			
+			public override bool TrySerialize(Cluster item, EndianBinaryWriter writer, out int bytesWritten) {
+				try {
+					Guard.ArgumentNotNull(item, nameof(item));
+					Guard.ArgumentNotNull(writer, nameof(writer));
 				
-				Debug.Assert(cluster.Data.Length == _clusterDataSize);
+					Debug.Assert(item.Data.Length == _clusterDataSize);
 
-				writer.Write((int)cluster.Traits);
-				writer.Write(cluster.Number);
-				writer.Write(cluster.Data);
-				writer.Write(cluster.Next);
+					writer.Write((int)item.Traits);
+					writer.Write(item.Number);
+					writer.Write(item.Data);
+					writer.Write(item.Next);
 
-				return sizeof(int) + _clusterDataSize + sizeof(int) + sizeof(int);
+					bytesWritten = sizeof(int) + _clusterDataSize + sizeof(int) + sizeof(int);
+					
+					return true;
+				} catch (Exception) {
+					bytesWritten = 0;
+					return false;
+				}
 			}
 
-			public override Cluster Deserialize(int size, EndianBinaryReader reader) {
-				Guard.ArgumentNotNull(reader, nameof(reader));
+			public override bool TryDeserialize(int byteSize, EndianBinaryReader reader, out Cluster item) {
+				try {
+					Guard.ArgumentNotNull(reader, nameof(reader));
 				
-				var cluster = new Cluster {
-					Traits = (ClusterTraits)reader.ReadInt32(),
-					Number = reader.ReadInt32(),
-					Data = reader.ReadBytes(_clusterDataSize),
-					Next = reader.ReadInt32()
-				};
-				return cluster;
+					var cluster = new Cluster {
+						Traits = (ClusterTraits)reader.ReadInt32(),
+						Number = reader.ReadInt32(),
+						Data = reader.ReadBytes(_clusterDataSize),
+						Next = reader.ReadInt32()
+					};
+					item = cluster;
+					return true;
+				} catch (Exception) {
+					item = default;
+					return false;
+				}
 			}
 		}
 

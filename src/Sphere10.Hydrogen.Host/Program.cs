@@ -1,84 +1,103 @@
 ﻿using Sphere10.Framework;
+using Sphere10.Framework.Communications;
+using Sphere10.Hydrogen.Core.Runtime;
+using Sphere10.Hydrogen.Core.Storage;
 using System;
+using System.Configuration;
 using System.Diagnostics;
 using System.IO;
-using System.IO.Pipes;
 using System.Linq;
 using System.Net.Sockets;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sphere10.Hydrogen.Host {
 
+
 	class Program {
-		public static CommandLineParameters Arguments = new CommandLineParameters(
-			new[] {
-				"Hydrogen Host v1.0",
+		private static CommandLineParameters Arguments = new CommandLineParameters() {
+			Header = new[] {
+				"HydrogenP2P Host {CurrentVersion}",
 				"Copyright (c) Sphere 10 Software 2021 - {CurrentYear}"
 			},
-			new[] {
+
+			Footer = new[] {
 				"NOTE: The Hydrogen Host will forward all arguments marked [N] above to the Hydrogen Node which is launched as a child-process."
 			},
-			new CommandLineCommand[] {
-				new("development", "Used during development only"),
-				new("config", "Path to the HydrogenHostConfig.ini file used to launch a Hydrogen Node"),
-				new("app", "Path to the Hydrogen Application Package (HAP)"),
-				new("update", "Path to a  which Hydrogen Application Package (HAP)  HydrogenNode executable to host"),
-			});
 
-		private static void RunNode(string nodeExecutable, CancellationToken stopNodeToken) {
-			var nodeProcess = new Process();
-			using var pipeServer = new AnonymousPipeServerStream(PipeDirection.Out, HandleInheritability.Inheritable);
-			nodeProcess.StartInfo.FileName = nodeExecutable;
-			nodeProcess.StartInfo.Arguments = pipeServer.GetClientHandleAsString();
-			nodeProcess.StartInfo.UseShellExecute = false;
-			nodeProcess.Start();
-			pipeServer.DisposeLocalCopyOfClientHandle();
-			using var streamWriter = new StreamWriter(pipeServer) {
-				AutoFlush = true
-			};
-			stopNodeToken.Register(() => streamWriter.WriteLine("ABORT"));
-			//Thread.Sleep(5000);
-			//streamWriter.WriteLine("ABORT");
-			nodeProcess.WaitForExit();
-			nodeProcess.Close();
-		}
+			Parameters = new CommandLineParameter[] {
+				new("path", "Root path for Hydrogen Application and location of where deployments occur", CommandLineParameterOptions.Optional | CommandLineParameterOptions.RequiresValue),
+				new("deploy", "Path to an Hydrogen Application Package (HAP) to deploy ", CommandLineParameterOptions.Optional | CommandLineParameterOptions.RequiresValue),
+				new("verbose", "Logs DEBUG and INFO messages which is useful for diagnostic", CommandLineParameterOptions.Optional),
+				new("development", "Used for development and internal use only", CommandLineParameterOptions.Optional),
+			},
 
-		private static void MonitorHydrogenApplicationUpdate(CancellationTokenSource stopNodeCancellationTokenSource) {
+			Options = CommandLineArgumentOptions.DoubleDash | CommandLineArgumentOptions.PrintHelpOnH
+		};
 
-		}
 
-		private static string GetDevelopmentNodeExecutable() {
-			const string nodeProject = "Sphere10.Hydrogen.Node";
-			const string nodeExecutable = "Sphere10.Hydrogen.Node.exe";
-#if DEBUG
-			const string buildConfiguration = "Debug";
-#elif RELEASE
-			const string buildConfiguration = "Release";
-#else
-#error Unrecognized build configuration
-#endif
-			var hostExecutable = Assembly.GetEntryAssembly()?.Location;
-
-			if (string.IsNullOrEmpty(hostExecutable) || !Path.IsPathFullyQualified(hostExecutable))
-				throw new SoftwareException("Development mode can only be executed from a file-system");
-
-			var srcDir = Tools.FileSystem.GetParentDirectoryPath(hostExecutable, 5);
-			return Path.Combine(srcDir, nodeProject, "bin", buildConfiguration, "net5.0", nodeExecutable);
-		}
-		
-		static void Main(string[] args) {
-			var stopNodeCancellationTokenSource = new CancellationTokenSource();
+		static async Task Main(string[] args) {
 			try {
-				
-				Result<CommandLineResults> parsed = Arguments.TryParseArguments(args);
-				
-				var nodeExecutable = GetDevelopmentNodeExecutable();
-				RunNode(nodeExecutable, stopNodeCancellationTokenSource.Token);
-			}
-			catch (Exception error) {
-				Console.WriteLine($"Hydrogen host terminated abnormally.");
+				var defaultDeployPath = ConfigurationManager.AppSettings["DefaultDeployPath"];
+				var userArgsResult = Arguments.TryParseArguments(args);
+				if (userArgsResult.Failure) {
+					userArgsResult.ErrorMessages.ForEach(Console.WriteLine);
+					return;
+				}
+				var userArgs = userArgsResult.Value;
+				if (userArgs.HelpRequested) {
+					Arguments.PrintHelp();
+					return;
+				}
+
+				// Check no custom path or deployable HAP in development mode
+				if (userArgs.Arguments.Contains("development")) {
+					if (userArgs.Arguments.Contains("path")) {
+						Console.WriteLine("Error: Cannot specify an override 'path' in 'development' mode");
+						return;
+					}
+					if (userArgs.Arguments.Contains("deploy")) {
+						Console.WriteLine("Error: Cannot deploy a HAP in 'development' mode");
+						return;
+					}
+				}
+
+				// Determine Hydrogen Application Paths
+				IApplicationPaths applicationPaths;
+				if (userArgs.Arguments.Contains("development")) {
+					applicationPaths = new DevelopmentApplicationPaths();
+				} else if (userArgs.Arguments.Contains("path")) {
+					applicationPaths = new ApplicationPaths(userArgs.Arguments["path"].Single(), true);
+				} else {
+					applicationPaths = new ApplicationPaths(Tools.Text.FormatEx(ConfigurationManager.AppSettings["AppRoot"]));
+				}
+
+				// Setup the logger
+				ILogger logger = new MulticastLogger(new FileAppendLogger(applicationPaths.HostLog)) {
+					Options = userArgs.Arguments.Contains("verbose")
+						? LogOptions.DebugEnabled | LogOptions.InfoEnabled | LogOptions.WarningEnabled | LogOptions.ErrorEnabled
+						: LogOptions.WarningEnabled | LogOptions.ErrorEnabled
+				};
+
+
+				// Setup the host
+				IHost host = userArgs.Arguments.Contains("development")
+					? new DevelopmentHost(logger, applicationPaths)
+					: new Sphere10.Hydrogen.Core.Runtime.Host(logger, applicationPaths);
+
+
+				// Deploy user specified HAP (if applicable)
+				if (userArgs.Arguments.Contains("deploy")) {
+					await Task.Run(() => host.DeployHAP(defaultDeployPath));
+				}
+
+				// Run the host
+				await host.Run();
+				Console.WriteLine("Hydrogen host terminated succesfully");
+			} catch (Exception error) {
+				Console.WriteLine($"Hydrogen host terminated abnormally");
 				Console.Write(error.ToDiagnosticString());
 			}
 		}

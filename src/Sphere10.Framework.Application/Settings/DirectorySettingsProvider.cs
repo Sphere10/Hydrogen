@@ -15,7 +15,7 @@ using System;
 using System.IO;
 
 namespace Sphere10.Framework.Application {
-	public class DirectorySettingsProvider : BaseSettingsProvider {
+    public class DirectorySettingsProvider : BaseSettingsProvider {
 
 		public DirectorySettingsProvider(string directory, DirectorySettingsProviderPolicy policy = DirectorySettingsProviderPolicy.Default) {
 			BaseDirectory = directory;
@@ -107,12 +107,5 @@ namespace Sphere10.Framework.Application {
 
 		#endregion
 
-	}
-
-	[Flags]
-	public enum DirectorySettingsProviderPolicy {
-		CreateDirectoryIfNotExists				= 1 << 0,
-		UseFullyQualifiedTypeNameInFilename		= 1 << 1,
-		Default									= CreateDirectoryIfNotExists
 	}
 }

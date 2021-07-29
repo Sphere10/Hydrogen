@@ -11,9 +11,6 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-#if !__MOBILE__
-
-
 namespace Sphere10.Framework.Application {
 	public interface ILicenseKeyDecoder {
 
@@ -22,5 +19,3 @@ namespace Sphere10.Framework.Application {
 		bool TryDecode(string key, out ProductLicense license);
 	}
 }
-
-#endif

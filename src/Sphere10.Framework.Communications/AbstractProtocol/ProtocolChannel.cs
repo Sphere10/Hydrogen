@@ -1,11 +1,12 @@
 ﻿using System;
+using System.ComponentModel;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sphere10.Framework.Communications {
 
-    public abstract class ProtocolChannel : IAsyncDisposable {
+    public abstract class ProtocolChannel : IDisposable, IAsyncDisposable {
         public const int DefaultTimeoutMS = 5000;
         private const int DefaultMinMessageLength = 0;
         private const int DefaultMaxMessageLength = 65536;
@@ -56,11 +57,16 @@ namespace Sphere10.Framework.Communications {
 
         protected byte[] MessageEnvelopeMarker { get; init; }
 
-        #endregion
+		#endregion
 
-        #region Methods
+		#region Methods
 
-        public async Task Open() {
+		public async Task Open() {
+			if (!await TryOpen())
+				throw new ProtocolException("Protocol channel could not be opened (endpoint and/or handshake problem)");
+		}
+		
+        public async Task<bool> TryOpen() {
             CheckState(ProtocolChannelState.Closed);
             SetState(ProtocolChannelState.Opening);
             NotifyOpening();
@@ -78,7 +84,9 @@ namespace Sphere10.Framework.Communications {
                 NotifyClosing();
                 _cancelReceiveLoop.Cancel(false);
                 await CloseInternal();
+				return false;
             }
+			return true;
         }
 
         public async Task Close() {
@@ -123,16 +131,18 @@ namespace Sphere10.Framework.Communications {
             return true;
         }
 
+		public async Task SendMessage(ProtocolMessageType messageType, object message) {
+			if (!await TrySendMessage(messageType, message))
+				throw new ProtocolException($"Failed to send message: '{message}'");
+		}
+
         public virtual Task<bool> TrySendMessage(ProtocolMessageType messageType, object message)
             => TrySendMessage(messageType, message, DefaultTimeout);
 
-        public virtual Task<bool> TrySendMessage(ProtocolMessageType messageType, object message, TimeSpan timeout) {
-            var canceller = new CancellationTokenSource(timeout);
-            return TrySendMessage(messageType, message, canceller.Token);
-        }
+        public virtual Task<bool> TrySendMessage(ProtocolMessageType messageType, object message, TimeSpan timeout) 
+			=> TrySendMessage(messageType, message, new CancellationTokenSource(timeout).Token);
 
         public virtual async Task<bool> TrySendMessage(ProtocolMessageType messageType, object message, CancellationToken cancellationToken) {
-
             Guard.Ensure(MessageSerializationEnabled, "Message Serialization is not enabled");
             Guard.Ensure(MessageSerializer != null, "Message Serializer is not set");
             var envelope = new ProtocolMessageEnvelope {
@@ -143,6 +153,16 @@ namespace Sphere10.Framework.Communications {
             return await TrySendEnvelope(envelope, cancellationToken);
         }
 
+        public virtual Task<bool> TryWaitClose(TimeSpan timeout)
+	        => TryWaitClose(new CancellationTokenSource(timeout).Token);
+
+        public virtual Task<bool> TryWaitClose(CancellationToken token) {
+	        var tcs = new TaskCompletionSource<bool>();
+	        token.Register(() => tcs.SetResult(false));
+	        this.Closed += () => tcs.SetResult(true);
+	        return tcs.Task;
+        }
+
         internal virtual async Task<bool> TrySendEnvelope(ProtocolMessageEnvelope envelope, CancellationToken cancellationToken) {
             using var memStream = new MemoryStream();
             using var writer = new EndianBinaryWriter(EndianBitConverter.Little, memStream);
@@ -151,11 +171,15 @@ namespace Sphere10.Framework.Communications {
             writer.Write(envelope.RequestID);
             writer.Write((uint)MessageSerializer.CalculateSize(envelope.Message));
             MessageSerializer.Serialize(envelope.Message, writer);
-            if (await TrySendBytes(memStream.GetBuffer(), cancellationToken)) {
+            if (await TrySendBytes(memStream.ToArray(), cancellationToken)) {
                 NotifySentMessage(envelope);
                 return true;
             }
             return false;
+        }
+
+        public void Dispose() {
+			DisposeAsync().AsTask().WaitSafe();
         }
 
         public async ValueTask DisposeAsync() {
@@ -169,7 +193,7 @@ namespace Sphere10.Framework.Communications {
         protected abstract Task CloseInternal();
 
         protected virtual async Task<bool> TryWaitHandshake(CancellationToken cancellationToken) => true;
-
+		
         protected virtual async Task ReceiveLoop(CancellationToken cancellationToken) {
             CheckState(ProtocolChannelState.Opening, ProtocolChannelState.Open);
             while (State.IsIn(ProtocolChannelState.Opening, ProtocolChannelState.Open) && IsConnectionAlive() && !cancellationToken.IsCancellationRequested) {

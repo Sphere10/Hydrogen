@@ -11,12 +11,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-#if !__MOBILE__
-
-
 namespace Sphere10.Framework.Application {
-
-
 	public interface IHelpServices  {
 
 		void ShowContextHelp(IHelpableObject helpableObject);
@@ -26,4 +21,3 @@ namespace Sphere10.Framework.Application {
 	}
 }
 
-#endif

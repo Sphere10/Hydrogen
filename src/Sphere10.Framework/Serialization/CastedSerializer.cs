@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Sphere10.Framework {
@@ -19,13 +20,29 @@ namespace Sphere10.Framework {
 
 		public int FixedSize => _concreteSerializer.FixedSize;
 
-		public int CalculateTotalSize(IEnumerable<TBase> items, bool calculateIndividualItems, out int[] itemSizes) 
+		public int CalculateTotalSize(IEnumerable<TBase> items, bool calculateIndividualItems, out int[] itemSizes)
 			=> _concreteSerializer.CalculateTotalSize(items.Cast<TConcrete>(), calculateIndividualItems, out itemSizes);
 
 		public int CalculateSize(TBase item) => _concreteSerializer.CalculateSize((TConcrete)item);
 
-		public int Serialize(TBase @object, EndianBinaryWriter writer) => _concreteSerializer.Serialize((TConcrete)@object, writer);
+		public bool TrySerialize(TBase item, EndianBinaryWriter writer, out int bytesWritten) {
+			try {
+				bytesWritten = _concreteSerializer.Serialize((TConcrete)item, writer);
+				return true;
+			} catch (Exception) {
+				bytesWritten = 0;
+				return false;
+			}
+		}
 
-		public TBase Deserialize(int size, EndianBinaryReader reader) => _concreteSerializer.Deserialize(size, reader);
+		public bool TryDeserialize(int byteSize, EndianBinaryReader reader, out TBase item) {
+			try {
+				item = _concreteSerializer.Deserialize(byteSize, reader);
+				return true;
+			} catch (Exception) {
+				item = default;
+				return false;
+			}
+		}
 	}
 }

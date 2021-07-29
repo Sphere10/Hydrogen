@@ -46,31 +46,31 @@ namespace Tools {
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static string EncryptStringAES(string plainText, string sharedSecret, string salt) 
-			=> Encrypter.EncryptStringAES(plainText, sharedSecret, salt);
+			=> Encryptor.EncryptStringAES(plainText, sharedSecret, salt);
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static string EncryptStringAES(string plainText, string sharedSecret, byte[] salt) 
-			=> Encrypter.EncryptStringAES(plainText, sharedSecret, salt);
+			=> Encryptor.EncryptStringAES(plainText, sharedSecret, salt);
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static string DecryptStringAES(string cipherText, string sharedSecret, string salt) 
-			=> Encrypter.DecryptStringAES(cipherText, sharedSecret, salt);
+			=> Encryptor.DecryptStringAES(cipherText, sharedSecret, salt);
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static string DecryptStringAES(string cipherText, string sharedSecret, byte[] salt) 
-			=> Encrypter.DecryptStringAES(cipherText, sharedSecret, salt);
+			=> Encryptor.DecryptStringAES(cipherText, sharedSecret, salt);
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static void EncryptStream(Stream input, Stream output, SymmetricAlgorithm symmetricAlgorithm)
-			=> Encrypter.EncryptStream(input, output, symmetricAlgorithm);
+			=> Encryptor.EncryptStream(input, output, symmetricAlgorithm);
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static void DecryptStream(Stream input, Stream output, SymmetricAlgorithm symmetricAlgorithm) 
-			=> Encrypter.DecryptStream(input, output, symmetricAlgorithm);
+			=> Encryptor.DecryptStream(input, output, symmetricAlgorithm);
 		
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static SymmetricAlgorithm PrepareSymmetricAlgorithm<TSymmetricAlgorithm>(string password, byte[] salt = null, PaddingMode paddingMode = PaddingMode.PKCS7, CipherMode cipherMode = CipherMode.CBC) where TSymmetricAlgorithm : SymmetricAlgorithm, new()
-			=> Encrypter.PrepareSymmetricAlgorithm<TSymmetricAlgorithm>(password, salt, paddingMode, cipherMode);
+			=> Encryptor.PrepareSymmetricAlgorithm<TSymmetricAlgorithm>(password, salt, paddingMode, cipherMode);
 
 	}
 }

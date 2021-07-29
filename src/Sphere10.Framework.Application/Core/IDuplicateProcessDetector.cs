@@ -11,17 +11,9 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-#if !__MOBILE__
-
-
 namespace Sphere10.Framework.Application {
-
-
 	public interface IDuplicateProcessDetector  {
 		int CountRunningInstancesOfThisApplication();
-		
+	
 	}
 }
-
-
-#endif

@@ -11,16 +11,8 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-#if !__MOBILE__
-
 namespace Sphere10.Framework.Application {
-
-
 	public interface IProductInformationServices  {
-
 		ProductInformation ProductInformation { get; }
-
 	}
 }
-
-#endif

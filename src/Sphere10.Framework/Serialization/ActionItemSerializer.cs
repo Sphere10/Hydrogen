@@ -13,10 +13,26 @@ namespace Sphere10.Framework {
 			_serializer = serializer;
 			_deserializer = deserializer;
 		}
+		
+		public bool TrySerialize(T item, EndianBinaryWriter writer, out int bytesWritten) {
+			try {
+				bytesWritten = _serializer(item, writer);
+				return true;
+			} catch (Exception) {
+				bytesWritten = 0;
+				return false;
+			}
+		}
 
-		public int Serialize(T @object, EndianBinaryWriter writer) => _serializer(@object, writer);
-
-		public T Deserialize(int size, EndianBinaryReader reader) => _deserializer(size, reader);
+		public bool TryDeserialize(int byteSize, EndianBinaryReader reader, out T item) {
+			try {
+				item = _deserializer(byteSize, reader);
+				return true;
+			} catch (Exception) {
+				item = default;
+				return false;
+			}
+		}
 	}
 
 }

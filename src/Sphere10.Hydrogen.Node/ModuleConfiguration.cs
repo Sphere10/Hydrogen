@@ -20,15 +20,18 @@ using Sphere10.Framework;
 using Sphere10.Framework.Application;
 
 namespace Sphere10.Hydrogen.Node {
+
 	public class ModuleConfiguration : ModuleConfigurationBase {
 
 		public override void RegisterComponents(ComponentRegistry registry) {
 			// Init tasks
 			registry.RegisterInitializationTask<HydrogenInitializer>();
+			registry.RegisterInitializationTask<IncrementUsageByOneTask>();
+
 			// Start Tasks
 			// none
 			// End Tasks
-			// none
+			registry.RegisterEndTask<SaveSettingsEndTask>();
 
 			// Components
 			
@@ -36,9 +39,6 @@ namespace Sphere10.Hydrogen.Node {
 
 		public override void DeregisterComponents(ComponentRegistry registry) {
 			registry.DeregisterInitializationTask<HydrogenInitializer>();
-			
-			
 		}
-
 	}
 }

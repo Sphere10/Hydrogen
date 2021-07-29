@@ -9,6 +9,7 @@ namespace Sphere10.Framework.Communications {
         private readonly string _processPath;
         private readonly string _arguments;
         private readonly Func<string, string, string, string> _argInjectorFunc;
+		private Process _childProcess;
 
         /// <summary>
         /// Constructor.
@@ -40,14 +41,14 @@ namespace Sphere10.Framework.Communications {
             };
 
             // Start child process
-            var childProcess = new Process {
+            _childProcess = new Process {
                 StartInfo = {
                     FileName = _processPath,
                     Arguments = _argInjectorFunc(_arguments, endpoint.ReaderHandle, endpoint.WriterHandle),
                     UseShellExecute = false  // note: MUST be false or won't work (Win64)
                 }
             };
-            await Task.Run(() => childProcess.Start());
+            await Task.Run(() => _childProcess.Start());
 
             // Dispose pipe handles (owned by child process now)
             readPipe.DisposeLocalCopyOfClientHandle();
@@ -56,6 +57,14 @@ namespace Sphere10.Framework.Communications {
             return (endpoint, readPipe, writePipe);
         }
 
-    }
+
+		protected override async Task CloseInternal() {
+			await base.CloseInternal();
+			await Task.Run( () => _childProcess.WaitForExit(DefaultTimeout));
+			if (!_childProcess.HasExited)
+				_childProcess.Kill();
+		}
+
+	}
 
 }

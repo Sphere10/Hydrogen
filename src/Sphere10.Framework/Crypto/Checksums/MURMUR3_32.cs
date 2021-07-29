@@ -46,17 +46,22 @@ namespace Sphere10.Framework {
 
 					i++;
 				}
-
 				if (remainder > 0) {
-					int shift = sizeof(uint) - remainder;
-					uint k = (array[i] << shift) >> shift;
+					int remainderIdx = len*4;
+					uint k1 = 0;
+					if (remainder >= 3)
+						k1 ^= ((uint)buffer[remainderIdx + 2]) << 16;
+					if (remainder >= 2)
+						k1 ^= ((uint)buffer[remainderIdx + 1]) << 8;
+					if (remainder >= 1)
+						k1 ^= (uint)buffer[remainderIdx]; 
 
-					k *= c1;
-					k = (k << r1) | (k >> (32 - r1)); //k = rotl32(k, r1);
-					k *= c2;
-
-					hash ^= k;
+					k1 *= c1;
+					k1 = (k1 << r1) | (k1 >> (32 - r1)); //k = rotl32(k, r1);
+					k1 *= c2;
+					hash ^= k1;
 				}
+
 
 				hash ^= (uint)length;
 

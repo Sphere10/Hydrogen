@@ -11,8 +11,6 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-#if !__MOBILE__
-
 namespace Sphere10.Framework.Maths {
 	public class FunctionDerivative : IFunction {
         private IFunction _function = null;
@@ -26,4 +24,3 @@ namespace Sphere10.Framework.Maths {
         }
     }
 }
-#endif

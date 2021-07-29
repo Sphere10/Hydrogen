@@ -31,9 +31,8 @@ namespace Sphere10.Framework.Communications {
 			}
 
 			public HandlerBuilder<TRequest, TResponse> ToRequest<TRequest>() 
-				=> new HandlerBuilder<TRequest, TResponse>(_parent);
+				=> new(_parent);
 		}
-
 
 		public class HandlerBuilder<TRequest, TResponse> {
 			private readonly TProtocolResponseBuilder _parent;
@@ -42,7 +41,16 @@ namespace Sphere10.Framework.Communications {
 				_parent = parent;
 			}
 
-			public TProtocolResponseBuilder HandleWith(Action<TChannel, TRequest, TResponse> handler) 
+			public TProtocolResponseBuilder HandleWith(Action handler)
+				=> HandleWith(_ => handler());
+
+			public TProtocolResponseBuilder HandleWith(Action<TResponse> handler)
+				=> HandleWith((_, response) => handler(response));
+
+			public TProtocolResponseBuilder HandleWith(Action<TRequest, TResponse> handler)
+				=> HandleWith((_, request, response) => handler(request, response));
+			
+			public TProtocolResponseBuilder HandleWith(Action<TChannel, TRequest, TResponse> handler)
 				=> HandleWith(new ActionResponseHandler<TChannel, TRequest, TResponse>(handler));
 
 			public TProtocolResponseBuilder HandleWith(IResponseHandler<TChannel, TRequest, TResponse> handler) {

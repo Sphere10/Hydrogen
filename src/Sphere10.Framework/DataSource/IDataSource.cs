@@ -19,17 +19,19 @@ namespace Sphere10.Framework {
 	public interface IDataSource<TItem> {
 		IEnumerable<TItem> New(int count);
 
-		Task Create(IEnumerable<TItem> entity);
+		Task Create(IEnumerable<TItem> entities);
 
 		Task<IEnumerable<TItem>> Read(string searchTerm, int pageLength, ref int page, string sortProperty, SortDirection sortDirection, out int totalItems);
 
-		Task Refresh(TItem[] entity);
+		Task Refresh(TItem[] entities);
 
-		Task Update(IEnumerable<TItem> entity);
+		Task Update(IEnumerable<TItem> entities);
 
-		Task Delete(IEnumerable<TItem> entity);
+		Task Delete(IEnumerable<TItem> entities);
 
 		Task<Result> Validate(IEnumerable<(TItem entity, CrudAction action)> actions);
+
+		Task<int> Count { get; }
 
 		#region Single access simplifications
 

@@ -10,6 +10,7 @@
 @using Sphere10.Hydrogen.Presentation2.UI.Controls
 @using Sphere10.Hydrogen.Presentation2.UI.Controls.BlazorGrid;
 
+@using Sphere10.Framework;
 @using System.Threading;
 @using System.Linq;
 @using Microsoft.JSInterop
@@ -101,18 +102,18 @@
                     <div class="tab-pane fade" id="tab-4">
                         <h5 class="card-title">Grid New</h5>
                         <p>Testing of new Grid</p>
-                        <BlazorGrid Id="TestGrid"
-                                    DataSource="Hydrogen-Node-1"
+                        <BlazorGrid TItem="TestClass"
+                                    Id="TestGrid"
+                                    DataSource="@DataSource"
                                     PageSize="10"
-                                    GridType="BlazorGrid<object>.GridTypes.ActionColumn"
-                                    GetPageDataFunction="GetPageDataFunction"
-                                    GetDataCountFunction="GetDataCountFunction"
-                                    SetItemDataFunction="SetItemDataFunction">
-
-                                @*ItemDataChangedFunction="ItemDataChangedFunction"*@
+                                    
+                                    
+                                    >
 
                         </BlazorGrid>
                     </div>
+
+
                 </div>
             </div>
         </div>
@@ -146,7 +147,113 @@
 
 </div>
 
+
+@*kfhgjdfkjh
+    GridType="BlazorGrid<object>.GridTypes.ActionColumn"
+*@
+
+
 @code {
+
+    public class DataSource1<TItem> : IDataSource<TestClass>
+    {
+        List<TestClass> AllItems = new List<TestClass>();
+
+        public void RefreshData()
+        {
+            AllItems = LoadData(73);
+        }
+
+        // create some dummy data
+        public DataSource1()
+        {
+            RefreshData();
+        }
+
+        static List<TestClass> LoadData(int size)
+        {
+            var testData = new List<TestClass>();
+
+            for (int i = 0; i < size; i++)
+            {
+                var testObject = new TestClass();
+                testObject.FillWithTestData(i);
+                testData.Add(testObject);
+            }
+
+            return testData;
+        }
+
+        public async Task Create(IEnumerable<TestClass> entities)
+        {
+            AllItems.AddRange(entities);
+        }
+
+        public async Task Delete(IEnumerable<TestClass> entities)
+        {
+            foreach (var entity in entities)
+            {
+                var index = AllItems.IndexOf(entity);
+                if (index >= 0) AllItems.RemoveAt(index);
+            }
+        }
+
+        public IEnumerable<TestClass> New(int count)
+        {
+            var returnList = new List<TestClass>();
+            var newId = AllItems.Max(x => x.Id) + 1;
+
+            for (int i = 0; i < count; i++)
+            {
+                var newEntity = new TestClass();
+                newEntity.FillWithTestData(newId++);
+                AllItems.Add(newEntity);
+                returnList.Add(newEntity);
+            }
+
+            return returnList;
+        }
+
+        public Task<IEnumerable<TestClass>> Read(string searchTerm, int pageLength, ref int page, string sortProperty, SortDirection sortDirection, out int totalItems)
+        {
+            totalItems = pageLength;
+
+            var startIndex = pageLength * page;
+
+            return Task.Run(() => (IEnumerable<TestClass>)AllItems.GetRange(startIndex, pageLength));
+        }
+
+        public Task Refresh(TestClass[] entity)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task Update(IEnumerable<TestClass> entities)
+        {
+            return Task.Run(() =>
+            {
+                foreach (var entity in entities)
+                {
+                    for (int i = 0; i < AllItems.Count; i++)
+                    {
+                        if (AllItems[i].Id == entity.Id)
+                        {
+                            AllItems[i] = entity;
+                            break;
+                        }
+                    }
+                }
+            }
+            );
+        }
+
+        public Task<Result> Validate(IEnumerable<(TestClass entity, CrudAction action)> actions)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<int> Count { get { return Task.Run(() => AllItems.Count); } }
+    }
 
     #region Javascript
 
@@ -157,22 +264,13 @@
 
     #endregion
 
-    //    List<TestClass> TestGridData { get; set; } = new List<TestClass>() {
-    //        new TestClass() { Id = 1, Name = "Bitcoin", Color = TestClass.TestEnum.Black, CreationDate = new DateTime(2010, 4, 24), Age = 203.4m, Details = "In a cryptocurrency such as Bitcoin", Note = "The fingerprint is unique " },
-    //        new TestClass(){ Id = 2, Name = "Ethereum", Color = TestClass.TestEnum.Brown, CreationDate = new DateTime(2015, 2, 18), Age = 103.2m, Details = "transactions propagate", Note = "Malleability is the ability to change" },
-    //        new TestClass(){ Id = 3, Name = "Polkadot", Color = TestClass.TestEnum.Purple, CreationDate = new DateTime(2013, 4, 18), Age = 167.354m, Details = "able to distinguish", Note = "how the math"  },
-    //        new TestClass(){ Id = 4, Name = "Litecoin", Color = TestClass.TestEnum.White, CreationDate = new DateTime(2017, 3, 3), Age = 457.34m, Details = "transactions in the same way", Note = "forgeries of those signatures, it does permit an attacker "  }
-    //    };
-
-    //    BlazorGrid<TestClass> GridInstance { get; set; }
-    List<TestClass> TestGridData { get; set; }
+    DataSource1<TestClass> DataSource { get; set; }
     System.Timers.Timer Timer { get; set; }
-
-    //   { Id = , Name = "", Color = TestClass.TestEnum, CreationDate = new DateTime(), Age = m, Details = "", Note = "" }
 
     protected override void OnInitialized()
     {
-        TestGridData = LoadData(73);
+        DataSource = new Index.DataSource1<TestClass>();
+
         Timer = new System.Timers.Timer(10000); // 10 seconds
         Timer.Elapsed += CountDownTimer;
         Timer.Start();
@@ -180,7 +278,7 @@
 
     public void CountDownTimer(Object source, System.Timers.ElapsedEventArgs e)
     {
-        TestGridData = LoadData(73);
+        DataSource.RefreshData();
         StateHasChanged();
     }
 
@@ -190,47 +288,25 @@
         //        Alert("OnAfterRenderAsync Index");
     }
 
-    static List<TestClass> LoadData(int size)
-    {
-        var testData = new List<TestClass>();
-
-        for (int i = 0; i < size; i++)
-        {
-            var testObject = new TestClass();
-            testObject.FillWithTestData(i);
-
-            testData.Add(testObject);
-        }
-
-        return testData;
-
-        //            return new List<TestClass>() {
-        //            new TestClass() { Id = 1, Name = "Bitcoin", Color = TestClass.TestEnum.Black, CreationDate = new DateTime(2010, 4, 24), Age = 203.4m, Details = "In a cryptocurrency such as Bitcoin", Note = "The fingerprint is unique " },
-        //            new TestClass(){ Id = 2, Name = "Ethereum", Color = TestClass.TestEnum.Brown, CreationDate = new DateTime(2015, 2, 18), Age = 103.2m, Details = "transactions propagate", Note = "Malleability is the ability to change" },
-        //            new TestClass(){ Id = 3, Name = "Polkadot", Color = TestClass.TestEnum.Purple, CreationDate = new DateTime(2013, 4, 18), Age = 167.354m, Details = "able to distinguish", Note = "how the math"  },
-        //            new TestClass(){ Id = 4, Name = "Litecoin", Color = TestClass.TestEnum.White, CreationDate = new DateTime(2017, 3, 3), Age = 457.34m, Details = "transactions in the same way", Note = "forgeries of those signatures, it does permit an attacker "  }
-        //        };
-    }
-
     // Grid Callback Functions
-    List<TestClass> GetPageDataFunction(int pageNumber, int pageSize)
-    {
-        return TestGridData.Skip(pageNumber * pageSize).Take(pageSize).ToList();
-    }
+    //    List<TestClass> GetPageDataFunction(int pageNumber, int pageSize)
+    //    {
+    //        return TestGridData.Skip(pageNumber * pageSize).Take(pageSize).ToList();
+    //    }
 
-    int GetDataCountFunction()
-    {
-        return TestGridData.Count;
-    }
+    //    int GetDataCountFunction()
+    //    {
+    //        return TestGridData.Count;
+    //    }
 
-    bool SetItemDataFunction(string dataSource, string newValue, string dataName, object originalItem)
-    {
-        var item = (TestClass)originalItem;
-
-        Alert($"Id: {item.Id} newValue: {newValue}");
-
-        return true;
-    }
+    //    bool SetItemDataFunction(string dataSource, string newValue, string dataName, object originalItem)
+    //    {
+    //        var item = (TestClass)originalItem;
+    //
+    //        Alert($"Id: {item.Id} newValue: {newValue}");
+    //
+    //        return true;
+    //    }
 
     private async Task Confirm()
     {

@@ -24,6 +24,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <Folder Include="UI\Controls\BlazorGrid\Modals\" />
       <Folder Include="UI\Dialogs\Example" />
       <Folder Include="UI\Wizard\Examples\Send" />
     </ItemGroup>

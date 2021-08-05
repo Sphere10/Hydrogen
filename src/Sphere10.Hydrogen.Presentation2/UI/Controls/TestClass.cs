@@ -18,16 +18,15 @@ namespace Sphere10.Hydrogen.Presentation2.UI.Controls {
 		static string[] Names = { "Bitcoin", "Ethereum", "Polkadot", "Litecoin" };
 		static TestEnum[] Colors = (TestEnum[])Enum.GetValues(typeof(TestEnum));
 
+		static Random Random { get; set; } = new Random((int)DateTime.Now.Ticks);
+
 		public void FillWithTestData(int id) 
 		{
-			var seed = (int)DateTime.Now.Ticks;
-			var random = new Random(seed);
-
 			Id = id;
-			Name = Names[random.Next(Names.Length - 1)];
-			Color = Colors[random.Next(Colors.Length - 1)];
-			CreationDate = new DateTime(random.Next(2010, 2021), random.Next(1, 13), 1);
-			Age = random.Next(1, 100);
+			Name = Names[Random.Next(Names.Length - 1)];
+			Color = Colors[Random.Next(Colors.Length - 1)];
+			CreationDate = new DateTime(Random.Next(2010, 2021), Random.Next(1, 13), 1);
+			Age = Random.Next(1, 100);
 			Details = "Test Details";
 			Note = "Test Note";
 		}

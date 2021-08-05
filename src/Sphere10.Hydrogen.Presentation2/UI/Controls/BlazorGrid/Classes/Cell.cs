@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 
 namespace Sphere10.Hydrogen.Presentation2.UI.Controls.BlazorGrid.Classes {
 	public class Cell 
@@ -6,21 +7,89 @@ namespace Sphere10.Hydrogen.Presentation2.UI.Controls.BlazorGrid.Classes {
 		public HeaderData Header { get; set; }
 		public RowData Row { get; set; }
 		public ObjectTypeInfo TypeInfo { get; set; }
-		public string Data { get; set; }
-		public object Tag { get; private set; }
+		public string Text { get; set; }
+		public object Tag { get; private set; } // this is the full row of data
+		public int DataIndex { get; set; }
 		public string Name { get { return Header.Name; } }
 		public int Width { get { return Header.Width; } }
 		public int Height { get { return Row.Height; } }
 
 		public bool IsEnum { get; set; }
 
-		public Cell(HeaderData headerData, RowData row, ObjectTypeInfo typeInfo, string data, object underlyingData) 
+		public Cell(HeaderData header, RowData row, ObjectTypeInfo typeInfo, string text, object underlyingData, int dataIndex) 
 		{
-			Header = headerData;
+			Header = header;
 			Row = row;
 			TypeInfo = typeInfo;
-			Data = data;
+			Text = text;
 			Tag = underlyingData;
+			DataIndex = dataIndex;
+			IsEnum = TypeInfo.IsEnum;
+		}
+
+		public string GetInputType() 
+		{
+			switch (TypeInfo.Type.Name.ToLower()) 
+			{
+				case "datetime":	return "date";
+				case "decimal":
+				case "double":
+				case "float":
+				case "long":
+				case "int32":
+				case "int64":		return "number";
+				case "bool":		return "checkbox";
+				default:			return "text";
+			}
+		}
+
+		public string GetListName() 
+		{
+			if (TypeInfo.IsEnum) 
+			{
+				return Name;
+			}
+
+			return string.Empty;
+		}
+
+		public void UpdateData(string newValue) 
+		{
+			object objectValue = null;
+
+			if (IsEnum) 
+			{
+				objectValue = Enum.Parse(TypeInfo.Type, newValue);
+			} 
+			else 
+			{
+				switch (TypeInfo.TypeName.ToLower()) 
+				{
+					case "string": objectValue = newValue; break;
+					case "datetime": objectValue = DateTime.Parse(newValue); break;
+					case "decimal": objectValue = decimal.Parse(newValue); break;
+					case "double": objectValue = double.Parse(newValue); break;
+					case "float":
+					case "single:": objectValue = float.Parse(newValue); break;
+					case "long":
+					case "int64": objectValue = long.Parse(newValue); break;
+					case "int":
+					case "int32": objectValue = int.Parse(newValue); break;
+					case "uint": objectValue = uint.Parse(newValue); break;
+					case "short":
+					case "int16": objectValue = short.Parse(newValue); break;
+					case "ushort": objectValue = ushort.Parse(newValue); break;
+					case "bool": objectValue = bool.Parse(newValue); break;
+					case "char": objectValue = char.Parse(newValue); break;
+					case "byte": objectValue = byte.Parse(newValue); break;
+					case "sbyte": objectValue = sbyte.Parse(newValue); break;
+					default: throw new Exception("Cell.UpdateData Unknown Data Type; ");
+				}
+			}
+
+			// handle arrays, IEnumerable, classes, trees of classes
+
+			TypeInfo.PropertyInfo.SetValue(Tag, objectValue);
 		}
 	}
 }

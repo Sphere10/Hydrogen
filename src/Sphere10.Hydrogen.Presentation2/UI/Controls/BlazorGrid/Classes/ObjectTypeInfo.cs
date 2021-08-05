@@ -6,18 +6,21 @@ using System.Reflection;
 namespace Sphere10.Hydrogen.Presentation2.UI.Controls.BlazorGrid.Classes {
 	public class ObjectTypeInfo 
 	{
+		public PropertyInfo PropertyInfo { get; set; }
 		public Type Type { get; set; }
 		public string TypeName { get; set; }
 		public string TypeFullName { get; set; }
 		public bool IsEnum { get; set; }
 		public List<string> EnumValues { get; set; } = new List<string>();
 
+
 		public ObjectTypeInfo(PropertyInfo propertyInfo) 
 		{
 			try 
 			{
-				TypeName = propertyInfo.PropertyType.Name.ToString();
-				TypeFullName = propertyInfo.PropertyType.FullName;
+				PropertyInfo = propertyInfo;
+				TypeName = PropertyInfo.PropertyType.Name.ToString();
+				TypeFullName = PropertyInfo.PropertyType.FullName;
 				Type = Type.GetType(TypeFullName);
 				IsEnum = Type.IsEnum;
 				if (IsEnum) 
@@ -41,7 +44,9 @@ namespace Sphere10.Hydrogen.Presentation2.UI.Controls.BlazorGrid.Classes {
 			}
 		}
 
-		public ObjectTypeInfo(string name) {
+		public ObjectTypeInfo(string name) 
+		{
+			PropertyInfo = name.GetType().GetProperty("this");
 			TypeName = name;
 			TypeFullName = name;
 			Type = TypeFullName.GetType();

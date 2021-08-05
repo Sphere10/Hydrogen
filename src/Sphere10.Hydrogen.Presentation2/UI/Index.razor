@@ -19,6 +19,8 @@
 
 @implements IDisposable
 
+
+<body oncontextmenu="return false;" style="overflow:hidden"> 
 <div class="row">
     <div class="col-6">
         <div class="card">
@@ -106,10 +108,8 @@
                                     Id="TestGrid"
                                     DataSource="@DataSource"
                                     PageSize="10"
-                                    
-                                    
+                                    GridType="BlazorGrid<TestClass>.GridTypes.ActionColumn"
                                     >
-
                         </BlazorGrid>
                     </div>
 
@@ -146,14 +146,12 @@
     </div>
 
 </div>
-
-
-@*kfhgjdfkjh
-    GridType="BlazorGrid<object>.GridTypes.ActionColumn"
-*@
-
+</body>
 
 @code {
+
+
+        
 
     public class DataSource1<TItem> : IDataSource<TestClass>
     {
@@ -230,6 +228,11 @@
 
         public Task Update(IEnumerable<TestClass> entities)
         {
+            var test = entities.ToArray()[0].ToString();
+
+            Alert(test);
+
+
             return Task.Run(() =>
             {
                 foreach (var entity in entities)
@@ -284,6 +287,8 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+    //    CountDownTimer(null, null);
+
         //        TestGrid.LoadJavascript();
         //        Alert("OnAfterRenderAsync Index");
     }

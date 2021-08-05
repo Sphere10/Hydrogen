@@ -17,12 +17,12 @@
 
                 @if (GridType == GridTypes.ActionColumn)
                 {
-                    <th style="width:20px">
-                        Actions<br />
-                        <div class="ResizableClass">
-                            <input class="ResizableClass" type="search" />
-                        </div>
-                    </th>
+                    @*<th style="width:20px">
+                            Actions<br />
+                            <div class="ResizableClass">
+                                <input class="ResizableClass" type="search" />
+                            </div>
+                        </th>*@
                 }
 
                 @foreach (var headerCell in Header)
@@ -41,17 +41,19 @@
             {
                 <tr @onmousedown="@(e => OnTableRowMouseDown())" @onmouseup="@(e => OnTableMouseUp(row))" style="@GetTableRowStyle()">
 
-                    @if (GridType == GridTypes.ActionColumn)
-                    {
-                        <td style="width:20px">
-                            <input class="ResizableClass" Type(cell)" />
-                        </td>
-                    }
+                    @*@if (GridType == GridTypes.ActionColumn)
+                        {
+                            <td style="width:20px">
+                                <input class="ResizableClass" Type(cell)" />
+                            </td>
+                        }*@
 
                     @foreach (var cell in row)
                     {
                         <td style="width:@cell.Width.ToString()px">
-                            <input class="ResizableClass" type="@GetCellInputType(cell)" list="@GetListName(cell)" value="@cell.Data" @onchange="@(e => CellDataChanged(e.Value, cell.Name, cell))" />
+                            <input class="ResizableClass" type="@cell.GetInputType()" list="@cell.GetListName()" value="@cell.Text"
+                                   @onchange="@(e => CellDataChanged(e.Value, cell.Name, cell))"
+                                   @onmouseup="CellMouseUp" />
                         </td>
                     }
                 </tr>
@@ -68,6 +70,11 @@
         </div>
     </footer>
 
+    @*@onmouseup="@(e => CellMouseUp(e, cell))"
+        oncontextmenu="return false;"
+    *@
+
+    @*Add in the lists, these are for Enums, so they are only declared in one place each*@
     @foreach (var headerCell in Header)
     {
         if (headerCell.TypeInfo.IsEnum)
@@ -80,299 +87,352 @@
             </datalist>
         }
     }
-
 </div>
 
-@code {
+@*<div class="modal" tabindex="-1" role="dialog" style="@GetContextMenuStyle()">
+        <div class="modal-dialog" role="document" aria-hidden="true">
+            <div class="modal-content" style="@GetContextMenuContentStyle()" >
+                <div class="modal-header">
+                    <h5 class="modal-title">Context Menu</h5>
+                </div>
+                <div class="modal-body">
+                    <p @onclick="ContextMenu1">Menu Item 1</p>
+                    <p @onclick="ContextMenu2">Menu Item 2</p>
+                    <p>-----------</p>
+                    <p @onclick="ContextMenu3">Menu Item 3</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="CloseContextMenu">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>*@
+
+<button type="button" class="btn btn-info btn-lg" data-toggle="modal" data-target="#ContextMenuModal">Open Modal</button>
+
+@*<div class="modal hidden" id="ContextMenuModal" role="dialog" style="@GetContextMenuStyle()">*@
+    <div class="modal hidden" id="ContextMenuModal" role="dialog">
+        <div class="modal-dialog">
+
+            <!-- Modal content-->
+            <div class="modal-content" style="@GetContextMenuContentStyle()">
+                <div class="modal-header">
+                    <h5 class="modal-title">Context Menu</h5>
+                </div>
+                <div class="modal-body">
+                    <p @onclick="ContextMenu1">Menu Item 1</p>
+                    <p @onclick="ContextMenu2">Menu Item 2</p>
+                    <p>-----------</p>
+                    <p @onclick="ContextMenu3">Menu Item 3</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="CloseContextMenu">Close</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+
+@code
+{
 
     @typeparam TItem
-    @*@implements IDataSource<TItem>*@
 
-public enum GridTypes { DataSupplied, DataOnDemand, ActionColumn }
+    public enum GridTypes { DataSupplied, DataOnDemand, ActionColumn }
 
-[Parameter] public string Id { get; set; }
-[Parameter] public int PageSize { get; set; }
-[Parameter] public IDataSource<TItem> DataSource { get; set; }
-[Parameter] public GridTypes GridType { get; set; }
+    [Parameter] public string Id { get; set; }
+    [Parameter] public int PageSize { get; set; }
+    [Parameter] public IDataSource<TItem> DataSource { get; set; }
+    [Parameter] public GridTypes GridType { get; set; }
 
-//public delegate List<TestClass> GetPageData(int pageNumber, int pageSize);
-//public delegate int GetDataCount();
-//public delegate bool SetItemData(string dataSource, string newValue, string dataName, object originalItem);
-//public delegate void ItemDataChanged<TItem>(string dataSource, TItem item);
-//[Parameter] public string DataSourceString { get; set; }
-//[Parameter] public GetPageData GetPageDataFunction { get; set; }
-//[Parameter] public GetDataCount GetDataCountFunction { get; set; }
-//[Parameter] public SetItemData SetItemDataFunction { get; set; }
+    //public delegate List<TestClass> GetPageData(int pageNumber, int pageSize);
+    //public delegate int GetDataCount();
+    //public delegate bool SetItemData(string dataSource, string newValue, string dataName, object originalItem);
+    //public delegate void ItemDataChanged<TItem>(string dataSource, TItem item);
+    //[Parameter] public string DataSourceString { get; set; }
+    //[Parameter] public GetPageData GetPageDataFunction { get; set; }
+    //[Parameter] public GetDataCount GetDataCountFunction { get; set; }
+    //[Parameter] public SetItemData SetItemDataFunction { get; set; }
 
-List<Cell> Header { get; set; } = new List<Cell>();
-List<List<Cell>> Rows { get; set; } = new List<List<Cell>>();
+    List<Cell> Header { get; set; } = new List<Cell>();
+    List<List<Cell>> Rows { get; set; } = new List<List<Cell>>();
 
-IEnumerable<TItem> Data { get; set; }
-int CurrentPage { get; set; }
+    IEnumerable<TItem> Data { get; set; }
+    int CurrentPage { get; set; }
 
-#region Javascript
+    #region Javascript
 
-void Alert(string text)
-{
-    JSRuntime.InvokeAsync<object>("AlertWrite", text);
-}
-
-#endregion
-
-#region Grid
-
-protected override void OnInitialized()
-{
-    ControlCheck();
-
-    PagingFirst();
-}
-
-protected override async Task OnAfterRenderAsync(bool firstRender)
-{
-    //Alert($"OnAfterRenderAsync FirstRender: {firstRender}");
-
-    if (!firstRender)
+    void Alert(string text)
     {
-        //PagingFirst();
-        LoadJavascript();
-        //await JSRuntime.InvokeAsync<object>("ResizableColumnTable", new object[] { Id });
+        JSRuntime.InvokeAsync<object>("AlertWrite", text);
     }
-}
 
-public async void LoadJavascript()
-{
-    await JSRuntime.InvokeAsync<object>("ResizableColumnTable", new object[] { Id });
-}
+    #endregion
 
-void ControlCheck()
-{
-    //Id
-    //GridType
-    //Data
-    //PageSize
-    //if (GetPageDataFunction == null) throw new Exception("GetPageDataFunction == null");
-    //if (GetDataCountFunction == null) throw new Exception("GetDataCountFunction == null");
-    //if (SetItemDataFunction == null) throw new Exception("SetItemDataFunction == null");
-    //if (ItemDataChangedFunction == null) throw new Exception("ItemDataChangedFunction == null");
-}
+    #region Grid
 
-void LoadData()
-{
-    //Alert($"BlazorGrid LoadData {Data.Count()}");
-    //Alert($"Type: {Type}");
-
-    // Load the first page of data
-    //PagingFirst();
-
-    Header.Clear();
-    Rows.Clear();
-
-    var width = 40;
-    var height = 20;
-    if (Data.Any())
+    protected override void OnInitialized()
     {
-        var first = Data.First();
-        var type = first.GetType();
-        var properties = type.GetProperties().ToList();
-        var typeInfos = new List<ObjectTypeInfo>();
+        ControlCheck();
 
-        // Add the Action column
-        //var headerTypeInfo = new ObjectTypeInfo("Action");
-        //typeInfos.Add(headerTypeInfo);
-        //Header.Add(new Cell(new HeaderData("Action", width), new RowData(height), headerTypeInfo, "Action", "Action"));
+        PagingFirst();
+    }
 
-        foreach (var property in properties)
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        //Alert($"OnAfterRenderAsync FirstRender: {firstRender}");
+
+        if (!firstRender)
         {
-            var name = Utility.AddSpacesForCamelCase(property.Name);
-
-            var typeInfo = new ObjectTypeInfo(property);
-            typeInfos.Add(typeInfo);
-
-            Header.Add(new Cell(new HeaderData(name, width), new RowData(height), typeInfo, name, name));
+            //PagingFirst();
+            await LoadJavascript();
+            //await JSRuntime.InvokeAsync<object>("ResizableColumnTable", new object[] { Id });
         }
+    }
 
-        foreach (var dataObject in Data)
+    public async Task LoadJavascript()
+    {
+        await JSRuntime.InvokeAsync<object>("ResizableColumnTable", new object[] { Id });
+    }
+
+    void ControlCheck()
+    {
+        //Id
+        //GridType
+        //Data
+        //PageSize
+        //if (GetPageDataFunction == null) throw new Exception("GetPageDataFunction == null");
+        //if (GetDataCountFunction == null) throw new Exception("GetDataCountFunction == null");
+        //if (SetItemDataFunction == null) throw new Exception("SetItemDataFunction == null");
+        //if (ItemDataChangedFunction == null) throw new Exception("ItemDataChangedFunction == null");
+    }
+
+    void LoadData()
+    {
+        //Alert($"BlazorGrid LoadData {Data.Count()}");
+        //Alert($"Type: {Type}");
+
+        // Load the first page of data
+        //PagingFirst();
+
+        Header.Clear();
+        Rows.Clear();
+
+        var width = 40;
+        var height = 20;
+        if (Data.Any())
         {
-            var rowData = new List<Cell>();
-            int columnIndex = 0;
+            var first = Data.First();
+            var type = first.GetType();
+            var properties = type.GetProperties().ToList();
+            var typeInfos = new List<ObjectTypeInfo>();
 
-            //var cellText = string.Empty;
-            //var cellData = new Cell(Header[columnIndex].Header, Header[columnIndex].Row, typeInfos[columnIndex], cellText, dataObject);
-            //rowData.Add(cellData);
-            //columnIndex++;
+            // Add the Action column
+            //var headerTypeInfo = new ObjectTypeInfo("Action");
+            //typeInfos.Add(headerTypeInfo);
+            //Header.Add(new Cell(new HeaderData("Action", width), new RowData(height), headerTypeInfo, "Action", "Action"));
 
             foreach (var property in properties)
             {
-                var cellText = GetCellText(dataObject, property);
-                var cellData = new Cell(Header[columnIndex].Header, Header[columnIndex].Row, typeInfos[columnIndex], cellText, dataObject);
-                rowData.Add(cellData);
-                columnIndex++;
+                var name = Utility.AddSpacesForCamelCase(property.Name);
+
+                var typeInfo = new ObjectTypeInfo(property);
+                typeInfos.Add(typeInfo);
+
+                Header.Add(new Cell(new HeaderData(name, width), new RowData(height), typeInfo, name, name, typeInfos.Count - 1));
             }
 
-            Rows.Add(rowData);
+            foreach (var dataObject in Data)
+            {
+                var rowData = new List<Cell>();
+                int columnIndex = 0;
+
+                //var cellText = string.Empty;
+                //var cellData = new Cell(Header[columnIndex].Header, Header[columnIndex].Row, typeInfos[columnIndex], cellText, dataObject);
+                //rowData.Add(cellData);
+                //columnIndex++;
+
+                foreach (var property in properties)
+                {
+                    var cellText = GetCellText(dataObject, property);
+                    var cellData = new Cell(Header[columnIndex].Header, Header[columnIndex].Row, typeInfos[columnIndex], cellText, dataObject, columnIndex);
+                    rowData.Add(cellData);
+                    columnIndex++;
+                }
+
+                Rows.Add(rowData);
+            }
+        }
+
+        JSRuntime.InvokeAsync<object>("ResizableColumnTable", new object[] { Id }, DotNetObjectReference.Create<BlazorGrid<TItem>>(this));
+    }
+
+    // put this into Cell
+    string GetCellText(object cellData, PropertyInfo property)
+    {
+        var value = property.GetValue(cellData);
+        var typeName = property.PropertyType.Name.ToString();
+        switch (typeName)
+        {
+            case "DateTime": return ((DateTime)value).ToString("yyyy-MM-dd");
+            default: return value.ToString();
         }
     }
 
-    JSRuntime.InvokeAsync<object>("ResizableColumnTable", new object[] { Id }, DotNetObjectReference.Create<BlazorGrid<TItem>>(this));
-}
-
-string GetCellText(object cellData, PropertyInfo property)
-{
-    var value = property.GetValue(cellData);
-    var typeName = property.PropertyType.Name.ToString();
-    switch (typeName)
+    private void CellDataChanged(object valueObject, string dataName, Cell cell)
     {
-        //case "DateTime": return ((DateTime)value).ToShortDateString();
-        case "DateTime": return ((DateTime)value).ToString("yyyy-MM-dd");
-        default: return value.ToString();
+        var newValue = valueObject.ToString();
+
+        // update the underlying value in the cell
+        cell.UpdateData(newValue);
+
+Alert(cell.Tag.ToString());
+
+        // return the updated underlying value to the DataSource
+        var itemInList = new List<TItem>() { (TItem)cell.Tag };
+
+        DataSource.Update(itemInList);
     }
-}
 
-//string GetCellInput(Cell cell)
-//{
-//    switch (cell.DataType.ToString())
-//    {
-//        case "DateTime":    return $"<input type=\"date\" value=\"{cell.Data}\" />";
-//        case "decimal":
-//        case "double":
-//        case "float":
-//        case "long":        return $"<input type=\"number\" value=\"{cell.Data}\" />";
-//        default:            return $"<input type=\"text\" value=\"{cell.Data}\" />";
-//    }
-//}
+    //private bool CellMouseUp(object entity, Cell cell)
+    //{
+    //    OpenMenu();
 
-string GetCellInputType(Cell cell)
-{
-    switch (cell.TypeInfo.Type.Name)
+    //    return false;
+    //}
+
+    private bool CellContextMenu(object entity)
     {
-        case "DateTime": return "date";
-        case "decimal":
-        case "Decimal":
-        case "double":
-        case "float":
-        case "long":
-        case "Int32":
-        case "Int64": return "number";
-        default: return "text";
+        return false;
     }
-}
 
-string GetListName(Cell cell)
-{
-    if (cell.TypeInfo.IsEnum)
+    string GetContextMenuStyle()
     {
-        return cell.Name;
+        //       if (MenuShown) return $"display:block; top: {MenuX}px; left:{MenuY}px;";
+        if (MenuShown) return $"display:block;";
+
+        return "display:hidden";
     }
 
-    return string.Empty;
-}
-
-private void CellDataChanged(object valueObject, string dataName, Cell cell)
-{
-    var newValue = valueObject.ToString();
-
-    //DataSource.Update()
-
-
-    //            SetItemDataFunction(DataSource, newValue, dataName, cell.Tag);
-}
-
-void OnTableRowMouseDown()
-{
-
-}
-
-void OnTableMouseUp(List<Cell> cells)
-{
-
-}
-
-string GetTableRowStyle()
-{
-    return string.Empty;
-}
-
-void ButtonClick()
-{
-    LoadData();
-}
-
-#endregion
-
-#region Paging
-
-void PagingFirst()
-{
-    //if (CurrentPage == 0) return;
-    CurrentPage = 0;
-    GetPageAndDisplayData();
-}
-
-void PagingNext()
-{
-    CurrentPage++;
-    GetPageAndDisplayData();
-}
-
-void PagingPrevious()
-{
-    if (CurrentPage == 0) return;
-    CurrentPage--;
-    GetPageAndDisplayData();
-}
-
-void PagingLast()
-{
-    // callback to the server
-    var total = DataSource.Count.Result;
-    CurrentPage = total / PageSize;
-    GetPageAndDisplayData();
-}
-
-void GetPageAndDisplayData()
-{
-    // callback to the server
-
-    var useCurrentPage = CurrentPage;
-    Data = (IEnumerable<TItem>)DataSource.Read("", PageSize, ref useCurrentPage, "", SortDirection.Ascending, out int totalItems);
-    CurrentPage = useCurrentPage;
-
-    //Data = (IEnumerable<TItem>)GetPageDataFunction(CurrentPage, PageSize);
-    LoadData();
-}
-
-#endregion
-
-//#region DataSource
-
-//public Task Create(IEnumerable<TItem> entity) {
-//    throw new NotImplementedException();
-//}
-
-//public Task Delete(IEnumerable<TItem> entity) {
-//    throw new NotImplementedException();
-//}
-
-//public IEnumerable<TItem> New(int count) {
-//    throw new NotImplementedException();
-//}
-
-//public Task<IEnumerable<TItem>> Read(string searchTerm, int pageLength, ref int page, string sortProperty, SortDirection sortDirection, out int totalItems) {
-//    throw new NotImplementedException();
-//}
-
-//public Task Refresh(TItem[] entity) {
-//    throw new NotImplementedException();
-//}
-
-//public Task Update(IEnumerable<TItem> entity) {
-//    throw new NotImplementedException();
-//}
-
-//public Task<Result> Validate(IEnumerable<(TItem entity, CrudAction action)> actions) {
-//    throw new NotImplementedException();
-//}
-
-//#endregion
+    string GetContextMenuContentStyle()
+    {
+        return $"width:200px; height:300px; left:{MenuX}px;top:{MenuY}px;";
     }
+
+    void CloseContextMenu()
+    {
+        CloseMenu();
+    }
+
+    void CellMouseUp(MouseEventArgs args)
+    {
+        if (args.Button == 2)
+        {
+            OpenMenu((int)args.ClientX - 650, (int)args.ClientY - 30);
+        }
+    }
+
+    bool MenuShown { get; set; }
+    int MenuX { get; set; }
+    int MenuY { get; set; }
+
+    void OpenMenu(int menuX, int menuY)
+    {
+        //        Alert($"X: {menuX} Y: {menuY}");
+
+        MenuX = menuX;
+        MenuY = menuY;
+        MenuShown = true;
+    }
+
+    void CloseMenu()
+    {
+        MenuShown = false;
+        //        StateHasChanged();
+    }
+
+    void ContextMenu1()
+    {
+        Alert("1");
+    }
+
+    void ContextMenu2()
+    {
+        Alert("2");
+    }
+
+    void ContextMenu3()
+    {
+        Alert("3");
+    }
+
+
+
+
+    void OnTableRowMouseDown()
+    {
+
+    }
+
+    void OnTableMouseUp(List<Cell> cells)
+    {
+
+    }
+
+    string GetTableRowStyle()
+    {
+        return string.Empty;
+    }
+
+    void ButtonClick()
+    {
+        GetPageAndDisplayData();
+    }
+
+    #endregion
+
+    #region Paging
+
+    void PagingFirst()
+    {
+        //if (CurrentPage == 0) return;
+        CurrentPage = 0;
+        GetPageAndDisplayData();
+    }
+
+    void PagingNext()
+    {
+        CurrentPage++;
+        GetPageAndDisplayData();
+    }
+
+    void PagingPrevious()
+    {
+        if (CurrentPage == 0) return;
+        CurrentPage--;
+        GetPageAndDisplayData();
+    }
+
+    void PagingLast()
+    {
+        // callback to the server
+        var total = DataSource.Count.Result;
+        CurrentPage = total / PageSize;
+        GetPageAndDisplayData();
+    }
+
+    async void GetPageAndDisplayData()
+    {
+        // callback to the server
+
+        var useCurrentPage = CurrentPage;
+        Data = (IEnumerable<TItem>)await DataSource.Read("", PageSize, ref useCurrentPage, "", SortDirection.Ascending, out int totalItems);
+        CurrentPage = useCurrentPage;
+
+        //Data = (IEnumerable<TItem>)GetPageDataFunction(CurrentPage, PageSize);
+        LoadData();
+    }
+
+    #endregion
+}

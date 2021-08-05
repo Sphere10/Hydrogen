@@ -77,6 +77,10 @@ function ResizableTable(table) {
                 if (curColIndex > 0) { inBetweenColumnsWidth = table.rows[1].cells[curColIndex - 1].offsetWidth; }
 
                 var newWidth = (mouseX - tableLeft) - inBetweenColumnsWidth;
+
+// why does this help
+newWidth -= 60;
+
                 if (newWidth < MinimumColumWidth) newWidth = MinimumColumWidth;
 
 console.log("mouseX: " + mouseX + " Table left: " + tableLeft + " inBetweenColumnsWidth: " + inBetweenColumnsWidth + " newWidth: " + newWidth);

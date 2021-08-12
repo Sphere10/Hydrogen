@@ -1,5 +1,6 @@
 ﻿<h3>Blazor Grid</h3>
 
+@using System;
 @using Microsoft.JSInterop
 @using System.Collections.Generic;
 @using System.Reflection;
@@ -8,21 +9,21 @@
 
 @inject IJSRuntime JSRuntime
 
+<meta charset="UTF-8">
 <div class="ResizableClass">
     <button @onclick="ButtonClick">Load</button>
 
     <table class="TableClass" style="width:100%" id="@Id">
         <thead>
             <tr>
-
                 @if (GridType == GridTypes.ActionColumn)
                 {
-                    @*<th style="width:20px">
-                            Actions<br />
-                            <div class="ResizableClass">
-                                <input class="ResizableClass" type="search" />
-                            </div>
-                        </th>*@
+                    <th style="width:30px">
+                        Actions<br />
+                        <div class="ResizableClass">
+                            <input class="ResizableClass" type="search" />
+                        </div>
+                    </th>
                 }
 
                 @foreach (var headerCell in Header)
@@ -41,12 +42,21 @@
             {
                 <tr @onmousedown="@(e => OnTableRowMouseDown())" @onmouseup="@(e => OnTableMouseUp(row))" style="@GetTableRowStyle()">
 
-                    @*@if (GridType == GridTypes.ActionColumn)
+                    @if (GridType == GridTypes.ActionColumn)
+                    {
+                    <td style="width:30px">
+                        @foreach (var action in Actions)
                         {
-                            <td style="width:20px">
-                                <input class="ResizableClass" Type(cell)" />
-                            </td>
-                        }*@
+                            if (action.IsActionAvailable != null && action.IsActionAvailable((TItem)row[0].Tag))
+                            {
+                                <button title="@action.Name" class="btn btn-success ActionButton" @onclick="@(e => action.ActionWork((TItem)row[0].Tag))">
+                                    @action.IconURL
+                                </button>
+                            }
+                        }
+
+                    </td>
+                    }
 
                     @foreach (var cell in row)
                     {
@@ -70,10 +80,6 @@
         </div>
     </footer>
 
-    @*@onmouseup="@(e => CellMouseUp(e, cell))"
-        oncontextmenu="return false;"
-    *@
-
     @*Add in the lists, these are for Enums, so they are only declared in one place each*@
     @foreach (var headerCell in Header)
     {
@@ -89,7 +95,7 @@
     }
 </div>
 
-@*<div class="modal" tabindex="-1" role="dialog" style="@GetContextMenuStyle()">
+<div class="modal" tabindex="-1" role="dialog" style="@GetContextMenuStyle()">
         <div class="modal-dialog" role="document" aria-hidden="true">
             <div class="modal-content" style="@GetContextMenuContentStyle()" >
                 <div class="modal-header">
@@ -106,32 +112,32 @@
                 </div>
             </div>
         </div>
-    </div>*@
+    </div>
 
 <button type="button" class="btn btn-info btn-lg" data-toggle="modal" data-target="#ContextMenuModal">Open Modal</button>
 
 @*<div class="modal hidden" id="ContextMenuModal" role="dialog" style="@GetContextMenuStyle()">*@
-    <div class="modal hidden" id="ContextMenuModal" role="dialog">
-        <div class="modal-dialog">
+<!--<div class="modal hidden" id="ContextMenuModal" role="dialog">
+    <div class="modal-dialog">-->
 
-            <!-- Modal content-->
-            <div class="modal-content" style="@GetContextMenuContentStyle()">
-                <div class="modal-header">
-                    <h5 class="modal-title">Context Menu</h5>
-                </div>
-                <div class="modal-body">
-                    <p @onclick="ContextMenu1">Menu Item 1</p>
-                    <p @onclick="ContextMenu2">Menu Item 2</p>
-                    <p>-----------</p>
-                    <p @onclick="ContextMenu3">Menu Item 3</p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" @onclick="CloseContextMenu">Close</button>
-                </div>
+        <!-- Modal content-->
+        <!--<div class="modal-content" style="@GetContextMenuContentStyle()">
+            <div class="modal-header">
+                <h5 class="modal-title">Context Menu</h5>
             </div>
-
+            <div class="modal-body">
+                <p @onclick="ContextMenu1">Menu Item 1</p>
+                <p @onclick="ContextMenu2">Menu Item 2</p>
+                <p>-----------</p>
+                <p @onclick="ContextMenu3">Menu Item 3</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" @onclick="CloseContextMenu">Close</button>
+            </div>
         </div>
+
     </div>
+</div>-->
 
 
 @code
@@ -145,19 +151,10 @@
     [Parameter] public int PageSize { get; set; }
     [Parameter] public IDataSource<TItem> DataSource { get; set; }
     [Parameter] public GridTypes GridType { get; set; }
-
-    //public delegate List<TestClass> GetPageData(int pageNumber, int pageSize);
-    //public delegate int GetDataCount();
-    //public delegate bool SetItemData(string dataSource, string newValue, string dataName, object originalItem);
-    //public delegate void ItemDataChanged<TItem>(string dataSource, TItem item);
-    //[Parameter] public string DataSourceString { get; set; }
-    //[Parameter] public GetPageData GetPageDataFunction { get; set; }
-    //[Parameter] public GetDataCount GetDataCountFunction { get; set; }
-    //[Parameter] public SetItemData SetItemDataFunction { get; set; }
+    [Parameter] public List<GridAction<TItem>> Actions { get; set; }
 
     List<Cell> Header { get; set; } = new List<Cell>();
     List<List<Cell>> Rows { get; set; } = new List<List<Cell>>();
-
     IEnumerable<TItem> Data { get; set; }
     int CurrentPage { get; set; }
 
@@ -186,6 +183,9 @@
         if (!firstRender)
         {
             //PagingFirst();
+
+            //Alert("OnAfterRenderAsync");
+
             await LoadJavascript();
             //await JSRuntime.InvokeAsync<object>("ResizableColumnTable", new object[] { Id });
         }
@@ -287,20 +287,13 @@
         // update the underlying value in the cell
         cell.UpdateData(newValue);
 
-Alert(cell.Tag.ToString());
+        Alert(cell.Tag.ToString());
 
         // return the updated underlying value to the DataSource
         var itemInList = new List<TItem>() { (TItem)cell.Tag };
 
         DataSource.Update(itemInList);
     }
-
-    //private bool CellMouseUp(object entity, Cell cell)
-    //{
-    //    OpenMenu();
-
-    //    return false;
-    //}
 
     private bool CellContextMenu(object entity)
     {
@@ -318,6 +311,11 @@ Alert(cell.Tag.ToString());
     string GetContextMenuContentStyle()
     {
         return $"width:200px; height:300px; left:{MenuX}px;top:{MenuY}px;";
+    }
+
+    string GetActionButtonItem(GridAction<TItem> item)
+    {
+        return $"<i class=\"{item.IconURL} btn btn-success\"></i>";
     }
 
     void CloseContextMenu()
@@ -344,6 +342,7 @@ Alert(cell.Tag.ToString());
         MenuX = menuX;
         MenuY = menuY;
         MenuShown = true;
+        //        StateHasChanged();
     }
 
     void CloseMenu()
@@ -366,9 +365,6 @@ Alert(cell.Tag.ToString());
     {
         Alert("3");
     }
-
-
-
 
     void OnTableRowMouseDown()
     {
@@ -399,12 +395,14 @@ Alert(cell.Tag.ToString());
         //if (CurrentPage == 0) return;
         CurrentPage = 0;
         GetPageAndDisplayData();
+        StateHasChanged();
     }
 
     void PagingNext()
     {
         CurrentPage++;
         GetPageAndDisplayData();
+        StateHasChanged();
     }
 
     void PagingPrevious()
@@ -412,6 +410,7 @@ Alert(cell.Tag.ToString());
         if (CurrentPage == 0) return;
         CurrentPage--;
         GetPageAndDisplayData();
+        StateHasChanged();
     }
 
     void PagingLast()
@@ -420,6 +419,7 @@ Alert(cell.Tag.ToString());
         var total = DataSource.Count.Result;
         CurrentPage = total / PageSize;
         GetPageAndDisplayData();
+        StateHasChanged();
     }
 
     async void GetPageAndDisplayData()
@@ -429,9 +429,8 @@ Alert(cell.Tag.ToString());
         var useCurrentPage = CurrentPage;
         Data = (IEnumerable<TItem>)await DataSource.Read("", PageSize, ref useCurrentPage, "", SortDirection.Ascending, out int totalItems);
         CurrentPage = useCurrentPage;
-
-        //Data = (IEnumerable<TItem>)GetPageDataFunction(CurrentPage, PageSize);
         LoadData();
+        StateHasChanged();
     }
 
     #endregion

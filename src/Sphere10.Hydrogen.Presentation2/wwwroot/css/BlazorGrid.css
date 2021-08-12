@@ -42,3 +42,9 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 input[type="number"]::-webkit-inner-spin-button {
     -webkit-appearance: none;
 }
+
+.ActionButton{
+    padding: 1px;
+    margin: 1px;
+    border: 1px;
+}

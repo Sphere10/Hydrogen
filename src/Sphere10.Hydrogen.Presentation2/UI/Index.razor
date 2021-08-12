@@ -9,9 +9,11 @@
 
 @using Sphere10.Hydrogen.Presentation2.UI.Controls
 @using Sphere10.Hydrogen.Presentation2.UI.Controls.BlazorGrid;
+@using Sphere10.Hydrogen.Presentation2.UI.Controls.BlazorGrid.Classes;
 
 @using Sphere10.Framework;
 @using System.Threading;
+@using System;
 @using System.Linq;
 @using Microsoft.JSInterop
 
@@ -19,139 +21,135 @@
 
 @implements IDisposable
 
+@*<body oncontextmenu="return false;" style="overflow:hidden">*@
+    <body oncontextmenu="return false;" style="overflow:hidden">
+        <div class="row">
+            <div class="col-6">
+                <div class="card">
+                    <div class="card-header">
+                        <ul class="nav nav-tabs card-header-tabs pull-right" role="tablist">
+                            <li class="nav-item">
+                                <a class="nav-link active" data-toggle="tab" href="#tab-1">Table</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" data-toggle="tab" href="#tab-2">Virtual</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" data-toggle="tab" href="#tab-3">Rapid</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" data-toggle="tab" href="#tab-4">New Grid</a>
+                            </li>
 
-<body oncontextmenu="return false;" style="overflow:hidden"> 
-<div class="row">
-    <div class="col-6">
-        <div class="card">
-            <div class="card-header">
-                <ul class="nav nav-tabs card-header-tabs pull-right" role="tablist">
-                    <li class="nav-item">
-                        <a class="nav-link active" data-toggle="tab" href="#tab-1">Table</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" data-toggle="tab" href="#tab-2">Virtual</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" data-toggle="tab" href="#tab-3">Rapid</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" data-toggle="tab" href="#tab-4">New Grid</a>
-                    </li>
-
-                </ul>
-            </div>
-            <div class="card-body">
-                <div class="tab-content">
-                    <div class="tab-pane fade active show" id="tab-1">
-                        <h5 class="card-title">Paged table</h5>
-                        <PagedTable Items="Enumerable.Range(1, 100)"
-                                    TItem="int"
-                                    OnRowSelect="OnRowSelectAsync"
-                                    Class="table table-hover table-striped w-100">
-                            <HeaderTemplate>
-                                <tr>
-                                    <th>i</th>
-                                </tr>
-                            </HeaderTemplate>
-                            <ItemTemplate Context="i">
-                                <tr>
-                                    <td>@i</td>
-                                </tr>
-                            </ItemTemplate>
-                        </PagedTable>
+                        </ul>
                     </div>
-                    <div class="tab-pane fade" id="tab-2">
-                        <h5 class="card-title">Virtual data source</h5>
-                        <p> Items retrieved from data source on demand.</p>
-                        <VirtualPagedTable ItemsProvider="ItemsProvider"
-                                           TItem="int"
-                                           OnRowSelect="OnRowSelectAsync"
-                                           Class="table table-hover table-striped w-100">
-                            <HeaderTemplate>
-                                <tr>
-                                    <th>i</th>
-                                </tr>
-                            </HeaderTemplate>
-                            <ItemTemplate Context="i">
-                                <tr>
-                                    <td>@i</td>
-                                </tr>
-                            </ItemTemplate>
-                        </VirtualPagedTable>
-                    </div>
-                    <div class="tab-pane fade" id="tab-3">
-                        <h5 class="card-title">Rapid table</h5>
-                        <p> Update table continously from stream source</p>
-                        <RapidTable Source="GetIntAsync()"
-                                    ItemLimit="10"
-                                    TItem="int"
-                                    OnRowSelect="OnRowSelectAsync"
-                                    Class="table table-hover table-striped w-100">
-                            <HeaderTemplate>
-                                <tr>
-                                    <th>i</th>
-                                </tr>
-                            </HeaderTemplate>
-                            <ItemTemplate Context="i">
-                                <tr>
-                                    <td>@i</td>
-                                </tr>
-                            </ItemTemplate>
-                        </RapidTable>
-                    </div>
+                    <div class="card-body">
+                        <div class="tab-content">
+                            <div class="tab-pane fade active show" id="tab-1">
+                                <h5 class="card-title">Paged table</h5>
+                                <PagedTable Items="Enumerable.Range(1, 100)"
+                                            TItem="int"
+                                            OnRowSelect="OnRowSelectAsync"
+                                            Class="table table-hover table-striped w-100">
+                                    <HeaderTemplate>
+                                        <tr>
+                                            <th>i</th>
+                                        </tr>
+                                    </HeaderTemplate>
+                                    <ItemTemplate Context="i">
+                                        <tr>
+                                            <td>@i</td>
+                                        </tr>
+                                    </ItemTemplate>
+                                </PagedTable>
+                            </div>
+                            <div class="tab-pane fade" id="tab-2">
+                                <h5 class="card-title">Virtual data source</h5>
+                                <p> Items retrieved from data source on demand.</p>
+                                <VirtualPagedTable ItemsProvider="ItemsProvider"
+                                                   TItem="int"
+                                                   OnRowSelect="OnRowSelectAsync"
+                                                   Class="table table-hover table-striped w-100">
+                                    <HeaderTemplate>
+                                        <tr>
+                                            <th>i</th>
+                                        </tr>
+                                    </HeaderTemplate>
+                                    <ItemTemplate Context="i">
+                                        <tr>
+                                            <td>@i</td>
+                                        </tr>
+                                    </ItemTemplate>
+                                </VirtualPagedTable>
+                            </div>
+                            <div class="tab-pane fade" id="tab-3">
+                                <h5 class="card-title">Rapid table</h5>
+                                <p> Update table continously from stream source</p>
+                                <RapidTable Source="GetIntAsync()"
+                                            ItemLimit="10"
+                                            TItem="int"
+                                            OnRowSelect="OnRowSelectAsync"
+                                            Class="table table-hover table-striped w-100">
+                                    <HeaderTemplate>
+                                        <tr>
+                                            <th>i</th>
+                                        </tr>
+                                    </HeaderTemplate>
+                                    <ItemTemplate Context="i">
+                                        <tr>
+                                            <td>@i</td>
+                                        </tr>
+                                    </ItemTemplate>
+                                </RapidTable>
+                            </div>
 
-                    <div class="tab-pane fade" id="tab-4">
-                        <h5 class="card-title">Grid New</h5>
-                        <p>Testing of new Grid</p>
-                        <BlazorGrid TItem="TestClass"
-                                    Id="TestGrid"
-                                    DataSource="@DataSource"
-                                    PageSize="10"
-                                    GridType="BlazorGrid<TestClass>.GridTypes.ActionColumn"
-                                    >
-                        </BlazorGrid>
+                            <div class="tab-pane fade" id="tab-4">
+                                <h5 class="card-title">Grid New</h5>
+                                <p>Testing of new Grid</p>
+                                <BlazorGrid TItem="TestClass"
+                                            Id="TestGrid"
+                                            DataSource="@DataSource"
+                                            PageSize="10"
+                                            GridType="BlazorGrid<TestClass>.GridTypes.ActionColumn"
+                                            Actions="DataActions"                                            
+                                            >
+                                </BlazorGrid>
+                            </div>
+                        </div>
                     </div>
-
-
                 </div>
             </div>
-        </div>
-    </div>
-    <div class="col-4">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="card-title"> Dialogs</h5>
-            </div>
-            <div class="card-body">
-                <div>
-                    <button class="btn btn-primary btn-sm mx-1" @onclick="Confirm"> Confirm</button>
-                    <button class="btn btn-info btn-sm mx-1" @onclick="Info"> Info</button>
-                    <button class="btn btn-warning btn-sm mx-1" @onclick="Warning"> Warning</button>
-                    <button class="btn btn-danger btn-sm mx-1" @onclick="Exception"> Exception</button>
-                    <button class="btn btn-secondary btn-sm mx-1" @onclick="Custom"> Custom</button>
+            <div class="col-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title"> Dialogs</h5>
+                    </div>
+                    <div class="card-body">
+                        <div>
+                            <button class="btn btn-primary btn-sm mx-1" @onclick="Confirm"> Confirm</button>
+                            <button class="btn btn-info btn-sm mx-1" @onclick="Info"> Info</button>
+                            <button class="btn btn-warning btn-sm mx-1" @onclick="Warning"> Warning</button>
+                            <button class="btn btn-danger btn-sm mx-1" @onclick="Exception"> Exception</button>
+                            <button class="btn btn-secondary btn-sm mx-1" @onclick="Custom"> Custom</button>
+                        </div>
+
+                    </div>
+
                 </div>
-
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title"> Wizards</h5>
+                    </div>
+                    <div class="card-body">
+                        <button class="btn btn-primary btn-sm" @onclick="Wizard"> New Wallet</button>
+                    </div>
+                </div>
             </div>
 
         </div>
-        <div class="card">
-            <div class="card-header">
-                <h5 class="card-title"> Wizards</h5>
-            </div>
-            <div class="card-body">
-                <button class="btn btn-primary btn-sm" @onclick="Wizard"> New Wallet</button>
-            </div>
-        </div>
-    </div>
-
-</div>
-</body>
+    </body>
 
 @code {
-
-
-        
 
     public class DataSource1<TItem> : IDataSource<TestClass>
     {
@@ -230,9 +228,6 @@
         {
             var test = entities.ToArray()[0].ToString();
 
-            Alert(test);
-
-
             return Task.Run(() =>
             {
                 foreach (var entity in entities)
@@ -268,15 +263,43 @@
     #endregion
 
     DataSource1<TestClass> DataSource { get; set; }
+    List<GridAction<TestClass>> DataActions { get; set; }
     System.Timers.Timer Timer { get; set; }
 
     protected override void OnInitialized()
     {
         DataSource = new Index.DataSource1<TestClass>();
+        DataActions = new List<GridAction<TestClass>>();
+        DataActions.Add(new GridAction<TestClass>("Action1", Action1, "😄", IsAction1Available));
+        DataActions.Add(new GridAction<TestClass>("Action2", Action2, "⚽", IsAction2Available));
 
         Timer = new System.Timers.Timer(10000); // 10 seconds
         Timer.Elapsed += CountDownTimer;
         Timer.Start();
+    }
+
+    TestClass Action1(TestClass item)
+    {
+        Alert($"Action 1 pressed for Id: {item.Id}");
+
+        return item;
+    }
+
+    TestClass Action2(TestClass item)
+    {
+        Alert($"Action 2 pressed for Id: {item.Id}");
+
+        return item;
+    }
+
+    bool IsAction1Available(TestClass item)
+    {
+        return true;
+    }
+
+    bool IsAction2Available(TestClass item)
+    {
+        return item.Name == "Bitcoin";
     }
 
     public void CountDownTimer(Object source, System.Timers.ElapsedEventArgs e)
@@ -287,32 +310,13 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-    //    CountDownTimer(null, null);
+        //    CountDownTimer(null, null);
 
         //        TestGrid.LoadJavascript();
         //        Alert("OnAfterRenderAsync Index");
     }
 
-    // Grid Callback Functions
-    //    List<TestClass> GetPageDataFunction(int pageNumber, int pageSize)
-    //    {
-    //        return TestGridData.Skip(pageNumber * pageSize).Take(pageSize).ToList();
-    //    }
-
-    //    int GetDataCountFunction()
-    //    {
-    //        return TestGridData.Count;
-    //    }
-
-    //    bool SetItemDataFunction(string dataSource, string newValue, string dataName, object originalItem)
-    //    {
-    //        var item = (TestClass)originalItem;
-    //
-    //        Alert($"Id: {item.Id} newValue: {newValue}");
-    //
-    //        return true;
-    //    }
-
+    #region Original Code
     private async Task Confirm()
     {
         bool result = await ViewService.ConfirmDialogAsync("Confirm", "Are you sure you want to do that ?", "Yes");
@@ -409,4 +413,6 @@
     {
         EnumeratorCts.Cancel();
     }
+
+    #endregion
 }

@@ -5,7 +5,7 @@ using Sphere10.Framework.Application;
 using Sphere10.Helium.Router;
 
 namespace Sphere10.Helium.Framework {
-	public class HeliumFramework {
+	public class HeliumFramework : IHeliumFramework {
 
 		static HeliumFramework() {
 			Instance = new HeliumFramework();

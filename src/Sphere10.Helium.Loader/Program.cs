@@ -17,9 +17,12 @@ namespace Sphere10.Helium.Loader {
 			var logger = new ConsoleLogger();
 
 			IHeliumPluginLoader heliumPluginLoader = new HeliumPluginLoader(logger);
-			heliumPluginLoader.LoadPlugins(GetPluginRelativePathNameList());
+
+			var pluginsRelativePathArray = GetPluginRelativePathNameList();
+			heliumPluginLoader.LoadPlugins(pluginsRelativePathArray);
 
 			var heliumFramework = heliumPluginLoader.GetHeliumFramework();
+
 			heliumFramework.ModeOfOperation = EnumModeOfOperationType.HydrogenMode;
 			heliumFramework.StartHeliumFramework();
 			_router = heliumFramework.Router;

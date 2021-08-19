@@ -26,7 +26,7 @@ namespace Sphere10.Helium.Loader {
 
 			var x = heliumPluginLoader.GetEnabledPlugins();
 
-			SimulateMessagesBeingSentToThisNode();
+			//SimulateMessagesBeingSentToThisNode();
 		}
 
 		private static string[] GetPluginRelativePathNameList() {
@@ -39,13 +39,13 @@ namespace Sphere10.Helium.Loader {
 			};
 		}
 
-		private static void SimulateMessagesBeingSentToThisNode() {
-			Test_SendTestMessage1ToRouter();
-			Test_SendTestMessage2ToRouter();
-			Test_SendTestMessage3ToRouter();
-			Test_SendTestMessage4ToRouter();
-			Test_SendTestMessage5ToRouter();
-		}
+		//private static void SimulateMessagesBeingSentToThisNode() {
+		//	Test_SendTestMessage1ToRouter();
+		//	Test_SendTestMessage2ToRouter();
+		//	Test_SendTestMessage3ToRouter();
+		//	Test_SendTestMessage4ToRouter();
+		//	Test_SendTestMessage5ToRouter();
+		//}
 
 		private static void Test_SendTestMessage1ToRouter() {
 			//_router.InputMessage()

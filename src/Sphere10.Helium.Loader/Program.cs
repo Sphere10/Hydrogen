@@ -6,8 +6,16 @@ using Sphere10.Helium.Router;
 namespace Sphere10.Helium.Loader {
 
 	/// <summary>
-	/// IMPORTANT: This simulates the Sphere10 node and shows how the HeliumFrame is used.
-	/// This Project will be deleted once Helium is integrated into Hydrogen.
+	/// IMPORTANT: This simulates the Sphere10 node and shows how the HeliumFramework and HeliumPluginLoader are used.
+	/// This Project will be deleted once Helium is integrated into Hydrogen and Helium runs within the Node.
+	///
+	/// IMPORTANT: Design Decisions
+	/// An assembly (dll, Project consisting of Handlers and Sagas) is a Plugin.
+	/// 1) ALL Plugins with relative paths listed in the pluginsRelativePathArray will be loaded and will be enabled when the Node starts up.
+	///    enabled in this context means: ALL handlers, Timeouts etc of the Plugin will work as per normal.
+	/// 2) If you DON'T want a Plugin to load at start-up then remove the Plug-in's relative path from the pluginsRelativePathArray.
+	/// 3) Any Plugin can be disabled that is: PluginAssemblyHandler.IsEnabled = false at any time while the Node is running.
+	/// 4) Any Plugin that was disabled can be enabled at any time while the Node is running.
 	/// </summary>
 	public class Program {
 		private static IRouter _router;
@@ -15,16 +23,15 @@ namespace Sphere10.Helium.Loader {
 		public static void Main(string[] args) {
 
 			var logger = new ConsoleLogger();
-
-			IHeliumPluginLoader heliumPluginLoader = new HeliumPluginLoader(logger);
-
 			var pluginsRelativePathArray = GetPluginRelativePathNameList();
+			
+			IHeliumPluginLoader heliumPluginLoader = new HeliumPluginLoader(logger);
 			heliumPluginLoader.LoadPlugins(pluginsRelativePathArray);
 
 			var heliumFramework = heliumPluginLoader.GetHeliumFramework();
-
 			heliumFramework.ModeOfOperation = EnumModeOfOperationType.HydrogenMode;
 			heliumFramework.StartHeliumFramework();
+			heliumFramework.LoadHandlerTypes(heliumPluginLoader.PluginAssemblyHandlerList);
 			_router = heliumFramework.Router;
 
 			var x = heliumPluginLoader.GetEnabledPlugins();

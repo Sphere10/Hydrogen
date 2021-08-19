@@ -12,7 +12,7 @@ namespace Sphere10.Helium.PluginFramework
     public class HeliumPluginLoader : IHeliumPluginLoader
     {
         private readonly ILogger _logger;
-        private static IList<PluginAssemblyHandler> PluginAssemblyHandlerList { get; set; }
+        public IList<PluginAssemblyHandler> PluginAssemblyHandlerList { get; set; }
 
         public HeliumPluginLoader(ILogger logger)
         {
@@ -39,7 +39,7 @@ namespace Sphere10.Helium.PluginFramework
                 GetHandlers(pluginAssembly, path);
             }
 
-            HeliumFramework.Instance.LoadHandlerTypes(PluginAssemblyHandlerList);
+            //HeliumFramework.Instance.LoadHandlerTypes(PluginAssemblyHandlerList);
         }
 
         public void EnableThesePlugins(string[] relativePathList)
@@ -138,7 +138,7 @@ namespace Sphere10.Helium.PluginFramework
             Console.WriteLine(typeString);
         }
 
-        private static int CheckIfInterfaceIsHandler(Type type, int count, string assemblyFullName, string relativePath)
+        private int CheckIfInterfaceIsHandler(Type type, int count, string assemblyFullName, string relativePath)
         {
             foreach (var i in type.GetInterfaces())
             {

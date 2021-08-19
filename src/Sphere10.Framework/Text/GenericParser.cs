@@ -43,7 +43,7 @@ namespace Sphere10.Framework {
 	        // Note: that NULL case is handled by nullable converter            
 
 	        // Use component model type convertors
-	        var converter = TypeDescriptorEx.GetConverter(typeof(T));
+	        var converter = TypeDescriptorEx.GetConverter(type);
 	        if (converter != null && converter.IsValid(input)) {
 		        value = converter.ConvertFromString(input);
 		        return true;
@@ -54,7 +54,7 @@ namespace Sphere10.Framework {
 
         public static object Parse(Type type, string input) {
 	        if (!TryParse(type,input, out var value))
-		        throw new FormatException((input == null ? "Null string" : $"String '{input}'") + $" could not be parsed into an {typeof(T).Name}");
+		        throw new FormatException((input == null ? "Null string" : $"String '{input}'") + $" could not be parsed into an {type.Name}");
 	        return value;
         }
 

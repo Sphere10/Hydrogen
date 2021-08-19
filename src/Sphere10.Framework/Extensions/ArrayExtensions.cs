@@ -19,6 +19,11 @@ namespace Sphere10.Framework {
 
 	public static class ArrayExtensions {
 
+		public static T[] ReverseArray<T>(this T[] array) {
+            Array.Reverse(array);
+            return array;
+		}
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T[] Copy<T>(this T[] array)
             => SubArray(array, 0);

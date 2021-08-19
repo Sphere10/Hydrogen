@@ -55,11 +55,20 @@ namespace Sphere10.Framework {
 		/// <param name="paramName">The name of the argument</param>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static void ArgumentNotNullOrEmpty(string value, string paramName, string message = null) {
-            ArgumentNotNull(value, paramName);
-
-            if (value == string.Empty)
+			if (string.IsNullOrEmpty(value))
                 throw new ArgumentException(message ?? $"Argument must not be the empty string", paramName);
         }
+
+		/// <summary>
+		/// Throws an exception if a string argument is null or empty
+		/// </summary>
+		/// <param name="value">The value to be tested</param>
+		/// <param name="paramName">The name of the argument</param>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static void ArgumentNotNullOrWhitespace(string value, string paramName, string message = null) {
+			if (string.IsNullOrWhiteSpace(value))
+				throw new ArgumentException(message ?? $"Argument must not be the empty string", paramName);
+		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static void ArgumentNotNullOrEmpty<T>(IEnumerable<T> items, string paramName, string message = null) {
@@ -67,7 +76,6 @@ namespace Sphere10.Framework {
 			if (!items.Any())
 				throw new ArgumentException( message ?? $"Argument must not be the empty enumerable", paramName);
 		}
-
 
 		/// <summary>
 		/// Throws an ArgumentOutOfRangeException if the specified condition is not met.

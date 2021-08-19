@@ -21,8 +21,7 @@ namespace Sphere10.Framework {
 			_setterDelegate = (Action<object, object>)callPropertySetterClosedGenericMethod.CreateDelegate(typeof(Action<object, object>), propertySetterAsAction);
 		}
 
-		// TODO change to when C# 9: public bool Cascading { get; init; } 
-		public bool Cascading { get; set; }
+		public bool Cascading { get; init; }
 
 		public void SetValue(object target, object value) => _setterDelegate(target, value);
 

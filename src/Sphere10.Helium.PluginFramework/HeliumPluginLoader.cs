@@ -22,7 +22,7 @@ namespace Sphere10.Helium.PluginFramework
 
         public bool AllPluginsEnabled { get; private set; } = true;
 
-        public HeliumFramework GetHeliumFramework()
+        public IHeliumFramework GetHeliumFramework()
         {
             var heliumFrameworkInstance = HeliumFramework.Instance;
             heliumFrameworkInstance.Logger = _logger;

@@ -208,13 +208,13 @@ namespace Sphere10.Framework {
 				var nameOptions = new List<string>();
 				var hasValue = arg.Traits.HasFlag(CommandLineParameterOptions.RequiresValue);
 				if (Options.HasFlag(CommandLineArgumentOptions.SingleDash))
-					nameOptions.Add($"-{arg.Name}{(hasValue ? " <value>" : "")}");
+					nameOptions.Add(StringFormatter.FormatEx( $"-{arg.Name}{(hasValue ? " <value>" : "")}"));
 
 				if (Options.HasFlag(CommandLineArgumentOptions.DoubleDash))
-					nameOptions.Add($"--{arg.Name}{(hasValue ? " <value>" : "")}");
+					nameOptions.Add(StringFormatter.FormatEx($"--{arg.Name}{(hasValue ? " <value>" : "")}"));
 
 				if (Options.HasFlag(CommandLineArgumentOptions.ForwardSlash))
-					nameOptions.Add($"/{arg.Name}{(hasValue ? " <value>" : "")}");
+					nameOptions.Add(StringFormatter.FormatEx($"/{arg.Name}{(hasValue ? " <value>" : "")}"));
 
 				return nameOptions;
 			}
@@ -224,7 +224,7 @@ namespace Sphere10.Framework {
 
 				foreach (var command in commands) {
 					string line = (itemIndentation + command.Name).PadRight(ArgumentLineLengthPadded) + "\t\t" + command.Description;
-					Console.WriteLine(line);
+					Console.WriteLine(StringFormatter.FormatEx(line));
 
 					foreach (var arg in command.Parameters) {
 						var nameOptions = GetNameOptions(arg);
@@ -264,13 +264,13 @@ namespace Sphere10.Framework {
 			PrintCommands(Commands);
 
 			foreach (var line in Footer) {
-				Console.WriteLine(line);
+				Console.WriteLine(StringFormatter.FormatEx(line));
 			}
 		}
 
 		public void PrintHeader() {
 			foreach (var line in Header)
-				Console.WriteLine(line);
+				Console.WriteLine(StringFormatter.FormatEx(line));
 		}
 
 		/// <summary>

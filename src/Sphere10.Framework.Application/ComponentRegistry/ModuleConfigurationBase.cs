@@ -25,7 +25,6 @@ namespace Sphere10.Framework.Application {
         }
 
         public virtual void OnFinalize() {
-            
         }
 
     }

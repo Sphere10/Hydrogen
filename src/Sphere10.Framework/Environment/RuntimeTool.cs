@@ -14,6 +14,7 @@
 using System;
 using System.Diagnostics;
 using System.Reflection;
+using System.Text;
 using Sphere10.Framework;
 
 // ReSharper disable CheckNamespace
@@ -79,7 +80,8 @@ namespace Tools {
                     lock (_threadLock) {
                         if (!_hasDeterminedDesignMode) {
                             var processName = Process.GetCurrentProcess().ProcessName.ToUpperInvariant();
-                            _isDesignMode = processName.IsIn("DEVENV", "SHARPDEVELOP");
+                            //System.IO.File.AppendAllText("c:/temp/a.txt", processName);
+                            _isDesignMode = processName.IsIn("DEVENV", "SHARPDEVELOP", "DESIGNTOOLSSERVER");
                             _hasDeterminedDesignMode = true;
                         }
                     }
@@ -114,6 +116,53 @@ namespace Tools {
             ////return System.Web.HttpContext.Current.Handler.GetType().BaseType.Assembly;
         }
 
+
+        public static string EncodeCommandLineArgumentWin(string argument, bool force = false) {
+            // NOTE: only for Windows
+	        if (argument == null) throw new ArgumentNullException(nameof(argument));
+
+	        // Unless we're told otherwise, don't quote unless we actually
+	        // need to do so --- hopefully avoid problems if programs won't
+	        // parse quotes properly
+	        if (force == false
+	            && argument.Length > 0
+	            && argument.IndexOfAny(" \t\n\v\"".ToCharArray()) == -1) {
+		        return argument;
+	        }
+
+	        var quoted = new StringBuilder();
+	        quoted.Append('"');
+
+	        var numberBackslashes = 0;
+
+	        foreach (var chr in argument) {
+		        switch (chr) {
+			        case '\\':
+				        numberBackslashes++;
+				        continue;
+			        case '"':
+				        // Escape all backslashes and the following
+				        // double quotation mark.
+				        quoted.Append('\\', numberBackslashes * 2 + 1);
+				        quoted.Append(chr);
+				        break;
+			        default:
+				        // Backslashes aren't special here.
+				        quoted.Append('\\', numberBackslashes);
+				        quoted.Append(chr);
+				        break;
+		        }
+		        numberBackslashes = 0;
+	        }
+
+	        // Escape all backslashes, but let the terminating
+	        // double quotation mark we add below be interpreted
+	        // as a metacharacter.
+	        quoted.Append('\\', numberBackslashes * 2);
+	        quoted.Append('"');
+
+	        return quoted.ToString();
+        }
     }
 }
 

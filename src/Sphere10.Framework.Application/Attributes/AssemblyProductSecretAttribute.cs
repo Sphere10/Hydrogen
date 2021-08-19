@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------
-// <copyright file="AssemblyProductLinkAttribute.cs" company="Sphere 10 Software">
+// <copyright file="AssemblyProductSharedSecretAttribute.cs" company="Sphere 10 Software">
 //
 // Copyright (c) Sphere 10 Software. All rights reserved. (http://www.sphere10.com)
 //
@@ -16,14 +16,14 @@ using System.Runtime.InteropServices;
 
 namespace Sphere10.Framework.Application {
 
-    [ComVisible(true)]
+	[ComVisible(true)]
     [AttributeUsage(AttributeTargets.Assembly, Inherited = false)]
-    public sealed class AssemblyProductLinkAttribute : Attribute {
-        public AssemblyProductLinkAttribute(string url) {
-            ProductLink = url;
+    public sealed class AssemblyProductSecretAttribute : Attribute {
+    	public AssemblyProductSecretAttribute(string secret) {
+            Secret = secret;
         }
 
-        public string ProductLink { get; set; }
+    	public string Secret { get; set; }
     }
 
 }

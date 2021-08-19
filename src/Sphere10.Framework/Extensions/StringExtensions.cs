@@ -305,8 +305,8 @@ namespace Sphere10.Framework {
 				case "GRANTED":
 				case "PERMISSION GRANTED":
 				case "APPROVED":
-					retval = true;
-					break;
+				retval = true;
+				break;
 			}
 			return retval;
 		}

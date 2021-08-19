@@ -21,7 +21,6 @@ namespace Sphere10.Framework.Application {
 	/// Facade class for the application framework. Basically wraps all the services into one class.
 	/// </summary>
 	public class ApplicationServices : ProductServices, IApplicationServices {
-
 	
 		public ApplicationServices() {
 		}

@@ -24,12 +24,6 @@ namespace Sphere10.Framework.Application {
 			if (!registry.HasImplementationFor<IBackgroundLicenseVerifier>())
 				registry.RegisterComponent<IBackgroundLicenseVerifier, NoOpBackgroundLicenseVerifier>();
 
-			if (!registry.HasImplementationFor<ISettingsProvider>("UserSettings"))
-				registry.RegisterComponentInstance<ISettingsProvider>(new DirectorySettingsProvider(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), AppDomain.CurrentDomain.FriendlyName)), "UserSettings");
-
-			if (!registry.HasImplementationFor<ISettingsProvider>("SystemSettings"))
-				registry.RegisterComponentInstance<ISettingsProvider>(new DirectorySettingsProvider(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), AppDomain.CurrentDomain.FriendlyName)), "SystemSettings");
-
 			if (!registry.HasImplementationFor<IConfigurationServices>())
 				registry.RegisterComponent<IConfigurationServices, StandardConfigurationServices>(activation: ActivationType.Singleton);
 
@@ -76,10 +70,30 @@ namespace Sphere10.Framework.Application {
 			if (!registry.HasImplementationFor<IWebsiteLauncher>())
 				registry.RegisterComponent<IWebsiteLauncher, StandardWebsiteLauncher>();
 
+			registry.RegisterComponent<ITokenResolver, ApplicationTokenResolver>();
+
+			// Register settings provider last
+			if (!registry.HasImplementationFor<ISettingsProvider>("UserSettings")) {
+				var productInfo = registry.Resolve<IProductInformationServices>();
+				registry.RegisterComponentInstance<ISettingsProvider>(
+					new CachedSettingsProvider(
+						new DirectorySettingsProvider(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), productInfo.ProductInformation.ProductName))
+					), "UserSettings"
+				);
+			}
+
+			if (!registry.HasImplementationFor<ISettingsProvider>("SystemSettings")) {
+				var productInfo = registry.Resolve<IProductInformationServices>();
+				registry.RegisterComponentInstance<ISettingsProvider>(
+					new CachedSettingsProvider(
+						new DirectorySettingsProvider(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), productInfo.ProductInformation.ProductName))
+					), "SystemSettings"
+				);
+			}
+
 			// HS 2021-07-12: top-level application should register this, since it is optional
 			//if (!registry.HasInitializationTask<IncrementUsageByOneTask>())
 			//	registry.RegisterInitializationTask<IncrementUsageByOneTask>();
-
 
 			// Start Tasks
 			// ....
@@ -90,5 +104,13 @@ namespace Sphere10.Framework.Application {
 				registry.RegisterEndTask<SaveSettingsEndTask>();
 
 		}
-	}
+
+        public override void OnInitialize() {
+            base.OnInitialize();
+
+			if (Tools.Runtime.GetEntryAssembly().TryGetCustomAttributeOfType<AssemblyProductSecretAttribute>(false, out var attribute)) {
+				EncryptedAttribute.ApplicationSharedSecret = attribute.Secret;
+			}
+        }
+    }
 }

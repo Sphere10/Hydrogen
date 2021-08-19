@@ -4,35 +4,54 @@ using System.Linq;
 namespace Sphere10.Framework {
 	public class CommandLineResults {
 
-		public string GetSingleArgumentValue(string argName) {
-			if (!Arguments.Contains(argName))
-				throw new InvalidOperationException($"Command-line argument not specified: '{argName}'");
+		public bool HasArgument(string argName) => Arguments.Contains(argName);
 
-			var values = Arguments[argName];
-			switch (values.Count()) {
-				case 0:
-					throw new InvalidOperationException($"Command-line argument did not specify a value: '{argName}'");
-				case 1:
-					return values.Single();
-				default:
-					throw new InvalidOperationException($"Command-line argument specified more than one value: '{argName}'");
+		public bool TryGetArgumentValues(string argName, out string[] values) {
+			if (!Arguments.Contains(argName)) {
+				values = Array.Empty<string>();
+				return false;
 			}
+			values = Arguments[argName].ToArray();
+			return true;
+		}
+
+		public bool TryGetSingleArgumentValue(string argName, out string value) {
+			if (TryGetArgumentValues(argName, out var values)) {
+				if (values.Length == 1) {
+					value = values[0];
+					return true;
+				}
+			}
+			value = null;
+			return false;
+		}
+		
+		public string GetSingleArgumentValue(string argName) {
+			if (!TryGetSingleArgumentValue(argName, out var value)) {
+				throw new InvalidOperationException($"Command-line argument did not specify a single value: '{argName}'");
+			}
+			return value;
 		}
 
 		public string GetSingleArgumentValueOrDefault(string argName, string defaultValue = null) {
-			if (!Arguments.Contains(argName))
+			if (!TryGetSingleArgumentValue(argName, out var value)) {
 				return defaultValue;
-
-			var values = Arguments[argName];
-			switch (values.Count()) {
-				case 0:
-					throw new InvalidOperationException($"Command-line argument did not specify a value: '{argName}'");
-				case 1:
-					return values.Single();
-				default:
-					throw new InvalidOperationException($"Command-line argument specified more than one value: '{argName}'");
 			}
+			return value;
+		}
 
+		public bool TryGetEnumArgument<TEnum>(string argName, out TEnum value) where TEnum : struct {
+			if (TryGetSingleArgumentValue(argName, out var strValue)) {
+				return Enum.TryParse(strValue, out value);
+			}
+			value = default;
+			return false;
+		}
+
+		public TEnum GetEnumArgument<TEnum>(string argName) where TEnum : struct {
+			if (!TryGetEnumArgument<TEnum>(argName, out var value))
+				throw new InvalidOperationException($"Argument '{argName}' had an unrecognized value");
+			return value;
 		}
 
 

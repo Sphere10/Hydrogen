@@ -19,40 +19,34 @@ namespace Sphere10.Framework.Application {
 
 	[XmlRoot]
 	[Serializable]
-	public abstract class SettingsObject : ObjectWithDefaultValues {
+	public abstract class SettingsObject : ObjectWithDefaultValues  {
 
-		[DefaultValue(null)]
-		public object ID { get; set; }
+		public object ID { get; set; } = null;
 
 		[XmlIgnore]
 		public ISettingsProvider Provider { get; set; }
 
-
 		public virtual void Load() {
-			ValidateProvider();
+			CheckProvider();
 			Provider.ReloadSetting(this);
 		}
 
-
 		public virtual void Save() {
-			ValidateProvider();
+			CheckProvider();
 			Provider.SaveSetting(this);
 		}
-
 	
 		public virtual void Delete() {
-			ValidateProvider();
+			CheckProvider();
 			Provider.DeleteSetting(this);
 		}
 
+		public virtual Result Validate() => Result.Valid;
 
-		private void ValidateProvider() {
+		private void CheckProvider() {
 			if (Provider == null)
 				throw new SoftwareException("Setting cannot be saved as it is not registered with a settings provider.");
-
 		}
-
-
 
 	}
 }

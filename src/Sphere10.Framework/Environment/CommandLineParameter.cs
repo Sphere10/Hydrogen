@@ -1,6 +1,10 @@
 ﻿namespace Sphere10.Framework {
 	public class CommandLineParameter {
 
+		public CommandLineParameter(string name, CommandLineParameterOptions traits = CommandLineParameterOptions.Default, params string[] dependencies) 
+			: this(name, string.Empty, traits, dependencies) {
+		}
+
 		public CommandLineParameter(string name, string description, CommandLineParameterOptions traits = CommandLineParameterOptions.Default, params string[] dependencies) {
 			Name = name;
 			Description = description;

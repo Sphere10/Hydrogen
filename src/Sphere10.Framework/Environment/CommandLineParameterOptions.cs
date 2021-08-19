@@ -7,6 +7,6 @@ namespace Sphere10.Framework {
 		Mandatory = 2,  // must occur 1 time
 		Multiple = 4,   // if optional, can occur 0..N times, if mandatory can occur 1..N times
 		RequiresValue = 8, // 
-		Default = Optional | RequiresValue
+		Default = Optional
 	}
 }

@@ -30,18 +30,14 @@ namespace Sphere10.Framework {
 		public string Pepper { get; set; }
 
 		public virtual string Encrypt(string value) {
-			if (string.IsNullOrEmpty(ApplicationSharedSecret))
-				throw new InvalidOperationException("Application secret was not set");
-
+			CheckSecret();
 			var salt = CalculateSalt() ?? string.Empty;
 			var pepper = Pepper ?? string.Empty;
 			return Tools.Crypto.EncryptStringAES(value, ApplicationSharedSecret, salt + pepper);
 		}
 
 		public virtual string Decrypt(string value) {
-			if (string.IsNullOrEmpty(ApplicationSharedSecret))
-				throw new InvalidOperationException("Application secret was not set");
-
+			CheckSecret();
 			var salt = CalculateSalt() ?? string.Empty;
 			var pepper = Pepper ?? string.Empty;
 			return Tools.Crypto.DecryptStringAES(value, ApplicationSharedSecret, salt + pepper);
@@ -111,7 +107,12 @@ namespace Sphere10.Framework {
 		protected virtual string GetCustomSaltValue() {
 			return Pepper;
 		}
-		
+
+		private void CheckSecret() {
+			if (string.IsNullOrEmpty(ApplicationSharedSecret))
+				throw new InvalidOperationException("Application secret was not set");
+		}
+
 	}
 
 }

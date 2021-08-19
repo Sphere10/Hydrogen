@@ -45,7 +45,6 @@ namespace Sphere10.Framework.Application {
 			}
 		}
 
-
 		protected override SettingsObject LoadInternal(Type settingsObjectType, object id = null) {
             return Tools.Xml.DeepReadFromFile<SettingsObject>(DetermineFilepath(settingsObjectType, id));
 		}

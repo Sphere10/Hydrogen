@@ -98,6 +98,7 @@ namespace Sphere10.Framework.Communications.RPC {
 					Tuple<AutoResetEvent, string> waitingCaller;
 					var found = persistantCallResults.TryGetValue(id, out waitingCaller);
 					if (found == true) {
+						//Debug.WriteLine($"Client {EndPoint.GetDescription()} recording and seding result for callid {id}");
 						var waitEvent = waitingCaller.Item1;
 						persistantCallResults[id] = new Tuple<AutoResetEvent, string>(waitEvent, message);
 						waitEvent.Set();

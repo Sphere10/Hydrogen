@@ -118,7 +118,7 @@ namespace Tools {
         }
 
         public static string ResolvePathTemplate(string pathTemplate, Func<string, string> tokenResolver) {
-            return Text.FormatEx(pathTemplate, (token) => tokenResolver(token) ?? DefaultPathTokenResolver(token));
+            return StringFormatter.FormatEx(pathTemplate, (token) => tokenResolver(token) ?? DefaultPathTokenResolver(token));
         }
 
         public static string DefaultPathTokenResolver(string token) {

@@ -172,7 +172,6 @@ namespace Sphere10.Framework.Application {
             }
         }
 
-
 		public void DeregisterComponent<TImplementation>(string resolveKey = null)
 			=> DeregisterComponent(typeof(TImplementation), resolveKey);
 

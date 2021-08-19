@@ -15,6 +15,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using System.Xml.Serialization;
 using System.Text;
@@ -72,7 +73,6 @@ namespace Sphere10.Framework {
 		[IgnoreDataMember]
 		public bool HasInformation => ResultCodes.Any(x => x.Traits.HasFlag(ResultCodeTraits.InfoSeverity));
 
-
 		public void Add(ResultCode resultCode) {
 			ResultCodes.Add(resultCode);
 		}
@@ -106,7 +106,12 @@ namespace Sphere10.Framework {
 		public void Merge(Result result) {
 			ResultCodes.AddRange(result.ResultCodes);
 		}
-		
+
+		public void ThrowOnFailure() {
+			if (Failure)
+				throw new InvalidOperationException(ErrorMessages.ToParagraphCase());
+		}
+
 		public static Result Default => new Result();
 
 		public static Result Valid => Default;

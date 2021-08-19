@@ -25,11 +25,12 @@ namespace Tools {
 
 
 	public static class Text {
-        private static readonly char[] TokenTrimDelimitters;
 
-        static Text() {
-            TokenTrimDelimitters = new[] { '{', '}' };
-        }
+        public static string FormatEx(string formatString, params object[] formatArgs)
+            => StringFormatter.FormatEx(formatString, formatArgs);
+
+        public static string FormatEx(string formatString, Func<string, string> userTokenResolver, params object[] formatArgs)
+            => StringFormatter.FormatEx(formatString, userTokenResolver, formatArgs);
 
         public static bool IsValidHexString(IEnumerable<char> hexString) {
             return !hexString.Any(c => !(c >= '0' && c <= '9') && !(c >= 'a' && c <= 'f') && !(c >= 'A' && c <= 'F'));
@@ -50,68 +51,6 @@ namespace Tools {
 				return false;
 			}
             return true;
-        }
-
-        public static string FormatEx(string formatString, params object[] formatArgs) {
-            return FormatEx(formatString, DefaultTokenResolver, formatArgs);
-        }
-
-        public static string FormatEx(string formatString, Func<string, string> userTokenResolver, params object[] formatArgs) {
-            if (formatString == null)
-                throw new ArgumentNullException("formatString");
-
-            var splits = new Stack<string>(formatString.SplitAndKeep(TokenTrimDelimitters, StringSplitOptions.RemoveEmptyEntries).Reverse());
-            var resolver = userTokenResolver ?? DefaultTokenResolver;
-            var resultBuiler = new StringBuilder();
-            var currentFormatItemBuilder = new StringBuilder();
-            var inFormatItem = false;
-            while (splits.Count > 0) {
-                var split = splits.Pop();
-                switch (split) {
-                    case "{":
-                        if (splits.Count > 0 && splits.Peek() == "{") {
-                            // Escaped {{
-                            splits.Pop();
-                            if (inFormatItem)
-                                currentFormatItemBuilder.Append("{");
-                            else
-                                resultBuiler.Append("{");
-                            continue;
-                        }
-
-                        if (inFormatItem) {
-                            // illegal
-                            throw new FormatException("Invalid format string");
-                        }
-                        inFormatItem = true;
-                        break;
-                    case "}":
-                        if (inFormatItem) {
-                            // end of format item, process and add to string
-                            resultBuiler.Append(ResolveFormatItem(currentFormatItemBuilder.ToString(), resolver, formatArgs));
-                            inFormatItem = false;
-                            currentFormatItemBuilder.Clear();
-                        } else if (splits.Count > 0 && splits.Peek() == "}") {
-                            // Escaped }}
-                            splits.Pop();
-                            resultBuiler.Append("}");
-                        } else {
-                            // illegal format string
-                            throw new FormatException("Incorrect format string");
-                        }
-                        break;
-                    default:
-                        if (inFormatItem)
-                            currentFormatItemBuilder.Append(split);
-                        else
-                            resultBuiler.Append(split);
-                        break;
-                }
-            }
-            if (inFormatItem)
-                throw new FormatException("Incorrect format string");
-
-            return resultBuiler.ToString();
         }
 
         /// <summary>
@@ -207,34 +146,6 @@ namespace Tools {
                 streamPipeline.Run(sourceStream, destStream);
                 return ConvertToString(destStream.ToArray());
             }
-        }
-
-        private static string ResolveFormatItem(string token, Func<string, string> resolver, params object[] formatArgs) {
-            int formatIndex;
-            string formatOptions;
-            if (IsStandardFormatIndex(token, out formatIndex, out formatOptions)) {
-                if (formatIndex >= formatArgs.Length)
-                    throw new ArgumentOutOfRangeException("formatArgs", String.Format("Insufficient format arguments"));
-
-                return String.Format("{0" + (formatOptions ?? String.Empty) + "}", formatArgs[formatIndex]);
-            }
-            return resolver(token) ?? DefaultTokenResolver(token);
-        }
-
-        private static bool IsStandardFormatIndex(string token, out int number, out string formatOptions) {
-            var numberString = new string(token.TakeWhile(Char.IsDigit).ToArray());
-            if (numberString.Length > 0) {
-                number = Int32.Parse(numberString);
-                formatOptions = token.Substring(numberString.Length);
-                return true;
-            }
-            number = 0;
-            formatOptions = null;
-            return false;
-        }
-
-        private static string DefaultTokenResolver(string token) {
-            return token;
         }
 
     }

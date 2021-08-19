@@ -21,8 +21,8 @@
 
 @implements IDisposable
 
-@*<body oncontextmenu="return false;" style="overflow:hidden">*@
-    <body oncontextmenu="return false;" style="overflow:hidden">
+<body style="overflow:hidden">
+    @*<body oncontextmenu="return false;" style="overflow:hidden">*@
         <div class="row">
             <div class="col-6">
                 <div class="card">
@@ -151,27 +151,22 @@
 
 @code {
 
-    public class DataSource1<TItem> : IDataSource<TestClass>
-    {
+    public class DataSource1<TItem> : IDataSource<TestClass> {
         List<TestClass> AllItems = new List<TestClass>();
 
-        public void RefreshData()
-        {
+        public void RefreshData() {
             AllItems = LoadData(73);
         }
 
         // create some dummy data
-        public DataSource1()
-        {
+        public DataSource1() {
             RefreshData();
         }
 
-        static List<TestClass> LoadData(int size)
-        {
+        static List<TestClass> LoadData(int size) {
             var testData = new List<TestClass>();
 
-            for (int i = 0; i < size; i++)
-            {
+            for (int i = 0; i < size; i++) {
                 var testObject = new TestClass();
                 testObject.FillWithTestData(i);
                 testData.Add(testObject);
@@ -180,27 +175,22 @@
             return testData;
         }
 
-        public async Task Create(IEnumerable<TestClass> entities)
-        {
+        public async Task Create(IEnumerable<TestClass> entities) {
             AllItems.AddRange(entities);
         }
 
-        public async Task Delete(IEnumerable<TestClass> entities)
-        {
-            foreach (var entity in entities)
-            {
+        public async Task Delete(IEnumerable<TestClass> entities) {
+            foreach (var entity in entities) {
                 var index = AllItems.IndexOf(entity);
                 if (index >= 0) AllItems.RemoveAt(index);
             }
         }
 
-        public IEnumerable<TestClass> New(int count)
-        {
+        public IEnumerable<TestClass> New(int count) {
             var returnList = new List<TestClass>();
             var newId = AllItems.Max(x => x.Id) + 1;
 
-            for (int i = 0; i < count; i++)
-            {
+            for (int i = 0; i < count; i++) {
                 var newEntity = new TestClass();
                 newEntity.FillWithTestData(newId++);
                 AllItems.Add(newEntity);
@@ -212,11 +202,21 @@
 
         public Task<IEnumerable<TestClass>> Read(string searchTerm, int pageLength, ref int page, string sortProperty, SortDirection sortDirection, out int totalItems)
         {
-            totalItems = pageLength;
+            // make sure the requested page is logical
+            if (page < 0) page = 0;
+            else if (page > AllItems.Count / pageLength) page = AllItems.Count / pageLength;
 
             var startIndex = pageLength * page;
 
-            return Task.Run(() => (IEnumerable<TestClass>)AllItems.GetRange(startIndex, pageLength));
+            // the last page might not have a full [page of data
+            if (startIndex + pageLength >= AllItems.Count) pageLength = AllItems.Count - startIndex;
+
+            var items = (IEnumerable<TestClass>)AllItems.GetRange(startIndex, pageLength);
+
+            totalItems = items.Count();
+            return Task.FromResult(items);
+
+            //return Task.Run(() => (IEnumerable<TestClass>)AllItems.GetRange(startIndex, pageLength));
         }
 
         public Task Refresh(TestClass[] entity)
@@ -275,7 +275,7 @@
 
         Timer = new System.Timers.Timer(10000); // 10 seconds
         Timer.Elapsed += CountDownTimer;
-        Timer.Start();
+//        Timer.Start();
     }
 
     TestClass Action1(TestClass item)

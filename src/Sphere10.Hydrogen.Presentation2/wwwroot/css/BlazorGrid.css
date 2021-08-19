@@ -1,7 +1,7 @@
 ﻿tr, .TableClass {
     border-bottom: 0px;
     table-layout: fixed !important;
-    width: 100px;
+    width: 100%;
 }
 
 th, td {

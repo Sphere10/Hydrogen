@@ -78,7 +78,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sphere10.Helium.Usage", "Sp
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sphere10.Helium.BlueService", "Sphere10.Helium.BlueService\Sphere10.Helium.BlueService.csproj", "{2D251D2F-2DDD-4C7A-808A-C64804F7EFAD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sphere10.Helium.TestPlugin1", "Sphere10.Helium.TestPlugin1\Sphere10.Helium.TestPlugin1.csproj", "{866EDDD5-9A2E-446C-BEC5-E5BB6D8BADFF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sphere10.Helium.TestPlugin1", "Sphere10.Helium.TestPlugin1\Sphere10.Helium.TestPlugin1.csproj", "{866EDDD5-9A2E-446C-BEC5-E5BB6D8BADFF}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sphere10.Helium.PluginFramework", "Sphere10.Helium.PluginFramework\Sphere10.Helium.PluginFramework.csproj", "{E1EA4AEC-7B1D-4124-A906-8FCA710A0BB2}"
 EndProject

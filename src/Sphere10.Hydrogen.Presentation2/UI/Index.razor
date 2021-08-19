@@ -213,7 +213,7 @@
 
             var items = (IEnumerable<TestClass>)AllItems.GetRange(startIndex, pageLength);
 
-            totalItems = items.Count();
+            totalItems = AllItems.Count();
             return Task.FromResult(items);
 
             //return Task.Run(() => (IEnumerable<TestClass>)AllItems.GetRange(startIndex, pageLength));
@@ -273,9 +273,9 @@
         DataActions.Add(new GridAction<TestClass>("Action1", Action1, "😄", IsAction1Available));
         DataActions.Add(new GridAction<TestClass>("Action2", Action2, "⚽", IsAction2Available));
 
-        Timer = new System.Timers.Timer(10000); // 10 seconds
+        Timer = new System.Timers.Timer(1000); // 10 seconds
         Timer.Elapsed += CountDownTimer;
-//        Timer.Start();
+        Timer.Start();
     }
 
     TestClass Action1(TestClass item)
@@ -306,6 +306,7 @@
     {
         DataSource.RefreshData();
         StateHasChanged();
+        Timer.Stop();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)

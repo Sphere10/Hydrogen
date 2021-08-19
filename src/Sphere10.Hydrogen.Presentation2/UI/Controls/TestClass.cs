@@ -3,7 +3,8 @@
 namespace Sphere10.Hydrogen.Presentation2.UI.Controls {
 	public class TestClass {
 
-		public enum TestEnum {
+		public enum TestEnum 
+		{
 			Black, White, Yellow, Purple, Brown , Blue
 		}
 

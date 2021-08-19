@@ -40,7 +40,7 @@
         <tbody>
             @foreach (var row in Rows)
             {
-                <tr @onmousedown="@(e => OnTableRowMouseDown())" @onmouseup="@(e => OnTableMouseUp(row))" style="@GetTableRowStyle()">
+                <tr @onmousedown="@(e => OnTableRowMouseDown())" @onmouseup="@(e => OnTableMouseUp(row))">
 
                     @if (GridType == GridTypes.ActionColumn)
                     {
@@ -82,9 +82,15 @@
     </table>
 
     <footer>
-        <div style="@GetPagingStyle()">
+        <div>
             <button @onclick="PagingFirst">First</button>
             <button @onclick="PagingNext">Next</button>
+
+            <input class="PagingInput" type="number" min="0" max="@(TotalDataCount / PageSize)" step="1" pattern="[0-9]{10}" oninput="this.value=this.value.replace(/[^0-9]/g,'');"
+                   value="@CurrentPage" @onchange="@(e => PagingSetCurrentPage(e.Value))"/>
+            of
+            <input class="PagingInput" type="number" value="@(TotalDataCount / PageSize)" readonly/>
+
             <button @onclick="PagingPrevious">Previous</button>
             <button @onclick="PagingLast">Last</button>
         </div>
@@ -152,7 +158,6 @@
 
 @code
 {
-
     @typeparam TItem
 
     public enum GridTypes { DataSupplied, DataOnDemand, ActionColumn }
@@ -162,11 +167,13 @@
     [Parameter] public IDataSource<TItem> DataSource { get; set; }
     [Parameter] public GridTypes GridType { get; set; }
     [Parameter] public List<GridAction<TItem>> Actions { get; set; }
+    [Parameter] public List<GridAction<TItem>> Components { get; set; }
 
     List<Cell> Header { get; set; } = new List<Cell>();
     List<List<Cell>> Rows { get; set; } = new List<List<Cell>>();
     IEnumerable<TItem> Data { get; set; }
     int CurrentPage { get; set; }
+    int TotalDataCount { get; set; }
 
     int DefaultRowHeight = 20;
     int DefaultCellWidth = 40;
@@ -223,12 +230,6 @@
 
     void LoadData()
     {
-        //Alert($"BlazorGrid LoadData {Data.Count()}");
-        //Alert($"Type: {Type}");
-
-        // Load the first page of data
-        //PagingFirst();
-
         Header.Clear();
         Rows.Clear();
 
@@ -241,11 +242,6 @@
             var type = first.GetType();
             var properties = type.GetProperties().ToList();
             var typeInfos = new List<ObjectTypeInfo>();
-
-            // Add the Action column
-            //var headerTypeInfo = new ObjectTypeInfo("Action");
-            //typeInfos.Add(headerTypeInfo);
-            //Header.Add(new Cell(new HeaderData("Action", width), new RowData(height), headerTypeInfo, "Action", "Action"));
 
             foreach (var property in properties)
             {
@@ -272,23 +268,6 @@
 
                 Rows.Add(rowData);
             }
-
-            //while (Rows.Count < PageSize)
-            //{
-            //    var rowData = new List<Cell>();
-
-            //    var columnIndex = 0;
-            //    foreach (var property in properties)
-            //    {
-            //        var cellText = string.Empty;
-            //        var cellData = new Cell(Header[columnIndex].Header, Header[columnIndex].Row, typeInfos[columnIndex], cellText, cellText, columnIndex);
-            //        rowData.Add(cellData);
-
-            //        columnIndex++;
-            //    }
-
-            //    Rows.Add(rowData);
-            //}
         }
 
         JSRuntime.InvokeAsync<object>("ResizableColumnTable", new object[] { Id }, DotNetObjectReference.Create<BlazorGrid<TItem>>(this));
@@ -416,11 +395,6 @@
 
     }
 
-    string GetTableRowStyle()
-    {
-        return string.Empty;
-    }
-
     void ButtonClick()
     {
         GetPageAndDisplayData();
@@ -429,15 +403,6 @@
     #endregion
 
     #region Paging
-
-    string GetPagingStyle()
-    {
-        return string.Empty;
-
-        //        int pagingTop = 300;
-
-        //        return $"top: {pagingTop}px;";
-    }
 
     void PagingFirst()
     {
@@ -450,6 +415,13 @@
     void PagingNext()
     {
         CurrentPage++;
+        GetPageAndDisplayData();
+        StateHasChanged();
+    }
+
+    void PagingSetCurrentPage(object newCurrentPage)
+    {
+        CurrentPage = int.Parse(newCurrentPage.ToString());
         GetPageAndDisplayData();
         StateHasChanged();
     }
@@ -477,6 +449,7 @@
 
         var useCurrentPage = CurrentPage;
         Data = (IEnumerable<TItem>)await DataSource.Read("", PageSize, ref useCurrentPage, "", SortDirection.Ascending, out int totalItems);
+        TotalDataCount = totalItems;
         CurrentPage = useCurrentPage;
         LoadData();
         StateHasChanged();

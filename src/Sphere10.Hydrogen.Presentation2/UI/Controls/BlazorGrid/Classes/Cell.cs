@@ -55,6 +55,9 @@ namespace Sphere10.Hydrogen.Presentation2.UI.Controls.BlazorGrid.Classes {
 
 		public void UpdateData(string newValue) 
 		{
+			var objectValue = Tools.Parser.Parse(TypeInfo.Type, newValue);
+			TypeInfo.PropertyInfo.SetValue(Tag, objectValue);
+/*
 			object objectValue = null;
 
 			if (IsEnum) 
@@ -88,8 +91,8 @@ namespace Sphere10.Hydrogen.Presentation2.UI.Controls.BlazorGrid.Classes {
 			}
 
 			// handle arrays, IEnumerable, classes, trees of classes
-
 			TypeInfo.PropertyInfo.SetValue(Tag, objectValue);
+*/
 		}
 	}
 }

@@ -1,0 +1,11 @@
+﻿<div>
+    <select id="@ListId" multiple="multiple">
+        <option value="Bitcoin">Bitcoin</option>
+        <option value="Polkadot">Polkadot</option>
+        <option value="Ethereum">Ethereum</option>
+    </select>
+</div>
+
+@code {
+    [Parameter] public string ListId { get; set; }
+}

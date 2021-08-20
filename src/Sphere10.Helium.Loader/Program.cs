@@ -24,7 +24,7 @@ namespace Sphere10.Helium.Loader {
 
 			var logger = new ConsoleLogger();
 			var pluginsRelativePathArray = GetPluginRelativePathNameList();
-			
+
 			IHeliumPluginLoader heliumPluginLoader = new HeliumPluginLoader(logger);
 			heliumPluginLoader.LoadPlugins(pluginsRelativePathArray);
 
@@ -41,8 +41,6 @@ namespace Sphere10.Helium.Loader {
 
 		private static string[] GetPluginRelativePathNameList() {
 			return new[] {
-					@"Sphere10.Helium.BlueService\bin\Debug\net5.0\Sphere10.Helium.BlueService.dll",
-					@"Sphere10.Helium.Usage\bin\Debug\net5.0\Sphere10.Helium.Usage.dll",
 					@"Sphere10.Helium.TestPlugin1\bin\Debug\net5.0\Sphere10.Helium.TestPlugin1.dll",
 					@"Sphere10.Helium.TestPlugin2\bin\Debug\net5.0\Sphere10.Helium.TestPlugin2.dll",
 					@"Sphere10.Helium.TestPlugin3\bin\Debug\net5.0\Sphere10.Helium.TestPlugin3.dll"

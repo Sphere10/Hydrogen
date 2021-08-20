@@ -42,7 +42,7 @@ namespace Sphere10.Helium.PluginFramework
             //HeliumFramework.Instance.LoadHandlerTypes(PluginAssemblyHandlerList);
         }
 
-        public void EnableThesePlugins(string[] relativePathList)
+        public void EnablePlugin(string[] relativePathList)
         {
             if (relativePathList == null || relativePathList.Length == 0)
                 return;
@@ -56,7 +56,7 @@ namespace Sphere10.Helium.PluginFramework
                 item.assemblyHandler.IsEnabled = true;
         }
 
-        public void DisableThesePlugins(string[] relativePathList)
+        public void DisablePlugin(string[] relativePathList)
         {
             if (relativePathList == null || relativePathList.Length == 0)
                 return;

@@ -1,26 +1,18 @@
 ﻿using System.Collections.Generic;
+using Sphere10.Framework;
 using Sphere10.Helium.Endpoint;
 using Sphere10.Helium.Message;
-using Sphere10.Helium.Retry;
+using Sphere10.Helium.Processor;
 
 namespace Sphere10.Helium.Router {
-
 	public class Router : IRouter {
-		private readonly IRetryManager _retryManager;
-		//private readonly IHeliumQueue _routerQueue;
-		//private readonly IHeliumQueue _localQueue;
+		private readonly ILocalQueueInput _localQueueInput;
 
-		//public Router(IHeliumQueue routerQueue, IHeliumQueue localQueue) {
-		//	_routerQueue = routerQueue;
-		//	_localQueue = localQueue;
-		//}
-
-		public Router(IRetryManager retryManager) {
-			_retryManager = retryManager;
-
+		public Router(ILocalQueueInput localQueueInput) {
+			_localQueueInput = localQueueInput;
 		}
 
-		RouterConfigDto IRouter.RouterConfigDto { get; set; }
+		public ILogger Logger { get; set; }
 
 		bool IRouter.OutputMessage(IMessage message) {
 
@@ -28,13 +20,18 @@ namespace Sphere10.Helium.Router {
 		}
 
 		IList<EndpointAddressListByTypeDto> IRouter.GetEndpointAddresses() {
+			
 			throw new System.NotImplementedException();
 		}
 
 		IList<MessageProcessed> IRouter.MessagesAlreadyProcessed { get; set; }
 
-		public bool InputMessage(IMessage message) {
-			throw new System.NotImplementedException();
+		public void InputMessage(IMessage message) {
+			Logger.Debug("Inbound message received: Router.InputMessage(_)");
+			Logger.Debug($"Message Name = {message.GetType().Name}");
+			Logger.Debug($"Message Assembly = {message.GetType().Assembly}");
+
+			_localQueueInput.AddMessageToLocalQueue(message);
 		}
 
 		public bool InputMessageList(IList<IMessage> message) {

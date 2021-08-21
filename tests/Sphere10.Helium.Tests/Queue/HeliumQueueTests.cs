@@ -150,7 +150,7 @@ namespace Sphere10.Helium.Tests.Queue
 	public class HeliumQueueProcessor
 	{
 		private readonly int _batchSize;
-		private readonly QueueConfigDto _queueConfigDto;
+		private readonly LocalQueueConfigDto _queueConfigDto;
 		private const string StrGuid = "997D1367-E7B0-46F0-B0A1-686DC0F15945";
 		private const string TempQueueName = "Temp_AB3CB3F9-3EBC-46B3-877D-14AB5A7A7FD2_1";
 		private readonly Guid _sameGuid = new Guid(StrGuid);
@@ -168,20 +168,20 @@ namespace Sphere10.Helium.Tests.Queue
 
 			if (File.Exists(queuePath)) File.Delete(queuePath);
 
-			var queueConfig = new QueueConfigDto
-			{
-				Path = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), TempQueueName),
-				TempDirPath = _queueTempDir,
-				FileId = _sameGuid,
-				TransactionalPageSizeBytes = 1 << 17, /*DefaultTransactionalPageSize = 1 << 17; => 132071 ~ 128 KB*/
-				MaxStorageSizeBytes = 1 << 21, /*2097152 ~ 2MB*/
-				FileMemoryCacheBytes = 1 << 20, /*1048576 ~ 1MB*/
-				ClusterSize = 1 << 9, /*512 B*/
-				MaxItems = 500,
-				ReadOnly = false
-			};
+			//var queueConfig = new Sphere10.Helium.Queue.LocalQueueConfigDto
+			//{
+			//	Path = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), TempQueueName),
+			//	TempDirPath = _queueTempDir,
+			//	FileId = _sameGuid,
+			//	TransactionalPageSizeBytes = 1 << 17, /*DefaultTransactionalPageSize = 1 << 17; => 132071 ~ 128 KB*/
+			//	MaxStorageSizeBytes = 1 << 21, /*2097152 ~ 2MB*/
+			//	FileMemoryCacheBytes = 1 << 20, /*1048576 ~ 1MB*/
+			//	ClusterSize = 1 << 9, /*512 B*/
+			//	MaxItems = 500,
+			//	ReadOnly = false
+			//};
 
-			_queueConfigDto = queueConfig;
+			_queueConfigDto = new Sphere10.Helium.Queue.LocalQueueConfigDto();
 			_localQueue = SetupHeliumQueue();
 
 			if (_localQueue.RequiresLoad)
@@ -301,4 +301,23 @@ namespace Sphere10.Helium.Tests.Queue
 		public string MessageField3 { get; init; }
 		public string MessageField4 { get; init; }
 	}
+
+    //public class LocalQueueConfigDto
+    //{
+    //    public Guid FileId { get; set; }
+    //    public string Path { get; set; }
+    //    public string TempDirPath { get; set; }
+    //    public int MaxItems { get; set; }
+    //    public int MaxStorageSizeBytes { get; set; }
+    //    public int AllocatedMemory { get; set; }
+    //    public int TransactionalPageSizeBytes { get; set; }
+    //    public int ClusterSize { get; set; }
+    //    public int ListingClusterCount { get; set; }
+    //    public int StorageClusterCount { get; set; }
+    //    public int InputQueueReadRatePerMinute { get; set; }
+    //    public string ErrorQueueName { get; set; } = "ErrorQueue";
+    //    public string AuditLogQueueName { get; set; } = "AuditLogQueue";
+    //    public int FileMemoryCacheBytes { get; set; }
+    //    public bool ReadOnly { get; set; }
+    //}
 }

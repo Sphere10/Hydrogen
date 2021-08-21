@@ -4,7 +4,19 @@ using Sphere10.Helium.Message;
 
 namespace Sphere10.Helium.Queue {
 	public class RouterQueue : TransactionalList<IMessage>, IRouterQueue {
-
+		public RouterQueue(RouterQueueConfigDto routerQueueConfigDto)
+			: base(
+				new BinaryFormattedSerializer<IMessage>(),
+				routerQueueConfigDto.Path,
+				routerQueueConfigDto.TempDirPath,
+				routerQueueConfigDto.FileId,
+				routerQueueConfigDto.TransactionalPageSizeBytes,
+				routerQueueConfigDto.MaxStorageSizeBytes,
+				routerQueueConfigDto.AllocatedMemory,
+				routerQueueConfigDto.ClusterSize,
+				routerQueueConfigDto.MaxItems
+			) {
+		}
 
 		public RouterQueue(IItemSerializer<IMessage> serializer, string filename, string uncommittedPageFileDir, Guid fileID, int maxStorageBytes, int memoryCacheBytes, int maxItems, bool readOnly = false) : base(serializer, filename, uncommittedPageFileDir, fileID, maxStorageBytes, memoryCacheBytes, maxItems, readOnly) {
 		}

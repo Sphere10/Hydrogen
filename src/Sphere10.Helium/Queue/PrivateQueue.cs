@@ -2,23 +2,36 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using Sphere10.Framework;
 using Sphere10.Helium.Message;
 
 namespace Sphere10.Helium.Queue {
-	public class PrivateQueue : IPrivateQueue {
+	public class PrivateQueue : TransactionalList<IMessage>, IHeliumQueue {
 		private readonly int _count;
 		private readonly int _count1;
 		private readonly int _count2;
-		public PrivateQueue(int count, int count1, int count2) {
-			_count = count;
-			_count1 = count1;
-			_count2 = count2;
+
+		//public PrivateQueue(int count, int count1, int count2) {
+		//	_count = count;
+		//	_count1 = count1;
+		//	_count2 = count2;
+		//}
+
+		public PrivateQueue(PrivateQueueConfigDto privateQueueConfigDto)
+			: base(
+				new BinaryFormattedSerializer<IMessage>(),
+				privateQueueConfigDto.Path,
+				privateQueueConfigDto.TempDirPath,
+				privateQueueConfigDto.FileId,
+				privateQueueConfigDto.TransactionalPageSizeBytes,
+				privateQueueConfigDto.MaxStorageSizeBytes,
+				privateQueueConfigDto.AllocatedMemory,
+				privateQueueConfigDto.ClusterSize,
+				privateQueueConfigDto.MaxItems
+			) {
 		}
+
 		public IEnumerator<IMessage> GetEnumerator() {
 			throw new NotImplementedException();
 		}

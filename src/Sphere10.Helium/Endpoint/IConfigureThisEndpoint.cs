@@ -3,7 +3,7 @@
 namespace Sphere10.Helium.Endpoint {
 	public interface IConfigureThisEndpoint {
 
-		public void SetupEndpoint(BusConfiguration busConfiguration);
+		public void SetupEndpoint(BusConfigurationDto busConfigurationDto);
 
 	}
 }

@@ -2,10 +2,14 @@
 using Sphere10.Helium.Framework;
 using Sphere10.Helium.PluginFramework;
 using Sphere10.Helium.Router;
+using Sphere10.Helium.TestPlugin3.Message;
 
 namespace Sphere10.Helium.Loader {
-
 	/// <summary>
+	/// ********
+	/// THE NODE
+	/// ********
+	/// 
 	/// IMPORTANT: This simulates the Sphere10 node and shows how the HeliumFramework and HeliumPluginLoader are used.
 	/// This Project will be deleted once Helium is integrated into Hydrogen and Helium runs within the Node.
 	///
@@ -18,12 +22,12 @@ namespace Sphere10.Helium.Loader {
 	/// 4) Any Plugin that was disabled can be enabled at any time while the Node is running.
 	/// </summary>
 	public class Program {
-		private static IRouter _router;
+		public static IRouter Router;
 
 		public static void Main(string[] args) {
 
 			var logger = new ConsoleLogger();
-			var pluginsRelativePathArray = GetPluginRelativePathNameList();
+			var pluginsRelativePathArray = GetPluginsToBeLoadedList();
 
 			IHeliumPluginLoader heliumPluginLoader = new HeliumPluginLoader(logger);
 			heliumPluginLoader.LoadPlugins(pluginsRelativePathArray);
@@ -32,14 +36,12 @@ namespace Sphere10.Helium.Loader {
 			heliumFramework.ModeOfOperation = EnumModeOfOperationType.HydrogenMode;
 			heliumFramework.StartHeliumFramework();
 			heliumFramework.LoadHandlerTypes(heliumPluginLoader.PluginAssemblyHandlerList);
-			_router = heliumFramework.Router;
+			Router = heliumFramework.Router;
 
-			var x = heliumPluginLoader.GetEnabledPlugins();
-
-			SimulateMessagesBeingSentToThisNode();
+			SimulateMessagesBeingSentToThisNodeFromOutside();
 		}
 
-		private static string[] GetPluginRelativePathNameList() {
+		private static string[] GetPluginsToBeLoadedList() {
 			return new[] {
 					@"Sphere10.Helium.TestPlugin1\bin\Debug\net5.0\Sphere10.Helium.TestPlugin1.dll",
 					@"Sphere10.Helium.TestPlugin2\bin\Debug\net5.0\Sphere10.Helium.TestPlugin2.dll",
@@ -47,32 +49,15 @@ namespace Sphere10.Helium.Loader {
 			};
 		}
 
-		private static void SimulateMessagesBeingSentToThisNode() {
+		private static void SimulateMessagesBeingSentToThisNodeFromOutside() {
 			Test_SendTestMessage1ToRouter();
-			Test_SendTestMessage2ToRouter();
-			Test_SendTestMessage3ToRouter();
-			Test_SendTestMessage4ToRouter();
-			Test_SendTestMessage5ToRouter();
 		}
 
 		private static void Test_SendTestMessage1ToRouter() {
-			//_router.InputMessage()
-		}
+			
+			var message = new InboundToRouterTestMessage1 { Id = "Test1_00001", TheName = "InboundIntoRouter" };
 
-		private static void Test_SendTestMessage2ToRouter() {
-			//_router.InputMessage()
-		}
-
-		private static void Test_SendTestMessage3ToRouter() {
-			//_router.InputMessage()
-		}
-
-		private static void Test_SendTestMessage4ToRouter() {
-			//_router.InputMessage()
-		}
-
-		private static void Test_SendTestMessage5ToRouter() {
-			//_router.InputMessage()
+			Router.InputMessage(message);
 		}
 	}
 }

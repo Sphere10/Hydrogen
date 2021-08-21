@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Sphere10.Framework;
 using Sphere10.Framework.Application;
+using Sphere10.Helium.Queue;
 using Sphere10.Helium.Router;
 
 namespace Sphere10.Helium.Framework {
@@ -12,23 +13,31 @@ namespace Sphere10.Helium.Framework {
 		}
 
 		public static HeliumFramework Instance { get; }
+
 		public EnumModeOfOperationType ModeOfOperation { get; set; }
 		public IRouter Router { get; set; }
 		public ILogger Logger { get; set; }
+		public LocalQueueConfigDto QueueConfigDto { get; set; }
 
 		public void StartHeliumFramework() {
+			if(Logger == null) throw new ArgumentNullException($"Logger", "HeliumFramework CANNOT start without a logger.");
+
 			var heliumAssembly = typeof(ModuleConfiguration).Assembly;
 			var moduleConfiguration = (ModuleConfiguration)heliumAssembly.CreateInstance("Sphere10.Helium.ModuleConfiguration");
 
-			if (moduleConfiguration == null)
-				throw new ArgumentNullException($"moduleConfiguration");
+			if (moduleConfiguration == null) throw new ArgumentNullException($"moduleConfiguration");
 
 			moduleConfiguration.RegisterComponents(ComponentRegistry.Instance);
 
-			Router = ComponentRegistry.Instance.Resolve<Router.Router>();
+			//var localQueue = ComponentRegistry.Instance.Resolve<Queue.LocalQueue>();
 
-			if (Router == null)
-				throw new ArgumentNullException($"Router");
+			Router = ComponentRegistry.Instance.Resolve<Router.Router>();
+			
+			if (Router == null) throw new ArgumentNullException($"Router");
+			//if (localQueue == null) throw new ArgumentNullException($"LocalQueue");
+
+			Router.Logger = Logger;
+			//Router.LocalQueue = localQueue;
 		}
 
 		public void LoadHandlerTypes(IList<PluginAssemblyHandler> handlerTypeList) {

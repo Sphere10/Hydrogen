@@ -203,7 +203,11 @@ namespace Sphere10.Framework.Application {
             }
         }
 
-        public TInterface Resolve<TInterface>(string resolveKey = null) where TInterface : class {
+        public void RegisterComponentFactory<TInterface>(Func<ComponentRegistry, TInterface> factory) {
+	        _tinyIoCContainer.Register(typeof(TInterface), (container, overloads) => factory(this));
+        }
+
+		public TInterface Resolve<TInterface>(string resolveKey = null) where TInterface : class {
             var resolvedImplementation = _tinyIoCContainer.Resolve<TInterface>(resolveKey ?? string.Empty);
             //if (!TryResolve(out resolvedImplementation, name)) {
             //    throw new SoftwareException(

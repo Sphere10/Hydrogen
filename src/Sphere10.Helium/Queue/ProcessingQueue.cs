@@ -10,7 +10,19 @@ namespace Sphere10.Helium.Queue {
 		private readonly int _count1 = 1;
 		private readonly int _count2 = 1;
 
-
+		public ProcessingQueue(LocalQueueConfigDto localQueueConfigDto)
+			: base(
+				new BinaryFormattedSerializer<IMessage>(),
+				localQueueConfigDto.Path,
+				localQueueConfigDto.TempDirPath,
+				localQueueConfigDto.FileId,
+				localQueueConfigDto.TransactionalPageSizeBytes,
+				localQueueConfigDto.MaxStorageSizeBytes,
+				localQueueConfigDto.AllocatedMemory,
+				localQueueConfigDto.ClusterSize,
+				localQueueConfigDto.MaxItems
+			) {
+		}
 
 		public override IEnumerator<IMessage> GetEnumerator() {
 			throw new NotImplementedException();
@@ -201,19 +213,7 @@ namespace Sphere10.Helium.Queue {
 			throw new NotImplementedException();
 		}
 
-		public ProcessingQueue(QueueConfigDto queueConfigDto)
-			: base(
-				new BinaryFormattedSerializer<IMessage>(),
-				queueConfigDto.Path,
-				queueConfigDto.TempDirPath,
-				queueConfigDto.FileId,
-				queueConfigDto.TransactionalPageSizeBytes,
-				queueConfigDto.MaxStorageSizeBytes,
-				queueConfigDto.AllocatedMemory,
-				queueConfigDto.ClusterSize,
-				queueConfigDto.MaxItems
-			) {
-		}
+
 
 		public ProcessingQueue(IItemSerializer<IMessage> serializer, string filename, string uncommittedPageFileDir, Guid fileID, int maxStorageBytes, int memoryCacheBytes, int maxItems, TransactionalFileMappedBuffer asBuffer, bool readOnly = false) : base(serializer, filename, uncommittedPageFileDir, fileID, maxStorageBytes, memoryCacheBytes, maxItems, readOnly) {
 			AsBuffer = asBuffer;

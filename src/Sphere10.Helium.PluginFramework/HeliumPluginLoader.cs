@@ -14,24 +14,23 @@ namespace Sphere10.Helium.PluginFramework
         private readonly ILogger _logger;
         public IList<PluginAssemblyHandler> PluginAssemblyHandlerList { get; set; }
 
-        public HeliumPluginLoader(ILogger logger)
+		public HeliumPluginLoader(ILogger logger)
         {
             _logger = logger;
             PluginAssemblyHandlerList = new List<PluginAssemblyHandler>();
-        }
-
-        public bool AllPluginsEnabled { get; private set; } = true;
+		}
 
         public IHeliumFramework GetHeliumFramework()
         {
             var heliumFrameworkInstance = HeliumFramework.Instance;
             heliumFrameworkInstance.Logger = _logger;
 
-            return heliumFrameworkInstance;
+			return heliumFrameworkInstance;
         }
 
         public void LoadPlugins(string[] relativeAssemblyPathList)
         {
+			_logger.Debug("Loading plugins and all associated Handlers.");
             foreach (var path in relativeAssemblyPathList)
             {
                 var pluginAssembly = LoadPluginAssembly(path);
@@ -39,8 +38,11 @@ namespace Sphere10.Helium.PluginFramework
                 GetHandlers(pluginAssembly, path);
             }
 
-            //HeliumFramework.Instance.LoadHandlerTypes(PluginAssemblyHandlerList);
-        }
+            var totalPluginsLoaded = GetEnabledPlugins();
+            var totalHandlersLoaded = PluginAssemblyHandlerList.Count;
+			_logger.Debug("Loading Complete.");
+            _logger.Debug($"Total Plugins loaded = {totalPluginsLoaded.Length}, Total Handlers loaded = {totalHandlersLoaded}");
+		}
 
         public void EnablePlugin(string[] relativePathList)
         {
@@ -72,8 +74,6 @@ namespace Sphere10.Helium.PluginFramework
 
         public void DisableAllPlugins()
         {
-            AllPluginsEnabled = false;
-
             if (PluginAssemblyHandlerList == null || PluginAssemblyHandlerList.Count == 0) return;
 
             foreach (var x in PluginAssemblyHandlerList)
@@ -82,8 +82,6 @@ namespace Sphere10.Helium.PluginFramework
 
         public void EnableAllPlugins()
         {
-            AllPluginsEnabled = true;
-
             if (PluginAssemblyHandlerList == null || PluginAssemblyHandlerList.Count == 0) return;
 
             foreach (var x in PluginAssemblyHandlerList)
@@ -92,8 +90,6 @@ namespace Sphere10.Helium.PluginFramework
 
         public string[] GetEnabledPlugins()
         {
-            _logger.Info("I am in GetEnabledPlugins.");
-
             var result = PluginAssemblyHandlerList.Where(y => y.IsEnabled).
                 Select(y => y.AssemblyFullName).Distinct().ToArray();
 

@@ -8,7 +8,7 @@ namespace Sphere10.Helium.Framework {
 		EnumModeOfOperationType ModeOfOperation { get; set; }
 		IRouter Router { get; set; }
 		ILogger Logger { get; set; }
-		public LocalQueueConfigDto QueueConfigDto { get; set; }
+		public LocalQueueSettings QueueSettings { get; set; }
 
 		void StartHeliumFramework();
 

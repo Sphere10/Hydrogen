@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using Sphere10.Framework.Application;
 using Sphere10.Helium.Bus;
 using Sphere10.Helium.Framework;
 using Sphere10.Helium.Message;
@@ -10,27 +11,25 @@ namespace Sphere10.Helium.Processor {
 	/// IMPORTANT: This class deals exclusively with ALL Reading/Deleting/Re-Inserting of the LocalQueue.
 	/// </summary>
 	public class LocalQueueProcessor : ILocalQueueProcessor {
-		private readonly BusConfigurationDto _endpointConfigurationDto;
 		private readonly IInstantiateHandler _instantiateHandler;
 		private readonly IHeliumQueue _localQueue; //SHALL be used soon.
 		private readonly ILocalQueueInput _localQueueInput;
 
-		public LocalQueueProcessor(
-			BusConfigurationDto endpointConfigurationDto, 
-			LocalQueueConfigDto localQueueConfigDto,
-			IInstantiateHandler instantiateHandler, 
-			IHeliumQueue localQueue, 
-			ILocalQueueInput localQueueInput) {
-			_endpointConfigurationDto = endpointConfigurationDto;
+		public LocalQueueProcessor(IInstantiateHandler instantiateHandler, 
+		                           IHeliumQueue localQueue, 
+		                           ILocalQueueInput localQueueInput) {
+
 			_instantiateHandler = instantiateHandler;
 			_localQueue = localQueue;
 			_localQueueInput = localQueueInput;
 
-			if (!Directory.Exists(localQueueConfigDto.TempDirPath))
-				Directory.CreateDirectory(localQueueConfigDto.TempDirPath);
+			var localQueueSettings = GlobalSettings.Get<LocalQueueSettings>();
 
-			if (File.Exists(localQueueConfigDto.Path))
-				File.Delete(localQueueConfigDto.Path);
+			if (!Directory.Exists(localQueueSettings.TempDirPath))
+				Directory.CreateDirectory(localQueueSettings.TempDirPath);
+
+			if (File.Exists(localQueueSettings.Path))
+				File.Delete(localQueueSettings.Path);
 
 			if (_localQueue.RequiresLoad)
 				_localQueue.Load();
@@ -48,7 +47,7 @@ namespace Sphere10.Helium.Processor {
 			//if (LocalQueue.Count == 0)
 			//	throw new InvalidOperationException("CRITICAL ERROR: LocalQueue is empty and should not be empty. Message missing cannot proceed.");
 
-			////using var txnScope = new FileTransactionScope(LocalQueueConfigDto.TempDirPath, ScopeContextPolicy.None);
+			////using var txnScope = new FileTransactionScope(LocalQueueSettings.TempDirPath, ScopeContextPolicy.None);
 
 			//txnScope.EnlistFile(LocalQueue, false);
 			//txnScope.EnlistFile(ProcessingQueue, false);
@@ -65,7 +64,7 @@ namespace Sphere10.Helium.Processor {
 
 		//public void InsertMessageInLocalQueue(IMessage message) {
 
-			//using var txnScope = new FileTransactionScope(LocalQueueConfigDto.TempDirPath, ScopeContextPolicy.None);
+			//using var txnScope = new FileTransactionScope(LocalQueueSettings.TempDirPath, ScopeContextPolicy.None);
 
 			//txnScope.EnlistFile(LocalQueue, false);
 
@@ -80,7 +79,7 @@ namespace Sphere10.Helium.Processor {
 			//if (LocalQueue.Count == 0)
 			//	throw new InvalidOperationException("CRITICAL ERROR: LocalQueue is empty and should not be empty. Message missing cannot proceed.");
 
-			//using var txnScope = new FileTransactionScope(LocalQueueConfigDto.TempDirPath, ScopeContextPolicy.None);
+			//using var txnScope = new FileTransactionScope(LocalQueueSettings.TempDirPath, ScopeContextPolicy.None);
 
 			//txnScope.EnlistFile(LocalQueue, false);
 

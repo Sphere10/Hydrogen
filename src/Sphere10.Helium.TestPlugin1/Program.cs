@@ -114,7 +114,7 @@ namespace Sphere10.Helium.TestPlugin1 {
 
 	public class AsLocalQueueProcessor {
 
-		private readonly LocalQueueConfigDto _queueConfigDto;
+		private readonly LocalQueueSettings _queueSettings;
 
 		private const string StrGuid = "997D1367-E7B0-46F0-B0A1-686DC0F15945";
 		private const string TempQueueName = "Temp_AB3CB3F9-3EBC-46B3-877D-14AB5A7A7FD2_1";
@@ -126,13 +126,13 @@ namespace Sphere10.Helium.TestPlugin1 {
 
 		public AsLocalQueueProcessor() {
 
-			_queueConfigDto = new LocalQueueConfigDto();
+			_queueSettings = new LocalQueueSettings();
 
-			if (!Directory.Exists(_queueConfigDto.TempDirPath))
-				Directory.CreateDirectory(_queueConfigDto.TempDirPath);
+			if (!Directory.Exists(_queueSettings.TempDirPath))
+				Directory.CreateDirectory(_queueSettings.TempDirPath);
 
-			if (File.Exists(_queueConfigDto.Path))
-				File.Delete(_queueConfigDto.Path);
+			if (File.Exists(_queueSettings.Path))
+				File.Delete(_queueSettings.Path);
 
 			if (LocalQueue.RequiresLoad)
 				LocalQueue.Load();
@@ -146,7 +146,7 @@ namespace Sphere10.Helium.TestPlugin1 {
 
 			//if(File.Exists(queuePath)) File.Delete(queuePath);
 
-			//_queueConfigDto = new LocalQueueConfigDto();
+			//_queueSettings = new LocalQueueSettings();
 
 			//_localQueue = SetupLocalQueue();
 			//_processingQueue = SetupProcessingQueue();
@@ -167,7 +167,7 @@ namespace Sphere10.Helium.TestPlugin1 {
 
 		public void AddMessageToQueue(IMessage message) {
 
-			using var txnScope = new FileTransactionScope(_queueConfigDto.TempDirPath, ScopeContextPolicy.None);
+			using var txnScope = new FileTransactionScope(_queueSettings.TempDirPath, ScopeContextPolicy.None);
 			txnScope.BeginTransaction();
 			txnScope.EnlistFile(LocalQueue, false);
 
@@ -201,7 +201,7 @@ namespace Sphere10.Helium.TestPlugin1 {
 			if (LocalQueue.Count == 0)
 				throw new InvalidOperationException("CRITICAL ERROR: LocalQueue is empty and should not be empty. Message missing cannot proceed.");
 
-			using var txnScope = new FileTransactionScope(_queueConfigDto.TempDirPath, ScopeContextPolicy.None);
+			using var txnScope = new FileTransactionScope(_queueSettings.TempDirPath, ScopeContextPolicy.None);
 			txnScope.BeginTransaction();
 			txnScope.EnlistFile(LocalQueue, false);
 
@@ -228,11 +228,11 @@ namespace Sphere10.Helium.TestPlugin1 {
 		}
 
 		//private IHeliumQueue SetupLocalQueue() {
-		//	return _localQueue ??= new LocalQueue(_queueConfigDto);
+		//	return _localQueue ??= new LocalQueue(_queueSettings);
 		//}
 
 		private IHeliumQueue SetupProcessingQueue() {
-			return ProcessingQueue ??= new ProcessingQueue(_queueConfigDto);
+			return ProcessingQueue ??= new ProcessingQueue(_queueSettings);
 		}
 	}
 }

@@ -17,19 +17,14 @@ namespace Sphere10.Helium.Framework {
 		public EnumModeOfOperationType ModeOfOperation { get; set; }
 		public IRouter Router { get; set; }
 		public ILogger Logger { get; set; }
-		public LocalQueueConfigDto QueueConfigDto { get; set; }
+		public LocalQueueSettings QueueSettings { get; set; }
 
 		public void StartHeliumFramework() {
+			Sphere10Framework.Instance.StartFramework();
+
 			if(Logger == null) throw new ArgumentNullException($"Logger", "HeliumFramework CANNOT start without a logger.");
 
-			var heliumAssembly = typeof(ModuleConfiguration).Assembly;
-			var moduleConfiguration = (ModuleConfiguration)heliumAssembly.CreateInstance("Sphere10.Helium.ModuleConfiguration");
 
-			if (moduleConfiguration == null) throw new ArgumentNullException($"moduleConfiguration");
-
-			moduleConfiguration.RegisterComponents(ComponentRegistry.Instance);
-
-			//var localQueue = ComponentRegistry.Instance.Resolve<Queue.LocalQueue>();
 
 			Router = ComponentRegistry.Instance.Resolve<Router.Router>();
 			

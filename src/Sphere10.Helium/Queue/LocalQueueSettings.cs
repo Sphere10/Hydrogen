@@ -1,10 +1,11 @@
 ﻿using System;
+using Sphere10.Framework.Application;
 
 namespace Sphere10.Helium.Queue {
 	/// <summary>
 	/// IMPORTANT: Every queue has it's own ConfigDto, to allow flexibility to configure every queue independently.
 	/// </summary>
-	public class LocalQueueConfigDto {
+	public class LocalQueueSettings : SettingsObject {
 
 		private const string StrGuid = "56B43C84-043B-4C9D-9013-3231B3E6E453";
 		private const string TemporaryQueueName = "Temp_0405D43D-2C38-4174-BEEC-CD497DAA3E46";
@@ -20,7 +21,7 @@ namespace Sphere10.Helium.Queue {
 		public int AllocatedMemory { get; set; } /*Not used yet.*/
 		public int TransactionalPageSizeBytes { get; } = 1 << 17; /*DefaultTransactionalPageSize = 1 << 17; => 132071 ~ 128 KB*/
 		public int ClusterSize { get; } = 1 << 9; /*512 B*/
-		public int ListingClusterCount { get; set; } /*Not used yet.*/
+		public int ListingClusterCount { get; set; } = 0;/*Set DEFAULT values for them.*/
 		public int StorageClusterCount { get; set; } /*Not used yet.*/
 		public int InputQueueReadRatePerMinute { get; set; } /*Not used yet.*/
 		public string ErrorQueueName { get; set; } /*Not used yet.*/

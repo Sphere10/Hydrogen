@@ -112,7 +112,7 @@
 
 //	public class AsLocalQueueProcessor {
 
-//		private QueueConfigDto _queueConfigDto;
+//		private QueueSettings _queueSettings;
 
 //		private const string StrGuid = "997D1367-E7B0-46F0-B0A1-686DC0F15945";
 //		private const string TempQueueName = "Temp_AB3CB3F9-3EBC-46B3-877D-14AB5A7A7FD2_1";
@@ -127,7 +127,7 @@
 //			if (!Directory.Exists(_queueTempPath))
 //				Directory.CreateDirectory(_queueTempPath);
 
-//			var queueConfig = new QueueConfigDto {
+//			var queueConfig = new QueueSettings {
 //				Path = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), TempQueueName),
 //				TempDirPath = _queueTempPath,
 //				FileId = _sameGuid,
@@ -139,7 +139,7 @@
 //				ReadOnly = false
 //			};
 
-//			_queueConfigDto = queueConfig;
+//			_queueSettings = queueConfig;
 
 //			_localQueue = SetupLocalQueue();
 //			_processingQueue = SetupProcessingQueue();
@@ -153,7 +153,7 @@
 
 //		public void AddMessageToQueue(IMessage message) {
 
-//			using var txnScope = new FileTransactionScope(_queueConfigDto.TempDirPath, ScopeContextPolicy.None);
+//			using var txnScope = new FileTransactionScope(_queueSettings.TempDirPath, ScopeContextPolicy.None);
 
 //			txnScope.EnlistFile(_localQueue);
 
@@ -177,7 +177,7 @@
 //			if (_localQueue.Count == 0)
 //				throw new InvalidOperationException("CRITICAL ERROR: LocalQueue is empty and should not be empty. Message missing cannot proceed.");
 
-//			using var txnScope = new FileTransactionScope(_queueConfigDto.TempDirPath, ScopeContextPolicy.None);
+//			using var txnScope = new FileTransactionScope(_queueSettings.TempDirPath, ScopeContextPolicy.None);
 
 //			txnScope.EnlistFile(_localQueue);
 
@@ -204,11 +204,11 @@
 //		}
 
 //		private IHeliumQueue SetupLocalQueue() {
-//			return _localQueue ??= new LocalQueue(_queueConfigDto);
+//			return _localQueue ??= new LocalQueue(_queueSettings);
 //		}
 
 //		private IHeliumQueue SetupProcessingQueue() {
-//			return _processingQueue ??= new ProcessingQueue(_queueConfigDto);
+//			return _processingQueue ??= new ProcessingQueue(_queueSettings);
 //		}
 //	}
 //}
@@ -338,7 +338,7 @@
 //			if (!Directory.Exists(_queueTempPath))
 //				Directory.CreateDirectory(_queueTempPath);
 
-//			var queueConfig = new QueueConfigDto {
+//			var queueConfig = new QueueSettings {
 //				Path = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), TempQueueName),
 //				TempDirPath = _queueTempPath,
 //				FileId = _sameGuid,
@@ -395,7 +395,7 @@
 
 
 /////////////////////////////////////////////////////////////////////////////
-// using var txnScope = new FileTransactionScope(_queueConfigDto.TempDirPath, ScopeContextPolicy.None);
+// using var txnScope = new FileTransactionScope(_queueSettings.TempDirPath, ScopeContextPolicy.None);
 //txnScope.BeginTransaction();
 //txnScope.EnlistFile(_localQueue);
 

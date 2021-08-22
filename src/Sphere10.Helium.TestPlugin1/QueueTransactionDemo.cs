@@ -32,7 +32,7 @@ namespace Sphere10.Helium.TestPlugin1 {
 		public IHeliumQueue Queue1 {
 			get {
 				if (_queue1 == null) {
-					var configDTO = new LocalQueueConfigDto(); // TODO
+					var configDTO = new LocalQueueSettings(); // TODO
 
 
 					_queue1 = new LocalQueue(configDTO);
@@ -44,7 +44,7 @@ namespace Sphere10.Helium.TestPlugin1 {
 		public IHeliumQueue Queue2 {
 			get {
 				if (_queue2 == null) {
-					var configDTO = new LocalQueueConfigDto(); // TODO
+					var configDTO = new LocalQueueSettings(); // TODO
 					_queue2 = new LocalQueue(configDTO);
 				}
 				return _queue2;

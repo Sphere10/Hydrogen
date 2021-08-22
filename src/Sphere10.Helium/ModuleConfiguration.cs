@@ -12,11 +12,11 @@ namespace Sphere10.Helium {
 
 		public override void RegisterComponents(ComponentRegistry registry) {
 			#region Config DTO
-			if (!registry.HasImplementationFor<BusConfigurationDto>())
-				registry.RegisterComponentInstance(new BusConfigurationDto(), "BusConfigurationDto");
+			//if (!registry.HasImplementationFor<BusConfigurationDto>())
+			//	registry.RegisterComponentInstance(new BusConfigurationDto(), "BusConfigurationDto");
 
-			if (!registry.HasImplementationFor<LocalQueueConfigDto>())
-				registry.RegisterComponentInstance<LocalQueueConfigDto>(new LocalQueueConfigDto(), "LocalQueueConfigDto");
+			//if (!registry.HasImplementationFor<LocalQueueSettings>())
+			//	registry.RegisterComponentInstance<LocalQueueSettings>(new LocalQueueSettings(), "LocalQueueSettings");
 
 			if (!registry.HasImplementationFor<PrivateQueueConfigDto>())
 				registry.RegisterComponentInstance<PrivateQueueConfigDto>(new PrivateQueueConfigDto(), "PrivateQueueConfigDto");
@@ -37,29 +37,28 @@ namespace Sphere10.Helium {
 			if (!registry.HasImplementationFor<ILocalQueueInput>())
 				registry.RegisterComponentFactory<ILocalQueueInput>(
 					container => new LocalQueueInput(
-						container.Resolve<IHeliumQueue>("LocalQueue"), 
-						container.Resolve<LocalQueueConfigDto>("LocalQueueConfigDto")));
+						container.Resolve<IHeliumQueue>("LocalQueue")));
 
 			if (!registry.HasImplementationFor<ILocalQueueProcessor>())
 				registry.RegisterComponentFactory<ILocalQueueProcessor>(
 					container => new LocalQueueProcessor(
-						container.Resolve<BusConfigurationDto>("BusConfigurationDto"),
-						container.Resolve<LocalQueueConfigDto>("LocalQueueConfigDto"),
 						container.Resolve<IInstantiateHandler>("InstantiateHandler"),
 						container.Resolve<IHeliumQueue>("LocalQueue"),
-						container.Resolve<ILocalQueueInput>("LocalQueueInput"))); 
+						container.Resolve<ILocalQueueInput>("LocalQueueInput")));
 			#endregion
-			
-			if (!registry.HasImplementationFor<IRetryManager>())
-				registry.RegisterComponent<IRetryManager, RetryManager>(ActivationType.Singleton);
 
 			if (!registry.HasImplementationFor<IRouter>())
 				registry.RegisterComponentFactory<IRouter>(
 					container => new Router.Router(
 						container.Resolve<ILocalQueueInput>("LocalQueueInput")));
 
+			if (!registry.HasImplementationFor<IRetryManager>())
+				registry.RegisterComponent<IRetryManager, RetryManager>(ActivationType.Singleton);
+
 			if (!registry.HasImplementationFor<IInstantiateHandler>())
 				registry.RegisterComponent<IInstantiateHandler, InstantiateHandler>(ActivationType.Singleton);
+
+			registry.RegisterInitializationTask<SetupFoldersInitTask>(); //Setup working folder is here
 		}
 	}
 }

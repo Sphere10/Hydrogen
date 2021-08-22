@@ -150,7 +150,7 @@ namespace Sphere10.Helium.Tests.Queue
 	public class HeliumQueueProcessor
 	{
 		private readonly int _batchSize;
-		private readonly LocalQueueConfigDto _queueConfigDto;
+		private readonly LocalQueueSettings _queueSettings;
 		private const string StrGuid = "997D1367-E7B0-46F0-B0A1-686DC0F15945";
 		private const string TempQueueName = "Temp_AB3CB3F9-3EBC-46B3-877D-14AB5A7A7FD2_1";
 		private readonly Guid _sameGuid = new Guid(StrGuid);
@@ -168,7 +168,7 @@ namespace Sphere10.Helium.Tests.Queue
 
 			if (File.Exists(queuePath)) File.Delete(queuePath);
 
-			//var queueConfig = new Sphere10.Helium.Queue.LocalQueueConfigDto
+			//var queueConfig = new Sphere10.Helium.Queue.LocalQueueSettings
 			//{
 			//	Path = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), TempQueueName),
 			//	TempDirPath = _queueTempDir,
@@ -181,7 +181,7 @@ namespace Sphere10.Helium.Tests.Queue
 			//	ReadOnly = false
 			//};
 
-			_queueConfigDto = new Sphere10.Helium.Queue.LocalQueueConfigDto();
+			_queueSettings = new Sphere10.Helium.Queue.LocalQueueSettings();
 			_localQueue = SetupHeliumQueue();
 
 			if (_localQueue.RequiresLoad)
@@ -204,7 +204,7 @@ namespace Sphere10.Helium.Tests.Queue
 		{
 			var messageList = GetMessageList();
 
-			using var txnScope = new FileTransactionScope(_queueConfigDto.TempDirPath);
+			using var txnScope = new FileTransactionScope(_queueSettings.TempDirPath);
 			txnScope.BeginTransaction();
 			txnScope.EnlistFile(_localQueue, false);
 
@@ -221,7 +221,7 @@ namespace Sphere10.Helium.Tests.Queue
 		
 		public IMessage RemoveMessageFromQueue()
 		{
-			using var txnScope = new FileTransactionScope(_queueConfigDto.TempDirPath);
+			using var txnScope = new FileTransactionScope(_queueSettings.TempDirPath);
 			txnScope.BeginTransaction();
 			txnScope.EnlistFile(_localQueue, false);
 
@@ -274,7 +274,7 @@ namespace Sphere10.Helium.Tests.Queue
 
 		private IHeliumQueue SetupHeliumQueue()
 		{
-			return _localQueue ??= new LocalQueue(_queueConfigDto);
+			return _localQueue ??= new LocalQueue(_queueSettings);
 		}
 
 		private static IMessage CreateMessage()
@@ -302,7 +302,7 @@ namespace Sphere10.Helium.Tests.Queue
 		public string MessageField4 { get; init; }
 	}
 
-    //public class LocalQueueConfigDto
+    //public class LocalQueueSettings
     //{
     //    public Guid FileId { get; set; }
     //    public string Path { get; set; }

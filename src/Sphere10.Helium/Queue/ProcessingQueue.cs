@@ -10,17 +10,17 @@ namespace Sphere10.Helium.Queue {
 		private readonly int _count1 = 1;
 		private readonly int _count2 = 1;
 
-		public ProcessingQueue(LocalQueueConfigDto localQueueConfigDto)
+		public ProcessingQueue(LocalQueueSettings localQueueSettings)
 			: base(
 				new BinaryFormattedSerializer<IMessage>(),
-				localQueueConfigDto.Path,
-				localQueueConfigDto.TempDirPath,
-				localQueueConfigDto.FileId,
-				localQueueConfigDto.TransactionalPageSizeBytes,
-				localQueueConfigDto.MaxStorageSizeBytes,
-				localQueueConfigDto.AllocatedMemory,
-				localQueueConfigDto.ClusterSize,
-				localQueueConfigDto.MaxItems
+				localQueueSettings.Path,
+				localQueueSettings.TempDirPath,
+				localQueueSettings.FileId,
+				localQueueSettings.TransactionalPageSizeBytes,
+				localQueueSettings.MaxStorageSizeBytes,
+				localQueueSettings.AllocatedMemory,
+				localQueueSettings.ClusterSize,
+				localQueueSettings.MaxItems
 			) {
 		}
 

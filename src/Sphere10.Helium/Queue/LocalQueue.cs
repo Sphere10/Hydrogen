@@ -31,29 +31,23 @@ namespace Sphere10.Helium.Queue {
 		}
 
 		public void AddMessage(IMessage message) {
-			//Add(message);
+			Add(message);
 		}
 
 		public bool DeleteMessage(IMessage message) {
-			//var result = Remove(message);
-			//return result;
-
-			return true;
+			var result = Remove(message);
+			return result;
 		}
 
 		public IMessage ReadMessage() {
-			//var message = Read(0);
-			//return message;
-
-			return null;
+			var message = Read(0);
+			return message;
 		}
 
 		public IMessage RemoveMessage() {
-			//var message = this[^1];
-			//this.RemoveAt(^1);
-			//return message;
-
-			return null;
+			var message = this[^1];
+			this.RemoveAt(^1);
+			return message;
 		}
 	}
 }

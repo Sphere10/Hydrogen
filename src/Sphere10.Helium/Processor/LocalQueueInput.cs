@@ -1,6 +1,4 @@
-﻿using System.IO;
-using Sphere10.Framework.Application;
-using Sphere10.Helium.Message;
+﻿using Sphere10.Helium.Message;
 using Sphere10.Helium.Queue;
 
 namespace Sphere10.Helium.Processor {
@@ -15,13 +13,13 @@ namespace Sphere10.Helium.Processor {
 		public LocalQueueInput(IHeliumQueue localQueue) {
 			_localQueue = localQueue;
 
-			var localQueueSettings = GlobalSettings.Get<LocalQueueSettings>();
+			//var localQueueSettings = GlobalSettings.Get<LocalQueueSettings>();
 
-			if (!Directory.Exists(localQueueSettings.TempDirPath)) 
-				Directory.CreateDirectory(localQueueSettings.TempDirPath);
+			//if (!Directory.Exists(localQueueSettings.TempDirPath)) 
+			//	Directory.CreateDirectory(localQueueSettings.TempDirPath);
 
-			if (File.Exists(localQueueSettings.Path)) 
-				File.Delete(localQueueSettings.Path);
+			//if (File.Exists(localQueueSettings.Path)) 
+			//	File.Delete(localQueueSettings.Path);
 
 			if (_localQueue.RequiresLoad)
 				_localQueue.Load();

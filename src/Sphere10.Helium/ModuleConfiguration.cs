@@ -18,8 +18,8 @@ namespace Sphere10.Helium {
 			//if (!registry.HasImplementationFor<LocalQueueSettings>())
 			//	registry.RegisterComponentInstance<LocalQueueSettings>(new LocalQueueSettings(), "LocalQueueSettings");
 
-			if (!registry.HasImplementationFor<PrivateQueueConfigDto>())
-				registry.RegisterComponentInstance<PrivateQueueConfigDto>(new PrivateQueueConfigDto(), "PrivateQueueConfigDto");
+			if (!registry.HasImplementationFor<PrivateQueueSettings>())
+				registry.RegisterComponentInstance<PrivateQueueSettings>(new PrivateQueueSettings(), "PrivateQueueSettings");
 
 			if (!registry.HasImplementationFor<RouterConfigDto>())
 				registry.RegisterComponentInstance<RouterConfigDto>(new RouterConfigDto(), "RouterConfigDto");

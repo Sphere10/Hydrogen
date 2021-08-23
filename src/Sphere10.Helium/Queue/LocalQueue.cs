@@ -5,7 +5,7 @@ using Sphere10.Helium.Message;
 namespace Sphere10.Helium.Queue {
 	/// <summary>
 	/// CRITICAL: The LocalQueue is a FIFO queue for the Helium Framework.
-	/// ALL input messages into Helium must go into this LocalQueue.
+	/// ALL input messages into Helium MUST go into this LocalQueue.
 	/// </summary>
 	public class LocalQueue : TransactionalList<IMessage>, IHeliumQueue {
 
@@ -31,23 +31,29 @@ namespace Sphere10.Helium.Queue {
 		}
 
 		public void AddMessage(IMessage message) {
-			Add(message);
+			//Add(message);
 		}
 
 		public bool DeleteMessage(IMessage message) {
-			var result = Remove(message);
-			return result;
+			//var result = Remove(message);
+			//return result;
+
+			return true;
 		}
 
 		public IMessage ReadMessage() {
-			var message = Read(0);
-			return message;
+			//var message = Read(0);
+			//return message;
+
+			return null;
 		}
 
 		public IMessage RemoveMessage() {
-			var message = this[^1];
-			this.RemoveAt(^1);
-			return message;
+			//var message = this[^1];
+			//this.RemoveAt(^1);
+			//return message;
+
+			return null;
 		}
 	}
 }

@@ -5,12 +5,12 @@ namespace Sphere10.Helium.Queue {
 	/// <summary>
 	/// IMPORTANT: Every queue has it's own Settings, to allows flexibility to configure every queue independently.
 	/// </summary>
-	public class LocalQueueSettings : SettingsObject {
+	public class PrivateQueueSettings : SettingsObject {
 
-		private const string StrGuid = "56B43C84-043B-4C9D-9013-3231B3E6E453";
-		private const string TemporaryQueueName = "Temp_0405D43D-2C38-4174-BEEC-CD497DAA3E46";
+		private const string StrGuid = "539DA682-580A-42CA-B275-0143659D0AF7";
+		private const string TemporaryQueueName = "Temp_75F40999-C3F1-43D6-93D7-1BEFFE7859F2";
 		private const int MessageBatchSize = 40;
-		private static readonly string QueueTempDir = System.IO.Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Local");
+		private static readonly string QueueTempDir = System.IO.Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Private");
 		private static readonly string QueuePath = System.IO.Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), TemporaryQueueName);
 
 		public Guid FileId { get; } = new(StrGuid);

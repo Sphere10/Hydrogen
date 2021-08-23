@@ -18,17 +18,17 @@ namespace Sphere10.Helium.Queue {
 		//	_count2 = count2;
 		//}
 
-		public PrivateQueue(PrivateQueueConfigDto privateQueueConfigDto)
+		public PrivateQueue(PrivateQueueSettings privateQueueSettings)
 			: base(
 				new BinaryFormattedSerializer<IMessage>(),
-				privateQueueConfigDto.Path,
-				privateQueueConfigDto.TempDirPath,
-				privateQueueConfigDto.FileId,
-				privateQueueConfigDto.TransactionalPageSizeBytes,
-				privateQueueConfigDto.MaxStorageSizeBytes,
-				privateQueueConfigDto.AllocatedMemory,
-				privateQueueConfigDto.ClusterSize,
-				privateQueueConfigDto.MaxItems
+				privateQueueSettings.Path,
+				privateQueueSettings.TempDirPath,
+				privateQueueSettings.FileId,
+				privateQueueSettings.TransactionalPageSizeBytes,
+				privateQueueSettings.MaxStorageSizeBytes,
+				privateQueueSettings.AllocatedMemory,
+				privateQueueSettings.ClusterSize,
+				privateQueueSettings.MaxItems
 			) {
 		}
 

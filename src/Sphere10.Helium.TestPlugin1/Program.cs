@@ -232,7 +232,7 @@ namespace Sphere10.Helium.TestPlugin1 {
 		//}
 
 		private IHeliumQueue SetupProcessingQueue() {
-			return ProcessingQueue ??= new ProcessingQueue(_queueSettings);
+			return ProcessingQueue ??= new LocalQueue(_queueSettings);
 		}
 	}
 }

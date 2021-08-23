@@ -24,15 +24,11 @@ namespace Sphere10.Helium.Framework {
 
 			if(Logger == null) throw new ArgumentNullException($"Logger", "HeliumFramework CANNOT start without a logger.");
 
-
-
 			Router = ComponentRegistry.Instance.Resolve<Router.Router>();
 			
 			if (Router == null) throw new ArgumentNullException($"Router");
-			//if (localQueue == null) throw new ArgumentNullException($"LocalQueue");
 
 			Router.Logger = Logger;
-			//Router.LocalQueue = localQueue;
 		}
 
 		public void LoadHandlerTypes(IList<PluginAssemblyHandler> handlerTypeList) {

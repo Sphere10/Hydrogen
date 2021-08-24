@@ -26,7 +26,7 @@ namespace Sphere10.Helium.Queue {
 		}
 
 		protected override void OnCommitted() {
-			var handler = MessageCommitted;
+			var unused = MessageCommitted;
 			base.OnCommitted();
 		}
 

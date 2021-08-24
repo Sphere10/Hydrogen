@@ -13,28 +13,28 @@ namespace Sphere10.Helium.Queue {
 	public interface IHeliumQueue : ITransactionalList<IMessage> {
 
 		/// <summary>
-		/// PUTS a message ON the queue.
+		/// Puts a message on the queue.
 		/// The message must be inserted into the "back" of the queue.
 		/// </summary>
 		/// <param name="message"></param>
 		public void AddMessage(IMessage message);
 
 		/// <summary>
-		/// DELETES a message FROM the queue.
+		/// Deletes a message from the queue.
 		/// The message must be taken off the "front" of the queue.
 		/// </summary>
 		/// <param name="message"></param>
 		public bool DeleteMessage(IMessage message);
 
 		/// <summary>
-		/// Make a COPY of the message.
-		/// The copy is made from the front of the queue.
+		/// Make a copy of the message.
+		/// The copy is made from the "front" of the queue.
 		/// </summary>
 		/// <returns></returns>
 		public IMessage ReadMessage();
 
 		/// <summary>
-		/// RETRIEVES a message FROM the queue.
+		/// Removes a message from the queue.
 		/// The message must be taken off the "front" of the queue.
 		/// </summary>
 		public IMessage RemoveMessage();

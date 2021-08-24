@@ -11,20 +11,6 @@ namespace Sphere10.Helium {
 		public override int Priority => int.MinValue;
 
 		public override void RegisterComponents(ComponentRegistry registry) {
-			#region Config DTO
-			//if (!registry.HasImplementationFor<BusConfigurationDto>())
-			//	registry.RegisterComponentInstance(new BusConfigurationDto(), "BusConfigurationDto");
-
-			//if (!registry.HasImplementationFor<LocalQueueSettings>())
-			//	registry.RegisterComponentInstance<LocalQueueSettings>(new LocalQueueSettings(), "LocalQueueSettings");
-
-			if (!registry.HasImplementationFor<PrivateQueueSettings>())
-				registry.RegisterComponentInstance<PrivateQueueSettings>(new PrivateQueueSettings(), "PrivateQueueSettings");
-
-			if (!registry.HasImplementationFor<RouterConfigDto>())
-				registry.RegisterComponentInstance<RouterConfigDto>(new RouterConfigDto(), "RouterConfigDto");
-			#endregion
-
 			#region Queues
 			if (!registry.HasImplementationFor<IHeliumQueue>()) {
 				registry.RegisterComponent<IHeliumQueue, LocalQueue>("LocalQueue", ActivationType.Singleton);

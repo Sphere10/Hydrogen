@@ -1,7 +1,9 @@
-﻿using Sphere10.Helium.Endpoint;
+﻿using Sphere10.Framework.Application;
+using Sphere10.Helium.Endpoint;
 
 namespace Sphere10.Helium.Bus {
-	public record BusConfigurationDto {
+	public class BusConfigurationSettings : SettingsObject {
+
 		public string SourceEndpointName { get; set; }
 
 		public EnumEndpointType EndpointType { get; set; }

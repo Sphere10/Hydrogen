@@ -34,7 +34,7 @@ namespace Sphere10.Helium.Tests.Core
         {
             _totalAmountOfPluginsAtStartUp = _relativePathsForPlugins.Length;
 
-            _heliumPluginLoader = new HeliumPluginLoader(new ConsoleLogger()); //Class under test
+            _heliumPluginLoader = new HeliumPluginLoader(new ConsoleLogger()); /* Class under test */
             _heliumPluginLoader.LoadPlugins(_relativePathsForPlugins);
         }
 

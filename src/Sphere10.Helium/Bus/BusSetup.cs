@@ -3,7 +3,7 @@ using Sphere10.Helium.Endpoint;
 
 namespace Sphere10.Helium.Bus {
 	public class BusSetup {
-		public IBus Create(BusConfigurationDto endpointConfigurationDto) {
+		public IBus Create(BusConfigurationSettings endpointConfigurationDto) {
 			if (endpointConfigurationDto.EndpointType == EnumEndpointType.SendAndForget) {
 				ISendOnlyBus sendOnlyBus = new SendOnlyBus(null, null);
 

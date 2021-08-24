@@ -6,6 +6,7 @@ namespace Sphere10.Helium.Queue {
 	/// IMPORTANT: Every queue has it's own Settings, to allows flexibility to configure every queue independently.
 	/// </summary>
 	public class RouterQueueSettings : SettingsObject {
+
 		private const string StrGuid = "539DA682-580A-42CA-B275-0143659D0AF7";
 		private const string TemporaryQueueName = "Temp_75F40999-C3F1-43D6-93D7-1BEFFE7859F2";
 		private const int MessageBatchSize = 40;

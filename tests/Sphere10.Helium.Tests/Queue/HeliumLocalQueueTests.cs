@@ -24,6 +24,7 @@ namespace Sphere10.Helium.Tests.Queue
         [SetUp]
         public void InitializeLocalHeliumQueue()
         {
+            _localQueueSettings = new LocalQueueSettings();
             _messageCommitEventCount = 0;
 
             CreateLocalQueueForTesting();
@@ -52,7 +53,6 @@ namespace Sphere10.Helium.Tests.Queue
             var messageCount = _localQueue.Count;
             Assert.AreEqual(messageCount, 0);
         }
-        
 
         [Test]
         public void RemoveMessagesSynchronouslyFromQueue()
@@ -76,12 +76,18 @@ namespace Sphere10.Helium.Tests.Queue
             _messageCommitEventCount = 0;
         }
 
+        [TearDown]
+        public void DeleteQueue()
+        {
+            DeleteFileAndFolder();
+        }
+
         private void RemoveMessagesFromQueue()
         {
             var messageCount = _localQueue.Count;
 
             for (var i = 0; i < messageCount; i++) {
-                var message = _localQueue.RemoveMessage(); 
+                _localQueue.RemoveMessage(); 
             }
         }
 
@@ -116,8 +122,6 @@ namespace Sphere10.Helium.Tests.Queue
 
         private void CreateLocalQueueForTesting()
         {
-            _localQueueSettings = new LocalQueueSettings();
-
             if (!Directory.Exists(_localQueueSettings.TempDirPath))
                 Directory.CreateDirectory(_localQueueSettings.TempDirPath);
 
@@ -147,6 +151,18 @@ namespace Sphere10.Helium.Tests.Queue
                 messageList.Add(CreateMessage($"TestMessageA{i}"));
 
             return messageList;
+        }
+
+        public void DeleteFileAndFolder()
+        {
+            _localQueue?.Dispose(); // Need to dispose the queue which is using that file and folder
+            _localQueue = null;
+
+            if (File.Exists(_localQueueSettings.Path))
+                File.Delete(_localQueueSettings.Path);
+
+            if (Directory.Exists(_localQueueSettings.TempDirPath))
+                Directory.Delete(_localQueueSettings.TempDirPath);
         }
     }
 

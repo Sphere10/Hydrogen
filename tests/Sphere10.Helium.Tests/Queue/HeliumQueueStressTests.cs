@@ -10,18 +10,23 @@ using Sphere10.Helium.Queue;
 
 namespace Sphere10.Helium.Tests.Queue
 {
-	[TestFixture]
-	public class HeliumQueueStressTests
-	{
+    /// <summary>
+    /// INTEGRATION-TEST: Testing across inputs and outputs of methods.
+    /// </summary>
+    [TestFixture]
+    public class HeliumQueueStressTests
+    {
         private IHeliumQueue _localQueue; /*Class under test*/
         private const int MessageInsertAttempts = 2;
         private const int MessageBatchSize = 3;
 
         private LocalQueueSettings _localQueueSettings;
 
-		[SetUp]
+        [SetUp]
         public void InitializeLocalHeliumQueue()
         {
+            _localQueueSettings = new LocalQueueSettings();
+
             CreateLocalQueueForTesting();
 
             if (_localQueue.RequiresLoad)
@@ -30,91 +35,91 @@ namespace Sphere10.Helium.Tests.Queue
             _localQueue.Committed += MessageAdded;
         }
 
-		[Test]
-		public void SynchronouslyInsertMultipleMessagesIntoQueue()
-		{
+        [Test]
+        public void SynchronouslyInsertMultipleMessagesIntoQueue()
+        {
             _localQueue.Clear();
 
             var sw = new Stopwatch();
-			
+
             sw.Start();
-			var totalMessageList = InsertMessagesInQueue();
-			sw.Stop();
+            var totalMessageList = InsertMessagesInQueue();
+            sw.Stop();
             var duration = sw.Elapsed;
 
-			Assert.AreEqual(totalMessageList.Count, _localQueue.Count);
+            Assert.AreEqual(totalMessageList.Count, _localQueue.Count);
             Console.WriteLine($"Time taken to insert {totalMessageList.Count} messages is: {duration.TotalSeconds} seconds");
-		}
+        }
 
-		[Test]
-		public void SynchronouslyFlushQueueMultipleTimes()
-		{
-			_localQueue.Clear();
+        [Test]
+        public void SynchronouslyFlushQueueMultipleTimes()
+        {
+            _localQueue.Clear();
 
             var sw = new Stopwatch();
             sw.Start();
-			var totalMessageList = InsertMessagesInQueue();
-			Assert.AreEqual(totalMessageList.Count, _localQueue.Count);
+            var totalMessageList = InsertMessagesInQueue();
+            Assert.AreEqual(totalMessageList.Count, _localQueue.Count);
 
-			_localQueue.Clear();
-			Assert.AreEqual(_localQueue.Count, 0);
+            _localQueue.Clear();
+            Assert.AreEqual(_localQueue.Count, 0);
 
-			_localQueue.Clear();
-			Assert.AreEqual(_localQueue.Count, 0);
+            _localQueue.Clear();
+            Assert.AreEqual(_localQueue.Count, 0);
 
-			_localQueue.Clear();
-			Assert.AreEqual(_localQueue.Count, 0);
-            
+            _localQueue.Clear();
+            Assert.AreEqual(_localQueue.Count, 0);
+
             sw.Stop();
             var duration = sw.Elapsed;
             Console.WriteLine($"Time taken to insert {totalMessageList.Count} messages and flush is: {duration.TotalSeconds} seconds");
-		}
+        }
 
-		[Test]
-		public void SynchronouslyDeletedMessagesFromQueue()
-		{
-			_localQueue.Clear();
+        [Test]
+        public void SynchronouslyDeletedMessagesFromQueue()
+        {
+            _localQueue.Clear();
 
             var sw1 = new Stopwatch();
             var sw2 = new Stopwatch();
-			
+
             sw1.Start();
-			var totalMessageList = InsertMessagesInQueue();
-			sw1.Stop();
+            var totalMessageList = InsertMessagesInQueue();
+            sw1.Stop();
             var duration1 = sw1.Elapsed;
-			Assert.AreEqual(totalMessageList.Count, _localQueue.Count);
-			
+            Assert.AreEqual(totalMessageList.Count, _localQueue.Count);
+
             sw2.Start();
-			foreach (var message in totalMessageList)
-				_localQueue.DeleteMessage(message);
-			sw2.Stop();
+            foreach (var message in totalMessageList)
+                _localQueue.DeleteMessage(message);
+            sw2.Stop();
             var duration2 = sw2.Elapsed;
-            
+
             Console.WriteLine($"Time taken to insert {totalMessageList.Count} message is: {duration1.TotalSeconds} seconds");
             Console.WriteLine($"Time taken to delete {totalMessageList.Count} message is: {duration2.TotalSeconds} seconds");
-			Assert.AreEqual(_localQueue.Count, 0);
-		}
+            Assert.AreEqual(_localQueue.Count, 0);
+        }
 
-		[Test]
-		public void SynchronouslyRemoveFirstMessageFromQueue()
-		{
+        [Test]
+        public void SynchronouslyRemoveFirstMessageFromQueue()
+        {
             var sw1 = new Stopwatch();
             var sw2 = new Stopwatch();
-            
+
             sw1.Start();
-			var totalMessageList = InsertMessagesInQueue();
-			sw1.Stop();
+            var totalMessageList = InsertMessagesInQueue();
+            sw1.Stop();
             var duration1 = sw1.Elapsed;
 
             sw2.Start();
-			IList<IMessage> readFromQueueList = totalMessageList.Select(_ => RemoveMessageFromQueue()).ToList();
+            IList<IMessage> readFromQueueList = totalMessageList.Select(_ => RemoveMessageFromQueue()).ToList();
             sw2.Stop();
-			var duration2 = sw2.Elapsed;
+            var duration2 = sw2.Elapsed;
 
             Console.WriteLine($"Time taken to insert {totalMessageList.Count} message is: {duration1.TotalSeconds} seconds");
             Console.WriteLine($"Time taken to remove {totalMessageList.Count} message is: {duration2.TotalSeconds} seconds");
-			Assert.AreEqual(totalMessageList.Count, readFromQueueList.Count);
-		}
+            Assert.AreEqual(totalMessageList.Count, readFromQueueList.Count);
+        }
 
         [Test]
         public void SynchronouslyReadFirstMessageFromQueue()
@@ -137,20 +142,24 @@ namespace Sphere10.Helium.Tests.Queue
             Assert.AreEqual(totalMessageList.Count, readFromQueueList.Count);
         }
 
-		private IList<IMessage> InsertMessagesInQueue()
-		{
-			IList<IMessage> totalMessageList = new List<IMessage>();
+        [TearDown]
+        public void DeleteQueue()
+        {
+            DeleteFileAndFolder();
+        }
 
-			for (var i = 0; i < MessageInsertAttempts; i++)
-				AddMultipleMessagesSynchronouslyToQueue().ForEach(x => totalMessageList.Add(x));
-			
+        private IList<IMessage> InsertMessagesInQueue()
+        {
+            IList<IMessage> totalMessageList = new List<IMessage>();
+
+            for (var i = 0; i < MessageInsertAttempts; i++)
+                AddMultipleMessagesSynchronouslyToQueue().ForEach(x => totalMessageList.Add(x));
+
             return totalMessageList;
-		}
+        }
 
         private void CreateLocalQueueForTesting()
         {
-            _localQueueSettings = new LocalQueueSettings();
-
             if (!Directory.Exists(_localQueueSettings.TempDirPath))
                 Directory.CreateDirectory(_localQueueSettings.TempDirPath);
 
@@ -228,97 +237,96 @@ namespace Sphere10.Helium.Tests.Queue
             return message;
         }
 
-        //public void DeleteFileAndFolder()
-        //{
-        //    _localQueue?.Dispose(); // Need to dispose the queue which is using that file and folder
-        //    _localQueue = null;
-        //    var queuePath = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), TempQueueName);
+        public void DeleteFileAndFolder()
+        {
+            _localQueue?.Dispose(); // Need to dispose the queue which is using that file and folder
+            _localQueue = null;
 
-        //    if (File.Exists(queuePath))
-        //        File.Delete(queuePath);
+            if (File.Exists(_localQueueSettings.Path))
+                File.Delete(_localQueueSettings.Path);
 
-        //    if (Directory.Exists(_queueTempDir))
-        //        Directory.Delete(_queueTempDir);
-        //}
+            if (Directory.Exists(_localQueueSettings.TempDirPath))
+                Directory.Delete(_localQueueSettings.TempDirPath);
+        }
     }
 
     public class HeliumQueueProcessor
-	{
-		//private readonly int _batchSize;
-		//private readonly LocalQueueSettings _queueSettings;
-		//private const string StrGuid = "997D1367-E7B0-46F0-B0A1-686DC0F15945";
-		//private const string TempQueueName = "Temp_AB3CB3F9-3EBC-46B3-877D-14AB5A7A7FD2_1";
-		//private readonly Guid _sameGuid = new Guid(StrGuid);
-		//private readonly string _queueTempDir = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "a");
-		//private IHeliumQueue _localQueue;
+    {
+        //private readonly int _batchSize;
+        //private readonly LocalQueueSettings _queueSettings;
+        //private const string StrGuid = "997D1367-E7B0-46F0-B0A1-686DC0F15945";
+        //private const string TempQueueName = "Temp_AB3CB3F9-3EBC-46B3-877D-14AB5A7A7FD2_1";
+        //private readonly Guid _sameGuid = new Guid(StrGuid);
+        //private readonly string _queueTempDir = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "a");
+        //private IHeliumQueue _localQueue;
 
-		//public HeliumQueueProcessor(int batchSize)
-		//{
-		//	_batchSize = batchSize;
+        //public HeliumQueueProcessor(int batchSize)
+        //{
+        //	_batchSize = batchSize;
 
-		//	if (!Directory.Exists(_queueTempDir))
-		//		Directory.CreateDirectory(_queueTempDir);
+        //	if (!Directory.Exists(_queueTempDir))
+        //		Directory.CreateDirectory(_queueTempDir);
 
-		//	var queuePath = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), TempQueueName);
+        //	var queuePath = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), TempQueueName);
 
-		//	if (File.Exists(queuePath)) File.Delete(queuePath);
+        //	if (File.Exists(queuePath)) File.Delete(queuePath);
 
-		//	//var queueConfig = new Sphere10.Helium.Queue.LocalQueueSettings
-		//	//{
-		//	//	Path = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), TempQueueName),
-		//	//	TempDirPath = _queueTempDir,
-		//	//	FileId = _sameGuid,
-		//	//	TransactionalPageSizeBytes = 1 << 17, /*DefaultTransactionalPageSize = 1 << 17; => 132071 ~ 128 KB*/
-		//	//	MaxStorageSizeBytes = 1 << 21, /*2097152 ~ 2MB*/
-		//	//	FileMemoryCacheBytes = 1 << 20, /*1048576 ~ 1MB*/
-		//	//	ClusterSize = 1 << 9, /*512 B*/
-		//	//	MaxItems = 500,
-		//	//	ReadOnly = false
-		//	//};
+        //	//var queueConfig = new Sphere10.Helium.Queue.LocalQueueSettings
+        //	//{
+        //	//	Path = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), TempQueueName),
+        //	//	TempDirPath = _queueTempDir,
+        //	//	FileId = _sameGuid,
+        //	//	TransactionalPageSizeBytes = 1 << 17, /*DefaultTransactionalPageSize = 1 << 17; => 132071 ~ 128 KB*/
+        //	//	MaxStorageSizeBytes = 1 << 21, /*2097152 ~ 2MB*/
+        //	//	FileMemoryCacheBytes = 1 << 20, /*1048576 ~ 1MB*/
+        //	//	ClusterSize = 1 << 9, /*512 B*/
+        //	//	MaxItems = 500,
+        //	//	ReadOnly = false
+        //	//};
 
-		//	_queueSettings = new Sphere10.Helium.Queue.LocalQueueSettings();
-		//	_localQueue = SetupHeliumQueue();
+        //	_queueSettings = new Sphere10.Helium.Queue.LocalQueueSettings();
+        //	_localQueue = SetupHeliumQueue();
 
-		//	if (_localQueue.RequiresLoad)
-		//		_localQueue.Load();
+        //	if (_localQueue.RequiresLoad)
+        //		_localQueue.Load();
 
-		//	_localQueue.Committed += MessageAdded;
-		//}
+        //	_localQueue.Committed += MessageAdded;
+        //}
 
-		//public int CountLocal()
-		//{
-		//	return _localQueue.Count;
-		//}
+        //public int CountLocal()
+        //{
+        //	return _localQueue.Count;
+        //}
 
-		//public void ClearAll()
-		//{
-		//	_localQueue.Clear();
-		//}
+        //public void ClearAll()
+        //{
+        //	_localQueue.Clear();
+        //}
 
-		
-		
-		
-        
 
-		
 
-		//private IHeliumQueue SetupHeliumQueue()
-		//{
-		//	return _localQueue ??= new LocalQueue(_queueSettings);
-		//}
 
-		
-	}
 
-	[Serializable]
-	public record TestMessage1 : IMessage
-	{
-		public string Id { get; set; }
-		public string MessageField1 { get; init; }
-		public string MessageField2 { get; init; }
-		public string MessageField3 { get; init; }
-		public string MessageField4 { get; init; }
-	}
+
+
+
+        //private IHeliumQueue SetupHeliumQueue()
+        //{
+        //	return _localQueue ??= new LocalQueue(_queueSettings);
+        //}
+
+
+    }
+
+    [Serializable]
+    public record TestMessage1 : IMessage
+    {
+        public string Id { get; set; }
+        public string MessageField1 { get; init; }
+        public string MessageField2 { get; init; }
+        public string MessageField3 { get; init; }
+        public string MessageField4 { get; init; }
+    }
 
     //public class LocalQueueSettings
     //{

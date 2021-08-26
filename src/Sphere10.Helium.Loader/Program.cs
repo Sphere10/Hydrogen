@@ -22,7 +22,7 @@ namespace Sphere10.Helium.Loader {
 	/// 4) Any Plugin that was disabled can be enabled at any time while the Node is running.
 	/// </summary>
 	public class Program {
-		public static IRouter Router;
+		private static IRouter _router; //This will be made public when integrated into Sphere10.Framework
 
 		public static void Main(string[] args) {
 
@@ -36,7 +36,7 @@ namespace Sphere10.Helium.Loader {
 			heliumFramework.ModeOfOperation = EnumModeOfOperationType.HydrogenMode;
 			heliumFramework.StartHeliumFramework();
 			heliumFramework.LoadHandlerTypes(heliumPluginLoader.PluginAssemblyHandlerList);
-			Router = heliumFramework.Router;
+			_router = heliumFramework.Router;
 
 			SimulateMessagesBeingSentToThisNodeFromOutside();
 		}
@@ -57,7 +57,7 @@ namespace Sphere10.Helium.Loader {
 			
 			var message = new InboundToRouterTestMessage1 { Id = "Test1_00001", TheName = "InboundIntoRouter" };
 
-			Router.InputMessage(message);
+			_router.InputMessage(message);
 		}
 	}
 }

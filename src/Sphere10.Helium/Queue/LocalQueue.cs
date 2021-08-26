@@ -26,10 +26,8 @@ namespace Sphere10.Helium.Queue {
 		}
 
 		protected override void OnCommitted() {
-			base.OnCommitted();
-			
 			var unused = LocalMessageCommitted;
-			unused?.Invoke(this, new EventArgs());
+			base.OnCommitted();
 		}
 
 		public void AddMessage(IMessage message) {

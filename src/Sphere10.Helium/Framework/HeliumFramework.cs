@@ -24,7 +24,7 @@ namespace Sphere10.Helium.Framework {
 
 			Router = ComponentRegistry.Instance.Resolve<Router.Router>();
 
-			if (Router == null) throw new ArgumentNullException($"Router");
+			if (Router == null) throw new ArgumentNullException($"Router", "HeliumFramework CANNOT work without a Router.");
 
 			Router.Logger = Logger;
 		}

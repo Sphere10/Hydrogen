@@ -193,7 +193,7 @@ namespace Sphere10.Helium.Tests.Queue
             return messageList;
         }
 
-        private IList<IMessage> GetMessageList()
+        private static IList<IMessage> GetMessageList()
         {
             IList<IMessage> messageList = new List<IMessage>();
 
@@ -250,74 +250,6 @@ namespace Sphere10.Helium.Tests.Queue
         }
     }
 
-    public class HeliumQueueProcessor
-    {
-        //private readonly int _batchSize;
-        //private readonly LocalQueueSettings _queueSettings;
-        //private const string StrGuid = "997D1367-E7B0-46F0-B0A1-686DC0F15945";
-        //private const string TempQueueName = "Temp_AB3CB3F9-3EBC-46B3-877D-14AB5A7A7FD2_1";
-        //private readonly Guid _sameGuid = new Guid(StrGuid);
-        //private readonly string _queueTempDir = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "a");
-        //private IHeliumQueue _localQueue;
-
-        //public HeliumQueueProcessor(int batchSize)
-        //{
-        //	_batchSize = batchSize;
-
-        //	if (!Directory.Exists(_queueTempDir))
-        //		Directory.CreateDirectory(_queueTempDir);
-
-        //	var queuePath = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), TempQueueName);
-
-        //	if (File.Exists(queuePath)) File.Delete(queuePath);
-
-        //	//var queueConfig = new Sphere10.Helium.Queue.LocalQueueSettings
-        //	//{
-        //	//	Path = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), TempQueueName),
-        //	//	TempDirPath = _queueTempDir,
-        //	//	FileId = _sameGuid,
-        //	//	TransactionalPageSizeBytes = 1 << 17, /*DefaultTransactionalPageSize = 1 << 17; => 132071 ~ 128 KB*/
-        //	//	MaxStorageSizeBytes = 1 << 21, /*2097152 ~ 2MB*/
-        //	//	FileMemoryCacheBytes = 1 << 20, /*1048576 ~ 1MB*/
-        //	//	ClusterSize = 1 << 9, /*512 B*/
-        //	//	MaxItems = 500,
-        //	//	ReadOnly = false
-        //	//};
-
-        //	_queueSettings = new Sphere10.Helium.Queue.LocalQueueSettings();
-        //	_localQueue = SetupHeliumQueue();
-
-        //	if (_localQueue.RequiresLoad)
-        //		_localQueue.Load();
-
-        //	_localQueue.Committed += MessageAdded;
-        //}
-
-        //public int CountLocal()
-        //{
-        //	return _localQueue.Count;
-        //}
-
-        //public void ClearAll()
-        //{
-        //	_localQueue.Clear();
-        //}
-
-
-
-
-
-
-
-
-        //private IHeliumQueue SetupHeliumQueue()
-        //{
-        //	return _localQueue ??= new LocalQueue(_queueSettings);
-        //}
-
-
-    }
-
     [Serializable]
     public record TestMessage1 : IMessage
     {
@@ -327,23 +259,4 @@ namespace Sphere10.Helium.Tests.Queue
         public string MessageField3 { get; init; }
         public string MessageField4 { get; init; }
     }
-
-    //public class LocalQueueSettings
-    //{
-    //    public Guid FileId { get; set; }
-    //    public string Path { get; set; }
-    //    public string TempDirPath { get; set; }
-    //    public int MaxItems { get; set; }
-    //    public int MaxStorageSizeBytes { get; set; }
-    //    public int AllocatedMemory { get; set; }
-    //    public int TransactionalPageSizeBytes { get; set; }
-    //    public int ClusterSize { get; set; }
-    //    public int ListingClusterCount { get; set; }
-    //    public int StorageClusterCount { get; set; }
-    //    public int InputQueueReadRatePerMinute { get; set; }
-    //    public string ErrorQueueName { get; set; } = "ErrorQueue";
-    //    public string AuditLogQueueName { get; set; } = "AuditLogQueue";
-    //    public int FileMemoryCacheBytes { get; set; }
-    //    public bool ReadOnly { get; set; }
-    //}
 }

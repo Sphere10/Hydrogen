@@ -78,8 +78,6 @@ namespace Sphere10.Framework {
 			AsBuffer = buffer;
 			AsBuffer.Committing += _ => OnCommitting();
 			AsBuffer.Committed += _ => OnCommitted();
-			AsBuffer.Committing += _ => OnCommitting();
-			AsBuffer.Committed += _ => OnCommitted();
 			AsBuffer.RollingBack += _ => OnRollingBack();
 			AsBuffer.RolledBack += _ => OnRolledBack();
 		}
@@ -135,8 +133,6 @@ namespace Sphere10.Framework {
 			_clusteredList = clusteredList;
 			_synchronizedList = synchronizedList;
 			AsBuffer = buffer;
-			AsBuffer.Committing += _ => OnCommitting();
-			AsBuffer.Committed += _ => OnCommitted();
 			AsBuffer.Committing += _ => OnCommitting();
 			AsBuffer.Committed += _ => OnCommitted();
 			AsBuffer.RollingBack += _ => OnRollingBack();

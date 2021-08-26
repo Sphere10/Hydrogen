@@ -100,9 +100,7 @@ namespace Sphere10.Framework.Application {
 
 
 			// End Tasks
-			if (!registry.HasEndTask<SaveSettingsEndTask>())
-				registry.RegisterEndTask<SaveSettingsEndTask>();
-
+	
 		}
 
         public override void OnInitialize() {

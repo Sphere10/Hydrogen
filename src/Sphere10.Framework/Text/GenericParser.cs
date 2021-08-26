@@ -34,33 +34,33 @@ namespace Sphere10.Framework {
         }
 
         public static bool TryParse(Type type, string input, out object value) {
-	        // Special case: when input is empty and T is nullable, then parsed correctly as null
-	        if (input == string.Empty && type.IsGenericType) {
-		        value = default;
-		        return true;
-	        }
+            // Special case: when input is empty and T is nullable, then parsed correctly as null
+            if (input == string.Empty && type.IsGenericType) {
+                value = default;
+                return true;
+            }
 
-	        // Note: that NULL case is handled by nullable converter            
+            // Note: that NULL case is handled by nullable converter            
 
-	        // Use component model type convertors
-	        var converter = TypeDescriptorEx.GetConverter(type);
-	        if (converter != null && converter.IsValid(input)) {
-		        value = converter.ConvertFromString(input);
-		        return true;
-	        }
-	        value = default;
-	        return false;
+            // Use component model type convertors
+            var converter = TypeDescriptorEx.GetConverter(type);
+            if (converter != null && converter.IsValid(input)) {
+                value = converter.ConvertFromString(input);
+                return true;
+            }
+            value = default;
+            return false;
         }
 
         public static object Parse(Type type, string input) {
-	        if (!TryParse(type,input, out var value))
-		        throw new FormatException((input == null ? "Null string" : $"String '{input}'") + $" could not be parsed into an {type.Name}");
-	        return value;
+            if (!TryParse(type, input, out var value))
+                throw new FormatException((input == null ? "Null string" : $"String '{input}'") + $" could not be parsed into an {type.Name}");
+            return value;
         }
 
         public static object SafeParse(Type type, string input) {
-	        TryParse(type, input, out var value);
-	        return value;
+            TryParse(type, input, out var value);
+            return value;
         }
 
     }

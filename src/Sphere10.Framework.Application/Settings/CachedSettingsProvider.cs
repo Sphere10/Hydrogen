@@ -32,7 +32,7 @@ namespace Sphere10.Framework.Application {
             if (_cache.ContainsKey(key)) {
                 return true;
             }
-            return false;
+            return base.ContainsSetting(settingsObjectType, id);
         }
 
         public override void DeleteSetting(SettingsObject setting) {

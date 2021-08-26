@@ -1,4 +1,4 @@
-//-----------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------
 // <copyright file="BaseApplicationInitializeTask.cs" company="Sphere 10 Software">
 //
 // Copyright (c) Sphere 10 Software. All rights reserved. (http://www.sphere10.com)
@@ -12,14 +12,12 @@
 //-----------------------------------------------------------------------
 
 namespace Sphere10.Framework.Application {
+    public abstract class BaseApplicationEndTask : IApplicationEndTask {
+        public const int DefaultPriority = 100;
 
+        public virtual int Priority => 100;
 
-    public abstract class BaseApplicationInitializeTask : IApplicationInitializeTask {
-		public const int DefaultPriority = 100;
+        public abstract void End();
 
-		public virtual int Priority => 100;
-
-		public abstract void Initialize();
-
-	}
+    }
 }

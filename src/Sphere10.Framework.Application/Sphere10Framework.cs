@@ -22,12 +22,17 @@ namespace Sphere10.Framework.Application {
         private bool _registeredConfig;
         private bool _registeredModuleComponents;
 
+        public event EventHandlerEx Initializing;
+        public event EventHandlerEx Starting;
+        public event EventHandlerEx Ending;
+        public event EventHandlerEx Finalizing;
 
         static Sphere10Framework() {
             Instance = new Sphere10Framework();
         }
 
         public Sphere10Framework() {
+            IsStarted = false;
             _threadLock = new object();
             ModuleConfigurations = Tools.Values.LazyLoad( () =>
 				AppDomain
@@ -45,72 +50,54 @@ namespace Sphere10.Framework.Application {
 
 		public static Sphere10Framework Instance { get; }
 
-        public void RegisterAppConfig(string configSectionName = "ComponentRegistry") {
-            if (_registeredConfig)
-                throw new SoftwareException("Components defined in App/Web config have already been registered");
+        public bool IsStarted { get; private set; }
 
-            lock (_threadLock) {
-                if (_registeredConfig) return;
-				if (ConfigurationManager.GetSection(configSectionName) is ComponentRegistryDefinition definition) {
-                    ComponentRegistry.Instance.RegisterDefinition(definition);
-                }                
-                _registeredConfig = true;
-            }
-        }
+        private IFuture<IModuleConfiguration[]> ModuleConfigurations { get; set; }
 
-        public void RegisterAllModuleComponents() {
-            if (_registeredModuleComponents)
-                throw new SoftwareException("All modules have already been initialized, cannot initialize again.");
+        public void StartFramework() {
+            CheckNotStarted();
 
-            lock (_threadLock) {
-                if (_registeredModuleComponents) return;
-				ModuleConfigurations.Value.Update(mconf => mconf.RegisterComponents(ComponentRegistry.Instance));
-                _registeredModuleComponents = true;
-            }
-        }
+            // Register App/Web Config components
 
-		public void DeregisterAllModuleComponents() {
-			if (!_registeredModuleComponents) return;
-
-			lock (_threadLock) {
-				ModuleConfigurations.Value.Update(mconf => mconf.DeregisterComponents(ComponentRegistry.Instance));
-				_registeredModuleComponents = false;
-			}
-		}
-
-		public void StartFramework() {
-			// Register App/Web Config components
-
-			if (!_registeredConfig)
+            if (!_registeredConfig)
                 RegisterAppConfig();
 
-			if (!_registeredModuleComponents)
+            if (!_registeredModuleComponents)
                 RegisterAllModuleComponents();
 
-			// Initialize Modules
-			ModuleConfigurations.Value.Update(mconf => Tools.Exceptions.ExecuteIgnoringException(mconf.OnInitialize));
+            // Initialize Modules
+            ModuleConfigurations.Value.Update(mconf => Tools.Exceptions.ExecuteIgnoringException(mconf.OnInitialize));
 
 
-			// Execute all the application initialization tasks synchronously and in sequence
-			ComponentRegistry
-				.Instance
-				.ResolveAll<IApplicationInitializeTask>()
-				.OrderBy(initTask => initTask.Priority)
-				.ForEach(
-					initTask => Tools.Exceptions.ExecuteIgnoringException(initTask.Initialize)
-				);
+            // Execute all the application initialization tasks synchronously and in sequence
+            ComponentRegistry
+                .Instance
+                .ResolveAll<IApplicationInitializeTask>()
+                .OrderBy(initTask => initTask.Priority)
+                .ForEach(
+                    initTask => Tools.Exceptions.ExecuteIgnoringException(initTask.Initialize)
+                );
+            Initializing?.Invoke();
 
-			// Execute all the start tasks asynchronously
-			ComponentRegistry
-				.Instance
-				.ResolveAll<IApplicationStartTask>()
-				.ForEach(
-					startTask => Tools.Lambda.ActionAsAsyncronous(startTask.Start).IgnoringExceptions().Invoke()
-				);
-		}
+            // Execute all the start tasks asynchronously
+            ComponentRegistry
+                .Instance
+                .ResolveAll<IApplicationStartTask>()
+                .ForEach(
+                    startTask => Tools.Lambda.ActionAsAsyncronous(startTask.Start).IgnoringExceptions().Invoke()
+                );
+            Starting?.Invoke();
 
-        public void EndFramework(out bool abort, out string abortReason) {
-            abortReason = String.Empty;
+            IsStarted = true;
+        }
+
+        public void EndFramework()
+            => EndFramework(out _, out _);
+
+         public void EndFramework(out bool abort, out string abortReason) {
+            CheckStarted();
+
+            abortReason = string.Empty;
             abort = false;
 
             var results = new List<Result>();
@@ -118,8 +105,9 @@ namespace Sphere10.Framework.Application {
                 .Instance
                 .ResolveAll<IApplicationEndTask>()
                 .ForEach(
-                    endTask => Tools.Exceptions.ExecuteIgnoringException(() => results.Add(endTask.End()))
+                    endTask => Tools.Exceptions.Execute(() => endTask.End(), error => results.Add(Result.Error(error.ToDisplayString())))
                 );
+            Ending?.Invoke();
 
             if (results.Any(r => r.Failure)) {
                 var textBuilder = new ParagraphBuilder();
@@ -134,15 +122,63 @@ namespace Sphere10.Framework.Application {
                 abortReason = textBuilder.ToString();
             }
 
-			// Finalize modules
-			ModuleConfigurations.Value.Update(mconf => Tools.Exceptions.ExecuteIgnoringException(mconf.OnFinalize));
+            // Finalize modules
+            ModuleConfigurations.Value.Update(mconf => Tools.Exceptions.ExecuteIgnoringException(mconf.OnFinalize));
+            Finalizing?.Invoke();
 
-			DeregisterAllModuleComponents();
+            DeregisterAllModuleComponents();
 
-			ComponentRegistry.Instance.Dispose();
+            ComponentRegistry.Instance.Dispose();
+
+            IsStarted = false;
         }
-		
 
-        private IFuture<IModuleConfiguration[]> ModuleConfigurations { get; set; }
+        public void RegisterAppConfig(string configSectionName = "ComponentRegistry") {
+            CheckNotStarted();
+
+            if (_registeredConfig)
+                throw new SoftwareException("Components defined in App/Web config have already been registered");
+
+            lock (_threadLock) {
+                if (_registeredConfig) return;
+				if (ConfigurationManager.GetSection(configSectionName) is ComponentRegistryDefinition definition) {
+                    ComponentRegistry.Instance.RegisterDefinition(definition);
+                }                
+                _registeredConfig = true;
+            }
+        }
+
+        public void RegisterAllModuleComponents() {
+            CheckNotStarted();
+
+            if (_registeredModuleComponents)
+                throw new SoftwareException("All modules have already been initialized, cannot initialize again.");
+
+            lock (_threadLock) {
+                if (_registeredModuleComponents) return;
+				ModuleConfigurations.Value.Update(mconf => mconf.RegisterComponents(ComponentRegistry.Instance));
+                _registeredModuleComponents = true;
+            }
+        }
+
+		public void DeregisterAllModuleComponents() {
+            CheckStarted();
+			if (!_registeredModuleComponents) return;
+
+			lock (_threadLock) {
+				ModuleConfigurations.Value.Update(mconf => mconf.DeregisterComponents(ComponentRegistry.Instance));
+				_registeredModuleComponents = false;
+			}
+		}
+
+        private void CheckStarted() {
+            if (!IsStarted)
+                throw new InvalidOperationException("Sphere 10 Framework was not started");
+        }
+
+        private void CheckNotStarted() {
+            if (IsStarted)
+                throw new InvalidOperationException("Sphere 10 Framework is alraedy started");
+        }
     }
 }

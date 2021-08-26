@@ -55,24 +55,19 @@ namespace Sphere10.Framework {
 
         public static object ChangeType(object value, Type targetType) {
 			var isNullable = targetType.IsNullable();
-			if (isNullable && (value == null || value == DBNull.Value))
+            var isReferenceType = !targetType.IsValueType;
+			if ((isNullable || isReferenceType) && (value == null || value == DBNull.Value))
 				return null;
+            if (value == null)
+                throw new InvalidOperationException("Unable to convert NULL to a value type");
+
 			if (targetType.IsInstanceOfType(value))
 				return value;
 			return Convert.ChangeType(value, isNullable ? Nullable.GetUnderlyingType(targetType) : targetType);
-
 		}
 
-	    public static T ChangeType<T>(object value) {
-			var targetType = typeof(T);
-			var isNullable = targetType.IsNullable();
-			if (isNullable && (value == null || value == DBNull.Value))
-				return default(T);
-			if (targetType.IsInstanceOfType(value))
-				return (T) value;
-			return (T) Convert.ChangeType(value, isNullable ? Nullable.GetUnderlyingType(targetType) : targetType);
-
-		}
+        public static T ChangeType<T>(object value)
+            => (T)ChangeType(value, typeof(T));
 
     }
 }

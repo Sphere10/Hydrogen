@@ -21,13 +21,13 @@ namespace Sphere10.Helium.Queue {
 		public int AllocatedMemory { get; set; } /*Not used yet.*/
 		public int TransactionalPageSizeBytes { get; } = 1 << 17; /*DefaultTransactionalPageSize = 1 << 17; => 132071 ~ 128 KB*/
 		public int ClusterSize { get; } = 1 << 9; /*512 B*/
-		public int ListingClusterCount { get; set; } = 0;/*Set DEFAULT values for them.*/
+		public int ListingClusterCount { get; set; } /*Set DEFAULT values for them.*/
 		public int StorageClusterCount { get; set; } /*Not used yet.*/
 		public int InputQueueReadRatePerMinute { get; set; } /*Not used yet.*/
 		public string ErrorQueueName { get; set; } /*Not used yet.*/
 		public string AuditLogQueueName { get; set; } /*Not used yet.*/
 		public int FileMemoryCacheBytes { get; } = 1 << 20; /*1048576 ~ 1MB*/
-		public bool ReadOnly { get; } = false;
+		public bool ReadOnly { get; }
 		public string TempQueueName { get; } = TemporaryQueueName;
 		public int BatchSize { get; } = MessageBatchSize;
 	}

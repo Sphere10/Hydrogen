@@ -3,20 +3,25 @@ using Sphere10.Framework;
 using Sphere10.Helium.Message;
 
 namespace Sphere10.Helium.Queue {
-	public class PrivateQueue : TransactionalList<IMessage>, IHeliumQueue {
+	/// <summary>
+	/// CRITICAL: The ErrorQueue is a FIFO queue for the Helium Framework.
+	/// ALL input messages into Helium MUST go into this ErrorQueue.
+	/// </summary>
+	public class ErrorQueue : TransactionalList<IMessage>, IHeliumQueue {
+
 		public event EventHandler MessageCommitted;
 
-		public PrivateQueue(PrivateQueueSettings privateQueueSettings)
+		public ErrorQueue(LocalQueueSettings localQueueSettings)
 			: base(
 				new BinaryFormattedSerializer<IMessage>(),
-				privateQueueSettings.Path,
-				privateQueueSettings.TempDirPath,
-				privateQueueSettings.FileId,
-				privateQueueSettings.TransactionalPageSizeBytes,
-				privateQueueSettings.MaxStorageSizeBytes,
-				privateQueueSettings.AllocatedMemory,
-				privateQueueSettings.ClusterSize,
-				privateQueueSettings.MaxItems
+				localQueueSettings.Path,
+				localQueueSettings.TempDirPath,
+				localQueueSettings.FileId,
+				localQueueSettings.TransactionalPageSizeBytes,
+				localQueueSettings.MaxStorageSizeBytes,
+				localQueueSettings.AllocatedMemory,
+				localQueueSettings.ClusterSize,
+				localQueueSettings.MaxItems
 			) {
 		}
 

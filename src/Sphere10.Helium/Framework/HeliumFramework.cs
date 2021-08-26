@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using Sphere10.Framework;
 using Sphere10.Framework.Application;
-using Sphere10.Helium.Queue;
 using Sphere10.Helium.Router;
 
 namespace Sphere10.Helium.Framework {
@@ -17,15 +16,14 @@ namespace Sphere10.Helium.Framework {
 		public EnumModeOfOperationType ModeOfOperation { get; set; }
 		public IRouter Router { get; set; }
 		public ILogger Logger { get; set; }
-		public LocalQueueSettings QueueSettings { get; set; }
 
 		public void StartHeliumFramework() {
 			Sphere10Framework.Instance.StartFramework();
 
-			if(Logger == null) throw new ArgumentNullException($"Logger", "HeliumFramework CANNOT start without a logger.");
+			if (Logger == null) throw new ArgumentNullException($"Logger", "HeliumFramework CANNOT start without a logger.");
 
 			Router = ComponentRegistry.Instance.Resolve<Router.Router>();
-			
+
 			if (Router == null) throw new ArgumentNullException($"Router");
 
 			Router.Logger = Logger;

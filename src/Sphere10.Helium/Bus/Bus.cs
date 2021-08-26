@@ -8,12 +8,12 @@ namespace Sphere10.Helium.Bus {
 	public class Bus : IBus {
 		private readonly IMessageHeader _messageHeader;
 		private readonly ITimeoutManager _timeoutManagerManager;
-		private readonly ILocalQueueProcessor _queueManager;
+		private readonly ILocalQueueOutputProcessor _queueOutputManager;
 
-		public Bus(ILocalQueueProcessor queueManager, IMessageHeader messageHeader, ITimeoutManager timeoutManagerManager) {
+		public Bus(ILocalQueueOutputProcessor queueOutputManager, IMessageHeader messageHeader, ITimeoutManager timeoutManagerManager) {
 			_messageHeader = messageHeader;
 			_timeoutManagerManager = timeoutManagerManager;
-			_queueManager = queueManager;
+			_queueOutputManager = queueOutputManager;
 		}
 
 		public ICallback SendLocal(IMessage message) {
@@ -43,7 +43,7 @@ namespace Sphere10.Helium.Bus {
 		public void SendAndForget(string destination, IMessage message) {
 			var headerMessage = _messageHeader.AddHeadersToMessage(message);
 
-			//_queueManager.FirstIn(destination, headerMessage);
+			//_queueOutputManager.FirstIn(destination, headerMessage);
 		}
 
 		public void SendAndForget(string destination, IMessage message, IMessageHeader messageHeader) {

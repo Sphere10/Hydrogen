@@ -6,11 +6,11 @@ using Sphere10.Helium.Processor;
 namespace Sphere10.Helium.Bus {
 	public class SendOnlyBus : ISendOnlyBus {
 		private readonly IMessageHeader _messageHeader;
-		private readonly ILocalQueueProcessor _queueManager;
+		private readonly ILocalQueueOutputProcessor _queueOutputManager;
 
-		public SendOnlyBus(ILocalQueueProcessor queueManager, IMessageHeader messageHeader) {
+		public SendOnlyBus(ILocalQueueOutputProcessor queueOutputManager, IMessageHeader messageHeader) {
 			_messageHeader = messageHeader;
-			_queueManager = queueManager;
+			_queueOutputManager = queueOutputManager;
 		}
 
 		public void Dispose() {

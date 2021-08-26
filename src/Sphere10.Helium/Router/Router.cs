@@ -6,9 +6,9 @@ using Sphere10.Helium.Processor;
 
 namespace Sphere10.Helium.Router {
 	public class Router : IRouter {
-		private readonly ILocalQueueInput _localQueueInput;
+		private readonly ILocalQueueInputProcessor _localQueueInput;
 
-		public Router(ILocalQueueInput localQueueInput) {
+		public Router(ILocalQueueInputProcessor localQueueInput) {
 			_localQueueInput = localQueueInput;
 		}
 

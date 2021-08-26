@@ -9,7 +9,7 @@ namespace Sphere10.Helium.Queue {
 	/// </summary>
 	public class LocalQueue : TransactionalList<IMessage>, IHeliumQueue {
 
-		public event EventHandler MessageCommitted;
+		public event EventHandler LocalMessageCommitted;
 
 		public LocalQueue(LocalQueueSettings localQueueSettings)
 			: base(
@@ -26,8 +26,10 @@ namespace Sphere10.Helium.Queue {
 		}
 
 		protected override void OnCommitted() {
-			var unused = MessageCommitted;
 			base.OnCommitted();
+			
+			var unused = LocalMessageCommitted;
+			unused?.Invoke(this, new EventArgs());
 		}
 
 		public void AddMessage(IMessage message) {

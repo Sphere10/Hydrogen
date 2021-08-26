@@ -35,16 +35,16 @@ namespace Sphere10.Helium {
 			if (!registry.HasImplementationFor<ILocalQueueOutputProcessor>())
 				registry.RegisterComponentFactory<ILocalQueueOutputProcessor>(
 					container => new LocalQueueOutputProcessor(
-						container.Resolve<IInstantiateHandler>("InstantiateHandler"),
+						container.Resolve<IInstantiateHandler>(),
 						container.Resolve<IHeliumQueue>("LocalQueue"),
-						container.Resolve<ILocalQueueInputProcessor>("LocalQueueInputProcessor"),
+						container.Resolve<ILocalQueueInputProcessor>(),
 						container.Resolve<ILogger>("ConsoleLogger")));
 			#endregion
 
 			if (!registry.HasImplementationFor<IRouter>())
 				registry.RegisterComponentFactory<IRouter>(
 					container => new Router.Router(
-						container.Resolve<ILocalQueueInputProcessor>("LocalQueueInputProcessor")));
+						container.Resolve<ILocalQueueInputProcessor>()));
 			
 			if (!registry.HasImplementationFor<IRetryManager>())
 				registry.RegisterComponent<IRetryManager, RetryManager>(ActivationType.Singleton);

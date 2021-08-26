@@ -6,6 +6,7 @@
 @using System.Reflection;
 @using Sphere10.Framework;
 @using UI.Controls.BlazorGrid.Classes; @*Fix This*@
+@using Sphere10.Hydrogen.Presentation2.UI.Controls.BlazorGrid.Components;
 
 @inject IJSRuntime JSRuntime
 
@@ -35,46 +36,76 @@
                         </div>
                     </th>
                 }
+
+                <th style="width:40px">
+                    Testing Component 1
+                    <div class="ResizableClass">
+                        <input class="ResizableClass" type="search" />
+                    </div>
+                </th>
+
+                <th style="width:40px">
+                    Testing Component 2
+                    <div class="ResizableClass">
+                        <input class="ResizableClass" type="search" />
+                    </div>
+                </th>
+
             </tr>
         </thead>
         <tbody>
             @foreach (var row in Rows)
             {
-                <tr @onmousedown="@(e => OnTableRowMouseDown())" @onmouseup="@(e => OnTableMouseUp(row))">
+            <tr @onmousedown="@(e => OnTableRowMouseDown())" @onmouseup="@(e => OnTableMouseUp(row))">
 
-                    @if (GridType == GridTypes.ActionColumn)
-                    {
-                        <td style="width:30px">
-                            @foreach (var action in Actions)
+                @if (GridType == GridTypes.ActionColumn)
+                {
+                    <td style="width:30px">
+                        @foreach (var action in Actions)
+                        {
+                            if (action.IsActionAvailable != null && action.IsActionAvailable((TItem)row[0].Tag))
                             {
-                                if (action.IsActionAvailable != null && action.IsActionAvailable((TItem)row[0].Tag))
-                                {
-                                    <button title="@action.Name" class="btn btn-success ActionButton" @onclick="@(e => action.ActionWork((TItem)row[0].Tag))">
-                                        @action.IconURL
-                                    </button>
-                                }
+                                <button title="@action.Name" class="btn btn-success ActionButton" @onclick="@(e => action.ActionWork((TItem)row[0].Tag))">
+                                    @action.IconURL
+                                </button>
                             }
+                        }
 
-                        </td>
-                    }
+                    </td>
+                }
 
-                    @foreach (var cell in row)
-                    {
-                        <td style="width:@cell.Width.ToString()px">
-                            <input class="ResizableClass" type="@cell.GetInputType()" list="@cell.GetListName()" value="@cell.Text"
-                                   @onchange="@(e => CellDataChanged(e.Value, cell.Name, cell))"
-                                   @onmouseup="CellMouseUp" />
-                        </td>
-                    }
-                </tr>
+                @foreach (var cell in row)
+                {
+                    <td style="width:@cell.Width.ToString()px">
+                        <input class="ResizableClass" type="@cell.GetInputType()" list="@cell.GetListName()" value="@cell.Text"
+                               @onchange="@(e => CellDataChanged(e.Value, cell.Name, cell))"
+                               @onmouseup="CellMouseUp" />
+                    </td>
+                }
+
+                @*Test use of Components*@
+                <td>
+                    @TestControl(0)
+                </td>
+                <td>
+                    @TestControl(1)
+                </td>
+
+            </tr>
             }
 
             @*Make sure there are a full PageSize number of rows, for the paging info to be in the correct place*@
             @for (var i = Rows.Count; i < PageSize; i++)
             {
                 <tr>
-                    @if (GridType == GridTypes.ActionColumn) { <td style="width:30px"></td>}
-                    @foreach (var headerCell in Header) { <td style="width:@(headerCell.Width)px"> <input class="ResizableClass" readonly></td>}
+                    @if (GridType == GridTypes.ActionColumn)
+                    {
+                        <td style="width:30px"></td>
+                    }
+                    @foreach (var headerCell in Header)
+                    {
+                        <td style="width:@(headerCell.Width)px"> <input class="ResizableClass" readonly></td>
+                    }
                 </tr>
             }
 
@@ -87,9 +118,9 @@
             <button @onclick="PagingNext">Next</button>
 
             <input class="PagingInput" type="number" min="0" max="@(TotalDataCount / PageSize)" step="1" pattern="[0-9]{10}" oninput="this.value=this.value.replace(/[^0-9]/g,'');"
-                   value="@CurrentPage" @onchange="@(e => PagingSetCurrentPage(e.Value))"/>
+                   value="@CurrentPage" @onchange="@(e => PagingSetCurrentPage(e.Value))" />
             of
-            <input class="PagingInput" type="number" value="@(TotalDataCount / PageSize)" readonly/>
+            <input class="PagingInput" type="number" value="@(TotalDataCount / PageSize)" readonly />
 
             <button @onclick="PagingPrevious">Previous</button>
             <button @onclick="PagingLast">Last</button>
@@ -112,32 +143,31 @@
 </div>
 
 <div class="modal" tabindex="-1" role="dialog" style="@GetContextMenuStyle()">
-        <div class="modal-dialog" role="document" aria-hidden="true">
-            <div class="modal-content" style="@GetContextMenuContentStyle()" >
-                <div class="modal-header">
-                    <h5 class="modal-title">Context Menu</h5>
-                </div>
-                <div class="modal-body">
-                    <p @onclick="ContextMenu1">Menu Item 1</p>
-                    <p @onclick="ContextMenu2">Menu Item 2</p>
-                    <p>-----------</p>
-                    <p @onclick="ContextMenu3">Menu Item 3</p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" @onclick="CloseContextMenu">Close</button>
-                </div>
+    <div class="modal-dialog" role="document" aria-hidden="true">
+        <div class="modal-content" style="@GetContextMenuContentStyle()">
+            <div class="modal-header">
+                <h5 class="modal-title">Context Menu</h5>
+            </div>
+            <div class="modal-body">
+                <p @onclick="ContextMenu1">Menu Item 1</p>
+                <p @onclick="ContextMenu2">Menu Item 2</p>
+                <p>-----------</p>
+                <p @onclick="ContextMenu3">Menu Item 3</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" @onclick="CloseContextMenu">Close</button>
             </div>
         </div>
     </div>
+</div>
 
 <button type="button" class="btn btn-info btn-lg" data-toggle="modal" data-target="#ContextMenuModal">Open Modal</button>
 
 @*<div class="modal hidden" id="ContextMenuModal" role="dialog" style="@GetContextMenuStyle()">*@
 <!--<div class="modal hidden" id="ContextMenuModal" role="dialog">
     <div class="modal-dialog">-->
-
-        <!-- Modal content-->
-        <!--<div class="modal-content" style="@GetContextMenuContentStyle()">
+<!-- Modal content-->
+<!--<div class="modal-content" style="@GetContextMenuContentStyle()">
             <div class="modal-header">
                 <h5 class="modal-title">Context Menu</h5>
             </div>
@@ -167,7 +197,7 @@
     [Parameter] public IDataSource<TItem> DataSource { get; set; }
     [Parameter] public GridTypes GridType { get; set; }
     [Parameter] public List<GridAction<TItem>> Actions { get; set; }
-    [Parameter] public List<GridAction<TItem>> Components { get; set; }
+    [Parameter] public List<IGridComponent> Components { get; set; }
 
     List<Cell> Header { get; set; } = new List<Cell>();
     List<List<Cell>> Rows { get; set; } = new List<List<Cell>>();
@@ -177,6 +207,8 @@
 
     int DefaultRowHeight = 20;
     int DefaultCellWidth = 40;
+
+    static Random Random { get; set; } = new Random((int)DateTime.Now.Ticks);
 
     #region Javascript
 
@@ -350,6 +382,39 @@
         }
     }
 
+    private RenderFragment TestControl(int index) => builder =>
+    {
+        Components[index].Render(builder);
+
+//        if (Random.NextBool())
+//        {
+//            Components[index].Render(builder);
+//        }
+//        else
+//        {
+//            Components[1].Render(builder);
+//        }
+    };
+
+    void OnTableRowMouseDown()
+    {
+
+    }
+
+    void OnTableMouseUp(List<Cell> cells)
+    {
+
+    }
+
+    void ButtonClick()
+    {
+        GetPageAndDisplayData();
+    }
+
+    #endregion
+
+    #region Context Menu
+
     bool MenuShown { get; set; }
     int MenuX { get; set; }
     int MenuY { get; set; }
@@ -383,21 +448,6 @@
     void ContextMenu3()
     {
         Alert("3");
-    }
-
-    void OnTableRowMouseDown()
-    {
-
-    }
-
-    void OnTableMouseUp(List<Cell> cells)
-    {
-
-    }
-
-    void ButtonClick()
-    {
-        GetPageAndDisplayData();
     }
 
     #endregion

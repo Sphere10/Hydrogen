@@ -7,7 +7,6 @@ using Sphere10.Helium.Router;
 
 namespace Sphere10.Helium.Framework {
 	public class HeliumFramework : IHeliumFramework {
-
 		private IInstantiateHandler _instantiateHandler;
 
 		static HeliumFramework() {
@@ -33,7 +32,7 @@ namespace Sphere10.Helium.Framework {
 			ComponentRegistry.Instance.Resolve<ILocalQueueOutputProcessor>();
 		}
 
-		public void LoadHandlerTypes(IList<PluginAssemblyHandler> handlerTypeList) {
+		public void LoadHandlerTypes(IList<PluginAssemblyHandlerDto> handlerTypeList) {
 			_instantiateHandler.PluginAssemblyHandlerList = handlerTypeList;
 		}
 	}

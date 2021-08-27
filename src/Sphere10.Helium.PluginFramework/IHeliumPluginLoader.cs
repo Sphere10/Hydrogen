@@ -3,7 +3,7 @@ using Sphere10.Helium.Framework;
 
 namespace Sphere10.Helium.PluginFramework {
     public interface IHeliumPluginLoader {
-	    public IList<PluginAssemblyHandler> PluginAssemblyHandlerList { get; set; }
+	    public IList<PluginAssemblyHandlerDto> PluginAssemblyHandlerList { get; set; }
 
 	    public IHeliumFramework GetHeliumFramework();
 

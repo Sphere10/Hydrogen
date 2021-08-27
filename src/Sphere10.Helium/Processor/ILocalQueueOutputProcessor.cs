@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using Sphere10.Helium.Framework;
 using Sphere10.Helium.Message;
 
 namespace Sphere10.Helium.Processor {
@@ -15,6 +17,8 @@ namespace Sphere10.Helium.Processor {
 		/// </summary>
 		public void ProcessAllMessagesSynchronously();
 
-		public void ExecuteHandler(IList<IMessage> messageList);
+		public void ExtractHandler();
+
+		public void RunHandler(List<PluginAssemblyHandlerDto> handlerTypeList, IMessage message);
 	}
 }

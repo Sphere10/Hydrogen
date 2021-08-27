@@ -5,7 +5,7 @@ using Sphere10.Helium.Message;
 namespace Sphere10.Helium.Framework {
 	public class InstantiateHandler : IInstantiateHandler {
 
-		public IList<PluginAssemblyHandler> PluginAssemblyHandlerList { get; set; }
+		public IList<PluginAssemblyHandlerDto> PluginAssemblyHandlerList { get; set; }
 
 		public InstantiateHandler() {
 		}

@@ -10,6 +10,6 @@ namespace Sphere10.Helium.Framework {
 
 		void StartHeliumFramework();
 
-		void LoadHandlerTypes(IList<PluginAssemblyHandler> handlerTypeList);
+		void LoadHandlerTypes(IList<PluginAssemblyHandlerDto> handlerTypeList);
 	}
 }

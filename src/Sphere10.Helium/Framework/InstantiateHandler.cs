@@ -7,6 +7,9 @@ namespace Sphere10.Helium.Framework {
 
 		public IList<PluginAssemblyHandler> PluginAssemblyHandlerList { get; set; }
 
+		public InstantiateHandler() {
+		}
+
 		public void HandleMessage(IMessage message) {
 			throw new NotImplementedException();
 		}

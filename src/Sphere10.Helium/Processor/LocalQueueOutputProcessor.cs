@@ -54,6 +54,10 @@ namespace Sphere10.Helium.Processor {
 		}
 
 		public void ExecuteHandler(IList<IMessage> messageList) {
+			_logger.Debug($"=> {_instantiateHandler}");
+
+			_logger.Debug($"Total Plugins: {_instantiateHandler.PluginAssemblyHandlerList.Count}");
+			
 			foreach (var message in messageList) {
 				
 			}

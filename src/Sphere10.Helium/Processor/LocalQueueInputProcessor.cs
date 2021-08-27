@@ -36,8 +36,6 @@ namespace Sphere10.Helium.Processor {
 			}
 
 			txnScope.Commit();
-
-			var totalMessagesInQueue = _localQueue.Count;
 		}
 	}
 }

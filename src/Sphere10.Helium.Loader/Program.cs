@@ -2,7 +2,7 @@
 using Sphere10.Helium.Framework;
 using Sphere10.Helium.PluginFramework;
 using Sphere10.Helium.Router;
-using Sphere10.Helium.TestPlugin3.Message;
+using Sphere10.Helium.TestPlugin1;
 
 namespace Sphere10.Helium.Loader {
 	/// <summary>
@@ -55,7 +55,7 @@ namespace Sphere10.Helium.Loader {
 
 		private static void Test_SendTestMessage1ToRouter() {
 			
-			var message = new BlueHandlerMessage2 { Id = "BlueHandlerMessage2_Test1_00001", TheName = "InboundIntoRouter" };
+			var message = new BlueHandlerMessage { Id = "BlueHandlerMessage2_Test1_00001" };
 
 			_router.InputMessage(message);
 		}

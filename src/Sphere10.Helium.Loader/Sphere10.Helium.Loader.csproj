@@ -8,8 +8,13 @@
   <ItemGroup>
     <ProjectReference Include="..\Sphere10.Framework\Sphere10.Framework.csproj" />
     <ProjectReference Include="..\Sphere10.Helium.PluginFramework\Sphere10.Helium.PluginFramework.csproj" />
-    <ProjectReference Include="..\Sphere10.Helium.TestPlugin3.Message\Sphere10.Helium.TestPlugin3.Message.csproj" />
     <ProjectReference Include="..\Sphere10.Helium\Sphere10.Helium.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Sphere10.Helium.TestPlugin1">
+      <HintPath>..\Sphere10.Helium.TestPlugin1\bin\Debug\net5.0\Sphere10.Helium.TestPlugin1.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>

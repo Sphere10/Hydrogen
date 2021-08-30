@@ -69,16 +69,16 @@ namespace Sphere10.Helium.Processor {
 
 				if (handlerList.Count <= 0) continue;
 
-				RunHandler(handlerList, message);
+				InvokeHandler(handlerList, message);
 			}
 		}
 
-		public void RunHandler(List<PluginAssemblyHandlerDto> handlerTypeList, IMessage message) {
+		public void InvokeHandler(List<PluginAssemblyHandlerDto> handlerTypeList, IMessage message) {
 			_logger.Debug($"Inside:{nameof(LocalQueueOutputProcessor)}.{MethodBase.GetCurrentMethod()}");
 
 			foreach (var handlerType in handlerTypeList) {
 				_logger.Debug($"HandlerInterface to run={handlerType.HandlerInterface}");
-				_logger.Debug($"Assembly full path={handlerType.FullPath}");
+				_logger.Debug($"Handler name={handlerType.HandlerClass.Name} full-path={handlerType.HandlerClass.FullName}.");
 
 				var constructor = handlerType.HandlerClass.GetConstructor(Type.EmptyTypes);
 				var handler = constructor?.Invoke(null);
@@ -94,7 +94,9 @@ namespace Sphere10.Helium.Processor {
 
 				var parameters = new[] { messageFromTypeInstance };
 
+				_logger.Debug("Invoking Handler now...");
 				handleMethod?.Invoke(handler, parameters);
+				_logger.Debug("Hooray! Handler invoked successfully!");
 			}
 		}
 	}

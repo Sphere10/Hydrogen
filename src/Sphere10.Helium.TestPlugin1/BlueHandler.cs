@@ -5,14 +5,11 @@ using Sphere10.Helium.Message;
 
 namespace Sphere10.Helium.TestPlugin1 {
 	public class BlueHandler : IHandleMessage<BlueHandlerMessage> {
-		//private readonly IBus _bus;
-
-		//public BlueHandler(IBus bus) {
-		//	_bus = bus;
-		//}
 
 		public void Handle(BlueHandlerMessage message) {
-			const string path = @"C:\Temp\MyTest.txt";
+			var fileName = $"T1_{nameof(BlueHandler)}.txt";
+
+			var path = $@"C:\Temp\{fileName}";
 
 			if (File.Exists(path)) File.Delete(path);
 

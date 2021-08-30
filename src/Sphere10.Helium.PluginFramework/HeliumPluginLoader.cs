@@ -148,7 +148,7 @@ namespace Sphere10.Helium.PluginFramework
                     continue;
 
                 count++;
-                _logger.Debug($"=>{type.FullName},IsAbstract={type.IsAbstract}, IsInterface={type.IsInterface}, IsGenericType={type.IsGenericType}, IsClass={type.IsClass},BaseType={type.BaseType.Name}");
+
 				var handlerType = new PluginAssemblyHandlerDto
                 {
 					FullPath = fullPath,

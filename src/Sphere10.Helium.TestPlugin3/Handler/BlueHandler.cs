@@ -7,7 +7,9 @@ namespace Sphere10.Helium.TestPlugin3.Handler {
 	public class BlueHandler : IHandleMessage<BlueHandlerMessage2> {
 		public void Handle(BlueHandlerMessage2 message) {
 
-			const string path = @"C:\Temp\MyTest.txt";
+			var fileName = $"{nameof(BlueHandler)}.txt";
+
+			var path = $@"C:\Temp\{fileName}";
 
 			if (File.Exists(path)) File.Delete(path);
 

@@ -80,8 +80,7 @@ namespace Sphere10.Helium.Processor {
 				_logger.Debug($"HandlerInterface to run={handlerType.HandlerInterface}");
 				_logger.Debug($"Handler name={handlerType.HandlerClass.Name} full-path={handlerType.HandlerClass.FullName}.");
 
-				var constructor = handlerType.HandlerClass.GetConstructor(Type.EmptyTypes);
-				var handler = constructor?.Invoke(null);
+				var handler = Activator.CreateInstance(handlerType.HandlerClass, null);
 				var parameterTypes = new[] { handlerType.Message };
 				var handleMethod = handlerType.HandlerClass.GetMethod("Handle", parameterTypes);
 				var messageFromTypeInstance = Activator.CreateInstance(handlerType.Message);

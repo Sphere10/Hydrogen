@@ -26,6 +26,7 @@ namespace Sphere10.Helium.Processor {
 		public void AddMessageToLocalQueue(IMessage message) {
 			_logger.Debug("Inside: LocalQueueInputProcessor.AddMessageToLocalQueue(_)");
 			_logger.Debug("Adding a message to the LocalQueue.");
+			_logger.Debug($"Total messages in queue before add:{_localQueue.Count}");
 
 			using var txnScope = new FileTransactionScope(_localQueueSettings.TempDirPath);
 			txnScope.BeginTransaction();

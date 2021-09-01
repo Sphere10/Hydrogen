@@ -16,9 +16,16 @@ namespace Sphere10.Helium.TestPlugin1 {
 		}
 
 		public void Handle(BlueHandlerMessage message) {
-			var fileName = $"T1_{nameof(BlueHandler)}.txt";
+			var fileName = $"{message.MessageNumber}_{message.MessageName}_{message.Id}.txt";
 			var path = $@"C:\Temp\{fileName}";
+			message.EndDateTime = DateTime.Now.Ticks;
 
+			var ts = TimeSpan.FromTicks(message.EndDateTime - message.StartDateTime);
+			message.ProcessingTimeMSec = ts.Milliseconds;
+
+			var startDateTime = new DateTime(message.StartDateTime);
+			var endDateTime = new DateTime(message.EndDateTime);
+			
 			if (File.Exists(path)) File.Delete(path);
 
 			using var sw = File.CreateText(path);
@@ -26,14 +33,20 @@ namespace Sphere10.Helium.TestPlugin1 {
 			sw.WriteLine("Hello");
 			sw.WriteLine("And");
 			sw.WriteLine("Welcome");
-			sw.WriteLine($"=>{DateTime.Now}");
-			sw.WriteLine($"=>Id={message.Id}");
+			sw.WriteLine($"StartDateTime={startDateTime:dd/MM/yyyy HH:mm:ss.ffffff}");
+			sw.WriteLine($"EndDateTime={endDateTime:dd/MM/yyyy HH:mm:ss.ffffff}");
+			sw.WriteLine($"ProcessingTimeInMillisecond={message.ProcessingTimeMSec}");
 		}
 	}
 
 	[Serializable]
 	public class BlueHandlerMessage : IMessage {
 		public string Id { get; set; }
+		public int MessageNumber { get; set; }
+		public string MessageName { get; set; }
+		public long StartDateTime { get; set; }
+		public long EndDateTime { get; set; }
+		public int ProcessingTimeMSec { get; set; }
 	}
 
 	public interface IBlueBat {

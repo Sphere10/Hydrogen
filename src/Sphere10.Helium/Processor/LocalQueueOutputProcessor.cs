@@ -44,7 +44,10 @@ namespace Sphere10.Helium.Processor {
 		public void ProcessAllMessagesSynchronously() {
 			_logger.Debug($"Inside:{nameof(LocalQueueOutputProcessor)}.{MethodBase.GetCurrentMethod()}");
 
+			CurrentMessageList.Clear();
+
 			var messageCount = _localQueue.Count;
+			_logger.Debug($"Total messages in queue before Remove:{messageCount}");
 
 			for (var i = 0; i < messageCount; i++) {
 				var message = _localQueue.RemoveMessage();
@@ -56,8 +59,8 @@ namespace Sphere10.Helium.Processor {
 
 		public void ExtractHandler() {
 			_logger.Debug($"Inside:{nameof(LocalQueueOutputProcessor)}.{MethodBase.GetCurrentMethod()}");
-			_logger.Debug($"Total Handlers to check={_instantiateHandler.PluginAssemblyHandlerList.Count}");
-
+			_logger.Debug($"Total of {_instantiateHandler.PluginAssemblyHandlerList.Count} handlers to check.");
+			
 			var handlerTypeList = _instantiateHandler.PluginAssemblyHandlerList;
 
 			foreach (var message in CurrentMessageList) {
@@ -75,6 +78,7 @@ namespace Sphere10.Helium.Processor {
 
 		public void InvokeHandler(List<PluginAssemblyHandlerDto> handlerTypeList, IMessage message) {
 			_logger.Debug($"Inside:{nameof(LocalQueueOutputProcessor)}.{MethodBase.GetCurrentMethod()}");
+			_logger.Debug($"Total of {handlerTypeList.Count} Handlers found.");
 
 			foreach (var handlerType in handlerTypeList) {
 				_logger.Debug($"HandlerInterface to run={handlerType.HandlerInterface}");
@@ -85,17 +89,21 @@ namespace Sphere10.Helium.Processor {
 				var handleMethod = handlerType.HandlerClass.GetMethod("Handle", parameterTypes);
 				var messageFromTypeInstance = Activator.CreateInstance(handlerType.Message);
 
-				foreach (var propertyInfo in message.GetType().GetProperties()) {
-					var property = messageFromTypeInstance?.GetType().GetProperty(propertyInfo.Name, propertyInfo.PropertyType);
-					var propertyValue = propertyInfo.GetValue(message);
-					property?.SetValue(messageFromTypeInstance, propertyValue, null);
-				}
+				AssignPropertyValues(message, messageFromTypeInstance);
 
 				var parameters = new[] { messageFromTypeInstance };
 
 				_logger.Debug("Invoking Handler now...");
 				handleMethod?.Invoke(handler, parameters);
 				_logger.Debug("Hooray! Handler invoked successfully!");
+			}
+		}
+
+		private static void AssignPropertyValues(IMessage message, object messageFromTypeInstance) {
+			foreach (var propertyInfo in message.GetType().GetProperties()) {
+				var property = messageFromTypeInstance?.GetType().GetProperty(propertyInfo.Name, propertyInfo.PropertyType);
+				var propertyValue = propertyInfo.GetValue(message);
+				property?.SetValue(messageFromTypeInstance, propertyValue, null);
 			}
 		}
 	}

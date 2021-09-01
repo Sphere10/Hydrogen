@@ -14,6 +14,8 @@ namespace Sphere10.Helium.Processor {
 	public class LocalQueueOutputProcessor : ILocalQueueOutputProcessor {
 		private readonly IInstantiateHandler _instantiateHandler;
 		private readonly IHeliumQueue _localQueue;
+
+		// ReSharper disable once NotAccessedField.Local
 		private readonly ILocalQueueInputProcessor _localQueueInput;
 		private readonly ILogger _logger;
 		public IList<IMessage> CurrentMessageList;
@@ -36,13 +38,13 @@ namespace Sphere10.Helium.Processor {
 		}
 
 		public void OnCommittedLocalQueue(object sender) {
-			_logger.Debug($"Inside:{nameof(LocalQueueOutputProcessor)}.{MethodBase.GetCurrentMethod()}");
+			_logger.Debug($"Inside:{nameof(LocalQueueOutputProcessor)}_{MethodBase.GetCurrentMethod()}");
 
 			ProcessAllMessagesSynchronously();
 		}
 
 		public void ProcessAllMessagesSynchronously() {
-			_logger.Debug($"Inside:{nameof(LocalQueueOutputProcessor)}.{MethodBase.GetCurrentMethod()}");
+			_logger.Debug($"Inside:{nameof(LocalQueueOutputProcessor)}_{MethodBase.GetCurrentMethod()}");
 
 			CurrentMessageList.Clear();
 
@@ -58,7 +60,7 @@ namespace Sphere10.Helium.Processor {
 		}
 
 		public void ExtractHandler() {
-			_logger.Debug($"Inside:{nameof(LocalQueueOutputProcessor)}.{MethodBase.GetCurrentMethod()}");
+			_logger.Debug($"Inside:{nameof(LocalQueueOutputProcessor)}_{MethodBase.GetCurrentMethod()}");
 			_logger.Debug($"Total of {_instantiateHandler.PluginAssemblyHandlerList.Count} handlers to check.");
 			
 			var handlerTypeList = _instantiateHandler.PluginAssemblyHandlerList;
@@ -77,7 +79,7 @@ namespace Sphere10.Helium.Processor {
 		}
 
 		public void InvokeHandler(List<PluginAssemblyHandlerDto> handlerTypeList, IMessage message) {
-			_logger.Debug($"Inside:{nameof(LocalQueueOutputProcessor)}.{MethodBase.GetCurrentMethod()}");
+			_logger.Debug($"Inside:{nameof(LocalQueueOutputProcessor)}_{MethodBase.GetCurrentMethod()}");
 			_logger.Debug($"Total of {handlerTypeList.Count} Handlers found.");
 
 			foreach (var handlerType in handlerTypeList) {

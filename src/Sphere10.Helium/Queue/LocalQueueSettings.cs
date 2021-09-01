@@ -30,5 +30,7 @@ namespace Sphere10.Helium.Queue {
 		public bool ReadOnly { get; }
 		public string TempQueueName { get; } = TemporaryQueueName;
 		public int BatchSize { get; } = MessageBatchSize;
+		public int InputBufferSize { get; } = 100;
+		public int InputBufferLimit { get; } = 10000;
 	}
 }

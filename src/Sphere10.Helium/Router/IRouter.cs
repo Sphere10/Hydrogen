@@ -6,7 +6,7 @@ using Sphere10.Helium.Message;
 namespace Sphere10.Helium.Router {
 
 	/// <summary>
-	/// The Router is single point of contact for the Node.
+	/// The Router is a single point of contact for the Node.
 	/// ALL input and output to and from the Node goes through the Router.
 	/// </summary>
 	public interface IRouter {
@@ -16,8 +16,8 @@ namespace Sphere10.Helium.Router {
 		protected bool OutputMessage(IMessage message);
 		protected IList<EndpointAddressListByTypeDto> GetEndpointAddresses();
 
-		public void InputMessage(IMessage message);
-		public bool InputMessageList(IList<IMessage> message); //TODO Jake is there any evidence for Inputting multiple message in one method//
+		public bool InputMessage(IMessage message);
+		public bool InputMessageList(IList<IMessage> messageList);
 		public bool CoreMessageValidation(IMessage message);
 		public bool CoreMessageValidation(IList<IMessage> message);
 		public bool PutMessageInLocalQueue();

@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Components.Rendering;
 using Sphere10.Hydrogen.Presentation2.UI.Controls.BlazorGrid.Classes;
 
 namespace Sphere10.Hydrogen.Presentation2.UI.Controls.BlazorGrid.Components {
-	partial class Component2Test : IGridComponent 
+	partial class Component2Test : IGridComponent<bool>
 	{
 		[Parameter] public bool Checked { get; set; }
 
@@ -14,7 +14,7 @@ namespace Sphere10.Hydrogen.Presentation2.UI.Controls.BlazorGrid.Components {
 			Checked = checkedValue;
 		}
 
-		public void Render(RenderTreeBuilder builder) 
+		public void Render(bool item, RenderTreeBuilder builder) 
 		{
 			builder.OpenComponent<Component2Test>(0);
 			builder.AddAttribute(1, "Checked", Checked);

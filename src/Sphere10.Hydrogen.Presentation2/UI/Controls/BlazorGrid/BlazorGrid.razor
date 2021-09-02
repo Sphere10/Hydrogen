@@ -37,7 +37,17 @@
                     </th>
                 }
 
-                <th style="width:40px">
+                @foreach (var column in ColumnDefinitions) 
+                {
+                    <th style="width:40px">
+                        @column.Name
+                        <div class="ResizableClass">
+                            <input class="ResizableClass" type="search" />
+                        </div>
+                    </th>
+                }
+
+                @*<th style="width:40px">
                     Testing Component 1
                     <div class="ResizableClass">
                         <input class="ResizableClass" type="search" />
@@ -49,7 +59,7 @@
                     <div class="ResizableClass">
                         <input class="ResizableClass" type="search" />
                     </div>
-                </th>
+                </th>*@
 
             </tr>
         </thead>
@@ -83,13 +93,20 @@
                     </td>
                 }
 
+                @foreach (var column in ColumnDefinitions)
+                {
+                    <td>
+                        @RenderDataEnd((TItem)row[0].Tag, column)
+                    </td>
+                }
+
                 @*Test use of Components*@
-                <td>
+                @*<td>
                     @TestControl(0)
                 </td>
                 <td>
                     @TestControl(1)
-                </td>
+                </td>*@
 
             </tr>
             }
@@ -190,14 +207,15 @@
 {
     @typeparam TItem
 
-    public enum GridTypes { DataSupplied, DataOnDemand, ActionColumn }
+    public enum GridTypes { DataSupplied, DataOnDemand, ActionColumn,  }
 
     [Parameter] public string Id { get; set; }
     [Parameter] public int PageSize { get; set; }
     [Parameter] public IDataSource<TItem> DataSource { get; set; }
     [Parameter] public GridTypes GridType { get; set; }
     [Parameter] public List<GridAction<TItem>> Actions { get; set; }
-    [Parameter] public List<IGridComponent> Components { get; set; }
+    [Parameter] public List<IGridComponent<TItem>> Components { get; set; }
+    [Parameter] public List<IDataEnd> ColumnDefinitions { get; set; }
 
     List<Cell> Header { get; set; } = new List<Cell>();
     List<List<Cell>> Rows { get; set; } = new List<List<Cell>>();
@@ -306,12 +324,11 @@
     }
 
     // put this into Cell
-    string GetCellText(object cellData, PropertyInfo property)
+    string GetCellText(object cellData, PropertyInfo property) 
     {
         var value = property.GetValue(cellData);
         var typeName = property.PropertyType.Name.ToString();
-        switch (typeName)
-        {
+        switch (typeName) {
             case "DateTime": return ((DateTime)value).ToString("yyyy-MM-dd");
             default: return value.ToString();
         }
@@ -382,18 +399,23 @@
         }
     }
 
-    private RenderFragment TestControl(int index) => builder =>
+    private RenderFragment TestControl(TItem item, int index) => builder =>
     {
-        Components[index].Render(builder);
+        if (Random.NextBool())
+        {
+            Components[0].Render(item, builder);
+        }
+        else
+        {
+            Components[1].Render(item, builder);
+        }
+    };
 
-//        if (Random.NextBool())
-//        {
-//            Components[index].Render(builder);
-//        }
-//        else
-//        {
-//            Components[1].Render(builder);
-//        }
+    private RenderFragment RenderDataEnd(TItem item, IDataEnd dataEnd) => builder =>
+    {
+        var component = Activator.CreateInstance(typeof(IDataEnd));
+
+        dataEnd.Render(item, builder);
     };
 
     void OnTableRowMouseDown()

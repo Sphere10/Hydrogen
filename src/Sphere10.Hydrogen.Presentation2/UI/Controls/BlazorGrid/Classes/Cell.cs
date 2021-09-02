@@ -13,7 +13,6 @@ namespace Sphere10.Hydrogen.Presentation2.UI.Controls.BlazorGrid.Classes {
 		public string Name { get { return Header.Name; } }
 		public int Width { get { return Header.Width; } }
 		public int Height { get { return Row.Height; } }
-
 		public bool IsEnum { get; set; }
 
 		public Cell(HeaderData header, RowData row, ObjectTypeInfo typeInfo, string text, object underlyingData, int dataIndex) 
@@ -52,6 +51,16 @@ namespace Sphere10.Hydrogen.Presentation2.UI.Controls.BlazorGrid.Classes {
 
 			return string.Empty;
 		}
+
+//		public string GetText(object cellData, PropertyInfo property) 
+//		{
+//			var value = property.GetValue(cellData);
+//			var typeName = property.PropertyType.Name.ToString();
+//			switch (typeName) {
+//				case "DateTime": return ((DateTime)value).ToString("yyyy-MM-dd");
+//				default: return value.ToString();
+//			}
+//		}
 
 		public void UpdateData(string newValue) 
 		{

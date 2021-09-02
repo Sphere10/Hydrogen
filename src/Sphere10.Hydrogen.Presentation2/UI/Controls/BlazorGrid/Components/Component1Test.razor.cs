@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Components.Rendering;
 using Sphere10.Hydrogen.Presentation2.UI.Controls.BlazorGrid.Classes;
 
 namespace Sphere10.Hydrogen.Presentation2.UI.Controls.BlazorGrid.Components {
-	partial class Component1Test : IGridComponent 
+	partial class Component1Test : IGridComponent<string>
 	{
 		[Parameter] public string ListId { get; set; }
 
@@ -14,7 +14,7 @@ namespace Sphere10.Hydrogen.Presentation2.UI.Controls.BlazorGrid.Components {
 			ListId = listId;
 		}
 		
-		public void Render(RenderTreeBuilder builder) 
+		public void Render(string item, RenderTreeBuilder builder) 
 		{
 			builder.OpenComponent<Component1Test>(0);
 			builder.AddAttribute(1, "ListId", ListId);

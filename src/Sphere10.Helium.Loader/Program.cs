@@ -33,7 +33,7 @@ namespace Sphere10.Helium.Loader {
 		public static void Main(string[] args) {
 			var logger = new ConsoleLogger();
 			var pluginsRelativePathArray = GetPluginsToBeLoadedList();
-			var endpointSetting = new EndPointSettings {
+			var endpointSettings = new EndPointSettings {
 				FlushLocalQueueOnStartup = true,
 				FlushPrivateQueueOnStartup = true
 			};
@@ -43,7 +43,7 @@ namespace Sphere10.Helium.Loader {
 
 			var heliumFramework = heliumPluginLoader.GetHeliumFramework();
 			heliumFramework.ModeOfOperation = EnumModeOfOperationType.HydrogenMode;
-			heliumFramework.StartHeliumFramework(endpointSetting);
+			heliumFramework.StartHeliumFramework(endpointSettings);
 			heliumFramework.LoadHandlerTypes(heliumPluginLoader.PluginAssemblyHandlerList);
 			_router = heliumFramework.Router;
 

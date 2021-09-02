@@ -56,9 +56,15 @@ namespace Sphere10.Helium.Processor {
 			// ReSharper disable once PossibleLossOfFraction
 			var loopCount = Math.Ceiling((decimal)messageList.Count / (decimal)_settings.InputBufferSize);
 
+			//var workingMessageList = messageList;
+
 			for (var i = 0; i < loopCount; i++) {
 				var messageBatch = messageList.Take(_settings.InputBufferSize);
-				AddMessageBatchToLocalQueue(messageBatch);
+				var enumerable = messageBatch.ToList();
+
+				messageList = messageList.Except(enumerable).ToList();
+
+				AddMessageBatchToLocalQueue(enumerable);
 			}
 		}
 

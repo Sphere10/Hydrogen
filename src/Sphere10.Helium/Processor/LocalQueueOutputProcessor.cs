@@ -84,7 +84,7 @@ namespace Sphere10.Helium.Processor {
 
 			foreach (var handlerType in handlerTypeList) {
 				_logger.Debug($"HandlerInterface to run={handlerType.HandlerInterface}");
-				_logger.Debug($"Handler name={handlerType.HandlerClass.Name} full-path={handlerType.HandlerClass.FullName}.");
+				_logger.Debug($"Handler name={handlerType.HandlerClass.Name}, full-name={handlerType.HandlerClass.FullName}.");
 
 				var handler = Activator.CreateInstance(handlerType.HandlerClass, null);
 				var parameterTypes = new[] { handlerType.Message };

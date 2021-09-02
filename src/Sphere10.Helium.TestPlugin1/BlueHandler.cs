@@ -9,7 +9,7 @@ namespace Sphere10.Helium.TestPlugin1 {
 		private readonly IGreenBat _greenBat;
 
 		public BlueHandler() { }
-	
+
 		public BlueHandler(IBlueBat blueBat, IGreenBat greenBat) {
 			_blueBat = blueBat;
 			_greenBat = greenBat;
@@ -21,11 +21,11 @@ namespace Sphere10.Helium.TestPlugin1 {
 			message.EndDateTime = DateTime.Now.Ticks;
 
 			var ts = TimeSpan.FromTicks(message.EndDateTime - message.StartDateTime);
-			message.ProcessingTimeMSec = ts.Milliseconds;
+			message.ProcessingTimeMSec = ts.Milliseconds / (decimal)1000;
 
 			var startDateTime = new DateTime(message.StartDateTime);
 			var endDateTime = new DateTime(message.EndDateTime);
-			
+
 			if (File.Exists(path)) File.Delete(path);
 
 			using var sw = File.CreateText(path);
@@ -35,7 +35,9 @@ namespace Sphere10.Helium.TestPlugin1 {
 			sw.WriteLine("Welcome");
 			sw.WriteLine($"StartDateTime={startDateTime:dd/MM/yyyy HH:mm:ss.ffffff}");
 			sw.WriteLine($"EndDateTime={endDateTime:dd/MM/yyyy HH:mm:ss.ffffff}");
-			sw.WriteLine($"ProcessingTimeInMillisecond={message.ProcessingTimeMSec}");
+			sw.WriteLine($"StartTicks={message.StartDateTime}");
+			sw.WriteLine($"EndDTicks={message.EndDateTime}");
+			sw.WriteLine($"ProcessingTimeInSeconds={message.ProcessingTimeMSec}");
 		}
 	}
 
@@ -46,7 +48,7 @@ namespace Sphere10.Helium.TestPlugin1 {
 		public string MessageName { get; set; }
 		public long StartDateTime { get; set; }
 		public long EndDateTime { get; set; }
-		public int ProcessingTimeMSec { get; set; }
+		public decimal ProcessingTimeMSec { get; set; }
 	}
 
 	public interface IBlueBat {

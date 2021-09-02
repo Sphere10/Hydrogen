@@ -28,7 +28,7 @@ namespace Sphere10.Helium.Loader {
 	public class Program {
 		private static IRouter _router; //This will be made public when integrated into Sphere10.Framework
 		private static int _messageNumber;
-		private const int MessageCount = 7;
+		private const int MessageCount = 10000;
 
 		public static void Main(string[] args) {
 			var logger = new ConsoleLogger();
@@ -59,19 +59,16 @@ namespace Sphere10.Helium.Loader {
 				cki = Console.ReadKey();
 
 				if ((cki.Modifiers & ConsoleModifiers.Alt) != 0 && (cki.KeyChar == 'a' || cki.KeyChar == 'A')) {
-					Console.WriteLine("-----------------------------------------------------------------------------------");
+					Console.WriteLine("--------------------------------------");
 					Console.WriteLine(" Sending a single message now.");
 					SendSingleMessageToLocalQueue();
-					Console.WriteLine("-----------------------------------------------------------------------------------");
+					Console.WriteLine("--------------------------------------");
 				}
 				if ((cki.Modifiers & ConsoleModifiers.Alt) != 0 && (cki.KeyChar == 'b' || cki.KeyChar == 'B')) {
-					Console.WriteLine("-----------------------------------------------------------------------------------");
+					Console.WriteLine("--------------------------------------");
 					Console.WriteLine($" Sending {MessageCount} messages now.");
 					SendListOfMessagesToLocalQueue();
-					Console.WriteLine("-----------------------------------------------------------------------------------");
-				}
-				if ((cki.Modifiers & ConsoleModifiers.Alt) != 0 && (cki.KeyChar == 'c' || cki.KeyChar == 'C')) {
-
+					Console.WriteLine("--------------------------------------");
 				}
 
 			} while (cki.Key != ConsoleKey.Escape);

@@ -25,10 +25,10 @@ namespace Sphere10.Helium.Processor {
 		}
 
 		public void AddMessageToLocalQueue(IMessage message) {
-			Guard.Argument(message == null, nameof(message), "Message CANNOT be null here. Catastrophic failure!!!");
+			Guard.Argument(message != null, nameof(message), "Message == null. Unexpected. Catastrophic failure!");
 
 			_logger.Debug($"Inside:{nameof(LocalQueueInputProcessor)}_{MethodBase.GetCurrentMethod()}");
-			_logger.Debug("Adding a single messageList to the LocalQueue.");
+			_logger.Debug("Adding a single message to the LocalQueue.");
 			_logger.Debug($"Total messages in queue before add:{_localQueue.Count}");
 
 			using var txnScope = new FileTransactionScope(_settings.TempDirPath);
@@ -45,18 +45,16 @@ namespace Sphere10.Helium.Processor {
 		public void AddMessageListToLocalQueue(IList<IMessage> messageList) {
 			_logger.Debug($"Inside:{nameof(LocalQueueInputProcessor)}_{MethodBase.GetCurrentMethod()}");
 
-			Guard.Argument(messageList != null, nameof(messageList), "Message List CANNOT be null here. Catastrophic failure!!!");
-			Guard.Argument(messageList != null && messageList.Count > 0, nameof(messageList), "Input messageList count is <= 0. Lost input messages?");
-			Guard.Argument(_settings.InputBufferSize > 0, nameof(_settings.InputBufferSize), "Input messageList buffer size <= 0. Catastrophic failure!!!");
+			Guard.Argument(messageList != null, nameof(messageList), "MessageList == null. UNEXPECTED. Catastrophic failure!!!");
+			Guard.Argument(messageList != null && messageList.Count > 0, nameof(messageList), "messageList count <= 0. Lost input messages! BAD.");
+			Guard.Argument(_settings.InputBufferSize > 0, nameof(_settings.InputBufferSize), "messageList buffer <= 0. Catastrophic failure!!!");
 
 			_logger.Debug($"Adding a batch of {_settings.InputBufferSize} messages to the LocalQueue.");
 			_logger.Debug($"Total messages in queue before add:{_localQueue.Count}");
 
-			// ReSharper disable once PossibleNullReferenceException
-			// ReSharper disable once PossibleLossOfFraction
-			var loopCount = Math.Ceiling((decimal)messageList.Count / (decimal)_settings.InputBufferSize);
-
-			//var workingMessageList = messageList;
+			if (messageList == null) throw new ArgumentNullException(nameof(messageList));
+			if (_settings.InputBufferSize <= 0) throw new ArgumentNullException(nameof(_settings.InputBufferSize));
+			var loopCount = Math.Ceiling(d: messageList.Count / (decimal)_settings.InputBufferSize);
 
 			for (var i = 0; i < loopCount; i++) {
 				var messageBatch = messageList.Take(_settings.InputBufferSize);

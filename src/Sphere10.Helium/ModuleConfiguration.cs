@@ -1,5 +1,6 @@
 ﻿using Sphere10.Framework;
 using Sphere10.Framework.Application;
+using Sphere10.Helium.Endpoint;
 using Sphere10.Helium.Framework;
 using Sphere10.Helium.Processor;
 using Sphere10.Helium.Queue;
@@ -39,6 +40,11 @@ namespace Sphere10.Helium {
 						container.Resolve<IHeliumQueue>("LocalQueue"),
 						container.Resolve<ILocalQueueInputProcessor>(),
 						container.Resolve<ILogger>("ConsoleLogger")));
+
+			if (!registry.HasImplementationFor<IPrivateQueueInputProcessor>())
+				registry.RegisterComponentFactory<IPrivateQueueInputProcessor>(
+					container => new PrivateQueueInputProcessor(
+						container.Resolve<ILogger>("ConsoleLogger")));
 			#endregion
 
 			if (!registry.HasImplementationFor<IRouter>())
@@ -48,6 +54,12 @@ namespace Sphere10.Helium {
 			
 			if (!registry.HasImplementationFor<IRetryManager>())
 				registry.RegisterComponent<IRetryManager, RetryManager>(ActivationType.Singleton);
+
+			if (!registry.HasImplementationFor<IConfigureThisEndpoint>())
+				registry.RegisterComponentFactory<IConfigureThisEndpoint>(
+					container => new ConfigureThisEndpoint(
+						container.Resolve<ILocalQueueInputProcessor>(),
+						container.Resolve<IPrivateQueueInputProcessor>()));
 
 			registry.RegisterInitializationTask<SetupFoldersInitTask>(); //Setup working folder is here
 		}

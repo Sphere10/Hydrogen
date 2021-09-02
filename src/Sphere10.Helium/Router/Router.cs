@@ -8,11 +8,11 @@ using Sphere10.Helium.Queue;
 
 namespace Sphere10.Helium.Router {
 	public class Router : IRouter {
-		private readonly ILocalQueueInputProcessor _localQueueInput;
+		private readonly ILocalQueueInputProcessor _localQueueInputProcessor;
 		private readonly LocalQueueSettings _settings;
 
-		public Router(ILocalQueueInputProcessor localQueueInput) {
-			_localQueueInput = localQueueInput;
+		public Router(ILocalQueueInputProcessor localQueueInputProcessor) {
+			_localQueueInputProcessor = localQueueInputProcessor;
 			_settings = new LocalQueueSettings();
 		}
 
@@ -37,7 +37,7 @@ namespace Sphere10.Helium.Router {
 			Logger.Debug($"Message Name = {message.GetType().Name}");
 			Logger.Debug($"Message Assembly = {message.GetType().Assembly}");
 
-			_localQueueInput.AddMessageToLocalQueue(message);
+			_localQueueInputProcessor.AddMessageToLocalQueue(message);
 
 			return true; /*Needed for StandAloneMode*/
 		}
@@ -48,9 +48,9 @@ namespace Sphere10.Helium.Router {
 			Logger.Debug($"Inside:{nameof(Router)}_{MethodBase.GetCurrentMethod()}");
 			Logger.Debug($"Message count={messageList.Count}");
 
-			Guard.Argument(messageList.Count >= _settings.InputBufferLimit, nameof(_settings.InputBufferLimit), "Seriously sending 10,000 plus messages in one hit? Consider smaller batches!");
+			Guard.Argument(messageList.Count <= _settings.InputBufferLimit, nameof(_settings.InputBufferLimit), $"Seriously sending {_settings.InputBufferLimit} plus messages in one hit? Consider smaller batches!");
 
-			_localQueueInput.AddMessageListToLocalQueue(messageList);
+			_localQueueInputProcessor.AddMessageListToLocalQueue(messageList);
 
 			return true; /*Needed for StandAloneMode*/
 		}

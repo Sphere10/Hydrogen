@@ -45,21 +45,25 @@ namespace Sphere10.Helium.Processor {
 		public void AddMessageListToLocalQueue(IList<IMessage> messageList) {
 			_logger.Debug($"Inside:{nameof(LocalQueueInputProcessor)}_{MethodBase.GetCurrentMethod()}");
 
-			Guard.Argument(messageList == null, nameof(messageList), "Message List CANNOT be null here. Catastrophic failure!!!");
-			Guard.Argument(messageList != null && messageList.Count <= 0, nameof(messageList), "Input messageList count is <= 0. Lost input messages?");
-			Guard.Argument(_settings.InputBufferSize <= 0, nameof(_settings.InputBufferSize), "Input messageList buffer size <= 0. Catastrophic failure!!!");
+			Guard.Argument(messageList != null, nameof(messageList), "Message List CANNOT be null here. Catastrophic failure!!!");
+			Guard.Argument(messageList != null && messageList.Count > 0, nameof(messageList), "Input messageList count is <= 0. Lost input messages?");
+			Guard.Argument(_settings.InputBufferSize > 0, nameof(_settings.InputBufferSize), "Input messageList buffer size <= 0. Catastrophic failure!!!");
 
 			_logger.Debug($"Adding a batch of {_settings.InputBufferSize} messages to the LocalQueue.");
 			_logger.Debug($"Total messages in queue before add:{_localQueue.Count}");
 
 			// ReSharper disable once PossibleNullReferenceException
 			// ReSharper disable once PossibleLossOfFraction
-			var loopCount = Math.Ceiling((decimal)(messageList.Count / _settings.InputBufferSize));
+			var loopCount = Math.Ceiling((decimal)messageList.Count / (decimal)_settings.InputBufferSize);
 
 			for (var i = 0; i < loopCount; i++) {
 				var messageBatch = messageList.Take(_settings.InputBufferSize);
 				AddMessageBatchToLocalQueue(messageBatch);
 			}
+		}
+
+		public void FlushLocalQueue() {
+			_localQueue.Clear();
 		}
 
 		private void AddMessageBatchToLocalQueue(IEnumerable<IMessage> messageBatch) {

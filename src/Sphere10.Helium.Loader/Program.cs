@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using Sphere10.Framework;
+using Sphere10.Helium.Endpoint;
 using Sphere10.Helium.Framework;
+using Sphere10.Helium.Message;
 using Sphere10.Helium.PluginFramework;
 using Sphere10.Helium.Router;
 using Sphere10.Helium.TestPlugin1;
@@ -24,27 +27,31 @@ namespace Sphere10.Helium.Loader {
 	/// </summary>
 	public class Program {
 		private static IRouter _router; //This will be made public when integrated into Sphere10.Framework
-		private static int _messageNumber = 0;
+		private static int _messageNumber;
+		private const int MessageCount = 7;
 
 		public static void Main(string[] args) {
-			Console.SetWindowSize(130,40);
-
 			var logger = new ConsoleLogger();
 			var pluginsRelativePathArray = GetPluginsToBeLoadedList();
+			var endpointSetting = new EndPointSettings {
+				FlushLocalQueueOnStartup = true,
+				FlushPrivateQueueOnStartup = true
+			};
 
 			IHeliumPluginLoader heliumPluginLoader = new HeliumPluginLoader(logger);
 			heliumPluginLoader.LoadPlugins(pluginsRelativePathArray);
 
 			var heliumFramework = heliumPluginLoader.GetHeliumFramework();
 			heliumFramework.ModeOfOperation = EnumModeOfOperationType.HydrogenMode;
-			heliumFramework.StartHeliumFramework();
+			heliumFramework.StartHeliumFramework(endpointSetting);
 			heliumFramework.LoadHandlerTypes(heliumPluginLoader.PluginAssemblyHandlerList);
 			_router = heliumFramework.Router;
 
 			Console.WriteLine("======================================");
 			Console.WriteLine("Send messages to Helium");
-			Console.WriteLine("To exit, Ctrl + C");
+			Console.WriteLine("To exit, press Ctrl + C");
 			Console.WriteLine("A) To send a single message: Alt A.");
+			Console.WriteLine($"B) To send a List of {MessageCount} messages synchronously : Alt B.");
 			Console.WriteLine("======================================");
 
 			ConsoleKeyInfo cki;
@@ -58,7 +65,10 @@ namespace Sphere10.Helium.Loader {
 					Console.WriteLine("-----------------------------------------------------------------------------------");
 				}
 				if ((cki.Modifiers & ConsoleModifiers.Alt) != 0 && (cki.KeyChar == 'b' || cki.KeyChar == 'B')) {
-
+					Console.WriteLine("-----------------------------------------------------------------------------------");
+					Console.WriteLine($" Sending {MessageCount} messages now.");
+					SendListOfMessagesToLocalQueue();
+					Console.WriteLine("-----------------------------------------------------------------------------------");
 				}
 				if ((cki.Modifiers & ConsoleModifiers.Alt) != 0 && (cki.KeyChar == 'c' || cki.KeyChar == 'C')) {
 
@@ -76,10 +86,24 @@ namespace Sphere10.Helium.Loader {
 		}
 
 		private static void SendSingleMessageToLocalQueue() {
-			Test_SendTestMessage1ToRouter();
+			var message = CreateTestMessage();
+
+			_router.InputMessage(message);
 		}
 
-		private static void Test_SendTestMessage1ToRouter() {
+		private static void SendListOfMessagesToLocalQueue() {
+
+			var messageList = new List<IMessage>();
+
+			for (var i = 0; i < MessageCount; i++) {
+				var message = CreateTestMessage();
+				messageList.Add(message);
+			}
+
+			_router.InputMessageList(messageList);
+		}
+
+		private static IMessage CreateTestMessage() {
 			var message = new BlueHandlerMessage {
 				Id = Guid.NewGuid().ToString(),
 				StartDateTime = DateTime.Now.Ticks,
@@ -87,7 +111,7 @@ namespace Sphere10.Helium.Loader {
 				MessageName = nameof(BlueHandlerMessage)
 			};
 
-			_router.InputMessage(message);
+			return message;
 		}
 	}
 }

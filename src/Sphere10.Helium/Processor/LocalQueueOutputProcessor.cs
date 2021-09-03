@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using Sphere10.Framework;
 using Sphere10.Helium.Framework;
 using Sphere10.Helium.Message;
@@ -14,18 +15,18 @@ namespace Sphere10.Helium.Processor {
 	public class LocalQueueOutputProcessor : ILocalQueueOutputProcessor {
 		private readonly IInstantiateHandler _instantiateHandler;
 		private readonly IHeliumQueue _localQueue;
+		private readonly LocalQueueSettings _settings;
 
 		// ReSharper disable once NotAccessedField.Local
 		private readonly ILocalQueueInputProcessor _localQueueInput;
 		private readonly ILogger _logger;
-		public IList<IMessage> CurrentMessageList;
 
 		public LocalQueueOutputProcessor(IInstantiateHandler instantiateHandler,
 								   IHeliumQueue localQueue,
 								   ILocalQueueInputProcessor localQueueInput,
 								   ILogger logger) {
 
-			CurrentMessageList = new List<IMessage>();
+			_settings = new LocalQueueSettings();
 			_instantiateHandler = instantiateHandler;
 			_localQueue = localQueue;
 			_localQueueInput = localQueueInput;
@@ -40,45 +41,64 @@ namespace Sphere10.Helium.Processor {
 		public void OnCommittedLocalQueue(object sender) {
 			_logger.Debug($"Inside:{nameof(LocalQueueOutputProcessor)}_{MethodBase.GetCurrentMethod()}");
 
-			ProcessAllMessagesSynchronously();
+			ProcessAllMessagesInQueue();
 		}
 
-		public void ProcessAllMessagesSynchronously() {
+		public void ProcessAllMessagesInQueue() {
 			_logger.Debug($"Inside:{nameof(LocalQueueOutputProcessor)}_{MethodBase.GetCurrentMethod()}");
 
-			CurrentMessageList.Clear();
+			var currentMessageList = new List<IMessage>();
 
 			var messageCount = _localQueue.Count;
 			_logger.Debug($"Total messages in queue before Remove:{messageCount}");
 
 			for (var i = 0; i < messageCount; i++) {
 				var message = _localQueue.RemoveMessage();
-				CurrentMessageList.Add(message);
+				currentMessageList.Add(message);
 			}
 
-			ExtractHandler();
+			ExtractHandler(currentMessageList);
 		}
 
-		public void ExtractHandler() {
+		private void ExtractHandler(List<IMessage> currentMessageList) {
 			_logger.Debug($"Inside:{nameof(LocalQueueOutputProcessor)}_{MethodBase.GetCurrentMethod()}");
 			_logger.Debug($"Total of {_instantiateHandler.PluginAssemblyHandlerList.Count} handlers to check.");
-			
-			var handlerTypeList = _instantiateHandler.PluginAssemblyHandlerList;
 
-			foreach (var message in CurrentMessageList) {
+			if (currentMessageList == null) throw new ArgumentNullException(nameof(currentMessageList));
+			if (_settings.AmountOfProcessingThreads <= 0) throw new ArgumentNullException(nameof(_settings.AmountOfProcessingThreads));
+			var loopCount = Math.Ceiling(d: currentMessageList.Count / (decimal)_settings.AmountOfProcessingThreads);
+
+			for (var i = 0; i < loopCount; i++) {
+				var taskMessageBatch = currentMessageList.Take((int)_settings.AmountOfProcessingThreads);
+				var enumTaskMessageBatch = taskMessageBatch.ToList();
+				currentMessageList = currentMessageList.Except(enumTaskMessageBatch).ToList();
+				
+				var taskArray = new Task[enumTaskMessageBatch.Count];
+				
+				var j = 0;
+				foreach (var taskMessage in enumTaskMessageBatch) {
+					taskArray[j] = Task.Factory.StartNew(() => InitTaskForHandlerList(taskMessage));
+					j++;
+				}
+				
+				Task.WaitAll(taskArray);
+			}
+		}
+
+		private void InitTaskForHandlerList(IMessage message) {
 				_logger.Debug($"Finding Handlers for message={message.GetType()}");
 
+				var handlerTypeList = _instantiateHandler.PluginAssemblyHandlerList;
 				var handlerList = handlerTypeList
 					.Where(x => x.Message.FullName != null && x.Message.FullName.Equals(message.GetType().FullName))
 					.ToList();
 
-				if (handlerList.Count <= 0) continue;
+				if (handlerList.Count <= 0) return;
 
-				InvokeHandler(handlerList, message);
-			}
+				InvokeHandler(message, handlerList);
 		}
 
-		public void InvokeHandler(List<PluginAssemblyHandlerDto> handlerTypeList, IMessage message) {
+		private void InvokeHandler(IMessage message, IReadOnlyCollection<PluginAssemblyHandlerDto> handlerTypeList) {
 			_logger.Debug($"Inside:{nameof(LocalQueueOutputProcessor)}_{MethodBase.GetCurrentMethod()}");
 			_logger.Debug($"Total of {handlerTypeList.Count} Handlers found.");
 

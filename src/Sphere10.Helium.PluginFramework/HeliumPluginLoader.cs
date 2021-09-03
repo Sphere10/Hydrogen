@@ -6,7 +6,6 @@ using System.Reflection;
 using Sphere10.Framework;
 using Sphere10.Helium.Framework;
 using Sphere10.Helium.Handler;
-using Sphere10.Helium.Message;
 
 namespace Sphere10.Helium.PluginFramework
 {

@@ -48,7 +48,7 @@ namespace Sphere10.Helium.Router {
 			Logger.Debug($"Inside:{nameof(Router)}_{MethodBase.GetCurrentMethod()}");
 			Logger.Debug($"Message count={messageList.Count}");
 
-			Guard.Argument(messageList.Count <= _settings.InputBufferLimit, nameof(_settings.InputBufferLimit), $"Seriously sending {_settings.InputBufferLimit} plus messages in one hit? Consider smaller batches!");
+			Guard.Argument(messageList.Count <= _settings.InputMessageCountLimit, nameof(_settings.InputMessageCountLimit), $"Seriously sending {_settings.InputMessageCountLimit} plus messages in one hit? Consider smaller batches!");
 
 			_localQueueInputProcessor.AddMessageListToLocalQueue(messageList);
 

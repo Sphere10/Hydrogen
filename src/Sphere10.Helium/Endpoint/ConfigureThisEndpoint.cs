@@ -1,4 +1,6 @@
-﻿using Sphere10.Helium.Processor;
+﻿using System;
+using Sphere10.Helium.Processor;
+using Sphere10.Helium.Queue;
 
 namespace Sphere10.Helium.Endpoint {
 	public class ConfigureThisEndpoint : IConfigureThisEndpoint{
@@ -13,6 +15,13 @@ namespace Sphere10.Helium.Endpoint {
 		public void SetupEndpoint(EndPointSettings endPointSettings) {
 			if(endPointSettings.FlushLocalQueueOnStartup) _localQueueInputProcessor.FlushLocalQueue();
 			if(endPointSettings.FlushPrivateQueueOnStartup) _privateQueueProcessor.FlushPrivateQueue();
+		}
+
+		public void CheckSettings() {
+			var localQueueSetting = new LocalQueueSettings();
+
+			if (localQueueSetting.InputMessageBatchSize < localQueueSetting.AmountOfProcessingThreads)
+				throw new ArgumentOutOfRangeException(nameof(localQueueSetting.AmountOfProcessingThreads), "AmountOfProcessingThreads CANNOT be bigger than BatchSize? Doesn't make sense.");
 		}
 	}
 }

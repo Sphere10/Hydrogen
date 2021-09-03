@@ -47,22 +47,22 @@ namespace Sphere10.Helium.Processor {
 
 			Guard.Argument(messageList != null, nameof(messageList), "MessageList == null. UNEXPECTED. Catastrophic failure!!!");
 			Guard.Argument(messageList != null && messageList.Count > 0, nameof(messageList), "messageList count <= 0. Lost input messages! BAD.");
-			Guard.Argument(_settings.InputBufferSize > 0, nameof(_settings.InputBufferSize), "messageList buffer <= 0. Catastrophic failure!!!");
+			Guard.Argument(_settings.InputMessageBatchSize > 0, nameof(_settings.InputMessageBatchSize), "messageList buffer <= 0. Catastrophic failure!!!");
 
-			_logger.Debug($"Adding a batch of {_settings.InputBufferSize} messages to the LocalQueue.");
+			_logger.Debug($"Adding a batch of {_settings.InputMessageBatchSize} messages to the LocalQueue.");
 			_logger.Debug($"Total messages in queue before add:{_localQueue.Count}");
 
 			if (messageList == null) throw new ArgumentNullException(nameof(messageList));
-			if (_settings.InputBufferSize <= 0) throw new ArgumentNullException(nameof(_settings.InputBufferSize));
-			var loopCount = Math.Ceiling(d: messageList.Count / (decimal)_settings.InputBufferSize);
+			if (_settings.InputMessageBatchSize <= 0) throw new ArgumentNullException(nameof(_settings.InputMessageBatchSize));
+			var loopCount = Math.Ceiling(d: messageList.Count / (decimal)_settings.InputMessageBatchSize);
 
 			for (var i = 0; i < loopCount; i++) {
-				var messageBatch = messageList.Take(_settings.InputBufferSize);
-				var enumerable = messageBatch.ToList();
+				var messageBatch = messageList.Take(_settings.InputMessageBatchSize);
+				var enumMessageBatch = messageBatch.ToList();
 
-				messageList = messageList.Except(enumerable).ToList();
+				messageList = messageList.Except(enumMessageBatch).ToList();
 
-				AddMessageBatchToLocalQueue(enumerable);
+				AddMessageBatchToLocalQueue(enumMessageBatch);
 			}
 		}
 

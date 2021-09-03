@@ -34,6 +34,7 @@ namespace Sphere10.Helium.Framework {
 
 			var configureThisEndpoint = ComponentRegistry.Instance.Resolve<IConfigureThisEndpoint>();
 			configureThisEndpoint.SetupEndpoint(endPointSettings);
+			configureThisEndpoint.CheckSettings();
 		}
 
 		public void LoadHandlerTypes(IList<PluginAssemblyHandlerDto> handlerTypeList) {

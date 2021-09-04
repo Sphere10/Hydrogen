@@ -1,11 +1,13 @@
 ﻿using Sphere10.Framework;
 using Sphere10.Framework.Application;
+using Sphere10.Helium.Bus;
 using Sphere10.Helium.Framework;
 using Sphere10.Helium.HeliumNode;
 using Sphere10.Helium.Processor;
 using Sphere10.Helium.Queue;
 using Sphere10.Helium.Retry;
 using Sphere10.Helium.Router;
+using Sphere10.Helium.Timeout;
 
 namespace Sphere10.Helium {
 	public class ModuleConfiguration : ModuleConfigurationBase {
@@ -46,6 +48,21 @@ namespace Sphere10.Helium {
 					container => new PrivateQueueInputProcessor(
 						container.Resolve<ILogger>("ConsoleLogger")));
 			#endregion
+
+			if (!registry.HasImplementationFor<ITimeoutManager>())
+				registry.RegisterComponentFactory<ITimeoutManager>(
+					_ => new TimeoutManager());
+
+			if (!registry.HasImplementationFor<IBus>())
+				registry.RegisterComponentFactory<IBus>(
+					container => new Bus.Bus(
+						container.Resolve<ILocalQueueInputProcessor>(),
+						container.Resolve<ITimeoutManager>()));
+
+			if (!registry.HasImplementationFor<Handler.Handler>())
+				registry.RegisterComponentInstance(container => new Handler.Handler(
+					container.Resolve<IBus>()
+					));
 
 			if (!registry.HasImplementationFor<IRouter>())
 				registry.RegisterComponentFactory<IRouter>(

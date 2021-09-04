@@ -1,8 +1,6 @@
 ﻿using System;
 using Sphere10.Helium.Configuration;
 using Sphere10.Helium.Message;
-using Sphere10.Helium.Processor;
-using Sphere10.Helium.Queue;
 
 namespace Sphere10.Helium.Timeout
 {
@@ -10,11 +8,12 @@ namespace Sphere10.Helium.Timeout
     {
         string ITimeoutManager.TimeoutMessageId { get; set; } = Global.TimeoutMessageId;
         
-        private readonly ILocalQueueOutputProcessor _queueOutputManager;
+        //private readonly ILocalQueueOutputProcessor _queueOutputManager;
         
-        public TimeoutManager(ILocalQueueOutputProcessor queueOutputManager)
+        public TimeoutManager()
         {
-            _queueOutputManager = queueOutputManager;
+			/*ILocalQueueOutputProcessor queueOutputManager*/
+            //_queueOutputManager = queueOutputManager;
         }
         
 		public void PutTimeoutMessageInQueue(ITimeout message) {

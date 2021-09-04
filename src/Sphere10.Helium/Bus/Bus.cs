@@ -5,14 +5,15 @@ using Sphere10.Helium.Timeout;
 
 namespace Sphere10.Helium.Bus {
 	public class Bus : IBus {
-		private readonly IMessageHeader _messageHeader;
+		//private readonly IMessageHeader _messageHeader;
 		private readonly ITimeoutManager _timeoutManagerManager;
-		private readonly ILocalQueueOutputProcessor _queueOutputManager;
+		private readonly ILocalQueueInputProcessor _localQueueInputProcessor;
 
-		public Bus(ILocalQueueOutputProcessor queueOutputManager, IMessageHeader messageHeader, ITimeoutManager timeoutManagerManager) {
-			_messageHeader = messageHeader;
+		public Bus(ILocalQueueInputProcessor localQueueInputProcessor, ITimeoutManager timeoutManagerManager) {
+			/*IMessageHeader messageHeader,*/
+			//_messageHeader = messageHeader;
 			_timeoutManagerManager = timeoutManagerManager;
-			_queueOutputManager = queueOutputManager;
+			_localQueueInputProcessor = localQueueInputProcessor;
 		}
 
 		public ICallback SendLocal(IMessage message) {
@@ -35,21 +36,15 @@ namespace Sphere10.Helium.Bus {
 			throw new NotImplementedException();
 		}
 
-		public void Return<Tk>(Tk errorEnum) {
-			throw new NotImplementedException();
-		}
-
 		public void SendAndForget(string destination, IMessage message) {
-			var headerMessage = _messageHeader.AddHeadersToMessage(message);
+			//var headerMessage = _messageHeader.AddHeadersToMessage(message);
 
-			//_queueOutputManager.FirstIn(destination, headerMessage);
+			//_localQueueInputProcessor.FirstIn(destination, headerMessage);
+
+			throw new NotImplementedException();
 		}
 
 		public void SendAndForget(string destination, IMessage message, IMessageHeader messageHeader) {
-			throw new NotImplementedException();
-		}
-
-		public ICallback SendAndResponse(string destination, IMessage message) {
 			throw new NotImplementedException();
 		}
 

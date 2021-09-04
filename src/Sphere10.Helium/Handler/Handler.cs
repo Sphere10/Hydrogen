@@ -7,5 +7,7 @@ namespace Sphere10.Helium.Handler {
 		public Handler(IBus bus) {
 			Bus = bus;
 		}
+		protected Handler() {
+		}
 	}
 }

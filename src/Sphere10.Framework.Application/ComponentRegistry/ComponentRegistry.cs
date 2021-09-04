@@ -124,6 +124,14 @@ namespace Sphere10.Framework.Application {
             }
         }
 
+        public void RegisterComponentInstance<TInterface>(Func<ComponentRegistry, TInterface> factory, string resolveKey = null)
+	        where TInterface : class {
+	        lock (_threadLock) {
+		        _tinyIoCContainer.Register(typeof(TInterface), (container, overloads) => factory(this), resolveKey);
+		        RegisterInternal(Registration.FromFactory(typeof(TInterface), resolveKey));
+	        }
+        }
+
         public void RegisterComponent<TInterface, TImplementation>(ActivationType activation)
             where TInterface : class
             where TImplementation : class, TInterface {

@@ -5,9 +5,8 @@ namespace Sphere10.Helium.Bus {
 	public class BusSetup {
 		public IBus Create(BusConfigurationSettings endpointConfigurationDto) {
 			if (endpointConfigurationDto.EndpointType == EnumEndpointType.SendAndForget) {
-				ISendOnlyBus sendOnlyBus = new SendOnlyBus(null, null);
 
-				return sendOnlyBus as IBus;
+				return null;
 			}
 
 			if (endpointConfigurationDto.EndpointType == EnumEndpointType.SendAndResponse) {
@@ -15,15 +14,12 @@ namespace Sphere10.Helium.Bus {
 					throw new ArgumentNullException(endpointConfigurationDto.SourceEndpointName.GetType().FullName,
 						"Cannot proceed! Need a return address for the Response.");
 
-				ISendOnlyBus sendOnlyBus = new SendOnlyBus(null, null);
-
-				return sendOnlyBus as IBus;
+				return null;
 			}
 
 			if (endpointConfigurationDto.EndpointType == EnumEndpointType.PublishAndSubscribe) {
-				IBus bus = new Bus(null, null, null);
 
-				return bus;
+				return null;
 			}
 
 			throw new ArgumentOutOfRangeException(endpointConfigurationDto.SourceEndpointName.GetType().FullName,

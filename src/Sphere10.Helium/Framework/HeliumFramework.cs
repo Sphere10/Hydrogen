@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Sphere10.Framework;
 using Sphere10.Framework.Application;
-using Sphere10.Helium.Endpoint;
+using Sphere10.Helium.HeliumNode;
 using Sphere10.Helium.Processor;
 using Sphere10.Helium.Router;
 
@@ -20,7 +20,7 @@ namespace Sphere10.Helium.Framework {
 		public IRouter Router { get; set; }
 		public ILogger Logger { get; set; }
 
-		public void StartHeliumFramework(EndPointSettings endPointSettings) {
+		public void StartHeliumFramework(HeliumNodeSettings endPointSettings) {
 			Sphere10Framework.Instance.StartFramework();
 			
 			if (Logger == null) throw new ArgumentNullException($"Logger", "HeliumFramework CANNOT start without a logger.");
@@ -32,7 +32,7 @@ namespace Sphere10.Helium.Framework {
 			_instantiateHandler = ComponentRegistry.Instance.Resolve<IInstantiateHandler>();
 			ComponentRegistry.Instance.Resolve<ILocalQueueOutputProcessor>();
 
-			var configureThisEndpoint = ComponentRegistry.Instance.Resolve<IConfigureThisEndpoint>();
+			var configureThisEndpoint = ComponentRegistry.Instance.Resolve<IConfigureHeliumNode>();
 			configureThisEndpoint.SetupEndpoint(endPointSettings);
 			configureThisEndpoint.CheckSettings();
 		}

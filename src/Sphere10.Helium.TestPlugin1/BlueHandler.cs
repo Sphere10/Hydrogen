@@ -4,7 +4,7 @@ using Sphere10.Helium.Handler;
 using Sphere10.Helium.Message;
 
 namespace Sphere10.Helium.TestPlugin1 {
-	public class BlueHandler : IHandleMessage<BlueHandlerMessage> {
+	public class BlueHandler : Handler.Handler, IHandleMessage<BlueHandlerMessage> {
 		private readonly IBlueBat _blueBat;
 		private readonly IGreenBat _greenBat;
 

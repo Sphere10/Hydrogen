@@ -1,7 +1,7 @@
 ﻿using Sphere10.Framework;
 using Sphere10.Framework.Application;
-using Sphere10.Helium.Endpoint;
 using Sphere10.Helium.Framework;
+using Sphere10.Helium.HeliumNode;
 using Sphere10.Helium.Processor;
 using Sphere10.Helium.Queue;
 using Sphere10.Helium.Retry;
@@ -55,9 +55,9 @@ namespace Sphere10.Helium {
 			if (!registry.HasImplementationFor<IRetryManager>())
 				registry.RegisterComponent<IRetryManager, RetryManager>(ActivationType.Singleton);
 
-			if (!registry.HasImplementationFor<IConfigureThisEndpoint>())
-				registry.RegisterComponentFactory<IConfigureThisEndpoint>(
-					container => new ConfigureThisEndpoint(
+			if (!registry.HasImplementationFor<IConfigureHeliumNode>())
+				registry.RegisterComponentFactory<IConfigureHeliumNode>(
+					container => new ConfigureHeliumNode(
 						container.Resolve<ILocalQueueInputProcessor>(),
 						container.Resolve<IPrivateQueueInputProcessor>()));
 

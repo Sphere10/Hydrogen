@@ -1,5 +1,5 @@
 ﻿using System;
-using Sphere10.Helium.Endpoint;
+using Sphere10.Helium.HeliumNode;
 
 namespace Sphere10.Helium.Bus {
 	public class BusSetup {

@@ -15,6 +15,12 @@
     <Reference Include="Sphere10.Helium.TestPlugin1">
       <HintPath>..\Sphere10.Helium.TestPlugin1\bin\Debug\net5.0\Sphere10.Helium.TestPlugin1.dll</HintPath>
     </Reference>
+    <Reference Include="Sphere10.Helium.TestPlugin2">
+      <HintPath>..\Sphere10.Helium.TestPlugin2\bin\Debug\net5.0\Sphere10.Helium.TestPlugin2.dll</HintPath>
+    </Reference>
+    <Reference Include="Sphere10.Helium.TestPlugin3">
+      <HintPath>..\Sphere10.Helium.TestPlugin3\bin\Debug\net5.0\Sphere10.Helium.TestPlugin3.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>

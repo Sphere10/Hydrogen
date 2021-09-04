@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using Sphere10.Framework;
-using Sphere10.Helium.Endpoint;
+using Sphere10.Helium.HeliumNode;
 using Sphere10.Helium.Message;
 
 namespace Sphere10.Helium.Router {

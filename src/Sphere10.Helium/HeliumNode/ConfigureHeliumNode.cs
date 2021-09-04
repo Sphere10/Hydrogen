@@ -2,17 +2,17 @@
 using Sphere10.Helium.Processor;
 using Sphere10.Helium.Queue;
 
-namespace Sphere10.Helium.Endpoint {
-	public class ConfigureThisEndpoint : IConfigureThisEndpoint{
+namespace Sphere10.Helium.HeliumNode {
+	public class ConfigureHeliumNode : IConfigureHeliumNode{
 		private readonly ILocalQueueInputProcessor _localQueueInputProcessor;
 		private readonly IPrivateQueueInputProcessor _privateQueueProcessor;
 
-		public ConfigureThisEndpoint(ILocalQueueInputProcessor localQueueInputProcessor, IPrivateQueueInputProcessor privateQueueProcessor) {
+		public ConfigureHeliumNode(ILocalQueueInputProcessor localQueueInputProcessor, IPrivateQueueInputProcessor privateQueueProcessor) {
 			_localQueueInputProcessor = localQueueInputProcessor;
 			_privateQueueProcessor = privateQueueProcessor;
 		}
 
-		public void SetupEndpoint(EndPointSettings endPointSettings) {
+		public void SetupEndpoint(HeliumNodeSettings endPointSettings) {
 			if(endPointSettings.FlushLocalQueueOnStartup) _localQueueInputProcessor.FlushLocalQueue();
 			if(endPointSettings.FlushPrivateQueueOnStartup) _privateQueueProcessor.FlushPrivateQueue();
 		}

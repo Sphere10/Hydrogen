@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using Sphere10.Framework;
-using Sphere10.Helium.Endpoint;
 using Sphere10.Helium.Framework;
+using Sphere10.Helium.HeliumNode;
 using Sphere10.Helium.Message;
 using Sphere10.Helium.PluginFramework;
 using Sphere10.Helium.Router;
@@ -28,12 +28,12 @@ namespace Sphere10.Helium.Loader {
 	public class Program {
 		private static IRouter _router; //This will be made public when integrated into Sphere10.Framework
 		private static int _messageNumber;
-		private const int MessageCount = 10000;
+		private const int MessageCount = 100;
 
 		public static void Main(string[] args) {
 			var logger = new ConsoleLogger();
 			var pluginsRelativePathArray = GetPluginsToBeLoadedList();
-			var endpointSettings = new EndPointSettings {
+			var endpointSettings = new HeliumNodeSettings {
 				FlushLocalQueueOnStartup = true,
 				FlushPrivateQueueOnStartup = true
 			};

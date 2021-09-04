@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Reflection;
 using Sphere10.Framework;
-using Sphere10.Helium.Endpoint;
+using Sphere10.Helium.HeliumNode;
 using Sphere10.Helium.Message;
 using Sphere10.Helium.Processor;
 using Sphere10.Helium.Queue;

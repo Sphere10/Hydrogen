@@ -104,7 +104,7 @@ namespace Sphere10.Helium.Processor {
 
 			foreach (var handlerType in handlerTypeList) {
 				_logger.Debug($"HandlerInterface to run={handlerType.HandlerInterface}");
-				_logger.Debug($"Handler name={handlerType.HandlerClass.Name}, full-name={handlerType.HandlerClass.FullName}.");
+				_logger.Debug($"HandlerBase name={handlerType.HandlerClass.Name}, full-name={handlerType.HandlerClass.FullName}.");
 
 				var handler = Activator.CreateInstance(handlerType.HandlerClass, null);
 				var parameterTypes = new[] { handlerType.Message };
@@ -115,9 +115,9 @@ namespace Sphere10.Helium.Processor {
 
 				var parameters = new[] { messageFromTypeInstance };
 
-				_logger.Debug("Invoking Handler now...");
+				_logger.Debug("Invoking HandlerBase now...");
 				handleMethod?.Invoke(handler, parameters);
-				_logger.Debug("Hooray! Handler invoked successfully!");
+				_logger.Debug("Hooray! HandlerBase invoked successfully!");
 			}
 		}
 

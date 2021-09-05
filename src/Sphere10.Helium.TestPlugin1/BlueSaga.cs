@@ -1,6 +1,6 @@
 ﻿using System;
 using Sphere10.Helium.Bus;
-using Sphere10.Helium.Handler;
+using Sphere10.Helium.Handle;
 using Sphere10.Helium.Message;
 using Sphere10.Helium.Saga;
 
@@ -11,10 +11,8 @@ namespace Sphere10.Helium.TestPlugin1 {
 		IHandleMessage<BlueSagaWorkflow1>,
 		IHandleMessage<BlueSagaWorkflow2>,
 		IHandleTimeout<BlueSagaWorkflow3> {
-		private readonly IBus _bus;
 
 		public BlueSaga(IBus bus) : base(bus) {
-			_bus = bus;
 		}
 
 		protected override void ConfigureHowToFindSaga(SagaPropertyMapper<BlueSagaData> mapper) {
@@ -25,9 +23,7 @@ namespace Sphere10.Helium.TestPlugin1 {
 
 		public void Handle(BlueSagaStart message) {
 			Data.Id = Guid.NewGuid();
-
-			_bus.SendLocal(message);
-
+			
 			throw new NotImplementedException();
 		}
 

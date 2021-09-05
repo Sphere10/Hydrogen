@@ -59,11 +59,6 @@ namespace Sphere10.Helium {
 						container.Resolve<ILocalQueueInputProcessor>(),
 						container.Resolve<ITimeoutManager>()));
 
-			if (!registry.HasImplementationFor<Handler.Handler>())
-				registry.RegisterComponentInstance(container => new Handler.Handler(
-					container.Resolve<IBus>()
-					));
-
 			if (!registry.HasImplementationFor<IRouter>())
 				registry.RegisterComponentFactory<IRouter>(
 					container => new Router.Router(

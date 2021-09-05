@@ -5,7 +5,7 @@ using System.Linq;
 using System.Reflection;
 using Sphere10.Framework;
 using Sphere10.Helium.Framework;
-using Sphere10.Helium.Handler;
+using Sphere10.Helium.Handle;
 
 namespace Sphere10.Helium.PluginFramework
 {

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Sphere10.Helium.Bus;
-using Sphere10.Helium.Handler;
+using Sphere10.Helium.Handle;
 using Sphere10.Helium.HeliumNode;
 using Sphere10.Helium.Message;
 using Sphere10.Helium.Saga;

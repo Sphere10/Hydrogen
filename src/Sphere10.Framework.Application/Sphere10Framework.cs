@@ -15,6 +15,7 @@ using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
+using System.Reflection;
 
 namespace Sphere10.Framework.Application {
 	public class Sphere10Framework {
@@ -34,7 +35,8 @@ namespace Sphere10.Framework.Application {
         public Sphere10Framework() {
             IsStarted = false;
             _threadLock = new object();
-            ModuleConfigurations = Tools.Values.LazyLoad( () =>
+            PluginConfigurations = new Dictionary<Assembly, IModuleConfiguration>();
+			ModuleConfigurations = Tools.Values.LazyLoad( () =>
 				AppDomain
 					.CurrentDomain
 					.GetNonFrameworkAssemblies()
@@ -46,13 +48,15 @@ namespace Sphere10.Framework.Application {
 					.OrderByDescending(x => x.Priority)
 					.ToArray()
 			);
-		}
+        }
 
 		public static Sphere10Framework Instance { get; }
 
         public bool IsStarted { get; private set; }
 
-        private IFuture<IModuleConfiguration[]> ModuleConfigurations { get; set; }
+        private IFuture<IModuleConfiguration[]> ModuleConfigurations { get; }
+
+		private IDictionary<Assembly, IModuleConfiguration[]> PluginConfigurations { get; }
 
         public void StartFramework() {
             CheckNotStarted();
@@ -94,7 +98,7 @@ namespace Sphere10.Framework.Application {
         public void EndFramework()
             => EndFramework(out _, out _);
 
-         public void EndFramework(out bool abort, out string abortReason) {
+        public void EndFramework(out bool abort, out string abortReason) {
             CheckStarted();
 
             abortReason = string.Empty;
@@ -133,7 +137,30 @@ namespace Sphere10.Framework.Application {
             IsStarted = false;
         }
 
-        public void RegisterAppConfig(string configSectionName = "ComponentRegistry") {
+        public void LoadPluginAssembly(Assembly assembly) {
+	        var pluginModuleConfigurations = assembly
+		        .GetTypes()
+		        .Where(t => t.IsClass && !t.IsAbstract && typeof(IModuleConfiguration).IsAssignableFrom(t))
+		        .Select(TypeActivator.Create)
+		        .Cast<IModuleConfiguration>()
+		        .OrderByDescending(x => x.Priority)
+		        .ToArray();
+
+	        pluginModuleConfigurations.Update(mconf => mconf.RegisterComponents(ComponentRegistry.Instance));
+			pluginModuleConfigurations.Update(mconf => Tools.Exceptions.ExecuteIgnoringException(mconf.OnInitialize));
+			PluginConfigurations.Add(assembly, pluginModuleConfigurations);
+		}
+
+        public void UnloadPluginAssembly(Assembly assembly) {
+	        if (!PluginConfigurations.TryGetValue(assembly, out var pluginModuleConfigurations))
+		        throw new SoftwareException($"Plugin '{assembly.FullName} was not loaded");
+
+	        pluginModuleConfigurations.Update(mconf => mconf.OnFinalize());
+			pluginModuleConfigurations.Update(mconf => mconf.DeregisterComponents(ComponentRegistry.Instance));
+        }
+
+
+		public void RegisterAppConfig(string configSectionName = "ComponentRegistry") {
             CheckNotStarted();
 
             if (_registeredConfig)

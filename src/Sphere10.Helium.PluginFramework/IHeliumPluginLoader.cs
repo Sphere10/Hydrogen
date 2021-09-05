@@ -7,10 +7,15 @@ namespace Sphere10.Helium.PluginFramework {
 
 	    public IHeliumFramework GetHeliumFramework();
 
-	    public void LoadPlugins(string[] relativeAssemblyPathList);
-	    
-	    public void EnablePlugin(string[] relativePathList);
-	    public void DisablePlugin(string[] relativePathList);
+	    public PluginAssemblyHandlerDto[] LoadPlugins(string[] relativeAssemblyPathList);
+
+	    public void EnablePlugin(string relativePath) => EnablePlugins(new[] { relativePath });
+
+		public void EnablePlugins(string[] relativePathList);
+
+		public void DisablePlugin(string relativePath) => DisablePlugins(new[] { relativePath });
+
+		public void DisablePlugins(string[] relativePathList);
 	    
 	    public void DisableAllPlugins();
 	    public void EnableAllPlugins();

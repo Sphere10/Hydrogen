@@ -1,10 +1,12 @@
 ﻿using System;
 using System.IO;
+using Sphere10.Framework.Application;
 using Sphere10.Helium.Bus;
 using Sphere10.Helium.Handle;
 using Sphere10.Helium.Message;
 
 namespace Sphere10.Helium.TestPlugin1 {
+
 	public class BlueHandler : HandlerBase, IHandleMessage<BlueHandlerMessage> {
 		private readonly IBlueBat _blueBat;
 		private readonly IGreenBat _greenBat;

@@ -48,6 +48,9 @@ namespace Sphere10.Framework {
 			}
 		}
 
+		public static bool IsDescendantOfType(this Type type, Type ancestor)
+			=> type.GetAncestorTypes().Contains(ancestor);
+
 		public static bool HasSubType(this Type type, Type otherType) => otherType.IsAssignableFrom(type);
 
 		public static Type GetInterface(this Type type, string name) {

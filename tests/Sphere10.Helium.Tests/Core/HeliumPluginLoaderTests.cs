@@ -63,7 +63,7 @@ namespace Sphere10.Helium.Tests.Core
         [Test]
         public void DisablePlugin()
         {
-            _heliumPluginLoader.DisablePlugin(new[] { TestPlugin2 });
+            _heliumPluginLoader.DisablePlugins(new[] { TestPlugin2 });
 
             Debug.Assert(GetAmountOfEnabledPlugins() == _totalAmountOfPluginsAtStartUp - 1);
         }
@@ -71,7 +71,7 @@ namespace Sphere10.Helium.Tests.Core
         [Test]
         public void EnablePlugin()
         {
-            _heliumPluginLoader.EnablePlugin(new[] { TestPlugin2 });
+            _heliumPluginLoader.EnablePlugins(new[] { TestPlugin2 });
 
             Debug.Assert(GetAmountOfEnabledPlugins() == _totalAmountOfPluginsAtStartUp);
         }

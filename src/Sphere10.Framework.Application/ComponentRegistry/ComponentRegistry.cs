@@ -13,6 +13,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.Linq;
 using System.Xml.Serialization;
 using Sphere10.Framework;
@@ -124,14 +125,6 @@ namespace Sphere10.Framework.Application {
             }
         }
 
-        public void RegisterComponentInstance<TInterface>(Func<ComponentRegistry, TInterface> factory, string resolveKey = null)
-	        where TInterface : class {
-	        lock (_threadLock) {
-		        _tinyIoCContainer.Register(typeof(TInterface), (container, overloads) => factory(this), resolveKey);
-		        RegisterInternal(Registration.FromFactory(typeof(TInterface), resolveKey));
-	        }
-        }
-
         public void RegisterComponent<TInterface, TImplementation>(ActivationType activation)
             where TInterface : class
             where TImplementation : class, TInterface {
@@ -211,12 +204,26 @@ namespace Sphere10.Framework.Application {
             }
         }
 
-        public void RegisterComponentFactory<TInterface>(Func<ComponentRegistry, TInterface> factory, string resolveKey = null) {
-            _tinyIoCContainer.Register(typeof(TInterface), (container, overloads) => factory(this), resolveKey);
-            RegisterInternal(Registration.FromFactory(typeof(TInterface), resolveKey));
+        public void RegisterComponentFactory<TInterface>(Func<ComponentRegistry, TInterface> factory, ActivationType activation = ActivationType.Instance, string resolveKey = null) where TInterface : class {
+	        lock (_threadLock) {
+		        var options = _tinyIoCContainer.Register(typeof(TInterface), (container, overloads) => factory(this), resolveKey);
+		        switch (activation) {
+			        case ActivationType.Instance:
+				        options.AsMultiInstance();
+				        break;
+			        case ActivationType.Singleton:
+				        options.AsSingleton();
+						break;
+			        case ActivationType.PerRequest:
+				        throw new NotSupportedException(ActivationType.PerRequest.ToString());
+			        default:
+				        throw new ArgumentOutOfRangeException(nameof(activation), activation, null);
+		        }
+		        RegisterInternal(Registration.FromFactory(typeof(TInterface), resolveKey));
+	        }
         }
 
-        public TInterface Resolve<TInterface>(string resolveKey = null) where TInterface : class {
+		public TInterface Resolve<TInterface>(string resolveKey = null) where TInterface : class {
             var resolvedImplementation = _tinyIoCContainer.Resolve<TInterface>(resolveKey );
             //if (!TryResolve(out resolvedImplementation, name)) {
             //    throw new SoftwareException(

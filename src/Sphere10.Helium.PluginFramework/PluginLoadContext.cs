@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.Loader;
+using Sphere10.Framework.Application;
 
 namespace Sphere10.Helium.PluginFramework
 {
@@ -28,7 +29,9 @@ namespace Sphere10.Helium.PluginFramework
 
             var assemblyPath = _resolver.ResolveAssemblyToPath(assemblyName);
             
-            return assemblyPath != null ? LoadFromAssemblyPath(assemblyPath) : base.Load(assemblyName);
+            var assembly = assemblyPath != null ? LoadFromAssemblyPath(assemblyPath) : base.Load(assemblyName);
+            Sphere10Framework.Instance.LoadPluginAssembly(assembly);  // this ensures module configurations are executed
+            return assembly;
         }
 
         protected override IntPtr LoadUnmanagedDll(string unmanagedDllName)
@@ -37,5 +40,6 @@ namespace Sphere10.Helium.PluginFramework
 
             return libraryPath != null ? LoadUnmanagedDllFromPath(libraryPath) : IntPtr.Zero;
         }
+
     }
 }

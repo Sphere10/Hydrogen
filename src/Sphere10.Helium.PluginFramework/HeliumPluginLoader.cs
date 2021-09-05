@@ -28,7 +28,7 @@ namespace Sphere10.Helium.PluginFramework
 			return heliumFrameworkInstance;
         }
 
-        public void LoadPlugins(string[] relativeAssemblyPathList)
+        public PluginAssemblyHandlerDto[] LoadPlugins(string[] relativeAssemblyPathList)
         {
 			_logger.Debug("Loading plugins and all associated Handlers.");
             foreach (var path in relativeAssemblyPathList)
@@ -42,9 +42,10 @@ namespace Sphere10.Helium.PluginFramework
             var totalHandlersLoaded = PluginAssemblyHandlerList.Count;
 			_logger.Debug("Loading Complete.");
             _logger.Debug($"Total Plugins loaded = {totalPluginsLoaded.Length}, Total Handlers loaded = {totalHandlersLoaded}");
-		}
+            return PluginAssemblyHandlerList.ToArray();
+        }
 
-        public void EnablePlugin(string[] relativePathList)
+        public void EnablePlugins(string[] relativePathList)
         {
             if (relativePathList == null || relativePathList.Length == 0)
                 return;
@@ -58,7 +59,7 @@ namespace Sphere10.Helium.PluginFramework
                 item.assemblyHandler.IsEnabled = true;
         }
 
-        public void DisablePlugin(string[] relativePathList)
+        public void DisablePlugins(string[] relativePathList)
         {
             if (relativePathList == null || relativePathList.Length == 0)
                 return;

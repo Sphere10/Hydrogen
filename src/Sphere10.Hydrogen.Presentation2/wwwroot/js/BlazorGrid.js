@@ -10,6 +10,9 @@ var MinimumColumWidth = 10;
 var TableId = "";
 //var Table = null;
 var CSharpInstance = null;
+
+var ColumnWidths = null;
+
 function ResizableColumnTable(id, csharpInstance)
 {
     TableId = id;
@@ -22,9 +25,24 @@ function ResizableColumnTable(id, csharpInstance)
 }
 
 function ResizableTable(table) {
+
+
+console.log("ResizableTable");
+
     var row = table.getElementsByTagName('tr')[0],
         cols = row ? row.children : undefined;
     if (!cols) return;
+
+
+console.log("Table Columns: " + cols.length.toString());
+
+    ColumnWidths = new Array(cols.length);
+    for (var i = 0; i < cols.length; i++)
+    {
+        ColumnWidths[i] = cols[i].clientWidth;
+    }
+
+console.log(ColumnWidths);
 
     table.style.overflow = 'hidden';
     var headerHeight = $(table).find('thead').height();
@@ -76,19 +94,22 @@ function ResizableTable(table) {
                 var inBetweenColumnsWidth = 0;
                 if (curColIndex > 0) { inBetweenColumnsWidth = table.rows[1].cells[curColIndex - 1].offsetWidth; }
 
-                var newWidth = (mouseX - tableLeft) - inBetweenColumnsWidth;
-
-// why does this help
-newWidth -= 60;
+                newWidth = (mouseX - tableLeft) - inBetweenColumnsWidth;
 
                 if (newWidth < MinimumColumWidth) newWidth = MinimumColumWidth;
 
-console.log("mouseX: " + mouseX + " Table left: " + tableLeft + " inBetweenColumnsWidth: " + inBetweenColumnsWidth + " newWidth: " + newWidth);
+                console.log("mouseX: " + mouseX + " Table left: " + tableLeft + " inBetweenColumnsWidth: " + inBetweenColumnsWidth + " newWidth: " + newWidth);
+
+                // update the current columns width in the global ColumnWidths
+                ColumnWidths[curColIndex] = newWidth;
 
                 // set every row's cell's width
-                for (var i = 0; row = table.rows[i]; i++)
+                for (var row = 0; row < table.rows.length; row++)
                 {
-                    table.rows[i].cells[curColIndex].style.width = newWidth + 'px';
+                    for (var column = 0; column < ColumnWidths.length; column++)
+                    {
+                        table.rows[row].cells[column].style.width = ColumnWidths[column] + 'px';
+                    }
                 }
 
                 curColWidth = newWidth;

@@ -1,9 +1,8 @@
 ﻿using System;
-using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Sphere10.Hydrogen.Presentation2.UI.Controls.BlazorGrid.Classes {
-	public class DataEnd<TInItem, TOutItem> : IDataEnd
+	public class DataEnd<TInItem, TOutItem>
 	{
 		public string Name { get; set; }
 		public Func<object, object> DataExtractor { get; set; }
@@ -16,22 +15,12 @@ namespace Sphere10.Hydrogen.Presentation2.UI.Controls.BlazorGrid.Classes {
 			DataExtractor = dataExtractor;
 		}
 
-//		public RenderFragment Render(RenderTreeBuilder builder)
 		public void Render(object item, RenderTreeBuilder builder)
 		{
-//			var component = Activator.CreateInstance(GridComponent);
-
-//			dynamic data = DataExtractor(item);
-
-//			component.Render(Convert.ChangeType(data, GridComponent), builder);
-
-			dynamic component = (IGridComponent<TOutItem>)Activator.CreateInstance(typeof(TOutItem));
-
-			var data = (TOutItem)DataExtractor(item);
-
-			//var genericType = GridComponent.MakeGenericType(data.GetType());
-
-			component.Render(data, builder);
+			var extractedData = (IColumnDefinition)DataExtractor(item);
+			var componentType = extractedData.GetComponentType();
+			dynamic component = Activator.CreateInstance(componentType);
+			component.Render((TOutItem)extractedData, builder);
 		}
 	}
 }

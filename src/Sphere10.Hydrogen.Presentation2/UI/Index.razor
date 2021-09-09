@@ -113,9 +113,16 @@
                                         PageSize="10"
                                         GridType="BlazorGrid<TestClass>.GridTypes.ActionColumn"
                                         Actions="DataActions"
-                                        Components="Components"
-                                        ColumnDefinitions="ColumnDefinitions"
+                                        ColumnDefinitions="ColumnDefinitions"                                        
+                                        
                                         >
+
+                                @* comments 
+
+
+
+                                *@
+
                             </BlazorGrid>
                         </div>
                     </div>
@@ -278,40 +285,42 @@
     DataSource1<TestClass> DataSource { get; set; }
     List<GridAction<TestClass>> DataActions { get; set; } = new List<GridAction<TestClass>>();
     List<IGridComponent<TestClass>> Components { get; set; } = new List<IGridComponent<TestClass>>();
-    List<IDataEnd> ColumnDefinitions { get; set; } = new List<IDataEnd>();
+    List<object> ColumnDefinitions { get; set; } = new List<object>();
     System.Timers.Timer Timer { get; set; }
 
     protected override void OnInitialized()
     {
         DataSource = new Index.DataSource1<TestClass>();
+
         DataActions.Add(new GridAction<TestClass>("Action1", Action1, "😄", IsAction1Available));
         DataActions.Add(new GridAction<TestClass>("Action2", Action2, "⚽", IsAction2Available));
-        //Components.Add(new Component1Test<string>("TestListId"));
-        //Components.Add(new Component2Test(true));
 
-        //        Components.Add(new Component1Test());
-        //        Components.Add(new Component2Test(true));
+        ColumnDefinitions.Add(new DataEnd<TestClass, TestClass2>("Data End 1", TestDataExtractor1));
+        ColumnDefinitions.Add(new DataEnd<TestClass, TestClass3>("Data End 2", TestDataExtractor2));
 
-        ColumnDefinitions.Add(new DataEnd<TestClass, TestClass2>("Data End 1", TestDataExtractor));
-
-        Timer = new System.Timers.Timer(1000); // 10 seconds
-        Timer.Elapsed += CountDownTimer;
-        Timer.Start();
+//        Timer = new System.Timers.Timer(1000); // 10 seconds
+//        Timer.Elapsed += CountDownTimer;
+//        Timer.Start();
     }
 
-    TestClass2 TestDataExtractor(object data)
+    TestClass2 TestDataExtractor1(object data)
     {
         var useData = (TestClass)data;
 
         // this is a simple example
-        var text = $"Ext: {useData.Name}";
+        var text = $"Test: {useData.Name}";
         var value = (decimal)Math.PI;
         var locked = (new Random()).NextBool();
 
         return new TestClass2(text, value, locked);
     }
 
+    TestClass3 TestDataExtractor2(object data)
+    {
+        var useData = (TestClass)data;
 
+        return new TestClass3(useData.Name);
+    }
 
     TestClass Action1(TestClass item)
     {

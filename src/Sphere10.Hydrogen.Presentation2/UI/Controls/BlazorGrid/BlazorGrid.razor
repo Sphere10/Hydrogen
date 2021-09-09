@@ -6,7 +6,6 @@
 @using System.Reflection;
 @using Sphere10.Framework;
 @using UI.Controls.BlazorGrid.Classes; @*Fix This*@
-@using Sphere10.Hydrogen.Presentation2.UI.Controls.BlazorGrid.Components;
 
 @inject IJSRuntime JSRuntime
 
@@ -37,29 +36,15 @@
                     </th>
                 }
 
-                @foreach (var column in ColumnDefinitions) 
+                @foreach (object column in ColumnDefinitions) 
                 {
                     <th style="width:40px">
-                        @column.Name
+                        @GetColumnName(column)
                         <div class="ResizableClass">
                             <input class="ResizableClass" type="search" />
                         </div>
                     </th>
                 }
-
-                @*<th style="width:40px">
-                    Testing Component 1
-                    <div class="ResizableClass">
-                        <input class="ResizableClass" type="search" />
-                    </div>
-                </th>
-
-                <th style="width:40px">
-                    Testing Component 2
-                    <div class="ResizableClass">
-                        <input class="ResizableClass" type="search" />
-                    </div>
-                </th>*@
 
             </tr>
         </thead>
@@ -93,20 +78,12 @@
                     </td>
                 }
 
-                @foreach (var column in ColumnDefinitions)
+                @foreach (object column in ColumnDefinitions)
                 {
                     <td>
                         @RenderDataEnd((TItem)row[0].Tag, column)
                     </td>
                 }
-
-                @*Test use of Components*@
-                @*<td>
-                    @TestControl(0)
-                </td>
-                <td>
-                    @TestControl(1)
-                </td>*@
 
             </tr>
             }
@@ -214,8 +191,7 @@
     [Parameter] public IDataSource<TItem> DataSource { get; set; }
     [Parameter] public GridTypes GridType { get; set; }
     [Parameter] public List<GridAction<TItem>> Actions { get; set; }
-    [Parameter] public List<IGridComponent<TItem>> Components { get; set; }
-    [Parameter] public List<IDataEnd> ColumnDefinitions { get; set; }
+    [Parameter] public List<object> ColumnDefinitions { get; set; }
 
     List<Cell> Header { get; set; } = new List<Cell>();
     List<List<Cell>> Rows { get; set; } = new List<List<Cell>>();
@@ -324,7 +300,7 @@
     }
 
     // put this into Cell
-    string GetCellText(object cellData, PropertyInfo property) 
+    string GetCellText(object cellData, PropertyInfo property)
     {
         var value = property.GetValue(cellData);
         var typeName = property.PropertyType.Name.ToString();
@@ -399,25 +375,6 @@
         }
     }
 
-    private RenderFragment TestControl(TItem item, int index) => builder =>
-    {
-        if (Random.NextBool())
-        {
-            Components[0].Render(item, builder);
-        }
-        else
-        {
-            Components[1].Render(item, builder);
-        }
-    };
-
-    private RenderFragment RenderDataEnd(TItem item, IDataEnd dataEnd) => builder =>
-    {
-        var component = Activator.CreateInstance(typeof(IDataEnd));
-
-        dataEnd.Render(item, builder);
-    };
-
     void OnTableRowMouseDown()
     {
 
@@ -431,6 +388,20 @@
     void ButtonClick()
     {
         GetPageAndDisplayData();
+    }
+
+    #endregion
+
+    #region Custom Columns
+
+    private RenderFragment RenderDataEnd(TItem item, object dataEndObject) => builder =>
+    {
+        ((dynamic)dataEndObject).Render(item, builder);
+    };
+
+    string GetColumnName(object column)
+    {
+        return ((dynamic)column).Name;
     }
 
     #endregion

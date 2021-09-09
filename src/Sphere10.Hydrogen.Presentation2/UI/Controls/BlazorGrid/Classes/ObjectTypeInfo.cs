@@ -13,7 +13,6 @@ namespace Sphere10.Hydrogen.Presentation2.UI.Controls.BlazorGrid.Classes {
 		public bool IsEnum { get; set; }
 		public List<string> EnumValues { get; set; } = new List<string>();
 
-
 		public ObjectTypeInfo(PropertyInfo propertyInfo) 
 		{
 			try 

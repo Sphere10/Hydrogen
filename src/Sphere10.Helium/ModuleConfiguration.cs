@@ -15,7 +15,7 @@ namespace Sphere10.Helium {
 
 		public override void RegisterComponents(ComponentRegistry registry) {
 			if (!registry.HasImplementationFor<ILogger>())
-				registry.RegisterComponent<ILogger, ConsoleLogger>("ConsoleLogger", ActivationType.Singleton);
+				registry.RegisterComponent<ILogger, ConsoleLogger>(ActivationType.Singleton);
 
 			#region Queues
 			if (!registry.HasImplementationFor<IHeliumQueue>()) {
@@ -30,7 +30,8 @@ namespace Sphere10.Helium {
 				registry.RegisterComponentFactory<ILocalQueueInputProcessor>(
 					container => new LocalQueueInputProcessor(
 						container.Resolve<IHeliumQueue>("LocalQueue"),
-						container.Resolve<ILogger>("ConsoleLogger")),ActivationType.Singleton, "LocalQueueInputProcessor");
+						container.Resolve<ILogger>()),ActivationType.Singleton
+					);
 
 			if (!registry.HasImplementationFor<ILocalQueueOutputProcessor>())
 				registry.RegisterComponentFactory<ILocalQueueOutputProcessor>(
@@ -38,14 +39,15 @@ namespace Sphere10.Helium {
 						container.Resolve<IInstantiateHandler>(),
 						container.Resolve<IHeliumQueue>("LocalQueue"),
 						container.Resolve<ILocalQueueInputProcessor>(),
-						container.Resolve<ILogger>("ConsoleLogger")), ActivationType.Singleton, "LocalQueueOutputProcessor");
+						container.Resolve<ILogger>()), ActivationType.Singleton);
 			#endregion
 
 			#region PrivateQueue Processing
 			if (!registry.HasImplementationFor<IPrivateQueueInputProcessor>())
 				registry.RegisterComponentFactory<IPrivateQueueInputProcessor>(
 					container => new PrivateQueueInputProcessor(
-						container.Resolve<ILogger>("ConsoleLogger")), ActivationType.Singleton, "PrivateQueueInputProcessor"); 
+						container.Resolve<ILogger>()), ActivationType.Singleton
+					); 
 			#endregion
 
 			if (!registry.HasImplementationFor<IInstantiateHandler>())
@@ -53,18 +55,23 @@ namespace Sphere10.Helium {
 
 			if (!registry.HasImplementationFor<ITimeoutManager>())
 				registry.RegisterComponentFactory<ITimeoutManager>(
-					_ => new TimeoutManager(), ActivationType.Singleton, "TimeoutManager");
+					_ => new TimeoutManager(), ActivationType.Singleton
+				);
 
 			if (!registry.HasImplementationFor<IBus>())
 				registry.RegisterComponentFactory<IBus>(
 					container => new Bus.Bus(
 						container.Resolve<ILocalQueueInputProcessor>(),
-						container.Resolve<ITimeoutManager>()), ActivationType.Singleton, "Bus");
+						container.Resolve<ITimeoutManager>()), ActivationType.Singleton
+					);
 
 			if (!registry.HasImplementationFor<IRouter>())
 				registry.RegisterComponentFactory<IRouter>(
 					container => new Router.Router(
-						container.Resolve<ILocalQueueInputProcessor>()), ActivationType.Singleton, "Router");
+						container.Resolve<ILocalQueueInputProcessor>()
+					),
+					ActivationType.Singleton
+				);
 			
 			if (!registry.HasImplementationFor<IRetryManager>())
 				registry.RegisterComponent<IRetryManager, RetryManager>(ActivationType.Singleton);
@@ -73,7 +80,8 @@ namespace Sphere10.Helium {
 				registry.RegisterComponentFactory<IConfigureHeliumEndpoint>(
 					container => new ConfigureHeliumEndpoint(
 						container.Resolve<ILocalQueueInputProcessor>(),
-						container.Resolve<IPrivateQueueInputProcessor>()), ActivationType.Singleton, "ConfigureHeliumEndpoint");
+						container.Resolve<IPrivateQueueInputProcessor>()), ActivationType.Singleton
+					);
 
 			#region Forking folders for queues
 			registry.RegisterInitializationTask<SetupFoldersInitTask>();

@@ -1,3 +1,6 @@
+using System;
+using System.IO;
+
 namespace Sphere10.Framework.Application {
 	public class ApplicationTokenResolver : ITokenResolver {
 
@@ -5,6 +8,8 @@ namespace Sphere10.Framework.Application {
 
 		public string TryResolve(string token) {
 			return token.ToUpperInvariant() switch {
+				"USERDATADIR" => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)), 
+				"SYSTEMDATADIR" => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData)),
 				"COMPANYNAME" => _productInfoServices.Value.ProductInformation.CompanyName,
 				"COMPANYNUMBER" => _productInfoServices.Value.ProductInformation.CompanyNumber,
 				"PRODUCTNAME" => _productInfoServices.Value.ProductInformation.ProductName,

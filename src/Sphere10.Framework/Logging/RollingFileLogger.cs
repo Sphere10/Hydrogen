@@ -26,7 +26,7 @@ namespace Sphere10.Framework {
 		private FileAppendTextWriter _textWriter;
 		private FileInfo _currentFile;
 		private int _currentFileSizeBytes;
-		
+
 		/// <summary>
 		/// It is necessary to have an encoding specified so that the number of bytes a message will require can be calculated to maintain
 		/// a max file size.
@@ -40,15 +40,18 @@ namespace Sphere10.Framework {
 		/// <param name="logFileNameTemplate">Template log filename used to generate log files (include # for number sequence).</param>
 		/// <param name="maxFiles">Maximum number of files to keep in the directory. As new log files are created, older ones are deleted.</param>
 		/// <param name="maxFileSize">The maximum byte-size of a log-file before further logging is rolled-over into a new log-file.</param>
+		/// <param name="createDirectoryIfMissing">Creates the <param name="directoryPath"></param> if it doesn't exist</param>
 		/// <remarks>A <paramref name="logFileNameTemplate"/> parameter value of "ImageStudio_####.log" would result in log-files with paths "%Directory%/ImageStudio_0001.log", "%Directory%/ImageStudio_0002.log", etc</remarks>
-		public RollingFileLogger(string directoryPath, string logFileNameTemplate, int maxFiles, int maxFileSize) {
+		public RollingFileLogger(string directoryPath, string logFileNameTemplate, int maxFiles, int maxFileSize, bool createDirectoryIfMissing = false) {
 			Guard.Argument(Tools.FileSystem.IsWellFormedDirectoryPath(directoryPath), nameof(directoryPath), "Directory path is not well formed.");
-			Guard.Argument(Directory.Exists(directoryPath), directoryPath, "Directory does not exist.");
 			Guard.ArgumentInRange(maxFiles, 1, 9999, nameof(maxFiles));
 			Guard.ArgumentInRange(maxFileSize, 1, int.MaxValue, nameof(maxFileSize));
-			
 			Guard.ArgumentNotNullOrEmpty(logFileNameTemplate, nameof(logFileNameTemplate));
 			Guard.Argument(Tools.FileSystem.IsWellFormedFileName(logFileNameTemplate), logFileNameTemplate, "Log file name template contains invalid characters.");
+			var directoryPathExists = Directory.Exists(directoryPath);
+			Guard.Argument(createDirectoryIfMissing || directoryPathExists, directoryPath, "Directory does not exist.");
+			if (!directoryPathExists)
+				Directory.CreateDirectory(directoryPath);
 
 			DirectoryPath = directoryPath;
 			LogFileNameTemplate = logFileNameTemplate;
@@ -85,7 +88,7 @@ namespace Sphere10.Framework {
 		/// <inheritdoc />
 		protected override void Log(LogLevel logLevel, string message) {
 			Guard.ArgumentNotNull(message, nameof(message));
-			
+
 			if (TextEncoding.GetByteCount(message) > MaxFileSize)
 				throw new InvalidOperationException("Log message is larger than MaxFileSize, splitting message over multiple files is not supported.");
 
@@ -100,18 +103,18 @@ namespace Sphere10.Framework {
 			Guard.ArgumentNotNull(message, nameof(message));
 			message += Environment.NewLine;
 			var bytesRequired = TextEncoding.GetByteCount(message);
-			
-			if (_currentFile is null 
-			    || !_currentFile.Exists 
-			    || _currentFileSizeBytes + bytesRequired > MaxFileSize) {
-				
+
+			if (_currentFile is null
+				|| !_currentFile.Exists
+				|| _currentFileSizeBytes + bytesRequired > MaxFileSize) {
+
 				_textWriter?.Close();
 				var logfile = GetNewLogFileInfo();
 				_textWriter = new FileAppendTextWriter(logfile.FullName, TextEncoding, true);
 				_currentFile = logfile;
 				_currentFileSizeBytes = 0;
 			}
-			
+
 			_textWriter.Write(message);
 			_textWriter.Flush();
 			_currentFileSizeBytes += bytesRequired;
@@ -141,7 +144,7 @@ namespace Sphere10.Framework {
 			var fileName = GetLogFileName(newFileNumber);
 			return new FileInfo(Path.Combine(DirectoryPath, fileName));
 		}
-		
+
 		/// <summary>
 		/// For use when searching the directory for log files, creates the search pattern which is the log file name template, excluding
 		/// log file sequence number component, and the extension. 

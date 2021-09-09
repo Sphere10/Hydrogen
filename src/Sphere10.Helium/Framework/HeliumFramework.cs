@@ -32,7 +32,7 @@ namespace Sphere10.Helium.Framework {
 			_instantiateHandler = ComponentRegistry.Instance.Resolve<IInstantiateHandler>();
 			ComponentRegistry.Instance.Resolve<ILocalQueueOutputProcessor>();
 
-			var configureThisEndpoint = ComponentRegistry.Instance.Resolve<IConfigureHeliumNode>();
+			var configureThisEndpoint = ComponentRegistry.Instance.Resolve<IConfigureHeliumEndpoint>();
 			configureThisEndpoint.SetupEndpoint(endPointSettings);
 			configureThisEndpoint.CheckSettings();
 		}

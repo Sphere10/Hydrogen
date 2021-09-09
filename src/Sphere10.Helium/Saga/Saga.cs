@@ -14,10 +14,6 @@ namespace Sphere10.Helium.Saga {
 
 		public IBus Bus { get; }
 
-		public void Foo() {
-			throw new NotImplementedException();
-		}
-
 		public bool Completed { get; private set; }
 
 		protected internal abstract void ConfigureHowToFindSaga(IFindSaga sagaFindMap);

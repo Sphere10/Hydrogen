@@ -8,6 +8,5 @@ namespace Sphere10.Helium.Handle {
 		}
 
 		public IBus Bus { get; }
-		
 	}
 }

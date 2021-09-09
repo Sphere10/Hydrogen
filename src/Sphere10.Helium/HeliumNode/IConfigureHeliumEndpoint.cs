@@ -1,5 +1,5 @@
 ﻿namespace Sphere10.Helium.HeliumNode {
-	public interface IConfigureHeliumNode {
+	public interface IConfigureHeliumEndpoint {
 		public void SetupEndpoint(HeliumNodeSettings endPointSettings);
 		public void CheckSettings();
 	}

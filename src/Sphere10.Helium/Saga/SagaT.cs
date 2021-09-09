@@ -5,7 +5,7 @@ namespace Sphere10.Helium.Saga {
 
 		public T Data {
 			get => (T)SagaDataBase;
-			set => SagaDataBase = (ISagaData)value;
+			set => SagaDataBase = value;
 		}
 
 		protected Saga(IBus bus) : base(bus) {

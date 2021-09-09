@@ -2,6 +2,6 @@
 
 namespace Sphere10.Helium.Bus {
 	public interface INeedInitialization {
-		void Customize(IConfigureHeliumNode configuration);
+		void Customize(IConfigureHeliumEndpoint configuration);
 	}
 }

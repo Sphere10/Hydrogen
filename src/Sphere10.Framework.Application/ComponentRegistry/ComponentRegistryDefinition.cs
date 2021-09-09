@@ -71,8 +71,8 @@ namespace Sphere10.Framework.Application {
                 set { Activation = value != null ? (ActivationType?) Enum.Parse(typeof(ActivationType), value, true) : null; }
             }
 
-            [XmlAttribute("resolveKey")]
-            public string ResolveKey { get; set; }
+            [XmlAttribute("name")]
+            public string Name { get; set; }
         }
 
         public class ProxyInterfaceRegistrationDefinition : RegistrationDefinition {

@@ -74,19 +74,17 @@ namespace Sphere10.Framework.Application {
 
 			// Register settings provider last
 			if (!registry.HasImplementationFor<ISettingsProvider>("UserSettings")) {
-				var productInfo = registry.Resolve<IProductInformationServices>();
 				registry.RegisterComponentInstance<ISettingsProvider>(
 					new CachedSettingsProvider(
-						new DirectorySettingsProvider(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), productInfo.ProductInformation.ProductName))
+						new DirectorySettingsProvider(Path.Combine(Tools.Text.FormatEx("{UserDataDir}"), Tools.Text.FormatEx("{ProductName}")))
 					), "UserSettings"
 				);
 			}
 
 			if (!registry.HasImplementationFor<ISettingsProvider>("SystemSettings")) {
-				var productInfo = registry.Resolve<IProductInformationServices>();
 				registry.RegisterComponentInstance<ISettingsProvider>(
 					new CachedSettingsProvider(
-						new DirectorySettingsProvider(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), productInfo.ProductInformation.ProductName))
+						new DirectorySettingsProvider(Path.Combine(Tools.Text.FormatEx("{SystemDataDir}"), Tools.Text.FormatEx("{ProductName}")))
 					), "SystemSettings"
 				);
 			}

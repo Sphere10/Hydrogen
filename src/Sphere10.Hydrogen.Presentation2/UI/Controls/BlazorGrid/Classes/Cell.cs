@@ -16,7 +16,7 @@ namespace Sphere10.Hydrogen.Presentation2.UI.Controls.BlazorGrid.Classes {
 		public bool IsEnum { get; set; }
 
 		public Cell(HeaderData header, RowData row, ObjectTypeInfo typeInfo, string text, object underlyingData, int dataIndex) 
-		{
+		{ 
 			Header = header;
 			Row = row;
 			TypeInfo = typeInfo;
@@ -26,6 +26,25 @@ namespace Sphere10.Hydrogen.Presentation2.UI.Controls.BlazorGrid.Classes {
 			IsEnum = TypeInfo.IsEnum;
 		}
 
+/*
+		public Cell(HeaderData header, RowData row, ObjectTypeInfo typeInfo, PropertyInfo propertyInfo, int dataIndex) 
+			:this(header, row, typeInfo, propertyInfo, header.Name, dataIndex)
+		{
+		}
+
+		public Cell(HeaderData header, RowData row, ObjectTypeInfo typeInfo, PropertyInfo propertyInfo, object underlyingData, int dataIndex)
+		{
+			Header = header;
+			Row = row;
+			TypeInfo = typeInfo;
+			PropertyInfo = propertyInfo;
+			Tag = underlyingData;
+			DataIndex = dataIndex;
+			IsEnum = TypeInfo.IsEnum;
+
+			Text = GetText();
+		}
+*/
 		public string GetInputType() 
 		{
 			switch (TypeInfo.Type.Name.ToLower()) 
@@ -51,17 +70,28 @@ namespace Sphere10.Hydrogen.Presentation2.UI.Controls.BlazorGrid.Classes {
 
 			return string.Empty;
 		}
+/*
+		public string GetText() 
+		{
+			object value;
+			string typeName;
 
-//		public string GetText(object cellData, PropertyInfo property) 
-//		{
-//			var value = property.GetValue(cellData);
-//			var typeName = property.PropertyType.Name.ToString();
-//			switch (typeName) {
-//				case "DateTime": return ((DateTime)value).ToString("yyyy-MM-dd");
-//				default: return value.ToString();
-//			}
-//		}
-
+			try 
+			{
+				value = PropertyInfo.GetValue(Tag);
+				typeName = PropertyInfo.PropertyType.Name.ToString();
+				switch (typeName) 
+				{
+					case "DateTime": return ((DateTime)value).ToString("yyyy-MM-dd");
+					default: return value.ToString();
+				}
+			}
+			catch (Exception ex) 
+			{
+				return "Error";
+			}
+		}
+*/
 		public void UpdateData(string newValue) 
 		{
 			var objectValue = Tools.Parser.Parse(TypeInfo.Type, newValue);

@@ -6,12 +6,11 @@ function AlertWrite(data) {
     alert(data);
 }
 
-var MinimumColumWidth = 10;
+var MinimumColumWidth = 20;
 var TableId = "";
-//var Table = null;
 var CSharpInstance = null;
-
 var ColumnWidths = null;
+var curColIndex, curCol;
 
 function ResizableColumnTable(id, csharpInstance)
 {
@@ -25,24 +24,20 @@ function ResizableColumnTable(id, csharpInstance)
 }
 
 function ResizableTable(table) {
-
-
-console.log("ResizableTable");
+    console.log("ResizableTable");
 
     var row = table.getElementsByTagName('tr')[0],
         cols = row ? row.children : undefined;
     if (!cols) return;
 
-
-console.log("Table Columns: " + cols.length.toString());
+    //console.log("Table Columns: " + cols.length.toString());
 
     ColumnWidths = new Array(cols.length);
-    for (var i = 0; i < cols.length; i++)
-    {
+    for (var i = 0; i < cols.length; i++) {
         ColumnWidths[i] = cols[i].clientWidth;
     }
 
-console.log(ColumnWidths);
+    //console.log(ColumnWidths);
 
     table.style.overflow = 'hidden';
     var headerHeight = $(table).find('thead').height();
@@ -55,25 +50,9 @@ console.log(ColumnWidths);
     }
 
     function setListeners(div) {
-        var pageX, curCol, nxtCol, curColWidth, nxtColWidth;
-        var curColIndex, nextColIndex, newWidth, curColTitle;
-
         div.addEventListener('mousedown', function (e) {
             curCol = e.target.parentElement;
-
-            curColTitle = curCol.childNodes[1].wholeText;
-            nxtCol = curCol.nextElementSibling;
-
             curColIndex = curCol.cellIndex;
-            nextColIndex = curColIndex + 1;
-
-            pageX = e.pageX;
-
-            var padding = paddingDiff(curCol);
-
-            curColWidth = curCol.offsetWidth - padding;
-            if (nxtCol)
-                nxtColWidth = nxtCol.offsetWidth - padding;
         });
 
         div.addEventListener('mouseover', function (e) {
@@ -84,60 +63,48 @@ console.log(ColumnWidths);
             e.target.style.borderRight = '';
         })
 
-        document.addEventListener('mousemove', function (e)
-        {
-            if (curCol)
-            {
+        document.addEventListener('mousemove', function (e) {
+            if (curCol) {
                 var mouseX = e.pageX;
                 var table = document.getElementById(TableId);
                 var tableLeft = table.getBoundingClientRect().left;
                 var inBetweenColumnsWidth = 0;
-                if (curColIndex > 0) { inBetweenColumnsWidth = table.rows[1].cells[curColIndex - 1].offsetWidth; }
 
-                newWidth = (mouseX - tableLeft) - inBetweenColumnsWidth;
+                for (var i = 0; i < curColIndex; i++) {
+                    inBetweenColumnsWidth += ColumnWidths[i];
+                }
+
+                var newWidth = (mouseX - tableLeft) - inBetweenColumnsWidth;
 
                 if (newWidth < MinimumColumWidth) newWidth = MinimumColumWidth;
 
-                console.log("mouseX: " + mouseX + " Table left: " + tableLeft + " inBetweenColumnsWidth: " + inBetweenColumnsWidth + " newWidth: " + newWidth);
+                //console.log("mouseX: " + mouseX + " Table left: " + tableLeft + " inBetweenColumnsWidth: " + inBetweenColumnsWidth + " newWidth: " + newWidth + "curColIndex: " + curColIndex);
 
-                // update the current columns width in the global ColumnWidths
+                // update the current column's width in the global ColumnWidths
                 ColumnWidths[curColIndex] = newWidth;
 
                 // set every row's cell's width
-                for (var row = 0; row < table.rows.length; row++)
-                {
-                    for (var column = 0; column < ColumnWidths.length; column++)
-                    {
+                for (var row = 0; row < table.rows.length; row++) {
+                    for (var column = 0; column < ColumnWidths.length; column++) {
                         table.rows[row].cells[column].style.width = ColumnWidths[column] + 'px';
                     }
                 }
-
-                curColWidth = newWidth;
             }
         });
 
-        document.addEventListener('mouseup', function (e) {
-            if (curColIndex === undefined) return;
-
+        document.addEventListener('mouseup', function (e)
+        {
             // call a static C# function 
             //DotNet.invokeMethodAsync("SystemX", "SaveColumnWidth", curColTitle, newWidth);
 
             // call an instance C# function
             // CSharpInstance.invokeMethodAsync("SaveColumnWidth", curColTitle, newWidth);
-
-            newWidth = undefined;
-            curCol = undefined;
-            nxtCol = undefined;
-            pageX = undefined;
-            nxtColWidth = undefined;
-            curColWidth = undefined;
             curColIndex = undefined;
-            nextColIndex = undefined;
-            curColTitle = undefined;
         });
     }
 
-    function createDiv(height) {
+    function createDiv(height)
+    {
         var div = document.createElement('div');
         div.style.top = 0;
         div.style.right = 0;
@@ -148,20 +115,5 @@ console.log(ColumnWidths);
         div.style.height = height + 'px';
 
         return div;
-    }
-
-    function paddingDiff(col) {
-        if (getStyleVal(col, 'box-sizing') == 'border-box') {
-            return 0;
-        }
-
-        var padLeft = getStyleVal(col, 'padding-left');
-        var padRight = getStyleVal(col, 'padding-right');
-
-        return (parseInt(padLeft) + parseInt(padRight));
-    }
-
-    function getStyleVal(elm, css) {
-        return (window.getComputedStyle(elm, null).getPropertyValue(css));
     }
 }

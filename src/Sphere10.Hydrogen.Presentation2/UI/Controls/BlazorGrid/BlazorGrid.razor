@@ -224,16 +224,9 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        //Alert($"OnAfterRenderAsync FirstRender: {firstRender}");
-
         if (!firstRender)
         {
-            //PagingFirst();
-
-            //Alert("OnAfterRenderAsync");
-
             await LoadJavascript();
-            //await JSRuntime.InvokeAsync<object>("ResizableColumnTable", new object[] { Id });
         }
     }
 
@@ -288,6 +281,8 @@
                 {
                     var cellText = GetCellText(dataObject, property);
                     var cellData = new Cell(Header[columnIndex].Header, Header[columnIndex].Row, typeInfos[columnIndex], cellText, dataObject, columnIndex);
+
+//                    var cellData = new Cell(Header[columnIndex].Header, Header[columnIndex].Row, typeInfos[columnIndex], properties[columnIndex], dataObject, columnIndex);
                     rowData.Add(cellData);
                     columnIndex++;
                 }

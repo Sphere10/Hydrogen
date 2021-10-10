@@ -114,7 +114,7 @@ namespace Sphere10.Framework {
 			NotifyPageAccessing(page);
 			using (EnterOpenPageScope(page)) {
 				NotifyPageReading(page);
-				page.ReadItemRaw(itemIndex, byteOffset, byteLength, out result);
+				page.ReadItemBytes(itemIndex, byteOffset, byteLength, out result);
 				NotifyPageRead(page);
 			}
 			NotifyPageAccessed(page);

@@ -147,7 +147,7 @@ namespace Sphere10.Framework {
 			return ReadInternal(StartIndex, Count).GetEnumerator().OnMoveNext(CheckVersion);
 		}
 
-		public override int ReadItemRaw(int itemIndex, int byteOffset, int byteLength, out byte[] result) {
+		public override int ReadItemBytes(int itemIndex, int byteOffset, int byteLength, out byte[] result) {
 			Stream.Seek(_offsets[itemIndex] + byteOffset, SeekOrigin.Begin);
 			result = Reader.ReadBytes(byteLength);
 			

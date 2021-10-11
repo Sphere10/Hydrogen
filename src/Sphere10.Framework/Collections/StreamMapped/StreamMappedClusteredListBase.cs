@@ -44,6 +44,11 @@ namespace Sphere10.Framework {
 			RequiresLoad = false;
 		}
 
+		//TODO: add ability to read raw byte segments that by-pass expensive serialization
+		//public abstract void UpdateItemBytes(int index, int byteOffset, byte[] bytes);
+
+		//public abstract void ReadItemBytes(int index, int byteOffset, int byteCount, out byte[] bytes);
+
 		protected virtual void Initialize() {
 			RequiresLoad = false;
 		}
@@ -174,7 +179,6 @@ namespace Sphere10.Framework {
 				throw new InvalidOperationException("List requires loading as stream contains existing data.");
 			}
 		}
-
 
 		protected virtual void OnItemAccess(ListOperationType operationType, int listingIndex, TListing listing, TItem item, byte[] serializedItem) {
 		}

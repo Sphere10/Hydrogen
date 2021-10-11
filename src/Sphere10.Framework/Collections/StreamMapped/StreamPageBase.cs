@@ -9,7 +9,7 @@ namespace Sphere10.Framework {
 
 		public long StartPosition { get; protected set; }
 		
-		public abstract int ReadItemRaw(int itemIndex, int byteOffset, int byteLength, out byte[] bytes);
+		public abstract int ReadItemBytes(int itemIndex, int byteOffset, int byteLength, out byte[] bytes);
 
 		protected StreamMappedPagedList<TItem> Parent { get; }
 

@@ -11,6 +11,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
+using Sphere10.Framework;
 using System;
 using System.Runtime.InteropServices;
 
@@ -18,6 +19,36 @@ using System.Runtime.InteropServices;
 namespace Tools {
 
 	public static class Array {
+
+
+		public static T[][] Transpose<T>(T[][] array, int? expectedColumns = null) {
+			Guard.ArgumentNotNull(array, nameof(array));
+			if (expectedColumns != null)
+				Guard.Argument(expectedColumns.Value > 0, nameof(expectedColumns), "Must be null or greater than or equal to 0");
+			
+			var columnCount = array.Length > 0 ? (expectedColumns ?? array[0].Length) : 0;
+			var rowCount = array.Length;
+
+			if (columnCount == 0 && rowCount > 0 || rowCount == 0 && columnCount > 0)
+				throw new ArgumentException("Expected empty but was not");
+				
+
+			// Ensure all rows have consistent columns
+			for (var i = 0; i < rowCount; i++)
+				if (array[i].Length != columnCount)
+					throw new ArgumentException($"Row at index {i} had {array[i].Length} columns but expected {columnCount}", nameof(array));
+
+			// Transpose the array
+			var result = new T[columnCount][];
+			for (var i = 0; i < columnCount; i++) {
+				result[i] = new T[rowCount];
+				for (var j = 0; j < rowCount; j++)
+					result[i][j] = array[j][i];
+			}
+			return result;
+
+		}
+
 
 		public static T Head<T>(ref T[] arr) {
 			if (arr.Length == 0)

@@ -6,7 +6,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Sphere10.Helium.TestPlugin2.Message\Sphere10.Helium.TestPlugin2.Message.csproj" />
-    <ProjectReference Include="..\Sphere10.Helium\Sphere10.Helium.csproj" />
   </ItemGroup>
 
 </Project>

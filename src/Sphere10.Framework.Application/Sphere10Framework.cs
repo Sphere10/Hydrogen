@@ -67,8 +67,7 @@ namespace Sphere10.Framework.Application {
 				RegisterAllModuleComponents();
 
 			// Initialize Modules
-			ModuleConfigurations.Value.Update(mconf => Tools.Exceptions.ExecuteIgnoringException(mconf.OnInitialize));
-
+			ModuleConfigurations.Value.Update(moduleConfiguration => Tools.Exceptions.ExecuteIgnoringException(moduleConfiguration.OnInitialize));
 
 			// Execute all the application initialization tasks synchronously and in sequence
 			ComponentRegistry
@@ -106,7 +105,7 @@ namespace Sphere10.Framework.Application {
 				.Instance
 				.ResolveAll<IApplicationEndTask>()
 				.ForEach(
-					endTask => Tools.Exceptions.Execute(() => endTask.End(), error => results.Add(Result.Error(error.ToDisplayString())))
+					endTask => Tools.Exceptions.Execute(endTask.End, error => results.Add(Result.Error(error.ToDisplayString())))
 				);
 			Ending?.Invoke();
 
@@ -124,7 +123,7 @@ namespace Sphere10.Framework.Application {
 			}
 
 			// Finalize modules
-			ModuleConfigurations.Value.Update(mconf => Tools.Exceptions.ExecuteIgnoringException(mconf.OnFinalize));
+			ModuleConfigurations.Value.Update(moduleConfiguration => Tools.Exceptions.ExecuteIgnoringException(moduleConfiguration.OnFinalize));
 			Finalizing?.Invoke();
 
 			DeregisterAllModuleComponents();
@@ -134,16 +133,25 @@ namespace Sphere10.Framework.Application {
 			IsStarted = false;
 		}
 
-		public void RegisterApplicationLogger(bool visibleToAllUsers = false)
-			=> RegisterApplicationLogger(Tools.Text.FormatEx("{ProductName}"), visibleToAllUsers: visibleToAllUsers);
+		public ILogger CreateApplicationLogger(bool visibleToAllUsers = false)
+			=> CreateApplicationLogger(Tools.Text.FormatEx("{ProductName}"), visibleToAllUsers: visibleToAllUsers);
 
-		public void RegisterApplicationLogger(string logName, bool visibleToAllUsers = false)
-			=> RegisterApplicationLogger(logName, 10, Tools.Memory.ToBytes(1, MemoryMetric.Megabyte), visibleToAllUsers: visibleToAllUsers);
+		public ILogger CreateApplicationLogger(string logName, bool visibleToAllUsers = false)
+			=> CreateApplicationLogger(logName, 10, Tools.Memory.ToBytes(1, MemoryMetric.Megabyte), visibleToAllUsers: visibleToAllUsers);
 
-		public void RegisterApplicationLogger(string logName, int maxFiles, int maxFileSize, bool visibleToAllUsers = false) 
-			=> SystemLog.RegisterLogger(new RollingFileLogger(Path.Combine(Tools.Text.FormatEx(visibleToAllUsers ? "{SystemDataDir}" : "{UserDataDir}"  ), Tools.Text.FormatEx("{ProductName}"), "logs"), logName, maxFiles, maxFileSize, true));
+		public ILogger CreateApplicationLogger(string logFileName, int maxFiles, int maxFileSize, bool visibleToAllUsers = false)
+			=> new ThreadIdLogger(
+				new TimestampLogger(
+					new RollingFileLogger(
+						Path.Combine(Tools.Text.FormatEx(visibleToAllUsers ? "{SystemDataDir}" : "{UserDataDir}"), Tools.Text.FormatEx("{ProductName}"), "logs", logFileName),
+						maxFiles,
+						maxFileSize
+					)
+				)
+			);
+				
 
-		private void RegisterAppConfig(string configSectionName = "ComponentRegistry") {
+		public void RegisterAppConfig(string configSectionName = "ComponentRegistry") {
 			CheckNotStarted();
 
 			if (_registeredConfig)

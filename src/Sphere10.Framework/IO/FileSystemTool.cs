@@ -205,7 +205,7 @@ namespace Tools {
 
         public static void RenameFile(string sourcePath, string newName) {
             var fileInfo = new FileInfo(sourcePath);
-            fileInfo.MoveTo(fileInfo.Directory.FullName + Path.PathSeparator + newName);
+            fileInfo.MoveTo(Path.Combine( fileInfo.Directory.FullName, newName));
         }
 
         //https://docs.microsoft.com/en-us/dotnet/standard/io/how-to-copy-directories#example

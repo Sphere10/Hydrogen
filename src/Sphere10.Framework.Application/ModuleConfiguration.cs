@@ -103,7 +103,6 @@ namespace Sphere10.Framework.Application {
 
         public override void OnInitialize() {
             base.OnInitialize();
-
 			if (Tools.Runtime.GetEntryAssembly().TryGetCustomAttributeOfType<AssemblyProductSecretAttribute>(false, out var attribute)) {
 				EncryptedAttribute.ApplicationSharedSecret = attribute.Secret;
 			}

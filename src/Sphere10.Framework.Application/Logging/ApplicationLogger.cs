@@ -24,7 +24,7 @@ namespace Sphere10.Framework.Application {
 			var section = ConfigurationManager.GetSection("LoggingConfiguration") as LoggingConfiguration;
 			if (section == null)
 				return new NoOpLogger();
-			var logger = new RollingFileLogger(section.Directory, section.LogNameTemplate, section.MaxLogFiles, section.MaxLogFileSize);
+			var logger = new RollingFileLogger(section.LogFilePath, section.MaxLogFiles, section.MaxLogFileSize);
 			if (section.EnableDebug)
 				logger.Options = logger.Options | LogOptions.DebugEnabled;
 			if (section.EnableInfo)

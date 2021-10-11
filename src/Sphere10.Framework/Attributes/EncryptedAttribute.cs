@@ -17,12 +17,13 @@ using System.Text;
 
 namespace Sphere10.Framework {
 	public class EncryptedAttribute : Attribute {
+		public const string DefaultPepper = "00000000";
 
 		public static string ApplicationSharedSecret = null;
 
 		public EncryptedAttribute() {
 			Policy = EncryptionSaltPolicy.Custom;
-			Pepper = string.Empty;
+			Pepper = DefaultPepper;
 		}
 
 		public EncryptionSaltPolicy Policy { get; set; }

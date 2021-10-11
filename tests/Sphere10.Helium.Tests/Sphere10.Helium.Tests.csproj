@@ -12,9 +12,4 @@
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.10.0" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\..\src\Sphere10.Helium.PluginFramework\Sphere10.Helium.PluginFramework.csproj" />
-    <ProjectReference Include="..\..\src\Sphere10.Helium\Sphere10.Helium.csproj" />
-  </ItemGroup>
-
 </Project>

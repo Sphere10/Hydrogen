@@ -27,7 +27,6 @@ namespace Sphere10.Framework.NUnit {
 				// Test 3: Insert at 0 when empty 
 				var item = randomItemGenerator(RNG, 1).Single();
 				expected.Insert(0, item);
-				Assert.That(expected, Is.Not.EqualTo(list).Using(comparer)); // this ensures comparer isn't broken for test
 				list.Insert(0, item);
 				Assert.That(expected, Is.EqualTo(list).Using(comparer));
 			}
@@ -36,7 +35,6 @@ namespace Sphere10.Framework.NUnit {
 				// Test 4: Insert at end of list (same as add)
 				var item = randomItemGenerator(RNG, 1).Single();
 				expected.Insert(1, item);
-				Assert.That(expected, Is.Not.EqualTo(list).Using(comparer)); // this ensures comparer isn't broken for test
 				list.Insert(1, item);
 				Assert.That(expected, Is.EqualTo(list).Using(comparer));
 
@@ -51,7 +49,6 @@ namespace Sphere10.Framework.NUnit {
 			if (maxCapacity >= 1) {
 				// Test 6: Delete from end of list
 				expected.RemoveAt(^1);
-				Assert.That(expected, Is.Not.EqualTo(list).Using(comparer)); // this ensures comparer isn't broken for test
 				list.RemoveAt(^1);
 				Assert.That(expected, Is.EqualTo(list).Using(comparer));
 			}

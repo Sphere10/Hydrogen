@@ -17,10 +17,12 @@ using System.IO;
 namespace Sphere10.Framework {
 
     public abstract class LoggerBase : ILogger {
-        public LogOptions Options {
-            get;
-            set;
-        }
+
+	    protected LoggerBase() {
+		    Options = Tools.Runtime.IsDebugBuild ? LogOptions.DebugBuildDefaults : LogOptions.ReleaseBuildDefaults;
+	    }
+
+        public LogOptions Options { get; set; }
 
 		/// <summary>
 		/// Logs a debug message.

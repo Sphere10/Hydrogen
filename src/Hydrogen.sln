@@ -84,6 +84,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sphere10.Helium.TestPlugin3
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sphere10.Helium.TestPlugin3.Message", "Sphere10.Helium.TestPlugin3.Message\Sphere10.Helium.TestPlugin3.Message.csproj", "{D1197EC4-40D4-4DAE-B1CE-6DA2E70518FD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HydrogenDemo.Consensus", "HydrogenTest.Consensus\HydrogenDemo.Consensus.csproj", "{5C8A5424-A829-46F7-B297-7EFC3AE57B7B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "HydrogenDemo", "HydrogenDemo", "{6ED6952A-5441-4EA5-99A3-DB3AC2716904}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -454,6 +458,18 @@ Global
 		{D1197EC4-40D4-4DAE-B1CE-6DA2E70518FD}.Release|x64.Build.0 = Release|Any CPU
 		{D1197EC4-40D4-4DAE-B1CE-6DA2E70518FD}.Release|x86.ActiveCfg = Release|Any CPU
 		{D1197EC4-40D4-4DAE-B1CE-6DA2E70518FD}.Release|x86.Build.0 = Release|Any CPU
+		{5C8A5424-A829-46F7-B297-7EFC3AE57B7B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5C8A5424-A829-46F7-B297-7EFC3AE57B7B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5C8A5424-A829-46F7-B297-7EFC3AE57B7B}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{5C8A5424-A829-46F7-B297-7EFC3AE57B7B}.Debug|x64.Build.0 = Debug|Any CPU
+		{5C8A5424-A829-46F7-B297-7EFC3AE57B7B}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{5C8A5424-A829-46F7-B297-7EFC3AE57B7B}.Debug|x86.Build.0 = Debug|Any CPU
+		{5C8A5424-A829-46F7-B297-7EFC3AE57B7B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5C8A5424-A829-46F7-B297-7EFC3AE57B7B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5C8A5424-A829-46F7-B297-7EFC3AE57B7B}.Release|x64.ActiveCfg = Release|Any CPU
+		{5C8A5424-A829-46F7-B297-7EFC3AE57B7B}.Release|x64.Build.0 = Release|Any CPU
+		{5C8A5424-A829-46F7-B297-7EFC3AE57B7B}.Release|x86.ActiveCfg = Release|Any CPU
+		{5C8A5424-A829-46F7-B297-7EFC3AE57B7B}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -488,6 +504,7 @@ Global
 		{B9D64653-5C46-4E64-A465-AF2A37DFE9AC} = {95CE96F3-615F-40DC-848C-E0F6E7A70403}
 		{C8847956-8379-4F80-B6E2-BFCA7E72DF60} = {95CE96F3-615F-40DC-848C-E0F6E7A70403}
 		{D1197EC4-40D4-4DAE-B1CE-6DA2E70518FD} = {95CE96F3-615F-40DC-848C-E0F6E7A70403}
+		{5C8A5424-A829-46F7-B297-7EFC3AE57B7B} = {6ED6952A-5441-4EA5-99A3-DB3AC2716904}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3FB0E192-E14D-409E-AE7C-B8D68AA31AE7}

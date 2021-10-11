@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Folder Include="Events\" />
+    <Folder Include="Protocol\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Sphere10.Framework\Sphere10.Framework.csproj" />
+    <ProjectReference Include="..\Sphere10.Hydrogen.Core\Sphere10.Hydrogen.Core.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -20,4 +20,5 @@ namespace Sphere10.Hydrogen.Core.Consensus {
 		public byte[]	Data { get; set; }
 	}
 
+
 }

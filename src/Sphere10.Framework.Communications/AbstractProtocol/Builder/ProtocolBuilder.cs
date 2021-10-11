@@ -18,7 +18,7 @@ namespace Sphere10.Framework.Communications {
             Commands = new CommandBuilder(this);
             Requests = new RequestBuilder(this);
             Responses = new ResponseBuilder(this);
-            Messages = new MessageBuilder(this);
+            MessageDefinitions = new MessageBuilder(this);
         }
 
         public CommandBuilder Commands { get; }
@@ -27,7 +27,7 @@ namespace Sphere10.Framework.Communications {
 
         public ResponseBuilder Responses { get; }
 
-        public MessageBuilder Messages { get; }
+        public MessageBuilder MessageDefinitions { get; }
 
         public Protocol Build() {
             var protocol = new Protocol() {
@@ -53,7 +53,7 @@ namespace Sphere10.Framework.Communications {
 
             public ResponseBuilder Responses => _parent.Responses;
 
-            public MessageBuilder Messages => _parent.Messages;
+            public MessageBuilder MessageDefinitions => _parent.MessageDefinitions;
 
             public Protocol Build() => _parent.Build();
 
@@ -70,7 +70,7 @@ namespace Sphere10.Framework.Communications {
 
             public ResponseBuilder Responses => _parent.Responses;
 
-            public MessageBuilder Messages => _parent.Messages;
+            public MessageBuilder MessageDefinitions => _parent.MessageDefinitions;
 
             public Protocol Build() => _parent.Build();
         }
@@ -86,7 +86,7 @@ namespace Sphere10.Framework.Communications {
 
             public RequestBuilder Requests => _parent.Requests;
 
-            public MessageBuilder Messages => _parent.Messages;
+            public MessageBuilder MessageDefinitions => _parent.MessageDefinitions;
 
             public Protocol Build() => _parent.Build();
 
@@ -106,11 +106,12 @@ namespace Sphere10.Framework.Communications {
 
             public Protocol Build() => _parent.Build();
 
-			public MessageBuilder Use(IFactorySerializer<object> serializer) {
-				Guard.ArgumentNotNull(serializer, nameof(serializer));
-				base.Serializer = serializer;
-				return this;
-			}
+            public MessageBuilder Use(IFactorySerializer<object> serializer) {
+                Guard.ArgumentNotNull(serializer, nameof(serializer));
+                base.Serializer = serializer;
+                return this;
+            }
+
 
 		}
     }

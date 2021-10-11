@@ -44,7 +44,7 @@ namespace Sphere10.Framework {
 				var typeCode = GetTypeCode(item);
 				writer.Write(typeCode);
 				bytesWritten = GetConcreteSerializer(typeCode).Serialize(item, writer);
-				return false;
+				return true;
 			} catch (Exception) {
 				bytesWritten = 0;
 				return false;

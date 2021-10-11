@@ -8,13 +8,13 @@ using Sphere10.Framework.FastReflection;
 using Sphere10.Framework.Values;
 
 namespace Sphere10.Framework {
-	public class GenericItemSerializer<T> : GenericItemSerializer, IItemSerializer<T> where T : new() {
+	public class GenericItemSerializer<T> : GenericItemSerializerBase, IItemSerializer<T> where T : new() {
 		public bool IsFixedSize => false;
 
 		public int FixedSize => -1;
 
 		/// <summary>
-		/// Initialize a new instance of <see cref="GenericItemSerializer"/>. Registers generic type param
+		/// Initialize a new instance of <see cref="GenericItemSerializerBase"/>. Registers generic type param
 		/// in type registrations.
 		/// </summary>
 		public GenericItemSerializer() {

@@ -22,7 +22,7 @@ namespace Sphere10.Framework {
 		}
 
 		public class SerializerBuilder<TConcrete>
-			where TConcrete : TBase  {
+			where TConcrete : TBase {
 			private readonly TFactorySerializerBuilder _parentBuilder;
 
 			public SerializerBuilder(TFactorySerializerBuilder parentBuilder) {

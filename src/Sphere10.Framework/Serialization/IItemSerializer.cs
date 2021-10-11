@@ -9,13 +9,13 @@ namespace Sphere10.Framework {
 
 		public TItem Deserialize(int byteSize, EndianBinaryReader reader) {
 			if (!TryDeserialize(byteSize, reader, out var item))
-				throw new InvalidOperationException("Unable to deserialize object");
+				throw new InvalidOperationException($"Unable to deserialize object of size {byteSize}b");
 			return item;
 		}
 
 		public int Serialize(TItem @object, EndianBinaryWriter writer) {
 			if (!TrySerialize(@object, writer, out var bytesWritten))
-				throw new InvalidOperationException("Unable to serialize object");
+				throw new InvalidOperationException($"Unable to serialize object of type '{@object?.GetType().Name ?? "NULL"}'");
 			return bytesWritten;
 		}
 	}

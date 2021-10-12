@@ -131,22 +131,22 @@ namespace Sphere10.Framework.Communications {
             return true;
         }
 
-		public async Task SendMessage(ProtocolMessageType messageType, object message) {
-			if (!await TrySendMessage(messageType, message))
+		public async Task SendMessage(ProtocolDispatchType dispatchType, object message) {
+			if (!await TrySendMessage(dispatchType, message))
 				throw new ProtocolException($"Failed to send message: '{message}'");
 		}
 
-        public virtual Task<bool> TrySendMessage(ProtocolMessageType messageType, object message)
-            => TrySendMessage(messageType, message, DefaultTimeout);
+        public virtual Task<bool> TrySendMessage(ProtocolDispatchType dispatchType, object message)
+            => TrySendMessage(dispatchType, message, DefaultTimeout);
 
-        public virtual Task<bool> TrySendMessage(ProtocolMessageType messageType, object message, TimeSpan timeout) 
-			=> TrySendMessage(messageType, message, new CancellationTokenSource(timeout).Token);
+        public virtual Task<bool> TrySendMessage(ProtocolDispatchType dispatchType, object message, TimeSpan timeout) 
+			=> TrySendMessage(dispatchType, message, new CancellationTokenSource(timeout).Token);
 
-        public virtual async Task<bool> TrySendMessage(ProtocolMessageType messageType, object message, CancellationToken cancellationToken) {
+        public virtual async Task<bool> TrySendMessage(ProtocolDispatchType dispatchType, object message, CancellationToken cancellationToken) {
             Guard.Ensure(MessageSerializationEnabled, "Message Serialization is not enabled");
             Guard.Ensure(MessageSerializer != null, "Message Serializer is not set");
             var envelope = new ProtocolMessageEnvelope {
-                MessageType = messageType,
+                DispatchType = dispatchType,
                 RequestID = Interlocked.Increment(ref _messageID),
                 Message = message
             };
@@ -167,7 +167,7 @@ namespace Sphere10.Framework.Communications {
             using var memStream = new MemoryStream();
             using var writer = new EndianBinaryWriter(EndianBitConverter.Little, memStream);
             writer.Write(MessageEnvelopeMarker);
-            writer.Write((byte)envelope.MessageType);
+            writer.Write((byte)envelope.DispatchType);
             writer.Write(envelope.RequestID);
             writer.Write((uint)MessageSerializer.CalculateSize(envelope.Message));
             MessageSerializer.Serialize(envelope.Message, writer);
@@ -249,7 +249,7 @@ namespace Sphere10.Framework.Communications {
                 return; // Message Magic ID not found, so not a message
 
             // Read envelope
-            var messageType = (ProtocolMessageType)reader.ReadOrThrow<byte>(() => new ProtocolException($"Malformed message (missing MessageType)"));
+            var dispatchType = (ProtocolDispatchType)reader.ReadOrThrow<byte>(() => new ProtocolException($"Malformed message (missing MessageType)"));
             var requestID = reader.ReadOrThrow<int>(() => new ProtocolException($"Malformed message (missing RequestiD)"));
             var messageLength = reader.ReadOrThrow<uint>(() => new ProtocolException($"Malformed message (missing Object Length))"));
 
@@ -262,7 +262,7 @@ namespace Sphere10.Framework.Communications {
             }
 
             var messageEnvelope = new ProtocolMessageEnvelope {
-                MessageType = messageType,
+                DispatchType = dispatchType,
                 RequestID = requestID,
                 Message = message
             };

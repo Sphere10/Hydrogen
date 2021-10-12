@@ -47,14 +47,14 @@ namespace Sphere10.Framework.Communications {
 
         protected virtual void ProcessReceivedMessage(ProtocolMessageEnvelope envelope) {
             try {
-                switch (envelope.MessageType) {
-                    case ProtocolMessageType.Command:
+                switch (envelope.DispatchType) {
+                    case ProtocolDispatchType.Command:
                         ProcessReceivedCommand(envelope.Message);
                         break;
-                    case ProtocolMessageType.Request:
+                    case ProtocolDispatchType.Request:
                         ProcessReceivedRequest(envelope.RequestID, envelope.Message);
                         break;
-                    case ProtocolMessageType.Response:
+                    case ProtocolDispatchType.Response:
                         ProcessReceivedResponse(envelope.RequestID, envelope.Message);
                         break;
                 }
@@ -65,7 +65,7 @@ namespace Sphere10.Framework.Communications {
         }
 
         protected virtual void ProcessSentMessage(ProtocolMessageEnvelope envelope) {
-            if (envelope.MessageType == ProtocolMessageType.Request) {
+            if (envelope.DispatchType == ProtocolDispatchType.Request) {
                 _unfulfilledRequests[envelope.RequestID] = envelope.Message;
             }
         }
@@ -92,7 +92,7 @@ namespace Sphere10.Framework.Communications {
                 try {
                     var response = requestHandler.Execute(Channel, request);
                     var envelope = new ProtocolMessageEnvelope {
-                        MessageType = ProtocolMessageType.Response,
+                        DispatchType = ProtocolDispatchType.Response,
                         RequestID = requestID,
                         Message = response
                     };

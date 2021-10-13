@@ -12,7 +12,7 @@ namespace Sphere10.Hydrogen.Core.Runtime {
 					.ForRequest<PingMessage>().RespondWith((_, _) => new PongMessage())
 				.Commands
 					.ForCommand<UpgradeMessage>().Execute(upgradeNodeHandler)
-				.Messages
+				.MessageDefinitions
 					.Use(BuildMessageSerializer())
 				.Build();
 

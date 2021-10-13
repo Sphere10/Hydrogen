@@ -37,7 +37,7 @@ namespace Sphere10.Hydrogen.Core.Runtime {
 				.Commands
 					.ForCommand<UpgradeMessage>().Execute(async upgradeMessage => await UpgradeApplication(upgradeMessage.HydrogenApplicationPackagePath))
 					.ForCommand<ShutdownMessage>().Execute(async () => await RequestShutdown())
-				.Messages
+				.MessageDefinitions
 					.Use(HostProtocolHelper.BuildMessageSerializer())
 				.Build();
 
@@ -76,7 +76,7 @@ namespace Sphere10.Hydrogen.Core.Runtime {
 		protected virtual async Task StopNode() {
 			CheckStatus(HostStatus.Running, HostStatus.Upgrading);
 			Logger.Info("Requesting node shutdown");
-			await NodePipe.SendMessage(ProtocolMessageType.Command, new ShutdownMessage());
+			await NodePipe.SendMessage(ProtocolDispatchType.Command, new ShutdownMessage());
 			if (!await NodePipe.TryWaitClose(TimeSpan.FromMinutes(1)))
 				throw new HostException("Node failed to shutdown");
 			if (Status != HostStatus.Upgrading)

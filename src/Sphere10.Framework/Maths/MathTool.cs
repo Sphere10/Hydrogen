@@ -28,17 +28,17 @@ namespace Tools {
 		private static readonly Random _globalRandom = new Random(Environment.TickCount);
 
 		[ThreadStatic] 
-		private static Random _localRandom;
+		private static Random _threadRandom;
 
 		public static Random RNG {
 			get {
-				if (_localRandom != null)
-					return _localRandom;
+				if (_threadRandom != null)
+					return _threadRandom;
 
 				int seed;
 				lock (_globalRandom) seed = _globalRandom.Next();
-				_localRandom = new Random(seed);
-				return _localRandom;
+				_threadRandom = new Random(seed);
+				return _threadRandom;
 			}
 		}
 

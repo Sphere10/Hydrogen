@@ -169,7 +169,7 @@ namespace Sphere10.Framework {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static void Ensure(bool condition, string message = null) {
             if (!condition)
-                throw new InternalErrorException(message);
+                throw new InternalErrorException(message ?? "Internal error");
         }
 
     }

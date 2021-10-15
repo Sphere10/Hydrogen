@@ -16,25 +16,23 @@ namespace Sphere10.Framework.Communications {
         public event EventHandlerEx Opened;
         public event EventHandlerEx Closing;
         public event EventHandlerEx Closed;
-        public event EventHandlerEx Handshake;
+        //public event EventHandlerEx Handshake;
         public event EventHandlerEx<ReadOnlyMemory<byte>> ReceivedBytes;
         public event EventHandlerEx<Memory<byte>> SentBytes;
-        public event EventHandlerEx<ProtocolMessageEnvelope> ReceivedMessage;
-        public event EventHandlerEx<ProtocolMessageEnvelope> SentMessage;
 
         // Fields
+        protected TaskCompletionSource _startReceiveLoop;
         protected CancellationTokenSource _cancelReceiveLoop;
         private Task _receiveLoop;
-        private volatile int _messageID;
+        
 
         // Constructors
         protected ProtocolChannel() {
-            _cancelReceiveLoop = null;
-            _receiveLoop = null;
-            MessageEnvelopeMarker = Array.Empty<byte>();
+	        _startReceiveLoop = new TaskCompletionSource();
+	        _cancelReceiveLoop = new CancellationTokenSource();
+	        _receiveLoop = ReceiveLoop(_cancelReceiveLoop.Token);
             DefaultTimeout = TimeSpan.FromMilliseconds(DefaultTimeoutMS);
             State = ProtocolChannelState.Closed;
-            _messageID = 0;
         }
 
         #region Properties
@@ -49,7 +47,7 @@ namespace Sphere10.Framework.Communications {
 
         public bool MessageSerializationEnabled { get; set; }
 
-        public virtual IItemSerializer<object> MessageSerializer { get; init; }
+        //public virtual IItemSerializer<object> MessageSerializer { get; init; }
 
         public virtual int MinMessageLength { get; init; } = DefaultMinMessageLength;
 
@@ -67,26 +65,19 @@ namespace Sphere10.Framework.Communications {
 		}
 		
         public async Task<bool> TryOpen() {
-            CheckState(ProtocolChannelState.Closed);
-            SetState(ProtocolChannelState.Opening);
-            NotifyOpening();
-            _cancelReceiveLoop = new CancellationTokenSource();
-            _receiveLoop = new Task(async () => await ReceiveLoop(_cancelReceiveLoop.Token));
-            await OpenInternal();
-            _receiveLoop.Start();
-            var cancelHandshake = new CancellationTokenSource(DefaultTimeout);
-            if (await TryWaitHandshake(cancelHandshake.Token)) {
-                SetState(ProtocolChannelState.Open);
-                NotifyHandshake();
-                NotifyOpened();
-            } else {
-                SetState(ProtocolChannelState.Closing);
-                NotifyClosing();
-                _cancelReceiveLoop.Cancel(false);
-                await CloseInternal();
-				return false;
-            }
-			return true;
+	        try {
+		        CheckState(ProtocolChannelState.Closed);
+		        SetState(ProtocolChannelState.Opening);
+		        NotifyOpening();
+		        await OpenInternal();
+		        StartReceiveLoop();
+		        SetState(ProtocolChannelState.Open);
+		        NotifyOpened();
+		        return true;
+	        } catch (Exception error) {
+                // Log?
+		        return false;
+	        }
         }
 
         public async Task Close() {
@@ -116,10 +107,8 @@ namespace Sphere10.Framework.Communications {
 
         public virtual Task<bool> TrySendBytes(byte[] bytes) => TrySendBytes(bytes, DefaultTimeout);
 
-        public virtual Task<bool> TrySendBytes(byte[] bytes, TimeSpan timeout) {
-            var canceller = new CancellationTokenSource(timeout);
-            return TrySendBytes(bytes, canceller.Token);
-        }
+        public virtual Task<bool> TrySendBytes(byte[] bytes, TimeSpan timeout) 
+            => TrySendBytes(bytes, new CancellationTokenSource(timeout).Token);
 
         public async Task<bool> TrySendBytes(byte[] bytes, CancellationToken cancellationToken) {
             if (!IsConnectionAlive())
@@ -131,28 +120,6 @@ namespace Sphere10.Framework.Communications {
             return true;
         }
 
-		public async Task SendMessage(ProtocolDispatchType dispatchType, object message) {
-			if (!await TrySendMessage(dispatchType, message))
-				throw new ProtocolException($"Failed to send message: '{message}'");
-		}
-
-        public virtual Task<bool> TrySendMessage(ProtocolDispatchType dispatchType, object message)
-            => TrySendMessage(dispatchType, message, DefaultTimeout);
-
-        public virtual Task<bool> TrySendMessage(ProtocolDispatchType dispatchType, object message, TimeSpan timeout) 
-			=> TrySendMessage(dispatchType, message, new CancellationTokenSource(timeout).Token);
-
-        public virtual async Task<bool> TrySendMessage(ProtocolDispatchType dispatchType, object message, CancellationToken cancellationToken) {
-            Guard.Ensure(MessageSerializationEnabled, "Message Serialization is not enabled");
-            Guard.Ensure(MessageSerializer != null, "Message Serializer is not set");
-            var envelope = new ProtocolMessageEnvelope {
-                DispatchType = dispatchType,
-                RequestID = Interlocked.Increment(ref _messageID),
-                Message = message
-            };
-            return await TrySendEnvelope(envelope, cancellationToken);
-        }
-
         public virtual Task<bool> TryWaitClose(TimeSpan timeout)
 	        => TryWaitClose(new CancellationTokenSource(timeout).Token);
 
@@ -161,21 +128,6 @@ namespace Sphere10.Framework.Communications {
 	        token.Register(() => tcs.SetResult(false));
 	        this.Closed += () => tcs.SetResult(true);
 	        return tcs.Task;
-        }
-
-        internal virtual async Task<bool> TrySendEnvelope(ProtocolMessageEnvelope envelope, CancellationToken cancellationToken) {
-            using var memStream = new MemoryStream();
-            using var writer = new EndianBinaryWriter(EndianBitConverter.Little, memStream);
-            writer.Write(MessageEnvelopeMarker);
-            writer.Write((byte)envelope.DispatchType);
-            writer.Write(envelope.RequestID);
-            writer.Write((uint)MessageSerializer.CalculateSize(envelope.Message));
-            MessageSerializer.Serialize(envelope.Message, writer);
-            if (await TrySendBytes(memStream.ToArray(), cancellationToken)) {
-                NotifySentMessage(envelope);
-                return true;
-            }
-            return false;
         }
 
         public void Dispose() {
@@ -192,19 +144,22 @@ namespace Sphere10.Framework.Communications {
 
         protected abstract Task CloseInternal();
 
-        protected virtual async Task<bool> TryWaitHandshake(CancellationToken cancellationToken) => true;
-		
+        protected void StartReceiveLoop() {
+            _startReceiveLoop.SetResult();
+        }
+
         protected virtual async Task ReceiveLoop(CancellationToken cancellationToken) {
-            CheckState(ProtocolChannelState.Opening, ProtocolChannelState.Open);
-            while (State.IsIn(ProtocolChannelState.Opening, ProtocolChannelState.Open) && IsConnectionAlive() && !cancellationToken.IsCancellationRequested) {
-                var bytes = await ReceiveBytesInternal(cancellationToken).IgnoringCancellationException();
-                if (bytes?.Length > 0)
-                    NotifyReceivedBytes(bytes);
-            }
-            // Connection is Closed only when receive loop finishes
-            Guard.Ensure(State != ProtocolChannelState.Closed);
-            SetState(ProtocolChannelState.Closed);
-            NotifyClosed();
+	        await _startReceiveLoop.Task;
+	        CheckState(ProtocolChannelState.Opening, ProtocolChannelState.Open);
+	        while (State.IsIn(ProtocolChannelState.Opening, ProtocolChannelState.Open) && IsConnectionAlive() && !cancellationToken.IsCancellationRequested) {
+		        var bytes = await ReceiveBytesInternal(cancellationToken).IgnoringCancellationException();
+		        if (bytes?.Length > 0) 
+			        NotifyReceivedBytes(bytes);
+	        }
+	        // Connection is Closed only when receive loop finishes
+	        Guard.Ensure(State != ProtocolChannelState.Closed, "Protocol channel was already closed");
+	        SetState(ProtocolChannelState.Closed);
+	        NotifyClosed();
         }
 
         protected abstract Task<byte[]> ReceiveBytesInternal(CancellationToken cancellationToken);
@@ -229,54 +184,10 @@ namespace Sphere10.Framework.Communications {
         protected virtual void OnClosed() {
         }
 
-        protected virtual void OnHandshake() {
-        }
-
         protected virtual void OnReceivedBytes(ReadOnlySpan<byte> bytes) {
-            if (!MessageSerializationEnabled)
-                return;
-            Guard.Ensure(MessageSerializer != null, "Message Serializer is not set");
-
-            using var readStream = new MemoryStream(bytes.ToArray()); // TODO: uses slow ToArray
-            using var reader = new EndianBinaryReader(EndianBitConverter.Little, readStream);
-
-            if (readStream.Length < MessageEnvelopeMarker.Length)
-                return; // Not an object message
-
-            // Read magic header for message object 
-            var magicID = reader.ReadBytes(MessageEnvelopeMarker.Length);
-            if (!magicID.AsSpan().SequenceEqual(MessageEnvelopeMarker))
-                return; // Message Magic ID not found, so not a message
-
-            // Read envelope
-            var dispatchType = (ProtocolDispatchType)reader.ReadOrThrow<byte>(() => new ProtocolException($"Malformed message (missing MessageType)"));
-            var requestID = reader.ReadOrThrow<int>(() => new ProtocolException($"Malformed message (missing RequestiD)"));
-            var messageLength = reader.ReadOrThrow<uint>(() => new ProtocolException($"Malformed message (missing Object Length))"));
-
-            // Deserialize message
-            object message;
-            try {
-                message = MessageSerializer.Deserialize((int)messageLength, reader);
-            } catch (Exception error) {
-                throw new ProtocolException($"Malformed message (unable to deserialize message)", error);
-            }
-
-            var messageEnvelope = new ProtocolMessageEnvelope {
-                DispatchType = dispatchType,
-                RequestID = requestID,
-                Message = message
-            };
-
-            NotifyReceivedMessage(messageEnvelope);
         }
 
         protected virtual void OnSentBytes(ReadOnlySpan<byte> bytes) {
-        }
-
-        protected virtual void OnReceivedMessage(ProtocolMessageEnvelope messageEnvelope) {
-        }
-
-        protected virtual void OnSentMessage(ProtocolMessageEnvelope messageEnvelope) {
         }
 
         #endregion
@@ -303,11 +214,6 @@ namespace Sphere10.Framework.Communications {
             Tools.Threads.RaiseAsync(Closed);
         }
 
-        private void NotifyHandshake() {
-            OnHandshake();
-            Tools.Threads.RaiseAsync(Handshake);
-        }
-
         private void NotifyReceivedBytes(byte[] bytes) {
             OnReceivedBytes(bytes);
             Tools.Threads.RaiseAsync(ReceivedBytes, bytes);
@@ -316,16 +222,6 @@ namespace Sphere10.Framework.Communications {
         private void NotifySentBytes(byte[] bytes) {
             OnSentBytes(bytes);
             Tools.Threads.RaiseAsync(SentBytes, bytes);
-        }
-
-        private void NotifyReceivedMessage(ProtocolMessageEnvelope messageEnvelope) {
-            OnReceivedMessage(messageEnvelope);
-            Tools.Threads.RaiseAsync(ReceivedMessage, messageEnvelope);
-        }
-
-        private void NotifySentMessage(ProtocolMessageEnvelope messageEnvelope) {
-            OnSentMessage(messageEnvelope);
-            Tools.Threads.RaiseAsync(SentMessage, messageEnvelope);
         }
 
         #endregion
@@ -337,7 +233,6 @@ namespace Sphere10.Framework.Communications {
                 throw new InvalidOperationException($"Channel state was not in {expectedStates.ToDelimittedString(", ")}");
         }
 
-
         private void SetState(ProtocolChannelState state) {
             State = state;
         }
@@ -345,6 +240,5 @@ namespace Sphere10.Framework.Communications {
         #endregion
 
     }
-
 
 }

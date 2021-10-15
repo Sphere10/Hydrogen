@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 
 namespace Sphere10.Framework {
 	public interface IItemSerializer<TItem> : IItemSizer<TItem> {
@@ -7,16 +8,5 @@ namespace Sphere10.Framework {
 
 		bool TryDeserialize(int byteSize, EndianBinaryReader reader, out TItem item);
 
-		public TItem Deserialize(int byteSize, EndianBinaryReader reader) {
-			if (!TryDeserialize(byteSize, reader, out var item))
-				throw new InvalidOperationException($"Unable to deserialize object of size {byteSize}b");
-			return item;
-		}
-
-		public int Serialize(TItem @object, EndianBinaryWriter writer) {
-			if (!TrySerialize(@object, writer, out var bytesWritten))
-				throw new InvalidOperationException($"Unable to serialize object of type '{@object?.GetType().Name ?? "NULL"}'");
-			return bytesWritten;
-		}
 	}
 }

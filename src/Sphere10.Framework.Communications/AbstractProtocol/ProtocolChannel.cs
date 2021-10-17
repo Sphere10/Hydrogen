@@ -16,7 +16,6 @@ namespace Sphere10.Framework.Communications {
         public event EventHandlerEx Opened;
         public event EventHandlerEx Closing;
         public event EventHandlerEx Closed;
-        //public event EventHandlerEx Handshake;
         public event EventHandlerEx<ReadOnlyMemory<byte>> ReceivedBytes;
         public event EventHandlerEx<Memory<byte>> SentBytes;
 
@@ -45,15 +44,6 @@ namespace Sphere10.Framework.Communications {
 
         public abstract CommunicationRole Initiator { get; }
 
-        public bool MessageSerializationEnabled { get; set; }
-
-        //public virtual IItemSerializer<object> MessageSerializer { get; init; }
-
-        public virtual int MinMessageLength { get; init; } = DefaultMinMessageLength;
-
-        public virtual int MaxMessageLength { get; init; } = DefaultMaxMessageLength;
-
-        protected byte[] MessageEnvelopeMarker { get; init; }
 
 		#endregion
 
@@ -134,7 +124,7 @@ namespace Sphere10.Framework.Communications {
 			DisposeAsync().AsTask().WaitSafe();
         }
 
-        public async ValueTask DisposeAsync() {
+        public virtual async ValueTask DisposeAsync() {
             if (State == ProtocolChannelState.Open)
                 await Close();
         }

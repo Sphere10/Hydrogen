@@ -12,8 +12,6 @@ using System.Threading.Tasks;
 namespace Sphere10.Framework.Communications {
 
     public abstract class AnonymousPipe : ProtocolChannel, IDisposable {
-	    public new static readonly byte[] MessageEnvelopeMarker = { 0, 0, 0, 1 };
-
         public event EventHandlerEx<string> ReceivedString;
         public event EventHandlerEx<string> SentString;
 
@@ -22,9 +20,6 @@ namespace Sphere10.Framework.Communications {
         private StreamReader _reader;
         private StreamWriter _writer;
 
-        protected AnonymousPipe() {
-            base.MessageEnvelopeMarker = MessageEnvelopeMarker;
-        }
 
         /// <summary>
         /// Starts a child process and passes in the read/writer pipe handles.
@@ -36,18 +31,10 @@ namespace Sphere10.Framework.Communications {
         /// <returns>A channel used to send messages backwards and forwards</returns>
         /// <remarks>If <paramref name="argInjectorFunc"/> is null the read pipe handle and write pipe handle are passed consequtively.</remarks>
         public static AnonymousPipe ToChildProcess(string processPath, string arguments = "", Func<string, string, string, string> argInjectorFunc = null)
-            => new AnonymousServerPipe(processPath, arguments, argInjectorFunc) {
-                MessageSerializationEnabled = true
-            };
+            => new AnonymousServerPipe(processPath, arguments, argInjectorFunc);
 
-		public static AnonymousPipe FromChildProcess(AnonymousPipeEndpoint serverEndpoint) 
-			=> new AnonymousClientPipe(serverEndpoint) {
-                MessageSerializationEnabled = true
-			};
-
-        public override int MinMessageLength => 0;
-
-        public override int MaxMessageLength => 1 << 16;
+        public static AnonymousPipe FromChildProcess(AnonymousPipeEndpoint serverEndpoint)
+            => new AnonymousClientPipe(serverEndpoint);
 
         public AnonymousPipeEndpoint Endpoint { get; protected set; }
 
@@ -66,8 +53,8 @@ namespace Sphere10.Framework.Communications {
 	        }
 	        return false;
         }
-
-        public void Dispose() {
+        public override async ValueTask DisposeAsync() {
+            await base.DisposeAsync();
             _writeStream?.Dispose();
             _readStream?.Dispose();
         }

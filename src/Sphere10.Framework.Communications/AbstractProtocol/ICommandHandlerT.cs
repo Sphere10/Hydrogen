@@ -1,6 +1,6 @@
 ﻿namespace Sphere10.Framework.Communications {
 
-    public interface ICommandHandler<in TChannel, in TMessage> : ICommandHandler where TChannel : ProtocolChannel {
-		void Execute(TChannel channel, TMessage command);
+    public interface ICommandHandler<in TMessage> : ICommandHandler {
+		void Execute(ProtocolOrchestrator orchestrator, TMessage command);
 	}
 }

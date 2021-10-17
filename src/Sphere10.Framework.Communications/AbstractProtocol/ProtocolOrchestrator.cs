@@ -9,6 +9,10 @@ using System.Threading.Tasks;
 
 namespace Sphere10.Framework.Communications {
 
+    /// <summary>
+    /// Responsible for orchestrating a protocol over a channel. The responsibilities here include message-based communications,
+    /// handshaking, request-response workflow, command workflow.
+    /// </summary>
     public class ProtocolOrchestrator {
 	    public const int DefaultTimeoutMS = 5000;
         private readonly SynchronizedDictionary<int, object> _unfulfilledRequests; // TODO add expiration 
@@ -130,7 +134,7 @@ namespace Sphere10.Framework.Communications {
                 throw new ProtocolException($"Command handler for '{commandType}' not found");
             ThreadPool.QueueUserWorkItem(_ => {
                 try {
-                    commandHandler.Execute(Channel, command);
+                    commandHandler.Execute(this, command);
                 } catch (Exception error) {
                     Logger.Error($"Command handler for '{commandType.Name}' failed");
                     Logger.LogException(error);
@@ -144,7 +148,7 @@ namespace Sphere10.Framework.Communications {
                 throw new ProtocolException($"Request handler for '{requestType}' not found");
             ThreadPool.QueueUserWorkItem(async _ => {
                 try {
-                    var response = requestHandler.Execute(Channel, request);
+                    var response = requestHandler.Execute(this, request);
                     var envelope = new ProtocolMessageEnvelope {
                         DispatchType = ProtocolDispatchType.Response,
                         RequestID = requestID,
@@ -173,7 +177,7 @@ namespace Sphere10.Framework.Communications {
             }
             ThreadPool.QueueUserWorkItem(_ => {
                 try {
-                    responseHandler.Execute(Channel, request, response);
+                    responseHandler.Execute(this, request, response);
                 } catch (Exception error) {
                     Logger.Error($"Response handler for '{responseType.Name}' failed");
                     Logger.LogException(error);

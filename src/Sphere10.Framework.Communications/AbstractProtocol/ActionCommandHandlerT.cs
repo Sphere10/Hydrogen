@@ -2,19 +2,18 @@
 
 namespace Sphere10.Framework.Communications {
 
-	public class ActionCommandHandler<TChannel, TMessage> : CommandHandlerBase<TChannel, TMessage>
-		where TChannel : ProtocolChannel {
-		private readonly Action<TChannel, TMessage> _action;
+	public class ActionCommandHandler<TMessage> : CommandHandlerBase<TMessage> {
+		private readonly Action<ProtocolOrchestrator, TMessage> _action;
 
-		public ActionCommandHandler(Action<TChannel, TMessage> action) {
+		public ActionCommandHandler(Action<ProtocolOrchestrator, TMessage> action) {
 			Guard.ArgumentNotNull(action, nameof(action));
 			_action = action;
 		}
 
-		public override void Execute(TChannel channel, TMessage command) {
-			Guard.ArgumentNotNull(channel, nameof(channel));
+		public override void Execute(ProtocolOrchestrator orchestrator, TMessage command) {
+			Guard.ArgumentNotNull(orchestrator, nameof(orchestrator));
 			Guard.ArgumentNotNull(command, nameof(command));
-			_action.Invoke(channel, command);
+			_action.Invoke(orchestrator, command);
 		}
   
 	}

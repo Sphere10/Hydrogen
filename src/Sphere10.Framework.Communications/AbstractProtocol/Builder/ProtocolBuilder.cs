@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace Sphere10.Framework.Communications {
 
-    public class ProtocolBuilder<TChannel> where TChannel : ProtocolChannel {
+    public class ProtocolBuilder {
         private readonly IDictionary<Type, ICommandHandler> _commands;
         private readonly IDictionary<Type, IRequestHandler> _requests;
         private readonly MultiKeyDictionary<Type, Type, IResponseHandler> _responses;
@@ -20,6 +20,8 @@ namespace Sphere10.Framework.Communications {
             Responses = new ResponseBuilder(this);
             MessageDefinitions = new MessageBuilder(this);
         }
+
+        //public HandshakeBuilder Handshake { get; }
 
         public CommandBuilder Commands { get; }
 
@@ -42,9 +44,9 @@ namespace Sphere10.Framework.Communications {
             return protocol;
         }
 
-        public class CommandBuilder : ProtocolCommandBuilderBase<TChannel, CommandBuilder> {
-            private ProtocolBuilder<TChannel> _parent;
-            public CommandBuilder(ProtocolBuilder<TChannel> parent) 
+        public class CommandBuilder : ProtocolCommandBuilderBase<CommandBuilder> {
+            private ProtocolBuilder _parent;
+            public CommandBuilder(ProtocolBuilder parent) 
                 : base(parent._commands) {
                 _parent = parent;
             }
@@ -59,9 +61,9 @@ namespace Sphere10.Framework.Communications {
 
         }
 
-        public class RequestBuilder : ProtocolRequestBuilderBase<TChannel, RequestBuilder> {
-            private ProtocolBuilder<TChannel> _parent;
-            public RequestBuilder(ProtocolBuilder<TChannel> parent) 
+        public class RequestBuilder : ProtocolRequestBuilderBase<RequestBuilder> {
+            private ProtocolBuilder _parent;
+            public RequestBuilder(ProtocolBuilder parent) 
                 : base(parent._requests) {
                 _parent = parent;
             }
@@ -75,9 +77,9 @@ namespace Sphere10.Framework.Communications {
             public Protocol Build() => _parent.Build();
         }
 
-        public class ResponseBuilder : ProtocolResponseBuilderBase<TChannel, ResponseBuilder> {
-            private ProtocolBuilder<TChannel> _parent;
-            public ResponseBuilder(ProtocolBuilder<TChannel> parent)
+        public class ResponseBuilder : ProtocolResponseBuilderBase<ResponseBuilder> {
+            private ProtocolBuilder _parent;
+            public ResponseBuilder(ProtocolBuilder parent)
                 : base(parent._responses) {
                 _parent = parent;
             }
@@ -93,8 +95,8 @@ namespace Sphere10.Framework.Communications {
         }
 
         public sealed class MessageBuilder : FactorySerializerBuilderBase<object, MessageBuilder> {
-            private ProtocolBuilder<TChannel> _parent;
-            public MessageBuilder(ProtocolBuilder<TChannel> parent) : base(parent._serializer) {
+            private ProtocolBuilder _parent;
+            public MessageBuilder(ProtocolBuilder parent) : base(parent._serializer) {
                 _parent = parent;
             }
 

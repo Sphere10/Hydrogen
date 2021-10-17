@@ -2,9 +2,8 @@
 using System.Collections.Generic;
 
 namespace Sphere10.Framework.Communications {
-    public abstract class ProtocolResponseBuilderBase<TChannel, TProtocolResponseBuilder> 
-		where TChannel : ProtocolChannel
-		where TProtocolResponseBuilder : ProtocolResponseBuilderBase<TChannel, TProtocolResponseBuilder> {
+    public abstract class ProtocolResponseBuilderBase<TProtocolResponseBuilder> 
+		where TProtocolResponseBuilder : ProtocolResponseBuilderBase<TProtocolResponseBuilder> {
 		protected readonly MultiKeyDictionary<Type, Type, IResponseHandler> ResponseHandlers;
 
 		protected ProtocolResponseBuilderBase() 
@@ -50,10 +49,10 @@ namespace Sphere10.Framework.Communications {
 			public TProtocolResponseBuilder HandleWith(Action<TRequest, TResponse> handler)
 				=> HandleWith((_, request, response) => handler(request, response));
 			
-			public TProtocolResponseBuilder HandleWith(Action<TChannel, TRequest, TResponse> handler)
-				=> HandleWith(new ActionResponseHandler<TChannel, TRequest, TResponse>(handler));
+			public TProtocolResponseBuilder HandleWith(Action<ProtocolOrchestrator, TRequest, TResponse> handler)
+				=> HandleWith(new ActionResponseHandler<TRequest, TResponse>(handler));
 
-			public TProtocolResponseBuilder HandleWith(IResponseHandler<TChannel, TRequest, TResponse> handler) {
+			public TProtocolResponseBuilder HandleWith(IResponseHandler<TRequest, TResponse> handler) {
 				_parent.ResponseHandlers.Add(typeof(TRequest), typeof(TResponse), handler);
 				return _parent;
 			}

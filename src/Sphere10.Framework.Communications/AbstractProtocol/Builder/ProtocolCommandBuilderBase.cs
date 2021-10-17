@@ -2,9 +2,8 @@
 using System.Collections.Generic;
 
 namespace Sphere10.Framework.Communications {
-    public abstract class ProtocolCommandBuilderBase<TChannel, TProtocolCommandBuilder> 
-		where TChannel : ProtocolChannel
-		where TProtocolCommandBuilder : ProtocolCommandBuilderBase<TChannel, TProtocolCommandBuilder> {
+    public abstract class ProtocolCommandBuilderBase<TProtocolCommandBuilder> 
+		where TProtocolCommandBuilder : ProtocolCommandBuilderBase<TProtocolCommandBuilder> {
 		protected readonly IDictionary<Type, ICommandHandler> CommandHandlers;
 
 		protected ProtocolCommandBuilderBase() 
@@ -36,10 +35,10 @@ namespace Sphere10.Framework.Communications {
 			public TProtocolCommandBuilder Execute(Action<TMessage> action)
 				=> Execute((_, message) => action(message));
 
-			public TProtocolCommandBuilder Execute(Action<TChannel, TMessage> action) 
-				=> Execute(new ActionCommandHandler<TChannel, TMessage>(action));
+			public TProtocolCommandBuilder Execute(Action<ProtocolOrchestrator, TMessage> action) 
+				=> Execute(new ActionCommandHandler<TMessage>(action));
 
-			public TProtocolCommandBuilder Execute(ICommandHandler<TChannel, TMessage> handler) {
+			public TProtocolCommandBuilder Execute(ICommandHandler<TMessage> handler) {
 				_parent.Add(typeof(TMessage), handler);
 				return _parent;
 			}

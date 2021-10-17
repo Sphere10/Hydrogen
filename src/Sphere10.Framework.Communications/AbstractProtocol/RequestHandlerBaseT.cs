@@ -1,14 +1,12 @@
 ﻿namespace Sphere10.Framework.Communications {
-    public abstract class RequestHandlerBase<TChannel, TRequest, TResponse> : RequestHandlerBase, IRequestHandler<TChannel, TRequest, TResponse>
-		where TChannel : ProtocolChannel {
-		public override object Execute(ProtocolChannel channel, object request) {
-			Guard.ArgumentCast<TChannel>(channel, out var channelT, nameof(channel));
+    public abstract class RequestHandlerBase<TRequest, TResponse> : RequestHandlerBase, IRequestHandler<TRequest, TResponse> {
+		public sealed override object Execute(ProtocolOrchestrator orchestrator, object request) {
 			Guard.ArgumentCast<TRequest>(request, out var requestT, nameof(request));
-			var result = Execute(channelT, requestT);
+			var result = Execute(orchestrator, requestT);
 			return result;
 		}
 
-		public abstract TResponse Execute(TChannel channel, TRequest request);
+		public abstract TResponse Execute(ProtocolOrchestrator orchestrator, TRequest request);
 
     }
 

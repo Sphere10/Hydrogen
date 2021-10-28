@@ -23,7 +23,9 @@
 @implements IDisposable
 
 <body style="overflow:hidden">
-    @*<body oncontextmenu="return false;" style="overflow:hidden">*@
+@*<body oncontextmenu="return false;" style="overflow:hidden">*@
+
+<button @onclick="() => Test()">Test</button>
     <div class="row">
         <div class="col-6">
             <div class="card">
@@ -287,6 +289,14 @@
     List<object> ColumnDefinitions { get; set; } = new List<object>();
     System.Timers.Timer Timer { get; set; }
 
+    void Test() {
+        var f1 = new Filter<string>();
+        var f2 = new Filter<double>();
+        var f3 = new Filter<DateTime>();
+        var f4 = new Filter<char>();
+
+    }
+
     protected override void OnInitialized()
     {
         DataSource = new Index.DataSource1<TestClass>();
@@ -297,9 +307,9 @@
         ColumnDefinitions.Add(new DataEnd<TestClass, TestClass2>("Data End 1", TestDataExtractor1));
         ColumnDefinitions.Add(new DataEnd<TestClass, TestClass3>("Data End 2", TestDataExtractor2));
 
-//        Timer = new System.Timers.Timer(1000); // 10 seconds
-//        Timer.Elapsed += CountDownTimer;
-//        Timer.Start();
+        //        Timer = new System.Timers.Timer(1000); // 10 seconds
+        //        Timer.Elapsed += CountDownTimer;
+        //        Timer.Start();
     }
 
     TestClass2 TestDataExtractor1(object data)

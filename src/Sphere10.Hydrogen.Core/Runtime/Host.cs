@@ -10,8 +10,10 @@ namespace Sphere10.Hydrogen.Core.Runtime {
 		public event EventHandlerEx<AnonymousPipe> NodeStarted;
 		public event EventHandlerEx NodeEnded;
 
+		private ProtocolOrchestrator _hostProtocolOrchestrator;
 		private TaskCompletionSource _hostTask;
 		private Task _protocolRunner;
+
 		public Host(ILogger logger, IApplicationPaths paths) {
 			Logger = logger;
 			Paths = paths;
@@ -22,14 +24,12 @@ namespace Sphere10.Hydrogen.Core.Runtime {
 		
 		public IApplicationPaths Paths { get; }
 		
-		
 		protected AnonymousPipe NodePipe { get; set; }
 
 		protected ILogger Logger { get; }
-
 		
 		private Protocol BuildProtocol()
-			=> new ProtocolBuilder<AnonymousPipe>()
+			=> new ProtocolBuilder()
 				.Requests
 					.ForRequest<PingMessage>().RespondWith(() => new PongMessage())
 				.Responses
@@ -38,7 +38,7 @@ namespace Sphere10.Hydrogen.Core.Runtime {
 					.ForCommand<UpgradeMessage>().Execute(async upgradeMessage => await UpgradeApplication(upgradeMessage.HydrogenApplicationPackagePath))
 					.ForCommand<ShutdownMessage>().Execute(async () => await RequestShutdown())
 				.Messages
-					.Use(HostProtocolHelper.BuildMessageSerializer())
+					.UseOnly(HostProtocolHelper.BuildMessageSerializer())
 				.Build();
 
 		public virtual async Task DeployHAP(string hapPath) {
@@ -65,7 +65,7 @@ namespace Sphere10.Hydrogen.Core.Runtime {
 			Logger.Info("Starting node");
 			if (NodePipe != null)
 				await NodePipe.DisposeAsync();
-			NodePipe = AnonymousPipe.ToChildProcess(Paths.NodeExecutable, HostProtocolHelper.BuildMessageSerializer(), "-host {0}:{1}", string.Format);
+			NodePipe = AnonymousPipe.ToChildProcess(Paths.NodeExecutable, "-host {0}:{1}", string.Format);
 			NodePipe.Closed += NotifyNodeEnded;
 			await NodePipe.Open();
 			if (Status != HostStatus.Upgrading)
@@ -76,7 +76,7 @@ namespace Sphere10.Hydrogen.Core.Runtime {
 		protected virtual async Task StopNode() {
 			CheckStatus(HostStatus.Running, HostStatus.Upgrading);
 			Logger.Info("Requesting node shutdown");
-			await NodePipe.SendMessage(ProtocolMessageType.Command, new ShutdownMessage());
+			_hostProtocolOrchestrator.SendMessage(ProtocolDispatchType.Command, new ShutdownMessage());
 			if (!await NodePipe.TryWaitClose(TimeSpan.FromMinutes(1)))
 				throw new HostException("Node failed to shutdown");
 			if (Status != HostStatus.Upgrading)
@@ -100,9 +100,9 @@ namespace Sphere10.Hydrogen.Core.Runtime {
 			if (_protocolRunner != null && !_protocolRunner.IsCompleted)
 				throw new InvalidOperationException("Previous protocol is still running");
 			// build and run the protocol between the host and node
-			var protocol = BuildProtocol(); 
-			var protocolOrchestrator = new ProtocolOrchestrator(NodePipe, protocol);
-			_protocolRunner = protocolOrchestrator.Run();  // protocol runner is left running in background, awaited in Run method
+			var protocol = BuildProtocol();
+			_hostProtocolOrchestrator = new ProtocolOrchestrator(NodePipe, protocol);
+			_protocolRunner = _hostProtocolOrchestrator.RunToEnd();  // protocol runner is left running in background, awaited in Run method
 		}
 
 		protected virtual void OnNodeEnded() {

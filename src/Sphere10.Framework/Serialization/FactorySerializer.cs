@@ -23,7 +23,7 @@ namespace Sphere10.Framework {
 			=> RegisterSerializer(GenerateTypeCode(), concreteSerializer);
 
 		public void RegisterSerializer<TConcrete>(ushort typeCode, IItemSerializer<TConcrete> concreteSerializer) where TConcrete : TBase {
-			Guard.Argument(!_typeCodeMap.ContainsValue(typeCode), nameof(typeCode), "Type code is already used for another serializer");
+			Guard.Argument(!_typeCodeMap.ContainsValue(typeCode), nameof(typeCode), $"Type code {typeCode} for type '{typeof(TConcrete).Name}' is already used for another serializer");
 			var concreteType = typeof(TConcrete);
 			Guard.Argument(!_typeCodeMap.ContainsKey(concreteType), nameof(TConcrete), "Type already registered");
 			_concreteLookup.Add(typeCode, new CastedSerializer<TBase, TConcrete>(concreteSerializer));

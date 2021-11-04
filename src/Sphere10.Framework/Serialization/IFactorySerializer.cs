@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Sphere10.Framework {
     /// <summary>
-    /// A Serializer that works for base-level objects that delegates actual serialization to registered concrete-level serializers. 
+    /// A Serializer that works for base-level objects by delegating actual serialization to registered concrete-level serializers. 
     /// </summary>
     /// <typeparam name="TBase">The type of object which is serialized/deserialized</typeparam>
     public interface IFactorySerializer<TBase> : IItemSerializer<TBase> {

@@ -21,6 +21,8 @@ namespace Sphere10.Framework.Communications {
         private StreamWriter _writer;
 
 
+        public override CommunicationRole Initiator => CommunicationRole.Server;
+
         /// <summary>
         /// Starts a child process and passes in the read/writer pipe handles.
         /// </summary>
@@ -76,8 +78,8 @@ namespace Sphere10.Framework.Communications {
 
         protected override bool IsConnectionAlive() => _readStream.IsConnected && _writeStream.IsConnected;
 
-        protected override Task<bool> TrySendBytesInternal(ReadOnlySpan<byte> bytes, CancellationToken cancellationToken) 
-            => TrySendString(Convert.ToBase64String(bytes), cancellationToken);
+        protected override Task<bool> TrySendBytesInternal(ReadOnlyMemory<byte> bytes, CancellationToken cancellationToken) 
+            => TrySendString(Convert.ToBase64String(bytes.Span), cancellationToken);
 
         protected override async Task<byte[]> ReceiveBytesInternal(CancellationToken cancellationToken) {
 	        var str = await ReceiveString(cancellationToken);

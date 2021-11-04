@@ -1,13 +1,15 @@
 ﻿using System;
 
 namespace Sphere10.Framework {
-    public abstract class FactorySerializerBuilderBase<TBase, TFactorySerializerBuilder> where TFactorySerializerBuilder : FactorySerializerBuilderBase<TBase, TFactorySerializerBuilder> {
-		protected IFactorySerializer<TBase> Serializer;
-		protected ushort TypeCode;
+    public class FactorySerializerBuilderBase<TBase, TFactorySerializerBuilder> where TFactorySerializerBuilder : FactorySerializerBuilderBase<TBase, TFactorySerializerBuilder> {
 
 		public FactorySerializerBuilderBase(IFactorySerializer<TBase> serializer) {
 			Serializer = serializer;
 		}
+
+		public IFactorySerializer<TBase> Serializer { get; protected set; }
+		
+		protected ushort TypeCode { get; private set; }
 
 		public SerializerBuilder<TConcrete> For<TConcrete>() where TConcrete : TBase 
 			=> For<TConcrete>(Serializer.GenerateTypeCode());

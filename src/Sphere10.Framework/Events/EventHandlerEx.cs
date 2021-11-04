@@ -19,17 +19,19 @@ namespace Sphere10.Framework {
 	public delegate void EventHandlerEx();
 
 	[Serializable]
-	public delegate void EventHandlerEx<T>(T arg);
+	public delegate void EventHandlerEx<in T>(T arg);
 
 	[Serializable]
-	public delegate void EventHandlerEx<T1, T2>(T1 arg1, T2 arg2);
+	public delegate void EventHandlerEx<in T1, in T2>(T1 arg1, T2 arg2);
 
 	[Serializable]
-	public delegate void EventHandlerEx<T1, T2, T3>(T1 arg1, T2 arg2, T3 arg3);
+	public delegate void EventHandlerEx<in T1, in T2, in T3>(T1 arg1, T2 arg2, T3 arg3);
 
 	[Serializable]
-	public delegate void EventHandlerEx<T1, T2, T3, T4>(T1 arg1, T2 arg2, T3 arg3, T4 arg4);
+	public delegate void EventHandlerEx<in T1, in T2, in T3, in T4>(T1 arg1, T2 arg2, T3 arg3, T4 arg4);
 
 	[Serializable]
-	public delegate void EventHandlerEx<T1, T2, T3, T4, T5>(T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5);
+	public delegate void EventHandlerEx<in T1, in T2, in T3, in T4, in T5>(T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5);
+
+
 }

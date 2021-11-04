@@ -14,6 +14,7 @@
 using System;
 using System.Threading;
 using System.Linq.Expressions;
+using System.Runtime.InteropServices.ComTypes;
 using System.Threading.Tasks;
 using Sphere10.Framework;
 
@@ -22,7 +23,7 @@ namespace Tools {
 
 	public static class Lambda {
 
-        public static Action Action(Action action) {
+		public static Action Action(Action action) {
             return action;
         }
 
@@ -72,8 +73,6 @@ namespace Tools {
                     }
                 };
         }
-
-
 
         /// <summary>
         /// Returns the action to run asyncronously (queued in the ThreadPool).

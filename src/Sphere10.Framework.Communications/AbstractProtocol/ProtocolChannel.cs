@@ -20,16 +20,14 @@ namespace Sphere10.Framework.Communications {
         public event EventHandlerEx<Memory<byte>> SentBytes;
 
         // Fields
-        protected TaskCompletionSource _startReceiveLoop;
         protected CancellationTokenSource _cancelReceiveLoop;
         private Task _receiveLoop;
         
 
         // Constructors
         protected ProtocolChannel() {
-	        _startReceiveLoop = new TaskCompletionSource();
 	        _cancelReceiveLoop = new CancellationTokenSource();
-	        _receiveLoop = ReceiveLoop(_cancelReceiveLoop.Token);
+	        _receiveLoop = null; // set by StartReceiveLoop
             DefaultTimeout = TimeSpan.FromMilliseconds(DefaultTimeoutMS);
             State = ProtocolChannelState.Closed;
         }
@@ -38,14 +36,13 @@ namespace Sphere10.Framework.Communications {
 
         public ProtocolChannelState State { get; private set; }
 
-        public TimeSpan DefaultTimeout { get; set; }
+		public TimeSpan DefaultTimeout { get; set; }
 
         public abstract CommunicationRole LocalRole { get; }
 
-        public abstract CommunicationRole Initiator { get; }
+        public virtual CommunicationRole Initiator => CommunicationRole.Client;
 
-
-		#endregion
+        #endregion
 
 		#region Methods
 
@@ -60,8 +57,8 @@ namespace Sphere10.Framework.Communications {
 		        SetState(ProtocolChannelState.Opening);
 		        NotifyOpening();
 		        await OpenInternal();
-		        StartReceiveLoop();
-		        SetState(ProtocolChannelState.Open);
+				StartReceiveLoop();
+				SetState(ProtocolChannelState.Open);
 		        NotifyOpened();
 		        return true;
 	        } catch (Exception error) {
@@ -71,7 +68,6 @@ namespace Sphere10.Framework.Communications {
         }
 
         public async Task Close() {
-            const int forceCancelReceiveLoopMS = 150;
             CheckState(ProtocolChannelState.Open, ProtocolChannelState.Closing, ProtocolChannelState.Closed);
             if (State == ProtocolChannelState.Closed)
                 return;
@@ -79,18 +75,7 @@ namespace Sphere10.Framework.Communications {
                 SetState(ProtocolChannelState.Closing);
                 NotifyClosing();
             }
-            _cancelReceiveLoop.CancelAfter(forceCancelReceiveLoopMS);
-            try {
-                // Receive loop SHOULD immediately react to channel State being Closed.
-                // But if it does not, then after some time (forceCancelReceiveLoopMS), it is forced closed.
-                await _receiveLoop;
-                if (State != ProtocolChannelState.Closed) {
-                    SetState(ProtocolChannelState.Closed);
-                    NotifyClosed();
-                }
-            } catch (TaskCanceledException) {
-            }
-
+            await StopReceiveLoop();
             await CloseInternal();
             // Note: NotifyClosed() is called by receive loop termination
         }
@@ -134,12 +119,27 @@ namespace Sphere10.Framework.Communications {
 
         protected abstract Task CloseInternal();
 
-        protected void StartReceiveLoop() {
-            _startReceiveLoop.SetResult();
-        }
+        protected virtual void StartReceiveLoop() {
+			_receiveLoop = Task.Run(() => ReceiveLoop(_cancelReceiveLoop.Token));
+		}
 
-        protected virtual async Task ReceiveLoop(CancellationToken cancellationToken) {
-	        await _startReceiveLoop.Task;
+		protected virtual async Task StopReceiveLoop() {
+			const int forceCancelReceiveLoopMS = 150;
+			_cancelReceiveLoop.CancelAfter(forceCancelReceiveLoopMS);
+			try {
+				// Receive loop SHOULD immediately react to channel State being Closed.
+				// But if it does not, then after some time (forceCancelReceiveLoopMS), it is forced closed.
+				await _receiveLoop;
+				if (State != ProtocolChannelState.Closed) {
+					SetState(ProtocolChannelState.Closed);
+					NotifyClosed();
+				}
+			} catch (TaskCanceledException) {
+			}
+		}
+
+		protected virtual async Task ReceiveLoop(CancellationToken cancellationToken) {
+	       // await _startReceiveLoop.Task.ConfigureAwait(false);
 	        CheckState(ProtocolChannelState.Opening, ProtocolChannelState.Open);
 	        while (State.IsIn(ProtocolChannelState.Opening, ProtocolChannelState.Open) && IsConnectionAlive() && !cancellationToken.IsCancellationRequested) {
 		        var bytes = await ReceiveBytesInternal(cancellationToken).IgnoringCancellationException();
@@ -154,7 +154,7 @@ namespace Sphere10.Framework.Communications {
 
         protected abstract Task<byte[]> ReceiveBytesInternal(CancellationToken cancellationToken);
 
-        protected abstract Task<bool> TrySendBytesInternal(ReadOnlySpan<byte> bytes, CancellationToken cancellationToken);
+        protected abstract Task<bool> TrySendBytesInternal(ReadOnlyMemory<byte> bytes, CancellationToken cancellationToken);
 
         protected abstract bool IsConnectionAlive();
 
@@ -180,36 +180,36 @@ namespace Sphere10.Framework.Communications {
         protected virtual void OnSentBytes(ReadOnlySpan<byte> bytes) {
         }
 
-        #endregion
+		#endregion
 
-        #region Notify methods
+		#region Notify methods
 
-        private void NotifyOpening() {
+		protected void NotifyOpening() {
             OnOpening();
             Tools.Threads.RaiseAsync(Opening);
         }
 
-        private void NotifyOpened() {
+        protected void NotifyOpened() {
             OnOpened();
             Tools.Threads.RaiseAsync(Opened);
         }
 
-        private void NotifyClosing() {
+        protected void NotifyClosing() {
             OnClosing();
             Tools.Threads.RaiseAsync(Closing);
         }
 
-        private void NotifyClosed() {
+        protected void NotifyClosed() {
             OnClosed();
             Tools.Threads.RaiseAsync(Closed);
         }
 
-        private void NotifyReceivedBytes(byte[] bytes) {
+        protected void NotifyReceivedBytes(byte[] bytes) {
             OnReceivedBytes(bytes);
             Tools.Threads.RaiseAsync(ReceivedBytes, bytes);
         }
 
-        private void NotifySentBytes(byte[] bytes) {
+        protected void NotifySentBytes(byte[] bytes) {
             OnSentBytes(bytes);
             Tools.Threads.RaiseAsync(SentBytes, bytes);
         }
@@ -227,8 +227,8 @@ namespace Sphere10.Framework.Communications {
             State = state;
         }
 
-        #endregion
+		#endregion
 
-    }
+	}
 
 }

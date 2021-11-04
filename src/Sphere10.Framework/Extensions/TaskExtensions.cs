@@ -21,14 +21,29 @@ namespace Sphere10.Framework {
 
 
 		public static Task<T> IgnoringCancellationException<T>(this Task<T> task)
-			=> IgnoringException<T, OperationCanceledException>(task);
+			=> IgnoringExceptionOfType<T, OperationCanceledException>(task);
+
+
+		/// <summary>
+		/// Wraps the task with a try/catch that ignores all exceptions.
+		/// </summary>
+		/// <param name="task">The task</param>
+		/// <returns>Wrapped task</returns>
+		public static Task IgnoringExceptions(Task task)
+			=> task.IgnoringExceptionOfType<Exception>();
 
 
 		public static Task<T> IgnoringExceptions<T>(this Task<T> task)
-			=> IgnoringException<T, Exception>(task);
+			=> task.IgnoringExceptionOfType<T, Exception>();
 
-		public static async Task<T> IgnoringException<T, TException>(this Task<T> task) where TException : Exception {
-			Guard.ArgumentNotNull(task, nameof(task));
+		public static async Task IgnoringExceptionOfType<TException>(this Task task) where TException : Exception {
+			try {
+				 await task;
+			} catch (TException) {
+			}
+		}
+
+		public static async Task<T> IgnoringExceptionOfType<T, TException>(this Task<T> task) where TException : Exception {
 			T result;
 			try {
 				result = await task;
@@ -37,6 +52,98 @@ namespace Sphere10.Framework {
 			}
 			return result;
 		}
+
+
+		/// <summary>
+		/// Wraps the task with an exception handler.
+		/// </summary>
+		/// <param name="task">The task</param>
+		/// <param name="exceptionHandler">The catch block.</param>
+		/// <returns></returns>
+		public static Task WithExceptionHandler(this Task task, Action<Exception> exceptionHandler)
+			=> task.WithRetry(0, (_, e) => exceptionHandler(e));
+
+		/// <summary>
+		/// Wraps the task with an exception handler.
+		/// </summary>
+		/// <param name="task">The task</param>
+		/// <param name="exceptionHandler">The catch block.</param>
+		/// <returns></returns>
+		public static Task<T> WithExceptionHandler<T>(this Task<T> task, Action<Exception> exceptionHandler)
+			=> task.WithRetry(0, (_, e) => exceptionHandler(e));
+
+		/// <summary>
+		/// Wraps an action with retry fail-over code.
+		/// </summary>
+		/// <param name="task">The task</param>
+		/// <param name="retryCount">Number of attempts to retry upon failure</param>
+		/// <param name="failAction">Action to execute when a failure occurs (e.g. could log, sleep, etc)</param>
+		/// <param name="onComplete">Action to execute when task completes</param>
+		/// <returns></returns>
+		public static Task WithRetry(this Task task, int retryCount, Action<int, Exception> failAction = null, Action<int> onComplete = null) 
+			=> task.WithFailOver(
+				(attempt, error) => {
+					failAction?.Invoke(attempt, error);
+					return attempt < retryCount + 1;
+				},
+				onComplete
+			);
+
+		/// <summary>
+		/// Wraps an action with retry fail-over code.
+		/// </summary>
+		/// <param name="task">The task</param>
+		/// <param name="retryCount">Number of attempts to retry upon failure</param>
+		/// <param name="failAction">Action to execute when a failure occurs (e.g. could log, sleep, etc)</param>
+		/// <param name="onComplete">Action to execute when task completes</param>
+		/// <returns></returns>
+		public static Task<T> WithRetry<T>(this Task<T> task, int retryCount, Action<int, Exception> failAction = null, Action<int> onComplete = null)
+			=> task.WithFailOver(
+				(attempt, error) => {
+					failAction?.Invoke(attempt, error);
+					return attempt < retryCount + 1;
+				},
+				onComplete
+			);
+
+		/// <summary>
+		/// Adds fail-over redundancy code to the task.
+		/// </summary>
+		/// <param name="task">The task.</param>
+		/// <param name="decideRetry">Functor to decide whether or not to retry. Parameters are attempt number, last Exception and returns true/false.</param>
+		/// <param name="onComplete">Action to execute when task completes</param>
+		/// <param name="attempt">The attempt</param>
+		/// <returns>The given task wrapped with fail-over code.</returns>
+		public static async Task WithFailOver(this Task task, Func<int, Exception, bool> decideRetry, Action<int> onComplete = null, int attempt = 1) {
+			try {
+				await task;
+				onComplete?.Invoke(attempt);
+			} catch (Exception error) {
+				if (decideRetry(attempt, error))
+					await WithFailOver(task, decideRetry, onComplete, ++attempt);
+			}
+		}
+
+		/// <summary>
+		/// Adds fail-over redundancy code to the task.
+		/// </summary>
+		/// <param name="task">The task.</param>
+		/// <param name="decideRetry">Functor to decide whether or not to retry. Parameters are attempt number, last Exception and returns true/false.</param>
+		/// <param name="onComplete">Action to execute when task completes</param>
+		/// <param name="attempt">The attempt count of this fail-over</param>
+		/// <returns>The given task wrapped with fail-over code.</returns>
+		public static async Task<T> WithFailOver<T>(this Task<T> task, Func<int, Exception, bool> decideRetry, Action<int> onComplete = null, int attempt = 1) {
+			try {
+				var result = await task;
+				onComplete?.Invoke(attempt);
+				return result;
+			} catch (Exception error) {
+				if (decideRetry(attempt, error))
+					return await WithFailOver(task, decideRetry, onComplete, ++attempt);
+				throw;
+			}
+		}
+
 
         /// <summary>
         /// Makes a non-cancellable task cancellable.

@@ -8,8 +8,8 @@ namespace Sphere10.Framework {
 	/// <typeparam name="TItem"></typeparam>
 	public abstract class FilePagedListBase<TItem> : MemoryPagedListBase<TItem>, IFilePagedList<TItem> {
 
-		protected FilePagedListBase(string filename, int pageSize, int maxCacheCapacity, CacheCapacityPolicy cachePolicy, bool readOnly = false)
-			: base(pageSize, maxCacheCapacity, cachePolicy) {
+		protected FilePagedListBase(string filename, int pageSize, long maxMemory, bool readOnly = false)
+			: base(pageSize, maxMemory) {
 			IsReadOnly = readOnly;
 			var fileExists = File.Exists(filename);
 			if (readOnly) {

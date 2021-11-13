@@ -16,8 +16,8 @@ namespace Sphere10.Framework {
 	/// </summary>
 	public sealed class FileMappedBuffer : FilePagedListBase<byte>, IMemoryPagedBuffer {
 
-		public FileMappedBuffer(string filename, int pageSize, int maxOpenPages, bool readOnly = false)
-			: base(filename, pageSize, maxOpenPages, CacheCapacityPolicy.CapacityIsMaxOpenPages, readOnly) {
+		public FileMappedBuffer(string filename, int pageSize, long maxMemory, bool readOnly = false)
+			: base(filename, pageSize, maxMemory, readOnly) {
 		}
 
 		internal new IReadOnlyList<IBufferPage> Pages => new ReadOnlyListDecorator<IPage<byte>, IBufferPage>(InternalPages);

@@ -44,13 +44,13 @@ namespace Sphere10.Framework.Tests {
 			using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectories(fileBaseDir, txnBaseDir))) {
 				using (var scope1 = new FileTransactionScope(txnBaseDir)) {
 					scope1.BeginTransaction();
-					scope1.EnlistFile(filePath1, 100, 1);
+					scope1.EnlistFile(filePath1, 100, 1*100);
 					using (var scope2 = new FileTransactionScope(txnBaseDir)) {
 						scope2.BeginTransaction();
-						scope2.EnlistFile(filePath2, 100, 1);
+						scope2.EnlistFile(filePath2, 100, 1*100);
 						using (var scope3 = new FileTransactionScope(txnBaseDir)) {
 							scope3.BeginTransaction();
-							scope3.EnlistFile(filePath3, 100, 1);
+							scope3.EnlistFile(filePath3, 100, 1*100);
 
 							// Ensures that scope3 refers to 3 enlisted files
 							Assert.AreEqual(filePath1, scope3.Transaction.EnlistedFiles[0].Path);
@@ -86,7 +86,7 @@ namespace Sphere10.Framework.Tests {
 						filePageDir,
 						Guid.NewGuid(),
 						100,
-						1); // note: filePageDir != txnBaseDir
+						1*100); // note: filePageDir != txnBaseDir
 					Assert.Throws<ArgumentException>(() => scope.EnlistFile(file, true));
 				}
 			}
@@ -109,7 +109,7 @@ namespace Sphere10.Framework.Tests {
 						filePageDir,
 						Guid.NewGuid(),
 						100,
-						1); // note: filePageDir == txnBaseDir
+						1*100); // note: filePageDir == txnBaseDir
 					Assert.DoesNotThrow(() => scope.EnlistFile(file, true));
 				}
 			}
@@ -134,7 +134,7 @@ namespace Sphere10.Framework.Tests {
 				using (var scope1 = new FileTransactionScope(txnBaseDir)) {
 					txnFile = scope1.TransactionFile;
 					scope1.BeginTransaction();
-					var file = scope1.EnlistFile(filePath, 100, 1) as TransactionalFileMappedBuffer;
+					var file = scope1.EnlistFile(filePath, 100, 1*100) as TransactionalFileMappedBuffer;
 					file.AddRange(chunk1);
 
 					using (var scope2 = new FileTransactionScope(txnBaseDir)) {
@@ -180,7 +180,7 @@ namespace Sphere10.Framework.Tests {
 				using (var scope1 = new FileTransactionScope(txnBaseDir)) {
 					txnFile = scope1.TransactionFile;
 					scope1.BeginTransaction();
-					var file = scope1.EnlistFile(filePath, 100, 1) as TransactionalFileMappedBuffer;
+					var file = scope1.EnlistFile(filePath, 100, 1*100) as TransactionalFileMappedBuffer;
 					file.AddRange(chunk1);
 
 					using (var scope2 = new FileTransactionScope(txnBaseDir)) {
@@ -227,7 +227,7 @@ namespace Sphere10.Framework.Tests {
 				using (var scope1 = new FileTransactionScope(txnBaseDir)) {
 					txnFile = scope1.TransactionFile;
 					scope1.BeginTransaction();
-					var file = scope1.EnlistFile(filePath, 100, 1) as TransactionalFileMappedBuffer;
+					var file = scope1.EnlistFile(filePath, 100, 1*100) as TransactionalFileMappedBuffer;
 					file.AddRange(chunk1);
 
 					using (var scope2 = new FileTransactionScope(txnBaseDir)) {
@@ -276,7 +276,7 @@ namespace Sphere10.Framework.Tests {
 				using (var scope1 = new FileTransactionScope(txnBaseDir)) {
 					txnFile = scope1.TransactionFile;
 					scope1.BeginTransaction();
-					var file = scope1.EnlistFile(filePath, 100, 1) as TransactionalFileMappedBuffer;
+					var file = scope1.EnlistFile(filePath, 100, 1*100) as TransactionalFileMappedBuffer;
 					file.AddRange(chunk1);
 
 					using (var scope2 = new FileTransactionScope(txnBaseDir)) {
@@ -315,7 +315,7 @@ namespace Sphere10.Framework.Tests {
 			using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectories(fileBaseDir, txnBaseDir))) {
 				using (var scope1 = new FileTransactionScope(txnBaseDir)) {
 					scope1.BeginTransaction();
-					var file = scope1.EnlistFile(filePath, 100, 1) as TransactionalFileMappedBuffer;
+					var file = scope1.EnlistFile(filePath, 100, 1*100) as TransactionalFileMappedBuffer;
 					Assert.Throws<InvalidOperationException>(() => file.Commit());
 					scope1.Rollback();
 				}
@@ -334,7 +334,7 @@ namespace Sphere10.Framework.Tests {
 			using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectories(fileBaseDir, txnBaseDir))) {
 				using (var scope1 = new FileTransactionScope(txnBaseDir)) {
 					scope1.BeginTransaction();
-					var file = new TransactionalFileMappedBuffer(filePath, 100, 1); // note: not enlisted in scope
+					var file = new TransactionalFileMappedBuffer(filePath, 100, 1*100); // note: not enlisted in scope
 					if (file.RequiresLoad)
 						file.Load();
 
@@ -356,7 +356,7 @@ namespace Sphere10.Framework.Tests {
 			using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectories(fileBaseDir, txnBaseDir))) {
 				using (var scope1 = new FileTransactionScope(txnBaseDir)) {
 					scope1.BeginTransaction();
-					var file = scope1.EnlistFile(filePath, 100, 1) as TransactionalFileMappedBuffer;
+					var file = scope1.EnlistFile(filePath, 100, 1*100) as TransactionalFileMappedBuffer;
 					Assert.Throws<InvalidOperationException>(() => file.Rollback());
 					scope1.Rollback();
 				}
@@ -377,7 +377,7 @@ namespace Sphere10.Framework.Tests {
 				using (var scope1 = new FileTransactionScope(txnBaseDir)) {
 					scope1.BeginTransaction();
 					// note: file is not enlisted
-					var file = new TransactionalFileMappedBuffer(filePath, 100, 1); // note: not enlisted in scope
+					var file = new TransactionalFileMappedBuffer(filePath, 100, 1*100); // note: not enlisted in scope
 					if (file.RequiresLoad)
 						file.Load();
 					Assert.DoesNotThrow(() => file.Rollback());
@@ -415,7 +415,7 @@ namespace Sphere10.Framework.Tests {
 				for (var i = 0; i < loops; i++) {
 					using (var scope = new FileTransactionScope(txnBaseDir, ScopeContextPolicy.MustBeRoot)) {
 						scope.BeginTransaction();
-						var file = scope.EnlistFile(filepath, 100, 1);
+						var file = scope.EnlistFile(filepath, 100, 1*100);
 						file.AsBuffer.AddRange(RNG.NextBytes(100));
 						scope.Commit();
 					}

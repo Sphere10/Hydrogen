@@ -91,11 +91,11 @@ namespace Sphere10.Framework {
 			}
 		}
 
-		public TransactionalFileMappedBuffer EnlistFile(string filename, int pageSize, int maxOpenPages) {
-			return EnlistFile(filename, Guid.NewGuid(), pageSize, maxOpenPages);
+		public TransactionalFileMappedBuffer EnlistFile(string filename, int pageSize, long maxMemory) {
+			return EnlistFile(filename, Guid.NewGuid(), pageSize, maxMemory);
 		}
 
-		public TransactionalFileMappedBuffer EnlistFile(string filename, Guid fileID, int pageSize, int maxOpenPages) {
+		public TransactionalFileMappedBuffer EnlistFile(string filename, Guid fileID, int pageSize, long maxMemory) {
 			Guard.ArgumentNotNullOrEmpty(filename, nameof(filename));
 
 			if (File.Exists(filename)) {
@@ -112,7 +112,7 @@ namespace Sphere10.Framework {
 				if (GloballyEnlistedFiles.ContainsKey(filename))
 					throw new InvalidOperationException($"File already enlisted in other transaction: {filename})");
 
-				return EnlistFile(new TransactionalFileMappedBuffer(filename, UncomittedPageFileDirectory, fileID, pageSize, maxOpenPages, false), true);
+				return EnlistFile(new TransactionalFileMappedBuffer(filename, UncomittedPageFileDirectory, fileID, pageSize, maxMemory, false), true);
 			}
 		}
 
@@ -212,7 +212,7 @@ namespace Sphere10.Framework {
 			this.TransactionHeaderFile = transactionHeaderFile;
 			this.UncomittedPageFileDirectory = surrogate.UncomittedPageFileDirectory;
 			foreach (var enlistedSurrogate in surrogate.EnlistedFiles) {
-				EnlistFile(enlistedSurrogate.Filename, enlistedSurrogate.FileID, enlistedSurrogate.PageSize, enlistedSurrogate.MaxOpenPages);
+				EnlistFile(enlistedSurrogate.Filename, enlistedSurrogate.FileID, enlistedSurrogate.PageSize, enlistedSurrogate.MaxMemory);
 			}
 		}
 
@@ -251,7 +251,7 @@ namespace Sphere10.Framework {
 			public string Filename { get; set; }
 			public Guid FileID { get; set; }
 			public int PageSize { get; set; }
-			public int MaxOpenPages { get; set; }
+			public long MaxMemory { get; set; }
 
 			public TransactionalFileSerializableSurrogate() {
 			}
@@ -264,7 +264,7 @@ namespace Sphere10.Framework {
 				to.Filename = from.Path;
 				to.FileID = from.FileID;
 				to.PageSize = from.PageSize;
-				to.MaxOpenPages = from.MaxOpenPages;
+				to.MaxMemory = from.MaxMemory;
 			}
 
 			public static TransactionalFileSerializableSurrogate Dehydrate(TransactionalFileMappedBuffer transaction) {

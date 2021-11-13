@@ -28,7 +28,7 @@ namespace Sphere10.Framework.Tests {
 			[Values(StorageType.MemoryPagedBuffer, StorageType.BinaryFile, StorageType.TransactionalBinaryFile)] StorageType storageType,
 			[Values(1, 2, 10, 57, 173)] int pageSize,
 			[Values(1, 2, int.MaxValue)] int maxOpenPages) {
-			using (CreateMemPagedBuffer(storageType, pageSize, maxOpenPages, out var buffer)) {
+			using (CreateMemPagedBuffer(storageType, pageSize, maxOpenPages*(long)pageSize, out var buffer)) {
 				buffer.AddRange(Tools.Array.Gen<byte>(pageSize, 10));
 				// Check page
 				Assert.AreEqual(1, buffer.Pages.Count());
@@ -52,7 +52,7 @@ namespace Sphere10.Framework.Tests {
 			[Values(StorageType.MemoryPagedBuffer, StorageType.BinaryFile, StorageType.TransactionalBinaryFile)] StorageType storageType,
 			[Values(1, 2, 10, 57, 173)] int pageSize) {
 
-			using (CreateMemPagedBuffer(storageType, pageSize, 1, out var buffer)) {
+			using (CreateMemPagedBuffer(storageType, pageSize, 1*pageSize, out var buffer)) {
 				buffer.AddRange(Tools.Array.Gen<byte>(pageSize, 10));
 
 				// Check Page 1
@@ -101,7 +101,7 @@ namespace Sphere10.Framework.Tests {
 			[Values(StorageType.MemoryPagedBuffer, StorageType.BinaryFile, StorageType.TransactionalBinaryFile)] StorageType storageType,
 			[Values(1, 2, 10, 57, 173)] int pageSize,
 			[Values(1, 2, int.MaxValue)] int maxOpenPages) {
-			using (CreateMemPagedBuffer(storageType, pageSize, maxOpenPages, out var buffer)) {
+			using (CreateMemPagedBuffer(storageType, pageSize, maxOpenPages * (long)pageSize, out var buffer)) {
 				buffer.AddRange(Tools.Array.Gen<byte>(pageSize, 10));
 				buffer.RemoveRange(0, buffer.Count);
 				Assert.AreEqual(0, buffer.Pages.Count);
@@ -115,7 +115,7 @@ namespace Sphere10.Framework.Tests {
 			[Values(StorageType.MemoryPagedBuffer, StorageType.BinaryFile, StorageType.TransactionalBinaryFile)] StorageType storageType,
 			[Values(2, 10, 57, 173)] int pageSize,
 			[Values(1, 2, int.MaxValue)] int maxOpenPages) {
-			using (CreateMemPagedBuffer(storageType, pageSize, maxOpenPages, out var buffer)) {
+			using (CreateMemPagedBuffer(storageType, pageSize, maxOpenPages*(long)pageSize, out var buffer)) {
 				buffer.AddRange(Tools.Array.Gen<byte>(pageSize, 10));
 				buffer.RemoveRange(1, buffer.Count-1);
 				Assert.AreEqual(1, buffer.Pages.Count);
@@ -130,7 +130,7 @@ namespace Sphere10.Framework.Tests {
 			[Values(1, 2, 111)] int pageSize,
 			[Values(1, 2, int.MaxValue)] int maxOpenPages) {
 			var expected = new byte[] { 127, 17, 18, 19 };
-			using (CreateMemPagedBuffer(storageType, pageSize, maxOpenPages, out var buffer)) {
+			using (CreateMemPagedBuffer(storageType, pageSize, maxOpenPages*(long)pageSize, out var buffer)) {
 				buffer.AddRange<byte>(127, 16, 15, 14, 13);
 				buffer.RemoveRange(1, 4);
 				Assert.AreEqual(1, buffer.Count);
@@ -149,7 +149,7 @@ namespace Sphere10.Framework.Tests {
 		public void IntegrationTests([Values] StorageType storageType, [Values(1, 10, 57, 173, 1111)] int pageSize, [Values(1,2,100)] int maxOpenPages) {
 			var expected = new List<byte>();
 			var maxCapacity = pageSize * maxOpenPages*2;
-			using (CreateBuffer(storageType, pageSize, maxOpenPages, out var buffer)) {
+			using (CreateBuffer(storageType, pageSize, maxOpenPages*pageSize, out var buffer)) {
 				var mutateFromEndOnly = buffer is not MemoryBuffer;
 				AssertEx.BufferIntegrationTest(buffer, maxCapacity, mutateFromEndOnly);
 			}
@@ -162,36 +162,36 @@ namespace Sphere10.Framework.Tests {
 			TransactionalBinaryFile,
 		}
 
-		private IDisposable CreateBuffer(StorageType storageType, int pageSize, int maxOpenPages, out IBuffer buffer) {
+		private IDisposable CreateBuffer(StorageType storageType, int pageSize, long maxMemory, out IBuffer buffer) {
 			switch (storageType) {
 				case StorageType.MemoryBuffer:
 					buffer = new MemoryBuffer(0, pageSize);
 					return new Disposables();
 			}
 			
-			var result = CreateMemPagedBuffer(storageType, pageSize, maxOpenPages, out var memBuffer);
+			var result = CreateMemPagedBuffer(storageType, pageSize, maxMemory, out var memBuffer);
 			buffer = memBuffer;
 			return result;
 		}
 
-		private IDisposable CreateMemPagedBuffer(StorageType storageType, int pageSize, int maxOpenPages, out IMemoryPagedBuffer buffer) {
+		private IDisposable CreateMemPagedBuffer(StorageType storageType, int pageSize, long maxMemory, out IMemoryPagedBuffer buffer) {
 			var disposables = new Disposables();
 
 			switch (storageType) {
 				case StorageType.MemoryBuffer:
 					throw new InvalidOperationException();
 				case StorageType.MemoryPagedBuffer:
-					buffer = new MemoryPagedBuffer(pageSize, maxOpenPages);
+					buffer = new MemoryPagedBuffer(pageSize, maxMemory);
 					break;
 				case StorageType.BinaryFile:
 					var tmpFile = Tools.FileSystem.GetTempFileName(false);
-					buffer = new FileMappedBuffer(tmpFile, pageSize, maxOpenPages);
+					buffer = new FileMappedBuffer(tmpFile, pageSize, maxMemory);
 					disposables.Add(new ActionScope(() => File.Delete(tmpFile)));
 					break;
 				case StorageType.TransactionalBinaryFile:
 					var baseDir = Tools.FileSystem.GetTempEmptyDirectory(true);
 					var fileName = Path.Combine(baseDir, "File.dat");
-					buffer = new TransactionalFileMappedBuffer(fileName, baseDir, Guid.NewGuid(), pageSize, maxOpenPages);
+					buffer = new TransactionalFileMappedBuffer(fileName, baseDir, Guid.NewGuid(), pageSize, maxMemory);
 					disposables.Add(new ActionScope(() => Tools.FileSystem.DeleteDirectory(baseDir)));
 					break;
 				default:

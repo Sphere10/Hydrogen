@@ -11,6 +11,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
+using System;
 using System.Threading;
 
 namespace Sphere10.Framework {
@@ -27,15 +28,19 @@ namespace Sphere10.Framework {
     public class SynchronizedObject<TReadScope, TWriteScope> : ISynchronizedObject<TReadScope, TWriteScope>
         where TReadScope : IScope, new()
         where TWriteScope : IScope, new() {
+	    private readonly ReaderWriterLockSlim _threadLock;
 
-        protected SynchronizedObject() : this(LockRecursionPolicy.SupportsRecursion) {
-        }
+		protected SynchronizedObject() 
+			: this(LockRecursionPolicy.SupportsRecursion) {
+		}
 
         protected SynchronizedObject(LockRecursionPolicy policy) {
-            ThreadLock = new ReaderWriterLockSlim(policy);
+	        _threadLock = new ReaderWriterLockSlim(policy);
         }
 
-        public ReaderWriterLockSlim ThreadLock { get; }
+        public ISynchronizedObject<TReadScope, TWriteScope> ParentSyncObject { get; set; }
+
+        public ReaderWriterLockSlim ThreadLock => ParentSyncObject?.ThreadLock ?? _threadLock;
 
         public TReadScope EnterReadScope() {
             ThreadLock.EnterReadLock();

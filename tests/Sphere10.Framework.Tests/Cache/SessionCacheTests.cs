@@ -13,6 +13,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NUnit.Framework;
@@ -65,7 +66,7 @@ namespace Sphere10.Framework.Tests {
                 Thread.Sleep(50);
 			}
 		    cache.Cleanup(); // Need to call this manually since https://dzone.com/articles/unit-testing-multi-threaded
-            var remaining = cache.GetCachedItems();
+		    var remaining = cache.InternalStorage;
             Assert.AreEqual(3, remaining.Count);
             Assert.IsTrue(remaining.ContainsKey(1));
             Assert.IsTrue(remaining.ContainsKey(2));
@@ -91,7 +92,7 @@ namespace Sphere10.Framework.Tests {
             cache.Remove(2);
             cache.Remove(3);
 			cache.Cleanup(); // Need to call this manually since https://dzone.com/articles/unit-testing-multi-threaded
-            var remaining = cache.GetCachedItems();
+			var remaining = cache.InternalStorage;
             Assert.AreEqual(1, remaining.Count);
             Assert.IsTrue(remaining.ContainsKey(1));
         }

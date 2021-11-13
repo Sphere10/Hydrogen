@@ -16,7 +16,7 @@ namespace Sphere10.Framework {
 	public interface ISynchronizedResource : ISynchronizedResource<Scope, Scope>, ISynchronizedObject {
 	}
 
-    public interface ISynchronizedResource<out TReadScope, out TWriteScope> : ISynchronizedObject<TReadScope, TWriteScope>
+    public interface ISynchronizedResource<TReadScope, TWriteScope> : ISynchronizedObject<TReadScope, TWriteScope>
 		where TReadScope : IScope
         where TWriteScope : IScope {
 

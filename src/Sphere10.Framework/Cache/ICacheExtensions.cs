@@ -17,17 +17,13 @@ using System.Linq;
 namespace Sphere10.Framework {
 	public static class ICacheExtensions {
 
-        public static TVal Get<TKey, TVal>(this ICache<TKey, TVal> cache, TKey key) {
-            return cache[key];
-        }
+		public static IEnumerable<V> GetAllCachedValues<K, V>(this ICache<K, V> cache) {
+			using (cache.EnterReadScope()) {
+				return cache.CachedItems.Select(c => c.Value).ToArray();
+			}
+		}
 
-        public static IEnumerable<V> GetAllCachedValues<K, V>(this ICache<K, V> cache) {
-	        using (cache.EnterReadScope()) {
-		        return cache.GetCachedItems().Values.Select(c => c.Value).ToArray();
-	        }
-        }
-
-        public static void Set<K, V>(this ICache<K, V> cache, K key, V value) {
+		public static void Set<K, V>(this ICache<K, V> cache, K key, V value) {
             cache.BulkLoad(new[] {new KeyValuePair<K, V>(key, value)});
         }
     }

@@ -22,12 +22,12 @@ namespace Sphere10.Framework {
 		public event EventHandlerEx<object, IMemoryPage<TItem>> PageUnloading { add => InternalPagedList.PageUnloading += value; remove => InternalPagedList.PageUnloading -= value; }
 		public event EventHandlerEx<object, IMemoryPage<TItem>> PageUnloaded { add => InternalPagedList.PageUnloaded += value; remove => InternalPagedList.PageUnloaded -= value; }
 
-		public LargeCollection(int pageSize, int maxOpenPages)
-			: this(pageSize, maxOpenPages, null) {
+		public LargeCollection(int pageSize, long maxMemory)
+			: this(pageSize, maxMemory, null) {
 		}
 
-		public LargeCollection(int pageSize, int maxOpenPages, Func<TItem, int> itemSizer)
-			: base(new MemoryPagedList<TItem>(pageSize, maxOpenPages, itemSizer)) {
+		public LargeCollection(int pageSize, long maxMemory, Func<TItem, int> itemSizer)
+			: base(new MemoryPagedList<TItem>(pageSize, maxMemory, itemSizer)) {
 		}
 
 		protected MemoryPagedListBase<TItem> InternalPagedList => (MemoryPagedListBase<TItem>)base.InternalCollection;

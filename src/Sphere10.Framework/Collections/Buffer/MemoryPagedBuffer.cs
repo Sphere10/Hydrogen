@@ -6,8 +6,8 @@ namespace Sphere10.Framework {
 
 	public class MemoryPagedBuffer : MemoryPagedListBase<byte>, IMemoryPagedBuffer {
 
-        public MemoryPagedBuffer(int pageSize, int inMemoryPages) 
-			: base(pageSize, inMemoryPages, CacheCapacityPolicy.CapacityIsMaxOpenPages) {
+        public MemoryPagedBuffer(int pageSize, long maxMemory) 
+			: base(pageSize, maxMemory) {
 		}
 
 		internal new IReadOnlyList<IBufferPage> Pages => new ReadOnlyListDecorator<IPage<byte>, IBufferPage>(InternalPages);

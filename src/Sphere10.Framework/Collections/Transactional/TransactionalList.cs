@@ -26,11 +26,11 @@ namespace Sphere10.Framework {
 		/// <param name="uncommittedPageFileDir">A working directory which stores transactional pages before comitted. Must be same across system restart.</param>
 		/// <param name="fileID">A unique ID for this file. Must be the same across system restarts.</param>
 		/// <param name="maxStorageBytes">Maximum size file should take.</remarks>
-		/// <param name="memoryCacheBytes">How much of the file is cached in memory. <remarks>This value should (roughly) be a factor of <see cref="transactionalPageSizeBytes"/></remarks></param>
+		/// <param name="maxMemory">How much of the list can be kept in memory at any time</param>
 		/// <param name="maxItems">The maximum number of items this file will ever support. <remarks>Avoid <see cref="Int32.MaxValue"/> and give lowest number possible.</remarks> </param>
 		/// <param name="readOnly">Whether or not file is opened in readonly mode.</param>
-		public TransactionalList(IItemSerializer<T> serializer, string filename, string uncommittedPageFileDir, Guid fileID, int maxStorageBytes, int memoryCacheBytes, int maxItems, bool readOnly = false)
-			: this(serializer, filename, uncommittedPageFileDir, fileID, DefaultTransactionalPageSize, maxStorageBytes, memoryCacheBytes, DefaultClusterSize, maxItems, readOnly) {
+		public TransactionalList(IItemSerializer<T> serializer, string filename, string uncommittedPageFileDir, Guid fileID, int maxStorageBytes, long maxMemory, int maxItems, bool readOnly = false)
+			: this(serializer, filename, uncommittedPageFileDir, fileID, DefaultTransactionalPageSize, maxStorageBytes, maxMemory, DefaultClusterSize, maxItems, readOnly) {
 		}
 
 		/// <summary>
@@ -42,11 +42,11 @@ namespace Sphere10.Framework {
 		/// <param name="fileID">A unique ID for this file. Must be the same across system restarts.</param>
 		/// <param name="transactionalPageSizeBytes">Size of transactional page</param>
 		/// <param name="maxStorageBytes">Maximum size file should take.</remarks>		
-		/// <param name="memoryCacheBytes">How much of the file is cached in memory. <remarks>This value should (roughly) be a factor of <see cref="transactionalPageSizeBytes"/></remarks></param>
+		/// <param name="maxMemory">How much of the list can be kept in memory at any time</param>
 		/// <param name="clusterSize">To support random access reads/writes the file is broken into discontinuous clusters of this size (similar to how disk storage) works. <remarks>Try to fit your average object in 1 cluster for performance. However, spare space in a cluster cannot be used.</remarks> </param>
 		/// <param name="maxItems">The maximum count of items this file will ever support. <remarks>Avoid <see cref="Int32.MaxValue"/> and give lowest number possible.</remarks> </param>
 		/// <param name="readOnly">Whether or not file is opened in readonly mode.</param>
-		public TransactionalList(IItemSerializer<T> serializer, string filename, string uncommittedPageFileDir, Guid fileID, int transactionalPageSizeBytes, int maxStorageBytes, int memoryCacheBytes, int clusterSize, int maxItems, bool readOnly = false)
+		public TransactionalList(IItemSerializer<T> serializer, string filename, string uncommittedPageFileDir, Guid fileID, int transactionalPageSizeBytes, int maxStorageBytes, long maxMemory, int clusterSize, int maxItems, bool readOnly = false)
 			: base(
 				NewSynchronizedExtendedList(
 					NewStreamMappedFixedClusteredList(
@@ -59,7 +59,7 @@ namespace Sphere10.Framework {
 								uncommittedPageFileDir,
 								fileID,
 								transactionalPageSizeBytes,
-								Math.Max(1, memoryCacheBytes / transactionalPageSizeBytes),
+								maxMemory,
 								readOnly,
 								out var buffer
 							),
@@ -88,11 +88,11 @@ namespace Sphere10.Framework {
 		/// <param name="filename">File which will contain the serialized objects.</param>
 		/// <param name="uncommittedPageFileDir">A working directory which stores transactional pages before comitted. Must be same across system restart.</param>
 		/// <param name="fileID">A unique ID for this file. Must be the same across system restarts.</param>
-		/// <param name="memoryCacheBytes">How much of the file is cached in memory. <remarks>This value should (roughly) be a factor of <see cref="transactionalPageSizeBytes"/></remarks></param>
+		/// <param name="maxMemory">How much of the list can be kept in memory at any time</param>
 		/// <param name="serializer">Serializer for the objects</param>
 		/// <param name="readOnly">Whether or not file is opened in readonly mode.</param>
-		public TransactionalList(string filename, string uncommittedPageFileDir, Guid fileID, int memoryCacheBytes, IItemSerializer<T> serializer, bool readOnly = false)
-			: this(filename, uncommittedPageFileDir, fileID, DefaultTransactionalPageSize, memoryCacheBytes, DefaultClusterSize, serializer, readOnly) {
+		public TransactionalList(string filename, string uncommittedPageFileDir, Guid fileID, long maxMemory, IItemSerializer<T> serializer, bool readOnly = false)
+			: this(filename, uncommittedPageFileDir, fileID, DefaultTransactionalPageSize, maxMemory, DefaultClusterSize, serializer, readOnly) {
 		}
 
 		/// <summary>
@@ -102,11 +102,11 @@ namespace Sphere10.Framework {
 		/// <param name="uncommittedPageFileDir">A working directory which stores transactional pages before comitted. Must be same across system restart.</param>
 		/// <param name="fileID">A unique ID for this file. Must be the same across system restarts.</param>
 		/// <param name="transactionalPageSizeBytes">Size of transactional page</param>
-		/// <param name="memoryCacheBytes">How much of the file is cached in memory. <remarks>This value should (roughly) be a factor of <see cref="transactionalPageSizeBytes"/></remarks></param>
+		/// <param name="maxMemory">How much of the list can be kept in memory at any time</param>
 		/// <param name="clusterSize">To support random access reads/writes the file is broken into discontinuous clusters of this size (similar to how disk storage) works. <remarks>Try to fit your average object in 1 cluster for performance. However, spare space in a cluster cannot be used.</remarks> </param>
 		/// <param name="serializer">Serializer for the objects</param>
 		/// <param name="readOnly">Whether or not file is opened in readonly mode.</param>
-		public TransactionalList(string filename, string uncommittedPageFileDir, Guid fileID, int transactionalPageSizeBytes, int memoryCacheBytes, int clusterSize, IItemSerializer<T> serializer, bool readOnly = false)
+		public TransactionalList(string filename, string uncommittedPageFileDir, Guid fileID, int transactionalPageSizeBytes, long maxMemory, int clusterSize, IItemSerializer<T> serializer, bool readOnly = false)
 			: base(
 				NewSynchronizedExtendedList(
 					NewStreamMappedDynamicClusteredList(
@@ -117,7 +117,7 @@ namespace Sphere10.Framework {
 								uncommittedPageFileDir,
 								fileID,
 								transactionalPageSizeBytes,
-								Math.Max(1, memoryCacheBytes / transactionalPageSizeBytes),
+								maxMemory,
 								readOnly,
 								out var buffer
 							),
@@ -140,6 +140,11 @@ namespace Sphere10.Framework {
 		}
 
 		public bool RequiresLoad => _clusteredList.RequiresLoad;
+
+		public ISynchronizedObject<Scope, Scope> ParentSyncObject {
+			get => _synchronizedList.ParentSyncObject;
+			set => _synchronizedList.ParentSyncObject = value;
+		}
 
 		public ReaderWriterLockSlim ThreadLock => _synchronizedList.ThreadLock;
 
@@ -201,10 +206,10 @@ namespace Sphere10.Framework {
 			string uncommittedPageFileDir,
 			Guid fileID,
 			int transactionalPageSizeBytes,
-			int inMemPages,
+			long maxMemory,
 			bool readOnly,
 			out TransactionalFileMappedBuffer result) {
-			result = new TransactionalFileMappedBuffer(filename, uncommittedPageFileDir, fileID, transactionalPageSizeBytes, inMemPages, readOnly) {
+			result = new TransactionalFileMappedBuffer(filename, uncommittedPageFileDir, fileID, transactionalPageSizeBytes, maxMemory, readOnly) {
 				FlushOnDispose = false
 			};
 			return result;

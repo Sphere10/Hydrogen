@@ -156,7 +156,7 @@ namespace Sphere10.Framework {
 		}
 
 		public virtual bool Equals(Result other) {
-			var comparer = new EnumerableSequenceEqualComparer<ResultCode>();
+			var comparer = new EnumerableEqualityComparer<ResultCode>();
 			return comparer.Equals(ResultCodes, other.ResultCodes);
 		}
 

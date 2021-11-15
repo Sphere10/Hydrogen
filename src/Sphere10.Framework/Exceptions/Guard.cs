@@ -115,6 +115,7 @@ namespace Sphere10.Framework {
 			}
 		}
 
+
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static void ArgumentInRange(int value, int minInclusive, int maxInclusive, string paramName) {
 			ArgumentInRange(value, minInclusive, maxInclusive, paramName, $"Value should be in range [{minInclusive} - {maxInclusive}]");

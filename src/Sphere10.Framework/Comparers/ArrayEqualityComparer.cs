@@ -17,12 +17,22 @@ using System.Linq;
 
 namespace Sphere10.Framework.Collections {
 
-	public class EnumerableSequenceEqualComparer<T> : IEqualityComparer<IEnumerable<T>> {
-        public bool Equals(IEnumerable<T> x, IEnumerable<T> y) {
-            return Object.ReferenceEquals(x, y) || (x != null && y != null && x.SequenceEqual(y));
+	public class ArrayEqualityComparer<T> : IEqualityComparer<T[]> {
+		private readonly IEqualityComparer<T> _elementComparer;
+
+		public ArrayEqualityComparer() {
+			_elementComparer = EqualityComparer<T>.Default;
+		}
+
+		public ArrayEqualityComparer(IEqualityComparer<T> comparer) {
+			_elementComparer = comparer;
+		}
+
+		public bool Equals(T[] x, T[] y) {
+            return Object.ReferenceEquals(x, y) || (x != null && y != null && x.SequenceEqual(y, _elementComparer));
         }
 
-        public int GetHashCode(IEnumerable<T> obj) {
+        public int GetHashCode(T[] obj) {
             if (obj == null)
                 return 0;
 

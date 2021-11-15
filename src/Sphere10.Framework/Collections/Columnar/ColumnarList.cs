@@ -8,7 +8,7 @@ namespace Sphere10.Framework {
 	public class ColumnarList : RangedListBase<object[]> {
 		private IExtendedList<object>[] _columnStore;
 
-		public ColumnarList(IExtendedList<object>[] columnStore) {
+		public ColumnarList(params IExtendedList<object>[] columnStore) {
 			Guard.ArgumentNotNull(columnStore, nameof(columnStore));
 			Guard.Argument(columnStore.Length > 0, nameof(columnStore), "Must contain at least 1 column store");
 			_columnStore = columnStore;
@@ -22,7 +22,10 @@ namespace Sphere10.Framework {
 
 		public override void AddRange(IEnumerable<object[]> items) {
 			var rowItems = items as object[][] ?? items.ToArray();
+			if (rowItems.Length == 0)
+				return;
 			var columnarItems = Tools.Array.Transpose(rowItems, _columnStore.Length);
+			CheckDimension(columnarItems.Length);
 			for (var i = 0; i < columnarItems.Length; i++)
 				_columnStore[i].AddRange(columnarItems[i]);
 		}
@@ -34,7 +37,10 @@ namespace Sphere10.Framework {
 		public override void InsertRange(int index, IEnumerable<object[]> items) {
 			CheckIndex(index, true);
 			var rowItems = items as object[][] ?? items.ToArray();
+			if (rowItems.Length == 0)
+				return;
 			var columnarItems = Tools.Array.Transpose(rowItems, _columnStore.Length);
+			CheckDimension(columnarItems.Length);
 			for (var i = 0; i < columnarItems.Length; i++)
 				_columnStore[i].InsertRange(index, columnarItems[i]);
 		}
@@ -58,7 +64,10 @@ namespace Sphere10.Framework {
 		public override void UpdateRange(int index, IEnumerable<object[]> items) {
 			CheckIndex(index, true);
 			var rowItems = items as object[][] ?? items.ToArray();
+			if (rowItems.Length == 0)
+				return;
 			var columnarItems = Tools.Array.Transpose(rowItems, _columnStore.Length);
+			CheckDimension(columnarItems.Length);
 			for (var i = 0; i < columnarItems.Length; i++)
 				_columnStore[i].UpdateRange(index, columnarItems[i]);
 		}
@@ -82,6 +91,11 @@ namespace Sphere10.Framework {
 			Guard.ArgumentInRange(index, startIX, lastIX, nameof(index));
 			if (count > 0)
 				Guard.ArgumentInRange(index + count - 1, startIX, lastIX, nameof(count));
+		}
+
+
+		public void CheckDimension(int dim) {
+			Guard.ArgumentEquals(dim, Columns.Length, nameof(dim));
 		}
 	}
 

@@ -4,24 +4,59 @@ using System.IO;
 using System.Linq;
 
 namespace Sphere10.Framework {
-	public abstract class StreamMappedDynamicClusteredList<T, TListing> : StreamMappedClusteredListBase<T, TListing> where TListing : IItemListing {
+
+	/// <summary>
+	/// A list whose items are stored in a linked-list of clusters serialized over a stream. It is dynamic since the maximum capacity of the list does not need to be known on activation.
+	/// Items can added/removed arbitrarily and are stored in a non-contiguous manner over a linked-list of clusters (similar in principle to how file systems work). Unlike <see cref="StaticClusteredList{T}"/> there is
+	/// no limitation in the list's capacity imposed at construction since the listing's themselves are stored in clusters. However this benefit is paid for by a notable performance penalty since item listings are more costly to retrieve.
+	/// </summary>
+	/// <typeparam name="T">The type of item being stored in the list</typeparam>
+	/// <remarks>
+	/// The underlying implementation is similar to <see cref="StaticClusteredList{T}"/> except the "listing sector" is serialized as a fragmented stream over a linked-list of clusters whereas in <see cref="StaticClusteredList{T}"/> the listing sector is stored in a contiguous BLOB before the content sector.
+	/// </remarks>
+	public class DynamicClusteredList<T> : DynamicClusteredList<T, ItemListing> {
+
+		public DynamicClusteredList(int clusterDataSize, Stream stream, IItemSerializer<T> itemSerializer, IEqualityComparer<T> itemComparer = null)
+			: base(clusterDataSize, stream, itemSerializer, new ItemListingSerializer(), itemComparer) {
+		}
+
+		protected override ItemListing NewListingInstance(int itemSizeBytes, int clusterStartIndex) {
+			return new ItemListing {
+				Size = itemSizeBytes,
+				ClusterStartIndex = clusterStartIndex
+			};
+		}
+	}
+
+	/// <summary>
+	/// A list whose items are stored in a linked-list of clusters serialized over a stream. It is dynamic since the capacity of the list does not need to be known on activation.
+	/// Items can added/removed arbitrarily and are stored in a non-contiguous manner over a linked-list of clusters (similar in principle to how file systems work). Unlike <see cref="StaticClusteredList{T,TListing}"/> there is
+	/// no limitation in the list's capacity imposed at construction since the listing's themselves are stored in clusters. However this benefit is paid for by a notable performance penalty since item listings are more costly to retrieve.
+	/// </summary>
+	/// <typeparam name="T">The type of item being stored in the list</typeparam>
+	/// <typeparam name="TListing">The type of listing which tracks the stored items</typeparam>
+	/// <remarks>
+	/// The underlying implementation is similar to <see cref="StaticClusteredList{T}"/> except the "listing sector" is serialized as a fragmented stream over a linked-list of clusters whereas in <see cref="StaticClusteredList{T}"/> the listing sector is stored in a contiguous BLOB before the content sector.
+	/// </remarks>
+	public abstract class DynamicClusteredList<T, TListing> : ClusteredListBase<T, TListing> where TListing : IItemListing {
 		private const int HeaderSize = 256;
 
 		private readonly EndianBinaryWriter _headerWriter;
 		private readonly BoundedStream _headerStream;
 		private readonly List<int> _freeClusters;
 		private readonly LittleEndianBitConverter _bitConverter;
-		private StreamMappedPagedList<TListing> _listingStore;
-		private PreAllocatedList<TListing> _listings;
+		private PreAllocatedList<TListing> _listings;             // this is used to 
+		private StreamPagedList<TListing> _listingSector;
+		
 
-		protected StreamMappedDynamicClusteredList(int clusterDataSize, Stream stream, IItemSerializer<T> itemSerializer, IItemSerializer<TListing> listingSerializer, IEqualityComparer<T> itemComparer = null)
+		protected DynamicClusteredList(int clusterDataSize, Stream stream, IItemSerializer<T> itemSerializer, IItemSerializer<TListing> listingSerializer, IEqualityComparer<T> itemComparer = null)
 			: base(clusterDataSize, stream, itemSerializer, listingSerializer, itemComparer) {
 			_headerStream = new BoundedStream(stream, 0, HeaderSize - 1);
 			_headerWriter = new EndianBinaryWriter(EndianBitConverter.Little, _headerStream);
 			_freeClusters = new List<int>();
 			_bitConverter = EndianBitConverter.Little;
 
-			Clusters = new StreamMappedPagedList<Cluster>(
+			Clusters = new StreamPagedList<Cluster>(
 				new ClusterSerializer(clusterDataSize),
 				new NonClosingStream(new BoundedStream(stream, _headerStream.MaxAbsolutePosition + 1, long.MaxValue) { UseRelativeOffset = true })
 			);
@@ -33,18 +68,18 @@ namespace Sphere10.Framework {
 			Guard.ArgumentNotNull(items, nameof(items));
 			CheckLoaded();
 
-			var listings = new List<TListing>();
+			var newListings = new List<TListing>();
 
 			foreach (var item in items) {
-				listings.Add(AddItemToClusters(Count, item));
+				newListings.Add(AddItemToClusters(Count, item));
 			}
 
-			if (_listings.Capacity < _listings.Count + listings.Count) {
-				var required = _listings.Capacity - _listings.Count + listings.Count;
-				_listingStore.AddRange(Tools.Array.Gen(required, default(TListing)));
+			if (_listings.Capacity < _listings.Count + newListings.Count) {
+				var required = _listings.Capacity - _listings.Count + newListings.Count;
+				_listingSector.AddRange(Tools.Array.Gen(required, default(TListing)));
 			}
 
-			_listings.AddRange(listings);
+			_listings.AddRange(newListings);
 			UpdateCountHeader();
 		}
 
@@ -115,7 +150,7 @@ namespace Sphere10.Framework {
 			// Add listings
 			if (_listings.Capacity < _listings.Count + listings.Count) {
 				var required = _listings.Capacity - _listings.Count + listings.Count;
-				_listingStore.AddRange(Tools.Array.Gen(required, default(TListing)));
+				_listingSector.AddRange(Tools.Array.Gen(required, default(TListing)));
 			}
 
 			_listings.InsertRange(index, listings);
@@ -143,13 +178,13 @@ namespace Sphere10.Framework {
 
 			Clusters.Load();
 
-			_listingStore = new StreamMappedPagedList<TListing>(ListingSerializer, new FragmentedStream(new FragmentProvider(listingsBytesLength, this))) {
+			_listingSector = new StreamPagedList<TListing>(ListingSerializer, new FragmentedStream(new FragmentProvider(listingsBytesLength, this))) {
 				IncludeListHeader = false
 			};
-			_listingStore.Load();
+			_listingSector.Load();
 
-			_listings = new PreAllocatedList<TListing>(_listingStore);
-			_listings.AddRange(_listingStore);
+			_listings = new PreAllocatedList<TListing>(_listingSector);
+			_listings.AddRange(_listingSector);
 
 			for (var i = 0; i < Clusters.Count; i++) {
 				Clusters.ReadItemRaw(i, 0, sizeof(int), out var bytes);
@@ -186,14 +221,14 @@ namespace Sphere10.Framework {
 
 		protected override void Initialize() {
 			base.Initialize();
-			_listingStore = new StreamMappedPagedList<TListing>(ListingSerializer, new FragmentedStream(new FragmentProvider(this))) {
+			_listingSector = new StreamPagedList<TListing>(ListingSerializer, new FragmentedStream(new FragmentProvider(this))) {
 				IncludeListHeader = false
 			};
-			_listings = new PreAllocatedList<TListing>(_listingStore);
+			_listings = new PreAllocatedList<TListing>(_listingSector);
 			WriteHeader();
 
 			// listing store capacity set to 1, reserving cluster 0 as item listing. 
-			_listingStore.Add(default);
+			_listingSector.Add(default);
 		}
 
 		private void WriteHeader() {
@@ -221,16 +256,16 @@ namespace Sphere10.Framework {
 
 		private class FragmentProvider : IStreamFragmentProvider {
 
-			private readonly StreamMappedDynamicClusteredList<T, TListing> _parent;
+			private readonly DynamicClusteredList<T, TListing> _parent;
 
 			private readonly int _nextClusterOffset;
 
 			private readonly IDictionary<int, int> _fragmentClusterMap;
 
-			public FragmentProvider(StreamMappedDynamicClusteredList<T, TListing> parent) : this(0, parent) {
+			public FragmentProvider(DynamicClusteredList<T, TListing> parent) : this(0, parent) {
 			}
 
-			public FragmentProvider(long byteCount, StreamMappedDynamicClusteredList<T, TListing> parent) {
+			public FragmentProvider(long byteCount, DynamicClusteredList<T, TListing> parent) {
 				_parent = parent;
 				_nextClusterOffset = sizeof(int) + sizeof(int) + _parent.ClusterDataSize;
 				ByteCount = byteCount;
@@ -250,7 +285,7 @@ namespace Sphere10.Framework {
 				}
 			}
 
-			private StreamMappedPagedList<Cluster> Clusters => _parent.Clusters;
+			private StreamPagedList<Cluster> Clusters => _parent.Clusters;
 
 			private int ClusterDataSize => _parent.ClusterDataSize;
 
@@ -271,8 +306,7 @@ namespace Sphere10.Framework {
 
 				var clusterNumber = _fragmentClusterMap[index];
 
-				return Clusters[clusterNumber]
-					.Data[..(int)fragmentLength];
+				return Clusters[clusterNumber].Data[..(int)fragmentLength];
 			}
 
 			public (int fragmentIndex, int fragmentPosition) GetFragment(long position, out Span<byte> fragment) {
@@ -385,18 +419,4 @@ namespace Sphere10.Framework {
 		}
 	}
 
-
-	public class StreamMappedDynamicClusteredList<T> : StreamMappedDynamicClusteredList<T, ItemListing> {
-
-		public StreamMappedDynamicClusteredList(int clusterDataSize, Stream stream, IItemSerializer<T> itemSerializer, IEqualityComparer<T> itemComparer = null)
-			: base(clusterDataSize, stream, itemSerializer, new ItemListingSerializer(), itemComparer) {
-		}
-
-		protected override ItemListing NewListingInstance(int itemSizeBytes, int clusterStartIndex) {
-			return new ItemListing {
-				Size = itemSizeBytes,
-				ClusterStartIndex = clusterStartIndex
-			};
-		}
-	}
 }

@@ -6,16 +6,23 @@ using System.Threading;
 
 namespace Sphere10.Framework {
 
-	internal class FixedSizeStreamPage<TItem> : StreamPageBase<TItem> {
+	/// <summary>
+	/// A page of data stored on a stream whose items are dynamically sized. The page header thus stores the item sizes.
+	/// </summary>
+	/// <remarks>
+	/// Unlike <see cref="DynamicStreamPage{TItem}"/> no header is stored for the page.
+	/// </remarks>
+
+	internal class StaticStreamPage<TItem> : StreamPageBase<TItem> {
 		private readonly int _item0Offset;
 		private volatile int _version;
 
-		public FixedSizeStreamPage(StreamMappedPagedList<TItem> parent) : base(parent) {
-			Guard.Argument(parent.Serializer.IsFixedSize, nameof(parent), $"Parent list's serializer is not fixed size. {nameof(FixedSizeStreamPage<TItem>)} only supports fixed sized items.");
+		public StaticStreamPage(StreamPagedList<TItem> parent) : base(parent) {
+			Guard.Argument(parent.Serializer.IsFixedSize, nameof(parent), $"Parent list's serializer is not fixed size. {nameof(StaticStreamPage<TItem>)} only supports fixed sized items.");
 			Guard.Ensure(parent.Serializer.FixedSize > 0, "parent.Serializer.FixedSize > 0");
 			
 			_version = 0;
-			_item0Offset = Parent.IncludeListHeader ? StreamMappedPagedList<TItem>.ListHeaderSize : 0;
+			_item0Offset = Parent.IncludeListHeader ? StreamPagedList<TItem>.ListHeaderSize : 0;
 			base.State = PageState.Loaded;
 			base.StartIndex = 0;
 			base.EndIndex = (int)(Stream.Length - _item0Offset) / ItemSize - 1;

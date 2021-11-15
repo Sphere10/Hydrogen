@@ -7,7 +7,7 @@ using System.Linq;
 namespace Sphere10.Framework {
 
 	/// <summary>
-	/// A list implementation which is mapped onto a stream via contiguous pages. Items can only be added/removed from the end of the stream.
+	/// A list whose items are mapped onto a stream via contiguous pages. Items can only be added/removed from the end of the stream.
 	/// </summary>
 	/// <remarks>
 	/// List Serialization Format
@@ -48,24 +48,24 @@ namespace Sphere10.Framework {
 	///  - page headers to be slimmed down depending on traits
 	///  - indexing
 	/// </remarks>
-	public class StreamMappedPagedList<TItem> : PagedListBase<TItem> {
+	public class StreamPagedList<TItem> : PagedListBase<TItem> {
 		public const uint MagicID = 31337;
 		public const byte FormatVersion = 1;
 		public const int ListHeaderSize = 256;
 		public const int DefaultPageSize = 100;
 
-		public StreamMappedPagedList(IItemSerializer<TItem> serializer, Stream stream) : this(
-			serializer.IsFixedSize ? StreamMappedPagedListType.FixedSize : StreamMappedPagedListType.Dynamic,
+		public StreamPagedList(IItemSerializer<TItem> serializer, Stream stream) : this(
+			serializer.IsFixedSize ? StreamPagedListType.FixedSize : StreamPagedListType.Dynamic,
 			serializer,
 			stream,
 			serializer.IsFixedSize ? int.MaxValue : DefaultPageSize) {
 		}
 
-		public StreamMappedPagedList(IItemSerializer<TItem> serializer, Stream stream, int pageSize)
-			: this(serializer.IsFixedSize ? StreamMappedPagedListType.FixedSize : StreamMappedPagedListType.Dynamic, serializer, stream, pageSize) {
+		public StreamPagedList(IItemSerializer<TItem> serializer, Stream stream, int pageSize)
+			: this(serializer.IsFixedSize ? StreamPagedListType.FixedSize : StreamPagedListType.Dynamic, serializer, stream, pageSize) {
 		}
 
-		public StreamMappedPagedList(StreamMappedPagedListType type, IItemSerializer<TItem> serializer, Stream stream, int pageSize) {
+		public StreamPagedList(StreamPagedListType type, IItemSerializer<TItem> serializer, Stream stream, int pageSize) {
 			PageSize = pageSize;
 			Serializer = serializer;
 			Stream = stream;
@@ -79,7 +79,7 @@ namespace Sphere10.Framework {
 
 		public bool IncludeListHeader { get; set; } = true;
 
-		public StreamMappedPagedListType Type { get; }
+		public StreamPagedListType Type { get; }
 
 		internal Stream Stream { get; }
 
@@ -91,13 +91,13 @@ namespace Sphere10.Framework {
 
 		public override IDisposable EnterOpenPageScope(IPage<TItem> page) {
 			switch (Type) {
-				case StreamMappedPagedListType.Dynamic: {
+				case StreamPagedListType.Dynamic: {
 					var streamedPage = (DynamicStreamPage<TItem>)page;
 					streamedPage.Open();
 
 					return Tools.Scope.ExecuteOnDispose(streamedPage.Close);
 				}
-				case StreamMappedPagedListType.FixedSize:
+				case StreamPagedListType.FixedSize:
 					return Tools.Scope.ExecuteOnDispose(() => { }); //no-op
 				default:
 					throw new ArgumentOutOfRangeException();
@@ -158,10 +158,10 @@ namespace Sphere10.Framework {
 
 			// Load pages if any
 			var pages = new List<IPage<TItem>>();
-			if (Type is StreamMappedPagedListType.Dynamic) {
+			if (Type is StreamPagedListType.Dynamic) {
 				while (Stream.Position < Stream.Length)
 					pages.Add(InternalPages.Any() ? new DynamicStreamPage<TItem>(this) : new DynamicStreamPage<TItem>((DynamicStreamPage<TItem>)pages.Last()));
-			} else pages.Add(new FixedSizeStreamPage<TItem>(this));
+			} else pages.Add(new StaticStreamPage<TItem>(this));
 
 			return pages.ToArray();
 		}
@@ -176,18 +176,16 @@ namespace Sphere10.Framework {
 
 		protected override void OnPageDeleted(IPage<TItem> page) {
 			base.OnPageDeleted(page);
-
 			if (page is StreamPageBase<TItem> streamPage)
 				Stream.SetLength(page.Number > 0 ? streamPage.StartPosition : 0L);
-
 		}
 
 		protected override IPage<TItem> NewPageInstance(int pageNumber) =>
 			Type switch {
-				StreamMappedPagedListType.Dynamic => pageNumber == 0 ? new DynamicStreamPage<TItem>(this) : new DynamicStreamPage<TItem>((DynamicStreamPage<TItem>)InternalPages.Last()),
-				StreamMappedPagedListType.FixedSize => pageNumber == 0
-					? new FixedSizeStreamPage<TItem>(this)
-					: throw new InvalidOperationException($"{nameof(StreamMappedPagedListType.FixedSize)} only supports a single page."),
+				StreamPagedListType.Dynamic => pageNumber == 0 ? new DynamicStreamPage<TItem>(this) : new DynamicStreamPage<TItem>((DynamicStreamPage<TItem>)InternalPages.Last()),
+				StreamPagedListType.FixedSize => pageNumber == 0
+					? new StaticStreamPage<TItem>(this)
+					: throw new InvalidOperationException($"{nameof(StreamPagedListType.FixedSize)} only supports a single page."),
 				_ => throw new ArgumentOutOfRangeException()
 			};
 

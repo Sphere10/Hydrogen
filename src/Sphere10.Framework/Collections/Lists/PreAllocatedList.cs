@@ -6,7 +6,7 @@ namespace Sphere10.Framework {
 
 	/// <summary>
 	/// A list implementation that implements inserts/deletes/appends as updates over an underlying list using Update only operations. This requires the underlying
-	/// list to be "pre-allocated". This class is useful for converting a list that can only be updated into a list that supports inserts/updates/deletes. It
+	/// list to be "pre-allocated". This class is useful for converting a list that can only be mutated via UPDATE operations into a list that supports inserts/updates/deletes. It
 	/// achieves this by maintaining it's own <see cref="Count"/> and by copy/pasting items as needed. When shuffling objects around via copy/paste the algorithms
 	/// are optimized for 1-to-1 copy/paste to avoid exhausting memory. Thus this class is suitable for wrapping arbitrarily large lists.
 	/// </summary>

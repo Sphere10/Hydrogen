@@ -6,9 +6,6 @@ using System.Linq;
 
 namespace Sphere10.Framework {
 
-	// NOTES: use Bits as a guide
-
-
 	/*
 	 
 
@@ -32,12 +29,12 @@ namespace Sphere10.Framework {
 	/// <summary>
 	/// A replacement for <see cref="BitArray"/>
 	/// </summary>
-	public class StreamMappedBitVector : RangedListBase<bool> {
+	public class BitVector : RangedListBase<bool> {
 
 		private readonly Stream _stream;
 		private int _count;
 		
-		public StreamMappedBitVector(Stream stream) {
+		public BitVector(Stream stream) {
 			Guard.ArgumentNotNull(stream, nameof(stream));
 			
 			_stream = stream;

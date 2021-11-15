@@ -6,24 +6,23 @@ using System.Linq;
 
 namespace Sphere10.Framework {
 
-	public abstract class StreamMappedClusteredListBase<TItem, TListing> : RangedListBase<TItem>, ILoadable where TListing : IItemListing {
+	public abstract class ClusteredListBase<TItem, TListing> : RangedListBase<TItem>, ILoadable where TListing : IItemListing {
 
 		protected readonly IItemSerializer<TListing> ListingSerializer;
 		protected readonly IItemSerializer<TItem> ItemSerializer;
 		protected readonly IEqualityComparer<TItem> ItemComparer;
 		protected readonly Stream InnerStream;
 		protected readonly int ClusterDataSize;
-		protected StreamMappedPagedList<Cluster> Clusters;
+		protected StreamPagedList<Cluster> Clusters;
 
-		public event EventHandlerEx<object, StreamMappedItemAccessedArgs<TItem, TListing>> ItemAccess;
+		public event EventHandlerEx<object, ClusteredItemAccessedArgs<TItem, TListing>> ItemAccess;
 
-		protected StreamMappedClusteredListBase(int clusterDataSize, Stream stream, IItemSerializer<TItem> itemSerializer, IItemSerializer<TListing> listingSerializer, IEqualityComparer<TItem> itemComparer = null) {
+		protected ClusteredListBase(int clusterDataSize, Stream stream, IItemSerializer<TItem> itemSerializer, IItemSerializer<TListing> listingSerializer, IEqualityComparer<TItem> itemComparer = null) {
 			Guard.ArgumentInRange(clusterDataSize, 1, int.MaxValue, nameof(clusterDataSize));
 			Guard.ArgumentNotNull(stream, nameof(stream));
 			Guard.ArgumentNotNull(itemSerializer, nameof(itemSerializer));
 			Guard.ArgumentNotNull(listingSerializer, nameof(listingSerializer));
 			Guard.Argument(listingSerializer.IsFixedSize, nameof(listingSerializer), "Listing objects must be fixed size");
-
 			ItemSerializer = itemSerializer;
 			ListingSerializer = listingSerializer;
 			ItemComparer = itemComparer ?? EqualityComparer<TItem>.Default;
@@ -188,7 +187,7 @@ namespace Sphere10.Framework {
 				return;
 
 			OnItemAccess(operationType, listingIndex, listing, item, serializedItem);
-			var args = new StreamMappedItemAccessedArgs<TItem, TListing>() { ListingIndex = listingIndex, Listing = listing, Item = item, SerializedItem = serializedItem };
+			var args = new ClusteredItemAccessedArgs<TItem, TListing>() { ListingIndex = listingIndex, Listing = listing, Item = item, SerializedItem = serializedItem };
 			ItemAccess?.Invoke(this, args);
 		}
 

@@ -15,11 +15,11 @@ namespace Sphere10.Framework {
 		public event EventHandlerEx<object> RolledBack { add => AsBuffer.RolledBack += value; remove => AsBuffer.RolledBack -= value; }
 
 		private readonly SynchronizedExtendedList<T> _synchronizedList;
-		private readonly StreamMappedClusteredListBase<T, ItemListing> _clusteredList;
+		private readonly ClusteredListBase<T, ItemListing> _clusteredList;
 		private bool _disposed;
 
 		/// <summary>
-		/// Creates a <see cref="TransactionalList{T}" /> based on a <see cref="StreamMappedFixedClusteredList{T}"/>/>.
+		/// Creates a <see cref="TransactionalList{T}" /> based on a <see cref="StaticClusteredList{T}"/>/>.
 		/// </summary>
 		/// <param name="serializer">Serializer for the objects</param>
 		/// <param name="filename">File which will contain the serialized objects.</param>
@@ -34,7 +34,7 @@ namespace Sphere10.Framework {
 		}
 
 		/// <summary>
-		/// Creates a <see cref="TransactionalList{T}" /> based on a <see cref="StreamMappedFixedClusteredList{T}"/>/>.
+		/// Creates a <see cref="TransactionalList{T}" /> based on a <see cref="StaticClusteredList{T}"/>/>.
 		/// </summary>
 		/// <param name="serializer">Serializer for the objects</param>
 		/// <param name="filename">File which will contain the serialized objects.</param>
@@ -49,7 +49,7 @@ namespace Sphere10.Framework {
 		public TransactionalList(IItemSerializer<T> serializer, string filename, string uncommittedPageFileDir, Guid fileID, int transactionalPageSizeBytes, int maxStorageBytes, long maxMemory, int clusterSize, int maxItems, bool readOnly = false)
 			: base(
 				NewSynchronizedExtendedList(
-					NewStreamMappedFixedClusteredList(
+					NewFixedClusteredList(
 						clusterSize,
 						maxItems,
 						maxStorageBytes,
@@ -83,7 +83,7 @@ namespace Sphere10.Framework {
 		}
 
 		/// <summary>
-		/// Creates a <see cref="TransactionalList{T}" /> based on a <see cref="StreamMappedDynamicClusteredList{T}"/>/>.
+		/// Creates a <see cref="TransactionalList{T}" /> based on a <see cref="DynamicClusteredList{T}"/>/>.
 		/// </summary>
 		/// <param name="filename">File which will contain the serialized objects.</param>
 		/// <param name="uncommittedPageFileDir">A working directory which stores transactional pages before comitted. Must be same across system restart.</param>
@@ -96,7 +96,7 @@ namespace Sphere10.Framework {
 		}
 
 		/// <summary>
-		/// Creates a <see cref="TransactionalList{T}" /> based on a <see cref="StreamMappedDynamicClusteredList{T}"/>/>.
+		/// Creates a <see cref="TransactionalList{T}" /> based on a <see cref="DynamicClusteredList{T}"/>/>.
 		/// </summary>
 		/// <param name="filename">File which will contain the serialized objects.</param>
 		/// <param name="uncommittedPageFileDir">A working directory which stores transactional pages before comitted. Must be same across system restart.</param>
@@ -109,7 +109,7 @@ namespace Sphere10.Framework {
 		public TransactionalList(string filename, string uncommittedPageFileDir, Guid fileID, int transactionalPageSizeBytes, long maxMemory, int clusterSize, IItemSerializer<T> serializer, bool readOnly = false)
 			: base(
 				NewSynchronizedExtendedList(
-					NewStreamMappedDynamicClusteredList(
+					NewDynamicClusteredList(
 						clusterSize,
 						new ExtendedMemoryStream(
 							NewTransactionalFileMappedBuffer(
@@ -191,13 +191,13 @@ namespace Sphere10.Framework {
 			return result;
 		}
 
-		private static StreamMappedFixedClusteredList<T> NewStreamMappedFixedClusteredList(int clusterDataSize, int maxItems, int maxStorageBytes, Stream stream, IItemSerializer<T> itemSerializer, IEqualityComparer<T> itemComparer, out StreamMappedFixedClusteredList<T> result) {
-			result = new StreamMappedFixedClusteredList<T>(clusterDataSize, maxItems, maxStorageBytes, stream, itemSerializer, itemComparer);
+		private static StaticClusteredList<T> NewFixedClusteredList(int clusterDataSize, int maxItems, int maxStorageBytes, Stream stream, IItemSerializer<T> itemSerializer, IEqualityComparer<T> itemComparer, out StaticClusteredList<T> result) {
+			result = new StaticClusteredList<T>(clusterDataSize, maxItems, maxStorageBytes, stream, itemSerializer, itemComparer);
 			return result;
 		}
 
-		private static StreamMappedDynamicClusteredList<T> NewStreamMappedDynamicClusteredList(int clusterDataSize, Stream stream, IItemSerializer<T> itemSerializer, IEqualityComparer<T> itemComparer, out StreamMappedDynamicClusteredList<T> result) {
-			result = new StreamMappedDynamicClusteredList<T>(clusterDataSize, stream, itemSerializer, itemComparer);
+		private static DynamicClusteredList<T> NewDynamicClusteredList(int clusterDataSize, Stream stream, IItemSerializer<T> itemSerializer, IEqualityComparer<T> itemComparer, out DynamicClusteredList<T> result) {
+			result = new DynamicClusteredList<T>(clusterDataSize, stream, itemSerializer, itemComparer);
 			return result;
 		}
 

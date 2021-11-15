@@ -7,33 +7,33 @@ using NUnit.Framework;
 using Sphere10.Framework.NUnit;
 
 namespace Sphere10.Framework.Tests {
-	public class StreamMappedDynamicClusteredListTests {
+	public class DynamicClusteredListTests {
 
 		[Test]
 		public void ConstructorArgumentsAreGuarded() {
-			Assert.Throws<ArgumentNullException>(() => new StreamMappedDynamicClusteredList<int>(1, null, new IntSerializer()));
-			Assert.Throws<ArgumentNullException>(() => new StreamMappedDynamicClusteredList<int>(1, new MemoryStream(), null));
-			Assert.Throws<ArgumentOutOfRangeException>(() => new StreamMappedDynamicClusteredList<int>(0, new MemoryStream(), null));
+			Assert.Throws<ArgumentNullException>(() => new DynamicClusteredList<int>(1, null, new IntSerializer()));
+			Assert.Throws<ArgumentNullException>(() => new DynamicClusteredList<int>(1, new MemoryStream(), null));
+			Assert.Throws<ArgumentOutOfRangeException>(() => new DynamicClusteredList<int>(0, new MemoryStream(), null));
 		}
 
 		[Test]
 		public void RequiresLoad_1() {
 			using var stream = new MemoryStream();
-			var list = new StreamMappedDynamicClusteredList<string>(32, stream, new StringSerializer(Encoding.UTF8));
+			var list = new DynamicClusteredList<string>(32, stream, new StringSerializer(Encoding.UTF8));
 			Assert.IsFalse(list.RequiresLoad);
 
-			var secondList = new StreamMappedDynamicClusteredList<string>(32, stream, new StringSerializer(Encoding.UTF8));
+			var secondList = new DynamicClusteredList<string>(32, stream, new StringSerializer(Encoding.UTF8));
 			Assert.IsFalse(secondList.RequiresLoad); // since nothing was written, should still be empty
 		}
 
 		[Test]
 		public void RequiresLoad_2() {
 			using var stream = new MemoryStream();
-			var list = new StreamMappedDynamicClusteredList<string>(32, stream, new StringSerializer(Encoding.UTF8));
+			var list = new DynamicClusteredList<string>(32, stream, new StringSerializer(Encoding.UTF8));
 			Assert.IsFalse(list.RequiresLoad);
 			list.Add("data");
 
-			var secondList = new StreamMappedDynamicClusteredList<string>(32, stream, new StringSerializer(Encoding.UTF8));
+			var secondList = new DynamicClusteredList<string>(32, stream, new StringSerializer(Encoding.UTF8));
 			Assert.IsTrue(secondList.RequiresLoad);
 
 			secondList.Load();
@@ -46,7 +46,7 @@ namespace Sphere10.Framework.Tests {
 			var random = new Random(31337);
 			string[] inputs = Enumerable.Range(0, random.Next(5, 10)).Select(x => random.NextString(1, 100)).ToArray();
 			using var stream = new MemoryStream();
-			var list = new StreamMappedDynamicClusteredList<string>(32, stream, new StringSerializer(Encoding.UTF8));
+			var list = new DynamicClusteredList<string>(32, stream, new StringSerializer(Encoding.UTF8));
 
 			list.AddRange(inputs);
 
@@ -61,7 +61,7 @@ namespace Sphere10.Framework.Tests {
 		[Test]
 		public void ReadRangeInvalidArguments() {
 			using var stream = new MemoryStream();
-			var list = new StreamMappedDynamicClusteredList<int>(1, stream, new IntSerializer());
+			var list = new DynamicClusteredList<int>(1, stream, new IntSerializer());
 			list.AddRange(999, 1000, 1001, 1002);
 
 			Assert.Throws<ArgumentOutOfRangeException>(() => _ = list.ReadRange(-1, 1).ToList());
@@ -71,7 +71,7 @@ namespace Sphere10.Framework.Tests {
 		[Test]
 		public void ReadRangeEmpty() {
 			using var stream = new MemoryStream();
-			var list = new StreamMappedDynamicClusteredList<int>(1, stream, new IntSerializer());
+			var list = new DynamicClusteredList<int>(1, stream, new IntSerializer());
 			list.AddRange(999, 1000, 1001, 1002);
 			Assert.IsEmpty(list.ReadRange(0, 0));
 			;
@@ -82,7 +82,7 @@ namespace Sphere10.Framework.Tests {
 		[Test]
 		public void AddRangeEmptyNullStrings() {
 			using var stream = new MemoryStream();
-			var list = new StreamMappedDynamicClusteredList<string>(32, stream, new StringSerializer(Encoding.UTF8));
+			var list = new DynamicClusteredList<string>(32, stream, new StringSerializer(Encoding.UTF8));
 			string[] input = { string.Empty, null, string.Empty, null };
 			list.AddRange(input);
 			Assert.AreEqual(4, list.Count);
@@ -94,7 +94,7 @@ namespace Sphere10.Framework.Tests {
 		[Test]
 		public void AddRangeNullEmptyCollections() {
 			using var stream = new MemoryStream();
-			var list = new StreamMappedDynamicClusteredList<string>(32, stream, new StringSerializer(Encoding.UTF8));
+			var list = new DynamicClusteredList<string>(32, stream, new StringSerializer(Encoding.UTF8));
 			Assert.Throws<ArgumentNullException>(() => list.AddRange(null));
 			Assert.DoesNotThrow(() => list.AddRange(new string[0]));
 		}
@@ -104,7 +104,7 @@ namespace Sphere10.Framework.Tests {
 			var random = new Random(31337);
 			string[] inputs = Enumerable.Range(0, random.Next(1, 100)).Select(x => random.NextString(1, 100)).ToArray();
 			using var stream = new MemoryStream();
-			var list = new StreamMappedDynamicClusteredList<string>(32, stream, new StringSerializer(Encoding.UTF8));
+			var list = new DynamicClusteredList<string>(32, stream, new StringSerializer(Encoding.UTF8));
 
 			list.AddRange(inputs);
 
@@ -118,7 +118,7 @@ namespace Sphere10.Framework.Tests {
 		[Test]
 		public void UpdateRangeInvalidArguments() {
 			using var stream = new MemoryStream();
-			var list = new StreamMappedDynamicClusteredList<int>(32, stream, new IntSerializer());
+			var list = new DynamicClusteredList<int>(32, stream, new IntSerializer());
 
 			list.AddRange(999, 1000, 1001, 1002);
 			list.UpdateRange(0, new[] { 998 });
@@ -134,7 +134,7 @@ namespace Sphere10.Framework.Tests {
 			var random = new Random(31337);
 			string[] inputs = Enumerable.Range(0, random.Next(1, 100)).Select(x => random.NextString(1, 100)).ToArray();
 			using var stream = new MemoryStream();
-			var list = new StreamMappedDynamicClusteredList<string>(32, stream, new StringSerializer(Encoding.UTF8));
+			var list = new DynamicClusteredList<string>(32, stream, new StringSerializer(Encoding.UTF8));
 
 			list.AddRange(inputs);
 			list.RemoveRange(0, 1);
@@ -146,7 +146,7 @@ namespace Sphere10.Framework.Tests {
 		[Test]
 		public void RemoveRangeInvalidArguments() {
 			using var stream = new MemoryStream();
-			var list = new StreamMappedDynamicClusteredList<int>(32, stream, new IntSerializer());
+			var list = new DynamicClusteredList<int>(32, stream, new IntSerializer());
 
 			list.Add(999);
 
@@ -162,7 +162,7 @@ namespace Sphere10.Framework.Tests {
 			var random = new Random(31337);
 			string[] inputs = Enumerable.Range(1, 10).Select(x => random.NextString(1, 100)).ToArray();
 			using var stream = new MemoryStream();
-			var list = new StreamMappedDynamicClusteredList<string>(32, stream, new StringSerializer(Encoding.UTF8));
+			var list = new DynamicClusteredList<string>(32, stream, new StringSerializer(Encoding.UTF8));
 
 			list.AddRange(inputs);
 
@@ -174,7 +174,7 @@ namespace Sphere10.Framework.Tests {
 		[Test]
 		public void IndexOfInvalidArguments() {
 			using var stream = new MemoryStream();
-			var list = new StreamMappedDynamicClusteredList<int>(32, stream, new IntSerializer());
+			var list = new DynamicClusteredList<int>(32, stream, new IntSerializer());
 			list.AddRange(999, 1000, 1001, 1002);
 
 			Assert.Throws<ArgumentNullException>(() => list.IndexOfRange(null));
@@ -186,7 +186,7 @@ namespace Sphere10.Framework.Tests {
 			var random = new Random(31337);
 			string[] inputs = Enumerable.Range(0, random.Next(1, 100)).Select(x => random.NextString(1, 100)).ToArray();
 			using var stream = new MemoryStream();
-			var list = new StreamMappedDynamicClusteredList<string>(32, stream, new StringSerializer(Encoding.UTF8));
+			var list = new DynamicClusteredList<string>(32, stream, new StringSerializer(Encoding.UTF8));
 
 			Assert.AreEqual(0, list.Count);
 			list.AddRange(inputs);
@@ -199,7 +199,7 @@ namespace Sphere10.Framework.Tests {
 			var random = new Random(31337);
 			string[] inputs = Enumerable.Range(1, random.Next(1, 5)).Select(x => random.NextString(1, 5)).ToArray();
 			using var stream = new MemoryStream();
-			var list = new StreamMappedDynamicClusteredList<string>(32, stream, new StringSerializer(Encoding.UTF8));
+			var list = new DynamicClusteredList<string>(32, stream, new StringSerializer(Encoding.UTF8));
 
 			list.AddRange(inputs);
 			list.InsertRange(0, new[] { random.NextString(1, 100) });
@@ -211,7 +211,7 @@ namespace Sphere10.Framework.Tests {
 		[Test]
 		public void InsertRangeInvalidArguments() {
 			using var stream = new MemoryStream();
-			var list = new StreamMappedDynamicClusteredList<int>(32, stream, new IntSerializer());
+			var list = new DynamicClusteredList<int>(32, stream, new IntSerializer());
 
 			list.AddRange(999, 1000, 1001, 1002);
 
@@ -226,7 +226,7 @@ namespace Sphere10.Framework.Tests {
 			var random = new Random(31337);
 			string[] inputs = Enumerable.Range(0, random.Next(1, 100)).Select(x => random.NextString(1, 100)).ToArray();
 			using var stream = new MemoryStream();
-			var list = new StreamMappedDynamicClusteredList<string>(32, stream, new StringSerializer(Encoding.UTF8));
+			var list = new DynamicClusteredList<string>(32, stream, new StringSerializer(Encoding.UTF8));
 
 			list.AddRange(inputs);
 			list.Clear();
@@ -239,7 +239,7 @@ namespace Sphere10.Framework.Tests {
 		[Test]
 		public void IntegrationTests() {
 			using var stream = new MemoryStream();
-			var list = new StreamMappedDynamicClusteredList<string>(32, stream, new StringSerializer(Encoding.UTF8));
+			var list = new DynamicClusteredList<string>(32, stream, new StringSerializer(Encoding.UTF8));
 			AssertEx.ListIntegrationTest(list,
 				100,
 				(rng, i) => Enumerable.Range(0, i)
@@ -251,7 +251,7 @@ namespace Sphere10.Framework.Tests {
 		public void ObjectIntegrationTest([Values] StorageType storage) {
 			using(CreateStream(storage, 5000, out Stream stream))
 			{
-				var list = new StreamMappedDynamicClusteredList<TestObject>(100, stream, new TestObjectSerializer(), new TestObjectComparer());
+				var list = new DynamicClusteredList<TestObject>(100, stream, new TestObjectSerializer(), new TestObjectComparer());
 				AssertEx.ListIntegrationTest(list,
 					100,
 					(rng, i) => Enumerable.Range(0, i).Select(x => new TestObject()).ToArray(),
@@ -269,12 +269,12 @@ namespace Sphere10.Framework.Tests {
 			var fileName = Tools.FileSystem.GetTempFileName(true);
 			using (Tools.Scope.ExecuteOnDispose(() => File.Delete(fileName))) {
 				using (var fileStream = new FileStream(fileName, FileMode.Open)) {
-					var list = new StreamMappedDynamicClusteredList<string>(32, fileStream, new StringSerializer(Encoding.UTF8));
+					var list = new DynamicClusteredList<string>(32, fileStream, new StringSerializer(Encoding.UTF8));
 					list.AddRange(input);
 				}
 
 				using (var fileStream = new FileStream(fileName, FileMode.Open)) {
-					var list = new StreamMappedDynamicClusteredList<string>(32, fileStream, new StringSerializer(Encoding.UTF8));
+					var list = new DynamicClusteredList<string>(32, fileStream, new StringSerializer(Encoding.UTF8));
 					list.Load();
 					Assert.AreEqual(input.Length, list.Count);
 					Assert.AreEqual(input, list);

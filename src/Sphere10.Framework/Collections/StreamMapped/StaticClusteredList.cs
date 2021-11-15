@@ -6,19 +6,59 @@ using System.Linq;
 namespace Sphere10.Framework {
 
 	/// <summary>
-	/// A list implementation which is mapped onto a stream via clusters. Items can added/removed anywhere, and they are stored
-	/// in a non-contiguous manner via clusters of data (similar in principle to a file system format). The limitation here is that the
-	/// the list is inherantly bounded from construction and cannot grow past the pre-determined maximum number of items. This uses
-	/// <see cref="StreamMappedPagedList{TItem}"/> under the hood.
+	/// A list whose items are stored in a linked-list of clusters serialized over a stream. It is "static" since the capacity of the list needs to be known on activation.
+	/// Items can added/removed arbitrarily and are stored in a non-contiguous manner over a linked-list of clusters (similar in principle to how file systems work). The limitation here is that the
+	/// the list's capacity is inherantly bound at construction and cannot grow. This limitation results in a notable performance compared to <see cref="DynamicClusteredList{T}"/> 
+	/// since item listings can be efficiently retrieved.
 	/// </summary>
-	public abstract class StreamMappedFixedClusteredList<T, TListing> : StreamMappedClusteredListBase<T, TListing> where TListing : IItemListing {
+	/// <typeparam name="T">The type of item being stored in the list</typeparam>
+	/// <remarks>
+	/// The underlying implementation is similar to <see cref="DynamicClusteredList{T}"/> except the "listing sector" is efficiently serialized as a contiguous block of memory before the "data sector" containing the clusters, thus is more efficient.
+	/// </remarks>
+	/// <remarks>
+	/// This uses <see cref="StreamPagedList{TItem}"/> under the hood.
+	/// </remarks>
+
+	public class StaticClusteredList<T> : StaticClusteredList<T, ItemListing> {
+		public StaticClusteredList(
+			int clusterDataSize,
+			int maxItems,
+			int maxStorageBytes,
+			Stream stream,
+			IItemSerializer<T> itemSerializer,
+			IEqualityComparer<T> itemComparer = null)
+			: base(clusterDataSize, maxItems, maxStorageBytes, stream, itemSerializer, new ItemListingSerializer(), itemComparer) {
+		}
+		protected override ItemListing NewListingInstance(int itemSizeBytes, int clusterStartIndex) {
+			return new() {
+				Size = itemSizeBytes,
+				ClusterStartIndex = clusterStartIndex
+			};
+		}
+	}
+
+	/// <summary>
+	/// A list whose items are stored in a linked-list of clusters serialized over a stream. It is "static" since the capacity of the list needs to be known on activation.
+	/// Items can added/removed arbitrarily and are stored in a non-contiguous manner over a linked-list of clusters (similar in principle to how file systems work). The limitation here is that the
+	/// the list's capacity is inherantly bound at construction and cannot grow. This limitation results in a notable performance compared to <see cref="DynamicClusteredList{T,TListing}"/> 
+	/// since item listings can be efficiently retrieved.
+	/// </summary>
+	/// <typeparam name="T">The type of item being stored in the list</typeparam>
+	/// <typeparam name="TListing">The type of listing which tracks the stored items. This can be specified for advanced use-cases such as a clustered dictionary implementation.</typeparam>
+	/// <remarks>
+	/// The underlying implementation is similar to <see cref="DynamicClusteredList{T,TListing}"/> except the "listing sector" is efficiently serialized as a contiguous block of memory before the "data sector" containing the clusters, thus is more efficient.
+	/// </remarks>
+	/// <remarks>
+	/// This uses <see cref="StreamPagedList{TItem}"/> under the hood.
+	/// </remarks>
+	public abstract class StaticClusteredList<T, TListing> : ClusteredListBase<T, TListing> where TListing : IItemListing {
 		private const int HeaderSize = 256;
 
 		private readonly int _maxStorageBytes;
 		private IExtendedList<bool> _clusterStatus;
 		private IExtendedList<TListing> _listings;
 
-		protected StreamMappedFixedClusteredList(
+		protected StaticClusteredList(
 			int clusterDataSize,
 			int maxItems,
 			int maxStorageBytes,
@@ -159,18 +199,18 @@ namespace Sphere10.Framework {
 			if (InnerStream.Length > 0)
 				itemCount = ReadHeader();
 			
-			var preAllocatedListingStore = new StreamMappedPagedList<TListing>(ListingSerializer, listingsStream) { IncludeListHeader = false };
+			var preAllocatedListingStore = new StreamPagedList<TListing>(ListingSerializer, listingsStream) { IncludeListHeader = false };
 			preAllocatedListingStore.Load();
 			_listings = new PreAllocatedList<TListing>(preAllocatedListingStore);
 			_listings.AddRange(preAllocatedListingStore.Take(itemCount));
 			
-			var status = new StreamMappedBitVector(statusStream);
+			var status = new BitVector(statusStream);
 			_clusterStatus = new PreAllocatedList<bool>(status);
 			_clusterStatus.AddRange(status);
 			
 			int pageSize = ItemSerializer.IsFixedSize ? clusterSerializer.FixedSize * storageClusterCount : int.MaxValue;
 			
-			Clusters = new StreamMappedPagedList<Cluster>(StreamMappedPagedListType.FixedSize, clusterSerializer, clusterStream, pageSize) {
+			Clusters = new StreamPagedList<Cluster>(StreamPagedListType.FixedSize, clusterSerializer, clusterStream, pageSize) {
 				IncludeListHeader = false
 			};
 			
@@ -220,18 +260,18 @@ namespace Sphere10.Framework {
 			if (InnerStream.Length == 0)
 				WriteHeader();
 			
-			var preAllocatedListingStore = new StreamMappedPagedList<TListing>(ListingSerializer, listingsStream) { IncludeListHeader = false };
+			var preAllocatedListingStore = new StreamPagedList<TListing>(ListingSerializer, listingsStream) { IncludeListHeader = false };
 			preAllocatedListingStore.AddRange(Tools.Array.Gen(Capacity, default(TListing)));
 			_listings = new PreAllocatedList<TListing>(preAllocatedListingStore);
 			
-			var status = new StreamMappedBitVector(statusStream);
+			var status = new BitVector(statusStream);
 			status.AddRange(Tools.Array.Gen(storageClusterCount, false));
 			_clusterStatus = new PreAllocatedList<bool>(status);
 			_clusterStatus.AddRange(status);
 
 			int pageSize = ItemSerializer.IsFixedSize ? clusterSerializer.FixedSize * storageClusterCount : int.MaxValue;
 
-			Clusters = new StreamMappedPagedList<Cluster>(StreamMappedPagedListType.FixedSize, clusterSerializer, clusterStream, pageSize) {
+			Clusters = new StreamPagedList<Cluster>(StreamPagedListType.FixedSize, clusterSerializer, clusterStream, pageSize) {
 				IncludeListHeader = false
 			};
 		}
@@ -261,27 +301,4 @@ namespace Sphere10.Framework {
 		}
 	}
 
-	/// <summary>
-	/// A list implementation which is mapped onto a stream via clusters. Items can added/removed anywhere, and they are stored
-	/// in a non-contiguous manner via clusters of data (similar in principle to a file system format). The limitation here is that the
-	/// the list is inherently bounded from construction and cannot grow past the pre-determined maximum number of items. This uses
-	/// <see cref="StreamMappedPagedList{TItem}"/> under the hood.
-	/// </summary>
-	public class StreamMappedFixedClusteredList<T> : StreamMappedFixedClusteredList<T, ItemListing> {
-		public StreamMappedFixedClusteredList(
-					int clusterDataSize,
-					int maxItems,
-					int maxStorageBytes,
-					Stream stream,
-					IItemSerializer<T> itemSerializer,
-					IEqualityComparer<T> itemComparer = null)
-			: base(clusterDataSize, maxItems, maxStorageBytes, stream, itemSerializer, new ItemListingSerializer(), itemComparer) {
-		}
-		protected override ItemListing NewListingInstance(int itemSizeBytes, int clusterStartIndex) {
-			return new() {
-				Size = itemSizeBytes,
-				ClusterStartIndex = clusterStartIndex
-			};
-		}
-	}
 }

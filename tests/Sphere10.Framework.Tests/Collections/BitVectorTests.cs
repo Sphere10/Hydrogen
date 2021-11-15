@@ -5,13 +5,13 @@ using NUnit.Framework;
 using Sphere10.Framework.NUnit;
 
 namespace Sphere10.Framework.Tests {
-	public class StreamMappedBitVectorTests {
+	public class BitVectorTests {
 		
 		[Test]
 		public void InsertRangeEnd() {
 			var random = new Random(31337);
 			using var memoryStream = new MemoryStream();
-			var list = new StreamMappedBitVector(memoryStream);
+			var list = new BitVector(memoryStream);
 
 			var inputs = Enumerable.Repeat(true, 20).ToArray();
 			list.AddRange(inputs);
@@ -26,7 +26,7 @@ namespace Sphere10.Framework.Tests {
 		public void ReadRange() {
 			var random = new Random(31337);
 			using var memoryStream = new MemoryStream();
-			var list = new StreamMappedBitVector(memoryStream);
+			var list = new BitVector(memoryStream);
 
 			var inputs = random.NextBools(16);
 			list.AddRange(inputs);
@@ -42,7 +42,7 @@ namespace Sphere10.Framework.Tests {
 		public void IndexOfRange() {
 			var random = new Random(31337);
 			using var memoryStream = new MemoryStream();
-			var list = new StreamMappedBitVector(memoryStream);
+			var list = new BitVector(memoryStream);
 
 			var inputs = new[] { false, false, false, false, false, false, false, false, true };
 			list.AddRange(inputs);
@@ -54,7 +54,7 @@ namespace Sphere10.Framework.Tests {
 		[Test]
 		public void RemoveRange() {
 			using var memoryStream = new MemoryStream();
-			var list = new StreamMappedBitVector(memoryStream);
+			var list = new BitVector(memoryStream);
 
 			var inputs = new[] { false, false, false, false, false, false, false, false, true };
 
@@ -71,7 +71,7 @@ namespace Sphere10.Framework.Tests {
 		public void UpdateRange() {
 			var random = new Random(31337);
 			using var memoryStream = new MemoryStream();
-			var list = new StreamMappedBitVector(memoryStream);
+			var list = new BitVector(memoryStream);
 			var expected = new ExtendedList<bool>();
 
 			var inputs = random.NextBools(100);
@@ -97,7 +97,7 @@ namespace Sphere10.Framework.Tests {
 		[Test]
 		public void IntegrationTest() {
 			using var memoryStream = new MemoryStream();
-			var list = new StreamMappedBitVector(memoryStream);
+			var list = new BitVector(memoryStream);
 			AssertEx.ListIntegrationTest(list, 1000, (Random, i) => Random.NextBools(i), true);
 		}
 	}

@@ -1,5 +1,5 @@
 ﻿namespace Sphere10.Framework {
-	public enum StreamMappedPagedListType {
+	public enum StreamPagedListType {
 		Dynamic,
 		FixedSize
 	}

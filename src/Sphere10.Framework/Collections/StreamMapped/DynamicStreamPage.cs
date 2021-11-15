@@ -6,6 +6,11 @@ using System.Threading;
 
 namespace Sphere10.Framework {
 
+	 
+	/// <summary>
+	/// A page of data stored on a stream whose items are dynamically sized. The page header thus stores the item sizes.
+	/// </summary>
+	/// <remarks>
 	/// Page Header Format
 	/// ===================
 	///	Count (UINT16)
@@ -15,6 +20,7 @@ namespace Sphere10.Framework {
 	///	Object 1 Size
 	///	...
 	///	Object N Size
+	/// </remarks>
 	internal class DynamicStreamPage<TItem> : StreamPageBase<TItem> {
 		private const int Page0Offset = 256;
 		private const int CountFieldOffset = 0;
@@ -29,13 +35,13 @@ namespace Sphere10.Framework {
 		private const int ObjectSizeFieldSize = sizeof(uint);
 
 		private volatile int _version;
-		private readonly StreamMappedPagedList<TItem> _parent;
+		private readonly StreamPagedList<TItem> _parent;
 		private int[] _itemSizes;
 		private long _previousPagePosition;
 		private long _nextPagePosition;
 		private long[] _offsets;
 
-		public DynamicStreamPage(StreamMappedPagedList<TItem> parent)
+		public DynamicStreamPage(StreamPagedList<TItem> parent)
 			: this(Page0Offset, Page0Offset, parent) {
 		}
 
@@ -43,7 +49,7 @@ namespace Sphere10.Framework {
 			: this(previousPage.StartPosition, previousPage.NextPagePosition, previousPage._parent) {
 		}
 
-		private DynamicStreamPage(long previousPagePosition, long startPosition, StreamMappedPagedList<TItem> parent) 
+		private DynamicStreamPage(long previousPagePosition, long startPosition, StreamPagedList<TItem> parent) 
 			: base(parent) {
 			Guard.ArgumentNotNull(parent, nameof(parent));
 			Guard.ArgumentNotNull(parent.Stream, nameof(parent.Stream));

@@ -1,8 +1,7 @@
 ﻿namespace Sphere10.Framework {
-	public interface IItemListing {
+	public interface IClusteredItemListing {
 		int ClusterStartIndex { get; set; }
 		int Size { get; set; }
-
 	}
 
 }

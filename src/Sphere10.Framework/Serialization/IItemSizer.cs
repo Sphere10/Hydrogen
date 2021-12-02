@@ -4,9 +4,9 @@ namespace Sphere10.Framework {
 
 	public interface IItemSizer<T> {
 
-		bool IsFixedSize { get; }
+		bool IsStaticSize { get; }
 
-		int FixedSize { get; }
+		int StaticSize { get; }
 
 		int CalculateTotalSize(IEnumerable<T> items, bool calculateIndividualItems, out int[] itemSizes);
 

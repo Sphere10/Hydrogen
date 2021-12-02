@@ -3,8 +3,8 @@ using System.Collections.Generic;
 
 namespace Sphere10.Framework {
 
-	public class PagedListFriendDelegate<TItem> : IPagedListInternalMethods<TItem> {
-		public PagedListFriendDelegate(
+	internal class PagedListDelegate<TItem> : IPagedListDelegate<TItem> {
+		public PagedListDelegate(
 			Action updateVersion,
 			Action checkRequiresLoad,
 			Action<int, int> checkRange,

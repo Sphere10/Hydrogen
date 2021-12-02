@@ -14,8 +14,8 @@ namespace Sphere10.Framework {
 	/// <typeparam name="TItem"></typeparam>
 	public sealed class BinaryFormattedSerializer<TItem> : IItemSerializer<TItem> {
 
-		public bool IsFixedSize => false;
-		public int FixedSize => -1;
+		public bool IsStaticSize => false;
+		public int StaticSize => -1;
 
 		public int CalculateTotalSize(IEnumerable<TItem> items, bool calculateIndividualItems, out int[] itemSizes) {
 			var itemsArr = items as TItem[] ?? items.ToArray();

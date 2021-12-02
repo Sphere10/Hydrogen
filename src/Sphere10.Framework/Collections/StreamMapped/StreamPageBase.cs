@@ -17,7 +17,7 @@ namespace Sphere10.Framework {
 
 		protected EndianBinaryReader Reader => Parent.Reader;
 
-		protected int ItemSize => Parent.Serializer.FixedSize;
+		protected int ItemSize => Parent.Serializer.StaticSize;
 
 		protected IItemSerializer<TItem> Serializer => Parent.Serializer;
 

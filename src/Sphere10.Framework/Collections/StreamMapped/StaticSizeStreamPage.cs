@@ -7,7 +7,7 @@ using System.Threading;
 namespace Sphere10.Framework {
 
 	/// <summary>
-	/// A page of data stored on a stream whose items are dynamically sized. The page header thus stores the item sizes.
+	/// A page of data stored on a stream whose items are constant sized.
 	/// </summary>
 	/// <remarks>
 	/// Unlike <see cref="DynamicStreamPage{TItem}"/> no header is stored for the page.
@@ -18,8 +18,8 @@ namespace Sphere10.Framework {
 		private volatile int _version;
 
 		public StaticStreamPage(StreamPagedList<TItem> parent) : base(parent) {
-			Guard.Argument(parent.Serializer.IsFixedSize, nameof(parent), $"Parent list's serializer is not fixed size. {nameof(StaticStreamPage<TItem>)} only supports fixed sized items.");
-			Guard.Ensure(parent.Serializer.FixedSize > 0, "parent.Serializer.FixedSize > 0");
+			Guard.Argument(parent.Serializer.IsStaticSize, nameof(parent), $"Parent list's serializer is not fixed size. {nameof(StaticStreamPage<TItem>)} only supports fixed sized items.");
+			Guard.Ensure(parent.Serializer.StaticSize > 0, $"{nameof(TItem)} serialization size size is not greater than 0");
 			
 			_version = 0;
 			_item0Offset = Parent.IncludeListHeader ? StreamPagedList<TItem>.ListHeaderSize : 0;
@@ -69,8 +69,10 @@ namespace Sphere10.Framework {
 
 			Stream.Seek(_item0Offset + Count * ItemSize, SeekOrigin.Begin);
 
-			foreach (var item in items)
-				Serializer.Serialize(item, Writer);
+			foreach (var item in items) {
+				var bytesWritten = Serializer.Serialize(item, Writer);
+				Guard.Ensure(bytesWritten == Serializer.StaticSize, $"Static serializer wrote {bytesWritten} bytes expected {Serializer.StaticSize}");
+			}
 
 			newItemsSize = items.Length * ItemSize;
 			Interlocked.Increment(ref _version);
@@ -87,8 +89,10 @@ namespace Sphere10.Framework {
 
 			Stream.Seek(index, SeekOrigin.Begin);
 
-			foreach (var item in items)
-				Serializer.Serialize(item, Writer);
+			foreach (var item in items) {
+				var bytesWritten = Serializer.Serialize(item, Writer);
+				Guard.Ensure(bytesWritten == Serializer.StaticSize, $"Static serializer wrote {bytesWritten} bytes expected {Serializer.StaticSize}");
+			}
 
 			newItemsSize = itemsSize;
 			oldItemsSize = itemsSize;

@@ -14,6 +14,7 @@ namespace Sphere10.Framework {
 			InternalExtendedList = internalExtendedList;
 		}
 
+		// TODO: change to field for perf
 		protected TInternalList InternalExtendedList { get; }
 
 		public virtual int Count => InternalExtendedList.Count;

@@ -8,20 +8,26 @@ using Sphere10.Framework.FastReflection;
 using Sphere10.Framework.Values;
 
 namespace Sphere10.Framework {
-	public class GenericItemSerializer<T> : GenericItemSerializerBase, IItemSerializer<T> where T : new() {
-		public bool IsFixedSize => false;
 
-		public int FixedSize => -1;
+	/// <summary>
+	/// A serializer for any object. It will intelligently serialize it's member fields/properties in a recursive manner and supports
+	/// circular references between objects.
+	/// </summary>
+	/// <typeparam name="T"></typeparam>
+	public class GenericSerializer<T> : GenericSerializerBase, IItemSerializer<T> where T : new() {
+		public bool IsStaticSize => false;
+
+		public int StaticSize => -1;
 
 		/// <summary>
-		/// Initialize a new instance of <see cref="GenericItemSerializerBase"/>. Registers generic type param
+		/// Initialize a new instance of <see cref="GenericSerializerBase"/>. Registers generic type param
 		/// in type registrations.
 		/// </summary>
-		public GenericItemSerializer() {
+		public GenericSerializer() {
 			RegisterType<T>();
 		}
 
-		private static Lazy<GenericItemSerializer<T>> DefaultInstance { get; } = new(() => new GenericItemSerializer<T>(), LazyThreadSafetyMode.ExecutionAndPublication);
+		private static Lazy<GenericSerializer<T>> DefaultInstance { get; } = new(() => new GenericSerializer<T>(), LazyThreadSafetyMode.ExecutionAndPublication);
 
 		public static IItemSerializer<T> Default => DefaultInstance.Value;
 
@@ -45,26 +51,170 @@ namespace Sphere10.Framework {
 		}
 
 		public bool TrySerialize(T item, EndianBinaryWriter writer, out int bytesWritten) {
-			try {
-				var context = new SerializationContext(writer);
-				SerializeInternal(typeof(T), item, context);
-				bytesWritten = (int)context.SizeBytes;
-
-				return true;
-			} catch (Exception) {
-				bytesWritten = 0;
-				return false;
-			}
+			var context = new SerializationContext(writer);
+			SerializeInternal(typeof(T), item, context);
+			bytesWritten = (int)context.SizeBytes;
+			return true;
 		}
 
 		public bool TryDeserialize(int byteSize, EndianBinaryReader reader, out T item) {
-			try {
-				var context = new SerializationContext(reader);
-				item = (T)DeserializeInternal(typeof(T), context);
-				return true;
-			} catch (Exception) {
-				item = default;
-				return false;
+			var context = new SerializationContext(reader);
+			item = (T)DeserializeInternal(typeof(T), context);
+			return true;
+		}
+
+		private void SerializeInternal(Type propertyType, object propertyValue, SerializationContext context) {
+			if (propertyValue is not null) {
+				var valueType = propertyValue.GetType();
+
+				if (IsCircularReference(valueType, propertyValue, context, out var reference)) {
+					propertyValue = reference;
+					valueType = typeof(CircularReference);
+				}
+
+				if (RequiresTypeHeader(propertyType))
+					CreateTypeHeader(valueType, context);
+
+				if (Serializers.TryGetValue(valueType, out var serializer)) {
+					SerializeCustom(serializer, propertyValue, context);
+				} else if (valueType.IsEnum)
+					SerializePrimitive(Tools.Object.ChangeType(propertyValue, propertyType.GetEnumUnderlyingType()), context);
+				else if (valueType.IsPrimitive)
+					SerializePrimitive(propertyValue, context);
+				else if (valueType.IsValueType)
+					SerializeValueType(propertyValue, context);
+				else if (valueType.IsCollection())
+					SerializeCollectionType(propertyValue, context);
+				else
+					SerializeReferenceType(propertyValue, context);
+			} else
+				SerializePrimitive(DetermineTypeCode(typeof(NullValue)), context);
+		}
+
+		private void SerializeCustom(IItemSerializer<object> serializer, object propertyValue, SerializationContext context) {
+			// Uses a custom serializer, so prefix with byte-sze of what it serializes
+			var byteSize = serializer.CalculateSize(propertyValue);
+			if (context.IsSizing) {
+				context.SizeBytes += CVarInt.SizeOf((ulong)byteSize) + byteSize;
+			} else {
+				context.Writer.Write(new CVarInt((ulong)byteSize));
+				serializer.Serialize(propertyValue, context.Writer);
+			}
+		}
+
+		private void SerializePrimitive(object boxedPrimitive, SerializationContext context) {
+			if (context.IsSizing) {
+				var size = boxedPrimitive switch {
+					sbyte => sizeof(sbyte),
+					byte => sizeof(byte),
+					short => sizeof(short),
+					ushort primitive => CVarInt.SizeOf(primitive),
+					int => sizeof(int),
+					uint primitive => CVarInt.SizeOf(primitive),
+					long => sizeof(long),
+					ulong primitive => CVarInt.SizeOf(primitive),
+					float => sizeof(float),
+					double => sizeof(double),
+					decimal => sizeof(decimal),
+					bool => sizeof(bool),
+					char => sizeof(char),
+					_ => throw new InvalidOperationException("Unknown primitive type")
+				};
+				context.SizeBytes += size;
+			} else {
+				switch (boxedPrimitive) {
+					case sbyte x:
+						context.Writer.Write(x);
+						break;
+					case byte x:
+						context.Writer.Write(x);
+						break;
+					case short x:
+						context.Writer.Write(x);
+						break;
+					case ushort x:
+						context.Writer.Write(new CVarInt(x).ToBytes());
+						break;
+					case int x:
+						context.Writer.Write(x);
+						break;
+					case uint x:
+						context.Writer.Write(new CVarInt(x).ToBytes());
+						break;
+					case long x:
+						context.Writer.Write(x);
+						break;
+					case ulong x:
+						context.Writer.Write(new CVarInt(x).ToBytes());
+						break;
+					case float x:
+						context.Writer.Write(x);
+						break;
+					case double x:
+						context.Writer.Write(x);
+						break;
+					case decimal x:
+						context.Writer.Write(x);
+						break;
+					case bool x:
+						context.Writer.Write(x);
+						break;
+					case char x:
+						context.Writer.Write(x);
+						break;
+					default:
+						throw new InvalidOperationException("Unknown primitive type");
+				}
+			}
+		}
+
+		private void SerializeReferenceType(object value, SerializationContext context) {
+			var type = value.GetType();
+			context.AddSerializedObject(value);
+			foreach (var property in GetSerializableProperties(type)) {
+				SerializeInternal(property.PropertyType, property.FastGetValue(value), context);
+			}
+		}
+
+		private void SerializeValueType(object value, SerializationContext context) {
+			var valueType = value.GetType();
+			foreach (var property in GetSerializableProperties(valueType)) {
+				SerializeInternal(property.PropertyType, property.FastGetValue(value), context);
+			}
+		}
+
+		private void SerializeCollectionType(object value, SerializationContext context) {
+			var listType = value.GetType();
+
+			if (value is IDictionary dictionary)
+				SerializeDictionary(dictionary, context);
+			else if (value is IEnumerable list) {
+				var items = new List<object>();
+				var enumerator = list.GetEnumerator();
+				while (enumerator.MoveNext())
+					items.Add(enumerator.Current);
+
+				SerializePrimitive(items.Count, context);
+
+				foreach (var item in items) {
+					var itemType = listType.IsGenericType ? listType.GenericTypeArguments[0] : item!.GetType();
+					SerializeInternal(itemType, item, context);
+				}
+			} else
+				throw new InvalidOperationException("Could not serialize object as it doesn't implement IEnumerable.");
+		}
+
+		private void SerializeDictionary(IDictionary dictionary, SerializationContext context) {
+			SerializePrimitive(dictionary.Count, context);
+
+			var enumerator = dictionary.GetEnumerator();
+
+			while (enumerator.MoveNext()) {
+				var key = enumerator.Key;
+				var val = enumerator.Value;
+
+				SerializeInternal(key!.GetType(), key, context);
+				SerializeInternal(val.GetType(), val, context);
 			}
 		}
 
@@ -74,8 +224,8 @@ namespace Sphere10.Framework {
 			if (RequiresTypeHeader(propertyType))
 				propertyValueType = ReadTypeHeader(propertyType, context);
 
-			if (Serializers.TryGetValue(propertyValueType, out var serializer))
-				return serializer.Deserialize(0, context.Reader);
+			if (Serializers.TryGetValue(propertyValueType, out var serializer)) 
+				return DeserializeCustom(serializer, context);
 
 			if (propertyValueType.IsPrimitive)
 				return DeserializePrimitive(propertyValueType, context);
@@ -92,8 +242,12 @@ namespace Sphere10.Framework {
 			return DeserializeReferenceType(propertyValueType, context);
 		}
 
-		private object DeserializePrimitive(Type t, SerializationContext context) {
+		private object DeserializeCustom(IItemSerializer<object> serializer, SerializationContext context) {
+			var byteSize = (int)(ulong)context.Reader.ReadCVarInt(sizeof(int));
+			return serializer.Deserialize(byteSize, context.Reader);
+		}
 
+		private object DeserializePrimitive(Type t, SerializationContext context) {
 			var reader = context.Reader;
 			if (t == typeof(sbyte))
 				return reader.ReadSByte();
@@ -240,156 +394,6 @@ namespace Sphere10.Framework {
 			return Enum.ToObject(propertyValueType, value);
 		}
 
-		private void SerializeInternal(Type propertyType, object propertyValue, SerializationContext context) {
-			if (propertyValue is null)
-				SerializePrimitive(GetTypeCode(typeof(NullValue)), context);
-			else {
-				var valueType = propertyValue.GetType();
-
-				if (IsCircularReference(valueType, propertyValue, context, out var reference)) {
-					propertyValue = reference;
-					valueType = typeof(CircularReference);
-				}
-
-				if (RequiresTypeHeader(propertyType))
-					CreateTypeHeader(valueType, context);
-
-				if (Serializers.TryGetValue(valueType, out var serializer)) {
-					if (context.IsSizing)
-						context.SizeBytes += serializer.CalculateSize(propertyValue);
-					else
-						serializer.Serialize(propertyValue, context.Writer);
-				} else if (valueType.IsEnum)
-					SerializePrimitive(Convert.ChangeType(propertyValue, propertyType.GetEnumUnderlyingType()), context);
-				else if (valueType.IsPrimitive)
-					SerializePrimitive(propertyValue, context);
-				else if (valueType.IsValueType)
-					SerializeValueType(propertyValue, context);
-				else if (valueType.IsCollection())
-					SerializeCollectionType(propertyValue, context);
-				else
-					SerializeReferenceType(propertyValue, context);
-			}
-		}
-
-		private void SerializePrimitive(object boxedPrimitive, SerializationContext context) {
-			if (context.IsSizing) {
-				var size = boxedPrimitive switch {
-					sbyte => sizeof(sbyte),
-					byte => sizeof(byte),
-					short => sizeof(short),
-					ushort primitive => CVarInt.SizeOf(primitive),
-					int => sizeof(int),
-					uint primitive => CVarInt.SizeOf(primitive),
-					long => sizeof(long),
-					ulong primitive => CVarInt.SizeOf(primitive),
-					float => sizeof(float),
-					double => sizeof(double),
-					decimal => sizeof(decimal),
-					bool => sizeof(bool),
-					char => sizeof(char),
-					_ => throw new InvalidOperationException("Unknown primitive type")
-				};
-				context.SizeBytes += size;
-			} else {
-				switch (boxedPrimitive) {
-					case sbyte x:
-						context.Writer.Write(x);
-						break;
-					case byte x:
-						context.Writer.Write(x);
-						break;
-					case short x:
-						context.Writer.Write(x);
-						break;
-					case ushort x:
-						context.Writer.Write(new CVarInt(x).ToBytes());
-						break;
-					case int x:
-						context.Writer.Write(x);
-						break;
-					case uint x:
-						context.Writer.Write(new CVarInt(x).ToBytes());
-						break;
-					case long x:
-						context.Writer.Write(x);
-						break;
-					case ulong x:
-						context.Writer.Write(new CVarInt(x).ToBytes());
-						break;
-					case float x:
-						context.Writer.Write(x);
-						break;
-					case double x:
-						context.Writer.Write(x);
-						break;
-					case decimal x:
-						context.Writer.Write(x);
-						break;
-					case bool x:
-						context.Writer.Write(x);
-						break;
-					case char x:
-						context.Writer.Write(x);
-						break;
-					default:
-						throw new InvalidOperationException("Unknown primitive type");
-				}
-			}
-		}
-
-		private void SerializeReferenceType(object value, SerializationContext context) {
-			var type = value.GetType();
-			context.AddSerializedObject(value);
-			foreach (var property in GetSerializableProperties(type)) {
-				SerializeInternal(property.PropertyType, property.FastGetValue(value), context);
-			}
-		}
-
-		private void SerializeValueType(object value, SerializationContext context) {
-			var valueType = value.GetType();
-			foreach (var property in GetSerializableProperties(valueType)) {
-				SerializeInternal(property.PropertyType, property.FastGetValue(value), context);
-			}
-		}
-
-		private void SerializeCollectionType(object value, SerializationContext context) {
-			var listType = value.GetType();
-
-			if (value is IDictionary dictionary)
-				SerializeDictionary(dictionary, context);
-			else if (value is IEnumerable list) {
-				var enumerator = list.GetEnumerator();
-
-				int count = 0;
-				while (enumerator.MoveNext())
-					count++;
-
-				SerializePrimitive(count, context);
-
-				enumerator.Reset();
-				while (enumerator.MoveNext()) {
-					var itemType = listType.IsGenericType ? listType.GenericTypeArguments[0] : enumerator.Current!.GetType();
-					SerializeInternal(itemType, enumerator.Current, context);
-				}
-			} else
-				throw new InvalidOperationException("Could not serialize object as it doesn't implement IEnumerable.");
-		}
-
-		private void SerializeDictionary(IDictionary dictionary, SerializationContext context) {
-			SerializePrimitive(dictionary.Count, context);
-
-			var enumerator = dictionary.GetEnumerator();
-
-			while (enumerator.MoveNext()) {
-				var key = enumerator.Key;
-				var val = enumerator.Value;
-
-				SerializeInternal(key!.GetType(), key, context);
-				SerializeInternal(val.GetType(), val, context);
-			}
-		}
-
 		private bool RequiresTypeHeader(Type propertyType) {
 			return !propertyType.IsNullable()
 			       && propertyType.IsGenericType
@@ -410,7 +414,7 @@ namespace Sphere10.Framework {
 				// in polymorphic scenarios where the property type does not match the value type then deserialization
 				// will fail here as the real type must be pre-registered.
 				var knownType = propertyType.IsGenericType ? propertyType.GetGenericTypeDefinition() : propertyType;
-				var propertyTypeCode = GetTypeCode(knownType);
+				var propertyTypeCode = DetermineTypeCode(knownType);
 
 				if (propertyTypeCode == serializedTypeCode)
 					type = knownType;
@@ -449,15 +453,15 @@ namespace Sphere10.Framework {
 				if (valueType.GetArrayRank() > 1)
 					throw new InvalidOperationException("Multi-dimension arrays are not supported.");
 
-				SerializePrimitive(GetTypeCode(typeof(Array)), context);
-				SerializePrimitive(GetTypeCode(valueType.GetElementType()), context);
+				SerializePrimitive(DetermineTypeCode(typeof(Array)), context);
+				SerializePrimitive(DetermineTypeCode(valueType.GetElementType()), context);
 
 			} else
-				SerializePrimitive(GetTypeCode(valueType.IsGenericType ? valueType.GetGenericTypeDefinition() : valueType), context);
+				SerializePrimitive(DetermineTypeCode(valueType.IsGenericType ? valueType.GetGenericTypeDefinition() : valueType), context);
 
 			if (valueType.IsGenericType) {
 				foreach (var typeArgument in valueType.GenericTypeArguments) {
-					SerializePrimitive(GetTypeCode(typeArgument), context);
+					SerializePrimitive(DetermineTypeCode(typeArgument), context);
 				}
 			}
 		}
@@ -478,7 +482,7 @@ namespace Sphere10.Framework {
 				if (context.TryGetObjectRefIndex(value, out var index)) {
 					circularReference = new CircularReference {
 						Index = (ushort)index,
-						TypeCode = GetTypeCode(valueType)
+						TypeCode = DetermineTypeCode(valueType)
 					};
 					return true;
 				} else
@@ -486,7 +490,6 @@ namespace Sphere10.Framework {
 			} else
 				return false;
 		}
-
 
 		private class SerializationContext {
 

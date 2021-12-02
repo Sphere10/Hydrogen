@@ -50,7 +50,8 @@ namespace Sphere10.Framework {
         public override bool Remove(U key) {
             if (TryGetValue(key, out var val))
                 if (base.Remove(key))
-                    return _bijection.InternalDictionary.Remove(val);
+	                if (!_bijection.InternalDictionary.Remove(val))
+		                throw new InvalidOperationException("Failed to remove from bijection");
             return false;
         }
 

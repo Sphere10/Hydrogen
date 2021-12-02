@@ -6,8 +6,13 @@ using System.Linq;
 
 namespace Sphere10.Framework {
 
-	public abstract class ClusteredListBase<TItem, TListing> : RangedListBase<TItem>, ILoadable where TListing : IItemListing {
+	public delegate TListing ClusteredListingActivator<in TItem, out TListing>(object source, TItem item, int itemSizeBytes, int clusterStartIndex);
 
+	internal abstract class ClusteredListImplBase<TItem, TListing> : RangedListBase<TItem>, ILoadable where TListing : IClusteredItemListing {
+		public event EventHandlerEx<object> Loading;
+		public event EventHandlerEx<object> Loaded;
+
+		private ClusteredListingActivator<TItem, TListing> _listingActivator;
 		protected readonly IItemSerializer<TListing> ListingSerializer;
 		protected readonly IItemSerializer<TItem> ItemSerializer;
 		protected readonly IEqualityComparer<TItem> ItemComparer;
@@ -17,12 +22,13 @@ namespace Sphere10.Framework {
 
 		public event EventHandlerEx<object, ClusteredItemAccessedArgs<TItem, TListing>> ItemAccess;
 
-		protected ClusteredListBase(int clusterDataSize, Stream stream, IItemSerializer<TItem> itemSerializer, IItemSerializer<TListing> listingSerializer, IEqualityComparer<TItem> itemComparer = null) {
+		protected ClusteredListImplBase(int clusterDataSize, Stream stream, IItemSerializer<TItem> itemSerializer, IItemSerializer<TListing> listingSerializer, IEqualityComparer<TItem> itemComparer = null) {
 			Guard.ArgumentInRange(clusterDataSize, 1, int.MaxValue, nameof(clusterDataSize));
 			Guard.ArgumentNotNull(stream, nameof(stream));
 			Guard.ArgumentNotNull(itemSerializer, nameof(itemSerializer));
 			Guard.ArgumentNotNull(listingSerializer, nameof(listingSerializer));
-			Guard.Argument(listingSerializer.IsFixedSize, nameof(listingSerializer), "Listing objects must be fixed size");
+			Guard.Argument(listingSerializer.IsStaticSize, nameof(listingSerializer), "Listing objects must be fixed size");
+			_listingActivator = null; // Must be set post-construction by implementation class (TODO: refactor this away with better pattern)
 			ItemSerializer = itemSerializer;
 			ListingSerializer = listingSerializer;
 			ItemComparer = itemComparer ?? EqualityComparer<TItem>.Default;
@@ -31,15 +37,28 @@ namespace Sphere10.Framework {
 			RequiresLoad = stream.Length != 0;  // stream length may be -1 if it's an ExtendedStream of an unloaded ILoadableList
 		}
 
+		internal ClusteredListingActivator<TItem, TListing> ListingActivator { 
+			get {
+				Guard.Ensure(_listingActivator != null, "Listing activator has not been configured by client class");
+				return _listingActivator;
+			}
+			set => _listingActivator = value;
+		}
+
+		public abstract IReadOnlyList<TListing> Listings { get; }
+
 		public bool RequiresLoad { get; protected set; }
 	
-		protected abstract IEnumerable<int> GetFreeClusterNumbers(int numberRequired);
+		protected abstract IEnumerable<int> ConsumeClusters(int numberRequired);
 
 		protected bool SuppressNotifications;
 
 		public virtual void Load() {
-			if (InnerStream is ILoadable { RequiresLoad: true } loadable)
+			if (InnerStream is ILoadable { RequiresLoad: true } loadable) {
+				NotifyLoading();
 				loadable.Load();
+				NotifyLoaded();
+			}
 			RequiresLoad = false;
 		}
 
@@ -52,26 +71,30 @@ namespace Sphere10.Framework {
 			RequiresLoad = false;
 		}
 
-		protected abstract TListing NewListingInstance(int itemSizeBytes, int clusterStartIndex);
+		protected TListing NewListingInstance(TItem item, int itemSizeBytes, int clusterStartIndex)
+			=> ListingActivator(this, item, itemSizeBytes, clusterStartIndex);
+
+		internal abstract void UpdateListing(int index, TListing listing);
 
 		protected abstract void MarkClusterFree(int clusterNumber);
 
 		protected TListing AddItemToClusters(int listingIndex, TItem item) {
 			if (item is null) {
-				return NewListingInstance(-1, -1);
+				// TODO: size should be 0?
+				return NewListingInstance(item, -1, -1);
 			}
-			
-			byte[] data = SerializeItem(item);
-			var listing = AddItemInternal(data);
+
+			var data = ItemSerializer.Serialize(item, Endianness.LittleEndian);
+			var listing = AddItemInternal(item, data);
 			NotifyItemAccess(ListOperationType.Add, listingIndex, listing, item, data);
 			return listing;
 		}
 
 		protected TListing UpdateItemInClusters(int listingIndex, TListing itemListing, TItem update) {
+			// note: implementation here removes items (frees up clusters) and adds it again (consumes free clusters).
+			var updatedData = ItemSerializer.Serialize(update, Endianness.LittleEndian);
 			RemoveItemFromClusters(listingIndex, itemListing);
-			//NotifyItemAccess(ListOperationType.Remove, itemListing, default, default);   // an update does not mean old item was removed, it means overwritten
-			byte[] updatedData = SerializeItem(update);
-			var listing = AddItemInternal(updatedData);
+			var listing = AddItemInternal(update, updatedData);
 			NotifyItemAccess(ListOperationType.Update, listingIndex, listing, update, updatedData);
 			return listing;
 		}
@@ -90,7 +113,6 @@ namespace Sphere10.Framework {
 			while (next != -1) {
 				var cluster = Clusters[next.Value];
 				next = cluster.Next;
-
 				if (cluster.Next < 0) {
 					builder.Append(cluster.Data.Take(remaining).ToArray());
 				} else {
@@ -100,12 +122,9 @@ namespace Sphere10.Framework {
 			}
 
 			var data = builder.ToArray();
-
-			var item = ItemSerializer.Deserialize(size,
-				new EndianBinaryReader(EndianBitConverter.Little, new MemoryStream(data)));
-
+			Guard.Ensure(data.Length == size, "Read item was not same size as listing");
+			var item = ItemSerializer.Deserialize(data, Endianness.LittleEndian);
 			NotifyItemAccess(ListOperationType.Read, listingIndex, listing, item, data);
-
 			return item;
 		}
 
@@ -128,12 +147,12 @@ namespace Sphere10.Framework {
 			NotifyItemAccess(ListOperationType.Remove, listingIndex, listing, default, default);
 		}
 
-		private TListing AddItemInternal(byte[] data) {
+		private TListing AddItemInternal(TItem item, byte[] data) {
 			var clusters = new List<Cluster>();
-			var segments = data.Partition(ClusterDataSize).ToList();
-			var numbers = GetFreeClusterNumbers(segments.Count).ToArray();
+			var segments = data.Partition(ClusterDataSize).ToArray();
+			var numbers = ConsumeClusters(segments.Length).ToArray();
 
-			for (var i = 0; i < segments.Count; i++) {
+			for (var i = 0; i < segments.Length; i++) {
 				var segment = segments[i].ToArray();
 				var clusterData = new byte[ClusterDataSize];
 				segment.CopyTo(clusterData, 0);
@@ -141,7 +160,7 @@ namespace Sphere10.Framework {
 				clusters.Add(new Cluster {
 					Number = numbers[i],
 					Data = clusterData,
-					Next = segments.Count - 1 == i ? -1 : numbers[i + 1]
+					Next = i == segments.Length - 1 ? -1 : numbers[i + 1]
 				});
 			}
 
@@ -153,30 +172,13 @@ namespace Sphere10.Framework {
 				else
 					Clusters[cluster.Number] = cluster;
 
-			return NewListingInstance(data.Length, clusters.FirstOrDefault()?.Number ?? -1);
+			return NewListingInstance(item, data.Length, clusters.FirstOrDefault()?.Number ?? -1);
 		}
 
-		private byte[] SerializeItem(TItem item) {
-			using var stream = new MemoryStream();
-			ItemSerializer.Serialize(item, new EndianBinaryWriter(EndianBitConverter.Little, stream));
-			return stream.ToArray();
+		protected virtual void OnLoading() {
 		}
 
-		protected void CheckRange(int index, int count) {
-			var startIx = 0;
-			var lastIx = (Count - 1).ClipTo(startIx, int.MaxValue);
-			Guard.ArgumentInRange(index, startIx, lastIx, nameof(index));
-			if (count > 0)
-				Guard.ArgumentInRange(index + count - 1, startIx, lastIx, nameof(count));
-		}
-
-		protected void CheckLoaded() {
-			if (InnerStream.Length == 0)
-				Initialize(); // only initialize when stream is empty
-
-			if (RequiresLoad) {
-				throw new InvalidOperationException("List requires loading as stream contains existing data.");
-			}
+		protected virtual void OnLoaded() {
 		}
 
 		protected virtual void OnItemAccess(ListOperationType operationType, int listingIndex, TListing listing, TItem item, byte[] serializedItem) {
@@ -187,21 +189,54 @@ namespace Sphere10.Framework {
 				return;
 
 			OnItemAccess(operationType, listingIndex, listing, item, serializedItem);
-			var args = new ClusteredItemAccessedArgs<TItem, TListing>() { ListingIndex = listingIndex, Listing = listing, Item = item, SerializedItem = serializedItem };
+			var args = new ClusteredItemAccessedArgs<TItem, TListing> { ListingIndex = listingIndex, Listing = listing, Item = item, SerializedItem = serializedItem };
 			ItemAccess?.Invoke(this, args);
+		}
+
+		protected void NotifyLoading() {
+			if (SuppressNotifications)
+				return;
+
+			OnLoading();
+			Loading?.Invoke(this);
+		}
+
+		protected void NotifyLoaded() {
+			if (SuppressNotifications)
+				return;
+
+			OnLoaded();
+			Loaded?.Invoke(this);
+		}
+
+		protected void CheckLoaded() {
+			if (InnerStream.Length == 0)
+				Initialize(); // only initialize when stream is empty
+
+			if (RequiresLoad) 
+				throw new InvalidOperationException("List requires loading as stream contains existing data.");
+		}
+
+		protected void CheckRange(int index, int count) {
+			var startIx = 0;
+			var lastIx = (Count - 1).ClipTo(startIx, int.MaxValue);
+			Guard.ArgumentInRange(index, startIx, lastIx, nameof(index));
+			if (count > 0)
+				Guard.ArgumentInRange(index + count - 1, startIx, lastIx, nameof(count));
 		}
 
 		public class Cluster {
 			public ClusterTraits Traits { get; set; }
+			// will pad 3 bytes after traits when serialized
 			public int Number { get; set; }
 			public byte[] Data { get; set; }
 			public int Next { get; set; }
 		}
 
-		public class ClusterSerializer : FixedSizeObjectSerializer<Cluster> {
+		public class ClusterSerializer : StaticSizeObjectSerializer<Cluster> {
 			private readonly int _clusterDataSize;
 
-			public ClusterSerializer(int clusterSize) : base(clusterSize + sizeof(int) + sizeof(int) + sizeof(int)) {
+			public ClusterSerializer(int clusterSize) : base(sizeof(int) + clusterSize + sizeof(int) + sizeof(int)) {
 				Guard.ArgumentInRange(clusterSize, 1, int.MaxValue, nameof(clusterSize));
 				_clusterDataSize = clusterSize;
 			}
@@ -213,7 +248,9 @@ namespace Sphere10.Framework {
 				
 					Debug.Assert(item.Data.Length == _clusterDataSize);
 
-					writer.Write((int)item.Traits);
+					writer.Write((byte)item.Traits);
+					writer.Write((ushort)0); // padding
+					writer.Write((byte)0); // padding
 					writer.Write(item.Number);
 					writer.Write(item.Data);
 					writer.Write(item.Next);
@@ -230,12 +267,19 @@ namespace Sphere10.Framework {
 			public override bool TryDeserialize(int byteSize, EndianBinaryReader reader, out Cluster item) {
 				try {
 					Guard.ArgumentNotNull(reader, nameof(reader));
-				
+
+					var traits = (ClusterTraits)reader.ReadByte();
+					reader.ReadUInt16(); // PADDING	
+					reader.ReadByte(); // PADDING
+					var number = reader.ReadInt32();
+					var data = reader.ReadBytes(_clusterDataSize);
+					var next = reader.ReadInt32();
+
 					var cluster = new Cluster {
-						Traits = (ClusterTraits)reader.ReadInt32(),
-						Number = reader.ReadInt32(),
-						Data = reader.ReadBytes(_clusterDataSize),
-						Next = reader.ReadInt32()
+						Traits = traits,
+						Number = number,
+						Data = data,
+						Next = next
 					};
 					item = cluster;
 					return true;
@@ -247,7 +291,7 @@ namespace Sphere10.Framework {
 		}
 
 		[Flags]
-		public enum ClusterTraits {
+		public enum ClusterTraits : byte {
 			Used = 1 << 0, // 00000001
 			Listing = 1 << 1,
 			Data = 1 << 2,

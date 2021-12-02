@@ -5,9 +5,9 @@ namespace Sphere10.Framework {
 
 	public abstract class ItemSizer<TItem> : IItemSizer<TItem> {
 
-		public bool IsFixedSize => false;
+		public bool IsStaticSize => false;
 
-		public int FixedSize => -1;
+		public int StaticSize => -1;
 
 		public virtual int CalculateTotalSize(IEnumerable<TItem> items, bool calculateIndividualItems, out int[] itemSizes) {
 			var sizes = items.Select(CalculateSize).ToArray();

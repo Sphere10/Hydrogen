@@ -5,13 +5,13 @@ using System.Reflection;
 using System.Text;
 
 namespace Sphere10.Framework {
-	public abstract class GenericItemSerializerBase {
+	public abstract class GenericSerializerBase {
 
 		protected readonly SynchronizedDictionary<Type, int> Registrations = new();
 
 		protected readonly SynchronizedDictionary<Type, IItemSerializer<object>> Serializers = new();
 
-		public GenericItemSerializerBase() {
+		public GenericSerializerBase() {
 			
 			RegisterType<NullValue>();
 			RegisterType<CircularReference>();
@@ -49,7 +49,7 @@ namespace Sphere10.Framework {
 		/// </summary>
 		/// <param name="type"></param>
 		/// <returns></returns>
-		protected int GetTypeCode(Type type) {
+		protected int DetermineTypeCode(Type type) {
 			if (Registrations.ContainsKey(type))
 				return Registrations[type];
 			else {
@@ -126,5 +126,6 @@ namespace Sphere10.Framework {
 
 			public ushort Index { get; set; }
 		}
+
 	}
 }

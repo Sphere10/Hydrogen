@@ -23,7 +23,7 @@ namespace Sphere10.Framework.Tests {
 
     [TestFixture]
     [Parallelizable(ParallelScope.Children)]
-    public class StreamMappedPagedListTests {
+    public class StreamPagedListTests {
 
         [Test]
         public void V1_Add_1([Values(1, 111)] int pageSize) {
@@ -110,7 +110,7 @@ namespace Sphere10.Framework.Tests {
         }
 		
 		[Test]
-		[TestCase(StreamPagedListType.FixedSize, int.MaxValue)]
+		[TestCase(StreamPagedListType.Static, int.MaxValue)]
 		[TestCase(StreamPagedListType.Dynamic, 12)]
 		public void ReadItemRaw(StreamPagedListType type, int pageSize) {
 			var random = new Random(31337);
@@ -129,7 +129,7 @@ namespace Sphere10.Framework.Tests {
 		public void ReadItemRawInvalidIndex() {
 			var random = new Random(31337);
 			using var stream = new MemoryStream();
-			var mappedList = new StreamPagedList<int>(StreamPagedListType.FixedSize, new IntSerializer(), stream, int.MaxValue);
+			var mappedList = new StreamPagedList<int>(StreamPagedListType.Static, new IntSerializer(), stream, int.MaxValue);
 			
 			mappedList.AddRange(random.NextInts(1));
 			Assert.Throws<ArgumentOutOfRangeException>(() => mappedList.ReadItemRaw(5, 1, 1, out var span));
@@ -200,6 +200,14 @@ namespace Sphere10.Framework.Tests {
                 var list = new StreamPagedList<int>(new IntSerializer(), stream) { IncludeListHeader = includeListHeader };
                 AssertEx.ListIntegrationTest(list, maxCapacity, (rng, i) => rng.NextInts(i), mutateFromEndOnly: true);
             }
+        }
+
+
+        private struct TestStruct {
+	        public int X;
+	        public int Y;
+	        public int Z;
+	        public byte U;
         }
 
         public enum StorageType {

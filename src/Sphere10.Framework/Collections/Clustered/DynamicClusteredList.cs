@@ -6,29 +6,6 @@ using System.Linq;
 namespace Sphere10.Framework {
 
 	/// <summary>
-	/// A list whose items are stored in a linked-list of clusters serialized over a stream. It is dynamic since the maximum capacity of the list does not need to be known on activation.
-	/// Items can added/removed arbitrarily and are stored in a non-contiguous manner over a linked-list of clusters (similar in principle to how file systems work). Unlike <see cref="StaticClusteredList{T}"/> there is
-	/// no limitation in the list's capacity imposed at construction since the listing's themselves are stored in clusters. However this benefit is paid for by a notable performance penalty since item listings are more costly to retrieve.
-	/// </summary>
-	/// <typeparam name="T">The type of item being stored in the list</typeparam>
-	/// <remarks>
-	/// The underlying implementation is similar to <see cref="StaticClusteredList{T}"/> except the "listing sector" is serialized as a fragmented stream over a linked-list of clusters whereas in <see cref="StaticClusteredList{T}"/> the listing sector is stored in a contiguous BLOB before the content sector.
-	/// </remarks>
-	public class DynamicClusteredList<T> : DynamicClusteredList<T, ItemListing> {
-
-		public DynamicClusteredList(int clusterDataSize, Stream stream, IItemSerializer<T> itemSerializer, IEqualityComparer<T> itemComparer = null)
-			: base(clusterDataSize, stream, itemSerializer, new ItemListingSerializer(), itemComparer) {
-		}
-
-		protected override ItemListing NewListingInstance(int itemSizeBytes, int clusterStartIndex) {
-			return new ItemListing {
-				Size = itemSizeBytes,
-				ClusterStartIndex = clusterStartIndex
-			};
-		}
-	}
-
-	/// <summary>
 	/// A list whose items are stored in a linked-list of clusters serialized over a stream. It is dynamic since the capacity of the list does not need to be known on activation.
 	/// Items can added/removed arbitrarily and are stored in a non-contiguous manner over a linked-list of clusters (similar in principle to how file systems work). Unlike <see cref="StaticClusteredList{T,TListing}"/> there is
 	/// no limitation in the list's capacity imposed at construction since the listing's themselves are stored in clusters. However this benefit is paid for by a notable performance penalty since item listings are more costly to retrieve.
@@ -38,31 +15,47 @@ namespace Sphere10.Framework {
 	/// <remarks>
 	/// The underlying implementation is similar to <see cref="StaticClusteredList{T}"/> except the "listing sector" is serialized as a fragmented stream over a linked-list of clusters whereas in <see cref="StaticClusteredList{T}"/> the listing sector is stored in a contiguous BLOB before the content sector.
 	/// </remarks>
-	public abstract class DynamicClusteredList<T, TListing> : ClusteredListBase<T, TListing> where TListing : IItemListing {
+	internal sealed class DynamicClusteredList<T, TListing> : ClusteredListImplBase<T, TListing> where TListing : IClusteredItemListing {
 		private const int HeaderSize = 256;
 
 		private readonly EndianBinaryWriter _headerWriter;
-		private readonly BoundedStream _headerStream;
-		private readonly List<int> _freeClusters;
-		private readonly LittleEndianBitConverter _bitConverter;
-		private PreAllocatedList<TListing> _listings;             // this is used to 
-		private StreamPagedList<TListing> _listingSector;
-		
+		private readonly BoundedStream _headerStream;				// header portion
+		private readonly List<int> _freeClusters;					// list of free clusters
+		private readonly IItemSerializer<TListing> _listingSerializer; // listing serializer
+		private PreAllocatedList<TListing> _listings;				// pre-allocated list (which can be grown) to contain listing headers of items
+		private StreamPagedList<TListing> _listingSector;           // dynamic listing sector that is mapped over the clusters through a fragment provider
+		private readonly EndianBitConverter _bitConverter;
+		private readonly Endianness _endianness;
 
-		protected DynamicClusteredList(int clusterDataSize, Stream stream, IItemSerializer<T> itemSerializer, IItemSerializer<TListing> listingSerializer, IEqualityComparer<T> itemComparer = null)
+		public DynamicClusteredList(int clusterDataSize, Stream stream, IItemSerializer<T> itemSerializer, IItemSerializer<TListing> listingSerializer, IEqualityComparer<T> itemComparer = null, Endianness endianness = Endianness.LittleEndian)
 			: base(clusterDataSize, stream, itemSerializer, listingSerializer, itemComparer) {
+			Guard.Argument(clusterDataSize > 0, nameof(clusterDataSize), "Must be greater than 0");
+			Guard.ArgumentNotNull(stream, nameof(stream));
+			Guard.ArgumentNotNull(itemSerializer, nameof(itemSerializer));
+			Guard.ArgumentNotNull(listingSerializer, nameof(listingSerializer));
+			Guard.Argument(listingSerializer.IsStaticSize, nameof(listingSerializer), "Listings must be static sized and cannot be dynamic");
+
+			_listingSerializer = listingSerializer;
 			_headerStream = new BoundedStream(stream, 0, HeaderSize - 1);
 			_headerWriter = new EndianBinaryWriter(EndianBitConverter.Little, _headerStream);
 			_freeClusters = new List<int>();
-			_bitConverter = EndianBitConverter.Little;
+			_bitConverter = EndianBitConverter.For(endianness);
+			_endianness = endianness;
 
 			Clusters = new StreamPagedList<Cluster>(
 				new ClusterSerializer(clusterDataSize),
 				new NonClosingStream(new BoundedStream(stream, _headerStream.MaxAbsolutePosition + 1, long.MaxValue) { UseRelativeOffset = true })
 			);
+
+			_listingSector = new StreamPagedList<TListing>(ListingSerializer, new FragmentedStream(new FragmentProvider(this)), _endianness) {
+				IncludeListHeader = false
+			};
+			_listings = new PreAllocatedList<TListing>(_listingSector, 0);
 		}
 
 		public override int Count => _listings?.Count ?? 0;
+
+		public override IReadOnlyList<TListing> Listings => (IExtendedList<TListing>)_listings ?? new ExtendedList<TListing>();
 
 		public override void AddRange(IEnumerable<T> items) {
 			Guard.ArgumentNotNull(items, nameof(items));
@@ -160,7 +153,6 @@ namespace Sphere10.Framework {
 		public override void RemoveRange(int index, int count) {
 			CheckRange(index, count);
 			CheckLoaded();
-			
 
 			for (var i = 0; i < count; i++) {
 				var listing = _listings[index + i];
@@ -174,17 +166,16 @@ namespace Sphere10.Framework {
 		public override void Load() {
 			base.Load();
 			var count = ReadHeader();
-			var listingsBytesLength = count * ListingSerializer.FixedSize;
+			var listingsBytesLength = count * ListingSerializer.StaticSize;
 
 			Clusters.Load();
 
-			_listingSector = new StreamPagedList<TListing>(ListingSerializer, new FragmentedStream(new FragmentProvider(listingsBytesLength, this))) {
+			_listingSector = new StreamPagedList<TListing>(ListingSerializer, new FragmentedStream(new FragmentProvider(listingsBytesLength, this)), _endianness) {
 				IncludeListHeader = false
 			};
 			_listingSector.Load();
 
-			_listings = new PreAllocatedList<TListing>(_listingSector);
-			_listings.AddRange(_listingSector);
+			_listings = new PreAllocatedList<TListing>(_listingSector, _listingSector.Count);
 
 			for (var i = 0; i < Clusters.Count; i++) {
 				Clusters.ReadItemRaw(i, 0, sizeof(int), out var bytes);
@@ -196,9 +187,17 @@ namespace Sphere10.Framework {
 			}
 		}
 
+		protected override void Initialize() {
+			base.Initialize();
+			WriteHeader();
+
+			// listing store capacity set to 1, reserving cluster 0 as item listing. 
+			_listingSector.Add(default);
+		}
+
 		protected override void MarkClusterFree(int clusterNumber) => _freeClusters.Add(clusterNumber);
 
-		protected override IEnumerable<int> GetFreeClusterNumbers(int numberRequired) {
+		protected override IEnumerable<int> ConsumeClusters(int numberRequired) {
 			var clusterNumbers = _freeClusters.Take(numberRequired)
 				.ToList();
 
@@ -219,16 +218,8 @@ namespace Sphere10.Framework {
 			return clusterNumbers;
 		}
 
-		protected override void Initialize() {
-			base.Initialize();
-			_listingSector = new StreamPagedList<TListing>(ListingSerializer, new FragmentedStream(new FragmentProvider(this))) {
-				IncludeListHeader = false
-			};
-			_listings = new PreAllocatedList<TListing>(_listingSector);
-			WriteHeader();
-
-			// listing store capacity set to 1, reserving cluster 0 as item listing. 
-			_listingSector.Add(default);
+		internal override void UpdateListing(int index, TListing listing) {
+			_listings[index] = listing;
 		}
 
 		private void WriteHeader() {
@@ -254,6 +245,11 @@ namespace Sphere10.Framework {
 			return reader.ReadInt32();
 		}
 
+		// NOTE: this is a buggy implementation (not written by Herman) that needs to be unit tested
+		//  - Releasing small amount of space consecutively may be problematic
+		//  - No need for a _fragmentClusterMap, the fragment indexes should be the cluster indexes
+		//  - _fragmentClusterMap can explode in size when large numbers of clusters
+
 		private class FragmentProvider : IStreamFragmentProvider {
 
 			private readonly DynamicClusteredList<T, TListing> _parent;
@@ -267,13 +263,13 @@ namespace Sphere10.Framework {
 
 			public FragmentProvider(long byteCount, DynamicClusteredList<T, TListing> parent) {
 				_parent = parent;
-				_nextClusterOffset = sizeof(int) + sizeof(int) + _parent.ClusterDataSize;
-				ByteCount = byteCount;
+				_nextClusterOffset = sizeof(int) + sizeof(int) + _parent.ClusterDataSize;   // TODO: should sizeof(int)*2 be parent._listingSerializer.StaticSize ?
+				TotalBytes = byteCount;
 				_fragmentClusterMap = new Dictionary<int, int>();
 
 				//Fragment provider assumes cluster 0 has been reserved for item listings. fill
 				// existing cluster map for quick listing lookup. 
-				if (ByteCount > 0) {
+				if (TotalBytes > 0) {
 					var next = 0;
 					var fragmentIndex = 0;
 
@@ -289,7 +285,7 @@ namespace Sphere10.Framework {
 
 			private int ClusterDataSize => _parent.ClusterDataSize;
 
-			public long ByteCount { get; private set; }
+			public long TotalBytes { get; private set; }
 
 			public int FragmentCount => _fragmentClusterMap.Count;
 
@@ -297,25 +293,25 @@ namespace Sphere10.Framework {
 				Guard.ArgumentInRange(index, 0, FragmentCount - 1, nameof(index));
 
 				long fragmentLength;
-				if (ByteCount > ClusterDataSize) {
-					fragmentLength = index * ClusterDataSize <= ByteCount
+				if (TotalBytes > ClusterDataSize) {
+					fragmentLength = index * ClusterDataSize <= TotalBytes
 						? ClusterDataSize
-						: index * ClusterDataSize - ByteCount;
+						: index * ClusterDataSize - TotalBytes;
 				} else
-					fragmentLength = ByteCount;
+					fragmentLength = TotalBytes;
 
 				var clusterNumber = _fragmentClusterMap[index];
 
 				return Clusters[clusterNumber].Data[..(int)fragmentLength];
 			}
 
-			public (int fragmentIndex, int fragmentPosition) GetFragment(long position, out Span<byte> fragment) {
+			public (int fragmentIndex, int fragmentPosition) MapLogicalPositionToFragment(long position, out Span<byte> fragment) {
 				var fragmentIndex = (int)Math.Floor((decimal)position / ClusterDataSize);
 				var lastCluster = _fragmentClusterMap[fragmentIndex];
 
-				var fragmentLength = ByteCount > ClusterDataSize
-					? Math.Min(ByteCount - fragmentIndex * ClusterDataSize, ClusterDataSize)
-					: ByteCount;
+				var fragmentLength = TotalBytes > ClusterDataSize
+					? Math.Min(TotalBytes - fragmentIndex * ClusterDataSize, ClusterDataSize)
+					: TotalBytes;
 
 				fragment = Clusters[lastCluster].Data[..(int)fragmentLength];
 
@@ -326,21 +322,21 @@ namespace Sphere10.Framework {
 				long remainingAvailableSpace;
 
 				if (Clusters.Any()) {
-					if (ByteCount > ClusterDataSize)
-						remainingAvailableSpace = FragmentCount * ClusterDataSize - ByteCount;
+					if (TotalBytes > ClusterDataSize)
+						remainingAvailableSpace = FragmentCount * ClusterDataSize - TotalBytes;
 					else
-						remainingAvailableSpace = ClusterDataSize - ByteCount;
+						remainingAvailableSpace = ClusterDataSize - TotalBytes;
 				} else
 					remainingAvailableSpace = 0;
 
 				if (remainingAvailableSpace >= bytes) {
-					ByteCount += bytes;
+					TotalBytes += bytes;
 					newFragmentIndexes = new int[0];
 					return true;
 				}
 
 				var numberRequired = (int)Math.Ceiling(((decimal)bytes - remainingAvailableSpace) / ClusterDataSize);
-				var clusterNumbers = _parent.GetFreeClusterNumbers(numberRequired).ToArray();
+				var clusterNumbers = _parent.ConsumeClusters(numberRequired).ToArray();
 				newFragmentIndexes = Enumerable.Range(FragmentCount, numberRequired).ToArray();
 				var lastCluster = _fragmentClusterMap.Any() ? _fragmentClusterMap.Last().Value : -1;
 
@@ -368,7 +364,7 @@ namespace Sphere10.Framework {
 					Clusters.Update(lastCluster, last);
 				}
 
-				ByteCount += bytes;
+				TotalBytes += bytes;
 
 				return true;
 			}
@@ -397,7 +393,7 @@ namespace Sphere10.Framework {
 					_fragmentClusterMap.Remove(releasedFragmentIndex);
 				}
 
-				ByteCount -= bytes;
+				TotalBytes -= bytes;
 
 				return bytes;
 			}

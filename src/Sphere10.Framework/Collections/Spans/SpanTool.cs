@@ -13,10 +13,14 @@
 
 
 // ReSharper disable CheckNamespace
+
+using System;
+
 namespace Tools {
 
 	public static class Spans {
 
-      
+		public static Span<T> Empty<T>() => System.Array.Empty<T>().AsSpan();
+
 	}
 }

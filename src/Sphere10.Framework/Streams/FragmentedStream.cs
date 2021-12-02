@@ -38,7 +38,7 @@ namespace Sphere10.Framework {
 			var remaining = (int)bytesToRead;
 
 			// Starting with the current position's fragment, read bytes from fragment and move to the next until no further bytes remain
-			var (fragmentIndex, fragmentPosition) = _fragmentProvider.GetFragment(Position, out var fragment);
+			var (fragmentIndex, fragmentPosition) = _fragmentProvider.MapLogicalPositionToFragment(Position, out var fragment);
 
 			while (remaining > 0) {
 				var fromFragmentCount = Math.Min(fragment.Length - fragmentPosition, remaining);
@@ -110,7 +110,7 @@ namespace Sphere10.Framework {
 			//Update existing fragments, starting with the current position's fragment.
 			var remaining = updateAmount;
 			if (remaining > 0) {
-				var (fragmentIndex, fragmentPosition) = _fragmentProvider.GetFragment(Position, out var fragment);
+				var (fragmentIndex, fragmentPosition) = _fragmentProvider.MapLogicalPositionToFragment(Position, out var fragment);
 				var updatedBytes = new byte[remaining];
 				Buffer.BlockCopy(buffer, offset, updatedBytes, 0, remaining);
 
@@ -119,7 +119,7 @@ namespace Sphere10.Framework {
 				while (remaining > 0) {
 					var sliceBytesCount = Math.Min(remaining, fragment.Length - fragmentPosition);
 
-					_fragmentProvider.UpdateFragment(fragmentIndex, fragmentPosition,updatedBytes[updateIndex..(updateIndex + sliceBytesCount)]);
+					_fragmentProvider.UpdateFragment(fragmentIndex, fragmentPosition, updatedBytes[updateIndex..(updateIndex + sliceBytesCount)]);
 					updateIndex += sliceBytesCount;
 					remaining -= sliceBytesCount;
 
@@ -143,14 +143,14 @@ namespace Sphere10.Framework {
 
 				if (_fragmentProvider.TryRequestSpace(remaining, out var newFragmentIndexes)) {
 					
-					var (currentFragmentIndex, fragmentPosition) = _fragmentProvider.GetFragment(Position, out var fragment);
+					var (currentFragmentIndex, fragmentPosition) = _fragmentProvider.MapLogicalPositionToFragment(Position, out var fragment);
 					// if the current fragment isn't new and has space available, fill it first.
-					if (fragmentPosition != fragment.Length - 1 && !newFragmentIndexes.Contains(currentFragmentIndex)) {
+					if (fragmentPosition != fragment.Length && !newFragmentIndexes.Contains(currentFragmentIndex)) {
 						var currentFragmentRemainingBytes = fragment.Length - fragmentPosition;
-						var slice = fragment[fragmentPosition..];
-						addedBytes[addIndex..(currentFragmentRemainingBytes - 1)].CopyTo(slice);
-						addIndex += slice.Length;
-						remaining -= slice.Length;
+						var unusedFragmentSlice = fragment.Slice(fragmentPosition, Math.Min(currentFragmentRemainingBytes, remaining));
+						addedBytes.AsSpan(addIndex, unusedFragmentSlice.Length).CopyTo(unusedFragmentSlice);
+						addIndex += unusedFragmentSlice.Length;
+						remaining -= unusedFragmentSlice.Length;
 					}
 					
 					if (remaining > 0) {
@@ -164,8 +164,9 @@ namespace Sphere10.Framework {
 							remaining -= toAddAmount;
 						}
 					}
-					
-					Debug.Assert(remaining == 0);
+
+					Guard.Ensure(remaining == 0, "Internal Error");
+					//Debug.Assert(remaining == 0);
 					Position += addingAmount;
 					
 				} else {
@@ -182,7 +183,7 @@ namespace Sphere10.Framework {
 
 		public override bool CanWrite => true;
 
-		public override long Length => _fragmentProvider.ByteCount;
+		public override long Length => _fragmentProvider.TotalBytes;
 
 		public override long Position {
 			get => _position;
@@ -194,8 +195,12 @@ namespace Sphere10.Framework {
 
 		public virtual byte[] ToArray() {
 			var builder = new ByteArrayBuilder();
+			var remainingBytes = _fragmentProvider.TotalBytes;
 			for (var i = 0; i < _fragmentProvider.FragmentCount; i++) {
-				builder.Append(_fragmentProvider.GetFragment(i));
+				var fragment = _fragmentProvider.GetFragment(i);
+				var takeAmount = (int)Math.Min(fragment.Length, remainingBytes);
+				builder.Append(fragment.Slice(0, takeAmount));
+				remainingBytes -= takeAmount;
 			}
 			return builder.ToArray();
 		}

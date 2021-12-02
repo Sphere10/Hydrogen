@@ -29,31 +29,15 @@ namespace Sphere10.Framework {
             fromY = temp;
         }
 
-        public static bool IsIn<T>(this T source, params T[] collection) {
-            return collection.Contains(source);
-        }
-        public static bool IsIn<T>(this T source, IEnumerable<T> collection) {
-            return collection.Contains(source);
+        public static bool IsIn<T>(this T @object, params T[] collection) {
+            return collection.Contains(@object);
         }
 
-        //public static TRet SafeOrDefault<T, TRet>(this T obj, Func<T, TRet> getter) where T : class {
-        //    return obj != null ? getter(obj) : default(TRet);
-        //}
+        public static bool IsIn<T>(this T @object, IEnumerable<T> collection) {
+            return collection.Contains(@object);
+        }
 
-        //public static TRet SafeOrNull<T, TRet>(this T obj, Func<T, TRet> getter) where T : class where TRet : class {
-        //    return obj != null ? getter(obj) : null;
-        //}
-
-        //public static TRet? SafeOrNullValue<T, TRet>(this T obj, Func<T, TRet> getter)
-        //    where T : class
-        //    where TRet : struct {
-        //    return obj != null ? getter(obj) : new TRet?();
-        //}
-
-        //public static void SafeCall<T>(this T obj, Action<T> action) where T : class {
-        //    if (obj != null)
-        //        action(obj);
-        //}
+		public static string ToStringSafe<T>(this T @object) => @object?.ToString() ?? "<null>";
 
 
     }

@@ -7,8 +7,6 @@ namespace Sphere10.Framework {
 		new int IndexOf(T item);
 		new void Insert(int index, T item);
 		new void RemoveAt(int index);
-
-
 	}
 
 	public static class IExtendedListExtensions {

@@ -54,23 +54,26 @@ namespace Sphere10.Framework {
 		public const int ListHeaderSize = 256;
 		public const int DefaultPageSize = 100;
 
-		public StreamPagedList(IItemSerializer<TItem> serializer, Stream stream) : this(
-			serializer.IsFixedSize ? StreamPagedListType.FixedSize : StreamPagedListType.Dynamic,
+		public StreamPagedList(IItemSerializer<TItem> serializer, Stream stream, Endianness endianness = Endianness.LittleEndian) 
+			: this(
+			serializer.IsStaticSize ? StreamPagedListType.Static : StreamPagedListType.Dynamic,
 			serializer,
 			stream,
-			serializer.IsFixedSize ? int.MaxValue : DefaultPageSize) {
+			serializer.IsStaticSize ? int.MaxValue : DefaultPageSize,
+			endianness
+		) {
 		}
 
-		public StreamPagedList(IItemSerializer<TItem> serializer, Stream stream, int pageSize)
-			: this(serializer.IsFixedSize ? StreamPagedListType.FixedSize : StreamPagedListType.Dynamic, serializer, stream, pageSize) {
+		public StreamPagedList(IItemSerializer<TItem> serializer, Stream stream, int pageSize, Endianness endianness = Endianness.LittleEndian)
+			: this(serializer.IsStaticSize ? StreamPagedListType.Static : StreamPagedListType.Dynamic, serializer, stream, pageSize, endianness) {
 		}
 
-		public StreamPagedList(StreamPagedListType type, IItemSerializer<TItem> serializer, Stream stream, int pageSize) {
+		public StreamPagedList(StreamPagedListType type, IItemSerializer<TItem> serializer, Stream stream, int pageSize, Endianness endianness = Endianness.LittleEndian) {
 			PageSize = pageSize;
 			Serializer = serializer;
 			Stream = stream;
-			Reader = new EndianBinaryReader(EndianBitConverter.Little, Stream);
-			Writer = new EndianBinaryWriter(EndianBitConverter.Little, Stream);
+			Reader = new EndianBinaryReader(EndianBitConverter.For(endianness), Stream);
+			Writer = new EndianBinaryWriter(EndianBitConverter.For(endianness), Stream);
 			RequiresLoad = Stream.Length > 0;
 			Type = type;
 		}
@@ -97,7 +100,7 @@ namespace Sphere10.Framework {
 
 					return Tools.Scope.ExecuteOnDispose(streamedPage.Close);
 				}
-				case StreamPagedListType.FixedSize:
+				case StreamPagedListType.Static:
 					return Tools.Scope.ExecuteOnDispose(() => { }); //no-op
 				default:
 					throw new ArgumentOutOfRangeException();
@@ -183,9 +186,9 @@ namespace Sphere10.Framework {
 		protected override IPage<TItem> NewPageInstance(int pageNumber) =>
 			Type switch {
 				StreamPagedListType.Dynamic => pageNumber == 0 ? new DynamicStreamPage<TItem>(this) : new DynamicStreamPage<TItem>((DynamicStreamPage<TItem>)InternalPages.Last()),
-				StreamPagedListType.FixedSize => pageNumber == 0
+				StreamPagedListType.Static => pageNumber == 0
 					? new StaticStreamPage<TItem>(this)
-					: throw new InvalidOperationException($"{nameof(StreamPagedListType.FixedSize)} only supports a single page."),
+					: throw new InvalidOperationException($"{nameof(StreamPagedListType.Static)} only supports a single page."),
 				_ => throw new ArgumentOutOfRangeException()
 			};
 

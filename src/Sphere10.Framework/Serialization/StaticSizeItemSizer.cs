@@ -5,28 +5,28 @@ namespace Sphere10.Framework {
 
 	// ReSharper disable PossibleInvalidOperationException
 
-	public class FixedSizeItemtSizer<TItem> : IItemSizer<TItem> {
+	public class StaticSizeItemSizer<TItem> : IItemSizer<TItem> {
 
-		public FixedSizeItemtSizer(int fixedSize) {
-			FixedSize = fixedSize;
+		public StaticSizeItemSizer(int fixedSize) {
+			StaticSize = fixedSize;
 		}
 
-		public bool IsFixedSize => true;
+		public bool IsStaticSize => true;
 
-		public int FixedSize { get; }
+		public int StaticSize { get; }
 
 		public int CalculateTotalSize(IEnumerable<TItem> items, bool calculateIndividualItems, out int[] itemSizes) {
 			return CalculateTotalSize(items.Count(), calculateIndividualItems, out itemSizes);
 		}
 
 		public int CalculateTotalSize(int itemsCount, bool calculateIndividualItems, out int[] itemSizes) {
-			var val = FixedSize;
+			var val = StaticSize;
 			var size = itemsCount * val;
 			itemSizes = calculateIndividualItems ? Tools.Array.Gen(itemsCount, val) : null;
 			return size;
 		}
 
-		public int CalculateSize(TItem item) => FixedSize;
+		public int CalculateSize(TItem item) => StaticSize;
 	}
 
 }

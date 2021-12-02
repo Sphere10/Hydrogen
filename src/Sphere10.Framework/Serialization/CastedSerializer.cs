@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 
 namespace Sphere10.Framework {
 
@@ -16,33 +17,23 @@ namespace Sphere10.Framework {
 			_concreteSerializer = concreteSerializer;
 		}
 
-		public bool IsFixedSize => _concreteSerializer.IsFixedSize;
+		public bool IsStaticSize => _concreteSerializer.IsStaticSize;
 
-		public int FixedSize => _concreteSerializer.FixedSize;
+		public int StaticSize => _concreteSerializer.StaticSize;
 
 		public int CalculateTotalSize(IEnumerable<TBase> items, bool calculateIndividualItems, out int[] itemSizes)
 			=> _concreteSerializer.CalculateTotalSize(items.Cast<TConcrete>(), calculateIndividualItems, out itemSizes);
 
 		public int CalculateSize(TBase item) => _concreteSerializer.CalculateSize((TConcrete)item);
 
-		public bool TrySerialize(TBase item, EndianBinaryWriter writer, out int bytesWritten) {
-			try {
-				bytesWritten = _concreteSerializer.Serialize((TConcrete)item, writer);
-				return true;
-			} catch (Exception) {
-				bytesWritten = 0;
-				return false;
-			}
-		}
+		public bool TrySerialize(TBase item, EndianBinaryWriter writer, out int bytesWritten) 
+			=> _concreteSerializer.TrySerialize((TConcrete)item, writer, out bytesWritten);
 
 		public bool TryDeserialize(int byteSize, EndianBinaryReader reader, out TBase item) {
-			try {
-				item = _concreteSerializer.Deserialize(byteSize, reader);
-				return true;
-			} catch (Exception) {
-				item = default;
-				return false;
-			}
+			var result =_concreteSerializer.TryDeserialize(byteSize, reader, out var concrete);
+			item = concrete;
+			return result;
 		}
+		
 	}
 }

@@ -5,23 +5,23 @@ using System.Linq;
 namespace Sphere10.Framework {
 
 	public class BoolSerializer : IItemSerializer<bool> {
-		public bool IsFixedSize => true;
-		public int FixedSize => sizeof(bool);
+		public bool IsStaticSize => true;
+		public int StaticSize => sizeof(bool);
 		
 		public int CalculateTotalSize(IEnumerable<bool> items, bool calculateIndividualItems, out int[] itemSizes) {
 			var enumerable = items as bool[] ?? items.ToArray();
-			int sum = enumerable.Length * FixedSize;
+			int sum = enumerable.Length * StaticSize;
 
-			itemSizes = Enumerable.Repeat(FixedSize, enumerable.Length).ToArray();
+			itemSizes = Enumerable.Repeat(StaticSize, enumerable.Length).ToArray();
 			return sum;
 		}
 
-		public int CalculateSize(bool item) => FixedSize;
+		public int CalculateSize(bool item) => StaticSize;
 
 		public bool TrySerialize(bool item, EndianBinaryWriter writer, out int bytesWritten) {
 			try {
 				writer.Write(item);
-				bytesWritten = FixedSize;
+				bytesWritten = StaticSize;
 				return true;
 			} catch (Exception) {
 				bytesWritten = 0;

@@ -19,6 +19,7 @@ using System.Reflection;
 
 namespace Sphere10.Framework {
 
+	//TODO: refactor so nodes are stored in a IExtended list, then pass that list in (TransactionalList)
 	public class BTree<K, V> : IDictionary<K, V> where K : IComparable<K> {
 		private readonly int order;
 	    private BTreeNode _root;
@@ -163,16 +164,11 @@ namespace Sphere10.Framework {
 
 		public V this[K key] {
 			get {
-				V value = default(V);
-				if (this.TryGetValue(key, out value)) {
+				if (TryGetValue(key, out var value))
 					return value;
-				} else {
-					throw new KeyNotFoundException();
-				}
+				throw new KeyNotFoundException();
 			}
-			set {
-				this.Add(key, value);
-			}
+			set => Add(key, value);
 		}
 
 		public bool ContainsKey(K key) {

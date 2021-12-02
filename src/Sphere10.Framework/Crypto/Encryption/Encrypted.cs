@@ -15,7 +15,7 @@ namespace Sphere10.Framework {
 
     public class Encrypted {
         public static Encrypted<T> For<T>(T item, byte[] secret) where T : new()
-            => new(item, secret, new GenericItemSerializer<T>());
+            => new(item, secret, new GenericSerializer<T>());
     }
 
     public sealed class Encrypted<TObject> : Encrypted, IEncrypted<TObject> {

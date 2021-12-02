@@ -15,6 +15,7 @@
 using System;
 using System.IO;
 using System.Text;
+using Sphere10.Framework.Values;
 
 
 namespace Sphere10.Framework {
@@ -208,12 +209,14 @@ namespace Sphere10.Framework {
             WriteInternal(buffer, 8);
         }
 
-        /// <summary>
-        /// Writes a single-precision floating-point value to the stream, using the bit converter
-        /// for this writer. 4 bytes are written.
-        /// </summary>
-        /// <param name="value">The value to write</param>
-        public void Write(float value) {
+		public void Write(CVarInt value) => Write(value.ToBytes());
+
+		/// <summary>
+		/// Writes a single-precision floating-point value to the stream, using the bit converter
+		/// for this writer. 4 bytes are written.
+		/// </summary>
+		/// <param name="value">The value to write</param>
+		public void Write(float value) {
             bitConverter.WriteTo(value, buffer, 0);
             WriteInternal(buffer, 4);
         }

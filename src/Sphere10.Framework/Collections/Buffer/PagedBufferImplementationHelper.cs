@@ -5,89 +5,94 @@ using System.Runtime.InteropServices;
 
 namespace Sphere10.Framework {
 
-	// PagedBuffer span operations implemented in a not-so-great way. Relying on page operations to do the bulk insertions/
+	/// <summary>
+	/// A re-implementation of <see cref="PagedListBase{TItem}"/> methods optimized for spans and used by <see cref="IBuffer"/> implementations.
+	/// </summary>
+	/// <remarks>PagedBuffer span operations implemented in a not-so-great way. Relying on page operations to do the bulk insertions</remarks>
 	internal static class PagedBufferImplementationHelper {
-		public static ReadOnlySpan<byte> ReadRange(IPagedListInternalMethods<byte> internalMethods, int index, int count) {
+		public static ReadOnlySpan<byte> ReadRange(IPagedListDelegate<byte> pagedBuffer, int index, int count) {
 			var builder = new ByteArrayBuilder();
 
-			internalMethods.CheckRequiresLoad();
-			internalMethods.NotifyAccessing();
-			internalMethods.CheckRange(index, count);
+			pagedBuffer.CheckRequiresLoad();
+			pagedBuffer.NotifyAccessing();
+			pagedBuffer.CheckRange(index, count);
 
-			foreach (var pageSegment in internalMethods.GetPageSegments(index, count)) {
+			foreach (var pageSegment in pagedBuffer.GetPageSegments(index, count)) {
 				var page = (IBufferPage)pageSegment.Item1;
 				var pageStartIndex = pageSegment.Item2;
 				var pageItemCount = pageSegment.Item3;
-				internalMethods.NotifyPageAccessing(page);
-				using (internalMethods.EnterOpenPageScope(page)) {
-					internalMethods.NotifyPageReading(page);
+				pagedBuffer.NotifyPageAccessing(page);
+				using (pagedBuffer.EnterOpenPageScope(page)) {
+					pagedBuffer.NotifyPageReading(page);
 					builder.Append(page.ReadSpan(pageStartIndex, pageItemCount));
-					internalMethods.NotifyPageRead(page);
+					pagedBuffer.NotifyPageRead(page);
 				}
-				internalMethods.NotifyPageAccessed(page);
+				pagedBuffer.NotifyPageAccessed(page);
 			}
-			internalMethods.NotifyAccessed();
+			pagedBuffer.NotifyAccessed();
 
 			return builder.ToArray();
 		}
 
-		public static void AddRange(IPagedListInternalMethods<byte> internalMethods, ReadOnlySpan<byte> span) {
+		public static void AddRange(IPagedListDelegate<byte> pagedBuffer, ReadOnlySpan<byte> span) {
 			if (span.IsEmpty)
 				return;
-			internalMethods.CheckRequiresLoad();
-			internalMethods.NotifyAccessing();
-			var page = internalMethods.InternalPages().Any() ? internalMethods.InternalPages().Last() : internalMethods.CreateNextPage();
+			pagedBuffer.CheckRequiresLoad();
+			pagedBuffer.NotifyAccessing();
+			var page = pagedBuffer.InternalPages().Any() ? pagedBuffer.InternalPages().Last() : pagedBuffer.CreateNextPage();
 			var bufferPage = (IBufferPage)page;
-			internalMethods.NotifyPageAccessing(page);
+			pagedBuffer.NotifyPageAccessing(page);
 			var fittedCompletely = false;
 			while (!fittedCompletely) {
-				using (internalMethods.EnterOpenPageScope(page)) {
-					internalMethods.NotifyPageWriting(page);
-					internalMethods.UpdateVersion();
+				using (pagedBuffer.EnterOpenPageScope(page)) {
+					pagedBuffer.NotifyPageWriting(page);
+					pagedBuffer.UpdateVersion();
 					fittedCompletely = bufferPage.AppendSpan(span, out span);
-					internalMethods.NotifyPageWrite(page);
+					pagedBuffer.NotifyPageWrite(page);
 				}
-				internalMethods.NotifyPageAccessed(page);
+				pagedBuffer.NotifyPageAccessed(page);
 				if (!fittedCompletely) {
-					page = internalMethods.CreateNextPage() as IBufferPage;
+					page = pagedBuffer.CreateNextPage() as IBufferPage;
 					bufferPage = (IBufferPage)page;
 				}
 			}
-			internalMethods.NotifyAccessed();
+			pagedBuffer.NotifyAccessed();
 		}
 
-		public static void UpdateRange(IPagedListInternalMethods<byte> internalMethods, int index, ReadOnlySpan<byte> items) {
-			internalMethods.CheckRequiresLoad();
-			internalMethods.NotifyAccessing();
+		public static void UpdateRange(IPagedListDelegate<byte> pagedBuffer, int index, ReadOnlySpan<byte> items) {
+			pagedBuffer.CheckRequiresLoad();
+			pagedBuffer.NotifyAccessing();
 
 			if (items.Length == 0)
 				return;
 
-			foreach (var pageSegment in internalMethods.GetPageSegments(index, items.Length)) {
+			foreach (var pageSegment in pagedBuffer.GetPageSegments(index, items.Length)) {
 				var page = pageSegment.Item1;
 				var bufferPage = (IBufferPage)page;
 				var pageStartIx = pageSegment.Item2;
 				var pageCount = pageSegment.Item3;
 				var pageSpan = items.Slice(pageStartIx - index, pageCount);
-				using (internalMethods.EnterOpenPageScope(page)) {
-					internalMethods.NotifyPageAccessing(page);
-					internalMethods.NotifyPageWriting(page);
-					internalMethods.UpdateVersion();
+				using (pagedBuffer.EnterOpenPageScope(page)) {
+					pagedBuffer.NotifyPageAccessing(page);
+					pagedBuffer.NotifyPageWriting(page);
+					pagedBuffer.UpdateVersion();
 					bufferPage.UpdateSpan(pageStartIx, pageSpan);
-					internalMethods.NotifyPageWrite(page);
+					pagedBuffer.NotifyPageWrite(page);
 				}
-				internalMethods.NotifyPageAccessed(page);
+				pagedBuffer.NotifyPageAccessed(page);
 			}
-			internalMethods.NotifyAccessed();
+			pagedBuffer.NotifyAccessed();
 		}
 
-		public static void InsertRange(IPagedListInternalMethods<byte> internalMethods, in int count, in int index, in ReadOnlySpan<byte> items) {
+		public static void InsertRange(IPagedListDelegate<byte> pagedBuffer, in int count, in int index, in ReadOnlySpan<byte> items) {
 			if (index == count)
-				AddRange(internalMethods, items);
+				AddRange(pagedBuffer, items);
 			else throw new NotSupportedException("This collection can only be mutated from the end");
 		}
 
-		public static Span<byte> AsSpan(IPagedListInternalMethods<byte> internalMethods, int index, int count) {
+		public static Span<byte> AsSpan(IPagedListDelegate<byte> internalMethods, int index, int count) {
+			// TODO: this needs to check if the span range covers a contiguous region of a page, and if not throw
+			// returns span for the page (needs to provide a locking scope to ensure the page isn't swapped)
 			var readOnlySpan = ReadRange(internalMethods, index, count);
 
 			// https://github.com/dotnet/runtime/issues/23494#issuecomment-648290373

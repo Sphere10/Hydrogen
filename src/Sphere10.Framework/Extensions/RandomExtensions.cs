@@ -14,7 +14,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
+using System.Threading.Channels;
 
 namespace Sphere10.Framework {
 	public static class RandomExtensions {
@@ -27,6 +29,8 @@ namespace Sphere10.Framework {
 				return random.Next(minInclusive, maxInclusive + 1);
 			}
 		}
+
+		public static char NextAnsiChar(this Random random) => (char)random.Next(-127, 127);
 
 		public static bool NextBool(this Random random) {
 			return random.Next(0, 2) > 0;

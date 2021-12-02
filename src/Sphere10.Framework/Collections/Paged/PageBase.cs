@@ -42,11 +42,12 @@ namespace Sphere10.Framework {
 			if (updateCount > 0) {
 				var updateItems = itemsArr.Take(updateCount).ToArray();
 				UpdateInternal(index, updateItems, out var oldItemsSpace, out var newItemsSpace);
-				if (oldItemsSpace != newItemsSpace)
-					// TODO: support this scenario if ever needed, lots of complexity in ensuring updated page doesn't overflow max size from superclasses.
-					// Can lead to cascading page updates. 
-					// For constant sized objects (like byte arrays) this will never fail since the updated regions will always remain the same size.
-					throw new NotSupportedException("Updated a page with different sized objects is not supported in this collection.");
+				
+				// TODO: support this scenario if ever needed, lots of complexity in ensuring updated page doesn't overflow max size from superclasses.
+				// Can lead to cascading page updates. 
+				// For constant sized objects (like byte arrays) this will never fail since the updated regions will always remain the same size.
+				Guard.Against(oldItemsSpace != newItemsSpace, "Updated a page with different sized objects is not supported in this collection.");
+
 				Size = Size - oldItemsSpace + newItemsSpace;
 			}
 
@@ -58,10 +59,9 @@ namespace Sphere10.Framework {
 			Size += appendedItemsSpace;
 
 			var totalWriteCount = updateCount + appendCount;
-			if (Count == 0 && totalWriteCount == 0) {
-				// Was unable to write the first element in an empty page, item too large
-				throw new InvalidOperationException($"Item '{itemsArr[0]?.ToString() ?? "(NULL)"}' cannot be fitted onto a page of this collection");
-			}
+			// Was unable to write the first element in an empty page, item too large
+			Guard.Against(Count == 0 && totalWriteCount == 0, $"Item '{itemsArr[0]?.ToString() ?? "(NULL)"}' cannot be fitted onto a page of this collection");
+				
 			if (totalWriteCount > 0)
 				Dirty = true;
 			overflow = totalWriteCount < itemsArr.Length ? itemsArr.Skip(totalWriteCount).ToArray() : Enumerable.Empty<TItem>();
@@ -103,25 +103,17 @@ namespace Sphere10.Framework {
 				Guard.ArgumentInRange(index + count - 1, startIX, lastIX, nameof(count));
 		}
 
-		internal void CheckPageState(PageState status) {
-			if (State != status)
-				throw new InvalidOperationException($"Page not {status}");
-		}
+		internal void CheckPageState(PageState status) 
+			=> Guard.Ensure(State == status, $"Page not {status}");
 
-		protected void CheckPageState(params PageState[] statuses) {
-			if (!State.IsIn(statuses))
-				throw new InvalidOperationException($"Page not in states {statuses.ToDelimittedString(",")}");
-		}
+		protected void CheckPageState(params PageState[] statuses) 
+			=> Guard.Ensure(State.IsIn(statuses), $"Page not in states {statuses.ToDelimittedString(",")}");
 
-		protected void CheckDirty() {
-			if (!Dirty)
-				throw new InvalidOperationException($"Page was not dirty");
-		}
-
-		protected void CheckNotDirty() {
-			if (Dirty)
-				throw new InvalidOperationException($"Page was dirty");
-		}
+		protected void CheckDirty() 
+			=> Guard.Ensure(Dirty, $"Page was not dirty");
+		
+		protected void CheckNotDirty() 
+			=> Guard.Ensure(!Dirty, $"Page was dirty");
 
 	}
 

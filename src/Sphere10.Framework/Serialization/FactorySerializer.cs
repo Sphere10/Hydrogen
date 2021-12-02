@@ -30,8 +30,8 @@ namespace Sphere10.Framework {
 			_typeCodeMap.Add(typeof(TConcrete), typeCode);
 		}
 
-		public bool IsFixedSize => false;
-		public int FixedSize => -1;
+		public bool IsStaticSize => false;
+		public int StaticSize => -1;
 
 		public int CalculateTotalSize(IEnumerable<TBase> items, bool calculateIndividualItems, out int[] itemSizes) {
 			throw new NotImplementedException();

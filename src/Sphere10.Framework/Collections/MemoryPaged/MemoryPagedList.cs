@@ -5,7 +5,7 @@ namespace Sphere10.Framework {
 	    private readonly IItemSizer<TItem> _sizer;
 
 	    public MemoryPagedList(int pageSize, long maxMemory, int fixedItemSize)
-		    : this(pageSize, maxMemory, new FixedSizeItemtSizer<TItem>(fixedItemSize)) {
+		    : this(pageSize, maxMemory, new StaticSizeItemSizer<TItem>(fixedItemSize)) {
 	    }
 
 	    public MemoryPagedList(int pageSize, long maxMemory, Func<TItem, int> itemSizer)

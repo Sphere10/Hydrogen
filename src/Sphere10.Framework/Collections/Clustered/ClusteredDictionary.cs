@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Diagnostics;
@@ -88,21 +89,27 @@ namespace Sphere10.Framework {
 			_valueSerializer = valueSerializer;
 			_endianness = endianess;
 			_checksumToIndexLookup = new LookupEx<int, int>();
-			_unusedListings = new SortedList<int>();
+			_unusedListings = new();
 			kvpStore.Loaded += _ => RefreshChecksumToIndexLookup();
 			if (!kvpStore.RequiresLoad)
 				RefreshChecksumToIndexLookup();
 		}
 
-		public override ICollection<TKey> Keys => KeyValuePairs.Select(kvp => kvp.Key).ToList();
+		public override ICollection<TKey> Keys => _kvpStore
+		                                          .Where((_, i) => !IsUnusedListing(i))
+		                                          .Select(kvp => kvp.Key)
+		                                          .ToList();
 
-		public override ICollection<TValue> Values => KeyValuePairs.Select(kvp => kvp.Value).ToList();
+		public override ICollection<TValue> Values => _kvpStore
+		                                              .Where((_, i) => !IsUnusedListing(i))
+		                                              .Select(kvp => DeserializeValue(kvp.Value))
+		                                              .ToList();
 
 		public bool RequiresLoad => _kvpStore.RequiresLoad;
 
 		protected IEnumerable<KeyValuePair<TKey, TValue>> KeyValuePairs =>
 			_kvpStore
-				.Where((_, i) => _unusedListings.Contains(i))
+				.Where((_, i) => !IsUnusedListing(i))
 				.Select(kvp => new KeyValuePair<TKey, TValue>(kvp.Key, DeserializeValue(kvp.Value)));
 
 		public override void Add(TKey key, TValue value) {
@@ -117,8 +124,18 @@ namespace Sphere10.Framework {
 				listing.Traits = listing.Traits.CopyAndSetFlags(ItemListingTraits.Used, true);
 				_kvpStore.UpdateListing(index, listing);
 			} else {
-				AddOrReuseStorageKVP(newStorageKVP);
+				AddInternal(newStorageKVP);
 			}
+		}
+
+		public override bool Remove(TKey key) {
+			Guard.ArgumentNotNull(key, nameof(key));
+			CheckLoaded();
+			if (TryFindKVP(key, out var index, out _)) {
+				RemoveInternal(key, index);
+				return true;
+			}
+			return false;
 		}
 
 		public override bool ContainsKey(TKey key) {
@@ -126,20 +143,9 @@ namespace Sphere10.Framework {
 			CheckLoaded();
 			return
 				_checksumToIndexLookup[CalculateKeyChecksum(key)]
-					.Where(index => !_unusedListings.Contains(index))
+					.Where(index => !IsUnusedListing(index))
 					.Select(_kvpStore.Read)
 					.Any(item => _keyComparer.Equals(item.Key, key));
-		}
-
-		public override bool Remove(TKey key) {
-			Guard.ArgumentNotNull(key, nameof(key));
-			CheckLoaded();
-			if (TryFindKVP(key, out var index, out _)) {
-				// Removing storage KVP (only marks it as unused)
-				MarkListingAsUnused(index);
-				return true;
-			}
-			return false;
 		}
 
 		public override void Clear() {
@@ -175,8 +181,22 @@ namespace Sphere10.Framework {
 			if (TryFindKVP(item.Key, out var index, out _)) {
 				_kvpStore.Update(index, newStorageKVP);
 			} else {
-				AddOrReuseStorageKVP(newStorageKVP);
+				AddInternal(newStorageKVP);
 			}
+		}
+
+		public override bool Remove(KeyValuePair<TKey, TValue> item) {
+			Guard.ArgumentNotNull(item, nameof(item));
+			CheckLoaded();
+
+			if (TryFindKVP(item.Key, out var index, out var kvpValueBytes)) {
+				var serializedValue = SerializeValue(item.Value);
+				if (ByteArrayEqualityComparer.Instance.Equals(serializedValue, kvpValueBytes)) {
+					RemoveInternal(item.Key, index);
+					return true;
+				}
+			}
+			return false;
 		}
 
 		public override bool Contains(KeyValuePair<TKey, TValue> item) {
@@ -184,24 +204,14 @@ namespace Sphere10.Framework {
 			CheckLoaded();
 			if (!TryFindKVP(item.Key, out _, out var valueBytes))
 				return false;
-			var itemValueBytes = _valueSerializer.Serialize(item.Value, _endianness);
+			var itemValueBytes = SerializeValue(item.Value);
 			return ByteArrayEqualityComparer.Instance.Equals(valueBytes, itemValueBytes);
 		}
 
 		public override void CopyTo(KeyValuePair<TKey, TValue>[] array, int arrayIndex)
 			=> KeyValuePairs.ToArray().CopyTo(array, arrayIndex);
 
-		public override bool Remove(KeyValuePair<TKey, TValue> item) {
-			Guard.ArgumentNotNull(item, nameof(item));
-			CheckLoaded();
-
-			if (TryFindKVP(item.Key, out var index, out _)) {
-				_kvpStore.RemoveAt(index);
-				return true;
-			}
-			return false;
-		}
-
+		
 		public void Shrink() {
 			// delete all unused listings from _kvpStore
 			// deletes item right to left
@@ -214,21 +224,15 @@ namespace Sphere10.Framework {
 			}
 		}
 
-		public override IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator()
-			=> _kvpStore
-			   .Where((_, i) => !_unusedListings.Contains(i))
-			   .Select(storageKVP => new KeyValuePair<TKey, TValue>(storageKVP.Key, DeserializeValue(storageKVP.Value)))
-			   .GetEnumerator();
+		public override IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator() {
+			var version = _kvpStore.Version;
+			return _kvpStore
+			  .Where((_, i) => !_unusedListings.Contains(i))
+			  .Select(storageKVP => new KeyValuePair<TKey, TValue>(storageKVP.Key, DeserializeValue(storageKVP.Value)))
+			  .GetEnumerator();
+		}
 
-		private ItemListing NewListingInstance(object source, KeyValuePair<TKey, byte[]> item, int itemSizeBytes, int clusterStartIndex)
-			=> new() {
-				Size = itemSizeBytes,
-				ClusterStartIndex = clusterStartIndex,
-				Traits = ItemListingTraits.Used,
-				KeyChecksum = CalculateKeyChecksum(item.Key)
-			};
-
-		protected virtual bool TryFindKVP(TKey key, out int index, out byte[] valueBytes) {
+		private bool TryFindKVP(TKey key, out int index, out byte[] valueBytes) {
 			Guard.ArgumentNotNull(key, nameof(key));
 			foreach (var i in _checksumToIndexLookup[CalculateKeyChecksum(key)]) {
 				var kvp = _kvpStore.Read(i);
@@ -243,20 +247,45 @@ namespace Sphere10.Framework {
 			return false;
 		}
 
-		private void AddOrReuseStorageKVP(KeyValuePair<TKey, byte[]> item) {
+		private void AddInternal(KeyValuePair<TKey, byte[]> item) {
 			if (_unusedListings.Any()) {
-				var index = _unusedListings[0];
-				_unusedListings.RemoveAt(0);
-				_kvpStore.Update(index, item);
+				var index = ConsumeUnusedlisting();
 				MarkListingAsUsed(index, item.Key);
+				_kvpStore.Update(index, item);
 			} else {
 				_kvpStore.Add(item);
+				_checksumToIndexLookup.Add(CalculateKeyChecksum(item.Key), _kvpStore.Count - 1);
 			}
+		}
+
+		private void RemoveInternal(TKey key, int index) {
+			// We don't delete the instance, we mark is as unused. Use Shrink to intelligently remove unused listings.
+			var kvp = KeyValuePair.Create(key, null as byte[]);
+			_kvpStore.Update(index, kvp);
+			MarkListingAsUnused(index);  // listing has to be updated after _kvpStore update since it removes/creates under the hood
+		}
+
+		private ItemListing NewListingInstance(object source, KeyValuePair<TKey, byte[]> item, int itemSizeBytes, int clusterStartIndex)
+			=> new() {
+				Size = itemSizeBytes,
+				ClusterStartIndex = clusterStartIndex,
+				Traits = ItemListingTraits.Used,
+				KeyChecksum = CalculateKeyChecksum(item.Key)
+			};
+
+		private bool IsUnusedListing(int index) => _unusedListings.Contains(index);
+		
+
+		private int ConsumeUnusedlisting() {
+			var index = _unusedListings[0];
+			_unusedListings.RemoveAt(0);
+			return index;
 		}
 
 		private void MarkListingAsUnused(int index) {
 			var listing = _kvpStore.Listings[index];
 			Guard.Ensure(listing.Traits.HasFlag(ItemListingTraits.Used), "Listing not in used state");
+			_checksumToIndexLookup.Remove(listing.KeyChecksum, index);
 			listing.KeyChecksum = -1;
 			listing.Traits = listing.Traits.CopyAndSetFlags(ItemListingTraits.Used, false);
 			_kvpStore.UpdateListing(index, listing);
@@ -273,7 +302,7 @@ namespace Sphere10.Framework {
 		}
 		
 		private byte[] SerializeValue(TValue value)
-			=> value != null ? _valueSerializer.Serialize(value, _endianness) : Array.Empty<byte>();
+			=> value != null ? _valueSerializer.Serialize(value, _endianness) : null;
 
 		private TValue DeserializeValue(byte[] valueBytes)
 			=> valueBytes != null ? _valueSerializer.Deserialize(valueBytes, _endianness) : default;
@@ -293,7 +322,7 @@ namespace Sphere10.Framework {
 			}
 		}
 
-		protected void CheckLoaded() {
+		private void CheckLoaded() {
 			if (RequiresLoad)
 				throw new InvalidOperationException($"{nameof(ClusteredDictionary<TKey, TValue>)} requires loading.");
 		}
@@ -304,7 +333,7 @@ namespace Sphere10.Framework {
 
 			public int Size { get; set; }
 
-			public int KeyChecksum { get; set; }
+			public int KeyChecksum { get; set; } 
 
 			public ItemListingTraits Traits { get; set; }
 
@@ -331,11 +360,12 @@ namespace Sphere10.Framework {
 			}
 
 			public override bool TryDeserialize(int byteSize, EndianBinaryReader reader, out ItemListing item) {
-				item = new ItemListing();
-				item.ClusterStartIndex = reader.ReadInt32();
-				item.Size = reader.ReadInt32();
-				item.KeyChecksum = reader.ReadInt32();
-				item.Traits = (ItemListingTraits)reader.ReadByte();
+				item = new ItemListing {
+					ClusterStartIndex = reader.ReadInt32(),
+					Size = reader.ReadInt32(),
+					KeyChecksum = reader.ReadInt32(),
+					Traits = (ItemListingTraits)reader.ReadByte()
+				};
 				return true;
 			}
 		}

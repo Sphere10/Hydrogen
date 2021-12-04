@@ -81,13 +81,15 @@ namespace Sphere10.Framework.Tests {
 				C = c;
 			}
 
-			public string A { get; }
+			public string A { get; set; }
 
-			public int B { get; }
+			public int B { get; set; }
 
-			public bool C { get; }
+			public bool C { get; set; }
 
-		}
+			public override string ToString() => $"[TestObject] A: '{A}', B: {B}, C: {C}";
+
+        }
 
         public class TestObjectSerializer : ItemSerializerBase<TestObject> {
 			private readonly IItemSerializer<string> _stringSerializer = new StringSerializer(Encoding.UTF8);

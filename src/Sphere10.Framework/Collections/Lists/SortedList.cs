@@ -12,6 +12,7 @@
 //-----------------------------------------------------------------------
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 
 namespace Sphere10.Framework {
@@ -26,7 +27,7 @@ namespace Sphere10.Framework {
 			: base(internalList) {
 			Guard.ArgumentNotNull(internalList, nameof(internalList));
 			Guard.Argument(sortDirection != SortDirection.None, nameof(sortDirection), "Must be Ascending or Descending");
-			_comparer ??= comparer;
+			_comparer = comparer ?? Comparer<T>.Default;
 			if (sortDirection == SortDirection.Descending)
 				_comparer = new ReverseComparer<T>(_comparer);
 		}

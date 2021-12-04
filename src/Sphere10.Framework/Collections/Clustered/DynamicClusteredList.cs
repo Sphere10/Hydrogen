@@ -22,7 +22,8 @@ namespace Sphere10.Framework {
 		private readonly BoundedStream _headerStream;				// header portion
 		private readonly List<int> _freeClusters;					// list of free clusters
 		private readonly IItemSerializer<TListing> _listingSerializer; // listing serializer
-		private PreAllocatedList<TListing> _listings;				// pre-allocated list (which can be grown) to contain listing headers of items
+		private PreAllocatedList<TListing> _listings;               // pre-allocated list (which can be grown) to contain listing headers of items
+		// TODO: make _listingSector anonymous and avoid direct usage
 		private StreamPagedList<TListing> _listingSector;           // dynamic listing sector that is mapped over the clusters through a fragment provider
 		private readonly EndianBitConverter _bitConverter;
 		private readonly Endianness _endianness;
@@ -39,8 +40,9 @@ namespace Sphere10.Framework {
 			_headerStream = new BoundedStream(stream, 0, HeaderSize - 1);
 			_headerWriter = new EndianBinaryWriter(EndianBitConverter.Little, _headerStream);
 			_freeClusters = new List<int>();
-			_bitConverter = EndianBitConverter.For(endianness);
 			_endianness = endianness;
+			_bitConverter = EndianBitConverter.For(endianness);
+			
 
 			Clusters = new StreamPagedList<Cluster>(
 				new ClusterSerializer(clusterDataSize),
@@ -67,6 +69,7 @@ namespace Sphere10.Framework {
 				newListings.Add(AddItemToClusters(Count, item));
 			}
 
+			// TODO: refactor and move out to PreAllocatedList.Grow()
 			if (_listings.Capacity < _listings.Count + newListings.Count) {
 				var required = _listings.Capacity - _listings.Count + newListings.Count;
 				_listingSector.AddRange(Tools.Array.Gen(required, default(TListing)));
@@ -141,6 +144,7 @@ namespace Sphere10.Framework {
 			}
 
 			// Add listings
+			// TODO: refactor and move out to PreAllocatedList.Grow()
 			if (_listings.Capacity < _listings.Count + listings.Count) {
 				var required = _listings.Capacity - _listings.Count + listings.Count;
 				_listingSector.AddRange(Tools.Array.Gen(required, default(TListing)));

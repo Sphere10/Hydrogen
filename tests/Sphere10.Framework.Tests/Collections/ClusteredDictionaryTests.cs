@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using NUnit.Framework;
 using Sphere10.Framework.NUnit;
+using Tools;
 
 namespace Sphere10.Framework.Tests {
 
@@ -13,48 +15,139 @@ namespace Sphere10.Framework.Tests {
 	[TestFixture]
 	[Parallelizable(ParallelScope.Children)]
 	public class ClusteredDictionaryTests : ClusteredCollectionTestsBase {
+		private const int DefaultStaticMaxBytesSize = 400+256;
+		private const int DefaultStaticMaxItems = 10;
 		private const int DefaultClusterDataSize = 32;
 
 		[Test]
-		public void AddNothing([Values] ClusteringType clusteringType, [Values] StorageType storageType) {
+		public void AddNothing([Values] ClusteringType clusteringType, [Values] StorageType storageType, [Values("alpha", "Unicode😊😊😊", "")] string key) {
 			var rng = new Random(31337);
-			using (CreateDictionary(100, 10, Tools.Memory.ToBytes(1, MemoryMetric.Megabyte), clusteringType, storageType, out var clusteredDictionary)) {
+			using (CreateDictionary(DefaultStaticMaxBytesSize, DefaultStaticMaxItems, clusteringType, storageType, out var clusteredDictionary)) {
 				Assert.That(clusteredDictionary.Count, Is.EqualTo(0));
 			}
 		}
 
-
 		[Test]
-		public void AddOne([Values] ClusteringType clusteringType, [Values] StorageType storageType) {
+		public void AddOne([Values] ClusteringType clusteringType, [Values] StorageType storageType, [Values("alpha", "Unicode😊😊😊", "")] string key) {
 			var rng = new Random(31337);
-			using (CreateDictionary(100, 10, Tools.Memory.ToBytes(1, MemoryMetric.Megabyte), clusteringType, storageType, out var clusteredDictionary)) {
-				clusteredDictionary.Add("alpha", new TestObject(rng));
+			using (CreateDictionary(DefaultStaticMaxBytesSize, DefaultStaticMaxItems, clusteringType, storageType, out var clusteredDictionary)) {
+				clusteredDictionary.Add(key, new TestObject(rng));
 				Assert.That(clusteredDictionary.Count, Is.EqualTo(1));
 			}
 		}
 
+		[Test]
+		public void ReuseListing([Values] ClusteringType clusteringType, [Values] StorageType storageType, [Values("alpha", "Unicode😊😊😊", "")] string key) {
+			var rng = new Random(31337);
+			using (CreateDictionary(DefaultStaticMaxBytesSize, DefaultStaticMaxItems, clusteringType, storageType, out var clusteredDictionary)) {
+				clusteredDictionary.Add(key, new TestObject(rng));
+				clusteredDictionary.Remove(key);
+				clusteredDictionary.Add(key, new TestObject(rng));
+				Assert.That(clusteredDictionary.Count, Is.EqualTo(1));
+			}
+		}
 
-// Test 3: Check ContainsKey(x)
+		[Test]
+		public void ContainsKey([Values] ClusteringType clusteringType, [Values] StorageType storageType, [Values("alpha", "Unicode😊😊😊", "")] string key) {
+			var rng = new Random(31337);
+			using (CreateDictionary(DefaultStaticMaxBytesSize, DefaultStaticMaxItems, clusteringType, storageType, out var clusteredDictionary)) {
+				clusteredDictionary.Add(key, new TestObject(rng));
+				Assert.That(clusteredDictionary.ContainsKey(key), Is.True);
+			}
+		}
 
-// Test 4: Check ContainsKeyValuePair
 
-// Test 5: Remove(x)
-	//- Count 0
-	//- TryGetKey(x) == false
+		[Test]
+		public void DoesNotContainKeyAfterRemove([Values] ClusteringType clusteringType, [Values] StorageType storageType, [Values("alpha", "Unicode😊😊😊", "")] string key) {
+			var rng = new Random(31337);
+			using (CreateDictionary(DefaultStaticMaxBytesSize, DefaultStaticMaxItems, clusteringType, storageType, out var clusteredDictionary)) {
+				clusteredDictionary.Add(key, new TestObject(rng));
+				clusteredDictionary.Remove(key);
+				Assert.That(clusteredDictionary.ContainsKey(key), Is.False);
+			}
+		}
 
 
-// Test 6: Add 
+		[Test]
+		public void ContainsKeyValuePair([Values] ClusteringType clusteringType, [Values] StorageType storageType, [Values("alpha", "Unicode😊😊😊", "")] string key) {
+			var rng = new Random(31337);
+			using (CreateDictionary(DefaultStaticMaxBytesSize, DefaultStaticMaxItems, clusteringType, storageType, out var clusteredDictionary)) {
+				var value = new TestObject(rng);
+				var kvp = KeyValuePair.Create(key, value);
+				clusteredDictionary.Add(kvp);
+				Assert.That(clusteredDictionary.Contains(kvp), Is.True);
+			}
+		}
 
-		
+		[Test]
+		public void DoesNotContainKeyValuePair_SameKeyDifferentValue([Values] ClusteringType clusteringType, [Values] StorageType storageType, [Values("alpha", "Unicode😊😊😊", "")] string key) {
+			var rng = new Random(31337);
+			using (CreateDictionary(DefaultStaticMaxBytesSize, DefaultStaticMaxItems, clusteringType, storageType, out var clusteredDictionary)) {
+				var value = new TestObject(rng);
+				var kvp = KeyValuePair.Create(key, value);
+				clusteredDictionary.Add(kvp);
+				value.A += "1";
+				Assert.That(clusteredDictionary.Contains(kvp), Is.False);
+			}
+		}
 
-		protected IDisposable CreateDictionary(int estimatedMaxByteSize, int staticMaxItems, int staticMaxStorageBytes, ClusteringType clusteringType, StorageType storageType, out ClusteredDictionary<string, TestObject> clusteredDictionary)
-			=> CreateDictionary(estimatedMaxByteSize, staticMaxItems, staticMaxStorageBytes, clusteringType, storageType, new StringSerializer(Encoding.UTF8), new TestObjectSerializer(), EqualityComparer<string>.Default, out clusteredDictionary);
+		[Test]
+		public void RemoveByKey([Values] ClusteringType clusteringType, [Values] StorageType storageType, [Values("alpha", "Unicode😊😊😊", "")] string key) {
+			var rng = new Random(31337);
+			using (CreateDictionary(DefaultStaticMaxBytesSize, DefaultStaticMaxItems, clusteringType, storageType, out var clusteredDictionary)) {
+				clusteredDictionary.Add(key, new TestObject(rng));
+				clusteredDictionary.Remove(key);
+				Assert.That(clusteredDictionary.Count, Is.EqualTo(0));
+			}
+		}
 
-		protected IDisposable CreateDictionary<TKey, TValue>(int estimatedMaxByteSize, int staticMaxItems, int staticMaxStorageBytes, ClusteringType clusteringType, StorageType storageType, IItemSerializer<TKey> keySerializer, IItemSerializer<TValue> valueSerializer, IEqualityComparer<TKey> keyComparer, out ClusteredDictionary<TKey, TValue> clusteredDictionary) {
-			var disposable = base.CreateStream(storageType, estimatedMaxByteSize, out var stream);
+		[Test]
+		public void RemoveByKeyValuePair([Values] ClusteringType clusteringType, [Values] StorageType storageType, [Values("alpha", "Unicode😊😊😊", "")] string key) {
+			var rng = new Random(31337);
+			using (CreateDictionary(DefaultStaticMaxBytesSize, DefaultStaticMaxItems, clusteringType, storageType, out var clusteredDictionary)) {
+				clusteredDictionary.Add(key, new TestObject(rng));
+				clusteredDictionary.Remove(key);
+				Assert.That(clusteredDictionary.Count, Is.EqualTo(0));
+			}
+		}
+
+		[Test]
+		public void IntegrationTests_Heavy([Values] ClusteringType clusteringType, [Values(StorageType.MemoryStream)] StorageType storageType, [Values(250)] int maxItems) {
+			var keyGens = 0;
+			using (CreateDictionary(Tools.Memory.ToBytes(1, MemoryMetric.Megabyte), maxItems, clusteringType, storageType, out var clusteredDictionary)) {
+				AssertEx.DictionaryIntegrationTest(
+					clusteredDictionary,
+					maxItems,
+					(rng) => ($"{keyGens++}_{rng.NextString(0, 100)}", new TestObject(rng)),
+					iterations: 250,
+					valueComparer: new TestObjectComparer()
+				);
+			}
+		}
+
+
+		[Test]
+		public void IntegrationTests([Values] ClusteringType clusteringType, [Values] StorageType storageType, [Values(23)] int maxItems) {
+			var keyGens = 0;
+			using (CreateDictionary(Tools.Memory.ToBytes(1, MemoryMetric.Megabyte), maxItems, clusteringType, storageType, out var clusteredDictionary)) {
+				AssertEx.DictionaryIntegrationTest(
+					clusteredDictionary,
+					maxItems,
+					(rng) => ($"{keyGens++}_{rng.NextString(0, 100)}", new TestObject(rng)),
+					iterations: 10,
+					valueComparer: new TestObjectComparer()
+				);
+			}
+		}
+
+		protected IDisposable CreateDictionary(int staticMaxByteSize, int staticMaxItems,  ClusteringType clusteringType, StorageType storageType, out ClusteredDictionary<string, TestObject> clusteredDictionary)
+			=> CreateDictionary(staticMaxByteSize, staticMaxItems, clusteringType, storageType, new StringSerializer(Encoding.UTF8), new TestObjectSerializer(), EqualityComparer<string>.Default, out clusteredDictionary);
+
+		protected IDisposable CreateDictionary<TKey, TValue>(int staticMaxByteSize, int staticMaxItems, ClusteringType clusteringType, StorageType storageType, IItemSerializer<TKey> keySerializer, IItemSerializer<TValue> valueSerializer, IEqualityComparer<TKey> keyComparer, out ClusteredDictionary<TKey, TValue> clusteredDictionary) {
+			var disposable = base.CreateStream(storageType, staticMaxByteSize, out var stream);
 			switch (clusteringType) {
 				case ClusteringType.Static:
-					clusteredDictionary = new ClusteredDictionary<TKey, TValue>(DefaultClusterDataSize, staticMaxItems, staticMaxStorageBytes, stream, keySerializer, valueSerializer, keyComparer);
+					clusteredDictionary = new ClusteredDictionary<TKey, TValue>(DefaultClusterDataSize, staticMaxItems, staticMaxByteSize, stream, keySerializer, valueSerializer, keyComparer);
 					break;
 				case ClusteringType.Dynamic:
 					clusteredDictionary = new ClusteredDictionary<TKey, TValue>(DefaultClusterDataSize, stream, keySerializer, valueSerializer, keyComparer);

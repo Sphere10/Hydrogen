@@ -25,7 +25,7 @@ namespace Sphere10.Framework {
 
 		private readonly long _maxStorageBytes;
 		private IExtendedList<bool> _clusterStatus;  // mapped to a BitVector on the stream which denotes which clusters are available or not
-		private IExtendedList<TListing> _listings;   // mapped to a paged stream, each page is a cluster
+		private IExtendedList<TListing> _listings;   // mapped to a paged stream (single page for all fixed-size items)
 		private readonly Endianness _endianness;
 
 		public StaticClusteredList(
@@ -41,7 +41,7 @@ namespace Sphere10.Framework {
 			
 			Guard.ArgumentInRange(clusterDataSize, 0, int.MaxValue, nameof(clusterDataSize));
 			Guard.ArgumentInRange(maxItems, 0, int.MaxValue, nameof(maxItems));
-			Guard.ArgumentInRange(maxStorageBytes, 0, int.MaxValue, nameof(maxStorageBytes));
+			Guard.ArgumentInRange(maxStorageBytes, HeaderSize, int.MaxValue, nameof(maxStorageBytes));
 			Guard.ArgumentNotNull(stream, nameof(stream));
 			Guard.ArgumentNotNull(itemSerializer, nameof(itemSerializer));
 			Guard.ArgumentNotNull(listingSerializer, nameof(listingSerializer));
@@ -50,13 +50,46 @@ namespace Sphere10.Framework {
 			Capacity = maxItems;
 			_maxStorageBytes = maxStorageBytes;
 			_endianness = endianness;
+
+			var clusterSerializer = new ClusterSerializer(ClusterDataSize);
+			var listingTotalSize = ListingSerializer.StaticSize * Capacity;
+			var availableClusterStorageBytes = _maxStorageBytes - HeaderSize - listingTotalSize;
+			var bytesPerCluster = clusterSerializer.StaticSize + sizeof(bool);
+			if (availableClusterStorageBytes < bytesPerCluster)
+				throw new InvalidOperationException("Max storage bytes is insufficient for list.");
+
+			var storageClusterCount = (int)Math.Floor(availableClusterStorageBytes / (clusterSerializer.StaticSize + 0.125));
+			var statusTotalSize = (int)Math.Ceiling((decimal)storageClusterCount / 8);
+
+			var listingsStream = new BoundedStream(InnerStream, HeaderSize, HeaderSize + listingTotalSize - 1) { UseRelativeOffset = true };
+			var statusStream = new BoundedStream(InnerStream, listingsStream.MaxAbsolutePosition + 1, listingsStream.MaxAbsolutePosition + statusTotalSize) { UseRelativeOffset = true };
+			var clusterStream = new BoundedStream(InnerStream, statusStream.MaxAbsolutePosition + 1, long.MaxValue) { UseRelativeOffset = true };
+
+
+			if (InnerStream.Length == 0)
+				WriteHeader();
+
+			var preAllocatedListingStore = new StreamPagedList<TListing>(ListingSerializer, listingsStream, _endianness) { IncludeListHeader = false };
+			preAllocatedListingStore.AddRange(Tools.Array.Gen(Capacity, default(TListing)));
+			_listings = new PreAllocatedList<TListing>(preAllocatedListingStore, 0);
+
+			var status = new BitVector(statusStream);
+			status.AddRange(Tools.Array.Gen(storageClusterCount, false));
+			_clusterStatus = new PreAllocatedList<bool>(status, status.Count);
+
+			var pageSize = ItemSerializer.IsStaticSize ? clusterSerializer.StaticSize * storageClusterCount : int.MaxValue;
+
+			Clusters = new StreamPagedList<Cluster>(StreamPagedListType.Static, clusterSerializer, clusterStream, pageSize, _endianness) {
+				IncludeListHeader = false
+			};
+
 		}
 
 		public override int Count => _listings?.Count ?? 0;
 
 		public int Capacity { get; }
 
-		public override IReadOnlyList<TListing> Listings => _listings ?? new ExtendedList<TListing>();  // only null when not initialized
+		public override IReadOnlyList<TListing> Listings => _listings;
 
 		public override void AddRange(IEnumerable<T> items) {
 			Guard.ArgumentNotNull(items, nameof(items));
@@ -193,39 +226,7 @@ namespace Sphere10.Framework {
 
 		protected override void Initialize() {
 			base.Initialize();
-			var clusterSerializer = new ClusterSerializer(ClusterDataSize);
 
-			var listingTotalSize = ListingSerializer.StaticSize * Capacity;
-			var availableClusterStorageBytes = _maxStorageBytes - HeaderSize - listingTotalSize;
-			var bytesPerCluster = clusterSerializer.StaticSize + sizeof(bool);
-
-			if (availableClusterStorageBytes < bytesPerCluster)
-				throw new InvalidOperationException("Max storage bytes is insufficient for list.");
-
-			//total available bytes divided by the size of data required per cluster - the cluster size plus one bit per cluster.
-			var storageClusterCount = (int)Math.Floor(availableClusterStorageBytes / (clusterSerializer.StaticSize + 0.125));
-			var statusTotalSize = (int)Math.Ceiling((decimal)storageClusterCount / 8);
-
-			var listingsStream = new BoundedStream(InnerStream, HeaderSize, HeaderSize + listingTotalSize - 1) { UseRelativeOffset = true };
-			var statusStream = new BoundedStream(InnerStream, listingsStream.MaxAbsolutePosition + 1, listingsStream.MaxAbsolutePosition + statusTotalSize) { UseRelativeOffset = true };
-			var clusterStream = new BoundedStream(InnerStream, statusStream.MaxAbsolutePosition + 1, long.MaxValue) { UseRelativeOffset = true };
-
-			if (InnerStream.Length == 0)
-				WriteHeader();
-
-			var preAllocatedListingStore = new StreamPagedList<TListing>(ListingSerializer, listingsStream, _endianness) { IncludeListHeader = false };
-			preAllocatedListingStore.AddRange(Tools.Array.Gen(Capacity, default(TListing)));
-			_listings = new PreAllocatedList<TListing>(preAllocatedListingStore, 0);
-
-			var status = new BitVector(statusStream);
-			status.AddRange(Tools.Array.Gen(storageClusterCount, false));
-			_clusterStatus = new PreAllocatedList<bool>(status, status.Count);
-
-			var pageSize = ItemSerializer.IsStaticSize ? clusterSerializer.StaticSize * storageClusterCount : int.MaxValue;
-
-			Clusters = new StreamPagedList<Cluster>(StreamPagedListType.Static, clusterSerializer, clusterStream, pageSize, _endianness) {
-				IncludeListHeader = false
-			};
 		}
 
 		protected override IEnumerable<int> ConsumeClusters(int numberRequired) {

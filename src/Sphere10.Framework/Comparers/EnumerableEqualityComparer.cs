@@ -15,7 +15,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Sphere10.Framework.Collections {
+namespace Sphere10.Framework {
 
 	public class EnumerableEqualityComparer<T> : IEqualityComparer<IEnumerable<T>> {
 		private readonly IEqualityComparer<T> _elementComparer;

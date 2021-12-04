@@ -1,9 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net.Http.Headers;
 using System.Text.RegularExpressions;
 using NUnit.Framework;
+using Sphere10.Framework.Collections;
+using Sphere10.Framework.Misc;
 
 namespace Sphere10.Framework.NUnit {
 
@@ -282,7 +285,78 @@ namespace Sphere10.Framework.NUnit {
 		}
 		
 
-		public static void DictionaryIntegrationTest<TKey, TValue>(IDictionary<TKey, TValue> dictionary, int maxCapacity, Func<Random, int, (TKey,TValue)> randomItemGenerator, int iterations = 100, IDictionary<TKey, TValue> expected = null, IEqualityComparer<TKey> keyComparer = null) {
+		public static void DictionaryIntegrationTest<TKey, TValue>(IDictionary<TKey, TValue> dictionary, int maxCapacity, Func<Random, (TKey,TValue)> randomItemGenerator, int iterations = 100, IDictionary<TKey, TValue> expected = null, IEqualityComparer<TKey> keyComparer = null, IEqualityComparer<TValue> valueComparer = null) {
+			var rng = new Random(31337);
+			expected ??= new Dictionary<TKey, TValue>();
+			keyComparer ??= EqualityComparer<TKey>.Default;
+			valueComparer ??= EqualityComparer<TValue>.Default;
+			var kvpComparer = new KeyValuePairEqualityComparer<TKey, TValue>(keyComparer, valueComparer);
+
+			for (var i = 0; i < iterations; i++) {
+				var remainingCapacity = maxCapacity - expected.Count;
+
+				// add a bunch of random items
+				var toAdd = rng.Next(0, remainingCapacity + 1);
+				for (var j = 0; j < toAdd; j++) {
+					var item = randomItemGenerator(rng);
+					dictionary.Add(item.Item1, item.Item2);
+					expected.Add(item.Item1, item.Item2);
+					Assert.That(dictionary.ContainsKey(item.Item1), Is.EqualTo(expected.ContainsKey(item.Item1)));
+				}
+
+				// update a bunch of random items
+				var toUpdate = rng.Next(0, expected.Count);
+				for (var j = 0; j < toUpdate; j++) {
+					var randomIndex = rng.Next(0, expected.Count);
+					var oldItem = expected.ToArray()[randomIndex];
+					var newItem = randomItemGenerator(rng);
+					var updatedItem = KeyValuePair.Create(oldItem.Key, newItem.Item2);
+					dictionary[updatedItem.Key] = updatedItem.Value;
+					expected[updatedItem.Key] = updatedItem.Value;
+					Assert.That(dictionary.Contains(updatedItem), Is.EqualTo(expected.Contains(updatedItem)));
+				}
+
+				// remove a bunch of items
+				var toRemove = rng.Next(0, expected.Count);
+
+				// remove by key
+				var toRemoveByKey = (int) Math.Ceiling(toRemove / 2.0);
+				var keys = expected.Keys.Randomize().Take(toRemoveByKey).ToArray();
+				foreach(var key in keys) {
+					var removeResult = dictionary.Remove(key);
+					var expectedRemoveResult = expected.Remove(key);
+					Assert.That(removeResult, Is.EqualTo(expectedRemoveResult));
+					Assert.That(dictionary.ContainsKey(key), Is.EqualTo(expected.ContainsKey(key)));
+				}
+
+				//remove by kvp
+				var toRemoveByKVP = (int)Math.Floor(toRemove / 2.0);
+				Debug.Assert(toRemoveByKey + toRemoveByKVP == toRemove);
+
+				var kvps = expected.Randomize().Take(toRemoveByKVP).ToArray();
+				foreach (var kvp in kvps) {
+					var removeResult = dictionary.Remove(kvp);
+					var expectedRemoveResult = expected.Remove(kvp);
+					Assert.That(removeResult, Is.EqualTo(expectedRemoveResult));
+					Assert.That(dictionary.ContainsKey(kvp.Key), Is.EqualTo(expected.ContainsKey(kvp.Key)));
+				}
+				
+				// Clear list every quarter iteration
+				if (i == iterations / 2) {
+					dictionary.Clear();
+					expected.Clear();
+				}
+
+				CheckConsistent();
+			}
+
+
+			void CheckConsistent() {
+				Assert.That(dictionary.Count, Is.EqualTo(expected.Count));
+				Assert.That(expected.ToHashSet(kvpComparer).SetEquals(dictionary.ToHashSet(kvpComparer)));
+				Assert.That(expected.Keys.ToHashSet(keyComparer).SetEquals(dictionary.Keys.ToHashSet(keyComparer)));
+				Assert.That(expected.Values.ToHashSet(valueComparer).SetEquals(dictionary.Values.ToHashSet(valueComparer)));
+			}
 		}
 
 		public static void AssertTreeEqual(IUpdateableMerkleTree expected, IUpdateableMerkleTree actual) {

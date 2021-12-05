@@ -20,16 +20,18 @@ namespace Sphere10.Framework {
 	public class SortedList<T> : CollectionDecorator<T>, IReadOnlyList<T> {
 		private readonly IComparer<T> _comparer;
 		
-		public SortedList() : this(new List<T>()) {
+		public SortedList(SortDirection sortDirection = SortDirection.Ascending, IComparer<T> comparer = null) : this(new List<T>(), sortDirection, comparer) {
 		}
 
 		public SortedList(IList<T> internalList, SortDirection sortDirection = SortDirection.Ascending,  IComparer<T> comparer = null)
 			: base(internalList) {
 			Guard.ArgumentNotNull(internalList, nameof(internalList));
-			Guard.Argument(sortDirection != SortDirection.None, nameof(sortDirection), "Must be Ascending or Descending");
-			_comparer = comparer ?? Comparer<T>.Default;
-			if (sortDirection == SortDirection.Descending)
-				_comparer = new ReverseComparer<T>(_comparer);
+			comparer ??= Comparer<T>.Default;
+			_comparer = sortDirection switch {
+				SortDirection.Ascending => comparer,
+				SortDirection.Descending => new ReverseComparer<T>(comparer),
+				_ => throw new ArgumentException("Must be Ascending or Descending (or null)", nameof(sortDirection))
+			};
 		}
 
 		protected IList<T> InternalList => (IList<T>)base.InternalCollection;

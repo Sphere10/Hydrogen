@@ -229,7 +229,7 @@ namespace Sphere10.Framework {
 
 		}
 
-		protected override IEnumerable<int> ConsumeClusters(int numberRequired) {
+		protected override IEnumerable<int> GetFreeClusters(int numberRequired) {
 			var clusterNumbers = _clusterStatus
 				.WithIndex()
 				.Where(x => !x.Item1)

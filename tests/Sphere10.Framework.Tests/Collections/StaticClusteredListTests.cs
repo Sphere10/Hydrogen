@@ -198,31 +198,28 @@ namespace Sphere10.Framework.Tests {
 		}
 
 		[Test]
-		public void LoadAndUseExistingStream() {
+		public void LoadAndUseExistingStream([Values(1, 100)] int iterations) {
+			var random = new Random(31337 + iterations);
+			var input = Enumerable.Range(0, random.Next(1, 100)).Select(x => random.NextString(0, 100)).ToArray();
 			var fileName = Tools.FileSystem.GetTempFileName(true);
 
 			using (Tools.Scope.ExecuteOnDispose(() => File.Delete(fileName))) {
 				using (var fileStream = new FileStream(fileName, FileMode.Open)) {
-					new ClusteredList<int>(32, 100, 4000, fileStream, new IntSerializer())
-						.Add(999);
+					new ClusteredList<string>(32, 100, 40000, fileStream, new StringSerializer(Encoding.Default))
+						.AddRange(input);
 				}
 
 				using (var fileStream = new FileStream(fileName, FileMode.Open)) {
-					var list = new ClusteredList<int>(32, 100, 4000, fileStream, new IntSerializer());
+					var list = new ClusteredList<string>(32, 100, 40000, fileStream, new StringSerializer(Encoding.Default));
 
 					list.Load();
 
-					Assert.AreEqual(1, list.Count);
-					Assert.AreEqual(999, list[0]);
+					Assert.AreEqual(input.Length, list.Count);
 
-					list.Add(1000);
-					Assert.AreEqual(2, list.Count);
-					Assert.AreEqual(1000, list[1]);
-					Assert.AreEqual(list.ReadRange(0, 2), new[] { 999, 1000 });
-					list.RemoveAt(1);
-					list.RemoveAt(0);
-
-					Assert.IsEmpty(list);
+					list.Add("hello");
+					Assert.AreEqual(input.Length + 1, list.Count);
+					Assert.AreEqual(input, list.ReadRange(0, input.Length));
+					Assert.AreEqual(list[^1], "hello");
 				}
 			}
 		}

@@ -37,6 +37,7 @@ namespace Sphere10.Framework.Tests {
 			}
 		}
 
+
 		protected abstract IDisposable CreateList(out ClusteredList<TestObject> clusteredList);
 	}
 }

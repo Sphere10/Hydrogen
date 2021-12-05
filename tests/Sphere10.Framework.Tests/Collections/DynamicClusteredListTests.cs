@@ -272,9 +272,9 @@ namespace Sphere10.Framework.Tests {
 		}
 
 		[Test]
-		public void LoadAndUseExistingStream() {
-			var random = new Random(31337);
-			var input = Enumerable.Range(0, random.Next(1, 100)).Select(x => random.NextString(1, 100)).ToArray();
+		public void LoadAndUseExistingStream([Values(1, 100)] int iterations) {
+			var random = new Random(31337 + iterations);
+			var input = Enumerable.Range(0, random.Next(1, 100)).Select(x => random.NextString(0, 100)).ToArray();
 			var fileName = Tools.FileSystem.GetTempFileName(true);
 			using (Tools.Scope.ExecuteOnDispose(() => File.Delete(fileName))) {
 				using (var fileStream = new FileStream(fileName, FileMode.Open)) {

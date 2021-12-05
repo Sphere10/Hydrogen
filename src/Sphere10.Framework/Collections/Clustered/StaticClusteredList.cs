@@ -50,38 +50,7 @@ namespace Sphere10.Framework {
 			Capacity = maxItems;
 			_maxStorageBytes = maxStorageBytes;
 			_endianness = endianness;
-
-			var clusterSerializer = new ClusterSerializer(ClusterDataSize);
-			var listingTotalSize = ListingSerializer.StaticSize * Capacity;
-			var availableClusterStorageBytes = _maxStorageBytes - HeaderSize - listingTotalSize;
-			var bytesPerCluster = clusterSerializer.StaticSize + sizeof(bool);
-			if (availableClusterStorageBytes < bytesPerCluster)
-				throw new InvalidOperationException("Max storage bytes is insufficient for list.");
-
-			var storageClusterCount = (int)Math.Floor(availableClusterStorageBytes / (clusterSerializer.StaticSize + 0.125));
-			var statusTotalSize = (int)Math.Ceiling((decimal)storageClusterCount / 8);
-
-			var listingsStream = new BoundedStream(InnerStream, HeaderSize, HeaderSize + listingTotalSize - 1) { UseRelativeOffset = true };
-			var statusStream = new BoundedStream(InnerStream, listingsStream.MaxAbsolutePosition + 1, listingsStream.MaxAbsolutePosition + statusTotalSize) { UseRelativeOffset = true };
-			var clusterStream = new BoundedStream(InnerStream, statusStream.MaxAbsolutePosition + 1, long.MaxValue) { UseRelativeOffset = true };
-
-
-			if (InnerStream.Length == 0)
-				WriteHeader();
-
-			var preAllocatedListingStore = new StreamPagedList<TListing>(ListingSerializer, listingsStream, _endianness) { IncludeListHeader = false };
-			preAllocatedListingStore.AddRange(Tools.Array.Gen(Capacity, default(TListing)));
-			_listings = new PreAllocatedList<TListing>(preAllocatedListingStore, 0);
-
-			var status = new BitVector(statusStream);
-			status.AddRange(Tools.Array.Gen(storageClusterCount, false));
-			_clusterStatus = new PreAllocatedList<bool>(status, status.Count);
-
-			var pageSize = ItemSerializer.IsStaticSize ? clusterSerializer.StaticSize * storageClusterCount : int.MaxValue;
-
-			Clusters = new StreamPagedList<Cluster>(StreamPagedListType.Static, clusterSerializer, clusterStream, pageSize, _endianness) {
-				IncludeListHeader = false
-			};
+			_listings = new ExtendedList<TListing>(); // this is a temporary assignment which is overwritten on Initialize
 
 		}
 
@@ -227,6 +196,37 @@ namespace Sphere10.Framework {
 		protected override void Initialize() {
 			base.Initialize();
 
+			if (InnerStream.Length == 0)
+				WriteHeader();
+			
+			var clusterSerializer = new ClusterSerializer(ClusterDataSize);
+			var listingTotalSize = ListingSerializer.StaticSize * Capacity;
+			var availableClusterStorageBytes = _maxStorageBytes - HeaderSize - listingTotalSize;
+			var bytesPerCluster = clusterSerializer.StaticSize + sizeof(bool);
+			if (availableClusterStorageBytes < bytesPerCluster)
+				throw new InvalidOperationException("Max storage bytes is insufficient for list.");
+
+			var storageClusterCount = (int)Math.Floor(availableClusterStorageBytes / (clusterSerializer.StaticSize + 0.125));
+			var statusTotalSize = (int)Math.Ceiling((decimal)storageClusterCount / 8);
+
+			var listingsStream = new BoundedStream(InnerStream, HeaderSize, HeaderSize + listingTotalSize - 1) { UseRelativeOffset = true };
+			var statusStream = new BoundedStream(InnerStream, listingsStream.MaxAbsolutePosition + 1, listingsStream.MaxAbsolutePosition + statusTotalSize) { UseRelativeOffset = true };
+			var clusterStream = new BoundedStream(InnerStream, statusStream.MaxAbsolutePosition + 1, long.MaxValue) { UseRelativeOffset = true };
+
+
+			var preAllocatedListingStore = new StreamPagedList<TListing>(ListingSerializer, listingsStream, _endianness) { IncludeListHeader = false };
+			preAllocatedListingStore.AddRange(Tools.Array.Gen(Capacity, default(TListing)));
+			_listings = new PreAllocatedList<TListing>(preAllocatedListingStore, 0);
+
+			var status = new BitVector(statusStream);
+			status.AddRange(Tools.Array.Gen(storageClusterCount, false));
+			_clusterStatus = new PreAllocatedList<bool>(status, status.Count);
+
+			var pageSize = ItemSerializer.IsStaticSize ? clusterSerializer.StaticSize * storageClusterCount : int.MaxValue;
+
+			Clusters = new StreamPagedList<Cluster>(StreamPagedListType.Static, clusterSerializer, clusterStream, pageSize, _endianness) {
+				IncludeListHeader = false
+			};
 		}
 
 		protected override IEnumerable<int> ConsumeClusters(int numberRequired) {

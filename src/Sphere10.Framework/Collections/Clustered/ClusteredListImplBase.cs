@@ -49,7 +49,7 @@ namespace Sphere10.Framework {
 
 		public bool RequiresLoad { get; protected set; }
 	
-		protected abstract IEnumerable<int> ConsumeClusters(int numberRequired);
+		protected abstract IEnumerable<int> GetFreeClusters(int numberRequired);
 
 		protected bool SuppressNotifications;
 
@@ -130,7 +130,6 @@ namespace Sphere10.Framework {
 
 		protected void RemoveItemFromClusters(int listingIndex, TListing listing) {
 			var startClusterNumber = listing.ClusterStartIndex;
-			var size = listing.Size;
 			var next = startClusterNumber;
 
 			while (next != -1) {
@@ -150,7 +149,7 @@ namespace Sphere10.Framework {
 		private TListing AddItemInternal(TItem item, byte[] data) {
 			var clusters = new List<Cluster>();
 			var segments = data.Partition(ClusterDataSize).ToArray();
-			var numbers = ConsumeClusters(segments.Length).ToArray();
+			var numbers = GetFreeClusters(segments.Length).ToArray();
 
 			for (var i = 0; i < segments.Length; i++) {
 				var segment = segments[i].ToArray();
@@ -160,7 +159,8 @@ namespace Sphere10.Framework {
 				clusters.Add(new Cluster {
 					Number = numbers[i],
 					Data = clusterData,
-					Next = i == segments.Length - 1 ? -1 : numbers[i + 1]
+					Next = i == segments.Length - 1 ? -1 : numbers[i + 1],
+					Traits = ClusterTraits.Used
 				});
 			}
 

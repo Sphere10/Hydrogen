@@ -6,8 +6,6 @@ using System.Linq;
 
 namespace Sphere10.Framework {
 
-	public delegate TListing ClusteredListingActivator<in TItem, out TListing>(object source, TItem item, int itemSizeBytes, int clusterStartIndex);
-
 	internal abstract class ClusteredListImplBase<TItem, TListing> : RangedListBase<TItem>, ILoadable where TListing : IClusteredItemListing {
 		public event EventHandlerEx<object> Loading;
 		public event EventHandlerEx<object> Loaded;

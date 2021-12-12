@@ -14,7 +14,7 @@ namespace Sphere10.Framework {
 	/// <typeparam name="T">The type of item being stored in the list</typeparam>
 	/// <typeparam name="TListing">The type of listing which tracks the stored items</typeparam>
 	/// <remarks>
-	/// The underlying implementation is similar to <see cref="StaticClusteredList{T}"/> except the "listing sector" is serialized as a fragmented stream over a linked-list of clusters whereas in <see cref="StaticClusteredList{T}"/> the listing sector is stored in a contiguous BLOB before the content sector.
+	/// The underlying implementation is similar to <see cref="StaticClusteredList{T, TListing}"/> except the "listing sector" is serialized as a fragmented stream over a linked-list of clusters whereas in <see cref="StaticClusteredList{T}"/> the listing sector is stored in a contiguous BLOB before the content sector.
 	/// </remarks>
 	internal sealed class DynamicClusteredList<T, TListing> : ClusteredListImplBase<T, TListing> where TListing : IClusteredItemListing {
 		private const int HeaderSize = 256;

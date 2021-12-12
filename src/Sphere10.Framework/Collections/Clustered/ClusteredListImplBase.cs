@@ -47,7 +47,7 @@ namespace Sphere10.Framework {
 
 		public bool RequiresLoad { get; protected set; }
 	
-		protected abstract IEnumerable<int> GetFreeClusters(int numberRequired);
+		protected abstract IEnumerable<int> ConsumeClusters(int numberRequired);
 
 		protected bool SuppressNotifications;
 
@@ -147,7 +147,7 @@ namespace Sphere10.Framework {
 		private TListing AddItemInternal(TItem item, byte[] data) {
 			var clusters = new List<Cluster>();
 			var segments = data.Partition(ClusterDataSize).ToArray();
-			var numbers = GetFreeClusters(segments.Length).ToArray();
+			var numbers = ConsumeClusters(segments.Length).ToArray();
 
 			for (var i = 0; i < segments.Length; i++) {
 				var segment = segments[i].ToArray();

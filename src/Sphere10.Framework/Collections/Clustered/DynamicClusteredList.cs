@@ -208,7 +208,7 @@ namespace Sphere10.Framework {
 				_knownFreeClusters.Add(clusterNumber);
 		}
 
-		protected override IEnumerable<int> GetFreeClusters(int numberRequired) {
+		protected override IEnumerable<int> ConsumeClusters(int numberRequired) {
 			var clusterNumbers = _knownFreeClusters.Take(numberRequired)
 			                                       .ToList();
 
@@ -395,7 +395,7 @@ namespace Sphere10.Framework {
 				}
 
 				var numberRequired = (int)Math.Ceiling(((decimal)bytes - remainingAvailableSpace) / ClusterDataSize);
-				var clusterNumbers = _parent.GetFreeClusters(numberRequired).ToArray();
+				var clusterNumbers = _parent.ConsumeClusters(numberRequired).ToArray();
 				newFragmentIndexes = Enumerable.Range(FragmentCount, numberRequired).ToArray();
 
 				for (var i = 0; i < clusterNumbers.Length; i++) {

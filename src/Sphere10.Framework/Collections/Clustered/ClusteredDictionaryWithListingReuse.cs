@@ -10,8 +10,13 @@ using System.Runtime.InteropServices;
 
 namespace Sphere10.Framework {
 
-
-	public class ClusteredDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>, ILoadable {
+	/// <summary>
+	/// A clustered dictionary that doesn't delete items, only forgets them. This allows the dictionary to re-use that slot if ever needed. 
+	/// </summary>
+	/// <typeparam name="TKey"></typeparam>
+	/// <typeparam name="TValue"></typeparam>
+	/// <remarks>This is useful when the underlying KVP store isn't efficient at deletion. When deleting an item, it's listing is marked as available and re-used later.</remarks>
+	public class ClusteredDictionaryWithListingReuse<TKey, TValue> : DictionaryBase<TKey, TValue>, ILoadable {
 		public event EventHandlerEx<object> Loading { add => _kvpStore.Loading += value; remove => _kvpStore.Loading -= value; }
 		public event EventHandlerEx<object> Loaded { add => _kvpStore.Loaded += value; remove => _kvpStore.Loaded -= value; }
 
@@ -32,7 +37,7 @@ namespace Sphere10.Framework {
 		/// <param name="valueSerializer"></param>
 		/// <param name="keyComparer"></param>
 		/// <param name="endianess"></param>
-		public ClusteredDictionary(int clusterDataSize, Stream stream, IItemSerializer<TKey> keySerializer, IItemSerializer<TValue> valueSerializer, IEqualityComparer<TKey> keyComparer = null, Endianness endianess = Endianness.LittleEndian) 
+		public ClusteredDictionaryWithListingReuse(int clusterDataSize, Stream stream, IItemSerializer<TKey> keySerializer, IItemSerializer<TValue> valueSerializer, IEqualityComparer<TKey> keyComparer = null, Endianness endianess = Endianness.LittleEndian) 
 		: this(
 			new DynamicClusteredList<KeyValuePair<TKey, byte[]>, ItemListing>(
 				clusterDataSize, 
@@ -58,7 +63,7 @@ namespace Sphere10.Framework {
 		/// <param name="valueSerializer"></param>
 		/// <param name="keyComparer"></param>
 		/// <param name="endianess"></param>
-		public ClusteredDictionary(int clusterDataSize, int maxItems, long maxStorageBytes, Stream stream, IItemSerializer<TKey> keySerializer, IItemSerializer<TValue> valueSerializer, IEqualityComparer<TKey> keyComparer = null, Endianness endianess = Endianness.LittleEndian) 
+		public ClusteredDictionaryWithListingReuse(int clusterDataSize, int maxItems, long maxStorageBytes, Stream stream, IItemSerializer<TKey> keySerializer, IItemSerializer<TValue> valueSerializer, IEqualityComparer<TKey> keyComparer = null, Endianness endianess = Endianness.LittleEndian) 
 		: this(
 			new StaticClusteredList<KeyValuePair<TKey, byte[]>, ItemListing>(
 				clusterDataSize, 
@@ -83,7 +88,7 @@ namespace Sphere10.Framework {
 		/// <param name="valueSerializer"></param>
 		/// <param name="keyComparer"></param>
 		/// <param name="endianess"></param>
-		private ClusteredDictionary(ClusteredListImplBase<KeyValuePair<TKey, byte[]>, ItemListing> kvpStore, IItemSerializer<TValue> valueSerializer, IEqualityComparer<TKey> keyComparer = null, Endianness endianess = Endianness.LittleEndian) {
+		private ClusteredDictionaryWithListingReuse(ClusteredListImplBase<KeyValuePair<TKey, byte[]>, ItemListing> kvpStore, IItemSerializer<TValue> valueSerializer, IEqualityComparer<TKey> keyComparer = null, Endianness endianess = Endianness.LittleEndian) {
 			_keyComparer = keyComparer ?? EqualityComparer<TKey>.Default;
 			_kvpStore = kvpStore;
 			_valueSerializer = valueSerializer;
@@ -324,7 +329,7 @@ namespace Sphere10.Framework {
 
 		private void CheckLoaded() {
 			if (RequiresLoad)
-				throw new InvalidOperationException($"{nameof(ClusteredDictionary<TKey, TValue>)} requires loading.");
+				throw new InvalidOperationException($"{nameof(ClusteredDictionaryWithListingReuse<TKey, TValue>)} requires loading.");
 		}
 
 		[StructLayout(LayoutKind.Sequential)]

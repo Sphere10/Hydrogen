@@ -44,15 +44,15 @@ namespace Sphere10.Framework.Tests {
         }
 
 
-		private class ItemListingSerializer : StaticSizeObjectSerializer<TestStruct> {
-	        private bool _simulateBug;
+		private class ItemListingSerializer : StaticSizeItemSizer<TestStruct>, IItemSerializer<TestStruct> {
+	        private readonly bool _simulateBug;
 
 	        public ItemListingSerializer(bool simulateBug)
 		        : base(sizeof(int) + sizeof(int) + sizeof(int) + sizeof(byte)) {
 		        _simulateBug = simulateBug;
 	        }
 
-	        public override bool TrySerialize(TestStruct item, EndianBinaryWriter writer, out int bytesWritten) {
+			public bool TrySerialize(TestStruct item, EndianBinaryWriter writer, out int bytesWritten) {
 		        writer.Write(item.X);
 		        writer.Write(item.Y);
 		        writer.Write(item.Z);
@@ -61,7 +61,7 @@ namespace Sphere10.Framework.Tests {
 				return true;
 	        }
 
-	        public override bool TryDeserialize(int byteSize, EndianBinaryReader reader, out TestStruct item) {
+	        public bool TryDeserialize(int byteSize, EndianBinaryReader reader, out TestStruct item) {
 		        item = new TestStruct();
 		        item.X = reader.ReadInt32();
 		        item.Y = reader.ReadInt32();

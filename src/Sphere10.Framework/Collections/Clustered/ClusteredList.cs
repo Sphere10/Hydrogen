@@ -86,17 +86,17 @@ namespace Sphere10.Framework {
 				: base(sizeof(int) + sizeof(int)) {
 			}
 
-			public override bool TrySerialize(ItemListing item, EndianBinaryWriter writer, out int bytesWritten) {
+			public override bool TrySerialize(ItemListing item, EndianBinaryWriter writer) {
 				writer.Write(item.ClusterStartIndex);
 				writer.Write(item.Size);
-				bytesWritten = sizeof(int) + sizeof(int);
 				return true;
 			}
 
-			public override bool TryDeserialize(int byteSize, EndianBinaryReader reader, out ItemListing item) {
-				item = new ItemListing();
-				item.ClusterStartIndex = reader.ReadInt32();
-				item.Size = reader.ReadInt32();
+			public override bool TryDeserialize(EndianBinaryReader reader, out ItemListing item) {
+				item = new ItemListing {
+					ClusterStartIndex = reader.ReadInt32(),
+					Size = reader.ReadInt32()
+				};
 				return true;
 			}
 		}

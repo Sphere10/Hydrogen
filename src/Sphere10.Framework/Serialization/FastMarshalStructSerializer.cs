@@ -26,21 +26,20 @@ namespace Sphere10.Framework {
 			: base(Marshal.SizeOf(typeof(T))) {
 		}
 
-		public override bool TrySerialize(T item, EndianBinaryWriter writer, out int bytesWritten) {
+		public override bool TrySerialize(T item, EndianBinaryWriter writer) {
 			var bytes = new byte[StaticSize];
 			var handle = GCHandle.Alloc(bytes, GCHandleType.Pinned);
 			try {
 				var bytesPtr = handle.AddrOfPinnedObject();
 				Marshal.StructureToPtr(item, bytesPtr, false);
 				writer.Write(bytes);
-				bytesWritten = StaticSize;
 				return true;
 			} finally {
 				handle.Free();
 			}
 		}
 
-		public override bool TryDeserialize(int byteSize, EndianBinaryReader reader, out T item) {
+		public override bool TryDeserialize(EndianBinaryReader reader, out T item) {
 			var bytes = reader.ReadBytes(StaticSize);
 			var handle = GCHandle.Alloc(bytes, GCHandleType.Pinned);
 			try {

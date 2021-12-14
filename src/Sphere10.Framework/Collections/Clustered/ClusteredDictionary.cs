@@ -16,7 +16,7 @@ namespace Sphere10.Framework {
 	/// <typeparam name="TKey"></typeparam>
 	/// <typeparam name="TValue"></typeparam>
 	/// <remarks>This is useful when the underlying KVP store isn't efficient at deletion. When deleting an item, it's listing is marked as available and re-used later.</remarks>
-	public class ClusteredDictionaryWithListingReuse<TKey, TValue> : DictionaryBase<TKey, TValue>, ILoadable {
+	public class ClusteredDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>, ILoadable {
 		public event EventHandlerEx<object> Loading { add => _kvpStore.Loading += value; remove => _kvpStore.Loading -= value; }
 		public event EventHandlerEx<object> Loaded { add => _kvpStore.Loaded += value; remove => _kvpStore.Loaded -= value; }
 
@@ -37,7 +37,7 @@ namespace Sphere10.Framework {
 		/// <param name="valueSerializer"></param>
 		/// <param name="keyComparer"></param>
 		/// <param name="endianess"></param>
-		public ClusteredDictionaryWithListingReuse(int clusterDataSize, Stream stream, IItemSerializer<TKey> keySerializer, IItemSerializer<TValue> valueSerializer, IEqualityComparer<TKey> keyComparer = null, Endianness endianess = Endianness.LittleEndian) 
+		public ClusteredDictionary(int clusterDataSize, Stream stream, IItemSerializer<TKey> keySerializer, IItemSerializer<TValue> valueSerializer, IEqualityComparer<TKey> keyComparer = null, Endianness endianess = Endianness.LittleEndian) 
 		: this(
 			new DynamicClusteredList<KeyValuePair<TKey, byte[]>, ItemListing>(
 				clusterDataSize, 
@@ -63,7 +63,7 @@ namespace Sphere10.Framework {
 		/// <param name="valueSerializer"></param>
 		/// <param name="keyComparer"></param>
 		/// <param name="endianess"></param>
-		public ClusteredDictionaryWithListingReuse(int clusterDataSize, int maxItems, long maxStorageBytes, Stream stream, IItemSerializer<TKey> keySerializer, IItemSerializer<TValue> valueSerializer, IEqualityComparer<TKey> keyComparer = null, Endianness endianess = Endianness.LittleEndian) 
+		public ClusteredDictionary(int clusterDataSize, int maxItems, long maxStorageBytes, Stream stream, IItemSerializer<TKey> keySerializer, IItemSerializer<TValue> valueSerializer, IEqualityComparer<TKey> keyComparer = null, Endianness endianess = Endianness.LittleEndian) 
 		: this(
 			new StaticClusteredList<KeyValuePair<TKey, byte[]>, ItemListing>(
 				clusterDataSize, 
@@ -88,7 +88,7 @@ namespace Sphere10.Framework {
 		/// <param name="valueSerializer"></param>
 		/// <param name="keyComparer"></param>
 		/// <param name="endianess"></param>
-		private ClusteredDictionaryWithListingReuse(ClusteredListImplBase<KeyValuePair<TKey, byte[]>, ItemListing> kvpStore, IItemSerializer<TValue> valueSerializer, IEqualityComparer<TKey> keyComparer = null, Endianness endianess = Endianness.LittleEndian) {
+		private ClusteredDictionary(ClusteredListImplBase<KeyValuePair<TKey, byte[]>, ItemListing> kvpStore, IItemSerializer<TValue> valueSerializer, IEqualityComparer<TKey> keyComparer = null, Endianness endianess = Endianness.LittleEndian) {
 			_keyComparer = keyComparer ?? EqualityComparer<TKey>.Default;
 			_kvpStore = kvpStore;
 			_valueSerializer = valueSerializer;
@@ -329,7 +329,7 @@ namespace Sphere10.Framework {
 
 		private void CheckLoaded() {
 			if (RequiresLoad)
-				throw new InvalidOperationException($"{nameof(ClusteredDictionaryWithListingReuse<TKey, TValue>)} requires loading.");
+				throw new InvalidOperationException($"{nameof(ClusteredDictionary<TKey, TValue>)} requires loading.");
 		}
 
 		[StructLayout(LayoutKind.Sequential)]
@@ -355,16 +355,15 @@ namespace Sphere10.Framework {
 				: base(sizeof(int) + sizeof(int) + sizeof(int) + sizeof(byte)) {
 			}
 
-			public override bool TrySerialize(ItemListing item, EndianBinaryWriter writer, out int bytesWritten) {
+			public override bool TrySerialize(ItemListing item, EndianBinaryWriter writer) {
 				writer.Write(item.ClusterStartIndex);
 				writer.Write(item.Size);
 				writer.Write(item.KeyChecksum);
 				writer.Write((byte)item.Traits);
-				bytesWritten = sizeof(int) + sizeof(int) + sizeof(int) + sizeof(byte);
 				return true;
 			}
 
-			public override bool TryDeserialize(int byteSize, EndianBinaryReader reader, out ItemListing item) {
+			public override bool TryDeserialize(EndianBinaryReader reader, out ItemListing item) {
 				item = new ItemListing {
 					ClusterStartIndex = reader.ReadInt32(),
 					Size = reader.ReadInt32(),

@@ -278,29 +278,5 @@ namespace Sphere10.Framework.Tests {
 
 	}
 
-	internal class IntSerializer : StaticSizeObjectSerializer<int> {
-		public IntSerializer() : base(4) {
-		}
 
-		public override bool TrySerialize(int item, EndianBinaryWriter writer, out int bytesWritten) {
-			try {
-				writer.Write(BitConverter.GetBytes(item));
-				bytesWritten = sizeof(int);
-				return true;
-			} catch (Exception) {
-				bytesWritten = 0;
-				return false;
-			}
-		}
-
-		public override bool TryDeserialize(int byteSize, EndianBinaryReader reader, out int item) {
-			try {
-				item = reader.ReadInt32();
-				return true;
-			} catch (Exception) {
-				item = default;
-				return false;
-			}
-		}
-	}
 }

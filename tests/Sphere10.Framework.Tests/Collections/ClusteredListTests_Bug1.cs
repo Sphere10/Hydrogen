@@ -59,21 +59,21 @@ namespace Sphere10.Framework.Tests {
 				: base(sizeof(int) + sizeof(int) + sizeof(int) + sizeof(byte)) {
 			}
 
-			public override bool TrySerialize(ItemListing item, EndianBinaryWriter writer, out int bytesWritten) {
+			public override bool TrySerialize(ItemListing item, EndianBinaryWriter writer) {
 				writer.Write(item.ClusterStartIndex);
 				writer.Write(item.Size);
 				writer.Write(item.KeyChecksum);
 				writer.Write((byte)item.Traits);
-				bytesWritten = sizeof(int) + sizeof(int) + sizeof(int) + sizeof(byte);
 				return true;
 			}
 
-			public override bool TryDeserialize(int byteSize, EndianBinaryReader reader, out ItemListing item) {
-				item = new ItemListing();
-				item.ClusterStartIndex = reader.ReadInt32();
-				item.Size = reader.ReadInt32();
-				item.KeyChecksum = reader.ReadInt32();
-				item.Traits = (ItemListingTraits)reader.ReadByte();
+			public override bool TryDeserialize(EndianBinaryReader reader, out ItemListing item) {
+				item = new ItemListing {
+					ClusterStartIndex = reader.ReadInt32(),
+					Size = reader.ReadInt32(),
+					KeyChecksum = reader.ReadInt32(),
+					Traits = (ItemListingTraits)reader.ReadByte()
+				};
 				return true;
 			}
 		}

@@ -239,52 +239,37 @@ namespace Sphere10.Framework {
 				_clusterDataSize = clusterSize;
 			}
 			
-			public override bool TrySerialize(Cluster item, EndianBinaryWriter writer, out int bytesWritten) {
-				try {
+			public override bool TrySerialize(Cluster item, EndianBinaryWriter writer) {
 					Guard.ArgumentNotNull(item, nameof(item));
 					Guard.ArgumentNotNull(writer, nameof(writer));
-				
 					Debug.Assert(item.Data.Length == _clusterDataSize);
-
 					writer.Write((byte)item.Traits);
 					writer.Write((ushort)0); // padding
 					writer.Write((byte)0); // padding
 					writer.Write(item.Number);
 					writer.Write(item.Data);
 					writer.Write(item.Next);
-
-					bytesWritten = sizeof(int) + _clusterDataSize + sizeof(int) + sizeof(int);
-					
 					return true;
-				} catch (Exception) {
-					bytesWritten = 0;
-					return false;
-				}
 			}
 
-			public override bool TryDeserialize(int byteSize, EndianBinaryReader reader, out Cluster item) {
-				try {
-					Guard.ArgumentNotNull(reader, nameof(reader));
+			public override bool TryDeserialize(EndianBinaryReader reader, out Cluster item) {
+				Guard.ArgumentNotNull(reader, nameof(reader));
 
-					var traits = (ClusterTraits)reader.ReadByte();
-					reader.ReadUInt16(); // PADDING	
-					reader.ReadByte(); // PADDING
-					var number = reader.ReadInt32();
-					var data = reader.ReadBytes(_clusterDataSize);
-					var next = reader.ReadInt32();
+				var traits = (ClusterTraits)reader.ReadByte();
+				reader.ReadUInt16(); // PADDING	
+				reader.ReadByte(); // PADDING
+				var number = reader.ReadInt32();
+				var data = reader.ReadBytes(_clusterDataSize);
+				var next = reader.ReadInt32();
 
-					var cluster = new Cluster {
-						Traits = traits,
-						Number = number,
-						Data = data,
-						Next = next
-					};
-					item = cluster;
-					return true;
-				} catch (Exception) {
-					item = default;
-					return false;
-				}
+				var cluster = new Cluster {
+					Traits = traits,
+					Number = number,
+					Data = data,
+					Next = next
+				};
+				item = cluster;
+				return true;
 			}
 		}
 

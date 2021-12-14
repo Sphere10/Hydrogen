@@ -14,7 +14,7 @@ namespace Sphere10.Framework.Tests {
 
 	[TestFixture]
 	[Parallelizable(ParallelScope.Children)]
-	public class ClusteredDictionaryWithListingReuseTests : ClusteredCollectionTestsBase {
+	public class ClusteredDictionaryTests : ClusteredCollectionTestsBase {
 		private const int DefaultStaticMaxBytesSize = 400+256;
 		private const int DefaultStaticMaxItems = 10;
 		private const int DefaultClusterDataSize = 32;
@@ -140,17 +140,17 @@ namespace Sphere10.Framework.Tests {
 			}
 		}
 
-		protected IDisposable CreateDictionary(int staticMaxByteSize, int staticMaxItems,  ClusteringType clusteringType, StorageType storageType, out ClusteredDictionaryWithListingReuse<string, TestObject> clusteredDictionary)
+		protected IDisposable CreateDictionary(int staticMaxByteSize, int staticMaxItems,  ClusteringType clusteringType, StorageType storageType, out ClusteredDictionary<string, TestObject> clusteredDictionary)
 			=> CreateDictionary(staticMaxByteSize, staticMaxItems, clusteringType, storageType, new StringSerializer(Encoding.UTF8), new TestObjectSerializer(), EqualityComparer<string>.Default, out clusteredDictionary);
 
-		protected IDisposable CreateDictionary<TKey, TValue>(int staticMaxByteSize, int staticMaxItems, ClusteringType clusteringType, StorageType storageType, IItemSerializer<TKey> keySerializer, IItemSerializer<TValue> valueSerializer, IEqualityComparer<TKey> keyComparer, out ClusteredDictionaryWithListingReuse<TKey, TValue> clusteredDictionary) {
+		protected IDisposable CreateDictionary<TKey, TValue>(int staticMaxByteSize, int staticMaxItems, ClusteringType clusteringType, StorageType storageType, IItemSerializer<TKey> keySerializer, IItemSerializer<TValue> valueSerializer, IEqualityComparer<TKey> keyComparer, out ClusteredDictionary<TKey, TValue> clusteredDictionary) {
 			var disposable = base.CreateStream(storageType, staticMaxByteSize, out var stream);
 			switch (clusteringType) {
 				case ClusteringType.Static:
-					clusteredDictionary = new ClusteredDictionaryWithListingReuse<TKey, TValue>(DefaultClusterDataSize, staticMaxItems, staticMaxByteSize, stream, keySerializer, valueSerializer, keyComparer);
+					clusteredDictionary = new ClusteredDictionary<TKey, TValue>(DefaultClusterDataSize, staticMaxItems, staticMaxByteSize, stream, keySerializer, valueSerializer, keyComparer);
 					break;
 				case ClusteringType.Dynamic:
-					clusteredDictionary = new ClusteredDictionaryWithListingReuse<TKey, TValue>(DefaultClusterDataSize, stream, keySerializer, valueSerializer, keyComparer);
+					clusteredDictionary = new ClusteredDictionary<TKey, TValue>(DefaultClusterDataSize, stream, keySerializer, valueSerializer, keyComparer);
 					break;
 				default:
 					throw new ArgumentOutOfRangeException(nameof(clusteringType), clusteringType, null);

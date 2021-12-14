@@ -7,8 +7,9 @@ namespace Sphere10.Framework {
 
 	public class StaticSizeItemSizer<TItem> : IItemSizer<TItem> {
 
-		public StaticSizeItemSizer(int fixedSize) {
-			StaticSize = fixedSize;
+		public StaticSizeItemSizer(int staticSize) {
+			Guard.ArgumentInRange(staticSize, 0, int.MaxValue, nameof(staticSize));
+			StaticSize = staticSize;
 		}
 
 		public bool IsStaticSize => true;

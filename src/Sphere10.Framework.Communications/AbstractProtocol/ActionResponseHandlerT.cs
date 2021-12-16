@@ -1,20 +1,19 @@
 ﻿using System;
 
 namespace Sphere10.Framework.Communications {
-    public class ActionResponseHandler<TChannel, TRequest, TResponse> : ResponseHandlerBase<TChannel, TRequest, TResponse>
-		where TChannel : ProtocolChannel {
-		private readonly Action<TChannel, TRequest, TResponse> _action;
+    public class ActionResponseHandler<TRequest, TResponse> : ResponseHandlerBase<TRequest, TResponse> { 
+		private readonly Action<ProtocolOrchestrator, TRequest, TResponse> _action;
 
-		public ActionResponseHandler(Action<TChannel, TRequest, TResponse> action) {
+		public ActionResponseHandler(Action<ProtocolOrchestrator, TRequest, TResponse> action) {
 			Guard.ArgumentNotNull(action, nameof(action));
 			_action = action;
 		}
 
-		public override void Execute(TChannel channel, TRequest request, TResponse response) {
-			Guard.ArgumentNotNull(channel, nameof(channel));
+		public override void Execute(ProtocolOrchestrator orchestrator, TRequest request, TResponse response) {
+			Guard.ArgumentNotNull(orchestrator, nameof(orchestrator));
 			Guard.ArgumentNotNull(request, nameof(request));
 			Guard.ArgumentNotNull(request, nameof(response));
-			_action(channel, request, response);
+			_action(orchestrator, request, response);
 		}
 
 	}

@@ -4,10 +4,14 @@ using System.IO;
 
 namespace Sphere10.Framework {
 
+	/// <summary>
+	/// A buffer whose contents are paged on memory and suitable for arbitrarily large buffers.
+	/// </summary>
+	/// <remarks>The underlying implementation relies on a <see cref="MemoryPagedList{TItem}"/> whose pages are <see cref="MemoryBuffer"/>'s.</remarks>
 	public class MemoryPagedBuffer : MemoryPagedListBase<byte>, IMemoryPagedBuffer {
 
-        public MemoryPagedBuffer(int pageSize, int inMemoryPages) 
-			: base(pageSize, inMemoryPages, CacheCapacityPolicy.CapacityIsMaxOpenPages) {
+        public MemoryPagedBuffer(int pageSize, long maxMemory) 
+			: base(pageSize, maxMemory) {
 		}
 
 		internal new IReadOnlyList<IBufferPage> Pages => new ReadOnlyListDecorator<IPage<byte>, IBufferPage>(InternalPages);
@@ -38,7 +42,7 @@ namespace Sphere10.Framework {
 		public sealed class BufferPage : FileSwappedMemoryPage<byte>, IBufferPage {
 
 			public BufferPage(int pageSize)
-				: base(pageSize, new FixedSizeItemtSizer<byte>(sizeof(byte)), new MemoryBuffer(0, pageSize, pageSize)) {
+				: base(pageSize, new StaticSizeItemSizer<byte>(sizeof(byte)), new MemoryBuffer(0, pageSize, pageSize)) {
 			}
 
 			public ReadOnlySpan<byte> ReadSpan(int index, int count) 

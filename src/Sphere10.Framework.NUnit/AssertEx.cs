@@ -1,34 +1,38 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Net.Http.Headers;
 using System.Text.RegularExpressions;
 using NUnit.Framework;
+using Sphere10.Framework.Collections;
+using Sphere10.Framework.Misc;
 
 namespace Sphere10.Framework.NUnit {
 
 	public static class AssertEx {
 
-		public static void ListIntegrationTest<T>(IExtendedList<T> list, int maxCapacity, Func<Random, int, T[]> randomItemGenerator, bool mutateFromEndOnly = false, int iterations = 100, IList<T> expected = null, IEqualityComparer<T> comparer = null) {
+		public static void ListIntegrationTest<T>(IExtendedList<T> list, int maxCapacity, Func<Random, int, T[]> randomItemGenerator, bool mutateFromEndOnly = false, int iterations = 100, IList<T> expected = null, IEqualityComparer<T> itemComparer = null) {
 			var RNG = new Random(31337);
 			expected ??= new List<T>();
-			comparer ??= EqualityComparer<T>.Default;
+			itemComparer ??= EqualityComparer<T>.Default;
 
 			// Test 1: Add nothing
 			expected.AddRangeSequentially(Enumerable.Empty<T>());
 			list.AddRange(Enumerable.Empty<T>());
-			Assert.That(expected, Is.EqualTo(list).Using(comparer));
+			Assert.That(expected, Is.EqualTo(list).Using(itemComparer));
 
 			// Test 2: Insert nothing
 			expected.InsertRangeSequentially(0, Enumerable.Empty<T>());
 			list.InsertRange(0, Enumerable.Empty<T>());
-			Assert.That(expected, Is.EqualTo(list).Using(comparer));
+			Assert.That(expected, Is.EqualTo(list).Using(itemComparer));
 
 			if (maxCapacity >= 1) {
 				// Test 3: Insert at 0 when empty 
 				var item = randomItemGenerator(RNG, 1).Single();
 				expected.Insert(0, item);
 				list.Insert(0, item);
-				Assert.That(expected, Is.EqualTo(list).Using(comparer));
+				Assert.That(expected, Is.EqualTo(list).Using(itemComparer));
 			}
 
 			if (maxCapacity >= 2) {
@@ -36,13 +40,13 @@ namespace Sphere10.Framework.NUnit {
 				var item = randomItemGenerator(RNG, 1).Single();
 				expected.Insert(1, item);
 				list.Insert(1, item);
-				Assert.That(expected, Is.EqualTo(list).Using(comparer));
+				Assert.That(expected, Is.EqualTo(list).Using(itemComparer));
 
 				// Test 5: Delete from beginning of list
 				if (!mutateFromEndOnly) {
 					expected.RemoveAt(0);
 					list.RemoveAt(0);
-					Assert.That(expected, Is.EqualTo(list).Using(comparer));
+					Assert.That(expected, Is.EqualTo(list).Using(itemComparer));
 				}
 			}
 
@@ -50,33 +54,33 @@ namespace Sphere10.Framework.NUnit {
 				// Test 6: Delete from end of list
 				expected.RemoveAt(^1);
 				list.RemoveAt(^1);
-				Assert.That(expected, Is.EqualTo(list).Using(comparer));
+				Assert.That(expected, Is.EqualTo(list).Using(itemComparer));
 			}
 
 			// Test 7: AddRange half capacity
 			T[] newItems = randomItemGenerator(RNG, maxCapacity / 2);
 			expected.AddRangeSequentially(newItems);
 			list.AddRange(newItems);
-			Assert.That(expected, Is.EqualTo(list).Using(comparer));
+			Assert.That(expected, Is.EqualTo(list).Using(itemComparer));
 
 			// Test 8: Enumerator consistency
 			using (var expectedEnumerator = expected.GetEnumerator())
 			using (var enumerator = list.GetEnumerator()) {
 				
-				Assert.That(expectedEnumerator.Current, Is.EqualTo(enumerator.Current).Using(comparer));
+				Assert.That(expectedEnumerator.Current, Is.EqualTo(enumerator.Current).Using(itemComparer));
 				bool expectedMoveNext;
 				do {
 					expectedMoveNext = expectedEnumerator.MoveNext();
 					var moveNext = enumerator.MoveNext();
-					Assert.That(expectedMoveNext, Is.EqualTo(moveNext).Using(comparer));
+					Assert.That(expectedMoveNext, Is.EqualTo(moveNext).Using(itemComparer));
 					if (expectedMoveNext)
-						Assert.That(expectedEnumerator.Current, Is.EqualTo(enumerator.Current).Using(comparer));
+						Assert.That(expectedEnumerator.Current, Is.EqualTo(enumerator.Current).Using(itemComparer));
 				} while (expectedMoveNext);
 			}
 
 			// Test 9: Clear
 			for (var i = 0; i < 3; i++) {
-				Assert.That(expected, Is.EqualTo(list).Using(comparer));
+				Assert.That(expected, Is.EqualTo(list).Using(itemComparer));
 				// add a random amount
 				var remainingCapacity = maxCapacity - list.Count;
 				var newItemsCount = RNG.Next(0, remainingCapacity + 1);
@@ -88,8 +92,6 @@ namespace Sphere10.Framework.NUnit {
 				list.Clear();
 			}
 
-
-
 			// Test 10: Iterate with random mutations
 			for (var i = 0; i < iterations; i++) {
 
@@ -99,7 +101,7 @@ namespace Sphere10.Framework.NUnit {
 				newItems = randomItemGenerator(RNG, newItemsCount);
 				list.AddRange(newItems);
 				expected.AddRangeSequentially(newItems);
-				Assert.That(expected, Is.EqualTo(list).Using(comparer));
+				Assert.That(expected, Is.EqualTo(list).Using(itemComparer));
 
 				if (list.Count > 0) {
 					// update a random range
@@ -108,7 +110,7 @@ namespace Sphere10.Framework.NUnit {
 					newItems = randomItemGenerator(RNG, rangeLen);
 					list.UpdateRange(range.Start, newItems);
 					expected.UpdateRangeSequentially(range.Start, newItems);
-					Assert.That(expected, Is.EqualTo(list).Using(comparer));
+					Assert.That(expected, Is.EqualTo(list).Using(itemComparer));
 
 					// copy/paste a random range
 					range = RNG.NextRange(list.Count);
@@ -119,14 +121,14 @@ namespace Sphere10.Framework.NUnit {
 					range = RNG.NextRange(list.Count, rangeLength: newItems.Length);
 					expected.UpdateRangeSequentially(range.Start, expectedNewItems);
 					list.UpdateRange(range.Start, newItems);
-					Assert.That(expected, Is.EqualTo(list).Using(comparer));
+					Assert.That(expected, Is.EqualTo(list).Using(itemComparer));
 
 					// remove a random amount
 					range = RNG.NextRange(list.Count, fromEndOnly: mutateFromEndOnly);
 					rangeLen = Math.Max(0, range.End - range.Start + 1);
 					list.RemoveRange(range.Start, rangeLen);
 					expected.RemoveRangeSequentially(range.Start, rangeLen);
-					Assert.That(expected, Is.EqualTo(list).Using(comparer));
+					Assert.That(expected, Is.EqualTo(list).Using(itemComparer));
 				}
 
 				// insert a random amount
@@ -136,13 +138,13 @@ namespace Sphere10.Framework.NUnit {
 				var insertIX = mutateFromEndOnly ? list.Count : RNG.Next(0, list.Count + 1);  // + 1 allows inserting from end (same as add)
 				list.InsertRange(insertIX, newItems);
 				expected.InsertRangeSequentially(insertIX, newItems);
-				Assert.That(expected, Is.EqualTo(list).Using(comparer));
+				Assert.That(expected, Is.EqualTo(list).Using(itemComparer));
 
 			}
 		}
 		
 		/// <summary>
-		/// Same as <see cref="ListIntegrationTest{T}(IExtendedList{T}, int, Func{Random, int, T[]}, bool, int, IList{T})"/> but using span mutator methods
+		/// Same as <see cref="ListIntegrationTest{T}"/> but using span mutator methods
 		/// </summary>
 		/// <param name="buffer">The buffer being tested</param>
 		/// <param name="maxCapacity">Maximum bytes buffer can store</param>
@@ -150,17 +152,97 @@ namespace Sphere10.Framework.NUnit {
 		/// <param name="iterations">Number of internal iterations where random operations are performed </param>
 		/// <param name="expected">Buffer implementation which <see cref="buffer"/> is tested against. This is assumed to be bug-free.</param>
 		public static void BufferIntegrationTest(IBuffer buffer, int maxCapacity, bool mutateFromEndOnly = false, int iterations = 100, IBuffer expected = null) {
+			Guard.ArgumentNotNull(buffer, nameof(buffer));
+
 			var RNG = new Random(31337);
 			expected ??= new BufferAdapter(new List<byte>());
+			var itemComparer = ByteArrayEqualityComparer.Instance;
+			
+			// Test 1: Add nothing
+			expected.AddRange(Tools.Spans.Empty<byte>());
+			buffer.AddRange(Tools.Spans.Empty<byte>());
+			Assert.That(expected, Is.EqualTo(buffer).Using(itemComparer));
+
+			// Test 2: Insert nothing
+			expected.InsertRange(0, Tools.Spans.Empty<byte>());
+			buffer.InsertRange(0, Tools.Spans.Empty<byte>());
+			Assert.That(expected, Is.EqualTo(buffer).Using(itemComparer));
+
+			if (maxCapacity >= 1) {
+				// Test 3: Insert at 0 when empty 
+				var item = RNG.NextBytes(1).AsSpan();
+				expected.InsertRange(0, item);
+				buffer.InsertRange(0, item);
+				Assert.That(expected, Is.EqualTo(buffer).Using(itemComparer));
+			}
+
+			if (maxCapacity >= 2) {
+				// Test 4: Insert at end of list (same as add)
+				var item = RNG.NextBytes(1).AsSpan();
+				expected.InsertRange(1, item);
+				buffer.InsertRange(1, item);
+				Assert.That(expected, Is.EqualTo(buffer).Using(itemComparer));
+
+				// Test 5: Delete from beginning of list
+				if (!mutateFromEndOnly) {
+					expected.RemoveAt(0);
+					buffer.RemoveAt(0);
+					Assert.That(expected, Is.EqualTo(buffer).Using(itemComparer));
+				}
+			}
+
+			if (maxCapacity >= 1) {
+				// Test 6: Delete from end of list
+				expected.RemoveAt(^1);
+				buffer.RemoveAt(^1);
+				Assert.That(expected, Is.EqualTo(buffer).Using(itemComparer));
+			}
+
+			// Test 7: AddRange half capacity
+			Span<byte> newItems = RNG.NextBytes(maxCapacity / 2);
+			expected.AddRange(newItems);
+			buffer.AddRange(newItems);
+			Assert.That(expected, Is.EqualTo(buffer).Using(itemComparer));
+
+			// Test 8: Enumerator consistency
+			using (var expectedEnumerator = expected.GetEnumerator())
+			using (var enumerator = buffer.GetEnumerator()) {
+
+				Assert.That(expectedEnumerator.Current, Is.EqualTo(enumerator.Current).Using(itemComparer));
+				bool expectedMoveNext;
+				do {
+					expectedMoveNext = expectedEnumerator.MoveNext();
+					var moveNext = enumerator.MoveNext();
+					Assert.That(expectedMoveNext, Is.EqualTo(moveNext).Using(itemComparer));
+					if (expectedMoveNext)
+						Assert.That(expectedEnumerator.Current, Is.EqualTo(enumerator.Current).Using(itemComparer));
+				} while (expectedMoveNext);
+			}
+
+			// Test 9: Clear
+			for (var i = 0; i < 3; i++) {
+				Assert.That(expected, Is.EqualTo(buffer).Using(itemComparer));
+				// add a random amount
+				var remainingCapacity = maxCapacity - buffer.Count;
+				var newItemsCount = RNG.Next(0, remainingCapacity + 1);
+				newItems = RNG.NextBytes(newItemsCount);
+				expected.AddRange(newItems);
+				buffer.AddRange(newItems);
+
+				expected.Clear();
+				buffer.Clear();
+			}
+
+			// Test 10: Iterate with random mutations
 			for (var i = 0; i < iterations; i++) {
 
 				// add a random amount
 				var remainingCapacity = maxCapacity - buffer.Count;
 				var newItemsCount = RNG.Next(0, remainingCapacity + 1);
-				ReadOnlySpan<byte> newItems = RNG.NextBytes(newItemsCount);
+				newItems = RNG.NextBytes(newItemsCount);
 				buffer.AddRange(newItems);
 				expected.AddRange(newItems);
-				Assert.AreEqual(expected, buffer);
+				Assert.That(expected, Is.EqualTo(buffer).Using(itemComparer));
 
 				if (buffer.Count > 0) {
 					// update a random range
@@ -169,35 +251,111 @@ namespace Sphere10.Framework.NUnit {
 					newItems = RNG.NextBytes(rangeLen);
 					buffer.UpdateRange(range.Start, newItems);
 					expected.UpdateRange(range.Start, newItems);
-					Assert.AreEqual(expected, buffer);
+					Assert.That(expected, Is.EqualTo(buffer).Using(itemComparer));
 
 					// copy/paste a random range
 					range = RNG.NextRange(buffer.Count);
 					rangeLen = Math.Max(0, range.End - range.Start + 1);
-					newItems = buffer.ReadSpan(range.Start, rangeLen);
-					ReadOnlySpan<byte> expectedNewItems = expected.ReadSpan(range.Start, rangeLen);
+					newItems = buffer.ReadRange(range.Start, rangeLen).ToArray();
+					var expectedNewItems = expected.ReadRangeSequentially(range.Start, rangeLen).ToArray();
 
 					range = RNG.NextRange(buffer.Count, rangeLength: newItems.Length);
-					expected.UpdateRange(range.Start, expectedNewItems);
+					expected.UpdateRangeSequentially(range.Start, expectedNewItems);
 					buffer.UpdateRange(range.Start, newItems);
-					Assert.AreEqual(expected, buffer);
+					Assert.That(expected, Is.EqualTo(buffer).Using(itemComparer));
 
 					// remove a random amount
 					range = RNG.NextRange(buffer.Count, fromEndOnly: mutateFromEndOnly);
 					rangeLen = Math.Max(0, range.End - range.Start + 1);
 					buffer.RemoveRange(range.Start, rangeLen);
 					expected.RemoveRangeSequentially(range.Start, rangeLen);
-					Assert.AreEqual(expected, buffer);
+					Assert.That(expected, Is.EqualTo(buffer).Using(itemComparer));
 				}
 
 				// insert a random amount
 				remainingCapacity = maxCapacity - buffer.Count;
 				newItemsCount = RNG.Next(0, remainingCapacity + 1);
 				newItems = RNG.NextBytes(newItemsCount);
-				var insertIX = mutateFromEndOnly ? buffer.Count : RNG.Next(0, buffer.Count);
+				var insertIX = mutateFromEndOnly ? buffer.Count : RNG.Next(0, buffer.Count + 1);  // + 1 allows inserting from end (same as add)
 				buffer.InsertRange(insertIX, newItems);
 				expected.InsertRange(insertIX, newItems);
-				Assert.AreEqual(expected, buffer);
+				Assert.That(expected, Is.EqualTo(buffer).Using(itemComparer));
+			}
+
+		}
+		
+
+		public static void DictionaryIntegrationTest<TKey, TValue>(IDictionary<TKey, TValue> dictionary, int maxCapacity, Func<Random, (TKey,TValue)> randomItemGenerator, int iterations = 100, IDictionary<TKey, TValue> expected = null, IEqualityComparer<TKey> keyComparer = null, IEqualityComparer<TValue> valueComparer = null) {
+			var rng = new Random(31337);
+			expected ??= new Dictionary<TKey, TValue>();
+			keyComparer ??= EqualityComparer<TKey>.Default;
+			valueComparer ??= EqualityComparer<TValue>.Default;
+			var kvpComparer = new KeyValuePairEqualityComparer<TKey, TValue>(keyComparer, valueComparer);
+
+			for (var i = 0; i < iterations; i++) {
+				var remainingCapacity = maxCapacity - expected.Count;
+
+				// add a bunch of random items
+				var toAdd = rng.Next(0, remainingCapacity + 1);
+				for (var j = 0; j < toAdd; j++) {
+					var item = randomItemGenerator(rng);
+					dictionary.Add(item.Item1, item.Item2);
+					expected.Add(item.Item1, item.Item2);
+					Assert.That(dictionary.ContainsKey(item.Item1), Is.EqualTo(expected.ContainsKey(item.Item1)));
+				}
+
+				// update a bunch of random items
+				var toUpdate = rng.Next(0, expected.Count);
+				for (var j = 0; j < toUpdate; j++) {
+					var randomIndex = rng.Next(0, expected.Count);
+					var oldItem = expected.ToArray()[randomIndex];
+					var newItem = randomItemGenerator(rng);
+					var updatedItem = KeyValuePair.Create(oldItem.Key, newItem.Item2);
+					dictionary[updatedItem.Key] = updatedItem.Value;
+					expected[updatedItem.Key] = updatedItem.Value;
+					Assert.That(dictionary.Contains(updatedItem), Is.EqualTo(expected.Contains(updatedItem)));
+				}
+
+				// remove a bunch of items
+				var toRemove = rng.Next(0, expected.Count);
+
+				// remove by key
+				var toRemoveByKey = (int) Math.Ceiling(toRemove / 2.0);
+				var keys = expected.Keys.Randomize().Take(toRemoveByKey).ToArray();
+				foreach(var key in keys) {
+					var removeResult = dictionary.Remove(key);
+					var expectedRemoveResult = expected.Remove(key);
+					Assert.That(removeResult, Is.EqualTo(expectedRemoveResult));
+					Assert.That(dictionary.ContainsKey(key), Is.EqualTo(expected.ContainsKey(key)));
+				}
+
+				//remove by kvp
+				var toRemoveByKVP = (int)Math.Floor(toRemove / 2.0);
+				Debug.Assert(toRemoveByKey + toRemoveByKVP == toRemove);
+
+				var kvps = expected.Randomize().Take(toRemoveByKVP).ToArray();
+				foreach (var kvp in kvps) {
+					var removeResult = dictionary.Remove(kvp);
+					var expectedRemoveResult = expected.Remove(kvp);
+					Assert.That(removeResult, Is.EqualTo(expectedRemoveResult));
+					Assert.That(dictionary.ContainsKey(kvp.Key), Is.EqualTo(expected.ContainsKey(kvp.Key)));
+				}
+				
+				// Clear list every quarter iteration
+				if (i == iterations / 2) {
+					dictionary.Clear();
+					expected.Clear();
+				}
+
+				CheckConsistent();
+			}
+
+
+			void CheckConsistent() {
+				Assert.That(dictionary.Count, Is.EqualTo(expected.Count));
+				Assert.That(expected.ToHashSet(kvpComparer).SetEquals(dictionary.ToHashSet(kvpComparer)));
+				Assert.That(expected.Keys.ToHashSet(keyComparer).SetEquals(dictionary.Keys.ToHashSet(keyComparer)));
+				Assert.That(expected.Values.ToHashSet(valueComparer).SetEquals(dictionary.Values.ToHashSet(valueComparer)));
 			}
 		}
 

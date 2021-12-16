@@ -6,14 +6,14 @@ namespace Sphere10.Hydrogen.Core.Runtime {
 
 	public static class HostProtocolHelper {
 
-		public static Protocol BuildForNode<TChannel>(ICommandHandler<TChannel, UpgradeMessage> upgradeNodeHandler) where TChannel : ProtocolChannel
-			=> new ProtocolBuilder<TChannel>()
+		public static Protocol BuildForNode(ICommandHandler<UpgradeMessage> upgradeNodeHandler)
+			=> new ProtocolBuilder()
 				.Requests
 					.ForRequest<PingMessage>().RespondWith((_, _) => new PongMessage())
 				.Commands
 					.ForCommand<UpgradeMessage>().Execute(upgradeNodeHandler)
 				.Messages
-					.Use(BuildMessageSerializer())
+					.UseOnly(BuildMessageSerializer())
 				.Build();
 
 		public static IFactorySerializer<object> BuildMessageSerializer()

@@ -114,77 +114,75 @@ namespace Sphere10.Helium.TestPlugin1 {
 
 	public class AsLocalQueueProcessor {
 
-		private readonly QueueConfigDto _queueConfigDto;
+		private readonly LocalQueueSettings _queueSettings;
 
 		private const string StrGuid = "997D1367-E7B0-46F0-B0A1-686DC0F15945";
 		private const string TempQueueName = "Temp_AB3CB3F9-3EBC-46B3-877D-14AB5A7A7FD2_1";
 		private readonly Guid _sameGuid = new Guid(StrGuid);
 		private readonly string _queueTempDir = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "a");
 
-		public IHeliumQueue _localQueue;
-		public IHeliumQueue _processingQueue;
+		public IHeliumQueue LocalQueue;
+		public IHeliumQueue ProcessingQueue;
 
 		public AsLocalQueueProcessor() {
 
+			_queueSettings = new LocalQueueSettings();
+
+			if (!Directory.Exists(_queueSettings.TempDirPath))
+				Directory.CreateDirectory(_queueSettings.TempDirPath);
+
+			if (File.Exists(_queueSettings.Path))
+				File.Delete(_queueSettings.Path);
+
+			if (LocalQueue.RequiresLoad)
+				LocalQueue.Load();
+
+			//if (!Directory.Exists(_queueTempDir))
+			//	Directory.CreateDirectory(_queueTempDir);
+
+			//var queuePath = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), TempQueueName);
 			
-			if (!Directory.Exists(_queueTempDir))
-				Directory.CreateDirectory(_queueTempDir);
+			//Debug.Assert(!Tools.FileSystem.DirectoryContainsFiles(_queueTempDir));
 
-			var queuePath = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), TempQueueName);
-			
-			Debug.Assert(!Tools.FileSystem.DirectoryContainsFiles(_queueTempDir));
+			//if(File.Exists(queuePath)) File.Delete(queuePath);
 
-			if(File.Exists(queuePath)) File.Delete(queuePath);
+			//_queueSettings = new LocalQueueSettings();
 
-			var queueConfig = new QueueConfigDto {
-				Path = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), TempQueueName),
-				TempDirPath = _queueTempDir,
-				FileId = _sameGuid,
-				TransactionalPageSizeBytes = 1 << 17, /*DefaultTransactionalPageSize = 1 << 17; => 132071 ~ 128 KB*/
-				MaxStorageSizeBytes = 1 << 21, /*2097152 ~ 2MB*/
-				FileMemoryCacheBytes = 1 << 20, /*1048576 ~ 1MB*/
-				ClusterSize = 1 << 9, /*512 B*/
-				MaxItems = 100,
-				ReadOnly = false
-			};
-
-			_queueConfigDto = queueConfig;
-
-			_localQueue = SetupLocalQueue();
+			//_localQueue = SetupLocalQueue();
 			//_processingQueue = SetupProcessingQueue();
 
-			if (_localQueue.RequiresLoad)
-				_localQueue.Load();
+			if (LocalQueue.RequiresLoad)
+				LocalQueue.Load();
 
-			_localQueue.Committed += MessageAdded;
+			LocalQueue.Committed += MessageAdded;
 		}
 
 		public int CountLocal() {
-			return _localQueue.Count;
+			return LocalQueue.Count;
 		}
 
 		public void ClearAll() {
-			_localQueue.Clear();
+			LocalQueue.Clear();
 		}
 
 		public void AddMessageToQueue(IMessage message) {
 
-			using var txnScope = new FileTransactionScope(_queueConfigDto.TempDirPath, ScopeContextPolicy.None);
+			using var txnScope = new FileTransactionScope(_queueSettings.TempDirPath, ScopeContextPolicy.None);
 			txnScope.BeginTransaction();
-			txnScope.EnlistFile(_localQueue, false);
+			txnScope.EnlistFile(LocalQueue, false);
 
-			using (_localQueue.EnterWriteScope()) {
-				_localQueue.Add(message);
-				_localQueue.Add(message);
-				_localQueue.Add(message);
-				_localQueue.Add(message);
-				_localQueue.Add(message);
-				_localQueue.Add(message);
-				_localQueue.Add(message);
-				_localQueue.Add(message);
-				_localQueue.Add(message);
-				_localQueue.Add(message);
-				_localQueue.Add(message);
+			using (LocalQueue.EnterWriteScope()) {
+				LocalQueue.Add(message);
+				LocalQueue.Add(message);
+				LocalQueue.Add(message);
+				LocalQueue.Add(message);
+				LocalQueue.Add(message);
+				LocalQueue.Add(message);
+				LocalQueue.Add(message);
+				LocalQueue.Add(message);
+				LocalQueue.Add(message);
+				LocalQueue.Add(message);
+				LocalQueue.Add(message);
 			}
 
 			txnScope.Commit();
@@ -196,20 +194,20 @@ namespace Sphere10.Helium.TestPlugin1 {
 		}
 
 		public void DeleteMessageFromQueue(IMessage message) {
-			_localQueue.DeleteMessage(message);
+			LocalQueue.DeleteMessage(message);
 		}
 
 		public IMessage RetrieveMessageFromQueue() {
-			if (_localQueue.Count == 0)
+			if (LocalQueue.Count == 0)
 				throw new InvalidOperationException("CRITICAL ERROR: LocalQueue is empty and should not be empty. Message missing cannot proceed.");
 
-			using var txnScope = new FileTransactionScope(_queueConfigDto.TempDirPath, ScopeContextPolicy.None);
+			using var txnScope = new FileTransactionScope(_queueSettings.TempDirPath, ScopeContextPolicy.None);
 			txnScope.BeginTransaction();
-			txnScope.EnlistFile(_localQueue, false);
+			txnScope.EnlistFile(LocalQueue, false);
 
-			var localQueueMessage = _localQueue[^1];
+			var localQueueMessage = LocalQueue[^1];
 
-			_localQueue.RemoveAt(^1);
+			LocalQueue.RemoveAt(^1);
 
 			txnScope.Commit();
 
@@ -229,12 +227,12 @@ namespace Sphere10.Helium.TestPlugin1 {
 			//} else Console.WriteLine("Message is null.");
 		}
 
-		private IHeliumQueue SetupLocalQueue() {
-			return _localQueue ??= new LocalQueue(_queueConfigDto);
-		}
+		//private IHeliumQueue SetupLocalQueue() {
+		//	return _localQueue ??= new LocalQueue(_queueSettings);
+		//}
 
 		private IHeliumQueue SetupProcessingQueue() {
-			return _processingQueue ??= new ProcessingQueue(_queueConfigDto);
+			return ProcessingQueue ??= new LocalQueue(_queueSettings);
 		}
 	}
 }

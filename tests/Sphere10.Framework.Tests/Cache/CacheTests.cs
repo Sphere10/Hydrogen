@@ -83,7 +83,7 @@ namespace Sphere10.Framework.Tests {
                     {1, "one"}, {2, "two"}, {3, "three"}
                 });
            Assert.AreEqual("one", cache[1]); 
-           Assert.AreEqual(new [] { "one", "two", "three"}, cache.GetAllCachedValues().ToArray());
+           Assert.AreEqual(new [] { "one", "two", "three"}, cache.CachedItems.Select(x => x.Value).ToArray());
         }
 
 		[Test]
@@ -112,20 +112,20 @@ namespace Sphere10.Framework.Tests {
                 reapStrategy: CacheReapPolicy.LeastUsed,
                 expirationStrategy: ExpirationPolicy.SinceFetchedTime,
                 expirationDuration: TimeSpan.FromMilliseconds(100),
-                sizeEstimator: uint.Parse,
+                sizeEstimator: long.Parse,
                 maxCapacity: 100
             );
 
-            Assert.Throws<SoftwareException>(() => { var x = cache[101]; });
+            Assert.Throws<InvalidOperationException>(() => { var x = cache[101]; });
             Assert.AreEqual("98", cache[98]);
-            Assert.AreEqual(1, cache.GetCachedItems().Count);
+            Assert.AreEqual(1, cache.InternalStorage.Count);
             Assert.AreEqual("2", cache[2]);
-            Assert.AreEqual(2, cache.GetCachedItems().Count);
+            Assert.AreEqual(2, cache.InternalStorage.Count);
             Assert.AreEqual("1", cache[1]);
-            Assert.AreEqual(2, cache.GetCachedItems().Count);  // should have purged first item
+            Assert.AreEqual(2, cache.InternalStorage.Count);  // should have purged first item
             Assert.AreEqual(new [] { "1", "2"}, cache.GetAllCachedValues().ToArray());
             Assert.AreEqual("100", cache[100]);
-            Assert.AreEqual(1, cache.GetCachedItems().Count);  // should have purged everything 
+            Assert.AreEqual(1, cache.InternalStorage.Count);  // should have purged everything 
         }
 
 		[Test]
@@ -150,5 +150,45 @@ namespace Sphere10.Framework.Tests {
 			Thread.Sleep(111);
 			Assert.IsFalse(cache.ContainsCachedItem(1));
 		}
+
+
+		[Test]
+		public void TestEmptySize() {
+			var cache = new ActionCache<int, string>(
+				_ => string.Empty,
+				s => s.Length,
+				0
+			);
+            for (var i = 0; i < 100; i++) {
+                var item = cache[i];
+                Assert.AreEqual(i + 1, cache.ItemCount);
+                Assert.AreEqual(0, cache.CurrentSize);
+            }
+		}
+
+        [Test]
+        public void TestOutOfSpace_1() {
+	        string[] items = { "", "1", "22", "333" };
+
+	        var cache = new ActionCache<int, string>(
+		        (x) => items[x],
+                s => s.Length,
+                CacheReapPolicy.Smallest,
+                ExpirationPolicy.None,
+                5
+	        );
+
+	        var x = cache[0]; // item ""
+	        var y = cache[1]; // item "1"
+	        var z = cache[2]; // item "22"
+	        cache.Get(0).CanPurge = false;
+	        cache.Get(1).CanPurge = false;
+	        cache.Get(2).CanPurge = false;
+            string d = default;
+	        Assert.Throws<InvalidOperationException>(() => d = cache[3]);
+        }
+
+        
+
     }
 }

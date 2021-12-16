@@ -25,6 +25,11 @@ namespace Sphere10.Framework {
 			_lock = new SynchronizedObject();
 		}
 
+		public ISynchronizedObject<Scope, Scope> ParentSyncObject {
+			get => _lock.ParentSyncObject;
+			set => _lock.ParentSyncObject = value;
+		}
+
 		public ReaderWriterLockSlim ThreadLock => _lock.ThreadLock;
 
 		public Scope EnterReadScope() {
@@ -108,7 +113,7 @@ namespace Sphere10.Framework {
 		public override bool IsReadOnly => InternalSet.IsReadOnly;
 	}
 
-	public sealed class SynchronizedSet<TItem> : SetDecorator<TItem, ISet<TItem>> {
+	public sealed class SynchronizedSet<TItem> : SynchronizedSet<TItem, ISet<TItem>> {
 
 		public SynchronizedSet()
 			: this(EqualityComparer<TItem>.Default) {

@@ -16,6 +16,8 @@ using System.Collections.Generic;
 using System.Linq;
 
 namespace Sphere10.Framework {
+
+
 	public class BackgroundProcessor {
 
 		private readonly SynchronizedCollection<Action> _queue;

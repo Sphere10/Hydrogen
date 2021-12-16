@@ -63,7 +63,7 @@ namespace Sphere10.Framework {
 
                 foreach (var attr in p.GetCustomAttributesOfType<DefaultValueAttribute>()) {
 #if USE_FAST_REFLECTION
-                    p.FastSetValue(obj, TypeChanger.ChangeType(attr.Value, p.PropertyType)); // using FastReflection lib
+                    p.FastSetValue(obj, Tools.Object.ChangeType(attr.Value, p.PropertyType)); // using FastReflection lib
 #else
                     p.SetValue(obj, TypeChanger.ChangeType(attr.Value, p.PropertyType), null);		// using normal reflection
 #endif

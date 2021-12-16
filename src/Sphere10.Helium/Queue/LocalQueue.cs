@@ -1,37 +1,32 @@
 ﻿using System;
-using System.IO;
 using Sphere10.Framework;
 using Sphere10.Helium.Message;
 
 namespace Sphere10.Helium.Queue {
 	/// <summary>
-	/// CRITICAL:
-	/// 1) The LocalQueue is a FIFO queue for a Helium Service.
-	/// 2) Every Helium Service has it's own LocalQueue.
-	/// 3) ALL input messages goes into a Helium Service goes into this queue.
+	/// CRITICAL: The LocalQueue is a FIFO queue for the Helium Framework.
+	/// ALL input messages into Helium MUST go into this LocalQueue.
 	/// </summary>
-
 	public class LocalQueue : TransactionalList<IMessage>, IHeliumQueue {
-		
-		public event EventHandler MessageCommitted;
 
-		public LocalQueue(QueueConfigDto queueConfigDto)
+		public event EventHandler LocalMessageCommitted;
+
+		public LocalQueue(LocalQueueSettings localQueueSettings)
 			: base(
 				new BinaryFormattedSerializer<IMessage>(),
-				queueConfigDto.Path,
-				queueConfigDto.TempDirPath,
-				queueConfigDto.FileId,
-				queueConfigDto.TransactionalPageSizeBytes,
-				queueConfigDto.MaxStorageSizeBytes,
-				queueConfigDto.AllocatedMemory,
-				queueConfigDto.ClusterSize,
-				queueConfigDto.MaxItems
+				localQueueSettings.Path,
+				localQueueSettings.TempDirPath,
+				localQueueSettings.FileId,
+				localQueueSettings.TransactionalPageSizeBytes,
+				localQueueSettings.MaxStorageSizeBytes,
+				localQueueSettings.AllocatedMemory,
+				localQueueSettings.ClusterSize,
+				localQueueSettings.MaxItems
 			) {
 		}
 
 		protected override void OnCommitted() {
-			var handler = MessageCommitted;
-
+			var unused = LocalMessageCommitted;
 			base.OnCommitted();
 		}
 
@@ -40,10 +35,10 @@ namespace Sphere10.Helium.Queue {
 		}
 
 		public bool DeleteMessage(IMessage message) {
-			var result =Remove(message);
+			var result = Remove(message);
 			return result;
 		}
-		
+
 		public IMessage ReadMessage() {
 			var message = Read(0);
 			return message;

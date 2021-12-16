@@ -15,6 +15,7 @@
 using System;
 using System.IO;
 using System.Text;
+using Sphere10.Framework.Values;
 
 namespace Sphere10.Framework {
 	/// <summary>
@@ -28,27 +29,27 @@ namespace Sphere10.Framework {
         /// <summary>
         /// Whether or not this reader has been disposed yet.
         /// </summary>
-        private bool disposed = false;
+        private bool _disposed = false;
 
         /// <summary>
         /// Decoder to use for string conversions.
         /// </summary>
-        private Decoder decoder;
+        private readonly Decoder _decoder;
 
         /// <summary>
         /// Buffer used for temporary storage before conversion into primitives
         /// </summary>
-        private byte[] buffer = new byte[16];
+        private byte[] _buffer = new byte[16];
 
         /// <summary>
         /// Buffer used for temporary storage when reading a single character
         /// </summary>
-        private char[] charBuffer = new char[1];
+        private readonly char[] _charBuffer = new char[1];
 
         /// <summary>
         /// Minimum number of bytes used to encode a character
         /// </summary>
-        private int minBytesPerChar;
+        private readonly int _minBytesPerChar;
 
         #endregion
 
@@ -84,14 +85,14 @@ namespace Sphere10.Framework {
             if (!stream.CanRead) {
                 throw new ArgumentException("Stream isn't writable", "stream");
             }
-            this.stream = stream;
-            this.bitConverter = bitConverter;
-            this.encoding = encoding;
-            this.decoder = encoding.GetDecoder();
-            this.minBytesPerChar = 1;
+            this._stream = stream;
+            this._bitConverter = bitConverter;
+            this._encoding = encoding;
+            this._decoder = encoding.GetDecoder();
+            this._minBytesPerChar = 1;
 
             if (encoding is UnicodeEncoding) {
-                minBytesPerChar = 2;
+                _minBytesPerChar = 2;
             }
         }
 
@@ -99,31 +100,31 @@ namespace Sphere10.Framework {
 
         #region Properties
 
-        private EndianBitConverter bitConverter;
+        private readonly EndianBitConverter _bitConverter;
 
         /// <summary>
         /// The bit converter used to read values from the stream
         /// </summary>
         public EndianBitConverter BitConverter {
-            get { return bitConverter; }
+            get { return _bitConverter; }
         }
 
-        private Encoding encoding;
+        private readonly Encoding _encoding;
 
         /// <summary>
         /// The encoding used to read strings
         /// </summary>
         public Encoding Encoding {
-            get { return encoding; }
+            get { return _encoding; }
         }
 
-        private Stream stream;
+        private readonly Stream _stream;
 
         /// <summary>
         /// Gets the underlying stream of the EndianBinaryReader.
         /// </summary>
         public Stream BaseStream {
-            get { return stream; }
+            get { return _stream; }
         }
 
         #endregion
@@ -144,7 +145,7 @@ namespace Sphere10.Framework {
         /// <param name="origin">Origin of seek operation.</param>
         public void Seek(int offset, SeekOrigin origin) {
             CheckDisposed();
-            stream.Seek(offset, origin);
+            _stream.Seek(offset, origin);
         }
 
         /// <summary>
@@ -152,8 +153,8 @@ namespace Sphere10.Framework {
         /// </summary>
         /// <returns>The byte read</returns>
         public byte ReadByte() {
-            ReadInternal(buffer, 1);
-            return buffer[0];
+            ReadInternal(_buffer, 1);
+            return _buffer[0];
         }
 
         /// <summary>
@@ -161,8 +162,8 @@ namespace Sphere10.Framework {
         /// </summary>
         /// <returns>The byte read</returns>
         public sbyte ReadSByte() {
-            ReadInternal(buffer, 1);
-            return unchecked((sbyte) buffer[0]);
+            ReadInternal(_buffer, 1);
+            return unchecked((sbyte) _buffer[0]);
         }
 
         /// <summary>
@@ -170,8 +171,8 @@ namespace Sphere10.Framework {
         /// </summary>
         /// <returns>The boolean read</returns>
         public bool ReadBoolean() {
-            ReadInternal(buffer, 1);
-            return bitConverter.ToBoolean(buffer, 0);
+            ReadInternal(_buffer, 1);
+            return _bitConverter.ToBoolean(_buffer, 0);
         }
 
         /// <summary>
@@ -180,8 +181,8 @@ namespace Sphere10.Framework {
         /// </summary>
         /// <returns>The 16-bit integer read</returns>
         public short ReadInt16() {
-            ReadInternal(buffer, 2);
-            return bitConverter.ToInt16(buffer, 0);
+            ReadInternal(_buffer, 2);
+            return _bitConverter.ToInt16(_buffer, 0);
         }
 
         /// <summary>
@@ -190,8 +191,8 @@ namespace Sphere10.Framework {
         /// </summary>
         /// <returns>The 32-bit integer read</returns>
         public int ReadInt32() {
-            ReadInternal(buffer, 4);
-            return bitConverter.ToInt32(buffer, 0);
+            ReadInternal(_buffer, 4);
+            return _bitConverter.ToInt32(_buffer, 0);
         }
 
         /// <summary>
@@ -200,8 +201,8 @@ namespace Sphere10.Framework {
         /// </summary>
         /// <returns>The 64-bit integer read</returns>
         public long ReadInt64() {
-            ReadInternal(buffer, 8);
-            return bitConverter.ToInt64(buffer, 0);
+            ReadInternal(_buffer, 8);
+            return _bitConverter.ToInt64(_buffer, 0);
         }
 
         /// <summary>
@@ -210,8 +211,8 @@ namespace Sphere10.Framework {
         /// </summary>
         /// <returns>The 16-bit unsigned integer read</returns>
         public ushort ReadUInt16() {
-            ReadInternal(buffer, 2);
-            return bitConverter.ToUInt16(buffer, 0);
+            ReadInternal(_buffer, 2);
+            return _bitConverter.ToUInt16(_buffer, 0);
         }
 
         /// <summary>
@@ -220,8 +221,8 @@ namespace Sphere10.Framework {
         /// </summary>
         /// <returns>The 32-bit unsigned integer read</returns>
         public uint ReadUInt32() {
-            ReadInternal(buffer, 4);
-            return bitConverter.ToUInt32(buffer, 0);
+            ReadInternal(_buffer, 4);
+            return _bitConverter.ToUInt32(_buffer, 0);
         }
 
         /// <summary>
@@ -230,18 +231,26 @@ namespace Sphere10.Framework {
         /// </summary>
         /// <returns>The 64-bit unsigned integer read</returns>
         public ulong ReadUInt64() {
-            ReadInternal(buffer, 8);
-            return bitConverter.ToUInt64(buffer, 0);
+            ReadInternal(_buffer, 8);
+            return _bitConverter.ToUInt64(_buffer, 0);
         }
 
         /// <summary>
-        /// Reads a single-precision floating-point value from the stream, using the bit converter
-        /// for this reader. 4 bytes are read.
+        /// Reads a Compact-encoded integeger
         /// </summary>
-        /// <returns>The floating point value read</returns>
-        public float ReadSingle() {
-            ReadInternal(buffer, 4);
-            return bitConverter.ToSingle(buffer, 0);
+        /// <returns>The 64-bit unsigned integer read</returns>
+        public CVarInt ReadCVarInt(int valueSize) 
+	        => CVarInt.Read(valueSize, _stream);
+        
+
+		/// <summary>
+		/// Reads a single-precision floating-point value from the stream, using the bit converter
+		/// for this reader. 4 bytes are read.
+		/// </summary>
+		/// <returns>The floating point value read</returns>
+		public float ReadSingle() {
+            ReadInternal(_buffer, 4);
+            return _bitConverter.ToSingle(_buffer, 0);
         }
 
         /// <summary>
@@ -250,8 +259,8 @@ namespace Sphere10.Framework {
         /// </summary>
         /// <returns>The floating point value read</returns>
         public double ReadDouble() {
-            ReadInternal(buffer, 8);
-            return bitConverter.ToDouble(buffer, 0);
+            ReadInternal(_buffer, 8);
+            return _bitConverter.ToDouble(_buffer, 0);
         }
 
         /// <summary>
@@ -260,8 +269,8 @@ namespace Sphere10.Framework {
         /// </summary>
         /// <returns>The decimal value read</returns>
         public decimal ReadDecimal() {
-            ReadInternal(buffer, 16);
-            return bitConverter.ToDecimal(buffer, 0);
+            ReadInternal(_buffer, 16);
+            return _bitConverter.ToDecimal(_buffer, 0);
         }
 
         /// <summary>
@@ -271,11 +280,11 @@ namespace Sphere10.Framework {
         /// </summary>
         /// <returns>The character read, or -1 for end of stream.</returns>
         public int Read() {
-            int charsRead = Read(charBuffer, 0, 1);
+            int charsRead = Read(_charBuffer, 0, 1);
             if (charsRead == 0) {
                 return -1;
             } else {
-                return charBuffer[0];
+                return _charBuffer[0];
             }
         }
 
@@ -285,47 +294,47 @@ namespace Sphere10.Framework {
         public object ReadOrThrow(Type type, Func<Exception> exceptionActivator) {
             Guard.ArgumentNotNull(exceptionActivator, nameof(exceptionActivator));
             if (type == typeof(char)) {
-                if (!stream.CanRead(sizeof(char)))
+                if (!_stream.CanRead(sizeof(char)))
                     throw exceptionActivator();
                 return Read();
             } else if (type == typeof(byte)) {
-                if (!stream.CanRead(sizeof(byte)))
+                if (!_stream.CanRead(sizeof(byte)))
                     throw exceptionActivator();
                 return ReadByte();
             } else if (type == typeof(ushort)) {
-                if (!stream.CanRead(sizeof(ushort)))
+                if (!_stream.CanRead(sizeof(ushort)))
                     throw exceptionActivator();
                 return ReadUInt16();
             } else if (type == typeof(short)) {
-                if (!stream.CanRead(sizeof(short)))
+                if (!_stream.CanRead(sizeof(short)))
                     throw exceptionActivator();
                 return ReadInt16();
             } else if (type == typeof(uint)) {
-                if (!stream.CanRead(sizeof(uint)))
+                if (!_stream.CanRead(sizeof(uint)))
                     throw exceptionActivator();
                 return ReadUInt32();
             } else if (type == typeof(int)) {
-                if (!stream.CanRead(sizeof(int)))
+                if (!_stream.CanRead(sizeof(int)))
                     throw exceptionActivator();
                 return ReadInt32();
             } else if (type == typeof(ulong)) {
-                if (!stream.CanRead(sizeof(ulong)))
+                if (!_stream.CanRead(sizeof(ulong)))
                     throw exceptionActivator();
                 return ReadUInt64();
             } else if (type == typeof(long)) {
-                if (!stream.CanRead(sizeof(long)))
+                if (!_stream.CanRead(sizeof(long)))
                     throw exceptionActivator();
                 return ReadInt64();
             } else if (type == typeof(float)) {
-                if (!stream.CanRead(sizeof(float)))
+                if (!_stream.CanRead(sizeof(float)))
                     throw exceptionActivator();
                 return ReadSingle();
             } else if (type == typeof(double)) {
-                if (!stream.CanRead(sizeof(double)))
+                if (!_stream.CanRead(sizeof(double)))
                     throw exceptionActivator();
                 return ReadDouble();
             } else if (type == typeof(decimal)) {
-                if (!stream.CanRead(sizeof(decimal)))
+                if (!_stream.CanRead(sizeof(decimal)))
                     throw exceptionActivator();
                 return ReadDecimal();
             } else if (type.HasSubType(typeof(Enum))) {
@@ -348,8 +357,8 @@ namespace Sphere10.Framework {
         /// </returns>
         public int Read(char[] data, int index, int count) {
             CheckDisposed();
-            if (buffer == null) {
-                throw new ArgumentNullException(nameof(buffer));
+            if (_buffer == null) {
+                throw new ArgumentNullException(nameof(_buffer));
             }
             if (index < 0) {
                 throw new ArgumentOutOfRangeException(nameof(index));
@@ -367,9 +376,9 @@ namespace Sphere10.Framework {
 
             // Use the normal buffer if we're only reading a small amount, otherwise
             // use at most 4K at a time.
-            byte[] byteBuffer = buffer;
+            byte[] byteBuffer = _buffer;
 
-            if (byteBuffer.Length < count*minBytesPerChar) {
+            if (byteBuffer.Length < count*_minBytesPerChar) {
                 byteBuffer = new byte[4096];
             }
 
@@ -377,13 +386,13 @@ namespace Sphere10.Framework {
                 int amountToRead;
                 // First time through we know we haven't previously read any data
                 if (firstTime) {
-                    amountToRead = count*minBytesPerChar;
+                    amountToRead = count*_minBytesPerChar;
                     firstTime = false;
                 }
                 // After that we can only assume we need to fully read "chars left -1" characters
                 // and a single byte of the character we may be in the middle of
                 else {
-                    amountToRead = ((count - read - 1)*minBytesPerChar) + 1;
+                    amountToRead = ((count - read - 1)*_minBytesPerChar) + 1;
                 }
                 if (amountToRead > byteBuffer.Length) {
                     amountToRead = byteBuffer.Length;
@@ -392,7 +401,7 @@ namespace Sphere10.Framework {
                 if (bytesRead == 0) {
                     return read;
                 }
-                int decoded = decoder.GetChars(byteBuffer, 0, bytesRead, data, index);
+                int decoded = _decoder.GetChars(byteBuffer, 0, bytesRead, data, index);
                 read += decoded;
                 index += decoded;
             }
@@ -425,7 +434,7 @@ namespace Sphere10.Framework {
             }
             int read = 0;
             while (count > 0) {
-                int block = stream.Read(buffer, index, count);
+                int block = _stream.Read(buffer, index, count);
                 if (block == 0) {
                     return read;
                 }
@@ -451,7 +460,7 @@ namespace Sphere10.Framework {
             byte[] ret = new byte[count];
             int index = 0;
             while (index < count) {
-                int read = stream.Read(ret, index, count - index);
+                int read = _stream.Read(ret, index, count - index);
                 // Stream has finished half way through. That's fine, return what we've got.
                 if (read == 0) {
                     byte[] copy = new byte[index];
@@ -503,7 +512,7 @@ namespace Sphere10.Framework {
 
             int ret = 0;
             for (int shift = 0; shift < 35; shift += 7) {
-                int b = stream.ReadByte();
+                int b = _stream.ReadByte();
                 if (b == -1) {
                     throw new EndOfStreamException();
                 }
@@ -528,7 +537,7 @@ namespace Sphere10.Framework {
 
             int ret = 0;
             for (int i = 0; i < 5; i++) {
-                int b = stream.ReadByte();
+                int b = _stream.ReadByte();
                 if (b == -1) {
                     throw new EndOfStreamException();
                 }
@@ -553,7 +562,7 @@ namespace Sphere10.Framework {
 
             byte[] data = new byte[bytesToRead];
             ReadInternal(data, bytesToRead);
-            return encoding.GetString(data, 0, data.Length);
+            return _encoding.GetString(data, 0, data.Length);
         }
 
         #endregion
@@ -564,7 +573,7 @@ namespace Sphere10.Framework {
         /// Checks whether or not the reader has been disposed, throwing an exception if so.
         /// </summary>
         private void CheckDisposed() {
-            if (disposed) {
+            if (_disposed) {
                 throw new ObjectDisposedException(nameof(EndianBinaryReader));
             }
         }
@@ -580,7 +589,7 @@ namespace Sphere10.Framework {
             int index = 0;
             while (index < size) {
                 // int read = stream.Read(data, index, size - index);
-                int read = stream.Read(data.Slice(index, size-index));
+                int read = _stream.Read(data.Slice(index, size-index));
                 if (read == 0) {
                     throw new EndOfStreamException
                         ($"End of stream reached with {size - index} byte{(size - index == 1 ? "s" : "")} left to read.");
@@ -601,7 +610,7 @@ namespace Sphere10.Framework {
             CheckDisposed();
             int index = 0;
             while (index < size) {
-                int read = stream.Read(data, index, size - index);
+                int read = _stream.Read(data, index, size - index);
                 if (read == 0) {
                     return index;
                 }
@@ -618,9 +627,9 @@ namespace Sphere10.Framework {
         /// Disposes of the underlying stream.
         /// </summary>
         public void Dispose() {
-            if (!disposed) {
-                disposed = true;
-                ((IDisposable) stream).Dispose();
+            if (!_disposed) {
+                _disposed = true;
+                ((IDisposable) _stream).Dispose();
             }
         }
 

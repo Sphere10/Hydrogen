@@ -90,6 +90,8 @@ namespace Sphere10.Framework {
 
 		public static implicit operator ulong(VarInt v) => v._value;
 
+		public static implicit operator VarInt(ulong v) => new(v);
+
 		/// <summary>
 		/// Returns varint as ulong.
 		/// </summary>
@@ -98,19 +100,19 @@ namespace Sphere10.Framework {
 		
 		public static VarInt operator +(VarInt a, VarInt b) => new (a._value + b._value);
 
-		public static VarInt operator +(VarInt a, ulong b) => new (a._value + b);
+		//public static VarInt operator +(VarInt a, ulong b) => new (a._value + b);
 
 		public static VarInt operator -(VarInt a, VarInt b) => new (a._value - b._value);
 
-		public static VarInt operator -(VarInt a, ulong b) => new (a._value - b);
+		//public static VarInt operator -(VarInt a, ulong b) => new (a._value - b);
 		
 		public static VarInt operator *(VarInt a, VarInt b) => new (a._value * b._value);
 
-		public static VarInt operator *(VarInt a, ulong b) => new (a._value * b);
+		//public static VarInt operator *(VarInt a, ulong b) => new (a._value * b);
 		
 		public static VarInt operator /(VarInt a, VarInt b) => b._value == 0 ? throw new DivideByZeroException() : new VarInt(a._value / b._value);
 
-		public static VarInt operator /(VarInt a, ulong b) => b == 0 ? throw new DivideByZeroException() : new VarInt(a._value / b);
+	//	public static VarInt operator /(VarInt a, ulong b) => b == 0 ? throw new DivideByZeroException() : new VarInt(a._value / b);
 
 		public static VarInt operator ++(VarInt a) => new VarInt(a._value + 1);
 		

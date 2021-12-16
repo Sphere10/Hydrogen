@@ -54,8 +54,6 @@ namespace Tools {
 				return EmailValidatorRegex.IsMatch(email);
 			}
 
-
-
 			public static void SendEmail(
 				string smtpServer,
 				string from,

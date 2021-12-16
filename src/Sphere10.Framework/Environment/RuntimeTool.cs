@@ -14,6 +14,7 @@
 using System;
 using System.Diagnostics;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text;
 using Sphere10.Framework;
 
@@ -32,6 +33,11 @@ namespace Tools {
             // https://stackoverflow.com/questions/64581054/how-do-i-get-the-name-of-the-current-executable-in-c-net-5-edition
             return Process.GetCurrentProcess().MainModule.FileName;
         }
+
+
+
+        public static bool IsInExceptionContext()
+	        => Marshal.GetExceptionPointers() != IntPtr.Zero || Marshal.GetExceptionCode() != 0;
 
         public static bool IsDebugBuild {
             get {
@@ -163,6 +169,7 @@ namespace Tools {
 
 	        return quoted.ToString();
         }
+
     }
 }
 

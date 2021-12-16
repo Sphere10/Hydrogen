@@ -299,25 +299,6 @@ namespace Sphere10.Framework {
 				Guard.ArgumentInRange(index + count - 1, startIX, lastIX, nameof(count));
 		}
 
-		// Needed since C# lacks "friend" modifier
-		protected IPagedListInternalMethods<TItem> CreateFriendDelegate() => new PagedListFriendDelegate<TItem>(
-			UpdateVersion,
-			CheckRequiresLoad,
-			CheckRange,
-			EnterOpenPageScope,
-			GetPageSegments,
-			() => InternalPages,
-			CreateNextPage,
-			NotifyAccessing,
-			NotifyAccessed,
-			NotifyPageAccessing,
-			NotifyPageAccessed,
-			NotifyPageReading,
-			NotifyPageRead,
-			NotifyPageWriting,
-			NotifyPageWrite
-		);
-
 		#region Events 
 
 		protected virtual void OnAccessing() {
@@ -410,7 +391,7 @@ namespace Sphere10.Framework {
 			PageAccessed?.Invoke(this, page);
 		}
 
-		private void NotifyPageCreating(int pageNumber) {
+		protected void NotifyPageCreating(int pageNumber) {
 			if (SuppressNotifications)
 				return;
 
@@ -418,7 +399,7 @@ namespace Sphere10.Framework {
 			PageCreating?.Invoke(this, pageNumber);
 		}
 
-		private void NotifyPageCreated(IPage<TItem> page) {
+		protected void NotifyPageCreated(IPage<TItem> page) {
 			if (SuppressNotifications)
 				return;
 
@@ -426,7 +407,7 @@ namespace Sphere10.Framework {
 			PageCreated?.Invoke(this, page);
 		}
 
-		private void NotifyPageWriting(IPage<TItem> page) {
+		protected void NotifyPageWriting(IPage<TItem> page) {
 			if (SuppressNotifications)
 				return;
 
@@ -434,7 +415,7 @@ namespace Sphere10.Framework {
 			PageWriting?.Invoke(this, page);
 		}
 
-		private void NotifyPageWrite(IPage<TItem> page) {
+		protected void NotifyPageWrite(IPage<TItem> page) {
 			if (SuppressNotifications)
 				return;
 
@@ -458,7 +439,7 @@ namespace Sphere10.Framework {
 			PageRead?.Invoke(this, page);
 		}
 
-		private void NotifyPageDeleting(IPage<TItem> page) {
+		protected void NotifyPageDeleting(IPage<TItem> page) {
 			if (SuppressNotifications)
 				return;
 
@@ -466,13 +447,33 @@ namespace Sphere10.Framework {
 			PageDeleting?.Invoke(this, page);
 		}
 
-		private void NotifyPageDeleted(IPage<TItem> page) {
+		protected void NotifyPageDeleted(IPage<TItem> page) {
 			if (SuppressNotifications)
 				return;
 
 			OnPageDeleted(page);
 			PageDeleted?.Invoke(this, page);
 		}
+
+
+		// Needed since C# lacks "friend" modifier
+		internal IPagedListDelegate<TItem> CreateFriendDelegate() => new PagedListDelegate<TItem>(
+			UpdateVersion,
+			CheckRequiresLoad,
+			CheckRange,
+			EnterOpenPageScope,
+			GetPageSegments,
+			() => InternalPages,
+			CreateNextPage,
+			NotifyAccessing,
+			NotifyAccessed,
+			NotifyPageAccessing,
+			NotifyPageAccessed,
+			NotifyPageReading,
+			NotifyPageRead,
+			NotifyPageWriting,
+			NotifyPageWrite
+		);
 
 		#endregion
 

@@ -13,6 +13,9 @@
 
 namespace Sphere10.Framework.Application {
 	public interface IApplicationEndTask {
-		Result End();
+
+		int Priority { get; }
+
+		void End();
 	}
 }

@@ -1,23 +1,20 @@
 ﻿using System;
 using Sphere10.Helium.Bus;
+using Sphere10.Helium.Handle;
 using Sphere10.Helium.Message;
 
 namespace Sphere10.Helium.Saga {
-	public abstract class Saga {
-		private IBus _bus;
+	public abstract class Saga : IHandler {
 
 		protected ISagaData SagaDataBase { get; set; }
 
-		public IBus Bus {
-			get => _bus ?? throw new InvalidOperationException("Cannot proceed! IBus not instantiated. Do NOT use your own bus here!");
-			set => _bus = value;
+		protected Saga(IBus bus) {
+			Bus = bus;
 		}
+
+		public IBus Bus { get; }
 
 		public bool Completed { get; private set; }
-
-		protected Saga(IBus bus) {
-			_bus = bus;
-		}
 
 		protected internal abstract void ConfigureHowToFindSaga(IFindSaga sagaFindMap);
 

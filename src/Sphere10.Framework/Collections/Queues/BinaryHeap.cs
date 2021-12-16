@@ -46,12 +46,14 @@ namespace Sphere10.Framework {
 				}
 			}
 		}
+		
 		// Methods
 		/// <summary>
 		/// Creates a new binary heap.
 		/// </summary>
 		public BinaryHeap() {
 		}
+
 		private BinaryHeap(T[] data, int count) {
 			Capacity = count;
 			_count = count;
@@ -100,8 +102,9 @@ namespace Sphere10.Framework {
 			DownHeap();
 			return v;
 		}
-		private void UpHeap()
+
 		//helper function that performs up-heap bubbling
+		private void UpHeap()
 		{
 			_sorted = false;
 			int p = _count;
@@ -114,8 +117,9 @@ namespace Sphere10.Framework {
 			}
 			_data[p] = item;
 		}
-		private void DownHeap()
+
 		//helper function that performs down-heap bubbling
+		private void DownHeap()
 		{
 			_sorted = false;
 			int n;
@@ -139,24 +143,25 @@ namespace Sphere10.Framework {
 			}
 			_data[p] = item;
 		}
+
 		private void EnsureSort() {
 			if (_sorted) return;
 			Array.Sort(_data, 0, _count);
 			_sorted = true;
 		}
-		private static int Parent(int index)
+
 		//helper function that calculates the parent of a node
-		{
+		private static int Parent(int index) {
 			return (index - 1) >> 1;
 		}
-		private static int Child1(int index)
+
 		//helper function that calculates the first child of a node
-		{
+		private static int Child1(int index) {
 			return (index << 1) + 1;
 		}
-		private static int Child2(int index)
+
 		//helper function that calculates the second child of a node
-		{
+		private static int Child2(int index) {
 			return (index << 1) + 2;
 		}
 
@@ -178,6 +183,7 @@ namespace Sphere10.Framework {
 				yield return _data[i];
 			}
 		}
+
 		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() {
 			return GetEnumerator();
 		}
@@ -191,6 +197,7 @@ namespace Sphere10.Framework {
 			EnsureSort();
 			return Array.BinarySearch<T>(_data, 0, _count, item) >= 0;
 		}
+
 		/// <summary>
 		/// Copies the binary heap to an array at the specified index.
 		/// </summary>

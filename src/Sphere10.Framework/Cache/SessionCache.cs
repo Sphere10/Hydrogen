@@ -38,7 +38,7 @@ namespace Sphere10.Framework {
             base.Get(sessionID); // refresh cache
         }
 
-        protected override uint EstimateSize(T value) {
+        protected override long EstimateSize(T value) {
             return 0;
         }
 

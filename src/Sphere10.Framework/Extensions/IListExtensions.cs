@@ -19,6 +19,20 @@ namespace Sphere10.Framework {
 
 	public static class IListExtensions {
 
+
+		public static bool IsOrdered<T>(this IList<T> list, IComparer<T> comparer = null) {
+			comparer ??= Comparer<T>.Default;
+
+			if (list.Count <= 1)
+				return true;
+
+			for (var i = 1; i < list.Count; i++) {
+				if (comparer.Compare(list[i - 1], list[i]) > 0) 
+					return false;
+			}
+			return true;
+		}
+
 		public static void RemoveAt<T>(this IList<T> list, Index index) {
 			list.RemoveAt(index.GetOffset(list.Count));
 		}

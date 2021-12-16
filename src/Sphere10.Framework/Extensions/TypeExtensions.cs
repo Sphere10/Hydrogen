@@ -109,6 +109,7 @@ namespace Sphere10.Framework {
 		/// <param name="type">The type.</param>
 		/// <param name="genericTypeDefinition">The generic type definition.</param>
 		/// <returns><see langword="true" /> if <paramref name="type"/> is a constructed type of <paramref name="genericTypeDefinition"/>; otherwise, <see langword="false" />.</returns>
+		/// <remarks>This should be interepreted as "is a constructed generic type of the following pure generic type".</remarks>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static bool IsConstructedGenericTypeOf(this Type type, Type genericTypeDefinition)
 			=> type.IsConstructedGenericType && type.GetGenericTypeDefinition() == genericTypeDefinition;

@@ -5,44 +5,46 @@ using System.Linq;
 using System.Reflection;
 using Sphere10.Framework;
 using Sphere10.Helium.Framework;
-using Sphere10.Helium.Handler;
+using Sphere10.Helium.Handle;
 
 namespace Sphere10.Helium.PluginFramework
 {
     public class HeliumPluginLoader : IHeliumPluginLoader
     {
         private readonly ILogger _logger;
-        private static IList<PluginAssemblyHandler> PluginAssemblyHandlerList { get; set; }
+        public IList<PluginAssemblyHandlerDto> PluginAssemblyHandlerList { get; set; }
 
-        public HeliumPluginLoader(ILogger logger)
+		public HeliumPluginLoader(ILogger logger)
         {
             _logger = logger;
-            PluginAssemblyHandlerList = new List<PluginAssemblyHandler>();
-        }
-
-        public bool AllPluginsEnabled { get; private set; } = true;
+            PluginAssemblyHandlerList = new List<PluginAssemblyHandlerDto>();
+		}
 
         public IHeliumFramework GetHeliumFramework()
         {
             var heliumFrameworkInstance = HeliumFramework.Instance;
             heliumFrameworkInstance.Logger = _logger;
 
-            return heliumFrameworkInstance;
+			return heliumFrameworkInstance;
         }
 
         public void LoadPlugins(string[] relativeAssemblyPathList)
         {
+			_logger.Debug("Loading plugins and all associated Handlers.");
             foreach (var path in relativeAssemblyPathList)
             {
                 var pluginAssembly = LoadPluginAssembly(path);
 
-                GetHandlers(pluginAssembly, path);
+                GetHandlers(pluginAssembly);
             }
 
-            HeliumFramework.Instance.LoadHandlerTypes(PluginAssemblyHandlerList);
-        }
+            var totalPluginsLoaded = GetEnabledPlugins();
+            var totalHandlersLoaded = PluginAssemblyHandlerList.Count;
+			_logger.Debug("Loading Complete.");
+            _logger.Debug($"Total Plugins loaded = {totalPluginsLoaded.Length}, Total Handlers loaded = {totalHandlersLoaded}");
+		}
 
-        public void EnableThesePlugins(string[] relativePathList)
+        public void EnablePlugin(string[] relativePathList)
         {
             if (relativePathList == null || relativePathList.Length == 0)
                 return;
@@ -56,7 +58,7 @@ namespace Sphere10.Helium.PluginFramework
                 item.assemblyHandler.IsEnabled = true;
         }
 
-        public void DisableThesePlugins(string[] relativePathList)
+        public void DisablePlugin(string[] relativePathList)
         {
             if (relativePathList == null || relativePathList.Length == 0)
                 return;
@@ -72,8 +74,6 @@ namespace Sphere10.Helium.PluginFramework
 
         public void DisableAllPlugins()
         {
-            AllPluginsEnabled = false;
-
             if (PluginAssemblyHandlerList == null || PluginAssemblyHandlerList.Count == 0) return;
 
             foreach (var x in PluginAssemblyHandlerList)
@@ -82,8 +82,6 @@ namespace Sphere10.Helium.PluginFramework
 
         public void EnableAllPlugins()
         {
-            AllPluginsEnabled = true;
-
             if (PluginAssemblyHandlerList == null || PluginAssemblyHandlerList.Count == 0) return;
 
             foreach (var x in PluginAssemblyHandlerList)
@@ -92,8 +90,6 @@ namespace Sphere10.Helium.PluginFramework
 
         public string[] GetEnabledPlugins()
         {
-            _logger.Info("I am in GetEnabledPlugins.");
-
             var result = PluginAssemblyHandlerList.Where(y => y.IsEnabled).
                 Select(y => y.AssemblyFullName).Distinct().ToArray();
 
@@ -108,7 +104,7 @@ namespace Sphere10.Helium.PluginFramework
             return result;
         }
 
-        private static Assembly LoadPluginAssembly(string relativePath)
+        private static AssemblyLocationDto LoadPluginAssembly(string relativePath)
         {
             var root = Path.GetFullPath(Path.Combine(
                 Path.GetDirectoryName(
@@ -120,44 +116,52 @@ namespace Sphere10.Helium.PluginFramework
             var pluginLocation = Path.GetFullPath(Path.Combine(root, relativePath.Replace('\\', Path.DirectorySeparatorChar)));
             var loadContext = new PluginLoadContext(pluginLocation);
             var assembly = loadContext.LoadFromAssemblyName(new AssemblyName(Path.GetFileNameWithoutExtension(pluginLocation)));
-
-            return assembly;
+			var returnDto = new AssemblyLocationDto { Assembly = assembly, FullPath = pluginLocation, RelativePath = relativePath};
+            
+			return returnDto;
         }
 
-        private void GetHandlers(Assembly assembly, string relativePath)
+        private void GetHandlers(AssemblyLocationDto assemblyLocationDto)
         {
-            var count = assembly.GetTypes().Aggregate(0, (current, type) => CheckIfInterfaceIsHandler(type, current, assembly.FullName, relativePath));
+            var count = assemblyLocationDto.Assembly.GetTypes().
+	            Aggregate(0, (current, type) => 
+		            CheckIfInterfaceIsHandler(type, current, assemblyLocationDto.Assembly.FullName, assemblyLocationDto.RelativePath, assemblyLocationDto.FullPath));
 
             if (count != 0) return;
 
-            var availableTypes = string.Join(",", assembly.GetTypes().Select(t => t.FullName));
-            var typeString = $"Can't find any type which implements IHandleMessage<IMessage> in {assembly} from {assembly.Location}.\nAvailable types: {availableTypes}";
+            var availableTypes = string.Join(",", assemblyLocationDto.Assembly.GetTypes().Select(t => t.FullName));
+            var typeString = $"Can't find any type which implements IHandleMessage<IMessage> in {assemblyLocationDto} " +
+                             $"from {assemblyLocationDto.Assembly.Location}.\nAvailable types: {availableTypes}";
+
             _logger.Error(typeString);
 
             typeString = typeString.Replace(",", "\n");
             Console.WriteLine(typeString);
         }
 
-        private static int CheckIfInterfaceIsHandler(Type type, int count, string assemblyFullName, string relativePath)
+        private int CheckIfInterfaceIsHandler(Type type, int count, string assemblyFullName, string relativePath, string fullPath)
         {
-            foreach (var i in type.GetInterfaces())
+			foreach (var i in type.GetInterfaces())
             {
-                if (!i.IsGenericType || !string.Equals(i.GetGenericTypeDefinition().AssemblyQualifiedName, typeof(IHandleMessage<>).AssemblyQualifiedName))
+				if (!i.IsGenericType || !string.Equals(i.GetGenericTypeDefinition().AssemblyQualifiedName, typeof(IHandleMessage<>).AssemblyQualifiedName))
                     continue;
 
                 count++;
 
-                var handlerType = new PluginAssemblyHandler
+				var handlerType = new PluginAssemblyHandlerDto
                 {
+					FullPath = fullPath,
                     RelativePath = relativePath,
                     AssemblyFullName = assemblyFullName,
-                    Handler = i,
+					HandlerClass = type,
+                    HandlerInterface = i,
                     Message = i.GetGenericArguments()[0]
                 };
 
                 PluginAssemblyHandlerList.Add(handlerType);
             }
-            return count;
+
+			return count;
         }
     }
 }

@@ -15,26 +15,40 @@ using System;
 
 namespace Sphere10.Framework {
 
-	public class CachedItem<T> : IDisposable {
+	public abstract class CachedItem : IDisposable {
 
-        public bool Invalidated { get; set; }
+		protected CachedItem() {
+			Traits = CachedItemTraits.Default;
+		}
 
-        public DateTime FetchedOn { get; internal set; }
+		public object Value { get; internal set; }
 
-        public DateTime LastAccessedOn { get; internal set; }
+		public CachedItemTraits Traits { get; internal set; }
 
-        public uint AccessedCount { get; internal set; }
+		public DateTime FetchedOn { get; internal set; }
 
-        public uint Size { get; internal set; }
+		public DateTime LastAccessedOn { get; internal set; }
 
-        public T Value { get; internal set; }
+		public uint AccessedCount { get; internal set; }
 
-		public void Dispose() {
+		public long Size { get; internal set; }
+
+		public bool CanPurge {
+			get => Traits.HasFlag(CachedItemTraits.CanPurge);
+			set => Traits = Traits.CopyAndSetFlags(CachedItemTraits.CanPurge, value);
+		}
+
+		public virtual void Dispose() {
 			if (Value is IDisposable disposable) {
 				disposable.Dispose();
 			}
 		}
+	}
 
-	
-    }
+	public class CachedItem<T> : CachedItem {
+		public new T Value { 
+			get => (T)base.Value;
+			internal set => base.Value = value;
+		}
+	}
 }

@@ -20,35 +20,35 @@ using TinyIoC;
 
 namespace Sphere10.Framework.Application {
 
-	/// <summary>
-	/// Sphere 10 one stop shop for all IoC and Service Locator functionality.
-	/// <remarks>
-	/// Under root configuration element add
-	///   &lt;configSections&gt;
-	///    &lt;section name = "ComponentRegistry" type ="Sphere10.Framework.GenericSectionHandler, Sphere10.Framework"/&gt;
-	///  &lt;/configSections&gt;
-	/// 
-	/// In Program.cs or Web startup, use
-	///  ...
-	///  ComponentRegistry.Instance.RegisterAppConfig();
-	/// 
-	/// if using application framework, this this is called automatically on start
-	/// </remarks>
-	/// </summary>
-	[XmlRoot]
+    /// <summary>
+    /// Sphere 10 one stop shop for all IoC and Service Locator functionality.
+    /// <remarks>
+    /// Under root configuration element add
+    ///   &lt;configSections&gt;
+    ///    &lt;section name = "ComponentRegistry" type ="Sphere10.Framework.GenericSectionHandler, Sphere10.Framework"/&gt;
+    ///  &lt;/configSections&gt;
+    /// 
+    /// In Program.cs or Web startup, use
+    ///  ...
+    ///  ComponentRegistry.Instance.RegisterAppConfig();
+    /// 
+    /// if using application framework, this this is called automatically on start
+    /// </remarks>
+    /// </summary>
+    [XmlRoot]
     public class ComponentRegistry : IDisposable {
         private readonly object _threadLock;
         private readonly TinyIoCContainer _tinyIoCContainer;
         private readonly IList<Registration> _registrations;
         private readonly LookupEx<Type, Registration> _registrationsByInterfaceType;
         private readonly LookupEx<Type, Registration> _registrationsByImplementationType;
-		private readonly ComponentRegistry _parent;
+        private readonly ComponentRegistry _parent;
 
         static ComponentRegistry() {
             Instance = new ComponentRegistry(TinyIoCContainer.Current);
         }
 
-        private ComponentRegistry(TinyIoCContainer tinyIoCContainer) {
+        public ComponentRegistry(TinyIoCContainer tinyIoCContainer) {
             _threadLock = new object();
             _tinyIoCContainer = tinyIoCContainer;
             _registrations = new List<Registration>();
@@ -58,7 +58,7 @@ namespace Sphere10.Framework.Application {
             _parent = null;
         }
 
-        private ComponentRegistry(ComponentRegistry parent) 
+        public ComponentRegistry(ComponentRegistry parent)
             : this(parent._tinyIoCContainer.GetChildContainer()) {
             //_threadLock = new object();
             //_tinyIoCContainer = parent._tinyIoCContainer.GetChildContainer();
@@ -71,7 +71,7 @@ namespace Sphere10.Framework.Application {
 
         public static ComponentRegistry Instance { get; }
 
-        
+
         public IEnumerable<Registration> Registrations => (_parent?.Registrations ?? Enumerable.Empty<Registration>()).Concat(_registrations);
 
         public int State { get; private set; }
@@ -81,7 +81,7 @@ namespace Sphere10.Framework.Application {
         public ComponentRegistry CreateChildRegistry() {
             return new ComponentRegistry(this);
         }
-		
+
         public void RegisterDefinition(ComponentRegistryDefinition componentRegistryDefinition) {
             if (componentRegistryDefinition.RegistrationsDefinition == null)
                 return;
@@ -118,93 +118,120 @@ namespace Sphere10.Framework.Application {
 
         public void RegisterComponentInstance<TInterface>(TInterface instance, string name = null)
             where TInterface : class {
-            lock (_threadLock) {
-                _tinyIoCContainer.Register(instance, name ?? string.Empty);
-                RegisterInternal(Registration.From(instance, name ?? string.Empty));
+	        name ??= string.Empty;
+	        lock (_threadLock) {
+                _tinyIoCContainer.Register(instance, name);
+                RegisterInternal(Registration.From(instance, name));
             }
         }
 
-	    public void RegisterComponent<TInterface, TImplementation>(ActivationType activation) 
-			where TInterface : class
-			where TImplementation : class, TInterface {
-			RegisterComponent<TInterface, TImplementation>(null, activation);
-	    }
-
-		public void RegisterComponent<TInterface, TImplementation>(string resolveKey = null, ActivationType activation = ActivationType.Instance)
+        public void RegisterComponent<TInterface, TImplementation>(ActivationType activation)
             where TInterface : class
             where TImplementation : class, TInterface {
-            lock (_threadLock) {
-				var tinyOptions = _tinyIoCContainer.Register<TInterface, TImplementation>(resolveKey ?? string.Empty);
-				switch (activation) {
-					case ActivationType.Instance:
-						tinyOptions.AsMultiInstance();
-						break;
-					case ActivationType.Singleton:
-						tinyOptions.AsSingleton();
-						break;
-					case ActivationType.PerRequest:
-						tinyOptions.AsPerRequestSingleton();
-						break;
-					default:
-						throw new ArgumentOutOfRangeException(nameof(activation), activation, null);
-				}
-				RegisterInternal(Registration.From<TInterface, TImplementation>(resolveKey ?? string.Empty, activation));
+            RegisterComponent<TInterface, TImplementation>(null, activation);
+        }
+
+        public void RegisterComponent<TInterface, TImplementation>(string name = null, ActivationType activation = ActivationType.Instance)
+            where TInterface : class
+            where TImplementation : class, TInterface {
+	        name ??= string.Empty;
+			lock (_threadLock) {
+                var tinyOptions = _tinyIoCContainer.Register<TInterface, TImplementation>(name);
+                switch (activation) {
+                    case ActivationType.Instance:
+                    tinyOptions.AsMultiInstance();
+                    break;
+                    case ActivationType.Singleton:
+                    tinyOptions.AsSingleton();
+                    break;
+                    case ActivationType.PerRequest:
+                    tinyOptions.AsPerRequestSingleton();
+                    break;
+                    default:
+                    throw new ArgumentOutOfRangeException(nameof(activation), activation, null);
+                }
+                RegisterInternal(Registration.From<TInterface, TImplementation>(name, activation));
             }
         }
 
-        public void RegisterComponent(Type interfaceType, Type componentType, string resolveKey = null, ActivationType options = ActivationType.Instance) {
-            lock (_threadLock) {
-                var tinyOptions = _tinyIoCContainer.Register(interfaceType, componentType, resolveKey ?? string.Empty);
+        public void RegisterComponent(Type interfaceType, Type componentType, string name = null, ActivationType options = ActivationType.Instance) {
+	        name ??= string.Empty;
+			lock (_threadLock) {
+                var tinyOptions = _tinyIoCContainer.Register(interfaceType, componentType, name);
                 switch (options) {
                     case ActivationType.Instance:
-                        tinyOptions.AsMultiInstance();
-                        break;
+                    tinyOptions.AsMultiInstance();
+                    break;
                     case ActivationType.Singleton:
-                        tinyOptions.AsSingleton();
-                        break;
+                    tinyOptions.AsSingleton();
+                    break;
                     case ActivationType.PerRequest:
-                        tinyOptions.AsPerRequestSingleton();
-                        break;
+                    tinyOptions.AsPerRequestSingleton();
+                    break;
                     default:
-                        throw new ArgumentOutOfRangeException(nameof(options), options, null);
+                    throw new ArgumentOutOfRangeException(nameof(options), options, null);
                 }
-                RegisterInternal(Registration.From(interfaceType, componentType, resolveKey ?? string.Empty, options));
+                RegisterInternal(Registration.From(interfaceType, componentType, name , options));
             }
         }
 
-		public void DeregisterComponent<TImplementation>(string resolveKey = null)
-			=> DeregisterComponent(typeof(TImplementation), resolveKey);
+        public void DeregisterComponent<TImplementation>(string name = null)
+            => DeregisterComponent(typeof(TImplementation), name);
 
-		public void DeregisterComponent(Type type, string resolveKey = null) {
+        public void DeregisterComponent(Type type, string name = null) {
+	        name ??= string.Empty;
 			lock (_threadLock) {
-				_tinyIoCContainer.Unregister(type, resolveKey);
-				var registration = _registrations.SingleOrDefault(r => r.ImplementationType == type);
-				if (registration != null)
-					DeregisterInternal(registration);
-			}
-		}
-
-        public void RegisterProxyComponent<TInterface, TProxy>(string resolveKey = null) 
-            where TInterface : class 
-            where TProxy : class {
-            lock (_threadLock) {
-                _tinyIoCContainer.Register((container, overloads) => container.Resolve<TProxy>(overloads) as TInterface, resolveKey ?? string.Empty);
-                RegisterInternal(Registration.FromProxy<TInterface, TProxy>(resolveKey ?? string.Empty));
+                _tinyIoCContainer.Unregister(type, name);
+                var registration = _registrations.SingleOrDefault(r => r.ImplementationType == type);
+                if (registration != null)
+                    DeregisterInternal(registration);
             }
         }
 
-        public void RegisterProxyComponent(Type interfaceType, Type proxyType, string resolveKey = null) {
-            lock (_threadLock) {
+        public void RegisterProxyComponent<TInterface, TProxy>(string name = null)
+            where TInterface : class
+            where TProxy : class {
+	        name ??= string.Empty;
+			lock (_threadLock) {
+                _tinyIoCContainer.Register((container, _) => container.Resolve<TProxy>() as TInterface, name);
+                RegisterInternal(Registration.FromProxy<TInterface, TProxy>(name ));
+            }
+        }
+
+        public void RegisterProxyComponent(Type interfaceType, Type proxyType, string name = null) {
+	        name ??= string.Empty;
+			lock (_threadLock) {
                 if (!proxyType.IsAssignableFrom(proxyType))
                     throw new SoftwareException("Unable to register proxy component '{0}' as it is not a sub-type of '{1}'", proxyType.FullName, interfaceType.FullName);
-                _tinyIoCContainer.Register(interfaceType, (container, overloads) => container.Resolve(proxyType, overloads), resolveKey ?? string.Empty);
-                RegisterInternal(Registration.FromProxy(interfaceType, proxyType, resolveKey ?? string.Empty));
+                _tinyIoCContainer.Register(interfaceType, (container, overloads) => container.Resolve(proxyType, overloads), name);
+                RegisterInternal(Registration.FromProxy(interfaceType, proxyType, name));
 
             }
         }
 
-        public TInterface Resolve<TInterface>(string resolveKey = null) where TInterface : class {
-            var resolvedImplementation = _tinyIoCContainer.Resolve<TInterface>(resolveKey ?? string.Empty);
+        public void RegisterComponentFactory<TInterface>(Func<ComponentRegistry, TInterface> factory, ActivationType activation = ActivationType.Instance, string name = null) where TInterface : class {
+	        name ??= string.Empty;
+			lock (_threadLock) {
+		        var options = _tinyIoCContainer.Register(typeof(TInterface), (container, overloads) => factory(this), name);
+		        switch (activation) {
+			        case ActivationType.Instance:
+                        // Factory called each time 
+				        break;
+			        case ActivationType.Singleton:
+				        options.AsSingleton();
+				        break;
+			        case ActivationType.PerRequest:
+				        throw new NotSupportedException(ActivationType.PerRequest.ToString());
+			        default:
+				        throw new ArgumentOutOfRangeException(nameof(activation), activation, null);
+		        }
+		        RegisterInternal(Registration.FromFactory(typeof(TInterface), name));
+	        }
+        }
+
+        public TInterface Resolve<TInterface>(string name = null) where TInterface : class {
+	        name ??= string.Empty;
+			var resolvedImplementation = _tinyIoCContainer.Resolve<TInterface>(name);
             //if (!TryResolve(out resolvedImplementation, name)) {
             //    throw new SoftwareException(
             //        "No component has been registered for service type '{0}' with name {1}",
@@ -215,13 +242,15 @@ namespace Sphere10.Framework.Application {
             return resolvedImplementation;
         }
 
-        public object Resolve(Type type, string resolveKey = null)  {
-            var resolvedImplementation = _tinyIoCContainer.Resolve(type, resolveKey ?? string.Empty);
+        public object Resolve(Type type, string name = null) {
+	        name ??= string.Empty;
+			var resolvedImplementation = _tinyIoCContainer.Resolve(type, name);
             return resolvedImplementation;
         }
 
-        public bool TryResolve<TInterface>(out TInterface component, string resolveKey = null) where TInterface : class {
-            return _tinyIoCContainer.TryResolve(resolveKey ?? string.Empty, out component);
+        public bool TryResolve<TInterface>(out TInterface component, string name = null) where TInterface : class {
+	        name ??= string.Empty;
+			return _tinyIoCContainer.TryResolve(name, out component);
         }
 
         public IEnumerable<TInterface> ResolveAll<TInterface>() where TInterface : class {
@@ -232,29 +261,31 @@ namespace Sphere10.Framework.Application {
             return _tinyIoCContainer.ResolveAll(type, true);
         }
 
-        public bool HasImplementation<TImplementation>(string resolveKey = null) {
-            return HasImplementation(typeof(TImplementation), resolveKey);
+        public bool HasImplementation<TImplementation>(string name = null) {
+			return HasImplementation(typeof(TImplementation), name);
         }
 
-        public bool HasImplementation(Type type, string resolveKey = null) {
-			return 
-                (_parent?.HasImplementation(type, resolveKey) ?? false) ||
-                (!string.IsNullOrWhiteSpace(resolveKey)
-				? _registrationsByImplementationType[type].Any(r => r.ResolveKey == resolveKey)
-				: _registrationsByImplementationType.CountForKey(type) > 0);
-		}
-
-        public bool HasImplementationFor<TInterface>(string resolveKey = null) {
-            return HasImplementationFor(typeof(TInterface), resolveKey);
+        public bool HasImplementation(Type type, string name = null) {
+	        name ??= string.Empty;
+			return
+                (_parent?.HasImplementation(type, name) ?? false) ||
+                (!string.IsNullOrWhiteSpace(name)
+                ? _registrationsByImplementationType[type].Any(r => r.Name == name)
+                : _registrationsByImplementationType.CountForKey(type) > 0);
         }
 
-        public bool HasImplementationFor(Type type, string resolveKey = null) {
-			return 
-                (_parent?.HasImplementationFor(type, resolveKey) ?? false) ||
-                (!string.IsNullOrWhiteSpace(resolveKey)
-				? _registrationsByInterfaceType[type].Any(r => r.ResolveKey == resolveKey)
-				: _registrationsByInterfaceType.CountForKey(type) > 0);
-		}
+        public bool HasImplementationFor<TInterface>(string name = null) {
+            return HasImplementationFor(typeof(TInterface), name);
+        }
+
+        public bool HasImplementationFor(Type type, string name = null) {
+	        name ??= string.Empty;
+			return
+                (_parent?.HasImplementationFor(type, name) ?? false) ||
+                (!string.IsNullOrWhiteSpace(name)
+                ? _registrationsByInterfaceType[type].Any(r => r.Name == name)
+                : _registrationsByInterfaceType.CountForKey(type) > 0);
+        }
 
         public void Dispose() {
             _tinyIoCContainer.Dispose();
@@ -272,9 +303,9 @@ namespace Sphere10.Framework.Application {
             TypeResolver.LoadAssembly(assemblyRegistrationDefinition.Dll, componentRegistryDefinition.PluginFolder);
         }
 
-        private void RegisterInternalComponentRegistration( ComponentRegistryDefinition componentRegistryDefinition, ComponentRegistryDefinition.ComponentRegistrationDefinition componentRegistrationDefinition) {
-			if (string.IsNullOrWhiteSpace(componentRegistrationDefinition.Implementation))
-				throw new ArgumentException("No implementation field provided in component registry definition");
+        private void RegisterInternalComponentRegistration(ComponentRegistryDefinition componentRegistryDefinition, ComponentRegistryDefinition.ComponentRegistrationDefinition componentRegistrationDefinition) {
+            if (string.IsNullOrWhiteSpace(componentRegistrationDefinition.Implementation))
+                throw new ArgumentException("No implementation field provided in component registry definition");
             var interfaceType = TypeResolver.Resolve(componentRegistrationDefinition.Interface, assemblyHint: componentRegistrationDefinition.Dll);
             var implementationType = TypeResolver.Resolve(componentRegistrationDefinition.Implementation, componentRegistrationDefinition.Dll, componentRegistryDefinition.PluginFolder);
             var activation = componentRegistrationDefinition.Activation;
@@ -282,7 +313,7 @@ namespace Sphere10.Framework.Application {
             RegisterComponent(
                 interfaceType,
                 implementationType,
-                componentRegistrationDefinition.ResolveKey,
+                componentRegistrationDefinition.Name,
                 activation ?? ActivationType.Instance
             );
         }
@@ -290,7 +321,6 @@ namespace Sphere10.Framework.Application {
         private void RegisterInternalProxyRegistration(ComponentRegistryDefinition componentRegistryDefinition, ComponentRegistryDefinition.ProxyInterfaceRegistrationDefinition proxyInterfaceRegistrationDefinition) {
             var interfaceType = TypeResolver.Resolve(proxyInterfaceRegistrationDefinition.Interface);
             var implementationType = TypeResolver.Resolve(proxyInterfaceRegistrationDefinition.Proxy);
-
             RegisterProxyComponent(
                 interfaceType,
                 implementationType
@@ -329,7 +359,7 @@ namespace Sphere10.Framework.Application {
             RegisterComponent(
                 interfaceType,
                 implementationType,
-                componentRegistrationDefinition.ResolveKey ?? implementationType.FullName,
+                componentRegistrationDefinition.Name ?? implementationType.FullName,
                 componentRegistrationDefinition.Activation ?? ActivationType.Instance
             );
         }
@@ -348,18 +378,19 @@ namespace Sphere10.Framework.Application {
             lock (_threadLock) {
                 _registrations.Add(registration);
                 _registrationsByInterfaceType.Add(registration.InterfaceType, registration);
-                _registrationsByImplementationType.Add(registration.ImplementationType, registration);
+                if (registration.ImplementationType != null)
+                    _registrationsByImplementationType.Add(registration.ImplementationType, registration);
                 State++;
             }
         }
 
-		private void DeregisterInternal(Registration registration) {
-			lock (_threadLock) {
-				_registrations.Remove(registration);
-				_registrationsByInterfaceType.Remove(registration.InterfaceType, registration);
-				_registrationsByImplementationType.Add(registration.ImplementationType, registration);
-			}
-		}
+        private void DeregisterInternal(Registration registration) {
+            lock (_threadLock) {
+                _registrations.Remove(registration);
+                _registrationsByInterfaceType.Remove(registration.InterfaceType, registration);
+                _registrationsByImplementationType.Add(registration.ImplementationType, registration);
+            }
+        }
 
         #endregion
 
@@ -367,10 +398,11 @@ namespace Sphere10.Framework.Application {
 
         public class Registration {
 
-            public Registration(Type interfaceType, Type implementationType, string resolveKey, ActualActivationType activationType) {
-                InterfaceType = interfaceType;
+            public Registration(Type interfaceType, Type implementationType, string name, ActualActivationType activationType) {
+	            name ??= string.Empty;
+				InterfaceType = interfaceType;
                 ImplementationType = implementationType;
-                ResolveKey = resolveKey;
+                Name = name;
                 ActivationType = activationType;
             }
 
@@ -378,7 +410,7 @@ namespace Sphere10.Framework.Application {
 
             public Type ImplementationType { get; set; }
 
-            public string ResolveKey { get; set; }
+            public string Name { get; set; }
 
             public ActualActivationType ActivationType { get; set; }
 
@@ -403,16 +435,20 @@ namespace Sphere10.Framework.Application {
                 return new Registration(@interface, implementation, name, ActualActivationType.Proxy);
             }
 
+            public static Registration FromFactory(Type @interface, string name) {
+                return new Registration(@interface, null, name, ActualActivationType.Factory);
+            }
+
             private static ActualActivationType Convert(ActivationType activationType) {
                 switch (activationType) {
                     case Application.ActivationType.Instance:
-                        return ActualActivationType.NewInstance;
+                    return ActualActivationType.NewInstance;
                     case Application.ActivationType.Singleton:
-                        return ActualActivationType.Singleton;
+                    return ActualActivationType.Singleton;
                     case Application.ActivationType.PerRequest:
-                        return ActualActivationType.PerRequest;
+                    return ActualActivationType.PerRequest;
                     default:
-                        throw new ArgumentOutOfRangeException(nameof(activationType), activationType, null);
+                    throw new ArgumentOutOfRangeException(nameof(activationType), activationType, null);
                 }
             }
         }
@@ -423,7 +459,8 @@ namespace Sphere10.Framework.Application {
             NewInstance,
             Singleton,
             PerRequest,
-            Proxy
+            Proxy,
+            Factory,
         }
 
         #endregion

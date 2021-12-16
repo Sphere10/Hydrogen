@@ -22,14 +22,14 @@ namespace Sphere10.Framework {
 
 		public string TransactionFile { get; }
 
-		public ITransactionalFile EnlistFile(string filename, int pageSize, int maxOpenPages) {
+		public ITransactionalFile EnlistFile(string filename, int pageSize, long maxMemory) {
 			CheckTransactionExists();
-			return Transaction.EnlistFile(filename, pageSize, maxOpenPages);
+			return Transaction.EnlistFile(filename, pageSize, maxMemory);
 		}
 
-		public ITransactionalFile EnlistFile(string filename, Guid fileID, int pageSize, int maxOpenPages) {
+		public ITransactionalFile EnlistFile(string filename, Guid fileID, int pageSize, long maxMemory) {
 			CheckTransactionExists();
-			return Transaction.EnlistFile(filename, fileID, pageSize, maxOpenPages);
+			return Transaction.EnlistFile(filename, fileID, pageSize, maxMemory);
 		}
 
 		public ITransactionalFile EnlistFile(ITransactionalFile file, bool ownsFile) {

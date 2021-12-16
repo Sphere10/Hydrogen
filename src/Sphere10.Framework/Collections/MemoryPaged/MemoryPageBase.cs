@@ -57,11 +57,11 @@ namespace Sphere10.Framework {
 
 		protected override int AppendInternal(TItem[] items, out int newItemsSpace) {
 			TItem[] appendItems;
-			if (Sizer.IsFixedSize) {
+			if (Sizer.IsStaticSize) {
 				// Optimized for constant sized objects (primitive types like bytes)
-				var maxAppendCount = (MaxSize - Size) / Sizer.FixedSize;
+				var maxAppendCount = (MaxSize - Size) / Sizer.StaticSize;
 				appendItems = items.Take(maxAppendCount).ToArray();
-				newItemsSpace = appendItems.Length * Sizer.FixedSize;
+				newItemsSpace = appendItems.Length * Sizer.StaticSize;
 			} else {
 				// Used for variable length objects
 				var newSpace = 0;
@@ -79,8 +79,8 @@ namespace Sphere10.Framework {
 		}
 
 		protected override void UpdateInternal(int index, TItem[] items, out int oldItemsSpace, out int newItemsSpace) {
-			if (Sizer.IsFixedSize) {
-				oldItemsSpace = Sizer.FixedSize * items.Length;
+			if (Sizer.IsStaticSize) {
+				oldItemsSpace = Sizer.StaticSize * items.Length;
 				newItemsSpace = oldItemsSpace;
 				MemoryStore.UpdateRange(index - StartIndex, items);
 			} else {
@@ -98,9 +98,9 @@ namespace Sphere10.Framework {
 
 		protected virtual int MeasureConsumedSpace(int index, int count, bool fetchIndividualSizes, out int[] sizes) {
 			CheckRange(index, count);
-			if (Sizer.IsFixedSize) {
-				sizes = fetchIndividualSizes ? Tools.Array.Gen(count, Sizer.FixedSize) : null;
-				return Sizer.FixedSize * count;
+			if (Sizer.IsStaticSize) {
+				sizes = fetchIndividualSizes ? Tools.Array.Gen(count, Sizer.StaticSize) : null;
+				return Sizer.StaticSize * count;
 			} else {
 				sizes = MemoryStore.ReadRange(index - StartIndex, count).Select(Sizer.CalculateSize).ToArray();
 				var totalSize = sizes.Sum();

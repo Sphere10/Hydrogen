@@ -31,7 +31,7 @@ namespace Sphere10.Hydrogen.Node {
 			// Start Tasks
 			// none
 			// End Tasks
-			registry.RegisterEndTask<SaveSettingsEndTask>();
+			
 
 			// Components
 			

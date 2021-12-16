@@ -2,10 +2,10 @@
 
 namespace Sphere10.Helium.Saga {
 	public abstract class Saga<T> : Saga where T : ISagaData, new() {
-		
+
 		public T Data {
 			get => (T)SagaDataBase;
-			set => SagaDataBase = (ISagaData)value;
+			set => SagaDataBase = value;
 		}
 
 		protected Saga(IBus bus) : base(bus) {
@@ -16,5 +16,6 @@ namespace Sphere10.Helium.Saga {
 		}
 
 		protected abstract void ConfigureHowToFindSaga(SagaPropertyMapper<T> mapper);
+
 	}
 }

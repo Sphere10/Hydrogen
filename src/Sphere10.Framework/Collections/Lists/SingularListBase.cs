@@ -10,6 +10,8 @@ namespace Sphere10.Framework {
 	/// <typeparam name="T"></typeparam>
 	public abstract class SingularListBase<T> : ExtendedListBase<T> {
 
+		public override bool IsReadOnly => false;
+
 		public override IEnumerable<bool> ContainsRange(IEnumerable<T> items) => items.Select(Contains).ToArray();
 
 		public override IEnumerable<int> IndexOfRange(IEnumerable<T> items) {
@@ -38,6 +40,11 @@ namespace Sphere10.Framework {
 
 		public override IEnumerable<bool> RemoveRange(IEnumerable<T> items) => throw new NotImplementedException();
 
+		protected void CheckIndex(int index, bool allowAtEnd = false) {
+			if (allowAtEnd && index == Count)
+				return; 
+			Guard.ArgumentInRange(index, 0, Math.Max(0, Count - 1), nameof(index));
+		}
 
 	}
 

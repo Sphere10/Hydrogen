@@ -30,8 +30,6 @@ namespace Sphere10.Framework.Communications {
 
         public override CommunicationRole LocalRole => CommunicationRole.Server;
 
-        public override CommunicationRole Initiator => CommunicationRole.Server;
-
         protected override async Task<(AnonymousPipeEndpoint endpoint, PipeStream readStream, PipeStream writeStream)> OpenPipeInternal() {
             var readPipe = new AnonymousPipeServerStream(PipeDirection.In, HandleInheritability.Inheritable);
             var writePipe = new AnonymousPipeServerStream(PipeDirection.Out, HandleInheritability.Inheritable);

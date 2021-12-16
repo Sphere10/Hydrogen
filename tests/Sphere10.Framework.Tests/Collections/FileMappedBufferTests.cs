@@ -214,7 +214,7 @@ namespace Sphere10.Framework.Tests {
 			var fileName = Tools.FileSystem.GetTempFileName(true);
 			Tools.FileSystem.AppendAllBytes(fileName, expected);
 			using (Tools.Scope.ExecuteOnDispose(() => File.Delete(fileName)))
-			using (var binaryFile = new FileMappedBuffer(fileName, 8, 4, true)) {
+			using (var binaryFile = new FileMappedBuffer(fileName, 8, 4*8, true)) {
 				if (binaryFile.RequiresLoad)
 					binaryFile.Load();
 
@@ -229,7 +229,7 @@ namespace Sphere10.Framework.Tests {
 			var fileName = Tools.FileSystem.GetTempFileName(true);
 			Tools.FileSystem.AppendAllBytes(fileName, expected);
 			using (Tools.Scope.ExecuteOnDispose(() => File.Delete(fileName)))
-			using (var binaryFile = new FileMappedBuffer(fileName, 8, 4, true)) {
+			using (var binaryFile = new FileMappedBuffer(fileName, 8, 4*8, true)) {
 				if (binaryFile.RequiresLoad)
 					binaryFile.Load();
 
@@ -245,7 +245,7 @@ namespace Sphere10.Framework.Tests {
 			Tools.FileSystem.AppendAllBytes(fileName, expected.Reverse().ToArray());
 			using (Tools.Scope.ExecuteOnDispose(() => File.Delete(fileName))) {
 				// first load the file and sort them
-				using (var binaryFile = new FileMappedBuffer(fileName, 8, 4, false)) {
+				using (var binaryFile = new FileMappedBuffer(fileName, 8, 4*8, false)) {
 					if (binaryFile.RequiresLoad)
 						binaryFile.Load();
 
@@ -255,7 +255,7 @@ namespace Sphere10.Framework.Tests {
 				}
 
 				// check file is as expected
-				using (var binaryFile = new FileMappedBuffer(fileName, 8, 4, true)) {
+				using (var binaryFile = new FileMappedBuffer(fileName, 8, 4*8, true)) {
 					if (binaryFile.RequiresLoad)
 						binaryFile.Load();
 
@@ -280,7 +280,7 @@ namespace Sphere10.Framework.Tests {
 			[Values(1, 1, 7, 2,  19)] int maxOpenPages) {
 			var fileName = Tools.FileSystem.GetTempFileName(true);
 			using (Tools.Scope.ExecuteOnDispose(() => File.Delete(fileName))) {
-				using (var binaryFile = new FileMappedBuffer(fileName, pageSize, maxOpenPages, false)) {
+				using (var binaryFile = new FileMappedBuffer(fileName, pageSize, maxOpenPages*pageSize, false)) {
 					if (binaryFile.RequiresLoad)
 						binaryFile.Load();
 

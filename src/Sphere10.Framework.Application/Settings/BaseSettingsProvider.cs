@@ -16,14 +16,9 @@ using System;
 namespace Sphere10.Framework.Application {
 	public abstract class BaseSettingsProvider : ISettingsProvider {
 
-		public BaseSettingsProvider() {
-			AutoSaveNewSettings = false;
-			EncryptSettings = false;
-		}
+		public virtual bool AutoSaveNewSettings => false;
 
-		public virtual bool AutoSaveNewSettings { get; set;}
-
-		public virtual bool EncryptSettings { get; set; }
+		public virtual bool EncryptSettings => true;
 
 		public virtual SettingsObject LoadSetting(Type settingsObjectType, object id = null) {
 			var settings = LoadInternal(settingsObjectType, id);

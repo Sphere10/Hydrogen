@@ -26,6 +26,11 @@ namespace Sphere10.Framework {
 			_lock = new SynchronizedObject();
 		}
 
+		public ISynchronizedObject<Scope, Scope> ParentSyncObject {
+			get => _lock.ParentSyncObject;
+			set => _lock.ParentSyncObject = value;
+		}
+
 		public ReaderWriterLockSlim ThreadLock => _lock.ThreadLock;
 
 		public override int Count {

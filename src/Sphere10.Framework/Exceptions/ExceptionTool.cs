@@ -31,7 +31,7 @@ namespace Tools {
 	        }
         }
 
-        public static void ExecuteIgnoringException(Action action, ICollection<Exception> exceptionList ) {
+        public static void ExecuteIgnoringException(Action action, ICollection<Exception> exceptionList) {
             Exception error;
             ExecuteIgnoringException(action, out error);
             if (error != null)
@@ -46,6 +46,17 @@ namespace Tools {
                 caughtError = error;
             }
         }
+
+        public static bool Execute(Action action, Action<Exception> handler = null) {
+            try {
+                action();
+                return true;
+            } catch (Exception error) {
+                handler?.Invoke(error);
+                return false;
+            }
+        }
+
 
 
         public static T TryOrDefault<T>(Func<T> func, T @default) {

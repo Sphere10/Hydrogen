@@ -7,6 +7,10 @@
 		<StartupObject />
 	</PropertyGroup>
 
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+	  <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+	</PropertyGroup>
+
 	<ItemGroup>
 		<Compile Remove="Kernel\**" />
 		<EmbeddedResource Remove="Kernel\**" />

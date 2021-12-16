@@ -5,10 +5,10 @@ using System.Linq;
 namespace Sphere10.Framework {
 
 	/// <summary>
-	/// A list implementation that implements inserts/deletes/appends as updates over an underlying list using Update only operations. This requires the underlying
-	/// list to be "pre-allocated". This class is useful for converting a list that can only be updated into a list that supports inserts/updates/deletes. It
+	/// A list that implements inserts/deletes/appends as update operations over a underlying fixed-sized list. This requires the underlying
+	/// list to be "pre-allocated". This class is useful for converting a list that can only be mutated via UPDATE operations into a list that supports inserts/updates/deletes. It
 	/// achieves this by maintaining it's own <see cref="Count"/> and by copy/pasting items as needed. When shuffling objects around via copy/paste the algorithms
-	/// are optimized for 1-to-1 copy/paste to avoid exhausting memory. Thus this class is suitable for wrapping arbitrarily large lists.
+	/// are optimized for 1-to-1 copy/paste to avoid exhausting memory. Thus this class is suitable for wrapping arbitrarily large lists who can only be updated.
 	/// </summary>
 	/// <remarks>
 	/// <see cref="Contains"/> and <see cref="ContainsRange"/> are overriden and implemented based on <see cref="IndexOf"/> and <see cref="IndexOfRange"/> in order to ensure only
@@ -23,16 +23,16 @@ namespace Sphere10.Framework {
 		/// </summary>
 		/// <param name="maxCount">Number of items to pre-allocate.</param>
 		public PreAllocatedList(int maxCount)
-			: this(new ExtendedList<TItem>(Tools.Array.Gen<TItem>(maxCount, default))) {
+			: this(new ExtendedList<TItem>(Tools.Array.Gen<TItem>(maxCount, default)), 0) {
 		}
 
 		/// <summary>
 		/// Constructor.
 		/// </summary>
 		/// <param name="preAllocatedStore">This is the pre-allocated list that is used to add/update/insert/remote from. This list is never changed and only mutated via update operations.</param>
-		public PreAllocatedList(IExtendedList<TItem> preAllocatedStore)
+		public PreAllocatedList(IExtendedList<TItem> preAllocatedStore, int count)
 			: base(preAllocatedStore) {
-			_count = 0;
+			_count = count;
 		}
 
 		public override int Count => _count;

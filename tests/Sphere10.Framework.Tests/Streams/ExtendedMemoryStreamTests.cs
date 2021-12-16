@@ -177,19 +177,19 @@ namespace Sphere10.Framework.Tests {
 					stream = new ExtendedMemoryStream(new MemoryBuffer());
 					return Disposables.None;
 				case InnerListType.MemoryPagedBuffer:
-					var memPagedBuffer = new MemoryPagedBuffer(pageSize, maxOpenPages);
+					var memPagedBuffer = new MemoryPagedBuffer(pageSize, maxOpenPages*pageSize);
 					stream = new ExtendedMemoryStream(memPagedBuffer);
 					return new Disposables(memPagedBuffer);
 				case InnerListType.BinaryFile:
 					var tmpFile = Tools.FileSystem.GetTempFileName(false);
-					var binaryFile = new FileMappedBuffer(tmpFile, pageSize, maxOpenPages);
+					var binaryFile = new FileMappedBuffer(tmpFile, pageSize, maxOpenPages*pageSize);
 					stream = new ExtendedMemoryStream(binaryFile);
 					return new Disposables(new ActionScope(() => File.Delete(tmpFile)));
 				
 				case InnerListType.TransactionalBinaryFile:
 					var baseDir = Tools.FileSystem.GetTempEmptyDirectory(true);
 					var fileName = Path.Combine(baseDir, "File.dat");
-					var transactionalBinaryFile = new TransactionalFileMappedBuffer(fileName, baseDir, Guid.NewGuid(), pageSize, maxOpenPages);
+					var transactionalBinaryFile = new TransactionalFileMappedBuffer(fileName, baseDir, Guid.NewGuid(), pageSize, maxOpenPages*pageSize);
 					stream = new ExtendedMemoryStream(transactionalBinaryFile);
 					return new Disposables(new ActionScope(() => Tools.FileSystem.DeleteDirectory(baseDir)));
 				default:

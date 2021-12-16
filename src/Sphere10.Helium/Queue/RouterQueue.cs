@@ -3,8 +3,20 @@ using Sphere10.Framework;
 using Sphere10.Helium.Message;
 
 namespace Sphere10.Helium.Queue {
-	public class RouterQueue : TransactionalList<IMessage>, IRouterQueue {
-
+	public class RouterQueue : TransactionalList<IMessage>, IHeliumQueue {
+		public RouterQueue(RouterQueueSettings routerQueueSettings)
+			: base(
+				new BinaryFormattedSerializer<IMessage>(),
+				routerQueueSettings.Path,
+				routerQueueSettings.TempDirPath,
+				routerQueueSettings.FileId,
+				routerQueueSettings.TransactionalPageSizeBytes,
+				routerQueueSettings.MaxStorageSizeBytes,
+				routerQueueSettings.AllocatedMemory,
+				routerQueueSettings.ClusterSize,
+				routerQueueSettings.MaxItems
+			) {
+		}
 
 		public RouterQueue(IItemSerializer<IMessage> serializer, string filename, string uncommittedPageFileDir, Guid fileID, int maxStorageBytes, int memoryCacheBytes, int maxItems, bool readOnly = false) : base(serializer, filename, uncommittedPageFileDir, fileID, maxStorageBytes, memoryCacheBytes, maxItems, readOnly) {
 		}

@@ -13,8 +13,7 @@
 
 namespace Sphere10.Framework.Application {
 	public class LoggingConfiguration {		
-		public string Directory { get; set; }
-		public string LogNameTemplate { get; set; }
+		public string LogFilePath { get; set; }
 		public int MaxLogFiles { get; set; }
 		public int MaxLogFileSize { get; set; }
 		public bool EnableDebug { get; set; }

@@ -11,6 +11,9 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
+using System;
+using System.Runtime.InteropServices;
+
 namespace Sphere10.Framework {
 
 	public abstract class ScopeContext<T> : Disposable where T : ScopeContext<T> {
@@ -51,7 +54,7 @@ namespace Sphere10.Framework {
         }
 
         protected sealed override void FreeManagedResources() {
-            var inException = false;
+	        var inException = Tools.Runtime.IsInExceptionContext(); 
             // Remove from registry
             if (IsRootScope) {
                 CallContext.LogicalSetData(ContextName, null);

@@ -18,9 +18,12 @@ using System.Linq;
 
 namespace Sphere10.Framework {
 	/// <summary>
-	/// A memory stream that writes to an IExtendedList of bytes.
+	/// A memory stream that writes to an underlying <see cref="IExtendedList{T}"/> of bytes.
 	/// </summary>
 	public class ExtendedMemoryStream : Stream, ILoadable {
+		public event EventHandlerEx<object> Loading;
+		public event EventHandlerEx<object> Loaded;
+
 
 		private long _position;
 		private readonly bool _disposeSource;
@@ -34,13 +37,17 @@ namespace Sphere10.Framework {
 			_source = source;
 			_position = 0;
 			_disposeSource = disposeSource;
+
 		}
 
 		public bool RequiresLoad => _source is ILoadable { RequiresLoad: true };
 
 		public void Load() {
-			if (_source is ILoadable { RequiresLoad: true } loadable)
+			if (_source is ILoadable { RequiresLoad: true } loadable) {
+				Loading?.Invoke(this);
 				loadable.Load();
+				Loaded?.Invoke(this);
+			}
 		}
 
 		public override bool CanRead => true;
@@ -173,9 +180,8 @@ namespace Sphere10.Framework {
 			}
 		}
 
-		private void SourceRemoveRange(int index, int count) {
-			_source.RemoveRange(index, count);
-		}
+		private void SourceRemoveRange(int index, int count) 
+			=> _source.RemoveRange(index, count);
 
 		protected override void Dispose(bool disposing) {
 			base.Dispose(disposing);

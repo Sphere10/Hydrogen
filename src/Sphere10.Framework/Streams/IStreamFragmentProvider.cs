@@ -5,9 +5,9 @@ namespace Sphere10.Framework {
 	public interface IStreamFragmentProvider {
 		
 		/// <summary>
-		/// Number of bytes in all fragments.
+		/// Number of bytes requested minus total released (not necessarily allocated).
 		/// </summary>
-		long ByteCount { get; }
+		long TotalBytes { get; }
 		
 		/// <summary>
 		/// Fragment count
@@ -22,28 +22,28 @@ namespace Sphere10.Framework {
 		Span<byte> GetFragment(int index);
 
 		/// <summary>
-		/// Retrieves the fragment which the global position / index corresponds to. 
+		/// Maps a logical <see cref="position"/> to a fragment and a local index therein.
 		/// </summary>
-		/// <param name="position"> index of position in total fragment space</param>
-		/// <param name="fragment"> the fragment that</param>
-		/// <returns> fragment index, or -1 if index outside of fragment space. if valid fragment, the corresponding position in fragment also returned.</returns>
-		(int fragmentIndex, int fragmentPosition) GetFragment(long position, out Span<byte> fragment);
+		/// <param name="position">logical position being resolved</param>
+		/// <param name="fragment"> the fragment that the position resides in</param>
+		/// <returns> fragment index (or -1 if index outside of fragment space). if valid fragment, the corresponding position in fragment also returned.</returns>
+		(int fragmentIndex, int fragmentPosition) MapLogicalPositionToFragment(long position, out Span<byte> fragment);
 
 		/// <summary>
 		/// Requests new fragments for the requested space. Guaranteed allocation if returns true;
 		/// </summary>
 		/// <param name="bytes">Requested new space</param>
-		/// <param name="newFragmentIndexes">New fragments</param>
+		/// <param name="newFragments">New fragments</param>
 		/// <returns></returns>
-		bool TryRequestSpace(int bytes, out int[] newFragmentIndexes);
+		bool TryRequestSpace(int bytes, out int[] newFragments);
 
 		/// <summary>
 		/// Defensive release of space from fragments. Not guaranteed to release requested bytes.
 		/// </summary>
 		/// <param name="bytes">Number of bytes to release</param>
-		/// <param name="releasedFragmentIndexes">Index of fragments released (should be right-most neighborhood)</param>
+		/// <param name="releasedFragments">Index of fragments released (should be right-most neighborhood)</param>
 		/// <returns>Number of bytes actually released</returns>
-		int ReleaseSpace(int bytes, out int[] releasedFragmentIndexes);
+		int ReleaseSpace(int bytes, out int[] releasedFragments);
 
 		/// <summary>
 		/// Update an existing fragment with the span bytes from the specified position.

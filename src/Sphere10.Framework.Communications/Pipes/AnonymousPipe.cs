@@ -12,8 +12,6 @@ using System.Threading.Tasks;
 namespace Sphere10.Framework.Communications {
 
     public abstract class AnonymousPipe : ProtocolChannel, IDisposable {
-	    public new static readonly byte[] MessageEnvelopeMarker = { 0, 0, 0, 1 };
-
         public event EventHandlerEx<string> ReceivedString;
         public event EventHandlerEx<string> SentString;
 
@@ -22,9 +20,8 @@ namespace Sphere10.Framework.Communications {
         private StreamReader _reader;
         private StreamWriter _writer;
 
-        protected AnonymousPipe() {
-            base.MessageEnvelopeMarker = MessageEnvelopeMarker;
-        }
+
+        public override CommunicationRole Initiator => CommunicationRole.Server;
 
         /// <summary>
         /// Starts a child process and passes in the read/writer pipe handles.
@@ -35,39 +32,31 @@ namespace Sphere10.Framework.Communications {
         /// <param name="mediator">Handles bad messages.</param>
         /// <returns>A channel used to send messages backwards and forwards</returns>
         /// <remarks>If <paramref name="argInjectorFunc"/> is null the read pipe handle and write pipe handle are passed consequtively.</remarks>
-        public static AnonymousPipe ToChildProcess(string processPath, IItemSerializer<object> serializer, string arguments = "", Func<string, string, string, string> argInjectorFunc = null)
-            => new AnonymousServerPipe(processPath, arguments, argInjectorFunc) {
-                MessageSerializer = serializer,
-                MessageSerializationEnabled = true
-            };
+        public static AnonymousPipe ToChildProcess(string processPath, string arguments = "", Func<string, string, string, string> argInjectorFunc = null)
+            => new AnonymousServerPipe(processPath, arguments, argInjectorFunc);
 
-		public static AnonymousPipe FromChildProcess(AnonymousPipeEndpoint serverEndpoint, IItemSerializer<object> serializer) 
-			=> new AnonymousClientPipe(serverEndpoint) {
-				MessageSerializer = serializer,
-                MessageSerializationEnabled = true
-			};
-
-        public override int MinMessageLength => 0;
-
-        public override int MaxMessageLength => 1 << 16;
+        public static AnonymousPipe FromChildProcess(AnonymousPipeEndpoint serverEndpoint)
+            => new AnonymousClientPipe(serverEndpoint);
 
         public AnonymousPipeEndpoint Endpoint { get; protected set; }
 
         public async Task<bool> TrySendString(string @string, CancellationToken cancellationToken) {
-            Guard.ArgumentNotNull(@string, nameof(@string));
-	        if (!State.IsIn(ProtocolChannelState.Opening, ProtocolChannelState.Open) || !IsConnectionAlive())
+	        Guard.ArgumentNotNull(@string, nameof(@string));
+	        if (!State.IsIn(ProtocolChannelState.Opening, ProtocolChannelState.Open) || !IsConnectionAlive()) {
 		        return false;
+	        }
 	        try {
 		        await Task.Run(_writeStream.WaitForPipeDrain, cancellationToken); // ensure last message was read before new sent
 		        await _writer.WriteLineAsync(@string.AsMemory(), cancellationToken);
 		        NotifySentString(@string);
 		        return true;
 	        } catch {
+		        // do nothing
 	        }
 	        return false;
         }
-
-        public void Dispose() {
+        public override async ValueTask DisposeAsync() {
+            await base.DisposeAsync();
             _writeStream?.Dispose();
             _readStream?.Dispose();
         }
@@ -89,16 +78,8 @@ namespace Sphere10.Framework.Communications {
 
         protected override bool IsConnectionAlive() => _readStream.IsConnected && _writeStream.IsConnected;
 
-        protected override async Task<bool> TryWaitHandshake(CancellationToken cancellationToken) {
-	        return LocalRole switch {
-		        CommunicationRole.Server => await TrySendString("SYNC", cancellationToken) && await TryWaitForString("SYNC", cancellationToken),
-		        CommunicationRole.Client => await TryWaitForString("SYNC", cancellationToken) && await TrySendString("SYNC", cancellationToken),
-		        _ => false
-	        };
-        }
-
-        protected override Task<bool> TrySendBytesInternal(ReadOnlySpan<byte> bytes, CancellationToken cancellationToken) 
-            => TrySendString(Convert.ToBase64String(bytes), cancellationToken);
+        protected override Task<bool> TrySendBytesInternal(ReadOnlyMemory<byte> bytes, CancellationToken cancellationToken) 
+            => TrySendString(Convert.ToBase64String(bytes.Span), cancellationToken);
 
         protected override async Task<byte[]> ReceiveBytesInternal(CancellationToken cancellationToken) {
 	        var str = await ReceiveString(cancellationToken);
@@ -114,19 +95,18 @@ namespace Sphere10.Framework.Communications {
         }
 
         public async Task<bool> TryWaitForString(string value, CancellationToken cancellationToken) {
-            var taskCompletionSource = new TaskCompletionSource<bool>();
-            cancellationToken.Register(() => {
-	            taskCompletionSource.TrySetResult(false);
-            });
+	        var taskCompletionSource = new TaskCompletionSource<bool>();
+	        cancellationToken.Register(() => { taskCompletionSource.TrySetResult(false); });
 
-            void MonitorSync(string @string) {
-                if (@string == value)
-                    taskCompletionSource.TrySetResult(true);
-                this.ReceivedString -= MonitorSync;
-            }
-            this.ReceivedString += MonitorSync;
-            
-            return await taskCompletionSource.Task;
+	        void MonitorSync(string @string) {
+		        if (@string == value)
+			        taskCompletionSource.TrySetResult(true);
+		        this.ReceivedString -= MonitorSync;
+	        }
+
+	        this.ReceivedString += MonitorSync;
+
+	        return await taskCompletionSource.Task;
         }
 
         private async Task<string> ReceiveString(CancellationToken cancellationToken) {

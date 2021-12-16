@@ -4,16 +4,16 @@ namespace Sphere10.Framework {
 	public class MemoryPagedList<TItem> : MemoryPagedListBase<TItem> {
 	    private readonly IItemSizer<TItem> _sizer;
 
-	    public MemoryPagedList(int pageSize, int maxOpenPages, int fixedItemSize)
-		    : this(pageSize, maxOpenPages, new FixedSizeItemtSizer<TItem>(fixedItemSize)) {
+	    public MemoryPagedList(int pageSize, long maxMemory, int fixedItemSize)
+		    : this(pageSize, maxMemory, new StaticSizeItemSizer<TItem>(fixedItemSize)) {
 	    }
 
-	    public MemoryPagedList(int pageSize, int maxOpenPages, Func<TItem, int> itemSizer)
-		    : this(pageSize, maxOpenPages, new ActionItemSizer<TItem>(itemSizer)) {
+	    public MemoryPagedList(int pageSize, long maxMemory, Func<TItem, int> itemSizer)
+		    : this(pageSize, maxMemory, new ActionItemSizer<TItem>(itemSizer)) {
 	    }
 
-	    private MemoryPagedList(int pageSize, int maxOpenPages, IItemSizer<TItem> sizer)
-		    : base(pageSize, maxOpenPages, CacheCapacityPolicy.CapacityIsMaxOpenPages) {
+	    private MemoryPagedList(int pageSize, long maxMemory, IItemSizer<TItem> sizer)
+		    : base(pageSize, maxMemory) {
 		    _sizer = sizer;
 	    }
 

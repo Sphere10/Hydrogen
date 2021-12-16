@@ -12,8 +12,6 @@ namespace Sphere10.Framework {
 
 		private readonly string[] _parameterPrefixes = { "-", "--", "/" };
 
-		private StringComparison NameComparisonCasing => Options.HasFlag(CommandLineArgumentOptions.CaseSensitive) ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
-
 		public CommandLineParameters() : this(null, null, null, null) {
 		}
 
@@ -42,9 +40,10 @@ namespace Sphere10.Framework {
 
 		public CommandLineCommand[] Commands { get; init; } = Array.Empty<CommandLineCommand>();
 
-		public CommandLineArgumentOptions Options { get; init; } =
-			CommandLineArgumentOptions.DoubleDash | CommandLineArgumentOptions.SingleDash | CommandLineArgumentOptions.PrintHelpOnHelp |
-			CommandLineArgumentOptions.ForwardSlash | CommandLineArgumentOptions.PrintHelpOnH;
+		public CommandLineArgumentOptions Options { get; init; } = CommandLineArgumentOptions.Default;
+
+		private StringComparison NameComparisonCasing => Options.HasFlag(CommandLineArgumentOptions.CaseSensitive) ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
+
 
 		public Result<CommandLineResults> TryParseArguments(string[] args) {
 			Guard.ArgumentNotNull(args, nameof(args));
@@ -130,8 +129,8 @@ namespace Sphere10.Framework {
 		}
 
 		private bool IsHelp(string arg) {
-			return Options.HasFlag(CommandLineArgumentOptions.PrintHelpOnHelp) && string.Equals(arg, "Help", NameComparisonCasing)
-			       || Options.HasFlag(CommandLineArgumentOptions.PrintHelpOnH) && string.Equals(arg, "H", NameComparisonCasing);
+			return Options.HasFlag(CommandLineArgumentOptions.PrintHelpOnHelp) && string.Equals(arg, "help", NameComparisonCasing)
+			       || Options.HasFlag(CommandLineArgumentOptions.PrintHelpOnH) && string.Equals(arg, "h", NameComparisonCasing);
 		}
 
 		private void ValidateParameters(Result<CommandLineResults> parseResults) {
@@ -222,7 +221,9 @@ namespace Sphere10.Framework {
 			void PrintCommands(IEnumerable<CommandLineCommand> commands, int level = 1) {
 				string itemIndentation = string.Empty.PadRight(level * 2);
 
-				foreach (var command in commands) {
+				foreach (var (command, index) in commands.WithIndex()) {
+					if (index > 0)
+						Console.WriteLine();
 					string line = (itemIndentation + command.Name).PadRight(ArgumentLineLengthPadded) + "\t\t" + command.Description;
 					Console.WriteLine(StringFormatter.FormatEx(line));
 
@@ -263,8 +264,11 @@ namespace Sphere10.Framework {
 			Console.WriteLine("Commands:");
 			PrintCommands(Commands);
 
-			foreach (var line in Footer) {
-				Console.WriteLine(StringFormatter.FormatEx(line));
+			if (Footer.Length > 0) {
+				Console.WriteLine();
+				foreach (var line in Footer) {
+					Console.WriteLine(StringFormatter.FormatEx(line));
+				}
 			}
 		}
 

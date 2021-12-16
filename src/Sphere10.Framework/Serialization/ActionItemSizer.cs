@@ -11,9 +11,9 @@ namespace Sphere10.Framework {
 			_sizer = sizer;
 		}
 
-		public bool IsFixedSize => false;
+		public bool IsStaticSize => false;
 
-		public int FixedSize => -1;
+		public int StaticSize => -1;
 
 		public int CalculateTotalSize(IEnumerable<T> items, bool calculateIndividualItems, out int[] itemSizes) {
 			var sizes = items.Select(CalculateSize).ToArray();

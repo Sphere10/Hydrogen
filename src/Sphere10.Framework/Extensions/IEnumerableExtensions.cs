@@ -279,6 +279,10 @@ namespace Sphere10.Framework {
 			return source.Concat(new[] { element });
 		}
 
+
+		public static Dictionary<TKey, TValue> ToDictionary<TKey, TValue>(this IEnumerable<KeyValuePair<TKey, TValue>> items)
+			=> new Dictionary<TKey, TValue>(items);
+
 		public static IDictionary<K, List<T>> ToMultiValueDictionary<K, T>(this IEnumerable<T> source, Func<T, K> keySelector) {
 			var result = new Dictionary<K, List<T>>();
 

@@ -4,6 +4,8 @@ using System.Linq;
 namespace Sphere10.Framework {
 	public class CommandLineResults {
 
+		public bool HasCommand(string name) => this.SubCommand != null && this.SubCommand.CommandName == name;
+
 		public bool HasArgument(string argName) => Arguments.Contains(argName);
 
 		public bool TryGetArgumentValues(string argName, out string[] values) {
@@ -25,20 +27,34 @@ namespace Sphere10.Framework {
 			value = null;
 			return false;
 		}
-		
+
+		public bool TryGetSingleArgumentValue<T>(string argName, out T value) {
+			if (TryGetSingleArgumentValue(argName, out var stringValue) && GenericParser.TryParse(stringValue, out value)) {
+				return true;
+			}
+			value = default;
+			return false;
+		}
+
 		public string GetSingleArgumentValue(string argName) {
 			if (!TryGetSingleArgumentValue(argName, out var value)) {
 				throw new InvalidOperationException($"Command-line argument did not specify a single value: '{argName}'");
 			}
 			return value;
 		}
-
-		public string GetSingleArgumentValueOrDefault(string argName, string defaultValue = null) {
-			if (!TryGetSingleArgumentValue(argName, out var value)) {
-				return defaultValue;
+		
+		public T GetSingleArgumentValue<T>(string argName) {
+			if (!TryGetSingleArgumentValue<T>(argName, out var value)) {
+				throw new InvalidOperationException($"Command-line argument did not specify a single value: '{argName}' of type '{typeof(T).Name}'");
 			}
 			return value;
 		}
+
+		public string GetSingleArgumentValueOrDefault(string argName, string defaultValue = null) 
+			=> TryGetSingleArgumentValue(argName, out var value) ? value : defaultValue;
+
+		public T GetSingleArgumentValueOrDefault<T>(string argName, T defaultValue = default) 
+			=> TryGetSingleArgumentValue<T>(argName, out var value) ? value : defaultValue;
 
 		public bool TryGetEnumArgument<TEnum>(string argName, out TEnum value) where TEnum : struct {
 			if (TryGetSingleArgumentValue(argName, out var strValue)) {

@@ -5,7 +5,7 @@ using Sphere10.Framework;
 using Sphere10.Hydrogen.Core.Mining;
 
 namespace Sphere10.Hydrogen.Core.Consensus.Serializers {
-	public class NewMinerBlockSerializer : FixedSizeObjectSerializer<NewMinerBlock> {
+	public class NewMinerBlockSerializer : StaticSizeObjectSerializer<NewMinerBlock> {
 		public NewMinerBlockSerializer() : base(
 			4 + //Version
 			32 + //PrevMinerElectionHeader
@@ -41,7 +41,7 @@ namespace Sphere10.Hydrogen.Core.Consensus.Serializers {
 				writer.Write(SanitizeTag(item.MinerTag));
 				writer.Write(item.UnixTime);
 				writer.Write(item.Nonce);
-				bytesWritten = FixedSize;
+				bytesWritten = StaticSize;
 				return true;
 			} catch (Exception e) {
 				bytesWritten = 0;

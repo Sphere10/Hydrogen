@@ -1,16 +1,21 @@
-﻿using Sphere10.Helium.Framework;
+﻿using System.Collections.Generic;
+using Sphere10.Helium.Framework;
 
 namespace Sphere10.Helium.PluginFramework {
     public interface IHeliumPluginLoader {
+	    public IList<PluginAssemblyHandlerDto> PluginAssemblyHandlerList { get; set; }
 
-        bool AllPluginsEnabled { get; }
-        IHeliumFramework GetHeliumFramework();
-        void LoadPlugins(string[] relativeAssemblyPathList);
-        void EnableThesePlugins(string[] relativePathList);
-        void DisableThesePlugins(string[] relativePathList);
-        void DisableAllPlugins();
-        void EnableAllPlugins();
-        string[] GetEnabledPlugins();
-        string[] GetDisabledPlugins();
+	    public IHeliumFramework GetHeliumFramework();
+
+	    public void LoadPlugins(string[] relativeAssemblyPathList);
+	    
+	    public void EnablePlugin(string[] relativePathList);
+	    public void DisablePlugin(string[] relativePathList);
+	    
+	    public void DisableAllPlugins();
+	    public void EnableAllPlugins();
+	    
+	    public string[] GetEnabledPlugins();
+	    public string[] GetDisabledPlugins();
     }
 }

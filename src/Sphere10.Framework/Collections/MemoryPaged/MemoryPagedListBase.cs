@@ -17,17 +17,10 @@ namespace Sphere10.Framework {
 
 		protected bool Disposing;
 
-		protected MemoryPagedListBase(int pageSize, int maxCacheCapacity, CacheCapacityPolicy cachePolicy) {
+		protected MemoryPagedListBase(int pageSize, long maxMemory) {
 			Guard.ArgumentInRange(pageSize, 1, int.MaxValue, nameof(pageSize));
+			Guard.ArgumentInRange(maxMemory, pageSize, long.MaxValue, nameof(maxMemory));
 			PageSize = pageSize;
-			switch (cachePolicy) {
-				case CacheCapacityPolicy.CapacityIsMaxOpenPages:
-				case CacheCapacityPolicy.CapacityIsTotalMemoryConsumed:
-					Guard.ArgumentInRange(maxCacheCapacity, 1, uint.MaxValue, nameof(maxCacheCapacity));
-					break;
-				default:
-					throw new ArgumentOutOfRangeException(nameof(cachePolicy), cachePolicy, null);
-			}
 			FlushOnDispose = false;
 			Disposing = false;
 			_loadedPages = new ActionCache<int, IMemoryPage<TItem>>(
@@ -41,23 +34,10 @@ namespace Sphere10.Framework {
 					NotifyPageAccessed(memPage);
 					return memPage;
 				},
-				sizeEstimator: p => {
-					switch(cachePolicy) {
-						case CacheCapacityPolicy.CapacityIsMaxOpenPages:
-							return 1;
-						case CacheCapacityPolicy.CapacityIsTotalMemoryConsumed:
-							throw new NotImplementedException();
-							//if (Sizer is ConstantObjectSizer<TItem> constantSizer) {
-							//	return (uint)constantSizer.FixedSize * p.ItemCount;
-							//}
-							//return (uint)p.Select(Sizer.CalculateSize).Sum();
-						default:
-							throw new ArgumentOutOfRangeException(nameof(cachePolicy), cachePolicy, null);
-					}
-				}, 
+				sizeEstimator: p => (uint)pageSize, 
 				reapStrategy: CacheReapPolicy.LeastUsed,
 				expirationStrategy: ExpirationPolicy.SinceLastAccessedTime,
-				maxCapacity: (uint)maxCacheCapacity
+				maxCapacity: (uint)maxMemory
 			);
 			
 			_loadedPages.ItemRemoved += (page, key) => {
@@ -91,9 +71,9 @@ namespace Sphere10.Framework {
 
 		public int CurrentOpenPages => _loadedPages.ItemCount;
 
-		public int MaxOpenPages {
+		public long MaxMemory {
 			get => (int) _loadedPages.MaxCapacity;
-			internal set => _loadedPages.MaxCapacity = value;
+			//internal set => _loadedPages.MaxCapacity = value;
 		}
 
 		public virtual bool Dirty => InternalPages.Any(p => p.Dirty);
@@ -101,9 +81,11 @@ namespace Sphere10.Framework {
 		public bool FlushOnDispose { get; set; }
 
 		public sealed override IDisposable EnterOpenPageScope(IPage<TItem> page) {
+			// dont need to do much since cache manages life-cycle of page
 			CheckNotDisposed();
-			var _ = _loadedPages.Get(page.Number); // ensures page is fetched from storage if not cached
-			return new Disposables(); // dont need to do anything, cache manages life-cycle of page
+			var cachedItem = _loadedPages.Get(page.Number); // ensures page is fetched from storage if not cached
+			cachedItem.CanPurge = false;
+			return new ActionScope(() => cachedItem.CanPurge = true); 
 		}
 
 		public virtual void Flush() {
@@ -207,15 +189,6 @@ namespace Sphere10.Framework {
 		private void CheckNotDisposed() {
 			if (Disposing)
 				throw new InvalidOperationException("Disposing or disposed");
-		}
-
-		#endregion
-
-		#region Inner Types
-
-		public enum CacheCapacityPolicy {
-			CapacityIsMaxOpenPages,
-			CapacityIsTotalMemoryConsumed,
 		}
 
 		#endregion

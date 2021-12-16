@@ -80,7 +80,7 @@ namespace Sphere10.Framework.Tests {
 			var diffData = Enumerable.Range(0, int.MaxValue).Zip(data.Loop(), (i, s) => $"__{i}_{s}").Take(FalsePositiveSampleSize).ToArray();
 			var falsePositives = diffData.Count(filter.Contains);
 			var actualError = falsePositives / (decimal)diffData.Length;
-			var errorUpperBound = targetError + 0.05M; // allow 5% tolerance for testing (happens when filter is small)
+			var errorUpperBound = targetError + 0.07M; // allow 7% tolerance for testing (happens when filter is small)
 			Assert.LessOrEqual(actualError, errorUpperBound);
 		}
 

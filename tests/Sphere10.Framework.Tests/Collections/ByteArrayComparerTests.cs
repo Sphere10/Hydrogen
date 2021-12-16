@@ -11,15 +11,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
 using NUnit.Framework;
-using System.IO;
-using NUnit.Framework.Constraints;
-using Sphere10.Framework;
 
 namespace Sphere10.Framework.Tests {
 
@@ -39,17 +31,17 @@ namespace Sphere10.Framework.Tests {
 
         [Test]
         public void TestSame() {
-            Assert.AreEqual(0, ByteArrayComparer.Instance.Compare(new byte[] {1,2 }, new byte[] { 1,2 }));
+            Assert.AreEqual(0, ByteArrayComparer.Instance.Compare(new byte[] {1,2,3 }, new byte[] { 1,2,3 }));
         }
 
         [Test]
         public void TestSmaller() {
-            Assert.AreEqual(-1, ByteArrayComparer.Instance.Compare(new byte[] { 1, 2 }, new byte[] { 2, 1 }));
+            Assert.AreEqual(-1, ByteArrayComparer.Instance.Compare(new byte[] { 1, 2, 3 }, new byte[] { 3, 2, 1 }));
         }
 
         [Test]
         public void TestGreater() {
-            Assert.AreEqual(1, ByteArrayComparer.Instance.Compare(new byte[] { 2, 1 }, new byte[] { 1, 2 }));
+            Assert.AreEqual(1, ByteArrayComparer.Instance.Compare(new byte[] { 3, 2, 1 }, new byte[] { 1, 2, 3 }));
         }
     }
 

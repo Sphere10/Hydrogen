@@ -3,21 +3,21 @@
 namespace Sphere10.Framework {
 
 	internal abstract class StreamPageBase<TItem> : PageBase<TItem> {
-		protected StreamPageBase(StreamMappedPagedList<TItem> parent) {
+		protected StreamPageBase(StreamPagedList<TItem> parent) {
 			Parent = parent;
 		}
 
 		public long StartPosition { get; protected set; }
 		
-		public abstract int ReadItemRaw(int itemIndex, int byteOffset, int byteLength, out byte[] bytes);
+		public abstract int ReadItemBytes(int itemIndex, int byteOffset, int byteLength, out byte[] bytes);
 
-		protected StreamMappedPagedList<TItem> Parent { get; }
+		protected StreamPagedList<TItem> Parent { get; }
 
 		protected Stream Stream => Parent.Stream;
 
 		protected EndianBinaryReader Reader => Parent.Reader;
 
-		protected int ItemSize => Parent.Serializer.FixedSize;
+		protected int ItemSize => Parent.Serializer.StaticSize;
 
 		protected IItemSerializer<TItem> Serializer => Parent.Serializer;
 

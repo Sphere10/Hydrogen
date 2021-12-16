@@ -19,18 +19,19 @@ namespace Sphere10.Framework {
 	public sealed class ActionCache<TKey, TValue> : CacheBase<TKey, TValue> {
 
         private readonly Func<TKey, TValue> _fetchFunc = null;
-        private readonly Func<TValue, uint> _estimateSizeFunc = null;
+        private readonly Func<TValue, long> _estimateSizeFunc = null;
 
         public ActionCache(
             Func<TKey, TValue> valueFetcher,
-            Func<TValue, uint> sizeEstimator = null,
+            Func<TValue, long> sizeEstimator = null,
             CacheReapPolicy reapStrategy = CacheReapPolicy.None,
             ExpirationPolicy expirationStrategy = ExpirationPolicy.None,
-            uint maxCapacity = int.MaxValue,
+            long maxCapacity = long.MaxValue,
             TimeSpan? expirationDuration = null,
             NullValuePolicy nullValuePolicy = NullValuePolicy.CacheNormally,
-            IEqualityComparer<TKey> keyComparer = null)
-        : base(reapStrategy, expirationStrategy, maxCapacity, expirationDuration, nullValuePolicy, keyComparer) {
+            IEqualityComparer<TKey> keyComparer = null,
+            ICacheReaper reaper = null)
+        : base(reapStrategy, expirationStrategy, maxCapacity, expirationDuration, nullValuePolicy, keyComparer, reaper) {
             _fetchFunc = valueFetcher;
             _estimateSizeFunc = sizeEstimator;
         }
@@ -41,7 +42,7 @@ namespace Sphere10.Framework {
             return val;
         }
 
-        protected override uint EstimateSize(TValue value) {
+        protected override long EstimateSize(TValue value) {
             if (_estimateSizeFunc != null) {
                 return _estimateSizeFunc(value);
             }

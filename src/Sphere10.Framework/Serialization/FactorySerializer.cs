@@ -23,15 +23,15 @@ namespace Sphere10.Framework {
 			=> RegisterSerializer(GenerateTypeCode(), concreteSerializer);
 
 		public void RegisterSerializer<TConcrete>(ushort typeCode, IItemSerializer<TConcrete> concreteSerializer) where TConcrete : TBase {
-			Guard.Argument(!_typeCodeMap.ContainsValue(typeCode), nameof(typeCode), "Type code is already used for another serializer");
+			Guard.Argument(!_typeCodeMap.ContainsValue(typeCode), nameof(typeCode), $"Type code {typeCode} for type '{typeof(TConcrete).Name}' is already used for another serializer");
 			var concreteType = typeof(TConcrete);
 			Guard.Argument(!_typeCodeMap.ContainsKey(concreteType), nameof(TConcrete), "Type already registered");
 			_concreteLookup.Add(typeCode, new CastedSerializer<TBase, TConcrete>(concreteSerializer));
 			_typeCodeMap.Add(typeof(TConcrete), typeCode);
 		}
 
-		public bool IsFixedSize => false;
-		public int FixedSize => -1;
+		public bool IsStaticSize => false;
+		public int StaticSize => -1;
 
 		public int CalculateTotalSize(IEnumerable<TBase> items, bool calculateIndividualItems, out int[] itemSizes) {
 			throw new NotImplementedException();
@@ -44,7 +44,7 @@ namespace Sphere10.Framework {
 				var typeCode = GetTypeCode(item);
 				writer.Write(typeCode);
 				bytesWritten = GetConcreteSerializer(typeCode).Serialize(item, writer);
-				return false;
+				return true;
 			} catch (Exception) {
 				bytesWritten = 0;
 				return false;

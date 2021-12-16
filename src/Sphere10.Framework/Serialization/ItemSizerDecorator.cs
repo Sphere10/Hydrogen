@@ -9,9 +9,9 @@ namespace Sphere10.Framework {
 			Internal = internalSizer;
 		}
 
-		public virtual bool IsFixedSize => Internal.IsFixedSize;
+		public virtual bool IsStaticSize => Internal.IsStaticSize;
 
-		public virtual int FixedSize => Internal.FixedSize;
+		public virtual int StaticSize => Internal.StaticSize;
 
 		public virtual int CalculateTotalSize(IEnumerable<TItem> items, bool calculateIndividualItems, out int[] itemSizes) 
 			=> Internal.CalculateTotalSize(items, calculateIndividualItems, out itemSizes);

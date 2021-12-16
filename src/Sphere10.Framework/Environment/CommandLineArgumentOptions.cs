@@ -9,6 +9,6 @@ namespace Sphere10.Framework {
 		CaseSensitive = 1 << 3,
 		PrintHelpOnH = 1 << 4,
 		PrintHelpOnHelp = 1 << 5,
-		Default = SingleDash | DoubleDash | ForwardSlash | PrintHelpOnH | PrintHelpOnHelp
+		Default = DoubleDash | PrintHelpOnH | PrintHelpOnHelp
 	}
 }

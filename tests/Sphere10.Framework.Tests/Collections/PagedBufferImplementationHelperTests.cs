@@ -1,27 +1,23 @@
 ﻿using System;
 using NUnit.Framework;
 
-namespace Sphere10.Framework.Tests
-{
+namespace Sphere10.Framework.Tests {
 
-    public class PagedBufferImplementationHelperTests
-    {
-        [TestCase(0, 1000)]
-        [TestCase(10, 990)]
-        [TestCase(999, 1)]
-        [TestCase(1, 9)]
-        public void ReadSpan(int startIndex, int count)
-        {
-            var rand = new Random(31337);
-            byte[] input = rand.NextBytes(1000);
-            
-            using IMemoryPagedBuffer buffer = new MemoryPagedBuffer(10, 100);
-            buffer.AddRange(input);
+	public class PagedBufferImplementationHelperTests {
 
-            int endIndex = startIndex + count;
-            
-            var span = buffer.ReadSpan(startIndex, count);
-            Assert.AreEqual(input[startIndex..endIndex], span.ToArray());
-        }
-    }
+		public void ReadSpan([Values(0, 10, 99, 1)] int startIndex, [Values(1000, 990, 1, 9)] int count, [Values(1, 2, 100)] int maxOpenPages) {
+			var rand = new Random(31337);
+			byte[] input = rand.NextBytes(1000);
+
+			using IMemoryPagedBuffer buffer = new MemoryPagedBuffer(10, 10 * maxOpenPages);
+			buffer.AddRange(input);
+
+			int endIndex = startIndex + count;
+
+			var span = buffer.ReadSpan(startIndex, count);
+			Assert.AreEqual(input[startIndex..endIndex], span.ToArray());
+		}
+	}
+
 }
+

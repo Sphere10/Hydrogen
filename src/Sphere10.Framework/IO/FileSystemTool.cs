@@ -56,14 +56,14 @@ namespace Tools {
         }
 
         public static bool IsWellFormedFileName(string fileName) {
-	        var invalidFIleNameChars = new string(Path.GetInvalidFileNameChars());
-	        invalidFIleNameChars += @":/?*" + "\"";
-	        var containsABadCharacter = new Regex("[" + Regex.Escape(invalidFIleNameChars) + "]");
-	        
-	        if (containsABadCharacter.IsMatch(fileName))
-		        return false;
-	        else 
-				return true;
+            var invalidFIleNameChars = new string(Path.GetInvalidFileNameChars());
+            invalidFIleNameChars += @":/?*" + "\"";
+            var containsABadCharacter = new Regex("[" + Regex.Escape(invalidFIleNameChars) + "]");
+
+            if (containsABadCharacter.IsMatch(fileName))
+                return false;
+            else
+                return true;
         }
 
         public static string GetParentDirectoryPath(string path, int parentLevel = 1) {
@@ -205,32 +205,35 @@ namespace Tools {
 
         public static void RenameFile(string sourcePath, string newName) {
             var fileInfo = new FileInfo(sourcePath);
-            fileInfo.MoveTo(fileInfo.Directory.FullName + Path.PathSeparator + newName);
+            fileInfo.MoveTo(Path.Combine( fileInfo.Directory.FullName, newName));
         }
 
         //https://docs.microsoft.com/en-us/dotnet/standard/io/how-to-copy-directories#example
-        public static void CopyDirectory(string sourceDir, string destDirectory, bool copySubDirectories = false,
-            bool createIfDoesNotExist = true, bool clearIfNotEmpty = false) {
-            // Get the subdirectories for the specified directory.
-            var dir = new DirectoryInfo(sourceDir);
+        public static void CopyDirectory(string sourceDir, string destDirectory, bool copySubDirectories = false, bool createIfDoesNotExist = true, bool clearIfNotEmpty = false) {
 
-            if (!dir.Exists) {
+            // Get the subdirectories for the specified directory.
+            var sourceDirInfo = new DirectoryInfo(sourceDir);
+            if (!sourceDirInfo.Exists) {
                 throw new DirectoryNotFoundException(
                     "Source directory does not exist or could not be found: "
                     + sourceDir);
             }
 
-            var dirs = dir.GetDirectories();
+            // If the destination directory doesn't exist, create it.
+            if (!Directory.Exists(destDirectory)) {
+                if (createIfDoesNotExist)
+                    Directory.CreateDirectory(destDirectory);
+                else
+                    throw new DirectoryNotFoundException(
+                        "Destination directory does not exist or could not be found: " +
+                        destDirectory);
+            }
 
-            // If the destination directory doesn't exist, create it.       
-            if (createIfDoesNotExist)
-                Directory.CreateDirectory(destDirectory);
-            else
-                throw new DirectoryNotFoundException("Destination directory does not exist or could not be found: " +
-                                                     destDirectory);
+
+            var sourceSubDirs = sourceDirInfo.GetDirectories();
 
             // Get the files in the directory and copy them to the new location.
-            var files = dir.GetFiles();
+            var files = sourceDirInfo.GetFiles();
             foreach (var file in files) {
                 var tempPath = Path.Combine(destDirectory, file.Name);
                 file.CopyTo(tempPath, false);
@@ -238,7 +241,7 @@ namespace Tools {
 
             // If copying subdirectories, copy them and their contents to new location.
             if (copySubDirectories) {
-                foreach (var subDir in dirs) {
+                foreach (var subDir in sourceSubDirs) {
                     var tempPath = Path.Combine(destDirectory, subDir.Name);
                     CopyDirectory(subDir.FullName, tempPath, true);
                 }

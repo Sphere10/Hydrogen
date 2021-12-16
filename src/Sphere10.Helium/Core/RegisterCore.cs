@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using Sphere10.Helium.Bus;
-using Sphere10.Helium.Endpoint;
-using Sphere10.Helium.Handler;
+using Sphere10.Helium.Handle;
+using Sphere10.Helium.HeliumNode;
 using Sphere10.Helium.Message;
 using Sphere10.Helium.Saga;
 
@@ -18,7 +18,7 @@ namespace Sphere10.Helium.Core {
 
 		public IBus Bus { get; set; }
 
-		public IConfigureThisEndpoint EndpointConfiguration { get; set; }
+		public IConfigureHeliumEndpoint EndpointConfiguration { get; set; }
 
 		public InitResultDto InitializeHelium() {
 			if ($"Error in Registering and Instantiating types" is string) {

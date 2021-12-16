@@ -17,22 +17,17 @@ using System.Configuration;
 namespace Sphere10.Framework.Application {
 	public class AppSettingAttribute : DefaultValueAttribute {
 
-		public AppSettingAttribute(string key) : base(GetAppSetting(key)) {
+		public AppSettingAttribute(string key)
+            : base(GetAppSetting(key)) {
 			Key = key;
 		}
 
-		public string Key { get; private set; }
+		public string Key { get; }
 
-		public override object Value {
-			get {
-				return GetAppSetting(Key);
-			}
-		}
+		public override object Value => GetAppSetting(Key);
 
-		private static string GetAppSetting(string key) {
-			return ConfigurationManager.AppSettings[key];
-		}
-
-	}
+        private static string GetAppSetting(string key) 
+            => ConfigurationManager.AppSettings[key];
+    }
 }
 

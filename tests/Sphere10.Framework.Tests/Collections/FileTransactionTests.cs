@@ -44,7 +44,7 @@ namespace Sphere10.Framework.Tests {
 				var chunk1 = new byte[] { 1, 2, 3 };
 				var chunk2 = new byte[] { 4, 5, 6 };
 				using (var transaction = new FileTransaction(txnFile)) {
-					var file = transaction.EnlistFile(filePath, 100, 1);
+					var file = transaction.EnlistFile(filePath, 100, 1*100);
 
 					file.AddRange(chunk1);
 					transaction.Commit();
@@ -73,7 +73,7 @@ namespace Sphere10.Framework.Tests {
 				var chunk1 = new byte[] { 1, 2, 3 };
 				var chunk2 = new byte[] { 4, 5, 6 };
 				using (var transaction = new FileTransaction(txnFile)) {
-					var file = transaction.EnlistFile(filePath, 100, 1);
+					var file = transaction.EnlistFile(filePath, 100, 1*100);
 
 					file.AddRange(chunk1);
 					transaction.Commit();
@@ -103,7 +103,7 @@ namespace Sphere10.Framework.Tests {
 				var chunk1 = new byte[] { 1, 2, 3 };
 				var chunk2 = new byte[] { 4, 5, 6 };
 				using (var transaction = new FileTransaction(txnFile)) {
-					var file = transaction.EnlistFile(filePath, 100, 1);
+					var file = transaction.EnlistFile(filePath, 100, 1*100);
 
 					file.AddRange(chunk1);
 					transaction.Rollback();
@@ -133,7 +133,7 @@ namespace Sphere10.Framework.Tests {
 				var chunk1 = new byte[] { 1, 2, 3 };
 				var chunk2 = new byte[] { 4, 5, 6 };
 				using (var transaction = new FileTransaction(txnFile)) {
-					var file = transaction.EnlistFile(filePath, 100, 1);
+					var file = transaction.EnlistFile(filePath, 100, 1*100);
 
 					file.AddRange(chunk1);
 					transaction.Rollback();
@@ -159,7 +159,7 @@ namespace Sphere10.Framework.Tests {
 
 			using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectories(fileBaseDir, txnBaseDir))) {
 				using (var transaction = new FileTransaction(txnFile)) {
-					transaction.EnlistFile(file, 100, 1);
+					transaction.EnlistFile(file, 100, 1*100);
 					Assert.Throws<InvalidOperationException>(() => transaction.EnlistFile(file, 10, 11));
 				}
 			}
@@ -179,7 +179,7 @@ namespace Sphere10.Framework.Tests {
 			using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectories(fileBaseDir, txnBaseDir))) {
 				using (var transaction1 = new FileTransaction(txnFile1))
 				using (var transaction2 = new FileTransaction(txnFile2)) {
-					transaction1.EnlistFile(file, 100, 1);
+					transaction1.EnlistFile(file, 100, 1*100);
 					Assert.Throws<InvalidOperationException>(() => transaction2.EnlistFile(file, 10, 11));
 				}
 			}
@@ -213,7 +213,7 @@ namespace Sphere10.Framework.Tests {
 							File.WriteAllBytes(filename, startBytes);
 							expected[i].AddRange(startBytes);
 						}
-						files.Add(transaction.EnlistFile(filename, Guid.NewGuid(), pageSize, maxOpenPages));
+						files.Add(transaction.EnlistFile(filename, Guid.NewGuid(), pageSize, maxOpenPages*pageSize));
 					}
 
 					// Mutate all the files 100 times, commit every 10 times
@@ -271,7 +271,7 @@ namespace Sphere10.Framework.Tests {
 							File.WriteAllBytes(filename, startBytes);
 							expected[i].AddRange(startBytes);
 						}
-						files.Add(transaction.EnlistFile(filename, Guid.NewGuid(), pageSize, maxOpenPages));
+						files.Add(transaction.EnlistFile(filename, Guid.NewGuid(), pageSize, maxOpenPages*pageSize));
 					}
 
 					// Mutate all the files 100 times, commit every 10 times
@@ -353,7 +353,7 @@ namespace Sphere10.Framework.Tests {
 								expected[i].AddRange(startBytes);
 							}
 						}
-						files.Add(transaction.EnlistFile(filename, Guid.NewGuid(), pageSize, maxOpenPages));
+						files.Add(transaction.EnlistFile(filename, Guid.NewGuid(), pageSize, maxOpenPages*pageSize));
 					}
 
 					// Original is a clone of expected before mutations
@@ -415,7 +415,7 @@ namespace Sphere10.Framework.Tests {
 							File.WriteAllBytes(filename, startBytes);
 							expected[i].AddRange(startBytes);
 						}
-						files.Add(transaction.EnlistFile(filename, Guid.NewGuid(), pageSize, maxOpenPages));
+						files.Add(transaction.EnlistFile(filename, Guid.NewGuid(), pageSize, maxOpenPages*pageSize));
 					}
 
 					// Original is a clone of expected before mutations

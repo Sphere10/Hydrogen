@@ -21,7 +21,7 @@ namespace Sphere10.Framework {
 	    private uint _fetchCount;
            
 		protected BulkFetchCacheBase(ExpirationPolicy expirationStrategy, TimeSpan? expirationDuration = null, bool fetchOnceOnly = false, NullValuePolicy nullValuePolicy = NullValuePolicy.CacheNormally, IEqualityComparer<TKey> keyComparer = null)
-			: base (CacheReapPolicy.None, expirationStrategy, uint.MaxValue, expirationDuration, nullValuePolicy, keyComparer) {
+			: base (CacheReapPolicy.None, expirationStrategy, uint.MaxValue, expirationDuration, nullValuePolicy, keyComparer, new IsolatedCacheReaper()) {
 		    _fetchOnceOnly = fetchOnceOnly;
 		    _fetchCount = 0;
 		}
@@ -35,7 +35,9 @@ namespace Sphere10.Framework {
 				if (InternalStorage.TryGetValue(key, out var item)) {
                     item.AccessedCount++;
                     item.LastAccessedOn = DateTime.Now;
-                    result = item.Value;
+                    base.TotalAccesses++;
+                    base.LastAccessedOn = DateTime.Now;
+                    result = ((CachedItem<TValue>)item).Value;
                 } else { 
 				    switch(NullValuePolicy) {
                         case NullValuePolicy.Throw:
@@ -56,14 +58,14 @@ namespace Sphere10.Framework {
 	        throw new NotSupportedException("Items cannot be manually removed from a bulk fetch cache");
 	    }
 
-	    protected sealed override uint EstimateSize(TValue value) {
+	    protected sealed override long EstimateSize(TValue value) {
             // Size limiting not applied to bulk-fetched cache
-			return 0;
+			return 0L;
 		}
 
-		public override IReadOnlyDictionary<TKey, CachedItem<TValue>> GetCachedItems() {
-			return base.GetCachedItems();
-		}
+		//public override IReadOnlyDictionary<TKey, CachedItem<TValue>> GetCachedItems() {
+		//	return base.GetCachedItems();
+		//}
 
 		protected abstract IDictionary<TKey, TValue> BulkFetch();
 

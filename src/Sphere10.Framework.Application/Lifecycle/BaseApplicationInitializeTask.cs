@@ -14,10 +14,10 @@
 namespace Sphere10.Framework.Application {
 
 
-	public abstract class BaseApplicationInitializeTask : IApplicationInitializeTask {
+    public abstract class BaseApplicationInitializeTask : IApplicationInitializeTask {
 		public const int DefaultPriority = 100;
 
-		public int Priority => 100;
+		public virtual int Priority => 100;
 
 		public abstract void Initialize();
 

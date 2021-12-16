@@ -29,18 +29,17 @@ namespace Sphere10.Framework {
 
 		protected TransactionalFileMappedListBase(
 			string filename, 
-			string uncomittedPageFileDir, 
+			string uncommittedPageFileDir, 
 			Guid fileID,
 			int pageSize,
-			int maxCacheCapacity,
-			CacheCapacityPolicy cachePolicy,
+			long maxMemory,
 			bool readOnly = false)
-			: base(filename, pageSize, maxCacheCapacity, cachePolicy, readOnly) { 
-			Guard.ArgumentNotNullOrEmpty(uncomittedPageFileDir, nameof(uncomittedPageFileDir));
-			if (!Directory.Exists(uncomittedPageFileDir))
-				throw new DirectoryNotFoundException($"Directory not found: {uncomittedPageFileDir}");
+			: base(filename, pageSize, maxMemory, readOnly) { 
+			Guard.ArgumentNotNullOrEmpty(uncommittedPageFileDir, nameof(uncommittedPageFileDir));
+			if (!Directory.Exists(uncommittedPageFileDir))
+				throw new DirectoryNotFoundException($"Directory not found: {uncommittedPageFileDir}");
 			FileID = fileID;
-			PageMarkerRepo = new MarkerRepository(uncomittedPageFileDir, FileID);
+			PageMarkerRepo = new MarkerRepository(uncommittedPageFileDir, FileID);
 		}
 
 		public Guid FileID { get; }

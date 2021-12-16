@@ -29,16 +29,16 @@ namespace Sphere10.Framework {
 	/// </summary>
 	public sealed class TransactionalFileMappedBuffer : TransactionalFileMappedListBase<byte>, IMemoryPagedBuffer {
 		
-		public TransactionalFileMappedBuffer(string filename, int pageSize, int inMemoryPages, bool readOnly = false)
-			: this(filename, Guid.NewGuid(), pageSize, inMemoryPages, readOnly) {
+		public TransactionalFileMappedBuffer(string filename, int pageSize, long maxMemory, bool readOnly = false)
+			: this(filename, Guid.NewGuid(), pageSize, maxMemory, readOnly) {
 		}
 
-		public TransactionalFileMappedBuffer(string filename, Guid fileID, int pageSize, int inMemoryPages, bool readOnly = false)
-			: this(filename, System.IO.Path.GetDirectoryName(filename), fileID, pageSize, inMemoryPages, readOnly) {
+		public TransactionalFileMappedBuffer(string filename, Guid fileID, int pageSize, long maxMemory, bool readOnly = false)
+			: this(filename, System.IO.Path.GetDirectoryName(filename), fileID, pageSize, maxMemory, readOnly) {
 		}
 
-		public TransactionalFileMappedBuffer(string filename, string uncomittedPageFileDir, Guid fileID, int pageSize, int inMemoryPages, bool readOnly = false)
-			: base(filename, uncomittedPageFileDir, fileID, pageSize, inMemoryPages, CacheCapacityPolicy.CapacityIsMaxOpenPages, readOnly) {
+		public TransactionalFileMappedBuffer(string filename, string uncommittedPageFileDir, Guid fileID, int pageSize, long maxMemory, bool readOnly = false)
+			: base(filename, uncommittedPageFileDir, fileID, pageSize, maxMemory, readOnly) {
 		}
 
 		internal new IReadOnlyList<IBufferPage> Pages => new ReadOnlyListDecorator<IPage<byte>, IBufferPage>(InternalPages);
@@ -125,7 +125,7 @@ namespace Sphere10.Framework {
 		private class PageImpl : TransactionalFilePageBase<byte>, IBufferPage {
 
 			public PageImpl(FileStream stream, string uncommittedPageFileName, int pageNumber, int pageSize)
-				: base(stream, new FixedSizeItemtSizer<byte>(sizeof(byte)), uncommittedPageFileName, pageNumber, pageSize, new MemoryBuffer(0, pageSize, pageSize)) {
+				: base(stream, new StaticSizeItemSizer<byte>(sizeof(byte)), uncommittedPageFileName, pageNumber, pageSize, new MemoryBuffer(0, pageSize, pageSize)) {
 			}
 
 			public ReadOnlySpan<byte> ReadSpan(int index, int count)

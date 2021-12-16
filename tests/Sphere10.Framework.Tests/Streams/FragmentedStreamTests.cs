@@ -150,13 +150,92 @@ namespace Sphere10.Framework.Tests {
 			Assert.AreEqual(expected.Length, stream.Length);
 			Assert.AreEqual(expected.ToArray(), stream.ToArray());
 		}
-		
+
 		[Test]
-		public void IntegrationTests([Values(0, 3, 111, 9371)] int maxSize) {
+		public void WriteLastByteOfFragment() {
+			var fragmentProvider = new ByteArrayStreamFragmentProvider(2);
+			var stream = new FragmentedStream(fragmentProvider);
+			Assert.That(stream.Position, Is.EqualTo(0));
+		
+			stream.WriteBytes(new byte[] { 0 });
+			Assert.That(stream.Position, Is.EqualTo(1));
+			Assert.That(fragmentProvider.FragmentCount, Is.EqualTo(1));
+
+			stream.WriteBytes(new byte[] { 1 });
+			Assert.That(stream.Position, Is.EqualTo(2));
+			Assert.That(fragmentProvider.FragmentCount, Is.EqualTo(1));
+
+			stream.WriteBytes(new byte[] { 2 });
+			Assert.That(stream.Position, Is.EqualTo(3));
+			Assert.That(fragmentProvider.FragmentCount, Is.EqualTo(2));
+		}
+
+		[Test]
+		public void WriteBytesCorrectly() {
+			var fragmentProvider = new ByteArrayStreamFragmentProvider(3);
+			var stream = new FragmentedStream(fragmentProvider);
+			stream.WriteBytes(new byte[] { 0 });
+			Assert.That(stream.ToArray(), Is.EqualTo(new byte[] { 0 }).Using(ByteArrayEqualityComparer.Instance));
+
+			stream.WriteBytes(new byte[] { 1 });
+			Assert.That(stream.ToArray(), Is.EqualTo(new byte[] { 0, 1 }).Using(ByteArrayEqualityComparer.Instance));
+
+			stream.WriteBytes(new byte[] { 2 });
+			Assert.That(stream.ToArray(), Is.EqualTo(new byte[] { 0, 1, 2 }).Using(ByteArrayEqualityComparer.Instance));
+
+			stream.WriteBytes(new byte[] { 3 });
+			Assert.That(stream.ToArray(), Is.EqualTo(new byte[] { 0, 1, 2, 3 }).Using(ByteArrayEqualityComparer.Instance));
+
+			stream.WriteBytes(new byte[] { 4 });
+			Assert.That(stream.ToArray(), Is.EqualTo(new byte[] { 0, 1, 2, 3, 4 }).Using(ByteArrayEqualityComparer.Instance));
+
+			stream.WriteBytes(new byte[] { 5 });
+			Assert.That(stream.ToArray(), Is.EqualTo(new byte[] { 0, 1, 2, 3, 4, 5 }).Using(ByteArrayEqualityComparer.Instance));
+
+			stream.WriteBytes(new byte[] { 6 });
+			Assert.That(stream.ToArray(), Is.EqualTo(new byte[] { 0, 1, 2, 3, 4, 5, 6 }).Using(ByteArrayEqualityComparer.Instance));
+
+			stream.WriteBytes(new byte[] { 7 });
+			Assert.That(stream.ToArray(), Is.EqualTo(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7 }).Using(ByteArrayEqualityComparer.Instance));
+
+		}
+
+
+		[Test]
+		public void SetLengthForward() {
+			var fragmentProvider = new ByteArrayStreamFragmentProvider(3);
+			var stream = new FragmentedStream(fragmentProvider);
+			stream.WriteBytes(new byte[] { 0, 1, 2, 3 });
+			stream.SetLength(5);
+			Assert.That(stream.ToArray(), Is.EqualTo(new byte[] { 0, 1, 2, 3, 0 }).Using(ByteArrayEqualityComparer.Instance));
+		}
+
+		[Test]
+		public void SetLengthBackward() {
+			var fragmentProvider = new ByteArrayStreamFragmentProvider(3);
+			var stream = new FragmentedStream(fragmentProvider);
+			stream.WriteBytes(new byte[] { 0, 1, 2, 3 });
+			stream.SetLength(2);
+			Assert.That(stream.ToArray(), Is.EqualTo(new byte[] { 0, 1 }).Using(ByteArrayEqualityComparer.Instance));
+		}
+
+		[Test]
+		public void SetLengthBackwardThenForward() {
+			var fragmentProvider = new ByteArrayStreamFragmentProvider(3);
+			var stream = new FragmentedStream(fragmentProvider);
+			stream.WriteBytes(new byte[] { 0, 1, 2, 3 });
+			stream.SetLength(2);
+			stream.SetLength(3);
+			Assert.That(stream.ToArray(), Is.EqualTo(new byte[] { 0, 1, 0 }).Using(ByteArrayEqualityComparer.Instance));
+		}
+
+		[Test]
+		public void IntegrationTests([Values(0, 3, 111, 9371)] int maxSize, [Values(1, 3, 11, 10000)] int fragmentSize) {
+			const int Interations = 100;
 			var RNG = new Random(maxSize);
-			var stream = new FragmentedStream(new ByteArrayStreamFragmentProvider());
+			var stream = new FragmentedStream(new ByteArrayStreamFragmentProvider(fragmentSize));
 			var expected = new MemoryStream();
-			for (var i = 0; i < 100; i++) {
+			for (var i = 0; i < Interations; i++) {
 				Assert.AreEqual(expected.Position, stream.Position);
 				Assert.AreEqual(expected.Length, stream.Length);
 				Assert.AreEqual(expected.ToArray(), stream.ToArray());

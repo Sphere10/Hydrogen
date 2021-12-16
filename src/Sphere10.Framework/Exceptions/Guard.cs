@@ -115,6 +115,7 @@ namespace Sphere10.Framework {
 			}
 		}
 
+
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static void ArgumentInRange(int value, int minInclusive, int maxInclusive, string paramName) {
 			ArgumentInRange(value, minInclusive, maxInclusive, paramName, $"Value should be in range [{minInclusive} - {maxInclusive}]");
@@ -161,6 +162,12 @@ namespace Sphere10.Framework {
 			Argument(@object.GetType().IsAssignableFrom(typeof(TType)), parameter, $"Not assignable from {typeof(TType).GetShortName()}");
 		}
 
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static void Against(bool condition, string message = null)
+			=> Ensure(!condition, message);
+
+
 		/// <summary>
 		/// Throws an InvalidOperationException if the specified condition is not met.
 		/// </summary>
@@ -169,7 +176,7 @@ namespace Sphere10.Framework {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static void Ensure(bool condition, string message = null) {
             if (!condition)
-                throw new InternalErrorException(message);
+                throw new InvalidOperationException(message ?? "Internal error");
         }
 
     }

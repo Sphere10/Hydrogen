@@ -17,40 +17,71 @@ using System.Threading.Tasks;
 
 namespace Sphere10.Framework {
 
-	public interface ICache<TKey, TValue> : ISynchronizedObject {
+	// ICache is a fully functional cache of <object, object>
+	public interface ICache : ISynchronizedObject {
 
-        event EventHandlerEx<TKey, TValue> ItemFetched;
-	    event EventHandlerEx<TKey, CachedItem<TValue>>  ItemRemoved;
+		event EventHandlerEx<object, object> ItemFetched;
+		
+		event EventHandlerEx<object, CachedItem> ItemRemoved;
+
+		IEnumerable<CachedItem> CachedItems { get; }
 
 		int ItemCount { get; }
 
 		long CurrentSize { get; }
 
-        long MaxCapacity { get; set;  }
+        long MaxCapacity { get; }
 
-		TimeSpan ExpirationDuration { get; set; }
+        DateTime LastUpdateOn { get; }
 
-        ExpirationPolicy ExpirationPolicy { get; set; }
+        DateTime LastAccessedOn { get; }
 
-        CacheReapPolicy ReapPolicy { get; set; }
+        long TotalAccesses { get; }
 
-        NullValuePolicy NullValuePolicy { get; set; }
+		TimeSpan ExpirationDuration { get; }
 
-		bool ContainsCachedItem(TKey key);
+        ExpirationPolicy ExpirationPolicy { get; }
 
-		TValue this[TKey index] { get; }
+        CacheReapPolicy ReapPolicy { get; }
 
-		Task<TValue> GetAsync(TKey index);
+        NullValuePolicy NullValuePolicy { get; }
 
-        void BulkLoad(IEnumerable<KeyValuePair<TKey, TValue>> bulkLoadedValues);
+        bool ContainsCachedItem(object key);
 
-	    IReadOnlyDictionary<TKey, CachedItem<TValue>> GetCachedItems();
+        CachedItem Get(object key);
 
-	    void Invalidate(TKey key);
-	    
-		void Remove(TKey key);
-        
+        object this[object index] { get; }
+
+        void BulkLoad(IEnumerable<KeyValuePair<object, object>> bulkLoadedValues);
+
+        void Invalidate(object key);
+
+        void Remove(object key);
+
 		void Flush();
 
 	}
+
+	public interface ICache<TKey, TValue> : ICache {
+
+		new event EventHandlerEx<TKey, TValue> ItemFetched;
+		
+		new event EventHandlerEx<TKey, CachedItem<TValue>> ItemRemoved;
+
+		new IEnumerable<CachedItem<TValue>> CachedItems { get; }
+
+		bool ContainsCachedItem(TKey key);
+
+		CachedItem<TValue> Get(TKey key);
+
+		TValue this[TKey index] { get; }
+
+		void BulkLoad(IEnumerable<KeyValuePair<TKey, TValue>> bulkLoadedValues);
+
+		void Invalidate(TKey key);
+
+		void Remove(TKey key);
+
+	}
+
 }

@@ -1,8 +1,31 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using NUnit.Framework;
+using Sphere10.Framework;
+using Sphere10.Framework.CryptoEx;
+using Sphere10.Framework.NUnit;
 using Sphere10.Hydrogen.Core.Maths;
 
-namespace Sphere10.Framework.CryptoEx.Tests {
-    public abstract class RandomHashTests : HashTestBase {
+namespace Sphere10.Hydrogen.Core.Tests {
+    public abstract class RandomHashTests {
+        
+        static RandomHashTests() {
+            ModuleConfiguration.Initialize();
+        }
+        
+        protected static void TestHash<TResult>(Func<byte[], TResult> hasher, IEnumerable<TestItem<int, TResult>> testCases) {
+            foreach (var testCase in testCases) {
+                var input = HexEncoding.Decode(DATA_BYTES).Take(testCase.Input).ToArray();
+                var result = hasher(input);
+                Assert.AreEqual(testCase.Expected, result);
+            }
+        }
+        
+        // General purpose byte array for testing		
+        const string DATA_BYTES =
+            "0x4f550200ca022000bb718b4b00d6f74478c332f5fb310507e55a9ef9b38551f63858e3f7c86dbd00200006f69afae8a6b0735b6acfcc58b7865fc8418897c530211f19140c9f95f24532102700000000000003000300a297fd17506f6c796d696e65722e506f6c796d696e65722e506f6c796d6939303030303030302184d63666eb166619e925cef2a306549bbc4d6f4da3bdf28b4393d5c1856f0ee3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855000000006d68295b00000000";
+
 
         protected readonly TestItem<int, string>[] DATA_RANDOMHASH =  {
  		    // NOTE: Input denotes the number of bytes to take from DATA_BYTES when executing test

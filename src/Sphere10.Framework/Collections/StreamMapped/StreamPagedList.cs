@@ -126,6 +126,32 @@ namespace Sphere10.Framework {
 			return result.Length;
 		}
 
+		public void WriteItemBytes(int index, int byteOffset, ReadOnlySpan<byte> bytes) {
+			CheckRequiresLoad();
+			NotifyAccessing();
+			var newItems = bytes;
+			var newItemsCount = bytes.Length;
+			CheckRange(index, 1);
+
+			if (newItemsCount == 0) return;
+			var endIndex = index + newItemsCount - 1;
+			var pageSegment = GetPageSegments(index, 1).Single();
+
+			var page = (StreamPageBase<TItem>)pageSegment.Item1;
+			var pageStartIX = pageSegment.Item2;
+			var pageCount = pageSegment.Item3;
+			var pageItems = newItems.Slice(pageStartIX - index, pageCount);
+			using (EnterOpenPageScope(page)) {
+				NotifyPageAccessing(page);
+				NotifyPageWriting(page);
+				UpdateVersion();
+				page.WriteItemBytes(pageStartIX, byteOffset, bytes);
+				NotifyPageWrite(page);
+			}
+			NotifyPageAccessed(page);
+			NotifyAccessed();
+		}
+
 		public virtual IEnumerable<IEnumerable<TItem>> ReadRangeByPage(int index, int count) {
 			CheckRequiresLoad();
 			NotifyAccessing();

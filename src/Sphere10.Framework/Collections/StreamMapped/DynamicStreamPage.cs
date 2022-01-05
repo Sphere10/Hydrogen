@@ -160,6 +160,12 @@ namespace Sphere10.Framework {
 			return result.Length;
 		}
 
+		public override void WriteItemBytes(int itemIndex, int byteOffset, ReadOnlySpan<byte> bytes) {
+			Stream.Seek(_offsets[itemIndex] + byteOffset, SeekOrigin.Begin);
+			Writer.Write(bytes);
+			// TODO: check doesn't overwrite other item
+		}
+
 		protected override IEnumerable<TItem> ReadInternal(int index, int count) {
 			CheckPageState(PageState.Loaded);
 			// Transform list index into page index

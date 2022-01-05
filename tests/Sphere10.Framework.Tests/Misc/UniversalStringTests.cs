@@ -12,6 +12,7 @@
 //-----------------------------------------------------------------------
 
 using System;
+using System.IO;
 using System.Linq;
 using NUnit.Framework;
 
@@ -29,7 +30,28 @@ namespace Sphere10.Framework.Tests {
 		[Test]
 		public void InterpolateNullAssumption() {
 			Assert.AreEqual(string.Empty, $"{null}");
-			
+		}
+
+		[Test]
+		public void MemoryStreamSetLengthClearsOldBytes() {
+			var rng = new Random(31337);
+			for (var i=0; i < 1000; i++ ) {
+				using var stream = new MemoryStream();
+				var data = rng.NextBytes(i);
+				stream.Write(data);
+				for (var j = i; j >= 0; j--) {
+					var bytes = stream.ToArray();
+					stream.Position = rng.Next(0, (int)stream.Length);
+					stream.SetLength(j);
+					stream.SetLength(i);
+					// j-i bytes should be 0
+					Assert.That(stream.ToArray().AsSpan(^(i - j)).ToArray().All(b => b == 0));
+					// reset stream
+					stream.Position = 0;
+					stream.Write(data);
+
+				}
+			}
 		}
 	}
 }

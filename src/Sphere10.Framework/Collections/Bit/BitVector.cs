@@ -43,6 +43,33 @@ namespace Sphere10.Framework {
 		
 		public override int Count => _count;
 
+		public override IEnumerable<int> IndexOfRange(IEnumerable<bool> items) {
+			Guard.ArgumentNotNull(items, nameof(items));
+
+			var itemsArray = items as bool[] ?? items.ToArray();
+			if (!itemsArray.Any()) {
+				return new List<int>();
+			}
+
+			var results = new int[itemsArray.Length];
+			_stream.Seek(0, SeekOrigin.Begin);
+
+			for (var i = 0; i < _stream.Length; i++) {
+				var current = _stream.ReadBytes(1);
+				var bitsLength = Math.Min(8, _count - i * 8);
+
+				for (var j = 0; j < bitsLength; j++) {
+					var value = Bits.ReadBit(current, j);
+					foreach (var (t, index) in itemsArray.WithIndex()) {
+						if (value == t) {
+							results[index] = i * 8 + j;
+						}
+					}
+				}
+			}
+			return results;
+		}
+
 		public override void AddRange(IEnumerable<bool> items) {
 			Guard.ArgumentNotNull(items, nameof(items));
 			
@@ -73,34 +100,6 @@ namespace Sphere10.Framework {
 			_stream.Write(buffer);
 
 			_count += itemsArray.Length;
-		}
-
-		public override IEnumerable<int> IndexOfRange(IEnumerable<bool> items) {
-			Guard.ArgumentNotNull(items, nameof(items));
-			
-			var itemsArray = items as bool[] ?? items.ToArray();
-			if (!itemsArray.Any()) {
-				return new List<int>();
-			}
-
-			var results = new int[itemsArray.Length];
-			_stream.Seek(0, SeekOrigin.Begin);
-
-			for (var i = 0; i < _stream.Length; i++) {
-				var current = _stream.ReadBytes(1);
-				var bitsLength = Math.Min(8, _count - i * 8);
-
-				for (var j = 0; j < bitsLength; j++) {
-					var value = Bits.ReadBit(current, j);
-					foreach (var (t, index) in itemsArray.WithIndex()) {
-						if (value == t) {
-							results[index] = i * 8 + j;
-						}
-					}
-				}
-			}
-
-			return results;
 		}
 
 		public override void InsertRange(int index, IEnumerable<bool> items) {
@@ -200,7 +199,59 @@ namespace Sphere10.Framework {
 			_stream.SetLength(0);
 			base.Clear();
 		}
-		
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="fromOffset"></param>
+		/// <param name="quantity"></param>
+		/// <param name="searchValue"></param>
+		/// <param name="value"></param>
+		/// <param name="indices"></param>
+		/// <returns></returns>
+		/// <remarks>NOT TESTED</remarks>
+		public long FastFindBits(long fromOffset, int quantity, bool searchValue, bool value, out int[] indices) {
+			fromOffset = FastFindStreamOffsetContainingBitValue(fromOffset, value);
+			// TODO: update this to search bit values using QWORD's
+			var indicesL = new List<int>();
+			var startSearchBit = fromOffset * 8;
+			for (var i = startSearchBit; i < _count || indicesL.Count < quantity; i++)
+				if (Read((int)i) == searchValue)
+					indicesL.Add((int)i);
+			indices = indicesL.ToArray();
+			return _stream.Position;
+		}
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="offset"></param>
+		/// <param name="value"></param>
+		/// <returns></returns>
+		/// <remarks>NOT TESTED</remarks>
+		public long FastFindStreamOffsetContainingBitValue(long offset, bool value) {
+			_stream.Seek(offset, SeekOrigin.Begin);
+			var converter = EndianBitConverter.For(Endianness.LittleEndian);
+			var mask = 0b11111111111111111111111111111111;
+			var bytesRead = new byte[64];
+			var blank = Tools.Array.Gen<byte>(64, 0);
+			var foundBit = false;
+			var readCount = 0;
+			while (!foundBit && (offset + readCount) < Count) {
+				blank.AsSpan().CopyTo(bytesRead);
+				readCount = _stream.Read(bytesRead);
+				var qwordRead = converter.ToUInt64(bytesRead);
+				foundBit = value ? (qwordRead & mask) > 0 : (~qwordRead & mask) > 0;
+				if (!foundBit) {
+					offset += sizeof(UInt64);
+				}
+			}
+
+			if (foundBit)
+				return offset;
+			return -1;
+		}
+
 		private void CheckRange(int index, int count) {
 			Guard.Argument(count >= 0, nameof(index), "Must be greater than or equal to 0");
 			if (index == Count && count == 0) return; // special case: at index of "next item" with no count, this is valid

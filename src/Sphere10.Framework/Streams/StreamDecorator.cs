@@ -58,7 +58,6 @@ namespace Sphere10.Framework {
 			set => InnerStream.Position = value;
 		}
 
-
 		protected override void Dispose(bool disposing) {
 			InnerStream.Dispose();
 		}
@@ -74,6 +73,7 @@ namespace Sphere10.Framework {
 		public override bool CanTimeout => InnerStream.CanTimeout;
 
 		public override void Close() {
+			base.Close();
 			InnerStream.Close();
 		}
 

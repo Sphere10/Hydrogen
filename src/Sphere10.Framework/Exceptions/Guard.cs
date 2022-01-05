@@ -140,6 +140,18 @@ namespace Sphere10.Framework {
                 throw new ArgumentException(message, paramName);
         }
 
+		/// <summary>
+		/// Throws an ArgumentException if the specified condition is met.
+		/// </summary>
+		/// <param name="condition">The condition that must be met</param>
+		/// <param name="paramName">The name of the argument</param>
+		/// <param name="message">The exception message to be used</param>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static void ArgumentNot(bool condition, string paramName, string message) {
+			if (condition)
+				throw new ArgumentException(message, paramName);
+		}
+
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static TType ArgumentCast<TType>(object @object, string parameter) {
 			ArgumentCast<TType>(@object, out var result, parameter);

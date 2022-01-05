@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 
 namespace Sphere10.Framework {
 
@@ -10,6 +11,8 @@ namespace Sphere10.Framework {
 		public long StartPosition { get; protected set; }
 		
 		public abstract int ReadItemBytes(int itemIndex, int byteOffset, int byteLength, out byte[] bytes);
+
+		public abstract void WriteItemBytes(int itemIndex, int byteOffset, ReadOnlySpan<byte> bytes);
 
 		protected StreamPagedList<TItem> Parent { get; }
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Sphere10.Framework {
 
@@ -11,6 +12,7 @@ namespace Sphere10.Framework {
 	public class FactorySerializer<TBase> : IItemSerializer<TBase>, IFactorySerializer<TBase> {
 		private readonly IDictionary<ushort, IItemSerializer<TBase>> _concreteLookup;
 		private readonly IBijectiveDictionary<Type, ushort> _typeCodeMap;
+		
 
 		public FactorySerializer() {
 			_concreteLookup = new Dictionary<ushort, IItemSerializer<TBase>>();
@@ -31,35 +33,34 @@ namespace Sphere10.Framework {
 		}
 
 		public bool IsStaticSize => false;
+
 		public int StaticSize => -1;
 
 		public int CalculateTotalSize(IEnumerable<TBase> items, bool calculateIndividualItems, out int[] itemSizes) {
-			throw new NotImplementedException();
+			var itemSizesL = new List<int>();
+			var totalSize = items.Aggregate(
+				0,
+				(i, o) => {
+					var itemSize = GetConcreteSerializer(GetTypeCode(o.GetType())).CalculateSize(o);
+					if (calculateIndividualItems)
+						itemSizesL.Add(itemSize);
+					return itemSize;
+				});
+			itemSizes = itemSizesL.ToArray();
+			return totalSize;
 		}
 
 		public int CalculateSize(TBase item) => GetConcreteSerializer(item).CalculateSize(item);
 
 		public bool TrySerialize(TBase item, EndianBinaryWriter writer, out int bytesWritten) {
-			try {
-				var typeCode = GetTypeCode(item);
-				writer.Write(typeCode);
-				bytesWritten = GetConcreteSerializer(typeCode).Serialize(item, writer);
-				return true;
-			} catch (Exception) {
-				bytesWritten = 0;
-				return false;
-			}
+			var typeCode = GetTypeCode(item);
+			writer.Write(typeCode);
+			return GetConcreteSerializer(typeCode).TrySerialize(item, writer, out bytesWritten);
 		}
 
 		public bool TryDeserialize(int byteSize, EndianBinaryReader reader, out TBase item) {
-			try {
-				var typeCode = reader.ReadUInt16();
-				item = GetConcreteSerializer(typeCode).Deserialize(byteSize, reader);
-				return true;
-			} catch (Exception) {
-				item = default;
-				return false;
-			}
+			var typeCode = reader.ReadUInt16();
+			return GetConcreteSerializer(typeCode).TryDeserialize(byteSize, reader, out item);
 		}
 
 		public ushort GetTypeCode<TConcrete>(TConcrete item) where TConcrete : TBase => GetTypeCode(item.GetType());

@@ -49,6 +49,15 @@ namespace Sphere10.Framework {
 			}
 		}
 
+		public static byte[] ReadAllAndDispose(this Stream stream, int blockSize = Tools.Streams.DefaultBufferReadBlockSize) {
+			try {
+				return stream.ReadAll(blockSize);
+			} finally { 
+				stream.Dispose();
+			}
+		}
+
+
 		public static T RouteTo<T>(this Stream stream, T writeStream, int blockSizeInBytes = Tools.Streams.DefaultBufferReadBlockSize) where T : Stream {
 			long originalPosition = 0;
 			if (stream.CanSeek) {

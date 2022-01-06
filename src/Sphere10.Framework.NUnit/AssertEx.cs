@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Net.Http.Headers;
 using System.Text.RegularExpressions;
@@ -283,7 +284,6 @@ namespace Sphere10.Framework.NUnit {
 			}
 
 		}
-		
 
 		public static void DictionaryIntegrationTest<TKey, TValue>(IDictionary<TKey, TValue> dictionary, int maxCapacity, Func<Random, (TKey,TValue)> randomItemGenerator, int iterations = 100, IDictionary<TKey, TValue> expected = null, IEqualityComparer<TKey> keyComparer = null, IEqualityComparer<TValue> valueComparer = null) {
 			var rng = new Random(31337);
@@ -359,7 +359,85 @@ namespace Sphere10.Framework.NUnit {
 			}
 		}
 
-		public static void AssertTreeEqual(IUpdateableMerkleTree expected, IUpdateableMerkleTree actual) {
+		[Test]
+		public static void StreamIntegrationTests(int maxSize, Stream actualStream, Stream expectedStream = null, int iterations = 100, Random RNG = null) {
+			Guard.ArgumentInRange(maxSize, 0, int.MaxValue, nameof(maxSize));
+			Guard.ArgumentNotNull(actualStream, nameof(actualStream));
+			Guard.ArgumentNot(actualStream.Length > 0 && expectedStream == null, nameof(actualStream), "Must be empty if not supplying expected stream");
+			expectedStream ??= new MemoryStream();
+			RNG ??= new Random(31337);
+			for (var i = 0; i < iterations; i++) {
+				AreEqual(expectedStream, actualStream);
+
+				// 1. random seek
+				var seekParam = GenerateRandomSeekParameters(RNG, actualStream.Position, actualStream.Length);
+				actualStream.Seek(seekParam.Item1, seekParam.Item2);
+				expectedStream.Seek(seekParam.Item1, seekParam.Item2);
+				AreEqual(expectedStream, actualStream);
+
+				// 2. write random bytes
+				var remainingCapacity = (int)(maxSize - actualStream.Position);
+				if (remainingCapacity > 0) {
+					var fromBufferSize = RNG.Next(1, remainingCapacity * 2); // allow from buffer to be 0..2*remaining
+					var fromBuffer = RNG.NextBytes(fromBufferSize);
+					// Copy from a random segment of fromBuffer into stream
+					var segment = RNG.NextRange(fromBufferSize, rangeLength: RNG.Next(1, Math.Min(fromBufferSize, remainingCapacity)));
+					if (segment.End >= segment.Start) {
+						expectedStream.Write(fromBuffer, segment.Start, segment.End - segment.Start + 1);
+						actualStream.Write(fromBuffer, segment.Start, segment.End - segment.Start + 1);
+					}
+					AreEqual(expectedStream, actualStream);
+				}
+
+				// 3. random read
+				if (actualStream.Length > 0) {
+					var segment = RNG.NextRange((int)actualStream.Length, rangeLength: Math.Max(1, RNG.Next(0, (int)actualStream.Length)));
+					var count = segment.End - segment.Start + 1;
+					expectedStream.Seek(segment.Start, SeekOrigin.Begin);
+					actualStream.Seek(segment.Start, SeekOrigin.Begin);
+					Assert.AreEqual(expectedStream.ReadBytes(count), actualStream.ReadBytes(count));
+					AreEqual(expectedStream, actualStream);
+				}
+
+				// 4. resize 
+				AreEqual(expectedStream, actualStream);
+				var newLength = RNG.Next(0, maxSize);
+				expectedStream.SetLength(newLength);
+				actualStream.SetLength(newLength);
+				AreEqual(expectedStream, actualStream);
+			}
+		}
+
+		public static Tuple<long, SeekOrigin> GenerateRandomSeekParameters(Random rng, long position, long length) {
+			switch (rng.Next(0, 3)) {
+				case 0:
+					return Tuple.Create((long)rng.Next((int)-position, (int)(Math.Max(0, length - position))), SeekOrigin.Current);
+				case 1:
+					return Tuple.Create((long)rng.Next(0, (int)Math.Max(0, length)), SeekOrigin.Begin);
+				case 2:
+					return Tuple.Create((long)rng.Next((int)-length, 0 + 1), SeekOrigin.End);
+				default:
+					throw new InvalidOperationException();
+			}
+		}
+
+		public static void AreEqual(Stream expected, Stream actual) {
+			Assert.That(expected.Length, Is.EqualTo(actual.Length));
+			Assert.That(expected.Position, Is.EqualTo(actual.Position));
+			if (expected.Length == 0)
+				return;
+			var oldPos = expected.Position;
+			expected.Seek(0L, SeekOrigin.Begin);
+			actual.Seek(0L, SeekOrigin.Begin);
+			var actualBytes = actual.ReadAll();
+			var expectedBytes = expected.ReadAll();
+			Assert.That(actualBytes, Is.EqualTo(expectedBytes).Using(new ByteArrayEqualityComparer()));
+			expected.Seek(oldPos, SeekOrigin.Begin);
+			actual.Seek(oldPos, SeekOrigin.Begin);
+		}
+
+
+		public static void AreEqual(IUpdateableMerkleTree expected, IUpdateableMerkleTree actual) {
 			Assert.AreEqual(expected.Size, actual.Size);
 			Assert.AreEqual(expected.Leafs.Count, actual.Leafs.Count);
 			Assert.AreEqual(expected.Leafs.ToArray(), actual.Leafs.ToArray());
@@ -400,7 +478,6 @@ namespace Sphere10.Framework.NUnit {
 
 		}
 
-
 		public static void AssertSame2DArrays<T>(IEnumerable<IEnumerable<T>> expectedRows, IEnumerable<IEnumerable<T>> actualRows, string actualName = "Actual", string expectedName = "Expected") {
 			var expectedRowsArr = expectedRows as T[][] ?? expectedRows.Select(i => i as T[] ?? i.ToArray()).ToArray();
 			var actualRowsArr = actualRows as T[][] ?? actualRows.Select(i => i as T[] ?? i.ToArray()).ToArray();
@@ -428,7 +505,6 @@ namespace Sphere10.Framework.NUnit {
 			var inRange = Tools.OperatorTool.LessThanOrEqual(lowerBound, actual) && Tools.OperatorTool.LessThanOrEqual(actual, upperBound);
 			Assert.IsTrue(inRange, message ?? $"Value '{actual}' was not approx equal to '{expected}' (tolerance '{tolerance}')");
 		}
-
 
 		public static void HasLoadedPages<TItem>(PagedListBase<TItem> list, params int[] pageNos) {
 			Assert.IsEmpty(list.Pages.Where(p => p.State == PageState.Loaded).Select(p => p.Number).Except(pageNos), "Unexpected pages were open");

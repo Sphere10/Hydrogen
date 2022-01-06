@@ -24,7 +24,7 @@ namespace Sphere10.Hydrogen.Core.Consensus.Serializers {
 			) {
 		}
 
-		public override bool TrySerialize(NewMinerBlock item, EndianBinaryWriter writer, out int bytesWritten) {
+		public override bool TrySerialize(NewMinerBlock item, EndianBinaryWriter writer) {
 			try {
 				writer.Write(item.Version);
 				writer.Write(item.PrevMinerElectionHeader);
@@ -41,16 +41,14 @@ namespace Sphere10.Hydrogen.Core.Consensus.Serializers {
 				writer.Write(SanitizeTag(item.MinerTag));
 				writer.Write(item.UnixTime);
 				writer.Write(item.Nonce);
-				bytesWritten = StaticSize;
 				return true;
 			} catch (Exception e) {
-				bytesWritten = 0;
 				return false;
 			}
 		}
 
 
-		public override bool TryDeserialize(int byteSize, EndianBinaryReader reader, out NewMinerBlock item) {
+		public override bool TryDeserialize(EndianBinaryReader reader, out NewMinerBlock item) {
 			try {
 				var block = new NewMinerBlock();
 				block.Version = reader.ReadUInt32();

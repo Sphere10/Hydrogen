@@ -17,6 +17,7 @@ using System.Threading.Tasks;
 
 namespace Sphere10.Framework {
 	public interface IDataSource<TItem> {
+
 		IEnumerable<TItem> New(int count);
 
 		Task Create(IEnumerable<TItem> entities);

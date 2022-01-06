@@ -20,7 +20,12 @@ namespace Sphere10.Framework {
 	public class SortedList<T> : CollectionDecorator<T>, IReadOnlyList<T> {
 		private readonly IComparer<T> _comparer;
 		
-		public SortedList(SortDirection sortDirection = SortDirection.Ascending, IComparer<T> comparer = null) : this(new List<T>(), sortDirection, comparer) {
+		public SortedList(SortDirection sortDirection = SortDirection.Ascending, IComparer<T> comparer = null)
+			: this(4, sortDirection, comparer) {
+		}
+
+		public SortedList(int initialCapacity, SortDirection sortDirection = SortDirection.Ascending, IComparer<T> comparer = null)
+			: this(new List<T>(initialCapacity), sortDirection, comparer) {
 		}
 
 		public SortedList(IList<T> internalList, SortDirection sortDirection = SortDirection.Ascending,  IComparer<T> comparer = null)

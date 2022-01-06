@@ -17,11 +17,14 @@ namespace Sphere10.Framework {
 			MinAbsolutePosition = minPosition;
 			MaxAbsolutePosition = maxPosition;
 			UseRelativeOffset = false;
+			AllowResize = true;
 		}
 
 		public long MinAbsolutePosition { get; }
 
 		public long MaxAbsolutePosition { get; }
+
+		public bool AllowResize { get; set; }
 
 		public override long Position {
 			get => FromAbsoluteOffset(AbsolutePosition); 
@@ -33,6 +36,9 @@ namespace Sphere10.Framework {
 			set => base.Position = value;
 		}
 
+		/// <summary>
+		/// When true, stream begins at <see cref="Position"/>=0, when false, begins at <see cref="Position"/>=<see cref="MinAbsolutePosition"/>. 
+		/// </summary>
 		public bool UseRelativeOffset { get; set; }
 
 		public override long Seek(long offset, SeekOrigin origin) {
@@ -75,7 +81,9 @@ namespace Sphere10.Framework {
 		} 
 
 		public override void SetLength(long value) {
-			throw new NotSupportedException();
+			if (AllowResize)
+				InnerStream.SetLength(ToAbsoluteOffset(value));
+			else throw new NotSupportedException();
 		}
 
 		public override int Read(byte[] buffer, int offset, int count) {

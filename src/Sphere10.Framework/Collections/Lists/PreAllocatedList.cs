@@ -5,34 +5,44 @@ using System.Linq;
 namespace Sphere10.Framework {
 
 	/// <summary>
-	/// A list that implements inserts/deletes/appends as update operations over a underlying fixed-sized list. This requires the underlying
-	/// list to be "pre-allocated". This class is useful for converting a list that can only be mutated via UPDATE operations into a list that supports inserts/updates/deletes. It
-	/// achieves this by maintaining it's own <see cref="Count"/> and by copy/pasting items as needed. When shuffling objects around via copy/paste the algorithms
-	/// are optimized for 1-to-1 copy/paste to avoid exhausting memory. Thus this class is suitable for wrapping arbitrarily large lists who can only be updated.
+	/// A wrapper for <see cref="IExtendedList{T}"/> that implements insertion, deletion and append as update operations over a pre-allocated collection of items.
+	/// This is useful for converting an <see cref="IExtendedList{T}"/> that can only be mutated via "UPDATE" operations into one that supports INSERT/UPDATE/DELETE.
+	/// This is achieved by maintaining a local <see cref="Count"/> property and by overwriting pre-allocated items on append/insert, and "forgetting" them on delete.
+	/// When the pre-allocated items are exhaused, a <see cref="PreallocationGrowthPolicy"/> is used to grow the underlying list. 
 	/// </summary>
 	/// <remarks>
-	/// <see cref="Contains"/> and <see cref="ContainsRange"/> are overriden and implemented based on <see cref="IndexOf"/> and <see cref="IndexOfRange"/> in order to ensure only
-	/// the logical objects are searched (avoids false positives). Same for <see cref="Remove"/> and <see cref="RemoveRange(int,int)"/>.
+	/// When shuffling items around via copy/paste operations, they are done "one at a time" rather than in ranges so as not to exhaust memory. Thus this class
+	/// is suitable for wrapping arbitrarily large lists.
+	/// Additionally, <see cref="Contains"/> and <see cref="ContainsRange"/> are overriden and implemented based on <see cref="IndexOf"/> and <see cref="IndexOfRange"/>
+	/// so as to ensure only the logical objects are searched (avoids false positives). Same is true for <see cref="Remove"/> and <see cref="RemoveRange(int,int)"/>.
 	/// </remarks>
-	public class PreAllocatedList<TItem> : ExtendedListDecorator<TItem> {
-
+	public class PreAllocatedList<TItem> : ExtendedListDecorator<TItem> where TItem : new() {
 		private int _count;
+		private readonly PreAllocationPolicy _preAllocationPolicy;
+		private readonly int _blockSize;
 
-		/// <summary>
-		/// Creates a PreAllocatedList.
-		/// </summary>
-		/// <param name="maxCount">Number of items to pre-allocate.</param>
-		public PreAllocatedList(int maxCount)
-			: this(new ExtendedList<TItem>(Tools.Array.Gen<TItem>(maxCount, default)), 0) {
+		public PreAllocatedList() : this(PreAllocationPolicy.MinimumRequired, 0) {
 		}
 
-		/// <summary>
-		/// Constructor.
-		/// </summary>
-		/// <param name="preAllocatedStore">This is the pre-allocated list that is used to add/update/insert/remote from. This list is never changed and only mutated via update operations.</param>
-		public PreAllocatedList(IExtendedList<TItem> preAllocatedStore, int count)
-			: base(preAllocatedStore) {
-			_count = count;
+		public PreAllocatedList(int preallocatedItemCount) 
+			: this(PreAllocationPolicy.Fixed, preallocatedItemCount) {
+		}
+
+		public PreAllocatedList(PreAllocationPolicy preAllocationPolicy, int blockSize)
+			: this(new ExtendedList<TItem>(), 0, preAllocationPolicy, blockSize) {
+		}
+
+		public PreAllocatedList(IExtendedList<TItem> internalStore, int internalStoreCount, PreAllocationPolicy preAllocationPolicy, int blockSize)
+			: base(internalStore) {
+			_count = internalStoreCount;
+			if (preAllocationPolicy.IsIn(PreAllocationPolicy.ByBlock, PreAllocationPolicy.Fixed)) {
+				Guard.Argument(blockSize > 0, nameof(blockSize), $"Must be greater than 0 for policy {preAllocationPolicy}");
+			}
+			if (preAllocationPolicy == PreAllocationPolicy.Fixed) 
+				internalStore.AddRange(Enumerable.Repeat(new TItem(), Math.Max(0, blockSize - internalStore.Count)));
+			
+			_preAllocationPolicy = preAllocationPolicy;
+			_blockSize = blockSize;
 		}
 
 		public override int Count => _count;
@@ -59,8 +69,7 @@ namespace Sphere10.Framework {
 		public override void AddRange(IEnumerable<TItem> items) {
 			Guard.ArgumentNotNull(items, nameof(items));
 			var itemsArr = items as TItem[] ?? items.ToArray();
-			var remaining = Capacity - Count;
-			Guard.ArgumentInRange(itemsArr.Length, 0, remaining, nameof(items), "Insufficient space");
+			EnsureSpace(itemsArr.Length);
 			base.UpdateRange(_count, itemsArr);
 			_count += itemsArr.Length;
 		}
@@ -82,18 +91,9 @@ namespace Sphere10.Framework {
 			Guard.ArgumentNotNull(items, nameof(items));
 			var itemsArr = items as TItem[] ?? items.ToArray();
 			CheckIndex(index, true);
-			if (_count + itemsArr.Length > Capacity)
-				throw new ArgumentException("Insufficient space");
+			EnsureSpace(itemsArr.Length);
 
-
-			// shuffle the items forward
-
-			// aaaa            ;; _count = 4  max = 10   fromStartIndex = 2   fromEndIndex = _count - 1 
-			// 0123456789
-			// insert 3 b's at index 2
-			// aabbbaa         ;; _count = 7  max = 10   toStartIndex = fromStartIndex + itemsArr.Length   toEndIndex = fromEndIndex + itemsArr.Length   
-			// 0123456789
-
+			// shuffle item after insertion point forward
 			var movedRegionFromStartIX = index;
 			var movedRegionFromEndIX = _count - 1;
 			var movedRegionToStartIX = movedRegionFromStartIX + itemsArr.Length;
@@ -134,6 +134,8 @@ namespace Sphere10.Framework {
 				base.Update(i, toCopy);
 			}
 			_count -= count;
+			if (_preAllocationPolicy == PreAllocationPolicy.MinimumRequired)
+				ReduceExcessCapacity();
 		}
 
 		public override void Clear() => _count = 0;
@@ -144,6 +146,29 @@ namespace Sphere10.Framework {
 		}
 
 		public override IEnumerator<TItem> GetEnumerator() => base.GetEnumerator().WithBoundary(_count);
+
+		private void EnsureSpace(int quantity) {
+			var spareCapacity = (Capacity - Count) - quantity;
+			if (spareCapacity < 0) {
+				var required = -spareCapacity;
+				var newPreAllocatedItems = _preAllocationPolicy switch {
+					PreAllocationPolicy.Fixed => Enumerable.Empty<TItem>(), 
+					PreAllocationPolicy.MinimumRequired => Enumerable.Repeat(new TItem(), required),
+					PreAllocationPolicy.ByBlock => Enumerable.Repeat(new TItem(), _blockSize * (int)Math.Ceiling(required / (float)_blockSize)),
+					_ => throw new ArgumentOutOfRangeException(nameof(_preAllocationPolicy), _preAllocationPolicy, null)
+				};
+
+				InternalExtendedList.AddRange(newPreAllocatedItems);
+				spareCapacity = (Capacity - Count) - quantity;
+				Guard.Ensure(spareCapacity >= 0, "Insufficient space");
+			}
+		}
+
+		private void ReduceExcessCapacity() {
+			var spareCapacity = (Capacity - Count);
+			if (spareCapacity > 0)
+				InternalExtendedList.RemoveRange(^spareCapacity..);
+		}
 
 		private int ToLogicalIndex(int index) {
 			if (0 <= index && index <= _count - 1)
@@ -166,6 +191,24 @@ namespace Sphere10.Framework {
 				Guard.ArgumentInRange(index + count - 1, startIX, lastIX, nameof(count));
 		}
 
+	}
+
+	public enum PreAllocationPolicy {
+		/// <summary>
+		/// The initial block of pre-allocated items is used, never grown or reduced.
+		/// </summary>
+		Fixed,
+
+		/// <summary>
+		/// The Capacity is grown in fixed-sized blocks as needed and never reduced.
+		/// </summary>
+		ByBlock,
+
+		/// <summary>
+		/// The Capacity is grown (and reduced) to meet the item Count.
+		/// </summary>
+		MinimumRequired,
 
 	}
+
 }

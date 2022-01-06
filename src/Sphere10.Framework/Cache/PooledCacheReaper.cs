@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace Sphere10.Framework {
 
 	/// <summary>
-	/// Allows caches to pool their consumption together.
+	/// Allows caches to pool their consumption together, so as to maintain a constant amount in memory.
 	/// </summary>
 	/// <remarks>
 	/// Pooled Cache Algorithm:

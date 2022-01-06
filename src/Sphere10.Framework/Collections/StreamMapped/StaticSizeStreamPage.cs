@@ -123,6 +123,16 @@ namespace Sphere10.Framework {
 			result = Reader.ReadBytes(byteLength);
 			return result.Length;
 		}
+
+
+
+		public override void WriteItemBytes(int itemIndex, int byteOffset, ReadOnlySpan<byte> bytes) {
+			Guard.ArgumentInRange(itemIndex, 0, Count - 1, nameof(itemIndex));
+			int offset = itemIndex * ItemSize + _item0Offset + byteOffset;
+			Stream.Seek(offset, SeekOrigin.Begin);
+			Writer.Write(bytes);
+		}
+
 	}
 
 }

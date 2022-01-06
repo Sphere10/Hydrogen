@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace Sphere10.Framework {
@@ -7,6 +8,12 @@ namespace Sphere10.Framework {
 		new int IndexOf(T item);
 		new void Insert(int index, T item);
 		new void RemoveAt(int index);
+
+
+		public void RemoveRange(Range range) {
+			var (offset, length) = range.GetOffsetAndLength(Count);
+			RemoveRange(offset, length);
+		}
 	}
 
 	public static class IExtendedListExtensions {

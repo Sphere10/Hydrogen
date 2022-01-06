@@ -6,104 +6,100 @@ using System.Linq;
 namespace Sphere10.Framework {
 
 	public class ByteArrayStreamFragmentProvider : IStreamFragmentProvider {
-		public const int DefaultNewFragmentSize  = 10;
-		private readonly int _newFragmentSize;
+		public const int DefaultNewFragmentSize = 10;
 		private readonly List<byte[]> _fragments;
-		private int _unusedTipFragmentBytes;
-		
+		private readonly Func<byte[]> _fragmentGenerator;
 
-		public ByteArrayStreamFragmentProvider(int newFragmentSize = DefaultNewFragmentSize) : this(Enumerable.Empty<byte[]>(), newFragmentSize) {
+		public ByteArrayStreamFragmentProvider() : this(DefaultNewFragmentSize) {
 		}
 
-		public ByteArrayStreamFragmentProvider(IEnumerable<byte[]> fragments, int newFragmentSize = DefaultNewFragmentSize) {
+		public ByteArrayStreamFragmentProvider(int newFragmentSize)
+			: this(() => new byte[newFragmentSize]) {
+		}
+
+		public ByteArrayStreamFragmentProvider(Func<byte[]> fragmentGenerator)
+			: this(Enumerable.Empty<byte[]>(), fragmentGenerator) {
+		}
+
+		public ByteArrayStreamFragmentProvider(IEnumerable<byte[]> fragments, Func<byte[]> fragmentGenerator) {
 			Guard.ArgumentNotNull(fragments, nameof(fragments));
 			_fragments = fragments.ToList();
-			_newFragmentSize = newFragmentSize;
-			_unusedTipFragmentBytes = 0;
+			TotalBytes = fragments.Sum(x => x.Length);
+			_fragmentGenerator = fragmentGenerator;
 		}
 
 		public int FragmentCount => _fragments.Count;
 
-		public long TotalBytes => TotalAllocatedBytes - _unusedTipFragmentBytes;
+		public long TotalBytes { get; private set; }
 
-		private long TotalAllocatedBytes => _fragments.Sum(x => x.Length);
-
-		public Span<byte> GetFragment(int index) {
+		public ReadOnlySpan<byte> GetFragment(int index) {
 			return _fragments[index];
 		}
 
-		public (int fragmentIndex, int fragmentPosition) MapLogicalPositionToFragment(long position, out Span<byte> fragment) {
-			fragment = null;
-			var remaining = position;
+		public void UpdateFragment(int fragmentIndex, int fragmentPosition, ReadOnlySpan<byte> updateSpan)
+			=> updateSpan.CopyTo(_fragments[fragmentIndex].AsSpan(fragmentPosition));
 
-			if (position > TotalAllocatedBytes - 1)
-				remaining = 0;
-
-			for (var i = 0; i < _fragments.Count; i++) {
-				var frag = _fragments[i];
-
-				if (frag.Length > remaining) {
-					fragment = frag;
-					return (i, (int)remaining);
+		public bool TryMapStreamPosition(long position, out int fragmentIndex, out int fragmentPosition) {
+			var fragmentPositionL = position;
+			for (fragmentIndex = 0; fragmentIndex < _fragments.Count; fragmentIndex++) {
+				var fragmentLength = _fragments[fragmentIndex].Length;
+				if (fragmentPositionL < fragmentLength) {
+					fragmentPosition = (int)fragmentPositionL;
+					return true;
 				}
-
-				remaining -= frag.Length;
+				fragmentPositionL -= fragmentLength;
 			}
-
-			return (-1, -1);
+			fragmentPosition = (int)fragmentPositionL;
+			return false;
 		}
 
+		public bool TrySetTotalBytes(long length, out int[] newFragments, out int[] deletedFragments) {
+			newFragments = Array.Empty<int>();
+			deletedFragments = Array.Empty<int>();
 
-		public bool TryRequestSpace(int bytes, out int[] newFragmentIndexes) {
+			if (length == TotalBytes)
+				return true;
 
-			var newNeededBytes = Math.Max(0, bytes - _unusedTipFragmentBytes);
-			int newFragmentsRequired = (int)Math.Ceiling((decimal)newNeededBytes / _newFragmentSize);
-			var newIndexes = Enumerable.Range(FragmentCount, newFragmentsRequired).ToList();
-			for (int i = 0; i < newFragmentsRequired; i++) {
-				_fragments.Add(new byte[_newFragmentSize]);
-			}
-			newFragmentIndexes = newIndexes.ToArray();
-			_unusedTipFragmentBytes = (_unusedTipFragmentBytes - (bytes - newNeededBytes)) + (_newFragmentSize*newFragmentsRequired - newNeededBytes);
-			ClearUnusedTip();
-			return true;
-		}
+			if (length > TotalBytes)
+				return TryGrowSpace(length - TotalBytes, out newFragments);
 
-		public int ReleaseSpace(int bytes, out int[] releasedFragmentIndexes) {
-			var toRelease = bytes;
-			var releasedFragments = new List<int>();
+			return TryReleaseSpace(TotalBytes - length, out deletedFragments);
 
-			// First consume the tip fragment
-			while (toRelease > 0 && _fragments.Count > 0) {
-				var last = _fragments[^1];
-				var usedTipFragmentBytes = last.Length - _unusedTipFragmentBytes;
-				Debug.Assert(usedTipFragmentBytes >= 0);
-				if (toRelease > usedTipFragmentBytes) {
-					toRelease -= usedTipFragmentBytes;
-					releasedFragments.Add(_fragments.Count - 1);
-					_fragments.RemoveAt(^1);
-					_unusedTipFragmentBytes = 0;
-				} else {
-					usedTipFragmentBytes -= toRelease;
-					_unusedTipFragmentBytes += toRelease;
-					toRelease = 0;
+			bool TryGrowSpace(long bytes, out int[] newFragments) {
+				var newFragmentIX = new List<int>();
+				while (bytes > 0) {
+					var newFragment = _fragmentGenerator();
+					_fragments.Add(newFragment);
+					TotalBytes += newFragment.Length;
+					newFragmentIX.Add(_fragments.Count - 1);
+					bytes -= newFragment.Length;
 				}
+				newFragments = newFragmentIX.ToArray();
+				return true;
 			}
-			
-			ClearUnusedTip();
-			releasedFragmentIndexes = releasedFragments.ToArray();
-			return bytes - toRelease;
+
+			bool TryReleaseSpace(long bytes, out int[] releasedFragmentIndexes) {
+				var releasedFragments = new List<int>();
+				for (var i = _fragments.Count - 1; i >= 0; i--) {
+					var fragmentLength = _fragments[i].Length;
+					if (bytes >= fragmentLength) {
+						releasedFragments.Add(i);
+						_fragments.RemoveAt(i);
+						TotalBytes -= fragmentLength;
+						bytes -= fragmentLength;
+					} else {
+						// Not releasing a fragment, but need to clear the right tip of it
+						Tools.Array.Gen((int)bytes, (byte)0).AsSpan().CopyTo(_fragments[i].AsSpan(^(int)bytes));
+						bytes -= bytes;
+					}
+
+				}
+				releasedFragmentIndexes = releasedFragments.ToArray();
+				return true;
+			}
+
 		}
 
-		public void UpdateFragment(int fragmentIndex, int fragmentPosition, Span<byte> updateSpan) {
-			updateSpan.CopyTo(_fragments[fragmentIndex].AsSpan(fragmentPosition));
-		}
 
-		private void ClearUnusedTip() {
-			if (_fragments.Count > 0) {
-				var last = _fragments[^1];
-				for (var i = last.Length - _unusedTipFragmentBytes; i < last.Length; i++)
-					last[i] = default;
-			}
-		}
 	}
 }

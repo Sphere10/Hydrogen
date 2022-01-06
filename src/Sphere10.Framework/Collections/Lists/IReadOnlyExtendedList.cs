@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace Sphere10.Framework {
@@ -7,6 +8,12 @@ namespace Sphere10.Framework {
 		IEnumerable<int> IndexOfRange(IEnumerable<T> items);
 		T Read(int index);
 		IEnumerable<T> ReadRange(int index, int count);
+
+		IEnumerable<T> ReadRange(Range range) {
+			var (offset, length) = range.GetOffsetAndLength(Count);
+			return ReadRange(offset, length);
+		}
+
 	}
 
 }

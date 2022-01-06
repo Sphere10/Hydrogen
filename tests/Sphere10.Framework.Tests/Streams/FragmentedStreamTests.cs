@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Security;
 using NUnit.Framework;
+using Sphere10.Framework.NUnit;
 
 namespace Sphere10.Framework.Tests {
 	public class FragmentedStreamTests {
@@ -12,12 +13,35 @@ namespace Sphere10.Framework.Tests {
 
 		[Test]
 		public void Empty() {
-			var fragments = new ByteArrayStreamFragmentProvider(Enumerable.Empty<byte[]>());
+			var fragments = new ByteArrayStreamFragmentProvider();
 			var stream = new FragmentedStream(fragments);
 			var expected = new MemoryStream();
 
 			Assert.AreEqual(expected.Position, stream.Position);
 			Assert.AreEqual(expected.Length, stream.Length);
+			Assert.AreEqual(expected.ToArray(), stream.ToArray());
+		}
+
+		[Test]
+		public void WriteEmpty() {
+			var fragments = new ByteArrayStreamFragmentProvider();
+			var stream = new FragmentedStream(fragments);
+			var expected = new MemoryStream();
+			var data = Array.Empty<byte>();
+			expected.WriteBytes(data);
+			stream.WriteBytes(data);
+			Assert.AreEqual(expected.ToArray(), stream.ToArray());
+		}
+
+		[Test]
+		public void Write([Range(1, 100)] int iteration) {
+			var rng = new Random(31337 * iteration);
+			var fragments = new ByteArrayStreamFragmentProvider( () => rng.NextBytes(rng.Next(1, 11)));
+			var stream = new FragmentedStream(fragments);
+			var expected = new MemoryStream();
+			var data = rng.NextBytes(rng.Next(0, 100));
+			expected.WriteBytes(data);
+			stream.WriteBytes(data);
 			Assert.AreEqual(expected.ToArray(), stream.ToArray());
 		}
 
@@ -38,7 +62,6 @@ namespace Sphere10.Framework.Tests {
 			Assert.AreEqual(expected.Length, stream.Length);
 			
 			Assert.AreEqual(expected.ReadBytes(data.Length), stream.ReadBytes(data.Length));
-			Assert.AreEqual(expected.ToArray(), stream.ToArray());
 		}
 
 		[Test]
@@ -130,21 +153,24 @@ namespace Sphere10.Framework.Tests {
 		}
 
 		[Test]
-		public void DecreaseSize() {
+		public void DecreaseSize([Range(1, 1000)] int iteration) {
+			var rng = new Random(31337 * iteration);
 			var fragments = new ByteArrayStreamFragmentProvider();
 			var stream = new FragmentedStream(fragments);
 			var expected = new MemoryStream();
-			var data = Random.NextBytes(Random.Next(1, 99));
+			var data = rng.NextBytes(rng.Next(0, 99));
 
 			stream.WriteBytes(data);
 			expected.WriteBytes(data);
-			
+		
+
 			Assert.AreEqual(expected.Length, stream.Length);
 			Assert.AreEqual(expected.Position, stream.Position);
 
-			int newSpace = Random.Next(1, (int)expected.Length);
-			stream.SetLength(stream.Length - newSpace);
+			int newSpace = Random.Next(0, (int)expected.Length);
 			expected.SetLength(expected.Length - newSpace);
+			stream.SetLength(stream.Length - newSpace);
+			
 			
 			Assert.AreEqual(expected.Position, stream.Position);
 			Assert.AreEqual(expected.Length, stream.Length);
@@ -200,7 +226,6 @@ namespace Sphere10.Framework.Tests {
 
 		}
 
-
 		[Test]
 		public void SetLengthForward() {
 			var fragmentProvider = new ByteArrayStreamFragmentProvider(3);
@@ -224,85 +249,63 @@ namespace Sphere10.Framework.Tests {
 			var fragmentProvider = new ByteArrayStreamFragmentProvider(3);
 			var stream = new FragmentedStream(fragmentProvider);
 			stream.WriteBytes(new byte[] { 0, 1, 2, 3 });
+			Assert.That(fragmentProvider.TotalBytes, Is.EqualTo(6));
 			stream.SetLength(2);
-			stream.SetLength(3);
-			Assert.That(stream.ToArray(), Is.EqualTo(new byte[] { 0, 1, 0 }).Using(ByteArrayEqualityComparer.Instance));
+			stream.SetLength(4);
+			Assert.That(fragmentProvider.TotalBytes, Is.EqualTo(6));
+			Assert.That(fragmentProvider.FragmentCount, Is.EqualTo(2));
+			Assert.That(stream.ToArray(), Is.EqualTo(new byte[] { 0, 1, 0, 0 }).Using(ByteArrayEqualityComparer.Instance));
 		}
 
 		[Test]
-		public void IntegrationTests([Values(0, 3, 111, 9371)] int maxSize, [Values(1, 3, 11, 10000)] int fragmentSize) {
-			const int Interations = 100;
-			var RNG = new Random(maxSize);
-			var stream = new FragmentedStream(new ByteArrayStreamFragmentProvider(fragmentSize));
-			var expected = new MemoryStream();
-			for (var i = 0; i < Interations; i++) {
-				Assert.AreEqual(expected.Position, stream.Position);
-				Assert.AreEqual(expected.Length, stream.Length);
-				Assert.AreEqual(expected.ToArray(), stream.ToArray());
-
-				// 1. random seek
-				var seekParam = RandomSeekParameters(RNG, stream.Position, stream.Length);
-				stream.Seek(seekParam.Item1, seekParam.Item2);
-				expected.Seek(seekParam.Item1, seekParam.Item2);
-				// Check
-				Assert.AreEqual(expected.Position, stream.Position);
-				Assert.AreEqual(expected.Length, stream.Length);
-				Assert.AreEqual(expected.ToArray(), stream.ToArray());
-
-				// 2. write random bytes
-				var remainingCapacity = (int)(maxSize - stream.Position);
-				if (remainingCapacity > 0) {
-					var fromBufferSize = RNG.Next(1, remainingCapacity * 2);  // allow from buffer to be 0..2*remaining
-					var fromBuffer = RNG.NextBytes(fromBufferSize);
-					// Copy from a random segment of fromBuffer into stream
-					var segment = RNG.NextRange(fromBufferSize, rangeLength: RNG.Next(1, Math.Min(fromBufferSize, remainingCapacity)));
-					if (segment.End >= segment.Start) {
-						expected.Write(fromBuffer, segment.Start, segment.End - segment.Start + 1);
-						stream.Write(fromBuffer, segment.Start, segment.End - segment.Start + 1);
-					}
-					// Check
-					Assert.AreEqual(expected.Position, stream.Position);
-					Assert.AreEqual(expected.Length, stream.Length);
-					Assert.AreEqual(expected.ToArray(), stream.ToArray());
-				}
-
-				// 3. random read
-				if (stream.Length > 0) {
-					var segment = RNG.NextRange((int)stream.Length, rangeLength: Math.Max(1, RNG.Next(0, (int)stream.Length)));
-					var count = segment.End - segment.Start + 1;
-					expected.Seek(segment.Start, SeekOrigin.Begin);
-					stream.Seek(segment.Start, SeekOrigin.Begin);
-					// Check
-					Assert.AreEqual(expected.ReadBytes(count), stream.ReadBytes(count));
-					Assert.AreEqual(expected.Position, stream.Position);
-					Assert.AreEqual(expected.Length, stream.Length);
-					Assert.AreEqual(expected.ToArray(), stream.ToArray());
-				}
-
-				// 4. resize 
-				var newLength = RNG.Next(0, maxSize);
-				expected.SetLength(newLength);
-				stream.SetLength(newLength);
-		
-				// Check
-				Assert.AreEqual(expected.Position, stream.Position);
-				Assert.AreEqual(expected.Length, stream.Length);
-				Assert.AreEqual(expected.ToArray(), stream.ToArray());
-
-			}
+		public void SetLengthBackwardThenForward_SameFragment() {
+			var fragmentProvider = new ByteArrayStreamFragmentProvider(4);
+			var stream = new FragmentedStream(fragmentProvider);
+			stream.WriteBytes(new byte[] { 0, 1, 2, 3 });
+			Assert.That(fragmentProvider.TotalBytes, Is.EqualTo(4));
+			stream.SetLength(3);
+			stream.SetLength(4);
+			Assert.That(fragmentProvider.TotalBytes, Is.EqualTo(4));
+			Assert.That(fragmentProvider.FragmentCount, Is.EqualTo(1));
+			Assert.That(stream.ToArray(), Is.EqualTo(new byte[] { 0, 1, 2, 0 }).Using(ByteArrayEqualityComparer.Instance));
 		}
 
-		private Tuple<long, SeekOrigin> RandomSeekParameters(Random rng, long position, long length) {
-			switch (rng.Next(0, 3)) {
-				case 0:
-					return Tuple.Create((long)rng.Next((int)-position, (int)(Math.Max(0, length - position))), SeekOrigin.Current);
-				case 1:
-					return Tuple.Create((long)rng.Next(0, (int)Math.Max(0, length)), SeekOrigin.Begin);
-				case 2:
-					return Tuple.Create((long)rng.Next((int)-length, 0 + 1), SeekOrigin.End);
-				default:
-					throw new InvalidOperationException();
-			}
+		[Test]
+		public void Position_SetEnd() {
+			var fragmentProvider = new ByteArrayStreamFragmentProvider();
+			using var stream = new FragmentedStream(fragmentProvider);
+			stream.WriteBytes(new byte[] { 0, 1, 2, 3 });
+			stream.Position = 0;
+			Assert.That(stream.Position, Is.EqualTo(0));
+			stream.Position = 4;
+			Assert.That(stream.Position, Is.EqualTo(4));
 		}
+
+
+		[Test]
+		public void SeekEnd() {
+			var fragmentProvider = new ByteArrayStreamFragmentProvider();
+			using var stream = new FragmentedStream(fragmentProvider);
+			stream.WriteBytes(new byte[] { 0, 1, 2, 3 });
+			stream.Position = 0;
+			Assert.That(stream.Position, Is.EqualTo(0));
+			stream.Seek(4L, SeekOrigin.Begin);
+			Assert.That(stream.Position, Is.EqualTo(4));
+		}
+
+		[Test]
+		public void IntegrationTests_StaticSizeFragments([Values(0, 3, 111, 1371)] int maxSize, [Values(3, 11, 10000)] int fragmentSize) {
+			var rng = new Random(31337);
+			using var stream = new FragmentedStream(new ByteArrayStreamFragmentProvider(fragmentSize));
+			AssertEx.StreamIntegrationTests(maxSize, stream, RNG: rng);
+		}
+
+		[Test]
+		public void IntegrationTests_DynamicSizeFragments([Values(0, 3, 111, 1371)] int maxSize) {
+			var rng = new Random(31337);
+			using var stream = new FragmentedStream(new ByteArrayStreamFragmentProvider(() => new byte[rng.Next(1, 100)]));
+			AssertEx.StreamIntegrationTests(maxSize, stream, RNG: rng);
+		}
+	
 	}
 }

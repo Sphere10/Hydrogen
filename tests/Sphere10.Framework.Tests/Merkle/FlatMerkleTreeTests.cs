@@ -81,7 +81,7 @@ namespace Sphere10.Framework.Tests {
                 byte[][] newItems = RNG.NextByteArrays(Hashers.GetDigestSizeBytes(CHF.SHA2_256), newItemsCount);
                 tree.Leafs.AddRange(newItems);
                 expected.Leafs.AddRange(newItems);
-				AssertEx.AssertTreeEqual(expected, tree);
+				AssertEx.AreEqual(expected, tree);
 
 				if (tree.Leafs.Count > 0) {
                     // update a random amount
@@ -90,14 +90,14 @@ namespace Sphere10.Framework.Tests {
                     tree.Leafs.UpdateRange(range.Start, newItems);
                     expected.Leafs.UpdateRangeSequentially(range.Start, newItems);
 
-					AssertEx.AssertTreeEqual(expected, tree);
+					AssertEx.AreEqual(expected, tree);
 
 					// remove a random amount
 					range = RNG.NextRange(tree.Leafs.Count);
                     tree.Leafs.RemoveRange(range.Start, range.End - range.Start + 1);
                     expected.Leafs.RemoveRange(range.Start, range.End - range.Start + 1);
 
-					AssertEx.AssertTreeEqual(expected, tree);
+					AssertEx.AreEqual(expected, tree);
 				}
 
 				// insert a random amount
@@ -107,7 +107,7 @@ namespace Sphere10.Framework.Tests {
                 tree.Leafs.InsertRange(insertIX, newItems);
                 expected.Leafs.InsertRange(insertIX, newItems);
 
-				AssertEx.AssertTreeEqual(expected, tree);
+				AssertEx.AreEqual(expected, tree);
 
 			}
 		}
@@ -147,7 +147,7 @@ namespace Sphere10.Framework.Tests {
 			}
 
 			// Test at end only
-			AssertEx.AssertTreeEqual(expected, tree);
+			AssertEx.AreEqual(expected, tree);
 		}
 
 		[Test]

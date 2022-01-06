@@ -7,7 +7,7 @@ namespace Sphere10.Framework {
 		private readonly Action<Stream> _disposeAction;
 
 		public OnDisposeStream(Stream stream, Action disposeAction)
-			: this(stream, x => disposeAction()) { 
+			: this(stream, _ => disposeAction()) { 
 		}
 
 		public OnDisposeStream(Stream stream, Action<Stream> disposeAction)

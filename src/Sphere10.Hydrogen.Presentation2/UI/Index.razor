@@ -117,18 +117,19 @@
                                         PageSize="10"
                                         GridType="BlazorGrid<TestClass>.GridTypes.ActionColumn"
                                         Actions="DataActions"
-                                        ColumnDefinitions="ColumnDefinitions"                                        
-                                        
-                                        >
+                                        ColumnDefinitions="ColumnDefinitions">
 
-                                @* comments 
+                                @* comments
 
                                 *@
 
                             </BlazorGrid>
                         </div>
 
-                        <button @onclick="SetInstance">Set Instance</button>
+                        <button @onclick="StartWebSockets">Start Web Sockets</button>
+                        <button @onclick="SendData">SendData</button>
+
+
                         <div><textarea id="Output"></textarea></div>
                     </div>
                 </div>
@@ -286,6 +287,33 @@
         JSRuntime.InvokeAsync<object>("AlertWrite", text);
     }
 
+    void WriteOutput(string text) {
+        JSRuntime.InvokeAsync<object>("WriteOutout", text);
+    }
+
+    void WebSocketsChannelStartConnection(string url) {
+
+        //        CSharpInstance = DotNetObjectReference.Create<Sphere10.Hydrogen.Presentation2.UI.Index>(this);
+        CSharpInstance = DotNetObjectReference.Create<Sphere10.Hydrogen.Presentation2.UI.Index>(this);
+
+        JSRuntime.InvokeAsync<object>("OpenWebSockets", new object[] { url }, CSharpInstance);
+    }
+
+    void WebSocketsChannelSendData(byte[] data) {
+
+        var text = System.Text.Encoding.ASCII.GetString(data);
+
+        JSRuntime.InvokeAsync<object>("SendWebSockets", text);
+    }
+
+    [JSInvokable]
+    public void WebSocketsChannelReceiveData(ReadOnlyMemory<byte> memory)
+    {
+        var text = System.Text.Encoding.ASCII.GetString(memory.ToArray());
+
+        WriteOutput("XXX" + text);
+    }
+
     #endregion
 
     DataSource1<TestClass> DataSource { get; set; }
@@ -294,6 +322,7 @@
     List<object> ColumnDefinitions { get; set; } = new List<object>();
     System.Timers.Timer Timer { get; set; }
 
+    DotNetObjectReference<Index> CSharpInstance { get; set; }
     WebSocketsChannel Channel { get; set; }
 
     void Test() {
@@ -305,12 +334,6 @@
 
     protected override async void OnInitialized()
     {
-        var localEndpoint = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 80);
-        var remoteEndpoint = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 80);
-
-        Channel = new WebSocketsChannel(localEndpoint, remoteEndpoint, CommunicationRole.Client, false);
-        await Channel.Open();
-
         DataSource = new Index.DataSource1<TestClass>();
 
         DataActions.Add(new GridAction<TestClass>("Action1", Action1, "😄", IsAction1Available));
@@ -319,20 +342,46 @@
         ColumnDefinitions.Add(new DataEnd<TestClass, TestClass2>("Data End 1", TestDataExtractor1));
         ColumnDefinitions.Add(new DataEnd<TestClass, TestClass3>("Data End 2", TestDataExtractor2));
 
-
-
-
-
-
         //        Timer = new System.Timers.Timer(1000); // 10 seconds
         //        Timer.Elapsed += CountDownTimer;
         //        Timer.Start();
     }
 
-    void SetInstance()
-    {
-        //await jsRuntime.InvokeAsync<object>("SetCSharpInstance", DotNetObjectReference.Create<WorkAssignmentComponent>(this));
+    protected override async Task OnAfterRenderAsync(bool firstRender) {
+        //    CountDownTimer(null, null);
+
+        //        TestGrid.LoadJavascript();
+        //        Alert("OnAfterRenderAsync Index");
     }
+
+    async void StartWebSockets()
+    {
+        // create the reference to this page
+        //CSharpInstance = DotNetObjectReference.Create<Sphere10.Hydrogen.Presentation2.UI.Index>(this);
+        // store the reference of this page in JavaScript
+        //await JSRuntime.InvokeAsync<object>("SetCSharpInstance", new object[] { instance });
+
+        //var localEndpoint = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 80);
+        //var remoteEndpoint = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 80);
+
+        Channel = new WebSocketsChannel("ws://localhost:80/service", CommunicationRole.Client, false,
+                                        WebSocketsChannelStartConnection,
+                                        WebSocketsChannelSendData,
+                                        WebSocketsChannelReceiveData);
+        //Channel.ReceivedBytes += delegate (ReadOnlyMemory<byte> memory)
+        //{
+        //    WriteOutput(System.Text.Encoding.ASCII.GetString(memory.Span));
+        //};
+        await Channel.Open();
+    }
+
+    void SendData()
+    {
+        WebSocketsChannelSendData(System.Text.Encoding.ASCII.GetBytes("Hello from Server 666"));
+    }
+
+
+
 
     TestClass2 TestDataExtractor1(object data)
     {
@@ -382,14 +431,6 @@
         DataSource.RefreshData();
         StateHasChanged();
         Timer.Stop();
-    }
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        //    CountDownTimer(null, null);
-
-        //        TestGrid.LoadJavascript();
-        //        Alert("OnAfterRenderAsync Index");
     }
 
     #region Original Code

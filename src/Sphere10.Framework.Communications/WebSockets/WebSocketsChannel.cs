@@ -10,15 +10,25 @@ using System.IO;
 namespace Sphere10.Framework.Communications {
 	public class WebSocketsChannel : ProtocolChannel, IDisposable {
 
-		public IPEndPoint LocalEndpoint { get; }
-		public IPEndPoint RemoteEndpoint { get; }
-		public CommunicationRole Role { get; }
+		public delegate void ClientStartConnectionDelegate(string url);
+		public delegate void ClientSendDataDelegate(byte[] data);
+		public delegate void ClientReceiveDataDelegate(ReadOnlyMemory<byte> data);
+
+		IPEndPoint LocalEndpoint { get; }
+		IPEndPoint RemoteEndpoint { get; }
+		string URL { get; }
+		CommunicationRole Role { get; }
 		bool Secure { get; } 
 		TcpClient TcpClient { get; set; }
-
 		TcpListener Server { get; set; }
 		NetworkStream NetWorkStream { get; set; }
-		WebSocket WebSocket { get; set; } 
+		WebSocket WebSocket { get; set; }
+
+		ClientStartConnectionDelegate ClientStartConnectionHandler { get; set; }
+		ClientSendDataDelegate ClientSendDataHandler { get; set; }
+		ClientReceiveDataDelegate ClientReceiveDataHandler { get; set; }
+		// CloseConnection
+		// IsConnectionAlive
 
 		public WebSocketsChannel(IPEndPoint localEndpoint, IPEndPoint remoteEndpoint, CommunicationRole role, bool secure) {
 			LocalEndpoint = localEndpoint;
@@ -30,10 +40,31 @@ namespace Sphere10.Framework.Communications {
 				throw new NotImplementedException("Secure Websockets is not available yet");
 			}
 
-			if (role == CommunicationRole.Server) {
-				Server = new TcpListener(localEndpoint);
-			} else {
+			if (role != CommunicationRole.Server) { 
+				throw new NotImplementedException("Websockets, this constructor is for Servers only");
+			}
+			Server = new TcpListener(localEndpoint);
+		}
 
+		public WebSocketsChannel(/*IPEndPoint localEndpoint, IPEndPoint remoteEndpoint,*/string url, CommunicationRole role, bool secure,
+								 ClientStartConnectionDelegate clientStartConnectionHandler,
+								 ClientSendDataDelegate clientSendDataHandler,
+								 ClientReceiveDataDelegate clientReceiveDataHandler) {
+			URL = url;
+			//LocalEndpoint = localEndpoint;
+			//RemoteEndpoint = remoteEndpoint;
+			Role = role;
+			Secure = secure;
+			ClientStartConnectionHandler = clientStartConnectionHandler;
+			ClientSendDataHandler = clientSendDataHandler;
+			ClientReceiveDataHandler = clientReceiveDataHandler;
+
+			if (Secure) {
+				throw new NotImplementedException("Secure Websockets is not available yet");
+			}
+
+			if (role != CommunicationRole.Client) {
+				throw new NotImplementedException("Websockets, this constructor is for Clients only");
 			}
 		}
 
@@ -51,9 +82,7 @@ namespace Sphere10.Framework.Communications {
 		protected override bool IsConnectionAlive() {
 
 			if (Role == CommunicationRole.Server) {
-
 				return NetWorkStream.Socket.Connected;
-
 				//return Server.Server.Connected;
 			} else {
 				// finish code
@@ -68,13 +97,12 @@ namespace Sphere10.Framework.Communications {
 				TcpClient = await Server.AcceptTcpClientAsync();
 				NetWorkStream = TcpClient.GetStream();
 				// "ws" probably does nothing and should be ignored
-				WebSocket = WebSocket.CreateFromStream(NetWorkStream, true, "ws", new TimeSpan(0, 30, 0)); // 30 Minute timeout
-
+				WebSocket = WebSocket.CreateFromStream(NetWorkStream, true, "ws", new TimeSpan(0, 30, 0)); // 30 Minute timeout, this seems to do nothing and is default at about 30 secs
 				DoHandshake(NetWorkStream);
-
-SystemLog.Info("WebSocketChannel HTTP to WebSockets Handshake Completed");
 			} else {
-				throw new NotImplementedException();
+				if (ClientStartConnectionHandler != null) {
+					ClientStartConnectionHandler(URL);
+				}
 			}
 		}
 
@@ -86,8 +114,7 @@ SystemLog.Info("WebSocketChannel HTTP to WebSockets Handshake Completed");
 
 				using (var memoryStream = new MemoryStream()) {
 
-					while(true) {
-						
+					while (true) {
 						var received = await WebSocket.ReceiveAsync(new ArraySegment<byte>(buffer), cancellationToken);
 						memoryStream.Write(buffer, 0, received.Count);
 
@@ -99,7 +126,12 @@ SystemLog.Info("WebSocketChannel ReceiveBytesInternal");
 					return memoryStream.ToArray();
 				}
 			} else {
-				throw new NotImplementedException();
+
+				// this is not working this way for the client
+				// it is waiting for a JavaScript event to happen
+				// and it will be called from there
+
+				throw new NotImplementedException("Should never get to this code");
 			}
 		}
 
@@ -109,7 +141,10 @@ SystemLog.Info("WebSocketChannel ReceiveBytesInternal");
 
 				return true;
 			} else {
-				throw new NotImplementedException();
+				if (ClientSendDataHandler != null) {
+					ClientSendDataHandler(bytes.ToArray());
+				}
+				return true;
 			}
 		}
 

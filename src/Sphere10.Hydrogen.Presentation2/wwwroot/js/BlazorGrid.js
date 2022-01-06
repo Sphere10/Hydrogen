@@ -8,7 +8,6 @@ function AlertWrite(data) {
 
 var MinimumColumWidth = 20;
 var TableId = "";
-var CSharpInstance = null;
 var ColumnWidths = null;
 var curColIndex, curCol;
 
@@ -120,17 +119,27 @@ function ResizableTable(table) {
 
 
 
+// Web Sockets
 
+//var CSharpInstance = null;
+//function SetCSharpInstance(cSharpInstance)
+//{
+//    console.log("Set CSharp Instance")
 
-var CSharpInstance = null;
-function SetCSharpInstance(cSharpInstance) {
-    CSharpInstance = cSharpInstance;
-}
+//    CSharpInstance = cSharpInstance;
 
+//    console.log(CSharpInstance);
+//}
 
 var Socket;
-function OpenWebSocket(url) {
+var CSharpInstance;
+function OpenWebSockets(url, cSharpInstance) {
     Socket = new WebSocket(url);
+    CSharpInstance = cSharpInstance;
+
+
+call a c sharp instance method now, to make sure it can work
+
 
 console.log(Socket);
 
@@ -145,9 +154,7 @@ console.log(Socket);
         var received_msg = evt.data;
         WriteOutout(received_msg);
 
-        CSharpInstanceWorkLog.invokeMethodAsync("IndexChanged", StartIndex - 1, StopIndex - 1);
-
-
+        CSharpInstance.invokeMethodAsync("WebSocketsChannelReceiveData", evt.data);
     };
 
     Socket.onclose = function () {
@@ -161,12 +168,12 @@ console.log(Socket);
     }
 }
 
-function SendWebSocket(data) {
-    WriteOutout("About to Send Data");
+function SendWebSockets(data) {
+    console.log("SendWebSocket");
+    console.log(data);
 
-    console.log(webSocket);
-
-    //var sendData = document.getElementById("SendData").value;
+    console.log("CSharpInstance");
+    console.log(CSharpInstance);
 
     Socket.send(data);
 }
@@ -174,4 +181,3 @@ function SendWebSocket(data) {
 function WriteOutout(text) {
     document.getElementById("Output").value += (text + '\r\n');
 }
-

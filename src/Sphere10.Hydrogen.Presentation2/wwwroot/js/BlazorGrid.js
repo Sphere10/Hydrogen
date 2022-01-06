@@ -117,3 +117,61 @@ function ResizableTable(table) {
         return div;
     }
 }
+
+
+
+
+
+var CSharpInstance = null;
+function SetCSharpInstance(cSharpInstance) {
+    CSharpInstance = cSharpInstance;
+}
+
+
+var Socket;
+function OpenWebSocket(url) {
+    Socket = new WebSocket(url);
+
+console.log(Socket);
+
+    Socket.onopen = function (e) {
+        console.log(e);
+        WriteOutout("Connection Open...");
+    }
+
+    Socket.onmessage = function (evt) {
+        WriteOutout("Message is received...");
+
+        var received_msg = evt.data;
+        WriteOutout(received_msg);
+
+        CSharpInstanceWorkLog.invokeMethodAsync("IndexChanged", StartIndex - 1, StopIndex - 1);
+
+
+    };
+
+    Socket.onclose = function () {
+        // websocket is closed.
+        WriteOutout("Connection Closed...");
+    };
+
+    Socket.onerror = function (error) {
+        //WriteOutout(error.message);
+        WriteOutout(error.message);
+    }
+}
+
+function SendWebSocket(data) {
+    WriteOutout("About to Send Data");
+
+    console.log(webSocket);
+
+    //var sendData = document.getElementById("SendData").value;
+
+    Socket.send(data);
+}
+
+function WriteOutout(text) {
+    document.getElementById("Output").value += (text + '\r\n');
+}
+

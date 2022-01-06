@@ -16,7 +16,9 @@
 @using System.Threading;
 @using System;
 @using System.Linq;
-@using Microsoft.JSInterop
+@using System.Net;
+@using Microsoft.JSInterop;
+@using Sphere10.Framework.Communications;
 
 @inject IJSRuntime JSRuntime
 
@@ -125,6 +127,9 @@
 
                             </BlazorGrid>
                         </div>
+
+                        <button @onclick="SetInstance">Set Instance</button>
+                        <div><textarea id="Output"></textarea></div>
                     </div>
                 </div>
             </div>
@@ -289,16 +294,23 @@
     List<object> ColumnDefinitions { get; set; } = new List<object>();
     System.Timers.Timer Timer { get; set; }
 
+    WebSocketsChannel Channel { get; set; }
+
     void Test() {
         var f1 = new Filter<string>();
         var f2 = new Filter<double>();
         var f3 = new Filter<DateTime>();
         var f4 = new Filter<char>();
-
     }
 
-    protected override void OnInitialized()
+    protected override async void OnInitialized()
     {
+        var localEndpoint = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 80);
+        var remoteEndpoint = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 80);
+
+        Channel = new WebSocketsChannel(localEndpoint, remoteEndpoint, CommunicationRole.Client, false);
+        await Channel.Open();
+
         DataSource = new Index.DataSource1<TestClass>();
 
         DataActions.Add(new GridAction<TestClass>("Action1", Action1, "😄", IsAction1Available));
@@ -307,9 +319,19 @@
         ColumnDefinitions.Add(new DataEnd<TestClass, TestClass2>("Data End 1", TestDataExtractor1));
         ColumnDefinitions.Add(new DataEnd<TestClass, TestClass3>("Data End 2", TestDataExtractor2));
 
+
+
+
+
+
         //        Timer = new System.Timers.Timer(1000); // 10 seconds
         //        Timer.Elapsed += CountDownTimer;
         //        Timer.Start();
+    }
+
+    void SetInstance()
+    {
+        //await jsRuntime.InvokeAsync<object>("SetCSharpInstance", DotNetObjectReference.Create<WorkAssignmentComponent>(this));
     }
 
     TestClass2 TestDataExtractor1(object data)

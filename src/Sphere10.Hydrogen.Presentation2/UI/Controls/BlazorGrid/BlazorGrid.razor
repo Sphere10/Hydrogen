@@ -211,6 +211,12 @@
         JSRuntime.InvokeAsync<object>("AlertWrite", text);
     }
 
+    [JSInvokable]
+    public void WebSocketsReceiveData(byte[] data) {
+
+
+    }
+
     #endregion
 
     #region Grid
@@ -282,7 +288,7 @@
                     var cellText = GetCellText(dataObject, property);
                     var cellData = new Cell(Header[columnIndex].Header, Header[columnIndex].Row, typeInfos[columnIndex], cellText, dataObject, columnIndex);
 
-//                    var cellData = new Cell(Header[columnIndex].Header, Header[columnIndex].Row, typeInfos[columnIndex], properties[columnIndex], dataObject, columnIndex);
+                    //                    var cellData = new Cell(Header[columnIndex].Header, Header[columnIndex].Row, typeInfos[columnIndex], properties[columnIndex], dataObject, columnIndex);
                     rowData.Add(cellData);
                     columnIndex++;
                 }

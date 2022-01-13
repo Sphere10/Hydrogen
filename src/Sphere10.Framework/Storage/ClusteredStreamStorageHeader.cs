@@ -2,7 +2,7 @@
 
 namespace Sphere10.Framework {
 
-	public class ClusteredStreamContainerHeader {
+	public class ClusteredStreamStorageHeader {
 		public const int ByteLength = 256;
 
 		private const int VersionOffset = 0;
@@ -29,6 +29,7 @@ namespace Sphere10.Framework {
 			_clusterSize = null;
 			_totalClusters = null;
 			_listings = null;
+			CheckHeaderIntegrity();
 		}
 
 		public virtual void CreateIn(byte version, Stream rootStream, int clusterSize, Endianness endianness) {
@@ -115,5 +116,19 @@ namespace Sphere10.Framework {
 		}
 
 		public override string ToString() => $"[BlobContainer] Version: {Version}, Cluster Size: {ClusterSize}, Total Clusters: {TotalClusters}, Listings: {Listings}";
+
+		private void CheckHeaderIntegrity() {
+			if (Version != 1)
+				throw new CorruptDataException($"Corrupt header (Version field was {Version} bytes)");
+
+			if (ClusterSize <= 0)
+				throw new CorruptDataException($"Corrupt header (ClusterSize field was {ClusterSize} bytes)");
+
+			if (TotalClusters < 0)
+				throw new CorruptDataException($"Corrupt header (TotalClusters was {TotalClusters})");
+
+			if (Listings < 0)
+				throw new CorruptDataException($"Corrupt header (Listings field was {Listings})");
+		}
 	}
 }

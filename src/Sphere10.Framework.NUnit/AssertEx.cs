@@ -360,20 +360,22 @@ namespace Sphere10.Framework.NUnit {
 		}
 
 		[Test]
-		public static void StreamIntegrationTests(int maxSize, Stream actualStream, Stream expectedStream = null, int iterations = 100, Random RNG = null) {
+		public static void StreamIntegrationTests(int maxSize, Stream actualStream, Stream expectedStream = null, int iterations = 100, Random RNG = null, bool runAsserts = true) {
 			Guard.ArgumentInRange(maxSize, 0, int.MaxValue, nameof(maxSize));
 			Guard.ArgumentNotNull(actualStream, nameof(actualStream));
 			Guard.ArgumentNot(actualStream.Length > 0 && expectedStream == null, nameof(actualStream), "Must be empty if not supplying expected stream");
 			expectedStream ??= new MemoryStream();
 			RNG ??= new Random(31337);
 			for (var i = 0; i < iterations; i++) {
-				AreEqual(expectedStream, actualStream);
+				if (runAsserts)
+					AreEqual(expectedStream, actualStream);
 
 				// 1. random seek
 				var seekParam = GenerateRandomSeekParameters(RNG, actualStream.Position, actualStream.Length);
 				actualStream.Seek(seekParam.Item1, seekParam.Item2);
 				expectedStream.Seek(seekParam.Item1, seekParam.Item2);
-				AreEqual(expectedStream, actualStream);
+				if (runAsserts)
+					AreEqual(expectedStream, actualStream);
 
 				// 2. write random bytes
 				var remainingCapacity = (int)(maxSize - actualStream.Position);
@@ -386,7 +388,8 @@ namespace Sphere10.Framework.NUnit {
 						expectedStream.Write(fromBuffer, segment.Start, segment.End - segment.Start + 1);
 						actualStream.Write(fromBuffer, segment.Start, segment.End - segment.Start + 1);
 					}
-					AreEqual(expectedStream, actualStream);
+					if (runAsserts)
+						AreEqual(expectedStream, actualStream);
 				}
 
 				// 3. random read
@@ -395,16 +398,18 @@ namespace Sphere10.Framework.NUnit {
 					var count = segment.End - segment.Start + 1;
 					expectedStream.Seek(segment.Start, SeekOrigin.Begin);
 					actualStream.Seek(segment.Start, SeekOrigin.Begin);
-					Assert.AreEqual(expectedStream.ReadBytes(count), actualStream.ReadBytes(count));
-					AreEqual(expectedStream, actualStream);
+					if (runAsserts) {
+						Assert.AreEqual(expectedStream.ReadBytes(count), actualStream.ReadBytes(count));
+						AreEqual(expectedStream, actualStream);
+					}
 				}
 
 				// 4. resize 
-				AreEqual(expectedStream, actualStream);
 				var newLength = RNG.Next(0, maxSize);
 				expectedStream.SetLength(newLength);
 				actualStream.SetLength(newLength);
-				AreEqual(expectedStream, actualStream);
+				if (runAsserts)
+					AreEqual(expectedStream, actualStream);
 			}
 		}
 

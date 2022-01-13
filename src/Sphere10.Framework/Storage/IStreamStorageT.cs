@@ -4,12 +4,11 @@ using System.IO;
 
 namespace Sphere10.Framework {
 
-	public interface IStreamContainer<out TStreamListing> : IStreamContainer
+	public interface IStreamStorageT<out TStreamListing> : IStreamStorage
 		where TStreamListing : IStreamListing, new() { 
 
 		IReadOnlyList<TStreamListing> Listings { get; }
 
 	}
-
 
 }

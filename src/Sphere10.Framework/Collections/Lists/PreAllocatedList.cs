@@ -6,13 +6,14 @@ namespace Sphere10.Framework {
 
 	/// <summary>
 	/// A wrapper for <see cref="IExtendedList{T}"/> that implements insertion, deletion and append as update operations over a pre-allocated collection of items.
-	/// This is useful for converting an <see cref="IExtendedList{T}"/> that can only be mutated via "UPDATE" operations into one that supports INSERT/UPDATE/DELETE.
-	/// This is achieved by maintaining a local <see cref="Count"/> property and by overwriting pre-allocated items on append/insert, and "forgetting" them on delete.
-	/// When the pre-allocated items are exhaused, a <see cref="PreallocationGrowthPolicy"/> is used to grow the underlying list. 
+	/// This is useful for converting an <see cref="IExtendedList{T}"/> that can only be mutated via "UPDATE" operations into one that supports INSERT/UPDATE/DELETE
+	/// via sequential UPDATE operations. This is achieved by maintaining a local <see cref="Count"/> property and by overwriting pre-allocated items on
+	/// append/insert, and "forgetting" them on delete. When the pre-allocated items are exhaused, a <see cref="PreallocationGrowthPolicy"/> is used to grow
+	/// the underlying list. 
 	/// </summary>
 	/// <remarks>
-	/// When shuffling items around via copy/paste operations, they are done "one at a time" rather than in ranges so as not to exhaust memory. Thus this class
-	/// is suitable for wrapping arbitrarily large lists.
+	/// When shuffling items around via copy/paste operations, they are done "one at a time" rather than in "in ranges" so as not to exhaust memory on
+	/// unbounded lists. Thus this class is suitable for wrapping unbounded lists of data without memory/computational complexity blowout.
 	/// Additionally, <see cref="Contains"/> and <see cref="ContainsRange"/> are overriden and implemented based on <see cref="IndexOf"/> and <see cref="IndexOfRange"/>
 	/// so as to ensure only the logical objects are searched (avoids false positives). Same is true for <see cref="Remove"/> and <see cref="RemoveRange(int,int)"/>.
 	/// </remarks>

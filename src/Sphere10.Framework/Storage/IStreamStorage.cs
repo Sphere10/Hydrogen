@@ -4,8 +4,7 @@ using System.IO;
 
 namespace Sphere10.Framework {
 
-	public interface IStreamContainer {
-
+	public interface IStreamStorage { 
 		int Count { get; }
 
 		Stream Add();
@@ -14,11 +13,11 @@ namespace Sphere10.Framework {
 
 		void Remove(int index);
 
-		void Insert(int index);
+		Stream Insert(int index);
 
 		void Swap(int first, int second);
 
-		void Clear();
+		void ClearAll();
 
 	}
 

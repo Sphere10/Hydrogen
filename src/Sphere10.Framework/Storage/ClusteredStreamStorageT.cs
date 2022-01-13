@@ -10,9 +10,8 @@ using Microsoft.VisualBasic.CompilerServices;
 
 namespace Sphere10.Framework {
 
-
 	/// <summary>
-	/// An <see cref="IStreamContainer{TStreamListing}"/> implementation which interlaces component streams together over a single logical stream using a clustering approach similar to how physical disk
+	/// An <see cref="IStreamStorageT{TStreamListing}"/> implementation which interlaces component streams together over a single logical stream using a clustering approach similar to how physical disk
 	/// drives store data. This component can be used to store multiple streams over a single file, all of whom can be dynamically sized.  The implementationis optimized for arbitrarily large data
 	/// scenarios without space/time/memory complexity issues and no load-time required. It is suitable as a general-purpose file-format for storing an application static and/or dynamic data.
 	/// </summary>
@@ -47,8 +46,8 @@ namespace Sphere10.Framework {
 	///  - Listings always link to the (First | Data) cluster of their stream.
 	///  - Clusters with traits (First | Data) re-purpose the Prev field to denote the listing.
 	/// </remarks>
-	public class ClusteredStreamContainerT<TStreamContainerHeader, TStreamListing> : IStreamContainer<TStreamListing>
-		where TStreamContainerHeader : ClusteredStreamContainerHeader, new()
+	public class ClusteredStreamStorage<TStreamContainerHeader, TStreamListing> : IStreamStorageT<TStreamListing>
+		where TStreamContainerHeader : ClusteredStreamStorageHeader, new()
 		where TStreamListing : IStreamListing, new() {
 		private readonly Stream _stream;
 		private readonly Endianness _endianness;
@@ -63,7 +62,7 @@ namespace Sphere10.Framework {
 		private readonly object _lock;
 		private int _version;
 
-		public ClusteredStreamContainerT(Stream rootStream, int clusterSize, IItemSerializer<TStreamListing> listingSerializer, Endianness endianness = Endianness.LittleEndian) {
+		public ClusteredStreamStorage(Stream rootStream, int clusterSize, IItemSerializer<TStreamListing> listingSerializer, Endianness endianness = Endianness.LittleEndian, ClusteredStreamCachePolicy listingsCachePolicy = ClusteredStreamCachePolicy.None) {
 			Guard.ArgumentNotNull(rootStream, nameof(rootStream));
 			Guard.ArgumentInRange(clusterSize, 1, int.MaxValue, nameof(clusterSize));
 			Guard.ArgumentNotNull(listingSerializer, nameof(listingSerializer));
@@ -71,20 +70,22 @@ namespace Sphere10.Framework {
 			_stream = rootStream;
 			_endianness = endianness;
 			_listingSerializer = listingSerializer;
+			var clusterSerializer = new ClusterSerializer(clusterSize);
 			_header = new TStreamContainerHeader();
 			if (_stream.Length > 0) {
 				_header.AttachTo(_stream, _endianness);
+				CheckHeaderDataIntegrity((int)rootStream.Length, _header, clusterSerializer, _listingSerializer);
 			} else {
 				_header.CreateIn(1, _stream, clusterSize, _endianness);
 			}
-			Guard.Argument(_header.Version == 1, nameof(rootStream), $"Unsupported version '{_header.Version}'");
-			Guard.Argument(_header.ClusterSize == clusterSize, nameof(rootStream), $"Inconsistent cluster sizes (stream header had '{_header.ClusterSize}')");
+			Guard.Argument(ClusterSize == clusterSize, nameof(rootStream), $"Inconsistent cluster sizes (stream header had '{ClusterSize}')");
+			AllListingsSize = _header.Listings * _listingSerializer.StaticSize;
 			_clusters = new StreamPagedList<Cluster>(
-				new ClusterSerializer(clusterSize),
-				new NonClosingStream(new BoundedStream(rootStream, ClusteredStreamContainerHeader.ByteLength, long.MaxValue) { UseRelativeOffset = true, AllowResize = true }),
+				clusterSerializer,
+				new NonClosingStream(new BoundedStream(rootStream, ClusteredStreamStorageHeader.ByteLength, long.MaxValue) { UseRelativeOffset = true, AllowResize = true }),
 				_endianness
-			);
-			_listingsFragmentProvider = new FragmentProvider(this);
+			) { IncludeListHeader = false };
+			_listingsFragmentProvider = new FragmentProvider(this, listingsCachePolicy);
 			_listings = new PreAllocatedList<TStreamListing>(
 				new StreamPagedList<TStreamListing>(
 					_listingSerializer,
@@ -95,22 +96,31 @@ namespace Sphere10.Framework {
 				PreAllocationPolicy.MinimumRequired,
 				0
 			);
-			ListingsSize = _header.Listings * _listingSerializer.StaticSize;
+			ClusterEnvelopeSize = clusterSerializer.StaticSize - ClusterSize;
 			_lock = new object();
 			_openFragmentProvider = null;
 			_openStream = null;
 			_openListing = null;
 			_version = 0;
 			ZeroClusterBytes = Tools.Array.Gen<byte>(clusterSize, 0);
+			IntegrityChecks = true;
 		}
 
-		public virtual int Count => _header.Listings;
+		public int Count => _header.Listings;
+
+		public ClusteredStreamCachePolicy DefaultStreamPolicy { get; set; } = ClusteredStreamCachePolicy.None;
 
 		public IReadOnlyList<TStreamListing> Listings => _listings;
 
-		internal int Clusters => _clusters.Count;
+		public bool IntegrityChecks { get; set; }
 
-		private int ListingsSize { get; set; }
+		internal IReadOnlyList<Cluster> Clusters => _clusters;
+
+		internal int ClusterSize => _header.ClusterSize;
+
+		internal int ClusterEnvelopeSize { get; }
+
+		internal int AllListingsSize { get; private set; }
 
 		private ReadOnlyMemory<byte> ZeroClusterBytes { get; }
 
@@ -118,38 +128,43 @@ namespace Sphere10.Framework {
 
 		public byte[] ReadAll(int index) => Open(index).ReadAllAndDispose();
 
-		public void CreateAllBytes(ReadOnlySpan<byte> bytes) {
+		public void AddBytes(ReadOnlySpan<byte> bytes) {
 			using var stream = Add();
 			stream.Write(bytes);
 		}
 
-		public void OverwriteAllBytes(int index, ReadOnlySpan<byte> bytes) {
+		public void UpdateBytes(int index, ReadOnlySpan<byte> bytes) {
 			using var stream = Open(index);
 			stream.SetLength(0);
 			stream.Write(bytes);
 		}
 
-		public void AppendAllBytes(int index, ReadOnlySpan<byte> bytes) {
+		public void AppendBytes(int index, ReadOnlySpan<byte> bytes) {
 			using var stream = Open(index);
+			stream.Seek(stream.Length, SeekOrigin.Current);
 			stream.Write(bytes);
 		}
 
-		public Stream Add() {
+		public Stream Add() => Add(DefaultStreamPolicy);
+
+		public Stream Add(ClusteredStreamCachePolicy cachePolicy) {
 			lock (_lock) {
 				CheckNotOpened();
-				var listing = AddListing(out var index);  // the first listing add will allocate cluster 0 for the listings stream
+				var listing = AddListing(out var index, CreateListing());  // the first listing add will allocate cluster 0 for the listings stream
 				listing.Size = 0;
 				listing.StartCluster = -1; // when opened and written, the first cluster will be allocated
 				UpdateListing(index, listing);
-				return Open(index); ;
+				return Open(index, cachePolicy);
 			}
 		}
 
-		public Stream Open(int index) {
+		public Stream Open(int index) => Open(index, DefaultStreamPolicy);
+
+		public Stream Open(int index, ClusteredStreamCachePolicy cachePolicy) {
+			CheckListingIndex(index);
 			lock (_lock) {
-				CheckListingIndex(index);
 				CheckNotOpened();
-				_openFragmentProvider = new FragmentProvider(this, index);
+				_openFragmentProvider = new FragmentProvider(this, index, cachePolicy);
 				_openStream = new FragmentedStream(_openFragmentProvider).OnDispose(() => { _openStream = null; _openListing = null; _openFragmentProvider = null; });
 				_openListing = index;
 				return _openStream;
@@ -167,21 +182,57 @@ namespace Sphere10.Framework {
 			}
 		}
 
-		public void Insert(int index) {
-			throw new NotImplementedException();
+		public Stream Insert(int index) => Insert(index, DefaultStreamPolicy);
+
+		public Stream Insert(int index, ClusteredStreamCachePolicy cachePolicy) {
+			CheckListingIndex(index);
+			lock (_lock) {
+				CheckNotOpened();
+				InsertListing(index, CreateListing());
+				return Open(index, cachePolicy);
+			}
 		}
 
 		public void Swap(int first, int second) {
-			throw new NotImplementedException();
+			CheckListingIndex(first);
+			CheckListingIndex(second);
+			
+			if (first == second)
+				return;
+
+			lock(_lock) {
+				CheckNotOpened();
+
+				// Get listings
+				var firstListing = GetListing(first);
+				var secondListing = GetListing(second);
+
+				// Swap listings
+				UpdateListing(first, secondListing);
+				UpdateListing(second, firstListing);
+				
+				// Update genesis-to-listing links in genesis clusters (if applicable)
+				if (firstListing.StartCluster != -1) {
+					FastWriteClusterPrev(firstListing.StartCluster, second);
+				}
+
+				if (secondListing.StartCluster != -1) {
+					FastWriteClusterPrev(secondListing.StartCluster, first);
+				}
+			}
 		}
 
-		public void Clear() {
+		public void Clear(int index) {
+			UpdateBytes(index, Array.Empty<byte>());
+		}
+
+		public void ClearAll() {
 			lock (_lock) {
 				CheckNotOpened();
 				_header.Listings = 0;
 				_header.TotalClusters = 0;
 				_clusters.Clear();
-				_listingsFragmentProvider.ResetClusterTacking();
+				_listingsFragmentProvider.Reset();
 			}
 		}
 
@@ -191,15 +242,17 @@ namespace Sphere10.Framework {
 
 		public override string ToString() => _header.ToString();
 
-		internal string ToStringWithContents() {
+		public string ToStringFullContents() {
 			var stringBuilder = new FastStringBuilder();
 			stringBuilder.AppendLine(this.ToString());
 			stringBuilder.AppendLine("Listings:");
-			foreach (var (listing, i) in _listings.WithIndex()) {
+			for (var i = 0; i < _listings.Count; i++) {
+				var listing = GetListing(i);
 				stringBuilder.AppendLine($"\t{i}: {listing}");
 			}
 			stringBuilder.AppendLine("Clusters:");
-			foreach (var (cluster, i) in _clusters.WithIndex()) {
+			for (var i = 0; i < _clusters.Count; i++) {
+				var cluster = GetCluster(i);
 				stringBuilder.AppendLine($"\t{i}: {cluster}");
 			}
 
@@ -210,12 +263,16 @@ namespace Sphere10.Framework {
 
 		#region Listings
 
+		private TStreamListing CreateListing() => new() { Size = 0, StartCluster = -1 };
+
 		private TStreamListing GetListing(int index) {
-			return _listings.Read(index);
+			var listing = _listings.Read(index);
+			if (IntegrityChecks)
+				CheckListingIntegrity(index, listing);
+			return listing;
 		}
 
-		private TStreamListing AddListing(out int index) {
-			var listing = new TStreamListing();
+		private TStreamListing AddListing(out int index, TStreamListing listing) {
 			_listings.Add(listing);
 			_header.Listings++;
 			index = _listings.Count - 1;
@@ -225,12 +282,24 @@ namespace Sphere10.Framework {
 		private void UpdateListing(int index, TStreamListing listing) {
 			_listings.Update(index, listing);
 			if (_openListing.HasValue && _openListing.Value == index)
-				_openFragmentProvider.ResetClusterTacking();
+				_openFragmentProvider.Reset();
+		}
+
+		private void InsertListing(int index, TStreamListing listing) {
+			Debug.Assert(_openStream == null);
+			// Update genesis clusters 
+			for (var i = index + 1; i < _listings.Count; i++) {
+				var shiftedListing = GetListing(i);
+				if (shiftedListing.StartCluster != -1)
+					FastWriteClusterPrev(shiftedListing.StartCluster, i + 1);
+			}
+			_listings.Insert(index, listing);
+			_header.Listings++;
 		}
 
 		private void RemoveListing(int index) {
 			for (var i = index + 1; i < _listings.Count; i++) {
-				var higherListing = _listings[i];
+				var higherListing = GetListing(i);
 				if (higherListing.StartCluster != -1)
 					FastWriteClusterPrev(higherListing.StartCluster, i - 1);
 			}
@@ -251,7 +320,7 @@ namespace Sphere10.Framework {
 			};
 			_clusters.Add(cluster);
 			if (clusterDataType == ClusterDataType.Listing)
-				_listingsFragmentProvider.ResetClusterTacking();
+				_listingsFragmentProvider.Reset();
 
 			_header.TotalClusters++;
 			return _clusters.Count - 1;
@@ -271,7 +340,16 @@ namespace Sphere10.Framework {
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		private Cluster GetCluster(int clusterIndex) => _clusters[clusterIndex];
+		private Cluster GetCluster(int clusterIndex) {
+			var cluster = _clusters[clusterIndex];
+			if (IntegrityChecks) {
+				CheckClusterTraits(clusterIndex, cluster.Traits);
+				CheckClusterIndex(cluster.Next);
+				if (!cluster.Traits.HasFlag(ClusterTraits.First | ClusterTraits.Data))
+					CheckClusterIndex(cluster.Prev);
+			}
+			return cluster;
+		}
 
 		private void UpdateCluster(int clusterIndex, Cluster cluster) => _clusters[clusterIndex] = cluster;
 
@@ -282,11 +360,15 @@ namespace Sphere10.Framework {
 			var prevPointsToListing = traits.HasFlag(ClusterTraits.First) && traits.HasFlag(ClusterTraits.Data);
 			if (!prevPointsToListing) {
 				var prev = FastReadClusterPrev(clusterIndex);
+				if (prev >= _header.TotalClusters)
+					throw new CorruptDataException(_header, clusterIndex, $"Prev index pointed to non-existent cluster {clusterIndex}");
 				if (prev != -1)
 					FastWriteClusterNext(prev, -1);  // prev.next points to deleted cluster, so make it point to nothing
 			}
 			MigrateTipClusterTo(clusterIndex);
-			_clusters.RemoveAt(^1);
+			var tipClusterIX = _clusters.Count - 1;
+			InvalidateCachedCluster(tipClusterIX);
+			_clusters.RemoveAt(tipClusterIX);
 			_header.TotalClusters--;
 		}
 
@@ -303,6 +385,8 @@ namespace Sphere10.Framework {
 				if (tipIX == nextCluster)
 					nextCluster = cluster;
 				MigrateTipClusterTo(tipIX, cluster);
+				InvalidateCachedCluster(tipIX);
+				InvalidateCachedCluster(cluster);
 				clustersRemoved++;
 				cluster = nextCluster;
 			}
@@ -311,42 +395,46 @@ namespace Sphere10.Framework {
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		private ClusterTraits FastReadClusterTraits(int clusterIndex) {
+		internal ClusterTraits FastReadClusterTraits(int clusterIndex) {
 			_clusters.ReadItemRaw(clusterIndex, 0, 1, out var bytes);
-			return (ClusterTraits)bytes[0];
+			var traits = (ClusterTraits)bytes[0];
+			if (IntegrityChecks)
+				CheckClusterTraits(clusterIndex, traits);
+			return traits;
 		}
 
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		private void FastWriteClusterTraits(int clusterIndex, ClusterTraits traits) {
+		internal void FastWriteClusterTraits(int clusterIndex, ClusterTraits traits) {
 			_clusters.WriteItemBytes(clusterIndex, 0, new byte[(byte)traits]);
 		}
 
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		private int FastReadClusterPrev(int clusterIndex) {
+		internal int FastReadClusterPrev(int clusterIndex) {
 			_clusters.ReadItemRaw(clusterIndex, sizeof(byte), 4, out var bytes);
-			return _clusters.Reader.BitConverter.ToInt32(bytes);
+			var prevCluster = _clusters.Reader.BitConverter.ToInt32(bytes);
+			if (IntegrityChecks)
+				CheckLinkedCluster(clusterIndex, prevCluster);
+			return prevCluster;
 		}
 
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		private void FastWriteClusterPrev(int clusterIndex, int prev) {
+		internal void FastWriteClusterPrev(int clusterIndex, int prev) {
 			var bytes = _clusters.Writer.BitConverter.GetBytes(prev);
 			_clusters.WriteItemBytes(clusterIndex, sizeof(byte), bytes);
 		}
 
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		private int FastReadClusterNext(int clusterIndex) {
 			_clusters.ReadItemRaw(clusterIndex, sizeof(byte) + sizeof(int), 4, out var bytes);
-			return _clusters.Reader.BitConverter.ToInt32(bytes);
+			var nextValue = _clusters.Reader.BitConverter.ToInt32(bytes);
+			if (IntegrityChecks)
+			CheckLinkedCluster(clusterIndex, nextValue);
+			return nextValue;
 		}
 
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		private void FastWriteClusterNext(int clusterIndex, int next) {
+		internal void FastWriteClusterNext(int clusterIndex, int next) {
 			var bytes = _clusters.Writer.BitConverter.GetBytes(next);
 			_clusters.WriteItemBytes(clusterIndex, sizeof(byte) + sizeof(int), bytes);
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		private void FastWriteClusterData(int clusterIndex, int offset, ReadOnlySpan<byte> data) {
+		internal void FastWriteClusterData(int clusterIndex, int offset, ReadOnlySpan<byte> data) {
 			_clusters.WriteItemBytes(clusterIndex, sizeof(byte) + sizeof(int) + sizeof(int) + offset, data);
 		}
 
@@ -354,13 +442,51 @@ namespace Sphere10.Framework {
 
 		#region Aux methods
 
+		private void CheckHeaderDataIntegrity(int rootStreamLength, ClusteredStreamStorageHeader header, IItemSerializer<Cluster> clusterSerializer, IItemSerializer<TStreamListing> listingSerializer) {
+			var clusterEnvelopeSize = clusterSerializer.StaticSize - header.ClusterSize;
+			var listingClusters = (int)Math.Ceiling(header.Listings*listingSerializer.StaticSize / (float)header.ClusterSize); 
+			if (header.TotalClusters < listingClusters)
+				throw new CorruptDataException($"Inconsistency in {nameof(ClusteredStreamStorageHeader.TotalClusters)}/{nameof(ClusteredStreamStorageHeader.Listings)}");
+			var minStreamSize = header.TotalClusters * (header.ClusterSize + clusterEnvelopeSize) + ClusteredStreamStorageHeader.ByteLength;
+			if (rootStreamLength < minStreamSize)
+				throw new CorruptDataException($"Stream too small (header gives minimum size {minStreamSize} but was {rootStreamLength})");
+		}
+
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		private void CheckListingIndex(int index, string msg = null)
 			=> Guard.Argument(0 <= index && index < _listings.Count, nameof(index), msg ?? "Index out of bounds");
 
+		private void CheckListingIntegrity(int index, TStreamListing listing) {
+			if (listing.Size == 0) {
+				if (listing.StartCluster != -1)
+					throw new CorruptDataException(_header, $"Empty listing {index} should have start cluster -1 but was {listing.StartCluster}");
+			} else if (!(0 <= listing.StartCluster && listing.StartCluster < _header.TotalClusters))
+				throw new CorruptDataException(_header, $"Listing {index} pointed to to non-existent cluster {listing.StartCluster}");
+		}
+
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		private void CheckClusterIndex(int index, string msg = null)
 			=> Guard.Argument(index == -1 || (0 <= index && index < _clusters.Count), nameof(index), msg ?? "Cluster index out of bounds (or not -1)");
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		private void CheckLinkedCluster(int sourceCluster, int linkedCluster, string msg = null) {
+			Guard.Argument(sourceCluster >= 0, nameof(sourceCluster), "Must be greater than or equal to 0");
+
+			if (linkedCluster == -1)
+				return;
+
+			if (sourceCluster == linkedCluster)
+				throw new CorruptDataException(_header, sourceCluster, $"Cluster links to itself {sourceCluster}");
+
+			if (!(0 <= linkedCluster && linkedCluster < _header.TotalClusters))
+				throw new CorruptDataException(_header, sourceCluster, msg ?? $"Cluster {sourceCluster} pointed to non-existent cluster {linkedCluster}");
+		}
+
+		private void CheckClusterTraits(int cluster, ClusterTraits traits) {
+			var bTraits = (byte)traits;
+			if (bTraits == 0 || bTraits > 7 || ((traits & ClusterTraits.Data) > 0 && (traits & ClusterTraits.Listing) > 0))
+				throw new CorruptDataException(_header, cluster, "Invalid traits");
+		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		private void CheckNotOpened() {
@@ -380,8 +506,8 @@ namespace Sphere10.Framework {
 			if (to == tipIndex)
 				return;
 
-			var tipCluster = _clusters[tipIndex];
-			var toCluster = _clusters[to];
+			var tipCluster = GetCluster(tipIndex);
+			var toCluster = GetCluster(to);
 			toCluster.Traits = tipCluster.Traits;
 			toCluster.Prev = tipCluster.Prev;
 			toCluster.Next = tipCluster.Next;
@@ -401,10 +527,12 @@ namespace Sphere10.Framework {
 				FastWriteClusterPrev(tipCluster.Next, to);
 
 			_clusters.Update(to, toCluster);
-			if (tipCluster.Traits.HasFlag(ClusterTraits.Listing))
-				_listingsFragmentProvider.ResetClusterTacking();
-			//else if (tipCluster.Traits.HasFlag(ClusterTraits.Data) && _openFragmentProvider != null)
-			//	_openFragmentProvider.ResetClusterTacking();
+		}
+
+		private void InvalidateCachedCluster(int cluster) {
+			_listingsFragmentProvider.InvalidateCluster(cluster);
+			if (_openFragmentProvider != null) 
+				_openFragmentProvider.InvalidateCluster(cluster);
 		}
 
 		#endregion
@@ -412,37 +540,40 @@ namespace Sphere10.Framework {
 		#region Inner Types
 
 		internal class FragmentProvider : IStreamFragmentProvider {
-			private readonly ClusteredStreamContainerT<TStreamContainerHeader, TStreamListing> _parent;
+			private readonly ClusteredStreamStorage<TStreamContainerHeader, TStreamListing> _parent;
+			private readonly FragmentCache _fragmentCache;
 			private readonly ClusterDataType _clusterDataType;
 			private int _currentFragment;
 			private int _currentCluster;
 			private readonly int _listingIndex;
 			private TStreamListing _listing;
+			
 
-			public FragmentProvider(ClusteredStreamContainerT<TStreamContainerHeader, TStreamListing> parent)
-				: this(parent, ClusterDataType.Listing, -1) {
+			public FragmentProvider(ClusteredStreamStorage<TStreamContainerHeader, TStreamListing> parent, ClusteredStreamCachePolicy cachePolicy)
+				: this(parent, ClusterDataType.Listing, -1, cachePolicy) {
 			}
 
-			public FragmentProvider(ClusteredStreamContainerT<TStreamContainerHeader, TStreamListing> parent, int listingIndex)
-				: this(parent, ClusterDataType.Stream, listingIndex) {
+			public FragmentProvider(ClusteredStreamStorage<TStreamContainerHeader, TStreamListing> parent, int listingIndex, ClusteredStreamCachePolicy cachePolicy)
+				: this(parent, ClusterDataType.Stream, listingIndex, cachePolicy) {
 			}
 
-			private FragmentProvider(ClusteredStreamContainerT<TStreamContainerHeader, TStreamListing> parent, ClusterDataType clusterDataType, int listingIndex) {
+			private FragmentProvider(ClusteredStreamStorage<TStreamContainerHeader, TStreamListing> parent, ClusterDataType clusterDataType, int listingIndex, ClusteredStreamCachePolicy cachePolicy) {
 				_parent = parent;
 				_clusterDataType = clusterDataType;
 				if (_clusterDataType == ClusterDataType.Stream)
 					Guard.ArgumentInRange(listingIndex, 0, _parent._header.Listings, nameof(listingIndex));
 				_listingIndex = listingIndex;
-				ResetClusterTacking();
+				_fragmentCache = new FragmentCache(cachePolicy);
+				Reset();
 			}
 
 			public long TotalBytes => _clusterDataType switch {
-				ClusterDataType.Listing => _parent.ListingsSize,
+				ClusterDataType.Listing => _parent.AllListingsSize,
 				ClusterDataType.Stream => _listing.Size,
 				_ => throw new ArgumentOutOfRangeException()
 			};
 
-			public int FragmentCount => (int)Math.Ceiling(TotalBytes / (float)_parent._header.ClusterSize);
+			public int FragmentCount => (int)Math.Ceiling(TotalBytes / (float)_parent.ClusterSize);
 
 			public ReadOnlySpan<byte> GetFragment(int index) {
 				Guard.ArgumentInRange(index, 0, FragmentCount - 1, nameof(index));
@@ -451,8 +582,8 @@ namespace Sphere10.Framework {
 			}
 
 			public bool TryMapStreamPosition(long position, out int fragmentIndex, out int fragmentPosition) {
-				fragmentIndex = (int)(position / _parent._header.ClusterSize);
-				fragmentPosition = (int)(position % _parent._header.ClusterSize);
+				fragmentIndex = (int)(position / _parent.ClusterSize);
+				fragmentPosition = (int)(position % _parent.ClusterSize);
 				return true;
 			}
 
@@ -465,7 +596,7 @@ namespace Sphere10.Framework {
 
 			public bool TrySetTotalBytes(long length, out int[] newFragments, out int[] deletedFragments) {
 				var oldLength = TotalBytes;
-				var newTotalClusters = (int)Math.Ceiling(length / (float)_parent._header.ClusterSize);
+				var newTotalClusters = (int)Math.Ceiling(length / (float)_parent.ClusterSize);
 				var oldTotalClusters = FragmentCount;
 				var currentTotalClusters = oldTotalClusters;
 				var newFragmentsL = new List<int>();
@@ -477,17 +608,19 @@ namespace Sphere10.Framework {
 					while (currentTotalClusters < newTotalClusters) {
 						_currentCluster = currentTotalClusters == 0 ? _parent.AllocateStartCluster(_listingIndex, _clusterDataType) : _parent.AllocateNextCluster(_currentCluster, _clusterDataType);
 						_currentFragment++;
+						_fragmentCache.SetCluster(_currentFragment, _currentCluster);
 						currentTotalClusters++;
 						newFragmentsL.Add(_currentFragment);
 						newClustersL.Add(_currentCluster);
 					}
 				} else if (newTotalClusters < currentTotalClusters) {
-
 					// remove clusters from tip
 					while (currentTotalClusters > newTotalClusters) {
 						var deleteCluster = _currentCluster;
 						var deleteFragment = _currentFragment;
+						_fragmentCache.InvalidateCluster(_currentCluster);
 						TryStepBack();
+
 						// Remember the current position after step back because RemoveCluster may reset this when shuffling listing clusters
 						var rememberCurrentCluster = _currentCluster;
 						var rememberCurrentFragment = _currentFragment;
@@ -504,9 +637,9 @@ namespace Sphere10.Framework {
 
 				// Erase unused portion of tip cluster when shrinking stream
 				if (length < oldLength) {
-					var unusedTipClusterBytes = (int)(newTotalClusters * _parent._header.ClusterSize - length);
+					var unusedTipClusterBytes = (int)(newTotalClusters * _parent.ClusterSize - length);
 					if (unusedTipClusterBytes > 0)
-						_parent.FastWriteClusterData(_currentCluster, _parent._header.ClusterSize - unusedTipClusterBytes, _parent.ZeroClusterBytes.Span.Slice(..unusedTipClusterBytes));
+						_parent.FastWriteClusterData(_currentCluster, _parent.ClusterSize - unusedTipClusterBytes, _parent.ZeroClusterBytes.Span.Slice(..unusedTipClusterBytes));
 				}
 
 				// Update listing if applicable
@@ -518,7 +651,7 @@ namespace Sphere10.Framework {
 						_listing.StartCluster = newClustersL[0];
 					_parent.UpdateListing(_listingIndex, _listing);
 				} else {
-					_parent.ListingsSize = (int)length;
+					_parent.AllListingsSize = (int)length;
 				}
 
 				newFragments = newFragmentsL.ToArray();
@@ -526,7 +659,12 @@ namespace Sphere10.Framework {
 				return true;
 			}
 
-			internal void ResetClusterTacking() {
+			internal void Reset() {
+				ResetClusterPointer();
+				_fragmentCache.Clear();
+			}
+
+			internal void ResetClusterPointer() {
 				switch (_clusterDataType) {
 					case ClusterDataType.Listing:
 						_currentFragment = _parent._header.Listings > 0 ? 0 : -1;
@@ -542,33 +680,61 @@ namespace Sphere10.Framework {
 				}
 			}
 
+			internal void InvalidateCluster(int cluster) {
+				if (cluster == _currentCluster)
+					ResetClusterPointer();
+				_fragmentCache.InvalidateCluster(cluster);
+			}
+
 			private void TraverseToStart() {
-				// TODO: solve for case where deliberate data-corruption results in infinite loop
+				// TODO: start moving backward from known smallest fragment 
 				while (TryStepBack()) ;
 			}
 
 			private void TraverseToEnd() {
-				// TODO: solve for case where deliberate data-corruption results in infinite loop
-				while (TryStepForward()) ;
+				// TODO: start moving forward from known greatest fragment
+				var steps = 0;
+				while (TryStepForward()) {
+					CheckSteps(steps++);
+				}
 			}
 
 			private void TraverseToFragment(int index) {
-				// TODO: solve for case where deliberate data-corruption results in infinite loop
+				if (_currentFragment == index)
+					return;
+				
+				if (_fragmentCache.TryGetCluster(index, out var cluster)) {
+					_currentFragment = index;
+					_currentCluster = cluster;
+					return;
+				}
+
+				var steps = 0;
 				if (index < _currentFragment) {
-					while (_currentFragment != index)
+					while (_currentFragment != index) {
 						if (!TryStepBack())
 							throw new InvalidOperationException($"Unable to seek to fragment {index}");
+						CheckSteps(steps++);
+					}
 				} else if (index > _currentFragment)
-					while (_currentFragment != index)
+					while (_currentFragment != index) {
 						if (!TryStepForward())
 							throw new InvalidOperationException($"Unable to seek to fragment {index}");
+						CheckSteps(steps++);
+					}
 			}
 
 			private bool TryStepBack() {
 				if (_currentFragment <= 0)
 					return false;
+
 				_currentFragment--;
-				_currentCluster = _parent.FastReadClusterPrev(_currentCluster);
+				// note: _currentCluster still points to current at this point
+				if (!_fragmentCache.TryGetCluster(_currentFragment, out var prevCluster)) {
+					_currentCluster = _parent.FastReadClusterPrev(_currentCluster);
+					_fragmentCache.SetCluster(_currentFragment, _currentCluster);
+				} else _currentCluster = prevCluster;
+
 				return true;
 			}
 
@@ -576,7 +742,9 @@ namespace Sphere10.Framework {
 				if (_currentFragment < 0)
 					return false;
 
-				var nextCluster = _parent.FastReadClusterNext(_currentCluster);
+				if (!_fragmentCache.TryGetCluster(_currentFragment + 1, out var nextCluster)) {
+					nextCluster = _parent.FastReadClusterNext(_currentCluster);
+				}
 
 				if (nextCluster == _currentCluster)
 					return false;
@@ -586,7 +754,77 @@ namespace Sphere10.Framework {
 
 				_currentFragment++;
 				_currentCluster = nextCluster;
+				_fragmentCache.SetCluster(_currentFragment, _currentCluster);
 				return true;
+			}
+
+			private void CheckSteps(int steps) {
+				if (steps > FragmentCount)
+					throw new CorruptDataException(_parent._header, $"Unable to traverse the cluster-chain due to cyclic dependency (detected at cluster {_currentCluster})");
+			}
+
+		}
+
+		internal class FragmentCache {
+			private readonly IDictionary<int, int> _fragmentToClusterMap;
+			private readonly IDictionary<int, int> _clusterToFragmentMap;
+
+			public FragmentCache(ClusteredStreamCachePolicy policy) {
+				if (policy == ClusteredStreamCachePolicy.Scan)
+					throw new NotSupportedException(policy.ToString());
+
+				_fragmentToClusterMap = new Dictionary<int, int>();
+				_clusterToFragmentMap = new Dictionary<int, int>();
+				Policy = policy;
+			}
+
+			public ClusteredStreamCachePolicy Policy { get; }
+
+			public bool TryGetCluster(int fragment, out int cluster) {
+				if (Policy == ClusteredStreamCachePolicy.None) {
+					cluster = default;
+					return false;
+				}
+				return _fragmentToClusterMap.TryGetValue(fragment, out cluster);
+			}
+
+			public void SetCluster(int fragment, int cluster) {
+				if (Policy == ClusteredStreamCachePolicy.None)
+					return;
+
+				_fragmentToClusterMap[fragment] = cluster;
+				_clusterToFragmentMap[cluster] = fragment;
+			}
+
+			public void Invalidate(int fragment, int cluster) {
+				if (Policy == ClusteredStreamCachePolicy.None)
+					return;
+
+				_fragmentToClusterMap.Remove(fragment);
+				_clusterToFragmentMap.Remove(cluster);
+			}
+			
+			public void InvalidateFragment(int fragment) {
+				if (Policy == ClusteredStreamCachePolicy.None)
+					return;
+
+				if (_fragmentToClusterMap.TryGetValue(fragment, out var cluster))
+					Invalidate(fragment, cluster);
+			}
+
+			public void InvalidateCluster(int cluster) {
+				if (Policy == ClusteredStreamCachePolicy.None) 
+					return;
+
+				if (_clusterToFragmentMap.TryGetValue(cluster, out var fragment))
+					Invalidate(fragment, cluster);
+			}
+
+			public void Clear() {
+				if (Policy == ClusteredStreamCachePolicy.None)
+					return;
+				_clusterToFragmentMap.Clear();
+				_fragmentToClusterMap.Clear();
 			}
 
 		}

@@ -79,7 +79,40 @@ namespace Sphere10.Framework.NUnit {
 				} while (expectedMoveNext);
 			}
 
-			// Test 9: Clear
+			// Test 9: Read/Remove/Update nothing from tip
+			// First fill up
+			newItems = randomItemGenerator(RNG, maxCapacity - expected.Count);
+			expected.AddRangeSequentially(newItems);
+			list.AddRange(newItems);
+			// Read nothing from tip
+			var expectedRead = expected.ReadRangeSequentially(expected.Count, 0);
+			var actualRead = list.ReadRange(list.Count, 0);
+			Assert.That(expectedRead, Is.EqualTo(actualRead).Using(itemComparer));
+
+			// Remove nothing from tip
+			expected.RemoveRangeSequentially(expected.Count, 0);
+			list.RemoveRange(list.Count, 0);
+			Assert.That(expected, Is.EqualTo(list).Using(itemComparer));
+
+			// Update nothing from tip
+			expected.UpdateRangeSequentially(expected.Count, Enumerable.Empty<T>());
+			list.UpdateRangeSequentially(list.Count, Enumerable.Empty<T>());
+			Assert.That(expected, Is.EqualTo(list).Using(itemComparer));
+
+			// Test 10: Read/Remove/Update range overflow throws
+			Assert.That(() => expected.ReadRangeSequentially(expected.Count / 2, maxCapacity + 1).ToArray(), Throws.InstanceOf<ArgumentException>());
+			Assert.That(() => list.ReadRange(list.Count / 2, maxCapacity + 1).ToArray(), Throws.InstanceOf<ArgumentException>());
+			Assert.That(() => expected.RemoveRangeSequentially(expected.Count / 2, maxCapacity + 1), Throws.InstanceOf<ArgumentException>());
+			Assert.That(() => list.RemoveRange(list.Count / 2, maxCapacity + 1), Throws.InstanceOf<ArgumentException>());
+			var updateItems = Tools.Array.Gen<T>(maxCapacity + 1, default);
+			Assert.That(() => expected.UpdateRangeSequentially(expected.Count / 2, updateItems), Throws.InstanceOf<ArgumentException>());
+			Assert.That(() => list.UpdateRange(list.Count / 2, updateItems), Throws.InstanceOf<ArgumentException>());
+
+			// Clear items (note: inconsistency could arise from test 10 due to do Singular-lists detecting argument error after mutations whereas range-lists not)
+			expected.Clear();
+			list.Clear();
+
+			// Test 11: Clear
 			for (var i = 0; i < 3; i++) {
 				Assert.That(expected, Is.EqualTo(list).Using(itemComparer));
 				// add a random amount
@@ -93,7 +126,7 @@ namespace Sphere10.Framework.NUnit {
 				list.Clear();
 			}
 
-			// Test 10: Iterate with random mutations
+			// Test 12: Iterate with random mutations
 			for (var i = 0; i < iterations; i++) {
 
 				// add a random amount

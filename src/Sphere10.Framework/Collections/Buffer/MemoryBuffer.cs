@@ -51,6 +51,7 @@ namespace Sphere10.Framework {
 		public override int Count => _length;
 
 		public override IEnumerable<int> IndexOfRange(IEnumerable<byte> items) {
+			Guard.ArgumentNotNull(items, nameof(items));
 			var results = new List<int>();
 			var itemsArr = items as byte[] ?? items.ToArray();
 			for (var i = 0; i <_internalArray.Length; i++) {
@@ -66,6 +67,7 @@ namespace Sphere10.Framework {
 		}
 
 		public override IEnumerable<byte> ReadRange(int index, int count) {
+			CheckRange(index, count);
 			// optimize for single read
 			if (count == 1)
 				return new[] { _internalArray[index] };
@@ -82,27 +84,27 @@ namespace Sphere10.Framework {
 		public ReadOnlySpan<byte> ReadSpan(int index, int count) => AsSpan(index, count);
 
 		public override void AddRange(IEnumerable<byte> items) {
+			Guard.ArgumentNotNull(items, nameof(items));
 			AddRange(items as byte[] ?? items.ToArray());
 		}
 
-		public void AddRange(ReadOnlySpan<byte> span) {
-			Write(_length, span);
+		public void AddRange(ReadOnlySpan<byte> items) {
+			Write(_length, items);
 		}
 
-		public void Write(int index, ReadOnlySpan<byte> span)
-		{
-			int newBytesCount = Math.Max(index + span.Length, _length) - _length;
+		public void Write(int index, ReadOnlySpan<byte> items) {
+			int newBytesCount = Math.Max(index + items.Length, _length) - _length;
 			
 			GrowSpaceIfRequired(newBytesCount);
 			UpdateVersion();
 			
-			if (span.Length == 1)
+			if (items.Length == 1)
 			{
-				_internalArray[index] = span[0];
+				_internalArray[index] = items[0];
 			}
 			else
 			{
-				span.CopyTo(_internalArray.AsSpan(index, span.Length));
+				items.CopyTo(_internalArray.AsSpan(index, items.Length));
 			}
 
 			_length += newBytesCount;
@@ -123,13 +125,12 @@ namespace Sphere10.Framework {
 
 
 		public override void UpdateRange(int index, IEnumerable<byte> items) {
+			Guard.ArgumentNotNull(items, nameof(items));
 			UpdateRange(index, items as byte[] ?? items.ToArray()) ;
 		}
 
 		public void UpdateRange(int index, ReadOnlySpan<byte> items) {
-			var endIndex = index + items.Length;
-			if (endIndex > _length)
-				throw new ArgumentOutOfRangeException(nameof(index), "Update range is out of bounds");
+			CheckRange(index, items.Length);
 			UpdateVersion();
 			items.CopyTo(_internalArray.AsSpan(index, items.Length));
 		}
@@ -139,6 +140,7 @@ namespace Sphere10.Framework {
 		}
 
 		public void InsertRange(int index, ReadOnlySpan<byte> items) {
+			CheckIndex(index, allowAtEnd: true);
 			GrowSpaceIfRequired(items.Length);
 			UpdateVersion();
 			var capacity = _internalArray.Length - _length;
@@ -152,8 +154,7 @@ namespace Sphere10.Framework {
 		}
 
 		public override void RemoveRange(int index, int count) {
-			if (index + count > _length)
-				throw new ArgumentOutOfRangeException(nameof(index), "Remove range out of bounds");
+			CheckRange(index, count);
 			UpdateVersion();
 
 			// Use Array.Copy to move original items, since handles overlap scenarios
@@ -177,8 +178,6 @@ namespace Sphere10.Framework {
 			_internalArray = new byte[_initialCapacity];
 			_length = 0;
 		}
-
-
 
 		private void GrowSpaceIfRequired(int newBytes) {
 			var newCapacity = _length + newBytes;

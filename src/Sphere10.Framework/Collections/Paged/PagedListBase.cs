@@ -66,6 +66,7 @@ namespace Sphere10.Framework {
 		}
 
 		public virtual IEnumerable<IEnumerable<TItem>> ReadRangeByPage(int index, int count) {
+			CheckRange(index, count);
 			CheckRequiresLoad();
 			NotifyAccessing();
 			CheckRange(index, count);
@@ -85,8 +86,7 @@ namespace Sphere10.Framework {
 		}
 
 		public override void AddRange(IEnumerable<TItem> items) {
-			if (!items.Any())
-				return;
+			Guard.ArgumentNotNull(items, nameof(items));
 			CheckRequiresLoad();
 			NotifyAccessing();
 
@@ -113,6 +113,7 @@ namespace Sphere10.Framework {
 		}
 
 		public override void UpdateRange(int index, IEnumerable<TItem> items) {
+			Guard.ArgumentNotNull(items, nameof(items));
 			CheckRequiresLoad();
 			NotifyAccessing();
 			var newItems = items.ToExtendedList();
@@ -149,6 +150,7 @@ namespace Sphere10.Framework {
 		public override IEnumerable<bool> RemoveRange(IEnumerable<TItem> items) => throw new NotSupportedException();
 
 		public override void RemoveRange(int index, int count) {
+			CheckRange(index, count, rightAligned: true);
 			CheckRequiresLoad();
 			NotifyAccessing();
 			CheckRange(index, count);
@@ -285,19 +287,36 @@ namespace Sphere10.Framework {
 
 		protected void CheckRequiresLoad() {
 			if (RequiresLoad)
-				throw new InvalidOperationException("File exists but has not been loaded");
+				throw new InvalidOperationException("Paged collection has not been loaded");
 		}
 
-		protected void CheckRange(int index, int count) {
-			Guard.Argument(InternalPages.Count > 0, nameof(index), "No pages");
-			Guard.Argument(count >= 0, nameof(index), "Must be greater than or equal to 0");
+
+		protected override void CheckIndex(int index, bool allowAtEnd = false) {
+			Guard.Ensure(InternalPages.Count > 0, "No pages");
 			var startIX = InternalPages.First().StartIndex;
 			var lastIX = InternalPages.Last().EndIndex;
-			if (index == lastIX + 1 && count == 0) return;  // special case: at index of "next item" with no count, this is valid
-			Guard.ArgumentInRange(index, startIX, lastIX, nameof(index));
-			if (count > 0)
-				Guard.ArgumentInRange(index + count - 1, startIX, lastIX, nameof(count));
+			var collectionCount = lastIX - startIX + 1;
+			Guard.CheckIndex(index, startIX, collectionCount, allowAtEnd);
 		}
+
+		protected override void CheckRange(int index, int count, bool rightAligned = false) {
+			Guard.Ensure(InternalPages.Count > 0, "No pages");
+			var startIX = InternalPages.First().StartIndex;
+			var lastIX = InternalPages.Last().EndIndex;
+			var collectionCount = lastIX - startIX + 1;
+			Guard.CheckRange(index, count, rightAligned, startIX, collectionCount);
+		}
+
+		//protected override void CheckRange(int index, int count) {
+		//	Guard.Argument(InternalPages.Count > 0, nameof(index), "No pages");
+		//	Guard.Argument(count >= 0, nameof(index), "Must be greater than or equal to 0");
+		//	var startIX = InternalPages.First().StartIndex;
+		//	var lastIX = InternalPages.Last().EndIndex;
+		//	if (index == lastIX + 1 && count == 0) return;  // special case: at index of "next item" with no count, this is valid
+		//	Guard.ArgumentInRange(index, startIX, lastIX, nameof(index));
+		//	if (count > 0)
+		//		Guard.ArgumentInRange(index + count - 1, startIX, lastIX, nameof(count));
+		//}
 
 		#region Events 
 

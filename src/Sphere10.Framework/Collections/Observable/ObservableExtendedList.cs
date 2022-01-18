@@ -38,7 +38,7 @@ namespace Sphere10.Framework {
 			InternalCollection = (IExtendedList<TItem>)base.InternalCollection;
 		}
 
-
+		
 		public int IndexOf(TItem item) => DoOperation(
 			EventTraits.Search,
 			() => InternalCollection.IndexOf(item),

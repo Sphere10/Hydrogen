@@ -99,8 +99,8 @@ namespace Sphere10.Framework {
 				Flush();
 			SuppressNotifications = true;
 			Disposing = true;
-			Clear();
 			_loadedPages.Flush(); // clear cache (should be clear except obscure flows)
+			Clear();
 		}
 
 		protected override void OnAccessing() {

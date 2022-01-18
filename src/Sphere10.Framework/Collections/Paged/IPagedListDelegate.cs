@@ -8,7 +8,7 @@ namespace Sphere10.Framework {
 
 		Action CheckRequiresLoad { get; }
 
-		Action<int, int> CheckRange { get; }
+		Action<int, int, bool> CheckRange { get; }
 
 		Func<IEnumerable<IPage<TItem>>> InternalPages { get; }
 

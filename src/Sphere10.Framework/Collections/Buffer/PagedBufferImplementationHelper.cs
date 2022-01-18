@@ -15,7 +15,7 @@ namespace Sphere10.Framework {
 
 			pagedBuffer.CheckRequiresLoad();
 			pagedBuffer.NotifyAccessing();
-			pagedBuffer.CheckRange(index, count);
+			pagedBuffer.CheckRange(index, count, false);
 
 			foreach (var pageSegment in pagedBuffer.GetPageSegments(index, count)) {
 				var page = (IBufferPage)pageSegment.Item1;
@@ -60,6 +60,7 @@ namespace Sphere10.Framework {
 		}
 
 		public static void UpdateRange(IPagedListDelegate<byte> pagedBuffer, int index, ReadOnlySpan<byte> items) {
+			pagedBuffer.CheckRange(index, items.Length, false);
 			pagedBuffer.CheckRequiresLoad();
 			pagedBuffer.NotifyAccessing();
 
@@ -87,7 +88,7 @@ namespace Sphere10.Framework {
 		public static void InsertRange(IPagedListDelegate<byte> pagedBuffer, in int count, in int index, in ReadOnlySpan<byte> items) {
 			if (index == count)
 				AddRange(pagedBuffer, items);
-			else throw new NotSupportedException("This collection can only be mutated from the end");
+			else throw new NotSupportedException("This collection can only be appended from the end");
 		}
 
 		public static Span<byte> AsSpan(IPagedListDelegate<byte> internalMethods, int index, int count) {

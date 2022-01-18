@@ -43,15 +43,18 @@ namespace Sphere10.Framework {
 		}
 
 	    public static void RemoveRangeSequentially<T>(this IList<T> list, int index, int count) {
+		    Guard.CheckRange(index, count, false, 0, list.Count);
 			if (list is List<T> listImpl) {
 	            listImpl.RemoveRange(index, count);
 	            return;
 	        }
-            while(count-- > 0)
+            while(index < list.Count && count-- > 0)
                 list.RemoveAt(index);
 	    }
 
 		public static void InsertRangeSequentially<T>(this IList<T> list, int index, IEnumerable<T> items) {
+			Guard.ArgumentNotNull(items, nameof(items));
+			Guard.CheckIndex(index, 0, list.Count, true);
 			if (list is List<T> listImpl) {
 				listImpl.InsertRange(index, items);
 				return;
@@ -63,13 +66,16 @@ namespace Sphere10.Framework {
 		}
 
 		public static void UpdateRangeSequentially<T>(this IList<T> list, int index, IEnumerable<T> items) {
-			foreach (var (item, offset) in items.WithIndex()) {
+			Guard.ArgumentNotNull(items, nameof(items));
+			var itemsArr = items as T[] ?? items.ToArray();
+			Guard.CheckRange(index, itemsArr.Length, false, 0, list.Count);
+			foreach (var (item, offset) in itemsArr.WithIndex()) {
 				list[index + offset] = item;
 			}
 		}
 
-
 		public static IEnumerable<T> ReadRangeSequentially<T>(this IList<T> list, int index, int count) {
+			Guard.CheckRange(index, count, false, 0, list.Count);
 			for (var offset = 0; offset < count; offset++) {
 				yield return list[index + offset];
 			}

@@ -47,6 +47,10 @@ namespace Sphere10.Framework {
 
 		public override IEnumerable<object[]> ReadRange(int index, int count) {
 			CheckRange(index, count);
+
+			if (count == 0)
+				return Enumerable.Empty<object[]>();
+
 			var actualCount = Math.Min(count, Count - index);
 
 			var colData = new object[_columnStore.Length][];
@@ -57,15 +61,23 @@ namespace Sphere10.Framework {
 		}
 
 		public override void RemoveRange(int index, int count) {
+			CheckRange(index, count);
+			
+			if (count == 0)
+				return;
+
 			for (var i = 0; i < _columnStore.Length; i++)
 				_columnStore[i].RemoveRange(index, count);
 		}
 
 		public override void UpdateRange(int index, IEnumerable<object[]> items) {
-			CheckIndex(index, true);
+			Guard.ArgumentNotNull(items, nameof(items));
 			var rowItems = items as object[][] ?? items.ToArray();
+			CheckRange(index, rowItems.Length);
+		
 			if (rowItems.Length == 0)
 				return;
+
 			var columnarItems = Tools.Array.Transpose(rowItems, _columnStore.Length);
 			CheckDimension(columnarItems.Length);
 			for (var i = 0; i < columnarItems.Length; i++)
@@ -76,25 +88,8 @@ namespace Sphere10.Framework {
 			_columnStore.ForEach(c => c.Clear());
 		}
 
-		private int CheckIndex(int index, bool allowAtEnd = false) {
-			if (allowAtEnd && index == Count)
-				return index;
-			Guard.ArgumentInRange(index, 0, Math.Max(0, Count - 1), nameof(index));
-			return index;
-		}
 
-		private void CheckRange(int index, int count) {
-			var startIX = 0;
-			var lastIX = startIX + (Count - 1).ClipTo(startIX, int.MaxValue);
-			if (index == lastIX + 1 && count == 0)
-				return;  // special case: at index of "next item" with no count, this is valid
-			Guard.ArgumentInRange(index, startIX, lastIX, nameof(index));
-			if (count > 0)
-				Guard.ArgumentInRange(index + count - 1, startIX, lastIX, nameof(count));
-		}
-
-
-		public void CheckDimension(int dim) {
+		private void CheckDimension(int dim) {
 			Guard.ArgumentEquals(dim, Columns.Length, nameof(dim));
 		}
 	}

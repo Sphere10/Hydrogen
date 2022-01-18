@@ -12,6 +12,7 @@
 //-----------------------------------------------------------------------
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using NUnit.Framework;
@@ -52,6 +53,26 @@ namespace Sphere10.Framework.Tests {
 
 				}
 			}
+		}
+
+		[Test]
+		public void StandardBehaviour_ListGetRangeNotSupportOverflow() {
+			var list = new List<int>();
+			list.AddRange(new[] { 1, 2, 3 });
+			Assert.That(() => list.GetRange(1, 3), Throws.InstanceOf<ArgumentException>());
+		}
+
+		[Test]
+		public void StandardBehaviour_ListRemoveRangeNotSupportOverflow() {
+			var list = new List<int>();
+			list.AddRange(new[] { 1, 2, 3 });
+			Assert.That(() => list.RemoveRange(1, 3), Throws.InstanceOf<ArgumentException>());
+		}
+
+		[Test]
+		public void StandardBehaviour_ListInsertRangeThrowsOnNull() {
+			var list = new List<int>();
+			Assert.That(() => list.InsertRange(0, null), Throws.InstanceOf<ArgumentException>());
 		}
 	}
 }

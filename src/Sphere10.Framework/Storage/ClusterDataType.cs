@@ -1,6 +1,6 @@
 ﻿namespace Sphere10.Framework {
-	public enum ClusterDataType {
-		Listing,
+	internal enum ClusterDataType {
+		Record,
 		Stream
 	}
 }

@@ -7,6 +7,7 @@ namespace Sphere10.Framework {
 	/// Decorator for an IExtendedList, but calls to non-range get routed to the range-based methods.
 	/// </summary>
 	/// <typeparam name="TItem"></typeparam>
+	/// <typeparam name="TInternalList"></typeparam>
 	public abstract class ExtendedListDecorator<TItem, TInternalList> : IExtendedList<TItem> where TInternalList : IExtendedList<TItem> {
 
 		protected ExtendedListDecorator(TInternalList internalExtendedList) {
@@ -59,9 +60,9 @@ namespace Sphere10.Framework {
 
 		public virtual IEnumerator<TItem> GetEnumerator() => InternalExtendedList.GetEnumerator();
 
-		IEnumerator IEnumerable.GetEnumerator() => this.GetEnumerator();
+		IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-		public TItem this[int index] { get => this.Read(index); set => this.Update(index, value); }
+		public TItem this[int index] { get => Read(index); set => this.Update(index, value); }
 
 		TItem IWriteOnlyExtendedList<TItem>.this[int index] { set => this[index] = value; }
 

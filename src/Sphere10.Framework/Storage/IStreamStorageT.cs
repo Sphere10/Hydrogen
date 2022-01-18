@@ -4,10 +4,13 @@ using System.IO;
 
 namespace Sphere10.Framework {
 
-	public interface IStreamStorageT<out TStreamListing> : IStreamStorage
-		where TStreamListing : IStreamListing, new() { 
+	public interface IStreamStorage<out THeader, out TRecord> : IStreamStorage
+		where THeader : IStreamStorageHeader
+		where TRecord : IStreamRecord {
 
-		IReadOnlyList<TStreamListing> Listings { get; }
+		THeader Header { get; }
+
+		IReadOnlyList<TRecord> Records { get; }
 
 	}
 

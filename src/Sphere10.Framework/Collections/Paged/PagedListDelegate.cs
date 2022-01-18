@@ -7,7 +7,7 @@ namespace Sphere10.Framework {
 		public PagedListDelegate(
 			Action updateVersion,
 			Action checkRequiresLoad,
-			Action<int, int> checkRange,
+			Action<int, int, bool> checkRange,
 			Func<IPage<TItem>, IDisposable> enterOpenPageScope,
 			Func<int, int, IEnumerable<Tuple<IPage<TItem>, int, int>>> getPageSegments,
 			Func<IEnumerable<IPage<TItem>>> internalPages,
@@ -41,7 +41,7 @@ namespace Sphere10.Framework {
 
 		public Action CheckRequiresLoad { get; }
 
-		public Action<int, int> CheckRange { get; }
+		public Action<int, int, bool> CheckRange { get; }
 
 		public Func<IEnumerable<IPage<TItem>>> InternalPages { get; }
 

@@ -53,6 +53,7 @@ namespace Sphere10.Framework {
 		public override bool IsReadOnly => false;
 
 		public override IEnumerable<int> IndexOfRange(IEnumerable<T> items) {
+			Guard.ArgumentNotNull(items, nameof(items));
 			var comparer = EqualityComparer<T>.Default;
 			var itemsArr = items as T[] ?? items.ToArray();
 			foreach (var item in itemsArr) {
@@ -68,6 +69,8 @@ namespace Sphere10.Framework {
 		}
 
 		public override IEnumerable<T> ReadRange(int index, int count) {
+			CheckRange(index, count);
+			
 			// optimize for single read
 			if (count == 1)
 				return new[] { _internalArray[index] };
@@ -82,7 +85,12 @@ namespace Sphere10.Framework {
 		}
 
 		public override void AddRange(IEnumerable<T> items) {
+			Guard.ArgumentNotNull(items, nameof(items));
 			var itemsArr = items as T[] ?? items.ToArray();
+
+			if (itemsArr.Length == 0)
+				return;
+			
 			GrowSpaceIfRequired(itemsArr.Length);
 			UpdateVersion();
 			if (itemsArr.Length == 1)
@@ -94,15 +102,21 @@ namespace Sphere10.Framework {
 		}
 
 		public override void UpdateRange(int index, IEnumerable<T> items) {
+			Guard.ArgumentNotNull(items, nameof(items));
 			var itemsArr = items as T[] ?? items.ToArray();
-			var endIndex = index + itemsArr.Length;
-			if (endIndex > _length)
-				throw new ArgumentOutOfRangeException(nameof(index), "Update range is out of bounds");
+			CheckRange(index, itemsArr.Length);
+			
+			if (itemsArr.Length == 0)
+				return;
+
 			UpdateVersion();
 			Array.Copy(itemsArr, 0, _internalArray, index, itemsArr.Length);
 		}
 
 		public override void InsertRange(int index, IEnumerable<T> items) {
+			Guard.ArgumentNotNull(items, nameof(items));
+			Guard.ArgumentInRange(index, 0, Math.Max(0, _length), nameof(index));
+
 			var itemsArr = items as T[] ?? items.ToArray();
 			GrowSpaceIfRequired(itemsArr.Length);
 			UpdateVersion();
@@ -118,13 +132,15 @@ namespace Sphere10.Framework {
 		}
 
 		public override void RemoveRange(int index, int count) {
-			if (index + count > _length)
-				throw new ArgumentOutOfRangeException(nameof(index), "Remove range out of bounds");
-			UpdateVersion();
+			CheckRange(index, count);
+
+			if (count == 0)
+				return;
 
 			// Use Array.Copy to move original items, since handles overlap scenarios
 			Array.Copy(_internalArray, index + count, _internalArray, index, (_length - (index + count)));
 			_length -= count;
+			UpdateVersion();
 		}
 
 		private void GrowSpaceIfRequired(int newItems) {

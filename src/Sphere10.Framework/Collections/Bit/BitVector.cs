@@ -143,6 +143,8 @@ namespace Sphere10.Framework {
 		}
 
 		public override void RemoveRange(int index, int count) {
+			CheckRange(index, count, rightAligned: true);
+
 			if (index + count != Count)
 				throw new NotSupportedException("This collection can only be removed from the end");
 
@@ -155,7 +157,10 @@ namespace Sphere10.Framework {
 			Guard.ArgumentNotNull(items, nameof(items));
 			var itemsArray = items as bool[] ?? items.ToArray();
 			CheckRange(index, itemsArray.Length);
-			
+
+			if (itemsArray.Length == 0)
+				return;
+
 			var endIndex = index + itemsArray.Length;
 			if (endIndex > _count)
 				throw new ArgumentOutOfRangeException(nameof(index), "Update range is out of bounds");
@@ -252,12 +257,16 @@ namespace Sphere10.Framework {
 			return -1;
 		}
 
-		private void CheckRange(int index, int count) {
-			Guard.Argument(count >= 0, nameof(index), "Must be greater than or equal to 0");
-			if (index == Count && count == 0) return; // special case: at index of "next item" with no count, this is valid
-			Guard.ArgumentInRange(index, 0, Count - 1, nameof(index));
-			if (count > 0)
-				Guard.ArgumentInRange(index + count - 1, 0, Count - 1, nameof(count));
-		}
+
+		//private void CheckRange(int index, int count) {
+		//	Guard.Argument(count >= 0, nameof(index), "Must be greater than or equal to 0");
+		//	if (index == Count && count == 0) return; // special case: at index of "next item" with no count, this is valid
+		//	Guard.ArgumentInRange(index, 0, Count - 1, nameof(index));
+		//	if (count > 0)
+		//		Guard.ArgumentInRange(index + count - 1, 0, Count - 1, nameof(count));
+		//}
+
+
 	}
+
 }

@@ -239,7 +239,7 @@ namespace Sphere10.Framework.Tests {
 				AssertEx.HasLoadedPages(collection, 3, 2);
 
                 // Remove an illegal subrange
-				Assert.Throws<NotSupportedException>(()=> collection.RemoveRange(3, 3));
+				Assert.Throws<ArgumentOutOfRangeException>(()=> collection.RemoveRange(3, 3));
 
                 // remove some items
                 collection.RemoveRange(3, 4);
@@ -344,7 +344,7 @@ namespace Sphere10.Framework.Tests {
 				AssertEx.HasLoadedPages(collection, 2, 1);
 
 				// Remove an illegal subrange
-				Assert.Throws<NotSupportedException>(() => collection.RemoveRange(1, 2));
+				Assert.Throws<ArgumentOutOfRangeException>(() => collection.RemoveRange(1, 2));
 
 				// remove some items
 				collection.RemoveRange(1, 3);
@@ -418,7 +418,7 @@ namespace Sphere10.Framework.Tests {
 				collection.Add("5");
 				collection.Add("67");
 				collection.Add("89");
-                Assert.Throws<InvalidOperationException>(() => collection.Add("0123"));
+                Assert.That(() => collection.Add("0123"), Throws.InstanceOf<InvalidOperationException>());
             }				
 		}
 

@@ -15,20 +15,20 @@
 //	/// </summary>
 //	/// <typeparam name="TKey"></typeparam>
 //	/// <typeparam name="TValue"></typeparam>
-//	/// <remarks>This is useful when the underlying KVP store isn't efficient at deletion. When deleting an item, it's listing is marked as available and re-used later.</remarks>
+//	/// <remarks>This is useful when the underlying KVP store isn't efficient at deletion. When deleting an item, it's record is marked as available and re-used later.</remarks>
 //	public class ClusteredDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>, ILoadable {
 //		public event EventHandlerEx<object> Loading { add => _kvpStore.Loading += value; remove => _kvpStore.Loading -= value; }
 //		public event EventHandlerEx<object> Loaded { add => _kvpStore.Loaded += value; remove => _kvpStore.Loaded -= value; }
 
 //		private readonly IItemSerializer<TValue> _valueSerializer;
 //		private readonly Endianness _endianness;
-//		private readonly ClusteredListImplBase<KeyValuePair<TKey, byte[]>, ItemListing> _kvpStore;
+//		private readonly ClusteredListImplBase<KeyValuePair<TKey, byte[]>, ItemRecord> _kvpStore;
 //		private readonly IEqualityComparer<TKey> _keyComparer;
 //		private readonly LookupEx<int, int> _checksumToIndexLookup;
-//		private readonly SortedList<int> _unusedListings;
+//		private readonly SortedList<int> _unusedRecords;
 
 //		/// <summary>
-//		/// Constructs a dictionary which uses an underlying <see cref="DynamicClusteredList{T, TListing}"/> to store the key-value pairs. By virtue of the dynamic clustered list no storage constraints are present
+//		/// Constructs a dictionary which uses an underlying <see cref="DynamicClusteredList{T, TRecord}"/> to store the key-value pairs. By virtue of the dynamic clustered list no storage constraints are present
 //		/// but performs slower.
 //		/// </summary>
 //		/// <param name="clusterDataSize"></param>
@@ -39,22 +39,22 @@
 //		/// <param name="endianess"></param>
 //		public ClusteredDictionary(int clusterDataSize, Stream stream, IItemSerializer<TKey> keySerializer, IItemSerializer<TValue> valueSerializer, IEqualityComparer<TKey> keyComparer = null, Endianness endianess = Endianness.LittleEndian) 
 //		: this(
-//			new DynamicClusteredList<KeyValuePair<TKey, byte[]>, ItemListing>(
+//			new DynamicClusteredList<KeyValuePair<TKey, byte[]>, ItemRecord>(
 //				clusterDataSize, 
 //				stream, 
 //				new KeyValuePairSerializer<TKey, byte[]> (keySerializer, new ByteArraySerializer()),
-//				new ItemListingSerializer(), 
+//				new ItemRecordSerializer(), 
 //				new KeyValuePairEqualityComparer<TKey, byte[]>(keyComparer, ByteArrayEqualityComparer.Instance)
 //			), 
 //			valueSerializer,
 //			keyComparer,
 //			endianess
 //		) {
-//			_kvpStore.ListingActivator = NewListingInstance;
+//			_kvpStore.RecordActivator = NewRecordInstance;
 //		}
 
 //		/// <summary>
-//		/// Constructs a dictionary which uses an underlying <see cref="StaticClusteredList{T, TListing}"/> to store the key-value pairs. By virtue of the static clustered list the performance is better but
+//		/// Constructs a dictionary which uses an underlying <see cref="StaticClusteredList{T, TRecord}"/> to store the key-value pairs. By virtue of the static clustered list the performance is better but
 //		/// the size constraints must be known on activation.
 //		/// </summary>
 //		/// <param name="clusterDataSize"></param>
@@ -65,20 +65,20 @@
 //		/// <param name="endianess"></param>
 //		public ClusteredDictionary(int clusterDataSize, int maxItems, long maxStorageBytes, Stream stream, IItemSerializer<TKey> keySerializer, IItemSerializer<TValue> valueSerializer, IEqualityComparer<TKey> keyComparer = null, Endianness endianess = Endianness.LittleEndian) 
 //		: this(
-//			new StaticClusteredList<KeyValuePair<TKey, byte[]>, ItemListing>(
+//			new StaticClusteredList<KeyValuePair<TKey, byte[]>, ItemRecord>(
 //				clusterDataSize, 
 //				maxItems, 
 //				maxStorageBytes, 
 //				stream, 
 //				new KeyValuePairSerializer<TKey, byte[]>(keySerializer, new ByteArraySerializer()),
-//				new ItemListingSerializer(),
+//				new ItemRecordSerializer(),
 //				new KeyValuePairEqualityComparer<TKey, byte[]>(keyComparer, ByteArrayEqualityComparer.Instance)
 //			),
 //			valueSerializer,
 //			keyComparer,
 //			endianess
 //		) {
-//			_kvpStore.ListingActivator = NewListingInstance;
+//			_kvpStore.RecordActivator = NewRecordInstance;
 //		}
 
 //		/// <summary>
@@ -88,25 +88,25 @@
 //		/// <param name="valueSerializer"></param>
 //		/// <param name="keyComparer"></param>
 //		/// <param name="endianess"></param>
-//		private ClusteredDictionary(ClusteredListImplBase<KeyValuePair<TKey, byte[]>, ItemListing> kvpStore, IItemSerializer<TValue> valueSerializer, IEqualityComparer<TKey> keyComparer = null, Endianness endianess = Endianness.LittleEndian) {
+//		private ClusteredDictionary(ClusteredListImplBase<KeyValuePair<TKey, byte[]>, ItemRecord> kvpStore, IItemSerializer<TValue> valueSerializer, IEqualityComparer<TKey> keyComparer = null, Endianness endianess = Endianness.LittleEndian) {
 //			_keyComparer = keyComparer ?? EqualityComparer<TKey>.Default;
 //			_kvpStore = kvpStore;
 //			_valueSerializer = valueSerializer;
 //			_endianness = endianess;
 //			_checksumToIndexLookup = new LookupEx<int, int>();
-//			_unusedListings = new();
+//			_unusedRecords = new();
 //			kvpStore.Loaded += _ => RefreshChecksumToIndexLookup();
 //			if (!kvpStore.RequiresLoad)
 //				RefreshChecksumToIndexLookup();
 //		}
 
 //		public override ICollection<TKey> Keys => _kvpStore
-//		                                          .Where((_, i) => !IsUnusedListing(i))
+//		                                          .Where((_, i) => !IsUnusedRecord(i))
 //		                                          .Select(kvp => kvp.Key)
 //		                                          .ToList();
 
 //		public override ICollection<TValue> Values => _kvpStore
-//		                                              .Where((_, i) => !IsUnusedListing(i))
+//		                                              .Where((_, i) => !IsUnusedRecord(i))
 //		                                              .Select(kvp => DeserializeValue(kvp.Value))
 //		                                              .ToList();
 
@@ -114,7 +114,7 @@
 
 //		protected IEnumerable<KeyValuePair<TKey, TValue>> KeyValuePairs =>
 //			_kvpStore
-//				.Where((_, i) => !IsUnusedListing(i))
+//				.Where((_, i) => !IsUnusedRecord(i))
 //				.Select(kvp => new KeyValuePair<TKey, TValue>(kvp.Key, DeserializeValue(kvp.Value)));
 
 //		public override void Add(TKey key, TValue value) {
@@ -123,11 +123,11 @@
 //			var newBytes = SerializeValue(value);
 //			var newStorageKVP = new KeyValuePair<TKey, byte[]>(key, newBytes);
 //			if (TryFindKVP(key, out var index, out _)) {
-//				// Updating value only, listings (and checksum) don't change  when updating
+//				// Updating value only, records (and checksum) don't change  when updating
 //				_kvpStore[index] = newStorageKVP;
-//				var listing = _kvpStore.Listings[index];
-//				listing.Traits = listing.Traits.CopyAndSetFlags(ItemListingTraits.Used, true);
-//				_kvpStore.UpdateListing(index, listing);
+//				var record = _kvpStore.Records[index];
+//				record.Traits = record.Traits.CopyAndSetFlags(ItemRecordTraits.Used, true);
+//				_kvpStore.UpdateRecord(index, record);
 //			} else {
 //				AddInternal(newStorageKVP);
 //			}
@@ -148,7 +148,7 @@
 //			CheckLoaded();
 //			return
 //				_checksumToIndexLookup[CalculateKeyChecksum(key)]
-//					.Where(index => !IsUnusedListing(index))
+//					.Where(index => !IsUnusedRecord(index))
 //					.Select(_kvpStore.Read)
 //					.Any(item => _keyComparer.Equals(item.Key, key));
 //		}
@@ -157,10 +157,10 @@
 //			CheckLoaded();
 //			_kvpStore.Clear();
 //			_checksumToIndexLookup.Clear();
-//			_unusedListings.Clear();
+//			_unusedRecords.Clear();
 //		}
 
-//		public override int Count => _kvpStore.Count - _unusedListings.Count;
+//		public override int Count => _kvpStore.Count - _unusedRecords.Count;
 
 //		public override bool IsReadOnly { get; }
 
@@ -218,21 +218,21 @@
 
 		
 //		public void Shrink() {
-//			// delete all unused listings from _kvpStore
+//			// delete all unused records from _kvpStore
 //			// deletes item right to left
-//			// possible optimization: a connected neighbourhood of unused listings can be deleted 
+//			// possible optimization: a connected neighbourhood of unused records can be deleted 
 //			CheckLoaded();
-//			for (var i = _unusedListings.Count - 1; i >=0; i--) {
-//				var index = _unusedListings[i];
+//			for (var i = _unusedRecords.Count - 1; i >=0; i--) {
+//				var index = _unusedRecords[i];
 //				_kvpStore.RemoveAt(i);
-//				_unusedListings.RemoveAt(i);
+//				_unusedRecords.RemoveAt(i);
 //			}
 //		}
 
 //		public override IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator() {
 //			var version = _kvpStore.Version;
 //			return _kvpStore
-//			  .Where((_, i) => !_unusedListings.Contains(i))
+//			  .Where((_, i) => !_unusedRecords.Contains(i))
 //			  .Select(storageKVP => new KeyValuePair<TKey, TValue>(storageKVP.Key, DeserializeValue(storageKVP.Value)))
 //			  .GetEnumerator();
 //		}
@@ -253,9 +253,9 @@
 //		}
 
 //		private void AddInternal(KeyValuePair<TKey, byte[]> item) {
-//			if (_unusedListings.Any()) {
-//				var index = ConsumeUnusedlisting();
-//				MarkListingAsUsed(index, item.Key);
+//			if (_unusedRecords.Any()) {
+//				var index = ConsumeUnusedrecord();
+//				MarkRecordAsUsed(index, item.Key);
 //				_kvpStore.Update(index, item);
 //			} else {
 //				_kvpStore.Add(item);
@@ -264,46 +264,46 @@
 //		}
 
 //		private void RemoveInternal(TKey key, int index) {
-//			// We don't delete the instance, we mark is as unused. Use Shrink to intelligently remove unused listings.
+//			// We don't delete the instance, we mark is as unused. Use Shrink to intelligently remove unused records.
 //			var kvp = KeyValuePair.Create(key, null as byte[]);
 //			_kvpStore.Update(index, kvp);
-//			MarkListingAsUnused(index);  // listing has to be updated after _kvpStore update since it removes/creates under the hood
+//			MarkRecordAsUnused(index);  // record has to be updated after _kvpStore update since it removes/creates under the hood
 //		}
 
-//		private ItemListing NewListingInstance(object source, KeyValuePair<TKey, byte[]> item, int itemSizeBytes, int clusterStartIndex)
+//		private ItemRecord NewRecordInstance(object source, KeyValuePair<TKey, byte[]> item, int itemSizeBytes, int clusterStartIndex)
 //			=> new() {
 //				Size = itemSizeBytes,
 //				ClusterStartIndex = clusterStartIndex,
-//				Traits = ItemListingTraits.Used,
+//				Traits = ItemRecordTraits.Used,
 //				KeyChecksum = CalculateKeyChecksum(item.Key)
 //			};
 
-//		private bool IsUnusedListing(int index) => _unusedListings.Contains(index);
+//		private bool IsUnusedRecord(int index) => _unusedRecords.Contains(index);
 		
 
-//		private int ConsumeUnusedlisting() {
-//			var index = _unusedListings[0];
-//			_unusedListings.RemoveAt(0);
+//		private int ConsumeUnusedrecord() {
+//			var index = _unusedRecords[0];
+//			_unusedRecords.RemoveAt(0);
 //			return index;
 //		}
 
-//		private void MarkListingAsUnused(int index) {
-//			var listing = _kvpStore.Listings[index];
-//			Guard.Ensure(listing.Traits.HasFlag(ItemListingTraits.Used), "Listing not in used state");
-//			_checksumToIndexLookup.Remove(listing.KeyChecksum, index);
-//			listing.KeyChecksum = -1;
-//			listing.Traits = listing.Traits.CopyAndSetFlags(ItemListingTraits.Used, false);
-//			_kvpStore.UpdateListing(index, listing);
-//			_unusedListings.Add(index);
+//		private void MarkRecordAsUnused(int index) {
+//			var record = _kvpStore.Records[index];
+//			Guard.Ensure(record.Traits.HasFlag(ItemRecordTraits.Used), "Record not in used state");
+//			_checksumToIndexLookup.Remove(record.KeyChecksum, index);
+//			record.KeyChecksum = -1;
+//			record.Traits = record.Traits.CopyAndSetFlags(ItemRecordTraits.Used, false);
+//			_kvpStore.UpdateRecord(index, record);
+//			_unusedRecords.Add(index);
 //		}
 
-//		private void MarkListingAsUsed(int index, TKey key) {
-//			var listing = _kvpStore.Listings[index];
-//			Guard.Ensure(!listing.Traits.HasFlag(ItemListingTraits.Used), "Listing not in unused state");
-//			listing.KeyChecksum = CalculateKeyChecksum(key);
-//			listing.Traits = listing.Traits.CopyAndSetFlags(ItemListingTraits.Used, true);
-//			_kvpStore.UpdateListing(index, listing);
-//			_checksumToIndexLookup.Add(listing.KeyChecksum, index);
+//		private void MarkRecordAsUsed(int index, TKey key) {
+//			var record = _kvpStore.Records[index];
+//			Guard.Ensure(!record.Traits.HasFlag(ItemRecordTraits.Used), "Record not in unused state");
+//			record.KeyChecksum = CalculateKeyChecksum(key);
+//			record.Traits = record.Traits.CopyAndSetFlags(ItemRecordTraits.Used, true);
+//			_kvpStore.UpdateRecord(index, record);
+//			_checksumToIndexLookup.Add(record.KeyChecksum, index);
 //		}
 		
 //		private byte[] SerializeValue(TValue value)
@@ -317,13 +317,13 @@
 		
 //		private void RefreshChecksumToIndexLookup() {
 //			_checksumToIndexLookup.Clear();
-//			_unusedListings.Clear();
-//			for (var i = 0; i < _kvpStore.Listings.Count; i++) {
-//				var listing = _kvpStore.Listings[i];
-//				if (listing.Traits.HasFlag(ItemListingTraits.Used))
-//					_checksumToIndexLookup.Add(listing.KeyChecksum, i);
+//			_unusedRecords.Clear();
+//			for (var i = 0; i < _kvpStore.Records.Count; i++) {
+//				var record = _kvpStore.Records[i];
+//				if (record.Traits.HasFlag(ItemRecordTraits.Used))
+//					_checksumToIndexLookup.Add(record.KeyChecksum, i);
 //				else
-//					_unusedListings.Add(i);
+//					_unusedRecords.Add(i);
 //			}
 //		}
 
@@ -333,29 +333,29 @@
 //		}
 
 //		[StructLayout(LayoutKind.Sequential)]
-//		private struct ItemListing : IClusteredItemListing {
+//		private struct ItemRecord : IClusteredItemRecord {
 //			public int ClusterStartIndex { get; set; }
 
 //			public int Size { get; set; }
 
 //			public int KeyChecksum { get; set; } 
 
-//			public ItemListingTraits Traits { get; set; }
+//			public ItemRecordTraits Traits { get; set; }
 
 //		}
 
 //		[Flags]
-//		private enum ItemListingTraits : byte {
+//		private enum ItemRecordTraits : byte {
 //			Used = 1 << 0
 //		}
 
-//		private class ItemListingSerializer : StaticSizeObjectSerializer<ItemListing> {
+//		private class ItemRecordSerializer : StaticSizeObjectSerializer<ItemRecord> {
 
-//			public ItemListingSerializer()
+//			public ItemRecordSerializer()
 //				: base(sizeof(int) + sizeof(int) + sizeof(int) + sizeof(byte)) {
 //			}
 
-//			public override bool TrySerialize(ItemListing item, EndianBinaryWriter writer) {
+//			public override bool TrySerialize(ItemRecord item, EndianBinaryWriter writer) {
 //				writer.Write(item.ClusterStartIndex);
 //				writer.Write(item.Size);
 //				writer.Write(item.KeyChecksum);
@@ -363,12 +363,12 @@
 //				return true;
 //			}
 
-//			public override bool TryDeserialize(EndianBinaryReader reader, out ItemListing item) {
-//				item = new ItemListing {
+//			public override bool TryDeserialize(EndianBinaryReader reader, out ItemRecord item) {
+//				item = new ItemRecord {
 //					ClusterStartIndex = reader.ReadInt32(),
 //					Size = reader.ReadInt32(),
 //					KeyChecksum = reader.ReadInt32(),
-//					Traits = (ItemListingTraits)reader.ReadByte()
+//					Traits = (ItemRecordTraits)reader.ReadByte()
 //				};
 //				return true;
 //			}

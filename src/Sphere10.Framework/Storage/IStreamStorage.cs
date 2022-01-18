@@ -17,7 +17,7 @@ namespace Sphere10.Framework {
 
 		void Swap(int first, int second);
 
-		void ClearAll();
+		void Clear();
 
 	}
 

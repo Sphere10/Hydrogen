@@ -1,14 +1,15 @@
 ﻿using System.IO;
+using System.Text.RegularExpressions;
 
 namespace Sphere10.Framework {
 
-	public class ClusteredStreamStorageHeader {
+	public class ClusteredStreamStorageHeader : IStreamStorageHeader {
 		public const int ByteLength = 256;
 
 		private const int VersionOffset = 0;
 		private const int ClusterSizeOffset = VersionOffset + sizeof(byte);
 		private const int TotalClustersOffset = ClusterSizeOffset + sizeof(int);
-		private const int ListingsOffset = TotalClustersOffset + sizeof(int);
+		private const int RecordsOffset = TotalClustersOffset + sizeof(int);
 
 		private Stream _headerStream;
 		private EndianBinaryReader _reader;
@@ -17,9 +18,9 @@ namespace Sphere10.Framework {
 		private byte? _version;
 		private int? _clusterSize;
 		private int? _totalClusters;
-		private int? _listings;
+		private int? _records;
 
-		public virtual void AttachTo(Stream rootStream, Endianness endianness) {
+		public void AttachTo(Stream rootStream, Endianness endianness) {
 			Guard.ArgumentNotNull(rootStream, nameof(rootStream));
 			Guard.Argument(rootStream.Length >= ByteLength, nameof(rootStream), "Missing header");
 			_headerStream = new BoundedStream(rootStream, 0, 255);
@@ -28,11 +29,10 @@ namespace Sphere10.Framework {
 			_version = null;
 			_clusterSize = null;
 			_totalClusters = null;
-			_listings = null;
-			CheckHeaderIntegrity();
+			_records = null;
 		}
 
-		public virtual void CreateIn(byte version, Stream rootStream, int clusterSize, Endianness endianness) {
+		public void CreateIn(byte version, Stream rootStream, int clusterSize, Endianness endianness) {
 			Guard.ArgumentNotNull(rootStream, nameof(rootStream));
 			Guard.Argument(rootStream.Length == 0, nameof(rootStream), "Must be empty");
 			rootStream.Seek(0, SeekOrigin.Begin);
@@ -40,11 +40,24 @@ namespace Sphere10.Framework {
 			writer.Write(version); // Version
 			writer.Write(clusterSize); // ClusterSize
 			writer.Write((int)0); // TotalClusters 
-			writer.Write((int)0); // Listings
+			writer.Write((int)0); // Records
 			writer.Write(Tools.Array.Gen<byte>(ByteLength - sizeof(byte) - sizeof(int) - sizeof(int) - sizeof(int), 0)); // header padding
 			AttachTo(rootStream, endianness);
 		}
 
+		public void CheckHeaderIntegrity() {
+			if (Version != 1)
+				throw new CorruptDataException($"Corrupt header (Version field was {Version} bytes)");
+
+			if (ClusterSize <= 0)
+				throw new CorruptDataException($"Corrupt header (ClusterSize field was {ClusterSize} bytes)");
+
+			if (TotalClusters < 0)
+				throw new CorruptDataException($"Corrupt header (TotalClusters was {TotalClusters})");
+
+			if (RecordsCount < 0)
+				throw new CorruptDataException($"Corrupt header (Records field was {RecordsCount})");
+		}
 
 		public byte Version {
 			get {
@@ -98,37 +111,27 @@ namespace Sphere10.Framework {
 			}
 		}
 
-		public int Listings {
+	//	public override int Records => RecordsCount;
+
+		public int RecordsCount {
 			get {
-				if (!_listings.HasValue) {
-					_headerStream.Seek(ListingsOffset, SeekOrigin.Begin);
-					_listings = _reader.ReadInt32();
+				if (!_records.HasValue) {
+					_headerStream.Seek(RecordsOffset, SeekOrigin.Begin);
+					_records = _reader.ReadInt32();
 				}
-				return _listings.Value;
+				return _records.Value;
 			}
 			set {
-				if (_listings == value)
+				if (_records == value)
 					return;
-				_listings = value;
-				_headerStream.Seek(ListingsOffset, SeekOrigin.Begin);
-				_writer.Write(_listings.Value);
+				_records = value;
+				_headerStream.Seek(RecordsOffset, SeekOrigin.Begin);
+				_writer.Write(_records.Value);
 			}
 		}
 
-		public override string ToString() => $"[BlobContainer] Version: {Version}, Cluster Size: {ClusterSize}, Total Clusters: {TotalClusters}, Listings: {Listings}";
+		public override string ToString() => $"[ClusteredStreamStorage] Version: {Version}, Cluster Size: {ClusterSize}, Total Clusters: {TotalClusters}, Records: {RecordsCount}";
 
-		private void CheckHeaderIntegrity() {
-			if (Version != 1)
-				throw new CorruptDataException($"Corrupt header (Version field was {Version} bytes)");
-
-			if (ClusterSize <= 0)
-				throw new CorruptDataException($"Corrupt header (ClusterSize field was {ClusterSize} bytes)");
-
-			if (TotalClusters < 0)
-				throw new CorruptDataException($"Corrupt header (TotalClusters was {TotalClusters})");
-
-			if (Listings < 0)
-				throw new CorruptDataException($"Corrupt header (Listings field was {Listings})");
-		}
 	}
+
 }

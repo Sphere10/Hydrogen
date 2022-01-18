@@ -9,7 +9,7 @@ using Sphere10.Framework.NUnit;
 
 namespace Sphere10.Framework.Tests {
 
-	public class ClusteredCollectionTestsBase {
+	public class StreamedCollectionTestsBase {
 
         protected IDisposable CreateStream(StorageType storageType, int estimatedMaxByteSize, out Stream stream) {
             var disposables = new Disposables();

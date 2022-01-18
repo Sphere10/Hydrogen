@@ -53,10 +53,13 @@ namespace Sphere10.Framework {
 
 			// Append segment
 			var appendItems = updateCount > 0 ? itemsArr.Skip(updateCount).ToArray() : itemsArr;
-			var appendCount = AppendInternal(appendItems, out var appendedItemsSpace);
-			Count += appendCount;
-			EndIndex += appendCount;
-			Size += appendedItemsSpace;
+			var appendCount = 0;
+			if (appendItems.Length > 0) {
+				appendCount = AppendInternal(appendItems, out var appendedItemsSpace);
+				Count += appendCount;
+				EndIndex += appendCount;
+				Size += appendedItemsSpace;
+			}
 
 			var totalWriteCount = updateCount + appendCount;
 			// Was unable to write the first element in an empty page, item too large

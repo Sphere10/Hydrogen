@@ -30,7 +30,7 @@ namespace Sphere10.Framework.Tests {
         public void ThrowsWhenItemSerializerSerializesIncorrectAmount() {
 			// Tests for a bug found in initial impl of ClusteredDictionary caused by a broken ItemSerializer
 			using var stream = new MemoryStream();
-	        var list = new StreamPagedList<TestStruct>(new ItemListingSerializer(true), stream) { IncludeListHeader = true };
+	        var list = new StreamPagedList<TestStruct>(new ItemRecordSerializer(true), stream) { IncludeListHeader = true };
 			Assert.That( () => list.Add(default), Throws.Exception);
         }
 
@@ -39,15 +39,15 @@ namespace Sphere10.Framework.Tests {
         public void DoesNotThrowWhenItemSerializerSerializesCorrectAmount() {
 	        // Tests for a bug found in initial impl of ClusteredDictionary caused by a broken ItemSerializer
 	        using var stream = new MemoryStream();
-	        var list = new StreamPagedList<TestStruct>(new ItemListingSerializer(false), stream) { IncludeListHeader = true };
+	        var list = new StreamPagedList<TestStruct>(new ItemRecordSerializer(false), stream) { IncludeListHeader = true };
 	        Assert.That(() => list.Add(default), Throws.Nothing);
         }
 
 
-		private class ItemListingSerializer : StaticSizeItemSizer<TestStruct>, IItemSerializer<TestStruct> {
+		private class ItemRecordSerializer : StaticSizeItemSizer<TestStruct>, IItemSerializer<TestStruct> {
 	        private readonly bool _simulateBug;
 
-	        public ItemListingSerializer(bool simulateBug)
+	        public ItemRecordSerializer(bool simulateBug)
 		        : base(sizeof(int) + sizeof(int) + sizeof(int) + sizeof(byte)) {
 		        _simulateBug = simulateBug;
 	        }

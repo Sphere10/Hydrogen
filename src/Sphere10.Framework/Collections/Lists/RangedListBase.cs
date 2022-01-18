@@ -10,7 +10,6 @@ namespace Sphere10.Framework {
 	/// </summary>
 	/// <typeparam name="T"></typeparam>
 	public abstract class RangedListBase<T> : ExtendedListBase<T> {
-
 		internal volatile int Version;
 
 		protected RangedListBase() {

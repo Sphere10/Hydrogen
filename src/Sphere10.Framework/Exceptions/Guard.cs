@@ -12,6 +12,24 @@ namespace Sphere10.Framework {
 	/// </summary>
 	public static class Guard {
 
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static void CheckIndex(int index, int collectionStartIndex, int collectionCount, bool allowAtEnd) {
+			if (allowAtEnd && index == collectionCount)
+				return;
+			CheckRange(index, 1, false, collectionStartIndex, collectionCount);
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static void CheckRange(int index, int count, bool rightMostAligned, int collectionStartIndex, int collectionCount) {
+			ArgumentGTE(index, collectionStartIndex, nameof(index));
+			ArgumentGTE(count, 0, nameof(count));
+			if (rightMostAligned)
+				ArgumentEquals(collectionCount - index, count, nameof(count), "Specified range must be aligned to right-most of collection");
+			else
+				ArgumentGTE(collectionCount - index, count, nameof(count), "Specified range is beyond the boundaries of the collection");
+		}
+
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static void FileExists(string path) {
 			if (!File.Exists(path))
@@ -85,21 +103,6 @@ namespace Sphere10.Framework {
 		/// <param name="maxInclusive">The maximum allowed value of the argument</param>
 		/// <param name="paramName">The name of the argument</param>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static void ArgumentInRange(long value, long minInclusive, long maxInclusive, string paramName) {
-			if (value < minInclusive || value > maxInclusive) {
-				throw new ArgumentOutOfRangeException(paramName, value,
-					$"Value should be in range [{minInclusive} - {maxInclusive}]");
-			}
-		}
-
-		/// <summary>
-		/// Throws an ArgumentOutOfRangeException if the specified condition is not met.
-		/// </summary>
-		/// <param name="value">The value of the argument</param>
-		/// <param name="minInclusive">The minimum allowed value of the argument</param>
-		/// <param name="maxInclusive">The maximum allowed value of the argument</param>
-		/// <param name="paramName">The name of the argument</param>
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static void ArgumentInRange(ulong value, ulong minInclusive, ulong maxInclusive, string paramName) {
 			if (value < minInclusive || value > maxInclusive) {
 				throw new ArgumentOutOfRangeException(paramName, value,
@@ -108,24 +111,39 @@ namespace Sphere10.Framework {
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static void ArgumentEquals(long value, long expected, string paramName) {
-			if (value != expected) {
-				throw new ArgumentOutOfRangeException(paramName, value,
-					$"Value should be {expected}");
-			}
-		}
-
-
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static void ArgumentInRange(int value, int minInclusive, int maxInclusive, string paramName) {
-			ArgumentInRange(value, minInclusive, maxInclusive, paramName, $"Value should be in range [{minInclusive} - {maxInclusive}]");
+		public static void ArgumentEquals(long value, long expected, string paramName, string message = null) {
+			if (value != expected) 
+				throw new ArgumentOutOfRangeException(paramName, value, message ?? $"Value should be {expected}");
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static void ArgumentInRange(int value, int minInclusive, int maxInclusive, string paramName, string message) {
-			if (value < minInclusive || value > maxInclusive) {
-				throw new ArgumentOutOfRangeException(paramName, value, message);
-			}
+		public static void ArgumentLT(long value, long operand, string paramName, string message = null) {
+			if (value >= operand)
+				throw new ArgumentOutOfRangeException(paramName, value, message ?? $"Must be less than {operand} but was {value}");
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static void ArgumentLTE(long value, long operand, string paramName, string message = null) {
+			if (value > operand)
+				throw new ArgumentOutOfRangeException(paramName, value, message ?? $"Must be less than or equal to {operand} but was {value}");
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static void ArgumentGT(long value, long operand, string paramName, string message = null) {
+			if (value <= operand)
+				throw new ArgumentOutOfRangeException(paramName, value, message ?? $"Must be greater than {operand} but was {value}");
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static void ArgumentGTE(long value, long operand, string paramName, string message = null) {
+			if (value < operand)
+				throw new ArgumentOutOfRangeException(paramName, value, message ?? $"Must be greater than or equal to {operand} but was {value}");
+		}
+		
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static void ArgumentInRange(long value, long minInclusive, long maxInclusive, string paramName, string message = null) {
+			if (value < minInclusive || value > maxInclusive) 
+				throw new ArgumentOutOfRangeException(paramName, value, message ?? $"Value should be in range [{minInclusive} - {maxInclusive}]");
 		}
 
 		/// <summary>
@@ -191,5 +209,5 @@ namespace Sphere10.Framework {
                 throw new InvalidOperationException(message ?? "Internal error");
         }
 
-    }
+	}
 }

@@ -7,7 +7,7 @@ namespace Sphere10.Framework {
 	/// <summary>
 	/// A stream container which stores item streams by interlacing them over a single logical stream using a clustering approach similar to that of OS file-system. This
 	/// component can be used to store multiple streams over a single file, all of whom can be dynamically sized.  The implementation is optimized for arbitrarily large data scenarios
-	/// without space/time/memory complexity issues and no load-time required. As a result, a <see cref="ClusteredStreamStorage"/> is suitable
+	/// without space/time/memory complexity issues and no load-time required. As a result, a <see cref="ClusteredStorage"/> is suitable
 	/// as a general-purpose file-format for storing an application static and/or dynamic data.
 	/// </summary>
 	/// <remarks>
@@ -39,31 +39,31 @@ namespace Sphere10.Framework {
 	///  - Records always link to the (First | Data) cluster of their stream.
 	///  - Clusters with traits (First | Data) re-purpose the Prev field to denote the record.
 	/// </remarks>
-	public class ClusteredStreamStorage<TStreamRecord> : ClusteredStreamStorageBase<ClusteredStreamStorageHeader, TStreamRecord>
-		where TStreamRecord : IClusteredStreamRecord, new() {
+	public class ClusteredStorage<TStreamRecord> : ClusteredStorageBase<ClusteredStorageHeader, TStreamRecord>
+		where TStreamRecord : IClusteredRecord, new() {
 		
 		
-		public ClusteredStreamStorage(Stream rootStream, int clusterSize, IItemSerializer<TStreamRecord> recordSerializer, Endianness endianness = Endianness.LittleEndian, ClusteredStreamCachePolicy recordsCachePolicy = ClusteredStreamCachePolicy.None)
+		public ClusteredStorage(Stream rootStream, int clusterSize, IItemSerializer<TStreamRecord> recordSerializer, Endianness endianness = Endianness.LittleEndian, ClusteredStorageCachePolicy recordsCachePolicy = ClusteredStorageCachePolicy.None)
 			: base(rootStream, clusterSize, recordSerializer, endianness, recordsCachePolicy) {
 		}
 
-		protected override ClusteredStreamStorageHeader CreateHeader() => new();
+		protected override ClusteredStorageHeader CreateHeader() => new();
 
 		protected override TStreamRecord NewRecord() => new();
 
 	}
 
 
-	public class ClusteredStreamStorage : ClusteredStreamStorage<ClusteredStreamRecord>  {
+	public class ClusteredStorage : ClusteredStorage<ClusteredRecord>  {
 
-		public ClusteredStreamStorage(Stream rootStream, int clusterSize,  Endianness endianness = Endianness.LittleEndian, ClusteredStreamCachePolicy recordsCachePolicy = ClusteredStreamCachePolicy.None) 
-			: base(rootStream, clusterSize, new ClusteredStreamRecordSerializer(), endianness, recordsCachePolicy) {
+		public ClusteredStorage(Stream rootStream, int clusterSize,  Endianness endianness = Endianness.LittleEndian, ClusteredStorageCachePolicy recordsCachePolicy = ClusteredStorageCachePolicy.None) 
+			: base(rootStream, clusterSize, new ClusteredRecordSerializer(), endianness, recordsCachePolicy) {
 		}
 
-		protected override ClusteredStreamRecord NewRecord() => new() { Size = 0, StartCluster = -1 };
+		protected override ClusteredRecord NewRecord() => new() { Size = 0, StartCluster = -1 };
 
-		public static ClusteredStreamStorage Load(Stream rootStream, Endianness endianness = Endianness.LittleEndian, ClusteredStreamCachePolicy recordsCachePolicy = ClusteredStreamCachePolicy.None) {
-			if (rootStream.Length < ClusteredStreamStorageHeader.ByteLength)
+		public static ClusteredStorage Load(Stream rootStream, Endianness endianness = Endianness.LittleEndian, ClusteredStorageCachePolicy recordsCachePolicy = ClusteredStorageCachePolicy.None) {
+			if (rootStream.Length < ClusteredStorageHeader.ByteLength)
 				throw new CorruptDataException($"Corrupt header (stream was too small {rootStream.Length} bytes)");
 			var reader = new EndianBinaryReader(EndianBitConverter.For(endianness), rootStream);
 			rootStream.Position = 1;
@@ -71,7 +71,7 @@ namespace Sphere10.Framework {
 			if (clusterSize <= 0)
 				throw new CorruptDataException($"Corrupt header (ClusterSize field was {clusterSize} bytes)");
 			rootStream.Position = 0;
-			return new ClusteredStreamStorage(rootStream, clusterSize, endianness, recordsCachePolicy);
+			return new ClusteredStorage(rootStream, clusterSize, endianness, recordsCachePolicy);
 		}
 
 	}

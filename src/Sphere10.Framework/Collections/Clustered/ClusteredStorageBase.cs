@@ -12,10 +12,10 @@ namespace Sphere10.Framework {
 
 
 	/// <summary>
-	/// Base implementation of Clustered stream container. The main consumer-level sub-class is <see cref="ClusteredStreamStorage"/>, which
+	/// Base implementation of Clustered stream container. The main consumer-level sub-class is <see cref="ClusteredStorage"/>, which
 	/// can be combined with decorators <see cref="MerkleStreamStorage" /> and <see cref="MerkleStreamStorage" />.
-	/// <typeparam name="TStreamRecord">Type which maintains the stream record (customizable)</typeparam>
-	/// <typeparam name="TStreamStorageHeader">Type which maintains the header of the stream storage (customizable)</typeparam>
+	/// <typeparam name="TRecord">Type which maintains the stream record (customizable)</typeparam>
+	/// <typeparam name="THeader">Type which maintains the header of the stream storage (customizable)</typeparam>
 	/// <remarks>
 	/// [HEADER] Version: 1, Cluster Size: 32, Total Clusters: 10, Records: 5
 	/// [Records]
@@ -45,19 +45,19 @@ namespace Sphere10.Framework {
 	///  - Records always link to the (First | Data) cluster of their stream.
 	///  - Clusters with traits (First | Data) re-purpose the Prev field to denote the record.
 	/// </remarks>
-	public abstract class ClusteredStreamStorageBase<TStreamStorageHeader, TStreamRecord> : IStreamStorage<TStreamStorageHeader, TStreamRecord>
-		where TStreamStorageHeader : ClusteredStreamStorageHeader
-		where TStreamRecord : IClusteredStreamRecord {
+	public abstract class ClusteredStorageBase<THeader, TRecord> : IStreamStorage<THeader, TRecord>
+		where THeader : ClusteredStorageHeader
+		where TRecord : IClusteredRecord {
 
 		private readonly StreamPagedList<Cluster> _clusters;
 		private readonly FragmentProvider _recordsFragmentProvider;
-		private readonly PreAllocatedList<TStreamRecord> _records;
+		private readonly PreAllocatedList<TRecord> _records;
 		private int? _openRecord;
 		private FragmentProvider _openFragmentProvider;
 		private Stream _openStream;
 		private readonly object _lock;
 
-		protected ClusteredStreamStorageBase(Stream rootStream, int clusterSize, IItemSerializer<TStreamRecord> recordSerializer, Endianness endianness = Endianness.LittleEndian, ClusteredStreamCachePolicy recordsCachePolicy = ClusteredStreamCachePolicy.None) {
+		protected ClusteredStorageBase(Stream rootStream, int clusterSize, IItemSerializer<TRecord> recordSerializer, Endianness endianness = Endianness.LittleEndian, ClusteredStorageCachePolicy recordsCachePolicy = ClusteredStorageCachePolicy.None) {
 			Guard.ArgumentNotNull(rootStream, nameof(rootStream));
 			Guard.ArgumentInRange(clusterSize, 1, int.MaxValue, nameof(clusterSize));
 			Guard.ArgumentNotNull(recordSerializer, nameof(recordSerializer));
@@ -77,7 +77,7 @@ namespace Sphere10.Framework {
 			// Clusters are stored in a StreamPagedList (single page, statically sized items)
 			_clusters = new StreamPagedList<Cluster>(
 				clusterSerializer,
-				new NonClosingStream(new BoundedStream(rootStream, ClusteredStreamStorageHeader.ByteLength, long.MaxValue) { UseRelativeOffset = true, AllowResize = true }),
+				new NonClosingStream(new BoundedStream(rootStream, ClusteredStorageHeader.ByteLength, long.MaxValue) { UseRelativeOffset = true, AllowResize = true }),
 				endianness
 			) { IncludeListHeader = false };
 			if (_clusters.RequiresLoad)
@@ -85,7 +85,7 @@ namespace Sphere10.Framework {
 
 			// Records are stored in record 0 as StreamPagedList (single page, statically sized items) which maps over the fragmented stream 
 			_recordsFragmentProvider = new FragmentProvider(this, recordsCachePolicy);
-			var recordStorage = new StreamPagedList<TStreamRecord>(
+			var recordStorage = new StreamPagedList<TRecord>(
 				recordSerializer,
 				new FragmentedStream(_recordsFragmentProvider, Header.RecordsCount * recordSerializer.StaticSize),
 				endianness
@@ -94,7 +94,7 @@ namespace Sphere10.Framework {
 				recordStorage.Load();
 
 			// The actual records collection is a PreAllocated list over the StreamPagedList which allows INSERTS in the form of UPDATES.
-			_records = new PreAllocatedList<TStreamRecord>(
+			_records = new PreAllocatedList<TRecord>(
 				recordStorage,
 				Header.RecordsCount,
 				PreAllocationPolicy.MinimumRequired,
@@ -110,13 +110,13 @@ namespace Sphere10.Framework {
 			IntegrityChecks = true;
 		}
 
-		public TStreamStorageHeader Header { get; }
+		public THeader Header { get; }
 
 		public int Count => Header.RecordsCount;
 
-		public ClusteredStreamCachePolicy DefaultStreamPolicy { get; set; } = ClusteredStreamCachePolicy.None;
+		public ClusteredStorageCachePolicy DefaultStreamPolicy { get; set; } = ClusteredStorageCachePolicy.None;
 
-		public IReadOnlyList<TStreamRecord> Records => _records;
+		public IReadOnlyList<TRecord> Records => _records;
 
 		public bool IntegrityChecks { get; set; }
 
@@ -132,36 +132,24 @@ namespace Sphere10.Framework {
 
 		#region Streams
 
-		public byte[] ReadAll(int index) => Open(index).ReadAllAndDispose();
+		public byte[] ReadAll(int index)
+			=> ((IStreamStorage)this).Open(index).ReadAllAndDispose();
 
-		public void AddBytes(ReadOnlySpan<byte> bytes) {
-			using var stream = Add();
-			stream.Write(bytes);
-		}
+		public void AddBytes(ReadOnlySpan<byte> bytes)
+			=> ((IStreamStorage)this).AddBytes(bytes);
 
-		public void UpdateBytes(int index, ReadOnlySpan<byte> bytes) {
-			using var stream = Open(index);
-			stream.SetLength(0);
-			stream.Write(bytes);
-		}
+		public void UpdateBytes(int index, ReadOnlySpan<byte> bytes)
+			=> ((IStreamStorage)this).UpdateBytes(index, bytes);
 
-		public void AppendBytes(int index, ReadOnlySpan<byte> bytes) {
-			using var stream = Open(index);
-			stream.Seek(stream.Length, SeekOrigin.Current);
-			stream.Write(bytes);
-		}
+		public void AppendBytes(int index, ReadOnlySpan<byte> bytes)
+			=> ((IStreamStorage)this).AppendBytes(index, bytes);
 
-		public void InsertBytes(int index, ReadOnlySpan<byte> bytes) {
-			using var stream = Insert(index);
-			if (bytes != null) {
-				stream.Seek(stream.Length, SeekOrigin.Current);
-				stream.Write(bytes);
-			}
-		}
+		public void InsertBytes(int index, ReadOnlySpan<byte> bytes)
+			=> ((IStreamStorage)this).InsertBytes(index, bytes);
 
 		public Stream Add() => Add(DefaultStreamPolicy);
 
-		public Stream Add(ClusteredStreamCachePolicy cachePolicy) {
+		public Stream Add(ClusteredStorageCachePolicy cachePolicy) {
 			lock (_lock) {
 				CheckNotOpened();
 				var record = AddRecord(out var index, CreateRecord());  // the first record add will allocate cluster 0 for the records stream
@@ -171,7 +159,7 @@ namespace Sphere10.Framework {
 
 		public Stream Open(int index) => Open(index, DefaultStreamPolicy);
 
-		public Stream Open(int index, ClusteredStreamCachePolicy cachePolicy) {
+		public Stream Open(int index, ClusteredStorageCachePolicy cachePolicy) {
 			CheckRecordIndex(index);
 			lock (_lock) {
 				CheckNotOpened();
@@ -195,7 +183,7 @@ namespace Sphere10.Framework {
 
 		public Stream Insert(int index) => Insert(index, DefaultStreamPolicy);
 
-		public Stream Insert(int index, ClusteredStreamCachePolicy cachePolicy) {
+		public Stream Insert(int index, ClusteredStorageCachePolicy cachePolicy) {
 			CheckRecordIndex(index, allowEnd: true);
 			lock (_lock) {
 				CheckNotOpened();
@@ -275,15 +263,15 @@ namespace Sphere10.Framework {
 			return stringBuilder.ToString();
 		}
 
-		protected abstract TStreamStorageHeader CreateHeader();
+		protected abstract THeader CreateHeader();
 
 		#endregion
 
 		#region Records
 
-		protected abstract TStreamRecord NewRecord();
+		protected abstract TRecord NewRecord();
 
-		internal void UpdateRecord(int index, TStreamRecord record) {
+		private void UpdateRecord(int index, TRecord record) {
 			if (IntegrityChecks)
 				CheckRecordIntegrity(index, record);
 
@@ -292,28 +280,34 @@ namespace Sphere10.Framework {
 				_openFragmentProvider.Reset();
 		}
 
-		private TStreamRecord CreateRecord() {
+		// This is the interface implementation of UpdateRecord (used by friendly classes)
+		void IStreamStorage<THeader, TRecord>.UpdateRecord(int index, IStreamRecord record) {
+			Guard.ArgumentCast<TRecord>(record, out var recordT, nameof(record));
+			UpdateRecord(index, recordT);
+		}
+
+		private TRecord CreateRecord() {
 			var record = NewRecord();
 			record.Size = 0;
 			record.StartCluster = -1;
 			return record;
 		}
 
-		private TStreamRecord GetRecord(int index) {
+		private TRecord GetRecord(int index) {
 			var record = _records.Read(index);
 			if (IntegrityChecks)
 				CheckRecordIntegrity(index, record);
 			return record;
 		}
 
-		private TStreamRecord AddRecord(out int index, TStreamRecord record) {
+		private TRecord AddRecord(out int index, TRecord record) {
 			_records.Add(record);
 			Header.RecordsCount++;
 			index = _records.Count - 1;
 			return record;
 		}
 
-		private void InsertRecord(int index, TStreamRecord record) {
+		private void InsertRecord(int index, TRecord record) {
 			Debug.Assert(_openStream == null);
 			// Update genesis clusters 
 			for (var i = index; i < _records.Count; i++) {
@@ -476,12 +470,12 @@ namespace Sphere10.Framework {
 
 		#region Aux methods
 
-		private void CheckHeaderDataIntegrity(int rootStreamLength, ClusteredStreamStorageHeader header, IItemSerializer<Cluster> clusterSerializer, IItemSerializer<TStreamRecord> recordSerializer) {
+		private void CheckHeaderDataIntegrity(int rootStreamLength, ClusteredStorageHeader header, IItemSerializer<Cluster> clusterSerializer, IItemSerializer<TRecord> recordSerializer) {
 			var clusterEnvelopeSize = clusterSerializer.StaticSize - header.ClusterSize;
 			var recordClusters = (int)Math.Ceiling(header.RecordsCount * recordSerializer.StaticSize / (float)header.ClusterSize);
 			if (header.TotalClusters < recordClusters)
-				throw new CorruptDataException($"Inconsistency in {nameof(ClusteredStreamStorageHeader.TotalClusters)}/{nameof(ClusteredStreamStorageHeader.RecordsCount)}");
-			var minStreamSize = header.TotalClusters * (header.ClusterSize + clusterEnvelopeSize) + ClusteredStreamStorageHeader.ByteLength;
+				throw new CorruptDataException($"Inconsistency in {nameof(ClusteredStorageHeader.TotalClusters)}/{nameof(ClusteredStorageHeader.RecordsCount)}");
+			var minStreamSize = header.TotalClusters * (header.ClusterSize + clusterEnvelopeSize) + ClusteredStorageHeader.ByteLength;
 			if (rootStreamLength < minStreamSize)
 				throw new CorruptDataException($"Stream too small (header gives minimum size {minStreamSize} but was {rootStreamLength})");
 		}
@@ -490,7 +484,7 @@ namespace Sphere10.Framework {
 		private void CheckRecordIndex(int index, string msg = null, bool allowEnd = false)
 			=> Guard.Argument(0 <= index && allowEnd ? index <= _records.Count : index < _records.Count, nameof(index), msg ?? "Index out of bounds");
 
-		private void CheckRecordIntegrity(int index, TStreamRecord record) {
+		private void CheckRecordIntegrity(int index, TRecord record) {
 			if (record.Size == 0) {
 				if (record.StartCluster != -1)
 					throw new CorruptDataException(Header, $"Empty record {index} should have start cluster -1 but was {record.StartCluster}");
@@ -574,23 +568,23 @@ namespace Sphere10.Framework {
 		#region Inner Types
 
 		internal class FragmentProvider : IStreamFragmentProvider {
-			private readonly ClusteredStreamStorageBase<TStreamStorageHeader, TStreamRecord> _parent;
+			private readonly ClusteredStorageBase<THeader, TRecord> _parent;
 			private readonly FragmentCache _fragmentCache;
 			private readonly ClusterDataType _clusterDataType;
 			private int _currentFragment;
 			private int _currentCluster;
 			private readonly int _recordIndex;
-			private TStreamRecord _record;
+			private TRecord _record;
 
-			public FragmentProvider(ClusteredStreamStorageBase<TStreamStorageHeader, TStreamRecord> parent, ClusteredStreamCachePolicy cachePolicy)
+			public FragmentProvider(ClusteredStorageBase<THeader, TRecord> parent, ClusteredStorageCachePolicy cachePolicy)
 				: this(parent, ClusterDataType.Record, -1, cachePolicy) {
 			}
 
-			public FragmentProvider(ClusteredStreamStorageBase<TStreamStorageHeader, TStreamRecord> parent, int recordIndex, ClusteredStreamCachePolicy cachePolicy)
+			public FragmentProvider(ClusteredStorageBase<THeader, TRecord> parent, int recordIndex, ClusteredStorageCachePolicy cachePolicy)
 				: this(parent, ClusterDataType.Stream, recordIndex, cachePolicy) {
 			}
 
-			private FragmentProvider(ClusteredStreamStorageBase<TStreamStorageHeader, TStreamRecord> parent, ClusterDataType clusterDataType, int recordIndex, ClusteredStreamCachePolicy cachePolicy) {
+			private FragmentProvider(ClusteredStorageBase<THeader, TRecord> parent, ClusterDataType clusterDataType, int recordIndex, ClusteredStorageCachePolicy cachePolicy) {
 				_parent = parent;
 				_clusterDataType = clusterDataType;
 				if (_clusterDataType == ClusterDataType.Stream)
@@ -608,7 +602,7 @@ namespace Sphere10.Framework {
 
 			public int FragmentCount => (int)Math.Ceiling(TotalBytes / (float)_parent.ClusterSize);
 
-			public bool EnableCache => _fragmentCache.Policy != ClusteredStreamCachePolicy.None;
+			public bool EnableCache => _fragmentCache.Policy != ClusteredStorageCachePolicy.None;
 
 			public ReadOnlySpan<byte> GetFragment(int index) {
 				Guard.ArgumentInRange(index, 0, FragmentCount - 1, nameof(index));
@@ -827,8 +821,8 @@ namespace Sphere10.Framework {
 			private readonly IDictionary<int, int> _fragmentToClusterMap;
 			private readonly IDictionary<int, int> _clusterToFragmentMap;
 
-			public FragmentCache(ClusteredStreamCachePolicy policy) {
-				if (policy == ClusteredStreamCachePolicy.Scan)
+			public FragmentCache(ClusteredStorageCachePolicy policy) {
+				if (policy == ClusteredStorageCachePolicy.Scan)
 					throw new NotSupportedException(policy.ToString());
 
 				_fragmentToClusterMap = new Dictionary<int, int>();
@@ -836,7 +830,7 @@ namespace Sphere10.Framework {
 				Policy = policy;
 			}
 
-			public ClusteredStreamCachePolicy Policy { get; }
+			public ClusteredStorageCachePolicy Policy { get; }
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			public bool TryGetCluster(int fragment, out int cluster) {

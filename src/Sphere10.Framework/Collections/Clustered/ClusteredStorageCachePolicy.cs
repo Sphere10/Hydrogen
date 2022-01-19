@@ -1,5 +1,5 @@
 ﻿namespace Sphere10.Framework {
-	public enum ClusteredStreamCachePolicy {
+	public enum ClusteredStorageCachePolicy {
 		/// <summary>
 		///  Clusters next/prev pointers are always read from root stream
 		/// </summary>

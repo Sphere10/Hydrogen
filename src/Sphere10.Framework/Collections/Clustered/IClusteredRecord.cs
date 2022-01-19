@@ -1,6 +1,6 @@
 ﻿namespace Sphere10.Framework {
 
-	public interface IClusteredStreamRecord : IStreamRecord {
+	public interface IClusteredRecord : IStreamRecord {
 		int StartCluster { get; set; }
 	}
 }

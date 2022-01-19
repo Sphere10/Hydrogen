@@ -3,7 +3,7 @@ using System.Text.RegularExpressions;
 
 namespace Sphere10.Framework {
 
-	public class ClusteredStreamStorageHeader : IStreamStorageHeader {
+	public class ClusteredStorageHeader : IStreamStorageHeader {
 		public const int ByteLength = 256;
 
 		private const int VersionOffset = 0;

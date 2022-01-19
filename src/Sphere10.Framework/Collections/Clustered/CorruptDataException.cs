@@ -8,11 +8,11 @@ namespace Sphere10.Framework {
 			: base(msg){ 
 		}
 
-		public CorruptDataException(ClusteredStreamStorageHeader containerHeader, string msg )
-			: this($"{msg} - [ClusteredStreamContainer]: {containerHeader}") {
+		public CorruptDataException(ClusteredStorageHeader containerHeader, string msg )
+			: this($"{msg} - [ClusteredStorage]: {containerHeader}") {
 		}
 
-		public CorruptDataException(ClusteredStreamStorageHeader containerHeader, int cluster, string? msg = null) 
+		public CorruptDataException(ClusteredStorageHeader containerHeader, int cluster, string? msg = null) 
 			: this(containerHeader, $"Corrupt Cluster {cluster} ({msg ?? "Unexpected value in cluster envelope"})") {
 		}
 	}

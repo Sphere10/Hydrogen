@@ -6,72 +6,34 @@
 //using System.IO;
 //using System.Linq;
 //using System.Reflection.Metadata.Ecma335;
-//using System.Runtime.InteropServices;
 
 //namespace Sphere10.Framework {
 
 //	/// <summary>
-//	/// A clustered dictionary that doesn't delete items, only forgets them. This allows the dictionary to re-use that slot if ever needed. 
+//	/// A dictionary whose keys and values are mapped over a stream. When deleting a key, it's listing record is marked as unused and re-used later for efficiency.
 //	/// </summary>
 //	/// <typeparam name="TKey"></typeparam>
 //	/// <typeparam name="TValue"></typeparam>
+//	/// <typeparam name="TRecord"></typeparam>
 //	/// <remarks>This is useful when the underlying KVP store isn't efficient at deletion. When deleting an item, it's record is marked as available and re-used later.</remarks>
-//	public class ClusteredDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>, ILoadable {
-//		public event EventHandlerEx<object> Loading { add => _kvpStore.Loading += value; remove => _kvpStore.Loading -= value; }
-//		public event EventHandlerEx<object> Loaded { add => _kvpStore.Loaded += value; remove => _kvpStore.Loaded -= value; }
+//	public class StreamedDictionary<TKey, TValue, THeader,  TRecord> : DictionaryBase<TKey, TValue> 
+//		where THeader : ClusteredStreamStorageHeader
+//		where TRecord : IStreamKeyRecord, new() {
 
 //		private readonly IItemSerializer<TValue> _valueSerializer;
 //		private readonly Endianness _endianness;
-//		private readonly ClusteredListImplBase<KeyValuePair<TKey, byte[]>, ItemRecord> _kvpStore;
+//		private readonly StreamedList<KeyValuePair<TKey, byte[]>, StreamKeyRecord> _kvpStore;
 //		private readonly IEqualityComparer<TKey> _keyComparer;
 //		private readonly LookupEx<int, int> _checksumToIndexLookup;
 //		private readonly SortedList<int> _unusedRecords;
 
-//		/// <summary>
-//		/// Constructs a dictionary which uses an underlying <see cref="DynamicClusteredList{T, TRecord}"/> to store the key-value pairs. By virtue of the dynamic clustered list no storage constraints are present
-//		/// but performs slower.
-//		/// </summary>
-//		/// <param name="clusterDataSize"></param>
-//		/// <param name="stream"></param>
-//		/// <param name="keySerializer"></param>
-//		/// <param name="valueSerializer"></param>
-//		/// <param name="keyComparer"></param>
-//		/// <param name="endianess"></param>
-//		public ClusteredDictionary(int clusterDataSize, Stream stream, IItemSerializer<TKey> keySerializer, IItemSerializer<TValue> valueSerializer, IEqualityComparer<TKey> keyComparer = null, Endianness endianess = Endianness.LittleEndian) 
+//		public StreamedDictionary(int clusterDataSize, Stream stream, IItemSerializer<TKey> keySerializer, IItemSerializer<TValue> valueSerializer, IEqualityComparer<TKey> keyComparer = null, Endianness endianess = Endianness.LittleEndian)
 //		: this(
-//			new DynamicClusteredList<KeyValuePair<TKey, byte[]>, ItemRecord>(
-//				clusterDataSize, 
-//				stream, 
-//				new KeyValuePairSerializer<TKey, byte[]> (keySerializer, new ByteArraySerializer()),
-//				new ItemRecordSerializer(), 
-//				new KeyValuePairEqualityComparer<TKey, byte[]>(keyComparer, ByteArrayEqualityComparer.Instance)
-//			), 
-//			valueSerializer,
-//			keyComparer,
-//			endianess
-//		) {
-//			_kvpStore.RecordActivator = NewRecordInstance;
-//		}
-
-//		/// <summary>
-//		/// Constructs a dictionary which uses an underlying <see cref="StaticClusteredList{T, TRecord}"/> to store the key-value pairs. By virtue of the static clustered list the performance is better but
-//		/// the size constraints must be known on activation.
-//		/// </summary>
-//		/// <param name="clusterDataSize"></param>
-//		/// <param name="stream"></param>
-//		/// <param name="keySerializer"></param>
-//		/// <param name="valueSerializer"></param>
-//		/// <param name="keyComparer"></param>
-//		/// <param name="endianess"></param>
-//		public ClusteredDictionary(int clusterDataSize, int maxItems, long maxStorageBytes, Stream stream, IItemSerializer<TKey> keySerializer, IItemSerializer<TValue> valueSerializer, IEqualityComparer<TKey> keyComparer = null, Endianness endianess = Endianness.LittleEndian) 
-//		: this(
-//			new StaticClusteredList<KeyValuePair<TKey, byte[]>, ItemRecord>(
-//				clusterDataSize, 
-//				maxItems, 
-//				maxStorageBytes, 
-//				stream, 
+//			new DynamicClusteredList<KeyValuePair<TKey, byte[]>, StreamKeyRecord>(
+//				clusterDataSize,
+//				stream,
 //				new KeyValuePairSerializer<TKey, byte[]>(keySerializer, new ByteArraySerializer()),
-//				new ItemRecordSerializer(),
+//				new StreamKeyRecordSerializer(),
 //				new KeyValuePairEqualityComparer<TKey, byte[]>(keyComparer, ByteArrayEqualityComparer.Instance)
 //			),
 //			valueSerializer,
@@ -81,6 +43,7 @@
 //			_kvpStore.RecordActivator = NewRecordInstance;
 //		}
 
+
 //		/// <summary>
 //		/// Constructs a dictionary which uses argument <see cref="kvpStore"/> clustered list to storage it's key-value pairs.
 //		/// </summary>
@@ -88,29 +51,29 @@
 //		/// <param name="valueSerializer"></param>
 //		/// <param name="keyComparer"></param>
 //		/// <param name="endianess"></param>
-//		private ClusteredDictionary(ClusteredListImplBase<KeyValuePair<TKey, byte[]>, ItemRecord> kvpStore, IItemSerializer<TValue> valueSerializer, IEqualityComparer<TKey> keyComparer = null, Endianness endianess = Endianness.LittleEndian) {
+//		protected ClusteredDictionary(StreamedList<KeyValuePair<TKey, byte[]>, StreamKeyRecord> kvpStore, IItemSerializer<TValue> valueSerializer, IEqualityComparer<TKey> keyComparer = null, Endianness endianess = Endianness.LittleEndian) {
 //			_keyComparer = keyComparer ?? EqualityComparer<TKey>.Default;
 //			_kvpStore = kvpStore;
 //			_valueSerializer = valueSerializer;
 //			_endianness = endianess;
 //			_checksumToIndexLookup = new LookupEx<int, int>();
 //			_unusedRecords = new();
-//			kvpStore.Loaded += _ => RefreshChecksumToIndexLookup();
-//			if (!kvpStore.RequiresLoad)
-//				RefreshChecksumToIndexLookup();
+//			//kvpStore.Loaded += _ => RefreshChecksumToIndexLookup();
+//			//if (!kvpStore.RequiresLoad)
+//			//	RefreshChecksumToIndexLookup();
 //		}
 
-//		public override ICollection<TKey> Keys => _kvpStore
-//		                                          .Where((_, i) => !IsUnusedRecord(i))
-//		                                          .Select(kvp => kvp.Key)
-//		                                          .ToList();
+//		public override ICollection<TKey> Keys 
+//			=> _kvpStore
+//				  .Where((_, i) => !IsUnusedRecord(i))
+//				  .Select(kvp => kvp.Key)
+//				  .ToList();
 
-//		public override ICollection<TValue> Values => _kvpStore
-//		                                              .Where((_, i) => !IsUnusedRecord(i))
-//		                                              .Select(kvp => DeserializeValue(kvp.Value))
-//		                                              .ToList();
-
-//		public bool RequiresLoad => _kvpStore.RequiresLoad;
+//		public override ICollection<TValue> Values 
+//			=> _kvpStore
+//				  .Where((_, i) => !IsUnusedRecord(i))
+//				  .Select(kvp => DeserializeValue(kvp.Value))
+//				  .ToList();
 
 //		protected IEnumerable<KeyValuePair<TKey, TValue>> KeyValuePairs =>
 //			_kvpStore
@@ -125,9 +88,9 @@
 //			if (TryFindKVP(key, out var index, out _)) {
 //				// Updating value only, records (and checksum) don't change  when updating
 //				_kvpStore[index] = newStorageKVP;
-//				var record = _kvpStore.Records[index];
-//				record.Traits = record.Traits.CopyAndSetFlags(ItemRecordTraits.Used, true);
-//				_kvpStore.UpdateRecord(index, record);
+//				var record = _kvpStore.StreamRecords[index];
+//				record.Traits = record.Traits.CopyAndSetFlags(StreamRecordTraits.Bit1, true);
+//				_kvpStore.Storage.UpdateRecord(index, record);
 //			} else {
 //				AddInternal(newStorageKVP);
 //			}
@@ -163,8 +126,6 @@
 //		public override int Count => _kvpStore.Count - _unusedRecords.Count;
 
 //		public override bool IsReadOnly { get; }
-
-//		public void Load() => _kvpStore.Load();
 
 //		public override bool TryGetValue(TKey key, out TValue value) {
 //			Guard.ArgumentNotNull(key, nameof(key));
@@ -216,13 +177,13 @@
 //		public override void CopyTo(KeyValuePair<TKey, TValue>[] array, int arrayIndex)
 //			=> KeyValuePairs.ToArray().CopyTo(array, arrayIndex);
 
-		
+
 //		public void Shrink() {
 //			// delete all unused records from _kvpStore
 //			// deletes item right to left
 //			// possible optimization: a connected neighbourhood of unused records can be deleted 
 //			CheckLoaded();
-//			for (var i = _unusedRecords.Count - 1; i >=0; i--) {
+//			for (var i = _unusedRecords.Count - 1; i >= 0; i--) {
 //				var index = _unusedRecords[i];
 //				_kvpStore.RemoveAt(i);
 //				_unusedRecords.RemoveAt(i);
@@ -270,7 +231,7 @@
 //			MarkRecordAsUnused(index);  // record has to be updated after _kvpStore update since it removes/creates under the hood
 //		}
 
-//		private ItemRecord NewRecordInstance(object source, KeyValuePair<TKey, byte[]> item, int itemSizeBytes, int clusterStartIndex)
+//		private StreamKeyRecord NewRecordInstance(object source, KeyValuePair<TKey, byte[]> item, int itemSizeBytes, int clusterStartIndex)
 //			=> new() {
 //				Size = itemSizeBytes,
 //				ClusterStartIndex = clusterStartIndex,
@@ -279,7 +240,7 @@
 //			};
 
 //		private bool IsUnusedRecord(int index) => _unusedRecords.Contains(index);
-		
+
 
 //		private int ConsumeUnusedrecord() {
 //			var index = _unusedRecords[0];
@@ -305,7 +266,7 @@
 //			_kvpStore.UpdateRecord(index, record);
 //			_checksumToIndexLookup.Add(record.KeyChecksum, index);
 //		}
-		
+
 //		private byte[] SerializeValue(TValue value)
 //			=> value != null ? _valueSerializer.Serialize(value, _endianness) : null;
 
@@ -314,7 +275,7 @@
 
 //		private int CalculateKeyChecksum(TKey key)
 //			=> _keyComparer.GetHashCode(key);
-		
+
 //		private void RefreshChecksumToIndexLookup() {
 //			_checksumToIndexLookup.Clear();
 //			_unusedRecords.Clear();
@@ -327,51 +288,31 @@
 //			}
 //		}
 
-//		private void CheckLoaded() {
-//			if (RequiresLoad)
-//				throw new InvalidOperationException($"{nameof(ClusteredDictionary<TKey, TValue>)} requires loading.");
-//		}
+//		//private void CheckLoaded() {
+//		//	if (RequiresLoad)
+//		//		throw new InvalidOperationException($"{nameof(ClusteredDictionary<TKey, TValue>)} requires loading.");
+//		//}
 
-//		[StructLayout(LayoutKind.Sequential)]
-//		private struct ItemRecord : IClusteredItemRecord {
-//			public int ClusterStartIndex { get; set; }
 
-//			public int Size { get; set; }
 
-//			public int KeyChecksum { get; set; } 
+//		//[Flags]
+//		//private enum ItemRecordTraits : byte {
+//		//	Used = 1 << 0
+//		//}
 
-//			public ItemRecordTraits Traits { get; set; }
 
-//		}
 
-//		[Flags]
-//		private enum ItemRecordTraits : byte {
-//			Used = 1 << 0
-//		}
+		
+//	}
 
-//		private class ItemRecordSerializer : StaticSizeObjectSerializer<ItemRecord> {
 
-//			public ItemRecordSerializer()
-//				: base(sizeof(int) + sizeof(int) + sizeof(int) + sizeof(byte)) {
-//			}
+//	//internal class KVPStore : StreamPagedList<KeyValuePair<TKey, TValue>, TKey>
 
-//			public override bool TrySerialize(ItemRecord item, EndianBinaryWriter writer) {
-//				writer.Write(item.ClusterStartIndex);
-//				writer.Write(item.Size);
-//				writer.Write(item.KeyChecksum);
-//				writer.Write((byte)item.Traits);
-//				return true;
-//			}
+//	public class KVPStore<TKey, TValue, TRecord> : StreamedList<KeyValuePair<TKey, TValue>, TRecord> where TRecord : IStreamKeyRecord, new() {
 
-//			public override bool TryDeserialize(EndianBinaryReader reader, out ItemRecord item) {
-//				item = new ItemRecord {
-//					ClusterStartIndex = reader.ReadInt32(),
-//					Size = reader.ReadInt32(),
-//					KeyChecksum = reader.ReadInt32(),
-//					Traits = (ItemRecordTraits)reader.ReadByte()
-//				};
-//				return true;
-//			}
+
+//		public KVPStore(Stream stream, int clusterSize, IItemSerializer<KeyValuePair<TKey, TValue>> itemSerializer, IItemSerializer<TRecord> recordSerializer, IEqualityComparer<KeyValuePair<TKey, TValue>> itemComparer = null, Endianness endianness = Endianness.LittleEndian) 
+//			: base(stream, clusterSize, itemSerializer, recordSerializer, itemComparer, endianness) {
 //		}
 //	}
 //}

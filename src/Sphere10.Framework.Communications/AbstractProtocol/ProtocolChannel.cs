@@ -23,7 +23,6 @@ namespace Sphere10.Framework.Communications {
         protected CancellationTokenSource _cancelReceiveLoop;
         private Task _receiveLoop;
         
-
         // Constructors
         protected ProtocolChannel() {
 	        _cancelReceiveLoop = new CancellationTokenSource();
@@ -50,8 +49,8 @@ namespace Sphere10.Framework.Communications {
 			if (!await TryOpen())
 				throw new ProtocolException("Protocol channel could not be opened (endpoint and/or handshake problem)");
 		}
-		
-        public async Task<bool> TryOpen() {
+
+		public virtual async Task<bool> TryOpen() {
 	        try {
 		        CheckState(ProtocolChannelState.Closed);
 		        SetState(ProtocolChannelState.Opening);
@@ -67,18 +66,19 @@ namespace Sphere10.Framework.Communications {
 	        }
         }
 
-        public async Task Close() {
-            CheckState(ProtocolChannelState.Open, ProtocolChannelState.Closing, ProtocolChannelState.Closed);
-            if (State == ProtocolChannelState.Closed)
+		public virtual async Task Close() {
+			CheckState(ProtocolChannelState.Open, ProtocolChannelState.Closing, ProtocolChannelState.Closed);
+			if (State == ProtocolChannelState.Closed)
                 return;
-            if (State != ProtocolChannelState.Closing) {
-                SetState(ProtocolChannelState.Closing);
-                NotifyClosing();
-            }
-            await StopReceiveLoop();
-            await CloseInternal();
-            // Note: NotifyClosed() is called by receive loop termination
-        }
+			if (State != ProtocolChannelState.Closing) {
+				SetState(ProtocolChannelState.Closing);
+				NotifyClosing();
+			}
+			await BeginClose(new CancellationTokenSource(DefaultTimeout).Token);
+			await StopReceiveLoop();
+			await CloseInternal();
+			// Note: NotifyClosed() is called by receive loop termination
+		}
 
         public virtual Task<bool> TrySendBytes(byte[] bytes) => TrySendBytes(bytes, DefaultTimeout);
 
@@ -117,7 +117,9 @@ namespace Sphere10.Framework.Communications {
         // Template-Pattern abstract methods
         protected abstract Task OpenInternal();
 
-        protected abstract Task CloseInternal();
+		protected virtual async Task BeginClose(CancellationToken cancellationToken) { }
+
+		protected abstract Task CloseInternal();
 
         protected virtual void StartReceiveLoop() {
 			_receiveLoop = Task.Run(() => ReceiveLoop(_cancelReceiveLoop.Token));
@@ -148,7 +150,7 @@ namespace Sphere10.Framework.Communications {
 	        }
 	        // Connection is Closed only when receive loop finishes
 	        Guard.Ensure(State != ProtocolChannelState.Closed, "Protocol channel was already closed");
-	        SetState(ProtocolChannelState.Closed);
+			SetState(ProtocolChannelState.Closed);
 	        NotifyClosed();
         }
 
@@ -224,11 +226,9 @@ namespace Sphere10.Framework.Communications {
         }
 
         private void SetState(ProtocolChannelState state) {
-            State = state;
+			State = state;
         }
 
 		#endregion
-
 	}
-
 }

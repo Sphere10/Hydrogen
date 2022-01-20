@@ -119,64 +119,7 @@ function ResizableTable(table) {
 
 
 
-// Web Sockets
 
-//var CSharpInstance = null;
-//function SetCSharpInstance(cSharpInstance)
-//{
-//    console.log("Set CSharp Instance")
-
-//    CSharpInstance = cSharpInstance;
-
-//    console.log(CSharpInstance);
-//}
-
-var Socket;
-var CSharpInstance;
-function OpenWebSockets(url, cSharpInstance) {
-    Socket = new WebSocket(url);
-    CSharpInstance = cSharpInstance;
-
-
-call a c sharp instance method now, to make sure it can work
-
-
-console.log(Socket);
-
-    Socket.onopen = function (e) {
-        console.log(e);
-        WriteOutout("Connection Open...");
-    }
-
-    Socket.onmessage = function (evt) {
-        WriteOutout("Message is received...");
-
-        var received_msg = evt.data;
-        WriteOutout(received_msg);
-
-        CSharpInstance.invokeMethodAsync("WebSocketsChannelReceiveData", evt.data);
-    };
-
-    Socket.onclose = function () {
-        // websocket is closed.
-        WriteOutout("Connection Closed...");
-    };
-
-    Socket.onerror = function (error) {
-        //WriteOutout(error.message);
-        WriteOutout(error.message);
-    }
-}
-
-function SendWebSockets(data) {
-    console.log("SendWebSocket");
-    console.log(data);
-
-    console.log("CSharpInstance");
-    console.log(CSharpInstance);
-
-    Socket.send(data);
-}
 
 function WriteOutout(text) {
     document.getElementById("Output").value += (text + '\r\n');

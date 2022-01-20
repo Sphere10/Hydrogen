@@ -291,28 +291,6 @@
         JSRuntime.InvokeAsync<object>("WriteOutout", text);
     }
 
-    void WebSocketsChannelStartConnection(string url) {
-
-        //        CSharpInstance = DotNetObjectReference.Create<Sphere10.Hydrogen.Presentation2.UI.Index>(this);
-        CSharpInstance = DotNetObjectReference.Create<Sphere10.Hydrogen.Presentation2.UI.Index>(this);
-
-        JSRuntime.InvokeAsync<object>("OpenWebSockets", new object[] { url }, CSharpInstance);
-    }
-
-    void WebSocketsChannelSendData(byte[] data) {
-
-        var text = System.Text.Encoding.ASCII.GetString(data);
-
-        JSRuntime.InvokeAsync<object>("SendWebSockets", text);
-    }
-
-    [JSInvokable]
-    public void WebSocketsChannelReceiveData(ReadOnlyMemory<byte> memory)
-    {
-        var text = System.Text.Encoding.ASCII.GetString(memory.ToArray());
-
-        WriteOutput("XXX" + text);
-    }
 
     #endregion
 
@@ -323,7 +301,7 @@
     System.Timers.Timer Timer { get; set; }
 
     DotNetObjectReference<Index> CSharpInstance { get; set; }
-    WebSocketsChannel Channel { get; set; }
+    ClientWebSocketsChannel Channel { get; set; }
 
     void Test() {
         var f1 = new Filter<string>();
@@ -356,18 +334,7 @@
 
     async void StartWebSockets()
     {
-        // create the reference to this page
-        //CSharpInstance = DotNetObjectReference.Create<Sphere10.Hydrogen.Presentation2.UI.Index>(this);
-        // store the reference of this page in JavaScript
-        //await JSRuntime.InvokeAsync<object>("SetCSharpInstance", new object[] { instance });
-
-        //var localEndpoint = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 80);
-        //var remoteEndpoint = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 80);
-
-        Channel = new WebSocketsChannel("ws://localhost:80/service", CommunicationRole.Client, false);//,
-//                                        WebSocketsChannelStartConnection,
- //                                       WebSocketsChannelSendData,
-//                                        WebSocketsChannelReceiveData);
+        Channel = new ClientWebSocketsChannel("ws://192.168.1.107:80/service", false);
         Channel.ReceivedBytes += delegate (ReadOnlyMemory<byte> memory)
         {
             WriteOutput(System.Text.Encoding.ASCII.GetString(memory.Span));
@@ -377,10 +344,8 @@
 
     void SendData()
     {
-        WebSocketsChannelSendData(System.Text.Encoding.ASCII.GetBytes("Hello from Server 666"));
+        Channel.TrySendBytes(System.Text.Encoding.ASCII.GetBytes("Hello from Server 666"));
     }
-
-
 
 
     TestClass2 TestDataExtractor1(object data)

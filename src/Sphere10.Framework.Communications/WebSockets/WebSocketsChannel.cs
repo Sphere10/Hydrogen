@@ -10,56 +10,38 @@ using System.IO;
 namespace Sphere10.Framework.Communications {
 	public class WebSocketsChannel : ProtocolChannel, IDisposable {
 
-//		public delegate void ClientStartConnectionDelegate(string url);
-//		public delegate void ClientSendDataDelegate(byte[] data);
-//		public delegate void ClientReceiveDataDelegate(ReadOnlyMemory<byte> data);
-
+		public event EventHandlerEx<WebSocketReceiveResult> ReceivedWebSocketMessage;
 		IPEndPoint LocalEndpoint { get; }
 		IPEndPoint RemoteEndpoint { get; }
 		string URI { get; }
-		CommunicationRole Role { get; }
-		bool Secure { get; } 
+		bool Secure { get; }
 		TcpClient TcpClient { get; set; }
 		TcpListener Server { get; set; }
-		NetworkStream NetWorkStream { get; set; }
+		NetworkStream NetworkStream { get; set; }
 		WebSocket WebSocket { get; set; }
 		ClientWebSocket ClientWebSocket { get; set; }
-
-//		ClientStartConnectionDelegate ClientStartConnectionHandler { get; set; }
-//		ClientSendDataDelegate ClientSendDataHandler { get; set; }
-//		ClientReceiveDataDelegate ClientReceiveDataHandler { get; set; }
-		// CloseConnection
-		// IsConnectionAlive
 
 		public WebSocketsChannel(IPEndPoint localEndpoint, IPEndPoint remoteEndpoint, CommunicationRole role, bool secure) {
 			LocalEndpoint = localEndpoint;
 			RemoteEndpoint = remoteEndpoint;
-			Role = role;
+			LocalRole = role;
 			Secure = secure;
 
 			if (Secure) {
 				throw new NotImplementedException("Secure Websockets is not available yet");
 			}
 
-			if (role != CommunicationRole.Server) { 
+			if (role != CommunicationRole.Server) {
 				throw new NotImplementedException("Websockets, this constructor is for Servers only");
 			}
 			Server = new TcpListener(localEndpoint);
+			CloseInitiator = null;
 		}
 
-		public WebSocketsChannel(/*IPEndPoint localEndpoint, IPEndPoint remoteEndpoint,*/string uri, CommunicationRole role, bool secure)
-//								 ClientStartConnectionDelegate clientStartConnectionHandler,
-//								 ClientSendDataDelegate clientSendDataHandler,
-//								 ClientReceiveDataDelegate clientReceiveDataHandler) 
-		{
+		public WebSocketsChannel(string uri, CommunicationRole role, bool secure) {
 			URI = uri;
-			//LocalEndpoint = localEndpoint;
-			//RemoteEndpoint = remoteEndpoint;
-			Role = role;
+			LocalRole = role;
 			Secure = secure;
-			//			ClientStartConnectionHandler = clientStartConnectionHandler;
-			//			ClientSendDataHandler = clientSendDataHandler;
-			//			ClientReceiveDataHandler = clientReceiveDataHandler;
 
 			if (Secure) {
 				throw new NotImplementedException("Secure Websockets is not available yet");
@@ -72,20 +54,87 @@ namespace Sphere10.Framework.Communications {
 			ClientWebSocket = new ClientWebSocket();
 		}
 
-		public override CommunicationRole LocalRole => throw new NotImplementedException();
+		public override CommunicationRole LocalRole { get; }
+
+		public CommunicationRole? CloseInitiator { get; set; }
+
+		public override Task Close() {
+			CloseInitiator ??= this.LocalRole;
+			return base.Close();
+		}
+
+		async Task RespondToCloseMessage() {
+
+SystemLog.Info($"RespondToCloseMessage() Start");
+			if (LocalRole == CommunicationRole.Server) {
+				if (WebSocket.State != WebSocketState.Closed) {
+					await WebSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, string.Empty, CancellationToken.None);
+				}
+			} else {
+				if (ClientWebSocket.State != WebSocketState.Closed) {
+					await ClientWebSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, string.Empty, CancellationToken.None);
+				}
+			}
+SystemLog.Info($"RespondToCloseMessage() End");
+		}
+
+		protected override async Task BeginClose(CancellationToken cancellationToken) {
+			if (CloseInitiator != LocalRole)
+				return;
+
+			var tcs = new TaskCompletionSource();
+
+			ReceivedWebSocketMessage += async message => {
+				tcs.SetResult();
+			};
+			cancellationToken.Register(() => tcs.TrySetCanceled());
+
+			if (LocalRole == CommunicationRole.Server) {
+				await WebSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, CancellationToken.None);
+			} else {
+				await ClientWebSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, CancellationToken.None);
+			}
+
+			await tcs.Task;
+		}
 
 		protected override async Task CloseInternal() {
-			if (Role == CommunicationRole.Server) { 
-				Server?.Stop();
+
+			if (LocalRole == CommunicationRole.Server) {
+				TcpClient.Close();
+				TcpClient.Dispose();
+				TcpClient = null;
+
+				Server.Server.Close();
+				Server.Stop();
+				Server = null;
+
+				NetworkStream.Close();
+				NetworkStream.Flush();
+				NetworkStream.Dispose();
+				NetworkStream = null;
+
+				WebSocket = null;
 			} else {
-				ClientWebSocket?.CloseAsync(WebSocketCloseStatus.NormalClosure, "Close Normal", CancellationToken.None);
+				ClientWebSocket = null;
 			}
 		}
 
 		protected override bool IsConnectionAlive() {
+			if (LocalRole == CommunicationRole.Server) {
 
-			if (Role == CommunicationRole.Server) {
-				return NetWorkStream.Socket.Connected;
+				if (Server == null || Server.Server == null || //!Server.Pending() || !Server.Server.Connected ||
+					TcpClient == null || !TcpClient.Connected || TcpClient.Client == null || !TcpClient.Client.Connected ||
+					NetworkStream == null || NetworkStream.Socket == null || !NetworkStream.Socket.Connected ||
+					WebSocket == null || WebSocket.State == WebSocketState.Aborted || 
+										 WebSocket.State == WebSocketState.Closed || 
+										 WebSocket.State == WebSocketState.CloseReceived || 
+										 WebSocket.State == WebSocketState.CloseSent || 
+										 WebSocket.State == WebSocketState.None) {
+					return false;
+				}
+
+				return NetworkStream.Socket.Connected;
 				//return Server.Server.Connected;
 			} else {
 				return ClientWebSocket.State == WebSocketState.Open;
@@ -93,43 +142,60 @@ namespace Sphere10.Framework.Communications {
 		}
 
 		protected override async Task OpenInternal() {
-			if (Role == CommunicationRole.Server) {
+			if (LocalRole == CommunicationRole.Server) {
 				Server.Start();
 				TcpClient = await Server.AcceptTcpClientAsync(); // will block here until a connection is made
-				NetWorkStream = TcpClient.GetStream();
+				NetworkStream = TcpClient.GetStream();
 				// "ws" probably does nothing and should be ignored
-				WebSocket = WebSocket.CreateFromStream(NetWorkStream, true, "ws", new TimeSpan(0, 30, 0)); // 30 Minute timeout, this seems to do nothing and is default at about 30 secs
-				DoHandshake(NetWorkStream);
+				WebSocket = WebSocket.CreateFromStream(NetworkStream, true, "ws", new TimeSpan(0, 30, 0)); // 30 Minute timeout, this seems to do nothing and is default at about 30 secs
+				DoHandshake(NetworkStream);
 			} else {
-				await ClientWebSocket.ConnectAsync(new Uri(URI), CancellationToken.None);
+				try {
+					await ClientWebSocket.ConnectAsync(new Uri(URI), CancellationToken.None);
+				}
+				catch (Exception ex) {
+
+				}
 			}
+
+			// Handle the response to close
+			ReceivedWebSocketMessage += async msg => {
+				if (msg.MessageType == WebSocketMessageType.Close && CloseInitiator == null) {
+					CloseInitiator = LocalRole switch {
+						CommunicationRole.Server => CommunicationRole.Client,
+						CommunicationRole.Client => CommunicationRole.Server,
+					};
+					// handle close response
+					await RespondToCloseMessage();
+					CloseInitiator ??= this.LocalRole;
+					await CloseInternal();
+				}
+			};
 		}
 
 		protected override async Task<byte[]> ReceiveBytesInternal(CancellationToken cancellationToken) {
 
-			Byte[] buffer = new byte[1024];
+			var buffer = new byte[1024];
 
-SystemLog.Info("WebSocketChannel ReceiveBytesInternal");
-
-			if (Role == CommunicationRole.Server) {
+			if (LocalRole == CommunicationRole.Server) {
 				using (var memoryStream = new MemoryStream()) {
 
 					while (true) {
 						var received = await WebSocket.ReceiveAsync(new ArraySegment<byte>(buffer), cancellationToken);
+						NotifyReceivedWebSocketMessage(received);
 						memoryStream.Write(buffer, 0, received.Count);
-
 						if (received.EndOfMessage) break;
 					}
 
 					return memoryStream.ToArray();
 				}
-			} else {
+			} else { // Client
 				using (var memoryStream = new MemoryStream()) {
 
 					while (true) {
 						var received = await ClientWebSocket.ReceiveAsync(new ArraySegment<byte>(buffer), cancellationToken);
+						NotifyReceivedWebSocketMessage(received);
 						memoryStream.Write(buffer, 0, received.Count);
-
 						if (received.EndOfMessage) break;
 					}
 
@@ -139,7 +205,7 @@ SystemLog.Info("WebSocketChannel ReceiveBytesInternal");
 		}
 
 		protected override async Task<bool> TrySendBytesInternal(ReadOnlyMemory<byte> bytes, CancellationToken cancellationToken) {
-			if (Role == CommunicationRole.Server) {
+			if (LocalRole == CommunicationRole.Server) {
 				await WebSocket.SendAsync(bytes, WebSocketMessageType.Text, true, cancellationToken);
 
 				return true;
@@ -150,18 +216,27 @@ SystemLog.Info("WebSocketChannel ReceiveBytesInternal");
 			}
 		}
 
+		protected virtual void OnReceivedWebSocketMessage(WebSocketReceiveResult result) {
+		}
 
+		private void NotifyReceivedWebSocketMessage(WebSocketReceiveResult result) {
+			OnReceivedWebSocketMessage(result);
+			ReceivedWebSocketMessage?.Invoke(result);
+		}
 
-		static void DoHandshake(NetworkStream stream) {
+		async static void DoHandshake(NetworkStream stream) {
 
 			using (var memoryStream = new MemoryStream()) {
 				var size = 0;
 				var buffer = new byte[1024];
-				while (stream.DataAvailable && (size = stream.Read(buffer)) > 0) {
+
+				while ((size = await stream.ReadAsync(buffer, CancellationToken.None)) > 0) {
 					memoryStream.Write(buffer, 0, size);
+					if (!stream.DataAvailable) break; // this might be improvable
 				}
 
 				var array = memoryStream.ToArray();
+
 				if (array.Length > 0) {
 					SwitchHttpToWebSockets(array, stream);
 				}

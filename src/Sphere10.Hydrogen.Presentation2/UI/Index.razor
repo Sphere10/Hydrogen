@@ -364,14 +364,14 @@
         //var localEndpoint = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 80);
         //var remoteEndpoint = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 80);
 
-        Channel = new WebSocketsChannel("ws://localhost:80/service", CommunicationRole.Client, false,
-                                        WebSocketsChannelStartConnection,
-                                        WebSocketsChannelSendData,
-                                        WebSocketsChannelReceiveData);
-        //Channel.ReceivedBytes += delegate (ReadOnlyMemory<byte> memory)
-        //{
-        //    WriteOutput(System.Text.Encoding.ASCII.GetString(memory.Span));
-        //};
+        Channel = new WebSocketsChannel("ws://localhost:80/service", CommunicationRole.Client, false);//,
+//                                        WebSocketsChannelStartConnection,
+ //                                       WebSocketsChannelSendData,
+//                                        WebSocketsChannelReceiveData);
+        Channel.ReceivedBytes += delegate (ReadOnlyMemory<byte> memory)
+        {
+            WriteOutput(System.Text.Encoding.ASCII.GetString(memory.Span));
+        };
         await Channel.Open();
     }
 

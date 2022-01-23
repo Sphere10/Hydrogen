@@ -35,7 +35,7 @@ namespace Sphere10.Framework {
 
 		public override void Update(int index, TItem item) => _endpoint[EnsureSafe(index)] = item;
 
-		public override void Insert(int index, TItem item) => _endpoint.Insert(EnsureSafe(index), item);
+		public override void Insert(int index, TItem item) => _endpoint.Insert(EnsureSafe(index, allowAtEnd: true), item);
 
 		public override void RemoveAt(int index) => _endpoint.RemoveAt(EnsureSafe(index));
 

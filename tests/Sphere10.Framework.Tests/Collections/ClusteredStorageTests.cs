@@ -425,7 +425,6 @@ namespace Sphere10.Framework.Tests {
 			using var rootStream = new MemoryStream();
 			var streamContainer = new ClusteredStorage(rootStream, clusterSize, recordsCachePolicy: recordsCachePolicy) { DefaultStreamPolicy = streamCachePolicy };
 			streamContainer.AddBytes(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 });
-			var xxx = streamContainer.ToStringFullContents();
 			// corrupt root-stream, make tip cluster 18 have next to 10 creating a circular linked loop through forward traversal
 			var nextOffset = rootStream.Length - clusterSize - sizeof(uint);
 			var writer = new EndianBinaryWriter(EndianBitConverter.For(Endianness.LittleEndian), rootStream);
@@ -478,7 +477,7 @@ namespace Sphere10.Framework.Tests {
 			using var rootStream = new MemoryStream();
 			var streamContainer = new ClusteredStorage(rootStream, clusterSize, recordsCachePolicy: recordsCachePolicy) { DefaultStreamPolicy = streamCachePolicy };
 			streamContainer.AddBytes(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 });
-			rootStream.Position = 0;
+			rootStream.Position = ClusteredStorageHeader.VersionOffset;
 			rootStream.WriteByte(2);
 
 			Assert.That(() => ClusteredStorage.Load(rootStream), Throws.TypeOf<CorruptDataException>());
@@ -491,7 +490,7 @@ namespace Sphere10.Framework.Tests {
 			var writer = new EndianBinaryWriter(EndianBitConverter.Little, rootStream);
 			var streamContainer = new ClusteredStorage(rootStream, clusterSize, recordsCachePolicy: recordsCachePolicy) { DefaultStreamPolicy = streamCachePolicy };
 			streamContainer.AddBytes(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 });
-			rootStream.Position = sizeof(byte);
+			rootStream.Position = ClusteredStorageHeader.ClusterSizeOffset;
 			writer.Write(0);
 			Assert.That(() => ClusteredStorage.Load(rootStream), Throws.TypeOf<CorruptDataException>());
 		}
@@ -503,7 +502,7 @@ namespace Sphere10.Framework.Tests {
 			var writer = new EndianBinaryWriter(EndianBitConverter.Little, rootStream);
 			var streamContainer = new ClusteredStorage(rootStream, clusterSize, recordsCachePolicy: recordsCachePolicy) { DefaultStreamPolicy = streamCachePolicy };
 			streamContainer.AddBytes(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 });
-			rootStream.Position = sizeof(byte);
+			rootStream.Position = ClusteredStorageHeader.ClusterSizeOffset;
 			writer.Write(100);
 			Assert.That(() => ClusteredStorage.Load(rootStream), Throws.TypeOf<CorruptDataException>());
 		}
@@ -515,7 +514,7 @@ namespace Sphere10.Framework.Tests {
 			var writer = new EndianBinaryWriter(EndianBitConverter.Little, rootStream);
 			var streamContainer = new ClusteredStorage(rootStream, clusterSize, recordsCachePolicy: recordsCachePolicy) { DefaultStreamPolicy = streamCachePolicy };
 			streamContainer.AddBytes(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 });
-			rootStream.Position = sizeof(byte);
+			rootStream.Position = ClusteredStorageHeader.ClusterSizeOffset;
 			writer.Write(clusterSize + 1);
 			Assert.That(() => ClusteredStorage.Load(rootStream), Throws.TypeOf<CorruptDataException>());
 		}
@@ -527,7 +526,7 @@ namespace Sphere10.Framework.Tests {
 			var writer = new EndianBinaryWriter(EndianBitConverter.Little, rootStream);
 			var streamContainer = new ClusteredStorage(rootStream, clusterSize, recordsCachePolicy: recordsCachePolicy) { DefaultStreamPolicy = streamCachePolicy };
 			streamContainer.AddBytes(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 });
-			rootStream.Position = sizeof(byte) + sizeof(int);
+			rootStream.Position = ClusteredStorageHeader.TotalClustersOffset;
 			writer.Write(0);
 			Assert.That(() => ClusteredStorage.Load(rootStream), Throws.TypeOf<CorruptDataException>());
 		}
@@ -539,7 +538,7 @@ namespace Sphere10.Framework.Tests {
 			var writer = new EndianBinaryWriter(EndianBitConverter.Little, rootStream);
 			var streamContainer = new ClusteredStorage(rootStream, clusterSize, recordsCachePolicy: recordsCachePolicy) { DefaultStreamPolicy = streamCachePolicy };
 			streamContainer.AddBytes(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 });
-			rootStream.Position = sizeof(byte) + sizeof(int);
+			rootStream.Position = ClusteredStorageHeader.TotalClustersOffset;
 			writer.Write(streamContainer.Clusters.Count + 1);
 			Assert.That(() => ClusteredStorage.Load(rootStream), Throws.TypeOf<CorruptDataException>());
 		}
@@ -551,7 +550,7 @@ namespace Sphere10.Framework.Tests {
 			var writer = new EndianBinaryWriter(EndianBitConverter.Little, rootStream);
 			var streamContainer = new ClusteredStorage(rootStream, clusterSize, recordsCachePolicy: recordsCachePolicy) { DefaultStreamPolicy = streamCachePolicy };
 			streamContainer.AddBytes(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 });
-			rootStream.Position = sizeof(byte) + sizeof(int) + sizeof(int);
+			rootStream.Position = ClusteredStorageHeader.RecordsOffset;
 			writer.Write(streamContainer.Records.Count - 1);
 			// note: Can't detect this scenario in integrity checks without examining data, so will
 			// end up creating a corrupt data later. This is not ideal, but acceptable.
@@ -565,13 +564,12 @@ namespace Sphere10.Framework.Tests {
 			var writer = new EndianBinaryWriter(EndianBitConverter.Little, rootStream);
 			var streamContainer = new ClusteredStorage(rootStream, clusterSize, recordsCachePolicy: recordsCachePolicy) { DefaultStreamPolicy = streamCachePolicy };
 			streamContainer.AddBytes(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 });
-			rootStream.Position = sizeof(byte) + sizeof(int) + sizeof(int);
+			rootStream.Position = ClusteredStorageHeader.RecordsOffset;
 			writer.Write(streamContainer.Records.Count + 1);
 			// note: Can't detect this scenario in integrity checks without examining data, so will
 			// end up creating a corrupt data later. This is not ideal, but acceptable.
 			ClusteredStorage.Load(rootStream);
 		}
-
 
 		[Test]
 		public void LoadEmpty() {
@@ -617,7 +615,7 @@ namespace Sphere10.Framework.Tests {
 		[Test]
 		public void IntegrationTests([Values(1, 4, 32)] int clusterSize, [Values(1, 2, 100)] int totalStreams, [Values(0, 2, 4, 100)] int maxStreamSize, [Values(ClusteredStorageCachePolicy.None, ClusteredStorageCachePolicy.Remember)] ClusteredStorageCachePolicy recordsCachePolicy, [Values(ClusteredStorageCachePolicy.None, ClusteredStorageCachePolicy.Remember)] ClusteredStorageCachePolicy streamCachePolicy) {
 			// NOTE: change DebugMode to True when trying to isolate error, else leave False when confirmed working (for faster evaluation)
-			const bool DebugMode = false;
+			const bool DebugMode = true;
 			const int StreamStreamOperations = 100;
 			var rng = new Random(31337 + (int)recordsCachePolicy + (int)streamCachePolicy);
 			var expectedStreams = new List<Stream>();

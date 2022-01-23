@@ -54,8 +54,8 @@ namespace Sphere10.Framework {
 				yield return Remove(item);
 		}
 
-		protected int EnsureSafe(int index) {
-			CheckIndex(index);
+		protected int EnsureSafe(int index, bool allowAtEnd = false) {
+			CheckIndex(index, allowAtEnd);
 			return index;
 		}
 

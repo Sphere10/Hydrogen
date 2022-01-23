@@ -14,29 +14,28 @@ namespace Sphere10.Framework {
 	/// <typeparam name="TItem"></typeparam>
 	/// <typeparam name="THeader"></typeparam>
 	/// <typeparam name="TRecord"></typeparam>
-	public class StreamPersistedList<TItem, THeader, TRecord> : SingularListBase<TItem>
-		where THeader : ClusteredStorageHeader
-		where TRecord : IClusteredRecord {
+	public class StreamPersistedList<TItem, THeader, TRecord> : SingularListBase<TItem>, IStreamPersistedList<TItem, THeader, TRecord>
+		where THeader : IStreamStorageHeader
+		where TRecord : IStreamRecord {
 
 		private readonly IItemSerializer<TItem> _itemSerializer;
 		private readonly IEqualityComparer<TItem> _itemComparer;
 		private readonly Endianness _endianness;
 		private int _version;
 
-		protected StreamPersistedList(IStreamStorage<THeader, TRecord> storage, IItemSerializer<TItem> itemSerializer, IEqualityComparer<TItem> itemComparer = null) {
+		protected StreamPersistedList(IStreamStorage<THeader, TRecord> storage, IItemSerializer<TItem> itemSerializer, IEqualityComparer<TItem> itemComparer = null, Endianness endianness = Endianness.LittleEndian) {
 			Guard.ArgumentNotNull(storage, nameof(storage));
 			Guard.ArgumentNotNull(itemSerializer, nameof(itemSerializer));
 			Storage = storage;
 			_itemSerializer = itemSerializer;
 			_itemComparer = itemComparer ?? EqualityComparer<TItem>.Default;
 			_version = 0;
+			_endianness = endianness;
 		}
 
 		public override int Count => Storage.Count;
 
-		public IReadOnlyList<TRecord> StreamRecords => Storage.Records;
-
-		internal IStreamStorage<THeader, TRecord> Storage { get; }
+		public IStreamStorage<THeader, TRecord> Storage { get; }
 
 		public override void Insert(int index, TItem item) {
 			CheckIndex(index, allowAtEnd: true);
@@ -118,12 +117,12 @@ namespace Sphere10.Framework {
 
 		private void MarkRecordNull(int index, bool isNull) {
 			var record = Storage.Records[index];
-			record.Traits = record.Traits.CopyAndSetFlags(StreamRecordTraits.Bit0, isNull);
+			record.Traits = record.Traits.CopyAndSetFlags(StreamRecordTraits.IsNull, isNull);
 			Storage.UpdateRecord(index, record);
 		}
 
 		private bool IsRecordMarkedNull(int index)
-			=> Storage.Records[index].Traits.HasFlag(StreamRecordTraits.Bit0);
+			=> Storage.Records[index].Traits.HasFlag(StreamRecordTraits.IsNull);
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		private void UpdateVersion() => Interlocked.Increment(ref _version);

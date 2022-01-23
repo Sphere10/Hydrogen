@@ -46,7 +46,6 @@ namespace Sphere10.Framework {
 				stream.Write(bytes);
 			}
 		}
-
 	}
 
 	public interface IStreamStorage<out THeader, TRecord> : IStreamStorage

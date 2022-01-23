@@ -392,7 +392,6 @@ namespace Sphere10.Framework.Tests {
 							break;
 
                     }
-                    var xxx = item;
 				}
 
                 Assert.AreEqual(3, loads.Count);
@@ -577,10 +576,8 @@ namespace Sphere10.Framework.Tests {
 				collection.AddRange("10");
 				var thrown = false;
 				try {
-					foreach (var item in collection) {
-						var xxx = 1;
+					foreach (var item in collection) 
 						collection.Add("20");
-					}
 				} catch (Exception error) {
 					thrown = true;
 				}
@@ -595,10 +592,8 @@ namespace Sphere10.Framework.Tests {
                 collection.AddRange("10", "20");
                 var thrown = false;
                 try {
-                    foreach (var item in collection) {
-                        var xxx = 1;
+                    foreach (var item in collection) 
                         collection.Add("20");
-                    }
                 } catch (Exception error) {
                     thrown = true;
                 }
@@ -684,12 +679,12 @@ namespace Sphere10.Framework.Tests {
                 for (int i = 0; i < 100000; i++) {
                     collection.Add(i.ToString());
                 }
-                var xxx = collection
+                var testCollection = collection
                     .Where(s => s.StartsWith("1"))
                     .Union(collection.Where(s => s.StartsWith("2")))
                     .Reverse();
 
-                foreach (var val in xxx) {
+                foreach (var val in testCollection) {
                     Assert.IsTrue(val.StartsWith("1") || val.StartsWith("2"));
                 }
 

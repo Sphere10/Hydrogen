@@ -240,9 +240,7 @@ namespace Sphere10.Framework.Tests {
 			var items = rng.NextByteArrays(Hashers.GetDigestSizeBytes(CHF.SHA2_256), 2);
 			var tree = new FlatMerkleTree(CHF.SHA2_256, items);
 			tree.Leafs.RemoveRange(2, 0);
-			Assert.DoesNotThrow(() => {
-				var xxx = tree.Root;
-			});
+			Assert.DoesNotThrow(() => { var _ = tree.Root; });
 		}
 	}
 }

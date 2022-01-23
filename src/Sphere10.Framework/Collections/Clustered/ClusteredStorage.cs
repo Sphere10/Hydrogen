@@ -66,7 +66,7 @@ namespace Sphere10.Framework {
 			if (rootStream.Length < ClusteredStorageHeader.ByteLength)
 				throw new CorruptDataException($"Corrupt header (stream was too small {rootStream.Length} bytes)");
 			var reader = new EndianBinaryReader(EndianBitConverter.For(endianness), rootStream);
-			rootStream.Position = 1;
+			rootStream.Position = ClusteredStorageHeader.ClusterSizeOffset;
 			var clusterSize = reader.ReadInt32();
 			if (clusterSize <= 0)
 				throw new CorruptDataException($"Corrupt header (ClusterSize field was {clusterSize} bytes)");

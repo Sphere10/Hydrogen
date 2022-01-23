@@ -8,7 +8,7 @@ namespace Sphere10.Framework {
 	/// <typeparam name="TItem"></typeparam>
 	public class ClusteredList<TItem> : StreamPersistedList<TItem, ClusteredStorageHeader,  ClusteredRecord> {
 		public ClusteredList(Stream stream, int clusterSize, IItemSerializer<TItem> itemSerializer, IEqualityComparer<TItem> itemComparer = null, Endianness endianness = Endianness.LittleEndian)
-			: base(new ClusteredStorage(stream, clusterSize, endianness), itemSerializer, itemComparer) {
+			: base(new ClusteredStorage(stream, clusterSize, endianness), itemSerializer, itemComparer, endianness) {
 		}
 	}
 }

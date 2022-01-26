@@ -228,11 +228,11 @@ namespace Sphere10.Framework {
 		public void Clear() {
 			lock (_lock) {
 				CheckNotOpened();
+				_records.Clear();
+				_clusters.Clear();
 				Header.RecordsCount = 0;
 				Header.TotalClusters = 0;
 				AllRecordsSize = 0;
-				_records.Clear();
-				_clusters.Clear();
 				_recordsFragmentProvider.Reset();
 			}
 		}

@@ -16,9 +16,11 @@ namespace Sphere10.Framework {
 	/// <typeparam name="TValue"></typeparam>
 	/// <typeparam name="TRecord"></typeparam>
 	/// <remarks>This is useful when the underlying KVP store isn't efficient at deletion. When deleting an item, it's record is marked as available and re-used later.</remarks>
-	public class StreamPersistedDictionary<TKey, TValue, THeader, TRecord> : DictionaryBase<TKey, TValue>
+	public class StreamPersistedDictionary<TKey, TValue, THeader, TRecord> : DictionaryBase<TKey, TValue>, ILoadable
 		where THeader : IStreamStorageHeader
-		where TRecord : IStreamKeyRecord, new() {
+		where TRecord : IStreamKeyRecord {
+		public event EventHandlerEx<object> Loading;
+		public event EventHandlerEx<object> Loaded;
 
 		private readonly IItemSerializer<TValue> _valueSerializer;
 		private readonly Endianness _endianness;
@@ -26,7 +28,6 @@ namespace Sphere10.Framework {
 		private readonly IEqualityComparer<TKey> _keyComparer;
 		private readonly LookupEx<int, int> _checksumToIndexLookup;
 		private readonly SortedList<int> _unusedRecords;
-
 
 		/// <summary>
 		/// Constructs a dictionary which uses argument <see cref="kvpStore"/> clustered list to storage it's key-value pairs.
@@ -42,6 +43,7 @@ namespace Sphere10.Framework {
 			_endianness = endianess;
 			_checksumToIndexLookup = new LookupEx<int, int>();
 			_unusedRecords = new();
+			RequiresLoad = kvpStore.Storage.Records.Count > 0;
 		}
 
 		public override ICollection<TKey> Keys
@@ -61,8 +63,16 @@ namespace Sphere10.Framework {
 				.Where((_, i) => !IsUnusedRecord(i))
 				.Select(kvp => new KeyValuePair<TKey, TValue>(kvp.Key, DeserializeValue(kvp.Value)));
 
+		public bool RequiresLoad { get; private set; }
+
+		public void Load() {
+			RefreshChecksumToIndexLookup();
+			RequiresLoad = false;
+		}
+
 		public override void Add(TKey key, TValue value) {
 			Guard.ArgumentNotNull(key, nameof(key));
+			CheckLoaded();
 			var newBytes = SerializeValue(value);
 			var newStorageKVP = new KeyValuePair<TKey, byte[]>(key, newBytes);
 			if (TryFindKVP(key, out var index, out _)) {
@@ -70,7 +80,7 @@ namespace Sphere10.Framework {
 				_kvpStore[index] = newStorageKVP;
 				var record = _kvpStore.Storage.Records[index];
 				record.Traits = record.Traits.CopyAndSetFlags(StreamRecordTraits.IsUsed, true);
-				_kvpStore.Storage.UpdateRecord(index, record);
+				record.KeyChecksum = CalculateKeyChecksum(key);
 			} else {
 				AddInternal(newStorageKVP);
 			}
@@ -78,6 +88,7 @@ namespace Sphere10.Framework {
 
 		public override bool Remove(TKey key) {
 			Guard.ArgumentNotNull(key, nameof(key));
+			CheckLoaded();
 			if (TryFindKVP(key, out var index, out _)) {
 				RemoveInternal(key, index);
 				return true;
@@ -87,6 +98,7 @@ namespace Sphere10.Framework {
 
 		public override bool ContainsKey(TKey key) {
 			Guard.ArgumentNotNull(key, nameof(key));
+			CheckLoaded();
 			return
 				_checksumToIndexLookup[CalculateKeyChecksum(key)]
 					.Where(index => !IsUnusedRecord(index))
@@ -95,17 +107,19 @@ namespace Sphere10.Framework {
 		}
 
 		public override void Clear() {
+			// Load not required
 			_kvpStore.Clear();
 			_checksumToIndexLookup.Clear();
 			_unusedRecords.Clear();
 		}
 
-		public override int Count => _kvpStore.Count - _unusedRecords.Count;
+		public override int Count => _kvpStore.Count - _unusedRecords.Count;  // Load not required
 
-		public override bool IsReadOnly { get; }
+		public override bool IsReadOnly => false;
 
 		public override bool TryGetValue(TKey key, out TValue value) {
 			Guard.ArgumentNotNull(key, nameof(key));
+			CheckLoaded();
 			if (TryFindKVP(key, out _, out var valueBytes)) {
 				value = DeserializeValue(valueBytes);
 				return true;
@@ -117,6 +131,7 @@ namespace Sphere10.Framework {
 		public override void Add(KeyValuePair<TKey, TValue> item) {
 			Guard.ArgumentNotNull(item, nameof(item));
 			Guard.ArgumentNotNull(item, nameof(item));
+			CheckLoaded();
 			var newBytes = SerializeValue(item.Value);
 			var newStorageKVP = new KeyValuePair<TKey, byte[]>(item.Key, newBytes);
 			if (TryFindKVP(item.Key, out var index, out _)) {
@@ -128,6 +143,7 @@ namespace Sphere10.Framework {
 
 		public override bool Remove(KeyValuePair<TKey, TValue> item) {
 			Guard.ArgumentNotNull(item, nameof(item));
+			CheckLoaded();
 			if (TryFindKVP(item.Key, out var index, out var kvpValueBytes)) {
 				var serializedValue = SerializeValue(item.Value);
 				if (ByteArrayEqualityComparer.Instance.Equals(serializedValue, kvpValueBytes)) {
@@ -140,20 +156,23 @@ namespace Sphere10.Framework {
 
 		public override bool Contains(KeyValuePair<TKey, TValue> item) {
 			Guard.ArgumentNotNull(item, nameof(item));
+			CheckLoaded();
 			if (!TryFindKVP(item.Key, out _, out var valueBytes))
 				return false;
 			var itemValueBytes = SerializeValue(item.Value);
 			return ByteArrayEqualityComparer.Instance.Equals(valueBytes, itemValueBytes);
 		}
 
-		public override void CopyTo(KeyValuePair<TKey, TValue>[] array, int arrayIndex)
-			=> KeyValuePairs.ToArray().CopyTo(array, arrayIndex);
-
+		public override void CopyTo(KeyValuePair<TKey, TValue>[] array, int arrayIndex) {
+			CheckLoaded();
+			KeyValuePairs.ToArray().CopyTo(array, arrayIndex);
+		}
 
 		public void Shrink() {
 			// delete all unused records from _kvpStore
 			// deletes item right to left
 			// possible optimization: a connected neighbourhood of unused records can be deleted 
+			CheckLoaded();
 			for (var i = _unusedRecords.Count - 1; i >= 0; i--) {
 				var index = _unusedRecords[i];
 				_kvpStore.RemoveAt(i);
@@ -162,6 +181,7 @@ namespace Sphere10.Framework {
 		}
 
 		public override IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator() {
+			CheckLoaded();
 			return _kvpStore
 			  .Where((_, i) => !_unusedRecords.Contains(i))
 			  .Select(storageKVP => new KeyValuePair<TKey, TValue>(storageKVP.Key, DeserializeValue(storageKVP.Value)))
@@ -184,14 +204,15 @@ namespace Sphere10.Framework {
 		}
 
 		private void AddInternal(KeyValuePair<TKey, byte[]> item) {
+			int index;
 			if (_unusedRecords.Any()) {
-				var index = ConsumeUnusedrecord();
-				MarkRecordAsUsed(index, item.Key);
+				index = ConsumeUnusedrecord();
 				_kvpStore.Update(index, item);
 			} else {
 				_kvpStore.Add(item);
-				_checksumToIndexLookup.Add(CalculateKeyChecksum(item.Key), _kvpStore.Count - 1);
+				index = Count - 1;
 			}
+			MarkRecordAsUsed(index, item.Key);
 		}
 
 		private void RemoveInternal(TKey key, int index) {
@@ -201,16 +222,7 @@ namespace Sphere10.Framework {
 			MarkRecordAsUnused(index);  // record has to be updated after _kvpStore update since it removes/creates under the hood
 		}
 
-		private StreamKeyRecord NewRecordInstance(object source, KeyValuePair<TKey, byte[]> item, int itemSizeBytes, int clusterStartIndex)
-			=> new() {
-				Size = itemSizeBytes,
-				StartCluster = clusterStartIndex,
-				Traits = StreamRecordTraits.IsUsed,
-				KeyChecksum = CalculateKeyChecksum(item.Key)
-			};
-
 		private bool IsUnusedRecord(int index) => _unusedRecords.Contains(index);
-
 
 		private int ConsumeUnusedrecord() {
 			var index = _unusedRecords[0];
@@ -256,6 +268,11 @@ namespace Sphere10.Framework {
 				else
 					_unusedRecords.Add(i);
 			}
+		}
+
+		protected void CheckLoaded() {
+			if (RequiresLoad)
+				throw new InvalidOperationException("StreamPersistedDictionary has not been loaded");
 		}
 	}
 }

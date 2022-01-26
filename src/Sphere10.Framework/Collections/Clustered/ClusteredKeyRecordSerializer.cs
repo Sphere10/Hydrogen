@@ -1,11 +1,11 @@
 ﻿namespace Sphere10.Framework {
-	public class StreamKeyRecordSerializer : StaticSizeObjectSerializer<StreamKeyRecord> {
+	public class ClusteredKeyRecordSerializer : StaticSizeObjectSerializer<ClusteredKeyRecord> {
 
-		public StreamKeyRecordSerializer()
+		public ClusteredKeyRecordSerializer()
 			: base(+sizeof(byte) + sizeof(int) + sizeof(int) + sizeof(int)) {
 		}
 
-		public override bool TrySerialize(StreamKeyRecord item, EndianBinaryWriter writer) {
+		public override bool TrySerialize(ClusteredKeyRecord item, EndianBinaryWriter writer) {
 			writer.Write((byte)item.Traits);
 			writer.Write(item.Size);
 			writer.Write(item.StartCluster);
@@ -13,8 +13,8 @@
 			return true;
 		}
 
-		public override bool TryDeserialize(EndianBinaryReader reader, out StreamKeyRecord item) {
-			item = new StreamKeyRecord {
+		public override bool TryDeserialize(EndianBinaryReader reader, out ClusteredKeyRecord item) {
+			item = new ClusteredKeyRecord {
 				Traits = (StreamRecordTraits)reader.ReadByte(),
 				Size = reader.ReadInt32(),
 				StartCluster = reader.ReadInt32(),

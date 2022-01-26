@@ -3,7 +3,7 @@
 namespace Sphere10.Framework {
 	public abstract class BufferDecorator<TBuffer> : ExtendedListDecorator<byte, TBuffer>, IBuffer where TBuffer : IBuffer {
 
-        public BufferDecorator(TBuffer internalBuffer)
+		protected BufferDecorator(TBuffer internalBuffer)
             : base(internalBuffer) {
         }
 

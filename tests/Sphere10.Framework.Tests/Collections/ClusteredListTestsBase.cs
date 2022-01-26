@@ -3,7 +3,7 @@ using System.IO;
 using NUnit.Framework;
 
 namespace Sphere10.Framework.Tests {
-	public abstract class ClusteredListTestsBase : StreamedCollectionTestsBase {
+	public abstract class ClusteredListTestsBase : StreamPersistedCollectionTestsBase {
 
 		[Test]
 		public void AddOneTest() {

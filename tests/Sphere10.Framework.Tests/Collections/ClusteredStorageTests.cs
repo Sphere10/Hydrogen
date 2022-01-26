@@ -225,7 +225,6 @@ namespace Sphere10.Framework.Tests {
 			Assert.That(streamContainer.ReadAll(2), Is.EqualTo(new byte[] { 1 }));
 		}
 
-
 		[Test]
 		public void Insert_BugCase() {
 			using var rootStream = new MemoryStream();
@@ -360,6 +359,35 @@ namespace Sphere10.Framework.Tests {
 			Assert.That(streamContainer.Count, Is.EqualTo(2));
 			Assert.That(streamContainer.ReadAll(0), Is.EqualTo(new byte[] { 5, 6, 7, 8, 9 }));
 			Assert.That(streamContainer.ReadAll(1), Is.EqualTo(new byte[] { 0, 1, 2, 3, 4 }));
+		}
+
+		[Test]
+		public void ClearTest() {
+			var rng = new Random(31337);
+			using var rootStream = new MemoryStream();
+			var streamContainer = new ClusteredStorage(rootStream, 1);
+			streamContainer.AddBytes(rng.NextBytes(100));
+			streamContainer.AddBytes(rng.NextBytes(100));
+			streamContainer.AddBytes(rng.NextBytes(100));
+			streamContainer.Clear();
+			Assert.That(streamContainer.Count, Is.EqualTo(0));
+			Assert.That(streamContainer.Header.RecordsCount, Is.EqualTo(0));
+			Assert.That(streamContainer.Header.TotalClusters, Is.EqualTo(0));
+		}
+
+		[Test]
+		public void ClearTest_Bug1() {
+			var rng = new Random(31337);
+			using var rootStream = new MemoryStream();
+			var streamContainer = new ClusteredStorage(rootStream, 1);
+			streamContainer.AddBytes(rng.NextBytes(100));
+			streamContainer.AddBytes(rng.NextBytes(100));
+			streamContainer.AddBytes(rng.NextBytes(100));
+			var listing0 = streamContainer.Records[0]; // force the cluster pointer in records fragment provider backwards
+			streamContainer.Clear();
+			Assert.That(streamContainer.Count, Is.EqualTo(0));
+			Assert.That(streamContainer.Header.RecordsCount, Is.EqualTo(0));
+			Assert.That(streamContainer.Header.TotalClusters, Is.EqualTo(0));
 		}
 
 		[Test]
@@ -615,7 +643,7 @@ namespace Sphere10.Framework.Tests {
 		[Test]
 		public void IntegrationTests([Values(1, 4, 32)] int clusterSize, [Values(1, 2, 100)] int totalStreams, [Values(0, 2, 4, 100)] int maxStreamSize, [Values(ClusteredStorageCachePolicy.None, ClusteredStorageCachePolicy.Remember)] ClusteredStorageCachePolicy recordsCachePolicy, [Values(ClusteredStorageCachePolicy.None, ClusteredStorageCachePolicy.Remember)] ClusteredStorageCachePolicy streamCachePolicy) {
 			// NOTE: change DebugMode to True when trying to isolate error, else leave False when confirmed working (for faster evaluation)
-			const bool DebugMode = true;
+			const bool DebugMode = false;
 			const int StreamStreamOperations = 100;
 			var rng = new Random(31337 + (int)recordsCachePolicy + (int)streamCachePolicy);
 			var expectedStreams = new List<Stream>();

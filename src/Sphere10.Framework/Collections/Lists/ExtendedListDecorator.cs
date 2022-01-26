@@ -4,19 +4,19 @@ using System.Collections.Generic;
 namespace Sphere10.Framework {
 
 	/// <summary>
-	/// Decorator for an IExtendedList, but calls to non-range get routed to the range-based methods.
+	/// Decorator pattern for an IExtendedList, but calls to non-range get routed to the range-based methods.
 	/// </summary>
 	/// <typeparam name="TItem"></typeparam>
-	/// <typeparam name="TInternalList"></typeparam>
-	public abstract class ExtendedListDecorator<TItem, TInternalList> : IExtendedList<TItem> where TInternalList : IExtendedList<TItem> {
+	/// <typeparam name="TConcrete"></typeparam>
+	/// <remarks>At first glance the implementation may counter-intuitive, but it is born out of extensive usage and optimization. The <see cref="TConcrete"/>
+	/// generic argument ensures sub-classes can retrieve the decorated list in it's type,without an expensive chain of casts/retrieves.</remarks>
+	public abstract class ExtendedListDecorator<TItem, TConcrete> : IExtendedList<TItem> where TConcrete : IExtendedList<TItem> {
+		protected TConcrete InternalExtendedList;
 
-		protected ExtendedListDecorator(TInternalList internalExtendedList) {
+		protected ExtendedListDecorator(TConcrete internalExtendedList) {
 			Guard.ArgumentNotNull(internalExtendedList, nameof(internalExtendedList));
 			InternalExtendedList = internalExtendedList;
 		}
-
-		// TODO: change to field for perf
-		protected TInternalList InternalExtendedList { get; }
 
 		public virtual int Count => InternalExtendedList.Count;
 

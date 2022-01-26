@@ -3,4 +3,5 @@
 	public interface IClusteredRecord : IStreamRecord {
 		int StartCluster { get; set; }
 	}
+
 }

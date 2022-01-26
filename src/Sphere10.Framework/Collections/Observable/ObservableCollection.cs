@@ -16,7 +16,20 @@ using System.Collections.Generic;
 
 namespace Sphere10.Framework {
 
-	public class ObservableCollection<TItem> : CollectionDecorator<TItem>, IObservableCollection {
+
+	public class ObservableCollection<TItem> : ObservableCollection<TItem, ICollection<TItem>> {
+
+		public ObservableCollection()
+			: this(new ExtendedList<TItem>()) {
+		}
+		public ObservableCollection(ICollection<TItem> internalCollection)
+			: base(internalCollection) {
+		}
+	}
+
+
+	public class ObservableCollection<TItem, TConcrete> : CollectionDecorator<TItem, TConcrete>, IObservableCollection
+		where TConcrete : ICollection<TItem> {
 
 		public event EventHandlerEx<object, EventTraits> Accessing;
 		public event EventHandlerEx<object, EventTraits> Accessed;
@@ -39,11 +52,7 @@ namespace Sphere10.Framework {
 		public event EventHandlerEx<object, EnumeratingItemEventArgs> EnumeratingItem;
 		public event EventHandlerEx<object, EnumeratedItemEventArgs<TItem>> EnumeratedItem;
 
-		public ObservableCollection()
-			: this(new List<TItem>()) {
-		}
-
-		public ObservableCollection(ICollection<TItem> internalCollection)
+		public ObservableCollection(TConcrete internalCollection)
 			: base(internalCollection) {
 			EventFilter = EventTraits.All;
 		}
@@ -56,7 +65,7 @@ namespace Sphere10.Framework {
 			DoOperation(
 				EventTraits.Count,
 				() => base.Count,
-				() => new CountingEventArgs(), 
+				() => new CountingEventArgs(),
 				result => new CountedEventArgs { Result = result },
 				(preEventArgs) => {
 					OnCounting(preEventArgs);
@@ -91,7 +100,7 @@ namespace Sphere10.Framework {
 					base.Add(item);
 					return 0;
 				},
-				() => new AddingEventArgs<TItem> { CallArgs = new ItemsCallArgs<TItem>( item ) },
+				() => new AddingEventArgs<TItem> { CallArgs = new ItemsCallArgs<TItem>(item) },
 				_ => new AddedEventArgs<TItem>(),
 				(preEventArgs) => {
 					OnAdding(preEventArgs);
@@ -107,8 +116,8 @@ namespace Sphere10.Framework {
 			DoOperation(
 				EventTraits.Remove,
 				() => base.Remove(item),
-				() => new RemovingItemsEventArgs<TItem> { CallArgs = new ItemsCallArgs<TItem>( item ) },
-				result => new RemovedItemsEventArgs<TItem> { Result =  new[] { result } },
+				() => new RemovingItemsEventArgs<TItem> { CallArgs = new ItemsCallArgs<TItem>(item) },
+				result => new RemovedItemsEventArgs<TItem> { Result = new[] { result } },
 				(preEventArgs) => {
 					OnRemovingItems(preEventArgs);
 					RemovingItems?.Invoke(this, preEventArgs);
@@ -323,10 +332,10 @@ namespace Sphere10.Framework {
 
 
 		private class ObservableEnumerator : EnumeratorDecorator<TItem> {
-			private readonly ObservableCollection<TItem> _collection;
+			private readonly ObservableCollection<TItem, TConcrete> _collection;
 			private int _index;
 
-			public ObservableEnumerator(ObservableCollection<TItem> collection, IEnumerator<TItem> enumerator)
+			public ObservableEnumerator(ObservableCollection<TItem, TConcrete> collection, IEnumerator<TItem> enumerator)
 				: base(enumerator) {
 				_collection = collection;
 				_index = 0;
@@ -336,7 +345,7 @@ namespace Sphere10.Framework {
 				var result = _collection.DoOperation(
 					EventTraits.Fetch,
 					() => base.MoveNext(),
-					() => new EnumeratingItemEventArgs(), 
+					() => new EnumeratingItemEventArgs(),
 					_ => new EnumeratedItemEventArgs<TItem> { Result = Current },
 					(preEventArgs) => {
 						_collection.OnEnumeratingItem(preEventArgs);

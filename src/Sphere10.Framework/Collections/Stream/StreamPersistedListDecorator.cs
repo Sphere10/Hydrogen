@@ -16,7 +16,7 @@ namespace Sphere10.Framework {
 		public StreamPersistedListDecorator(TConcrete internalStreamPersistedList) : base(internalStreamPersistedList) {
 		}
 
-		public IStreamStorage<THeader, TRecord> Storage => InternalExtendedList.Storage;
+		public IStreamStorage<THeader, TRecord> Storage => InternalCollection.Storage;
 	}
 
 	public class StreamPersistedListDecorator<TItem, THeader, TRecord> : StreamPersistedListDecorator<TItem, THeader, TRecord, IStreamPersistedList<TItem, THeader, TRecord>>

@@ -175,7 +175,7 @@ namespace Sphere10.Framework {
 					PreAllocationPolicy.ByBlock => Enumerable.Repeat(_activator(), _blockSize * (int)Math.Ceiling(required / (float)_blockSize)).ToArray(),
 					_ => throw new ArgumentOutOfRangeException(nameof(_preAllocationPolicy), _preAllocationPolicy, null)
 				};
-				InternalExtendedList.AddRange(newPreAllocatedItems);
+				InternalCollection.AddRange(newPreAllocatedItems);
 				spareCapacity = (Capacity - Count) - quantity;
 				Guard.Ensure(spareCapacity >= 0, "Insufficient space");
 			}
@@ -186,11 +186,11 @@ namespace Sphere10.Framework {
 			var spareCapacity = (Capacity - Count);
 			if (spareCapacity > 0) {
 				if (typeof(TItem).HasSubType(typeof(IDisposable))) 
-					InternalExtendedList.ReadRange(^spareCapacity..)
+					InternalCollection.ReadRange(^spareCapacity..)
 										.Cast<IDisposable>()
 										.ForEach(x => x.Dispose());
 
-				InternalExtendedList.RemoveRange(^spareCapacity..);
+				InternalCollection.RemoveRange(^spareCapacity..);
 			}
 		}
 

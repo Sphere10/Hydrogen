@@ -76,7 +76,7 @@ namespace Sphere10.Framework {
 		}
 
 		public override void Clear() {
-			InternalExtendedList.Clear();
+			InternalCollection.Clear();
 			_merkleTree.Leafs.Clear();
 		}
 

@@ -15,9 +15,7 @@ using System.Collections.Generic;
 
 namespace Sphere10.Framework {
 
-
-	public class ObservableExtendedCollection<TItem> : ObservableCollection<TItem>, IExtendedCollection<TItem> {
-		protected new readonly IExtendedCollection<TItem> InternalCollection;
+	public class ObservableExtendedCollection<TItem> : ObservableExtendedCollection<TItem, IExtendedCollection<TItem>> {
 
 		public ObservableExtendedCollection()
 			: this(new ExtendedList<TItem>()) {
@@ -25,7 +23,15 @@ namespace Sphere10.Framework {
 
 		public ObservableExtendedCollection(IExtendedCollection<TItem> internalCollection)
 			: base(internalCollection) {
-			InternalCollection = (IExtendedCollection<TItem>)base.InternalCollection;
+		}
+
+	}
+
+	public class ObservableExtendedCollection<TItem, TConcrete> : ObservableCollection<TItem, TConcrete>, IExtendedCollection<TItem>
+		where TConcrete : IExtendedCollection<TItem> {
+
+		public ObservableExtendedCollection(TConcrete internalCollection)
+			: base(internalCollection) {
 		}
 
 		public virtual IEnumerable<bool> ContainsRange(IEnumerable<TItem> items) =>

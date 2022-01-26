@@ -7,15 +7,15 @@ namespace Sphere10.Framework {
             : base(internalBuffer) {
         }
 
-        public virtual void AddRange(ReadOnlySpan<byte> span) => InternalExtendedList.AddRange(span);
+        public virtual void AddRange(ReadOnlySpan<byte> span) => InternalCollection.AddRange(span);
 
-        public virtual Span<byte> AsSpan(int index, int count) => InternalExtendedList.AsSpan(index, count);
+        public virtual Span<byte> AsSpan(int index, int count) => InternalCollection.AsSpan(index, count);
 
-        public virtual void InsertRange(int index, ReadOnlySpan<byte> items) => InternalExtendedList.InsertRange(index, items);
+        public virtual void InsertRange(int index, ReadOnlySpan<byte> items) => InternalCollection.InsertRange(index, items);
 
-        public virtual ReadOnlySpan<byte> ReadSpan(int index, int count) => InternalExtendedList.ReadSpan(index, count);
+        public virtual ReadOnlySpan<byte> ReadSpan(int index, int count) => InternalCollection.ReadSpan(index, count);
 
-        public virtual void UpdateRange(int index, ReadOnlySpan<byte> items) => InternalExtendedList.UpdateRange(index, items);
+        public virtual void UpdateRange(int index, ReadOnlySpan<byte> items) => InternalCollection.UpdateRange(index, items);
     }
 
 }

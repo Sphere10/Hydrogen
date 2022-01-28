@@ -39,7 +39,7 @@ namespace Sphere10.Framework {
 
 		private void CreateUncommittedStream() {
 			// create file marker
-			if (!File.Exists(UncommittedPageFileName))
+			if (!File.Exists(UncommittedPageFileName)) 
 				throw new InvalidOperationException("Uncommitted page marker not created");
 
 			// Write source data into the uncommitted page marker.

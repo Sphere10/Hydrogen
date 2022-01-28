@@ -12,6 +12,7 @@
 //-----------------------------------------------------------------------
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -54,7 +55,14 @@ namespace Tools {
                     return false;
                 return index < collection.Count();
             }
-        }
+
+			public static IEnumerable<int> Partition(int number, int chunk) {
+				while (number > 0) {
+					yield return chunk < number ? chunk : number;
+					number -= chunk;
+				}
+			}
+	}
 
 	
 }

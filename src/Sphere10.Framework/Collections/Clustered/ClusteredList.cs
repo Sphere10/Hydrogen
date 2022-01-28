@@ -12,7 +12,7 @@ namespace Sphere10.Framework {
 	public class ClusteredList<TItem, THeader, TRecord> : StreamPersistedList<TItem, THeader, TRecord>, IClusteredList<TItem, THeader, TRecord>
 		where THeader : IClusteredStorageHeader
 		where TRecord : IClusteredRecord { 
-		public ClusteredList(IStreamStorage<THeader, TRecord> storage, IItemSerializer<TItem> itemSerializer, IEqualityComparer<TItem> itemComparer = null, Endianness endianness = Endianness.LittleEndian)
+		public ClusteredList(IStreamStorage<THeader, TRecord> storage, IItemSerializer<TItem> itemSerializer, IEqualityComparer<TItem> itemComparer = null, ClusteredStorageCachePolicy recordsCachePolicy = ClusteredStorageCachePolicy.Remember, Endianness endianness = Endianness.LittleEndian)
 			: base(storage, itemSerializer, itemComparer, endianness) {
 		}
 	}
@@ -22,8 +22,8 @@ namespace Sphere10.Framework {
 	/// </summary>
 	/// <typeparam name="TItem"></typeparam>
 	public class ClusteredList<TItem> : ClusteredList<TItem, ClusteredStorageHeader,  ClusteredRecord> {
-		public ClusteredList(Stream stream, int clusterSize, IItemSerializer<TItem> itemSerializer, IEqualityComparer<TItem> itemComparer = null, Endianness endianness = Endianness.LittleEndian)
-			: base(new ClusteredStorage(stream, clusterSize, endianness), itemSerializer, itemComparer, endianness) {
+		public ClusteredList(Stream stream, int clusterSize, IItemSerializer<TItem> itemSerializer, IEqualityComparer<TItem> itemComparer = null, ClusteredStorageCachePolicy recordsCachePolicy = ClusteredStorageCachePolicy.Remember, Endianness endianness = Endianness.LittleEndian)
+			: base(new ClusteredStorage(stream, clusterSize, endianness, recordsCachePolicy), itemSerializer, itemComparer, recordsCachePolicy, endianness) {
 		}
 	}
 }

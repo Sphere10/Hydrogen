@@ -39,19 +39,22 @@ namespace Sphere10.Framework {
 		/// <param name="maxMemory">How much of the list can be kept in memory at any time</param>
 		/// <param name="clusterSize">To support random access reads/writes the file is broken into discontinuous clusters of this size (similar to how disk storage) works. <remarks>Try to fit your average object in 1 cluster for performance. However, spare space in a cluster cannot be used.</remarks> </param>
 		/// <param name="readOnly">Whether or not file is opened in readonly mode.</param>
-		public TransactionalList(string filename, string uncommittedPageFileDir, IItemSerializer<T> serializer, IEqualityComparer<T> comparer = null, int transactionalPageSizeBytes = DefaultTransactionalPageSize, long maxMemory = DefaultMaxMemory, int clusterSize = DefaultClusterSize, bool readOnly = false) {
+		public TransactionalList(string filename, string uncommittedPageFileDir, IItemSerializer<T> serializer, IEqualityComparer<T> comparer = null, int transactionalPageSizeBytes = DefaultTransactionalPageSize, long maxMemory = DefaultMaxMemory, int clusterSize = DefaultClusterSize, ClusteredStorageCachePolicy recordsCachePolicy = ClusteredStorageCachePolicy.Remember, bool readOnly = false) {
 			Guard.ArgumentNotNull(filename, nameof(filename));
 			Guard.ArgumentNotNull(uncommittedPageFileDir, nameof(uncommittedPageFileDir));
 
 			_disposed = false;
 
-			_transactionalBuffer = new TransactionalFileMappedBuffer(filename, uncommittedPageFileDir, transactionalPageSizeBytes, maxMemory, readOnly) {
-				FlushOnDispose = false
-			};
+			_transactionalBuffer = new TransactionalFileMappedBuffer(filename, uncommittedPageFileDir, transactionalPageSizeBytes, maxMemory, readOnly);
 			_transactionalBuffer.Committing += _ => OnCommitting();
 			_transactionalBuffer.Committed += _ => OnCommitted();
 			_transactionalBuffer.RollingBack += _ => OnRollingBack();
 			_transactionalBuffer.RolledBack += _ => OnRolledBack();
+
+
+			// NOTE: needs removal
+			if (_transactionalBuffer.RequiresLoad)
+				_transactionalBuffer.Load();
 
 			var clusteredList = new ClusteredList<T>(
 				new ExtendedMemoryStream(
@@ -60,7 +63,8 @@ namespace Sphere10.Framework {
 				),
 				clusterSize,
 				serializer,
-				comparer
+				comparer,
+				recordsCachePolicy
 			);
 
 			_itemList = new SynchronizedExtendedList<T>(clusteredList);

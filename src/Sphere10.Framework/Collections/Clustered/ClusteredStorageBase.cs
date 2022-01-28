@@ -132,21 +132,6 @@ namespace Sphere10.Framework {
 
 		#region Streams
 
-		public byte[] ReadAll(int index)
-			=> ((IStreamStorage)this).Open(index).ReadAllAndDispose();
-
-		public void AddBytes(ReadOnlySpan<byte> bytes)
-			=> ((IStreamStorage)this).AddBytes(bytes);
-
-		public void UpdateBytes(int index, ReadOnlySpan<byte> bytes)
-			=> ((IStreamStorage)this).UpdateBytes(index, bytes);
-
-		public void AppendBytes(int index, ReadOnlySpan<byte> bytes)
-			=> ((IStreamStorage)this).AppendBytes(index, bytes);
-
-		public void InsertBytes(int index, ReadOnlySpan<byte> bytes)
-			=> ((IStreamStorage)this).InsertBytes(index, bytes);
-
 		public Stream Add() => Add(DefaultStreamPolicy);
 
 		public Stream Add(ClusteredStorageCachePolicy cachePolicy) {
@@ -222,7 +207,10 @@ namespace Sphere10.Framework {
 		}
 
 		public void Clear(int index) {
-			UpdateBytes(index, Array.Empty<byte>());
+			CheckRecordIndex(index);
+			using (var stream = Open(index)) {
+				stream.SetLength(0);
+			}
 		}
 
 		public void Clear() {

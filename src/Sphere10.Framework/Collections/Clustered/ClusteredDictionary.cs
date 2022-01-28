@@ -29,7 +29,7 @@ namespace Sphere10.Framework {
 
 	public class ClusteredDictionary<TKey, TValue> : ClusteredDictionary<TKey, TValue, ClusteredStorageHeader, ClusteredKeyRecord> {
 
-		public ClusteredDictionary(Stream stream, int clusterSize, IItemSerializer<TKey> keySerializer, IItemSerializer<TValue> valueSerializer, IEqualityComparer<TKey> keyComparer = null, Endianness endianess = Endianness.LittleEndian)
+		public ClusteredDictionary(Stream stream, int clusterSize, IItemSerializer<TKey> keySerializer, IItemSerializer<TValue> valueSerializer, IEqualityComparer<TKey> keyComparer = null, ClusteredStorageCachePolicy recordsCachePolicy = ClusteredStorageCachePolicy.Remember, Endianness endianess = Endianness.LittleEndian)
 			: base(
 				new ClusteredList<KeyValuePair<TKey, byte[]>, ClusteredStorageHeader, ClusteredKeyRecord>(
 					new ClusteredStorage<ClusteredKeyRecord>(
@@ -46,6 +46,7 @@ namespace Sphere10.Framework {
 						keyComparer,
 						new ByteArrayEqualityComparer()
 					),
+					recordsCachePolicy,
 					endianess
 				),
 				valueSerializer, 

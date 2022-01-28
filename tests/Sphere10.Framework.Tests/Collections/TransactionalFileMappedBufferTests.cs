@@ -694,10 +694,25 @@ namespace Sphere10.Framework.Tests {
 			}
 		}
 
+
+		[Test]
+		public void DiposeBug() {
+			var RNG = new Random(RandomSeed);
+			var baseDir = Tools.FileSystem.GetTempEmptyDirectory(true);
+			var fileName = Path.Combine(baseDir, "File.dat");
+			using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectory(baseDir))) {
+				var file = new TransactionalFileMappedBuffer(fileName, 10, 100) { FlushOnDispose = false };
+				if (file.RequiresLoad)
+					file.Load();
+				file.Add(1);
+				Assert.That(() => file.Dispose(), Throws.Nothing);
+			}
+		}
+
 		#endregion
 
 		#region Event Tests
-		
+
 		[Test]
 		public void CommitEvents() {
 			var baseDir = Tools.FileSystem.GetTempEmptyDirectory(true);

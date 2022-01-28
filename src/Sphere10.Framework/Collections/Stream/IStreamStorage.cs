@@ -18,34 +18,6 @@ namespace Sphere10.Framework {
 		void Swap(int first, int second);
 
 		void Clear();
-
-		public sealed byte[] ReadAll(int index)
-			=> Open(index).ReadAllAndDispose();
-
-		public sealed void AddBytes(ReadOnlySpan<byte> bytes) {
-			using var stream = Add();
-			stream.Write(bytes);
-		}
-
-		public sealed void UpdateBytes(int index, ReadOnlySpan<byte> bytes) {
-			using var stream = Open(index);
-			stream.SetLength(0);
-			stream.Write(bytes);
-		}
-
-		public sealed void AppendBytes(int index, ReadOnlySpan<byte> bytes) {
-			using var stream = Open(index);
-			stream.Seek(stream.Length, SeekOrigin.Current);
-			stream.Write(bytes);
-		}
-
-		public sealed void InsertBytes(int index, ReadOnlySpan<byte> bytes) {
-			using var stream = Insert(index);
-			if (bytes != null) {
-				stream.Seek(stream.Length, SeekOrigin.Current);
-				stream.Write(bytes);
-			}
-		}
 	}
 
 	public interface IStreamStorage<out THeader, TRecord> : IStreamStorage
@@ -58,6 +30,37 @@ namespace Sphere10.Framework {
 
 		internal void UpdateRecord(int index, IStreamRecord record);
 
+	}
+
+
+	public static class IStreamStorageExtensions {
+		public static byte[] ReadAll(this IStreamStorage storage, int index)
+			=> storage.Open(index).ReadAllAndDispose();
+
+		public static void AddBytes(this IStreamStorage storage, ReadOnlySpan<byte> bytes) {
+			using var stream = storage.Add();
+			stream.Write(bytes);
+		}
+
+		public static void UpdateBytes(this IStreamStorage storage, int index, ReadOnlySpan<byte> bytes) {
+			using var stream = storage.Open(index);
+			stream.SetLength(0);
+			stream.Write(bytes);
+		}
+
+		public static void AppendBytes(this IStreamStorage storage, int index, ReadOnlySpan<byte> bytes) {
+			using var stream = storage.Open(index);
+			stream.Seek(stream.Length, SeekOrigin.Current);
+			stream.Write(bytes);
+		}
+
+		public static void InsertBytes(this IStreamStorage storage, int index, ReadOnlySpan<byte> bytes) {
+			using var stream = storage.Insert(index);
+			if (bytes != null) {
+				stream.Seek(stream.Length, SeekOrigin.Current);
+				stream.Write(bytes);
+			}
+		}
 	}
 
 

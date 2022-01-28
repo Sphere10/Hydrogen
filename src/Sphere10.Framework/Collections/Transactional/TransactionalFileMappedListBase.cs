@@ -15,6 +15,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 
 namespace Sphere10.Framework {
 
@@ -30,7 +31,6 @@ namespace Sphere10.Framework {
 		protected TransactionalFileMappedListBase(
 			string filename, 
 			string uncommittedPageFileDir, 
-			Guid fileID,
 			int pageSize,
 			long maxMemory,
 			bool readOnly = false)
@@ -38,7 +38,7 @@ namespace Sphere10.Framework {
 			Guard.ArgumentNotNullOrEmpty(uncommittedPageFileDir, nameof(uncommittedPageFileDir));
 			if (!Directory.Exists(uncommittedPageFileDir))
 				throw new DirectoryNotFoundException($"Directory not found: {uncommittedPageFileDir}");
-			FileID = fileID;
+			FileID = ComputeFileID(Path);
 			PageMarkerRepo = new MarkerRepository(uncommittedPageFileDir, FileID);
 		}
 
@@ -94,6 +94,12 @@ namespace Sphere10.Framework {
 			if (PageMarkerRepo.FileMarkers.Any() || PageMarkerRepo.PageMarkers.Any())
 				Rollback();
 			base.Dispose();
+		}
+
+		public static Guid ComputeFileID(string caseCorrectFilePath) {
+			// FileID is a first 16 bytes of the case-correct path converted into a guid
+			Guard.ArgumentNotNull(caseCorrectFilePath, nameof(caseCorrectFilePath));
+			return new Guid(Hashers.Hash(CHF.SHA2_256, Encoding.UTF8.GetBytes(caseCorrectFilePath)).Take(16).ToArray());
 		}
 
 		protected abstract int GetCommittedPageCount();

@@ -38,7 +38,6 @@ namespace Sphere10.Framework.ObjectSpace {
 			var file = new TransactionalFileMappedBuffer(
 				filename,
 				pageDir,
-				fileID,
 				merklePageSize,
 				(memoryCacheBytes / merklePageSize).ClipTo(1, int.MaxValue),
 				readOnly

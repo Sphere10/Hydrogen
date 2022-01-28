@@ -37,6 +37,8 @@ namespace Sphere10.Framework {
 
 		#region Tree Navigation
 
+		public static bool IsLeaf(MerkleCoordinate node) => node.Level == 0;
+
 		public static MerkleNodeTraits GetTraits(MerkleSize size, MerkleCoordinate node) {
 			MerkleNodeTraits traits = 0;
 

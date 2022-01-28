@@ -13,7 +13,7 @@ namespace Sphere10.Framework {
 	/// <typeparam name="T">Type of item</typeparam>
 	public class TransactionalList<T> : ObservableExtendedList<T>, ITransactionalList<T> {
 		public const int DefaultTransactionalPageSize = 1 << 18;  // 256kb
-		public const int DefaultClusterSize = 1 << 17;  // 128kb
+		public const int DefaultClusterSize = 256;  //1 << 17;  // 128kb
 		public const int DefaultMaxMemory = 10 * (1 << 20);// 10mb
 
 		public event EventHandlerEx<object> Loading { add => _transactionalBuffer.Loading += value; remove => _transactionalBuffer.Loading -= value; }
@@ -42,10 +42,10 @@ namespace Sphere10.Framework {
 		public TransactionalList(string filename, string uncommittedPageFileDir, IItemSerializer<T> serializer, IEqualityComparer<T> comparer = null, int transactionalPageSizeBytes = DefaultTransactionalPageSize, long maxMemory = DefaultMaxMemory, int clusterSize = DefaultClusterSize, bool readOnly = false) {
 			Guard.ArgumentNotNull(filename, nameof(filename));
 			Guard.ArgumentNotNull(uncommittedPageFileDir, nameof(uncommittedPageFileDir));
-			var fileID = new Guid(Hashers.Hash(CHF.SHA2_256, Tools.FileSystem.GetCaseCorrectFilePath(filename).ToBase64().ToAsciiByteArray()).Take(16).ToArray());
+
 			_disposed = false;
 
-			_transactionalBuffer = new TransactionalFileMappedBuffer(filename, uncommittedPageFileDir, fileID, transactionalPageSizeBytes, maxMemory, readOnly) {
+			_transactionalBuffer = new TransactionalFileMappedBuffer(filename, uncommittedPageFileDir, transactionalPageSizeBytes, maxMemory, readOnly) {
 				FlushOnDispose = false
 			};
 			_transactionalBuffer.Committing += _ => OnCommitting();

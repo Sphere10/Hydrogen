@@ -18,7 +18,7 @@ namespace Sphere10.Framework {
 			: this(transactionHeaderFilePath, Path.GetDirectoryName(transactionHeaderFilePath)) {
 		}
 
-		public FileTransaction(string transactionHeaderFilePath, string uncomittedPageFileDirectory) {
+		public FileTransaction(string transactionHeaderFilePath, string uncommittedPageFileDirectory) {
 			_enlistedFiles = new Dictionary<string, FileDescriptor>();
 
 			// Resume prior transaction if already exists, resume
@@ -42,7 +42,7 @@ namespace Sphere10.Framework {
 			Debug.Assert(!_enlistedFiles.Any());
 			Status = FileTransactionState.Unchanged;
 			TransactionHeaderFile = transactionHeaderFilePath;
-			UncomittedPageFileDirectory = uncomittedPageFileDirectory;
+			UncommittedPageFileDirectory = uncommittedPageFileDirectory;
 		}
 
 		public string TransactionHeaderFile { get; private set; }
@@ -51,7 +51,7 @@ namespace Sphere10.Framework {
 
 		public FileTransactionState Status { get; private set; }
 
-		public string UncomittedPageFileDirectory { get; private set; }
+		public string UncommittedPageFileDirectory { get; private set; }
 
 		public void Flush() {
 			foreach (var file in _enlistedFiles.Values) {
@@ -112,7 +112,7 @@ namespace Sphere10.Framework {
 				if (GloballyEnlistedFiles.ContainsKey(filename))
 					throw new InvalidOperationException($"File already enlisted in other transaction: {filename})");
 
-				return EnlistFile(new TransactionalFileMappedBuffer(filename, UncomittedPageFileDirectory, fileID, pageSize, maxMemory, false), true);
+				return EnlistFile(new TransactionalFileMappedBuffer(filename, UncommittedPageFileDirectory, pageSize, maxMemory, false), true);
 			}
 		}
 
@@ -210,7 +210,7 @@ namespace Sphere10.Framework {
 			var surrogate = Tools.Object.DeserializeFromByteArray(File.ReadAllBytes(transactionHeaderFile)) as FileTransactionSerializableSurrogate;
 			this.Status = surrogate.Status;
 			this.TransactionHeaderFile = transactionHeaderFile;
-			this.UncomittedPageFileDirectory = surrogate.UncomittedPageFileDirectory;
+			this.UncommittedPageFileDirectory = surrogate.UncomittedPageFileDirectory;
 			foreach (var enlistedSurrogate in surrogate.EnlistedFiles) {
 				EnlistFile(enlistedSurrogate.Filename, enlistedSurrogate.FileID, enlistedSurrogate.PageSize, enlistedSurrogate.MaxMemory);
 			}
@@ -289,7 +289,7 @@ namespace Sphere10.Framework {
 			}
 
 			public static void Dehydrate(FileTransaction @from, FileTransactionSerializableSurrogate to) {
-				to.UncomittedPageFileDirectory = @from.UncomittedPageFileDirectory;
+				to.UncomittedPageFileDirectory = @from.UncommittedPageFileDirectory;
 				to.Status = @from.Status;
 				to.EnlistedFiles = @from.EnlistedFiles.Select(TransactionalFileSerializableSurrogate.Dehydrate).ToArray();
 			}

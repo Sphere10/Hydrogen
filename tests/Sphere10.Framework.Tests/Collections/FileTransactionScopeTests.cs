@@ -84,7 +84,6 @@ namespace Sphere10.Framework.Tests {
 					scope.BeginTransaction();
 					var file = new TransactionalFileMappedBuffer(filePath,
 						filePageDir,
-						Guid.NewGuid(),
 						100,
 						1*100); // note: filePageDir != txnBaseDir
 					Assert.Throws<ArgumentException>(() => scope.EnlistFile(file, true));
@@ -107,7 +106,6 @@ namespace Sphere10.Framework.Tests {
 					scope.BeginTransaction();
 					var file = new TransactionalFileMappedBuffer(filePath,
 						filePageDir,
-						Guid.NewGuid(),
 						100,
 						1*100); // note: filePageDir == txnBaseDir
 					Assert.DoesNotThrow(() => scope.EnlistFile(file, true));

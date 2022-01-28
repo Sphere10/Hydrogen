@@ -191,7 +191,7 @@ namespace Sphere10.Framework.Tests {
 				case StorageType.TransactionalBinaryFile:
 					var baseDir = Tools.FileSystem.GetTempEmptyDirectory(true);
 					var fileName = Path.Combine(baseDir, "File.dat");
-					buffer = new TransactionalFileMappedBuffer(fileName, baseDir, Guid.NewGuid(), pageSize, maxMemory);
+					buffer = new TransactionalFileMappedBuffer(fileName, baseDir, pageSize, maxMemory);
 					disposables.Add(new ActionScope(() => Tools.FileSystem.DeleteDirectory(baseDir)));
 					break;
 				default:

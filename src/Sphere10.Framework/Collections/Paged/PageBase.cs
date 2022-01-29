@@ -63,7 +63,7 @@ namespace Sphere10.Framework {
 
 			var totalWriteCount = updateCount + appendCount;
 			// Was unable to write the first element in an empty page, item too large
-			Guard.Against(Count == 0 && totalWriteCount == 0, $"Item '{itemsArr[0]?.ToString() ?? "(NULL)"}' cannot be fitted onto a page of this collection");
+			Guard.Against(Count == 0 && totalWriteCount == 0, $"Item cannot be fitted onto a page of this collection");
 				
 			if (totalWriteCount > 0)
 				Dirty = true;

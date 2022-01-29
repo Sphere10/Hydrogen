@@ -259,12 +259,12 @@ namespace Sphere10.Framework {
 
 		protected abstract TRecord NewRecord();
 
-		private void UpdateRecord(int index, TRecord record) {
+		private void UpdateRecord(int index, TRecord record, bool resetTrackingIfOpen = true) {
 			if (IntegrityChecks)
 				CheckRecordIntegrity(index, record);
 
 			_records.Update(index, record);
-			if (_openRecord.HasValue && _openRecord.Value == index)
+			if (resetTrackingIfOpen && _openRecord.HasValue && _openRecord.Value == index)
 				_openFragmentProvider.Reset();
 		}
 
@@ -321,32 +321,44 @@ namespace Sphere10.Framework {
 
 		#region Clusters
 
-		private int AllocateStartCluster(int record, ClusterDataType clusterDataType) {
-			var cluster = new Cluster {
-				Traits = ClusterTraits.First | clusterDataType switch { ClusterDataType.Record => ClusterTraits.Record, ClusterDataType.Stream => ClusterTraits.Data },
-				Prev = record,
-				Next = -1,
-				Data = ZeroClusterBytes.ToArray(),
-			};
-			_clusters.Add(cluster);
-			if (clusterDataType == ClusterDataType.Record)
-				_recordsFragmentProvider.Reset();
+		private void AllocateNextClusters(ClusterDataType clusterDataType, int recordIndex, int previousCluster, int quantity, bool allocateFirst, out int startClusterIX) {
+			if (quantity == 0) {
+				startClusterIX = -1;
+				return;
+			}
+			var typeTrait = clusterDataType switch { ClusterDataType.Record => ClusterTraits.Record, ClusterDataType.Stream => ClusterTraits.Data };
+			var clusters = new Cluster[quantity];
+			startClusterIX = _clusters.Count;
+			var zeroData = ZeroClusterBytes.ToArray();
+			for(var i = 0; i < quantity; i++) {
+				clusters[i] = new Cluster {
+					Traits = typeTrait,
+					Prev = startClusterIX + i - 1,
+					Next = startClusterIX + i + 1,
+					Data = zeroData
+				};
+			}
+			// Fix first new cluster
+			if (allocateFirst) 
+				clusters[0].Traits |= ClusterTraits.First;
+			if (previousCluster != -1)
+				FastWriteClusterNext(previousCluster, startClusterIX);
+			switch (clusterDataType) {
+				case ClusterDataType.Record:
+					clusters[0].Prev = allocateFirst ? -1 : previousCluster;
+					break;
+				case ClusterDataType.Stream:
+					clusters[0].Prev = allocateFirst ? recordIndex : previousCluster;
+					break;
+				default:
+					throw new ArgumentOutOfRangeException(nameof(clusterDataType), clusterDataType, null);
+			}
 
-			Header.TotalClusters++;
-			return _clusters.Count - 1;
-		}
+			// Fix last new cluster
+			clusters[^1].Next = -1;
 
-		private int AllocateNextCluster(int prevCluster, ClusterDataType clusterDataType) {
-			var cluster = new Cluster {
-				Traits = clusterDataType switch { ClusterDataType.Record => ClusterTraits.Record, ClusterDataType.Stream => ClusterTraits.Data },
-				Prev = prevCluster,
-				Next = -1,
-				Data = ZeroClusterBytes.ToArray(),
-			};
-			_clusters.Add(cluster);
-			FastWriteClusterNext(prevCluster, _clusters.Count - 1);
-			Header.TotalClusters++;
-			return _clusters.Count - 1;
+			_clusters.AddRange(clusters);
+			Header.TotalClusters += clusters.Length;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -612,7 +624,7 @@ namespace Sphere10.Framework {
 			}
 
 			public bool TrySetTotalBytes(long length, out int[] newFragments, out int[] deletedFragments) {
-				//	var xxx = _parent.ToStringFullContents();   // TODO this seemed to cause bug somewhere (it shouldnt of)
+				Tools.Debugger.CounterA++;
 				var oldLength = TotalBytes;
 				var newTotalClusters = (int)Math.Ceiling(length / (float)_parent.ClusterSize);
 				var oldTotalClusters = FragmentCount;
@@ -623,16 +635,24 @@ namespace Sphere10.Framework {
 				var deletedClustersL = new List<int>();
 				TraverseToEnd();
 				if (newTotalClusters > currentTotalClusters) {
-					// add new clusters
-					while (currentTotalClusters < newTotalClusters) {
-						_currentCluster = currentTotalClusters == 0 ? _parent.AllocateStartCluster(_recordIndex, _clusterDataType) : _parent.AllocateNextCluster(_currentCluster, _clusterDataType);
-						_currentFragment++;
+					// Fast Implementation, adds clusters in range
+					var newClusters = newTotalClusters - currentTotalClusters;
+					var needsFirstCluster = currentTotalClusters == 0;
+					_parent.AllocateNextClusters(_clusterDataType, _recordIndex, _currentCluster, newClusters, needsFirstCluster, out var newStartIX);
+					
+					for (var i = 0; i < newClusters; i++) {
+						var newClusterIX = newStartIX + i;
+						var newFragmentIX = _currentFragment + i + 1;
+						newClustersL.Add(newClusterIX);
+						newFragmentsL.Add(newFragmentIX);
 						if (EnableCache)
-							_fragmentCache.SetCluster(_currentFragment, _currentCluster);
-						currentTotalClusters++;
-						newFragmentsL.Add(_currentFragment);
-						newClustersL.Add(_currentCluster);
+							_fragmentCache.SetCluster(newFragmentIX, newClusterIX);
 					}
+
+					// Set carrot to tip
+					_currentCluster = newClustersL[^1];
+					_currentFragment = newFragmentsL[^1];
+
 				} else if (newTotalClusters < currentTotalClusters) {
 					// remove clusters from tip
 					while (currentTotalClusters > newTotalClusters) {
@@ -676,7 +696,7 @@ namespace Sphere10.Framework {
 						_record.StartCluster = -1;
 					if (oldTotalClusters == 0 && newTotalClusters > 0)
 						_record.StartCluster = newClustersL[0];
-					_parent.UpdateRecord(_recordIndex, _record);
+					_parent.UpdateRecord(_recordIndex, _record, false);
 				} else {
 					_parent.AllRecordsSize = (int)length;
 				}
@@ -770,7 +790,8 @@ namespace Sphere10.Framework {
 				var prevCluster = 0;
 				if (!(EnableCache && _fragmentCache.TryGetCluster(_currentFragment, out prevCluster))) {
 					_currentCluster = _parent.FastReadClusterPrev(_currentCluster);
-					_fragmentCache.SetCluster(_currentFragment, _currentCluster);
+					if (EnableCache)
+						_fragmentCache.SetCluster(_currentFragment, _currentCluster);
 				} else _currentCluster = prevCluster;
 
 				return true;

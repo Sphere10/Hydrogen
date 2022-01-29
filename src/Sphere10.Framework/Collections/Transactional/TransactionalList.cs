@@ -13,7 +13,7 @@ namespace Sphere10.Framework {
 	/// <typeparam name="T">Type of item</typeparam>
 	public class TransactionalList<T> : ObservableExtendedList<T>, ITransactionalList<T> {
 		public const int DefaultTransactionalPageSize = 1 << 18;  // 256kb
-		public const int DefaultClusterSize = 256;  //1 << 17;  // 128kb
+		public const int DefaultClusterSize = 256;   // 256b
 		public const int DefaultMaxMemory = 10 * (1 << 20);// 10mb
 
 		public event EventHandlerEx<object> Loading { add => _transactionalBuffer.Loading += value; remove => _transactionalBuffer.Loading -= value; }
@@ -57,7 +57,7 @@ namespace Sphere10.Framework {
 				_transactionalBuffer.Load();
 
 			var clusteredList = new ClusteredList<T>(
-				new ExtendedMemoryStream(
+				new BufferStream(
 					_transactionalBuffer,
 					disposeSource: true
 				),

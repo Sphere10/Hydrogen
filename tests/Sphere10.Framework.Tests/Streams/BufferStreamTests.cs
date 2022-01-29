@@ -21,7 +21,7 @@ namespace Sphere10.Framework.Tests {
 
 	[TestFixture]
 	[Parallelizable]
-	public class ExtendedMemoryStreamTests {
+	public class BufferStreamTests {
 
 		[Test]
 		public void Empty([Values] InnerListType listType) {
@@ -92,36 +92,30 @@ namespace Sphere10.Framework.Tests {
 				AssertEx.StreamIntegrationTests(maxSize, stream, RNG: RNG);
 		}
 
-		private IDisposable CreateTestStream(InnerListType listType, int maxSize,  out ExtendedMemoryStream stream) {
+		private IDisposable CreateTestStream(InnerListType listType, int maxSize,  out BufferStream stream) {
 			var pageSize = Math.Max(1, maxSize / 5);
 			var maxOpenPages = 2;
 			var disposables = new Disposables();
 
 			switch (listType) {
-				case InnerListType.List:
-					stream = new ExtendedMemoryStream(new ExtendedListAdapter<byte>(new List<byte>()));
-					return Disposables.None;
-				case InnerListType.ExtendedList:
-					stream = new ExtendedMemoryStream(new ExtendedList<byte>());
-					return Disposables.None;
 				case InnerListType.MemoryBuffer:
-					stream = new ExtendedMemoryStream(new MemoryBuffer());
+					stream = new BufferStream(new MemoryBuffer());
 					return Disposables.None;
 				case InnerListType.MemoryPagedBuffer:
 					var memPagedBuffer = new MemoryPagedBuffer(pageSize, maxOpenPages*pageSize);
-					stream = new ExtendedMemoryStream(memPagedBuffer);
+					stream = new BufferStream(memPagedBuffer);
 					return new Disposables(memPagedBuffer);
 				case InnerListType.BinaryFile:
 					var tmpFile = Tools.FileSystem.GetTempFileName(false);
 					var binaryFile = new FileMappedBuffer(tmpFile, pageSize, maxOpenPages*pageSize);
-					stream = new ExtendedMemoryStream(binaryFile);
+					stream = new BufferStream(binaryFile);
 					return new Disposables(new ActionScope(() => File.Delete(tmpFile)));
 				
 				case InnerListType.TransactionalBinaryFile:
 					var baseDir = Tools.FileSystem.GetTempEmptyDirectory(true);
 					var fileName = Path.Combine(baseDir, "File.dat");
 					var transactionalBinaryFile = new TransactionalFileMappedBuffer(fileName, baseDir, pageSize, maxOpenPages*pageSize);
-					stream = new ExtendedMemoryStream(transactionalBinaryFile);
+					stream = new BufferStream(transactionalBinaryFile);
 					return new Disposables(new ActionScope(() => Tools.FileSystem.DeleteDirectory(baseDir)));
 				default:
 					throw new ArgumentOutOfRangeException(nameof(listType), listType, null);
@@ -129,8 +123,6 @@ namespace Sphere10.Framework.Tests {
 		}
 
 		public enum InnerListType {
-			List,
-			ExtendedList,
 			MemoryBuffer,
 			MemoryPagedBuffer,
 			BinaryFile,

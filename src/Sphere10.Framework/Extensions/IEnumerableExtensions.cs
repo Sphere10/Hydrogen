@@ -17,7 +17,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Collections.Concurrent;
-
+using System.Runtime.CompilerServices;
 
 
 namespace Sphere10.Framework {
@@ -390,6 +390,7 @@ namespace Sphere10.Framework {
 		}
 
 		// NOTE: ForReach applies action to all items then return enumerable, Apply applies action during enumeration 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static void ForEach<T>(this IEnumerable<T> source, Action<T> action) {
 			foreach (T item in source)
 				action(item);
@@ -405,6 +406,7 @@ namespace Sphere10.Framework {
 		}
 
 		// NOTE: ForReach applies action to all items then return enumerable, Apply applies action during enumeration
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static IEnumerable<T> Apply<T>(this IEnumerable<T> source, Action<T> action) {
 			foreach (T item in source) {
 				action(item);
@@ -530,6 +532,7 @@ namespace Sphere10.Framework {
 		/// <param name="value">The value to search for.</param>
 		/// <param name="comparer">The comparer that is used to compare the value with the list items.</param>
 		/// <returns></returns>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static int BinarySearch<TItem>(this IEnumerable<TItem> list, TItem value, IComparer<TItem> comparer) {
 			return list.BinarySearch(value, comparer.Compare);
 		}

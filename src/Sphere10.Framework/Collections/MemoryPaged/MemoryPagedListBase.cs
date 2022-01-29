@@ -99,7 +99,6 @@ namespace Sphere10.Framework {
 				Flush();
 			SuppressNotifications = true;
 			Disposing = true;
-			//_loadedPages.Flush(); // clear cache (should be clear except obscure flows)
 			Clear();
 		}
 

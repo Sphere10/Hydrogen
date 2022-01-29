@@ -230,7 +230,8 @@ namespace Sphere10.Framework {
 			oldItemsSize = _itemSizes.Skip(index).Take(sizes.Length).Sum();
 			Array.Copy(sizes, 0, _itemSizes, index, sizes.Length);
 			Stream.Seek(StartPosition + Object0SizeFieldOffset + index * ObjectSizeFieldSize, SeekOrigin.Begin);
-			sizes.Cast<uint>().ForEach(Writer.Write);
+			foreach (var size in sizes.Cast<uint>())
+				Writer.Write(size);
 
 			// Calculate the updated offsets if opened
 			if (State == PageState.Loaded)

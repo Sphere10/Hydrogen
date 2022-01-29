@@ -22,7 +22,8 @@ namespace Sphere10.Framework {
         public CollectionGroup(TKey key, IEnumerable<TElement> elements) {
             Key = key;
             Elements = new TCollection();
-            elements.ForEach(Elements.Add); 
+            foreach (var element in elements)
+	            Elements.Add(element); 
         }
 
 		public TKey Key { get; }

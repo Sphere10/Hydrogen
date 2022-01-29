@@ -85,7 +85,8 @@ namespace Sphere10.Framework {
 		}
 
 		public override void Clear() {
-			_columnStore.ForEach(c => c.Clear());
+			foreach (var col in _columnStore)
+				col.Clear();
 		}
 
 

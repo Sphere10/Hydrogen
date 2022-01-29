@@ -186,9 +186,8 @@ namespace Sphere10.Framework {
 			var spareCapacity = (Capacity - Count);
 			if (spareCapacity > 0) {
 				if (typeof(TItem).HasSubType(typeof(IDisposable))) 
-					InternalCollection.ReadRange(^spareCapacity..)
-										.Cast<IDisposable>()
-										.ForEach(x => x.Dispose());
+					foreach (var item in InternalCollection.ReadRange(^spareCapacity..).Cast<IDisposable>())
+						item.Dispose();
 
 				InternalCollection.RemoveRange(^spareCapacity..);
 			}

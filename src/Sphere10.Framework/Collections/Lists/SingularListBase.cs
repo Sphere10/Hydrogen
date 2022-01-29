@@ -30,12 +30,14 @@ namespace Sphere10.Framework {
 
 		public override void UpdateRange(int index, IEnumerable<T> items) {
 			Guard.ArgumentNotNull(items, nameof(items));
-			items.ForEach(x => Update(index++, x));
+			foreach (var x in items)
+				Update(index++, x);
 		}
 
 		public override void InsertRange(int index, IEnumerable<T> items) {
 			Guard.ArgumentNotNull(items, nameof(items));
-			items.ForEach(x => Insert(index++, x));
+			foreach (var x in items)
+				Insert(index++, x);
 		}
 
 		public override void RemoveRange(int index, int count) {
@@ -45,7 +47,8 @@ namespace Sphere10.Framework {
 
 		public override void AddRange(IEnumerable<T> items) {
 			Guard.ArgumentNotNull(items, nameof(items));
-			items.ForEach(Add);
+			foreach (var item in items)
+				Add(item);
 		}
 
 		public override IEnumerable<bool> RemoveRange(IEnumerable<T> items) {

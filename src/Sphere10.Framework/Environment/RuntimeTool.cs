@@ -36,7 +36,7 @@ namespace Tools {
 
 
         public static bool IsInExceptionContext()
-	        => Marshal.GetExceptionPointers() != IntPtr.Zero || Marshal.GetExceptionCode() != 0;
+	        => /*Marshal.GetExceptionPointers() != IntPtr.Zero || */ Marshal.GetExceptionCode() != 0;
 
         public static bool IsDebugBuild {
             get {

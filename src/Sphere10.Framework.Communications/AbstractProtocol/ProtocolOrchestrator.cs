@@ -6,7 +6,6 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.VisualBasic.CompilerServices;
 using Sphere10.Framework.Stateless;
 
 namespace Sphere10.Framework.Communications {
@@ -138,7 +137,7 @@ namespace Sphere10.Framework.Communications {
 		public async Task RunToEnd(CancellationToken cancellationToken) {
 			CheckState(ProtocolOrchestratorState.Started);
 			// Run until channel closed by other end (or cancelled by token)
-			var tcs = new TaskCompletionSource();
+			var tcs = new TaskCompletionSourceEx();
 			cancellationToken.Register(async () => {
 				// cancellation token wants to cancel, so call Finish here (will trigger Finish state changed event)
 				if (State != ProtocolOrchestratorState.Finished)

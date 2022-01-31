@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using Microsoft.VisualBasic.CompilerServices;
 
 namespace Sphere10.Framework.Communications {
-
 
 	public class ProtocolHandshake {
 		

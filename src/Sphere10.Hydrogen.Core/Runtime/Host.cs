@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Sphere10.Framework;
 using Sphere10.Framework.Communications;
 using Sphere10.Hydrogen.Core.Storage;
+using Void = Sphere10.Framework.Void;
 
 namespace Sphere10.Hydrogen.Core.Runtime {
 
@@ -11,7 +12,7 @@ namespace Sphere10.Hydrogen.Core.Runtime {
 		public event EventHandlerEx NodeEnded;
 
 		private ProtocolOrchestrator _hostProtocolOrchestrator;
-		private TaskCompletionSource _hostTask;
+		private TaskCompletionSourceEx _hostTask;
 		private Task _protocolRunner;
 
 		public Host(ILogger logger, IApplicationPaths paths) {
@@ -51,7 +52,7 @@ namespace Sphere10.Hydrogen.Core.Runtime {
 
 		public virtual async Task Run() {
 			CheckStatus(HostStatus.Stopped);
-			_hostTask = new TaskCompletionSource();
+			_hostTask = new TaskCompletionSourceEx();
 			await StartNode();  // starts the node child-process
 			await _hostTask.Task;  // wait until host task is finished (host finishes when node channel closed and protocol finishes
 			await _protocolRunner; // wait for protocol to finish

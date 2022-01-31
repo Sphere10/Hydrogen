@@ -49,16 +49,17 @@ namespace Sphere10.Framework.Communications {
 		}
 
 		protected override bool IsConnectionAlive() {
+			throw new NotImplementedException();
+			// HS 2022-01-30: disable due to porting issues .NET 5 -> .NET Standard 2.1
+			//if (Role == CommunicationRole.Server) {
 
-			if (Role == CommunicationRole.Server) {
+			//	return NetWorkStream.Socket.Connected;
 
-				return NetWorkStream.Socket.Connected;
-
-				//return Server.Server.Connected;
-			} else {
-				// finish code
-				return true;
-			}
+			//	//return Server.Server.Connected;
+			//} else {
+			//	// finish code
+			//	return true;
+			//}
 		}
 
 		protected override async Task OpenInternal() {

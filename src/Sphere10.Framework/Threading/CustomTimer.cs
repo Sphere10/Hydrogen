@@ -11,25 +11,20 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-#if __PCL__
+
 using System;
-using System.Collections.Generic;
-using System.Diagnostics.Contracts;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Sphere10.Framework;
 
-namespace System.Timers {
-
-	internal delegate void ElapsedEventHandler(object sender, ElapsedEventArgs e);
-
-	internal sealed class Timer : IDisposable {
+namespace Sphere10.Framework {
+	
+	internal sealed class CustomTimer : IDisposable {
 		private CancellationTokenSource _cancellationTokenSource;
 		private int _interval;
 
-		internal Timer() {
+		internal delegate void ElapsedEventHandler(object sender, ElapsedEventArgs e);
+
+		internal CustomTimer() {
 			_cancellationTokenSource = null;
 			_interval = 100;
 		}
@@ -39,9 +34,7 @@ namespace System.Timers {
 		public ElapsedEventHandler Elapsed { get; set; }
 
 		public double Interval {
-			get {
-				return _interval;
-			}
+			get => _interval;
 			set {
 				_interval = (int)Math.Round(value);
 				if (Enabled) {
@@ -77,27 +70,26 @@ namespace System.Timers {
 			_cancellationTokenSource = null;
 		}
 
-
-
-
 		public bool AutoReset { get; set; }
 
-		public new void Dispose() {
+		public void Dispose() {
 			_cancellationTokenSource?.Cancel();
 		}
-	}
 
-	public class ElapsedEventArgs : EventArgs {
-		internal ElapsedEventArgs(DateTime signalTime) {
-			SignalTime = signalTime;
+		public class ElapsedEventArgs : EventArgs {
+			internal ElapsedEventArgs(DateTime signalTime) {
+				SignalTime = signalTime;
+			}
+
+			internal ElapsedEventArgs(int low, int high) {
+				var fileTime = (long)((((ulong)high) << 32) | (((ulong)low) & 0xffffffff));
+				this.SignalTime = DateTime.FromFileTime(fileTime);
+			}
+
+			public DateTime SignalTime { get; }
 		}
 
-		internal ElapsedEventArgs(int low, int high) {
-            var fileTime = (long)((((ulong)high) << 32) | (((ulong)low) & 0xffffffff)); 
-            this.SignalTime = DateTime.FromFileTime(fileTime); 
-        }
- 
-        public DateTime SignalTime { get; }
-	} 
+	}
+
+	
 }
-#endif

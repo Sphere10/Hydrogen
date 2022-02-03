@@ -30,7 +30,6 @@ namespace Sphere10.Framework {
         private readonly ConditionalLock _producerQueue;
         private readonly ConditionalLock _consumerQueue;
 
-
         public ProducerConsumerQueue(long maxCapacity) : this(UnitSizeEstimator, maxCapacity) {
         }
 
@@ -76,7 +75,6 @@ namespace Sphere10.Framework {
 			}
 		}
 
-
 		public virtual int Count {
             get {
                 lock (_threadLock)
@@ -110,7 +108,6 @@ namespace Sphere10.Framework {
             }
         }
 
-
         public virtual void PutMany(IEnumerable<T> items) {
             if (items == null) throw new ArgumentNullException(nameof(items));
             items
@@ -126,7 +123,6 @@ namespace Sphere10.Framework {
             if (batchSize > _maxCapacity)
                 throw new SoftwareException("ProducerConsumerQueue has insufficient capacity for your items");
 
-
             using (_producerQueue.BlockUntil(() => _maxCapacity - Volatile.Read(ref _currentLevel) >= batchSize || Volatile.Read(ref _finishedConsuming))) {
                 if (_maxCapacity - Volatile.Read(ref _currentLevel) < batchSize && Volatile.Read(ref _finishedConsuming))
                     throw new SoftwareException("ProducerConsumerQueue stopped consuming whilst attemping to produce data into queue.");
@@ -136,11 +132,10 @@ namespace Sphere10.Framework {
             }
         }
 
-
         public virtual T Take() {
             var results = TakeMany(1);
             if (results.Length == 0)
-                return default(T);
+                return default;
             return results[0];
         }
 
@@ -149,7 +144,7 @@ namespace Sphere10.Framework {
             if (_finishedConsuming) throw new SoftwareException("ProducerConsumerQueue is closed for consumption");
 
             if (maxItems == 0)
-                return new T[0];
+                return Array.Empty<T>();
 
             using (_consumerQueue.BlockUntil(() => Volatile.Read(ref _currentLevel) > 0 || Volatile.Read(ref _finishedProducing))) {
                 var takeAmount = _itemQueue.Count.ClipTo(0, maxItems);
@@ -163,13 +158,13 @@ namespace Sphere10.Framework {
             }
         }
 
-
         public virtual T[] TakeBySize(int maxSize) {
             if (maxSize < 0) throw new ArgumentOutOfRangeException(nameof(maxSize));
             if (_finishedConsuming) throw new SoftwareException("ProducerConsumerQueue is closed for consumption");
 
             if (maxSize == 0)
-                return new T[0];
+                return Array.Empty<T>();
+
             using (_consumerQueue.BlockUntil(() => Volatile.Read(ref _currentLevel) > 0 || Volatile.Read(ref _finishedProducing))) {
                 var takeList = new List<T>();
                 var takenAmount = 0L;
@@ -193,7 +188,6 @@ namespace Sphere10.Framework {
 
         }
 
-
         public virtual T[] TakeAll() {
             if (_finishedConsuming)
                 throw new SoftwareException("ProducerConsumerQueue is closed for consumption");
@@ -210,8 +204,8 @@ namespace Sphere10.Framework {
                 }
                 return takeList.ToArray();
             }
-
         }
+
         public virtual void FinishedProducing() {
             lock (_threadLock) {
                 _finishedProducing = true;
@@ -226,7 +220,7 @@ namespace Sphere10.Framework {
             _producerQueue.Pulse();
         }
 
-        private static long UnitSizeEstimator<T>(T item) {
+        private static long UnitSizeEstimator(T item) {
             return 1;
         }
 

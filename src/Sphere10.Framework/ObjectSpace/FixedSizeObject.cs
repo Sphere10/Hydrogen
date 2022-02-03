@@ -23,8 +23,8 @@ namespace Sphere10.Framework.ObjectSpace {
 
 	public class ObjectBox<T> : ExtendedListDecorator<T> where T : FixedSizeObject {
 
-		public ObjectBox(string filename, Guid fileID, string pageDir, int logicalPageSize, int merklePageSize, IItemSerializer<T> serializer, CHF merkleCHF, int memoryCacheBytes, bool readOnly)
-			: base(CreateInternalList(filename, fileID, pageDir, logicalPageSize, merklePageSize, serializer, merkleCHF, memoryCacheBytes, readOnly, out var txnFile, out var merkleTree)) {
+		public ObjectBox(string filename, string pageDir, int logicalPageSize, int merklePageSize, IItemSerializer<T> serializer, CHF merkleCHF, int memoryCacheBytes, bool readOnly)
+			: base(CreateInternalList(filename, pageDir, logicalPageSize, merklePageSize, serializer, merkleCHF, memoryCacheBytes, readOnly, out var txnFile, out var merkleTree)) {
 			TransactionalFile = txnFile;
 			StorageMerkleTree = merkleTree;
 		}
@@ -34,7 +34,7 @@ namespace Sphere10.Framework.ObjectSpace {
 		public IMerkleTree StorageMerkleTree { get; }
 
 
-		public static IExtendedList<T> CreateInternalList(string filename, Guid fileID, string pageDir, int logicalPageSize, int merklePageSize, IItemSerializer<T> serializer, CHF merkleCHF, int memoryCacheBytes, bool readOnly, out ITransactionalFile txnFile, out IMerkleTree storageMerkleTree) {
+		public static IExtendedList<T> CreateInternalList(string filename, string pageDir, int logicalPageSize, int merklePageSize, IItemSerializer<T> serializer, CHF merkleCHF, int memoryCacheBytes, bool readOnly, out ITransactionalFile txnFile, out IMerkleTree storageMerkleTree) {
 			var file = new TransactionalFileMappedBuffer(
 				filename,
 				pageDir,
@@ -44,7 +44,7 @@ namespace Sphere10.Framework.ObjectSpace {
 			);
 
 			var merkleFile = new MerkleBuffer(file, merkleCHF);
-			var stream = new ExtendedMemoryStream(file);
+			var stream = new BufferStream(file);
 			txnFile = file;
 			storageMerkleTree = merkleFile.MerkleTree;
 			return new StreamPagedList<T>(serializer, stream, logicalPageSize);

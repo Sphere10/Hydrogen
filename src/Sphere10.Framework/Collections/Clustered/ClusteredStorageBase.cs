@@ -45,7 +45,7 @@ namespace Sphere10.Framework {
 	///  - Records always link to the (First | Data) cluster of their stream.
 	///  - Clusters with traits (First | Data) re-purpose the Prev field to denote the record.
 	/// </remarks>
-	public abstract class ClusteredStorageBase<THeader, TRecord> : IStreamStorage<THeader, TRecord>
+	public abstract class ClusteredStorageBase<THeader, TRecord> : IClusteredStorage<THeader, TRecord>
 		where THeader : ClusteredStorageHeader
 		where TRecord : IClusteredRecord {
 
@@ -79,17 +79,17 @@ namespace Sphere10.Framework {
 				clusterSerializer,
 				new NonClosingStream(new BoundedStream(rootStream, ClusteredStorageHeader.ByteLength, long.MaxValue) { UseRelativeOffset = true, AllowResize = true }),
 				endianness
-			) { IncludeListHeader = false };
+			) { IncludeListHeader = false };  // Suppressing events increases performance
 			if (_clusters.RequiresLoad)
 				_clusters.Load();
 
 			// Records are stored in record 0 as StreamPagedList (single page, statically sized items) which maps over the fragmented stream 
 			_recordsFragmentProvider = new FragmentProvider(this, recordsCachePolicy);
 			var recordStorage = new StreamPagedList<TRecord>(
-				recordSerializer,
+				recordSerializer, 
 				new FragmentedStream(_recordsFragmentProvider, Header.RecordsCount * recordSerializer.StaticSize),
 				endianness
-			) { IncludeListHeader = false };
+			) { IncludeListHeader = false};
 			if (recordStorage.RequiresLoad)
 				recordStorage.Load();
 
@@ -624,7 +624,6 @@ namespace Sphere10.Framework {
 			}
 
 			public bool TrySetTotalBytes(long length, out int[] newFragments, out int[] deletedFragments) {
-				Tools.Debugger.CounterA++;
 				var oldLength = TotalBytes;
 				var newTotalClusters = (int)Math.Ceiling(length / (float)_parent.ClusterSize);
 				var oldTotalClusters = FragmentCount;

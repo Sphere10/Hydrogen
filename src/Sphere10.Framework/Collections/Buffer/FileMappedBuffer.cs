@@ -16,15 +16,15 @@ namespace Sphere10.Framework {
 	/// </summary>
 	public sealed class FileMappedBuffer : FilePagedListBase<byte>, IMemoryPagedBuffer {
 		private readonly IPagedListDelegate<byte> _friend;
+		private readonly ReadOnlyListDecorator<IPage<byte>, IBufferPage> _pagesDecorator;
 
 		public FileMappedBuffer(string filename, int pageSize, long maxMemory, bool readOnly = false)
 			: base(filename, pageSize, maxMemory, readOnly) {
 			_friend = CreateFriendDelegate();
+			_pagesDecorator = new ReadOnlyListDecorator<IPage<byte>, IBufferPage>(new ReadOnlyListAdapter<IPage<byte>>(base.InternalPages));
 		}
 
-		internal new IReadOnlyList<IBufferPage> Pages => new ReadOnlyListDecorator<IPage<byte>, IBufferPage>(InternalPages);
-
-		IReadOnlyList<IBufferPage> IMemoryPagedBuffer.Pages => this.Pages;
+		public new IReadOnlyList<IBufferPage> Pages => _pagesDecorator;
 
 		public ReadOnlySpan<byte> ReadSpan(int index, int count) => PagedBufferImplementationHelper.ReadRange(_friend, index, count);
 

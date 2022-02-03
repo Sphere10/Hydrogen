@@ -118,7 +118,7 @@ namespace Sphere10.Framework {
 
 		protected override void OnPageCreating(int pageNumber) {
 			base.OnPageCreating(pageNumber);
-			if (IsLoading)
+			if (IsLoading || Disposing)
 				return;
 
 			// If creating a new page on a previously deleted page, 
@@ -132,6 +132,8 @@ namespace Sphere10.Framework {
 
 		protected override void OnPageSaving(IMemoryPage<TItem> page) {
 			base.OnPageSaving(page);
+			if (Disposing)
+				return;
 
 			// Clear any deleted marker
 			if (PageMarkerRepo.Contains(PageMarkerType.DeletedMarker, page.Number))
@@ -145,6 +147,9 @@ namespace Sphere10.Framework {
 
 		protected override void OnPageSaved(IMemoryPage<TItem> page) {
 			base.OnPageSaved(page);
+			if (Disposing)
+				return;
+
 
 			// Truncate last page
 			if (page.Number == InternalPages.Count - 1) {
@@ -155,6 +160,9 @@ namespace Sphere10.Framework {
 
 		protected override void OnPageDeleting(IPage<TItem> pageHeader) {
 			base.OnPageDeleting(pageHeader);
+			if (Disposing)
+				return;
+
 
 			if (Disposing)
 				return;
@@ -294,7 +302,7 @@ namespace Sphere10.Framework {
 			}
 
 			public void RemoveAllPageMarkersExcept(PageMarkerType except, int pageNumber) {
-				RemoveAllPageMakers(pageNumber, new[] { except });
+				RemoveAllPageMakers(pageNumber, except);
 			}
 
 			public void RemoveAllPageMakers(int pageNumber, params PageMarkerType[] except) {

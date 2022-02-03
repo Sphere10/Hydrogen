@@ -52,14 +52,13 @@ namespace Sphere10.Framework {
 		public const uint MagicID = 31337;
 		public const byte FormatVersion = 1;
 		public const int ListHeaderSize = 256;
-		public const int DefaultPageSize = 100;
 
 		public StreamPagedList(IItemSerializer<TItem> serializer, Stream stream, Endianness endianness = Endianness.LittleEndian) 
 			: this(
-			serializer.IsStaticSize ? StreamPagedListType.Static : StreamPagedListType.Dynamic,
+			serializer.IsStaticSize ? StreamPagedListType.Static : throw new ArgumentException(nameof(serializer), $"This constructor only supports {nameof(StreamPagedListType.Static)} items"),
 			serializer,
 			stream,
-			serializer.IsStaticSize ? int.MaxValue : DefaultPageSize,
+			serializer.IsStaticSize ? int.MaxValue : throw new ArgumentException(nameof(serializer), $"This constructor only supports {nameof(StreamPagedListType.Static)} items"),
 			endianness
 		) {
 		}

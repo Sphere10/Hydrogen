@@ -14,6 +14,7 @@ namespace Sphere10.Framework {
 		public event EventHandlerEx<object, IMemoryPage<TItem>> PageUnloaded;
 
 		private readonly ICache<int, IMemoryPage<TItem>> _loadedPages;
+		private readonly ReadOnlyListDecorator<IPage<TItem>, IMemoryPage<TItem>> _pagesDecorator;
 
 		protected bool Disposing;
 
@@ -23,6 +24,7 @@ namespace Sphere10.Framework {
 			PageSize = pageSize;
 			FlushOnDispose = false;
 			Disposing = false;
+			_pagesDecorator = new ReadOnlyListDecorator<IPage<TItem>, IMemoryPage<TItem>>(new ReadOnlyListAdapter<IPage<TItem>>( InternalPages));
 			_loadedPages = new ActionCache<int, IMemoryPage<TItem>>(
 				(page)=> {
 					Guard.ArgumentInRange(page, 0, InternalPages.Count - 1, nameof(page), "Page not contained in list");
@@ -63,22 +65,23 @@ namespace Sphere10.Framework {
 			};
 		}
 
-		public new IReadOnlyList<IMemoryPage<TItem>> Pages => new ReadOnlyListDecorator<IPage<TItem>, IMemoryPage<TItem>>(InternalPages);
+		public new IReadOnlyList<IMemoryPage<TItem>> Pages => _pagesDecorator;
 
 		public int PageSize { get; }
 
-		public int Size => InternalPages.Sum(p => p.Size);
-
 		public int CurrentOpenPages => _loadedPages.ItemCount;
+
+		public bool Disposed { get; protected set; }
 
 		public long MaxMemory {
 			get => (int) _loadedPages.MaxCapacity;
 			//internal set => _loadedPages.MaxCapacity = value;
 		}
-
 		public virtual bool Dirty => InternalPages.Any(p => p.Dirty);
 
 		public bool FlushOnDispose { get; set; }
+
+		public int CalculateTotalSize() => InternalPages.Sum(p => p.Size);
 
 		public sealed override IDisposable EnterOpenPageScope(IPage<TItem> page) {
 			// dont need to do much since cache manages life-cycle of page
@@ -97,9 +100,9 @@ namespace Sphere10.Framework {
 		public virtual void Dispose() {
 			if (FlushOnDispose)
 				Flush();
-			SuppressNotifications = true;
 			Disposing = true;
 			Clear();
+			Disposed = true;
 		}
 
 		protected override void OnAccessing() {
@@ -134,49 +137,31 @@ namespace Sphere10.Framework {
 		}
 	
 		private void NotifyPageLoading(IMemoryPage<TItem> page) {
-			if (SuppressNotifications)
-				return;
-
 			OnPageLoading(page);
 			PageLoading?.Invoke(this, page);
 		}
 
 		private void NotifyPageLoaded(IMemoryPage<TItem> page) {
-			if (SuppressNotifications)
-				return;
-
 			OnPageLoaded(page);
 			PageLoaded?.Invoke(this, page);
 		}
 
 		private void NotifyPageSaving(IMemoryPage<TItem> page) {
-			if (SuppressNotifications)
-				return;
-
 			OnPageSaving(page);
 			PageSaving?.Invoke(this, page);
 		}
 
 		private void NotifyPageSaved(IMemoryPage<TItem> page) {
-			if (SuppressNotifications)
-				return;
-
 			OnPageSaved(page);
 			PageSaved?.Invoke(this, page);
 		}
 
 		private void NotifyPageUnloading(IMemoryPage<TItem> page) {
-			if (SuppressNotifications)
-				return;
-
 			OnPageUnloading(page);
 			PageUnloading?.Invoke(this, page);
 		}
 
 		private void NotifyPageUnloaded(IMemoryPage<TItem> page) {
-			if (SuppressNotifications)
-				return;
-
 			OnPageUnloaded(page);
 			PageUnloaded?.Invoke(this, page);
 		}
@@ -186,7 +171,7 @@ namespace Sphere10.Framework {
 		#region Private methods
 
 		private void CheckNotDisposed() {
-			if (Disposing)
+			if (Disposed)
 				throw new InvalidOperationException("Disposing or disposed");
 		}
 

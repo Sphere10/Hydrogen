@@ -19,8 +19,8 @@ namespace Sphere10.Framework {
 		public static Task WaitNext(this EventHandlerEx @event) => WaitNext(@event, CancellationToken.None);
 
 		public static Task WaitNext(this EventHandlerEx @event, CancellationToken token) {
-			var tcs = new TaskCompletionSource<Void>();
-			@event += () => tcs.SetResult(Void.Value);
+			var tcs = new TaskCompletionSourceEx();
+			@event += () => tcs.SetResult();
 			token.Register(tcs.SetCanceled);
 			return tcs.Task;
 		}

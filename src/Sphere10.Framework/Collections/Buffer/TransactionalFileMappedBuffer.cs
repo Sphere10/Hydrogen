@@ -29,6 +29,7 @@ namespace Sphere10.Framework {
 	/// </summary>
 	public sealed class TransactionalFileMappedBuffer : TransactionalFileMappedListBase<byte>, IMemoryPagedBuffer {
 		private readonly IPagedListDelegate<byte> _friend;
+		private readonly ReadOnlyListDecorator<IPage<byte>, IBufferPage> _pagesDecorator;
 
 		public TransactionalFileMappedBuffer(string filename, int pageSize, long maxMemory, bool readOnly = false)
 			: this(filename, System.IO.Path.GetDirectoryName(filename), pageSize, maxMemory, readOnly) {
@@ -37,11 +38,10 @@ namespace Sphere10.Framework {
 		public TransactionalFileMappedBuffer(string filename, string uncommittedPageFileDir, int pageSize, long maxMemory, bool readOnly = false)
 			: base(filename, uncommittedPageFileDir, pageSize, maxMemory, readOnly) {
 			_friend = CreateFriendDelegate();
+			_pagesDecorator = new ReadOnlyListDecorator<IPage<byte>, IBufferPage>(new ReadOnlyListAdapter<IPage<byte>>( base.InternalPages));
 		}
 
-		internal new IReadOnlyList<IBufferPage> Pages => new ReadOnlyListDecorator<IPage<byte>, IBufferPage>(InternalPages);
-
-		IReadOnlyList<IBufferPage> IMemoryPagedBuffer.Pages => this.Pages;
+		public new IReadOnlyList<IBufferPage> Pages => _pagesDecorator;
 
 		public override TransactionalFileMappedBuffer AsBuffer => this;
 

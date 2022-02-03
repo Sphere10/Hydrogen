@@ -1,8 +1,12 @@
-﻿using System;
+﻿//#define OMIT_GUARD
+
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+
 
 namespace Sphere10.Framework {
 
@@ -12,7 +16,9 @@ namespace Sphere10.Framework {
 	/// </summary>
 	public static class Guard {
 
-
+#if OMIT_GUARD
+		[Conditional("DEBUG")]
+#endif
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static void CheckIndex(int index, int collectionStartIndex, int collectionCount, bool allowAtEnd) {
 			if (allowAtEnd && index == collectionCount)
@@ -20,6 +26,9 @@ namespace Sphere10.Framework {
 			CheckRange(index, 1, false, collectionStartIndex, collectionCount);
 		}
 
+#if OMIT_GUARD
+		[Conditional("DEBUG")]
+#endif
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static void CheckRange(int index, int count, bool rightMostAligned, int collectionStartIndex, int collectionCount) {
 			ArgumentGTE(index, collectionStartIndex, nameof(index));
@@ -30,25 +39,36 @@ namespace Sphere10.Framework {
 				ArgumentGTE(collectionCount - index, count, nameof(count), "Specified range is beyond the boundaries of the collection");
 		}
 
+#if OMIT_GUARD
+		[Conditional("DEBUG")]
+#endif
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static void FileExists(string path) {
 			if (!File.Exists(path))
 				throw new FileNotFoundException("File not found", path);
 		}
 
+#if OMIT_GUARD
+		[Conditional("DEBUG")]
+#endif
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static void FileNotExists(string path) {
 			if (!File.Exists(path))
 				throw new FileAlreadyExistsException("File already exists", path);
 		}
 
-
+#if OMIT_GUARD
+		[Conditional("DEBUG")]
+#endif
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static void DirectoryExists(string path) {
 			if (!Directory.Exists(path))
 				throw new DirectoryNotFoundException($"Directory not found: '{path}'");
 		}
 
+#if OMIT_GUARD
+		[Conditional("DEBUG")]
+#endif
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static void DirectoryNotExists(string path) {
 			if (Directory.Exists(path))
@@ -60,6 +80,9 @@ namespace Sphere10.Framework {
 		/// </summary>
 		/// <param name="value">The value to be tested</param>
 		/// <param name="name">The name of the argument</param>
+#if OMIT_GUARD
+		[Conditional("DEBUG")]
+#endif
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static void ArgumentNotNull(object value, string name) {
             if (value == null)
@@ -71,6 +94,9 @@ namespace Sphere10.Framework {
 		/// </summary>
 		/// <param name="value">The value to be tested</param>
 		/// <param name="paramName">The name of the argument</param>
+#if OMIT_GUARD
+		[Conditional("DEBUG")]
+#endif
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static void ArgumentNotNullOrEmpty(string value, string paramName, string message = null) {
 			if (string.IsNullOrEmpty(value))
@@ -82,12 +108,18 @@ namespace Sphere10.Framework {
 		/// </summary>
 		/// <param name="value">The value to be tested</param>
 		/// <param name="paramName">The name of the argument</param>
+#if OMIT_GUARD
+		[Conditional("DEBUG")]
+#endif
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static void ArgumentNotNullOrWhitespace(string value, string paramName, string message = null) {
 			if (string.IsNullOrWhiteSpace(value))
 				throw new ArgumentException(message ?? $"Argument must not be the empty string", paramName);
 		}
 
+#if OMIT_GUARD
+		[Conditional("DEBUG")]
+#endif
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static void ArgumentNotNullOrEmpty<T>(IEnumerable<T> items, string paramName, string message = null) {
 			ArgumentNotNull(items, paramName);
@@ -102,6 +134,9 @@ namespace Sphere10.Framework {
 		/// <param name="minInclusive">The minimum allowed value of the argument</param>
 		/// <param name="maxInclusive">The maximum allowed value of the argument</param>
 		/// <param name="paramName">The name of the argument</param>
+#if OMIT_GUARD
+		[Conditional("DEBUG")]
+#endif
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static void ArgumentInRange(ulong value, ulong minInclusive, ulong maxInclusive, string paramName) {
 			if (value < minInclusive || value > maxInclusive) {
@@ -111,36 +146,54 @@ namespace Sphere10.Framework {
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+#if OMIT_GUARD
+		[Conditional("DEBUG")]
+#endif
 		public static void ArgumentEquals(long value, long expected, string paramName, string message = null) {
 			if (value != expected) 
 				throw new ArgumentOutOfRangeException(paramName, value, message ?? $"Value should be {expected}");
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+#if OMIT_GUARD
+		[Conditional("DEBUG")]
+#endif
 		public static void ArgumentLT(long value, long operand, string paramName, string message = null) {
 			if (value >= operand)
 				throw new ArgumentOutOfRangeException(paramName, value, message ?? $"Must be less than {operand} but was {value}");
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+#if OMIT_GUARD
+		[Conditional("DEBUG")]
+#endif
 		public static void ArgumentLTE(long value, long operand, string paramName, string message = null) {
 			if (value > operand)
 				throw new ArgumentOutOfRangeException(paramName, value, message ?? $"Must be less than or equal to {operand} but was {value}");
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+#if OMIT_GUARD
+		[Conditional("DEBUG")]
+#endif
 		public static void ArgumentGT(long value, long operand, string paramName, string message = null) {
 			if (value <= operand)
 				throw new ArgumentOutOfRangeException(paramName, value, message ?? $"Must be greater than {operand} but was {value}");
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+#if OMIT_GUARD
+		[Conditional("DEBUG")]
+#endif
 		public static void ArgumentGTE(long value, long operand, string paramName, string message = null) {
 			if (value < operand)
 				throw new ArgumentOutOfRangeException(paramName, value, message ?? $"Must be greater than or equal to {operand} but was {value}");
 		}
 		
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+#if OMIT_GUARD
+		[Conditional("DEBUG")]
+#endif
 		public static void ArgumentInRange(long value, long minInclusive, long maxInclusive, string paramName, string message = null) {
 			if (value < minInclusive || value > maxInclusive) 
 				throw new ArgumentOutOfRangeException(paramName, value, message ?? $"Value should be in range [{minInclusive} - {maxInclusive}]");
@@ -152,6 +205,9 @@ namespace Sphere10.Framework {
 		/// <param name="condition">The condition that must be met</param>
 		/// <param name="paramName">The name of the argument</param>
 		/// <param name="message">The exception message to be used</param>
+#if OMIT_GUARD
+		[Conditional("DEBUG")]
+#endif
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static void Argument(bool condition, string paramName, string message) {
             if (!condition)
@@ -164,6 +220,9 @@ namespace Sphere10.Framework {
 		/// <param name="condition">The condition that must be met</param>
 		/// <param name="paramName">The name of the argument</param>
 		/// <param name="message">The exception message to be used</param>
+#if OMIT_GUARD
+		[Conditional("DEBUG")]
+#endif
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static void ArgumentNot(bool condition, string paramName, string message) {
 			if (condition)
@@ -187,12 +246,17 @@ namespace Sphere10.Framework {
 			castedObject = cobj;
 		}
 
+#if OMIT_GUARD
+		[Conditional("DEBUG")]
+#endif
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static void ArgumentIsAssignable<TType>(object @object, string parameter) {
 			Argument(@object.GetType().IsAssignableFrom(typeof(TType)), parameter, $"Not assignable from {typeof(TType).GetShortName()}");
 		}
 
-
+#if OMIT_GUARD
+		[Conditional("DEBUG")]
+#endif
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static void Against(bool condition, string message = null)
 			=> Ensure(!condition, message);
@@ -203,6 +267,9 @@ namespace Sphere10.Framework {
 		/// </summary>
 		/// <param name="condition">The condition that must be met</param>
 		/// <param name="message">The exception message to be used</param>
+#if OMIT_GUARD
+		[Conditional("DEBUG")]
+#endif
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static void Ensure(bool condition, string message = null) {
             if (!condition)

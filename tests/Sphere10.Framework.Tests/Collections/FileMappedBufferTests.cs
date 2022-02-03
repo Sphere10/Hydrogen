@@ -68,7 +68,7 @@ namespace Sphere10.Framework.Tests {
 					// Check value
 					Assert.AreEqual(expected, binaryFile);
 					Assert.AreEqual(1, binaryFile.Count);
-					Assert.AreEqual(1, binaryFile.Size);
+					Assert.AreEqual(1, binaryFile.CalculateTotalSize());
 				}
 				// Check file unchanged
 				Assert.AreEqual(expected, File.ReadAllBytes(fileName));
@@ -106,7 +106,7 @@ namespace Sphere10.Framework.Tests {
 					// Check value
 					Assert.AreEqual(expected, binaryFile);
 					Assert.AreEqual(2, binaryFile.Count);
-					Assert.AreEqual(2, binaryFile.Size);
+					Assert.AreEqual(2, binaryFile.CalculateTotalSize());
 				}
 				// Check file was saved appended
 				Assert.AreEqual(expected, File.ReadAllBytes(fileName));

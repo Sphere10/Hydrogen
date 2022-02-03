@@ -51,8 +51,6 @@ namespace Sphere10.Framework {
 			if (preAllocationPolicy == PreAllocationPolicy.Fixed) {
 				internalStore.AddRange(Enumerable.Repeat(_activator(), Math.Max(0, _blockSize - internalStore.Count)));
 			}
-		
-			
 		}
 
 		public override int Count => _count;
@@ -136,6 +134,8 @@ namespace Sphere10.Framework {
 		public override void RemoveAt(int index) => this.RemoveRange(index, 1);
 
 		public override void RemoveRange(int index, int count) {
+			// TODO: this could be optimized by copying bounded ranges instead of 1-by-1. Will 
+			// improve stream record performance in ClusteredStorage
 			CheckRange(index, count);
 
 			var movedRegionFromStartIX = index + count;
@@ -204,48 +204,6 @@ namespace Sphere10.Framework {
 		protected void CheckIndex(int index, bool allowAtEnd = false) => Guard.CheckIndex(index, 0, Count, allowAtEnd);
 
 		protected void CheckRange(int index, int count, bool rightAligned = false) => Guard.CheckRange(index, count, rightAligned, 0, Count);
-
-		//private int CheckIndex(int index, bool allowAtEnd = false) {
-		//	if (allowAtEnd && index == _count) return index;
-		//	Guard.ArgumentInRange(index, 0, Math.Max(0, _count - 1), nameof(index));
-		//	return index;
-		//}
-
-		//private void CheckRange(int index, int count) => CheckRange(index, count, out _);
-
-		//private void CheckRange(int index, int count, out int actualAcount) {
-		//	var listStartIX = 0;
-		//	var listLastIX = Math.Max(listStartIX, listStartIX + (_count - 1));
-
-		//	// special case: at index of "next item" with no count, this is valid
-		//	if (index == listLastIX + 1 && count == 0) {
-		//		actualAcount = 0;
-		//		return;
-		//	}
-
-		//	actualAcount = count > 0 ? listLastIX - index + 1 : count;
-		//	Guard.ArgumentInRange(index, listStartIX, listLastIX, nameof(index));
-		//	if (count > 0)
-		//		Guard.ArgumentInRange(index + count - 1, listStartIX, listLastIX, nameof(count));
-		//}
-
-	}
-
-	public enum PreAllocationPolicy {
-		/// <summary>
-		/// The initial block of pre-allocated items is used, never grown or reduced.
-		/// </summary>
-		Fixed,
-
-		/// <summary>
-		/// The Capacity is grown in fixed-sized blocks as needed and never reduced.
-		/// </summary>
-		ByBlock,
-
-		/// <summary>
-		/// The Capacity is grown (and reduced) to meet the item Count.
-		/// </summary>
-		MinimumRequired,
 
 	}
 

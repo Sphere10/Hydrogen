@@ -38,12 +38,12 @@ namespace Sphere10.Framework {
 		}
 
 		internal IReadOnlyList<IPage<TItem>> Pages => InternalCollection.Pages;
-	
+
 		IReadOnlyList<IPage<TItem>> IPagedList<TItem>.Pages => this.Pages;
 
 		public bool RequiresLoad => InternalCollection.RequiresLoad;
 
-		
+
 
 		public void Load() => InternalCollection.Load();
 

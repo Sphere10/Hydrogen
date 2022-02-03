@@ -13,7 +13,7 @@ namespace Sphere10.Framework.NUnit {
 
 	public static class AssertEx {
 
-		public static void ListIntegrationTest<T>(IExtendedList<T> list, int maxCapacity, Func<Random, int, T[]> randomItemGenerator, bool mutateFromEndOnly = false, int iterations = 100, IList<T> expected = null, IEqualityComparer<T> itemComparer = null) {
+		public static void ListIntegrationTest<T>(IExtendedList<T> list, int maxCapacity, Func<Random, int, T[]> randomItemGenerator, bool mutateFromEndOnly = false, int iterations = 100, IList<T> expected = null,  Action endOfIterTest = null, IEqualityComparer<T> itemComparer = null) {
 			var RNG = new Random(31337);
 			expected ??= new List<T>();
 			itemComparer ??= EqualityComparer<T>.Default;
@@ -163,6 +163,15 @@ namespace Sphere10.Framework.NUnit {
 					list.RemoveRange(range.Start, rangeLen);
 					expected.RemoveRangeSequentially(range.Start, rangeLen);
 					Assert.That(expected, Is.EqualTo(list).Using(itemComparer));
+
+					// PagedList specific: check page index consistency
+					if (list is IPagedList<T> pagedList) {
+						for (var j = 1; j < pagedList.Pages.Count; j++)
+							Assert.That(pagedList.Pages[j].StartIndex, Is.EqualTo(pagedList.Pages[j - 1].EndIndex + 1));
+					}
+
+					// Custom user test
+					endOfIterTest?.Invoke();
 				}
 
 				// insert a random amount

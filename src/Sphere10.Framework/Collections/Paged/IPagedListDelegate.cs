@@ -4,6 +4,11 @@ using System.Collections.Generic;
 namespace Sphere10.Framework {
 
 	internal interface IPagedListDelegate<TItem> {
+
+		Action<int> IncCount { get; }
+
+		Action<int> DecCount { get; }
+
 		Action UpdateVersion { get; }
 
 		Action CheckRequiresLoad { get; }

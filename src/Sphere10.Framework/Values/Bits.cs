@@ -22,6 +22,15 @@ namespace Sphere10.Framework {
 	/// </summary>
 	public class Bits  {
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static bool IsPositivePowerOf2(int value) 
+			=> 0 < value && 0 == (value & (value - 1));
+	
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static byte ReverseBits(byte value) 
+			=> (byte)((((ulong)value * 0x80200802) & 0x884422110) * 0x101010101 >> 32);
+			
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static uint ReadBinaryNumber(ReadOnlySpan<byte> source, int sourceBitOffset, int binaryDigitsToRead, IterateDirection direction) {

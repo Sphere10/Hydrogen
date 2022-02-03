@@ -10,91 +10,95 @@ namespace Sphere10.Framework {
 	/// </summary>
 	/// <remarks>PagedBuffer span operations implemented in a not-so-great way. Relying on page operations to do the bulk insertions</remarks>
 	internal static class PagedBufferImplementationHelper {
-		public static ReadOnlySpan<byte> ReadRange(IPagedListDelegate<byte> pagedBuffer, int index, int count) {
+		public static ReadOnlySpan<byte> ReadRange(IPagedListDelegate<byte> source, int index, int count) {
 			var builder = new ByteArrayBuilder();
 
-			pagedBuffer.CheckRequiresLoad();
-			pagedBuffer.NotifyAccessing();
-			pagedBuffer.CheckRange(index, count, false);
+			source.CheckRequiresLoad();
+			source.NotifyAccessing();
+			source.CheckRange(index, count, false);
 
-			foreach (var pageSegment in pagedBuffer.GetPageSegments(index, count)) {
+			foreach (var pageSegment in source.GetPageSegments(index, count)) {
 				var page = (IBufferPage)pageSegment.Item1;
 				var pageStartIndex = pageSegment.Item2;
 				var pageItemCount = pageSegment.Item3;
-				pagedBuffer.NotifyPageAccessing(page);
-				using (pagedBuffer.EnterOpenPageScope(page)) {
-					pagedBuffer.NotifyPageReading(page);
+				source.NotifyPageAccessing(page);
+				using (source.EnterOpenPageScope(page)) {
+					source.NotifyPageReading(page);
 					builder.Append(page.ReadSpan(pageStartIndex, pageItemCount));
-					pagedBuffer.NotifyPageRead(page);
+					source.NotifyPageRead(page);
 				}
-				pagedBuffer.NotifyPageAccessed(page);
+				source.NotifyPageAccessed(page);
 			}
-			pagedBuffer.NotifyAccessed();
+			source.NotifyAccessed();
 
 			return builder.ToArray();
 		}
 
-		public static void AddRange(IPagedListDelegate<byte> pagedBuffer, ReadOnlySpan<byte> span) {
+		public static void AddRange(IPagedListDelegate<byte> source, ReadOnlySpan<byte> span) {
 			if (span.IsEmpty)
 				return;
-			pagedBuffer.CheckRequiresLoad();
-			pagedBuffer.NotifyAccessing();
-			var page = pagedBuffer.InternalPages().Any() ? pagedBuffer.InternalPages().Last() : pagedBuffer.CreateNextPage();
+			source.CheckRequiresLoad();
+			source.NotifyAccessing();
+			var page = source.InternalPages().Any() ? source.InternalPages().Last() : source.CreateNextPage();
 			var bufferPage = (IBufferPage)page;
-			pagedBuffer.NotifyPageAccessing(page);
+			source.NotifyPageAccessing(page);
 			var fittedCompletely = false;
+			source.DecCount(bufferPage.Count); // discount pages item count from total count
 			while (!fittedCompletely) {
-				using (pagedBuffer.EnterOpenPageScope(page)) {
-					pagedBuffer.NotifyPageWriting(page);
-					pagedBuffer.UpdateVersion();
+				using (source.EnterOpenPageScope(page)) {
+					source.NotifyPageWriting(page);
+					source.UpdateVersion();
 					fittedCompletely = bufferPage.AppendSpan(span, out span);
-					pagedBuffer.NotifyPageWrite(page);
+					source.IncCount(bufferPage.Count); // add page item count to total count
+					source.NotifyPageWrite(page);
 				}
-				pagedBuffer.NotifyPageAccessed(page);
+				source.NotifyPageAccessed(page);
 				if (!fittedCompletely) {
-					page = pagedBuffer.CreateNextPage() as IBufferPage;
+					page = source.CreateNextPage() as IBufferPage;
 					bufferPage = (IBufferPage)page;
 				}
 			}
-			pagedBuffer.NotifyAccessed();
+			source.NotifyAccessed();
 		}
 
-		public static void UpdateRange(IPagedListDelegate<byte> pagedBuffer, int index, ReadOnlySpan<byte> items) {
-			pagedBuffer.CheckRange(index, items.Length, false);
-			pagedBuffer.CheckRequiresLoad();
-			pagedBuffer.NotifyAccessing();
+		public static void UpdateRange(IPagedListDelegate<byte> source, int index, ReadOnlySpan<byte> items) {
+			source.CheckRange(index, items.Length, false);
+			source.CheckRequiresLoad();
+			source.NotifyAccessing();
 
 			if (items.Length == 0)
 				return;
 
-			foreach (var pageSegment in pagedBuffer.GetPageSegments(index, items.Length)) {
+			foreach (var pageSegment in source.GetPageSegments(index, items.Length)) {
 				var page = pageSegment.Item1;
 				var bufferPage = (IBufferPage)page;
 				var pageStartIx = pageSegment.Item2;
 				var pageCount = pageSegment.Item3;
 				var pageSpan = items.Slice(pageStartIx - index, pageCount);
-				using (pagedBuffer.EnterOpenPageScope(page)) {
-					pagedBuffer.NotifyPageAccessing(page);
-					pagedBuffer.NotifyPageWriting(page);
-					pagedBuffer.UpdateVersion();
+				source.DecCount(bufferPage.Count);
+				using (source.EnterOpenPageScope(page)) {
+					source.NotifyPageAccessing(page);
+					source.NotifyPageWriting(page);
+					source.UpdateVersion();
 					bufferPage.UpdateSpan(pageStartIx, pageSpan);
-					pagedBuffer.NotifyPageWrite(page);
+					source.IncCount(bufferPage.Count);
+					source.NotifyPageWrite(page);
 				}
-				pagedBuffer.NotifyPageAccessed(page);
+				source.NotifyPageAccessed(page);
 			}
-			pagedBuffer.NotifyAccessed();
+			source.NotifyAccessed();
 		}
 
-		public static void InsertRange(IPagedListDelegate<byte> pagedBuffer, in int count, in int index, in ReadOnlySpan<byte> items) {
+		public static void InsertRange(IPagedListDelegate<byte> source, in int count, in int index, in ReadOnlySpan<byte> items) {
 			if (index == count)
-				AddRange(pagedBuffer, items);
+				AddRange(source, items);
 			else throw new NotSupportedException("This collection can only be appended from the end");
 		}
 
-		public static Span<byte> AsSpan(IPagedListDelegate<byte> internalMethods, int index, int count) {
+		public static Span<byte> AsSpan(IPagedListDelegate<byte> source, int index, int count) {
 			// TODO: this needs to check if the span range covers a contiguous region of a page, and if not throw
 			// returns span for the page (needs to provide a locking scope to ensure the page isn't swapped)
-			var readOnlySpan = ReadRange(internalMethods, index, count);
+			var readOnlySpan = ReadRange(source, index, count);
 
 			// https://github.com/dotnet/runtime/issues/23494#issuecomment-648290373
 			return MemoryMarshal.CreateSpan(ref MemoryMarshal.GetReference(readOnlySpan), readOnlySpan.Length);
@@ -125,6 +129,8 @@ namespace Sphere10.Framework {
 			page.Size += writeSpan.Length;
 
 			var totalWriteCount = writeSpan.Length;
+			
+			// source.SetCount(source.GetCount() + writeSpan.Length); // When updating a page, the owner container should be aware of acquiring the count
 
 			if (page.Count == 0 && totalWriteCount == 0) // Was unable to write the first element in an empty page, item too large
 				throw new InvalidOperationException("Span cannot be fitted onto a page of this collection");
@@ -153,6 +159,8 @@ namespace Sphere10.Framework {
 			page.EndIndex += newBytesCount;
 			page.Size += newBytesCount;
 			page.Dirty = true;
+
+			//source.SetCount(source.GetCount() + newBytesCount);  // When updating a page, the owner container should be aware of acquiring the count
 		}
 	}
 

@@ -24,7 +24,8 @@ namespace Sphere10.Framework {
 		public event EventHandlerEx<object> RolledBack { add => _transactionalBuffer.RolledBack += value; remove => _transactionalBuffer.RolledBack -= value; }
 
 		private readonly TransactionalFileMappedBuffer _transactionalBuffer;
-		private readonly SynchronizedExtendedList<T> _itemList;
+		private readonly ClusteredList<T> _clustered;
+		private readonly SynchronizedExtendedList<T> _items;
 		private bool _disposed;
 
 
@@ -56,7 +57,7 @@ namespace Sphere10.Framework {
 			if (_transactionalBuffer.RequiresLoad)
 				_transactionalBuffer.Load();
 
-			var clusteredList = new ClusteredList<T>(
+			_clustered = new ClusteredList<T>(
 				new BufferStream(
 					_transactionalBuffer,
 					disposeSource: true
@@ -67,18 +68,18 @@ namespace Sphere10.Framework {
 				recordsCachePolicy
 			);
 
-			_itemList = new SynchronizedExtendedList<T>(clusteredList);
-			InternalCollection = _itemList;
+			_items = new SynchronizedExtendedList<T>(_clustered);
+			InternalCollection = _items;
 		}
 
 		public bool RequiresLoad => _transactionalBuffer.RequiresLoad;
 
 		public ISynchronizedObject<Scope, Scope> ParentSyncObject {
-			get => _itemList.ParentSyncObject;
-			set => _itemList.ParentSyncObject = value;
+			get => _items.ParentSyncObject;
+			set => _items.ParentSyncObject = value;
 		}
 
-		public ReaderWriterLockSlim ThreadLock => _itemList.ThreadLock;
+		public ReaderWriterLockSlim ThreadLock => _items.ThreadLock;
 
 		public string Path => _transactionalBuffer.Path;
 
@@ -86,11 +87,13 @@ namespace Sphere10.Framework {
 
 		public TransactionalFileMappedBuffer AsBuffer => _transactionalBuffer;
 
+		public IClusteredStorage<ClusteredStorageHeader, ClusteredRecord> Storage => (IClusteredStorage < ClusteredStorageHeader, ClusteredRecord >)_clustered.Storage;
+
 		public void Load() => _transactionalBuffer.Load();
 
-		public Scope EnterReadScope() => _itemList.EnterReadScope();
+		public Scope EnterReadScope() => _items.EnterReadScope();
 
-		public Scope EnterWriteScope() => _itemList.EnterWriteScope();
+		public Scope EnterWriteScope() => _items.EnterWriteScope();
 
 		public void Commit() => _transactionalBuffer.Commit();
 

@@ -496,7 +496,7 @@ namespace Sphere10.Framework {
 
 			var lower = 0;
 
-			var upper = listArr.Count() - 1;
+			var upper = listArr.Length - 1;
 
 			while (lower <= upper) {
 				var middle = lower + (upper - lower) / 2;

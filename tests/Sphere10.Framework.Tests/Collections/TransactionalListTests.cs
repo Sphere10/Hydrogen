@@ -47,7 +47,7 @@ namespace Sphere10.Framework.Tests {
 
 		[Test]
 		[Pairwise]
-		public void IntegrationTests_Commit([Values(0, 1, 200)] int maxCapacity) {
+		public void IntegrationTests_Commit([Values(0, 1, 100)] int maxCapacity) {
 			const int StringMinSize = 0;
 			const int StringMaxSize = 100;
 			var file = Tools.FileSystem.GenerateTempFilename();
@@ -62,7 +62,7 @@ namespace Sphere10.Framework.Tests {
 
 		[Test]
 		[Pairwise]
-		public void IntegrationTests_Rollback([Values(0, 1, 200)] int maxCapacity) {
+		public void IntegrationTests_Rollback([Values(0, 1, 100)] int maxCapacity) {
 			const int StringMinSize = 0;
 			const int StringMaxSize = 100;
 			var file = Tools.FileSystem.GenerateTempFilename();

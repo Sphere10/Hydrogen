@@ -7,8 +7,6 @@ namespace Sphere10.Framework {
 
 		event EventHandlerEx<object> Accessing;
 		event EventHandlerEx<object> Accessed;
-		public event EventHandlerEx<object> Loading;
-		public event EventHandlerEx<object> Loaded;
 		event EventHandlerEx<object, IPage<TItem>> PageAccessing;
 		event EventHandlerEx<object, IPage<TItem>> PageAccessed;
 		event EventHandlerEx<object, int> PageCreating;
@@ -22,7 +20,7 @@ namespace Sphere10.Framework {
 
 		IDisposable EnterOpenPageScope(IPage<TItem> page);
 
-		internal IReadOnlyList<IPage<TItem>> Pages { get; }
+		IReadOnlyList<IPage<TItem>> Pages { get; }
 
 	}
 }

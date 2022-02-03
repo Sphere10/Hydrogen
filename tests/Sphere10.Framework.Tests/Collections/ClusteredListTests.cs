@@ -241,8 +241,7 @@ namespace Sphere10.Framework.Tests {
 					(rng, i) => Enumerable.Range(0, i).Select(x => new TestObject(rng)).ToArray(),
 					false,
 					10,
-					null,
-					new TestObjectComparer()
+					itemComparer: new TestObjectComparer()
 				);
 			}
 		}

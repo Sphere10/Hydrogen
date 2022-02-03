@@ -11,13 +11,15 @@ namespace Sphere10.Framework {
 	/// <remarks>The underlying implementation relies on a <see cref="MemoryPagedList{TItem}"/> whose pages are <see cref="MemoryBuffer"/>'s.</remarks>
 	public class MemoryPagedBuffer : MemoryPagedListBase<byte>, IMemoryPagedBuffer {
 		private readonly IPagedListDelegate<byte> _friend;
+		private readonly ReadOnlyListDecorator<IPage<byte>, IBufferPage> _pagesDecorator;
 
 		public MemoryPagedBuffer(int pageSize, long maxMemory) 
 			: base(pageSize, maxMemory) {
 			_friend = CreateFriendDelegate();
+			_pagesDecorator = new ReadOnlyListDecorator<IPage<byte>, IBufferPage>( new ReadOnlyListAdapter<IPage<byte>>( base.InternalPages));
 		}
 
-		IReadOnlyList<IBufferPage> IMemoryPagedBuffer.Pages => new ReadOnlyListDecorator<IPage<byte>, IBufferPage>(InternalPages);
+		public new IReadOnlyList<IBufferPage> Pages => _pagesDecorator;
 
 		protected override IPage<byte> NewPageInstance(int pageNumber) {
 			return new BufferPage(PageSize);

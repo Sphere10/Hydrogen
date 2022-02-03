@@ -20,7 +20,7 @@ namespace Sphere10.Framework {
 	/// <summary>
 	/// A memory stream that writes to an underlying <see cref="IBuffer"/>.
 	/// </summary>
-	public class BufferStream : Stream, ILoadable {
+	public class ExtendedMemoryStream : Stream, ILoadable {
 		public event EventHandlerEx<object> Loading;
 		public event EventHandlerEx<object> Loaded;
 
@@ -28,11 +28,11 @@ namespace Sphere10.Framework {
 		private readonly bool _disposeSource;
 		private readonly IBuffer _source;
 
-		public BufferStream() 
+		public ExtendedMemoryStream() 
 			: this(new MemoryBuffer()) {
 		}
 
-		public BufferStream(IBuffer source, bool disposeSource = false) {
+		public ExtendedMemoryStream(IBuffer source, bool disposeSource = false) {
 			_source = source;
 			_position = 0;
 			_disposeSource = disposeSource;

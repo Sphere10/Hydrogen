@@ -58,7 +58,7 @@ namespace Sphere10.Framework {
 				_transactionalBuffer.Load();
 
 			_clustered = new ClusteredList<T>(
-				new BufferStream(
+				new ExtendedMemoryStream(
 					_transactionalBuffer,
 					disposeSource: true
 				),

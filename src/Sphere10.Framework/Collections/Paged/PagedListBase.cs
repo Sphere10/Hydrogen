@@ -289,7 +289,7 @@ namespace Sphere10.Framework {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		protected int FindPageContainingIndex(int index) {
 			if (InternalPages.Count == 0)
-				return 0;
+				return -1;
 			// Figure out a page-access-caching solution here
 			// Binary search very slow (method call on each test, always starts on range (0,^-1)
 			// Solutions
@@ -309,7 +309,6 @@ namespace Sphere10.Framework {
 			if (RequiresLoad)
 				throw new InvalidOperationException("Paged collection has not been loaded");
 		}
-
 
 		protected override void CheckIndex(int index, bool allowAtEnd = false) {
 			Guard.Ensure(InternalPages.Count > 0, "No pages");

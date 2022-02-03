@@ -9,7 +9,7 @@ jobs:
       - name: Setup .NET Core SDK
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: 6.0.1
+          dotnet-version: 6.0.x
           
       - name: Build Hydrogen solution
         run: dotnet build ./src/Hydrogen.sln
@@ -21,7 +21,7 @@ jobs:
       - name: Setup .NET Core SDK
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: 6.0.1
+          dotnet-version: 6.0.x
 
       - name: Run tests
         run: dotnet test ./src/Hydrogen.sln

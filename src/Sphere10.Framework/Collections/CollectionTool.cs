@@ -14,7 +14,9 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using Sphere10.Framework;
 
 // ReSharper disable CheckNamespace
 namespace Tools {
@@ -62,6 +64,24 @@ namespace Tools {
 					number -= chunk;
 				}
 			}
+
+			public static int BinarySearch<TItem, TSearch>(IList<TItem> list, TSearch value, int lower, int upper, Func<TSearch, TItem, int> comparer) {
+				Debug.Assert(list != null);
+				Guard.ArgumentNotNull(comparer, nameof(comparer));
+				while (lower <= upper) {
+					var middle = lower + (upper - lower) / 2;
+					var comparisonResult = comparer(value, list[middle]);
+					if (comparisonResult < 0) {
+						upper = middle - 1;
+					} else if (comparisonResult > 0) {
+						lower = middle + 1;
+					} else {
+						return middle;
+					}
+				}
+				return ~lower;
+			}
+
 	}
 
 	

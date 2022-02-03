@@ -24,6 +24,7 @@ namespace Sphere10.Framework {
 		public event EventHandlerEx<object, IPage<TItem>> PageDeleted;
 
 		private int _count;
+		private int _currentPage;
 		private readonly ReadOnlyListAdapter<IPage<TItem>> _pagesAdapter;
 		protected IList<IPage<TItem>> InternalPages;
 
@@ -33,6 +34,7 @@ namespace Sphere10.Framework {
 			InternalPages = new ExtendedList<IPage<TItem>>();
 			_count = 0;
 			_pagesAdapter = new ReadOnlyListAdapter<IPage<TItem>>(InternalPages);
+			_currentPage = -1;
 		}
 
 		public override int Count => _count;
@@ -193,6 +195,7 @@ namespace Sphere10.Framework {
 			while (InternalPages.Count > 0)
 				DeletePage(InternalPages[^1]);
 			InternalPages.Clear();
+			_currentPage = -1;
 			_count = 0;
 			NotifyAccessed();
 		}
@@ -285,22 +288,57 @@ namespace Sphere10.Framework {
 			} while (endIndex > page.EndIndex && index < InternalPages.Count);
 		}
 
-
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		protected int FindPageContainingIndex(int index) {
-			if (InternalPages.Count == 0)
+			var internalPagesCount = InternalPages.Count;
+			if (internalPagesCount == 0)
 				return -1;
-			// Figure out a page-access-caching solution here
-			// Binary search very slow (method call on each test, always starts on range (0,^-1)
-			// Solutions
-			//  - cache "last requested"
-			return InternalPages.BinarySearch(index, (x, p) => {
+
+			int lower, upper;
+			if (_currentPage != -1) {
+				// Optimization 1: check the last binary searched page again (index seeks tend to be clustered together)
+				var currentPage = InternalPages[_currentPage];
+				var cpStartIndex = currentPage.StartIndex;
+				var cpEndIndex = currentPage.EndIndex;
+				if (cpStartIndex <= index && index <= cpEndIndex)
+					return _currentPage;
+
+				// Optimization 2: if index is just beyond current page bounary, it has to be adjacent (assuming it exists)
+				if (index == cpEndIndex + 1 && internalPagesCount > _currentPage + 1) {
+					return ++_currentPage;
+				}
+
+				if (index == cpStartIndex - 1 && _currentPage > 0) {
+					return --_currentPage;
+				}
+
+				// Optimization 3: Restrict binary search range since we know if after/before current page
+				if (index < cpStartIndex) {
+					lower = 0;
+					upper = _currentPage - 1;
+				} else {
+					lower = _currentPage + 1;
+					upper = internalPagesCount - 1;
+				}
+			} else {
+				lower = 0;
+				upper = internalPagesCount - 1;
+			}
+
+			// Binary search pages to find the one containing the index
+			_currentPage = Tools.Collection.BinarySearch(
+				InternalPages, 
+				index, 
+				lower,
+				upper,
+				(_, p) => {
 				if (index < p.StartIndex)
 					return -1;
 				if (index > p.EndIndex)
 					return +1;
 				return 0;
 			});
+
+			return _currentPage;
 		}
 
 		public abstract IDisposable EnterOpenPageScope(IPage<TItem> page);
@@ -350,6 +388,8 @@ namespace Sphere10.Framework {
 		}
 
 		protected virtual void OnPageCreated(IPage<TItem> page) {
+			// set current page to end, since most likely place to search 
+			_currentPage = page.Number;
 		}
 
 		protected virtual void OnPageReading(IPage<TItem> page) {
@@ -368,6 +408,11 @@ namespace Sphere10.Framework {
 		}
 
 		protected virtual void OnPageDeleted(IPage<TItem> page) {
+			if (_currentPage == page.Number) {
+				// reset current page to end, since most likely place to search 
+				var pCount = Pages.Count;
+				_currentPage = pCount > 0 ? pCount - 1 : -1;
+			}
 		}
 
 		protected void NotifyAccessing() {

@@ -44,7 +44,7 @@ namespace Sphere10.Framework.ObjectSpace {
 			);
 
 			var merkleFile = new MerkleBuffer(file, merkleCHF);
-			var stream = new BufferStream(file);
+			var stream = new ExtendedMemoryStream(file);
 			txnFile = file;
 			storageMerkleTree = merkleFile.MerkleTree;
 			return new StreamPagedList<T>(serializer, stream, logicalPageSize);

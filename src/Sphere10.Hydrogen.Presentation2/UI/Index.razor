@@ -20,6 +20,11 @@
 @using Microsoft.JSInterop;
 @using Sphere10.Framework.Communications;
 
+@using System.IO;
+@using System.Runtime.Serialization.Formatters.Binary;
+@using System.Text;
+@using Newtonsoft.Json;
+
 @inject IJSRuntime JSRuntime
 
 @implements IDisposable
@@ -130,7 +135,7 @@
                         <button @onclick="SendData">SendData</button>
 
 
-                        <div><textarea id="Output"></textarea></div>
+                        <div><textarea id="Output" rows="10" cols="60"></textarea></div>
                     </div>
                 </div>
             </div>
@@ -280,6 +285,108 @@
         public Task<int> Count { get { return Task.Run(() => AllItems.Count); } }
     }
 
+    public class DataSource2<TItem> : IDataSource<TestClass> {
+        //List<TestClass> AllItems = new List<TestClass>();
+
+        //public void RefreshData() {
+        //    AllItems = LoadData(73);
+        //}
+
+        // create some dummy data
+        public DataSource2() {
+            //RefreshData();
+        }
+
+        //static List<TestClass> LoadData(int size) {
+        //    var testData = new List<TestClass>();
+
+        //    for (int i = 0; i < size; i++) {
+        //        var testObject = new TestClass();
+        //        testObject.FillWithTestData(i);
+        //        testData.Add(testObject);
+        //    }
+
+        //    return testData;
+        //}
+
+        public async Task Create(IEnumerable<TestClass> entities) {
+            //    AllItems.AddRange(entities);
+        }
+
+        public async Task Delete(IEnumerable<TestClass> entities) {
+            //    foreach (var entity in entities) {
+            //        var index = AllItems.IndexOf(entity);
+            //        if (index >= 0) AllItems.RemoveAt(index);
+            //    }
+        }
+
+        public IEnumerable<TestClass> New(int count) {
+
+            //var returnList = new List<TestClass>();
+            //var newId = AllItems.Max(x => x.Id) + 1;
+
+            //for (int i = 0; i < count; i++) {
+            //    var newEntity = new TestClass();
+            //    newEntity.FillWithTestData(newId++);
+            //    AllItems.Add(newEntity);
+            //    returnList.Add(newEntity);
+            //}
+
+            //return returnList;
+
+            throw new NotImplementedException();
+        }
+
+        public Task<IEnumerable<TestClass>> Read(string searchTerm, int pageLength, ref int page, string sortProperty, SortDirection sortDirection, out int totalItems) {
+
+            // make sure the requested page is logical
+            //            if (page < 0) page = 0;
+            //            else if (page > AllItems.Count / pageLength) page = AllItems.Count / pageLength;
+
+            //            var startIndex = pageLength * page;
+
+            // the last page might not have a full [page of data
+            //            if (startIndex + pageLength >= AllItems.Count) pageLength = AllItems.Count - startIndex;
+
+            //            var items = (IEnumerable<TestClass>)AllItems.GetRange(startIndex, pageLength);
+
+            //            totalItems = AllItems.Count();
+            //            return Task.FromResult(items);
+
+            //return Task.Run(() => (IEnumerable<TestClass>)AllItems.GetRange(startIndex, pageLength));
+
+            throw new NotImplementedException();
+        }
+
+        public Task Refresh(TestClass[] entity) {
+            throw new NotImplementedException();
+        }
+
+        public Task Update(IEnumerable<TestClass> entities) {
+            //var test = entities.ToArray()[0].ToString();
+
+            //return Task.Run(() => {
+            //    foreach (var entity in entities) {
+            //        for (int i = 0; i < AllItems.Count; i++) {
+            //            if (AllItems[i].Id == entity.Id) {
+            //                AllItems[i] = entity;
+            //                break;
+            //            }
+            //        }
+            //    }
+            //}
+            //);
+            throw new NotImplementedException();
+        }
+
+        public Task<Result> Validate(IEnumerable<(TestClass entity, CrudAction action)> actions) {
+            throw new NotImplementedException();
+        }
+
+        public Task<int> Count { get { return Task.Run(() => 0); } }
+    }
+
+
     #region Javascript
 
     void Alert(string text)
@@ -334,7 +441,11 @@
 
     async void StartWebSockets()
     {
-        Channel = new ClientWebSocketsChannel("ws://192.168.1.107:80/service", false);
+        // Virtual Machine
+        //Channel = new ClientWebSocketsChannel("ws://192.168.1.108:80/service", false);
+
+        // Local Machine
+        Channel = new ClientWebSocketsChannel("ws://192.168.1.171:80/service", false);
         Channel.ReceivedBytes += delegate (ReadOnlyMemory<byte> memory)
         {
             WriteOutput(System.Text.Encoding.ASCII.GetString(memory.Span));
@@ -342,9 +453,52 @@
         await Channel.Open();
     }
 
+    public class WebSocketsPacket 
+    {
+        public string Message { get; set; }
+        public string[] Tokens { get; private set; } = new string[0];
+        public string JsonData { get; set; }
+
+        public WebSocketsPacket() {
+		}
+
+        public WebSocketsPacket(byte[] bytes) {
+
+            var text = Encoding.ASCII.GetString(bytes);
+            WebSocketsPacket packet = JsonConvert.DeserializeObject<WebSocketsPacket>(text);
+
+            Message = packet.Message;
+            Tokens = Message.Split(" ");
+            JsonData = packet.JsonData;
+        }
+
+        public WebSocketsPacket(string message, string jsonData) {
+            Message = message;
+            JsonData = jsonData;
+        }
+
+        public byte[] ToBytes() {
+            var jsonData = JsonConvert.SerializeObject(this);
+            return System.Text.Encoding.ASCII.GetBytes(jsonData);
+        }
+    }
+
+
     void SendData()
     {
-        Channel.TrySendBytes(System.Text.Encoding.ASCII.GetBytes("Hello from Server 666"));
+        try
+        {
+            var testData = new TestClass();
+            testData.FillWithTestData(666);
+            var jsonData = JsonConvert.SerializeObject(testData);
+            var testPacket = new WebSocketsPacket("new 7", jsonData);
+            Channel.TrySendBytes(testPacket.ToBytes());
+        }
+        catch (Exception ex) {
+            
+        }
+        //Channel.TrySendBytes(System.Text.Encoding.ASCII.GetBytes("Hello from Server 666"));
+//this sends but is not AbandonedMutexException data
     }
 
 

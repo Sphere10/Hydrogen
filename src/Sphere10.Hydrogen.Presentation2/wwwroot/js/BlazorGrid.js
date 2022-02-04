@@ -117,10 +117,6 @@ function ResizableTable(table) {
     }
 }
 
-
-
-
-
 function WriteOutout(text) {
     document.getElementById("Output").value += (text + '\r\n');
 }

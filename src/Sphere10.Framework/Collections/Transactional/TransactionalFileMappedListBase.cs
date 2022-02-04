@@ -15,6 +15,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 
 namespace Sphere10.Framework {
 
@@ -30,7 +31,6 @@ namespace Sphere10.Framework {
 		protected TransactionalFileMappedListBase(
 			string filename, 
 			string uncommittedPageFileDir, 
-			Guid fileID,
 			int pageSize,
 			long maxMemory,
 			bool readOnly = false)
@@ -38,7 +38,7 @@ namespace Sphere10.Framework {
 			Guard.ArgumentNotNullOrEmpty(uncommittedPageFileDir, nameof(uncommittedPageFileDir));
 			if (!Directory.Exists(uncommittedPageFileDir))
 				throw new DirectoryNotFoundException($"Directory not found: {uncommittedPageFileDir}");
-			FileID = fileID;
+			FileID = ComputeFileID(Path);
 			PageMarkerRepo = new MarkerRepository(uncommittedPageFileDir, FileID);
 		}
 
@@ -96,6 +96,12 @@ namespace Sphere10.Framework {
 			base.Dispose();
 		}
 
+		public static Guid ComputeFileID(string caseCorrectFilePath) {
+			// FileID is a first 16 bytes of the case-correct path converted into a guid
+			Guard.ArgumentNotNull(caseCorrectFilePath, nameof(caseCorrectFilePath));
+			return new Guid(Hashers.Hash(CHF.SHA2_256, Encoding.UTF8.GetBytes(caseCorrectFilePath)).Take(16).ToArray());
+		}
+
 		protected abstract int GetCommittedPageCount();
 
 		protected override void OnLoaded() {
@@ -112,7 +118,7 @@ namespace Sphere10.Framework {
 
 		protected override void OnPageCreating(int pageNumber) {
 			base.OnPageCreating(pageNumber);
-			if (IsLoading)
+			if (IsLoading || Disposing)
 				return;
 
 			// If creating a new page on a previously deleted page, 
@@ -126,6 +132,8 @@ namespace Sphere10.Framework {
 
 		protected override void OnPageSaving(IMemoryPage<TItem> page) {
 			base.OnPageSaving(page);
+			if (Disposing)
+				return;
 
 			// Clear any deleted marker
 			if (PageMarkerRepo.Contains(PageMarkerType.DeletedMarker, page.Number))
@@ -139,6 +147,9 @@ namespace Sphere10.Framework {
 
 		protected override void OnPageSaved(IMemoryPage<TItem> page) {
 			base.OnPageSaved(page);
+			if (Disposing)
+				return;
+
 
 			// Truncate last page
 			if (page.Number == InternalPages.Count - 1) {
@@ -149,6 +160,9 @@ namespace Sphere10.Framework {
 
 		protected override void OnPageDeleting(IPage<TItem> pageHeader) {
 			base.OnPageDeleting(pageHeader);
+			if (Disposing)
+				return;
+
 
 			if (Disposing)
 				return;
@@ -288,7 +302,7 @@ namespace Sphere10.Framework {
 			}
 
 			public void RemoveAllPageMarkersExcept(PageMarkerType except, int pageNumber) {
-				RemoveAllPageMakers(pageNumber, new[] { except });
+				RemoveAllPageMakers(pageNumber, except);
 			}
 
 			public void RemoveAllPageMakers(int pageNumber, params PageMarkerType[] except) {

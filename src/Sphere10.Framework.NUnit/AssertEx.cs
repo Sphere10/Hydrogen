@@ -13,7 +13,7 @@ namespace Sphere10.Framework.NUnit {
 
 	public static class AssertEx {
 
-		public static void ListIntegrationTest<T>(IExtendedList<T> list, int maxCapacity, Func<Random, int, T[]> randomItemGenerator, bool mutateFromEndOnly = false, int iterations = 100, IList<T> expected = null, IEqualityComparer<T> itemComparer = null) {
+		public static void ListIntegrationTest<T>(IExtendedList<T> list, int maxCapacity, Func<Random, int, T[]> randomItemGenerator, bool mutateFromEndOnly = false, int iterations = 100, IList<T> expected = null,  Action endOfIterTest = null, IEqualityComparer<T> itemComparer = null) {
 			var RNG = new Random(31337);
 			expected ??= new List<T>();
 			itemComparer ??= EqualityComparer<T>.Default;
@@ -79,7 +79,40 @@ namespace Sphere10.Framework.NUnit {
 				} while (expectedMoveNext);
 			}
 
-			// Test 9: Clear
+			// Test 9: Read/Remove/Update nothing from tip
+			// First fill up
+			newItems = randomItemGenerator(RNG, maxCapacity - expected.Count);
+			expected.AddRangeSequentially(newItems);
+			list.AddRange(newItems);
+			// Read nothing from tip
+			var expectedRead = expected.ReadRangeSequentially(expected.Count, 0);
+			var actualRead = list.ReadRange(list.Count, 0);
+			Assert.That(expectedRead, Is.EqualTo(actualRead).Using(itemComparer));
+
+			// Remove nothing from tip
+			expected.RemoveRangeSequentially(expected.Count, 0);
+			list.RemoveRange(list.Count, 0);
+			Assert.That(expected, Is.EqualTo(list).Using(itemComparer));
+
+			// Update nothing from tip
+			expected.UpdateRangeSequentially(expected.Count, Enumerable.Empty<T>());
+			list.UpdateRangeSequentially(list.Count, Enumerable.Empty<T>());
+			Assert.That(expected, Is.EqualTo(list).Using(itemComparer));
+
+			// Test 10: Read/Remove/Update range overflow throws
+			Assert.That(() => expected.ReadRangeSequentially(expected.Count / 2, maxCapacity + 1).ToArray(), Throws.InstanceOf<ArgumentException>());
+			Assert.That(() => list.ReadRange(list.Count / 2, maxCapacity + 1).ToArray(), Throws.InstanceOf<ArgumentException>());
+			Assert.That(() => expected.RemoveRangeSequentially(expected.Count / 2, maxCapacity + 1), Throws.InstanceOf<ArgumentException>());
+			Assert.That(() => list.RemoveRange(list.Count / 2, maxCapacity + 1), Throws.InstanceOf<ArgumentException>());
+			var updateItems = Tools.Array.Gen<T>(maxCapacity + 1, default);
+			Assert.That(() => expected.UpdateRangeSequentially(expected.Count / 2, updateItems), Throws.InstanceOf<ArgumentException>());
+			Assert.That(() => list.UpdateRange(list.Count / 2, updateItems), Throws.InstanceOf<ArgumentException>());
+
+			// Clear items (note: inconsistency could arise from test 10 due to do Singular-lists detecting argument error after mutations whereas range-lists not)
+			expected.Clear();
+			list.Clear();
+
+			// Test 11: Clear
 			for (var i = 0; i < 3; i++) {
 				Assert.That(expected, Is.EqualTo(list).Using(itemComparer));
 				// add a random amount
@@ -93,7 +126,7 @@ namespace Sphere10.Framework.NUnit {
 				list.Clear();
 			}
 
-			// Test 10: Iterate with random mutations
+			// Test 12: Iterate with random mutations
 			for (var i = 0; i < iterations; i++) {
 
 				// add a random amount
@@ -130,6 +163,15 @@ namespace Sphere10.Framework.NUnit {
 					list.RemoveRange(range.Start, rangeLen);
 					expected.RemoveRangeSequentially(range.Start, rangeLen);
 					Assert.That(expected, Is.EqualTo(list).Using(itemComparer));
+
+					// PagedList specific: check page index consistency
+					if (list is IPagedList<T> pagedList) {
+						for (var j = 1; j < pagedList.Pages.Count; j++)
+							Assert.That(pagedList.Pages[j].StartIndex, Is.EqualTo(pagedList.Pages[j - 1].EndIndex + 1));
+					}
+
+					// Custom user test
+					endOfIterTest?.Invoke();
 				}
 
 				// insert a random amount
@@ -360,20 +402,22 @@ namespace Sphere10.Framework.NUnit {
 		}
 
 		[Test]
-		public static void StreamIntegrationTests(int maxSize, Stream actualStream, Stream expectedStream = null, int iterations = 100, Random RNG = null) {
+		public static void StreamIntegrationTests(int maxSize, Stream actualStream, Stream expectedStream = null, int iterations = 100, Random RNG = null, bool runAsserts = true) {
 			Guard.ArgumentInRange(maxSize, 0, int.MaxValue, nameof(maxSize));
 			Guard.ArgumentNotNull(actualStream, nameof(actualStream));
 			Guard.ArgumentNot(actualStream.Length > 0 && expectedStream == null, nameof(actualStream), "Must be empty if not supplying expected stream");
 			expectedStream ??= new MemoryStream();
 			RNG ??= new Random(31337);
 			for (var i = 0; i < iterations; i++) {
-				AreEqual(expectedStream, actualStream);
+				if (runAsserts)
+					AreEqual(expectedStream, actualStream);
 
 				// 1. random seek
 				var seekParam = GenerateRandomSeekParameters(RNG, actualStream.Position, actualStream.Length);
 				actualStream.Seek(seekParam.Item1, seekParam.Item2);
 				expectedStream.Seek(seekParam.Item1, seekParam.Item2);
-				AreEqual(expectedStream, actualStream);
+				if (runAsserts)
+					AreEqual(expectedStream, actualStream);
 
 				// 2. write random bytes
 				var remainingCapacity = (int)(maxSize - actualStream.Position);
@@ -386,7 +430,8 @@ namespace Sphere10.Framework.NUnit {
 						expectedStream.Write(fromBuffer, segment.Start, segment.End - segment.Start + 1);
 						actualStream.Write(fromBuffer, segment.Start, segment.End - segment.Start + 1);
 					}
-					AreEqual(expectedStream, actualStream);
+					if (runAsserts)
+						AreEqual(expectedStream, actualStream);
 				}
 
 				// 3. random read
@@ -395,16 +440,18 @@ namespace Sphere10.Framework.NUnit {
 					var count = segment.End - segment.Start + 1;
 					expectedStream.Seek(segment.Start, SeekOrigin.Begin);
 					actualStream.Seek(segment.Start, SeekOrigin.Begin);
-					Assert.AreEqual(expectedStream.ReadBytes(count), actualStream.ReadBytes(count));
-					AreEqual(expectedStream, actualStream);
+					if (runAsserts) {
+						Assert.AreEqual(expectedStream.ReadBytes(count), actualStream.ReadBytes(count));
+						AreEqual(expectedStream, actualStream);
+					}
 				}
 
 				// 4. resize 
-				AreEqual(expectedStream, actualStream);
 				var newLength = RNG.Next(0, maxSize);
 				expectedStream.SetLength(newLength);
 				actualStream.SetLength(newLength);
-				AreEqual(expectedStream, actualStream);
+				if (runAsserts)
+					AreEqual(expectedStream, actualStream);
 			}
 		}
 

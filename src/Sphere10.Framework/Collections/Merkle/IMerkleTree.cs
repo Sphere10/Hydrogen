@@ -25,9 +25,10 @@ namespace Sphere10.Framework {
 			=> MerkleMath.AggregateSubRoots(tree.HashAlgorithm, MerkleMath.CalculateSubRoots(priorLeafCount).Select(c => tree.GetValue(c).ToArray()));
 			
 		public static (MerkleNode Left, MerkleNode Right) GetChildren(this IMerkleTree tree, MerkleCoordinate node) {
+			Guard.Argument(!MerkleMath.IsLeaf(node), nameof(node), "Leaf node has no descendant node(s)");
 			var childCoords = MerkleMath.GetChildren(tree.Size, node);
 			var left = new MerkleNode(childCoords.Left, tree.GetValue(childCoords.Left).ToArray());
-			var right = new MerkleNode(childCoords.Right, childCoords.Right != MerkleCoordinate.Null ? tree.GetValue(childCoords.Right).ToArray() : null);
+			var right = childCoords.Right != MerkleCoordinate.Null ?  new MerkleNode(childCoords.Right, tree.GetValue(childCoords.Right).ToArray()) : null;
 			return (left, right);
 		}
 

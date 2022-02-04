@@ -4,20 +4,20 @@ using System.Collections.Generic;
 namespace Sphere10.Framework {
 	public abstract class PagedListDecorator<TItem, TPagedList> : ExtendedListDecorator<TItem, TPagedList>, IPagedList<TItem> where TPagedList : IPagedList<TItem> {
 
-		public event EventHandlerEx<object> Accessing { add => InternalExtendedList.Accessing += value; remove => InternalExtendedList.Accessing -= value; }
-		public event EventHandlerEx<object> Accessed { add => InternalExtendedList.Accessed += value; remove => InternalExtendedList.Accessed -= value; }
-		public event EventHandlerEx<object> Loading { add => InternalExtendedList.Loading += value; remove => InternalExtendedList.Loading -= value; }
-		public event EventHandlerEx<object> Loaded { add => InternalExtendedList.Loaded += value; remove => InternalExtendedList.Loaded -= value; }
-		public event EventHandlerEx<object, IPage<TItem>> PageAccessing { add => InternalExtendedList.PageAccessing += value; remove => InternalExtendedList.PageAccessing -= value; }
-		public event EventHandlerEx<object, IPage<TItem>> PageAccessed { add => InternalExtendedList.PageAccessed += value; remove => InternalExtendedList.PageAccessed -= value; }
-		public event EventHandlerEx<object, int> PageCreating { add => InternalExtendedList.PageCreating += value; remove => InternalExtendedList.PageCreating -= value; }
-		public event EventHandlerEx<object, IPage<TItem>> PageCreated { add => InternalExtendedList.PageCreated += value; remove => InternalExtendedList.PageCreated -= value; }
-		public event EventHandlerEx<object, IPage<TItem>> PageReading { add => InternalExtendedList.PageReading += value; remove => InternalExtendedList.PageReading -= value; }
-		public event EventHandlerEx<object, IPage<TItem>> PageRead { add => InternalExtendedList.PageRead += value; remove => InternalExtendedList.PageRead -= value; }
-		public event EventHandlerEx<object, IPage<TItem>> PageWriting { add => InternalExtendedList.PageWriting += value; remove => InternalExtendedList.PageWriting -= value; }
-		public event EventHandlerEx<object, IPage<TItem>> PageWrite { add => InternalExtendedList.PageWrite += value; remove => InternalExtendedList.PageWrite -= value; }
-		public event EventHandlerEx<object, IPage<TItem>> PageDeleting { add => InternalExtendedList.PageDeleting += value; remove => InternalExtendedList.PageDeleting -= value; }
-		public event EventHandlerEx<object, IPage<TItem>> PageDeleted { add => InternalExtendedList.PageDeleted += value; remove => InternalExtendedList.PageDeleted -= value; }
+		public event EventHandlerEx<object> Accessing { add => InternalCollection.Accessing += value; remove => InternalCollection.Accessing -= value; }
+		public event EventHandlerEx<object> Accessed { add => InternalCollection.Accessed += value; remove => InternalCollection.Accessed -= value; }
+		public event EventHandlerEx<object> Loading { add => InternalCollection.Loading += value; remove => InternalCollection.Loading -= value; }
+		public event EventHandlerEx<object> Loaded { add => InternalCollection.Loaded += value; remove => InternalCollection.Loaded -= value; }
+		public event EventHandlerEx<object, IPage<TItem>> PageAccessing { add => InternalCollection.PageAccessing += value; remove => InternalCollection.PageAccessing -= value; }
+		public event EventHandlerEx<object, IPage<TItem>> PageAccessed { add => InternalCollection.PageAccessed += value; remove => InternalCollection.PageAccessed -= value; }
+		public event EventHandlerEx<object, int> PageCreating { add => InternalCollection.PageCreating += value; remove => InternalCollection.PageCreating -= value; }
+		public event EventHandlerEx<object, IPage<TItem>> PageCreated { add => InternalCollection.PageCreated += value; remove => InternalCollection.PageCreated -= value; }
+		public event EventHandlerEx<object, IPage<TItem>> PageReading { add => InternalCollection.PageReading += value; remove => InternalCollection.PageReading -= value; }
+		public event EventHandlerEx<object, IPage<TItem>> PageRead { add => InternalCollection.PageRead += value; remove => InternalCollection.PageRead -= value; }
+		public event EventHandlerEx<object, IPage<TItem>> PageWriting { add => InternalCollection.PageWriting += value; remove => InternalCollection.PageWriting -= value; }
+		public event EventHandlerEx<object, IPage<TItem>> PageWrite { add => InternalCollection.PageWrite += value; remove => InternalCollection.PageWrite -= value; }
+		public event EventHandlerEx<object, IPage<TItem>> PageDeleting { add => InternalCollection.PageDeleting += value; remove => InternalCollection.PageDeleting -= value; }
+		public event EventHandlerEx<object, IPage<TItem>> PageDeleted { add => InternalCollection.PageDeleted += value; remove => InternalCollection.PageDeleted -= value; }
 
 		protected PagedListDecorator(TPagedList internalPagedList)
 			: base(internalPagedList) {
@@ -37,17 +37,17 @@ namespace Sphere10.Framework {
 			internalPagedList.PageDeleted += (o, p) => OnPageDeleted(p);
 		}
 
-		internal IReadOnlyList<IPage<TItem>> Pages => InternalExtendedList.Pages;
-	
+		internal IReadOnlyList<IPage<TItem>> Pages => InternalCollection.Pages;
+
 		IReadOnlyList<IPage<TItem>> IPagedList<TItem>.Pages => this.Pages;
 
-		public bool RequiresLoad => InternalExtendedList.RequiresLoad;
+		public bool RequiresLoad => InternalCollection.RequiresLoad;
 
-		
 
-		public void Load() => InternalExtendedList.Load();
 
-		public IDisposable EnterOpenPageScope(IPage<TItem> page) => InternalExtendedList.EnterOpenPageScope(page);
+		public void Load() => InternalCollection.Load();
+
+		public IDisposable EnterOpenPageScope(IPage<TItem> page) => InternalCollection.EnterOpenPageScope(page);
 
 		protected virtual void OnAccessing() {
 		}

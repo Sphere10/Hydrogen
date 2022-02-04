@@ -17,7 +17,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Collections.Concurrent;
-
+using System.Diagnostics;
+using System.Runtime.CompilerServices;
 
 
 namespace Sphere10.Framework {
@@ -390,6 +391,7 @@ namespace Sphere10.Framework {
 		}
 
 		// NOTE: ForReach applies action to all items then return enumerable, Apply applies action during enumeration 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static void ForEach<T>(this IEnumerable<T> source, Action<T> action) {
 			foreach (T item in source)
 				action(item);
@@ -405,6 +407,7 @@ namespace Sphere10.Framework {
 		}
 
 		// NOTE: ForReach applies action to all items then return enumerable, Apply applies action during enumeration
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static IEnumerable<T> Apply<T>(this IEnumerable<T> source, Action<T> action) {
 			foreach (T item in source) {
 				action(item);
@@ -483,32 +486,9 @@ namespace Sphere10.Framework {
 		/// <param name="comparer">The comparer that is used to compare the value with the list items.</param>
 		/// <returns></returns>
 		public static int BinarySearch<TItem, TSearch>(this IEnumerable<TItem> list, TSearch value, Func<TSearch, TItem, int> comparer) {
-			if (list == null) {
-				throw new ArgumentNullException(nameof(list));
-			}
+			Guard.ArgumentNotNull(list, nameof(list));
 			var listArr = list as TItem[] ?? list.ToArray();
-
-			if (comparer == null) {
-				throw new ArgumentNullException(nameof(comparer));
-			}
-
-			var lower = 0;
-
-			var upper = listArr.Count() - 1;
-
-			while (lower <= upper) {
-				var middle = lower + (upper - lower) / 2;
-				var comparisonResult = comparer(value, listArr[middle]);
-				if (comparisonResult < 0) {
-					upper = middle - 1;
-				} else if (comparisonResult > 0) {
-					lower = middle + 1;
-				} else {
-					return middle;
-				}
-			}
-
-			return ~lower;
+			return Tools.Collection.BinarySearch(listArr, value, 0, listArr.Length - 1, comparer);
 		}
 
 		/// <summary>
@@ -530,6 +510,7 @@ namespace Sphere10.Framework {
 		/// <param name="value">The value to search for.</param>
 		/// <param name="comparer">The comparer that is used to compare the value with the list items.</param>
 		/// <returns></returns>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static int BinarySearch<TItem>(this IEnumerable<TItem> list, TItem value, IComparer<TItem> comparer) {
 			return list.BinarySearch(value, comparer.Compare);
 		}

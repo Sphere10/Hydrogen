@@ -3,7 +3,7 @@ using System.Collections.Generic;
 namespace Sphere10.Framework {
 
 	public abstract class ExtendedListBase<T> : ExtendedCollectionBase<T>, IExtendedList<T> {
-	
+
 		public T this[int index] { get => Read(index); set => Update(index, value); }
 
 		public abstract int IndexOf(T item);
@@ -25,6 +25,10 @@ namespace Sphere10.Framework {
 		public abstract void RemoveAt(int index);
 
 		public abstract void RemoveRange(int index, int count);
+
+		protected virtual void CheckIndex(int index, bool allowAtEnd = false) => Guard.CheckIndex(index, 0, Count, allowAtEnd);
+
+		protected virtual void CheckRange(int index, int count, bool rightAligned = false) => Guard.CheckRange(index, count, rightAligned, 0, Count);
 
 	}
 

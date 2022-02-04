@@ -1,48 +1,56 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace Sphere10.Framework {
 
 	/// <summary>
 	/// A wrapper for <see cref="IExtendedList{T}"/> that implements insertion, deletion and append as update operations over a pre-allocated collection of items.
-	/// This is useful for converting an <see cref="IExtendedList{T}"/> that can only be mutated via "UPDATE" operations into one that supports INSERT/UPDATE/DELETE.
-	/// This is achieved by maintaining a local <see cref="Count"/> property and by overwriting pre-allocated items on append/insert, and "forgetting" them on delete.
-	/// When the pre-allocated items are exhaused, a <see cref="PreallocationGrowthPolicy"/> is used to grow the underlying list. 
+	/// This is useful for converting an <see cref="IExtendedList{T}"/> that can only be mutated via "UPDATE" operations into one that supports INSERT/UPDATE/DELETE
+	/// via sequential UPDATE operations. This is achieved by maintaining a local <see cref="Count"/> property and by overwriting pre-allocated items on
+	/// append/insert, and "forgetting" them on delete. When the pre-allocated items are exhaused, a <see cref="PreallocationGrowthPolicy"/> is used to grow
+	/// the underlying list. 
 	/// </summary>
 	/// <remarks>
-	/// When shuffling items around via copy/paste operations, they are done "one at a time" rather than in ranges so as not to exhaust memory. Thus this class
-	/// is suitable for wrapping arbitrarily large lists.
+	/// When shuffling items around via copy/paste operations, they are done "one at a time" rather than in "in ranges" so as not to exhaust memory on
+	/// unbounded lists. Thus this class is suitable for wrapping unbounded lists of data without memory/computational complexity blowout.
 	/// Additionally, <see cref="Contains"/> and <see cref="ContainsRange"/> are overriden and implemented based on <see cref="IndexOf"/> and <see cref="IndexOfRange"/>
 	/// so as to ensure only the logical objects are searched (avoids false positives). Same is true for <see cref="Remove"/> and <see cref="RemoveRange(int,int)"/>.
 	/// </remarks>
-	public class PreAllocatedList<TItem> : ExtendedListDecorator<TItem> where TItem : new() {
+	public class PreAllocatedList<TItem> : ExtendedListDecorator<TItem> {
 		private int _count;
 		private readonly PreAllocationPolicy _preAllocationPolicy;
 		private readonly int _blockSize;
+		private readonly Func<TItem> _activator;
 
-		public PreAllocatedList() : this(PreAllocationPolicy.MinimumRequired, 0) {
+		public PreAllocatedList(Func<TItem> itemActivator) 
+			: this(PreAllocationPolicy.MinimumRequired, 0, itemActivator)  {
 		}
 
-		public PreAllocatedList(int preallocatedItemCount) 
-			: this(PreAllocationPolicy.Fixed, preallocatedItemCount) {
+		public PreAllocatedList(int preallocatedItemCount, Func<TItem> itemActivator) 
+			: this(PreAllocationPolicy.Fixed, preallocatedItemCount, itemActivator) {
 		}
 
-		public PreAllocatedList(PreAllocationPolicy preAllocationPolicy, int blockSize)
-			: this(new ExtendedList<TItem>(), 0, preAllocationPolicy, blockSize) {
+		public PreAllocatedList(PreAllocationPolicy preAllocationPolicy, int blockSize, Func<TItem> itemActivator)
+			: this(new ExtendedList<TItem>(), 0, preAllocationPolicy, blockSize, itemActivator) {
 		}
 
-		public PreAllocatedList(IExtendedList<TItem> internalStore, int internalStoreCount, PreAllocationPolicy preAllocationPolicy, int blockSize)
+		public PreAllocatedList(IExtendedList<TItem> internalStore, int internalStoreCount, PreAllocationPolicy preAllocationPolicy, int blockSize, Func<TItem> itemActivator)
 			: base(internalStore) {
 			_count = internalStoreCount;
 			if (preAllocationPolicy.IsIn(PreAllocationPolicy.ByBlock, PreAllocationPolicy.Fixed)) {
 				Guard.Argument(blockSize > 0, nameof(blockSize), $"Must be greater than 0 for policy {preAllocationPolicy}");
 			}
-			if (preAllocationPolicy == PreAllocationPolicy.Fixed) 
-				internalStore.AddRange(Enumerable.Repeat(new TItem(), Math.Max(0, blockSize - internalStore.Count)));
-			
+
 			_preAllocationPolicy = preAllocationPolicy;
 			_blockSize = blockSize;
+			_activator = itemActivator;
+
+			// Ensure enough capacity when in Fixed mode (since never allocates again)
+			if (preAllocationPolicy == PreAllocationPolicy.Fixed) {
+				internalStore.AddRange(Enumerable.Repeat(_activator(), Math.Max(0, _blockSize - internalStore.Count)));
+			}
 		}
 
 		public override int Count => _count;
@@ -57,7 +65,10 @@ namespace Sphere10.Framework {
 
 		public override IEnumerable<bool> ContainsRange(IEnumerable<TItem> items) => IndexOfRange(items).Select(ix => ix > 0);
 
-		public override TItem Read(int index) => base.Read(CheckIndex(index));
+		public override TItem Read(int index) {
+			CheckIndex(index);
+			return base.Read(index);
+		}
 
 		public override IEnumerable<TItem> ReadRange(int index, int count) {
 			CheckRange(index, count);
@@ -75,7 +86,8 @@ namespace Sphere10.Framework {
 		}
 
 		public override void Update(int index, TItem item) {
-			this.UpdateRange(index, new[] { item });
+			CheckIndex(index);
+			UpdateRange(index, new[] { item });
 		}
 
 		public override void UpdateRange(int index, IEnumerable<TItem> items) {
@@ -122,6 +134,8 @@ namespace Sphere10.Framework {
 		public override void RemoveAt(int index) => this.RemoveRange(index, 1);
 
 		public override void RemoveRange(int index, int count) {
+			// TODO: this could be optimized by copying bounded ranges instead of 1-by-1. Will 
+			// improve stream record performance in ClusteredStorage
 			CheckRange(index, count);
 
 			var movedRegionFromStartIX = index + count;
@@ -138,7 +152,11 @@ namespace Sphere10.Framework {
 				ReduceExcessCapacity();
 		}
 
-		public override void Clear() => _count = 0;
+		public override void Clear() {
+			_count = 0;
+			if (_preAllocationPolicy == PreAllocationPolicy.MinimumRequired)
+				ReduceExcessCapacity();
+		}
 
 		public override void CopyTo(TItem[] array, int arrayIndex) {
 			foreach (var item in this)
@@ -152,22 +170,27 @@ namespace Sphere10.Framework {
 			if (spareCapacity < 0) {
 				var required = -spareCapacity;
 				var newPreAllocatedItems = _preAllocationPolicy switch {
-					PreAllocationPolicy.Fixed => Enumerable.Empty<TItem>(), 
-					PreAllocationPolicy.MinimumRequired => Enumerable.Repeat(new TItem(), required),
-					PreAllocationPolicy.ByBlock => Enumerable.Repeat(new TItem(), _blockSize * (int)Math.Ceiling(required / (float)_blockSize)),
+					PreAllocationPolicy.Fixed => Enumerable.Empty<TItem>().ToArray(), 
+					PreAllocationPolicy.MinimumRequired => Enumerable.Repeat(_activator(), required).ToArray(),
+					PreAllocationPolicy.ByBlock => Enumerable.Repeat(_activator(), _blockSize * (int)Math.Ceiling(required / (float)_blockSize)).ToArray(),
 					_ => throw new ArgumentOutOfRangeException(nameof(_preAllocationPolicy), _preAllocationPolicy, null)
 				};
-
-				InternalExtendedList.AddRange(newPreAllocatedItems);
+				InternalCollection.AddRange(newPreAllocatedItems);
 				spareCapacity = (Capacity - Count) - quantity;
 				Guard.Ensure(spareCapacity >= 0, "Insufficient space");
 			}
 		}
 
 		private void ReduceExcessCapacity() {
+			Debug.Assert(_preAllocationPolicy == PreAllocationPolicy.MinimumRequired);
 			var spareCapacity = (Capacity - Count);
-			if (spareCapacity > 0)
-				InternalExtendedList.RemoveRange(^spareCapacity..);
+			if (spareCapacity > 0) {
+				if (typeof(TItem).HasSubType(typeof(IDisposable))) 
+					foreach (var item in InternalCollection.ReadRange(^spareCapacity..).Cast<IDisposable>())
+						item.Dispose();
+
+				InternalCollection.RemoveRange(^spareCapacity..);
+			}
 		}
 
 		private int ToLogicalIndex(int index) {
@@ -176,38 +199,11 @@ namespace Sphere10.Framework {
 			return -1;
 		}
 
-		private int CheckIndex(int index, bool allowAtEnd = false) {
-			if (allowAtEnd && index == _count) return index;
-			Guard.ArgumentInRange(index, 0, Math.Max(0, _count - 1), nameof(index));
-			return index;
-		}
+		protected bool ValidIndex(int index, bool allowAtEnd = false) => 0 <= index && (allowAtEnd ? index <= Count : index < Count);
 
-		private void CheckRange(int index, int count) {
-			var startIX = 0;
-			var lastIX = startIX + (_count - 1).ClipTo(startIX, int.MaxValue);
-			if (index == lastIX + 1 && count == 0) return;  // special case: at index of "next item" with no count, this is valid
-			Guard.ArgumentInRange(index, startIX, lastIX, nameof(index));
-			if (count > 0)
-				Guard.ArgumentInRange(index + count - 1, startIX, lastIX, nameof(count));
-		}
+		protected void CheckIndex(int index, bool allowAtEnd = false) => Guard.CheckIndex(index, 0, Count, allowAtEnd);
 
-	}
-
-	public enum PreAllocationPolicy {
-		/// <summary>
-		/// The initial block of pre-allocated items is used, never grown or reduced.
-		/// </summary>
-		Fixed,
-
-		/// <summary>
-		/// The Capacity is grown in fixed-sized blocks as needed and never reduced.
-		/// </summary>
-		ByBlock,
-
-		/// <summary>
-		/// The Capacity is grown (and reduced) to meet the item Count.
-		/// </summary>
-		MinimumRequired,
+		protected void CheckRange(int index, int count, bool rightAligned = false) => Guard.CheckRange(index, count, rightAligned, 0, Count);
 
 	}
 

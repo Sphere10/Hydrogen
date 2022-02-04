@@ -43,7 +43,7 @@ namespace Sphere10.Framework.Communications {
 			if (CloseInitiator != LocalRole)
 				return;
 
-			var tcs = new TaskCompletionSource();
+			var tcs = new TaskCompletionSourceEx();
 
 			ReceivedWebSocketMessage += async message => {
 				tcs.SetResult();

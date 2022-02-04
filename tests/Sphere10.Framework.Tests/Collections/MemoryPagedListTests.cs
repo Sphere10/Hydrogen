@@ -47,7 +47,7 @@ namespace Sphere10.Framework.Tests {
                 // Check value
                 Assert.AreEqual(10, collection[0]);
                 Assert.AreEqual(1, collection.Count);
-				Assert.AreEqual(1 * itemSize, collection.Size);
+				Assert.AreEqual(1 * itemSize, collection.CalculateTotalSize());
             }
         }
 
@@ -99,7 +99,7 @@ namespace Sphere10.Framework.Tests {
                 // Check size
 				Assert.AreEqual(collection.Pages[0].Size, itemSize);
 				Assert.AreEqual(collection.Pages[1].Size, itemSize);
-                Assert.AreEqual(collection.Size, 2 * itemSize);
+                Assert.AreEqual(collection.CalculateTotalSize(), 2 * itemSize);
             }
         }
 
@@ -119,7 +119,7 @@ namespace Sphere10.Framework.Tests {
                 Assert.AreEqual(0, loads);
                 Assert.AreEqual(0, unloads);
 				Assert.AreEqual(collection.Count, 0);
-				Assert.AreEqual(collection.Pages.Count(), 0);
+				Assert.AreEqual(collection.Pages.Count, 0);
 				AssertEx.HasLoadedPages(collection, new int[0]);
 
                 collection.Add("page1");
@@ -127,7 +127,7 @@ namespace Sphere10.Framework.Tests {
                 Assert.AreEqual(1, loads);
 				Assert.AreEqual(0, unloads);
 				Assert.AreEqual(collection.Count, 1);
-				Assert.AreEqual(collection.Pages.Count(), 1);
+				Assert.AreEqual(collection.Pages.Count, 1);
 				AssertEx.HasLoadedPages(collection, 0);
 
                 collection.Add("page1.1");
@@ -135,7 +135,7 @@ namespace Sphere10.Framework.Tests {
                 Assert.AreEqual(1, loads);
 				Assert.AreEqual(0, unloads);
 				Assert.AreEqual(collection.Count, 2);
-                Assert.AreEqual(collection.Pages.Count(), 1);
+                Assert.AreEqual(collection.Pages.Count, 1);
 				AssertEx.HasLoadedPages(collection, 0);
 
                 collection.Add("page2");
@@ -143,7 +143,7 @@ namespace Sphere10.Framework.Tests {
                 Assert.AreEqual(2, loads);
 				Assert.AreEqual(0, unloads);
 				Assert.AreEqual(collection.Count, 3);
-                Assert.AreEqual(collection.Pages.Count(), 2);
+                Assert.AreEqual(collection.Pages.Count, 2);
 				AssertEx.HasLoadedPages(collection, 0, 1);
 
                 collection.Add("page2.2");
@@ -151,7 +151,7 @@ namespace Sphere10.Framework.Tests {
                 Assert.AreEqual(2, loads);
 				Assert.AreEqual(0, unloads);
 				Assert.AreEqual(collection.Count, 4);
-                Assert.AreEqual(collection.Pages.Count(), 2);
+                Assert.AreEqual(collection.Pages.Count, 2);
 				AssertEx.HasLoadedPages(collection, 0, 1);
 
                 // should be two pages open
@@ -159,14 +159,14 @@ namespace Sphere10.Framework.Tests {
 				Assert.AreEqual(3, created);
                 Assert.AreEqual(3, loads);
 				Assert.AreEqual(1, unloads);
-				Assert.AreEqual(collection.Pages.Count(), 3);
+				Assert.AreEqual(collection.Pages.Count, 3);
 				AssertEx.HasLoadedPages(collection, 1, 2);
 
                 collection.Add("page3.3");
 				Assert.AreEqual(3, created);
                 Assert.AreEqual(3, loads);
 				Assert.AreEqual(1, unloads);
-				Assert.AreEqual(collection.Pages.Count(), 3);
+				Assert.AreEqual(collection.Pages.Count, 3);
 				AssertEx.HasLoadedPages(collection, 1, 2);
 
                 // read from page[2] a few times to increase demand ticker
@@ -176,7 +176,7 @@ namespace Sphere10.Framework.Tests {
 				Assert.AreEqual(4, created);
 				Assert.AreEqual(4, loads);
 				Assert.AreEqual(2, unloads);
-                Assert.AreEqual(collection.Pages.Count(), 4);
+                Assert.AreEqual(collection.Pages.Count, 4);
 				AssertEx.HasLoadedPages(collection, 2, 3);
 
                 // read from page[3] several times to increase demand ticker
@@ -186,7 +186,7 @@ namespace Sphere10.Framework.Tests {
 				Assert.AreEqual(4, created);
 				Assert.AreEqual(5, loads);
 				Assert.AreEqual(3, unloads);
-				Assert.AreEqual(collection.Pages.Count(), 4);
+				Assert.AreEqual(collection.Pages.Count, 4);
                 Assert.AreEqual(item, "page1");
 				AssertEx.HasLoadedPages(collection, 3, 0);
 
@@ -194,7 +194,7 @@ namespace Sphere10.Framework.Tests {
 				Assert.AreEqual(4, created);
 				Assert.AreEqual(5, loads);
 				Assert.AreEqual(3, unloads);
-				Assert.AreEqual(collection.Pages.Count(), 4);
+				Assert.AreEqual(collection.Pages.Count, 4);
 				Assert.AreEqual(item, "page1.1");
 				AssertEx.HasLoadedPages(collection, 3, 0);
 
@@ -202,7 +202,7 @@ namespace Sphere10.Framework.Tests {
 				Assert.AreEqual(4, created);
 				Assert.AreEqual(6, loads);
 				Assert.AreEqual(4, unloads);
-				Assert.AreEqual(collection.Pages.Count(), 4);
+				Assert.AreEqual(collection.Pages.Count, 4);
 				Assert.AreEqual(item, "page2");
 				AssertEx.HasLoadedPages(collection, 3, 1);
 
@@ -210,7 +210,7 @@ namespace Sphere10.Framework.Tests {
 				Assert.AreEqual(4, created);
 				Assert.AreEqual(6, loads);
 				Assert.AreEqual(4, unloads);
-				Assert.AreEqual(collection.Pages.Count(), 4);
+				Assert.AreEqual(collection.Pages.Count, 4);
 				Assert.AreEqual(item, "page2.2");
 				AssertEx.HasLoadedPages(collection, 3, 1);
 
@@ -218,7 +218,7 @@ namespace Sphere10.Framework.Tests {
 				Assert.AreEqual(4, created);
 				Assert.AreEqual(7, loads);
 				Assert.AreEqual(5, unloads);
-				Assert.AreEqual(collection.Pages.Count(), 4);
+				Assert.AreEqual(collection.Pages.Count, 4);
 				Assert.AreEqual(item, "page3");
 				AssertEx.HasLoadedPages(collection, 3, 2);
 
@@ -226,7 +226,7 @@ namespace Sphere10.Framework.Tests {
 				Assert.AreEqual(4, created);
 				Assert.AreEqual(7, loads);
 				Assert.AreEqual(5, unloads);
-				Assert.AreEqual(collection.Pages.Count(), 4);
+				Assert.AreEqual(collection.Pages.Count, 4);
 				Assert.AreEqual(item, "page3.3");
 				AssertEx.HasLoadedPages(collection, 3, 2);
 
@@ -234,16 +234,16 @@ namespace Sphere10.Framework.Tests {
 				Assert.AreEqual(4, created);
 				Assert.AreEqual(7, loads);
 				Assert.AreEqual(5, unloads);
-				Assert.AreEqual(collection.Pages.Count(), 4);
+				Assert.AreEqual(collection.Pages.Count, 4);
 				Assert.AreEqual(item, "page4");
 				AssertEx.HasLoadedPages(collection, 3, 2);
 
                 // Remove an illegal subrange
-				Assert.Throws<NotSupportedException>(()=> collection.RemoveRange(3, 3));
+				Assert.Throws<ArgumentOutOfRangeException>(()=> collection.RemoveRange(3, 3));
 
                 // remove some items
                 collection.RemoveRange(3, 4);
-				Assert.AreEqual(collection.Pages.Count(), 2);
+				Assert.AreEqual(collection.Pages.Count, 2);
 				Assert.AreEqual(collection.Count, 3);
                 Assert.AreEqual(collection.Last(), "page2");
 				Assert.AreEqual(2, deletes);
@@ -344,7 +344,7 @@ namespace Sphere10.Framework.Tests {
 				AssertEx.HasLoadedPages(collection, 2, 1);
 
 				// Remove an illegal subrange
-				Assert.Throws<NotSupportedException>(() => collection.RemoveRange(1, 2));
+				Assert.Throws<ArgumentOutOfRangeException>(() => collection.RemoveRange(1, 2));
 
 				// remove some items
 				collection.RemoveRange(1, 3);
@@ -392,7 +392,6 @@ namespace Sphere10.Framework.Tests {
 							break;
 
                     }
-                    var xxx = item;
 				}
 
                 Assert.AreEqual(3, loads.Count);
@@ -418,7 +417,7 @@ namespace Sphere10.Framework.Tests {
 				collection.Add("5");
 				collection.Add("67");
 				collection.Add("89");
-                Assert.Throws<InvalidOperationException>(() => collection.Add("0123"));
+                Assert.That(() => collection.Add("0123"), Throws.InstanceOf<InvalidOperationException>());
             }				
 		}
 
@@ -577,10 +576,8 @@ namespace Sphere10.Framework.Tests {
 				collection.AddRange("10");
 				var thrown = false;
 				try {
-					foreach (var item in collection) {
-						var xxx = 1;
+					foreach (var item in collection) 
 						collection.Add("20");
-					}
 				} catch (Exception error) {
 					thrown = true;
 				}
@@ -595,10 +592,8 @@ namespace Sphere10.Framework.Tests {
                 collection.AddRange("10", "20");
                 var thrown = false;
                 try {
-                    foreach (var item in collection) {
-                        var xxx = 1;
+                    foreach (var item in collection) 
                         collection.Add("20");
-                    }
                 } catch (Exception error) {
                     thrown = true;
                 }
@@ -684,12 +679,12 @@ namespace Sphere10.Framework.Tests {
                 for (int i = 0; i < 100000; i++) {
                     collection.Add(i.ToString());
                 }
-                var xxx = collection
+                var testCollection = collection
                     .Where(s => s.StartsWith("1"))
                     .Union(collection.Where(s => s.StartsWith("2")))
                     .Reverse();
 
-                foreach (var val in xxx) {
+                foreach (var val in testCollection) {
                     Assert.IsTrue(val.StartsWith("1") || val.StartsWith("2"));
                 }
 
@@ -697,16 +692,16 @@ namespace Sphere10.Framework.Tests {
         }
 
 
-        [Test]
-        [Sequential]
-        public void IntegrationTests(
-        [Values(1, 10, 57, 173, 1111)] int maxCapacity,
-        [Values(1, 1, 3, 31, 13)] int pageSize,
-        [Values(1, 1, 7, 2, 19)] int maxOpenPages) {
-            using (var list = new MemoryPagedList<byte>(pageSize, maxOpenPages*pageSize, sizeof(byte))) {
-                AssertEx.ListIntegrationTest<byte>(list, maxCapacity, (rng, i) => rng.NextBytes(i), mutateFromEndOnly: true);
-            }
-        }
-    }
+		[Test]
+		[Sequential]
+		public void IntegrationTests(
+		[Values(1, 10, 57, 173, 1111)] int maxCapacity,
+		[Values(1, 1, 3, 31, 13)] int pageSize,
+		[Values(1, 1, 7, 2, 19)] int maxOpenPages) {
+			using (var list = new MemoryPagedList<byte>(pageSize, maxOpenPages * pageSize, sizeof(byte))) {
+				AssertEx.ListIntegrationTest<byte>(list, maxCapacity, (rng, i) => rng.NextBytes(i), mutateFromEndOnly: true);
+			}
+		}
+	}
 
 }

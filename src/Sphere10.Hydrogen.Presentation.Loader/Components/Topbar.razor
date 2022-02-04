@@ -212,7 +212,7 @@
 {
     #nullable enable
 
-    private Func<string, Task<IEnumerable<SearchResult>>> SearchProvider { get; set; } = null!;
+    private SearchInput.SearchProviderDelegate SearchProvider { get; set; } = null!;
 
     protected override void OnInitialized()
     {

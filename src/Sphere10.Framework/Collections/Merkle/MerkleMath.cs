@@ -9,12 +9,12 @@ namespace Sphere10.Framework {
 
 	public static class MerkleMath {
 
-		private static readonly ulong[] _perfectLeftMostIndices;
+		private static readonly ulong[] PerfectLeftMostIndices;
 
 		static MerkleMath() {
-			_perfectLeftMostIndices = new ulong[63];
+			PerfectLeftMostIndices = new ulong[63];
 			for (var i = 1; i < 64; i++) {
-				_perfectLeftMostIndices[i - 1] = (1UL << i) - 1;
+				PerfectLeftMostIndices[i - 1] = (1UL << i) - 1;
 			}
 		}
 
@@ -36,6 +36,8 @@ namespace Sphere10.Framework {
 		#endregion
 
 		#region Tree Navigation
+
+		public static bool IsLeaf(MerkleCoordinate node) => node.Level == 0;
 
 		public static MerkleNodeTraits GetTraits(MerkleSize size, MerkleCoordinate node) {
 			MerkleNodeTraits traits = 0;
@@ -67,8 +69,8 @@ namespace Sphere10.Framework {
 				if (node.Level > 0) {
 					var childLevel = node.Level - 1;
 					var leftChildIndex = node.Index * 2;
-					var childLeveLLength = MerkleMath.CalculateLevelLength(size.LeafCount, childLevel);
-					var isLast = leftChildIndex == childLeveLLength - 1;
+					var childLevelLength = MerkleMath.CalculateLevelLength(size.LeafCount, childLevel);
+					var isLast = leftChildIndex == childLevelLength - 1;
 					traits.SetFlags(MerkleNodeTraits.BubbledUp, isLast);
 					traits.SetFlags(MerkleNodeTraits.HasRightChild, !isLast);
 				} else {
@@ -182,16 +184,16 @@ namespace Sphere10.Framework {
 
 		public static MerkleCoordinate FromFlatIndex(ulong flatIndex) {
 			flatIndex++; // algorithm below based on 1-based indexing
-			var rootLevel = Array.BinarySearch(_perfectLeftMostIndices, flatIndex);
+			var rootLevel = Array.BinarySearch(PerfectLeftMostIndices, flatIndex);
 			if (rootLevel < 0)
 				rootLevel = ~rootLevel; // didn't find, so take next larger index
 
 			var index = 0;
-			var rootFlatIX = _perfectLeftMostIndices[rootLevel];
+			var rootFlatIX = PerfectLeftMostIndices[rootLevel];
 			while (flatIndex != rootFlatIX) {
 				var isRight = flatIndex > (rootFlatIX >> 1);
 				index = 2 * index + (isRight ? 1 : 0);
-				rootFlatIX = _perfectLeftMostIndices[--rootLevel];
+				rootFlatIX = PerfectLeftMostIndices[--rootLevel];
 				if (isRight)
 					flatIndex -= rootFlatIX;
 			}
@@ -201,7 +203,7 @@ namespace Sphere10.Framework {
 		public static ulong ToFlatIndex(MerkleCoordinate coordinate) {
 			// Step 1: Find the closest perfect root ancestor
 			var numNodesBefore = (1UL << (coordinate.Level + 1)) * ((ulong)coordinate.Index + 1) - 1;
-			var rootLevel = Array.BinarySearch(_perfectLeftMostIndices, numNodesBefore);
+			var rootLevel = Array.BinarySearch(PerfectLeftMostIndices, numNodesBefore);
 			if (rootLevel < 0)
 				rootLevel = ~rootLevel;
 			var perfectRoot = MerkleCoordinate.From(rootLevel, 0);
@@ -215,11 +217,11 @@ namespace Sphere10.Framework {
 			}
 
 			// Step 2: Traverse from root down to the node, adjusting the flat index along the way
-			var flatIX = _perfectLeftMostIndices[rootLevel];
+			var flatIX = PerfectLeftMostIndices[rootLevel];
 			for (var i = 0; i < flags.Length; i++) {
 				if (flags[flags.Length - i - 1] == 0)
 					// moving to left child, so flat index decreases by the difference between the corresponding roots.
-					flatIX -= _perfectLeftMostIndices[rootLevel - i] - _perfectLeftMostIndices[rootLevel - i - 1];
+					flatIX -= PerfectLeftMostIndices[rootLevel - i] - PerfectLeftMostIndices[rootLevel - i - 1];
 				else
 					flatIX--;  // moving to right child, so flat index decreases by one
 			}
@@ -500,13 +502,13 @@ namespace Sphere10.Framework {
 				return true;
 
 			// 2: Add each new leaf and rebuild the partial tree incrementally
-			foreach (var leaf in updatedLeafsArr) {
-				var leafCoord = MerkleCoordinate.LeafAt(leaf.Item1);
+			foreach (var (leafIX, leafHash) in updatedLeafsArr) {
+				var leafCoord = MerkleCoordinate.LeafAt(leafIX);
 
 				// Replace the old leaf with new leaf
 				if (!partialTree.Remove(leafCoord))
 					return false; // internal error
-				partialTree[leafCoord] = leaf.Item2;
+				partialTree[leafCoord] = leafHash;
 
 				// Rebuild parent nodes
 				var logicalPathToRoot = MerkleMath.CalculatePathToRoot(treeSize, leafCoord, true).Skip(1);

@@ -36,14 +36,14 @@ namespace Sphere10.Framework {
 		public override int Count {
 			get {
 				using (EnterReadScope())
-					return InternalExtendedList.Count;
+					return InternalCollection.Count;
 			}
 		}
 
 		public override bool IsReadOnly {
 			get {
 				using (EnterReadScope())
-					return InternalExtendedList.IsReadOnly;
+					return InternalCollection.IsReadOnly;
 			}
 		}
 

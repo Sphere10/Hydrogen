@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Sphere10.Framework {
@@ -75,7 +76,7 @@ namespace Sphere10.Framework {
 		}
 
 		public override void Clear() {
-			InternalExtendedList.Clear();
+			InternalCollection.Clear();
 			_merkleTree.Leafs.Clear();
 		}
 

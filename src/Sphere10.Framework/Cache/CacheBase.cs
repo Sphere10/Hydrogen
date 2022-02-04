@@ -143,7 +143,8 @@ namespace Sphere10.Framework {
 
 		public virtual void Flush() {
 			using (this.EnterWriteScope()) {
-				InternalStorage.Keys.ToArray().ForEach(RemoveItemInternal);
+				foreach (var key in InternalStorage.Keys.ToArray())
+					RemoveItemInternal(key);
 				InternalStorage.Clear();
 			}
 		}
@@ -166,9 +167,8 @@ namespace Sphere10.Framework {
 
 		public virtual void Dispose() {
 			using (this.EnterWriteScope()) {
-				InternalStorage
-					.ToArray()
-					.ForEach(x => RemoveItemInternal(x.Key));
+				foreach (var key in InternalStorage.ToArray())
+					RemoveItemInternal(key.Key);
 				InternalStorage.Clear();
 			}
 			Reaper.Deregister(this);

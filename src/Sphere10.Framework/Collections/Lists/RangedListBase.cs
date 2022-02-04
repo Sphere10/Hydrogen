@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace Sphere10.Framework {
 
@@ -10,7 +11,6 @@ namespace Sphere10.Framework {
 	/// </summary>
 	/// <typeparam name="T"></typeparam>
 	public abstract class RangedListBase<T> : ExtendedListBase<T> {
-
 		internal volatile int Version;
 
 		protected RangedListBase() {
@@ -86,13 +86,15 @@ namespace Sphere10.Framework {
 		}
 
 		public override IEnumerator<T> GetEnumerator() {
+			/// Try removing this method and CopyTo, seems to be being called in TransactionalList when specialized overloads are not (decorator issue)
 			var version = this.Version;
 			for (var i = 0; i < Count; i++) {
 				CheckVersion(version);
 				yield return Read(i);
 			}
 		}
-
+		
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		protected void UpdateVersion() {
 			unchecked {
 				Version++;

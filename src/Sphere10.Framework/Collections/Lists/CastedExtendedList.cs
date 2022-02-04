@@ -12,7 +12,7 @@ namespace Sphere10.Framework {
 		public CastedExtendedList(IExtendedList<TFrom> from)  {
 			_from = from;
 		}
-
+	
 		public int Count => _from.Count;
 
 		public bool IsReadOnly => _from.IsReadOnly;

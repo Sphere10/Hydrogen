@@ -15,24 +15,26 @@ namespace Sphere10.Framework {
 	/// </remarks>
 	/// </summary>
 	public sealed class FileMappedBuffer : FilePagedListBase<byte>, IMemoryPagedBuffer {
+		private readonly IPagedListDelegate<byte> _friend;
+		private readonly ReadOnlyListDecorator<IPage<byte>, IBufferPage> _pagesDecorator;
 
 		public FileMappedBuffer(string filename, int pageSize, long maxMemory, bool readOnly = false)
 			: base(filename, pageSize, maxMemory, readOnly) {
+			_friend = CreateFriendDelegate();
+			_pagesDecorator = new ReadOnlyListDecorator<IPage<byte>, IBufferPage>(new ReadOnlyListAdapter<IPage<byte>>(base.InternalPages));
 		}
 
-		internal new IReadOnlyList<IBufferPage> Pages => new ReadOnlyListDecorator<IPage<byte>, IBufferPage>(InternalPages);
+		public new IReadOnlyList<IBufferPage> Pages => _pagesDecorator;
 
-		IReadOnlyList<IBufferPage> IMemoryPagedBuffer.Pages => this.Pages;
+		public ReadOnlySpan<byte> ReadSpan(int index, int count) => PagedBufferImplementationHelper.ReadRange(_friend, index, count);
 
-		public ReadOnlySpan<byte> ReadSpan(int index, int count) => PagedBufferImplementationHelper.ReadRange(CreateFriendDelegate(), index, count);
+		public void AddRange(ReadOnlySpan<byte> span) => PagedBufferImplementationHelper.AddRange(_friend, span);
 
-		public void AddRange(ReadOnlySpan<byte> span) => PagedBufferImplementationHelper.AddRange(CreateFriendDelegate(), span);
+		public void UpdateRange(int index, ReadOnlySpan<byte> items) => PagedBufferImplementationHelper.UpdateRange(_friend, index, items);
 
-		public void UpdateRange(int index, ReadOnlySpan<byte> items) => PagedBufferImplementationHelper.UpdateRange(CreateFriendDelegate(), index, items);
+		public void InsertRange(int index, ReadOnlySpan<byte> items) => PagedBufferImplementationHelper.InsertRange(_friend, Count, index, items);
 
-		public void InsertRange(int index, ReadOnlySpan<byte> items) => PagedBufferImplementationHelper.InsertRange(CreateFriendDelegate(), Count, index, items);
-
-		public Span<byte> AsSpan(int index, int count) => PagedBufferImplementationHelper.AsSpan(CreateFriendDelegate(), index, count);
+		public Span<byte> AsSpan(int index, int count) => PagedBufferImplementationHelper.AsSpan(_friend, index, count);
 
 		protected override IPage<byte> NewPageInstance(int pageNumber) {
 			return new PageImpl(Stream, pageNumber, PageSize);

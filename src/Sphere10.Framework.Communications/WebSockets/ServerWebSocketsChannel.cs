@@ -52,7 +52,7 @@ namespace Sphere10.Framework.Communications {
 			if (CloseInitiator != LocalRole)
 				return;
 
-			var tcs = new TaskCompletionSource();
+			var tcs = new TaskCompletionSourceEx();
 
 			ReceivedWebSocketMessage += async message => {
 				tcs.SetResult();
@@ -82,19 +82,21 @@ namespace Sphere10.Framework.Communications {
 		}
 
 		protected override bool IsConnectionAlive() {
-			if (Server == null || Server.Server == null || //!Server.Pending() || !Server.Server.Connected ||
-				TcpClient == null || !TcpClient.Connected || TcpClient.Client == null || !TcpClient.Client.Connected ||
-				NetworkStream == null || NetworkStream.Socket == null || !NetworkStream.Socket.Connected ||
-				WebSocket == null || WebSocket.State == WebSocketState.Aborted ||
-										WebSocket.State == WebSocketState.Closed ||
-										WebSocket.State == WebSocketState.CloseReceived ||
-										WebSocket.State == WebSocketState.CloseSent ||
-										WebSocket.State == WebSocketState.None) {
-				return false;
-			}
+			throw new NotImplementedException();
+			// HS 2022-01-30: disable due to porting issues .NET 5 -> .NET Standard 2.1
+			//if (Server == null || Server.Server == null || //!Server.Pending() || !Server.Server.Connected ||
+			//	TcpClient == null || !TcpClient.Connected || TcpClient.Client == null || !TcpClient.Client.Connected ||
+			//	NetworkStream == null || NetworkStream.Socket == null || !NetworkStream.Socket.Connected ||
+			//	WebSocket == null || WebSocket.State == WebSocketState.Aborted ||
+			//							WebSocket.State == WebSocketState.Closed ||
+			//							WebSocket.State == WebSocketState.CloseReceived ||
+			//							WebSocket.State == WebSocketState.CloseSent ||
+			//							WebSocket.State == WebSocketState.None) {
+			//	return false;
+			//}
 
-			return NetworkStream.Socket.Connected;
-			//return Server.Server.Connected;
+			//return NetworkStream.Socket.Connected;
+			////return Server.Server.Connected;
 		}
 
 		protected override async Task OpenInternal() {

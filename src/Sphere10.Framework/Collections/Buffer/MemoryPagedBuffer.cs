@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace Sphere10.Framework {
 
@@ -9,32 +10,51 @@ namespace Sphere10.Framework {
 	/// </summary>
 	/// <remarks>The underlying implementation relies on a <see cref="MemoryPagedList{TItem}"/> whose pages are <see cref="MemoryBuffer"/>'s.</remarks>
 	public class MemoryPagedBuffer : MemoryPagedListBase<byte>, IMemoryPagedBuffer {
+		private readonly IPagedListDelegate<byte> _friend;
+		private readonly ReadOnlyListDecorator<IPage<byte>, IBufferPage> _pagesDecorator;
 
-        public MemoryPagedBuffer(int pageSize, long maxMemory) 
+		public MemoryPagedBuffer(int pageSize, long maxMemory) 
 			: base(pageSize, maxMemory) {
+			_friend = CreateFriendDelegate();
+			_pagesDecorator = new ReadOnlyListDecorator<IPage<byte>, IBufferPage>( new ReadOnlyListAdapter<IPage<byte>>( base.InternalPages));
 		}
 
-		internal new IReadOnlyList<IBufferPage> Pages => new ReadOnlyListDecorator<IPage<byte>, IBufferPage>(InternalPages);
-
-		IReadOnlyList<IBufferPage> IMemoryPagedBuffer.Pages => this.Pages;
+		public new IReadOnlyList<IBufferPage> Pages => _pagesDecorator;
 
 		protected override IPage<byte> NewPageInstance(int pageNumber) {
 			return new BufferPage(PageSize);
 		}
 
 		protected override IPage<byte>[] LoadPages() {
-			throw new NotSupportedException("Pages are not loadable across runtime sessions in this implementation. See BinaryFile class.");
+			throw new NotSupportedException($"Pages are not loadable across runtime sessions in this implementation. See {nameof(FileMappedBuffer)} class.");
 		}
 
-        public ReadOnlySpan<byte> ReadSpan(int index, int count) => PagedBufferImplementationHelper.ReadRange(CreateFriendDelegate(), index,  count);
+		public override IEnumerable<byte> ReadRange(int index, int count)
+			=> ReadSpan(index, count).ToArray();
 
-        public void AddRange(ReadOnlySpan<byte> span) => PagedBufferImplementationHelper.AddRange(CreateFriendDelegate(), span);
+		public ReadOnlySpan<byte> ReadSpan(int index, int count) 
+	        => PagedBufferImplementationHelper.ReadRange(_friend, index,  count);
 
-        public void UpdateRange(int index, ReadOnlySpan<byte> items) => PagedBufferImplementationHelper.UpdateRange(CreateFriendDelegate(), index, items);
+        public override void AddRange(IEnumerable<byte> items) 
+	        => AddRange((items as byte[] ?? items?.ToArray()).AsSpan());
 
-        public void InsertRange(int index, ReadOnlySpan<byte> items) =>  PagedBufferImplementationHelper.InsertRange(CreateFriendDelegate(), Count,  index, items);
+        public void AddRange(ReadOnlySpan<byte> span) 
+	        => PagedBufferImplementationHelper.AddRange(_friend, span);
 
-        public Span<byte> AsSpan(int index, int count) => PagedBufferImplementationHelper.AsSpan(CreateFriendDelegate(), index, count);
+        public override void UpdateRange(int index, IEnumerable<byte> items) 
+	        => UpdateRange(index, (items as byte[] ?? items?.ToArray()).AsSpan());
+
+        public void UpdateRange(int index, ReadOnlySpan<byte> items) 
+	        => PagedBufferImplementationHelper.UpdateRange(_friend, index, items);
+
+        public override void InsertRange(int index, IEnumerable<byte> items)
+	        => InsertRange(index, (items as byte[] ?? items?.ToArray()).AsSpan());
+
+        public void InsertRange(int index, ReadOnlySpan<byte> items) 
+	        =>  PagedBufferImplementationHelper.InsertRange(_friend, Count,  index, items);
+
+        public Span<byte> AsSpan(int index, int count) 
+	        => PagedBufferImplementationHelper.AsSpan(_friend, index, count);
 
 		/// <summary>
 		/// The page is mapped to it's own page file.

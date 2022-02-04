@@ -15,10 +15,10 @@ using System.Collections;
 using System.Collections.Generic;
 
 namespace Sphere10.Framework {
-	public abstract class CollectionDecorator<TItem, TCollection> : ICollection<TItem> where TCollection : ICollection<TItem> {
-		protected readonly TCollection InternalCollection;
+	public abstract class CollectionDecorator<TItem, TConcrete> : ICollection<TItem> where TConcrete : ICollection<TItem> {
+		protected TConcrete InternalCollection;
 
-		protected CollectionDecorator(TCollection innerCollection) {
+		protected CollectionDecorator(TConcrete innerCollection) {
 			InternalCollection = innerCollection;
 		}
 

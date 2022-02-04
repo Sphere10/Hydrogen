@@ -8,12 +8,15 @@ namespace Sphere10.Framework {
 		IEnumerable<int> IndexOfRange(IEnumerable<T> items);
 		T Read(int index);
 		IEnumerable<T> ReadRange(int index, int count);
-
-		IEnumerable<T> ReadRange(Range range) {
-			var (offset, length) = range.GetOffsetAndLength(Count);
-			return ReadRange(offset, length);
-		}
-
 	}
+
+
+	public static class IReadOnlyExtendedListExtensions {
+		public static IEnumerable<T> ReadRange<T>(this IReadOnlyExtendedList<T> list, Range range) {
+			var (offset, length) = range.GetOffsetAndLength(list.Count);
+			return list.ReadRange(offset, length);
+		}
+	}
+
 
 }

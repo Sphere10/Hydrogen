@@ -15,8 +15,19 @@ using System.Collections.Generic;
 
 namespace Sphere10.Framework {
 
-	public class ObservableExtendedList<TItem> : ObservableExtendedCollection<TItem>, IExtendedList<TItem> {
-		protected new readonly IExtendedList<TItem> InternalCollection;
+	public class ObservableExtendedList<TItem> : ObservableExtendedList<TItem, IExtendedList<TItem>> {
+
+		public ObservableExtendedList()
+			: this(new ExtendedList<TItem>()) {
+		}
+
+		public ObservableExtendedList(IExtendedList<TItem> internalExtendedList)
+			: base(internalExtendedList) {
+		}
+	}
+
+	public class ObservableExtendedList<TItem, TConcrete> : ObservableExtendedCollection<TItem, TConcrete>, IExtendedList<TItem>
+		where TConcrete : IExtendedList<TItem> {
 
 		public event EventHandlerEx<object, SearchingLocationEventArgs<TItem>> SearchingLocation;
 		public event EventHandlerEx<object, SearchedLocationEventArgs<TItem>> SearchedLocation;
@@ -29,16 +40,11 @@ namespace Sphere10.Framework {
 		public event EventHandlerEx<object, RemovingRangeEventArgs> RemovingRange;
 		public event EventHandlerEx<object, RemovedRangeEventArgs> RemovedRange;
 
-		public ObservableExtendedList()
-			: this(new ExtendedList<TItem>()) {
-		}
-
-		public ObservableExtendedList(IExtendedList<TItem> internalExtendedList)
+		public ObservableExtendedList(TConcrete internalExtendedList)
 			: base(internalExtendedList) {
-			InternalCollection = (IExtendedList<TItem>)base.InternalCollection;
 		}
 
-
+		
 		public int IndexOf(TItem item) => DoOperation(
 			EventTraits.Search,
 			() => InternalCollection.IndexOf(item),

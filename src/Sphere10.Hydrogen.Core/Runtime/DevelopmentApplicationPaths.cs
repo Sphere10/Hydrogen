@@ -31,8 +31,11 @@ namespace Sphere10.Hydrogen.Core.Runtime {
 			get {
 #if NET5_0
 				return "net5.0";
+#elif NET6_0
+				return "net6.0";
 #else
-#error Unrecognized platform
+				throw new NotImplementedException("This needs to be moved out");
+
 #endif
 			}
 		}

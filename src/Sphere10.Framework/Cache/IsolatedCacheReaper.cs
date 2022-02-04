@@ -98,10 +98,10 @@ namespace Sphere10.Framework {
 				}
 
 				var releasedSpace = 0L;
-				deathRow
-					.TakeWhile(item => reapAll || releasedSpace < requestedSpace)
-					.Apply(x => releasedSpace += x.Item.Size)
-					.ForEach(x => cache.RemoveItemInternal(x.Key));
+				foreach (var x in deathRow
+				                  .TakeWhile(item => reapAll || releasedSpace < requestedSpace)
+				                  .Apply(x => releasedSpace += x.Item.Size))
+					cache.RemoveItemInternal(x.Key);
 
 				return releasedSpace;
 

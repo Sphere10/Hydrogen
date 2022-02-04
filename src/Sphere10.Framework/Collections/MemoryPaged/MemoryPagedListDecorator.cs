@@ -1,11 +1,11 @@
 ﻿namespace Sphere10.Framework {
 	public class MemoryPagedListDecorator<TItem, TMemoryPagedList> : PagedListDecorator<TItem, TMemoryPagedList>, IMemoryPagedList<TItem> where TMemoryPagedList : IMemoryPagedList<TItem> { 
-        public event EventHandlerEx<object, IMemoryPage<TItem>> PageLoading { add => InternalExtendedList.PageLoading += value; remove => InternalExtendedList.PageLoading -= value; }
-        public event EventHandlerEx<object, IMemoryPage<TItem>> PageLoaded { add => InternalExtendedList.PageLoaded += value; remove => InternalExtendedList.PageLoaded -= value; }
-        public event EventHandlerEx<object, IMemoryPage<TItem>> PageSaving { add => InternalExtendedList.PageSaving += value; remove => InternalExtendedList.PageSaving -= value; }
-        public event EventHandlerEx<object, IMemoryPage<TItem>> PageSaved { add => InternalExtendedList.PageSaved += value; remove => InternalExtendedList.PageSaved -= value; }
-        public event EventHandlerEx<object, IMemoryPage<TItem>> PageUnloading { add => InternalExtendedList.PageUnloading += value; remove => InternalExtendedList.PageUnloading -= value; }
-        public event EventHandlerEx<object, IMemoryPage<TItem>> PageUnloaded { add => InternalExtendedList.PageUnloaded += value; remove => InternalExtendedList.PageUnloaded -= value; }
+        public event EventHandlerEx<object, IMemoryPage<TItem>> PageLoading { add => InternalCollection.PageLoading += value; remove => InternalCollection.PageLoading -= value; }
+        public event EventHandlerEx<object, IMemoryPage<TItem>> PageLoaded { add => InternalCollection.PageLoaded += value; remove => InternalCollection.PageLoaded -= value; }
+        public event EventHandlerEx<object, IMemoryPage<TItem>> PageSaving { add => InternalCollection.PageSaving += value; remove => InternalCollection.PageSaving -= value; }
+        public event EventHandlerEx<object, IMemoryPage<TItem>> PageSaved { add => InternalCollection.PageSaved += value; remove => InternalCollection.PageSaved -= value; }
+        public event EventHandlerEx<object, IMemoryPage<TItem>> PageUnloading { add => InternalCollection.PageUnloading += value; remove => InternalCollection.PageUnloading -= value; }
+        public event EventHandlerEx<object, IMemoryPage<TItem>> PageUnloaded { add => InternalCollection.PageUnloaded += value; remove => InternalCollection.PageUnloaded -= value; }
 
         public MemoryPagedListDecorator(TMemoryPagedList internalPagedList)
             : base(internalPagedList) {
@@ -16,9 +16,9 @@
             internalPagedList.PageUnloading += (o, p) => OnPageUnloading(p);
             internalPagedList.PageUnloaded += (o, p) => OnPageUnloaded(p);
         }
-		public virtual void Flush() => InternalExtendedList.Flush();
+		public virtual void Flush() => InternalCollection.Flush();
 
-		public virtual void Dispose() => InternalExtendedList.Dispose();
+		public virtual void Dispose() => InternalCollection.Dispose();
 
         protected virtual void OnPageLoading(IMemoryPage<TItem> page) {
         }

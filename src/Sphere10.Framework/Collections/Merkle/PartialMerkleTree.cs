@@ -13,7 +13,7 @@ namespace Sphere10.Framework {
 			HashAlgorithm = hashAlgorithm;
 			Size = MerkleSize.FromLeafCount(leafCount);
 			nodes.ForEach(x => Add(x.Key, x.Value));
-			Leafs = new LeafList();
+			Leafs = new LeafList(this);
 		}
 
 		public CHF HashAlgorithm { get; }
@@ -32,58 +32,38 @@ namespace Sphere10.Framework {
 			get;
 		}
 
+		// This list does nothing except return a count
 		private class LeafList : SingularListBase<byte[]> {
-			public override void CopyTo(byte[][] array, int arrayIndex) {
-				throw new NotSupportedException();
+			private readonly PartialMerkleTree _parent;
+			public LeafList(PartialMerkleTree parent) {
+				_parent = parent;
 			}
 
-			public override IEnumerator<byte[]> GetEnumerator() {
-				throw new NotSupportedException();
-			}
+			public override void CopyTo(byte[][] array, int arrayIndex) => throw new NotSupportedException();
 
-			public override bool Remove(byte[] item) {
-				throw new NotSupportedException();
-			}
+			public override IEnumerator<byte[]> GetEnumerator() => throw new NotSupportedException();
 
-			public override bool Contains(byte[] item) {
-				throw new NotImplementedException();
-			}
+			public override bool Remove(byte[] item) => throw new NotSupportedException();
 
-			public override int Count {
-				get;
-			}
+			public override bool Contains(byte[] item) => throw new NotImplementedException();
 
-			public override void Add(byte[] item) {
-				throw new NotSupportedException();
-			}
+			public override int Count=> _parent.Size.LeafCount;
 
-			public override void Clear() {
-				throw new NotSupportedException();
-			}
+			public override void Add(byte[] item) => throw new NotSupportedException();
 
-			public override bool IsReadOnly {
-				get;
-			}
+			public override void Clear() => throw new NotSupportedException();
 
-			public override int IndexOf(byte[] item) {
-				throw new NotSupportedException();
-			}
+			public override bool IsReadOnly => true;
 
-			public override void Insert(int index, byte[] item) {
-				throw new NotSupportedException();
-			}
+			public override int IndexOf(byte[] item) => throw new NotSupportedException();
 
-			public override void RemoveAt(int index) {
-				throw new NotSupportedException();
-			}
+			public override void Insert(int index, byte[] item) => throw new NotSupportedException();
 
-			public override byte[] Read(int index) {
-				throw new NotImplementedException();
-			}
+			public override void RemoveAt(int index) => throw new NotSupportedException();
 
-			public override void Update(int index, byte[] item) {
-				throw new NotImplementedException();
-			}
+			public override byte[] Read(int index) => throw new NotImplementedException();
+
+			public override void Update(int index, byte[] item) => throw new NotImplementedException();
 		}
 	}
 

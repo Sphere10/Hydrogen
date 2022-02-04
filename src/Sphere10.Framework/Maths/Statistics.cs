@@ -21,9 +21,17 @@ namespace Sphere10.Framework {
 	[Serializable]
     public class Statistics {
 
-        public const double EPSILON = 0.00001;
+		public const double EPSILON = 0.00001;
 
-        public Statistics() {
+		private int _maxHistory;
+		private CircularList<double> _history;
+
+		public Statistics() : this(0) {
+		}
+
+		public Statistics(int maxHistory) {
+			_maxHistory = maxHistory;
+			_history = new CircularList<double>(maxHistory);
             Reset();
         }
 
@@ -171,6 +179,7 @@ namespace Sphere10.Framework {
             SquaredSum = 0.0;
             ReciprocalSum = 0.0;
             Product = 1.0;
+            _history.Clear();
         }
 
         public void AddDatum(double datum) {
@@ -200,8 +209,9 @@ namespace Sphere10.Framework {
             }
         }
 
-        public void AddDatum(double datum, uint numTimes) {
-            SampleCount += numTimes;
+        public void AddDatum(double datum, int numTimes) {
+	        Guard.ArgumentGTE(numTimes, 0, nameof(numTimes));
+            SampleCount += (uint)numTimes;
             Sum += datum * numTimes;
             SquaredSum += datum * datum * numTimes;
             if (double.IsNaN(ReciprocalSum) || datum * datum < EPSILON * EPSILON) {
@@ -225,15 +235,31 @@ namespace Sphere10.Framework {
                     Maximum = datum;
                 }
             }
+
+			if (_maxHistory > 0) {
+				for (var i = 0; i < numTimes; i++)
+					_history.Add(datum);
+			}
         }
 
         public void RemoveDatum(double datum) {
+	        Guard.Ensure(_maxHistory == 0, "Cannot remove datum when tracking trend history");
             SampleCount--;
             Sum -= datum;
             SquaredSum -= datum * datum;
             ReciprocalSum -= 1.0 / datum;
             Product /= datum;
         }
+
+
+		public Statistics GetTrend(int lastN) {
+			Guard.ArgumentInRange(lastN, 0, _maxHistory, nameof(lastN), "History not tracked that far");
+			var trendStats = new Statistics();
+			foreach(var datum in _history.ReadRange(^lastN..)) {
+				trendStats.AddDatum(datum);
+			}
+			return trendStats;
+		}
 
     }
 }

@@ -4,10 +4,13 @@ using System.Collections.Generic;
 namespace Sphere10.Framework {
 
 	internal class PagedListDelegate<TItem> : IPagedListDelegate<TItem> {
+
 		public PagedListDelegate(
+			Action<int> incCount,
+			Action<int> decCount,
 			Action updateVersion,
 			Action checkRequiresLoad,
-			Action<int, int> checkRange,
+			Action<int, int, bool> checkRange,
 			Func<IPage<TItem>, IDisposable> enterOpenPageScope,
 			Func<int, int, IEnumerable<Tuple<IPage<TItem>, int, int>>> getPageSegments,
 			Func<IEnumerable<IPage<TItem>>> internalPages,
@@ -20,6 +23,8 @@ namespace Sphere10.Framework {
 			Action<IPage<TItem>> notifyPageRead,
 			Action<IPage<TItem>> notifyPageWriting,
 			Action<IPage<TItem>> notifyPageWrite) {
+			IncCount = incCount;
+			DecCount = decCount;
 			UpdateVersion = updateVersion;
 			CheckRequiresLoad = checkRequiresLoad;
 			CheckRange = checkRange;
@@ -37,11 +42,15 @@ namespace Sphere10.Framework {
 			GetPageSegments = getPageSegments;
 		}
 
+		public Action<int> IncCount { get; }
+
+		public Action<int> DecCount { get; }
+
 		public Action UpdateVersion { get; }
 
 		public Action CheckRequiresLoad { get; }
 
-		public Action<int, int> CheckRange { get; }
+		public Action<int, int, bool> CheckRange { get; }
 
 		public Func<IEnumerable<IPage<TItem>>> InternalPages { get; }
 

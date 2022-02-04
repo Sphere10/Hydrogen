@@ -122,7 +122,7 @@ namespace Sphere10.Framework.Tests {
 			scheduler.AddJob(job9);
 			scheduler.Start();
 			var secondsToTest = 20;
-			await Task.Delay(TimeSpan.FromSeconds(secondsToTest).Add(TimeSpan.FromMilliseconds(800)));
+			await Task.Delay(TimeSpan.FromSeconds(secondsToTest).Add(TimeSpan.FromMilliseconds(920)));
 			scheduler.Stop();
 			Assert.AreEqual(secondsToTest / 1, count1);
 			Assert.AreEqual(secondsToTest / 2, count2);

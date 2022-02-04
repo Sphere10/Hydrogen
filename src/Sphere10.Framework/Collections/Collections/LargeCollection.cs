@@ -22,8 +22,11 @@ namespace Sphere10.Framework {
 		public event EventHandlerEx<object, IMemoryPage<TItem>> PageUnloading { add => InternalPagedList.PageUnloading += value; remove => InternalPagedList.PageUnloading -= value; }
 		public event EventHandlerEx<object, IMemoryPage<TItem>> PageUnloaded { add => InternalPagedList.PageUnloaded += value; remove => InternalPagedList.PageUnloaded -= value; }
 
+		private readonly ReadOnlyListDecorator<IPage<TItem>, IMemoryPage<TItem>> _pagesDecorator;
+
 		public LargeCollection(int pageSize, long maxMemory)
 			: this(pageSize, maxMemory, null) {
+			_pagesDecorator = new ReadOnlyListDecorator<IPage<TItem>, IMemoryPage<TItem>>(InternalPagedList.Pages);
 		}
 
 		public LargeCollection(int pageSize, long maxMemory, Func<TItem, int> itemSizer)
@@ -32,7 +35,7 @@ namespace Sphere10.Framework {
 
 		protected MemoryPagedListBase<TItem> InternalPagedList => (MemoryPagedListBase<TItem>)base.InternalCollection;
 
-		public IReadOnlyList<IMemoryPage<TItem>> Pages => new ReadOnlyListDecorator<IPage<TItem>, IMemoryPage<TItem>>(InternalPagedList.Pages);
+		public IReadOnlyList<IMemoryPage<TItem>> Pages => _pagesDecorator;
 
 		public void Dispose() {
 			InternalPagedList.Dispose();

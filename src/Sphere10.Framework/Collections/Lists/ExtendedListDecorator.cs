@@ -4,64 +4,58 @@ using System.Collections.Generic;
 namespace Sphere10.Framework {
 
 	/// <summary>
-	/// Decorator for an IExtendedList, but calls to non-range get routed to the range-based methods.
+	/// Decorator pattern for an IExtendedList, but calls to non-range get routed to the range-based methods.
 	/// </summary>
 	/// <typeparam name="TItem"></typeparam>
-	public abstract class ExtendedListDecorator<TItem, TInternalList> : IExtendedList<TItem> where TInternalList : IExtendedList<TItem> {
+	/// <remarks>At first glance the implementation may counter-intuitive, but it is born out of extensive usage and optimization. The <see cref="TConcrete"/>
+	/// generic argument ensures sub-classes can retrieve the decorated list in it's type,without an expensive chain of casts/retrieves.</remarks>
+	public abstract class ExtendedListDecorator<TItem> : ExtendedListDecorator<TItem, IExtendedList<TItem>> {
+		protected ExtendedListDecorator(IExtendedList<TItem> internalExtendedList)
+			: base(internalExtendedList) {
+		}
+	}
 
-		protected ExtendedListDecorator(TInternalList internalExtendedList) {
-			Guard.ArgumentNotNull(internalExtendedList, nameof(internalExtendedList));
-			InternalExtendedList = internalExtendedList;
+	/// <summary>
+	/// Decorator pattern for an IExtendedList, but calls to non-range get routed to the range-based methods.
+	/// </summary>
+	/// <typeparam name="TItem"></typeparam>
+	/// <typeparam name="TConcrete"></typeparam>
+	/// <remarks>At first glance the implementation may counter-intuitive, but it is born out of extensive usage and optimization. The <see cref="TConcrete"/>
+	/// generic argument ensures sub-classes can retrieve the decorated list in it's type,without an expensive chain of casts/retrieves.</remarks>
+	public abstract class ExtendedListDecorator<TItem, TConcrete> : CollectionDecorator<TItem, TConcrete>, IExtendedList<TItem>
+		where TConcrete : IExtendedList<TItem> {
+		//protected TConcrete InternalCollection;
+
+		protected ExtendedListDecorator(TConcrete internalExtendedList) : base(internalExtendedList) {
 		}
 
-		// TODO: change to field for perf
-		protected TInternalList InternalExtendedList { get; }
+		public virtual int IndexOf(TItem item) => InternalCollection.IndexOf(item);
 
-		public virtual int Count => InternalExtendedList.Count;
+		public virtual IEnumerable<int> IndexOfRange(IEnumerable<TItem> items) => InternalCollection.IndexOfRange(items);
 
-		public virtual bool IsReadOnly => InternalExtendedList.IsReadOnly;
+		public virtual IEnumerable<bool> ContainsRange(IEnumerable<TItem> items) => InternalCollection.ContainsRange(items);
 
-		public virtual int IndexOf(TItem item) => InternalExtendedList.IndexOf(item);
+		public virtual TItem Read(int index) => InternalCollection.Read(index);
 
-		public virtual IEnumerable<int> IndexOfRange(IEnumerable<TItem> items) => InternalExtendedList.IndexOfRange(items);
+		public virtual IEnumerable<TItem> ReadRange(int index, int count) => InternalCollection.ReadRange(index, count);
 
-		public virtual bool Contains(TItem item) => InternalExtendedList.Contains(item);
+		public virtual void AddRange(IEnumerable<TItem> items) => InternalCollection.AddRange(items);
 
-		public virtual IEnumerable<bool> ContainsRange(IEnumerable<TItem> items) => InternalExtendedList.ContainsRange(items);
+		public virtual void Update(int index, TItem item) => InternalCollection.Update(index, item);
 
-		public virtual TItem Read(int index) => InternalExtendedList.Read(index);
+		public virtual void UpdateRange(int index, IEnumerable<TItem> items) => InternalCollection.UpdateRange(index, items);
 
-		public virtual IEnumerable<TItem> ReadRange(int index, int count) => InternalExtendedList.ReadRange(index, count);
+		public virtual void Insert(int index, TItem item) => InternalCollection.Insert(index, item);
 
-		public virtual void Add(TItem item) => InternalExtendedList.Add(item);
+		public virtual void InsertRange(int index, IEnumerable<TItem> items) => InternalCollection.InsertRange(index, items);
 
-		public virtual void AddRange(IEnumerable<TItem> items) => InternalExtendedList.AddRange(items);
+		public virtual IEnumerable<bool> RemoveRange(IEnumerable<TItem> items) => InternalCollection.RemoveRange(items);
 
-		public virtual void Update(int index, TItem item) => InternalExtendedList.Update(index, item);
+		public virtual void RemoveAt(int index) => InternalCollection.RemoveAt(index);
 
-		public virtual void UpdateRange(int index, IEnumerable<TItem> items) => InternalExtendedList.UpdateRange(index, items);
+		public virtual void RemoveRange(int index, int count) => InternalCollection.RemoveRange(index, count);
 
-		public virtual void Insert(int index, TItem item) => InternalExtendedList.Insert(index, item);
-
-		public virtual void InsertRange(int index, IEnumerable<TItem> items) => InternalExtendedList.InsertRange(index, items);
-
-		public virtual bool Remove(TItem item) => InternalExtendedList.Remove(item);
-
-		public virtual IEnumerable<bool> RemoveRange(IEnumerable<TItem> items) => InternalExtendedList.RemoveRange(items);
-
-		public virtual void RemoveAt(int index) => InternalExtendedList.RemoveAt(index);
-
-		public virtual void RemoveRange(int index, int count) => InternalExtendedList.RemoveRange(index, count);
-
-		public virtual void Clear() => InternalExtendedList.Clear();
-
-		public virtual void CopyTo(TItem[] array, int arrayIndex) => InternalExtendedList.CopyTo(array, arrayIndex);
-
-		public virtual IEnumerator<TItem> GetEnumerator() => InternalExtendedList.GetEnumerator();
-
-		IEnumerator IEnumerable.GetEnumerator() => this.GetEnumerator();
-
-		public TItem this[int index] { get => this.Read(index); set => this.Update(index, value); }
+		public TItem this[int index] { get => Read(index); set => this.Update(index, value); }
 
 		TItem IWriteOnlyExtendedList<TItem>.this[int index] { set => this[index] = value; }
 
@@ -69,9 +63,4 @@ namespace Sphere10.Framework {
 
 	}
 
-	public abstract class ExtendedListDecorator<TItem> : ExtendedListDecorator<TItem, IExtendedList<TItem>> {
-		protected ExtendedListDecorator(IExtendedList<TItem> internalExtendedList) 
-			: base(internalExtendedList) {
-		}
-	}
 }

@@ -6,8 +6,6 @@ namespace Sphere10.Framework {
 
 		string Path { get; }
 
-		Guid FileID { get; }
-
 		TransactionalFileMappedBuffer AsBuffer { get; }
 
 	}

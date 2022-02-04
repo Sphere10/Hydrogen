@@ -98,12 +98,6 @@ namespace Sphere10.Framework.Tests {
 			var disposables = new Disposables();
 
 			switch (listType) {
-				case InnerListType.List:
-					stream = new ExtendedMemoryStream(new ExtendedListAdapter<byte>(new List<byte>()));
-					return Disposables.None;
-				case InnerListType.ExtendedList:
-					stream = new ExtendedMemoryStream(new ExtendedList<byte>());
-					return Disposables.None;
 				case InnerListType.MemoryBuffer:
 					stream = new ExtendedMemoryStream(new MemoryBuffer());
 					return Disposables.None;
@@ -120,7 +114,7 @@ namespace Sphere10.Framework.Tests {
 				case InnerListType.TransactionalBinaryFile:
 					var baseDir = Tools.FileSystem.GetTempEmptyDirectory(true);
 					var fileName = Path.Combine(baseDir, "File.dat");
-					var transactionalBinaryFile = new TransactionalFileMappedBuffer(fileName, baseDir, Guid.NewGuid(), pageSize, maxOpenPages*pageSize);
+					var transactionalBinaryFile = new TransactionalFileMappedBuffer(fileName, baseDir, pageSize, maxOpenPages*pageSize);
 					stream = new ExtendedMemoryStream(transactionalBinaryFile);
 					return new Disposables(new ActionScope(() => Tools.FileSystem.DeleteDirectory(baseDir)));
 				default:
@@ -129,8 +123,6 @@ namespace Sphere10.Framework.Tests {
 		}
 
 		public enum InnerListType {
-			List,
-			ExtendedList,
 			MemoryBuffer,
 			MemoryPagedBuffer,
 			BinaryFile,

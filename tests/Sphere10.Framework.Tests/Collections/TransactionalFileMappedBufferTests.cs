@@ -188,12 +188,12 @@ namespace Sphere10.Framework.Tests {
 			Tools.FileSystem.AppendAllBytes(fileName, originalData);
 			using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectory(baseDir))) {
 				// Write a commit header and a deleted page
-				var fileID = Guid.NewGuid();
+				var fileID = TransactionalFileMappedBuffer.ComputeFileID(fileName);
 				var commitFile = TransactionalFileMappedBuffer.MarkerRepository.GenerateFileMarkerFileName(baseDir, fileID, TransactionalFileMappedBuffer.FileMarkerType.Committing);
 				var pageFile = TransactionalFileMappedBuffer.MarkerRepository.GeneratePageMarkerFileName(baseDir, fileID, TransactionalFileMappedBuffer.PageMarkerType.UncommittedPage, 0);
 				Tools.FileSystem.CreateBlankFile(commitFile);
 				File.WriteAllBytes(pageFile, originalData.Select(b => (byte)(b ^ b)).ToArray());
-				using (var file = new TransactionalFileMappedBuffer(fileName, fileID, pageSize, 1 * pageSize)) {
+				using (var file = new TransactionalFileMappedBuffer(fileName, pageSize, 1 * pageSize)) {
 					file.Load(); // resumes commit
 				}
 
@@ -215,12 +215,12 @@ namespace Sphere10.Framework.Tests {
 			Tools.FileSystem.AppendAllBytes(fileName, originalData);
 			using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectory(baseDir))) {
 				// Write a commit header and a deleted page
-				var fileID = Guid.NewGuid();
+				var fileID = TransactionalFileMappedBuffer.ComputeFileID(fileName);
 				var rollbackFile = TransactionalFileMappedBuffer.MarkerRepository.GenerateFileMarkerFileName(baseDir, fileID, TransactionalFileMappedBuffer.FileMarkerType.RollingBack);
 				var pageFile = TransactionalFileMappedBuffer.MarkerRepository.GeneratePageMarkerFileName(baseDir, fileID, TransactionalFileMappedBuffer.PageMarkerType.UncommittedPage, 0);
 				Tools.FileSystem.CreateBlankFile(rollbackFile);
 				File.WriteAllBytes(pageFile, originalData.Select(b => (byte)(b ^ b)).ToArray());
-				using (var file = new TransactionalFileMappedBuffer(fileName, fileID, pageSize, 1 * pageSize)) {
+				using (var file = new TransactionalFileMappedBuffer(fileName, pageSize, 1 * pageSize)) {
 					file.Load();
 				}
 
@@ -346,12 +346,12 @@ namespace Sphere10.Framework.Tests {
 			Tools.FileSystem.AppendAllBytes(fileName, originalData);
 			using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectory(baseDir))) {
 				// Write a commit header and a deleted page
-				var fileID = Guid.NewGuid();
+				var fileID = TransactionalFileMappedBuffer.ComputeFileID(fileName);
 				var commitFile = TransactionalFileMappedBuffer.MarkerRepository.GenerateFileMarkerFileName(baseDir, fileID, TransactionalFileMappedBuffer.FileMarkerType.Committing);
 				var markerFile = TransactionalFileMappedBuffer.MarkerRepository.GeneratePageMarkerFileName(baseDir, fileID, TransactionalFileMappedBuffer.PageMarkerType.DeletedMarker, 0);
 				Tools.FileSystem.CreateBlankFile(commitFile);
 				Tools.FileSystem.CreateBlankFile(markerFile);
-				using (var file = new TransactionalFileMappedBuffer(fileName, fileID, pageSize, 1 * pageSize)) {
+				using (var file = new TransactionalFileMappedBuffer(fileName, pageSize, 1 * pageSize)) {
 					file.Load(); // resumes commit
 				}
 
@@ -373,12 +373,12 @@ namespace Sphere10.Framework.Tests {
 			Tools.FileSystem.AppendAllBytes(fileName, originalData);
 			using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectory(baseDir))) {
 				// Write a commit header and a deleted page
-				var fileID = Guid.NewGuid();
+				var fileID = TransactionalFileMappedBuffer.ComputeFileID(fileName);
 				var commitFile = TransactionalFileMappedBuffer.MarkerRepository.GenerateFileMarkerFileName(baseDir, fileID, TransactionalFileMappedBuffer.FileMarkerType.RollingBack);
 				var markerFile = TransactionalFileMappedBuffer.MarkerRepository.GeneratePageMarkerFileName(baseDir, fileID, TransactionalFileMappedBuffer.PageMarkerType.DeletedMarker, 0);
 				Tools.FileSystem.CreateBlankFile(commitFile);
 				Tools.FileSystem.CreateBlankFile(markerFile);
-				using (var file = new TransactionalFileMappedBuffer(fileName, fileID, pageSize, 1 * pageSize)) {
+				using (var file = new TransactionalFileMappedBuffer(fileName, pageSize, 1 * pageSize)) {
 					file.Load(); // resumes rollback
 				}
 
@@ -642,8 +642,8 @@ namespace Sphere10.Framework.Tests {
 
 			Tools.FileSystem.AppendAllBytes(fileName, originalData);
 			using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectories(baseDir, pageDir1, pageDir2))) {
-				var fileID = Guid.NewGuid();
-				using (var file = new TransactionalFileMappedBuffer(fileName, pageDir1, fileID,  pageSize, maxOpenPages*pageSize)) {
+				var fileID = TransactionalFileMappedBuffer.ComputeFileID(fileName);
+				using (var file = new TransactionalFileMappedBuffer(fileName, pageDir1, pageSize, maxOpenPages*pageSize)) {
 					file.Load();
 					AssertFileCount(pageDir1, 0);
 
@@ -654,7 +654,7 @@ namespace Sphere10.Framework.Tests {
 					AssertFileCount(pageDir1, 10); // duplicate markers 
  				}
 
-				using (var file = new TransactionalFileMappedBuffer(fileName, pageDir2, fileID, pageSize, maxOpenPages*pageSize)) {
+				using (var file = new TransactionalFileMappedBuffer(fileName, pageDir2, pageSize, maxOpenPages*pageSize)) {
 					file.Load();
 					AssertFileCount(pageDir1, 0);
 				}
@@ -675,7 +675,7 @@ namespace Sphere10.Framework.Tests {
 			Tools.FileSystem.AppendAllBytes(fileName, originalData);
 			using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectories(baseDir, pageDir1, pageDir2))) {
 				var fileID = Guid.NewGuid();
-				using (var file = new TransactionalFileMappedBuffer(fileName, pageDir1, fileID, pageSize, maxOpenPages*pageSize)) {
+				using (var file = new TransactionalFileMappedBuffer(fileName, pageDir1, pageSize, maxOpenPages*pageSize)) {
 					file.Load();
 					AssertFileCount(pageDir1, 0);
 
@@ -687,17 +687,32 @@ namespace Sphere10.Framework.Tests {
 					AssertFileCount(pageDir1, 2); // duplicate markers 
 				}
 
-				using (var file = new TransactionalFileMappedBuffer(fileName, pageDir2, fileID, pageSize, maxOpenPages*pageSize)) {
+				using (var file = new TransactionalFileMappedBuffer(fileName, pageDir2, pageSize, maxOpenPages*pageSize)) {
 					file.Load();
 					AssertFileCount(pageDir1, 0);
 				}
 			}
 		}
 
+
+		[Test]
+		public void DiposeBug() {
+			var RNG = new Random(RandomSeed);
+			var baseDir = Tools.FileSystem.GetTempEmptyDirectory(true);
+			var fileName = Path.Combine(baseDir, "File.dat");
+			using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectory(baseDir))) {
+				var file = new TransactionalFileMappedBuffer(fileName, 10, 100) { FlushOnDispose = false };
+				if (file.RequiresLoad)
+					file.Load();
+				file.Add(1);
+				Assert.That(() => file.Dispose(), Throws.Nothing);
+			}
+		}
+
 		#endregion
 
 		#region Event Tests
-		
+
 		[Test]
 		public void CommitEvents() {
 			var baseDir = Tools.FileSystem.GetTempEmptyDirectory(true);
@@ -776,7 +791,7 @@ namespace Sphere10.Framework.Tests {
 			expected.AddRange(startBytes);
 			File.WriteAllBytes(fileName, startBytes);
 			using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectories(fileBaseDir, pageBaseDir))) {
-				using (var file = new TransactionalFileMappedBuffer(fileName, pageBaseDir, fileID, pageSize, maxOpenPages*pageSize)) {
+				using (var file = new TransactionalFileMappedBuffer(fileName, pageBaseDir, pageSize, maxOpenPages*pageSize)) {
 					if (file.RequiresLoad)
 						file.Load();
 
@@ -846,7 +861,7 @@ namespace Sphere10.Framework.Tests {
 				for (var j = 0; j < 10; j++) {
 					string oldPageDir;
 					// Do a bunch of operations on a transactional file and abort them, but copy the page files before abort
-					using (var file = new TransactionalFileMappedBuffer(fileName, pageBaseDir, fileID, pageSize, maxOpenPages*pageSize)) {
+					using (var file = new TransactionalFileMappedBuffer(fileName, pageBaseDir, pageSize, maxOpenPages*pageSize)) {
 						if (file.RequiresLoad)
 							file.Load();
 
@@ -906,7 +921,7 @@ namespace Sphere10.Framework.Tests {
 				}
 
 				// Do final commit
-				using (var file = new TransactionalFileMappedBuffer(fileName, pageBaseDir, fileID, pageSize, maxOpenPages*pageSize)) {
+				using (var file = new TransactionalFileMappedBuffer(fileName, pageBaseDir, pageSize, maxOpenPages*pageSize)) {
 					file.Load(); // should resume commit
 				}
 				Assert.AreEqual(expected, File.ReadAllBytes(fileName));

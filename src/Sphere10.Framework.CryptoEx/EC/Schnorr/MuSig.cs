@@ -8,7 +8,7 @@ using Org.BouncyCastle.Utilities;
 namespace Sphere10.Framework.CryptoEx.EC; 
 
 public class MuSig {
-	private static readonly byte[] MusicTag = Schnorr.ComputeSha256Hash(Encoding.UTF8.GetBytes("MuSig coefficient"));
+	private static readonly byte[] MusigTag = Schnorr.ComputeSha256Hash(Encoding.UTF8.GetBytes("KeyAgg coefficient"));
 	public Schnorr Schnorr { get; }
 	
 	public MuSig(Schnorr schnorr) {
@@ -17,7 +17,7 @@ public class MuSig {
 	
 	private BigInteger ComputeCoefficient(byte[] ell, int idx) {
 		var idxBuffer = Pack.UInt32_To_LE((uint)idx);
-		var data = Arrays.ConcatenateAll(MusicTag, MusicTag, ell, idxBuffer);
+		var data = Arrays.ConcatenateAll(MusigTag, MusigTag, ell, idxBuffer);
 		return BigIntegerUtils.BytesToBigInteger(Schnorr.ComputeSha256Hash(data)).Mod(Schnorr.N);
 	}
 	

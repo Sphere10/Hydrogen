@@ -7,7 +7,7 @@ using Org.BouncyCastle.Math.EC;
 namespace Sphere10.Framework.CryptoEx.EC;
 
 
-public record CurveData {
+public class CurveData {
 	public ECPoint G { get; internal set; }
 	public ECCurve Curve { get; internal set; }
 	public BigInteger P { get; internal set; }

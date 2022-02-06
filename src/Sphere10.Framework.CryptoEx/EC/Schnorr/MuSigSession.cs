@@ -6,7 +6,7 @@ public class MuSigSession {
 	public byte[] SessionId { get; internal set; }
 	public byte[] MessageDigest { get; internal set; }
 	public byte[] CombinedPublicKey { get; internal set; }
-	public byte[] Nonce { get; internal set; }
+	public byte[] PublicNonce { get; internal set; }
 	public byte[] Ell { get; internal set; }
 	public byte[] Commitment { get; internal set; }
 	public bool NonceParity { get; internal set; }

@@ -179,6 +179,11 @@ public class Schnorr: StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schnor
 		return Hashers.Hash(CHF.SHA2_256, message);
 	}
 	
+	internal static IHashFunction BorrowSHA256Hasher() {
+		 Hashers.BorrowHasher(CHF.SHA2_256, out var hasher);
+		 return hasher;
+	}
+
 	// Math Methods
 	private BigInteger GetEvenKey(ECPoint publicKey, BigInteger privateKey) {
 		return IsEven(publicKey) ? privateKey : N.Subtract(privateKey);

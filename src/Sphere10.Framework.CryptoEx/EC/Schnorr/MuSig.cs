@@ -7,6 +7,7 @@ using Org.BouncyCastle.Utilities;
 
 namespace Sphere10.Framework.CryptoEx.EC; 
 
+//https://github.com/ElementsProject/secp256k1-zkp/blob/master/doc/musig-spec.mediawiki
 public class MuSig {
 	private static readonly byte[] MusigTag = Schnorr.ComputeSha256Hash(Encoding.UTF8.GetBytes("KeyAgg coefficient"));
 	private static readonly byte[] KeyAggListTag = Schnorr.ComputeSha256Hash(Encoding.UTF8.GetBytes("KeyAgg list"));
@@ -17,19 +18,36 @@ public class MuSig {
 	}
 
 	private BigInteger ComputeCoefficient(byte[] ell, int idx, byte[] currentPublicKey) {
-		return idx == 1
-			? BigInteger.One
-			: BigIntegerUtils
-			  .BytesToBigInteger(
-				  Schnorr.ComputeSha256Hash(Arrays.ConcatenateAll(Arrays.ConcatenateAll(MusigTag, MusigTag), ell, currentPublicKey)))
-			  .Mod(Schnorr.N);
+		if (idx == 1) {
+			return BigInteger.One;
+		}
+		var hasher = Schnorr.BorrowSHA256Hasher();
+		hasher.Transform(MusigTag);
+		hasher.Transform(MusigTag);
+		hasher.Transform(ell);
+		hasher.Transform(currentPublicKey);
+		return BigIntegerUtils.BytesToBigInteger(hasher.GetResult()).Mod(Schnorr.N);
+
+		// return idx == 1
+		// 	? BigInteger.One
+		// 	: BigIntegerUtils
+		// 	  .BytesToBigInteger(
+		// 		  Schnorr.ComputeSha256Hash(Arrays.ConcatenateAll(Arrays.ConcatenateAll(MusigTag, MusigTag),
+		// 			  ell,
+		// 			  currentPublicKey)))
+		// 	  .Mod(Schnorr.N);
 	}
 
 	// Computes ell = SHA256(publicKeys[0], ..., publicKeys[publicKeys.Length-1]) with
 	// publicKeys serialized in compressed form.
 	public static byte[] ComputeEll(byte[][] publicKeys) {
 		Schnorr.ValidatePublicKeyArrays(publicKeys);
-		return Schnorr.ComputeSha256Hash(Arrays.ConcatenateAll(KeyAggListTag, KeyAggListTag, Arrays.ConcatenateAll(publicKeys)));
+		var hasher = Schnorr.BorrowSHA256Hasher();
+		hasher.Transform(KeyAggListTag);
+		hasher.Transform(KeyAggListTag);
+		hasher.Transform(Arrays.ConcatenateAll(publicKeys));
+		return hasher.GetResult();
+		//return Schnorr.ComputeSha256Hash(Arrays.ConcatenateAll(KeyAggListTag, KeyAggListTag, Arrays.ConcatenateAll(publicKeys)));
 	}
 	
 	public ECPoint CombinePublicKey(byte[][] publicKeys, byte[] publicKeyHash = null) {
@@ -69,9 +87,9 @@ public class MuSig {
 		session.SecretNonce = BigIntegerUtils.BytesToBigInteger(Schnorr.ComputeSha256Hash(nonceData));
 		Schnorr.ValidateRange(nameof(session.SecretNonce), session.SecretNonce);
 		var r = Schnorr.G.Multiply(session.SecretNonce).Normalize();
-		session.Nonce = BigIntegerUtils.BigIntegerToBytes(r.AffineXCoord.ToBigInteger(), 32);
+		session.PublicNonce = BigIntegerUtils.BigIntegerToBytes(r.AffineXCoord.ToBigInteger(), 32);
 		session.NonceParity = Schnorr.IsEven(r);
-		session.Commitment = Schnorr.ComputeSha256Hash(session.Nonce);
+		session.Commitment = Schnorr.ComputeSha256Hash(session.PublicNonce);
 		session.PartialSignature = null;
 		return session;
 	}
@@ -171,8 +189,8 @@ public class MuSig {
 		var signerSession = sessions[0];
 		
 		// 4. combine nonces and keep track of whether the nonce was negated or not
-		var nonces = sessions.Select(x => x.Nonce).ToArray();
-		var combinedNonce = CombineSessionNonce(signerSession, nonces);
+		var publicNonces = sessions.Select(x => x.PublicNonce).ToArray();
+		var combinedNonce = CombineSessionNonce(signerSession, publicNonces);
 		for (var i = 0; i < sessions.Length; i++) {
 			sessions[i].CombinedNonceParity = signerSession.CombinedNonceParity;
 		}
@@ -185,7 +203,7 @@ public class MuSig {
 		
 		// 6. verify individual partial signatures
 		for (var i = 0; i < publicKeys.Length; i++) {
-			PartialSigVerify(signerSession, sessions[i].PartialSignature, combinedNonce, i, publicKeys[i], nonces[i]);
+			PartialSigVerify(signerSession, sessions[i].PartialSignature, combinedNonce, i, publicKeys[i], publicNonces[i]);
 		}
 		
 		return new MuSigData {

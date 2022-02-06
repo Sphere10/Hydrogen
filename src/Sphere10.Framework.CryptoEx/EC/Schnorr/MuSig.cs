@@ -120,12 +120,13 @@ public class MuSig {
 		}
 		var rx = BigIntegerUtils.BigIntegerToBytes(r.AffineXCoord.ToBigInteger(), 32);
 		var s = partialSignatures[0];
+		var n = Schnorr.N;
 		for (var i = 1; i < partialSignatures.Length; i++) {
 			var tmp = partialSignatures[i];
-			if (tmp.CompareTo(Schnorr.N) >= 0) {
+			if (tmp.CompareTo(n) >= 0) {
 				throw new Exception($"{tmp} must be an integer less than n");	
 			}
-			s = s.Add(partialSignatures[i]).Mod(Schnorr.N);
+			s = s.Add(partialSignatures[i]).Mod(n);
 		}
 		return Arrays.ConcatenateAll(rx, BigIntegerUtils.BigIntegerToBytes(s, 32));
 	}

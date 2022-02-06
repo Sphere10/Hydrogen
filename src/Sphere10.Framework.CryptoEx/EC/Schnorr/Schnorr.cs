@@ -39,7 +39,7 @@ public class Schnorr: StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schnor
 	public override IIESAlgorithm IES => new ECIES();  // defaults to a Pascalcoin style ECIES
 
 	internal ECPoint G => _curveParams.G;
-	private ECCurve Curve => _curveParams.Curve; 
+	internal ECCurve Curve => _curveParams.Curve; 
 	private BigInteger P => _curveParams.Curve.Field.Characteristic;
 	internal BigInteger N => _curveParams.N;
 	internal int KeySize => (Curve.FieldSize + 7) >> 3;
@@ -138,7 +138,7 @@ public class Schnorr: StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schnor
 		ValidateSignature(rSig, sSig);
 		var e = GetE(BigIntegerUtils.BigIntegerToBytes(rSig, 32), px, messageDigest.ToArray());
 		var r = GetR(sSig, e, p);
-		return !r.IsInfinity && IsEven(r) && r.AffineXCoord.ToBigInteger().Equals(rSig);
+		return !IsPointInfinity(r) && IsEven(r) && r.AffineXCoord.ToBigInteger().Equals(rSig);
 	}
 
 	public bool BatchVerifyDigest(byte[][] signatures, byte[][] messageDigests, byte[][] publicKeys) {
@@ -220,6 +220,10 @@ public class Schnorr: StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schnor
 		ValidatePoint(point);
 		return point.Normalize();
 	}
+
+	internal static bool IsPointInfinity(ECPoint publicKey) {
+		return publicKey.IsInfinity;
+	}
 	
 	private static bool IsEven(BigInteger publicKey) {
 		//return BigInteger.Jacobi(publicKey, P) == 1);
@@ -227,6 +231,7 @@ public class Schnorr: StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schnor
 	}
 
 	internal static bool IsEven(ECPoint publicKey) {
+		ThrowIfPointIsAtInfinity(publicKey);
 		return IsEven(publicKey.AffineYCoord.ToBigInteger());
 	}
 
@@ -324,15 +329,24 @@ public class Schnorr: StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schnor
 	}
 
 	/// <summary>
+	/// Throw If Point Is At Infinity
+	/// </summary>
+	/// <param name="point"></param>
+	/// <exception cref="Exception"></exception>
+	private static void ThrowIfPointIsAtInfinity(ECPoint point) {
+		if (IsPointInfinity(point)) {
+			throw new Exception($"{nameof(point)} is at infinity");
+		}
+	}
+
+	/// <summary>
 	/// Validate Point
 	/// </summary>
 	/// <param name="point"></param>
 	/// <exception cref="Exception"></exception>
 	private static void ValidatePoint(ECPoint point) {
-		if (point.IsInfinity) {
-			throw new Exception($"{nameof(point)} is at infinity");
-		}
-		if (!Schnorr.IsEven(point))
+		ThrowIfPointIsAtInfinity(point);
+		if (!IsEven(point))
 		{
 			throw new Exception($"{nameof(point)} does not exist");
 		}

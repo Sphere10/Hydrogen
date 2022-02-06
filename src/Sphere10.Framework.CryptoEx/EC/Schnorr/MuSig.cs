@@ -9,23 +9,27 @@ namespace Sphere10.Framework.CryptoEx.EC;
 
 public class MuSig {
 	private static readonly byte[] MusigTag = Schnorr.ComputeSha256Hash(Encoding.UTF8.GetBytes("KeyAgg coefficient"));
+	private static readonly byte[] KeyAggListTag = Schnorr.ComputeSha256Hash(Encoding.UTF8.GetBytes("KeyAgg list"));
 	public Schnorr Schnorr { get; }
 	
 	public MuSig(Schnorr schnorr) {
 		Schnorr = schnorr;
 	}
-	
-	private BigInteger ComputeCoefficient(byte[] ell, int idx) {
-		var idxBuffer = Pack.UInt32_To_LE((uint)idx);
-		var data = Arrays.ConcatenateAll(MusigTag, MusigTag, ell, idxBuffer);
-		return BigIntegerUtils.BytesToBigInteger(Schnorr.ComputeSha256Hash(data)).Mod(Schnorr.N);
+
+	private BigInteger ComputeCoefficient(byte[] ell, int idx, byte[] currentPublicKey) {
+		return idx == 1
+			? BigInteger.One
+			: BigIntegerUtils
+			  .BytesToBigInteger(
+				  Schnorr.ComputeSha256Hash(Arrays.ConcatenateAll(Arrays.ConcatenateAll(MusigTag, MusigTag), ell, currentPublicKey)))
+			  .Mod(Schnorr.N);
 	}
-	
+
 	// Computes ell = SHA256(publicKeys[0], ..., publicKeys[publicKeys.Length-1]) with
 	// publicKeys serialized in compressed form.
-	public static byte[] ComputeEll(byte[][] pubKeys) {
-		Schnorr.ValidatePublicKeyArrays(pubKeys);
-		return Schnorr.ComputeSha256Hash(Arrays.ConcatenateAll(pubKeys));
+	public static byte[] ComputeEll(byte[][] publicKeys) {
+		Schnorr.ValidatePublicKeyArrays(publicKeys);
+		return Schnorr.ComputeSha256Hash(Arrays.ConcatenateAll(KeyAggListTag, KeyAggListTag, Arrays.ConcatenateAll(publicKeys)));
 	}
 	
 	public ECPoint CombinePublicKey(byte[][] publicKeys, byte[] publicKeyHash = null) {
@@ -33,14 +37,16 @@ public class MuSig {
 		ECPoint x = null;
 		for (var i = 0; i < publicKeys.Length; i++) {
 			var xi = Schnorr.LiftX(publicKeys[i]);
-			var coefficient = ComputeCoefficient(ell, i);
+			var coefficient = ComputeCoefficient(ell, i, publicKeys[i]);
+			var jj = BigIntegerUtils.BigIntegerToBytes(coefficient, 32);
 			var summand = xi.Multiply(coefficient);
 			x = x == null ? summand : x.Add(summand);
 		}
-		return x?.Normalize();
+		x = x?.Normalize();
+		return Schnorr.IsPointInfinity(x) ? throw new Exception("public key combination failed") : x;
 	}
 	
-	public MuSigSession InitializeSession(byte[] sessionId, BigInteger privateKey, byte[] messageDigest, byte[] combinedPublicKey, bool publicKeyParity, byte[] ell, int idx) {
+	public MuSigSession InitializeSession(byte[] sessionId, BigInteger privateKey, byte[] publicKey, byte[] messageDigest, byte[] combinedPublicKey, bool publicKeyParity, byte[] ell, int idx) {
 		ValidateSessionParams(sessionId, privateKey, messageDigest, combinedPublicKey, ell);
 		var session = new MuSigSession {
 			SessionId = sessionId,
@@ -52,7 +58,7 @@ public class MuSig {
 		};
 
 		var n = Schnorr.N;
-		var coefficient = ComputeCoefficient(ell, idx);
+		var coefficient = ComputeCoefficient(ell, idx, publicKey);
 		session.SecretKey = privateKey.Multiply(coefficient).Mod(n);
 		session.OwnKeyParity = Schnorr.IsEven(Schnorr.G.Multiply(privateKey).Normalize());
 		if (session.PublicKeyParity != session.OwnKeyParity) {
@@ -94,7 +100,7 @@ public class MuSig {
 	
 	public void PartialSigVerify(MuSigSession session, BigInteger partialSignature, byte[] combinedNonce, int idx, byte[] publicKey, byte[] nonce) {
 		var e = Schnorr.GetE(combinedNonce, session.CombinedPublicKey, session.MessageDigest);
-		var coefficient = ComputeCoefficient(session.Ell, idx);
+		var coefficient = ComputeCoefficient(session.Ell, idx, publicKey);
 		var pj = Schnorr.LiftX(publicKey);
 		var ri = Schnorr.LiftX(nonce);
 		var n = Schnorr.N;
@@ -108,7 +114,7 @@ public class MuSig {
 			rp = rp.Negate();
 		}
 		var sum = rp.Add(ri);
-		if (!sum.IsInfinity) {
+		if (!Schnorr.IsPointInfinity(sum)) {
 			throw new Exception("partial signature verification failed");
 		}
 	}
@@ -155,6 +161,7 @@ public class MuSig {
 			sessions[i] = InitializeSession(
 				Schnorr.RandomBytes(),
 				BigIntegerUtils.BytesToBigInteger(privateKeys[i].RawBytes),
+				publicKeys[i],
 				messageDigest,
 				combinedPublicKey,
 				publicKeyParity,

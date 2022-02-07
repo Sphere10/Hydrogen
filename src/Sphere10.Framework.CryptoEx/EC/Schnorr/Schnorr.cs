@@ -49,7 +49,7 @@ public class Schnorr: StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schnor
 			publicKey = null;
 			return false;
 		}
-		publicKey = new PublicKey(bytes.ToArray(), _keyType, _curveParams, _domainParams);
+		publicKey = new PublicKey(LiftX(bytes.ToArray()), _keyType, _curveParams, _domainParams);
 		return true;
 	}
 
@@ -81,7 +81,7 @@ public class Schnorr: StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schnor
 		var domainParameters = privateKeyParameters.Parameters;
 		var ecPoint = (new FixedPointCombMultiplier() as ECMultiplier).Multiply(domainParameters.G, privateKeyParameters.D);
 		var pubKeyParams = new ECPublicKeyParameters(privateKeyParameters.AlgorithmName, ecPoint, domainParameters);
-		return new PublicKey(BigIntegerUtils.BigIntegerToBytes(pubKeyParams.Q.AffineXCoord.ToBigInteger(), 32), _keyType, _curveParams, _domainParams);
+		return new PublicKey(pubKeyParams.Q, _keyType, _curveParams, _domainParams);
 	}
 	
 	public override bool IsPublicKey(PrivateKey privateKey, ReadOnlySpan<byte> publicKeyBytes) {
@@ -99,7 +99,7 @@ public class Schnorr: StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schnor
 		var pk = privateKey.AsInteger.Value; 
 		ValidateRange(nameof(pk), pk);
 		var p = G.Multiply(pk).Normalize();
-		var px = BigIntegerUtils.BigIntegerToBytes(p.AffineXCoord.ToBigInteger(), 32);
+		var px = BytesOfXCoord(p);
 
 		var d = GetEvenKey(p, pk);
 		BigInteger kPrime;
@@ -119,10 +119,10 @@ public class Schnorr: StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schnor
 
 		var r = G.Multiply(kPrime).Normalize();
 		var k = GetEvenKey(r, kPrime);
-		var rx = BigIntegerUtils.BigIntegerToBytes(r.AffineXCoord.ToBigInteger(), 32);
+		var rx = BytesOfXCoord(r);
 		var e = GetE(rx, px, message);
 		var sig = Arrays.ConcatenateAll(rx, BigIntegerUtils.BigIntegerToBytes(k.Add(e.Multiply(d)).Mod(N), 32));
-		if (!VerifyDigest(sig, messageDigest, BigIntegerUtils.BigIntegerToBytes(p.AffineXCoord.ToBigInteger(), 32))) {
+		if (!VerifyDigest(sig, messageDigest, BytesOfXCoord(p))) {
 			throw new Exception("The created signature did not pass verification.");
 		}
 		return sig;
@@ -132,7 +132,7 @@ public class Schnorr: StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schnor
 		// https://github.com/bitcoin/bips/blob/master/bip-0340.mediawiki#verification
 		ValidateVerificationParams(signature, messageDigest, publicKey);
 		var p = LiftX(publicKey.ToArray());
-		var px = BigIntegerUtils.BigIntegerToBytes(p.AffineXCoord.ToBigInteger(), 32);
+		var px = BytesOfXCoord(p);
 		var rSig = BigIntegerUtils.BytesToBigInteger(signature.Slice(0, 32).ToArray());
 		var sSig = BigIntegerUtils.BytesToBigInteger(signature.Slice(32, 32).ToArray());
 		ValidateSignature(rSig, sSig);
@@ -148,7 +148,7 @@ public class Schnorr: StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schnor
 		ECPoint rightSide = null;
 		for (var i = 0; i < publicKeys.Length; i++) {
 			var p = LiftX(publicKeys[i]);
-			var px = BigIntegerUtils.BigIntegerToBytes(p.AffineXCoord.ToBigInteger(), 32);
+			var px = BytesOfXCoord(p);
 			var rSig = BigIntegerUtils.BytesToBigInteger(signatures[i].AsSpan().Slice(0, 32).ToArray());
 			var sSig = BigIntegerUtils.BytesToBigInteger(signatures[i].AsSpan().Slice(32, 32).ToArray());
 			ValidateSignature(rSig, sSig);
@@ -229,7 +229,7 @@ public class Schnorr: StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schnor
 	internal static bool IsPointInfinity(ECPoint publicKey) {
 		return publicKey.IsInfinity;
 	}
-	
+
 	private static bool IsEven(BigInteger publicKey) {
 		//return BigInteger.Jacobi(publicKey, P) == 1);
 		return publicKey.Mod(BigInteger.Two).Equals(BigInteger.Zero);
@@ -238,6 +238,10 @@ public class Schnorr: StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schnor
 	internal static bool IsEven(ECPoint publicKey) {
 		ThrowIfPointIsAtInfinity(publicKey);
 		return IsEven(publicKey.AffineYCoord.ToBigInteger());
+	}
+	
+	internal static byte[] BytesOfXCoord(ECPoint point) {
+		return BigIntegerUtils.BigIntegerToBytes(point.AffineXCoord.ToBigInteger(), 32);
 	}
 
 	// Random Generation Methods
@@ -421,7 +425,6 @@ public class Schnorr: StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schnor
 			CurveParams = curveParams;
 			DomainParams = domainParams;
 			AsInteger = Tools.Values.LazyLoad(() => BigIntegerUtils.BytesToBigInteger(RawBytes));
-			AsPoint = Tools.Values.LazyLoad(() => curveParams.Curve.DecodePoint(Arrays.ConcatenateAll(new byte[] { 02 }, RawBytes)));
 		}
 
 		public ECDSAKeyType KeyType { get; }
@@ -433,8 +436,6 @@ public class Schnorr: StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schnor
 		internal ECDomainParameters DomainParams { get; }
 
 		internal IFuture<BigInteger> AsInteger { get; }
-
-		internal IFuture<ECPoint> AsPoint { get; }
 
 		public override bool Equals(object obj) {
 			if (obj is Key key) {
@@ -459,12 +460,15 @@ public class Schnorr: StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schnor
 	}
 
 	public class PublicKey : Key, IPublicKey {
-		public PublicKey(byte[] rawKeyBytes, ECDSAKeyType keyType, X9ECParameters curveParams, ECDomainParameters domainParams) :
-			base(rawKeyBytes, keyType, curveParams, domainParams) {
+		public PublicKey(ECPoint point, ECDSAKeyType keyType, X9ECParameters curveParams, ECDomainParameters domainParams) :
+			base(BytesOfXCoord(point), keyType, curveParams, domainParams) {
+			AsPoint = Tools.Values.LazyLoad(() => point);
 			Parameters = Tools.Values.LazyLoad(() => new ECPublicKeyParameters("ECDSA", AsPoint.Value, DomainParams));
 		}
 
 		public IFuture<ECPublicKeyParameters> Parameters { get; }
+		
+		internal IFuture<ECPoint> AsPoint { get; }
 
 	}
 

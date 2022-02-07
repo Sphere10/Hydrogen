@@ -15,6 +15,6 @@ public class MuSigSession {
 	public bool CombinedNonceParity { get; internal set; }
 	public int Idx { get; internal set; }
 	public BigInteger SecretKey { get; internal set; }
-	public BigInteger SecretNonce { get; internal set; }
+	public BigInteger PrivateNonce { get; internal set; }
 	public BigInteger PartialSignature { get; internal set; }
 }

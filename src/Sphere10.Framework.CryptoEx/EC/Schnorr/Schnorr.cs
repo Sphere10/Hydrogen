@@ -170,7 +170,7 @@ public class Schnorr: StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schnor
 	}
 	
 	// Hash Methods
-	private static byte[] TaggedHash(string tag, byte[] msg) {
+	internal static byte[] TaggedHash(string tag, byte[] msg) {
 		var tagHash = ComputeSha256Hash(Encoding.UTF8.GetBytes(tag));
 		return ComputeSha256Hash(Arrays.ConcatenateAll(tagHash, tagHash, msg));
 	}
@@ -230,7 +230,7 @@ public class Schnorr: StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schnor
 		return publicKey.IsInfinity;
 	}
 
-	private static bool IsEven(BigInteger publicKey) {
+	internal static bool IsEven(BigInteger publicKey) {
 		//return BigInteger.Jacobi(publicKey, P) == 1);
 		return publicKey.Mod(BigInteger.Two).Equals(BigInteger.Zero);
 	}
@@ -333,7 +333,7 @@ public class Schnorr: StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schnor
 	}
 	internal static void ValidateNonceArrays(byte[][] nonces) {
 		for (var i = 0; i < nonces.Length; i++) {
-			ValidateBuffer(nameof(nonces), nonces[i], 32, i);
+			ValidateBuffer(nameof(nonces), nonces[i], 66, i);
 		}
 	}
 
@@ -342,7 +342,7 @@ public class Schnorr: StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schnor
 	/// </summary>
 	/// <param name="point"></param>
 	/// <exception cref="Exception"></exception>
-	private static void ThrowIfPointIsAtInfinity(ECPoint point) {
+	internal static void ThrowIfPointIsAtInfinity(ECPoint point) {
 		if (IsPointInfinity(point)) {
 			throw new Exception($"{nameof(point)} is at infinity");
 		}

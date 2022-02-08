@@ -51,11 +51,11 @@ public class MuSig {
 		for (var i = 0; i < publicKeys.Length; i++) {
 			var xi = Schnorr.LiftX(publicKeys[i]);
 			var coefficient = ComputeCoefficient(ell, i, publicKeys[i]);
-			var jj = BigIntegerUtils.BigIntegerToBytes(coefficient, 32);
 			var summand = xi.Multiply(coefficient);
 			x = x == null ? summand : x.Add(summand);
 		}
 		x = x?.Normalize();
+		x = Schnorr.IsEven(x) ? x : x?.Negate();
 		return Schnorr.IsPointInfinity(x) ? throw new Exception("public key combination failed") : x;
 	}
 
@@ -80,6 +80,7 @@ public class MuSig {
 	}
 
 	private static byte[] CBytes(ECPoint point) {
+		var x = BigIntegerUtils.BigIntegerToBytes(point.AffineYCoord.ToBigInteger(), 32);
 		var xCoord = Schnorr.BytesOfXCoord(point);
 		return Schnorr.IsEven(point)
 			? Arrays.Concatenate(new byte[] { 2 }, xCoord)
@@ -164,7 +165,7 @@ public class MuSig {
 
 	public MuSigSession InitializeSession(byte[] sessionId, BigInteger privateKey, byte[] publicKey, byte[] messageDigest,
 	                                      byte[] combinedPublicKey, bool publicKeyParity, byte[] ell, int idx) {
-		ValidateSessionParams(sessionId, privateKey, messageDigest, combinedPublicKey, ell);
+		//ValidateSessionParams(sessionId, privateKey, messageDigest, combinedPublicKey, ell);
 		var session = new MuSigSession {
 			SessionId = sessionId,
 			MessageDigest = messageDigest,
@@ -173,52 +174,121 @@ public class MuSig {
 			Ell = ell,
 			Idx = idx
 		};
-
+		
 		var n = Schnorr.N;
-		var coefficient = ComputeCoefficient(ell, idx, publicKey);
-		session.SecretKey = privateKey.Multiply(coefficient).Mod(n);
-		session.OwnKeyParity = Schnorr.IsEven(Schnorr.G.Multiply(privateKey).Normalize());
-		if (session.PublicKeyParity != session.OwnKeyParity) {
+		session.SecretKey = privateKey;
+
+		session.Coefficient = ComputeCoefficient(ell, idx, publicKey);
+		//session.SecretKey = privateKey.Multiply(coefficient).Mod(n);
+		
+		var point = Schnorr.G.Multiply(session.SecretKey).Normalize();
+		session.OwnKeyParity = Schnorr.IsEven(point);
+		
+		if (session.OwnKeyParity ^ session.PublicKeyParity) {
 			session.SecretKey = n.Subtract(session.SecretKey);
 		}
+		
+		// if (Schnorr.IsEven(point) ^ Schnorr.IsEven(Schnorr.LiftX(combinedPublicKey))) {
+		// 	session.SecretKey = n.Subtract(session.SecretKey);
+		// }
+		// if (session.PublicKeyParity != session.OwnKeyParity) {
+		// 	session.SecretKey = n.Subtract(session.SecretKey);
+		// }
 
-		var nonceData = Arrays.ConcatenateAll(sessionId,
-			messageDigest,
-			combinedPublicKey,
-			BigIntegerUtils.BigIntegerToBytes(privateKey, 32));
-		session.PrivateNonce = BigIntegerUtils.BytesToBigInteger(Schnorr.ComputeSha256Hash(nonceData));
-		Schnorr.ValidateRange(nameof(session.PrivateNonce), session.PrivateNonce);
-		var r = Schnorr.G.Multiply(session.PrivateNonce).Normalize();
-		session.PublicNonce = Schnorr.BytesOfXCoord(r);
-		session.NonceParity = Schnorr.IsEven(r);
-		session.Commitment = Schnorr.ComputeSha256Hash(session.PublicNonce);
+
+		// var nonceData = Arrays.ConcatenateAll(sessionId,
+		// 	messageDigest,
+		// 	combinedPublicKey,
+		// 	BigIntegerUtils.BigIntegerToBytes(privateKey, 32));
+		var nonceData = GenerateNonce(sessionId, BigIntegerUtils.BigIntegerToBytes(privateKey, 32), messageDigest, combinedPublicKey);
+		//session.PrivateNonce = BigIntegerUtils.BytesToBigInteger(Schnorr.ComputeSha256Hash(nonceData));
+		//Schnorr.ValidateRange(nameof(session.PrivateNonce), session.PrivateNonce);
+		// var r = Schnorr.G.Multiply(session.PrivateNonce).Normalize();
+		// session.PublicNonce = Schnorr.BytesOfXCoord(r);
+		//session.NonceParity = Schnorr.IsEven(r);
+		session.PublicNonce = nonceData.PublicNonce;
+		session.PrivateNonce = nonceData.PrivateNonce;
+		//session.Commitment = Schnorr.ComputeSha256Hash(session.PublicNonce);
 		session.PartialSignature = null;
 		return session;
 	}
 
+	private ECPoint PointC(byte[] compressedPublicKey) {
+		var point = Schnorr.LiftX(compressedPublicKey.AsSpan().Slice(1, 32).ToArray());
+		var compressionMarker = compressedPublicKey[0];
+		switch (compressionMarker) {
+			case 2:
+				return point;
+			case 3:
+				return point.Negate();
+			default:
+				throw new Exception("unknown compression marker encountered");
+		}
+	}
+
 	public byte[] CombineSessionNonce(MuSigSession session, byte[][] nonces) {
 		Schnorr.ValidateNonceArrays(nonces);
-		var r = Schnorr.LiftX(nonces[0]);
-		for (var i = 1; i < nonces.Length; i++) {
-			r = r.Add(Schnorr.LiftX(nonces[i]));
+		ECPoint rA = null;
+		ECPoint rB = null;
+		for (var i = 0; i < nonces.Length; i++) {
+			var sliceA = nonces[i].AsSpan().Slice(0, 33).ToArray();
+			var sliceB = nonces[i].AsSpan().Slice(33, 33).ToArray();
+			var summandA = PointC(sliceA);
+			var summandB = PointC(sliceB);
+			rA = rA == null ? summandA : rA.Add(summandA);
+			rB = rB == null ? summandB : rB.Add(summandB);
 		}
-		r = r.Normalize();
-		session.CombinedNonceParity = Schnorr.IsEven(r);
+		rA = rA?.Normalize();
+		rB = rB?.Normalize();
+		rA = Schnorr.IsPointInfinity(rA) ? throw new Exception($"nonce combination failed, {nameof(rA)} is at infinity") : rA;
+		rB = Schnorr.IsPointInfinity(rB) ? throw new Exception($"nonce combination failed, {nameof(rB)} is at infinity") : rB;
+		return Arrays.Concatenate(CBytes(rA), CBytes(rB));
+	}
+	
+	internal BigInteger GetB(byte[] aggNonce, byte[] q, byte[] m) {
+		var hash = Schnorr.TaggedHash("MuSig/noncecoef", Arrays.ConcatenateAll(aggNonce, q, m));
+		return BigIntegerUtils.BytesToBigInteger(hash).Mod(Schnorr.N);
+	}
+
+	public byte[] GenerateFinalNonce(byte[] message, byte[] combinedNonce, byte[] combinedPublicKey) {
+		var r1 = PointC(combinedNonce.AsSpan().Slice(0, 33).ToArray());
+		var r2 = PointC(combinedNonce.AsSpan().Slice(33, 33).ToArray());
+		var b = GetB(combinedNonce, combinedPublicKey, message);
+		var r = r2.Multiply(b).Add(r1).Normalize();
+		Schnorr.ThrowIfPointIsAtInfinity(r);
 		return Schnorr.BytesOfXCoord(r);
 	}
 
-	public BigInteger PartialSign(MuSigSession session, byte[] message, byte[] combinedNonce, byte[] combinedPublicKey) {
-		var e = Schnorr.GetE(combinedNonce, combinedPublicKey, message);
-		var sk = session.SecretKey;
-		var k = session.PrivateNonce;
+	public PartialMuSig PartialSign(MuSigSession session, byte[] message, byte[] combinedNonce, byte[] combinedPublicKey) {
 		var n = Schnorr.N;
-		if (session.NonceParity != session.CombinedNonceParity) {
-			k = n.Subtract(k);
-		}
-		return sk.Multiply(e).Add(k).Mod(n);
+		var g = Schnorr.G;
+		var b = GetB(combinedNonce, combinedPublicKey, message);
+		var e = Schnorr.GetE(combinedNonce, combinedPublicKey, message);
+		var k1 = BigIntegerUtils.BytesToBigInteger(session.PrivateNonce.AsSpan().Slice(0, 32).ToArray());
+		var k2 = BigIntegerUtils.BytesToBigInteger(session.PrivateNonce.AsSpan().Slice(32, 32).ToArray());
+		Schnorr.ValidateRange(nameof(k1), k1);
+		Schnorr.ValidateRange(nameof(k2), k2);
+		k1 = Schnorr.IsEven(k1) ? k1 : n.Subtract(k1);
+		k2 = Schnorr.IsEven(k2) ? k2 : n.Subtract(k2);
+		var mu = session.Coefficient;
+		var sk = session.SecretKey;
+		var aa = b.Multiply(k2);
+		var bb = e.Multiply(mu).Multiply(sk);
+		var cc = k1.Add(aa).Add(bb);
+		var sig = cc.Mod(n);
+
+		//session.PubNonce = Arrays.Concatenate(CBytes(g.Multiply(k1)), CBytes(g.Multiply(k2)));
+
+		return new PartialMuSig {
+			Signature = sig
+		};
+		// if (session.NonceParity != session.CombinedNonceParity) {
+		// 	k = n.Subtract(k);
+		// }
+		//return sk.Multiply(e).Add(k).Mod(n);
 	}
 
-	public void PartialSigVerify(MuSigSession session, BigInteger partialSignature, byte[] combinedNonce, int idx, byte[] publicKey,
+	public void PartialSigVerify(MuSigSession session, PartialMuSig partialSignature, byte[] combinedNonce, int idx, byte[] publicKey,
 	                             byte[] nonce) {
 		var e = Schnorr.GetE(combinedNonce, session.CombinedPublicKey, session.MessageDigest);
 		var coefficient = ComputeCoefficient(session.Ell, idx, publicKey);
@@ -230,7 +300,7 @@ public class MuSig {
 			e = n.Subtract(e);
 		}
 
-		var rp = Schnorr.GetR(partialSignature, e.Multiply(coefficient).Mod(n), pj);
+		var rp = Schnorr.GetR(partialSignature.Signature, e.Multiply(coefficient).Mod(n), pj);
 		if (session.CombinedNonceParity) {
 			rp = rp.Negate();
 		}
@@ -239,23 +309,22 @@ public class MuSig {
 			throw new Exception("partial signature verification failed");
 		}
 	}
-
-	public byte[] CombinePartialSigs(byte[] combinedNonce, BigInteger[] partialSignatures) {
-		var r = Schnorr.LiftX(combinedNonce);
+	
+	public byte[] CombinePartialSigs(byte[] finalNonce, PartialMuSig[] partialSignatures) {
 		if (!(partialSignatures?.Any() ?? false)) {
 			throw new Exception($"{nameof(partialSignatures)} cannot be null or empty");
 		}
-		var rx = Schnorr.BytesOfXCoord(r);
-		var s = partialSignatures[0];
+
+		BigInteger s = null;
 		var n = Schnorr.N;
-		for (var i = 1; i < partialSignatures.Length; i++) {
-			var tmp = partialSignatures[i];
-			if (tmp.CompareTo(n) >= 0) {
-				throw new Exception($"{tmp} must be an integer less than n");
+		for (var i = 0; i < partialSignatures.Length; i++) {
+			var summand = partialSignatures[i].Signature;
+			if (summand.CompareTo(n) >= 0) {
+				throw new Exception($"{summand} must be an integer less than n");
 			}
-			s = s.Add(partialSignatures[i]).Mod(n);
+			s = s == null ? summand.Mod(n) : s.Add(summand).Mod(n);
 		}
-		return Arrays.ConcatenateAll(rx, BigIntegerUtils.BigIntegerToBytes(s, 32));
+		return Arrays.Concatenate(finalNonce, BigIntegerUtils.BigIntegerToBytes(s, 32));
 	}
 
 	public MuSigData MuSigNonInteractive(Schnorr.PrivateKey[] privateKeys, byte[] messageDigest) {
@@ -274,17 +343,33 @@ public class MuSig {
 		var publicKeyHash = ComputeEll(publicKeys);
 		var combinedPublicKeyPoint = CombinePublicKey(publicKeys, publicKeyHash);
 		var combinedPublicKey = Schnorr.BytesOfXCoord(combinedPublicKeyPoint);
-		var uy = BigIntegerUtils.BigIntegerToBytes(combinedPublicKeyPoint.AffineYCoord.ToBigInteger(), 32);
-		var publicKeyParity = GetYCoordParity(combinedPublicKeyPoint);
+		//var publicKeyParity = GetYCoordParity(combinedPublicKeyPoint);
+		var publicKeyParity = Schnorr.IsEven(combinedPublicKeyPoint);
+		
+		var session_id = new[]
+		{
+			"7CB6E93BCF96AEE2BB31AB80AC880E108438FCECCD2E6132B49A2CF103991ED0",
+			"236851BDBB4E62E06D08DC228D4E83A0A0971816EED785F994D19B165952F38D",
+			"BC1DCCF8BB20655E39ABB6279152D46AB999F4C36982DB3296986DC0368319EB",
+		};
 
 		// 3. create private signing sessions
 		var sessions = new MuSigSession[privateKeys.Length];
 		for (var i = 0; i < sessions.Length; i++) {
-			sessions[i] = InitializeSession(Schnorr.RandomBytes(),
+			// sessions[i] = InitializeSession(Schnorr.RandomBytes(),
+			// 	BigIntegerUtils.BytesToBigInteger(privateKeys[i].RawBytes),
+			// 	publicKeys[i],
+			// 	messageDigest,
+			// 	combinedPublicKey,
+			// 	publicKeyParity,
+			// 	publicKeyHash,
+			// 	i);
+			
+			sessions[i] = InitializeSession(session_id[i].ToHexByteArray(),
 				BigIntegerUtils.BytesToBigInteger(privateKeys[i].RawBytes),
 				publicKeys[i],
 				messageDigest,
-				combinedPublicKey,
+				null,
 				publicKeyParity,
 				publicKeyHash,
 				i);
@@ -297,21 +382,38 @@ public class MuSig {
 		for (var i = 0; i < sessions.Length; i++) {
 			sessions[i].CombinedNonceParity = signerSession.CombinedNonceParity;
 		}
+		
+		
+		var expectedSigs = new[]
+		{
+			"34ce323cd18ce1193b45f8e1e8ff4d23241053211a3bd26d240f1fbd036f5d07",
+			"f985a08c5da23b409a7a8ad2501598c20e71f9566df0168082136b0c9afc0f45",
+			"71ae6305bc7cf6c784245daab7f2f5c9aff70abbfc7475708069fa7bf1b7c24d"
+		};
+
+		// var sigasbig = expectedSigs.Select(x => BigIntegerUtils.BytesToBigInteger(x.ToHexByteArray())).Select(k => new PartialMuSig(){Signature = k}).ToArray();
+		//
+		// var finalNonce = "ed7d22176b48817351b197be4ff6df813c938dfc3cd5c9823640c2303e22e80f".ToHexByteArray();
+		// var hyu = CombinePartialSigs(finalNonce, sigasbig);
 
 		// 5. generate partial signatures
 		for (var i = 0; i < sessions.Length; i++) {
 			sessions[i].PartialSignature = PartialSign(sessions[i], messageDigest, combinedNonce, combinedPublicKey);
 		}
+		
+		// 6. generate final nonce
+		var finalNonce = GenerateFinalNonce(messageDigest, combinedNonce, combinedPublicKey);
+
 		var partialSignatures = sessions.Select(x => x.PartialSignature).ToArray();
 
-		// 6. verify individual partial signatures
+		// 7. verify individual partial signatures
 		for (var i = 0; i < publicKeys.Length; i++) {
 			PartialSigVerify(signerSession, sessions[i].PartialSignature, combinedNonce, i, publicKeys[i], publicNonces[i]);
 		}
 
 		return new MuSigData {
-			// 7. combine partial signatures
-			Signature = CombinePartialSigs(combinedNonce, partialSignatures),
+			// 8. combine partial signatures
+			Signature = CombinePartialSigs(finalNonce, partialSignatures),
 			MessageDigest = messageDigest,
 			CombinedPublicKey = combinedPublicKey
 		};
@@ -326,8 +428,9 @@ public class MuSig {
 	/// <param name="messageDigest"></param>
 	/// <param name="combinedPublicKey"></param>
 	/// <param name="ell"></param>
-	private static void ValidateSessionParams(byte[] sessionId, BigInteger privateKey, byte[] messageDigest, byte[] combinedPublicKey,
+	private void ValidateSessionParams(byte[] sessionId, BigInteger privateKey, byte[] messageDigest, byte[] combinedPublicKey,
 	                                          byte[] ell) {
+		Schnorr.ValidateRange(nameof(privateKey), privateKey);
 		Schnorr.ValidateSignatureParams(BigIntegerUtils.BigIntegerToBytes(privateKey, 32), messageDigest);
 		Schnorr.ValidateBuffer(nameof(sessionId), sessionId, 32);
 		Schnorr.ValidateBuffer(nameof(combinedPublicKey), combinedPublicKey, 32);

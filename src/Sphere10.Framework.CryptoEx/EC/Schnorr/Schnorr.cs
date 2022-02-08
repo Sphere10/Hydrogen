@@ -28,7 +28,7 @@ public class Schnorr: StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schnor
 	private Schnorr(ECDSAKeyType keyType, CHF digestCHF) : base(digestCHF) {
 		
 		if (keyType != ECDSAKeyType.SECP256K1) {
-			throw new Exception($"Only {nameof(ECDSAKeyType.SECP256K1)} is supported in Schnorr");
+			throw new InvalidOperationException($"Only {nameof(ECDSAKeyType.SECP256K1)} is supported in Schnorr");
 		}
 		_keyType = keyType;
 		_curveParams = CustomNamedCurves.GetByName(keyType.ToString());
@@ -114,7 +114,7 @@ public class Schnorr: StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schnor
 		}
 		
 		if (kPrime.SignValue == 0) {
-			throw new Exception("kPrime is zero");
+			throw new InvalidOperationException("kPrime is zero");
 		}
 
 		var r = G.Multiply(kPrime).Normalize();
@@ -123,7 +123,7 @@ public class Schnorr: StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schnor
 		var e = GetE(rx, px, message);
 		var sig = Arrays.ConcatenateAll(rx, BigIntegerUtils.BigIntegerToBytes(k.Add(e.Multiply(d)).Mod(N), 32));
 		if (!VerifyDigest(sig, messageDigest, BytesOfXCoord(p))) {
-			throw new Exception("The created signature did not pass verification.");
+			throw new InvalidOperationException("The created signature did not pass verification.");
 		}
 		return sig;
 	}
@@ -178,11 +178,6 @@ public class Schnorr: StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schnor
 	internal static byte[] ComputeSha256Hash(ReadOnlySpan<byte> message) {
 		return Hashers.Hash(CHF.SHA2_256, message);
 	}
-	
-	internal static IHashFunction BorrowSHA256Hasher() {
-		 Hashers.BorrowHasher(CHF.SHA2_256, out var hasher);
-		 return hasher;
-	}
 
 	// Math Methods
 	private BigInteger GetEvenKey(ECPoint publicKey, BigInteger privateKey) {
@@ -211,12 +206,12 @@ public class Schnorr: StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schnor
 	internal ECPoint LiftX(byte[] publicKey) {
 		var x = BigIntegerUtils.BytesToBigInteger(publicKey);
 		if (x.CompareTo(P) >= 0) {
-			throw new Exception($"{nameof(x)} is not in the range 0..p-1");
+			throw new InvalidOperationException($"{nameof(x)} is not in the range 0..p-1");
 		}
 		var c = x.Pow(3).Add(BigInteger.ValueOf(7)).Mod(P);
 		var y = c.ModPow(P.Add(BigInteger.One).Divide(BigInteger.Four), P);
 		if (c.CompareTo(y.ModPow(BigInteger.Two, P)) != 0) {
-			throw new Exception($"{nameof(c)} is not equal to y^2");
+			throw new InvalidOperationException($"{nameof(c)} is not equal to y^2");
 		}
 		var point = Curve.CreatePoint(x, y);
 		if (!IsEven(point)) {
@@ -267,21 +262,21 @@ public class Schnorr: StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schnor
 	/// </summary>
 	/// <param name="r"></param>
 	/// <param name="s"></param>
-	/// <exception cref="Exception"></exception>
+	/// <exception cref="ArgumentException"></exception>
 	private void ValidateSignature(BigInteger r, BigInteger s) {
 		if (r.CompareTo(P) >= 0) {
-			throw new Exception($"{nameof(r)} is larger than or equal to field size");
+			throw new ArgumentException($"{nameof(r)} is larger than or equal to field size");
 		}
 		if (s.CompareTo(N) >= 0) {
-			throw new Exception($"{nameof(s)} is larger than or equal to curve order");
+			throw new ArgumentException($"{nameof(s)} is larger than or equal to curve order");
 		}
 	}
 	
-	/// <summary>
-	/// Validate Range No Throw
-	/// </summary>
-	/// <param name="scalar"></param>
-	/// <exception cref="Exception"></exception>
+    /// <summary>
+    /// Validate Range No Throw
+    /// </summary>
+    /// <param name="scalar"></param>
+    /// <returns></returns>
 	private bool ValidateRangeNoThrow(BigInteger scalar) {
 		return scalar.CompareTo(BigInteger.One) >= 0 && scalar.CompareTo(N.Subtract(BigInteger.One)) <= 0;
 	}
@@ -291,10 +286,10 @@ public class Schnorr: StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schnor
 	/// </summary>
 	/// <param name="name"></param>
 	/// <param name="scalar"></param>
-	/// <exception cref="Exception"></exception>
+	/// <exception cref="ArgumentOutOfRangeException"></exception>
 	internal void ValidateRange(string name, BigInteger scalar) {
 		if (!ValidateRangeNoThrow(scalar)) {
-			throw new Exception($"{name} must be an integer in the range 1..n-1");
+			throw new ArgumentOutOfRangeException($"{name} must be an integer in the range 1..n-1");
 		}
 	}
 
@@ -305,14 +300,14 @@ public class Schnorr: StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schnor
 	/// <param name="buf"></param>
 	/// <param name="len"></param>
 	/// <param name="idx"></param>
-	/// <exception cref="Exception"></exception>
+	/// <exception cref="ArgumentOutOfRangeException"></exception>
 	private static void ValidatePrivateKey(string name, ReadOnlySpan<byte> buf, int len, int? idx = null) {
 		var idxStr = (idx.HasValue ? "[" + idx + "]" : "");
 		// if (buf.IsEmpty) {
 		// 	throw new Exception($"{name + idxStr} cannot be empty");
 		// }
 		if (buf.Length != len) {
-			throw new Exception($"{name + idxStr} must be {len} bytes long");
+			throw new ArgumentOutOfRangeException($"{name + idxStr} must be {len} bytes long");
 		}
 	}
 
@@ -341,10 +336,10 @@ public class Schnorr: StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schnor
 	/// Throw If Point Is At Infinity
 	/// </summary>
 	/// <param name="point"></param>
-	/// <exception cref="Exception"></exception>
+	/// <exception cref="ArgumentOutOfRangeException"></exception>
 	internal static void ThrowIfPointIsAtInfinity(ECPoint point) {
 		if (IsPointInfinity(point)) {
-			throw new Exception($"{nameof(point)} is at infinity");
+			throw new ArgumentOutOfRangeException($"{nameof(point)} is at infinity");
 		}
 	}
 
@@ -352,12 +347,12 @@ public class Schnorr: StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schnor
 	/// Validate Point
 	/// </summary>
 	/// <param name="point"></param>
-	/// <exception cref="Exception"></exception>
+	/// <exception cref="InvalidOperationException"></exception>
 	private static void ValidatePoint(ECPoint point) {
 		ThrowIfPointIsAtInfinity(point);
 		if (!IsEven(point))
 		{
-			throw new Exception($"{nameof(point)} does not exist");
+			throw new InvalidOperationException($"{nameof(point)} does not exist");
 		}
 	}
 
@@ -368,14 +363,14 @@ public class Schnorr: StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schnor
 	/// <param name="buf"></param>
 	/// <param name="len"></param>
 	/// <param name="idx"></param>
-	/// <exception cref="Exception"></exception>
+	/// <exception cref="ArgumentOutOfRangeException"></exception>
 	internal static void ValidateBuffer(string name, ReadOnlySpan<byte> buf, int len, int? idx = null) {
 		var idxStr = (idx.HasValue ? "[" + idx + "]" : "");
 		// if (buf.IsEmpty) {
 		// 	throw new Exception($"{name + idxStr} cannot be empty");
 		// }
 		if (buf.Length != len) {
-			throw new Exception($"{name + idxStr} must be {len} bytes long");
+			throw new ArgumentOutOfRangeException($"{name + idxStr} must be {len} bytes long");
 		}
 	}
 
@@ -405,7 +400,7 @@ public class Schnorr: StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schnor
 	/// <param name="signatures"></param>
 	/// <param name="messageDigests"></param>
 	/// <param name="publicKeys"></param>
-	/// <exception cref="Exception"></exception>
+	/// <exception cref="ArgumentException"></exception>
 	private static void ValidateBatchVerificationParams(byte[][] signatures, byte[][] messageDigests, byte[][] publicKeys) {
 
 		ValidateSignatureArrays(signatures);
@@ -413,7 +408,7 @@ public class Schnorr: StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schnor
 		ValidateMessageDigestArrays(messageDigests);
 
 		if (signatures.Length != messageDigests.Length || messageDigests.Length != publicKeys.Length) {
-			throw new Exception("all parameters must be an array with the same length");
+			throw new ArgumentException("all parameters must be an array with the same length");
 		}
 	}
 

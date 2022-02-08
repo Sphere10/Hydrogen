@@ -206,12 +206,12 @@ public class Schnorr: StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schnor
 	internal ECPoint LiftX(byte[] publicKey) {
 		var x = BigIntegerUtils.BytesToBigInteger(publicKey);
 		if (x.CompareTo(P) >= 0) {
-			throw new InvalidOperationException($"{nameof(x)} is not in the range 0..p-1");
+			throw new ArgumentOutOfRangeException($"{nameof(x)} is not in the range 0..p-1");
 		}
 		var c = x.Pow(3).Add(BigInteger.ValueOf(7)).Mod(P);
 		var y = c.ModPow(P.Add(BigInteger.One).Divide(BigInteger.Four), P);
 		if (c.CompareTo(y.ModPow(BigInteger.Two, P)) != 0) {
-			throw new InvalidOperationException($"{nameof(c)} is not equal to y^2");
+			throw new ArgumentOutOfRangeException($"{nameof(c)} is not equal to y^2");
 		}
 		var point = Curve.CreatePoint(x, y);
 		if (!IsEven(point)) {
@@ -262,13 +262,13 @@ public class Schnorr: StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schnor
 	/// </summary>
 	/// <param name="r"></param>
 	/// <param name="s"></param>
-	/// <exception cref="ArgumentException"></exception>
+	/// <exception cref="ArgumentOutOfRangeException"></exception>
 	private void ValidateSignature(BigInteger r, BigInteger s) {
 		if (r.CompareTo(P) >= 0) {
-			throw new ArgumentException($"{nameof(r)} is larger than or equal to field size");
+			throw new ArgumentOutOfRangeException($"{nameof(r)} is larger than or equal to field size");
 		}
 		if (s.CompareTo(N) >= 0) {
-			throw new ArgumentException($"{nameof(s)} is larger than or equal to curve order");
+			throw new ArgumentOutOfRangeException($"{nameof(s)} is larger than or equal to curve order");
 		}
 	}
 	

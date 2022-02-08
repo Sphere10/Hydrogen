@@ -332,7 +332,7 @@ public class MuSig {
 		for (var i = 0; i < partialSignatures.Length; i++) {
 			var summand = partialSignatures[i];
 			if (summand.CompareTo(n) >= 0) {
-				throw new InvalidOperationException($"{summand} must be an integer less than n");
+				throw new ArgumentOutOfRangeException($"{summand} must be an integer less than n");
 			}
 			s = s == null ? summand.Mod(n) : s.Add(summand).Mod(n);
 		}

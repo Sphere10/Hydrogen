@@ -1,4 +1,5 @@
 using Org.BouncyCastle.Math;
+using Org.BouncyCastle.Math.EC;
 
 namespace Sphere10.Framework.CryptoEx.EC; 
 
@@ -8,7 +9,7 @@ public class MuSigData {
 	public byte[] Signature { get; internal set; }
 }
 
-
-public class PartialMuSig {
-	public BigInteger Signature { get; internal set; }
+public class PublicKeyAggregationData {
+	public ECPoint CombinedPoint { get; internal set; }
+	public bool PublicKeyParity { get; internal set; }
 }

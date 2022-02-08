@@ -292,8 +292,7 @@ public class MuSig {
 		var r2 = PointC(session.PublicNonce.AsSpan().Slice(33, 33).ToArray());
 		
 		var rj = r2;
-		rj = rj.Multiply(b);
-		rj = rj.Add(r1);
+		rj = rj.Multiply(b).Add(r1);
 
 		var pkp = Schnorr.LiftX(publicKey);
 		/* Multiplying the messagehash by the musig coefficient is equivalent
@@ -309,9 +308,8 @@ public class MuSig {
 		var s = partialSignature;
 		/* Compute -s*G + e*pkj + rj */
 		s = n.Subtract(s); // s = s.Negate().Mod(n); also works
-		var tmp = pkp.Multiply(e);
-		var tmp2 = g.Multiply(s);
-		tmp = tmp.Add(tmp2);
+
+		var tmp = pkp.Multiply(e).Add(g.Multiply(s));
 
 		if (session.FinalNonceParity)
 		{

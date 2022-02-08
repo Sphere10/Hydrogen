@@ -392,13 +392,16 @@ public class MuSig {
 		// 	PartialSigVerify(signerSession, sessions[i].PartialSignature, combinedNonce, i, publicKeys[i], publicNonces[i]);
 		// }
 
-		// return new MuSigData {
-		// 	// 8. combine partial signatures
-		// 	Signature = CombinePartialSigs(finalNonce, partialSignatures),
-		// 	MessageDigest = messageDigest,
-		// 	CombinedPublicKey = combinedPublicKey
-		// };
-		return null;
+		// 7. select all partial signatures
+		var partialSignatures = sessions.Select(x => x.PartialSignature).ToArray();
+		// 8. combine all partial signatures
+		 var combinedSignature = CombinePartialSigs(combinedNonce.FinalNonce, partialSignatures);
+		 return new MuSigData {
+		 // 9. combine partial signatures
+		 	CombinedSignature = combinedSignature,
+		 	MessageDigest = messageDigest,
+		 	CombinedPublicKey = combinedPublicKey
+		 };
 	}
 
 	// Validation Methods

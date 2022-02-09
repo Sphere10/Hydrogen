@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Security.Cryptography;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using NUnit.Framework;
+using Org.BouncyCastle.Math;
 using Sphere10.Framework.CryptoEx.EC;
 
 namespace Sphere10.Framework.CryptoEx.Tests;
@@ -36,12 +36,10 @@ public class Bip340SchnorrTest
     private string _bip40SchnorrFolder;
     private string _bip40SchnorrFilePath;
     private List<Bip340SchnorrTestData> _vectors;
-    
+
     private static byte[] RandomBytes(int length)
     {
-        Span<byte> result = stackalloc byte [length];
-        RandomNumberGenerator.Fill(result);
-        return result.ToArray();
+        return Tools.Crypto.GenerateCryptographicallyRandomBytes(length);
     }
 
     [OneTimeSetUp]
@@ -156,10 +154,9 @@ public class Bip340SchnorrTest
     }
 
     [Test]
-    [TestCase(ECDSAKeyType.SECP256K1), Repeat(50)]
+    [TestCase(ECDSAKeyType.SECP256K1), Repeat(64)]
     // [TestCase(ECDSAKeyType.SECP384R1)]
     // [TestCase(ECDSAKeyType.SECP521R1)]
-    // [TestCase(ECDSAKeyType.SECT283K1)]
     public void TestRandomSignAndVerify(ECDSAKeyType keyType)
     {
         var messageDigest = Hashers.Hash(CHF.SHA2_256, RandomBytes(new Random().Next(0, 65536)));
@@ -170,6 +167,94 @@ public class Bip340SchnorrTest
         var actual = schnorr.VerifyDigest(sig, messageDigest, pk);
         Assert.IsTrue(actual);
     }
+
+    [Test]
+    [TestCase(ECDSAKeyType.SECP256K1)]
+    // [TestCase(ECDSAKeyType.SECP384R1)]
+    // [TestCase(ECDSAKeyType.SECP521R1)]
+    public void IsPublicKey(ECDSAKeyType keyType) {
+        var schnorr = new Schnorr(keyType);
+        var privateKey = schnorr.GeneratePrivateKey();
+        var publicKey = schnorr.DerivePublicKey(privateKey);
+        Assert.IsTrue(schnorr.IsPublicKey(privateKey, publicKey.RawBytes));
+    }
     
-    // TODO test parsing private and public keys
+    // test parsing private and public keys
+
+    [Test]
+    [TestCase(new byte[] { }, ECDSAKeyType.SECP256K1)]
+    [TestCase(new byte[] { 0, 0 }, ECDSAKeyType.SECP256K1)]
+    // [TestCase(new byte[] { }, ECDSAKeyType.SECP384R1)]
+    // [TestCase(new byte[] { 0, 0 }, ECDSAKeyType.SECP384R1)]
+    // [TestCase(new byte[] { }, ECDSAKeyType.SECP521R1)]
+    // [TestCase(new byte[] { 0, 0 }, ECDSAKeyType.SECP521R1)]
+    public void VerifyThatTryParsePrivateKeyFailsEarlyForBadKeys(byte[] badRawKey, ECDSAKeyType keyType) {
+        var schnorr = new Schnorr(keyType);
+        Assert.IsFalse(schnorr.TryParsePrivateKey(badRawKey, out _));
+    }
+    
+    [Test]
+    [TestCase(ECDSAKeyType.SECP256K1)]
+    // [TestCase(ECDSAKeyType.SECP384R1)]
+    // [TestCase(ECDSAKeyType.SECP521R1)]
+    public void VerifyThatTryParsePrivateKeyFailsForValuesNotInBetweenZeroToCurveOrderMinusOne(ECDSAKeyType keyType) {
+        var schnorr = new Schnorr(keyType);
+        var negativeOne = BigInteger.One.Negate();
+        Assert.IsFalse(schnorr.TryParsePrivateKey(negativeOne.ToByteArray(), out _));
+        var order = keyType.GetAttribute<KeyTypeOrderAttribute>().Value;
+        Assert.IsFalse(schnorr.TryParsePrivateKey(order.ToByteArrayUnsigned(), out _));
+    }
+    
+    [Test]
+    [TestCase(ECDSAKeyType.SECP256K1)]
+    [TestCase(ECDSAKeyType.SECP256K1)]
+    // [TestCase(ECDSAKeyType.SECP384R1)]
+    // [TestCase(ECDSAKeyType.SECP384R1)]
+    // [TestCase(ECDSAKeyType.SECP521R1)]
+    // [TestCase(ECDSAKeyType.SECP521R1)]
+    public void VerifyThatTryParsePrivateKeyPassForGoodKeys(ECDSAKeyType keyType) {
+        var schnorr = new Schnorr(keyType);
+        var privateKeyBytes = schnorr.GeneratePrivateKey().RawBytes;
+        Assert.IsTrue(schnorr.TryParsePrivateKey(privateKeyBytes, out var privateKey));
+        Assert.AreEqual(privateKeyBytes, privateKey.RawBytes);
+    }
+    
+    [Test]
+    [TestCase(new byte[] { }, ECDSAKeyType.SECP256K1)]
+    [TestCase(new byte[] { 0, 0 }, ECDSAKeyType.SECP256K1)]
+    // [TestCase(new byte[] { }, ECDSAKeyType.SECP384R1)]
+    // [TestCase(new byte[] { 0, 0 }, ECDSAKeyType.SECP384R1)]
+    // [TestCase(new byte[] { }, ECDSAKeyType.SECP521R1)]
+    // [TestCase(new byte[] { 0, 0 }, ECDSAKeyType.SECP521R1)]
+    public void VerifyThatTryParsePublicKeyFailsEarlyForBadKeys(byte[] badRawKey, ECDSAKeyType keyType) {
+        var schnorr = new Schnorr(keyType);
+        Assert.IsFalse(schnorr.TryParsePublicKey(badRawKey, out _));
+    }
+    
+    [Test]
+    [TestCase(ECDSAKeyType.SECP256K1)]
+    // [TestCase(ECDSAKeyType.SECP384R1)]
+    // [TestCase(ECDSAKeyType.SECP521R1)]
+    public void VerifyThatTryParsePublicKeyFailsForValuesNotInBetweenZeroToPrimeFieldMinusOne(ECDSAKeyType keyType) {
+        var schnorr = new Schnorr(keyType);
+        var negativeOne = BigInteger.One.Negate();
+        Assert.IsFalse(schnorr.TryParsePublicKey(negativeOne.ToByteArray(), out _));
+        var primeField = keyType.GetAttribute<KeyTypePrimeFieldAttribute>().Value;
+        Assert.IsFalse(schnorr.TryParsePublicKey(primeField.ToByteArrayUnsigned(), out _));
+    }
+    
+    [Test]
+    [TestCase(ECDSAKeyType.SECP256K1)]
+    [TestCase(ECDSAKeyType.SECP256K1)]
+    // [TestCase(ECDSAKeyType.SECP384R1)]
+    // [TestCase(ECDSAKeyType.SECP384R1)]
+    // [TestCase(ECDSAKeyType.SECP521R1)]
+    // [TestCase(ECDSAKeyType.SECP521R1)]
+    public void VerifyThatTryParsePublicKeyPassForGoodKeys(ECDSAKeyType keyType) {
+        var schnorr = new Schnorr(keyType);
+        var privateKey = schnorr.GeneratePrivateKey();
+        var publicKeyBytes = schnorr.DerivePublicKey(privateKey).RawBytes;
+        Assert.IsTrue(schnorr.TryParsePublicKey(publicKeyBytes, out var publicKey));
+        Assert.AreEqual(publicKeyBytes, publicKey.RawBytes);
+    }
 }

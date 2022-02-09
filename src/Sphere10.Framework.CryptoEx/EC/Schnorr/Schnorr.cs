@@ -21,14 +21,20 @@ public class Schnorr: StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schnor
 	private readonly X9ECParameters _curveParams;
 	private readonly ECDomainParameters _domainParams;
 	private readonly SecureRandom _secureRandom;
+	
+	private static readonly ECDSAKeyType[] SupportedKeyTypes = {
+		ECDSAKeyType.SECP256K1,
+		ECDSAKeyType.SECP384R1,
+		ECDSAKeyType.SECP521R1
+	};
 
 	public Schnorr(ECDSAKeyType keyType) : this(keyType, CHF.SHA2_256) {
 	}
 
 	private Schnorr(ECDSAKeyType keyType, CHF digestCHF) : base(digestCHF) {
 		
-		if (keyType != ECDSAKeyType.SECP256K1) {
-			throw new InvalidOperationException($"Only {nameof(ECDSAKeyType.SECP256K1)} is supported in Schnorr");
+		if (!SupportedKeyTypes.Contains(keyType)) {
+			throw new InvalidOperationException($"{keyType.ToString()} is not supported in Schnorr");
 		}
 		_keyType = keyType;
 		_curveParams = CustomNamedCurves.GetByName(keyType.ToString());
@@ -45,7 +51,12 @@ public class Schnorr: StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schnor
 	internal int KeySize => (Curve.FieldSize + 7) >> 3;
 
 	public override bool TryParsePublicKey(ReadOnlySpan<byte> bytes, out PublicKey publicKey) {
-		if (bytes.Length <= 0 || bytes.Length > 32) {
+		if (bytes.Length != 32) {
+			publicKey = null;
+			return false;
+		}
+		var x = BytesToBigInt(bytes.ToArray());
+		if (x.CompareTo(P) >= 0) {
 			publicKey = null;
 			return false;
 		}
@@ -54,12 +65,12 @@ public class Schnorr: StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schnor
 	}
 
 	public override bool TryParsePrivateKey(ReadOnlySpan<byte> bytes, out PrivateKey privateKey) {
-		if (bytes.Length <= 0 || bytes.Length > 32) {
+		if (bytes.Length != 32) {
 			privateKey = null;
 			return false;
 		}
 		var order = _keyType.GetAttribute<KeyTypeOrderAttribute>().Value;
-		var d = BigIntegerUtils.BytesToBigInteger(bytes.ToArray());
+		var d = BytesToBigInt(bytes.ToArray());
 		if (d.CompareTo(BigInteger.One) < 0 || d.CompareTo(order) >= 0) {
 			privateKey = null;
 			return false;
@@ -72,7 +83,7 @@ public class Schnorr: StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schnor
 		var keyPairGenerator = GeneratorUtilities.GetKeyPairGenerator("ECDSA");
 		keyPairGenerator.Init(new ECKeyGenerationParameters(_domainParams, _secureRandom));
 		var keyPair = keyPairGenerator.GenerateKeyPair();
-		var privateKeyBytes = BigIntegerUtils.BigIntegerToBytes((keyPair.Private as ECPrivateKeyParameters)?.D, 32);
+		var privateKeyBytes = BytesOfBigInt((keyPair.Private as ECPrivateKeyParameters)?.D, 32);
 		return (PrivateKey)this.ParsePrivateKey(privateKeyBytes);
 	}
 
@@ -94,7 +105,7 @@ public class Schnorr: StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schnor
 	
 	public byte[] SignDigestWithAuxRandomData(PrivateKey privateKey, ReadOnlySpan<byte> messageDigest, ReadOnlySpan<byte> auxRandomData) {
 		// https://github.com/bitcoin/bips/blob/master/bip-0340.mediawiki#signing
-		ValidateSignatureParams(BigIntegerUtils.BigIntegerToBytes(privateKey.AsInteger.Value, 32), messageDigest);
+		ValidateSignatureParams(BytesOfBigInt(privateKey.AsInteger.Value, 32), messageDigest);
 		var message = messageDigest.ToArray();
 		var pk = privateKey.AsInteger.Value; 
 		ValidateRange(nameof(pk), pk);
@@ -109,9 +120,9 @@ public class Schnorr: StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schnor
 			auxRandomData = RandomBytes();
 		}
 
-		var t = BigIntegerUtils.BigIntegerToBytes(d.Xor(BigIntegerUtils.BytesToBigInteger(TaggedHash("BIP0340/aux", auxRandomData.ToArray()))), 32);
+		var t = BytesOfBigInt(d.Xor(BytesToBigInt(TaggedHash("BIP0340/aux", auxRandomData.ToArray()))), 32);
 		var rand = TaggedHash("BIP0340/nonce", Arrays.ConcatenateAll(t, px, message));
-		var kPrime = BigIntegerUtils.BytesToBigInteger(rand).Mod(N);
+		var kPrime = BytesToBigInt(rand).Mod(N);
 
 		if (kPrime.SignValue == 0) {
 			throw new InvalidOperationException("kPrime is zero");
@@ -121,7 +132,7 @@ public class Schnorr: StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schnor
 		var k = GetEvenKey(r, kPrime);
 		var rx = BytesOfXCoord(r);
 		var e = GetE(rx, px, message);
-		var sig = Arrays.ConcatenateAll(rx, BigIntegerUtils.BigIntegerToBytes(k.Add(e.Multiply(d)).Mod(N), 32));
+		var sig = Arrays.ConcatenateAll(rx, BytesOfBigInt(k.Add(e.Multiply(d)).Mod(N), 32));
 		if (!VerifyDigest(sig, messageDigest, BytesOfXCoord(p))) {
 			throw new InvalidOperationException("The created signature did not pass verification.");
 		}
@@ -134,10 +145,10 @@ public class Schnorr: StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schnor
 		ValidateVerificationParams(signature, messageDigest, publicKey);
 		var p = LiftX(publicKey.ToArray());
 		var px = BytesOfXCoord(p);
-		var rSig = BigIntegerUtils.BytesToBigInteger(signature.Slice(0, 32).ToArray());
-		var sSig = BigIntegerUtils.BytesToBigInteger(signature.Slice(32, 32).ToArray());
+		var rSig = BytesToBigInt(signature.Slice(0, 32).ToArray());
+		var sSig = BytesToBigInt(signature.Slice(32, 32).ToArray());
 		ValidateSignature(rSig, sSig);
-		var e = GetE(BigIntegerUtils.BigIntegerToBytes(rSig, 32), px, messageDigest.ToArray());
+		var e = GetE(BytesOfBigInt(rSig, 32), px, messageDigest.ToArray());
 		var r = GetR(sSig, e, p);
 		return !IsPointInfinity(r) && IsEven(r) && r.AffineXCoord.ToBigInteger().Equals(rSig);
 	}
@@ -150,10 +161,10 @@ public class Schnorr: StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schnor
 		for (var i = 0; i < publicKeys.Length; i++) {
 			var p = LiftX(publicKeys[i]);
 			var px = BytesOfXCoord(p);
-			var rSig = BigIntegerUtils.BytesToBigInteger(signatures[i].AsSpan().Slice(0, 32).ToArray());
-			var sSig = BigIntegerUtils.BytesToBigInteger(signatures[i].AsSpan().Slice(32, 32).ToArray());
+			var rSig = BytesToBigInt(signatures[i].AsSpan().Slice(0, 32).ToArray());
+			var sSig = BytesToBigInt(signatures[i].AsSpan().Slice(32, 32).ToArray());
 			ValidateSignature(rSig, sSig);
-			var e = GetE(BigIntegerUtils.BigIntegerToBytes(rSig, 32), px, messageDigests[i]);
+			var e = GetE(BytesOfBigInt(rSig, 32), px, messageDigests[i]);
 			var r = LiftX(signatures[i].AsSpan().Slice(0, 32).ToArray());
 
 			if (i == 0) {
@@ -187,7 +198,7 @@ public class Schnorr: StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schnor
 
 	internal BigInteger GetE(byte[] r, byte[] p, byte[] m) {
 		var hash = TaggedHash("BIP0340/challenge", Arrays.ConcatenateAll(r, p, m));
-		return BigIntegerUtils.BytesToBigInteger(hash).Mod(N);
+		return BytesToBigInt(hash).Mod(N);
 	}
 
 	internal ECPoint GetR(BigInteger s, BigInteger e, ECPoint p) {
@@ -197,8 +208,8 @@ public class Schnorr: StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schnor
 	}
 
 	internal ECPoint LiftX(byte[] publicKey) {
-		var x = BigIntegerUtils.BytesToBigInteger(publicKey);
-		if (x.CompareTo(P) >= 0) {
+		var x = BytesToBigInt(publicKey);
+		if (x.CompareTo(BigInteger.One) < 0 || x.CompareTo(P) >= 0) {
 			throw new ArgumentException($"{nameof(x)} is not in the range 0..p-1");
 		}
 		var c = x.Pow(3).Add(BigInteger.ValueOf(7)).Mod(P);
@@ -229,7 +240,15 @@ public class Schnorr: StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schnor
 	}
 	
 	internal static byte[] BytesOfXCoord(ECPoint point) {
-		return BigIntegerUtils.BigIntegerToBytes(point.AffineXCoord.ToBigInteger(), 32);
+		return BytesOfBigInt(point.AffineXCoord.ToBigInteger(), 32);
+	}
+	
+	internal static byte[] BytesOfBigInt(BigInteger bi, int numBytes) {
+		return BigIntegerUtils.BigIntegerToBytes(bi, numBytes);
+	}
+	
+	internal static BigInteger BytesToBigInt(byte[] bytes) {
+		return BigIntegerUtils.BytesToBigInteger(bytes);
 	}
 
 	// Random Generation Methods
@@ -242,10 +261,8 @@ public class Schnorr: StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schnor
 		}
 	}
 
-	internal byte[] RandomBytes(int sizeInBytes = 32) {
-		var bytes = new byte[sizeInBytes];
-		_secureRandom.NextBytes(bytes);
-		return bytes;
+	internal static byte[] RandomBytes(int sizeInBytes = 32) {
+		return Tools.Crypto.GenerateCryptographicallyRandomBytes(sizeInBytes);
 	}
 
 	// Validation Methods
@@ -412,7 +429,7 @@ public class Schnorr: StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schnor
 			KeyType = keyType;
 			CurveParams = curveParams;
 			DomainParams = domainParams;
-			AsInteger = Tools.Values.LazyLoad(() => BigIntegerUtils.BytesToBigInteger(RawBytes));
+			AsInteger = Tools.Values.LazyLoad(() => BytesToBigInt(RawBytes));
 		}
 
 		public ECDSAKeyType KeyType { get; }

@@ -11,6 +11,11 @@ namespace Sphere10.Framework.CryptoEx.EC;
 public class MuSig {
 	private static readonly byte[] MusigNonceTag = Schnorr.ComputeSha256Hash(Encoding.UTF8.GetBytes("MuSig/nonce"));
 	public Schnorr Schnorr { get; }
+	internal ECPoint G => Schnorr.G;
+	internal ECCurve Curve => Schnorr.Curve; 
+	private BigInteger P => Curve.Field.Characteristic;
+	internal BigInteger N => Schnorr.N;
+	internal int KeySize => Schnorr.KeySize;
 
 	public MuSig(Schnorr schnorr) {
 		Schnorr = schnorr;
@@ -33,7 +38,7 @@ public class MuSig {
 			return BigInteger.One;
 		}
 		var hash = Schnorr.TaggedHash("KeyAgg coefficient", Arrays.ConcatenateAll(ell, currentPublicKey));
-		return BigIntegerUtils.BytesToBigInteger(hash).Mod(Schnorr.N);
+		return Schnorr.BytesToBigInt(hash).Mod(Schnorr.N);
 	}
 
 	public PublicKeyAggregationData CombinePublicKey(byte[][] publicKeys, byte[] publicKeyHash = null) {
@@ -177,7 +182,7 @@ public class MuSig {
 			KeyCoefficient = ComputeKeyAggregationCoefficient(ell, idx, publicKey)
 		};
 
-		var nonceData = GenerateNonce(sessionId, BigIntegerUtils.BigIntegerToBytes(privateKey, 32), messageDigest, null);
+		var nonceData = GenerateNonce(sessionId, Schnorr.BytesOfBigInt(privateKey, 32), messageDigest, null);
 		session.PublicNonce = nonceData.PublicNonce;
 		session.PrivateNonce = nonceData.PrivateNonce;
 		return session;
@@ -230,15 +235,15 @@ public class MuSig {
 
 	private BigInteger GetB(byte[] aggNonce, byte[] q, byte[] m) {
 		var hash = Schnorr.TaggedHash("MuSig/noncecoef", Arrays.ConcatenateAll(aggNonce, q, m));
-		return BigIntegerUtils.BytesToBigInteger(hash).Mod(Schnorr.N);
+		return Schnorr.BytesToBigInt(hash).Mod(Schnorr.N);
 	}
 
 	public BigInteger PartialSign(MuSigSession session) {
 		var n = Schnorr.N;
 		var g = Schnorr.G;
 
-		var k1 = BigIntegerUtils.BytesToBigInteger(session.PrivateNonce.AsSpan().Slice(0, 32).ToArray());
-		var k2 = BigIntegerUtils.BytesToBigInteger(session.PrivateNonce.AsSpan().Slice(32, 32).ToArray());
+		var k1 = Schnorr.BytesToBigInt(session.PrivateNonce.AsSpan().Slice(0, 32).ToArray());
+		var k2 = Schnorr.BytesToBigInt(session.PrivateNonce.AsSpan().Slice(32, 32).ToArray());
 		Schnorr.ValidateRange(nameof(k1), k1);
 		Schnorr.ValidateRange(nameof(k2), k2);
 		
@@ -336,7 +341,7 @@ public class MuSig {
 			}
 			s = s == null ? summand.Mod(n) : s.Add(summand).Mod(n);
 		}
-		return Arrays.Concatenate(finalNonce, BigIntegerUtils.BigIntegerToBytes(s, 32));
+		return Arrays.Concatenate(finalNonce, Schnorr.BytesOfBigInt(s, 32));
 	}
 
 	public MuSigData MuSigNonInteractive(Schnorr.PrivateKey[] privateKeys, byte[] messageDigest) {
@@ -361,7 +366,7 @@ public class MuSig {
 		var sessions = new MuSigSession[privateKeys.Length];
 		for (var i = 0; i < sessions.Length; i++) {
 			sessions[i] = InitializeSession(Schnorr.RandomBytes(),
-				BigIntegerUtils.BytesToBigInteger(privateKeys[i].RawBytes),
+				Schnorr.BytesToBigInt(privateKeys[i].RawBytes),
 				publicKeys[i],
 				messageDigest,
 				combinedPublicKey,
@@ -418,7 +423,7 @@ public class MuSig {
 	private void ValidateSessionParams(byte[] sessionId, BigInteger privateKey, byte[] messageDigest, byte[] combinedPublicKey,
 	                                          byte[] ell) {
 		Schnorr.ValidateRange(nameof(privateKey), privateKey);
-		Schnorr.ValidateSignatureParams(BigIntegerUtils.BigIntegerToBytes(privateKey, 32), messageDigest);
+		Schnorr.ValidateSignatureParams(Schnorr.BytesOfBigInt(privateKey, 32), messageDigest);
 		Schnorr.ValidateBuffer(nameof(sessionId), sessionId, 32);
 		Schnorr.ValidateBuffer(nameof(combinedPublicKey), combinedPublicKey, 32);
 		Schnorr.ValidateBuffer(nameof(ell), ell, 32);

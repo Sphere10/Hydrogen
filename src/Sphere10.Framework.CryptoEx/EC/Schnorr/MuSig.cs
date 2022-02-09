@@ -325,14 +325,14 @@ public class MuSig {
 
 	public byte[] CombinePartialSigs(byte[] finalNonce, BigInteger[] partialSignatures) {
 		if (!(partialSignatures?.Any() ?? false)) {
-			throw new ArgumentNullException($"{nameof(partialSignatures)} cannot be null or empty");
+			throw new ArgumentNullException(nameof(partialSignatures));
 		}
 		BigInteger s = null;
 		var n = Schnorr.N;
 		for (var i = 0; i < partialSignatures.Length; i++) {
 			var summand = partialSignatures[i];
 			if (summand.CompareTo(n) >= 0) {
-				throw new ArgumentOutOfRangeException($"{summand} must be an integer less than n");
+				throw new ArgumentException($"{summand} must be an integer less than n");
 			}
 			s = s == null ? summand.Mod(n) : s.Add(summand).Mod(n);
 		}
@@ -341,11 +341,11 @@ public class MuSig {
 
 	public MuSigData MuSigNonInteractive(Schnorr.PrivateKey[] privateKeys, byte[] messageDigest) {
 		if (!(privateKeys?.Any() ?? false)) {
-			throw new ArgumentNullException($"{nameof(privateKeys)} cannot be null or empty");
+			throw new ArgumentNullException(nameof(privateKeys));
 		}
 
 		if (messageDigest == null) {
-			throw new ArgumentNullException($"{nameof(messageDigest)} cannot be null");
+			throw new ArgumentNullException(nameof(messageDigest));
 		}
 
 		// 1. derive the public keys.

@@ -102,17 +102,17 @@ public class Schnorr: StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schnor
 		var px = BytesOfXCoord(p);
 
 		var d = GetEvenKey(p, pk);
-		BigInteger kPrime;
+
 		if (!auxRandomData.IsEmpty) {
 			ValidateBuffer(nameof(auxRandomData), auxRandomData, 32);
-
-			var t = BigIntegerUtils.BigIntegerToBytes(d.Xor(BigIntegerUtils.BytesToBigInteger(TaggedHash("BIP0340/aux", auxRandomData.ToArray()))), 32);
-			var rand = TaggedHash("BIP0340/nonce", Arrays.ConcatenateAll(t, px, message));
-			kPrime = BigIntegerUtils.BytesToBigInteger(rand).Mod(N);
 		} else {
-			kPrime = GetDeterministicKPrime(d, px, message);
+			auxRandomData = RandomBytes();
 		}
-		
+
+		var t = BigIntegerUtils.BigIntegerToBytes(d.Xor(BigIntegerUtils.BytesToBigInteger(TaggedHash("BIP0340/aux", auxRandomData.ToArray()))), 32);
+		var rand = TaggedHash("BIP0340/nonce", Arrays.ConcatenateAll(t, px, message));
+		var kPrime = BigIntegerUtils.BytesToBigInteger(rand).Mod(N);
+
 		if (kPrime.SignValue == 0) {
 			throw new InvalidOperationException("kPrime is zero");
 		}
@@ -127,6 +127,7 @@ public class Schnorr: StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schnor
 		}
 		return sig;
 	}
+
 	
 	public override bool VerifyDigest(ReadOnlySpan<byte> signature, ReadOnlySpan<byte> messageDigest, ReadOnlySpan<byte> publicKey) {
 		// https://github.com/bitcoin/bips/blob/master/bip-0340.mediawiki#verification
@@ -184,14 +185,6 @@ public class Schnorr: StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schnor
 		return IsEven(publicKey) ? privateKey : N.Subtract(privateKey);
 	}
 
-	private BigInteger GetDeterministicKPrime(BigInteger privateKey, byte[] publicKey, byte[] message) {
-		ValidateSignatureParams(BigIntegerUtils.BigIntegerToBytes(privateKey, 32), message);
-
-		var h = TaggedHash("BIP0340/nonce", Arrays.ConcatenateAll(BigIntegerUtils.BigIntegerToBytes(privateKey, 32), publicKey, message));
-		var i = BigIntegerUtils.BytesToBigInteger(h);
-		return i.Mod(N);
-	}
-
 	internal BigInteger GetE(byte[] r, byte[] p, byte[] m) {
 		var hash = TaggedHash("BIP0340/challenge", Arrays.ConcatenateAll(r, p, m));
 		return BigIntegerUtils.BytesToBigInteger(hash).Mod(N);
@@ -206,12 +199,12 @@ public class Schnorr: StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schnor
 	internal ECPoint LiftX(byte[] publicKey) {
 		var x = BigIntegerUtils.BytesToBigInteger(publicKey);
 		if (x.CompareTo(P) >= 0) {
-			throw new ArgumentOutOfRangeException($"{nameof(x)} is not in the range 0..p-1");
+			throw new ArgumentException($"{nameof(x)} is not in the range 0..p-1");
 		}
 		var c = x.Pow(3).Add(BigInteger.ValueOf(7)).Mod(P);
 		var y = c.ModPow(P.Add(BigInteger.One).Divide(BigInteger.Four), P);
 		if (c.CompareTo(y.ModPow(BigInteger.Two, P)) != 0) {
-			throw new ArgumentOutOfRangeException($"{nameof(c)} is not equal to y^2");
+			throw new ArgumentException( $"{nameof(c)} is not equal to y^2");
 		}
 		var point = Curve.CreatePoint(x, y);
 		if (!IsEven(point)) {
@@ -262,13 +255,13 @@ public class Schnorr: StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schnor
 	/// </summary>
 	/// <param name="r"></param>
 	/// <param name="s"></param>
-	/// <exception cref="ArgumentOutOfRangeException"></exception>
+	/// <exception cref="ArgumentException"></exception>
 	private void ValidateSignature(BigInteger r, BigInteger s) {
 		if (r.CompareTo(P) >= 0) {
-			throw new ArgumentOutOfRangeException($"{nameof(r)} is larger than or equal to field size");
+			throw new ArgumentException($"{nameof(r)} is larger than or equal to field size");
 		}
 		if (s.CompareTo(N) >= 0) {
-			throw new ArgumentOutOfRangeException($"{nameof(s)} is larger than or equal to curve order");
+			throw new ArgumentException($"{nameof(s)} is larger than or equal to curve order");
 		}
 	}
 	
@@ -286,10 +279,10 @@ public class Schnorr: StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schnor
 	/// </summary>
 	/// <param name="name"></param>
 	/// <param name="scalar"></param>
-	/// <exception cref="ArgumentOutOfRangeException"></exception>
+	/// <exception cref="ArgumentException"></exception>
 	internal void ValidateRange(string name, BigInteger scalar) {
 		if (!ValidateRangeNoThrow(scalar)) {
-			throw new ArgumentOutOfRangeException($"{name} must be an integer in the range 1..n-1");
+			throw new ArgumentException($"{name} must be an integer in the range 1..n-1");
 		}
 	}
 
@@ -300,14 +293,14 @@ public class Schnorr: StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schnor
 	/// <param name="buf"></param>
 	/// <param name="len"></param>
 	/// <param name="idx"></param>
-	/// <exception cref="ArgumentOutOfRangeException"></exception>
+	/// <exception cref="ArgumentException"></exception>
 	private static void ValidatePrivateKey(string name, ReadOnlySpan<byte> buf, int len, int? idx = null) {
 		var idxStr = (idx.HasValue ? "[" + idx + "]" : "");
 		// if (buf.IsEmpty) {
 		// 	throw new Exception($"{name + idxStr} cannot be empty");
 		// }
 		if (buf.Length != len) {
-			throw new ArgumentOutOfRangeException($"{name + idxStr} must be {len} bytes long");
+			throw new ArgumentException($"{name + idxStr} must be {len} bytes long");
 		}
 	}
 
@@ -336,10 +329,10 @@ public class Schnorr: StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schnor
 	/// Throw If Point Is At Infinity
 	/// </summary>
 	/// <param name="point"></param>
-	/// <exception cref="ArgumentOutOfRangeException"></exception>
+	/// <exception cref="ArgumentException"></exception>
 	internal static void ThrowIfPointIsAtInfinity(ECPoint point) {
 		if (IsPointInfinity(point)) {
-			throw new ArgumentOutOfRangeException($"{nameof(point)} is at infinity");
+			throw new ArgumentException($"{nameof(point)} is at infinity");
 		}
 	}
 
@@ -363,14 +356,14 @@ public class Schnorr: StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schnor
 	/// <param name="buf"></param>
 	/// <param name="len"></param>
 	/// <param name="idx"></param>
-	/// <exception cref="ArgumentOutOfRangeException"></exception>
+	/// <exception cref="ArgumentException"></exception>
 	internal static void ValidateBuffer(string name, ReadOnlySpan<byte> buf, int len, int? idx = null) {
 		var idxStr = (idx.HasValue ? "[" + idx + "]" : "");
 		// if (buf.IsEmpty) {
 		// 	throw new Exception($"{name + idxStr} cannot be empty");
 		// }
 		if (buf.Length != len) {
-			throw new ArgumentOutOfRangeException($"{name + idxStr} must be {len} bytes long");
+			throw new ArgumentException($"{name + idxStr} must be {len} bytes long");
 		}
 	}
 

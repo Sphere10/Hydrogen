@@ -3,9 +3,9 @@ using Org.BouncyCastle.Utilities;
 
 namespace Sphere10.Framework.CryptoEx.EC;
 
-public class MuSigNonceData {
-	public byte[] PrivateNonce { get; internal set; }
-	public byte[] PublicNonce { get; internal set; }
+internal class MuSigNonceData {
+	internal byte[] PrivateNonce { get; set; }
+	internal byte[] PublicNonce { get; set; }
 }
 
 internal class MuSigPrivateNonce {
@@ -17,7 +17,6 @@ internal class MuSigPrivateNonce {
 	}
 }
 
-
 internal class MuSigPublicNonce {
 	internal byte[] R1 { get; set; }
 	internal byte[] R2 { get; set; }
@@ -27,10 +26,9 @@ internal class MuSigPublicNonce {
 	}
 }
 
-
 public class MuSigSessionNonce {
-	internal byte[] AggregatedNonce { get; set; }
-	internal byte[] FinalNonce { get; set; }
-	internal BigInteger NonceCoefficient { get; set; }
-	internal bool FinalNonceParity { get; set; }
+	public byte[] AggregatedNonce { get; internal set; }
+	public byte[] FinalNonce { get; internal set; }
+	public BigInteger NonceCoefficient { get; internal set; }
+	public bool FinalNonceParity { get; internal set; }
 }

@@ -15,20 +15,15 @@ public class MuSig {
 	internal ECCurve Curve => Schnorr.Curve;
 	private BigInteger P => Curve.Field.Characteristic;
 	internal BigInteger N => Schnorr.N;
-	internal int KeySize => Schnorr.KeySize;
+	public int KeySize => Schnorr.KeySize;
 
 	public MuSig(Schnorr schnorr) {
 		Schnorr = schnorr;
 	}
 
-	private static IHashFunction BorrowSha256Hasher() {
-		Hashers.BorrowHasher(CHF.SHA2_256, out var hasher);
-		return hasher;
-	}
-
 	// Computes ell = SHA256(publicKeys[0], ..., publicKeys[publicKeys.Length-1]) with
 	// publicKeys serialized in compressed form.
-	public static byte[] ComputeEll(byte[][] publicKeys) {
+	public byte[] ComputeEll(byte[][] publicKeys) {
 		Schnorr.ValidateJaggedArray(nameof(publicKeys), publicKeys);
 		return Schnorr.TaggedHash("KeyAgg list", Arrays.ConcatenateAll(publicKeys));
 	}
@@ -107,66 +102,67 @@ public class MuSig {
 	}
 
 	private static MuSigPrivateNonce GeneratePrivateNonce(byte[] sessionId, byte[] messageDigest, byte[] privateKey, byte[] aggregatedPublicKey, byte[] extraInput) {
-		var hasher = BorrowSha256Hasher();
-		hasher.Transform(MusigNonceTag);
-		hasher.Transform(MusigNonceTag);
-		hasher.Transform(sessionId);
+		using (Hashers.BorrowHasher(CHF.SHA2_256, out var hasher)) {
+			hasher.Transform(MusigNonceTag);
+			hasher.Transform(MusigNonceTag);
+			hasher.Transform(sessionId);
 
-		var marker = new byte[1];
+			var marker = new byte[1];
 
-		if (messageDigest != null) {
-			marker[0] = 32;
-			hasher.Transform(marker);
-			hasher.Transform(messageDigest);
-		} else {
-			marker[0] = 0;
-			hasher.Transform(marker);
+			if (messageDigest != null) {
+				marker[0] = 32;
+				hasher.Transform(marker);
+				hasher.Transform(messageDigest);
+			} else {
+				marker[0] = 0;
+				hasher.Transform(marker);
+			}
+
+			if (privateKey != null) {
+				marker[0] = 32;
+				hasher.Transform(marker);
+				hasher.Transform(privateKey);
+			} else {
+				marker[0] = 0;
+				hasher.Transform(marker);
+			}
+
+			if (aggregatedPublicKey != null) {
+				marker[0] = 32;
+				hasher.Transform(marker);
+				hasher.Transform(aggregatedPublicKey);
+			} else {
+				marker[0] = 0;
+				hasher.Transform(marker);
+			}
+
+			if (extraInput != null) {
+				marker[0] = 32;
+				hasher.Transform(marker);
+				hasher.Transform(extraInput);
+			} else {
+				marker[0] = 0;
+				hasher.Transform(marker);
+			}
+
+			var seed = hasher.GetResult();
+
+			hasher.Transform(seed);
+			hasher.Transform(new byte[] {
+				0
+			});
+			var k1 = hasher.GetResult();
+
+			hasher.Transform(seed);
+			hasher.Transform(new byte[] {
+				1
+			});
+			var k2 = hasher.GetResult();
+			return new MuSigPrivateNonce() {
+				K1 = k1,
+				K2 = k2
+			};
 		}
-
-		if (privateKey != null) {
-			marker[0] = 32;
-			hasher.Transform(marker);
-			hasher.Transform(privateKey);
-		} else {
-			marker[0] = 0;
-			hasher.Transform(marker);
-		}
-
-		if (aggregatedPublicKey != null) {
-			marker[0] = 32;
-			hasher.Transform(marker);
-			hasher.Transform(aggregatedPublicKey);
-		} else {
-			marker[0] = 0;
-			hasher.Transform(marker);
-		}
-
-		if (extraInput != null) {
-			marker[0] = 32;
-			hasher.Transform(marker);
-			hasher.Transform(extraInput);
-		} else {
-			marker[0] = 0;
-			hasher.Transform(marker);
-		}
-
-		var seed = hasher.GetResult();
-
-		hasher.Transform(seed);
-		hasher.Transform(new byte[] {
-			0
-		});
-		var k1 = hasher.GetResult();
-
-		hasher.Transform(seed);
-		hasher.Transform(new byte[] {
-			1
-		});
-		var k2 = hasher.GetResult();
-		return new MuSigPrivateNonce() {
-			K1 = k1,
-			K2 = k2
-		};
 	}
 
 	public byte[] GetSecondPublicKey(byte[][] publicKeys) {
@@ -194,12 +190,12 @@ public class MuSig {
 			KeyCoefficient = ComputeKeyAggregationCoefficient(ell, publicKey, secondPublicKey),
 			PublicNonce = nonceData.PublicNonce,
 			PrivateNonce = nonceData.PrivateNonce,
-			InternalKeyParity = false // TODO investigate further
+			InternalKeyParity = false
 		};
 		return session;
 	}
 
-	public static MuSigSessionCache InitializeSessionCache(MuSigSessionNonce combinedNonce, BigInteger challenge, bool publicKeyParity) {
+	public MuSigSessionCache InitializeSessionCache(MuSigSessionNonce combinedNonce, BigInteger challenge, bool publicKeyParity) {
 
 		var sessionCache = new MuSigSessionCache {
 			FinalNonceParity = combinedNonce.FinalNonceParity,
@@ -250,6 +246,7 @@ public class MuSig {
 		var finalNonceParity = !Schnorr.IsEven(finalNoncePoint);
 
 		return new MuSigSessionNonce {
+			AggregatedNonce = aggregatedNonce,
 			FinalNonce = finalNonce,
 			NonceCoefficient = nonceCoefficient,
 			FinalNonceParity = finalNonceParity
@@ -372,7 +369,7 @@ public class MuSig {
 
 	public MuSigData MuSigNonInteractive(Schnorr.PrivateKey[] privateKeys, byte[] messageDigest) {
 		Schnorr.ValidateArray(nameof(privateKeys), privateKeys);
-		Schnorr.ValidateArray(nameof(messageDigest), messageDigest);
+		Schnorr.ValidateBuffer(nameof(messageDigest), messageDigest, 32);
 
 		var numberOfSigners = privateKeys.Length;
 
@@ -386,31 +383,9 @@ public class MuSig {
 		var secondPublicKey = GetSecondPublicKey(publicKeys);
 
 		// 4. create private signing sessions
-		// var signerSessions = new SignerMuSigSession[numberOfSigners];
-		// for (var i = 0; i < numberOfSigners; i++) {
-		// 	signerSessions[i] = InitializeSignerSession(Schnorr.RandomBytes(),
-		// 		Schnorr.BytesToBigInt(privateKeys[i].RawBytes),
-		// 		publicKeys[i],
-		// 		messageDigest,
-		// 		publicKeyHash,
-		// 		secondPublicKey);
-		// }
-
-
-		// TODO Cleanup after implementing musig tests
-		var session_id = new[]
-		{
-			"7CB6E93BCF96AEE2BB31AB80AC880E108438FCECCD2E6132B49A2CF103991ED0",
-			"236851BDBB4E62E06D08DC228D4E83A0A0971816EED785F994D19B165952F38D",
-			"BC1DCCF8BB20655E39ABB6279152D46AB999F4C36982DB3296986DC0368319EB",
-		};
-		var ko = session_id.Select(x => x.ToHexByteArray()).ToArray();
-		// _ = session_id.Select(x =>
-		// 	x.ToHexByteArray()
-		// );//.ToArray();
 		var signerSessions = new SignerMuSigSession[numberOfSigners];
 		for (var i = 0; i < numberOfSigners; i++) {
-			signerSessions[i] = InitializeSignerSession(ko[i],
+			signerSessions[i] = InitializeSignerSession(Schnorr.RandomBytes(32),
 				Schnorr.BytesToBigInt(privateKeys[i].RawBytes),
 				publicKeys[i],
 				messageDigest,

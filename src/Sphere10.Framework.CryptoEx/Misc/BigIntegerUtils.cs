@@ -3,8 +3,8 @@ using Org.BouncyCastle.Math;
 
 namespace Sphere10.Framework.CryptoEx; 
 
-public class BigIntegerUtils {
-	internal static byte[] BigIntegerToBytes(BigInteger b, int numBytes)
+public static class BigIntegerUtils {
+	public static byte[] BigIntegerToBytes(BigInteger b, int numBytes)
 	{
 		if (b == null)
 		{
@@ -18,7 +18,7 @@ public class BigIntegerUtils {
 		return bytes;
 	}
 
-	internal static BigInteger BytesToBigInteger(byte[] data) {
+	public static BigInteger BytesToBigInteger(byte[] data) {
 		return data == null ? null : new BigInteger(1, data);
 	}
 }

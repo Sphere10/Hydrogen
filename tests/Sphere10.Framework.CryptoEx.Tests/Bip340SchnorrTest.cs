@@ -94,7 +94,7 @@ public class Bip340SchnorrTest
             {
                 actual = schnorr.VerifyDigest(sig, m, pk);
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 actual = false;
             }

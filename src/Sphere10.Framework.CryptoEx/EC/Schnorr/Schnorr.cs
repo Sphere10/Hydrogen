@@ -55,12 +55,12 @@ public class Schnorr: StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schnor
 			publicKey = null;
 			return false;
 		}
-		var x = BytesToBigInt(bytes.ToArray());
-		if (x.CompareTo(P) >= 0) {
+		var pubKey = bytes.ToArray();
+		if (!ValidatePublicKeyRangeNoThrow(BytesToBigInt(pubKey))) {
 			publicKey = null;
 			return false;
 		}
-		publicKey = new PublicKey(LiftX(bytes.ToArray()), _keyType, _curveParams, _domainParams);
+		publicKey = new PublicKey(LiftX(pubKey), _keyType, _curveParams, _domainParams);
 		return true;
 	}
 
@@ -69,13 +69,13 @@ public class Schnorr: StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schnor
 			privateKey = null;
 			return false;
 		}
-		var order = _keyType.GetAttribute<KeyTypeOrderAttribute>().Value;
-		var d = BytesToBigInt(bytes.ToArray());
-		if (d.CompareTo(BigInteger.One) < 0 || d.CompareTo(order) >= 0) {
+		var secretKey = bytes.ToArray();
+		var d = BytesToBigInt(secretKey);
+		if (!ValidatePrivateKeyRangeNoThrow(d)) {
 			privateKey = null;
 			return false;
 		}
-		privateKey = new PrivateKey(bytes.ToArray(), _keyType, _curveParams, _domainParams);
+		privateKey = new PrivateKey(secretKey, _keyType, _curveParams, _domainParams);
 		return true;
 	}
 
@@ -105,14 +105,14 @@ public class Schnorr: StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schnor
 	
 	public byte[] SignDigestWithAuxRandomData(PrivateKey privateKey, ReadOnlySpan<byte> messageDigest, ReadOnlySpan<byte> auxRandomData) {
 		// https://github.com/bitcoin/bips/blob/master/bip-0340.mediawiki#signing
-		ValidateSignatureParams(BytesOfBigInt(privateKey.AsInteger.Value, 32), messageDigest);
+		var sk = privateKey.AsInteger.Value;
 		var message = messageDigest.ToArray();
-		var pk = privateKey.AsInteger.Value; 
-		ValidateRange(nameof(pk), pk);
-		var p = G.Multiply(pk).Normalize();
-		var px = BytesOfXCoord(p);
+		ValidatePrivateKeyRange(nameof(sk), sk);
+		ValidateArray(nameof(message), message);
 
-		var d = GetEvenKey(p, pk);
+		var p = G.Multiply(sk).Normalize();
+		var px = BytesOfXCoord(p);
+		var d = GetEvenKey(p, sk);
 
 		if (!auxRandomData.IsEmpty) {
 			ValidateBuffer(nameof(auxRandomData), auxRandomData, 32);
@@ -142,13 +142,20 @@ public class Schnorr: StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schnor
 	
 	public override bool VerifyDigest(ReadOnlySpan<byte> signature, ReadOnlySpan<byte> messageDigest, ReadOnlySpan<byte> publicKey) {
 		// https://github.com/bitcoin/bips/blob/master/bip-0340.mediawiki#verification
-		ValidateVerificationParams(signature, messageDigest, publicKey);
-		var p = LiftX(publicKey.ToArray());
+		//ValidateVerificationParams(signature, messageDigest, publicKey);
+		var message = messageDigest.ToArray();
+		var sig = signature.ToArray();
+		var pubKey = publicKey.ToArray();
+		ValidateArray(nameof(sig), sig);
+		ValidateArray(nameof(message), message);
+		ValidatePublicKeyRange(nameof(pubKey),BytesToBigInt(pubKey));
+		
+		var p = LiftX(pubKey);
 		var px = BytesOfXCoord(p);
-		var rSig = BytesToBigInt(signature.Slice(0, 32).ToArray());
-		var sSig = BytesToBigInt(signature.Slice(32, 32).ToArray());
+		var rSig = BytesToBigInt(sig.AsSpan().Slice(0, 32).ToArray());
+		var sSig = BytesToBigInt(sig.AsSpan().Slice(32, 32).ToArray());
 		ValidateSignature(rSig, sSig);
-		var e = GetE(BytesOfBigInt(rSig, 32), px, messageDigest.ToArray());
+		var e = GetE(BytesOfBigInt(rSig, 32), px, message.ToArray());
 		var r = GetR(sSig, e, p);
 		return !IsPointInfinity(r) && IsEven(r) && r.AffineXCoord.ToBigInteger().Equals(rSig);
 	}
@@ -208,18 +215,16 @@ public class Schnorr: StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schnor
 	}
 
 	internal ECPoint LiftX(byte[] publicKey) {
-		var x = BytesToBigInt(publicKey);
-		if (x.CompareTo(BigInteger.One) < 0 || x.CompareTo(P) >= 0) {
-			throw new ArgumentException($"{nameof(x)} is not in the range 0..p-1");
-		}
-		var c = x.Pow(3).Add(BigInteger.ValueOf(7)).Mod(P);
+		var xPubKey = BytesToBigInt(publicKey);
+		ValidatePublicKeyRange(nameof(xPubKey), xPubKey);
+		var c = xPubKey.Pow(3).Add(BigInteger.ValueOf(7)).Mod(P);
 		var y = c.ModPow(P.Add(BigInteger.One).Divide(BigInteger.Four), P);
 		if (c.CompareTo(y.ModPow(BigInteger.Two, P)) != 0) {
 			throw new ArgumentException( $"{nameof(c)} is not equal to y^2");
 		}
-		var point = Curve.CreatePoint(x, y);
+		var point = Curve.CreatePoint(xPubKey, y);
 		if (!IsEven(point)) {
-			point = Curve.CreatePoint(x, P.Subtract(y));
+			point = Curve.CreatePoint(xPubKey, P.Subtract(y));
 		}
 		ValidatePoint(point);
 		return point.Normalize();
@@ -255,7 +260,7 @@ public class Schnorr: StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schnor
 	private BigInteger RandomBigInteger(int sizeInBytes = 32) {
 		for (;;) {
 			var tmp = BigIntegers.CreateRandomBigInteger(sizeInBytes * 8, _secureRandom);
-			if (ValidateRangeNoThrow(tmp)) {
+			if (tmp.CompareTo(BigInteger.One) >= 0 && tmp.CompareTo(N.Subtract(BigInteger.One)) <= 0) {
 				return tmp;
 			}
 		}
@@ -287,9 +292,9 @@ public class Schnorr: StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schnor
     /// </summary>
     /// <param name="scalar"></param>
     /// <returns></returns>
-	private bool ValidateRangeNoThrow(BigInteger scalar) {
-		return scalar.CompareTo(BigInteger.One) >= 0 && scalar.CompareTo(N.Subtract(BigInteger.One)) <= 0;
-	}
+	private bool ValidatePrivateKeyRangeNoThrow(BigInteger scalar) {
+	    return scalar.CompareTo(BigInteger.Zero) >= 0 && scalar.CompareTo(N.Subtract(BigInteger.One)) <= 0;
+    }
 	
 	/// <summary>
 	/// Validate Range
@@ -297,9 +302,33 @@ public class Schnorr: StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schnor
 	/// <param name="name"></param>
 	/// <param name="scalar"></param>
 	/// <exception cref="ArgumentException"></exception>
-	internal void ValidateRange(string name, BigInteger scalar) {
-		if (!ValidateRangeNoThrow(scalar)) {
-			throw new ArgumentException($"{name} must be an integer in the range 1..n-1");
+	internal void ValidatePrivateKeyRange(string name, BigInteger scalar) {
+		if (!ValidatePrivateKeyRangeNoThrow(scalar)) {
+			throw new ArgumentException($"{name} must be an integer in the range 0..n-1");
+		}
+	}
+	
+	private bool ValidatePublicKeyRangeNoThrow(BigInteger publicKey) {
+		return publicKey.CompareTo(BigInteger.One) >= 0 && publicKey.CompareTo(P) < 0;
+	}
+
+	internal void ValidatePublicKeyRange(string name, BigInteger publicKey) {
+		if (!ValidatePublicKeyRangeNoThrow(publicKey)) {
+			throw new ArgumentException($"{name} is not in the range 0..p-1");
+		}
+	}
+
+	internal static void ValidateArray<T>(string name, T[] buffer) {
+		if (!(buffer?.Any() ?? false)) {
+			throw new ArgumentNullException(nameof(buffer), name);
+		}
+	}
+	
+	internal static void ValidateJaggedArray<T>(string name, T[][] buffer) {
+		ValidateArray(name, buffer);
+		for (var i = 0; i < buffer.Length; i++) {
+			var tmp = buffer[i];
+			ValidateArray($"{name}[{i}]", tmp);
 		}
 	}
 

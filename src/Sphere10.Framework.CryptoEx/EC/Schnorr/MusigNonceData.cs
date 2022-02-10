@@ -3,12 +3,12 @@ using Org.BouncyCastle.Utilities;
 
 namespace Sphere10.Framework.CryptoEx.EC; 
 
-public class MusigNonceData {
+public class MuSigNonceData {
 	public byte[] PrivateNonce { get; internal set; }
 	public byte[] PublicNonce { get; internal set; }
 }
 
-internal class MusigPrivateNonce {
+internal class MuSigPrivateNonce {
 	internal byte[] K1 { get; set; }
 	internal byte[] K2 { get; set; }
 	
@@ -18,7 +18,7 @@ internal class MusigPrivateNonce {
 }
 
 
-internal class MusigPublicNonce {
+internal class MuSigPublicNonce {
 	internal byte[] R1 { get; set; }
 	internal byte[] R2 { get; set; }
 
@@ -28,7 +28,7 @@ internal class MusigPublicNonce {
 }
 
 
-public class MusigSessionNonce {
+public class MuSigSessionNonce {
 	internal byte[] AggregatedNonce { get; set; }
 	internal byte[] FinalNonce { get; set; }
 	internal BigInteger NonceCoefficient { get; set; }

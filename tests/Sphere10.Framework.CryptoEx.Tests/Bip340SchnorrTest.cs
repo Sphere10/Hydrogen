@@ -1,32 +1,31 @@
+using Newtonsoft.Json;
+using NUnit.Framework;
+using Org.BouncyCastle.Math;
+using Sphere10.Framework.CryptoEx.EC;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text.Json;
-using System.Text.Json.Serialization;
-using NUnit.Framework;
-using Org.BouncyCastle.Math;
-using Sphere10.Framework.CryptoEx.EC;
 
 namespace Sphere10.Framework.CryptoEx.Tests;
 
 public class Bip340SchnorrTestData
 {
-    [JsonPropertyName("index")]
+    [JsonProperty("index")]
     public int Index { get; set; }
-    [JsonPropertyName("secret key")]
+    [JsonProperty("secret key")]
     public string SecretKey { get; set; }
-    [JsonPropertyName("public key")]
+    [JsonProperty("public key")]
     public string PublicKey { get; set; }
-    [JsonPropertyName("aux_rand")]
+    [JsonProperty("aux_rand")]
     public string AuxRand { get; set; }
-    [JsonPropertyName("message")]
+    [JsonProperty("message")]
     public string Message { get; set; }
-    [JsonPropertyName("signature")]
+    [JsonProperty("signature")]
     public string Signature { get; set; }
-    [JsonPropertyName("verification result")]
+    [JsonProperty("verification result")]
     public bool VerificationResult { get; set; }
-    [JsonPropertyName("comment")]
+    [JsonProperty("comment")]
     public string Comment { get; set; }
 }
 
@@ -50,7 +49,7 @@ public class Bip340SchnorrTest
         Tools.FileSystem.AppendAllBytes(Path.Combine(_bip40SchnorrFolder, "bip340SchnorrVectors.json"), Properties.Resource.bip340SchnorrVectors_json);
         _bip40SchnorrFilePath = Path.Combine(_bip40SchnorrFolder, "bip340SchnorrVectors.json");
         var jsonContent = File.ReadAllText(_bip40SchnorrFilePath);
-        _vectors = JsonSerializer.Deserialize<List<Bip340SchnorrTestData>>(jsonContent);
+        _vectors = JsonConvert.DeserializeObject<List<Bip340SchnorrTestData>>(jsonContent);
     }
 
     [OneTimeTearDown]

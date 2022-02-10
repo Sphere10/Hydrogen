@@ -441,16 +441,21 @@
 
     async void StartWebSockets()
     {
-        // Virtual Machine
-        //Channel = new ClientWebSocketsChannel("ws://192.168.1.108:80/service", false);
+        try {
+            // Virtual Machine
+            //Channel = new ClientWebSocketsChannel("ws://192.168.1.108:80/service", false);
 
-        // Local Machine
-        Channel = new ClientWebSocketsChannel("ws://192.168.1.171:80/service", false);
-        Channel.ReceivedBytes += delegate (ReadOnlyMemory<byte> memory)
-        {
-            WriteOutput(System.Text.Encoding.ASCII.GetString(memory.Span));
-        };
-        await Channel.Open();
+            // Local Machine
+            Channel = new ClientWebSocketsChannel("ws://192.168.1.171:80/service", false);
+            Channel.ReceivedBytes += delegate (ReadOnlyMemory<byte> memory)
+            {
+                WriteOutput(System.Text.Encoding.ASCII.GetString(memory.Span));
+            };
+            await Channel.Open();        
+        }
+        catch (Exception ex) {
+            
+        }
     }
 
     public class WebSocketsPacket 
@@ -493,6 +498,8 @@
             var jsonData = JsonConvert.SerializeObject(testData);
             var testPacket = new WebSocketsPacket("new 7", jsonData);
             Channel.TrySendBytes(testPacket.ToBytes());
+
+            //Channel.TrySendBytes(Encoding.ASCII.GetBytes("Hello 666"));
         }
         catch (Exception ex) {
             

@@ -1,7 +1,7 @@
 using Org.BouncyCastle.Math;
 using Org.BouncyCastle.Utilities;
 
-namespace Sphere10.Framework.CryptoEx.EC; 
+namespace Sphere10.Framework.CryptoEx.EC;
 
 public class MuSigNonceData {
 	public byte[] PrivateNonce { get; internal set; }
@@ -11,7 +11,7 @@ public class MuSigNonceData {
 internal class MuSigPrivateNonce {
 	internal byte[] K1 { get; set; }
 	internal byte[] K2 { get; set; }
-	
+
 	internal byte[] GetFullNonce() {
 		return Arrays.Concatenate(K1, K2);
 	}

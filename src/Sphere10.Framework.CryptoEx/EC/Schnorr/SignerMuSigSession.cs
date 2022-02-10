@@ -1,6 +1,6 @@
 using Org.BouncyCastle.Math;
 
-namespace Sphere10.Framework.CryptoEx.EC; 
+namespace Sphere10.Framework.CryptoEx.EC;
 
 public class SignerMuSigSession {
 	public bool InternalKeyParity { get; internal set; }

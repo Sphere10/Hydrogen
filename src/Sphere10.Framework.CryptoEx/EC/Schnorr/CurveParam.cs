@@ -17,11 +17,11 @@ public class CurveData {
 public class CurveParam {
 	private static readonly Dictionary<ECDSAKeyType, CurveData> CurveParams = new();
 	static CurveParam() {
-		
+
 		foreach (ECDSAKeyType keyType in Enum.GetValues(typeof(ECDSAKeyType))) {
 			var curve = CustomNamedCurves.GetByName(keyType.ToString());
-			CurveParams.Add(keyType,  new CurveData { G = curve.G, Curve = curve.Curve, P = curve.Curve.Field.Characteristic, N = curve.N }); 
-		}  
+			CurveParams.Add(keyType, new CurveData { G = curve.G, Curve = curve.Curve, P = curve.Curve.Field.Characteristic, N = curve.N });
+		}
 	}
 
 	public static CurveData GetCurveData(ECDSAKeyType keyType) {

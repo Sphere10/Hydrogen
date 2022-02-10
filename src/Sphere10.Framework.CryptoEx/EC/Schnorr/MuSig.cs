@@ -374,9 +374,13 @@ public class MuSig {
 				publicKeyHash,
 				i);
 		}
+		
+		/* Communication round 1: A production system would exchange public nonces
+		* here before moving on. */
 
 		// 4. combine nonce
 		var publicNonces = sessions.Select(x => x.PublicNonce).ToArray();
+		/* Create aggregate nonce */
 		var combinedNonce = CombineSessionNonce(publicNonces, combinedPublicKey, messageDigest);
 		// 5. compute challenge
 		var challenge = ComputeChallenge(combinedNonce.FinalNonce, combinedPublicKey, messageDigest);
@@ -394,6 +398,8 @@ public class MuSig {
 			sessions[i].PartialSignature = PartialSign(sessions[i]);
 		}
 		
+		/* Communication round 2: A production system would exchange
+		* partial signatures here before moving on. */
 		// 6. verify individual partial signatures
 		for (var i = 0; i < publicKeys.Length; i++) {
 			if (!PartialSigVerify(sessions[i], publicKeys[i], sessions[i].PartialSignature)) {

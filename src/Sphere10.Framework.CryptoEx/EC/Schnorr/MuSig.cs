@@ -70,7 +70,7 @@ public class MuSig {
 		Schnorr.ValidateArray(nameof(messageDigest), messageDigest);
 
 		if (aggregatePubKey != null) {
-			Schnorr.ValidateBuffer(nameof(aggregatePubKey), aggregatePubKey, 32);
+			Schnorr.ValidateBuffer(nameof(aggregatePubKey), aggregatePubKey, 32); // TODO, Remove when adapting for other curves
 		}
 		if (extraInput != null) {
 			Schnorr.ValidateBuffer(nameof(extraInput), extraInput, 32);
@@ -445,24 +445,7 @@ public class MuSig {
 		var combinedSignature = CombinePartialSigs(sessionCache.FinalNonce, partialSignatures);
 		return new MuSigData {
 			CombinedSignature = combinedSignature,
-			MessageDigest = messageDigest,
 			CombinedPublicKey = combinedPublicKey
 		};
-	}
-
-	// Validation Methods
-	/// <summary>
-	/// Validate Session Params
-	/// </summary>
-	/// <param name="sessionId"></param>
-	/// <param name="privateKey"></param>
-	/// <param name="messageDigest"></param>
-	/// <param name="ell"></param>
-	private void ValidateSessionParams(byte[] sessionId, BigInteger privateKey, byte[] messageDigest,
-	                                          byte[] ell) {
-		Schnorr.ValidatePrivateKeyRange(nameof(privateKey), privateKey);
-		Schnorr.ValidateSignatureParams(Schnorr.BytesOfBigInt(privateKey, 32), messageDigest);
-		Schnorr.ValidateBuffer(nameof(sessionId), sessionId, 32);
-		Schnorr.ValidateBuffer(nameof(ell), ell, 32);
 	}
 }

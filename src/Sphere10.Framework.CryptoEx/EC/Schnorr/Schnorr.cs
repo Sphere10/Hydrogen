@@ -117,7 +117,7 @@ public class Schnorr: StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schnor
 		if (!auxRandomData.IsEmpty) {
 			ValidateBuffer(nameof(auxRandomData), auxRandomData, 32);
 		} else {
-			auxRandomData = RandomBytes();
+			auxRandomData = RandomBytes(32);
 		}
 
 		var t = BytesOfBigInt(d.Xor(BytesToBigInt(TaggedHash("BIP0340/aux", auxRandomData.ToArray()))), 32);
@@ -162,7 +162,9 @@ public class Schnorr: StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schnor
 
 	public bool BatchVerifyDigest(byte[][] signatures, byte[][] messageDigests, byte[][] publicKeys) {
 		// https://github.com/bitcoin/bips/blob/master/bip-0340.mediawiki#Batch_Verification
-		ValidateBatchVerificationParams(signatures, messageDigests, publicKeys);
+		ValidateJaggedArray(nameof(signatures), signatures);
+		ValidateJaggedArray(nameof(messageDigests), messageDigests);
+		ValidateJaggedArray(nameof(publicKeys), publicKeys);
 		var leftSide = BigInteger.Zero;
 		ECPoint rightSide = null;
 		for (var i = 0; i < publicKeys.Length; i++) {
@@ -179,7 +181,7 @@ public class Schnorr: StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schnor
 				rightSide = r;
 				rightSide = rightSide.Add(p.Multiply(e));
 			} else {
-				var a = RandomBigInteger();
+				var a = RandomBigInteger(32);
 				leftSide = leftSide.Add(a.Multiply(sSig));
 				rightSide = rightSide?.Add(r.Multiply(a));
 				rightSide = rightSide?.Add(p.Multiply(a.Multiply(e)));
@@ -257,7 +259,7 @@ public class Schnorr: StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schnor
 	}
 
 	// Random Generation Methods
-	private BigInteger RandomBigInteger(int sizeInBytes = 32) {
+	private BigInteger RandomBigInteger(int sizeInBytes) {
 		for (;;) {
 			var tmp = BigIntegers.CreateRandomBigInteger(sizeInBytes * 8, _secureRandom);
 			if (tmp.CompareTo(BigInteger.One) >= 0 && tmp.CompareTo(N.Subtract(BigInteger.One)) <= 0) {
@@ -266,7 +268,7 @@ public class Schnorr: StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schnor
 		}
 	}
 
-	internal static byte[] RandomBytes(int sizeInBytes = 32) {
+	internal static byte[] RandomBytes(int sizeInBytes) {
 		return Tools.Crypto.GenerateCryptographicallyRandomBytes(sizeInBytes);
 	}
 
@@ -333,45 +335,6 @@ public class Schnorr: StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schnor
 	}
 
 	/// <summary>
-	/// Validate Private Key
-	/// </summary>
-	/// <param name="name"></param>
-	/// <param name="buf"></param>
-	/// <param name="len"></param>
-	/// <param name="idx"></param>
-	/// <exception cref="ArgumentException"></exception>
-	private static void ValidatePrivateKey(string name, ReadOnlySpan<byte> buf, int len, int? idx = null) {
-		var idxStr = (idx.HasValue ? "[" + idx + "]" : "");
-		// if (buf.IsEmpty) {
-		// 	throw new Exception($"{name + idxStr} cannot be empty");
-		// }
-		if (buf.Length != len) {
-			throw new ArgumentException($"{name + idxStr} must be {len} bytes long");
-		}
-	}
-
-	private static void ValidateSignatureArrays(byte[][] signatures) {
-			for (var i = 0; i < signatures.Length; i++) {
-				ValidateBuffer(nameof(signatures), signatures[i], 64, i);
-			}
-	}
-	private static void ValidateMessageDigestArrays(byte[][] messageDigests) {
-		for (var i = 0; i < messageDigests.Length; i++) {
-			ValidateBuffer(nameof(messageDigests), messageDigests[i], 32, i);
-		}
-	}
-	internal static void ValidatePublicKeyArrays(byte[][] publicKeys) {
-		for (var i = 0; i < publicKeys.Length; i++) {
-			ValidateBuffer(nameof(publicKeys), publicKeys[i], 32, i);
-		}
-	}
-	internal static void ValidateNonceArrays(byte[][] nonces) {
-		for (var i = 0; i < nonces.Length; i++) {
-			ValidateBuffer(nameof(nonces), nonces[i], 66, i);
-		}
-	}
-
-	/// <summary>
 	/// Throw If Point Is At Infinity
 	/// </summary>
 	/// <param name="point"></param>
@@ -410,44 +373,6 @@ public class Schnorr: StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schnor
 		// }
 		if (buf.Length != len) {
 			throw new ArgumentException($"{name + idxStr} must be {len} bytes long");
-		}
-	}
-
-	/// <summary>
-	/// Validate Signature Parameters
-	/// </summary>
-	/// <param name="privateKey"></param>
-	/// <param name="messageDigest"></param>
-	internal static void ValidateSignatureParams(ReadOnlySpan<byte> privateKey, ReadOnlySpan<byte> messageDigest) {
-		ValidateBuffer(nameof(messageDigest), messageDigest, 32);
-		ValidatePrivateKey(nameof(privateKey), privateKey, 32);
-	}
-	/// <summary>
-	/// Validate Verification Parameters
-	/// </summary>
-	/// <param name="signature"></param>
-	/// <param name="messageDigest"></param>
-	/// <param name="publicKey"></param>
-	private static void ValidateVerificationParams(ReadOnlySpan<byte> signature, ReadOnlySpan<byte> messageDigest, ReadOnlySpan<byte> publicKey) {
-		ValidateBuffer(nameof(signature), signature, 64);
-		ValidateBuffer(nameof(publicKey), publicKey, 32);
-		ValidateBuffer(nameof(messageDigest), messageDigest, 32);
-	}
-	/// <summary>
-	/// Validate Batch Verification Parameters
-	/// </summary>
-	/// <param name="signatures"></param>
-	/// <param name="messageDigests"></param>
-	/// <param name="publicKeys"></param>
-	/// <exception cref="ArgumentException"></exception>
-	private static void ValidateBatchVerificationParams(byte[][] signatures, byte[][] messageDigests, byte[][] publicKeys) {
-
-		ValidateSignatureArrays(signatures);
-		ValidatePublicKeyArrays(publicKeys);
-		ValidateMessageDigestArrays(messageDigests);
-
-		if (signatures.Length != messageDigests.Length || messageDigests.Length != publicKeys.Length) {
-			throw new ArgumentException("all parameters must be an array with the same length");
 		}
 	}
 

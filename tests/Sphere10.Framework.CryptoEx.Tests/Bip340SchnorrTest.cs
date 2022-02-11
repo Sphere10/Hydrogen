@@ -156,8 +156,6 @@ public class Bip340SchnorrTest
 
     [Test]
     [TestCase(ECDSAKeyType.SECP256K1), Repeat(64)]
-    // [TestCase(ECDSAKeyType.SECP384R1)]
-    // [TestCase(ECDSAKeyType.SECP521R1)]
     public void TestRandomSignAndVerify(ECDSAKeyType keyType)
     {
         var messageDigest = Hashers.Hash(CHF.SHA2_256, RandomBytes(new Random().Next(0, 65536)));
@@ -171,8 +169,6 @@ public class Bip340SchnorrTest
 
     [Test]
     [TestCase(ECDSAKeyType.SECP256K1)]
-    // [TestCase(ECDSAKeyType.SECP384R1)]
-    // [TestCase(ECDSAKeyType.SECP521R1)]
     public void IsPublicKey(ECDSAKeyType keyType)
     {
         var schnorr = new Schnorr(keyType);
@@ -186,10 +182,6 @@ public class Bip340SchnorrTest
     [Test]
     [TestCase(new byte[] { }, ECDSAKeyType.SECP256K1)]
     [TestCase(new byte[] { 0, 0 }, ECDSAKeyType.SECP256K1)]
-    // [TestCase(new byte[] { }, ECDSAKeyType.SECP384R1)]
-    // [TestCase(new byte[] { 0, 0 }, ECDSAKeyType.SECP384R1)]
-    // [TestCase(new byte[] { }, ECDSAKeyType.SECP521R1)]
-    // [TestCase(new byte[] { 0, 0 }, ECDSAKeyType.SECP521R1)]
     public void VerifyThatTryParsePrivateKeyFailsEarlyForBadKeys(byte[] badRawKey, ECDSAKeyType keyType)
     {
         var schnorr = new Schnorr(keyType);
@@ -198,8 +190,6 @@ public class Bip340SchnorrTest
 
     [Test]
     [TestCase(ECDSAKeyType.SECP256K1)]
-    // [TestCase(ECDSAKeyType.SECP384R1)]
-    // [TestCase(ECDSAKeyType.SECP521R1)]
     public void VerifyThatTryParsePrivateKeyFailsForValuesNotInBetweenZeroToCurveOrderMinusOne(ECDSAKeyType keyType)
     {
         var schnorr = new Schnorr(keyType);
@@ -212,10 +202,6 @@ public class Bip340SchnorrTest
     [Test]
     [TestCase(ECDSAKeyType.SECP256K1)]
     [TestCase(ECDSAKeyType.SECP256K1)]
-    // [TestCase(ECDSAKeyType.SECP384R1)]
-    // [TestCase(ECDSAKeyType.SECP384R1)]
-    // [TestCase(ECDSAKeyType.SECP521R1)]
-    // [TestCase(ECDSAKeyType.SECP521R1)]
     public void VerifyThatTryParsePrivateKeyPassForGoodKeys(ECDSAKeyType keyType)
     {
         var schnorr = new Schnorr(keyType);
@@ -227,10 +213,6 @@ public class Bip340SchnorrTest
     [Test]
     [TestCase(new byte[] { }, ECDSAKeyType.SECP256K1)]
     [TestCase(new byte[] { 0, 0 }, ECDSAKeyType.SECP256K1)]
-    // [TestCase(new byte[] { }, ECDSAKeyType.SECP384R1)]
-    // [TestCase(new byte[] { 0, 0 }, ECDSAKeyType.SECP384R1)]
-    // [TestCase(new byte[] { }, ECDSAKeyType.SECP521R1)]
-    // [TestCase(new byte[] { 0, 0 }, ECDSAKeyType.SECP521R1)]
     public void VerifyThatTryParsePublicKeyFailsEarlyForBadKeys(byte[] badRawKey, ECDSAKeyType keyType)
     {
         var schnorr = new Schnorr(keyType);
@@ -239,8 +221,6 @@ public class Bip340SchnorrTest
 
     [Test]
     [TestCase(ECDSAKeyType.SECP256K1)]
-    // [TestCase(ECDSAKeyType.SECP384R1)]
-    // [TestCase(ECDSAKeyType.SECP521R1)]
     public void VerifyThatTryParsePublicKeyFailsForValuesNotInBetweenZeroToPrimeFieldMinusOne(ECDSAKeyType keyType)
     {
         var schnorr = new Schnorr(keyType);
@@ -253,10 +233,6 @@ public class Bip340SchnorrTest
     [Test]
     [TestCase(ECDSAKeyType.SECP256K1)]
     [TestCase(ECDSAKeyType.SECP256K1)]
-    // [TestCase(ECDSAKeyType.SECP384R1)]
-    // [TestCase(ECDSAKeyType.SECP384R1)]
-    // [TestCase(ECDSAKeyType.SECP521R1)]
-    // [TestCase(ECDSAKeyType.SECP521R1)]
     public void VerifyThatTryParsePublicKeyPassForGoodKeys(ECDSAKeyType keyType)
     {
         var schnorr = new Schnorr(keyType);

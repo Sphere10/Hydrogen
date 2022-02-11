@@ -23,9 +23,7 @@ public class Schnorr : StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schno
 	private readonly SecureRandom _secureRandom;
 
 	private static readonly ECDSAKeyType[] SupportedKeyTypes = {
-		ECDSAKeyType.SECP256K1,
-		ECDSAKeyType.SECP384R1,
-		ECDSAKeyType.SECP521R1
+		ECDSAKeyType.SECP256K1
 	};
 
 	public Schnorr(ECDSAKeyType keyType) : this(keyType, CHF.SHA2_256) {

@@ -274,17 +274,8 @@ public class MuSig {
 		var mu = signerSession.KeyCoefficient;
 		var sk = signerSession.SecretKey;
 		var pk = g.Multiply(sk).Normalize();
-		var l = 0;
-		if (!Schnorr.IsEven(pk)) {
-			l++;
-		}
-		if (sessionCache.PublicKeyParity) {
-			l++;
-		}
-		if (signerSession.InternalKeyParity) {
-			l++;
-		}
-		if (l % 2 == 1) {
+
+		if ((!Schnorr.IsEven(pk) != sessionCache.PublicKeyParity) != signerSession.InternalKeyParity) {
 			sk = n.Subtract(sk); //sk = sk.Negate().Mod(n); also works
 		}
 

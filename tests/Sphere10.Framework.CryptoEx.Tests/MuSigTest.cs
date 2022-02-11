@@ -179,9 +179,7 @@ public class MuSigTest
     }
 
     [Test]
-    [TestCase(ECDSAKeyType.SECP256K1)]
-    // [TestCase(ECDSAKeyType.SECP384R1)]
-    // [TestCase(ECDSAKeyType.SECP521R1)]
+    [TestCase(ECDSAKeyType.SECP256K1), Repeat(64)]
     public void TestFullMuSigWithDifferentCurves(ECDSAKeyType keyType)
     {
         // messageDigest must be 32 bytes in length

@@ -139,7 +139,6 @@ public class Schnorr : StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schno
 	
 	public override bool VerifyDigest(ReadOnlySpan<byte> signature, ReadOnlySpan<byte> messageDigest, ReadOnlySpan<byte> publicKey) {
 		// https://github.com/bitcoin/bips/blob/master/bip-0340.mediawiki#verification
-		//ValidateVerificationParams(signature, messageDigest, publicKey);
 		var message = messageDigest.ToArray();
 		var sig = signature.ToArray();
 		var pubKey = publicKey.ToArray();

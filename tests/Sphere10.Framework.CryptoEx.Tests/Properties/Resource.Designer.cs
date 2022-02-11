@@ -89,5 +89,15 @@ namespace Sphere10.Framework.CryptoEx.Tests.Properties {
                 return ((byte[])(obj));
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        internal static byte[] bip340SchnorrVectors_json {
+            get {
+                object obj = ResourceManager.GetObject("bip340SchnorrVectors.json", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
     }
 }

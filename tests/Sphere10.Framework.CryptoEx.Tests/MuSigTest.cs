@@ -180,7 +180,7 @@ public class MuSigTest
 
     [Test]
     [TestCase(ECDSAKeyType.SECP256K1), Repeat(64)]
-    public void TestFullMuSigWithDifferentCurves(ECDSAKeyType keyType)
+    public void TestFullMuSigWithRandomSignAndVerify(ECDSAKeyType keyType)
     {
         // messageDigest must be 32 bytes in length
         var messageDigest = Tools.Crypto.GenerateCryptographicallyRandomBytes(32);

@@ -184,7 +184,7 @@ public class MuSig {
 		Schnorr.ValidateArray(nameof(publicKey), publicKey);
 		Schnorr.ValidateArray(nameof(messageDigest), messageDigest);
 		Schnorr.ValidateArray(nameof(ell), ell);
-		var nonceData = GenerateNonce(sessionId, Schnorr.BytesOfBigInt(privateKey, 32), messageDigest, null);
+		var nonceData = GenerateNonce(sessionId, Schnorr.BytesOfBigInt(privateKey, KeySize), messageDigest, null);
 		var session = new SignerMuSigSession {
 			SecretKey = privateKey,
 			KeyCoefficient = ComputeKeyAggregationCoefficient(ell, publicKey, secondPublicKey),
@@ -208,7 +208,7 @@ public class MuSig {
 	}
 
 	private ECPoint PointC(byte[] compressedPublicKey) {
-		var point = Schnorr.LiftX(compressedPublicKey.AsSpan().Slice(1, 32).ToArray());
+		var point = Schnorr.LiftX(compressedPublicKey.AsSpan().Slice(1, KeySize).ToArray());
 		var compressionMarker = compressedPublicKey[0];
 		switch (compressionMarker) {
 			case 2:
@@ -227,8 +227,8 @@ public class MuSig {
 		ECPoint rA = null;
 		ECPoint rB = null;
 		for (var i = 0; i < nonces.Length; i++) {
-			var sliceA = nonces[i].AsSpan().Slice(0, 33).ToArray();
-			var sliceB = nonces[i].AsSpan().Slice(33, 33).ToArray();
+			var sliceA = nonces[i].AsSpan().Slice(0, KeySize + 1).ToArray();
+			var sliceB = nonces[i].AsSpan().Slice(KeySize + 1, KeySize + 1).ToArray();
 			var summandA = PointC(sliceA);
 			var summandB = PointC(sliceB);
 			rA = rA == null ? summandA : rA.Add(summandA);
@@ -266,8 +266,8 @@ public class MuSig {
 		var n = Schnorr.N;
 		var g = Schnorr.G;
 
-		var k1 = Schnorr.BytesToBigInt(signerSession.PrivateNonce.AsSpan().Slice(0, 32).ToArray());
-		var k2 = Schnorr.BytesToBigInt(signerSession.PrivateNonce.AsSpan().Slice(32, 32).ToArray());
+		var k1 = Schnorr.BytesToBigInt(signerSession.PrivateNonce.AsSpan().Slice(0, KeySize).ToArray());
+		var k2 = Schnorr.BytesToBigInt(signerSession.PrivateNonce.AsSpan().Slice(KeySize, KeySize).ToArray());
 		Schnorr.ValidatePrivateKeyRange(nameof(k1), k1);
 		Schnorr.ValidatePrivateKeyRange(nameof(k2), k2);
 
@@ -318,8 +318,8 @@ public class MuSig {
 		var g = Schnorr.G;
 		var b = sessionCache.NonceCoefficient;
 
-		var r1 = PointC(signerSession.PublicNonce.AsSpan().Slice(0, 33).ToArray());
-		var r2 = PointC(signerSession.PublicNonce.AsSpan().Slice(33, 33).ToArray());
+		var r1 = PointC(signerSession.PublicNonce.AsSpan().Slice(0, KeySize + 1).ToArray());
+		var r2 = PointC(signerSession.PublicNonce.AsSpan().Slice(KeySize + 1, KeySize + 1).ToArray());
 
 		var rj = r2;
 		rj = rj.Multiply(b).Add(r1);
@@ -364,7 +364,7 @@ public class MuSig {
 			}
 			s = s == null ? summand.Mod(n) : s.Add(summand).Mod(n);
 		}
-		return Arrays.Concatenate(finalNonce, Schnorr.BytesOfBigInt(s, 32));
+		return Arrays.Concatenate(finalNonce, Schnorr.BytesOfBigInt(s, KeySize));
 	}
 
 	public MuSigData MuSigNonInteractive(Schnorr.PrivateKey[] privateKeys, byte[] messageDigest) {

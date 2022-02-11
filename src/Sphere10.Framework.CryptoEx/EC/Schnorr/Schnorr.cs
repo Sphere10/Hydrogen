@@ -51,7 +51,7 @@ public class Schnorr : StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schno
 	internal int KeySize => (Curve.FieldSize + 7) >> 3;
 
 	public override bool TryParsePublicKey(ReadOnlySpan<byte> bytes, out PublicKey publicKey) {
-		if (bytes.Length != 32) {
+		if (bytes.Length != KeySize) {
 			publicKey = null;
 			return false;
 		}
@@ -65,7 +65,7 @@ public class Schnorr : StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schno
 	}
 
 	public override bool TryParsePrivateKey(ReadOnlySpan<byte> bytes, out PrivateKey privateKey) {
-		if (bytes.Length != 32) {
+		if (bytes.Length != KeySize) {
 			privateKey = null;
 			return false;
 		}
@@ -83,7 +83,7 @@ public class Schnorr : StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schno
 		var keyPairGenerator = GeneratorUtilities.GetKeyPairGenerator("ECDSA");
 		keyPairGenerator.Init(new ECKeyGenerationParameters(_domainParams, _secureRandom));
 		var keyPair = keyPairGenerator.GenerateKeyPair();
-		var privateKeyBytes = BytesOfBigInt((keyPair.Private as ECPrivateKeyParameters)?.D, 32);
+		var privateKeyBytes = BytesOfBigInt((keyPair.Private as ECPrivateKeyParameters)?.D, KeySize);
 		return (PrivateKey)this.ParsePrivateKey(privateKeyBytes);
 	}
 
@@ -120,7 +120,7 @@ public class Schnorr : StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schno
 			auxRandomData = RandomBytes(32);
 		}
 
-		var t = BytesOfBigInt(d.Xor(BytesToBigInt(TaggedHash("BIP0340/aux", auxRandomData.ToArray()))), 32);
+		var t = BytesOfBigInt(d.Xor(BytesToBigInt(TaggedHash("BIP0340/aux", auxRandomData.ToArray()))), KeySize);
 		var rand = TaggedHash("BIP0340/nonce", Arrays.ConcatenateAll(t, px, message));
 		var kPrime = BytesToBigInt(rand).Mod(N);
 
@@ -132,14 +132,13 @@ public class Schnorr : StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schno
 		var k = GetEvenKey(r, kPrime);
 		var rx = BytesOfXCoord(r);
 		var e = GetE(rx, px, message);
-		var sig = Arrays.ConcatenateAll(rx, BytesOfBigInt(k.Add(e.Multiply(d)).Mod(N), 32));
+		var sig = Arrays.ConcatenateAll(rx, BytesOfBigInt(k.Add(e.Multiply(d)).Mod(N), KeySize));
 		if (!VerifyDigest(sig, messageDigest, BytesOfXCoord(p))) {
 			throw new InvalidOperationException("The created signature did not pass verification.");
 		}
 		return sig;
 	}
-
-
+	
 	public override bool VerifyDigest(ReadOnlySpan<byte> signature, ReadOnlySpan<byte> messageDigest, ReadOnlySpan<byte> publicKey) {
 		// https://github.com/bitcoin/bips/blob/master/bip-0340.mediawiki#verification
 		//ValidateVerificationParams(signature, messageDigest, publicKey);
@@ -152,10 +151,10 @@ public class Schnorr : StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schno
 
 		var p = LiftX(pubKey);
 		var px = BytesOfXCoord(p);
-		var rSig = BytesToBigInt(sig.AsSpan().Slice(0, 32).ToArray());
-		var sSig = BytesToBigInt(sig.AsSpan().Slice(32, 32).ToArray());
+		var rSig = BytesToBigInt(sig.AsSpan().Slice(0, KeySize).ToArray());
+		var sSig = BytesToBigInt(sig.AsSpan().Slice(KeySize, KeySize).ToArray());
 		ValidateSignature(rSig, sSig);
-		var e = GetE(BytesOfBigInt(rSig, 32), px, message.ToArray());
+		var e = GetE(BytesOfBigInt(rSig, KeySize), px, message.ToArray());
 		var r = GetR(sSig, e, p);
 		return !IsPointInfinity(r) && IsEven(r) && r.AffineXCoord.ToBigInteger().Equals(rSig);
 	}
@@ -170,18 +169,18 @@ public class Schnorr : StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schno
 		for (var i = 0; i < publicKeys.Length; i++) {
 			var p = LiftX(publicKeys[i]);
 			var px = BytesOfXCoord(p);
-			var rSig = BytesToBigInt(signatures[i].AsSpan().Slice(0, 32).ToArray());
-			var sSig = BytesToBigInt(signatures[i].AsSpan().Slice(32, 32).ToArray());
+			var rSig = BytesToBigInt(signatures[i].AsSpan().Slice(0, KeySize).ToArray());
+			var sSig = BytesToBigInt(signatures[i].AsSpan().Slice(KeySize, KeySize).ToArray());
 			ValidateSignature(rSig, sSig);
-			var e = GetE(BytesOfBigInt(rSig, 32), px, messageDigests[i]);
-			var r = LiftX(signatures[i].AsSpan().Slice(0, 32).ToArray());
+			var e = GetE(BytesOfBigInt(rSig, KeySize), px, messageDigests[i]);
+			var r = LiftX(signatures[i].AsSpan().Slice(0, KeySize).ToArray());
 
 			if (i == 0) {
 				leftSide = leftSide.Add(sSig);
 				rightSide = r;
 				rightSide = rightSide.Add(p.Multiply(e));
 			} else {
-				var a = RandomBigInteger(32);
+				var a = RandomBigInteger(KeySize);
 				leftSide = leftSide.Add(a.Multiply(sSig));
 				rightSide = rightSide?.Add(r.Multiply(a));
 				rightSide = rightSide?.Add(p.Multiply(a.Multiply(e)));
@@ -221,8 +220,8 @@ public class Schnorr : StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schno
 		ValidatePublicKeyRange(nameof(xPubKey), xPubKey);
 		var c = xPubKey.Pow(3).Add(BigInteger.ValueOf(7)).Mod(P);
 		var y = c.ModPow(P.Add(BigInteger.One).Divide(BigInteger.Four), P);
-		if (c.CompareTo(y.ModPow(BigInteger.Two, P)) != 0) {
-			throw new ArgumentException($"{nameof(c)} is not equal to y^2");
+		 if (c.CompareTo(y.ModPow(BigInteger.Two, P)) != 0) {
+		 	throw new ArgumentException($"{nameof(c)} is not equal to y^2");
 		}
 		var point = Curve.CreatePoint(xPubKey, y);
 		if (!IsEven(point)) {

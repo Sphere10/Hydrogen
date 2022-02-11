@@ -45,7 +45,7 @@ public class Bip340SchnorrTest
     public void Init()
     {
         // extract the needed Resource (bip340SchnorrVectors.json) and assign path to variable below
-        _bip40SchnorrFolder = Tools.FileSystem.GetTempEmptyDirectory(true);
+        _bip40SchnorrFolder = Tools.FileSystem.GetTempEmptyDirectory();
         Tools.FileSystem.AppendAllBytes(Path.Combine(_bip40SchnorrFolder, "bip340SchnorrVectors.json"), Properties.Resource.bip340SchnorrVectors_json);
         _bip40SchnorrFilePath = Path.Combine(_bip40SchnorrFolder, "bip340SchnorrVectors.json");
         var jsonContent = File.ReadAllText(_bip40SchnorrFilePath);

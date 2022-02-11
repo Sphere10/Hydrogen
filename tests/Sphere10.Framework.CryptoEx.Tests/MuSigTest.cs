@@ -58,14 +58,14 @@ public class MuSigTest
         const string combinedNonceVector = "02861f7cdfc60874b69a3743aeb83566a2b8ceacd39b9c31f23127066b61e80aef02828902ed4a86c266cb46c23b923b3577ea4fcbcb99579302ed801765d205c361";
         const string sessionCacheVector = "8c6ec9c83028ba09a10cc74e0af9890281b73b0f05440d0f261aab051fb31abaa5121da2d218956e8e69df8f5bfabf94c51bad7283cd09a07db4fb3d205ccf1b00";
         const string combinedSigsVector = "ed7d22176b48817351b197be4ff6df813c938dfc3cd5c9823640c2303e22e80fa00235ceebac132159e4e15ef107dbb027ca7a4cd557be2266ba26b8bfeced58";
-        
+
         var privateKeysVector = new[]
         {
             "3FC866534575FA473CA1FFAAFA6A64001B5B319A6928A138A82146C367BF699C",
             "14DAD4678588D866F50B084204A69C7ECAF0E3F34B12638DD25545ED153A8128",
             "16E31D4126EE7C217EF3A45D5C99DCCE2A5F0477E694AF948A771D6735903B0F"
         };
-        
+
         var sessionIdsVector = new[]
         {
             "7CB6E93BCF96AEE2BB31AB80AC880E108438FCECCD2E6132B49A2CF103991ED0",

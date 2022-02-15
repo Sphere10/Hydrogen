@@ -122,7 +122,7 @@ public class MuSigTest
         var keyCoefficients = signerSessions.Select(k => k.KeyCoefficient).ToArray();
 
         // 5. combine the public keys.
-        var publicKeyAggregationData = muSig.CombinePublicKey(keyCoefficients, publicKeys);
+        var publicKeyAggregationData = muSig.CombinePublicKeys(keyCoefficients, publicKeys);
         var combinedPublicKey = muSig.Schnorr.BytesOfXCoord(publicKeyAggregationData.CombinedPoint);
 
         Assert.AreEqual(combinedPublicKeyVector, combinedPublicKey.ToHexString(true));
@@ -219,7 +219,7 @@ public class MuSigTest
         var keyCoefficients = signerSessions.Select(k => k.KeyCoefficient).ToArray();
 
         // 5. combine the public keys.
-        var publicKeyAggregationData = muSig.CombinePublicKey(keyCoefficients, publicKeys);
+        var publicKeyAggregationData = muSig.CombinePublicKeys(keyCoefficients, publicKeys);
         var combinedPublicKey = muSig.Schnorr.BytesOfXCoord(publicKeyAggregationData.CombinedPoint);
         var publicKeyParity = publicKeyAggregationData.PublicKeyParity;
 

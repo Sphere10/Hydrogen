@@ -284,7 +284,7 @@ public class Schnorr : StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schno
 		return BytesOfBigInt(point.AffineXCoord.ToBigInteger(), KeySize);
 	}
 
-	internal static byte[] BytesOfBigInt(BigInteger bi, int numBytes)
+	public static byte[] BytesOfBigInt(BigInteger bi, int numBytes)
 	{
 		return BigIntegerUtils.BigIntegerToBytes(bi, numBytes);
 	}

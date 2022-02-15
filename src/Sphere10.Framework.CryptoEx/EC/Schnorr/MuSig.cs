@@ -29,7 +29,7 @@ public class MuSig
 		return Schnorr.TaggedHash("KeyAgg list", Arrays.ConcatenateAll(publicKeys));
 	}
 
-	private BigInteger ComputeKeyAggregationCoefficient(byte[] ell, byte[] currentPublicKey, byte[] secondPublicKey)
+	internal BigInteger ComputeKeyAggregationCoefficient(byte[] ell, byte[] currentPublicKey, byte[] secondPublicKey)
 	{
 		if (Arrays.AreEqual(currentPublicKey, secondPublicKey))
 		{
@@ -39,7 +39,7 @@ public class MuSig
 		return Schnorr.BytesToBigInt(hash).Mod(Schnorr.N);
 	}
 
-	public PublicKeyAggregationData CombinePublicKey(BigInteger[] keyCoefficients, byte[][] publicKeys)
+	public PublicKeyAggregationData CombinePublicKeys(BigInteger[] keyCoefficients, byte[][] publicKeys)
 	{
 		Schnorr.ValidateArray(nameof(keyCoefficients), keyCoefficients);
 		Schnorr.ValidateJaggedArray(nameof(publicKeys), publicKeys);
@@ -62,8 +62,8 @@ public class MuSig
 			PublicKeyParity = publicKeyParity
 		};
 	}
-	private MuSigNonceData GenerateNonce(byte[] sessionId, byte[] privateKey, byte[] messageDigest, byte[] aggregatePubKey,
-										 byte[] extraInput = null)
+	internal MuSigNonceData GenerateNonce(byte[] sessionId, byte[] privateKey, byte[] messageDigest, byte[] aggregatePubKey,
+	                                      byte[] extraInput = null)
 	{
 
 		Schnorr.ValidateArray(nameof(sessionId), sessionId);
@@ -437,7 +437,7 @@ public class MuSig
 
 		var keyCoefficients = signerSessions.Select(k => k.KeyCoefficient).ToArray();
 		// 5. combine the public keys.
-		var publicKeyAggregationData = CombinePublicKey(keyCoefficients, publicKeys);
+		var publicKeyAggregationData = CombinePublicKeys(keyCoefficients, publicKeys);
 		var combinedPublicKey = Schnorr.BytesOfXCoord(publicKeyAggregationData.CombinedPoint);
 		var publicKeyParity = publicKeyAggregationData.PublicKeyParity;
 

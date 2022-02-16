@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace Sphere10.Framework {
 
@@ -74,6 +75,7 @@ namespace Sphere10.Framework {
 						State = PageState.Unloaded,
 					}
 				)
+				.Cast<IPage<byte>>()
 				.ToArray();
 		}
 
@@ -141,7 +143,6 @@ namespace Sphere10.Framework {
 			public bool AppendSpan(ReadOnlySpan<byte> items, out ReadOnlySpan<byte> overflow) {
 				var fittedCompletely = PagedBufferImplementationHelper.AppendPageSpan(this, MemoryStore as MemoryBuffer, items, out overflow);
 				EndPosition += items.Length - overflow.Length;
-
 				return fittedCompletely;
 			}
 		}

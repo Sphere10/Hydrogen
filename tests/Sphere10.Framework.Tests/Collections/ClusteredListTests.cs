@@ -10,14 +10,38 @@ namespace Sphere10.Framework.Tests {
 
 	[TestFixture]
 	[Parallelizable(ParallelScope.Children)]
-	public class ClusteredListTests : ClusteredListTestsBase {
+	public class ClusteredListTests : StreamPersistedTestsBase {
 
-		protected override IDisposable CreateList(out ClusteredList<TestObject> clusteredList) {
+		private IDisposable CreateList(out ClusteredList<TestObject> clusteredList) {
 			var stream = new MemoryStream();
 			clusteredList = new ClusteredList<TestObject>(stream, 32, new TestObjectSerializer());
 			return stream;
 		}
 
+		[Test]
+		public void AddOneTest() {
+			var rng = new Random(31337);
+			using (CreateList(out var clusteredList)) {
+				var obj = new TestObject(rng);
+				clusteredList.Add(obj);
+				Assert.That(clusteredList.Count, Is.EqualTo(1));
+				Assert.That(clusteredList[0], Is.EqualTo(obj).Using(new TestObjectComparer()));
+			}
+		}
+
+		[Test]
+		public void AddOneRepeat([Values(100)] int iterations) {
+			var rng = new Random(31337);
+			using (CreateList(out var clusteredList)) {
+				for (var i = 0; i < iterations; i++) {
+					var obj = new TestObject(rng);
+					clusteredList.Add(obj);
+					Assert.That(clusteredList.Count, Is.EqualTo(i + 1));
+					Assert.That(clusteredList[i], Is.EqualTo(obj).Using(new TestObjectComparer()));
+				}
+			}
+		}
+	
 		[Test]
 		public void ConstructorArgumentsAreGuarded() {
 			Assert.Throws<ArgumentNullException>(() => new ClusteredList<int>(null, 1, new IntSerializer()));
@@ -95,8 +119,8 @@ namespace Sphere10.Framework.Tests {
 
 			string update = random.NextString(0, 100);
 			list.UpdateRange(0, new[] { update });
-
-			Assert.AreEqual(update, list[0]);
+			var value = list.Read(0);
+			Assert.AreEqual(update, value);
 			Assert.AreEqual(inputs.Length, list.Count);
 		}
 
@@ -221,7 +245,7 @@ namespace Sphere10.Framework.Tests {
 		}
 
 		[Test]
-		public void IntegrationTests() {
+		public void IntegrationTests_String() {
 			using var stream = new MemoryStream();
 			var list = new ClusteredList<string>(stream, 32, new StringSerializer(Encoding.UTF8));
 			AssertEx.ListIntegrationTest(list,
@@ -231,8 +255,34 @@ namespace Sphere10.Framework.Tests {
 					.ToArray());
 		}
 
+
 		[Test]
-		public void ObjectIntegrationTest([Values] StorageType storage) {
+		public void LoadAndUseExistingStream([Values(1, 100)] int iterations) {
+			var random = new Random(31337 + iterations);
+			var input = Enumerable.Range(0, random.Next(1, 100)).Select(x => random.NextString(0, 100)).ToArray();
+			var fileName = Tools.FileSystem.GetTempFileName(true);
+			using (Tools.Scope.ExecuteOnDispose(() => File.Delete(fileName))) {
+				using (var fileStream = new FileStream(fileName, FileMode.Open)) {
+					var list = new ClusteredList<string>(fileStream, 32, new StringSerializer(Encoding.UTF8));
+					list.AddRange(input);
+				}
+
+				using (var fileStream = new FileStream(fileName, FileMode.Open)) {
+					var list = new ClusteredList<string>(fileStream, 32, new StringSerializer(Encoding.UTF8));
+					Assert.AreEqual(input.Length, list.Count);
+					Assert.AreEqual(input, list);
+
+					var secondInput = Enumerable.Range(0, random.Next(1, 100)).Select(x => random.NextString(1, 100)).ToArray();
+					list.AddRange(secondInput);
+					Assert.AreEqual(input.Concat(secondInput), list.ReadRange(0, list.Count));
+					list.RemoveRange(0, list.Count);
+					Assert.IsEmpty(list);
+				}
+			}
+		}
+
+		[Test]
+		public void IntegrationTests([Values] StorageType storage) {
 			var rng = new Random(31337);
 			using (CreateStream(storage, 5000, out Stream stream)) {
 				var list = new ClusteredList<TestObject>(stream, 100, new TestObjectSerializer(), new TestObjectComparer());
@@ -243,31 +293,6 @@ namespace Sphere10.Framework.Tests {
 					10,
 					itemComparer: new TestObjectComparer()
 				);
-			}
-		}
-
-		[Test]
-		public void LoadAndUseExistingStream([Values(1, 100)] int iterations) {
-			var random = new Random(31337 + iterations);
-			var input = Enumerable.Range(0, random.Next(1, 100)).Select(x => random.NextString(0, 100)).ToArray();
-			var fileName = Tools.FileSystem.GetTempFileName(true);
-			using (Tools.Scope.ExecuteOnDispose(() => File.Delete(fileName))) {
-				using (var fileStream = new FileStream(fileName, FileMode.Open)) {
-					var list = new ClusteredList<string>(fileStream, 32,  new StringSerializer(Encoding.UTF8));
-					list.AddRange(input);
-				}
-
-				using (var fileStream = new FileStream(fileName, FileMode.Open)) {
-					var list = new ClusteredList<string>(fileStream, 32,  new StringSerializer(Encoding.UTF8));
-					Assert.AreEqual(input.Length, list.Count);
-					Assert.AreEqual(input, list);
-
-					var secondInput = Enumerable.Range(0, random.Next(1, 100)).Select(x => random.NextString(1, 100)).ToArray();
-					list.AddRange(secondInput);
-					Assert.AreEqual(input.Concat(secondInput), list.ReadRange(0, list.Count));
-					list.RemoveRange(0, list.Count);
-					Assert.IsEmpty(list);
-				}
 			}
 		}
 

@@ -31,12 +31,12 @@ namespace Sphere10.Framework {
 		private readonly IPagedListDelegate<byte> _friend;
 		private readonly ReadOnlyListDecorator<IPage<byte>, IBufferPage> _pagesDecorator;
 
-		public TransactionalFileMappedBuffer(string filename, int pageSize, long maxMemory, bool readOnly = false)
-			: this(filename, System.IO.Path.GetDirectoryName(filename), pageSize, maxMemory, readOnly) {
+		public TransactionalFileMappedBuffer(string filename, int pageSize, long maxMemory, bool readOnly = false, bool autoLoad = false)
+			: this(filename, System.IO.Path.GetDirectoryName(filename), pageSize, maxMemory, readOnly, autoLoad) {
 		}
 
-		public TransactionalFileMappedBuffer(string filename, string uncommittedPageFileDir, int pageSize, long maxMemory, bool readOnly = false)
-			: base(filename, uncommittedPageFileDir, pageSize, maxMemory, readOnly) {
+		public TransactionalFileMappedBuffer(string filename, string uncommittedPageFileDir, int pageSize, long maxMemory, bool readOnly = false, bool autoLoad = false)
+			: base(filename, uncommittedPageFileDir, pageSize, maxMemory, readOnly, autoLoad) {
 			_friend = CreateFriendDelegate();
 			_pagesDecorator = new ReadOnlyListDecorator<IPage<byte>, IBufferPage>(new ReadOnlyListAdapter<IPage<byte>>( base.InternalPages));
 		}
@@ -63,7 +63,7 @@ namespace Sphere10.Framework {
 			var lastLogicalPageNumber = logicalPageCount - 1;
 
 			if (lastLogicalPageNumber < 0)
-				return new PageImpl[0];
+				return Array.Empty<IPage<byte>>();
 
 			var lastPageLength = 0;
 			if (PageMarkerRepo.Contains(PageMarkerType.UncommittedPage, lastLogicalPageNumber)) {
@@ -75,7 +75,7 @@ namespace Sphere10.Framework {
 
 			var logicalFileLength = (logicalPageCount - 1) * PageSize + lastPageLength;
 			if (logicalFileLength == 0)
-				return new PageImpl[0];
+				return Array.Empty<IPage<byte>>();
 
 			return
 				Enumerable
@@ -104,6 +104,7 @@ namespace Sphere10.Framework {
 							State = PageState.Unloaded,
 						}
 					)
+					.Cast<IPage<byte>>()
 					.ToArray();
 		}
 

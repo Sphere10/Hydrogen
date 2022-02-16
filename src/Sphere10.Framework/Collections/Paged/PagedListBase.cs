@@ -24,17 +24,17 @@ namespace Sphere10.Framework {
 		public event EventHandlerEx<object, IPage<TItem>> PageDeleted;
 
 		private int _count;
-		private int _currentPage;
+		private int _lastFoundPage;
 		private readonly ReadOnlyListAdapter<IPage<TItem>> _pagesAdapter;
-		protected IList<IPage<TItem>> InternalPages;
+		protected List<IPage<TItem>> InternalPages;
 
 		protected PagedListBase() {
 			RequiresLoad = false;
 			IsLoading = false;
-			InternalPages = new ExtendedList<IPage<TItem>>();
+			InternalPages = new List<IPage<TItem>>();
 			_count = 0;
 			_pagesAdapter = new ReadOnlyListAdapter<IPage<TItem>>(InternalPages);
-			_currentPage = -1;
+			_lastFoundPage = -1;
 		}
 
 		public override int Count => _count;
@@ -167,8 +167,9 @@ namespace Sphere10.Framework {
 			var endIndex = index + count - 1;
 			if (endIndex != InternalPages.Last().EndIndex)
 				throw new NotSupportedException("Removing an inner region of items is not supported. This collection only supports removing from the end.");
-
-			foreach (var page in GetPagesInRange(index, endIndex).Reverse()) {
+			var pages = GetPagesInRange(index, endIndex);
+			pages.Reverse();
+			foreach (var page in pages) {
 				_count -= page.Count;
 				var toRemoveCount = count > page.Count ? page.Count : count;
 				if (toRemoveCount < page.Count) {
@@ -195,7 +196,7 @@ namespace Sphere10.Framework {
 			while (InternalPages.Count > 0)
 				DeletePage(InternalPages[^1]);
 			InternalPages.Clear();
-			_currentPage = -1;
+			_lastFoundPage = -1;
 			_count = 0;
 			NotifyAccessed();
 		}
@@ -264,28 +265,32 @@ namespace Sphere10.Framework {
 			NotifyPageAccessed(page);
 		}
 
-		protected IEnumerable<Tuple<IPage<TItem>, int, int>> GetPageSegments(int startIndex, int count) {
+		protected List<Tuple<IPage<TItem>, int, int>> GetPageSegments(int startIndex, int count) {
+			var pageSegments = new List<Tuple<IPage<TItem>, int, int>>();
 			if (count == 0)
-				yield break;
+				return pageSegments;
 
 			foreach (var page in GetPagesInRange(startIndex, startIndex + count - 1)) {
 				Debug.Assert(startIndex >= page.StartIndex);
 				var pageItemsToRead = Math.Min(page.Count - (startIndex - page.StartIndex), count); // read only what's needed
-				yield return Tuple.Create(page, startIndex, pageItemsToRead);
+				pageSegments.Add(Tuple.Create(page, startIndex, pageItemsToRead));
 				startIndex += pageItemsToRead;
 				count -= pageItemsToRead;
 				if (count <= 0)
-					yield break;
+					break;
 			}
+			return pageSegments;
 		}
 
-		protected IEnumerable<IPage<TItem>> GetPagesInRange(int startIndex, int endIndex) {
+		protected List<IPage<TItem>> GetPagesInRange(int startIndex, int endIndex) {
 			var index = FindPageContainingIndex(startIndex);
+			var pages = new List<IPage<TItem>>();
 			IPage<TItem> page;
 			do {
 				page = InternalPages[index++];
-				yield return page;
+				pages.Add(page);
 			} while (endIndex > page.EndIndex && index < InternalPages.Count);
+			return pages;
 		}
 
 		protected int FindPageContainingIndex(int index) {
@@ -294,29 +299,29 @@ namespace Sphere10.Framework {
 				return -1;
 
 			int lower, upper;
-			if (_currentPage != -1) {
+			if (_lastFoundPage != -1) {
 				// Optimization 1: check the last binary searched page again (index seeks tend to be clustered together)
-				var currentPage = InternalPages[_currentPage];
+				var currentPage = InternalPages[_lastFoundPage];
 				var cpStartIndex = currentPage.StartIndex;
 				var cpEndIndex = currentPage.EndIndex;
 				if (cpStartIndex <= index && index <= cpEndIndex)
-					return _currentPage;
+					return _lastFoundPage;
 
-				// Optimization 2: if index is just beyond current page bounary, it has to be adjacent (assuming it exists)
-				if (index == cpEndIndex + 1 && internalPagesCount > _currentPage + 1) {
-					return ++_currentPage;
+				// Optimization 2: if index is just beyond current page boundary, it has to be adjacent (assuming it exists)
+				if (index == cpEndIndex + 1 && internalPagesCount > _lastFoundPage + 1) {
+					return ++_lastFoundPage;
 				}
 
-				if (index == cpStartIndex - 1 && _currentPage > 0) {
-					return --_currentPage;
+				if (index == cpStartIndex - 1 && _lastFoundPage > 0) {
+					return --_lastFoundPage;
 				}
 
 				// Optimization 3: Restrict binary search range since we know if after/before current page
 				if (index < cpStartIndex) {
 					lower = 0;
-					upper = _currentPage - 1;
+					upper = _lastFoundPage - 1;
 				} else {
-					lower = _currentPage + 1;
+					lower = _lastFoundPage + 1;
 					upper = internalPagesCount - 1;
 				}
 			} else {
@@ -325,7 +330,7 @@ namespace Sphere10.Framework {
 			}
 
 			// Binary search pages to find the one containing the index
-			_currentPage = Tools.Collection.BinarySearch(
+			_lastFoundPage = Tools.Collection.BinarySearch(
 				InternalPages, 
 				index, 
 				lower,
@@ -338,7 +343,7 @@ namespace Sphere10.Framework {
 				return 0;
 			});
 
-			return _currentPage;
+			return _lastFoundPage;
 		}
 
 		public abstract IDisposable EnterOpenPageScope(IPage<TItem> page);
@@ -389,7 +394,7 @@ namespace Sphere10.Framework {
 
 		protected virtual void OnPageCreated(IPage<TItem> page) {
 			// set current page to end, since most likely place to search 
-			_currentPage = page.Number;
+			_lastFoundPage = page.Number;
 		}
 
 		protected virtual void OnPageReading(IPage<TItem> page) {
@@ -408,10 +413,10 @@ namespace Sphere10.Framework {
 		}
 
 		protected virtual void OnPageDeleted(IPage<TItem> page) {
-			if (_currentPage == page.Number) {
+			if (_lastFoundPage == page.Number) {
 				// reset current page to end, since most likely place to search 
 				var pCount = Pages.Count;
-				_currentPage = pCount > 0 ? pCount - 1 : -1;
+				_lastFoundPage = pCount > 0 ? pCount - 1 : -1;
 			}
 		}
 
@@ -484,7 +489,6 @@ namespace Sphere10.Framework {
 			OnPageDeleted(page);
 			PageDeleted?.Invoke(this, page);
 		}
-
 
 		// Needed since C# lacks "friend" modifier
 		internal IPagedListDelegate<TItem> CreateFriendDelegate() => new PagedListDelegate<TItem>(

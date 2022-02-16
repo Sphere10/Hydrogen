@@ -30,7 +30,6 @@ namespace Sphere10.Framework.Tests {
 	public class TransactionalListTests {
 
 		[Test]
-		[Pairwise]
 		public void AddOne() {
 			var file = Tools.FileSystem.GenerateTempFilename();
 			var dir = Tools.FileSystem.GetTempEmptyDirectory(true);
@@ -46,7 +45,6 @@ namespace Sphere10.Framework.Tests {
 
 
 		[Test]
-		[Pairwise]
 		public void IntegrationTests_Commit([Values(0, 1, 50)] int maxCapacity) {
 			const int StringMinSize = 0;
 			const int StringMaxSize = 100;
@@ -61,7 +59,6 @@ namespace Sphere10.Framework.Tests {
 		}
 
 		[Test]
-		[Pairwise]
 		public void IntegrationTests_Rollback([Values(0, 1, 50)] int maxCapacity) {
 			const int StringMinSize = 0;
 			const int StringMaxSize = 100;

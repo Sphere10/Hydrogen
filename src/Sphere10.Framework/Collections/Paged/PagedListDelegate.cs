@@ -12,8 +12,8 @@ namespace Sphere10.Framework {
 			Action checkRequiresLoad,
 			Action<int, int, bool> checkRange,
 			Func<IPage<TItem>, IDisposable> enterOpenPageScope,
-			Func<int, int, IEnumerable<Tuple<IPage<TItem>, int, int>>> getPageSegments,
-			Func<IEnumerable<IPage<TItem>>> internalPages,
+			Func<int, int, List<Tuple<IPage<TItem>, int, int>>> getPageSegments,
+			Func<IReadOnlyList<IPage<TItem>>> internalPages,
 			Func<IPage<TItem>> createNextPage,
 			Action notifyAccessing,
 			Action notifyAccessed,
@@ -52,11 +52,11 @@ namespace Sphere10.Framework {
 
 		public Action<int, int, bool> CheckRange { get; }
 
-		public Func<IEnumerable<IPage<TItem>>> InternalPages { get; }
+		public Func<IReadOnlyList<IPage<TItem>>> InternalPages { get; }
 
 		public Func<IPage<TItem>, IDisposable> EnterOpenPageScope { get; }
 
-		public Func<int, int, IEnumerable<Tuple<IPage<TItem>, int, int>>> GetPageSegments { get; }
+		public Func<int, int, List<Tuple<IPage<TItem>, int, int>>> GetPageSegments { get; }
 
 		public Func<IPage<TItem>> CreateNextPage { get; }
 

@@ -170,6 +170,8 @@ namespace Sphere10.Framework.Tests {
 			}
 			
 			var result = CreateMemPagedBuffer(storageType, pageSize, maxMemory, out var memBuffer);
+			if (memBuffer.RequiresLoad)
+				memBuffer.Load();
 			buffer = memBuffer;
 			return result;
 		}
@@ -192,6 +194,8 @@ namespace Sphere10.Framework.Tests {
 					var baseDir = Tools.FileSystem.GetTempEmptyDirectory(true);
 					var fileName = Path.Combine(baseDir, "File.dat");
 					buffer = new TransactionalFileMappedBuffer(fileName, baseDir, pageSize, maxMemory);
+					if (buffer.RequiresLoad)
+						buffer.Load();
 					disposables.Add(new ActionScope(() => Tools.FileSystem.DeleteDirectory(baseDir)));
 					break;
 				default:

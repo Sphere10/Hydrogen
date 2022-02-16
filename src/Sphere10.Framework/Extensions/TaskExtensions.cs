@@ -12,6 +12,7 @@
 //-----------------------------------------------------------------------
 
 using System;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -19,31 +20,35 @@ namespace Sphere10.Framework {
 
 	public static class TaskExtensions {
 
-
-		public static Task<T> IgnoringCancellationException<T>(this Task<T> task)
-			=> IgnoringExceptionOfType<T, OperationCanceledException>(task);
-
-
 		/// <summary>
 		/// Wraps the task with a try/catch that ignores all exceptions.
 		/// </summary>
 		/// <param name="task">The task</param>
 		/// <returns>Wrapped task</returns>
-		public static Task IgnoringExceptions(Task task)
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static Task IgnoringExceptions(this Task task)
 			=> task.IgnoringExceptionOfType<Exception>();
 
-
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static Task<T> IgnoringExceptions<T>(this Task<T> task)
 			=> task.IgnoringExceptionOfType<T, Exception>();
 
-		public static async Task IgnoringExceptionOfType<TException>(this Task task) where TException : Exception {
-			try {
-				 await task;
-			} catch (TException) {
-			}
-		}
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static Task IgnoringCancellationException(this Task task)
+			=> task.IgnoringExceptionOfType<OperationCanceledException>();
+		
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static Task<T> IgnoringCancellationException<T>(this Task<T> task)
+			=> task.IgnoringExceptionOfType<T, OperationCanceledException>();
 
-		public static async Task<T> IgnoringExceptionOfType<T, TException>(this Task<T> task) where TException : Exception {
+        public static async Task IgnoringExceptionOfType<TException>(this Task task) where TException : Exception {
+        	try {
+        		 await task;
+        	} catch (TException) {
+        	}
+        }
+
+        public static async Task<T> IgnoringExceptionOfType<T, TException>(this Task<T> task) where TException : Exception {
 			T result;
 			try {
 				result = await task;
@@ -144,16 +149,58 @@ namespace Sphere10.Framework {
 			}
 		}
 
+		public static Task WithTimeout(this Task task, int delayMS)
+			=> WithTimeout(task, TimeSpan.FromMilliseconds(delayMS));
 
-        /// <summary>
-        /// Makes a non-cancellable task cancellable.
-        /// </summary>
-        /// <typeparam name="T">Type of task's result</typeparam>
-        /// <param name="task">The long-running task</param>
-        /// <param name="cancellationToken">The cancellation token which triggers the cancel.</param>
-        /// <returns>The task result</returns>
-        /// <remarks>Inspired by https://johnthiriet.com/cancel-asynchronous-operation-in-csharp/</remarks>
-        public static async Task<T> WithCancellationToken<T>(this Task<T> task, CancellationToken cancellationToken) {
+		public static Task WithTimeout(this Task task, TimeSpan delay)
+			=> WithCancellationToken(task, new CancellationTokenSource(delay).Token);
+
+
+		public static Task<T> WithTimeout<T>(this Task<T> task, int delayMS)
+			=> WithTimeout(task, TimeSpan.FromMilliseconds(delayMS));
+
+		public static Task<T> WithTimeout<T>(this Task<T> task, TimeSpan delay)
+			=> WithCancellationToken(task, new CancellationTokenSource(delay).Token);
+
+
+		/// <summary>
+		/// Makes a non-cancellable task cancellable.
+		/// </summary>
+		/// <typeparam name="T">Type of task's result</typeparam>
+		/// <param name="task">The long-running task</param>
+		/// <param name="cancellationToken">The cancellation token which triggers the cancel.</param>
+		/// <returns>The task result</returns>
+		/// <remarks>Inspired by https://johnthiriet.com/cancel-asynchronous-operation-in-csharp/</remarks>
+
+
+		public static async Task WithCancellationToken(this Task task, CancellationToken cancellationToken) {
+			// We create a TaskCompletionSource of decimal
+			var taskCompletionSource = new TaskCompletionSourceEx();
+
+			// Registering a lambda into the cancellationToken
+			cancellationToken.Register(() => {
+				// We received a cancellation message, cancel the TaskCompletionSource.Task
+				taskCompletionSource.TrySetCanceled();
+			});
+
+			// Wait for the first task to finish among the two
+			var completedTask = await Task.WhenAny(task, taskCompletionSource.Task);
+
+			// If the completed task is our long running operation we set its result.
+			if (completedTask == task) {
+
+				// Set the taskCompletionSource result
+				taskCompletionSource.TrySetResult();
+			} else {
+				// TODO: ABORT task?? 
+			}
+			// Note a cancellation exception is thrown if the completedTask was the taskCompletionSource
+
+			// Return the result of the TaskCompletionSource.Task
+			await taskCompletionSource.Task;
+		}
+
+		public static async Task<T> WithCancellationToken<T>(this Task<T> task, CancellationToken cancellationToken) {
             // We create a TaskCompletionSource of decimal
             var taskCompletionSource = new TaskCompletionSource<T>();
 
@@ -182,15 +229,15 @@ namespace Sphere10.Framework {
         }
 
         public static void WaitSafe(this Task task) {
-            Task.Run(() => task.Wait());
+            Task.Run(task.Wait);
         }
 
         public static void WaitSafe(this Task task, CancellationToken cancellationToken) {
-            Task.Run(() => task.Wait(cancellationToken));
+            Task.Run(() => task.Wait(cancellationToken), cancellationToken);
         }
 
         public static void RunSyncronouslySafe(this Task task) {
-            Task.Run(() => task.RunSynchronously());
+            Task.Run(task.RunSynchronously);
         }
 
         public static T ResultSafe<T>(this Task<T> task) {

@@ -13,6 +13,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -33,19 +34,27 @@ namespace Sphere10.Framework {
 			string uncommittedPageFileDir, 
 			int pageSize,
 			long maxMemory,
-			bool readOnly = false)
+			bool readOnly = false,
+			bool autoLoad = false)
 			: base(filename, pageSize, maxMemory, readOnly) { 
 			Guard.ArgumentNotNullOrEmpty(uncommittedPageFileDir, nameof(uncommittedPageFileDir));
 			if (!Directory.Exists(uncommittedPageFileDir))
 				throw new DirectoryNotFoundException($"Directory not found: {uncommittedPageFileDir}");
 			FileID = ComputeFileID(Path);
 			PageMarkerRepo = new MarkerRepository(uncommittedPageFileDir, FileID);
+			// Empty files with uncommitted pages still require load (marked not by base constructor). 
+			if (!RequiresLoad)
+				RequiresLoad = File.Exists(filename);
+
+			if (RequiresLoad && autoLoad)
+				Load();
 		}
 
 		public Guid FileID { get; }
 		
 		public abstract TransactionalFileMappedBuffer AsBuffer { get; }
 
+		// TODO: base.Dirty O(N) 
 		public override bool Dirty => base.Dirty || PageMarkerRepo.PageMarkers.Any() || PageMarkerRepo.FileMarkers.Any();
 
 		public void Commit() {
@@ -60,6 +69,7 @@ namespace Sphere10.Framework {
 				foreach (var marker in pageMarkers) {
 					if (marker == PageMarkerType.UncommittedPage) {
 						var pageFile = PageMarkerRepo.GetMarkerFilename(pageNumber, PageMarkerType.UncommittedPage);
+						// TODO avoid reading pagefile into memory
 						var pageFileBytes = File.ReadAllBytes(pageFile);
 						if (pageFileBytes.Length > 0) {
 							var page = InternalPages[pageMarkers.Key];
@@ -94,12 +104,6 @@ namespace Sphere10.Framework {
 			if (PageMarkerRepo.FileMarkers.Any() || PageMarkerRepo.PageMarkers.Any())
 				Rollback();
 			base.Dispose();
-		}
-
-		public static Guid ComputeFileID(string caseCorrectFilePath) {
-			// FileID is a first 16 bytes of the case-correct path converted into a guid
-			Guard.ArgumentNotNull(caseCorrectFilePath, nameof(caseCorrectFilePath));
-			return new Guid(Hashers.Hash(CHF.SHA2_256, Encoding.UTF8.GetBytes(caseCorrectFilePath)).Take(16).ToArray());
 		}
 
 		protected abstract int GetCommittedPageCount();
@@ -150,12 +154,10 @@ namespace Sphere10.Framework {
 			if (Disposing)
 				return;
 
-
 			// Truncate last page
 			if (page.Number == InternalPages.Count - 1) {
 				Tools.FileSystem.TruncateFile(PageMarkerRepo.GetMarkerFilename(page.Number, PageMarkerType.UncommittedPage), page.Size);
 			}
-
 		}
 
 		protected override void OnPageDeleting(IPage<TItem> pageHeader) {
@@ -203,6 +205,12 @@ namespace Sphere10.Framework {
 		private void NotifyRolledBack() {
 			OnRolledBack();
 			RolledBack?.Invoke(this);
+		}
+
+		public static Guid ComputeFileID(string caseCorrectFilePath) {
+			// FileID is a first 16 bytes of the case-correct path converted into a guid
+			Guard.ArgumentNotNull(caseCorrectFilePath, nameof(caseCorrectFilePath));
+			return new Guid(Hashers.Hash(CHF.SHA2_256, Encoding.UTF8.GetBytes(caseCorrectFilePath)).Take(16).ToArray());
 		}
 
 		private void CheckScopeInStatusIfExists(FileTransactionState status) {

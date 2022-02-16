@@ -14,12 +14,12 @@ namespace Sphere10.Framework.Tests {
 	// TODO:
 	// - During dev, bugs seemed to occur when clusters linked in descending order
 	// - write unit tests which directly scramble the cluster links, different patterns (descending, random, etc)
-	public class ClusteredStorageTests {
+	public class ClusteredStorageTests : StreamPersistedTestsBase {
 
 		[Test]
-		public void AddEmpty([Values(1, 4, 32)] int clusterSize, [Values(ClusteredStorageCachePolicy.None, ClusteredStorageCachePolicy.Remember)] ClusteredStorageCachePolicy recordsCachePolicy, [Values(ClusteredStorageCachePolicy.None, ClusteredStorageCachePolicy.Remember)] ClusteredStorageCachePolicy streamCachePolicy) {
+		public void AddEmpty([Values(1, 4, 32)] int clusterSize, [ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy) {
 			using var rootStream = new MemoryStream();
-			var streamContainer = new ClusteredStorage(rootStream, clusterSize, recordsCachePolicy: recordsCachePolicy) { DefaultStreamPolicy = streamCachePolicy };
+			var streamContainer = new ClusteredStorage(rootStream, clusterSize, policy: policy);
 			using (var stream = streamContainer.Add())
 				Assert.That(stream.Length, Is.EqualTo(0));
 			Assert.That(streamContainer.Count, Is.EqualTo(1));
@@ -27,9 +27,9 @@ namespace Sphere10.Framework.Tests {
 		}
 
 		[Test]
-		public void AddNull([Values(1, 4, 32)] int clusterSize, [Values(ClusteredStorageCachePolicy.None, ClusteredStorageCachePolicy.Remember)] ClusteredStorageCachePolicy recordsCachePolicy, [Values(ClusteredStorageCachePolicy.None, ClusteredStorageCachePolicy.Remember)] ClusteredStorageCachePolicy streamCachePolicy) {
+		public void AddNull([Values(1, 4, 32)] int clusterSize, [ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy) {
 			using var rootStream = new MemoryStream();
-			var streamContainer = new ClusteredStorage(rootStream, clusterSize, recordsCachePolicy: recordsCachePolicy) { DefaultStreamPolicy = streamCachePolicy };
+			var streamContainer = new ClusteredStorage(rootStream, clusterSize, policy: policy);
 			streamContainer.AddBytes(null);
 			using (var stream = streamContainer.Open(0))
 				Assert.That(stream.Length, Is.EqualTo(0));
@@ -38,9 +38,9 @@ namespace Sphere10.Framework.Tests {
 		}
 
 		[Test]
-		public void AddManyEmpty([Values(1, 4, 32)] int clusterSize, [Values(1, 2, 100)] int N, [Values(ClusteredStorageCachePolicy.None, ClusteredStorageCachePolicy.Remember)] ClusteredStorageCachePolicy recordsCachePolicy, [Values(ClusteredStorageCachePolicy.None, ClusteredStorageCachePolicy.Remember)] ClusteredStorageCachePolicy streamCachePolicy) {
+		public void AddManyEmpty([Values(1, 4, 32)] int clusterSize, [Values(1, 2, 100)] int N, [ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy) {
 			using var rootStream = new MemoryStream();
-			var streamContainer = new ClusteredStorage(rootStream, clusterSize, recordsCachePolicy: recordsCachePolicy) { DefaultStreamPolicy = streamCachePolicy };
+			var streamContainer = new ClusteredStorage(rootStream, clusterSize, policy: policy);
 			for (var i = 0; i < N; i++)
 				using (var stream = streamContainer.Add())
 					Assert.That(stream.Length, Is.EqualTo(0));
@@ -49,18 +49,18 @@ namespace Sphere10.Framework.Tests {
 		}
 
 		[Test]
-		public void OpenEmpty([Values(1, 4, 32)] int clusterSize, [Values(ClusteredStorageCachePolicy.None, ClusteredStorageCachePolicy.Remember)] ClusteredStorageCachePolicy recordsCachePolicy, [Values(ClusteredStorageCachePolicy.None, ClusteredStorageCachePolicy.Remember)] ClusteredStorageCachePolicy streamCachePolicy) {
+		public void OpenEmpty([Values(1, 4, 32)] int clusterSize, [ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy) {
 			using var rootStream = new MemoryStream();
-			var streamContainer = new ClusteredStorage(rootStream, clusterSize, recordsCachePolicy: recordsCachePolicy) { DefaultStreamPolicy = streamCachePolicy };
+			var streamContainer = new ClusteredStorage(rootStream, clusterSize, policy: policy);
 			using (_ = streamContainer.Add()) ;
 			using (var stream = streamContainer.Open(0))
 				Assert.That(stream.Length, Is.EqualTo(0));
 		}
 
 		[Test]
-		public void SetEmpty_1([Values(1, 4, 32)] int clusterSize, [Values(ClusteredStorageCachePolicy.None, ClusteredStorageCachePolicy.Remember)] ClusteredStorageCachePolicy recordsCachePolicy, [Values(ClusteredStorageCachePolicy.None, ClusteredStorageCachePolicy.Remember)] ClusteredStorageCachePolicy streamCachePolicy) {
+		public void SetEmpty_1([Values(1, 4, 32)] int clusterSize, [ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy) {
 			using var rootStream = new MemoryStream();
-			var streamContainer = new ClusteredStorage(rootStream, clusterSize, recordsCachePolicy: recordsCachePolicy) { DefaultStreamPolicy = streamCachePolicy };
+			var streamContainer = new ClusteredStorage(rootStream, clusterSize, policy: policy);
 			using (var stream = streamContainer.Add()) {
 				stream.SetLength(0);
 			}
@@ -71,9 +71,9 @@ namespace Sphere10.Framework.Tests {
 		}
 
 		[Test]
-		public void SetEmpty_2([Values(1, 4, 32)] int clusterSize, [Values(ClusteredStorageCachePolicy.None, ClusteredStorageCachePolicy.Remember)] ClusteredStorageCachePolicy recordsCachePolicy, [Values(ClusteredStorageCachePolicy.None, ClusteredStorageCachePolicy.Remember)] ClusteredStorageCachePolicy streamCachePolicy) {
+		public void SetEmpty_2([Values(1, 4, 32)] int clusterSize, [ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy) {
 			using var rootStream = new MemoryStream();
-			var streamContainer = new ClusteredStorage(rootStream, clusterSize, recordsCachePolicy: recordsCachePolicy) { DefaultStreamPolicy = streamCachePolicy };
+			var streamContainer = new ClusteredStorage(rootStream, clusterSize, policy: policy);
 			using (var stream = streamContainer.Add()) {
 				stream.Write(new byte[] { 1 });
 				stream.SetLength(0);
@@ -85,9 +85,9 @@ namespace Sphere10.Framework.Tests {
 		}
 
 		[Test]
-		public void SetEmpty_3([Values(1, 4, 32)] int clusterSize, [Values(ClusteredStorageCachePolicy.None, ClusteredStorageCachePolicy.Remember)] ClusteredStorageCachePolicy recordsCachePolicy, [Values(ClusteredStorageCachePolicy.None, ClusteredStorageCachePolicy.Remember)] ClusteredStorageCachePolicy streamCachePolicy) {
+		public void SetEmpty_3([Values(1, 4, 32)] int clusterSize, [ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy) {
 			using var rootStream = new MemoryStream();
-			var streamContainer = new ClusteredStorage(rootStream, clusterSize, recordsCachePolicy: recordsCachePolicy) { DefaultStreamPolicy = streamCachePolicy };
+			var streamContainer = new ClusteredStorage(rootStream, clusterSize, policy: policy);
 			using (var stream = streamContainer.Add()) {
 				stream.Write(new byte[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 });
 				stream.SetLength(0);
@@ -99,18 +99,18 @@ namespace Sphere10.Framework.Tests {
 		}
 
 		[Test]
-		public void Add1Byte([Values(1, 4, 32)] int clusterSize, [Values(ClusteredStorageCachePolicy.None, ClusteredStorageCachePolicy.Remember)] ClusteredStorageCachePolicy recordsCachePolicy, [Values(ClusteredStorageCachePolicy.None, ClusteredStorageCachePolicy.Remember)] ClusteredStorageCachePolicy streamCachePolicy) {
+		public void Add1Byte([Values(1, 4, 32)] int clusterSize, [ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy) {
 			using var rootStream = new MemoryStream();
-			var streamContainer = new ClusteredStorage(rootStream, clusterSize, recordsCachePolicy: recordsCachePolicy) { DefaultStreamPolicy = streamCachePolicy };
+			var streamContainer = new ClusteredStorage(rootStream, clusterSize, policy: policy);
 			streamContainer.AddBytes(new byte[] { 1 });
 			Assert.That(streamContainer.Count, Is.EqualTo(1));
 			Assert.That(streamContainer.ReadAll(0), Is.EqualTo(new byte[] { 1 }));
 		}
 
 		[Test]
-		public void Add2x1Byte([Values(1, 4, 32)] int clusterSize, [Values(ClusteredStorageCachePolicy.None, ClusteredStorageCachePolicy.Remember)] ClusteredStorageCachePolicy recordsCachePolicy, [Values(ClusteredStorageCachePolicy.None, ClusteredStorageCachePolicy.Remember)] ClusteredStorageCachePolicy streamCachePolicy) {
+		public void Add2x1Byte([Values(1, 4, 32)] int clusterSize, [ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy) {
 			using var rootStream = new MemoryStream();
-			var streamContainer = new ClusteredStorage(rootStream, clusterSize, recordsCachePolicy: recordsCachePolicy) { DefaultStreamPolicy = streamCachePolicy };
+			var streamContainer = new ClusteredStorage(rootStream, clusterSize, policy: policy);
 			streamContainer.AddBytes(new byte[] { 1 });
 			streamContainer.AddBytes(new byte[] { 1 });
 			Assert.That(streamContainer.Count, Is.EqualTo(2));
@@ -119,9 +119,9 @@ namespace Sphere10.Framework.Tests {
 		}
 
 		[Test]
-		public void Add2ShrinkFirst_1b([Values(1, 2, 3, 4, 32)] int clusterSize, [Values(ClusteredStorageCachePolicy.None, ClusteredStorageCachePolicy.Remember)] ClusteredStorageCachePolicy recordsCachePolicy, [Values(ClusteredStorageCachePolicy.None, ClusteredStorageCachePolicy.Remember)] ClusteredStorageCachePolicy streamCachePolicy) {
+		public void Add2ShrinkFirst_1b([Values(1, 2, 3, 4, 32)] int clusterSize, [ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy) {
 			using var rootStream = new MemoryStream();
-			var streamContainer = new ClusteredStorage(rootStream, clusterSize, recordsCachePolicy: recordsCachePolicy) { DefaultStreamPolicy = streamCachePolicy };
+			var streamContainer = new ClusteredStorage(rootStream, clusterSize, policy: policy);
 			streamContainer.AddBytes(new byte[] { 1 });
 			streamContainer.AddBytes(new byte[] { 2 });
 			using (var stream = streamContainer.Open(0))
@@ -133,9 +133,9 @@ namespace Sphere10.Framework.Tests {
 		}
 
 		[Test]
-		public void Add2ShrinkFirst_2b([Values(1, 2, 3, 4, 32)] int clusterSize, [Values(ClusteredStorageCachePolicy.None, ClusteredStorageCachePolicy.Remember)] ClusteredStorageCachePolicy recordsCachePolicy, [Values(ClusteredStorageCachePolicy.None, ClusteredStorageCachePolicy.Remember)] ClusteredStorageCachePolicy streamCachePolicy) {
+		public void Add2ShrinkFirst_2b([Values(1, 2, 3, 4, 32)] int clusterSize, [ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy) {
 			using var rootStream = new MemoryStream();
-			var streamContainer = new ClusteredStorage(rootStream, clusterSize, recordsCachePolicy: recordsCachePolicy) { DefaultStreamPolicy = streamCachePolicy };
+			var streamContainer = new ClusteredStorage(rootStream, clusterSize, policy: policy);
 			streamContainer.AddBytes(new byte[] { 1, 1 });
 			streamContainer.AddBytes(new byte[] { 2, 2 });
 
@@ -148,9 +148,9 @@ namespace Sphere10.Framework.Tests {
 		}
 
 		[Test]
-		public void Add2ShrinkSecond_2b([Values(1, 2, 3, 4, 32)] int clusterSize, [Values(ClusteredStorageCachePolicy.None, ClusteredStorageCachePolicy.Remember)] ClusteredStorageCachePolicy recordsCachePolicy, [Values(ClusteredStorageCachePolicy.None, ClusteredStorageCachePolicy.Remember)] ClusteredStorageCachePolicy streamCachePolicy) {
+		public void Add2ShrinkSecond_2b([Values(1, 2, 3, 4, 32)] int clusterSize, [ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy) {
 			using var rootStream = new MemoryStream();
-			var streamContainer = new ClusteredStorage(rootStream, clusterSize, recordsCachePolicy: recordsCachePolicy) { DefaultStreamPolicy = streamCachePolicy };
+			var streamContainer = new ClusteredStorage(rootStream, clusterSize, policy: policy);
 			streamContainer.AddBytes(new byte[] { 1, 1 });
 			streamContainer.AddBytes(new byte[] { 2, 2 });
 			using (var stream = streamContainer.Open(1))
@@ -162,9 +162,9 @@ namespace Sphere10.Framework.Tests {
 		}
 
 		[Test]
-		public void AddNx1Byte([Values(1, 4, 32)] int clusterSize, [Values(1, 2, 100)] int N, [Values(ClusteredStorageCachePolicy.None, ClusteredStorageCachePolicy.Remember)] ClusteredStorageCachePolicy recordsCachePolicy, [Values(ClusteredStorageCachePolicy.None, ClusteredStorageCachePolicy.Remember)] ClusteredStorageCachePolicy streamCachePolicy) {
+		public void AddNx1Byte([Values(1, 4, 32)] int clusterSize, [Values(1, 2, 100)] int N, [ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy) {
 			using var rootStream = new MemoryStream();
-			var streamContainer = new ClusteredStorage(rootStream, clusterSize, recordsCachePolicy: recordsCachePolicy) { DefaultStreamPolicy = streamCachePolicy };
+			var streamContainer = new ClusteredStorage(rootStream, clusterSize, policy: policy);
 			for (var i = 0; i < N; i++)
 				streamContainer.AddBytes(new byte[] { 1 });
 
@@ -176,11 +176,11 @@ namespace Sphere10.Framework.Tests {
 		}
 
 		[Test]
-		public void AddNxMByte([Values(1, 4, 32)] int clusterSize, [Values(1, 2, 100)] int N, [Values(2, 4, 100)] int M, [Values(ClusteredStorageCachePolicy.None, ClusteredStorageCachePolicy.Remember)] ClusteredStorageCachePolicy recordsCachePolicy, [Values(ClusteredStorageCachePolicy.None, ClusteredStorageCachePolicy.Remember)] ClusteredStorageCachePolicy streamCachePolicy) {
+		public void AddNxMByte([Values(1, 4, 32)] int clusterSize, [Values(1, 2, 100)] int N, [Values(2, 4, 100)] int M, [ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy) {
 			var rng = new Random(31337);
 			var actual = new List<byte[]>();
 			using var rootStream = new MemoryStream();
-			var streamContainer = new ClusteredStorage(rootStream, clusterSize, recordsCachePolicy: recordsCachePolicy) { DefaultStreamPolicy = streamCachePolicy };
+			var streamContainer = new ClusteredStorage(rootStream, clusterSize, policy: policy);
 			for (var i = 0; i < N; i++) {
 				using var stream = streamContainer.Add();
 				var data = rng.NextBytes(M);
@@ -193,18 +193,18 @@ namespace Sphere10.Framework.Tests {
 		}
 
 		[Test]
-		public void Insert1b([Values(1, 4, 32)] int clusterSize, [Values(1, 2, 100)] int N, [Values(2, 4, 100)] int M, [Values(ClusteredStorageCachePolicy.None, ClusteredStorageCachePolicy.Remember)] ClusteredStorageCachePolicy recordsCachePolicy, [Values(ClusteredStorageCachePolicy.None, ClusteredStorageCachePolicy.Remember)] ClusteredStorageCachePolicy streamCachePolicy) {
+		public void Insert1b([Values(1, 4, 32)] int clusterSize, [Values(1, 2, 100)] int N, [Values(2, 4, 100)] int M, [ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy) {
 			using var rootStream = new MemoryStream();
-			var streamContainer = new ClusteredStorage(rootStream, clusterSize, recordsCachePolicy: recordsCachePolicy) { DefaultStreamPolicy = streamCachePolicy };
+			var streamContainer = new ClusteredStorage(rootStream, clusterSize, policy: policy);
 			streamContainer.InsertBytes(0, new byte[] { 1 });
 			Assert.That(streamContainer.Count, Is.EqualTo(1));
 			Assert.That(streamContainer.ReadAll(0), Is.EqualTo(new byte[] { 1 }));
 		}
 
 		[Test]
-		public void Insert2x1b([Values(1, 4, 32)] int clusterSize, [Values(1, 2, 100)] int N, [Values(2, 4, 100)] int M, [Values(ClusteredStorageCachePolicy.None, ClusteredStorageCachePolicy.Remember)] ClusteredStorageCachePolicy recordsCachePolicy, [Values(ClusteredStorageCachePolicy.None, ClusteredStorageCachePolicy.Remember)] ClusteredStorageCachePolicy streamCachePolicy) {
+		public void Insert2x1b([Values(1, 4, 32)] int clusterSize, [Values(1, 2, 100)] int N, [Values(2, 4, 100)] int M, [ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy) {
 			using var rootStream = new MemoryStream();
-			var streamContainer = new ClusteredStorage(rootStream, clusterSize, recordsCachePolicy: recordsCachePolicy) { DefaultStreamPolicy = streamCachePolicy };
+			var streamContainer = new ClusteredStorage(rootStream, clusterSize, policy: policy);
 			streamContainer.InsertBytes(0, new byte[] { 1 });
 			streamContainer.InsertBytes(0, new byte[] { 2 });
 			Assert.That(streamContainer.Count, Is.EqualTo(2));
@@ -213,9 +213,9 @@ namespace Sphere10.Framework.Tests {
 		}
 
 		[Test]
-		public void Insert3x1b([Values(1, 4, 32)] int clusterSize, [Values(1, 2, 100)] int N, [Values(2, 4, 100)] int M, [Values(ClusteredStorageCachePolicy.None, ClusteredStorageCachePolicy.Remember)] ClusteredStorageCachePolicy recordsCachePolicy, [Values(ClusteredStorageCachePolicy.None, ClusteredStorageCachePolicy.Remember)] ClusteredStorageCachePolicy streamCachePolicy) {
+		public void Insert3x1b([Values(1, 4, 32)] int clusterSize, [Values(1, 2, 100)] int N, [Values(2, 4, 100)] int M, [ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy) {
 			using var rootStream = new MemoryStream();
-			var streamContainer = new ClusteredStorage(rootStream, clusterSize, recordsCachePolicy: recordsCachePolicy) { DefaultStreamPolicy = streamCachePolicy };
+			var streamContainer = new ClusteredStorage(rootStream, clusterSize, policy: policy);
 			streamContainer.InsertBytes(0, new byte[] { 1 });
 			streamContainer.InsertBytes(0, new byte[] { 2 });
 			streamContainer.InsertBytes(0, new byte[] { 3 });
@@ -235,9 +235,9 @@ namespace Sphere10.Framework.Tests {
 		}
 
 		[Test]
-		public void Remove1b([Values(1, 4, 32)] int clusterSize, [Values(ClusteredStorageCachePolicy.None, ClusteredStorageCachePolicy.Remember)] ClusteredStorageCachePolicy recordsCachePolicy, [Values(ClusteredStorageCachePolicy.None, ClusteredStorageCachePolicy.Remember)] ClusteredStorageCachePolicy streamCachePolicy) {
+		public void Remove1b([Values(1, 4, 32)] int clusterSize, [ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy) {
 			using var rootStream = new MemoryStream();
-			var streamContainer = new ClusteredStorage(rootStream, clusterSize, recordsCachePolicy: recordsCachePolicy) { DefaultStreamPolicy = streamCachePolicy };
+			var streamContainer = new ClusteredStorage(rootStream, clusterSize, policy: policy);
 			streamContainer.AddBytes(new byte[] { 1 });
 			streamContainer.Remove(0);
 			Assert.That(streamContainer.Count, Is.EqualTo(0));
@@ -246,9 +246,9 @@ namespace Sphere10.Framework.Tests {
 		}
 
 		[Test]
-		public void Remove2b([Values(1, 4, 32)] int clusterSize, [Values(ClusteredStorageCachePolicy.None, ClusteredStorageCachePolicy.Remember)] ClusteredStorageCachePolicy recordsCachePolicy, [Values(ClusteredStorageCachePolicy.None, ClusteredStorageCachePolicy.Remember)] ClusteredStorageCachePolicy streamCachePolicy) {
+		public void Remove2b([Values(1, 4, 32)] int clusterSize, [ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy) {
 			using var rootStream = new MemoryStream();
-			var streamContainer = new ClusteredStorage(rootStream, clusterSize, recordsCachePolicy: recordsCachePolicy) { DefaultStreamPolicy = streamCachePolicy };
+			var streamContainer = new ClusteredStorage(rootStream, clusterSize, policy: policy);
 			streamContainer.AddBytes(new byte[] { 1, 2 });
 			streamContainer.Remove(0);
 			Assert.That(streamContainer.Count, Is.EqualTo(0));
@@ -257,9 +257,9 @@ namespace Sphere10.Framework.Tests {
 		}
 
 		[Test]
-		public void Remove3b_Bug([Values(ClusteredStorageCachePolicy.None, ClusteredStorageCachePolicy.Remember)] ClusteredStorageCachePolicy recordsCachePolicy, [Values(ClusteredStorageCachePolicy.None, ClusteredStorageCachePolicy.Remember)] ClusteredStorageCachePolicy streamCachePolicy) {
+		public void Remove3b_Bug([ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy) {
 			using var rootStream = new MemoryStream();
-			var streamContainer = new ClusteredStorage(rootStream, 1, recordsCachePolicy: recordsCachePolicy) { DefaultStreamPolicy = streamCachePolicy };
+			var streamContainer = new ClusteredStorage(rootStream, 1, policy: policy);
 			streamContainer.AddBytes(new byte[] { 1, 2, 3 });
 			streamContainer.Remove(0);
 			Assert.That(streamContainer.Count, Is.EqualTo(0));
@@ -267,22 +267,22 @@ namespace Sphere10.Framework.Tests {
 		}
 
 		[Test]
-		public void AddString([Values(1, 4, 32)] int clusterSize, [Values(ClusteredStorageCachePolicy.None, ClusteredStorageCachePolicy.Remember)] ClusteredStorageCachePolicy recordsCachePolicy, [Values(ClusteredStorageCachePolicy.None, ClusteredStorageCachePolicy.Remember)] ClusteredStorageCachePolicy streamCachePolicy) {
+		public void AddString([Values(1, 4, 32)] int clusterSize, [ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy) {
 			const string data = "Hello Stream!";
 			var dataBytes = Encoding.ASCII.GetBytes(data);
 			using var rootStream = new MemoryStream();
-			var streamContainer = new ClusteredStorage(rootStream, clusterSize, recordsCachePolicy: recordsCachePolicy) { DefaultStreamPolicy = streamCachePolicy };
+			var streamContainer = new ClusteredStorage(rootStream, clusterSize, policy: policy);
 			streamContainer.AddBytes(dataBytes);
 			Assert.That(streamContainer.Count, Is.EqualTo(1));
 			Assert.That(streamContainer.ReadAll(0), Is.EqualTo(dataBytes));
 		}
 
 		[Test]
-		public void RemoveString([Values(1, 4, 32)] int clusterSize, [Values(ClusteredStorageCachePolicy.None, ClusteredStorageCachePolicy.Remember)] ClusteredStorageCachePolicy recordsCachePolicy, [Values(ClusteredStorageCachePolicy.None, ClusteredStorageCachePolicy.Remember)] ClusteredStorageCachePolicy streamCachePolicy) {
+		public void RemoveString([Values(1, 4, 32)] int clusterSize, [ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy) {
 			const string data = "Hello Stream!";
 			var dataBytes = Encoding.ASCII.GetBytes(data);
 			using var rootStream = new MemoryStream();
-			var streamContainer = new ClusteredStorage(rootStream, clusterSize, recordsCachePolicy: recordsCachePolicy) { DefaultStreamPolicy = streamCachePolicy };
+			var streamContainer = new ClusteredStorage(rootStream, clusterSize, policy: policy);
 			streamContainer.AddBytes(dataBytes);
 			streamContainer.Remove(0);
 			Assert.That(streamContainer.Count, Is.EqualTo(0));
@@ -291,13 +291,13 @@ namespace Sphere10.Framework.Tests {
 		}
 
 		[Test]
-		public void UpdateWithSmallerStream([Values(1, 4, 32, 2048)] int clusterSize, [Values(ClusteredStorageCachePolicy.None, ClusteredStorageCachePolicy.Remember)] ClusteredStorageCachePolicy recordsCachePolicy, [Values(ClusteredStorageCachePolicy.None, ClusteredStorageCachePolicy.Remember)] ClusteredStorageCachePolicy streamCachePolicy) {
+		public void UpdateWithSmallerStream([Values(1, 4, 32, 2048)] int clusterSize, [ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy) {
 			const string data1 = "Hello Stream! This is a long string which will be replaced by a smaller one.";
 			const string data2 = "a";
 			var data1Bytes = Encoding.ASCII.GetBytes(data1);
 			var data2Bytes = Encoding.ASCII.GetBytes(data2);
 			using var rootStream = new MemoryStream();
-			var streamContainer = new ClusteredStorage(rootStream, clusterSize, recordsCachePolicy: recordsCachePolicy) { DefaultStreamPolicy = streamCachePolicy };
+			var streamContainer = new ClusteredStorage(rootStream, clusterSize, policy: policy);
 			using (var stream = streamContainer.Add()) {
 				stream.Write(data1Bytes);
 				stream.SetLength(0);
@@ -308,13 +308,13 @@ namespace Sphere10.Framework.Tests {
 		}
 
 		[Test]
-		public void UpdateWithLargerStream([Values(1, 4, 32)] int clusterSize, [Values(ClusteredStorageCachePolicy.None, ClusteredStorageCachePolicy.Remember)] ClusteredStorageCachePolicy recordsCachePolicy, [Values(ClusteredStorageCachePolicy.None, ClusteredStorageCachePolicy.Remember)] ClusteredStorageCachePolicy streamCachePolicy) {
+		public void UpdateWithLargerStream([Values(1, 4, 32)] int clusterSize, [ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy) {
 			const string data1 = "a";
 			const string data2 = "Hello Stream! This is a long string which did replace a smaller one.";
 			var data1Bytes = Encoding.ASCII.GetBytes(data1);
 			var data2Bytes = Encoding.ASCII.GetBytes(data2);
 			using var rootStream = new MemoryStream();
-			var streamContainer = new ClusteredStorage(rootStream, clusterSize, recordsCachePolicy: recordsCachePolicy) { DefaultStreamPolicy = streamCachePolicy };
+			var streamContainer = new ClusteredStorage(rootStream, clusterSize, policy: policy);
 			using (var stream = streamContainer.Add()) {
 				stream.Write(data1Bytes);
 				stream.SetLength(0);
@@ -325,9 +325,9 @@ namespace Sphere10.Framework.Tests {
 		}
 
 		[Test]
-		public void AddRemoveAllAddFirst([Values(1, 4, 32)] int clusterSize, [Values(ClusteredStorageCachePolicy.None, ClusteredStorageCachePolicy.Remember)] ClusteredStorageCachePolicy recordsCachePolicy, [Values(ClusteredStorageCachePolicy.None, ClusteredStorageCachePolicy.Remember)] ClusteredStorageCachePolicy streamCachePolicy) {
+		public void AddRemoveAllAddFirst([Values(1, 4, 32)] int clusterSize, [ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy) {
 			using var rootStream = new MemoryStream();
-			var streamContainer = new ClusteredStorage(rootStream, clusterSize, recordsCachePolicy: recordsCachePolicy) { DefaultStreamPolicy = streamCachePolicy };
+			var streamContainer = new ClusteredStorage(rootStream, clusterSize, policy: policy);
 			streamContainer.AddBytes(new byte[] { 0, 1, 2, 3, 4 });
 			streamContainer.AddBytes(new byte[] { 5, 6, 7, 8, 9 });
 			streamContainer.Remove(0);
@@ -338,9 +338,9 @@ namespace Sphere10.Framework.Tests {
 		}
 
 		[Test]
-		public void AddTwoRemoveFirst([Values(1, 4, 32)] int clusterSize, [Values(ClusteredStorageCachePolicy.None, ClusteredStorageCachePolicy.Remember)] ClusteredStorageCachePolicy recordsCachePolicy, [Values(ClusteredStorageCachePolicy.None, ClusteredStorageCachePolicy.Remember)] ClusteredStorageCachePolicy streamCachePolicy) {
+		public void AddTwoRemoveFirst([Values(1, 4, 32)] int clusterSize, [ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy) {
 			using var rootStream = new MemoryStream();
-			var streamContainer = new ClusteredStorage(rootStream, clusterSize, recordsCachePolicy: recordsCachePolicy) { DefaultStreamPolicy = streamCachePolicy };
+			var streamContainer = new ClusteredStorage(rootStream, clusterSize, policy: policy);
 			streamContainer.AddBytes(new byte[] { 0, 1, 2, 3, 4 });
 			streamContainer.AddBytes(new byte[] { 5, 6, 7, 8, 9 });
 			streamContainer.Remove(0);
@@ -349,9 +349,9 @@ namespace Sphere10.Framework.Tests {
 		}
 
 		[Test]
-		public void AddTwoRemoveAndReAdd([Values(1, 4, 32)] int clusterSize, [Values(ClusteredStorageCachePolicy.None, ClusteredStorageCachePolicy.Remember)] ClusteredStorageCachePolicy recordsCachePolicy, [Values(ClusteredStorageCachePolicy.None, ClusteredStorageCachePolicy.Remember)] ClusteredStorageCachePolicy streamCachePolicy) {
+		public void AddTwoRemoveAndReAdd([Values(1, 4, 32)] int clusterSize, [ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy) {
 			using var rootStream = new MemoryStream();
-			var streamContainer = new ClusteredStorage(rootStream, clusterSize, recordsCachePolicy: recordsCachePolicy) { DefaultStreamPolicy = streamCachePolicy };
+			var streamContainer = new ClusteredStorage(rootStream, clusterSize, policy: policy);
 			streamContainer.AddBytes(new byte[] { 0, 1, 2, 3, 4 });
 			streamContainer.AddBytes(new byte[] { 5, 6, 7, 8, 9 });
 			streamContainer.Remove(0);
@@ -391,11 +391,11 @@ namespace Sphere10.Framework.Tests {
 		}
 
 		[Test]
-		public void TestRootStreamLengthConsistent([Values(ClusteredStorageCachePolicy.None, ClusteredStorageCachePolicy.Remember)] ClusteredStorageCachePolicy recordsCachePolicy, [Values(ClusteredStorageCachePolicy.None, ClusteredStorageCachePolicy.Remember)] ClusteredStorageCachePolicy streamCachePolicy) {
+		public void TestRootStreamLengthConsistent([ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy) {
 			const int clusterSize = 111;
 			var rng = new Random(31337);
 			using var rootStream = new MemoryStream();
-			var streamContainer = new ClusteredStorage(rootStream, clusterSize, recordsCachePolicy: recordsCachePolicy) { DefaultStreamPolicy = streamCachePolicy };
+			var streamContainer = new ClusteredStorage(rootStream, clusterSize, policy: policy);
 			streamContainer.AddBytes(rng.NextBytes(clusterSize));
 			streamContainer.AddBytes(rng.NextBytes(clusterSize));
 			streamContainer.AddBytes(rng.NextBytes(clusterSize));
@@ -403,10 +403,10 @@ namespace Sphere10.Framework.Tests {
 		}
 
 		[Test]
-		public void TestClear([Values(1, 4, 32)] int clusterSize, [Values(ClusteredStorageCachePolicy.None, ClusteredStorageCachePolicy.Remember)] ClusteredStorageCachePolicy recordsCachePolicy, [Values(ClusteredStorageCachePolicy.None, ClusteredStorageCachePolicy.Remember)] ClusteredStorageCachePolicy streamCachePolicy) {
+		public void TestClear([Values(1, 4, 32)] int clusterSize, [ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy) {
 			var rng = new Random(31337);
 			using var rootStream = new MemoryStream();
-			var streamContainer = new ClusteredStorage(rootStream, clusterSize, recordsCachePolicy: recordsCachePolicy) { DefaultStreamPolicy = streamCachePolicy };
+			var streamContainer = new ClusteredStorage(rootStream, clusterSize, policy: policy);
 			streamContainer.AddBytes(rng.NextBytes(clusterSize));
 			streamContainer.AddBytes(rng.NextBytes(clusterSize));
 			streamContainer.AddBytes(rng.NextBytes(clusterSize));
@@ -415,11 +415,11 @@ namespace Sphere10.Framework.Tests {
 		}
 
 		[Test]
-		public void TestClear_2([Values(1, 4, 32)] int clusterSize, [Values(ClusteredStorageCachePolicy.None, ClusteredStorageCachePolicy.Remember)] ClusteredStorageCachePolicy recordsCachePolicy, [Values(ClusteredStorageCachePolicy.None, ClusteredStorageCachePolicy.Remember)] ClusteredStorageCachePolicy streamCachePolicy) {
+		public void TestClear_2([Values(1, 4, 32)] int clusterSize, [ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy) {
 			const string data = "Hello Stream!";
 			var rng = new Random(31337);
 			using var rootStream = new MemoryStream();
-			var streamContainer = new ClusteredStorage(rootStream, clusterSize, recordsCachePolicy: recordsCachePolicy) { DefaultStreamPolicy = streamCachePolicy };
+			var streamContainer = new ClusteredStorage(rootStream, clusterSize, policy: policy);
 			streamContainer.AddBytes(rng.NextBytes(clusterSize));
 			streamContainer.AddBytes(rng.NextBytes(clusterSize));
 			streamContainer.AddBytes(rng.NextBytes(clusterSize));
@@ -427,17 +427,17 @@ namespace Sphere10.Framework.Tests {
 			Assert.That(streamContainer.Count, Is.EqualTo(0));
 
 			var dataBytes = Encoding.ASCII.GetBytes(data);
-			streamContainer = new ClusteredStorage(rootStream, clusterSize, recordsCachePolicy: recordsCachePolicy) { DefaultStreamPolicy = streamCachePolicy };
+			streamContainer = new ClusteredStorage(rootStream, clusterSize, policy: policy);
 			streamContainer.AddBytes(dataBytes);
 			Assert.That(streamContainer.Count, Is.EqualTo(1));
 			Assert.That(streamContainer.ReadAll(0), Is.EqualTo(dataBytes));
 		}
 
 		[Test]
-		public void CorruptData_NextPointsNonExistentCluster([Values(ClusteredStorageCachePolicy.None, ClusteredStorageCachePolicy.Remember)] ClusteredStorageCachePolicy recordsCachePolicy, [Values(ClusteredStorageCachePolicy.None, ClusteredStorageCachePolicy.Remember)] ClusteredStorageCachePolicy streamCachePolicy) {
+		public void CorruptData_NextPointsNonExistentCluster([ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy) {
 			const int clusterSize = 1;
 			using var rootStream = new MemoryStream();
-			var streamContainer = new ClusteredStorage(rootStream, clusterSize, recordsCachePolicy: recordsCachePolicy) { DefaultStreamPolicy = streamCachePolicy };
+			var streamContainer = new ClusteredStorage(rootStream, clusterSize, policy: policy);
 			streamContainer.AddBytes(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 });
 			// corrupt root-stream, make tip cluster 17 have next to 100 creating a circular linked loop through forward traversal
 			var cluster16NextPrevOffset = rootStream.Length - 9 * (streamContainer.ClusterEnvelopeSize + streamContainer.ClusterSize) + sizeof(byte) + sizeof(int);
@@ -448,10 +448,10 @@ namespace Sphere10.Framework.Tests {
 		}
 
 		[Test]
-		public void CorruptData_ForwardsCyclicClusterChain([Values(ClusteredStorageCachePolicy.None, ClusteredStorageCachePolicy.Remember)] ClusteredStorageCachePolicy recordsCachePolicy, [Values(ClusteredStorageCachePolicy.None, ClusteredStorageCachePolicy.Remember)] ClusteredStorageCachePolicy streamCachePolicy) {
+		public void CorruptData_ForwardsCyclicClusterChain([ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy) {
 			const int clusterSize = 1;
 			using var rootStream = new MemoryStream();
-			var streamContainer = new ClusteredStorage(rootStream, clusterSize, recordsCachePolicy: recordsCachePolicy) { DefaultStreamPolicy = streamCachePolicy };
+			var streamContainer = new ClusteredStorage(rootStream, clusterSize, policy: policy);
 			streamContainer.AddBytes(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 });
 			// corrupt root-stream, make tip cluster 18 have next to 10 creating a circular linked loop through forward traversal
 			var nextOffset = rootStream.Length - clusterSize - sizeof(uint);
@@ -462,22 +462,22 @@ namespace Sphere10.Framework.Tests {
 		}
 
 		[Test]
-		public void CorruptData_PrevPointsNonExistentCluster([Values(ClusteredStorageCachePolicy.None, ClusteredStorageCachePolicy.Remember)] ClusteredStorageCachePolicy recordsCachePolicy, [Values(ClusteredStorageCachePolicy.None, ClusteredStorageCachePolicy.Remember)] ClusteredStorageCachePolicy streamCachePolicy) {
+		public void CorruptData_PrevPointsNonExistentCluster([ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy) {
 			// make a 3 streams, corrupt middle back, should clear no problem
 			const int clusterSize = 1;
 			using var rootStream = new MemoryStream();
-			var streamContainer = new ClusteredStorage(rootStream, clusterSize, recordsCachePolicy: recordsCachePolicy) { DefaultStreamPolicy = streamCachePolicy };
+			var streamContainer = new ClusteredStorage(rootStream, clusterSize, policy: policy);
 			streamContainer.AddBytes(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 });
 			streamContainer.FastWriteClusterNext(9, 123456); // corrupt root-stream by make cluster 9 prev point back to NON-EXISTANT CLUSTER
 			Assert.That(() => streamContainer.Clear(0), Throws.TypeOf<CorruptDataException>());
 		}
 
 		[Test]
-		public void CorruptData_BackwardsCyclicClusterChain_Graceful([Values(ClusteredStorageCachePolicy.None, ClusteredStorageCachePolicy.Remember)] ClusteredStorageCachePolicy recordsCachePolicy, [Values(ClusteredStorageCachePolicy.None, ClusteredStorageCachePolicy.Remember)] ClusteredStorageCachePolicy streamCachePolicy) {
+		public void CorruptData_BackwardsCyclicClusterChain_Graceful([ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy) {
 			// make a 3 streams, corrupt middle back, should clear no problem
 			const int clusterSize = 1;
 			using var rootStream = new MemoryStream();
-			var streamContainer = new ClusteredStorage(rootStream, clusterSize, recordsCachePolicy: recordsCachePolicy) { DefaultStreamPolicy = streamCachePolicy };
+			var streamContainer = new ClusteredStorage(rootStream, clusterSize, policy: policy);
 			streamContainer.AddBytes(new byte[] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 });
 			streamContainer.AddBytes(new byte[] { 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 });
 			streamContainer.FastWriteClusterPrev(9, 10); // corrupt root-stream by making cyclic dependency between clusters 9 an 10
@@ -488,22 +488,22 @@ namespace Sphere10.Framework.Tests {
 		}
 
 		[Test]
-		public void CorruptData_ClusterTraits([Values(ClusteredStorageCachePolicy.None, ClusteredStorageCachePolicy.Remember)] ClusteredStorageCachePolicy recordsCachePolicy, [Values(ClusteredStorageCachePolicy.None, ClusteredStorageCachePolicy.Remember)] ClusteredStorageCachePolicy streamCachePolicy) {
+		public void CorruptData_ClusterTraits([ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy) {
 			const byte IllegalValue = 8;
 			// make a 3 streams, corrupt middle back, should clear no problem
 			const int clusterSize = 1;
 			using var rootStream = new MemoryStream();
-			var streamContainer = new ClusteredStorage(rootStream, clusterSize, recordsCachePolicy: recordsCachePolicy) { DefaultStreamPolicy = streamCachePolicy };
+			var streamContainer = new ClusteredStorage(rootStream, clusterSize, policy: policy);
 			streamContainer.AddBytes(new byte[] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 });
 			streamContainer.FastWriteClusterTraits(10, (ClusterTraits)IllegalValue);
 			Assert.That(() => streamContainer.ReadAll(0), Throws.TypeOf<CorruptDataException>());
 		}
 
 		[Test]
-		public void CorruptData_BadHeaderVersion([Values(ClusteredStorageCachePolicy.None, ClusteredStorageCachePolicy.Remember)] ClusteredStorageCachePolicy recordsCachePolicy, [Values(ClusteredStorageCachePolicy.None, ClusteredStorageCachePolicy.Remember)] ClusteredStorageCachePolicy streamCachePolicy) {
+		public void CorruptData_BadHeaderVersion([ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy) {
 			const int clusterSize = 1;
 			using var rootStream = new MemoryStream();
-			var streamContainer = new ClusteredStorage(rootStream, clusterSize, recordsCachePolicy: recordsCachePolicy) { DefaultStreamPolicy = streamCachePolicy };
+			var streamContainer = new ClusteredStorage(rootStream, clusterSize, policy: policy);
 			streamContainer.AddBytes(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 });
 			rootStream.Position = ClusteredStorageHeader.VersionOffset;
 			rootStream.WriteByte(2);
@@ -512,11 +512,11 @@ namespace Sphere10.Framework.Tests {
 		}
 
 		[Test]
-		public void CorruptData_BadClusterSize_Zero([Values(ClusteredStorageCachePolicy.None, ClusteredStorageCachePolicy.Remember)] ClusteredStorageCachePolicy recordsCachePolicy, [Values(ClusteredStorageCachePolicy.None, ClusteredStorageCachePolicy.Remember)] ClusteredStorageCachePolicy streamCachePolicy) {
+		public void CorruptData_BadClusterSize_Zero([ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy) {
 			const int clusterSize = 1;
 			using var rootStream = new MemoryStream();
 			var writer = new EndianBinaryWriter(EndianBitConverter.Little, rootStream);
-			var streamContainer = new ClusteredStorage(rootStream, clusterSize, recordsCachePolicy: recordsCachePolicy) { DefaultStreamPolicy = streamCachePolicy };
+			var streamContainer = new ClusteredStorage(rootStream, clusterSize, policy: policy);
 			streamContainer.AddBytes(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 });
 			rootStream.Position = ClusteredStorageHeader.ClusterSizeOffset;
 			writer.Write(0);
@@ -524,11 +524,11 @@ namespace Sphere10.Framework.Tests {
 		}
 
 		[Test]
-		public void CorruptData_BadClusterSize_TooLarge([Values(ClusteredStorageCachePolicy.None, ClusteredStorageCachePolicy.Remember)] ClusteredStorageCachePolicy recordsCachePolicy, [Values(ClusteredStorageCachePolicy.None, ClusteredStorageCachePolicy.Remember)] ClusteredStorageCachePolicy streamCachePolicy) {
+		public void CorruptData_BadClusterSize_TooLarge([ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy) {
 			const int clusterSize = 1;
 			using var rootStream = new MemoryStream();
 			var writer = new EndianBinaryWriter(EndianBitConverter.Little, rootStream);
-			var streamContainer = new ClusteredStorage(rootStream, clusterSize, recordsCachePolicy: recordsCachePolicy) { DefaultStreamPolicy = streamCachePolicy };
+			var streamContainer = new ClusteredStorage(rootStream, clusterSize, policy: policy);
 			streamContainer.AddBytes(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 });
 			rootStream.Position = ClusteredStorageHeader.ClusterSizeOffset;
 			writer.Write(100);
@@ -536,11 +536,11 @@ namespace Sphere10.Framework.Tests {
 		}
 
 		[Test]
-		public void CorruptData_BadClusterSize_TooBig([Values(ClusteredStorageCachePolicy.None, ClusteredStorageCachePolicy.Remember)] ClusteredStorageCachePolicy recordsCachePolicy, [Values(ClusteredStorageCachePolicy.None, ClusteredStorageCachePolicy.Remember)] ClusteredStorageCachePolicy streamCachePolicy) {
+		public void CorruptData_BadClusterSize_TooBig([ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy) {
 			const int clusterSize = 1;
 			using var rootStream = new MemoryStream();
 			var writer = new EndianBinaryWriter(EndianBitConverter.Little, rootStream);
-			var streamContainer = new ClusteredStorage(rootStream, clusterSize, recordsCachePolicy: recordsCachePolicy) { DefaultStreamPolicy = streamCachePolicy };
+			var streamContainer = new ClusteredStorage(rootStream, clusterSize, policy: policy);
 			streamContainer.AddBytes(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 });
 			rootStream.Position = ClusteredStorageHeader.ClusterSizeOffset;
 			writer.Write(clusterSize + 1);
@@ -548,11 +548,11 @@ namespace Sphere10.Framework.Tests {
 		}
 
 		[Test]
-		public void CorruptData_TotalClusters_Zero([Values(ClusteredStorageCachePolicy.None, ClusteredStorageCachePolicy.Remember)] ClusteredStorageCachePolicy recordsCachePolicy, [Values(ClusteredStorageCachePolicy.None, ClusteredStorageCachePolicy.Remember)] ClusteredStorageCachePolicy streamCachePolicy) {
+		public void CorruptData_TotalClusters_Zero([ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy) {
 			const int clusterSize = 1;
 			using var rootStream = new MemoryStream();
 			var writer = new EndianBinaryWriter(EndianBitConverter.Little, rootStream);
-			var streamContainer = new ClusteredStorage(rootStream, clusterSize, recordsCachePolicy: recordsCachePolicy) { DefaultStreamPolicy = streamCachePolicy };
+			var streamContainer = new ClusteredStorage(rootStream, clusterSize, policy: policy);
 			streamContainer.AddBytes(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 });
 			rootStream.Position = ClusteredStorageHeader.TotalClustersOffset;
 			writer.Write(0);
@@ -560,11 +560,11 @@ namespace Sphere10.Framework.Tests {
 		}
 
 		[Test]
-		public void CorruptData_TotalClusters_TooLarge([Values(ClusteredStorageCachePolicy.None, ClusteredStorageCachePolicy.Remember)] ClusteredStorageCachePolicy recordsCachePolicy, [Values(ClusteredStorageCachePolicy.None, ClusteredStorageCachePolicy.Remember)] ClusteredStorageCachePolicy streamCachePolicy) {
+		public void CorruptData_TotalClusters_TooLarge([ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy) {
 			const int clusterSize = 1;
 			using var rootStream = new MemoryStream();
 			var writer = new EndianBinaryWriter(EndianBitConverter.Little, rootStream);
-			var streamContainer = new ClusteredStorage(rootStream, clusterSize, recordsCachePolicy: recordsCachePolicy) { DefaultStreamPolicy = streamCachePolicy };
+			var streamContainer = new ClusteredStorage(rootStream, clusterSize, policy: policy);
 			streamContainer.AddBytes(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 });
 			rootStream.Position = ClusteredStorageHeader.TotalClustersOffset;
 			writer.Write(streamContainer.Clusters.Count + 1);
@@ -572,11 +572,11 @@ namespace Sphere10.Framework.Tests {
 		}
 
 		[Test]
-		public void CorruptData_Records_TooSmall_HandlesGracefully([Values(ClusteredStorageCachePolicy.None, ClusteredStorageCachePolicy.Remember)] ClusteredStorageCachePolicy recordsCachePolicy, [Values(ClusteredStorageCachePolicy.None, ClusteredStorageCachePolicy.Remember)] ClusteredStorageCachePolicy streamCachePolicy) {
+		public void CorruptData_Records_TooSmall_HandlesGracefully([ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy) {
 			const int clusterSize = 1;
 			using var rootStream = new MemoryStream();
 			var writer = new EndianBinaryWriter(EndianBitConverter.Little, rootStream);
-			var streamContainer = new ClusteredStorage(rootStream, clusterSize, recordsCachePolicy: recordsCachePolicy) { DefaultStreamPolicy = streamCachePolicy };
+			var streamContainer = new ClusteredStorage(rootStream, clusterSize, policy: policy);
 			streamContainer.AddBytes(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 });
 			rootStream.Position = ClusteredStorageHeader.RecordsOffset;
 			writer.Write(streamContainer.Records.Count - 1);
@@ -586,11 +586,11 @@ namespace Sphere10.Framework.Tests {
 		}
 
 		[Test]
-		public void CorruptData_Records_TooLarge_HandlesGracefully([Values(ClusteredStorageCachePolicy.None, ClusteredStorageCachePolicy.Remember)] ClusteredStorageCachePolicy recordsCachePolicy, [Values(ClusteredStorageCachePolicy.None, ClusteredStorageCachePolicy.Remember)] ClusteredStorageCachePolicy streamCachePolicy) {
+		public void CorruptData_Records_TooLarge_HandlesGracefully([ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy) {
 			const int clusterSize = 1;
 			using var rootStream = new MemoryStream();
 			var writer = new EndianBinaryWriter(EndianBitConverter.Little, rootStream);
-			var streamContainer = new ClusteredStorage(rootStream, clusterSize, recordsCachePolicy: recordsCachePolicy) { DefaultStreamPolicy = streamCachePolicy };
+			var streamContainer = new ClusteredStorage(rootStream, clusterSize, policy: policy);
 			streamContainer.AddBytes(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 });
 			rootStream.Position = ClusteredStorageHeader.RecordsOffset;
 			writer.Write(streamContainer.Records.Count + 1);
@@ -619,11 +619,11 @@ namespace Sphere10.Framework.Tests {
 		}
 
 		[Test]
-		public void LoadComplex([Values(1, 4, 32)] int clusterSize,  [Values(0, 2, 4, 100)] int maxStreamSize, [Values(ClusteredStorageCachePolicy.None, ClusteredStorageCachePolicy.Remember)] ClusteredStorageCachePolicy recordsCachePolicy, [Values(ClusteredStorageCachePolicy.None, ClusteredStorageCachePolicy.Remember)] ClusteredStorageCachePolicy streamCachePolicy) {
+		public void LoadComplex([Values(1, 4, 32)] int clusterSize,  [Values(0, 2, 4, 100)] int maxStreamSize, [ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy) {
 
-			var rng = new Random(31337 + (int)recordsCachePolicy + (int)streamCachePolicy);
+			var rng = new Random(31337 + (int)policy);
 			using var rootStream = new MemoryStream();
-			var streamContainer = new ClusteredStorage(rootStream, clusterSize, recordsCachePolicy: recordsCachePolicy) { DefaultStreamPolicy = streamCachePolicy };
+			var streamContainer = new ClusteredStorage(rootStream, clusterSize, policy: policy);
 			for (var i = 0; i < 100; i++)
 				streamContainer.AddBytes(rng.NextBytes(maxStreamSize));
 
@@ -634,21 +634,21 @@ namespace Sphere10.Framework.Tests {
 				streamContainer.Swap(i, 100 - i - 1);
 
 			using var clonedStream = new MemoryStream(rootStream.ToArray());
-			var loadedStreamContainer = new ClusteredStorage(clonedStream, clusterSize, recordsCachePolicy: recordsCachePolicy) { DefaultStreamPolicy = streamCachePolicy };
+			var loadedStreamContainer = new ClusteredStorage(clonedStream, clusterSize, policy: policy);
 
 			Assert.That(streamContainer.ToStringFullContents(), Is.EqualTo(loadedStreamContainer.ToStringFullContents()));
 			
 		}
 
 		[Test]
-		public void IntegrationTests([Values(1, 4, 32)] int clusterSize, [Values(1, 2, 100)] int totalStreams, [Values(0, 2, 4, 100)] int maxStreamSize, [Values(ClusteredStorageCachePolicy.None, ClusteredStorageCachePolicy.Remember)] ClusteredStorageCachePolicy recordsCachePolicy, [Values(ClusteredStorageCachePolicy.None, ClusteredStorageCachePolicy.Remember)] ClusteredStorageCachePolicy streamCachePolicy) {
+		public void IntegrationTests([Values(1, 4, 32)] int clusterSize, [Values(1, 2, 100)] int totalStreams, [Values(0, 2, 4, 100)] int maxStreamSize, [ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy) {
 			// NOTE: change DebugMode to True when trying to isolate error, else leave False when confirmed working (for faster evaluation)
 			const bool DebugMode = false;
 			const int StreamStreamOperations = 100;
-			var rng = new Random(31337 + (int)recordsCachePolicy + (int)streamCachePolicy);
+			var rng = new Random(31337 + (int)policy);
 			var expectedStreams = new List<Stream>();
 			using var rootStream = new MemoryStream();
-			var streamContainer = new ClusteredStorage(rootStream, clusterSize, recordsCachePolicy: recordsCachePolicy) { DefaultStreamPolicy = streamCachePolicy };
+			var streamContainer = new ClusteredStorage(rootStream, clusterSize, policy: policy);
 			// Iterates double (first leg adds/inserts streams, second leg removes)
 			for (var i = 0; i < totalStreams * 2; i++) {
 				if (i < totalStreams) {

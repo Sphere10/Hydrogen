@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Resources;
 using System.Runtime.CompilerServices;
@@ -18,41 +19,32 @@ namespace Sphere10.Framework {
 		where THeader : IStreamStorageHeader
 		where TRecord : IStreamRecord {
 
-		private readonly IItemSerializer<TItem> _itemSerializer;
-		private readonly IEqualityComparer<TItem> _itemComparer;
-		private readonly Endianness _endianness;
+		protected readonly IItemSerializer<TItem> ItemSerializer;
+		protected readonly IEqualityComparer<TItem> ItemComparer;
+		protected readonly Endianness Endianness;
 		private int _version;
 
 		protected StreamPersistedList(IStreamStorage<THeader, TRecord> storage, IItemSerializer<TItem> itemSerializer, IEqualityComparer<TItem> itemComparer = null, Endianness endianness = Endianness.LittleEndian) {
 			Guard.ArgumentNotNull(storage, nameof(storage));
 			Guard.ArgumentNotNull(itemSerializer, nameof(itemSerializer));
 			Storage = storage;
-			_itemSerializer = itemSerializer;
-			_itemComparer = itemComparer ?? EqualityComparer<TItem>.Default;
+			ItemSerializer = itemSerializer;
+			ItemComparer = itemComparer ?? EqualityComparer<TItem>.Default;
 			_version = 0;
-			_endianness = endianness;
+			Endianness = endianness;
 		}
 
 		public override int Count => Storage.Count;
 
 		public IStreamStorage<THeader, TRecord> Storage { get; }
 
-		public override void Insert(int index, TItem item) {
-			CheckIndex(index, allowAtEnd: true);
-			Storage.InsertBytes(index, SerializeItem(item));
-			MarkRecordNull(index, item == null);
-			UpdateVersion();
-		}
-
-		public override void RemoveAt(int index) => Storage.Remove(EnsureSafe(index));
-
-		public override TItem Read(int index)
-			=> IsRecordMarkedNull(index) ? default : _itemSerializer.Deserialize(Storage.ReadAll(EnsureSafe(index)), _endianness);
+		public override TItem Read(int index) 
+			=> Storage.LoadItem(index, ItemSerializer); // Index checking deferred to Storage
 
 		public override int IndexOf(TItem item) {
 			// TODO: if _storage keeps checksums, use that to quickly filter
 			for (var i = 0; i < Storage.Count; i++) {
-				if (_itemComparer.Equals(item, IsRecordMarkedNull(i) ? default : _itemSerializer.Deserialize(Storage.ReadAll(i), _endianness)))
+				if (ItemComparer.Equals(item, Read(i)))
 					return i;
 			}
 			return -1;
@@ -61,19 +53,19 @@ namespace Sphere10.Framework {
 		public override bool Contains(TItem item) => IndexOf(item) != -1;
 
 		public override void Add(TItem item) {
-			Storage.AddBytes(SerializeItem(item));
-			if (item == null)
-				MarkRecordNull(Storage.Count - 1, true);
+			// Index checking deferred to Storage
+			Storage.SaveItem(Storage.Count, item, ItemSerializer, ListOperationType.Add);
+			UpdateVersion();
+		}
+		public override void Insert(int index, TItem item) {
+			// Index checking deferred to Storage
+			Storage.SaveItem(index, item, ItemSerializer, ListOperationType.Insert);
 			UpdateVersion();
 		}
 
 		public override void Update(int index, TItem item) {
-			CheckIndex(index);
-			var wasNull = IsRecordMarkedNull(index);
-			Storage.UpdateBytes(index, SerializeItem(item));
-			var isNull = item == null;
-			if (wasNull != isNull)
-				MarkRecordNull(index, isNull);
+			// Index checking deferred to Storage
+			Storage.SaveItem(index, item, ItemSerializer, ListOperationType.Update);
 			UpdateVersion();
 		}
 
@@ -86,6 +78,9 @@ namespace Sphere10.Framework {
 			}
 			return false;
 		}
+
+		public override void RemoveAt(int index) 
+			=> Storage.Remove(index);
 
 		public override void Clear() {
 			Storage.Clear();
@@ -108,25 +103,10 @@ namespace Sphere10.Framework {
 				yield return Read(i);
 			}
 		}
-
-		private byte[] SerializeItem(TItem item) {
-			if (item == null)
-				return Array.Empty<byte>(); // note: null items are distinguished from empty items by a flag in record traits
-			return _itemSerializer.Serialize(item, _endianness);
-		}
-
-		private void MarkRecordNull(int index, bool isNull) {
-			var record = Storage.Records[index];
-			record.Traits = record.Traits.CopyAndSetFlags(StreamRecordTraits.IsNull, isNull);
-			Storage.UpdateRecord(index, record);
-		}
-
-		private bool IsRecordMarkedNull(int index)
-			=> Storage.Records[index].Traits.HasFlag(StreamRecordTraits.IsNull);
+	
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		private void UpdateVersion() => Interlocked.Increment(ref _version);
-
 
 	}
 

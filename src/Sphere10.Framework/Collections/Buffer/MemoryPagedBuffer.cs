@@ -78,21 +78,16 @@ namespace Sphere10.Framework {
 				var memBuff = (MemoryBuffer)memoryPage;
 				if (stream.Length != memBuff.Count)
 					stream.SetLength(memBuff.Count); // eliminate unused end-space in page file (happens when add, save, remove, save)
-				using (var writer = new BinaryWriter(stream)) {
-					writer.Write(memBuff.AsSpan());
-				}
+				stream.Write(memBuff.AsSpan());
 			}
 
 			protected override void LoadInternal(Stream stream, IExtendedList<byte> memoryPage) {
 				// Use byte streaming for perf
 				var memBuff = (MemoryBuffer)memoryPage;
-				memBuff.ExpandTo((int)stream.Length);
+				memBuff.ExpandTo((int)stream.Length);  // note: underlying allocation is still done in chunks of page-size
 				var bytesRead = stream.Read(memBuff.AsSpan());
 				Guard.Ensure(bytesRead == stream.Length, "Read less bytes than expected");
 			}
-
 		}
-
 	}
-
 }

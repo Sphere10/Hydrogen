@@ -142,7 +142,7 @@ namespace Sphere10.Framework {
 				var oldTotalFlatNodes = _parent._nodeBuffer.Count / _parent._digestSize;
 				var newTotalFlatNodes = (int)MerkleMath.CountFlatNodes(newLeafCount); 
 				var newFlatNodes = newTotalFlatNodes - oldTotalFlatNodes;
-				_parent._nodeBuffer.Expand(newFlatNodes * _parent._digestSize);
+				_parent._nodeBuffer.ExpandBy(newFlatNodes * _parent._digestSize);
 
 				// Mark all those new nodes dirty
 				_parent._dirtyNodes.Length += newFlatNodes;
@@ -203,7 +203,7 @@ namespace Sphere10.Framework {
 				var newFlatNodes = newTotalFlatNodes - oldTotalFlatNodes;
 				
 				// Grow buffer to accomodate new nodes
-				_parent._nodeBuffer.Expand(newFlatNodes * _parent._digestSize);
+				_parent._nodeBuffer.ExpandBy(newFlatNodes * _parent._digestSize);
 
 				// Backup nodes after insert which are moved forward
 				var movedLeafs = new byte[movedLeafCount * _parent._digestSize];

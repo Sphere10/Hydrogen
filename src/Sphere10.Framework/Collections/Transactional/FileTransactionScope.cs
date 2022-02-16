@@ -27,11 +27,6 @@ namespace Sphere10.Framework {
 			return Transaction.EnlistFile(filename, pageSize, maxMemory);
 		}
 
-		public ITransactionalFile EnlistFile(string filename, Guid fileID, int pageSize, long maxMemory) {
-			CheckTransactionExists();
-			return Transaction.EnlistFile(filename, fileID, pageSize, maxMemory);
-		}
-
 		public ITransactionalFile EnlistFile(ITransactionalFile file, bool ownsFile) {
 			CheckTransactionExists();
 			Guard.Argument(

@@ -8,9 +8,8 @@ namespace Sphere10.Framework {
 		where THeader : IClusteredStorageHeader
 		where TRecord : IClusteredRecord {
 
-		ClusteredStorageCachePolicy DefaultStreamPolicy { get; set; }
+		ClusteredStoragePolicy Policy { get; }
 
-		bool IntegrityChecks { get; set; }
 	}
 
 }

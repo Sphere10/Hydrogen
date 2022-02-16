@@ -14,7 +14,7 @@ namespace Sphere10.Framework {
 	public class TransactionalList<T> : ObservableExtendedList<T>, ITransactionalList<T> {
 		public const int DefaultTransactionalPageSize = 1 << 18;  // 256kb
 		public const int DefaultClusterSize = 256;   // 256b
-		public const int DefaultMaxMemory = 10 * (1 << 20);// 10mb
+		public const int DefaultMaxMemory = int.MaxValue;// 10mb
 
 		public event EventHandlerEx<object> Loading { add => _transactionalBuffer.Loading += value; remove => _transactionalBuffer.Loading -= value; }
 		public event EventHandlerEx<object> Loaded { add => _transactionalBuffer.Loaded += value; remove => _transactionalBuffer.Loaded -= value; }
@@ -40,7 +40,7 @@ namespace Sphere10.Framework {
 		/// <param name="maxMemory">How much of the list can be kept in memory at any time</param>
 		/// <param name="clusterSize">To support random access reads/writes the file is broken into discontinuous clusters of this size (similar to how disk storage) works. <remarks>Try to fit your average object in 1 cluster for performance. However, spare space in a cluster cannot be used.</remarks> </param>
 		/// <param name="readOnly">Whether or not file is opened in readonly mode.</param>
-		public TransactionalList(string filename, string uncommittedPageFileDir, IItemSerializer<T> serializer, IEqualityComparer<T> comparer = null, int transactionalPageSizeBytes = DefaultTransactionalPageSize, long maxMemory = DefaultMaxMemory, int clusterSize = DefaultClusterSize, ClusteredStorageCachePolicy recordsCachePolicy = ClusteredStorageCachePolicy.Remember, bool readOnly = false) {
+		public TransactionalList(string filename, string uncommittedPageFileDir, IItemSerializer<T> serializer, IEqualityComparer<T> comparer = null, int transactionalPageSizeBytes = DefaultTransactionalPageSize, long maxMemory = DefaultMaxMemory, int clusterSize = DefaultClusterSize, ClusteredStoragePolicy policy = ClusteredStoragePolicy.Default, Endianness endianness = Endianness.LittleEndian, bool readOnly = false) {
 			Guard.ArgumentNotNull(filename, nameof(filename));
 			Guard.ArgumentNotNull(uncommittedPageFileDir, nameof(uncommittedPageFileDir));
 
@@ -65,7 +65,8 @@ namespace Sphere10.Framework {
 				clusterSize,
 				serializer,
 				comparer,
-				recordsCachePolicy
+				policy,
+				endianness
 			);
 
 			_items = new SynchronizedExtendedList<T>(_clustered);
@@ -106,7 +107,7 @@ namespace Sphere10.Framework {
 
 		protected override void OnAccessing(EventTraits eventType) {
 			if (_disposed)
-				throw new InvalidOperationException("Queue has been disposed");
+				throw new InvalidOperationException($"{GetType().Name} has been disposed");
 		}
 
 		protected virtual void OnCommitting() {

@@ -7,6 +7,8 @@ namespace Sphere10.Framework {
 	public interface IStreamStorage { 
 		int Count { get; }
 
+		bool IsNull(int index);
+
 		Stream Add();
 
 		Stream Open(int index);
@@ -18,6 +20,11 @@ namespace Sphere10.Framework {
 		void Swap(int first, int second);
 
 		void Clear();
+
+		void SaveItem<TItem>(int index, TItem item, IItemSerializer<TItem> serializer, ListOperationType operationType);
+
+		TItem LoadItem<TItem>(int index, IItemSerializer<TItem> serializer);
+
 	}
 
 	public interface IStreamStorage<out THeader, TRecord> : IStreamStorage
@@ -27,6 +34,8 @@ namespace Sphere10.Framework {
 		THeader Header { get; }
 
 		IReadOnlyList<TRecord> Records { get; }
+
+		Stream Open(int index, out TRecord record);
 
 		internal void UpdateRecord(int index, IStreamRecord record);
 

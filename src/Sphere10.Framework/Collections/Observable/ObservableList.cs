@@ -15,8 +15,18 @@ using System.Collections.Generic;
 
 namespace Sphere10.Framework {
 
-	public class ObservableList<TItem> : ObservableCollection<TItem>, IList<TItem> {
-		protected new readonly IList<TItem> InnerCollection;
+	public class ObservableList<TItem> : ObservableList<TItem, IList<TItem>> {
+		public ObservableList()
+			: this(new List<TItem>()) {
+		}
+
+		public ObservableList(IList<TItem> internalList)
+			: base(internalList) {
+		}
+	}
+
+	public class ObservableList<TItem, TConcrete> : ObservableCollection<TItem, TConcrete>, IList<TItem> 
+		where TConcrete : IList<TItem> {
 
 		public event EventHandlerEx<object, SearchingLocationEventArgs<TItem>> SearchingLocation;
 		public event EventHandlerEx<object, SearchedLocationEventArgs<TItem>> SearchedLocation;
@@ -29,18 +39,13 @@ namespace Sphere10.Framework {
 		public event EventHandlerEx<object, RemovingRangeEventArgs> RemovingRange;
 		public event EventHandlerEx<object, RemovedRangeEventArgs> RemovedRange;
 
-		public ObservableList()
-			: this(new List<TItem>()) {
-		}
-
-		public ObservableList(IList<TItem> internalList)
+		public ObservableList(TConcrete internalList)
 			: base(internalList) {
-			InnerCollection = (IList<TItem>)base.InternalCollection;
 		}
 
 		public int IndexOf(TItem item) => DoOperation(
 			EventTraits.Search,
-			() => InnerCollection.IndexOf(item),
+			() => InternalCollection.IndexOf(item),
 			() => new SearchingLocationEventArgs<TItem> { CallArgs = new ItemsCallArgs<TItem>(item) },
 			result => new SearchedLocationEventArgs<TItem> { Result = new[] { result } },
 			(preEventArgs) => {
@@ -56,7 +61,7 @@ namespace Sphere10.Framework {
 		public void Insert(int index, TItem item) => DoOperation(
 			EventTraits.Insert,
 			() => {
-				InnerCollection.Insert(index, item);
+				InternalCollection.Insert(index, item);
 				return 0;
 			},
 			() => new InsertingEventArgs<TItem> { CallArgs = new IndexItemsCallArgs<TItem>(index, item) },
@@ -74,7 +79,7 @@ namespace Sphere10.Framework {
 		public void RemoveAt(int index) => DoOperation(
 			EventTraits.Remove, 
 			() => {
-				InnerCollection.RemoveAt(index);
+				InternalCollection.RemoveAt(index);
 				return 0;
 			},
 			() => new RemovingRangeEventArgs { CallArgs = new IndexCountCallArgs(index, 1) },
@@ -92,7 +97,7 @@ namespace Sphere10.Framework {
 		public TItem this[int index] {
 			get => DoOperation(
 					EventTraits.Fetch,
-					() => InnerCollection[index],
+					() => InternalCollection[index],
 					() => new FetchingByRangeEventArgs { CallArgs = new IndexCountCallArgs(index, 1) },
 					result => new FetchedByRangeEventArgs<TItem> { Result = new[] { result } },
 					(preEventArgs) => {
@@ -107,7 +112,7 @@ namespace Sphere10.Framework {
 
 			set => DoOperation(
 				EventTraits.Update,
-				() => InnerCollection[index] = value,
+				() => InternalCollection[index] = value,
 				() => new UpdatingByRangeEventArgs<TItem> { CallArgs = new IndexItemsCallArgs<TItem>(index, value ) },
 				result => new UpdatedByRangeEventArgs<TItem>(),
 				(preEventArgs) => {

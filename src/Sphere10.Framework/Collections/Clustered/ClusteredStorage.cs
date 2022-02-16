@@ -43,8 +43,8 @@ namespace Sphere10.Framework {
 		where TStreamRecord : IClusteredRecord, new() {
 		
 		
-		public ClusteredStorage(Stream rootStream, int clusterSize, IItemSerializer<TStreamRecord> recordSerializer, Endianness endianness = Endianness.LittleEndian, ClusteredStorageCachePolicy recordsCachePolicy = ClusteredStorageCachePolicy.None)
-			: base(rootStream, clusterSize, recordSerializer, endianness, recordsCachePolicy) {
+		public ClusteredStorage(Stream rootStream, int clusterSize, IItemSerializer<TStreamRecord> recordSerializer, Endianness endianness = Endianness.LittleEndian, ClusteredStoragePolicy policy = ClusteredStoragePolicy.Default)
+			: base(rootStream, clusterSize, recordSerializer, endianness, policy) {
 		}
 
 		protected override ClusteredStorageHeader CreateHeader() => new();
@@ -56,13 +56,13 @@ namespace Sphere10.Framework {
 
 	public class ClusteredStorage : ClusteredStorage<ClusteredRecord>  {
 
-		public ClusteredStorage(Stream rootStream, int clusterSize,  Endianness endianness = Endianness.LittleEndian, ClusteredStorageCachePolicy recordsCachePolicy = ClusteredStorageCachePolicy.None) 
-			: base(rootStream, clusterSize, new ClusteredRecordSerializer(), endianness, recordsCachePolicy) {
+		public ClusteredStorage(Stream rootStream, int clusterSize,  Endianness endianness = Endianness.LittleEndian, ClusteredStoragePolicy policy = ClusteredStoragePolicy.Default) 
+			: base(rootStream, clusterSize, new ClusteredRecordSerializer(), endianness, policy) {
 		}
 
 		protected override ClusteredRecord NewRecord() => new() { Size = 0, StartCluster = -1 };
 
-		public static ClusteredStorage Load(Stream rootStream, Endianness endianness = Endianness.LittleEndian, ClusteredStorageCachePolicy recordsCachePolicy = ClusteredStorageCachePolicy.None) {
+		public static ClusteredStorage Load(Stream rootStream, Endianness endianness = Endianness.LittleEndian, ClusteredStoragePolicy policy = ClusteredStoragePolicy.Default) {
 			if (rootStream.Length < ClusteredStorageHeader.ByteLength)
 				throw new CorruptDataException($"Corrupt header (stream was too small {rootStream.Length} bytes)");
 			var reader = new EndianBinaryReader(EndianBitConverter.For(endianness), rootStream);
@@ -71,7 +71,7 @@ namespace Sphere10.Framework {
 			if (clusterSize <= 0)
 				throw new CorruptDataException($"Corrupt header (ClusterSize field was {clusterSize} bytes)");
 			rootStream.Position = 0;
-			return new ClusteredStorage(rootStream, clusterSize, endianness, recordsCachePolicy);
+			return new ClusteredStorage(rootStream, clusterSize, endianness, policy);
 		}
 
 	}

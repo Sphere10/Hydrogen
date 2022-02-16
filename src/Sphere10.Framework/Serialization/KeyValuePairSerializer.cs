@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Sphere10.Framework.Values;
 
@@ -11,7 +12,7 @@ namespace Sphere10.Framework {
 	/// </summary>
 	/// <typeparam name="TKey"></typeparam>
 	/// <typeparam name="TValue"></typeparam>
-	/// <remarks>Serialization format: [KeyLength (uint32)] [KeyBytes....] [ValueLength (uint32)] [ValueBytes....] where</remarks>
+	/// <remarks>Serialization format: [KeyLength (uint32)] [KeyBytes....] [ValueLength (uint32)] [ValueBytes....] such that if total KVP bytes excludes ValueLength, than Value is inferred null</remarks>
 	public class KeyValuePairSerializer<TKey, TValue> : ItemSerializerBase<KeyValuePair<TKey, TValue>> {
 		private readonly IItemSerializer<TKey> _keySerializer;
 		private readonly IItemSerializer<TValue> _valueSerializer;
@@ -22,12 +23,11 @@ namespace Sphere10.Framework {
 		}
 
 		public override int CalculateSize(KeyValuePair<TKey, TValue> item) {
-			var size = 0;
-			size +=  _keySerializer.CalculateSize(item.Key);
-			size += _valueSerializer.CalculateSize(item.Value);
+			var size = sizeof(uint);
+			size += _keySerializer.CalculateSize(item.Key);
 			if (item.Value != null) {
 				size += sizeof(int);
-				size += sizeof(int);
+				size += _valueSerializer.CalculateSize(item.Value);
 			}
 			return size;
 		}
@@ -60,7 +60,7 @@ namespace Sphere10.Framework {
 			if (!_keySerializer.TryDeserialize(reader.ReadBytes((int)keyBytesLength), out var key, reader.BitConverter.Endianness))
 				return false;
 			TValue value = default;
-			if (sizeof(int) + keyBytesLength < byteSize) {
+			if (sizeof(uint) + keyBytesLength < byteSize) {
 				var valueBytesLength = reader.ReadUInt32();
 				if (!_valueSerializer.TryDeserialize(reader.ReadBytes((int)valueBytesLength), out value, reader.BitConverter.Endianness))
 					return false;
@@ -68,5 +68,39 @@ namespace Sphere10.Framework {
 			item = new KeyValuePair<TKey, TValue>(key, value);
 			return true;
 		}
+
+		public bool TryDeserializeKey(int byteSize, EndianBinaryReader reader, out TKey item) {
+			// TODO: add max length checks on reading byte lengths to avoid attacks with malicious kvp's
+			var keyBytesLength = reader.ReadUInt32();
+			if (!_keySerializer.TryDeserialize(reader.ReadBytes((int)keyBytesLength), out item, reader.BitConverter.Endianness))
+				return false;
+			return true;
+		}
+
+		public bool TryDeserializeValue(int byteSize, EndianBinaryReader reader, out TValue item) {
+			// TODO: add max length checks on reading byte lengths to avoid attacks with malicious kvp's
+			item = default;
+			var keyBytesLength = reader.ReadUInt32();
+			reader.BaseStream.Seek(keyBytesLength, SeekOrigin.Current);
+			if (sizeof(uint) + keyBytesLength < byteSize) {
+				var valueBytesLength = reader.ReadUInt32();
+				if (!_valueSerializer.TryDeserialize(reader.ReadBytes((int)valueBytesLength), out item, reader.BitConverter.Endianness))
+					return false;
+			}
+			return true;
+		}
+
+		public TKey DeserializeKey(int byteSize, EndianBinaryReader reader) {
+			if (!TryDeserializeKey(byteSize, reader, out var item))
+				throw new InvalidOperationException($"Unable to deserialize key from KVP of size {byteSize}b");
+			return item;
+		}
+
+		public TValue DeserializeValue(int byteSize, EndianBinaryReader reader) {
+			if (!TryDeserializeValue(byteSize, reader, out var item))
+				throw new InvalidOperationException($"Unable to deserialize value from KVP of size {byteSize}b");
+			return item;
+		}
+
 	}
 }

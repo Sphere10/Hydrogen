@@ -29,6 +29,8 @@ namespace Sphere10.Framework {
 
 		}
 
+		public IEnumerable<string> Strings => _strings.Select(x => x.Item2);
+
 		public void Append(string str) {
 			_strings.Add(Tuple.Create(Length + str.Length, str));
 		}

@@ -22,6 +22,31 @@ public class MuSigBuilderTest
     }
 
     [Test]
+    // test that method sorts public Keys in lexicographic order.
+    public void TestSortPublicKeysInLexicographicOrder()
+    {
+        var input = new List<byte[]>
+        {
+            new byte[] { 86 },
+            new byte[] { 0 },
+            new byte[] { 255 },
+            new byte[] { 86 },
+            new byte[] { 55 },
+        }.ToArray();
+
+        var expected = new List<byte[]>
+        {
+            new byte[] { 0 },
+            new byte[] { 55 },
+            new byte[] { 86 },
+            new byte[] { 86 },
+            new byte[] { 255 },
+        };
+        MuSigBuilder.SortPublicKeysInLexicographicOrder(input);
+        CollectionAssert.AreEqual(expected, input);
+    }
+
+    [Test]
     // this test performs a muSig between 3 parties using known test vectors.
     public void TestFullMuSigBuilderWithKnownTestVectors()
     {

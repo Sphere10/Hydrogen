@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Org.BouncyCastle.Math;
 
-namespace Sphere10.Framework.CryptoEx.EC.MuSigBuilder; 
+namespace Sphere10.Framework.CryptoEx.EC.MuSigBuilder;
 
 public class MuSigBuilder {
 	private readonly byte[] _sessionId;
@@ -23,16 +23,25 @@ public class MuSigBuilder {
 	public byte[] PublicNonce => _publicNonce ?? ComputePublicNonce();
 	public byte[] PartialSignature => _partialSignature ?? ComputePartialSignature();
 
+	/// <summary>
+	/// this method sorts the public Keys in lexicographic order as defined by the specification.
+	/// https://github.com/ElementsProject/secp256k1-zkp/blob/master/doc/musig-spec.mediawiki#Key_Sorting
+	/// </summary>
+	/// <param name="publicKeys"></param>
+	public static void SortPublicKeysInLexicographicOrder(byte[][] publicKeys) {
+		Array.Sort(publicKeys, ByteArrayComparer.Instance);
+	}
+
 	public MuSigBuilder(Schnorr.PrivateKey privateKey, byte[] messageDigest, byte[] sessionId = null) {
 		_privateKey = privateKey ?? throw new ArgumentNullException(nameof(privateKey));
 		_messageDigest = messageDigest;
 		Schnorr.ValidateBuffer(nameof(messageDigest), messageDigest, 32);
 		_sessionId = sessionId;
-		
+
 		if (_sessionId is not { Length: 32 }) {
 			_sessionId = Tools.Crypto.GenerateCryptographicallyRandomBytes(32);
 		}
-		
+
 		_muSig = new MuSig(new Schnorr(ECDSAKeyType.SECP256K1));
 		_publicKeys = new List<byte[]>();
 		_publicNonces = new List<byte[]>();
@@ -46,14 +55,14 @@ public class MuSigBuilder {
 		}
 		_publicKeys.Add(publicKey);
 	}
-	
+
 	public void AddPublicNonce(byte[] publicNonce) {
 		if (publicNonce == null) {
 			throw new ArgumentNullException(nameof(publicNonce));
 		}
 		_publicNonces.Add(publicNonce);
 	}
-	
+
 	public void AddPartialSignature(byte[] partialSignature) {
 		if (partialSignature == null) {
 			throw new ArgumentNullException(nameof(partialSignature));
@@ -67,7 +76,7 @@ public class MuSigBuilder {
 		}
 		var aggregatedSigs = _muSig.CombinePartialSigs(_muSigSessionCache.FinalNonce,
 			_partialSignatures.Select(x => Schnorr.BytesToBigInt(x))
-			                  .ToArray());
+							  .ToArray());
 		return new MuSigData {
 			AggregatedSignature = aggregatedSigs,
 			AggregatedPublicKey = _muSig.Schnorr.BytesOfXCoord(_aggregatedPublicKey.CombinedPoint)
@@ -78,7 +87,7 @@ public class MuSigBuilder {
 		if (!_publicKeys.Any()) {
 			throw new Exception("you need to add public keys before calculating coefficients");
 		}
-		
+
 		if (_keyAggregationCoefficients.Count == _publicKeys.Count) {
 			// if already computed, return.
 			return;
@@ -97,36 +106,36 @@ public class MuSigBuilder {
 			_keyAggregationCoefficients.Add(new Tuple<byte[], BigInteger>(publicKey, keyAggregationCoefficient));
 		}
 	}
-	
+
 	private void ComputeAggregatedPublicKeys() {
 		if (_aggregatedPublicKey != null) {
 			// if already computed, return.
 			return;
 		}
-		
+
 		// combine public keys.
 		_aggregatedPublicKey = _muSig.CombinePublicKeys(_keyAggregationCoefficients.Select(x => x.Item2)
-		                                                                           .ToArray(),
+																				   .ToArray(),
 			_keyAggregationCoefficients.Select(x => x.Item1)
-			                           .ToArray());
+									   .ToArray());
 	}
-	
+
 	private void InitializeSignerSession() {
 		if (_signerMuSigSession != null) {
 			// if already computed, return.
 			return;
 		}
-		
+
 		var privateKeyAsBytes = _privateKey.RawBytes;
 		var publicKeyAsBytes = _muSig.Schnorr.DerivePublicKey(_privateKey).RawBytes;
 
 		var secretKey = Schnorr.BytesToBigInt(privateKeyAsBytes);
 		// 1. generate nonce data
 		var nonceData = _muSig.GenerateNonce(_sessionId, Schnorr.BytesOfBigInt(secretKey, _muSig.KeySize), _messageDigest, null);
-		
+
 		var keyCoefficient = _keyAggregationCoefficients.FirstOrDefault(x => x.Item1.SequenceEqual(publicKeyAsBytes))?.Item2;
 		if (keyCoefficient is null) {
-			throw new InvalidOperationException("own public key not found");	
+			throw new InvalidOperationException("own public key not found");
 		}
 		// 2. create private signing session
 		_signerMuSigSession = new SignerMuSigSession {
@@ -137,7 +146,7 @@ public class MuSigBuilder {
 			InternalKeyParity = false,
 		};
 	}
-	
+
 	private byte[] ComputePublicNonce() {
 		ComputeKeyCoefficients();
 		ComputeAggregatedPublicKeys();
@@ -145,7 +154,7 @@ public class MuSigBuilder {
 		_publicNonce = _signerMuSigSession.PublicNonce;
 		return _publicNonce;
 	}
-	
+
 	private void InitializeMuSigSessionCache() {
 		if (_publicNonces.Count != _publicKeys.Count) {
 			throw new InvalidOperationException("public nonce count must be equal to participant count");
@@ -157,9 +166,8 @@ public class MuSigBuilder {
 		}
 		var aggregatedPublicKey = _muSig.Schnorr.BytesOfXCoord(_aggregatedPublicKey.CombinedPoint);
 		var aggregatedSessionNonce = _muSig.CombineSessionNonce(_publicNonces.ToArray(), aggregatedPublicKey, _messageDigest);
-		var challenge = _muSig.ComputeChallenge(aggregatedSessionNonce.FinalNonce, aggregatedPublicKey, _messageDigest); 
-		_muSigSessionCache = new MuSigSessionCache
-		{
+		var challenge = _muSig.ComputeChallenge(aggregatedSessionNonce.FinalNonce, aggregatedPublicKey, _messageDigest);
+		_muSigSessionCache = new MuSigSessionCache {
 			FinalNonceParity = aggregatedSessionNonce.FinalNonceParity,
 			FinalNonce = aggregatedSessionNonce.FinalNonce,
 			Challenge = challenge,
@@ -167,7 +175,7 @@ public class MuSigBuilder {
 			PublicKeyParity = _aggregatedPublicKey.PublicKeyParity
 		};
 	}
-	
+
 	private byte[] ComputePartialSignature() {
 		InitializeMuSigSessionCache();
 		_partialSignature = Schnorr.BytesOfBigInt(_muSig.PartialSign(_signerMuSigSession, _muSigSessionCache), _muSig.KeySize);

@@ -199,7 +199,7 @@ public class MuSigTest
         var publicKeys = GetPublicKeys(muSig, privateKeys).Select(x => x.RawBytes).ToArray();
 
         // 2. compute the public keys hash.
-        var publicKeyHash = muSig.ComputeEll(publicKeys);
+        var allPublicKeysHash = muSig.ComputeEll(publicKeys);
 
         // 3. get second public key
         var secondPublicKey = muSig.GetSecondPublicKey(publicKeys);
@@ -212,7 +212,7 @@ public class MuSigTest
                 Schnorr.BytesToBigInt(privateKeys[i].RawBytes),
                 publicKeys[i],
                 messageDigest,
-                publicKeyHash,
+                allPublicKeysHash,
                 secondPublicKey);
         }
 

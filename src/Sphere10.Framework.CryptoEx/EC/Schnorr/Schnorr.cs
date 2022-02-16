@@ -15,8 +15,7 @@ using Sphere10.Framework.CryptoEx.EC.IES;
 namespace Sphere10.Framework.CryptoEx.EC;
 
 //https://github.com/bitcoin/bips/blob/master/bip-0340.mediawiki
-public class Schnorr : StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schnorr.PublicKey>
-{
+public class Schnorr : StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schnorr.PublicKey> {
 
 	private readonly ECDSAKeyType _keyType;
 	private readonly X9ECParameters _curveParams;
@@ -27,15 +26,12 @@ public class Schnorr : StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schno
 		ECDSAKeyType.SECP256K1
 	};
 
-	public Schnorr(ECDSAKeyType keyType) : this(keyType, CHF.SHA2_256)
-	{
+	public Schnorr(ECDSAKeyType keyType) : this(keyType, CHF.SHA2_256) {
 	}
 
-	private Schnorr(ECDSAKeyType keyType, CHF digestCHF) : base(digestCHF)
-	{
+	private Schnorr(ECDSAKeyType keyType, CHF digestCHF) : base(digestCHF) {
 
-		if (!SupportedKeyTypes.Contains(keyType))
-		{
+		if (!SupportedKeyTypes.Contains(keyType)) {
 			throw new InvalidOperationException($"{keyType} is not supported in Schnorr");
 		}
 		_keyType = keyType;
@@ -52,16 +48,13 @@ public class Schnorr : StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schno
 	internal BigInteger N => _curveParams.N;
 	internal int KeySize => (Curve.FieldSize + 7) >> 3;
 
-	public override bool TryParsePublicKey(ReadOnlySpan<byte> bytes, out PublicKey publicKey)
-	{
-		if (bytes.Length != KeySize)
-		{
+	public override bool TryParsePublicKey(ReadOnlySpan<byte> bytes, out PublicKey publicKey) {
+		if (bytes.Length != KeySize) {
 			publicKey = null;
 			return false;
 		}
 		var pubKey = bytes.ToArray();
-		if (!ValidatePublicKeyRangeNoThrow(BytesToBigInt(pubKey)))
-		{
+		if (!ValidatePublicKeyRangeNoThrow(BytesToBigInt(pubKey))) {
 			publicKey = null;
 			return false;
 		}
@@ -69,17 +62,14 @@ public class Schnorr : StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schno
 		return true;
 	}
 
-	public override bool TryParsePrivateKey(ReadOnlySpan<byte> bytes, out PrivateKey privateKey)
-	{
-		if (bytes.Length != KeySize)
-		{
+	public override bool TryParsePrivateKey(ReadOnlySpan<byte> bytes, out PrivateKey privateKey) {
+		if (bytes.Length != KeySize) {
 			privateKey = null;
 			return false;
 		}
 		var secretKey = bytes.ToArray();
 		var d = BytesToBigInt(secretKey);
-		if (!ValidatePrivateKeyRangeNoThrow(d))
-		{
+		if (!ValidatePrivateKeyRangeNoThrow(d)) {
 			privateKey = null;
 			return false;
 		}
@@ -87,8 +77,7 @@ public class Schnorr : StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schno
 		return true;
 	}
 
-	public override PrivateKey GeneratePrivateKey(ReadOnlySpan<byte> seed)
-	{
+	public override PrivateKey GeneratePrivateKey(ReadOnlySpan<byte> seed) {
 		var keyPairGenerator = GeneratorUtilities.GetKeyPairGenerator("ECDSA");
 		keyPairGenerator.Init(new ECKeyGenerationParameters(_domainParams, _secureRandom));
 		var keyPair = keyPairGenerator.GenerateKeyPair();
@@ -96,8 +85,7 @@ public class Schnorr : StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schno
 		return (PrivateKey)this.ParsePrivateKey(privateKeyBytes);
 	}
 
-	public override PublicKey DerivePublicKey(PrivateKey privateKey)
-	{
+	public override PublicKey DerivePublicKey(PrivateKey privateKey) {
 		var privateKeyParameters = new ECPrivateKeyParameters("ECDSA", privateKey.AsInteger.Value, _domainParams);
 		var domainParameters = privateKeyParameters.Parameters;
 		var ecPoint = (new FixedPointCombMultiplier() as ECMultiplier).Multiply(domainParameters.G, privateKeyParameters.D);
@@ -105,18 +93,15 @@ public class Schnorr : StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schno
 		return new PublicKey(pubKeyParams.Q, _keyType, _curveParams, _domainParams);
 	}
 
-	public override bool IsPublicKey(PrivateKey privateKey, ReadOnlySpan<byte> publicKeyBytes)
-	{
+	public override bool IsPublicKey(PrivateKey privateKey, ReadOnlySpan<byte> publicKeyBytes) {
 		return DerivePublicKey(privateKey).RawBytes.AsSpan().SequenceEqual(publicKeyBytes);
 	}
 
-	public override byte[] SignDigest(PrivateKey privateKey, ReadOnlySpan<byte> messageDigest)
-	{
+	public override byte[] SignDigest(PrivateKey privateKey, ReadOnlySpan<byte> messageDigest) {
 		return SignDigestWithAuxRandomData(privateKey, messageDigest, ReadOnlySpan<byte>.Empty);
 	}
 
-	public byte[] SignDigestWithAuxRandomData(PrivateKey privateKey, ReadOnlySpan<byte> messageDigest, ReadOnlySpan<byte> auxRandomData)
-	{
+	public byte[] SignDigestWithAuxRandomData(PrivateKey privateKey, ReadOnlySpan<byte> messageDigest, ReadOnlySpan<byte> auxRandomData) {
 		// https://github.com/bitcoin/bips/blob/master/bip-0340.mediawiki#signing
 		var sk = privateKey.AsInteger.Value;
 		var message = messageDigest.ToArray();
@@ -127,12 +112,9 @@ public class Schnorr : StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schno
 		var px = BytesOfXCoord(p);
 		var d = GetEvenKey(p, sk);
 
-		if (!auxRandomData.IsEmpty)
-		{
+		if (!auxRandomData.IsEmpty) {
 			ValidateBuffer(nameof(auxRandomData), auxRandomData, 32);
-		}
-		else
-		{
+		} else {
 			auxRandomData = RandomBytes(32);
 		}
 
@@ -140,8 +122,7 @@ public class Schnorr : StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schno
 		var rand = TaggedHash("BIP0340/nonce", Arrays.ConcatenateAll(t, px, message));
 		var kPrime = BytesToBigInt(rand).Mod(N);
 
-		if (kPrime.SignValue == 0)
-		{
+		if (kPrime.SignValue == 0) {
 			throw new InvalidOperationException("kPrime is zero");
 		}
 
@@ -150,15 +131,13 @@ public class Schnorr : StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schno
 		var rx = BytesOfXCoord(r);
 		var e = GetE(rx, px, message);
 		var sig = Arrays.ConcatenateAll(rx, BytesOfBigInt(k.Add(e.Multiply(d)).Mod(N), KeySize));
-		if (!VerifyDigest(sig, messageDigest, BytesOfXCoord(p)))
-		{
+		if (!VerifyDigest(sig, messageDigest, BytesOfXCoord(p))) {
 			throw new InvalidOperationException("The created signature did not pass verification.");
 		}
 		return sig;
 	}
 
-	public override bool VerifyDigest(ReadOnlySpan<byte> signature, ReadOnlySpan<byte> messageDigest, ReadOnlySpan<byte> publicKey)
-	{
+	public override bool VerifyDigest(ReadOnlySpan<byte> signature, ReadOnlySpan<byte> messageDigest, ReadOnlySpan<byte> publicKey) {
 		// https://github.com/bitcoin/bips/blob/master/bip-0340.mediawiki#verification
 		var message = messageDigest.ToArray();
 		var sig = signature.ToArray();
@@ -177,16 +156,14 @@ public class Schnorr : StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schno
 		return !IsPointInfinity(r) && IsEven(r) && r.AffineXCoord.ToBigInteger().Equals(rSig);
 	}
 
-	public bool BatchVerifyDigest(byte[][] signatures, byte[][] messageDigests, byte[][] publicKeys)
-	{
+	public bool BatchVerifyDigest(byte[][] signatures, byte[][] messageDigests, byte[][] publicKeys) {
 		// https://github.com/bitcoin/bips/blob/master/bip-0340.mediawiki#Batch_Verification
 		ValidateJaggedArray(nameof(signatures), signatures);
 		ValidateJaggedArray(nameof(messageDigests), messageDigests);
 		ValidateJaggedArray(nameof(publicKeys), publicKeys);
 		var leftSide = BigInteger.Zero;
 		ECPoint rightSide = null;
-		for (var i = 0; i < publicKeys.Length; i++)
-		{
+		for (var i = 0; i < publicKeys.Length; i++) {
 			var p = LiftX(publicKeys[i]);
 			var px = BytesOfXCoord(p);
 			var rSig = BytesToBigInt(signatures[i].AsSpan().Slice(0, KeySize).ToArray());
@@ -195,14 +172,11 @@ public class Schnorr : StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schno
 			var e = GetE(BytesOfBigInt(rSig, KeySize), px, messageDigests[i]);
 			var r = LiftX(signatures[i].AsSpan().Slice(0, KeySize).ToArray());
 
-			if (i == 0)
-			{
+			if (i == 0) {
 				leftSide = leftSide.Add(sSig);
 				rightSide = r;
 				rightSide = rightSide.Add(p.Multiply(e));
-			}
-			else
-			{
+			} else {
 				var a = RandomBigInteger(KeySize);
 				leftSide = leftSide.Add(a.Multiply(sSig));
 				rightSide = rightSide?.Add(r.Multiply(a));
@@ -213,102 +187,85 @@ public class Schnorr : StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schno
 	}
 
 	// Hash Methods
-	internal static byte[] TaggedHash(string tag, byte[] msg)
-	{
+	internal static byte[] TaggedHash(string tag, byte[] msg) {
 		var tagHash = ComputeSha256Hash(Encoding.UTF8.GetBytes(tag));
 		return ComputeSha256Hash(Arrays.ConcatenateAll(tagHash, tagHash, msg));
 	}
 
-	internal static byte[] ComputeSha256Hash(ReadOnlySpan<byte> message)
-	{
+	internal static byte[] ComputeSha256Hash(ReadOnlySpan<byte> message) {
 		return Hashers.Hash(CHF.SHA2_256, message);
 	}
 
 	// Math Methods
-	private BigInteger GetEvenKey(ECPoint publicKey, BigInteger privateKey)
-	{
+	private BigInteger GetEvenKey(ECPoint publicKey, BigInteger privateKey) {
 		return IsEven(publicKey) ? privateKey : N.Subtract(privateKey);
 	}
 
-	internal BigInteger GetE(byte[] r, byte[] p, byte[] m)
-	{
+	internal BigInteger GetE(byte[] r, byte[] p, byte[] m) {
 		var hash = TaggedHash("BIP0340/challenge", Arrays.ConcatenateAll(r, p, m));
 		return BytesToBigInt(hash).Mod(N);
 	}
 
-	private ECPoint GetR(BigInteger s, BigInteger e, ECPoint p)
-	{
+	private ECPoint GetR(BigInteger s, BigInteger e, ECPoint p) {
 		var sG = G.Multiply(s);
 		var eP = p.Multiply(e);
 		return sG.Add(eP.Negate()).Normalize();
 	}
 
-	internal ECPoint LiftX(byte[] publicKey)
-	{
+	internal ECPoint LiftX(byte[] publicKey) {
 		var xPubKey = BytesToBigInt(publicKey);
 		ValidatePublicKeyRange(nameof(xPubKey), xPubKey);
 		var c = xPubKey.Pow(3).Add(BigInteger.ValueOf(7)).Mod(P);
 		var y = c.ModPow(P.Add(BigInteger.One).Divide(BigInteger.Four), P);
-		if (c.CompareTo(y.ModPow(BigInteger.Two, P)) != 0)
-		{
+		if (c.CompareTo(y.ModPow(BigInteger.Two, P)) != 0) {
 			throw new ArgumentException($"{nameof(c)} is not equal to y^2");
 		}
 		var point = Curve.CreatePoint(xPubKey, y);
-		if (!IsEven(point))
-		{
+		if (!IsEven(point)) {
 			point = Curve.CreatePoint(xPubKey, P.Subtract(y));
 		}
 		ValidatePoint(point);
 		return point.Normalize();
 	}
 
-	internal static bool IsPointInfinity(ECPoint publicKey)
-	{
+	internal static bool IsPointInfinity(ECPoint publicKey) {
 		return publicKey.IsInfinity;
 	}
 
-	private static bool IsEven(BigInteger publicKey)
-	{
+	private static bool IsEven(BigInteger publicKey) {
 		//return BigInteger.Jacobi(publicKey, P) == 1);
 		return publicKey.Mod(BigInteger.Two).Equals(BigInteger.Zero);
 	}
 
-	internal static bool IsEven(ECPoint publicKey)
-	{
+	internal static bool IsEven(ECPoint publicKey) {
 		ThrowIfPointIsAtInfinity(publicKey);
 		return IsEven(publicKey.AffineYCoord.ToBigInteger());
 	}
 
-	public byte[] BytesOfXCoord(ECPoint point)
-	{
+	public byte[] BytesOfXCoord(ECPoint point) {
 		return BytesOfBigInt(point.AffineXCoord.ToBigInteger(), KeySize);
 	}
 
-	public static byte[] BytesOfBigInt(BigInteger bi, int numBytes)
-	{
+	public static byte[] BytesOfBigInt(BigInteger bi, int numBytes) {
 		return BigIntegerUtils.BigIntegerToBytes(bi, numBytes);
 	}
 
-	public static BigInteger BytesToBigInt(byte[] bytes)
-	{
+	public static BigInteger BytesToBigInt(byte[] bytes) {
 		return BigIntegerUtils.BytesToBigInteger(bytes);
 	}
 
 	// Random Generation Methods
-	private BigInteger RandomBigInteger(int sizeInBytes)
-	{
+	private BigInteger RandomBigInteger(int sizeInBytes) {
 		for (; ; )
 		{
 			var tmp = BigIntegers.CreateRandomBigInteger(sizeInBytes * 8, _secureRandom);
-			if (tmp.CompareTo(BigInteger.One) >= 0 && tmp.CompareTo(N.Subtract(BigInteger.One)) <= 0)
-			{
+			if (tmp.CompareTo(BigInteger.One) >= 0 && tmp.CompareTo(N.Subtract(BigInteger.One)) <= 0) {
 				return tmp;
 			}
 		}
 	}
 
-	internal static byte[] RandomBytes(int sizeInBytes)
-	{
+	internal static byte[] RandomBytes(int sizeInBytes) {
 		return Tools.Crypto.GenerateCryptographicallyRandomBytes(sizeInBytes);
 	}
 
@@ -320,14 +277,11 @@ public class Schnorr : StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schno
 	/// <param name="r"></param>
 	/// <param name="s"></param>
 	/// <exception cref="ArgumentException"></exception>
-	private void ValidateSignature(BigInteger r, BigInteger s)
-	{
-		if (r.CompareTo(P) >= 0)
-		{
+	private void ValidateSignature(BigInteger r, BigInteger s) {
+		if (r.CompareTo(P) >= 0) {
 			throw new ArgumentException($"{nameof(r)} is larger than or equal to field size");
 		}
-		if (s.CompareTo(N) >= 0)
-		{
+		if (s.CompareTo(N) >= 0) {
 			throw new ArgumentException($"{nameof(s)} is larger than or equal to curve order");
 		}
 	}
@@ -337,8 +291,7 @@ public class Schnorr : StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schno
 	/// </summary>
 	/// <param name="scalar"></param>
 	/// <returns></returns>
-	private bool ValidatePrivateKeyRangeNoThrow(BigInteger scalar)
-	{
+	private bool ValidatePrivateKeyRangeNoThrow(BigInteger scalar) {
 		return scalar.CompareTo(BigInteger.Zero) >= 0 && scalar.CompareTo(N.Subtract(BigInteger.One)) <= 0;
 	}
 
@@ -348,10 +301,8 @@ public class Schnorr : StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schno
 	/// <param name="name"></param>
 	/// <param name="scalar"></param>
 	/// <exception cref="ArgumentException"></exception>
-	internal void ValidatePrivateKeyRange(string name, BigInteger scalar)
-	{
-		if (!ValidatePrivateKeyRangeNoThrow(scalar))
-		{
+	internal void ValidatePrivateKeyRange(string name, BigInteger scalar) {
+		if (!ValidatePrivateKeyRangeNoThrow(scalar)) {
 			throw new ArgumentException($"{name} must be an integer in the range 0..n-1");
 		}
 	}
@@ -361,8 +312,7 @@ public class Schnorr : StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schno
 	/// </summary>
 	/// <param name="publicKey"></param>
 	/// <returns></returns>
-	private bool ValidatePublicKeyRangeNoThrow(BigInteger publicKey)
-	{
+	private bool ValidatePublicKeyRangeNoThrow(BigInteger publicKey) {
 		return publicKey.CompareTo(BigInteger.One) >= 0 && publicKey.CompareTo(P) < 0;
 	}
 
@@ -372,27 +322,21 @@ public class Schnorr : StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schno
 	/// <param name="name"></param>
 	/// <param name="publicKey"></param>
 	/// <exception cref="ArgumentException"></exception>
-	private void ValidatePublicKeyRange(string name, BigInteger publicKey)
-	{
-		if (!ValidatePublicKeyRangeNoThrow(publicKey))
-		{
+	private void ValidatePublicKeyRange(string name, BigInteger publicKey) {
+		if (!ValidatePublicKeyRangeNoThrow(publicKey)) {
 			throw new ArgumentException($"{name} is not in the range 0..p-1");
 		}
 	}
 
-	internal static void ValidateArray<T>(string name, T[] buffer)
-	{
-		if (!(buffer?.Any() ?? false))
-		{
+	internal static void ValidateArray<T>(string name, T[] buffer) {
+		if (!(buffer?.Any() ?? false)) {
 			throw new ArgumentNullException(nameof(buffer), name);
 		}
 	}
 
-	internal static void ValidateJaggedArray<T>(string name, T[][] buffer)
-	{
+	internal static void ValidateJaggedArray<T>(string name, T[][] buffer) {
 		ValidateArray(name, buffer);
-		for (var i = 0; i < buffer.Length; i++)
-		{
+		for (var i = 0; i < buffer.Length; i++) {
 			var tmp = buffer[i];
 			ValidateArray($"{name}[{i}]", tmp);
 		}
@@ -403,10 +347,8 @@ public class Schnorr : StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schno
 	/// </summary>
 	/// <param name="point"></param>
 	/// <exception cref="ArgumentException"></exception>
-	internal static void ThrowIfPointIsAtInfinity(ECPoint point)
-	{
-		if (IsPointInfinity(point))
-		{
+	internal static void ThrowIfPointIsAtInfinity(ECPoint point) {
+		if (IsPointInfinity(point)) {
 			throw new ArgumentException($"{nameof(point)} is at infinity");
 		}
 	}
@@ -416,11 +358,9 @@ public class Schnorr : StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schno
 	/// </summary>
 	/// <param name="point"></param>
 	/// <exception cref="InvalidOperationException"></exception>
-	private static void ValidatePoint(ECPoint point)
-	{
+	private static void ValidatePoint(ECPoint point) {
 		ThrowIfPointIsAtInfinity(point);
-		if (!IsEven(point))
-		{
+		if (!IsEven(point)) {
 			throw new InvalidOperationException($"{nameof(point)} does not exist");
 		}
 	}
@@ -433,20 +373,16 @@ public class Schnorr : StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schno
 	/// <param name="len"></param>
 	/// <param name="idx"></param>
 	/// <exception cref="ArgumentException"></exception>
-	internal static void ValidateBuffer(string name, ReadOnlySpan<byte> buf, int len, int? idx = null)
-	{
+	internal static void ValidateBuffer(string name, ReadOnlySpan<byte> buf, int len, int? idx = null) {
 		var idxStr = (idx.HasValue ? "[" + idx + "]" : "");
-		if (buf.Length != len)
-		{
+		if (buf.Length != len) {
 			throw new ArgumentException($"{name + idxStr} must be {len} bytes long");
 		}
 	}
 
 
-	public abstract class Key : IKey
-	{
-		protected Key(byte[] immutableRawBytes, ECDSAKeyType keyType, X9ECParameters curveParams, ECDomainParameters domainParams)
-		{
+	public abstract class Key : IKey {
+		protected Key(byte[] immutableRawBytes, ECDSAKeyType keyType, X9ECParameters curveParams, ECDomainParameters domainParams) {
 			RawBytes = immutableRawBytes;
 			KeyType = keyType;
 			CurveParams = curveParams;
@@ -464,10 +400,8 @@ public class Schnorr : StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schno
 
 		internal IFuture<BigInteger> AsInteger { get; }
 
-		public override bool Equals(object obj)
-		{
-			if (obj is Key key)
-			{
+		public override bool Equals(object obj) {
+			if (obj is Key key) {
 				return Equals(key);
 			}
 			return false;
@@ -480,21 +414,17 @@ public class Schnorr : StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schno
 
 	}
 
-	public class PrivateKey : Key, IPrivateKey
-	{
-		public PrivateKey(byte[] rawKeyBytes, ECDSAKeyType keyType, X9ECParameters curveParams, ECDomainParameters domainParams) : base(rawKeyBytes, keyType, curveParams, domainParams)
-		{
+	public class PrivateKey : Key, IPrivateKey {
+		public PrivateKey(byte[] rawKeyBytes, ECDSAKeyType keyType, X9ECParameters curveParams, ECDomainParameters domainParams) : base(rawKeyBytes, keyType, curveParams, domainParams) {
 			Parameters = Tools.Values.LazyLoad(() => new ECPrivateKeyParameters("ECDSA", AsInteger.Value, DomainParams));
 		}
 
 		public IFuture<ECPrivateKeyParameters> Parameters { get; }
 	}
 
-	public class PublicKey : Key, IPublicKey
-	{
+	public class PublicKey : Key, IPublicKey {
 		public PublicKey(ECPoint point, ECDSAKeyType keyType, X9ECParameters curveParams, ECDomainParameters domainParams) :
-			base(BytesOfBigInt(point.AffineXCoord.ToBigInteger(), (curveParams.Curve.FieldSize + 7) >> 3), keyType, curveParams, domainParams)
-		{
+			base(BytesOfBigInt(point.AffineXCoord.ToBigInteger(), (curveParams.Curve.FieldSize + 7) >> 3), keyType, curveParams, domainParams) {
 			AsPoint = Tools.Values.LazyLoad(() => point);
 			Parameters = Tools.Values.LazyLoad(() => new ECPublicKeyParameters("ECDSA", AsPoint.Value, DomainParams));
 		}

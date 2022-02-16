@@ -186,6 +186,7 @@ public class MuSigBuilderTest
         Assert.IsTrue(aggregatedSignatures.All(bytes => bytes.AggregatedSignature.SequenceEqual(aggregatedSignatures
             .First()
             .AggregatedSignature)));
+        // since all aggregated signatures are same from above check, we can just verify one.
         Assert.IsTrue(muSig.Schnorr.VerifyDigest(aggregatedSignatures.Last().AggregatedSignature,
             messageDigest,
             aggregatedSignatures.Last().AggregatedPublicKey));

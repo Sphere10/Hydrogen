@@ -74,7 +74,7 @@ public class MuSigBuilder {
 		if (_partialSignatures.Count != _publicKeys.Count) {
 			throw new InvalidOperationException("partial signature count must be equal to participant count");
 		}
-		var aggregatedSigs = _muSig.CombinePartialSigs(_muSigSessionCache.FinalNonce,
+		var aggregatedSigs = _muSig.AggregatePartialSignatures(_muSigSessionCache.FinalNonce,
 			_partialSignatures.Select(x => Schnorr.BytesToBigInt(x))
 							  .ToArray());
 		return new MuSigData {
@@ -107,14 +107,14 @@ public class MuSigBuilder {
 		}
 	}
 
-	private void ComputeAggregatedPublicKeys() {
+	private void AggregatePublicKeys() {
 		if (_aggregatedPublicKey != null) {
 			// if already computed, return.
 			return;
 		}
 
-		// combine public keys.
-		_aggregatedPublicKey = _muSig.CombinePublicKeys(_keyAggregationCoefficients.Select(x => x.Item2)
+		// aggregate public keys.
+		_aggregatedPublicKey = _muSig.AggregatePublicKeys(_keyAggregationCoefficients.Select(x => x.Item2)
 																				   .ToArray(),
 			_keyAggregationCoefficients.Select(x => x.Item1)
 									   .ToArray());
@@ -149,7 +149,7 @@ public class MuSigBuilder {
 
 	private byte[] ComputePublicNonce() {
 		ComputeKeyCoefficients();
-		ComputeAggregatedPublicKeys();
+		AggregatePublicKeys();
 		InitializeSignerSession();
 		_publicNonce = _signerMuSigSession.PublicNonce;
 		return _publicNonce;
@@ -165,15 +165,9 @@ public class MuSigBuilder {
 			return;
 		}
 		var aggregatedPublicKey = _muSig.Schnorr.BytesOfXCoord(_aggregatedPublicKey.CombinedPoint);
-		var aggregatedSessionNonce = _muSig.CombineSessionNonce(_publicNonces.ToArray(), aggregatedPublicKey, _messageDigest);
-		var challenge = _muSig.ComputeChallenge(aggregatedSessionNonce.FinalNonce, aggregatedPublicKey, _messageDigest);
-		_muSigSessionCache = new MuSigSessionCache {
-			FinalNonceParity = aggregatedSessionNonce.FinalNonceParity,
-			FinalNonce = aggregatedSessionNonce.FinalNonce,
-			Challenge = challenge,
-			NonceCoefficient = aggregatedSessionNonce.NonceCoefficient,
-			PublicKeyParity = _aggregatedPublicKey.PublicKeyParity
-		};
+		var aggregatedPublicNonce = _muSig.AggregatePublicNonces(_publicNonces.ToArray(), aggregatedPublicKey, _messageDigest);
+		var challenge = _muSig.ComputeChallenge(aggregatedPublicNonce.FinalNonce, aggregatedPublicKey, _messageDigest);
+		_muSigSessionCache = _muSig.InitializeSessionCache(aggregatedPublicNonce, challenge, _aggregatedPublicKey.PublicKeyParity);
 	}
 
 	private byte[] ComputePartialSignature() {

@@ -26,7 +26,7 @@ internal class MuSigPublicNonce {
 	}
 }
 
-public class AggregatedSessionNonce {
+public class AggregatedPublicNonce {
 	public byte[] AggregatedNonce { get; internal set; }
 	public byte[] FinalNonce { get; internal set; }
 	public BigInteger NonceCoefficient { get; internal set; }

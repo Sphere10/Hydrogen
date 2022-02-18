@@ -35,7 +35,7 @@ public class MuSig {
 			return BigInteger.One;
 		}
 		var hash = Schnorr.TaggedHash("KeyAgg coefficient", Arrays.ConcatenateAll(ell, currentPublicKey));
-		return Schnorr.BytesToBigInt(hash).Mod(Schnorr.N);
+		return Schnorr.BytesToBigIntPositive(hash).Mod(Schnorr.N);
 	}
 
 	public AggregatedPublicKeyData AggregatePublicKeys(BigInteger[] keyCoefficients, byte[][] publicKeys) {
@@ -242,6 +242,8 @@ public class MuSig {
 		//In NonceAggregation, if an output R'i would be infinity, instead output the generator (an arbitrary choice).
 		rA = Schnorr.IsPointInfinity(rA) ? G : rA;
 		rB = Schnorr.IsPointInfinity(rB) ? G : rB;
+		// rA = Schnorr.IsPointInfinity(rA) ? throw new Exception($"nonce combination failed, {nameof(rA)} is at infinity") : rA;
+		// rB = Schnorr.IsPointInfinity(rB) ? throw new Exception($"nonce combination failed, {nameof(rB)} is at infinity") : rB;
 
 		var aggregatedPublicNonce = Arrays.Concatenate(CBytes(rA), CBytes(rB));
 		var nonceCoefficient = GetB(aggregatedPublicNonce, aggregatedPublicKey, message);
@@ -259,7 +261,13 @@ public class MuSig {
 
 	private BigInteger GetB(byte[] aggPublicNonce, byte[] q, byte[] m) {
 		var hash = Schnorr.TaggedHash("MuSig/noncecoef", Arrays.ConcatenateAll(aggPublicNonce, q, m));
-		return Schnorr.BytesToBigInt(hash).Mod(Schnorr.N);
+		return Schnorr.BytesToBigIntPositive(hash).Mod(Schnorr.N);
+	}
+	
+	private void ValidatePartialSignature(BigInteger partialSig) {
+		if (partialSig.CompareTo(N) >= 0) {
+			throw new ArgumentException($"{nameof(partialSig)} is larger than or equal to curve order");
+		}
 	}
 
 	public BigInteger PartialSign(SignerMuSigSession signerSession, MuSigSessionCache sessionCache) {
@@ -270,8 +278,8 @@ public class MuSig {
 
 		Schnorr.ThrowIfPointIsAtInfinity(Schnorr.LiftX(sessionCache.FinalNonce));
 
-		var k1 = Schnorr.BytesToBigInt(signerSession.PrivateNonce.AsSpan().Slice(0, KeySize).ToArray());
-		var k2 = Schnorr.BytesToBigInt(signerSession.PrivateNonce.AsSpan().Slice(KeySize, KeySize).ToArray());
+		var k1 = Schnorr.BytesToBigIntPositive(signerSession.PrivateNonce.AsSpan().Slice(0, KeySize).ToArray());
+		var k2 = Schnorr.BytesToBigIntPositive(signerSession.PrivateNonce.AsSpan().Slice(KeySize, KeySize).ToArray());
 		Schnorr.ValidatePrivateKeyRange(nameof(k1), k1);
 		Schnorr.ValidatePrivateKeyRange(nameof(k2), k2);
 
@@ -279,7 +287,11 @@ public class MuSig {
 		var sk = signerSession.SecretKey;
 		var pk = G.Multiply(sk).Normalize();
 
-		if ((!Schnorr.IsEven(pk) != sessionCache.PublicKeyParity) != signerSession.InternalKeyParity) {
+		// if (!Schnorr.IsEven(pk) != sessionCache.PublicKeyParity != signerSession.InternalKeyParity) {
+		// 	sk = sk.Negate().Mod(N);
+		// }
+
+		if (Schnorr.IsEven(pk) ^ !sessionCache.PublicKeyParity) {
 			sk = sk.Negate().Mod(N);
 		}
 
@@ -300,45 +312,105 @@ public class MuSig {
 		return signature;
 	}
 
-	public bool PartialSigVerify(SignerMuSigSession signerSession, MuSigSessionCache sessionCache, byte[] publicKey, BigInteger partialSignature) {
-		if (signerSession == null)
-			throw new InvalidOperationException("You need to run MuSig.InitializeSignerSession first");
-		if (sessionCache == null)
+	internal bool PartialSigVerify(MuSigSessionCache sessionCache, BigInteger keyCoefficient, byte[] publicKey, byte[] publicNonce, BigInteger partialSignature) {
+		if (sessionCache == null) {
 			throw new InvalidOperationException("You need to run MuSig.InitializeSessionCache first");
-		Schnorr.ValidateArray(nameof(publicKey), publicKey);
+		}
+		if (keyCoefficient == null) {
+			throw new ArgumentNullException(nameof(keyCoefficient));
+		}
+		Schnorr.ValidateBuffer(nameof(publicKey), publicKey, KeySize);
+		Schnorr.ValidateArray(nameof(publicNonce), publicNonce);
 		if (partialSignature == null)
 			throw new ArgumentNullException(nameof(partialSignature));
-
+	
+		ValidatePartialSignature(partialSignature);
+	
 		var b = sessionCache.NonceCoefficient;
-
-		var r1 = PointC(signerSession.PublicNonce.AsSpan().Slice(0, KeySize + 1).ToArray());
-		var r2 = PointC(signerSession.PublicNonce.AsSpan().Slice(KeySize + 1, KeySize + 1).ToArray());
-
+	
+		var r1 = PointC(publicNonce.AsSpan().Slice(0, KeySize + 1).ToArray());
+		var r2 = PointC(publicNonce.AsSpan().Slice(KeySize + 1, KeySize + 1).ToArray());
+	
 		var rj = r2;
 		rj = rj.Multiply(b).Add(r1);
-
+	
 		var pkp = Schnorr.LiftX(publicKey);
 		/* Multiplying the message hash by the musig coefficient is equivalent
 		 * to multiplying the signer's public key by the coefficient, except
 		 * much easier to do. */
-		var mu = signerSession.KeyCoefficient;
+		var mu = keyCoefficient;
 		var e = sessionCache.Challenge.Multiply(mu).Mod(N);
-
-		if (sessionCache.PublicKeyParity != signerSession.InternalKeyParity) {
+	
+		// if (sessionCache.PublicKeyParity != signerSession.InternalKeyParity) {
+		// 	e = e.Negate().Mod(N);
+		// }
+	
+		if (sessionCache.PublicKeyParity) {
 			e = e.Negate().Mod(N);
 		}
-
+	
 		var s = partialSignature;
 		/* Compute -s*G + e*pkj + rj */
 		s = s.Negate().Mod(N);
-
+	
 		var tmp = pkp.Multiply(e).Add(G.Multiply(s));
-
+		
 		if (sessionCache.FinalNonceParity) {
 			rj = rj.Negate();
 		}
+	
 		tmp = tmp.Add(rj);
 		return Schnorr.IsPointInfinity(tmp);
+	}
+	
+	// alternate verifier
+	// internal bool PartialSigVerify(MuSigSessionCache sessionCache, BigInteger keyCoefficient, byte[] publicKey, byte[] publicNonce, BigInteger partialSignature) {
+	// 	if (sessionCache == null) {
+	// 		throw new InvalidOperationException("You need to run MuSig.InitializeSessionCache first");
+	// 	}
+	// 	if (keyCoefficient == null) {
+	// 		throw new ArgumentNullException(nameof(keyCoefficient));
+	// 	}
+	// 	Schnorr.ValidateBuffer(nameof(publicKey), publicKey, KeySize);
+	// 	Schnorr.ValidateArray(nameof(publicNonce), publicNonce);
+	// 	if (partialSignature == null)
+	// 		throw new ArgumentNullException(nameof(partialSignature));
+	//
+	// 	ValidatePartialSignature(partialSignature);
+	//
+	// 	var b = sessionCache.NonceCoefficient;
+	//
+	// 	var r1 = PointC(publicNonce.AsSpan().Slice(0, KeySize + 1).ToArray());
+	// 	var r2 = PointC(publicNonce.AsSpan().Slice(KeySize + 1, KeySize + 1).ToArray());
+	//
+	// 	var rj = r2;
+	// 	rj = rj.Multiply(b).Add(r1);
+	// 	
+	// 	if (sessionCache.FinalNonceParity) {
+	// 		rj = rj.Negate();
+	// 	}
+	//
+	// 	var e = sessionCache.Challenge.Mod(N);
+	// 	var mu = keyCoefficient;
+	// 	
+	// 	var pkp = Schnorr.LiftX(publicKey);
+	// 	
+	// 	if (sessionCache.PublicKeyParity) {
+	// 		pkp = pkp.Negate();
+	// 	}
+	//
+	// 	var s = partialSignature;
+	// 	var tt = G.Multiply(s);
+	// 	var tmp = rj.Add(pkp.Multiply(e).Multiply(mu));
+	//
+	// 	return tt.Equals(tmp);
+	// }
+
+	public bool PartialSigVerify(SignerMuSigSession signerSession, MuSigSessionCache sessionCache, byte[] publicKey, BigInteger partialSignature) {
+		if (signerSession == null) {
+			throw new InvalidOperationException("You need to run MuSig.InitializeSignerSession first");
+		}
+		return PartialSigVerify(sessionCache, signerSession.KeyCoefficient, publicKey, signerSession.PublicNonce, partialSignature);
 	}
 
 	public BigInteger ComputeChallenge(byte[] finalNonce, byte[] combinedPublicKey, byte[] messageDigest) {
@@ -378,7 +450,7 @@ public class MuSig {
 		var signerSessions = new SignerMuSigSession[numberOfSigners];
 		for (var i = 0; i < numberOfSigners; i++) {
 			signerSessions[i] = InitializeSignerSession(Schnorr.RandomBytes(32),
-				Schnorr.BytesToBigInt(privateKeys[i].RawBytes),
+				Schnorr.BytesToBigIntPositive(privateKeys[i].RawBytes),
 				publicKeys[i],
 				messageDigest,
 				publicKeyHash,

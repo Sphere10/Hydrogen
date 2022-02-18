@@ -112,7 +112,7 @@ public class MuSigTest
         for (var i = 0; i < numberOfSigners; i++)
         {
             signerSessions[i] = muSig.InitializeSignerSession(sessionIds[i],
-                Schnorr.BytesToBigInt(privateKeys[i].RawBytes),
+                Schnorr.BytesToBigIntPositive(privateKeys[i].RawBytes),
                 publicKeys[i],
                 messageDigest,
                 publicKeyHash,
@@ -174,7 +174,7 @@ public class MuSigTest
         var combinedSignature = muSig.AggregatePartialSignatures(sessionCache.FinalNonce, partialSignatures);
         Assert.AreEqual(combinedSigsVector, combinedSignature.ToHexString(true));
 
-        // 11. validate combined signature
+        // 12. validate combined signature
         Assert.IsTrue(muSig.Schnorr.VerifyDigest(combinedSignature, messageDigest, combinedPublicKey));
     }
 
@@ -209,7 +209,7 @@ public class MuSigTest
         for (var i = 0; i < numberOfSigners; i++)
         {
             signerSessions[i] = muSig.InitializeSignerSession(Tools.Crypto.GenerateCryptographicallyRandomBytes(32),
-                Schnorr.BytesToBigInt(privateKeys[i].RawBytes),
+                Schnorr.BytesToBigIntPositive(privateKeys[i].RawBytes),
                 publicKeys[i],
                 messageDigest,
                 allPublicKeysHash,

@@ -10,16 +10,18 @@ public class MuSigBuilder {
 	private readonly Schnorr.PrivateKey _privateKey;
 	private readonly byte[] _messageDigest;
 	private readonly MuSig _muSig;
-	private readonly List<byte[]> _publicKeys;
-	private readonly List<byte[]> _publicNonces;
-	private readonly List<byte[]> _partialSignatures;
-	private readonly List<Tuple<byte[], BigInteger>> _keyAggregationCoefficients;
+	private readonly HashSet<byte[]> _publicKeys;
+	private readonly Dictionary<byte[], byte[]> _publicNonces;
+	private readonly Dictionary<byte[], byte[]> _partialSignatures;
+	private readonly Dictionary<byte[], BigInteger> _keyAggregationCoefficients;
 	private AggregatedPublicKeyData _aggregatedPublicKey;
 	private SignerMuSigSession _signerMuSigSession;
 	private MuSigSessionCache _muSigSessionCache;
+	private byte[] _publicKey;
 	private byte[] _publicNonce;
 	private byte[] _partialSignature;
 
+	public byte[] PublicKey => _publicKey ?? DerivePublicKey();
 	public byte[] PublicNonce => _publicNonce ?? ComputePublicNonce();
 	public byte[] PartialSignature => _partialSignature ?? ComputePartialSignature();
 
@@ -43,31 +45,56 @@ public class MuSigBuilder {
 		}
 
 		_muSig = new MuSig(new Schnorr(ECDSAKeyType.SECP256K1));
-		_publicKeys = new List<byte[]>();
-		_publicNonces = new List<byte[]>();
-		_partialSignatures = new List<byte[]>();
-		_keyAggregationCoefficients = new List<Tuple<byte[], BigInteger>>();
+		// duplicate public keys not allowed
+		_publicKeys = new HashSet<byte[]>(ByteArrayEqualityComparer.Instance);
+		_publicNonces = new Dictionary<byte[], byte[]>(ByteArrayEqualityComparer.Instance);
+		_partialSignatures = new Dictionary<byte[], byte[]>(ByteArrayEqualityComparer.Instance);
+		_keyAggregationCoefficients = new Dictionary<byte[], BigInteger>(ByteArrayEqualityComparer.Instance);
 	}
 
 	public void AddPublicKey(byte[] publicKey) {
 		if (publicKey == null) {
 			throw new ArgumentNullException(nameof(publicKey));
 		}
-		_publicKeys.Add(publicKey);
+		if (!_publicKeys.Add(publicKey)) {
+			throw new ArgumentException("public key already added");
+		}
 	}
 
-	public void AddPublicNonce(byte[] publicNonce) {
+	public void AddPublicNonce(byte[] publicKey, byte[] publicNonce) {
+		if (publicKey == null) {
+			throw new ArgumentNullException(nameof(publicKey));
+		}
 		if (publicNonce == null) {
 			throw new ArgumentNullException(nameof(publicNonce));
 		}
-		_publicNonces.Add(publicNonce);
+		_publicNonces.Add(publicKey, publicNonce);
 	}
 
-	public void AddPartialSignature(byte[] partialSignature) {
+	public void AddPartialSignature(byte[] publicKey, byte[] partialSignature) {
+		if (publicKey == null) {
+			throw new ArgumentNullException(nameof(publicKey));
+		}
 		if (partialSignature == null) {
 			throw new ArgumentNullException(nameof(partialSignature));
 		}
-		_partialSignatures.Add(partialSignature);
+		_partialSignatures.Add(publicKey, partialSignature);
+	}
+
+	public void VerifyPartialSignatures() {
+		if (_partialSignatures.Count != _publicKeys.Count) {
+			throw new InvalidOperationException("partial signature count must be equal to participant count");
+		}
+		foreach (var kvp in _partialSignatures) {
+			var publicKey = kvp.Key;
+			var partialSignature = Schnorr.BytesToBigIntPositive(kvp.Value);
+
+			var keyCoefficient = GetKeyAggregationCoefficient(publicKey);
+			var publicNonce = GetPublicNonce(publicKey);
+			if (!VerifyPartialSignature(_muSigSessionCache, keyCoefficient, publicKey, publicNonce, partialSignature)) {
+				throw new InvalidOperationException($"partial signature verification of participant (publicKey: {publicKey.ToHexString()}) failed");
+			}
+		};
 	}
 
 	public MuSigData BuildAggregatedSignature() {
@@ -75,7 +102,7 @@ public class MuSigBuilder {
 			throw new InvalidOperationException("partial signature count must be equal to participant count");
 		}
 		var aggregatedSigs = _muSig.AggregatePartialSignatures(_muSigSessionCache.FinalNonce,
-			_partialSignatures.Select(x => Schnorr.BytesToBigInt(x))
+			_partialSignatures.Select(x => Schnorr.BytesToBigIntPositive(x.Value))
 							  .ToArray());
 		return new MuSigData {
 			AggregatedSignature = aggregatedSigs,
@@ -103,7 +130,7 @@ public class MuSigBuilder {
 			var keyAggregationCoefficient = _muSig.ComputeKeyAggregationCoefficient(publicKeysHash,
 				publicKey,
 				secondPublicKey);
-			_keyAggregationCoefficients.Add(new Tuple<byte[], BigInteger>(publicKey, keyAggregationCoefficient));
+			_keyAggregationCoefficients.Add(publicKey, keyAggregationCoefficient);
 		}
 	}
 
@@ -113,11 +140,18 @@ public class MuSigBuilder {
 			return;
 		}
 
+		var keyCoefficients = _keyAggregationCoefficients.Select(item =>
+		new Tuple<byte[], BigInteger>
+		(
+			item.Key,
+			item.Value
+		)).ToArray();
 		// aggregate public keys.
-		_aggregatedPublicKey = _muSig.AggregatePublicKeys(_keyAggregationCoefficients.Select(x => x.Item2)
-																				   .ToArray(),
-			_keyAggregationCoefficients.Select(x => x.Item1)
-									   .ToArray());
+		_aggregatedPublicKey = _muSig.AggregatePublicKeys
+		(
+			keyCoefficients.Select(x => x.Item2).ToArray(),
+	keyCoefficients.Select(x => x.Item1).ToArray()
+		);
 	}
 
 	private void InitializeSignerSession() {
@@ -127,16 +161,12 @@ public class MuSigBuilder {
 		}
 
 		var privateKeyAsBytes = _privateKey.RawBytes;
-		var publicKeyAsBytes = _muSig.Schnorr.DerivePublicKey(_privateKey).RawBytes;
 
-		var secretKey = Schnorr.BytesToBigInt(privateKeyAsBytes);
+		var secretKey = Schnorr.BytesToBigIntPositive(privateKeyAsBytes);
 		// 1. generate nonce data
 		var nonceData = _muSig.GenerateNonce(_sessionId, Schnorr.BytesOfBigInt(secretKey, _muSig.KeySize), _messageDigest, null);
 
-		var keyCoefficient = _keyAggregationCoefficients.FirstOrDefault(x => x.Item1.SequenceEqual(publicKeyAsBytes))?.Item2;
-		if (keyCoefficient is null) {
-			throw new InvalidOperationException("own public key not found");
-		}
+		var keyCoefficient = GetKeyAggregationCoefficient(PublicKey);
 		// 2. create private signing session
 		_signerMuSigSession = new SignerMuSigSession {
 			SecretKey = secretKey,
@@ -145,6 +175,18 @@ public class MuSigBuilder {
 			PrivateNonce = nonceData.PrivateNonce,
 			InternalKeyParity = false,
 		};
+	}
+
+	private BigInteger GetKeyAggregationCoefficient(byte[] publicKey) {
+		return !_keyAggregationCoefficients.TryGetValue(publicKey, out var keyCoefficient)
+			? throw new InvalidOperationException("own public key not found")
+			: keyCoefficient;
+	}
+
+	private byte[] GetPublicNonce(byte[] publicKey) {
+		return !_publicNonces.TryGetValue(publicKey, out var publicNonce)
+			? throw new InvalidOperationException("own public key not found")
+			: publicNonce;
 	}
 
 	private byte[] ComputePublicNonce() {
@@ -165,14 +207,23 @@ public class MuSigBuilder {
 			return;
 		}
 		var aggregatedPublicKey = _muSig.Schnorr.BytesOfXCoord(_aggregatedPublicKey.CombinedPoint);
-		var aggregatedPublicNonce = _muSig.AggregatePublicNonces(_publicNonces.ToArray(), aggregatedPublicKey, _messageDigest);
+		var aggregatedPublicNonce = _muSig.AggregatePublicNonces(_publicNonces.Values.ToArray(), aggregatedPublicKey, _messageDigest);
 		var challenge = _muSig.ComputeChallenge(aggregatedPublicNonce.FinalNonce, aggregatedPublicKey, _messageDigest);
 		_muSigSessionCache = _muSig.InitializeSessionCache(aggregatedPublicNonce, challenge, _aggregatedPublicKey.PublicKeyParity);
+	}
+
+	private bool VerifyPartialSignature(MuSigSessionCache sessionCache, BigInteger keyCoefficient, byte[] publicKey, byte[] publicNonce, BigInteger partialSignature) {
+		return _muSig.PartialSigVerify(sessionCache, keyCoefficient, publicKey, publicNonce, partialSignature);
 	}
 
 	private byte[] ComputePartialSignature() {
 		InitializeMuSigSessionCache();
 		_partialSignature = Schnorr.BytesOfBigInt(_muSig.PartialSign(_signerMuSigSession, _muSigSessionCache), _muSig.KeySize);
 		return _partialSignature;
+	}
+
+	private byte[] DerivePublicKey() {
+		_publicKey = _muSig.Schnorr.DerivePublicKey(_privateKey).RawBytes;
+		return _publicKey;
 	}
 }

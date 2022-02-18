@@ -88,7 +88,6 @@ public class MuSigBuilder {
 		foreach (var kvp in _partialSignatures) {
 			var publicKey = kvp.Key;
 			var partialSignature = Schnorr.BytesToBigIntPositive(kvp.Value);
-
 			var keyCoefficient = GetKeyAggregationCoefficient(publicKey);
 			var publicNonce = GetPublicNonce(publicKey);
 			if (!VerifyPartialSignature(_muSigSessionCache, keyCoefficient, publicKey, publicNonce, partialSignature)) {

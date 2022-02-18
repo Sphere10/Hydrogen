@@ -31,7 +31,7 @@ namespace Tools {
 		public static SynchronizedSet<object> ConsumersInsideLock { get; } = new();
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static void AddMessage(string message) => Messages.Add(message); // Messages.Add($"[{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff}] {message}");
+		public static void AddMessage(string message) => Messages.Add($"[{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff}] {message}");
 
 	}
 }

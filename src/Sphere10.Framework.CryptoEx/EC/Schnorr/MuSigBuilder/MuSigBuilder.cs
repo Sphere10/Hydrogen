@@ -20,6 +20,8 @@ public class MuSigBuilder {
 	private byte[] _publicKey;
 	private byte[] _publicNonce;
 	private byte[] _partialSignature;
+	// used to check if a MuSigBuilder instance has signed a message before to avoid reuse.
+	private bool _hasSignedBefore;
 
 	public byte[] PublicKey => _publicKey ?? DerivePublicKey();
 	public byte[] PublicNonce => _publicNonce ?? ComputePublicNonce();
@@ -50,6 +52,7 @@ public class MuSigBuilder {
 		_publicNonces = new Dictionary<byte[], byte[]>(ByteArrayEqualityComparer.Instance);
 		_partialSignatures = new Dictionary<byte[], byte[]>(ByteArrayEqualityComparer.Instance);
 		_keyAggregationCoefficients = new Dictionary<byte[], BigInteger>(ByteArrayEqualityComparer.Instance);
+		_hasSignedBefore = false;
 	}
 
 	public void AddPublicKey(byte[] publicKey) {
@@ -216,8 +219,12 @@ public class MuSigBuilder {
 	}
 
 	private byte[] ComputePartialSignature() {
+		if (_hasSignedBefore) {
+			throw new InvalidOperationException($"you cannot reuse a {GetType().Name} instance. please instantiate a new instance");
+		}
 		InitializeMuSigSessionCache();
 		_partialSignature = Schnorr.BytesOfBigInt(_muSig.PartialSign(_signerMuSigSession, _muSigSessionCache), _muSig.KeySize);
+		_hasSignedBefore = true;
 		return _partialSignature;
 	}
 

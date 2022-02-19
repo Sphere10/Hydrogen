@@ -239,7 +239,7 @@ public class MuSig {
 		rA = rA?.Normalize();
 		rB = rB?.Normalize();
 
-		//In NonceAggregation, if an output R'i would be infinity, instead output the generator (an arbitrary choice).
+		//In "AggregatePublicNonces", if an output R'i would be infinity, instead output the generator (an arbitrary choice).
 		rA = Schnorr.IsPointInfinity(rA) ? G : rA;
 		rB = Schnorr.IsPointInfinity(rB) ? G : rB;
 

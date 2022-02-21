@@ -148,14 +148,14 @@ namespace Sphere10.Framework {
 				ListOperationType.Add => Add(),
 				ListOperationType.Update => Open(index, out _),
 				ListOperationType.Insert => Insert(index),
-				_ => throw new ArgumentException($"List operation type '{operationType}' not supported", nameof(operationType)),
+				_ => throw new ArgumentException($@"List operation type '{operationType}' not supported", nameof(operationType)),
 			};
 			var writer = new EndianBinaryWriter(EndianBitConverter.For(_endianness), stream);
 			if (item != null) {
 				_openFragmentProvider._record.Traits = _openFragmentProvider._record.Traits.CopyAndSetFlags(StreamRecordTraits.IsNull, false);
 				if (_preAllocateOptimization) {
 					// pre-setting the stream length before serialization improves performance since it avoids
-					// fragmented stream requesting new spaces for every piece of serialized data
+					// re-allocating fragmented stream on individual properties of the serialized item
 					var expectedSize = serializer.CalculateSize(item);
 					stream.SetLength(expectedSize);
 					if (!serializer.TrySerialize(item, writer, out var size))

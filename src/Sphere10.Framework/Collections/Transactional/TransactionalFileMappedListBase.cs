@@ -69,12 +69,12 @@ namespace Sphere10.Framework {
 				foreach (var marker in pageMarkers) {
 					if (marker == PageMarkerType.UncommittedPage) {
 						var pageFile = PageMarkerRepo.GetMarkerFilename(pageNumber, PageMarkerType.UncommittedPage);
-						// TODO avoid reading pagefile into memory
-						var pageFileBytes = File.ReadAllBytes(pageFile);
-						if (pageFileBytes.Length > 0) {
-							var page = InternalPages[pageMarkers.Key];
-							Stream.Seek(page.StartIndex, SeekOrigin.Begin);
-							Stream.WriteBytes(pageFileBytes);
+						using (var pageFileStream = File.OpenRead(pageFile)) {
+							if (pageFileStream.Length > 0) {
+								var page = InternalPages[pageMarkers.Key];
+								Stream.Seek(page.StartIndex, SeekOrigin.Begin);
+								Tools.Streams.RouteStream(pageFileStream, Stream, pageFileStream.Length, blockSizeInBytes: 262144);
+							}
 						}
 					}
 				}

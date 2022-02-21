@@ -2,8 +2,8 @@
 
 namespace Sphere10.Framework {
 
-	public abstract class StaticSizeObjectSerializer<TItem> : StaticSizeItemSizer<TItem>, IItemSerializer<TItem> {
-		protected StaticSizeObjectSerializer(int fixedSize) : base(fixedSize) {
+	public abstract class StaticSizeSerializer<TItem> : StaticSizeItemSizer<TItem>, IItemSerializer<TItem> {
+		protected StaticSizeSerializer(int fixedSize) : base(fixedSize) {
 		}
 		
 		public bool TrySerialize(TItem item, EndianBinaryWriter writer, out int bytesWritten) {

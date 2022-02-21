@@ -1,5 +1,5 @@
 ﻿namespace Sphere10.Framework {
-	public class ClusteredKeyRecordSerializer : StaticSizeObjectSerializer<ClusteredKeyRecord> {
+	public class ClusteredKeyRecordSerializer : StaticSizeSerializer<ClusteredKeyRecord> {
 
 		public ClusteredKeyRecordSerializer()
 			: base(+sizeof(byte) + sizeof(int) + sizeof(int) + sizeof(int)) {

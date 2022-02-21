@@ -20,7 +20,7 @@ namespace Sphere10.Framework {
 	/// Thus unless a structure is explicitly tested and confirmed to work, it is generally recommended to avoid using this class for such structures. An un-attributed
 	/// structure containing such fields will generally fail to serialize correctly otherwise.
 	/// </remarks>
-	public class FastMarshalStructSerializer<T> : StaticSizeSerializer<T> where T : struct {
+	public class FastMarshalStructSerializer<T> : StaticSizeItemSerializer<T> where T : struct {
 
 		public FastMarshalStructSerializer() 
 			: base(Marshal.SizeOf(typeof(T))) {

@@ -18,6 +18,8 @@ using System.Threading.Tasks;
 namespace Sphere10.Framework {
 	public interface IDataSource<TItem> {
 
+		public event EventHandlerEx<IEnumerable<CrudActionItem<TItem>>> MutatedItems;
+
 		IEnumerable<TItem> New(int count);
 
 		Task Create(IEnumerable<TItem> entities);

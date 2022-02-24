@@ -5,13 +5,14 @@
 @using System.Collections.Generic;
 @using System.Reflection;
 @using Sphere10.Framework;
+@using Sphere10.Framework.Communications;
 @using UI.Controls.BlazorGrid.Classes; @*Fix This*@
 
 @inject IJSRuntime JSRuntime
 
 <meta charset="UTF-8">
 <div class="ResizableClass">
-    <button @onclick="ButtonClick">Load</button>
+    <button @onclick="ButtonClick">ReLoad</button>
 
     <table class="TableClass" style="width: 100%" id="@Id">
         <thead>
@@ -108,6 +109,10 @@
 
     <footer>
         <div>
+            @*Add the new button*@
+            @if ((GridType & GridTypes.NewItem) != 0) {
+                <button @onclick="PagingNew">New</button>                
+            }
             <button @onclick="PagingFirst">First</button>
             <button @onclick="PagingNext">Next</button>
 
@@ -184,23 +189,26 @@
 {
     @typeparam TItem
 
-    public enum GridTypes { DataSupplied, DataOnDemand, ActionColumn,  }
+    [Flags] public enum GridTypes { DataSupplied = 1, DataOnDemand = 1 << 1, ActionColumn = 1 << 2, NewItem = 1 << 3  }
 
     [Parameter] public string Id { get; set; }
     [Parameter] public int PageSize { get; set; }
-    [Parameter] public IDataSource<TItem> DataSource { get; set; }
+//    [Parameter] public IDataSource<TItem> DataSource { get; set; }
+    [Parameter] public ClientWebSocketsDataSource<TItem> DataSource { get; set; }
     [Parameter] public GridTypes GridType { get; set; }
     [Parameter] public List<GridAction<TItem>> Actions { get; set; }
     [Parameter] public List<object> ColumnDefinitions { get; set; }
 
     List<Cell> Header { get; set; } = new List<Cell>();
     List<List<Cell>> Rows { get; set; } = new List<List<Cell>>();
-    IEnumerable<TItem> Data { get; set; }
+    //  IEnumerable<TItem> Data { get; set; }
+    List<TItem> Data { get; set; } = new List<TItem>();
     int CurrentPage { get; set; }
     int TotalDataCount { get; set; }
 
     int DefaultRowHeight = 20;
     int DefaultCellWidth = 40;
+    static bool FirstLoad = true;
 
     static Random Random { get; set; } = new Random((int)DateTime.Now.Ticks);
 
@@ -215,10 +223,20 @@
 
     #region Grid
 
+    //void ReLoad() {
+    //    LoadData();
+    //    StateHasChanged();
+    //}
+
     protected override void OnInitialized()
     {
-        ControlCheck();
+        if (FirstLoad) {
+SystemLog.Info($"FirstLoad OnInitialized()");
+            DataSource.MutatedItems += HandleRemoteDataChange;
+            FirstLoad = false;
+        }
 
+        ControlCheck();
         PagingFirst();
     }
 
@@ -254,6 +272,8 @@
 
         var width = DefaultCellWidth;
         var height = DefaultRowHeight;
+
+SystemLog.Info($"BlazorGrid LoadData() Data count {Data.Count}");
 
         if (Data.Any())
         {
@@ -442,6 +462,59 @@
 
     #region Paging
 
+        void HandleRemoteDataChange(IEnumerable<CrudActionItem<TItem>> items) {
+
+        var updates = items.ToList();
+
+SystemLog.Info($"BlazorGrid HandleRemoteDataChange() Items count {updates.Count}");
+
+        foreach (var update in updates) {
+            switch (update.CrudAction) {
+                case CrudAction.Create:
+                    Data.Add(update.Item);
+                break;
+
+                case CrudAction.Update:
+
+                break;
+
+                case CrudAction.Delete:
+
+                break;
+
+                default:
+SystemLog.Error($"BlazorGrid HandleRemoteDataChange() default");
+                break;
+            }
+        }
+
+        TotalDataCount = Data.Count;
+        //CurrentPage = 1; // this needs to be fixed
+        LoadData();
+        StateHasChanged(); 
+    }
+
+ //   async Task PagingNew() {
+    void PagingNew() {
+
+       try {
+//SystemLog.Info($"BlazorGrid Trying to Create 1 Object");
+            DataSource.New(1);
+        }
+        catch (Exception ex) {
+            
+SystemLog.Error(ex.Message);
+        }
+
+//        var useCurrentPage = CurrentPage;
+//        Data = (IEnumerable<TItem>)await DataSource.Read("", PageSize, ref useCurrentPage, "", SortDirection.Ascending, out int totalItems);
+//        TotalDataCount = totalItems;
+//        CurrentPage = useCurrentPage;
+  
+//        LoadData();
+//        StateHasChanged();
+    }
+
     void PagingFirst()
     {
         if (CurrentPage == 0) return;
@@ -484,9 +557,9 @@
     async void GetPageAndDisplayData()
     {
         // callback to the server
-
         var useCurrentPage = CurrentPage;
-        Data = (IEnumerable<TItem>)await DataSource.Read("", PageSize, ref useCurrentPage, "", SortDirection.Ascending, out int totalItems);
+//        Data = (IEnumerable<TItem>)await DataSource.Read("", PageSize, ref useCurrentPage, "", SortDirection.Ascending, out int totalItems);
+        Data = new List<TItem>(await DataSource.Read("", PageSize, ref useCurrentPage, "", SortDirection.Ascending, out int totalItems));
         TotalDataCount = totalItems;
         CurrentPage = useCurrentPage;
         LoadData();

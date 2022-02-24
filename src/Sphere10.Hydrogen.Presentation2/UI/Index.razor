@@ -118,14 +118,13 @@
                             <p>Testing of new Grid</p>
                             <BlazorGrid TItem="TestClass"
                                         Id="TestGrid"
-                                        DataSource="DataSource"
                                         PageSize="10"
-                                        GridType="BlazorGrid<TestClass>.GridTypes.ActionColumn"
+                                        DataSource="WebDataSource"
+                                        GridType="BlazorGrid<TestClass>.GridTypes.ActionColumn | BlazorGrid<TestClass>.GridTypes.NewItem"
                                         Actions="DataActions"
                                         ColumnDefinitions="ColumnDefinitions">
 
                                 @* comments
-
                                 *@
 
                             </BlazorGrid>
@@ -133,7 +132,6 @@
 
                         <button @onclick="StartWebSockets">Start Web Sockets</button>
                         <button @onclick="SendData">SendData</button>
-
 
                         <div><textarea id="Output" rows="10" cols="60"></textarea></div>
                     </div>
@@ -176,6 +174,8 @@
     public class DataSource1<TItem> : IDataSource<TestClass>
     {
         List<TestClass> AllItems = new List<TestClass>();
+
+        public event EventHandlerEx<IEnumerable<CrudActionItem<TestClass>>> MutatedItems;
 
         public void RefreshData()
         {
@@ -284,108 +284,108 @@
 
         public Task<int> Count { get { return Task.Run(() => AllItems.Count); } }
     }
-
-    public class DataSource2<TItem> : IDataSource<TestClass> {
+            /*
+        public class DataSource2<TItem> : IDataSource<TestClass> {
         //List<TestClass> AllItems = new List<TestClass>();
 
-        //public void RefreshData() {
+            //public void RefreshData() {
         //    AllItems = LoadData(73);
         //}
 
         // create some dummy data
         public DataSource2() {
-            //RefreshData();
-        }
+    //RefreshData();
+    }
 
-        //static List<TestClass> LoadData(int size) {
-        //    var testData = new List<TestClass>();
+    //static List<TestClass> LoadData(int size) {
+    //    var testData = new List<TestClass>();
 
-        //    for (int i = 0; i < size; i++) {
-        //        var testObject = new TestClass();
+    //    for (int i = 0; i < size; i++) {
+    //        var testObject = new TestClass();
         //        testObject.FillWithTestData(i);
         //        testData.Add(testObject);
-        //    }
+    //    }
 
-        //    return testData;
+    //    return testData;
         //}
 
         public async Task Create(IEnumerable<TestClass> entities) {
-            //    AllItems.AddRange(entities);
+        //    AllItems.AddRange(entities);
         }
 
         public async Task Delete(IEnumerable<TestClass> entities) {
-            //    foreach (var entity in entities) {
-            //        var index = AllItems.IndexOf(entity);
-            //        if (index >= 0) AllItems.RemoveAt(index);
-            //    }
+    //    foreach (var entity in entities) {
+        //        var index = AllItems.IndexOf(entity);
+        //        if (index >= 0) AllItems.RemoveAt(index);
+        //    }
         }
 
         public IEnumerable<TestClass> New(int count) {
 
-            //var returnList = new List<TestClass>();
-            //var newId = AllItems.Max(x => x.Id) + 1;
+        //var returnList = new List<TestClass>();
+        //var newId = AllItems.Max(x => x.Id) + 1;
 
-            //for (int i = 0; i < count; i++) {
-            //    var newEntity = new TestClass();
-            //    newEntity.FillWithTestData(newId++);
-            //    AllItems.Add(newEntity);
-            //    returnList.Add(newEntity);
-            //}
+        //for (int i = 0; i < count; i++) {
+        //    var newEntity = new TestClass();
+        //    newEntity.FillWithTestData(newId++);
+        //    AllItems.Add(newEntity);
+        //    returnList.Add(newEntity);
+    //}
 
-            //return returnList;
+    //return returnList;
 
-            throw new NotImplementedException();
-        }
-
-        public Task<IEnumerable<TestClass>> Read(string searchTerm, int pageLength, ref int page, string sortProperty, SortDirection sortDirection, out int totalItems) {
-
-            // make sure the requested page is logical
-            //            if (page < 0) page = 0;
-            //            else if (page > AllItems.Count / pageLength) page = AllItems.Count / pageLength;
-
-            //            var startIndex = pageLength * page;
-
-            // the last page might not have a full [page of data
-            //            if (startIndex + pageLength >= AllItems.Count) pageLength = AllItems.Count - startIndex;
-
-            //            var items = (IEnumerable<TestClass>)AllItems.GetRange(startIndex, pageLength);
-
-            //            totalItems = AllItems.Count();
-            //            return Task.FromResult(items);
-
-            //return Task.Run(() => (IEnumerable<TestClass>)AllItems.GetRange(startIndex, pageLength));
-
-            throw new NotImplementedException();
-        }
-
-        public Task Refresh(TestClass[] entity) {
-            throw new NotImplementedException();
-        }
-
-        public Task Update(IEnumerable<TestClass> entities) {
-            //var test = entities.ToArray()[0].ToString();
-
-            //return Task.Run(() => {
-            //    foreach (var entity in entities) {
-            //        for (int i = 0; i < AllItems.Count; i++) {
-            //            if (AllItems[i].Id == entity.Id) {
-            //                AllItems[i] = entity;
-            //                break;
-            //            }
-            //        }
-            //    }
-            //}
-            //);
-            throw new NotImplementedException();
-        }
-
-        public Task<Result> Validate(IEnumerable<(TestClass entity, CrudAction action)> actions) {
-            throw new NotImplementedException();
-        }
-
-        public Task<int> Count { get { return Task.Run(() => 0); } }
+    throw new NotImplementedException();
     }
 
+    public Task<IEnumerable<TestClass>> Read(string searchTerm, int pageLength, ref int page, string sortProperty, SortDirection sortDirection, out int totalItems) {
+
+        // make sure the requested page is logical
+        //            if (page < 0) page = 0;
+        //            else if (page > AllItems.Count / pageLength) page = AllItems.Count / pageLength;
+
+        //            var startIndex = pageLength * page;
+
+        // the last page might not have a full [page of data
+        //            if (startIndex + pageLength >= AllItems.Count) pageLength = AllItems.Count - startIndex;
+
+        //            var items = (IEnumerable<TestClass>)AllItems.GetRange(startIndex, pageLength);
+
+        //            totalItems = AllItems.Count();
+        //            return Task.FromResult(items);
+
+        //return Task.Run(() => (IEnumerable<TestClass>)AllItems.GetRange(startIndex, pageLength));
+
+    throw new NotImplementedException();
+    }
+
+    public Task Refresh(TestClass[] entity) {
+    throw new NotImplementedException();
+    }
+
+        public Task Update(IEnumerable<TestClass> entities) {
+        //var test = entities.ToArray()[0].ToString();
+
+        //return Task.Run(() => {
+        //    foreach (var entity in entities) {
+        //        for (int i = 0; i < AllItems.Count; i++) {
+        //            if (AllItems[i].Id == entity.Id) {
+        //                AllItems[i] = entity;
+        //                break;
+        //            }
+        //        }
+        //    }
+        //}
+        //);
+    throw new NotImplementedException();
+    }
+
+    public Task<Result> Validate(IEnumerable<(TestClass entity, CrudAction action)> actions) {
+    throw new NotImplementedException();
+    }
+
+    public Task<int> Count { get { return Task.Run(() => 0); } }
+    }
+    */
 
     #region Javascript
 
@@ -398,7 +398,6 @@
         JSRuntime.InvokeAsync<object>("WriteOutout", text);
     }
 
-
     #endregion
 
     DataSource1<TestClass> DataSource { get; set; }
@@ -410,6 +409,8 @@
     DotNetObjectReference<Index> CSharpInstance { get; set; }
     ClientWebSocketsChannel Channel { get; set; }
 
+    ClientWebSocketsDataSource<TestClass> WebDataSource { get; set; }
+
     void Test() {
         var f1 = new Filter<string>();
         var f2 = new Filter<double>();
@@ -417,9 +418,43 @@
         var f4 = new Filter<char>();
     }
 
+    public class WebLogger : ILogger {
+
+        public delegate void DisplayTextDelegate(string text);
+
+        DisplayTextDelegate DisplayTextFunction { get; init; }
+
+        public WebLogger(DisplayTextDelegate displayTextFunction) {
+            DisplayTextFunction = displayTextFunction;
+        }
+
+        LogOptions ILogger.Options { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+
+        void ILogger.Debug(string message) {
+            DisplayTextFunction("DEBUG: " + message);
+        }
+
+        void ILogger.Error(string message) {
+            DisplayTextFunction("ERROR: " + message);
+        }
+
+        void ILogger.Info(string message) {
+            DisplayTextFunction("INFO: " + message);
+        }
+
+        void ILogger.Warning(string message) {
+            DisplayTextFunction("WARNING: " + message);
+        }
+    }
+
+
     protected override async void OnInitialized()
     {
+        SystemLog.RegisterLogger(new WebLogger(WriteOutput));
+
         DataSource = new Index.DataSource1<TestClass>();
+        WebDataSource = new ClientWebSocketsDataSource<TestClass>("ws://192.168.1.171:80/service", false);
+SystemLog.Info($"ClientWebSocketsDataSource Created");
 
         DataActions.Add(new GridAction<TestClass>("Action1", Action1, "😄", IsAction1Available));
         DataActions.Add(new GridAction<TestClass>("Action2", Action2, "⚽", IsAction2Available));
@@ -446,48 +481,19 @@
             //Channel = new ClientWebSocketsChannel("ws://192.168.1.108:80/service", false);
 
             // Local Machine
-            Channel = new ClientWebSocketsChannel("ws://192.168.1.171:80/service", false);
-            Channel.ReceivedBytes += delegate (ReadOnlyMemory<byte> memory)
-            {
-                WriteOutput(System.Text.Encoding.ASCII.GetString(memory.Span));
-            };
-            await Channel.Open();        
+            //Channel = new ClientWebSocketsChannel("ws://192.168.1.171:80/service", false);
+            //Channel.ReceivedBytes += delegate (ReadOnlyMemory<byte> memory)
+            //{
+            //    WriteOutput(System.Text.Encoding.ASCII.GetString(memory.Span));
+            //};
+            //await Channel.Open();
+            
+//            WebDataSource.New
         }
         catch (Exception ex) {
             
         }
     }
-
-    public class WebSocketsPacket 
-    {
-        public string Message { get; set; }
-        public string[] Tokens { get; private set; } = new string[0];
-        public string JsonData { get; set; }
-
-        public WebSocketsPacket() {
-		}
-
-        public WebSocketsPacket(byte[] bytes) {
-
-            var text = Encoding.ASCII.GetString(bytes);
-            WebSocketsPacket packet = JsonConvert.DeserializeObject<WebSocketsPacket>(text);
-
-            Message = packet.Message;
-            Tokens = Message.Split(" ");
-            JsonData = packet.JsonData;
-        }
-
-        public WebSocketsPacket(string message, string jsonData) {
-            Message = message;
-            JsonData = jsonData;
-        }
-
-        public byte[] ToBytes() {
-            var jsonData = JsonConvert.SerializeObject(this);
-            return System.Text.Encoding.ASCII.GetBytes(jsonData);
-        }
-    }
-
 
     void SendData()
     {

@@ -1,13 +1,11 @@
 using System;
 using Org.BouncyCastle.Math;
 
-namespace Sphere10.Framework.CryptoEx; 
+namespace Sphere10.Framework.CryptoEx;
 
 public static class BigIntegerUtils {
-	public static byte[] BigIntegerToBytes(BigInteger b, int numBytes)
-	{
-		if (b == null)
-		{
+	public static byte[] BigIntegerToBytes(BigInteger b, int numBytes) {
+		if (b == null) {
 			return null;
 		}
 		var bytes = new byte[numBytes];
@@ -19,6 +17,11 @@ public static class BigIntegerUtils {
 	}
 
 	public static BigInteger BytesToBigInteger(byte[] data) {
+		return data == null ? null : new BigInteger(data);
+	}
+
+	public static BigInteger BytesToBigIntegerPositive(byte[] data) {
 		return data == null ? null : new BigInteger(1, data);
 	}
+
 }

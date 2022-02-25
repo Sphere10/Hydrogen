@@ -112,7 +112,7 @@ public class MuSigTest
         for (var i = 0; i < numberOfSigners; i++)
         {
             signerSessions[i] = muSig.InitializeSignerSession(sessionIds[i],
-                Schnorr.BytesToBigInt(privateKeys[i].RawBytes),
+                Schnorr.BytesToBigIntPositive(privateKeys[i].RawBytes),
                 publicKeys[i],
                 messageDigest,
                 publicKeyHash,
@@ -122,7 +122,7 @@ public class MuSigTest
         var keyCoefficients = signerSessions.Select(k => k.KeyCoefficient).ToArray();
 
         // 5. combine the public keys.
-        var publicKeyAggregationData = muSig.CombinePublicKey(keyCoefficients, publicKeys);
+        var publicKeyAggregationData = muSig.AggregatePublicKeys(keyCoefficients, publicKeys);
         var combinedPublicKey = muSig.Schnorr.BytesOfXCoord(publicKeyAggregationData.CombinedPoint);
 
         Assert.AreEqual(combinedPublicKeyVector, combinedPublicKey.ToHexString(true));
@@ -138,7 +138,7 @@ public class MuSigTest
         Assert.AreEqual(noncesVector.Select(x => x.ToHexByteArray()).ToArray(), publicNonces);
 
         /* Create aggregate nonce */
-        var combinedNonce = muSig.CombineSessionNonce(publicNonces, combinedPublicKey, messageDigest);
+        var combinedNonce = muSig.AggregatePublicNonces(publicNonces, combinedPublicKey, messageDigest);
 
         Assert.AreEqual(combinedNonceVector, combinedNonce.AggregatedNonce.ToHexString(true));
         // 7. compute challenge
@@ -171,10 +171,10 @@ public class MuSigTest
         }
 
         // 11. combine partial signatures
-        var combinedSignature = muSig.CombinePartialSigs(sessionCache.FinalNonce, partialSignatures);
+        var combinedSignature = muSig.AggregatePartialSignatures(sessionCache.FinalNonce, partialSignatures);
         Assert.AreEqual(combinedSigsVector, combinedSignature.ToHexString(true));
 
-        // 11. validate combined signature
+        // 12. validate combined signature
         Assert.IsTrue(muSig.Schnorr.VerifyDigest(combinedSignature, messageDigest, combinedPublicKey));
     }
 
@@ -199,7 +199,7 @@ public class MuSigTest
         var publicKeys = GetPublicKeys(muSig, privateKeys).Select(x => x.RawBytes).ToArray();
 
         // 2. compute the public keys hash.
-        var publicKeyHash = muSig.ComputeEll(publicKeys);
+        var allPublicKeysHash = muSig.ComputeEll(publicKeys);
 
         // 3. get second public key
         var secondPublicKey = muSig.GetSecondPublicKey(publicKeys);
@@ -209,17 +209,17 @@ public class MuSigTest
         for (var i = 0; i < numberOfSigners; i++)
         {
             signerSessions[i] = muSig.InitializeSignerSession(Tools.Crypto.GenerateCryptographicallyRandomBytes(32),
-                Schnorr.BytesToBigInt(privateKeys[i].RawBytes),
+                Schnorr.BytesToBigIntPositive(privateKeys[i].RawBytes),
                 publicKeys[i],
                 messageDigest,
-                publicKeyHash,
+                allPublicKeysHash,
                 secondPublicKey);
         }
 
         var keyCoefficients = signerSessions.Select(k => k.KeyCoefficient).ToArray();
 
         // 5. combine the public keys.
-        var publicKeyAggregationData = muSig.CombinePublicKey(keyCoefficients, publicKeys);
+        var publicKeyAggregationData = muSig.AggregatePublicKeys(keyCoefficients, publicKeys);
         var combinedPublicKey = muSig.Schnorr.BytesOfXCoord(publicKeyAggregationData.CombinedPoint);
         var publicKeyParity = publicKeyAggregationData.PublicKeyParity;
 
@@ -230,7 +230,7 @@ public class MuSigTest
         var publicNonces = signerSessions.Select(x => x.PublicNonce).ToArray();
 
         /* Create aggregate nonce */
-        var combinedNonce = muSig.CombineSessionNonce(publicNonces, combinedPublicKey, messageDigest);
+        var combinedNonce = muSig.AggregatePublicNonces(publicNonces, combinedPublicKey, messageDigest);
 
         // 7. compute challenge
         var challenge = muSig.ComputeChallenge(combinedNonce.FinalNonce, combinedPublicKey, messageDigest);
@@ -255,7 +255,7 @@ public class MuSigTest
         }
 
         // 11. combine partial signatures
-        var combinedSignature = muSig.CombinePartialSigs(sessionCache.FinalNonce, partialSignatures);
+        var combinedSignature = muSig.AggregatePartialSignatures(sessionCache.FinalNonce, partialSignatures);
 
         // 11. validate combined signature
         Assert.IsTrue(muSig.Schnorr.VerifyDigest(combinedSignature, messageDigest, combinedPublicKey));

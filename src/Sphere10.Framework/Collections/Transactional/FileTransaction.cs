@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text;
 
 namespace Sphere10.Framework {
 
@@ -92,10 +93,6 @@ namespace Sphere10.Framework {
 		}
 
 		public TransactionalFileMappedBuffer EnlistFile(string filename, int pageSize, long maxMemory) {
-			return EnlistFile(filename, Guid.NewGuid(), pageSize, maxMemory);
-		}
-
-		public TransactionalFileMappedBuffer EnlistFile(string filename, Guid fileID, int pageSize, long maxMemory) {
 			Guard.ArgumentNotNullOrEmpty(filename, nameof(filename));
 
 			if (File.Exists(filename)) {
@@ -212,7 +209,7 @@ namespace Sphere10.Framework {
 			this.TransactionHeaderFile = transactionHeaderFile;
 			this.UncommittedPageFileDirectory = surrogate.UncomittedPageFileDirectory;
 			foreach (var enlistedSurrogate in surrogate.EnlistedFiles) {
-				EnlistFile(enlistedSurrogate.Filename, enlistedSurrogate.FileID, enlistedSurrogate.PageSize, enlistedSurrogate.MaxMemory);
+				EnlistFile(enlistedSurrogate.Filename, enlistedSurrogate.PageSize, enlistedSurrogate.MaxMemory);
 			}
 		}
 
@@ -249,7 +246,6 @@ namespace Sphere10.Framework {
 		[Serializable]
 		public class TransactionalFileSerializableSurrogate {
 			public string Filename { get; set; }
-			public Guid FileID { get; set; }
 			public int PageSize { get; set; }
 			public long MaxMemory { get; set; }
 
@@ -262,7 +258,6 @@ namespace Sphere10.Framework {
 
 			public static void Dehydrate(TransactionalFileMappedBuffer @from, TransactionalFileSerializableSurrogate to) {
 				to.Filename = from.Path;
-				to.FileID = from.FileID;
 				to.PageSize = from.PageSize;
 				to.MaxMemory = from.MaxMemory;
 			}

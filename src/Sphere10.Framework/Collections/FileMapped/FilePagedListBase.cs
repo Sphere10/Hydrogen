@@ -21,7 +21,7 @@ namespace Sphere10.Framework {
 				FlushOnDispose = true;
 				Stream = File.Open(filename, FileMode.OpenOrCreate, FileAccess.ReadWrite);
 			}
-			RequiresLoad = fileExists;
+			RequiresLoad = fileExists && Tools.FileSystem.GetFileSize(filename) > 0;
 		}
 
 		public override bool IsReadOnly { get; }
@@ -72,8 +72,6 @@ namespace Sphere10.Framework {
 				Stream.SetLength(streamLength);
 			}
 		}
-
-	
 
 	}
 }

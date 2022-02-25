@@ -12,6 +12,7 @@
 //-----------------------------------------------------------------------
 
 using System;
+using System.IO;
 using Sphere10.Framework;
 
 // ReSharper disable CheckNamespace
@@ -26,6 +27,12 @@ namespace Tools {
             return new ActionScope(() => action(usingThesePrefetchedValues));
         }
 
-    }
+        public static IDisposable DeleteFileOnDispose(string filename)
+	        => ExecuteOnDispose(() => File.Delete(filename));
+
+        public static IDisposable DeleteDirOnDispose(string directory)
+	        => ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectories(directory));
+
+	}
 
 }

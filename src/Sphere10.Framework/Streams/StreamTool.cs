@@ -16,6 +16,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Security.Cryptography;
 using System.IO.Compression;
+using System.Runtime.CompilerServices;
 using Sphere10.Framework;
 
 // ReSharper disable CheckNamespace
@@ -26,21 +27,51 @@ namespace Tools {
         public const int DefaultBufferReadBlockSize = 32768;
         public const int OptimalCompressWriteBlockSize = 8192;
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void RouteStream(Stream readStream, Stream writeStream, int blockSizeInBytes = DefaultBufferReadBlockSize, bool closeReadStream = false, bool closeWriteStream = false) {
-            var buffer = new byte[blockSizeInBytes];
-            int bytesRead;
-            while ((bytesRead = readStream.Read(buffer, 0, buffer.Length)) > 0) {
-                writeStream.Write(buffer, 0, bytesRead);
-            }
-            if (closeReadStream)
-                readStream.Close();
+			// Optimized for reading a stream of unknown length
+	        var buffer = new byte[blockSizeInBytes];
+	        int bytesRead;
+	        while ((bytesRead = readStream.Read(buffer, 0, buffer.Length)) > 0) {
+		        writeStream.Write(buffer, 0, bytesRead);
+	        }
+	        if (closeReadStream)
+		        readStream.Close();
 
-            if (closeWriteStream)
-                writeStream.Close();
+	        if (closeWriteStream)
+		        writeStream.Close();
         }
 
+		public static void RouteStream(Stream readStream, Stream writeStream, long length, int blockSizeInBytes = DefaultBufferReadBlockSize, bool closeReadStream = false, bool closeWriteStream = false) {
+			// Optimized for reading a known length of bytes
+	        var buffer = new byte[blockSizeInBytes];
+	        var reads = length / blockSizeInBytes;
+			for (var i = 0; i < reads; i++) {
+				var bytesRead = readStream.Read(buffer, 0, blockSizeInBytes);
+				writeStream.Write(buffer, 0, bytesRead);
+				length -= bytesRead;
+				if (bytesRead < blockSizeInBytes || length == 0) {
+					// encountered last block early
+					length = 0;
+					break;
+				}
+			}
 
-        public static byte[] ReadByteArray(Stream stream, int blockSizeInBytes = DefaultBufferReadBlockSize, bool closeStream = true) {
+			// left-over 
+			if (length > 0) {
+				var bytesRead = readStream.Read(buffer, 0, (int)length);
+				writeStream.Write(buffer, 0, bytesRead);
+
+			}
+
+			if (closeReadStream)
+		        readStream.Close();
+
+	        if (closeWriteStream)
+		        writeStream.Close();
+        }
+
+		public static byte[] ReadByteArray(Stream stream, int blockSizeInBytes = DefaultBufferReadBlockSize, bool closeStream = true) {
             using (var memoryStream = new MemoryStream()) {
                 RouteStream(stream, memoryStream, blockSizeInBytes, closeStream, true);
                 return memoryStream.ToArray();

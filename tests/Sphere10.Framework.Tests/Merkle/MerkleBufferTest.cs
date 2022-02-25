@@ -201,19 +201,19 @@ namespace Sphere10.Framework.Tests {
                 case StorageType.TransactionalBinaryFile_1InMem:
                     var baseDir = Tools.FileSystem.GetTempEmptyDirectory(true);
                     var fileName = Path.Combine(baseDir, "File.dat");
-                    merkleBuffer = new MerkleBuffer(new TransactionalFileMappedBuffer(fileName, baseDir, pageSize, 1 * pageSize), chf);
+                    merkleBuffer = new MerkleBuffer(new TransactionalFileMappedBuffer(fileName, baseDir, pageSize, 1 * pageSize, autoLoad: true), chf);
                     disposables.Add(new ActionScope(() => Tools.FileSystem.DeleteDirectory(baseDir)));
                     break;
                 case StorageType.TransactionalBinaryFile_2InMem:
                     baseDir = Tools.FileSystem.GetTempEmptyDirectory(true);
                     fileName = Path.Combine(baseDir, "File.dat");
-                    merkleBuffer = new MerkleBuffer(new TransactionalFileMappedBuffer(fileName, baseDir, pageSize, 2 * pageSize), chf);
+                    merkleBuffer = new MerkleBuffer(new TransactionalFileMappedBuffer(fileName, baseDir, pageSize, 2 * pageSize, autoLoad: true), chf);
                     disposables.Add(new ActionScope(() => Tools.FileSystem.DeleteDirectory(baseDir)));
                     break;
                 case StorageType.TransactionalBinaryFile_5InMem:
                     baseDir = Tools.FileSystem.GetTempEmptyDirectory(true);
                     fileName = Path.Combine(baseDir, "File.dat");
-                    merkleBuffer = new MerkleBuffer(new TransactionalFileMappedBuffer(fileName, baseDir, pageSize, 5 * pageSize), chf);
+                    merkleBuffer = new MerkleBuffer(new TransactionalFileMappedBuffer(fileName, baseDir, pageSize, 5 * pageSize, autoLoad: true), chf);
                     disposables.Add(new ActionScope(() => Tools.FileSystem.DeleteDirectory(baseDir)));
                     break;
                 default:

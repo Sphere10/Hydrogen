@@ -16,8 +16,20 @@ using System.Collections.Generic;
 
 namespace Sphere10.Framework {
 
-	public class ObservableDictionary<TKey, TValue> : ObservableCollection<KeyValuePair<TKey, TValue>>, IDictionary<TKey, TValue> {
-		protected new readonly IDictionary<TKey, TValue> InnerCollection;
+	public class ObservableDictionary<TKey, TValue> : ObservableDictionary<TKey, TValue, IDictionary<TKey, TValue>> {
+
+		public ObservableDictionary()
+			: this(new Dictionary<TKey, TValue>()) {
+		}
+
+		public ObservableDictionary(IDictionary<TKey, TValue> internalDictionary)
+			: base(internalDictionary) {
+		}
+	}
+
+	public class ObservableDictionary<TKey, TValue, TConcrete> : ObservableCollection<KeyValuePair<TKey, TValue>, TConcrete> 
+		where TConcrete : IDictionary<TKey, TValue> {
+
 		public event EventHandlerEx<object, SearchingMembershipEventArgs<TKey>> SearchingKeyMembership;
 		public event EventHandlerEx<object, SearchedMembershipEventArgs<TKey>> SearchedKeyMembership;
 		public event EventHandlerEx<object, FetchingByItemsEventArgs<TKey>> Fetching;
@@ -31,21 +43,15 @@ namespace Sphere10.Framework {
 		public event EventHandlerEx<object, RemovingItemsEventArgs<TKey>> RemovingKeys;
 		public event EventHandlerEx<object, RemovedItemsEventArgs<TKey>> RemovedKeys;
 
-		public ObservableDictionary()
-			: this(new Dictionary<TKey, TValue>()) {
-		}
-
-		public ObservableDictionary(IDictionary<TKey, TValue> internalDictionary)
+		public ObservableDictionary(TConcrete internalDictionary)
 			: base(internalDictionary) {
-			InnerCollection = (IDictionary<TKey, TValue>)base.InternalCollection;
 		}
-
 
 		public void Add(TKey key, TValue value) =>
 			DoOperation(
 				EventTraits.Add,
 				() => {
-					InnerCollection.Add(key, value);
+					InternalCollection.Add(key, value);
 					return 0;
 				},
 				() => new AddingEventArgs<KeyValuePair<TKey, TValue>> { CallArgs = new ItemsCallArgs<KeyValuePair<TKey, TValue>>(new KeyValuePair<TKey,TValue>(key, value)) },
@@ -60,11 +66,10 @@ namespace Sphere10.Framework {
 				}
 			);
 
-
 		public bool ContainsKey(TKey key) =>
 			DoOperation(
 				EventTraits.Search,
-				() => InnerCollection.ContainsKey(key),
+				() => InternalCollection.ContainsKey(key),
 				() => new SearchingMembershipEventArgs<TKey> { CallArgs = new ItemsCallArgs<TKey>(key) },
 				result => new SearchedMembershipEventArgs<TKey> { Result = new[] { result } },
 				(preEventArgs) => {
@@ -79,7 +84,7 @@ namespace Sphere10.Framework {
 
 		public bool Remove(TKey key) => DoOperation(
 			EventTraits.Remove,
-			() => InnerCollection.Remove(key),
+			() => InternalCollection.Remove(key),
 			() => new RemovingItemsEventArgs<TKey> { CallArgs = new ItemsCallArgs<TKey>(key) },
 			result => new RemovedItemsEventArgs<TKey> { Result = new [] { result }},
 			(preEventArgs) => {
@@ -97,7 +102,7 @@ namespace Sphere10.Framework {
 			DoOperation(
 				EventTraits.Fetch,
 				() => {
-					var success = InnerCollection.TryGetValue(key, out var val);
+					var success = InternalCollection.TryGetValue(key, out var val);
 					result = Tuple.Create(success, val);
 					return result;
 				},
@@ -123,7 +128,7 @@ namespace Sphere10.Framework {
 		public TValue this[TKey key] {
 			get => DoOperation(
 				EventTraits.Fetch,
-				() => InnerCollection[key],
+				() => InternalCollection[key],
 				() => new FetchingByItemsEventArgs<TKey>{ CallArgs = new ItemsCallArgs<TKey>(key) },
 				result => new FetchedByItemsEventArgs<TKey, Tuple<bool, TValue>> { Result = new [] { Tuple.Create(true, result) } },
 				(preEventArgs) => {
@@ -138,7 +143,7 @@ namespace Sphere10.Framework {
 
 			set => DoOperation(
 				EventTraits.Update,
-				() => InnerCollection[key] = value,
+				() => InternalCollection[key] = value,
 				() => new UpdatingByItemsEventArgs<KeyValuePair<TKey, TValue>> { CallArgs = new ItemsCallArgs<KeyValuePair<TKey, TValue>>(new KeyValuePair<TKey, TValue>(key, value)) },
 				result => new UpdatedByItemsEventArgs<KeyValuePair<TKey, TValue>>(),
 				(preEventArgs) => {
@@ -156,7 +161,7 @@ namespace Sphere10.Framework {
 		public ICollection<TKey> Keys =>
 			DoOperation(
 				EventTraits.Fetch,
-				() => InnerCollection.Keys,
+				() => InternalCollection.Keys,
 				() => new EnumeratingEventArgs(), 
 				result => new EnumeratedEventArgs<TKey> { Result = result},
 				(preEventArgs) => {
@@ -172,7 +177,7 @@ namespace Sphere10.Framework {
 		public ICollection<TValue> Values =>
 			DoOperation(
 				EventTraits.Fetch,
-				() => InnerCollection.Values,
+				() => InternalCollection.Values,
 				() => new EnumeratingEventArgs(),
 				result => new EnumeratedEventArgs<TValue> { Result = result },
 				(preEventArgs) => {

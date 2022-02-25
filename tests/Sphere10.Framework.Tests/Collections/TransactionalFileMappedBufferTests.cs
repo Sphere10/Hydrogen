@@ -642,7 +642,6 @@ namespace Sphere10.Framework.Tests {
 
 			Tools.FileSystem.AppendAllBytes(fileName, originalData);
 			using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectories(baseDir, pageDir1, pageDir2))) {
-				var fileID = TransactionalFileMappedBuffer.ComputeFileID(fileName);
 				using (var file = new TransactionalFileMappedBuffer(fileName, pageDir1, pageSize, maxOpenPages*pageSize)) {
 					file.Load();
 					AssertFileCount(pageDir1, 0);
@@ -718,7 +717,7 @@ namespace Sphere10.Framework.Tests {
 			var baseDir = Tools.FileSystem.GetTempEmptyDirectory(true);
 			var fileName = Path.Combine(baseDir, "File.dat");
 			using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectory(baseDir))) {
-				using (var file = new TransactionalFileMappedBuffer(fileName, 100, 1*100)) {
+				using (var file = new TransactionalFileMappedBuffer(fileName, 100, 1*100, autoLoad: true)) {
 					var committingCount = 0;
 					var committedCount = 0;
 					var rollingBackCount = 0;
@@ -748,7 +747,7 @@ namespace Sphere10.Framework.Tests {
 			var baseDir = Tools.FileSystem.GetTempEmptyDirectory(true);
 			var fileName = Path.Combine(baseDir, "File.dat");
 			using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectory(baseDir))) {
-				using (var file = new TransactionalFileMappedBuffer(fileName, 100, 1*100)) {
+				using (var file = new TransactionalFileMappedBuffer(fileName, 100, 1*100, autoLoad: true)) {
 					var committingCount = 0;
 					var committedCount = 0;
 

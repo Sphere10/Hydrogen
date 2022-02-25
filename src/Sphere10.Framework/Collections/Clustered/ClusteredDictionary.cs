@@ -5,6 +5,7 @@ using System.Collections.Specialized;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using Sphere10.Framework.Collections.Stream;
 
 namespace Sphere10.Framework {
 
@@ -20,32 +21,27 @@ namespace Sphere10.Framework {
 		where THeader : IClusteredStorageHeader
 		where TRecord : IClusteredKeyRecord {
 
-		public ClusteredDictionary(IClusteredList<KeyValuePair<TKey, byte[]>, THeader, TRecord> kvpStore, IItemSerializer<TValue> valueSerializer, IEqualityComparer<TKey> keyComparer = null, Endianness endianess = Endianness.LittleEndian)
+		public ClusteredDictionary(IClusteredKeyValueStore<TKey, THeader, TRecord> kvpStore, IItemSerializer<TValue> valueSerializer, IEqualityComparer<TKey> keyComparer = null, Endianness endianess = Endianness.LittleEndian)
 			: base(kvpStore, valueSerializer, keyComparer, endianess) {
 		}
-	}
 
+		public new IClusteredStorage<THeader, TRecord> Storage => (IClusteredStorage<THeader,TRecord>)base.Storage;
+	}
 
 	public class ClusteredDictionary<TKey, TValue> : ClusteredDictionary<TKey, TValue, ClusteredStorageHeader, ClusteredKeyRecord> {
 
-		public ClusteredDictionary(Stream stream, int clusterSize, IItemSerializer<TKey> keySerializer, IItemSerializer<TValue> valueSerializer, IEqualityComparer<TKey> keyComparer = null, ClusteredStorageCachePolicy recordsCachePolicy = ClusteredStorageCachePolicy.Remember, Endianness endianess = Endianness.LittleEndian)
+		public ClusteredDictionary(Stream stream, int clusterSize, IItemSerializer<TKey> keySerializer, IItemSerializer<TValue> valueSerializer, IEqualityComparer<TKey> keyComparer = null, ClusteredStoragePolicy policy = ClusteredStoragePolicy.Default, Endianness endianess = Endianness.LittleEndian)
 			: base(
-				new ClusteredList<KeyValuePair<TKey, byte[]>, ClusteredStorageHeader, ClusteredKeyRecord>(
+				new ClusteredKeyValueStore<TKey, ClusteredStorageHeader, ClusteredKeyRecord>(
 					new ClusteredStorage<ClusteredKeyRecord>(
 						stream, 
 						clusterSize,
 						new ClusteredKeyRecordSerializer(),
 						endianess
 					),
-					new KeyValuePairSerializer<TKey, byte[]>(
-						keySerializer,
-						new ByteArraySerializer()
-					),
-					new KeyValuePairEqualityComparer<TKey, byte[]>(
-						keyComparer,
-						new ByteArrayEqualityComparer()
-					),
-					recordsCachePolicy,
+					keySerializer,
+					keyComparer,
+					policy,
 					endianess
 				),
 				valueSerializer, 

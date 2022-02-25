@@ -15,11 +15,11 @@ namespace Sphere10.Framework {
 
 		Action<int, int, bool> CheckRange { get; }
 
-		Func<IEnumerable<IPage<TItem>>> InternalPages { get; }
+		Func<IReadOnlyList<IPage<TItem>>> InternalPages { get; }
 
 		Func<IPage<TItem>, IDisposable> EnterOpenPageScope { get; }
 
-		Func<int, int, IEnumerable<Tuple<IPage<TItem>, int, int>>> GetPageSegments { get; }
+		Func<int, int, List<Tuple<IPage<TItem>, int, int>>> GetPageSegments { get; }
 
 		Func<IPage<TItem>> CreateNextPage { get; }
 

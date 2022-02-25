@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace Sphere10.Framework {
 
@@ -9,11 +10,12 @@ namespace Sphere10.Framework {
 	/// A memory buffer whose entire contents reside in a contiguous block of memory. Operations are batch optimized thus suitable for image/data manipulations of small - mid size.
 	/// For larger buffers whose contents should be paged use <see cref="MemoryPagedBuffer"/>.
 	/// <remarks>
-	/// All enumerable results are implemented as arrays and arguments are not checked for performance.
+	/// - Setting the initialCapacity accurately can yield 100x performance gains since resizing the array can be expensive.
+	/// - All enumerable results are implemented as arrays and arguments are not checked for performance.
 	/// </remarks>
 	/// </summary>
 	public sealed class MemoryBuffer : RangedListBase<byte>, IBuffer {
-		public const int DefaultBlockGrowth = 4096;
+		public const int DefaultBlockGrowth = 65536;
 		public const int DefaultMaxSize = int.MaxValue;
 		private byte[] _internalArray;
 		private int _length;
@@ -75,37 +77,36 @@ namespace Sphere10.Framework {
 			var endIndex = Math.Min(index + count - 1, _length - 1);
 			var readCount = endIndex - index + 1;
 			if (readCount <= 0)
-				return new byte[0];
+				return Array.Empty<byte>();
 			var readResult = new byte[readCount];
-			System.Buffer.BlockCopy(_internalArray, index, readResult, 0, readCount);
+			Buffer.BlockCopy(_internalArray, index, readResult, 0, readCount);
 			return readResult;
 		}
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public ReadOnlySpan<byte> ReadSpan(int index, int count) => AsSpan(index, count);
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public override void AddRange(IEnumerable<byte> items) {
 			Guard.ArgumentNotNull(items, nameof(items));
 			AddRange(items as byte[] ?? items.ToArray());
 		}
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void AddRange(ReadOnlySpan<byte> items) {
 			Write(_length, items);
 		}
 
 		public void Write(int index, ReadOnlySpan<byte> items) {
-			int newBytesCount = Math.Max(index + items.Length, _length) - _length;
+			var newBytesCount = Math.Max(index + items.Length, _length) - _length;
 			
 			GrowSpaceIfRequired(newBytesCount);
 			UpdateVersion();
-			
+
 			if (items.Length == 1)
-			{
 				_internalArray[index] = items[0];
-			}
 			else
-			{
 				items.CopyTo(_internalArray.AsSpan(index, items.Length));
-			}
 
 			_length += newBytesCount;
 		}
@@ -114,15 +115,14 @@ namespace Sphere10.Framework {
 			Guard.ArgumentInRange(totalBytes, _length, MaxCapacity, nameof(totalBytes), "Allocated space would either not contain existing items or exceed max capacity");
 			var newBytes = totalBytes - _internalArray.Length;
 			if (newBytes > 0) 
-				Expand(newBytes);
+				ExpandBy(newBytes);
 		}
 
-		public void Expand(int newBytes) {
+		public void ExpandBy(int newBytes) {
 			Guard.ArgumentInRange(newBytes, 0, int.MaxValue, nameof(newBytes));
 			GrowSpaceIfRequired(newBytes);
 			_length += newBytes;
 		}
-
 
 		public override void UpdateRange(int index, IEnumerable<byte> items) {
 			Guard.ArgumentNotNull(items, nameof(items));
@@ -162,20 +162,22 @@ namespace Sphere10.Framework {
 			_length -= count;
 		}
 
-        public Span<byte> AsSpan() => AsSpan(0);
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public Span<byte> AsSpan() => AsSpan(0);
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public Span<byte> AsSpan(int index) => AsSpan(index, _length - index);
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public Span<byte> AsSpan(int index, int count) {
 			if (index == _length && count == 0)
 				return Span<byte>.Empty;
-			Guard.ArgumentInRange(index, 0, Math.Max(_length - 1, 0), nameof(index));
-			Guard.ArgumentInRange(count, 0, Math.Max(_length - index, 0), nameof(count));
+			//Guard.CheckRange(index, count, false, 0, _length); // removed for efficiency
 			return _internalArray.AsSpan(index, count);
 		}
 
 		public override void Clear() {
-			_internalArray = new byte[_initialCapacity];
+			Array.Resize(ref _internalArray, _initialCapacity);
 			_length = 0;
 		}
 

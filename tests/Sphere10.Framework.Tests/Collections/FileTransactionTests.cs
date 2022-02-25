@@ -213,7 +213,7 @@ namespace Sphere10.Framework.Tests {
 							File.WriteAllBytes(filename, startBytes);
 							expected[i].AddRange(startBytes);
 						}
-						files.Add(transaction.EnlistFile(filename, Guid.NewGuid(), pageSize, maxOpenPages*pageSize));
+						files.Add(transaction.EnlistFile(filename, pageSize, maxOpenPages*pageSize));
 					}
 
 					// Mutate all the files 100 times, commit every 10 times
@@ -271,7 +271,7 @@ namespace Sphere10.Framework.Tests {
 							File.WriteAllBytes(filename, startBytes);
 							expected[i].AddRange(startBytes);
 						}
-						files.Add(transaction.EnlistFile(filename, Guid.NewGuid(), pageSize, maxOpenPages*pageSize));
+						files.Add(transaction.EnlistFile(filename, pageSize, maxOpenPages*pageSize));
 					}
 
 					// Mutate all the files 100 times, commit every 10 times
@@ -353,7 +353,7 @@ namespace Sphere10.Framework.Tests {
 								expected[i].AddRange(startBytes);
 							}
 						}
-						files.Add(transaction.EnlistFile(filename, Guid.NewGuid(), pageSize, maxOpenPages*pageSize));
+						files.Add(transaction.EnlistFile(filename, pageSize, maxOpenPages*pageSize));
 					}
 
 					// Original is a clone of expected before mutations
@@ -415,7 +415,7 @@ namespace Sphere10.Framework.Tests {
 							File.WriteAllBytes(filename, startBytes);
 							expected[i].AddRange(startBytes);
 						}
-						files.Add(transaction.EnlistFile(filename, Guid.NewGuid(), pageSize, maxOpenPages*pageSize));
+						files.Add(transaction.EnlistFile(filename, pageSize, maxOpenPages*pageSize));
 					}
 
 					// Original is a clone of expected before mutations

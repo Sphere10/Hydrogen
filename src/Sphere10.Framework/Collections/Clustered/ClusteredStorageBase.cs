@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Runtime.Serialization;
 using System.Threading;
 
 namespace Sphere10.Framework {
@@ -52,16 +53,21 @@ namespace Sphere10.Framework {
 		private readonly StreamPagedList<Cluster> _clusters;
 		private readonly FragmentProvider _recordsFragmentProvider;
 		private readonly PreAllocatedList<TRecord> _records;
-		private int? _openRecord;
+		private int? _openRecordIndex;
 		private FragmentProvider _openFragmentProvider;
 		private Stream _openStream;
+		private readonly Endianness _endianness;
 		private readonly object _lock;
+		private readonly bool _integrityChecks;
+		private readonly bool _preAllocateOptimization;
 
-		protected ClusteredStorageBase(Stream rootStream, int clusterSize, IItemSerializer<TRecord> recordSerializer, Endianness endianness = Endianness.LittleEndian, ClusteredStorageCachePolicy recordsCachePolicy = ClusteredStorageCachePolicy.None) {
+		protected ClusteredStorageBase(Stream rootStream, int clusterSize, IItemSerializer<TRecord> recordSerializer, Endianness endianness = Endianness.LittleEndian, ClusteredStoragePolicy policy = ClusteredStoragePolicy.Default) {
 			Guard.ArgumentNotNull(rootStream, nameof(rootStream));
 			Guard.ArgumentInRange(clusterSize, 1, int.MaxValue, nameof(clusterSize));
 			Guard.ArgumentNotNull(recordSerializer, nameof(recordSerializer));
 			Guard.Argument(recordSerializer.IsStaticSize, nameof(recordSerializer), "Records must be constant sized");
+			Policy = policy;
+			_endianness = endianness;
 			var clusterSerializer = new ClusterSerializer(clusterSize);
 			Header = CreateHeader();
 			if (rootStream.Length > 0) {
@@ -77,19 +83,19 @@ namespace Sphere10.Framework {
 			// Clusters are stored in a StreamPagedList (single page, statically sized items)
 			_clusters = new StreamPagedList<Cluster>(
 				clusterSerializer,
-				new NonClosingStream(new BoundedStream(rootStream, ClusteredStorageHeader.ByteLength, long.MaxValue) { UseRelativeOffset = true, AllowResize = true }),
+				new NonClosingStream(new BoundedStream(rootStream, ClusteredStorageHeader.ByteLength, long.MaxValue) { UseRelativeOffset = true, AllowInnerResize = true }),
 				endianness
 			) { IncludeListHeader = false };  // Suppressing events increases performance
 			if (_clusters.RequiresLoad)
 				_clusters.Load();
 
 			// Records are stored in record 0 as StreamPagedList (single page, statically sized items) which maps over the fragmented stream 
-			_recordsFragmentProvider = new FragmentProvider(this, recordsCachePolicy);
+			_recordsFragmentProvider = new FragmentProvider(this);
 			var recordStorage = new StreamPagedList<TRecord>(
-				recordSerializer, 
+				recordSerializer,
 				new FragmentedStream(_recordsFragmentProvider, Header.RecordsCount * recordSerializer.StaticSize),
 				endianness
-			) { IncludeListHeader = false};
+			) { IncludeListHeader = false };
 			if (recordStorage.RequiresLoad)
 				recordStorage.Load();
 
@@ -105,20 +111,19 @@ namespace Sphere10.Framework {
 			_lock = new object();
 			_openFragmentProvider = null;
 			_openStream = null;
-			_openRecord = null;
+			_openRecordIndex = null;
+			_preAllocateOptimization = Policy.HasFlag(ClusteredStoragePolicy.FastAllocate);
+			_integrityChecks = Policy.HasFlag(ClusteredStoragePolicy.IntegrityChecks);
 			ZeroClusterBytes = Tools.Array.Gen<byte>(clusterSize, 0);
-			IntegrityChecks = true;
 		}
 
 		public THeader Header { get; }
 
 		public int Count => Header.RecordsCount;
 
-		public ClusteredStorageCachePolicy DefaultStreamPolicy { get; set; } = ClusteredStorageCachePolicy.None;
+		public ClusteredStoragePolicy Policy { get; }
 
 		public IReadOnlyList<TRecord> Records => _records;
-
-		public bool IntegrityChecks { get; set; }
 
 		internal IReadOnlyList<Cluster> Clusters => _clusters;
 
@@ -132,25 +137,77 @@ namespace Sphere10.Framework {
 
 		#region Streams
 
-		public Stream Add() => Add(DefaultStreamPolicy);
+		public bool IsNull(int index) {
+			CheckRecordIndex(index);
+			return Records[index].Traits.HasFlag(StreamRecordTraits.IsNull);
+		}
 
-		public Stream Add(ClusteredStorageCachePolicy cachePolicy) {
-			lock (_lock) {
-				CheckNotOpened();
-				var record = AddRecord(out var index, CreateRecord());  // the first record add will allocate cluster 0 for the records stream
-				return Open(index, cachePolicy);
+
+		public void SaveItem<TItem>(int index, TItem item, IItemSerializer<TItem> serializer, ListOperationType operationType) {
+			using var stream = operationType switch {
+				ListOperationType.Add => Add(),
+				ListOperationType.Update => Open(index, out _),
+				ListOperationType.Insert => Insert(index),
+				_ => throw new ArgumentException($"List operation type '{operationType}' not supported", nameof(operationType)),
+			};
+			var writer = new EndianBinaryWriter(EndianBitConverter.For(_endianness), stream);
+			if (item != null) {
+				_openFragmentProvider._record.Traits = _openFragmentProvider._record.Traits.CopyAndSetFlags(StreamRecordTraits.IsNull, false);
+				if (_preAllocateOptimization) {
+					// pre-setting the stream length before serialization improves performance since it avoids
+					// fragmented stream requesting new spaces for every piece of serialized data
+					var expectedSize = serializer.CalculateSize(item);
+					stream.SetLength(expectedSize);
+					if (!serializer.TrySerialize(item, writer, out var size))
+						throw new SerializationException("Failed to serialize item");
+					if (_integrityChecks) {
+						Guard.Ensure(expectedSize == size, "Calculated size did not match serialization size");
+						Guard.Ensure(stream.Position == expectedSize, "Serialization did not serialize expected length");
+					} else {
+						Debug.Assert(expectedSize == size, "Calculated size did not match serialization size");
+						Debug.Assert(stream.Position == expectedSize, "Serialization did not serialize expected length");
+					}
+				} else {
+					var bytes = serializer.Serialize(item, writer);
+					if (_integrityChecks) {
+						Guard.Ensure(bytes == stream.Position);
+					} else {
+						Debug.Assert(bytes == stream.Position);
+					}
+					stream.SetLength(stream.Position);
+				}
+			} else {
+				_openFragmentProvider._record.Traits = _openFragmentProvider._record.Traits.CopyAndSetFlags(StreamRecordTraits.IsNull, true);
+				stream.SetLength(0);
 			}
 		}
 
-		public Stream Open(int index) => Open(index, DefaultStreamPolicy);
+		public TItem LoadItem<TItem>(int index, IItemSerializer<TItem> serializer) {
+			using var stream = Open(index, out _);
+			if (_openFragmentProvider._record.Traits.HasFlag(StreamRecordTraits.IsNull))
+				return default;
+			var reader = new EndianBinaryReader(EndianBitConverter.For(_endianness), stream);
+			return serializer.Deserialize(_openFragmentProvider._record.Size, reader);
+		}
 
-		public Stream Open(int index, ClusteredStorageCachePolicy cachePolicy) {
+		public Stream Add() {
+			lock (_lock) {
+				CheckNotOpened();
+				AddRecord(out var index, CreateRecord());  // the first record add will allocate cluster 0 for the records stream
+				return Open(index, out _);
+			}
+		}
+
+		public Stream Open(int index) => Open(index, out _);
+
+		public Stream Open(int index, out TRecord record) {
 			CheckRecordIndex(index);
 			lock (_lock) {
 				CheckNotOpened();
-				_openFragmentProvider = new FragmentProvider(this, index, cachePolicy);
-				_openStream = new FragmentedStream(_openFragmentProvider).OnDispose(() => { _openStream = null; _openRecord = null; _openFragmentProvider = null; });
-				_openRecord = index;
+				_openFragmentProvider = new FragmentProvider(this, index);
+				_openStream = new FragmentedStream(_openFragmentProvider).OnDispose(() => { _openStream = null; _openRecordIndex = null; _openFragmentProvider = null; });
+				_openRecordIndex = index;
+				record = _openFragmentProvider._record;
 				return _openStream;
 			}
 		}
@@ -166,14 +223,12 @@ namespace Sphere10.Framework {
 			}
 		}
 
-		public Stream Insert(int index) => Insert(index, DefaultStreamPolicy);
-
-		public Stream Insert(int index, ClusteredStorageCachePolicy cachePolicy) {
+		public Stream Insert(int index) {
 			CheckRecordIndex(index, allowEnd: true);
 			lock (_lock) {
 				CheckNotOpened();
 				InsertRecord(index, CreateRecord());
-				return Open(index, cachePolicy);
+				return Open(index, out _);
 			}
 		}
 
@@ -260,11 +315,11 @@ namespace Sphere10.Framework {
 		protected abstract TRecord NewRecord();
 
 		private void UpdateRecord(int index, TRecord record, bool resetTrackingIfOpen = true) {
-			if (IntegrityChecks)
+			if (_integrityChecks)
 				CheckRecordIntegrity(index, record);
 
 			_records.Update(index, record);
-			if (resetTrackingIfOpen && _openRecord.HasValue && _openRecord.Value == index)
+			if (resetTrackingIfOpen && _openRecordIndex.HasValue && _openRecordIndex.Value == index)
 				_openFragmentProvider.Reset();
 		}
 
@@ -283,7 +338,7 @@ namespace Sphere10.Framework {
 
 		private TRecord GetRecord(int index) {
 			var record = _records.Read(index);
-			if (IntegrityChecks)
+			if (_integrityChecks)
 				CheckRecordIntegrity(index, record);
 			return record;
 		}
@@ -364,7 +419,7 @@ namespace Sphere10.Framework {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		private Cluster GetCluster(int clusterIndex) {
 			var cluster = _clusters[clusterIndex];
-			if (IntegrityChecks) {
+			if (_integrityChecks) {
 				CheckClusterTraits(clusterIndex, cluster.Traits);
 				CheckClusterIndex(cluster.Next);
 				if (!cluster.Traits.HasFlag(ClusterTraits.First | ClusterTraits.Data))
@@ -422,7 +477,7 @@ namespace Sphere10.Framework {
 		internal ClusterTraits FastReadClusterTraits(int clusterIndex) {
 			_clusters.ReadItemRaw(clusterIndex, 0, 1, out var bytes);
 			var traits = (ClusterTraits)bytes[0];
-			if (IntegrityChecks)
+			if (_integrityChecks)
 				CheckClusterTraits(clusterIndex, traits);
 			return traits;
 		}
@@ -436,7 +491,7 @@ namespace Sphere10.Framework {
 		internal int FastReadClusterPrev(int clusterIndex) {
 			_clusters.ReadItemRaw(clusterIndex, sizeof(byte), 4, out var bytes);
 			var prevCluster = _clusters.Reader.BitConverter.ToInt32(bytes);
-			if (IntegrityChecks)
+			if (_integrityChecks)
 				CheckLinkedCluster(clusterIndex, prevCluster);
 			return prevCluster;
 		}
@@ -450,7 +505,7 @@ namespace Sphere10.Framework {
 		private int FastReadClusterNext(int clusterIndex) {
 			_clusters.ReadItemRaw(clusterIndex, sizeof(byte) + sizeof(int), 4, out var bytes);
 			var nextValue = _clusters.Reader.BitConverter.ToInt32(bytes);
-			if (IntegrityChecks)
+			if (_integrityChecks)
 				CheckLinkedCluster(clusterIndex, nextValue);
 			return nextValue;
 		}
@@ -482,7 +537,7 @@ namespace Sphere10.Framework {
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		private void CheckRecordIndex(int index, string msg = null, bool allowEnd = false)
-			=> Guard.Argument(0 <= index && allowEnd ? index <= _records.Count : index < _records.Count, nameof(index), msg ?? "Index out of bounds");
+			=> Guard.CheckIndex(index, 0, _records.Count, allowEnd);
 
 		private void CheckRecordIntegrity(int index, TRecord record) {
 			if (record.Size == 0) {
@@ -571,26 +626,29 @@ namespace Sphere10.Framework {
 			private readonly ClusteredStorageBase<THeader, TRecord> _parent;
 			private readonly FragmentCache _fragmentCache;
 			private readonly ClusterDataType _clusterDataType;
+			private readonly int _recordIndex;
+			private readonly bool _enableCache;
 			private int _currentFragment;
 			private int _currentCluster;
-			private readonly int _recordIndex;
-			private TRecord _record;
+			internal TRecord _record;
 
-			public FragmentProvider(ClusteredStorageBase<THeader, TRecord> parent, ClusteredStorageCachePolicy cachePolicy)
-				: this(parent, ClusterDataType.Record, -1, cachePolicy) {
+			public FragmentProvider(ClusteredStorageBase<THeader, TRecord> parent)
+				: this(parent, ClusterDataType.Record, -1) {
 			}
 
-			public FragmentProvider(ClusteredStorageBase<THeader, TRecord> parent, int recordIndex, ClusteredStorageCachePolicy cachePolicy)
-				: this(parent, ClusterDataType.Stream, recordIndex, cachePolicy) {
+			public FragmentProvider(ClusteredStorageBase<THeader, TRecord> parent, int recordIndex)
+				: this(parent, ClusterDataType.Stream, recordIndex) {
 			}
 
-			private FragmentProvider(ClusteredStorageBase<THeader, TRecord> parent, ClusterDataType clusterDataType, int recordIndex, ClusteredStorageCachePolicy cachePolicy) {
+			private FragmentProvider(ClusteredStorageBase<THeader, TRecord> parent, ClusterDataType clusterDataType, int recordIndex) {
 				_parent = parent;
 				_clusterDataType = clusterDataType;
 				if (_clusterDataType == ClusterDataType.Stream)
 					Guard.ArgumentInRange(recordIndex, 0, _parent.Header.RecordsCount, nameof(recordIndex));
 				_recordIndex = recordIndex;
-				_fragmentCache = new FragmentCache(cachePolicy);
+				_fragmentCache = new FragmentCache();
+				_enableCache = clusterDataType == ClusterDataType.Record && parent.Policy.HasFlag(ClusteredStoragePolicy.CacheRecordClusters) ||
+				               clusterDataType == ClusterDataType.Stream && parent.Policy.HasFlag(ClusteredStoragePolicy.CacheOpenClusters);
 				Reset();
 			}
 
@@ -601,8 +659,6 @@ namespace Sphere10.Framework {
 			};
 
 			public int FragmentCount => (int)Math.Ceiling(TotalBytes / (float)_parent.ClusterSize);
-
-			public bool EnableCache => _fragmentCache.Policy != ClusteredStorageCachePolicy.None;
 
 			public ReadOnlySpan<byte> GetFragment(int index) {
 				Guard.ArgumentInRange(index, 0, FragmentCount - 1, nameof(index));
@@ -644,7 +700,7 @@ namespace Sphere10.Framework {
 						var newFragmentIX = _currentFragment + i + 1;
 						newClustersL.Add(newClusterIX);
 						newFragmentsL.Add(newFragmentIX);
-						if (EnableCache)
+						if (_enableCache)
 							_fragmentCache.SetCluster(newFragmentIX, newClusterIX);
 					}
 
@@ -707,7 +763,7 @@ namespace Sphere10.Framework {
 
 			internal void Reset() {
 				ResetClusterPointer();
-				if (EnableCache)
+				if (_enableCache)
 					_fragmentCache.Clear();
 			}
 
@@ -730,7 +786,7 @@ namespace Sphere10.Framework {
 			internal void InvalidateCluster(int cluster) {
 				if (cluster == _currentCluster /*|| (_record != null && _record.StartCluster == cluster)*/)
 					ResetClusterPointer();
-				if (EnableCache)
+				if (_enableCache)
 					_fragmentCache.InvalidateCluster(cluster);
 			}
 
@@ -759,7 +815,7 @@ namespace Sphere10.Framework {
 				if (_currentFragment == index)
 					return;
 
-				if (EnableCache && _fragmentCache.TryGetCluster(index, out var cluster)) {
+				if (_enableCache && _fragmentCache.TryGetCluster(index, out var cluster)) {
 					_currentFragment = index;
 					_currentCluster = cluster;
 					return;
@@ -787,9 +843,9 @@ namespace Sphere10.Framework {
 				_currentFragment--;
 				// note: _currentCluster still points to current at this point
 				var prevCluster = 0;
-				if (!(EnableCache && _fragmentCache.TryGetCluster(_currentFragment, out prevCluster))) {
+				if (!(_enableCache && _fragmentCache.TryGetCluster(_currentFragment, out prevCluster))) {
 					_currentCluster = _parent.FastReadClusterPrev(_currentCluster);
-					if (EnableCache)
+					if (_enableCache)
 						_fragmentCache.SetCluster(_currentFragment, _currentCluster);
 				} else _currentCluster = prevCluster;
 
@@ -800,7 +856,7 @@ namespace Sphere10.Framework {
 				if (_currentFragment < 0)
 					return false;
 
-				if (!(EnableCache && _fragmentCache.TryGetCluster(_currentFragment + 1, out var nextCluster))) {
+				if (!(_enableCache && _fragmentCache.TryGetCluster(_currentFragment + 1, out var nextCluster))) {
 					nextCluster = _parent.FastReadClusterNext(_currentCluster);
 				}
 
@@ -812,7 +868,7 @@ namespace Sphere10.Framework {
 
 				_currentFragment++;
 				_currentCluster = nextCluster;
-				if (EnableCache)
+				if (_enableCache)
 					_fragmentCache.SetCluster(_currentFragment, _currentCluster);
 				return true;
 			}
@@ -829,16 +885,10 @@ namespace Sphere10.Framework {
 			private readonly IDictionary<int, int> _fragmentToClusterMap;
 			private readonly IDictionary<int, int> _clusterToFragmentMap;
 
-			public FragmentCache(ClusteredStorageCachePolicy policy) {
-				if (policy == ClusteredStorageCachePolicy.Scan)
-					throw new NotSupportedException(policy.ToString());
-
+			public FragmentCache() {
 				_fragmentToClusterMap = new Dictionary<int, int>();
 				_clusterToFragmentMap = new Dictionary<int, int>();
-				Policy = policy;
 			}
-
-			public ClusteredStorageCachePolicy Policy { get; }
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			public bool TryGetCluster(int fragment, out int cluster) {

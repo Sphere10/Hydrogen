@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -21,6 +22,7 @@ namespace Sphere10.Framework {
 
 		public override bool TrySerialize(string item, EndianBinaryWriter writer, out int bytesWritten) {
 			var bytes = TextEncoding.GetBytes(item);
+			Debug.Assert(bytes.Length == CalculateSize(item));
 			writer.Write(bytes);
 			bytesWritten = bytes.Length;
 			return true;

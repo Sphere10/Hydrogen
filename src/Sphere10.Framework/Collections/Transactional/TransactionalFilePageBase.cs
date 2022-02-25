@@ -39,14 +39,14 @@ namespace Sphere10.Framework {
 
 		private void CreateUncommittedStream() {
 			Debug.Assert(File.Exists(UncommittedPageFileName), "Uncommitted page marker not created");
-
 			// create file marker
 
 			// Write source data into the uncommitted page marker.
 			// This marker is also the store for Uncommitted data.
 			// When created, it contains the original source data.
 			using (var readStream = OpenSourceReadStream())
-				File.WriteAllBytes(UncommittedPageFileName, readStream.ReadBytes((int)readStream.Length));
+			using (var uncommittedPageStream = File.Open(UncommittedPageFileName, FileMode.Truncate, FileAccess.Write))
+				Tools.Streams.RouteStream(readStream, uncommittedPageStream, readStream.Length, blockSizeInBytes: 262144); // 256k read blocks
 
 			HasUncommittedData = true;
 		}

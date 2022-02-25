@@ -53,6 +53,7 @@ namespace Sphere10.Framework {
 	    /// <remarks></remarks>
 	    protected override void Log(LogLevel level, string message) {
 	        try {
+		        _writer.Write($"[{level}] ");
 	            _writer.Write(message + Environment.NewLine);
 	        } catch {
 	            // errors do not propagate outside logging framework

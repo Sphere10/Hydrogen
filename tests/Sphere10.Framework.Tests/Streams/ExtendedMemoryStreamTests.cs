@@ -114,7 +114,7 @@ namespace Sphere10.Framework.Tests {
 				case InnerListType.TransactionalBinaryFile:
 					var baseDir = Tools.FileSystem.GetTempEmptyDirectory(true);
 					var fileName = Path.Combine(baseDir, "File.dat");
-					var transactionalBinaryFile = new TransactionalFileMappedBuffer(fileName, baseDir, pageSize, maxOpenPages*pageSize);
+					var transactionalBinaryFile = new TransactionalFileMappedBuffer(fileName, baseDir, pageSize, maxOpenPages*pageSize, autoLoad: true);
 					stream = new ExtendedMemoryStream(transactionalBinaryFile);
 					return new Disposables(new ActionScope(() => Tools.FileSystem.DeleteDirectory(baseDir)));
 				default:

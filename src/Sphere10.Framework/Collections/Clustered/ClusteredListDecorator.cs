@@ -16,6 +16,8 @@ namespace Sphere10.Framework {
 		public ClusteredListDecorator(TConcrete internalClusteredList) 
 			: base(internalClusteredList) {
 		}
+
+		public new IClusteredStorage<THeader, TRecord> Storage => InternalCollection.Storage;
 	}
 
 	public class ClusteredListDecorator<TItem, THeader, TRecord> : StreamPersistedListDecorator<TItem, THeader, TRecord, IClusteredList<TItem, THeader, TRecord>>

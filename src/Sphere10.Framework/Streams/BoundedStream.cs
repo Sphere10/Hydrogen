@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 namespace Sphere10.Framework {
 
 	/// <summary>
-	/// Ensures that all stream read/writes occur within a boundary of the stream. Also,
-	/// ensures the length of the stream cannot be changed.
+	/// Ensures that all stream read/writes occur within a boundary of a stream. This is used to protect segments of streams within the family <see cref="IFilePagedList{TItem}" /> collections.
 	/// </summary>
+	/// <remarks>A <see cref="BoundedStream"/> can EXCEEED the boundary of the underlying stream (ex: boundary from 0 - 99 but stream has only 1 byte).</remarks>
 	public class BoundedStream : StreamDecorator {
 
 		public BoundedStream(Stream innerStream, long minPosition, long maxPosition)
@@ -17,14 +17,14 @@ namespace Sphere10.Framework {
 			MinAbsolutePosition = minPosition;
 			MaxAbsolutePosition = maxPosition;
 			UseRelativeOffset = false;
-			AllowResize = true;
+			AllowInnerResize = true;
 		}
 
 		public long MinAbsolutePosition { get; }
 
 		public long MaxAbsolutePosition { get; }
 
-		public bool AllowResize { get; set; }
+		public bool AllowInnerResize { get; set; }
 
 		public override long Position {
 			get => FromAbsoluteOffset(AbsolutePosition); 
@@ -81,12 +81,18 @@ namespace Sphere10.Framework {
 		} 
 
 		public override void SetLength(long value) {
-			if (AllowResize)
+			if (AllowInnerResize)
 				InnerStream.SetLength(ToAbsoluteOffset(value));
 			else throw new NotSupportedException();
 		}
 
 		public override int Read(byte[] buffer, int offset, int count) {
+			// Special Case: when inner stream Position is at Tip just beyond current boundary and reading 0 bytes, 
+			// this is valid
+			if (count == 0)
+				return 0;
+
+
 			CheckRange(count);
 			return base.Read(buffer, offset, count);
 		}

@@ -14,32 +14,31 @@ namespace Sphere10.Framework.Tests {
 
 	[TestFixture]
 	[Parallelizable(ParallelScope.Children)]
-	public class ClusteredDictionaryTests : StreamPersistedCollectionTestsBase {
-		private const int DefaultStaticMaxBytesSize = 400 + 256;
-		private const int DefaultStaticMaxItems = 10;
+	public class ClusteredDictionaryTests : StreamPersistedTestsBase {
+		private const int EstimatedTestObjectSize = 400 + 256;
 		private const int DefaultClusterDataSize = 32;
 
 		[Test]
-		public void AddNothing([Values] StorageType storageType, [Values("alpha", "Unicode😊😊😊", "")] string key) {
+		public void AddNothing([Values] StorageType storageType, [ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy) {
 			var rng = new Random(31337);
-			using (CreateDictionary(DefaultStaticMaxBytesSize, DefaultStaticMaxItems, storageType, out var clusteredDictionary)) {
+			using (CreateDictionary(EstimatedTestObjectSize * 1, storageType, policy, out var clusteredDictionary)) {
 				Assert.That(clusteredDictionary.Count, Is.EqualTo(0));
 			}
 		}
 
 		[Test]
-		public void AddOne([Values] StorageType storageType, [Values("alpha", "Unicode😊😊😊", "")] string key) {
+		public void AddOne([Values] StorageType storageType, [ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy, [Values("alpha", "Unicode😊😊😊", "")] string key) {
 			var rng = new Random(31337);
-			using (CreateDictionary(DefaultStaticMaxBytesSize, DefaultStaticMaxItems, storageType, out var clusteredDictionary)) {
+			using (CreateDictionary(EstimatedTestObjectSize * 1, storageType, policy, out var clusteredDictionary)) {
 				clusteredDictionary.Add(key, new TestObject(rng));
 				Assert.That(clusteredDictionary.Count, Is.EqualTo(1));
 			}
 		}
 
 		[Test]
-		public void ReuseRecord([Values] StorageType storageType, [Values("alpha", "Unicode😊😊😊", "")] string key) {
+		public void ReuseRecord([Values] StorageType storageType, [ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy, [Values("alpha", "Unicode😊😊😊", "")] string key) {
 			var rng = new Random(31337);
-			using (CreateDictionary(DefaultStaticMaxBytesSize, DefaultStaticMaxItems, storageType, out var clusteredDictionary)) {
+			using (CreateDictionary(EstimatedTestObjectSize * 1, storageType, policy, out var clusteredDictionary)) {
 				clusteredDictionary.Add(key, new TestObject(rng));
 				clusteredDictionary.Remove(key);
 				clusteredDictionary.Add(key, new TestObject(rng));
@@ -48,9 +47,9 @@ namespace Sphere10.Framework.Tests {
 		}
 
 		[Test]
-		public void ContainsKey([Values] StorageType storageType, [Values("alpha", "Unicode😊😊😊", "")] string key) {
+		public void ContainsKey([Values] StorageType storageType, [ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy, [Values("alpha", "Unicode😊😊😊", "")] string key) {
 			var rng = new Random(31337);
-			using (CreateDictionary(DefaultStaticMaxBytesSize, DefaultStaticMaxItems, storageType, out var clusteredDictionary)) {
+			using (CreateDictionary(EstimatedTestObjectSize * 1, storageType, policy, out var clusteredDictionary)) {
 				clusteredDictionary.Add(key, new TestObject(rng));
 				Assert.That(clusteredDictionary.ContainsKey(key), Is.True);
 			}
@@ -58,9 +57,9 @@ namespace Sphere10.Framework.Tests {
 
 
 		[Test]
-		public void DoesNotContainKeyAfterRemove([Values] StorageType storageType, [Values("alpha", "Unicode😊😊😊", "")] string key) {
+		public void DoesNotContainKeyAfterRemove([Values] StorageType storageType, [ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy, [Values("alpha", "Unicode😊😊😊", "")] string key) {
 			var rng = new Random(31337);
-			using (CreateDictionary(DefaultStaticMaxBytesSize, DefaultStaticMaxItems, storageType, out var clusteredDictionary)) {
+			using (CreateDictionary(EstimatedTestObjectSize * 1, storageType, policy, out var clusteredDictionary)) {
 				clusteredDictionary.Add(key, new TestObject(rng));
 				clusteredDictionary.Remove(key);
 				Assert.That(clusteredDictionary.ContainsKey(key), Is.False);
@@ -69,9 +68,9 @@ namespace Sphere10.Framework.Tests {
 
 
 		[Test]
-		public void ContainsKeyValuePair([Values] StorageType storageType, [Values("alpha", "Unicode😊😊😊", "")] string key) {
+		public void ContainsKeyValuePair([Values] StorageType storageType, [ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy, [Values("alpha", "Unicode😊😊😊", "")] string key) {
 			var rng = new Random(31337);
-			using (CreateDictionary(DefaultStaticMaxBytesSize, DefaultStaticMaxItems, storageType, out var clusteredDictionary)) {
+			using (CreateDictionary(EstimatedTestObjectSize * 1, storageType, policy, out var clusteredDictionary)) {
 				var value = new TestObject(rng);
 				var kvp = KeyValuePair.Create(key, value);
 				clusteredDictionary.Add(kvp);
@@ -80,9 +79,9 @@ namespace Sphere10.Framework.Tests {
 		}
 
 		[Test]
-		public void DoesNotContainKeyValuePair_SameKeyDifferentValue([Values] StorageType storageType, [Values("alpha", "Unicode😊😊😊", "")] string key) {
+		public void DoesNotContainKeyValuePair_SameKeyDifferentValue([Values] StorageType storageType, [ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy, [Values("alpha", "Unicode😊😊😊", "")] string key) {
 			var rng = new Random(31337);
-			using (CreateDictionary(DefaultStaticMaxBytesSize, DefaultStaticMaxItems, storageType, out var clusteredDictionary)) {
+			using (CreateDictionary(EstimatedTestObjectSize * 1, storageType, policy, out var clusteredDictionary)) {
 				var value = new TestObject(rng);
 				var kvp = KeyValuePair.Create(key, value);
 				clusteredDictionary.Add(kvp);
@@ -92,9 +91,9 @@ namespace Sphere10.Framework.Tests {
 		}
 
 		[Test]
-		public void RemoveByKey([Values] StorageType storageType, [Values("alpha", "Unicode😊😊😊", "")] string key) {
+		public void RemoveByKey([Values] StorageType storageType, [ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy, [Values("alpha", "Unicode😊😊😊", "")] string key) {
 			var rng = new Random(31337);
-			using (CreateDictionary(DefaultStaticMaxBytesSize, DefaultStaticMaxItems, storageType, out var clusteredDictionary)) {
+			using (CreateDictionary(EstimatedTestObjectSize * 1, storageType, policy, out var clusteredDictionary)) {
 				clusteredDictionary.Add(key, new TestObject(rng));
 				clusteredDictionary.Remove(key);
 				Assert.That(clusteredDictionary.Count, Is.EqualTo(0));
@@ -102,19 +101,20 @@ namespace Sphere10.Framework.Tests {
 		}
 
 		[Test]
-		public void RemoveByKeyValuePair([Values] StorageType storageType, [Values("alpha", "Unicode😊😊😊", "")] string key) {
+		public void RemoveByKeyValuePair([Values] StorageType storageType, [ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy, [Values("alpha", "Unicode😊😊😊", "")] string key) {
 			var rng = new Random(31337);
-			using (CreateDictionary(DefaultStaticMaxBytesSize, DefaultStaticMaxItems, storageType, out var clusteredDictionary)) {
+			using (CreateDictionary(EstimatedTestObjectSize * 1, storageType, policy, out var clusteredDictionary)) {
 				clusteredDictionary.Add(key, new TestObject(rng));
 				clusteredDictionary.Remove(key);
 				Assert.That(clusteredDictionary.Count, Is.EqualTo(0));
 			}
 		}
 
+#if DEBUG
 		[Test]
-		public void IntegrationTests_Heavy([Values(StorageType.MemoryStream)] StorageType storageType, [Values(250)] int maxItems) {
+		public void IntegrationTests_Heavy([Values(StorageType.MemoryStream)] StorageType storageType, [ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy, [Values(250)] int maxItems) {
 			var keyGens = 0;
-			using (CreateDictionary(Tools.Memory.ToBytes(1, MemoryMetric.Megabyte), maxItems, storageType, out var clusteredDictionary)) {
+			using (CreateDictionary(EstimatedTestObjectSize * maxItems, storageType, policy, out var clusteredDictionary)) {
 				AssertEx.DictionaryIntegrationTest(
 					clusteredDictionary,
 					maxItems,
@@ -124,12 +124,12 @@ namespace Sphere10.Framework.Tests {
 				);
 			}
 		}
-
+#endif
 
 		[Test]
-		public void IntegrationTests([Values] StorageType storageType, [Values(23)] int maxItems) {
+		public void IntegrationTests([Values] StorageType storageType, [ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy, [Values(23)] int maxItems) {
 			var keyGens = 0;
-			using (CreateDictionary(Tools.Memory.ToBytes(1, MemoryMetric.Megabyte), maxItems, storageType, out var clusteredDictionary)) {
+			using (CreateDictionary(maxItems * EstimatedTestObjectSize, storageType, policy, out var clusteredDictionary)) {
 				AssertEx.DictionaryIntegrationTest(
 					clusteredDictionary,
 					maxItems,
@@ -140,12 +140,12 @@ namespace Sphere10.Framework.Tests {
 			}
 		}
 
-		protected IDisposable CreateDictionary(int staticMaxByteSize, int staticMaxItems, StorageType storageType, out ClusteredDictionary<string, TestObject> clusteredDictionary)
-			=> CreateDictionary(staticMaxByteSize, staticMaxItems, storageType, new StringSerializer(Encoding.UTF8), new TestObjectSerializer(), EqualityComparer<string>.Default, out clusteredDictionary);
+		protected IDisposable CreateDictionary(int estimatedMaxByteSize, StorageType storageType,  ClusteredStoragePolicy policy, out ClusteredDictionary<string, TestObject> clusteredDictionary)
+			=> CreateDictionary(estimatedMaxByteSize, storageType, policy, new StringSerializer(Encoding.UTF8), new TestObjectSerializer(), EqualityComparer<string>.Default, out clusteredDictionary);
 
-		protected IDisposable CreateDictionary<TKey, TValue>(int staticMaxByteSize, int staticMaxItems, StorageType storageType, IItemSerializer<TKey> keySerializer, IItemSerializer<TValue> valueSerializer, IEqualityComparer<TKey> keyComparer, out ClusteredDictionary<TKey, TValue> clusteredDictionary) {
-			var disposable = base.CreateStream(storageType, staticMaxByteSize, out var stream);
-			clusteredDictionary = new ClusteredDictionary<TKey, TValue>(stream, DefaultClusterDataSize, keySerializer, valueSerializer, keyComparer);
+		protected IDisposable CreateDictionary<TKey, TValue>(int estimatedMaxByteSize, StorageType storageType, ClusteredStoragePolicy policy, IItemSerializer<TKey> keySerializer, IItemSerializer<TValue> valueSerializer, IEqualityComparer<TKey> keyComparer, out ClusteredDictionary<TKey, TValue> clusteredDictionary) {
+			var disposable = base.CreateStream(storageType, estimatedMaxByteSize, out var stream);
+			clusteredDictionary = new ClusteredDictionary<TKey, TValue>(stream, DefaultClusterDataSize, keySerializer, valueSerializer, keyComparer, policy);
 			return disposable;
 		}
 

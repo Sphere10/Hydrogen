@@ -148,11 +148,15 @@ namespace Sphere10.Framework.Communications {
 		}
 
 		private void NotifyReceivedWebSocketMessage(WebSocketReceiveResult result) {
+SystemLog.Info("NotifyReceivedWebSocketMessage()");
+
 			OnReceivedWebSocketMessage(result);
 			ReceivedWebSocketMessage?.Invoke(result);
 		}
 
 		async static void DoHandshake(NetworkStream stream) {
+
+SystemLog.Info("DoHandshake()");
 
 			using (var memoryStream = new MemoryStream()) {
 				var size = 0;
@@ -169,6 +173,8 @@ namespace Sphere10.Framework.Communications {
 					SwitchHttpToWebSockets(array, stream);
 				}
 			}
+
+SystemLog.Info("End DoHandshake()");
 		}
 
 		static void SwitchHttpToWebSockets(byte[] bytes, Stream stream) {

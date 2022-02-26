@@ -60,7 +60,7 @@ public class MuSigBuilder {
 			throw new ArgumentNullException(nameof(publicKey));
 		}
 		if (!_publicKeys.Add(publicKey)) {
-			throw new ArgumentException("public key already added");
+			throw new ArgumentException($"public key {publicKey.ToHexString()} already added");
 		}
 	}
 
@@ -71,7 +71,9 @@ public class MuSigBuilder {
 		if (publicNonce == null) {
 			throw new ArgumentNullException(nameof(publicNonce));
 		}
-		_publicNonces.Add(publicKey, publicNonce);
+		if (!_publicNonces.TryAdd(publicKey, publicNonce)) {
+			throw new ArgumentException($"public key of pair {publicKey.ToHexString()} already added in {nameof(_publicNonces)}");
+		}
 	}
 
 	public void AddPartialSignature(byte[] publicKey, byte[] partialSignature) {
@@ -81,22 +83,22 @@ public class MuSigBuilder {
 		if (partialSignature == null) {
 			throw new ArgumentNullException(nameof(partialSignature));
 		}
-		_partialSignatures.Add(publicKey, partialSignature);
+		if (!_partialSignatures.TryAdd(publicKey, partialSignature)) {
+			throw new ArgumentException($"public key of pair {publicKey.ToHexString()} already added in {nameof(_partialSignatures)}");
+		}
 	}
 
 	public void VerifyPartialSignatures() {
 		if (_partialSignatures.Count != _publicKeys.Count) {
 			throw new InvalidOperationException("partial signature count must be equal to participant count");
 		}
-		foreach (var kvp in _partialSignatures) {
-			var publicKey = kvp.Key;
-			var partialSignature = Schnorr.BytesToBigIntPositive(kvp.Value);
+		foreach (var (publicKey, partialSignature) in _partialSignatures) {
 			var keyCoefficient = GetKeyAggregationCoefficient(publicKey);
 			var publicNonce = GetPublicNonce(publicKey);
-			if (!VerifyPartialSignature(_muSigSessionCache, keyCoefficient, publicKey, publicNonce, partialSignature)) {
+			if (!VerifyPartialSignature(_muSigSessionCache, keyCoefficient, publicKey, publicNonce, Schnorr.BytesToBigIntPositive(partialSignature))) {
 				throw new InvalidOperationException($"partial signature verification of participant (publicKey: {publicKey.ToHexString()}) failed");
 			}
-		};
+		}
 	}
 
 	public MuSigData BuildAggregatedSignature() {
@@ -132,7 +134,9 @@ public class MuSigBuilder {
 			var keyAggregationCoefficient = _muSig.ComputeKeyAggregationCoefficient(publicKeysHash,
 				publicKey,
 				secondPublicKey);
-			_keyAggregationCoefficients.Add(publicKey, keyAggregationCoefficient);
+			if (!_keyAggregationCoefficients.TryAdd(publicKey, keyAggregationCoefficient)) {
+				throw new ArgumentException($"public key of pair {publicKey.ToHexString()} already added in {nameof(_keyAggregationCoefficients)}");
+			}
 		}
 	}
 

@@ -72,7 +72,7 @@ public class MuSigBuilder {
 			throw new ArgumentNullException(nameof(publicNonce));
 		}
 		if (!_publicNonces.TryAdd(publicKey, publicNonce)) {
-			throw new ArgumentException($"public key of pair {publicKey.ToHexString()} already added in {nameof(_publicNonces)}");
+			throw new ArgumentException($"public key {publicKey.ToHexString()} of pair already added in {nameof(_publicNonces)}");
 		}
 	}
 
@@ -84,7 +84,7 @@ public class MuSigBuilder {
 			throw new ArgumentNullException(nameof(partialSignature));
 		}
 		if (!_partialSignatures.TryAdd(publicKey, partialSignature)) {
-			throw new ArgumentException($"public key of pair {publicKey.ToHexString()} already added in {nameof(_partialSignatures)}");
+			throw new ArgumentException($"public key {publicKey.ToHexString()} of pair already added in {nameof(_partialSignatures)}");
 		}
 	}
 
@@ -135,7 +135,7 @@ public class MuSigBuilder {
 				publicKey,
 				secondPublicKey);
 			if (!_keyAggregationCoefficients.TryAdd(publicKey, keyAggregationCoefficient)) {
-				throw new ArgumentException($"public key of pair {publicKey.ToHexString()} already added in {nameof(_keyAggregationCoefficients)}");
+				throw new ArgumentException($"public key {publicKey.ToHexString()} of pair already added in {nameof(_keyAggregationCoefficients)}");
 			}
 		}
 	}

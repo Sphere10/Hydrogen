@@ -6,6 +6,8 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Org.BouncyCastle.Crypto.Parameters;
+using Org.BouncyCastle.Security;
 
 namespace Sphere10.Framework.CryptoEx.Tests
 {
@@ -24,7 +26,12 @@ namespace Sphere10.Framework.CryptoEx.Tests
                 .Select(s => s[rng.Next(s.Length)]).ToArray());
         }
 
-        private static BigInteger[] DerSig_To_R_And_S(byte[] derSig)
+        private static bool IsLowS(BigInteger order, BigInteger s)
+        {
+            return s.CompareTo(order.ShiftRight(1)) <= 0;
+        }
+
+        public static BigInteger[] DerSig_To_R_And_S(byte[] derSig)
         {
             if (derSig == null)
             {
@@ -67,14 +74,15 @@ namespace Sphere10.Framework.CryptoEx.Tests
             return outStream.ToArray();
         }
 
-        // TrickSig uses a given valid signature (r, s) over a message hash
-        // to calculate another valid signature over the same message hash as (r, -s mod n)
-        // where n is the curve order i.e. the order of the base point
-        private static byte[] TrickSig(BigInteger order, byte[] sig)
+        public static byte[] CanonicalizeSig(BigInteger order, byte[] sig)
         {
             var rs = DerSig_To_R_And_S(sig);
-            rs[1] = rs[1].Negate().Mod(order);
-            return R_And_S_To_DerSig(rs);
+            if (!IsLowS(order, rs[1]))
+            {
+                rs[1] = order.Subtract(rs[1]);
+                return R_And_S_To_DerSig(rs);
+            }
+            return sig;
         }
 
         [Test, Repeat(64)]
@@ -131,16 +139,45 @@ namespace Sphere10.Framework.CryptoEx.Tests
         [TestCase(ECDSAKeyType.SECT283K1)]
         public void TestSignatureMalleability(ECDSAKeyType keyType)
         {
-            var ecdsa = new ECDSA(keyType);
+            var ecdsaNoMalleability = new ECDSA(keyType);
             var secret = new byte[] { 0, 1, 2, 3, 4 }; // deterministic secret
-            var privateKey = ecdsa.GeneratePrivateKey(secret);
-            var publicKey = ecdsa.DerivePublicKey(privateKey);
-            var message = Encoding.ASCII.GetBytes("The quick brown fox jumps over the lazy dog");
-            var sig = ecdsa.Sign(privateKey, message);
-            Assert.IsTrue(ecdsa.Verify(sig, message, publicKey));
+            var privateKey = ecdsaNoMalleability.GeneratePrivateKey(secret);
+            var publicKey = ecdsaNoMalleability.DerivePublicKey(privateKey);
+            var messageDigest = Hashers.Hash(CHF.SHA2_256,
+                Encoding.ASCII.GetBytes("The quick brown fox jumps over the lazy dog"));
+
             var order = privateKey.Parameters.Value.Parameters.Curve.Order;
-            var trickedSig = TrickSig(order, sig);
-            Assert.IsFalse(ecdsa.Verify(trickedSig, message, publicKey));
+
+            var ecdsaAllowMalleability = SignerUtilities.GetSigner("NONEwithECDSA");
+
+            var secureRandom = new SecureRandom();
+            byte[] ecdsaAllowMalleabilitySig;
+            BigInteger[] sig;
+            // generate a "High S" signature
+            do
+            {
+                var parametersWithRandom = new ParametersWithRandom(privateKey.Parameters.Value, secureRandom);
+                ecdsaAllowMalleability.Init(true, parametersWithRandom);
+                ecdsaAllowMalleability.BlockUpdate(messageDigest, 0, messageDigest.Length);
+
+                ecdsaAllowMalleabilitySig = ecdsaAllowMalleability.GenerateSignature();
+                sig = DerSig_To_R_And_S(ecdsaAllowMalleabilitySig);
+            } while (IsLowS(order, sig[1]));
+
+            var canonicalSig = CanonicalizeSig(order, ecdsaAllowMalleabilitySig);
+
+            // normal ECDSA should be able to verify both the OriginalSig and CanonicalSig
+            ecdsaAllowMalleability.Init(false, publicKey.Parameters.Value);
+            ecdsaAllowMalleability.BlockUpdate(messageDigest, 0, messageDigest.Length);
+            Assert.IsTrue(ecdsaAllowMalleability.VerifySignature(ecdsaAllowMalleabilitySig));
+
+            ecdsaAllowMalleability.Init(false, publicKey.Parameters.Value);
+            ecdsaAllowMalleability.BlockUpdate(messageDigest, 0, messageDigest.Length);
+            Assert.IsTrue(ecdsaAllowMalleability.VerifySignature(canonicalSig));
+
+            // our LowS ECDSA should be able to verify only the CanonicalSig
+            Assert.IsFalse(ecdsaNoMalleability.VerifyDigest(ecdsaAllowMalleabilitySig, messageDigest, publicKey));
+            Assert.IsTrue(ecdsaNoMalleability.VerifyDigest(canonicalSig, messageDigest, publicKey));
         }
     }
 }

@@ -56,7 +56,10 @@ public class CustomEcDsaSigner : ECDsaSigner {
 	}
 
 	public override bool VerifySignature(byte[] message, BigInteger r, BigInteger s) {
-		return s.CompareTo(HalfCurveOrder) <= 0 && base.VerifySignature(message, r, s);
+		if (s.CompareTo(HalfCurveOrder) > 0) {
+			return false;
+		}
+		return base.VerifySignature(message, r, s);
 	}
 
 

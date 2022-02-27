@@ -57,6 +57,7 @@ namespace Sphere10.Framework {
 			Storage.SaveItem(Storage.Count, item, ItemSerializer, ListOperationType.Add);
 			UpdateVersion();
 		}
+		
 		public override void Insert(int index, TItem item) {
 			// Index checking deferred to Storage
 			Storage.SaveItem(index, item, ItemSerializer, ListOperationType.Insert);

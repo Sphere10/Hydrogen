@@ -54,6 +54,7 @@ namespace Sphere10.Framework {
 		private readonly FragmentProvider _recordsFragmentProvider;
 		private readonly PreAllocatedList<TRecord> _records;
 		private int? _openRecordIndex;
+		private TRecord _openRecord;
 		private FragmentProvider _openFragmentProvider;
 		private Stream _openStream;
 		private readonly Endianness _endianness;
@@ -90,7 +91,7 @@ namespace Sphere10.Framework {
 				_clusters.Load();
 
 			// Records are stored in record 0 as StreamPagedList (single page, statically sized items) which maps over the fragmented stream 
-			_recordsFragmentProvider = new FragmentProvider(this);
+			_recordsFragmentProvider = new FragmentProvider(this, ClusterDataType.Record);
 			var recordStorage = new StreamPagedList<TRecord>(
 				recordSerializer,
 				new FragmentedStream(_recordsFragmentProvider, Header.RecordsCount * recordSerializer.StaticSize),
@@ -142,7 +143,6 @@ namespace Sphere10.Framework {
 			return Records[index].Traits.HasFlag(StreamRecordTraits.IsNull);
 		}
 
-
 		public void SaveItem<TItem>(int index, TItem item, IItemSerializer<TItem> serializer, ListOperationType operationType) {
 			using var stream = operationType switch {
 				ListOperationType.Add => Add(),
@@ -152,7 +152,7 @@ namespace Sphere10.Framework {
 			};
 			var writer = new EndianBinaryWriter(EndianBitConverter.For(_endianness), stream);
 			if (item != null) {
-				_openFragmentProvider._record.Traits = _openFragmentProvider._record.Traits.CopyAndSetFlags(StreamRecordTraits.IsNull, false);
+				_openRecord.Traits = _openRecord.Traits.CopyAndSetFlags(StreamRecordTraits.IsNull, false);
 				if (_preAllocateOptimization) {
 					// pre-setting the stream length before serialization improves performance since it avoids
 					// re-allocating fragmented stream on individual properties of the serialized item
@@ -176,18 +176,23 @@ namespace Sphere10.Framework {
 					}
 					stream.SetLength(stream.Position);
 				}
+
 			} else {
-				_openFragmentProvider._record.Traits = _openFragmentProvider._record.Traits.CopyAndSetFlags(StreamRecordTraits.IsNull, true);
-				stream.SetLength(0);
+				_openRecord.Traits = _openRecord.Traits.CopyAndSetFlags(StreamRecordTraits.IsNull, true);
+				stream.SetLength(0); // open record will save when closed
 			}
+		}
+
+		protected virtual void SaveItemInternal<TItem>(int index, TItem item, IItemSerializer<TItem> serializer, ListOperationType operationType) {
+
 		}
 
 		public TItem LoadItem<TItem>(int index, IItemSerializer<TItem> serializer) {
 			using var stream = Open(index, out _);
-			if (_openFragmentProvider._record.Traits.HasFlag(StreamRecordTraits.IsNull))
+			if (_openRecord.Traits.HasFlag(StreamRecordTraits.IsNull))
 				return default;
 			var reader = new EndianBinaryReader(EndianBitConverter.For(_endianness), stream);
-			return serializer.Deserialize(_openFragmentProvider._record.Size, reader);
+			return serializer.Deserialize(_openRecord.Size, reader);
 		}
 
 		public Stream Add() {
@@ -204,10 +209,18 @@ namespace Sphere10.Framework {
 			CheckRecordIndex(index);
 			lock (_lock) {
 				CheckNotOpened();
-				_openFragmentProvider = new FragmentProvider(this, index);
-				_openStream = new FragmentedStream(_openFragmentProvider).OnDispose(() => { _openStream = null; _openRecordIndex = null; _openFragmentProvider = null; });
+				_openRecord = GetRecord(index);
 				_openRecordIndex = index;
-				record = _openFragmentProvider._record;
+				_openFragmentProvider = new FragmentProvider(this, ClusterDataType.Stream);
+				_openStream = new FragmentedStream(_openFragmentProvider).OnDispose(() => {
+					UpdateRecord(_openRecordIndex.Value, _openRecord, false);
+					_openStream = null; 
+					_openRecordIndex = null;
+					_openRecord = default;
+					_openFragmentProvider = null;
+				});
+				
+				record = _openRecord;
 				return _openStream;
 			}
 		}
@@ -319,8 +332,11 @@ namespace Sphere10.Framework {
 				CheckRecordIntegrity(index, record);
 
 			_records.Update(index, record);
-			if (resetTrackingIfOpen && _openRecordIndex.HasValue && _openRecordIndex.Value == index)
-				_openFragmentProvider.Reset();
+			if (_openRecordIndex == index) {
+				_openRecord = record;
+				if (resetTrackingIfOpen)
+					_openFragmentProvider.Reset();
+			}
 		}
 
 		// This is the interface implementation of UpdateRecord (used by friendly classes)
@@ -337,6 +353,9 @@ namespace Sphere10.Framework {
 		}
 
 		private TRecord GetRecord(int index) {
+			if (index == _openRecordIndex)
+				return _openRecord;
+
 			var record = _records.Read(index);
 			if (_integrityChecks)
 				CheckRecordIntegrity(index, record);
@@ -598,7 +617,7 @@ namespace Sphere10.Framework {
 			if (tipCluster.Traits.HasFlag(ClusterTraits.First)) {
 				var recordIndex = tipCluster.Prev; // convention, Prev points to Record index in first cluster of BLOB
 				if (recordIndex < _records.Count) {
-					var updatedRecord = _records[recordIndex];
+					var updatedRecord = GetRecord(recordIndex);
 					updatedRecord.StartCluster = to;
 					UpdateRecord(recordIndex, updatedRecord);
 				}
@@ -626,35 +645,28 @@ namespace Sphere10.Framework {
 			private readonly ClusteredStorageBase<THeader, TRecord> _parent;
 			private readonly FragmentCache _fragmentCache;
 			private readonly ClusterDataType _clusterDataType;
-			private readonly int _recordIndex;
 			private readonly bool _enableCache;
 			private int _currentFragment;
 			private int _currentCluster;
-			internal TRecord _record;
 
-			public FragmentProvider(ClusteredStorageBase<THeader, TRecord> parent)
-				: this(parent, ClusterDataType.Record, -1) {
-			}
 
-			public FragmentProvider(ClusteredStorageBase<THeader, TRecord> parent, int recordIndex)
-				: this(parent, ClusterDataType.Stream, recordIndex) {
-			}
-
-			private FragmentProvider(ClusteredStorageBase<THeader, TRecord> parent, ClusterDataType clusterDataType, int recordIndex) {
+			public FragmentProvider(ClusteredStorageBase<THeader, TRecord> parent, ClusterDataType clusterDataType) {
 				_parent = parent;
+				if (clusterDataType == ClusterDataType.Stream) {
+					Guard.Ensure(_parent._openRecordIndex != null, "[Internal Error] CB25E684A5974382B37A76BF3FAEFC12");
+					Guard.Ensure(_parent._openRecord != null, "[Internal Error] 8A67D72D333C4429B37BDBD663B63763");
+				}
 				_clusterDataType = clusterDataType;
-				if (_clusterDataType == ClusterDataType.Stream)
-					Guard.ArgumentInRange(recordIndex, 0, _parent.Header.RecordsCount, nameof(recordIndex));
-				_recordIndex = recordIndex;
 				_fragmentCache = new FragmentCache();
 				_enableCache = clusterDataType == ClusterDataType.Record && parent.Policy.HasFlag(ClusteredStoragePolicy.CacheRecordClusters) ||
 				               clusterDataType == ClusterDataType.Stream && parent.Policy.HasFlag(ClusteredStoragePolicy.CacheOpenClusters);
 				Reset();
+				
 			}
 
 			public long TotalBytes => _clusterDataType switch {
 				ClusterDataType.Record => _parent.AllRecordsSize,
-				ClusterDataType.Stream => _record.Size,
+				ClusterDataType.Stream => _parent._openRecord.Size,
 				_ => throw new ArgumentOutOfRangeException()
 			};
 
@@ -693,7 +705,7 @@ namespace Sphere10.Framework {
 					// Fast Implementation, adds clusters in range
 					var newClusters = newTotalClusters - currentTotalClusters;
 					var needsFirstCluster = currentTotalClusters == 0;
-					_parent.AllocateNextClusters(_clusterDataType, _recordIndex, _currentCluster, newClusters, needsFirstCluster, out var newStartIX);
+					_parent.AllocateNextClusters(_clusterDataType, _parent._openRecordIndex.GetValueOrDefault(-1), _currentCluster, newClusters, needsFirstCluster, out var newStartIX);
 					
 					for (var i = 0; i < newClusters; i++) {
 						var newClusterIX = newStartIX + i;
@@ -746,12 +758,11 @@ namespace Sphere10.Framework {
 
 				// Update record if applicable
 				if (_clusterDataType == ClusterDataType.Stream) {
-					_record.Size = (int)length;
-					if (_record.Size == 0)
-						_record.StartCluster = -1;
+					_parent._openRecord.Size = (int)length;
+					if (_parent._openRecord.Size == 0)
+						_parent._openRecord.StartCluster = -1;
 					if (oldTotalClusters == 0 && newTotalClusters > 0)
-						_record.StartCluster = newClustersL[0];
-					_parent.UpdateRecord(_recordIndex, _record, false);
+						_parent._openRecord.StartCluster = newClustersL[0];
 				} else {
 					_parent.AllRecordsSize = (int)length;
 				}
@@ -774,9 +785,8 @@ namespace Sphere10.Framework {
 						_currentCluster = _parent.Header.RecordsCount > 0 && _parent.Header.TotalClusters > 0 ? 0 : -1;
 						break;
 					case ClusterDataType.Stream:
-						_record = _parent.GetRecord(_recordIndex);
-						_currentFragment = _record.StartCluster > 0 ? 0 : -1;
-						_currentCluster = _record.StartCluster > 0 ? _record.StartCluster : -1;
+						_currentFragment = _parent._openRecord.StartCluster > 0 ? 0 : -1;
+						_currentCluster = _parent._openRecord.StartCluster > 0 ? _parent._openRecord.StartCluster : -1;
 						break;
 					default:
 						throw new ArgumentOutOfRangeException();
@@ -793,7 +803,7 @@ namespace Sphere10.Framework {
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			private bool IsStartCluster(int cluster) => _clusterDataType switch {
 				ClusterDataType.Record => cluster == 0,
-				ClusterDataType.Stream => cluster == _record.StartCluster,
+				ClusterDataType.Stream => cluster == _parent._openRecord.StartCluster,
 				_ => throw new NotSupportedException($"{_clusterDataType}")
 			};
 

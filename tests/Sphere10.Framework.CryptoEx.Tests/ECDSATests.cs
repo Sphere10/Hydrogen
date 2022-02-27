@@ -74,7 +74,6 @@ namespace Sphere10.Framework.CryptoEx.Tests
         {
             var rs = DerSig_To_R_And_S(sig);
             rs[1] = rs[1].Negate().Mod(order);
-            //rs[1] = order.Subtract(rs[1]);
             return R_And_S_To_DerSig(rs);
         }
 

@@ -81,7 +81,6 @@ namespace Sphere10.Framework.CryptoEx.EC {
 		}
 
 		public override byte[] SignDigest(PrivateKey privateKey, ReadOnlySpan<byte> messageDigest) {
-			//var signer = SignerUtilities.GetSigner("NONEwithECDSA");
 			var signer = CustomEcDsaSigner.GetRfc6979DeterministicSigner();
 			var parametersWithRandom = new ParametersWithRandom(privateKey.Parameters.Value, _secureRandom);
 			signer.Init(true, parametersWithRandom);
@@ -92,7 +91,6 @@ namespace Sphere10.Framework.CryptoEx.EC {
 		public override bool VerifyDigest(ReadOnlySpan<byte> signature, ReadOnlySpan<byte> messageDigest, ReadOnlySpan<byte> publicKey) {
 			if (!TryParsePublicKey(publicKey, out var pubKey))
 				return false;
-			//var signer = SignerUtilities.GetSigner("NONEwithECDSA");
 			var signer = CustomEcDsaSigner.GetRfc6979DeterministicSigner();
 			signer.Init(false, pubKey.Parameters.Value);
 			signer.BlockUpdate(messageDigest.ToArray(), 0, messageDigest.Length);

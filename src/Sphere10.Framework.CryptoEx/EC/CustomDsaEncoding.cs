@@ -16,7 +16,6 @@ public class CustomDsaEncoding : StandardDsaEncoding {
 	/// </summary>
 	private static BigInteger MakeSCanonical(BigInteger order, BigInteger s) {
 		return IsLowS(order, s) ? s : s.Negate().Mod(order);
-		//return IsLowS(order, s) ? s : order.Subtract(s);
 	}
 	public CustomDsaEncoding(bool forceLowS = true) {
 		ForceLowS = forceLowS;

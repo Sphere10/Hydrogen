@@ -81,21 +81,23 @@ namespace Sphere10.Framework.CryptoEx.EC {
 		}
 
 		public override byte[] SignDigest(PrivateKey privateKey, ReadOnlySpan<byte> messageDigest) {
-			var signer = SignerUtilities.GetSigner("NONEwithECDSA");
+			//var signer = SignerUtilities.GetSigner("NONEwithECDSA");
+			var signer = CustomEcDsaSigner.GetRfc6979DeterministicSigner();
 			var parametersWithRandom = new ParametersWithRandom(privateKey.Parameters.Value, _secureRandom);
 			signer.Init(true, parametersWithRandom);
 			signer.BlockUpdate(messageDigest.ToArray(), 0, messageDigest.Length);
 			return signer.GenerateSignature();
 		}
 
-		public override bool VerifyDigest(ReadOnlySpan<byte> signature, ReadOnlySpan<byte> messageDigest, ReadOnlySpan<byte> publicKey) { 
+		public override bool VerifyDigest(ReadOnlySpan<byte> signature, ReadOnlySpan<byte> messageDigest, ReadOnlySpan<byte> publicKey) {
 			if (!TryParsePublicKey(publicKey, out var pubKey))
 				return false;
-			var signer = SignerUtilities.GetSigner("NONEwithECDSA");
+			//var signer = SignerUtilities.GetSigner("NONEwithECDSA");
+			var signer = CustomEcDsaSigner.GetRfc6979DeterministicSigner();
 			signer.Init(false, pubKey.Parameters.Value);
 			signer.BlockUpdate(messageDigest.ToArray(), 0, messageDigest.Length);
 			return signer.VerifySignature(signature.ToArray());
-		} 
+		}
 
 
 		public abstract class Key : IKey {
@@ -136,7 +138,7 @@ namespace Sphere10.Framework.CryptoEx.EC {
 
 		public class PrivateKey : Key, IPrivateKey {
 			public PrivateKey(byte[] rawKeyBytes, ECDSAKeyType keyType, X9ECParameters curveParams, ECDomainParameters domainParams) : base(rawKeyBytes, keyType, curveParams, domainParams) {
-				Parameters = Tools.Values.LazyLoad( () => new ECPrivateKeyParameters("ECDSA", AsInteger.Value, DomainParams));
+				Parameters = Tools.Values.LazyLoad(() => new ECPrivateKeyParameters("ECDSA", AsInteger.Value, DomainParams));
 			}
 
 			public IFuture<ECPrivateKeyParameters> Parameters { get; }

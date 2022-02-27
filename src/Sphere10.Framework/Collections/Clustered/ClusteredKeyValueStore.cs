@@ -27,23 +27,18 @@ public class ClusteredKeyValueStore<TKey, THeader, TRecord> : ClusteredList<KeyV
 	public TKey ReadKey(int index) {
         if (Storage.IsNull(index))
             throw new InvalidOperationException($"Stream record {index} is null");
-        using (var stream = Storage.Open(index, out var record))
-        {
-            var reader = new EndianBinaryReader(EndianBitConverter.For(Endianness), stream);
-            return ((KeyValuePairSerializer<TKey, byte[]>)ItemSerializer).DeserializeKey(record.Size, reader);
-        }
-    }
+        using var stream = Storage.Open(index, out var record);
+        var reader = new EndianBinaryReader(EndianBitConverter.For(Endianness), stream);
+        return ((KeyValuePairSerializer<TKey, byte[]>)ItemSerializer).DeserializeKey(record.Size, reader);
+	}
 		
 
 	public byte[] ReadValue(int index) {
         if (Storage.IsNull(index))
 			throw new InvalidOperationException($"Stream record {index} is null");
-
-		using (var stream = Storage.Open(index, out var record))
-        {
-            var reader = new EndianBinaryReader(EndianBitConverter.For(Endianness), stream);
-            return ((KeyValuePairSerializer<TKey, byte[]>)ItemSerializer).DeserializeValue(record.Size, reader);
-        }
-    }
+        using var stream = Storage.Open(index, out var record);
+        var reader = new EndianBinaryReader(EndianBitConverter.For(Endianness), stream);
+        return ((KeyValuePairSerializer<TKey, byte[]>)ItemSerializer).DeserializeValue(record.Size, reader);
+	}
 
 }

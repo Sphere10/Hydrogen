@@ -58,13 +58,13 @@ namespace Sphere10.Framework {
 		public override ICollection<TValue> Values
 			=> _kvpStore
 				  .Where((_, i) => !IsUnusedRecord(i))
-				  .Select(kvp => DeserializeValue(kvp.Value))
+				  .Select(kvp => ConvertValueFromBytes(kvp.Value))
 				  .ToList();
 
 		protected IEnumerable<KeyValuePair<TKey, TValue>> KeyValuePairs =>
 			_kvpStore
 				.Where((_, i) => !IsUnusedRecord(i))
-				.Select(kvp => new KeyValuePair<TKey, TValue>(kvp.Key, DeserializeValue(kvp.Value)));
+				.Select(kvp => new KeyValuePair<TKey, TValue>(kvp.Key, ConvertValueFromBytes(kvp.Value)));
 
 		public bool RequiresLoad { get; private set; }
 
@@ -76,7 +76,7 @@ namespace Sphere10.Framework {
 		public override void Add(TKey key, TValue value) {
 			Guard.ArgumentNotNull(key, nameof(key));
 			CheckLoaded();
-			var newBytes = SerializeValue(value);
+			var newBytes = ConvertValueToBytes(value);
 			var newStorageKVP = new KeyValuePair<TKey, byte[]>(key, newBytes);
 			if (TryFindKey(key, out var index)) {
 				UpdateInternal(index, newStorageKVP);
@@ -120,7 +120,7 @@ namespace Sphere10.Framework {
 			Guard.ArgumentNotNull(key, nameof(key));
 			CheckLoaded();
 			if (TryFindValue(key, out _, out var valueBytes)) {
-				value = DeserializeValue(valueBytes);
+				value = ConvertValueFromBytes(valueBytes);
 				return true;
 			}
 			value = default;
@@ -131,7 +131,7 @@ namespace Sphere10.Framework {
 			Guard.ArgumentNotNull(item, nameof(item));
 			Guard.ArgumentNotNull(item, nameof(item));
 			CheckLoaded();
-			var newBytes = SerializeValue(item.Value);
+			var newBytes = ConvertValueToBytes(item.Value);
 			var newStorageKVP = new KeyValuePair<TKey, byte[]>(item.Key, newBytes);
 			if (TryFindKVP(item.Key, out var index, out _)) {
 				_kvpStore.Update(index, newStorageKVP);
@@ -144,7 +144,7 @@ namespace Sphere10.Framework {
 			Guard.ArgumentNotNull(item, nameof(item));
 			CheckLoaded();
 			if (TryFindKVP(item.Key, out var index, out var kvpValueBytes)) {
-				var serializedValue = SerializeValue(item.Value);
+				var serializedValue = ConvertValueToBytes(item.Value);
 				if (ByteArrayEqualityComparer.Instance.Equals(serializedValue, kvpValueBytes)) {
 					RemoveInternal(item.Key, index);
 					return true;
@@ -158,7 +158,7 @@ namespace Sphere10.Framework {
 			CheckLoaded();
 			if (!TryFindKVP(item.Key, out _, out var valueBytes))
 				return false;
-			var itemValueBytes = SerializeValue(item.Value);
+			var itemValueBytes = ConvertValueToBytes(item.Value);
 			return ByteArrayEqualityComparer.Instance.Equals(valueBytes, itemValueBytes);
 		}
 
@@ -183,7 +183,7 @@ namespace Sphere10.Framework {
 			CheckLoaded();
 			return _kvpStore
 			  .Where((_, i) => !_unusedRecords.Contains(i))
-			  .Select(storageKVP => new KeyValuePair<TKey, TValue>(storageKVP.Key, DeserializeValue(storageKVP.Value)))
+			  .Select(storageKVP => new KeyValuePair<TKey, TValue>(storageKVP.Key, ConvertValueFromBytes(storageKVP.Value)))
 			  .GetEnumerator();
 		}
 
@@ -286,12 +286,10 @@ namespace Sphere10.Framework {
 			_checksumToIndexLookup.Add(record.KeyChecksum, index);
 		}
 
-		// TODO replace SerializeValue with stream-direct approach
-		private byte[] SerializeValue(TValue value)
+		private byte[] ConvertValueToBytes(TValue value)
 			=> value != null ? _valueSerializer.Serialize(value, _endianness) : null;
 
-		// TODO replace DeserializeValue with stream-direct approach
-		private TValue DeserializeValue(byte[] valueBytes)
+		private TValue ConvertValueFromBytes(byte[] valueBytes)
 			=> valueBytes != null ? _valueSerializer.Deserialize(valueBytes, _endianness) : default;
 
 		private int CalculateKeyChecksum(TKey key)

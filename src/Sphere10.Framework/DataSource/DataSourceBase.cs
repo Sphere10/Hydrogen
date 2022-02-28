@@ -4,13 +4,16 @@ using System.Threading.Tasks;
 
 namespace Sphere10.Framework {
 	public abstract class DataSourceBase<TItem> : IDataSource<TItem> {
-		public event EventHandlerEx<IEnumerable<CrudActionItem<TItem>>> MutatedItems;
+
+		public event EventHandlerEx<DataSourceMutatedItems<TItem>> MutatedItems;
 
 		public abstract IEnumerable<TItem> New(int count);
 
 		public abstract Task Create(IEnumerable<TItem> entities);
 
 		public abstract Task<IEnumerable<TItem>> Read(string searchTerm, int pageLength, ref int page, string sortProperty, SortDirection sortDirection, out int totalItems);
+		public abstract IEnumerable<TItem> ReadSync(string searchTerm, int pageLength, ref int page, string sortProperty, SortDirection sortDirection, out int totalItems);
+
 
 		public abstract Task Refresh(TItem[] entities);
 
@@ -29,6 +32,9 @@ namespace Sphere10.Framework {
 		}
 
 		Task<IEnumerable<TItem>> IDataSource<TItem>.Read(string searchTerm, int pageLength, ref int page, string sortProperty, SortDirection sortDirection, out int totalItems) {
+			throw new NotImplementedException();
+		}
+		IEnumerable<TItem> IDataSource<TItem>.ReadSync(string searchTerm, int pageLength, ref int page, string sortProperty, SortDirection sortDirection, out int totalItems) {
 			throw new NotImplementedException();
 		}
 

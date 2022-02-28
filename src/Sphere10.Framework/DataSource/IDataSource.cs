@@ -18,13 +18,14 @@ using System.Threading.Tasks;
 namespace Sphere10.Framework {
 	public interface IDataSource<TItem> {
 
-		public event EventHandlerEx<IEnumerable<CrudActionItem<TItem>>> MutatedItems;
+		public event EventHandlerEx<DataSourceMutatedItems<TItem>> MutatedItems;
 
 		IEnumerable<TItem> New(int count);
 
 		Task Create(IEnumerable<TItem> entities);
 
 		Task<IEnumerable<TItem>> Read(string searchTerm, int pageLength, ref int page, string sortProperty, SortDirection sortDirection, out int totalItems);
+		IEnumerable<TItem> ReadSync(string searchTerm, int pageLength, ref int page, string sortProperty, SortDirection sortDirection, out int totalItems);
 
 		Task Refresh(TItem[] entities);
 

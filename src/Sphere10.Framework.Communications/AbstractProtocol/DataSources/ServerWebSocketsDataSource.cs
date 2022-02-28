@@ -62,8 +62,14 @@ SystemLog.Info("Created: " + jsonItem);
 			return newItems;
 		}
 
+		public override Task<IEnumerable<TItem>> Read(string searchTerm, int pageLength, ref int page, string sortProperty, SortDirection sortDirection, out int totalItems) {
+			throw new NotImplementedException();
+		}
+
 		public override Task<Result> Validate(IEnumerable<(TItem entity, CrudAction action)> actions) {
 			throw new System.NotImplementedException();
 		}
+
+
 	}
 }

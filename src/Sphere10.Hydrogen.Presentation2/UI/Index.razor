@@ -175,7 +175,7 @@
     {
         List<TestClass> AllItems = new List<TestClass>();
 
-        public event EventHandlerEx<IEnumerable<CrudActionItem<TestClass>>> MutatedItems;
+        public event EventHandlerEx<DataSourceMutatedItems<TestClass>> MutatedItems;
 
         public void RefreshData()
         {
@@ -186,6 +186,16 @@
         public DataSource1()
         {
             RefreshData();
+        }
+
+        event EventHandlerEx<DataSourceMutatedItems<TestClass>> IDataSource<TestClass>.MutatedItems {
+            add {
+                throw new NotImplementedException();
+            }
+
+            remove {
+                throw new NotImplementedException();
+            }
         }
 
         static List<TestClass> LoadData(int size)
@@ -282,9 +292,43 @@
             throw new NotImplementedException();
         }
 
+        IEnumerable<TestClass> IDataSource<TestClass>.New(int count) {
+            throw new NotImplementedException();
+        }
+
+        Task IDataSource<TestClass>.Create(IEnumerable<TestClass> entities) {
+            throw new NotImplementedException();
+        }
+
+        Task<IEnumerable<TestClass>> IDataSource<TestClass>.Read(string searchTerm, int pageLength, ref int page, string sortProperty, SortDirection sortDirection, out int totalItems) {
+            throw new NotImplementedException();
+        }
+
+        IEnumerable<TestClass> IDataSource<TestClass>.ReadSync(string searchTerm, int pageLength, ref int page, string sortProperty, SortDirection sortDirection, out int totalItems) {
+            throw new NotImplementedException();
+        }
+
+        Task IDataSource<TestClass>.Refresh(TestClass[] entities) {
+            throw new NotImplementedException();
+        }
+
+        Task IDataSource<TestClass>.Update(IEnumerable<TestClass> entities) {
+            throw new NotImplementedException();
+        }
+
+        Task IDataSource<TestClass>.Delete(IEnumerable<TestClass> entities) {
+            throw new NotImplementedException();
+        }
+
+        Task<Result> IDataSource<TestClass>.Validate(IEnumerable<(TestClass entity, CrudAction action)> actions) {
+            throw new NotImplementedException();
+        }
+
         public Task<int> Count { get { return Task.Run(() => AllItems.Count); } }
+
+        Task<int> IDataSource<TestClass>.Count => throw new NotImplementedException();
     }
-            /*
+        /*
         public class DataSource2<TItem> : IDataSource<TestClass> {
         //List<TestClass> AllItems = new List<TestClass>();
 

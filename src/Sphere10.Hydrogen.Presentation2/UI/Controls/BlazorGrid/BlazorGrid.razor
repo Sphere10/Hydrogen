@@ -114,14 +114,14 @@
                 <button @onclick="PagingNew">New</button>                
             }
             <button @onclick="PagingFirst">First</button>
-            <button @onclick="PagingNext">Next</button>
+            <button @onclick="PagingPrevious">Previous</button>
 
             <input class="PagingInput" type="number" min="0" max="@(TotalDataCount / PageSize)" step="1" pattern="[0-9]{10}" oninput="this.value=this.value.replace(/[^0-9]/g,'');"
                    value="@CurrentPage" @onchange="@(e => PagingSetCurrentPage(e.Value))" />
             of
             <input class="PagingInput" type="number" value="@(TotalDataCount / PageSize)" readonly />
 
-            <button @onclick="PagingPrevious">Previous</button>
+            <button @onclick="PagingNext">Next</button>
             <button @onclick="PagingLast">Last</button>
         </div>
     </footer>
@@ -201,7 +201,6 @@
 
     List<Cell> Header { get; set; } = new List<Cell>();
     List<List<Cell>> Rows { get; set; } = new List<List<Cell>>();
-    //  IEnumerable<TItem> Data { get; set; }
     List<TItem> Data { get; set; } = new List<TItem>();
     int CurrentPage { get; set; }
     int TotalDataCount { get; set; }
@@ -237,7 +236,7 @@ SystemLog.Info($"FirstLoad OnInitialized()");
         }
 
         ControlCheck();
-        PagingFirst();
+        //PagingFirst();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -462,11 +461,13 @@ SystemLog.Info($"BlazorGrid LoadData() Data count {Data.Count}");
 
     #region Paging
 
-        void HandleRemoteDataChange(IEnumerable<CrudActionItem<TItem>> items) {
+        void HandleRemoteDataChange(DataSourceMutatedItems<TItem> items) {
 
-        var updates = items.ToList();
+        var updates = items.UpdatedItems.ToList();
 
 SystemLog.Info($"BlazorGrid HandleRemoteDataChange() Items count {updates.Count}");
+
+        Data.Clear();
 
         foreach (var update in updates) {
             switch (update.CrudAction) {
@@ -488,82 +489,85 @@ SystemLog.Error($"BlazorGrid HandleRemoteDataChange() default");
             }
         }
 
-        TotalDataCount = Data.Count;
-        //CurrentPage = 1; // this needs to be fixed
+        TotalDataCount = items.TotalItems;
+        CurrentPage = items.CurrentPage;
         LoadData();
         StateHasChanged(); 
     }
 
  //   async Task PagingNew() {
     void PagingNew() {
-
        try {
-//SystemLog.Info($"BlazorGrid Trying to Create 1 Object");
-            DataSource.New(1);
+//SystemLog.Info($"BlazorGrid Trying to Create 100 Objects");
+            DataSource.New(100);
         }
-        catch (Exception ex) {
-            
-SystemLog.Error(ex.Message);
+        catch (Exception ex) {        
+//SystemLog.Error(ex.Message);
         }
-
-//        var useCurrentPage = CurrentPage;
-//        Data = (IEnumerable<TItem>)await DataSource.Read("", PageSize, ref useCurrentPage, "", SortDirection.Ascending, out int totalItems);
-//        TotalDataCount = totalItems;
-//        CurrentPage = useCurrentPage;
-  
-//        LoadData();
-//        StateHasChanged();
     }
 
-    void PagingFirst()
+    async void PagingFirst()
     {
 //        if (CurrentPage == 0) return;
         CurrentPage = 0;
-        GetPageAndDisplayData();
+        var error = await GetPageAndDisplayData();
         StateHasChanged();
     }
 
-    void PagingNext()
+    async void PagingNext()
     {
         CurrentPage++;
-        GetPageAndDisplayData();
+        await GetPageAndDisplayData();
         StateHasChanged();
     }
 
-    void PagingSetCurrentPage(object newCurrentPage)
+    async void PagingSetCurrentPage(object newCurrentPage)
     {
         CurrentPage = int.Parse(newCurrentPage.ToString());
-        GetPageAndDisplayData();
+        await GetPageAndDisplayData();
         StateHasChanged();
     }
 
-    void PagingPrevious()
+    async void PagingPrevious()
     {
         if (CurrentPage == 0) return;
         CurrentPage--;
-        GetPageAndDisplayData();
+        await GetPageAndDisplayData();
         StateHasChanged();
     }
 
-    void PagingLast()
+    async void PagingLast()
     {
         // callback to the server
         var total = DataSource.Count.Result;
         CurrentPage = total / PageSize;
-        GetPageAndDisplayData();
+        await GetPageAndDisplayData();
         StateHasChanged();
     }
 
-    async void GetPageAndDisplayData()
+    async Task<bool> GetPageAndDisplayData()
     {
-        // callback to the server
         var useCurrentPage = CurrentPage;
-//        Data = (IEnumerable<TItem>)await DataSource.Read("", PageSize, ref useCurrentPage, "", SortDirection.Ascending, out int totalItems);
-        Data = new List<TItem>(await DataSource.Read("", PageSize, ref useCurrentPage, "", SortDirection.Ascending, out int totalItems));
-        TotalDataCount = totalItems;
-        CurrentPage = useCurrentPage;
-        LoadData();
-        StateHasChanged();
+
+        try
+        {
+            Data = (await DataSource.Read("", PageSize, ref useCurrentPage, "", SortDirection.Ascending, out int totalItems)).ToList();
+
+            TotalDataCount = totalItems;
+            CurrentPage = useCurrentPage;
+            LoadData();
+            StateHasChanged();
+
+            return true;
+        }
+        catch (Exception ex) {
+            
+        }
+
+        return false;
+
+        // callback to the server
+SystemLog.Info($"GetPageAndDisplayData()");
     }
 
     #endregion

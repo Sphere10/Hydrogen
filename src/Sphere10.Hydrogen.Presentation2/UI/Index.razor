@@ -456,10 +456,10 @@
         WebDataSource = new ClientWebSocketsDataSource<TestClass>("ws://192.168.1.171:80/service", false);
 SystemLog.Info($"ClientWebSocketsDataSource Created");
 
-        DataActions.Add(new GridAction<TestClass>("Action1", Action1, "😄", IsAction1Available));
+        //DataActions.Add(new GridAction<TestClass>("Action1", Action1, "😄", IsAction1Available));
         DataActions.Add(new GridAction<TestClass>("Action2", Action2, "⚽", IsAction2Available));
 
-        ColumnDefinitions.Add(new DataEnd<TestClass, TestClass2>("Data End 1", TestDataExtractor1));
+        //ColumnDefinitions.Add(new DataEnd<TestClass, TestClass2>("Data End 1", TestDataExtractor1));
         ColumnDefinitions.Add(new DataEnd<TestClass, TestClass3>("Data End 2", TestDataExtractor2));
 
         //        Timer = new System.Timers.Timer(1000); // 10 seconds

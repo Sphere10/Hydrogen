@@ -5,21 +5,19 @@ using Newtonsoft.Json;
 
 namespace Sphere10.Framework.Communications {
 	public class ClientWebSocketsDataSource<TItem> : ProtocolChannelDataSource<TItem> {
+		public override Task<int> Count => throw new NotImplementedException();
 
 		public event EventHandlerEx<IEnumerable<CrudActionItem<TItem>>> MutatedItems;
 
 		public ClientWebSocketsDataSource(string uri, bool secure)
 			: base(new ClientWebSocketsChannel(uri, secure)) {
+
+//			ProtocolChannel.ReceivedBytes += ProtocolChannel_ReceivedBytes;
 		}
 
-		public override Task Delete(IEnumerable<TItem> entities) {
-			throw new NotImplementedException();
-		}
+//		private void ProtocolChannel_ReceivedBytes(System.ReadOnlyMemory<byte> bytes) {
+//		}
 
-		public override Task Create(IEnumerable<TItem> entities) {
-			throw new NotImplementedException();
-			//return base.Create(entities);
-		}
 
 		public override IEnumerable<TItem> New(int count) {
 
@@ -56,7 +54,28 @@ namespace Sphere10.Framework.Communications {
 			return returnData;
 		}
 
+		public override Task Delete(IEnumerable<TItem> entities) {
+			throw new NotImplementedException();
+		}
+
+		public override Task Create(IEnumerable<TItem> entities) {
+			throw new NotImplementedException();
+			//return base.Create(entities);
+		}
+
 		public override Task<Result> Validate(IEnumerable<(TItem entity, CrudAction action)> actions) {
+			throw new NotImplementedException();
+		}
+
+		public override Task<IEnumerable<TItem>> Read(string searchTerm, int pageLength, ref int page, string sortProperty, SortDirection sortDirection, out int totalItems) {
+			throw new NotImplementedException();
+		}
+
+		public override Task Refresh(TItem[] entities) {
+			throw new NotImplementedException();
+		}
+
+		public override Task Update(IEnumerable<TItem> entities) {
 			throw new NotImplementedException();
 		}
 	}

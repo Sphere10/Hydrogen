@@ -2,7 +2,7 @@
 
 namespace Sphere10.Framework {
 
-	public class ClusteredStorageHeader : IClusteredStorageHeader {
+	public class ClusteredStorageHeader {
 		public const int ByteLength = 256;
 
 		internal const int VersionOffset = 0;

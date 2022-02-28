@@ -2,7 +2,7 @@
 
 namespace Sphere10.Framework {
 	[Flags]
-	public enum StreamRecordTraits : byte {
+	public enum ClusteredStorageRecordTraits : byte {
 		None  = 0,
 		
 		IsNull = 1 << 0,

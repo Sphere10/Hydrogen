@@ -88,7 +88,7 @@ namespace Sphere10.Framework {
 
 		public TransactionalFileMappedBuffer AsBuffer => _transactionalBuffer;
 
-		public IClusteredStorage<ClusteredStorageHeader, ClusteredRecord> Storage => (IClusteredStorage < ClusteredStorageHeader, ClusteredRecord >)_clustered.Storage;
+		public IClusteredStorage Storage => _clustered.Storage;
 
 		public void Load() => _transactionalBuffer.Load();
 

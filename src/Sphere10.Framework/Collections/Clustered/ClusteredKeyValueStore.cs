@@ -1,14 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using Sphere10.Framework.Collections.Stream;
 
 namespace Sphere10.Framework;
 
-public class ClusteredKeyValueStore<TKey, THeader, TRecord> : ClusteredList<KeyValuePair<TKey, byte[]>, THeader, TRecord>, IClusteredKeyValueStore<TKey, THeader, TRecord>
-	where THeader : IClusteredStorageHeader
-	where TRecord : IClusteredKeyRecord {
 
-	public ClusteredKeyValueStore(IClusteredStorage<THeader, TRecord> storage, IItemSerializer<TKey> keySerializer, IEqualityComparer<TKey> keyComparer = null, ClusteredStoragePolicy policy = ClusteredStoragePolicy.Default, Endianness endianness = Endianness.LittleEndian) 
+/// <summary>
+/// A specialized list used to contain <see cref="KeyValuePair{TKey, TValue}"/> with value of <see cref="byte[]"/>. 
+/// </summary>
+/// <remarks>Used to implement <see cref="ClusteredDictionary{TKey,TValue}"/>.</remarks>
+/// <typeparam name="TKey"></typeparam>
+public class ClusteredKeyValueStore<TKey> : ClusteredList<KeyValuePair<TKey, byte[]>>, IClusteredKeyValueStore<TKey> {
+
+	public ClusteredKeyValueStore(Stream rootStream, int clusterSize, IItemSerializer<TKey> keySerializer, IEqualityComparer<TKey> keyComparer = null, ClusteredStoragePolicy policy = ClusteredStoragePolicy.Default, Endianness endianness = Endianness.LittleEndian) 
+		: this(new ClusteredStorage(rootStream, clusterSize, endianness, policy), keySerializer, keyComparer) {
+	}
+
+	public ClusteredKeyValueStore(IClusteredStorage storage, IItemSerializer<TKey> keySerializer, IEqualityComparer<TKey> keyComparer = null) 
 		: base(
 			storage, 
 			new KeyValuePairSerializer<TKey, byte[]>(
@@ -18,27 +27,24 @@ public class ClusteredKeyValueStore<TKey, THeader, TRecord> : ClusteredList<KeyV
 			new KeyValuePairEqualityComparer<TKey, byte[]>(
 				keyComparer,
 				new ByteArrayEqualityComparer()
-			),
-			policy,
-			endianness
+			)
 		) {
 	}
 
 	public TKey ReadKey(int index) {
         if (Storage.IsNull(index))
             throw new InvalidOperationException($"Stream record {index} is null");
-        using var stream = Storage.Open(index, out var record);
-        var reader = new EndianBinaryReader(EndianBitConverter.For(Endianness), stream);
-        return ((KeyValuePairSerializer<TKey, byte[]>)ItemSerializer).DeserializeKey(record.Size, reader);
+        using var scope = Storage.Open(index);
+        var reader = new EndianBinaryReader(EndianBitConverter.For(Endianness), scope.Stream);
+        return ((KeyValuePairSerializer<TKey, byte[]>)ItemSerializer).DeserializeKey(scope.Record.Size, reader);
 	}
-		
 
 	public byte[] ReadValue(int index) {
         if (Storage.IsNull(index))
 			throw new InvalidOperationException($"Stream record {index} is null");
-        using var stream = Storage.Open(index, out var record);
-        var reader = new EndianBinaryReader(EndianBitConverter.For(Endianness), stream);
-        return ((KeyValuePairSerializer<TKey, byte[]>)ItemSerializer).DeserializeValue(record.Size, reader);
+        using var scope = Storage.Open(index);
+        var reader = new EndianBinaryReader(EndianBitConverter.For(Endianness), scope.Stream);
+        return ((KeyValuePairSerializer<TKey, byte[]>)ItemSerializer).DeserializeValue(scope.Record.Size, reader);
 	}
 
 }

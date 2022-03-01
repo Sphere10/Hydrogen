@@ -51,7 +51,7 @@ public class CustomEcDsaSigner : ECDsaSigner {
 			} while (ForceLowR && r.ToByteArrayUnsigned()[0] >= 0x80);
 			s = BigIntegers.ModOddInverse(n, k).Multiply(e.Add(d?.Multiply(r))).Mod(n);
 		} while (s.SignValue == 0);
-
+		
 		return new[] { r, s };
 	}
 

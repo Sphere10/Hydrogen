@@ -24,7 +24,8 @@ namespace Sphere10.Framework {
 
 		public override int CalculateSize(KeyValuePair<TKey, TValue> item) {
 			var size = sizeof(uint);
-			size += _keySerializer.CalculateSize(item.Key);
+			if (item.Key != null)
+				size += _keySerializer.CalculateSize(item.Key);
 			if (item.Value != null) {
 				size += sizeof(int);
 				size += _valueSerializer.CalculateSize(item.Value);
@@ -35,8 +36,10 @@ namespace Sphere10.Framework {
 		public override bool TrySerialize(KeyValuePair<TKey, TValue> item, EndianBinaryWriter writer, out int bytesWritten) {
 			bytesWritten = 0;
 
-			if (!_keySerializer.TrySerialize(item.Key, out var keyBytes, writer.BitConverter.Endianness))
-				return false;
+			var keyBytes = Array.Empty<byte>();
+			if (item.Key != null)
+				if (!_keySerializer.TrySerialize(item.Key, out keyBytes, writer.BitConverter.Endianness))
+					return false;
 
 			writer.Write(keyBytes.Length);
 			writer.Write(keyBytes);

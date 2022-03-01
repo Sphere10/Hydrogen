@@ -29,7 +29,7 @@ namespace Sphere10.Framework {
 		private readonly SortedList<int> _unusedRecords;
 
 
-		public ClusteredDictionary(Stream rootStream, int clusterSize, IItemSerializer<TKey> keySerializer, IItemSerializer<TValue> valueSerializer, IEqualityComparer<TKey> keyComparer = null, ClusteredStoragePolicy policy = ClusteredStoragePolicy.Default, Endianness endianness = Endianness.LittleEndian)
+		public ClusteredDictionary(Stream rootStream, int clusterSize, IItemSerializer<TKey> keySerializer, IItemSerializer<TValue> valueSerializer, IEqualityComparer<TKey> keyComparer = null, ClusteredStoragePolicy policy = ClusteredStoragePolicy.DictionaryDefault, Endianness endianness = Endianness.LittleEndian)
 			: this(new ClusteredKeyValueStore<TKey>(rootStream, clusterSize, keySerializer, keyComparer, policy, endianness), valueSerializer, keyComparer, endianness) {
 		}
 
@@ -249,7 +249,7 @@ namespace Sphere10.Framework {
 			// Updating value only, records (and checksum) don't change  when updating
 			_kvpStore[index] = item;
 			var record = _kvpStore.Storage.Records[index];
-			record.Traits &= ClusteredStorageRecordTraits.IsUsed;
+			record.Traits = record.Traits.CopyAndSetFlags(ClusteredStorageRecordTraits.IsUsed, true);
 			record.KeyChecksum = CalculateKeyChecksum(item.Key);
 			_kvpStore.Storage.UpdateRecord(index, record);
 
@@ -257,7 +257,7 @@ namespace Sphere10.Framework {
 
 		private void RemoveInternal(TKey key, int index) {
 			// We don't delete the instance, we mark is as unused. Use Shrink to intelligently remove unused records.
-			var kvp = KeyValuePair.Create(key, null as byte[]);
+			var kvp = KeyValuePair.Create(default(TKey), null as byte[]);
 			_kvpStore.Update(index, kvp);
 			MarkRecordAsUnused(index);  // record has to be updated after _kvpStore update since it removes/creates under the hood
 		}
@@ -271,7 +271,7 @@ namespace Sphere10.Framework {
 		}
 
 		private void MarkRecordAsUnused(int index) {
-			var record = _kvpStore.Storage.Records[index];
+			var record = _kvpStore.Storage.GetRecord(index);
 			Guard.Ensure(record.Traits.HasFlag(ClusteredStorageRecordTraits.IsUsed), "Record not in used state");
 			_checksumToIndexLookup.Remove(record.KeyChecksum, index);
 			record.KeyChecksum = -1;
@@ -281,7 +281,7 @@ namespace Sphere10.Framework {
 		}
 
 		private void MarkRecordAsUsed(int index, TKey key) {
-			var record = _kvpStore.Storage.Records[index];
+			var record = _kvpStore.Storage.GetRecord(index);
 			Guard.Ensure(!record.Traits.HasFlag(ClusteredStorageRecordTraits.IsUsed), "Record not in unused state");
 			record.KeyChecksum = CalculateKeyChecksum(key);
 			record.Traits = record.Traits.CopyAndSetFlags(ClusteredStorageRecordTraits.IsUsed, true);

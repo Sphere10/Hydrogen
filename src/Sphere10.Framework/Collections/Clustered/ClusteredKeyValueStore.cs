@@ -13,8 +13,9 @@ namespace Sphere10.Framework;
 /// <typeparam name="TKey"></typeparam>
 public class ClusteredKeyValueStore<TKey> : ClusteredList<KeyValuePair<TKey, byte[]>>, IClusteredKeyValueStore<TKey> {
 
-	public ClusteredKeyValueStore(Stream rootStream, int clusterSize, IItemSerializer<TKey> keySerializer, IEqualityComparer<TKey> keyComparer = null, ClusteredStoragePolicy policy = ClusteredStoragePolicy.Default, Endianness endianness = Endianness.LittleEndian) 
+	public ClusteredKeyValueStore(Stream rootStream, int clusterSize, IItemSerializer<TKey> keySerializer, IEqualityComparer<TKey> keyComparer = null, ClusteredStoragePolicy policy = ClusteredStoragePolicy.DictionaryDefault, Endianness endianness = Endianness.LittleEndian) 
 		: this(new ClusteredStorage(rootStream, clusterSize, endianness, policy), keySerializer, keyComparer) {
+		Guard.Argument(policy.HasFlag(ClusteredStoragePolicy.TrackChecksums), nameof(policy), $"Checksum tracking must be enabled in clustered dictionary implementations.");
 	}
 
 	public ClusteredKeyValueStore(IClusteredStorage storage, IItemSerializer<TKey> keySerializer, IEqualityComparer<TKey> keyComparer = null) 
@@ -29,6 +30,7 @@ public class ClusteredKeyValueStore<TKey> : ClusteredList<KeyValuePair<TKey, byt
 				new ByteArrayEqualityComparer()
 			)
 		) {
+		Guard.Argument(storage.Policy.HasFlag(ClusteredStoragePolicy.TrackChecksums), nameof(storage), $"Checksum tracking must be enabled in clustered dictionary implementations.");
 	}
 
 	public TKey ReadKey(int index) {

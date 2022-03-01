@@ -6,6 +6,8 @@ namespace Sphere10.Framework {
 
 	public interface IClusteredStorage {
 
+		ClusteredStoragePolicy Policy { get; }
+
 		ClusteredStorageHeader Header { get; }
 
 		IReadOnlyList<ClusteredStorageRecord> Records { get; }
@@ -30,7 +32,9 @@ namespace Sphere10.Framework {
 
 		TItem LoadItem<TItem>(int index, IItemSerializer<TItem> serializer);
 
-		internal void UpdateRecord(int index, ClusteredStorageRecord record);
+		ClusteredStorageRecord GetRecord(int index);
+
+		void UpdateRecord(int index, ClusteredStorageRecord record);
 
 	}
 

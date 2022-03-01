@@ -4,6 +4,7 @@
 
 		public ClusteredStorageRecordSerializer(ClusteredStoragePolicy policy)
 			: base(DetermineSizeBasedOnPolicy(policy)) {
+			_policy = policy;
 		}
 
 

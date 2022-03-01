@@ -51,6 +51,8 @@ namespace Sphere10.Framework {
 		/// </summary>
 		Default = FastAllocate | CacheRecordClusters | CacheOpenClusters | IntegrityChecks,
 
+		DictionaryDefault = Default | TrackChecksums,
+
 		BlobOptimized = FastAllocate | CacheRecordClusters | IntegrityChecks,
 
 		Debug = IntegrityChecks 

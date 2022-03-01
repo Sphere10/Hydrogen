@@ -1,5 +1,4 @@
 using System;
-using System.IO;
 using Org.BouncyCastle.Asn1;
 using Org.BouncyCastle.Crypto.Signers;
 using Org.BouncyCastle.Math;
@@ -115,32 +114,12 @@ public class CustomDsaEncoding : StandardDsaEncoding {
 			EncodeValue(n, r),
 			EncodeValue(n, EnforceLowS(n, s))
 		).GetEncoded(Asn1Encodable.Der);
-
-		// MemoryStream stream = new MemoryStream();
-		// Asn1OutputStream der = Asn1OutputStream.Create(stream);
-		//
-		// Asn1EncodableVector v = new Asn1EncodableVector();
-		// v.Add(new DerInteger(r));
-		// v.Add(new DerInteger(s));
-		// der.WriteObject(new DerSequence(v));
-
-		// var tmp = stream.ToArray();
-
-		// Usually 70-72 bytes.
-		// MemoryStream bos = new MemoryStream();
-		// DerSequenceGenerator seq = new DerSequenceGenerator(bos);
-		// seq.AddObject(new DerInteger(r));
-		// //seq.AddObject(new DerInteger(s));
-		// seq.AddObject(new DerInteger(EnforceLowS(n, s)));
-		// seq.Close();
-		// var tmp = bos.ToArray();
 	}
 
 	public override BigInteger[] Decode(BigInteger n, byte[] encoding) {
 		if (!IsValidSignatureEncoding(encoding)) {
 			throw new ArgumentException(InvalidDerEncoding, nameof(encoding));
 		}
-		;
 		var seq = Asn1Object.FromByteArray(encoding) as Asn1Sequence;
 		if (seq is { Count: 2 }) {
 			var r = DecodeValue(n, seq, 0);
@@ -149,19 +128,5 @@ public class CustomDsaEncoding : StandardDsaEncoding {
 			return new[] { r, s };
 		}
 		throw new ArgumentException(MalformedSignature, nameof(encoding));
-
-		// try
-		// {
-		// 	Asn1InputStream decoder = new Asn1InputStream(derSig);
-		// 	var seq = decoder.ReadObject() as DerSequence;
-		// 	if (seq == null || seq.Count != 2)
-		// 		throw new FormatException(InvalidDERSignature);
-		// 	_R = ((DerInteger)seq[0]).Value;
-		// 	_S = ((DerInteger)seq[1]).Value;
-		// }
-		// catch (Exception ex)
-		// {
-		// 	throw new FormatException(InvalidDERSignature, ex);
-		// }
 	}
 }

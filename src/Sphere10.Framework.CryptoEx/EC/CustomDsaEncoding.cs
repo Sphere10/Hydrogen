@@ -21,7 +21,7 @@ public class CustomDsaEncoding : StandardDsaEncoding {
 	/// </summary>
 	/// <param name="sig"></param>
 	/// <returns></returns>
-	private static bool IsValidSignatureEncoding(byte[] sig) {
+	public static bool IsValidSignatureEncoding(byte[] sig) {
 		var sigLength = sig.Length;
 
 		// A signature is of type 0x30 (compound).
@@ -71,7 +71,7 @@ public class CustomDsaEncoding : StandardDsaEncoding {
 
 		// Null bytes at the start of R are not allowed, unless R would
 		// otherwise be interpreted as a negative number.
-		if (lenR > 1 && (sig[4] == 0x00) && (sig[5] & 0x80) == 0) {
+		if (lenR > 1 && (sig[4 + additionalOffset] == 0x00) && (sig[5 + additionalOffset] & 0x80) == 0) {
 			return false;
 		}
 

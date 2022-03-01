@@ -20,8 +20,8 @@ namespace Sphere10.Framework.Tests {
 		public void AddEmpty([Values(1, 4, 32)] int clusterSize, [ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy) {
 			using var rootStream = new MemoryStream();
 			var streamContainer = new ClusteredStorage(rootStream, clusterSize, policy: policy);
-			using (var stream = streamContainer.Add())
-				Assert.That(stream.Length, Is.EqualTo(0));
+			using (var scope = streamContainer.Add())
+				Assert.That(scope.Stream.Length, Is.EqualTo(0));
 			Assert.That(streamContainer.Count, Is.EqualTo(1));
 			Assert.That(streamContainer.Records.Count, Is.EqualTo(1));
 		}
@@ -31,8 +31,8 @@ namespace Sphere10.Framework.Tests {
 			using var rootStream = new MemoryStream();
 			var streamContainer = new ClusteredStorage(rootStream, clusterSize, policy: policy);
 			streamContainer.AddBytes(null);
-			using (var stream = streamContainer.Open(0))
-				Assert.That(stream.Length, Is.EqualTo(0));
+			using (var scope = streamContainer.Open(0))
+				Assert.That(scope.Stream.Length, Is.EqualTo(0));
 			Assert.That(streamContainer.Count, Is.EqualTo(1));
 			Assert.That(streamContainer.Records.Count, Is.EqualTo(1));
 		}
@@ -42,8 +42,8 @@ namespace Sphere10.Framework.Tests {
 			using var rootStream = new MemoryStream();
 			var streamContainer = new ClusteredStorage(rootStream, clusterSize, policy: policy);
 			for (var i = 0; i < N; i++)
-				using (var stream = streamContainer.Add())
-					Assert.That(stream.Length, Is.EqualTo(0));
+				using (var scope = streamContainer.Add())
+					Assert.That(scope.Stream.Length, Is.EqualTo(0));
 			Assert.That(streamContainer.Count, Is.EqualTo(N));
 			Assert.That(streamContainer.Records.Count, Is.EqualTo(N));
 		}
@@ -53,49 +53,49 @@ namespace Sphere10.Framework.Tests {
 			using var rootStream = new MemoryStream();
 			var streamContainer = new ClusteredStorage(rootStream, clusterSize, policy: policy);
 			using (_ = streamContainer.Add()) ;
-			using (var stream = streamContainer.Open(0))
-				Assert.That(stream.Length, Is.EqualTo(0));
+			using (var scope = streamContainer.Open(0))
+				Assert.That(scope.Stream.Length, Is.EqualTo(0));
 		}
 
 		[Test]
 		public void SetEmpty_1([Values(1, 4, 32)] int clusterSize, [ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy) {
 			using var rootStream = new MemoryStream();
 			var streamContainer = new ClusteredStorage(rootStream, clusterSize, policy: policy);
-			using (var stream = streamContainer.Add()) {
-				stream.SetLength(0);
+			using (var scope = streamContainer.Add()) {
+				scope.Stream.SetLength(0);
 			}
 			Assert.That(streamContainer.Records.Count, Is.EqualTo(1));
 			Assert.That(streamContainer.Records[0].StartCluster, Is.EqualTo(-1));
-			using (var stream = streamContainer.Open(0))
-				Assert.That(stream.Length, Is.EqualTo(0));
+			using (var scope = streamContainer.Open(0))
+				Assert.That(scope.Stream.Length, Is.EqualTo(0));
 		}
 
 		[Test]
 		public void SetEmpty_2([Values(1, 4, 32)] int clusterSize, [ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy) {
 			using var rootStream = new MemoryStream();
 			var streamContainer = new ClusteredStorage(rootStream, clusterSize, policy: policy);
-			using (var stream = streamContainer.Add()) {
-				stream.Write(new byte[] { 1 });
-				stream.SetLength(0);
+			using (var scope = streamContainer.Add()) {
+				scope.Stream.Write(new byte[] { 1 });
+				scope.Stream.SetLength(0);
 			}
 			Assert.That(streamContainer.Records.Count, Is.EqualTo(1));
 			Assert.That(streamContainer.Records[0].StartCluster, Is.EqualTo(-1));
-			using (var stream = streamContainer.Open(0))
-				Assert.That(stream.Length, Is.EqualTo(0));
+			using (var scope = streamContainer.Open(0))
+				Assert.That(scope.Stream.Length, Is.EqualTo(0));
 		}
 
 		[Test]
 		public void SetEmpty_3([Values(1, 4, 32)] int clusterSize, [ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy) {
 			using var rootStream = new MemoryStream();
 			var streamContainer = new ClusteredStorage(rootStream, clusterSize, policy: policy);
-			using (var stream = streamContainer.Add()) {
-				stream.Write(new byte[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 });
-				stream.SetLength(0);
+			using (var scope = streamContainer.Add()) {
+				scope.Stream.Write(new byte[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 });
+				scope.Stream.SetLength(0);
 			}
 			Assert.That(streamContainer.Records.Count, Is.EqualTo(1));
 			Assert.That(streamContainer.Records[0].StartCluster, Is.EqualTo(-1));
-			using (var stream = streamContainer.Open(0))
-				Assert.That(stream.Length, Is.EqualTo(0));
+			using (var scope = streamContainer.Open(0))
+				Assert.That(scope.Stream.Length, Is.EqualTo(0));
 		}
 
 		[Test]
@@ -124,8 +124,8 @@ namespace Sphere10.Framework.Tests {
 			var streamContainer = new ClusteredStorage(rootStream, clusterSize, policy: policy);
 			streamContainer.AddBytes(new byte[] { 1 });
 			streamContainer.AddBytes(new byte[] { 2 });
-			using (var stream = streamContainer.Open(0))
-				stream.SetLength(0);
+			using (var scope = streamContainer.Open(0))
+				scope.Stream.SetLength(0);
 
 			Assert.That(streamContainer.Count, Is.EqualTo(2));
 			Assert.That(streamContainer.ReadAll(0), Is.Empty);
@@ -139,8 +139,8 @@ namespace Sphere10.Framework.Tests {
 			streamContainer.AddBytes(new byte[] { 1, 1 });
 			streamContainer.AddBytes(new byte[] { 2, 2 });
 
-			using (var stream = streamContainer.Open(0))
-				stream.SetLength(0);
+			using (var scope = streamContainer.Open(0))
+				scope.Stream.SetLength(0);
 
 			Assert.That(streamContainer.Count, Is.EqualTo(2));
 			Assert.That(streamContainer.ReadAll(0), Is.Empty);
@@ -153,8 +153,8 @@ namespace Sphere10.Framework.Tests {
 			var streamContainer = new ClusteredStorage(rootStream, clusterSize, policy: policy);
 			streamContainer.AddBytes(new byte[] { 1, 1 });
 			streamContainer.AddBytes(new byte[] { 2, 2 });
-			using (var stream = streamContainer.Open(1))
-				stream.SetLength(0);
+			using (var scope = streamContainer.Open(1))
+				scope.Stream.SetLength(0);
 
 			Assert.That(streamContainer.Count, Is.EqualTo(2));
 			Assert.That(streamContainer.ReadAll(0), Is.EqualTo(new byte[] { 1, 1 }));
@@ -170,8 +170,10 @@ namespace Sphere10.Framework.Tests {
 
 			Assert.That(streamContainer.Count, Is.EqualTo(N));
 			for (var i = 0; i < N; i++) {
-				var streamData = streamContainer.Open(i).ReadAllAndDispose();
-				Assert.That(streamData, Is.EqualTo(new byte[] { 1 }));
+				using (var scope = streamContainer.Open(i)) {
+					var streamData = scope.Stream.ReadAll();
+					Assert.That(streamData, Is.EqualTo(new byte[] { 1 }));
+				}
 			}
 		}
 
@@ -182,10 +184,10 @@ namespace Sphere10.Framework.Tests {
 			using var rootStream = new MemoryStream();
 			var streamContainer = new ClusteredStorage(rootStream, clusterSize, policy: policy);
 			for (var i = 0; i < N; i++) {
-				using var stream = streamContainer.Add();
+				using var scope = streamContainer.Add();
 				var data = rng.NextBytes(M);
 				actual.Add(data);
-				stream.Write(data);
+				scope.Stream.Write(data);
 			}
 			Assert.That(streamContainer.Count, Is.EqualTo(N));
 			for (var i = 0; i < N; i++)
@@ -298,10 +300,10 @@ namespace Sphere10.Framework.Tests {
 			var data2Bytes = Encoding.ASCII.GetBytes(data2);
 			using var rootStream = new MemoryStream();
 			var streamContainer = new ClusteredStorage(rootStream, clusterSize, policy: policy);
-			using (var stream = streamContainer.Add()) {
-				stream.Write(data1Bytes);
-				stream.SetLength(0);
-				stream.Write(data2Bytes);
+			using (var scope = streamContainer.Add()) {
+				scope.Stream.Write(data1Bytes);
+				scope.Stream.SetLength(0);
+				scope.Stream.Write(data2Bytes);
 			}
 			Assert.That(streamContainer.Count, Is.EqualTo(1));
 			Assert.That(streamContainer.ReadAll(0), Is.EqualTo(data2Bytes));
@@ -315,10 +317,10 @@ namespace Sphere10.Framework.Tests {
 			var data2Bytes = Encoding.ASCII.GetBytes(data2);
 			using var rootStream = new MemoryStream();
 			var streamContainer = new ClusteredStorage(rootStream, clusterSize, policy: policy);
-			using (var stream = streamContainer.Add()) {
-				stream.Write(data1Bytes);
-				stream.SetLength(0);
-				stream.Write(data2Bytes);
+			using (var scope = streamContainer.Add()) {
+				scope.Stream.Write(data1Bytes);
+				scope.Stream.SetLength(0);
+				scope.Stream.Write(data2Bytes);
 			}
 			Assert.That(streamContainer.Count, Is.EqualTo(1));
 			Assert.That(streamContainer.ReadAll(0), Is.EqualTo(data2Bytes));
@@ -653,7 +655,7 @@ namespace Sphere10.Framework.Tests {
 			for (var i = 0; i < totalStreams * 2; i++) {
 				if (i < totalStreams) {
 					Stream expectedStream = new MemoryStream();
-					Stream newStream;
+					ClusteredStorageScope newStream;
 					// Add/insert a new stream
 					if (i % 2 == 0) {
 						newStream = streamContainer.Add();
@@ -666,7 +668,7 @@ namespace Sphere10.Framework.Tests {
 
 					// Run a test on it
 					using (newStream) {
-						AssertEx.StreamIntegrationTests(maxStreamSize, newStream, expectedStream, StreamStreamOperations, rng, runAsserts: DebugMode);
+						AssertEx.StreamIntegrationTests(maxStreamSize, newStream.Stream, expectedStream, StreamStreamOperations, rng, runAsserts: DebugMode);
 					}
 
 				} else {
@@ -690,7 +692,7 @@ namespace Sphere10.Framework.Tests {
 					var expectedUpdateStream = expectedStreams[priorIX];
 					expectedUpdateStream.Position = 0; // reset expected stream marker to 0, since actual is reset on dispose
 					using var actualUpdateStream = streamContainer.Open(priorIX);
-					AssertEx.StreamIntegrationTests(maxStreamSize, actualUpdateStream, expectedUpdateStream, StreamStreamOperations, rng, runAsserts: DebugMode);
+					AssertEx.StreamIntegrationTests(maxStreamSize, actualUpdateStream.Stream, expectedUpdateStream, StreamStreamOperations, rng, runAsserts: DebugMode);
 				}
 
 				// Check all streams match (this will catch any errors, even when runAsserts is passed false above)

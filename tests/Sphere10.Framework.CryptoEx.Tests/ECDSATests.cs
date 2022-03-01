@@ -137,7 +137,7 @@ namespace Sphere10.Framework.CryptoEx.Tests
         [TestCase(ECDSAKeyType.SECP384R1)]
         [TestCase(ECDSAKeyType.SECP521R1)]
         [TestCase(ECDSAKeyType.SECT283K1)]
-        public void TestSignatureMalleability(ECDSAKeyType keyType)
+        public void TestSignatureMalleability_Low_S(ECDSAKeyType keyType)
         {
             var ecdsaNoMalleability = new ECDSA(keyType);
             var secret = new byte[] { 0, 1, 2, 3, 4 }; // deterministic secret
@@ -178,6 +178,29 @@ namespace Sphere10.Framework.CryptoEx.Tests
             // our LowS ECDSA should be able to verify only the CanonicalSig
             Assert.IsFalse(ecdsaNoMalleability.VerifyDigest(ecdsaAllowMalleabilitySig, messageDigest, publicKey));
             Assert.IsTrue(ecdsaNoMalleability.VerifyDigest(canonicalSig, messageDigest, publicKey));
+        }
+
+        [Test]
+        [TestCase("0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000")]
+        [TestCase("0x30220220000000000000000000000000000000000000000000000000000000000000000000")]
+        [TestCase("0x3024021077777777777777777777777777777777020a7777777777777777777777777777777701")]
+        [TestCase("0x302403107777777777777777777777777777777702107777777777777777777777777777777701")]
+        [TestCase("0x302402107777777777777777777777777777777703107777777777777777777777777777777701")]
+        [TestCase("0x3014020002107777777777777777777777777777777701")]
+        [TestCase("0x3014021077777777777777777777777777777777020001")]
+        [TestCase("302402107777777777777777777777777777777702108777777777777777777777777777777701")]
+        public void TestSignatureMalleability_Invalid_Strict_DER(string badDerSig)
+        {
+            var invalidBip66Der = badDerSig.ToHexByteArray();
+            Assert.False(CustomDsaEncoding.IsValidSignatureEncoding(invalidBip66Der));
+        }
+        
+        [Test]
+        [TestCase("302502107777777777777777777777777777777702110087777777777777777777777777777777")]
+        public void TestSignatureMalleability_Valid_Strict_DER(string goodDerSig)
+        {
+             var validBip66Der = goodDerSig.ToHexByteArray();
+             Assert.True(CustomDsaEncoding.IsValidSignatureEncoding(validBip66Der));
         }
     }
 }

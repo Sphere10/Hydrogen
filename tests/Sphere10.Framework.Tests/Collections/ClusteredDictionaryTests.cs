@@ -145,7 +145,7 @@ namespace Sphere10.Framework.Tests {
 
 		protected IDisposable CreateDictionary<TKey, TValue>(int estimatedMaxByteSize, StorageType storageType, ClusteredStoragePolicy policy, IItemSerializer<TKey> keySerializer, IItemSerializer<TValue> valueSerializer, IEqualityComparer<TKey> keyComparer, out ClusteredDictionary<TKey, TValue> clusteredDictionary) {
 			var disposable = base.CreateStream(storageType, estimatedMaxByteSize, out var stream);
-			clusteredDictionary = new ClusteredDictionary<TKey, TValue>(stream, DefaultClusterDataSize, keySerializer, valueSerializer, keyComparer, policy);
+			clusteredDictionary = new ClusteredDictionary<TKey, TValue>(stream, DefaultClusterDataSize, keySerializer, valueSerializer, keyComparer, policy | ClusteredStoragePolicy.TrackChecksums);
 			return disposable;
 		}
 

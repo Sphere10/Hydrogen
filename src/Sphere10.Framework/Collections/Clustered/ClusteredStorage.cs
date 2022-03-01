@@ -355,9 +355,9 @@ namespace Sphere10.Framework {
 		}
 
 		// This is the interface implementation of UpdateRecord (used by friendly classes)
-		void IClusteredStorage.UpdateRecord(int index, ClusteredStorageRecord record) {
+		public void UpdateRecord(int index, ClusteredStorageRecord record) {
 			//Guard.ArgumentCast<TRecord>(record, out var recordT, nameof(record));
-			UpdateRecord(index, record);
+			UpdateRecord(index, record, true);
 		}
 
 		private ClusteredStorageRecord CreateRecord() {
@@ -367,7 +367,7 @@ namespace Sphere10.Framework {
 			return record;
 		}
 
-		private ClusteredStorageRecord GetRecord(int index) {
+		public ClusteredStorageRecord GetRecord(int index) {
 			if (_openScope != null && index == _openScope.RecordIndex)
 				return _openScope.Record;
 

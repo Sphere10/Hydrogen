@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Org.BouncyCastle.Asn1;
 using Org.BouncyCastle.Crypto.Signers;
 using Org.BouncyCastle.Math;
@@ -6,6 +7,7 @@ using Org.BouncyCastle.Math;
 namespace Sphere10.Framework.CryptoEx.EC;
 
 public class CustomDsaEncoding : StandardDsaEncoding {
+	private const string EmptySignature = "Empty signature";
 	private const string MalformedSignature = "Malformed signature";
 	private const string InvalidDerEncoding = "Signature does not conform to strict der encoding";
 	private bool ForceLowS { get; }
@@ -110,6 +112,15 @@ public class CustomDsaEncoding : StandardDsaEncoding {
 	}
 
 	public override byte[] Encode(BigInteger n, BigInteger r, BigInteger s) {
+		if (n == null) {
+			throw new ArgumentNullException(nameof(n));
+		}
+		if (r == null) {
+			throw new ArgumentNullException(nameof(r));
+		}
+		if (s == null) {
+			throw new ArgumentNullException(nameof(s));
+		}
 		return new DerSequence(
 			EncodeValue(n, r),
 			EncodeValue(n, EnforceLowS(n, s))
@@ -117,6 +128,12 @@ public class CustomDsaEncoding : StandardDsaEncoding {
 	}
 
 	public override BigInteger[] Decode(BigInteger n, byte[] encoding) {
+		if (n == null) {
+			throw new ArgumentNullException(nameof(n));
+		}
+		if (encoding is { Length: 0 }) {
+			throw new ArgumentException(EmptySignature, nameof(encoding));
+		}
 		if (!IsValidSignatureEncoding(encoding)) {
 			throw new ArgumentException(InvalidDerEncoding, nameof(encoding));
 		}

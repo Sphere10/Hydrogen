@@ -69,8 +69,10 @@ namespace Sphere10.Framework.CryptoEx.EC {
 			return true;
 		}
 
-		public override PrivateKey GeneratePrivateKey(ReadOnlySpan<byte> secret) {
+		public override PrivateKey GeneratePrivateKey(ReadOnlySpan<byte> seed) {
 			var keyPairGenerator = GeneratorUtilities.GetKeyPairGenerator("ECDSA");
+			// add seed to RNG
+			_secureRandom.SetSeed(seed.ToArray());
 			keyPairGenerator.Init(new ECKeyGenerationParameters(_domainParams, _secureRandom));
 			var keyPair = keyPairGenerator.GenerateKeyPair();
 			var privateKeyBytes = BigIntegerUtils.BigIntegerToBytes((keyPair.Private as ECPrivateKeyParameters)?.D, KeySize);

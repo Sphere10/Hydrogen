@@ -155,8 +155,8 @@ namespace Sphere10.Framework {
 			return Records[index].Traits.HasFlag(ClusteredStorageRecordTraits.IsNull);
 		}
 
-		public void SaveItem<TItem>(int index, TItem item, IItemSerializer<TItem> serializer, ListOperationType operationType) {
-			using var stream = operationType switch {
+		public ClusteredStorageScope EnterSaveItemScope<TItem>(int index, TItem item, IItemSerializer<TItem> serializer, ListOperationType operationType) {
+			var scope = operationType switch {
 				ListOperationType.Add => Add(),
 				ListOperationType.Update => Open(index),
 				ListOperationType.Insert => Insert(index),
@@ -194,15 +194,16 @@ namespace Sphere10.Framework {
 				_openScope.Record.Traits = _openScope.Record.Traits.CopyAndSetFlags(ClusteredStorageRecordTraits.IsNull, true);
 				_openScope.Stream.SetLength(0); // open record will save when closed
 			}
+			return scope;
 		}
 
-
-		public TItem LoadItem<TItem>(int index, IItemSerializer<TItem> serializer) {
-			using var stream = Open(index);
-			if (_openScope.Record.Traits.HasFlag(ClusteredStorageRecordTraits.IsNull))
-				return default;
-			var reader = new EndianBinaryReader(EndianBitConverter.For(_endianness), _openScope.Stream);
-			return serializer.Deserialize(_openScope.Record.Size, reader);
+		public ClusteredStorageScope EnterLoadItemScope<TItem>(int index, IItemSerializer<TItem> serializer, out TItem item) {
+			var scope = Open(index);
+			if (!_openScope.Record.Traits.HasFlag(ClusteredStorageRecordTraits.IsNull)) {
+				var reader = new EndianBinaryReader(EndianBitConverter.For(_endianness), _openScope.Stream);
+				item = serializer.Deserialize(_openScope.Record.Size, reader);
+			} else item = default;
+			return scope;
 		}
 
 		public ClusteredStorageScope Add() {

@@ -235,20 +235,30 @@ namespace Sphere10.Framework {
 
 		private void AddInternal(KeyValuePair<TKey, byte[]> item) {
 			int index;
+			ClusteredStorageScope scope;
 			if (_unusedRecords.Any()) {
 				index = ConsumeUnusedRecord();
-				_kvpStore.Update(index, item);
+				scope = _kvpStore.EnterUpdateScope(index, item);
 			} else {
-				_kvpStore.Add(item);
+				scope = _kvpStore.EnterAddScope(item);
 				index = Count - 1;
 			}
-			MarkRecordAsUsed(index, item.Key);
+
+			// Mark record as used
+			using (scope) {
+				Guard.Ensure(!scope.Record.Traits.HasFlag(ClusteredStorageRecordTraits.IsUsed), "Record not in unused state");
+				scope.Record.KeyChecksum = CalculateKeyChecksum(item.Key);
+				scope.Record.Traits = scope.Record.Traits.CopyAndSetFlags(ClusteredStorageRecordTraits.IsUsed, true);
+				_checksumToIndexLookup.Add(scope.Record.KeyChecksum, index);
+				// note: scope Dispose ends up updating the record
+			}
+
 		}
 
 		private void UpdateInternal(int index, KeyValuePair<TKey, byte[]> item) {
 			// Updating value only, records (and checksum) don't change  when updating
 			_kvpStore[index] = item;
-			var record = _kvpStore.Storage.Records[index];
+			var record = _kvpStore.Storage.GetRecord(index);
 			record.Traits = record.Traits.CopyAndSetFlags(ClusteredStorageRecordTraits.IsUsed, true);
 			record.KeyChecksum = CalculateKeyChecksum(item.Key);
 			_kvpStore.Storage.UpdateRecord(index, record);
@@ -258,8 +268,16 @@ namespace Sphere10.Framework {
 		private void RemoveInternal(TKey key, int index) {
 			// We don't delete the instance, we mark is as unused. Use Shrink to intelligently remove unused records.
 			var kvp = KeyValuePair.Create(default(TKey), null as byte[]);
-			_kvpStore.Update(index, kvp);
-			MarkRecordAsUnused(index);  // record has to be updated after _kvpStore update since it removes/creates under the hood
+			using var scope = _kvpStore.EnterUpdateScope(index, kvp);
+
+			// Mark record as unused
+			Guard.Ensure(scope.Record.Traits.HasFlag(ClusteredStorageRecordTraits.IsUsed), "Record not in used state");
+			_checksumToIndexLookup.Remove(scope.Record.KeyChecksum, index);
+			scope.Record.KeyChecksum = -1;
+			scope.Record.Traits = scope.Record.Traits.CopyAndSetFlags(ClusteredStorageRecordTraits.IsUsed, false);
+			_unusedRecords.Add(index);
+
+			// note: scope Dispose ends up updating the record
 		}
 
 		private bool IsUnusedRecord(int index) => _unusedRecords.Contains(index);
@@ -268,25 +286,6 @@ namespace Sphere10.Framework {
 			var index = _unusedRecords[0];
 			_unusedRecords.RemoveAt(0);
 			return index;
-		}
-
-		private void MarkRecordAsUnused(int index) {
-			var record = _kvpStore.Storage.GetRecord(index);
-			Guard.Ensure(record.Traits.HasFlag(ClusteredStorageRecordTraits.IsUsed), "Record not in used state");
-			_checksumToIndexLookup.Remove(record.KeyChecksum, index);
-			record.KeyChecksum = -1;
-			record.Traits = record.Traits.CopyAndSetFlags(ClusteredStorageRecordTraits.IsUsed, false);
-			_kvpStore.Storage.UpdateRecord(index, record);
-			_unusedRecords.Add(index);
-		}
-
-		private void MarkRecordAsUsed(int index, TKey key) {
-			var record = _kvpStore.Storage.GetRecord(index);
-			Guard.Ensure(!record.Traits.HasFlag(ClusteredStorageRecordTraits.IsUsed), "Record not in unused state");
-			record.KeyChecksum = CalculateKeyChecksum(key);
-			record.Traits = record.Traits.CopyAndSetFlags(ClusteredStorageRecordTraits.IsUsed, true);
-			_kvpStore.Storage.UpdateRecord(index, record);
-			_checksumToIndexLookup.Add(record.KeyChecksum, index);
 		}
 
 		private byte[] ConvertValueToBytes(TValue value)

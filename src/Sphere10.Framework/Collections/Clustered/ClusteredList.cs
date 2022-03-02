@@ -55,28 +55,41 @@ namespace Sphere10.Framework {
 		public override bool Contains(TItem item) => IndexOf(item) != -1;
 
 		public override void Add(TItem item) {
+			using var _ = EnterAddScope(item);
+		}
+
+		public ClusteredStorageScope EnterAddScope(TItem item) {
 			// Index checking deferred to Storage
-			Storage.SaveItem(Storage.Count, item, ItemSerializer, ListOperationType.Add);
 			UpdateVersion();
+			return Storage.EnterSaveItemScope(Storage.Count, item, ItemSerializer, ListOperationType.Add);
 		}
 		
 		public override void Insert(int index, TItem item) {
+			using var _ = EnterInsertScope(index, item);
+		}
+
+		public ClusteredStorageScope EnterInsertScope(int index, TItem item) {
 			// Index checking deferred to Storage
-			Storage.SaveItem(index, item, ItemSerializer, ListOperationType.Insert);
 			UpdateVersion();
+			return Storage.EnterSaveItemScope(index, item, ItemSerializer, ListOperationType.Insert);
 		}
 
 		public override void Update(int index, TItem item) {
+			using var _ = EnterUpdateScope(index, item);
+		}
+
+		public ClusteredStorageScope EnterUpdateScope(int index, TItem item) {
 			// Index checking deferred to Storage
-			Storage.SaveItem(index, item, ItemSerializer, ListOperationType.Update);
 			UpdateVersion();
+			return Storage.EnterSaveItemScope(index, item, ItemSerializer, ListOperationType.Update);
 		}
 
 		public override bool Remove(TItem item) {
 			var index = IndexOf(item);
 			if (index >= 0) {
-				Storage.Remove(index);
 				UpdateVersion();
+				Storage.Remove(index);
+				
 				return true;
 			}
 			return false;

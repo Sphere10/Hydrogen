@@ -131,6 +131,9 @@ public class CustomDsaEncoding : StandardDsaEncoding {
 		if (n == null) {
 			throw new ArgumentNullException(nameof(n));
 		}
+		if (encoding == null) {
+			throw new ArgumentNullException(nameof(encoding));
+		}
 		if (encoding is { Length: 0 }) {
 			throw new ArgumentException(EmptySignature, nameof(encoding));
 		}

@@ -28,9 +28,9 @@ namespace Sphere10.Framework {
 
 		void Clear();
 
-		void SaveItem<TItem>(int index, TItem item, IItemSerializer<TItem> serializer, ListOperationType operationType);
+		ClusteredStorageScope EnterSaveItemScope<TItem>(int index, TItem item, IItemSerializer<TItem> serializer, ListOperationType operationType);
 
-		TItem LoadItem<TItem>(int index, IItemSerializer<TItem> serializer);
+		ClusteredStorageScope EnterLoadItemScope<TItem>(int index, IItemSerializer<TItem> serializer, out TItem item);
 
 		ClusteredStorageRecord GetRecord(int index);
 
@@ -68,7 +68,15 @@ namespace Sphere10.Framework {
 				scope.Stream.Write(bytes);
 			}
 		}
-	}
 
+		public static void SaveItem<TItem>(this IClusteredStorage storage, int index, TItem item, IItemSerializer<TItem> serializer, ListOperationType operationType) {
+			using var scope = storage.EnterSaveItemScope(index, item, serializer, operationType);
+		}
+
+		public static TItem LoadItem<TItem>(this IClusteredStorage storage, int index, IItemSerializer<TItem> serializer) {
+			using var scope = storage.EnterLoadItemScope(index, serializer, out var item);
+			return item;
+		}
+	}
 
 }

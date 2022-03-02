@@ -3,7 +3,7 @@
 namespace Sphere10.Framework {
 	
 	[Flags]
-	public enum ClusteredStoragePolicy {
+	public enum ClusteredStoragePolicy : uint {
 
 		/// <summary>
 		/// Clusters are pre-allocated when serializing items. This avoids on-the-fly allocation during serialization which can be slow.

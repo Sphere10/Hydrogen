@@ -79,6 +79,8 @@ public class Schnorr : StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schno
 
 	public override PrivateKey GeneratePrivateKey(ReadOnlySpan<byte> seed) {
 		var keyPairGenerator = GeneratorUtilities.GetKeyPairGenerator("ECDSA");
+		// add seed to RNG
+		_secureRandom.SetSeed(seed.ToArray());
 		keyPairGenerator.Init(new ECKeyGenerationParameters(_domainParams, _secureRandom));
 		var keyPair = keyPairGenerator.GenerateKeyPair();
 		var privateKeyBytes = BytesOfBigInt((keyPair.Private as ECPrivateKeyParameters)?.D, KeySize);
@@ -296,7 +298,8 @@ public class Schnorr : StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schno
 	/// <param name="scalar"></param>
 	/// <returns></returns>
 	private bool ValidatePrivateKeyRangeNoThrow(BigInteger scalar) {
-		return scalar.CompareTo(BigInteger.Zero) >= 0 && scalar.CompareTo(N.Subtract(BigInteger.One)) <= 0;
+		// 1 to n - 1
+		return scalar.CompareTo(BigInteger.One) >= 0 && scalar.CompareTo(N.Subtract(BigInteger.One)) <= 0;
 	}
 
 	/// <summary>
@@ -307,7 +310,7 @@ public class Schnorr : StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schno
 	/// <exception cref="ArgumentException"></exception>
 	internal void ValidatePrivateKeyRange(string name, BigInteger scalar) {
 		if (!ValidatePrivateKeyRangeNoThrow(scalar)) {
-			throw new ArgumentException($"{name} must be an integer in the range 0..n-1");
+			throw new ArgumentException($"{name} must be an integer in the range 1..n-1");
 		}
 	}
 
@@ -317,7 +320,7 @@ public class Schnorr : StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schno
 	/// <param name="publicKey"></param>
 	/// <returns></returns>
 	private bool ValidatePublicKeyRangeNoThrow(BigInteger publicKey) {
-		return publicKey.CompareTo(BigInteger.One) >= 0 && publicKey.CompareTo(P) < 0;
+		return publicKey.CompareTo(BigInteger.Zero) >= 0 && publicKey.CompareTo(P.Subtract(BigInteger.One)) <= 0;
 	}
 
 	/// <summary>

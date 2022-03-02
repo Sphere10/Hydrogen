@@ -71,6 +71,7 @@ namespace Sphere10.Framework.CryptoEx.Tests {
 			var curveName = Enum.GetName(typeof(ECDSAKeyType), keyType);
 			var message = Encoding.ASCII.GetBytes(RandomString(rng.Next(1, 1000)));
 			var messageDigest = Hashers.Hash(CHF.SHA2_256, message).ToHexString(true);
+			var order = privateKey.Parameters.Value.Parameters.Curve.Order;
 			string[] args = {
 				"-operationtype SIGN",
 				$"-curvetype {curveName}",
@@ -79,6 +80,8 @@ namespace Sphere10.Framework.CryptoEx.Tests {
 			};
 
 			var sig = CallPascalOpenSSL(args).ToHexByteArray();
+			// OpenSSL doesn't take into account the "LowS fix" to resolve signature malleability so we account for it here
+			sig = ECDSATests.CanonicalizeSig(order, sig);
 			Assert.IsTrue(ecdsa.VerifyDigest(sig, messageDigest.ToHexByteArray(), publicKey));
 		}
 

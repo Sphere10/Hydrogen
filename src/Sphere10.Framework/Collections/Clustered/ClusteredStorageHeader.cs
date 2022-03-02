@@ -4,20 +4,30 @@ namespace Sphere10.Framework {
 
 	public class ClusteredStorageHeader {
 		public const int ByteLength = 256;
+		public const int MerkleRootLength = 32;
+		public const int MasterKeyLength = 32;
 
 		internal const int VersionOffset = 0;
-		internal const int RecordsOffset = sizeof(byte);
+		internal const int PolicyOffset = sizeof(byte);
+		internal const int RecordsOffset = PolicyOffset + sizeof(uint);
 		internal const int ClusterSizeOffset = RecordsOffset + sizeof(int);
 		internal const int TotalClustersOffset = ClusterSizeOffset + sizeof(int);
+		internal const int MerkleRootOffset = TotalClustersOffset + sizeof(int);
+		internal const int MasterKeyOffset = MerkleRootOffset + MerkleRootLength;
 
 		private Stream _headerStream;
 		private EndianBinaryReader _reader;
 		private EndianBinaryWriter _writer;
 
 		private byte? _version;
+		private ClusteredStoragePolicy? _policy;
+		private int? _records;
 		private int? _clusterSize;
 		private int? _totalClusters;
-		private int? _records;
+		
+		private byte[] _merkleRoot;
+		private byte[] _masterKey;
+		
 
 		public byte Version {
 			get {
@@ -34,6 +44,23 @@ namespace Sphere10.Framework {
 				_clusterSize = value;
 				_headerStream.Seek(VersionOffset, SeekOrigin.Begin);
 				_writer.Write(_clusterSize.Value);
+			}
+		}
+
+		public ClusteredStoragePolicy Policy {
+			get {
+				if (!_policy.HasValue) {
+					_headerStream.Seek(PolicyOffset, SeekOrigin.Begin);
+					_policy = (ClusteredStoragePolicy) _reader.ReadInt32();
+				}
+				return _policy.Value;
+			}
+			set {
+				if (_policy == value)
+					return;
+				_policy = value;
+				_headerStream.Seek(PolicyOffset, SeekOrigin.Begin);
+				_writer.Write((int)_policy.Value);
 			}
 		}
 
@@ -88,6 +115,40 @@ namespace Sphere10.Framework {
 			}
 		}
 
+		public byte[] MerkleRoot {
+			get {
+				if (_merkleRoot == null) {
+					_headerStream.Seek(MerkleRootOffset, SeekOrigin.Begin);
+					_merkleRoot = _reader.ReadBytes(MerkleRootLength);
+				}
+				return _merkleRoot;
+			}
+			set {
+				if (ByteArrayEqualityComparer.Instance.Equals(_merkleRoot, value))
+					return;
+				_merkleRoot = value;
+				_headerStream.Seek(MerkleRootOffset, SeekOrigin.Begin);
+				_writer.Write(_merkleRoot);
+			}
+		}
+
+		public byte[] MasterKey {
+			get {
+				if (_masterKey == null) {
+					_headerStream.Seek(MasterKeyOffset, SeekOrigin.Begin);
+					_masterKey = _reader.ReadBytes(MasterKeyLength);
+				}
+				return _masterKey;
+			}
+			set {
+				if (ByteArrayEqualityComparer.Instance.Equals(_masterKey, value))
+					return;
+				_masterKey = value;
+				_headerStream.Seek(MasterKeyOffset, SeekOrigin.Begin);
+				_writer.Write(_masterKey);
+			}
+		}
+
 		public void AttachTo(Stream rootStream, Endianness endianness) {
 			Guard.ArgumentNotNull(rootStream, nameof(rootStream));
 			Guard.Argument(rootStream.Length >= ByteLength, nameof(rootStream), "Missing header");
@@ -95,9 +156,12 @@ namespace Sphere10.Framework {
 			_reader = new EndianBinaryReader(EndianBitConverter.For(endianness), _headerStream);
 			_writer = new EndianBinaryWriter(EndianBitConverter.For(endianness), _headerStream);
 			_version = null;
+			_policy = 0;
 			_clusterSize = null;
 			_totalClusters = null;
 			_records = null;
+			_merkleRoot = new byte[MerkleRootLength];
+			_masterKey = new byte[MasterKeyLength];
 		}
 
 		public void CreateIn(byte version, Stream rootStream, int clusterSize, Endianness endianness) {
@@ -106,10 +170,14 @@ namespace Sphere10.Framework {
 			rootStream.Seek(0, SeekOrigin.Begin);
 			var writer = new EndianBinaryWriter(EndianBitConverter.For(endianness), rootStream);
 			writer.Write(version); // Version
+			writer.Write((int)0); // Policy
 			writer.Write((int)0); // Records
 			writer.Write(clusterSize); // ClusterSize
 			writer.Write((int)0); // TotalClusters 
-			writer.Write(Tools.Array.Gen<byte>(ByteLength - sizeof(byte) - sizeof(int) - sizeof(int) - sizeof(int), 0)); // header padding
+			writer.Write(new byte[MerkleRootLength]); // MerkleRoot 
+			writer.Write(new byte[MasterKeyLength]); // MasterKey
+
+			writer.Write(Tools.Array.Gen<byte>(ByteLength - sizeof(byte) - sizeof(int) - sizeof(int) - sizeof(int) - sizeof(int) - MerkleRootLength - MasterKeyLength, 0)); // header padding
 			AttachTo(rootStream, endianness);
 		}
 
@@ -127,7 +195,7 @@ namespace Sphere10.Framework {
 				throw new CorruptDataException($"Corrupt header (Records field was {RecordsCount})");
 		}
 
-		public override string ToString() => $"[ClusteredStreamStorage] Version: {Version}, Cluster Size: {ClusterSize}, Total Clusters: {TotalClusters}, Records: {RecordsCount}";
+		public override string ToString() => $"[ClusteredStreamStorage] Version: {Version}, Cluster Size: {ClusterSize}, Total Clusters: {TotalClusters}, Records: {RecordsCount}, Policy: {Policy}, MerkleRoot: {MerkleRoot.ToHexString(true)}";
 
 	}
 

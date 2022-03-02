@@ -15,8 +15,8 @@ namespace Sphere10.Framework {
 		public const int DefaultClusterSize = 256;   // 256b
 		public const int DefaultMaxMemory = int.MaxValue; //  10 * (1 << 20);// 10mb
 
-		public event EventHandlerEx<object> Loading { add => _transactionalBuffer.Loading += value; remove => _transactionalBuffer.Loading -= value; }
-		public event EventHandlerEx<object> Loaded { add => _transactionalBuffer.Loaded += value; remove => _transactionalBuffer.Loaded -= value; }
+		public event EventHandlerEx<object> Loading { add => _clustered.Loading += value; remove => _clustered.Loading -= value; }
+		public event EventHandlerEx<object> Loaded { add => _clustered.Loaded += value; remove => _clustered.Loaded -= value; }
 		public event EventHandlerEx<object> Committing { add => _transactionalBuffer.Committing += value; remove => _transactionalBuffer.Committing -= value; }
 		public event EventHandlerEx<object> Committed { add => _transactionalBuffer.Committed += value; remove => _transactionalBuffer.Committed -= value; }
 		public event EventHandlerEx<object> RollingBack { add => _transactionalBuffer.RollingBack += value; remove => _transactionalBuffer.RollingBack -= value; }
@@ -73,7 +73,7 @@ namespace Sphere10.Framework {
 			InternalCollection = _dictionary;
 		}
 
-		public bool RequiresLoad => _transactionalBuffer.RequiresLoad;
+		public bool RequiresLoad => _transactionalBuffer.RequiresLoad || _clustered.RequiresLoad;
 
 		public ISynchronizedObject<Scope, Scope> ParentSyncObject {
 			get => _dictionary.ParentSyncObject;
@@ -84,13 +84,14 @@ namespace Sphere10.Framework {
 
 		public string Path => _transactionalBuffer.Path;
 
-		public Guid FileID => _transactionalBuffer.FileID;
-
 		public TransactionalFileMappedBuffer AsBuffer => _transactionalBuffer;
 
 		public IClusteredStorage Storage => _clustered.Storage;
 
-		public void Load() => _transactionalBuffer.Load();
+		public void Load() {
+			_transactionalBuffer.Load();
+			_clustered.Load();
+		}
 
 		public Scope EnterReadScope() => _dictionary.EnterReadScope();
 

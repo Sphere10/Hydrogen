@@ -13,13 +13,8 @@ namespace Sphere10.Framework {
 	/// A list whose items are persisted via an <see cref="IClusteredStorage"/>.
 	/// </summary>
 	/// <typeparam name="TItem"></typeparam>
-	/// <typeparam name="THeader"></typeparam>
-	/// <typeparam name="TRecord"></typeparam>
 	public class ClusteredList<TItem> : SingularListBase<TItem>, IClusteredList<TItem> {
-
-		protected readonly IItemSerializer<TItem> ItemSerializer;
-		protected readonly IEqualityComparer<TItem> ItemComparer;
-		protected readonly Endianness Endianness;
+		private readonly Endianness _endianness;
 		private int _version;
 
 		public ClusteredList(Stream rootStream, int clusterSize, IItemSerializer<TItem> itemSerializer, IEqualityComparer<TItem> itemComparer = null, ClusteredStoragePolicy policy = ClusteredStoragePolicy.Default,  Endianness endianness = Endianness.LittleEndian)
@@ -33,12 +28,16 @@ namespace Sphere10.Framework {
 			ItemSerializer = itemSerializer;
 			ItemComparer = itemComparer ?? EqualityComparer<TItem>.Default;
 			_version = 0;
-			Endianness = endianness;
+			_endianness = endianness;
 		}
 
 		public override int Count => Storage.Count;
 
 		public IClusteredStorage Storage { get; }
+
+		public IItemSerializer<TItem> ItemSerializer { get; }
+
+		public IEqualityComparer<TItem> ItemComparer { get; }
 
 		public override TItem Read(int index) 
 			=> Storage.LoadItem(index, ItemSerializer); // Index checking deferred to Storage

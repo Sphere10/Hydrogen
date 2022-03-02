@@ -5,7 +5,6 @@ using System.Collections.Specialized;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using Sphere10.Framework.Collections.Stream;
 
 namespace Sphere10.Framework {
 
@@ -14,7 +13,6 @@ namespace Sphere10.Framework {
 	/// </summary>
 	/// <typeparam name="TKey"></typeparam>
 	/// <typeparam name="TValue"></typeparam>
-	/// <typeparam name="TRecord"></typeparam>
 	/// <remarks>This is useful when the underlying KVP store isn't efficient at deletion. When deleting an item, it's record is marked as available and re-used later.</remarks>
 	// TODO: there are some memory-blowout lookups in this class that need to be refactored out (should be safe for non-huge dictionaries).
 	public class ClusteredDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>, IClusteredDictionary<TKey, TValue>, ILoadable {
@@ -23,14 +21,33 @@ namespace Sphere10.Framework {
 
 		private readonly IItemSerializer<TValue> _valueSerializer;
 		private readonly Endianness _endianness;
-		private readonly IClusteredKeyValueStore<TKey> _kvpStore;
+		private readonly IClusteredList<KeyValuePair<TKey, byte[]>> _kvpStore;
 		private readonly IEqualityComparer<TKey> _keyComparer;
 		private readonly LookupEx<int, int> _checksumToIndexLookup;
 		private readonly SortedList<int> _unusedRecords;
 
 
 		public ClusteredDictionary(Stream rootStream, int clusterSize, IItemSerializer<TKey> keySerializer, IItemSerializer<TValue> valueSerializer, IEqualityComparer<TKey> keyComparer = null, ClusteredStoragePolicy policy = ClusteredStoragePolicy.DictionaryDefault, Endianness endianness = Endianness.LittleEndian)
-			: this(new ClusteredKeyValueStore<TKey>(rootStream, clusterSize, keySerializer, keyComparer, policy, endianness), valueSerializer, keyComparer, endianness) {
+			: this(
+				new ClusteredList<KeyValuePair<TKey, byte[]>>(
+					rootStream, 
+					clusterSize,
+					new KeyValuePairSerializer<TKey, byte[]>(
+						keySerializer,
+						new ByteArraySerializer()
+					),
+					new KeyValuePairEqualityComparer<TKey, byte[]>(
+						keyComparer,
+						new ByteArrayEqualityComparer()
+					),
+					policy,
+					endianness
+				), 
+				valueSerializer,
+				keyComparer,
+				endianness
+			) {
+			Guard.Argument(policy.HasFlag(ClusteredStoragePolicy.TrackChecksums), nameof(policy), $"Checksum tracking must be enabled in clustered dictionary implementations.");
 		}
 
 		/// <summary>
@@ -40,7 +57,7 @@ namespace Sphere10.Framework {
 		/// <param name="valueSerializer"></param>
 		/// <param name="keyComparer"></param>
 		/// <param name="endianess"></param>
-		public ClusteredDictionary(IClusteredKeyValueStore<TKey> kvpStore, IItemSerializer<TValue> valueSerializer, IEqualityComparer<TKey> keyComparer = null, Endianness endianess = Endianness.LittleEndian) {
+		public ClusteredDictionary(IClusteredList<KeyValuePair<TKey, byte[]>> kvpStore, IItemSerializer<TValue> valueSerializer, IEqualityComparer<TKey> keyComparer = null, Endianness endianess = Endianness.LittleEndian) {
 			_keyComparer = keyComparer ?? EqualityComparer<TKey>.Default;
 			_kvpStore = kvpStore;
 			_valueSerializer = valueSerializer;
@@ -72,8 +89,26 @@ namespace Sphere10.Framework {
 		public bool RequiresLoad { get; private set; }
 
 		public void Load() {
+			NotifyLoading();
 			RefreshChecksumToIndexLookup();
 			RequiresLoad = false;
+			NotifyLoaded();
+		}
+
+		public TKey ReadKey(int index) {
+			if (Storage.IsNull(index))
+				throw new InvalidOperationException($"Stream record {index} is null");
+			using var scope = Storage.Open(index);
+			var reader = new EndianBinaryReader(EndianBitConverter.For(_endianness), scope.Stream);
+			return ((KeyValuePairSerializer<TKey, byte[]>)_kvpStore.ItemSerializer).DeserializeKey(scope.Record.Size, reader);
+		}
+
+		public byte[] ReadValue(int index) {
+			if (Storage.IsNull(index))
+				throw new InvalidOperationException($"Stream record {index} is null");
+			using var scope = Storage.Open(index);
+			var reader = new EndianBinaryReader(EndianBitConverter.For(_endianness), scope.Stream);
+			return ((KeyValuePairSerializer<TKey, byte[]>)_kvpStore.ItemSerializer).DeserializeValue(scope.Record.Size, reader);
 		}
 
 		public override void Add(TKey key, TValue value) {
@@ -104,7 +139,7 @@ namespace Sphere10.Framework {
 			return
 				_checksumToIndexLookup[CalculateKeyChecksum(key)]
 					.Where(index => !IsUnusedRecord(index))
-					.Select(_kvpStore.ReadKey)
+					.Select(ReadKey)
 					.Any(item => _keyComparer.Equals(item, key));
 		}
 
@@ -190,13 +225,19 @@ namespace Sphere10.Framework {
 			  .GetEnumerator();
 		}
 
+		protected virtual void OnLoading() {
+		}
+
+		protected virtual void OnLoaded() {
+		}
+
 		private bool TryFindKVP(TKey key, out int index, out byte[] valueBytes) {
 			Debug.Assert(key != null);
 			foreach (var i in _checksumToIndexLookup[CalculateKeyChecksum(key)]) {
-				var candidateKey = _kvpStore.ReadKey(i);
+				var candidateKey = ReadKey(i);
 				if (_keyComparer.Equals(candidateKey,key)) {
 					index = i;
-					valueBytes = _kvpStore.ReadValue(i);
+					valueBytes = ReadValue(i);
 					return true;
 				}
 			}
@@ -208,7 +249,7 @@ namespace Sphere10.Framework {
 		private bool TryFindKey(TKey key, out int index) {
 			Debug.Assert(key != null);
 			foreach (var i in _checksumToIndexLookup[CalculateKeyChecksum(key)]) {
-				var candidateKey = _kvpStore.ReadKey(i);
+				var candidateKey = ReadKey(i);
 				if (_keyComparer.Equals(candidateKey, key)) {
 					index = i;
 					return true;
@@ -221,10 +262,10 @@ namespace Sphere10.Framework {
 		private bool TryFindValue(TKey key, out int index, out byte[] valueBytes) {
 			Debug.Assert(key != null);
 			foreach (var i in _checksumToIndexLookup[CalculateKeyChecksum(key)]) {
-				var candidateKey = _kvpStore.ReadKey(i);
+				var candidateKey = ReadKey(i);
 				if (_keyComparer.Equals(candidateKey, key)) {
 					index = i;
-					valueBytes = _kvpStore.ReadValue(index);
+					valueBytes = ReadValue(index);
 					return true;
 				}
 			}
@@ -309,9 +350,20 @@ namespace Sphere10.Framework {
 			}
 		}
 
-		protected void CheckLoaded() {
+		private void CheckLoaded() {
 			if (RequiresLoad)
 				throw new InvalidOperationException("StreamPersistedDictionary has not been loaded");
 		}
+
+		protected void NotifyLoading() {
+			OnLoading();
+			Loading?.Invoke(this);
+		}
+
+		protected void NotifyLoaded() {
+			OnLoaded();
+			Loaded?.Invoke(this);
+		}
+
 	}
 }

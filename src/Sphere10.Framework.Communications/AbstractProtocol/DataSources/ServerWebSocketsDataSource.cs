@@ -70,6 +70,36 @@ SystemLog.Info("Created: " + jsonItem);
 			throw new System.NotImplementedException();
 		}
 
+		public override void NewDelayed(int count) {
+			throw new NotImplementedException();
+		}
 
+		public override void CreateDelayed(IEnumerable<TItem> entities) {
+			throw new NotImplementedException();
+		}
+
+		public override void RefreshDelayed(IEnumerable<TItem> entities) {
+			throw new NotImplementedException();
+		}
+
+		public override Task Update(IEnumerable<TItem> entities) {
+			throw new NotImplementedException();
+		}
+
+		public override void UpdateDelayed(IEnumerable<TItem> entities) {
+			throw new NotImplementedException();
+		}
+
+		public override void DeleteDelayed(IEnumerable<TItem> entities) {
+			throw new NotImplementedException();
+		}
+
+		public override void ValidateDelayed(IEnumerable<(TItem entity, CrudAction action)> actions) {
+			throw new NotImplementedException();
+		}
+
+		public override void CountDelayed() {
+			throw new NotImplementedException();
+		}
 	}
 }

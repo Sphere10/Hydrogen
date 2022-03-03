@@ -21,21 +21,28 @@ namespace Sphere10.Framework {
 		public event EventHandlerEx<DataSourceMutatedItems<TItem>> MutatedItems;
 
 		IEnumerable<TItem> New(int count);
+		void NewDelayed(int count);
 
 		Task Create(IEnumerable<TItem> entities);
+		void CreateDelayed(IEnumerable<TItem> entities);
 
 		Task<IEnumerable<TItem>> Read(string searchTerm, int pageLength, ref int page, string sortProperty, SortDirection sortDirection, out int totalItems);
-		IEnumerable<TItem> ReadSync(string searchTerm, int pageLength, ref int page, string sortProperty, SortDirection sortDirection, out int totalItems);
+		void ReadDelayed(string searchTerm, int pageLength, int page, string sortProperty, SortDirection sortDirection);
 
 		Task Refresh(TItem[] entities);
+		void RefreshDelayed(IEnumerable<TItem> entities);
 
 		Task Update(IEnumerable<TItem> entities);
+		void UpdateDelayed(IEnumerable<TItem> entities);
 
 		Task Delete(IEnumerable<TItem> entities);
+		void DeleteDelayed(IEnumerable<TItem> entities);
 
 		Task<Result> Validate(IEnumerable<(TItem entity, CrudAction action)> actions);
+		void ValidateDelayed(IEnumerable<(TItem entity, CrudAction action)> actions);
 
 		Task<int> Count { get; }
+		void CountDelayed();
 
 		#region Single access simplifications
 
@@ -67,6 +74,4 @@ namespace Sphere10.Framework {
 
 		#endregion
 	}
-
-
 }

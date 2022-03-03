@@ -206,7 +206,7 @@
     int TotalDataCount { get; set; }
 
     int DefaultRowHeight = 20;
-    int DefaultCellWidth = 40;
+    //int DefaultCellWidth = 40;
     static bool FirstLoad = true;
 
     static Random Random { get; set; } = new Random((int)DateTime.Now.Ticks);
@@ -230,7 +230,7 @@
     protected override void OnInitialized()
     {
         if (FirstLoad) {
-SystemLog.Info($"FirstLoad OnInitialized()");
+//SystemLog.Info($"FirstLoad OnInitialized()");
             DataSource.MutatedItems += HandleRemoteDataChange;
             FirstLoad = false;
         }
@@ -269,10 +269,10 @@ SystemLog.Info($"FirstLoad OnInitialized()");
         Header.Clear();
         Rows.Clear();
 
-        var width = DefaultCellWidth;
+        var width = HeaderData.DefaultWidth;
         var height = DefaultRowHeight;
 
-SystemLog.Info($"BlazorGrid LoadData() Data count {Data.Count}");
+//SystemLog.Info($"BlazorGrid LoadData() Data count {Data.Count}");
 
         if (Data.Any())
         {
@@ -310,7 +310,9 @@ SystemLog.Info($"BlazorGrid LoadData() Data count {Data.Count}");
             }
         }
 
-        JSRuntime.InvokeAsync<object>("ResizableColumnTable", new object[] { Id }, DotNetObjectReference.Create<BlazorGrid<TItem>>(this));
+        //JSRuntime.InvokeAsync<object>("ResizableColumnTable", new object[] { Id }, DotNetObjectReference.Create<BlazorGrid<TItem>>(this));
+
+        StateHasChanged(); 
     }
 
     // put this into Cell
@@ -324,7 +326,7 @@ SystemLog.Info($"BlazorGrid LoadData() Data count {Data.Count}");
         }
     }
 
-    private void CellDataChanged(object valueObject, string dataName, Cell cell)
+    async private void CellDataChanged(object valueObject, string dataName, Cell cell)
     {
         var newValue = valueObject.ToString();
 
@@ -336,7 +338,12 @@ SystemLog.Info($"BlazorGrid LoadData() Data count {Data.Count}");
         // return the updated underlying value to the DataSource
         var itemInList = new List<TItem>() { (TItem)cell.Tag };
 
-        DataSource.Update(itemInList);
+        try {
+            await DataSource.Update(itemInList);
+        }
+        catch (Exception ex) {
+            
+        }
     }
 
     private bool CellContextMenu(object entity)
@@ -465,7 +472,7 @@ SystemLog.Info($"BlazorGrid LoadData() Data count {Data.Count}");
 
         var updates = items.UpdatedItems.ToList();
 
-SystemLog.Info($"BlazorGrid HandleRemoteDataChange() Items count {updates.Count}");
+SystemLog.Info($"BlazorGrid HandleRemoteDataChange() Items TotalItems {items.TotalItems} Updates Count {updates.Count}");
 
         Data.Clear();
 
@@ -484,90 +491,86 @@ SystemLog.Info($"BlazorGrid HandleRemoteDataChange() Items count {updates.Count}
                 break;
 
                 default:
-SystemLog.Error($"BlazorGrid HandleRemoteDataChange() default");
+SystemLog.Error($"XXXXXXXX BlazorGrid HandleRemoteDataChange() default");
                 break;
             }
         }
 
         TotalDataCount = items.TotalItems;
-        CurrentPage = items.CurrentPage;
+        //CurrentPage = items.CurrentPage;
         LoadData();
-        StateHasChanged(); 
+        //StateHasChanged(); 
     }
 
  //   async Task PagingNew() {
     void PagingNew() {
        try {
 //SystemLog.Info($"BlazorGrid Trying to Create 100 Objects");
-            DataSource.New(100);
+            DataSource.NewDelayed(100);
         }
         catch (Exception ex) {        
 //SystemLog.Error(ex.Message);
         }
     }
 
-    async void PagingFirst()
+    void PagingFirst()
     {
-//        if (CurrentPage == 0) return;
         CurrentPage = 0;
-        var error = await GetPageAndDisplayData();
-        StateHasChanged();
+        GetPageAndDisplayData();
     }
 
-    async void PagingNext()
-    {
-        CurrentPage++;
-        await GetPageAndDisplayData();
-        StateHasChanged();
-    }
-
-    async void PagingSetCurrentPage(object newCurrentPage)
-    {
-        CurrentPage = int.Parse(newCurrentPage.ToString());
-        await GetPageAndDisplayData();
-        StateHasChanged();
-    }
-
-    async void PagingPrevious()
+    void PagingPrevious()
     {
         if (CurrentPage == 0) return;
         CurrentPage--;
-        await GetPageAndDisplayData();
-        StateHasChanged();
+        GetPageAndDisplayData();
     }
 
-    async void PagingLast()
+    void PagingNext()
+    {
+        if (CurrentPage < (TotalDataCount / PageSize) - 1) {
+            CurrentPage++;
+            GetPageAndDisplayData();       
+        }
+    }
+
+    void PagingSetCurrentPage(object newCurrentPage)
+    {
+        var maxPage = TotalDataCount / PageSize;
+        var currentPage = int.Parse(newCurrentPage.ToString());
+        if (currentPage < 0) CurrentPage = 0;
+        else if (currentPage > maxPage) CurrentPage = maxPage;
+        else CurrentPage = currentPage;
+        GetPageAndDisplayData();
+    }
+
+    void PagingLast()
     {
         // callback to the server
         var total = DataSource.Count.Result;
         CurrentPage = total / PageSize;
-        await GetPageAndDisplayData();
-        StateHasChanged();
+        GetPageAndDisplayData();
     }
 
-    async Task<bool> GetPageAndDisplayData()
+ //   async Task<bool> GetPageAndDisplayData()
+    void GetPageAndDisplayData()
     {
-        var useCurrentPage = CurrentPage;
-
         try
         {
-            Data = (await DataSource.Read("", PageSize, ref useCurrentPage, "", SortDirection.Ascending, out int totalItems)).ToList();
-
-            TotalDataCount = totalItems;
-            CurrentPage = useCurrentPage;
-            LoadData();
-            StateHasChanged();
-
-            return true;
+            //var useCurrentPage = CurrentPage;
+            //Data = (await DataSource.Read("", PageSize, ref useCurrentPage, "", SortDirection.Ascending, out int totalItems)).ToList();
+            DataSource.ReadDelayed("", PageSize, CurrentPage, "", SortDirection.Ascending);
+            //TotalDataCount = totalItems;
+            //CurrentPage = useCurrentPage;
+            //LoadData();
+            //StateHasChanged();
         }
         catch (Exception ex) {
             
         }
 
-        return false;
-
         // callback to the server
-SystemLog.Info($"GetPageAndDisplayData()");
+//SystemLog.Info($"GetPageAndDisplayData()");
     }
 
     #endregion

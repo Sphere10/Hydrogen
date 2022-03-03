@@ -8,53 +8,28 @@ namespace Sphere10.Framework {
 		public event EventHandlerEx<DataSourceMutatedItems<TItem>> MutatedItems;
 
 		public abstract IEnumerable<TItem> New(int count);
+		public abstract void NewDelayed(int count);
 
 		public abstract Task Create(IEnumerable<TItem> entities);
+		public abstract void CreateDelayed(IEnumerable<TItem> entities);
 
 		public abstract Task<IEnumerable<TItem>> Read(string searchTerm, int pageLength, ref int page, string sortProperty, SortDirection sortDirection, out int totalItems);
-		public abstract IEnumerable<TItem> ReadSync(string searchTerm, int pageLength, ref int page, string sortProperty, SortDirection sortDirection, out int totalItems);
-
+		public abstract void ReadDelayed(string searchTerm, int pageLength, int page, string sortProperty, SortDirection sortDirection);
 
 		public abstract Task Refresh(TItem[] entities);
+		public abstract void RefreshDelayed(IEnumerable<TItem> entities);
 
 		public abstract Task Update(IEnumerable<TItem> entities);
+		public abstract void UpdateDelayed(IEnumerable<TItem> entities);
 
 		public abstract Task Delete(IEnumerable<TItem> entities);
+		public abstract void DeleteDelayed(IEnumerable<TItem> entities);
 
 		public abstract Task<Result> Validate(IEnumerable<(TItem entity, CrudAction action)> actions);
-
-		IEnumerable<TItem> IDataSource<TItem>.New(int count) {
-			throw new NotImplementedException();
-		}
-
-		Task IDataSource<TItem>.Create(IEnumerable<TItem> entities) {
-			throw new NotImplementedException();
-		}
-
-		Task<IEnumerable<TItem>> IDataSource<TItem>.Read(string searchTerm, int pageLength, ref int page, string sortProperty, SortDirection sortDirection, out int totalItems) {
-			throw new NotImplementedException();
-		}
-		IEnumerable<TItem> IDataSource<TItem>.ReadSync(string searchTerm, int pageLength, ref int page, string sortProperty, SortDirection sortDirection, out int totalItems) {
-			throw new NotImplementedException();
-		}
-
-		Task IDataSource<TItem>.Refresh(TItem[] entities) {
-			throw new NotImplementedException();
-		}
-
-		Task IDataSource<TItem>.Update(IEnumerable<TItem> entities) {
-			throw new NotImplementedException();
-		}
-
-		Task IDataSource<TItem>.Delete(IEnumerable<TItem> entities) {
-			throw new NotImplementedException();
-		}
-
-		Task<Result> IDataSource<TItem>.Validate(IEnumerable<(TItem entity, CrudAction action)> actions) {
-			throw new NotImplementedException();
-		}
+		public abstract void ValidateDelayed(IEnumerable<(TItem entity, CrudAction action)> actions);
 
 		public abstract Task<int> Count { get; }
+		public abstract void CountDelayed();
 
 		Task<int> IDataSource<TItem>.Count => throw new NotImplementedException();
 	}

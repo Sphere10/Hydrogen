@@ -171,6 +171,7 @@
 
 @code {
 
+/*
     public class DataSource1<TItem> : IDataSource<TestClass>
     {
         List<TestClass> AllItems = new List<TestClass>();
@@ -226,7 +227,7 @@
             }
         }
 
-        public IEnumerable<TestClass> New(int count)
+        public Task<IEnumerable<TestClass>> New(int count)
         {
             var returnList = new List<TestClass>();
             var newId = AllItems.Max(x => x.Id) + 1;
@@ -239,8 +240,12 @@
                 returnList.Add(newEntity);
             }
 
-            return returnList;
+            return Task.FromResult((IEnumerable<TestClass>)returnList);
         }
+
+        //void New(int count) {
+        //    throw new NotImplementedException();
+        //}
 
         public Task<IEnumerable<TestClass>> Read(string searchTerm, int pageLength, ref int page, string sortProperty, SortDirection sortDirection, out int totalItems)
         {
@@ -292,10 +297,6 @@
             throw new NotImplementedException();
         }
 
-        IEnumerable<TestClass> IDataSource<TestClass>.New(int count) {
-            throw new NotImplementedException();
-        }
-
         Task IDataSource<TestClass>.Create(IEnumerable<TestClass> entities) {
             throw new NotImplementedException();
         }
@@ -304,9 +305,9 @@
             throw new NotImplementedException();
         }
 
-        IEnumerable<TestClass> IDataSource<TestClass>.ReadSync(string searchTerm, int pageLength, ref int page, string sortProperty, SortDirection sortDirection, out int totalItems) {
-            throw new NotImplementedException();
-        }
+//        IEnumerable<TestClass> IDataSource<TestClass>.ReadSync(string searchTerm, int pageLength, ref int page, string sortProperty, SortDirection sortDirection, out int totalItems) {
+//           throw new NotImplementedException();
+//        }
 
         Task IDataSource<TestClass>.Refresh(TestClass[] entities) {
             throw new NotImplementedException();
@@ -324,10 +325,45 @@
             throw new NotImplementedException();
         }
 
+
+        void IDataSource<TestClass>.NewDelayed(int count) {
+            throw new NotImplementedException();
+        }
+
+        void IDataSource<TestClass>.CreateDelayed(IEnumerable<TestClass> entities) {
+            throw new NotImplementedException();
+        }
+
+        void IDataSource<TestClass>.ReadDelayed(string searchTerm, int pageLength, int page, string sortProperty, SortDirection sortDirection) {
+            throw new NotImplementedException();
+        }
+
+        void IDataSource<TestClass>.RefreshDelayed(IEnumerable<TestClass> entities) {
+            throw new NotImplementedException();
+        }
+
+        void IDataSource<TestClass>.UpdateDelayed(IEnumerable<TestClass> entities) {
+            throw new NotImplementedException();
+        }
+
+        void IDataSource<TestClass>.DeleteDelayed(IEnumerable<TestClass> entities) {
+            throw new NotImplementedException();
+        }
+
+        void IDataSource<TestClass>.ValidateDelayed(IEnumerable<(TestClass entity, CrudAction action)> actions) {
+            throw new NotImplementedException();
+        }
+
+        void IDataSource<TestClass>.CountDelayed() {
+            throw new NotImplementedException();
+        }
+
         public Task<int> Count { get { return Task.Run(() => AllItems.Count); } }
 
         Task<int> IDataSource<TestClass>.Count => throw new NotImplementedException();
     }
+*/
+
         /*
         public class DataSource2<TItem> : IDataSource<TestClass> {
         //List<TestClass> AllItems = new List<TestClass>();
@@ -444,11 +480,11 @@
 
     #endregion
 
-    DataSource1<TestClass> DataSource { get; set; }
+    //DataSource1<TestClass> DataSource { get; set; }
     List<GridAction<TestClass>> DataActions { get; set; } = new List<GridAction<TestClass>>();
     List<IGridComponent<TestClass>> Components { get; set; } = new List<IGridComponent<TestClass>>();
     List<object> ColumnDefinitions { get; set; } = new List<object>();
-    System.Timers.Timer Timer { get; set; }
+    //System.Timers.Timer Timer { get; set; }
 
     DotNetObjectReference<Index> CSharpInstance { get; set; }
     ClientWebSocketsChannel Channel { get; set; }
@@ -496,7 +532,7 @@
     {
         SystemLog.RegisterLogger(new WebLogger(WriteOutput));
 
-        DataSource = new Index.DataSource1<TestClass>();
+        //DataSource = new Index.DataSource1<TestClass>();
         WebDataSource = new ClientWebSocketsDataSource<TestClass>("ws://192.168.1.171:80/service", false);
 SystemLog.Info($"ClientWebSocketsDataSource Created");
 
@@ -602,12 +638,12 @@ SystemLog.Info($"ClientWebSocketsDataSource Created");
         return item.Name == "Bitcoin";
     }
 
-    public void CountDownTimer(Object source, System.Timers.ElapsedEventArgs e)
-    {
-        DataSource.RefreshData();
-        StateHasChanged();
-        Timer.Stop();
-    }
+    //public void CountDownTimer(Object source, System.Timers.ElapsedEventArgs e)
+    //{
+    //    //DataSource.RefreshData();
+    //    StateHasChanged();
+    //    Timer.Stop();
+    //}
 
     #region Original Code
     private async Task Confirm()

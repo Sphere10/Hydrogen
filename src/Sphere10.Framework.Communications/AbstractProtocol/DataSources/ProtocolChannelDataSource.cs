@@ -26,7 +26,7 @@ namespace Sphere10.Framework.Communications {
 		//public override Task<IEnumerable<TItem>> Read(string searchTerm, int pageLength, ref int page, string sortProperty, SortDirection sortDirection, out int totalItems) {
 		//	throw new System.NotImplementedException();
 		//}
-		public override IEnumerable<TItem> ReadSync(string searchTerm, int pageLength, ref int page, string sortProperty, SortDirection sortDirection, out int totalItems) {
+		public override void ReadDelayed(string searchTerm, int pageLength, int page, string sortProperty, SortDirection sortDirection) {
 			throw new System.NotImplementedException();
 		}
 
@@ -34,9 +34,9 @@ namespace Sphere10.Framework.Communications {
 			throw new System.NotImplementedException();
 		}
 
-		public override Task Update(IEnumerable<TItem> entities) {
-			throw new System.NotImplementedException();
-		}
+		//public override Task Update(IEnumerable<TItem> entities) {
+		//	throw new System.NotImplementedException();
+		//}
 
 		//public override IEnumerable<TItem> New(int count) {
 		//	throw new System.NotImplementedException();

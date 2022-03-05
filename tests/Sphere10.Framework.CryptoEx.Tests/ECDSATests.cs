@@ -31,7 +31,7 @@ namespace Sphere10.Framework.CryptoEx.Tests
             return s.CompareTo(order.ShiftRight(1)) <= 0;
         }
 
-        public static BigInteger[] DerSig_To_R_And_S(byte[] derSig)
+        private static BigInteger[] DerSig_To_R_And_S(byte[] derSig)
         {
             if (derSig == null)
             {
@@ -114,6 +114,19 @@ namespace Sphere10.Framework.CryptoEx.Tests
             var publicKey = ecdsa.DerivePublicKey(privateKey);
             Assert.IsTrue(ecdsa.IsPublicKey(privateKey, publicKey.RawBytes));
         }
+        
+        [Test]
+        [TestCase(ECDSAKeyType.SECP256K1)]
+        [TestCase(ECDSAKeyType.SECP384R1)]
+        [TestCase(ECDSAKeyType.SECP521R1)]
+        [TestCase(ECDSAKeyType.SECT283K1)]
+        public void VerifyThatTryParsePrivateKeyPassForGoodKeys(ECDSAKeyType keyType)
+        {
+            var ecdsa = new ECDSA(keyType);
+            var privateKeyBytes = ecdsa.GeneratePrivateKey().RawBytes;
+            Assert.IsTrue(ecdsa.TryParsePrivateKey(privateKeyBytes, out var privateKey));
+            Assert.AreEqual(privateKeyBytes, privateKey.RawBytes);
+        }
 
         [Test]
         [TestCase(new byte[] { }, ECDSAKeyType.SECP256K1)]
@@ -128,8 +141,63 @@ namespace Sphere10.Framework.CryptoEx.Tests
         {
             var ecdsa = new ECDSA(keyType);
             Assert.IsFalse(ecdsa.TryParsePrivateKey(badRawKey, out _));
+        }
+        
+        [Test]
+        [TestCase(ECDSAKeyType.SECP256K1)]
+        [TestCase(ECDSAKeyType.SECP384R1)]
+        [TestCase(ECDSAKeyType.SECP521R1)]
+        [TestCase(ECDSAKeyType.SECT283K1)]
+        public void VerifyThatTryParsePrivateKeyFailsForValuesNotInBetweenZeroToCurveOrderMinusOne(ECDSAKeyType keyType)
+        {
+            var ecdsa = new ECDSA(keyType);
+            var negativeOne = BigInteger.One.Negate();
+            Assert.IsFalse(ecdsa.TryParsePrivateKey(negativeOne.ToByteArray(), out _));
             var order = keyType.GetAttribute<KeyTypeOrderAttribute>().Value;
-            Assert.IsFalse(ecdsa.TryParsePrivateKey(order.ToByteArrayUnsigned(), out _));
+            Assert.IsFalse(ecdsa.TryParsePrivateKey(BigIntegerUtils.BigIntegerToBytes(order.Add(BigInteger.One), ecdsa.KeySize), out _));
+        }
+        
+        [Test]
+        [TestCase(ECDSAKeyType.SECP256K1)]
+        [TestCase(ECDSAKeyType.SECP384R1)]
+        [TestCase(ECDSAKeyType.SECP521R1)]
+        [TestCase(ECDSAKeyType.SECT283K1)]
+        public void VerifyThatTryParsePublicKeyPassForGoodKeys(ECDSAKeyType keyType)
+        {
+            var ecdsa = new ECDSA(keyType);
+            var privateKey = ecdsa.GeneratePrivateKey();
+            var publicKeyBytes = ecdsa.DerivePublicKey(privateKey).RawBytes;
+            Assert.IsTrue(ecdsa.TryParsePublicKey(publicKeyBytes, out var publicKey));
+            Assert.AreEqual(publicKeyBytes, publicKey.RawBytes);
+        }
+        
+        [Test]
+        [TestCase(new byte[] { }, ECDSAKeyType.SECP256K1)]
+        [TestCase(new byte[] { 0, 0 }, ECDSAKeyType.SECP256K1)]
+        [TestCase(new byte[] { }, ECDSAKeyType.SECP384R1)]
+        [TestCase(new byte[] { 0, 0 }, ECDSAKeyType.SECP384R1)]
+        [TestCase(new byte[] { }, ECDSAKeyType.SECP521R1)]
+        [TestCase(new byte[] { 0, 0 }, ECDSAKeyType.SECP521R1)]
+        [TestCase(new byte[] { }, ECDSAKeyType.SECT283K1)]
+        [TestCase(new byte[] { 0, 0 }, ECDSAKeyType.SECT283K1)]
+        public void VerifyThatTryParsePublicKeyFailsEarlyForBadKeys(byte[] badRawKey, ECDSAKeyType keyType)
+        {
+            var ecdsa = new ECDSA(keyType);
+            Assert.IsFalse(ecdsa.TryParsePublicKey(badRawKey, out _));
+        }
+
+        //SECT283K1 excluded as it is a binary curve
+        [Test]
+        [TestCase(ECDSAKeyType.SECP256K1)]
+        [TestCase(ECDSAKeyType.SECP384R1)]
+        [TestCase(ECDSAKeyType.SECP521R1)]
+        public void VerifyThatTryParsePublicKeyFailsForValuesNotInBetweenZeroToPrimeFieldMinusOne(ECDSAKeyType keyType)
+        {
+            var ecdsa = new ECDSA(keyType);
+            var negativeOne = BigInteger.One.Negate();
+            Assert.IsFalse(ecdsa.TryParsePublicKey(negativeOne.ToByteArray(), out _));
+            var primeField = keyType.GetAttribute<KeyTypePrimeFieldAttribute>().Value;
+            Assert.IsFalse(ecdsa.TryParsePublicKey(BigIntegerUtils.BigIntegerToBytes(primeField, ecdsa.CompressedPublicKeySize), out _));
         }
 
         [Test, Repeat(64)]

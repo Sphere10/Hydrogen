@@ -108,21 +108,9 @@ public class Bip340SchnorrTest
         var messages = positiveVectors.Select(vec => vec.Message.ToHexByteArray()).ToArray();
         var pubKeys = positiveVectors.Select(vec => vec.PublicKey.ToHexByteArray()).ToArray();
         var signatures = positiveVectors.Select(vec => vec.Signature.ToHexByteArray()).ToArray();
-        Exception exception = null;
         var schnorr = new Schnorr(ECDSAKeyType.SECP256K1);
-        bool actual;
-        try
-        {
-            actual = schnorr.BatchVerifyDigest(signatures, messages, pubKeys);
-        }
-        catch (Exception e)
-        {
-            actual = false;
-            exception = e;
-        }
-
+        var actual = schnorr.BatchVerifyDigest(signatures, messages, pubKeys);
         Assert.AreEqual(true, actual, $"batch verification failure. expected = '{true}' but got = '{actual}'");
-        Assert.IsNull(exception);
     }
 
     [Test]
@@ -149,8 +137,9 @@ public class Bip340SchnorrTest
             actual = false;
             exception = e;
         }
-
+        
         Assert.AreEqual(false, actual, $"batch verification failure. expected = '{false}' but got = '{actual}'");
+        Assert.IsNotNull(exception);
         Assert.AreEqual("c is not equal to y^2", exception?.Message);
     }
 
@@ -196,11 +185,10 @@ public class Bip340SchnorrTest
         var negativeOne = BigInteger.One.Negate();
         Assert.IsFalse(schnorr.TryParsePrivateKey(negativeOne.ToByteArray(), out _));
         var order = keyType.GetAttribute<KeyTypeOrderAttribute>().Value;
-        Assert.IsFalse(schnorr.TryParsePrivateKey(order.ToByteArrayUnsigned(), out _));
+        Assert.IsFalse(schnorr.TryParsePrivateKey(BigIntegerUtils.BigIntegerToBytes(order.Add(BigInteger.One), schnorr.KeySize), out _));
     }
 
     [Test]
-    [TestCase(ECDSAKeyType.SECP256K1)]
     [TestCase(ECDSAKeyType.SECP256K1)]
     public void VerifyThatTryParsePrivateKeyPassForGoodKeys(ECDSAKeyType keyType)
     {
@@ -227,11 +215,10 @@ public class Bip340SchnorrTest
         var negativeOne = BigInteger.One.Negate();
         Assert.IsFalse(schnorr.TryParsePublicKey(negativeOne.ToByteArray(), out _));
         var primeField = keyType.GetAttribute<KeyTypePrimeFieldAttribute>().Value;
-        Assert.IsFalse(schnorr.TryParsePublicKey(primeField.ToByteArrayUnsigned(), out _));
+        Assert.IsFalse(schnorr.TryParsePublicKey(BigIntegerUtils.BigIntegerToBytes(primeField, schnorr.KeySize), out _));
     }
 
     [Test]
-    [TestCase(ECDSAKeyType.SECP256K1)]
     [TestCase(ECDSAKeyType.SECP256K1)]
     public void VerifyThatTryParsePublicKeyPassForGoodKeys(ECDSAKeyType keyType)
     {

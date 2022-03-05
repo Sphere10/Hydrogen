@@ -16,10 +16,6 @@ public static class BigIntegerUtils {
 		return bytes;
 	}
 
-	public static BigInteger BytesToBigInteger(byte[] data) {
-		return data == null ? null : new BigInteger(data);
-	}
-
 	public static BigInteger BytesToBigIntegerPositive(byte[] data) {
 		return data == null ? null : new BigInteger(1, data);
 	}

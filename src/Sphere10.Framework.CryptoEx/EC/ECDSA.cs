@@ -18,7 +18,7 @@ namespace Sphere10.Framework.CryptoEx.EC {
 		private readonly ECDomainParameters _domainParams;
 		private readonly SecureRandom _secureRandom;
 
-		private bool ValidatePrivateKeyRangeNoThrow(BigInteger scalar) {
+		private bool ValidatePrivateKey(BigInteger scalar) {
 			// 1 to n - 1
 			return scalar.CompareTo(BigInteger.One) >= 0 && scalar.CompareTo(N.Subtract(BigInteger.One)) <= 0;
 		}
@@ -41,17 +41,25 @@ namespace Sphere10.Framework.CryptoEx.EC {
 		public override IIESAlgorithm IES => new ECIES(); // defaults to a pascalcoin style ECIES
 		private ECCurve Curve => _curveParams.Curve;
 		private BigInteger N => _curveParams.N;
-		private int KeySize => (Curve.FieldSize + 7) >> 3;
+		public int KeySize => (Curve.FieldSize + 7) >> 3;
+		public int CompressedPublicKeySize => KeySize + 1;
 
 		public override bool TryParsePublicKey(ReadOnlySpan<byte> bytes, out PublicKey publicKey) {
-			// we add "1" to account for compression marker
-			if (bytes.Length != KeySize + 1) {
-				publicKey = null;
+			publicKey = null;
+			if (bytes.Length != CompressedPublicKeySize) {
 				return false;
 			}
 			var pubKey = bytes.ToArray();
-			publicKey = new PublicKey(Curve.DecodePoint(pubKey), _keyType, _curveParams, _domainParams);
-			return true;
+			// we only allows compressed ECDSA public keys
+			if (pubKey[0] != 0x02 && pubKey[0] != 0x03) {
+				return false;
+			}
+			try {
+				publicKey = new PublicKey(Curve.DecodePoint(pubKey), _keyType, _curveParams, _domainParams);
+				return true;
+			} catch (Exception) {
+				return false;
+			}
 		}
 
 		public override bool TryParsePrivateKey(ReadOnlySpan<byte> bytes, out PrivateKey privateKey) {
@@ -61,7 +69,7 @@ namespace Sphere10.Framework.CryptoEx.EC {
 			}
 			var secretKey = bytes.ToArray();
 			var d = BigIntegerUtils.BytesToBigIntegerPositive(secretKey);
-			if (!ValidatePrivateKeyRangeNoThrow(d)) {
+			if (!ValidatePrivateKey(d)) {
 				privateKey = null;
 				return false;
 			}

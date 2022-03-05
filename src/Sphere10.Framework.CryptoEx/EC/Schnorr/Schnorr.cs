@@ -36,41 +36,44 @@ public class Schnorr : StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schno
 		}
 		_keyType = keyType;
 		_curveParams = CustomNamedCurves.GetByName(keyType.ToString());
-		_domainParams = new ECDomainParameters(_curveParams.Curve, _curveParams.G, _curveParams.N, _curveParams.H, _curveParams.GetSeed());
+		_domainParams =
+			new ECDomainParameters(_curveParams.Curve, _curveParams.G, _curveParams.N, _curveParams.H, _curveParams.GetSeed());
 		_secureRandom = new SecureRandom();
 		Traits = Traits & DigitalSignatureSchemeTraits.Schnorr & DigitalSignatureSchemeTraits.SupportsIES;
 	}
-	public override IIESAlgorithm IES => new ECIES();  // defaults to a Pascalcoin style ECIES
+	public override IIESAlgorithm IES => new ECIES(); // defaults to a Pascalcoin style ECIES
 
 	internal ECPoint G => _curveParams.G;
 	private ECCurve Curve => _curveParams.Curve;
 	private BigInteger P => _curveParams.Curve.Field.Characteristic;
 	internal BigInteger N => _curveParams.N;
-	internal int KeySize => (Curve.FieldSize + 7) >> 3;
+	public int KeySize => (Curve.FieldSize + 7) >> 3;
 
 	public override bool TryParsePublicKey(ReadOnlySpan<byte> bytes, out PublicKey publicKey) {
+		publicKey = null;
 		if (bytes.Length != KeySize) {
-			publicKey = null;
 			return false;
 		}
 		var pubKey = bytes.ToArray();
 		if (!ValidatePublicKeyRangeNoThrow(BytesToBigIntPositive(pubKey))) {
-			publicKey = null;
 			return false;
 		}
-		publicKey = new PublicKey(LiftX(pubKey), _keyType, _curveParams, _domainParams);
-		return true;
+		try {
+			publicKey = new PublicKey(LiftX(pubKey), _keyType, _curveParams, _domainParams);
+			return true;
+		} catch (Exception) {
+			return false;
+		}
 	}
 
 	public override bool TryParsePrivateKey(ReadOnlySpan<byte> bytes, out PrivateKey privateKey) {
+		privateKey = null;
 		if (bytes.Length != KeySize) {
-			privateKey = null;
 			return false;
 		}
 		var secretKey = bytes.ToArray();
 		var d = BytesToBigIntPositive(secretKey);
 		if (!ValidatePrivateKeyRangeNoThrow(d)) {
-			privateKey = null;
 			return false;
 		}
 		privateKey = new PrivateKey(secretKey, _keyType, _curveParams, _domainParams);
@@ -103,7 +106,8 @@ public class Schnorr : StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schno
 		return SignDigestWithAuxRandomData(privateKey, messageDigest, ReadOnlySpan<byte>.Empty);
 	}
 
-	public byte[] SignDigestWithAuxRandomData(PrivateKey privateKey, ReadOnlySpan<byte> messageDigest, ReadOnlySpan<byte> auxRandomData) {
+	public byte[] SignDigestWithAuxRandomData(PrivateKey privateKey, ReadOnlySpan<byte> messageDigest,
+	                                          ReadOnlySpan<byte> auxRandomData) {
 		// https://github.com/bitcoin/bips/blob/master/bip-0340.mediawiki#signing
 		var sk = privateKey.AsInteger.Value;
 		var message = messageDigest.ToArray();
@@ -251,10 +255,6 @@ public class Schnorr : StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schno
 	public static byte[] BytesOfBigInt(BigInteger bi, int numBytes) {
 		return BigIntegerUtils.BigIntegerToBytes(bi, numBytes);
 	}
-	
-	public static BigInteger BytesToBigInt(byte[] bytes) {
-		return BigIntegerUtils.BytesToBigInteger(bytes);
-	}
 
 	public static BigInteger BytesToBigIntPositive(byte[] bytes) {
 		return BigIntegerUtils.BytesToBigIntegerPositive(bytes);
@@ -262,8 +262,7 @@ public class Schnorr : StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schno
 
 	// Random Generation Methods
 	private BigInteger RandomBigInteger(int sizeInBytes) {
-		for (; ; )
-		{
+		for (;;) {
 			var tmp = BigIntegers.CreateRandomBigInteger(sizeInBytes * 8, _secureRandom);
 			if (tmp.CompareTo(BigInteger.One) >= 0 && tmp.CompareTo(N.Subtract(BigInteger.One)) <= 0) {
 				return tmp;
@@ -421,17 +420,26 @@ public class Schnorr : StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schno
 
 	}
 
+
 	public class PrivateKey : Key, IPrivateKey {
-		public PrivateKey(byte[] rawKeyBytes, ECDSAKeyType keyType, X9ECParameters curveParams, ECDomainParameters domainParams) : base(rawKeyBytes, keyType, curveParams, domainParams) {
+		public PrivateKey(byte[] rawKeyBytes, ECDSAKeyType keyType, X9ECParameters curveParams, ECDomainParameters domainParams) : base(
+			rawKeyBytes,
+			keyType,
+			curveParams,
+			domainParams) {
 			Parameters = Tools.Values.LazyLoad(() => new ECPrivateKeyParameters("ECDSA", AsInteger.Value, DomainParams));
 		}
 
 		public IFuture<ECPrivateKeyParameters> Parameters { get; }
 	}
 
+
 	public class PublicKey : Key, IPublicKey {
 		public PublicKey(ECPoint point, ECDSAKeyType keyType, X9ECParameters curveParams, ECDomainParameters domainParams) :
-			base(BytesOfBigInt(point.AffineXCoord.ToBigInteger(), (curveParams.Curve.FieldSize + 7) >> 3), keyType, curveParams, domainParams) {
+			base(BytesOfBigInt(point.AffineXCoord.ToBigInteger(), (curveParams.Curve.FieldSize + 7) >> 3),
+				keyType,
+				curveParams,
+				domainParams) {
 			AsPoint = Tools.Values.LazyLoad(() => point);
 			Parameters = Tools.Values.LazyLoad(() => new ECPublicKeyParameters("ECDSA", AsPoint.Value, DomainParams));
 		}

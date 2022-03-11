@@ -17,8 +17,8 @@ namespace Sphere10.Framework {
 		private readonly Endianness _endianness;
 		private int _version;
 
-		public ClusteredList(Stream rootStream, int clusterSize, IItemSerializer<TItem> itemSerializer, IEqualityComparer<TItem> itemComparer = null, ClusteredStoragePolicy policy = ClusteredStoragePolicy.Default,  Endianness endianness = Endianness.LittleEndian)
-			: this(new ClusteredStorage(rootStream, clusterSize, endianness, policy), itemSerializer, itemComparer, endianness) {
+		public ClusteredList(Stream rootStream, int clusterSize, IItemSerializer<TItem> itemSerializer, IEqualityComparer<TItem> itemComparer = null, ClusteredStoragePolicy policy = ClusteredStoragePolicy.Default, int recordKeySize = 0,  Endianness endianness = Endianness.LittleEndian)
+			: this(new ClusteredStorage(rootStream, clusterSize, policy, recordKeySize, endianness), itemSerializer, itemComparer, endianness) {
 		}
 
 		public ClusteredList(IClusteredStorage storage, IItemSerializer<TItem> itemSerializer, IEqualityComparer<TItem> itemComparer = null, Endianness endianness = Endianness.LittleEndian) {

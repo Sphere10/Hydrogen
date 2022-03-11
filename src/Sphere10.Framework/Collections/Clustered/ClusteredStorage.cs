@@ -10,7 +10,7 @@ using System.Threading;
 
 namespace Sphere10.Framework {
 
-
+	
 
 	/// <summary>
 	/// A container of dynamic <see cref="Stream"/>'s whose contents are multi-plexed across clusters within a root <see cref="Stream"/> similar in principle to a file-system.
@@ -49,6 +49,8 @@ namespace Sphere10.Framework {
 	/// </remarks>
 	public class ClusteredStorage : IClusteredStorage {
 
+		public event EventHandlerEx<ClusteredStorageRecord> RecordCreated;
+
 		private readonly StreamPagedList<Cluster> _clusters;
 		private readonly FragmentProvider _recordsFragmentProvider;
 		private readonly PreAllocatedList<ClusteredStorageRecord> _records;
@@ -58,15 +60,18 @@ namespace Sphere10.Framework {
 		private readonly object _lock;
 		private readonly bool _integrityChecks;
 		private readonly bool _preAllocateOptimization;
+		private readonly int _clusteredRecordKeySize;
 
-		public ClusteredStorage(Stream rootStream, int clusterSize,Endianness endianness = Endianness.LittleEndian, ClusteredStoragePolicy policy = ClusteredStoragePolicy.Default) {
+		public ClusteredStorage(Stream rootStream, int clusterSize, ClusteredStoragePolicy policy = ClusteredStoragePolicy.Default, int recordKeySize = 0, Endianness endianness = Endianness.LittleEndian) {
 			Guard.ArgumentNotNull(rootStream, nameof(rootStream));
 			Guard.ArgumentInRange(clusterSize, 1, int.MaxValue, nameof(clusterSize));
-			var recordSerializer = new ClusteredStorageRecordSerializer(policy);
-			//Guard.ArgumentNotNull(recordSerializer, nameof(recordSerializer));
-			//Guard.Argument(recordSerializer.IsStaticSize, nameof(recordSerializer), "Records must be constant sized");
+			Guard.ArgumentInRange(recordKeySize, 0, ushort.MaxValue, nameof(recordKeySize));
+			if (Policy.HasFlag(ClusteredStoragePolicy.TrackKey))
+				Guard.Argument(recordKeySize > 0, nameof(recordKeySize), $"Must be greater than 0 when {nameof(ClusteredStoragePolicy.TrackKey)}");
 			Policy = policy;
 			_endianness = endianness;
+			_clusteredRecordKeySize = recordKeySize;
+			var recordSerializer = new ClusteredStorageRecordSerializer(policy, _clusteredRecordKeySize);
 			var clusterSerializer = new ClusterSerializer(clusterSize);
 			Header = CreateHeader();
 			if (rootStream.Length > 0) {
@@ -84,7 +89,7 @@ namespace Sphere10.Framework {
 				clusterSerializer,
 				new NonClosingStream(new BoundedStream(rootStream, ClusteredStorageHeader.ByteLength, long.MaxValue) { UseRelativeOffset = true, AllowInnerResize = true }),
 				endianness
-			) { IncludeListHeader = false };  // Suppressing events increases performance
+			) { IncludeListHeader = false };
 			if (_clusters.RequiresLoad)
 				_clusters.Load();
 
@@ -108,27 +113,34 @@ namespace Sphere10.Framework {
 			);
 			ClusterEnvelopeSize = clusterSerializer.StaticSize - ClusterSize;
 			_lock = new object();
-			/*_openFragmentProvider = null;
-			_openStream = null;
-			_openRecordIndex = null;*/
 			_openScope = null;
 			_preAllocateOptimization = Policy.HasFlag(ClusteredStoragePolicy.FastAllocate);
 			_integrityChecks = Policy.HasFlag(ClusteredStoragePolicy.IntegrityChecks);
 			ZeroClusterBytes = Tools.Array.Gen<byte>(clusterSize, 0);
 		}
 
-		public static ClusteredStorage Load(Stream rootStream, Endianness endianness = Endianness.LittleEndian, ClusteredStoragePolicy policy = ClusteredStoragePolicy.Default) {
+		public static ClusteredStorage Load(Stream rootStream, Endianness endianness = Endianness.LittleEndian) {
 			if (rootStream.Length < ClusteredStorageHeader.ByteLength)
 				throw new CorruptDataException($"Corrupt header (stream was too small {rootStream.Length} bytes)");
 			var reader = new EndianBinaryReader(EndianBitConverter.For(endianness), rootStream);
-			rootStream.Position = ClusteredStorageHeader.ClusterSizeOffset;
+			
+			// read cluster size
+			rootStream.Seek(ClusteredStorageHeader.ClusterSizeOffset, SeekOrigin.Begin);
 			var clusterSize = reader.ReadInt32();
 			if (clusterSize <= 0)
 				throw new CorruptDataException($"Corrupt header (ClusterSize field was {clusterSize} bytes)");
-			rootStream.Position = 0;
-			return new ClusteredStorage(rootStream, clusterSize, endianness, policy);
-		}
 
+			// read policy
+			rootStream.Seek(ClusteredStorageHeader.PolicyOffset, SeekOrigin.Begin);
+			var policy = (ClusteredStoragePolicy)reader.ReadInt32();
+
+			// read record key size
+			rootStream.Seek(ClusteredStorageHeader.RecordKeySizeOffset, SeekOrigin.Begin);
+			var recordKeySize = (ClusteredStoragePolicy)reader.ReadUInt16();
+
+			rootStream.Position = 0;
+			return new ClusteredStorage(rootStream, clusterSize, policy, (int)recordKeySize, endianness);
+		}
 
 		public ClusteredStorageHeader Header { get; }
 
@@ -209,7 +221,7 @@ namespace Sphere10.Framework {
 		public ClusteredStorageScope Add() {
 			lock (_lock) {
 				CheckNotOpened();
-				AddRecord(out var index, CreateRecord());  // the first record add will allocate cluster 0 for the records stream
+				AddRecord(out var index, NewRecord());  // the first record add will allocate cluster 0 for the records stream
 				return Open(index);
 			}
 		}
@@ -238,7 +250,7 @@ namespace Sphere10.Framework {
 			CheckRecordIndex(index, allowEnd: true);
 			lock (_lock) {
 				CheckNotOpened();
-				InsertRecord(index, CreateRecord());
+				InsertRecord(index, NewRecord());
 				return Open(index);
 			}
 		}
@@ -341,7 +353,14 @@ namespace Sphere10.Framework {
 
 		#region Records
 
-		private ClusteredStorageRecord NewRecord() => new();
+		private ClusteredStorageRecord NewRecord() {
+			var record = new ClusteredStorageRecord();
+			record.Size = 0;
+			record.StartCluster = -1;
+			record.Key = Tools.Array.Gen<byte>(_clusteredRecordKeySize, 0);
+			RecordCreated?.Invoke(record);
+			return record;
+		}
 
 		private void UpdateRecord(int index, ClusteredStorageRecord record, bool resetTrackingIfOpen = true) {
 			if (_integrityChecks)
@@ -359,13 +378,6 @@ namespace Sphere10.Framework {
 		public void UpdateRecord(int index, ClusteredStorageRecord record) {
 			//Guard.ArgumentCast<TRecord>(record, out var recordT, nameof(record));
 			UpdateRecord(index, record, true);
-		}
-
-		private ClusteredStorageRecord CreateRecord() {
-			var record = NewRecord();
-			record.Size = 0;
-			record.StartCluster = -1;
-			return record;
 		}
 
 		public ClusteredStorageRecord GetRecord(int index) {

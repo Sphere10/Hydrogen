@@ -32,9 +32,9 @@ namespace Sphere10.Framework {
 
 
 		///// <summary>
-		///// Tracks a UInt32 checksum of streams in the stream record (used by dictionaries).
+		///// Tracks a constant byte[] key in the stream record (used by dictionaries).
 		///// </summary>
-		TrackDigests = 1 << 5,
+		TrackKey = 1 << 5,
 
 		///// <summary>
 		///// Builds a merkle-tree from the streams, stores the root in the header (used for blockchain). 

@@ -14,11 +14,11 @@ namespace Sphere10.Framework.Tests {
 
 	[TestFixture]
 	[Parallelizable(ParallelScope.Children)]
-	public class ClusteredDictionaryTests : ClusteredDictionaryTestsBase {
-				private const int DefaultClusterDataSize = 32;
+	public class ClusteredDictionarySKTests : ClusteredDictionaryTestsBase {
+		private const int DefaultClusterDataSize = 32;
 		protected override IDisposable CreateDictionary<TKey, TValue>(int estimatedMaxByteSize, StorageType storageType, ClusteredStoragePolicy policy, IItemSerializer<TKey> keySerializer, IItemSerializer<TValue> valueSerializer, IEqualityComparer<TKey> keyComparer, out IClusteredDictionary<TKey, TValue> clusteredDictionary) {
 			var disposable = base.CreateStream(storageType, estimatedMaxByteSize, out var stream);
-			clusteredDictionary = new ClusteredDictionary<TKey, TValue>(stream, DefaultClusterDataSize, keySerializer, valueSerializer, null,  keyComparer, policy | ClusteredStoragePolicy.TrackChecksums);
+			clusteredDictionary = new ClusteredDictionarySK<TKey, TValue>(stream, DefaultClusterDataSize, keySerializer.ToStaticSizeSerializer(256), valueSerializer, null, keyComparer, policy | ClusteredStoragePolicy.TrackChecksums | ClusteredStoragePolicy.TrackKey);
 			return disposable;
 		}
 

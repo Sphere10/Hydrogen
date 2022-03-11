@@ -6,6 +6,7 @@ namespace Sphere10.Framework {
 
 	public interface IClusteredStorage {
 
+		public event EventHandlerEx<ClusteredStorageRecord> RecordCreated;
 		ClusteredStoragePolicy Policy { get; }
 
 		ClusteredStorageHeader Header { get; }

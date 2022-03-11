@@ -66,6 +66,7 @@ namespace Sphere10.Framework {
 				serializer,
 				comparer,
 				policy,
+				0,
 				endianness
 			);
 

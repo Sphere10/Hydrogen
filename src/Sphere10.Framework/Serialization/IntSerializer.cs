@@ -1,5 +1,5 @@
 ﻿namespace Sphere10.Framework {
-	public class IntSerializer : StaticSizeItemSerializer<int> {
+	public class IntSerializer : StaticSizeItemSerializerBase<int> {
 		public IntSerializer() : base(4) {
 		}
 

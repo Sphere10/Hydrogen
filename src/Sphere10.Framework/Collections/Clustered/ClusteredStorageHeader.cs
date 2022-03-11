@@ -9,7 +9,8 @@ namespace Sphere10.Framework {
 
 		internal const int VersionOffset = 0;
 		internal const int PolicyOffset = sizeof(byte);
-		internal const int RecordsOffset = PolicyOffset + sizeof(uint);
+		internal const int RecordKeySizeOffset = PolicyOffset + sizeof(int);
+		internal const int RecordsOffset = RecordKeySizeOffset + sizeof(ushort);
 		internal const int ClusterSizeOffset = RecordsOffset + sizeof(int);
 		internal const int TotalClustersOffset = ClusterSizeOffset + sizeof(int);
 		internal const int MerkleRootOffset = TotalClustersOffset + sizeof(int);
@@ -21,6 +22,7 @@ namespace Sphere10.Framework {
 
 		private byte? _version;
 		private ClusteredStoragePolicy? _policy;
+		private ushort? _recordKeySize;
 		private int? _records;
 		private int? _clusterSize;
 		private int? _totalClusters;
@@ -61,6 +63,23 @@ namespace Sphere10.Framework {
 				_policy = value;
 				_headerStream.Seek(PolicyOffset, SeekOrigin.Begin);
 				_writer.Write((int)_policy.Value);
+			}
+		}
+
+		public ushort RecordKeySize {
+			get {
+				if (!_recordKeySize.HasValue) {
+					_headerStream.Seek(PolicyOffset, SeekOrigin.Begin);
+					_recordKeySize = _reader.ReadUInt16();
+				}
+				return _recordKeySize.Value;
+			}
+			set {
+				if (_recordKeySize == value)
+					return;
+				_recordKeySize = value;
+				_headerStream.Seek(RecordKeySizeOffset, SeekOrigin.Begin);
+				_writer.Write((ushort)_recordKeySize.Value);
 			}
 		}
 
@@ -157,6 +176,7 @@ namespace Sphere10.Framework {
 			_writer = new EndianBinaryWriter(EndianBitConverter.For(endianness), _headerStream);
 			_version = null;
 			_policy = 0;
+			_recordKeySize = 0;
 			_clusterSize = null;
 			_totalClusters = null;
 			_records = null;
@@ -171,31 +191,35 @@ namespace Sphere10.Framework {
 			var writer = new EndianBinaryWriter(EndianBitConverter.For(endianness), rootStream);
 			writer.Write(version); // Version
 			writer.Write((int)0); // Policy
+			writer.Write((ushort)0); // RecordKeySize
 			writer.Write((int)0); // Records
 			writer.Write(clusterSize); // ClusterSize
 			writer.Write((int)0); // TotalClusters 
 			writer.Write(new byte[MerkleRootLength]); // MerkleRoot 
 			writer.Write(new byte[MasterKeyLength]); // MasterKey
 
-			writer.Write(Tools.Array.Gen<byte>(ByteLength - sizeof(byte) - sizeof(int) - sizeof(int) - sizeof(int) - sizeof(int) - MerkleRootLength - MasterKeyLength, 0)); // header padding
+			writer.Write(Tools.Array.Gen<byte>(ByteLength - sizeof(byte) - sizeof(int) - sizeof(ushort) - sizeof(int) - sizeof(int) - sizeof(int) - MerkleRootLength - MasterKeyLength, 0)); // header padding
 			AttachTo(rootStream, endianness);
 		}
 
 		public void CheckHeaderIntegrity() {
 			if (Version != 1)
-				throw new CorruptDataException($"Corrupt header (Version field was {Version} bytes)");
+				throw new CorruptDataException($"Corrupt header ({nameof(Version)} property was {Version} bytes)");
 
 			if (ClusterSize <= 0)
-				throw new CorruptDataException($"Corrupt header (ClusterSize field was {ClusterSize} bytes)");
+				throw new CorruptDataException($"Corrupt header ({nameof(ClusterSize)} property was {ClusterSize} bytes)");
 
 			if (TotalClusters < 0)
-				throw new CorruptDataException($"Corrupt header (TotalClusters was {TotalClusters})");
+				throw new CorruptDataException($"Corrupt header ({nameof(TotalClusters)} property was {TotalClusters})");
 
 			if (RecordsCount < 0)
-				throw new CorruptDataException($"Corrupt header (Records field was {RecordsCount})");
+				throw new CorruptDataException($"Corrupt header ({nameof(RecordsCount)} property was {RecordsCount})");
+
+			if (Policy.HasFlag(ClusteredStoragePolicy.TrackKey) && RecordKeySize <= 0)
+				throw new CorruptDataException($"Corrupt header ({nameof(Policy)} property was {Policy} but {nameof(Policy)} property was {RecordKeySize})");
 		}
 
-		public override string ToString() => $"[ClusteredStreamStorage] Version: {Version}, Cluster Size: {ClusterSize}, Total Clusters: {TotalClusters}, Records: {RecordsCount}, Policy: {Policy}, MerkleRoot: {MerkleRoot.ToHexString(true)}";
+		public override string ToString() => $"[{nameof(ClusteredStorageHeader)}] {nameof(Version)}: {Version}, {nameof(ClusterSize)}: {ClusterSize}, {nameof(TotalClusters)}: {TotalClusters}, {nameof(RecordsCount)}: {RecordsCount}, {nameof(Policy)}: {Policy},  {nameof(MerkleRoot)}: {MerkleRoot.ToHexString(true)}";
 
 	}
 

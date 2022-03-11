@@ -5,7 +5,7 @@ using Sphere10.Framework;
 using Sphere10.Hydrogen.Core.Mining;
 
 namespace Sphere10.Hydrogen.Core.Consensus.Serializers {
-	public class NewMinerBlockSerializer : StaticSizeItemSerializer<NewMinerBlock> {
+	public class NewMinerBlockSerializer : StaticSizeItemSerializerBase<NewMinerBlock> {
 		public NewMinerBlockSerializer() : base(
 			4 + //Version
 			32 + //PrevMinerElectionHeader

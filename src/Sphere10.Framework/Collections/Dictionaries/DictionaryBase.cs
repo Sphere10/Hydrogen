@@ -1,15 +1,24 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Sphere10.Framework {
 	/// <summary>
 	/// Base class for dictionary implementation. Implements index operator and misc.
 	/// </summary>
 	public abstract class DictionaryBase<TKey, TValue> : IDictionary<TKey, TValue> {
+		private readonly KeysCollection _keysCollectionProperty;
+		private readonly ValuesCollection _valuesCollectionProperty;
 
-		public abstract ICollection<TKey> Keys { get; }
+		protected DictionaryBase() {
+			_keysCollectionProperty = new KeysCollection(this);
+			_valuesCollectionProperty = new ValuesCollection(this);
+		}
 
-		public abstract ICollection<TValue> Values { get; }
+		public virtual ICollection<TKey> Keys => _keysCollectionProperty;
+
+		public virtual ICollection<TValue> Values => _valuesCollectionProperty;
 
 		public abstract void Add(TKey key, TValue value);
 
@@ -44,7 +53,75 @@ namespace Sphere10.Framework {
 
 		public abstract IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator();
 
+		protected virtual IEnumerator<TKey> GetKeysEnumerator() => GetEnumerator().AsEnumerable().Select(x => x.Key).GetEnumerator();
+
+		protected virtual IEnumerator<TValue> GetValuesEnumerator() => GetEnumerator().AsEnumerable().Select(x => x.Value).GetEnumerator();
+
 		IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+		private class KeysCollection : ICollection<TKey> {
+
+			private readonly DictionaryBase<TKey, TValue> _parent;
+
+			public KeysCollection(DictionaryBase<TKey, TValue> parent) {
+				_parent = parent;
+			}
+
+			public IEnumerator<TKey> GetEnumerator() => _parent.GetKeysEnumerator();
+
+			IEnumerator IEnumerable.GetEnumerator() {
+				return GetEnumerator();
+			}
+
+			public void Add(TKey item) => throw new NotSupportedException();
+
+			public void Clear() => _parent.Clear();
+
+			public bool Contains(TKey item) => _parent.ContainsKey(item);
+
+			public void CopyTo(TKey[] array, int arrayIndex) {
+				foreach(var key in this) 
+					array[arrayIndex++] = key;
+			}
+
+			public bool Remove(TKey item) => _parent.Remove(item);
+
+			public int Count => _parent.Count;
+
+			public bool IsReadOnly => _parent.IsReadOnly;
+		}
+
+		private class ValuesCollection : ICollection<TValue> {
+
+			private readonly DictionaryBase<TKey, TValue> _parent;
+
+			public ValuesCollection(DictionaryBase<TKey, TValue> parent) {
+				_parent = parent;
+			}
+
+			public IEnumerator<TValue> GetEnumerator() => _parent.GetValuesEnumerator();
+
+			IEnumerator IEnumerable.GetEnumerator() {
+				return GetEnumerator();
+			}
+
+			public void Add(TValue item) => throw new NotSupportedException();
+
+			public void Clear() => _parent.Clear();
+
+			public bool Contains(TValue item) => throw new NotSupportedException();
+
+			public void CopyTo(TValue[] array, int arrayIndex) {
+				foreach (var value in this)
+					array[arrayIndex++] = value;
+			}
+
+			public bool Remove(TValue item) => throw new NotSupportedException();
+
+			public int Count => _parent.Count;
+
+			public bool IsReadOnly => _parent.IsReadOnly;
+		}
 
 	}
 }

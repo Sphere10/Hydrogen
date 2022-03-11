@@ -46,7 +46,7 @@ namespace Sphere10.Framework.Tests {
 			var dir = Tools.FileSystem.GetTempEmptyDirectory(true);
 			var disposable1 = Tools.Scope.ExecuteOnDispose(() => Tools.Lambda.ActionIgnoringExceptions(() => File.Delete(file)));
 			var disposable2 = Tools.Scope.ExecuteOnDispose(() => Tools.Lambda.ActionIgnoringExceptions(() => Tools.FileSystem.DeleteDirectory(dir)));
-			clusteredDictionary = new TransactionalDictionary<TKey, TValue>(file, dir, keySerializer, valueSerializer, keyComparer);
+			clusteredDictionary = new TransactionalDictionary<TKey, TValue>(file, dir, keySerializer, valueSerializer, null, keyComparer);
 			return new Disposables(disposable1, disposable2);
 		}
 

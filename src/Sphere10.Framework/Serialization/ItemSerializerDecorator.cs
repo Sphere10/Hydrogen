@@ -8,26 +8,12 @@ namespace Sphere10.Framework {
 		public ItemSerializerDecorator(TSerializer internalSerializer)
 			: base(internalSerializer) {
 		}
-		
-		public bool TrySerialize(TItem item, EndianBinaryWriter writer, out int bytesWritten) {
-			try {
-				bytesWritten = Internal.Serialize(item, writer);
-				return true;
-			} catch (Exception) {
-				bytesWritten = 0;
-				return false;
-			}
-		}
 
-		public bool TryDeserialize(int byteSize, EndianBinaryReader reader, out TItem item) {
-			try {
-				item = Internal.Deserialize(byteSize, reader);
-				return true;
-			} catch (Exception) {
-				item = default;
-				return false;
-			}
-		}
+		public bool TrySerialize(TItem item, EndianBinaryWriter writer, out int bytesWritten)
+			=> Internal.TrySerialize(item, writer, out bytesWritten);
+
+		public bool TryDeserialize(int byteSize, EndianBinaryReader reader, out TItem item) 
+			=> Internal.TryDeserialize(byteSize, reader, out item);
 	}
 
 	public class ItemSerializerDecorator<TItem> : ItemSerializerDecorator<TItem, IItemSerializer<TItem>> {

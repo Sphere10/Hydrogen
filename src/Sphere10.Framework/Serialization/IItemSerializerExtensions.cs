@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.IO;
 
 namespace Sphere10.Framework {
@@ -63,5 +64,10 @@ namespace Sphere10.Framework {
 
 		public static IItemSerializer<TBase> AsBaseSerializer<TItem, TBase>(this IItemSerializer<TItem> serializer) where TItem : TBase
 			=> new CastedSerializer<TBase, TItem>(serializer);
+
+
+		public static IItemSerializer<TItem> ToStaticSizeSerializer<TItem>(this IItemSerializer<TItem> serializer, int staticSize) 
+			=> new StaticSizeSerializerAdapter<TItem>(staticSize, serializer);
+		
 	}
 }

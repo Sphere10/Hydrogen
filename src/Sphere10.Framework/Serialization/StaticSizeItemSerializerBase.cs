@@ -1,9 +1,10 @@
 ﻿using System;
+using System.ComponentModel;
 
 namespace Sphere10.Framework {
 
-	public abstract class StaticSizeItemSerializer<TItem> : StaticSizeItemSizer<TItem>, IItemSerializer<TItem> {
-		protected StaticSizeItemSerializer(int fixedSize) : base(fixedSize) {
+	public abstract class StaticSizeItemSerializerBase<TItem> : StaticSizeItemSizer<TItem>, IItemSerializer<TItem> {
+		protected StaticSizeItemSerializerBase(int fixedSize) : base(fixedSize) {
 		}
 		
 		public bool TrySerialize(TItem item, EndianBinaryWriter writer, out int bytesWritten) {
@@ -19,5 +20,6 @@ namespace Sphere10.Framework {
 
 		public abstract bool TryDeserialize(EndianBinaryReader reader, out TItem item);
 	}
+
 
 }

@@ -2,7 +2,7 @@
 
 namespace Sphere10.Framework {
 
-	[StructLayout(LayoutKind.Sequential)]
+	//[StructLayout(LayoutKind.Sequential)]
 	public struct ClusteredStorageRecord {
 		
 		public ClusteredStorageRecordTraits Traits { get; set; }
@@ -13,8 +13,8 @@ namespace Sphere10.Framework {
 
 		public int KeyChecksum { get; set; }
 
-		public byte[] ValueDigest { get; set; }
+		public byte[] Key { get; set; }
 
-		public override string ToString() => $"[StreamRecord] Size: {Size}, Start: {StartCluster}, Traits: {Traits}, KeyChecksum: {KeyChecksum}, ValueDigest: {ValueDigest?.ToHexString(true)}";
+		public override string ToString() => $"[{nameof(ClusteredStorageRecord)}] {nameof(Size)}: {Size}, {nameof(StartCluster)}: {StartCluster}, {nameof(Traits)}: {Traits}, {nameof(KeyChecksum)}: {KeyChecksum}, {nameof(Key)}: {Key?.ToHexString(true)}";
 	}
 }

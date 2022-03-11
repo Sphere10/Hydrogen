@@ -2,7 +2,7 @@
 using System.Diagnostics;
 
 namespace Sphere10.Framework {
-	internal class ClusterSerializer : StaticSizeItemSerializer<Cluster> {
+	internal class ClusterSerializer : StaticSizeItemSerializerBase<Cluster> {
 		private readonly int _clusterDataSize;
 
 		public ClusterSerializer(int clusterDataSize) : base(sizeof(byte) + sizeof(int) + sizeof(int) + clusterDataSize) {  // cluster has an envelope of 9 bytes

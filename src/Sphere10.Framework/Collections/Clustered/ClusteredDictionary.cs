@@ -22,52 +22,44 @@ namespace Sphere10.Framework {
 		public event EventHandlerEx<object> Loading;
 		public event EventHandlerEx<object> Loaded;
 
-		private readonly IItemSerializer<TValue> _valueSerializer;
 		private readonly Endianness _endianness;
-		private readonly IClusteredList<KeyValuePair<TKey, byte[]>> _kvpStore;
+		private readonly IClusteredList<KeyValuePair<TKey, TValue>> _kvpStore;
 		private readonly IEqualityComparer<TKey> _keyComparer;
+		private readonly IEqualityComparer<TValue> _valueComparer;
 		private readonly IItemChecksum<TKey> _keyChecksum;
 		private readonly LookupEx<int, int> _checksumToIndexLookup;
 		private readonly SortedList<int> _unusedRecords;
 
-		public ClusteredDictionary(Stream rootStream, int clusterSize, IItemSerializer<TKey> keySerializer, IItemSerializer<TValue> valueSerializer, IItemChecksum<TKey> keyChecksum = null, IEqualityComparer<TKey> keyComparer = null, ClusteredStoragePolicy policy = ClusteredStoragePolicy.DictionaryDefault, Endianness endianness = Endianness.LittleEndian)
+		public ClusteredDictionary(Stream rootStream, int clusterSize, IItemSerializer<TKey> keySerializer, IItemSerializer<TValue> valueSerializer, IItemChecksum<TKey> keyChecksum = null, IEqualityComparer<TKey> keyComparer = null, IEqualityComparer<TValue> valueComparer = null, ClusteredStoragePolicy policy = ClusteredStoragePolicy.DictionaryDefault, Endianness endianness = Endianness.LittleEndian)
 			: this(
-				new ClusteredList<KeyValuePair<TKey, byte[]>>(
+				new ClusteredList<KeyValuePair<TKey, TValue>>(
 					rootStream,
 					clusterSize,
-					new KeyValuePairSerializer<TKey, byte[]>(
+					new KeyValuePairSerializer<TKey, TValue>(
 						keySerializer,
-						new ByteArraySerializer()
+						valueSerializer
 					),
-					new KeyValuePairEqualityComparer<TKey, byte[]>(
+					new KeyValuePairEqualityComparer<TKey, TValue>(
 						keyComparer,
-						new ByteArrayEqualityComparer()
+						valueComparer
 					),
 					policy,
 					0,
 					endianness
 				),
-				valueSerializer,
 				keyChecksum,
 				keyComparer,
+				valueComparer,
 				endianness
 			) {
 			Guard.Argument(policy.HasFlag(ClusteredStoragePolicy.TrackChecksums), nameof(policy), $"Checksum tracking must be enabled in {nameof(ClusteredDictionary<TKey, TValue>)} implementations.");
 		}
 
-		/// <summary>
-		/// Constructs a dictionary which uses argument <see cref="kvpStore"/> clustered list to storage it's key-value pairs.
-		/// </summary>
-		/// <param name="kvpStore"></param>
-		/// <param name="valueSerializer"></param>
-		/// <param name="keyComparer"></param>
-		/// <param name="endianess"></param>
-		public ClusteredDictionary(IClusteredList<KeyValuePair<TKey, byte[]>> kvpStore, IItemSerializer<TValue> valueSerializer, IItemChecksum<TKey> keyChecksum = null, IEqualityComparer<TKey> keyComparer = null, Endianness endianess = Endianness.LittleEndian) {
+		public ClusteredDictionary(IClusteredList<KeyValuePair<TKey, TValue>> kvpStore, IItemChecksum<TKey> keyChecksum = null, IEqualityComparer<TKey> keyComparer = null, IEqualityComparer<TValue> valueComparer = null, Endianness endianess = Endianness.LittleEndian) {
 			Guard.ArgumentNotNull(kvpStore, nameof(kvpStore));
-			Guard.ArgumentNotNull(valueSerializer, nameof(valueSerializer));
 			_keyComparer = keyComparer ?? EqualityComparer<TKey>.Default;
+			_valueComparer = valueComparer ?? EqualityComparer<TValue>.Default;
 			_kvpStore = kvpStore;
-			_valueSerializer = valueSerializer;
 			_keyChecksum = keyChecksum ?? new ActionChecksum<TKey>(DefaultCalculateKeyChecksum);
 			_endianness = endianess;
 			_checksumToIndexLookup = new LookupEx<int, int>();
@@ -83,7 +75,7 @@ namespace Sphere10.Framework {
 					if (IsUnusedRecord(i))
 						continue;
 					var (key, value) = _kvpStore[i];
-					yield return new KeyValuePair<TKey, TValue>(key, ConvertValueFromBytes(value));
+					yield return new KeyValuePair<TKey, TValue>(key, value);
 				}
 			}
 		}
@@ -111,26 +103,25 @@ namespace Sphere10.Framework {
 				throw new InvalidOperationException($"Stream record {index} is null");
 			using var scope = Storage.Open(index);
 			var reader = new EndianBinaryReader(EndianBitConverter.For(_endianness), scope.Stream);
-			return ((KeyValuePairSerializer<TKey, byte[]>)_kvpStore.ItemSerializer).DeserializeKey(scope.Record.Size, reader);
+			return ((KeyValuePairSerializer<TKey, TValue>)_kvpStore.ItemSerializer).DeserializeKey(scope.Record.Size, reader);
 		}
 
-		public byte[] ReadValue(int index) {
+		public TValue ReadValue(int index) {
 			if (Storage.IsNull(index))
 				throw new InvalidOperationException($"Stream record {index} is null");
 			using var scope = Storage.Open(index);
 			var reader = new EndianBinaryReader(EndianBitConverter.For(_endianness), scope.Stream);
-			return ((KeyValuePairSerializer<TKey, byte[]>)_kvpStore.ItemSerializer).DeserializeValue(scope.Record.Size, reader);
+			return ((KeyValuePairSerializer<TKey, TValue>)_kvpStore.ItemSerializer).DeserializeValue(scope.Record.Size, reader);
 		}
 
 		public override void Add(TKey key, TValue value) {
 			Guard.ArgumentNotNull(key, nameof(key));
 			CheckLoaded();
-			var newBytes = ConvertValueToBytes(value);
-			var newStorageKVP = new KeyValuePair<TKey, byte[]>(key, newBytes);
+			var kvp = new KeyValuePair<TKey, TValue>(key, value);
 			if (TryFindKey(key, out var index)) {
-				UpdateInternal(index, newStorageKVP);
+				UpdateInternal(index, kvp);
 			} else {
-				AddInternal(newStorageKVP);
+				AddInternal(kvp);
 			}
 		}
 
@@ -164,8 +155,7 @@ namespace Sphere10.Framework {
 		public override bool TryGetValue(TKey key, out TValue value) {
 			Guard.ArgumentNotNull(key, nameof(key));
 			CheckLoaded();
-			if (TryFindValue(key, out _, out var valueBytes)) {
-				value = ConvertValueFromBytes(valueBytes);
+			if (TryFindValue(key, out _, out value)) {
 				return true;
 			}
 			value = default;
@@ -176,21 +166,19 @@ namespace Sphere10.Framework {
 			Guard.ArgumentNotNull(item, nameof(item));
 			Guard.ArgumentNotNull(item, nameof(item));
 			CheckLoaded();
-			var newBytes = ConvertValueToBytes(item.Value);
-			var newStorageKVP = new KeyValuePair<TKey, byte[]>(item.Key, newBytes);
+			var kvp = new KeyValuePair<TKey, TValue>(item.Key, item.Value);
 			if (TryFindKey(item.Key, out var index)) {
-				_kvpStore.Update(index, newStorageKVP);
+				_kvpStore.Update(index, kvp);
 			} else {
-				AddInternal(newStorageKVP);
+				AddInternal(kvp);
 			}
 		}
 
 		public override bool Remove(KeyValuePair<TKey, TValue> item) {
 			Guard.ArgumentNotNull(item, nameof(item));
 			CheckLoaded();
-			if (TryFindValue(item.Key, out var index, out var kvpValueBytes)) {
-				var serializedValue = ConvertValueToBytes(item.Value);
-				if (ByteArrayEqualityComparer.Instance.Equals(serializedValue, kvpValueBytes)) {
+			if (TryFindValue(item.Key, out var index, out var value)) {
+				if (_valueComparer.Equals(item.Value, value)) {
 					RemoveInternal(item.Key, index);
 					return true;
 				}
@@ -201,10 +189,9 @@ namespace Sphere10.Framework {
 		public override bool Contains(KeyValuePair<TKey, TValue> item) {
 			Guard.ArgumentNotNull(item, nameof(item));
 			CheckLoaded();
-			if (!TryFindValue(item.Key, out _, out var valueBytes))
+			if (!TryFindValue(item.Key, out _, out var value))
 				return false;
-			var itemValueBytes = ConvertValueToBytes(item.Value);
-			return ByteArrayEqualityComparer.Instance.Equals(valueBytes, itemValueBytes);
+			return _valueComparer.Equals(value, item.Value);
 		}
 
 		public override void CopyTo(KeyValuePair<TKey, TValue>[] array, int arrayIndex) {
@@ -228,7 +215,7 @@ namespace Sphere10.Framework {
 			CheckLoaded();
 			return _kvpStore
 			  .Where((_, i) => !_unusedRecords.Contains(i))
-			  .Select(storageKVP => new KeyValuePair<TKey, TValue>(storageKVP.Key, ConvertValueFromBytes(storageKVP.Value)))
+			  .Select(kvp => new KeyValuePair<TKey, TValue>(kvp.Key, kvp.Value))
 			  .GetEnumerator();
 		}
 
@@ -245,7 +232,6 @@ namespace Sphere10.Framework {
 			return Enumerable.Range(0, _kvpStore.Count)
 				.Where(i => !_unusedRecords.Contains(i))
 				.Select(ReadValue)
-				.Select(ConvertValueFromBytes)
 				.GetEnumerator();
 		}
 
@@ -268,22 +254,22 @@ namespace Sphere10.Framework {
 			return false;
 		}
 
-		private bool TryFindValue(TKey key, out int index, out byte[] valueBytes) {
+		private bool TryFindValue(TKey key, out int index, out TValue value) {
 			Debug.Assert(key != null);
 			foreach (var i in _checksumToIndexLookup[_keyChecksum.Calculate(key)]) {
 				var candidateKey = ReadKey(i);
 				if (_keyComparer.Equals(candidateKey, key)) {
 					index = i;
-					valueBytes = ReadValue(index);
+					value = ReadValue(index);
 					return true;
 				}
 			}
 			index = -1;
-			valueBytes = default;
+			value = default;
 			return false;
 		}
 
-		private void AddInternal(KeyValuePair<TKey, byte[]> item) {
+		private void AddInternal(KeyValuePair<TKey, TValue> item) {
 			int index;
 			ClusteredStorageScope scope;
 			if (_unusedRecords.Any()) {
@@ -305,7 +291,7 @@ namespace Sphere10.Framework {
 
 		}
 
-		private void UpdateInternal(int index, KeyValuePair<TKey, byte[]> item) {
+		private void UpdateInternal(int index, KeyValuePair<TKey, TValue> item) {
 			// Updating value only, records (and checksum) don't change  when updating
 			using var scope = _kvpStore.EnterUpdateScope(index, item);
 			scope.Record.Traits = scope.Record.Traits.CopyAndSetFlags(ClusteredStorageRecordTraits.IsUsed, true);
@@ -314,7 +300,7 @@ namespace Sphere10.Framework {
 
 		private void RemoveInternal(TKey key, int index) {
 			// We don't delete the instance, we mark is as unused. Use Shrink to intelligently remove unused records.
-			var kvp = KeyValuePair.Create(default(TKey), null as byte[]);
+			var kvp = KeyValuePair.Create(default(TKey), default(TValue));
 			using var scope = _kvpStore.EnterUpdateScope(index, kvp);
 
 			// Mark record as unused
@@ -334,12 +320,6 @@ namespace Sphere10.Framework {
 			_unusedRecords.RemoveAt(0);
 			return index;
 		}
-
-		private byte[] ConvertValueToBytes(TValue value)
-			=> value != null ? _valueSerializer.Serialize(value, _endianness) : null;
-
-		private TValue ConvertValueFromBytes(byte[] valueBytes)
-			=> valueBytes != null ? _valueSerializer.Deserialize(valueBytes, _endianness) : default;
 
 		private int DefaultCalculateKeyChecksum(TKey key)
 			=> _keyComparer.GetHashCode(key);
@@ -370,7 +350,6 @@ namespace Sphere10.Framework {
 			OnLoaded();
 			Loaded?.Invoke(this);
 		}
-
 
 	}
 }

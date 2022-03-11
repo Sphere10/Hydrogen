@@ -135,9 +135,9 @@ namespace Sphere10.Framework.Tests {
 		}
 
 		protected IDisposable CreateDictionary(int estimatedMaxByteSize, StorageType storageType,  ClusteredStoragePolicy policy, out IClusteredDictionary<string, TestObject> clusteredDictionary)
-			=> CreateDictionary(estimatedMaxByteSize, storageType, policy, new StringSerializer(Encoding.UTF8), new TestObjectSerializer(), EqualityComparer<string>.Default, out clusteredDictionary);
+			=> CreateDictionary(estimatedMaxByteSize, storageType, policy, new StringSerializer(Encoding.UTF8), new TestObjectSerializer(), EqualityComparer<string>.Default, new TestObjectComparer(), out clusteredDictionary);
 
-		protected abstract IDisposable CreateDictionary<TKey, TValue>(int estimatedMaxByteSize, StorageType storageType, ClusteredStoragePolicy policy, IItemSerializer<TKey> keySerializer, IItemSerializer<TValue> valueSerializer, IEqualityComparer<TKey> keyComparer, out IClusteredDictionary<TKey, TValue> clusteredDictionary);
+		protected abstract IDisposable CreateDictionary<TKey, TValue>(int estimatedMaxByteSize, StorageType storageType, ClusteredStoragePolicy policy, IItemSerializer<TKey> keySerializer, IItemSerializer<TValue> valueSerializer, IEqualityComparer<TKey> keyComparer, IEqualityComparer<TValue> valueComparer, out IClusteredDictionary<TKey, TValue> clusteredDictionary);
 
 	}
 

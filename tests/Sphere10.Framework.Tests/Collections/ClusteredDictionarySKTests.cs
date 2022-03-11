@@ -16,9 +16,9 @@ namespace Sphere10.Framework.Tests {
 	[Parallelizable(ParallelScope.Children)]
 	public class ClusteredDictionarySKTests : ClusteredDictionaryTestsBase {
 		private const int DefaultClusterDataSize = 32;
-		protected override IDisposable CreateDictionary<TKey, TValue>(int estimatedMaxByteSize, StorageType storageType, ClusteredStoragePolicy policy, IItemSerializer<TKey> keySerializer, IItemSerializer<TValue> valueSerializer, IEqualityComparer<TKey> keyComparer, out IClusteredDictionary<TKey, TValue> clusteredDictionary) {
+		protected override IDisposable CreateDictionary<TKey, TValue>(int estimatedMaxByteSize, StorageType storageType, ClusteredStoragePolicy policy, IItemSerializer<TKey> keySerializer, IItemSerializer<TValue> valueSerializer, IEqualityComparer<TKey> keyComparer, IEqualityComparer<TValue> valueComparer, out IClusteredDictionary<TKey, TValue> clusteredDictionary) {
 			var disposable = base.CreateStream(storageType, estimatedMaxByteSize, out var stream);
-			clusteredDictionary = new ClusteredDictionarySK<TKey, TValue>(stream, DefaultClusterDataSize, keySerializer.ToStaticSizeSerializer(256), valueSerializer, null, keyComparer, policy | ClusteredStoragePolicy.TrackChecksums | ClusteredStoragePolicy.TrackKey);
+			clusteredDictionary = new ClusteredDictionarySK<TKey, TValue>(stream, DefaultClusterDataSize, keySerializer.ToStaticSizeSerializer(256), valueSerializer, null, keyComparer, valueComparer, policy | ClusteredStoragePolicy.TrackChecksums | ClusteredStoragePolicy.TrackKey);
 			return disposable;
 		}
 

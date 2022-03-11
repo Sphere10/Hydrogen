@@ -14,7 +14,97 @@ namespace Sphere10.Framework.Tests {
 
 	[TestFixture]
 	[Parallelizable(ParallelScope.Children)]
-	public class TransactionalDictionaryTests : StreamPersistedTestsBase {
+	public class TransactionalTests : StreamPersistedTestsBase {
+
+		[Test]
+		public void AddNothing([Values] StorageType storageType, [ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy) {
+			var rng = new Random(31337);
+			using (Create(out var dictionary)) {
+				Assert.That(dictionary.Count, Is.EqualTo(0));
+			}
+		}
+
+		[Test]
+		public void AddOne([Values] StorageType storageType, [ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy, [Values("alpha", "Unicode😊😊😊", "")] string key) {
+			var rng = new Random(31337);
+			using (Create(out var dictionary)) {
+				dictionary.Add(key, new TestObject(rng));
+				Assert.That(dictionary.Count, Is.EqualTo(1));
+			}
+		}
+
+		[Test]
+		public void ReuseRecord([Values] StorageType storageType, [ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy, [Values("alpha", "Unicode😊😊😊", "")] string key) {
+			var rng = new Random(31337);
+			using (Create(out var dictionary)) {
+				dictionary.Add(key, new TestObject(rng));
+				dictionary.Remove(key);
+				dictionary.Add(key, new TestObject(rng));
+				Assert.That(dictionary.Count, Is.EqualTo(1));
+			}
+		}
+
+		[Test]
+		public void ContainsKey([Values] StorageType storageType, [ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy, [Values("alpha", "Unicode😊😊😊", "")] string key) {
+			var rng = new Random(31337);
+			using (Create(out var dictionary)) {
+				dictionary.Add(key, new TestObject(rng));
+				Assert.That(dictionary.ContainsKey(key), Is.True);
+			}
+		}
+
+		[Test]
+		public void DoesNotContainKeyAfterRemove([Values] StorageType storageType, [ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy, [Values("alpha", "Unicode😊😊😊", "")] string key) {
+			var rng = new Random(31337);
+			using (Create(out var dictionary)) {
+				dictionary.Add(key, new TestObject(rng));
+				dictionary.Remove(key);
+				Assert.That(dictionary.ContainsKey(key), Is.False);
+			}
+		}
+
+		[Test]
+		public void ContainsKeyValuePair([Values] StorageType storageType, [ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy, [Values("alpha", "Unicode😊😊😊", "")] string key) {
+			var rng = new Random(31337);
+			using (Create(out var dictionary)) {
+				var value = new TestObject(rng);
+				var kvp = KeyValuePair.Create(key, value);
+				dictionary.Add(kvp);
+				Assert.That(dictionary.Contains(kvp), Is.True);
+			}
+		}
+
+		[Test]
+		public void DoesNotContainKeyValuePair_SameKeyDifferentValue([Values] StorageType storageType, [ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy, [Values("alpha", "Unicode😊😊😊", "")] string key) {
+			var rng = new Random(31337);
+			using (Create(out var dictionary)) {
+				var value = new TestObject(rng);
+				var kvp = KeyValuePair.Create(key, value);
+				dictionary.Add(kvp);
+				value.A += "1";
+				Assert.That(dictionary.Contains(kvp), Is.False);
+			}
+		}
+
+		[Test]
+		public void RemoveByKey([Values] StorageType storageType, [ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy, [Values("alpha", "Unicode😊😊😊", "")] string key) {
+			var rng = new Random(31337);
+			using (Create(out var dictionary)) {
+				dictionary.Add(key, new TestObject(rng));
+				dictionary.Remove(key);
+				Assert.That(dictionary.Count, Is.EqualTo(0));
+			}
+		}
+
+		[Test]
+		public void RemoveByKeyValuePair([Values] StorageType storageType, [ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy, [Values("alpha", "Unicode😊😊😊", "")] string key) {
+			var rng = new Random(31337);
+			using (Create(out var dictionary)) {
+				dictionary.Add(key, new TestObject(rng));
+				dictionary.Remove(key);
+				Assert.That(dictionary.Count, Is.EqualTo(0));
+			}
+		}
 
 		[Test]
 		public void IntegrationTests([Values(23)] int maxItems) => DoIntegrationTests(maxItems, 30);
@@ -26,9 +116,9 @@ namespace Sphere10.Framework.Tests {
 
 		private void DoIntegrationTests(int maxItems, int iterations) {
 			var keyGens = 0;
-			using (CreateDictionary(out var clusteredDictionary)) {
+			using (Create(out var dictionary)) {
 				AssertEx.DictionaryIntegrationTest(
-					clusteredDictionary,
+					dictionary,
 					maxItems,
 					(rng) => ($"{keyGens++}_{rng.NextString(0, 100)}", new TestObject(rng)),
 					iterations: iterations,
@@ -38,15 +128,15 @@ namespace Sphere10.Framework.Tests {
 		}
 
 
-		protected IDisposable CreateDictionary(out TransactionalDictionary<string, TestObject> clusteredDictionary)
-			=> CreateDictionary(new StringSerializer(Encoding.UTF8), new TestObjectSerializer(), EqualityComparer<string>.Default, out clusteredDictionary);
+		protected IDisposable Create(out TransactionalDictionary<string, TestObject> dictionary)
+			=> Create(new StringSerializer(Encoding.UTF8), new TestObjectSerializer(), EqualityComparer<string>.Default, new TestObjectComparer(), out dictionary);
 
-		protected IDisposable CreateDictionary<TKey, TValue>( IItemSerializer<TKey> keySerializer, IItemSerializer<TValue> valueSerializer, IEqualityComparer<TKey> keyComparer, out TransactionalDictionary<TKey, TValue> clusteredDictionary) {
+		protected IDisposable Create<TKey, TValue>( IItemSerializer<TKey> keySerializer, IItemSerializer<TValue> valueSerializer, IEqualityComparer<TKey> keyComparer, IEqualityComparer<TValue> valueComparer, out TransactionalDictionary<TKey, TValue> clustered) {
 			var file = Tools.FileSystem.GenerateTempFilename();
 			var dir = Tools.FileSystem.GetTempEmptyDirectory(true);
 			var disposable1 = Tools.Scope.ExecuteOnDispose(() => Tools.Lambda.ActionIgnoringExceptions(() => File.Delete(file)));
 			var disposable2 = Tools.Scope.ExecuteOnDispose(() => Tools.Lambda.ActionIgnoringExceptions(() => Tools.FileSystem.DeleteDirectory(dir)));
-			clusteredDictionary = new TransactionalDictionary<TKey, TValue>(file, dir, keySerializer, valueSerializer, null, keyComparer);
+			clustered = new TransactionalDictionary<TKey, TValue>(file, dir, keySerializer, valueSerializer, null, keyComparer, valueComparer);
 			return new Disposables(disposable1, disposable2);
 		}
 

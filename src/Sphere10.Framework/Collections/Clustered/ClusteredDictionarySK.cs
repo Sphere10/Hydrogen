@@ -11,14 +11,14 @@ using System.Runtime.CompilerServices;
 namespace Sphere10.Framework {
 
 	/// <summary>
-	/// Similar to a <see cref="ClusteredDictionary{TKey,TValue}"/> except keys are statically sized and serialized inside the <see cref="ClusteredStorageRecord"/> rather than within a <see cref="KeyValuePair{TKey, TValue}"/> item).
+	/// Similar to a <see cref="ClusteredDictionary{TKey,TValue}"/> except keys are statically sized and serialized inside the <see cref="ClusteredStreamRecord"/> rather than within a <see cref="KeyValuePair{TKey, TValue}"/> item).
 	/// This implementation of <see cref="IClusteredDictionary{TKey,TValue}"/> permits faster scanning of keys and is thus used internally by <see cref="ClusteredHashSet{TValue}"/> and <see cref="MerklizedHashSet{TValue}"/> for
 	/// their implementations.
 	/// </summary>
 	/// <typeparam name="TKey">The type of key stored in the dictionary</typeparam>
 	/// <typeparam name="TValue">The type of value stored in the dictionary</typeparam>
-	/// <remarks>When deleting an item the underlying <see cref="ClusteredStorageRecord"/> is marked nullified but retained and re-used in later calls to <see cref="Add(TKey,TValue)"/>.</remarks>
-	/// <remarks>This implementation stores the items key in the underlying <see cref="ClusteredStorageRecord"/> whereas the <see cref="ClusteredDictionary{TKey,TValue}"/> class stores it in the <see cref="KeyValuePair{TKey, TValue}"/>.</remarks>
+	/// <remarks>When deleting an item the underlying <see cref="ClusteredStreamRecord"/> is marked nullified but retained and re-used in later calls to <see cref="Add(TKey,TValue)"/>.</remarks>
+	/// <remarks>This implementation stores the items key in the underlying <see cref="ClusteredStreamRecord"/> whereas the <see cref="ClusteredDictionary{TKey,TValue}"/> class stores it in the <see cref="KeyValuePair{TKey, TValue}"/>.</remarks>
 	// TODO: there are some memory-blowout lookups in this class that need to be refactored out (should be safe for non-huge dictionaries).
 	public class ClusteredDictionarySK<TKey, TValue> : DictionaryBase<TKey, TValue>, IClusteredDictionary<TKey, TValue>, ILoadable {
 		public event EventHandlerEx<object> Loading;
@@ -280,7 +280,7 @@ namespace Sphere10.Framework {
 
 		private void AddInternal(TKey key, TValue value) {
 			int index;
-			ClusteredStorageScope scope;
+			ClusteredStreamScope scope;
 			if (_unusedRecords.Any()) {
 				index = ConsumeUnusedRecord();
 				scope = _valueStore.EnterUpdateScope(index, value);
@@ -292,10 +292,10 @@ namespace Sphere10.Framework {
 
 			using (scope) {
 				// Mark record as used and set key
-				Guard.Ensure(!scope.Record.Traits.HasFlag(ClusteredStorageRecordTraits.IsUsed), "Record not in unused state");
+				Guard.Ensure(!scope.Record.Traits.HasFlag(ClusteredStreamTraits.IsUsed), "Record not in unused state");
 				scope.Record.Key = _keySerializer.Serialize(key, _endianness);
 				scope.Record.KeyChecksum = _keyChecksum.Calculate(key);
-				scope.Record.Traits = scope.Record.Traits.CopyAndSetFlags(ClusteredStorageRecordTraits.IsUsed, true);
+				scope.Record.Traits = scope.Record.Traits.CopyAndSetFlags(ClusteredStreamTraits.IsUsed, true);
 				_checksumToIndexLookup.Add(scope.Record.KeyChecksum, index);
 				// note: scope Dispose ends up updating the record
 			}
@@ -305,7 +305,7 @@ namespace Sphere10.Framework {
 		private void UpdateInternal(int index, TKey key, TValue value) {
 			// Updating value only, records (and checksum) don't change  when updating
 			using var scope = _valueStore.EnterUpdateScope(index, value);
-			scope.Record.Traits = scope.Record.Traits.CopyAndSetFlags(ClusteredStorageRecordTraits.IsUsed, true);
+			scope.Record.Traits = scope.Record.Traits.CopyAndSetFlags(ClusteredStreamTraits.IsUsed, true);
 			scope.Record.Key = _keySerializer.Serialize(key, _endianness);
 			scope.Record.KeyChecksum = _keyChecksum.Calculate(key);
 			// note: scope Dispose updates record
@@ -316,11 +316,11 @@ namespace Sphere10.Framework {
 			using var scope = _valueStore.EnterUpdateScope(index, default);
 
 			// Mark record as unused
-			Guard.Ensure(scope.Record.Traits.HasFlag(ClusteredStorageRecordTraits.IsUsed), "Record not in used state");
+			Guard.Ensure(scope.Record.Traits.HasFlag(ClusteredStreamTraits.IsUsed), "Record not in used state");
 			_checksumToIndexLookup.Remove(scope.Record.KeyChecksum, index);
 			scope.Record.Key = UnusedKeyBytes;
 			scope.Record.KeyChecksum = -1;
-			scope.Record.Traits = scope.Record.Traits.CopyAndSetFlags(ClusteredStorageRecordTraits.IsUsed, false);
+			scope.Record.Traits = scope.Record.Traits.CopyAndSetFlags(ClusteredStreamTraits.IsUsed, false);
 			_unusedRecords.Add(index);
 			// note: scope Dispose updates record
 		}
@@ -341,7 +341,7 @@ namespace Sphere10.Framework {
 			_unusedRecords.Clear();
 			for (var i = 0; i < _valueStore.Storage.Records.Count; i++) {
 				var record = _valueStore.Storage.Records[i];
-				if (record.Traits.HasFlag(ClusteredStorageRecordTraits.IsUsed))
+				if (record.Traits.HasFlag(ClusteredStreamTraits.IsUsed))
 					_checksumToIndexLookup.Add(record.KeyChecksum, i);
 				else
 					_unusedRecords.Add(i);

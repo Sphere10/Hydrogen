@@ -6,40 +6,42 @@ namespace Sphere10.Framework {
 
 	public interface IClusteredStorage {
 
-		public event EventHandlerEx<ClusteredStorageRecord> RecordCreated;
+		public event EventHandlerEx<ClusteredStreamRecord> RecordCreated;
+
 		ClusteredStoragePolicy Policy { get; }
 
 		ClusteredStorageHeader Header { get; }
 
-		IReadOnlyList<ClusteredStorageRecord> Records { get; }
+		IReadOnlyList<ClusteredStreamRecord> Records { get; }
+
+		ClusteredStreamRecord GetRecord(int index);
 
 		int Count { get; }
 
-		bool IsNull(int index);
+		ClusteredStreamScope Add();
 
-		ClusteredStorageScope Add();
-
-		ClusteredStorageScope Open(int index);
+		ClusteredStreamScope Open(int index);
 
 		void Remove(int index);
 
-		ClusteredStorageScope Insert(int index);
+		ClusteredStreamScope Insert(int index);
 
 		void Swap(int first, int second);
 
 		void Clear();
 
-		ClusteredStorageScope EnterSaveItemScope<TItem>(int index, TItem item, IItemSerializer<TItem> serializer, ListOperationType operationType);
+		ClusteredStreamScope EnterSaveItemScope<TItem>(int index, TItem item, IItemSerializer<TItem> serializer, ListOperationType operationType);
 
-		ClusteredStorageScope EnterLoadItemScope<TItem>(int index, IItemSerializer<TItem> serializer, out TItem item);
-
-		ClusteredStorageRecord GetRecord(int index);
-
-		void UpdateRecord(int index, ClusteredStorageRecord record);
+		ClusteredStreamScope EnterLoadItemScope<TItem>(int index, IItemSerializer<TItem> serializer, out TItem item);
 
 	}
 
 	public static class IClusteredStorageExtensions {
+
+		public static bool IsNull(this IClusteredStorage storage, int index) 
+			=> storage.GetRecord(index).Traits.HasFlag(ClusteredStreamTraits.IsNull);
+		
+
 		public static byte[] ReadAll(this IClusteredStorage storage, int index) {
 			using var scope = storage.Open(index);
 			return scope.Stream.ReadAll();

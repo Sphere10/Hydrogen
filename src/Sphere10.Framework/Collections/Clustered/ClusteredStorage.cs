@@ -49,13 +49,13 @@ namespace Sphere10.Framework {
 	/// </remarks>
 	public class ClusteredStorage : IClusteredStorage {
 
-		public event EventHandlerEx<ClusteredStorageRecord> RecordCreated;
+		public event EventHandlerEx<ClusteredStreamRecord> RecordCreated;
 
 		private readonly StreamPagedList<Cluster> _clusters;
 		private readonly FragmentProvider _recordsFragmentProvider;
-		private readonly PreAllocatedList<ClusteredStorageRecord> _records;
+		private readonly PreAllocatedList<ClusteredStreamRecord> _records;
 
-		private ClusteredStorageScope _openScope;
+		private ClusteredStreamScope _openScope;
 		private readonly Endianness _endianness;
 		private readonly object _lock;
 		private readonly bool _integrityChecks;
@@ -95,7 +95,7 @@ namespace Sphere10.Framework {
 
 			// Records are stored in record 0 as StreamPagedList (single page, statically sized items) which maps over the fragmented stream 
 			_recordsFragmentProvider = new FragmentProvider(this, ClusterDataType.Record);
-			var recordStorage = new StreamPagedList<ClusteredStorageRecord>(
+			var recordStorage = new StreamPagedList<ClusteredStreamRecord>(
 				recordSerializer,
 				new FragmentedStream(_recordsFragmentProvider, Header.RecordsCount * recordSerializer.StaticSize),
 				endianness
@@ -104,7 +104,7 @@ namespace Sphere10.Framework {
 				recordStorage.Load();
 
 			// The actual records collection is a PreAllocated list over the StreamPagedList which allows INSERTS in the form of UPDATES.
-			_records = new PreAllocatedList<ClusteredStorageRecord>(
+			_records = new PreAllocatedList<ClusteredStreamRecord>(
 				recordStorage,
 				Header.RecordsCount,
 				PreAllocationPolicy.MinimumRequired,
@@ -148,7 +148,7 @@ namespace Sphere10.Framework {
 
 		public ClusteredStoragePolicy Policy { get; }
 
-		public IReadOnlyList<ClusteredStorageRecord> Records => _records;
+		public IReadOnlyList<ClusteredStreamRecord> Records => _records;
 
 		internal IReadOnlyList<Cluster> Clusters => _clusters;
 
@@ -162,12 +162,7 @@ namespace Sphere10.Framework {
 
 		#region Streams
 
-		public bool IsNull(int index) {
-			CheckRecordIndex(index);
-			return Records[index].Traits.HasFlag(ClusteredStorageRecordTraits.IsNull);
-		}
-
-		public ClusteredStorageScope EnterSaveItemScope<TItem>(int index, TItem item, IItemSerializer<TItem> serializer, ListOperationType operationType) {
+		public ClusteredStreamScope EnterSaveItemScope<TItem>(int index, TItem item, IItemSerializer<TItem> serializer, ListOperationType operationType) {
 			var scope = operationType switch {
 				ListOperationType.Add => Add(),
 				ListOperationType.Update => Open(index),
@@ -177,7 +172,7 @@ namespace Sphere10.Framework {
 			var writer = new EndianBinaryWriter(EndianBitConverter.For(_endianness), _openScope.Stream);
 			if (item != null) {
 
-				_openScope.Record.Traits = _openScope.Record.Traits.CopyAndSetFlags(ClusteredStorageRecordTraits.IsNull, false);
+				_openScope.Record.Traits = _openScope.Record.Traits.CopyAndSetFlags(ClusteredStreamTraits.IsNull, false);
 				if (_preAllocateOptimization) {
 					// pre-setting the stream length before serialization improves performance since it avoids
 					// re-allocating fragmented stream on individual properties of the serialized item
@@ -203,22 +198,22 @@ namespace Sphere10.Framework {
 				}
 
 			} else {
-				_openScope.Record.Traits = _openScope.Record.Traits.CopyAndSetFlags(ClusteredStorageRecordTraits.IsNull, true);
+				_openScope.Record.Traits = _openScope.Record.Traits.CopyAndSetFlags(ClusteredStreamTraits.IsNull, true);
 				_openScope.Stream.SetLength(0); // open record will save when closed
 			}
 			return scope;
 		}
 
-		public ClusteredStorageScope EnterLoadItemScope<TItem>(int index, IItemSerializer<TItem> serializer, out TItem item) {
+		public ClusteredStreamScope EnterLoadItemScope<TItem>(int index, IItemSerializer<TItem> serializer, out TItem item) {
 			var scope = Open(index);
-			if (!_openScope.Record.Traits.HasFlag(ClusteredStorageRecordTraits.IsNull)) {
+			if (!_openScope.Record.Traits.HasFlag(ClusteredStreamTraits.IsNull)) {
 				var reader = new EndianBinaryReader(EndianBitConverter.For(_endianness), _openScope.Stream);
 				item = serializer.Deserialize(_openScope.Record.Size, reader);
 			} else item = default;
 			return scope;
 		}
 
-		public ClusteredStorageScope Add() {
+		public ClusteredStreamScope Add() {
 			lock (_lock) {
 				CheckNotOpened();
 				AddRecord(out var index, NewRecord());  // the first record add will allocate cluster 0 for the records stream
@@ -226,7 +221,7 @@ namespace Sphere10.Framework {
 			}
 		}
 
-		public ClusteredStorageScope Open(int index) {
+		public ClusteredStreamScope Open(int index) {
 			CheckRecordIndex(index);
 			lock (_lock) {
 				CheckNotOpened();
@@ -246,7 +241,7 @@ namespace Sphere10.Framework {
 			}
 		}
 
-		public ClusteredStorageScope Insert(int index) {
+		public ClusteredStreamScope Insert(int index) {
 			CheckRecordIndex(index, allowEnd: true);
 			lock (_lock) {
 				CheckNotOpened();
@@ -337,7 +332,7 @@ namespace Sphere10.Framework {
 
 		private void BeginOpenScope(int index) {
 			Guard.Ensure(_openScope == null);
-			_openScope = new ClusteredStorageScope(index, GetRecord(index), EndOpenScope);
+			_openScope = new ClusteredStreamScope(index, GetRecord(index), EndOpenScope);
 			// TODO: improve _openScope must be set before we can create FragmentProvider(this, ...) because it uses parent._openScope
 			_openScope.Stream = new FragmentedStream(new FragmentProvider(this, ClusterDataType.Stream));
 
@@ -353,8 +348,8 @@ namespace Sphere10.Framework {
 
 		#region Records
 
-		private ClusteredStorageRecord NewRecord() {
-			var record = new ClusteredStorageRecord();
+		private ClusteredStreamRecord NewRecord() {
+			var record = new ClusteredStreamRecord();
 			record.Size = 0;
 			record.StartCluster = -1;
 			record.Key = Tools.Array.Gen<byte>(_clusteredRecordKeySize, 0);
@@ -362,7 +357,7 @@ namespace Sphere10.Framework {
 			return record;
 		}
 
-		private void UpdateRecord(int index, ClusteredStorageRecord record, bool resetTrackingIfOpen = true) {
+		private void UpdateRecord(int index, ClusteredStreamRecord record, bool resetTrackingIfOpen = true) {
 			if (_integrityChecks)
 				CheckRecordIntegrity(index, record);
 
@@ -375,12 +370,12 @@ namespace Sphere10.Framework {
 		}
 
 		// This is the interface implementation of UpdateRecord (used by friendly classes)
-		public void UpdateRecord(int index, ClusteredStorageRecord record) {
+		public void UpdateRecord(int index, ClusteredStreamRecord record) {
 			//Guard.ArgumentCast<TRecord>(record, out var recordT, nameof(record));
 			UpdateRecord(index, record, true);
 		}
 
-		public ClusteredStorageRecord GetRecord(int index) {
+		public ClusteredStreamRecord GetRecord(int index) {
 			if (_openScope != null && index == _openScope.RecordIndex)
 				return _openScope.Record;
 
@@ -390,14 +385,14 @@ namespace Sphere10.Framework {
 			return record;
 		}
 
-		private ClusteredStorageRecord AddRecord(out int index, ClusteredStorageRecord record) {
+		private ClusteredStreamRecord AddRecord(out int index, ClusteredStreamRecord record) {
 			_records.Add(record);
 			Header.RecordsCount++;
 			index = _records.Count - 1;
 			return record;
 		}
 
-		private void InsertRecord(int index, ClusteredStorageRecord record) {
+		private void InsertRecord(int index, ClusteredStreamRecord record) {
 			Debug.Assert(_openScope == null);
 			// Update genesis clusters 
 			for (var i = index; i < _records.Count; i++) {
@@ -572,7 +567,7 @@ namespace Sphere10.Framework {
 
 		#region Aux methods
 
-		private void CheckHeaderDataIntegrity(int rootStreamLength, ClusteredStorageHeader header, IItemSerializer<Cluster> clusterSerializer, IItemSerializer<ClusteredStorageRecord> recordSerializer) {
+		private void CheckHeaderDataIntegrity(int rootStreamLength, ClusteredStorageHeader header, IItemSerializer<Cluster> clusterSerializer, IItemSerializer<ClusteredStreamRecord> recordSerializer) {
 			var clusterEnvelopeSize = clusterSerializer.StaticSize - header.ClusterSize;
 			var recordClusters = (int)Math.Ceiling(header.RecordsCount * recordSerializer.StaticSize / (float)header.ClusterSize);
 			if (header.TotalClusters < recordClusters)
@@ -586,7 +581,7 @@ namespace Sphere10.Framework {
 		private void CheckRecordIndex(int index, string msg = null, bool allowEnd = false)
 			=> Guard.CheckIndex(index, 0, _records.Count, allowEnd);
 
-		private void CheckRecordIntegrity(int index, ClusteredStorageRecord record) {
+		private void CheckRecordIntegrity(int index, ClusteredStreamRecord record) {
 			if (record.Size == 0) {
 				if (record.StartCluster != -1)
 					throw new CorruptDataException(Header, $"Empty record {index} should have start cluster -1 but was {record.StartCluster}");

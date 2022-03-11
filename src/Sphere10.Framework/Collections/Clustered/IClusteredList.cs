@@ -11,11 +11,11 @@ namespace Sphere10.Framework {
 
 		IEqualityComparer<TItem> ItemComparer { get; }
 
-		public ClusteredStorageScope EnterAddScope(TItem item);
+		public ClusteredStreamScope EnterAddScope(TItem item);
 
-		public ClusteredStorageScope EnterInsertScope(int index, TItem item);
+		public ClusteredStreamScope EnterInsertScope(int index, TItem item);
 
-		public ClusteredStorageScope EnterUpdateScope(int index, TItem item);
+		public ClusteredStreamScope EnterUpdateScope(int index, TItem item);
 	}
 
 

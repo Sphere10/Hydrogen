@@ -3,9 +3,9 @@ using System.IO;
 
 namespace Sphere10.Framework;
 
-public class ClusteredStorageScope : IDisposable {
+public class ClusteredStreamScope : IDisposable {
 	private readonly Action _closeAction;
-	public ClusteredStorageScope(int recordIndex, ClusteredStorageRecord record, Action closeAction) {
+	public ClusteredStreamScope(int recordIndex, ClusteredStreamRecord record, Action closeAction) {
 		RecordIndex = recordIndex;
 		Record = record;
 		_closeAction = closeAction;
@@ -13,7 +13,7 @@ public class ClusteredStorageScope : IDisposable {
 
 	public int RecordIndex;
 
-	public ClusteredStorageRecord Record;
+	public ClusteredStreamRecord Record;
 
 	public Stream Stream;
 

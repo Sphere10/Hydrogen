@@ -57,7 +57,7 @@ namespace Sphere10.Framework {
 			using var _ = EnterAddScope(item);
 		}
 
-		public ClusteredStorageScope EnterAddScope(TItem item) {
+		public ClusteredStreamScope EnterAddScope(TItem item) {
 			// Index checking deferred to Storage
 			UpdateVersion();
 			return Storage.EnterSaveItemScope(Storage.Count, item, ItemSerializer, ListOperationType.Add);
@@ -67,7 +67,7 @@ namespace Sphere10.Framework {
 			using var _ = EnterInsertScope(index, item);
 		}
 
-		public ClusteredStorageScope EnterInsertScope(int index, TItem item) {
+		public ClusteredStreamScope EnterInsertScope(int index, TItem item) {
 			// Index checking deferred to Storage
 			UpdateVersion();
 			return Storage.EnterSaveItemScope(index, item, ItemSerializer, ListOperationType.Insert);
@@ -77,7 +77,7 @@ namespace Sphere10.Framework {
 			using var _ = EnterUpdateScope(index, item);
 		}
 
-		public ClusteredStorageScope EnterUpdateScope(int index, TItem item) {
+		public ClusteredStreamScope EnterUpdateScope(int index, TItem item) {
 			// Index checking deferred to Storage
 			UpdateVersion();
 			return Storage.EnterSaveItemScope(index, item, ItemSerializer, ListOperationType.Update);

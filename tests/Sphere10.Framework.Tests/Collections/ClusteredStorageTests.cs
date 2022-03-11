@@ -655,7 +655,7 @@ namespace Sphere10.Framework.Tests {
 			for (var i = 0; i < totalStreams * 2; i++) {
 				if (i < totalStreams) {
 					Stream expectedStream = new MemoryStream();
-					ClusteredStorageScope newStream;
+					ClusteredStreamScope newStream;
 					// Add/insert a new stream
 					if (i % 2 == 0) {
 						newStream = streamContainer.Add();

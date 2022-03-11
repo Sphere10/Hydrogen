@@ -1,5 +1,5 @@
 ﻿namespace Sphere10.Framework {
-	public class ClusteredStorageRecordSerializer : StaticSizeItemSerializerBase<ClusteredStorageRecord> {
+	public class ClusteredStorageRecordSerializer : StaticSizeItemSerializerBase<ClusteredStreamRecord> {
 		private readonly ClusteredStoragePolicy _policy;
 		private readonly int _keySize;
 
@@ -9,7 +9,7 @@
 			_keySize = keySize;
 		}
 
-		public override bool TrySerialize(ClusteredStorageRecord item, EndianBinaryWriter writer) {
+		public override bool TrySerialize(ClusteredStreamRecord item, EndianBinaryWriter writer) {
 			writer.Write((byte)item.Traits);
 			writer.Write(item.StartCluster);
 			writer.Write(item.Size);
@@ -25,9 +25,9 @@
 			return true;
 		}
 
-		public override bool TryDeserialize(EndianBinaryReader reader, out ClusteredStorageRecord item) {
-			item = new ClusteredStorageRecord {
-				Traits = (ClusteredStorageRecordTraits) reader.ReadByte(),
+		public override bool TryDeserialize(EndianBinaryReader reader, out ClusteredStreamRecord item) {
+			item = new ClusteredStreamRecord {
+				Traits = (ClusteredStreamTraits) reader.ReadByte(),
 				StartCluster = reader.ReadInt32(),
 				Size = reader.ReadInt32()
 			};

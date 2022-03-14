@@ -9,7 +9,7 @@ using Tools;
 
 namespace Sphere10.Framework {
 
-	public class StringSerializer : ItemSerializerBase<string> {
+	public class StringSerializer : ItemSerializer<string> {
 	
 		public StringSerializer(Encoding textEncoding) {
 			Guard.ArgumentNotNull(textEncoding, nameof(textEncoding));

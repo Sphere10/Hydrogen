@@ -8,15 +8,18 @@ namespace Sphere10.Framework {
 
 		public event EventHandlerEx<ClusteredStreamRecord> RecordCreated;
 
+		ClusteredStorageHeader Header { get; }
+
 		ClusteredStoragePolicy Policy { get; }
 
-		ClusteredStorageHeader Header { get; }
+		int Count { get; }
 
 		IReadOnlyList<ClusteredStreamRecord> Records { get; }
 
+		Endianness Endianness { get; }
+
 		ClusteredStreamRecord GetRecord(int index);
 
-		int Count { get; }
 
 		ClusteredStreamScope Add();
 

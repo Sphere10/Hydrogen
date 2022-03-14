@@ -18,7 +18,7 @@ namespace Sphere10.Framework {
 			
 			RegisterSerializer(new DateTimeSerializer());
 			RegisterSerializer(new DateTimeOffsetSerializer());
-			RegisterSerializer(new DecimalSerializer());
+			RegisterSerializer(new PrimitiveSerializer<decimal>());
 			RegisterSerializer(new StringSerializer(Encoding.UTF8));
 			RegisterSerializer(new ByteArraySerializer());
 		}
@@ -27,7 +27,7 @@ namespace Sphere10.Framework {
 		/// Registers the type with the serializer. Required to serialize and deserialize types.
 		/// </summary>
 		/// <typeparam name="T"> type to register.</typeparam>
-		public void RegisterType<T>() where T : new() => RegisterType(typeof(T));
+		public void RegisterType<T>() => RegisterType(typeof(T));
 
 		/// <summary>
 		/// Registers the type with the serializer. Required to serialize and deserialize types.

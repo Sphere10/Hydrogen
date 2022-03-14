@@ -14,21 +14,19 @@ namespace Sphere10.Framework {
 	/// </summary>
 	/// <typeparam name="TItem"></typeparam>
 	public class ClusteredList<TItem> : SingularListBase<TItem>, IClusteredList<TItem> {
-		private readonly Endianness _endianness;
 		private int _version;
 
 		public ClusteredList(Stream rootStream, int clusterSize, IItemSerializer<TItem> itemSerializer, IEqualityComparer<TItem> itemComparer = null, ClusteredStoragePolicy policy = ClusteredStoragePolicy.Default, int recordKeySize = 0,  Endianness endianness = Endianness.LittleEndian)
-			: this(new ClusteredStorage(rootStream, clusterSize, policy, recordKeySize, endianness), itemSerializer, itemComparer, endianness) {
+			: this(new ClusteredStorage(rootStream, clusterSize, policy, recordKeySize, endianness), itemSerializer, itemComparer) {
 		}
 
-		public ClusteredList(IClusteredStorage storage, IItemSerializer<TItem> itemSerializer, IEqualityComparer<TItem> itemComparer = null, Endianness endianness = Endianness.LittleEndian) {
+		public ClusteredList(IClusteredStorage storage, IItemSerializer<TItem> itemSerializer, IEqualityComparer<TItem> itemComparer = null) {
 			Guard.ArgumentNotNull(storage, nameof(storage));
 			Guard.ArgumentNotNull(itemSerializer, nameof(itemSerializer));
 			Storage = storage;
 			ItemSerializer = itemSerializer;
 			ItemComparer = itemComparer ?? EqualityComparer<TItem>.Default;
 			_version = 0;
-			_endianness = endianness;
 		}
 
 		public override int Count => Storage.Count;

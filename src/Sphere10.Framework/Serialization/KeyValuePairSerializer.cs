@@ -13,7 +13,7 @@ namespace Sphere10.Framework {
 	/// <typeparam name="TKey"></typeparam>
 	/// <typeparam name="TValue"></typeparam>
 	/// <remarks>Serialization format: [KeyLength (uint32)] [KeyBytes....] [ValueLength (uint32)] [ValueBytes....] such that if total KVP bytes excludes ValueLength, than Value is inferred null</remarks>
-	public class KeyValuePairSerializer<TKey, TValue> : ItemSerializerBase<KeyValuePair<TKey, TValue>> {
+	public class KeyValuePairSerializer<TKey, TValue> : ItemSerializer<KeyValuePair<TKey, TValue>> {
 		private readonly IItemSerializer<TKey> _keySerializer;
 		private readonly IItemSerializer<TValue> _valueSerializer;
 

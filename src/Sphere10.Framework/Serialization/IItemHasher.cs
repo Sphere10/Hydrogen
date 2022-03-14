@@ -2,6 +2,8 @@
 
 	public interface IItemHasher<in TItem> {
 		byte[] Hash(TItem @object);
+
+		int DigestLength { get; }
 	}
 
 }

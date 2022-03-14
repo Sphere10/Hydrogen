@@ -56,7 +56,7 @@ namespace Sphere10.Framework {
 		private readonly PreAllocatedList<ClusteredStreamRecord> _records;
 
 		private ClusteredStreamScope _openScope;
-		private readonly Endianness _endianness;
+		
 		private readonly object _lock;
 		private readonly bool _integrityChecks;
 		private readonly bool _preAllocateOptimization;
@@ -69,7 +69,7 @@ namespace Sphere10.Framework {
 			if (Policy.HasFlag(ClusteredStoragePolicy.TrackKey))
 				Guard.Argument(recordKeySize > 0, nameof(recordKeySize), $"Must be greater than 0 when {nameof(ClusteredStoragePolicy.TrackKey)}");
 			Policy = policy;
-			_endianness = endianness;
+			Endianness = endianness;
 			_clusteredRecordKeySize = recordKeySize;
 			var recordSerializer = new ClusteredStorageRecordSerializer(policy, _clusteredRecordKeySize);
 			var clusterSerializer = new ClusterSerializer(clusterSize);
@@ -150,6 +150,8 @@ namespace Sphere10.Framework {
 
 		public IReadOnlyList<ClusteredStreamRecord> Records => _records;
 
+		public Endianness Endianness { get; }
+
 		internal IReadOnlyList<Cluster> Clusters => _clusters;
 
 		internal int ClusterSize => Header.ClusterSize;
@@ -169,7 +171,7 @@ namespace Sphere10.Framework {
 				ListOperationType.Insert => Insert(index),
 				_ => throw new ArgumentException($@"List operation type '{operationType}' not supported", nameof(operationType)),
 			};
-			var writer = new EndianBinaryWriter(EndianBitConverter.For(_endianness), _openScope.Stream);
+			var writer = new EndianBinaryWriter(EndianBitConverter.For(Endianness), _openScope.Stream);
 			if (item != null) {
 
 				_openScope.Record.Traits = _openScope.Record.Traits.CopyAndSetFlags(ClusteredStreamTraits.IsNull, false);
@@ -207,7 +209,7 @@ namespace Sphere10.Framework {
 		public ClusteredStreamScope EnterLoadItemScope<TItem>(int index, IItemSerializer<TItem> serializer, out TItem item) {
 			var scope = Open(index);
 			if (!_openScope.Record.Traits.HasFlag(ClusteredStreamTraits.IsNull)) {
-				var reader = new EndianBinaryReader(EndianBitConverter.For(_endianness), _openScope.Stream);
+				var reader = new EndianBinaryReader(EndianBitConverter.For(Endianness), _openScope.Stream);
 				item = serializer.Deserialize(_openScope.Record.Size, reader);
 			} else item = default;
 			return scope;

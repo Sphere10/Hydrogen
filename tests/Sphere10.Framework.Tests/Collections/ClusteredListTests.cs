@@ -44,7 +44,7 @@ namespace Sphere10.Framework.Tests {
 	
 		[Test]
 		public void ConstructorArgumentsAreGuarded() {
-			Assert.Throws<ArgumentNullException>(() => new ClusteredList<int>(null, 1, new IntSerializer()));
+			Assert.Throws<ArgumentNullException>(() => new ClusteredList<int>(null, 1, new PrimitiveSerializer<int>()));
 			Assert.Throws<ArgumentNullException>(() => new ClusteredList<int>(new MemoryStream(), 1,  null));
 			Assert.Throws<ArgumentOutOfRangeException>(() => new ClusteredList<int>(new MemoryStream(), 0, null));
 		}
@@ -70,7 +70,7 @@ namespace Sphere10.Framework.Tests {
 		[Test]
 		public void ReadRangeInvalidArguments() {
 			using var stream = new MemoryStream();
-			var list = new ClusteredList<int>(stream, 1,  new IntSerializer());
+			var list = new ClusteredList<int>(stream, 1,  new PrimitiveSerializer<int>());
 			list.AddRange(999, 1000, 1001, 1002);
 
 			Assert.Throws<ArgumentOutOfRangeException>(() => _ = list.ReadRange(-1, 1).ToList());
@@ -80,7 +80,7 @@ namespace Sphere10.Framework.Tests {
 		[Test]
 		public void ReadRangeEmpty() {
 			using var stream = new MemoryStream();
-			var list = new ClusteredList<int>(stream, 1,  new IntSerializer());
+			var list = new ClusteredList<int>(stream, 1,  new PrimitiveSerializer<int>());
 			list.AddRange(999, 1000, 1001, 1002);
 			Assert.IsEmpty(list.ReadRange(0, 0));
 
@@ -127,7 +127,7 @@ namespace Sphere10.Framework.Tests {
 		[Test]
 		public void UpdateRangeInvalidArguments() {
 			using var stream = new MemoryStream();
-			var list = new ClusteredList<int>(stream, 32,  new IntSerializer());
+			var list = new ClusteredList<int>(stream, 32,  new PrimitiveSerializer<int>());
 
 			list.AddRange(999, 1000, 1001, 1002);
 			list.UpdateRange(0, new[] { 998 });
@@ -154,7 +154,7 @@ namespace Sphere10.Framework.Tests {
 		[Test]
 		public void RemoveRangeInvalidArguments() {
 			using var stream = new MemoryStream();
-			var list = new ClusteredList<int>(stream, 32, new IntSerializer());
+			var list = new ClusteredList<int>(stream, 32, new PrimitiveSerializer<int>());
 
 			list.Add(999);
 
@@ -182,7 +182,7 @@ namespace Sphere10.Framework.Tests {
 		[Test]
 		public void IndexOfInvalidArguments() {
 			using var stream = new MemoryStream();
-			var list = new ClusteredList<int>(stream, 32,  new IntSerializer());
+			var list = new ClusteredList<int>(stream, 32,  new PrimitiveSerializer<int>());
 			list.AddRange(999, 1000, 1001, 1002);
 
 			Assert.Throws<ArgumentNullException>(() => list.IndexOfRange(null));
@@ -219,7 +219,7 @@ namespace Sphere10.Framework.Tests {
 		[Test]
 		public void InsertRangeInvalidArguments() {
 			using var stream = new MemoryStream();
-			var list = new ClusteredList<int>(stream, 32,  new IntSerializer());
+			var list = new ClusteredList<int>(stream, 32,  new PrimitiveSerializer<int>());
 
 			list.AddRange(999, 1000, 1001, 1002);
 

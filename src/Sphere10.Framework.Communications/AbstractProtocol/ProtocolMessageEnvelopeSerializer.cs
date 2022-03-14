@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Sphere10.Framework.Communications {
-	public class ProtocolMessageEnvelopeSerializer : ItemSerializerBase<ProtocolMessageEnvelope> {
+	public class ProtocolMessageEnvelopeSerializer : ItemSerializer<ProtocolMessageEnvelope> {
 		private readonly IItemSerializer<object> _payloadSerializer;
 		private static readonly byte[] MessageEnvelopeMarker = {0,1,2,3};
 		private static readonly int MessageEnvelopeLength = MessageEnvelopeMarker.Length + sizeof(byte) + sizeof(int) + sizeof(int);  // magicID + dispatchType + requestID + messageLength + payload 

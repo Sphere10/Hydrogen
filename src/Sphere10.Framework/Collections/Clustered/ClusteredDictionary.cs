@@ -22,7 +22,6 @@ namespace Sphere10.Framework {
 		public event EventHandlerEx<object> Loading;
 		public event EventHandlerEx<object> Loaded;
 
-		private readonly Endianness _endianness;
 		private readonly IClusteredList<KeyValuePair<TKey, TValue>> _kvpStore;
 		private readonly IEqualityComparer<TKey> _keyComparer;
 		private readonly IEqualityComparer<TValue> _valueComparer;
@@ -49,19 +48,17 @@ namespace Sphere10.Framework {
 				),
 				keyChecksum,
 				keyComparer,
-				valueComparer,
-				endianness
+				valueComparer
 			) {
 			Guard.Argument(policy.HasFlag(ClusteredStoragePolicy.TrackChecksums), nameof(policy), $"Checksum tracking must be enabled in {nameof(ClusteredDictionary<TKey, TValue>)} implementations.");
 		}
 
-		public ClusteredDictionary(IClusteredList<KeyValuePair<TKey, TValue>> kvpStore, IItemChecksum<TKey> keyChecksum = null, IEqualityComparer<TKey> keyComparer = null, IEqualityComparer<TValue> valueComparer = null, Endianness endianess = Endianness.LittleEndian) {
+		public ClusteredDictionary(IClusteredList<KeyValuePair<TKey, TValue>> kvpStore, IItemChecksum<TKey> keyChecksum = null, IEqualityComparer<TKey> keyComparer = null, IEqualityComparer<TValue> valueComparer = null) {
 			Guard.ArgumentNotNull(kvpStore, nameof(kvpStore));
 			_keyComparer = keyComparer ?? EqualityComparer<TKey>.Default;
 			_valueComparer = valueComparer ?? EqualityComparer<TValue>.Default;
 			_kvpStore = kvpStore;
 			_keyChecksum = keyChecksum ?? new ActionChecksum<TKey>(DefaultCalculateKeyChecksum);
-			_endianness = endianess;
 			_checksumToIndexLookup = new LookupEx<int, int>();
 			_unusedRecords = new();
 			RequiresLoad = _kvpStore.Storage.Records.Count > 0;
@@ -102,7 +99,7 @@ namespace Sphere10.Framework {
 			if (Storage.IsNull(index))
 				throw new InvalidOperationException($"Stream record {index} is null");
 			using var scope = Storage.Open(index);
-			var reader = new EndianBinaryReader(EndianBitConverter.For(_endianness), scope.Stream);
+			var reader = new EndianBinaryReader(EndianBitConverter.For(Storage.Endianness), scope.Stream);
 			return ((KeyValuePairSerializer<TKey, TValue>)_kvpStore.ItemSerializer).DeserializeKey(scope.Record.Size, reader);
 		}
 
@@ -110,7 +107,7 @@ namespace Sphere10.Framework {
 			if (Storage.IsNull(index))
 				throw new InvalidOperationException($"Stream record {index} is null");
 			using var scope = Storage.Open(index);
-			var reader = new EndianBinaryReader(EndianBitConverter.For(_endianness), scope.Stream);
+			var reader = new EndianBinaryReader(EndianBitConverter.For(Storage.Endianness), scope.Stream);
 			return ((KeyValuePairSerializer<TKey, TValue>)_kvpStore.ItemSerializer).DeserializeValue(scope.Record.Size, reader);
 		}
 
@@ -129,7 +126,7 @@ namespace Sphere10.Framework {
 			Guard.ArgumentNotNull(key, nameof(key));
 			CheckLoaded();
 			if (TryFindKey(key, out var index)) {
-				RemoveInternal(key, index);
+				RemoveAt(index);
 				return true;
 			}
 			return false;
@@ -162,6 +159,35 @@ namespace Sphere10.Framework {
 			return false;
 		}
 
+		public bool TryFindKey(TKey key, out int index) {
+			Debug.Assert(key != null);
+			foreach (var i in _checksumToIndexLookup[_keyChecksum.Calculate(key)]) {
+				var candidateKey = ReadKey(i);
+				if (_keyComparer.Equals(candidateKey, key)) {
+					index = i;
+					return true;
+				}
+			}
+			index = -1;
+			return false;
+		}
+
+		public bool TryFindValue(TKey key, out int index, out TValue value) {
+			Debug.Assert(key != null);
+			foreach (var i in _checksumToIndexLookup[_keyChecksum.Calculate(key)]) {
+				var candidateKey = ReadKey(i);
+				if (_keyComparer.Equals(candidateKey, key)) {
+					index = i;
+					value = ReadValue(index);
+					return true;
+				}
+			}
+			index = -1;
+			value = default;
+			return false;
+		}
+
+
 		public override void Add(KeyValuePair<TKey, TValue> item) {
 			Guard.ArgumentNotNull(item, nameof(item));
 			Guard.ArgumentNotNull(item, nameof(item));
@@ -179,11 +205,26 @@ namespace Sphere10.Framework {
 			CheckLoaded();
 			if (TryFindValue(item.Key, out var index, out var value)) {
 				if (_valueComparer.Equals(item.Value, value)) {
-					RemoveInternal(item.Key, index);
+					RemoveAt(index);
 					return true;
 				}
 			}
 			return false;
+		}
+
+		public void RemoveAt(int index) {
+			// We don't delete the instance, we mark is as unused. Use Shrink to intelligently remove unused records.
+			var kvp = KeyValuePair.Create(default(TKey), default(TValue));
+			using var scope = _kvpStore.EnterUpdateScope(index, kvp);
+
+			// Mark record as unused
+			Guard.Ensure(scope.Record.Traits.HasFlag(ClusteredStreamTraits.IsUsed), "Record not in used state");
+			_checksumToIndexLookup.Remove(scope.Record.KeyChecksum, index);
+			scope.Record.KeyChecksum = -1;
+			scope.Record.Traits = scope.Record.Traits.CopyAndSetFlags(ClusteredStreamTraits.IsUsed, false);
+			_unusedRecords.Add(index);
+
+			// note: scope Dispose ends up updating the record
 		}
 
 		public override bool Contains(KeyValuePair<TKey, TValue> item) {
@@ -241,34 +282,6 @@ namespace Sphere10.Framework {
 		protected virtual void OnLoaded() {
 		}
 
-		private bool TryFindKey(TKey key, out int index) {
-			Debug.Assert(key != null);
-			foreach (var i in _checksumToIndexLookup[_keyChecksum.Calculate(key)]) {
-				var candidateKey = ReadKey(i);
-				if (_keyComparer.Equals(candidateKey, key)) {
-					index = i;
-					return true;
-				}
-			}
-			index = -1;
-			return false;
-		}
-
-		private bool TryFindValue(TKey key, out int index, out TValue value) {
-			Debug.Assert(key != null);
-			foreach (var i in _checksumToIndexLookup[_keyChecksum.Calculate(key)]) {
-				var candidateKey = ReadKey(i);
-				if (_keyComparer.Equals(candidateKey, key)) {
-					index = i;
-					value = ReadValue(index);
-					return true;
-				}
-			}
-			index = -1;
-			value = default;
-			return false;
-		}
-
 		private void AddInternal(KeyValuePair<TKey, TValue> item) {
 			int index;
 			ClusteredStreamScope scope;
@@ -296,21 +309,6 @@ namespace Sphere10.Framework {
 			using var scope = _kvpStore.EnterUpdateScope(index, item);
 			scope.Record.Traits = scope.Record.Traits.CopyAndSetFlags(ClusteredStreamTraits.IsUsed, true);
 			scope.Record.KeyChecksum = _keyChecksum.Calculate(item.Key);
-		}
-
-		private void RemoveInternal(TKey key, int index) {
-			// We don't delete the instance, we mark is as unused. Use Shrink to intelligently remove unused records.
-			var kvp = KeyValuePair.Create(default(TKey), default(TValue));
-			using var scope = _kvpStore.EnterUpdateScope(index, kvp);
-
-			// Mark record as unused
-			Guard.Ensure(scope.Record.Traits.HasFlag(ClusteredStreamTraits.IsUsed), "Record not in used state");
-			_checksumToIndexLookup.Remove(scope.Record.KeyChecksum, index);
-			scope.Record.KeyChecksum = -1;
-			scope.Record.Traits = scope.Record.Traits.CopyAndSetFlags(ClusteredStreamTraits.IsUsed, false);
-			_unusedRecords.Add(index);
-
-			// note: scope Dispose ends up updating the record
 		}
 
 		private bool IsUnusedRecord(int index) => _unusedRecords.Contains(index);
@@ -341,12 +339,12 @@ namespace Sphere10.Framework {
 				throw new InvalidOperationException($"{nameof(ClusteredDictionary<TKey, TValue>)} has not been loaded");
 		}
 
-		protected void NotifyLoading() {
+		private void NotifyLoading() {
 			OnLoading();
 			Loading?.Invoke(this);
 		}
 
-		protected void NotifyLoaded() {
+		private void NotifyLoaded() {
 			OnLoaded();
 			Loaded?.Invoke(this);
 		}

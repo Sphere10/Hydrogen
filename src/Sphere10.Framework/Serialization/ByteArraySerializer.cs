@@ -5,7 +5,7 @@ using Sphere10.Framework.Values;
 
 namespace Sphere10.Framework {
 
-	public class ByteArraySerializer : ItemSerializerBase<byte[]> {
+	public class ByteArraySerializer : ItemSerializer<byte[]> {
 
 		public override int CalculateSize(byte[] item) => item.Length;
 

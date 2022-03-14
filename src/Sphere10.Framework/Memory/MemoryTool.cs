@@ -77,7 +77,6 @@ namespace Tools {
             return GetBytesReadable(metric == MemoryMetric.Byte ? quantity : (long)ConvertMemoryMetric(quantity, metric, MemoryMetric.Byte));
 		}
 
-
         public static double ConvertMemoryMetric(double quanity, MemoryMetric fromMetric, MemoryMetric toMetric) {
 			var fromBaseMetric = ToBaseMetric(fromMetric, out var fromBaseFactor);
 			var toBaseMetric = ToBaseMetric(toMetric, out var toBaseFactor);
@@ -115,7 +114,6 @@ namespace Tools {
 
             return (fromBaseFactor*quanity*conversionFactor)/toBaseFactor;
         }
-
 
         public static MemoryMetric ToBaseMetric(MemoryMetric metric, out double factor) {
             switch (metric) {
@@ -161,6 +159,29 @@ namespace Tools {
             }
 
         }
-    }
+
+        public static int SizeOfPrimitive(Type type) {
+	        Guard.Argument(type.IsPrimitive, nameof(type), $" {type} is not a primitive type");
+	        return SizeOfPrimitive(Type.GetTypeCode(type));
+        }
+
+        public static int SizeOfPrimitive(TypeCode typeCode) => typeCode switch {
+	        TypeCode.Boolean => sizeof(bool),
+	        TypeCode.Byte => sizeof(byte),
+	        TypeCode.Char => sizeof(char),
+	        TypeCode.Decimal => sizeof(decimal),
+	        TypeCode.Double => sizeof(double),
+	        TypeCode.Int16 => sizeof(short),
+	        TypeCode.Int32 => sizeof(int),
+	        TypeCode.Int64 => sizeof(long),
+	        TypeCode.SByte => sizeof(sbyte),
+	        TypeCode.Single => sizeof(float),
+	        TypeCode.UInt16 => sizeof(ushort),
+	        TypeCode.UInt32 => sizeof(uint),
+	        TypeCode.UInt64 => sizeof(ulong),
+	        _ => throw new NotSupportedException($"{nameof(typeCode)} has an indeterminable static size")
+        };
+
+	}
 }
 

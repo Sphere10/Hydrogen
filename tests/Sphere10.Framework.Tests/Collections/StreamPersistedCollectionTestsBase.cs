@@ -85,7 +85,7 @@ namespace Sphere10.Framework.Tests {
 
         }
 
-        public class TestObjectSerializer : ItemSerializerBase<TestObject> {
+        public class TestObjectSerializer : ItemSerializer<TestObject> {
 			private readonly IItemSerializer<string> _stringSerializer = new StringSerializer(Encoding.UTF8);
 
 			public override int CalculateSize(TestObject item) 

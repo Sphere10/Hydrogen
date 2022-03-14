@@ -14,7 +14,7 @@ namespace Sphere10.Framework {
 	/// circular references between objects.
 	/// </summary>
 	/// <typeparam name="T"></typeparam>
-	public class GenericSerializer<T> : GenericSerializerBase, IItemSerializer<T> where T : new() {
+	public class GenericSerializer<T> : GenericSerializerBase, IItemSerializer<T> {
 		public bool IsStaticSize => false;
 
 		public int StaticSize => -1;

@@ -88,7 +88,7 @@ namespace Sphere10.Framework.Tests {
         public void V1_FixedSize_Read_NoHeader() {
             StreamPagedList<int> list;
             using var stream = new MemoryStream();
-            list = new StreamPagedList<int>(new IntSerializer(), stream) {IncludeListHeader = false};
+            list = new StreamPagedList<int>(new PrimitiveSerializer<int>(), stream) {IncludeListHeader = false};
             var added = new[] { 1, 2, 3, 4 };
             list.AddRange(added);
             var read = list.ReadRange(2, 2);
@@ -99,7 +99,7 @@ namespace Sphere10.Framework.Tests {
         public void V1_FixedSize_Update()
         {
             using var stream = new MemoryStream();
-            StreamPagedList<int> list = new StreamPagedList<int>(new IntSerializer(), stream) {IncludeListHeader = false};
+            StreamPagedList<int> list = new StreamPagedList<int>(new PrimitiveSerializer<int>(), stream) {IncludeListHeader = false};
             var added = new[] { 1, 2, 3, 4 };
             list.AddRange(added);
             var read = list.ReadRange(0, added.Length);
@@ -115,7 +115,7 @@ namespace Sphere10.Framework.Tests {
 		public void ReadItemRaw(StreamPagedListType type, int pageSize) {
 			var random = new Random(31337);
 			using var stream = new MemoryStream();
-			var mappedList = new StreamPagedList<int>(type, new IntSerializer(), stream, pageSize);
+			var mappedList = new StreamPagedList<int>(type, new PrimitiveSerializer<int>(), stream, pageSize);
 			
 			mappedList.AddRange(random.NextInts(10));
 			int read = mappedList.ReadItemRaw(1, 1, 3, out var span);
@@ -129,7 +129,7 @@ namespace Sphere10.Framework.Tests {
 		public void ReadItemRawInvalidIndex() {
 			var random = new Random(31337);
 			using var stream = new MemoryStream();
-			var mappedList = new StreamPagedList<int>(StreamPagedListType.Static, new IntSerializer(), stream, int.MaxValue);
+			var mappedList = new StreamPagedList<int>(StreamPagedListType.Static, new PrimitiveSerializer<int>(), stream, int.MaxValue);
 			
 			mappedList.AddRange(random.NextInts(1));
 			Assert.Throws<ArgumentOutOfRangeException>(() => mappedList.ReadItemRaw(5, 1, 1, out var span));
@@ -197,7 +197,7 @@ namespace Sphere10.Framework.Tests {
         [Test]
         public void V1_IntegrationTests([Values(0,1,17,1000)] int maxCapacity, [Values] bool includeListHeader) {
             using (var stream = new MemoryStream()) {
-                var list = new StreamPagedList<int>(new IntSerializer(), stream) { IncludeListHeader = includeListHeader };
+                var list = new StreamPagedList<int>(new PrimitiveSerializer<int>(), stream) { IncludeListHeader = includeListHeader };
                 AssertEx.ListIntegrationTest(list, maxCapacity, (rng, i) => rng.NextInts(i), mutateFromEndOnly: true);
             }
         }

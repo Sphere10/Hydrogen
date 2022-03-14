@@ -236,7 +236,7 @@ namespace Sphere10.Framework {
         }
 
         /// <summary>
-        /// Reads a Compact-encoded integeger
+        /// Reads a Compact-encoded integer
         /// </summary>
         /// <returns>The 64-bit unsigned integer read</returns>
         public CVarInt ReadCVarInt(int valueSize) 

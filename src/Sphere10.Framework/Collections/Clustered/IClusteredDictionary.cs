@@ -12,6 +12,12 @@ namespace Sphere10.Framework {
 
 		TValue ReadValue(int index);
 
+		bool TryFindKey(TKey key, out int index);
+
+		bool TryFindValue(TKey key, out int index, out TValue value);
+
+		void RemoveAt(int index);
+
 	}
 
 }

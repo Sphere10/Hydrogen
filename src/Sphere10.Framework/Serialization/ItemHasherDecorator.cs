@@ -10,6 +10,8 @@
 		}
 
 		public virtual byte[] Hash(TItem @object) => InternalHasher.Hash(@object);
+
+		public int DigestLength => InternalHasher.DigestLength;
 	}
 
 }

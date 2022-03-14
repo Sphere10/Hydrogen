@@ -34,18 +34,18 @@ namespace Sphere10.Framework {
 		/// <returns></returns>
 		public static IEnumerable<(T, T)> AsPairwise<T>(this IEnumerable<T> source) {
 			var previous = default(T);
-			using (var it = source.GetEnumerator()) {
-				if (it.MoveNext())
-					previous = it.Current;
+			using var it = source.GetEnumerator();
 
-				while (it.MoveNext())
-					yield return (previous, previous = it.Current);
-			}
+			if (it.MoveNext())
+				previous = it.Current;
+
+			while (it.MoveNext())
+				yield return (previous, previous = it.Current);
+
 		}
-
 	
-		public static IEnumerable<T> Head<T>(this IEnumerable<T> enumerables, out T head) {
-			var arr = enumerables.ToArray();
+		public static IEnumerable<T> Head<T>(this IEnumerable<T> enumerable, out T head) {
+			var arr = enumerable as T[] ?? enumerable.ToArray();
 			head = Tools.Array.Head(ref arr);
 			return arr;
 		}
@@ -92,7 +92,6 @@ namespace Sphere10.Framework {
 				yield return @enum.Current;
 			}
 		}
-
 
 		public static IEnumerable<IEnumerable<T>> Duplicate<T>(this IEnumerable<T> enumerable) {
 			while (true)
@@ -280,11 +279,18 @@ namespace Sphere10.Framework {
 			return source.Concat(new[] { element });
 		}
 
+		public static ISet<T> ToSet<T>(this IEnumerable<T> source, IEqualityComparer<T> comparer = null) {
+			comparer ??= EqualityComparer<T>.Default;
+			var hashSet = new HashSet<T>(comparer);
+			foreach (var item in source)
+				hashSet.Add(item);
+			return hashSet;
+		}
 
-		public static Dictionary<TKey, TValue> ToDictionary<TKey, TValue>(this IEnumerable<KeyValuePair<TKey, TValue>> items)
+		public static IDictionary<TKey, TValue> ToDictionary<TKey, TValue>(this IEnumerable<KeyValuePair<TKey, TValue>> items)
 			=> new Dictionary<TKey, TValue>(items);
 
-		public static IDictionary<K, List<T>> ToMultiValueDictionary<K, T>(this IEnumerable<T> source, Func<T, K> keySelector) {
+		public static IDictionary<K, List<T>>ToMultiValueDictionary<K, T>(this IEnumerable<T> source, Func<T, K> keySelector) {
 			var result = new Dictionary<K, List<T>>();
 
 			foreach (var item in source) {
@@ -390,7 +396,7 @@ namespace Sphere10.Framework {
 			return extList;
 		}
 
-		// NOTE: ForReach applies action to all items then return enumerable, Apply applies action during enumeration 
+		// NOTE: ForEach applies action to all items then return enumerable, Apply applies action during enumeration 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static void ForEach<T>(this IEnumerable<T> source, Action<T> action) {
 			foreach (T item in source)
@@ -406,7 +412,7 @@ namespace Sphere10.Framework {
 			return updated;
 		}
 
-		// NOTE: ForReach applies action to all items then return enumerable, Apply applies action during enumeration
+		// NOTE: ForEach applies action to all items then return enumerable, Apply applies action during enumeration
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static IEnumerable<T> Apply<T>(this IEnumerable<T> source, Action<T> action) {
 			foreach (T item in source) {

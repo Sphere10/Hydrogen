@@ -12,10 +12,13 @@ namespace Sphere10.Framework {
 		public ItemHasher(CHF hashAlgorithm, IItemSerializer<TItem> internalSerializer)
 			: base(internalSerializer) {
 			_hashAlgorithm = hashAlgorithm;
+			DigestLength = Hashers.GetDigestSizeBytes(_hashAlgorithm);
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public byte[] Hash(TItem @object) => Hashers.Hash(_hashAlgorithm, @object, this);
+
+		public int DigestLength { get; }
 	}
 
 }

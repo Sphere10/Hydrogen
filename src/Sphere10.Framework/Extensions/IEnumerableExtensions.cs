@@ -521,9 +521,11 @@ namespace Sphere10.Framework {
 			return list.BinarySearch(value, comparer.Compare);
 		}
 
-		public static IEnumerable<t> Randomize<t>(this IEnumerable<t> source) {
-			return source.OrderBy(x => (Tools.Maths.RNG.Next()));
-		}
+		public static IEnumerable<TItem> Randomize<TItem>(this IEnumerable<TItem> source)
+			=> Randomize(source, Tools.Maths.RNG);
+
+		public static IEnumerable<TItem> Randomize<TItem>(this IEnumerable<TItem> source, Random RNG) 
+			=> source.OrderBy(x => RNG.Next());
 
 		public static IEnumerable<IEnumerable<T>> Partition<T>(this IEnumerable<T> sequence, int partitionSize) {
 			// HS 2019-02-26 removed iOS specific implementation due to .NET Standard port

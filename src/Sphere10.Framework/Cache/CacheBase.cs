@@ -32,7 +32,7 @@ namespace Sphere10.Framework {
             TimeSpan? expirationDuration = null,
             NullValuePolicy nullValuePolicy = NullValuePolicy.CacheNormally,
             ICacheReaper reaper = null
-			) {
+		) {
 			Guard.ArgumentNotNull(keyComparer, nameof(keyComparer));
             expirationDuration ??= TimeSpan.MaxValue;
             expirationDuration ??= TimeSpan.MaxValue;
@@ -76,7 +76,10 @@ namespace Sphere10.Framework {
 			return InternalStorage.TryGetValue(key, out var item) && !IsExpired(item);
 		}
 
-		public virtual object this[object key] => Get(key).Value;
+		public virtual object this[object key] {
+			get => Get(key).Value;
+			set => Set(key, value);
+		}
 
 		public void Invalidate(object key) {
 			if (InternalStorage.TryGetValue(key, out var item)) {
@@ -116,6 +119,18 @@ namespace Sphere10.Framework {
 			return item;
 		}
 
+		public virtual void Set(object key, object value) {
+			using (this.EnterWriteScope()) {
+				if (InternalStorage.ContainsKey(key)) {
+					InternalStorage[key].Value = value;
+					InternalStorage[key].LastAccessedOn = DateTime.Now;
+				} else {
+					AddItemInternal(key, value);
+				}
+				this.LastUpdateOn = DateTime.Now;
+			}
+		}
+
 		public virtual void Remove(object key) {
 			using (this.EnterWriteScope()) {
 				RemoveItemInternal(key);
@@ -151,17 +166,8 @@ namespace Sphere10.Framework {
 
 		public virtual void BulkLoad(IEnumerable<KeyValuePair<object, object>> bulkLoadedValues) {
 			using (this.EnterWriteScope()) {
-				foreach (var kvp in bulkLoadedValues) {
-					if (InternalStorage.ContainsKey(kvp.Key)) {
-						InternalStorage[kvp.Key].Value = kvp.Value;
-						InternalStorage[kvp.Key].LastAccessedOn = DateTime.Now;
-					} else {
-						AddItemInternal(kvp.Key, kvp.Value);
-					}
-				}
-				if (bulkLoadedValues.Any()) {
-					this.LastUpdateOn = DateTime.Now;
-				}
+				foreach (var kvp in bulkLoadedValues) 
+					this[kvp.Key] = kvp.Value;
 			}
 		}
 

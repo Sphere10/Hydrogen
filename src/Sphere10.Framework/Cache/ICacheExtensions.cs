@@ -23,8 +23,5 @@ namespace Sphere10.Framework {
 			}
 		}
 
-		public static void Set<K, V>(this ICache<K, V> cache, K key, V value) {
-            cache.BulkLoad(new[] {new KeyValuePair<K, V>(key, value)});
-        }
     }
 }

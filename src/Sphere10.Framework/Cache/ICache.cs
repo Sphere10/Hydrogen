@@ -50,7 +50,9 @@ namespace Sphere10.Framework {
 
         CachedItem Get(object key);
 
-        object this[object index] { get; }
+        void Set(object key, object value);
+
+		object this[object index] { get; set; }
 
         void BulkLoad(IEnumerable<KeyValuePair<object, object>> bulkLoadedValues);
 
@@ -74,7 +76,9 @@ namespace Sphere10.Framework {
 
 		CachedItem<TValue> Get(TKey key);
 
-		TValue this[TKey index] { get; }
+		void Set(TKey key, TValue value);
+
+		TValue this[TKey index] { get; set; }
 
 		void BulkLoad(IEnumerable<KeyValuePair<TKey, TValue>> bulkLoadedValues);
 

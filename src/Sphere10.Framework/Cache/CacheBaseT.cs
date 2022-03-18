@@ -51,8 +51,13 @@ namespace Sphere10.Framework {
 		public CachedItem<TValue> Get(TKey key)
 	        => (CachedItem<TValue>)base.Get(key);
 
-        public TValue this[TKey index]
-	        => (TValue)base[index];
+		public void Set(TKey key, TValue value)
+			=> base.Set(key, value);
+
+		public TValue this[TKey index] {
+			get => (TValue)base[index];
+			set => base[index] = value;
+		}
 
         public virtual void BulkLoad(IEnumerable<KeyValuePair<TKey, TValue>> bulkLoadedValues)
 	        => base.BulkLoad(bulkLoadedValues.Select(x => new KeyValuePair<object, object>(x.Key, x.Value)));

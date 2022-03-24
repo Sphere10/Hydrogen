@@ -50,10 +50,17 @@ namespace Sphere10.Framework {
 	public class ClusteredStorage : IClusteredStorage {
 
 		public event EventHandlerEx<ClusteredStreamRecord> RecordCreated;
+		public event EventHandlerEx<int, ClusteredStreamRecord> RecordAdded;
+		public event EventHandlerEx<int, ClusteredStreamRecord> RecordInserted;
+		public event EventHandlerEx<int, ClusteredStreamRecord> RecordUpdated;
+		public event EventHandlerEx<int> RecordRemoved;
+
+		private const long DefaultRecordCacheSize = 1 << 20; // 1mb
 
 		private readonly StreamPagedList<Cluster> _clusters;
 		private readonly FragmentProvider _recordsFragmentProvider;
 		private readonly PreAllocatedList<ClusteredStreamRecord> _records;
+		private readonly ICache<int, ClusteredStreamRecord> _recordCache;
 
 		private ClusteredStreamScope _openScope;
 		
@@ -71,7 +78,7 @@ namespace Sphere10.Framework {
 			Policy = policy;
 			Endianness = endianness;
 			_clusteredRecordKeySize = recordKeySize;
-			var recordSerializer = new ClusteredStorageRecordSerializer(policy, _clusteredRecordKeySize);
+			var recordSerializer = new ClusteredStreamRecordSerializer(policy, _clusteredRecordKeySize);
 			var clusterSerializer = new ClusterSerializer(clusterSize);
 			Header = CreateHeader();
 			if (rootStream.Length > 0) {
@@ -111,12 +118,22 @@ namespace Sphere10.Framework {
 				0,
 				NewRecord
 			);
-			ClusterEnvelopeSize = clusterSerializer.StaticSize - ClusterSize;
+			_recordCache = Policy.HasFlag(ClusteredStoragePolicy.CacheRecords) ? 
+				new ActionCache<int, ClusteredStreamRecord>(
+					FetchRecord,
+					sizeEstimator: _ => recordSerializer.StaticSize,
+					reapStrategy: CacheReapPolicy.LeastUsed,
+					ExpirationPolicy.SinceLastAccessedTime,
+					maxCapacity: DefaultRecordCacheSize
+				) : 
+				null;
+
 			_lock = new object();
 			_openScope = null;
 			_preAllocateOptimization = Policy.HasFlag(ClusteredStoragePolicy.FastAllocate);
 			_integrityChecks = Policy.HasFlag(ClusteredStoragePolicy.IntegrityChecks);
 			ZeroClusterBytes = Tools.Array.Gen<byte>(clusterSize, 0);
+			ClusterEnvelopeSize = clusterSerializer.StaticSize - ClusterSize;
 		}
 
 		public static ClusteredStorage Load(Stream rootStream, Endianness endianness = Endianness.LittleEndian) {
@@ -144,13 +161,20 @@ namespace Sphere10.Framework {
 
 		public ClusteredStorageHeader Header { get; }
 
-		public int Count => Header.RecordsCount;
-
 		public ClusteredStoragePolicy Policy { get; }
 
-		public IReadOnlyList<ClusteredStreamRecord> Records => _records;
-
 		public Endianness Endianness { get; }
+
+		public long RecordCacheSize {
+			get => _recordCache.MaxCapacity;
+			set {
+				throw new NotImplementedException();
+			}
+		}
+
+		public int Count => Header.RecordsCount;
+
+		public IReadOnlyList<ClusteredStreamRecord> Records => _records;
 
 		internal IReadOnlyList<Cluster> Clusters => _clusters;
 
@@ -163,6 +187,7 @@ namespace Sphere10.Framework {
 		private ReadOnlyMemory<byte> ZeroClusterBytes { get; }
 
 		#region Streams
+		
 
 		public ClusteredStreamScope EnterSaveItemScope<TItem>(int index, TItem item, IItemSerializer<TItem> serializer, ListOperationType operationType) {
 			var scope = operationType switch {
@@ -292,6 +317,7 @@ namespace Sphere10.Framework {
 			lock (_lock) {
 				CheckNotOpened();
 				_records.Clear();
+				_recordCache?.Flush();
 				_clusters.Clear();
 				Header.RecordsCount = 0;
 				Header.TotalClusters = 0;
@@ -314,7 +340,7 @@ namespace Sphere10.Framework {
 			stringBuilder.AppendLine(this.ToString());
 			stringBuilder.AppendLine("Records:");
 			for (var i = 0; i < _records.Count; i++) {
-				var record = _records[i];
+				var record = GetRecord(i);
 				stringBuilder.AppendLine($"\t{i}: {record}");
 			}
 			stringBuilder.AppendLine("Clusters:");
@@ -337,7 +363,6 @@ namespace Sphere10.Framework {
 			_openScope = new ClusteredStreamScope(index, GetRecord(index), EndOpenScope);
 			// TODO: improve _openScope must be set before we can create FragmentProvider(this, ...) because it uses parent._openScope
 			_openScope.Stream = new FragmentedStream(new FragmentProvider(this, ClusterDataType.Stream));
-
 		}
 
 		internal void EndOpenScope() {
@@ -355,20 +380,8 @@ namespace Sphere10.Framework {
 			record.Size = 0;
 			record.StartCluster = -1;
 			record.Key = Tools.Array.Gen<byte>(_clusteredRecordKeySize, 0);
-			RecordCreated?.Invoke(record);
+			NotifyRecordCreated(record);
 			return record;
-		}
-
-		private void UpdateRecord(int index, ClusteredStreamRecord record, bool resetTrackingIfOpen = true) {
-			if (_integrityChecks)
-				CheckRecordIntegrity(index, record);
-
-			_records.Update(index, record);
-			if (_openScope != null && _openScope.RecordIndex == index) {
-				_openScope.Record = record;
-				if (resetTrackingIfOpen)
-					_openScope.ResetTracking();
-			}
 		}
 
 		// This is the interface implementation of UpdateRecord (used by friendly classes)
@@ -377,7 +390,10 @@ namespace Sphere10.Framework {
 			UpdateRecord(index, record, true);
 		}
 
-		public ClusteredStreamRecord GetRecord(int index) {
+		public ClusteredStreamRecord GetRecord(int index) => _recordCache is not null ? _recordCache[index] : FetchRecord(index);
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		private ClusteredStreamRecord FetchRecord(int index) {
 			if (_openScope != null && index == _openScope.RecordIndex)
 				return _openScope.Record;
 
@@ -389,31 +405,54 @@ namespace Sphere10.Framework {
 
 		private ClusteredStreamRecord AddRecord(out int index, ClusteredStreamRecord record) {
 			_records.Add(record);
-			Header.RecordsCount++;
-			index = _records.Count - 1;
+			index = Header.RecordsCount++;
+			_recordCache?.Set(index, record);
+			NotifyRecordAdded(index, record);
 			return record;
 		}
 
 		private void InsertRecord(int index, ClusteredStreamRecord record) {
 			Debug.Assert(_openScope == null);
 			// Update genesis clusters 
-			for (var i = index; i < _records.Count; i++) {
+			for (var i = _records.Count - 1; i >= index; i--) {
 				var shiftedRecord = GetRecord(i);
-				if (shiftedRecord.StartCluster != -1)
+				if (shiftedRecord.StartCluster != -1) 
 					FastWriteClusterPrev(shiftedRecord.StartCluster, i + 1);
+				_recordCache?.Invalidate(i);
+				_recordCache?.Set(i + 1, shiftedRecord);
 			}
 			_records.Insert(index, record);
+			_recordCache?.Set(index, record);
 			Header.RecordsCount++;
+			NotifyRecordInserted(index, record);
+		}
+
+		private void UpdateRecord(int index, ClusteredStreamRecord record, bool resetTrackingIfOpen) {
+			if (_integrityChecks)
+				CheckRecordIntegrity(index, record);
+
+			_records.Update(index, record);
+			_recordCache?.Set(index, record);
+			if (_openScope != null && _openScope.RecordIndex == index) {
+				_openScope.Record = record;
+				if (resetTrackingIfOpen)
+					_openScope.ResetTracking();
+			}
+			NotifyRecordUpdated(index, record);
 		}
 
 		private void RemoveRecord(int index) {
 			for (var i = index + 1; i < _records.Count; i++) {
 				var higherRecord = GetRecord(i);
-				if (higherRecord.StartCluster != -1)
+				if (higherRecord.StartCluster != -1) {
 					FastWriteClusterPrev(higherRecord.StartCluster, i - 1);
+				}
+				_recordCache?.Set(i - 1, higherRecord); 
 			}
 			_records.RemoveAt(index);
+			_recordCache?.Invalidate(index);
 			Header.RecordsCount--;
+			NotifyRecordRemoved(index);
 		}
 
 		#endregion
@@ -563,6 +602,50 @@ namespace Sphere10.Framework {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		internal void FastWriteClusterData(int clusterIndex, int offset, ReadOnlySpan<byte> data) {
 			_clusters.WriteItemBytes(clusterIndex, sizeof(byte) + sizeof(int) + sizeof(int) + offset, data);
+		}
+
+		#endregion
+
+		#region Event methods
+
+		protected virtual void OnRecordCreated(ClusteredStreamRecord record) {
+		}
+
+		protected virtual void OnRecordAdded(int index, ClusteredStreamRecord record) {
+		}
+
+		protected virtual void OnRecordInserted(int index, ClusteredStreamRecord record) {
+		}
+
+		protected virtual void OnRecordUpdated(int index, ClusteredStreamRecord record) {
+		}
+
+		protected virtual void OnRecordRemoved(int index) {
+		}
+
+		private void NotifyRecordCreated(ClusteredStreamRecord record) {
+			OnRecordCreated(record);
+			RecordCreated?.Invoke(record);
+		}
+
+		private void NotifyRecordAdded(int index, ClusteredStreamRecord record) {
+			OnRecordAdded(index, record);
+			RecordAdded?.Invoke(index, record);
+		}
+
+		private void NotifyRecordInserted(int index, ClusteredStreamRecord record) {
+			OnRecordInserted(index, record);
+			RecordInserted?.Invoke(index, record);
+		}
+
+		private void NotifyRecordUpdated(int index, ClusteredStreamRecord record) {
+			OnRecordUpdated(index, record);
+			RecordUpdated?.Invoke(index, record);
+		}
+
+		private void NotifyRecordRemoved(int index) {
+			OnRecordRemoved(index);
+			RecordRemoved?.Invoke(index);
 		}
 
 		#endregion

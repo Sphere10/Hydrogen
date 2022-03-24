@@ -24,7 +24,6 @@ namespace Sphere10.Framework {
 	/// generic argument ensures sub-classes can retrieve the decorated list in it's type,without an expensive chain of casts/retrieves.</remarks>
 	public abstract class ExtendedListDecorator<TItem, TConcrete> : CollectionDecorator<TItem, TConcrete>, IExtendedList<TItem>
 		where TConcrete : IExtendedList<TItem> {
-		//protected TConcrete InternalCollection;
 
 		protected ExtendedListDecorator(TConcrete internalExtendedList) : base(internalExtendedList) {
 		}

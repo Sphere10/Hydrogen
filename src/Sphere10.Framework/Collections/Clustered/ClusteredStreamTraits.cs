@@ -16,6 +16,7 @@ namespace Sphere10.Framework {
 		/// <summary>
 		/// In Dictionary usage, this bit indicates whether Stream is a part of the Dictionary. When 0, it is available to be used as a slot for the dictionary item.
 		/// </summary>
+		/// TODO: rename to IsTombstone and invert usage
 		IsUsed = 1 << 1,
 
 

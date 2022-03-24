@@ -15,8 +15,8 @@ namespace Sphere10.Framework {
 	/// </summary>
 	/// <remarks>When deleting an item the underlying <see cref="ClusteredStorageRecord"/> is marked nullified but retained and re-used in later calls to <see cref="Add(TItem)"/>.</remarks>
 	public class ClusteredHashSet<TItem> : SetBase<TItem>, ILoadable {
-		public event EventHandlerEx<object> Loading;
-		public event EventHandlerEx<object> Loaded;
+		public event EventHandlerEx<object> Loading { add => _itemStore.Loading += value; remove => _itemStore.Loading -= value; }
+		public event EventHandlerEx<object> Loaded { add => _itemStore.Loaded += value; remove => _itemStore.Loaded -= value; }
 
 		private readonly IClusteredDictionary<byte[], TItem> _itemStore;
 		private readonly IItemHasher<TItem> _hasher;
@@ -48,22 +48,20 @@ namespace Sphere10.Framework {
 			: base(comparer ?? EqualityComparer<TItem>.Default) {
 			_itemStore = itemStore;
 			_hasher = hasher;
-			RequiresLoad = itemStore.Storage.Records.Count > 0;
 		}
 
 		public override int Count => _itemStore.Count;
 
 		public override bool IsReadOnly => _itemStore.IsReadOnly;
 
-		public bool RequiresLoad { get; }
+		public bool RequiresLoad => _itemStore.RequiresLoad;
 
 		public IClusteredStorage Storage => _itemStore.Storage;
 
-		public void Load() {
-			throw new NotImplementedException();
-		}
+		public void Load() => _itemStore.Load();
 
 		public override bool Add(TItem item) {
+			Guard.ArgumentNotNull(item, nameof(item));
 			var itemHash = _hasher.Hash(item);
 			if (_itemStore.ContainsKey(itemHash))
 				return false;
@@ -71,9 +69,13 @@ namespace Sphere10.Framework {
 			return true;
 		}
 
-		public override bool Contains(TItem item) => _itemStore.ContainsKey(_hasher.Hash(item));
+		public override bool Contains(TItem item) {
+			Guard.ArgumentNotNull(item, nameof(item));
+			return _itemStore.ContainsKey(_hasher.Hash(item));
+		}
 
 		public override bool Remove(TItem item) {
+			Guard.ArgumentNotNull(item, nameof(item));
 			var itemHash = _hasher.Hash(item);
 			if (!_itemStore.TryFindKey(itemHash, out var index))
 				return false;
@@ -81,32 +83,14 @@ namespace Sphere10.Framework {
 			return true;
 		}
 
-		public override void Clear() => _itemStore.Clear();
+		public override void Clear() 
+			=> _itemStore.Clear();
 
-		public override void CopyTo(TItem[] array, int arrayIndex) => _itemStore.Values.CopyTo(array, arrayIndex);
+		public override void CopyTo(TItem[] array, int arrayIndex) 
+			=> _itemStore.Values.CopyTo(array, arrayIndex);
 
-		public override IEnumerator<TItem> GetEnumerator() => _itemStore.Values.GetEnumerator();
-		
-		protected virtual void OnLoading() {
-		}
-
-		protected virtual void OnLoaded() {
-		}
-
-		private void NotifyLoading() {
-			OnLoading();
-			Loading?.Invoke(this);
-		}
-
-		private void NotifyLoaded() {
-			OnLoaded();
-			Loaded?.Invoke(this);
-		}
-
-		private void CheckLoaded() {
-			if (RequiresLoad)
-				throw new InvalidOperationException($"{nameof(ClusteredHashSet<TItem>)} has not been loaded");
-		}
+		public override IEnumerator<TItem> GetEnumerator() 
+			=> _itemStore.Values.GetEnumerator();
 
 	}
 }

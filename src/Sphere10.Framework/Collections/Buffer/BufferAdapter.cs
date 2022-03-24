@@ -32,6 +32,17 @@ namespace Sphere10.Framework {
         public Span<byte> AsSpan(int index, int count) {
             throw new NotSupportedException();
         }
-    }
+
+        public void ExpandTo(int totalBytes) {
+			var newBytes = totalBytes - base.Count;
+			if (newBytes > 0)
+				ExpandBy(newBytes);
+		}
+
+        public void ExpandBy(int newBytes) {
+	        for (var i = 0; i < newBytes; i++)
+		        base.Add(default);
+        }
+	}
 
 }

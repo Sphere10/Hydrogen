@@ -7,12 +7,18 @@ using Sphere10.Framework;
 namespace Sphere10.Framework {
 
 	/// <summary>
-	/// Merkle-tree implementation that maintains all perfect nodes in flat array allocated in a contiguous block of memory. 
+	/// Merkle-tree implementation that maintains all perfect nodes in flat array allocated in a contiguous block of memory.
+	/// Read Complexity: O(1)
+	/// Append Complexity: O(LogN)   (leaf and antecedent nodes are updated)
+	/// Update Complexity: O(LogN)   (leaf and antecedent nodes need updating)
+	/// Insert Complexity: O(N)      
+	/// Update Complexity: O(N)
+	/// Memory Complexity: O(N LogN)
 	/// </summary>
 	public class FlatMerkleTree : IUpdateableMerkleTree {
 		public const int DefaultLeafGrowth = 4096;
 		public const int DefaultMaxLeaf = 1 << 24;
-		private readonly MemoryBuffer _nodeBuffer;
+		private readonly IBuffer _nodeBuffer;
 		private readonly BitArray _dirtyNodes;
 		private readonly int _digestSize;
 		private MerkleSize _size;
@@ -32,21 +38,28 @@ namespace Sphere10.Framework {
 			: this(hashAlgorithm, initialLeafCapacity, leafGrowthCapacity, maxCapacity, Enumerable.Empty<byte[]>()) {
 		}
 
-		public FlatMerkleTree(CHF hashAlgorithm, int initialLeafCapacity, int leafGrowthCapacity, int maxLeafCapacity, IEnumerable<byte[]> initialLeafs) {
+		public FlatMerkleTree(CHF hashAlgorithm, int initialLeafCapacity, int leafGrowthCapacity, int maxLeafCapacity, IEnumerable<byte[]> initialLeafs) 
+			: this(
+				  hashAlgorithm, 
+				  new MemoryBuffer(
+					(int)MerkleMath.CountFlatNodes(initialLeafCapacity) * Hashers.GetDigestSizeBytes(hashAlgorithm),
+					(int)MerkleMath.CountFlatNodes(leafGrowthCapacity) * Hashers.GetDigestSizeBytes(hashAlgorithm),
+					(int)MerkleMath.CountFlatNodes(maxLeafCapacity) * Hashers.GetDigestSizeBytes(hashAlgorithm)
+				  )
+				) {
+			Leafs.AddRange(initialLeafs ?? Enumerable.Empty<byte[]>());
+		}
+
+		public FlatMerkleTree(CHF hashAlgorithm, IBuffer nodeBuffer) {
 			Guard.Argument(hashAlgorithm != CHF.ConcatBytes, nameof(hashAlgorithm), "Must be digest size CHF");
-			initialLeafs ??= Enumerable.Empty<byte[]>();
+		
 			HashAlgorithm = hashAlgorithm;
 			_digestSize = Hashers.GetDigestSizeBytes(hashAlgorithm);
 			Guard.Argument(_digestSize > 0, nameof(hashAlgorithm), "Unsupported CHF");
-			_nodeBuffer = new MemoryBuffer(
-				(int)MerkleMath.CountFlatNodes(initialLeafCapacity) * _digestSize,
-				(int)MerkleMath.CountFlatNodes(leafGrowthCapacity) * _digestSize,
-				(int)MerkleMath.CountFlatNodes(maxLeafCapacity) * _digestSize
-			);
+			_nodeBuffer = nodeBuffer;
 			_dirtyNodes = new BitArray(0);
 			_size = MerkleSize.FromLeafCount(0);
 			Leafs = new LeafList(this);
-			Leafs.AddRange(initialLeafs);
 		}
 
 		public CHF HashAlgorithm { get; }
@@ -72,7 +85,7 @@ namespace Sphere10.Framework {
 				return GetValue(childNodes.Left);  // Bubble-up left
 			}
 			// Aggregation node (left is always a sub-root)
-			return Hashers.JoinHash(HashAlgorithm, GetValue(childNodes.Left), GetValue(childNodes.Right));
+			return MerkleMath.NodeHash(HashAlgorithm, GetValue(childNodes.Left), GetValue(childNodes.Right));
 		}
 
 		public void SetLeafDirty(int index, bool value) {
@@ -102,7 +115,7 @@ namespace Sphere10.Framework {
 
 			_nodeBuffer.UpdateRange(
 				flatIndex * _digestSize,
-				Hashers.JoinHash(
+				MerkleMath.NodeHash(
 					HashAlgorithm,
 					_nodeBuffer.ReadSpan(leftIX * _digestSize, _digestSize),
 					_nodeBuffer.ReadSpan(rightIX * _digestSize, _digestSize)

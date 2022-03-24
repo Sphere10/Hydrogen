@@ -37,6 +37,10 @@ namespace Sphere10.Framework {
 
 		public Span<byte> AsSpan(int index, int count) => PagedBufferImplementationHelper.AsSpan(_friend, index, count);
 
+		public void ExpandTo(int totalBytes) => PagedBufferImplementationHelper.ExpandTo(_friend, totalBytes);
+
+		public void ExpandBy(int newBytes) => PagedBufferImplementationHelper.ExpandBy(_friend, newBytes);
+
 		protected override IPage<byte> NewPageInstance(int pageNumber) {
 			return new PageImpl(Stream, pageNumber, PageSize);
 		}
@@ -79,7 +83,6 @@ namespace Sphere10.Framework {
 				.ToArray();
 		}
 
-
 		protected override void OnPageSaving(IMemoryPage<byte> page) {
 			// Always ensure file-stream is long enough to save this page
 			base.OnPageSaving(page);
@@ -104,7 +107,6 @@ namespace Sphere10.Framework {
 				TruncateFile();
 			}
 		}
-
 
 		/// <summary>
 		/// The page is mapped to a section of a single file

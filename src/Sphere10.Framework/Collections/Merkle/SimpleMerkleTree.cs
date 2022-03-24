@@ -13,7 +13,7 @@ namespace Sphere10.Framework {
 	/// </summary>
 	public class SimpleMerkleTree : IUpdateableMerkleTree {
 		private readonly IExtendedList<IExtendedList<byte[]>> _levels;
-		private MerkleSize _size;
+		private readonly MerkleSize _size;
 
 		public SimpleMerkleTree(CHF hasher, IEnumerable<byte[]> leafs = null)  {
 			Leafs = new ObservableExtendedList<byte[]>(new ExtendedList<byte[]>());
@@ -91,7 +91,7 @@ namespace Sphere10.Framework {
 					nextLevel.Add(level[i]);
 					break;
 				}
-				var parentHash = Hashers.JoinHash(HashAlgorithm, level[i], level[i + 1]);
+				var parentHash = MerkleMath.NodeHash(HashAlgorithm, level[i], level[i + 1]);
 				nextLevel.Add(parentHash);
 			}
 			return nextLevel;

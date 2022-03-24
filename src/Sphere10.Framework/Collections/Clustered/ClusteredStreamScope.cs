@@ -11,9 +11,9 @@ public class ClusteredStreamScope : IDisposable {
 		_closeAction = closeAction;
 	}
 
-	public int RecordIndex;
+	public int RecordIndex { get; }
 
-	public ClusteredStreamRecord Record;
+	public ClusteredStreamRecord Record; // TODO: MAKE PROPERTY (check won't break when is struct)
 
 	public Stream Stream;
 

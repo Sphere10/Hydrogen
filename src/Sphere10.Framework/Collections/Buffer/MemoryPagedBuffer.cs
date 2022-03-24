@@ -9,7 +9,8 @@ namespace Sphere10.Framework {
 	/// A buffer whose contents are paged on memory and suitable for arbitrarily large buffers.
 	/// </summary>
 	/// <remarks>The underlying implementation relies on a <see cref="MemoryPagedList{TItem}"/> whose pages are <see cref="MemoryBuffer"/>'s.</remarks>
-	public class MemoryPagedBuffer : MemoryPagedListBase<byte>, IMemoryPagedBuffer {
+	public class 
+		MemoryPagedBuffer : MemoryPagedListBase<byte>, IMemoryPagedBuffer {
 		private readonly IPagedListDelegate<byte> _friend;
 		private readonly ReadOnlyListDecorator<IPage<byte>, IBufferPage> _pagesDecorator;
 
@@ -56,7 +57,16 @@ namespace Sphere10.Framework {
         public Span<byte> AsSpan(int index, int count) 
 	        => PagedBufferImplementationHelper.AsSpan(_friend, index, count);
 
-		/// <summary>
+        public void ExpandTo(int totalBytes) {
+	        throw new NotImplementedException();
+        }
+
+        public void ExpandBy(int newBytes) {
+	        throw new NotImplementedException();
+        }
+
+
+        /// <summary>
 		/// The page is mapped to it's own page file.
 		/// </summary>
 		public sealed class BufferPage : FileSwappedMemoryPage<byte>, IBufferPage {

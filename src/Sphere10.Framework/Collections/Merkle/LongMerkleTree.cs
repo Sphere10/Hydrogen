@@ -97,7 +97,7 @@ namespace Sphere10.Framework {
 				return GetValue(childNodes.Left);  // Bubble-up left
 			}
 			// Aggregation node (left is always a sub-root)
-			return Hashers.JoinHash(HashAlgorithm, GetValue(childNodes.Left), GetValue(childNodes.Right));
+			return MerkleMath.NodeHash(HashAlgorithm, GetValue(childNodes.Left), GetValue(childNodes.Right));
 		}
 
 		private void CalculateTree() {

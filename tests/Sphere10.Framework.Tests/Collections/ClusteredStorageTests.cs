@@ -697,6 +697,7 @@ namespace Sphere10.Framework.Tests {
 
 				// Check all streams match (this will catch any errors, even when runAsserts is passed false above)
 				for (var j = 0; j < expectedStreams.Count; j++)
+					
 					Assert.That(expectedStreams[j].ReadAll(), Is.EqualTo(streamContainer.ReadAll(j)).Using(ByteArrayEqualityComparer.Instance));
 			}
 			Debug.Assert(expectedStreams.Count == 0);

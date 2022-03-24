@@ -174,9 +174,13 @@ namespace Sphere10.Framework {
 				}
 				var tip = subRoots[^1];
 				subRoots.RemoveAt(subRoots.Count - 1);
-				newNode = new MerkleSubRoot(tip.Height + 1, Hashers.JoinHash(chf, tip.Hash, newNode.Hash));
+				newNode = new MerkleSubRoot(tip.Height + 1, NodeHash(chf, tip.Hash, newNode.Hash));
 			}
 		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static byte[] NodeHash(CHF chf, ReadOnlySpan<byte> left, ReadOnlySpan<byte> right)
+			=> Hashers.JoinHash(chf, left, right);
 
 		#endregion
 
@@ -401,7 +405,7 @@ namespace Sphere10.Framework {
 					left = result;
 					right = hash;
 				}
-				result = Hashers.JoinHash(hashAlgorithm, left, right); // TODO: use pre-alloc result, but need to size for concat and irregular initial digests
+				result = NodeHash(hashAlgorithm, left, right); // TODO: use pre-alloc result, but need to size for concat and irregular initial digests
 			}
 			return result.AsSpan().SequenceEqual(expectedHash);
 		}
@@ -517,7 +521,7 @@ namespace Sphere10.Framework {
 					var rightCoord = GetLogicalRightChild(treeSize, parent);
 					var left = partialTree[leftCoord];
 					var right = partialTree[rightCoord];
-					partialTree[parent] = Hashers.JoinHash(hashAlgorithm, left, right); 
+					partialTree[parent] = NodeHash(hashAlgorithm, left, right); 
 				}
 			}
 			// Root node was added during rebuild

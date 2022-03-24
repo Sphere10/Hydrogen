@@ -281,6 +281,8 @@ namespace Sphere10.Framework.Tests {
 					return new FlatMerkleTree(chf, leafs);
 				case MerkleTreeImpl.Long:
 					return new LongMerkleTree(chf, leafs);
+				case MerkleTreeImpl.Adapter:
+					throw new NotImplementedException();
 				default:
 					throw new ArgumentOutOfRangeException(nameof(impl), impl, null);
 			}
@@ -289,7 +291,8 @@ namespace Sphere10.Framework.Tests {
 		public enum MerkleTreeImpl {
 			Simple,
 			Flat,
-			Long
+			Long,
+			Adapter
 		}
 	}
 }

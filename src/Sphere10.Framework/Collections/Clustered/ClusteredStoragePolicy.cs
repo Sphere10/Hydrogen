@@ -8,7 +8,7 @@ namespace Sphere10.Framework {
 		/// <summary>
 		/// Clusters are pre-allocated when serializing items. This avoids on-the-fly allocation during serialization which can be slow.
 		/// </summary>
-		FastAllocate = 1 >> 0,
+		FastAllocate = 1 << 0,
 		
 		/// <summary>
 		/// Clusters for records are cached for faster lookup (can cause memory-bloat when container's stream count in very large scenarios)
@@ -21,20 +21,25 @@ namespace Sphere10.Framework {
 		CacheOpenClusters = 1 << 2,
 
 		/// <summary>
+		/// Cache records
+		/// </summary>
+		CacheRecords = 1 << 3,
+
+		/// <summary>
 		/// Performs real-time integrity checks when processing. Disabling this may improve performance slightly.
 		/// </summary>
-		IntegrityChecks = 1 << 3,
+		IntegrityChecks = 1 << 4,
 
 		///// <summary>
 		///// Tracks a UInt32 checksum of streams in the stream record (used by dictionaries).
 		///// </summary>
-		TrackChecksums = 1 << 4,
+		TrackChecksums = 1 << 5,
 
 
 		///// <summary>
 		///// Tracks a constant byte[] key in the stream record (used by dictionaries).
 		///// </summary>
-		TrackKey = 1 << 5,
+		TrackKey = 1 << 6,
 
 		///// <summary>
 		///// Builds a merkle-tree from the streams, stores the root in the header (used for blockchain). 

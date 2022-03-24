@@ -2,7 +2,7 @@
 
 namespace Sphere10.Framework {
 
-	public interface IMerkleizedCollection<TItem> : ICollection<TItem> {
+	public interface IMerkleCollection<TItem> : ICollection<TItem> {
 		IMerkleTree MerkleTree { get; }
 	}
 

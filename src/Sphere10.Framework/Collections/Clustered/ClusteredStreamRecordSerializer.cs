@@ -1,9 +1,9 @@
 ﻿namespace Sphere10.Framework {
-	public class ClusteredStorageRecordSerializer : StaticSizeItemSerializerBase<ClusteredStreamRecord> {
+	public class ClusteredStreamRecordSerializer : StaticSizeItemSerializerBase<ClusteredStreamRecord> {
 		private readonly ClusteredStoragePolicy _policy;
 		private readonly int _keySize;
 
-		public ClusteredStorageRecordSerializer(ClusteredStoragePolicy policy, int keySize)
+		public ClusteredStreamRecordSerializer(ClusteredStoragePolicy policy, int keySize)
 			: base(DetermineSizeBasedOnPolicy(policy, keySize)) {
 			_policy = policy;
 			_keySize = keySize;
@@ -43,7 +43,7 @@
 
 
 		static int DetermineSizeBasedOnPolicy(ClusteredStoragePolicy policy, int keySize) {
-			var size = sizeof(byte) + sizeof(int) + sizeof(int); // Traits + Size + StartCluster
+			var size = sizeof(byte) + sizeof(int) + sizeof(int); // Traits + StartCluster + Size
 
 			if (policy.HasFlag(ClusteredStoragePolicy.TrackChecksums))
 				size += sizeof(int);

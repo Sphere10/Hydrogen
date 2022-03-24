@@ -8,10 +8,10 @@ namespace Sphere10.Framework {
 		public const int MasterKeyLength = 32;
 
 		internal const int VersionOffset = 0;
-		internal const int PolicyOffset = sizeof(byte);
-		internal const int RecordKeySizeOffset = PolicyOffset + sizeof(int);
-		internal const int RecordsOffset = RecordKeySizeOffset + sizeof(ushort);
-		internal const int ClusterSizeOffset = RecordsOffset + sizeof(int);
+		internal const int PolicyOffset = VersionOffset + sizeof(byte);
+		internal const int RecordsOffset = PolicyOffset + sizeof(uint);
+		internal const int RecordKeySizeOffset = RecordsOffset + sizeof(int);
+		internal const int ClusterSizeOffset = RecordKeySizeOffset + sizeof(ushort);
 		internal const int TotalClustersOffset = ClusterSizeOffset + sizeof(int);
 		internal const int MerkleRootOffset = TotalClustersOffset + sizeof(int);
 		internal const int MasterKeyOffset = MerkleRootOffset + MerkleRootLength;
@@ -22,8 +22,8 @@ namespace Sphere10.Framework {
 
 		private byte? _version;
 		private ClusteredStoragePolicy? _policy;
-		private ushort? _recordKeySize;
 		private int? _records;
+		private ushort? _recordKeySize;
 		private int? _clusterSize;
 		private int? _totalClusters;
 		
@@ -66,23 +66,6 @@ namespace Sphere10.Framework {
 			}
 		}
 
-		public ushort RecordKeySize {
-			get {
-				if (!_recordKeySize.HasValue) {
-					_headerStream.Seek(PolicyOffset, SeekOrigin.Begin);
-					_recordKeySize = _reader.ReadUInt16();
-				}
-				return _recordKeySize.Value;
-			}
-			set {
-				if (_recordKeySize == value)
-					return;
-				_recordKeySize = value;
-				_headerStream.Seek(RecordKeySizeOffset, SeekOrigin.Begin);
-				_writer.Write((ushort)_recordKeySize.Value);
-			}
-		}
-
 		public int RecordsCount {
 			get {
 				if (!_records.HasValue) {
@@ -97,6 +80,24 @@ namespace Sphere10.Framework {
 				_records = value;
 				_headerStream.Seek(RecordsOffset, SeekOrigin.Begin);
 				_writer.Write(_records.Value);
+			}
+		}
+
+
+		public ushort RecordKeySize {
+			get {
+				if (!_recordKeySize.HasValue) {
+					_headerStream.Seek(PolicyOffset, SeekOrigin.Begin);
+					_recordKeySize = _reader.ReadUInt16();
+				}
+				return _recordKeySize.Value;
+			}
+			set {
+				if (_recordKeySize == value)
+					return;
+				_recordKeySize = value;
+				_headerStream.Seek(RecordKeySizeOffset, SeekOrigin.Begin);
+				_writer.Write((ushort)_recordKeySize.Value);
 			}
 		}
 
@@ -191,14 +192,14 @@ namespace Sphere10.Framework {
 			var writer = new EndianBinaryWriter(EndianBitConverter.For(endianness), rootStream);
 			writer.Write(version); // Version
 			writer.Write((int)0); // Policy
-			writer.Write((ushort)0); // RecordKeySize
 			writer.Write((int)0); // Records
+			writer.Write((ushort)0); // RecordKeySize
 			writer.Write(clusterSize); // ClusterSize
 			writer.Write((int)0); // TotalClusters 
 			writer.Write(new byte[MerkleRootLength]); // MerkleRoot 
 			writer.Write(new byte[MasterKeyLength]); // MasterKey
 
-			writer.Write(Tools.Array.Gen<byte>(ByteLength - sizeof(byte) - sizeof(int) - sizeof(ushort) - sizeof(int) - sizeof(int) - sizeof(int) - MerkleRootLength - MasterKeyLength, 0)); // header padding
+			writer.Write(Tools.Array.Gen<byte>(ByteLength - sizeof(byte) - sizeof(int)  - sizeof(int) - sizeof(ushort) - sizeof(int) - sizeof(int) - MerkleRootLength - MasterKeyLength, 0)); // header padding
 			AttachTo(rootStream, endianness);
 		}
 

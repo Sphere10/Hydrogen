@@ -6,7 +6,11 @@ namespace Sphere10.Framework {
 
 	public interface IClusteredStorage {
 
-		public event EventHandlerEx<ClusteredStreamRecord> RecordCreated;
+		event EventHandlerEx<ClusteredStreamRecord> RecordCreated;
+		event EventHandlerEx<int, ClusteredStreamRecord> RecordAdded;
+		event EventHandlerEx<int, ClusteredStreamRecord> RecordInserted;
+		event EventHandlerEx<int, ClusteredStreamRecord> RecordUpdated;
+		event EventHandlerEx<int> RecordRemoved;
 
 		ClusteredStorageHeader Header { get; }
 

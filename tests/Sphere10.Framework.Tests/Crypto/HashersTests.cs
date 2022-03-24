@@ -26,7 +26,7 @@ namespace Sphere10.Framework.Tests {
 			var tail = items.Head(out var head);
 			var expected = head;
 			foreach (var item in tail)
-				expected = Hashers.JoinHash(CHF.SHA2_256, expected, item);
+				expected = MerkleMath.NodeHash(CHF.SHA2_256, expected, item);
 			
 			Assert.AreEqual(expected, Hashers.Aggregate(CHF.SHA2_256, items));
 		}

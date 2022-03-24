@@ -104,6 +104,15 @@ namespace Sphere10.Framework {
 			return MemoryMarshal.CreateSpan(ref MemoryMarshal.GetReference(readOnlySpan), readOnlySpan.Length);
 		}
 
+		public static void ExpandTo(IPagedListDelegate<byte> source, int totalBytes) {
+			throw new NotImplementedException();
+		}
+
+		public static void ExpandBy(IPagedListDelegate<byte> source, int newBytes) {
+			throw new NotImplementedException();
+		}
+
+
 		public static ReadOnlySpan<byte> ReadPageSpan(MemoryPageBase<byte> page, MemoryBuffer memoryStore, int index, int count) {
 			page.CheckPageState(PageState.Loaded);
 			page.CheckRange(index, count);
@@ -162,6 +171,7 @@ namespace Sphere10.Framework {
 
 			//source.SetCount(source.GetCount() + newBytesCount);  // When updating a page, the owner container should be aware of acquiring the count
 		}
+
 	}
 
 }

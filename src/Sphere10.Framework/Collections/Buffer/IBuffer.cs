@@ -12,6 +12,10 @@ namespace Sphere10.Framework {
 		void InsertRange(int index, ReadOnlySpan<byte> items);
 
 		Span<byte> AsSpan(int index, int count);
+
+		void ExpandTo(int totalBytes);
+
+		void ExpandBy(int newBytes);
 	}
 
 

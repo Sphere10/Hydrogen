@@ -52,8 +52,6 @@ namespace Sphere10.Framework {
 
         void Set(object key, object value);
 
-		object this[object index] { get; set; }
-
         void BulkLoad(IEnumerable<KeyValuePair<object, object>> bulkLoadedValues);
 
         void Invalidate(object key);
@@ -61,6 +59,8 @@ namespace Sphere10.Framework {
         void Remove(object key);
 
 		void Flush();
+
+		object this[object index] { get; set; }
 
 	}
 
@@ -78,13 +78,13 @@ namespace Sphere10.Framework {
 
 		void Set(TKey key, TValue value);
 
-		TValue this[TKey index] { get; set; }
-
 		void BulkLoad(IEnumerable<KeyValuePair<TKey, TValue>> bulkLoadedValues);
 
 		void Invalidate(TKey key);
 
 		void Remove(TKey key);
+
+		TValue this[TKey index] { get; set; }
 
 	}
 

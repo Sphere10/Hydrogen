@@ -30,12 +30,12 @@ namespace Sphere10.Framework.Tests {
 	public class TransactionalListTests {
 
 		[Test]
-		public void AddOne() {
+		public void AddOne([ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy) {
 			var file = Tools.FileSystem.GenerateTempFilename();
 			var dir = Tools.FileSystem.GetTempEmptyDirectory(true);
 			using (Tools.Scope.ExecuteOnDispose(() => Tools.Lambda.ActionIgnoringExceptions(() => File.Delete(file))))
 			using (Tools.Scope.ExecuteOnDispose(() => Tools.Lambda.ActionIgnoringExceptions(() => Tools.FileSystem.DeleteDirectory(dir))))
-			using (var txnFile = new TransactionalList<string>(file, dir, new StringSerializer(Encoding.UTF8))) {
+			using (var txnFile = new TransactionalList<string>(file, dir, new StringSerializer(Encoding.UTF8), policy: policy)) {
 				txnFile.Add("Hello World!");
 				Assert.That(txnFile.Count, Is.EqualTo(1));
 				Assert.That(txnFile[0], Is.EqualTo("Hello World!"));
@@ -45,28 +45,28 @@ namespace Sphere10.Framework.Tests {
 
 
 		[Test]
-		public void IntegrationTests_Commit([Values(0, 1, 50)] int maxCapacity) {
+		public void IntegrationTests_Commit([Values(0, 1, 50)] int maxCapacity, [ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy) {
 			const int StringMinSize = 0;
 			const int StringMaxSize = 100;
 			var file = Tools.FileSystem.GenerateTempFilename();
 			var dir = Tools.FileSystem.GetTempEmptyDirectory(true);
 			using (Tools.Scope.ExecuteOnDispose(() => Tools.Lambda.ActionIgnoringExceptions(() => File.Delete(file))))
 			using (Tools.Scope.ExecuteOnDispose(() => Tools.Lambda.ActionIgnoringExceptions(() => Tools.FileSystem.DeleteDirectory(dir))))
-			using (var txnFile = new TransactionalList<string>(file, dir, new StringSerializer(Encoding.UTF8))) {
+			using (var txnFile = new TransactionalList<string>(file, dir, new StringSerializer(Encoding.UTF8), policy: policy)) {
 				AssertEx.ListIntegrationTest(txnFile, maxCapacity, (rng, i) => Tools.Array.Gen(i, rng.NextString(StringMinSize, StringMaxSize)));
 				txnFile.Commit();
 			}
 		}
 
 		[Test]
-		public void IntegrationTests_Rollback([Values(0, 1, 50)] int maxCapacity) {
+		public void IntegrationTests_Rollback([Values(0, 1, 50)] int maxCapacity, [ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy) {
 			const int StringMinSize = 0;
 			const int StringMaxSize = 100;
 			var file = Tools.FileSystem.GenerateTempFilename();
 			var dir = Tools.FileSystem.GetTempEmptyDirectory(true);
 			using (Tools.Scope.ExecuteOnDispose(() => Tools.Lambda.ActionIgnoringExceptions(() => File.Delete(file))))
 			using (Tools.Scope.ExecuteOnDispose(() => Tools.Lambda.ActionIgnoringExceptions(() => Tools.FileSystem.DeleteDirectory(dir))))
-			using (var txnFile = new TransactionalList<string>(file, dir, new StringSerializer(Encoding.UTF8))) {
+			using (var txnFile = new TransactionalList<string>(file, dir, new StringSerializer(Encoding.UTF8), policy: policy)) {
 				AssertEx.ListIntegrationTest(txnFile, maxCapacity, (rng, i) => Tools.Array.Gen(i, rng.NextString(StringMinSize, StringMaxSize)));
 				txnFile.Rollback();
 			}

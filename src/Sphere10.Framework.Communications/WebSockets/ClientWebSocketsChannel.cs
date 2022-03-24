@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Net.WebSockets;
 using System.IO;
+using System.Text;
 
 namespace Sphere10.Framework.Communications {
 	public class ClientWebSocketsChannel : ProtocolChannel, IDisposable {
@@ -11,6 +12,8 @@ namespace Sphere10.Framework.Communications {
 		string URI { get; }
 		bool Secure { get; }
 		ClientWebSocket ClientWebSocket { get; set; }
+
+		public string Id { get; set; }
 
 		public ClientWebSocketsChannel(string uri, bool secure) {
 			URI = uri;
@@ -64,7 +67,26 @@ namespace Sphere10.Framework.Communications {
 
 		protected override async Task OpenInternal() {
 
-			await ClientWebSocket.ConnectAsync(new Uri(URI), CancellationToken.None);
+			try 
+			{
+				await ClientWebSocket.ConnectAsync(new Uri(URI), CancellationToken.None);
+			
+				using (var memoryStream = new MemoryStream()) {
+					var buffer = new byte[1024];
+					while (true) {
+						var received = await ClientWebSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
+						memoryStream.Write(buffer, 0, received.Count);
+						if (received.EndOfMessage) break;
+					}
+
+					Id = Encoding.ASCII.GetString(memoryStream.ToArray());
+				}
+
+SystemLog.Info($"ID has been Set: {Id}");
+			}
+			catch (Exception ex) {
+				
+			}
 
 			// Handle the response to close
 			ReceivedWebSocketMessage += async msg => {

@@ -13,6 +13,8 @@ namespace Sphere10.Framework.Communications {
 		public ClientWebSocketsDataSource(string uri, bool secure)
 			: base(new ClientWebSocketsChannel(uri, secure)) {
 
+//			var id = ((ClientWebSocketsChannel)ProtocolChannel).Id;
+
 			ProtocolChannel.ReceivedBytes += ProtocolChannel_ReceivedBytes;
 		}
 
@@ -62,7 +64,9 @@ namespace Sphere10.Framework.Communications {
 			throw new NotImplementedException();
 		}
 		public override void NewDelayed(int count) {
-			var sendPacket = new WebSocketsPacket($"new {count}");
+			var id = ((ClientWebSocketsChannel)ProtocolChannel).Id;
+
+			var sendPacket = new WebSocketsPacket(id, $"new {count}");
 			SendBytes(sendPacket.ToBytes());
 		}
 
@@ -112,8 +116,10 @@ namespace Sphere10.Framework.Communications {
 					tcs.SetResult();
 				};
 
+				var id = ((ClientWebSocketsChannel)ProtocolChannel).Id;
+
 				// if the search term has a comma, we're screwed
-				var sendPacket = new WebSocketsPacket($"read {searchTerm} {pageLength} {usePage} {sortProperty} {sortDirection}");
+				var sendPacket = new WebSocketsPacket(id, $"read {searchTerm} {pageLength} {usePage} {sortProperty} {sortDirection}");
 				SendBytes(sendPacket.ToBytes());
 
 				tcs.Task.Wait();
@@ -136,8 +142,10 @@ namespace Sphere10.Framework.Communications {
 		public override void ReadDelayed(string searchTerm, int pageLength, int page, string sortProperty, SortDirection sortDirection) {
 			var usePage = page;
 
+			var id = ((ClientWebSocketsChannel)ProtocolChannel).Id;
+
 			// if the search term has a comma, we're screwed
-			var sendPacket = new WebSocketsPacket($"read {searchTerm} {pageLength} {usePage} {sortProperty} {sortDirection}");
+			var sendPacket = new WebSocketsPacket(id, $"read {searchTerm} {pageLength} {usePage} {sortProperty} {sortDirection}");
 			SendBytes(sendPacket.ToBytes());
 		}
 		

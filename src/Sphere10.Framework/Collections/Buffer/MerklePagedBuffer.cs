@@ -7,19 +7,19 @@ using System.Linq;
 namespace Sphere10.Framework {
 
 	/// <summary>
-	/// A memory-paged byte list that maintains a merkle-tree of every page. It is a decorator since the underlying byte list could be a binary file,
-	/// transactional file, etc.
+	/// Attaches a merkle-tree to a <see cref="IMemoryPagedBuffer "/> suitable for merkleized data-files.
+	/// It is implemented as a a decorator since the underlying byte list could be a binary file, transactional file, etc.
 	/// </summary>
-	public class MerkleBuffer : MemoryPagedBufferDecorator, IMerkleList<byte> {
+	public class MerklePagedBuffer : MemoryPagedBufferDecorator, IMerkleList<byte> {
         private readonly MerkleTreeImpl _merkleTree;
         private readonly BitArray _merklePagesDirty;
         private readonly byte[] _defaultLeafValue;
 
-        public MerkleBuffer(IMemoryPagedBuffer buffer, CHF chf)
+        public MerklePagedBuffer(IMemoryPagedBuffer buffer, CHF chf)
             : this(buffer, new FlatMerkleTree(chf)) {
         }
 
-        public MerkleBuffer(IMemoryPagedBuffer buffer, IUpdateableMerkleTree merkleTreeImpl)
+        public MerklePagedBuffer(IMemoryPagedBuffer buffer, IUpdateableMerkleTree merkleTreeImpl)
             : base(buffer) {
             Guard.ArgumentNotNull(buffer, nameof(buffer));
             Guard.ArgumentNotNull(merkleTreeImpl, nameof(merkleTreeImpl));
@@ -119,8 +119,8 @@ namespace Sphere10.Framework {
         private void MarkMerkleDirty(IPage<byte> page, bool dirty) => _merklePagesDirty[page.Number] = dirty;
 
         private class MerkleTreeImpl : UpdatableMerkleTreeDecorator {
-            private readonly MerkleBuffer _parent;
-            public MerkleTreeImpl(MerkleBuffer parent, IUpdateableMerkleTree internalMerkleTree)
+            private readonly MerklePagedBuffer _parent;
+            public MerkleTreeImpl(MerklePagedBuffer parent, IUpdateableMerkleTree internalMerkleTree)
                 : base(internalMerkleTree) {
                 _parent = parent;
             }

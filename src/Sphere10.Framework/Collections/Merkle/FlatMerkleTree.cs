@@ -18,8 +18,8 @@ namespace Sphere10.Framework {
 	public class FlatMerkleTree : IUpdateableMerkleTree {
 		public const int DefaultLeafGrowth = 4096;
 		public const int DefaultMaxLeaf = 1 << 24;
-		private readonly IBuffer _nodeBuffer;
-		private readonly BitArray _dirtyNodes;
+		private IBuffer _nodeBuffer;
+		private BitArray _dirtyNodes;
 		private readonly int _digestSize;
 		private MerkleSize _size;
 
@@ -52,14 +52,11 @@ namespace Sphere10.Framework {
 
 		public FlatMerkleTree(CHF hashAlgorithm, IBuffer nodeBuffer) {
 			Guard.Argument(hashAlgorithm != CHF.ConcatBytes, nameof(hashAlgorithm), "Must be digest size CHF");
-		
 			HashAlgorithm = hashAlgorithm;
 			_digestSize = Hashers.GetDigestSizeBytes(hashAlgorithm);
 			Guard.Argument(_digestSize > 0, nameof(hashAlgorithm), "Unsupported CHF");
-			_nodeBuffer = nodeBuffer;
-			_dirtyNodes = new BitArray(0);
-			_size = MerkleSize.FromLeafCount(0);
 			Leafs = new LeafList(this);
+			AttachBuffer(nodeBuffer);
 		}
 
 		public CHF HashAlgorithm { get; }
@@ -122,6 +119,13 @@ namespace Sphere10.Framework {
 				)
 			);
 			SetDirty(flatIndex, false);
+		}
+
+		internal void AttachBuffer(IBuffer buffer) {
+			Guard.Argument(buffer.Count % _digestSize == 0, nameof(buffer), "Size was not a multiple of digest length");
+			_nodeBuffer = buffer;
+			_dirtyNodes = new BitArray(0);
+			_size = MerkleSize.FromLeafCount(buffer.Count / _digestSize);
 		}
 
 		private bool IsDirty(int flatIndex) {

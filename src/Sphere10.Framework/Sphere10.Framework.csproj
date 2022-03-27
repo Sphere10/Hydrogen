@@ -17,4 +17,8 @@
 		<AllowUnsafeBlocks>false</AllowUnsafeBlocks>
 		<LangVersion>latest</LangVersion>
 	</PropertyGroup>
+
+	<ItemGroup>
+	  <Folder Include="ObjectSpace\" />
+	</ItemGroup>
 </Project>

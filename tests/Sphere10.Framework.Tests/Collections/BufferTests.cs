@@ -16,6 +16,7 @@ using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
 using System.IO;
+using Sphere10.Framework.Collections;
 using Sphere10.Framework.NUnit;
 
 namespace Sphere10.Framework.Tests {
@@ -150,7 +151,7 @@ namespace Sphere10.Framework.Tests {
 			var expected = new List<byte>();
 			var maxCapacity = pageSize * maxOpenPages*2;
 			using (CreateBuffer(storageType, pageSize, maxOpenPages*pageSize, out var buffer)) {
-				var mutateFromEndOnly = buffer is not MemoryBuffer;
+				var mutateFromEndOnly = buffer is not MemoryBuffer && buffer is not StreamMappedBuffer;
 				AssertEx.BufferIntegrationTest(buffer, maxCapacity, mutateFromEndOnly);
 			}
 		}
@@ -160,12 +161,16 @@ namespace Sphere10.Framework.Tests {
 			MemoryPagedBuffer,
 			BinaryFile,
 			TransactionalBinaryFile,
+			StreamMappedBuffer,
 		}
 
 		private IDisposable CreateBuffer(StorageType storageType, int pageSize, long maxMemory, out IBuffer buffer) {
 			switch (storageType) {
 				case StorageType.MemoryBuffer:
 					buffer = new MemoryBuffer(0, pageSize);
+					return new Disposables();
+				case StorageType.StreamMappedBuffer:
+					buffer = new StreamMappedBuffer(new MemoryStream());
 					return new Disposables();
 			}
 			

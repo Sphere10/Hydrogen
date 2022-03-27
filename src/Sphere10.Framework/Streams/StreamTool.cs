@@ -22,13 +22,63 @@ using Sphere10.Framework;
 // ReSharper disable CheckNamespace
 namespace Tools {
 
-
 	public static class Streams {
         public const int DefaultBufferReadBlockSize = 32768;
         public const int OptimalCompressWriteBlockSize = 8192;
 
+		public static void ShiftBytes(Stream stream, int fromIndex, int count, int toIndex, int blockSize = DefaultBufferReadBlockSize) {
+			Guard.ArgumentNotNull(stream, nameof(stream));
+			Guard.ArgumentGT(blockSize, 0, nameof(blockSize));
+			if (count == 0)
+				return;
+
+			// Seek to the initial read position
+			stream.Seek(fromIndex, SeekOrigin.Begin);
+
+			// In cases where the copy/paste overlaps, isolate the overlapping region
+			// TODO: this can result in memory bloat if overlap region is large (i.e. insert 1 byte at beginning of stream will result in overlap block the size of of entire stream)
+			// The solution to this is complex but possible using the two-variable-XOR swap trick such that:
+			// - when writing to overlap region, write the XOR'd value as follows (NEW VALUE XOR OLD VALUE)
+			// - when reading an overlap region byte, the original value ios recovered by (NEW VALUE) XOR (NEW VALUE XOR OLD VALUE)
+			// - the memory bloat complexity is traded-off with computational and seek complexity
+			// - wrapping the above in a block-based approach would be ideal
+
+			var rightOverlapSection = System.Array.Empty<byte>();
+			if (toIndex >= fromIndex) {
+				var fromEndIndex = fromIndex + count - 1;
+				if (toIndex <= fromEndIndex) {
+					var rightOverlapSectionLength = fromEndIndex - toIndex + 1;
+					rightOverlapSection = stream.ReadBytes(rightOverlapSectionLength);
+					if (rightOverlapSection.Length != rightOverlapSectionLength)
+						throw new InternalErrorException("Unable to read overlapping section");
+				}
+			}
+
+			// Shift the bytes in blocks read from left-to-right
+			var readPosition = stream.Position;
+			var writePosition = (long)toIndex + rightOverlapSection.Length;
+			var block = new byte[blockSize];
+			foreach (var nextBlockSize in Tools.Collection.Partition(count - rightOverlapSection.Length, blockSize)) {
+				stream.Seek(readPosition, SeekOrigin.Begin);
+				if (stream.Read(block, 0, nextBlockSize) != nextBlockSize)
+					throw new InternalErrorException("Failed to read bytes from stream");
+				readPosition = stream.Position;
+				stream.Seek(writePosition, SeekOrigin.Begin);
+				stream.Write(block, 0, nextBlockSize);
+				writePosition = stream.Position;
+			}
+
+			// Copy the isolated overlap block if required
+			if (rightOverlapSection.Length > 0) {
+				stream.Seek(toIndex, SeekOrigin.Begin);
+				stream.WriteBytes(rightOverlapSection);
+			}
+
+		}
+
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void RouteStream(Stream readStream, Stream writeStream, int blockSizeInBytes = DefaultBufferReadBlockSize, bool closeReadStream = false, bool closeWriteStream = false) {
+	        Guard.Argument(writeStream != readStream, nameof(writeStream), "Cannot route to same stream");
 			// Optimized for reading a stream of unknown length
 	        var buffer = new byte[blockSizeInBytes];
 	        int bytesRead;
@@ -43,8 +93,9 @@ namespace Tools {
         }
 
 		public static void RouteStream(Stream readStream, Stream writeStream, long length, int blockSizeInBytes = DefaultBufferReadBlockSize, bool closeReadStream = false, bool closeWriteStream = false) {
+			Guard.Argument(writeStream != readStream, nameof(writeStream), "Cannot route to same stream");
 			// Optimized for reading a known length of bytes
-	        var buffer = new byte[blockSizeInBytes];
+			var buffer = new byte[blockSizeInBytes];
 	        var reads = length / blockSizeInBytes;
 			for (var i = 0; i < reads; i++) {
 				var bytesRead = readStream.Read(buffer, 0, blockSizeInBytes);

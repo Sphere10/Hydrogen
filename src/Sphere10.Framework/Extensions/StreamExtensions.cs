@@ -13,10 +13,17 @@
 
 using System;
 using System.IO;
+using System.Runtime.CompilerServices;
 
 namespace Sphere10.Framework {
 
 	public static class StreamExtensions {
+
+		public static byte[] ToArray(this Stream stream) {
+			Guard.ArgumentNotNull(stream, nameof(stream));
+			Guard.ArgumentLTE(stream.Length, int.MaxValue, nameof(string.Length));
+			return stream.ReadAll((int)stream.Length);
+		}
 
 		public static bool CanRead(this Stream stream, int byteCount) =>
 			stream.CanRead && (stream.Length - stream.Position) >= byteCount;
@@ -29,9 +36,22 @@ namespace Sphere10.Framework {
 			return result;
 		}
 
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static byte[] ReadBytes(this Stream stream, long position, int count) {
+			stream.Seek(position, SeekOrigin.Begin);
+			return stream.ReadBytes(count);
+		}
+
 		public static void WriteBytes(this Stream stream, byte[] buffer) {
 			Guard.ArgumentNotNull(buffer, nameof(buffer));
 			stream.Write(buffer, 0, buffer.Length);
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static void WriteBytes(this Stream stream, long position, byte[] buffer) {
+			stream.Seek(position, SeekOrigin.Begin);
+			stream.WriteBytes(buffer);
 		}
 
 		public static byte[] ReadAll(this Stream stream, int blockSize = Tools.Streams.DefaultBufferReadBlockSize) {

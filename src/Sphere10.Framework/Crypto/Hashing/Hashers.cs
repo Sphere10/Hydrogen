@@ -136,9 +136,13 @@ namespace Sphere10.Framework {
 			try {
 				var aggregatedValue = new byte[expectedSize];
 				Tools.Array.Fill<byte>(aggregatedValue, 0);
-				var tail = digests.Head(out var head);
-				head.CopyTo(result);
-				foreach (var item in tail) {
+				//var tail = digests.Head(out var head);
+				//head.CopyTo(result);
+				foreach (var (item, index) in digests.WithIndex()) {
+					if (index == 0) {
+						item.CopyTo(result);
+						continue;
+					}
 					if (flipJoinHash) {
 						hasher.Transform(item);
 						hasher.Transform(result);

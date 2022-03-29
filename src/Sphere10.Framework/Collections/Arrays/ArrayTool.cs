@@ -49,8 +49,7 @@ namespace Tools {
 
 		}
 
-
-		public static T Head<T>(ref T[] arr) {
+		public static T PopHead<T>(ref T[] arr) {
 			if (arr.Length == 0)
 				throw new ArgumentOutOfRangeException(nameof(arr), "Empty");
 			var head = arr[0];

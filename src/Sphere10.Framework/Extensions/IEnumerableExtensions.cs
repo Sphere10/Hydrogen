@@ -44,12 +44,6 @@ namespace Sphere10.Framework {
 
 		}
 	
-		public static IEnumerable<T> Head<T>(this IEnumerable<T> enumerable, out T head) {
-			var arr = enumerable as T[] ?? enumerable.ToArray();
-			head = Tools.Array.Head(ref arr);
-			return arr;
-		}
-
 		public static T[,] ToArray2D<T>(this IEnumerable<IEnumerable<T>> enumerable) {
 			var rows = new List<T[]>();
 			var hlen = 0;

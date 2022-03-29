@@ -34,7 +34,7 @@ namespace Sphere10.Framework {
 		private readonly LookupEx<int, int> _checksumToIndexLookup;
 		private readonly SortedList<int> _unusedRecords;
 
-		public ClusteredDictionarySK(Stream rootStream, int clusterSize, IItemSerializer<TKey> keySerializer, IItemSerializer<TValue> valueSerializer, IItemChecksum<TKey> keyChecksum = null, IEqualityComparer<TKey> keyComparer = null, IEqualityComparer<TValue> valueComparer = null, ClusteredStoragePolicy policy = ClusteredStoragePolicy.DictionaryDefault, Endianness endianness = Endianness.LittleEndian)
+		public ClusteredDictionarySK(Stream rootStream, int clusterSize, IItemSerializer<TKey> keySerializer, IItemSerializer<TValue> valueSerializer, IItemChecksum<TKey> keyChecksum = null, IEqualityComparer<TKey> keyComparer = null, IEqualityComparer<TValue> valueComparer = null, ClusteredStoragePolicy policy = ClusteredStoragePolicy.DictionaryDefault, int reservedRecords = 0, Endianness endianness = Endianness.LittleEndian)
 			: this(
 				new ClusteredList<TValue>(
 					rootStream,
@@ -43,6 +43,7 @@ namespace Sphere10.Framework {
 					valueComparer,
 					policy | ClusteredStoragePolicy.TrackChecksums | ClusteredStoragePolicy.TrackKey,
 					keySerializer.StaticSize,
+					reservedRecords,
 					endianness
 				),
 				keySerializer,

@@ -1,4 +1,6 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
+using System.Xml.Schema;
 
 namespace Sphere10.Framework {
 
@@ -11,7 +13,8 @@ namespace Sphere10.Framework {
 		internal const int PolicyOffset = VersionOffset + sizeof(byte);
 		internal const int RecordsOffset = PolicyOffset + sizeof(uint);
 		internal const int RecordKeySizeOffset = RecordsOffset + sizeof(int);
-		internal const int ClusterSizeOffset = RecordKeySizeOffset + sizeof(ushort);
+		internal const int ReservedRecordsOffset = RecordKeySizeOffset + sizeof(ushort);
+		internal const int ClusterSizeOffset = ReservedRecordsOffset + sizeof(int);
 		internal const int TotalClustersOffset = ClusterSizeOffset + sizeof(int);
 		internal const int MerkleRootOffset = TotalClustersOffset + sizeof(int);
 		internal const int MasterKeyOffset = MerkleRootOffset + MerkleRootLength;
@@ -24,6 +27,7 @@ namespace Sphere10.Framework {
 		private ClusteredStoragePolicy? _policy;
 		private int? _records;
 		private ushort? _recordKeySize;
+		private int? _reservedRecords;
 		private int? _clusterSize;
 		private int? _totalClusters;
 		
@@ -43,9 +47,9 @@ namespace Sphere10.Framework {
 				Guard.Argument(value == 1, nameof(value), "Only version 1 supported");
 				if (_version == value)
 					return;
-				_clusterSize = value;
+				_version = value;
 				_headerStream.Seek(VersionOffset, SeekOrigin.Begin);
-				_writer.Write(_clusterSize.Value);
+				_writer.Write(_version.Value);
 			}
 		}
 
@@ -83,11 +87,10 @@ namespace Sphere10.Framework {
 			}
 		}
 
-
 		public ushort RecordKeySize {
 			get {
 				if (!_recordKeySize.HasValue) {
-					_headerStream.Seek(PolicyOffset, SeekOrigin.Begin);
+					_headerStream.Seek(RecordKeySizeOffset, SeekOrigin.Begin);
 					_recordKeySize = _reader.ReadUInt16();
 				}
 				return _recordKeySize.Value;
@@ -98,6 +101,29 @@ namespace Sphere10.Framework {
 				_recordKeySize = value;
 				_headerStream.Seek(RecordKeySizeOffset, SeekOrigin.Begin);
 				_writer.Write((ushort)_recordKeySize.Value);
+			}
+		}
+
+		public int ReservedRecords {
+			get {
+				if (!_reservedRecords.HasValue) {
+					_headerStream.Seek(ReservedRecordsOffset, SeekOrigin.Begin);
+					_reservedRecords = _reader.ReadUInt16();
+				}
+				return _reservedRecords.Value;
+			}
+			set {
+				if (_reservedRecords == value)
+					return;
+				if (value == 0 && Policy.HasFlag(ClusteredStoragePolicy.TrackKey))
+					throw new InvalidOperationException($"Cannot set {nameof(ReservedRecords)} to 0 as {nameof(Policy)} has {ClusteredStoragePolicy.TrackKey} enabled");
+
+				if (RecordsCount > _reservedRecords.GetValueOrDefault(0))
+					throw new InvalidOperationException($"Cannot set {nameof(ReservedRecords)} to {value} as records already exist with value");
+
+				_reservedRecords = value;
+				_headerStream.Seek(ReservedRecordsOffset, SeekOrigin.Begin);
+				_writer.Write(_reservedRecords.Value);
 			}
 		}
 
@@ -176,48 +202,64 @@ namespace Sphere10.Framework {
 			_reader = new EndianBinaryReader(EndianBitConverter.For(endianness), _headerStream);
 			_writer = new EndianBinaryWriter(EndianBitConverter.For(endianness), _headerStream);
 			_version = null;
-			_policy = 0;
-			_recordKeySize = 0;
+			_policy = null;
+			_recordKeySize = null;
+			_reservedRecords = null;
 			_clusterSize = null;
 			_totalClusters = null;
 			_records = null;
-			_merkleRoot = new byte[MerkleRootLength];
-			_masterKey = new byte[MasterKeyLength];
+			_merkleRoot = null;
+			_masterKey = null;
 		}
 
-		public void CreateIn(byte version, Stream rootStream, int clusterSize, Endianness endianness) {
+		public void CreateIn(byte version, Stream rootStream, int clusterSize, int recordKeySize, int reservedRecords, Endianness endianness) {
 			Guard.ArgumentNotNull(rootStream, nameof(rootStream));
 			Guard.Argument(rootStream.Length == 0, nameof(rootStream), "Must be empty");
+			Guard.ArgumentGTE(clusterSize, 1, nameof(clusterSize));
+			Guard.ArgumentInRange(recordKeySize, 0, ushort.MaxValue, nameof(recordKeySize));
+			Guard.ArgumentGTE(reservedRecords, 0,nameof(reservedRecords));
 			rootStream.Seek(0, SeekOrigin.Begin);
 			var writer = new EndianBinaryWriter(EndianBitConverter.For(endianness), rootStream);
 			writer.Write(version); // Version
 			writer.Write((int)0); // Policy
 			writer.Write((int)0); // Records
-			writer.Write((ushort)0); // RecordKeySize
+			writer.Write((ushort)recordKeySize); // RecordKeySize
+			writer.Write((int)reservedRecords); // ReservedRecords
 			writer.Write(clusterSize); // ClusterSize
 			writer.Write((int)0); // TotalClusters 
 			writer.Write(new byte[MerkleRootLength]); // MerkleRoot 
 			writer.Write(new byte[MasterKeyLength]); // MasterKey
 
-			writer.Write(Tools.Array.Gen<byte>(ByteLength - sizeof(byte) - sizeof(int)  - sizeof(int) - sizeof(ushort) - sizeof(int) - sizeof(int) - MerkleRootLength - MasterKeyLength, 0)); // header padding
+			writer.Write(Tools.Array.Gen<byte>(ByteLength - (int)rootStream.Position, 0)); // header padding
+			Guard.Ensure(rootStream.Position == ByteLength);
 			AttachTo(rootStream, endianness);
 		}
 
 		public void CheckHeaderIntegrity() {
 			if (Version != 1)
-				throw new CorruptDataException($"Corrupt header ({nameof(Version)} property was {Version} bytes)");
+				throw new CorruptDataException($"Corrupt header property {nameof(Version)} value was {Version} bytes");
 
 			if (ClusterSize <= 0)
-				throw new CorruptDataException($"Corrupt header ({nameof(ClusterSize)} property was {ClusterSize} bytes)");
+				throw new CorruptDataException($"Corrupt header property {nameof(ClusterSize)} value was {ClusterSize} bytes");
 
 			if (TotalClusters < 0)
-				throw new CorruptDataException($"Corrupt header ({nameof(TotalClusters)} property was {TotalClusters})");
+				throw new CorruptDataException($"Corrupt header property {nameof(TotalClusters)} value was {TotalClusters}");
+
+			if (ClusterSize < 0)
+				throw new CorruptDataException($"Corrupt header property {nameof(ClusterSize)} value was {ClusterSize}");
+
+			if (ReservedRecords < 0)
+				throw new CorruptDataException($"Corrupt header property {nameof(ReservedRecords)} value was {ReservedRecords}");
+
+			if (ReservedRecords < 0)
+				throw new CorruptDataException($"Corrupt header property {nameof(ReservedRecords)} value was {ReservedRecords}");
 
 			if (RecordsCount < 0)
-				throw new CorruptDataException($"Corrupt header ({nameof(RecordsCount)} property was {RecordsCount})");
+				throw new CorruptDataException($"Corrupt header property {nameof(RecordsCount)} value was {RecordsCount}");
 
 			if (Policy.HasFlag(ClusteredStoragePolicy.TrackKey) && RecordKeySize <= 0)
-				throw new CorruptDataException($"Corrupt header ({nameof(Policy)} property was {Policy} but {nameof(Policy)} property was {RecordKeySize})");
+				throw new CorruptDataException($"Corrupt header property {nameof(RecordKeySize)} value was {RecordKeySize} but {nameof(Policy)} property value was {RecordKeySize}");
+
 		}
 
 		public override string ToString() => $"[{nameof(ClusteredStorageHeader)}] {nameof(Version)}: {Version}, {nameof(ClusterSize)}: {ClusterSize}, {nameof(TotalClusters)}: {TotalClusters}, {nameof(RecordsCount)}: {RecordsCount}, {nameof(Policy)}: {Policy},  {nameof(MerkleRoot)}: {MerkleRoot.ToHexString(true)}";

@@ -11,11 +11,18 @@ namespace Sphere10.Framework.Tests {
 	[TestFixture]
 	[Parallelizable(ParallelScope.Children)]
 	public class ClusteredListTests : StreamPersistedTestsBase {
+		private const int ReservedRecordsInStorage = 11;
 
 		private IDisposable CreateList(ClusteredStoragePolicy policy, out ClusteredList<TestObject> clusteredList) {
 			var stream = new MemoryStream();
-			clusteredList = new ClusteredList<TestObject>(stream, 32, new TestObjectSerializer(), policy: policy);
+			clusteredList = new ClusteredList<TestObject>(stream, 32, new TestObjectSerializer(), reservedRecords: ReservedRecordsInStorage, policy: policy);
 			return stream;
+		}
+
+		[Test]
+		public void HasReservedRecords([ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy) {
+			using var scope = CreateList(policy, out var list);
+			Assert.That(list.Storage.Count, Is.EqualTo(ReservedRecordsInStorage));
 		}
 
 		[Test]
@@ -286,7 +293,7 @@ namespace Sphere10.Framework.Tests {
 		public void IntegrationTests([Values] StorageType storage, [ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy) {
 			var rng = new Random(31337);
 			using (CreateStream(storage, 5000, out Stream stream)) {
-				var list = new ClusteredList<TestObject>(stream, 100, new TestObjectSerializer(), new TestObjectComparer(), policy: policy);
+				var list = new ClusteredList<TestObject>(stream, 100, new TestObjectSerializer(), new TestObjectComparer(), reservedRecords: ReservedRecordsInStorage, policy: policy);
 				AssertEx.ListIntegrationTest(list,
 					100,
 					(rng, i) => Enumerable.Range(0, i).Select(x => new TestObject(rng)).ToArray(),

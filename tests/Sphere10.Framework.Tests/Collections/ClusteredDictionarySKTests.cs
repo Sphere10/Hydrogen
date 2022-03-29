@@ -16,7 +16,16 @@ namespace Sphere10.Framework.Tests {
 	[Parallelizable(ParallelScope.Children)]
 	public class ClusteredDictionarySKTests : ClusteredDictionaryTestsBase {
 		private const int DefaultClusterDataSize = 32;
-		protected override IDisposable CreateDictionary<TKey, TValue>(int estimatedMaxByteSize, StorageType storageType, ClusteredStoragePolicy policy, IItemSerializer<TKey> keySerializer, IItemSerializer<TValue> valueSerializer, IEqualityComparer<TKey> keyComparer, IEqualityComparer<TValue> valueComparer, out IClusteredDictionary<TKey, TValue> clusteredDictionary) {
+
+		[Test]
+		public void TestHeader() {
+			var dict = new ClusteredDictionarySK<string, string>(new MemoryStream(), 21, new StringSerializer().ToStaticSizeSerializer(11), new StringSerializer(), reservedRecords: 33, policy: ClusteredStoragePolicy.BlobOptimized);
+			Assert.That(dict.Storage.Header.ClusterSize, Is.EqualTo(21));
+			Assert.That(dict.Storage.Header.RecordKeySize, Is.EqualTo(11));
+			Assert.That(dict.Storage.Header.ReservedRecords, Is.EqualTo(33));
+		}
+
+		protected override IDisposable CreateDictionary<TKey, TValue>(int estimatedMaxByteSize, StorageType storageType, int reservedRecords, ClusteredStoragePolicy policy, IItemSerializer<TKey> keySerializer, IItemSerializer<TValue> valueSerializer, IEqualityComparer<TKey> keyComparer, IEqualityComparer<TValue> valueComparer, out IClusteredDictionary<TKey, TValue> clusteredDictionary) {
 			var disposable = base.CreateStream(storageType, estimatedMaxByteSize, out var stream);
 			clusteredDictionary = new ClusteredDictionarySK<TKey, TValue>(stream, DefaultClusterDataSize, keySerializer.ToStaticSizeSerializer(256), valueSerializer, null, keyComparer, valueComparer, policy | ClusteredStoragePolicy.TrackChecksums | ClusteredStoragePolicy.TrackKey);
 			return disposable;

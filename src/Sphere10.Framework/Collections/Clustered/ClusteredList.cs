@@ -16,8 +16,8 @@ namespace Sphere10.Framework {
 	public class ClusteredList<TItem> : SingularListBase<TItem>, IClusteredList<TItem> {
 		private int _version;
 
-		public ClusteredList(Stream rootStream, int clusterSize, IItemSerializer<TItem> itemSerializer, IEqualityComparer<TItem> itemComparer = null, ClusteredStoragePolicy policy = ClusteredStoragePolicy.Default, int recordKeySize = 0,  Endianness endianness = Endianness.LittleEndian)
-			: this(new ClusteredStorage(rootStream, clusterSize, policy, recordKeySize, endianness), itemSerializer, itemComparer) {
+		public ClusteredList(Stream rootStream, int clusterSize, IItemSerializer<TItem> itemSerializer, IEqualityComparer<TItem> itemComparer = null, ClusteredStoragePolicy policy = ClusteredStoragePolicy.Default, int recordKeySize = 0, int reservedRecords = 0,  Endianness endianness = Endianness.LittleEndian)
+			: this(new ClusteredStorage(rootStream, clusterSize, policy, recordKeySize, reservedRecords, endianness), itemSerializer, itemComparer) {
 		}
 
 		public ClusteredList(IClusteredStorage storage, IItemSerializer<TItem> itemSerializer, IEqualityComparer<TItem> itemComparer = null) {
@@ -29,7 +29,7 @@ namespace Sphere10.Framework {
 			_version = 0;
 		}
 
-		public override int Count => Storage.Count;
+		public override int Count => Storage.Count - Storage.Header.ReservedRecords;
 
 		public IClusteredStorage Storage { get; }
 
@@ -38,11 +38,12 @@ namespace Sphere10.Framework {
 		public IEqualityComparer<TItem> ItemComparer { get; }
 
 		public override TItem Read(int index) 
-			=> Storage.LoadItem(index, ItemSerializer); // Index checking deferred to Storage
+			=> Storage.LoadItem(index + Storage.Header.ReservedRecords, ItemSerializer); // Index checking deferred to Storage
 
 		public override int IndexOf(TItem item) {
 			// TODO: if _storage keeps checksums, use that to quickly filter
-			for (var i = 0; i < Storage.Count; i++) {
+			var listRecords = Storage.Count - Storage.Header.ReservedRecords;
+			for (var i = 0; i < listRecords; i++) {
 				if (ItemComparer.Equals(item, Read(i)))
 					return i;
 			}
@@ -68,7 +69,7 @@ namespace Sphere10.Framework {
 		public ClusteredStreamScope EnterInsertScope(int index, TItem item) {
 			// Index checking deferred to Storage
 			UpdateVersion();
-			return Storage.EnterSaveItemScope(index, item, ItemSerializer, ListOperationType.Insert);
+			return Storage.EnterSaveItemScope(index + Storage.Header.ReservedRecords, item, ItemSerializer, ListOperationType.Insert);
 		}
 
 		public override void Update(int index, TItem item) {
@@ -78,14 +79,14 @@ namespace Sphere10.Framework {
 		public ClusteredStreamScope EnterUpdateScope(int index, TItem item) {
 			// Index checking deferred to Storage
 			UpdateVersion();
-			return Storage.EnterSaveItemScope(index, item, ItemSerializer, ListOperationType.Update);
+			return Storage.EnterSaveItemScope(index + Storage.Header.ReservedRecords, item, ItemSerializer, ListOperationType.Update);
 		}
 
 		public override bool Remove(TItem item) {
 			var index = IndexOf(item);
 			if (index >= 0) {
 				UpdateVersion();
-				Storage.Remove(index);
+				Storage.Remove(index + Storage.Header.ReservedRecords);
 				
 				return true;
 			}
@@ -93,7 +94,7 @@ namespace Sphere10.Framework {
 		}
 
 		public override void RemoveAt(int index) 
-			=> Storage.Remove(index);
+			=> Storage.Remove(index + Storage.Header.ReservedRecords);
 
 		public override void Clear() {
 			Storage.Clear();
@@ -103,14 +104,15 @@ namespace Sphere10.Framework {
 		public override void CopyTo(TItem[] array, int arrayIndex) {
 			Guard.ArgumentNotNull(array, nameof(array));
 			Guard.ArgumentInRange(arrayIndex, 0, Math.Max(0, array.Length - 1), nameof(array));
-			var itemsToCopy = Math.Min(Storage.Count, array.Length - arrayIndex);
+			var itemsToCopy = Math.Min(Count, array.Length - arrayIndex);
 			for (var i = 0; i < itemsToCopy; i++)
 				array[i + arrayIndex] = Read(i);
 		}
 
 		public override IEnumerator<TItem> GetEnumerator() {
 			var version = _version;
-			for (var i = 0; i < Storage.Count; i++) {
+			var listRecords = Storage.Count - Storage.Header.ReservedRecords;
+			for (var i = 0; i < listRecords; i++) {
 				if (_version != version)
 					throw new InvalidOperationException("Collection was mutated during enumeration");
 				yield return Read(i);

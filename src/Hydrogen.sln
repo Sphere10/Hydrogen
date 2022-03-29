@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.29215.179
+# Visual Studio Version 17
+VisualStudioVersion = 17.1.32203.90
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sphere10.Framework", "Sphere10.Framework\Sphere10.Framework.csproj", "{1AFEF3F6-1C08-4543-B782-3A45D95CC6D6}"
 EndProject
@@ -67,6 +67,11 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HydrogenDemo.Consensus", "HydrogenTest.Consensus\HydrogenDemo.Consensus.csproj", "{5C8A5424-A829-46F7-B297-7EFC3AE57B7B}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "HydrogenDemo", "HydrogenDemo", "{6ED6952A-5441-4EA5-99A3-DB3AC2716904}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{53918CBF-B0E7-41D7-9CA0-AA69885165E0}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

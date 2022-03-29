@@ -13,6 +13,7 @@ namespace Sphere10.Framework.Tests {
 	
 	public abstract class ClusteredDictionaryTestsBase : StreamPersistedTestsBase {
 		private const int EstimatedTestObjectSize = 400 + 256;
+		private const int ReservedRecordsInStorage = 1;
 
 		[Test]
 		public void AddNothing([Values] StorageType storageType, [ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy) {
@@ -123,7 +124,7 @@ namespace Sphere10.Framework.Tests {
 		[Test]
 		public void IntegrationTests([Values] StorageType storageType, [ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy, [Values(23)] int maxItems) {
 			var keyGens = 0;
-			using (CreateDictionary(maxItems * EstimatedTestObjectSize, storageType, policy, out var clusteredDictionary)) {
+			using (CreateDictionary(maxItems * EstimatedTestObjectSize, storageType,  policy, out var clusteredDictionary)) {
 				AssertEx.DictionaryIntegrationTest(
 					clusteredDictionary,
 					maxItems,
@@ -134,10 +135,10 @@ namespace Sphere10.Framework.Tests {
 			}
 		}
 
-		protected IDisposable CreateDictionary(int estimatedMaxByteSize, StorageType storageType,  ClusteredStoragePolicy policy, out IClusteredDictionary<string, TestObject> clusteredDictionary)
-			=> CreateDictionary(estimatedMaxByteSize, storageType, policy, new StringSerializer(Encoding.UTF8), new TestObjectSerializer(), EqualityComparer<string>.Default, new TestObjectComparer(), out clusteredDictionary);
+		protected IDisposable CreateDictionary(int estimatedMaxByteSize, StorageType storageType, ClusteredStoragePolicy policy, out IClusteredDictionary<string, TestObject> clusteredDictionary)
+			=> CreateDictionary(estimatedMaxByteSize, storageType, ReservedRecordsInStorage, policy, new StringSerializer(Encoding.UTF8), new TestObjectSerializer(), EqualityComparer<string>.Default, new TestObjectComparer(), out clusteredDictionary);
 
-		protected abstract IDisposable CreateDictionary<TKey, TValue>(int estimatedMaxByteSize, StorageType storageType, ClusteredStoragePolicy policy, IItemSerializer<TKey> keySerializer, IItemSerializer<TValue> valueSerializer, IEqualityComparer<TKey> keyComparer, IEqualityComparer<TValue> valueComparer, out IClusteredDictionary<TKey, TValue> clusteredDictionary);
+		protected abstract IDisposable CreateDictionary<TKey, TValue>(int estimatedMaxByteSize, StorageType storageType, int reservedRecords, ClusteredStoragePolicy policy, IItemSerializer<TKey> keySerializer, IItemSerializer<TValue> valueSerializer, IEqualityComparer<TKey> keyComparer, IEqualityComparer<TValue> valueComparer, out IClusteredDictionary<TKey, TValue> clusteredDictionary);
 
 	}
 

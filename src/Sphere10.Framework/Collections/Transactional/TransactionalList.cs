@@ -40,7 +40,7 @@ namespace Sphere10.Framework {
 		/// <param name="maxMemory">How much of the list can be kept in memory at any time</param>
 		/// <param name="clusterSize">To support random access reads/writes the file is broken into discontinuous clusters of this size (similar to how disk storage) works. <remarks>Try to fit your average object in 1 cluster for performance. However, spare space in a cluster cannot be used.</remarks> </param>
 		/// <param name="readOnly">Whether or not file is opened in readonly mode.</param>
-		public TransactionalList(string filename, string uncommittedPageFileDir, IItemSerializer<T> serializer, IEqualityComparer<T> comparer = null, int transactionalPageSizeBytes = DefaultTransactionalPageSize, long maxMemory = DefaultMaxMemory, int clusterSize = DefaultClusterSize, ClusteredStoragePolicy policy = ClusteredStoragePolicy.Default, Endianness endianness = Endianness.LittleEndian, bool readOnly = false) {
+		public TransactionalList(string filename, string uncommittedPageFileDir, IItemSerializer<T> serializer, IEqualityComparer<T> comparer = null, int transactionalPageSizeBytes = DefaultTransactionalPageSize, long maxMemory = DefaultMaxMemory, int clusterSize = DefaultClusterSize, ClusteredStoragePolicy policy = ClusteredStoragePolicy.Default, int reservedRecords = 0, Endianness endianness = Endianness.LittleEndian, bool readOnly = false) {
 			Guard.ArgumentNotNull(filename, nameof(filename));
 			Guard.ArgumentNotNull(uncommittedPageFileDir, nameof(uncommittedPageFileDir));
 
@@ -67,6 +67,7 @@ namespace Sphere10.Framework {
 				comparer,
 				policy,
 				0,
+				reservedRecords,
 				endianness
 			);
 

@@ -21,11 +21,11 @@ namespace Sphere10.Framework {
 		private readonly IClusteredDictionary<byte[], TItem> _itemStore;
 		private readonly IItemHasher<TItem> _hasher;
 
-		public ClusteredHashSet(Stream rootStream, int clusterSize, IItemSerializer<TItem> serializer, CHF chf, IEqualityComparer<TItem> comparer = null, ClusteredStoragePolicy policy = ClusteredStoragePolicy.DictionaryDefault, Endianness endianness = Endianness.LittleEndian)
-			: this(rootStream, clusterSize, serializer, new ItemHasher<TItem>(chf, serializer), comparer, policy, endianness) {
+		public ClusteredHashSet(Stream rootStream, int clusterSize, IItemSerializer<TItem> serializer, CHF chf, IEqualityComparer<TItem> comparer = null, ClusteredStoragePolicy policy = ClusteredStoragePolicy.DictionaryDefault, int reservedRecords = 0, Endianness endianness = Endianness.LittleEndian)
+			: this(rootStream, clusterSize, serializer, new ItemHasher<TItem>(chf, serializer), comparer, policy, reservedRecords, endianness) {
 		}
 
-		public ClusteredHashSet(Stream rootStream, int clusterSize, IItemSerializer<TItem> serializer, IItemHasher<TItem> hasher, IEqualityComparer<TItem> comparer = null, ClusteredStoragePolicy policy = ClusteredStoragePolicy.DictionaryDefault, Endianness endianness = Endianness.LittleEndian)
+		public ClusteredHashSet(Stream rootStream, int clusterSize, IItemSerializer<TItem> serializer, IItemHasher<TItem> hasher, IEqualityComparer<TItem> comparer = null, ClusteredStoragePolicy policy = ClusteredStoragePolicy.DictionaryDefault, int reservedRecords = 0, Endianness endianness = Endianness.LittleEndian)
 			: this(
 				new ClusteredDictionarySK<byte[], TItem>(
 					rootStream,
@@ -36,6 +36,7 @@ namespace Sphere10.Framework {
 					new ByteArrayEqualityComparer(),
 					comparer,
 					policy,
+					reservedRecords,
 					endianness
 				),
 				comparer,

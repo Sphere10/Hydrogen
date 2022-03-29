@@ -69,10 +69,11 @@ namespace Sphere10.Framework {
 		private readonly bool _preAllocateOptimization;
 		private readonly int _clusteredRecordKeySize;
 
-		public ClusteredStorage(Stream rootStream, int clusterSize, ClusteredStoragePolicy policy = ClusteredStoragePolicy.Default, int recordKeySize = 0, Endianness endianness = Endianness.LittleEndian) {
+		public ClusteredStorage(Stream rootStream, int clusterSize, ClusteredStoragePolicy policy = ClusteredStoragePolicy.Default, int recordKeySize = 0, int reservedRecords = 0, Endianness endianness = Endianness.LittleEndian) {
 			Guard.ArgumentNotNull(rootStream, nameof(rootStream));
-			Guard.ArgumentInRange(clusterSize, 1, int.MaxValue, nameof(clusterSize));
+			Guard.ArgumentGTE(clusterSize, 1, nameof(clusterSize));
 			Guard.ArgumentInRange(recordKeySize, 0, ushort.MaxValue, nameof(recordKeySize));
+			Guard.ArgumentGTE(reservedRecords, 0, nameof(reservedRecords));
 			if (Policy.HasFlag(ClusteredStoragePolicy.TrackKey))
 				Guard.Argument(recordKeySize > 0, nameof(recordKeySize), $"Must be greater than 0 when {nameof(ClusteredStoragePolicy.TrackKey)}");
 			Policy = policy;
@@ -81,12 +82,13 @@ namespace Sphere10.Framework {
 			var recordSerializer = new ClusteredStreamRecordSerializer(policy, _clusteredRecordKeySize);
 			var clusterSerializer = new ClusterSerializer(clusterSize);
 			Header = CreateHeader();
-			if (rootStream.Length > 0) {
+			var wasEmptyStream = rootStream.Length == 0;
+			if (!wasEmptyStream) {
 				Header.AttachTo(rootStream, endianness);
 				Header.CheckHeaderIntegrity();
 				CheckHeaderDataIntegrity((int)rootStream.Length, Header, clusterSerializer, recordSerializer);
 			} else {
-				Header.CreateIn(1, rootStream, clusterSize, endianness);
+				Header.CreateIn(1, rootStream, clusterSize, recordKeySize, reservedRecords, endianness);
 			}
 			Guard.Argument(ClusterSize == clusterSize, nameof(rootStream), $"Inconsistent cluster sizes (stream header had '{ClusterSize}')");
 			AllRecordsSize = Header.RecordsCount * recordSerializer.StaticSize;
@@ -134,7 +136,11 @@ namespace Sphere10.Framework {
 			_integrityChecks = Policy.HasFlag(ClusteredStoragePolicy.IntegrityChecks);
 			ZeroClusterBytes = Tools.Array.Gen<byte>(clusterSize, 0);
 			ClusterEnvelopeSize = clusterSerializer.StaticSize - ClusterSize;
+
+			if (wasEmptyStream)
+				CreateReservedRecords();
 		}
+	
 
 		public static ClusteredStorage Load(Stream rootStream, Endianness endianness = Endianness.LittleEndian) {
 			if (rootStream.Length < ClusteredStorageHeader.ByteLength)
@@ -155,8 +161,12 @@ namespace Sphere10.Framework {
 			rootStream.Seek(ClusteredStorageHeader.RecordKeySizeOffset, SeekOrigin.Begin);
 			var recordKeySize = (ClusteredStoragePolicy)reader.ReadUInt16();
 
+			// read records offset
+			rootStream.Seek(ClusteredStorageHeader.ReservedRecordsOffset, SeekOrigin.Begin);
+			var reservedRecords = reader.ReadInt32();
+
 			rootStream.Position = 0;
-			return new ClusteredStorage(rootStream, clusterSize, policy, (int)recordKeySize, endianness);
+			return new ClusteredStorage(rootStream, clusterSize, policy, (int)recordKeySize, reservedRecords, endianness);
 		}
 
 		public ClusteredStorageHeader Header { get; }
@@ -323,6 +333,7 @@ namespace Sphere10.Framework {
 				Header.TotalClusters = 0;
 				AllRecordsSize = 0;
 				_recordsFragmentProvider.Reset();
+				CreateReservedRecords();
 			}
 		}
 
@@ -660,6 +671,13 @@ namespace Sphere10.Framework {
 			var minStreamSize = header.TotalClusters * (header.ClusterSize + clusterEnvelopeSize) + ClusteredStorageHeader.ByteLength;
 			if (rootStreamLength < minStreamSize)
 				throw new CorruptDataException($"Stream too small (header gives minimum size {minStreamSize} but was {rootStreamLength})");
+		}
+
+		private void CreateReservedRecords() {
+			Guard.Ensure(Header.RecordsCount == 0, "Records are already existing");
+			while (Header.RecordsCount < Header.ReservedRecords) {
+				using var scope = Add();
+			}
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]

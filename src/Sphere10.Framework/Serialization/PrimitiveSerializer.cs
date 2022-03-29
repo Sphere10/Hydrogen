@@ -9,7 +9,7 @@ public class PrimitiveSerializer<T> : StaticSizeItemSerializerBase<T> {
 
 	public PrimitiveSerializer() 
 		: base(Tools.Memory.SizeOfPrimitive(typeof(T))) {
-		Guard.Argument(typeof(T).IsPrimitive, nameof(T), $" {typeof(T)} is not a primitive type");
+		Guard.Argument(Tools.Memory.IsSerializationPrimitive(typeof(T)), nameof(T), $" {typeof(T)} is not a primitive type");
 		var typeCode = Type.GetTypeCode(typeof(T));
 		_writePrimitive = GetPrimitiveWriter(typeCode);
 		_readPrimitive = GetPrimitiveReader(typeCode);

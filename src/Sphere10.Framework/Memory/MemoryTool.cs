@@ -15,6 +15,7 @@
 using System;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Sphere10.Framework;
 
 // ReSharper disable CheckNamespace
@@ -161,7 +162,7 @@ namespace Tools {
         }
 
         public static int SizeOfPrimitive(Type type) {
-	        Guard.Argument(type.IsPrimitive, nameof(type), $" {type} is not a primitive type");
+	        Guard.Argument(IsSerializationPrimitive(type), nameof(type), $" {type} is not a primitive type");
 	        return SizeOfPrimitive(Type.GetTypeCode(type));
         }
 
@@ -181,6 +182,12 @@ namespace Tools {
 	        TypeCode.UInt64 => sizeof(ulong),
 	        _ => throw new NotSupportedException($"{nameof(typeCode)} has an indeterminable static size")
         };
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static bool IsSerializationPrimitive(Type type) {
+			return type.IsPrimitive || type == typeof(decimal);
+		}
+
 
 	}
 }

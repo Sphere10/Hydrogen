@@ -30,6 +30,8 @@ namespace Sphere10.Framework.Communications {
 				throw new Exception("2 XXXXXXXXX ClientWebSocketsDataSource received bad packet");
 			}
 
+SystemLog.Info($"Received Data, YAYYYYYY");
+
 			var returnData = JsonConvert.DeserializeObject<List<TItem>>(returnPacket.JsonData);
 
 			var mutatedItems = new DataSourceMutatedItems<TItem>();
@@ -53,8 +55,7 @@ namespace Sphere10.Framework.Communications {
 				break;
 
 				default:
-
-				break;
+					break;
 			}
 
 			MutatedItems.Invoke(mutatedItems);

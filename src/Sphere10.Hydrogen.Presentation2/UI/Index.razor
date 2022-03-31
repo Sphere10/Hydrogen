@@ -534,9 +534,9 @@
 
         //DataSource = new Index.DataSource1<TestClass>();
         // LAN
-        //WebDataSource = new ClientWebSocketsDataSource<TestClass>("ws://192.168.1.171:80/service", false);
+        WebDataSource = new ClientWebSocketsDataSource<TestClass>("ws://192.168.1.171:80/service", false);
         // WIFI
-        WebDataSource = new ClientWebSocketsDataSource<TestClass>("ws://192.168.1.106:80/service", false);
+        //WebDataSource = new ClientWebSocketsDataSource<TestClass>("ws://192.168.1.106:80/service", false);
 SystemLog.Info($"ClientWebSocketsDataSource Created");
 
         //DataActions.Add(new GridAction<TestClass>("Action1", Action1, "😄", IsAction1Available));

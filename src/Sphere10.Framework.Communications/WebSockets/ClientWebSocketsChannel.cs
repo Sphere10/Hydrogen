@@ -104,6 +104,9 @@ SystemLog.Info($"ID has been Set: {Id}");
 		}
 
 		protected override async Task<byte[]> ReceiveBytesInternal(CancellationToken cancellationToken) {
+
+SystemLog.Info($"ReceiveBytesInternal()");
+
 			var buffer = new byte[1024];
 
 			using (var memoryStream = new MemoryStream()) {

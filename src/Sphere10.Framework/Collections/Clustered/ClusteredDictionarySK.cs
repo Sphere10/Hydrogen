@@ -20,7 +20,7 @@ namespace Sphere10.Framework {
 	/// <remarks>When deleting an item the underlying <see cref="ClusteredStreamRecord"/> is marked nullified but retained and re-used in later calls to <see cref="Add(TKey,TValue)"/>.</remarks>
 	/// <remarks>This implementation stores the items key in the underlying <see cref="ClusteredStreamRecord"/> whereas the <see cref="ClusteredDictionary{TKey,TValue}"/> class stores it in the <see cref="KeyValuePair{TKey, TValue}"/>.</remarks>
 	// TODO: there are some memory-blowout lookups in this class that need to be refactored out (should be safe for non-huge dictionaries).
-	public class ClusteredDictionarySK<TKey, TValue> : DictionaryBase<TKey, TValue>, IClusteredDictionary<TKey, TValue>, ILoadable {
+	public class ClusteredDictionarySK<TKey, TValue> : DictionaryBase<TKey, TValue>, IClusteredDictionary<TKey, TValue> {
 		public event EventHandlerEx<object> Loading;
 		public event EventHandlerEx<object> Loaded;
 
@@ -69,7 +69,7 @@ namespace Sphere10.Framework {
 			_keyChecksum = keyChecksum ?? new ActionChecksum<TKey>(DefaultCalculateKeyChecksum);
 			_checksumToIndexLookup = new LookupEx<int, int>();
 			_unusedRecords = new();
-			RequiresLoad = _valueStore.Storage.Records.Count > 0;
+			RequiresLoad = _valueStore.Storage.Records.Count > _valueStore.Storage.Header.ReservedRecords;
 			UnusedKeyBytes = Tools.Array.Gen<byte>(keySerializer.StaticSize, 0);
 		}
 
@@ -77,10 +77,10 @@ namespace Sphere10.Framework {
 
 		protected IEnumerable<KeyValuePair<TKey, TValue>> KeyValuePairs {
 			get {
-				for (var i = 0; i < _valueStore.Storage.Records.Count; i++) {
+				for (var i = 0; i < _valueStore.Count; i++) {
 					if (IsUnusedRecord(i))
 						continue;
-					var (key, value) = (_valueStore.Storage.GetRecord(i), _valueStore[i]);
+					var (key, value) = (_valueStore.Storage.GetRecord(_valueStore.Storage.Header.ReservedRecords + i), _valueStore[i]);
 					yield return new KeyValuePair<TKey, TValue>(
 						_keySerializer.Deserialize(key.Key, Storage.Endianness),
 						value
@@ -108,14 +108,14 @@ namespace Sphere10.Framework {
 		}
 
 		public TKey ReadKey(int index) {
-			if (Storage.IsNull(index))
+			if (Storage.IsNull(_valueStore.Storage.Header.ReservedRecords + index))
 				throw new InvalidOperationException($"Stream record {index} is null");
-			var record = Storage.GetRecord(index);
+			var record = Storage.GetRecord(_valueStore.Storage.Header.ReservedRecords + index);
 			return _keySerializer.Deserialize(record.Key, Storage.Endianness);
 		}
 
 		public TValue ReadValue(int index) {
-			if (Storage.IsNull(index))
+			if (Storage.IsNull(_valueStore.Storage.Header.ReservedRecords + index))
 				throw new InvalidOperationException($"Stream record {index} is null");
 			return _valueStore.Read(index);
 		}
@@ -252,7 +252,7 @@ namespace Sphere10.Framework {
 			CheckLoaded();
 			for (var i = _unusedRecords.Count - 1; i >= 0; i--) {
 				var index = _unusedRecords[i];
-				_valueStore.RemoveAt(i);
+				_valueStore.RemoveAt(index);
 				_unusedRecords.RemoveAt(i);
 			}
 		}
@@ -263,7 +263,7 @@ namespace Sphere10.Framework {
 				if (_unusedRecords.Contains(i))
 					continue;
 				KeyValuePair<TKey, TValue> kvp;
-				using (var scope = _valueStore.Storage.EnterLoadItemScope(i, _valueSerializer, out var value))
+				using (var scope = _valueStore.Storage.EnterLoadItemScope(Storage.Header.ReservedRecords + i, _valueSerializer, out var value))
 					kvp = new KeyValuePair<TKey, TValue>(_keySerializer.Deserialize(scope.Record.Key, Storage.Endianness), value);
 				yield return kvp;
 			}
@@ -338,8 +338,8 @@ namespace Sphere10.Framework {
 		private void RefreshChecksumToIndexLookup() {
 			_checksumToIndexLookup.Clear();
 			_unusedRecords.Clear();
-			for (var i = 0; i < _valueStore.Storage.Records.Count; i++) {
-				var record = _valueStore.Storage.Records[i];
+			for (var i = 0; i < _valueStore.Count; i++) {
+				var record = _valueStore.Storage.Records[_valueStore.Storage.Header.ReservedRecords + i];
 				if (record.Traits.HasFlag(ClusteredStreamTraits.IsUsed))
 					_checksumToIndexLookup.Add(record.KeyChecksum, i);
 				else

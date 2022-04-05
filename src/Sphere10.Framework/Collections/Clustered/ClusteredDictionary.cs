@@ -62,14 +62,14 @@ namespace Sphere10.Framework {
 			_keyChecksum = keyChecksum ?? new ActionChecksum<TKey>(DefaultCalculateKeyChecksum);
 			_checksumToIndexLookup = new LookupEx<int, int>();
 			_unusedRecords = new();
-			RequiresLoad = _kvpStore.Storage.Records.Count > 0;
+			RequiresLoad = _kvpStore.Storage.Records.Count > _kvpStore.Storage.Header.ReservedRecords;
 		}
 
 		public IClusteredStorage Storage => _kvpStore.Storage;
 
 		protected IEnumerable<KeyValuePair<TKey, TValue>> KeyValuePairs {
 			get {
-				for (var i = 0; i < _kvpStore.Storage.Records.Count; i++) {
+				for (var i = 0; i < _kvpStore.Count; i++) {
 					if (IsUnusedRecord(i))
 						continue;
 					var (key, value) = _kvpStore[i];
@@ -97,17 +97,17 @@ namespace Sphere10.Framework {
 		}
 
 		public TKey ReadKey(int index) {
-			if (Storage.IsNull(index))
+			if (Storage.IsNull(_kvpStore.Storage.Header.ReservedRecords + index))
 				throw new InvalidOperationException($"Stream record {index} is null");
-			using var scope = Storage.Open(index);
+			using var scope = Storage.Open(_kvpStore.Storage.Header.ReservedRecords + index);
 			var reader = new EndianBinaryReader(EndianBitConverter.For(Storage.Endianness), scope.Stream);
 			return ((KeyValuePairSerializer<TKey, TValue>)_kvpStore.ItemSerializer).DeserializeKey(scope.Record.Size, reader);
 		}
 
 		public TValue ReadValue(int index) {
-			if (Storage.IsNull(index))
+			if (Storage.IsNull(_kvpStore.Storage.Header.ReservedRecords + index))
 				throw new InvalidOperationException($"Stream record {index} is null");
-			using var scope = Storage.Open(index);
+			using var scope = Storage.Open(_kvpStore.Storage.Header.ReservedRecords + index);
 			var reader = new EndianBinaryReader(EndianBitConverter.For(Storage.Endianness), scope.Stream);
 			return ((KeyValuePairSerializer<TKey, TValue>)_kvpStore.ItemSerializer).DeserializeValue(scope.Record.Size, reader);
 		}
@@ -248,7 +248,7 @@ namespace Sphere10.Framework {
 			CheckLoaded();
 			for (var i = _unusedRecords.Count - 1; i >= 0; i--) {
 				var index = _unusedRecords[i];
-				_kvpStore.RemoveAt(i);
+				_kvpStore.RemoveAt(index);
 				_unusedRecords.RemoveAt(i);
 			}
 		}
@@ -326,8 +326,8 @@ namespace Sphere10.Framework {
 		private void RefreshChecksumToIndexLookup() {
 			_checksumToIndexLookup.Clear();
 			_unusedRecords.Clear();
-			for (var i = 0; i < _kvpStore.Storage.Records.Count; i++) {
-				var record = _kvpStore.Storage.Records[i];
+			for (var i = 0; i < _kvpStore.Count; i++) {
+				var record = _kvpStore.Storage.Records[_kvpStore.Storage.Header.ReservedRecords + i];
 				if (record.Traits.HasFlag(ClusteredStreamTraits.IsUsed))
 					_checksumToIndexLookup.Add(record.KeyChecksum, i);
 				else

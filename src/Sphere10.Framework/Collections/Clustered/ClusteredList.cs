@@ -37,12 +37,14 @@ namespace Sphere10.Framework {
 
 		public IEqualityComparer<TItem> ItemComparer { get; }
 
-		public override TItem Read(int index) 
-			=> Storage.LoadItem(index + Storage.Header.ReservedRecords, ItemSerializer); // Index checking deferred to Storage
+		public override TItem Read(int index) {
+			CheckIndex(index, true);
+			return Storage.LoadItem(Storage.Header.ReservedRecords + index, ItemSerializer); // Index checking deferred to Storage
+		}
 
 		public override int IndexOf(TItem item) {
 			// TODO: if _storage keeps checksums, use that to quickly filter
-			var listRecords = Storage.Count - Storage.Header.ReservedRecords;
+			var listRecords = Count;
 			for (var i = 0; i < listRecords; i++) {
 				if (ItemComparer.Equals(item, Read(i)))
 					return i;
@@ -63,6 +65,7 @@ namespace Sphere10.Framework {
 		}
 		
 		public override void Insert(int index, TItem item) {
+			CheckIndex(index, true);
 			using var _ = EnterInsertScope(index, item);
 		}
 
@@ -73,6 +76,7 @@ namespace Sphere10.Framework {
 		}
 
 		public override void Update(int index, TItem item) {
+			CheckIndex(index, false);
 			using var _ = EnterUpdateScope(index, item);
 		}
 
@@ -93,8 +97,10 @@ namespace Sphere10.Framework {
 			return false;
 		}
 
-		public override void RemoveAt(int index) 
-			=> Storage.Remove(index + Storage.Header.ReservedRecords);
+		public override void RemoveAt(int index) {
+			CheckIndex(index, false);
+			Storage.Remove(Storage.Header.ReservedRecords + index);
+		}
 
 		public override void Clear() {
 			Storage.Clear();
@@ -111,8 +117,8 @@ namespace Sphere10.Framework {
 
 		public override IEnumerator<TItem> GetEnumerator() {
 			var version = _version;
-			var listRecords = Storage.Count - Storage.Header.ReservedRecords;
-			for (var i = 0; i < listRecords; i++) {
+			var count = Count;
+			for (var i = 0; i < count; i++) {
 				if (_version != version)
 					throw new InvalidOperationException("Collection was mutated during enumeration");
 				yield return Read(i);

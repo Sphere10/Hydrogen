@@ -18,7 +18,7 @@ namespace Sphere10.Framework.Tests {
 		private const int DefaultClusterDataSize = 32;
 		protected override IDisposable CreateDictionary<TKey, TValue>(int estimatedMaxByteSize, StorageType storageType, int reservedRecords, ClusteredStoragePolicy policy, IItemSerializer<TKey> keySerializer, IItemSerializer<TValue> valueSerializer, IEqualityComparer<TKey> keyComparer, IEqualityComparer<TValue> valueComparer, out IClusteredDictionary<TKey, TValue> clusteredDictionary) {
 			var disposable = base.CreateStream(storageType, estimatedMaxByteSize, out var stream);
-			clusteredDictionary = new ClusteredDictionary<TKey, TValue>(stream, DefaultClusterDataSize, keySerializer, valueSerializer, null, keyComparer, valueComparer, policy | ClusteredStoragePolicy.TrackChecksums);
+			clusteredDictionary = new ClusteredDictionary<TKey, TValue>(stream, DefaultClusterDataSize, keySerializer, valueSerializer, null, keyComparer, valueComparer, policy | ClusteredStoragePolicy.TrackChecksums, reservedRecords);
 			return disposable;
 		}
 

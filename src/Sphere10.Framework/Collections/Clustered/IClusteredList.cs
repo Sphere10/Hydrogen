@@ -18,5 +18,4 @@ namespace Sphere10.Framework {
 		public ClusteredStreamScope EnterUpdateScope(int index, TItem item);
 	}
 
-
 }

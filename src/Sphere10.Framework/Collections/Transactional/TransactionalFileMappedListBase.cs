@@ -54,7 +54,7 @@ namespace Sphere10.Framework {
 		
 		public abstract TransactionalFileMappedBuffer AsBuffer { get; }
 
-		// TODO: base.Dirty O(N) 
+		// TODO: base.Dirty O(N) -> O(1)
 		public override bool Dirty => base.Dirty || PageMarkerRepo.PageMarkers.Any() || PageMarkerRepo.FileMarkers.Any();
 
 		public void Commit() {

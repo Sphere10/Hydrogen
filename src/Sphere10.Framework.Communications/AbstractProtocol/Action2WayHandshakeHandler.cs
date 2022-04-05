@@ -23,7 +23,7 @@ namespace Sphere10.Framework.Communications {
 		public override HandshakeOutcome ReceiveHandshake(ProtocolOrchestrator orchestrator, THandshake handshake, out TAck acknowledgement)
 			=> _receive(orchestrator, handshake, out acknowledgement);
 
-		public override HandshakeOutcome VerifyHandshake_(ProtocolOrchestrator orchestrator, THandshake handshake, TAck acknowledgement, out Void verifyAcknowledgement) {
+		public override HandshakeOutcome VerifyHandshake(ProtocolOrchestrator orchestrator, THandshake handshake, TAck acknowledgement, out Void verifyAcknowledgement) {
 			verifyAcknowledgement = default;
 			return _verify(orchestrator, handshake, acknowledgement);
 		}

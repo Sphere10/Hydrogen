@@ -119,9 +119,7 @@ namespace Sphere10.Framework {
 			// Sometimes a node can bubble all the way up a tree. When constructing proofs, we don't care about 
 			// parent nodes which are merely bubbled up child nodes, we care about the node which will consume
 			// the child node as either a left or right child. The logical parent denotes this parent node.
-			MerkleCoordinate prev;
 			do {
-				prev = node;
 				node = GetParent(size, node);
 			} while (node != MerkleCoordinate.Null && GetTraits(size, node).HasFlag(MerkleNodeTraits.BubbledUp));
 			return node;
@@ -322,7 +320,7 @@ namespace Sphere10.Framework {
 
 			// If old tree was empty, then append proof is empty
 			if (m == 0) {
-				oldRootProofPath = new int[0]; // old root does not exist since old tree was empty
+				oldRootProofPath = Array.Empty<int>(); // old root does not exist since old tree was empty
 				return Enumerable.Empty<MerkleCoordinate>();
 			}
 

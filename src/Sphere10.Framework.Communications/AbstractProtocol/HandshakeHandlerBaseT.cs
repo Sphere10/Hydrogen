@@ -11,12 +11,11 @@
 		}
 
 		public sealed override HandshakeOutcome VerifyHandshake(ProtocolOrchestrator orchestrator, object handshake, object acknowledgement, out object verifyAcknowledgement) {
-			var result = VerifyHandshake_(orchestrator, (THandshake)handshake, (TAck)acknowledgement, out var verack);
+			var result = VerifyHandshake(orchestrator, (THandshake)handshake, (TAck)acknowledgement, out var verack);
 			verifyAcknowledgement = verack;
 			return result;
 		}
 	
-
 		public sealed override bool AcknowledgeHandshake(ProtocolOrchestrator orchestrator, object handshake, object acknowledgement, object verify)
 			=> AcknowledgeHandshake(orchestrator, (THandshake)handshake, (TAck)acknowledgement, (TVerack)verify);
 
@@ -25,7 +24,7 @@
 
 		public abstract HandshakeOutcome ReceiveHandshake(ProtocolOrchestrator orchestrator, THandshake handshake, out TAck acknowledgement);
 
-		public abstract HandshakeOutcome VerifyHandshake_(ProtocolOrchestrator orchestrator, THandshake handshake, TAck acknowledgement, out TVerack verifyAcknowledgement);
+		public abstract HandshakeOutcome VerifyHandshake(ProtocolOrchestrator orchestrator, THandshake handshake, TAck acknowledgement, out TVerack verifyAcknowledgement);
 
 		public abstract bool AcknowledgeHandshake(ProtocolOrchestrator orchestrator, THandshake handshake, TAck acknowledgement, TVerack verifyAcknowledgement);
 

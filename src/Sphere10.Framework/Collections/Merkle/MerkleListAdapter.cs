@@ -4,16 +4,34 @@ using System.Linq;
 
 namespace Sphere10.Framework {
 
-	public class MerkleList<TItem> : ExtendedListDecorator<TItem>, IMerkleList<TItem> {
-
+	/// <summary>
+	/// Converts a given <see cref="IExtendedList{T}"/> into an <see cref="IMerkleList{TItem}"/>.
+	/// </summary>
+	/// <typeparam name="TItem"></typeparam>
+	public class MerkleListAdapter<TItem> : ExtendedListDecorator<TItem>, IMerkleList<TItem> {
 		private readonly IItemHasher<TItem> _hasher;
 		private readonly IUpdateableMerkleTree _merkleTree;
 
-		public MerkleList(IItemSerializer<TItem> serializer, CHF hashAlgorithm) 
-			: this(new ItemHasher<TItem>(hashAlgorithm, serializer), new ExtendedList<TItem>(), new SimpleMerkleTree(hashAlgorithm)) {
+		public MerkleListAdapter()
+			: this(new ExtendedList<TItem>()) {
 		}
 
-		public MerkleList(IItemHasher<TItem> hasher, IExtendedList<TItem> internalList, IUpdateableMerkleTree merkleTreeImpl) 
+		public MerkleListAdapter(IExtendedList<TItem> internalList) 
+			: this(internalList, CHF.SHA2_256) {
+		}
+
+		public MerkleListAdapter(IExtendedList<TItem> internalList, CHF hashAlgorithm)
+			: this(internalList, ItemSerializer<TItem>.Default, hashAlgorithm) {
+		}
+		public MerkleListAdapter(IItemSerializer<TItem> serializer, CHF hashAlgorithm) 
+			: this(new ExtendedList<TItem>(), serializer, hashAlgorithm) {
+		}
+
+		public MerkleListAdapter(IExtendedList<TItem> internalList, IItemSerializer<TItem> serializer, CHF hashAlgorithm)
+			: this(internalList, new ItemHasher<TItem>(hashAlgorithm, serializer), new FlatMerkleTree(hashAlgorithm)) {
+		}
+
+		public MerkleListAdapter(IExtendedList<TItem> internalList, IItemHasher<TItem> hasher, IUpdateableMerkleTree merkleTreeImpl) 
 			: base(internalList) {
 			_hasher = hasher;
 			_merkleTree = merkleTreeImpl;

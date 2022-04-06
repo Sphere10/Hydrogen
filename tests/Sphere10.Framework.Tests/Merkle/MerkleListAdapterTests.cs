@@ -11,18 +11,18 @@ namespace Sphere10.Framework.Tests {
 
 	[TestFixture]
 	[Parallelizable(ParallelScope.Children)]
-	public class MerkleListTests {
+	public class MerkleListAdapterTests {
 
 		[Test]
 		public void CRUD() {
-			var expected = new MerkleList<string>(new StringSerializer(Encoding.UTF8), CHF.SHA2_256) { 
+			var expected = new MerkleListAdapter<string>(new StringSerializer(Encoding.UTF8), CHF.SHA2_256) { 
 				"Alpha",
 				"Beta",
 				"Gamma"
 			};
 
 
-			var test = new MerkleList<string>(new StringSerializer(Encoding.UTF8), CHF.SHA2_256) {
+			var test = new MerkleListAdapter<string>(new StringSerializer(Encoding.UTF8), CHF.SHA2_256) {
 				"Alpha",
 				"Beta",
 				"Gamma"

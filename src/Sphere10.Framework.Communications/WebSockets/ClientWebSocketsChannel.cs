@@ -82,7 +82,7 @@ namespace Sphere10.Framework.Communications {
 					Id = Encoding.ASCII.GetString(memoryStream.ToArray());
 				}
 
-SystemLog.Info($"ID has been Set: {Id}");
+SystemLog.Info($"ID: {Id}");
 			}
 			catch (Exception ex) {
 				
@@ -105,7 +105,7 @@ SystemLog.Info($"ID has been Set: {Id}");
 
 		protected override async Task<byte[]> ReceiveBytesInternal(CancellationToken cancellationToken) {
 
-SystemLog.Info($"ReceiveBytesInternal()");
+//SystemLog.Info($"ReceiveBytesInternal()");
 
 			var buffer = new byte[1024];
 

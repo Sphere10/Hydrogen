@@ -171,84 +171,84 @@
 
 @code {
 
-/*
-    public class DataSource1<TItem> : IDataSource<TestClass>
-    {
-        List<TestClass> AllItems = new List<TestClass>();
+            /*
+            public class DataSource1<TItem> : IDataSource<TestClass>
+                {
+            List<TestClass> AllItems = new List<TestClass>();
 
-        public event EventHandlerEx<DataSourceMutatedItems<TestClass>> MutatedItems;
+                public event EventHandlerEx<DataSourceMutatedItems<TestClass>> MutatedItems;
 
         public void RefreshData()
         {
-            AllItems = LoadData(73);
-        }
-
-        // create some dummy data
-        public DataSource1()
-        {
-            RefreshData();
-        }
-
-        event EventHandlerEx<DataSourceMutatedItems<TestClass>> IDataSource<TestClass>.MutatedItems {
-            add {
-                throw new NotImplementedException();
+        AllItems = LoadData(73);
             }
 
-            remove {
-                throw new NotImplementedException();
-            }
-        }
-
-        static List<TestClass> LoadData(int size)
-        {
-            var testData = new List<TestClass>();
-
-            for (int i = 0; i < size; i++)
+            // create some dummy data
+            public DataSource1()
             {
-                var testObject = new TestClass();
+                RefreshData();
+                }
+
+                event EventHandlerEx<DataSourceMutatedItems<TestClass>> IDataSource<TestClass>.MutatedItems {
+                add {
+            throw new NotImplementedException();
+        }
+
+        remove {
+        throw new NotImplementedException();
+        }
+            }
+
+            static List<TestClass> LoadData(int size)
+        {
+        var testData = new List<TestClass>();
+
+        for (int i = 0; i < size; i++)
+            {
+            var testObject = new TestClass();
                 testObject.FillWithTestData(i);
                 testData.Add(testObject);
             }
 
-            return testData;
+        return testData;
         }
 
         public async Task Create(IEnumerable<TestClass> entities)
-        {
-            AllItems.AddRange(entities);
-        }
-
-        public async Task Delete(IEnumerable<TestClass> entities)
-        {
-            foreach (var entity in entities)
             {
+            AllItems.AddRange(entities);
+            }
+
+            public async Task Delete(IEnumerable<TestClass> entities)
+            {
+            foreach (var entity in entities)
+                {
                 var index = AllItems.IndexOf(entity);
                 if (index >= 0) AllItems.RemoveAt(index);
-            }
-        }
+                }
+                }
 
-        public Task<IEnumerable<TestClass>> New(int count)
-        {
+                public Task<IEnumerable<TestClass>> New(int count)
+            {
             var returnList = new List<TestClass>();
             var newId = AllItems.Max(x => x.Id) + 1;
 
-            for (int i = 0; i < count; i++)
-            {
-                var newEntity = new TestClass();
-                newEntity.FillWithTestData(newId++);
-                AllItems.Add(newEntity);
-                returnList.Add(newEntity);
-            }
-
-            return Task.FromResult((IEnumerable<TestClass>)returnList);
+        for (int i = 0; i < count; i++)
+        {
+        var newEntity = new TestClass();
+        newEntity.FillWithTestData(newId++);
+        AllItems.Add(newEntity);
+        returnList.Add(newEntity);
         }
 
-        //void New(int count) {
-        //    throw new NotImplementedException();
-        //}
+            return Task.FromResult((IEnumerable<TestClass>)returnList);
+            }
 
-        public Task<IEnumerable<TestClass>> Read(string searchTerm, int pageLength, ref int page, string sortProperty, SortDirection sortDirection, out int totalItems)
-        {
+            //void New(int count) {
+            //    throw new NotImplementedException();
+            //}
+
+            public Task<IEnumerable<TestClass>> Read(string searchTerm, int pageLength, ref int page, string sortProperty, SortDirection sortDirection, out int totalItems)
+            {
             // make sure the requested page is logical
             if (page < 0) page = 0;
             else if (page > AllItems.Count / pageLength) page = AllItems.Count / pageLength;
@@ -258,38 +258,38 @@
             // the last page might not have a full [page of data
             if (startIndex + pageLength >= AllItems.Count) pageLength = AllItems.Count - startIndex;
 
-            var items = (IEnumerable<TestClass>)AllItems.GetRange(startIndex, pageLength);
+        var items = (IEnumerable<TestClass>)AllItems.GetRange(startIndex, pageLength);
 
             totalItems = AllItems.Count();
-            return Task.FromResult(items);
+        return Task.FromResult(items);
 
-            //return Task.Run(() => (IEnumerable<TestClass>)AllItems.GetRange(startIndex, pageLength));
-        }
-
-        public Task Refresh(TestClass[] entity)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task Update(IEnumerable<TestClass> entities)
-        {
-            var test = entities.ToArray()[0].ToString();
-
-            return Task.Run(() =>
-            {
-                foreach (var entity in entities)
-                {
-                    for (int i = 0; i < AllItems.Count; i++)
-                    {
-                        if (AllItems[i].Id == entity.Id)
-                        {
-                            AllItems[i] = entity;
-                            break;
-                        }
-                    }
-                }
+        //return Task.Run(() => (IEnumerable<TestClass>)AllItems.GetRange(startIndex, pageLength));
             }
-            );
+
+            public Task Refresh(TestClass[] entity)
+                {
+                throw new NotImplementedException();
+                    }
+
+                    public Task Update(IEnumerable<TestClass> entities)
+                    {
+                        var test = entities.ToArray()[0].ToString();
+
+                        return Task.Run(() =>
+                            {
+                            foreach (var entity in entities)
+                            {
+                        for (int i = 0; i < AllItems.Count; i++)
+                {
+            if (AllItems[i].Id == entity.Id)
+        {
+        AllItems[i] = entity;
+        break;
+            }
+            }
+        }
+        }
+        );
         }
 
         public Task<Result> Validate(IEnumerable<(TestClass entity, CrudAction action)> actions)
@@ -298,16 +298,16 @@
         }
 
         Task IDataSource<TestClass>.Create(IEnumerable<TestClass> entities) {
-            throw new NotImplementedException();
+        throw new NotImplementedException();
         }
 
-        Task<IEnumerable<TestClass>> IDataSource<TestClass>.Read(string searchTerm, int pageLength, ref int page, string sortProperty, SortDirection sortDirection, out int totalItems) {
+            Task<IEnumerable<TestClass>> IDataSource<TestClass>.Read(string searchTerm, int pageLength, ref int page, string sortProperty, SortDirection sortDirection, out int totalItems) {
             throw new NotImplementedException();
         }
 
 //        IEnumerable<TestClass> IDataSource<TestClass>.ReadSync(string searchTerm, int pageLength, ref int page, string sortProperty, SortDirection sortDirection, out int totalItems) {
-//           throw new NotImplementedException();
-//        }
+            //           throw new NotImplementedException();
+        //        }
 
         Task IDataSource<TestClass>.Refresh(TestClass[] entities) {
             throw new NotImplementedException();
@@ -318,40 +318,40 @@
         }
 
         Task IDataSource<TestClass>.Delete(IEnumerable<TestClass> entities) {
-            throw new NotImplementedException();
-        }
+        throw new NotImplementedException();
+            }
 
-        Task<Result> IDataSource<TestClass>.Validate(IEnumerable<(TestClass entity, CrudAction action)> actions) {
+            Task<Result> IDataSource<TestClass>.Validate(IEnumerable<(TestClass entity, CrudAction action)> actions) {
             throw new NotImplementedException();
-        }
+            }
 
 
         void IDataSource<TestClass>.NewDelayed(int count) {
-            throw new NotImplementedException();
-        }
+        throw new NotImplementedException();
+            }
 
-        void IDataSource<TestClass>.CreateDelayed(IEnumerable<TestClass> entities) {
-            throw new NotImplementedException();
+            void IDataSource<TestClass>.CreateDelayed(IEnumerable<TestClass> entities) {
+        throw new NotImplementedException();
         }
 
         void IDataSource<TestClass>.ReadDelayed(string searchTerm, int pageLength, int page, string sortProperty, SortDirection sortDirection) {
-            throw new NotImplementedException();
+        throw new NotImplementedException();
         }
 
-        void IDataSource<TestClass>.RefreshDelayed(IEnumerable<TestClass> entities) {
-            throw new NotImplementedException();
+            void IDataSource<TestClass>.RefreshDelayed(IEnumerable<TestClass> entities) {
+        throw new NotImplementedException();
         }
 
         void IDataSource<TestClass>.UpdateDelayed(IEnumerable<TestClass> entities) {
-            throw new NotImplementedException();
+        throw new NotImplementedException();
         }
 
         void IDataSource<TestClass>.DeleteDelayed(IEnumerable<TestClass> entities) {
-            throw new NotImplementedException();
+        throw new NotImplementedException();
         }
 
         void IDataSource<TestClass>.ValidateDelayed(IEnumerable<(TestClass entity, CrudAction action)> actions) {
-            throw new NotImplementedException();
+        throw new NotImplementedException();
         }
 
         void IDataSource<TestClass>.CountDelayed() {
@@ -362,18 +362,18 @@
 
         Task<int> IDataSource<TestClass>.Count => throw new NotImplementedException();
     }
-*/
+    */
 
-        /*
-        public class DataSource2<TItem> : IDataSource<TestClass> {
-        //List<TestClass> AllItems = new List<TestClass>();
+    /*
+    public class DataSource2<TItem> : IDataSource<TestClass> {
+    //List<TestClass> AllItems = new List<TestClass>();
 
-            //public void RefreshData() {
-        //    AllItems = LoadData(73);
-        //}
+        //public void RefreshData() {
+    //    AllItems = LoadData(73);
+    //}
 
-        // create some dummy data
-        public DataSource2() {
+    // create some dummy data
+    public DataSource2() {
     //RefreshData();
     }
 
@@ -382,34 +382,34 @@
 
     //    for (int i = 0; i < size; i++) {
     //        var testObject = new TestClass();
-        //        testObject.FillWithTestData(i);
-        //        testData.Add(testObject);
+    //        testObject.FillWithTestData(i);
+    //        testData.Add(testObject);
     //    }
 
     //    return testData;
-        //}
+    //}
 
-        public async Task Create(IEnumerable<TestClass> entities) {
-        //    AllItems.AddRange(entities);
-        }
+    public async Task Create(IEnumerable<TestClass> entities) {
+    //    AllItems.AddRange(entities);
+    }
 
-        public async Task Delete(IEnumerable<TestClass> entities) {
+    public async Task Delete(IEnumerable<TestClass> entities) {
     //    foreach (var entity in entities) {
-        //        var index = AllItems.IndexOf(entity);
-        //        if (index >= 0) AllItems.RemoveAt(index);
-        //    }
-        }
+    //        var index = AllItems.IndexOf(entity);
+    //        if (index >= 0) AllItems.RemoveAt(index);
+    //    }
+    }
 
-        public IEnumerable<TestClass> New(int count) {
+    public IEnumerable<TestClass> New(int count) {
 
-        //var returnList = new List<TestClass>();
-        //var newId = AllItems.Max(x => x.Id) + 1;
+    //var returnList = new List<TestClass>();
+    //var newId = AllItems.Max(x => x.Id) + 1;
 
-        //for (int i = 0; i < count; i++) {
-        //    var newEntity = new TestClass();
-        //    newEntity.FillWithTestData(newId++);
-        //    AllItems.Add(newEntity);
-        //    returnList.Add(newEntity);
+    //for (int i = 0; i < count; i++) {
+    //    var newEntity = new TestClass();
+    //    newEntity.FillWithTestData(newId++);
+    //    AllItems.Add(newEntity);
+    //    returnList.Add(newEntity);
     //}
 
     //return returnList;
@@ -419,21 +419,21 @@
 
     public Task<IEnumerable<TestClass>> Read(string searchTerm, int pageLength, ref int page, string sortProperty, SortDirection sortDirection, out int totalItems) {
 
-        // make sure the requested page is logical
-        //            if (page < 0) page = 0;
-        //            else if (page > AllItems.Count / pageLength) page = AllItems.Count / pageLength;
+    // make sure the requested page is logical
+    //            if (page < 0) page = 0;
+    //            else if (page > AllItems.Count / pageLength) page = AllItems.Count / pageLength;
 
-        //            var startIndex = pageLength * page;
+    //            var startIndex = pageLength * page;
 
-        // the last page might not have a full [page of data
-        //            if (startIndex + pageLength >= AllItems.Count) pageLength = AllItems.Count - startIndex;
+    // the last page might not have a full [page of data
+    //            if (startIndex + pageLength >= AllItems.Count) pageLength = AllItems.Count - startIndex;
 
-        //            var items = (IEnumerable<TestClass>)AllItems.GetRange(startIndex, pageLength);
+    //            var items = (IEnumerable<TestClass>)AllItems.GetRange(startIndex, pageLength);
 
-        //            totalItems = AllItems.Count();
-        //            return Task.FromResult(items);
+    //            totalItems = AllItems.Count();
+    //            return Task.FromResult(items);
 
-        //return Task.Run(() => (IEnumerable<TestClass>)AllItems.GetRange(startIndex, pageLength));
+    //return Task.Run(() => (IEnumerable<TestClass>)AllItems.GetRange(startIndex, pageLength));
 
     throw new NotImplementedException();
     }
@@ -442,19 +442,19 @@
     throw new NotImplementedException();
     }
 
-        public Task Update(IEnumerable<TestClass> entities) {
-        //var test = entities.ToArray()[0].ToString();
+    public Task Update(IEnumerable<TestClass> entities) {
+    //var test = entities.ToArray()[0].ToString();
 
-        //return Task.Run(() => {
-        //    foreach (var entity in entities) {
-        //        for (int i = 0; i < AllItems.Count; i++) {
-        //            if (AllItems[i].Id == entity.Id) {
-        //                AllItems[i] = entity;
-        //                break;
-        //            }
-        //        }
-        //    }
-        //}
+    //return Task.Run(() => {
+    //    foreach (var entity in entities) {
+    //        for (int i = 0; i < AllItems.Count; i++) {
+    //            if (AllItems[i].Id == entity.Id) {
+    //                AllItems[i] = entity;
+    //                break;
+    //            }
+    //        }
+    //    }
+    //}
         //);
     throw new NotImplementedException();
     }
@@ -532,12 +532,15 @@
     {
         SystemLog.RegisterLogger(new WebLogger(WriteOutput));
 
-        //DataSource = new Index.DataSource1<TestClass>();
         // LAN
-        WebDataSource = new ClientWebSocketsDataSource<TestClass>("ws://192.168.1.171:80/service", false);
+        var connectionString = "ws://192.168.1.171:80/service";
         // WIFI
-        //WebDataSource = new ClientWebSocketsDataSource<TestClass>("ws://192.168.1.106:80/service", false);
-SystemLog.Info($"ClientWebSocketsDataSource Created");
+        //var connectionString = "ws://192.168.1.106:80/service";
+        // Virtual Machine
+        //var connectionString = "ws://192.168.1.108:80/service";
+        WebDataSource = new ClientWebSocketsDataSource<TestClass>(connectionString, false);
+
+//SystemLog.Info($"ClientWebSocketsDataSource Created");
 
         //DataActions.Add(new GridAction<TestClass>("Action1", Action1, "😄", IsAction1Available));
         DataActions.Add(new GridAction<TestClass>("Action2", Action2, "⚽", IsAction2Available));

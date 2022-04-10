@@ -18,8 +18,14 @@ using System.Linq;
 
 namespace Sphere10.Framework {
 	/// <summary>
-	/// A memory stream that writes to an underlying <see cref="IBuffer"/>.
+	/// A stream that writes to an underlying <see cref="IBuffer"/> rather than a byte array (as <see cref="MemoryStream"/> does).
+	/// The purpose of this class is to provide a Stream similar in principle to a  <see cref="MemoryStream"/> but whose underlying storage of bytes
+	/// is decoupled from "contiguous block of memory". Example use cases include the ability to construct an arbitrarily large memory stream (by passing in an <see cref="MemoryPagedBuffer"/>) whose
+	/// contents are file-swapped automatically. The ability to construct a logical memory stream from a multitude of byte-fragments (via <see cref="FragmentedStream"/>).
 	/// </summary>
+	/// <remarks><see cref="ExtendedMemoryStream"/>'s are used extensively throughout the Hydrogen Framework in particular as an internal mechanism to facilitate
+	/// memory paged, clustered, stream mapped and merkleized collections.
+	/// </remarks>
 	public class ExtendedMemoryStream : Stream, ILoadable {
 		public event EventHandlerEx<object> Loading;
 		public event EventHandlerEx<object> Loaded;
@@ -33,10 +39,10 @@ namespace Sphere10.Framework {
 		}
 
 		public ExtendedMemoryStream(IBuffer source, bool disposeSource = false) {
+			Guard.Argument(!disposeSource || source is IDisposable, nameof(source), "Not a disposable buffer");
 			_source = source;
 			_position = 0;
 			_disposeSource = disposeSource;
-
 		}
 
 		public bool RequiresLoad => _source is ILoadable { RequiresLoad: true };
@@ -56,11 +62,11 @@ namespace Sphere10.Framework {
 		public override bool CanWrite => true;
 
 		public override void Flush() {
-			if (_source is IMemoryPagedList<byte> memPagedList)
+			if (_source is IMemoryPagedList<byte> memPagedList) // TODO: add Flushable abstraction?
 				memPagedList.Flush();
 		}
 
-		public override long Length => RequiresLoad ? -1 : _source.Count;
+		public override long Length => RequiresLoad ? throw new InvalidOperationException("Stream is not loaded") : _source.Count;
 
 		public override long Position {
 			get => _position;

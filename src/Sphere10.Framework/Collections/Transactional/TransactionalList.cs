@@ -24,7 +24,7 @@ namespace Sphere10.Framework {
 		public event EventHandlerEx<object> RolledBack { add => _transactionalBuffer.RolledBack += value; remove => _transactionalBuffer.RolledBack -= value; }
 
 		private readonly TransactionalFileMappedBuffer _transactionalBuffer;
-		private readonly ClusteredList<T> _clustered;
+		private readonly StreamMappedList<T> _clustered;
 		private readonly SynchronizedExtendedList<T> _items;
 		private bool _disposed;
 
@@ -57,7 +57,7 @@ namespace Sphere10.Framework {
 			if (_transactionalBuffer.RequiresLoad)
 				_transactionalBuffer.Load();
 
-			_clustered = new ClusteredList<T>(
+			_clustered = new StreamMappedList<T>(
 				new ExtendedMemoryStream(
 					_transactionalBuffer,
 					disposeSource: true

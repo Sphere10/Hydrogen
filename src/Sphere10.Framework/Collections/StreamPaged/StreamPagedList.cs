@@ -7,7 +7,7 @@ using System.Linq;
 namespace Sphere10.Framework {
 
 	/// <summary>
-	/// A list whose items are mapped onto a stream via contiguous pages. Items can only be added/removed from the end of the stream (unlike <see cref="ClusteredList{TItem,THeader,TRecord}"/>).
+	/// A list whose items are mapped onto a stream via contiguous pages. Items can only be added/removed from the end of the stream (unlike <see cref="StreamMappedList{TItem}"/>).
 	/// </summary>
 	/// <remarks>
 	/// List Serialization Format

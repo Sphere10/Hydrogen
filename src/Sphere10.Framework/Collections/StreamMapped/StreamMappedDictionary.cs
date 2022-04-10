@@ -9,7 +9,7 @@ using System.Linq;
 namespace Sphere10.Framework {
 
 	/// <summary>
-	/// A dictionary whose keys and values are mapped over a stream as a <see cref="ClusteredList{TItem}"/> of <see cref="KeyValuePair{TKey, TValue}"/>. A checksum of the key
+	/// A dictionary whose keys and values are mapped over a stream as a <see cref="StreamMappedList{TItem}"/> of <see cref="KeyValuePair{TKey, TValue}"/>. A checksum of the key
 	/// is kept in clustered record for fast lookup. 
 	///
 	/// IMPORTANT: Item deletions areWhen deleting a key, it's listing record is marked as unused and re-used later for efficiency.
@@ -18,20 +18,20 @@ namespace Sphere10.Framework {
 	/// <typeparam name="TValue">The type of value stored in the dictionary</typeparam>
 	/// <remarks>When deleting an item the underlying <see cref="ClusteredStreamRecord"/> is marked nullified but retained and re-used in later calls to <see cref="Add(TKey,TValue)"/>.</remarks>
 	// TODO: there are some memory-blowout lookups in this class that need to be refactored out (should be safe for non-huge dictionaries).
-	public class ClusteredDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>, IClusteredDictionary<TKey, TValue>, ILoadable {
+	public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>, IStreamMappedDictionary<TKey, TValue>, ILoadable {
 		public event EventHandlerEx<object> Loading;
 		public event EventHandlerEx<object> Loaded;
 
-		private readonly IClusteredList<KeyValuePair<TKey, TValue>> _kvpStore;
+		private readonly IStreamMappedList<KeyValuePair<TKey, TValue>> _kvpStore;
 		private readonly IEqualityComparer<TKey> _keyComparer;
 		private readonly IEqualityComparer<TValue> _valueComparer;
 		private readonly IItemChecksum<TKey> _keyChecksum;
 		private readonly LookupEx<int, int> _checksumToIndexLookup;
 		private readonly SortedList<int> _unusedRecords;
 
-		public ClusteredDictionary(Stream rootStream, int clusterSize, IItemSerializer<TKey> keySerializer, IItemSerializer<TValue> valueSerializer, IItemChecksum<TKey> keyChecksum = null, IEqualityComparer<TKey> keyComparer = null, IEqualityComparer<TValue> valueComparer = null, ClusteredStoragePolicy policy = ClusteredStoragePolicy.DictionaryDefault, int reservedRecords = 0, Endianness endianness = Endianness.LittleEndian)
+		public StreamMappedDictionary(Stream rootStream, int clusterSize, IItemSerializer<TKey> keySerializer, IItemSerializer<TValue> valueSerializer, IItemChecksum<TKey> keyChecksum = null, IEqualityComparer<TKey> keyComparer = null, IEqualityComparer<TValue> valueComparer = null, ClusteredStoragePolicy policy = ClusteredStoragePolicy.DictionaryDefault, int reservedRecords = 0, Endianness endianness = Endianness.LittleEndian)
 			: this(
-				new ClusteredList<KeyValuePair<TKey, TValue>>(
+				new StreamMappedList<KeyValuePair<TKey, TValue>>(
 					rootStream,
 					clusterSize,
 					new KeyValuePairSerializer<TKey, TValue>(
@@ -51,10 +51,10 @@ namespace Sphere10.Framework {
 				keyComparer,
 				valueComparer
 			) {
-			Guard.Argument(policy.HasFlag(ClusteredStoragePolicy.TrackChecksums), nameof(policy), $"Checksum tracking must be enabled in {nameof(ClusteredDictionary<TKey, TValue>)} implementations.");
+			Guard.Argument(policy.HasFlag(ClusteredStoragePolicy.TrackChecksums), nameof(policy), $"Checksum tracking must be enabled in {nameof(StreamMappedDictionary<TKey, TValue>)} implementations.");
 		}
 
-		public ClusteredDictionary(IClusteredList<KeyValuePair<TKey, TValue>> kvpStore, IItemChecksum<TKey> keyChecksum = null, IEqualityComparer<TKey> keyComparer = null, IEqualityComparer<TValue> valueComparer = null) {
+		public StreamMappedDictionary(IStreamMappedList<KeyValuePair<TKey, TValue>> kvpStore, IItemChecksum<TKey> keyChecksum = null, IEqualityComparer<TKey> keyComparer = null, IEqualityComparer<TValue> valueComparer = null) {
 			Guard.ArgumentNotNull(kvpStore, nameof(kvpStore));
 			_keyComparer = keyComparer ?? EqualityComparer<TKey>.Default;
 			_valueComparer = valueComparer ?? EqualityComparer<TValue>.Default;
@@ -337,7 +337,7 @@ namespace Sphere10.Framework {
 
 		private void CheckLoaded() {
 			if (RequiresLoad)
-				throw new InvalidOperationException($"{nameof(ClusteredDictionary<TKey, TValue>)} has not been loaded");
+				throw new InvalidOperationException($"{nameof(StreamMappedDictionary<TKey, TValue>)} has not been loaded");
 		}
 
 		private void NotifyLoading() {

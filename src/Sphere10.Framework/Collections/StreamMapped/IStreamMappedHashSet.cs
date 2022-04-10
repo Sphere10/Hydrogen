@@ -2,6 +2,6 @@
 
 namespace Sphere10.Framework;
 
-public interface IClusteredHashSet<TItem> : ISet<TItem> {
+public interface IStreamMappedHashSet<TItem> : ISet<TItem> {
 	IClusteredStorage Storage { get; }
 }

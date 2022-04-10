@@ -11,8 +11,8 @@ namespace Sphere10.Framework;
 /// <typeparam name="TItem"></typeparam>
 public class MerkleListAdapter<TItem, TList> : ExtendedListDecorator<TItem, TList>, IMerkleList<TItem> 
 	where TList : IExtendedList<TItem> {
-	private readonly IItemHasher<TItem> _hasher;
-	private readonly IUpdateableMerkleTree _merkleTree;
+	protected readonly IItemHasher<TItem> ItemHasher;
+	protected readonly IUpdateableMerkleTree InternalMerkleTree;
 
 	public MerkleListAdapter(TList internalList)
 		: this(internalList, CHF.SHA2_256) {
@@ -28,42 +28,42 @@ public class MerkleListAdapter<TItem, TList> : ExtendedListDecorator<TItem, TLis
 
 	public MerkleListAdapter(TList internalList, IItemHasher<TItem> hasher, IUpdateableMerkleTree merkleTreeImpl)
 		: base(internalList) {
-		_hasher = hasher;
-		_merkleTree = merkleTreeImpl;
+		ItemHasher = hasher;
+		InternalMerkleTree = merkleTreeImpl;
 	}
 
-	public IMerkleTree MerkleTree => _merkleTree;
+	public IMerkleTree MerkleTree => InternalMerkleTree;
 
 	public override void Add(TItem item) {
-		_merkleTree.Leafs.Add(_hasher.Hash(item));
+		InternalMerkleTree.Leafs.Add(ItemHasher.Hash(item));
 		base.Add(item);
 	}
 
 	public override void AddRange(IEnumerable<TItem> items) {
 		var itemsArr = items as TItem[] ?? items.ToArray();
-		_merkleTree.Leafs.AddRange(itemsArr.Select(_hasher.Hash));
+		InternalMerkleTree.Leafs.AddRange(itemsArr.Select(ItemHasher.Hash));
 		base.AddRange(itemsArr);
 	}
 
 	public override void Update(int index, TItem item) {
-		_merkleTree.Leafs.Update(index, _hasher.Hash(item));
+		InternalMerkleTree.Leafs.Update(index, ItemHasher.Hash(item));
 		base.Update(index, item);
 	}
 
 	public override void UpdateRange(int fromIndex, IEnumerable<TItem> leafs) {
 		var leafsArr = leafs as TItem[] ?? leafs.ToArray();
-		_merkleTree.Leafs.UpdateRange(fromIndex, leafsArr.Select(_hasher.Hash));
+		InternalMerkleTree.Leafs.UpdateRange(fromIndex, leafsArr.Select(ItemHasher.Hash));
 		base.UpdateRange(fromIndex, leafsArr);
 	}
 
 	public override void Insert(int index, TItem item) {
-		_merkleTree.Leafs.Insert(index, _hasher.Hash(item));
+		InternalMerkleTree.Leafs.Insert(index, ItemHasher.Hash(item));
 		base.Insert(index, item);
 	}
 
 	public override void InsertRange(int index, IEnumerable<TItem> leafs) {
 		var leafsArr = leafs as TItem[] ?? leafs.ToArray();
-		_merkleTree.Leafs.InsertRange(index, leafsArr.Select(_hasher.Hash));
+		InternalMerkleTree.Leafs.InsertRange(index, leafsArr.Select(ItemHasher.Hash));
 		base.InsertRange(index, leafsArr);
 	}
 
@@ -76,7 +76,7 @@ public class MerkleListAdapter<TItem, TList> : ExtendedListDecorator<TItem, TLis
 	}
 
 	public override void RemoveAt(int index) {
-		_merkleTree.Leafs.RemoveAt(index);
+		InternalMerkleTree.Leafs.RemoveAt(index);
 		base.RemoveAt(index);
 	}
 
@@ -84,13 +84,13 @@ public class MerkleListAdapter<TItem, TList> : ExtendedListDecorator<TItem, TLis
 		=> items.Select(Remove).ToArray();
 
 	public override void RemoveRange(int fromIndex, int count) {
-		_merkleTree.Leafs.RemoveRange(fromIndex, count);
+		InternalMerkleTree.Leafs.RemoveRange(fromIndex, count);
 		base.RemoveRange(fromIndex, count);
 	}
 
 	public override void Clear() {
 		base.Clear();
-		_merkleTree.Leafs.Clear();
+		InternalMerkleTree.Leafs.Clear();
 	}
 
 }

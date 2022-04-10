@@ -4,8 +4,8 @@ using System.Runtime.InteropServices;
 namespace Sphere10.Framework;
 
 public class PrimitiveSerializer<T> : StaticSizeItemSerializerBase<T> {
-	readonly Action<EndianBinaryWriter, T> _writePrimitive;
-	readonly Func<EndianBinaryReader, T> _readPrimitive;
+	private readonly Action<EndianBinaryWriter, T> _writePrimitive;
+	private readonly Func<EndianBinaryReader, T> _readPrimitive;
 
 	public PrimitiveSerializer() 
 		: base(Tools.Memory.SizeOfPrimitive(typeof(T))) {

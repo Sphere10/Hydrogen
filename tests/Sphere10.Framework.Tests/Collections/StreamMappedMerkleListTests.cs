@@ -13,6 +13,11 @@ namespace Sphere10.Framework.Tests {
 	[Parallelizable(ParallelScope.Children)]
 	public class StreamMappedMerkleListTests : MerkleListTestsBase {
 
+		[Test]
+		public void TestAdaptedScopes() {
+			Assert.That(true, Is.False);
+		}
+
 		protected override IDisposable CreateMerkleList(out IMerkleList<string> merkleList) {
 			var memStream = new MemoryStream();
 			var clusteredList = new StreamMappedMerkleList<string>(memStream, 256, DefaultCHF);

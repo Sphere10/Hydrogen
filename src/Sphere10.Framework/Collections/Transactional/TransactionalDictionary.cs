@@ -23,7 +23,7 @@ namespace Sphere10.Framework {
 		public event EventHandlerEx<object> RolledBack { add => _transactionalBuffer.RolledBack += value; remove => _transactionalBuffer.RolledBack -= value; }
 
 		private readonly TransactionalFileMappedBuffer _transactionalBuffer;
-		private readonly ClusteredDictionary<TKey, TValue> _clustered;
+		private readonly StreamMappedDictionary<TKey, TValue> _clustered;
 		private readonly SynchronizedDictionary<TKey, TValue> _dictionary;
 		private bool _disposed;
 
@@ -55,7 +55,7 @@ namespace Sphere10.Framework {
 			if (_transactionalBuffer.RequiresLoad)
 				_transactionalBuffer.Load();
 
-			_clustered = new ClusteredDictionary<TKey, TValue>(
+			_clustered = new StreamMappedDictionary<TKey, TValue>(
 				new ExtendedMemoryStream(
 					_transactionalBuffer,
 					disposeSource: true

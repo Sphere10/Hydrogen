@@ -13,14 +13,14 @@ namespace Sphere10.Framework {
 	/// A list whose items are persisted via an <see cref="IClusteredStorage"/>.
 	/// </summary>
 	/// <typeparam name="TItem"></typeparam>
-	public class ClusteredList<TItem> : SingularListBase<TItem>, IClusteredList<TItem> {
+	public class StreamMappedList<TItem> : SingularListBase<TItem>, IStreamMappedList<TItem> {
 		private int _version;
 
-		public ClusteredList(Stream rootStream, int clusterSize, IItemSerializer<TItem> itemSerializer = null, IEqualityComparer<TItem> itemComparer = null, ClusteredStoragePolicy policy = ClusteredStoragePolicy.Default, int recordKeySize = 0, int reservedRecords = 0, Endianness endianness = Endianness.LittleEndian)
+		public StreamMappedList(Stream rootStream, int clusterSize, IItemSerializer<TItem> itemSerializer = null, IEqualityComparer<TItem> itemComparer = null, ClusteredStoragePolicy policy = ClusteredStoragePolicy.Default, int recordKeySize = 0, int reservedRecords = 0, Endianness endianness = Endianness.LittleEndian)
 			: this(new ClusteredStorage(rootStream, clusterSize, policy, recordKeySize, reservedRecords, endianness), itemSerializer, itemComparer) {
 		}
 
-		public ClusteredList(IClusteredStorage storage, IItemSerializer<TItem> itemSerializer = null, IEqualityComparer<TItem> itemComparer = null) {
+		public StreamMappedList(IClusteredStorage storage, IItemSerializer<TItem> itemSerializer = null, IEqualityComparer<TItem> itemComparer = null) {
 			Guard.ArgumentNotNull(storage, nameof(storage));
 			Storage = storage;
 			ItemSerializer = itemSerializer ?? ItemSerializer<TItem>.Default;

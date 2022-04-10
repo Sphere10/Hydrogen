@@ -10,24 +10,24 @@ using System.Runtime.CompilerServices;
 namespace Sphere10.Framework {
 
 	/// <summary>
-	/// A set whose items are mapped over a stream as a <see cref="ClusteredList{TItem}"/>. A digest of the items are kept in the clustered record for fast lookup. 
+	/// A set whose items are mapped over a stream as a <see cref="StreamMappedList{TItem}"/>. A digest of the items are kept in the clustered record for fast lookup. 
 	///
 	/// </summary>
 	/// <remarks>When deleting an item the underlying <see cref="ClusteredStorageRecord"/> is marked nullified but retained and re-used in later calls to <see cref="Add(TItem)"/>.</remarks>
-	public class ClusteredHashSet<TItem> : SetBase<TItem>, ILoadable {
+	public class StreamMappedHashSet<TItem> : SetBase<TItem>, ILoadable {
 		public event EventHandlerEx<object> Loading { add => _itemStore.Loading += value; remove => _itemStore.Loading -= value; }
 		public event EventHandlerEx<object> Loaded { add => _itemStore.Loaded += value; remove => _itemStore.Loaded -= value; }
 
-		private readonly IClusteredDictionary<byte[], TItem> _itemStore;
+		private readonly IStreamMappedDictionary<byte[], TItem> _itemStore;
 		private readonly IItemHasher<TItem> _hasher;
 
-		public ClusteredHashSet(Stream rootStream, int clusterSize, IItemSerializer<TItem> serializer, CHF chf, IEqualityComparer<TItem> comparer = null, ClusteredStoragePolicy policy = ClusteredStoragePolicy.DictionaryDefault, int reservedRecords = 0, Endianness endianness = Endianness.LittleEndian)
+		public StreamMappedHashSet(Stream rootStream, int clusterSize, IItemSerializer<TItem> serializer, CHF chf, IEqualityComparer<TItem> comparer = null, ClusteredStoragePolicy policy = ClusteredStoragePolicy.DictionaryDefault, int reservedRecords = 0, Endianness endianness = Endianness.LittleEndian)
 			: this(rootStream, clusterSize, serializer, new ItemHasher<TItem>(chf, serializer), comparer, policy, reservedRecords, endianness) {
 		}
 
-		public ClusteredHashSet(Stream rootStream, int clusterSize, IItemSerializer<TItem> serializer, IItemHasher<TItem> hasher, IEqualityComparer<TItem> comparer = null, ClusteredStoragePolicy policy = ClusteredStoragePolicy.DictionaryDefault, int reservedRecords = 0, Endianness endianness = Endianness.LittleEndian)
+		public StreamMappedHashSet(Stream rootStream, int clusterSize, IItemSerializer<TItem> serializer, IItemHasher<TItem> hasher, IEqualityComparer<TItem> comparer = null, ClusteredStoragePolicy policy = ClusteredStoragePolicy.DictionaryDefault, int reservedRecords = 0, Endianness endianness = Endianness.LittleEndian)
 			: this(
-				new ClusteredDictionarySK<byte[], TItem>(
+				new StreamMappedDictionarySK<byte[], TItem>(
 					rootStream,
 					clusterSize,
 					new StaticSizeByteArraySerializer(hasher.DigestLength),
@@ -45,7 +45,7 @@ namespace Sphere10.Framework {
 			Guard.Argument(policy.HasFlag(ClusteredStoragePolicy.TrackChecksums), nameof(policy), $"Checksum tracking must be enabled in clustered dictionary implementations.");
 		}
 
-		public ClusteredHashSet(IClusteredDictionary<byte[], TItem> itemStore, IEqualityComparer<TItem> comparer, IItemHasher<TItem> hasher) 
+		public StreamMappedHashSet(IStreamMappedDictionary<byte[], TItem> itemStore, IEqualityComparer<TItem> comparer, IItemHasher<TItem> hasher) 
 			: base(comparer ?? EqualityComparer<TItem>.Default) {
 			_itemStore = itemStore;
 			_hasher = hasher;

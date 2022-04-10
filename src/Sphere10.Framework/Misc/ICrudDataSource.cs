@@ -14,6 +14,7 @@
 using System.Collections.Generic;
 
 namespace Sphere10.Framework {
+
 	public interface ICrudDataSource<TEntity>  {
 		TEntity New();
 		void Create(TEntity entity);

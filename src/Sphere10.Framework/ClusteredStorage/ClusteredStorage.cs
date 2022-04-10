@@ -10,15 +10,14 @@ using System.Threading;
 
 namespace Sphere10.Framework {
 
-	
-
 	/// <summary>
-	/// A container of dynamic <see cref="Stream"/>'s whose contents are multi-plexed across clusters within a root <see cref="Stream"/> similar in principle to a file-system.
-	/// Fundamentally, this class can function as a "virtual file system" allowing the user to store an arbitrary number of <see cref="Stream"/> and dynamically expand and shrink those streams at will.
-	/// The feature-set includes maintaining a digest of the streams within the stream headers. This allows construction of a <see cref="MerkleizedClusteredStorage" />.
+	/// A container of <see cref="Stream"/>'s whose contents are stored across clusters of data over a root <see cref="Stream"/> (similar in principle to how a file-system works).
+	/// Fundamentally, this class can function as a "virtual file system" allowing an arbitrary number of <see cref="Stream"/>'s to be stored (and changed). This class
+	/// also serves as the base container for implementations of <see cref="IStreamMappedList{TItem}"/>'s, <see cref="IStreamMappedDictionary{TKey,TValue}"/>'s and <see cref="IStreamMappedHashSet{TItem}"/>'s.
 	/// <typeparam name="TRecord">Type which maintains the stream record (customizable)</typeparam>
 	/// <typeparam name="THeader">Type which maintains the header of the stream storage (customizable)</typeparam>
 	/// <remarks>
+	/// The structure of the underlying stream is depicted below:
 	/// [HEADER] Version: 1, Cluster Size: 32, Total Clusters: 10, Records: 5
 	/// [Records]
 	///   0: [StreamRecord] Size: 60, Start Cluster: 3
@@ -39,8 +38,8 @@ namespace Sphere10.Framework {
 	///   9: [Cluster] Traits: Data, Prev: 3, Next: -1, Data: 594ebf3d9241c837ffa3dea9ab0e550516ad18ed0f7b9c000000000000000000
 	///
 	///  Notes:
-	///  - Header is fixed 256b, and can be expanded to include other data (passwords, merkle roots, etc)
-	///  - Clusters are bi-directionally linked, to allow dynamic re-sizing on the fly 
+	///  - Header is fixed 256b, and can be expanded to include other data (passwords, merkle roots, etc).
+	///  - Clusters are bi-directionally linked, to allow dynamic re-sizing on the fly. 
 	///  - Records contain the meta-data of all the streams and the entire records stream is also serialized over clusters.
 	///  - Cluster traits distinguish record clusters from stream clusters. 
 	///  - Cluster 0, when allocated, is always the first record cluster.

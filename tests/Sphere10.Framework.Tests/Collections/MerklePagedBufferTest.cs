@@ -27,7 +27,7 @@ namespace Sphere10.Framework.Tests {
 
     [TestFixture]
     [Parallelizable(ParallelScope.Children)]
-    public class MerkleBufferTest {
+    public class MerklePagedBufferTest {
 
         [Test]
         public void SingleByte([Values(1, 2, 1 << 18)] int pageSize, [Values(CHF.SHA2_256, CHF.Blake2b_128)] CHF chf, [Values] StorageType storage) {

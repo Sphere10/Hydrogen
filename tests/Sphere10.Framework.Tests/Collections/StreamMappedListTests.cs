@@ -10,12 +10,12 @@ namespace Sphere10.Framework.Tests {
 
 	[TestFixture]
 	[Parallelizable(ParallelScope.Children)]
-	public class ClusteredListTests : StreamPersistedTestsBase {
+	public class StreamMappedListTests : StreamPersistedTestsBase {
 		private const int ReservedRecordsInStorage = 11;
 
-		private IDisposable CreateList(ClusteredStoragePolicy policy, int reserved, out ClusteredList<TestObject> clusteredList) {
+		private IDisposable CreateList(ClusteredStoragePolicy policy, int reserved, out StreamMappedList<TestObject> clusteredList) {
 			var stream = new MemoryStream();
-			clusteredList = new ClusteredList<TestObject>(stream, 32, new TestObjectSerializer(), reservedRecords: reserved, policy: policy);
+			clusteredList = new StreamMappedList<TestObject>(stream, 32, new TestObjectSerializer(), reservedRecords: reserved, policy: policy);
 			return stream;
 		}
 
@@ -51,9 +51,9 @@ namespace Sphere10.Framework.Tests {
 	
 		[Test]
 		public void ConstructorArgumentsAreGuarded([ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy, [Values(0, ReservedRecordsInStorage)] int reserved) {
-			Assert.Throws<ArgumentNullException>(() => new ClusteredList<int>(null, 1, new PrimitiveSerializer<int>(), reservedRecords: reserved, policy: policy));
-			Assert.Throws<ArgumentNullException>(() => new ClusteredList<int>(new MemoryStream(), 1,  null, reservedRecords: reserved, policy: policy));
-			Assert.Throws<ArgumentOutOfRangeException>(() => new ClusteredList<int>(new MemoryStream(), 0, null, reservedRecords: reserved, policy: policy));
+			Assert.Throws<ArgumentNullException>(() => new StreamMappedList<int>(null, 1, new PrimitiveSerializer<int>(), reservedRecords: reserved, policy: policy));
+			Assert.DoesNotThrow(() => new StreamMappedList<int>(new MemoryStream(), 1,  null, reservedRecords: reserved, policy: policy));
+			Assert.Throws<ArgumentOutOfRangeException>(() => new StreamMappedList<int>(new MemoryStream(), 0, null, reservedRecords: reserved, policy: policy));
 		}
 
 		[Test]
@@ -61,7 +61,7 @@ namespace Sphere10.Framework.Tests {
 			var random = new Random(31337);
 			string[] inputs = Enumerable.Range(0, random.Next(5, 10)).Select(x => random.NextString(1, 100)).ToArray();
 			using var stream = new MemoryStream();
-			var list = new ClusteredList<string>(stream, 32, new StringSerializer(Encoding.UTF8), reservedRecords: reserved, policy: policy);
+			var list = new StreamMappedList<string>(stream, 32, new StringSerializer(Encoding.UTF8), reservedRecords: reserved, policy: policy);
 
 			list.AddRange(inputs);
 
@@ -77,7 +77,7 @@ namespace Sphere10.Framework.Tests {
 		[Test]
 		public void ReadRangeInvalidArguments([ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy, [Values(0, ReservedRecordsInStorage)] int reserved) {
 			using var stream = new MemoryStream();
-			var list = new ClusteredList<int>(stream, 1,  new PrimitiveSerializer<int>(), reservedRecords: reserved, policy: policy);
+			var list = new StreamMappedList<int>(stream, 1,  new PrimitiveSerializer<int>(), reservedRecords: reserved, policy: policy);
 			list.AddRange(999, 1000, 1001, 1002);
 
 			Assert.Throws<ArgumentOutOfRangeException>(() => _ = list.ReadRange(-1, 1).ToList());
@@ -87,7 +87,7 @@ namespace Sphere10.Framework.Tests {
 		[Test]
 		public void ReadRangeEmpty([ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy, [Values(0, ReservedRecordsInStorage)] int reserved) {
 			using var stream = new MemoryStream();
-			var list = new ClusteredList<int>(stream, 1,  new PrimitiveSerializer<int>(), reservedRecords: reserved, policy: policy);
+			var list = new StreamMappedList<int>(stream, 1,  new PrimitiveSerializer<int>(), reservedRecords: reserved, policy: policy);
 			list.AddRange(999, 1000, 1001, 1002);
 			Assert.IsEmpty(list.ReadRange(0, 0));
 
@@ -98,7 +98,7 @@ namespace Sphere10.Framework.Tests {
 		[Test]
 		public void AddRangeEmptyNullStrings([ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy, [Values(0, ReservedRecordsInStorage)] int reserved) {
 			using var stream = new MemoryStream();
-			var list = new ClusteredList<string>(stream, 32,  new StringSerializer(Encoding.UTF8), reservedRecords: reserved, policy: policy);
+			var list = new StreamMappedList<string>(stream, 32,  new StringSerializer(Encoding.UTF8), reservedRecords: reserved, policy: policy);
 			string[] input = { string.Empty, null, string.Empty, null };
 			list.AddRange(input);
 			Assert.AreEqual(4, list.Count);
@@ -110,7 +110,7 @@ namespace Sphere10.Framework.Tests {
 		[Test]
 		public void AddRangeNullEmptyCollections([ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy, [Values(0, ReservedRecordsInStorage)] int reserved) {
 			using var stream = new MemoryStream();
-			var list = new ClusteredList<string>(stream, 32,  new StringSerializer(Encoding.UTF8), reservedRecords: reserved, policy: policy);
+			var list = new StreamMappedList<string>(stream, 32,  new StringSerializer(Encoding.UTF8), reservedRecords: reserved, policy: policy);
 			Assert.Throws<ArgumentNullException>(() => list.AddRange(null));
 			Assert.DoesNotThrow(() => list.AddRange(new string[0]));
 		}
@@ -120,7 +120,7 @@ namespace Sphere10.Framework.Tests {
 			var random = new Random(31337);
 			string[] inputs = Enumerable.Range(0, random.Next(1, 100)).Select(x => random.NextString(1, 100)).ToArray();
 			using var stream = new MemoryStream();
-			var list = new ClusteredList<string>(stream, 32,  new StringSerializer(Encoding.UTF8), reservedRecords: reserved, policy: policy);
+			var list = new StreamMappedList<string>(stream, 32,  new StringSerializer(Encoding.UTF8), reservedRecords: reserved, policy: policy);
 
 			list.AddRange(inputs);
 
@@ -134,7 +134,7 @@ namespace Sphere10.Framework.Tests {
 		[Test]
 		public void UpdateRangeInvalidArguments([ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy, [Values(0, ReservedRecordsInStorage)] int reserved) {
 			using var stream = new MemoryStream();
-			var list = new ClusteredList<int>(stream, 32,  new PrimitiveSerializer<int>(), reservedRecords: reserved, policy: policy);
+			var list = new StreamMappedList<int>(stream, 32,  new PrimitiveSerializer<int>(), reservedRecords: reserved, policy: policy);
 
 			list.AddRange(999, 1000, 1001, 1002);
 			list.UpdateRange(0, new[] { 998 });
@@ -149,7 +149,7 @@ namespace Sphere10.Framework.Tests {
 			var random = new Random(31337);
 			string[] inputs = Enumerable.Range(0, random.Next(1, 100)).Select(x => random.NextString(1, 100)).ToArray();
 			using var stream = new MemoryStream();
-			var list = new ClusteredList<string>(stream, 32, new StringSerializer(Encoding.UTF8), reservedRecords: reserved, policy: policy);
+			var list = new StreamMappedList<string>(stream, 32, new StringSerializer(Encoding.UTF8), reservedRecords: reserved, policy: policy);
 
 			list.AddRange(inputs);
 			list.RemoveRange(0, 1);
@@ -161,7 +161,7 @@ namespace Sphere10.Framework.Tests {
 		[Test]
 		public void RemoveRangeInvalidArguments([ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy, [Values(0, ReservedRecordsInStorage)] int reserved) {
 			using var stream = new MemoryStream();
-			var list = new ClusteredList<int>(stream, 32, new PrimitiveSerializer<int>(), reservedRecords: reserved, policy: policy);
+			var list = new StreamMappedList<int>(stream, 32, new PrimitiveSerializer<int>(), reservedRecords: reserved, policy: policy);
 
 			list.Add(999);
 
@@ -177,7 +177,7 @@ namespace Sphere10.Framework.Tests {
 			var random = new Random(31337);
 			string[] inputs = Enumerable.Range(1, 10).Select(x => random.NextString(1, 100)).ToArray();
 			using var stream = new MemoryStream();
-			var list = new ClusteredList<string>(stream, 32, new StringSerializer(Encoding.UTF8), reservedRecords: reserved, policy: policy);
+			var list = new StreamMappedList<string>(stream, 32, new StringSerializer(Encoding.UTF8), reservedRecords: reserved, policy: policy);
 
 			list.AddRange(inputs);
 
@@ -189,7 +189,7 @@ namespace Sphere10.Framework.Tests {
 		[Test]
 		public void IndexOfInvalidArguments([ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy, [Values(0, ReservedRecordsInStorage)] int reserved) {
 			using var stream = new MemoryStream();
-			var list = new ClusteredList<int>(stream, 32,  new PrimitiveSerializer<int>(), reservedRecords: reserved, policy: policy);
+			var list = new StreamMappedList<int>(stream, 32,  new PrimitiveSerializer<int>(), reservedRecords: reserved, policy: policy);
 			list.AddRange(999, 1000, 1001, 1002);
 
 			Assert.Throws<ArgumentNullException>(() => list.IndexOfRange(null));
@@ -201,7 +201,7 @@ namespace Sphere10.Framework.Tests {
 			var random = new Random(31337);
 			string[] inputs = Enumerable.Range(0, random.Next(1, 100)).Select(x => random.NextString(1, 100)).ToArray();
 			using var stream = new MemoryStream();
-			var list = new ClusteredList<string>(stream, 32,  new StringSerializer(Encoding.UTF8), reservedRecords: reserved, policy: policy);
+			var list = new StreamMappedList<string>(stream, 32,  new StringSerializer(Encoding.UTF8), reservedRecords: reserved, policy: policy);
 
 			Assert.AreEqual(0, list.Count);
 			list.AddRange(inputs);
@@ -214,7 +214,7 @@ namespace Sphere10.Framework.Tests {
 			var random = new Random(31337);
 			string[] inputs = Enumerable.Range(1, random.Next(1, 5)).Select(x => random.NextString(1, 5)).ToArray();
 			using var stream = new MemoryStream();
-			var list = new ClusteredList<string>(stream, 32,  new StringSerializer(Encoding.UTF8), reservedRecords: reserved, policy: policy);
+			var list = new StreamMappedList<string>(stream, 32,  new StringSerializer(Encoding.UTF8), reservedRecords: reserved, policy: policy);
 
 			list.AddRange(inputs);
 			list.InsertRange(0, new[] { random.NextString(1, 100) });
@@ -226,7 +226,7 @@ namespace Sphere10.Framework.Tests {
 		[Test]
 		public void InsertRangeInvalidArguments([ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy, [Values(0, ReservedRecordsInStorage)] int reserved) {
 			using var stream = new MemoryStream();
-			var list = new ClusteredList<int>(stream, 32,  new PrimitiveSerializer<int>(), reservedRecords: reserved, policy: policy);
+			var list = new StreamMappedList<int>(stream, 32,  new PrimitiveSerializer<int>(), reservedRecords: reserved, policy: policy);
 
 			list.AddRange(999, 1000, 1001, 1002);
 
@@ -241,7 +241,7 @@ namespace Sphere10.Framework.Tests {
 			var random = new Random(31337);
 			string[] inputs = Enumerable.Range(0, random.Next(1, 100)).Select(x => random.NextString(1, 100)).ToArray();
 			using var stream = new MemoryStream();
-			var list = new ClusteredList<string>(stream, 32,  new StringSerializer(Encoding.UTF8), reservedRecords: reserved, policy: policy);
+			var list = new StreamMappedList<string>(stream, 32,  new StringSerializer(Encoding.UTF8), reservedRecords: reserved, policy: policy);
 
 			list.AddRange(inputs);
 			list.Clear();
@@ -254,14 +254,13 @@ namespace Sphere10.Framework.Tests {
 		[Test]
 		public void IntegrationTests_String([ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy, [Values(0, ReservedRecordsInStorage)] int reserved) {
 			using var stream = new MemoryStream();
-			var list = new ClusteredList<string>(stream, 32, new StringSerializer(Encoding.UTF8), reservedRecords: reserved, policy: policy);
+			var list = new StreamMappedList<string>(stream, 32, new StringSerializer(Encoding.UTF8), reservedRecords: reserved, policy: policy);
 			AssertEx.ListIntegrationTest(list,
 				100,
 				(rng, i) => Enumerable.Range(0, i)
 					.Select(x => rng.NextString(1, 100))
 					.ToArray());
 		}
-
 
 		[Test]
 		public void LoadAndUseExistingStream([Values(1, 100)] int iterations, [ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy, [Values(0, ReservedRecordsInStorage)] int reserved) {
@@ -270,12 +269,12 @@ namespace Sphere10.Framework.Tests {
 			var fileName = Tools.FileSystem.GetTempFileName(true);
 			using (Tools.Scope.ExecuteOnDispose(() => File.Delete(fileName))) {
 				using (var fileStream = new FileStream(fileName, FileMode.Open)) {
-					var list = new ClusteredList<string>(fileStream, 32, new StringSerializer(Encoding.UTF8), reservedRecords: reserved, policy: policy);
+					var list = new StreamMappedList<string>(fileStream, 32, new StringSerializer(Encoding.UTF8), reservedRecords: reserved, policy: policy);
 					list.AddRange(input);
 				}
 
 				using (var fileStream = new FileStream(fileName, FileMode.Open)) {
-					var list = new ClusteredList<string>(fileStream, 32, new StringSerializer(Encoding.UTF8), reservedRecords: reserved, policy: policy);
+					var list = new StreamMappedList<string>(fileStream, 32, new StringSerializer(Encoding.UTF8), reservedRecords: reserved, policy: policy);
 					Assert.AreEqual(input.Length, list.Count);
 					Assert.AreEqual(input, list);
 
@@ -292,7 +291,7 @@ namespace Sphere10.Framework.Tests {
 		public void IntegrationTests([ClusteredStorageStorageTypeValues] StorageType storage, [ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy, [Values(0, ReservedRecordsInStorage)] int reserved) {
 			var rng = new Random(31337);
 			using (CreateStream(storage, 5000, out Stream stream)) {
-				var list = new ClusteredList<TestObject>(stream, 100, new TestObjectSerializer(), new TestObjectComparer(), reservedRecords: reserved, policy: policy);
+				var list = new StreamMappedList<TestObject>(stream, 100, new TestObjectSerializer(), new TestObjectComparer(), reservedRecords: reserved, policy: policy);
 				AssertEx.ListIntegrationTest(list,
 					100,
 					(rng, i) => Enumerable.Range(0, i).Select(x => new TestObject(rng)).ToArray(),

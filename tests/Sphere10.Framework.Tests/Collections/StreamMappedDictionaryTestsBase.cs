@@ -12,7 +12,7 @@ using Tools;
 
 namespace Sphere10.Framework.Tests {
 	
-	public abstract class ClusteredDictionaryTestsBase : StreamPersistedTestsBase {
+	public abstract class StreamMappedDictionaryTestsBase : StreamPersistedTestsBase {
 		private const int EstimatedTestObjectSize = 400 + 256;
 		private const int ReservedRecordsInStorage = 11;
 
@@ -136,14 +136,14 @@ namespace Sphere10.Framework.Tests {
 			}
 		}
 
-		protected IDisposable CreateDictionary(int estimatedMaxByteSize, StorageType storageType, int reservedRecords, ClusteredStoragePolicy policy, out IClusteredDictionary<string, TestObject> clusteredDictionary) {
+		protected IDisposable CreateDictionary(int estimatedMaxByteSize, StorageType storageType, int reservedRecords, ClusteredStoragePolicy policy, out IStreamMappedDictionary<string, TestObject> clusteredDictionary) {
 			var disposables = CreateDictionary(estimatedMaxByteSize, storageType, reservedRecords, policy, new StringSerializer(Encoding.UTF8), new TestObjectSerializer(), EqualityComparer<string>.Default, new TestObjectComparer(), out clusteredDictionary);
 			if (clusteredDictionary.RequiresLoad)
 				clusteredDictionary.Load();
 			return disposables;
 		}
 
-		protected abstract IDisposable CreateDictionary<TKey, TValue>(int estimatedMaxByteSize, StorageType storageType, int reservedRecords, ClusteredStoragePolicy policy, IItemSerializer<TKey> keySerializer, IItemSerializer<TValue> valueSerializer, IEqualityComparer<TKey> keyComparer, IEqualityComparer<TValue> valueComparer, out IClusteredDictionary<TKey, TValue> clusteredDictionary);
+		protected abstract IDisposable CreateDictionary<TKey, TValue>(int estimatedMaxByteSize, StorageType storageType, int reservedRecords, ClusteredStoragePolicy policy, IItemSerializer<TKey> keySerializer, IItemSerializer<TValue> valueSerializer, IEqualityComparer<TKey> keyComparer, IEqualityComparer<TValue> valueComparer, out IStreamMappedDictionary<TKey, TValue> clusteredDictionary);
 
 	}
 

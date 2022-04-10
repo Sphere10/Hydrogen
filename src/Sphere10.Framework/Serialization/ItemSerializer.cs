@@ -16,7 +16,7 @@ namespace Sphere10.Framework {
 			get {
 				var type = typeof(TItem);
 
-				if (type.IsPrimitive)
+				if (Tools.Memory.IsSerializationPrimitive(type))
 					return new PrimitiveSerializer<TItem>();
 
 				if (type == typeof(string))

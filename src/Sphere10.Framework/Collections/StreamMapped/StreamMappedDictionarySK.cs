@@ -11,16 +11,16 @@ using System.Runtime.CompilerServices;
 namespace Sphere10.Framework {
 
 	/// <summary>
-	/// Similar to a <see cref="ClusteredDictionary{TKey,TValue}"/> except keys are statically sized and serialized inside the <see cref="ClusteredStreamRecord"/> rather than within a <see cref="KeyValuePair{TKey, TValue}"/> item).
-	/// This implementation of <see cref="IClusteredDictionary{TKey,TValue}"/> permits faster scanning of keys and is thus used internally by <see cref="ClusteredHashSet{TValue}"/> and <see cref="MerklizedHashSet{TValue}"/> for
+	/// Similar to a <see cref="StreamMappedDictionary{TKey,TValue}"/> except keys are statically sized and serialized inside the <see cref="ClusteredStreamRecord"/> rather than within a <see cref="KeyValuePair{TKey, TValue}"/> item).
+	/// This implementation of <see cref="IStreamMappedDictionary{TKey,TValue}"/> permits faster scanning of keys and is thus used internally by <see cref="StreamMappedHashSet{TItem}"/> and <see cref="MerklizedHashSet{TValue}"/> for
 	/// their implementations.
 	/// </summary>
 	/// <typeparam name="TKey">The type of key stored in the dictionary</typeparam>
 	/// <typeparam name="TValue">The type of value stored in the dictionary</typeparam>
 	/// <remarks>When deleting an item the underlying <see cref="ClusteredStreamRecord"/> is marked nullified but retained and re-used in later calls to <see cref="Add(TKey,TValue)"/>.</remarks>
-	/// <remarks>This implementation stores the items key in the underlying <see cref="ClusteredStreamRecord"/> whereas the <see cref="ClusteredDictionary{TKey,TValue}"/> class stores it in the <see cref="KeyValuePair{TKey, TValue}"/>.</remarks>
+	/// <remarks>This implementation stores the items key in the underlying <see cref="ClusteredStreamRecord"/> whereas the <see cref="StreamMappedDictionary{TKey,TValue}"/> class stores it in the <see cref="KeyValuePair{TKey, TValue}"/>.</remarks>
 	// TODO: there are some memory-blowout lookups in this class that need to be refactored out (should be safe for non-huge dictionaries).
-	public class ClusteredDictionarySK<TKey, TValue> : DictionaryBase<TKey, TValue>, IClusteredDictionary<TKey, TValue> {
+	public class StreamMappedDictionarySK<TKey, TValue> : DictionaryBase<TKey, TValue>, IStreamMappedDictionary<TKey, TValue> {
 		public event EventHandlerEx<object> Loading;
 		public event EventHandlerEx<object> Loaded;
 
@@ -28,15 +28,15 @@ namespace Sphere10.Framework {
 		private readonly IItemChecksum<TKey> _keyChecksum;
 		private readonly IItemSerializer<TKey> _keySerializer;
 		private readonly IItemSerializer<TValue> _valueSerializer;
-		private readonly IClusteredList<TValue> _valueStore;
+		private readonly IStreamMappedList<TValue> _valueStore;
 		private readonly IEqualityComparer<TKey> _keyComparer;
 		private readonly IEqualityComparer<TValue> _valueComparer;
 		private readonly LookupEx<int, int> _checksumToIndexLookup;
 		private readonly SortedList<int> _unusedRecords;
 
-		public ClusteredDictionarySK(Stream rootStream, int clusterSize, IItemSerializer<TKey> keySerializer, IItemSerializer<TValue> valueSerializer, IItemChecksum<TKey> keyChecksum = null, IEqualityComparer<TKey> keyComparer = null, IEqualityComparer<TValue> valueComparer = null, ClusteredStoragePolicy policy = ClusteredStoragePolicy.DictionaryDefault, int reservedRecords = 0, Endianness endianness = Endianness.LittleEndian)
+		public StreamMappedDictionarySK(Stream rootStream, int clusterSize, IItemSerializer<TKey> keySerializer, IItemSerializer<TValue> valueSerializer, IItemChecksum<TKey> keyChecksum = null, IEqualityComparer<TKey> keyComparer = null, IEqualityComparer<TValue> valueComparer = null, ClusteredStoragePolicy policy = ClusteredStoragePolicy.DictionaryDefault, int reservedRecords = 0, Endianness endianness = Endianness.LittleEndian)
 			: this(
-				new ClusteredList<TValue>(
+				new StreamMappedList<TValue>(
 					rootStream,
 					clusterSize,
 					valueSerializer,
@@ -54,12 +54,12 @@ namespace Sphere10.Framework {
 			) {
 		}
 
-		public ClusteredDictionarySK(IClusteredList<TValue> valueStore, IItemSerializer<TKey> keySerializer, IItemSerializer<TValue> valueSerializer, IItemChecksum<TKey> keyChecksum = null, IEqualityComparer<TKey> keyComparer = null, IEqualityComparer<TValue> valueComparer = null) {
+		public StreamMappedDictionarySK(IStreamMappedList<TValue> valueStore, IItemSerializer<TKey> keySerializer, IItemSerializer<TValue> valueSerializer, IItemChecksum<TKey> keyChecksum = null, IEqualityComparer<TKey> keyComparer = null, IEqualityComparer<TValue> valueComparer = null) {
 			Guard.ArgumentNotNull(keySerializer, nameof(keySerializer));
 			Guard.ArgumentNotNull(valueSerializer, nameof(valueSerializer));
 			Guard.Argument(keySerializer.IsStaticSize, nameof(keySerializer),"Keys must be statically sized");
-			Guard.Argument(valueStore.Storage.Policy.HasFlag(ClusteredStoragePolicy.TrackChecksums), nameof(valueStore), $"Checksum tracking must be enabled in {nameof(ClusteredDictionarySK<TKey, TValue>)} implementations.");
-			Guard.Argument(valueStore.Storage.Policy.HasFlag(ClusteredStoragePolicy.TrackKey), nameof(valueStore), $"Checksum tracking must be enabled in {nameof(ClusteredDictionarySK<TKey, TValue>)} implementations.");
+			Guard.Argument(valueStore.Storage.Policy.HasFlag(ClusteredStoragePolicy.TrackChecksums), nameof(valueStore), $"Checksum tracking must be enabled in {nameof(StreamMappedDictionarySK<TKey, TValue>)} implementations.");
+			Guard.Argument(valueStore.Storage.Policy.HasFlag(ClusteredStoragePolicy.TrackKey), nameof(valueStore), $"Checksum tracking must be enabled in {nameof(StreamMappedDictionarySK<TKey, TValue>)} implementations.");
 
 			_keyComparer = keyComparer ?? EqualityComparer<TKey>.Default;
 			_valueComparer = valueComparer ?? EqualityComparer<TValue>.Default;
@@ -349,7 +349,7 @@ namespace Sphere10.Framework {
 
 		private void CheckLoaded() {
 			if (RequiresLoad)
-				throw new InvalidOperationException($"{nameof(ClusteredDictionary<TKey, TValue>)} has not been loaded");
+				throw new InvalidOperationException($"{nameof(StreamMappedDictionary<TKey, TValue>)} has not been loaded");
 		}
 
 		private void NotifyLoading() {

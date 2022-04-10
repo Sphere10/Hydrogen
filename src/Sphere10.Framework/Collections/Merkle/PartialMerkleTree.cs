@@ -4,10 +4,10 @@ using System.Collections.Generic;
 namespace Sphere10.Framework {
 
 	/// <summary>
-	/// A merkle-tree implementation which contains only a subset of the nodes. This is useful for constructing
-	/// and verifying proofs.
+	/// An <see cref="IUpdateableMerkleTree"/> that maintains only a subset of the nodes. This is useful for constructing
+	/// and verifying multi-item proofs.
 	/// </summary>
-	public class PartialMerkleTree : Dictionary<MerkleCoordinate, byte[]>,  IUpdateableMerkleTree {
+	public sealed class PartialMerkleTree : Dictionary<MerkleCoordinate, byte[]>,  IUpdateableMerkleTree {
 
 		public PartialMerkleTree(CHF hashAlgorithm, int leafCount, IEnumerable<KeyValuePair<MerkleCoordinate, byte[]>> nodes) {
 			HashAlgorithm = hashAlgorithm;
@@ -33,7 +33,7 @@ namespace Sphere10.Framework {
 		}
 
 		// This list does nothing except return a count
-		private class LeafList : SingularListBase<byte[]> {
+		private sealed class LeafList : SingularListBase<byte[]> {
 			private readonly PartialMerkleTree _parent;
 			public LeafList(PartialMerkleTree parent) {
 				_parent = parent;

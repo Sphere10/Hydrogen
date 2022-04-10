@@ -45,18 +45,19 @@ namespace Sphere10.Framework {
 					(int)MerkleMath.CountFlatNodes(initialLeafCapacity) * Hashers.GetDigestSizeBytes(hashAlgorithm),
 					(int)MerkleMath.CountFlatNodes(leafGrowthCapacity) * Hashers.GetDigestSizeBytes(hashAlgorithm),
 					(int)MerkleMath.CountFlatNodes(maxLeafCapacity) * Hashers.GetDigestSizeBytes(hashAlgorithm)
-				  )
+				  ),
+				  initialLeafs.Count()
 				) {
 			Leafs.AddRange(initialLeafs ?? Enumerable.Empty<byte[]>());
 		}
 
-		public FlatMerkleTree(CHF hashAlgorithm, IBuffer nodeBuffer) {
+		public FlatMerkleTree(CHF hashAlgorithm, IBuffer nodeBuffer, int leafCount) {
 			Guard.Argument(hashAlgorithm != CHF.ConcatBytes, nameof(hashAlgorithm), "Must be digest size CHF");
 			HashAlgorithm = hashAlgorithm;
 			_digestSize = Hashers.GetDigestSizeBytes(hashAlgorithm);
 			Guard.Argument(_digestSize > 0, nameof(hashAlgorithm), "Unsupported CHF");
 			Leafs = new LeafList(this);
-			AttachBuffer(nodeBuffer);
+			AttachBuffer(nodeBuffer, leafCount);
 		}
 
 		public CHF HashAlgorithm { get; }
@@ -121,11 +122,13 @@ namespace Sphere10.Framework {
 			SetDirty(flatIndex, false);
 		}
 
-		internal void AttachBuffer(IBuffer buffer) {
+		internal void AttachBuffer(IBuffer buffer, int leafCount) {
 			Guard.Argument(buffer.Count % _digestSize == 0, nameof(buffer), "Size was not a multiple of digest length");
 			_nodeBuffer = buffer;
-			_dirtyNodes = new BitArray(0);
-			_size = MerkleSize.FromLeafCount(buffer.Count / _digestSize);
+			var flatNodeCount = buffer.Count / _digestSize;
+			_dirtyNodes = new BitArray(flatNodeCount);
+			_size = MerkleSize.FromLeafCount(leafCount);
+			Guard.Ensure((ulong)flatNodeCount == MerkleMath.CountFlatNodes(_size.LeafCount), $"Inconsistent buffer size (flatNodes: {flatNodeCount}, leafCount: {leafCount})");
 		}
 
 		private bool IsDirty(int flatIndex) {

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using Sphere10.Framework;
 
@@ -96,5 +97,7 @@ namespace Sphere10.Framework {
 			}
 			return nextLevel;
 		}
+
 	}
+
 }

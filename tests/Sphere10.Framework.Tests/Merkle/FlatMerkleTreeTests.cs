@@ -198,6 +198,39 @@ namespace Sphere10.Framework.Tests {
 		}
 
 		[Test]
+		public void RemoveAt_1([Values(3,4)] int leafCount) {
+			var rng = new Random(31337);
+			var list = new FlatMerkleTree(CHF.SHA2_256);
+			var expected = new List<byte[]>();
+
+			var digests = rng.NextByteArrays(Hashers.GetDigestSizeBytes(CHF.SHA2_256), leafCount);
+			expected.AddRange(digests);
+			list.Leafs.AddRange(digests);
+
+			expected.RemoveAt(1);
+			list.Leafs.RemoveAt(1);
+
+			Assert.AreEqual(expected.ToArray(), list.Leafs.ToArray());
+		}
+
+
+		[Test]
+		public void RemoveAt_2([Values(3, 4)] int leafCount) {
+			var rng = new Random(31337);
+			var list = new FlatMerkleTree(CHF.SHA2_256);
+			var expected = new List<byte[]>();
+
+			var digests = rng.NextByteArrays(Hashers.GetDigestSizeBytes(CHF.SHA2_256), leafCount);
+			expected.AddRange(digests);
+			list.Leafs.AddRange(digests);
+
+			expected.RemoveAt(2);
+			list.Leafs.RemoveAt(2);
+
+			Assert.AreEqual(expected.ToArray(), list.Leafs.ToArray());
+		}
+
+		[Test]
 		public void TestNodes_BottomUp(
 			[Values(CHF.SHA2_256)] CHF chf,
 			[Values(0, 1, 11, 33, 1000)] int leafCount) {

@@ -11,31 +11,29 @@ namespace Sphere10.Framework.Tests {
 
 	[TestFixture]
 	[Parallelizable(ParallelScope.Children)]
-	public class MerkleListAdapterTests {
+	public class MerkleListAdapterTests : MerkleListTestsBase {
+
+		protected override IDisposable CreateMerkleList(out IMerkleList<string> merkleList) {
+			merkleList = new MerkleListAdapter<string>();
+			return Disposables.None;
+		}
 
 		[Test]
-		public void CRUD() {
-			var expected = new MerkleListAdapter<string>(new StringSerializer(Encoding.UTF8), CHF.SHA2_256) { 
-				"Alpha",
-				"Beta",
-				"Gamma"
-			};
-
-
-			var test = new MerkleListAdapter<string>(new StringSerializer(Encoding.UTF8), CHF.SHA2_256) {
-				"Alpha",
-				"Beta",
-				"Gamma"
-			};
-			var root = test.MerkleTree.Root;
-			test.Remove("Beta");
-			test.RemoveAt(0);
-			test.Insert(0, "Beta");
-			test.Insert(0, "AlphaX");
-			test[0] = "Alpha";
-
-			Assert.AreEqual(expected.MerkleTree.Root, test.MerkleTree.Root);
-
+		public void IntegrationTests_Heavy([Values(100)] int iterations) {
+			var rng = new Random(31337);
+			using (CreateMerkleList(out var merkleList)) {
+				var expectedList = new ExtendedList<string>();
+				AssertEx.ListIntegrationTest(
+					merkleList,
+					1000,
+					(rng, i) => Tools.Collection.GenerateArray<string>(i, _ => rng.NextString(100)),
+					false,
+					iterations,
+					expectedList,
+					() => Assert.That(merkleList.MerkleTree.Root, Is.EqualTo(Tools.MerkleTree.ComputeMerkleRoot(expectedList)))
+				);
+			}
 		}
+
 	}
 }

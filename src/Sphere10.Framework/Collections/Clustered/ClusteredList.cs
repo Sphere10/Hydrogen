@@ -16,15 +16,14 @@ namespace Sphere10.Framework {
 	public class ClusteredList<TItem> : SingularListBase<TItem>, IClusteredList<TItem> {
 		private int _version;
 
-		public ClusteredList(Stream rootStream, int clusterSize, IItemSerializer<TItem> itemSerializer, IEqualityComparer<TItem> itemComparer = null, ClusteredStoragePolicy policy = ClusteredStoragePolicy.Default, int recordKeySize = 0, int reservedRecords = 0,  Endianness endianness = Endianness.LittleEndian)
+		public ClusteredList(Stream rootStream, int clusterSize, IItemSerializer<TItem> itemSerializer = null, IEqualityComparer<TItem> itemComparer = null, ClusteredStoragePolicy policy = ClusteredStoragePolicy.Default, int recordKeySize = 0, int reservedRecords = 0, Endianness endianness = Endianness.LittleEndian)
 			: this(new ClusteredStorage(rootStream, clusterSize, policy, recordKeySize, reservedRecords, endianness), itemSerializer, itemComparer) {
 		}
 
-		public ClusteredList(IClusteredStorage storage, IItemSerializer<TItem> itemSerializer, IEqualityComparer<TItem> itemComparer = null) {
+		public ClusteredList(IClusteredStorage storage, IItemSerializer<TItem> itemSerializer = null, IEqualityComparer<TItem> itemComparer = null) {
 			Guard.ArgumentNotNull(storage, nameof(storage));
-			Guard.ArgumentNotNull(itemSerializer, nameof(itemSerializer));
 			Storage = storage;
-			ItemSerializer = itemSerializer;
+			ItemSerializer = itemSerializer ?? ItemSerializer<TItem>.Default;
 			ItemComparer = itemComparer ?? EqualityComparer<TItem>.Default;
 			_version = 0;
 		}

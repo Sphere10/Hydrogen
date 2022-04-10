@@ -22,20 +22,31 @@ namespace Sphere10.Framework {
 	/// disposed at the end of the DisposalScope.
 	/// </summary>
 	public class Disposables : ListDecorator<IDisposable>, IDisposable {
+		private readonly bool _ignoreExceptions;
 
 		static Disposables() {
 			None = new Disposables();
 		}
 
         public Disposables(params IDisposable[] disposals) 
-			: base(new List<IDisposable>()) {
-            if (disposals.Any())
-                this.AddRangeSequentially(disposals);
+			: this(true, disposals) {
+
         }
 
-        public void Dispose() {
-            this.ForEach(disposable => Tools.Exceptions.ExecuteIgnoringException(disposable.Dispose));
-        }
+		public Disposables(bool ignoreExceptions, params IDisposable[] disposals)
+			: base(new List<IDisposable>()) {
+			_ignoreExceptions = ignoreExceptions;
+			if (disposals.Any())
+				this.AddRangeSequentially(disposals);
+		}
+
+
+		public void Dispose() {
+			if (_ignoreExceptions)
+				this.ForEach(disposable => Tools.Exceptions.ExecuteIgnoringException(disposable.Dispose));
+			else
+				this.ForEach(disposable => disposable.Dispose());
+		}
 
         public void Add(Action disposeAction) {
             base.Add(new ActionScope(disposeAction));

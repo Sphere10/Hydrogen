@@ -234,6 +234,31 @@ namespace Sphere10.Framework {
 			return (ulong)Pow2.CalculatePow2Partition(leafCount).Sum(x => (1L << (x + 1)) - 1);
 		}
 
+		/// <summary>
+		/// Calculate the leaf count from a flat tree having <see cref="flatNodeCount"/> nodes using a Newtonian search.
+		/// </summary>
+		/// <param name="flatNodeCount"></param>
+		/// <returns></returns>
+		/// <exception cref="InternalErrorException"></exception>
+		/// <remarks>Limited to Int.MaxValue flat nodes, needs updating to support Long.MaxValue</remarks>
+		public static int SlowCalculateLeafCountFromFlatNodes(int flatNodeCount) {
+			int lower = 0;
+			int upper = flatNodeCount;
+			var comparer = Comparer<int>.Default;
+			while (lower <= upper) {
+				var middle = lower + (upper - lower) / 2;
+				var comparisonResult = comparer.Compare(flatNodeCount, (int)CountFlatNodes(middle));
+				if (comparisonResult < 0) {
+					upper = middle - 1;
+				} else if (comparisonResult > 0) {
+					lower = middle + 1;
+				} else {
+					return middle;
+				}
+			}
+			throw new InternalErrorException($"Unable to determine leaf count from float node count {flatNodeCount}");
+		}
+
 		#endregion
 
 		#region Tree Iteration

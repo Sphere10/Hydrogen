@@ -239,7 +239,12 @@ namespace Sphere10.Framework.Tests {
 
 		}
 
+		[Test]
 
+		public void OutOfBoundsIntCastDoesntThrow() {
+			var x = (long)int.MaxValue + 1;
+			Assert.That(() => (int)x, Throws.Nothing);
+		}
 	
 	}
 }

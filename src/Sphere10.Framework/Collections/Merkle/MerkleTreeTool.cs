@@ -6,6 +6,7 @@ namespace Tools;
 
 public static class MerkleTree {
 
+	// NOTE: avoid method signatures with "params TItem[] items" since passed in collections of type C are interpreted as arrays of 1 item containing C
 	public static byte[] ComputeMerkleRoot<TItem>(IEnumerable<TItem> items)
 		=> ComputeMerkleRoot(items, CHF.SHA2_256);
 

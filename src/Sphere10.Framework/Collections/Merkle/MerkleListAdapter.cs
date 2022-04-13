@@ -89,8 +89,8 @@ public class MerkleListAdapter<TItem, TList> : ExtendedListDecorator<TItem, TLis
 	}
 
 	public override void Clear() {
-		base.Clear();
 		InternalMerkleTree.Leafs.Clear();
+		base.Clear();
 	}
 
 }
@@ -107,6 +107,9 @@ public class MerkleListAdapter<TItem> : MerkleListAdapter<TItem, IExtendedList<T
 		: this(new ExtendedList<TItem>()) {
 	}
 
+	public MerkleListAdapter(CHF chf)
+	: this(new ExtendedList<TItem>(), chf) {
+	}
 	public MerkleListAdapter(IExtendedList<TItem> internalList)
 		: base(internalList, CHF.SHA2_256) {
 	}

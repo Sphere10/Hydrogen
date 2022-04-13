@@ -104,7 +104,7 @@ namespace Sphere10.Framework.NUnit {
 			Assert.That(() => list.ReadRange(list.Count / 2, maxCapacity + 1).ToArray(), Throws.InstanceOf<ArgumentException>());
 			Assert.That(() => expected.RemoveRangeSequentially(expected.Count / 2, maxCapacity + 1), Throws.InstanceOf<ArgumentException>());
 			Assert.That(() => list.RemoveRange(list.Count / 2, maxCapacity + 1), Throws.InstanceOf<ArgumentException>());
-			var updateItems = Tools.Array.Gen<T>(maxCapacity + 1, default);
+			var updateItems = Tools.Array.Gen(maxCapacity + 1, randomItemGenerator(RNG, 1)[0]);
 			Assert.That(() => expected.UpdateRangeSequentially(expected.Count / 2, updateItems), Throws.InstanceOf<ArgumentException>());
 			Assert.That(() => list.UpdateRange(list.Count / 2, updateItems), Throws.InstanceOf<ArgumentException>());
 

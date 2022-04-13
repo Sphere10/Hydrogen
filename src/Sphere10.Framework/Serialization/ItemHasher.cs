@@ -16,7 +16,10 @@ namespace Sphere10.Framework {
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public byte[] Hash(TItem @object) => Hashers.Hash(_hashAlgorithm, @object, this);
+		public byte[] Hash(TItem @object) {
+			Guard.ArgumentNotNull(@object, nameof(@object));
+			return Hashers.Hash(_hashAlgorithm, @object, this);
+		}
 
 		public int DigestLength { get; }
 	}

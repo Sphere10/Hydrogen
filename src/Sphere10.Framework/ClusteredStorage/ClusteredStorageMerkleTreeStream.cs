@@ -40,7 +40,7 @@ internal sealed class ClusteredStorageMerkleTreeStream : IUpdateableMerkleTree {
 		var disposables = new Disposables(false);
 		var streamScope = _storage.Open(_flatTreeStreamRecord);
 		var flatTreeData = new StreamMappedBuffer(streamScope.Stream);
-		var flatMerkleTree = new FlatMerkleTree(CHF.SHA2_256, flatTreeData, _storage.Count - _storage.Header.ReservedRecords);
+		var flatMerkleTree = new FlatMerkleTree(HashAlgorithm, flatTreeData, _storage.Count - _storage.Header.ReservedRecords);
 		merkleTree = flatMerkleTree;
 		disposables.Add(() => { Root = flatMerkleTree.Root; }); // When scope finishes, update storage merkle-root in header
 		disposables.Add(streamScope); // when scope finishes, dispose the stream scope

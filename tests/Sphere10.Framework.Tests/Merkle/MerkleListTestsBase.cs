@@ -68,8 +68,25 @@ namespace Sphere10.Framework.Tests {
 		}
 
 
-		// Add test with a null
+		[Test]
+		public void NoNullItems([Values(CHF.SHA2_256, CHF.Blake2b_128)] CHF chf) {
+			using (CreateMerkleList(chf, out var merkleList)) {
+				Assert.That(() => merkleList.Add(null), Throws.ArgumentNullException);
+				Assert.That(merkleList.MerkleTree.Root, Is.Null);
 
+				Assert.That(() => merkleList.Insert(0, null), Throws.ArgumentNullException);
+				Assert.That(merkleList.MerkleTree.Root, Is.Null);
+
+				merkleList.Add("alpha");
+				Assert.That(merkleList.MerkleTree.Root, Is.EqualTo(Tools.MerkleTree.ComputeMerkleRoot(new[] { "alpha" }, chf)));
+
+				Assert.That(() => merkleList.Update(0, null), Throws.ArgumentNullException);
+				Assert.That(merkleList.MerkleTree.Root, Is.EqualTo(Tools.MerkleTree.ComputeMerkleRoot(new[] { "alpha" }, chf)));
+
+				merkleList.Clear();
+				Assert.That(merkleList.MerkleTree.Root, Is.Null);
+			}
+		}
 
 		[Test]
 		public void TestSimple_4([Values(CHF.SHA2_256, CHF.Blake2b_128)] CHF chf) {

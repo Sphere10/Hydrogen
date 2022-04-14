@@ -61,7 +61,7 @@ namespace Sphere10.Framework.Communications {
 		        NotifyOpened();
 		        return true;
 	        } catch (Exception error) {
-                // Log?
+                // TODO: add Logging
 		        return false;
 	        }
         }
@@ -188,6 +188,7 @@ namespace Sphere10.Framework.Communications {
 
 		protected void NotifyOpening() {
             OnOpening();
+			// TODO: add a ShouldRaiseAsync property
             Tools.Threads.RaiseAsync(Opening);
         }
 

@@ -74,4 +74,5 @@ namespace Sphere10.Framework {
 
 		protected abstract void Log(LogLevel logLevel, string message);
 	}
+
 }

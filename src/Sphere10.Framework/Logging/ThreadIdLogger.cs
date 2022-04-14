@@ -16,7 +16,7 @@ using System.Threading;
 
 namespace Sphere10.Framework {
 
-	public class ThreadIdLogger : DecoratedLogger {
+	public class ThreadIdLogger : LoggerDecorator {
 
 		public const string DefaultThreadIdFormat = "(TID: {0})";
 

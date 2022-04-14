@@ -12,11 +12,11 @@
 //-----------------------------------------------------------------------
 
 namespace Sphere10.Framework {
-	public class DecoratedLogger : ILogger {
+	public class LoggerDecorator : ILogger {
 
 		private readonly ILogger _decoratedLogger;
 
-		public DecoratedLogger(ILogger decoratedLogger) {
+		public LoggerDecorator(ILogger decoratedLogger) {
 			_decoratedLogger = decoratedLogger;
 		}
 

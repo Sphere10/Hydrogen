@@ -11,15 +11,18 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
+using System;
+using System.Collections.Generic;
+
 namespace Sphere10.Framework {
 
 
-	public class AsyncLogger : DecoratedLogger {
+	public class AsyncLogger : LoggerDecorator {
 
 		private readonly BackgroundProcessor _backgroundProcessor;
 
-		public AsyncLogger(ILogger decoratedLogger) : base(decoratedLogger) {
-			_backgroundProcessor = new BackgroundProcessor();	
+		public AsyncLogger(ILogger decoratedLogger, Action<Exception> errorHandler = null) : base(decoratedLogger) {
+			_backgroundProcessor = new BackgroundProcessor(new List<Action>(), errorHandler);	
 		}
 
 		public override void Debug(string message) {

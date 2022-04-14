@@ -15,7 +15,7 @@ using System.Configuration;
 using System.IO;
 
 namespace Sphere10.Framework.Application {
-	public class ApplicationLogger : DecoratedLogger {
+	public class ApplicationLogger : LoggerDecorator {
 
 		public ApplicationLogger() : base(CreateLogger("Logging")) {
 		}

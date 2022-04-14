@@ -6,7 +6,6 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Sphere10.Framework.Stateless;
 
 namespace Sphere10.Framework.Communications {
 	/// <summary>

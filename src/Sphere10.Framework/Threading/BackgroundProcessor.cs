@@ -13,6 +13,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace Sphere10.Framework {
@@ -21,12 +22,14 @@ namespace Sphere10.Framework {
 	public class BackgroundProcessor {
 
 		private readonly SynchronizedCollection<Action> _queue;
+		private readonly Action<Exception> _errorHandler;
 
 		public BackgroundProcessor() : this(new List<Action>()) {	
 		}
 
-		public BackgroundProcessor(ICollection<Action> queue) {
+		public BackgroundProcessor(ICollection<Action> queue, Action<Exception> errorEventHandler = null) {
 			_queue = new SynchronizedCollection<Action>( queue );
+			_errorHandler = errorEventHandler ?? (_ => { });
 		}
 
 
@@ -49,8 +52,15 @@ namespace Sphere10.Framework {
 						actionQueue.Enqueue(action);
 					_queue.Clear();
 				}
-				foreach (var action in actionQueue)
-					action();
+
+				foreach (var action in actionQueue) {
+					try {
+						action();
+					} catch (Exception error) {
+						_errorHandler(error);
+					}
+				}
+
 				using (_queue.EnterReadScope()) {
 					hasMore = _queue.Count > 0;
 				}

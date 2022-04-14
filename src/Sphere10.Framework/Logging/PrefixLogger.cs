@@ -15,7 +15,7 @@ using System;
 
 namespace Sphere10.Framework {
 
-	public class PrefixLogger : DecoratedLogger {
+	public class PrefixLogger : LoggerDecorator {
 		private readonly string _prefix;
 
 		public PrefixLogger(ILogger decoratedLogger, string prefix)

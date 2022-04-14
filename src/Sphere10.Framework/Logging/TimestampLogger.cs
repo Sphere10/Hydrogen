@@ -15,7 +15,7 @@ using System;
 
 namespace Sphere10.Framework {
 
-	public class TimestampLogger : DecoratedLogger {
+	public class TimestampLogger : LoggerDecorator {
 
 		public const string DefaultDateFormat = "yyyy-MM-dd HH:mm:ss";
 

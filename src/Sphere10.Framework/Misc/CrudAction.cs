@@ -14,6 +14,7 @@
 namespace Sphere10.Framework {
 	public enum CrudAction {
 		Create,
+		Read,
 		Update,
 		Delete
 	}

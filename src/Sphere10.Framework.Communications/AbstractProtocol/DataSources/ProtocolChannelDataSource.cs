@@ -4,6 +4,10 @@ using System.Threading.Tasks;
 namespace Sphere10.Framework.Communications {
 	public abstract class ProtocolChannelDataSource<TItem> : DataSourceBase<TItem> {
 
+		public delegate string InitializeDelegate(TItem item, int id);
+		public delegate string UpdateDelegate(TItem item);
+		public delegate string IdDelegate(TItem item);
+
 		protected ProtocolChannelDataSource(ProtocolChannel protocolChannel) {
 			ProtocolChannel = protocolChannel;
 			//ProtocolChannel.ReceivedBytes += ProtocolChannel_ReceivedBytes;

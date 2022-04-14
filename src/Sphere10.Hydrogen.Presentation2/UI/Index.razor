@@ -34,7 +34,7 @@
 
 <button @onclick="() => Test()">Test</button>
     <div class="row">
-        <div class="col-6">
+        <div class="col-10">
             <div class="card">
                 <div class="card-header">
                     <ul class="nav nav-tabs card-header-tabs pull-right" role="tablist">
@@ -171,74 +171,74 @@
 
 @code {
 
-            /*
-            public class DataSource1<TItem> : IDataSource<TestClass>
-                {
-            List<TestClass> AllItems = new List<TestClass>();
+        /*
+        public class DataSource1<TItem> : IDataSource<TestClass>
+        {
+        List<TestClass> AllItems = new List<TestClass>();
 
-                public event EventHandlerEx<DataSourceMutatedItems<TestClass>> MutatedItems;
+        public event EventHandlerEx<DataSourceMutatedItems<TestClass>> MutatedItems;
 
         public void RefreshData()
-        {
-        AllItems = LoadData(73);
+            {
+            AllItems = LoadData(73);
             }
 
             // create some dummy data
             public DataSource1()
-            {
+                {
                 RefreshData();
                 }
 
                 event EventHandlerEx<DataSourceMutatedItems<TestClass>> IDataSource<TestClass>.MutatedItems {
-                add {
-            throw new NotImplementedException();
-        }
+                    add {
+                    throw new NotImplementedException();
+                    }
 
-        remove {
-        throw new NotImplementedException();
-        }
-            }
+                    remove {
+                    throw new NotImplementedException();
+                    }
+                    }
 
-            static List<TestClass> LoadData(int size)
+                    static List<TestClass> LoadData(int size)
+                    {
+                        var testData = new List<TestClass>();
+
+                        for (int i = 0; i < size; i++)
         {
-        var testData = new List<TestClass>();
+        var testObject = new TestClass();
+                        testObject.FillWithTestData(i);
+                        testData.Add(testObject);
+                        }
 
-        for (int i = 0; i < size; i++)
-            {
-            var testObject = new TestClass();
-                testObject.FillWithTestData(i);
-                testData.Add(testObject);
-            }
+                        return testData;
+                        }
 
-        return testData;
-        }
+                        public async Task Create(IEnumerable<TestClass> entities)
+                            {
+                            AllItems.AddRange(entities);
+                            }
 
-        public async Task Create(IEnumerable<TestClass> entities)
-            {
-            AllItems.AddRange(entities);
-            }
+                            public async Task Delete(IEnumerable<TestClass> entities)
+                            {
+                            foreach (var entity in entities)
+                            {
+                            var index = AllItems.IndexOf(entity);
+                            if (index >= 0) AllItems.RemoveAt(index);
+                            }
+                    }
 
-            public async Task Delete(IEnumerable<TestClass> entities)
-            {
-            foreach (var entity in entities)
-                {
-                var index = AllItems.IndexOf(entity);
-                if (index >= 0) AllItems.RemoveAt(index);
-                }
-                }
-
-                public Task<IEnumerable<TestClass>> New(int count)
-            {
-            var returnList = new List<TestClass>();
-            var newId = AllItems.Max(x => x.Id) + 1;
-
-        for (int i = 0; i < count; i++)
+        public Task<IEnumerable<TestClass>> New(int count)
         {
-        var newEntity = new TestClass();
-        newEntity.FillWithTestData(newId++);
-        AllItems.Add(newEntity);
-        returnList.Add(newEntity);
-        }
+        var returnList = new List<TestClass>();
+                        var newId = AllItems.Max(x => x.Id) + 1;
+
+                        for (int i = 0; i < count; i++)
+                        {
+            var newEntity = new TestClass();
+            newEntity.FillWithTestData(newId++);
+            AllItems.Add(newEntity);
+            returnList.Add(newEntity);
+            }
 
             return Task.FromResult((IEnumerable<TestClass>)returnList);
             }
@@ -260,107 +260,107 @@
 
         var items = (IEnumerable<TestClass>)AllItems.GetRange(startIndex, pageLength);
 
-            totalItems = AllItems.Count();
+        totalItems = AllItems.Count();
         return Task.FromResult(items);
 
         //return Task.Run(() => (IEnumerable<TestClass>)AllItems.GetRange(startIndex, pageLength));
-            }
-
-            public Task Refresh(TestClass[] entity)
-                {
-                throw new NotImplementedException();
-                    }
-
-                    public Task Update(IEnumerable<TestClass> entities)
-                    {
-                        var test = entities.ToArray()[0].ToString();
-
-                        return Task.Run(() =>
-                            {
-                            foreach (var entity in entities)
-                            {
-                        for (int i = 0; i < AllItems.Count; i++)
-                {
-            if (AllItems[i].Id == entity.Id)
-        {
-        AllItems[i] = entity;
-        break;
-            }
-            }
-        }
-        }
-        );
         }
 
-        public Task<Result> Validate(IEnumerable<(TestClass entity, CrudAction action)> actions)
+        public Task Refresh(TestClass[] entity)
         {
             throw new NotImplementedException();
+            }
+
+            public Task Update(IEnumerable<TestClass> entities)
+            {
+            var test = entities.ToArray()[0].ToString();
+
+            return Task.Run(() =>
+            {
+            foreach (var entity in entities)
+            {
+            for (int i = 0; i < AllItems.Count; i++)
+            {
+            if (AllItems[i].Id == entity.Id)
+            {
+            AllItems[i] = entity;
+            break;
+            }
+            }
+            }
+            }
+            );
+            }
+
+            public Task<Result> Validate(IEnumerable<(TestClass entity, CrudAction action)> actions)
+        {
+        throw new NotImplementedException();
         }
 
         Task IDataSource<TestClass>.Create(IEnumerable<TestClass> entities) {
         throw new NotImplementedException();
-        }
+            }
 
             Task<IEnumerable<TestClass>> IDataSource<TestClass>.Read(string searchTerm, int pageLength, ref int page, string sortProperty, SortDirection sortDirection, out int totalItems) {
-            throw new NotImplementedException();
+        throw new NotImplementedException();
         }
 
-//        IEnumerable<TestClass> IDataSource<TestClass>.ReadSync(string searchTerm, int pageLength, ref int page, string sortProperty, SortDirection sortDirection, out int totalItems) {
-            //           throw new NotImplementedException();
+        //        IEnumerable<TestClass> IDataSource<TestClass>.ReadSync(string searchTerm, int pageLength, ref int page, string sortProperty, SortDirection sortDirection, out int totalItems) {
+        //           throw new NotImplementedException();
         //        }
 
         Task IDataSource<TestClass>.Refresh(TestClass[] entities) {
-            throw new NotImplementedException();
+        throw new NotImplementedException();
         }
 
         Task IDataSource<TestClass>.Update(IEnumerable<TestClass> entities) {
-            throw new NotImplementedException();
+        throw new NotImplementedException();
         }
 
         Task IDataSource<TestClass>.Delete(IEnumerable<TestClass> entities) {
         throw new NotImplementedException();
-            }
+        }
 
-            Task<Result> IDataSource<TestClass>.Validate(IEnumerable<(TestClass entity, CrudAction action)> actions) {
-            throw new NotImplementedException();
-            }
+        Task<Result> IDataSource<TestClass>.Validate(IEnumerable<(TestClass entity, CrudAction action)> actions) {
+        throw new NotImplementedException();
+        }
 
 
         void IDataSource<TestClass>.NewDelayed(int count) {
         throw new NotImplementedException();
-            }
+    }
 
-            void IDataSource<TestClass>.CreateDelayed(IEnumerable<TestClass> entities) {
+    void IDataSource<TestClass>.CreateDelayed(IEnumerable<TestClass> entities) {
         throw new NotImplementedException();
-        }
+    }
 
-        void IDataSource<TestClass>.ReadDelayed(string searchTerm, int pageLength, int page, string sortProperty, SortDirection sortDirection) {
-        throw new NotImplementedException();
-        }
+    void IDataSource<TestClass>.ReadDelayed(string searchTerm, int pageLength, int page, string sortProperty, SortDirection sortDirection) {
+    throw new NotImplementedException();
+    }
 
-            void IDataSource<TestClass>.RefreshDelayed(IEnumerable<TestClass> entities) {
-        throw new NotImplementedException();
-        }
+    void IDataSource<TestClass>.RefreshDelayed(IEnumerable<TestClass> entities) {
+    throw new NotImplementedException();
+    }
 
-        void IDataSource<TestClass>.UpdateDelayed(IEnumerable<TestClass> entities) {
-        throw new NotImplementedException();
-        }
+    void IDataSource<TestClass>.UpdateDelayed(IEnumerable<TestClass> entities) {
+    throw new NotImplementedException();
+    }
 
-        void IDataSource<TestClass>.DeleteDelayed(IEnumerable<TestClass> entities) {
-        throw new NotImplementedException();
-        }
+    void IDataSource<TestClass>.DeleteDelayed(IEnumerable<TestClass> entities) {
+    throw new NotImplementedException();
+    }
 
-        void IDataSource<TestClass>.ValidateDelayed(IEnumerable<(TestClass entity, CrudAction action)> actions) {
-        throw new NotImplementedException();
-        }
+    void IDataSource<TestClass>.ValidateDelayed(IEnumerable<(TestClass entity, CrudAction action)> actions) {
+    throw new NotImplementedException();
+    }
 
-        void IDataSource<TestClass>.CountDelayed() {
-            throw new NotImplementedException();
-        }
+    void IDataSource<TestClass>.CountDelayed() {
+    throw new NotImplementedException();
+    }
 
-        public Task<int> Count { get { return Task.Run(() => AllItems.Count); } }
+    public Task<int> Count { get { return Task.Run(() => AllItems.Count); } }
 
-        Task<int> IDataSource<TestClass>.Count => throw new NotImplementedException();
+    Task<int> IDataSource<TestClass>.Count => throw new NotImplementedException();
     }
     */
 
@@ -448,14 +448,14 @@
     //return Task.Run(() => {
     //    foreach (var entity in entities) {
     //        for (int i = 0; i < AllItems.Count; i++) {
-    //            if (AllItems[i].Id == entity.Id) {
+        //            if (AllItems[i].Id == entity.Id) {
     //                AllItems[i] = entity;
     //                break;
     //            }
     //        }
     //    }
     //}
-        //);
+    //);
     throw new NotImplementedException();
     }
 
@@ -538,19 +538,45 @@
         //var connectionString = "ws://192.168.1.106:80/service";
         // Virtual Machine
         //var connectionString = "ws://192.168.1.108:80/service";
-        WebDataSource = new ClientWebSocketsDataSource<TestClass>(connectionString, false);
+        WebDataSource = new ClientWebSocketsDataSource<TestClass>(connectionString, false, InitializeItem, UpdateItem, IdItem);
 
-//SystemLog.Info($"ClientWebSocketsDataSource Created");
-
-        //DataActions.Add(new GridAction<TestClass>("Action1", Action1, "😄", IsAction1Available));
-        DataActions.Add(new GridAction<TestClass>("Action2", Action2, "⚽", IsAction2Available));
+        //SystemLog.Info($"ClientWebSocketsDataSource Created");
+        //DataActions.Add(new GridAction<TestClass>("Action1", Action1, "😄⛔", IsAction1Available));
+        DataActions.Add(new GridAction<TestClass>("DeleteAction", DeleteAction, "❌✡", IsDeleteAvailable));
+        //DataActions.Add(new GridAction<TestClass>("Action2", Action2, "⚽", IsAction2Available));
 
         //ColumnDefinitions.Add(new DataEnd<TestClass, TestClass2>("Data End 1", TestDataExtractor1));
         ColumnDefinitions.Add(new DataEnd<TestClass, TestClass3>("Data End 2", TestDataExtractor2));
 
-        //        Timer = new System.Timers.Timer(1000); // 10 seconds
-        //        Timer.Elapsed += CountDownTimer;
-        //        Timer.Start();
+        //Timer = new System.Timers.Timer(1000); // 1 seconds
+        //Timer.Elapsed += CountDownTimer;
+        //Timer.Start();
+    }
+
+    string InitializeItem(TestClass item, int id)
+    {
+        try {
+            item.FillWithTestData(id);
+        } catch (Exception ex) {
+            return ex.Message;
+        }
+
+        return null;
+    }
+
+    string UpdateItem(TestClass item) {
+        try {
+            // do something here
+
+        } catch (Exception ex) {
+            return ex.Message;
+        }
+
+        return null;
+    }
+
+    string IdItem(TestClass item) {
+        return item.Id.ToString();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender) {
@@ -573,11 +599,11 @@
             //    WriteOutput(System.Text.Encoding.ASCII.GetString(memory.Span));
             //};
             //await Channel.Open();
-            
-//            WebDataSource.New
+
+            //            WebDataSource.New
         }
         catch (Exception ex) {
-            
+
         }
     }
 
@@ -594,10 +620,10 @@
             //Channel.TrySendBytes(Encoding.ASCII.GetBytes("Hello 666"));
         }
         catch (Exception ex) {
-            
+
         }
         //Channel.TrySendBytes(System.Text.Encoding.ASCII.GetBytes("Hello from Server 666"));
-//this sends but is not AbandonedMutexException data
+        //this sends but is not AbandonedMutexException data
     }
 
 
@@ -620,9 +646,18 @@
         return new TestClass3(useData.Name);
     }
 
-    TestClass Action1(TestClass item)
+    bool IsDeleteAvailable(TestClass item)
     {
-        Alert($"Action 1 pressed for Id: {item.Id}");
+        if (item.Name == "Polkadot") {
+            return false;
+        }
+
+        return true;
+    }
+
+    TestClass DeleteAction(TestClass item)
+    {
+        WebDataSource.DeleteDelayed(new List<TestClass>() { item });
 
         return item;
     }
@@ -633,6 +668,8 @@
 
         return item;
     }
+
+
 
     bool IsAction1Available(TestClass item)
     {

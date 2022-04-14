@@ -9,11 +9,16 @@ namespace Sphere10.Framework.Communications {
 		public override Task<int> Count => throw new NotImplementedException();
 
 		public event EventHandlerEx<DataSourceMutatedItems<TItem>> MutatedItems;
+		public InitializeDelegate InitializeItem { get; init; }
+		public UpdateDelegate UpdateItem { get; set; }
+		public IdDelegate IdItem { get; set; }
 
-		public ClientWebSocketsDataSource(string uri, bool secure)
+		public ClientWebSocketsDataSource(string uri, bool secure, InitializeDelegate initializeItem, UpdateDelegate updateItem, IdDelegate idItem)
 			: base(new ClientWebSocketsChannel(uri, secure)) {
 
-//			var id = ((ClientWebSocketsChannel)ProtocolChannel).Id;
+			InitializeItem = initializeItem;
+			UpdateItem = updateItem;
+			IdItem = idItem;
 
 			ProtocolChannel.ReceivedBytes += ProtocolChannel_ReceivedBytes;
 		}
@@ -30,16 +35,14 @@ namespace Sphere10.Framework.Communications {
 				throw new Exception("2 XXXXXXXXX ClientWebSocketsDataSource received bad packet");
 			}
 
-SystemLog.Info($"Received Data, YAYYYYYY");
-
 			var returnData = JsonConvert.DeserializeObject<List<TItem>>(returnPacket.JsonData);
-
 			var mutatedItems = new DataSourceMutatedItems<TItem>();
 			mutatedItems.TotalItems = totalItems;
-
 			switch (returnPacket.Tokens[0]) {
 				case "newreturn":
-
+					foreach (var returnItem in returnData) {
+						mutatedItems.UpdatedItems.Add(new CrudActionItem<TItem>(CrudAction.Create, returnItem));
+					}
 				break;
 
 				case "readreturn":
@@ -51,6 +54,12 @@ SystemLog.Info($"Received Data, YAYYYYYY");
 				case "updatereturn":
 					foreach (var returnItem in returnData) {
 						mutatedItems.UpdatedItems.Add(new CrudActionItem<TItem>(CrudAction.Update, returnItem));
+					}
+				break;
+
+				case "deletereturn":
+					foreach (var returnItem in returnData) {
+						mutatedItems.UpdatedItems.Add(new CrudActionItem<TItem>(CrudAction.Delete, returnItem));
 					}
 				break;
 
@@ -80,9 +89,6 @@ SystemLog.Info($"Received Data, YAYYYYYY");
 
 		public override Task<IEnumerable<TItem>> Read(string searchTerm, int pageLength, ref int page, string sortProperty, SortDirection sortDirection, out int totalItems) {
 
-			//totalItems = 0;
-			//return Task.FromResult((IEnumerable<TItem>)new List<TItem>());
-
 			var usePage = page;
 			var returnData = new List<TItem>();
 
@@ -100,11 +106,7 @@ SystemLog.Info($"Received Data, YAYYYYYY");
 
 					totalItems = int.Parse(returnPacket.Tokens[1]);
 
-					//if (returnPacket.Message != "readreturn") throw new Exception("ClientWebSocketsDataSource Read() received bad message");
-
 					returnData = JsonConvert.DeserializeObject<List<TItem>>(returnPacket.JsonData);
-
-					//					var actionData = new List<CrudActionItem<TItem>>();// the data to use in IDataSource
 
 					var mutatedItems = new DataSourceMutatedItems<TItem>();
 					mutatedItems.TotalItems = totalItems;
@@ -193,16 +195,20 @@ SystemLog.Info($"Received Data, YAYYYYYY");
 			return task;
 		}
 		public override void UpdateDelayed(IEnumerable<TItem> entities) {
-				var jsonData = JsonConvert.SerializeObject(entities);
-				var sendPacket = new WebSocketsPacket($"update {entities.Count()}", jsonData);
-				SendBytes(sendPacket.ToBytes());
+			var jsonData = JsonConvert.SerializeObject(entities);
+			var id = ((ClientWebSocketsChannel)ProtocolChannel).Id;
+			var sendPacket = new WebSocketsPacket(id, $"update {entities.Count()}", jsonData);
+			SendBytes(sendPacket.ToBytes());
 		}
 
 		public override Task Delete(IEnumerable<TItem> entities) {
 			throw new NotImplementedException();
 		}
 		public override void DeleteDelayed(IEnumerable<TItem> entities) {
-			throw new NotImplementedException();
+			var jsonData = JsonConvert.SerializeObject(entities);
+			var id = ((ClientWebSocketsChannel)ProtocolChannel).Id;
+			var sendPacket = new WebSocketsPacket(id, $"delete {entities.Count()}", jsonData);
+			SendBytes(sendPacket.ToBytes());
 		}
 
 		public override Task<Result> Validate(IEnumerable<(TItem entity, CrudAction action)> actions) {

@@ -4,10 +4,10 @@ using System.Collections.Generic;
 namespace Sphere10.Framework {
 
 	/// <summary>
-	/// An <see cref="IUpdateableMerkleTree"/> that maintains only a subset of the nodes. This is useful for constructing
+	/// An <see cref="IEditableMerkleTree"/> that maintains only a subset of the nodes. This is useful for constructing
 	/// and verifying multi-item proofs.
 	/// </summary>
-	public sealed class PartialMerkleTree : Dictionary<MerkleCoordinate, byte[]>,  IUpdateableMerkleTree {
+	public sealed class PartialMerkleTree : Dictionary<MerkleCoordinate, byte[]>,  IEditableMerkleTree {
 
 		public PartialMerkleTree(CHF hashAlgorithm, int leafCount, IEnumerable<KeyValuePair<MerkleCoordinate, byte[]>> nodes) {
 			HashAlgorithm = hashAlgorithm;

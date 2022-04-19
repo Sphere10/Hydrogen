@@ -12,7 +12,7 @@ namespace Sphere10.Framework {
 	///  
 	/// Not suitable for "large" trees. Not thread-safe.
 	/// </summary>
-	public class SimpleMerkleTree : IUpdateableMerkleTree {
+	public class SimpleMerkleTree : IEditableMerkleTree {
 		private readonly IExtendedList<IExtendedList<byte[]>> _levels;
 		private readonly MerkleSize _size;
 

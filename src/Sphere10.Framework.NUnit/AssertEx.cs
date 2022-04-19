@@ -484,7 +484,7 @@ namespace Sphere10.Framework.NUnit {
 		}
 
 
-		public static void AreEqual(IUpdateableMerkleTree expected, IUpdateableMerkleTree actual) {
+		public static void AreEqual(IEditableMerkleTree expected, IEditableMerkleTree actual) {
 			Assert.AreEqual(expected.Size, actual.Size);
 			Assert.AreEqual(expected.Leafs.Count, actual.Leafs.Count);
 			Assert.AreEqual(expected.Leafs.ToArray(), actual.Leafs.ToArray());

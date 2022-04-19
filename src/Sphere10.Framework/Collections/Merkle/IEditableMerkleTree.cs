@@ -1,6 +1,6 @@
 ﻿namespace Sphere10.Framework {
 
-	public interface IUpdateableMerkleTree : IMerkleTree {
+	public interface IEditableMerkleTree : IMerkleTree {
 		IExtendedList<byte[]> Leafs { get; }
 	}
 

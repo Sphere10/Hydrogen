@@ -19,7 +19,7 @@ namespace Sphere10.Framework {
             : this(buffer, new FlatMerkleTree(chf)) {
         }
 
-        public MerklePagedBuffer(IMemoryPagedBuffer buffer, IUpdateableMerkleTree merkleTreeImpl)
+        public MerklePagedBuffer(IMemoryPagedBuffer buffer, IEditableMerkleTree merkleTreeImpl)
             : base(buffer) {
             Guard.ArgumentNotNull(buffer, nameof(buffer));
             Guard.ArgumentNotNull(merkleTreeImpl, nameof(merkleTreeImpl));
@@ -118,9 +118,9 @@ namespace Sphere10.Framework {
 
         private void MarkMerkleDirty(IPage<byte> page, bool dirty) => _merklePagesDirty[page.Number] = dirty;
 
-        private class MerkleTreeImpl : UpdatableMerkleTreeDecorator {
+        private class MerkleTreeImpl : EditableMerkleTreeDecorator {
             private readonly MerklePagedBuffer _parent;
-            public MerkleTreeImpl(MerklePagedBuffer parent, IUpdateableMerkleTree internalMerkleTree)
+            public MerkleTreeImpl(MerklePagedBuffer parent, IEditableMerkleTree internalMerkleTree)
                 : base(internalMerkleTree) {
                 _parent = parent;
             }

@@ -269,11 +269,11 @@ namespace Sphere10.Framework.Tests {
 		}
 
 
-		private IUpdateableMerkleTree CreateReferenceTree(CHF chf, IEnumerable<byte[]> leafs = null)
+		private IEditableMerkleTree CreateReferenceTree(CHF chf, IEnumerable<byte[]> leafs = null)
 			=> CreateMerkleTree(MerkleTreeImpl.Simple, chf);
 		
 
-		private IUpdateableMerkleTree CreateMerkleTree(MerkleTreeImpl impl, CHF chf, IEnumerable<byte[]> leafs = null) {
+		private IEditableMerkleTree CreateMerkleTree(MerkleTreeImpl impl, CHF chf, IEnumerable<byte[]> leafs = null) {
 			switch (impl) {
 				case MerkleTreeImpl.Simple:
 					return new SimpleMerkleTree(chf, leafs);

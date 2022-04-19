@@ -14,7 +14,7 @@ namespace Sphere10.Framework {
 	//  - verifying and generating append-proofs 
 	//  - appending leaves
 	// TODO: write ExtendedList that keeps partial items only
-	public class LongMerkleTree : IUpdateableMerkleTree {
+	public class LongMerkleTree : IEditableMerkleTree {
 		private readonly List<MerkleSubRoot> _subRoots;
 		private List<MerkleCoordinate> _subRootCoords;
 		private readonly ObservableExtendedList<byte[]> _observableLeafs;

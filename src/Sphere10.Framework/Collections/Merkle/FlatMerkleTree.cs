@@ -15,7 +15,7 @@ namespace Sphere10.Framework {
 	/// Update Complexity: O(N)
 	/// Memory Complexity: O(N LogN)
 	/// </summary>
-	public class FlatMerkleTree : IUpdateableMerkleTree {
+	public class FlatMerkleTree : IEditableMerkleTree {
 		public const int DefaultLeafGrowth = 4096;
 		public const int DefaultMaxLeaf = 1 << 24;
 		private IBuffer _nodeBuffer;

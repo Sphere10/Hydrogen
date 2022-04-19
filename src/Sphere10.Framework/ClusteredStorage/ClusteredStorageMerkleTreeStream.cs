@@ -4,11 +4,11 @@ using System.Collections.Generic;
 namespace Sphere10.Framework.Collections;
 
 /// <summary>
-/// Maps a <see cref="IUpdateableMerkleTree"/> onto a <see cref="Stream"/> within a <see cref="IClusteredStorage"/>. The tree data 
+/// Maps a <see cref="IEditableMerkleTree"/> onto a <see cref="Stream"/> within a <see cref="IClusteredStorage"/>. The tree data 
 /// is stored as a <see cref="FlatMerkleTree"/> and mapped to reserved <see cref="ClusteredStreamRecord"/> within the <see cref="IClusteredStorage"/>.
 /// </summary>
 /// <remarks>This class is intended for building <see cref="IMerkleTree"/>'s of items stored in a <see cref="IClusteredStorage"/>-based containers.</remarks>
-internal sealed class ClusteredStorageMerkleTreeStream : IUpdateableMerkleTree {
+internal sealed class ClusteredStorageMerkleTreeStream : IEditableMerkleTree {
 
 	private readonly IClusteredStorage _storage;
 	private readonly int _flatTreeStreamRecord;
@@ -36,7 +36,7 @@ internal sealed class ClusteredStorageMerkleTreeStream : IUpdateableMerkleTree {
 	}
 	public IExtendedList<byte[]> Leafs { get; }
 
-	private IDisposable EnterAccessMerkleTreeScope(out IUpdateableMerkleTree merkleTree) {
+	private IDisposable EnterAccessMerkleTreeScope(out IEditableMerkleTree merkleTree) {
 		var disposables = new Disposables(false);
 		var streamScope = _storage.Open(_flatTreeStreamRecord);
 		var flatTreeData = new StreamMappedBuffer(streamScope.Stream);

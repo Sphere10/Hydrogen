@@ -12,7 +12,7 @@ namespace Sphere10.Framework;
 public class MerkleListAdapter<TItem, TList> : ExtendedListDecorator<TItem, TList>, IMerkleList<TItem> 
 	where TList : IExtendedList<TItem> {
 	protected readonly IItemHasher<TItem> ItemHasher;
-	protected readonly IUpdateableMerkleTree InternalMerkleTree;
+	protected readonly IEditableMerkleTree InternalMerkleTree;
 
 	public MerkleListAdapter(TList internalList)
 		: this(internalList, CHF.SHA2_256) {
@@ -26,7 +26,7 @@ public class MerkleListAdapter<TItem, TList> : ExtendedListDecorator<TItem, TLis
 		: this(internalList, new ItemHasher<TItem>(hashAlgorithm, serializer), new FlatMerkleTree(hashAlgorithm)) {
 	}
 
-	public MerkleListAdapter(TList internalList, IItemHasher<TItem> hasher, IUpdateableMerkleTree merkleTreeImpl)
+	public MerkleListAdapter(TList internalList, IItemHasher<TItem> hasher, IEditableMerkleTree merkleTreeImpl)
 		: base(internalList) {
 		ItemHasher = hasher.WithNullHash(Tools.Array.Gen<byte>(Hashers.GetDigestSizeBytes(merkleTreeImpl.HashAlgorithm), 0));
 		InternalMerkleTree = merkleTreeImpl;
@@ -125,7 +125,7 @@ public class MerkleListAdapter<TItem> : MerkleListAdapter<TItem, IExtendedList<T
 		: base(internalList, new ItemHasher<TItem>(hashAlgorithm, serializer), new FlatMerkleTree(hashAlgorithm)) {
 	}
 
-	public MerkleListAdapter(IExtendedList<TItem> internalList, IItemHasher<TItem> hasher, IUpdateableMerkleTree merkleTreeImpl)
+	public MerkleListAdapter(IExtendedList<TItem> internalList, IItemHasher<TItem> hasher, IEditableMerkleTree merkleTreeImpl)
 		: base(internalList, hasher, merkleTreeImpl) {
 	}
 }

@@ -15,19 +15,19 @@ namespace Sphere10.Framework {
 			return bytes;
 		}
 		
-		public static int Serialize<TItem>(this IItemSerializer<TItem> serializer, TItem @object, EndianBinaryWriter writer) {
-			if (!serializer.TrySerialize(@object, writer, out var bytesWritten))
-				throw new InvalidOperationException($"Unable to serialize object of type '{@object?.GetType().Name ?? "NULL"}'");
+		public static int Serialize<TItem>(this IItemSerializer<TItem> serializer, TItem item, EndianBinaryWriter writer) {
+			if (!serializer.TrySerialize(item, writer, out var bytesWritten))
+				throw new InvalidOperationException($"Unable to serialize object of type '{item?.GetType().Name ?? "NULL"}'");
 			return bytesWritten;
 		}
 
-		public static bool TrySerializeLE<TItem>(this IItemSerializer<TItem> serializer, TItem @object, out byte[] data)
-			=> serializer.TrySerialize(@object, out data, Endianness.LittleEndian);
+		public static bool TrySerializeLE<TItem>(this IItemSerializer<TItem> serializer, TItem item, out byte[] data)
+			=> serializer.TrySerialize(item, out data, Endianness.LittleEndian);
 
-		public static bool TrySerialize<TItem>(this IItemSerializer<TItem> serializer, TItem @object, out byte[] data, Endianness endianness) {
+		public static bool TrySerialize<TItem>(this IItemSerializer<TItem> serializer, TItem item, out byte[] data, Endianness endianness) {
 			using var stream = new MemoryStream();
 			using var writer = new EndianBinaryWriter(EndianBitConverter.For(endianness), stream);
-			if (!serializer.TrySerialize(@object, writer, out _)) {
+			if (!serializer.TrySerialize(item, writer, out _)) {
 				data = null;
 				return false;
 			}

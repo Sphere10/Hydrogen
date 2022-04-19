@@ -34,7 +34,7 @@ namespace Sphere10.Framework {
 		private readonly LookupEx<int, int> _checksumToIndexLookup;
 		private readonly SortedList<int> _unusedRecords;
 
-		public StreamMappedDictionarySK(Stream rootStream, int clusterSize, IItemSerializer<TKey> keySerializer, IItemSerializer<TValue> valueSerializer, IItemChecksum<TKey> keyChecksum = null, IEqualityComparer<TKey> keyComparer = null, IEqualityComparer<TValue> valueComparer = null, ClusteredStoragePolicy policy = ClusteredStoragePolicy.DictionaryDefault, int reservedRecords = 0, Endianness endianness = Endianness.LittleEndian)
+		public StreamMappedDictionarySK(Stream rootStream, int clusterSize, IItemSerializer<TKey> keyStaticSizedSerializer, IItemSerializer<TValue> valueSerializer = null, IItemChecksum<TKey> keyChecksum = null, IEqualityComparer<TKey> keyComparer = null, IEqualityComparer<TValue> valueComparer = null, ClusteredStoragePolicy policy = ClusteredStoragePolicy.DictionaryDefault, int reservedRecords = 0, Endianness endianness = Endianness.LittleEndian)
 			: this(
 				new StreamMappedList<TValue>(
 					rootStream,
@@ -42,11 +42,11 @@ namespace Sphere10.Framework {
 					valueSerializer,
 					valueComparer,
 					policy | ClusteredStoragePolicy.TrackChecksums | ClusteredStoragePolicy.TrackKey,
-					keySerializer.StaticSize,
+					keyStaticSizedSerializer.StaticSize,
 					reservedRecords,
 					endianness
 				),
-				keySerializer,
+				keyStaticSizedSerializer,
 				valueSerializer,
 				keyChecksum,
 				keyComparer,
@@ -54,26 +54,27 @@ namespace Sphere10.Framework {
 			) {
 		}
 
-		public StreamMappedDictionarySK(IStreamMappedList<TValue> valueStore, IItemSerializer<TKey> keySerializer, IItemSerializer<TValue> valueSerializer, IItemChecksum<TKey> keyChecksum = null, IEqualityComparer<TKey> keyComparer = null, IEqualityComparer<TValue> valueComparer = null) {
-			Guard.ArgumentNotNull(keySerializer, nameof(keySerializer));
-			Guard.ArgumentNotNull(valueSerializer, nameof(valueSerializer));
-			Guard.Argument(keySerializer.IsStaticSize, nameof(keySerializer),"Keys must be statically sized");
+		public StreamMappedDictionarySK(IStreamMappedList<TValue> valueStore, IItemSerializer<TKey> keyStaticSizedSerializer, IItemSerializer<TValue> valueSerializer = null, IItemChecksum<TKey> keyChecksum = null, IEqualityComparer<TKey> keyComparer = null, IEqualityComparer<TValue> valueComparer = null) {
+			Guard.ArgumentNotNull(keyStaticSizedSerializer, nameof(keyStaticSizedSerializer));
+			Guard.Argument(keyStaticSizedSerializer.IsStaticSize, nameof(keyStaticSizedSerializer),"Keys must be statically sized");
 			Guard.Argument(valueStore.Storage.Policy.HasFlag(ClusteredStoragePolicy.TrackChecksums), nameof(valueStore), $"Checksum tracking must be enabled in {nameof(StreamMappedDictionarySK<TKey, TValue>)} implementations.");
 			Guard.Argument(valueStore.Storage.Policy.HasFlag(ClusteredStoragePolicy.TrackKey), nameof(valueStore), $"Checksum tracking must be enabled in {nameof(StreamMappedDictionarySK<TKey, TValue>)} implementations.");
 
 			_keyComparer = keyComparer ?? EqualityComparer<TKey>.Default;
 			_valueComparer = valueComparer ?? EqualityComparer<TValue>.Default;
 			_valueStore = valueStore;
-			_keySerializer = keySerializer;
-			_valueSerializer = valueSerializer;
+			_keySerializer = keyStaticSizedSerializer;
+			_valueSerializer = valueSerializer ?? ItemSerializer<TValue>.Default;
 			_keyChecksum = keyChecksum ?? new ActionChecksum<TKey>(DefaultCalculateKeyChecksum);
 			_checksumToIndexLookup = new LookupEx<int, int>();
 			_unusedRecords = new();
 			RequiresLoad = _valueStore.Storage.Records.Count > _valueStore.Storage.Header.ReservedRecords;
-			UnusedKeyBytes = Tools.Array.Gen<byte>(keySerializer.StaticSize, 0);
+			UnusedKeyBytes = Tools.Array.Gen<byte>(_keySerializer.StaticSize, 0);
 		}
 
 		public IClusteredStorage Storage => _valueStore.Storage;
+
+		object IStreamMappedDictionary<TKey, TValue>.InternalList => _valueStore;
 
 		protected IEnumerable<KeyValuePair<TKey, TValue>> KeyValuePairs {
 			get {

@@ -28,7 +28,7 @@ public class MerkleListAdapter<TItem, TList> : ExtendedListDecorator<TItem, TLis
 
 	public MerkleListAdapter(TList internalList, IItemHasher<TItem> hasher, IUpdateableMerkleTree merkleTreeImpl)
 		: base(internalList) {
-		ItemHasher = hasher;
+		ItemHasher = hasher.WithNullHash(Tools.Array.Gen<byte>(Hashers.GetDigestSizeBytes(merkleTreeImpl.HashAlgorithm), 0));
 		InternalMerkleTree = merkleTreeImpl;
 	}
 

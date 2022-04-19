@@ -18,25 +18,25 @@ namespace Sphere10.Framework {
 	/// <typeparam name="TValue">The type of value stored in the dictionary</typeparam>
 	/// <remarks>When deleting an item the underlying <see cref="ClusteredStreamRecord"/> is marked nullified but retained and re-used in later calls to <see cref="Add(TKey,TValue)"/>.</remarks>
 	// TODO: there are some memory-blowout lookups in this class that need to be refactored out (should be safe for non-huge dictionaries).
-	public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>, IStreamMappedDictionary<TKey, TValue>, ILoadable {
+	public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>, IStreamMappedDictionary<TKey, TValue> {
 		public event EventHandlerEx<object> Loading;
 		public event EventHandlerEx<object> Loaded;
 
-		private readonly IStreamMappedList<KeyValuePair<TKey, TValue>> _kvpStore;
+		protected readonly IStreamMappedList<KeyValuePair<TKey, TValue>> KVPList;
 		private readonly IEqualityComparer<TKey> _keyComparer;
 		private readonly IEqualityComparer<TValue> _valueComparer;
 		private readonly IItemChecksum<TKey> _keyChecksum;
 		private readonly LookupEx<int, int> _checksumToIndexLookup;
 		private readonly SortedList<int> _unusedRecords;
 
-		public StreamMappedDictionary(Stream rootStream, int clusterSize, IItemSerializer<TKey> keySerializer, IItemSerializer<TValue> valueSerializer, IItemChecksum<TKey> keyChecksum = null, IEqualityComparer<TKey> keyComparer = null, IEqualityComparer<TValue> valueComparer = null, ClusteredStoragePolicy policy = ClusteredStoragePolicy.DictionaryDefault, int reservedRecords = 0, Endianness endianness = Endianness.LittleEndian)
+		public StreamMappedDictionary(Stream rootStream, int clusterSize, IItemSerializer<TKey> keySerializer = null, IItemSerializer<TValue> valueSerializer = null, IItemChecksum<TKey> keyChecksum = null, IEqualityComparer<TKey> keyComparer = null, IEqualityComparer<TValue> valueComparer = null, ClusteredStoragePolicy policy = ClusteredStoragePolicy.DictionaryDefault, int reservedRecords = 0, Endianness endianness = Endianness.LittleEndian)
 			: this(
 				new StreamMappedList<KeyValuePair<TKey, TValue>>(
 					rootStream,
 					clusterSize,
 					new KeyValuePairSerializer<TKey, TValue>(
-						keySerializer,
-						valueSerializer
+						keySerializer ?? ItemSerializer<TKey>.Default,
+						valueSerializer ?? ItemSerializer<TValue>.Default
 					),
 					new KeyValuePairEqualityComparer<TKey, TValue>(
 						keyComparer,
@@ -58,21 +58,23 @@ namespace Sphere10.Framework {
 			Guard.ArgumentNotNull(kvpStore, nameof(kvpStore));
 			_keyComparer = keyComparer ?? EqualityComparer<TKey>.Default;
 			_valueComparer = valueComparer ?? EqualityComparer<TValue>.Default;
-			_kvpStore = kvpStore;
+			KVPList = kvpStore;
 			_keyChecksum = keyChecksum ?? new ActionChecksum<TKey>(DefaultCalculateKeyChecksum);
 			_checksumToIndexLookup = new LookupEx<int, int>();
 			_unusedRecords = new();
-			RequiresLoad = _kvpStore.Storage.Records.Count > _kvpStore.Storage.Header.ReservedRecords;
+			RequiresLoad = KVPList.Storage.Records.Count > KVPList.Storage.Header.ReservedRecords;
 		}
 
-		public IClusteredStorage Storage => _kvpStore.Storage;
+		public IClusteredStorage Storage => KVPList.Storage;
+
+		object IStreamMappedDictionary<TKey, TValue>.InternalList => KVPList;
 
 		protected IEnumerable<KeyValuePair<TKey, TValue>> KeyValuePairs {
 			get {
-				for (var i = 0; i < _kvpStore.Count; i++) {
+				for (var i = 0; i < KVPList.Count; i++) {
 					if (IsUnusedRecord(i))
 						continue;
-					var (key, value) = _kvpStore[i];
+					var (key, value) = KVPList[i];
 					yield return new KeyValuePair<TKey, TValue>(key, value);
 				}
 			}
@@ -83,7 +85,7 @@ namespace Sphere10.Framework {
 		public override int Count {
 			get {
 				CheckLoaded();
-				return _kvpStore.Count - _unusedRecords.Count;
+				return KVPList.Count - _unusedRecords.Count;
 			}
 		}
 
@@ -97,19 +99,19 @@ namespace Sphere10.Framework {
 		}
 
 		public TKey ReadKey(int index) {
-			if (Storage.IsNull(_kvpStore.Storage.Header.ReservedRecords + index))
+			if (Storage.IsNull(KVPList.Storage.Header.ReservedRecords + index))
 				throw new InvalidOperationException($"Stream record {index} is null");
-			using var scope = Storage.Open(_kvpStore.Storage.Header.ReservedRecords + index);
+			using var scope = Storage.Open(KVPList.Storage.Header.ReservedRecords + index);
 			var reader = new EndianBinaryReader(EndianBitConverter.For(Storage.Endianness), scope.Stream);
-			return ((KeyValuePairSerializer<TKey, TValue>)_kvpStore.ItemSerializer).DeserializeKey(scope.Record.Size, reader);
+			return ((KeyValuePairSerializer<TKey, TValue>)KVPList.ItemSerializer).DeserializeKey(scope.Record.Size, reader);
 		}
 
 		public TValue ReadValue(int index) {
-			if (Storage.IsNull(_kvpStore.Storage.Header.ReservedRecords + index))
+			if (Storage.IsNull(KVPList.Storage.Header.ReservedRecords + index))
 				throw new InvalidOperationException($"Stream record {index} is null");
-			using var scope = Storage.Open(_kvpStore.Storage.Header.ReservedRecords + index);
+			using var scope = Storage.Open(KVPList.Storage.Header.ReservedRecords + index);
 			var reader = new EndianBinaryReader(EndianBitConverter.For(Storage.Endianness), scope.Stream);
-			return ((KeyValuePairSerializer<TKey, TValue>)_kvpStore.ItemSerializer).DeserializeValue(scope.Record.Size, reader);
+			return ((KeyValuePairSerializer<TKey, TValue>)KVPList.ItemSerializer).DeserializeValue(scope.Record.Size, reader);
 		}
 
 		public override void Add(TKey key, TValue value) {
@@ -145,7 +147,7 @@ namespace Sphere10.Framework {
 
 		public override void Clear() {
 			// Load not required
-			_kvpStore.Clear();
+			KVPList.Clear();
 			_checksumToIndexLookup.Clear();
 			_unusedRecords.Clear();
 		}
@@ -188,14 +190,13 @@ namespace Sphere10.Framework {
 			return false;
 		}
 
-
 		public override void Add(KeyValuePair<TKey, TValue> item) {
 			Guard.ArgumentNotNull(item, nameof(item));
 			Guard.ArgumentNotNull(item, nameof(item));
 			CheckLoaded();
 			var kvp = new KeyValuePair<TKey, TValue>(item.Key, item.Value);
 			if (TryFindKey(item.Key, out var index)) {
-				_kvpStore.Update(index, kvp);
+				KVPList.Update(index, kvp);
 			} else {
 				AddInternal(kvp);
 			}
@@ -216,7 +217,7 @@ namespace Sphere10.Framework {
 		public void RemoveAt(int index) {
 			// We don't delete the instance, we mark is as unused. Use Shrink to intelligently remove unused records.
 			var kvp = KeyValuePair.Create(default(TKey), default(TValue));
-			using var scope = _kvpStore.EnterUpdateScope(index, kvp);
+			using var scope = KVPList.EnterUpdateScope(index, kvp);
 
 			// Mark record as unused
 			Guard.Ensure(scope.Record.Traits.HasFlag(ClusteredStreamTraits.IsUsed), "Record not in used state");
@@ -248,14 +249,14 @@ namespace Sphere10.Framework {
 			CheckLoaded();
 			for (var i = _unusedRecords.Count - 1; i >= 0; i--) {
 				var index = _unusedRecords[i];
-				_kvpStore.RemoveAt(index);
+				KVPList.RemoveAt(index);
 				_unusedRecords.RemoveAt(i);
 			}
 		}
 
 		public override IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator() {
 			CheckLoaded();
-			return _kvpStore
+			return KVPList
 			  .Where((_, i) => !_unusedRecords.Contains(i))
 			  .Select(kvp => new KeyValuePair<TKey, TValue>(kvp.Key, kvp.Value))
 			  .GetEnumerator();
@@ -263,7 +264,7 @@ namespace Sphere10.Framework {
 
 		protected override IEnumerator<TKey> GetKeysEnumerator() {
 			CheckLoaded();
-			return Enumerable.Range(0, _kvpStore.Count)
+			return Enumerable.Range(0, KVPList.Count)
 			   .Where(i => !_unusedRecords.Contains(i))
 			   .Select(ReadKey)
 			   .GetEnumerator();
@@ -271,7 +272,7 @@ namespace Sphere10.Framework {
 
 		protected override IEnumerator<TValue> GetValuesEnumerator() {
 			CheckLoaded();
-			return Enumerable.Range(0, _kvpStore.Count)
+			return Enumerable.Range(0, KVPList.Count)
 				.Where(i => !_unusedRecords.Contains(i))
 				.Select(ReadValue)
 				.GetEnumerator();
@@ -288,9 +289,9 @@ namespace Sphere10.Framework {
 			ClusteredStreamScope scope;
 			if (_unusedRecords.Any()) {
 				index = ConsumeUnusedRecord();
-				scope = _kvpStore.EnterUpdateScope(index, item);
+				scope = KVPList.EnterUpdateScope(index, item);
 			} else {
-				scope = _kvpStore.EnterAddScope(item);
+				scope = KVPList.EnterAddScope(item);
 				index = Count - 1;
 			}
 
@@ -307,7 +308,7 @@ namespace Sphere10.Framework {
 
 		private void UpdateInternal(int index, KeyValuePair<TKey, TValue> item) {
 			// Updating value only, records (and checksum) don't change  when updating
-			using var scope = _kvpStore.EnterUpdateScope(index, item);
+			using var scope = KVPList.EnterUpdateScope(index, item);
 			scope.Record.Traits = scope.Record.Traits.CopyAndSetFlags(ClusteredStreamTraits.IsUsed, true);
 			scope.Record.KeyChecksum = _keyChecksum.Calculate(item.Key);
 		}
@@ -326,8 +327,8 @@ namespace Sphere10.Framework {
 		private void RefreshChecksumToIndexLookup() {
 			_checksumToIndexLookup.Clear();
 			_unusedRecords.Clear();
-			for (var i = 0; i < _kvpStore.Count; i++) {
-				var record = _kvpStore.Storage.Records[_kvpStore.Storage.Header.ReservedRecords + i];
+			for (var i = 0; i < KVPList.Count; i++) {
+				var record = KVPList.Storage.Records[KVPList.Storage.Header.ReservedRecords + i];
 				if (record.Traits.HasFlag(ClusteredStreamTraits.IsUsed))
 					_checksumToIndexLookup.Add(record.KeyChecksum, i);
 				else

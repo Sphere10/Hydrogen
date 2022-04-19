@@ -17,12 +17,12 @@ public class StreamMappedMerkleList<TItem> : MerkleListAdapter<TItem, IStreamMap
 			  rootStream,
 			  clusterSize,
 			  hashAlgorithm,
-			  new ItemHasher<TItem>(hashAlgorithm, itemSerializer ?? ItemSerializer<TItem>.Default),
-			  itemSerializer ?? ItemSerializer<TItem>.Default,
+			  new ItemHasher<TItem>(hashAlgorithm, itemSerializer).WithNullHash(Tools.Array.Gen<byte>(Hashers.GetDigestSizeBytes(hashAlgorithm), 0)),
+			  itemSerializer,
 			  itemComparer,
 			  policy,
 			  endianness
-			) {
+		) {
 	}
 
 	public StreamMappedMerkleList(Stream rootStream, int clusterSize, CHF hashAlgorithm, IItemHasher<TItem> hasher, IItemSerializer<TItem> itemSerializer = null, IEqualityComparer<TItem> itemComparer = null, ClusteredStoragePolicy policy = ClusteredStoragePolicy.Default, Endianness endianness = Endianness.LittleEndian)
@@ -30,7 +30,7 @@ public class StreamMappedMerkleList<TItem> : MerkleListAdapter<TItem, IStreamMap
 			  new StreamMappedList<TItem>(rootStream, clusterSize, itemSerializer, itemComparer, policy, 0, 1, endianness),
 			  hasher ?? new ItemHasher<TItem>(hashAlgorithm, itemSerializer),
 			  hashAlgorithm
-			  ) {
+		  ) {
 	}
 
 	public StreamMappedMerkleList(IStreamMappedList<TItem> clusteredList, IItemHasher<TItem> hasher, CHF hashAlgorithm)

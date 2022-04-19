@@ -1,4 +1,6 @@
-﻿namespace Sphere10.Framework {
+﻿using System.Collections;
+
+namespace Sphere10.Framework {
 
 	public interface IMerkleList<TItem> : IExtendedList<TItem>, IMerkleCollection<TItem> {
 	}

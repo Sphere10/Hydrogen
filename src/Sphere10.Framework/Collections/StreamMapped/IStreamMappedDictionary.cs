@@ -8,6 +8,8 @@ namespace Sphere10.Framework {
 
 		IClusteredStorage Storage { get; }
 
+		internal object InternalList { get; }  // this is used to get the internal list container (parent of Storage)
+
 		TKey ReadKey(int index);
 
 		TValue ReadValue(int index);
@@ -18,6 +20,8 @@ namespace Sphere10.Framework {
 
 		void RemoveAt(int index);
 
-	}
+		
 
+	}
+	
 }

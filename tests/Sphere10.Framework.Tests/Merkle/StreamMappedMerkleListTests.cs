@@ -13,6 +13,7 @@ namespace Sphere10.Framework.Tests {
 	[TestFixture]
 	[Parallelizable(ParallelScope.Children)]
 	public class StreamMappedMerkleListTests : MerkleListTestsBase {
+		private const int DefaultClusterSize = 256;
 
 		[Test]
 		public void TestAdaptedScopes([Values(CHF.SHA2_256, CHF.Blake2b_128)] CHF chf) {
@@ -30,7 +31,7 @@ namespace Sphere10.Framework.Tests {
 
 		protected override IDisposable CreateMerkleList([Values(CHF.SHA2_256, CHF.Blake2b_128)] CHF chf, out IMerkleList<string> merkleList) {
 			var memStream = new MemoryStream();
-			var clusteredList = new StreamMappedMerkleList<string>(memStream, 256, chf);
+			var clusteredList = new StreamMappedMerkleList<string>(memStream, DefaultClusterSize, chf);
 			merkleList = clusteredList;
 			return memStream;
 		}

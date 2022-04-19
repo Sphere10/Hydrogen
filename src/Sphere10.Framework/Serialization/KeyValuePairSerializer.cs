@@ -17,9 +17,9 @@ namespace Sphere10.Framework {
 		private readonly IItemSerializer<TKey> _keySerializer;
 		private readonly IItemSerializer<TValue> _valueSerializer;
 
-		public KeyValuePairSerializer(IItemSerializer<TKey> keySerializer, IItemSerializer<TValue> valueSerializer) {
-			_keySerializer = keySerializer;
-			_valueSerializer = valueSerializer;
+		public KeyValuePairSerializer(IItemSerializer<TKey> keySerializer = null, IItemSerializer<TValue> valueSerializer = null) {
+			_keySerializer = keySerializer ?? ItemSerializer<TKey>.Default;
+			_valueSerializer = valueSerializer ?? ItemSerializer<TValue>.Default;
 		}
 
 		public override int CalculateSize(KeyValuePair<TKey, TValue> item) {

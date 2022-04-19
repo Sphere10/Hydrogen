@@ -9,19 +9,20 @@ namespace Sphere10.Framework {
 			: this(CHF.SHA2_256, internalSerializer) {
 		}
 
-		public ItemHasher(CHF hashAlgorithm, IItemSerializer<TItem> internalSerializer)
-			: base(internalSerializer) {
+		public ItemHasher(CHF hashAlgorithm, IItemSerializer<TItem> internalSerializer = null)
+			: base(internalSerializer ?? ItemSerializer<TItem>.Default) {
 			_hashAlgorithm = hashAlgorithm;
 			DigestLength = Hashers.GetDigestSizeBytes(_hashAlgorithm);
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public byte[] Hash(TItem @object) {
-			Guard.ArgumentNotNull(@object, nameof(@object));
-			return Hashers.Hash(_hashAlgorithm, @object, this);
+		public byte[] Hash(TItem item) {
+			Guard.ArgumentNotNull(item, nameof(item));
+			return Hashers.Hash(_hashAlgorithm, item, this);
 		}
 
 		public int DigestLength { get; }
 	}
+
 
 }

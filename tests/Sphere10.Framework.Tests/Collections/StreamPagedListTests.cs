@@ -26,7 +26,7 @@ namespace Sphere10.Framework.Tests {
     public class StreamPagedListTests {
 
         [Test]
-        public void V1_Add_1([Values(1, 111)] int pageSize) {
+        public void Add_1([Values(1, 111)] int pageSize) {
             using var stream = new MemoryStream();
             var list = new StreamPagedList<string>(new StringSerializer(Encoding.UTF8), stream, pageSize);
 
@@ -35,7 +35,7 @@ namespace Sphere10.Framework.Tests {
         }
 
         [Test]
-        public void V1_Update_1([Values(1, 111)] int pageSize) {
+        public void Update_1([Values(1, 111)] int pageSize) {
             using var stream = new MemoryStream();
             var list = new StreamPagedList<string>(new StringSerializer(Encoding.UTF8), stream, pageSize);
 
@@ -46,7 +46,7 @@ namespace Sphere10.Framework.Tests {
         }
 
         [Test]
-        public void V1_Add_2([Values(1, 2, 111)] int pageSize) {
+        public void Add_2([Values(1, 2, 111)] int pageSize) {
             using var stream = new MemoryStream();
             var list = new StreamPagedList<string>(new StringSerializer(Encoding.UTF8), stream, pageSize);
 
@@ -56,7 +56,7 @@ namespace Sphere10.Framework.Tests {
         }
 
         [Test]
-        public void V1_Add_3([Values(1, 2, 111)] int pageSize) {
+        public void Add_3([Values(1, 2, 111)] int pageSize) {
             using var stream = new MemoryStream();
             var list = new StreamPagedList<string>(new StringSerializer(Encoding.UTF8), stream, pageSize);
 
@@ -66,7 +66,7 @@ namespace Sphere10.Framework.Tests {
         }
 
         [Test]
-        public void V1_Read_1([Values(1, 2)] int pageSize) {
+        public void Read_1([Values(1, 2)] int pageSize) {
             using var stream = new MemoryStream();
             var list = new StreamPagedList<string>(new StringSerializer(Encoding.UTF8), stream, pageSize);
 
@@ -75,7 +75,7 @@ namespace Sphere10.Framework.Tests {
         }
 
         [Test]
-        public void V1_Read_2([Values(1, 2)] int pageSize) {
+        public void Read_2([Values(1, 2)] int pageSize) {
             using var stream = new MemoryStream();
             var list = new StreamPagedList<string>(new StringSerializer(Encoding.UTF8), stream, pageSize);
 
@@ -85,7 +85,7 @@ namespace Sphere10.Framework.Tests {
         }
 
         [Test]
-        public void V1_FixedSize_Read_NoHeader() {
+        public void FixedSize_Read_NoHeader() {
             StreamPagedList<int> list;
             using var stream = new MemoryStream();
             list = new StreamPagedList<int>(new PrimitiveSerializer<int>(), stream) {IncludeListHeader = false};
@@ -96,7 +96,7 @@ namespace Sphere10.Framework.Tests {
         }
 
         [Test]
-        public void V1_FixedSize_Update()
+        public void FixedSize_Update()
         {
             using var stream = new MemoryStream();
             StreamPagedList<int> list = new StreamPagedList<int>(new PrimitiveSerializer<int>(), stream) {IncludeListHeader = false};

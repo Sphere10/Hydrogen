@@ -101,10 +101,22 @@ namespace Sphere10.Framework.Tests {
 			var list = new StreamMappedList<string>(stream, 32,  new StringSerializer(Encoding.UTF8), reservedRecords: reserved, policy: policy);
 			string[] input = { string.Empty, null, string.Empty, null };
 			list.AddRange(input);
-			Assert.AreEqual(4, list.Count);
+			Assert.That(list.Count, Is.EqualTo(4));
+			Assert.That(list, Is.EqualTo(input));
+		}
 
-			var read = list.ReadRange(0, 4);
-			Assert.AreEqual(input, read);
+		[Test]
+		public void IndexOf_NullEmptyStrings([ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy, [Values(0, ReservedRecordsInStorage)] int reserved) {
+			using var stream = new MemoryStream();
+			var list = new StreamMappedList<string>(stream, 32,  new StringSerializer(Encoding.UTF8), reservedRecords: reserved, policy: policy);
+			string[] input = { string.Empty, null, string.Empty, null };
+			list.AddRange(input);
+			Assert.That(list.IndexOf(null), Is.EqualTo(1));
+			list[1] = "z";
+			Assert.That(list.IndexOf(null), Is.EqualTo(3));
+			Assert.That(list.IndexOf(string.Empty), Is.EqualTo(0));
+			list[0] = "z";
+			Assert.That(list.IndexOf(string.Empty), Is.EqualTo(2));
 		}
 
 		[Test]

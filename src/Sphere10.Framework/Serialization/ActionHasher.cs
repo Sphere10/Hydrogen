@@ -10,7 +10,7 @@ namespace Sphere10.Framework {
 			DigestLength = digestLength;
 		}
 
-		public byte[] Hash(T @object) => _hasher.Invoke(@object);
+		public byte[] Hash(T item) => _hasher.Invoke(item);
 
 		public int DigestLength { get; }
 

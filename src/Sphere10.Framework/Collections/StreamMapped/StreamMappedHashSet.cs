@@ -13,7 +13,7 @@ namespace Sphere10.Framework {
 	/// A set whose items are mapped over a stream as a <see cref="StreamMappedList{TItem}"/>. A digest of the items are kept in the clustered record for fast lookup. 
 	///
 	/// </summary>
-	/// <remarks>When deleting an item the underlying <see cref="ClusteredStorageRecord"/> is marked nullified but retained and re-used in later calls to <see cref="Add(TItem)"/>.</remarks>
+	/// <remarks>When deleting an item the underlying <see cref="ClusteredStreamRecord"/> is marked nullified but retained and re-used in later calls to <see cref="Add(TItem)"/>.</remarks>
 	public class StreamMappedHashSet<TItem> : SetBase<TItem>, ILoadable {
 		public event EventHandlerEx<object> Loading { add => _itemStore.Loading += value; remove => _itemStore.Loading -= value; }
 		public event EventHandlerEx<object> Loaded { add => _itemStore.Loaded += value; remove => _itemStore.Loaded -= value; }

@@ -27,7 +27,6 @@ namespace Sphere10.Framework.Tests {
 			}
 		}
 
-
 		[Test]
 		public void TestSimple_2([Values(CHF.SHA2_256, CHF.Blake2b_128)] CHF chf) {
 			var memStream = new MemoryStream();
@@ -67,21 +66,21 @@ namespace Sphere10.Framework.Tests {
 			}
 		}
 
-
 		[Test]
-		public void NoNullItems([Values(CHF.SHA2_256, CHF.Blake2b_128)] CHF chf) {
+		public void SupportsNullItems([Values(CHF.SHA2_256, CHF.Blake2b_128)] CHF chf) {
 			using (CreateMerkleList(chf, out var merkleList)) {
-				Assert.That(() => merkleList.Add(null), Throws.ArgumentNullException);
-				Assert.That(merkleList.MerkleTree.Root, Is.Null);
+				var nullHashValue = Tools.Array.Gen<byte>(Hashers.GetDigestSizeBytes(chf), 0);
+				Assert.That(() => merkleList.Add(null), Throws.Nothing);
+				Assert.That(merkleList.MerkleTree.Root, Is.EqualTo(nullHashValue));
 
-				Assert.That(() => merkleList.Insert(0, null), Throws.ArgumentNullException);
-				Assert.That(merkleList.MerkleTree.Root, Is.Null);
+				Assert.That(() => merkleList.Insert(0, null), Throws.Nothing);
+				Assert.That(merkleList.MerkleTree.Root,  Is.EqualTo(Tools.MerkleTree.ComputeMerkleRoot(new string[] { null, null }, chf)));
 
 				merkleList.Add("alpha");
-				Assert.That(merkleList.MerkleTree.Root, Is.EqualTo(Tools.MerkleTree.ComputeMerkleRoot(new[] { "alpha" }, chf)));
+				Assert.That(merkleList.MerkleTree.Root, Is.EqualTo(Tools.MerkleTree.ComputeMerkleRoot(new string[] { null, null, "alpha" }, chf)));
 
-				Assert.That(() => merkleList.Update(0, null), Throws.ArgumentNullException);
-				Assert.That(merkleList.MerkleTree.Root, Is.EqualTo(Tools.MerkleTree.ComputeMerkleRoot(new[] { "alpha" }, chf)));
+				Assert.That(() => merkleList.Update(2, null), Throws.Nothing);
+				Assert.That(merkleList.MerkleTree.Root, Is.EqualTo(Tools.MerkleTree.ComputeMerkleRoot(new string[] { null, null, null }, chf)));
 
 				merkleList.Clear();
 				Assert.That(merkleList.MerkleTree.Root, Is.Null);
@@ -121,6 +120,29 @@ namespace Sphere10.Framework.Tests {
 			}
 		}
 
+	[Test]
+		public void AddRangeEmptyNullStrings([Values(CHF.SHA2_256, CHF.Blake2b_128)] CHF chf) {
+			using (CreateMerkleList(chf, out var merkleList)) {
+				string[] input = { string.Empty, null, string.Empty, null };
+				merkleList.AddRange(input);
+				Assert.That(merkleList.Count, Is.EqualTo(4));
+				Assert.That(merkleList, Is.EqualTo(input));
+			}
+		}
+
+		[Test]
+		public void IndexOf_NullEmptyStrings([Values(CHF.SHA2_256, CHF.Blake2b_128)] CHF chf) {
+			using (CreateMerkleList(chf, out var merkleList)) {
+				string[] input = { string.Empty, null, string.Empty, null };
+				merkleList.AddRange(input);
+				Assert.That(merkleList.IndexOf(null), Is.EqualTo(1));
+				merkleList[1] = "z";
+				Assert.That(merkleList.IndexOf(null), Is.EqualTo(3));
+				Assert.That(merkleList.IndexOf(string.Empty), Is.EqualTo(0));
+				merkleList[0] = "z";
+				Assert.That(merkleList.IndexOf(string.Empty), Is.EqualTo(2));
+			}
+		}
 
 		[Test]
 		public void IntegrationTests([Values(CHF.SHA2_256, CHF.Blake2b_128)] CHF chf, [Values(100)] int iterations) {

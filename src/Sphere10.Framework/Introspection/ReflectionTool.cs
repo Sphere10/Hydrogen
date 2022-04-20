@@ -23,7 +23,7 @@ namespace Tools {
 		}
 
 		public static object GetPropertyValue(object obj, string propertyName) {
-			return obj.GetType().GetProperty(propertyName).FastGetValue(obj);
+			return obj.GetType().GetProperty(propertyName)?.FastGetValue(obj);
 		}
 
 		public static T GetPropertyValue<T>(object obj, string propertyName) {
@@ -32,11 +32,11 @@ namespace Tools {
 		}
 
 		public static void SetPropertyValue(object obj, string propertyName, object value) {
-			obj.GetType().GetProperty(propertyName).FastSetValue(obj, value);
+			obj.GetType().GetProperty(propertyName)?.FastSetValue(obj, value);
 		}
 
 		public static object GetFieldValue(object obj, string propertyName) {
-			return obj.GetType().GetField(propertyName).FastGetValue(obj);
+			return obj.GetType().GetField(propertyName)?.FastGetValue(obj);
 		}
 
 		public static T GetFieldValue<T>(object obj, string propertyName) {

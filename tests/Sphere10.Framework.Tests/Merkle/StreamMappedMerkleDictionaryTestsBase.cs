@@ -16,7 +16,7 @@ namespace Sphere10.Framework.Tests {
 	public abstract class StreamMappedMerkleDictionaryTestsBase : StreamPersistedTestsBase {
 
 
-		protected abstract IDisposable CreateDictionary(CHF chf, out IMerkleDictionary<string, TestObject> merkleDictionary);
+		protected abstract IDisposable CreateDictionary(CHF chf, out StreamMappedMerkleDictionary<string, TestObject> merkleDictionary);
 
 		[Test]
 		public void AddNothing([Values(CHF.SHA2_256, CHF.Blake2b_128)] CHF chf) {

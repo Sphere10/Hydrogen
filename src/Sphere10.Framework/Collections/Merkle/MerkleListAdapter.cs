@@ -9,7 +9,7 @@ namespace Sphere10.Framework;
 /// A <see cref="MerkleListAdapter{TItem}"/> can also be used stand-alone in-memory as a merkleized list of items.
 /// </summary>
 /// <typeparam name="TItem"></typeparam>
-public class MerkleListAdapter<TItem, TList> : ExtendedListDecorator<TItem, TList>, IMerkleList<TItem> 
+public class MerkleListAdapter<TItem, TList> : ExtendedListDecorator<TItem, TList>, IMerkleList<TItem>
 	where TList : IExtendedList<TItem> {
 	protected readonly IItemHasher<TItem> ItemHasher;
 	protected readonly IEditableMerkleTree InternalMerkleTree;
@@ -28,7 +28,7 @@ public class MerkleListAdapter<TItem, TList> : ExtendedListDecorator<TItem, TLis
 
 	public MerkleListAdapter(TList internalList, IItemHasher<TItem> hasher, IEditableMerkleTree merkleTreeImpl)
 		: base(internalList) {
-		ItemHasher = hasher.WithNullHash(Tools.Array.Gen<byte>(Hashers.GetDigestSizeBytes(merkleTreeImpl.HashAlgorithm), 0));
+		ItemHasher = hasher.WithNullHash(merkleTreeImpl.HashAlgorithm);
 		InternalMerkleTree = merkleTreeImpl;
 	}
 
@@ -101,8 +101,8 @@ public class MerkleListAdapter<TItem, TList> : ExtendedListDecorator<TItem, TLis
 /// A <see cref="MerkleListAdapter{TItem}"/> can also be used stand-alone in-memory as a merkleized list of items.
 /// </summary>
 /// <typeparam name="TItem"></typeparam>
-public class MerkleListAdapter<TItem> : MerkleListAdapter<TItem, IExtendedList<TItem>>{
-	
+public class MerkleListAdapter<TItem> : MerkleListAdapter<TItem, IExtendedList<TItem>> {
+
 	public MerkleListAdapter()
 		: this(new ExtendedList<TItem>()) {
 	}

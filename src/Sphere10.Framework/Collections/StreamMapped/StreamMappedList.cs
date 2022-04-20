@@ -10,7 +10,7 @@ using System.Threading;
 namespace Sphere10.Framework {
 
 	/// <summary>
-	/// A list whose items are persisted via an <see cref="IClusteredStorage"/>.
+	/// A list whose items are persisted over a stream via an <see cref="IClusteredStorage"/>.
 	/// </summary>
 	/// <typeparam name="TItem"></typeparam>
 	public class StreamMappedList<TItem> : SingularListBase<TItem>, IStreamMappedList<TItem> {

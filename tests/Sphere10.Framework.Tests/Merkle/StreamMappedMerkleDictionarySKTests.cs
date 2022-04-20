@@ -14,15 +14,16 @@ namespace Sphere10.Framework.Tests {
 
 	[TestFixture]
 	[Parallelizable(ParallelScope.Children)]
-	public class StreamMappedMerkleDictionaryTests : StreamMappedMerkleDictionaryTestsBase {
+	public class StreamMappedMerkleDictionarySKTests : StreamMappedMerkleDictionaryTestsBase {
 		private const int DefaultClusterSize = 256;
-		private const int DefaultReservedRecords = 11;
+		private const int StaticKeySize = 200;
+		private const int DefaultReservedRecords = 33;
 
 		[Test]
 		public void TestHeader() {
 			using(CreateDictionary(CHF.SHA2_256, out var streamMappedMerkleDictionary)) {
 				Assert.That(streamMappedMerkleDictionary.Storage.Header.ClusterSize, Is.EqualTo(DefaultClusterSize));
-				Assert.That(streamMappedMerkleDictionary.Storage.Header.RecordKeySize, Is.EqualTo(0));
+				Assert.That(streamMappedMerkleDictionary.Storage.Header.RecordKeySize, Is.EqualTo(StaticKeySize));
 				Assert.That(streamMappedMerkleDictionary.Storage.Header.ReservedRecords, Is.EqualTo(DefaultReservedRecords));
 			}
 		}
@@ -32,6 +33,7 @@ namespace Sphere10.Framework.Tests {
 			streamMappedMerkleDictionary = new StreamMappedMerkleDictionary<string, TestObject>(
 				memoryStream, 
 				DefaultClusterSize,
+				new StringSerializer().ToStaticSizeSerializer(StaticKeySize),
 				chf,
 				reservedRecords: DefaultReservedRecords,
 				valueComparer: new TestObjectComparer(),

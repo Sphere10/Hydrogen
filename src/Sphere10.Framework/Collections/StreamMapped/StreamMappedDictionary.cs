@@ -67,8 +67,6 @@ namespace Sphere10.Framework {
 
 		public IClusteredStorage Storage => KVPList.Storage;
 
-		object IStreamMappedDictionary<TKey, TValue>.InternalList => KVPList;
-
 		protected IEnumerable<KeyValuePair<TKey, TValue>> KeyValuePairs {
 			get {
 				for (var i = 0; i < KVPList.Count; i++) {

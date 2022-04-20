@@ -12,25 +12,38 @@ namespace Sphere10.Framework;
 /// <typeparam name="TItem"></typeparam>
 public class StreamMappedMerkleList<TItem> : MerkleListAdapter<TItem, IStreamMappedList<TItem>>, IStreamMappedList<TItem> {
 	private const int MerkleTreeStreamIndex = 0;
-	public StreamMappedMerkleList(Stream rootStream, int clusterSize, CHF hashAlgorithm, IItemSerializer<TItem> itemSerializer = null, IEqualityComparer<TItem> itemComparer = null, ClusteredStoragePolicy policy = ClusteredStoragePolicy.Default, Endianness endianness = Endianness.LittleEndian)
+	public StreamMappedMerkleList(Stream rootStream, int clusterSize, CHF hashAlgorithm = CHF.SHA2_256, IItemSerializer<TItem> itemSerializer = null, IEqualityComparer<TItem> itemComparer = null, ClusteredStoragePolicy policy = ClusteredStoragePolicy.Default, int recordKeySize = 0, int reservedRecords = 1, Endianness endianness = Endianness.LittleEndian)
 		: this(
 			  rootStream,
 			  clusterSize,
 			  hashAlgorithm,
-			  new ItemHasher<TItem>(hashAlgorithm, itemSerializer).WithNullHash(Tools.Array.Gen<byte>(Hashers.GetDigestSizeBytes(hashAlgorithm), 0)),
+			  new ItemHasher<TItem>(hashAlgorithm, itemSerializer).WithNullHash(hashAlgorithm),
 			  itemSerializer,
 			  itemComparer,
 			  policy,
+			  recordKeySize,
+			  reservedRecords,
 			  endianness
 		) {
 	}
 
-	public StreamMappedMerkleList(Stream rootStream, int clusterSize, CHF hashAlgorithm, IItemHasher<TItem> hasher, IItemSerializer<TItem> itemSerializer = null, IEqualityComparer<TItem> itemComparer = null, ClusteredStoragePolicy policy = ClusteredStoragePolicy.Default, Endianness endianness = Endianness.LittleEndian)
+	public StreamMappedMerkleList(Stream rootStream, int clusterSize, CHF hashAlgorithm, IItemHasher<TItem> hasher, IItemSerializer<TItem> itemSerializer = null, IEqualityComparer<TItem> itemComparer = null, ClusteredStoragePolicy policy = ClusteredStoragePolicy.Default, int recordKeySize = 0, int reservedRecords = 1, Endianness endianness = Endianness.LittleEndian)
 		: this(
-			  new StreamMappedList<TItem>(rootStream, clusterSize, itemSerializer, itemComparer, policy, 0, 1, endianness),
-			  hasher ?? new ItemHasher<TItem>(hashAlgorithm, itemSerializer),
+			  new StreamMappedList<TItem>(
+				  rootStream,
+				  clusterSize, 
+				  itemSerializer, 
+				  itemComparer,
+				  policy,
+				  recordKeySize,
+				  reservedRecords, 
+				  endianness
+			  ),
+			  hasher,
 			  hashAlgorithm
 		  ) {
+		Guard.ArgumentNotNull(hasher, nameof(hasher)); // must be provided with null hash support
+		Guard.ArgumentGTE(reservedRecords, 1, nameof(reservedRecords));
 	}
 
 	public StreamMappedMerkleList(IStreamMappedList<TItem> clusteredList, IItemHasher<TItem> hasher, CHF hashAlgorithm)

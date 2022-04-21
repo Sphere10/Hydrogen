@@ -13,7 +13,7 @@ using Tools;
 
 namespace Sphere10.Framework.Tests {
 	
-	public abstract class StreamMappedMerkleDictionaryTestsBase : StreamPersistedTestsBase {
+	public abstract class StreamMappedMerkleDictionaryTestsBase : StreamPersistedCollectionTestsBase {
 
 
 		protected abstract IDisposable CreateDictionary(CHF chf, out StreamMappedMerkleDictionary<string, TestObject> merkleDictionary);

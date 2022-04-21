@@ -12,7 +12,7 @@ using Tools;
 
 namespace Sphere10.Framework.Tests {
 	
-	public abstract class StreamMappedDictionaryTestsBase : StreamPersistedTestsBase {
+	public abstract class StreamMappedDictionaryTestsBase : StreamPersistedCollectionTestsBase {
 		private const int EstimatedTestObjectSize = 400 + 256;
 		private const int ReservedRecordsInStorage = 11;
 

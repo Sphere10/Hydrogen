@@ -10,7 +10,7 @@ namespace Sphere10.Framework.Tests {
 
 	[TestFixture]
 	[Parallelizable(ParallelScope.Children)]
-	public class StreamMappedListTests : StreamPersistedTestsBase {
+	public class StreamMappedListTests : StreamPersistedCollectionTestsBase {
 		private const int ReservedRecordsInStorage = 11;
 
 		private IDisposable CreateList(ClusteredStoragePolicy policy, int reserved, out StreamMappedList<TestObject> clusteredList) {

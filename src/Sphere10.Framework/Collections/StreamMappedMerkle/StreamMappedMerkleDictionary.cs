@@ -9,24 +9,17 @@ using System.Linq;
 namespace Sphere10.Framework {
 
 	/// <summary>
-	/// A merkleized <see cref="IStreamMappedDictionary"/>.
+	/// A dictionary implementation that is both an <see cref="IStreamMappedDictionary{TKey,TValue}"/> and an <see cref="IMerkleDictionary{TKey,TValue}"/>.
 	/// </summary>
 	public class StreamMappedMerkleDictionary<TKey, TValue> : DictionaryDecorator<TKey, TValue, IStreamMappedDictionary<TKey, TValue>>, IStreamMappedDictionary<TKey, TValue>, IMerkleDictionary<TKey, TValue> {
 		
-		public event EventHandlerEx<object> Loading {
-			add => InternalDictionary.Loading += value;
-			remove => InternalDictionary.Loading -= value;
-		}
-
-		public event EventHandlerEx<object> Loaded {
-			add => InternalDictionary.Loaded += value;
-			remove => InternalDictionary.Loaded -= value;
-		}
+		public event EventHandlerEx<object> Loading { add => InternalDictionary.Loading += value; remove => InternalDictionary.Loading -= value; }
+		public event EventHandlerEx<object> Loaded { add => InternalDictionary.Loaded += value; remove => InternalDictionary.Loaded -= value; }
 
 		private object _internalList;
 
 		/// <summary>
-		/// Constructs using an <see cref="StreamMappedMerkleDictionary"/> using an <see cref="StreamMappedDictionary"/> under the hood.
+		/// Constructs using an <see cref="StreamMappedMerkleDictionary{TKey,TValue}"/> using an <see cref="StreamMappedDictionary{TKey,TValue}"/> under the hood.
 		/// </summary>
 		public StreamMappedMerkleDictionary(Stream rootStream, int clusterSize, CHF hashAlgorithm = CHF.SHA2_256, IItemSerializer<TKey> keySerializer = null, IItemSerializer<TValue> valueSerializer = null, IItemChecksum<TKey> keyChecksum = null, IEqualityComparer<TKey> keyComparer = null, IEqualityComparer<TValue> valueComparer = null, ClusteredStoragePolicy policy = ClusteredStoragePolicy.DictionaryDefault, int reservedRecords = 0, Endianness endianness = Endianness.LittleEndian)
 			: this(
@@ -55,7 +48,7 @@ namespace Sphere10.Framework {
 		}
 
 		/// <summary>
-		/// Constructs using an <see cref="StreamMappedMerkleDictionary"/> using an <see cref="StreamMappedDictionarySK"/> under the hood.
+		/// Constructs using an <see cref="StreamMappedMerkleDictionary{TKey,TValue}"/> using an <see cref="StreamMappedDictionarySK{TKey,TValue}"/> under the hood.
 		/// </summary>
 		public StreamMappedMerkleDictionary(Stream rootStream, int clusterSize, IItemSerializer<TKey> staticSizedKeySerializer, CHF hashAlgorithm = CHF.SHA2_256, IItemSerializer<TValue> valueSerializer = null, IItemChecksum<TKey> keyChecksum = null, IEqualityComparer<TKey> keyComparer = null, IEqualityComparer<TValue> valueComparer = null, ClusteredStoragePolicy policy = ClusteredStoragePolicy.DictionaryDefault, int reservedRecords = 0, Endianness endianness = Endianness.LittleEndian)
 			: this(
@@ -80,7 +73,7 @@ namespace Sphere10.Framework {
 		}
 
 		/// <summary>
-		/// Constructs using an <see cref="StreamMappedMerkleDictionary"/> using an <see cref="StreamMappedDictionary"/> under the hood.
+		/// Constructs using an <see cref="StreamMappedMerkleDictionary{TKey,TValue}"/> using an <see cref="StreamMappedDictionary{TKey,TValue}"/> under the hood.
 		/// </summary>
 		public StreamMappedMerkleDictionary(StreamMappedMerkleList<KeyValuePair<TKey, TValue>> merkleizedKvpStore, IItemChecksum<TKey> keyChecksum = null, IEqualityComparer<TKey> keyComparer = null, IEqualityComparer<TValue> valueComparer = null)
 			: this(
@@ -95,7 +88,7 @@ namespace Sphere10.Framework {
 		}
 
 		/// <summary>
-		/// Constructs using an <see cref="StreamMappedMerkleDictionary"/> using an <see cref="StreamMappedDictionarySK"/> under the hood.
+		/// Constructs using an <see cref="StreamMappedMerkleDictionary{TKey,TValue}"/> using an <see cref="StreamMappedDictionarySK{TKey,TValue}"/> under the hood.
 		/// </summary>
 		public StreamMappedMerkleDictionary(StreamMappedMerkleList<TValue> merkleizedKvpStore, IItemSerializer<TKey> staticSizedKeySerializer, IItemSerializer<TValue> valueSerializer = null, IItemChecksum<TKey> keyChecksum = null, IEqualityComparer<TKey> keyComparer = null, IEqualityComparer<TValue> valueComparer = null)
 			: this(
@@ -120,11 +113,11 @@ namespace Sphere10.Framework {
 
 		public IMerkleTree MerkleTree { get; }
 
+		public IClusteredStorage Storage => InternalDictionary.Storage;
+
 		public bool RequiresLoad => InternalDictionary.RequiresLoad;
 
 		public void Load() => InternalDictionary.Load();
-
-		public IClusteredStorage Storage => InternalDictionary.Storage;
 
 		public TKey ReadKey(int index) => InternalDictionary.ReadKey(index);
 

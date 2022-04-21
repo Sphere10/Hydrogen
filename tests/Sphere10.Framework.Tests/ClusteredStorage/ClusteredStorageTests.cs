@@ -15,7 +15,7 @@ namespace Sphere10.Framework.Tests {
     /// </remarks>
     [TestFixture]
     [Parallelizable(ParallelScope.Children)]
-    public class ClusteredStorageTests : StreamPersistedTestsBase {
+    public class ClusteredStorageTests : StreamPersistedCollectionTestsBase {
 
         [Test]
         public void AddEmpty([Values(1, 4, 32)] int clusterSize, [ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy) {

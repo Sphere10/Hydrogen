@@ -14,7 +14,7 @@ namespace Sphere10.Framework.Tests {
 
 	[TestFixture]
 	[Parallelizable(ParallelScope.Children)]
-	public class TransactionalDictionaryTests : StreamPersistedTestsBase {
+	public class TransactionalDictionaryTests : StreamPersistedCollectionTestsBase {
 
 		[Test]
 		public void AddNothing([ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy) {

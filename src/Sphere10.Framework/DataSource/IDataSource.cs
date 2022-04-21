@@ -16,13 +16,15 @@ using System.Linq;
 using System.Threading.Tasks;
 
 namespace Sphere10.Framework {
+
+
 	public interface IDataSource<TItem> {
 
 		IEnumerable<TItem> New(int count);
 
 		Task Create(IEnumerable<TItem> entities);
 
-		Task<IEnumerable<TItem>> Read(string searchTerm, int pageLength, ref int page, string sortProperty, SortDirection sortDirection, out int totalItems);
+		Task<DataSourceItems<TItem>> Read(string searchTerm, int pageLength, int page, string sortProperty, SortDirection sortDirection);
 
 		Task Refresh(TItem[] entities);
 
@@ -33,6 +35,8 @@ namespace Sphere10.Framework {
 		Task<Result> Validate(IEnumerable<(TItem entity, CrudAction action)> actions);
 
 		Task<int> Count { get; }
+
+		Task<DataSourceCapabilities> Capabilities { get; }
 
 		#region Single access simplifications
 

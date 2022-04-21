@@ -48,7 +48,7 @@ namespace Sphere10.Framework.Communications {
 			throw new System.NotImplementedException();
 		}
 
-		public override Task<IEnumerable<TItem>> Read(string searchTerm, int pageLength, ref int page, string sortProperty, SortDirection sortDirection, out int totalItems) {
+		public override Task<DataSourceItems<TItem>> Read(string searchTerm, int pageLength, int page, string sortProperty, SortDirection sortDirection) {
 			//var message = $"New {count}";
 			throw new System.NotImplementedException();
 		}

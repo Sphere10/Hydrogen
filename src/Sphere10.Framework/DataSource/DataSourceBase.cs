@@ -7,7 +7,7 @@ namespace Sphere10.Framework.DataSource {
 
 		public abstract Task Create(IEnumerable<TItem> entities);
 
-		public abstract Task<IEnumerable<TItem>> Read(string searchTerm, int pageLength, ref int page, string sortProperty, SortDirection sortDirection, out int totalItems);
+		public abstract Task<DataSourceItems<TItem>> Read(string searchTerm, int pageLength, int page, string sortProperty, SortDirection sortDirection);
 
 		public abstract Task Refresh(TItem[] entities);
 
@@ -18,5 +18,7 @@ namespace Sphere10.Framework.DataSource {
 		public abstract Task<Result> Validate(IEnumerable<(TItem entity, CrudAction action)> actions);
 
 		public abstract Task<int> Count { get; }
+
+		public Task<DataSourceCapabilities> Capabilities { get; }
 	}
 }

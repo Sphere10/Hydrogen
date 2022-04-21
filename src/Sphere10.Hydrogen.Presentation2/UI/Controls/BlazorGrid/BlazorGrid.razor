@@ -195,7 +195,7 @@
 
     List<Cell> Header { get; set; } = new List<Cell>();
     List<List<Cell>> Rows { get; set; } = new List<List<Cell>>();
-    IEnumerable<TItem> Data { get; set; }
+    DataSourceItems<TItem> Data { get; set; }
     int CurrentPage { get; set; }
     int TotalDataCount { get; set; }
 
@@ -255,9 +255,9 @@
         var width = DefaultCellWidth;
         var height = DefaultRowHeight;
 
-        if (Data.Any())
+        if (Data.Items.Any())
         {
-            var first = Data.First();
+            var first = Data.Items.First();
             var type = first.GetType();
             var properties = type.GetProperties().ToList();
             var typeInfos = new List<ObjectTypeInfo>();
@@ -272,7 +272,7 @@
                 Header.Add(new Cell(new HeaderData(name, width), new RowData(height), typeInfo, name, name, typeInfos.Count - 1));
             }
 
-            foreach (var dataObject in Data)
+            foreach (var dataObject in Data.Items)
             {
                 var rowData = new List<Cell>();
                 int columnIndex = 0;
@@ -486,9 +486,9 @@
         // callback to the server
 
         var useCurrentPage = CurrentPage;
-        Data = (IEnumerable<TItem>)await DataSource.Read("", PageSize, ref useCurrentPage, "", SortDirection.Ascending, out int totalItems);
-        TotalDataCount = totalItems;
-        CurrentPage = useCurrentPage;
+        Data = (DataSourceItems<TItem>)await DataSource.Read("", PageSize, useCurrentPage, "", SortDirection.Ascending);
+        TotalDataCount = Data.TotalCount;
+        CurrentPage = Data.Page;
         LoadData();
         StateHasChanged();
     }

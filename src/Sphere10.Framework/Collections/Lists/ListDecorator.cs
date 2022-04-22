@@ -11,6 +11,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
+using System.Collections;
 using System.Collections.Generic;
 
 namespace Sphere10.Framework {
@@ -22,54 +23,35 @@ namespace Sphere10.Framework {
 			InternalList = internalList;
 		}
 
-		public virtual int IndexOf(TItem item) {
-			return InternalList.IndexOf(item);
-		}
+		public virtual int IndexOf(TItem item) => InternalList.IndexOf(item);
 
-		public virtual void Insert(int index, TItem item) {
-			InternalList.Insert(index, item);
-		}
+		public virtual void Insert(int index, TItem item) => InternalList.Insert(index, item);
 
-		public virtual bool Remove(TItem item) {
-			return InternalList.Remove(item);
-		}
+		public virtual bool Remove(TItem item) => InternalList.Remove(item);
 
-		public virtual void RemoveAt(int index) {
-			InternalList.RemoveAt(index);
-		}
+		public virtual void RemoveAt(int index) => InternalList.RemoveAt(index);
 
 		public virtual TItem this[int index] {
 			get => InternalList[index];
 			set => InternalList[index] = value;
 		}
 
-		public virtual void Add(TItem item) {
-			InternalList.Add(item);
-		}
+		public virtual void Add(TItem item) => InternalList.Add(item);
 
-		public virtual void Clear() {
-			InternalList.Clear();
-		}
+		public virtual void Clear() => InternalList.Clear();
 
-		public virtual bool Contains(TItem item) {
-			return InternalList.Contains(item);
-		}
+		public virtual bool Contains(TItem item) => InternalList.Contains(item);
 
-		public virtual void CopyTo(TItem[] array, int arrayIndex) {
-			InternalList.CopyTo(array, arrayIndex);
-		}
+		public virtual void CopyTo(TItem[] array, int arrayIndex) => InternalList.CopyTo(array, arrayIndex);
 
 		public virtual int Count => InternalList.Count;
 
 		public virtual bool IsReadOnly => InternalList.IsReadOnly;
 
-		public virtual IEnumerator<TItem> GetEnumerator() {
-			return InternalList.GetEnumerator();
-		}
+		public virtual IEnumerator<TItem> GetEnumerator() => InternalList.GetEnumerator();
 
-		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() {
-			return InternalList.GetEnumerator();
-		}
+		IEnumerator IEnumerable.GetEnumerator() => InternalList.GetEnumerator();
+
 	}
 
 	public abstract class ListDecorator<TItem> : ListDecorator<TItem, IList<TItem>> {

@@ -14,11 +14,11 @@ namespace Sphere10.Framework {
 	///
 	/// </summary>
 	/// <remarks>When deleting an item the underlying <see cref="ClusteredStreamRecord"/> is marked nullified but retained and re-used in later calls to <see cref="Add(TItem)"/>.</remarks>
-	public class StreamMappedHashSet<TItem> : SetBase<TItem>, ILoadable {
-		public event EventHandlerEx<object> Loading { add => _itemStore.Loading += value; remove => _itemStore.Loading -= value; }
-		public event EventHandlerEx<object> Loaded { add => _itemStore.Loaded += value; remove => _itemStore.Loaded -= value; }
+	public class StreamMappedHashSet<TItem> : SetBase<TItem>, IStreamMappedHashSet<TItem>, ILoadable {
+		public event EventHandlerEx<object> Loading { add => InternalDictionary.Loading += value; remove => InternalDictionary.Loading -= value; }
+		public event EventHandlerEx<object> Loaded { add => InternalDictionary.Loaded += value; remove => InternalDictionary.Loaded -= value; }
 
-		private readonly IStreamMappedDictionary<byte[], TItem> _itemStore;
+		internal readonly IStreamMappedDictionary<byte[], TItem> InternalDictionary;
 		private readonly IItemHasher<TItem> _hasher;
 
 		public StreamMappedHashSet(Stream rootStream, int clusterSize, IItemSerializer<TItem> serializer, CHF chf, IEqualityComparer<TItem> comparer = null, ClusteredStoragePolicy policy = ClusteredStoragePolicy.DictionaryDefault, int reservedRecords = 0, Endianness endianness = Endianness.LittleEndian)
@@ -45,53 +45,53 @@ namespace Sphere10.Framework {
 			Guard.Argument(policy.HasFlag(ClusteredStoragePolicy.TrackChecksums), nameof(policy), $"Checksum tracking must be enabled in clustered dictionary implementations.");
 		}
 
-		public StreamMappedHashSet(IStreamMappedDictionary<byte[], TItem> itemStore, IEqualityComparer<TItem> comparer, IItemHasher<TItem> hasher) 
+		public StreamMappedHashSet(IStreamMappedDictionary<byte[], TItem> internalDictionary, IEqualityComparer<TItem> comparer, IItemHasher<TItem> hasher) 
 			: base(comparer ?? EqualityComparer<TItem>.Default) {
-			_itemStore = itemStore;
+			InternalDictionary = internalDictionary;
 			_hasher = hasher;
 		}
 
-		public override int Count => _itemStore.Count;
+		public override int Count => InternalDictionary.Count;
 
-		public override bool IsReadOnly => _itemStore.IsReadOnly;
+		public override bool IsReadOnly => InternalDictionary.IsReadOnly;
 
-		public bool RequiresLoad => _itemStore.RequiresLoad;
+		public bool RequiresLoad => InternalDictionary.RequiresLoad;
 
-		public IClusteredStorage Storage => _itemStore.Storage;
+		public IClusteredStorage Storage => InternalDictionary.Storage;
 
-		public void Load() => _itemStore.Load();
+		public void Load() => InternalDictionary.Load();
 
 		public override bool Add(TItem item) {
 			Guard.ArgumentNotNull(item, nameof(item));
 			var itemHash = _hasher.Hash(item);
-			if (_itemStore.ContainsKey(itemHash))
+			if (InternalDictionary.ContainsKey(itemHash))
 				return false;
-			_itemStore.Add(itemHash, item);
+			InternalDictionary.Add(itemHash, item);
 			return true;
 		}
 
 		public override bool Contains(TItem item) {
 			Guard.ArgumentNotNull(item, nameof(item));
-			return _itemStore.ContainsKey(_hasher.Hash(item));
+			return InternalDictionary.ContainsKey(_hasher.Hash(item));
 		}
 
 		public override bool Remove(TItem item) {
 			Guard.ArgumentNotNull(item, nameof(item));
 			var itemHash = _hasher.Hash(item);
-			if (!_itemStore.TryFindKey(itemHash, out var index))
+			if (!InternalDictionary.TryFindKey(itemHash, out var index))
 				return false;
-			_itemStore.RemoveAt(index);
+			InternalDictionary.RemoveAt(index);
 			return true;
 		}
 
 		public override void Clear() 
-			=> _itemStore.Clear();
+			=> InternalDictionary.Clear();
 
 		public override void CopyTo(TItem[] array, int arrayIndex) 
-			=> _itemStore.Values.CopyTo(array, arrayIndex);
+			=> InternalDictionary.Values.CopyTo(array, arrayIndex);
 
 		public override IEnumerator<TItem> GetEnumerator() 
-			=> _itemStore.Values.GetEnumerator();
+			=> InternalDictionary.Values.GetEnumerator();
 
 	}
 }

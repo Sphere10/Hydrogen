@@ -11,9 +11,9 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Sphere10.Framework.Application\Sphere10.Framework.Application.csproj" />
+		<ProjectReference Include="..\Sphere10.Framework\Sphere10.Framework.csproj" />
+		<ProjectReference Include="..\Sphere10.Framework.Application\Sphere10.Framework.Application.csproj" />
         <ProjectReference Include="..\Sphere10.Framework.Communications\Sphere10.Framework.Communications.csproj" />
-        <ProjectReference Include="..\Sphere10.Framework\Sphere10.Framework.csproj" />
     </ItemGroup>
 
     <ItemGroup>

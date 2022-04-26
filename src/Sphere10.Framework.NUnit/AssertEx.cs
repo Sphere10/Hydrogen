@@ -327,7 +327,7 @@ namespace Sphere10.Framework.NUnit {
 
 		}
 
-		public static void DictionaryIntegrationTest<TKey, TValue>(IDictionary<TKey, TValue> dictionary, int maxCapacity, Func<Random, (TKey,TValue)> randomItemGenerator, int iterations = 100, IDictionary<TKey, TValue> expected = null, IEqualityComparer<TKey> keyComparer = null, IEqualityComparer<TValue> valueComparer = null) {
+		public static void DictionaryIntegrationTest<TKey, TValue>(IDictionary<TKey, TValue> dictionary, int maxCapacity, Func<Random, (TKey,TValue)> randomItemGenerator, int iterations = 100, IDictionary<TKey, TValue> expected = null, IEqualityComparer<TKey> keyComparer = null, IEqualityComparer<TValue> valueComparer = null, Action endOfIterTest = null) {
 			var rng = new Random(31337);
 			expected ??= new Dictionary<TKey, TValue>();
 			keyComparer ??= EqualityComparer<TKey>.Default;
@@ -390,6 +390,7 @@ namespace Sphere10.Framework.NUnit {
 				}
 
 				CheckConsistent();
+				endOfIterTest?.Invoke();
 			}
 
 

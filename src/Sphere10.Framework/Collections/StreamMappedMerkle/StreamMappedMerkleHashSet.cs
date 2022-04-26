@@ -14,7 +14,7 @@ namespace Sphere10.Framework {
 	public class StreamMappedMerkleHashSet<TItem> : SetDecorator<TItem, StreamMappedHashSet<TItem>>, IStreamMappedHashSet<TItem>, IMerkleSet<TItem> {
 
 		public StreamMappedMerkleHashSet(Stream rootStream, int clusterSize, IItemSerializer<TItem> serializer, CHF hashAlgorithm = CHF.SHA2_256, IEqualityComparer<TItem> comparer = null, ClusteredStoragePolicy policy = ClusteredStoragePolicy.DictionaryDefault, int reservedRecords = 1, Endianness endianness = Endianness.LittleEndian)
-			: this(rootStream, clusterSize, serializer, new ItemHasher<TItem>(hashAlgorithm, serializer), hashAlgorithm, comparer, policy, reservedRecords, endianness) {
+			: this(rootStream, clusterSize, serializer, new ItemHasher<TItem>(hashAlgorithm, serializer, endianness), hashAlgorithm, comparer, policy, reservedRecords, endianness) {
 		}
 
 		public StreamMappedMerkleHashSet(Stream rootStream, int clusterSize, IItemSerializer<TItem> serializer, IItemHasher<TItem> hasher, CHF hashAlgorithm, IEqualityComparer<TItem> comparer = null, ClusteredStoragePolicy policy = ClusteredStoragePolicy.DictionaryDefault, int reservedRecords = 1, Endianness endianness = Endianness.LittleEndian)

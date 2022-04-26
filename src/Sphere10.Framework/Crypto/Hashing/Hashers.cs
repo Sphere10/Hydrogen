@@ -38,9 +38,11 @@ namespace Sphere10.Framework {
 		public static int GetDigestSizeBytes(CHF algorithm)
 			=> DigestByteSizes[(int)algorithm];
 
+
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static byte[] Hash<TItem>(CHF algorithm, TItem item, IItemSerializer<TItem> serializer)
-			=> Hash(algorithm, serializer.SerializeLE(item));
+		public static byte[] Hash<TItem>(CHF algorithm, TItem item, IItemSerializer<TItem> serializer, Endianness endianness = Endianness.LittleEndian) 
+			=> Hash(algorithm, serializer.Serialize(item, endianness));
+
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static byte[] Hash(CHF algorithm, ReadOnlySpan<byte> bytes) {

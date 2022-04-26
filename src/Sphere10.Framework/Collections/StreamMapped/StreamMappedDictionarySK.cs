@@ -115,7 +115,8 @@ namespace Sphere10.Framework {
 
 		public TValue ReadValue(int index) {
 			if (Storage.IsNull(_valueStore.Storage.Header.ReservedRecords + index))
-				throw new InvalidOperationException($"Stream record {index} is null");
+				//throw new InvalidOperationException($"Stream record {index} is null");
+				return default;
 			return _valueStore.Read(index);
 		}
 		
@@ -167,7 +168,7 @@ namespace Sphere10.Framework {
 		}
 
 		public bool TryFindKey(TKey key, out int index) {
-			Debug.Assert(key != null);
+			Guard.ArgumentNotNull(key, nameof(key));
 			foreach (var i in _checksumToIndexLookup[_keyChecksum.Calculate(key)]) {
 				var candidateKey = ReadKey(i);
 				if (_keyComparer.Equals(candidateKey, key)) {
@@ -180,7 +181,7 @@ namespace Sphere10.Framework {
 		}
 
 		public bool TryFindValue(TKey key, out int index, out TValue value) {
-			Debug.Assert(key != null);
+			Guard.ArgumentNotNull(key, nameof(key));
 			foreach (var i in _checksumToIndexLookup[_keyChecksum.Calculate(key)]) {
 				var candidateKey = ReadKey(i);
 				if (_keyComparer.Equals(candidateKey, key)) {
@@ -195,8 +196,7 @@ namespace Sphere10.Framework {
 		}
 
 		public override void Add(KeyValuePair<TKey, TValue> item) {
-			Guard.ArgumentNotNull(item, nameof(item));
-			Guard.ArgumentNotNull(item, nameof(item));
+			Guard.ArgumentNotNull(item, nameof(item)); // Key not null checked in TrueFindKey
 			CheckLoaded();
 			if (TryFindKey(item.Key, out var index)) {
 				_valueStore.Update(index, item.Value);
@@ -206,7 +206,7 @@ namespace Sphere10.Framework {
 		}
 
 		public override bool Remove(KeyValuePair<TKey, TValue> item) {
-			Guard.ArgumentNotNull(item, nameof(item));
+			Guard.ArgumentNotNull(item, nameof(item)); // Key not null checked in TryFindValue
 			CheckLoaded();
 			if (TryFindValue(item.Key, out var index, out var value)) {
 				if (_valueComparer.Equals(item.Value, value)) {
@@ -232,7 +232,7 @@ namespace Sphere10.Framework {
 		}
 
 		public override bool Contains(KeyValuePair<TKey, TValue> item) {
-			Guard.ArgumentNotNull(item, nameof(item));
+			Guard.ArgumentNotNull(item, nameof(item)); // Key not null checked in TryFindValue
 			CheckLoaded();
 			if (!TryFindValue(item.Key, out _, out var value))
 				return false;

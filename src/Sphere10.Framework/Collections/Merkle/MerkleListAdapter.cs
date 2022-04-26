@@ -18,17 +18,17 @@ public class MerkleListAdapter<TItem, TList> : ExtendedListDecorator<TItem, TLis
 		: this(internalList, CHF.SHA2_256) {
 	}
 
-	public MerkleListAdapter(TList internalList, CHF hashAlgorithm)
-		: this(internalList, ItemSerializer<TItem>.Default, hashAlgorithm) {
+	public MerkleListAdapter(TList internalList, CHF hashAlgorithm, Endianness endianness = Endianness.LittleEndian)
+		: this(internalList, ItemSerializer<TItem>.Default, hashAlgorithm, endianness) {
 	}
 
-	public MerkleListAdapter(TList internalList, IItemSerializer<TItem> serializer, CHF hashAlgorithm)
-		: this(internalList, new ItemHasher<TItem>(hashAlgorithm, serializer), new FlatMerkleTree(hashAlgorithm)) {
+	public MerkleListAdapter(TList internalList, IItemSerializer<TItem> serializer, CHF hashAlgorithm, Endianness endianness = Endianness.LittleEndian)
+		: this(internalList, new ItemHasher<TItem>(hashAlgorithm, serializer, endianness), new FlatMerkleTree(hashAlgorithm)) {
 	}
 
 	public MerkleListAdapter(TList internalList, IItemHasher<TItem> hasher, IEditableMerkleTree merkleTreeImpl)
 		: base(internalList) {
-		ItemHasher = hasher.WithNullHash(merkleTreeImpl.HashAlgorithm);
+		ItemHasher = hasher is not IWithNullValueItemHasher<TItem> ? hasher.WithNullHash(merkleTreeImpl.HashAlgorithm) : hasher;
 		InternalMerkleTree = merkleTreeImpl;
 	}
 

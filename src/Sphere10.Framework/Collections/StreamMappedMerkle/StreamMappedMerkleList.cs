@@ -17,7 +17,7 @@ public class StreamMappedMerkleList<TItem> : MerkleListAdapter<TItem, IStreamMap
 			  rootStream,
 			  clusterSize,
 			  hashAlgorithm,
-			  new ItemHasher<TItem>(hashAlgorithm, itemSerializer).WithNullHash(hashAlgorithm),
+			  new ItemHasher<TItem>(hashAlgorithm, itemSerializer, endianness).WithNullHash(hashAlgorithm),
 			  itemSerializer,
 			  itemComparer,
 			  policy,
@@ -43,12 +43,12 @@ public class StreamMappedMerkleList<TItem> : MerkleListAdapter<TItem, IStreamMap
 			  hashAlgorithm
 		  ) {
 		Guard.ArgumentNotNull(hasher, nameof(hasher)); // must be provided with null hash support
-		Guard.ArgumentGTE(reservedRecords, 1, nameof(reservedRecords));
+		Guard.ArgumentGTE(reservedRecords, 1, nameof(reservedRecords), "Must be greater than 1 to allow storage of merkle-tree");
 	}
 
 	public StreamMappedMerkleList(IStreamMappedList<TItem> clusteredList, IItemHasher<TItem> hasher, CHF hashAlgorithm)
 		: base(clusteredList, hasher, new ClusteredStorageMerkleTreeStream(clusteredList.Storage, MerkleTreeStreamIndex, hashAlgorithm)) {
-		Guard.Ensure(clusteredList.Storage.Header.ReservedRecords > 0, "Clustered storage requires at least 1 reserved stream");
+		Guard.Ensure(clusteredList.Storage.Header.ReservedRecords > 0, "Clustered storage requires at least 1 reserved stream to store merkle-tree");
 	}
 
 	public IClusteredStorage Storage => InternalCollection.Storage;

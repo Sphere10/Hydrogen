@@ -14,8 +14,6 @@ using Tools;
 namespace Sphere10.Framework.Tests {
 	
 	public abstract class StreamMappedMerkleDictionaryTestsBase : StreamPersistedCollectionTestsBase {
-
-
 		protected abstract IDisposable CreateDictionary(CHF chf, out StreamMappedMerkleDictionary<string, TestObject> merkleDictionary);
 
 		[Test]
@@ -134,7 +132,17 @@ namespace Sphere10.Framework.Tests {
 					maxItems,
 					(rng) => ($"{keyGens++}_{rng.NextString(0, 100)}", new TestObject(rng)),
 					iterations: 10,
-					valueComparer: new TestObjectComparer()
+					valueComparer: new TestObjectComparer(),
+					endOfIterTest: () => {
+						// Manually test the merkle root
+						var itemSerializer = new TestObjectSerializer();
+						var itemHasher = new ItemHasher<TestObject>(chf, itemSerializer, Endianness.LittleEndian).WithNullHash(chf);
+						var itemHashes = Enumerable.Range(0, clusteredDictionary.Storage.Count - clusteredDictionary.Storage.Header.ReservedRecords).Select(i => {
+							var item = clusteredDictionary.ReadValue(i);
+							return itemHasher.Hash(item);
+						}).ToArray(); ;
+						Assert.That(clusteredDictionary.MerkleTree.Root, Is.EqualTo(Tools.MerkleTree.ComputeMerkleRoot(itemHashes, chf)));
+					}
 				);
 			}
 		}

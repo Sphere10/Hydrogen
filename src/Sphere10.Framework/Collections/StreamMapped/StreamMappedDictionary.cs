@@ -107,6 +107,7 @@ namespace Sphere10.Framework {
 		public TValue ReadValue(int index) {
 			if (Storage.IsNull(KVPList.Storage.Header.ReservedRecords + index))
 				throw new InvalidOperationException($"Stream record {index} is null");
+				
 			using var scope = Storage.Open(KVPList.Storage.Header.ReservedRecords + index);
 			var reader = new EndianBinaryReader(EndianBitConverter.For(Storage.Endianness), scope.Stream);
 			return ((KeyValuePairSerializer<TKey, TValue>)KVPList.ItemSerializer).DeserializeValue(scope.Record.Size, reader);

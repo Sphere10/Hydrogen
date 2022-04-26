@@ -22,6 +22,8 @@ namespace Sphere10.Framework.Tests {
 
 			using (clusteredList.EnterAddScope("beta"));
 			using (clusteredList.EnterInsertScope(0, "alpha"));
+			using (clusteredList.EnterAddScope("alphaa"));
+			clusteredList.RemoveAt(2);
 			using (clusteredList.EnterInsertScope(2, "gammaa"));
 			using (clusteredList.EnterAddScope("delta"));
 			using (clusteredList.EnterUpdateScope(2, "gamma"));

@@ -1,17 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>netstandard2.1</TargetFramework>
+		<TargetFramework>net6.0</TargetFramework>
 		<IsPackable>false</IsPackable>
+		<OutputType>Library</OutputType>
 		<LangVersion>latest</LangVersion>
 	</PropertyGroup>
 
 	<ItemGroup>
-		<None Remove="Resources\SH2 Sedgman Database.db3" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<EmbeddedResource Include="Resources\SH2 Sedgman Database.db3" />
+		<None Remove="Resources\TestsDatabase.db3" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -23,6 +20,21 @@
 	<ItemGroup>
 		<ProjectReference Include="..\..\src\Hydrogen.Data\Hydrogen.Data.csproj" />
 		<ProjectReference Include="..\..\src\Hydrogen.NUnit.DB\Hydrogen.NUnit.DB.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Compile Update="Properties\Resource.Designer.cs">
+	    <DesignTime>True</DesignTime>
+	    <AutoGen>True</AutoGen>
+	    <DependentUpon>Resource.resx</DependentUpon>
+	  </Compile>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <EmbeddedResource Update="Properties\Resource.resx">
+	    <Generator>PublicResXFileCodeGenerator</Generator>
+	    <LastGenOutput>Resource.Designer.cs</LastGenOutput>
+	  </EmbeddedResource>
 	</ItemGroup>
 
 </Project>

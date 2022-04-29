@@ -18,10 +18,13 @@ using System.Diagnostics;
 using System.Text;
 using NUnit.Framework;
 using System.IO;
+using System.Reflection;
 using System.Transactions;
 using Hydrogen;
 using Hydrogen.Data;
 using Hydrogen;
+using Hydrogen.Data.Tests.Properties;
+
 
 namespace Hydrogen.Data.Tests {
 
@@ -33,7 +36,7 @@ namespace Hydrogen.Data.Tests {
         [SetUp]
         public void CreateDatabase() {
             DBFile = Path.GetTempFileName();
-            File.WriteAllBytes(DBFile, Resource.TestSqliteDatabase);
+            File.WriteAllBytes(DBFile, Resource.TestDatabase);
         }
 
         [Test]

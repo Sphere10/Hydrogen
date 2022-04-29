@@ -12,7 +12,7 @@ jobs:
           dotnet-version: 6.0.x
           
       - name: Build Hydrogen solution
-        run: dotnet build ./src/Hydrogen.sln
+        run: dotnet build "./src/Hydrogen (CrossPlatform).sln"
   
   test:
     runs-on: ubuntu-latest
@@ -24,4 +24,4 @@ jobs:
           dotnet-version: 6.0.x
 
       - name: Run tests
-        run: dotnet test ./src/Hydrogen (CrossPlatform).sln
+        run: dotnet test "./src/Hydrogen (CrossPlatform).sln"

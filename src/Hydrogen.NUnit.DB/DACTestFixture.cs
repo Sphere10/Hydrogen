@@ -44,7 +44,7 @@ namespace Hydrogen.NUnit {
         private const string MSSQLServer_Default = "localhost";
         private const string MSSQLUser_Default = "sa";
         private const string MSSQLPassword_Default = "";
-	    public static object[] DBMS = { DBMSType.Sqlite, DBMSType.SQLServer };
+	    public static object[] DBMS = { DBMSType.Sqlite/*, DBMSType.SQLServer*/ };
 
 		public DACTestFixture() : this(MSSQLServer_Default, MSSQLUser_Default, MSSQLPassword_Default) {
         }

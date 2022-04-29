@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using NUnit.Framework;
 
-namespace Sphere10.Framework.Tests;
+namespace Hydrogen.Tests;
 
 [TestFixture]
 public class HashSetTests : SetTestsBase {

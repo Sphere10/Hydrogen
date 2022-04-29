@@ -1,7 +1,7 @@
 ﻿using System;
 using Org.BouncyCastle.Crypto.Digests;
 
-namespace Sphere10.Framework.CryptoEx {
+namespace Hydrogen.CryptoEx {
 
 	public class GeneralDigestAdapter : IHashFunction {
 		private readonly GeneralDigest _generalDigest;

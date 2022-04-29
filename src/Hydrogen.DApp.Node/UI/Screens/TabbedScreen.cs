@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Sphere10.Framework;
+using Hydrogen;
 using Terminal.Gui;
 
-namespace Sphere10.Hydrogen.Node.UI {
+namespace Hydrogen.DApp.Node.UI {
 
 	/// <summary>
 	/// A screen that is composed of many component screens, driven by a left menu.

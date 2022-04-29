@@ -8,7 +8,7 @@ using AutoFixture;
 using FluentAssertions;
 using NUnit.Framework;
 
-namespace Sphere10.Framework.Tests {
+namespace Hydrogen.Tests {
 
 	[Ignore("Fails on Github")]
 	public class FastMarshalStructSerializerTests {

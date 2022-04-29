@@ -15,7 +15,7 @@ using System;
 using System.ComponentModel;
 using System.Xml.Serialization;
 
-namespace Sphere10.Framework.Application {
+namespace Hydrogen.Application {
 
 	[XmlRoot("ComponentRegistry")]
     public class ComponentRegistryDefinition {

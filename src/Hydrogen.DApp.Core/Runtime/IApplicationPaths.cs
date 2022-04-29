@@ -1,4 +1,4 @@
-﻿using Sphere10.Framework;
+﻿using Hydrogen;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Sphere10.Hydrogen.Core.Runtime {
+namespace Hydrogen.DApp.Core.Runtime {
 
 	/// <summary>
 	/// Class that provides the folders for the Hydrogen Application. It can also create them if they don't exist.

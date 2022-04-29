@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel;
 using Microsoft.Extensions.DependencyInjection;
-using Sphere10.Framework;
-using Sphere10.Framework.Application;
+using Hydrogen;
+using Hydrogen.Application;
 
-namespace Sphere10.Hydrogen.Presentation2.Logic {
+namespace Hydrogen.DApp.Presentation2.Logic {
 
 	public interface IPlugin {
 		event EventHandlerEx Loaded;

@@ -16,7 +16,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Linq.Expressions;
 
-namespace Sphere10.Framework.FastReflection {
+namespace Hydrogen.FastReflection {
 
 	public class MethodInvoker {
         private readonly Func<object, object[], object> _mInvoker;

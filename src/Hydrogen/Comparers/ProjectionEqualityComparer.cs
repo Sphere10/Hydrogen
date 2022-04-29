@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	/// <summary>
 	/// Non-generic class to produce instances of the generic class,
 	/// optionally using type inference.

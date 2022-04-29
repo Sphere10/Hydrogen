@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Sphere10.Framework;
+namespace Hydrogen;
 
 /// <summary>
 /// Adapts a <see cref="TList"/> into an <see cref="IMerkleList{TItem}"/>.

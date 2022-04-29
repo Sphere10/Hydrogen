@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Sphere10.Hydrogen.Presentation.Plugins {
+namespace Hydrogen.DApp.Presentation.Plugins {
     /// <summary>
     /// Application block
     /// </summary>

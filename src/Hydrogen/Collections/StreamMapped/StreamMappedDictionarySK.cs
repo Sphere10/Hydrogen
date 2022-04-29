@@ -8,7 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	/// <summary>
 	/// Similar to a <see cref="StreamMappedDictionary{TKey,TValue}"/> except keys are statically sized and serialized inside the <see cref="ClusteredStreamRecord"/> rather than within a <see cref="KeyValuePair{TKey, TValue}"/> item).

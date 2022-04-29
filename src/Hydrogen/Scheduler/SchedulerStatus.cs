@@ -11,7 +11,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace Sphere10.Framework.Scheduler {
+namespace Hydrogen {
 
 	public enum SchedulerStatus  {
 		Off,

@@ -19,9 +19,9 @@ using System.Text;
 using System.Windows.Forms;
 using SourceGrid;
 using SourceGrid.Cells.Editors;
-using Sphere10.Framework;
+using Hydrogen;
 
-namespace Sphere10.Framework.Windows.Forms {
+namespace Hydrogen.Windows.Forms {
 	internal class UpdateEntityOnValueChangedController : SourceGrid.Cells.Controllers.ControllerBase {
 		private readonly CrudGrid _grid;
 		private readonly ICrudDataSource<object> _dataSource;

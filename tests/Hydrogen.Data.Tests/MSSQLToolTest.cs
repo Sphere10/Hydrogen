@@ -19,10 +19,10 @@ using System.Text;
 using NUnit.Framework;
 using System.IO;
 using System.Transactions;
-using Sphere10.Framework;
-using Sphere10.Framework.Data;
+using Hydrogen;
+using Hydrogen.Data;
 
-namespace Sphere10.Framework.UnitTests {
+namespace Hydrogen.Data.Tests {
 
     [TestFixture]
     public class MSSQLToolTest {

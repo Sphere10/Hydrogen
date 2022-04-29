@@ -2,9 +2,9 @@
 using System.IO;
 using FluentAssertions;
 using NUnit.Framework;
-using Sphere10.Framework.Values;
+using Hydrogen.Values;
 
-namespace Sphere10.Framework.Tests.Values {
+namespace Hydrogen.Tests.Values {
 	public class VarIntTests {
 		[Test]
 		[TestCase(ulong.MinValue, 1)]

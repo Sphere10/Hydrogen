@@ -21,7 +21,7 @@ using System.Reflection;
 
 
 
-namespace Sphere10.Framework.Windows.Forms {
+namespace Hydrogen.Windows.Forms {
 
     public partial class StandardNagDialog : ApplicationForm, INagDialog {
 

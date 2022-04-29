@@ -17,10 +17,10 @@ using System.Reflection;
 using System.Threading;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using Sphere10.Framework;
+using Hydrogen;
 
 
-namespace Sphere10.Framework.Windows {
+namespace Hydrogen.Windows {
 
     public sealed class WindowsMouseHook : BaseMouseHook, IComponent {
         public new event EventHandler Disposed;

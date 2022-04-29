@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
     public class FactorySerializerBuilderBase<TBase, TFactorySerializerBuilder> where TFactorySerializerBuilder : FactorySerializerBuilderBase<TBase, TFactorySerializerBuilder> {
 
 		public FactorySerializerBuilderBase(IFactorySerializer<TBase> serializer) {

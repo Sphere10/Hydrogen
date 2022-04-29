@@ -14,11 +14,11 @@
 
 using System.ComponentModel;
 using System.Reflection;
-using Sphere10.Framework.FastReflection;
+using Hydrogen.FastReflection;
 
 
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
     public abstract class ObjectWithDefaultValues : object {
         protected ObjectWithDefaultValues()
             : this(true) {

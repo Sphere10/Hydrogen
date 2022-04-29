@@ -4,10 +4,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using Blazored.LocalStorage;
 using Microsoft.Extensions.Options;
-using Sphere10.Framework;
-using Sphere10.Hydrogen.Presentation.Services;
+using Hydrogen;
+using Hydrogen.DApp.Presentation.Services;
 
-namespace Sphere10.Hydrogen.Presentation.Loader.Services
+namespace Hydrogen.DApp.Presentation.Loader.Services
 {
 
     /// <summary>

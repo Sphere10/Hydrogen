@@ -17,9 +17,9 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Net.NetworkInformation;
-using Sphere10.Framework.Application;
+using Hydrogen.Application;
 
-namespace Sphere10.Framework.Windows.Forms {
+namespace Hydrogen.Windows.Forms {
 	public class BITSBackgroundLicenseVerifier : StandardBackgroundLicenseVerifier {
 
 		public BITSBackgroundLicenseVerifier(IProductInformationServices productInformationServices, IWebsiteLauncher websiteLauncher, ILicenseServices licenseServices, ILicenseEnforcer licenseEnforcer)

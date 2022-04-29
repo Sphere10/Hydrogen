@@ -13,7 +13,7 @@
 
 using System;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	public static class FastExp {
         static readonly double[] ExpAdjustment = new double[256] {
             1.040389835,

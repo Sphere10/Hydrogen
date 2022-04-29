@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Sphere10.Framework;
-using Sphere10.Framework.Communications;
-using Sphere10.Hydrogen.Core.Storage;
-using Void = Sphere10.Framework.Void;
+using Hydrogen;
+using Hydrogen.Communications;
+using Hydrogen.DApp.Core.Storage;
+using Void = Hydrogen.Void;
 
-namespace Sphere10.Hydrogen.Core.Runtime {
+namespace Hydrogen.DApp.Core.Runtime {
 
 	public class Host : IHost {
 		public event EventHandlerEx<AnonymousPipe> NodeStarted;

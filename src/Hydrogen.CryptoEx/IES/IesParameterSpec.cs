@@ -1,7 +1,7 @@
 using System;
 using Org.BouncyCastle.Utilities;
 
-namespace Sphere10.Framework.CryptoEx.IES {
+namespace Hydrogen.CryptoEx.IES {
 	/**
     * Parameter spec for an integrated encryptor, as in IEEE P1363a
     */

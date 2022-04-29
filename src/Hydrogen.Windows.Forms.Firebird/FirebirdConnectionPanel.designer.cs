@@ -11,7 +11,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace Sphere10.Framework.Windows.Forms.Firebird {
+namespace Hydrogen.Windows.Forms.Firebird {
 	partial class FirebirdConnectionPanel {
 		/// <summary> 
 		/// Required designer variable.

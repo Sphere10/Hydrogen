@@ -3,7 +3,7 @@ using System;
 using System.Numerics;
 using System.Security.Cryptography;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	public static class BigIntegerExtensions {
 
         // primes smaller than 2000 to test the generated prime number

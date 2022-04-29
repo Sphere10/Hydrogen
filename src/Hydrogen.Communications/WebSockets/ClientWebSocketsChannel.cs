@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using System.Net.WebSockets;
 using System.IO;
 
-namespace Sphere10.Framework.Communications {
+namespace Hydrogen.Communications {
 	public class ClientWebSocketsChannel : ProtocolChannel, IDisposable {
 
 		public event EventHandlerEx<WebSocketReceiveResult> ReceivedWebSocketMessage;

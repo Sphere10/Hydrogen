@@ -17,9 +17,9 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Linq;
 using System.Text;
-using Sphere10.Framework;
+using Hydrogen;
 
-namespace Sphere10.Framework.Windows.Forms.Crud {
+namespace Hydrogen.Windows.Forms.Crud {
 	public class CrudComboBox : CustomComboBox {
 		private readonly CrudGrid _crudGrid;
 

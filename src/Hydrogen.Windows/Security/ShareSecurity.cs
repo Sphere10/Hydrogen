@@ -19,7 +19,7 @@ using System.Security.Permissions;
 using System.Security.Principal;
 using System.Runtime.InteropServices;
 
-namespace Sphere10.Framework.Windows.Security {
+namespace Hydrogen.Windows.Security {
 
 
     [Flags]

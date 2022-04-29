@@ -1,4 +1,4 @@
-﻿namespace Sphere10.Hydrogen.Presentation.Loader.Plugins
+﻿namespace Hydrogen.DApp.Presentation.Loader.Plugins
 {
 
     /// <summary>

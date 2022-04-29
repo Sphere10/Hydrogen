@@ -16,7 +16,7 @@ using System.Collections;
 using System.ComponentModel;
 using System.Drawing;
 using System.Windows.Forms;
-using Sphere10.Framework.FastReflection;
+using Hydrogen.FastReflection;
 
 
 namespace SourceGrid.Cells.Editors

@@ -10,9 +10,9 @@ using Org.BouncyCastle.Math.EC;
 using Org.BouncyCastle.Math.EC.Multiplier;
 using Org.BouncyCastle.Security;
 using Org.BouncyCastle.Utilities;
-using Sphere10.Framework.CryptoEx.EC.IES;
+using Hydrogen.CryptoEx.EC.IES;
 
-namespace Sphere10.Framework.CryptoEx.EC;
+namespace Hydrogen.CryptoEx.EC;
 
 //https://github.com/bitcoin/bips/blob/master/bip-0340.mediawiki
 public class Schnorr : StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schnorr.PublicKey> {

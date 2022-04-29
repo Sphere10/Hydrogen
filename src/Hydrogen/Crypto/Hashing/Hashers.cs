@@ -6,7 +6,7 @@ using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	/// <summary>
 	/// Fast, thread-safe static hash methods.

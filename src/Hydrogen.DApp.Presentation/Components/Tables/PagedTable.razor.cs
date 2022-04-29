@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
-using Sphere10.Hydrogen.Presentation.ViewModels;
+using Hydrogen.DApp.Presentation.ViewModels;
 
-namespace Sphere10.Hydrogen.Presentation.Components.Tables {
+namespace Hydrogen.DApp.Presentation.Components.Tables {
     /// <summary>
     /// Paging table - simple table with pagination 
     /// </summary>

@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
-using Sphere10.Framework;
-using Sphere10.Hydrogen.Presentation2.Logic.Wizard;
+using Hydrogen;
+using Hydrogen.DApp.Presentation2.Logic.Wizard;
 
-namespace Sphere10.Hydrogen.Presentation2.UI.Wizard
+namespace Hydrogen.DApp.Presentation2.UI.Wizard
 {
 
     /// <summary>

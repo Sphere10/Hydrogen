@@ -14,7 +14,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	/// <summary>
 	/// 1 invalidated item, invalidates all. 1 fetched item fetches all

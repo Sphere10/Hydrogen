@@ -15,7 +15,7 @@ using System;
 using UIKit;
 using CoreGraphics;
 
-namespace Sphere10.Framework.iOS
+namespace Hydrogen.iOS
 {
 	public class FullScaleImageView : UIScrollView {
 

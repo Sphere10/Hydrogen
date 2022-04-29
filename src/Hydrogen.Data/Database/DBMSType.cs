@@ -17,7 +17,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text;
 
-namespace Sphere10.Framework.Data {
+namespace Hydrogen.Data {
 	public enum DBMSType {
         [Description("SQL Server")]
 		SQLServer			= 1,

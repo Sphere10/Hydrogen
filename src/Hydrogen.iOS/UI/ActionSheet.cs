@@ -19,9 +19,9 @@ using Foundation;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Threading;
-using Sphere10.Framework;
+using Hydrogen;
 
-namespace Sphere10.Framework.iOS {
+namespace Hydrogen.iOS {
 
     public static class ActionSheet
     {

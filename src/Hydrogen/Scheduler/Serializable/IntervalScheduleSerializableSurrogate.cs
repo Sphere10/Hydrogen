@@ -1,6 +1,6 @@
 ﻿using System.Xml.Serialization;
 
-namespace Sphere10.Framework.Scheduler.Serializable {
+namespace Hydrogen {
 	public class IntervalScheduleSerializableSurrogate : JobScheduleSerializableSurrogate {
 		
 		[XmlAttribute]

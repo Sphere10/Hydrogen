@@ -15,7 +15,7 @@ using System;
 using System.IO;
 using System.Text;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	public class EncryptedAttribute : Attribute {
 		public const string DefaultPepper = "00000000";
 

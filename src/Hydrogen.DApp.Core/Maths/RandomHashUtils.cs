@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
-namespace Sphere10.Hydrogen.Core.Maths {
+namespace Hydrogen.DApp.Core.Maths {
 	public static class RandomHashUtils {
 	
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]

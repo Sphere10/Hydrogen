@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public enum ProducerConsumerType {
 		Consumer = 0,

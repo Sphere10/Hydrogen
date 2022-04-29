@@ -15,7 +15,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 
-namespace Sphere10.Framework.Data {
+namespace Hydrogen.Data {
 
 	public static class DataReaderExtensions {
 

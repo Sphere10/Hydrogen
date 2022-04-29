@@ -18,7 +18,7 @@ using System.Linq;
 using Foundation;
 using UIKit;
 
-namespace Sphere10.Framework.iOS
+namespace Hydrogen.iOS
 {
 	public partial class UIWebImageViewController : UIViewController
 	{

@@ -5,9 +5,9 @@ using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Crypto.Generators;
 using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.Security;
-using Sphere10.Framework.CryptoEx.EC.IES;
+using Hydrogen.CryptoEx.EC.IES;
 
-namespace Sphere10.Framework.CryptoEx.IES {
+namespace Hydrogen.CryptoEx.IES {
 
 	public class IesCipher {
 		private readonly CustomIesEngine _customIesEngine;

@@ -1,4 +1,4 @@
-﻿namespace Sphere10.Framework {
+﻿namespace Hydrogen {
 	internal class Cluster {
 		public ClusterTraits Traits { get; set; }
 		public int Prev { get; set; }

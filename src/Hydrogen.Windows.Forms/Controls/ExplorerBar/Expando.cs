@@ -28,9 +28,9 @@ using System.Threading;
 using System.Windows.Forms;
 using System.Windows.Forms.Design;
 using System.Xml.Serialization;
-using Sphere10.Framework;
+using Hydrogen;
 
-namespace Sphere10.Framework.Windows.Forms {
+namespace Hydrogen.Windows.Forms {
 
 
 	/// <summary>

@@ -5,10 +5,10 @@ using System.Linq;
 using System.Net.Http.Headers;
 using System.Reflection;
 using System.Threading;
-using Sphere10.Framework;
+using Hydrogen;
 using Terminal.Gui;
 
-namespace Sphere10.Hydrogen.Node.UI {
+namespace Hydrogen.DApp.Node.UI {
 
 	// change to IOC
 	public static class Navigator {
@@ -20,7 +20,7 @@ namespace Sphere10.Hydrogen.Node.UI {
 		private static IDictionary<Type, Screen> _activatedScreens;
 
 		public static void Start(CancellationToken stopRunningToken) {
-			Application.Init();
+			Terminal.Gui.Application.Init();
 			stopRunningToken.Register(Quit);
 			_activatedScreens = new Dictionary<Type, Screen>();
 			_applicationScreenTypes = ScanApplicationScreens().ToArray();
@@ -30,12 +30,12 @@ namespace Sphere10.Hydrogen.Node.UI {
 					.Where(x => x.GetCustomAttributeOfType<LifetimeAttribute>().Lifetime == ScreenLifetime.Application)
 					.ToDictionary(x => x, CreateScreen);
 
-			Application.Top.Add(BuildMenu());
+			Terminal.Gui.Application.Top.Add(BuildMenu());
 			Show<DashboardScreen>();
 			_statusBar = BuildStatusBar();
-			Application.Top.Add(_statusBar);
+			Terminal.Gui.Application.Top.Add(_statusBar);
 			RunApplication(
-				Application.Top,
+				Terminal.Gui.Application.Top,
 				error => {
 					SystemLog.Exception(nameof(Navigator), nameof(Start), error);
 					Dialogs.Exception(error);
@@ -45,13 +45,13 @@ namespace Sphere10.Hydrogen.Node.UI {
 		}
 
 		public static void Quit() {
-			Application.Top.Running = false;
+			Terminal.Gui.Application.Top.Running = false;
 		}
 
 		public static void NotifyStatusBarChanged() {
-			Application.Top.Remove(_statusBar);
+			Terminal.Gui.Application.Top.Remove(_statusBar);
 			_statusBar = BuildStatusBar();
-			Application.Top.Add(_statusBar);
+			Terminal.Gui.Application.Top.Add(_statusBar);
 		}
 
 		private static IEnumerable<Type> ScanApplicationScreens() {
@@ -163,12 +163,12 @@ namespace Sphere10.Hydrogen.Node.UI {
 
 				if (_screenFrame != null) {
 					_screenFrame.Subviews[0].Remove(priorScreen); // remove for not disposing
-					Application.Top.Remove(_screenFrame);
+					Terminal.Gui.Application.Top.Remove(_screenFrame);
 					_screenFrame.Dispose();
 					_screenFrame = null;
 				}
 				if (priorScreen != null) {
-					Application.Top.Remove(priorScreen);
+					Terminal.Gui.Application.Top.Remove(priorScreen);
 				}
 				priorScreen.NotifyDisappeared();
 
@@ -194,7 +194,7 @@ namespace Sphere10.Hydrogen.Node.UI {
 				newScreen.Y = 1;
 				newScreen.Width = Dim.Fill();
 				newScreen.Height = Dim.Fill(1);
-				Application.Top.Add(newScreen);
+				Terminal.Gui.Application.Top.Add(newScreen);
 			}
 			else {
 				_screenFrame = new FrameView($"{TitlePrefix} {newScreen.Title}") {
@@ -204,10 +204,10 @@ namespace Sphere10.Hydrogen.Node.UI {
 					Height = Dim.Fill(1) // 1 for statusbar
 				};
 				_screenFrame.Add(newScreen);
-				Application.Top.Add(_screenFrame);
+				Terminal.Gui.Application.Top.Add(_screenFrame);
 			}
 			NotifyStatusBarChanged();
-			Application.Top.LayoutSubviews();
+			Terminal.Gui.Application.Top.LayoutSubviews();
 			_currentScreen.NotifyAppeared();
 		}
 
@@ -224,9 +224,9 @@ namespace Sphere10.Hydrogen.Node.UI {
 			while (resume) {
 				try {
 					resume = false;
-					var runToken = Application.Begin(view);
-					Application.RunLoop(runToken);
-					Application.End(runToken);
+					var runToken = Terminal.Gui.Application.Begin(view);
+					Terminal.Gui.Application.RunLoop(runToken);
+					Terminal.Gui.Application.End(runToken);
 				} catch (Exception error) {
 					if (errorHandler == null)
 						throw;

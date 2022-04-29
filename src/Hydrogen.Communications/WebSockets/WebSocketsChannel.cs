@@ -7,7 +7,7 @@ using System.Net.Sockets;
 using System.Net.WebSockets;
 using System.IO;
 
-namespace Sphere10.Framework.Communications {
+namespace Hydrogen.Communications {
 	public class WebSocketsChannel : ProtocolChannel, IDisposable {
 
 		public IPEndPoint LocalEndpoint { get; }

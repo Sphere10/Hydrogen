@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
 using Org.BouncyCastle.Utilities;
-using Sphere10.Framework.CryptoEx.EC;
-using Sphere10.Framework.CryptoEx.EC.MuSigBuilder;
+using Hydrogen.CryptoEx.EC;
+using Hydrogen.CryptoEx.EC.MuSigBuilder;
 
-namespace Sphere10.Framework.CryptoEx.Tests;
+namespace Hydrogen.CryptoEx.Tests;
 
 [TestFixture]
 public class MuSigBuilderTest

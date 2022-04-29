@@ -13,7 +13,7 @@
 
 using System.ComponentModel;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	public enum MemoryMetric {
         [Description("bits")]
         Bit = 0,

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	public abstract class GenericSerializerBase {
 
 		protected readonly SynchronizedDictionary<Type, int> Registrations = new();

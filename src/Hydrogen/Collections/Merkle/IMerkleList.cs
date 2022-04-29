@@ -1,6 +1,6 @@
 ﻿using System.Collections;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public interface IMerkleList<TItem> : IExtendedList<TItem>, IMerkleCollection<TItem> {
 	}

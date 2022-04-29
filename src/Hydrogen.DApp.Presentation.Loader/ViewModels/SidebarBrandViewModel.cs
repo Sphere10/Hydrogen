@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Sphere10.Hydrogen.Presentation.Services;
-using Sphere10.Hydrogen.Presentation.ViewModels;
+using Hydrogen.DApp.Presentation.Services;
+using Hydrogen.DApp.Presentation.ViewModels;
 
-namespace Sphere10.Hydrogen.Presentation.Loader.ViewModels
+namespace Hydrogen.DApp.Presentation.Loader.ViewModels
 {
 
     public class SidebarBrandViewModel : ComponentViewModelBase, IDisposable

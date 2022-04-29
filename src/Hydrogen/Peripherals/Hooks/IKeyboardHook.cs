@@ -13,7 +13,7 @@
 
 using System;
 using System.Collections.Generic;
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public interface IKeyboardHook : IDeviceHook  {
 		 event EventHandler<KeyEvent> KeyDown;

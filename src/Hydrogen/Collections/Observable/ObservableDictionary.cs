@@ -14,7 +14,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public class ObservableDictionary<TKey, TValue> : ObservableDictionary<TKey, TValue, IDictionary<TKey, TValue>> {
 

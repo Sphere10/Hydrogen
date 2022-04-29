@@ -17,7 +17,7 @@ using System.IO;
 using System.Security.Cryptography;
 using System.IO.Compression;
 using System.Runtime.CompilerServices;
-using Sphere10.Framework;
+using Hydrogen;
 
 // ReSharper disable CheckNamespace
 namespace Tools {

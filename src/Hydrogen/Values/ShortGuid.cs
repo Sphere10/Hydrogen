@@ -13,7 +13,7 @@
 
 using System;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	/// <summary>
 	/// Represents a globally unique identifier (GUID) with a
 	/// shorter string value. Sguid

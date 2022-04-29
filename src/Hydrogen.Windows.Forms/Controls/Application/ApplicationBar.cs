@@ -18,11 +18,11 @@ using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
 using System.Diagnostics;
-using Sphere10.Framework;
-using Sphere10.Framework.Windows.Forms;
+using Hydrogen;
+using Hydrogen.Windows.Forms;
 
 
-namespace Sphere10.Framework.Windows.Forms {
+namespace Hydrogen.Windows.Forms {
 
     public delegate void ButtonPressedHandler(ApplicationBar source, ApplicationBar.Item button);
 

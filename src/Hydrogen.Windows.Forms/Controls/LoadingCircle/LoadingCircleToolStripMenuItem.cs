@@ -42,7 +42,7 @@ using System.Drawing;
 using System.Windows.Forms;
 using System.Windows.Forms.Design;
 
-namespace Sphere10.Framework.Windows.Forms
+namespace Hydrogen.Windows.Forms
 {
     [ToolStripItemDesignerAvailability(ToolStripItemDesignerAvailability.All)]
     public class LoadingCircleToolStripMenuItem : ToolStripControlHost
@@ -58,9 +58,9 @@ namespace Sphere10.Framework.Windows.Forms
         /// <value>The loading circle control.</value>
         [RefreshProperties(RefreshProperties.All),
         DesignerSerializationVisibility(DesignerSerializationVisibility.Content)]
-        public Sphere10.Framework.Windows.Forms.LoadingCircle LoadingCircleControl
+        public Hydrogen.Windows.Forms.LoadingCircle LoadingCircleControl
         {
-            get { return Control as Sphere10.Framework.Windows.Forms.LoadingCircle; }
+            get { return Control as Hydrogen.Windows.Forms.LoadingCircle; }
         }
 
         // Constructor ========================================================
@@ -68,7 +68,7 @@ namespace Sphere10.Framework.Windows.Forms
         /// Initializes a new instance of the <see cref="LoadingCircleToolStripMenuItem"/> class.
         /// </summary>
         public LoadingCircleToolStripMenuItem()
-            : base(new Sphere10.Framework.Windows.Forms.LoadingCircle())
+            : base(new Hydrogen.Windows.Forms.LoadingCircle())
         {
         }
 

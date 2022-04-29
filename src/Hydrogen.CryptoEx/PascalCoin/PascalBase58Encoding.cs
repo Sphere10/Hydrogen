@@ -2,9 +2,9 @@
 using System.Linq;
 using System.Numerics;
 using System.Text.RegularExpressions;
-using Sphere10.Framework;
+using Hydrogen;
 
-namespace Sphere10.Framework.CryptoEx.PascalCoin {
+namespace Hydrogen.CryptoEx.PascalCoin {
 	public class PascalBase58Encoding {
 		public const string CharSet = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
 		public const string CharPattern = "[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]";

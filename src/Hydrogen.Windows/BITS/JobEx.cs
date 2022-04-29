@@ -15,7 +15,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Sphere10.Framework.Windows.BITS {
+namespace Hydrogen.Windows.BITS {
 
     /// <summary>
     /// Encapsulates a job by name. Will create if doesn't exist, or fetch if already exists.

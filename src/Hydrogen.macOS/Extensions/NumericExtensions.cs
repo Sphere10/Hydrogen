@@ -16,7 +16,7 @@ using System.Collections.Generic;
 using System.Linq;
 using MonoMac.Foundation;
 
-namespace Sphere10.Framework
+namespace Hydrogen
 {
 	public static class NumericExtensions
 	{

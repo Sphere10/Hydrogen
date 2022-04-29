@@ -18,8 +18,8 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Text;
-using Sphere10.Framework;
-using Sphere10.Framework.Data;
+using Hydrogen;
+using Hydrogen.Data;
 using System.Data.SQLite;
 
 // ReSharper disable CheckNamespace

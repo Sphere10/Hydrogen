@@ -7,9 +7,9 @@ using System.Text;
 using System.Threading;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using NUnit.Framework;
-using Sphere10.Framework.NUnit;
+using Hydrogen.NUnit;
 
-namespace Sphere10.Framework.Tests {
+namespace Hydrogen.Tests {
 
 	// TODO: add "empty set" variations for tests
 	public abstract class SetTestsBase  {

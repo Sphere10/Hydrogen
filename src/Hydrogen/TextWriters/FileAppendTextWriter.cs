@@ -14,7 +14,7 @@
 using System.IO;
 using System.Text;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	/// <summary>
 	/// TextWriter which appends to a file.

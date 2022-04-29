@@ -1,7 +1,7 @@
 ﻿using Terminal.Gui;
-using Sphere10.Hydrogen.Node.Screens;
+using Hydrogen.DApp.Node.Screens;
 
-namespace Sphere10.Hydrogen.Node.UI {
+namespace Hydrogen.DApp.Node.UI {
 
 	public abstract class FramedScreen<T> : Screen<T> {
 		protected new FrameView Frame;

@@ -1,4 +1,4 @@
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public interface ILoadable {
 		event EventHandlerEx<object> Loading;

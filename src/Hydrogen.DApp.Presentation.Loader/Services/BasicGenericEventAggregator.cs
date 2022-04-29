@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Sphere10.Hydrogen.Presentation.Services;
+using Hydrogen.DApp.Presentation.Services;
 
-namespace Sphere10.Hydrogen.Presentation.Loader.Services
+namespace Hydrogen.DApp.Presentation.Loader.Services
 {
     public class BasicGenericEventAggregator : IGenericEventAggregator
     {

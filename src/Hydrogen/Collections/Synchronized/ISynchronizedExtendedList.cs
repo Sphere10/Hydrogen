@@ -1,4 +1,4 @@
-﻿namespace Sphere10.Framework {
+﻿namespace Hydrogen {
 	public interface ISynchronizedExtendedList<T> : IExtendedList<T>, ISynchronizedList<T>, ISynchronizedReadOnlyList<T> {
 	}
 }

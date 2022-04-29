@@ -2,10 +2,10 @@
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Sphere10.Framework.DataSource;
+using Hydrogen.DataSource;
 using Newtonsoft.Json;
 
-namespace Sphere10.Framework.Communications {
+namespace Hydrogen.Communications {
 	public abstract class ProtocolChannelDataSource<TItem> : DataSourceBase<TItem> {
 		protected ProtocolChannelDataSource(ProtocolChannel protocolChannel) {
 			ProtocolChannel = protocolChannel;

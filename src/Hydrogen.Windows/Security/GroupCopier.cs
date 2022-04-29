@@ -17,9 +17,9 @@ using System.Text;
 
 using System.Diagnostics;
 using System.Linq;
-using Sphere10.Framework;
+using Hydrogen;
 
-namespace Sphere10.Framework.Windows.Security {
+namespace Hydrogen.Windows.Security {
     
     public class GroupCopier {
         bool _copyLocalMembership;

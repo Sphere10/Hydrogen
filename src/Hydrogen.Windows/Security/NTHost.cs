@@ -19,10 +19,10 @@ using System.Net;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
 using System.Text;
-using Sphere10.Framework;
+using Hydrogen;
 
 
-namespace Sphere10.Framework.Windows.Security {
+namespace Hydrogen.Windows.Security {
 
     /// <summary>
     /// Encapsulates a remote host.

@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	/// <summary>
 	/// A list whose items are mapped onto a stream via contiguous pages. Items can only be added/removed from the end of the stream (unlike <see cref="StreamMappedList{TItem}"/>).

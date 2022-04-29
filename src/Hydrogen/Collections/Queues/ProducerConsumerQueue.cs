@@ -17,7 +17,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	public class ProducerConsumerQueue<T> : Disposable {
 		private readonly object _threadLock;
 		private readonly Func<T, long> _sizeEstimator;

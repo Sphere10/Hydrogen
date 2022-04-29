@@ -19,7 +19,7 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
 
-namespace Sphere10.Framework.Windows.Forms.Misc {
+namespace Hydrogen.Windows.Forms.Misc {
 	class ToolTipEx : ToolTip {
 		public ToolTipEx() {
 			this.OwnerDraw = true;

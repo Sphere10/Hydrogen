@@ -11,11 +11,11 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using Sphere10.Framework.Scheduler.Serializable;
+using Hydrogen;
 using System;
 using System.Linq;
 
-namespace Sphere10.Framework.Scheduler
+namespace Hydrogen
 {
     public class SchedulerJob : BaseJob
     {

@@ -4,11 +4,11 @@ using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Sphere10.Hydrogen.Presentation.Loader.Plugins;
-using Sphere10.Hydrogen.Presentation.Loader.Services;
-using Sphere10.Hydrogen.Presentation.Services;
+using Hydrogen.DApp.Presentation.Loader.Plugins;
+using Hydrogen.DApp.Presentation.Loader.Services;
+using Hydrogen.DApp.Presentation.Services;
 
-namespace Sphere10.Hydrogen.Presentation.Loader
+namespace Hydrogen.DApp.Presentation.Loader
 {
 
     public class Program

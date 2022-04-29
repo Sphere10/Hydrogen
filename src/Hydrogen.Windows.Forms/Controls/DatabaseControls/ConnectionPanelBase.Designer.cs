@@ -11,7 +11,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace Sphere10.Framework.Windows.Forms {
+namespace Hydrogen.Windows.Forms {
 	partial class ConnectionPanelBase {
 		/// <summary> 
 		/// Required designer variable.

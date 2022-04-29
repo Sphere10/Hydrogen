@@ -16,10 +16,10 @@ using System.Drawing;
 using System.Linq;
 using CoreGraphics;
 using Foundation;
-using Sphere10.Framework;
+using Hydrogen;
 using UIKit;
 
-namespace Sphere10.Framework.iOS {
+namespace Hydrogen.iOS {
     public static class UIScrollViewExtensions {
 
         /// <summary>

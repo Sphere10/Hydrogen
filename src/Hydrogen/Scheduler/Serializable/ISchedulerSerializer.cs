@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Sphere10.Framework.Scheduler.Serializable {
+namespace Hydrogen {
 	public interface ISchedulerSerializer {
 
 		void Serialize(SchedulerSerializableSurrogate scheduler);

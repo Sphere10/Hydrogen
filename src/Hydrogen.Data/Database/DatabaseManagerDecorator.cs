@@ -1,4 +1,4 @@
-﻿namespace Sphere10.Framework.Data {
+﻿namespace Hydrogen.Data {
     public class DatabaseManagerDecorator : IDatabaseManager {
 
         public event EventHandlerEx<DatabaseCreatedEventArgs> DatabaseCreated { add => InternalDatabaseManager.DatabaseCreated += value; remove => InternalDatabaseManager.DatabaseCreated -= value; }

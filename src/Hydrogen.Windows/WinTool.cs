@@ -19,8 +19,8 @@ using System.Runtime.InteropServices;
 using System.Security.Principal;
 using System.Text;
 using Microsoft.Win32;
-using Sphere10.Framework;
-using Sphere10.Framework.Windows;
+using Hydrogen;
+using Hydrogen.Windows;
 
 namespace Tools {
 

@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Sphere10.Hydrogen.Presentation.Plugins {
+namespace Hydrogen.DApp.Presentation.Plugins {
     /// <summary>
     /// Plugin base
     /// </summary>

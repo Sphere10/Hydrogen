@@ -11,7 +11,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-//	Sphere10.Framework.Data.Csv.CachedCsvReader.CsvPropertyDescriptor
+//	Hydrogen.Data.Csv.CachedCsvReader.CsvPropertyDescriptor
 //	Copyright (c) 2006 Sébastien Lorion
 //
 //	MIT license (http://en.wikipedia.org/wiki/MIT_License)
@@ -36,7 +36,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 
-namespace Sphere10.Framework.Data.Csv
+namespace Hydrogen.Data.Csv
 {
 	public partial class CachedCsvReader
 		: CsvReader

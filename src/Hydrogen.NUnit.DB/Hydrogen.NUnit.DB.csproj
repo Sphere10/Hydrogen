@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>netstandard2.1</TargetFramework>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<Compile Remove="Properties\**" />
+		<EmbeddedResource Remove="Properties\**" />
+		<None Remove="Properties\**" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="NUnit" Version="3.13.2" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\Hydrogen.Data.MSSQL\Hydrogen.Data.MSSQL.csproj" />
+		<ProjectReference Include="..\Hydrogen.Data.Sqlite\Hydrogen.Data.Sqlite.csproj" />
+		<ProjectReference Include="..\Hydrogen.Data\Hydrogen.Data.csproj" />
+		<ProjectReference Include="..\Hydrogen.NUnit\Hydrogen.NUnit.csproj" />
+		<ProjectReference Include="..\Hydrogen\Hydrogen.csproj" />
+	</ItemGroup>
+
+</Project>

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Sphere10.Hydrogen.Core.Runtime {
+namespace Hydrogen.DApp.Core.Runtime {
 	[Serializable]
 	public class ShutdownMessage {
 

@@ -3,9 +3,9 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading;
 using Terminal.Gui;
-using Sphere10.Hydrogen.Node.UI;
+using Hydrogen.DApp.Node.UI;
 
-namespace Sphere10.Hydrogen.Node.UI {
+namespace Hydrogen.DApp.Node.UI {
 
 	[Title("Tabbed Screen Test")]
 	[Lifetime(ScreenLifetime.WhenVisible)]

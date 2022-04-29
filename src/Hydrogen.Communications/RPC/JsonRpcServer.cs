@@ -10,7 +10,7 @@ using System.Text;
 using System.Linq;
 using Newtonsoft.Json;
 
-namespace Sphere10.Framework.Communications.RPC {
+namespace Hydrogen.Communications.RPC {
 	//Json server as an ApiService 
 
 	public class JsonRpcServer {

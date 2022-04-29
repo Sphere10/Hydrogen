@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Sphere10.Hydrogen.Node.UI {
+namespace Hydrogen.DApp.Node.UI {
 
 	public class TitleAttribute : Attribute {
 		public TitleAttribute(string title) {

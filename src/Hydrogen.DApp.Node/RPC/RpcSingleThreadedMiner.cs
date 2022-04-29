@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
-using Sphere10.Framework;
-using Sphere10.Framework.Communications.RPC;
-using Sphere10.Hydrogen.Core.Configuration;
-using Sphere10.Hydrogen.Core.Consensus.Serializers;
-using Sphere10.Hydrogen.Core.Maths;
-using Sphere10.Hydrogen.Core.Mining;
+using Hydrogen;
+using Hydrogen.Communications.RPC;
+using Hydrogen.DApp.Core.Configuration;
+using Hydrogen.DApp.Core.Consensus.Serializers;
+using Hydrogen.DApp.Core.Maths;
+using Hydrogen.DApp.Core.Mining;
 
-namespace Sphere10.Hydrogen.Node.RPC {
+namespace Hydrogen.DApp.Node.RPC {
 
 	public class RpcSingleThreadedMiner : IDisposable {
 		private JsonRpcClient _rpcClient;

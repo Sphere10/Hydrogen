@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	/// <summary>
 	/// Represents a stateless digital signature scheme. One where knowledge of nonces from prior signatures are not ever needed. These

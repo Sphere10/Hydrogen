@@ -9,9 +9,9 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-[assembly: global::Android.Runtime.ResourceDesignerAttribute("Sphere10.Framework.Android.Resource", IsApplication=false)]
+[assembly: global::Android.Runtime.ResourceDesignerAttribute("Hydrogen.Android.Resource", IsApplication=false)]
 
-namespace Sphere10.Framework.Android
+namespace Hydrogen.Android
 {
 	
 	

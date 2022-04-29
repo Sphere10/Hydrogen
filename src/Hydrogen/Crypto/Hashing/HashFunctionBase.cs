@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public abstract class HashFunctionBase : IHashFunction {
 		protected bool _inTransform;

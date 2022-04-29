@@ -2,10 +2,10 @@ using System;
 using System.Linq;
 using System.Text;
 using NUnit.Framework;
-using Sphere10.Framework;
-using Sphere10.Framework.NUnit;
+using Hydrogen;
+using Hydrogen.NUnit;
 
-namespace Sphere10.Framework.Tests {
+namespace Hydrogen.Tests {
 
 	[TestFixture]
     public class WOTSSharpTests {

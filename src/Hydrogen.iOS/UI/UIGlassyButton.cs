@@ -16,7 +16,7 @@ using CoreGraphics;
 using UIKit;
 using CoreAnimation;
 
-namespace Sphere10.Framework.iOS
+namespace Hydrogen.iOS
 {
 	//https://github.com/Clancey/ClanceyLib/tree/master/ClanceysLib
 	public class UIGlassyButton : UIButton

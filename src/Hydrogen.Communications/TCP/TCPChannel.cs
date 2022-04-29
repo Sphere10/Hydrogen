@@ -5,7 +5,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Sphere10.Framework.Communications {
+namespace Hydrogen.Communications {
 	public class TCPChannel : ProtocolChannel {
 
 		public IPEndPoint LocalEndpoint { get; }

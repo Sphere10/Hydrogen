@@ -1,6 +1,6 @@
 using System;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	public interface ITransactionalList<T> : IExtendedList<T>, ITransactionalFile, ILoadable, ISynchronizedObject, IDisposable {
 	}
 

@@ -61,10 +61,10 @@ The directory structures which govern a HAP are as follows.
 
 ### Host Protocol
 
-The protocol which governs a HAP lifecycle is called the Host Protocol. It comprises of Request-Response and Command style messages between the Host, Node and GUI processes. The underlying channel for the Host Protocol are Anonymous Pipes, although Sphere 10 Framework permits other channels. The below sequence diagram documents the core aspects of the Host Protocol, although the code serves as the [reference documentation][1].
+The protocol which governs a HAP lifecycle is called the Host Protocol. It comprises of Request-Response and Command style messages between the Host, Node and GUI processes. The underlying channel for the Host Protocol are Anonymous Pipes, although Hydrogen Framework permits other channels. The below sequence diagram documents the core aspects of the Host Protocol, although the code serves as the [reference documentation][1].
 
 ![Hydrogen Application (HAP) Lifecycle](resources/host-protocol.svg)
 
 
-[1]: https://github.com/Sphere10/Hydrogen/tree/master/src/Sphere10.Hydrogen.Core/Runtime "Hydrogen Host Protocol source-code"
+[1]: https://github.com/Sphere10/Hydrogen/tree/master/src/Hydrogen.DApp.Core/Runtime "Hydrogen Host Protocol source-code"
 

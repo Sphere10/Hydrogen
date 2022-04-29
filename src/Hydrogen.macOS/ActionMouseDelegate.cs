@@ -14,7 +14,7 @@
 using System;
 using MonoMac.AppKit;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	public sealed class ActionMouseDelegate : MouseDelegate {
 	
 		public ActionMouseDelegate() {

@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Sphere10.Hydrogen.Presentation.ViewModels;
+using Hydrogen.DApp.Presentation.ViewModels;
 
-namespace Sphere10.Hydrogen.Presentation.Components.Tables {
+namespace Hydrogen.DApp.Presentation.Components.Tables {
 
     /// <summary>
     /// Rapid table control view model

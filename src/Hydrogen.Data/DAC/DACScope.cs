@@ -16,7 +16,7 @@ using System.Collections.Generic;
 using System.Data;
 
 
-namespace Sphere10.Framework.Data {
+namespace Hydrogen.Data {
 
 	public sealed class DACScope : TransactionalScope<DACScope, IDbTransaction> {
         private const string DefaultContextPrefix = "EA9CC911-C209-42B9-B113-84562706145D";

@@ -11,7 +11,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace Sphere10.Framework.Windows.Forms {
+namespace Hydrogen.Windows.Forms {
 	partial class MainForm {
 		/// <summary>
 		/// Required designer variable.
@@ -107,7 +107,7 @@ namespace Sphere10.Framework.Windows.Forms {
 			// 
 			// _contextHelpToolStripMenuItem
 			// 
-			this._contextHelpToolStripMenuItem.Image = global::Sphere10.Framework.Windows.Forms.Resources.Help_16x16x32;
+			this._contextHelpToolStripMenuItem.Image = global::Hydrogen.Windows.Forms.Resources.Help_16x16x32;
 			this._contextHelpToolStripMenuItem.Name = "_contextHelpToolStripMenuItem";
 			this._contextHelpToolStripMenuItem.Size = new System.Drawing.Size(186, 22);
 			this._contextHelpToolStripMenuItem.Text = "Context Help";

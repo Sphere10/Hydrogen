@@ -1,6 +1,6 @@
-﻿using Sphere10.Framework;
+﻿using Hydrogen;
 
-namespace Sphere10.Hydrogen.Core.Keys {
+namespace Hydrogen.DApp.Core.Keys {
 
 	public interface IDigitalSignatureSchemeFactory {
 		IDigitalSignatureScheme Create(KeyType keyType);

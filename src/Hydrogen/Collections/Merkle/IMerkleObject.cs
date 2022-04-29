@@ -1,4 +1,4 @@
-﻿namespace Sphere10.Framework;
+﻿namespace Hydrogen;
 
 /// <summary>
 /// A merkleized object is one that maintains a merkle tree of it's state.

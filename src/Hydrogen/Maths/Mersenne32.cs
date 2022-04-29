@@ -1,4 +1,4 @@
-﻿namespace Sphere10.Framework {
+﻿namespace Hydrogen {
 
 	public sealed class Mersenne32 {
 		// Define MT19937 constants (32-bit RNG)

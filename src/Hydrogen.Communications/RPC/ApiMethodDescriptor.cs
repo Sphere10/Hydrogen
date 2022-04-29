@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Sphere10.Framework.Communications.RPC {
+namespace Hydrogen.Communications.RPC {
 	public class ApiMethodDescriptor {
 		//Service or Method name
 		public string MethodName;

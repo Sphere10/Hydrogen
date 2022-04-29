@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	/// <summary>
 	/// An <see cref="IEditableMerkleTree"/> that maintains only a subset of the nodes. This is useful for constructing

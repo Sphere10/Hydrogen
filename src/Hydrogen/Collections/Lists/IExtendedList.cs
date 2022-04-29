@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public interface IExtendedList<T> : IExtendedCollection<T>, IList<T>, IReadOnlyExtendedList<T>, IWriteOnlyExtendedList<T> {
 		new T this[int index] { get; set; }

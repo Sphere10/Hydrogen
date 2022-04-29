@@ -5,7 +5,7 @@ using System.Threading;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 
-namespace Sphere10.Framework.Communications {
+namespace Hydrogen.Communications {
 
 	public class UDPServer : Disposable {
 

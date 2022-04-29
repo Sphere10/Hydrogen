@@ -1,8 +1,8 @@
-﻿using Sphere10.Framework;
-using Sphere10.Framework.Communications;
+﻿using Hydrogen;
+using Hydrogen.Communications;
 using System.Collections.Generic;
 
-namespace Sphere10.Hydrogen.Core.Runtime {
+namespace Hydrogen.DApp.Core.Runtime {
 
 	public static class HostProtocolHelper {
 

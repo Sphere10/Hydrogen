@@ -15,12 +15,12 @@ using System;
 using System.Data;
 using MonoMac.AppKit;
 using MonoMac.Foundation;
-using Sphere10.Framework;
+using Hydrogen;
 using System.Drawing;
-using Sphere10.Framework;
+using Hydrogen;
 
 
-namespace Sphere10.Framework.Data {
+namespace Hydrogen.Data {
 
 	public class ADOTableViewDataSource : NSTableViewDataSource {
 

@@ -13,7 +13,7 @@
 
 using System;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	/// <summary>
 	/// Loggers are used to process debug, information, warning and error messages.

@@ -11,7 +11,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace Sphere10.Framework.Windows.Forms {
+namespace Hydrogen.Windows.Forms {
 	partial class LogonDialog {
 		/// <summary>
 		/// Required designer variable.
@@ -47,7 +47,7 @@ namespace Sphere10.Framework.Windows.Forms {
 			this.label2 = new System.Windows.Forms.Label();
 			this._errorRichTextBox = new System.Windows.Forms.RichTextBox();
 			this._loadingCircle = new LoadingCircle();
-			this.pictureBoxEx1 = new Sphere10.Framework.Windows.Forms.PictureBoxEx();
+			this.pictureBoxEx1 = new Hydrogen.Windows.Forms.PictureBoxEx();
 			((System.ComponentModel.ISupportInitialize)(this.pictureBoxEx1)).BeginInit();
 			this.SuspendLayout();
 			// 
@@ -184,7 +184,7 @@ namespace Sphere10.Framework.Windows.Forms {
 			this.pictureBoxEx1.Name = "pictureBoxEx1";
 			this.pictureBoxEx1.Size = new System.Drawing.Size(32, 32);
 			this.pictureBoxEx1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
-			this.pictureBoxEx1.SystemIcon = Sphere10.Framework.Windows.Forms.SystemIconType.Shield;
+			this.pictureBoxEx1.SystemIcon = Hydrogen.Windows.Forms.SystemIconType.Shield;
 			this.pictureBoxEx1.TabIndex = 0;
 			this.pictureBoxEx1.TabStop = false;
 			// 

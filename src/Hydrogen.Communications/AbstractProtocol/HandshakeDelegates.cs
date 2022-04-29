@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Sphere10.Framework.Communications {
+namespace Hydrogen.Communications {
 
 	// common handshake delegates
 	public delegate THandshake GenerateHandshakeDelegate<out THandshake>(ProtocolOrchestrator orchestrator);

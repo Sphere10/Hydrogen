@@ -15,7 +15,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public static class ArrayExtensions {
 

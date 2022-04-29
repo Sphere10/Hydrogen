@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Sphere10.Framework.Communications {
+namespace Hydrogen.Communications {
 	public class Action3WayHandshakeHandler<THandshake, TAck, TVerack> : HandshakeHandlerBase<THandshake, TAck, TVerack> {
 
 		private readonly GenerateHandshakeDelegate<THandshake> _generate;

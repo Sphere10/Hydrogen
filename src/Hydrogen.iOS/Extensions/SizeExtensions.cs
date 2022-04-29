@@ -14,7 +14,7 @@
 using System.Drawing;
 using CoreGraphics;
 
-namespace Sphere10.Framework.iOS {
+namespace Hydrogen.iOS {
 
     public static class SizeExtensions {
 

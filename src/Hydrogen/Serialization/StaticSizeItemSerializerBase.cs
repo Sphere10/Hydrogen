@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public abstract class StaticSizeItemSerializerBase<TItem> : StaticSizeItemSizer<TItem>, IItemSerializer<TItem> {
 		protected StaticSizeItemSerializerBase(int fixedSize) : base(fixedSize) {

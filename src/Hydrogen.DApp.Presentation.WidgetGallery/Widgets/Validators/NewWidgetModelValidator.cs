@@ -1,7 +1,7 @@
 ﻿using FluentValidation;
-using Sphere10.Hydrogen.Presentation.WidgetGallery.Widgets.Models;
+using Hydrogen.DApp.Presentation.WidgetGallery.Widgets.Models;
 
-namespace Sphere10.Hydrogen.Presentation.WidgetGallery.Widgets.Validators {
+namespace Hydrogen.DApp.Presentation.WidgetGallery.Widgets.Validators {
     public class NewWidgetModelValidator : AbstractValidator<NewWidgetModel> {
         public NewWidgetModelValidator() {
             RuleFor(x => x.Price).NotNull().GreaterThan(0);

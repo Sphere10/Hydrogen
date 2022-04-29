@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 
-namespace Sphere10.Framework.Threading {
+namespace Hydrogen.Threading {
 	/// <summary>
 	/// Hierarchical locks are not supported!!!
 	/// </summary>

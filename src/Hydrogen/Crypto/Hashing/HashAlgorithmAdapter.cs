@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Security.Cryptography;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public class HashAlgorithmAdapter : IHashFunction {
 		private readonly HashAlgorithm _hashAlgorithm;

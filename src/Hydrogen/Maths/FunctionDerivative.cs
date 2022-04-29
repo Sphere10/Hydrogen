@@ -11,7 +11,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace Sphere10.Framework.Maths {
+namespace Hydrogen.Maths {
 	public class FunctionDerivative : IFunction {
         private IFunction _function = null;
 

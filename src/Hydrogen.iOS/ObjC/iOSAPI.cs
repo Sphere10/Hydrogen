@@ -18,7 +18,7 @@ using Foundation;
 using ObjCRuntime;
 
 
-namespace Sphere10.Framework.iOS {
+namespace Hydrogen.iOS {
     public static class iOSAPI {
         [DllImport(Constants.ObjectiveCLibrary)]
         public static extern void objc_setAssociatedObject(IntPtr @object, IntPtr key, IntPtr value, AssociationPolicy policy);

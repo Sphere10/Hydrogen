@@ -19,7 +19,7 @@ using System.Collections;
 using System.Collections.Generic;
 using CoreGraphics;
 
-namespace Sphere10.Framework.iOS
+namespace Hydrogen.iOS
 {
 
 

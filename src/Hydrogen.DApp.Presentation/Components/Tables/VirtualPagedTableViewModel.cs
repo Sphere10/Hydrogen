@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Sphere10.Hydrogen.Presentation.Models;
-using Sphere10.Hydrogen.Presentation.ViewModels;
+using Hydrogen.DApp.Presentation.Models;
+using Hydrogen.DApp.Presentation.ViewModels;
 
-namespace Sphere10.Hydrogen.Presentation.Components.Tables {
+namespace Hydrogen.DApp.Presentation.Components.Tables {
 
     /// <summary>
     /// Virtual paged table view model

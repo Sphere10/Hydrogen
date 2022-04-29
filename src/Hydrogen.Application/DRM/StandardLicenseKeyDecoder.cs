@@ -12,10 +12,10 @@
 //-----------------------------------------------------------------------
 
 using System;
-using Sphere10.Framework.Application.Components;
+using Hydrogen.Application.Components;
 using System.Reflection;
 
-namespace Sphere10.Framework.Application {
+namespace Hydrogen.Application {
 
 	[Obfuscation(Feature = "encryptmethod", Exclude = false)]
 	public class StandardLicenseKeyDecoder : ILicenseKeyDecoder {

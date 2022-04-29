@@ -1,7 +1,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	public static class EventHandlerExExtensions {
 
 		public static void InvokeAsync(this EventHandlerEx handler)

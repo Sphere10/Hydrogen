@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Sphere10.Framework;
-using Sphere10.Hydrogen.Core.Configuration;
-using Sphere10.Hydrogen.Core.Consensus;
-using Sphere10.Hydrogen.Core.Maths;
+using Hydrogen;
+using Hydrogen.DApp.Core.Configuration;
+using Hydrogen.DApp.Core.Consensus;
+using Hydrogen.DApp.Core.Maths;
 
-namespace Sphere10.Hydrogen.Core.Mining {
+namespace Hydrogen.DApp.Core.Mining {
 
 	/// <summary>
 	/// A mining manager suitable for testing DAA, PoW and serialization algorithms. A real mining manager is burdened with the workflow

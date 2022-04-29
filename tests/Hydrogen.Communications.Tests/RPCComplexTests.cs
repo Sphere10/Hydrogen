@@ -7,11 +7,11 @@
 //using System.Text;
 //using System.Collections.Generic;
 //using System.Diagnostics;
-//using Sphere10.Framework;
-//using Sphere10.Framework.Communications.RPC;
+//using Hydrogen;
+//using Hydrogen.Communications.RPC;
 //using System.Threading;
 
-//namespace Sphere10.Framework.Tests
+//namespace Hydrogen.Tests
 //{
 
 

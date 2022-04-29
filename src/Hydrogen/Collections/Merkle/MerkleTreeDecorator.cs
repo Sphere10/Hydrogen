@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	public abstract class MerkleTreeDecorator<TMerkleTree> : IMerkleTree where TMerkleTree : IMerkleTree {
 
         protected MerkleTreeDecorator(TMerkleTree internalMerkleTree) {

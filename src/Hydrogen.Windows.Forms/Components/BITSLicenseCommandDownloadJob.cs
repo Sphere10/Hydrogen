@@ -17,11 +17,11 @@ using System.Text;
 using System.Net.NetworkInformation;
 using System.IO;
 using System.Reflection;
-using Sphere10.Framework.Application;
-using Sphere10.Framework;
-using Sphere10.Framework.Windows.BITS;
+using Hydrogen.Application;
+using Hydrogen;
+using Hydrogen.Windows.BITS;
 
-namespace Sphere10.Framework.Windows.Forms {
+namespace Hydrogen.Windows.Forms {
 
     public class BITSLicenseCommandDownloadJob : JobEx {
 

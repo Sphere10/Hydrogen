@@ -14,7 +14,7 @@
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 
 	public abstract class DictionaryDecorator<TKey, TValue, TDictionary> : IDictionary<TKey, TValue> where TDictionary : IDictionary<TKey, TValue> {

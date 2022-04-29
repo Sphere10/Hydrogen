@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using NUnit.Framework;
-using Sphere10.Hydrogen.Presentation.Components;
-using Sphere10.Hydrogen.Presentation.Components.Tables;
+using Hydrogen.DApp.Presentation.Components;
+using Hydrogen.DApp.Presentation.Components.Tables;
 
-namespace Sphere10.Hydrogen.Presentation.Tests {
+namespace Hydrogen.DApp.Presentation.Tests {
 
     public class RapidTableViewModelTests {
 #pragma warning disable 1998

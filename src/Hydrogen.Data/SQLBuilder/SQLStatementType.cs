@@ -16,7 +16,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Sphere10.Framework.Data {
+namespace Hydrogen.Data {
 	/// <summary>
 	///  http://www.orafaq.com/faq/what_are_the_difference_between_ddl_dml_and_dcl_commands
 	/// </summary>

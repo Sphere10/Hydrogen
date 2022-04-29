@@ -21,7 +21,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Sphere10.Framework.Data.Csv.Resources {
+namespace Hydrogen.Data.Csv.Resources {
     using System;
     
     
@@ -52,7 +52,7 @@ namespace Sphere10.Framework.Data.Csv.Resources {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Sphere10.Framework.Data.Csv.Resources.ExceptionMessage", typeof(ExceptionMessage).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Hydrogen.Data.Csv.Resources.ExceptionMessage", typeof(ExceptionMessage).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;

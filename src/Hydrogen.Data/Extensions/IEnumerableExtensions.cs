@@ -16,9 +16,9 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Text;
-using Sphere10.Framework;
+using Hydrogen;
 
-namespace Sphere10.Framework.Data {
+namespace Hydrogen.Data {
 
 
 	/// <summary>

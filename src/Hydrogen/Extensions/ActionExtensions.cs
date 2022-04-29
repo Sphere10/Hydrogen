@@ -13,7 +13,7 @@
 
 using System;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	public static class ActionExtensions {
 
 		public static Func<T, Void> AsVoid<T>(this Action<T> action) {

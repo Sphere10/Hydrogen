@@ -20,10 +20,10 @@ using System.Xml.Serialization;
 using System.Drawing;
 using System.Security.Permissions;
 using System.Reflection;
-using Sphere10.Framework;
+using Hydrogen;
 
 
-namespace Sphere10.Framework.Windows.Forms {
+namespace Hydrogen.Windows.Forms {
 
 	/// <summary>
 	/// A class that is serialized instead of a HeaderInfo (as 

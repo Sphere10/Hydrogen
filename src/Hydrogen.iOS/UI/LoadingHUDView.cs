@@ -48,7 +48,7 @@ using CoreGraphics;
 using Foundation;
 using System;
 
-namespace Sphere10.Framework.iOS {
+namespace Hydrogen.iOS {
 	public class LoadingHUDView : UIView {
 	
 		public static int WIDTH_MARGIN = 20;

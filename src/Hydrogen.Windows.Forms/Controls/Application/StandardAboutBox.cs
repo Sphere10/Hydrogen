@@ -17,10 +17,10 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Reflection;
 using System.Windows.Forms;
-using Sphere10.Framework.Application;
-using Sphere10.Framework;
+using Hydrogen.Application;
+using Hydrogen;
 
-namespace Sphere10.Framework.Windows.Forms {
+namespace Hydrogen.Windows.Forms {
 
     public partial class StandardAboutBox : ApplicationForm, IAboutBox {
 

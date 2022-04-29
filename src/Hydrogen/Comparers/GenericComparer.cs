@@ -14,7 +14,7 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.ComponentModel;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	/// <summary>
 	/// From Marc Clifton codeproject article.

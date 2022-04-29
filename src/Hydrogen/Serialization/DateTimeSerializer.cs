@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Sphere10.Framework.FastReflection;
+using Hydrogen.FastReflection;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	public class DateTimeSerializer : IItemSerializer<DateTime> {
 
 		public bool IsStaticSize => true;

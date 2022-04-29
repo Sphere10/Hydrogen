@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	/// <summary>
 	/// An <see cref="ExtendedListDecorator{TItem, TConcrete}"/> that wraps the range-based members as calls to the equivalent singular-based members.

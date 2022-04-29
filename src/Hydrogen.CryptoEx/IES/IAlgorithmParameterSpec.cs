@@ -1,4 +1,4 @@
-namespace Sphere10.Framework.CryptoEx.IES {
+namespace Hydrogen.CryptoEx.IES {
 	public interface IAlgorithmParameterSpec
     {
         

@@ -6,7 +6,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	/// <summary>
 	/// A set implementation that is both an <see cref="IStreamMappedHashSet{TItem}"/> and an <see cref="IMerkleSet{TItem}"/>.

@@ -13,7 +13,7 @@
 
 using System.Threading;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public abstract class SynchronizedResource : SynchronizedResource<Scope, Scope>, ISynchronizedResource {
     }

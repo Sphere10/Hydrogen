@@ -27,7 +27,7 @@ using System.ComponentModel;
 using System.Reflection;
 using System.Xml;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	/// <summary>
 	/// Deserializes complex objects serialized with the XmlSerializer.
 	/// </summary>

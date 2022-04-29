@@ -14,10 +14,10 @@
 using System.ComponentModel;
 using System.Data.SqlClient;
 using System.Linq;
-using Sphere10.Framework;
-using Sphere10.Framework.Data;
+using Hydrogen;
+using Hydrogen.Data;
 
-namespace Sphere10.Framework.Windows.Forms.MSSQL {
+namespace Hydrogen.Windows.Forms.MSSQL {
 	public partial class MSSQLConnectionPanel : ConnectionPanelBase {
 		public MSSQLConnectionPanel() {
 			InitializeComponent();

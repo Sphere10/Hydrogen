@@ -15,7 +15,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Sphere10.Framework.Collections {
+namespace Hydrogen.Collections {
 
 	public class ArrayEqualityComparer<T> : IEqualityComparer<T[]> {
 		private readonly IEqualityComparer<T> _elementComparer;

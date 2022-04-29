@@ -17,7 +17,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public static class AssemblyExtensions {
 		static readonly string[] FrameworkPrefixes = new[]{

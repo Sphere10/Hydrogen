@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Reflection;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	public sealed class PropertySetter {
 		private static readonly MethodInfo CallPropertySetterOpenGenericMethod =
 			typeof(PropertySetter).GetMethod(nameof(CallPropertySetter), BindingFlags.NonPublic | BindingFlags.Static)!;

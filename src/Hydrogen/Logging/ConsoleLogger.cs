@@ -11,7 +11,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	public class ConsoleLogger : TextWriterLogger {
 		public ConsoleLogger()
 			: base(new ConsoleTextWriter()) {

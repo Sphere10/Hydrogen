@@ -18,9 +18,9 @@ using System.Data;
 using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
-using Sphere10.Framework;
+using Hydrogen;
 
-namespace Sphere10.Framework.Windows.Forms {
+namespace Hydrogen.Windows.Forms {
 	public  class ExceptionDialog : DialogEx {
 
 		public ExceptionDialog() : this(string.Empty, new Exception()) {

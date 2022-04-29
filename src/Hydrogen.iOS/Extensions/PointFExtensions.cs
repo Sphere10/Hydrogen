@@ -15,7 +15,7 @@ using System;
 using System.Drawing;
 using CoreGraphics;
 
-namespace Sphere10.Framework.iOS {
+namespace Hydrogen.iOS {
 
     public static class PointFExtensions {
         public static CGPoint ToCGPoint(this PointF point) {

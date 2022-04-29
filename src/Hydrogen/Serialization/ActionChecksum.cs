@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Sphere10.Framework;
+namespace Hydrogen;
 
 public class ActionChecksum<TItem> : IItemChecksum<TItem> {
 	private readonly Func<TItem, int> _actionChecksum;

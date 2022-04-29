@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualBasic;
 
-namespace Sphere10.Framework.Communications {
+namespace Hydrogen.Communications {
 
 	public class Protocol {
 

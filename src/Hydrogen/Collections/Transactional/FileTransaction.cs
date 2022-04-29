@@ -5,7 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public class FileTransaction : IDisposable {
 		private static readonly SynchronizedDictionary<string, TransactionalFileMappedBuffer> GloballyEnlistedFiles;

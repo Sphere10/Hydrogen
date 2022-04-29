@@ -11,7 +11,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	public static class BoolExtensions
 	{
 		public static string YesNo(this bool value)

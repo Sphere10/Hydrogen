@@ -21,10 +21,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Sphere10.Framework;
-using Sphere10.Framework.Windows.Forms.WinForms;
+using Hydrogen;
+using Hydrogen.Windows.Forms.WinForms;
 
-namespace Sphere10.Framework.Windows.Forms {
+namespace Hydrogen.Windows.Forms {
 
 	public partial class LogonDialog : Form {
 		public const int MaxTextLength = 5000;

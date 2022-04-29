@@ -15,7 +15,7 @@ using System;
 using MonoMac.Foundation;
 using System.Collections;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	[Register("ComboBoxItem")]
 	public class ComboBoxItem : NSObject, IEqualityComparer {
 

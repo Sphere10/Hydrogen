@@ -1,8 +1,8 @@
-﻿using Sphere10.Framework;
-using Sphere10.Framework.Application;
-using Sphere10.Hydrogen.Node.RPC;
+﻿using Hydrogen;
+using Hydrogen.Application;
+using Hydrogen.DApp.Node.RPC;
 
-namespace Sphere10.Hydrogen.Node {
+namespace Hydrogen.DApp.Node {
 
 	public interface IHydrogenA {
 	}
@@ -14,7 +14,7 @@ namespace Sphere10.Hydrogen.Node {
 			SystemLog.RegisterLogger(new TimestampLogger(new ConsoleLogger()));
 
 			//NOTE: Until HydrogenInitializer gets to properly reference CryptoEx module, we init it here.
-			Sphere10.Framework.CryptoEx.ModuleConfiguration.Initialize();
+			Hydrogen.CryptoEx.ModuleConfiguration.Initialize();
 			//SystemLog.RegisterLogger(new TimestampLogger(new DebugLogger()));
 
 

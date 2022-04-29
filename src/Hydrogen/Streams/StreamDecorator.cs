@@ -16,7 +16,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public abstract class StreamDecorator<TStream> : Stream where TStream : Stream {
 		protected readonly TStream InnerStream;

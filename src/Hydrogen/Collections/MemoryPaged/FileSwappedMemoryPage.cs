@@ -1,6 +1,6 @@
 ﻿using System.IO;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	public abstract class FileSwappedMemoryPage<TItem> : MemoryPageBase<TItem> {
 		private readonly string _file;
 

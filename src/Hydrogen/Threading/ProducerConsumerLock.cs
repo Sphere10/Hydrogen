@@ -16,7 +16,7 @@ using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	/// <summary>
 	/// A synchronization mechanism similar to the <see cref="Monitor"/> but with "condition-based locking". This can be used by a producer/consumer queue to synchronize

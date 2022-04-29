@@ -3,7 +3,7 @@ using System.ComponentModel.Design;
 using System.Linq;
 using System.Text;
 
-namespace Sphere10.Hydrogen.Core {
+namespace Hydrogen.DApp.Core {
  
     interface INode {
         //ICommunications Communications { get; set; }

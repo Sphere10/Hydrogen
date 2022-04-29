@@ -2,9 +2,9 @@
 using System.IO;
 using System.Linq;
 using NUnit.Framework;
-using Sphere10.Framework.NUnit;
+using Hydrogen.NUnit;
 
-namespace Sphere10.Framework.Tests {
+namespace Hydrogen.Tests {
 	public class BitVectorTests {
 		
 		[Test]

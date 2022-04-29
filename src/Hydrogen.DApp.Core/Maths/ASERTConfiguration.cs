@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Sphere10.Hydrogen.Core.Maths {
+namespace Hydrogen.DApp.Core.Maths {
     public class ASERTConfiguration {
 
         public TimeSpan BlockTime { get; set; }

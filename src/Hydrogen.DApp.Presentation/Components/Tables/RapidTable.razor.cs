@@ -4,7 +4,7 @@ using System.Threading;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 
-namespace Sphere10.Hydrogen.Presentation.Components.Tables {
+namespace Hydrogen.DApp.Presentation.Components.Tables {
 
     /// <summary>
     /// Rapid table control / component. async enumerates an async enumerable e.g. a stream

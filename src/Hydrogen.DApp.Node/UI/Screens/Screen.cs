@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Sphere10.Framework;
+using Hydrogen;
 using Terminal.Gui;
-using Sphere10.Hydrogen.Node.Screens;
+using Hydrogen.DApp.Node.Screens;
 
-namespace Sphere10.Hydrogen.Node.UI {
+namespace Hydrogen.DApp.Node.UI {
 
 	public abstract class Screen : View {
 		private bool _initialized;
@@ -139,7 +139,7 @@ namespace Sphere10.Hydrogen.Node.UI {
 			foreach (var view in _viewCouldFocus.Keys)
 				view.CanFocus = _viewCouldFocus[view];
 			_viewCouldFocus.Clear();
-			this.ColorScheme = Application.Current.ColorScheme;
+			this.ColorScheme = Terminal.Gui.Application.Current.ColorScheme;
 			this.SetNeedsDisplay();
 		}
 

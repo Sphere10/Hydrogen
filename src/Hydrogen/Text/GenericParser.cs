@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
     public static class GenericParser {
 
 	    public static bool TryParse<T>(string input, out T value) {

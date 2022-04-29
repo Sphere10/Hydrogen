@@ -14,7 +14,7 @@
 using System;
 using System.Reflection;
 
-namespace Sphere10.Framework.FastReflection {
+namespace Hydrogen.FastReflection {
 
 	public static class FastReflectionCaches {
         static FastReflectionCaches() {

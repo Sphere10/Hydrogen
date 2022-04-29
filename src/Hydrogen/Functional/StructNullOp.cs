@@ -1,4 +1,4 @@
-﻿namespace Sphere10.Framework {
+﻿namespace Hydrogen {
 
 	internal sealed class StructNullOp<T> : INullOp<T>, INullOp<T?>
 		where T : struct {

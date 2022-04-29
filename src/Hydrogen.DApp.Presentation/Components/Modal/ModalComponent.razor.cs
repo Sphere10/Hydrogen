@@ -1,9 +1,9 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
-using Sphere10.Framework;
-using Sphere10.Hydrogen.Presentation.ViewModels;
+using Hydrogen;
+using Hydrogen.DApp.Presentation.ViewModels;
 
-namespace Sphere10.Hydrogen.Presentation.Components.Modal {
+namespace Hydrogen.DApp.Presentation.Components.Modal {
     /// <summary>
     /// Modal component. Modals should extend this component with custom
     /// content to be displayed in the modal.

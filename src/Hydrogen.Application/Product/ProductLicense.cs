@@ -15,7 +15,7 @@ using System;
 using System.Reflection;
 
 
-namespace Sphere10.Framework.Application {
+namespace Hydrogen.Application {
 
 	[Obfuscation(Exclude = true)]
     public class ProductLicense {

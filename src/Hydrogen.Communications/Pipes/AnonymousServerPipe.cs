@@ -4,7 +4,7 @@ using System.IO.Pipes;
 using System.Diagnostics;
 using System.Threading.Tasks;
 
-namespace Sphere10.Framework.Communications {
+namespace Hydrogen.Communications {
     public sealed class AnonymousServerPipe : AnonymousPipe {
         private readonly string _processPath;
         private readonly string _arguments;

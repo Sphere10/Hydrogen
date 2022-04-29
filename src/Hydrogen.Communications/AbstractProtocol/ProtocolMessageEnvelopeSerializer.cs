@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Sphere10.Framework.Communications {
+namespace Hydrogen.Communications {
 	public class ProtocolMessageEnvelopeSerializer : ItemSerializer<ProtocolMessageEnvelope> {
 		private readonly IItemSerializer<object> _payloadSerializer;
 		private static readonly byte[] MessageEnvelopeMarker = {0,1,2,3};

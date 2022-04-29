@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
-using Sphere10.Hydrogen.Presentation.Plugins;
+using Hydrogen.DApp.Presentation.Plugins;
 using Assert = NUnit.Framework.Assert;
 
-namespace Sphere10.Hydrogen.Presentation.Loader.Tests.PluginTests {
+namespace Hydrogen.DApp.Presentation.Loader.Tests.PluginTests {
 
     public class MenuItemTests {
         [Test]

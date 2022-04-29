@@ -17,7 +17,7 @@ using MonoMac.AppKit;
 using MonoMac.Foundation;
 using System.Collections.Generic;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	public sealed class ActionTableViewDataSource : NSTableViewDataSource {
 		public ActionTableViewDataSource(
 			 Func<NSTableView, NSDraggingInfo, int, NSTableViewDropOperation, bool> acceptDrop = null,

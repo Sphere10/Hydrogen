@@ -15,7 +15,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Sphere10.Framework.Collections {
+namespace Hydrogen.Collections {
 
 	public class EnumerableContainsSameComparer<T> : IEqualityComparer<IEnumerable<T>> {
         public bool Equals(IEnumerable<T> x, IEnumerable<T> y) {

@@ -1,5 +1,5 @@
 ﻿
-namespace Sphere10.Hydrogen.Presentation.Plugins {
+namespace Hydrogen.DApp.Presentation.Plugins {
     /// <summary>
     /// App block page
     /// </summary>

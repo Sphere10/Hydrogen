@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Sphere10.Hydrogen.Presentation.Plugins {
+namespace Hydrogen.DApp.Presentation.Plugins {
     public interface IMenuProvider {
         /// <summary>
         /// Gets this apps menu items.

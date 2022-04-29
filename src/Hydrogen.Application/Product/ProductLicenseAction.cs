@@ -16,7 +16,7 @@
 ///     www.sphere10.com/OnlineServices/ProductLicenseAction.cs
 using System.Reflection;
 
-namespace Sphere10.Framework.Application {
+namespace Hydrogen.Application {
 
 	[Obfuscation(Exclude = true)]
     public enum ProductLicenseAction {

@@ -19,7 +19,7 @@ using System.Data;
 using System.Text;
 using System.Windows.Forms;
 
-namespace Sphere10.Framework.Windows.Forms {
+namespace Hydrogen.Windows.Forms {
 
 
 

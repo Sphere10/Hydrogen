@@ -20,7 +20,7 @@ using System.Runtime.Serialization;
 using System.Drawing;
 using System.ComponentModel;
 
-namespace Sphere10.Framework.Windows.Forms {
+namespace Hydrogen.Windows.Forms {
 	/// <summary>
 	/// A class that contains system defined settings for TaskItems
 	/// </summary>

@@ -15,7 +15,7 @@ using System;
 using MonoMac.Foundation;
 using MonoMac.AppKit;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	public static class NSTableViewColumnExtensions
 	{
 		public static int GetIndex(this NSTableColumn tableColumn) {

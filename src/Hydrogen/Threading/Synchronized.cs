@@ -1,4 +1,4 @@
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	public sealed class Synchronized<T> : SynchronizedObject {
 		private T _value;
 

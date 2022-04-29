@@ -21,9 +21,9 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using DevAge.Windows.Forms;
-using Sphere10.Framework;
+using Hydrogen;
 
-namespace Sphere10.Framework.Windows.Forms {
+namespace Hydrogen.Windows.Forms {
     public partial class WizardDialog<T> : FormEx {
         
         public WizardDialog() {

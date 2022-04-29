@@ -19,10 +19,10 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Foundation;
-using Sphere10.Framework;
+using Hydrogen;
 using StoreKit;
 
-namespace Sphere10.Framework.iOS {
+namespace Hydrogen.iOS {
 
 	public class iTunesAppStoreManager {
 		private readonly SynchronizedDictionary<string, SKProduct> _productCache;

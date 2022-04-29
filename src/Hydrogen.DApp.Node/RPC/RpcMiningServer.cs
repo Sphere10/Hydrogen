@@ -1,10 +1,10 @@
-﻿using Sphere10.Framework;
-using Sphere10.Framework.Communications.RPC;
-using Sphere10.Hydrogen.Core.Consensus;
+﻿using Hydrogen;
+using Hydrogen.Communications.RPC;
+using Hydrogen.DApp.Core.Consensus;
 using System;
 using System.Diagnostics;
 
-namespace Sphere10.Hydrogen.Node.RPC {
+namespace Hydrogen.DApp.Node.RPC {
 
 	//Simple Stratum like server
 	public class RpcMiningServer: JsonRpcServer {

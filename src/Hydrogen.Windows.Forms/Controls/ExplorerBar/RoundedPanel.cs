@@ -19,10 +19,10 @@ using System.Text;
 using System.Windows.Forms;
 using System.Drawing;
 using System.Drawing.Drawing2D;
-using Sphere10.Framework;
+using Hydrogen;
 
 
-namespace Sphere10.Framework.Windows.Forms
+namespace Hydrogen.Windows.Forms
 {
 	public partial class RoundedPanel : Panel
 	{

@@ -15,7 +15,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	// ICache is a fully functional cache of <object, object>
 	public interface ICache : ISynchronizedObject {

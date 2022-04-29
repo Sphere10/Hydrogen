@@ -11,7 +11,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	public class NotInitializedException : SoftwareException {
 
         public NotInitializedException() : this("Not initliazed exception") { } 

@@ -11,7 +11,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace Sphere10.Framework.Windows.Forms {
+namespace Hydrogen.Windows.Forms {
 	partial class CrudGrid {
 		/// <summary> 
 		/// Required designer variable.
@@ -58,8 +58,8 @@ namespace Sphere10.Framework.Windows.Forms {
 			this._deleteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this._selectionContextMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
 			this._pageCountLabel = new System.Windows.Forms.Label();
-			this._searchTextBox = new Sphere10.Framework.Windows.Forms.SearchTextBox();
-			this._pageNumberBox = new Sphere10.Framework.Windows.Forms.IntBox();
+			this._searchTextBox = new Hydrogen.Windows.Forms.SearchTextBox();
+			this._pageNumberBox = new Hydrogen.Windows.Forms.IntBox();
 			this._grid = new SourceGrid.Grid();
 			this._layoutPanel.SuspendLayout();
 			this._topPanel.SuspendLayout();
@@ -111,7 +111,7 @@ namespace Sphere10.Framework.Windows.Forms {
 			// 
 			// _createButton
 			// 
-			this._createButton.Image = global::Sphere10.Framework.Windows.Forms.Resources.Plus;
+			this._createButton.Image = global::Hydrogen.Windows.Forms.Resources.Plus;
 			this._createButton.Location = new System.Drawing.Point(1, 2);
 			this._createButton.Name = "_createButton";
 			this._createButton.Size = new System.Drawing.Size(28, 23);
@@ -121,7 +121,7 @@ namespace Sphere10.Framework.Windows.Forms {
 			// 
 			// _deleteButton
 			// 
-			this._deleteButton.Image = global::Sphere10.Framework.Windows.Forms.Resources.Minus;
+			this._deleteButton.Image = global::Hydrogen.Windows.Forms.Resources.Minus;
 			this._deleteButton.Location = new System.Drawing.Point(28, 2);
 			this._deleteButton.Name = "_deleteButton";
 			this._deleteButton.Size = new System.Drawing.Size(28, 23);
@@ -151,7 +151,7 @@ namespace Sphere10.Framework.Windows.Forms {
 			// _lastPageButton
 			// 
 			this._lastPageButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-			this._lastPageButton.Image = global::Sphere10.Framework.Windows.Forms.Resources.MaxArrow;
+			this._lastPageButton.Image = global::Hydrogen.Windows.Forms.Resources.MaxArrow;
 			this._lastPageButton.Location = new System.Drawing.Point(492, 2);
 			this._lastPageButton.Name = "_lastPageButton";
 			this._lastPageButton.Size = new System.Drawing.Size(20, 20);
@@ -162,7 +162,7 @@ namespace Sphere10.Framework.Windows.Forms {
 			// _firstPageButton
 			// 
 			this._firstPageButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-			this._firstPageButton.Image = global::Sphere10.Framework.Windows.Forms.Resources.MinArrow;
+			this._firstPageButton.Image = global::Hydrogen.Windows.Forms.Resources.MinArrow;
 			this._firstPageButton.Location = new System.Drawing.Point(334, 2);
 			this._firstPageButton.Name = "_firstPageButton";
 			this._firstPageButton.Size = new System.Drawing.Size(20, 20);
@@ -173,7 +173,7 @@ namespace Sphere10.Framework.Windows.Forms {
 			// _nextPageButton
 			// 
 			this._nextPageButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-			this._nextPageButton.Image = global::Sphere10.Framework.Windows.Forms.Resources.RArrow;
+			this._nextPageButton.Image = global::Hydrogen.Windows.Forms.Resources.RArrow;
 			this._nextPageButton.Location = new System.Drawing.Point(473, 2);
 			this._nextPageButton.Name = "_nextPageButton";
 			this._nextPageButton.Size = new System.Drawing.Size(20, 20);
@@ -214,7 +214,7 @@ namespace Sphere10.Framework.Windows.Forms {
 			// _previousPageButton
 			// 
 			this._previousPageButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-			this._previousPageButton.Image = global::Sphere10.Framework.Windows.Forms.Resources.LArrow;
+			this._previousPageButton.Image = global::Hydrogen.Windows.Forms.Resources.LArrow;
 			this._previousPageButton.Location = new System.Drawing.Point(353, 2);
 			this._previousPageButton.Name = "_previousPageButton";
 			this._previousPageButton.Size = new System.Drawing.Size(20, 20);

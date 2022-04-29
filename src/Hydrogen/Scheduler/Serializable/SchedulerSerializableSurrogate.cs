@@ -1,6 +1,6 @@
 ﻿using System.Xml.Serialization;
 
-namespace Sphere10.Framework.Scheduler.Serializable {
+namespace Hydrogen {
 	[XmlRoot("Scheduler")]
 	public class SchedulerSerializableSurrogate {
 

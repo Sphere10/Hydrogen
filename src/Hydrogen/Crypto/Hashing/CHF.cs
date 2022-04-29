@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public enum CHF : ushort {
 		[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]

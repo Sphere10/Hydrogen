@@ -16,10 +16,10 @@ using System.Collections.Generic;
 using System.Text;
 using NUnit.Framework;
 using System.IO;
-using Sphere10.Framework;
+using Hydrogen;
 
 
-namespace Sphere10.Framework.Tests {
+namespace Hydrogen.Tests {
 
     [TestFixture]
 	[Parallelizable(ParallelScope.Children)]

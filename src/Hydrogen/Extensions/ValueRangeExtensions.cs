@@ -1,4 +1,4 @@
-﻿//namespace Sphere10.Framework {
+﻿//namespace Hydrogen {
 //	/// <summary>
 //	/// Extension methods to do with ranges.
 //	/// </summary>

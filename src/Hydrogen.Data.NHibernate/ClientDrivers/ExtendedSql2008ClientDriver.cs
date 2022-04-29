@@ -10,7 +10,7 @@ using NHibernate.Dialect;
 using NHibernate.Driver;
 using NHibernate.SqlTypes;
 
-namespace Sphere10.Framework.Data.NHibernate {
+namespace Hydrogen.Data.NHibernate {
     public class ExtendedSql2008ClientDriver : Sql2008ClientDriver {
         protected override void InitializeParameter(DbParameter dbParam, string name, SqlType sqlType)
         {

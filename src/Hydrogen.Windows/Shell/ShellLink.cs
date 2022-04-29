@@ -16,7 +16,7 @@ using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace Sphere10.Framework.Windows {
+namespace Hydrogen.Windows {
 	#region ShellLink Object
 	/// <summary>
 	/// Summary description for ShellLink.

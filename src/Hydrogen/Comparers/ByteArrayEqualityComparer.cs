@@ -15,7 +15,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	public class ByteArrayEqualityComparer : IEqualityComparer<byte[]> {
         public static readonly ByteArrayEqualityComparer Instance = new ByteArrayEqualityComparer();
 

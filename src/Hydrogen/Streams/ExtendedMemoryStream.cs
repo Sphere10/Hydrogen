@@ -16,7 +16,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	/// <summary>
 	/// A stream that writes to an underlying <see cref="IBuffer"/> rather than a byte array (as <see cref="MemoryStream"/> does).
 	/// The purpose of this class is to provide a Stream similar in principle to a  <see cref="MemoryStream"/> but whose underlying storage of bytes

@@ -20,7 +20,7 @@ using System.IO;
 using System.Diagnostics;
 using System.Threading;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	public static class StringExtensions {
 		private static readonly char[] InvalidFilePathChars = ("*?/\\:" + Path.GetInvalidPathChars().ToDelimittedString(string.Empty)).ToCharArray();
 		private static readonly Regex AlphabetCheckRegex = new Regex("^[a-zA-Z0-9]*$");

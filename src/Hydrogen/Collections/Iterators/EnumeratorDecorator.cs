@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public class EnumeratorDecorator<TFrom, TTo> : IEnumerator<TTo> where TTo : TFrom {
 

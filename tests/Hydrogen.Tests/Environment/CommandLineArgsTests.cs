@@ -2,7 +2,7 @@
 using System.Linq;
 using NUnit.Framework;
 
-namespace Sphere10.Framework.Tests.Environment {
+namespace Hydrogen.Tests.Environment {
 	[TestFixture]
 	[Parallelizable(ParallelScope.Children)]
 	public class CommandLineArgsTests {

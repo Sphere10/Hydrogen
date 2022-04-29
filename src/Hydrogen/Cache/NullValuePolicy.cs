@@ -11,7 +11,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	public enum NullValuePolicy {
         CacheNormally,
         ReturnButDontCache,

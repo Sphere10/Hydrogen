@@ -13,7 +13,7 @@
 
 using System.Collections.Generic;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	/// <summary>
 	/// Hierarchy node class which contains a nested collection of hierarchy nodes

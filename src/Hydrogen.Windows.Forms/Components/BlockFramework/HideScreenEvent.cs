@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Sphere10.Framework.Windows.Forms.Components.BlockFramework {
+namespace Hydrogen.Windows.Forms.Components.BlockFramework {
 	public class HideScreenEventArgs : EventArgs {
 		private bool _cancel;
 		public HideScreenEventArgs() {

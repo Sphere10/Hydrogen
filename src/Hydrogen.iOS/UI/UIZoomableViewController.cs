@@ -16,7 +16,7 @@ using UIKit;
 using CoreGraphics;
 using Foundation;
 
-namespace Sphere10.Framework.iOS {
+namespace Hydrogen.iOS {
 	// https://github.com/StuartMorris0/SPMZoomableUIImageView/blob/master/ZoomableScrollView/ZoomableScrollView/ViewController.m
 	// http://codehappily.wordpress.com/2013/09/26/ios-how-to-use-uiscrollview-with-auto-layout-pure-auto-layout/
 	[Foundation.Register]

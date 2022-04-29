@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
 
-namespace Sphere10.Hydrogen.Core.Keys {
+namespace Hydrogen.DApp.Core.Keys {
 
 	public enum KeyErrorCode {
 		[Description("Unrecognized Key Type '{0}'")]

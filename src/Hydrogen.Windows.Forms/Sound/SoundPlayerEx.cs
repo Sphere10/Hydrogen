@@ -17,7 +17,7 @@ using System.Text;
 using System.Runtime.InteropServices;
 using System.IO;
 
-namespace Sphere10.Framework.Windows.Forms {
+namespace Hydrogen.Windows.Forms {
 
 	public class SoundPlayerEx : IDisposable {
 		private byte[] _bytesToPlay;

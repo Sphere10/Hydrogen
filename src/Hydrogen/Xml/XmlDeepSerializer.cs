@@ -27,7 +27,7 @@ using System.Reflection;
 using System.Xml;
 using System.Diagnostics;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	/// <summary>
 	/// Serializes arbitrary objects to XML.

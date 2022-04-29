@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Sphere10.Framework.DataSource {
+namespace Hydrogen.DataSource {
 	public abstract class DataSourceBase<TItem> : IDataSource<TItem> {
 		public abstract IEnumerable<TItem> New(int count);
 

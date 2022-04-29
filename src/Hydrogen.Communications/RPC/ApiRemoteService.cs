@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Sphere10.Framework.Communications.RPC {
+namespace Hydrogen.Communications.RPC {
 	//Provide Remote and Local api calls support
 	public abstract class ApiRemoteService: ApiService {
 		protected IEndPoint EndPoint;				//Actual endpoint (TCP, NamedPIPE, POST, REST...)

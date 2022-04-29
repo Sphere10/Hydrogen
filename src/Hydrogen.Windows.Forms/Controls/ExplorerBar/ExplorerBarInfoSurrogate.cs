@@ -19,7 +19,7 @@ using System.Runtime.Serialization;
 using System.Security.Permissions;
 using System.Reflection;
 
-namespace Sphere10.Framework.Windows.Forms {
+namespace Hydrogen.Windows.Forms {
 
 	/// <summary>
 	/// A class that is serialized instead of an ExplorerBarInfo (as 

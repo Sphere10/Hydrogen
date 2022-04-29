@@ -14,7 +14,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public abstract class BulkFetchCacheBase<TKey, TValue> : CacheBase<TKey, TValue> {
 	    private readonly bool _fetchOnceOnly;

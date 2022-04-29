@@ -13,7 +13,7 @@
 
 using System;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	public class InvalidInterceptedValueException : SoftwareException {
 
 		public InvalidInterceptedValueException(object intercept, Type expected)

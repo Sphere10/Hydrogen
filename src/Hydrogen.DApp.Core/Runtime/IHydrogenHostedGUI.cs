@@ -1,4 +1,4 @@
-﻿namespace Sphere10.Hydrogen.Core.Runtime {
+﻿namespace Hydrogen.DApp.Core.Runtime {
 	public interface IHydrogenHostedGUI {
 	}
 }

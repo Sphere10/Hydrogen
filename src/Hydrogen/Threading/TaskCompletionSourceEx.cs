@@ -17,11 +17,11 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Sphere10.Framework;
+using Hydrogen;
 
-using VOID = Sphere10.Framework.Void;
+using VOID = Hydrogen.Void;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	/// <summary>
 	/// TaskCompletionSource is missing from .NET Standard. An implementation which decorates an <see cref="TaskCompletionSource{TResult}"/> is used.

@@ -17,7 +17,7 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 
-namespace Sphere10.Framework.Windows.Forms.AppointmentBook {
+namespace Hydrogen.Windows.Forms.AppointmentBook {
 	
 	public sealed class AppointmentViewModel {
 

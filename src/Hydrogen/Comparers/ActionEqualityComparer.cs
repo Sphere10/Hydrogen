@@ -14,7 +14,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	public class ActionEqualityComparer<T> : IEqualityComparer<T> {
 		private readonly Func<T, T, bool> _comparerFunc;
 

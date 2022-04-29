@@ -1,7 +1,7 @@
 using System.IO;
 using System.Linq;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	/// <summary>
 	/// A list whose items are mapped onto pages of a file and file pages are cached in memory.
 	/// </summary>

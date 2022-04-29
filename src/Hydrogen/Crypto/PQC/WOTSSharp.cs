@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	/// <summary>
 	/// W-OTS# scheme, a salt-hardened W-OTS variant that facilitates shorter/faster hash functions.

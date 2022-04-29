@@ -20,17 +20,17 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Sphere10.Framework;
-using Sphere10.Framework.Data;
-using Sphere10.Framework.Windows.Forms;
+using Hydrogen;
+using Hydrogen.Data;
+using Hydrogen.Windows.Forms;
 
-namespace Sphere10.Framework.Windows.Forms {
+namespace Hydrogen.Windows.Forms {
 
 	public partial class DatabaseConnectionBar : ConnectionBarBase, IDatabaseConnectionProvider {
-		private const string MSSQLConnectionBarTypeName = "Sphere10.Framework.Windows.Forms.MSSQL.MSSQLConnectionBar, Sphere10.Framework.Windows.Forms.MSSQL";
-		private const string SqliteConnectionBarTypeName = "Sphere10.Framework.Windows.Forms.Sqlite.SqliteConnectionBar, Sphere10.Framework.Windows.Forms.Sqlite";
-		private const string FirebirdConnectionBarTypeName = "Sphere10.Framework.Windows.Forms.Firebird.FirebirdConnectionBar, Sphere10.Framework.Windows.Forms.Firebird";
-		private const string FirebirdFileConnectionBarTypeName = "Sphere10.Framework.Windows.Forms.Firebird.FirebirdEmbeddedConnectionBar, Sphere10.Framework.Windows.Forms.Firebird";
+		private const string MSSQLConnectionBarTypeName = "Hydrogen.Windows.Forms.MSSQL.MSSQLConnectionBar, Hydrogen.Windows.Forms.MSSQL";
+		private const string SqliteConnectionBarTypeName = "Hydrogen.Windows.Forms.Sqlite.SqliteConnectionBar, Hydrogen.Windows.Forms.Sqlite";
+		private const string FirebirdConnectionBarTypeName = "Hydrogen.Windows.Forms.Firebird.FirebirdConnectionBar, Hydrogen.Windows.Forms.Firebird";
+		private const string FirebirdFileConnectionBarTypeName = "Hydrogen.Windows.Forms.Firebird.FirebirdEmbeddedConnectionBar, Hydrogen.Windows.Forms.Firebird";
 
 		public DatabaseConnectionBar() {
 			InitializeComponent();

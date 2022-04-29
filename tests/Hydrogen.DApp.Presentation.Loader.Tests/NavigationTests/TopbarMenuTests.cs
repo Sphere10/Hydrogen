@@ -1,4 +1,4 @@
-﻿namespace Sphere10.Hydrogen.Presentation.Loader.Tests.NavigationTests {
+﻿namespace Hydrogen.DApp.Presentation.Loader.Tests.NavigationTests {
 
     public class TopbarMenuTests {
 

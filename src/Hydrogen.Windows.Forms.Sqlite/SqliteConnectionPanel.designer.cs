@@ -11,7 +11,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace Sphere10.Framework.Windows.Forms.Sqlite {
+namespace Hydrogen.Windows.Forms.Sqlite {
 	partial class SqliteConnectionPanel {
 		/// <summary> 
 		/// Required designer variable.
@@ -37,13 +37,13 @@ namespace Sphere10.Framework.Windows.Forms.Sqlite {
 		/// </summary>
 		private void InitializeComponent() {
 			this.label2 = new System.Windows.Forms.Label();
-			this._fileSelectorControl = new Sphere10.Framework.Windows.Forms.PathSelectorControl();
+			this._fileSelectorControl = new Hydrogen.Windows.Forms.PathSelectorControl();
 			this._passwordTextBox = new System.Windows.Forms.TextBox();
 			this.label1 = new System.Windows.Forms.Label();
 			this._syncLabel = new System.Windows.Forms.Label();
 			this._journalLabel = new System.Windows.Forms.Label();
-			this._journalComboBox = new Sphere10.Framework.Windows.Forms.EnumComboBox();
-			this._syncComboBox = new Sphere10.Framework.Windows.Forms.EnumComboBox();
+			this._journalComboBox = new Hydrogen.Windows.Forms.EnumComboBox();
+			this._syncComboBox = new Hydrogen.Windows.Forms.EnumComboBox();
 			this._tableLayoutPanel = new System.Windows.Forms.TableLayoutPanel();
 			this._tableLayoutPanel.SuspendLayout();
 			this.SuspendLayout();
@@ -65,7 +65,7 @@ namespace Sphere10.Framework.Windows.Forms.Sqlite {
 			this._fileSelectorControl.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
 			this._fileSelectorControl.Location = new System.Drawing.Point(82, 2);
 			this._fileSelectorControl.Margin = new System.Windows.Forms.Padding(0);
-			this._fileSelectorControl.Mode = Sphere10.Framework.Windows.Forms.PathSelectionMode.File;
+			this._fileSelectorControl.Mode = Hydrogen.Windows.Forms.PathSelectionMode.File;
 			this._fileSelectorControl.Name = "_fileSelectorControl";
 			this._fileSelectorControl.Path = "";
 			this._fileSelectorControl.PlaceHolderText = "";

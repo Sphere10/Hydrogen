@@ -1,6 +1,6 @@
 using System;
 
-namespace Sphere10.Framework.Windows.Forms {
+namespace Hydrogen.Windows.Forms {
 	[Flags]
 	public enum FinishedUpdateBehaviour {
 		/// <summary>

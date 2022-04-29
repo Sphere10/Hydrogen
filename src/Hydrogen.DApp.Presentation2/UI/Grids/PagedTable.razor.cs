@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 
-namespace Sphere10.Hydrogen.Presentation2.UI.Grids {
+namespace Hydrogen.DApp.Presentation2.UI.Grids {
     /// <summary>
     /// Paging table - simple table with pagination 
     /// </summary>

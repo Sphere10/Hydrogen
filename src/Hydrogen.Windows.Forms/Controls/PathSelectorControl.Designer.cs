@@ -11,7 +11,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace Sphere10.Framework.Windows.Forms {
+namespace Hydrogen.Windows.Forms {
     partial class PathSelectorControl {
         /// <summary> 
         /// Required designer variable.
@@ -37,7 +37,7 @@ namespace Sphere10.Framework.Windows.Forms {
         /// </summary>
         private void InitializeComponent() {
             this._fileSelectorButton = new System.Windows.Forms.Button();
-            this._filenameTextBox = new Sphere10.Framework.Windows.Forms.TextBoxEx();
+            this._filenameTextBox = new Hydrogen.Windows.Forms.TextBoxEx();
             this._tableLayoutPanel = new System.Windows.Forms.TableLayoutPanel();
             this._tableLayoutPanel.SuspendLayout();
             this.SuspendLayout();
@@ -98,7 +98,7 @@ namespace Sphere10.Framework.Windows.Forms {
         #endregion
 
         private System.Windows.Forms.Button _fileSelectorButton;
-        private Sphere10.Framework.Windows.Forms.TextBoxEx _filenameTextBox;
+        private Hydrogen.Windows.Forms.TextBoxEx _filenameTextBox;
         private System.Windows.Forms.TableLayoutPanel _tableLayoutPanel;
     }
 }

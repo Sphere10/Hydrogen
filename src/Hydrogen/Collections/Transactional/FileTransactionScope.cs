@@ -1,6 +1,6 @@
 using System;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public class FileTransactionScope : TransactionalScope<FileTransactionScope, FileTransaction> {
 		private const string ContextIDPrefix = "FileTransactionContext:71C280A0-7DEA-41C0-BCE6-CC34DD99BD64";

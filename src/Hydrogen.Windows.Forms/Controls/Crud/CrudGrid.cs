@@ -26,11 +26,11 @@ using System.Windows.Forms;
 using System.Windows.Forms.VisualStyles;
 using SourceGrid;
 using SourceGrid.Cells;
-using Sphere10.Framework;
-using Sphere10.Framework.Threading;
-using Sphere10.Framework.Windows.Forms.WinForms;
+using Hydrogen;
+using Hydrogen.Threading;
+using Hydrogen.Windows.Forms.WinForms;
 
-namespace Sphere10.Framework.Windows.Forms {
+namespace Hydrogen.Windows.Forms {
 	public partial class CrudGrid : UserControl, ICrudGrid {
 
 		#region Constants

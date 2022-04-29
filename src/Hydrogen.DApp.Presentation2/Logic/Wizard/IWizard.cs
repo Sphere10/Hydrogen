@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Sphere10.Framework;
+using Hydrogen;
 
-namespace Sphere10.Hydrogen.Presentation2.Logic.Wizard
+namespace Hydrogen.DApp.Presentation2.Logic.Wizard
 {
 
     /// <summary>

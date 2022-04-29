@@ -17,9 +17,9 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
-using Sphere10.Framework;
+using Hydrogen;
 
-namespace Sphere10.Framework.Windows.Forms {
+namespace Hydrogen.Windows.Forms {
 
 	public partial class StandardRequestFeatureDialog : ApplicationForm, IRequestFeatureDialog {
 

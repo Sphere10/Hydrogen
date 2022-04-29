@@ -13,7 +13,7 @@
 
 using System;
 
-namespace Sphere10.Framework.Application {
+namespace Hydrogen.Application {
 
 	[AttributeUsage(AttributeTargets.Assembly, Inherited = false)]
     public abstract class AssemblyProductHelpResourceAttribute : Attribute {

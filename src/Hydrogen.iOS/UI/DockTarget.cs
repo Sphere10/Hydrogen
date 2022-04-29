@@ -14,12 +14,12 @@
 using System;
 using CoreGraphics;
 using UIKit;
-using Sphere10.Framework;
+using Hydrogen;
 using Foundation;
 using System.Linq;
 using System.Collections.Generic;
 
-namespace Sphere10.Framework.iOS {
+namespace Hydrogen.iOS {
     public class DockTarget {
         private readonly UIView _view;
         private readonly float _percentage;

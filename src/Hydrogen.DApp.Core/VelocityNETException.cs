@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Sphere10.Hydrogen.Core {
+namespace Hydrogen.DApp.Core {
 
 	public class VelocityNETException : Exception {
 		public VelocityNETException(string message) : base(message) {

@@ -5,7 +5,7 @@ using Org.BouncyCastle.Math;
 using Org.BouncyCastle.Math.EC;
 using Org.BouncyCastle.Utilities;
 
-namespace Sphere10.Framework.CryptoEx.EC;
+namespace Hydrogen.CryptoEx.EC;
 
 //https://github.com/ElementsProject/secp256k1-zkp/blob/master/doc/musig-spec.mediawiki
 public class MuSig {

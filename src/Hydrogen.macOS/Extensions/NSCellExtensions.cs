@@ -15,7 +15,7 @@ using System;
 using MonoMac.AppKit;
 using MonoMac.Foundation;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	public static class NSCellExtensions {
 
 		public static int DetermineFitWidth(this NSCell cell, NSObject objectValueAtCell, int minWidth = 10) {

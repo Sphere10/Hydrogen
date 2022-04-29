@@ -1,4 +1,4 @@
-﻿namespace Sphere10.Framework {
+﻿namespace Hydrogen {
 
 	public class ItemHasherDecorator<TItem, TItemHasher> : IItemHasher<TItem> 
 		where TItemHasher : IItemHasher<TItem> {

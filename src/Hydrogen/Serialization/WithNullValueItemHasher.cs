@@ -1,4 +1,4 @@
-﻿namespace Sphere10.Framework;
+﻿namespace Hydrogen;
 
 public sealed class WithNullValueItemHasher<TItem, TItemHasher> : ItemHasherDecorator<TItem, TItemHasher>, IWithNullValueItemHasher<TItem>
 	where TItemHasher : IItemHasher<TItem> {

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Sphere10.Framework.Communications {
+namespace Hydrogen.Communications {
     public class ActionResponseHandler : ResponseHandlerBase {
 		private readonly Action<ProtocolOrchestrator, object, object> _action;
 

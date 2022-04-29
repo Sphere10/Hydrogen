@@ -15,7 +15,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
     public enum ResizeMethod {
         /// <summary>
         /// Image width and height will be independently scaled to fit the requested size. The resulting image size will always match the requested size.

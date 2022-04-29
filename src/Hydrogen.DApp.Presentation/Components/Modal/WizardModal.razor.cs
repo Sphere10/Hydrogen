@@ -1,8 +1,8 @@
 ﻿using System;
 using Microsoft.AspNetCore.Components;
-using Sphere10.Hydrogen.Presentation.Components.Wizard;
+using Hydrogen.DApp.Presentation.Components.Wizard;
 
-namespace Sphere10.Hydrogen.Presentation.Components.Modal {
+namespace Hydrogen.DApp.Presentation.Components.Modal {
 
     /// <summary>
     /// Wizard modal - show a wizard component inside a modal dialog.

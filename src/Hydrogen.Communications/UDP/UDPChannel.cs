@@ -4,7 +4,7 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Sphere10.Framework.Communications {
+namespace Hydrogen.Communications {
 	public class UDPChannel : ProtocolChannel, IDisposable {
 		private readonly UdpClient _client;
 

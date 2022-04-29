@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Sphere10.Framework;
+using Hydrogen;
 using Terminal.Gui;
-using Key = Sphere10.Framework.Key;
+using Key = Hydrogen.Key;
 
-namespace Sphere10.Hydrogen.Node.UI {
+namespace Hydrogen.DApp.Node.UI {
 	public class LabelFieldLayout : View {
 		private readonly int _leftPadding;
 		private readonly int _topPadding;

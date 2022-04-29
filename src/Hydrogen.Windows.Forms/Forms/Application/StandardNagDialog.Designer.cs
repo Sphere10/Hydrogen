@@ -11,7 +11,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace Sphere10.Framework.Windows.Forms {
+namespace Hydrogen.Windows.Forms {
 
     partial class StandardNagDialog {
         /// <summary>
@@ -41,8 +41,8 @@ namespace Sphere10.Framework.Windows.Forms {
 			this._closeButton = new System.Windows.Forms.Button();
 			this._enterKeyButton = new System.Windows.Forms.Button();
 			this._buyNowLink = new System.Windows.Forms.LinkLabel();
-			this.applicationBanner1 = new Sphere10.Framework.Windows.Forms.ApplicationBanner();
-			this._nagMessageControl = new Sphere10.Framework.Windows.Forms.ProductExpirationDetailsControl();
+			this.applicationBanner1 = new Hydrogen.Windows.Forms.ApplicationBanner();
+			this._nagMessageControl = new Hydrogen.Windows.Forms.ProductExpirationDetailsControl();
 			this._shoppingCartPictureBox = new System.Windows.Forms.PictureBox();
 			((System.ComponentModel.ISupportInitialize)(this._shoppingCartPictureBox)).BeginInit();
 			this.SuspendLayout();

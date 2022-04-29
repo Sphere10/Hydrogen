@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
 
-namespace Sphere10.Framework.Collections.Spans {
+namespace Hydrogen.Collections.Spans {
 	public class ByteSpanReader {
 		private int _ix;
 		private readonly EndianBitConverter _converter;

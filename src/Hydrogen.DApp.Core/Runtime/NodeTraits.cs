@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Sphere10.Hydrogen.Core.Runtime {
+namespace Hydrogen.DApp.Core.Runtime {
 	
 	/// <summary>
 	/// Describes the characteristics of a Hydrogen node.

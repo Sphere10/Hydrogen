@@ -15,7 +15,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
     [Flags]
     public enum RoundedCorners {
         None = 0x00,

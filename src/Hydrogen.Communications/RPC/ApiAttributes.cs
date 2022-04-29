@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Reflection;
 
-namespace Sphere10.Framework.Communications.RPC {
+namespace Hydrogen.Communications.RPC {
 
 	//Attribute that makes this instance automaticaly registered in the service manager.
 	[AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]

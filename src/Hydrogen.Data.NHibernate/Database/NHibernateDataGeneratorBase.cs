@@ -4,9 +4,9 @@ using System.Collections.Generic;
 using System.Linq;
 using NHibernate;
 using System.Threading.Tasks;
-using Sphere10.Framework;
+using Hydrogen;
 
-namespace Sphere10.Framework.Data.NHibernatee {
+namespace Hydrogen.Data.NHibernatee {
     public abstract class NHibernateDataGeneratorBase : IDataGenerator {
 	    protected NHibernateDataGeneratorBase(ISessionFactory sessionFactory)  {
 			SessionFactory = sessionFactory;

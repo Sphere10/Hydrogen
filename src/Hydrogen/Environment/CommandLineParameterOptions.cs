@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	[Flags]
 	public enum CommandLineParameterOptions {
 		Optional = 1,  // must occur 0..1 times

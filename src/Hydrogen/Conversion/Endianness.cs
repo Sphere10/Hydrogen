@@ -12,7 +12,7 @@
 //-----------------------------------------------------------------------
 
 // Source originates from http://jonskeet.uk/csharp/miscutil/
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	/// <summary>
 	/// Endianness of a converter
 	/// </summary>

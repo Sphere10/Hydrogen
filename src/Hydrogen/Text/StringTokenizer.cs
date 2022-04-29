@@ -15,7 +15,7 @@
 using System.Text;
 using System.Collections;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	/// <summary>
 	/// A class that breaks a string into tokens

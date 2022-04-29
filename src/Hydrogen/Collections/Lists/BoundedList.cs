@@ -2,7 +2,7 @@
 using System.Data;
 using System.Linq;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public class BoundedList<T> : ExtendedListDecorator<T>, IBoundedList<T> {
 

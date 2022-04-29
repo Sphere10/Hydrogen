@@ -16,7 +16,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Drawing;
 using System.ComponentModel;
-using Sphere10.Framework.Windows.Forms;
+using Hydrogen.Windows.Forms;
 
 namespace DevAge.Drawing.VisualElements
 {

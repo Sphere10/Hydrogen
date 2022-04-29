@@ -19,9 +19,9 @@ using System.Data;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
-using Sphere10.Framework;
+using Hydrogen;
 
-namespace Sphere10.Framework.Windows.Forms {
+namespace Hydrogen.Windows.Forms {
 	public partial class DefaultCrudEntityEditor : UserControl, ICrudEntityEditor<object> {
 		private object _entity;
 		private object _backupEntity;

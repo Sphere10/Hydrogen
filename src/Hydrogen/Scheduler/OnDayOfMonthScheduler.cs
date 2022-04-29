@@ -12,9 +12,9 @@
 //-----------------------------------------------------------------------
 
 using System;
-using Sphere10.Framework.Scheduler.Serializable;
+using Hydrogen;
 
-namespace Sphere10.Framework.Scheduler {
+namespace Hydrogen {
 
 	public class OnDayOfMonthScheduler <T> : BaseJobSchedule<T> where T : class, IJob {
         private int DayOfMonth { get; set; }

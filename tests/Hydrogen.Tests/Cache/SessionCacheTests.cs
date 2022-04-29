@@ -18,7 +18,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using NUnit.Framework;
 
-namespace Sphere10.Framework.Tests {
+namespace Hydrogen.Tests {
 
     [TestFixture]
 	[Parallelizable(ParallelScope.Children)]

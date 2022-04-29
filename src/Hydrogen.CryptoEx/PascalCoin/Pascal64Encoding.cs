@@ -1,7 +1,7 @@
 ﻿using System.Linq;
 using System.Text.RegularExpressions;
 
-namespace Sphere10.Framework.CryptoEx.PascalCoin {
+namespace Hydrogen.CryptoEx.PascalCoin {
 	public static class Pascal64Encoding {
 		public const char EscapeChar = '\\';
 		public const string CharSet = @"abcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()-+{}[]_:""`|<>,.?/~";

@@ -1,7 +1,7 @@
 using NUnit.Framework;
 using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Utilities.Encoders;
-using Sphere10.Framework.CryptoEx.HF;
+using Hydrogen.CryptoEx.HF;
 
 namespace NPascalCoin.UnitTests.Crypto {
     /**

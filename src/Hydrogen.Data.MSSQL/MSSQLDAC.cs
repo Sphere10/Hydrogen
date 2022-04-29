@@ -18,7 +18,7 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Transactions;
 
-namespace Sphere10.Framework.Data
+namespace Hydrogen.Data
 {
 
     public class MSSQLDAC : DACBase {

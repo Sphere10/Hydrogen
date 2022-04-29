@@ -14,7 +14,7 @@
 using System.Runtime.Serialization;
 using System.Xml.Serialization;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	/// <summary>
 	///  A cross-platform reference to a target, typically a UI object. On some platforms the target and it's owner

@@ -1,11 +1,11 @@
 ﻿using System;
 using NUnit.Framework;
-using Sphere10.Framework.CryptoEx.EC;
+using Hydrogen.CryptoEx.EC;
 using System.Linq;
 using System.Text;
 using Tools;
 
-namespace Sphere10.Framework.CryptoEx.Tests {
+namespace Hydrogen.CryptoEx.Tests {
 
     [TestFixture]
     [Parallelizable(ParallelScope.Children)]

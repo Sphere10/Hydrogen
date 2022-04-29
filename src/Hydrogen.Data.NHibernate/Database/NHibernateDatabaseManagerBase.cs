@@ -6,9 +6,9 @@ using FluentNHibernate.Cfg;
 using FluentNHibernate.Cfg.Db;
 using NHibernate;
 using NHibernate.Cfg;
-using Sphere10.Framework.Data;
+using Hydrogen.Data;
 
-namespace Sphere10.Framework.Data.NHibernate {
+namespace Hydrogen.Data.NHibernate {
 
 
 	public abstract class NHibernateDatabaseManagerBase : DatabaseManagerDecorator, INHibernateSessionProvider {

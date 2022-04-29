@@ -3,7 +3,7 @@ using System.IO;
 using System.Collections.Generic;
 using System.Threading;
 
-namespace Sphere10.Framework.Communications.RPC {
+namespace Hydrogen.Communications.RPC {
 
 	public class TooManyConnectionsException : IllegalValueException {
 		public TooManyConnectionsException(string message) : base(message) { }

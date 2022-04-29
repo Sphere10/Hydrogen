@@ -15,7 +15,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	public class StreamProfiler : StreamDecorator {
         private volatile bool _peeking;
         private readonly Stack<List<byte>> _captureScopes;

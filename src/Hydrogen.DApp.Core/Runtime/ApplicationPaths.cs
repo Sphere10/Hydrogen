@@ -1,7 +1,7 @@
-﻿using Sphere10.Framework;
+﻿using Hydrogen;
 using System.IO;
 
-namespace Sphere10.Hydrogen.Core.Runtime {
+namespace Hydrogen.DApp.Core.Runtime {
 
 	/// <summary>
 	/// Provides directories and file paths for all artefacts of a Hydrogen Application (and can create them).
@@ -22,10 +22,10 @@ namespace Sphere10.Hydrogen.Core.Runtime {
 	/// </remarks>
 	public class ApplicationPaths : IApplicationPaths {
 		internal const string AppDirectoryName = "hap";
-		internal const string NodeExecutableFilename = "Sphere10.Hydrogen.Node.exe";
+		internal const string NodeExecutableFilename = "Hydrogen.DApp.Node.exe";
 		internal const string NodeDirectoryName = "node";
 		internal const string GuiDirectoryName = "gui";
-		internal const string GuiExecutableFilename = "Sphere10.Hydrogen.Presentation2.Loader.exe";
+		internal const string GuiExecutableFilename = "Hydrogen.DApp.Presentation2.Loader.exe";
 		internal const string ChainDirectoryName = "chain";
 		internal const string LogsDirectoryName = "logs";
 		internal const string TempDirectoryName = "temp";

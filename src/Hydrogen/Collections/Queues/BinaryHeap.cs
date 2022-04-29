@@ -15,7 +15,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	public class BinaryHeap<T> : ICollection<T>, IHeap<T> where T : IComparable<T> {
 		// Constants
 		private const int DEFAULT_SIZE = 4;

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using FluentNHibernate.Conventions;
 using FluentNHibernate.Conventions.Instances;
 
-namespace Sphere10.Framework.Data.NHibernate {
+namespace Hydrogen.Data.NHibernate {
 
     public class AnsiStringConvention : IPropertyConvention {
         public void Apply(IPropertyInstance instance) {

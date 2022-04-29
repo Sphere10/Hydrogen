@@ -11,7 +11,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	public static class NullableExtensions
 	{
 		public static bool IsZeroOrEmpty(this int? val)

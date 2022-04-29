@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	/// <summary>
 	/// Ensures that all stream read/writes occur within a boundary of a stream. This is used to protect segments of streams within the family <see cref="IFilePagedList{TItem}" /> collections.

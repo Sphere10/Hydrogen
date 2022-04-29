@@ -14,7 +14,7 @@
 using System;
 using System.Threading;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public class ThreadIdLogger : LoggerDecorator {
 

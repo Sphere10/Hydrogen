@@ -19,7 +19,7 @@ using System.Windows.Forms;
 using System.ComponentModel;
 using System.Diagnostics;
 
-namespace Sphere10.Framework.Windows.Forms {
+namespace Hydrogen.Windows.Forms {
 
 	[ToolboxItem(false)]
 	public abstract class NumericBoxBase<T> : TextBoxEx where T : struct {

@@ -11,7 +11,7 @@ using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace Sphere10.Framework.Communications.RPC {
+namespace Hydrogen.Communications.RPC {
 	//Decode and execute received call request
 	public class JsonRpcClientHandler: JsonRpcClient {
 		private static ThreadLocal<ulong> _clientContext = new ThreadLocal<ulong>(() => 0);

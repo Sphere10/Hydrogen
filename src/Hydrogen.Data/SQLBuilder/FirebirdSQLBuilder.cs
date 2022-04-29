@@ -17,7 +17,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Sphere10.Framework.Data {
+namespace Hydrogen.Data {
 	public class FirebirdSQLBuilder : SQLBuilderBase {
 		private const string DefaultStatementTerminator = "^";
 		private volatile int _transactionBlockCount;

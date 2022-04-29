@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
-using Sphere10.Hydrogen.Presentation2.Logic.Wizard;
-using Sphere10.Hydrogen.Presentation2.UI.Dialogs;
-using Sphere10.Hydrogen.Presentation2.UI.Dialogs.Content;
-using Sphere10.Hydrogen.Presentation2.UI.Wizard;
+using Hydrogen.DApp.Presentation2.Logic.Wizard;
+using Hydrogen.DApp.Presentation2.UI.Dialogs;
+using Hydrogen.DApp.Presentation2.UI.Dialogs.Content;
+using Hydrogen.DApp.Presentation2.UI.Wizard;
 
-namespace Sphere10.Hydrogen.Presentation2.Logic.Modal
+namespace Hydrogen.DApp.Presentation2.Logic.Modal
 {
 
     /// <summary>

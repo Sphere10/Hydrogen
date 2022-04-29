@@ -17,9 +17,9 @@ using System.Drawing;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
-using Sphere10.Framework;
+using Hydrogen;
 
-namespace Sphere10.Framework.Windows {
+namespace Hydrogen.Windows {
     public static partial class WinAPI {
 
         public static class USER32 {

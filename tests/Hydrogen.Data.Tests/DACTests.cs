@@ -12,11 +12,10 @@
 //-----------------------------------------------------------------------
 
 using NUnit.Framework;
-using Sphere10.Framework.Data;
-using Sphere10.Framework.NUnit;
-using Sphere10.Framework.UnitTests.DAC;
+using Hydrogen.Data;
+using Hydrogen.NUnit;
 
-namespace Sphere10.Framework.UnitTests {
+namespace Hydrogen.Data.Tests {
 
     [TestFixture]
     public class DACTests : DACTestFixture {

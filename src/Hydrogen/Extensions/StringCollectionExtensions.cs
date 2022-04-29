@@ -15,7 +15,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Diagnostics;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	public static class StringCollectionExtensions {
 
 		public static string ToParagraphCase(this IEnumerable<string> array, bool appendBreaks = false) {

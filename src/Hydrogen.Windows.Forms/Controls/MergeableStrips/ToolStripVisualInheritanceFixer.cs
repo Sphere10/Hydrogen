@@ -18,7 +18,7 @@ using System.Diagnostics;
 using System.Reflection;
 using System.Windows.Forms;
 
-namespace Sphere10.Framework.Windows.Forms {
+namespace Hydrogen.Windows.Forms {
 
 	/// <summary>
 	/// This component allows you to modify a base forms ToolStrip by merging a (hidden) tool strip on the sub-form. 

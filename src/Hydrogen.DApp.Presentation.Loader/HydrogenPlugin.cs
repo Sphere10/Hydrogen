@@ -2,16 +2,16 @@
 using System.Linq;
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
-using Sphere10.Hydrogen.Presentation.Plugins;
+using Hydrogen.DApp.Presentation.Plugins;
 
-namespace Sphere10.Hydrogen.Presentation.Loader
+namespace Hydrogen.DApp.Presentation.Loader
 {
 
     public class HydrogenPlugin : Plugin
     {
         public override IEnumerable<IApp> Apps { get; } = new List<IApp>
         {
-            new Sphere10.Hydrogen.Presentation.Plugins.App("/", "Hydrogen", "./img/heading-solid.svg",
+            new Hydrogen.DApp.Presentation.Plugins.App("/", "Hydrogen", "./img/heading-solid.svg",
                 new[]
                 {
                     new AppBlock("Hydrogen", "fa-link", new[]
@@ -30,7 +30,7 @@ namespace Sphere10.Hydrogen.Presentation.Loader
 
         protected override void ConfigureServicesInternal(IServiceCollection serviceCollection)
         {
-            serviceCollection.AddViewModelsFromAssembly(Assembly.Load("Sphere10.Hydrogen.Presentation"));
+            serviceCollection.AddViewModelsFromAssembly(Assembly.Load("Hydrogen.DApp.Presentation"));
         }
     }
 

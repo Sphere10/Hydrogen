@@ -14,7 +14,7 @@
 using System;
 using System.ComponentModel;
 
-namespace Sphere10.Framework.Application {
+namespace Hydrogen.Application {
 
 	public class StandardProductUsageServices : IProductUsageServices {
 

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	
 	/// <summary>
 	/// Variable-sized integer. A given ulong when converted to bytes, will take only the required

@@ -1,9 +1,9 @@
-﻿using Sphere10.Framework;
+﻿using Hydrogen;
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
-namespace Sphere10.Hydrogen.Core.Maths {
+namespace Hydrogen.DApp.Core.Maths {
 
 	public class RandomHash2 {
 		protected const string InvalidRound = "Round must be between 0 and N inclusive";

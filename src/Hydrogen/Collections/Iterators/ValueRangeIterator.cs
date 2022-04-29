@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	/// <summary>
 	/// Iterates over a range. Despite its name, this implements IEnumerable{T} rather than
 	/// IEnumerator{T} - it just sounds better, frankly.

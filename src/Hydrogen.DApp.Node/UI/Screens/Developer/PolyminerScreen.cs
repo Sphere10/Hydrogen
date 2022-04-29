@@ -1,19 +1,19 @@
-﻿using Sphere10.Hydrogen.Node.UI;
+﻿using Hydrogen.DApp.Node.UI;
 using Terminal.Gui;
-using Sphere10.Hydrogen.Node.UI.Components;
+using Hydrogen.DApp.Node.UI.Components;
 using System.ComponentModel;
-using Sphere10.Framework;
-using Sphere10.Framework.CryptoEx;
-using Sphere10.Hydrogen.Node.RPC;
-using Sphere10.Hydrogen.Core.Mining;
-using Sphere10.Hydrogen.Core.Maths;
-using Sphere10.Hydrogen.Core.Consensus.Serializers;
+using Hydrogen;
+using Hydrogen.CryptoEx;
+using Hydrogen.DApp.Node.RPC;
+using Hydrogen.DApp.Core.Mining;
+using Hydrogen.DApp.Core.Maths;
+using Hydrogen.DApp.Core.Consensus.Serializers;
 using System;
 using System.Collections.Generic;
 using System.Text;
-using Sphere10.Hydrogen.Core.Consensus;
+using Hydrogen.DApp.Core.Consensus;
 
-namespace Sphere10.Hydrogen.Node.UI {
+namespace Hydrogen.DApp.Node.UI {
 
 	[Title("Polyminer's Screen")]
 	[Lifetime(ScreenLifetime.WhenVisible)]
@@ -179,7 +179,7 @@ namespace Sphere10.Hydrogen.Node.UI {
 			}
 		}
 
-		//TODO: maybe bring that logger to Sphere10.Framework.Logging
+		//TODO: maybe bring that logger to Hydrogen.Logging
 		public class MainThreadActionLogger : ActionLogger {
 			public MainThreadActionLogger(Action<string> action)
 				: base(action) {
@@ -189,7 +189,7 @@ namespace Sphere10.Hydrogen.Node.UI {
 #if DEBUG
 					System.Diagnostics.Debug.WriteLine(message);
 #endif
-					Application.MainLoop.Invoke(() => action(message));
+					Terminal.Gui.Application.MainLoop.Invoke(() => action(message));
 				} catch {
 				}
 			}

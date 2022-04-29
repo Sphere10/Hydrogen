@@ -16,7 +16,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	public class BlockingStream : Stream {
 		private readonly object _lockForRead;
 		private readonly object _lockForAll;

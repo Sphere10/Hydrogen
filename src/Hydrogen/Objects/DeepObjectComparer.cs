@@ -34,7 +34,7 @@ using System.Net;
 using System.Reflection;
 using System.Text;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	/// <summary>
 	/// Class that allows comparison of two objects of the same type to each other.  Supports classes, lists, arrays, dictionaries, child comparison and more.
 	/// </summary>

@@ -63,7 +63,7 @@ McDonalds.PointOfSale.Data.SAP;
 Naming conventions are not strict and can vary reasonable and intuitively given the context. For example, the use of `.Core` as a catch-all tier for processing, communications and  data-tier is employed by Hydrogen.
 
 ```
-Sphere10.Hydrogen.Core     ; Includes processing, networking, data
+Hydrogen.DApp.Core     ; Includes processing, networking, data
 ```
 
 ## Framework

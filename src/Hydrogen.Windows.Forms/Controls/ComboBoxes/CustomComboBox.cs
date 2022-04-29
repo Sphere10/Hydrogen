@@ -19,7 +19,7 @@ using System.Security.Permissions;
 using System.Windows.Forms;
 using System.Windows.Forms.Design;
 
-namespace Sphere10.Framework.Windows.Forms
+namespace Hydrogen.Windows.Forms
 {
     /// <summary>
     /// <c>CustomComboBox</c> is an extension of <c>ComboBox</c> which provides drop-down customization.

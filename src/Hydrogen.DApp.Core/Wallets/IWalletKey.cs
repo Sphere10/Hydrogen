@@ -1,8 +1,8 @@
-﻿using Sphere10.Framework;
-using Sphere10.Framework.Application;
-using Sphere10.Hydrogen.Core.Keys;
+﻿using Hydrogen;
+using Hydrogen.Application;
+using Hydrogen.DApp.Core.Keys;
 
-namespace Sphere10.Hydrogen.Core.Wallets {
+namespace Hydrogen.DApp.Core.Wallets {
 	public interface IWalletKey {
 		public string Name { get; set; }
 		public KeyType KeyType { get; }

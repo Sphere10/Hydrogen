@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	public class CommandLineResults {
 
 		public bool HasCommand(string name) => this.SubCommand != null && this.SubCommand.CommandName == name;

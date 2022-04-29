@@ -14,7 +14,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Sphere10.Framework.Data {
+namespace Hydrogen.Data {
 
 	public abstract class SQLBuilderDecorator : ISQLBuilder {
 		private readonly ISQLBuilder _internalBuilder;

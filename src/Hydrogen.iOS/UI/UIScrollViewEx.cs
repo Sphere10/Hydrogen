@@ -15,9 +15,9 @@ using System;
 using UIKit;
 using CoreGraphics;
 using CoreGraphics;
-using Sphere10.Framework;
+using Hydrogen;
 
-namespace Sphere10.Framework.iOS
+namespace Hydrogen.iOS
 {
 	public class UIScrollViewEx : UIScrollView
 	{

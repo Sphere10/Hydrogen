@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 
-namespace Sphere10.Hydrogen.Presentation2.UI.Grids
+namespace Hydrogen.DApp.Presentation2.UI.Grids
 {
 
     public partial class VirtualPagedTable<TItem>

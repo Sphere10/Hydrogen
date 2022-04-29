@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public class ItemsCallArgs<T> : CallArgs {
 

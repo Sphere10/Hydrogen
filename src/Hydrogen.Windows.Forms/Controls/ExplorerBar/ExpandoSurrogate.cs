@@ -24,10 +24,10 @@ using System.ComponentModel;
 using System.Xml.Serialization;
 
 using System.Reflection;
-using Sphere10.Framework;
+using Hydrogen;
 
 
-namespace Sphere10.Framework.Windows.Forms {
+namespace Hydrogen.Windows.Forms {
 
 	
 

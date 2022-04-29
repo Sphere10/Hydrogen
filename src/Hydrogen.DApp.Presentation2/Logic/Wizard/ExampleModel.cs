@@ -1,4 +1,4 @@
-﻿namespace Sphere10.Hydrogen.Presentation2.Logic.Wizard
+﻿namespace Hydrogen.DApp.Presentation2.Logic.Wizard
 {
 
     public class ExampleModel

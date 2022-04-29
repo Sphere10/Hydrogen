@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	public sealed class BinaryFormattedPage<TItem> : FileSwappedMemoryPage<TItem> {
 
 		public BinaryFormattedPage(int pageSize, IItemSizer<TItem> sizer)

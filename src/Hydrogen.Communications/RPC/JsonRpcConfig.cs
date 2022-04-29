@@ -2,7 +2,7 @@
 using System.Reflection;
 using Newtonsoft.Json;
 
-namespace Sphere10.Framework.Communications.RPC {
+namespace Hydrogen.Communications.RPC {
 
 	public class JsonRpcConfig {
 		public static JsonRpcConfig Default = new JsonRpcConfig();

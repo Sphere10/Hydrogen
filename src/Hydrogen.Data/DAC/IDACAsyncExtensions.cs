@@ -19,7 +19,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Sphere10.Framework.Data {
+namespace Hydrogen.Data {
 
     public static class IDACAsyncExtensions {
 

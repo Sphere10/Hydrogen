@@ -1,3 +1,3 @@
-﻿namespace Sphere10.Framework;
+﻿namespace Hydrogen;
 
 public interface IWithNullValueItemHasher<in TItem> : IItemHasher<TItem> { }

@@ -17,7 +17,7 @@
 using System.Xml.Serialization;
 using System.Reflection;
 
-namespace Sphere10.Framework.Application {
+namespace Hydrogen.Application {
 
 	[Obfuscation(Exclude = true)]
     [XmlRoot("ProductLicenseCommand")]

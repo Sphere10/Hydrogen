@@ -1,6 +1,6 @@
 ﻿using System;
 using Microsoft.AspNetCore.Components;
-namespace Sphere10.Hydrogen.Presentation.Components.Wizard {
+namespace Hydrogen.DApp.Presentation.Components.Wizard {
     /// <summary>
     /// Wizard component.
     /// </summary>

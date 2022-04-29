@@ -15,7 +15,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public class ReferenceDictionary<TKey, TVal> : Dictionary<Reference<TKey>, TVal> where TKey : class {
 	    private readonly Func<TVal, TKey> _keyExtractor;

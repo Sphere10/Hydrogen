@@ -13,7 +13,7 @@
 
 using System;
 
-namespace Sphere10.Framework.Application {
+namespace Hydrogen.Application {
 	public class ProhibitedSettingsProvider : ISettingsProvider {
 		private const string ExceptionMessage = "Settings are prohibited in this application";
 		public bool AutoSaveNewSettings => throw new NotSupportedException(ExceptionMessage);

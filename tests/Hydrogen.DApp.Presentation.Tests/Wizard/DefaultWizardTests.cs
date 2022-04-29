@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using NUnit.Framework;
-using Sphere10.Framework;
-using Sphere10.Hydrogen.Presentation.Components.Wizard;
+using Hydrogen;
+using Hydrogen.DApp.Presentation.Components.Wizard;
 
-namespace Sphere10.Hydrogen.Presentation.Tests.Wizard {
+namespace Hydrogen.DApp.Presentation.Tests.Wizard {
 
     public class DefaultWizardTests {
         [Test]

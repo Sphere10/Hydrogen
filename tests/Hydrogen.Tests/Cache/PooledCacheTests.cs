@@ -17,9 +17,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using NUnit.Framework;
-using Sphere10.Framework.NUnit;
+using Hydrogen.NUnit;
 
-namespace Sphere10.Framework.Tests {
+namespace Hydrogen.Tests {
 
     [TestFixture]
 	public class PooledCacheTests {

@@ -14,7 +14,7 @@
 using System;
 using UIKit;
 
-namespace Sphere10.Framework.iOS {
+namespace Hydrogen.iOS {
 	public class MenuOption {
 		public object Tag;
 		public string Title;

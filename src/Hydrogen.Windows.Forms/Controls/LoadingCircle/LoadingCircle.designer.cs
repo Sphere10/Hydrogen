@@ -37,7 +37,7 @@
 // OF SUCH DAMAGE.
 //
 
-namespace Sphere10.Framework.Windows.Forms
+namespace Hydrogen.Windows.Forms
 {
     partial class LoadingCircle
     {

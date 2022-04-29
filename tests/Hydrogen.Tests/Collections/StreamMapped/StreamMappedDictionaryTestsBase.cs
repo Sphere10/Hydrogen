@@ -7,10 +7,10 @@ using System.Threading;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Diagnostics.Tracing.Parsers.Kernel;
 using NUnit.Framework;
-using Sphere10.Framework.NUnit;
+using Hydrogen.NUnit;
 using Tools;
 
-namespace Sphere10.Framework.Tests {
+namespace Hydrogen.Tests {
 	
 	public abstract class StreamMappedDictionaryTestsBase : StreamPersistedCollectionTestsBase {
 		private const int EstimatedTestObjectSize = 400 + 256;

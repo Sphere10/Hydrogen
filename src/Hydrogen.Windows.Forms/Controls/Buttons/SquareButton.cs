@@ -20,7 +20,7 @@ using System.Text;
 using System.Windows.Forms;
 using System.Drawing.Drawing2D;
 
-namespace Sphere10.Framework.Windows.Forms
+namespace Hydrogen.Windows.Forms
 {
     public partial class SquareButton : ButtonBase
     {

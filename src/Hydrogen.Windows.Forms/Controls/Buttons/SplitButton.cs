@@ -21,7 +21,7 @@ using System.Windows.Forms.VisualStyles;
 //Get the latest version of SplitButton at: http://wyday.com/splitbutton/
 
 
-namespace Sphere10.Framework.Windows.Forms
+namespace Hydrogen.Windows.Forms
 {
     public class SplitButton : Button
     {

@@ -17,7 +17,7 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Threading;
 
-namespace Sphere10.Framework.Windows.BITS {
+namespace Hydrogen.Windows.BITS {
     /// <summary>
     /// Use the IBackgroundCopyManager interface to create transfer jobs, 
     /// retrieve an enumerator object that contains the jobs in the queue, 

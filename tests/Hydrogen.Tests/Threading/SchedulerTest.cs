@@ -16,13 +16,12 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using System.Threading;
-using Sphere10.Framework.Scheduler;
 using System.Linq;
 using System.IO;
-using Sphere10.Framework.Scheduler.Serializable;
+using Hydrogen;
 
 
-namespace Sphere10.Framework.Tests {
+namespace Hydrogen.Tests {
 
     [TestFixture]
 	[Parallelizable(ParallelScope.Children)]
@@ -33,7 +32,7 @@ namespace Sphere10.Framework.Tests {
 	        var count = 0;
 	        Action action = () => count++;
 	        var job = JobBuilder.For(action).RunOnce(DateTime.Now.Add(TimeSpan.FromSeconds(1))).Build();
-	        var scheduler = new Scheduler.Scheduler();
+	        var scheduler = new Scheduler();
 			scheduler.AddJob(job);
 			scheduler.Start();
 	        await Task.Delay(TimeSpan.FromSeconds(1.1));
@@ -46,7 +45,7 @@ namespace Sphere10.Framework.Tests {
 			var count = 0;
 			Action action = () => count++;
 			var job = JobBuilder.For(action).RunOnce(DateTime.UtcNow.Add(TimeSpan.FromSeconds(1))).Build();
-			var scheduler = new Scheduler.Scheduler();
+			var scheduler = new Scheduler();
 			scheduler.AddJob(job);
 			scheduler.Start();
 			await Task.Delay(TimeSpan.FromSeconds(1.1));
@@ -59,7 +58,7 @@ namespace Sphere10.Framework.Tests {
 			var count = 0;
 			Action action = () => count++;
 			var job = JobBuilder.For(action).Repeat.OnInterval(TimeSpan.FromSeconds(1)).Build();
-			var scheduler = new Scheduler.Scheduler();
+			var scheduler = new Scheduler();
 			scheduler.AddJob(job);
 			scheduler.Start();
 			await Task.Delay(TimeSpan.FromSeconds(1.1));
@@ -73,7 +72,7 @@ namespace Sphere10.Framework.Tests {
 			var count = 0;
 			Action action = () => count++;
 			var job = JobBuilder.For(action).Repeat.OnInterval(DateTime.Now, TimeSpan.FromSeconds(1)).Build();
-			var scheduler = new Scheduler.Scheduler();
+			var scheduler = new Scheduler();
 			scheduler.AddJob(job);
 			scheduler.Start();
 			await Task.Delay(TimeSpan.FromSeconds(5.8));
@@ -110,7 +109,7 @@ namespace Sphere10.Framework.Tests {
 			var job7 = JobBuilder.For(action7).Repeat.OnInterval(TimeSpan.FromSeconds(7)).Build();
 			var job8 = JobBuilder.For(action8).Repeat.OnInterval(TimeSpan.FromSeconds(8)).Build();
 			var job9 = JobBuilder.For(action9).Repeat.OnInterval(TimeSpan.FromSeconds(9)).Build();
-			var scheduler = new Scheduler.Scheduler();
+			var scheduler = new Scheduler();
 			scheduler.AddJob(job1);
 			scheduler.AddJob(job2);
 			scheduler.AddJob(job3);
@@ -153,7 +152,7 @@ namespace Sphere10.Framework.Tests {
 				Thread.Sleep(10000);
 			};
 			var job = JobBuilder.For(action).Repeat.OnInterval(DateTime.Now, TimeSpan.FromSeconds(1), ReschedulePolicy.OnStart).Build();
-			var scheduler = new Scheduler.Scheduler();
+			var scheduler = new Scheduler();
 			scheduler.AddJob(job);
 			scheduler.Start();
 			await Task.Delay(TimeSpan.FromSeconds(3.8));
@@ -176,7 +175,7 @@ namespace Sphere10.Framework.Tests {
 				Thread.Sleep(1100);
 			};
 			var job = JobBuilder.For(action).Repeat.OnInterval(TimeSpan.FromSeconds(0.1)).Build();
-			var scheduler = new Scheduler.Scheduler();
+			var scheduler = new Scheduler();
 			scheduler.AddJob(job);
 			scheduler.Start();
 			await Task.Delay(TimeSpan.FromSeconds(1));
@@ -206,7 +205,7 @@ namespace Sphere10.Framework.Tests {
 				.OnInterval(TimeSpan.FromSeconds(intervalSeconds), endDate: endDate)
 				.Build();
 
-			var scheduler = new Scheduler.Scheduler();
+			var scheduler = new Scheduler();
 			scheduler.AddJob(job);
 
 			scheduler.Start();
@@ -239,7 +238,7 @@ namespace Sphere10.Framework.Tests {
 				.OnInterval(TimeSpan.FromSeconds(intervalSeconds), totalIterations: totalIterations, endDate: endDate)
 				.Build();
 
-			var scheduler = new Scheduler.Scheduler();
+			var scheduler = new Scheduler();
 			scheduler.AddJob(job);
 
 			scheduler.Start();
@@ -271,8 +270,8 @@ namespace Sphere10.Framework.Tests {
 				.OnInterval(TimeSpan.FromSeconds(1))
 				.Build();
 
-			var asynchronousScheduler = new Scheduler.Scheduler();
-			var synchronousScheduler = new Scheduler.Scheduler(SchedulerPolicy.ForceSyncronous);
+			var asynchronousScheduler = new Scheduler();
+			var synchronousScheduler = new Scheduler(SchedulerPolicy.ForceSyncronous);
 
 			// Adding sync job to async scheduler - should fail.
 			Assert.Throws<InvalidOperationException>(() =>
@@ -297,7 +296,7 @@ namespace Sphere10.Framework.Tests {
 				.RunOnce(DateTime.Now)
 				.Build();
 
-			var scheduler = new Scheduler.Scheduler();
+			var scheduler = new Scheduler();
 			scheduler.OnJobError = (job, ex) => failException = ex;
 			scheduler.AddJob(job);
 			scheduler.Start();
@@ -314,7 +313,7 @@ namespace Sphere10.Framework.Tests {
 			var schedulerPolicy = SchedulerPolicy.ForceSyncronous;
 
 			// Create a scheduler and add jobs to it.
-			var scheduler = new Scheduler.Scheduler(schedulerPolicy);
+			var scheduler = new Scheduler(schedulerPolicy);
 
 			var job1 = JobBuilder
 				.For(typeof(SchedulerTestNopJob))
@@ -338,7 +337,7 @@ namespace Sphere10.Framework.Tests {
 			var surrogate = scheduler.ToSerializableSurrogate();
 
 			// Convert the surrogate back to the scheduler.
-			var convertedScheduler = new Scheduler.Scheduler(schedulerPolicy);
+			var convertedScheduler = new Scheduler(schedulerPolicy);
 			convertedScheduler.FromSerializableSurrogate(surrogate);
 
 			// Compare the two schedulers - should be the same.
@@ -351,7 +350,7 @@ namespace Sphere10.Framework.Tests {
 			var schedulerPolicy = SchedulerPolicy.ForceSyncronous;
 
 			// Create a scheduler and add jobs to it.
-			var scheduler = new Scheduler.Scheduler(schedulerPolicy);
+			var scheduler = new Scheduler(schedulerPolicy);
 
 			var job1 = JobBuilder
 				.For(typeof(SchedulerTestNopJob))
@@ -384,7 +383,7 @@ namespace Sphere10.Framework.Tests {
 				var convertedSurrogate = serializer.Deserialize();
 
 				// Convert the surrogate back to the scheduler.
-				var convertedScheduler = new Scheduler.Scheduler(schedulerPolicy);
+				var convertedScheduler = new Scheduler(schedulerPolicy);
 				convertedScheduler.FromSerializableSurrogate(convertedSurrogate);
 
 				// Compare the two schedulers - should be the same.
@@ -399,7 +398,7 @@ namespace Sphere10.Framework.Tests {
 			}
 		}
 
-		private static void CompareSchedulers(Scheduler.Scheduler scheduler, Scheduler.Scheduler convertedScheduler)
+		private static void CompareSchedulers(Scheduler scheduler, Scheduler convertedScheduler)
 		{
 			// Compare the two schedulers.
 			foreach (var job in scheduler.GetJobs())

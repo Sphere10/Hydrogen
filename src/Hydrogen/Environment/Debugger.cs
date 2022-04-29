@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using Sphere10.Framework;
+using Hydrogen;
 
 namespace Tools {
 	public static class Debugger {

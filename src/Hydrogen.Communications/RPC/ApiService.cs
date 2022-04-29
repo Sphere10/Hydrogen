@@ -3,7 +3,7 @@ using System.Reflection;
 using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
 
-namespace Sphere10.Framework.Communications.RPC {
+namespace Hydrogen.Communications.RPC {
 	//Provide host/Local api calls and binding support.
 	//Can be used as a singleton, a property or an object service
 	public class ApiService {

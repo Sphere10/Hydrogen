@@ -13,7 +13,7 @@
 
 using System.Configuration;
 
-namespace Sphere10.Framework.Application {
+namespace Hydrogen.Application {
 	public static class Extension {
         public static bool HasConnectionString(this ConnectionStringSettingsCollection value, string key) {
             try {

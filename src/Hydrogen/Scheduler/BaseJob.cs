@@ -14,9 +14,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Sphere10.Framework.Scheduler.Serializable;
+using Hydrogen;
 
-namespace Sphere10.Framework.Scheduler {
+namespace Hydrogen {
 	public abstract class BaseJob : IJob {
 		private IList<IJobSchedule> _schedules;
 

@@ -16,9 +16,9 @@ using UIKit;
 using CoreGraphics;
 using CoreGraphics;
 using Foundation;
-using Sphere10.Framework;
+using Hydrogen;
 
-namespace Sphere10.Framework.iOS
+namespace Hydrogen.iOS
 {
 	public static class UIDatePickerExtensions {
 		

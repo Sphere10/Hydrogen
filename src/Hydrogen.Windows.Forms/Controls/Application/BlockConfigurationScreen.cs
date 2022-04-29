@@ -18,7 +18,7 @@ using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
 
-namespace Sphere10.Framework.Windows.Forms {
+namespace Hydrogen.Windows.Forms {
 
     public partial class BlockConfigurationScreen : UserControl
     {

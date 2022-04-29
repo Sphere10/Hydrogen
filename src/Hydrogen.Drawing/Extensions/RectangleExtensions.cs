@@ -14,7 +14,7 @@
 using System.Drawing;
 using System.Drawing.Drawing2D;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public static class RectangleExtensions {
 

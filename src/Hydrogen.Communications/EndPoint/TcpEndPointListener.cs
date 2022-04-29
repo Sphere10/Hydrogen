@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Net.Sockets;
 using System.Net;
 
-namespace Sphere10.Framework.Communications.RPC {
+namespace Hydrogen.Communications.RPC {
 	//Implement a TCP communication endpoint listnener
 	public class TcpEndPointListener : IEndPoint {
 		private ulong _uid = (ulong)Tools.Maths.RNG.Next();

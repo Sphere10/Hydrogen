@@ -16,7 +16,7 @@ using System.Data;
 using System.Linq;
 using System;
 
-namespace Sphere10.Framework.Data
+namespace Hydrogen.Data
 {
     public abstract class DACBase : IDAC {
         private ArtificialKeys _artificialKeys;

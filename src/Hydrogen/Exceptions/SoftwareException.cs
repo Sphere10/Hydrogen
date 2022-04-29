@@ -15,7 +15,7 @@ using System;
 using System.Threading;
 using System.Diagnostics;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	public class SoftwareException : ApplicationException {
 
         private int _threadID = -1;

@@ -14,7 +14,7 @@
 using System;
 using UIKit;
 
-namespace Sphere10.Framework.iOS {
+namespace Hydrogen.iOS {
 	public sealed class ActionViewController : UIViewController {
 		private readonly UIView _userView;
 		private readonly Func<UIInterfaceOrientation, bool> _shouldAutoRotate;

@@ -4,9 +4,9 @@ using System.Linq;
 using NUnit.Framework;
 using Org.BouncyCastle.Math;
 using Org.BouncyCastle.Utilities;
-using Sphere10.Framework.CryptoEx.EC;
+using Hydrogen.CryptoEx.EC;
 
-namespace Sphere10.Framework.CryptoEx.Tests;
+namespace Hydrogen.CryptoEx.Tests;
 
 [TestFixture]
 public class MuSigTest

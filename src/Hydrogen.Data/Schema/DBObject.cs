@@ -16,7 +16,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Sphere10.Framework.Data {
+namespace Hydrogen.Data {
 	public abstract class DBObject {
 		public abstract string Name { get; set; }
 		public abstract string SQL { get; set; }

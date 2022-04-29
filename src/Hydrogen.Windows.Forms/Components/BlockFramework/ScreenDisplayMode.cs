@@ -14,9 +14,9 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using Sphere10.Framework.Application;
+using Hydrogen.Application;
 
-namespace Sphere10.Framework.Windows.Forms {
+namespace Hydrogen.Windows.Forms {
 
 
     public enum ScreenDisplayMode

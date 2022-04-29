@@ -1,4 +1,4 @@
-﻿namespace Sphere10.Framework.Data {
+﻿namespace Hydrogen.Data {
     public enum DatabaseGenerationDataPolicy {
         NoData,
         PrimingData,

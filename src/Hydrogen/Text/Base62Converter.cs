@@ -14,7 +14,7 @@
 using System.IO;
 using System.Text;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	public static class Base62Converter {
 		private static string Base62CodingSpace = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 

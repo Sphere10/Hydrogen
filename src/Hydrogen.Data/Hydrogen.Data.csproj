@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>netstandard2.1</TargetFramework>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+		<Authors>Herman Schoenfeld</Authors>
+		<Company>Sphere 10 Software</Company>
+		<Description>General-purpose library covering Data-aspect of applications. This library provides ADO.NET enhancements, Schema support, SQL query building, CSV support and many extensions.</Description>
+		<Copyright>Sphere 10 Software Pty Ltd</Copyright>
+		<PackageLicenseUrl>https://raw.githubusercontent.com/Sphere10/Framework/master/LICENSE</PackageLicenseUrl>
+		<PackageProjectUrl>https://github.com/Sphere10/Framework</PackageProjectUrl>
+		<PackageIconUrl>https://raw.githubusercontent.com/Sphere10/Framework/master/NugetIcon_64x64.png</PackageIconUrl>
+		<RepositoryUrl>https://github.com/Sphere10/Framework.git</RepositoryUrl>
+		<PackageReleaseNotes>Initial public release</PackageReleaseNotes>
+		<PackageTags>ADO.NET, DAC, SQL, SQL Builder, Database, Schema, CSV</PackageTags>
+		<LangVersion>latest</LangVersion>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<Compile Remove="Properties\**" />
+		<EmbeddedResource Remove="Properties\**" />
+		<None Remove="Properties\**" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\Hydrogen\Hydrogen.csproj" />
+	</ItemGroup>
+
+</Project>

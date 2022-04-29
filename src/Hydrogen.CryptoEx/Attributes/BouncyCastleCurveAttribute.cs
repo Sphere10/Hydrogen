@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Sphere10.Framework.CryptoEx {
+namespace Hydrogen.CryptoEx {
 
 	public class BouncyCastleCurveAttribute : Attribute {
 		public BouncyCastleCurveAttribute(string name) {

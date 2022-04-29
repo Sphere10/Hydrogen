@@ -16,7 +16,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public abstract  class CacheBase<TKey, TValue> : CacheBase, ICache<TKey, TValue> {
         public new event EventHandlerEx<TKey, TValue> ItemFetched {

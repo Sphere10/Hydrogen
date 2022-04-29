@@ -13,7 +13,7 @@
 
 using System.Collections.Generic;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	public interface IHeap<T> : IEnumerable<T>, ICollection<T> {
 		T Peek();
 		T Pop();

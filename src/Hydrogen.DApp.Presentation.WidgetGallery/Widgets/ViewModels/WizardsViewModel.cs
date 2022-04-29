@@ -1,13 +1,13 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using Sphere10.Framework;
-using Sphere10.Hydrogen.Presentation.Components.Wizard;
-using Sphere10.Hydrogen.Presentation.Services;
-using Sphere10.Hydrogen.Presentation.ViewModels;
-using Sphere10.Hydrogen.Presentation.WidgetGallery.Widgets.Components;
-using Sphere10.Hydrogen.Presentation.WidgetGallery.Widgets.Models;
+using Hydrogen;
+using Hydrogen.DApp.Presentation.Components.Wizard;
+using Hydrogen.DApp.Presentation.Services;
+using Hydrogen.DApp.Presentation.ViewModels;
+using Hydrogen.DApp.Presentation.WidgetGallery.Widgets.Components;
+using Hydrogen.DApp.Presentation.WidgetGallery.Widgets.Models;
 
-namespace Sphere10.Hydrogen.Presentation.WidgetGallery.Widgets.ViewModels {
+namespace Hydrogen.DApp.Presentation.WidgetGallery.Widgets.ViewModels {
 
     public class WizardsViewModel : ComponentViewModelBase {
         /// <summary>

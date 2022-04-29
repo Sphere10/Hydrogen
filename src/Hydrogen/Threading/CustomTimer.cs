@@ -16,7 +16,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	
 	internal sealed class CustomTimer : IDisposable {
 		private CancellationTokenSource _cancellationTokenSource;

@@ -16,7 +16,7 @@ using MonoMac.Foundation;
 using MonoMac.AppKit;
 using System.Drawing;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 
 	public static class NSAlignmentExtensions

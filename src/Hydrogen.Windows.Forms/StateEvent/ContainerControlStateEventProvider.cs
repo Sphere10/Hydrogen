@@ -15,7 +15,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
 
-namespace Sphere10.Framework.Windows.Forms {
+namespace Hydrogen.Windows.Forms {
     public class ContainerControlStateEventProvider : ControlStateEventProviderBase<Control> {
 
         private IDictionary<Control, IControlStateEventProvider> _childEventProviders;

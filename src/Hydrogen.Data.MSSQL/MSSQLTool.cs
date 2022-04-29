@@ -13,8 +13,8 @@
 
 using System;
 using System.Data.SqlClient;
-using Sphere10.Framework;
-using Sphere10.Framework.Data;
+using Hydrogen;
+using Hydrogen.Data;
 
 // ReSharper disable CheckNamespace
 namespace Tools {

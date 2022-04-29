@@ -17,7 +17,7 @@ using System.Linq;
 using System.Text;
 using System.Data;
 
-namespace Sphere10.Framework.Data {
+namespace Hydrogen.Data {
 	public abstract class DataReaderDecorator : IDataReader {
 		protected readonly IDataReader InternalReader;
 

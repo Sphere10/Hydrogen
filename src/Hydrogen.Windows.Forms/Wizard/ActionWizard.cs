@@ -15,7 +15,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Sphere10.Framework.Windows.Forms {
+namespace Hydrogen.Windows.Forms {
     public class ActionWizard<T> : WizardBase<T> {
         private readonly Func<T, Task<Result>> _finishFunc;
         private readonly Func<T, Result> _cancelFunc;

@@ -1,7 +1,7 @@
 using NUnit.Framework;
 using Org.BouncyCastle.Asn1;
 using Org.BouncyCastle.Math;
-using Sphere10.Framework.CryptoEx.EC;
+using Hydrogen.CryptoEx.EC;
 using System;
 using System.IO;
 using System.Linq;
@@ -9,7 +9,7 @@ using System.Text;
 using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.Security;
 
-namespace Sphere10.Framework.CryptoEx.Tests
+namespace Hydrogen.CryptoEx.Tests
 {
     [TestFixture]
     [Parallelizable(ParallelScope.Children)]

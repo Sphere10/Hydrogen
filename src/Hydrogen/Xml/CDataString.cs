@@ -15,7 +15,7 @@ using System.Xml;
 using System.Xml.Schema;
 using System.Xml.Serialization;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	public class CDataString : IXmlSerializable {
 		private string _value;
 		public CDataString() : this(null) {

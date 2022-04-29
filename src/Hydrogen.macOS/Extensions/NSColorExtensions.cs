@@ -17,7 +17,7 @@ using MonoMac.AppKit;
 using System.Drawing;
 using MonoMac.CoreGraphics;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	public static class NSColorExtensions
 	{
 		public static Color ToColor(this NSColor nsColor) {

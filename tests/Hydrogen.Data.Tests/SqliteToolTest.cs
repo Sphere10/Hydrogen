@@ -14,9 +14,9 @@
 using System;
 using NUnit.Framework;
 using System.IO;
-using Sphere10.Framework.Data;
+using Hydrogen.Data;
 
-namespace Sphere10.Framework.UnitTests {
+namespace Hydrogen.Data.Tests {
 
     [TestFixture]
     public class SqliteToolTest {

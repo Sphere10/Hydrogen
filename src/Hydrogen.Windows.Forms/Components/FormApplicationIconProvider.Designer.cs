@@ -11,7 +11,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace Sphere10.Framework.Windows.Forms.Components {
+namespace Hydrogen.Windows.Forms.Components {
 	//partial class FormApplicationIconProvider {
 	//    /// <summary>
 	//    /// Required designer variable.

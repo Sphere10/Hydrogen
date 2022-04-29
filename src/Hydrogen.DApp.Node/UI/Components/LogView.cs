@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using Sphere10.Framework;
+using Hydrogen;
 using Terminal.Gui;
 
-namespace Sphere10.Hydrogen.Node.UI {
+namespace Hydrogen.DApp.Node.UI {
 	public class LogView : FrameView {
 		private const int DefaultMaxLines = 250;
 		private readonly IList<string> _lines;
@@ -48,13 +48,13 @@ namespace Sphere10.Hydrogen.Node.UI {
 				_textView.MoveEnd();
 
 			//TODO: avoid invoke if on main thread
-			Application.MainLoop.Invoke(() => _textView.SetNeedsDisplay());
+			Terminal.Gui.Application.MainLoop.Invoke(() => _textView.SetNeedsDisplay());
 		}
 
 		public void ClearLog() {
 			_lines.Clear();
 			_textView.Text = string.Empty;
-			Application.MainLoop.Invoke(() => _textView.SetNeedsDisplay());
+			Terminal.Gui.Application.MainLoop.Invoke(() => _textView.SetNeedsDisplay());
 		}
 		
 	}

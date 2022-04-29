@@ -11,7 +11,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace Sphere10.Framework.Windows.Forms {
+namespace Hydrogen.Windows.Forms {
     partial class WizardDialog<T> {
         /// <summary>
         /// Required designer variable.
@@ -39,7 +39,7 @@ namespace Sphere10.Framework.Windows.Forms {
 			this._nextButton = new System.Windows.Forms.Button();
 			this._previousButton = new System.Windows.Forms.Button();
 			this._contentPanel = new System.Windows.Forms.Panel();
-			this.loadingCircle1 = new Sphere10.Framework.Windows.Forms.LoadingCircle();
+			this.loadingCircle1 = new Hydrogen.Windows.Forms.LoadingCircle();
 			this.SuspendLayout();
 			// 
 			// _nextButton
@@ -92,7 +92,7 @@ namespace Sphere10.Framework.Windows.Forms {
 			this.loadingCircle1.RotationSpeed = 100;
 			this.loadingCircle1.Size = new System.Drawing.Size(35, 28);
 			this.loadingCircle1.SpokeThickness = 2;
-			this.loadingCircle1.StylePreset = Sphere10.Framework.Windows.Forms.LoadingCircle.StylePresets.MacOSX;
+			this.loadingCircle1.StylePreset = Hydrogen.Windows.Forms.LoadingCircle.StylePresets.MacOSX;
 			this.loadingCircle1.TabIndex = 5;
 			this.loadingCircle1.Text = "_loadingCircle";
 			this.loadingCircle1.Visible = false;

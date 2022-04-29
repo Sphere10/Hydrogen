@@ -20,9 +20,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Sphere10.Framework;
+using Hydrogen;
 
-namespace Sphere10.Framework.Windows.Forms.TextBoxes {
+namespace Hydrogen.Windows.Forms.TextBoxes {
     public partial class TextLog : UserControl {
         private readonly ProducerConsumerQueue<char> _appendQueue; 
         private readonly LargeCollection<char> _data;

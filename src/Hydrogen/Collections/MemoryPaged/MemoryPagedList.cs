@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	public class MemoryPagedList<TItem> : MemoryPagedListBase<TItem> {
 	    private readonly IItemSizer<TItem> _sizer;
 

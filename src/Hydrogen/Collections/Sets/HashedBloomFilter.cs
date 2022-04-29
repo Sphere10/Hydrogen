@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	/// <summary>
 	/// A bloom filter base implementation that selects the "bloom hashes" using the last bytes of a cryptographic hash. 

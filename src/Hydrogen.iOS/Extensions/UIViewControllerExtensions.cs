@@ -18,7 +18,7 @@ using CoreGraphics;
 using Foundation;
 using UIKit;
 
-namespace Sphere10.Framework.iOS {
+namespace Hydrogen.iOS {
     public static class UIViewControllerExtensions {
 
 

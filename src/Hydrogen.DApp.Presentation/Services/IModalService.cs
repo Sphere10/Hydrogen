@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using Sphere10.Hydrogen.Presentation.Components.Modal;
-using Sphere10.Hydrogen.Presentation.Components.Wizard;
+using Hydrogen.DApp.Presentation.Components.Modal;
+using Hydrogen.DApp.Presentation.Components.Wizard;
 
-namespace Sphere10.Hydrogen.Presentation.Services {
+namespace Hydrogen.DApp.Presentation.Services {
     public interface IModalService {
         /// <summary>
         /// Initialize the modal service passing a reference to the modal component.

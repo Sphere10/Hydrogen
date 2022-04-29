@@ -14,7 +14,7 @@
 using System;
 using System.IO;
 
-namespace Sphere10.Framework.Application {
+namespace Hydrogen.Application {
 
 	/// <summary>
 	/// These represent settings relevant to the system user of the application, and are not shared between users.

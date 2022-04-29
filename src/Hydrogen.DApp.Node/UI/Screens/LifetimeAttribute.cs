@@ -1,7 +1,7 @@
 ﻿using System;
-using Sphere10.Hydrogen.Node.Screens;
+using Hydrogen.DApp.Node.Screens;
 
-namespace Sphere10.Hydrogen.Node.UI {
+namespace Hydrogen.DApp.Node.UI {
 
 	public class LifetimeAttribute : Attribute {
 		public LifetimeAttribute(ScreenLifetime lifetime) {

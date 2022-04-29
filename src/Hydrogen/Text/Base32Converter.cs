@@ -14,7 +14,7 @@
 using System;
 using System.Text;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public sealed class Base32Converter {
 

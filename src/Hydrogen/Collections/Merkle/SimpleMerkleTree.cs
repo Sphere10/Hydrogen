@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using Sphere10.Framework;
+using Hydrogen;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	/// <summary>
 	/// Merkle-tree implementation that maintains all leaf nodes and lazily computes parent nodes when needed.

@@ -15,7 +15,7 @@ using System;
 using UIKit;
 using CoreGraphics;
 using Foundation;
-namespace Sphere10.Framework.iOS
+namespace Hydrogen.iOS
 {
 	public class Period {
 		public DateTime DateFrom = DateTime.Now.AddDays(-7);

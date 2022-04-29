@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Sphere10.Framework.Communications.AbstractProtocol.DataSources {
+namespace Hydrogen.Communications.AbstractProtocol.DataSources {
 	public class ClientWebSocketsDataSource<TItem> : ProtocolChannelDataSource<TItem> {
 
 		public ClientWebSocketsDataSource(string uri, bool secure)

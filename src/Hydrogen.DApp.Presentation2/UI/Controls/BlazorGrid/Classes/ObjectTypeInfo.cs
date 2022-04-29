@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
-namespace Sphere10.Hydrogen.Presentation2.UI.Controls.BlazorGrid.Classes {
+namespace Hydrogen.DApp.Presentation2.UI.Controls.BlazorGrid.Classes {
 	public class ObjectTypeInfo 
 	{
 		public PropertyInfo PropertyInfo { get; set; }

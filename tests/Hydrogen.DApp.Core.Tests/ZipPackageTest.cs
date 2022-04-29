@@ -4,8 +4,8 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using NUnit.Framework;
-using Sphere10.Framework;
-using Sphere10.Hydrogen.Core.Storage;
+using Hydrogen;
+using Hydrogen.DApp.Core.Storage;
 
 namespace VelocityNET.Processing.Tests.Core {
     public class ZipPackageTest {

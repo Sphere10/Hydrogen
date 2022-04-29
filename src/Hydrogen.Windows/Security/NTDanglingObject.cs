@@ -16,7 +16,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Security.Principal;
 
-namespace Sphere10.Framework.Windows.Security {
+namespace Hydrogen.Windows.Security {
 
     /// <summary>
     /// A dangling user or group which was referenced. Either the object had a SID and no name or a

@@ -1,4 +1,4 @@
-﻿namespace Sphere10.Hydrogen.Node.UI {
+﻿namespace Hydrogen.DApp.Node.UI {
 
 	/// <summary>
 	/// Determine when the screen is created and destroyed

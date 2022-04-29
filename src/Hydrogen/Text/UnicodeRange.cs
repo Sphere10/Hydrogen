@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	/// <summary>
 	/// Utility class providing a number of singleton instances of

@@ -15,9 +15,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Data;
-using Sphere10.Framework;
+using Hydrogen;
 
-namespace Sphere10.Framework.Data {
+namespace Hydrogen.Data {
 
 	// TODO: there is useful code  https://github.com/dotnet/corefx/tree/master/src/System.Data.DataSetExtensions/src/System/Data
 

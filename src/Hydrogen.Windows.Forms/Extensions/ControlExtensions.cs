@@ -19,10 +19,10 @@ using System.Threading;
 using System.Windows.Forms;
 using System.Drawing.Drawing2D;
 using System.Drawing;
-using Sphere10.Framework.FastReflection;
-using Sphere10.Framework.Windows.Forms;
+using Hydrogen.FastReflection;
+using Hydrogen.Windows.Forms;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public static class ControlExtensions {
 		// TKey is control to drag, TValue is a flag used while dragging

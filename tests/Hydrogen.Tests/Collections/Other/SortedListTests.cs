@@ -1,7 +1,7 @@
 ﻿using FluentAssertions;
 using NUnit.Framework;
 
-namespace Sphere10.Framework.Tests {
+namespace Hydrogen.Tests {
 
 	[Parallelizable]
 	public class SortedListTests {

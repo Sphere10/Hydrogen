@@ -11,7 +11,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace Sphere10.Framework.Application {
+namespace Hydrogen.Application {
 
 	public interface ILicenseKeyServices {
 

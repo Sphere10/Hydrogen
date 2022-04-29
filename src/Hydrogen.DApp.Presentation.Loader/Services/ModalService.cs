@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
-using Sphere10.Hydrogen.Presentation.Components.Modal;
-using Sphere10.Hydrogen.Presentation.Components.Wizard;
-using Sphere10.Hydrogen.Presentation.Services;
+using Hydrogen.DApp.Presentation.Components.Modal;
+using Hydrogen.DApp.Presentation.Components.Wizard;
+using Hydrogen.DApp.Presentation.Services;
 
-namespace Sphere10.Hydrogen.Presentation.Loader.Services
+namespace Hydrogen.DApp.Presentation.Loader.Services
 {
 
     public class ModalService : IModalService

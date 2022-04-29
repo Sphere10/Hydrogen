@@ -1,6 +1,6 @@
 using System.IO;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public sealed class NonClosingStream : StreamDecorator {
 		public NonClosingStream(Stream innerStream)

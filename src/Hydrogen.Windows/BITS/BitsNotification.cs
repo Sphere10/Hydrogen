@@ -16,7 +16,7 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace Sphere10.Framework.Windows.BITS
+namespace Hydrogen.Windows.BITS
 {
     #region Notification Event Arguments
     public class JobNotificationEventArgs : System.EventArgs

@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public interface IGraph<TNode, TEdge, TWeight>
 		where TNode : IGraph<TNode, TEdge, TWeight>

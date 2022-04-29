@@ -14,7 +14,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Sphere10.Framework.Windows.BITS
+namespace Hydrogen.Windows.BITS
 {
     public class FileProgress
     {

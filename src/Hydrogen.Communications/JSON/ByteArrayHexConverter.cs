@@ -3,10 +3,10 @@ using System.Numerics;
 using System.Collections.Generic;
 using System.Text;
 using System.Linq;
-using Sphere10.Framework;
+using Hydrogen;
 using Newtonsoft.Json;
 
-namespace Sphere10.Framework.Communications {
+namespace Hydrogen.Communications {
 	public class ByteArrayHexConverter : JsonConverter<byte[]> {
 		public override void WriteJson(JsonWriter writer, byte[] value, JsonSerializer serializer) {
 			string hexStr = HexEncoding.Encode(value, false);

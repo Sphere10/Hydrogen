@@ -19,7 +19,7 @@ using CoreAnimation;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Sphere10.Framework.iOS
+namespace Hydrogen.iOS
 {
 	internal class Block
 	{

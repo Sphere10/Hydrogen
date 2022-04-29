@@ -14,7 +14,7 @@
 using System.Text;
 using System.IO;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 
 	public abstract class BaseTextWriter : TextWriter {

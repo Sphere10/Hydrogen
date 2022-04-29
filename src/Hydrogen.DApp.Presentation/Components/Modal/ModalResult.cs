@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Sphere10.Hydrogen.Presentation.Components.Modal {
+namespace Hydrogen.DApp.Presentation.Components.Modal {
 
     /// <summary>
     /// Modal result - the result of a modal interaction.

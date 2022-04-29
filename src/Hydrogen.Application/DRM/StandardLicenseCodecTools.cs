@@ -14,7 +14,7 @@
 using System;
 using System.Reflection;
 
-namespace Sphere10.Framework.Application.Components {
+namespace Hydrogen.Application.Components {
 	[Obfuscation(Feature = "encryptmethod", Exclude = false)]
 	internal static class StandardLicenseCodecTools
 	{

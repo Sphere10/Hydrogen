@@ -15,7 +15,7 @@ using System.Drawing;
 using CoreGraphics;
 
 
-namespace Sphere10.Framework.iOS {
+namespace Hydrogen.iOS {
     public static class RectangleFFExtensions {
         public static CGRect ToCGRect(this RectangleF rectangle) {
             return new CGRect(rectangle.X, rectangle.Y, rectangle.Width, rectangle.Height);

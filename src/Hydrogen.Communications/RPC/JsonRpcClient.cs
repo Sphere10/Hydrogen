@@ -11,7 +11,7 @@ using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace Sphere10.Framework.Communications.RPC {
+namespace Hydrogen.Communications.RPC {
 	//Makes remote calls on a server
 	public class JsonRpcClient : ApiRemoteService {
 		protected static int CallID = 1;

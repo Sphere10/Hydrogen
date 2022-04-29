@@ -16,9 +16,9 @@ using UIKit;
 using CoreGraphics;
 using ObjCRuntime;
 using Foundation;
-using Sphere10.Framework;
+using Hydrogen;
 
-namespace Sphere10.Framework.iOS
+namespace Hydrogen.iOS
 {
 
 

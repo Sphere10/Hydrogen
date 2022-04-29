@@ -7,11 +7,11 @@ using System.IO.Compression;
 using System.Linq;
 using System.Text;
 using System.Xml.Schema;
-using Sphere10.Framework;
-using Sphere10.Hydrogen.Core.DataObjects;
+using Hydrogen;
+using Hydrogen.DApp.Core.DataObjects;
 
 
-namespace Sphere10.Hydrogen.Core.Storage {
+namespace Hydrogen.DApp.Core.Storage {
 
     public class ZipPackage : KeyValueStoreBase<string> {
         protected FileStream _stream;

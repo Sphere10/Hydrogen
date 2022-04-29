@@ -1,4 +1,4 @@
-namespace Sphere10.Framework.CryptoEx {
+namespace Hydrogen.CryptoEx {
 
 	public enum ECDSAKeyType {
 		

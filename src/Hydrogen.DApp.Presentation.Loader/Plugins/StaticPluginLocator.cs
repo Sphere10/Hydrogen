@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using Sphere10.Hydrogen.Presentation.Plugins;
-using Sphere10.Hydrogen.Presentation.WidgetGallery;
+using Hydrogen.DApp.Presentation.Plugins;
+using Hydrogen.DApp.Presentation.WidgetGallery;
 
-namespace Sphere10.Hydrogen.Presentation.Loader.Plugins
+namespace Hydrogen.DApp.Presentation.Loader.Plugins
 {
 
     /// <summary>

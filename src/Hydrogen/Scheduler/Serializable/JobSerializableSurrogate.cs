@@ -1,6 +1,6 @@
 ﻿using System.Xml.Serialization;
 
-namespace Sphere10.Framework.Scheduler.Serializable {
+namespace Hydrogen {
 	public class JobSerializableSurrogate {
 		public string JobType { get; set; }
 		public string Name { get; set; }

@@ -18,7 +18,7 @@ using System.Drawing;
 using MonoMac.CoreGraphics;
 using System.IO;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	public static class ByteArrayExtensions {
 
 		public static NSImage ToNSImage(this byte[] data) {

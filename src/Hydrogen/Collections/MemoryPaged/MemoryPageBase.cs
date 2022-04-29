@@ -2,7 +2,7 @@
 using System.IO;
 using System.Linq;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	public abstract class MemoryPageBase<TItem> : PageBase<TItem>, IMemoryPage<TItem> {
 		internal readonly IExtendedList<TItem> MemoryStore;
 

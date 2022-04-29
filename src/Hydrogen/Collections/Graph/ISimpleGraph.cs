@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	// specialization
 	public interface ISimpleGraph<TEntity, TNode> : ISimpleGraph<TNode>

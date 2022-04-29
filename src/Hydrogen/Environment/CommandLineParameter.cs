@@ -1,4 +1,4 @@
-﻿namespace Sphere10.Framework {
+﻿namespace Hydrogen {
 	public class CommandLineParameter {
 
 		public CommandLineParameter(string name, CommandLineParameterOptions traits = CommandLineParameterOptions.Default, params string[] dependencies) 

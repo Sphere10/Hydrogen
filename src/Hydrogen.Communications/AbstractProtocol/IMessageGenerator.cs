@@ -1,4 +1,4 @@
-﻿namespace Sphere10.Framework.Communications {
+﻿namespace Hydrogen.Communications {
     public interface IMessageGenerator {
 		object Execute(ProtocolOrchestrator orchestrator);
 	}

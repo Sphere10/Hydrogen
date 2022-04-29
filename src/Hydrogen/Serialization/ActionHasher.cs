@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public class ActionHasher<T> : IItemHasher<T> {
 		private readonly Func<T, byte[]> _hasher;

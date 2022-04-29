@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 using System.Diagnostics;
 using System.Globalization;
 
-namespace Sphere10.Framework.Windows.Forms {
+namespace Hydrogen.Windows.Forms {
 
 	[ToolboxItem(true)]
 	public class IntBox : NumericBoxBase<int> {

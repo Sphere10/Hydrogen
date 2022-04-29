@@ -13,7 +13,7 @@
 
 using System;
 
-namespace Sphere10.Framework.Data.Csv
+namespace Hydrogen.Data.Csv
 {
 	[Flags]
 	public enum ValueTrimmingOptions

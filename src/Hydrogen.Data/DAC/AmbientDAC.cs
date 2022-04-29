@@ -19,7 +19,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 
-namespace Sphere10.Framework.Data {
+namespace Hydrogen.Data {
     public sealed class AmbientDAC : DACDecorator {
 
         private readonly Func<IDbConnection> _getConnectionFunc;

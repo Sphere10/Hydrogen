@@ -17,7 +17,7 @@ using System.Linq;
 using System.Text;
 using Foundation;
 
-namespace Sphere10.Framework.iOS {
+namespace Hydrogen.iOS {
 	public class PurchaseResult {
 		public TransactionResult Result;
 		public string AppStoreProductID;

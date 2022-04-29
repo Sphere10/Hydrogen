@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	internal class PagedListDelegate<TItem> : IPagedListDelegate<TItem> {
 

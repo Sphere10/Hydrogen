@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	public class CircularList<TItem> : SingularListBase<TItem> {
 
 		public readonly IList<TItem> _list;

@@ -15,7 +15,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public abstract class TransactionalFilePageBase<TItem> : FilePageBase<TItem>, ITransactionalFilePage<TItem> {
 

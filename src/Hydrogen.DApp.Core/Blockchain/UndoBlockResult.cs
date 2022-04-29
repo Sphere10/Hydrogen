@@ -1,4 +1,4 @@
-﻿namespace Sphere10.Hydrogen.Core.Blockchain {
+﻿namespace Hydrogen.DApp.Core.Blockchain {
 	public enum UndoBlockResult {
 		Success,
 

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 
-namespace Sphere10.Framework.Communications {
+namespace Hydrogen.Communications {
 	public class ProtocolHandshakeBuilder : ProtocolBuilderMain {
 		ProtocolHandshake _handshake;
 

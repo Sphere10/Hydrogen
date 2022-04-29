@@ -15,7 +15,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public class SynchronizedQueue<T> : SynchronizedObject, ICollection<T>, IReadOnlyCollection<T> {
 		private readonly Queue<T> _internalQueue;

@@ -18,7 +18,7 @@ using Foundation;
 using UIKit;
 using CoreGraphics;
 
-namespace Sphere10.Framework.iOS
+namespace Hydrogen.iOS
 {
 		[Foundation.Register("ControlsTableViewController")]
 		public partial class ControlsTableViewController : UITableViewController {

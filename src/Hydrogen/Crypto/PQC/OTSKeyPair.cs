@@ -1,4 +1,4 @@
-﻿namespace Sphere10.Framework {
+﻿namespace Hydrogen {
 
 	public class OTSKeyPair {
 		public OTSKeyPair(byte[,] privateKey, byte[,] publicKey, IFuture<byte[]> publicKeyHash) {

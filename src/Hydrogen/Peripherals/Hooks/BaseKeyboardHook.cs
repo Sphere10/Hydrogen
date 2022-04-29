@@ -14,7 +14,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public abstract class BaseKeyboardHook : BaseDeviceHook, IKeyboardHook {
 		public event EventHandler<KeyEvent>  KeyDown;

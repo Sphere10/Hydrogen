@@ -14,10 +14,10 @@
 using System;
 using CoreGraphics;
 using UIKit;
-using Sphere10.Framework;
+using Hydrogen;
 using System.Linq;
 
-namespace Sphere10.Framework.iOS {
+namespace Hydrogen.iOS {
     public static class UINavigationItemExtensions {
 
 

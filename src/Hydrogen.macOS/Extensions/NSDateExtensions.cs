@@ -18,7 +18,7 @@ using MonoTouch.Foundation;
 using MonoMac.Foundation;
 #endif
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	public static class DateExtensions
 	{
 

@@ -21,7 +21,7 @@ using System.Drawing;
 using System.ComponentModel;
 using System.Xml.Serialization;
 
-namespace Sphere10.Framework.Windows.Forms {
+namespace Hydrogen.Windows.Forms {
 
 	/// <summary>
 	/// A class that contains system defined settings for Expandos

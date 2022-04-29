@@ -1,4 +1,4 @@
-﻿namespace Sphere10.Hydrogen.Core.Runtime {
+﻿namespace Hydrogen.DApp.Core.Runtime {
 	public enum HostProtocolMessageType {
 		Ping = 1,
 		Pong = 2,

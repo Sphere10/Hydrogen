@@ -1,4 +1,4 @@
-﻿namespace Sphere10.Framework.Communications {
+﻿namespace Hydrogen.Communications {
     public abstract class ResponseHandlerBase<TRequest, TResponse> : ResponseHandlerBase, IResponseHandler<TRequest, TResponse> {
 		public sealed override void Execute(ProtocolOrchestrator orchestrator, object request, object response) {
 			Guard.ArgumentCast<TRequest>(request, out var requestT, nameof(request));

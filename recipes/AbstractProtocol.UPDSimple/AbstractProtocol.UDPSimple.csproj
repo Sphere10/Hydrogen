@@ -9,8 +9,8 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\..\src\Sphere10.Framework.Communications\Sphere10.Framework.Communications.csproj" />
-		<ProjectReference Include="..\..\src\Sphere10.Framework\Sphere10.Framework.csproj" />
+		<ProjectReference Include="..\..\src\Hydrogen.Communications\Hydrogen.Communications.csproj" />
+		<ProjectReference Include="..\..\src\Hydrogen\Hydrogen.csproj" />
 	</ItemGroup>
 
 </Project>

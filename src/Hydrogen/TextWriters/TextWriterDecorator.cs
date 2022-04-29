@@ -14,7 +14,7 @@
 using System.Text;
 using System.IO;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	/// <summary>
 	/// Decorator for the <see cref="TextWriter"/> class. Applies a functor to the message before sending it to the underlying TextWriter.

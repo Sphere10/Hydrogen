@@ -17,7 +17,7 @@ using System.Data;
 using System.Linq;
 using System.Text;
 
-namespace Sphere10.Framework.Data {
+namespace Hydrogen.Data {
 	public static class DBSchemaExtensions {
 
 		public static IEnumerable<object> ValuesToObjectFormat(this IEnumerable<DBColumnSchema> columns, IEnumerable<string> keys) {

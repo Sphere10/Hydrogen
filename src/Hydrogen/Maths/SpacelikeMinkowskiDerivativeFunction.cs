@@ -11,9 +11,9 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using Sphere10.Framework.Maths;
+using Hydrogen.Maths;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	public class SpacelikeMinkowskiDerivativeFunction : IFunction {
 		private readonly IFunction _derivativeFunction = null;
 

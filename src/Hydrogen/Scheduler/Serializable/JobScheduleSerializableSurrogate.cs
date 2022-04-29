@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Xml.Serialization;
 
-namespace Sphere10.Framework.Scheduler.Serializable {
+namespace Hydrogen {
 	public abstract class JobScheduleSerializableSurrogate {
 
 		[XmlAttribute]

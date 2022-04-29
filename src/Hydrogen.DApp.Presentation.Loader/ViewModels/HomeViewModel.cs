@@ -1,4 +1,4 @@
-﻿namespace Sphere10.Hydrogen.Presentation.Loader.ViewModels
+﻿namespace Hydrogen.DApp.Presentation.Loader.ViewModels
 {
     public class HomeViewModel
     {

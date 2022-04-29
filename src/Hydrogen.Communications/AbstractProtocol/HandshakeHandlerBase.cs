@@ -1,4 +1,4 @@
-﻿namespace Sphere10.Framework.Communications {
+﻿namespace Hydrogen.Communications {
 	public abstract class HandshakeHandlerBase : IHandshakeHandler {
 		public abstract object GenerateHandshake(ProtocolOrchestrator orchestrator);
 

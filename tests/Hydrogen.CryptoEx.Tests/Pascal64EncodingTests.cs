@@ -1,12 +1,12 @@
 using NUnit.Framework;
 using NUnit.Framework.Internal;
-using Sphere10.Framework;
-using Sphere10.Framework.CryptoEx.PascalCoin;
-using Sphere10.Framework.NUnit;
+using Hydrogen;
+using Hydrogen.CryptoEx.PascalCoin;
+using Hydrogen.NUnit;
 using System;
 using System.Linq;
 
-namespace Sphere10.Framework.CryptoEx {
+namespace Hydrogen.CryptoEx {
 
 
     [TestFixture]

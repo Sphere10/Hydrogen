@@ -1,8 +1,8 @@
 ﻿using System.Threading.Tasks;
-using Sphere10.Framework;
-using Sphere10.Framework.Communications;
+using Hydrogen;
+using Hydrogen.Communications;
 
-namespace Sphere10.Hydrogen.Core.Runtime {
+namespace Hydrogen.DApp.Core.Runtime {
 	public interface IHost {
 		event EventHandlerEx<AnonymousPipe> NodeStarted;
 		event EventHandlerEx NodeEnded;

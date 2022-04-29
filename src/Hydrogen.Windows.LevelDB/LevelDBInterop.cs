@@ -19,7 +19,7 @@ using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using System.Text;
 
-namespace Sphere10.Framework.Windows.LevelDB
+namespace Hydrogen.Windows.LevelDB
 {
     public static class LevelDBInterop
     {
@@ -27,7 +27,7 @@ namespace Sphere10.Framework.Windows.LevelDB
             var assembly = Assembly.GetAssembly(typeof(LevelDBInterop)).GetName();
             var directory = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData, Environment.SpecialFolderOption.Create),
-				$"Sphere 10 Framework{Path.DirectorySeparatorChar}{assembly.Name}-{assembly.Version}{Path.DirectorySeparatorChar}{(IntPtr.Size == 4 ? "x32" : "x64")}"
+				$"Hydrogen Framework{Path.DirectorySeparatorChar}{assembly.Name}-{assembly.Version}{Path.DirectorySeparatorChar}{(IntPtr.Size == 4 ? "x32" : "x64")}"
 			);
             if (!Directory.Exists(directory))
                 Directory.CreateDirectory(directory);

@@ -14,7 +14,7 @@
 using System.Configuration;
 using System.IO;
 
-namespace Sphere10.Framework.Application {
+namespace Hydrogen.Application {
 	public class ApplicationLogger : LoggerDecorator {
 
 		public ApplicationLogger() : base(CreateLogger("Logging")) {

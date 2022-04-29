@@ -16,7 +16,7 @@ using System.Threading;
 
 
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public static class SemaphoreSlimExtensions {
         public static IDisposable EnterWaitScope(this SemaphoreSlim semaphore) {

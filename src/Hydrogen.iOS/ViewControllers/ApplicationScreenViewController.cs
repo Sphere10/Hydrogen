@@ -15,12 +15,12 @@ using System;
 using UIKit;
 using Foundation;
 using CoreGraphics;
-using Sphere10.Framework;
+using Hydrogen;
 using System.Collections.Generic;
 using ObjCRuntime;
 using System.Threading.Tasks;
 
-namespace Sphere10.Framework.iOS {
+namespace Hydrogen.iOS {
 
 	// TODO needs work
 public class ApplicationScreenViewController : KeyboardAwareViewController {

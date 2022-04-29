@@ -1,13 +1,13 @@
 ﻿//using System;
 //using System.Collections.Generic;
-//using Sphere10.Framework;
+//using Hydrogen;
 //using Terminal.Gui;
-//using Sphere10.Hydrogen.Core.Configuration;
-//using Sphere10.Hydrogen.Core.Consensus.Serializers;
-//using Sphere10.Hydrogen.Core.Maths;
-//using Sphere10.Hydrogen.Core.Mining;
+//using Hydrogen.DApp.Core.Configuration;
+//using Hydrogen.DApp.Core.Consensus.Serializers;
+//using Hydrogen.DApp.Core.Maths;
+//using Hydrogen.DApp.Core.Mining;
 
-//namespace Sphere10.Hydrogen.Node.UI {
+//namespace Hydrogen.DApp.Node.UI {
 
 //	[Title("Old Mining Simulator")]
 //	[Lifetime(ScreenLifetime.WhenVisible)]

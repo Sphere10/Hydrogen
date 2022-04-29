@@ -15,7 +15,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	public sealed class LookupEx<TKey, TValue> : ILookup<TKey, TValue> {
 		private readonly Dictionary<TKey, List<TValue>> _map;
 

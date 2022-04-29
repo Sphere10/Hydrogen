@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-namespace Sphere10.Hydrogen.Presentation.ViewModels
+namespace Hydrogen.DApp.Presentation.ViewModels
 {
 
     /// <summary>

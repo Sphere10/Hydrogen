@@ -21,7 +21,7 @@ using System.Reflection;
 using System.ComponentModel.Design.Serialization;
 using System.Globalization;
 
-namespace Sphere10.Framework.Windows.Forms {
+namespace Hydrogen.Windows.Forms {
 	#region BorderConverter
 
 	/// <summary>

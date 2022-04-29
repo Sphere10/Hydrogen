@@ -1,11 +1,11 @@
 ﻿using NUnit.Framework;
-using Sphere10.Framework.CryptoEx;
-using Sphere10.Hydrogen.Core.Maths;
+using Hydrogen.CryptoEx;
+using Hydrogen.DApp.Core.Maths;
 using System;
 using System.Text;
-using Sphere10.Framework;
+using Hydrogen;
 
-namespace Sphere10.Hydrogen.Core.Tests {
+namespace Hydrogen.DApp.Core.Tests {
 	internal abstract class RandomHash2TestBase {
 		protected struct TestItem<TInput, TExpected> {
 			public TInput Input;

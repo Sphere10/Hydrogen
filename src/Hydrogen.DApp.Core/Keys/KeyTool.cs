@@ -1,4 +1,4 @@
-﻿namespace Sphere10.Hydrogen.Core.Keys {
+﻿namespace Hydrogen.DApp.Core.Keys {
 
 	public static class KeyTool {
 		public static bool TryParseKeyType(byte[] accountKey, out KeyType keyType) {

@@ -17,7 +17,7 @@ using System.Data;
 using System.Linq;
 using System.Text;
 
-namespace Sphere10.Framework.Data {
+namespace Hydrogen.Data {
     public class TableSpecification2 : BaseSQLSpecificationObject {
 
         public string Schema { get; set; }

@@ -7,7 +7,7 @@ using AutoFixture;
 using FluentAssertions;
 using NUnit.Framework;
 
-namespace Sphere10.Framework.Tests {
+namespace Hydrogen.Tests {
 	public class GenericItemSerializerTests {
 		private readonly IFixture _fixture = new Fixture();
 

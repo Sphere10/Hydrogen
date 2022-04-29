@@ -1,4 +1,4 @@
-﻿using Sphere10.Framework;
+﻿using Hydrogen;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Sphere10.Hydrogen.Core.Blockchain {
+namespace Hydrogen.DApp.Core.Blockchain {
 	public interface IBlockchainLayer<TBlock> {
 
 		byte[] StateRoot { get; }

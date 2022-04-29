@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
     public interface IBijectiveDictionary<U, V> : IDictionary<U, V> {
         IBijectiveDictionary<V, U> Bijection { get; }
 

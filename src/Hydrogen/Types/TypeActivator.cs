@@ -15,7 +15,7 @@ using System;
 using System.Linq;
 
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	public static class TypeActivator {
 
         public static object Create(string typeName, string assemblyHint, params object[] parameters) { 

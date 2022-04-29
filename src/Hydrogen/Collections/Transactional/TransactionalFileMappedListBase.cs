@@ -18,7 +18,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public abstract class TransactionalFileMappedListBase<TItem> : FilePagedListBase<TItem>,  ITransactionalFile {
 		public event EventHandlerEx<object> Committing;

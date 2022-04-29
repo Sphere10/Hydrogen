@@ -16,7 +16,7 @@ using System.Net;
 using CoreFoundation;
 using SystemConfiguration;
 
-namespace Sphere10.Framework.iOS {
+namespace Hydrogen.iOS {
 	public static class Reachability {
 		public static string HostName = "www.google.com";
 		private static NetworkReachability _adHocWiFiNetworkReachability;

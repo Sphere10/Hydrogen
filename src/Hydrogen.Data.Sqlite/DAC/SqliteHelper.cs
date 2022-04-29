@@ -17,7 +17,7 @@ using System.Linq;
 using System.Text;
 using System.Data.SQLite;
 
-namespace Sphere10.Framework.Data {
+namespace Hydrogen.Data {
     public static class SqliteHelper {
 
 

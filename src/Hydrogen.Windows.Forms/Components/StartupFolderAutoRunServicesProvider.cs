@@ -19,10 +19,10 @@ using System.Threading;
 using System.Net.NetworkInformation;
 using Microsoft.Win32;
 using System.IO;
-using Sphere10.Framework;
-using Sphere10.Framework.Windows;
+using Hydrogen;
+using Hydrogen.Windows;
 
-namespace Sphere10.Framework.Application {
+namespace Hydrogen.Application {
 
 
 	public class StartupFolderAutoRunServicesProvider : IAutoRunServices {

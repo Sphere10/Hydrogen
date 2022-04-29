@@ -14,7 +14,7 @@
 using System.Configuration;
 using System.IO;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
     public abstract class LoggerBase : ILogger {
 

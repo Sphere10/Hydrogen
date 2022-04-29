@@ -1,6 +1,6 @@
 using Org.BouncyCastle.Math;
 
-namespace Sphere10.Framework.CryptoEx.EC;
+namespace Hydrogen.CryptoEx.EC;
 
 public class MuSigSessionCache {
 	public bool FinalNonceParity { get; internal set; }

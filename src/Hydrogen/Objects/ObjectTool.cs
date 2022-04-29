@@ -20,7 +20,7 @@ using System.Collections.Generic;
 using System;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
-using Sphere10.Framework;
+using Hydrogen;
 
 #if USE_FAST_REFLECTION
 #endif

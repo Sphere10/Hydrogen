@@ -21,7 +21,7 @@
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	public static class Inflector {
 		#region Default Rules
 

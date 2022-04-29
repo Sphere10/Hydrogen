@@ -1,8 +1,8 @@
 ﻿using NStack;
 using Terminal.Gui;
-using Sphere10.Hydrogen.Node.Screens;
+using Hydrogen.DApp.Node.Screens;
 
-namespace Sphere10.Hydrogen.Node.UI {
+namespace Hydrogen.DApp.Node.UI {
 
 	public class MockScreen : Screen {
 

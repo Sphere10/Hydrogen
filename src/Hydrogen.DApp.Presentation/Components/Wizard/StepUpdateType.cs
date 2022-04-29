@@ -1,4 +1,4 @@
-﻿namespace Sphere10.Hydrogen.Presentation.Components.Wizard {
+﻿namespace Hydrogen.DApp.Presentation.Components.Wizard {
     /// <summary>
     /// Operations for updating wizard steps
     /// </summary>

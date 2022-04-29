@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 
 	// A merkle-tree implementation that only keeps the roots.

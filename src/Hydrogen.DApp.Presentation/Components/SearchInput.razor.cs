@@ -4,10 +4,10 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
-using Sphere10.Framework;
-using Sphere10.Hydrogen.Presentation.Models;
+using Hydrogen;
+using Hydrogen.DApp.Presentation.Models;
 
-namespace Sphere10.Hydrogen.Presentation.Components {
+namespace Hydrogen.DApp.Presentation.Components {
     /// <summary>
     /// Search input component
     /// </summary>

@@ -17,7 +17,7 @@ using System.Linq;
 using System.Text;
 using System.Data;
 
-namespace Sphere10.Framework.Data {
+namespace Hydrogen.Data {
 	public class AutoClosingDataReader : DataReaderDecorator {
 		protected readonly IDbCommand InternalCommand;
 

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Numerics;
 
-namespace Sphere10.Hydrogen.Core.Maths {
+namespace Hydrogen.DApp.Core.Maths {
 
 	public interface ICompactTargetAlgorithm {
 

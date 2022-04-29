@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Sphere10.Framework;
+namespace Hydrogen;
 
 public interface ITransactionalDictionary<TKey, TValue> : IDictionary<TKey, TValue>, ITransactionalFile, ILoadable, ISynchronizedObject, IDisposable {
 }

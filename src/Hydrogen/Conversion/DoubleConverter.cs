@@ -15,7 +15,7 @@
 using System;
 using System.Globalization;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	/// <summary>
 	/// A class to allow the conversion of doubles to string representations of
 	/// their exact decimal values. The implementation aims for readability over

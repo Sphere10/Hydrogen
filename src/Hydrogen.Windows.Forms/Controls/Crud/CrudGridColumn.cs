@@ -17,7 +17,7 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 
-namespace Sphere10.Framework.Windows.Forms {
+namespace Hydrogen.Windows.Forms {
 	public class CrudGridColumn<TEntity> : ICrudGridColumn {
 		public CrudGridColumn() {
 			DropDownItemsNullDisplayString = string.Empty;

@@ -22,7 +22,7 @@ using System.Linq;
 
 
 
-namespace Sphere10.Framework.Windows.Security {
+namespace Hydrogen.Windows.Security {
     public class ShareCopier {
         public ShareCopier() : this(null, false, string.Empty, false, true, SecurityTool.DefaultActionObserver) {
         }

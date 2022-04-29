@@ -14,7 +14,7 @@
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	public abstract class CollectionDecorator<TItem, TConcrete> : ICollection<TItem> where TConcrete : ICollection<TItem> {
 		protected TConcrete InternalCollection;
 

@@ -16,12 +16,12 @@ using System.Configuration;
 using System.Xml;
 using System.Xml.Serialization;
 
-namespace Sphere10.Framework.Application {
+namespace Hydrogen.Application {
 	// based off https://sites.google.com/site/craigandera/craigs-stuff/clr-workings/the-last-configuration-section-handler-i-ll-ever-need
 	public class GenericSectionHandler : IConfigurationSectionHandler {
 
         public static IDictionary<string, string> KnownConfigurationObjectsByLowerCaseSectionName = new Dictionary<string, string>() {
-            {"componentregistry", "Sphere10.Framework.Application.ComponentRegistryDefinition, Sphere10.Framework.Application"}
+            {"componentregistry", "Hydrogen.Application.ComponentRegistryDefinition, Hydrogen.Application"}
         };
 
         public object Create(object parent, object configContext, System.Xml.XmlNode section) {

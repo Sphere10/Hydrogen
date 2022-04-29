@@ -1,7 +1,7 @@
 using Org.BouncyCastle.Math;
 using Org.BouncyCastle.Utilities;
 
-namespace Sphere10.Framework.CryptoEx.EC;
+namespace Hydrogen.CryptoEx.EC;
 
 internal class MuSigNonceData {
 	internal byte[] PrivateNonce { get; set; }

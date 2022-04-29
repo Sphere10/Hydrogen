@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
-using Sphere10.Framework.Communications;
-using Sphere10.Hydrogen.Core;
-using Sphere10.Hydrogen.Core.Consensus;
-using Sphere10.Hydrogen.Core.Maths;
+using Hydrogen.Communications;
+using Hydrogen.DApp.Core;
+using Hydrogen.DApp.Core.Consensus;
+using Hydrogen.DApp.Core.Maths;
 
-namespace Sphere10.Hydrogen.Node.RPC {
+namespace Hydrogen.DApp.Node.RPC {
 
 	//TODO: make surogate byte[] values end by 'Hash' so rhminer can identify then as byte array automaticaly
 	[Serializable]

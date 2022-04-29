@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public interface IClusteredStorage {
 

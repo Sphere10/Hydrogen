@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
 
-namespace Sphere10.Hydrogen.Node.UI {
+namespace Hydrogen.DApp.Node.UI {
 
 	public enum AppMenu {
 		[Description("_File")]

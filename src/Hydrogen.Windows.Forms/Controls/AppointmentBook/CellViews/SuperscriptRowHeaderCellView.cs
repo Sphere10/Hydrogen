@@ -17,7 +17,7 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 
-namespace Sphere10.Framework.Windows.Forms.AppointmentBook {
+namespace Hydrogen.Windows.Forms.AppointmentBook {
 	public class SuperscriptRowHeaderCellView : SourceGrid.Cells.Views.RowHeader {
 		public SuperscriptRowHeaderCellView()   {
 			Font = new System.Drawing.Font(SystemFonts.DefaultFont.FontFamily, 7);

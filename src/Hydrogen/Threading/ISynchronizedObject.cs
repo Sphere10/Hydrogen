@@ -14,7 +14,7 @@
 
 using System.Threading;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public interface ISynchronizedObject : ISynchronizedObject<Scope, Scope> {
 	}

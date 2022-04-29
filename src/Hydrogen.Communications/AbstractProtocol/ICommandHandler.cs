@@ -1,4 +1,4 @@
-﻿namespace Sphere10.Framework.Communications {
+﻿namespace Hydrogen.Communications {
     public interface ICommandHandler {
 		void Execute(ProtocolOrchestrator orchestrator, object command);
 	}

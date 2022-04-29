@@ -16,11 +16,11 @@ using System.ComponentModel;
 using System.Data.SQLite;
 using System.IO;
 using System.Threading.Tasks;
-using Sphere10.Framework;
-using Sphere10.Framework.Data;
+using Hydrogen;
+using Hydrogen.Data;
 
 
-namespace Sphere10.Framework.Windows.Forms.Sqlite {
+namespace Hydrogen.Windows.Forms.Sqlite {
 	public partial class SqliteConnectionPanel : ConnectionPanelBase, IDatabaseConnectionProvider {
 		public SqliteConnectionPanel() {
 			InitializeComponent();

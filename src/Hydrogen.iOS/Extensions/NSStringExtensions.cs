@@ -15,7 +15,7 @@ using System;
 using Foundation;
 
 
-namespace Sphere10.Framework.iOS {
+namespace Hydrogen.iOS {
 	public static class NSStringExtensions {
 		public static NSString ToNSString(this string clrString) {
 			return new NSString(clrString);

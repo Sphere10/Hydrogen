@@ -15,10 +15,10 @@ using System;
 using System.Data;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Sphere10.Framework;
-using Sphere10.Framework.Data;
+using Hydrogen;
+using Hydrogen.Data;
 
-namespace Sphere10.Framework.Windows.Forms {
+namespace Hydrogen.Windows.Forms {
 	public partial class ExecuteScriptForm : Form {
 		public ExecuteScriptForm(IDAC dac, ISQLBuilder script) {
 			InitializeComponent();

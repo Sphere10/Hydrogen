@@ -15,7 +15,7 @@ using System.Collections;
 using System.Linq;
 using System.Collections.Generic;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public sealed class Grouping<TKey, TElement> : IGrouping<TKey, TElement> {
 		private readonly IEnumerable<TElement> _elements;

@@ -1,5 +1,5 @@
-﻿using Sphere10.Framework;
-using Sphere10.Framework.Communications;
+﻿using Hydrogen;
+using Hydrogen.Communications;
 using System;
 
 namespace AbstractProtocol.UDPSimple {

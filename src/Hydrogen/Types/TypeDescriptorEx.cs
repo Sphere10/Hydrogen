@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Net;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
     /// <summary>
     /// Extends the system <see cref="TypeDescriptor"/> class with custom type converters that were missing in .NET standard library

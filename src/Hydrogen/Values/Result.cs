@@ -19,9 +19,9 @@ using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using System.Xml.Serialization;
 using System.Text;
-using Sphere10.Framework.Collections;
+using Hydrogen.Collections;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	[XmlRoot]
 	[DataContract]

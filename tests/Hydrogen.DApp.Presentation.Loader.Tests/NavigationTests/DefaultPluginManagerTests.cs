@@ -2,10 +2,10 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using NUnit.Framework;
-using Sphere10.Hydrogen.Presentation.Loader.Plugins;
-using Sphere10.Hydrogen.Presentation.Loader.Tests.PluginManagerTests;
+using Hydrogen.DApp.Presentation.Loader.Plugins;
+using Hydrogen.DApp.Presentation.Loader.Tests.PluginManagerTests;
 
-namespace Sphere10.Hydrogen.Presentation.Loader.Tests.NavigationTests {
+namespace Hydrogen.DApp.Presentation.Loader.Tests.NavigationTests {
 
     public class DefaultPluginManagerTests {
         [Test]

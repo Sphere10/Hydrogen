@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 
-namespace Sphere10.Framework.Collections;
+namespace Hydrogen.Collections;
 
 /// <summary>
 /// A buffer whose contents are mapped onto a stream.

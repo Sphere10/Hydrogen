@@ -15,7 +15,7 @@ using System;
 using CoreGraphics;
 using UIKit;
 
-namespace Sphere10.Framework.iOS {
+namespace Hydrogen.iOS {
 	public class BadgeView : UILabel {
 		private const float InternalPadding = 10.0f;
 		public const float DefaultHeight = 15.0f;

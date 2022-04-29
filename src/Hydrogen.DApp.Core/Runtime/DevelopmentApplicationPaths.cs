@@ -1,18 +1,18 @@
 ﻿using System;
 using System.IO;
 using System.Reflection;
-using Sphere10.Framework;
+using Hydrogen;
 
-namespace Sphere10.Hydrogen.Core.Runtime {
+namespace Hydrogen.DApp.Core.Runtime {
 
 	/// <summary>
 	/// Used for running within IDE.
 	/// </summary>
 	public class DevelopmentApplicationPaths : IApplicationPaths {
-		internal const string NodeProjectDir = "Sphere10.Hydrogen.Node";
-		internal const string NodeExecutableFileName = "Sphere10.Hydrogen.Node.exe";
-		internal const string GuiProjectDir = "Sphere10.Hydrogen.Presentation2.Loader";
-		internal const string GuiExecutableFileName = "Sphere10.Hydrogen.Presentation2.Loader.exe";
+		internal const string NodeProjectDir = "Hydrogen.DApp.Node";
+		internal const string NodeExecutableFileName = "Hydrogen.DApp.Node.exe";
+		internal const string GuiProjectDir = "Hydrogen.DApp.Presentation2.Loader";
+		internal const string GuiExecutableFileName = "Hydrogen.DApp.Presentation2.Loader.exe";
 
 		private readonly string _solutionFolderPath;
 

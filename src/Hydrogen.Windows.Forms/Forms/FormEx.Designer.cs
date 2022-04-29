@@ -1,7 +1,7 @@
 ﻿
 using System.Drawing;
 
-namespace Sphere10.Framework.Windows.Forms {
+namespace Hydrogen.Windows.Forms {
 	partial class FormEx {
 		/// <summary>
 		/// Required designer variable.

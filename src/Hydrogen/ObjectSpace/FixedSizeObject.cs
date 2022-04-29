@@ -19,7 +19,7 @@
 ////using System;
 ////using System.Collections.Generic;
 
-////namespace Sphere10.Framework.ObjectSpace {
+////namespace Hydrogen.ObjectSpace {
 
 ////	// transient properties are serialized but not merkleized
 ////	public class TransientAttribute : Attribute {

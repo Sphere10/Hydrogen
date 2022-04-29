@@ -1,7 +1,7 @@
 ﻿using NUnit.Framework;
-using Sphere10.Hydrogen.Presentation.Loader.Plugins;
+using Hydrogen.DApp.Presentation.Loader.Plugins;
 
-namespace Sphere10.Hydrogen.Presentation.Loader.Tests.PluginTests {
+namespace Hydrogen.DApp.Presentation.Loader.Tests.PluginTests {
     public class RoutingPathExtensionTests {
         [TestCase("/myapp/testing?test=1", ExpectedResult = "/myapp")]
         [TestCase("/", ExpectedResult = "/")]

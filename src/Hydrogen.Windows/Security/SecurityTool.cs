@@ -19,9 +19,9 @@ using System.Security.Principal;
 
 using System.Security.AccessControl;
 using System.IO;
-using Sphere10.Framework;
+using Hydrogen;
 
-namespace Sphere10.Framework.Windows.Security {
+namespace Hydrogen.Windows.Security {
     public class SecurityTool {
         public static readonly IActionObserver DefaultActionObserver = new NullActionObserver();
 

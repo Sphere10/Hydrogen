@@ -15,11 +15,10 @@ using System;
 using System.Data;
 using System.Threading.Tasks;
 using NUnit.Framework;
-using Sphere10.Framework.Data;
-using Sphere10.Framework.NUnit;
-using Sphere10.Framework.UnitTests.DAC;
+using Hydrogen.NUnit;
 
-namespace Sphere10.Framework.UnitTests {
+
+namespace Hydrogen.Data.Tests {
 
     [TestFixture]
     public class DACScopeTests : DACTestFixture {

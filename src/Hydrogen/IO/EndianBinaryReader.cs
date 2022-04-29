@@ -15,9 +15,9 @@
 using System;
 using System.IO;
 using System.Text;
-using Sphere10.Framework.Values;
+using Hydrogen.Values;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	/// <summary>
 	/// Equivalent of System.IO.BinaryReader, but with either endianness, depending on
 	/// the EndianBitConverter it is constructed with. No data is buffered in the

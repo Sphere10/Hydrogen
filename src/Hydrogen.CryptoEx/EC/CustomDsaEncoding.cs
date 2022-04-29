@@ -4,7 +4,7 @@ using Org.BouncyCastle.Asn1;
 using Org.BouncyCastle.Crypto.Signers;
 using Org.BouncyCastle.Math;
 
-namespace Sphere10.Framework.CryptoEx.EC;
+namespace Hydrogen.CryptoEx.EC;
 
 public class CustomDsaEncoding : StandardDsaEncoding {
 	private const string EmptySignature = "Empty signature";

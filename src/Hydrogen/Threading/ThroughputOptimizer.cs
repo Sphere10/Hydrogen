@@ -13,7 +13,7 @@
 
 using System;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	public class ThroughputOptimizer {
         private readonly long _minimumBatchSize;
         private readonly long _maximumBatchSize;

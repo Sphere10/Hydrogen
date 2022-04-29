@@ -2,7 +2,7 @@
 using System.ComponentModel;
 using System.IO;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public static class IItemSerializerExtensions {
 

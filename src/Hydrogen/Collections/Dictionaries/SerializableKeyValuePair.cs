@@ -15,7 +15,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	[Serializable, StructLayout(LayoutKind.Sequential)]
 	public struct SerializableKeyValuePair<TKey, TValue> {

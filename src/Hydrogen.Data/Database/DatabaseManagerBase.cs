@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Sphere10.Framework;
-using Sphere10.Framework.Data;
+using Hydrogen;
+using Hydrogen.Data;
 
-namespace Sphere10.Framework.Data {
+namespace Hydrogen.Data {
 
 	public abstract class DatabaseManagerBase : IDatabaseManager {
 

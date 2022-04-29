@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	/// <summary>
 	/// Bloom filter base implementation with parameterized length, hashing rounds. Sub-classes need only implement hashing function itself.

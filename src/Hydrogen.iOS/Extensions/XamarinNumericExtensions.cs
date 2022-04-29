@@ -15,7 +15,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Sphere10.Framework.iOS {
+namespace Hydrogen.iOS {
     public static class XamarinNumericExtensions {
 
         public static nfloat ClipTo(this nfloat value, nfloat min, nfloat max) {

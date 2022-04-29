@@ -15,7 +15,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
     public enum ResizeAlignment {
         TopLeft=1,
         TopCenter,

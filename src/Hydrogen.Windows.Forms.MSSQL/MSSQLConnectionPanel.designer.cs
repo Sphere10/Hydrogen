@@ -11,7 +11,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace Sphere10.Framework.Windows.Forms.MSSQL {
+namespace Hydrogen.Windows.Forms.MSSQL {
 	partial class MSSQLConnectionPanel {
 		/// <summary> 
 		/// Required designer variable.

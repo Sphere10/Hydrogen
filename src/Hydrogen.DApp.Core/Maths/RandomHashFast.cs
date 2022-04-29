@@ -1,9 +1,9 @@
-﻿//using Sphere10.Framework;
+﻿//using Hydrogen;
 //using System;
 //using System.Collections.Generic;
 //using System.Linq;
 
-//namespace Sphere10.Hydrogen.Core.Maths {
+//namespace Hydrogen.DApp.Core.Maths {
 //	public sealed class RandomHashFast {
 //		private const int N = 5; // Number of hashing rounds required to compute a nonce (total rounds = 2^N - 1)
 //		private const int M = (10 * 1024) * 5; // 10KB The memory expansion unit (in bytes)

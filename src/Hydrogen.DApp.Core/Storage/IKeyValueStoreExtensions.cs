@@ -4,10 +4,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using Sphere10.Framework;
+using Hydrogen;
 
 
-namespace Sphere10.Hydrogen.Core.Storage {
+namespace Hydrogen.DApp.Core.Storage {
 
     public static class IKeyValueStoreExtensions {
 

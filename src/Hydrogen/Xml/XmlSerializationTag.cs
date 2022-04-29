@@ -19,7 +19,7 @@
 // http://www.codeproject.com/KB/XML/deepserializer.aspx
 // -----------------------------------------------------------------------------------
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	/// <summary>
 	/// This class supports the Yaowi Framework infrastructure and is not intended to be used directly from your code. 
 	/// <P>These constants are used to parse the XmlNodes.

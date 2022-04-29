@@ -1,4 +1,4 @@
-﻿namespace Sphere10.Hydrogen.Core.Keys {
+﻿namespace Hydrogen.DApp.Core.Keys {
 
 	public enum KeyType : byte {
 		Burned = 0,

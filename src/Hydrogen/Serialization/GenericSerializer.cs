@@ -4,10 +4,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
-using Sphere10.Framework.FastReflection;
-using Sphere10.Framework.Values;
+using Hydrogen.FastReflection;
+using Hydrogen.Values;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	/// <summary>
 	/// A serializer for any object. It will intelligently serialize it's member fields/properties in a recursive manner and supports

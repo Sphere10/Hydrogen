@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	/// <summary>
 	/// Represents a range of values. An IComparer{T} is used to compare specific
 	/// values with a start and end point. A range may be include or exclude each end

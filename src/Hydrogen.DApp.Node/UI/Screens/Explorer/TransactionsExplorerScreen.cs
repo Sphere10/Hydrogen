@@ -1,6 +1,6 @@
-﻿using Sphere10.Hydrogen.Node.UI;
+﻿using Hydrogen.DApp.Node.UI;
 
-namespace Sphere10.Hydrogen.Node.UI {
+namespace Hydrogen.DApp.Node.UI {
 
 	[Title("Transactions")]
 	[Lifetime(ScreenLifetime.WhenVisible)]

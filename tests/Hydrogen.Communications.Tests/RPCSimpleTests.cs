@@ -9,14 +9,14 @@
 //using System.Net;
 //using System.Linq;
 //using System.Text;
-//using Sphere10.Framework;
-//using Sphere10.Framework.Communications.RPC;
+//using Hydrogen;
+//using Hydrogen.Communications.RPC;
 //using Newtonsoft.Json;
 //using Newtonsoft.Json.Linq;
-//using Sphere10.Framework.Communications;
+//using Hydrogen.Communications;
 //using Newtonsoft.Json.Converters;
 
-//namespace Sphere10.Framework.Tests {
+//namespace Hydrogen.Tests {
 //	public enum FreeEnum { First, Second, Third };
 
 //	//Anonymous API functions

@@ -15,7 +15,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
 
-namespace Sphere10.Framework.Windows.Forms {
+namespace Hydrogen.Windows.Forms {
     public class SplitContainerControlStateEventProvider : ControlStateEventProviderBase<Control> {
 	    private ContainerControlStateEventProvider _panel1Listener;
 	    private ContainerControlStateEventProvider _panel2Listener;

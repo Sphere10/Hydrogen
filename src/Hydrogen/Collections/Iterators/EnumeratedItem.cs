@@ -11,7 +11,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public class EnumeratedItem<T> {
         public int Index { get; private set; }

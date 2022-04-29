@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
-using Sphere10.Hydrogen.Presentation.Plugins;
+using Hydrogen.DApp.Presentation.Plugins;
 
-namespace Sphere10.Hydrogen.Presentation.Loader.Plugins
+namespace Hydrogen.DApp.Presentation.Loader.Plugins
 {
     /// <summary>
     /// Manages plugins.

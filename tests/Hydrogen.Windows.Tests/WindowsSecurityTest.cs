@@ -19,11 +19,11 @@ using System.Security.Principal;
 using System.IO;
 using System.Diagnostics;
 using NUnit.Framework.Internal;
-using Sphere10.Framework.Windows;
-using Sphere10.Framework.Windows.Security;
+using Hydrogen.Windows;
+using Hydrogen.Windows.Security;
 
 
-namespace Sphere10.Framework.UnitTests {
+namespace Hydrogen.UnitTests {
     [TestFixture]
     public class WindowsSecurityTests {
         public static readonly string RemoteHostName = "ANTARIS";

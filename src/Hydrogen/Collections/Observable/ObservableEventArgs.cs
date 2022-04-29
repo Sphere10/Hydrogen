@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	public sealed class CountingEventArgs : PreEventArgs<CallArgs> { }
 	public sealed class CountedEventArgs : PostEventArgs<CallArgs, int> { }
 

@@ -12,7 +12,7 @@
 
 using System;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	/// <summary>
 	/// Password hashing based on PBKDF2-SHA1,

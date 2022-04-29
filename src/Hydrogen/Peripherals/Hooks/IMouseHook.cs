@@ -13,7 +13,7 @@
 
 using System;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public interface IMouseHook : IDeviceHook  {
 		event EventHandler<MouseMoveEvent> MotionStart;

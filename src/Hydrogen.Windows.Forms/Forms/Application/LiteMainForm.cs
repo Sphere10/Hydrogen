@@ -22,11 +22,11 @@ using System.IO;
 using System.Reflection;
 using System.Threading;
 using System.Runtime.InteropServices;
-using Sphere10.Framework;
-using Sphere10.Framework.Application;
-using Sphere10.Framework.Windows.Forms;
+using Hydrogen;
+using Hydrogen.Application;
+using Hydrogen.Windows.Forms;
 
-namespace Sphere10.Framework.Windows.Forms {
+namespace Hydrogen.Windows.Forms {
 
 	public partial class LiteMainForm : ApplicationForm, IApplicationIconProvider, IUserInterfaceServices, IUserNotificationServices, IMainForm {
 		private volatile INagDialog _nagDialogInstance;

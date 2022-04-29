@@ -1,6 +1,6 @@
-﻿using Sphere10.Hydrogen.Node.UI;
+﻿using Hydrogen.DApp.Node.UI;
 
-namespace Sphere10.Hydrogen.Node.Screens.Diagnostic {
+namespace Hydrogen.DApp.Node.Screens.Diagnostic {
 
 	[Title("Logs")]
 	[Lifetime(ScreenLifetime.WhenVisible)]

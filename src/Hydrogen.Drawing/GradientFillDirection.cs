@@ -15,7 +15,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
     public enum GradientFillDirection {
         Horizontal = 0x00000000,
         Vertical = 0x00000001

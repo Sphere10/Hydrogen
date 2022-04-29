@@ -5,7 +5,7 @@ using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.Math;
 using Org.BouncyCastle.Utilities;
 
-namespace Sphere10.Framework.CryptoEx.IES {
+namespace Hydrogen.CryptoEx.IES {
 	/**
     * support class for constructing integrated encryption ciphers
     * for doing basic message exchanges on top of key agreement ciphers

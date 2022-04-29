@@ -2,7 +2,7 @@ using System;
 using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Utilities;
 
-namespace Sphere10.Framework.CryptoEx {
+namespace Hydrogen.CryptoEx {
 	public abstract class HavalDigest
         : IDigest, IMemoable
     {

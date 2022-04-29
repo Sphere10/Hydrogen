@@ -14,7 +14,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public class TextBank {
         private List<string> _data;

@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public abstract class TransactionalScope<TScope, TTransaction> : ScopeContext<TScope>
 		where TScope : TransactionalScope<TScope, TTransaction> { 

@@ -18,7 +18,7 @@ using MonoMac.AppKit;
 using System.Collections.Generic;
 
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	public static class NSComboBoxExtensions
 	{
 		public static void SelectByItem<T>(this NSComboBox comboBox, T obj, Func<T,T,bool> comparer = null) {

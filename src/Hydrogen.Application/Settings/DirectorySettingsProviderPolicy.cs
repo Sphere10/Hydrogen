@@ -13,7 +13,7 @@
 
 using System;
 
-namespace Sphere10.Framework.Application {
+namespace Hydrogen.Application {
     [Flags]
 	public enum DirectorySettingsProviderPolicy {
 		CreateDirectoryIfNotExists				= 1 << 0,

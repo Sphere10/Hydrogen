@@ -1,4 +1,4 @@
-﻿namespace Sphere10.Framework.Communications {
+﻿namespace Hydrogen.Communications {
     public class ProtocolMessageEnvelope {
         public ProtocolDispatchType DispatchType { get; init; }
         public int RequestID { get; init; }

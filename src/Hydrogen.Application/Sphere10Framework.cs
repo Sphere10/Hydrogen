@@ -17,7 +17,7 @@ using System.Configuration;
 using System.IO;
 using System.Linq;
 
-namespace Sphere10.Framework.Application {
+namespace Hydrogen.Application {
 	public class Sphere10Framework {
 		private readonly object _threadLock;
 		private bool _registeredConfig;
@@ -191,12 +191,12 @@ namespace Sphere10.Framework.Application {
 
 		private void CheckStarted() {
 			if (!IsStarted)
-				throw new InvalidOperationException("Sphere 10 Framework was not started");
+				throw new InvalidOperationException("Hydrogen Framework was not started");
 		}
 
 		private void CheckNotStarted() {
 			if (IsStarted)
-				throw new InvalidOperationException("Sphere 10 Framework is alraedy started");
+				throw new InvalidOperationException("Hydrogen Framework is alraedy started");
 		}
 	}
 }

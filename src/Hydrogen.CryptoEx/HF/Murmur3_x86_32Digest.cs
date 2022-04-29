@@ -2,7 +2,7 @@ using System;
 using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Utilities;
 
-namespace Sphere10.Framework.CryptoEx.HF {
+namespace Hydrogen.CryptoEx.HF {
 	public class Murmur3_x86_32Digest
         : IDigest, IMemoable
     {

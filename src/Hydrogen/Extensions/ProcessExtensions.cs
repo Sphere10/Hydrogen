@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	// https://raw.githubusercontent.com/dotnet/extensions/ffb7c20fb22a31ac31d3a836a8455655867e8e16/shared/Microsoft.Extensions.Process.Sources/ProcessHelper.cs
 	public static class ProcessExtensions {

@@ -1,7 +1,7 @@
 //using NUnit.Framework;
-//using Sphere10.Framework;
+//using Hydrogen;
 
-//namespace Sphere10.Framework.CryptoEx.Tests {
+//namespace Hydrogen.CryptoEx.Tests {
 //    public abstract class RandomHashTests : HashTestBase {
 
 //        protected readonly TestItem<int, string>[] DATA_RANDOMHASH =  {

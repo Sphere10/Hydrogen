@@ -18,10 +18,10 @@ using NUnit.Framework;
 using System.IO;
 using System.Text;
 using NUnit.Framework.Constraints;
-using Sphere10.Framework;
-using Sphere10.Framework.NUnit;
+using Hydrogen;
+using Hydrogen.NUnit;
 
-namespace Sphere10.Framework.Tests {
+namespace Hydrogen.Tests {
 
     [TestFixture]
 	[Parallelizable(ParallelScope.Children)]

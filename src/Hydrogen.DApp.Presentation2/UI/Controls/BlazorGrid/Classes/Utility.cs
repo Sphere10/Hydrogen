@@ -1,6 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 
-namespace Sphere10.Hydrogen.Presentation2.UI.Controls.BlazorGrid.Classes {
+namespace Hydrogen.DApp.Presentation2.UI.Controls.BlazorGrid.Classes {
 	public static class Utility {
 
 		public static bool IsNullOrEmpty(this string text) {

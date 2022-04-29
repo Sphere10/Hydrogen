@@ -17,7 +17,7 @@ using System.Text;
 using System.Security.Cryptography;
 
 // ReSharper disable CheckNamespace
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	// TODO: Requires major refactoring and improvements
 	// - unify string/byte[]/stream encryption

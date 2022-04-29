@@ -15,7 +15,7 @@ using System;
 using UIKit;
 using CoreGraphics;
 
-namespace Sphere10.Framework.iOS {
+namespace Hydrogen.iOS {
 
 	/// <summary>
 	/// Inherit from this to workaround the bug seen here (http://stackoverflow.com/questions/14081410/extended-uibutton-border-is-not-initially-drawn)

@@ -13,7 +13,7 @@
 
 using System.Collections.Generic;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public class ObservableList<TItem> : ObservableList<TItem, IList<TItem>> {
 		public ObservableList()

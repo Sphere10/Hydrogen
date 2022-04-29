@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	public static class Pow2 {
 	
 		public static IEnumerable<int> CalculatePow2Partition(int number) {

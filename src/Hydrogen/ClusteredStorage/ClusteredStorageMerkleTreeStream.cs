@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Sphere10.Framework.Collections;
+namespace Hydrogen.Collections;
 
 /// <summary>
 /// Maps a <see cref="IEditableMerkleTree"/> onto a <see cref="Stream"/> within a <see cref="IClusteredStorage"/>. The tree data 

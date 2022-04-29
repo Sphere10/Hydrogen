@@ -8,7 +8,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Sphere10.Hydrogen.Presentation2.Loader {
+namespace Hydrogen.DApp.Presentation2.Loader {
 	public class Program {
 		public static async Task Main(string[] args) {
 			var builder = WebAssemblyHostBuilder.CreateDefault(args);

@@ -17,7 +17,7 @@ using System.IO;
 using System.Linq;
 using System.Data;
 
-namespace Sphere10.Framework.Data {
+namespace Hydrogen.Data {
 	public static class DataSetExtensions {
 
 

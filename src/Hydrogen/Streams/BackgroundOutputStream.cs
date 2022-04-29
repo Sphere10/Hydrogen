@@ -16,7 +16,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public class BackgroundOutputStream : Stream {
         private readonly Queue<byte[]> _writeQueue = new Queue<byte[]>();

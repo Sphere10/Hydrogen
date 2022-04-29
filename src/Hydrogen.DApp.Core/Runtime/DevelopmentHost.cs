@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Sphere10.Framework;
+using Hydrogen;
 
-namespace Sphere10.Hydrogen.Core.Runtime {
+namespace Hydrogen.DApp.Core.Runtime {
 	public class DevelopmentHost : Host {
 
 		public DevelopmentHost(ILogger logger) 

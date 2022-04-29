@@ -15,10 +15,10 @@ using System;
 using System.ComponentModel;
 using System.IO;
 using FirebirdSql.Data.FirebirdClient;
-using Sphere10.Framework.Data;
+using Hydrogen.Data;
 
 
-namespace Sphere10.Framework.Windows.Forms.Firebird {
+namespace Hydrogen.Windows.Forms.Firebird {
 	public partial class FirebirdEmbeddedConnectionPanel : ConnectionPanelBase, IDatabaseConnectionProvider {
 		public FirebirdEmbeddedConnectionPanel() {
 			InitializeComponent();

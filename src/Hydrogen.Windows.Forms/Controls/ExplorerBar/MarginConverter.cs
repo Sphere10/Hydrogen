@@ -21,7 +21,7 @@ using System.ComponentModel.Design.Serialization;
 using System.Reflection;
 using System.Globalization;
 
-namespace Sphere10.Framework.Windows.Forms {
+namespace Hydrogen.Windows.Forms {
 
 	/// <summary>
 	/// A custom TypeConverter used to help convert Margins from 

@@ -17,7 +17,7 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 
-namespace Sphere10.Framework.Windows.Forms.AppointmentBook {
+namespace Hydrogen.Windows.Forms.AppointmentBook {
 	internal class AppointmentDragObject {
 		public AppointmentColumn SourceColumn { get; set; }
 		public Appointment Appointment { get; set; }

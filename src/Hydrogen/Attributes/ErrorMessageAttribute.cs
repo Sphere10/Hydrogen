@@ -15,7 +15,7 @@ using System;
 using System.Text;
 using System.Reflection;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	public class ErrorMessageAttribute  : Attribute {
         private string _errMsg;
 

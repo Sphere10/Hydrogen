@@ -17,7 +17,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text;
 
-namespace Sphere10.Framework.Data {
+namespace Hydrogen.Data {
 	public class SQLBuilderWithTableBasedVariables : SQLBuilderDecorator {
 		private IDictionary<string, Tuple<int, VariableStorageClass>> _variableDeclarations;
 		private IDictionary<VariableStorageClass, Tuple<int, string>> _columnLookup;

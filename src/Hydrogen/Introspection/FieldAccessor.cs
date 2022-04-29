@@ -15,7 +15,7 @@ using System;
 using System.Reflection;
 using System.Linq.Expressions;
 
-namespace Sphere10.Framework.FastReflection {
+namespace Hydrogen.FastReflection {
 
 	public class FieldAccessor {
         private Func<object, object> _getter;

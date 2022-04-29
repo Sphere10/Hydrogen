@@ -5,7 +5,7 @@
 using System;
 using System.Diagnostics;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public class Blake2b : HashFunctionBase {
 		public static readonly Config DefaultConfig = new Config();

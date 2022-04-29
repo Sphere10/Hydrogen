@@ -19,10 +19,10 @@ using System.Text;
 using NUnit.Framework;
 using System.IO;
 using NUnit.Framework.Constraints;
-using Sphere10.Framework;
-using Sphere10.Framework.FastReflection;
+using Hydrogen;
+using Hydrogen.FastReflection;
 
-namespace Sphere10.Framework.Tests {
+namespace Hydrogen.Tests {
 
 	[TestFixture]
 	[Parallelizable(ParallelScope.Children)]

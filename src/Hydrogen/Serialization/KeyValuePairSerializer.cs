@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Sphere10.Framework.Values;
+using Hydrogen.Values;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 
 	/// <summary>

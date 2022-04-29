@@ -18,7 +18,7 @@ using System.Data;
 using System.Linq;
 using System.Text;
 
-namespace Sphere10.Framework.Data {
+namespace Hydrogen.Data {
 	public class ANSI2003BaseSQLBuilder : SQLBuilderBase {
 		public override ISQLBuilder BeginTransaction() {
 			throw new NotSupportedException();

@@ -17,7 +17,7 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms.Design;
 
-namespace Sphere10.Framework.Windows.Forms {
+namespace Hydrogen.Windows.Forms {
 	/// <summary>
 	/// A custom designer used by TaskPanes to remove unwanted 
 	/// properties from the Property window in the designer

@@ -1,13 +1,13 @@
 using Newtonsoft.Json;
 using NUnit.Framework;
 using Org.BouncyCastle.Math;
-using Sphere10.Framework.CryptoEx.EC;
+using Hydrogen.CryptoEx.EC;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-namespace Sphere10.Framework.CryptoEx.Tests;
+namespace Hydrogen.CryptoEx.Tests;
 
 public class Bip340SchnorrTestData
 {

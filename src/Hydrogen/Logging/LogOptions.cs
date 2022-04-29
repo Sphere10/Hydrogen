@@ -13,7 +13,7 @@
 
 using System;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	[Flags]
     public enum LogOptions {
         DebugEnabled        = 1 << 0,

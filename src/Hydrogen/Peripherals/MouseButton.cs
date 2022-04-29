@@ -14,7 +14,7 @@
 using System;
 using System.Reflection;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	[Obfuscation(Exclude = true)]
     [Flags]
     public enum MouseButton

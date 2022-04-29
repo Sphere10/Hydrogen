@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using Sphere10.Hydrogen.Presentation.Loader.Plugins;
-using Sphere10.Hydrogen.Presentation.Plugins;
-using Sphere10.Hydrogen.Presentation.ViewModels;
+using Hydrogen.DApp.Presentation.Loader.Plugins;
+using Hydrogen.DApp.Presentation.Plugins;
+using Hydrogen.DApp.Presentation.ViewModels;
 
-namespace Sphere10.Hydrogen.Presentation.Loader.ViewModels
+namespace Hydrogen.DApp.Presentation.Loader.ViewModels
 {
     /// <summary>
     /// Apps menu view model.

@@ -13,11 +13,11 @@
 
 using System;
 using System.Reflection;
-using Sphere10.Framework.Application.Components;
+using Hydrogen.Application.Components;
 using System.Diagnostics;
 
 
-namespace Sphere10.Framework.Application {
+namespace Hydrogen.Application {
 
 	[Obfuscation(Feature = "encryptmethod", Exclude = false)]
 	public class StandardLicenseKeyEncoder : ILicenseKeyEncoder {

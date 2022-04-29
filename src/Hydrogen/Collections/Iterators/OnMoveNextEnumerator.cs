@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public sealed class OnMoveNextEnumerator<T> : EnumeratorDecorator<T> {
 		private readonly Func<bool?> _preMoveNextFunc;

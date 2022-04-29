@@ -20,9 +20,9 @@ using System.Reflection;
 using System.Text;
 using Android.App;
 using System.IO;
-using Sphere10.Framework.Application;
+using Hydrogen.Application;
 
-namespace Sphere10.Framework.Android {
+namespace Hydrogen.Android {
 
 	public class AndroidSettingsProvider : DirectorySettingsProvider {
 		private const string AppSettingsFolderName = "ApplicationSettings";

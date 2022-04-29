@@ -13,9 +13,8 @@
 
 using System;
 using System.Linq;
-using Sphere10.Framework.Scheduler;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	public class SessionCache<K,T> : CacheBase<K,T> {
         private readonly Scheduler<IJob> _cleaner; 
 

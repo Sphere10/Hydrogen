@@ -18,7 +18,7 @@ using System.Security.Principal;
 using System.Runtime.InteropServices;
 
 
-namespace Sphere10.Framework.Windows.Security {
+namespace Hydrogen.Windows.Security {
 
     /// <summary>
     /// Base class for objects which have a SID and name and host machine they are on.

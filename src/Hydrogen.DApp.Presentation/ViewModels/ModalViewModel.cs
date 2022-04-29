@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Data.SqlTypes;
 using System.Threading.Tasks;
-using Sphere10.Framework;
-using Sphere10.Hydrogen.Presentation.Components.Modal;
+using Hydrogen;
+using Hydrogen.DApp.Presentation.Components.Modal;
 
-namespace Sphere10.Hydrogen.Presentation.ViewModels {
+namespace Hydrogen.DApp.Presentation.ViewModels {
     /// <summary>
     /// Basic modal view model providing base functionality.
     /// </summary>

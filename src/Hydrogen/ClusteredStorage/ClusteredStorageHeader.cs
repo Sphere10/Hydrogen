@@ -2,7 +2,7 @@
 using System.IO;
 using System.Xml.Schema;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public class ClusteredStorageHeader {
 		public const int ByteLength = 256;

@@ -14,7 +14,7 @@
 using System.Collections.Generic;
 using System.Threading;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public class SynchronizedDictionary<TKey, TValue> : DictionaryDecorator<TKey, TValue>, ISynchronizedObject {
 

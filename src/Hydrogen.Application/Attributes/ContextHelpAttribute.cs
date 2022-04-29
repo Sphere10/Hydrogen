@@ -13,7 +13,7 @@
 
 using System;
 
-namespace Sphere10.Framework.Application.Help {
+namespace Hydrogen.Application.Help {
 	public class ContextHelpAttribute : Attribute {
 		public int ID { get; set; }
 	}

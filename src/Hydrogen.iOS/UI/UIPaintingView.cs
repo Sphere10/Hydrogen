@@ -25,7 +25,7 @@ using System.Collections.Generic;
 using System.Text;
 
 
-namespace Sphere10.Framework.iOS {
+namespace Hydrogen.iOS {
 
 
     // simpler way to do this -- http://stackoverflow.com/questions/5461819/draw-into-uiimage

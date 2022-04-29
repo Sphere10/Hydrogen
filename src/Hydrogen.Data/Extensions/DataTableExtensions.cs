@@ -16,9 +16,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Data;
-using Sphere10.Framework.FastReflection;
+using Hydrogen.FastReflection;
 
-namespace Sphere10.Framework.Data {
+namespace Hydrogen.Data {
 	public static class DataTableExtensions {
 
 		public static IEnumerable<DataRow> AsEnumerable(this DataTable table) {

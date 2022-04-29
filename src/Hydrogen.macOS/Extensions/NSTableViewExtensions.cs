@@ -20,7 +20,7 @@ using System.Collections.Generic;
 using System.Drawing;
 
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	public static class NSTableViewExtensions
 	{
 		public static void RemoveAllColumns(this NSTableView tableView) {

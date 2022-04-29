@@ -34,12 +34,12 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using NUnit.Framework;
-using Sphere10.Framework.Collections;
-using Sphere10.Framework.Data;
+using Hydrogen.Collections;
+using Hydrogen.Data;
 using Tools;
 using Object = Tools.Object;
 
-namespace Sphere10.Framework.NUnit {
+namespace Hydrogen.NUnit {
     public abstract class DACTestFixture {
         private const string MSSQLServer_Default = "localhost";
         private const string MSSQLUser_Default = "sa";

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	/// <summary>
 	/// A bloom filter implementation that uses MurMur3 checksums (with varying seeds) of serialized objects for the bloom hashing rounds.

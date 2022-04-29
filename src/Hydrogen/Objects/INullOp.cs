@@ -1,4 +1,4 @@
-﻿namespace Sphere10.Framework {
+﻿namespace Hydrogen {
 
 	interface INullOp<T> {
 		bool HasValue(T value);

@@ -14,13 +14,13 @@
 using System;
 using CoreGraphics;
 using UIKit;
-using Sphere10.Framework;
+using Hydrogen;
 using Foundation;
 using System.Linq;
 using System.Collections.Generic;
-using Sphere10.Framework.iOS;
+using Hydrogen.iOS;
 
-namespace Sphere10.Framework.iOS {
+namespace Hydrogen.iOS {
     public static class UIPopoverPresentationControllerExtensions {
 
         public static void SetPresentationAnchor(this UIPopoverPresentationController ppc, object anchorObject) {

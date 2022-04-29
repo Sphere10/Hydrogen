@@ -1,6 +1,6 @@
 ﻿using System.Text;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public class StringSizer : ItemSizer<string> {
 		protected Encoding Encoding;

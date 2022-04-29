@@ -16,7 +16,7 @@ using MonoMac.Foundation;
 using MonoMac.AppKit;
 using System.Collections.Generic;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	
 	// Inversion of implementation
 	// Object inheritance

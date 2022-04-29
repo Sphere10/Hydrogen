@@ -19,12 +19,12 @@ using System.Diagnostics;
 using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
-using Sphere10.Framework.Application;
-using Sphere10.Framework.Windows.Forms;
-using Sphere10.Framework.Windows.Forms.Components.BlockFramework;
+using Hydrogen.Application;
+using Hydrogen.Windows.Forms;
+using Hydrogen.Windows.Forms.Components.BlockFramework;
 
 
-namespace Sphere10.Framework.Windows.Forms {
+namespace Hydrogen.Windows.Forms {
 
     /// <summary>
     /// Application UIs can be presented as a screen. It is a proxy ApplicationServiceProvider

@@ -1,9 +1,9 @@
-﻿using Sphere10.Framework;
+﻿using Hydrogen;
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
-namespace Sphere10.Hydrogen.Core.Maths {
+namespace Hydrogen.DApp.Core.Maths {
 	public sealed class RandomHash2Fast : RandomHash2 {
 		private const string OverlappingArgs = "Overlapping read/write regions";
 		private const string BufferTooSmall = "Buffer too small to apply memory transform";

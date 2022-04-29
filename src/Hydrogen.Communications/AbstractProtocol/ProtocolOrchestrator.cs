@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Sphere10.Framework.Communications {
+namespace Hydrogen.Communications {
 	/// <summary>
 	/// Responsible for orchestrating a protocol over a channel. The responsibilities here include message-based communications,
 	/// handshaking, request-response workflow, command workflow.

@@ -4,10 +4,10 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualBasic;
 using NStack;
-using Sphere10.Framework;
+using Hydrogen;
 using Terminal.Gui;
 
-namespace Sphere10.Hydrogen.Node.UI {
+namespace Hydrogen.DApp.Node.UI {
 
 	public class ListDataSource<T>  {
 		public const int MinNameColumnWidth = 5;

@@ -11,7 +11,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	public class RegexQuantifier {
         readonly RegexPattern _quantifiedExpression;
 

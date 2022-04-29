@@ -13,7 +13,7 @@
 
 using System.Drawing;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public static class SizeExtensions {
 

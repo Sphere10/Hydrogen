@@ -7,7 +7,7 @@ using FluentNHibernate.Conventions.AcceptanceCriteria;
 using FluentNHibernate.Conventions.Inspections;
 using FluentNHibernate.Conventions.Instances;
 
-namespace Sphere10.Framework.Data.NHibernate {
+namespace Hydrogen.Data.NHibernate {
     public class BinaryColumnLengthConvention : IPropertyConvention, IPropertyConventionAcceptance {
 		public void Accept(IAcceptanceCriteria<IPropertyInspector> criteria) {
 			criteria.Expect(x => x.Property.PropertyType == typeof(byte[]));

@@ -1,7 +1,7 @@
-﻿using Sphere10.Framework;
-using Sphere10.Framework.Communications;
-using Sphere10.Hydrogen.Core.Runtime;
-using Sphere10.Hydrogen.Core.Storage;
+﻿using Hydrogen;
+using Hydrogen.Communications;
+using Hydrogen.DApp.Core.Runtime;
+using Hydrogen.DApp.Core.Storage;
 using System;
 using System.Configuration;
 using System.Diagnostics;
@@ -13,7 +13,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Sphere10.Hydrogen.Host {
+namespace Hydrogen.DApp.Host {
 
 
 	class Program {
@@ -85,7 +85,7 @@ namespace Sphere10.Hydrogen.Host {
 				// Setup the host
 				IHost host = userArgs.Arguments.Contains("development")
 					? new DevelopmentHost(logger, applicationPaths)
-					: new Sphere10.Hydrogen.Core.Runtime.Host(logger, applicationPaths);
+					: new Hydrogen.DApp.Core.Runtime.Host(logger, applicationPaths);
 
 
 				// Deploy user specified HAP (if applicable)

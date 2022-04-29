@@ -15,7 +15,7 @@ using System;
 using MonoMac.AppKit;
 using MonoMac.Foundation;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	public class StandardTableViewDelegate : NSTableViewDelegate {
 
 		public StandardTableViewDelegate() {

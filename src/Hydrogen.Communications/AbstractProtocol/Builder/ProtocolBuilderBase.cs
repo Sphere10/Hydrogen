@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Sphere10.Framework.Communications {
+namespace Hydrogen.Communications {
 
 	public abstract class ProtocolBuilderMain : IProtocolBuilderMain {
 

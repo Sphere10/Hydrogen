@@ -16,7 +16,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Sphere10.Framework.Windows.Forms.AppointmentBook.ViewModels {
+namespace Hydrogen.Windows.Forms.AppointmentBook.ViewModels {
 	public interface IAppointmentBookViewModel {
 		void SetTimePeriod(TimePeriodType timePeriod, DateTime startTime);
 	}

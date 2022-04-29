@@ -14,7 +14,7 @@
 using System;
 
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	/// <summary>
 	/// Extension methods for <see cref="DataTime"/>
 	/// </summary>

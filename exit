@@ -4,12 +4,12 @@ Date:   Fri Mar 12 18:05:50 2021 +1000
 
     SP10: Work in progress commit (resume at home) -- sorry for unprofessional commit
 
-[1mdiff --git a/src/Sphere10.Framework/Collections/Lists/PreallocatedList.cs b/src/Sphere10.Framework/Collections/Lists/PreallocatedList.cs[m
+[1mdiff --git a/src/Hydrogen/Collections/Lists/PreallocatedList.cs b/src/Hydrogen/Collections/Lists/PreallocatedList.cs[m
 [1mindex 31c110e..7235971 100644[m
-[1m--- a/src/Sphere10.Framework/Collections/Lists/PreallocatedList.cs[m
-[1m+++ b/src/Sphere10.Framework/Collections/Lists/PreallocatedList.cs[m
+[1m--- a/src/Hydrogen/Collections/Lists/PreallocatedList.cs[m
+[1m+++ b/src/Hydrogen/Collections/Lists/PreallocatedList.cs[m
 [36m@@ -6,8 +6,9 @@[m [musing System.Text;[m
- namespace Sphere10.Framework.Collections {[m
+ namespace Hydrogen.Collections {[m
  [m
  	/// <summary>[m
 [31m-	/// A list implementation that implements inserts/deletes/adds as updates over an underlying fixed-size list. This list maintains[m
@@ -20,7 +20,7 @@ Date:   Fri Mar 12 18:05:50 2021 +1000
  	/// </summary>[m
  	/// <remarks>[m
  	/// <see cref="Contains"/> and <see cref="ContainsRange"/> are overriden and implemented based on <see cref="IndexOf"/> and <see cref="IndexOfRange"/> in order to ensure only[m
-[36m@@ -75,9 +76,34 @@[m [mnamespace Sphere10.Framework.Collections {[m
+[36m@@ -75,9 +76,34 @@[m [mnamespace Hydrogen.Collections {[m
  			CheckIndex(index);[m
  			if (_count + itemsArr.Length > MaxCount)[m
  				throw new ArgumentException("Insufficient space");[m
@@ -66,18 +66,18 @@ Date:   Fri Mar 12 21:01:30 2021 +1300
     
     fix merge conflict
 
-[1mdiff --git a/src/Sphere10.Framework/Collections/Lists/PreallocatedList.cs b/src/Sphere10.Framework/Collections/Lists/PreallocatedList.cs[m
+[1mdiff --git a/src/Hydrogen/Collections/Lists/PreallocatedList.cs b/src/Hydrogen/Collections/Lists/PreallocatedList.cs[m
 [1mindex 9ecf390..31c110e 100644[m
-[1m--- a/src/Sphere10.Framework/Collections/Lists/PreallocatedList.cs[m
-[1m+++ b/src/Sphere10.Framework/Collections/Lists/PreallocatedList.cs[m
+[1m--- a/src/Hydrogen/Collections/Lists/PreallocatedList.cs[m
+[1m+++ b/src/Hydrogen/Collections/Lists/PreallocatedList.cs[m
 [36m@@ -3,11 +3,7 @@[m [musing System.Collections.Generic;[m
  using System.Linq;[m
  using System.Text;[m
  [m
 [31m-<<<<<<< HEAD[m
-[31m-namespace Sphere10.Framework.Collections.Lists {[m
+[31m-namespace Hydrogen.Collections.Lists {[m
 [31m-=======[m
- namespace Sphere10.Framework.Collections {[m
+ namespace Hydrogen.Collections {[m
 [31m->>>>>>> 31261811913d43c84cbc72ce9ab75c6658c08004[m
  [m
  	/// <summary>[m
@@ -91,7 +91,7 @@ Date:   Fri Mar 12 17:53:57 2021 +1000
     Merge branch 'master' of https://github.com/Sphere10/Hydrogen
     
     # Conflicts:
-    #       src/Sphere10.Framework/Collections/Lists/PreallocatedList.cs
+    #       src/Hydrogen/Collections/Lists/PreallocatedList.cs
 
 [33mcommit d7478945e78fe537b1578bd9ca15835b93a5ec10[m
 Author: cobanicuss <79815312+cobanicuss@users.noreply.github.com>
@@ -139,10 +139,10 @@ Date:   Fri Mar 12 17:13:58 2021 +1300
     
     new constructors for list type options. fixed some bugs and integration tests
 
-[1mdiff --git a/src/Sphere10.Framework.Tests/Collections/StreamMappedListTests.cs b/src/Sphere10.Framework.Tests/Collections/StreamMappedListTests.cs[m
+[1mdiff --git a/src/Hydrogen.Tests/Collections/StreamMappedListTests.cs b/src/Hydrogen.Tests/Collections/StreamMappedListTests.cs[m
 [1mindex ed8db10..a8eba68 100644[m
-[1m--- a/src/Sphere10.Framework.Tests/Collections/StreamMappedListTests.cs[m
-[1m+++ b/src/Sphere10.Framework.Tests/Collections/StreamMappedListTests.cs[m
+[1m--- a/src/Hydrogen.Tests/Collections/StreamMappedListTests.cs[m
+[1m+++ b/src/Hydrogen.Tests/Collections/StreamMappedListTests.cs[m
 [36m@@ -12,17 +12,12 @@[m
  //-----------------------------------------------------------------------[m
  [m
@@ -155,13 +155,13 @@ Date:   Fri Mar 12 17:13:58 2021 +1300
  using NUnit.Framework;[m
  using System.IO;[m
 [31m-using NUnit.Framework.Constraints;[m
-[31m-using Sphere10.Framework;[m
- using Sphere10.Framework.Collections.StreamMapped;[m
-[31m-using Sphere10.Framework.NUnit;[m
+[31m-using Hydrogen;[m
+ using Hydrogen.Collections.StreamMapped;[m
+[31m-using Hydrogen.NUnit;[m
  [m
- namespace Sphere10.Framework.Tests {[m
+ namespace Hydrogen.Tests {[m
  [m
-[36m@@ -33,7 +28,7 @@[m [mnamespace Sphere10.Framework.Tests {[m
+[36m@@ -33,7 +28,7 @@[m [mnamespace Hydrogen.Tests {[m
  		[Test][m
  		public void V1_Add_1([Values(1, 111)] int pageSize) {[m
  			var stream = new MemoryStream();[m
@@ -170,7 +170,7 @@ Date:   Fri Mar 12 17:13:58 2021 +1300
  [m
  			list.Add("item1");[m
  			Assert.AreEqual(1, list.Count);[m
-[36m@@ -42,7 +37,7 @@[m [mnamespace Sphere10.Framework.Tests {[m
+[36m@@ -42,7 +37,7 @@[m [mnamespace Hydrogen.Tests {[m
  		[Test][m
  		public void V1_Update_1([Values(1, 111)] int pageSize) {[m
  			var stream = new MemoryStream();[m
@@ -179,7 +179,7 @@ Date:   Fri Mar 12 17:13:58 2021 +1300
  [m
  			list.Add("item1");[m
  			list.Update(0, "item2");[m
-[36m@@ -53,7 +48,7 @@[m [mnamespace Sphere10.Framework.Tests {[m
+[36m@@ -53,7 +48,7 @@[m [mnamespace Hydrogen.Tests {[m
  		[Test][m
  		public void V1_Add_2([Values(1, 2, 111)] int pageSize) {[m
  			var stream = new MemoryStream();[m
@@ -188,7 +188,7 @@ Date:   Fri Mar 12 17:13:58 2021 +1300
  [m
  			list.Add("item1");[m
  			list.Add("the second item");[m
-[36m@@ -63,7 +58,7 @@[m [mnamespace Sphere10.Framework.Tests {[m
+[36m@@ -63,7 +58,7 @@[m [mnamespace Hydrogen.Tests {[m
  		[Test][m
  		public void V1_Add_3([Values(1, 2, 111)] int pageSize) {[m
  			var stream = new MemoryStream();[m
@@ -197,7 +197,7 @@ Date:   Fri Mar 12 17:13:58 2021 +1300
  [m
  			list.Add("item1");[m
  			list.AddRange("the second item", "33333333333333333333333333");[m
-[36m@@ -73,7 +68,7 @@[m [mnamespace Sphere10.Framework.Tests {[m
+[36m@@ -73,7 +68,7 @@[m [mnamespace Hydrogen.Tests {[m
  		[Test][m
  		public void V1_Read_1([Values(1, 2)] int pageSize) {[m
  			var stream = new MemoryStream();[m
@@ -206,7 +206,7 @@ Date:   Fri Mar 12 17:13:58 2021 +1300
  [m
  			list.Add("item1");[m
  			Assert.AreEqual("item1", list[0]);[m
-[36m@@ -82,18 +77,30 @@[m [mnamespace Sphere10.Framework.Tests {[m
+[36m@@ -82,18 +77,30 @@[m [mnamespace Hydrogen.Tests {[m
  		[Test][m
  		public void V1_Read_2([Values(1, 2)] int pageSize) {[m
  			var stream = new MemoryStream();[m
@@ -239,7 +239,7 @@ Date:   Fri Mar 12 17:13:58 2021 +1300
  [m
  				var len0 = stream.Length;[m
  [m
-[36m@@ -151,11 +158,10 @@[m [mnamespace Sphere10.Framework.Tests {[m
+[36m@@ -151,11 +158,10 @@[m [mnamespace Hydrogen.Tests {[m
  		public void V1_Integration_FixedSize()[m
  		{[m
  			var serializer = new IntSerializer();[m
@@ -253,7 +253,7 @@ Date:   Fri Mar 12 17:13:58 2021 +1300
  			{[m
  				IncludeListHeader = false[m
  			};[m
-[36m@@ -163,12 +169,11 @@[m [mnamespace Sphere10.Framework.Tests {[m
+[36m@@ -163,12 +169,11 @@[m [mnamespace Hydrogen.Tests {[m
  			var expected = new List<int>();[m
  			for (var i = 0; i < 100; i++)[m
  			{[m
@@ -267,7 +267,7 @@ Date:   Fri Mar 12 17:13:58 2021 +1300
  				expected.AddRange(newItems);[m
  				Assert.AreEqual(expected, list);[m
  [m
-[36m@@ -186,17 +191,11 @@[m [mnamespace Sphere10.Framework.Tests {[m
+[36m@@ -186,17 +191,11 @@[m [mnamespace Hydrogen.Tests {[m
  					newItems = list.ReadRange(range.Start, range.End - range.Start + 1);[m
  					var expectedNewItems = expected.GetRange(range.Start, range.End - range.Start + 1);[m
  					range = RNG.RandomSegment(list.Count, newItems.Count());[m
@@ -286,7 +286,7 @@ Date:   Fri Mar 12 17:13:58 2021 +1300
  				}[m
  			}[m
  		}[m
-[36m@@ -204,12 +203,10 @@[m [mnamespace Sphere10.Framework.Tests {[m
+[36m@@ -204,12 +203,10 @@[m [mnamespace Hydrogen.Tests {[m
  		[Test][m
  		public void V1_Integration_FixedSizeWithHeader()[m
  		{[m
@@ -301,7 +301,7 @@ Date:   Fri Mar 12 17:13:58 2021 +1300
  			{[m
  				IncludeListHeader = true[m
  			};[m
-[36m@@ -237,19 +234,13 @@[m [mnamespace Sphere10.Framework.Tests {[m
+[36m@@ -237,19 +234,13 @@[m [mnamespace Hydrogen.Tests {[m
  					// shuffle a random amount[m
  					range = RNG.RandomRange(list.Count);[m
  					newItems = list.ReadRange(range.Start, range.End - range.Start + 1);[m
@@ -323,7 +323,7 @@ Date:   Fri Mar 12 17:13:58 2021 +1300
  				}[m
  			}[m
  		}[m
-[36m@@ -259,7 +250,7 @@[m [mnamespace Sphere10.Framework.Tests {[m
+[36m@@ -259,7 +250,7 @@[m [mnamespace Hydrogen.Tests {[m
  		public void V1_IncludeListHeaderThrowsAfterInit()[m
  		{[m
  			var stream = new MemoryStream();[m
@@ -332,16 +332,16 @@ Date:   Fri Mar 12 17:13:58 2021 +1300
  			{[m
  				IncludeListHeader = false[m
  			};[m
-[1mdiff --git a/src/Sphere10.Framework/Collections/StreamMapped/BoolSerializer.cs b/src/Sphere10.Framework/Collections/StreamMapped/BoolSerializer.cs[m
+[1mdiff --git a/src/Hydrogen/Collections/StreamMapped/BoolSerializer.cs b/src/Hydrogen/Collections/StreamMapped/BoolSerializer.cs[m
 [1mnew file mode 100644[m
 [1mindex 0000000..2fa2aca[m
 [1m--- /dev/null[m
-[1m+++ b/src/Sphere10.Framework/Collections/StreamMapped/BoolSerializer.cs[m
+[1m+++ b/src/Hydrogen/Collections/StreamMapped/BoolSerializer.cs[m
 [36m@@ -0,0 +1,35 @@[m
 [32m+[m[32m﻿using System.Collections.Generic;[m
 [32m+[m[32musing System.Linq;[m
 [32m+[m
-[32m+[m[32mnamespace Sphere10.Framework.Collections.StreamMapped[m
+[32m+[m[32mnamespace Hydrogen.Collections.StreamMapped[m
 [32m+[m[32m{[m
 [32m+[m
 [32m+[m[32m    public class BoolSerializer : IObjectSerializer<bool>[m
@@ -374,19 +374,19 @@ Date:   Fri Mar 12 17:13:58 2021 +1300
 [32m+[m
 [32m+[m[32m}[m
 \ No newline at end of file[m
-[1mdiff --git a/src/Sphere10.Framework/Collections/StreamMapped/FixedClusterMappedList.cs b/src/Sphere10.Framework/Collections/StreamMapped/FixedClusterMappedList.cs[m
+[1mdiff --git a/src/Hydrogen/Collections/StreamMapped/FixedClusterMappedList.cs b/src/Hydrogen/Collections/StreamMapped/FixedClusterMappedList.cs[m
 [1mindex 3a66ed9..bbb83ed 100644[m
-[1m--- a/src/Sphere10.Framework/Collections/StreamMapped/FixedClusterMappedList.cs[m
-[1m+++ b/src/Sphere10.Framework/Collections/StreamMapped/FixedClusterMappedList.cs[m
+[1m--- a/src/Hydrogen/Collections/StreamMapped/FixedClusterMappedList.cs[m
+[1m+++ b/src/Hydrogen/Collections/StreamMapped/FixedClusterMappedList.cs[m
 [36m@@ -3,6 +3,7 @@[m [musing System.Collections;[m
  using System.Collections.Generic;[m
  using System.IO;[m
  using System.Linq;[m
-[32m+[m[32musing Sphere10.Framework.Collections.StreamMapped;[m
+[32m+[m[32musing Hydrogen.Collections.StreamMapped;[m
  [m
- namespace Sphere10.Framework.Collections[m
+ namespace Hydrogen.Collections[m
  {[m
-[36m@@ -17,30 +18,31 @@[m [mnamespace Sphere10.Framework.Collections[m
+[36m@@ -17,30 +18,31 @@[m [mnamespace Hydrogen.Collections[m
          private readonly int _listingSectorSize;[m
  [m
          private readonly IObjectSerializer<T> _serializer;[m
@@ -429,7 +429,7 @@ Date:   Fri Mar 12 17:13:58 2021 +1300
          }[m
  [m
          public override int Count => _listingSector.Count;[m
-[36m@@ -82,8 +84,6 @@[m [mnamespace Sphere10.Framework.Collections[m
+[36m@@ -82,8 +84,6 @@[m [mnamespace Hydrogen.Collections[m
                      }[m
                  }[m
              }[m
@@ -438,7 +438,7 @@ Date:   Fri Mar 12 17:13:58 2021 +1300
          }[m
  [m
          public override IEnumerable<int> IndexOfRange(IEnumerable<T> items)[m
-[36m@@ -133,7 +133,7 @@[m [mnamespace Sphere10.Framework.Collections[m
+[36m@@ -133,7 +133,7 @@[m [mnamespace Hydrogen.Collections[m
  [m
              for (int i = 0; i < itemsArray.Length; i++)[m
              {[m
@@ -447,7 +447,7 @@ Date:   Fri Mar 12 17:13:58 2021 +1300
                  IEnumerable<int> numbers = RemoveDataFromClusters(listing.StartIndex);[m
                  removedClusters.AddRange(numbers);[m
                  byte[] data = _serializer.SerializeLE(itemsArray[i]);[m
-[36m@@ -147,8 +147,6 @@[m [mnamespace Sphere10.Framework.Collections[m
+[36m@@ -147,8 +147,6 @@[m [mnamespace Hydrogen.Collections[m
              {[m
                  _clusters[cluster.Number] = cluster;[m
              }[m
@@ -456,7 +456,7 @@ Date:   Fri Mar 12 17:13:58 2021 +1300
          }[m
  [m
          public override void InsertRange(int index, IEnumerable<T> items)[m
-[36m@@ -157,7 +155,7 @@[m [mnamespace Sphere10.Framework.Collections[m
+[36m@@ -157,7 +155,7 @@[m [mnamespace Hydrogen.Collections[m
              {[m
                  return;[m
              }[m
@@ -465,7 +465,7 @@ Date:   Fri Mar 12 17:13:58 2021 +1300
              List<byte[]> newData = new List<byte[]>();[m
  [m
              foreach (T item in items)[m
-[36m@@ -186,8 +184,6 @@[m [mnamespace Sphere10.Framework.Collections[m
+[36m@@ -186,8 +184,6 @@[m [mnamespace Hydrogen.Collections[m
                      }[m
                  }[m
              }[m
@@ -474,7 +474,7 @@ Date:   Fri Mar 12 17:13:58 2021 +1300
          }[m
  [m
          public override void RemoveRange(int index, int count)[m
-[36m@@ -196,14 +192,12 @@[m [mnamespace Sphere10.Framework.Collections[m
+[36m@@ -196,14 +192,12 @@[m [mnamespace Hydrogen.Collections[m
  [m
              for (int i = 0; i < count; i++)[m
              {[m
@@ -490,7 +490,7 @@ Date:   Fri Mar 12 17:13:58 2021 +1300
          }[m
  [m
          private byte[] ReadDataFromClusters(int startCluster, int size)[m
-[36m@@ -250,116 +244,28 @@[m [mnamespace Sphere10.Framework.Collections[m
+[36m@@ -250,116 +244,28 @@[m [mnamespace Hydrogen.Collections[m
              return numbers;[m
          }[m
  [m

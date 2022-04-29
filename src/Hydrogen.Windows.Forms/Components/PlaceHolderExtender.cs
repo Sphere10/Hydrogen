@@ -17,9 +17,9 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
-using Sphere10.Framework.Windows;
+using Hydrogen.Windows;
 
-namespace Sphere10.Framework.Windows.Forms {
+namespace Hydrogen.Windows.Forms {
     [ToolboxItemFilter("System.Windows.Forms")]
     [ProvideProperty("PlaceHolderText", typeof(Control))]
     [Category("Behavior")]

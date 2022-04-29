@@ -17,7 +17,7 @@ using Foundation;
 using System.Threading.Tasks;
 using System.Threading;
 
-namespace Sphere10.Framework.iOS
+namespace Hydrogen.iOS
 {
 	public static class AddressBookTool	{
 		public static async Task<bool> RequestAddressBookAuthorization() {

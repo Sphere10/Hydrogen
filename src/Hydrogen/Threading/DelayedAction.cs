@@ -13,7 +13,7 @@
 
 using System;
 
-namespace Sphere10.Framework.Threading {
+namespace Hydrogen.Threading {
 	public class DelayedAction {
 		private readonly object _threadLock;
 		private readonly Action _action;

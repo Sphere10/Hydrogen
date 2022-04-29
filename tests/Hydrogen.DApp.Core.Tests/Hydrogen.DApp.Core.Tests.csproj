@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>netstandard2.1</TargetFramework>
+		<IsPackable>false</IsPackable>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="nunit" Version="3.13.2" />
+		<PackageReference Include="NUnit3TestAdapter" Version="4.2.1" />
+		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.0.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\src\Hydrogen.CryptoEx\Hydrogen.CryptoEx.csproj" />
+		<ProjectReference Include="..\..\src\Hydrogen.NUnit\Hydrogen.NUnit.csproj" />
+		<ProjectReference Include="..\..\src\Hydrogen\Hydrogen.csproj" />
+		<ProjectReference Include="..\..\src\Hydrogen.DApp.Core\Hydrogen.DApp.Core.csproj" />
+	</ItemGroup>
+
+</Project>

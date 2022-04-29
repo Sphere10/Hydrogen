@@ -16,7 +16,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Diagnostics;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public class XmlFileDictionary<T1, T2> : DictionaryDecorator<T1, T2>, IPersistedDictionary<T1, T2> {
 		private readonly bool _useSimpleXmlSerialization;

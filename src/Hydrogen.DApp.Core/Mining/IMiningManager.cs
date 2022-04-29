@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using Sphere10.Framework;
+using Hydrogen;
 
-namespace Sphere10.Hydrogen.Core.Mining {
+namespace Hydrogen.DApp.Core.Mining {
 
 	public interface IMiningManager {
 

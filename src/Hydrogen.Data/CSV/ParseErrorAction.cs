@@ -11,7 +11,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-//	Sphere10.Framework.Data.Csv.ParseErrorAction
+//	Hydrogen.Data.Csv.ParseErrorAction
 //	Copyright (c) 2006 Sébastien Lorion
 //
 //	MIT license (http://en.wikipedia.org/wiki/MIT_License)
@@ -34,7 +34,7 @@
 
 using System;
 
-namespace Sphere10.Framework.Data.Csv
+namespace Hydrogen.Data.Csv
 {
 	/// <summary>
 	/// Specifies the action to take when a parsing error has occured.

@@ -17,10 +17,10 @@ using System.Linq;
 using System.Text;
 using System.Security.Principal;
 using System.Runtime.InteropServices;
-using Sphere10.Framework;
+using Hydrogen;
 
 
-namespace Sphere10.Framework.Windows.Security {
+namespace Hydrogen.Windows.Security {
 
     /// <summary>
     /// Encapsulates a Local User from some host machine. A local user can only be a member of local groups.

@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using Sphere10.Framework;
+using Hydrogen;
 using Terminal.Gui;
-using Key = Sphere10.Framework.Key;
+using Key = Hydrogen.Key;
 
-namespace Sphere10.Hydrogen.Node.UI {
+namespace Hydrogen.DApp.Node.UI {
 	public class ListDialog<T> : Dialog {
 		private const int LeftPadding = 2;
 		private const int TopPadding = 1;
@@ -45,7 +45,7 @@ namespace Sphere10.Hydrogen.Node.UI {
 					Cancelled = true;
 
 				if (args.KeyEvent.Key.HasFlag(Terminal.Gui.Key.Enter))
-					Application.RequestStop();
+					Terminal.Gui.Application.RequestStop();
 			};
 			list.SelectedItem = selected;
 			list.SetFocus();

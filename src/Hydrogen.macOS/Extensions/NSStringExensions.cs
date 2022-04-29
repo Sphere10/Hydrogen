@@ -14,7 +14,7 @@
 using System;
 using MonoMac.Foundation;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	public static class StringExtensions
 	{
 		public static NSString ToNSString(this string str)

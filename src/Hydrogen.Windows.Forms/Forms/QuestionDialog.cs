@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace Sphere10.Framework.Windows.Forms {
+namespace Hydrogen.Windows.Forms {
 	public partial class QuestionDialog : DialogEx {
 
 		public QuestionDialog() : this(SystemIconType.None, string.Empty, string.Empty, "OK") {

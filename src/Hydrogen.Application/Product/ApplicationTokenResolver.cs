@@ -1,7 +1,7 @@
 using System;
 using System.IO;
 
-namespace Sphere10.Framework.Application {
+namespace Hydrogen.Application {
 	public class ApplicationTokenResolver : ITokenResolver {
 
 		private IFuture<StandardProductInformationServices> _productInfoServices = Tools.Values.LazyLoad(() => new StandardProductInformationServices());

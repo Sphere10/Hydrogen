@@ -15,7 +15,7 @@ using System;
 using System.IO;
 using System.Runtime.CompilerServices;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public static class StreamExtensions {
 

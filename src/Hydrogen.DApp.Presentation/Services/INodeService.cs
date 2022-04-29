@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Sphere10.Hydrogen.Presentation.Models;
+using Hydrogen.DApp.Presentation.Models;
 
-namespace Sphere10.Hydrogen.Presentation.Services {
+namespace Hydrogen.DApp.Presentation.Services {
     /// <summary>
     /// Node service -- example data service
     /// </summary>

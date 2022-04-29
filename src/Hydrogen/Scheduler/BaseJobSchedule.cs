@@ -12,9 +12,9 @@
 //-----------------------------------------------------------------------
 
 using System;
-using Sphere10.Framework.Scheduler.Serializable;
+using Hydrogen;
 
-namespace Sphere10.Framework.Scheduler {
+namespace Hydrogen {
 
 	public abstract class BaseJobSchedule : IJobSchedule {
 		protected uint? TotalIterations { get; set; }

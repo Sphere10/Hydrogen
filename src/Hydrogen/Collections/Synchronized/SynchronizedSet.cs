@@ -14,7 +14,7 @@
 using System.Collections.Generic;
 using System.Threading;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public class SynchronizedSet<TItem, TSet> : SetDecorator<TItem, TSet>, ISynchronizedObject where TSet : ISet<TItem> {
 

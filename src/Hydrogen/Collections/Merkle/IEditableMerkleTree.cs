@@ -1,4 +1,4 @@
-﻿namespace Sphere10.Framework {
+﻿namespace Hydrogen {
 
 	public interface IEditableMerkleTree : IMerkleTree {
 		IExtendedList<byte[]> Leafs { get; }

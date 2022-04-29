@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace Sphere10.Framework.Communications.RPC {
+namespace Hydrogen.Communications.RPC {
  
     [JsonObject(MemberSerialization.OptIn)]
     public class JsonRequest {

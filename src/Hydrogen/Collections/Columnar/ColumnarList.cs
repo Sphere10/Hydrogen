@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public class ColumnarList : RangedListBase<object[]> {
 		private IExtendedList<object>[] _columnStore;

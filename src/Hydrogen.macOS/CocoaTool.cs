@@ -20,7 +20,7 @@ using System.Collections;
 using System.Diagnostics;
 
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public static class CocoaTool {
 

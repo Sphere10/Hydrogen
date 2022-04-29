@@ -15,7 +15,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Sphere10.Framework.Windows.LevelDB
+namespace Hydrogen.Windows.LevelDB
 {
     /// <summary>
     /// Options that control read operations.

@@ -1,11 +1,11 @@
-﻿using Sphere10.Framework;
-using Sphere10.Framework.Data;
+﻿using Hydrogen;
+using Hydrogen.Data;
 using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Sphere10.Framework.Data {
+namespace Hydrogen.Data {
 
     public interface IDatabaseManager {
 

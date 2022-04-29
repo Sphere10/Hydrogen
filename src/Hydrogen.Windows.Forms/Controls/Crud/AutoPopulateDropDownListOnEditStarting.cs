@@ -20,7 +20,7 @@ using System.Windows.Forms;
 using SourceGrid;
 using SourceGrid.Cells.Editors;
 
-namespace Sphere10.Framework.Windows.Forms {
+namespace Hydrogen.Windows.Forms {
 	internal class AutoPopulateDropDownListOnEditStarting : SourceGrid.Cells.Controllers.ControllerBase {
 		private readonly DropDownList _dropDownList;
 		private readonly ICrudGridColumn _columnBinding;

@@ -17,11 +17,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Sphere10.Framework;
-using Sphere10.Framework.Application;
-using Sphere10.Framework.Windows;
+using Hydrogen;
+using Hydrogen.Application;
+using Hydrogen.Windows;
 
-namespace Sphere10.Framework.Windows.Forms {
+namespace Hydrogen.Windows.Forms {
     public class ModuleConfiguration : ModuleConfigurationBase {
         public override void RegisterComponents(ComponentRegistry registry) {
 
@@ -120,13 +120,13 @@ namespace Sphere10.Framework.Windows.Forms {
 // To override use below as guide:
 //<ComponentRegistry>
 //    <!-- Assemblies to pre-load -->
-//    <Assembly dll = "Sphere10.Framework.Application.dll" />
-//    < Assembly dll="Sphere10.Framework.Windows.Forms.dll" />
-//    <Assembly dll = "Sphere10.Framework.Windows.Forms.dll" />
-//    < Assembly dll="Sphere10.Framework.Windows.Forms.Sqlite.dll" />
+//    <Assembly dll = "Hydrogen.Application.dll" />
+//    < Assembly dll="Hydrogen.Windows.Forms.dll" />
+//    <Assembly dll = "Hydrogen.Windows.Forms.dll" />
+//    < Assembly dll="Hydrogen.Windows.Forms.Sqlite.dll" />
 //    <Assembly dll = "BlockchainSQL.DataAccess.NHibernate" />
 
-//    <!--Sphere 10 Framework Components -->
+//    <!--Hydrogen Framework Components -->
 //    <Component interface="IBackgroundLicenseVerifier"   implementation="StandardBackgroundLicenseVerifier" />
 //    <Component interface="ISettingsServices"            implementation="StandardUserSettingsProvider"     activation="Singleton" name="UserSettings" />
 //    <Component interface="ISettingsServices"            implementation="StandardSystemSettingsProvider"   activation="Singleton" name="SystemSettings" />
@@ -156,7 +156,7 @@ namespace Sphere10.Framework.Windows.Forms {
 //    <Component interface="IBackgroundLicenseVerifier"   implementation="BITSBackgroundLicenseVerifier" />
 //    <Component interface="IAutoRunServices"             implementation="StartupFolderAutoRunServicesProvider" />
 //    <ComponentSet interface="IControlStateChangeManager">
-//      <Component implementation = "CommonControlsControlStateChangeManager"   name="Sphere10.Framework.Windows.Forms.ApplicationControl" />
+//      <Component implementation = "CommonControlsControlStateChangeManager"   name="Hydrogen.Windows.Forms.ApplicationControl" />
 //      <Component implementation = "CommonControlsControlStateChangeManager"   name="System.Windows.Forms.NumericUpDown" />
 //      <Component implementation = "CommonControlsControlStateChangeManager"   name="System.Windows.Forms.TextBox" />
 //      <Component implementation = "CommonControlsControlStateChangeManager"   name="System.Windows.Forms.ComboBox" />

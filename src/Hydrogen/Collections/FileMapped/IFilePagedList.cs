@@ -1,4 +1,4 @@
-﻿namespace Sphere10.Framework {
+﻿namespace Hydrogen {
 	public interface IFilePagedList<TItem> : IMemoryPagedList<TItem>  {
         string Path { get; }
 

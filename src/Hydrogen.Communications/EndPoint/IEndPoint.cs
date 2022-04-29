@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Linq;
 
-namespace Sphere10.Framework.Communications.RPC {
+namespace Hydrogen.Communications.RPC {
 	//Declare a communication endpoint for simmple messaging
 	public interface IEndPoint {
 		public string			GetDescription();

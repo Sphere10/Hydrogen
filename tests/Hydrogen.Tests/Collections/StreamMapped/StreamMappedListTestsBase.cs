@@ -2,7 +2,7 @@
 using System.IO;
 using NUnit.Framework;
 
-namespace Sphere10.Framework.Tests {
+namespace Hydrogen.Tests {
 	public abstract class StreamMappedListTestsBase : StreamPersistedCollectionTestsBase {
 
 		[Test]

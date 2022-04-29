@@ -1,6 +1,6 @@
 ﻿using System.IO;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	public abstract class FilePageBase<TItem> : MemoryPageBase<TItem>, IFilePage<TItem> {
 
 		protected FilePageBase(Stream stream, IItemSizer<TItem> sizer, int pageNumber, int pageSize, IExtendedList<TItem> memoryStore)

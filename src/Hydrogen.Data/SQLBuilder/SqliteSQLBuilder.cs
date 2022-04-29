@@ -15,9 +15,9 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using Sphere10.Framework;
+using Hydrogen;
 
-namespace Sphere10.Framework.Data {
+namespace Hydrogen.Data {
 
 	public class SqliteSQLBuilder : SQLBuilderBase {
 		private bool _hasCreatedTempTable = false;

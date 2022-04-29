@@ -17,9 +17,9 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Sphere10.Framework;
+using Hydrogen;
 
-namespace Sphere10.Framework.Windows {
+namespace Hydrogen.Windows {
     public class EventLogLogger : ILogger {
         private System.Diagnostics.EventLog _eventLog;
         private readonly string _source;

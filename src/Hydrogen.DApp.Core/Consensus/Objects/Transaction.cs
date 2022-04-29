@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Sphere10.Hydrogen.Core.Consensus {
+namespace Hydrogen.DApp.Core.Consensus {
 
 	/// <summary>
 	/// A Hydrogen Operation references a rule (method), arguments (method arguments), entities (list of entities it

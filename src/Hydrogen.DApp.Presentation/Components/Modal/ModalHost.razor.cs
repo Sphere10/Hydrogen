@@ -2,9 +2,9 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
-using Sphere10.Framework;
+using Hydrogen;
 
-namespace Sphere10.Hydrogen.Presentation.Components.Modal
+namespace Hydrogen.DApp.Presentation.Components.Modal
 {
 
     /// <summary>

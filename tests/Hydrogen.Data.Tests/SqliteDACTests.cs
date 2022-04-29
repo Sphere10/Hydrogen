@@ -19,11 +19,11 @@ using System.Text;
 using NUnit.Framework;
 using System.IO;
 using System.Transactions;
-using Sphere10.Framework;
-using Sphere10.Framework.Data;
-using Sphere10.Framework;
+using Hydrogen;
+using Hydrogen.Data;
+using Hydrogen;
 
-namespace Sphere10.Framework.UnitTests {
+namespace Hydrogen.Data.Tests {
 
     [TestFixture]
     public class SqliteDACTests {
@@ -33,7 +33,7 @@ namespace Sphere10.Framework.UnitTests {
         [SetUp]
         public void CreateDatabase() {
             DBFile = Path.GetTempFileName();
-            File.WriteAllBytes(DBFile, Sphere10.Framework.UnitTests.Resource.TestSqliteDatabase);
+            File.WriteAllBytes(DBFile, Resource.TestSqliteDatabase);
         }
 
         [Test]

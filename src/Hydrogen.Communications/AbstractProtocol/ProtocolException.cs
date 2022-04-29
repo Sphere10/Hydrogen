@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Sphere10.Framework.Communications {
+namespace Hydrogen.Communications {
     public class ProtocolException : SoftwareException {
 		public ProtocolException(string errorMessage, Exception exception = null)
 			: base(errorMessage, exception) {

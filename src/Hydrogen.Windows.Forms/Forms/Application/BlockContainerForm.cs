@@ -22,11 +22,11 @@ using System.IO;
 using System.Reflection;
 using System.Threading;
 using System.Runtime.InteropServices;
-using Sphere10.Framework;
-using Sphere10.Framework.Windows.Forms;
+using Hydrogen;
+using Hydrogen.Windows.Forms;
 using System.Linq;
 
-namespace Sphere10.Framework.Windows.Forms {
+namespace Hydrogen.Windows.Forms {
 
 #warning Add icons
 #warning Add menus
@@ -460,7 +460,7 @@ namespace Sphere10.Framework.Windows.Forms {
                                 if (linkItem.ShowOnToolStrip) {
                                     ToolStripButton button = new ToolStripButton(
                                         string.Empty,
-                                        item.Image16x16 != null ? item.Image16x16 : Sphere10.Framework.Windows.Forms.Resources.DefaultToolStripImage,
+                                        item.Image16x16 != null ? item.Image16x16 : Hydrogen.Windows.Forms.Resources.DefaultToolStripImage,
                                         ToolStripItemActivate
                                      );
                                     button.ToolTipText = linkItem.Text;
@@ -516,7 +516,7 @@ namespace Sphere10.Framework.Windows.Forms {
 
             ToolStripItem contextHelpButton = ToolStrip.Items.Add(
                 string.Empty,
-                Sphere10.Framework.Windows.Forms.Resources.Help_16x16x32,
+                Hydrogen.Windows.Forms.Resources.Help_16x16x32,
                 ContextHelp_Click
             );
             contextHelpButton.ToolTipText = "Get help for currently opened screen";

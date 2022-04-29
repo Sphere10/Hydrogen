@@ -1,11 +1,11 @@
-﻿using Sphere10.Framework;
+﻿using Hydrogen;
 using System;
 using System.IO;
 using System.Linq;
 using System.Reflection.PortableExecutable;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using Sphere10.Framework.Communications;
+using Hydrogen.Communications;
 using System.Threading;
 using System.Text;
 

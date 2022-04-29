@@ -16,9 +16,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Sphere10.Framework.Data;
+using Hydrogen.Data;
 
-namespace Sphere10.Framework.UnitTests.DAC {
+namespace Hydrogen.Data.Tests {
     public static class TestTables {
 
 

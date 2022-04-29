@@ -1,4 +1,4 @@
-﻿using Sphere10.Framework;
+﻿using Hydrogen;
 using System;
 using System.IO;
 using System.IO.Pipes;
@@ -8,19 +8,19 @@ using System.Reflection;
 using System.Security.Policy;
 using System.Threading;
 using System.Threading.Tasks;
-using Sphere10.Hydrogen.Node;
-using Sphere10.Framework.Application;
-using Sphere10.Hydrogen.Node.UI;
-using Sphere10.Hydrogen.Node.RPC;
-using Sphere10.Hydrogen.Core.Maths;
-using Sphere10.Hydrogen.Core.Mining;
-using Sphere10.Hydrogen.Core.Consensus.Serializers;
-using Sphere10.Hydrogen.Node.UI.Components;
+using Hydrogen.DApp.Node;
+using Hydrogen.Application;
+using Hydrogen.DApp.Node.UI;
+using Hydrogen.DApp.Node.RPC;
+using Hydrogen.DApp.Core.Maths;
+using Hydrogen.DApp.Core.Mining;
+using Hydrogen.DApp.Core.Consensus.Serializers;
+using Hydrogen.DApp.Node.UI.Components;
 
-using Sphere10.Framework.CryptoEx;
-using Sphere10.Hydrogen.Core.Runtime;
+using Hydrogen.CryptoEx;
+using Hydrogen.DApp.Core.Runtime;
 
-namespace Sphere10.Hydrogen.Node {
+namespace Hydrogen.DApp.Node {
 
 	class Program {
 
@@ -65,7 +65,7 @@ namespace Sphere10.Hydrogen.Node {
 					Console.WriteLine("Invalid format for host read/write port");
 					return;
 				}
-				//hostedNode = new Sphere10.Hydrogen.Core.Runtime.Node()
+				//hostedNode = new Hydrogen.DApp.Core.Runtime.Node()
 				//hostedNodeRunner = hostedNode.Run(stopNodeTokenSource.Token);
 			}
 

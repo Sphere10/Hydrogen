@@ -1,9 +1,9 @@
 ﻿using System.IO;
 using System.Linq;
 using System.Threading;
-using Sphere10.Framework;
+using Hydrogen;
 
-namespace Sphere10.Hydrogen.Core.Storage {
+namespace Hydrogen.DApp.Core.Storage {
 
     public abstract class KeyValueStoreBase<T> : SynchronizedResource, IKeyValueStore<T> {
 

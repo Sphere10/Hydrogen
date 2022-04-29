@@ -1,4 +1,4 @@
-﻿namespace Sphere10.Framework.Scheduler.Serializable {
+﻿namespace Hydrogen {
 	public class XmlSchedulerSerializer : ISchedulerSerializer {
 
 		public XmlSchedulerSerializer(string filepath) {

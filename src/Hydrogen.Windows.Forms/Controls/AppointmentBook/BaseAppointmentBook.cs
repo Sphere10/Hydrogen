@@ -21,10 +21,10 @@ using System.Text;
 using System.Windows.Forms;
 using DevAge.Drawing;
 using DevAge.Drawing.VisualElements;
-using Sphere10.Framework;
+using Hydrogen;
 
 
-namespace Sphere10.Framework.Windows.Forms.AppointmentBook {
+namespace Hydrogen.Windows.Forms.AppointmentBook {
 
 	[ToolboxItem(false)]
 	public partial class BaseAppointmentBook : UserControl {

@@ -13,7 +13,7 @@
 
 using System.Collections.Generic;
 
-namespace Sphere10.Framework.Misc {
+namespace Hydrogen.Misc {
 	/// <summary>
 	/// Compares two sequences.
 	/// </summary>

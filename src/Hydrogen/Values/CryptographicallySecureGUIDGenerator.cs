@@ -15,7 +15,7 @@ using System;
 
 // ReSharper disable CheckNamespace
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public class CryptographicallySecureGUIDGenerator {
 

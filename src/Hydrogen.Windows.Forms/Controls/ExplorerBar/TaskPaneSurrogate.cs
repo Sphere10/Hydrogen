@@ -24,9 +24,9 @@ using System.Runtime.Serialization;
 using System.ComponentModel;
 
 using System.Reflection;
-using Sphere10.Framework;
+using Hydrogen;
 
-namespace Sphere10.Framework.Windows.Forms {
+namespace Hydrogen.Windows.Forms {
 
 	/// <summary>
 	/// A class that is serialized instead of a TaskPane (as 

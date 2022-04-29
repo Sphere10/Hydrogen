@@ -3,9 +3,9 @@ using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
-using Sphere10.Hydrogen.Presentation.Models;
+using Hydrogen.DApp.Presentation.Models;
 
-namespace Sphere10.Hydrogen.Presentation.Components.Tables {
+namespace Hydrogen.DApp.Presentation.Components.Tables {
 
     public class VirtualPagedTable<TItem> : ComponentWithViewModel<VirtualPagedTableViewModel<TItem>> {
         /// <summary>

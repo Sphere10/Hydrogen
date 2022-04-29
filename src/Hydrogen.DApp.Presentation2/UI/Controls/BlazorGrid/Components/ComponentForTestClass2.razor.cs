@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
-using Sphere10.Hydrogen.Presentation2.UI.Controls.BlazorGrid.Classes;
+using Hydrogen.DApp.Presentation2.UI.Controls.BlazorGrid.Classes;
 
-namespace Sphere10.Hydrogen.Presentation2.UI.Controls.BlazorGrid.Components {
+namespace Hydrogen.DApp.Presentation2.UI.Controls.BlazorGrid.Components {
 	public partial class ComponentForTestClass2 : IGridComponent<TestClass2>
 	{
 		public ComponentForTestClass2() { }

@@ -25,10 +25,10 @@ using System;
 using System.ComponentModel;
 using System.Reflection;
 using Foundation;
-using Sphere10.Framework;
-using Sphere10.Framework.Application;
+using Hydrogen;
+using Hydrogen.Application;
 
-namespace Sphere10.Framework.iOS {
+namespace Hydrogen.iOS {
 
 
 	public abstract class UserDefaultObject : SettingsObject {

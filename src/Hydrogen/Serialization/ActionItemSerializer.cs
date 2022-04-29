@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public class ActionItemSerializer<T> : ActionItemSizer<T>, IItemSerializer<T> {
 		private readonly Func<T, EndianBinaryWriter, int> _serializer;

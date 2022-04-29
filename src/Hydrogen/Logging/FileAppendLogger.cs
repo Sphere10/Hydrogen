@@ -13,7 +13,7 @@
 
 using System.IO;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	public class FileAppendLogger : TextWriterLogger {
         public FileAppendLogger(string file) : this(file, false) {
         }

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Org.BouncyCastle.Math;
 
-namespace Sphere10.Framework.CryptoEx.EC.MuSigBuilder;
+namespace Hydrogen.CryptoEx.EC.MuSigBuilder;
 
 public class MuSigBuilder {
 	private readonly byte[] _sessionId;

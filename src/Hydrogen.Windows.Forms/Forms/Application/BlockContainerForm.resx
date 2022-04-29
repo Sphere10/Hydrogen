@@ -86,7 +86,7 @@
     <value>_applicationBar</value>
   </data>
   <data name="&gt;&gt;_applicationBar.Type" xml:space="preserve">
-    <value>Sphere10.Framework.Windows.Forms.ApplicationBar, Sphere10.Framework.Windows.Forms, Culture=neutral, PublicKeyToken=null</value>
+    <value>Hydrogen.Windows.Forms.ApplicationBar, Hydrogen.Windows.Forms, Culture=neutral, PublicKeyToken=null</value>
   </data>
   <data name="&gt;&gt;_applicationBar.Parent" xml:space="preserve">
     <value>_splitContainer.Panel1</value>
@@ -242,6 +242,6 @@
     <value>BlockMainForm</value>
   </data>
   <data name="&gt;&gt;$this.Type" xml:space="preserve">
-    <value>Sphere10.Framework.Windows.Forms.MainForm, Sphere10.Framework.Windows.Forms, Culture=neutral, PublicKeyToken=null</value>
+    <value>Hydrogen.Windows.Forms.MainForm, Hydrogen.Windows.Forms, Culture=neutral, PublicKeyToken=null</value>
   </data>
 </root>

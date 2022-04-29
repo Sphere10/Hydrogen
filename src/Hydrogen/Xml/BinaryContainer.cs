@@ -25,7 +25,7 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Reflection;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	/// <summary>
 	/// Container for binary data.
 	/// This class can be used to encapsulate binary data for serialization or transportation purposes.

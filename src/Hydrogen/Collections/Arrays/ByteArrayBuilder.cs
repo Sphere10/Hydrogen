@@ -13,7 +13,7 @@
 
 using System;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	public class ByteArrayBuilder {
         private const int DefaultCapacity = 4096;
         private readonly int _initialCapacity;

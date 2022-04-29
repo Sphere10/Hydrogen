@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	/// <summary>
 	/// A semaphore that uses <see cref="Monitor"/> locking under the hood. 
 	/// </summary>

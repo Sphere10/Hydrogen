@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Sphere10.Hydrogen.Presentation.WidgetGallery.Widgets.Services {
+namespace Hydrogen.DApp.Presentation.WidgetGallery.Widgets.Services {
 
     public class RandomNumberService : IRandomNumberService {
         public int GetRandomNumber() => Random.Next();

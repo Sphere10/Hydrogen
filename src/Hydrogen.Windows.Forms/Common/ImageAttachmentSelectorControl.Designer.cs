@@ -11,7 +11,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace Sphere10.Framework.Windows.Forms {
+namespace Hydrogen.Windows.Forms {
     partial class ImageAttachmentSelectorControl {
         /// <summary> 
         /// Required designer variable.
@@ -37,7 +37,7 @@ namespace Sphere10.Framework.Windows.Forms {
         /// </summary>
         private void InitializeComponent() {
             this._pictureBox = new System.Windows.Forms.PictureBox();
-            this._fileSelectorControl = new Sphere10.Framework.Windows.Forms.PathSelectorControl();
+            this._fileSelectorControl = new Hydrogen.Windows.Forms.PathSelectorControl();
             this._noneRadioButton = new System.Windows.Forms.RadioButton();
             this._clipboardRadioButton = new System.Windows.Forms.RadioButton();
             this._filenameRadioButton = new System.Windows.Forms.RadioButton();

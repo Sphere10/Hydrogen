@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
 
-namespace Sphere10.Hydrogen.Presentation.Models {
+namespace Hydrogen.DApp.Presentation.Models {
     public record ItemsResponse<TItem>(IEnumerable<TItem> Items, int TotalItems);
 }

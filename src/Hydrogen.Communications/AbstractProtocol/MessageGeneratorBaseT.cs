@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Sphere10.Framework.Communications {
+namespace Hydrogen.Communications {
 	public abstract class MessageGeneratorBase<TMessage> : MessageGeneratorBase, IMessageGenerator<TMessage> {
 
 		TMessage IMessageGenerator<TMessage>.Execute(ProtocolOrchestrator orchestrator)

@@ -1,7 +1,7 @@
-﻿using Sphere10.Framework;
-using Sphere10.Framework.Communications.RPC;
+﻿using Hydrogen;
+using Hydrogen.Communications.RPC;
 
-namespace Sphere10.Hydrogen.Node.RPC {
+namespace Hydrogen.DApp.Node.RPC {
 	//Generic json rpc server singleton for spot calls (Pulse mode)
 	public class RpcServer {
 		static private JsonRpcServer _instance = null;

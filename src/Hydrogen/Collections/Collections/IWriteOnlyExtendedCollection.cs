@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public interface IWriteOnlyExtendedCollection<in T> {
 		void Add(T item);

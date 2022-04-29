@@ -4,12 +4,10 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 
-using Sphere10.Framework;
-using Sphere10.Framework.Scheduler;
 using System.IO.Pipes;
 using System.Threading.Tasks;
 
-namespace Sphere10.Framework.Communications {
+namespace Hydrogen.Communications {
 
     public abstract class AnonymousPipe : ProtocolChannel, IDisposable {
         public event EventHandlerEx<string> ReceivedString;

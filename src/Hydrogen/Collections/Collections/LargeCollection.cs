@@ -14,7 +14,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public class LargeCollection<TItem> : CollectionDecorator<TItem>, IDisposable {
 		public event EventHandlerEx<object, IMemoryPage<TItem>> PageLoading { add => InternalPagedList.PageLoading += value; remove => InternalPagedList.PageLoading -= value; }

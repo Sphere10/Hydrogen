@@ -15,10 +15,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Timers;
-using Sphere10.Framework.Scheduler.Serializable;
 using Timer = System.Timers.Timer;
 
-namespace Sphere10.Framework.Scheduler {
+namespace Hydrogen {
 
 	public class Scheduler<TJob, TJobSchedule> : Disposable where TJob : class, IJob where TJobSchedule : class, IJobSchedule, IComparable<TJobSchedule> {
 		private readonly object _threadLock;    // only used for start, stop & interrupt method

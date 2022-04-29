@@ -14,7 +14,7 @@
 using System.Collections.Generic;
 using System.Threading;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	/// <summary>
 	/// This class uses a read writer lock to provide data synchronization, but the design of the IList interface itself can lead to

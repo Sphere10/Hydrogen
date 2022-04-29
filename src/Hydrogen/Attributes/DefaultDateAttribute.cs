@@ -14,7 +14,7 @@
 using System;
 using System.ComponentModel;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	public class DefaultDateAttribute : DefaultValueAttribute {
 
 		public DefaultDateAttribute(string dateTimeString) : base(DateTime.Parse(dateTimeString)) {

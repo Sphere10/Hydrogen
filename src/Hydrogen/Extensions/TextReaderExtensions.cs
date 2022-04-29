@@ -3,7 +3,7 @@ using System.IO;
 using System.Linq;
 
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	public static class TextReaderExtensions {
 		public static char? PeekChar(this TextReader reader) {
 			var nextValue = reader.Peek();

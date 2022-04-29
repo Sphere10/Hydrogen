@@ -2,7 +2,7 @@
 using Org.BouncyCastle.Math;
 using Org.BouncyCastle.Utilities.Encoders;
 
-namespace Sphere10.Framework.CryptoEx {
+namespace Hydrogen.CryptoEx {
 
 	public class KeyTypeOrderAttribute : Attribute {
 		public KeyTypeOrderAttribute(string bigIntHexValue) {

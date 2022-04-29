@@ -1,4 +1,4 @@
-﻿namespace Sphere10.Hydrogen.Core.Blockchain {
+﻿namespace Hydrogen.DApp.Core.Blockchain {
 	public enum ApplyBlockResult {
 		/// <summary>
 		/// Block was appended to the blockchain successfully

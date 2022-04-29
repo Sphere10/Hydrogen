@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 
-namespace Sphere10.Framework;
+namespace Hydrogen;
 
 public class StaticSizeSerializerAdapter<TItem> : StaticSizeItemSerializerBase<TItem> {
 	private readonly IItemSerializer<TItem> _dynamicSerializer;

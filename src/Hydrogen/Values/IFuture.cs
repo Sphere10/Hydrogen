@@ -1,4 +1,4 @@
-﻿namespace Sphere10.Framework {
+﻿namespace Hydrogen {
 
 	/// <summary>
 	/// Class representing a value which will be available some time in the future.

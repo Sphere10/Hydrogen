@@ -4,7 +4,7 @@
 //using System.Linq;
 //using System.Text;
 
-//namespace Sphere10.Framework {
+//namespace Hydrogen {
 
 //	/// <summary>
 //	/// A bloom filter base implementation that uses the bytes of a cryptographic hash of an object to determine the bloom mask for that object.

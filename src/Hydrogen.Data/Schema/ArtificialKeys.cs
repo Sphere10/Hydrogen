@@ -17,7 +17,7 @@ using System.Linq;
 using System.Text;
 using System.Xml.Serialization;
 
-namespace Sphere10.Framework.Data {
+namespace Hydrogen.Data {
 
 	//<ArtificialKeys>
 	//    <Table name = "Table1">

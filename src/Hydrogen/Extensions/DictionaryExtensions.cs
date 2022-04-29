@@ -15,9 +15,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Diagnostics;
-using Sphere10.Framework.Collections;
+using Hydrogen.Collections;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	public static class IDictionaryExtensions {
 
 		public static bool TrySearchKeyByValue<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TValue value, out TKey key, IEqualityComparer<TValue> comparer = null) {

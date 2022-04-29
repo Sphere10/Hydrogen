@@ -13,7 +13,7 @@
 
 using System;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	public class SynchronizedHeap<T> : SynchronizedCollection<T>, IHeap<T> where T : IComparable<T> {
 		private readonly IHeap<T> _internalHeap;
 

@@ -5,7 +5,7 @@ using Org.BouncyCastle.Crypto.Signers;
 using Org.BouncyCastle.Math;
 using Org.BouncyCastle.Utilities;
 
-namespace Sphere10.Framework.CryptoEx.EC;
+namespace Hydrogen.CryptoEx.EC;
 
 public class CustomEcDsaSigner : ECDsaSigner {
 	private BigInteger HalfCurveOrder => Order.ShiftRight(1);

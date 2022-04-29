@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	public interface IPage<TItem> : IEnumerable<TItem> {
 		int Number { get; set; }
 		int StartIndex { get; set; }

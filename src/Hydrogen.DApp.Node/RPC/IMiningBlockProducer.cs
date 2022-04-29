@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using Sphere10.Framework;
-using Sphere10.Hydrogen.Core.Consensus;
-using Sphere10.Hydrogen.Node.RPC;
+using Hydrogen;
+using Hydrogen.DApp.Core.Consensus;
+using Hydrogen.DApp.Node.RPC;
 
-namespace Sphere10.Hydrogen.Node.RPC {
+namespace Hydrogen.DApp.Node.RPC {
 
 	public interface IMiningBlockProducer {
 		public event EventHandlerEx<SynchronizedList<BlockChainTransaction>> OnBlockAccepted;

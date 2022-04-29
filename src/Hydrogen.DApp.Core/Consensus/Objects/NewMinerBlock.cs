@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Sphere10.Hydrogen.Core.Consensus {
+namespace Hydrogen.DApp.Core.Consensus {
 
 	[Serializable]
 	public class NewMinerBlock {

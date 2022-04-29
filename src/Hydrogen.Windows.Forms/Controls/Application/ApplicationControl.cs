@@ -18,10 +18,10 @@ using System.ComponentModel;
 
 using System.Windows.Forms;
 using System.Globalization;
-using Sphere10.Framework;
-using Sphere10.Framework.Application;
+using Hydrogen;
+using Hydrogen.Application;
 
-namespace Sphere10.Framework.Windows.Forms {
+namespace Hydrogen.Windows.Forms {
 
 	/// <summary>
 	/// A base class for all controls in the application. Provides access to application services and 

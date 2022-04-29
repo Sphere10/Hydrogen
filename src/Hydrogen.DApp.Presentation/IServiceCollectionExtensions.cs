@@ -4,7 +4,7 @@ using System.Reflection;
 using System.Xml;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Sphere10.Hydrogen.Presentation {
+namespace Hydrogen.DApp.Presentation {
     /// <summary>
     /// Service collection extension methods
     /// </summary>

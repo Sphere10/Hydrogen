@@ -18,7 +18,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
-namespace Sphere10.Framework.Windows.Forms.Components {
+namespace Hydrogen.Windows.Forms.Components {
 	//public partial class FormApplicationIconProvider : Component, IApplicationIconProvider {
 	//    public FormApplicationIconProvider() {
 	//        InitializeComponent();

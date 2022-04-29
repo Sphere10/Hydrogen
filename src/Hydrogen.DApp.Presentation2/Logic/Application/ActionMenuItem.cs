@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Sphere10.Hydrogen.Presentation2.Logic {
+namespace Hydrogen.DApp.Presentation2.Logic {
 
 	public class ActionMenuItem : ApplicationMenuItem {
 		

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	internal abstract class StreamPageBase<TItem> : PageBase<TItem> {
 		protected StreamPageBase(StreamPagedList<TItem> parent) {

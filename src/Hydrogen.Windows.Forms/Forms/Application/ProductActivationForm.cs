@@ -19,7 +19,7 @@ using System.Text;
 using System.Windows.Forms;
 using System.Reflection;
 
-namespace Sphere10.Framework.Windows.Forms {
+namespace Hydrogen.Windows.Forms {
 
     public sealed partial class ProductActivationForm : ApplicationForm {
         private bool _cancelled;

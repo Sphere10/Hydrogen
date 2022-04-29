@@ -11,7 +11,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace Sphere10.Framework.Windows.Forms {
+namespace Hydrogen.Windows.Forms {
 	partial class DialogEx {
 		/// <summary>
 		/// Required designer variable.
@@ -42,7 +42,7 @@ namespace Sphere10.Framework.Windows.Forms {
             this.button4 = new System.Windows.Forms.Button();
             this._textLabel = new System.Windows.Forms.Label();
             this._textLabelPanel = new System.Windows.Forms.Panel();
-            this._pictureBoxEx = new Sphere10.Framework.Windows.Forms.PictureBoxEx();
+            this._pictureBoxEx = new Hydrogen.Windows.Forms.PictureBoxEx();
             this._alwaysCheckBox = new System.Windows.Forms.CheckBox();
             this._textLabelPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this._pictureBoxEx)).BeginInit();
@@ -125,7 +125,7 @@ namespace Sphere10.Framework.Windows.Forms {
             this._pictureBoxEx.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this._pictureBoxEx.Name = "_pictureBoxEx";
             this._pictureBoxEx.Size = new System.Drawing.Size(81, 70);
-            this._pictureBoxEx.SystemIcon = Sphere10.Framework.Windows.Forms.SystemIconType.None;
+            this._pictureBoxEx.SystemIcon = Hydrogen.Windows.Forms.SystemIconType.None;
             this._pictureBoxEx.TabIndex = 7;
             this._pictureBoxEx.TabStop = false;
             // 

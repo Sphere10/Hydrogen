@@ -18,7 +18,7 @@ using System.Data;
 using System.Linq;
 using System.Text;
 
-namespace Sphere10.Framework.Data {
+namespace Hydrogen.Data {
 
     // Need to change implementation
     // - InternalStatements gets appended on statement finish/tostring/iteration 

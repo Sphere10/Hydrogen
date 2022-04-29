@@ -16,7 +16,7 @@ using UIKit;
 using CoreGraphics;
 using System.Collections.Generic;
  
-namespace Sphere10.Framework.iOS
+namespace Hydrogen.iOS
 {
       public class PagedViewController : UIViewController
       {

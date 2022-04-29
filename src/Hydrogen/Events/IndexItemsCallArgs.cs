@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public class IndexItemsCallArgs<T> : CallArgs {
 		public IndexItemsCallArgs(int index, T item) : base(index, new[] { item }) {

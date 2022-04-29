@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	public interface IBuffer : IExtendedList<byte> {
 
 		ReadOnlySpan<byte> ReadSpan(int index, int count);

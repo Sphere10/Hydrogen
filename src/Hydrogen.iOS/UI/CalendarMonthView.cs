@@ -50,7 +50,7 @@ using System.Collections.Generic;
 using CoreGraphics;
 using System.Reflection;
 
-namespace Sphere10.Framework.iOS
+namespace Hydrogen.iOS
 {
 
     public delegate void DateSelected(DateTime date);

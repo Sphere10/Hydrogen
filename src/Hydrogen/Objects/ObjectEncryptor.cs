@@ -14,12 +14,12 @@
 
 #define USE_FAST_REFLECTION 
 
-using Sphere10.Framework.FastReflection;
+using Hydrogen.FastReflection;
 using System;
 using System.Linq;
 using System.Reflection;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public static class ObjectEncryptor {
 

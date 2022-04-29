@@ -14,7 +14,7 @@
 using static HashLib4CSharp.Base.HashFactory.Adapter;
 using static HashLib4CSharp.Base.HashFactory.Crypto;
 
-namespace Sphere10.Framework.CryptoEx {
+namespace Hydrogen.CryptoEx {
 	public static class ModuleConfiguration  {
 
 		public static void Initialize() {

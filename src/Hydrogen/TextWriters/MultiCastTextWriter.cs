@@ -15,7 +15,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.IO;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	/// <summary>
 	/// TextWriter which routes to a list of other TextWriters.

@@ -11,7 +11,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-//	Sphere10.Framework.Data.Csv.CsvReader
+//	Hydrogen.Data.Csv.CsvReader
 //	Copyright (c) 2005 Sébastien Lorion
 //
 //	MIT license (http://en.wikipedia.org/wiki/MIT_License)
@@ -41,9 +41,9 @@ using Debug = System.Diagnostics.Debug;
 using System.Globalization;
 using System.IO;
 
-using Sphere10.Framework.Data.Csv.Resources;
+using Hydrogen.Data.Csv.Resources;
 
-namespace Sphere10.Framework.Data.Csv
+namespace Hydrogen.Data.Csv
 {
 	/// <summary>
 	/// Represents a reader that provides fast, non-cached, forward-only access to CSV data.  

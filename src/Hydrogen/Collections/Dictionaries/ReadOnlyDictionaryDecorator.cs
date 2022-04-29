@@ -14,7 +14,7 @@
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public class ReadOnlyDictionaryDecorator<TKey, TValue, TReadOnlyDictionary> : IReadOnlyDictionary<TKey, TValue> 
 		where TReadOnlyDictionary : IReadOnlyDictionary<TKey, TValue> {

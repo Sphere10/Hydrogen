@@ -1,6 +1,6 @@
 ﻿using NUnit.Framework;
 
-namespace Sphere10.Framework.Tests;
+namespace Hydrogen.Tests;
 
 internal class ClusteredStorageStorageTypeValuesAttribute : ValuesAttribute {
 	public ClusteredStorageStorageTypeValuesAttribute()

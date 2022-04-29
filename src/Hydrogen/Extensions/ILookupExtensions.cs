@@ -17,7 +17,7 @@ using System.Linq;
 
 
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public static class ILookupExtensions {
 		public static ILookup<TKey, TValueOut> Transform<TKey, TValue, TValueOut>(

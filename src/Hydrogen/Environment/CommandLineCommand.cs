@@ -1,4 +1,4 @@
-﻿namespace Sphere10.Framework {
+﻿namespace Hydrogen {
 	public class CommandLineCommand : CommandLineParameter {
 
 		public CommandLineCommand(string name, CommandLineParameter[] parameters = null, CommandLineCommand[] subCommands = null, params string[] dependencies)

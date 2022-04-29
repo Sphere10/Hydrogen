@@ -11,7 +11,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	/// <summary>
 	/// Do-nothing Text Writer. Does nothing by design.
 	/// </summary>

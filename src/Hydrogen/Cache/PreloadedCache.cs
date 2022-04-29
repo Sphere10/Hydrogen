@@ -13,7 +13,7 @@
 
 using System.Collections.Generic;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public sealed class PreloadedCache<TKey, TValue> : BulkFetchCacheBase<TKey, TValue> {
 		private readonly IDictionary<TKey, TValue> _preloadedValues = null;

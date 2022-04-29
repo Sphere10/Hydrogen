@@ -1,4 +1,4 @@
-﻿namespace Sphere10.Framework.Communications {
+﻿namespace Hydrogen.Communications {
 	public enum ProtocolChannelInitiator {
 		Local,
 		Remote

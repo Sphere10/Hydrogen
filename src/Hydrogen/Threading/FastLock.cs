@@ -1,7 +1,7 @@
 using System;
 using System.Threading;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	public sealed class FastLock {
 		private readonly ReaderWriterLockSlim _lock;
 

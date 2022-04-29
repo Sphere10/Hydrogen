@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-namespace Sphere10.Hydrogen.Presentation.Services {
+namespace Hydrogen.DApp.Presentation.Services {
     public interface IGenericEventAggregator {
         void Subscribe<T>(Action<T> handler);
 

@@ -11,7 +11,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace Sphere10.Framework.Windows.Forms {
+namespace Hydrogen.Windows.Forms {
     partial class ListMerger {
         /// <summary> 
         /// Required designer variable.
@@ -63,7 +63,7 @@ namespace Sphere10.Framework.Windows.Forms {
             // _moveRightButton
             // 
             this._moveRightButton.Anchor = System.Windows.Forms.AnchorStyles.None;
-            this._moveRightButton.Image = global::Sphere10.Framework.Windows.Forms.Resources.RArrow;
+            this._moveRightButton.Image = global::Hydrogen.Windows.Forms.Resources.RArrow;
             this._moveRightButton.Location = new System.Drawing.Point(11, 130);
             this._moveRightButton.Margin = new System.Windows.Forms.Padding(6);
             this._moveRightButton.Name = "_moveRightButton";
@@ -75,7 +75,7 @@ namespace Sphere10.Framework.Windows.Forms {
             // _moveLeftButton
             // 
             this._moveLeftButton.Anchor = System.Windows.Forms.AnchorStyles.None;
-            this._moveLeftButton.Image = global::Sphere10.Framework.Windows.Forms.Resources.LArrow;
+            this._moveLeftButton.Image = global::Hydrogen.Windows.Forms.Resources.LArrow;
             this._moveLeftButton.Location = new System.Drawing.Point(11, 188);
             this._moveLeftButton.Margin = new System.Windows.Forms.Padding(6);
             this._moveLeftButton.Name = "_moveLeftButton";

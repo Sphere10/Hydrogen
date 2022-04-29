@@ -14,9 +14,9 @@
 using System;
 using System.Drawing;
 using CoreGraphics;
-using Sphere10.Framework;
+using Hydrogen;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
     public static class CGRectExtensions {
 

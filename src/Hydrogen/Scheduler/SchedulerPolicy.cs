@@ -13,7 +13,7 @@
 
 using System;
 
-namespace Sphere10.Framework.Scheduler {
+namespace Hydrogen {
 
 	[Flags]
 	public enum SchedulerPolicy {

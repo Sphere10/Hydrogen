@@ -14,8 +14,8 @@
 using System;
 using System.Diagnostics;
 using System.IO;
-using Sphere10.Framework;
-using Sphere10.Framework.Windows;
+using Hydrogen;
+using Hydrogen.Windows;
 
 
 namespace Tools {

@@ -1,7 +1,7 @@
 ﻿using System.IO.Pipes;
 using System.Threading.Tasks;
 
-namespace Sphere10.Framework.Communications {
+namespace Hydrogen.Communications {
     public sealed class AnonymousClientPipe : AnonymousPipe {
 
         public AnonymousClientPipe(AnonymousPipeEndpoint endpoint) {

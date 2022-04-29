@@ -13,7 +13,7 @@
 
 using System;
 
-namespace Sphere10.Framework.iOS {
+namespace Hydrogen.iOS {
 	public class DropDownListSelection<T> {
 		private T _selectedItem;
 

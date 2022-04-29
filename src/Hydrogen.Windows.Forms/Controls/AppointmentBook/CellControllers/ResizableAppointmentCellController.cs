@@ -20,7 +20,7 @@ using System.Windows.Forms;
 using SourceGrid;
 using SourceGrid.Cells.Controllers;
 
-namespace Sphere10.Framework.Windows.Forms.AppointmentBook {
+namespace Hydrogen.Windows.Forms.AppointmentBook {
 
 	internal class ResizableAppointmentCellController : BaseCellController {
 		private readonly DevAge.Drawing.RectangleBorder _logicalBorder;

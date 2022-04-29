@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using Sphere10.Framework.Collections;
+using Hydrogen.Collections;
 
-namespace Sphere10.Framework;
+namespace Hydrogen;
 
 /// <summary>
 /// An <see cref="IExtendedList{T}"/> of <see cref="TItem"/> mapped onto a <see cref="Stream"/> which also maintains an <see cref="IMerkleTree"/> of it's items.

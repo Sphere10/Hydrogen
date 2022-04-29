@@ -11,7 +11,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace Sphere10.Framework.Windows.Forms {
+namespace Hydrogen.Windows.Forms {
 	partial class DatabaseConnectionPanel {
 		/// <summary> 
 		/// Required designer variable.
@@ -36,7 +36,7 @@ namespace Sphere10.Framework.Windows.Forms {
 		/// the contents of this method with the code editor.
 		/// </summary>
 		private void InitializeComponent() {
-            this._dbmsCombo = new Sphere10.Framework.Windows.Forms.EnumComboBox();
+            this._dbmsCombo = new Hydrogen.Windows.Forms.EnumComboBox();
             this._connectionProviderPanel = new System.Windows.Forms.Panel();
             this._tableLayoutPanel = new System.Windows.Forms.TableLayoutPanel();
             this.label2 = new System.Windows.Forms.Label();
@@ -120,7 +120,7 @@ namespace Sphere10.Framework.Windows.Forms {
 		#endregion
 
 		protected System.Windows.Forms.Panel _connectionProviderPanel;
-		protected Sphere10.Framework.Windows.Forms.EnumComboBox _dbmsCombo;
+		protected Hydrogen.Windows.Forms.EnumComboBox _dbmsCombo;
         private System.Windows.Forms.TableLayoutPanel _tableLayoutPanel;
         private System.Windows.Forms.Label label2;
     }

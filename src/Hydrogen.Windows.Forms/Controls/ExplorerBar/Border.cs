@@ -18,7 +18,7 @@ using System.Text;
 using System.ComponentModel;
 using System.Reflection;
 
-namespace Sphere10.Framework.Windows.Forms {
+namespace Hydrogen.Windows.Forms {
 	/// <summary>
 	/// Specifies the width of the border along each edge of an object
 	/// </summary>

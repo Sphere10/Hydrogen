@@ -18,9 +18,9 @@ using System.Linq;
 using CoreGraphics;
 using Foundation;
 using ObjCRuntime;
-using Sphere10.Framework;
+using Hydrogen;
 
-namespace Sphere10.Framework.iOS {
+namespace Hydrogen.iOS {
 
 	// See this for adding improvements: https://gist.github.com/praeclarum/10024108
 	public sealed class GenericTableViewSource<T> : UITableViewSource {
@@ -154,7 +154,7 @@ namespace Sphere10.Framework.iOS {
 					cell.BadgeView.BackgroundColor = itemDescription.BadgeTextColor;
 
 			} else {
-				if (cell.AccessoryView is Sphere10.Framework.iOS.BadgeView)
+				if (cell.AccessoryView is Hydrogen.iOS.BadgeView)
 					cell.ShowBadgeView = false;
 			}
 			cell.Accessory = itemDescription.Accessory;

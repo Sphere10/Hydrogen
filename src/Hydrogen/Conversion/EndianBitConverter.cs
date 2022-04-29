@@ -18,7 +18,7 @@ using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	/// <summary>
 	/// Equivalent of System.BitConverter, but with either endianness.
 	/// </summary>

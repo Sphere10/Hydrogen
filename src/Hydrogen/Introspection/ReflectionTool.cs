@@ -12,7 +12,7 @@
 //-----------------------------------------------------------------------
 
 using System.Reflection;
-using Sphere10.Framework.FastReflection;
+using Hydrogen.FastReflection;
 
 
 namespace Tools {

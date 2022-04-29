@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	public abstract class PageBase<TItem> : IEnumerable<TItem>, IPage<TItem> {
 
 		protected PageBase() {

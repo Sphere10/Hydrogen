@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Sphere10.Framework.CryptoEx.Tests.Properties {
+namespace Hydrogen.CryptoEx.Tests.Properties {
     using System;
     
     
@@ -39,7 +39,7 @@ namespace Sphere10.Framework.CryptoEx.Tests.Properties {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Sphere10.Framework.CryptoEx.Tests.Properties.Resource", typeof(Resource).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Hydrogen.CryptoEx.Tests.Properties.Resource", typeof(Resource).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;

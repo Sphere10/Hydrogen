@@ -15,17 +15,17 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Serialization;
-using Sphere10.Framework;
+using Hydrogen;
 using TinyIoC;
 
-namespace Sphere10.Framework.Application {
+namespace Hydrogen.Application {
 
     /// <summary>
     /// Sphere 10 one stop shop for all IoC and Service Locator functionality.
     /// <remarks>
     /// Under root configuration element add
     ///   &lt;configSections&gt;
-    ///    &lt;section name = "ComponentRegistry" type ="Sphere10.Framework.GenericSectionHandler, Sphere10.Framework"/&gt;
+    ///    &lt;section name = "ComponentRegistry" type ="Hydrogen.GenericSectionHandler, Hydrogen"/&gt;
     ///  &lt;/configSections&gt;
     /// 
     /// In Program.cs or Web startup, use

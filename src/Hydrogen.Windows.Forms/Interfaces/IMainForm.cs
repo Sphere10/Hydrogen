@@ -17,9 +17,9 @@ using System.Text;
 using System.Drawing;
 using System.Security.Cryptography.X509Certificates;
 using System.Windows.Forms;
-using Sphere10.Framework.Application;
+using Hydrogen.Application;
 
-namespace Sphere10.Framework.Windows.Forms {
+namespace Hydrogen.Windows.Forms {
 
     public interface IMainForm : IApplicationIconProvider, IUserInterfaceServices, IUserNotificationServices {
 	}

@@ -1,7 +1,7 @@
-﻿using Sphere10.Hydrogen.Presentation.ViewModels;
-using Sphere10.Hydrogen.Presentation.WidgetGallery.Widgets.Services;
+﻿using Hydrogen.DApp.Presentation.ViewModels;
+using Hydrogen.DApp.Presentation.WidgetGallery.Widgets.Services;
 
-namespace Sphere10.Hydrogen.Presentation.WidgetGallery.Widgets.ViewModels {
+namespace Hydrogen.DApp.Presentation.WidgetGallery.Widgets.ViewModels {
 
     public class WidgetGalleryViewModel : ComponentViewModelBase {
         public IRandomNumberService NumberService { get; }

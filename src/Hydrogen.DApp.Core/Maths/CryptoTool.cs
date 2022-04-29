@@ -2,9 +2,9 @@
 //using System.Collections.Generic;
 //using System.Numerics;
 //using System.Text;
-//using Sphere10.Framework;
+//using Hydrogen;
 
-//namespace Sphere10.Hydrogen.Core.Maths {
+//namespace Hydrogen.DApp.Core.Maths {
 //    public static class CryptoTool {
 
 //        /// <summary>

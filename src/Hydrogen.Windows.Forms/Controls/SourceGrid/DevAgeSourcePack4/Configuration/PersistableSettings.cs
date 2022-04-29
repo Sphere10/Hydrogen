@@ -12,7 +12,7 @@
 //-----------------------------------------------------------------------
 
 using System;
-using Sphere10.Framework;
+using Hydrogen;
 
 namespace DevAge.Configuration
 {

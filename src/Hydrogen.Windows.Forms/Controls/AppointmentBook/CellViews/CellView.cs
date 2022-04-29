@@ -19,7 +19,7 @@ using System.Text;
 using System.Windows.Forms;
 using DevAge.Drawing;
 
-namespace Sphere10.Framework.Windows.Forms.AppointmentBook {
+namespace Hydrogen.Windows.Forms.AppointmentBook {
 	/// <summary>
 	/// Customized View to draw a rounded background
 	/// </summary>

@@ -2,7 +2,7 @@
 using System.Runtime.InteropServices;
 
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	/// <summary>
 	/// Fast, thread-safe static hash methods.

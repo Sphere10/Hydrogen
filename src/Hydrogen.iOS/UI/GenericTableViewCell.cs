@@ -15,9 +15,9 @@ using System;
 using UIKit;
 using CoreGraphics;
 
-namespace Sphere10.Framework.iOS {
+namespace Hydrogen.iOS {
 
-	public class GenericTableViewCell : Sphere10.Framework.iOS.BadgeCell {
+	public class GenericTableViewCell : Hydrogen.iOS.BadgeCell {
 		private const float DefaultImageViewWidth = 40.0f;
 		private const float DefaultImageViewHeight = 40.0f;
 		private readonly CGSize _imageViewSize;

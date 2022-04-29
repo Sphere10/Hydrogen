@@ -5,12 +5,12 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Sphere10.Framework;
-using Sphere10.Framework.Application;
+using Hydrogen;
+using Hydrogen.Application;
 using TinyIoC;
 
 
-namespace Sphere10.Hydrogen.Presentation2.Logic {
+namespace Hydrogen.DApp.Presentation2.Logic {
 
 	public abstract class Application : Disposable, IApplication {
         //private static IConfiguration Configuration { get; set; } = null!;

@@ -11,7 +11,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace Sphere10.Framework.Windows.Forms {
+namespace Hydrogen.Windows.Forms {
 	partial class EnterTextDialog {
 		/// <summary>
 		/// Required designer variable.
@@ -39,7 +39,7 @@ namespace Sphere10.Framework.Windows.Forms {
 			this.button2 = new System.Windows.Forms.Button();
 			this.button1 = new System.Windows.Forms.Button();
 			this._userInstructionLabel = new System.Windows.Forms.Label();
-			this._textBox = new Sphere10.Framework.Windows.Forms.TextBoxEx();
+			this._textBox = new Hydrogen.Windows.Forms.TextBoxEx();
 			this.SuspendLayout();
 			// 
 			// button2

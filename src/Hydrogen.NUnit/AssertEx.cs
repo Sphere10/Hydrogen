@@ -6,10 +6,10 @@ using System.Linq;
 using System.Net.Http.Headers;
 using System.Text.RegularExpressions;
 using NUnit.Framework;
-using Sphere10.Framework.Collections;
-using Sphere10.Framework.Misc;
+using Hydrogen.Collections;
+using Hydrogen.Misc;
 
-namespace Sphere10.Framework.NUnit {
+namespace Hydrogen.NUnit {
 
 	public static class AssertEx {
 

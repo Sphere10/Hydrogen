@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Sphere10.Hydrogen.Presentation2.Logic {
+namespace Hydrogen.DApp.Presentation2.Logic {
 
     public interface IApplicationMenu {
         public string Icon { get; set; }

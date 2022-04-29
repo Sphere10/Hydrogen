@@ -13,7 +13,7 @@
 
 using System;
 
-namespace Sphere10.Framework.Data {
+namespace Hydrogen.Data {
 
     public static class DACFactory {
 
@@ -21,14 +21,14 @@ namespace Sphere10.Framework.Data {
             switch (dbmsType) {
 
                 case DBMSType.SQLServer:
-					return (IDAC)TypeActivator.Create("Sphere10.Framework.Data.MSSQLDAC", "Sphere10.Framework.Data.MSSQL", connectionString, logger);
+					return (IDAC)TypeActivator.Create("Hydrogen.Data.MSSQLDAC", "Hydrogen.Data.MSSQL", connectionString, logger);
 
 				case DBMSType.Sqlite:
-                    return (IDAC) TypeActivator.Create("Sphere10.Framework.Data.SqliteDAC", "Sphere10.Framework.Data.Sqlite", connectionString, logger);
+                    return (IDAC) TypeActivator.Create("Hydrogen.Data.SqliteDAC", "Hydrogen.Data.Sqlite", connectionString, logger);
 
                 case DBMSType.Firebird:
                 case DBMSType.FirebirdFile:
-                    return (IDAC) TypeActivator.Create("Sphere10.Framework.Data.FirebirdDAC", "Sphere10.Framework.Data.Firebird", connectionString, logger);
+                    return (IDAC) TypeActivator.Create("Hydrogen.Data.FirebirdDAC", "Hydrogen.Data.Firebird", connectionString, logger);
                 default:
                     throw new NotSupportedException(dbmsType.ToString());
             }

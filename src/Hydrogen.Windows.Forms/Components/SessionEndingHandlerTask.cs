@@ -19,7 +19,7 @@ using System.Text;
 using System.Reflection;
 using Microsoft.Win32;
 
-namespace Sphere10.Framework.Application {
+namespace Hydrogen.Application {
 
 
 	/// <summary>

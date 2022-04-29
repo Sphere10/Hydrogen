@@ -17,7 +17,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public static class Array2DExtensions {
 

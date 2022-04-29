@@ -14,7 +14,7 @@
 using System;
 
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public interface IActiveApplicationMonitor  {
 		event EventHandler<ApplicationChangedEvent> ApplicationChanged;

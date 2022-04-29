@@ -15,7 +15,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Sphere10.Framework.Data {
+namespace Hydrogen.Data {
 
 
 	public interface ISQLBuilder {

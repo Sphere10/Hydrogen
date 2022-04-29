@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Sphere10.Framework.Collections.Lists {
+namespace Hydrogen.Collections.Lists {
 
 	public sealed class ListAdapter<T> : IList {
 		private readonly IList<T> _genericList;

@@ -15,7 +15,7 @@
 
 using System;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	/// <summary>
 	/// Implementation of EndianBitConverter which converts to/from little-endian
 	/// byte arrays.

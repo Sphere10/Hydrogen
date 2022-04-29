@@ -1,4 +1,4 @@
-﻿namespace Sphere10.Hydrogen.Presentation.Components.Modal {
+﻿namespace Hydrogen.DApp.Presentation.Components.Modal {
     /// <summary>
     /// Modal results
     /// </summary>

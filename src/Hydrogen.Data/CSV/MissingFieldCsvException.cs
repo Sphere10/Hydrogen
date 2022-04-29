@@ -11,7 +11,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-//	Sphere10.Framework.Data.Csv.MissingFieldCsvException
+//	Hydrogen.Data.Csv.MissingFieldCsvException
 //	Copyright (c) 2005 Sébastien Lorion
 //
 //	MIT license (http://en.wikipedia.org/wiki/MIT_License)
@@ -37,9 +37,9 @@ using System.Globalization;
 using System.Runtime.Serialization;
 using System.Security.Permissions;
 
-using Sphere10.Framework.Data.Csv.Resources;
+using Hydrogen.Data.Csv.Resources;
 
-namespace Sphere10.Framework.Data.Csv
+namespace Hydrogen.Data.Csv
 {
 	/// <summary>
 	/// Represents the exception that is thrown when a there is a missing field in a record of the CSV file.

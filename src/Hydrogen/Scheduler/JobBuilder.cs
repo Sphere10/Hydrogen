@@ -13,7 +13,7 @@
 
 using System;
 
-namespace Sphere10.Framework.Scheduler {
+namespace Hydrogen {
 
 	public class JobBuilder<T> where T : BaseJob {
 		internal readonly T Job;

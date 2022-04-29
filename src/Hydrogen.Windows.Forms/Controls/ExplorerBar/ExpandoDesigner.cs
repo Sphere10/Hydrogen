@@ -18,7 +18,7 @@ using System.Text;
 using System.Windows.Forms.Design;
 using System.Collections;
 
-namespace Sphere10.Framework.Windows.Forms {
+namespace Hydrogen.Windows.Forms {
 
 	
 	

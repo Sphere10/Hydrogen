@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using Sphere10.Framework;
-using Sphere10.Hydrogen.Core.Mining;
+using Hydrogen;
+using Hydrogen.DApp.Core.Mining;
 
-namespace Sphere10.Hydrogen.Core.Consensus.Serializers {
+namespace Hydrogen.DApp.Core.Consensus.Serializers {
 	public class NewMinerBlockSerializer : StaticSizeItemSerializerBase<NewMinerBlock> {
 		public NewMinerBlockSerializer() : base(
 			4 + //Version

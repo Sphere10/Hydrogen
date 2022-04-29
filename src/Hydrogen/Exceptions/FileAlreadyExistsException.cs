@@ -11,7 +11,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	public class FileAlreadyExistsException : SoftwareException {
         public FileAlreadyExistsException(string filename) 
             : this($"File already exists", filename) {

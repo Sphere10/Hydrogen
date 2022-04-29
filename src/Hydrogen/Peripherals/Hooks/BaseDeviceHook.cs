@@ -15,7 +15,7 @@ using System;
 using System.Threading;
 
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public abstract class BaseDeviceHook : IDeviceHook {
 		protected object _syncObject;

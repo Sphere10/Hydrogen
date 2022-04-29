@@ -1,4 +1,4 @@
-﻿namespace Sphere10.Framework {
+﻿namespace Hydrogen {
 
 	sealed class ClassNullOp<T> : INullOp<T>
 		where T : class {

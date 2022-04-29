@@ -13,7 +13,7 @@
 
 using System;
 
-namespace Sphere10.Framework.Application {
+namespace Hydrogen.Application {
     public interface ISettingsProvider {
 		bool AutoSaveNewSettings { get; }
 		bool EncryptSettings { get; }

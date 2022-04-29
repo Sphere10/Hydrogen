@@ -14,7 +14,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	public static class ICacheExtensions {
 
 		public static IEnumerable<V> GetAllCachedValues<K, V>(this ICache<K, V> cache) {

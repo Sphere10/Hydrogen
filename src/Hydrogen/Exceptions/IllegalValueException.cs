@@ -11,7 +11,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public class IllegalValueException : SoftwareException {
         public IllegalValueException(string value, string description = null) 

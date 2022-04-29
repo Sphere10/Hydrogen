@@ -1,4 +1,4 @@
-﻿namespace Sphere10.Framework {
+﻿namespace Hydrogen {
 	public abstract class CacheReaperBase : ICacheReaper {
 
 		public abstract void Register(ICache cache);

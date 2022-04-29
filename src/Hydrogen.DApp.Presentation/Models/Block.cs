@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Sphere10.Hydrogen.Presentation.Models {
+namespace Hydrogen.DApp.Presentation.Models {
 
     public class Block {
         public int Number { get; set; }

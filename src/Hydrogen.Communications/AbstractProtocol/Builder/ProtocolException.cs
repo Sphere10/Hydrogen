@@ -1,7 +1,7 @@
 ﻿
 using System;
 
-namespace Sphere10.Framework.Communications {
+namespace Hydrogen.Communications {
     public class ProtocolBuilderException : SoftwareException {
 
 		public ProtocolBuilderException(string error) : base(error) {

@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
-using Sphere10.Framework;
-using Sphere10.Hydrogen.Presentation.ViewModels;
+using Hydrogen;
+using Hydrogen.DApp.Presentation.ViewModels;
 
-namespace Sphere10.Hydrogen.Presentation.Components.Wizard {
+namespace Hydrogen.DApp.Presentation.Components.Wizard {
 
     public class WizardHostViewModel : ComponentViewModelBase {
         private WizardStepBase? _currentStepInstance;

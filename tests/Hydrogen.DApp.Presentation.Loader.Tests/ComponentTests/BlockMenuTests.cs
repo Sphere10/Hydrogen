@@ -1,10 +1,10 @@
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
-using Sphere10.Hydrogen.Presentation.Loader.Components;
-using Sphere10.Hydrogen.Presentation.Loader.Plugins;
-using Sphere10.Hydrogen.Presentation.Loader.ViewModels;
+using Hydrogen.DApp.Presentation.Loader.Components;
+using Hydrogen.DApp.Presentation.Loader.Plugins;
+using Hydrogen.DApp.Presentation.Loader.ViewModels;
 
-namespace Sphere10.Hydrogen.Presentation.Loader.Tests.ComponentTests {
+namespace Hydrogen.DApp.Presentation.Loader.Tests.ComponentTests {
 
     public class Tests : Bunit.TestContext {
         [SetUp]

@@ -20,7 +20,7 @@ using System.Drawing.Drawing2D;
 using System.Drawing;
 using System.Drawing.Imaging;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 
 	public static class GraphicsExtensions {

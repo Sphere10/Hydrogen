@@ -5,9 +5,9 @@
 //using System.Security.Cryptography;
 //using System.Text;
 //using NUnit.Framework.Internal;
-//using Sphere10.Framework.NUnit;
+//using Hydrogen.NUnit;
 
-//namespace Sphere10.Framework.Tests {
+//namespace Hydrogen.Tests {
 
 //	public class StreamPersistedTestsBase {
 

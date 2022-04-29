@@ -15,7 +15,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public class EnumerableKeyDictionary<K, V> : IDictionary<IEnumerable<K>, V> {
 

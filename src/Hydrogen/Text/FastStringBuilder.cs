@@ -16,7 +16,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	public class FastStringBuilder {
 		private const int DefaultCapacity = 1000;
 		private readonly List<Tuple<int, string>> _strings;

@@ -1,10 +1,10 @@
 ﻿using FluentNHibernate.Conventions;
 using FluentNHibernate.Conventions.Inspections;
 using FluentNHibernate.Conventions.Instances;
-using Sphere10.Framework;
+using Hydrogen;
 
 
-namespace Sphere10.Framework.Data.NHibernate {
+namespace Hydrogen.Data.NHibernate {
     public class CoreConventions : IReferenceConvention, IHasManyConvention, IHasManyToManyConvention {
         public void Apply(IOneToManyCollectionInstance instance) {
             instance.Inverse();

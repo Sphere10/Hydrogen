@@ -19,7 +19,7 @@
 //using System.Drawing;
 //using MonoTouch.CoreGraphics;
 //
-//namespace Sphere10.Framework.iOS {
+//namespace Hydrogen.iOS {
 //	public enum MBProgressHUDMode {
 //		/** Progress is shown using an UIActivityIndicatorView. This is the default. */
 //		Indeterminate,

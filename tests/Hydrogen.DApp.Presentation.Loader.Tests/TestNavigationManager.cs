@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
 
-namespace Sphere10.Hydrogen.Presentation.Loader.Tests {
+namespace Hydrogen.DApp.Presentation.Loader.Tests {
 
     public class TestNavigationManager : NavigationManager {
         public TestNavigationManager() {

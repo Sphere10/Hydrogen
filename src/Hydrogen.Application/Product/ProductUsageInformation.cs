@@ -15,7 +15,7 @@ using System;
 using System.IO;
 using System.Reflection;
 
-namespace Sphere10.Framework.Application {
+namespace Hydrogen.Application {
 
 	public class ProductUsageInformation {
 

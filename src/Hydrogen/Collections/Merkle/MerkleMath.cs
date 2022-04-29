@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using Sphere10.Framework;
+using Hydrogen;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public static class MerkleMath {
 

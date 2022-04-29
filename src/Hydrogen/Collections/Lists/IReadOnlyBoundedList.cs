@@ -1,4 +1,4 @@
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public interface IReadOnlyBoundedList<T> : IReadOnlyExtendedList<T> {
 		int FirstIndex { get; }

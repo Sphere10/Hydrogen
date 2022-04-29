@@ -20,7 +20,7 @@ using System.Net.Mail;
 using System.Net;
 using System.Text.RegularExpressions;
 using System.Diagnostics;
-using Sphere10.Framework;
+using Hydrogen;
 
 // ReSharper disable CheckNamespace
 namespace Tools {

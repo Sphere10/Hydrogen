@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Sphere10.Framework.Communications {
+namespace Hydrogen.Communications {
 	public class AnonymousPipeEndpoint {
 
 		public AnonymousPipeEndpoint() : this(null, null) {

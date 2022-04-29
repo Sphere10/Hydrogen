@@ -4,7 +4,7 @@ using System.Collections;
 using System.Diagnostics;
 using System.Linq;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	/// <summary>
 	/// Attaches a merkle-tree to a <see cref="IMemoryPagedBuffer "/> suitable for merkleized data-files.

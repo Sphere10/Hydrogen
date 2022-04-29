@@ -19,12 +19,12 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Sphere10.Framework.Windows.LevelDB;
+using Hydrogen.Windows.LevelDB;
 
 
 // ReSharper disable CheckNamespace
 
-namespace Sphere10.Framework.UnitTests {
+namespace Hydrogen.UnitTests {
 
     [TestFixture]
     public class LevelDBTests {

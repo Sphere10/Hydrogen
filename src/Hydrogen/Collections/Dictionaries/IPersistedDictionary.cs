@@ -13,7 +13,7 @@
 
 using System.Collections.Generic;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public interface IPersistedDictionary<T1, T2> : IDictionary<T1, T2> {
 		void Load();

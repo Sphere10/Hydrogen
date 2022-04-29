@@ -14,7 +14,7 @@
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public abstract class ListDecorator<TItem, TList> : IList<TItem> where TList : IList<TItem> {
 		protected readonly IList<TItem> InternalList;

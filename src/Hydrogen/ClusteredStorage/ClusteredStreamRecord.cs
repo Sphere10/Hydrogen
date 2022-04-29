@@ -1,6 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	//[StructLayout(LayoutKind.Sequential)]
 	public struct ClusteredStreamRecord {

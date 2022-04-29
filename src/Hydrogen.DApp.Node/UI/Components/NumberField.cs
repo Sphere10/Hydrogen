@@ -5,10 +5,10 @@ using System.Reflection.Metadata.Ecma335;
 using System.Text;
 using System.Threading.Tasks;
 using NStack;
-using Sphere10.Framework;
+using Hydrogen;
 using Terminal.Gui;
 
-namespace Sphere10.Hydrogen.Node.UI.Components {
+namespace Hydrogen.DApp.Node.UI.Components {
 	public class IntegerField : TextField {
 		private long _min;
 		private long _max;

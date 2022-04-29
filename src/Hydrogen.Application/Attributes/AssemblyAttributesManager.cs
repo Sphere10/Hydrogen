@@ -17,10 +17,10 @@ using System.Linq;
 using System.Reflection;
 
 using System.IO;
-using Sphere10.Framework;
+using Hydrogen;
 using Tools;
 
-namespace Sphere10.Framework.Application {
+namespace Hydrogen.Application {
 
 	public class AssemblyAttributesManager {
 		public const string DefaultLink = "www.sphere10.com";

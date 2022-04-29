@@ -1,6 +1,6 @@
 {
   "profiles": {
-    "Sphere10.Framework.Tests": {
+    "Hydrogen.Tests": {
       "commandName": "Project",
       "commandLineArgs": "/include:RPC"
     }

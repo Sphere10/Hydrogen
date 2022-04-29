@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
-namespace Sphere10.Hydrogen.Presentation.Loader.Components
+namespace Hydrogen.DApp.Presentation.Loader.Components
 {
     public partial class MainMenu
     {

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 
-namespace Sphere10.Framework;
+namespace Hydrogen;
 
 public class PrimitiveSerializer<T> : StaticSizeItemSerializerBase<T> {
 	private readonly Action<EndianBinaryWriter, T> _writePrimitive;

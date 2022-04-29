@@ -16,7 +16,7 @@ using System.Security.Principal;
 using System.Runtime.InteropServices;
 using System.ComponentModel;
 
-namespace Sphere10.Framework.Windows.Security {
+namespace Hydrogen.Windows.Security {
 
     public class Impersonator {
 

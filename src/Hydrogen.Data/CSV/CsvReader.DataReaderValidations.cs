@@ -11,7 +11,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-//	Sphere10.Framework.Data.Csv.CsvReader.DataReaderValidations
+//	Hydrogen.Data.Csv.CsvReader.DataReaderValidations
 //	Copyright (c) 2005 Sébastien Lorion
 //
 //	MIT license (http://en.wikipedia.org/wiki/MIT_License)
@@ -34,7 +34,7 @@
 
 using System;
 
-namespace Sphere10.Framework.Data.Csv
+namespace Hydrogen.Data.Csv
 {
 	public partial class CsvReader
 	{

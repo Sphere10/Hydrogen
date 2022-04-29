@@ -13,7 +13,7 @@
 
 using System.Runtime.InteropServices;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	[StructLayout(LayoutKind.Explicit)]
     public struct ReinterpretArray {
 

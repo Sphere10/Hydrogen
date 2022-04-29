@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Sphere10.Framework;
+using Hydrogen;
 using Terminal.Gui;
 
-namespace Sphere10.Hydrogen.Node.UI {
+namespace Hydrogen.DApp.Node.UI {
 	public static class Dialogs {
 
 
@@ -16,7 +16,7 @@ namespace Sphere10.Hydrogen.Node.UI {
 			Guard.Argument(currIndex >= 0, nameof(currentSelection), "Not a value of enumeration");
 			var datasource = new ListDataSource<T>(enumValues, x => Enum.GetName(x), x => Tools.Enums.GetDescription(x));
 			var dlg = new ListDialog<T>(title, description, datasource, currIndex);
-			Application.Run(dlg);
+			Terminal.Gui.Application.Run(dlg);
 			if (!dlg.Cancelled) {
 				selection = dlg.SelectedValue;
 				return true;

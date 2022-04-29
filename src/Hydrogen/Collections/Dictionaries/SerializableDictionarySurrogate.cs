@@ -16,7 +16,7 @@ using System.Xml.Serialization;
 using System.Diagnostics;
 using System.Reflection;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	[Obfuscation(Exclude = true)]
     [XmlRoot("DicionarySurrogate")]

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Sphere10.Hydrogen.Core.DataObjects {
+namespace Hydrogen.DApp.Core.DataObjects {
     interface ICommunications {
         event EventHandler PeerAdded;
         event EventHandler PeerRemoved;

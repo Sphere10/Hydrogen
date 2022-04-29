@@ -14,7 +14,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public static class ProducerConsumerQueueExtensions {
         public static void Put<T>(this ProducerConsumerQueue<T> producerConsumer, T item) {

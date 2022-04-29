@@ -17,7 +17,7 @@ using System.Text;
 using System.Security.Principal;
 
 
-namespace Sphere10.Framework.Windows.Security {
+namespace Hydrogen.Windows.Security {
 
     /// <summary>
     /// Represents a local object like a local user or local group. 

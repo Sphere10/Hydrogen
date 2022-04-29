@@ -17,7 +17,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Sphere10.Framework.Data {
+namespace Hydrogen.Data {
     public abstract class BaseSQLSpecificationObject {
         protected BaseSQLSpecificationObject() {
             Hints = new Hint[0];

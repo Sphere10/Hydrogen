@@ -13,7 +13,7 @@
 
 using System.Collections.Generic;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	public sealed class InsertionSort<T> : SortAlgorithm<T>{
 		
 		public override void Execute(IExtendedList<T> list, IComparer<T> comparer) {

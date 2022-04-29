@@ -21,7 +21,7 @@ using Microsoft.CSharp;
 using System.Diagnostics;
 
 
-namespace Sphere10.Framework.Windows.BITS
+namespace Hydrogen.Windows.BITS
 {
 
     public interface IPatch {

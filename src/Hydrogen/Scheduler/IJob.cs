@@ -12,9 +12,9 @@
 //-----------------------------------------------------------------------
 
 using System.Collections.Generic;
-using Sphere10.Framework.Scheduler.Serializable;
+using Hydrogen;
 
-namespace Sphere10.Framework.Scheduler {
+namespace Hydrogen {
 	public interface IJob {
 		
 		string Name { get; }

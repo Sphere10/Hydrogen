@@ -13,7 +13,7 @@
 
 using System;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	public class RegexRange {
         public static RegexPattern Of(char from, char to) {
 	        return OfMany(Tuple.Create(from, to));

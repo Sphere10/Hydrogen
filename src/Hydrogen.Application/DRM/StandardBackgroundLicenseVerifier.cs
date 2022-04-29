@@ -18,9 +18,9 @@ using System.Net;
 using System.Text;
 using System.Threading;
 using System.Net.NetworkInformation;
-using Sphere10.Framework;
+using Hydrogen;
 
-namespace Sphere10.Framework.Application {
+namespace Hydrogen.Application {
 	public class StandardBackgroundLicenseVerifier : IBackgroundLicenseVerifier
 	{
 		private readonly Encoding _textEncoding = Encoding.UTF8;
@@ -101,7 +101,7 @@ namespace Sphere10.Framework.Application {
 		}
 
 		protected virtual string GenerateUserID() {
-			return Convert.ToBase64String(Framework.Hashers.Hash(CHF.MD5, _textEncoding.GetBytes(Environment.UserName)));
+			return Convert.ToBase64String(Hashers.Hash(CHF.MD5, _textEncoding.GetBytes(Environment.UserName)));
 		}
 
 

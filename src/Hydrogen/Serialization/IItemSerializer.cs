@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	public interface IItemSerializer<TItem> : IItemSizer<TItem> {
 
 		bool TrySerialize(TItem item, EndianBinaryWriter writer, out int bytesWritten);

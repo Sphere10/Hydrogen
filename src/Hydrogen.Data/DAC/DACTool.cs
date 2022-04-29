@@ -16,7 +16,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Sphere10.Framework.Data {
+namespace Hydrogen.Data {
 	public static class DACTool {
 
 		public static string GeneratePrimaryKeyColumnName(AutoIdentityDAC.PrimaryKeyConvention strategy, string tableName) {

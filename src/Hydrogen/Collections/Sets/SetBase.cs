@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public abstract class SetBase<TItem> : ISet<TItem> {
 		protected readonly IEqualityComparer<TItem> Comparer;

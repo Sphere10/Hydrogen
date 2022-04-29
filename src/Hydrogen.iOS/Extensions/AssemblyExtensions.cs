@@ -18,9 +18,9 @@ using System.Text;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using Foundation;
-using Sphere10.Framework;
+using Hydrogen;
 
-namespace Sphere10.Framework.iOS {
+namespace Hydrogen.iOS {
 
 	public static class AssemblyExtensions {
 	

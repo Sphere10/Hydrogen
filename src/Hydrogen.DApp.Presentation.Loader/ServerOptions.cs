@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Sphere10.Hydrogen.Presentation.Loader
+namespace Hydrogen.DApp.Presentation.Loader
 {
     /// <summary>
     /// Data source options

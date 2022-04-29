@@ -1,6 +1,6 @@
 {
   "profiles": {
-    "Sphere10.Hydrogen.Presentation": {
+    "Hydrogen.DApp.Presentation": {
       "commandName": "Project",
       "dotnetRunMessages": "true",
       "launchBrowser": true,

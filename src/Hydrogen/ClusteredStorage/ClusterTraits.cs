@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	[Flags]
 	internal enum ClusterTraits : byte {
 		First = 1 << 0,

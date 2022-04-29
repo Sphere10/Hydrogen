@@ -15,7 +15,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Sphere10.Framework.Collections {
+namespace Hydrogen.Collections {
 	public class ValueReferenceInverseDictionary<TKey, TValue> : ILookup<TValue, TKey> where TValue : class {
 	    private readonly ILookup<Reference<TValue>, TKey> _valueReferenceToKeyLookup;
 

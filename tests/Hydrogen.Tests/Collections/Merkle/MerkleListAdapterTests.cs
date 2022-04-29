@@ -3,11 +3,11 @@ using NUnit.Framework;
 using System.IO;
 using System.Linq;
 using System.Text;
-using Sphere10.Framework;
-using Sphere10.Framework.Maths;
-using Sphere10.Framework.NUnit;
+using Hydrogen;
+using Hydrogen.Maths;
+using Hydrogen.NUnit;
 
-namespace Sphere10.Framework.Tests {
+namespace Hydrogen.Tests {
 
 	[TestFixture]
 	[Parallelizable(ParallelScope.Children)]

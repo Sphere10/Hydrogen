@@ -1,3 +1,3 @@
-﻿namespace Sphere10.Hydrogen.Presentation.Models {
+﻿namespace Hydrogen.DApp.Presentation.Models {
     public record ItemRequest(int Index, int Count, string SortBy, string SortDirection);
 }

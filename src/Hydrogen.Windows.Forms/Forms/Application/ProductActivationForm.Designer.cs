@@ -11,7 +11,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace Sphere10.Framework.Windows.Forms {
+namespace Hydrogen.Windows.Forms {
 
     partial class ProductActivationForm {
         /// <summary>
@@ -37,7 +37,7 @@ namespace Sphere10.Framework.Windows.Forms {
         /// the contents of this method with the code editor.
         /// </summary>
         private void InitializeComponent() {
-			this.applicationBanner1 = new Sphere10.Framework.Windows.Forms.ApplicationBanner();
+			this.applicationBanner1 = new Hydrogen.Windows.Forms.ApplicationBanner();
 			this._cancelButton = new System.Windows.Forms.Button();
 			this._activateButton = new System.Windows.Forms.Button();
 			this.groupBox1 = new System.Windows.Forms.GroupBox();

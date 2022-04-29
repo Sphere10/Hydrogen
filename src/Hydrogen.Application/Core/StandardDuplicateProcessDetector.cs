@@ -14,7 +14,7 @@
 using System.Linq;
 using System.Diagnostics;
 
-namespace Sphere10.Framework.Application {
+namespace Hydrogen.Application {
 
 	public class StandardDuplicateProcessDetector : IDuplicateProcessDetector {
 		

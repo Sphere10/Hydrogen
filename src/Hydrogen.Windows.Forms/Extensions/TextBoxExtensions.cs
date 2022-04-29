@@ -17,7 +17,7 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public static class TextBoxExtensions {
 

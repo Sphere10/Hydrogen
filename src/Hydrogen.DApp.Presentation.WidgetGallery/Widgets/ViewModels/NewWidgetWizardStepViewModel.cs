@@ -2,13 +2,13 @@
 using System.Threading.Tasks;
 using FluentValidation;
 using FluentValidation.Results;
-using Sphere10.Framework;
-using Sphere10.Hydrogen.Presentation.Components.Wizard;
-using Sphere10.Hydrogen.Presentation.WidgetGallery.Extensions;
-using Sphere10.Hydrogen.Presentation.WidgetGallery.Widgets.Components;
-using Sphere10.Hydrogen.Presentation.WidgetGallery.Widgets.Models;
+using Hydrogen;
+using Hydrogen.DApp.Presentation.Components.Wizard;
+using Hydrogen.DApp.Presentation.WidgetGallery.Extensions;
+using Hydrogen.DApp.Presentation.WidgetGallery.Widgets.Components;
+using Hydrogen.DApp.Presentation.WidgetGallery.Widgets.Models;
 
-namespace Sphere10.Hydrogen.Presentation.WidgetGallery.Widgets.ViewModels {
+namespace Hydrogen.DApp.Presentation.WidgetGallery.Widgets.ViewModels {
 
     public class NewWidgetWizardStepViewModel : WizardStepViewModelBase<NewWidgetModel> {
         private IValidator<NewWidgetModel> Validator { get; }

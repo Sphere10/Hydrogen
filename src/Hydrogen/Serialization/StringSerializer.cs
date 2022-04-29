@@ -4,10 +4,10 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
-using Sphere10.Framework.Values;
+using Hydrogen.Values;
 using Tools;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public class StringSerializer : ItemSerializer<string> {
 

@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
-using Sphere10.Framework.CryptoEx.Bitcoin;
+using Hydrogen.CryptoEx.Bitcoin;
 
-namespace Sphere10.Framework.CryptoEx.Tests {
+namespace Hydrogen.CryptoEx.Tests {
 	//https://github.com/bitcoin/bitcoin/blob/master/src/test/base58_tests.cpp
 	[TestFixture]
 	public class BitcoinBase58EncodingTests {

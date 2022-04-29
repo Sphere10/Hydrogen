@@ -11,7 +11,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace Sphere10.Framework.Windows.Forms.Firebird {
+namespace Hydrogen.Windows.Forms.Firebird {
 	partial class FirebirdEmbeddedConnectionPanel {
 		/// <summary> 
 		/// Required designer variable.
@@ -36,7 +36,7 @@ namespace Sphere10.Framework.Windows.Forms.Firebird {
 		/// the contents of this method with the code editor.
 		/// </summary>
 		private void InitializeComponent() {
-            this._fileSelectorControl = new Sphere10.Framework.Windows.Forms.PathSelectorControl();
+            this._fileSelectorControl = new Hydrogen.Windows.Forms.PathSelectorControl();
             this._tableLayoutPanel = new System.Windows.Forms.TableLayoutPanel();
             this.label6 = new System.Windows.Forms.Label();
             this._usernameTextBox = new System.Windows.Forms.TextBox();

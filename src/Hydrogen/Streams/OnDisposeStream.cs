@@ -1,7 +1,7 @@
 using System;
 using System.IO;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public sealed class OnDisposeStream : StreamDecorator {
 		private readonly Action<Stream> _disposeAction;

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	public static class StringFormatter {
 		private static readonly char[] TokenTrimDelimitters = new[] { '{', '}' };
 

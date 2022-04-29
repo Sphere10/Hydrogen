@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	public class ActionItemSizer<T> : IItemSizer<T> {
 		private readonly Func<T, int> _sizer;
 

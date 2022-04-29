@@ -4,9 +4,9 @@
 //using System.Linq;
 //using System.Text;
 //using NUnit.Framework;
-//using Sphere10.Framework;
-//using Sphere10.Hydrogen.Core.Encoding;
-//using Sphere10.Hydrogen.Core.Maths;
+//using Hydrogen;
+//using Hydrogen.DApp.Core.Encoding;
+//using Hydrogen.DApp.Core.Maths;
 
 //namespace VelocityNET.Processing.Tests.Core {
 

@@ -9,7 +9,7 @@
 //using FluentAssertions;
 //using NUnit.Framework;
 
-//namespace Sphere10.Framework.Tests.Logging
+//namespace Hydrogen.Tests.Logging
 //{
 //    public class RollingFileLoggerTests
 //    {

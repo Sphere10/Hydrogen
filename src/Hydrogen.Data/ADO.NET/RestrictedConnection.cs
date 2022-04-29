@@ -19,7 +19,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Sphere10.Framework.Data {
+namespace Hydrogen.Data {
     public class RestrictedConnection : DbConnectionDecorator {
         public RestrictedConnection(IDbConnection internalConnection)
             : base(internalConnection) {

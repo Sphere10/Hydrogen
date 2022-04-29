@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public class ByteArrayStreamFragmentProvider : IStreamFragmentProvider {
 		public const int DefaultNewFragmentSize = 10;

@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Diagnostics;
-using Sphere10.Framework;
-using Sphere10.Hydrogen.Core.Consensus;
-using Sphere10.Hydrogen.Core.Maths;
+using Hydrogen;
+using Hydrogen.DApp.Core.Consensus;
+using Hydrogen.DApp.Core.Maths;
 
-namespace Sphere10.Hydrogen.Core.Mining {
+namespace Hydrogen.DApp.Core.Mining {
 
 
 	public class MiningPuzzle {

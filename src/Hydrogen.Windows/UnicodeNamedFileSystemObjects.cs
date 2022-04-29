@@ -18,7 +18,7 @@ using System.IO;
 using System.Text;
 using Microsoft.Win32.SafeHandles;
 
-namespace Sphere10.Framework.Windows {
+namespace Hydrogen.Windows {
 
     public class UnicodeNamedFile {
         public static void Create(string fileName) {

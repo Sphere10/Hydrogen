@@ -5,9 +5,9 @@ using System.Text;
 using System.IO;
 using System.Runtime.Serialization;
 using System.Diagnostics;
-using Sphere10.Framework;
+using Hydrogen;
 
-namespace Sphere10.Hydrogen.Core {
+namespace Hydrogen.DApp.Core {
 
 	public static class EndianBinaryWriterExtensions {
 		public static void WriteBuffer(this EndianBinaryWriter writer, byte[] buffer) {

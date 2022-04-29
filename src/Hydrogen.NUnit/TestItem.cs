@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Sphere10.Framework.NUnit {
+namespace Hydrogen.NUnit {
 
 	public class TestItem<TInput, TExpected> {
 		public TInput Input { get; set; }

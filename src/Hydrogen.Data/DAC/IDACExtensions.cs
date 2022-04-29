@@ -17,7 +17,7 @@ using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Sphere10.Framework.Data {
+namespace Hydrogen.Data {
     public static class IDACExtensions {
 
         public static DACScope BeginScope(this IDAC dac, bool openConnection = true, ScopeContextPolicy policy = ScopeContextPolicy.None) {

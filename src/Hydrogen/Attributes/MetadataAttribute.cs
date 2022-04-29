@@ -16,7 +16,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	public class MetadataAttribute : Attribute {
 
 		public const int NoSequence = -1;

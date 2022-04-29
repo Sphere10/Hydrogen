@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Text.RegularExpressions;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	public class HexEncoding {
 		public const string CharSet = "0123456789abcdefABCDEF";
 		public const string NibblePattern = @"[0-9a-fA-F]";

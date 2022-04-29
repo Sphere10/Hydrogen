@@ -15,7 +15,7 @@ using System;
 using System.Security.Permissions;
 using System.Threading;
 
-namespace Sphere10.Framework.Threading {
+namespace Hydrogen.Threading {
 	/// <summary>
 	/// Represents a callback method to be executed with a specific <see cref="SynchronizationContext"/>.
 	/// </summary>

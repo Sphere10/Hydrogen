@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Sphere10.Framework.Values;
+using Hydrogen.Values;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public class StaticSizeByteArraySerializer : StaticSizeItemSerializerBase<byte[]> {
 

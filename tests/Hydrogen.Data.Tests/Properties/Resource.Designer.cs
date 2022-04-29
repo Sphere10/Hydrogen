@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Sphere10.Framework.UnitTests {
+namespace Hydrogen.Data.Tests {
     using System;
     
     

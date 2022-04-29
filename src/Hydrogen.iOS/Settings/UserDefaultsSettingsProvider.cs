@@ -29,10 +29,10 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using Foundation;
-using Sphere10.Framework;
-using Sphere10.Framework.Application;
+using Hydrogen;
+using Hydrogen.Application;
 
-namespace Sphere10.Framework.iOS {
+namespace Hydrogen.iOS {
 
 	public class UserDefaultsSettingsProvider : BaseSettingsProvider {
 		private const string NullValueString = "NULL!8be93b18-cecb-4be0-8d05-d6c43123aa4e";

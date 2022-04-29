@@ -11,7 +11,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace Sphere10.Framework.Windows.Forms.Firebird {
+namespace Hydrogen.Windows.Forms.Firebird {
 	partial class FirebirdEmbeddedConnectionBar {
 		/// <summary> 
 		/// Required designer variable.
@@ -41,7 +41,7 @@ namespace Sphere10.Framework.Windows.Forms.Firebird {
 			this._passwordTextBox = new System.Windows.Forms.TextBox();
 			this._journalLabel = new System.Windows.Forms.Label();
 			this.label4 = new System.Windows.Forms.Label();
-			this._fileSelectorControl = new Sphere10.Framework.Windows.Forms.PathSelectorControl();
+			this._fileSelectorControl = new Hydrogen.Windows.Forms.PathSelectorControl();
 			this.label5 = new System.Windows.Forms.Label();
 			this._tableLayoutPanel.SuspendLayout();
 			this.SuspendLayout();
@@ -122,7 +122,7 @@ namespace Sphere10.Framework.Windows.Forms.Firebird {
 			this._fileSelectorControl.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
 			this._fileSelectorControl.Location = new System.Drawing.Point(0, 15);
 			this._fileSelectorControl.Margin = new System.Windows.Forms.Padding(0, 0, 3, 0);
-			this._fileSelectorControl.Mode = Sphere10.Framework.Windows.Forms.PathSelectionMode.File;
+			this._fileSelectorControl.Mode = Hydrogen.Windows.Forms.PathSelectionMode.File;
 			this._fileSelectorControl.Name = "_fileSelectorControl";
 			this._fileSelectorControl.Path = "";
 			this._fileSelectorControl.PlaceHolderText = "";

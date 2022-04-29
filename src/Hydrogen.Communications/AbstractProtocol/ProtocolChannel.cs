@@ -4,7 +4,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Sphere10.Framework.Communications {
+namespace Hydrogen.Communications {
 
     public abstract class ProtocolChannel : IDisposable, IAsyncDisposable {
         public const int DefaultTimeoutMS = 5000;

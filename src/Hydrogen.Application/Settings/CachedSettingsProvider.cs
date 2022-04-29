@@ -13,7 +13,7 @@
 
 using System;
 
-namespace Sphere10.Framework.Application {
+namespace Hydrogen.Application {
     public class CachedSettingsProvider : SettingsProviderDecorator {
         SynchronizedDictionary<(Type, object), SettingsObject> _cache;
        

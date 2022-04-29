@@ -13,7 +13,7 @@
 
 using System;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	public static class GuidExtensions {
 
 		public static string ToStrictAlphaString(this Guid guid) {

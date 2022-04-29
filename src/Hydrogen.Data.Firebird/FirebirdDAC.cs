@@ -17,10 +17,10 @@ using System.Data;
 using System.Linq;
 using System.Transactions;
 using FirebirdSql.Data.FirebirdClient;
-using Sphere10.Framework.Data.Firebird;
+using Hydrogen.Data.Firebird;
 using IsolationLevel = System.Data.IsolationLevel;
 
-namespace Sphere10.Framework.Data {
+namespace Hydrogen.Data {
 
 	public class FirebirdDAC : DACBase {
 

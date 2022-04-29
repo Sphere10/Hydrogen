@@ -1,7 +1,7 @@
 ﻿using System;
-using Sphere10.Hydrogen.Presentation2.UI.Dialogs;
+using Hydrogen.DApp.Presentation2.UI.Dialogs;
 
-namespace Sphere10.Hydrogen.Presentation2.Logic.Modal {
+namespace Hydrogen.DApp.Presentation2.Logic.Modal {
 
     /// <summary>
     /// Modal result - the result of a modal interaction.

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Sphere10.Framework;
+namespace Hydrogen;
 
 public sealed class ProjectionHasher<TItem, TKey> : IItemHasher<TItem> {
 	private readonly Func<TItem, TKey> _projection;

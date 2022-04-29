@@ -17,7 +17,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	public class StreamPipeline : IDisposable {
 		private readonly ManualResetEvent _lastStagedFinished;
 		private readonly Action<Stream, Stream>[] _filters;

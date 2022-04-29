@@ -1,4 +1,4 @@
-﻿namespace Sphere10.Hydrogen.Presentation.Plugins {
+﻿namespace Hydrogen.DApp.Presentation.Plugins {
 
     public interface INamedItem {
         /// <summary>

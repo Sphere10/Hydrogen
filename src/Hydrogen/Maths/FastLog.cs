@@ -14,7 +14,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	public static class FastLog {
         [StructLayout(LayoutKind.Explicit)]
         private struct Ieee754 {

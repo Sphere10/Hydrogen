@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using NHibernate.Dialect;
 
-namespace Sphere10.Framework.Data.NHibernate {
+namespace Hydrogen.Data.NHibernate {
     public class ExtendedMssqlDialect : MsSql2008Dialect {
         protected override void RegisterNumericTypeMappings() {
             base.RegisterNumericTypeMappings();

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	/// <summary>
 	/// Used by <see cref="FragmentedStream"/> to map a set of non-contiguous byte arrays (fragments) into a logically contiguous stream of bytes.

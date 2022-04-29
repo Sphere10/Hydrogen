@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	[Flags]
 	public enum CommandLineArgumentOptions {
 		SingleDash = 1 << 0,

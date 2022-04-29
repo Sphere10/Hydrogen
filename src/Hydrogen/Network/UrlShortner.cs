@@ -17,7 +17,7 @@ using System.IO;
 using System.Net;
 using System.Threading.Tasks;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	public static class UrlShortner {
 		public static async Task<string> TinyUrlAsync(string url, string apiKey, string provider = "0_mk") {
 			//string yourUrl = "http://your-site.com/your-url-for-minification";

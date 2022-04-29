@@ -14,7 +14,7 @@
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public class ReadOnlyListAdapter<TItem> : IReadOnlyList<TItem> {
 		private readonly IList<TItem> _internalList;

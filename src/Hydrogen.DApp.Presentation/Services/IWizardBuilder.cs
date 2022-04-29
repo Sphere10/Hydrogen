@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Sphere10.Framework;
-using Sphere10.Hydrogen.Presentation.Components.Wizard;
+using Hydrogen;
+using Hydrogen.DApp.Presentation.Components.Wizard;
 
-namespace Sphere10.Hydrogen.Presentation.Services {
+namespace Hydrogen.DApp.Presentation.Services {
 
     /// <summary>
     /// Wizard builder

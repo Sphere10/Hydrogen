@@ -6,10 +6,10 @@ using System.Text;
 using System.Threading;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using NUnit.Framework;
-using Sphere10.Framework.NUnit;
+using Hydrogen.NUnit;
 using Tools;
 
-namespace Sphere10.Framework.Tests {
+namespace Hydrogen.Tests {
 
 
 	[TestFixture]

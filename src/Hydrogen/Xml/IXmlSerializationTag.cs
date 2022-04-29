@@ -19,7 +19,7 @@
 // http://www.codeproject.com/KB/XML/deepserializer.aspx
 // -----------------------------------------------------------------------------------
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	public interface IXmlSerializationTag
   {
     string ASSEMBLY_TAG { get; }

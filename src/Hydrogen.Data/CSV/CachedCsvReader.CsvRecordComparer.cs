@@ -11,7 +11,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-//	Sphere10.Framework.Data.Csv.CachedCsvReader.CsvRecordComparer
+//	Hydrogen.Data.Csv.CachedCsvReader.CsvRecordComparer
 //	Copyright (c) 2006 Sébastien Lorion
 //
 //	MIT license (http://en.wikipedia.org/wiki/MIT_License)
@@ -38,7 +38,7 @@ using System.ComponentModel;
 using Debug = System.Diagnostics.Debug;
 using System.Globalization;
 
-namespace Sphere10.Framework.Data.Csv {
+namespace Hydrogen.Data.Csv {
     public partial class CachedCsvReader
         : CsvReader {
         /// <summary>

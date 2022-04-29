@@ -14,7 +14,7 @@
 using System;
 using System.Reflection;
 
-namespace Sphere10.Framework.FastReflection {
+namespace Hydrogen.FastReflection {
 	public static class FastReflectionExtensions {
         public static object FastInvoke(this MethodInfo methodInfo, object instance, params object[] parameters) {
             return FastReflectionCaches.MethodInvokerCache.Get(methodInfo).Value.Invoke(instance, parameters);

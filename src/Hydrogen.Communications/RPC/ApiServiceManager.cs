@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Sphere10.Framework.Communications.RPC {
+namespace Hydrogen.Communications.RPC {
 	//Service Manager Singleton
 	public class ApiServiceManager {
 		private static Dictionary<string, ApiService> Services = new Dictionary<string, ApiService>();

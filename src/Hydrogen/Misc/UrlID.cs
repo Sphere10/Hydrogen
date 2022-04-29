@@ -13,7 +13,7 @@
 
 using System;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	public class UrlID {
 
         public static string Generate(uint id, Format format = Format.Base62) {

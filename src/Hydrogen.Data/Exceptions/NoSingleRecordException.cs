@@ -17,7 +17,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Sphere10.Framework.Data.Exceptions {
+namespace Hydrogen.Data.Exceptions {
     public class NoSingleRecordException : SoftwareException {
         private const string UnknownFound = "Expected a single '{0}', found {1}";
         private const string NoneFound = "No matching record was found in '{0}'";

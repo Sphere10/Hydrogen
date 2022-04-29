@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Sphere10.Framework;
+using Hydrogen;
 
-namespace Sphere10.Hydrogen.Presentation.Services {
+namespace Hydrogen.DApp.Presentation.Services {
     /// <summary>
     /// Endpoint manager
     /// </summary>

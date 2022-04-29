@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	internal class SimpleGraphAdapter<TNode, TEdge, TWeight> : ISimpleGraph 
 		where TNode : IGraph<TNode, TEdge, TWeight>

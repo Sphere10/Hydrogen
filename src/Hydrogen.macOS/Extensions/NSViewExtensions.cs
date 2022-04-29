@@ -19,7 +19,7 @@ using System.Drawing;
 using MonoMac.ObjCRuntime;
 
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	public static class NSViewExtensions {
 
 		private static IntPtr selConvertRectToBacking_ = Selector.GetHandle("convertRectToBacking:");

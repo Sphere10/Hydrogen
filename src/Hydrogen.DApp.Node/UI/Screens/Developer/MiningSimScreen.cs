@@ -3,15 +3,15 @@ using System.Collections.Generic;
 using System.Collections.Concurrent;
 using System.ComponentModel;
 using System.Diagnostics;
-using Sphere10.Framework;
+using Hydrogen;
 using Terminal.Gui;
-using Sphere10.Hydrogen.Core.Maths;
-using Sphere10.Hydrogen.Core.Mining;
-using Sphere10.Hydrogen.Core.Consensus.Serializers;
-using Sphere10.Hydrogen.Node.UI.Components;
-using Sphere10.Hydrogen.Core.Consensus;
+using Hydrogen.DApp.Core.Maths;
+using Hydrogen.DApp.Core.Mining;
+using Hydrogen.DApp.Core.Consensus.Serializers;
+using Hydrogen.DApp.Node.UI.Components;
+using Hydrogen.DApp.Core.Consensus;
 
-namespace Sphere10.Hydrogen.Node.UI {
+namespace Hydrogen.DApp.Node.UI {
 
 	[Title("Mining Simulator")]
 	[Lifetime(ScreenLifetime.WhenVisible)]

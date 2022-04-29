@@ -16,7 +16,7 @@ using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
-using Sphere10.Framework;
+using Hydrogen;
 
 // ReSharper disable CheckNamespace
 namespace Tools {

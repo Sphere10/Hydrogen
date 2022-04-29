@@ -7,7 +7,7 @@ using System.Resources;
 using System.Runtime.CompilerServices;
 using System.Threading;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	/// <summary>
 	/// A list whose items are persisted over a stream via an <see cref="IClusteredStorage"/>.

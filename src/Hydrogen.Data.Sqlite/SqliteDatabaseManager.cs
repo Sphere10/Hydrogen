@@ -1,5 +1,5 @@
-﻿using Sphere10.Framework;
-using Sphere10.Framework.Data;
+﻿using Hydrogen;
+using Hydrogen.Data;
 using System;
 using System.Collections.Generic;
 using System.Data.SQLite;
@@ -9,7 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Tools;
 
-namespace Sphere10.Framework.Data.Sqlite {
+namespace Hydrogen.Data.Sqlite {
     
     public class SqliteDatabaseManager : DatabaseManagerBase {
 

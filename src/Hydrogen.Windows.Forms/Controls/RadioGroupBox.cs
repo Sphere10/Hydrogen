@@ -41,7 +41,7 @@ using System.Windows.Forms;
 using System.Windows.Forms.VisualStyles;
 
 
-namespace Sphere10.Framework.Windows.Forms {
+namespace Hydrogen.Windows.Forms {
 	/// <summary>
 	/// RadioGroupBox is a GroupBox with an embeded RadioButton.
 	/// </summary>

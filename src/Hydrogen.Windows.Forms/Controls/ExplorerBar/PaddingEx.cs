@@ -18,7 +18,7 @@ using System.Text;
 using System.ComponentModel;
 using System.Reflection;
 
-namespace Sphere10.Framework.Windows.Forms {
+namespace Hydrogen.Windows.Forms {
 	/// <summary>
 	/// Specifies the amount of space between the border and any contained 
 	/// items along each edge of an object

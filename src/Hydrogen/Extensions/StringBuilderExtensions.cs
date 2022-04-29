@@ -13,7 +13,7 @@
 
 using System.Text;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	public static class StringBuilderExtensions {
 		
 		static public void AppendLine(this StringBuilder sb, string text, params object[] formatParams) {

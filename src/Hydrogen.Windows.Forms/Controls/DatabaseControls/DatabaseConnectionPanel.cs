@@ -20,17 +20,17 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Sphere10.Framework;
-using Sphere10.Framework.Data;
-using Sphere10.Framework.Windows.Forms;
+using Hydrogen;
+using Hydrogen.Data;
+using Hydrogen.Windows.Forms;
 
-namespace Sphere10.Framework.Windows.Forms {
+namespace Hydrogen.Windows.Forms {
 
 	public partial class DatabaseConnectionPanel : ConnectionPanelBase, IDatabaseConnectionProvider {
-		private const string MSSQLConnectionPanelTypeName = "Sphere10.Framework.Windows.Forms.MSSQL.MSSQLConnectionPanel, Sphere10.Framework.Windows.Forms.MSSQL";
-		private const string SqliteConnectionPanelTypeName = "Sphere10.Framework.Windows.Forms.Sqlite.SqliteConnectionPanel, Sphere10.Framework.Windows.Forms.Sqlite";
-		private const string FirebirdConnectionPanelTypeName = "Sphere10.Framework.Windows.Forms.Firebird.FirebirdConnectionPanel, Sphere10.Framework.Windows.Forms.Firebird";
-		private const string FirebirdFileConnectionPanelTypeName = "Sphere10.Framework.Windows.Forms.Firebird.FirebirdEmbeddedConnectionPanel, Sphere10.Framework.Windows.Forms.Firebird";
+		private const string MSSQLConnectionPanelTypeName = "Hydrogen.Windows.Forms.MSSQL.MSSQLConnectionPanel, Hydrogen.Windows.Forms.MSSQL";
+		private const string SqliteConnectionPanelTypeName = "Hydrogen.Windows.Forms.Sqlite.SqliteConnectionPanel, Hydrogen.Windows.Forms.Sqlite";
+		private const string FirebirdConnectionPanelTypeName = "Hydrogen.Windows.Forms.Firebird.FirebirdConnectionPanel, Hydrogen.Windows.Forms.Firebird";
+		private const string FirebirdFileConnectionPanelTypeName = "Hydrogen.Windows.Forms.Firebird.FirebirdEmbeddedConnectionPanel, Hydrogen.Windows.Forms.Firebird";
 
 		public event EventHandlerEx<DatabaseConnectionPanel, DBMSType> DBMSTypeChanged;
 

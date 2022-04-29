@@ -3,10 +3,10 @@ using System.Numerics;
 using System.Collections.Generic;
 using System.Text;
 using System.Linq;
-using Sphere10.Framework;
+using Hydrogen;
 using Newtonsoft.Json;
 
-namespace Sphere10.Framework.Communications {
+namespace Hydrogen.Communications {
 	//Write hexadecimal values. Read hex values, string contaning hex values, integer values, string containing integer values
 	public sealed class HexadecimalValueConverterReader : JsonConverter {
 		public override bool CanConvert(Type objectType) {

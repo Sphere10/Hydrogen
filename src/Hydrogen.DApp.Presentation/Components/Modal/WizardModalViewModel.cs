@@ -1,9 +1,9 @@
 ﻿using System.Threading.Tasks;
-using Sphere10.Framework;
-using Sphere10.Hydrogen.Presentation.Components.Wizard;
-using Sphere10.Hydrogen.Presentation.ViewModels;
+using Hydrogen;
+using Hydrogen.DApp.Presentation.Components.Wizard;
+using Hydrogen.DApp.Presentation.ViewModels;
 
-namespace Sphere10.Hydrogen.Presentation.Components.Modal {
+namespace Hydrogen.DApp.Presentation.Components.Modal {
 
     /// <summary>
     /// Wizard modal view model

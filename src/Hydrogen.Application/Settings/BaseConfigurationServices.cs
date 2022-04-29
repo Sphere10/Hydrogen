@@ -13,7 +13,7 @@
 
 using System;
 
-namespace Sphere10.Framework.Application {
+namespace Hydrogen.Application {
 
 	public abstract class BaseConfigurationServices : IConfigurationServices {
 		public event EventHandler ConfigurationChanged;

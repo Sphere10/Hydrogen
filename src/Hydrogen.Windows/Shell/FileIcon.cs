@@ -15,7 +15,7 @@ using System;
 using System.Drawing;
 using System.Runtime.InteropServices;
 
-namespace Sphere10.Framework.Windows {
+namespace Hydrogen.Windows {
 	/// <summary>
 	/// Enables extraction of icons for any file type from
 	/// the Shell.

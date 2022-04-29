@@ -7,7 +7,7 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
     /// <summary>
     /// Type converter for <see cref="IPAddress"/> which is missing in .NET. Use <see cref="TypeDescriptorEx"/> to activate.

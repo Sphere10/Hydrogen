@@ -16,9 +16,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Sphere10.Framework;
+using Hydrogen;
 
-namespace Sphere10.Framework.Windows {
+namespace Hydrogen.Windows {
     public class AlwaysOnScope : IDisposable {
         private readonly uint _priorState ;
         public AlwaysOnScope(bool system,  bool display) {

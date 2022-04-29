@@ -14,7 +14,7 @@
 using System;
 using UIKit;
 
-namespace Sphere10.Framework.iOS {
+namespace Hydrogen.iOS {
 	public class BadgeCell : UITableViewCell {
 
 		private readonly BadgeView _badgeView;

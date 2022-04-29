@@ -1,5 +1,5 @@
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public interface IObservableCollection : ISuppressableEvents {
 		event EventHandlerEx<object, EventTraits> Accessing;

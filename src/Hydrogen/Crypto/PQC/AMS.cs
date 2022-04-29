@@ -1,4 +1,4 @@
-﻿using Sphere10.Framework.Collections.Spans;
+﻿using Hydrogen.Collections.Spans;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
@@ -7,7 +7,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public class AMS : DigitalSignatureSchemeBase<AMS.PrivateKey, AMS.PublicKey> {
 		public const int MaxHeight = 20;

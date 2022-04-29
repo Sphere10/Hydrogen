@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
-using Sphere10.Hydrogen.Presentation.ViewModels;
+using Hydrogen.DApp.Presentation.ViewModels;
 
-namespace Sphere10.Hydrogen.Presentation.Components {
+namespace Hydrogen.DApp.Presentation.Components {
     /// <summary>
     /// Extends <see cref="ComponentBase"/> adding common functionality and view model support.
     /// </summary>

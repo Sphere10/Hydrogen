@@ -1,4 +1,4 @@
-﻿namespace Sphere10.Hydrogen.Presentation.Plugins {
+﻿namespace Hydrogen.DApp.Presentation.Plugins {
     /// <summary>
     /// Denotes an item that can be routed/navigated to.
     /// </summary>

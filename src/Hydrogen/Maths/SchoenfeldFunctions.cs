@@ -4,7 +4,7 @@
 /// <summary>
 /// From http://sci.math.narkive.com/4iRcGoJ3/some-functions LOL
 /// </summary>
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	public static class SchoenfeldFunctions {
 		private const long R = 10;
 

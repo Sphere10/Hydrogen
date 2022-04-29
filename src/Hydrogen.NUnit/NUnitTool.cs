@@ -15,7 +15,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using NUnit.Framework;
-using Sphere10.Framework;
+using Hydrogen;
 
 namespace Tools {
 	public static class NUnit {

@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Microsoft.JSInterop;
-using Sphere10.Hydrogen.Presentation.Loader.Plugins;
+using Hydrogen.DApp.Presentation.Loader.Plugins;
 
-namespace Sphere10.Hydrogen.Presentation.Loader
+namespace Hydrogen.DApp.Presentation.Loader
 {
 
     public class AppViewModel

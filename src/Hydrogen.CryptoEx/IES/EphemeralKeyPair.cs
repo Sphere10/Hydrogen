@@ -1,6 +1,6 @@
 using Org.BouncyCastle.Crypto;
 
-namespace Sphere10.Framework.CryptoEx.IES {
+namespace Hydrogen.CryptoEx.IES {
 	public class EphemeralKeyPair
     {
         private readonly AsymmetricCipherKeyPair _keyPair;

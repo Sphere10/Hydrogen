@@ -17,9 +17,9 @@ using System.Linq;
 using System.Text;
 
 using System.Runtime.InteropServices;
-using Sphere10.Framework;
+using Hydrogen;
 
-namespace Sphere10.Framework.Windows {
+namespace Hydrogen.Windows {
 	public static class HooksTool {
 
 		internal const int MaxExceptionsBeforeAbort = 20;

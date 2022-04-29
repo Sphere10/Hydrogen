@@ -16,10 +16,10 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
-using Sphere10.Framework.Collections;
+using Hydrogen.Collections;
 using System.Data.SQLite;
 
-namespace Sphere10.Framework.Data {
+namespace Hydrogen.Data {
 	
 	public class SqliteDAC : DACBase {
 

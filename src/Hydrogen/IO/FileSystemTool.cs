@@ -19,8 +19,8 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Sphere10.Framework;
-using Sphere10.Framework.FastReflection;
+using Hydrogen;
+using Hydrogen.FastReflection;
 
 // ReSharper disable CheckNamespace
 namespace Tools {

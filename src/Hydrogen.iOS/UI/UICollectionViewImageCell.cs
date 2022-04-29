@@ -15,11 +15,11 @@ using System;
 using UIKit;
 using System.Collections.Generic;
 using CoreGraphics;
-using Sphere10.Framework;
+using Hydrogen;
 using Foundation;
 using CoreAnimation;
 
-namespace Sphere10.Framework.iOS {
+namespace Hydrogen.iOS {
 
 	public class UICollectionViewImageCell : UICollectionViewCell, ISpecialDisposable {
 		public const string CellID = "UICollectionViewImageCell [fbb52a9f0a1640ceaf253bc080f94b89]";

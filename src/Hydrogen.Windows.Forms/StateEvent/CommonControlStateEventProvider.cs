@@ -17,10 +17,10 @@ using System.Text;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
-using Sphere10.Framework.Application;
-using Sphere10.Framework;
+using Hydrogen.Application;
+using Hydrogen;
 
-namespace Sphere10.Framework.Windows.Forms {
+namespace Hydrogen.Windows.Forms {
 
     public class CommonControlStateEventProvider : ControlStateEventProviderBase<Control> {
 

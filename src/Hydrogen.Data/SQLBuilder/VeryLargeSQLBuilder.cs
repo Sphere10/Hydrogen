@@ -16,7 +16,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Sphere10.Framework.Data.SQLBuilder {
+namespace Hydrogen.Data.SQLBuilder {
     public class VeryLargeSQLBuilder : SQLBuilderDecorator, IDisposable {
         private readonly IList<LargeCollection<SQLStatement>> _generatedContainers;
  

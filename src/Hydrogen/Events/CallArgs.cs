@@ -1,4 +1,4 @@
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public class CallArgs {
 		private readonly object[] _args;

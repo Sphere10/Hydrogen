@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
     /// <summary>
     /// A Serializer that works for base-level objects by delegating actual serialization to registered concrete-level serializers. 
     /// </summary>

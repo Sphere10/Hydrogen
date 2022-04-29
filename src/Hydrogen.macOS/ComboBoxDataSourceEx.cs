@@ -18,7 +18,7 @@ using System.Collections.Generic;
 using MonoMac.Foundation;
 
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 
 	public class ComboBoxDataSourceEx : NSComboBoxDataSource {

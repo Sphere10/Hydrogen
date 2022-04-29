@@ -17,9 +17,9 @@ using UIKit;
 using Foundation;
 using CoreGraphics;
 using CoreGraphics;
-using Sphere10.Framework;
+using Hydrogen;
 
-namespace Sphere10.Framework.iOS {
+namespace Hydrogen.iOS {
     public static class UIImageExtensions {
 
         public static UIImage ToUIImage(this byte[] imageBuffer) {

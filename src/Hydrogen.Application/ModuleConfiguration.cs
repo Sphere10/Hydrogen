@@ -14,7 +14,7 @@
 using System;
 using System.IO;
 
-namespace Sphere10.Framework.Application {
+namespace Hydrogen.Application {
 	public class ModuleConfiguration : ModuleConfigurationBase {
 
 		public override int Priority => int.MinValue; // last to execute

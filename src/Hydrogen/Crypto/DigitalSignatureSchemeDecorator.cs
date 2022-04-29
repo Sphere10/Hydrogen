@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public abstract class DigitalSignatureSchemeDecorator<TPrivateKey, TPublicKey, TScheme> : IDigitalSignatureScheme
     where TPrivateKey : IPrivateKey

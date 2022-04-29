@@ -1,7 +1,7 @@
-﻿using Sphere10.Framework;
+﻿using Hydrogen;
 using Terminal.Gui;
 
-namespace Sphere10.Hydrogen.Node.UI {
+namespace Hydrogen.DApp.Node.UI {
 
 	public class TextViewWriter : BaseTextWriter {
 		private readonly TextView _textBox;

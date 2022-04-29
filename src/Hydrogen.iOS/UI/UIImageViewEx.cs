@@ -16,7 +16,7 @@ using UIKit;
 using CoreGraphics;
 using Foundation;
 
-namespace Sphere10.Framework.iOS {
+namespace Hydrogen.iOS {
 	public class UIImageViewEx : UIImageView	{
 		public event EventHandler TouchBegan;
 		public event EventHandler TouchEnded;

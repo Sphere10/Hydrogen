@@ -4,7 +4,7 @@ using System.Linq;
 using System.Security;
 using System.Text;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public sealed class SecureItem<T> : ISecureItem<T> {
 		private SecureBytes _secureBytes;

@@ -1,7 +1,7 @@
 ﻿using FluentValidation.Results;
-using Sphere10.Framework;
+using Hydrogen;
 
-namespace Sphere10.Hydrogen.Presentation.WidgetGallery.Extensions {
+namespace Hydrogen.DApp.Presentation.WidgetGallery.Extensions {
     public static class FluentValidationResultExtensions {
 
         public static Result ToResult(this ValidationResult validationResult) {

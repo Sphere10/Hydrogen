@@ -2,7 +2,7 @@ using System;
 using System.Linq;
 using System.Diagnostics;
 
-namespace Sphere10.Framework.CryptoEx.Bitcoin {
+namespace Hydrogen.CryptoEx.Bitcoin {
 
 	// this implementation is based on https://github.com/bitcoin/bitcoin/blob/master/src/base58.cpp
 	public class BitcoinBase58Encoding {

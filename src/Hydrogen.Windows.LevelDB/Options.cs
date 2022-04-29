@@ -15,7 +15,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Sphere10.Framework.Windows.LevelDB
+namespace Hydrogen.Windows.LevelDB
 {
     /// <summary>
     /// Options to control the behavior of a database (passed to Open)

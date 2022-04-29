@@ -17,7 +17,7 @@ using System.Text;
 using System.Threading;
 using System.Runtime.InteropServices;
 
-namespace Sphere10.Framework.Windows.BITS
+namespace Hydrogen.Windows.BITS
 {
     public class BitsError
     {

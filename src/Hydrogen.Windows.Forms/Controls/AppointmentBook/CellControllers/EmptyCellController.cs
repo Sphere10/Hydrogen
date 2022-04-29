@@ -18,7 +18,7 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 
-namespace Sphere10.Framework.Windows.Forms.AppointmentBook {
+namespace Hydrogen.Windows.Forms.AppointmentBook {
 
 	internal class EmptyCellController : BaseCellController {
 		internal EmptyCellController(BaseAppointmentBook owner) : base(owner) {

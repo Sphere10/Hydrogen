@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Sphere10.Framework.Communications {
+namespace Hydrogen.Communications {
 
 	public class ProtocolHandshake {
 		

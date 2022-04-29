@@ -1,7 +1,7 @@
 ﻿using System.Text;
 using Newtonsoft.Json;
 
-namespace Sphere10.Framework.Communications {
+namespace Hydrogen.Communications {
 	public class WebSocketsPacket {
 		public string Message { get; set; }
 		public string[] Tokens { get; private set; } = new string[0];

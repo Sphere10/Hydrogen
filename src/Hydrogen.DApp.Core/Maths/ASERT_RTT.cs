@@ -5,10 +5,10 @@ using System.Linq;
 using System.Numerics;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
-using Sphere10.Framework;
-using Sphere10.Hydrogen.Core.Configuration;
+using Hydrogen;
+using Hydrogen.DApp.Core.Configuration;
 
-namespace Sphere10.Hydrogen.Core.Maths {
+namespace Hydrogen.DApp.Core.Maths {
 
     public class ASERT_RTT : IDAAlgorithm {
 

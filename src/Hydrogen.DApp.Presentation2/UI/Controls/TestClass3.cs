@@ -1,8 +1,8 @@
 ﻿using System;
-using Sphere10.Hydrogen.Presentation2.UI.Controls.BlazorGrid.Classes;
-using Sphere10.Hydrogen.Presentation2.UI.Controls.BlazorGrid.Components;
+using Hydrogen.DApp.Presentation2.UI.Controls.BlazorGrid.Classes;
+using Hydrogen.DApp.Presentation2.UI.Controls.BlazorGrid.Components;
 
-namespace Sphere10.Hydrogen.Presentation2.UI.Controls {
+namespace Hydrogen.DApp.Presentation2.UI.Controls {
 	public class TestClass3 : IColumnDefinition 
 	{
 		public int HashCode { get; set; }

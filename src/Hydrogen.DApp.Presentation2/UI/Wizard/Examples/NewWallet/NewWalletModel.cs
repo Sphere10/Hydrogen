@@ -1,4 +1,4 @@
-﻿namespace Sphere10.Hydrogen.Presentation2.UI.Wizard.Examples.NewWallet
+﻿namespace Hydrogen.DApp.Presentation2.UI.Wizard.Examples.NewWallet
 {
 
     public class NewWalletModel

@@ -17,7 +17,7 @@ using System.Text;
 using System.IO;
 using System.Diagnostics;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public static class ByteArrayExtensions {
 	

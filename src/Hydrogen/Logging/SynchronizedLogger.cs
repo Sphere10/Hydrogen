@@ -1,4 +1,4 @@
-namespace Sphere10.Framework;
+namespace Hydrogen;
 
 public class SynchronizedLogger : SynchronizedObject, ILogger {
 	private readonly ILogger _internalLogger;

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Sphere10.Hydrogen.Presentation.Models {
+namespace Hydrogen.DApp.Presentation.Models {
 
     /// <summary>
     /// Search result

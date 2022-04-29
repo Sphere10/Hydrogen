@@ -1,6 +1,6 @@
-﻿using Sphere10.Framework;
+﻿using Hydrogen;
 
-namespace Sphere10.Hydrogen.Presentation2.Logic {
+namespace Hydrogen.DApp.Presentation2.Logic {
 	public interface IApplicationMenuItem {
 		event EventHandlerEx Hover;
 		event EventHandlerEx Select;

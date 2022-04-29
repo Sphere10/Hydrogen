@@ -1,6 +1,6 @@
 using Org.BouncyCastle.Math.EC;
 
-namespace Sphere10.Framework.CryptoEx.EC;
+namespace Hydrogen.CryptoEx.EC;
 
 public class MuSigData {
 	public byte[] AggregatedPublicKey { get; internal set; }

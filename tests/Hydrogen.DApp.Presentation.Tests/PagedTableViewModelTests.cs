@@ -2,11 +2,11 @@
 using System.Linq;
 using AutoFixture;
 using NUnit.Framework;
-using Sphere10.Hydrogen.Presentation.Components.Tables;
-using Sphere10.Hydrogen.Presentation.Models;
-using Sphere10.Hydrogen.Presentation.ViewModels;
+using Hydrogen.DApp.Presentation.Components.Tables;
+using Hydrogen.DApp.Presentation.Models;
+using Hydrogen.DApp.Presentation.ViewModels;
 
-namespace Sphere10.Hydrogen.Presentation.Tests {
+namespace Hydrogen.DApp.Presentation.Tests {
 
     public class PagedTableTests {
         private Fixture AutoFixture { get; } = new();

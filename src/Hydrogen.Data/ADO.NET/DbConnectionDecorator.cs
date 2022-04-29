@@ -18,7 +18,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Sphere10.Framework.Data {
+namespace Hydrogen.Data {
     public abstract class DbConnectionDecorator : IDbConnection {
         protected readonly IDbConnection InternalConnection;
 

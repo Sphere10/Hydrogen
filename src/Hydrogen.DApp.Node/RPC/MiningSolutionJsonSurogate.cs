@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
-using Sphere10.Framework;
-using Sphere10.Framework.Communications;
-using Sphere10.Hydrogen.Core.Consensus;
-using Sphere10.Hydrogen.Core.Maths;
-using Sphere10.Hydrogen.Core.Mining;
+using Hydrogen;
+using Hydrogen.Communications;
+using Hydrogen.DApp.Core.Consensus;
+using Hydrogen.DApp.Core.Maths;
+using Hydrogen.DApp.Core.Mining;
 
-namespace Sphere10.Hydrogen.Node.RPC {
+namespace Hydrogen.DApp.Node.RPC {
 
 	[Serializable]
 	public class MiningSolutionJsonSurogate {

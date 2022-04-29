@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public class LazyLoad<T> : IFuture<T> {
 		private bool _loaded;

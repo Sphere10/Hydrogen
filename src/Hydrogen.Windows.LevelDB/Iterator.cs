@@ -16,7 +16,7 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace Sphere10.Framework.Windows.LevelDB
+namespace Hydrogen.Windows.LevelDB
 {
     /// <summary>
     /// An iterator yields a sequence of key/value pairs from a database.

@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
-using Sphere10.Framework;
-using Sphere10.Hydrogen.Core.Maths;
+using Hydrogen;
+using Hydrogen.DApp.Core.Maths;
 
-namespace Sphere10.Hydrogen.Core.Keys {
+namespace Hydrogen.DApp.Core.Keys {
 
 	public sealed class BurnDigitalSignatureSchme : StatelessDigitalSignatureScheme<BurnDigitalSignatureSchme.NoOpKey, BurnDigitalSignatureSchme.NoOpKey> {
 		

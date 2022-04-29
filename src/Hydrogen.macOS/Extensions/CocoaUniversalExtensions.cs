@@ -17,7 +17,7 @@ using MonoTouch.Foundation;
 #else
 using MonoMac.Foundation;
 #endif
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	public static class CocoaUniversalExtensions {
 
 		public static NSObject ToNSObject(this object obj) {

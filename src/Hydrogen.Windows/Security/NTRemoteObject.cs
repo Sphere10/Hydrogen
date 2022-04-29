@@ -16,7 +16,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Security.Principal;
 
-namespace Sphere10.Framework.Windows.Security {
+namespace Hydrogen.Windows.Security {
 
 
     /// <summary>

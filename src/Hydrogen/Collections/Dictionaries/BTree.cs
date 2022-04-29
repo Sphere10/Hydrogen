@@ -17,7 +17,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	//TODO: refactor so nodes are stored in a IExtended list, then pass that list in (TransactionalList)
 	public class BTree<K, V> : IDictionary<K, V> where K : IComparable<K> {

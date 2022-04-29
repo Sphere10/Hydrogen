@@ -11,7 +11,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace Sphere10.Framework.Application {
+namespace Hydrogen.Application {
 	public static class ComponentRegistryExtensions {
 
         public static void RegisterInitializationTask<TApplicationInitializeTask>(this ComponentRegistry componentRegistry)

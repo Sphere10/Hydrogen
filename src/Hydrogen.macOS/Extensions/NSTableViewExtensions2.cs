@@ -19,9 +19,9 @@ using System.Data;
 using System.Diagnostics.Contracts;
 using System.Collections.Generic;
 using System.Drawing;
-using Sphere10.Framework;
+using Hydrogen;
 
-namespace Sphere10.Framework.Data {
+namespace Hydrogen.Data {
 	public static class NSTableViewExtensions
 	{
 

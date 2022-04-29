@@ -18,7 +18,7 @@ using System.Drawing;
 
 using System.Windows.Forms;
 using System.Drawing.Design;
-using Sphere10.Framework.Windows.Forms;
+using Hydrogen.Windows.Forms;
 
 namespace DevAge.Windows.Forms
 {

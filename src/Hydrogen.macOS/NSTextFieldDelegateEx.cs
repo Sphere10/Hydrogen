@@ -14,7 +14,7 @@
 using System;
 using MonoMac.AppKit;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	public class NSTextFieldDelegateEx : NSTextFieldDelegate {
 
 	

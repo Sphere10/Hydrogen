@@ -1,8 +1,8 @@
 // using NUnit.Framework;
 // using NUnit.Framework.Internal;
-// using Sphere10.Framework;
+// using Hydrogen;
 //
-// namespace Sphere10.Framework.CryptoEx {
+// namespace Hydrogen.CryptoEx {
 // 	public class PascalBase58EncodingTests {
 // 		[SetUp]
 // 		public void Setup() {

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	/// <summary>
 	/// A fast serializer for structs which uses <see cref="Marshal"/> class to take an unmanaged in-memory snapshot on the struct.

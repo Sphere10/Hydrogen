@@ -1,6 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public class ItemHasher<TItem> : ItemSerializerDecorator<TItem>, IItemHasher<TItem> {
 		private readonly CHF _hashAlgorithm;

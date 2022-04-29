@@ -1,4 +1,4 @@
-﻿namespace Sphere10.Framework {
+﻿namespace Hydrogen {
 	public abstract class EditableMerkleTreeDecorator<TMerkleTree> : MerkleTreeDecorator<TMerkleTree>, IEditableMerkleTree where TMerkleTree : IEditableMerkleTree {
         protected EditableMerkleTreeDecorator(TMerkleTree internalMerkleTree)
             : base(internalMerkleTree) {

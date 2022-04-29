@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
-using Sphere10.Framework;
+using Hydrogen;
 
-namespace Sphere10.Hydrogen.Presentation2.UI.MainFrame {
+namespace Hydrogen.DApp.Presentation2.UI.MainFrame {
     
     /// <summary>
     /// Search input component

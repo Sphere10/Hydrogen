@@ -5,7 +5,7 @@ using System.Reflection;
 using System.Reflection.Emit;
 using System.Text;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public abstract class ItemSerializer<TItem> : ItemSizer<TItem>, IItemSerializer<TItem> {
 		public abstract bool TrySerialize(TItem item, EndianBinaryWriter writer, out int bytesWritten);

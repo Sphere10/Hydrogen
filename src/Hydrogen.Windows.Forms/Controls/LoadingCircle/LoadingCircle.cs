@@ -43,9 +43,9 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Linq;
 using System.Windows.Forms;
-using Sphere10.Framework;
+using Hydrogen;
 
-namespace Sphere10.Framework.Windows.Forms {
+namespace Hydrogen.Windows.Forms {
     public partial class LoadingCircle : Control {
         // Constants =========================================================
         private const double NumberOfDegreesInCircle = 360;

@@ -14,7 +14,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	internal class SelectionSort<T> : SortAlgorithm<T> where T : IComparable<T> {
 		public override void Execute(IExtendedList<T> list, IComparer<T> comparer) {
 			for (int i = 0; i < list.Count - 1; i++) {

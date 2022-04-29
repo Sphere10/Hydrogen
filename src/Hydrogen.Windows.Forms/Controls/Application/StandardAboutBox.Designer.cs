@@ -11,7 +11,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace Sphere10.Framework.Windows.Forms {
+namespace Hydrogen.Windows.Forms {
     partial class StandardAboutBox {
         /// <summary>
         /// Required designer variable.
@@ -36,7 +36,7 @@ namespace Sphere10.Framework.Windows.Forms {
         /// </summary>
         private void InitializeComponent() {
             this.okButton = new System.Windows.Forms.Button();
-            this.applicationBanner1 = new Sphere10.Framework.Windows.Forms.ApplicationBanner();
+            this.applicationBanner1 = new Hydrogen.Windows.Forms.ApplicationBanner();
             this._label1 = new System.Windows.Forms.Label();
             this._label2 = new System.Windows.Forms.Label();
             this._label3 = new System.Windows.Forms.Label();
@@ -50,7 +50,7 @@ namespace Sphere10.Framework.Windows.Forms {
             this._label10 = new System.Windows.Forms.Label();
             this._label11 = new System.Windows.Forms.Label();
             this._label12 = new System.Windows.Forms.Label();
-            this._productExpirationDetailsControl = new Sphere10.Framework.Windows.Forms.ProductExpirationDetailsControl();
+            this._productExpirationDetailsControl = new Hydrogen.Windows.Forms.ProductExpirationDetailsControl();
             this._enterNewProductKey = new System.Windows.Forms.Button();
             this._companyNumberLabel = new System.Windows.Forms.Label();
             this.SuspendLayout();

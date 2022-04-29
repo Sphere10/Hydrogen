@@ -16,7 +16,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Sphere10.Framework.Windows {
+namespace Hydrogen.Windows {
     public class NetApiException : WindowsException {
 
         public NetApiException(WinAPI.NETAPI32.NET_API_STATUS status, string errMsg, params object[] formatArgs ) : base((int) status, errMsg, formatArgs) {

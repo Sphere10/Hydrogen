@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	[Flags]
 	public enum ClusteredStreamTraits : byte {
 		/// <summary>

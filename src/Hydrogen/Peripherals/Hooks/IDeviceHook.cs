@@ -14,7 +14,7 @@
 using System;
 
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public interface IDeviceHook : IDisposable  {
 		DeviceHookStatus Status { get; }

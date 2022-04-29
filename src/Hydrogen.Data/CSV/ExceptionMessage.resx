@@ -147,7 +147,7 @@
   </data>
   <data name="MissingFieldActionNotSupported" xml:space="preserve">
     <value>'{0}' is not a supported missing field action.</value>
-    <comment>missingFieldAction:Sphere10.Framework.Data.Csv.MissingFieldAction</comment>
+    <comment>missingFieldAction:Hydrogen.Data.Csv.MissingFieldAction</comment>
   </data>
   <data name="NoCurrentRecord" xml:space="preserve">
     <value>No current record.</value>
@@ -160,11 +160,11 @@
   </data>
   <data name="ParseErrorActionInvalidInsideParseErrorEvent" xml:space="preserve">
     <value>'{0}' is not a valid ParseErrorAction while inside a ParseError event.</value>
-    <comment>parseErrorAction:Sphere10.Framework.Data.Csv.ParseErrorAction</comment>
+    <comment>parseErrorAction:Hydrogen.Data.Csv.ParseErrorAction</comment>
   </data>
   <data name="ParseErrorActionNotSupported" xml:space="preserve">
     <value>'{0}' is not a supported ParseErrorAction.</value>
-    <comment>parseErrorAction:Sphere10.Framework.Data.Csv.ParseErrorAction</comment>
+    <comment>parseErrorAction:Hydrogen.Data.Csv.ParseErrorAction</comment>
   </data>
   <data name="ReaderClosed" xml:space="preserve">
     <value>This operation is invalid when the reader is closed.</value>

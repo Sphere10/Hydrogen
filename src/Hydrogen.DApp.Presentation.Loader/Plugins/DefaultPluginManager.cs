@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Sphere10.Hydrogen.Presentation.Plugins;
+using Hydrogen.DApp.Presentation.Plugins;
 
-namespace Sphere10.Hydrogen.Presentation.Loader.Plugins
+namespace Hydrogen.DApp.Presentation.Loader.Plugins
 {
     /// <summary>
     /// Default plugin managers

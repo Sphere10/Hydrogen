@@ -19,7 +19,7 @@ using System.Text.RegularExpressions;
 using System.Text;
 using System.Collections.Specialized;
 using System.Data;
-using Sphere10.Framework;
+using Hydrogen;
 
 namespace BW.Cranewatch.Data {
 	public static class DataTableExtensions {

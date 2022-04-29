@@ -2,9 +2,9 @@ using System.IO;
 using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.Utilities.IO;
-using Sphere10.Framework.CryptoEx.IES;
+using Hydrogen.CryptoEx.IES;
 
-namespace Sphere10.Framework.CryptoEx.EC.IES {
+namespace Hydrogen.CryptoEx.EC.IES {
 
 	internal class ECIESPublicKeyParser : IKeyParser {
 		private readonly ECDomainParameters _ecParams;

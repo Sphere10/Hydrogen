@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Sphere10.Hydrogen.Presentation.WidgetGallery.Widgets.Models {
+namespace Hydrogen.DApp.Presentation.WidgetGallery.Widgets.Models {
 
     public class NewWidgetModel {
         [Required(AllowEmptyStrings = false)]

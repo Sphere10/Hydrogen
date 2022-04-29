@@ -16,7 +16,7 @@ using System.Drawing;
 using CoreGraphics;
 using UIKit;
 
-namespace Sphere10.Framework.iOS {
+namespace Hydrogen.iOS {
     public static class UIColorExtensions {
 
         public static Color ToColor(this UIColor uiColor) {

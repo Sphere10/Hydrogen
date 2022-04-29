@@ -17,7 +17,7 @@ using System.Data;
 using System.Linq;
 using System.Text;
 
-namespace Sphere10.Framework.Data.Firebird {
+namespace Hydrogen.Data.Firebird {
 	public class FirebirdCorrectingReader : DataReaderDecorator {
 
 		public FirebirdCorrectingReader(IDataReader internalReader) : base(internalReader) {

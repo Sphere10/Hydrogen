@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public abstract class SetDecorator<TItem, TSet> : ISet<TItem> where TSet : ISet<TItem> {
 

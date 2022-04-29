@@ -16,7 +16,7 @@ using System.Drawing;
 using CoreGraphics;
 
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
     public static class CGSizeExtensions {
 

@@ -1,4 +1,4 @@
-﻿namespace Sphere10.Framework.Communications {
+﻿namespace Hydrogen.Communications {
 	public abstract class HandshakeHandlerBase<THandshake, TAck, TVerack> : HandshakeHandlerBase, IHandshakeHandler<THandshake, TAck, TVerack> {
 
 		public sealed override object GenerateHandshake(ProtocolOrchestrator orchestrator)

@@ -20,9 +20,9 @@ using System.Threading.Tasks;
 using System.Linq;
 using CoreGraphics;
 using Foundation;
-using Sphere10.Framework;
+using Hydrogen;
 
-namespace Sphere10.Framework.iOS {
+namespace Hydrogen.iOS {
 
 	// NOTE: refactor this to include editing, deleting, inserting, delay image loading and nicer interface
 

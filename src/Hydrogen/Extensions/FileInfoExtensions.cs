@@ -13,7 +13,7 @@
 
 using System.IO;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public static class FileInfoExtensions {
 		public static string GetMimeType(this FileInfo fileInfo) {

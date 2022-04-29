@@ -8,7 +8,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	/// <summary>
 	/// Class used to guard against unexpected argument values

@@ -4,7 +4,7 @@ using System.Net;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 
-namespace Sphere10.Framework.Communications {
+namespace Hydrogen.Communications {
 	public class ServerWebSocketsDataSource<TItem> : ProtocolChannelDataSource<TItem> {
 
 		List<TItem> Items { get; set; } = new List<TItem>();

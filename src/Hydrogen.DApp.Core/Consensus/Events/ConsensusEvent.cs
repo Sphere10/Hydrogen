@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Sphere10.Framework.Consensus {
+namespace Hydrogen.Consensus {
 	
 	public abstract class ConsensusEventHeader {
 

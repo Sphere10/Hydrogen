@@ -18,7 +18,7 @@ using System.Linq;
 using System.Text;
 
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public class FileStore : Disposable {
 		private const string DefaultFileStoreDictionaryFileName = "__FileStoreRegistry.xml";

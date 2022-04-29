@@ -15,7 +15,7 @@ using System;
 using System.Threading;
 
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public abstract class BaseMouseHook : BaseDeviceHook, IMouseHook  {
 		

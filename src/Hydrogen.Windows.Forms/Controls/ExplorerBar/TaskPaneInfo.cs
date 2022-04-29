@@ -22,7 +22,7 @@ using System.Runtime.Serialization;
 using System.Security.Permissions;
 using System.Xml.Serialization;
 
-namespace Sphere10.Framework.Windows.Forms {
+namespace Hydrogen.Windows.Forms {
 
 	
 

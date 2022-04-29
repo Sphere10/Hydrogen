@@ -14,7 +14,7 @@
 using System;
 using System.IO;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	/// <summary>
 	/// Utility that read and write bits in byte array
 	/// </summary>

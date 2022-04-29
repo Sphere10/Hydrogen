@@ -1,12 +1,12 @@
 ﻿using System.Collections.Generic;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
-using Sphere10.Hydrogen.Presentation.Plugins;
-using Sphere10.Hydrogen.Presentation.WidgetGallery.Widgets.Models;
-using Sphere10.Hydrogen.Presentation.WidgetGallery.Widgets.Services;
-using Sphere10.Hydrogen.Presentation.WidgetGallery.Widgets.Validators;
+using Hydrogen.DApp.Presentation.Plugins;
+using Hydrogen.DApp.Presentation.WidgetGallery.Widgets.Models;
+using Hydrogen.DApp.Presentation.WidgetGallery.Widgets.Services;
+using Hydrogen.DApp.Presentation.WidgetGallery.Widgets.Validators;
 
-namespace Sphere10.Hydrogen.Presentation.WidgetGallery {
+namespace Hydrogen.DApp.Presentation.WidgetGallery {
 
     /// <summary>
     /// Widget gallery plugin

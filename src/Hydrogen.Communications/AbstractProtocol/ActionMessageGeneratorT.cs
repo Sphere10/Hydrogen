@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Sphere10.Framework.Communications {
+namespace Hydrogen.Communications {
     public class ActionMessageGeneratorT<TMessage> : MessageGeneratorBase<TMessage> {
 		private readonly Func<ProtocolOrchestrator, TMessage> _initiator;
 

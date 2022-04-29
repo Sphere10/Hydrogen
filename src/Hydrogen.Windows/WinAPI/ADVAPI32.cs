@@ -17,7 +17,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace Sphere10.Framework.Windows {
+namespace Hydrogen.Windows {
     public static partial class WinAPI {
 
         public static class ADVAPI32 {

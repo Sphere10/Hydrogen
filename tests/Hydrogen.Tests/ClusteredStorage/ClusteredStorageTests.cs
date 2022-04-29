@@ -5,9 +5,9 @@ using System.IO;
 using System.IO.MemoryMappedFiles;
 using System.Text;
 using NUnit.Framework;
-using Sphere10.Framework.NUnit;
+using Hydrogen.NUnit;
 
-namespace Sphere10.Framework.Tests {
+namespace Hydrogen.Tests {
 
     /// <remarks>
     /// During dev, bugs seemed to occur when clusters linked in descending order.

@@ -1,6 +1,6 @@
 using System.Security.Cryptography;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public static class PBKDF2 {
 		public static byte[] DeriveKey(string secret, byte[] salt, int iterations, int keyLength) {

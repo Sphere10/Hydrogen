@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 
-namespace Sphere10.Hydrogen.Presentation.Components.Tables {
+namespace Hydrogen.DApp.Presentation.Components.Tables {
 
     public interface IPagedCollectionViewModel {
         /// <summary>

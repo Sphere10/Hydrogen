@@ -16,7 +16,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Sphere10.Framework.Windows.Forms.AppointmentBook {
+namespace Hydrogen.Windows.Forms.AppointmentBook {
 	public class AppointmentDragStartingEvent : AppointmentEvent {
 		public bool Cancel { get; set; }
 		public string ErrorMessage { get; set; }

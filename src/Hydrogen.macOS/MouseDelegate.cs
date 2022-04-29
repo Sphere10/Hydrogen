@@ -16,7 +16,7 @@ using MonoMac.AppKit;
 using MonoMac.Foundation;
 using System.Drawing;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public class MouseDelegate : NSObject {
 

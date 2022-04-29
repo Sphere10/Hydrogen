@@ -21,10 +21,10 @@ using System.Runtime.InteropServices;
 using CoreGraphics;
 using System.Collections.Generic;
 using System.Text;
-using Sphere10.Framework;
+using Hydrogen;
 
 
-namespace Sphere10.Framework.iOS {
+namespace Hydrogen.iOS {
 
 	public partial class UIPaintingViewController : UIFixedOrientationViewController {
 

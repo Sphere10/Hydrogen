@@ -18,9 +18,9 @@ using System.Globalization;
 using System.Linq;
 using System.Numerics;
 using System.Text;
-using Sphere10.Framework;
+using Hydrogen;
 
-namespace Sphere10.Hydrogen.Core.Maths {
+namespace Hydrogen.DApp.Core.Maths {
 
     /// <summary>
     /// Represent the challenge that miners must solve for finding a new block. The Target/CompactTarget algorithm is

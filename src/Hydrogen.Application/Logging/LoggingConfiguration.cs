@@ -11,7 +11,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace Sphere10.Framework.Application {
+namespace Hydrogen.Application {
 	public class LoggingConfiguration {		
 		public string LogFilePath { get; set; }
 		public int MaxLogFiles { get; set; }

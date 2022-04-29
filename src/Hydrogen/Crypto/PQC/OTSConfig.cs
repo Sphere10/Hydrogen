@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public abstract class OTSConfig : ICloneable {
 		public readonly AMSOTS AMSID;

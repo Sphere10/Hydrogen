@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
     public class BijectiveDictionary<U, V> : DictionaryDecorator<U, V>, IBijectiveDictionary<U, V> {
         private readonly BijectiveDictionary<V, U> _bijection;

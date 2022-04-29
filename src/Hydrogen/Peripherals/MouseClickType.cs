@@ -13,7 +13,7 @@
 
 using System.Reflection;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	/// <summary>
 	/// Summary description for MouseClickType.
 	/// </summary>

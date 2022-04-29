@@ -20,7 +20,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Diagnostics.Tracing.Parsers;
 
-namespace Sphere10.Framework.Tests {
+namespace Hydrogen.Tests {
 
 	[TestFixture]
 	//[Parallelizable(ParallelScope.Children)]  // don't parallelize, since will affect producer/consumer threads

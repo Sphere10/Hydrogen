@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	internal class ClusterSerializer : StaticSizeItemSerializerBase<Cluster> {
 		private readonly int _clusterDataSize;
 

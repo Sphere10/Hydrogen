@@ -21,10 +21,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 #if USE_FAST_REFLECTION
-using Sphere10.Framework.FastReflection;
+using Hydrogen.FastReflection;
 #endif
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public class DeepObjectCloner : IObjectCloner {
 

@@ -1,4 +1,4 @@
-﻿namespace Sphere10.Hydrogen.Core.Blockchain {
+﻿namespace Hydrogen.DApp.Core.Blockchain {
 
 	/// <summary>
 	/// Used for handling block-trees from which a blockchain exists within. The purpose is to select a branch of that tree

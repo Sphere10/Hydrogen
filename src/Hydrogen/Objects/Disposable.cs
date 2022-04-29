@@ -13,7 +13,7 @@
 
 using System;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	// This class shows how to use a disposable resource.
 	// The resource is first initialized and passed to

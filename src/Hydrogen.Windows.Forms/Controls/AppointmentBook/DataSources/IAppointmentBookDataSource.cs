@@ -18,7 +18,7 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 
-namespace Sphere10.Framework.Windows.Forms.AppointmentBook {
+namespace Hydrogen.Windows.Forms.AppointmentBook {
 	public interface IAppointmentBookDataSource {
 		void SetTimeRange(DateTime startTime, DateTime endTime);
 		void Reschedule(Appointment appointment, AppointmentColumn sourceColumn,  AppointmentColumn destColumn, DateTime newStartTime, DateTime newEndTime);

@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public sealed class CastedExtendedList<TFrom, TTo> : IExtendedList<TTo> 
 		where TFrom : class 

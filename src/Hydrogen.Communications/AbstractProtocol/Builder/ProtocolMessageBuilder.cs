@@ -1,4 +1,4 @@
-﻿namespace Sphere10.Framework.Communications {
+﻿namespace Hydrogen.Communications {
 
 
 	public sealed class ProtocolMessageBuilder : FactorySerializerBuilderBase<object, ProtocolMessageBuilder>, IProtocolBuilderMain {

@@ -8,9 +8,9 @@ using Org.BouncyCastle.Math;
 using Org.BouncyCastle.Math.EC;
 using Org.BouncyCastle.Math.EC.Multiplier;
 using Org.BouncyCastle.Security;
-using Sphere10.Framework.CryptoEx.EC.IES;
+using Hydrogen.CryptoEx.EC.IES;
 
-namespace Sphere10.Framework.CryptoEx.EC {
+namespace Hydrogen.CryptoEx.EC {
 
 	public class ECDSA : StatelessDigitalSignatureScheme<ECDSA.PrivateKey, ECDSA.PublicKey> {
 		private readonly ECDSAKeyType _keyType;

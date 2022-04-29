@@ -13,7 +13,7 @@
 
 using System.Collections.Generic;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 
 	public class MultiKeyMap<K, V, C> : EnumerableKeyDictionary<K, C> where C : ICollection<V>, new() {

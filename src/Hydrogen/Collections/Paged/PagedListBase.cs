@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public abstract class PagedListBase<TItem> : RangedListBase<TItem>, IPagedList<TItem> {
 

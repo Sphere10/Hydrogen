@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Data.SqlClient;
 
-namespace Sphere10.Framework.Data {
+namespace Hydrogen.Data {
 
 
 	public class MSSQLDatabaseManager : DatabaseManagerBase {

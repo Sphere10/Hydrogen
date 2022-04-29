@@ -14,7 +14,7 @@
 using System;
 using UIKit;
 
-namespace Sphere10.Framework.iOS {
+namespace Hydrogen.iOS {
 	public class UILongPressGestureRecognizerEx : UILongPressGestureRecognizer {
 		private Action<UILongPressGestureRecognizerEx> _handler;
 		private readonly Token _token;

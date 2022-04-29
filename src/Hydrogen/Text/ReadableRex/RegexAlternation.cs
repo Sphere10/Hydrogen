@@ -13,7 +13,7 @@
 
 using System;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	public class RegexAlternation {
         readonly RegexPattern _precedingRegexPattern;
         internal RegexAlternation(RegexPattern precedingRegexPattern) {

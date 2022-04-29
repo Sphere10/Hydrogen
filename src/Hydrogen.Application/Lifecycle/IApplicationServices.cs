@@ -11,7 +11,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace Sphere10.Framework.Application {
+namespace Hydrogen.Application {
 
 	/// <summary>
 	/// Facade class for the application framework. Basically wraps all the services into one class.

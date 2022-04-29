@@ -21,7 +21,7 @@ using System.Threading.Tasks;
 using Foundation;
 using StoreKit;
 
-namespace Sphere10.Framework.iOS {
+namespace Hydrogen.iOS {
 
 	internal class ProductDataRequestor : SKProductsRequestDelegate {
 		private readonly ManualResetEventSlim _waiter;

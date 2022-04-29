@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Components;
-using Sphere10.Hydrogen.Presentation.Components.Modal;
-using Sphere10.Hydrogen.Presentation.Services;
+using Hydrogen.DApp.Presentation.Components.Modal;
+using Hydrogen.DApp.Presentation.Services;
 
-namespace Sphere10.Hydrogen.Presentation.Loader.Layouts
+namespace Hydrogen.DApp.Presentation.Loader.Layouts
 {
     /// <summary>
     /// Main layout

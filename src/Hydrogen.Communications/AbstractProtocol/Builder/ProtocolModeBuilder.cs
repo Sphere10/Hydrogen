@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Sphere10.Framework.Communications {
+namespace Hydrogen.Communications {
 	public class ProtocolModeBuilder : ProtocolBuilderMain {
 
 		public ProtocolModeBuilder(int number, ProtocolBuilder parent, ProtocolMode mode): base(parent) {

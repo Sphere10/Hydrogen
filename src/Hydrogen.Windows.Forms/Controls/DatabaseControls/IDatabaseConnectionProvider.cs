@@ -12,10 +12,10 @@
 //-----------------------------------------------------------------------
 
 using System.Threading.Tasks;
-using Sphere10.Framework.Data;
-using Sphere10.Framework;
+using Hydrogen.Data;
+using Hydrogen;
 
-namespace Sphere10.Framework.Windows.Forms {
+namespace Hydrogen.Windows.Forms {
 
 	public interface IDatabaseConnectionProvider {
 		IDAC GetDAC();

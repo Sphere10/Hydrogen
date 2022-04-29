@@ -17,7 +17,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	public static class RandomExtensions {
 		public static int NextIn(this Random random, int minInclusive, int maxInclusive) {
 			if (minInclusive == int.MinValue && maxInclusive == int.MaxValue) {

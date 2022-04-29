@@ -14,7 +14,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public abstract class ScopeContext<T> : Disposable where T : ScopeContext<T> {
 

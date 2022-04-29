@@ -17,7 +17,7 @@ using System.Text;
 using System.Security;
 
 
-namespace Sphere10.Framework.Windows.BITS
+namespace Hydrogen.Windows.BITS
 {
     public class BitsCredentials
     {

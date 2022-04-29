@@ -1,7 +1,7 @@
 ﻿using System;
-using Sphere10.Framework;
+using Hydrogen;
 
-namespace Sphere10.Hydrogen.Core.Runtime {
+namespace Hydrogen.DApp.Core.Runtime {
 	public class HostException : SoftwareException {
 		public HostException(string errorMessage, Exception exception = null)
 			: base(errorMessage, exception) {

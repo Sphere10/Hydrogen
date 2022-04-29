@@ -1,4 +1,4 @@
-﻿namespace Sphere10.Framework.Communications {
+﻿namespace Hydrogen.Communications {
 	public interface IHandshakeHandler<THandshake, TAck, TVerack> : IHandshakeHandler {
 		new THandshake GenerateHandshake(ProtocolOrchestrator orchestrator);
 

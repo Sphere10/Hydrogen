@@ -3,7 +3,7 @@ using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Crypto.Generators;
 using Org.BouncyCastle.Crypto.Parameters;
 
-namespace Sphere10.Framework.CryptoEx.PascalCoin {
+namespace Hydrogen.CryptoEx.PascalCoin {
 	public class PascalCoinEciesKdfBytesGenerator : BaseKdfBytesGenerator
     {
         private byte[] _shared;

@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Sphere10.Framework;
-using Sphere10.Hydrogen.Presentation.Components.Wizard;
-using Sphere10.Hydrogen.Presentation.Services;
+using Hydrogen;
+using Hydrogen.DApp.Presentation.Components.Wizard;
+using Hydrogen.DApp.Presentation.Services;
 
-namespace Sphere10.Hydrogen.Presentation.Loader.Services
+namespace Hydrogen.DApp.Presentation.Loader.Services
 {
 
     /// <summary>

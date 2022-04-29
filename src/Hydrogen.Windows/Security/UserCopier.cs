@@ -15,10 +15,10 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Diagnostics;
-using Sphere10.Framework;
+using Hydrogen;
 
 
-namespace Sphere10.Framework.Windows.Security
+namespace Hydrogen.Windows.Security
 {
 	public class UserCopier
 	{

@@ -24,7 +24,7 @@ using System.IO;
 using System.Collections;
 using System.Runtime.CompilerServices;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 	/// <summary>
 	/// This struct supports the Yaowi Framework infrastructure and is not intended to be used directly from your code. 
 	/// <P>This struct records relevant object information.

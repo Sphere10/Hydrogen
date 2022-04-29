@@ -15,7 +15,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public class SortedList<T> : CollectionDecorator<T>, IReadOnlyList<T> {
 		private readonly IComparer<T> _comparer;

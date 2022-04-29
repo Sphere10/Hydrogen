@@ -16,7 +16,7 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace Sphere10.Framework.Windows.LevelDB
+namespace Hydrogen.Windows.LevelDB
 {
     public class Comparator : LevelDBHandle
     {

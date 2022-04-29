@@ -1,7 +1,7 @@
 using System;
 using Org.BouncyCastle.Math;
 
-namespace Sphere10.Framework.CryptoEx;
+namespace Hydrogen.CryptoEx;
 
 public static class BigIntegerUtils {
 	public static byte[] BigIntegerToBytes(BigInteger b, int numBytes) {

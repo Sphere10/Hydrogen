@@ -17,7 +17,7 @@ using System.Data.SqlTypes;
 using System.Linq;
 using System.Text;
 
-namespace Sphere10.Framework.Data {
+namespace Hydrogen.Data {
 	public class SequentialSqlGuidGenerator : ISequentialGuidGenerator {
 		private Stack<SqlGuid> _guidStack;
 

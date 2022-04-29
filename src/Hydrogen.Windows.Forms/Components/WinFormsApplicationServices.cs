@@ -15,11 +15,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Sphere10.Framework.Application;
+using Hydrogen.Application;
 using System.Drawing;
-using Sphere10.Framework;
+using Hydrogen;
 
-namespace Sphere10.Framework.Windows.Forms {
+namespace Hydrogen.Windows.Forms {
 
 	public class WinFormsApplicationServices : ApplicationServices, IWinFormsApplicationServices{
 	    private IApplicationIconProvider ApplicationIconProvider { get { return ComponentRegistry.Instance.Resolve<IApplicationIconProvider>(); } }

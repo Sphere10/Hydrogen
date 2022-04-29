@@ -15,7 +15,7 @@ using System;
 using System.Data;
 using System.Collections.Generic;
 
-namespace Sphere10.Framework.Data {
+namespace Hydrogen.Data {
 
 	public abstract class DACDecorator : IDAC {
 		protected readonly IDAC DecoratedDAC;

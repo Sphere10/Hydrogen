@@ -18,7 +18,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
 
-namespace Sphere10.Framework.Data {
+namespace Hydrogen.Data {
 
     [XmlRoot("ConnectionString")]
     public struct DBReference {

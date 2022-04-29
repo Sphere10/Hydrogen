@@ -1,0 +1,31 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<TargetFramework>net6.0</TargetFramework>
+		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+	</PropertyGroup>
+	
+	<ItemGroup>
+		<None Remove="Properties\node.ini" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<EmbeddedResource Include="Properties\node.ini" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.2" />
+		<PackageReference Include="NStack.Core" Version="0.16.0" />
+		<PackageReference Include="Terminal.Gui" Version="1.4.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\Hydrogen.Application\Hydrogen.Application.csproj" />
+		<ProjectReference Include="..\Hydrogen.Communications\Hydrogen.Communications.csproj" />
+		<ProjectReference Include="..\Hydrogen.CryptoEx\Hydrogen.CryptoEx.csproj" />
+		<ProjectReference Include="..\Hydrogen.DApp.Core\Hydrogen.DApp.Core.csproj" />
+		<ProjectReference Include="..\Hydrogen\Hydrogen.csproj" />
+	</ItemGroup>
+
+</Project>

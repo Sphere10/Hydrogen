@@ -1,6 +1,6 @@
 using System.Security.Cryptography;
 
-namespace Sphere10.Framework {
+namespace Hydrogen {
 
 	public class CRNG {
 		private readonly RNGCryptoServiceProvider _rng;

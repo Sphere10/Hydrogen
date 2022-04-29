@@ -17,11 +17,11 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Reflection;
-using Sphere10.Framework.Windows;
+using Hydrogen.Windows;
 using Microsoft.Win32;
 using System.Diagnostics;
 
-namespace Sphere10.Framework.Windows {
+namespace Hydrogen.Windows {
 
     public class AttachToCommandPromptScope : IDisposable {
 

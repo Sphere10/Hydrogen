@@ -3,7 +3,7 @@ using System.IO;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Sphere10.Framework.Communications.RPC {
+namespace Hydrogen.Communications.RPC {
 	//Implement a communication endpoint message with bytes or strings
 	public class EndpointMessage {
 		public byte[] MessageData;

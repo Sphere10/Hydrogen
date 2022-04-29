@@ -19,7 +19,7 @@ using System.Text;
 using Foundation;
 using UIKit;
 
-namespace Sphere10.Framework.iOS {
+namespace Hydrogen.iOS {
     public enum AssociationPolicy {
         ASSIGN = 0,
         RETAIN_NONATOMIC = 1,

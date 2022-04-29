@@ -16,7 +16,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Sphere10.Framework.Windows.BITS
+namespace Hydrogen.Windows.BITS
 {
     public class BitsFiles: List<BitsFile>, IDisposable
     {

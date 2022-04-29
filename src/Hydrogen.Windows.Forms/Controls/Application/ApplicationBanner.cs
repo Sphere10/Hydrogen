@@ -18,11 +18,11 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.Text;
 using System.Windows.Forms;
-using Sphere10.Framework;
+using Hydrogen;
 
 
 
-namespace Sphere10.Framework.Windows.Forms {
+namespace Hydrogen.Windows.Forms {
 	public partial class ApplicationBanner : ApplicationControl {
 		private string _companyName;
 		private string _version;

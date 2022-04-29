@@ -15,10 +15,10 @@ using System;
 using System.Reflection;
 using System.Threading;
 using System.Diagnostics;
-using Sphere10.Framework;
+using Hydrogen;
 
 
-namespace Sphere10.Framework.Windows {
+namespace Hydrogen.Windows {
 
 	public class PollDrivenActiveApplicationMonitor : IActiveApplicationMonitor {
 		public event EventHandler<ApplicationChangedEvent> ApplicationChanged;

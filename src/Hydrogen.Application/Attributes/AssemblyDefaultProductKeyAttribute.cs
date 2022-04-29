@@ -14,7 +14,7 @@
 using System.Runtime.InteropServices;
 using System;
 
-namespace Sphere10.Framework.Application {
+namespace Hydrogen.Application {
 
 	[ComVisible(true)]
     [AttributeUsage(AttributeTargets.Assembly, Inherited = false)]

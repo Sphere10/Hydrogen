@@ -1,6 +1,6 @@
 {
-  "name": "Sphere10.Hydrogen.Presentation2.Loader",
-  "short_name": "Sphere10.Hydrogen.Presentation2.Loader",
+  "name": "Hydrogen.DApp.Presentation2.Loader",
+  "short_name": "Hydrogen.DApp.Presentation2.Loader",
   "start_url": "./",
   "display": "standalone",
   "background_color": "#ffffff",

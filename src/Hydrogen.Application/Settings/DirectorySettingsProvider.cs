@@ -14,7 +14,7 @@
 using System;
 using System.IO;
 
-namespace Sphere10.Framework.Application {
+namespace Hydrogen.Application {
     public class DirectorySettingsProvider : BaseSettingsProvider {
 
 		public DirectorySettingsProvider(string directory, DirectorySettingsProviderPolicy policy = DirectorySettingsProviderPolicy.Default) {

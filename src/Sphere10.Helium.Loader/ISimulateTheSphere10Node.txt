@@ -1,3 +1,0 @@
-﻿This is just a reminder that this project simmulates the Sphere10 Node.
-This is used as "scaffolding" while building the Helium system.
-This file and associated project will be deleted once Helium is integrated into Hydrogen.

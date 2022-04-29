@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Sphere10.FrameworkTester.WinForms": {
+      "commandName": "Project",
+      "nativeDebugging": true
+    }
+  }
+}

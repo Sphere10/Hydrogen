@@ -24,10 +24,11 @@ using Hydrogen;
 namespace Hydrogen.Tests {
 
     [TestFixture]
-	[Parallelizable(ParallelScope.Children)]
+	[NonParallelizable]
 	public class SchedulerTest {
 
         [Test]
+
         public async Task StartOn_LocalTime() {
 	        var count = 0;
 	        Action action = () => count++;
@@ -35,7 +36,7 @@ namespace Hydrogen.Tests {
 	        var scheduler = new Scheduler();
 			scheduler.AddJob(job);
 			scheduler.Start();
-	        await Task.Delay(TimeSpan.FromSeconds(1.1));
+	        await Task.Delay(TimeSpan.FromSeconds(1.5));
 			scheduler.Stop();
 			Assert.AreEqual(1, count);
         }
@@ -82,56 +83,35 @@ namespace Hydrogen.Tests {
 
 		[Test]
 		public async Task AwaitsCorrectly_Complex() {
-			var count1 = 0;
-			var count2 = 0;
-			var count3 = 0;
-			var count4 = 0;
-			var count5 = 0;
-			var count6 = 0;
-			var count7 = 0;
-			var count8 = 0;
-			var count9 = 0;
-			Action action1 = () => count1++;
-			Action action2 = () => count2++;
-			Action action3 = () => count3++;
-			Action action4 = () => count4++;
-			Action action5 = () => count5++;
-			Action action6 = () => count6++;
-			Action action7 = () => count7++;
-			Action action8 = () => count8++;
-			Action action9 = () => count9++;
-			var job1 = JobBuilder.For(action1).Repeat.OnInterval(TimeSpan.FromSeconds(1)).Build();
-			var job2 = JobBuilder.For(action2).Repeat.OnInterval(TimeSpan.FromSeconds(2)).Build();
-			var job3 = JobBuilder.For(action3).Repeat.OnInterval(TimeSpan.FromSeconds(3)).Build();
-			var job4 = JobBuilder.For(action4).Repeat.OnInterval(TimeSpan.FromSeconds(4)).Build();
-			var job5 = JobBuilder.For(action5).Repeat.OnInterval(TimeSpan.FromSeconds(5)).Build();
-			var job6 = JobBuilder.For(action6).Repeat.OnInterval(TimeSpan.FromSeconds(6)).Build();
-			var job7 = JobBuilder.For(action7).Repeat.OnInterval(TimeSpan.FromSeconds(7)).Build();
-			var job8 = JobBuilder.For(action8).Repeat.OnInterval(TimeSpan.FromSeconds(8)).Build();
-			var job9 = JobBuilder.For(action9).Repeat.OnInterval(TimeSpan.FromSeconds(9)).Build();
+			const int ToleranceMS = 25;
+			const int Job1FreqMS = 100;
+			const int Job2FreqMS = 200;
+			const int Job3FreqMS = 500;
+			var count1Date = DateTime.Now;
+			var count1 = new Statistics();
+			var count2Date = DateTime.Now;
+			var count2 = new Statistics();
+			var count3Date = DateTime.Now;
+			var count3 = new Statistics();
+
+			void UpdateCount(Statistics countStats, ref DateTime lastCountTime) {
+				var now = DateTime.Now;
+				countStats.AddDatum(now.Subtract(lastCountTime).TotalMilliseconds);
+				lastCountTime = now;
+			}
+			var job1 = JobBuilder.For(() => UpdateCount(count1, ref count1Date)).Repeat.OnInterval(TimeSpan.FromMilliseconds(Job1FreqMS)).Build();
+			var job2 = JobBuilder.For(() => UpdateCount(count2, ref count2Date)).Repeat.OnInterval(TimeSpan.FromMilliseconds(Job2FreqMS)).Build();
+			var job3 = JobBuilder.For(() => UpdateCount(count3, ref count3Date)).Repeat.OnInterval(TimeSpan.FromMilliseconds(Job3FreqMS)).Build();
 			var scheduler = new Scheduler();
 			scheduler.AddJob(job1);
 			scheduler.AddJob(job2);
 			scheduler.AddJob(job3);
-			scheduler.AddJob(job4);
-			scheduler.AddJob(job5);
-			scheduler.AddJob(job6);
-			scheduler.AddJob(job7);
-			scheduler.AddJob(job8);
-			scheduler.AddJob(job9);
 			scheduler.Start();
-			var secondsToTest = 20;
-			await Task.Delay(TimeSpan.FromSeconds(secondsToTest).Add(TimeSpan.FromMilliseconds(920)));
+			await Task.Delay(TimeSpan.FromSeconds(5));
 			scheduler.Stop();
-			Assert.AreEqual(secondsToTest / 1, count1);
-			Assert.AreEqual(secondsToTest / 2, count2);
-			Assert.AreEqual(secondsToTest / 3, count3);
-			Assert.AreEqual(secondsToTest / 4, count4);
-			Assert.AreEqual(secondsToTest / 5, count5);
-			Assert.AreEqual(secondsToTest / 6, count6);
-			Assert.AreEqual(secondsToTest / 7, count7);
-			Assert.AreEqual(secondsToTest / 8, count8);
-			Assert.AreEqual(secondsToTest / 9, count9);
+			Assert.That(count1.Mean, Is.InRange(Job1FreqMS - ToleranceMS, Job1FreqMS + ToleranceMS));
+			Assert.That(count2.Mean, Is.InRange(Job2FreqMS - ToleranceMS, Job2FreqMS + ToleranceMS));
+			Assert.That(count3.Mean, Is.InRange(Job3FreqMS - ToleranceMS, Job3FreqMS + ToleranceMS));
 		}
 
 

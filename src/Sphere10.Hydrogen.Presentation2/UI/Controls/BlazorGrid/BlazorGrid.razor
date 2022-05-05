@@ -13,6 +13,7 @@
 <meta charset="UTF-8">
 <div class="ResizableClass">
     <button @onclick="ButtonClick">ReLoad</button>
+    <button @onclick="ButtonClickClose">Close Connection</button>
 
     <table class="TableClass" style="width: 100%" id="@Id">
         <thead>
@@ -289,7 +290,7 @@
 
                 foreach (var property in properties)
                 {
-                    var cellText = GetCellText(dataObject, property);
+                    var cellText = Cell.GetCellText(dataObject, property);
                     var cellData = new Cell(Header[columnIndex].Header, Header[columnIndex].Row, typeInfos[columnIndex], cellText, dataObject, columnIndex);
 
                     //var cellData = new Cell(Header[columnIndex].Header, Header[columnIndex].Row, typeInfos[columnIndex], properties[columnIndex], dataObject, columnIndex);
@@ -304,17 +305,6 @@
         //JSRuntime.InvokeAsync<object>("ResizableColumnTable", new object[] { Id }, DotNetObjectReference.Create<BlazorGrid<TItem>>(this));
 
         StateHasChanged(); 
-    }
-
-    // put this into Cell
-    string GetCellText(object cellData, PropertyInfo property)
-    {
-        var value = property.GetValue(cellData);
-        var typeName = property.PropertyType.Name.ToString();
-        switch (typeName) {
-            case "DateTime": return ((DateTime)value).ToString("yyyy-MM-dd");
-            default: return value.ToString();
-        }
     }
 
     async private void CellDataChanged(object valueObject, string dataName, Cell cell)
@@ -334,7 +324,6 @@
             DataSource.UpdateDelayed(itemInList);
         }
         catch (Exception ex) {
-            
         }
     }
 
@@ -402,7 +391,12 @@
     {
         GetPageAndDisplayData();
     }
-     
+
+    void ButtonClickClose() {
+        DataSource.Close();
+        DataSource = null;
+    }
+
     #endregion
 
     #region Custom Columns
@@ -460,70 +454,65 @@
 
     #region Paging
 
-        void HandleRemoteDataChange(DataSourceMutatedItems<TItem> items) {
+    void HandleRemoteDataChange(DataSourceMutatedItems<TItem> items) {
 
-        var updates = items.UpdatedItems.ToList();
+    var updates = items.UpdatedItems.ToList();
 
 SystemLog.Info($"BlazorGrid HandleRemoteDataChange() Items TotalItems {items.TotalItems} Updates Count {updates.Count}");
 
-        if (updates.Any(x => x.CrudAction == CrudAction.Create || x.CrudAction == CrudAction.Update)) {
-           Data.Clear();         
-        }
-
-        foreach (var update in updates) {
-            var updateId = DataSource.IdItem(update.Item);
-            switch (update.CrudAction) {
-                case CrudAction.Create:
-                    Data.Add(update.Item);
-                break;
-
-                case CrudAction.Read:
-                    Data.Add(update.Item);
-                break;
-
-                case CrudAction.Update:
-                    // this is inefficient
-                    for (var i = Data.Count - 1; i >= 0 ; i--){ 
-                        var data = Data[i];
-                        var id = DataSource.IdItem(data);
-                        if (id == updateId) {
-                            Data[i] = update.Item;
-                        }
-                    }
-                break;
-
-                case CrudAction.Delete:
-                       // this is inefficient
-                    for (var i = Data.Count - 1; i >= 0 ; i--){
-                        var data = Data[i];
-                        var id = DataSource.IdItem(data);
-                        if (id == updateId) {
-                            Data.RemoveAt(i);
-                        }
-                    }
-                break;
-
-                default:
-SystemLog.Error($"XXXXXXXX BlazorGrid HandleRemoteDataChange() default");
-                break;
-            }
-        }
-
-        TotalDataCount = items.TotalItems;
-        //CurrentPage = items.CurrentPage;
-        DrawGrid();
-        //StateHasChanged(); 
+    if (updates.Any(x => x.CrudAction == CrudAction.Create || x.CrudAction == CrudAction.Read)) {
+        Data.Clear();         
     }
+
+    foreach (var update in updates) {
+        var updateId = DataSource.IdItem(update.Item);
+        switch (update.CrudAction) {
+            case CrudAction.Create:
+                Data.Add(update.Item);
+            break;
+
+            case CrudAction.Read:
+                Data.Add(update.Item);
+            break;
+
+            case CrudAction.Update:
+                // this is inefficient
+                for (var i = Data.Count - 1; i >= 0 ; i--){ 
+                    var data = Data[i];
+                    var id = DataSource.IdItem(data);
+                    if (id == updateId) {
+                        Data[i] = update.Item;
+                    }
+                }
+            break;
+
+            case CrudAction.Delete:
+                    // this is inefficient
+                for (var i = Data.Count - 1; i >= 0 ; i--){
+                    var data = Data[i];
+                    var id = DataSource.IdItem(data);
+                    if (id == updateId) {
+                        Data.RemoveAt(i);
+                    }
+                }
+            break;
+
+            default:
+SystemLog.Error($"XXXXXXXX BlazorGrid HandleRemoteDataChange() default");
+            break;
+        }
+    }
+
+    TotalDataCount = items.TotalItems;
+    //CurrentPage = items.CurrentPage;
+    DrawGrid();
+    //StateHasChanged(); 
+}
 
  //   async Task PagingNew() {
     void PagingNew() {
-//       try {
-            DataSource.NewDelayed(10);
-            GetPageAndDisplayData();
-//       }
-//        catch (Exception ex) {        
-//SystemLog.Error(ex.Message);
-//        }
+        DataSource.NewDelayed(10);
+        GetPageAndDisplayData();
     }
 
     void PagingFirst()
@@ -541,7 +530,12 @@ SystemLog.Error($"XXXXXXXX BlazorGrid HandleRemoteDataChange() default");
 
     void PagingNext()
     {
-        if (CurrentPage < (TotalDataCount / PageSize) - 1) {
+            //(TotalDataCount / PageSize)
+            //(CurrentPage + 1)
+            //of
+            //(TotalDataCount / PageSize)
+
+        if (CurrentPage + 1 < (TotalDataCount / PageSize)) {
             CurrentPage++;
             GetPageAndDisplayData();       
         }

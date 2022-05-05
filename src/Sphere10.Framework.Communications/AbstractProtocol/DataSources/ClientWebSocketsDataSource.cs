@@ -23,6 +23,10 @@ namespace Sphere10.Framework.Communications {
 			ProtocolChannel.ReceivedBytes += ProtocolChannel_ReceivedBytes;
 		}
 
+		async public void Close() {
+			await ProtocolChannel.Close();
+		}
+
 		private void ProtocolChannel_ReceivedBytes(ReadOnlyMemory<byte> message) {
 			var returnPacket = new WebSocketsPacket(message.ToArray());
 
@@ -37,21 +41,25 @@ namespace Sphere10.Framework.Communications {
 
 			var returnData = JsonConvert.DeserializeObject<List<TItem>>(returnPacket.JsonData);
 			var mutatedItems = new DataSourceMutatedItems<TItem>();
-			mutatedItems.TotalItems = totalItems;
+			mutatedItems.TotalItems = totalItems; // this is the count of all items, not just the count of the returned items
 			switch (returnPacket.Tokens[0]) {
+
 				case "newreturn":
+				case "createreturn":
 					foreach (var returnItem in returnData) {
 						mutatedItems.UpdatedItems.Add(new CrudActionItem<TItem>(CrudAction.Create, returnItem));
 					}
 				break;
 
 				case "readreturn":
+				case "refreshreturn":
 					foreach (var returnItem in returnData) {
-						mutatedItems.UpdatedItems.Add(new CrudActionItem<TItem>(CrudAction.Create, returnItem));
+						mutatedItems.UpdatedItems.Add(new CrudActionItem<TItem>(CrudAction.Read, returnItem));
 					}
 				break;
 
 				case "updatereturn":
+				case "validatereturn":
 					foreach (var returnItem in returnData) {
 						mutatedItems.UpdatedItems.Add(new CrudActionItem<TItem>(CrudAction.Update, returnItem));
 					}
@@ -61,6 +69,10 @@ namespace Sphere10.Framework.Communications {
 					foreach (var returnItem in returnData) {
 						mutatedItems.UpdatedItems.Add(new CrudActionItem<TItem>(CrudAction.Delete, returnItem));
 					}
+				break;
+
+				case "countreturn":
+					// the total items have already been filled in 
 				break;
 
 				default:
@@ -156,7 +168,10 @@ namespace Sphere10.Framework.Communications {
 			throw new NotImplementedException();
 		}
 		public override void RefreshDelayed(IEnumerable<TItem> entities) {
-			throw new NotImplementedException();
+			var jsonData = JsonConvert.SerializeObject(entities);
+			var id = ((ClientWebSocketsChannel)ProtocolChannel).Id;
+			var sendPacket = new WebSocketsPacket(id, $"refresh {entities.Count()}", jsonData);
+			SendBytes(sendPacket.ToBytes());
 		}
 
 		public override Task Update(IEnumerable<TItem> entities) {
@@ -217,7 +232,6 @@ namespace Sphere10.Framework.Communications {
 		public override void ValidateDelayed(IEnumerable<(TItem entity, CrudAction action)> actions) {
 			throw new NotImplementedException();
 		}
-
 
 		/*		public override IEnumerable<TItem> New(int count) {
 
@@ -353,7 +367,6 @@ namespace Sphere10.Framework.Communications {
 		//			throw new NotImplementedException();
 				}
 		*/
-
 
 		public override void CountDelayed() {
 			throw new NotImplementedException();

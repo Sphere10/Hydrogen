@@ -50,11 +50,12 @@
                         <li class="nav-item">
                             <a class="nav-link" data-toggle="tab" href="#tab-4">New Grid</a>
                         </li>
-
                     </ul>
                 </div>
                 <div class="card-body">
                     <div class="tab-content">
+
+@*
                         <div class="tab-pane fade active show" id="tab-1">
                             <h5 class="card-title">Paged table</h5>
                             <PagedTable Items="Enumerable.Range(1, 100)"
@@ -111,7 +112,7 @@
                                     </tr>
                                 </ItemTemplate>
                             </RapidTable>
-                        </div>
+                        </div>*@
 
                         <div class="tab-pane fade" id="tab-4">
                             <h5 class="card-title">Grid New</h5>
@@ -130,8 +131,8 @@
                             </BlazorGrid>
                         </div>
 
-                        <button @onclick="StartWebSockets">Start Web Sockets</button>
-                        <button @onclick="SendData">SendData</button>
+@*                        <button @onclick="StartWebSockets">Start Web Sockets</button>
+                        <button @onclick="SendData">SendData</button>*@
 
                         <div><textarea id="Output" rows="10" cols="60"></textarea></div>
                     </div>
@@ -668,8 +669,6 @@
 
         return item;
     }
-
-
 
     bool IsAction1Available(TestClass item)
     {

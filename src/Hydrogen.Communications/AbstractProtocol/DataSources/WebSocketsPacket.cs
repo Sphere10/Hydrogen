@@ -3,6 +3,7 @@ using Newtonsoft.Json;
 
 namespace Hydrogen.Communications {
 	public class WebSocketsPacket {
+		public string Id { get; set; }
 		public string Message { get; set; }
 		public string[] Tokens { get; private set; } = new string[0];
 		public string JsonData { get; set; }
@@ -15,14 +16,23 @@ namespace Hydrogen.Communications {
 			var text = Encoding.ASCII.GetString(bytes);
 			WebSocketsPacket packet = JsonConvert.DeserializeObject<WebSocketsPacket>(text);
 
+			Id = packet.Id;
 			Message = packet.Message;
 			Tokens = Message.Split(" ");
 			JsonData = packet.JsonData;
 		}
 
-		public WebSocketsPacket(string message, string jsonData) {
+		public WebSocketsPacket(string id, string message, string jsonData) {
+			Id = id;
 			Message = message;
+			Tokens = Message.Split(" ");
 			JsonData = jsonData;
+		}
+
+		public WebSocketsPacket(string id, string message) {
+			Id = id;
+			Message = message;
+			Tokens = Message.Split(" ");
 		}
 
 		public byte[] ToBytes() {

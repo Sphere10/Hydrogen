@@ -79,7 +79,7 @@ SystemLog.Info($"UDP Channel Sending to: {RemoteEndpoint.Address} Port: {RemoteE
 			return true;
 		}
 
-		protected override bool IsConnectionAlive() {
+		public override bool IsConnectionAlive() {
 			// UDP has no concept of a connection being alive
 			return true;
 		}

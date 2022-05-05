@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Hydrogen.Communications;
 
 namespace Hydrogen.Communications {
 
@@ -158,7 +159,7 @@ namespace Hydrogen.Communications {
 
         protected abstract Task<bool> TrySendBytesInternal(ReadOnlyMemory<byte> bytes, CancellationToken cancellationToken);
 
-        protected abstract bool IsConnectionAlive();
+        public abstract bool IsConnectionAlive();
 
         #endregion
 

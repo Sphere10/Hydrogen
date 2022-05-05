@@ -74,7 +74,7 @@ namespace Hydrogen.Communications {
 	        await _writeStream.DisposeAsync();
         }
 
-        protected override bool IsConnectionAlive() => _readStream.IsConnected && _writeStream.IsConnected;
+        public override bool IsConnectionAlive() => _readStream.IsConnected && _writeStream.IsConnected;
 
         protected override Task<bool> TrySendBytesInternal(ReadOnlyMemory<byte> bytes, CancellationToken cancellationToken) 
             => TrySendString(Convert.ToBase64String(bytes.Span), cancellationToken);

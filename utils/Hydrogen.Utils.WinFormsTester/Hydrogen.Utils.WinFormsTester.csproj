@@ -40,9 +40,6 @@
 			<AutoGen>True</AutoGen>
 			<DependentUpon>Resources.resx</DependentUpon>
 		</Compile>
-		<Compile Update="Screens\Communications\CommunicationsTestScreen.cs">
-		  <SubType>UserControl</SubType>
-		</Compile>
 		<Compile Update="Screens\TransactionalCollectionScreen.cs">
 		  <SubType>UserControl</SubType>
 		</Compile>

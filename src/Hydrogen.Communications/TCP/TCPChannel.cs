@@ -31,7 +31,7 @@ SystemLog.Info("TCPChannel Opened");
 SystemLog.Info("TCPChannel Closed");
 		}
 
-		protected override bool IsConnectionAlive() {
+		public override bool IsConnectionAlive() {
 			return _tcpListener != null;
 		}
 

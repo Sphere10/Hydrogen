@@ -48,7 +48,7 @@ namespace Hydrogen.Communications {
 			}
 		}
 
-		protected override bool IsConnectionAlive() {
+		public override bool IsConnectionAlive() {
 			throw new NotImplementedException();
 			// HS 2022-01-30: disable due to porting issues .NET 5 -> .NET Standard 2.1
 			//if (Role == CommunicationRole.Server) {

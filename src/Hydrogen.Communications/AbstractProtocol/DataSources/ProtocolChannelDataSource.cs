@@ -1,55 +1,36 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using Hydrogen.DataSource;
-using Newtonsoft.Json;
 
 namespace Hydrogen.Communications {
 	public abstract class ProtocolChannelDataSource<TItem> : DataSourceBase<TItem> {
+
+		public delegate string InitializeDelegate(TItem item, int id);
+		public delegate string UpdateDelegate(TItem item);
+		public delegate string IdDelegate(TItem item);
+
 		protected ProtocolChannelDataSource(ProtocolChannel protocolChannel) {
 			ProtocolChannel = protocolChannel;
-			ProtocolChannel.ReceivedBytes += ProtocolChannel_ReceivedBytes;
+			//ProtocolChannel.ReceivedBytes += ProtocolChannel_ReceivedBytes;
 			ProtocolChannel.Open();
 		}
 
-		ProtocolChannel ProtocolChannel { get; set; }
+		protected ProtocolChannel ProtocolChannel { get; set; }
 
-		private void ProtocolChannel_ReceivedBytes(System.ReadOnlyMemory<byte> bytes) {
-
-			var packet = new WebSocketsPacket(bytes.ToArray());
-
-			if (!packet.Tokens.Any()) return;
-			switch (packet.Tokens[0]) {
-				case "new":  New(packet); break;
-
-				default: break;
-			}
+		protected void SendBytes(System.ReadOnlyMemory<byte> bytes) {
+			ProtocolChannel.TrySendBytes(bytes.ToArray());
 		}
 
-		void New(WebSocketsPacket packet) {
-			var count = int.Parse(packet.Tokens[1]);
-			var newItems = New(count);
-
-			var message = $"newreturn";
-			var jsonData = JsonConvert.SerializeObject(newItems);
-			var returnPacket = new WebSocketsPacket(message, jsonData);
-
-			ProtocolChannel.TrySendBytes(returnPacket.ToBytes());
-		}
-
-		//public override IEnumerable<TItem> New(int count) {
-		//	//var message = $"new {count}";
-		//	//ProtocolChannel.TrySendBytes(Encoding.ASCII.GetBytes(message));
-		//	throw new System.NotImplementedException();
+		//private void ProtocolChannel_ReceivedBytes(System.ReadOnlyMemory<byte> bytes) {
 		//}
 
 		public override Task Create(IEnumerable<TItem> entities) {
 			throw new System.NotImplementedException();
 		}
 
-		public override Task<DataSourceItems<TItem>> Read(string searchTerm, int pageLength, int page, string sortProperty, SortDirection sortDirection) {
-			//var message = $"New {count}";
+		//public override Task<IEnumerable<TItem>> Read(string searchTerm, int pageLength, ref int page, string sortProperty, SortDirection sortDirection, out int totalItems) {
+		//	throw new System.NotImplementedException();
+		//}
+		public override void ReadDelayed(string searchTerm, int pageLength, int page, string sortProperty, SortDirection sortDirection) {
 			throw new System.NotImplementedException();
 		}
 
@@ -57,9 +38,13 @@ namespace Hydrogen.Communications {
 			throw new System.NotImplementedException();
 		}
 
-		public override Task Update(IEnumerable<TItem> entities) {
-			throw new System.NotImplementedException();
-		}
+		//public override Task Update(IEnumerable<TItem> entities) {
+		//	throw new System.NotImplementedException();
+		//}
+
+		//public override IEnumerable<TItem> New(int count) {
+		//	throw new System.NotImplementedException();
+		//}
 
 		//public override Task Delete(IEnumerable<TItem> entities) {
 		//	throw new System.NotImplementedException();

@@ -70,28 +70,38 @@ namespace Hydrogen.DApp.Presentation2.UI.Controls.BlazorGrid.Classes {
 
 			return string.Empty;
 		}
-/*
-		public string GetText() 
-		{
-			object value;
-			string typeName;
 
-			try 
-			{
-				value = PropertyInfo.GetValue(Tag);
-				typeName = PropertyInfo.PropertyType.Name.ToString();
-				switch (typeName) 
-				{
-					case "DateTime": return ((DateTime)value).ToString("yyyy-MM-dd");
-					default: return value.ToString();
-				}
-			}
-			catch (Exception ex) 
-			{
-				return "Error";
+		// improve this, they way it is called, maybe store the data on the cell
+		public static string GetCellText(object cellData, PropertyInfo property) {
+			var value = property.GetValue(cellData);
+			var typeName = property.PropertyType.Name.ToString();
+			switch (typeName) {
+				case "DateTime": return ((DateTime)value).ToString("yyyy-MM-dd");
+				default: return value.ToString();
 			}
 		}
-*/
+		/*
+				public string GetText() 
+				{
+					object value;
+					string typeName;
+
+					try 
+					{
+						value = PropertyInfo.GetValue(Tag);
+						typeName = PropertyInfo.PropertyType.Name.ToString();
+						switch (typeName) 
+						{
+							case "DateTime": return ((DateTime)value).ToString("yyyy-MM-dd");
+							default: return value.ToString();
+						}
+					}
+					catch (Exception ex) 
+					{
+						return "Error";
+					}
+				}
+		*/
 		public void UpdateData(string newValue) 
 		{
 			var objectValue = Tools.Parser.Parse(TypeInfo.Type, newValue);

@@ -6,9 +6,11 @@ using Hydrogen;
 
 namespace Hydrogen.Utils.WinFormsTester
 {
-	public class TestClassDataSource<TItem> : IDataSource<TestClass>
+	public class DataSource1<TItem> : IDataSource<TestClass>
 	{
 		List<TestClass> AllItems = new List<TestClass>();
+
+		public event EventHandlerEx<IEnumerable<CrudActionItem<TestClass>>> MutatedItems;
 
 		public void RefreshData()
 		{
@@ -16,9 +18,15 @@ namespace Hydrogen.Utils.WinFormsTester
 		}
 
 		// create some dummy data
-		public TestClassDataSource()
+		public DataSource1()
 		{
 			RefreshData();
+
+			MutatedItems += DataSource1_MutatedItems;
+		}
+
+		private void DataSource1_MutatedItems(IEnumerable<CrudActionItem<TestClass>> arg) {
+			throw new NotImplementedException();
 		}
 
 		static List<TestClass> LoadData(int size)
@@ -65,7 +73,7 @@ namespace Hydrogen.Utils.WinFormsTester
 			return returnList;
 		}
 
-		public Task<DataSourceItems<TestClass>> Read(string searchTerm, int pageLength, int page, string sortProperty, SortDirection sortDirection)
+		public Task<IEnumerable<TestClass>> Read(string searchTerm, int pageLength, ref int page, string sortProperty, SortDirection sortDirection, out int totalItems)
 		{
 			// make sure the requested page is logical
 			if (page < 0) page = 0;
@@ -78,13 +86,8 @@ namespace Hydrogen.Utils.WinFormsTester
 
 			var items = (IEnumerable<TestClass>)AllItems.GetRange(startIndex, pageLength);
 
-			var result = new DataSourceItems<TestClass>() {
-				Items = items,
-				Page = page,
-				TotalCount = AllItems.Count()
-			};
-			
-			return Task.FromResult(result);
+			totalItems = AllItems.Count();
+			return Task.FromResult(items);
 
 			//return Task.Run(() => (IEnumerable<TestClass>)AllItems.GetRange(startIndex, pageLength));
 		}
@@ -120,9 +123,14 @@ namespace Hydrogen.Utils.WinFormsTester
 			throw new NotImplementedException();
 		}
 
-		public Task<int> Count { get { return Task.Run(() => AllItems.Count); } }
+        public Task<DataSourceItems<TestClass>> Read(string searchTerm, int pageLength, int page, string sortProperty, SortDirection sortDirection)
+        {
+            throw new NotImplementedException();
+        }
 
-		public Task<DataSourceCapabilities> Capabilities => Task.FromResult(DataSourceCapabilities.Default);
-	}
+        public Task<int> Count { get { return Task.Run(() => AllItems.Count); } }
+
+        public Task<DataSourceCapabilities> Capabilities => throw new NotImplementedException();
+    }
 
 }

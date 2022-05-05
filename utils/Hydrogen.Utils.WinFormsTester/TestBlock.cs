@@ -70,7 +70,7 @@ namespace Hydrogen.Utils.WinFormsTester
 		                null,
 		                new IMenuItem[] {
 			                new ScreenMenuItem("TransactionalList Test", typeof(TransactionalCollectionScreen), null),
-                          //  new ScreenMenuItem("WebSockets Test", typeof(ChannelTestScreen), null),
+                            new ScreenMenuItem("WebSockets Test", typeof(CommunicationsTestScreen), null),
                             new ScreenMenuItem("Merkle Tree", typeof(MerkleTreeTestScreen), null),
 							new ScreenMenuItem("WAMS-8 Tests", typeof(WAMSTestScreen), null),
                             new ScreenMenuItem("Expando Launcher",typeof(ExpandoTesterScreen),null),

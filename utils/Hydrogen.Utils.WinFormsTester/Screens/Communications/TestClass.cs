@@ -27,10 +27,10 @@ namespace Hydrogen.Utils.WinFormsTester
 
         }
 
-		public TestClass(int id)
-		{
-			FillWithTestData(id);
-		}
+//		public TestClass(int id)
+//		{
+//			FillWithTestData(id);
+//		}
 
 		public void FillWithTestData(int id) 
 		{

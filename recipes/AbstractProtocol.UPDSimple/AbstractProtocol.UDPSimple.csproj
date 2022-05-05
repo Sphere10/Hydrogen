@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<TargetFramework>net6.0</TargetFramework>
+		<AssemblyName>AbstractProtocol.UDPSimple</AssemblyName>
+		<RootNamespace>AbstractProtocol.UDPSimple</RootNamespace>
+		<LangVersion>latest</LangVersion>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\src\Hydrogen.Communications\Hydrogen.Communications.csproj" />
+		<ProjectReference Include="..\..\src\Hydrogen\Hydrogen.csproj" />
+	</ItemGroup>
+
+</Project>

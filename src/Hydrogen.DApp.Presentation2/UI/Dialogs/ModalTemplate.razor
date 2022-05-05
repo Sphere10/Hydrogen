@@ -1,0 +1,64 @@
+﻿@using Microsoft.JSInterop
+@using Microsoft.Extensions.Options
+@using Hydrogen.DApp.Presentation2.Logic.Modal
+
+<div class="modal-dialog @SizeClass" role="document">
+    <div class="modal-content">
+        <div class="modal-header">
+            @HeaderTemplate
+            <button type="button" class="close" @onclick="OnCloseAsync" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <div class="modal-body">
+            @BodyTemplate
+        </div>
+
+        <div class="modal-footer">
+            @FooterTemplate
+        </div>
+    </div>
+</div>
+
+@code
+{
+
+    [Inject]
+    private IJSRuntime JsRuntime { get; set; } = null!;
+
+    [Parameter]
+    public RenderFragment HeaderTemplate { get; set; }
+
+    [Parameter]
+    public RenderFragment FooterTemplate { get; set; }
+
+    [Parameter]
+    public RenderFragment BodyTemplate { get; set; }
+
+    [Parameter]
+    public Func<Task<bool>> OnCloseFunc { get; set; } = () => Task.FromResult(true);
+
+    [Parameter]
+    public ModalOptions Options { get; set; } = new();
+    
+    private string SizeClass
+    {
+        get
+        {
+            return Options.Size switch
+            {
+                ModalSize.Small => "modal-sm",
+                ModalSize.Medium => "modal-md",
+                ModalSize.Large => "modal-lg",
+                _ => throw new ArgumentOutOfRangeException()};
+        }
+    }
+
+    private async Task OnCloseAsync()
+    {
+        if (await OnCloseFunc())
+        {
+            await JsRuntime.InvokeVoidAsync("hideModal");
+        }
+    }
+}

@@ -1,0 +1,62 @@
+﻿@using Hydrogen
+@using Hydrogen.DApp.Presentation2.Logic.Wizard
+@inherits WizardStep<NewWalletModel>
+
+<h6 class="mb-3">Select wallet type</h6>
+<EditForm Model="Model">
+    <fieldset class="form-group">
+        <div class="row">
+            <label class="col-form-label col-auto pt-sm-0">Wallet type:</label>
+            <div class="col-sm-9">
+                <div class="custom-controls-stacked">
+                    <InputRadioGroup @bind-Value="@Model.Type">
+                        <label class="custom-control custom-radio">
+                            <InputRadio class="custom-control-input" checked="" Value="WalletType.Standard"/>
+                            <span class="custom-control-label">Standard</span>
+                        </label>
+
+                        <label class="custom-control custom-radio">
+                            <InputRadio class="custom-control-input" checked="" Value="WalletType.Restore"/>
+                            <span class="custom-control-label">Restored</span>
+                        </label>
+                    </InputRadioGroup>
+                </div>
+            </div>
+        </div>
+    </fieldset>
+</EditForm>
+
+
+@code {
+    public override string Title { get; } = "Wallet Type";
+
+    protected override void OnParametersSet()
+    {
+        IsCancellable = false;
+        base.OnParametersSet();
+    }
+
+    public override Task<Result> OnNextAsync()
+    {
+        if (Model.Type is WalletType.Standard)
+        {
+            Wizard.UpdateSteps(StepUpdateType.ReplaceAllNext, new[]
+            {
+                typeof(PasswordStep),
+                typeof(SummaryStep)
+            });
+        }
+        if (Model.Type is WalletType.Restore)
+        {
+            Wizard.UpdateSteps(StepUpdateType.ReplaceAllNext, new[]
+            {
+                typeof(RestoreStep),
+                typeof(SummaryStep)
+            });
+        }
+
+        return Task.FromResult(Result.Valid);
+    }
+
+    public override Task<Result> OnPreviousAsync() => Task.FromResult(Result.Valid);
+}

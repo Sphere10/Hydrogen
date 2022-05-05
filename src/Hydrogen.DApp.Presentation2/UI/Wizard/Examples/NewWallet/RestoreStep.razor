@@ -1,0 +1,27 @@
+﻿@using Hydrogen
+@inherits WizardStep<NewWalletModel>
+
+<h6 class="mb-3">Restore from seed </h6>
+<EditForm Model="Model">
+    <div class="form-group">
+        <label class="form-label">Seed text</label>
+        <InputTextArea class="form-control" rows="3" @bind-Value="Model.Seed"/>
+    </div>
+</EditForm>
+
+
+@code {
+    public override string Title { get; } = "Restore wallet";
+
+    public override Task<Result> OnNextAsync()
+    {
+        if (string.IsNullOrEmpty(Model.Seed))
+        {
+            return Task.FromResult(Result.Error("Seed is required."));
+        }
+        else
+        {
+            return Task.FromResult(Result.Valid);
+        }
+    }
+}

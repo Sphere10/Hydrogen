@@ -1,0 +1,24 @@
+﻿@using Hydrogen
+@using Microsoft.JSInterop
+@inject IJSRuntime JsRuntime
+
+<p>
+    @Exception.ToDisplayString()
+</p>
+<a class="collapsed" data-toggle="collapse" data-target="#details">Details</a>
+<div class="collapse exception-details"  id="details">
+    <div>
+        @Exception.ToDiagnosticString()
+    </div>
+    <button class="btn btn-primary btn-sm" title="Copy to clipboard" @onclick="CopyToClipboardAsync" role="button">
+        <i data-feather="copy"></i>
+    </button>
+</div>
+
+@code {
+
+    [Parameter]
+    public Exception Exception { get; set; }
+
+    private Task CopyToClipboardAsync() => JsRuntime.InvokeVoidAsync("clipboardCopy.copyText", Exception.ToDiagnosticString()).AsTask();
+}

@@ -1,0 +1,100 @@
+﻿@page "/widget-gallery/tables"
+@using Hydrogen.DApp.Presentation.Models
+@using Hydrogen.DApp.Presentation.Services
+@inherits ComponentWithViewModel<TablesViewModel>
+@inject IModalService ModalService
+
+<LoadingOverlay IsLoading="@(!ViewModel!.IsInitialized)" />
+
+<h1 class="h3 mb-2 text-gray-800">Tables</h1>
+<div class="row">
+    <div class="col-md-4">
+        <div class="card shadow">
+            <div class="card-header">Rapid Table</div>
+            <div class="card-body">
+                <RapidTable ItemLimit="10"
+                            Source="@ViewModel!.NodeService.GetBlocksAsync()"
+                            TItem="Block"
+                            OnRowSelect="OnClickRowAsync"
+                            Class="table table-striped table-borderless table-hover">
+                    <HeaderTemplate>
+                        <tr>
+                            <th> Address</th>
+                            <th class="text-right"> Number</th>
+                        </tr>
+                    </HeaderTemplate>
+                    <ItemTemplate Context="block">
+                        <tr>
+                            <td>@block.Address</td>
+                            <td class="text-right">@block.Number</td>
+                        </tr>
+                    </ItemTemplate>
+                </RapidTable>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow">
+            <div class="card-header">Paged Table</div>
+            <div class="card-body">
+                <PagedTable class="table table-borderless table-hover overflow-auto"
+                            Items="Blocks"
+                            TItem="Block"
+                            PageSize="10"
+                            OnRowSelect="OnClickRowAsync">
+                    <HeaderTemplate>
+                        <tr>
+                            <th> Address</th>
+                            <th class="text-right"> Number</th>
+                        </tr>
+                    </HeaderTemplate>
+                    <ItemTemplate Context="block">
+                        <tr>
+                            <td>@block.Address</td>
+                            <td class="text-right">@block.Number</td>
+                        </tr>
+                    </ItemTemplate>
+                </PagedTable>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow">
+            <div class="card-header"> Virtual paged table</div>
+            <div class="card-body">
+                <VirtualPagedTable Class="table table-borderless table-hover overflow-auto"
+                                   ItemsProvider="request => ViewModel!.NodeService.GetBlocksAsync(request)"
+                                   OnRowSelect="OnClickRowAsync"
+                                   TItem="Block"
+                                   PageSize="10">
+                    <HeaderTemplate>
+                        <tr>
+                            <th> Address</th>
+                            <th> Number</th>
+                        </tr>
+                    </HeaderTemplate>
+                    <ItemTemplate Context="block">
+                        <tr>
+                            <td>@block.Address</td>
+                            <td>@block.Number</td>
+                        </tr>
+                    </ItemTemplate>
+                </VirtualPagedTable>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@code
+{
+    List<Block> Blocks { get; } = Enumerable.Range(0, 100).Select(x => new Block() { Address = Guid.NewGuid().ToString(), Number = x }).ToList();
+
+    private async Task OnClickRowAsync(Block block) {
+        await ModalService.ShowAsync<InfoDialog>(new Dictionary<string, object>
+        {
+            {nameof(InfoDialog.Title), $"Block {block.Number}"},
+            {nameof(InfoDialog.Message), $"Viewing {block.Number}, Address {block.Address}"},
+        });
+    }
+}

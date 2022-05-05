@@ -678,18 +678,18 @@ The full source-code respository for Dynamic Merkle Trees, proof generations and
 Of particular interest are the following source files:
 
 - The `MerkleMath.cs` source file which implements almost all the algorithms described herein:
- https://github.com/Sphere10/Framework/blob/master/src/Sphere10.Framework/Collections/Merkle/MerkleMath.cs
+ https://github.com/Sphere10/Framework/blob/master/src/Hydrogen/Collections/Merkle/MerkleMath.cs
 - The `Pow2.cs` source file which implements the Powers-of-2 algorithms such as `reduce`:
-   https://github.com/Sphere10/Framework/blob/master/src/Sphere10.Framework/Maths/Pow2.cs
+   https://github.com/Sphere10/Framework/blob/master/src/Hydrogen/Maths/Pow2.cs
 - The `LongMerkleTree.cs` source file which implements the memory-efficient long-tree:
-https://github.com/Sphere10/Framework/blob/master/src/Sphere10.Framework/Collections/Merkle/LongMerkleTree.cs
+https://github.com/Sphere10/Framework/blob/master/src/Hydrogen/Collections/Merkle/LongMerkleTree.cs
 - The `FlatMerkleTree.cs` source file which implements the contiguous-memory flat-tree:
-https://github.com/Sphere10/Framework/blob/master/src/Sphere10.Framework/Collections/Merkle/FlatMerkleTree.cs
+https://github.com/Sphere10/Framework/blob/master/src/Hydrogen/Collections/Merkle/FlatMerkleTree.cs
 
 
 
 # References
 
 [^1]: Ralph Merkle. "Secrecy, authentication and public key systems / A certified digital signature". Ph.D. dissertation, Dept. of Electrical Engineering, Stanford University, 1979. Url: http://www.merkle.com/papers/Certified1979.pdf
-[^2]: Github. Sphere 10 Framework, Dynamic Merkle-Trees Module. Url: https://github.com/Sphere10/Framework/tree/master/src/Sphere10.Framework/Collections/Merkle
+[^2]: Github. Hydrogen Framework, Dynamic Merkle-Trees Module. Url: https://github.com/Sphere10/Framework/tree/master/src/Hydrogen/Collections/Merkle
 

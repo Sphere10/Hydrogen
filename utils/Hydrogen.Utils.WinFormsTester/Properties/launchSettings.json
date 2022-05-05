@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "HydrogenTester.WinForms": {
+      "commandName": "Project",
+      "nativeDebugging": true
+    }
+  }
+}

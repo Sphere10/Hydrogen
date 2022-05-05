@@ -1,0 +1,32 @@
+﻿@page "/widget-gallery/modals"
+@using Hydrogen.DApp.Presentation.Services
+@inject IModalService ModalService
+
+<h3>Modals</h3>
+
+<button @onclick="ShowInfoModalAsync" class="d-none d-sm-inline-block btn btn-sm btn-info shadow-sm">
+    <i class="fas fa-download fa-sm text-white-50">
+    </i> Info Modal
+</button>
+
+<button @onclick="ShowConfirmModalAsync" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
+    <i class="fas fa-download fa-sm text-white-50">
+    </i> Confirm Modal
+</button>
+
+@code {
+
+    private async Task ShowInfoModalAsync() {
+        await ModalService.ShowAsync<InfoDialog>(new Dictionary<string, object>
+        {
+            {nameof(InfoDialog.Message), "This is a informational message."}
+        });
+    }
+
+    private async Task ShowConfirmModalAsync() {
+        await ModalService.ShowAsync<ConfirmDialog>(new Dictionary<string, object>
+        {
+            {nameof(ConfirmDialog.Message), "Do you wish to proceed?"}
+        });
+    }
+}

@@ -1,0 +1,39 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+        <LangVersion>9</LangVersion>
+    </PropertyGroup>
+
+    <ItemGroup>
+<<<<<<< HEAD:src/Sphere10.Hydrogen.Presentation2/Sphere10.Hydrogen.Presentation2.csproj
+        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="6.0.2" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.2" />
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+=======
+        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="6.0.4" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.4" />
+>>>>>>> master:src/Hydrogen.DApp.Presentation2/Hydrogen.DApp.Presentation2.csproj
+    </ItemGroup>
+
+    <ItemGroup>
+		<ProjectReference Include="..\Hydrogen\Hydrogen.csproj" />
+		<ProjectReference Include="..\Hydrogen.Application\Hydrogen.Application.csproj" />
+        <ProjectReference Include="..\Hydrogen.Communications\Hydrogen.Communications.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Content Update="wwwroot\**">
+            <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+            <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="UI\Controls\BlazorGrid\Modals\" />
+      <Folder Include="UI\Dialogs\Example" />
+      <Folder Include="UI\Wizard\Examples\Send" />
+    </ItemGroup>
+
+</Project>

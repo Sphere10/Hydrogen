@@ -1,0 +1,820 @@
+﻿@page "/"
+@using Hydrogen.DApp.Presentation2.Logic.Modal
+@using Hydrogen.DApp.Presentation2.Logic.Wizard
+@using Hydrogen.DApp.Presentation2.UI.Wizard
+@using Hydrogen
+@using System.Threading
+@using Hydrogen.DApp.Presentation2.UI.Wizard.Examples
+@using Hydrogen.DApp.Presentation2.UI.Wizard.Examples.NewWallet
+
+@using Hydrogen.DApp.Presentation2.UI.Controls
+@using Hydrogen.DApp.Presentation2.UI.Controls.BlazorGrid;
+@using Hydrogen.DApp.Presentation2.UI.Controls.BlazorGrid.Classes;
+@using Hydrogen.DApp.Presentation2.UI.Controls.BlazorGrid.Components;
+
+@using Hydrogen;
+@using System.Threading;
+@using System;
+@using System.Linq;
+@using System.Net;
+@using Microsoft.JSInterop;
+@using Hydrogen.Communications;
+
+@using System.IO;
+@using System.Runtime.Serialization.Formatters.Binary;
+@using System.Text;
+@using Newtonsoft.Json;
+
+@inject IJSRuntime JSRuntime
+
+@implements IDisposable
+
+<body style="overflow:hidden">
+@*<body oncontextmenu="return false;" style="overflow:hidden">*@
+
+<button @onclick="() => Test()">Test</button>
+    <div class="row">
+        <div class="col-10">
+            <div class="card">
+                <div class="card-header">
+                    <ul class="nav nav-tabs card-header-tabs pull-right" role="tablist">
+                        <li class="nav-item">
+                            <a class="nav-link active" data-toggle="tab" href="#tab-1">Table</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" data-toggle="tab" href="#tab-2">Virtual</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" data-toggle="tab" href="#tab-3">Rapid</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" data-toggle="tab" href="#tab-4">New Grid</a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="card-body">
+                    <div class="tab-content">
+
+@*
+                        <div class="tab-pane fade active show" id="tab-1">
+                            <h5 class="card-title">Paged table</h5>
+                            <PagedTable Items="Enumerable.Range(1, 100)"
+                                        TItem="int"
+                                        OnRowSelect="OnRowSelectAsync"
+                                        Class="table table-hover table-striped w-100">
+                                <HeaderTemplate>
+                                    <tr>
+                                        <th>i</th>
+                                    </tr>
+                                </HeaderTemplate>
+                                <ItemTemplate Context="i">
+                                    <tr>
+                                        <td>@i</td>
+                                    </tr>
+                                </ItemTemplate>
+                            </PagedTable>
+                        </div>
+                        <div class="tab-pane fade" id="tab-2">
+                            <h5 class="card-title">Virtual data source</h5>
+                            <p> Items retrieved from data source on demand.</p>
+                            <VirtualPagedTable ItemsProvider="ItemsProvider"
+                                               TItem="int"
+                                               OnRowSelect="OnRowSelectAsync"
+                                               Class="table table-hover table-striped w-100">
+                                <HeaderTemplate>
+                                    <tr>
+                                        <th>i</th>
+                                    </tr>
+                                </HeaderTemplate>
+                                <ItemTemplate Context="i">
+                                    <tr>
+                                        <td>@i</td>
+                                    </tr>
+                                </ItemTemplate>
+                            </VirtualPagedTable>
+                        </div>
+                        <div class="tab-pane fade" id="tab-3">
+                            <h5 class="card-title">Rapid table</h5>
+                            <p> Update table continously from stream source</p>
+                            <RapidTable Source="GetIntAsync()"
+                                        ItemLimit="10"
+                                        TItem="int"
+                                        OnRowSelect="OnRowSelectAsync"
+                                        Class="table table-hover table-striped w-100">
+                                <HeaderTemplate>
+                                    <tr>
+                                        <th>i</th>
+                                    </tr>
+                                </HeaderTemplate>
+                                <ItemTemplate Context="i">
+                                    <tr>
+                                        <td>@i</td>
+                                    </tr>
+                                </ItemTemplate>
+                            </RapidTable>
+                        </div>*@
+
+                        <div class="tab-pane fade" id="tab-4">
+                            <h5 class="card-title">Grid New</h5>
+                            <p>Testing of new Grid</p>
+                            <BlazorGrid TItem="TestClass"
+                                        Id="TestGrid"
+                                        PageSize="10"
+                                        DataSource="WebDataSource"
+                                        GridType="BlazorGrid<TestClass>.GridTypes.ActionColumn | BlazorGrid<TestClass>.GridTypes.NewItem"
+                                        Actions="DataActions"
+                                        ColumnDefinitions="ColumnDefinitions">
+
+                                @* comments
+                                *@
+
+                            </BlazorGrid>
+                        </div>
+
+@*                        <button @onclick="StartWebSockets">Start Web Sockets</button>
+                        <button @onclick="SendData">SendData</button>*@
+
+                        <div><textarea id="Output" rows="10" cols="60"></textarea></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @*<div class="col-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title"> Dialogs</h5>
+                </div>
+                <div class="card-body">
+                    <div>
+                        <button class="btn btn-primary btn-sm mx-1" @onclick="Confirm"> Confirm</button>
+                        <button class="btn btn-info btn-sm mx-1" @onclick="Info"> Info</button>
+                        <button class="btn btn-warning btn-sm mx-1" @onclick="Warning"> Warning</button>
+                        <button class="btn btn-danger btn-sm mx-1" @onclick="Exception"> Exception</button>
+                        <button class="btn btn-secondary btn-sm mx-1" @onclick="Custom"> Custom</button>
+                    </div>
+
+                </div>
+
+            </div>
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title"> Wizards</h5>
+                </div>
+                <div class="card-body">
+                    <button class="btn btn-primary btn-sm" @onclick="Wizard"> New Wallet</button>
+                </div>
+            </div>
+        </div>*@
+
+    </div>
+</body>
+
+@code {
+
+        /*
+        public class DataSource1<TItem> : IDataSource<TestClass>
+        {
+        List<TestClass> AllItems = new List<TestClass>();
+
+        public event EventHandlerEx<DataSourceMutatedItems<TestClass>> MutatedItems;
+
+        public void RefreshData()
+            {
+            AllItems = LoadData(73);
+            }
+
+            // create some dummy data
+            public DataSource1()
+                {
+                RefreshData();
+                }
+
+                event EventHandlerEx<DataSourceMutatedItems<TestClass>> IDataSource<TestClass>.MutatedItems {
+                    add {
+                    throw new NotImplementedException();
+                    }
+
+                    remove {
+                    throw new NotImplementedException();
+                    }
+                    }
+
+                    static List<TestClass> LoadData(int size)
+                    {
+                        var testData = new List<TestClass>();
+
+                        for (int i = 0; i < size; i++)
+        {
+        var testObject = new TestClass();
+                        testObject.FillWithTestData(i);
+                        testData.Add(testObject);
+                        }
+
+                        return testData;
+                        }
+
+                        public async Task Create(IEnumerable<TestClass> entities)
+                            {
+                            AllItems.AddRange(entities);
+                            }
+
+                            public async Task Delete(IEnumerable<TestClass> entities)
+                            {
+                            foreach (var entity in entities)
+                            {
+                            var index = AllItems.IndexOf(entity);
+                            if (index >= 0) AllItems.RemoveAt(index);
+                            }
+                    }
+
+        public Task<IEnumerable<TestClass>> New(int count)
+        {
+        var returnList = new List<TestClass>();
+                        var newId = AllItems.Max(x => x.Id) + 1;
+
+                        for (int i = 0; i < count; i++)
+                        {
+            var newEntity = new TestClass();
+            newEntity.FillWithTestData(newId++);
+            AllItems.Add(newEntity);
+            returnList.Add(newEntity);
+            }
+
+            return Task.FromResult((IEnumerable<TestClass>)returnList);
+            }
+
+<<<<<<< HEAD:src/Sphere10.Hydrogen.Presentation2/UI/Index.razor
+            //void New(int count) {
+            //    throw new NotImplementedException();
+            //}
+
+            public Task<IEnumerable<TestClass>> Read(string searchTerm, int pageLength, ref int page, string sortProperty, SortDirection sortDirection, out int totalItems)
+            {
+=======
+        public Task<DataSourceItems<TestClass>> Read(string searchTerm, int pageLength, int page, string sortProperty, SortDirection sortDirection)
+        {
+>>>>>>> master:src/Hydrogen.DApp.Presentation2/UI/Index.razor
+            // make sure the requested page is logical
+            if (page < 0) page = 0;
+            else if (page > AllItems.Count / pageLength) page = AllItems.Count / pageLength;
+
+            var startIndex = pageLength * page;
+
+            // the last page might not have a full [page of data
+            if (startIndex + pageLength >= AllItems.Count) pageLength = AllItems.Count - startIndex;
+
+<<<<<<< HEAD:src/Sphere10.Hydrogen.Presentation2/UI/Index.razor
+        var items = (IEnumerable<TestClass>)AllItems.GetRange(startIndex, pageLength);
+
+        totalItems = AllItems.Count();
+        return Task.FromResult(items);
+
+        //return Task.Run(() => (IEnumerable<TestClass>)AllItems.GetRange(startIndex, pageLength));
+=======
+            return Task.FromResult(
+                new DataSourceItems<TestClass> {
+                        Items = (IEnumerable<TestClass>)AllItems.GetRange(startIndex, pageLength),
+                        Page = page,
+                        TotalCount = AllItems.Count
+                }
+            );
+>>>>>>> master:src/Hydrogen.DApp.Presentation2/UI/Index.razor
+        }
+
+        public Task Refresh(TestClass[] entity)
+        {
+            throw new NotImplementedException();
+            }
+
+            public Task Update(IEnumerable<TestClass> entities)
+            {
+            var test = entities.ToArray()[0].ToString();
+
+            return Task.Run(() =>
+            {
+            foreach (var entity in entities)
+            {
+            for (int i = 0; i < AllItems.Count; i++)
+            {
+            if (AllItems[i].Id == entity.Id)
+            {
+            AllItems[i] = entity;
+            break;
+            }
+            }
+            }
+            }
+            );
+            }
+
+            public Task<Result> Validate(IEnumerable<(TestClass entity, CrudAction action)> actions)
+        {
+        throw new NotImplementedException();
+        }
+
+        Task IDataSource<TestClass>.Create(IEnumerable<TestClass> entities) {
+        throw new NotImplementedException();
+            }
+
+            Task<IEnumerable<TestClass>> IDataSource<TestClass>.Read(string searchTerm, int pageLength, ref int page, string sortProperty, SortDirection sortDirection, out int totalItems) {
+        throw new NotImplementedException();
+        }
+
+<<<<<<< HEAD:src/Sphere10.Hydrogen.Presentation2/UI/Index.razor
+        //        IEnumerable<TestClass> IDataSource<TestClass>.ReadSync(string searchTerm, int pageLength, ref int page, string sortProperty, SortDirection sortDirection, out int totalItems) {
+        //           throw new NotImplementedException();
+        //        }
+
+        Task IDataSource<TestClass>.Refresh(TestClass[] entities) {
+        throw new NotImplementedException();
+        }
+
+        Task IDataSource<TestClass>.Update(IEnumerable<TestClass> entities) {
+        throw new NotImplementedException();
+        }
+
+        Task IDataSource<TestClass>.Delete(IEnumerable<TestClass> entities) {
+        throw new NotImplementedException();
+        }
+
+        Task<Result> IDataSource<TestClass>.Validate(IEnumerable<(TestClass entity, CrudAction action)> actions) {
+        throw new NotImplementedException();
+        }
+
+
+        void IDataSource<TestClass>.NewDelayed(int count) {
+        throw new NotImplementedException();
+    }
+
+    void IDataSource<TestClass>.CreateDelayed(IEnumerable<TestClass> entities) {
+        throw new NotImplementedException();
+    }
+
+    void IDataSource<TestClass>.ReadDelayed(string searchTerm, int pageLength, int page, string sortProperty, SortDirection sortDirection) {
+    throw new NotImplementedException();
+    }
+
+    void IDataSource<TestClass>.RefreshDelayed(IEnumerable<TestClass> entities) {
+    throw new NotImplementedException();
+    }
+
+    void IDataSource<TestClass>.UpdateDelayed(IEnumerable<TestClass> entities) {
+    throw new NotImplementedException();
+    }
+
+    void IDataSource<TestClass>.DeleteDelayed(IEnumerable<TestClass> entities) {
+    throw new NotImplementedException();
+    }
+
+    void IDataSource<TestClass>.ValidateDelayed(IEnumerable<(TestClass entity, CrudAction action)> actions) {
+    throw new NotImplementedException();
+    }
+
+    void IDataSource<TestClass>.CountDelayed() {
+    throw new NotImplementedException();
+    }
+
+    public Task<int> Count { get { return Task.Run(() => AllItems.Count); } }
+
+    Task<int> IDataSource<TestClass>.Count => throw new NotImplementedException();
+=======
+        public Task<int> Count { get { return Task.Run(() => AllItems.Count); } }
+
+        public Task<DataSourceCapabilities> Capabilities => Task.FromResult(DataSourceCapabilities.Default);
+>>>>>>> master:src/Hydrogen.DApp.Presentation2/UI/Index.razor
+    }
+    */
+
+    /*
+    public class DataSource2<TItem> : IDataSource<TestClass> {
+    //List<TestClass> AllItems = new List<TestClass>();
+
+        //public void RefreshData() {
+    //    AllItems = LoadData(73);
+    //}
+
+    // create some dummy data
+    public DataSource2() {
+    //RefreshData();
+    }
+
+    //static List<TestClass> LoadData(int size) {
+    //    var testData = new List<TestClass>();
+
+    //    for (int i = 0; i < size; i++) {
+    //        var testObject = new TestClass();
+    //        testObject.FillWithTestData(i);
+    //        testData.Add(testObject);
+    //    }
+
+    //    return testData;
+    //}
+
+    public async Task Create(IEnumerable<TestClass> entities) {
+    //    AllItems.AddRange(entities);
+    }
+
+    public async Task Delete(IEnumerable<TestClass> entities) {
+    //    foreach (var entity in entities) {
+    //        var index = AllItems.IndexOf(entity);
+    //        if (index >= 0) AllItems.RemoveAt(index);
+    //    }
+    }
+
+    public IEnumerable<TestClass> New(int count) {
+
+    //var returnList = new List<TestClass>();
+    //var newId = AllItems.Max(x => x.Id) + 1;
+
+    //for (int i = 0; i < count; i++) {
+    //    var newEntity = new TestClass();
+    //    newEntity.FillWithTestData(newId++);
+    //    AllItems.Add(newEntity);
+    //    returnList.Add(newEntity);
+    //}
+
+    //return returnList;
+
+<<<<<<< HEAD:src/Sphere10.Hydrogen.Presentation2/UI/Index.razor
+    throw new NotImplementedException();
+    }
+=======
+        public Task<DataSourceItems<TestClass>> Read(string searchTerm, int pageLength, int page, string sortProperty, SortDirection sortDirection) {
+>>>>>>> master:src/Hydrogen.DApp.Presentation2/UI/Index.razor
+
+    public Task<IEnumerable<TestClass>> Read(string searchTerm, int pageLength, ref int page, string sortProperty, SortDirection sortDirection, out int totalItems) {
+
+    // make sure the requested page is logical
+    //            if (page < 0) page = 0;
+    //            else if (page > AllItems.Count / pageLength) page = AllItems.Count / pageLength;
+
+    //            var startIndex = pageLength * page;
+
+    // the last page might not have a full [page of data
+    //            if (startIndex + pageLength >= AllItems.Count) pageLength = AllItems.Count - startIndex;
+
+    //            var items = (IEnumerable<TestClass>)AllItems.GetRange(startIndex, pageLength);
+
+    //            totalItems = AllItems.Count();
+    //            return Task.FromResult(items);
+
+    //return Task.Run(() => (IEnumerable<TestClass>)AllItems.GetRange(startIndex, pageLength));
+
+    throw new NotImplementedException();
+    }
+
+    public Task Refresh(TestClass[] entity) {
+    throw new NotImplementedException();
+    }
+
+    public Task Update(IEnumerable<TestClass> entities) {
+    //var test = entities.ToArray()[0].ToString();
+
+    //return Task.Run(() => {
+    //    foreach (var entity in entities) {
+    //        for (int i = 0; i < AllItems.Count; i++) {
+        //            if (AllItems[i].Id == entity.Id) {
+    //                AllItems[i] = entity;
+    //                break;
+    //            }
+    //        }
+    //    }
+    //}
+    //);
+    throw new NotImplementedException();
+    }
+
+<<<<<<< HEAD:src/Sphere10.Hydrogen.Presentation2/UI/Index.razor
+    public Task<Result> Validate(IEnumerable<(TestClass entity, CrudAction action)> actions) {
+    throw new NotImplementedException();
+=======
+        public Task<int> Count { get { return Task.Run(() => 0); } }
+
+        public Task<DataSourceCapabilities> Capabilities => Task.FromResult(DataSourceCapabilities.Default);
+>>>>>>> master:src/Hydrogen.DApp.Presentation2/UI/Index.razor
+    }
+
+    public Task<int> Count { get { return Task.Run(() => 0); } }
+    }
+    */
+
+    #region Javascript
+
+    void Alert(string text)
+    {
+        JSRuntime.InvokeAsync<object>("AlertWrite", text);
+    }
+
+    void WriteOutput(string text) {
+        JSRuntime.InvokeAsync<object>("WriteOutout", text);
+    }
+
+    #endregion
+
+    //DataSource1<TestClass> DataSource { get; set; }
+    List<GridAction<TestClass>> DataActions { get; set; } = new List<GridAction<TestClass>>();
+    List<IGridComponent<TestClass>> Components { get; set; } = new List<IGridComponent<TestClass>>();
+    List<object> ColumnDefinitions { get; set; } = new List<object>();
+    //System.Timers.Timer Timer { get; set; }
+
+    DotNetObjectReference<Index> CSharpInstance { get; set; }
+    ClientWebSocketsChannel Channel { get; set; }
+
+    ClientWebSocketsDataSource<TestClass> WebDataSource { get; set; }
+
+    void Test() {
+        var f1 = new Filter<string>();
+        var f2 = new Filter<double>();
+        var f3 = new Filter<DateTime>();
+        var f4 = new Filter<char>();
+    }
+
+    public class WebLogger : ILogger {
+
+        public delegate void DisplayTextDelegate(string text);
+
+        DisplayTextDelegate DisplayTextFunction { get; init; }
+
+        public WebLogger(DisplayTextDelegate displayTextFunction) {
+            DisplayTextFunction = displayTextFunction;
+        }
+
+        LogOptions ILogger.Options { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+
+        void ILogger.Debug(string message) {
+            DisplayTextFunction("DEBUG: " + message);
+        }
+
+        void ILogger.Error(string message) {
+            DisplayTextFunction("ERROR: " + message);
+        }
+
+        void ILogger.Info(string message) {
+            DisplayTextFunction("INFO: " + message);
+        }
+
+        void ILogger.Warning(string message) {
+            DisplayTextFunction("WARNING: " + message);
+        }
+    }
+
+
+    protected override async void OnInitialized()
+    {
+        SystemLog.RegisterLogger(new WebLogger(WriteOutput));
+
+        // LAN
+        var connectionString = "ws://192.168.1.171:80/service";
+        // WIFI
+        //var connectionString = "ws://192.168.1.106:80/service";
+        // Virtual Machine
+        //var connectionString = "ws://192.168.1.108:80/service";
+        WebDataSource = new ClientWebSocketsDataSource<TestClass>(connectionString, false, InitializeItem, UpdateItem, IdItem);
+
+        //SystemLog.Info($"ClientWebSocketsDataSource Created");
+        //DataActions.Add(new GridAction<TestClass>("Action1", Action1, "😄⛔", IsAction1Available));
+        DataActions.Add(new GridAction<TestClass>("DeleteAction", DeleteAction, "❌✡", IsDeleteAvailable));
+        //DataActions.Add(new GridAction<TestClass>("Action2", Action2, "⚽", IsAction2Available));
+
+        //ColumnDefinitions.Add(new DataEnd<TestClass, TestClass2>("Data End 1", TestDataExtractor1));
+        ColumnDefinitions.Add(new DataEnd<TestClass, TestClass3>("Data End 2", TestDataExtractor2));
+
+        //Timer = new System.Timers.Timer(1000); // 1 seconds
+        //Timer.Elapsed += CountDownTimer;
+        //Timer.Start();
+    }
+
+    string InitializeItem(TestClass item, int id)
+    {
+        try {
+            item.FillWithTestData(id);
+        } catch (Exception ex) {
+            return ex.Message;
+        }
+
+        return null;
+    }
+
+    string UpdateItem(TestClass item) {
+        try {
+            // do something here
+
+        } catch (Exception ex) {
+            return ex.Message;
+        }
+
+        return null;
+    }
+
+    string IdItem(TestClass item) {
+        return item.Id.ToString();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender) {
+        //    CountDownTimer(null, null);
+
+        //        TestGrid.LoadJavascript();
+        //        Alert("OnAfterRenderAsync Index");
+    }
+
+    async void StartWebSockets()
+    {
+        try {
+            // Virtual Machine
+            //Channel = new ClientWebSocketsChannel("ws://192.168.1.108:80/service", false);
+
+            // Local Machine
+            //Channel = new ClientWebSocketsChannel("ws://192.168.1.171:80/service", false);
+            //Channel.ReceivedBytes += delegate (ReadOnlyMemory<byte> memory)
+            //{
+            //    WriteOutput(System.Text.Encoding.ASCII.GetString(memory.Span));
+            //};
+            //await Channel.Open();
+
+            //            WebDataSource.New
+        }
+        catch (Exception ex) {
+
+        }
+    }
+
+    void SendData()
+    {
+        try
+        {
+            var testData = new TestClass();
+            testData.FillWithTestData(666);
+            var jsonData = JsonConvert.SerializeObject(testData);
+            var testPacket = new WebSocketsPacket("new 7", jsonData);
+            Channel.TrySendBytes(testPacket.ToBytes());
+
+            //Channel.TrySendBytes(Encoding.ASCII.GetBytes("Hello 666"));
+        }
+        catch (Exception ex) {
+
+        }
+        //Channel.TrySendBytes(System.Text.Encoding.ASCII.GetBytes("Hello from Server 666"));
+        //this sends but is not AbandonedMutexException data
+    }
+
+
+    TestClass2 TestDataExtractor1(object data)
+    {
+        var useData = (TestClass)data;
+
+        // this is a simple example
+        var text = $"Test: {useData.Name}";
+        var value = (decimal)Math.PI;
+        var locked = (new Random()).NextBool();
+
+        return new TestClass2(text, value, locked);
+    }
+
+    TestClass3 TestDataExtractor2(object data)
+    {
+        var useData = (TestClass)data;
+
+        return new TestClass3(useData.Name);
+    }
+
+    bool IsDeleteAvailable(TestClass item)
+    {
+        if (item.Name == "Polkadot") {
+            return false;
+        }
+
+        return true;
+    }
+
+    TestClass DeleteAction(TestClass item)
+    {
+        WebDataSource.DeleteDelayed(new List<TestClass>() { item });
+
+        return item;
+    }
+
+    TestClass Action2(TestClass item)
+    {
+        Alert($"Action 2 pressed for Id: {item.Id}");
+
+        return item;
+    }
+
+    bool IsAction1Available(TestClass item)
+    {
+        return true;
+    }
+
+    bool IsAction2Available(TestClass item)
+    {
+        return item.Name == "Bitcoin";
+    }
+
+    //public void CountDownTimer(Object source, System.Timers.ElapsedEventArgs e)
+    //{
+    //    //DataSource.RefreshData();
+    //    StateHasChanged();
+    //    Timer.Stop();
+    //}
+
+    #region Original Code
+    private async Task Confirm()
+    {
+        bool result = await ViewService.ConfirmDialogAsync("Confirm", "Are you sure you want to do that ?", "Yes");
+    }
+
+    private async Task Info()
+    {
+        int i = await ViewService.DialogAsync("Information", "Something important has happened.", "Ignore", "Decline", "Accept");
+
+        Console.WriteLine(i);
+    }
+
+    private async Task Warning()
+    {
+        await ViewService.DialogAsync("An error occured", "Something went wrong", "Dismiss");
+    }
+
+    private async Task Exception()
+    {
+        try
+        {
+            decimal zero = decimal.Zero;
+            decimal snafu = 1 / zero;
+        }
+        catch (Exception e)
+        {
+            await ViewService.DialogAsync(e, "Error");
+        }
+    }
+
+    private async Task Custom()
+    {
+        //Build a custom render fragment to show in the dialog. Could be a prebuilt component in another file as well.
+
+        RenderFragment frag = builder =>
+        {
+            builder.OpenElement(0, "div");
+            builder.AddAttribute(0, "class", "text-center");
+            builder.OpenElement(1, "img");
+            builder.AddAttribute(1, "src", "https://www.coinbuzz.com/wp-content/uploads/2015/03/bitcoin-logo-plain.png");
+            builder.AddAttribute(1, "height", 100);
+            builder.AddAttribute(1, "width", 100);
+            builder.CloseElement();
+
+            builder.OpenElement(2, "p");
+            builder.AddContent(2, "Bitcoin");
+            builder.CloseElement();
+            builder.CloseElement();
+        };
+
+        await ViewService.DialogAsync(frag, "A custom dialog");
+    }
+
+    private async Task Wizard()
+    {
+        var builder = new DefaultWizardBuilder<NewWalletModel>();
+        var wizard = builder.NewWizard("New Wallet")
+            .AddStep<WalletNameStep>()
+            .AddStep<WalletTypeStep>()
+            .WithModel(new NewWalletModel())
+            .OnFinished(x => Task.FromResult<Result<bool>>(true))
+            .Build();
+
+        await ViewService.WizardDialogAsync(wizard);
+    }
+
+    private async Task OnRowSelectAsync(int i)
+    {
+        await ViewService.DialogAsync("Number", i.ToString());
+    }
+
+    List<int> Items = new(Enumerable.Range(1, 9999));
+
+    private Task<ItemsResponse<int>> ItemsProvider(ItemRequest request)
+    {
+        return Task.FromResult(new ItemsResponse<int>(Items.Skip(request.Index).Take(request.Count), Items.Count));
+    }
+
+    private CancellationTokenSource EnumeratorCts { get; } = new();
+
+    private async IAsyncEnumerable<int> GetIntAsync()
+    {
+        int last = 0;
+        Random rand = new();
+
+        while (!EnumeratorCts.IsCancellationRequested)
+        {
+            await Task.Delay(rand.Next(1000, 3000));
+            yield return last++;
+        }
+    }
+
+    public void Dispose()
+    {
+        EnumeratorCts.Cancel();
+    }
+
+    #endregion
+}

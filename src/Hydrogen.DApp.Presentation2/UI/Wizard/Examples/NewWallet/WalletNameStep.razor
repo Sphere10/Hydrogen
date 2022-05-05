@@ -1,0 +1,21 @@
+﻿@using Hydrogen
+@inherits WizardStep<NewWalletModel>
+
+<h6 class="mb-3"> Enter new wallet name</h6>
+<EditForm Model="@Model">
+    <div class="form-group row">
+        <label class="col-form-label col-auto">Wallet Name:</label>
+        <div class="col-auto">
+            <InputText @bind-Value="Model.Name" type="text" class="form-control"/>
+        </div>
+    </div>
+</EditForm>
+
+@code {
+    public override string Title { get; } = "Wallet Name";
+
+    public override Task<Result> OnNextAsync() => Task.FromResult(string.IsNullOrEmpty(Model.Name) ? Result.Error("Name is required") : Result.Valid);
+
+    public override Task<Result> OnPreviousAsync() => Task.FromResult(Result.Valid);
+
+}

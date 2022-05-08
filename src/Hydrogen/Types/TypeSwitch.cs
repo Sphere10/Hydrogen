@@ -30,22 +30,30 @@ namespace Hydrogen {
 		}
 
 		public static void For(object source, params CaseInfo[] cases) {
+			var found = false;
 			var type = source.GetType();
 			foreach (var entry in cases) {
 				if (entry.IsDefault || entry.Target.IsAssignableFrom(type)) {
 					entry.Action(source);
+					found = true;
 					break;
 				}
 			}
+			if (!found)
+				throw new InvalidOperationException($"Unrecognized type '{type}'");
 		}
 
 		public static void ForType(Type type, params CaseInfo[] cases) {
+			var found = false;
 			foreach (var entry in cases) {
 				if (entry.IsDefault || entry.Target.IsAssignableFrom(type)) {
 					entry.Action(type);
+					found = true;
 					break;
 				}
 			}
+			if (!found)
+				throw new InvalidOperationException($"Unrecognized type '{type}'");
 		}
 
 		public static CaseInfo Case<T>(Action action) {

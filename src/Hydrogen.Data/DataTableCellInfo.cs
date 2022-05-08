@@ -15,9 +15,9 @@ using System;
 
 namespace Hydrogen.Data {
 
-	public class CellSpec {
+	public class DataTableCellInfo {
 
-		public CellSpec(string columnName, string cellValue, bool columnVisible = true) {
+		public DataTableCellInfo(string columnName, string cellValue, bool columnVisible = true) {
 			ColumnName = columnName;
 			CellValue = cellValue;
 			ColumnVisible = columnVisible;

@@ -18,6 +18,7 @@ using System.Text.RegularExpressions;
 using System.Text;
 using System.IO;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Threading;
 
 namespace Hydrogen {
@@ -26,6 +27,13 @@ namespace Hydrogen {
 		private static readonly Regex AlphabetCheckRegex = new Regex("^[a-zA-Z0-9]*$");
 
 		#region General 
+
+		public static string Repeat(this string @string, int times) {
+			var stringBuilder = new StringBuilder(@string.Length * times);
+			for(var i = 0 ; i < times; i++) 
+				stringBuilder.Append(@string);
+			return stringBuilder.ToString();
+		}
 
         public static IEnumerable<int> IndexOfAll(this string sourceString, string subString) {
             return Regex.Matches(sourceString, Regex.Escape(subString)).Cast<Match>().Select(m => m.Index);
@@ -286,11 +294,13 @@ namespace Hydrogen {
 			return path == ".." ? string.Empty : path;
 		}
 
-		static public string EscapeCSV(this string value) {
-			if (String.IsNullOrEmpty(value))
-				return value;
-			else
-				return value.Replace("\"", "\"\"");
+		static public string EscapeCSV(this string value, string delimiter = ",") {
+			var needsQuotes = value.Contains(delimiter);
+			var isQuoted = value.StartsWith("\"") && !value.StartsWith("\"\"") && value.EndsWith("\"") && !value.EndsWith("\"\""); // doesn't handle """"text"""" scenarios
+			value = value.Replace("\"", "\"\"");
+			if (needsQuotes && !isQuoted)
+				value = $"\"{value}\"";
+			return value;
 		}
 
 		public static bool ToBool(this string value) {

@@ -19,6 +19,7 @@ using System.Threading.Tasks;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Threading;
 
 
 namespace Hydrogen {
@@ -96,27 +97,7 @@ namespace Hydrogen {
 			return enumerable.Duplicate().SelectMany(x => x);
 		}
 
-		public static Task ForEachAsync<T>(this IEnumerable<T> source, Func<T, Task> body) {
-			return ForEachAsync(source, 1, body);   // one at a time
-		}
 
-		public static Task ForEachAsync<T>(this IEnumerable<T> source, int dop, Func<T, Task> body) {
-			return Task.WhenAll(
-				from partition in Partitioner.Create(source).GetPartitions(dop)
-				select Task.Run(async delegate {
-					using (partition)
-						while (partition.MoveNext())
-							await body(partition.Current);
-				}));
-		}
-
-		//public static async Task ForEachAsync<T>(this IEnumerable<T> source, Func<T, Task> body)
-		//{
-		//    foreach (var item in source)
-		//    {
-		//        await body(item);
-		//    }
-		//}
 
 		public static IEnumerable<T> TakeUntil<T>(
 			this IEnumerable<T> elements,
@@ -395,6 +376,20 @@ namespace Hydrogen {
 		public static void ForEach<T>(this IEnumerable<T> source, Action<T> action) {
 			foreach (T item in source)
 				action(item);
+		}
+
+		public static async Task ForEachAsync<T>(this IEnumerable<T> source, Func<T, Task> asyncAction) {
+			foreach (var value in source) {
+				await asyncAction(value);
+			}
+		}
+
+		public static async Task ForEachAsync<T>(this IEnumerable<T> source, Func<T, Task> asyncAction, CancellationToken cancellationToken) {
+			foreach (var value in source) {
+				if (cancellationToken.IsCancellationRequested)
+					throw new OperationCanceledException(cancellationToken);
+				await asyncAction(value).WithCancellationToken(cancellationToken);
+			}
 		}
 
 		public static int Update<T>(this IEnumerable<T> source, Action<T> action) {

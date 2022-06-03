@@ -15,7 +15,7 @@ using System;
 
 namespace Hydrogen {
 	/// <example>
-	/// TypeSwitch.Do(
+	/// TypeSwitch.For(
 	///		sender,
 	///		TypeSwitch.Case<Button>(() => textBox1.Text = "Hit a Button"),
 	///		TypeSwitch.Case<CheckBox>(x => textBox1.Text = "Checkbox is " + x.Checked),

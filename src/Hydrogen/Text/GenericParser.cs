@@ -18,8 +18,9 @@ namespace Hydrogen {
 	        return value;
         }
 
-        public static T SafeParse<T>(this string input) {
-            TryParse<T>(input, out var value);
+        public static T SafeParse<T>(this string input, T defaultValue = default) {
+	        if (!TryParse<T>(input, out var value))
+		        return defaultValue;
             return value;
         }
 

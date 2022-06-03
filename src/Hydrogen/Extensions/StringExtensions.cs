@@ -18,6 +18,7 @@ using System.Text.RegularExpressions;
 using System.Text;
 using System.IO;
 using System.Diagnostics;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Threading;
 
@@ -26,7 +27,19 @@ namespace Hydrogen {
 		private static readonly char[] InvalidFilePathChars = ("*?/\\:" + Path.GetInvalidPathChars().ToDelimittedString(string.Empty)).ToCharArray();
 		private static readonly Regex AlphabetCheckRegex = new Regex("^[a-zA-Z0-9]*$");
 
-		#region General 
+		#region General
+
+		public static bool StartsWithAny(this string @string, params string[] strings)
+			=> @string.StartsWithAny(StringComparison.InvariantCulture, strings);
+
+		public static bool StartsWithAny(this string @string, StringComparison comparison, params string[] strings)
+			=> strings.Any(x => @string.StartsWith(x, comparison));
+
+		public static string ToNullIfWhitespace(this string @string)
+			=> @string.ToValueIfNullOrWhitespace(null);
+
+		public static string ToValueIfNullOrWhitespace(this string @string, string value) 
+			=> string.IsNullOrWhiteSpace(@string) ? value : @string;
 
 		public static string Repeat(this string @string, int times) {
 			var stringBuilder = new StringBuilder(@string.Length * times);
@@ -390,11 +403,11 @@ namespace Hydrogen {
 		}
 
 		static public string UrlEncoded(this string str) {
-			return Tools.Url.EncodeUrlData(str);	
+			return Tools.Url.EncodeUrl(str);	
 		}
 
 		static public string UrlDecoded(this string str) {
-			return Tools.Url.DecodeUrlData(str);
+			return Tools.Url.DecodeUrl(str);
 		}
 
 		public static string EscapeJavascriptString(this string value) {
@@ -555,7 +568,6 @@ namespace Hydrogen {
 			return Uri.UnescapeDataString(uri.Host);
 		}
 
-
 		public static string ToCamelCase(this string s) {
 			return s.ToCamelCase(true, false);
 		}
@@ -620,6 +632,21 @@ namespace Hydrogen {
 					@"([\p{L}])_([\p{Lu}])",
 					"$1 $2"
 					);
+		}
+
+		/// See: http://www.siao2.com/2007/05/14/2629747.aspx
+		public static string RemoveDiacritics(this string @string) {
+			var stFormD = @string.Normalize(NormalizationForm.FormD);
+			var sb = new StringBuilder();
+
+			for (int ich = 0; ich < stFormD.Length; ich++) {
+				var uc = CharUnicodeInfo.GetUnicodeCategory(stFormD[ich]);
+				if (uc != UnicodeCategory.NonSpacingMark) {
+					sb.Append(stFormD[ich]);
+				}
+			}
+
+			return (sb.ToString().Normalize(NormalizationForm.FormC));
 		}
 
 		#endregion

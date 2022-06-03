@@ -11,8 +11,8 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace Hydrogen {
-	public enum FileStorePersistencePolicy {
+namespace Hydrogen.Data {
+	public enum XmlFileStorePersistencePolicy {
 		Perist,
 		DeleteOnDispose
 	}

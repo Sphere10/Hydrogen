@@ -25,8 +25,8 @@ namespace Tools {
 		public static T Parse<T>(string input)
 			=> GenericParser.Parse<T>(input);
 
-		public static T SafeParse<T>(string input)
-			=> GenericParser.SafeParse<T>(input);
+		public static T SafeParse<T>(string input, T defaultValue = default)
+			=> GenericParser.SafeParse<T>(input, defaultValue);
 
 		public static bool TryParse(Type type, string input, out object value)
 			=> GenericParser.TryParse(type, input, out value);

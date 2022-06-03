@@ -64,17 +64,9 @@ namespace Hydrogen {
             long origPos = Position;
             try {
                 _peeking = true;
-                if (Position >= Length) {
-                    throw new Exception("Stream ended");
-                    return 0xff;
-                }
-                
+                Guard.Ensure(Position >= Length, "Cannot peek from end of stream");
                 var b = ReadByte();
-                if (b == -1) {
-                   throw new Exception("Stream ended[2]");
-                }
-                
-                
+				Guard.Against(b == -1, "Stream ended inexplicably");
                 return (byte)b;
             } finally {
                 _peeking = false;
@@ -90,7 +82,7 @@ namespace Hydrogen {
                 if (Position >= Length) {
                     return new byte[0];
                 }
-                var b = this.Read(result, 0, number);
+                var b = Read(result, 0, number);
                 if (b != number) {
                     Array.Resize(ref result, b);
                 }

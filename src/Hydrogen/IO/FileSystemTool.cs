@@ -17,6 +17,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Hydrogen;
@@ -25,11 +26,15 @@ using Hydrogen.FastReflection;
 // ReSharper disable CheckNamespace
 namespace Tools {
     public static class FileSystem {
-        public readonly static string DirectorySeparatorString;
-
+        public static readonly string DirectorySeparatorString;
+        public static readonly char[] CrossPlatformInvalidFileNameChars;
+        public static readonly string[] CrossPlatformForbiddenFileNames;
 
         static FileSystem() {
             DirectorySeparatorString = new string(new[] { Path.DirectorySeparatorChar });
+            var asciiControlChars = Enumerable.Range(0, 31).Select(x => (char)x).ToArray();
+            CrossPlatformInvalidFileNameChars = new [] {'<', '>', ':', '\"', '/', '\\', '|', '?', '*'}.Union(asciiControlChars).Union(Path.GetInvalidFileNameChars()).ToArray(); // https://stackoverflow.com/questions/1976007/what-characters-are-forbidden-in-windows-and-linux-directory-names
+			CrossPlatformForbiddenFileNames = new [] { "CON", "PRN", "AUX", "NUL", "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9" };
         }
 
         public static void TruncateFile(string filename, long size) {
@@ -38,6 +43,15 @@ namespace Tools {
                     stream.SetLength(size);
             }
         }
+
+        public static string ToValidFolderOrFilename(string filename) {
+	        Guard.ArgumentNotNullOrWhitespace(filename, nameof(filename));
+			var result = new string(filename.Where(c => !CrossPlatformInvalidFileNameChars.Contains(c)).ToArray());
+			if (result.ToUpperInvariant().IsIn(CrossPlatformForbiddenFileNames))
+				result += "_";
+	         return result;
+        }
+			
 
         public static bool IsWellFormedDirectoryPath(string path) {
             if (String.IsNullOrWhiteSpace(path))
@@ -56,10 +70,8 @@ namespace Tools {
         }
 
         public static bool IsWellFormedFileName(string fileName) {
-            var invalidFIleNameChars = new string(Path.GetInvalidFileNameChars());
-            invalidFIleNameChars += @":/?*" + "\"";
-            var containsABadCharacter = new Regex("[" + Regex.Escape(invalidFIleNameChars) + "]");
-
+            var invalidFileNameChars = new string(CrossPlatformInvalidFileNameChars);
+            var containsABadCharacter = new Regex("[" + Regex.Escape(invalidFileNameChars) + "]");
             if (containsABadCharacter.IsMatch(fileName))
                 return false;
             else
@@ -161,12 +173,17 @@ namespace Tools {
             return new FileInfo(file).Length == 0;
         }
 
-        public static string DetermineAvailableFileName(string directoryPath, string desiredFileName) {
-            if (!Directory.Exists(directoryPath))
-                throw new DirectoryNotFoundException(directoryPath);
+        public static string DetermineAvailableFileName(string filePath)
+	        => DetermineAvailableFileName(Tools.FileSystem.GetParentDirectoryPath(filePath), Path.GetFileName(filePath));
 
-            // Try desired filename
+        public static string DetermineAvailableFileName(string directoryPath, string desiredFileName) {
             var desiredPath = Path.Combine(directoryPath, desiredFileName);
+
+			// If parent folder exists, then desired filepath is available
+            if (!Directory.Exists(directoryPath))
+	            return desiredPath;
+
+            // If file does not exist in parent folder, filepath is available
             if (!File.Exists(desiredPath))
                 return desiredPath;
 
@@ -192,6 +209,10 @@ namespace Tools {
                     Directory.CreateDirectory(dir);
             File.WriteAllBytes(filename, new byte[0]);
         }
+
+	    public static Task CreateBlankFileAsync(string filename, bool createDirectories = false) {
+		    return Task.Run(() => CreateBlankFile(filename, createDirectories));
+	    }
 
         public static void CopyFile(string sourcePath, string destPath, bool overwrite = false,
             bool createDirectories = false) {

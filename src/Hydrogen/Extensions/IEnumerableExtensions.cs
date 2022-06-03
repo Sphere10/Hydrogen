@@ -24,7 +24,21 @@ using System.Threading;
 
 namespace Hydrogen {
 
+
 	public static class IEnumerableExtensions {
+
+		public static IEnumerable<TResult> SelectWithExceptionHandler<T, TResult>(this IEnumerable<T> enumerable, Func<T, TResult> func, Action<T, Exception> handler)
+			=> enumerable
+				.Select(x => {
+					try {
+						return (true, func(x));
+					} catch (Exception error) {
+						handler(x, error);
+					}
+					return default;
+				})
+				.Where(x => x.Item1)
+				.Select(x => x.Item2);
 
 
 		/// <summary>
@@ -44,7 +58,7 @@ namespace Hydrogen {
 				yield return (previous, previous = it.Current);
 
 		}
-	
+
 		public static T[,] ToArray2D<T>(this IEnumerable<IEnumerable<T>> enumerable) {
 			var rows = new List<T[]>();
 			var hlen = 0;
@@ -262,11 +276,11 @@ namespace Hydrogen {
 			return hashSet;
 		}
 
-		public static IDictionary<TKey, TValue> ToDictionary<TKey, TValue>(this IEnumerable<KeyValuePair<TKey, TValue>> items)
-			=> new Dictionary<TKey, TValue>(items);
+		public static IDictionary<TKey, TValue> ToDictionary<TKey, TValue>(this IEnumerable<KeyValuePair<TKey, TValue>> items, IEqualityComparer<TKey> keyComparer = null)
+			=> new Dictionary<TKey, TValue>(items, keyComparer);
 
-		public static IDictionary<K, List<T>>ToMultiValueDictionary<K, T>(this IEnumerable<T> source, Func<T, K> keySelector) {
-			var result = new Dictionary<K, List<T>>();
+		public static IDictionary<K, List<T>> ToMultiValueDictionary<K, T>(this IEnumerable<T> source, Func<T, K> keySelector, IEqualityComparer<K> keyComparer = null) {
+			var result = new Dictionary<K, List<T>>(keyComparer);
 
 			foreach (var item in source) {
 				var itemKey = keySelector(item);
@@ -278,8 +292,8 @@ namespace Hydrogen {
 			return result;
 		}
 
-		public static IDictionary<K, List<V>> ToMultiValueDictionary<K, V, T>(this IEnumerable<T> source, Func<T, K> keySelector, Func<T, V> valueSelector) {
-			var result = new Dictionary<K, List<V>>();
+		public static IDictionary<K, List<V>> ToMultiValueDictionary<K, V, T>(this IEnumerable<T> source, Func<T, K> keySelector, Func<T, V> valueSelector, IEqualityComparer<K> keyComparer = null) {
+			var result = new Dictionary<K, List<V>>(keyComparer);
 			foreach (var item in source) {
 				var itemKey = keySelector(item);
 				if (!result.ContainsKey(itemKey)) {
@@ -290,26 +304,42 @@ namespace Hydrogen {
 			return result;
 		}
 
-		public static MultiKeyDictionary<K1, K2, V> ToMultiKeyDictionary<S, K1, K2, V>(this IEnumerable<S> items, Func<S, K1> key1, Func<S, K2> key2, Func<S, V> value) {
-			var dict = new MultiKeyDictionary<K1, K2, V>();
+		public static MultiKeyDictionary<K1, K2, V> ToMultiKeyDictionary<S, K1, K2, V>(this IEnumerable<S> items, Func<S, K1> key1, Func<S, K2> key2, Func<S, V> value, IEqualityComparer<K1> key1Comparer = null, IEqualityComparer<K2> key2Comparer = null) {
+			var dict = new MultiKeyDictionary<K1, K2, V>(key1Comparer, key2Comparer);
 			foreach (S i in items) {
 				dict.Add(key1(i), key2(i), value(i));
 			}
 			return dict;
 		}
 
-		public static MultiKeyDictionary<K1, K2, K3, V> ToMultiKeyDictionary<S, K1, K2, K3, V>(this IEnumerable<S> items, Func<S, K1> key1, Func<S, K2> key2, Func<S, K3> key3, Func<S, V> value) {
-			var dict = new MultiKeyDictionary<K1, K2, K3, V>();
+		public static MultiKeyDictionary<K1, K2, K3, V> ToMultiKeyDictionary<S, K1, K2, K3, V>(this IEnumerable<S> items, Func<S, K1> key1, Func<S, K2> key2, Func<S, K3> key3, Func<S, V> value, IEqualityComparer<K1> key1Comparer = null, IEqualityComparer<K2> key2Comparer = null, IEqualityComparer<K3> key3Comparer = null) {
+			var dict = new MultiKeyDictionary<K1, K2, K3, V>(key1Comparer, key2Comparer, key3Comparer);
 			foreach (S i in items) {
 				dict.Add(key1(i), key2(i), key3(i), value(i));
 			}
 			return dict;
 		}
 
-		public static MultiKeyDictionary<K1, K2, K3, K4, V> ToMultiKeyDictionary<S, K1, K2, K3, K4, V>(this IEnumerable<S> items, Func<S, K1> key1, Func<S, K2> key2, Func<S, K3> key3, Func<S, K4> key4, Func<S, V> value) {
-			var dict = new MultiKeyDictionary<K1, K2, K3, K4, V>();
+		public static MultiKeyDictionary<K1, K2, K3, K4, V> ToMultiKeyDictionary<S, K1, K2, K3, K4, V>(this IEnumerable<S> items, Func<S, K1> key1, Func<S, K2> key2, Func<S, K3> key3, Func<S, K4> key4, Func<S, V> value, IEqualityComparer<K1> key1Comparer = null, IEqualityComparer<K2> key2Comparer = null, IEqualityComparer<K3> key3Comparer = null, IEqualityComparer<K4> key4Comparer = null) {
+			var dict = new MultiKeyDictionary<K1, K2, K3, K4, V>(key1Comparer, key2Comparer, key3Comparer, key4Comparer);
 			foreach (S i in items) {
 				dict.Add(key1(i), key2(i), key3(i), key4(i), value(i));
+			}
+			return dict;
+		}
+
+		public static MultiKeyDictionary<K1, K2, K3, K4, K5, V> ToMultiKeyDictionary<S, K1, K2, K3, K4, K5, V>(this IEnumerable<S> items, Func<S, K1> key1, Func<S, K2> key2, Func<S, K3> key3, Func<S, K4> key4, Func<S, K5> key5, Func<S, V> value, IEqualityComparer<K1> key1Comparer = null, IEqualityComparer<K2> key2Comparer = null, IEqualityComparer<K3> key3Comparer = null, IEqualityComparer<K4> key4Comparer = null, IEqualityComparer<K5> key5Comparer = null) {
+			var dict = new MultiKeyDictionary<K1, K2, K3, K4, K5, V>(key1Comparer, key2Comparer, key3Comparer, key4Comparer, key5Comparer);
+			foreach (S i in items) {
+				dict.Add(key1(i), key2(i), key3(i), key4(i), key5(i), value(i));
+			}
+			return dict;
+		}
+
+		public static MultiKeyDictionary<K1, K2, K3, K4, K5, K6, V> ToMultiKeyDictionary<S, K1, K2, K3, K4, K5, K6, V>(this IEnumerable<S> items, Func<S, K1> key1, Func<S, K2> key2, Func<S, K3> key3, Func<S, K4> key4, Func<S, K5> key5, Func<S, K6> key6, Func<S, V> value, IEqualityComparer<K1> key1Comparer = null, IEqualityComparer<K2> key2Comparer = null, IEqualityComparer<K3> key3Comparer = null, IEqualityComparer<K4> key4Comparer = null, IEqualityComparer<K5> key5Comparer = null, IEqualityComparer<K6> key6Comparer = null) {
+			var dict = new MultiKeyDictionary<K1, K2, K3, K4, K5, K6, V>(key1Comparer, key2Comparer, key3Comparer, key4Comparer, key5Comparer);
+			foreach (S i in items) {
+				dict.Add(key1(i), key2(i), key3(i), key4(i), key5(i), key6(i), value(i));
 			}
 			return dict;
 		}
@@ -337,17 +367,11 @@ namespace Hydrogen {
 		}
 
 		public static MultiKeyLookup<K, V> ToMultiKeyLookup<T, K, V>(this IEnumerable<T> source, Func<T, IEnumerable<K>> keySelector, Func<T, V> valueSelector, IEqualityComparer<K> comparer = null) {
-			if (source == null) {
-				throw new ArgumentNullException("source");
-			}
-			if (keySelector == null) {
-				throw new ArgumentNullException("keySelector");
-			}
-			if (valueSelector == null) {
-				throw new ArgumentNullException("valueSelector");
-			}
+			Guard.ArgumentNotNull(source, nameof(source));
+			Guard.ArgumentNotNull(keySelector, nameof(keySelector));
+			Guard.ArgumentNotNull(valueSelector, nameof(valueSelector));
 
-			var lookup = new MultiKeyLookup<K, V>(comparer ?? EqualityComparer<K>.Default);
+			var lookup = new MultiKeyLookup<K, V>(comparer);
 
 			foreach (var item in source) {
 				var key = keySelector(item);
@@ -404,8 +428,20 @@ namespace Hydrogen {
 		// NOTE: ForEach applies action to all items then return enumerable, Apply applies action during enumeration
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static IEnumerable<T> Apply<T>(this IEnumerable<T> source, Action<T> action) {
-			foreach (T item in source) {
+			foreach (var item in source) {
 				action(item);
+				yield return item;
+			}
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static IEnumerable<T> ApplyWithExceptionHandler<T>(this IEnumerable<T> source, Action<T> action, Action<T, Exception> handler) {
+			foreach (var item in source) {
+				try {
+					action(item);
+				} catch (Exception ex) {
+					handler(item, ex);
+				}
 				yield return item;
 			}
 		}
@@ -513,7 +549,7 @@ namespace Hydrogen {
 		public static IEnumerable<TItem> Randomize<TItem>(this IEnumerable<TItem> source)
 			=> Randomize(source, Tools.Maths.RNG);
 
-		public static IEnumerable<TItem> Randomize<TItem>(this IEnumerable<TItem> source, Random RNG) 
+		public static IEnumerable<TItem> Randomize<TItem>(this IEnumerable<TItem> source, Random RNG)
 			=> source.OrderBy(x => RNG.Next());
 
 		public static IEnumerable<IEnumerable<T>> Partition<T>(this IEnumerable<T> sequence, int partitionSize) {

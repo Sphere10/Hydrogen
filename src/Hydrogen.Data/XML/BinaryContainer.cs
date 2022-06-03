@@ -25,7 +25,7 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Reflection;
 
-namespace Hydrogen {
+namespace Hydrogen.Data {
 	/// <summary>
 	/// Container for binary data.
 	/// This class can be used to encapsulate binary data for serialization or transportation purposes.

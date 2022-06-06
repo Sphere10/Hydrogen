@@ -15,6 +15,7 @@ using System.Net.NetworkInformation;
 using System.Text;
 using System.Net;
 using System.Net.Sockets;
+using Hydrogen;
 
 // ReSharper disable CheckNamespace
 namespace Tools {
@@ -22,6 +23,8 @@ namespace Tools {
 
 	public static class Network {
 
+		public static string GetMimeType(string filePathOrExt)
+			=> MimeHelper.ToMimeType(filePathOrExt);
 
 		public static IPAddress GetNetworkAddress() {
 

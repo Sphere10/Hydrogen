@@ -168,6 +168,12 @@ namespace Tools {
 			return true;
 		}
 
+		public static (string protocol, int port, string host, string path, string queryString) Parse(string url) {
+			if (!TryParse(url, out var protocol, out var port, out var host, out var path, out var queryString))
+				throw new InvalidOperationException($"Unable to parse '{url}'");
+			return (protocol, port, host, path, queryString);
+		}
+
 	}
 }
 

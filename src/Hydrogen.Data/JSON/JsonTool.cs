@@ -5,7 +5,7 @@ using System.Text;
 using Newtonsoft.Json;
 
 namespace Tools;
-public static class JsonTool {
+public static class Json {
 	public static T ReadFromString<T>(string stringValue) {
 		using (TextReader reader = new StringReader(stringValue)) {
 			return Read<T>(reader);

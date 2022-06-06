@@ -14,6 +14,18 @@ namespace Hydrogen {
             return FormatEx(formatString, ResolveToken, formatArgs);
         }
 
+        public static string FormatWithDictionary(string formatString, IDictionary<string, string> userTokenResolver, params object[] formatArgs)
+	        => FormatEx(
+		        formatString,
+		        (token) => {
+			        if (userTokenResolver.TryGetValue(token, out var value))
+				        return value;
+			        return null;
+		        },
+		        formatArgs
+			);
+					
+
         public static string FormatEx(string formatString, Func<string, string> userTokenResolver, params object[] formatArgs) {
             Guard.ArgumentNotNull(formatString, nameof(formatString));
             Guard.ArgumentNotNull(userTokenResolver, nameof(userTokenResolver));

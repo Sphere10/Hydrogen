@@ -20,6 +20,7 @@
 	<ItemGroup>
 		<ProjectReference Include="..\..\src\Hydrogen.Data\Hydrogen.Data.csproj" />
 		<ProjectReference Include="..\..\src\Hydrogen.NUnit.DB\Hydrogen.NUnit.DB.csproj" />
+		<ProjectReference Include="..\Hydrogen.Tests\Hydrogen.Tests.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>

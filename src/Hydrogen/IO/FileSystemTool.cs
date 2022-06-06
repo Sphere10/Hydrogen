@@ -214,14 +214,25 @@ namespace Tools {
 		    return Task.Run(() => CreateBlankFile(filename, createDirectories));
 	    }
 
-        public static void CopyFile(string sourcePath, string destPath, bool overwrite = false,
-            bool createDirectories = false) {
+        public static void CopyFile(string sourcePath, string destPath, bool overwrite = false, bool createDirectories = false) {
             var dir = Path.GetDirectoryName(destPath);
             if (createDirectories)
                 if (!Directory.Exists(dir))
                     Directory.CreateDirectory(dir);
 
             File.Copy(sourcePath, destPath, overwrite);
+        }
+
+	    public static void DeleteFile(string path) 
+            => File.Delete(path);
+       
+		public static async Task DeleteFileAsync(string path) {
+            await Task.Run(() => DeleteFile(path));
+        }
+
+
+        public static async Task CopyFileAsync(string sourcePath, string destPath, bool overwrite = false, bool createDirectories = false) {
+            await Task.Run( () => CopyFile(sourcePath, destPath, overwrite, createDirectories));
         }
 
         public static void RenameFile(string sourcePath, string newName) {

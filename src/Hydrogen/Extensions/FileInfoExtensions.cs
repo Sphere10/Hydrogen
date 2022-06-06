@@ -17,7 +17,7 @@ namespace Hydrogen {
 
 	public static class FileInfoExtensions {
 		public static string GetMimeType(this FileInfo fileInfo) {
-			return Tools.Mime.MimeType(fileInfo.FullName); 
+			return Tools.Network.GetMimeType(fileInfo.FullName); 
 		}
 	}
 }

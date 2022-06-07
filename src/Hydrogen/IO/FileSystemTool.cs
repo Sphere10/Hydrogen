@@ -301,7 +301,6 @@ namespace Tools {
             DeleteDirectories(false, directories);
         }
 
-
         public static void DeleteDirectories(bool ignoreIfLocked, params string[] directories) {
             foreach (var dir in directories)
                 DeleteDirectory(dir, ignoreIfLocked);

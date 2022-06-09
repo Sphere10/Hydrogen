@@ -16,10 +16,6 @@ namespace Hydrogen.Communications {
 
 		private void Channel_Closed() {
 //			throw new NotImplementedException();
-
-
-
-
 		}
 
 		private void Channel_Closing() {

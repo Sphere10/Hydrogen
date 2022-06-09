@@ -209,13 +209,13 @@ namespace Hydrogen.Utils.WinFormsTester
             // 
             this.MyIp.Location = new System.Drawing.Point(69, 132);
             this.MyIp.Name = "MyIp";
-            this.MyIp.Size = new System.Drawing.Size(68, 23);
+            this.MyIp.Size = new System.Drawing.Size(109, 23);
             this.MyIp.TabIndex = 8;
             // 
             // label7
             // 
             this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(143, 135);
+            this.label7.Location = new System.Drawing.Point(184, 135);
             this.label7.Name = "label7";
             this.label7.Size = new System.Drawing.Size(30, 15);
             this.label7.TabIndex = 2;
@@ -223,9 +223,9 @@ namespace Hydrogen.Utils.WinFormsTester
             // 
             // Role
             // 
-            this.Role.Location = new System.Drawing.Point(189, 132);
+            this.Role.Location = new System.Drawing.Point(220, 133);
             this.Role.Name = "Role";
-            this.Role.Size = new System.Drawing.Size(78, 23);
+            this.Role.Size = new System.Drawing.Size(47, 23);
             this.Role.TabIndex = 8;
             // 
             // CloseConnection

@@ -5,6 +5,7 @@
 }
 
 th, td {
+
     white-space: nowrap;
     overflow-x:hidden;
     text-overflow: ellipsis;
@@ -51,4 +52,8 @@ input[type="number"]::-webkit-inner-spin-button {
 .PagingInput{
     width: 50px;
     padding: 0px 5px 0px 5px;
+}
+
+.RowSelected {
+    background-color: red;
 }

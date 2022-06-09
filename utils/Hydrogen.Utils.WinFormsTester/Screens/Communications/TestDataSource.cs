@@ -57,20 +57,23 @@ namespace Hydrogen.Utils.WinFormsTester
 			}
 		}
 
-		public IEnumerable<TestClass> New(int count)
+		public Task<IEnumerable<TestClass>> New(int count)
 		{
-			var returnList = new List<TestClass>();
-			var newId = AllItems.Max(x => x.Id) + 1;
+			return Task.Run(() => { 
 
-			for (int i = 0; i < count; i++)
-			{
-				var newEntity = new TestClass();
-				newEntity.FillWithTestData(newId++);
-				AllItems.Add(newEntity);
-				returnList.Add(newEntity);
-			}
+				var returnList = new List<TestClass>();
+				var newId = AllItems.Max(x => x.Id) + 1;
 
-			return returnList;
+				for (int i = 0; i < count; i++)
+				{
+					var newEntity = new TestClass();
+					newEntity.FillWithTestData(newId++);
+					AllItems.Add(newEntity);
+					returnList.Add(newEntity);
+				}
+
+				return (IEnumerable<TestClass>)returnList;			
+			});
 		}
 
 		public Task<IEnumerable<TestClass>> Read(string searchTerm, int pageLength, ref int page, string sortProperty, SortDirection sortDirection, out int totalItems)

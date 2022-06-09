@@ -2,16 +2,21 @@
 using System.Threading.Tasks;
 
 namespace Hydrogen.Communications {
-	public abstract class ProtocolChannelDataSource<TItem> : DataSourceBase<TItem> {
-
-		public delegate string InitializeDelegate(TItem item, int id);
-		public delegate string UpdateDelegate(TItem item);
-		public delegate string IdDelegate(TItem item);
+	public abstract class ProtocolChannelDataSource<TItem> : IDataSource<TItem> {
 
 		protected ProtocolChannelDataSource(ProtocolChannel protocolChannel) {
 			ProtocolChannel = protocolChannel;
-			//ProtocolChannel.ReceivedBytes += ProtocolChannel_ReceivedBytes;
 			ProtocolChannel.Open();
+		}
+
+		event EventHandlerEx<DataSourceMutatedItems<TItem>> IDataSource<TItem>.MutatedItems {
+			add {
+				throw new System.NotImplementedException();
+			}
+
+			remove {
+				throw new System.NotImplementedException();
+			}
 		}
 
 		protected ProtocolChannel ProtocolChannel { get; set; }
@@ -20,40 +25,80 @@ namespace Hydrogen.Communications {
 			ProtocolChannel.TrySendBytes(bytes.ToArray());
 		}
 
-		//private void ProtocolChannel_ReceivedBytes(System.ReadOnlyMemory<byte> bytes) {
-		//}
-
-		public override Task Create(IEnumerable<TItem> entities) {
+		void IDataSource<TItem>.NewDelayed(int count) {
 			throw new System.NotImplementedException();
 		}
 
-		//public override Task<IEnumerable<TItem>> Read(string searchTerm, int pageLength, ref int page, string sortProperty, SortDirection sortDirection, out int totalItems) {
-		//	throw new System.NotImplementedException();
-		//}
-		public override void ReadDelayed(string searchTerm, int pageLength, int page, string sortProperty, SortDirection sortDirection) {
+		void IDataSource<TItem>.RefreshDelayed(IEnumerable<TItem> entities) {
 			throw new System.NotImplementedException();
 		}
 
-		public override Task Refresh(TItem[] entities) {
+		void IDataSource<TItem>.UpdateDelayed(IEnumerable<TItem> entities) {
 			throw new System.NotImplementedException();
 		}
 
-		//public override Task Update(IEnumerable<TItem> entities) {
-		//	throw new System.NotImplementedException();
-		//}
+		void IDataSource<TItem>.DeleteDelayed(IEnumerable<TItem> entities) {
+			throw new System.NotImplementedException();
+		}
 
-		//public override IEnumerable<TItem> New(int count) {
-		//	throw new System.NotImplementedException();
-		//}
+		void IDataSource<TItem>.ValidateDelayed(IEnumerable<(TItem entity, CrudAction action)> actions) {
+			throw new System.NotImplementedException();
+		}
 
-		//public override Task Delete(IEnumerable<TItem> entities) {
-		//	throw new System.NotImplementedException();
-		//}
+		void IDataSource<TItem>.CountDelayed() {
+			throw new System.NotImplementedException();
+		}
 
-		//public override Task<Result> Validate(IEnumerable<(TItem entity, CrudAction action)> actions) {
-		//	throw new System.NotImplementedException();
-		//}
+		string IDataSource<TItem>.UpdateItem(TItem item) {
+			throw new System.NotImplementedException();
+		}
 
-		public override Task<int> Count { get; }
+		string IDataSource<TItem>.IdItem(TItem item) {
+			throw new System.NotImplementedException();
+		}
+
+		string IDataSource<TItem>.InitializeItem(TItem item) {
+			throw new System.NotImplementedException();
+		}
+
+		void IDataSource<TItem>.Close() {
+			throw new System.NotImplementedException();
+		}
+
+		Task<IEnumerable<TItem>> IDataSource<TItem>.New(int count) {
+			throw new System.NotImplementedException();
+		}
+
+		Task<DataSourceItems<TItem>> IDataSource<TItem>.Read(string searchTerm, int pageLength, int page, string sortProperty, SortDirection sortDirection, out int totalItems) {
+			throw new System.NotImplementedException();
+		}
+
+		Task IDataSource<TItem>.Update(IEnumerable<TItem> entities) {
+			throw new System.NotImplementedException();
+		}
+
+		Task IDataSource<TItem>.Delete(IEnumerable<TItem> entities) {
+			throw new System.NotImplementedException();
+		}
+
+		Task<Result> IDataSource<TItem>.Validate(IEnumerable<(TItem entity, CrudAction action)> actions) {
+			throw new System.NotImplementedException();
+		}
+
+		void IDataSource<TItem>.ReadDelayed(string searchTerm, int pageLength, int page, string sortProperty, SortDirection sortDirection) {
+			throw new System.NotImplementedException();
+		}
+
+		Task IDataSource<TItem>.Create(IEnumerable<TItem> entities) {
+			throw new System.NotImplementedException();
+		}
+
+		Task IDataSource<TItem>.Refresh(TItem[] entities) {
+			throw new System.NotImplementedException();
+		}
+
+		Task<DataSourceCapabilities> IDataSource<TItem>.Capabilities => throw new System.NotImplementedException();
+
+		Task<int> IDataSource<TItem>.Count => throw new System.NotImplementedException();
 	}
 }

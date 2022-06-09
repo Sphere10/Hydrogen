@@ -31,7 +31,7 @@ namespace Hydrogen.DApp.Node.UI {
 					.ToDictionary(x => x, CreateScreen);
 
 			Terminal.Gui.Application.Top.Add(BuildMenu());
-			Show<DashboardScreen>();
+			Show<WebBrowserScreen>();
 			_statusBar = BuildStatusBar();
 			Terminal.Gui.Application.Top.Add(_statusBar);
 			RunApplication(

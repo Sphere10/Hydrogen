@@ -8,21 +8,33 @@ using Newtonsoft.Json;
 namespace Hydrogen.Communications {
 	public class ServerWebSocketsDataSource<TItem> : ProtocolChannelDataSource<TItem> {
 
+		int CurrentId { get; set; } = 1;
 		Dictionary<string, TItem> Items = new Dictionary<string, TItem>();
-		private InitializeDelegate InitializeItem { get; init; }
-		private UpdateDelegate UpdateItem { get; set; }
-		private IdDelegate IdItem { get; set; }
 		string ReceivedId { get; set; }
 		ServerWebSocketsChannelHub Hub { get; set; }
 
-		public ServerWebSocketsDataSource(IPEndPoint localEndpoint, IPEndPoint remoteEndpoint, bool secure, InitializeDelegate initializeItem, UpdateDelegate updateItem, IdDelegate idItem)
+		public ServerWebSocketsDataSource(IPEndPoint localEndpoint, IPEndPoint remoteEndpoint, bool secure)
 			: base(new ServerWebSocketsChannel(localEndpoint, remoteEndpoint, secure, true)) {
-			InitializeItem = initializeItem;
-			UpdateItem = updateItem;
-			IdItem = idItem;
 
 			Hub = ((ServerWebSocketsChannel)ProtocolChannel).Hub;
 			Hub.ReceivedBytes += ProtocolChannel_ReceivedBytes;
+		}
+
+		public event EventHandlerEx<DataSourceMutatedItems<TItem>> MutatedItems;
+
+		public string UpdateItem(TItem item) {
+
+			return item.ToString();
+		}
+
+		public string InitializeItem(TItem item) {
+
+			return item.ToString();
+		}
+
+		public string IdItem(TItem item) {
+
+			return item.ToString();
 		}
 
 		public string Report() {
@@ -37,92 +49,112 @@ namespace Hydrogen.Communications {
 			Hub.Close();
 		}
 
+		System.Threading.Mutex Mutex = new System.Threading.Mutex(false);
 		public void PublicReceiveBytes(ReadOnlyMemory<byte> bytes) {
 
-			var packet = new WebSocketsPacket(bytes.ToArray());
-			ReceivedId = packet.Id;
+			Task.Run(() => {
 
-			if (!packet.Tokens.Any()) return;
-			switch (packet.Tokens[0]) {
-				case "new": New(int.Parse(packet.Tokens[1])); break;
+				Mutex.WaitOne();
 
-				case "create":
+				var packet = new WebSocketsPacket(bytes.ToArray());
+				ReceivedId = packet.Id;
 
+				if (!packet.Tokens.Any()) return;
+				switch (packet.Tokens[0]) {
+					case "new":
+						SystemLog.Info($"Server New");
+						New(int.Parse(packet.Tokens[1]));
+
+						break;
+
+					case "create":
+						SystemLog.Info($"Server Create");
+						break;
+
+					case "read": {
+						SystemLog.Info($"Server Read");
+						var searchTerm = packet.Tokens[1];
+						var pageLength = int.Parse(packet.Tokens[2]);
+						var page = int.Parse(packet.Tokens[3]);
+						var sortProperty = packet.Tokens[4];
+						var sortDirection = (SortDirection)Enum.Parse(typeof(SortDirection), packet.Tokens[5]);
+						var totalItems = 0;
+						Read(searchTerm, pageLength, ref page, sortProperty, sortDirection, out totalItems);
+					}
 					break;
 
-				case "read": {
-					var searchTerm = packet.Tokens[1];
-					var pageLength = int.Parse(packet.Tokens[2]);
-					var page = int.Parse(packet.Tokens[3]);
-					var sortProperty = packet.Tokens[4];
-					var sortDirection = (SortDirection)Enum.Parse(typeof(SortDirection), packet.Tokens[5]);
-					var totalItems = 0;
-					Read(searchTerm, pageLength, ref page, sortProperty, sortDirection, out totalItems);
+					case "refresh":
+						SystemLog.Info($"Server Refresh");
+						break;
+
+					case "update": {
+						SystemLog.Info($"Server update");
+						var toUpdate = JsonConvert.DeserializeObject<List<TItem>>(packet.JsonData);
+						Update(toUpdate);
+					}
+					break;
+
+					case "delete": {
+						var toDelete = JsonConvert.DeserializeObject<List<TItem>>(packet.JsonData);
+						Delete(toDelete);
+					}
+					break;
+
+					case "validate":
+						SystemLog.Info($"Server Validate");
+						break;
+
+					case "count":
+						SystemLog.Info($"Server Count");
+						break;
+
+					default: throw new Exception("Server received bad packet");
 				}
-				break;
 
-				case "refresh":
-
-					break;
-
-				case "update": {
-					var toUpdate = JsonConvert.DeserializeObject<List<TItem>>(packet.JsonData);
-					Update(toUpdate);
-				}
-				break;
-
-				case "delete": {
-					var toDelete = JsonConvert.DeserializeObject<List<TItem>>(packet.JsonData);
-					Delete(toDelete);
-				}
-				break;
-
-				case "validate":
-
-					break;
-
-				case "count":
-
-					break;
-
-				default: throw new Exception("Server received bad packet");
-			}
+				Mutex.ReleaseMutex();
+			});
 		}
 
 		private void ProtocolChannel_ReceivedBytes(ReadOnlyMemory<byte> bytes) {
 			PublicReceiveBytes(bytes);
 		}
 
-		public override IEnumerable<TItem> New(int count) {
+		public Task<IEnumerable<TItem>> New(int count) {
 
-			var type = typeof(TItem);
-			var newItems = new List<TItem>();
-			for (int i = 0; i < count; i++) {
-				// why does this next function fail if used more than once
-				//var newInstance = (TItem)Activator.CreateInstance(type, new object[Items.Count + 1]);
+			return Task.Run(() => {
 
-				var newInstance = (TItem)Activator.CreateInstance(type);
-				var error = InitializeItem(newInstance, Items.Count + 1);
-				if (string.IsNullOrEmpty(error)) {
-					newItems.Add(newInstance);
-					var id = IdItem(newInstance);
-					Items.Add(id, newInstance);
+				Mutex.WaitOne();
 
-					var jsonItem = JsonConvert.SerializeObject(newInstance);
-					SystemLog.Info("New: " + jsonItem);
+				var type = typeof(TItem);
+				var newItems = new List<TItem>();
+				for (int i = 0; i < count; i++) {
+					// why does this next function fail if used more than once
+					//var newInstance = (TItem)Activator.CreateInstance(type, new object[Items.Count + 1]);
+
+					var newInstance = (TItem)Activator.CreateInstance(type);
+					var error = InitializeItem(newInstance);
+					if (string.IsNullOrEmpty(error)) {
+						newItems.Add(newInstance);
+						var id = IdItem(newInstance);
+						Items.Add(id, newInstance);
+	//var jsonItem = JsonConvert.SerializeObject(newInstance);
+	//SystemLog.Info("New: " + jsonItem);
+					}
 				}
-			}
 
-			var message = $"newreturn {Items.Count}";
-			var jsonData = JsonConvert.SerializeObject(newItems);
-			var returnPacket = new WebSocketsPacket(ReceivedId, message, jsonData);
+				var message = $"newreturn {Items.Count}";
+				var jsonData = JsonConvert.SerializeObject(newItems);
+				var returnPacket = new WebSocketsPacket(ReceivedId, message, jsonData);
 
-			SendPacket(returnPacket, false);
+				SendPacket(returnPacket, false);
 
-			return newItems;
+				Mutex.ReleaseMutex();
+
+				return (IEnumerable<TItem>)newItems;
+			});
 		}
 
-		public override Task<IEnumerable<TItem>> Read(string searchTerm, int pageLength, ref int page, string sortProperty, SortDirection sortDirection, out int totalItems) {
+		public Task<IEnumerable<TItem>> Read(string searchTerm, int pageLength, ref int page, string sortProperty, SortDirection sortDirection, out int totalItems) {
 
 			var usePage = page;
 			totalItems = 0;
@@ -130,6 +162,9 @@ namespace Hydrogen.Communications {
 			//SystemLog.Info($"Read: searchTerm: {searchTerm} pageLength: {pageLength} page: {page} sortProperty: {sortProperty} sortDirection {sortDirection}");
 
 			return Task.Run(() => {
+
+				Mutex.WaitOne();
+
 				var list = Items.Values.ToList();
 				var first = pageLength * usePage;
 				if (first > list.Count) {
@@ -148,14 +183,22 @@ namespace Hydrogen.Communications {
 				var returnPacket = new WebSocketsPacket(ReceivedId, message, jsonData);
 				SendPacket(returnPacket, false);
 
-				SystemLog.Info($"Read: {jsonData}");
+SystemLog.Info($"Read: {jsonData}");
+				Mutex.ReleaseMutex();
 
 				return (IEnumerable<TItem>)readItems;
 			});
 		}
 
-		public override Task Update(IEnumerable<TItem> entities) {
+		public Task<DataSourceItems<TItem>> Read(string searchTerm, int pageLength, int page, string sortProperty, SortDirection sortDirection, out int totalItems) {
+			throw new NotImplementedException();
+		}
+
+		public Task Update(IEnumerable<TItem> entities) {
 			return Task.Run(() => {
+
+				Mutex.WaitOne();
+
 				var updatedEntities = new List<TItem>();
 				foreach (var entity in entities) {
 					var id = IdItem(entity);
@@ -163,7 +206,7 @@ namespace Hydrogen.Communications {
 						Items[id] = entity;
 						updatedEntities.Add(entity);
 						var jsonItem = JsonConvert.SerializeObject(entity);
-						SystemLog.Info("Updated: " + jsonItem);
+SystemLog.Info("Updated: " + jsonItem);
 					} else {
 						// error
 					}
@@ -173,11 +216,16 @@ namespace Hydrogen.Communications {
 				var jsonData = JsonConvert.SerializeObject(updatedEntities);
 				var returnPacket = new WebSocketsPacket(ReceivedId, message, jsonData);
 				SendPacket(returnPacket, true);
+
+				Mutex.ReleaseMutex();
 			});
 		}
 
-		public override Task Delete(IEnumerable<TItem> entities) {
+		public Task Delete(IEnumerable<TItem> entities) {
 			return Task.Run(() => {
+
+				Mutex.WaitOne();
+
 				var deletedEntities = new List<TItem>();
 				foreach (var entity in entities) {
 					var id = IdItem(entity);
@@ -185,7 +233,7 @@ namespace Hydrogen.Communications {
 						Items.Remove(id);
 						deletedEntities.Add(entity);
 						var jsonItem = JsonConvert.SerializeObject(entity);
-						SystemLog.Info("Deleted: " + jsonItem);
+SystemLog.Info("Deleted: " + jsonItem);
 					} else {
 						// error
 					}
@@ -195,10 +243,12 @@ namespace Hydrogen.Communications {
 				var jsonData = JsonConvert.SerializeObject(deletedEntities);
 				var returnPacket = new WebSocketsPacket(ReceivedId, message, jsonData);
 				SendPacket(returnPacket, true);
+
+				Mutex.ReleaseMutex();
 			});
 		}
 
-		public override Task<Result> Validate(IEnumerable<(TItem entity, CrudAction action)> actions) {
+		public Task<Result> Validate(IEnumerable<(TItem entity, CrudAction action)> actions) {
 			throw new System.NotImplementedException();
 		}
 
@@ -210,35 +260,35 @@ namespace Hydrogen.Communications {
 			}
 		}
 
-		public override void NewDelayed(int count) {
+		public void NewDelayed(int count) {
 			throw new NotImplementedException();
 		}
 
-		public override void CreateDelayed(IEnumerable<TItem> entities) {
+		public void CreateDelayed(IEnumerable<TItem> entities) {
 			throw new NotImplementedException();
 		}
 
-		public override Task<DataSourceItems<TItem>> Read(string searchTerm, int pageLength, int page, string sortProperty, SortDirection sortDirection) {
+		public Task<DataSourceItems<TItem>> Read(string searchTerm, int pageLength, int page, string sortProperty, SortDirection sortDirection) {
 			throw new NotImplementedException();
 		}
 
-		public override void RefreshDelayed(IEnumerable<TItem> entities) {
+		public void RefreshDelayed(IEnumerable<TItem> entities) {
 			throw new NotImplementedException();
 		}
 
-		public override void UpdateDelayed(IEnumerable<TItem> entities) {
+		public void UpdateDelayed(IEnumerable<TItem> entities) {
 			throw new NotImplementedException();
 		}
 
-		public override void DeleteDelayed(IEnumerable<TItem> entities) {
+		public void DeleteDelayed(IEnumerable<TItem> entities) {
 			throw new NotImplementedException();
 		}
 
-		public override void ValidateDelayed(IEnumerable<(TItem entity, CrudAction action)> actions) {
+		public void ValidateDelayed(IEnumerable<(TItem entity, CrudAction action)> actions) {
 			throw new NotImplementedException();
 		}
 
-		public override void CountDelayed() {
+		public void CountDelayed() {
 			throw new NotImplementedException();
 		}
 	}

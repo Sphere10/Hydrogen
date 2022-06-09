@@ -11,6 +11,7 @@
     "IIS Express": {
       "commandName": "IISExpress",
       "launchBrowser": true,
+      "launchUrl": "Recipie1",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
@@ -19,11 +20,12 @@
     "Hydrogen.DApp.Presentation2.Loader": {
       "commandName": "Project",
       "launchBrowser": true,
+      "launchUrl": "Recipie1",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
       "inspectUri": "{wsProtocol}://{url.hostname}:{url.port}/_framework/debug/ws-proxy?browser={browserInspectUri}",
-      "applicationUrl": "http://localhost:5000",
+      "applicationUrl": "http://localhost:5000/",
       "dotnetRunMessages": "true"
     },
     "WSL": {

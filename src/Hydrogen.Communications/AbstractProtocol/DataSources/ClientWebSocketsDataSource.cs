@@ -7,26 +7,43 @@ using Newtonsoft.Json;
 
 namespace Hydrogen.Communications {
 	public class ClientWebSocketsDataSource<TItem> : ProtocolChannelDataSource<TItem> {
-		public override Task<int> Count => throw new NotImplementedException();
 
 		public event EventHandlerEx<DataSourceMutatedItems<TItem>> MutatedItems;
-		public InitializeDelegate InitializeItem { get; init; }
-		public UpdateDelegate UpdateItem { get; set; }
-		public IdDelegate IdItem { get; set; }
 
-		public ClientWebSocketsDataSource(string uri, bool secure, InitializeDelegate initializeItem, UpdateDelegate updateItem, IdDelegate idItem)
+		public ClientWebSocketsDataSource(string uri, bool secure)
 			: base(new ClientWebSocketsChannel(uri, secure)) {
 
-			InitializeItem = initializeItem;
-			UpdateItem = updateItem;
-			IdItem = idItem;
+//			InitializeItem = initializeItem;
+//			UpdateItem = updateItem;
+//			IdItem = idItem;
 
 			ProtocolChannel.ReceivedBytes += ProtocolChannel_ReceivedBytes;
 		}
 
-		async public void Close() {
-			await ProtocolChannel.Close();
-		}
+		//string InitializeItem(TestClass item, int id) {
+		//	try {
+		//		item.FillWithTestData(id);
+		//	} catch (Exception ex) {
+		//		return ex.Message;
+		//	}
+
+		//	return null;
+		//}
+
+		//string UpdateItem(TestClass item) {
+		//	try {
+		//		// do something here
+
+		//	} catch (Exception ex) {
+		//		return ex.Message;
+		//	}
+
+		//	return null;
+		//}
+
+		//string IdItem(TestClass item) {
+		//	return item.Id.ToString();
+		//}
 
 		private void ProtocolChannel_ReceivedBytes(ReadOnlyMemory<byte> message) {
 			var returnPacket = new WebSocketsPacket(message.ToArray());
@@ -83,24 +100,24 @@ namespace Hydrogen.Communications {
 			MutatedItems.Invoke(mutatedItems);
 		}
 
-		public override IEnumerable<TItem> New(int count) {
+		public Task<IEnumerable<TItem>> New(int count) {
 			throw new NotImplementedException();
 		}
-		public override void NewDelayed(int count) {
+		public void NewDelayed(int count) {
 			var id = ((ClientWebSocketsChannel)ProtocolChannel).Id;
 
 			var sendPacket = new WebSocketsPacket(id, $"new {count}");
 			SendBytes(sendPacket.ToBytes());
 		}
 
-		public override Task Create(IEnumerable<TItem> entities) {
+		public Task Create(IEnumerable<TItem> entities) {
 			throw new NotImplementedException();
 		}
-		public override void CreateDelayed(IEnumerable<TItem> entities) {
+		public void CreateDelayed(IEnumerable<TItem> entities) {
 			throw new NotImplementedException();
 		}
 
-		public override Task<IEnumerable<TItem>> Read(string searchTerm, int pageLength, ref int page, string sortProperty, SortDirection sortDirection, out int totalItems) {
+		public Task<IEnumerable<TItem>> Read(string searchTerm, int pageLength, ref int page, string sortProperty, SortDirection sortDirection, out int totalItems) {
 
 			var usePage = page;
 			var returnData = new List<TItem>();
@@ -156,10 +173,13 @@ namespace Hydrogen.Communications {
 			return Task.FromResult((IEnumerable<TItem>)returnData);
 		}
 
-		public override Task<DataSourceItems<TItem>> Read(string searchTerm, int pageLength, int page, string sortProperty, SortDirection sortDirection) {
+		public Task<DataSourceItems<TItem>> Read(string searchTerm, int pageLength, int page, string sortProperty, SortDirection sortDirection) {
 			throw new NotImplementedException();
 		}
-		public override void ReadDelayed(string searchTerm, int pageLength, int page, string sortProperty, SortDirection sortDirection) {
+		public Task<DataSourceItems<TItem>> Read(string searchTerm, int pageLength, int page, string sortProperty, SortDirection sortDirection, out int totalItems) {
+			throw new NotImplementedException();
+		}
+		public void ReadDelayed(string searchTerm, int pageLength, int page, string sortProperty, SortDirection sortDirection) {
 			var usePage = page;
 
 			var id = ((ClientWebSocketsChannel)ProtocolChannel).Id;
@@ -169,17 +189,17 @@ namespace Hydrogen.Communications {
 			SendBytes(sendPacket.ToBytes());
 		}
 
-		public override Task Refresh(TItem[] entities) {
+		public Task Refresh(TItem[] entities) {
 			throw new NotImplementedException();
 		}
-		public override void RefreshDelayed(IEnumerable<TItem> entities) {
+		public void RefreshDelayed(IEnumerable<TItem> entities) {
 			var jsonData = JsonConvert.SerializeObject(entities);
 			var id = ((ClientWebSocketsChannel)ProtocolChannel).Id;
 			var sendPacket = new WebSocketsPacket(id, $"refresh {entities.Count()}", jsonData);
 			SendBytes(sendPacket.ToBytes());
 		}
 
-		public override Task Update(IEnumerable<TItem> entities) {
+		public Task Update(IEnumerable<TItem> entities) {
 
 			var task = Task.Run(async () => {
 				// start the blocking
@@ -214,27 +234,27 @@ namespace Hydrogen.Communications {
 
 			return task;
 		}
-		public override void UpdateDelayed(IEnumerable<TItem> entities) {
+		public void UpdateDelayed(IEnumerable<TItem> entities) {
 			var jsonData = JsonConvert.SerializeObject(entities);
 			var id = ((ClientWebSocketsChannel)ProtocolChannel).Id;
 			var sendPacket = new WebSocketsPacket(id, $"update {entities.Count()}", jsonData);
 			SendBytes(sendPacket.ToBytes());
 		}
 
-		public override Task Delete(IEnumerable<TItem> entities) {
+		public Task Delete(IEnumerable<TItem> entities) {
 			throw new NotImplementedException();
 		}
-		public override void DeleteDelayed(IEnumerable<TItem> entities) {
+		public void DeleteDelayed(IEnumerable<TItem> entities) {
 			var jsonData = JsonConvert.SerializeObject(entities);
 			var id = ((ClientWebSocketsChannel)ProtocolChannel).Id;
 			var sendPacket = new WebSocketsPacket(id, $"delete {entities.Count()}", jsonData);
 			SendBytes(sendPacket.ToBytes());
 		}
 
-		public override Task<Result> Validate(IEnumerable<(TItem entity, CrudAction action)> actions) {
+		public Task<Result> Validate(IEnumerable<(TItem entity, CrudAction action)> actions) {
 			throw new NotImplementedException();
 		}
-		public override void ValidateDelayed(IEnumerable<(TItem entity, CrudAction action)> actions) {
+		public void ValidateDelayed(IEnumerable<(TItem entity, CrudAction action)> actions) {
 			throw new NotImplementedException();
 		}
 
@@ -373,8 +393,8 @@ namespace Hydrogen.Communications {
 				}
 		*/
 
-		public override void CountDelayed() {
-			throw new NotImplementedException();
-		}
+//		public override void CountDelayed() {
+//			throw new NotImplementedException();
+//		}
 	}
 }

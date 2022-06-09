@@ -40,8 +40,8 @@ namespace Hydrogen.Utils.WinFormsTester
 
 		public CommunicationsTestScreen() {
 			InitializeComponent();
-			SystemLog.RegisterLogger(new TextBoxLogger(Output));
-			SystemLog.RegisterLogger(new FileAppendLogger("c:/temp/test.txt", true));
+			SystemLog.RegisterLogger(new SynchronizedLogger(new TextBoxLogger(Output)));
+			//SystemLog.RegisterLogger(new FileAppendLogger("c:/temp/test.txt", true));
 		}
 
 		private void WebSocketsScreen_Load(object sender, EventArgs e) {
@@ -326,9 +326,8 @@ namespace Hydrogen.Utils.WinFormsTester
 
 		private void Reset_Click(object sender, EventArgs e)
 		{
-			if (DataSource != null) {
-
-				return;
+			if (DataSource != null) {		
+				DataSource.Close();
 			}
 
 			var localEndpoint = new IPEndPoint(IPAddress.Parse(MyIp.Text), (int)SendPort.Value);

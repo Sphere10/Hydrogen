@@ -1,0 +1,708 @@
+﻿@page "/Recipie1"
+
+@using Hydrogen.DApp.Presentation2.Logic.Modal
+@using Hydrogen.DApp.Presentation2.Logic.Wizard
+@using Hydrogen.DApp.Presentation2.UI.Wizard
+@using Hydrogen.DApp.Presentation2.UI.Wizard.Examples
+@using Hydrogen.DApp.Presentation2.UI.Wizard.Examples.NewWallet
+@using Hydrogen.DApp.Presentation2.UI.Controls
+@using Hydrogen.DApp.Presentation2.UI.Controls.BlazorGrid
+@using Hydrogen.DApp.Presentation2.UI.Controls.BlazorGrid.Classes
+@using Hydrogen.DApp.Presentation2.UI.Controls.BlazorGrid.Components
+@using Hydrogen.DApp.Presentation2.UI.WalletTest
+
+@using System
+@using System.Threading
+@using System.Linq
+@using System.Net
+@using System.IO
+@using System.Runtime.Serialization.Formatters.Binary
+@using System.Text
+
+@using Newtonsoft.Json
+
+
+@using Microsoft.JSInterop
+
+
+@using Hydrogen
+
+@*@using Hydrogen.Communications*@
+
+@inject IJSRuntime JSRuntime
+
+
+<body style="overflow:hidden">
+
+    <h3>Blocks @(DataSource.Count.ToString())</h3>
+    <div style="width:50%">
+        <BlazorGrid TItem="Block"
+                    Id="TestGrid"
+                    PageSize="10"
+                    DataSource="DataSource"
+                    GridOptions="BlazorGrid<Block>.GridOption.ActionColumn  | 
+                                 BlazorGrid<Block>.GridOption.NewItem       | 
+                                 BlazorGrid<Block>.GridOption.ReverseOrder  |
+                                 BlazorGrid<Block>.GridOption.AlternateRows |
+                                 BlazorGrid<Block>.GridOption.Selection"
+                    Actions="DataActions"
+                    ColumnDefinitions="ColumnDefinitions">
+        </BlazorGrid>
+    </div>
+
+@*    <div style="width:30%">
+        <BlazorGrid TItem="Block"
+                    Id="TestGrid"
+                    PageSize="10"
+                    DataSource="DataSource"
+                    GridOptions="BlazorGrid<Block>.GridOption.ActionColumn  | 
+                                 BlazorGrid<Block>.GridOption.NewItem       | 
+                                 BlazorGrid<Block>.GridOption.ReverseOrder  |
+                                 BlazorGrid<Block>.GridOption.AlternateRows |
+                                 BlazorGrid<Block>.GridOption.Selection"
+                    Actions="DataActions"
+                    ColumnDefinitions="ColumnDefinitions">
+        </BlazorGrid>
+    </div>*@
+
+</body>
+
+@code {
+
+    #region Javascript
+
+    void Alert(string text)
+    {
+        JSRuntime.InvokeAsync<object>("AlertWrite", text);
+    }
+
+    void WriteOutput(string text) {
+        JSRuntime.InvokeAsync<object>("WriteOutout", text);
+    }
+
+    #endregion
+
+    BlockChainDataSource<Block> DataSource { get; set; }
+    List<GridAction<Block>> DataActions { get; set; } = new List<GridAction<Block>>();
+    List<IGridComponent<Block>> Components { get; set; } = new List<IGridComponent<Block>>();
+    List<object> ColumnDefinitions { get; set; } = new List<object>();
+    Timer Timer { get; set; }
+
+    protected override async void OnInitialized()
+    {
+        //SystemLog.RegisterLogger(new WebLogger(WriteOutput));
+
+        DataSource = new BlockChainDataSource<Block>();
+        //   DataSource.MutatedItems += HandleRemoteDataChange;
+
+        // LAN
+        //var connectionString = "ws://192.168.1.171:80/service";
+        //var connectionString = "ws://192.168.224.1:80/service";
+        //var connectionString = "wss://socketsbay.com/wss/v2/2/demo/";
+        // WIFI
+        //var connectionString = "ws://192.168.1.106:80/service";
+        // Virtual Machine
+        //var connectionString = "ws://192.168.1.108:80/service";
+        //WebDataSource = new ClientWebSocketsDataSource<TestClass>(connectionString, false, InitializeItem, UpdateItem, IdItem);
+
+        //SystemLog.Info($"ClientWebSocketsDataSource Created");
+        //DataActions.Add(new GridAction<TestClass>("Action1", Action1, "😄⛔", IsAction1Available));
+        DataActions.Add(new GridAction<Block>("DeleteAction", DeleteAction, "❌✡", IsDeleteAvailable));
+        //DataActions.Add(new GridAction<TestClass>("Action2", Action2, "⚽", IsAction2Available));
+
+        //ColumnDefinitions.Add(new DataEnd<TestClass, TestClass2>("Data End 1", TestDataExtractor1));
+        ColumnDefinitions.Add(new DataEnd<Block, TestClass3>("Data End 2", TestDataExtractor2));
+        ColumnDefinitions.Add(new DataEnd<Block, TestClass3>("Data End 2", TestDataExtractor2));
+
+        Timer = new Timer(TimerFunction, null, 1000, 5000); //System.Timers.Timer(1000); // 1 seconds   
+    }
+
+    //    void HandleRemoteDataChange(DataSourceMutatedItems<Block> items) {
+    //       DataSource.Refresh();
+    //    }
+
+    void TimerFunction(object value) {
+        try {
+            DataSource.New(3);          
+        }
+        catch (Exception ex) {
+
+        }  
+    }
+
+    bool IsDeleteAvailable(Block item)
+    {
+        if (item.CreationDateTime.Millisecond % 3 == 0) {
+            return false;
+        }
+
+        return true;
+    }
+
+    Block DeleteAction(Block item)
+    {
+        //DataSource.Delete(new List<Block>() { item });
+        DataSource.DeleteDelayed(new List<Block>() { item });
+
+        return item;
+    }
+
+    TestClass3 TestDataExtractor2(object data)
+    {
+        var useData = (Block)data;
+
+        return new TestClass3(useData.Id);
+    }
+    //public class DataSource2<TItem> : IDataSource<TestClass> {
+
+    //    int CurrentId = 1;
+    //    Dictionary<string, TestClass> AllItems = new Dictionary<string, TestClass>();
+
+    //    //public void RefreshData() {
+    //    //    AllItems = LoadData(73);
+    //    //}
+
+    //    // create some dummy data
+    //    public DataSource2() {
+    //        //New(73);
+    //    }
+
+    //    event EventHandlerEx<DataSourceMutatedItems<TestClass>> IDataSource<TestClass>.MutatedItems {
+    //        add {
+    //        }
+
+    //        remove {
+    //        }
+    //    }
+
+    //    public string UpdateItem(TestClass item) {
+
+    //        var id = IdItem(item);
+    //        if (AllItems.ContainsKey(id)) {
+    //            AllItems[id] = item;
+    //        }
+
+    //        return id;
+    //    }
+
+    //    public string InitializeItem(TestClass item) {
+    //        item.FillWithTestData(CurrentId++);
+
+    //        return item.ToString();
+    //    }
+
+    //    public string IdItem(TestClass item) {
+
+    //        return AllItems.FirstOrDefault(x => x.Value == item).Key;
+    //    }
+
+    //    public void Close() {
+
+    //    }
+
+    //    //List<TestClass> LoadData(int size) {
+    //    //    var testData = new List<TestClass>();
+
+    //    //    for (int i = 0; i < size; i++) {
+    //    //        var testObject = new TestClass();
+    //    //        testObject.FillWithTestData(i);
+    //    //        testData.Add(testObject);
+    //    //    }
+
+    //    //    return testData;
+    //    //}
+
+    //    public async Task Create(IEnumerable<TestClass> entities) {
+    //        //    AllItems.AddRange(entities);
+    //    }
+
+    //    public async Task Delete(IEnumerable<TestClass> entities) {
+    //        //    foreach (var entity in entities) {
+    //        //        var index = AllItems.IndexOf(entity);
+    //        //        if (index >= 0) AllItems.RemoveAt(index);
+    //        //    }
+    //    }
+
+    //    public IEnumerable<TestClass> New(int count) {
+
+    //        var returnList = new List<TestClass>();
+
+    //        for (var i = 0; i < count; i++) {
+    //            var id = Guid.NewGuid().ToString();
+
+    //            var newItem = new TestClass();
+    //            InitializeItem(newItem);
+
+    //            AllItems.Add(id, newItem);
+    //            returnList.Add(newItem);
+    //        }
+
+    //        return returnList;
+    //    }
+
+    //    public void NewDelayed(int count) {
+    //        New(count);
+    //    }
+
+    //    // public Task<IEnumerable<TestClass>> Read(string searchTerm, int pageLength, ref int page, string sortProperty, SortDirection sortDirection, out int totalItems) {
+
+    //    public Task<DataSourceItems<TestClass>> Read(string searchTerm, int pageLength, ref int page, string sortProperty, SortDirection sortDirection, out int totalItems) {
+
+    //        totalItems = AllItems.Count;
+
+    //        // make sure the requested page is logical
+    //        if (page < 0) page = 0;
+    //        else if (page > AllItems.Count / pageLength) page = AllItems.Count / pageLength;
+
+    //        var startIndex = pageLength * page;
+
+    //        //the last page might not have a full page of data
+    //        if (startIndex + pageLength >= AllItems.Count) pageLength = AllItems.Count - startIndex;
+
+    //        var items = AllItems.Values.ToList().GetRange(startIndex, pageLength);
+
+    //        var returnItems = new DataSourceItems<TestClass>();
+
+    //        returnItems.Items = new List<TestClass>(items);
+
+    //        return Task.Run(() => {
+    //            return returnItems;
+    //        });
+    //    }
+
+    //    Task<DataSourceItems<TestClass>> IDataSource<TestClass>.Read(string searchTerm, int pageLength, int page, string sortProperty, SortDirection sortDirection, out int totalItems) {
+    //       totalItems = AllItems.Count;
+
+    //        // make sure the requested page is logical
+    //        if (page < 0) page = 0;
+    //        else if (page > AllItems.Count / pageLength) page = AllItems.Count / pageLength;
+
+    //        var startIndex = pageLength * page;
+
+    //        //the last page might not have a full page of data
+    //        if (startIndex + pageLength >= AllItems.Count) pageLength = AllItems.Count - startIndex;
+
+    //        var items = AllItems.Values.ToList().GetRange(startIndex, pageLength);
+
+    //        var returnItems = new DataSourceItems<TestClass>();
+
+    //        returnItems.Items = new List<TestClass>(items);
+
+    //        return Task.Run(() => {
+    //            return returnItems;
+    //        });
+    //    }
+
+    //    public void ReadDelayed(string searchTerm, int pageLength, int page, string sortProperty, SortDirection sortDirection) {
+
+    //        //make sure the requested page is logical
+    //        if (page < 0) page = 0;
+    //        else if (page > AllItems.Count / pageLength) page = AllItems.Count / pageLength;
+
+    //        var startIndex = pageLength * page;
+
+    //        //the last page might not have a full page of data
+    //        if (startIndex + pageLength >= AllItems.Count) pageLength = AllItems.Count - startIndex;
+
+    //        var items = (IEnumerable<TestClass>)AllItems.Values.ToList().GetRange(startIndex, pageLength);
+
+    //        //      totalItems = AllItems.Count();
+    //        //      return Task.FromResult(items);
+
+    //        //      return Task.Run(() => (IEnumerable<TestClass>)AllItems.GetRange(startIndex, pageLength));
+
+
+    //        //      throw new NotImplementedException();
+    //    }
+
+
+    //    public Task Refresh(TestClass[] entity) {
+    //        throw new NotImplementedException();
+    //    }
+
+    //    public Task Update(IEnumerable<TestClass> entities) {
+    //        //var test = entities.ToArray()[0].ToString();
+
+    //        //return Task.Run(() => {
+    //        //    foreach (var entity in entities) {
+    //        //        for (int i = 0; i < AllItems.Count; i++) {
+    //        //            if (AllItems[i].Id == entity.Id) {
+    //        //                AllItems[i] = entity;
+    //        //                break;
+    //        //            }
+    //        //        }
+    //        //    }
+    //        //}
+    //        //);
+    //        throw new NotImplementedException();
+    //    }
+
+    //    public Task<Result> Validate(IEnumerable<(TestClass entity, CrudAction action)> actions) {
+    //        throw new NotImplementedException();
+    //    }
+
+    //    public Task<Result> Validate(TestClass entity, CrudAction action) {
+    //        throw new NotImplementedException();
+    //    }
+
+    //    public Task<DataSourceItems<TestClass>> Read(string searchTerm, int pageLength, int page, string sortProperty, SortDirection sortDirection) {
+    //        throw new NotImplementedException();
+    //    }
+
+    //    Task<IEnumerable<TestClass>> IDataSource<TestClass>.New(int count) {
+    //        throw new NotImplementedException();
+    //    }
+
+    //    public void RefreshDelayed(IEnumerable<TestClass> entities) {
+    //        throw new NotImplementedException();
+    //    }
+
+    //    public void UpdateDelayed(IEnumerable<TestClass> entities) {
+    //        throw new NotImplementedException();
+    //    }
+
+    //    public void ValidateDelayed(IEnumerable<(TestClass entity, CrudAction action)> actions) {
+    //        throw new NotImplementedException();
+    //    }
+
+    //    void IDataSource<TestClass>.DeleteDelayed(IEnumerable<TestClass> entities) {
+    //        throw new NotImplementedException();
+    //    }
+
+    //    void IDataSource<TestClass>.CountDelayed() {
+    //        throw new NotImplementedException();
+    //    }
+
+    //    string IDataSource<TestClass>.UpdateItem(TestClass item) {
+    //        throw new NotImplementedException();
+    //    }
+
+    //    string IDataSource<TestClass>.IdItem(TestClass item) {
+    //        throw new NotImplementedException();
+    //    }
+
+    //    string IDataSource<TestClass>.InitializeItem(TestClass item) {
+    //        throw new NotImplementedException();
+    //    }
+
+    //    public Task<int> Count { get { return Task.Run(() => 0); } }
+
+    //    public Task<DataSourceCapabilities> Capabilities => throw new NotImplementedException();
+    //}
+
+
+
+
+
+
+//
+//
+//
+//    //DataSource1<TestClass> DataSource { get; set; }
+//    List<GridAction<TestClass>> DataActions { get; set; } = new List<GridAction<TestClass>>();
+//    List<IGridComponent<TestClass>> Components { get; set; } = new List<IGridComponent<TestClass>>();
+//    List<object> ColumnDefinitions { get; set; } = new List<object>();
+//    //System.Timers.Timer Timer { get; set; }
+//
+//    DotNetObjectReference<Index> CSharpInstance { get; set; }
+//    ClientWebSocketsChannel Channel { get; set; }
+//
+//    ClientWebSocketsDataSource<TestClass> WebDataSource { get; set; }
+//
+//    void Test() {
+//        var f1 = new Filter<string>();
+//        var f2 = new Filter<double>();
+//        var f3 = new Filter<DateTime>();
+//        var f4 = new Filter<char>();
+//    }
+//
+//    public class WebLogger : ILogger {
+//
+//        public delegate void DisplayTextDelegate(string text);
+//
+//        DisplayTextDelegate DisplayTextFunction { get; init; }
+//
+//        public WebLogger(DisplayTextDelegate displayTextFunction) {
+//            DisplayTextFunction = displayTextFunction;
+//        }
+//
+//        LogOptions ILogger.Options { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+//
+//        void ILogger.Debug(string message) {
+//            DisplayTextFunction("DEBUG: " + message);
+//        }
+//
+//        void ILogger.Error(string message) {
+//            DisplayTextFunction("ERROR: " + message);
+//        }
+//
+//        void ILogger.Info(string message) {
+//            DisplayTextFunction("INFO: " + message);
+//        }
+//
+//        void ILogger.Warning(string message) {
+//            DisplayTextFunction("WARNING: " + message);
+//        }
+//    }
+//
+//
+//    protected override async void OnInitialized()
+//    {
+//        SystemLog.RegisterLogger(new WebLogger(WriteOutput));
+//
+//        // LAN
+//        //var connectionString = "ws://192.168.1.171:80/service";
+//        //var connectionString = "ws://192.168.224.1:80/service";
+//        var connectionString = "wss://socketsbay.com/wss/v2/2/demo/";
+//        // WIFI
+//        //var connectionString = "ws://192.168.1.106:80/service";
+//        // Virtual Machine
+//        //var connectionString = "ws://192.168.1.108:80/service";
+//        WebDataSource = new ClientWebSocketsDataSource<TestClass>(connectionString, false, InitializeItem, UpdateItem, IdItem);
+//
+//        //SystemLog.Info($"ClientWebSocketsDataSource Created");
+//        //DataActions.Add(new GridAction<TestClass>("Action1", Action1, "😄⛔", IsAction1Available));
+//        DataActions.Add(new GridAction<TestClass>("DeleteAction", DeleteAction, "❌✡", IsDeleteAvailable));
+//        //DataActions.Add(new GridAction<TestClass>("Action2", Action2, "⚽", IsAction2Available));
+//
+//        //ColumnDefinitions.Add(new DataEnd<TestClass, TestClass2>("Data End 1", TestDataExtractor1));
+//        ColumnDefinitions.Add(new DataEnd<TestClass, TestClass3>("Data End 2", TestDataExtractor2));
+//
+//        //Timer = new System.Timers.Timer(1000); // 1 seconds
+//        //Timer.Elapsed += CountDownTimer;
+//        //Timer.Start();
+//    }
+//
+//    string InitializeItem(TestClass item, int id)
+//    {
+//        try {
+//            item.FillWithTestData(id);
+//        } catch (Exception ex) {
+//            return ex.Message;
+//        }
+//
+//        return null;
+//    }
+//
+//    string UpdateItem(TestClass item) {
+//        try {
+//            // do something here
+//
+//        } catch (Exception ex) {
+//            return ex.Message;
+//        }
+//
+//        return null;
+//    }
+//
+//    string IdItem(TestClass item) {
+//        return item.Id.ToString();
+//    }
+//
+//    protected override async Task OnAfterRenderAsync(bool firstRender) {
+//        //    CountDownTimer(null, null);
+//
+//        //        TestGrid.LoadJavascript();
+//        //        Alert("OnAfterRenderAsync Index");
+//    }
+//
+//    async void StartWebSockets()
+//    {
+//        try {
+//            // Virtual Machine
+//            //Channel = new ClientWebSocketsChannel("ws://192.168.1.108:80/service", false);
+//
+//            // Local Machine
+//            //Channel = new ClientWebSocketsChannel("ws://192.168.1.171:80/service", false);
+//            //Channel.ReceivedBytes += delegate (ReadOnlyMemory<byte> memory)
+//            //{
+//            //    WriteOutput(System.Text.Encoding.ASCII.GetString(memory.Span));
+//            //};
+//            //await Channel.Open();
+//
+//            //            WebDataSource.New
+//        }
+//        catch (Exception ex) {
+//
+//        }
+//    }
+//
+//    void SendData()
+//    {
+//        try
+//        {
+//            var testData = new TestClass();
+//            testData.FillWithTestData(666);
+//            var jsonData = JsonConvert.SerializeObject(testData);
+//            var testPacket = new WebSocketsPacket("new 7", jsonData);
+//            Channel.TrySendBytes(testPacket.ToBytes());
+//
+//            //Channel.TrySendBytes(Encoding.ASCII.GetBytes("Hello 666"));
+//        }
+//        catch (Exception ex) {
+//
+//        }
+//        //Channel.TrySendBytes(System.Text.Encoding.ASCII.GetBytes("Hello from Server 666"));
+//        //this sends but is not AbandonedMutexException data
+//    }
+//
+//
+//    TestClass2 TestDataExtractor1(object data)
+//    {
+//        var useData = (TestClass)data;
+//
+//        // this is a simple example
+//        var text = $"Test: {useData.Name}";
+//        var value = (decimal)Math.PI;
+//        var locked = (new Random()).NextBool();
+//
+//        return new TestClass2(text, value, locked);
+//    }
+//
+//    TestClass3 TestDataExtractor2(object data)
+//    {
+//        var useData = (TestClass)data;
+//
+//        return new TestClass3(useData.Name);
+//    }
+//
+//    bool IsDeleteAvailable(TestClass item)
+//    {
+//        if (item.Name == "Polkadot") {
+//            return false;
+//        }
+//
+//        return true;
+//    }
+//
+//    TestClass DeleteAction(TestClass item)
+//    {
+//        WebDataSource.DeleteDelayed(new List<TestClass>() { item });
+//
+//        return item;
+//    }
+//
+//    TestClass Action2(TestClass item)
+//    {
+//        Alert($"Action 2 pressed for Id: {item.Id}");
+//
+//        return item;
+//    }
+//
+//    bool IsAction1Available(TestClass item)
+//    {
+//        return true;
+//    }
+//
+//    bool IsAction2Available(TestClass item)
+//    {
+//        return item.Name == "Bitcoin";
+//    }
+//
+//    //public void CountDownTimer(Object source, System.Timers.ElapsedEventArgs e)
+//    //{
+//    //    //DataSource.RefreshData();
+//    //    StateHasChanged();
+//    //    Timer.Stop();
+//    //}
+//
+//    #region Original Code
+//    private async Task Confirm()
+//    {
+//        bool result = await ViewService.ConfirmDialogAsync("Confirm", "Are you sure you want to do that ?", "Yes");
+//    }
+//
+//    private async Task Info()
+//    {
+//        int i = await ViewService.DialogAsync("Information", "Something important has happened.", "Ignore", "Decline", "Accept");
+//
+//        Console.WriteLine(i);
+//    }
+//
+//    private async Task Warning()
+//    {
+//        await ViewService.DialogAsync("An error occured", "Something went wrong", "Dismiss");
+//    }
+//
+//    private async Task Exception()
+//    {
+//        try
+//        {
+//            decimal zero = decimal.Zero;
+//            decimal snafu = 1 / zero;
+//        }
+//        catch (Exception e)
+//        {
+//            await ViewService.DialogAsync(e, "Error");
+//        }
+//    }
+//
+//    private async Task Custom()
+//    {
+//        //Build a custom render fragment to show in the dialog. Could be a prebuilt component in another file as well.
+//
+//        RenderFragment frag = builder =>
+//        {
+//            builder.OpenElement(0, "div");
+//            builder.AddAttribute(0, "class", "text-center");
+//            builder.OpenElement(1, "img");
+//            builder.AddAttribute(1, "src", "https://www.coinbuzz.com/wp-content/uploads/2015/03/bitcoin-logo-plain.png");
+//            builder.AddAttribute(1, "height", 100);
+//            builder.AddAttribute(1, "width", 100);
+//            builder.CloseElement();
+//
+//            builder.OpenElement(2, "p");
+//            builder.AddContent(2, "Bitcoin");
+//            builder.CloseElement();
+//            builder.CloseElement();
+//        };
+//
+//        await ViewService.DialogAsync(frag, "A custom dialog");
+//    }
+//
+//    private async Task Wizard()
+//    {
+//        var builder = new DefaultWizardBuilder<NewWalletModel>();
+//        var wizard = builder.NewWizard("New Wallet")
+//            .AddStep<WalletNameStep>()
+//            .AddStep<WalletTypeStep>()
+//            .WithModel(new NewWalletModel())
+//            .OnFinished(x => Task.FromResult<Result<bool>>(true))
+//            .Build();
+//
+//        await ViewService.WizardDialogAsync(wizard);
+//    }
+//
+//    private async Task OnRowSelectAsync(int i)
+//    {
+//        await ViewService.DialogAsync("Number", i.ToString());
+//    }
+//
+//    List<int> Items = new(Enumerable.Range(1, 9999));
+//
+//    private Task<ItemsResponse<int>> ItemsProvider(ItemRequest request)
+//    {
+//        return Task.FromResult(new ItemsResponse<int>(Items.Skip(request.Index).Take(request.Count), Items.Count));
+//    }
+//
+//    private CancellationTokenSource EnumeratorCts { get; } = new();
+//
+//    private async IAsyncEnumerable<int> GetIntAsync()
+//    {
+//        int last = 0;
+//        Random rand = new();
+//
+//        while (!EnumeratorCts.IsCancellationRequested)
+//        {
+//            await Task.Delay(rand.Next(1000, 3000));
+//            yield return last++;
+//        }
+//    }
+//
+//    public void Dispose()
+//    {
+//        EnumeratorCts.Cancel();
+//    }
+//
+//    #endregion
+}

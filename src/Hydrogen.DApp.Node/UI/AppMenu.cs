@@ -20,6 +20,9 @@ namespace Hydrogen.DApp.Node.UI {
 
 		[Description("_Development")]
 		Development,
+
+		[Description("_WebBrowser")]
+		WebBrowser,
 	}
 
 }

@@ -94,6 +94,9 @@ namespace Hydrogen.Communications {
 		}
 
 		protected override async Task CloseInternal() {
+
+			if (Hub != null) return;
+
 			TcpClient.Close();
 			TcpClient.Dispose();
 			TcpClient = null;
@@ -133,12 +136,8 @@ namespace Hydrogen.Communications {
 			// if this could be done in the handshake, that would be even better
 			await WebSocket.SendAsync(Encoding.ASCII.GetBytes(InternalId), WebSocketMessageType.Text, true, CancellationToken.None);
 
-			//Handle the response to close
+			// Handle the response to close
 			ReceivedWebSocketMessage += async msg => {
-
-				SystemLog.Info($"XXXX Handle the response to close ONLY");
-				SystemLog.Info($"ServerWebSocketsChannel Recieved Data Created Hub {CreatedHub}");
-
 				if (msg.MessageType == WebSocketMessageType.Close && CloseInitiator == null) {
 					CloseInitiator = LocalRole switch {
 						CommunicationRole.Server => CommunicationRole.Client,

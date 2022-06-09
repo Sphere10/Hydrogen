@@ -20,11 +20,25 @@ namespace Hydrogen {
 
 	public interface IDataSource<TItem> {
 
-		IEnumerable<TItem> New(int count);
+		event EventHandlerEx<DataSourceMutatedItems<TItem>> MutatedItems;
+		void NewDelayed(int count);
+		void ReadDelayed(string searchTerm, int pageLength, int page, string sortProperty, SortDirection sortDirection);
+		void RefreshDelayed(IEnumerable<TItem> entities);
+		void UpdateDelayed(IEnumerable<TItem> entities);
+		void DeleteDelayed(IEnumerable<TItem> entities);
+		void ValidateDelayed(IEnumerable<(TItem entity, CrudAction action)> actions);
+		void CountDelayed();
+		string UpdateItem(TItem item);
+		string IdItem(TItem item);
+		string InitializeItem(TItem item);
+
+		void Close();
+
+		Task<IEnumerable<TItem>> New(int count);
 
 		Task Create(IEnumerable<TItem> entities);
 
-		Task<DataSourceItems<TItem>> Read(string searchTerm, int pageLength, int page, string sortProperty, SortDirection sortDirection);
+		Task<DataSourceItems<TItem>> Read(string searchTerm, int pageLength, int page, string sortProperty, SortDirection sortDirection, out int totalItems);
 
 		Task Refresh(TItem[] entities);
 
@@ -42,7 +56,7 @@ namespace Hydrogen {
 
 		public TItem New() {
 			var results = New(1);
-			var enumerable = results as TItem[] ?? results.ToArray();
+			var enumerable = results as TItem[] ?? results.Result.ToArray();
 			Guard.Ensure(enumerable.Count() == 1, "Unable to create entity");
 			return enumerable.Single();
 		}
@@ -68,6 +82,4 @@ namespace Hydrogen {
 
 		#endregion
 	}
-
-
 }

@@ -186,6 +186,12 @@ namespace Hydrogen {
 
 			return String.Format(_string, _params);
 		}
+		
+
+		public static string FormatWithDictionary(this string _string, IDictionary<string, string> userTokenResolver) 
+			=> StringFormatter.FormatWithDictionary(_string, userTokenResolver);
+		
+		
 
 		/// <summary>
 		/// Parse a string into an enumeration

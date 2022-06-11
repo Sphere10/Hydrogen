@@ -6,6 +6,6 @@ using System.Threading.Tasks;
 
 namespace Hydrogen {
 	public interface ITokenResolver {
-		string TryResolve(string token);
+		bool TryResolve(string token, out string value);
 	}
 }

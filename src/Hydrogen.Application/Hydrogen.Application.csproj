@@ -12,6 +12,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<ProjectReference Include="..\Hydrogen.Data\Hydrogen.Data.csproj" />
 		<ProjectReference Include="..\Hydrogen\Hydrogen.csproj" />
 	</ItemGroup>
 

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Hydrogen.Streams {
+namespace Hydrogen {
 	internal class StreamReaderDecorator {
 	}
 }

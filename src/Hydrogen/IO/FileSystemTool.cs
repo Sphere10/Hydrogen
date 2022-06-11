@@ -240,6 +240,12 @@ namespace Tools {
             fileInfo.MoveTo(Path.Combine( fileInfo.Directory.FullName, newName));
         }
 
+	    public static void CreateDirectory(string directory) 
+			=> Directory.CreateDirectory(directory);
+
+	    public static Task CreateDirectoryAsync(string directory) 
+			=> Task.Run( () => CreateDirectory(directory));
+
         //https://docs.microsoft.com/en-us/dotnet/standard/io/how-to-copy-directories#example
         public static void CopyDirectory(string sourceDir, string destDirectory, bool copySubDirectories = false, bool createIfDoesNotExist = true, bool clearIfNotEmpty = false) {
 
@@ -290,7 +296,7 @@ namespace Tools {
         public static void DeleteDirectory(string directory, bool ignoreIfLocked = false) {
             Action<string> deleteDirAction = ignoreIfLocked
                 ? Lambda.ActionIgnoringExceptions<string>(Directory.Delete)
-                : Directory.Delete;
+                : x => Directory.Delete(x, true);
             DeleteAllFiles(directory, true, true);
             if (Directory.GetFiles(directory).Length == 0) {
                 deleteDirAction(directory);
@@ -305,7 +311,7 @@ namespace Tools {
             foreach (var dir in directories)
                 DeleteDirectory(dir, ignoreIfLocked);
         }
-
+		
         public static Task DeleteDirectoryAsync(string directory, bool ignoreIfLocked = false) {
             return Task.Run(() => DeleteDirectory(directory, ignoreIfLocked));
         }
@@ -424,15 +430,25 @@ namespace Tools {
             return path;
         }
 
-        public static string[] GetSubDirectories(string directory) {
-            return Directory.EnumerateDirectories(directory).Select(Path.GetFileName).ToArray();
+        public static string[] GetSubDirectories(string directory, FileSystemPathType pathType = FileSystemPathType.Relative) {
+            var subDirs = Directory.EnumerateDirectories(directory);
+			
+			if (pathType == FileSystemPathType.Relative)
+				subDirs = subDirs.Select(Path.GetFileName);
+			
+			return subDirs.ToArray();
         }
 
-        public static string[] GetFiles(string directory) {
-            return Directory.EnumerateFiles(directory).Select(Path.GetFileName).ToArray();
+        public static string[] GetFiles(string directory, FileSystemPathType pathType = FileSystemPathType.Relative) {
+            var files = Directory.EnumerateFiles(directory);
+		
+			if (pathType == FileSystemPathType.Relative)
+				files = files.Select(Path.GetFileName);
+
+			return files.ToArray();
         }
 
-        public static string[] GetFiles(string directory, string pattern) {
+        public static string[] GetFiles(string directory, string pattern, FileSystemPathType pathType = FileSystemPathType.Relative) {
             return Directory.EnumerateFiles(directory, pattern).Select(Path.GetFileName).ToArray();
         }
 

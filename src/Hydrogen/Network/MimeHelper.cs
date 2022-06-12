@@ -244,6 +244,7 @@ public static class MimeHelper {
 			".movie" => "video/x-sgi-movie",
 			".mp2" => "audio/mpeg",
 			".mp3" => "audio/mpeg",
+			".mp4" => "video/mp4",
 			".mpa" => "audio/mpeg",
 			".mpc" => "application/x-project",
 			".mpe" => "video/mpeg",

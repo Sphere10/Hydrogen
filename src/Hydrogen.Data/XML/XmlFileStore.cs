@@ -239,7 +239,7 @@ namespace Hydrogen.Data {
 		}
 
 		public void WriteAllBytes(string fileAlias, byte[] bytes) {
-			File.WriteAllBytes(GetFilePath(fileAlias), bytes);
+			Tools.FileSystem.WriteAllBytes(GetFilePath(fileAlias), bytes);
 		}
 
 		public void AppendAllBytes(string fileAlias, byte[] bytes) {

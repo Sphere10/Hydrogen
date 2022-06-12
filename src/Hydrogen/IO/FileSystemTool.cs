@@ -355,6 +355,22 @@ namespace Tools {
             }
         }
 
+		public static void WriteAllBytes(string path, byte[] bytes) {
+            Guard.ArgumentNotNull(path, nameof(path));
+            Guard.ArgumentNotNull(bytes, nameof(bytes));
+            using (var stream = new FileStream(path, FileMode.Truncate)) {
+                stream.Write(bytes, 0, bytes.Length);
+            }
+        }
+
+		public static void WriteAllBytes(string path, Stream bytes) {
+            Guard.ArgumentNotNull(path, nameof(path));
+            Guard.ArgumentNotNull(bytes, nameof(bytes));
+            using (var stream = new FileStream(path, FileMode.Truncate)) {
+                bytes.RouteTo(stream);
+            }
+        }
+
         public static byte[] GetFilePart(string filePath, long offset, int fetchSize) {
             if (!File.Exists(filePath))
                 throw new FileNotFoundException("File not found", filePath);

@@ -154,7 +154,11 @@ namespace Tools {
 		}
 
 		public static bool TryParse(string url, out string protocol, out int port, out string host, out string path, out string queryString) {
-			var uri = new Uri(url);
+			if (!Uri.TryCreate(url, UriKind.RelativeOrAbsolute, out var uri)) {
+				protocol = host = path = queryString = null;
+				port = -1;
+				return false;
+			}
 			if (!uri.IsAbsoluteUri) {
 				protocol = host = queryString = path = null;
 				port = 0;

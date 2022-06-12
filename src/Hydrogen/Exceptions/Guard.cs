@@ -45,7 +45,7 @@ namespace Hydrogen {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static void FileExists(string path) {
 			if (!File.Exists(path))
-				throw new FileNotFoundException("File not found", path);
+				throw new FileNotFoundException($"File not found: {path} ", path);
 		}
 
 #if OMIT_GUARD

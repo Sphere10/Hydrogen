@@ -14,7 +14,7 @@ namespace Hydrogen {
             return FormatEx(formatString, ResolveToken, formatArgs);
         }
 
-        public static string FormatWithDictionary(string formatString, IDictionary<string, string> userTokenResolver, params object[] formatArgs)
+        public static string FormatWithDictionary(string formatString, IDictionary<string, object> userTokenResolver, params object[] formatArgs)
 	        => FormatEx(
 		        formatString,
 		        (token) => {
@@ -26,7 +26,7 @@ namespace Hydrogen {
 			);
 					
 
-        public static string FormatEx(string formatString, Func<string, string> userTokenResolver, params object[] formatArgs) {
+        public static string FormatEx(string formatString, Func<string, object> userTokenResolver, params object[] formatArgs) {
             Guard.ArgumentNotNull(formatString, nameof(formatString));
             Guard.ArgumentNotNull(userTokenResolver, nameof(userTokenResolver));
 
@@ -59,7 +59,7 @@ namespace Hydrogen {
                     if (inFormatItem) {
                         // end of format item, process and add to string
                         var token = currentFormatItemBuilder.ToString();
-                        if (!TryResolveFormatItem(token, out var value, resolver, formatArgs))
+						if (!TryResolveFormatItem(token, out var value, resolver, formatArgs))
 							value = "{" + token + "}";
 	                    resultBuilder.Append(value);
                         inFormatItem = false;
@@ -87,19 +87,27 @@ namespace Hydrogen {
             return resultBuilder.ToString();
         }
 
-		private static bool TryResolveFormatItem(string token, out string value, Func<string, string> resolver, params object[] formatArgs) {
+		private static bool TryResolveFormatItem(string token, out string value, Func<string, object> resolver, params object[] formatArgs) {
+			token = token.TrimEnd();
 			value = null;
+			object valueObject;
 	        if (IsStandardFormatIndex(token, out var formatIndex, out var formatOptions)) {
 		        if (formatIndex >= formatArgs.Length)
 			        return false;
-
-		        value = string.Format("{0" + (formatOptions ?? string.Empty) + "}", formatArgs[formatIndex]);
-	        }
-	        
-			value = resolver(token);
+		        valueObject = formatArgs[formatIndex];
+	        } else {
+				var tokenSplits = token.Split(':');
+				if (tokenSplits.Length > 1) {
+					token = tokenSplits[0].TrimEnd();
+					formatOptions = ":" + tokenSplits.Skip(1).Select(s => s.Trim()).ToDelimittedString(":");
+				}
+				valueObject = resolver(token);
+			}
+			if (valueObject != null)
+				value = string.Format("{0" + (formatOptions ?? string.Empty) + "}", valueObject);
 	        return value != null || TryResolveToken(token, out value);
-
 		}
+
         private static bool IsStandardFormatIndex(string token, out int number, out string formatOptions) {
 	        var numberString = new string(token.TakeWhile(Char.IsDigit).ToArray());
 	        if (numberString.Length > 0) {

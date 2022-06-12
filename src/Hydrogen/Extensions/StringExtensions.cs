@@ -188,7 +188,7 @@ namespace Hydrogen {
 		}
 		
 
-		public static string FormatWithDictionary(this string _string, IDictionary<string, string> userTokenResolver) 
+		public static string FormatWithDictionary(this string _string, IDictionary<string, object> userTokenResolver) 
 			=> StringFormatter.FormatWithDictionary(_string, userTokenResolver);
 		
 		

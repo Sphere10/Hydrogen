@@ -20,22 +20,16 @@
 @using System.Text
 
 @using Newtonsoft.Json
-
-
 @using Microsoft.JSInterop
-
-
 @using Hydrogen
-
 @*@using Hydrogen.Communications*@
 
 @inject IJSRuntime JSRuntime
 
-
 <body style="overflow:hidden">
 
-    <h3>Blocks @(DataSource.Count.ToString())</h3>
-    <div style="width:50%">
+    <h3>Blocks @(DataSource.Count2)</h3>
+    <div style="width:50%; float:left;">
         <BlazorGrid TItem="Block"
                     Id="TestGrid"
                     PageSize="10"
@@ -50,20 +44,23 @@
         </BlazorGrid>
     </div>
 
-@*    <div style="width:30%">
+    <div style="width:30%; float:left;">
         <BlazorGrid TItem="Block"
-                    Id="TestGrid"
-                    PageSize="10"
-                    DataSource="DataSource"
-                    GridOptions="BlazorGrid<Block>.GridOption.ActionColumn  | 
-                                 BlazorGrid<Block>.GridOption.NewItem       | 
-                                 BlazorGrid<Block>.GridOption.ReverseOrder  |
-                                 BlazorGrid<Block>.GridOption.AlternateRows |
+                    Id="TestGrid2"
+                    PageSize="5"
+                    DataSource="DataSource2"
+                    GridOptions="BlazorGrid<Block>.GridOption.AlternateRows |
                                  BlazorGrid<Block>.GridOption.Selection"
-                    Actions="DataActions"
-                    ColumnDefinitions="ColumnDefinitions">
+                    Actions="DataActions2"
+                    ColumnDefinitions="ColumnDefinitions2">
+
+@*                    GridOptions="BlazorGrid<Block>.GridOption.ActionColumn  | 
+                                 BlazorGrid<Block>.GridOption.NewItem       | *@
+
+
+
         </BlazorGrid>
-    </div>*@
+    </div>
 
 </body>
 
@@ -83,9 +80,16 @@
     #endregion
 
     BlockChainDataSource<Block> DataSource { get; set; }
+    BlockChainDataSource<Transaction> DataSource2 { get; set; }
+
     List<GridAction<Block>> DataActions { get; set; } = new List<GridAction<Block>>();
+    List<IColumnDefinition> ColumnDefinitions { get; set; } = new List<IColumnDefinition>();
+
+    List<GridAction<Block>> DataActions2 { get; set; } = new List<GridAction<Block>>();
+    List<IColumnDefinition> ColumnDefinitions2 { get; set; } = new List<IColumnDefinition>();
+
     List<IGridComponent<Block>> Components { get; set; } = new List<IGridComponent<Block>>();
-    List<object> ColumnDefinitions { get; set; } = new List<object>();
+
     Timer Timer { get; set; }
 
     protected override async void OnInitialized()
@@ -93,6 +97,7 @@
         //SystemLog.RegisterLogger(new WebLogger(WriteOutput));
 
         DataSource = new BlockChainDataSource<Block>();
+        DataSource2 = new BlockChainDataSource<Transaction>();
         //   DataSource.MutatedItems += HandleRemoteDataChange;
 
         // LAN
@@ -110,23 +115,24 @@
         DataActions.Add(new GridAction<Block>("DeleteAction", DeleteAction, "❌✡", IsDeleteAvailable));
         //DataActions.Add(new GridAction<TestClass>("Action2", Action2, "⚽", IsAction2Available));
 
+        DataActions2.Add(new GridAction<Block>("DeleteAction", DeleteAction, "❌✡", IsDeleteAvailable));
+
         //ColumnDefinitions.Add(new DataEnd<TestClass, TestClass2>("Data End 1", TestDataExtractor1));
-        ColumnDefinitions.Add(new DataEnd<Block, TestClass3>("Data End 2", TestDataExtractor2));
-        ColumnDefinitions.Add(new DataEnd<Block, TestClass3>("Data End 2", TestDataExtractor2));
+        ColumnDefinitions.Add(new DataEnd<Block, TestClass3>(50, "Data End 2", TestDataExtractor2));
+        ColumnDefinitions.Add(new DataEnd<Block, TestClass3>(50, "Data End 2", TestDataExtractor2));
 
-        Timer = new Timer(TimerFunction, null, 1000, 5000); //System.Timers.Timer(1000); // 1 seconds   
+        ColumnDefinitions2.Add(new DataEnd<Block, TestClass3>(50, "Data End 1", TestDataExtractor2));
+
+        Timer = new Timer(TimerFunction, null, 5000, 10000); //System.Timers.Timer(1000); // 1 seconds   
     }
-
-    //    void HandleRemoteDataChange(DataSourceMutatedItems<Block> items) {
-    //       DataSource.Refresh();
-    //    }
 
     void TimerFunction(object value) {
         try {
-            DataSource.New(3);          
+            var random = Random.Shared.Next();
+            DataSource.New(1);
+            DataSource2.New(random % 6);
         }
         catch (Exception ex) {
-
         }  
     }
 

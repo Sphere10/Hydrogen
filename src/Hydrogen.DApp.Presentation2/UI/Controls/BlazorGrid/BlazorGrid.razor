@@ -1,19 +1,19 @@
-﻿@using System;
+﻿@using System
 @using Microsoft.JSInterop
-@using System.Collections.Generic;
-@using System.Reflection;
-@using Hydrogen;
-@using Hydrogen.Communications;
-@using UI.Controls.BlazorGrid.Classes; @*Fix This*@
+@using System.Collections.Generic
+@using System.Reflection
+@using Hydrogen
+@using Hydrogen.Communications
+@using UI.Controls.BlazorGrid.Classes @*Fix This*@
 
 @inject IJSRuntime JSRuntime
 
 <meta charset="UTF-8">
 
-<div><textarea id="Output" rows="10" cols="60"></textarea></div>
+@*<div><textarea id="Output" rows="10" cols="60"></textarea></div>*@
 
-<div class="ResizableClass">
-    <table class="TableClass" style="width: 100%" id="@Id">
+<div class="ResizableClass border margin2" style="margin:10px;overflow:auto;">
+    <table class="TableClass" style="width: 100%;" id="@Id">
         <thead>
             <tr>
                 @if (IsOption(GridOption.ActionColumn))
@@ -36,7 +36,7 @@
                     </th>
                 }
 
-                @foreach (object column in ColumnDefinitions) 
+                @foreach (object column in ColumnDefinitions)
                 {
                     <th style="width:40px">
                         @GetColumnName(column)
@@ -95,8 +95,8 @@
                         {
                             <td>
                                 @RenderDataEnd((TItem)row[0].Tag, column)
-                    </td>
-                }
+                            </td>
+                        }
 
                     </tr>
                 }
@@ -121,18 +121,19 @@
     </table>
 
     <footer>
-        <div>
+        <div style="width:max-content">
             @*Add the new button*@
-            @if (IsOption(GridOption.NewItem)) {
-                <button @onclick="PagingNew">New</button>                
+            @if (IsOption(GridOption.NewItem))
+            {
+                <button @onclick="PagingNew">New</button>
             }
             <button @onclick="PagingFirst">First</button>
-            <button @onclick="PagingPrevious">Previous</button>
+            <button @onclick="PagingPrevious">Prev</button>
 
-            <input class="PagingInput" type="number" min="0" max="@(TotalDataCount / PageSize)" step="1" pattern="[0-9]{10}" oninput="this.value=this.value.replace(/[^0-9]/g,'');"
+            <input class="PagingInput" type="number" min="0" max="@(GetMaximumPages())" step="1" pattern="[0-9]{10}" oninput="this.value=this.value.replace(/[^0-9]/g,'');"
                    value="@(CurrentPage + 1)" @onchange="@(e => PagingSetCurrentPage(e.Value))" />
             of
-            <input class="PagingInput" type="number" value="@(TotalDataCount / PageSize)" readonly />
+            <input class="PagingInput" type="number" value="@(GetMaximumPages())" readonly />
 
             <button @onclick="PagingNext">Next</button>
             <button @onclick="PagingLast">Last</button>
@@ -196,36 +197,40 @@
 
     </div>
 </div>-->
-
-
 @code
 {
 
-        public class WebLogger : ILogger {
+    public class WebLogger : ILogger
+    {
 
         public delegate void DisplayTextDelegate(string text);
 
         DisplayTextDelegate DisplayTextFunction { get; init; }
 
-        public WebLogger(DisplayTextDelegate displayTextFunction) {
+        public WebLogger(DisplayTextDelegate displayTextFunction)
+        {
             DisplayTextFunction = displayTextFunction;
         }
 
         LogOptions ILogger.Options { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
-        void ILogger.Debug(string message) {
+        void ILogger.Debug(string message)
+        {
             DisplayTextFunction("DEBUG: " + message);
         }
 
-        void ILogger.Error(string message) {
+        void ILogger.Error(string message)
+        {
             DisplayTextFunction("ERROR: " + message);
         }
 
-        void ILogger.Info(string message) {
+        void ILogger.Info(string message)
+        {
             DisplayTextFunction("INFO: " + message);
         }
 
-        void ILogger.Warning(string message) {
+        void ILogger.Warning(string message)
+        {
             DisplayTextFunction("WARNING: " + message);
         }
     }
@@ -233,22 +238,24 @@
 
     @typeparam TItem
 
-    [Flags] public enum GridOption { 
-        DataSupplied  = 1, 
-        DataOnDemand  = 1 << 1, 
-        ActionColumn  = 1 << 2, 
-        NewItem       = 1 << 3,
-        ReverseOrder  = 1 << 4,
+    [Flags]
+    public enum GridOption
+    {
+        DataSupplied = 1,
+        DataOnDemand = 1 << 1,
+        ActionColumn = 1 << 2,
+        NewItem = 1 << 3,
+        ReverseOrder = 1 << 4,
         AlternateRows = 1 << 5,
-        Selection     = 1 << 6 
+        Selection = 1 << 6
     }
 
     [Parameter] public string Id { get; set; }
     [Parameter] public int PageSize { get; set; }
     [Parameter] public IDataSource<TItem> DataSource { get; set; }
     [Parameter] public GridOption GridOptions { get; set; }
-    [Parameter] public List<GridAction<TItem>> Actions { get; set; }
-    [Parameter] public List<object> ColumnDefinitions { get; set; }
+    [Parameter] public List<GridAction<TItem>> Actions { get; set; } = new List<GridAction<TItem>>();
+    [Parameter] public List<IColumnDefinition> ColumnDefinitions { get; set; } = new List<IColumnDefinition>();
 
     List<Cell> Header { get; set; } = new List<Cell>();
     List<List<Cell>> Rows { get; set; } = new List<List<Cell>>();
@@ -262,6 +269,9 @@
     static bool FirstLoad = true;
 
     static Random Random { get; set; } = new Random((int)DateTime.Now.Ticks);
+
+    bool SetUpRemoteDataChange { get; set; }
+    bool JavaScriptLoaded { get; set; }
 
     #region Javascript
 
@@ -282,15 +292,31 @@
     {
         //SystemLog.RegisterLogger(new WebLogger(WriteOutput));
 
-        if (FirstLoad) {
+        if (!SetUpRemoteDataChange)
+        {
             DataSource.MutatedItems += HandleRemoteDataChange;
+            SetUpRemoteDataChange = true;
+        }
+
+        if (FirstLoad)
+        {
+            //    DataSource.MutatedItems += HandleRemoteDataChange;
             FirstLoad = false;
         }
 
         ControlCheck();
     }
 
-    void WriteOutput(string text) {
+    protected override bool ShouldRender()
+    {
+
+        var shouldRender = base.ShouldRender();
+
+        return shouldRender;
+    }
+
+    void WriteOutput(string text)
+    {
         JSRuntime.InvokeAsync<object>("Output", text);
     }
 
@@ -298,8 +324,13 @@
     {
         if (!firstRender)
         {
-            await LoadJavascript();
+            //await LoadJavascript();
         }
+
+        //        if (!JavaScriptLoaded) {
+        await LoadJavascript();
+        //            JavaScriptLoaded = true;
+        //        }
     }
 
     public async Task LoadJavascript()
@@ -307,7 +338,8 @@
         await JSRuntime.InvokeAsync<object>("ResizableColumnTable", new object[] { Id });
     }
 
-    bool IsOption(GridOption option) {
+    bool IsOption(GridOption option)
+    {
         return (GridOptions & option) != 0;
     }
 
@@ -328,7 +360,7 @@
         Header.Clear();
         Rows.Clear();
 
-        var width = HeaderData.DefaultWidth;
+        var width = IColumnDefinition.DefaultWidth;
         var height = DefaultRowHeight;
 
         if (Data.Any())
@@ -349,7 +381,8 @@
             }
 
             var useData = new List<TItem>(Data);
-            if (IsOption(GridOption.ReverseOrder)) {
+            if (IsOption(GridOption.ReverseOrder))
+            {
                 useData.Reverse();
             }
 
@@ -370,7 +403,7 @@
             }
         }
 
-        StateHasChanged(); 
+        StateHasChanged();
     }
 
     private bool CellContextMenu(object entity)
@@ -432,61 +465,77 @@
         WriteOutput($"Selected {selected}");
     }
 
+    int GetMaximumPages()
+    {
+        var pages = (TotalDataCount / PageSize) + 1;
+        if (pages < 1) pages = 1;
+
+        return pages;
+    }
+
     void OnTableMouseUp(List<Cell> cells)
     {
 
     }
 
-    void HandleRemoteDataChange(DataSourceMutatedItems<TItem> items) {
+    void HandleRemoteDataChange(DataSourceMutatedItems<TItem> items)
+    {
 
         var updates = items.UpdatedItems.ToList();
 
-    SystemLog.Info($"BlazorGrid HandleRemoteDataChange() Items TotalItems {items.TotalItems} Updates Count {updates.Count}");
+        SystemLog.Info($"BlazorGrid HandleRemoteDataChange() Items TotalItems {items.TotalItems} Updates Count {updates.Count}");
 
-//        if (updates.Any(x => x.CrudAction == CrudAction.Create || x.CrudAction == CrudAction.Read)) {
-//            Data.Clear();         
-//        }
+        //        if (updates.Any(x => x.CrudAction == CrudAction.Create || x.CrudAction == CrudAction.Read)) {
+        //            Data.Clear();
+        //        }
 
-        foreach (var update in updates) {
+        foreach (var update in updates)
+        {
             var updateId = DataSource.IdItem(update.Item);
-            switch (update.CrudAction) {
+            switch (update.CrudAction)
+            {
                 case CrudAction.Create:
                     Data.Add(update.Item);
-                break;
+                    break;
 
                 case CrudAction.Read:
                     Data.Add(update.Item);
-                break;
+                    break;
 
                 case CrudAction.Update:
                     // this is inefficient
-                    for (var i = Data.Count - 1; i >= 0 ; i--){ 
+                    for (var i = Data.Count - 1; i >= 0; i--)
+                    {
                         var data = Data[i];
                         var id = DataSource.IdItem(data);
-                        if (id == updateId) {
+                        if (id == updateId)
+                        {
                             Data[i] = update.Item;
                         }
                     }
-                break;
+                    break;
 
                 case CrudAction.Delete:
-                        // this is inefficient
-                    for (var i = Data.Count - 1; i >= 0 ; i--){
+                    // this is inefficient
+                    for (var i = Data.Count - 1; i >= 0; i--)
+                    {
                         var data = Data[i];
                         var id = DataSource.IdItem(data);
-                        if (id == updateId) {
+                        if (id == updateId)
+                        {
                             Data.RemoveAt(i);
                         }
                     }
-                break;
+                    break;
 
                 default:
-    SystemLog.Error($"XXXXXXXX BlazorGrid HandleRemoteDataChange() default");
-                break;
+                    SystemLog.Error($"XXXXXXXX BlazorGrid HandleRemoteDataChange() default");
+                    break;
             }
         }
 
-        if (Data.Count > PageSize) {
+        if (Data.Count > PageSize)
+        {
             CurrentPage = items.TotalItems / PageSize;
             Data = Data.GetRange(Data.Count - PageSize, PageSize);
         }
@@ -511,10 +560,12 @@
         // return the updated underlying value to the DataSource
         var itemInList = new List<TItem>() { (TItem)cell.Tag };
 
-        try {
+        try
+        {
             DataSource.UpdateDelayed(itemInList);
         }
-        catch (Exception ex) {
+        catch (Exception ex)
+        {
         }
     }
 
@@ -583,8 +634,9 @@
 
     #region Paging
 
- //   async Task PagingNew() {
-    async void PagingNew() {
+    //   async Task PagingNew() {
+    async void PagingNew()
+    {
         DataSource.NewDelayed(10);
         await GetPageAndDisplayData();
     }
@@ -604,14 +656,15 @@
 
     async void PagingNext()
     {
-            //(TotalDataCount / PageSize)
-            //(CurrentPage + 1)
-            //of
-            //(TotalDataCount / PageSize)
+        //(TotalDataCount / PageSize)
+        //(CurrentPage + 1)
+        //of
+        //(TotalDataCount / PageSize)
 
-        if (CurrentPage + 1 < (TotalDataCount / PageSize)) {
+        if (CurrentPage + 1 < (TotalDataCount / PageSize))
+        {
             CurrentPage++;
-            await GetPageAndDisplayData();       
+            await GetPageAndDisplayData();
         }
     }
 
@@ -642,24 +695,22 @@
 
             var data = (await DataSource.Read("", PageSize, CurrentPage, "", SortDirection.Ascending, out int totalItems));
             Data = new List<TItem>(data.Items);
-
-
-
             //Data = (await DataSource.Read("", PageSize, CurrentPage, "", SortDirection.Ascending, out int totalItems));
             TotalDataCount = totalItems;
             //CurrentPage = useCurrentPage;
-          //  LoadData();
+            //  LoadData();
             DrawGrid();
             //StateHasChanged();
         }
-        catch (Exception ex) {
-            
+        catch (Exception ex)
+        {
+
         }
 
-        StateHasChanged(); 
+        StateHasChanged();
 
         // callback to the server
-//SystemLog.Info($"GetPageAndDisplayData()");
+        //SystemLog.Info($"GetPageAndDisplayData()");
     }
 
     #endregion

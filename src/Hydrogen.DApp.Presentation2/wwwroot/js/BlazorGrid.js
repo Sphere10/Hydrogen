@@ -7,36 +7,37 @@ function AlertWrite(data) {
 }
 
 var MinimumColumWidth = 20;
-var TableId = "";
-var ColumnWidths = null;
-var curColIndex, curCol;
 
-function ResizableColumnTable(id, csharpInstance)
-{
-    TableId = id;
-    var table = document.getElementById(TableId);
+let TableIds = new Map();
+let ColumnWidths = new Map();
+let CurColIndexes = new Map();
+let CurCols = new Map();
 
+function ResizableColumnTable(id, csharpInstance) {
+    var table = document.getElementById(id);
     if (table === null) return;
 
+    TableIds.set(id, table);
+
     CSharpInstance = csharpInstance;
-    ResizableTable(table);
+    ResizableTable(table, id);
 }
 
-function ResizableTable(table) {
-    console.log("ResizableTable");
+function ResizableTable(table, id) {
+
+    //console.log("ResizableTable: " + id);
 
     var row = table.getElementsByTagName('tr')[0],
         cols = row ? row.children : undefined;
     if (!cols) return;
 
-    //console.log("Table Columns: " + cols.length.toString());
-
-    ColumnWidths = new Array(cols.length);
+    var columnWidths = new Array(cols.length);
     for (var i = 0; i < cols.length; i++) {
-        ColumnWidths[i] = cols[i].clientWidth;
+        columnWidths[i] = cols[i].clientWidth;
     }
 
-    //console.log(ColumnWidths);
+    // save the column widths for this table
+    ColumnWidths.set(id, columnWidths);
 
     table.style.overflow = 'hidden';
     var headerHeight = $(table).find('thead').height();
@@ -45,13 +46,16 @@ function ResizableTable(table) {
         var div = createDiv(headerHeight);
         cols[i].appendChild(div);
         cols[i].style.position = 'relative';
-        setListeners(div);
+        setListeners(div, id);
     }
 
-    function setListeners(div) {
+    function setListeners(div, id) {
         div.addEventListener('mousedown', function (e) {
-            curCol = e.target.parentElement;
-            curColIndex = curCol.cellIndex;
+            var curCol = e.target.parentElement;
+            var curColIndex = curCol.cellIndex;
+
+            CurCols.set(id, curCol);
+            CurColIndexes.set(id, curColIndex);
         });
 
         div.addEventListener('mouseover', function (e) {
@@ -63,14 +67,23 @@ function ResizableTable(table) {
         })
 
         document.addEventListener('mousemove', function (e) {
+
+            if (!CurColIndexes.has(id)) {
+                return;
+            }
+
+            var curColIndex = CurColIndexes.get(id);
+            var curCol = CurCols.get(id);
+            var columnWidths = ColumnWidths.get(id);
+
             if (curCol) {
                 var mouseX = e.pageX;
-                var table = document.getElementById(TableId);
+                var table = TableIds.get(id);
                 var tableLeft = table.getBoundingClientRect().left;
                 var inBetweenColumnsWidth = 0;
 
                 for (var i = 0; i < curColIndex; i++) {
-                    inBetweenColumnsWidth += ColumnWidths[i];
+                    inBetweenColumnsWidth += columnWidths[i];
                 }
 
                 var newWidth = (mouseX - tableLeft) - inBetweenColumnsWidth;
@@ -80,30 +93,30 @@ function ResizableTable(table) {
                 //console.log("mouseX: " + mouseX + " Table left: " + tableLeft + " inBetweenColumnsWidth: " + inBetweenColumnsWidth + " newWidth: " + newWidth + "curColIndex: " + curColIndex);
 
                 // update the current column's width in the global ColumnWidths
-                ColumnWidths[curColIndex] = newWidth;
+                columnWidths[curColIndex] = newWidth;
 
                 // set every row's cell's width
                 for (var row = 0; row < table.rows.length; row++) {
-                    for (var column = 0; column < ColumnWidths.length; column++) {
-                        table.rows[row].cells[column].style.width = ColumnWidths[column] + 'px';
+                    for (var column = 0; column < columnWidths.length; column++) {
+                        table.rows[row].cells[column].style.width = columnWidths[column] + 'px';
                     }
                 }
             }
         });
 
-        document.addEventListener('mouseup', function (e)
-        {
-            // call a static C# function 
+        document.addEventListener('mouseup', function (e) {
+            // call a static C# function
             //DotNet.invokeMethodAsync("SystemX", "SaveColumnWidth", curColTitle, newWidth);
 
             // call an instance C# function
             // CSharpInstance.invokeMethodAsync("SaveColumnWidth", curColTitle, newWidth);
-            curColIndex = undefined;
+
+            CurColIndexes.delete(id);
+            CurCols.delete(id);
         });
     }
 
-    function createDiv(height)
-    {
+    function createDiv(height) {
         var div = document.createElement('div');
         div.style.top = 0;
         div.style.right = 0;

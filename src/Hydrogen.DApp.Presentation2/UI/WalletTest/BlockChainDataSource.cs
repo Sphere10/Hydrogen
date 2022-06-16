@@ -16,6 +16,24 @@ namespace Hydrogen.DApp.Presentation2.UI.WalletTest {
 
 
 
+		//private EventHandler clickHandler; // Normal private field
+
+		//public event EventHandler Click {
+		//	add {
+		//		//Console.WriteLine("New subscriber");
+		//		clickHandler += value;
+		//	}
+		//	remove {
+		//		//Console.WriteLine("Lost a subscriber");
+		//		clickHandler -= value;
+		//	}
+		//}
+
+
+
+		public bool EventHandlerSetUp() {
+			return MutatedItems != null;
+		}
 
 
 		public string UpdateItem(Block item) {
@@ -81,6 +99,10 @@ namespace Hydrogen.DApp.Presentation2.UI.WalletTest {
 
 		public IEnumerable<Block> New(int count) {
 
+			if (count == 1) {
+
+			}
+
 			var returnList = new List<Block>();
 
 			for (var i = 0; i < count; i++) {
@@ -97,6 +119,7 @@ namespace Hydrogen.DApp.Presentation2.UI.WalletTest {
 			foreach (var item in returnList) {
 				mutatedItems.UpdatedItems.Add(new CrudActionItem<Block>(CrudAction.Create, item));
 			}
+			mutatedItems.TotalItems = Blocks.Count;
 			MutatedItems?.Invoke(mutatedItems);
 
 			return returnList;
@@ -253,7 +276,7 @@ namespace Hydrogen.DApp.Presentation2.UI.WalletTest {
 
 		public Task<int> Count { get { return Task.Run(() => 0); } }
 
-		public int Count { get}
+		public int Count2 { get { return Blocks.Count(); } }
 
 
 		public Task<DataSourceCapabilities> Capabilities => throw new NotImplementedException();

@@ -481,7 +481,7 @@
     //DataSource1<TestClass> DataSource { get; set; }
     List<GridAction<TestClass>> DataActions { get; set; } = new List<GridAction<TestClass>>();
     List<IGridComponent<TestClass>> Components { get; set; } = new List<IGridComponent<TestClass>>();
-    List<object> ColumnDefinitions { get; set; } = new List<object>();
+    List<IColumnDefinition> ColumnDefinitions { get; set; } = new List<IColumnDefinition>();
     //System.Timers.Timer Timer { get; set; }
 
     DotNetObjectReference<Index> CSharpInstance { get; set; }
@@ -545,7 +545,7 @@
         //DataActions.Add(new GridAction<TestClass>("Action2", Action2, "⚽", IsAction2Available));
 
         //ColumnDefinitions.Add(new DataEnd<TestClass, TestClass2>("Data End 1", TestDataExtractor1));
-        ColumnDefinitions.Add(new DataEnd<TestClass, TestClass3>("Data End 2", TestDataExtractor2));
+        ColumnDefinitions.Add(new DataEnd<TestClass, TestClass3>(50, "Data End 2", TestDataExtractor2));
 
         //Timer = new System.Timers.Timer(1000); // 1 seconds
         //Timer.Elapsed += CountDownTimer;
@@ -635,7 +635,7 @@
         var value = (decimal)Math.PI;
         var locked = (new Random()).NextBool();
 
-        return new TestClass2(text, value, locked);
+        return new TestClass2(50, text, value, locked);
     }
 
     TestClass3 TestDataExtractor2(object data)

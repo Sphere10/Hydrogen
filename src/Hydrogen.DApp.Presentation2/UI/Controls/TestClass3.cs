@@ -6,6 +6,7 @@ namespace Hydrogen.DApp.Presentation2.UI.Controls {
 	public class TestClass3 : IColumnDefinition 
 	{
 		public int HashCode { get; set; }
+		public int Width { get; init; }
 
 		public TestClass3() { }
 

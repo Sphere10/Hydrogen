@@ -288,9 +288,12 @@ namespace Hydrogen {
 
 		public static Result<TValue> From(TValue val) => new Result<TValue>(val);
 
-		public new static Result<TValue> Valid(TValue value) => Default;
+		public new static Result<TValue> Valid(TValue value) => From(value);
 
-		public new static Result<TValue> Error(params string[] errorMessages) {
+		public new static Result<TValue> Error(params string[] errorMessages)
+			=> Error((IEnumerable<string>)errorMessages);
+
+		public static Result<TValue> Error(IEnumerable<string> errorMessages) {
 			var result = new Result<TValue>();
 			foreach (var err in errorMessages)
 				result.AddError(err);

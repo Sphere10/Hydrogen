@@ -38,7 +38,7 @@ namespace Hydrogen {
 			using var stream = assembly.GetManifestResourceStream(resourceName);
 			if (!File.Exists(filePath))
 				Tools.FileSystem.CreateBlankFile(filePath, createDirectories);
-			Tools.FileSystem.AppendAllBytes(filePath, stream);
+			Tools.FileSystem.WriteAllBytes(filePath, stream);
 		}
 
 		public static IEnumerable<Assembly> GetNonFrameworkAssemblies(this AppDomain domain) {

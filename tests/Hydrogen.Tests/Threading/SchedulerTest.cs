@@ -324,61 +324,7 @@ namespace Hydrogen.Tests {
 			CompareSchedulers(scheduler, convertedScheduler);
 		}
 
-		[Test]
-		public void SerializeScheduler_ToFromXmlFile_ShouldBeEqual()
-        {
-			var schedulerPolicy = SchedulerPolicy.ForceSyncronous;
-
-			// Create a scheduler and add jobs to it.
-			var scheduler = new Scheduler(schedulerPolicy);
-
-			var job1 = JobBuilder
-				.For(typeof(SchedulerTestNopJob))
-				.Called("SyncJob1")
-				.RunOnce(DateTime.Now.AddMinutes(1))
-				.RunSyncronously()
-				.Build();
-			scheduler.AddJob(job1);
-
-			var job2 = JobBuilder
-				.For(typeof(SchedulerTestNopJob))
-				.Called("SyncJob2")
-				.RunOnce(DateTime.Now.AddMinutes(1))
-				.RunSyncronously()
-				.Repeat
-				.OnInterval(TimeSpan.FromSeconds(1), endDate: DateTime.Now.AddMinutes(2))
-				.Build();
-			scheduler.AddJob(job2);
-
-			var path = Path.GetTempFileName();
-			try
-			{
-				var serializer = new XmlSchedulerSerializer(path);
-
-				// Convert scheduler to XML and save to a file.
-				var surrogate = scheduler.ToSerializableSurrogate();
-				serializer.Serialize(surrogate);
-
-				// Load the XML from the file into a surrogate.
-				var convertedSurrogate = serializer.Deserialize();
-
-				// Convert the surrogate back to the scheduler.
-				var convertedScheduler = new Scheduler(schedulerPolicy);
-				convertedScheduler.FromSerializableSurrogate(convertedSurrogate);
-
-				// Compare the two schedulers - should be the same.
-				CompareSchedulers(scheduler, convertedScheduler);
-			}
-			finally
-			{
-				if (!string.IsNullOrEmpty(path) && File.Exists(path))
-				{
-					File.Delete(path);
-				}
-			}
-		}
-
-		private static void CompareSchedulers(Scheduler scheduler, Scheduler convertedScheduler)
+		public static void CompareSchedulers(Scheduler scheduler, Scheduler convertedScheduler)
 		{
 			// Compare the two schedulers.
 			foreach (var job in scheduler.GetJobs())
@@ -418,27 +364,8 @@ namespace Hydrogen.Tests {
             }
         }
 
-		/// <summary>
-		/// Scheduler job that will throw an exception when executed.
-		/// </summary>
-		public class SchedulerTestErrorJob : ISchedulerJob
-		{
-			public const string Errormessage = "FAIL";
 
-			public void Execute(IJob job)
-			{
-				throw new Exception(Errormessage);
-			}
-		}
-
-		/// <summary>
-		/// Scheduler job that does nothing when executed.
-		/// </summary>
-		public class SchedulerTestNopJob : ISchedulerJob
-		{
-			public void Execute(IJob job)
-			{
-			}
-		}
 	}
+
+
 }

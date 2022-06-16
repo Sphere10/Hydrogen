@@ -15,7 +15,9 @@ using System;
 using System.IO;
 using System.Xml.Serialization;
 using System.Text;
+using System.Xml;
 using Hydrogen;
+using Hydrogen.Data;
 
 namespace Tools {
 	/// <summary>
@@ -147,7 +149,9 @@ namespace Tools {
 		}
 
 		public static void Write<T>(T obj, Encoding encoding, TextWriter writer) {
-			CachedSerializers[obj.GetType()].Serialize(writer, obj);
+			using (var xmlWriter = XmlWriter.Create(writer, new XmlWriterSettings { Indent = true })) {
+				CachedSerializers[obj.GetType()].Serialize(xmlWriter, obj, new XmlSerializerNamespaces(new[] { XmlQualifiedName.Empty }));
+			}
 		}
 
 

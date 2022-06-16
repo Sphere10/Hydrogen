@@ -40,7 +40,7 @@ namespace Tools {
 	    }
 
 
-	    public static DataTable CreateDataTable(IEnumerable<CellSpec> colSpecs) {
+	    public static DataTable CreateDataTable(IEnumerable<DataTableCellInfo> colSpecs) {
 			var table = new DataTable();
 			// create columns
 			colSpecs.ForEach(c => {

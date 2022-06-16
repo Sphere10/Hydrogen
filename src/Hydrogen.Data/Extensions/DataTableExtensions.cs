@@ -109,10 +109,10 @@ namespace Hydrogen.Data {
 			return dataTable.Rows[0];
 		}
 
-		public static DataTable ToDataTable<T>(this IEnumerable<T> sequence, Func<T, IEnumerable<CellSpec>> typeToRow) {
+		public static DataTable ToDataTable<T>(this IEnumerable<T> sequence, Func<T, IEnumerable<DataTableCellInfo>> rowGenerator) {
 			var table = new DataTable();
-			var dataRows = new List<IEnumerable<CellSpec>>();
-			sequence.ForEach(datum => dataRows.Add(typeToRow(datum)));
+			var dataRows = new List<IEnumerable<DataTableCellInfo>>();
+			sequence.ForEach(datum => dataRows.Add(rowGenerator(datum)));
 
 			if (dataRows.Count > 0) {
 				// create columns
@@ -146,7 +146,7 @@ namespace Hydrogen.Data {
 
 			if (includeHeader) {
 				table.Columns.Cast<DataColumn>().ForEach(column => {
-					result.AppendFormat("{0}{1}", column.ColumnName, delimiter);
+					result.AppendFormat("{0}{1}", column.ColumnName.EscapeCSV(delimiter), delimiter);
 				});
 				result.Remove(--result.Length, 0);
 				result.Append(Environment.NewLine);
@@ -164,6 +164,9 @@ namespace Hydrogen.Data {
 			});
 
 			return result.ToString();
+		}
+		public static string ToPrintableString() {
+			throw new NotImplementedException();
 		}
 
 	}

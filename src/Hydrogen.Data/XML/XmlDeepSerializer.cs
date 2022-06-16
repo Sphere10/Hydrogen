@@ -27,7 +27,7 @@ using System.Reflection;
 using System.Xml;
 using System.Diagnostics;
 
-namespace Hydrogen {
+namespace Hydrogen.Data {
 
 	/// <summary>
 	/// Serializes arbitrary objects to XML.

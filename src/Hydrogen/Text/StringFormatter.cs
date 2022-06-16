@@ -14,7 +14,19 @@ namespace Hydrogen {
             return FormatEx(formatString, ResolveToken, formatArgs);
         }
 
-        public static string FormatEx(string formatString, Func<string, string> userTokenResolver, params object[] formatArgs) {
+        public static string FormatWithDictionary(string formatString, IDictionary<string, object> userTokenResolver, params object[] formatArgs)
+	        => FormatEx(
+		        formatString,
+		        (token) => {
+			        if (userTokenResolver.TryGetValue(token, out var value))
+				        return value;
+			        return null;
+		        },
+		        formatArgs
+			);
+					
+
+        public static string FormatEx(string formatString, Func<string, object> userTokenResolver, params object[] formatArgs) {
             Guard.ArgumentNotNull(formatString, nameof(formatString));
             Guard.ArgumentNotNull(userTokenResolver, nameof(userTokenResolver));
 
@@ -46,7 +58,10 @@ namespace Hydrogen {
                     case "}":
                     if (inFormatItem) {
                         // end of format item, process and add to string
-                        resultBuilder.Append(ResolveFormatItem(currentFormatItemBuilder.ToString(), resolver, formatArgs));
+                        var token = currentFormatItemBuilder.ToString();
+						if (!TryResolveFormatItem(token, out var value, resolver, formatArgs))
+							value = "{" + token + "}";
+	                    resultBuilder.Append(value);
                         inFormatItem = false;
                         currentFormatItemBuilder.Clear();
                     } else if (splits.Count > 0 && splits.Peek() == "}") {
@@ -72,17 +87,26 @@ namespace Hydrogen {
             return resultBuilder.ToString();
         }
 
-        private static string ResolveFormatItem(string token, Func<string, string> resolver, params object[] formatArgs) {
-	        int formatIndex;
-	        string formatOptions;
-	        if (IsStandardFormatIndex(token, out formatIndex, out formatOptions)) {
+		private static bool TryResolveFormatItem(string token, out string value, Func<string, object> resolver, params object[] formatArgs) {
+			token = token.TrimEnd();
+			value = null;
+			object valueObject;
+	        if (IsStandardFormatIndex(token, out var formatIndex, out var formatOptions)) {
 		        if (formatIndex >= formatArgs.Length)
-			        throw new ArgumentOutOfRangeException("formatArgs", String.Format("Insufficient format arguments"));
-
-		        return String.Format("{0" + (formatOptions ?? String.Empty) + "}", formatArgs[formatIndex]);
-	        }
-	        return resolver(token) ?? ResolveToken(token);
-        }
+			        return false;
+		        valueObject = formatArgs[formatIndex];
+	        } else {
+				var tokenSplits = token.Split(':');
+				if (tokenSplits.Length > 1) {
+					token = tokenSplits[0].TrimEnd();
+					formatOptions = ":" + tokenSplits.Skip(1).Select(s => s.Trim()).ToDelimittedString(":");
+				}
+				valueObject = resolver(token);
+			}
+			if (valueObject != null)
+				value = string.Format("{0" + (formatOptions ?? string.Empty) + "}", valueObject);
+	        return value != null || TryResolveToken(token, out value);
+		}
 
         private static bool IsStandardFormatIndex(string token, out int number, out string formatOptions) {
 	        var numberString = new string(token.TakeWhile(Char.IsDigit).ToArray());
@@ -97,23 +121,28 @@ namespace Hydrogen {
         }
 
         private static string ResolveToken(string token) {
-	        foreach (var resolver in Resolvers.Value) {
-		        var value = resolver.TryResolve(token);
-                if (value != null)
-			        return value;
-	        }
-	        return token;
+	        if (!TryResolveToken(token, out var value))
+				return token;
+	        return value;
         }
 
+        private static bool TryResolveToken(string token, out string value) {
+	        value = default;
+	        foreach (var resolver in Resolvers.Value) 
+		        if (resolver.TryResolve(token, out value))
+			        return true;
+	        return false;
+        }
 
         class DefaultTokenResolver : ITokenResolver {
-	        public string TryResolve(string token) {
-		        return token.ToUpperInvariant() switch {
+	        public bool TryResolve(string token, out string value) {
+		        value = token.ToUpperInvariant() switch {
 			        "CURRENTDATE" => $"{DateTime.Now:yyyy-MM-dd HH:mm:ss}",
 			        "CURRENTYEAR" => DateTime.Now.Year.ToString(),
 			        "STARTPATH" => System.IO.Path.GetDirectoryName(Tools.Runtime.GetEntryAssembly().Location),
 			        _ => null
 		        };
+				return value != null;
 	        }
         }
     }

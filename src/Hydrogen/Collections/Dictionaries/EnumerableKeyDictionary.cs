@@ -250,7 +250,7 @@ namespace Hydrogen {
 
 			public TreeHeader(EnumerableKeyDictionary<K, V> rootNode, IEqualityComparer<K> keyComparer) {
 				RootNode = rootNode;
-				KeyComparer = keyComparer;
+				KeyComparer = keyComparer ?? EqualityComparer<K>.Default;
 				ValueMap = new Dictionary<uint, V>();
                 KeyMap = new Dictionary<uint, IEnumerable<K>>();
 				_threadLock = new object();

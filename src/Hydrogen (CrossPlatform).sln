@@ -65,6 +65,14 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hydrogen.CryptoEx.Tests", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hydrogen.Data.Tests", "..\tests\Hydrogen.Data.Tests\Hydrogen.Data.Tests.csproj", "{D6096FDC-FF51-4402-AAE5-5C31500E4480}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Recipes", "Recipes", "{05FD2225-937A-4F7C-BEBA-1E853A1DAC16}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AbstractProtocol.AnonymousPipeComplex", "..\recipes\AbstractProtocol.AnonymousPipeComplex\AbstractProtocol.AnonymousPipeComplex.csproj", "{82BDCDEA-F05A-477F-9BBA-AF4B3C8F6245}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AbstractProtocol.AnonymousPipeSimple", "..\recipes\AbstractProtocol.AnonymousPipeSimple\AbstractProtocol.AnonymousPipeSimple.csproj", "{5C81E485-4B55-4F18-BAA7-AF5F4147B9AC}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AbstractProtocol.UDPSimple", "..\recipes\AbstractProtocol.UPDSimple\AbstractProtocol.UDPSimple.csproj", "{0A67216B-D8E4-4C72-A461-DE260E5DBF95}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -313,6 +321,30 @@ Global
 		{D6096FDC-FF51-4402-AAE5-5C31500E4480}.Release|Any CPU.Build.0 = Release|Any CPU
 		{D6096FDC-FF51-4402-AAE5-5C31500E4480}.Release|x86.ActiveCfg = Release|Any CPU
 		{D6096FDC-FF51-4402-AAE5-5C31500E4480}.Release|x86.Build.0 = Release|Any CPU
+		{82BDCDEA-F05A-477F-9BBA-AF4B3C8F6245}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{82BDCDEA-F05A-477F-9BBA-AF4B3C8F6245}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{82BDCDEA-F05A-477F-9BBA-AF4B3C8F6245}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{82BDCDEA-F05A-477F-9BBA-AF4B3C8F6245}.Debug|x86.Build.0 = Debug|Any CPU
+		{82BDCDEA-F05A-477F-9BBA-AF4B3C8F6245}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{82BDCDEA-F05A-477F-9BBA-AF4B3C8F6245}.Release|Any CPU.Build.0 = Release|Any CPU
+		{82BDCDEA-F05A-477F-9BBA-AF4B3C8F6245}.Release|x86.ActiveCfg = Release|Any CPU
+		{82BDCDEA-F05A-477F-9BBA-AF4B3C8F6245}.Release|x86.Build.0 = Release|Any CPU
+		{5C81E485-4B55-4F18-BAA7-AF5F4147B9AC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5C81E485-4B55-4F18-BAA7-AF5F4147B9AC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5C81E485-4B55-4F18-BAA7-AF5F4147B9AC}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{5C81E485-4B55-4F18-BAA7-AF5F4147B9AC}.Debug|x86.Build.0 = Debug|Any CPU
+		{5C81E485-4B55-4F18-BAA7-AF5F4147B9AC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5C81E485-4B55-4F18-BAA7-AF5F4147B9AC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5C81E485-4B55-4F18-BAA7-AF5F4147B9AC}.Release|x86.ActiveCfg = Release|Any CPU
+		{5C81E485-4B55-4F18-BAA7-AF5F4147B9AC}.Release|x86.Build.0 = Release|Any CPU
+		{0A67216B-D8E4-4C72-A461-DE260E5DBF95}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0A67216B-D8E4-4C72-A461-DE260E5DBF95}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0A67216B-D8E4-4C72-A461-DE260E5DBF95}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{0A67216B-D8E4-4C72-A461-DE260E5DBF95}.Debug|x86.Build.0 = Debug|Any CPU
+		{0A67216B-D8E4-4C72-A461-DE260E5DBF95}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0A67216B-D8E4-4C72-A461-DE260E5DBF95}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0A67216B-D8E4-4C72-A461-DE260E5DBF95}.Release|x86.ActiveCfg = Release|Any CPU
+		{0A67216B-D8E4-4C72-A461-DE260E5DBF95}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -327,6 +359,9 @@ Global
 		{C5A86B37-47F8-4176-BE9A-4B16D58B6416} = {E7705E7B-D04B-488C-8442-149A029F34B8}
 		{5EFC5E99-FD35-4F12-A9A1-966F40ED70B6} = {E7705E7B-D04B-488C-8442-149A029F34B8}
 		{D6096FDC-FF51-4402-AAE5-5C31500E4480} = {E7705E7B-D04B-488C-8442-149A029F34B8}
+		{82BDCDEA-F05A-477F-9BBA-AF4B3C8F6245} = {05FD2225-937A-4F7C-BEBA-1E853A1DAC16}
+		{5C81E485-4B55-4F18-BAA7-AF5F4147B9AC} = {05FD2225-937A-4F7C-BEBA-1E853A1DAC16}
+		{0A67216B-D8E4-4C72-A461-DE260E5DBF95} = {05FD2225-937A-4F7C-BEBA-1E853A1DAC16}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {A6BF0BD3-FB17-4EDB-AFBF-08A34BD2E2B6}

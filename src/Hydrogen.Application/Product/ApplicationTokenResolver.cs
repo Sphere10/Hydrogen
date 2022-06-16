@@ -5,9 +5,9 @@ namespace Hydrogen.Application {
 	public class ApplicationTokenResolver : ITokenResolver {
 
 		private IFuture<StandardProductInformationServices> _productInfoServices = Tools.Values.LazyLoad(() => new StandardProductInformationServices());
-
-		public string TryResolve(string token) {
-			return token.ToUpperInvariant() switch {
+		
+		public bool TryResolve(string token, out string value) {
+			value = token.ToUpperInvariant() switch {
 				"USERDATADIR" => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)), 
 				"SYSTEMDATADIR" => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData)),
 				"COMPANYNAME" => _productInfoServices.Value.ProductInformation.CompanyName,
@@ -23,6 +23,7 @@ namespace Hydrogen.Application {
 				"PRODUCTPURCHASEURL" => _productInfoServices.Value.ProductInformation.ProductPurchaseUrl,
 				_ => null
 			};
+			return value != null;
 		}
 	}
 }

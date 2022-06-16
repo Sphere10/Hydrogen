@@ -75,6 +75,10 @@ namespace Hydrogen {
 			return _map.ContainsKey(key);
 		}
 
+		public IDictionary<TKey, TValue[]> ToDictionary() 
+			=> _map.ToDictionary(x => x.Key, x => x.Value.ToArray());
+		
+
 		public IEnumerator<IGrouping<TKey, TValue>> GetEnumerator() {
 			return _map.Keys
 				.Select(key => new Grouping<TKey, TValue>(key, _map[key]))

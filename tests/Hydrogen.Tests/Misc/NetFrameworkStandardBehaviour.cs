@@ -17,68 +17,37 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Diagnostics.Runtime.Interop;
 using NUnit.Framework;
 
 namespace Hydrogen.Tests {
 
     [TestFixture]
 	[Parallelizable(ParallelScope.Children)]
-	public class MiscellaneousTests {
+	public class NetFrameworkStandardBehaviour {
 
 		[Test]
-		public void ToStringSafe() {
-			Assert.AreEqual("<null>", ((object)null).ToStringSafe());
-		}
-
-		[Test]
-		public void InterpolateNullAssumption() {
-			Assert.AreEqual(string.Empty, $"{null}");
-		}
-
-		[Test]
-		public void MemoryStreamSetLengthClearsOldBytes() {
-			var rng = new Random(31337);
-			for (var i=0; i < 1000; i++ ) {
-				using var stream = new MemoryStream();
-				var data = rng.NextBytes(i);
-				stream.Write(data);
-				for (var j = i; j >= 0; j--) {
-					var bytes = stream.ToArray();
-					stream.Position = rng.Next(0, (int)stream.Length);
-					stream.SetLength(j);
-					stream.SetLength(i);
-					// j-i bytes should be 0
-					Assert.That(stream.ToArray().AsSpan(^(i - j)).ToArray().All(b => b == 0));
-					// reset stream
-					stream.Position = 0;
-					stream.Write(data);
-
-				}
-			}
-		}
-
-		[Test]
-		public void StandardBehaviour_ListGetRangeNotSupportOverflow() {
+		public void ListGetRangeNotSupportOverflow() {
 			var list = new List<int>();
 			list.AddRange(new[] { 1, 2, 3 });
 			Assert.That(() => list.GetRange(1, 3), Throws.InstanceOf<ArgumentException>());
 		}
 
 		[Test]
-		public void StandardBehaviour_ListRemoveRangeNotSupportOverflow() {
+		public void ListRemoveRangeNotSupportOverflow() {
 			var list = new List<int>();
 			list.AddRange(new[] { 1, 2, 3 });
 			Assert.That(() => list.RemoveRange(1, 3), Throws.InstanceOf<ArgumentException>());
 		}
 
 		[Test]
-		public void StandardBehaviour_ListInsertRangeThrowsOnNull() {
+		public void ListInsertRangeThrowsOnNull() {
 			var list = new List<int>();
 			Assert.That(() => list.InsertRange(0, null), Throws.InstanceOf<ArgumentException>());
 		}
 
 		[Test]
-		public void StandardBehaviour_FileMode_Open_DoesNotTruncate() {
+		public void FileMode_Open_DoesNotTruncate() {
 			// append 100b to a file
 			// open a file stream overwrite
 			// append 50b
@@ -96,7 +65,7 @@ namespace Hydrogen.Tests {
 		}
 
 		[Test]
-		public void StandardBehaviour_FileMode_Truncate() {
+		public void FileMode_Truncate() {
 			// append 100b to a file
 			// open a file stream overwrite
 			// append 50b
@@ -114,7 +83,7 @@ namespace Hydrogen.Tests {
 		}
 
 		[Test]
-		public void StandardBehaviour_FileOpenWrite_DoesNotTruncate() {
+		public void FileOpenWrite_DoesNotTruncate() {
 			// append 100b to a file
 			// open a file stream overwrite
 			// append 50b
@@ -132,7 +101,7 @@ namespace Hydrogen.Tests {
 		}
 
 		[Test]
-		public void StandardBehaviour_StreamAllowsTipCursor() {
+		public void StreamAllowsTipCursor() {
 			var rng = new Random(31337);
 			using Stream stream = new MemoryStream();
 			Assert.That(stream.Length, Is.EqualTo(0));
@@ -142,7 +111,7 @@ namespace Hydrogen.Tests {
 		}
 
 		[Test]
-		public void StandardBehaviour_WhenAllDoesntAbandonAfterSingleFailure() {
+		public void WhenAllDoesntAbandonAfterSingleFailure() {
 			var rng = new Random(31337);
 			using Stream stream = new MemoryStream();
 
@@ -168,7 +137,7 @@ namespace Hydrogen.Tests {
 		}
 
 		[Test]
-		public void StandardBehaviour_WhenAllDoesntThrowAfterSingleFailure() {
+		public void WhenAllDoesntThrowAfterSingleFailure() {
 			var rng = new Random(31337);
 			using Stream stream = new MemoryStream();
 
@@ -192,7 +161,7 @@ namespace Hydrogen.Tests {
 		}
 
 		[Test]
-		public void StandardBehaviour_WhenAllDoesntThrowAfterAllFailure() {
+		public void WhenAllDoesntThrowAfterAllFailure() {
 			var rng = new Random(31337);
 			using Stream stream = new MemoryStream();
 
@@ -217,7 +186,7 @@ namespace Hydrogen.Tests {
 
 
 		[Test]
-		public async Task StandardBehaviour_WhenAnyAbandonsAfterSingleFailure() {
+		public async Task WhenAnyAbandonsAfterSingleFailure() {
 			var rng = new Random(31337);
 			using Stream stream = new MemoryStream();
 
@@ -241,17 +210,34 @@ namespace Hydrogen.Tests {
 
 		[Test]
 
-		public void StandardBehaviour_OutOfBoundsIntCastDoesntThrow() {
+		public void OutOfBoundsIntCastDoesntThrow() {
 			var x = (long)int.MaxValue + 1;
 			Assert.That(() => (int)x, Throws.Nothing);
 		}
 
 
+
 		[Test]
 
-		public async Task AsyncTaskIgnoringExceptionsWorks() {
+		public async Task AsyncTaskNotIgnoringExceptionsDoesThrow() {
+			try {
+				await SomeTaskAsync();
+			} catch  {
+				return;
+			}
+			Assert.That(false, Is.True);
 
+			async Task SomeTaskAsync() {
+				throw new InvalidOperationException("Should never be seen");
+			}
+		}
+
+
+		[Test]
+
+		public async Task AsyncTaskIgnoringExceptionsDoesntThrow() {
 			await SomeTaskAsync().IgnoringExceptions();
+			Assert.That(true, Is.True);
 
 			async Task SomeTaskAsync() {
 				throw new InvalidOperationException("Should never be seen");

@@ -18,25 +18,25 @@ using System.Linq;
 using System.Text;
 
 
-namespace Hydrogen {
+namespace Hydrogen.Data {
 
-	public class FileStore : Disposable {
+	public class XmlFileStore : Disposable {
 		private const string DefaultFileStoreDictionaryFileName = "__FileStoreRegistry.xml";
 		private readonly IPersistedDictionary<string, string> _fileDictionary;
 		private readonly SynchronizedDictionary<string, string> _synchronizedFileDictionary;
 
-		public FileStore() : this(Path.GetTempPath()) {
+		public XmlFileStore() : this(Path.GetTempPath()) {
 		}
 
-		public FileStore(string baseDirectory) 
-			: this (baseDirectory, FileStorePersistencePolicy.Perist) {
+		public XmlFileStore(string baseDirectory) 
+			: this (baseDirectory, XmlFileStorePersistencePolicy.Perist) {
 		}
 
-		public FileStore(string baseDirectory, FileStorePersistencePolicy persistencePolicy) 
+		public XmlFileStore(string baseDirectory, XmlFileStorePersistencePolicy persistencePolicy) 
 			: this (baseDirectory, new XmlFileDictionary<string, string>(Path.Combine(baseDirectory, DefaultFileStoreDictionaryFileName), true), persistencePolicy) {
 		}
 
-		public FileStore(string baseDirectory, IPersistedDictionary<string, string> fileRegistry, FileStorePersistencePolicy persistencePolicy = FileStorePersistencePolicy.Perist) {
+		public XmlFileStore(string baseDirectory, IPersistedDictionary<string, string> fileRegistry, XmlFileStorePersistencePolicy persistencePolicy = XmlFileStorePersistencePolicy.Perist) {
 			PersistencePolicy = persistencePolicy;
 			if (!Directory.Exists(baseDirectory)) {
 				Directory.CreateDirectory(baseDirectory);
@@ -47,7 +47,7 @@ namespace Hydrogen {
 				_fileDictionary.Load();
 
 				// Delete files not cleaned up since last use
-				if (_synchronizedFileDictionary.Any() && persistencePolicy == FileStorePersistencePolicy.DeleteOnDispose) {
+				if (_synchronizedFileDictionary.Any() && persistencePolicy == XmlFileStorePersistencePolicy.DeleteOnDispose) {
 					_synchronizedFileDictionary.Values.ForEach(file => Tools.Exceptions.ExecuteIgnoringException(() => File.Delete(file)));
 					_synchronizedFileDictionary.Clear();
 					_fileDictionary.Save();
@@ -60,7 +60,7 @@ namespace Hydrogen {
 
 		public IEnumerable<string> FileAliases => _synchronizedFileDictionary.Values;
 
-		public FileStorePersistencePolicy PersistencePolicy { get; set; }
+		public XmlFileStorePersistencePolicy PersistencePolicy { get; set; }
 
 		protected string BaseDirectory { get; set; }
 
@@ -239,7 +239,7 @@ namespace Hydrogen {
 		}
 
 		public void WriteAllBytes(string fileAlias, byte[] bytes) {
-			File.WriteAllBytes(GetFilePath(fileAlias), bytes);
+			Tools.FileSystem.WriteAllBytes(GetFilePath(fileAlias), bytes);
 		}
 
 		public void AppendAllBytes(string fileAlias, byte[] bytes) {
@@ -279,7 +279,7 @@ namespace Hydrogen {
 		}
 
 		protected override void FreeManagedResources() {
-			if (PersistencePolicy == FileStorePersistencePolicy.DeleteOnDispose) {
+			if (PersistencePolicy == XmlFileStorePersistencePolicy.DeleteOnDispose) {
 				Clear();
 			}
 		}

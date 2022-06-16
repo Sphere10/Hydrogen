@@ -17,6 +17,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Hydrogen;
@@ -25,11 +26,15 @@ using Hydrogen.FastReflection;
 // ReSharper disable CheckNamespace
 namespace Tools {
     public static class FileSystem {
-        public readonly static string DirectorySeparatorString;
-
+        public static readonly string DirectorySeparatorString;
+        public static readonly char[] CrossPlatformInvalidFileNameChars;
+        public static readonly string[] CrossPlatformForbiddenFileNames;
 
         static FileSystem() {
             DirectorySeparatorString = new string(new[] { Path.DirectorySeparatorChar });
+            var asciiControlChars = Enumerable.Range(0, 31).Select(x => (char)x).ToArray();
+            CrossPlatformInvalidFileNameChars = new [] {'<', '>', ':', '\"', '/', '\\', '|', '?', '*'}.Union(asciiControlChars).Union(Path.GetInvalidFileNameChars()).ToArray(); // https://stackoverflow.com/questions/1976007/what-characters-are-forbidden-in-windows-and-linux-directory-names
+			CrossPlatformForbiddenFileNames = new [] { "CON", "PRN", "AUX", "NUL", "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9" };
         }
 
         public static void TruncateFile(string filename, long size) {
@@ -38,6 +43,15 @@ namespace Tools {
                     stream.SetLength(size);
             }
         }
+
+        public static string ToValidFolderOrFilename(string filename) {
+	        Guard.ArgumentNotNullOrWhitespace(filename, nameof(filename));
+			var result = new string(filename.Where(c => !CrossPlatformInvalidFileNameChars.Contains(c)).ToArray());
+			if (result.ToUpperInvariant().IsIn(CrossPlatformForbiddenFileNames))
+				result += "_";
+	         return result;
+        }
+			
 
         public static bool IsWellFormedDirectoryPath(string path) {
             if (String.IsNullOrWhiteSpace(path))
@@ -56,10 +70,8 @@ namespace Tools {
         }
 
         public static bool IsWellFormedFileName(string fileName) {
-            var invalidFIleNameChars = new string(Path.GetInvalidFileNameChars());
-            invalidFIleNameChars += @":/?*" + "\"";
-            var containsABadCharacter = new Regex("[" + Regex.Escape(invalidFIleNameChars) + "]");
-
+            var invalidFileNameChars = new string(CrossPlatformInvalidFileNameChars);
+            var containsABadCharacter = new Regex("[" + Regex.Escape(invalidFileNameChars) + "]");
             if (containsABadCharacter.IsMatch(fileName))
                 return false;
             else
@@ -161,12 +173,17 @@ namespace Tools {
             return new FileInfo(file).Length == 0;
         }
 
-        public static string DetermineAvailableFileName(string directoryPath, string desiredFileName) {
-            if (!Directory.Exists(directoryPath))
-                throw new DirectoryNotFoundException(directoryPath);
+        public static string DetermineAvailableFileName(string filePath)
+	        => DetermineAvailableFileName(Tools.FileSystem.GetParentDirectoryPath(filePath), Path.GetFileName(filePath));
 
-            // Try desired filename
+        public static string DetermineAvailableFileName(string directoryPath, string desiredFileName) {
             var desiredPath = Path.Combine(directoryPath, desiredFileName);
+
+			// If parent folder exists, then desired filepath is available
+            if (!Directory.Exists(directoryPath))
+	            return desiredPath;
+
+            // If file does not exist in parent folder, filepath is available
             if (!File.Exists(desiredPath))
                 return desiredPath;
 
@@ -193,8 +210,11 @@ namespace Tools {
             File.WriteAllBytes(filename, new byte[0]);
         }
 
-        public static void CopyFile(string sourcePath, string destPath, bool overwrite = false,
-            bool createDirectories = false) {
+	    public static Task CreateBlankFileAsync(string filename, bool createDirectories = false) {
+		    return Task.Run(() => CreateBlankFile(filename, createDirectories));
+	    }
+
+        public static void CopyFile(string sourcePath, string destPath, bool overwrite = false, bool createDirectories = false) {
             var dir = Path.GetDirectoryName(destPath);
             if (createDirectories)
                 if (!Directory.Exists(dir))
@@ -203,10 +223,28 @@ namespace Tools {
             File.Copy(sourcePath, destPath, overwrite);
         }
 
+	    public static void DeleteFile(string path) 
+            => File.Delete(path);
+       
+		public static async Task DeleteFileAsync(string path) {
+            await Task.Run(() => DeleteFile(path));
+        }
+
+
+        public static async Task CopyFileAsync(string sourcePath, string destPath, bool overwrite = false, bool createDirectories = false) {
+            await Task.Run( () => CopyFile(sourcePath, destPath, overwrite, createDirectories));
+        }
+
         public static void RenameFile(string sourcePath, string newName) {
             var fileInfo = new FileInfo(sourcePath);
             fileInfo.MoveTo(Path.Combine( fileInfo.Directory.FullName, newName));
         }
+
+	    public static void CreateDirectory(string directory) 
+			=> Directory.CreateDirectory(directory);
+
+	    public static Task CreateDirectoryAsync(string directory) 
+			=> Task.Run( () => CreateDirectory(directory));
 
         //https://docs.microsoft.com/en-us/dotnet/standard/io/how-to-copy-directories#example
         public static void CopyDirectory(string sourceDir, string destDirectory, bool copySubDirectories = false, bool createIfDoesNotExist = true, bool clearIfNotEmpty = false) {
@@ -258,7 +296,7 @@ namespace Tools {
         public static void DeleteDirectory(string directory, bool ignoreIfLocked = false) {
             Action<string> deleteDirAction = ignoreIfLocked
                 ? Lambda.ActionIgnoringExceptions<string>(Directory.Delete)
-                : Directory.Delete;
+                : x => Directory.Delete(x, true);
             DeleteAllFiles(directory, true, true);
             if (Directory.GetFiles(directory).Length == 0) {
                 deleteDirAction(directory);
@@ -269,12 +307,11 @@ namespace Tools {
             DeleteDirectories(false, directories);
         }
 
-
         public static void DeleteDirectories(bool ignoreIfLocked, params string[] directories) {
             foreach (var dir in directories)
                 DeleteDirectory(dir, ignoreIfLocked);
         }
-
+		
         public static Task DeleteDirectoryAsync(string directory, bool ignoreIfLocked = false) {
             return Task.Run(() => DeleteDirectory(directory, ignoreIfLocked));
         }
@@ -314,6 +351,22 @@ namespace Tools {
             Guard.ArgumentNotNull(path, nameof(path));
             Guard.ArgumentNotNull(bytes, nameof(bytes));
             using (var stream = new FileStream(path, FileMode.Append)) {
+                bytes.RouteTo(stream);
+            }
+        }
+
+		public static void WriteAllBytes(string path, byte[] bytes) {
+            Guard.ArgumentNotNull(path, nameof(path));
+            Guard.ArgumentNotNull(bytes, nameof(bytes));
+            using (var stream = new FileStream(path, FileMode.Truncate)) {
+                stream.Write(bytes, 0, bytes.Length);
+            }
+        }
+
+		public static void WriteAllBytes(string path, Stream bytes) {
+            Guard.ArgumentNotNull(path, nameof(path));
+            Guard.ArgumentNotNull(bytes, nameof(bytes));
+            using (var stream = new FileStream(path, FileMode.Truncate)) {
                 bytes.RouteTo(stream);
             }
         }
@@ -393,15 +446,25 @@ namespace Tools {
             return path;
         }
 
-        public static string[] GetSubDirectories(string directory) {
-            return Directory.EnumerateDirectories(directory).Select(Path.GetFileName).ToArray();
+        public static string[] GetSubDirectories(string directory, FileSystemPathType pathType = FileSystemPathType.Relative) {
+            var subDirs = Directory.EnumerateDirectories(directory);
+			
+			if (pathType == FileSystemPathType.Relative)
+				subDirs = subDirs.Select(Path.GetFileName);
+			
+			return subDirs.ToArray();
         }
 
-        public static string[] GetFiles(string directory) {
-            return Directory.EnumerateFiles(directory).Select(Path.GetFileName).ToArray();
+        public static string[] GetFiles(string directory, FileSystemPathType pathType = FileSystemPathType.Relative) {
+            var files = Directory.EnumerateFiles(directory);
+		
+			if (pathType == FileSystemPathType.Relative)
+				files = files.Select(Path.GetFileName);
+
+			return files.ToArray();
         }
 
-        public static string[] GetFiles(string directory, string pattern) {
+        public static string[] GetFiles(string directory, string pattern, FileSystemPathType pathType = FileSystemPathType.Relative) {
             return Directory.EnumerateFiles(directory, pattern).Select(Path.GetFileName).ToArray();
         }
 

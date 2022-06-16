@@ -14,15 +14,15 @@
 using System;
 using System.IO;
 
-namespace Hydrogen {
+namespace Hydrogen.Data {
 
-	public class TempFileStore : FileStore {
+	public class XmlTempFileStore : XmlFileStore {
 
-		public TempFileStore() : this(Guid.NewGuid().ToStrictAlphaString()) {
+		public XmlTempFileStore() : this(Guid.NewGuid().ToStrictAlphaString()) {
 			
 		}
 
-		public TempFileStore(string subDir) : base(Path.Combine(Path.GetTempPath(), subDir), new NotPersistedDictionary<string,string>(), FileStorePersistencePolicy.DeleteOnDispose) {
+		public XmlTempFileStore(string subDir) : base(Path.Combine(Path.GetTempPath(), subDir), new NotPersistedDictionary<string,string>(), XmlFileStorePersistencePolicy.DeleteOnDispose) {
 		}
 
 		protected override string GenerateInternalFilePath(string fileAlias) {

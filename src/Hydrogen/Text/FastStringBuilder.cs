@@ -17,6 +17,7 @@ using System.Linq;
 using System.Text;
 
 namespace Hydrogen {
+
 	public class FastStringBuilder {
 		private const int DefaultCapacity = 1000;
 		private readonly List<Tuple<int, string>> _strings;
@@ -31,8 +32,20 @@ namespace Hydrogen {
 
 		public IEnumerable<string> Strings => _strings.Select(x => x.Item2);
 
+		public void Prepend(string str) {
+			Insert(0, str);
+		}
+
+		public void PrependFormat(string str, params object[] formatParams) {
+			Prepend(string.Format(str, formatParams));
+		}
+
+		public void PrependLine(string str, params object[] formatParams) {
+			PrependFormat(str + Environment.NewLine, formatParams);
+		}
+
 		public void Append(string str) {
-			_strings.Add(Tuple.Create(Length + str.Length, str));
+			Insert(_strings.Count, str);
 		}
 
 		public void AppendFormat(string str, params object[] formatParams) {
@@ -43,12 +56,26 @@ namespace Hydrogen {
 			AppendFormat(str + Environment.NewLine, formatParams);
 		}
 
+
+		public void Insert(int index, string str) {
+			var subTotal = index == 0 ? 0 : index == _strings.Count ? Length : _strings.Take(index).Sum(x => x.Item1);
+			subTotal += str.Length;
+			_strings.Insert(index, Tuple.Create(subTotal, str));
+			for(var i = index + 1 ; i < _strings.Count; i++) {
+				var item = _strings[i];
+				subTotal += _strings[i].Item1;
+				_strings[i] = Tuple.Create(subTotal, item.Item2);
+			}
+		}
+
 		public int Length {
 			get {
 				var numStrings = _strings.Count;
 				return numStrings == 0 ? 0 : _strings[numStrings - 1].Item1; ;
 			}
 		}
+
+		public int SubStringCount => _strings.Count;
 
 		public string ChopFromEnd(int lengthToChop) {
 			var itemCount = _strings.Count;
@@ -64,18 +91,18 @@ namespace Hydrogen {
 				lastRemovedItem = _strings[itemCount - itemsRemoved - 1];
 				amountChopped += lastRemovedItem.Item2.Length;
 				itemsRemoved++;
-				choppedOffPart.Append( new string( lastRemovedItem.Item2.Reverse().ToArray()));
+				choppedOffPart.Prepend(lastRemovedItem.Item2);
 			} while (amountChopped < lengthToChop && itemsRemoved < itemCount);
 
 			_strings.RemoveRange(itemCount - itemsRemoved, itemsRemoved);
 
+			var amountToRestore = 0;
 			if (amountChopped > lengthToChop) {
-				var amountToRestore = amountChopped - lengthToChop;
-				Append(lastRemovedItem.Item2.Substring( lastRemovedItem.Item2.Length - amountToRestore, lastRemovedItem.Item2.Length));
-				choppedOffPart.ChopFromEnd(amountToRestore);
+				amountToRestore = amountChopped - lengthToChop;
+				Append(lastRemovedItem.Item2.Substring(0, amountToRestore));
 			}
 
-			return new string (choppedOffPart.ToString().Reverse().ToArray());
+			return choppedOffPart.ToString().Substring(amountToRestore);
 		}
 
 		public void Clear() {

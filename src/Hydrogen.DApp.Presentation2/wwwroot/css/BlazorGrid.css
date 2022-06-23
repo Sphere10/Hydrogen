@@ -6,7 +6,7 @@
 
 th, td {
     white-space: nowrap;
-    overflow-x:hidden;
+    overflow-x: hidden;
     text-overflow: ellipsis;
 }
 
@@ -42,13 +42,27 @@ input[type="number"]::-webkit-inner-spin-button {
     -webkit-appearance: none;
 }
 
-.ActionButton{
+.ActionButton {
     padding: 1px;
     margin: 1px;
     border: 1px;
 }
 
-.PagingInput{
+.PagingInput {
     width: 50px;
     padding: 0px 5px 0px 5px;
+}
+
+.RowSelected {
+    background-color: #cedeed;
+}
+
+.AlternateRowColor {
+    background-color: #f2e9f2;
+}
+
+.RowHeight {
+    min-height: 20px !important;
+    max-height: 20px !important;
+    height: 20px !important;
 }

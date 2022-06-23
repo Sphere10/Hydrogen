@@ -14,12 +14,15 @@ namespace Hydrogen.DApp.Presentation2.UI.WalletTest {
 
 		static Random Random { get; set; } = new Random((int)DateTime.Now.Ticks);
 
+		public Block() { 
+		}
+
 		public void FillWithTestData(string id, int number) {
 			Id = id;
 			Number = number;
 
 			CreationDateTime = DateTime.Now;
-			var transactionCount = Random.Next(1, 10);
+			var transactionCount = Random.Next(1, 20);
 			for (var i = 0 ; i < transactionCount; i++)
 			{
 				var transaction = new Transaction();

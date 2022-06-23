@@ -9,5 +9,9 @@ namespace Hydrogen.DApp.Presentation2.UI.WalletTest {
 		public string Id { get; set; }
 		public string Data { get; set; }
 		public DateTime DateTime { get; set; }
+
+		public Transaction() {
+
+		}
 	}
 }

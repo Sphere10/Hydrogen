@@ -28,11 +28,11 @@
 
 <body style="overflow:hidden">
 
-    <h3>Blocks @(DataSource.Count2)</h3>
+    <h3>Blocks @(DataSource.Count2) Time @(DataSource.GetCreationDate().ToString("U"))</h3>
     <div style="width:50%; float:left;">
         <BlazorGrid TItem="Block"
                     Id="TestGrid"
-                    PageSize="10"
+                    PageSize="5"
                     DataSource="DataSource"
                     GridOptions="BlazorGrid<Block>.GridOption.ActionColumn  | 
                                  BlazorGrid<Block>.GridOption.NewItem       | 
@@ -40,19 +40,24 @@
                                  BlazorGrid<Block>.GridOption.AlternateRows |
                                  BlazorGrid<Block>.GridOption.Selection"
                     Actions="DataActions"
-                    ColumnDefinitions="ColumnDefinitions">
+                    ColumnDefinitions="ColumnDefinitions"
+                    OnSelection="OnBlockSelection"
+                    SelectedItem="RecipieSelectedItem"
+                  
+                    >
         </BlazorGrid>
     </div>
 
-    <div style="width:30%; float:left;">
-        <BlazorGrid TItem="Block"
+    <div style="width:50%; float:left;">
+        <BlazorGrid TItem="Transaction"
                     Id="TestGrid2"
-                    PageSize="5"
+                    PageSize="20"
                     DataSource="DataSource2"
-                    GridOptions="BlazorGrid<Block>.GridOption.AlternateRows |
-                                 BlazorGrid<Block>.GridOption.Selection"
+                    GridOptions="BlazorGrid<Transaction>.GridOption.AlternateRows |
+                                 BlazorGrid<Transaction>.GridOption.Selection"
                     Actions="DataActions2"
-                    ColumnDefinitions="ColumnDefinitions2">
+                    ColumnDefinitions="ColumnDefinitions2"
+                    >
 
 @*                    GridOptions="BlazorGrid<Block>.GridOption.ActionColumn  | 
                                  BlazorGrid<Block>.GridOption.NewItem       | *@
@@ -80,17 +85,18 @@
     #endregion
 
     BlockChainDataSource<Block> DataSource { get; set; }
-    BlockChainDataSource<Transaction> DataSource2 { get; set; }
+    BlockChainDataSource<Transaction> DataSource2 { get; set; } = new BlockChainDataSource<Transaction>();
 
     List<GridAction<Block>> DataActions { get; set; } = new List<GridAction<Block>>();
     List<IColumnDefinition> ColumnDefinitions { get; set; } = new List<IColumnDefinition>();
 
-    List<GridAction<Block>> DataActions2 { get; set; } = new List<GridAction<Block>>();
+    List<GridAction<Transaction>> DataActions2 { get; set; } = new List<GridAction<Transaction>>();
     List<IColumnDefinition> ColumnDefinitions2 { get; set; } = new List<IColumnDefinition>();
 
     List<IGridComponent<Block>> Components { get; set; } = new List<IGridComponent<Block>>();
 
     Timer Timer { get; set; }
+    Block RecipieSelectedItem { get; set; }
 
     protected override async void OnInitialized()
     {
@@ -98,6 +104,9 @@
 
         DataSource = new BlockChainDataSource<Block>();
         DataSource2 = new BlockChainDataSource<Transaction>();
+
+        DataSource.MutatedItems += HandleRemoteDataChange;
+
         //   DataSource.MutatedItems += HandleRemoteDataChange;
 
         // LAN
@@ -115,7 +124,7 @@
         DataActions.Add(new GridAction<Block>("DeleteAction", DeleteAction, "❌✡", IsDeleteAvailable));
         //DataActions.Add(new GridAction<TestClass>("Action2", Action2, "⚽", IsAction2Available));
 
-        DataActions2.Add(new GridAction<Block>("DeleteAction", DeleteAction, "❌✡", IsDeleteAvailable));
+        DataActions2.Add(new GridAction<Transaction>("DeleteAction", DeleteAction, "❌✡", IsDeleteAvailable));
 
         //ColumnDefinitions.Add(new DataEnd<TestClass, TestClass2>("Data End 1", TestDataExtractor1));
         ColumnDefinitions.Add(new DataEnd<Block, TestClass3>(50, "Data End 2", TestDataExtractor2));
@@ -128,9 +137,10 @@
 
     void TimerFunction(object value) {
         try {
-            var random = Random.Shared.Next();
-            DataSource.New(1);
-            DataSource2.New(random % 6);
+            //var random = Random.Shared.Next();
+            var newBlock = DataSource.New(1);
+            DataSource2.Clear();
+            DataSource2.CreateDelayed(newBlock.First().Transactions);
         }
         catch (Exception ex) {
         }  
@@ -155,10 +165,56 @@
 
     TestClass3 TestDataExtractor2(object data)
     {
-        var useData = (Block)data;
+        try {
+            if (data is Block block) {
+                return new TestClass3(block.Id);
+            }
+            else if (data is Transaction transaction) {
+                return new TestClass3(transaction.Id);                
+            }
 
-        return new TestClass3(useData.Id);
+            throw new Exception("TestDataExtractor2 bad data type");
+        }
+        catch (Exception ex) {
+
+        }
+
+        return null;
     }
+
+    void OnBlockSelection(Block block) {
+
+        RecipieSelectedItem = block;
+
+        DataSource2.Clear();
+        DataSource2.CreateDelayed(block.Transactions);
+        DataSource.SetSelectedItem(block);
+    }
+
+    void HandleRemoteDataChange(DataSourceMutatedItems<Block> items)
+    {
+        StateHasChanged();
+    }
+
+    bool IsDeleteAvailable(Transaction item)
+    {
+        if (item.DateTime.Millisecond % 10 == 0) {
+            return false;
+        }
+
+        return true;
+    }
+
+    Transaction DeleteAction(Transaction item)
+    {
+        DataSource2.DeleteDelayed(new List<Transaction>() { item });
+
+        return item;
+    }
+
+
+
+
     //public class DataSource2<TItem> : IDataSource<TestClass> {
 
     //    int CurrentId = 1;

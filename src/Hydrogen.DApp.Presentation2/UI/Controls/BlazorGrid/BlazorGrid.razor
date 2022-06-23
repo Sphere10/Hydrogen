@@ -52,23 +52,23 @@
             @{
                 for (int i = 0; i < Rows.Count; i++)
                 {
-                    string rowStyle = "";
+                    string rowClass = "";
                     var row = Rows[i];
 
                     if (SelectedRow != null && DataSource.IdItem((TItem)row[0].Tag) == DataSource.IdItem(SelectedRow))
                     {
-                        rowStyle = "background-color: red";
+                        rowClass = "RowSelected RowHeight";
                     }
                     else if (i % 2 == 0)
                     {
-                        rowStyle = "background-color: green";
+                        rowClass = "AlternateRowColor RowHeight";
                     }
 
-                    <tr style="@rowStyle" @onmousedown="@(e => OnTableRowMouseDown((TItem)row[0].Tag))" @onmouseup="@(e => OnTableMouseUp(row))">
+                    <tr class="@rowClass" @onmousedown="@(e => OnTableRowMouseDown((TItem)row[0].Tag))" @onmouseup="@(e => OnTableMouseUp(row))">
 
                         @if (IsOption(GridOption.ActionColumn))
                         {
-                            <td style="width:30px">
+                            <td class="RowHeight" style="width:30px">
                                 @foreach (var action in Actions)
                                 {
                                     if (action.IsActionAvailable != null && action.IsActionAvailable((TItem)row[0].Tag))
@@ -84,7 +84,7 @@
 
                         @foreach (var cell in row)
                         {
-                            <td style="width:@cell.Width.ToString()px">
+                            <td class="RowHeight" style="width:@cell.Width.ToString()px">
                                 <input class="ResizableClass" type="@cell.GetInputType()" list="@cell.GetListName()" value="@cell.Text"
                                @onchange="@(e => CellDataChanged(e.Value, cell.Name, cell))"
                                @onmouseup="CellMouseUp" />
@@ -235,7 +235,6 @@
         }
     }
 
-
     @typeparam TItem
 
     [Flags]
@@ -256,6 +255,9 @@
     [Parameter] public GridOption GridOptions { get; set; }
     [Parameter] public List<GridAction<TItem>> Actions { get; set; } = new List<GridAction<TItem>>();
     [Parameter] public List<IColumnDefinition> ColumnDefinitions { get; set; } = new List<IColumnDefinition>();
+    [Parameter] public TItem SelectedItem { get; set; }
+    //Events
+    [Parameter] public EventCallback<TItem> OnSelection { get; set; }
 
     List<Cell> Header { get; set; } = new List<Cell>();
     List<List<Cell>> Rows { get; set; } = new List<List<Cell>>();
@@ -266,7 +268,6 @@
 
     int DefaultRowHeight = 20;
     //int DefaultCellWidth = 40;
-    static bool FirstLoad = true;
 
     static Random Random { get; set; } = new Random((int)DateTime.Now.Ticks);
 
@@ -284,10 +285,6 @@
 
     #region Grid
 
-    //public void Refresh() {
-    //    DrawGrid();
-    //}
-
     protected override void OnInitialized()
     {
         //SystemLog.RegisterLogger(new WebLogger(WriteOutput));
@@ -297,19 +294,12 @@
             DataSource.MutatedItems += HandleRemoteDataChange;
             SetUpRemoteDataChange = true;
         }
-
-        if (FirstLoad)
-        {
-            //    DataSource.MutatedItems += HandleRemoteDataChange;
-            FirstLoad = false;
-        }
-
         ControlCheck();
+        DrawGrid();
     }
 
     protected override bool ShouldRender()
     {
-
         var shouldRender = base.ShouldRender();
 
         return shouldRender;
@@ -360,47 +350,45 @@
         Header.Clear();
         Rows.Clear();
 
+        if (SelectedItem != null)
+        {
+
+        }
+
         var width = IColumnDefinition.DefaultWidth;
         var height = DefaultRowHeight;
+        var type = typeof(TItem);
+        var properties = type.GetProperties().ToList();
+        var typeInfos = new List<ObjectTypeInfo>();
 
-        if (Data.Any())
+        foreach (var property in properties)
         {
-            var first = Data.First();
-            var type = first.GetType();
-            var properties = type.GetProperties().ToList();
-            var typeInfos = new List<ObjectTypeInfo>();
+            var name = Utility.AddSpacesForCamelCase(property.Name);
+            var typeInfo = new ObjectTypeInfo(property);
+            typeInfos.Add(typeInfo);
+            Header.Add(new Cell(new HeaderData(name, width), new RowData(height), typeInfo, name, name, typeInfos.Count - 1));
+        }
+
+        var useData = new List<TItem>(Data);
+        if (IsOption(GridOption.ReverseOrder))
+        {
+            useData.Reverse();
+        }
+
+        foreach (var dataObject in useData)
+        {
+            var rowData = new List<Cell>();
+            int columnIndex = 0;
 
             foreach (var property in properties)
             {
-                var name = Utility.AddSpacesForCamelCase(property.Name);
-
-                var typeInfo = new ObjectTypeInfo(property);
-                typeInfos.Add(typeInfo);
-
-                Header.Add(new Cell(new HeaderData(name, width), new RowData(height), typeInfo, name, name, typeInfos.Count - 1));
+                var cellText = Cell.GetCellText(dataObject, property);
+                var cellData = new Cell(Header[columnIndex].Header, Header[columnIndex].Row, typeInfos[columnIndex], cellText, dataObject, columnIndex);
+                rowData.Add(cellData);
+                columnIndex++;
             }
 
-            var useData = new List<TItem>(Data);
-            if (IsOption(GridOption.ReverseOrder))
-            {
-                useData.Reverse();
-            }
-
-            foreach (var dataObject in useData)
-            {
-                var rowData = new List<Cell>();
-                int columnIndex = 0;
-
-                foreach (var property in properties)
-                {
-                    var cellText = Cell.GetCellText(dataObject, property);
-                    var cellData = new Cell(Header[columnIndex].Header, Header[columnIndex].Row, typeInfos[columnIndex], cellText, dataObject, columnIndex);
-                    rowData.Add(cellData);
-                    columnIndex++;
-                }
-
-                Rows.Add(rowData);
-            }
+            Rows.Add(rowData);
         }
 
         StateHasChanged();
@@ -462,6 +450,8 @@
 
         var selected = SelectedRow != null;
 
+        OnSelection.InvokeAsync(SelectedRow);
+
         WriteOutput($"Selected {selected}");
     }
 
@@ -480,7 +470,6 @@
 
     void HandleRemoteDataChange(DataSourceMutatedItems<TItem> items)
     {
-
         var updates = items.UpdatedItems.ToList();
 
         SystemLog.Info($"BlazorGrid HandleRemoteDataChange() Items TotalItems {items.TotalItems} Updates Count {updates.Count}");
@@ -488,6 +477,10 @@
         //        if (updates.Any(x => x.CrudAction == CrudAction.Create || x.CrudAction == CrudAction.Read)) {
         //            Data.Clear();
         //        }
+        if (items.TotalItems == 0)
+        {
+            Data.Clear();
+        }
 
         foreach (var update in updates)
         {
@@ -539,13 +532,15 @@
             CurrentPage = items.TotalItems / PageSize;
             Data = Data.GetRange(Data.Count - PageSize, PageSize);
         }
+        else
+        {
+
+        }
 
         TotalDataCount = items.TotalItems;
         //CurrentPage = items.CurrentPage;
         DrawGrid();
     }
-
-    #endregion
 
     async private void CellDataChanged(object valueObject, string dataName, Cell cell)
     {
@@ -568,6 +563,8 @@
         {
         }
     }
+
+    #endregion
 
     //void ButtonClick()
     //{

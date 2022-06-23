@@ -4,17 +4,20 @@ using System.Linq;
 using System.Threading.Tasks;
 
 namespace Hydrogen.DApp.Presentation2.UI.WalletTest {
-	public class BlockChainDataSource<TItem> : IDataSource<Block> {
+	public class BlockChainDataSource<TItem> : IDataSource<TItem> where TItem : new() {
 
 		int CurrentId = 1;
-		Dictionary<string, Block> Blocks = new Dictionary<string, Block>();
+		Dictionary<string, TItem> Items = new Dictionary<string, TItem>();
+		TItem NewestItem { get; set; }
+		public TItem SelectedItem { get; private set; }
 
 		public BlockChainDataSource() {
 		}
 
-		public event EventHandlerEx<DataSourceMutatedItems<Block>> MutatedItems;
-
-
+		public event EventHandlerEx<DataSourceMutatedItems<TItem>> MutatedItems;
+		public void SetSelectedItem(TItem item) {
+			SelectedItem = item;
+		}
 
 		//private EventHandler clickHandler; // Normal private field
 
@@ -29,49 +32,100 @@ namespace Hydrogen.DApp.Presentation2.UI.WalletTest {
 		//	}
 		//}
 
-
-
 		public bool EventHandlerSetUp() {
 			return MutatedItems != null;
 		}
 
-
-		public string UpdateItem(Block item) {
+		public string UpdateItem(TItem item) {
 
 			var id = IdItem(item);
-			if (Blocks.ContainsKey(id)) {
-				Blocks[id] = item;
+			if (Items.ContainsKey(id)) {
+				Items[id] = item;
 			}
 
 			return id;
 		}
 
-		public string InitializeItem(Block item) {
+		public string InitializeItem(TItem item) {
 
-			item.FillWithTestData(Guid.NewGuid().ToString(), CurrentId++);
+			if (item is Block block) {
+				block.FillWithTestData(Guid.NewGuid().ToString(), CurrentId++);
+			}
+			else if (item is Transaction transaction) {
+
+			}
 
 			return item.ToString();
 		}
 
-		public string IdItem(Block item) {
+		bool IsEqual(TItem item1, TItem item2) {
+			if (item1 is Block block1 && item2 is Block block2) {
+				return block1 == block2;
+			}
+			else if (item1 is Transaction transaction1 && item2 is Transaction transaction2){
+				return transaction1 == transaction2;
+			}
 
-			return Blocks.FirstOrDefault(x => x.Value == item).Key;
+			return false;
+		}
+
+		public string IdItem(TItem item) {
+
+			if (item is Block block) {
+				if (!Items.Any(x => IsEqual(x.Value, item))) {
+					return block.Id;
+				}
+			}
+			if (item is Transaction transaction) {
+				if (!Items.Any(x => IsEqual(x.Value, item))) {
+					return transaction.Id;
+				}
+			}
+
+			return Items.FirstOrDefault(x => IsEqual(x.Value, item)).Key;
 		}
 
 		public void Close() {
 
 		}
 
-		public async Task Create(IEnumerable<Block> entities) {
+		public void Clear() {
+
+			Items.Clear();
+
+			if (EventHandlerSetUp()) {
+				var mutatedItems = new DataSourceMutatedItems<TItem>();
+				MutatedItems?.Invoke(mutatedItems);
+			}
+		}
+
+		public async Task Create(IEnumerable<TItem> entities) {
+			foreach (var item in entities) {
+
+			}
 			//    AllItems.AddRange(entities);
+		}
+
+		public void CreateDelayed(IEnumerable<TItem> entities) {
+
+			var mutatedItems = new DataSourceMutatedItems<TItem>();
+			foreach (var item in entities) {
+				var id = IdItem(item);
+				Items.Add(id, item);
+				mutatedItems.UpdatedItems.Add(new CrudActionItem<TItem>(CrudAction.Create, item));
+				NewestItem = item;
+			}
+			mutatedItems.TotalItems = Items.Count;
+			if (EventHandlerSetUp()) 
+				MutatedItems?.Invoke(mutatedItems);
 		}
 
 		public Task Delete(IEnumerable<Block> entities) {
 			return Task.Run(() =>
 			{
 				foreach (var entity in entities) {
-					if (Blocks.ContainsKey(entity.Id)) {
-						Blocks.Remove(entity.Id);
+					if (Items.ContainsKey(entity.Id)) {
+						Items.Remove(entity.Id);
 					}
 				}
 				//var mutatedItems = new DataSourceMutatedItems<Block>();
@@ -82,47 +136,45 @@ namespace Hydrogen.DApp.Presentation2.UI.WalletTest {
 			});
 		}
 
-		public void DeleteDelayed(IEnumerable<Block> entities) {
+		public void DeleteDelayed(IEnumerable<TItem> entities) {
 		
 			foreach (var entity in entities) {
-				if (Blocks.ContainsKey(entity.Id)) {
-					Blocks.Remove(entity.Id);
+				var id = IdItem(entity);
+				if (Items.ContainsKey(id)) {
+					Items.Remove(id);
 				}
 			}
 
-			var mutatedItems = new DataSourceMutatedItems<Block>();
+			var mutatedItems = new DataSourceMutatedItems<TItem>();
 			foreach (var item in entities) {
-				mutatedItems.UpdatedItems.Add(new CrudActionItem<Block>(CrudAction.Delete, item));
+				mutatedItems.UpdatedItems.Add(new CrudActionItem<TItem>(CrudAction.Delete, item));
 			}
 			MutatedItems.Invoke(mutatedItems);
 		}
 
-		public IEnumerable<Block> New(int count) {
+		public IEnumerable<TItem> New(int count) {
 
-			if (count == 1) {
-
-			}
-
-			var returnList = new List<Block>();
+			var newList = new List<TItem>();
 
 			for (var i = 0; i < count; i++) {
-				var id = Guid.NewGuid().ToString();
-
-				var newItem = new Block();
+				var newItem = new TItem();
 				InitializeItem(newItem);
+				var id = IdItem(newItem);
 
-				Blocks.Add(id, newItem);
-				returnList.Add(newItem);
+				Items.Add(id, newItem);
+				newList.Add(newItem);
+				NewestItem = newItem;
 			}
 
-			var mutatedItems = new DataSourceMutatedItems<Block>();
-			foreach (var item in returnList) {
-				mutatedItems.UpdatedItems.Add(new CrudActionItem<Block>(CrudAction.Create, item));
+			var mutatedItems = new DataSourceMutatedItems<TItem>();
+			foreach (var item in newList) {
+				mutatedItems.UpdatedItems.Add(new CrudActionItem<TItem>(CrudAction.Create, item));
 			}
-			mutatedItems.TotalItems = Blocks.Count;
-			MutatedItems?.Invoke(mutatedItems);
+			mutatedItems.TotalItems = Items.Count;
 
-			return returnList;
+			if (EventHandlerSetUp()) MutatedItems?.Invoke(mutatedItems);
+
+			return newList;
 		}
 
 		public void NewDelayed(int count) {
@@ -131,47 +183,47 @@ namespace Hydrogen.DApp.Presentation2.UI.WalletTest {
 
 		// public Task<IEnumerable<TestClass>> Read(string searchTerm, int pageLength, ref int page, string sortProperty, SortDirection sortDirection, out int totalItems) {
 
-		public Task<DataSourceItems<Block>> Read(string searchTerm, int pageLength, ref int page, string sortProperty, SortDirection sortDirection, out int totalItems) {
+		public Task<DataSourceItems<TItem>> Read(string searchTerm, int pageLength, ref int page, string sortProperty, SortDirection sortDirection, out int totalItems) {
 
-			totalItems = Blocks.Count;
+			totalItems = Items.Count;
 
 			// make sure the requested page is logical
 			if (page < 0) page = 0;
-			else if (page > Blocks.Count / pageLength) page = Blocks.Count / pageLength;
+			else if (page > Items.Count / pageLength) page = Items.Count / pageLength;
 
 			var startIndex = pageLength * page;
 
 			//the last page might not have a full page of data
-			if (startIndex + pageLength >= Blocks.Count) pageLength = Blocks.Count - startIndex;
+			if (startIndex + pageLength >= Items.Count) pageLength = Items.Count - startIndex;
 
-			var items = Blocks.Values.ToList().GetRange(startIndex, pageLength);
+			var items = Items.Values.ToList().GetRange(startIndex, pageLength);
 
-			var returnItems = new DataSourceItems<Block>();
+			var returnItems = new DataSourceItems<TItem>();
 
-			returnItems.Items = new List<Block>(items);
+			returnItems.Items = new List<TItem>(items);
 
 			return Task.Run(() => {
 				return returnItems;
 			});
 		}
 
-		Task<DataSourceItems<Block>> IDataSource<Block>.Read(string searchTerm, int pageLength, int page, string sortProperty, SortDirection sortDirection, out int totalItems) {
-			totalItems = Blocks.Count;
+		Task<DataSourceItems<TItem>> IDataSource<TItem>.Read(string searchTerm, int pageLength, int page, string sortProperty, SortDirection sortDirection, out int totalItems) {
+			totalItems = Items.Count;
 
 			// make sure the requested page is logical
 			if (page < 0) page = 0;
-			else if (page > Blocks.Count / pageLength) page = Blocks.Count / pageLength;
+			else if (page > Items.Count / pageLength) page = Items.Count / pageLength;
 
 			var startIndex = pageLength * page;
 
 			//the last page might not have a full page of data
-			if (startIndex + pageLength >= Blocks.Count) pageLength = Blocks.Count - startIndex;
+			if (startIndex + pageLength >= Items.Count) pageLength = Items.Count - startIndex;
 
-			var items = Blocks.Values.ToList().GetRange(startIndex, pageLength);
+			var items = Items.Values.ToList().GetRange(startIndex, pageLength);
 
-			var returnItems = new DataSourceItems<Block>();
+			var returnItems = new DataSourceItems<TItem>();
 
-			returnItems.Items = new List<Block>(items);
+			returnItems.Items = new List<TItem>(items);
 
 			return Task.Run(() => {
 				return returnItems;
@@ -182,14 +234,14 @@ namespace Hydrogen.DApp.Presentation2.UI.WalletTest {
 
 			//make sure the requested page is logical
 			if (page < 0) page = 0;
-			else if (page > Blocks.Count / pageLength) page = Blocks.Count / pageLength;
+			else if (page > Items.Count / pageLength) page = Items.Count / pageLength;
 
 			var startIndex = pageLength * page;
 
 			//the last page might not have a full page of data
-			if (startIndex + pageLength >= Blocks.Count) pageLength = Blocks.Count - startIndex;
+			if (startIndex + pageLength >= Items.Count) pageLength = Items.Count - startIndex;
 
-			var items = (IEnumerable<Block>)Blocks.Values.ToList().GetRange(startIndex, pageLength);
+			var items = (IEnumerable<Block>)Items.Values.ToList().GetRange(startIndex, pageLength);
 
 			//      totalItems = AllItems.Count();
 			//      return Task.FromResult(items);
@@ -234,25 +286,89 @@ namespace Hydrogen.DApp.Presentation2.UI.WalletTest {
 			throw new NotImplementedException();
 		}
 
-		Task<IEnumerable<Block>> IDataSource<Block>.New(int count) {
+		Task<IEnumerable<TItem>> IDataSource<TItem>.New(int count) {
 			throw new NotImplementedException();
 		}
 
-		public void RefreshDelayed(IEnumerable<Block> entities) {
+		public void RefreshDelayed(IEnumerable<TItem> entities) {
 			throw new NotImplementedException();
 		}
 
-		public void UpdateDelayed(IEnumerable<Block> entities) {
+		public void UpdateDelayed(IEnumerable<TItem> entities) {
 			throw new NotImplementedException();
 		}
 
-		public void ValidateDelayed(IEnumerable<(Block entity, CrudAction action)> actions) {
+		public void ValidateDelayed(IEnumerable<(TItem entity, CrudAction action)> actions) {
 			throw new NotImplementedException();
 		}
 
-		void IDataSource<Block>.CountDelayed() {
+//		void IDataSource<TItem>.CountDelayed() {
+//			throw new NotImplementedException();
+//		}
+
+		void IDataSource<TItem>.RefreshDelayed(IEnumerable<TItem> entities) {
 			throw new NotImplementedException();
 		}
+
+		void IDataSource<TItem>.UpdateDelayed(IEnumerable<TItem> entities) {
+			throw new NotImplementedException();
+		}
+
+		void IDataSource<TItem>.DeleteDelayed(IEnumerable<TItem> entities) {
+			throw new NotImplementedException();
+		}
+
+		void IDataSource<TItem>.ValidateDelayed(IEnumerable<(TItem entity, CrudAction action)> actions) {
+			throw new NotImplementedException();
+		}
+
+//		void IDataSource<TItem>.() {
+//			throw new NotImplementedException();
+//		}
+
+		string IDataSource<TItem>.UpdateItem(TItem item) {
+			throw new NotImplementedException();
+		}
+
+		string IDataSource<TItem>.IdItem(TItem item) {
+			return IdItem(item);
+		}
+
+		string IDataSource<TItem>.InitializeItem(TItem item) {
+			throw new NotImplementedException();
+		}
+
+//		Task<IEnumerable<TItem>> IDataSource<TItem>.New(int count) {
+//			throw new NotImplementedException();
+//		}
+
+		Task IDataSource<TItem>.Create(IEnumerable<TItem> entities) {
+			throw new NotImplementedException();
+		}
+
+		Task IDataSource<TItem>.Refresh(TItem[] entities) {
+			throw new NotImplementedException();
+		}
+
+		Task IDataSource<TItem>.Update(IEnumerable<TItem> entities) {
+			throw new NotImplementedException();
+		}
+
+		Task IDataSource<TItem>.Delete(IEnumerable<TItem> entities) {
+			throw new NotImplementedException();
+		}
+
+		Task<Result> IDataSource<TItem>.Validate(IEnumerable<(TItem entity, CrudAction action)> actions) {
+			throw new NotImplementedException();
+		}
+
+		void IDataSource<TItem>.CountDelayed() {
+			throw new NotImplementedException();
+		}
+
+//		Task<IEnumerable<TItem>> IDataSource<TItem>.New(int count) {
+//			throw new NotImplementedException();
+//		}
 
 		//string IDataSource<Block>.UpdateItem(Block item) {
 		//	throw new NotImplementedException();
@@ -276,8 +392,23 @@ namespace Hydrogen.DApp.Presentation2.UI.WalletTest {
 
 		public Task<int> Count { get { return Task.Run(() => 0); } }
 
-		public int Count2 { get { return Blocks.Count(); } }
+		public int Count2 { get { return Items.Count(); } }
 
+		public DateTime GetCreationDate() {
+
+			if (NewestItem == null) return DateTime.MinValue;
+
+			if (NewestItem is Block block)
+			{
+				return block.Transactions.First().DateTime;
+			}
+			else if (NewestItem is Transaction transaction)
+			{
+				return transaction.DateTime;
+			}
+
+			return DateTime.MinValue;
+		}
 
 		public Task<DataSourceCapabilities> Capabilities => throw new NotImplementedException();
 	}

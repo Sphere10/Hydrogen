@@ -55,5 +55,15 @@ input[type="number"]::-webkit-inner-spin-button {
 }
 
 .RowSelected {
-    background-color: red;
+    background-color: #98B4D4;
+}
+
+.AlternateRowColor {
+    background-color: #f2e9f2;
+}
+
+.RowHeight {
+    min-height: 20px !important;
+    max-height: 20px !important;
+    height: 20px !important;
 }

@@ -16,16 +16,18 @@ using System.IO;
 
 namespace Hydrogen.Data {
 
-	public class XmlTempFileStore : XmlFileStore {
+	/// <summary>
+	/// A <see cref="SimpleFileStore"/> that only keeps file ephemerally (will delete on dispose).
+	/// </summary>
+	public class TempFileStore : SimpleFileStore {
 
-		public XmlTempFileStore() : this(Guid.NewGuid().ToStrictAlphaString()) {
-			
+		public TempFileStore() : this(Guid.NewGuid().ToStrictAlphaString()) {
 		}
 
-		public XmlTempFileStore(string subDir) : base(Path.Combine(Path.GetTempPath(), subDir), new NotPersistedDictionary<string,string>(), XmlFileStorePersistencePolicy.DeleteOnDispose) {
+		public TempFileStore(string subDir) : base(Path.Combine(Path.GetTempPath(), subDir), new NotPersistedDictionary<string,string>(), FileStorePersistencePolicy.DeleteOnDispose) {
 		}
 
-		protected override string GenerateInternalFilePath(string fileAlias) {
+		protected override string GenerateInternalFilePath(string fileKey) {
 			return Path.Combine(base.BaseDirectory, Path.GetFileName(Guid.NewGuid().ToStrictAlphaString()));
 		}
 

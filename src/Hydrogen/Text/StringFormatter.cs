@@ -29,60 +29,59 @@ namespace Hydrogen {
         public static string FormatEx(string formatString, Func<string, object> userTokenResolver, params object[] formatArgs) {
             Guard.ArgumentNotNull(formatString, nameof(formatString));
             Guard.ArgumentNotNull(userTokenResolver, nameof(userTokenResolver));
-
             var splits = new Stack<string>(formatString.SplitAndKeep(TokenTrimDelimitters, StringSplitOptions.RemoveEmptyEntries).Reverse());
             var resolver = userTokenResolver ?? ResolveToken;
             var resultBuilder = new StringBuilder();
             var currentFormatItemBuilder = new StringBuilder();
             var inFormatItem = false;
+			var depth = 0;
             while (splits.Count > 0) {
                 var split = splits.Pop();
                 switch (split) {
                     case "{":
-                    if (splits.Count > 0 && splits.Peek() == "{") {
-                        // Escaped {{
-                        splits.Pop();
-                        if (inFormatItem)
-                            currentFormatItemBuilder.Append("{");
-                        else
-                            resultBuilder.Append("{");
-                        continue;
-                    }
-
-                    if (inFormatItem) {
-                        // illegal
-                        throw new FormatException("Invalid format string");
-                    }
-                    inFormatItem = true;
-                    break;
+	                    if (splits.Count > 0 && splits.Peek() == "{") {
+	                        // Escaped {{
+	                        splits.Pop();
+	                        if (inFormatItem)
+	                            currentFormatItemBuilder.Append("{");
+	                        else
+	                            resultBuilder.Append("{");
+	                        continue;
+	                    } 
+	                    inFormatItem = true;
+						depth++;
+						currentFormatItemBuilder.Append("{");
+	                    break;
                     case "}":
-                    if (inFormatItem) {
-                        // end of format item, process and add to string
-                        var token = currentFormatItemBuilder.ToString();
-						if (!TryResolveFormatItem(token, out var value, resolver, formatArgs))
-							value = "{" + token + "}";
-	                    resultBuilder.Append(value);
-                        inFormatItem = false;
-                        currentFormatItemBuilder.Clear();
-                    } else if (splits.Count > 0 && splits.Peek() == "}") {
-                        // Escaped }}
-                        splits.Pop();
-                        resultBuilder.Append("}");
-                    } else {
-                        // illegal format string
-                        throw new FormatException("Incorrect format string");
-                    }
-                    break;
+	                    if (inFormatItem) {
+							currentFormatItemBuilder.Append("}");
+							if (--depth == 0) {
+		                        // end of format item, process and add to string
+		                        var token = currentFormatItemBuilder.ToString();
+								if (!TryResolveFormatItem(token.Trim(TokenTrimDelimitters), out var value, resolver, formatArgs))
+									value = token;
+			                    resultBuilder.Append(value);
+		                        inFormatItem = false;
+		                        currentFormatItemBuilder.Clear();
+							}
+	                    } else if (splits.Count > 0 && splits.Peek() == "}") {
+	                        // Escaped }}
+	                        splits.Pop();
+	                        resultBuilder.Append("}");
+	                    } else {
+							currentFormatItemBuilder.Append("}");
+						}
+	                    break;
                     default:
-                    if (inFormatItem)
-                        currentFormatItemBuilder.Append(split);
-                    else
-                        resultBuilder.Append(split);
+	                    if (inFormatItem)
+	                        currentFormatItemBuilder.Append(split);
+	                    else
+	                        resultBuilder.Append(split);
                     break;
                 }
             }
             if (inFormatItem)
-                throw new FormatException("Incorrect format string");
+				resultBuilder.Append(currentFormatItemBuilder.ToString());
 
             return resultBuilder.ToString();
         }

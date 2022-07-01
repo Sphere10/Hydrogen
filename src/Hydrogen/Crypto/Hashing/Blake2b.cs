@@ -9,7 +9,10 @@ namespace Hydrogen {
 
 	public class Blake2b : HashFunctionBase {
 		public static readonly Config DefaultConfig = new Config();
-		public static readonly Config _256Config = new Config { OutputSizeInBytes = 256 / 8 };
+		public static readonly Config _512Config = new Config { OutputSizeInBytes = 512 / 8 };
+		public static readonly Config _384Config = new Config { OutputSizeInBytes = 384 / 8 };
+        public static readonly Config _256Config = new Config { OutputSizeInBytes = 256 / 8 };
+		public static readonly Config _224Config = new Config { OutputSizeInBytes = 224 / 8 };
 		public static readonly Config _160Config = new Config { OutputSizeInBytes = 160 / 8 };
 		public static readonly Config _128Config = new Config { OutputSizeInBytes = 128 / 8 };
 

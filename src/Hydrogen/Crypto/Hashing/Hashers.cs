@@ -55,9 +55,11 @@ namespace Hydrogen {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static void Hash(CHF algorithm, ReadOnlySpan<byte> bytes, Span<byte> result) {
 			var hashers = HasherStack[(int)algorithm];
+			Guard.Ensure(hashers is not null, $"No implementation for {algorithm} found");
 			if (!hashers.TryPop(out var hasher)) {
 				hasher = Constructors[(int)algorithm].Invoke();
-			}
+			} else hasher.Reset();
+
 			try {
 				hasher.Compute(bytes, result);
 			} finally {
@@ -76,9 +78,11 @@ namespace Hydrogen {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static void JoinHash(CHF algorithm, ReadOnlySpan<byte> left, ReadOnlySpan<byte> right, Span<byte> result) {
 			var hashers = HasherStack[(int)algorithm];
+			Guard.Ensure(hashers is not null, $"No implementation for {algorithm} found");
 			if (!hashers.TryPop(out var hasher)) {
 				hasher = Constructors[(int)algorithm].Invoke();
-			}
+			} else hasher.Reset();
+
 			try {
 				hasher.Transform(left);
 				hasher.Transform(right);
@@ -107,9 +111,10 @@ namespace Hydrogen {
 				return;
 			}
 			var hashers = HasherStack[(int)algorithm];
+			Guard.Ensure(hashers is not null, $"No implementation for {algorithm} found");
 			if (!hashers.TryPop(out var hasher)) {
 				hasher = Constructors[(int)algorithm].Invoke();
-			}
+			} else hasher.Reset();
 
 			var tempArr = new byte[expectedSize];
 			try {
@@ -132,9 +137,10 @@ namespace Hydrogen {
 			Guard.Argument(result.Length >= expectedSize, nameof(result), $"Expected {expectedSize} bytes");
 			
 			var hashers = HasherStack[(int)algorithm];
+			Guard.Ensure(hashers is not null, $"No implementation for {algorithm} found");
 			if (!hashers.TryPop(out var hasher)) {
 				hasher = Constructors[(int)algorithm].Invoke();
-			}
+			} else hasher.Reset();
 			try {
 				var aggregatedValue = new byte[expectedSize];
 				Tools.Array.Fill<byte>(aggregatedValue, 0);
@@ -167,20 +173,24 @@ namespace Hydrogen {
 
 		public static IDisposable BorrowHasher(CHF algorithm, out IHashFunction hasher) {
 			var hashers = HasherStack[(int)algorithm];
+			Guard.Ensure(hashers is not null, $"No implementation for {algorithm} found");
 			if (!hashers.TryPop(out hasher)) {
 				hasher = Constructors[(int)algorithm].Invoke();
-			}
+			} else hasher.Reset();
 			var hasherObj = hasher;
 			return new ActionScope(() => hashers.Push(hasherObj));
 		}		
 
 		public static void RegisterDefaultAlgorithms() {
 			Register(CHF.ConcatBytes, () => new ConcatBytes());
-			Register(CHF.SHA2_256, () => new HashAlgorithmAdapter(new SHA256Managed()));
-			Register(CHF.SHA2_384, () => new HashAlgorithmAdapter(new SHA384Managed()));
 			Register(CHF.SHA2_512, () => new HashAlgorithmAdapter(new SHA512Managed()));
+			Register(CHF.SHA2_384, () => new HashAlgorithmAdapter(new SHA384Managed()));
+			Register(CHF.SHA2_256, () => new HashAlgorithmAdapter(new SHA256Managed()));
 			Register(CHF.SHA1_160, () => new HashAlgorithmAdapter(new SHA1Managed()));
+			Register(CHF.Blake2b_512, () => new Blake2b(Blake2b._512Config));
+			Register(CHF.Blake2b_384, () => new Blake2b(Blake2b._384Config));
 			Register(CHF.Blake2b_256, () => new Blake2b(Blake2b._256Config));
+			Register(CHF.Blake2b_224, () => new Blake2b(Blake2b._224Config));
 			Register(CHF.Blake2b_160, () => new Blake2b(Blake2b._160Config));
 			Register(CHF.Blake2b_128, () => new Blake2b(Blake2b._128Config));
 			

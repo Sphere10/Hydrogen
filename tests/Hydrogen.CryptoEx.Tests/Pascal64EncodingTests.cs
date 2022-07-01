@@ -8,8 +8,7 @@ using System.Linq;
 
 namespace Hydrogen.CryptoEx {
 
-
-    [TestFixture]
+	[TestFixture]
     [Parallelizable(ParallelScope.Children)]
     public class Pascal64EncodingTests {
 

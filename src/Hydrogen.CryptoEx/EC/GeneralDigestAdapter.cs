@@ -3,10 +3,11 @@ using Org.BouncyCastle.Crypto.Digests;
 
 namespace Hydrogen.CryptoEx {
 
+	// Needs Testing (RaceConditions)
 	public class GeneralDigestAdapter : IHashFunction {
 		private readonly GeneralDigest _generalDigest;
-		private bool _partiallyComputed = false;
-		private static readonly byte[] NullBytes = new byte[0];
+		private bool _inTransform = false;
+		private static readonly byte[] NullBytes = Array.Empty<byte>();
 
 		public GeneralDigestAdapter(GeneralDigest generalDigest) {
 			_generalDigest = generalDigest;
@@ -17,19 +18,19 @@ namespace Hydrogen.CryptoEx {
 
 
 		public void Compute(ReadOnlySpan<byte> input, Span<byte> output) {
-			if (_partiallyComputed)
+			if (_inTransform)
 				throw new InvalidOperationException("Complete prior transformations before starting a new one");
 			Transform(input);
 			GetResult(output);
 		}
 
 		public void Transform(ReadOnlySpan<byte> part) {
-			_partiallyComputed = true;
+			_inTransform = true;
 			_generalDigest.BlockUpdate(part.ToArray(), 0, part.Length);
 		}
 
 		public void GetResult(Span<byte> result) {
-			if (!_partiallyComputed)
+			if (!_inTransform)
 				throw new InvalidOperationException("Nothing was transformed");
 			try {
 				var outputArr = new byte[DigestSize];
@@ -37,10 +38,13 @@ namespace Hydrogen.CryptoEx {
 				outputArr.CopyTo(result);
 			} finally {
 				_generalDigest.Reset();
-				_partiallyComputed = false;
+				_inTransform = false;
 			}
 		}
 
+		public void Reset() {
+			_generalDigest.Reset();
+		}
 
 		public void Dispose() {
 		}

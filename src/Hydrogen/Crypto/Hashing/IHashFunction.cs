@@ -12,6 +12,8 @@ namespace Hydrogen {
 		void Transform(ReadOnlySpan<byte> data);
 
 		void GetResult(Span<byte> result);
+
+		void Reset();
 	}
 
 	public static class IHashFunctionExtensions {

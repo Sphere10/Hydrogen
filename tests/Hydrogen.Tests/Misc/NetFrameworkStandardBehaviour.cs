@@ -27,6 +27,19 @@ namespace Hydrogen.Tests {
 	public class NetFrameworkStandardBehaviour {
 
 		[Test]
+		public void ParallelForEachPropagatesException() {
+	
+			Assert.That(ParallelCode, Throws.TypeOf<AggregateException>());
+		
+			void ParallelCode() {
+				Parallel.For(1, 100, x => {
+					if (x == 50)
+						throw new SoftwareException();
+				});
+			}
+		}
+
+		[Test]
 		public void ListGetRangeNotSupportOverflow() {
 			var list = new List<int>();
 			list.AddRange(new[] { 1, 2, 3 });

@@ -136,7 +136,8 @@ namespace Hydrogen.Utils.WinFormsTester {
 		}
 
 		private void _regFastButton_Click(object sender, EventArgs e) {
-			HashLibAdapter.RegisterHashLibHashers();
+			throw new NotImplementedException("address this");
+			//HashLibAdapter.RegisterHashLibHashers();
 		}
 	}
 }

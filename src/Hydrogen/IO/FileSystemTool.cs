@@ -37,6 +37,13 @@ namespace Tools {
 			CrossPlatformForbiddenFileNames = new [] { "CON", "PRN", "AUX", "NUL", "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9" };
         }
 
+		public static byte[] CalculateContentHash(string filename, CHF chf) {
+			using var fileStream = File.OpenRead(filename);
+			using var hashingStream = new HashingStream(chf);
+			Tools.Streams.RouteStream(fileStream, hashingStream);
+			return hashingStream.GetDigest();
+		}
+
         public static void TruncateFile(string filename, long size) {
             using (var stream = File.OpenWrite(filename)) {
                 if (stream.Length != size)
@@ -149,8 +156,8 @@ namespace Tools {
         public static string GenerateTempFilename(string ext = null) {
             return Path.Combine(
                 Path.GetTempPath(),
-                Guid.NewGuid().ToStrictAlphaString(),
-                ext != null ? (ext.StartsWith(".") ? ext : "." + ext) : String.Empty);
+                Guid.NewGuid().ToStrictAlphaString() + (ext != null ? $".{ext.TrimStart('.')}" : String.Empty)
+			);
         }
 
         public static string GetCaseCorrectFilePath(string filepath) {

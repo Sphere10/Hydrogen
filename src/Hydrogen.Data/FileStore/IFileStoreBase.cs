@@ -20,87 +20,89 @@ using System.Text;
 
 namespace Hydrogen.Data;
 
-public interface IFileStoreBase<TfileKeyType> : IDisposable {
+public interface IFileStoreBase<TFileKeyType> : IDisposable {
 
-	IEnumerable<TfileKeyType> FileKeys { get; }
+	IEnumerable<TFileKeyType> FileKeys { get; }
 
-	string GetFilePath(TfileKeyType fileKey);
+	TFileKeyType RecommendFileKey(string externalFilePath);
 
-	bool ContainsFile(TfileKeyType fileKey);
+	string GetFilePath(TFileKeyType fileKey);
 
-	TfileKeyType NewFile();
+	bool ContainsFile(TFileKeyType fileKey);
 
-	void RegisterMany(IEnumerable<TfileKeyType> fileKeys);
+	TFileKeyType NewFile();
 
-	void DeleteMany(IEnumerable<TfileKeyType> fileKeys);
+	string[] RegisterMany(IEnumerable<TFileKeyType> fileKeys);
+
+	void DeleteMany(IEnumerable<TFileKeyType> fileKeys);
 
 	void Clear();
 
-	public FileInfo GetInfo(TfileKeyType fileKey);
+	public FileInfo GetInfo(TFileKeyType fileKey);
 
-	public Stream Open(TfileKeyType fileKey, FileMode mode);
+	public Stream Open(TFileKeyType fileKey, FileMode mode);
 
-	public Stream Open(TfileKeyType fileKey, FileMode mode, FileAccess access);
+	public Stream Open(TFileKeyType fileKey, FileMode mode, FileAccess access);
 
-	public Stream Open(TfileKeyType fileKey, FileMode mode, FileAccess access, FileShare share);
+	public Stream Open(TFileKeyType fileKey, FileMode mode, FileAccess access, FileShare share);
 
-	public void SetCreationTime(TfileKeyType fileKey, DateTime creationTime);
+	public void SetCreationTime(TFileKeyType fileKey, DateTime creationTime);
 
-	public void SetCreationTimeUtc(TfileKeyType fileKey, DateTime creationTimeUtc);
+	public void SetCreationTimeUtc(TFileKeyType fileKey, DateTime creationTimeUtc);
 
-	public DateTime GetCreationTime(TfileKeyType fileKey);
+	public DateTime GetCreationTime(TFileKeyType fileKey);
 
-	public DateTime GetCreationTimeUtc(TfileKeyType fileKey);
+	public DateTime GetCreationTimeUtc(TFileKeyType fileKey);
 
-	public void SetLastAccessTime(TfileKeyType fileKey, DateTime lastAccessTime);
+	public void SetLastAccessTime(TFileKeyType fileKey, DateTime lastAccessTime);
 
-	public void SetLastAccessTimeUtc(TfileKeyType fileKey, DateTime lastAccessTimeUtc);
+	public void SetLastAccessTimeUtc(TFileKeyType fileKey, DateTime lastAccessTimeUtc);
 
-	public DateTime GetLastAccessTime(TfileKeyType fileKey);
+	public DateTime GetLastAccessTime(TFileKeyType fileKey);
 
-	public DateTime GetLastAccessTimeUtc(TfileKeyType fileKey);
+	public DateTime GetLastAccessTimeUtc(TFileKeyType fileKey);
 
-	public void SetLastWriteTime(TfileKeyType fileKey, DateTime lastWriteTime);
+	public void SetLastWriteTime(TFileKeyType fileKey, DateTime lastWriteTime);
 
-	public void SetLastWriteTimeUtc(TfileKeyType fileKey, DateTime lastWriteTimeUtc);
+	public void SetLastWriteTimeUtc(TFileKeyType fileKey, DateTime lastWriteTimeUtc);
 
-	public DateTime GetLastWriteTime(TfileKeyType fileKey);
+	public DateTime GetLastWriteTime(TFileKeyType fileKey);
 
-	public DateTime GetLastWriteTimeUtc(TfileKeyType fileKey);
+	public DateTime GetLastWriteTimeUtc(TFileKeyType fileKey);
 
-	public FileAttributes GetAttributes(TfileKeyType fileKey);
+	public FileAttributes GetAttributes(TFileKeyType fileKey);
 
-	public void SetAttributes(TfileKeyType fileKey, FileAttributes fileAttributes);
+	public void SetAttributes(TFileKeyType fileKey, FileAttributes fileAttributes);
 
-	public Stream OpenRead(TfileKeyType fileKey);
+	public Stream OpenRead(TFileKeyType fileKey);
 
-	public Stream OpenWrite(TfileKeyType fileKey);
+	public Stream OpenWrite(TFileKeyType fileKey);
 
-	public string ReadAllText(TfileKeyType fileKey);
+	public string ReadAllText(TFileKeyType fileKey);
 
-	public string ReadAllText(TfileKeyType fileKey, Encoding encoding);
+	public string ReadAllText(TFileKeyType fileKey, Encoding encoding);
 
-	public void WriteAllText(TfileKeyType fileKey, string contents);
+	public void WriteAllText(TFileKeyType fileKey, string contents);
 
-	public void WriteAllText(TfileKeyType fileKey, string contents, Encoding encoding);
+	public void WriteAllText(TFileKeyType fileKey, string contents, Encoding encoding);
 
-	public byte[] ReadAllBytes(TfileKeyType fileKey);
+	public byte[] ReadAllBytes(TFileKeyType fileKey);
 
-	public void WriteAllBytes(TfileKeyType fileKey, byte[] bytes);
+	public void WriteAllBytes(TFileKeyType fileKey, byte[] bytes);
 
-	public void AppendAllBytes(TfileKeyType fileKey, byte[] bytes);
+	public void AppendAllBytes(TFileKeyType fileKey, byte[] bytes);
 
-	public string[] ReadAllLines(TfileKeyType fileKey);
+	public string[] ReadAllLines(TFileKeyType fileKey);
 
-	public string[] ReadAllLines(TfileKeyType fileKey, Encoding encoding);
+	public string[] ReadAllLines(TFileKeyType fileKey, Encoding encoding);
 
-	public void WriteAllLines(TfileKeyType fileKey, string[] contents);
+	public void WriteAllLines(TFileKeyType fileKey, string[] contents);
 
-	public void WriteAllLines(TfileKeyType fileKey, string[] contents, Encoding encoding);
+	public void WriteAllLines(TFileKeyType fileKey, string[] contents, Encoding encoding);
 
-	public void AppendAllText(TfileKeyType fileKey, string contents);
+	public void AppendAllText(TFileKeyType fileKey, string contents);
 
-	public void AppendAllText(TfileKeyType fileKey, string contents, Encoding encoding);
+	public void AppendAllText(TFileKeyType fileKey, string contents, Encoding encoding);
 
 }
 

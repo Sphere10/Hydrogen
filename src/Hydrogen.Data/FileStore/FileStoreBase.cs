@@ -30,13 +30,15 @@ public abstract class FileStoreBase<TFileKey> : Disposable, IFileStoreBase<TFile
 
 	#region Methods
 
+	public abstract TFileKey RecommendFileKey(string externalFilePath);
+
 	public abstract string GetFilePath(TFileKey fileKey);
 
 	public abstract bool ContainsFile(TFileKey fileKey);
 
 	public abstract TFileKey NewFile();
 
-	public abstract void RegisterMany(IEnumerable<TFileKey> fileKeys);
+	public abstract string[] RegisterMany(IEnumerable<TFileKey> fileKeys);
 
 	public abstract void DeleteMany(IEnumerable<TFileKey> fileKeys);
 

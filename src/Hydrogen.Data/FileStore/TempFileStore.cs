@@ -27,7 +27,7 @@ namespace Hydrogen.Data {
 		public TempFileStore(string subDir) : base(Path.Combine(Path.GetTempPath(), subDir), new NotPersistedDictionary<string,string>(), FileStorePersistencePolicy.DeleteOnDispose) {
 		}
 
-		protected override string GenerateInternalFilePath(string fileKey) {
+		protected override string GenerateInternalRelFilePath(string fileKey) {
 			return Path.Combine(base.BaseDirectory, Path.GetFileName(Guid.NewGuid().ToStrictAlphaString()));
 		}
 

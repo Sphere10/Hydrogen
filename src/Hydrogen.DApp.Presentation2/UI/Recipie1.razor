@@ -30,7 +30,8 @@
 
     <h3>Blocks @(DataSource.Count2) Time @(DataSource.GetCreationDate().ToString("U"))</h3>
     <div style="width:50%; float:left;">
-        <BlazorGrid TItem="Block"
+        <BlazorGrid @ref="BlockGrid"
+                    TItem="Block"
                     Id="TestGrid"
                     PageSize="5"
                     DataSource="DataSource"
@@ -42,8 +43,8 @@
                     Actions="DataActions"
                     ColumnDefinitions="ColumnDefinitions"
                     OnSelection="OnBlockSelection"
-                    SelectedItem="RecipieSelectedItem"
-                  
+                    OnContextMenu="OnContextMenu"
+             
                     >
         </BlazorGrid>
     </div>
@@ -96,7 +97,9 @@
     List<IGridComponent<Block>> Components { get; set; } = new List<IGridComponent<Block>>();
 
     Timer Timer { get; set; }
-    Block RecipieSelectedItem { get; set; }
+
+    BlazorGrid<Block> BlockGrid { get; set; }
+    BlazorGrid<Transaction> TransactionGrid { get; set; }
 
     protected override async void OnInitialized()
     {
@@ -126,21 +129,27 @@
 
         DataActions2.Add(new GridAction<Transaction>("DeleteAction", DeleteAction, "❌✡", IsDeleteAvailable));
 
-        //ColumnDefinitions.Add(new DataEnd<TestClass, TestClass2>("Data End 1", TestDataExtractor1));
-        ColumnDefinitions.Add(new DataEnd<Block, TestClass3>(50, "Data End 2", TestDataExtractor2));
-        ColumnDefinitions.Add(new DataEnd<Block, TestClass3>(50, "Data End 2", TestDataExtractor2));
+        ColumnDefinitions.Add(new DataEnd<Block, TestClass3>(80, "D E 1", TestDataExtractor1));
+        //ColumnDefinitions.Add(new DataEnd<Block, TestClass3>(50, "Data End 2", TestDataExtractor2));
+        ColumnDefinitions.Add(new DataEnd<Block, TestClass3>(50, "D E 2", TestDataExtractor2));
 
-        ColumnDefinitions2.Add(new DataEnd<Block, TestClass3>(50, "Data End 1", TestDataExtractor2));
+        ColumnDefinitions2.Add(new DataEnd<Block, TestClass3>(50, "D E X", TestDataExtractor2));
 
-        Timer = new Timer(TimerFunction, null, 5000, 10000); //System.Timers.Timer(1000); // 1 seconds   
+        Timer = new Timer(TimerFunction, null, 1000, 100000); //System.Timers.Timer(1000); // 1 seconds   
     }
 
+    int count = 0;
     void TimerFunction(object value) {
         try {
+            if (count++ > 3) return;
+
             //var random = Random.Shared.Next();
-            var newBlock = DataSource.New(1);
+            var newBlocks = DataSource.New(1);
+            var newBlock = ((List<Block>)newBlocks)[0];
+
+            BlockGrid.SetSelectedItem(newBlock);
             DataSource2.Clear();
-            DataSource2.CreateDelayed(newBlock.First().Transactions);
+            DataSource2.CreateDelayed(newBlocks.First().Transactions);
         }
         catch (Exception ex) {
         }  
@@ -163,6 +172,26 @@
         return item;
     }
 
+    TestClass3 TestDataExtractor1(object data)
+    {
+        try {
+            if (data is Block block) {
+                return new TestClass3(block.Id);
+            }
+            else if (data is Transaction transaction) {
+                return new TestClass3(transaction.Id);                
+            }
+
+            throw new Exception("TestDataExtractor2 bad data type");
+        }
+        catch (Exception ex) {
+
+        }
+
+        return null;
+    }
+
+
     TestClass3 TestDataExtractor2(object data)
     {
         try {
@@ -183,12 +212,30 @@
     }
 
     void OnBlockSelection(Block block) {
-
-        RecipieSelectedItem = block;
-
         DataSource2.Clear();
         DataSource2.CreateDelayed(block.Transactions);
         DataSource.SetSelectedItem(block);
+    }
+
+    void OnContextMenu(object blockObject, MenuStrip menuStrip) {
+
+        var block = (Block)blockObject;
+
+        var menuItem1 = new MenuStripItem(block, "Display Block Id");
+        menuItem1.OnClick += ((block) => {
+            var thisBlock = (Block)block;
+            Alert(thisBlock.Id);
+        });
+        var menuItem2 = new MenuStripItem(block, "Display Block Creation Time");
+        menuItem2.OnClick += ((block) => {
+            var thisBlock = (Block)block;
+            Alert(thisBlock.CreationDateTime.ToString());
+        });
+        var menuItem3 = new MenuStripItem(block, "------------------");
+
+        menuStrip.Items.Add(menuItem1);
+        menuStrip.Items.Add(menuItem2);
+        menuStrip.Items.Add(menuItem3);
     }
 
     void HandleRemoteDataChange(DataSourceMutatedItems<Block> items)
@@ -211,9 +258,6 @@
 
         return item;
     }
-
-
-
 
     //public class DataSource2<TItem> : IDataSource<TestClass> {
 

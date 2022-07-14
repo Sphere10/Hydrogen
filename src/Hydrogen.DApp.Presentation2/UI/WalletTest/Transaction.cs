@@ -11,7 +11,10 @@ namespace Hydrogen.DApp.Presentation2.UI.WalletTest {
 		public DateTime DateTime { get; set; }
 
 		public Transaction() {
+		}
 
+		override public string ToString() {
+			return $"Id: {Id.Substring(0, 8)} Time: {DateTime.ToString()}";
 		}
 	}
 }

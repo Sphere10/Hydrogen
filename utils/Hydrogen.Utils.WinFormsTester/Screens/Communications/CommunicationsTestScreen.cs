@@ -21,6 +21,7 @@ using System.Linq;
 using Hydrogen;
 using Hydrogen.Communications;
 using Hydrogen.Windows.Forms;
+using Hydrogen.DApp.Presentation2.UI.Controls;
 
 namespace Hydrogen.Utils.WinFormsTester
 {

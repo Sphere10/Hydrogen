@@ -1,53 +1,62 @@
 ﻿using System;
+using System.Linq;
 using System.Reflection;
+using System.Collections.Generic;
 
 namespace Hydrogen.DApp.Presentation2.UI.Controls.BlazorGrid.Classes {
 	public class Cell 
 	{
-		public HeaderData Header { get; set; }
-		public RowData Row { get; set; }
-		public ObjectTypeInfo TypeInfo { get; set; }
-		public string Text { get; set; }
+		public HeaderData Header { get; private set; }
+		public RowData Row { get; private set; }
+		public ObjectTypeInfo ObjectTypeInfo { get; private set; }
+		public string HeaderText { get; private set; }
 		public object Tag { get; private set; } // this is the full row of data
-		public int DataIndex { get; set; }
+		public object CellData { get; private set; }
+		public int DataIndex { get; private set; }
+		public PropertyInfo PropertyInfo { get; private set; }
+		public bool IsHeader { get; private set;}
+		public string Text { get; private set; }
+
 		public string Name { get { return Header.Name; } }
 		public int Width { get { return Header.Width; } }
 		public int Height { get { return Row.Height; } }
-		public bool IsEnum { get; set; }
+		public bool IsEnum { get; private set; }
+		public bool IsCollection { get; private set; }
+		public List<string> ICollectionValues { get; private set; }
+		public string CollectionId { get; set; }
 
-		public Cell(HeaderData header, RowData row, ObjectTypeInfo typeInfo, string text, object underlyingData, int dataIndex) 
+		public Cell(HeaderData header, RowData row, ObjectTypeInfo typeInfo, string headerText, object underlyingData, int dataIndex, PropertyInfo propertyInfo, bool isHeader) 
 		{ 
 			Header = header;
 			Row = row;
-			TypeInfo = typeInfo;
-			Text = text;
+			ObjectTypeInfo = typeInfo;
+			HeaderText = headerText;
 			Tag = underlyingData;
 			DataIndex = dataIndex;
-			IsEnum = TypeInfo.IsEnum;
-		}
-
-/*
-		public Cell(HeaderData header, RowData row, ObjectTypeInfo typeInfo, PropertyInfo propertyInfo, int dataIndex) 
-			:this(header, row, typeInfo, propertyInfo, header.Name, dataIndex)
-		{
-		}
-
-		public Cell(HeaderData header, RowData row, ObjectTypeInfo typeInfo, PropertyInfo propertyInfo, object underlyingData, int dataIndex)
-		{
-			Header = header;
-			Row = row;
-			TypeInfo = typeInfo;
 			PropertyInfo = propertyInfo;
-			Tag = underlyingData;
-			DataIndex = dataIndex;
-			IsEnum = TypeInfo.IsEnum;
+			IsHeader = isHeader;
+			IsEnum = ObjectTypeInfo.IsEnum;
 
-			Text = GetText();
+			if (!IsHeader) {
+				var value = PropertyInfo.GetValue(Tag);
+				var namespaces = PropertyInfo.PropertyType.GetInterfaces().Select(x => x.Namespace).ToList();
+				IsCollection = namespaces.Any(x => x == "System.Collections" || x == "System.Collections.Generic") && value is not string;
+				if (IsCollection) {
+					ICollectionValues = ((IEnumerable<object>)value).Select(x => x.ToString()).ToList();
+					CollectionId = Guid.NewGuid().ToString();
+				}
+			}
+
+			Text = GetCellText();
 		}
-*/
+
 		public string GetInputType() 
 		{
-			switch (TypeInfo.Type.Name.ToLower()) 
+			if (IsCollection) {
+
+			}
+
+			switch (ObjectTypeInfo.Type.Name.ToLower()) 
 			{
 				case "datetime":	return "date";
 				case "decimal":
@@ -63,49 +72,39 @@ namespace Hydrogen.DApp.Presentation2.UI.Controls.BlazorGrid.Classes {
 
 		public string GetListName() 
 		{
-			if (TypeInfo.IsEnum) 
+			if (ObjectTypeInfo.IsEnum) 
 			{
 				return Name;
+			}
+
+			if (IsCollection) {
+
 			}
 
 			return string.Empty;
 		}
 
-		// improve this, they way it is called, maybe store the data on the cell
-		public static string GetCellText(object cellData, PropertyInfo property) {
-			var value = property.GetValue(cellData);
-			var typeName = property.PropertyType.Name.ToString();
+		public string GetCellText() {
+			if (IsCollection) {
+				return String.Empty;
+			}
+
+			if (IsHeader) {
+				return HeaderText;
+			}
+
+			var value = PropertyInfo.GetValue(Tag);
+			var typeName = PropertyInfo.PropertyType.Name.ToString();
 			switch (typeName) {
 				case "DateTime": return ((DateTime)value).ToString("yyyy-MM-dd");
 				default: return value.ToString();
 			}
 		}
-		/*
-				public string GetText() 
-				{
-					object value;
-					string typeName;
 
-					try 
-					{
-						value = PropertyInfo.GetValue(Tag);
-						typeName = PropertyInfo.PropertyType.Name.ToString();
-						switch (typeName) 
-						{
-							case "DateTime": return ((DateTime)value).ToString("yyyy-MM-dd");
-							default: return value.ToString();
-						}
-					}
-					catch (Exception ex) 
-					{
-						return "Error";
-					}
-				}
-		*/
 		public void UpdateData(string newValue) 
 		{
-			var objectValue = Tools.Parser.Parse(TypeInfo.Type, newValue);
-			TypeInfo.PropertyInfo.SetValue(Tag, objectValue);
+			var objectValue = Tools.Parser.Parse(ObjectTypeInfo.Type, newValue);
+			ObjectTypeInfo.PropertyInfo.SetValue(Tag, objectValue);
 /*
 			object objectValue = null;
 

@@ -13,11 +13,16 @@ namespace Hydrogen.DApp.Presentation2.UI.Controls.BlazorGrid.Components {
 		{
 			ListId = listId;
 		}
+
+		public void OnClick() {
+
+		}
 		
 		public void Render(string item, RenderTreeBuilder builder) 
 		{
 			builder.OpenComponent<Component1Test>(0);
-			builder.AddAttribute(1, "ListId", ListId);
+			builder.AddAttribute(1, "ListId", ListId); 
+	//		builder.AddAttribute(2, "onclick", EventCallback.Factory.Create(this,() => OnClick()));
 			builder.CloseComponent();
 		}
 	}

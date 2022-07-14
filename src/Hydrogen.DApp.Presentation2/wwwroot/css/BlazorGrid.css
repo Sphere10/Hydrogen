@@ -61,8 +61,13 @@ input[type="number"]::-webkit-inner-spin-button {
     background-color: #f2e9f2;
 }
 
-.RowHeight {
-    min-height: 20px !important;
-    max-height: 20px !important;
-    height: 20px !important;
+.RowHeight td {
+    min-height: 30px !important;
+    max-height: 30px !important;
+    height: 30px !important;
+    table-layout: fixed;
+    overflow: hidden;
+    margin: 0px;
+    border: none 0px;
+    padding: 0px;
 }

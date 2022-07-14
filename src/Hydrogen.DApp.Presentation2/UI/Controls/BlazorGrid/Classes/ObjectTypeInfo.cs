@@ -21,6 +21,7 @@ namespace Hydrogen.DApp.Presentation2.UI.Controls.BlazorGrid.Classes {
 				TypeFullName = PropertyInfo.PropertyType.FullName;
 				Type = Type.GetType(TypeFullName);
 				IsEnum = Type.IsEnum;
+
 				if (IsEnum) 
 				{
 			//		var name = Type.Name;

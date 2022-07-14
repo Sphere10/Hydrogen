@@ -10,13 +10,13 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <None Remove="Screens\Communications\TestClass.cs.old file" />
-	  <None Remove="Screens\Communications\TestDataSource.cs.old file" />
+	  <EmbeddedResource Remove="Screens\Communications\CommunicationsTestScreen.resx" />
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Compile Include="Screens\Communications\TestClass.cs.old file" />
-	  <Compile Include="Screens\Communications\TestDataSource.cs.old file" />
+	  <None Remove="Screens\Communications\CommunicationsTestScreen.cs.old" />
+	  <None Remove="Screens\Communications\TestClass.cs.old file" />
+	  <None Remove="Screens\Communications\TestDataSource.cs.old file" />
 	</ItemGroup>
 
 	<ItemGroup>

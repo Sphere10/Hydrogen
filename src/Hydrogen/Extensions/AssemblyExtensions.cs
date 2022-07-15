@@ -41,15 +41,36 @@ namespace Hydrogen {
 			Tools.FileSystem.WriteAllBytes(filePath, stream);
 		}
 
-		public static IEnumerable<Assembly> GetNonFrameworkAssemblies(this AppDomain domain) {
-			return domain.GetAssemblies().Where(x =>  !FrameworkPrefixes.Any(p => x.FullName.StartsWith(p)));
-		}
-        public static IEnumerable<Type> GetDerivedTypes<T>(this Assembly assembly) {
-            return assembly.GetDerivedTypes(typeof(T));
-        }
 
-        public static IEnumerable<Type> GetDerivedTypes(this Assembly assembly, Type baseType) {
-            return assembly.GetTypes().Where(t => t != baseType && baseType.IsAssignableFrom(t));
-        }
-    }
+		public static void ExtractEmbeddedResources(this Assembly assembly, string folder, string removeNamespace = null, bool keepExisting = true, Action<string, string> logAction = null) {
+			Guard.ArgumentNotNull(folder, nameof(folder));
+			removeNamespace ??= string.Empty;
+			logAction ??= (_, _) => { };
+			foreach (var embeddedResourceName in assembly.GetManifestResourceNames()) {
+				var pathItems = embeddedResourceName.TrimStart(removeNamespace.TrimEnd(".") + ".").Split('.').ToArray();
+				if (pathItems.Any(string.IsNullOrEmpty))
+					throw new NotSupportedException($"Embedded resources with dotted filenames are not supported: '{embeddedResourceName}'");
+				var fileName = pathItems.TakeLast(2).ToDelimittedString(".");
+				Array.Resize(ref pathItems, pathItems.Length - 2);
+				var folderPath = pathItems.Aggregate(folder, Path.Combine);    // empty folders were 
+				var templatePath = Path.Join(folderPath, fileName);
+				if (keepExisting && File.Exists(templatePath))
+					continue;
+				logAction(fileName, templatePath);
+				assembly.ExtractEmbeddedResource(embeddedResourceName, templatePath, createDirectories: true);
+			}
+
+		}
+
+		public static IEnumerable<Assembly> GetNonFrameworkAssemblies(this AppDomain domain) {
+			return domain.GetAssemblies().Where(x => !FrameworkPrefixes.Any(p => x.FullName.StartsWith(p)));
+		}
+		public static IEnumerable<Type> GetDerivedTypes<T>(this Assembly assembly) {
+			return assembly.GetDerivedTypes(typeof(T));
+		}
+
+		public static IEnumerable<Type> GetDerivedTypes(this Assembly assembly, Type baseType) {
+			return assembly.GetTypes().Where(t => t != baseType && baseType.IsAssignableFrom(t));
+		}
+	}
 }

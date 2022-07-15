@@ -29,6 +29,9 @@ namespace Hydrogen {
 
 		#region General
 
+		public static string ToUnixPath(this string path) 
+			=> path.Replace('\\', '/');
+
 		public static bool StartsWithAny(this string @string, params string[] strings)
 			=> @string.StartsWithAny(StringComparison.InvariantCulture, strings);
 

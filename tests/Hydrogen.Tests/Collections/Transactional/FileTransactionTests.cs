@@ -49,7 +49,7 @@ namespace Hydrogen.Tests {
 					file.AddRange(chunk1);
 					transaction.Commit();
 					// check no transaction files
-					Assert.AreEqual(0, Tools.FileSystem.GetFiles(txnBaseDir).Length);
+					Assert.AreEqual(0, Tools.FileSystem.GetFiles(txnBaseDir).Count());
 					file.AddRange(chunk2);
 					transaction.Commit();
 				}
@@ -78,7 +78,7 @@ namespace Hydrogen.Tests {
 					file.AddRange(chunk1);
 					transaction.Commit();
 					// check no transaction files
-					Assert.AreEqual(0, Tools.FileSystem.GetFiles(txnBaseDir).Length);
+					Assert.AreEqual(0, Tools.FileSystem.GetFiles(txnBaseDir).Count());
 					file.AddRange(chunk2);
 					transaction.Rollback();
 				}
@@ -108,7 +108,7 @@ namespace Hydrogen.Tests {
 					file.AddRange(chunk1);
 					transaction.Rollback();
 					// check no transaction files
-					Assert.AreEqual(0, Tools.FileSystem.GetFiles(txnBaseDir).Length);
+					Assert.AreEqual(0, Tools.FileSystem.GetFiles(txnBaseDir).Count());
 					file.AddRange(chunk2);
 					transaction.Commit();
 				}
@@ -138,7 +138,7 @@ namespace Hydrogen.Tests {
 					file.AddRange(chunk1);
 					transaction.Rollback();
 					// check no transaction files
-					Assert.AreEqual(0, Tools.FileSystem.GetFiles(txnBaseDir).Length);
+					Assert.AreEqual(0, Tools.FileSystem.GetFiles(txnBaseDir).Count());
 					file.AddRange(chunk2);
 					transaction.Rollback();
 				}
@@ -232,7 +232,7 @@ namespace Hydrogen.Tests {
 				}
 
 				// check no transaction junk
-				Assert.AreEqual(0, Tools.FileSystem.GetFiles(txnBaseDir).Length);
+				Assert.AreEqual(0, Tools.FileSystem.GetFiles(txnBaseDir).Count());
 
 				// check files match expected
 				for (var i = 0; i < numFiles; i++) {
@@ -311,7 +311,7 @@ namespace Hydrogen.Tests {
 				}
 
 				// check no transaction junk
-				Assert.AreEqual(0, Tools.FileSystem.GetFiles(txnBaseDir).Length);
+				Assert.AreEqual(0, Tools.FileSystem.GetFiles(txnBaseDir).Count());
 
 				// check files match expected
 				for (var i = 0; i < numFiles; i++) {
@@ -375,7 +375,7 @@ namespace Hydrogen.Tests {
 				}
 
 				// check no transaction junk
-				Assert.AreEqual(0, Tools.FileSystem.GetFiles(txnBaseDir).Length);
+				Assert.AreEqual(0, Tools.FileSystem.GetFiles(txnBaseDir).Count());
 
 				// check files match expected
 				for (var i = 0; i < numFiles; i++) {
@@ -458,7 +458,7 @@ namespace Hydrogen.Tests {
 				}
 
 				// check no transaction junk
-				Assert.AreEqual(0, Tools.FileSystem.GetFiles(txnBaseDir).Length);
+				Assert.AreEqual(0, Tools.FileSystem.GetFiles(txnBaseDir).Count());
 
 				// check files are unchanged
 				for (var i = 0; i < numFiles; i++) {

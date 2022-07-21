@@ -462,17 +462,32 @@ namespace Tools {
 			return subDirs.ToArray();
         }
 
-        public static string[] GetFiles(string directory, FileSystemPathType pathType = FileSystemPathType.Relative) {
-            var files = Directory.EnumerateFiles(directory);
-		
+
+        public static IEnumerable<string> GetFiles(string directory, string pattern = "*", bool recursive = false, FileSystemPathType pathType = FileSystemPathType.Relative) {
+			var files = Directory.EnumerateFiles(directory, pattern);
+
 			if (pathType == FileSystemPathType.Relative)
 				files = files.Select(Path.GetFileName);
 
-			return files.ToArray();
-        }
+			if (recursive) {
+				files = files.Concat( 
+					Directory
+						.EnumerateDirectories(directory)
+						.SelectMany(
+							subDir => 
+								GetFiles(subDir, pattern, recursive, pathType)
+									.Select(
+										subDirItem => pathType switch {
+											FileSystemPathType.Relative => Path.Join(Path.GetRelativePath(directory, subDir), subDirItem),
+											FileSystemPathType.Absolute => subDirItem,
+											_ => throw new NotSupportedException(pathType.ToString())
+										}
+									)
+						)
+				);
+			}
 
-        public static string[] GetFiles(string directory, string pattern, FileSystemPathType pathType = FileSystemPathType.Relative) {
-            return Directory.EnumerateFiles(directory, pattern).Select(Path.GetFileName).ToArray();
+            return files;
         }
 
         public static bool DirectoryContainsFiles(string directory, params string[] filenames) {

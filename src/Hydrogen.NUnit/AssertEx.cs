@@ -334,6 +334,47 @@ namespace Hydrogen.NUnit {
 			valueComparer ??= EqualityComparer<TValue>.Default;
 			var kvpComparer = new KeyValuePairEqualityComparer<TKey, TValue>(keyComparer, valueComparer);
 
+
+			// Add half capacity
+			var newItems = Enumerable.Repeat( randomItemGenerator(rng), maxCapacity / 2).Select(x => x.ToKeyValuePair()).ToArray();
+			expected.AddRange(newItems);
+			dictionary.AddRange(newItems);
+
+			// Enumerable comparer
+			Assert.That(expected, Is.EqualTo(dictionary).Using(kvpComparer));
+
+			// Enumerator consistency
+			using (var expectedEnumerator = expected.GetEnumerator())
+			using (var enumerator = dictionary.GetEnumerator()) {
+
+				Assert.That(expectedEnumerator.Current, Is.EqualTo(enumerator.Current).Using(kvpComparer));
+				bool expectedMoveNext;
+				do {
+					expectedMoveNext = expectedEnumerator.MoveNext();
+					var moveNext = enumerator.MoveNext();
+					Assert.That(expectedMoveNext, Is.EqualTo(moveNext).Using(kvpComparer));
+					if (expectedMoveNext)
+						Assert.That(expectedEnumerator.Current, Is.EqualTo(enumerator.Current).Using(kvpComparer));
+				} while (expectedMoveNext);
+			}
+
+			// Ensure adding duplicate fails
+			if (newItems.Length >0) {
+				var existing = newItems[0];
+				var newItem = randomItemGenerator(rng).ToKeyValuePair();
+				var duplicate = new KeyValuePair<TKey,TValue>(existing.Key, newItem.Value);
+				Assert.That(() => expected.Add(duplicate), Throws.Exception);
+				Assert.That(() => dictionary.Add(duplicate), Throws.Exception);
+				Assert.That(() => expected.Add(duplicate.Key, duplicate.Value), Throws.Exception);
+				Assert.That(() => dictionary.Add(duplicate.Key, duplicate.Value), Throws.Exception);
+			}
+
+			// Clear
+			expected.Clear();
+			dictionary.Clear();
+			Assert.That(expected.Count, Is.EqualTo(dictionary.Count));
+			Assert.That(expected, Is.EqualTo(dictionary).Using(kvpComparer));
+
 			for (var i = 0; i < iterations; i++) {
 				var remainingCapacity = maxCapacity - expected.Count;
 

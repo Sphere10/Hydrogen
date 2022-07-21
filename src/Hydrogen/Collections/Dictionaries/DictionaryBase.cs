@@ -20,19 +20,24 @@ namespace Hydrogen {
 
 		public virtual ICollection<TValue> Values => _valuesCollectionProperty;
 
-		public abstract void Add(TKey key, TValue value);
-
-		public abstract bool ContainsKey(TKey key);
+		public TValue Get(TKey key) { 
+			if (TryGetValue(key, out var value))
+				return value;
+			throw new KeyNotFoundException($"The key '{key}' was not found");
+		}
 
 		public abstract bool TryGetValue(TKey key, out TValue value);
 
+		public abstract void Add(TKey key, TValue value);
+
+		public abstract void Update(TKey key, TValue value);
+
+		public abstract bool ContainsKey(TKey key);
+
+
 		public virtual TValue this[TKey key] {
-			get {
-				if (TryGetValue(key, out var value))
-					return value;
-				throw new KeyNotFoundException($"The key '{key}' was not found");
-			}
-			set => Add(key, value);
+			get => Get(key);
+			set => AddOrUpdate(key, value);
 		}
 
 		public abstract void Add(KeyValuePair<TKey, TValue> item);
@@ -52,6 +57,13 @@ namespace Hydrogen {
 		public abstract bool IsReadOnly { get; }
 
 		public abstract IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator();
+
+		protected virtual void AddOrUpdate(TKey key, TValue value) {
+			if (ContainsKey(key))
+				Update(key, value);
+			else
+				Add(key, value);
+		}
 
 		protected virtual IEnumerator<TKey> GetKeysEnumerator() => GetEnumerator().AsEnumerable().Select(x => x.Key).GetEnumerator();
 

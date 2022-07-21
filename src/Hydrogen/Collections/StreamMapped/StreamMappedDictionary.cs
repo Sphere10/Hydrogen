@@ -116,6 +116,22 @@ namespace Hydrogen {
 		public override void Add(TKey key, TValue value) {
 			Guard.ArgumentNotNull(key, nameof(key));
 			CheckLoaded();
+			if (TryFindKey(key, out _))
+				throw new KeyNotFoundException($"An item with key '{key}' was already added");
+			var kvp = new KeyValuePair<TKey, TValue>(key, value);
+			AddInternal(kvp);
+		}
+
+		public override void Update(TKey key, TValue value) {
+			if (!TryFindKey(key, out var index))
+				throw new KeyNotFoundException($"The key '{key}' was not found");
+			var kvp = new KeyValuePair<TKey, TValue>(key, value);
+			UpdateInternal(index,  kvp);
+		}
+
+		protected override void AddOrUpdate(TKey key, TValue value) {
+			Guard.ArgumentNotNull(key, nameof(key));
+			CheckLoaded();
 			var kvp = new KeyValuePair<TKey, TValue>(key, value);
 			if (TryFindKey(key, out var index)) {
 				UpdateInternal(index, kvp);
@@ -191,14 +207,10 @@ namespace Hydrogen {
 
 		public override void Add(KeyValuePair<TKey, TValue> item) {
 			Guard.ArgumentNotNull(item, nameof(item));
-			Guard.ArgumentNotNull(item, nameof(item));
 			CheckLoaded();
-			var kvp = new KeyValuePair<TKey, TValue>(item.Key, item.Value);
-			if (TryFindKey(item.Key, out var index)) {
-				KVPList.Update(index, kvp);
-			} else {
-				AddInternal(kvp);
-			}
+			if (TryFindKey(item.Key, out _))
+				throw new KeyNotFoundException($"An item with key '{item.Key}' was already added");
+			AddInternal(item);
 		}
 
 		public override bool Remove(KeyValuePair<TKey, TValue> item) {

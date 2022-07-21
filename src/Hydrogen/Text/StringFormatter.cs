@@ -8,7 +8,7 @@ namespace Hydrogen {
 	public static class StringFormatter {
 		private static readonly char[] TokenTrimDelimitters = new[] { '{', '}' };
 
-		private static readonly IFuture<ITokenResolver[]> Resolvers = Tools.Values.LazyLoad(() => new []{ new DefaultTokenResolver() }.Concat(TinyIoC.TinyIoCContainer.Current.ResolveAll<ITokenResolver>(true)).ToArray());
+		private static readonly IFuture<ITokenResolver[]> Resolvers = Tools.Values.Future.LazyLoad(() => new []{ new DefaultTokenResolver() }.Concat(TinyIoC.TinyIoCContainer.Current.ResolveAll<ITokenResolver>(true)).ToArray());
 
         public static string FormatEx(string formatString, params object[] formatArgs) {
             return FormatEx(formatString, ResolveToken, formatArgs);
@@ -96,7 +96,7 @@ namespace Hydrogen {
 		        valueObject = formatArgs[formatIndex];
 	        } else {
 				var tokenSplits = token.Split(':');
-				if (tokenSplits.Length > 1) {
+				if (tokenSplits.Length > 1 && token.CountSubstring("://") != 1) {   // Note :// is used for url-looking tokens (i.e. https://www.sphere10.com);
 					token = tokenSplits[0].TrimEnd();
 					formatOptions = ":" + tokenSplits.Skip(1).Select(s => s.Trim()).ToDelimittedString(":");
 				}

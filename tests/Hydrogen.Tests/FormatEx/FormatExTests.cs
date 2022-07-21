@@ -43,14 +43,14 @@ namespace Hydrogen.Tests {
         [Test]
         public void SimpleTest_5() {
             var now = DateTime.Now;
-            Assert.AreEqual(string.Format(" x{0:yyyy-MM-dd }x ", now), Tools.Text.FormatEx(" x{0:yyyy-MM-dd }x ", now));
+            Assert.AreEqual(string.Format(" x{0:yyyy-MM-dd}x ", now), Tools.Text.FormatEx(" x{0:yyyy-MM-dd}x ", now));
         }
 
 
         [Test]
         public void SimpleTest_6() {
             var now = DateTime.Now;
-            Assert.AreEqual(string.Format(" ${0:yyyy-MM-dd }^^^^^{1}{2:HH:mm:ss tt zz}! ", now, "ALPHA", now), Tools.Text.FormatEx(" ${0:yyyy-MM-dd }^^^^^{1}{2:HH:mm:ss tt zz}! ", now, "ALPHA", now));
+            Assert.AreEqual(string.Format(" ${0:yyyy-MM-dd}^^^^^{1}{2:HH:mm:ss tt zz}! ", now, "ALPHA", now), Tools.Text.FormatEx(" ${0:yyyy-MM-dd}^^^^^{1}{2:HH:mm:ss tt zz}! ", now, "ALPHA", now));
         }
 
 
@@ -153,32 +153,32 @@ namespace Hydrogen.Tests {
         [Test]
         public void DanglingBraces_1() {
             Assert.Throws<FormatException>(() => string.Format("{"));
-            Assert.Throws<FormatException>(() => Tools.Text.FormatEx("{"));
+            Assert.DoesNotThrow(() => Tools.Text.FormatEx("{"));
         }
 
         [Test]
         public void DanglingBraces_2() {
             Assert.Throws<FormatException>(() => string.Format("}"));
-            Assert.Throws<FormatException>(() => Tools.Text.FormatEx("}"));
+            Assert.DoesNotThrow(() => Tools.Text.FormatEx("}"));
         }
 
         [Test]
         public void DanglingBraces_3() {
             Assert.Throws<FormatException>(() => string.Format("{{}}}"));
-            Assert.Throws<FormatException>(() => Tools.Text.FormatEx("{{}}}"));
+            Assert.DoesNotThrow(() => Tools.Text.FormatEx("{{}}}"));
         }
 
 
         [Test]
         public void DanglingBraces_4() {
             Assert.Throws<FormatException>(() => string.Format("{{}}{"));
-            Assert.Throws<FormatException>(() => Tools.Text.FormatEx("{{}}{"));
+            Assert.DoesNotThrow(() => Tools.Text.FormatEx("{{}}{"));
         }
 
         [Test]
         public void DanglingBraces_5() {
             Assert.Throws<FormatException>(() => string.Format("{{}}}"));
-            Assert.Throws<FormatException>(() => Tools.Text.FormatEx("{{{}}"));
+            Assert.DoesNotThrow(() => Tools.Text.FormatEx("{{{}}"));
         }
 
     }

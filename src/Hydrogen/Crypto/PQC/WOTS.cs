@@ -68,7 +68,7 @@ namespace Hydrogen {
 			IFuture<byte[]> pubKeyHash;
 			if (Config.UsePublicKeyHashOptimization) {
 				pub = ToOptimizedPublicKey(pub);
-				pubKeyHash = Future<byte[]>.For(pub.ToFlatArray());
+				pubKeyHash = ExplicitFuture<byte[]>.For(pub.ToFlatArray());
 			} else {
 				pubKeyHash = LazyLoad<byte[]>.From(() => ToOptimizedPublicKey(pub).ToFlatArray());
 			}

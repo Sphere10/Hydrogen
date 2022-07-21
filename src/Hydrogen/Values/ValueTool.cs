@@ -29,8 +29,6 @@ namespace Tools {
 		public const string UNDEFINED_STRING = "undef";
 
 
-		public static LazyLoad<T> LazyLoad<T>(Func<T> valueLoader) => new LazyLoad<T>(valueLoader);
-
 		/// <summary>
 		/// Converts an integer into into another base. 
 		/// </summary>
@@ -182,11 +180,17 @@ namespace Tools {
 
 		public static class Future {
 
-			public static IFuture<T> For<T>(T value)
-				=> Future<T>.For(value);
+			public static IFuture<T> Explicit<T>()
+				=> new ExplicitFuture<T>();
+
+			public static IFuture<T> Explicit<T>(T value)
+				=> ExplicitFuture<T>.For(value);
 
 			public static IFuture<T> LazyLoad<T>(Func<T> valueLoader)
 				=> new LazyLoad<T>(valueLoader);
+
+			public static IFuture<T> AlwaysLoad<T>(Func<T> valueLoader)
+				=> new ProxyValue<T>(valueLoader);
 
 			public static IFuture<T> Projection<TSource, T>(IFuture<TSource> future, Func<TSource, T> projection) {
 				return LazyLoad(() => projection(future.Value));

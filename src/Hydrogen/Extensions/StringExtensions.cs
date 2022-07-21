@@ -29,7 +29,17 @@ namespace Hydrogen {
 
 		#region General
 
-		public static string ToUnixPath(this string path) 
+		public static int CountSubstring(this string text, string value, StringComparison comparison = StringComparison.Ordinal) {
+			var count = 0;
+			var minIndex = text.IndexOf(value, 0, comparison);
+			while (minIndex != -1) {
+				minIndex = text.IndexOf(value, minIndex + value.Length, comparison);
+				count++;
+			}
+			return count;
+		}
+
+		public static string ToUnixPath(this string path)
 			=> path.Replace('\\', '/');
 
 		public static bool StartsWithAny(this string @string, params string[] strings)
@@ -41,55 +51,55 @@ namespace Hydrogen {
 		public static string ToNullIfWhitespace(this string @string)
 			=> @string.ToValueIfNullOrWhitespace(null);
 
-		public static string ToValueIfNullOrWhitespace(this string @string, string value) 
+		public static string ToValueIfNullOrWhitespace(this string @string, string value)
 			=> string.IsNullOrWhiteSpace(@string) ? value : @string;
 
 		public static string Repeat(this string @string, int times) {
 			var stringBuilder = new StringBuilder(@string.Length * times);
-			for(var i = 0 ; i < times; i++) 
+			for (var i = 0; i < times; i++)
 				stringBuilder.Append(@string);
 			return stringBuilder.ToString();
 		}
 
-        public static IEnumerable<int> IndexOfAll(this string sourceString, string subString) {
-            return Regex.Matches(sourceString, Regex.Escape(subString)).Cast<Match>().Select(m => m.Index);
-        }
+		public static IEnumerable<int> IndexOfAll(this string sourceString, string subString) {
+			return Regex.Matches(sourceString, Regex.Escape(subString)).Cast<Match>().Select(m => m.Index);
+		}
 
-        public static IEnumerable<string> SplitAndKeep(this string @string, char[] delims, StringSplitOptions options = StringSplitOptions.None) {
-            var start = 0;
-            var index = 0;
+		public static IEnumerable<string> SplitAndKeep(this string @string, char[] delims, StringSplitOptions options = StringSplitOptions.None) {
+			var start = 0;
+			var index = 0;
 
-            while ((index = @string.IndexOfAny(delims, start)) != -1) {
-                index = Interlocked.Exchange(ref start, index + 1);
+			while ((index = @string.IndexOfAny(delims, start)) != -1) {
+				index = Interlocked.Exchange(ref start, index + 1);
 
-                if (start - index - 1 > 0 || !options.HasFlag(StringSplitOptions.RemoveEmptyEntries))
-                    yield return @string.Substring(index, start - index - 1);
+				if (start - index - 1 > 0 || !options.HasFlag(StringSplitOptions.RemoveEmptyEntries))
+					yield return @string.Substring(index, start - index - 1);
 
-                yield return @string.Substring(start - 1, 1);
-            }
+				yield return @string.Substring(start - 1, 1);
+			}
 
-            if (options.HasFlag(StringSplitOptions.RemoveEmptyEntries)) {
-                if (start < @string.Length) {
-                    yield return @string.Substring(start);
-                }
-            } else {
-                yield return @string.Substring(start);
-            }
-        }
+			if (options.HasFlag(StringSplitOptions.RemoveEmptyEntries)) {
+				if (start < @string.Length) {
+					yield return @string.Substring(start);
+				}
+			} else {
+				yield return @string.Substring(start);
+			}
+		}
 
-        public static string Clip(this string text, int maxLength, string cap = "...") {
-            if (string.IsNullOrEmpty(text))
-                return text;
+		public static string Clip(this string text, int maxLength, string cap = "...") {
+			if (string.IsNullOrEmpty(text))
+				return text;
 
-            if (text.Length <= maxLength) {
-                return text;
-            }
-            if (text.Length < cap.Length || maxLength < cap.Length)
-                return text.Substring(0, maxLength);
-            return text.Substring(0, maxLength - cap.Length) + cap;
-        }
+			if (text.Length <= maxLength) {
+				return text;
+			}
+			if (text.Length < cap.Length || maxLength < cap.Length)
+				return text.Substring(0, maxLength);
+			return text.Substring(0, maxLength - cap.Length) + cap;
+		}
 
-	    public static bool ContainsAnySubstrings(this string text, params string[] substrings ) {
+		public static bool ContainsAnySubstrings(this string text, params string[] substrings) {
 			return substrings.Any(text.Contains);
 		}
 
@@ -136,25 +146,25 @@ namespace Hydrogen {
 			return encoding.GetBytes(asciiString);
 		}
 
-        public static byte[] ToHexByteArray(this string hex) {
-            if (String.IsNullOrEmpty(hex))
-                return new byte[0];
+		public static byte[] ToHexByteArray(this string hex) {
+			if (String.IsNullOrEmpty(hex))
+				return new byte[0];
 
-            var offset = 0;
-            if (hex.StartsWith("0x"))
-                offset = 2;
+			var offset = 0;
+			if (hex.StartsWith("0x"))
+				offset = 2;
 
-            if ((hex.Length - offset) % 2 != 0)
-                throw new FormatException("Hex-formatted string has odd number of nibbles");
+			if ((hex.Length - offset) % 2 != 0)
+				throw new FormatException("Hex-formatted string has odd number of nibbles");
 
-            var numberBytes = (hex.Length - offset) / 2;
+			var numberBytes = (hex.Length - offset) / 2;
 
-            var bytes = new byte[numberBytes];
-            for (var i = 0; i < numberBytes; i++)
-                bytes[i] = Convert.ToByte(new string(new char[2] { hex[offset + 2*i], hex[offset + 2*i + 1] }), 16);
+			var bytes = new byte[numberBytes];
+			for (var i = 0; i < numberBytes; i++)
+				bytes[i] = Convert.ToByte(new string(new char[2] { hex[offset + 2 * i], hex[offset + 2 * i + 1] }), 16);
 
-            return bytes;
-        }
+			return bytes;
+		}
 
 		public static IEnumerable<string> GetLines(this string str, bool removeEmptyLines = false) {
 			return str.Split(
@@ -189,12 +199,12 @@ namespace Hydrogen {
 
 			return String.Format(_string, _params);
 		}
-		
 
-		public static string FormatWithDictionary(this string _string, IDictionary<string, object> userTokenResolver) 
+
+		public static string FormatWithDictionary(this string _string, IDictionary<string, object> userTokenResolver)
 			=> StringFormatter.FormatWithDictionary(_string, userTokenResolver);
-		
-		
+
+
 
 		/// <summary>
 		/// Parse a string into an enumeration
@@ -234,43 +244,43 @@ namespace Hydrogen {
 		}
 
 
-        public static string MakeStartWith(this string @string, string startsWith, bool caseSensitive = true) {
-            var cmpString = caseSensitive ? @string : @string.ToUpperInvariant();
-            var cmpStartsWith = caseSensitive ? @startsWith : @startsWith.ToUpperInvariant();
+		public static string MakeStartWith(this string @string, string startsWith, bool caseSensitive = true) {
+			var cmpString = caseSensitive ? @string : @string.ToUpperInvariant();
+			var cmpStartsWith = caseSensitive ? @startsWith : @startsWith.ToUpperInvariant();
 
-            if (cmpString.StartsWith(cmpStartsWith))
-                return @string;
-            return startsWith + @string;
-        }
+			if (cmpString.StartsWith(cmpStartsWith))
+				return @string;
+			return startsWith + @string;
+		}
 
 		public static string MakeEndWith(this string @string, string endsWith, bool caseSensitive = true) {
-            var cmpString = caseSensitive ? @string : @string.ToUpperInvariant();
-            var cmpEndsWith = caseSensitive ? endsWith : endsWith.ToUpperInvariant();
+			var cmpString = caseSensitive ? @string : @string.ToUpperInvariant();
+			var cmpEndsWith = caseSensitive ? endsWith : endsWith.ToUpperInvariant();
 
-            if (cmpString.EndsWith(cmpEndsWith))
-                return @string;
+			if (cmpString.EndsWith(cmpEndsWith))
+				return @string;
 			return @string + endsWith;
 		}
 
 
-        public static string TrimStart(this string @string, string substring, bool caseSensitive = true) {
-            var cmpString = caseSensitive ? @string : @string.ToUpperInvariant();
-            var cmpSubstring = caseSensitive ? substring : substring.ToUpperInvariant();
+		public static string TrimStart(this string @string, string substring, bool caseSensitive = true) {
+			var cmpString = caseSensitive ? @string : @string.ToUpperInvariant();
+			var cmpSubstring = caseSensitive ? substring : substring.ToUpperInvariant();
 
-            if (cmpString.StartsWith(cmpSubstring))
-                return @string.Substring(substring.Length);
+			if (cmpString.StartsWith(cmpSubstring))
+				return @string.Substring(substring.Length);
 
-            return @string;
-        }
+			return @string;
+		}
 
-        public static string TrimEnd(this string @string, string substring, bool caseSensitive = true) {
-            var cmpString = caseSensitive ? @string : @string.ToUpperInvariant();
-            var cmpSubstring = caseSensitive ? substring : substring.ToUpperInvariant();
+		public static string TrimEnd(this string @string, string substring, bool caseSensitive = true) {
+			var cmpString = caseSensitive ? @string : @string.ToUpperInvariant();
+			var cmpSubstring = caseSensitive ? substring : substring.ToUpperInvariant();
 
-            if (cmpString.EndsWith(cmpSubstring))
-                return @string.Substring(0, @string.Length - substring.Length);
-            return @string;
-        }
+			if (cmpString.EndsWith(cmpSubstring))
+				return @string.Substring(0, @string.Length - substring.Length);
+			return @string;
+		}
 
 		public static string ToBase64(this string str) {
 			byte[] encbuff = Encoding.UTF8.GetBytes(str);
@@ -337,8 +347,8 @@ namespace Hydrogen {
 				case "GRANTED":
 				case "PERMISSION GRANTED":
 				case "APPROVED":
-				retval = true;
-				break;
+					retval = true;
+					break;
 			}
 			return retval;
 		}
@@ -412,7 +422,7 @@ namespace Hydrogen {
 		}
 
 		static public string UrlEncoded(this string str) {
-			return Tools.Url.EncodeUrl(str);	
+			return Tools.Url.EncodeUrl(str);
 		}
 
 		static public string UrlDecoded(this string str) {
@@ -449,10 +459,10 @@ namespace Hydrogen {
 				return null;
 			} else {
 				return Regex.Replace(@string, @"[^\u0021\u0023-\u0025\u0028-\u003B\u003D\u003F-\u005B\u005D-\u007E]",
-									 new MatchEvaluator(delegate(Match match) {
-					byte[] bb = Encoding.Unicode.GetBytes(match.Value);
-					return String.Format(@"\u{0}{1}", bb[1].ToString("x2"), bb[0].ToString("x2"));
-				}));
+									 new MatchEvaluator(delegate (Match match) {
+										 byte[] bb = Encoding.Unicode.GetBytes(match.Value);
+										 return String.Format(@"\u{0}{1}", bb[1].ToString("x2"), bb[0].ToString("x2"));
+									 }));
 			}
 		}
 
@@ -460,7 +470,7 @@ namespace Hydrogen {
 			return @string.Replace("\n", "<br/>");
 		}
 
-        public static Dictionary<string, string> ParseQueryString(this string encdata) {
+		public static Dictionary<string, string> ParseQueryString(this string encdata) {
 			return Tools.Url.ParseQueryString(encdata);
 		}
 

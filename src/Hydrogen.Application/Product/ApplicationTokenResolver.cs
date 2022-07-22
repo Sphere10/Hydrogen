@@ -4,7 +4,7 @@ using System.IO;
 namespace Hydrogen.Application {
 	public class ApplicationTokenResolver : ITokenResolver {
 
-		private IFuture<StandardProductInformationServices> _productInfoServices = Tools.Values.LazyLoad(() => new StandardProductInformationServices());
+		private IFuture<StandardProductInformationServices> _productInfoServices = Tools.Values.Future.LazyLoad(() => new StandardProductInformationServices());
 		
 		public bool TryResolve(string token, out string value) {
 			value = token.ToUpperInvariant() switch {

@@ -6,85 +6,98 @@ using System.Threading.Tasks;
 
 namespace Hydrogen {
 	public static class StringFormatter {
-		private static readonly char[] TokenTrimDelimitters = new[] { '{', '}' };
+		private static readonly char TokenStartChar= '{';
+		private static readonly char TokenEndChar= '}';
+		private static readonly char[] TokenTrimDelimitters = { TokenStartChar, TokenEndChar };
 
 		private static readonly IFuture<ITokenResolver[]> Resolvers = Tools.Values.Future.LazyLoad(() => new []{ new DefaultTokenResolver() }.Concat(TinyIoC.TinyIoCContainer.Current.ResolveAll<ITokenResolver>(true)).ToArray());
 
         public static string FormatEx(string formatString, params object[] formatArgs) {
-            return FormatEx(formatString, ResolveToken, formatArgs);
+            return FormatEx(formatString, ResolveToken, false, formatArgs);
         }
 
-        public static string FormatWithDictionary(string formatString, IDictionary<string, object> userTokenResolver, params object[] formatArgs)
-	        => FormatEx(
-		        formatString,
-		        (token) => {
-			        if (userTokenResolver.TryGetValue(token, out var value))
-				        return value;
-			        return null;
-		        },
-		        formatArgs
+        public static string FormatWithDictionary(string formatString, IDictionary<string, object> userTokenResolver, bool recursive, params object[] formatArgs) {
+			return FormatEx(
+				formatString,
+				(token) => {
+					if (userTokenResolver.TryGetValue(token, out var value))
+						return value;
+					return null;
+				},
+				recursive,
+				formatArgs
 			);
-					
+		}
 
-        public static string FormatEx(string formatString, Func<string, object> userTokenResolver, params object[] formatArgs) {
-            Guard.ArgumentNotNull(formatString, nameof(formatString));
-            Guard.ArgumentNotNull(userTokenResolver, nameof(userTokenResolver));
-            var splits = new Stack<string>(formatString.SplitAndKeep(TokenTrimDelimitters, StringSplitOptions.RemoveEmptyEntries).Reverse());
-            var resolver = userTokenResolver ?? ResolveToken;
-            var resultBuilder = new StringBuilder();
-            var currentFormatItemBuilder = new StringBuilder();
-            var inFormatItem = false;
-			var depth = 0;
-            while (splits.Count > 0) {
-                var split = splits.Pop();
-                switch (split) {
-                    case "{":
-	                    if (splits.Count > 0 && splits.Peek() == "{") {
-	                        // Escaped {{
-	                        splits.Pop();
-	                        if (inFormatItem)
-	                            currentFormatItemBuilder.Append("{");
-	                        else
-	                            resultBuilder.Append("{");
-	                        continue;
-	                    } 
-	                    inFormatItem = true;
-						depth++;
-						currentFormatItemBuilder.Append("{");
-	                    break;
-                    case "}":
-	                    if (inFormatItem) {
-							currentFormatItemBuilder.Append("}");
-							if (--depth == 0) {
-		                        // end of format item, process and add to string
-		                        var token = currentFormatItemBuilder.ToString();
-								if (!TryResolveFormatItem(token.Trim(TokenTrimDelimitters), out var value, resolver, formatArgs))
-									value = token;
-			                    resultBuilder.Append(value);
-		                        inFormatItem = false;
-		                        currentFormatItemBuilder.Clear();
+		public static string FormatEx(string @string, Func<string, object> userTokenResolver, bool recursive, params object[] formatArgs) {
+			var alreadyVisited = new HashSet<object>(ReferenceEqualityComparer.Instance);
+
+			return FormatExInternal(@string);
+
+			string FormatExInternal(string formatString) {
+				Guard.ArgumentNotNull(formatString, nameof(formatString));
+				Guard.ArgumentNotNull(userTokenResolver, nameof(userTokenResolver));
+				var splits = new Stack<string>(formatString.SplitAndKeep(TokenTrimDelimitters, StringSplitOptions.RemoveEmptyEntries).Reverse());
+				var resolver = userTokenResolver ?? ResolveToken;
+				var resultBuilder = new StringBuilder();
+				var currentFormatItemBuilder = new StringBuilder();
+				var inFormatItem = false;
+				var depth = 0;
+				while (splits.Count > 0) {
+					var split = splits.Pop();
+					switch (split) {
+						case "{":
+							if (splits.Count > 0 && splits.Peek() == "{") {
+								// Escaped {{
+								splits.Pop();
+								if (inFormatItem)
+									currentFormatItemBuilder.Append("{");
+								else
+									resultBuilder.Append("{");
+								continue;
 							}
-	                    } else if (splits.Count > 0 && splits.Peek() == "}") {
-	                        // Escaped }}
-	                        splits.Pop();
-	                        resultBuilder.Append("}");
-	                    } else {
-							currentFormatItemBuilder.Append("}");
-						}
-	                    break;
-                    default:
-	                    if (inFormatItem)
-	                        currentFormatItemBuilder.Append(split);
-	                    else
-	                        resultBuilder.Append(split);
-                    break;
-                }
-            }
-            if (inFormatItem)
-				resultBuilder.Append(currentFormatItemBuilder.ToString());
+							inFormatItem = true;
+							depth++;
+							currentFormatItemBuilder.Append("{");
+							break;
+						case "}":
+							if (inFormatItem) {
+								currentFormatItemBuilder.Append("}");
+								if (--depth == 0) {
+									// end of format item, process and add to string
+									var token = currentFormatItemBuilder.ToString();
+									if (!TryResolveFormatItem(token.Trim(TokenTrimDelimitters), out var value, resolver, formatArgs))
+										value = token;
+									else if (recursive && !alreadyVisited.Contains(token)) {
+										alreadyVisited.Add(token);
+										value = FormatExInternal(value);
+									}
+									resultBuilder.Append(value);
+									inFormatItem = false;
+									currentFormatItemBuilder.Clear();
+								}
+							} else if (splits.Count > 0 && splits.Peek() == "}") {
+								// Escaped }}
+								splits.Pop();
+								resultBuilder.Append("}");
+							} else {
+								currentFormatItemBuilder.Append("}");
+							}
+							break;
+						default:
+							if (inFormatItem)
+								currentFormatItemBuilder.Append(split);
+							else
+								resultBuilder.Append(split);
+							break;
+					}
+				}
+				if (inFormatItem)
+					resultBuilder.Append(currentFormatItemBuilder.ToString());
 
-            return resultBuilder.ToString();
-        }
+				return resultBuilder.ToString();
+			}
+		}
 
 		private static bool TryResolveFormatItem(string token, out string value, Func<string, object> resolver, params object[] formatArgs) {
 			token = token.TrimEnd();

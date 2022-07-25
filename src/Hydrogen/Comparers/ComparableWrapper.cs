@@ -17,16 +17,16 @@ using System.Collections.Generic;
 namespace Hydrogen {
 	public class ComparableWrapper<T> : IComparable<T>, IComparable, IEquatable<T> {
 		public readonly T @Object;
-		private readonly Comparer<T> comparer;
+		private readonly Comparer<T> _comparer;
 
 		public ComparableWrapper(T internalObject) {
 			@Object = internalObject;
-			comparer = Comparer<T>.Default;
+			_comparer = Comparer<T>.Default;
 		}
 
 
 		public int CompareTo(T other) {
-			return comparer.Compare(@Object, other);
+			return _comparer.Compare(@Object, other);
 		}
 
 		public int CompareTo(object obj) {

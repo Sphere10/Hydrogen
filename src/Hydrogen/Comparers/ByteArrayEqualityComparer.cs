@@ -17,21 +17,13 @@ using System.Runtime.CompilerServices;
 
 namespace Hydrogen {
 	public class ByteArrayEqualityComparer : IEqualityComparer<byte[]> {
-        public static readonly ByteArrayEqualityComparer Instance = new ByteArrayEqualityComparer();
+        public static readonly ByteArrayEqualityComparer Instance = new();
 
+        public bool Equals(byte[] x, byte[] y) => Equals(x.AsSpan(), y.AsSpan());
 
-        public bool Equals(byte[] x, byte[] y) {
-	        return Equals(x.AsSpan(), y.AsSpan());
-        }
+        public static bool Equals(byte[] x, byte[] y, int length) => Equals(x.AsSpan(0, length), y.AsSpan(0, length));
 
-        public static bool Equals(byte[] x, byte[] y, int length) {
-	        return Equals(x.AsSpan(0, length), y.AsSpan(0, length));
-        }
-
-        public static bool Equals(ReadOnlySpan<byte> x, ReadOnlySpan<byte> y) {
-	        return x.SequenceEqual(y);
-        }
-
+        public static bool Equals(ReadOnlySpan<byte> x, ReadOnlySpan<byte> y) => x.SequenceEqual(y);
 
         public int GetHashCode(byte[] obj) => obj.GetHashCodeSimple();
 

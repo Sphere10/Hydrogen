@@ -16,18 +16,17 @@ using System.Collections.Generic;
 
 namespace Hydrogen {
 	public class CastedEqualityComparer<TItem, TBase> : IEqualityComparer<TBase> where TItem : TBase {
-		private readonly IEqualityComparer<TItem> _equalityComparer;
+		private readonly IEqualityComparer<TItem> _comparer;
 
 		public CastedEqualityComparer(IEqualityComparer<TItem> equalityComparer) {
 			Guard.ArgumentNotNull(equalityComparer, nameof(equalityComparer));
-			_equalityComparer = equalityComparer;
+			_comparer = equalityComparer;
 		}
 
-
 		public bool Equals(TBase? x, TBase? y)
-			=> _equalityComparer.Equals((TItem)x, (TItem)y);
+			=> _comparer.Equals((TItem)x, (TItem)y);
 
 		public int GetHashCode(TBase obj)
-			=> _equalityComparer.GetHashCode((TItem)obj);
+			=> _comparer.GetHashCode((TItem)obj);
 	}
 }

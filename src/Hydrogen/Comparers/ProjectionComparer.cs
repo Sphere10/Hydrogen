@@ -1,4 +1,6 @@
-﻿using System;
+﻿// Based on Jon Skeet's library
+
+using System;
 using System.Collections.Generic;
 
 namespace Hydrogen {
@@ -27,9 +29,7 @@ namespace Hydrogen {
 		/// <param name="ignored">Value is ignored - type may be used by type inference</param>
 		/// <param name="projection">Projection to use when determining the key of an element</param>
 		/// <returns>A comparer which will compare elements by projecting each element to its key, and comparing keys</returns>
-		public static ProjectionComparer<TSource, TKey> Create<TSource, TKey>
-			(TSource ignored,
-			 Func<TSource, TKey> projection) {
+		public static ProjectionComparer<TSource, TKey> Create<TSource, TKey>(TSource ignored, Func<TSource, TKey> projection) {
 			return new ProjectionComparer<TSource, TKey>(projection);
 		}
 
@@ -58,8 +58,8 @@ namespace Hydrogen {
 	/// <typeparam name="TSource">Type of elements which this comparer will be asked to compare</typeparam>
 	/// <typeparam name="TKey">Type of the key projected from the element</typeparam>
 	public class ProjectionComparer<TSource, TKey> : IComparer<TSource> {
-		readonly Func<TSource, TKey> projection;
-		readonly IComparer<TKey> comparer;
+		readonly Func<TSource, TKey> _projection;
+		readonly IComparer<TKey> _comparer;
 
 		/// <summary>
 		/// Creates a new instance using the specified projection, which must not be null.
@@ -77,10 +77,9 @@ namespace Hydrogen {
 		/// <param name="comparer">The comparer to use on the keys. May be null, in
 		/// which case the default comparer will be used.</param>
 		public ProjectionComparer(Func<TSource, TKey> projection, IComparer<TKey> comparer) {
-			if (projection == null)
-				throw new ArgumentNullException(nameof(projection));
-			this.comparer = comparer ?? Comparer<TKey>.Default;
-			this.projection = projection;
+			Guard.ArgumentNotNull(projection, nameof(projection));
+			_comparer = comparer ?? Comparer<TKey>.Default;
+			_projection = projection;
 		}
 
 		/// <summary>
@@ -94,13 +93,15 @@ namespace Hydrogen {
 			if (x == null && y == null) {
 				return 0;
 			}
+
 			if (x == null) {
 				return -1;
 			}
+
 			if (y == null) {
 				return 1;
 			}
-			return comparer.Compare(projection(x), projection(y));
+			return _comparer.Compare(_projection(x), _projection(y));
 		}
 	}
 }

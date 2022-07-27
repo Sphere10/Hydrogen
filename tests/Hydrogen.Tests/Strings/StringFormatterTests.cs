@@ -203,5 +203,23 @@ namespace Hydrogen.Tests {
             Assert.That( StringFormatter.FormatWithDictionary("{B}", tokens, true), Is.EqualTo("{A}{B}{B}{A}{A}{B}"));
 	    }
 
+        [Test]
+	    public void FormatWithDictionary_HandlesRecursiveTokenName() {
+	        var tokens = new Dictionary<string, object> {
+                ["Alpha_Beta"] = "Found it!",
+	            ["B"] = "Beta",
+	        };
+	        Assert.That( StringFormatter.FormatWithDictionary("{Alpha_{B}" + "}", tokens, true), Is.EqualTo("Found it!"));
+	    }
+
+        [Test]
+	    public void FormatWithDictionary_NoRecursionOnTokenName() {
+	        var tokens = new Dictionary<string, object> {
+                ["Alpha_Beta"] = "Found it!",
+	            ["B"] = "Beta",
+	        };
+	        Assert.That( StringFormatter.FormatWithDictionary("{Alpha_{B}"+ "}", tokens, false), Is.EqualTo("{Alpha_{B}}"));
+	    }
+
     }
 }

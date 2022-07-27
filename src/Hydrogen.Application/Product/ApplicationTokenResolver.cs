@@ -4,9 +4,9 @@ using System.IO;
 namespace Hydrogen.Application {
 	public class ApplicationTokenResolver : ITokenResolver {
 
-		private IFuture<StandardProductInformationServices> _productInfoServices = Tools.Values.Future.LazyLoad(() => new StandardProductInformationServices());
+		private readonly IFuture<StandardProductInformationServices> _productInfoServices = Tools.Values.Future.LazyLoad(() => new StandardProductInformationServices());
 		
-		public bool TryResolve(string token, out string value) {
+		public bool TryResolve(string token, out object value) {
 			value = token.ToUpperInvariant() switch {
 				"USERDATADIR" => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)), 
 				"SYSTEMDATADIR" => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData)),

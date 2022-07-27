@@ -173,10 +173,52 @@ namespace Hydrogen {
 			);
 		}
 
-		public static string TrimDelimitters(this String inputString, params string[] delimitters) {
-			StringBuilder sbuilder = new StringBuilder(inputString);
-			delimitters.ForEach(d => sbuilder.Replace(d, String.Empty));
-			return sbuilder.ToString();
+
+		public static string ChompStart(this string inputString, params string[] delimitters) {
+			var sb = new StringBuilder(inputString);
+			foreach(var delimitter in delimitters) 
+				sb.Replace(delimitter, string.Empty, 0, 1);
+			return sb.ToString();
+		}
+
+		public static string ChompStart(this string inputString, params char[] delimitters) 
+			=> ChompStart(inputString, delimitters.Select(x => x.ToString()).ToArray());
+
+
+		public static string ChompEnd(this string inputString, params string[] delimitters) {
+			var sb = new StringBuilder(inputString);
+			foreach(var delimitter in delimitters) { 
+				var startIX = sb.Length - delimitter.Length;
+				if (startIX >= 0)
+					sb.Replace(delimitter, string.Empty, startIX, sb.Length - startIX);
+			}
+			return sb.ToString();
+		}
+
+		public static string ChompEnd(this string inputString, params char[] delimitters) 
+			=> ChompEnd(inputString, delimitters.Select(x => x.ToString()).ToArray());
+
+
+		public static string Chomp(this string inputString, params string[] delimitters) {
+			var sb = new StringBuilder(inputString);
+			foreach(var delimitter in delimitters) { 
+				sb.Replace(delimitter, string.Empty, 0, 1);
+				var startIX = sb.Length - delimitter.Length;
+				if (startIX >= 0)
+					sb.Replace(delimitter, string.Empty, startIX, sb.Length - startIX);
+			}
+			return sb.ToString();
+		}
+
+		public static string Chomp(this string inputString, params char[] delimitters) 
+			=> Chomp(inputString, delimitters.Select(x => x.ToString()).ToArray());
+
+
+		public static string ReplaceMany(this string inputString, params string[] subStrings) {
+			var sb = new StringBuilder(inputString);
+			foreach (var subString in subStrings)
+				sb.Replace(subString, string.Empty);
+			return sb.ToString();
 		}
 
 		static public string EncapsulateWith(this string value, string prePostFix) {

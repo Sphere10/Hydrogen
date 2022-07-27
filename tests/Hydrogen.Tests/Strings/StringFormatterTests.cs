@@ -12,13 +12,14 @@
 //-----------------------------------------------------------------------
 
 using System;
+using System.Collections.Generic;
 using NUnit.Framework;
 
 namespace Hydrogen.Tests {
 
     [TestFixture]
 	[Parallelizable(ParallelScope.Children)]
-    public class FormatExTests {
+    public class StringFormatterTests {
 
         [Test]
         public void SimpleTest_1() {
@@ -180,6 +181,27 @@ namespace Hydrogen.Tests {
             Assert.Throws<FormatException>(() => string.Format("{{}}}"));
             Assert.DoesNotThrow(() => Tools.Text.FormatEx("{{{}}"));
         }
+
+        [Test]
+	    public void FormatWithDictionary_NoRecursionDoesntRecurse() {
+	        var tokens = new Dictionary<string, object> {
+	            ["A"] = "{B}{A}",
+	            ["B"] = "{A}{B}",
+	        };
+	        Assert.That( StringFormatter.FormatWithDictionary("{A}", tokens, false), Is.EqualTo("{B}{A}"));
+            Assert.That( StringFormatter.FormatWithDictionary("{B}", tokens, false), Is.EqualTo("{A}{B}"));
+	    }
+
+
+        [Test]
+	    public void FormatWithDictionary_HandlesRecursiveLoop() {
+	        var tokens = new Dictionary<string, object> {
+	            ["A"] = "{B}{A}",
+	            ["B"] = "{A}{B}",
+	        };
+	        Assert.That( StringFormatter.FormatWithDictionary("{A}", tokens, true), Is.EqualTo("{B}{A}{A}{B}{B}{A}"));
+            Assert.That( StringFormatter.FormatWithDictionary("{B}", tokens, true), Is.EqualTo("{A}{B}{B}{A}{A}{B}"));
+	    }
 
     }
 }

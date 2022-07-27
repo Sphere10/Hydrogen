@@ -32,6 +32,9 @@ namespace Tools {
         public static string FormatEx(string formatString, Func<string, string> userTokenResolver, params object[] formatArgs)
             => StringFormatter.FormatEx(formatString, userTokenResolver, formatArgs);
 
+		public static string FormatWithDictionary(string formatString, IDictionary<string, object> userTokenResolver, bool recursive, params object[] formatArgs)
+			=> StringFormatter.FormatWithDictionary(formatString, userTokenResolver, recursive, formatArgs);
+
         public static bool IsValidHexString(IEnumerable<char> hexString) {
             return !hexString.Any(c => !(c >= '0' && c <= '9') && !(c >= 'a' && c <= 'f') && !(c >= 'A' && c <= 'F'));
         }

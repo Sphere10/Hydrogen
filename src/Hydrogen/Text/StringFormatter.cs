@@ -30,7 +30,7 @@ namespace Hydrogen {
 		}
 
 		public static string FormatEx(string @string, Func<string, object> userTokenResolver, bool recursive, params object[] formatArgs) {
-			var alreadyVisited = new HashSet<object>(ReferenceEqualityComparer.Instance);
+			var alreadyVisited = new HashSet<string>();
 
 			return FormatExInternal(@string);
 

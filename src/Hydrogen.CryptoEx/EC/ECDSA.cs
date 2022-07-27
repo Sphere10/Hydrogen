@@ -128,7 +128,7 @@ namespace Hydrogen.CryptoEx.EC {
 				KeyType = keyType;
 				CurveParams = curveParams;
 				DomainParams = domainParams;
-				AsInteger = Tools.Values.LazyLoad(() => BigIntegerUtils.BytesToBigIntegerPositive(RawBytes));
+				AsInteger = Tools.Values.Future.LazyLoad(() => BigIntegerUtils.BytesToBigIntegerPositive(RawBytes));
 			}
 
 			public ECDSAKeyType KeyType { get; }
@@ -159,7 +159,7 @@ namespace Hydrogen.CryptoEx.EC {
 		public class PrivateKey : Key, IPrivateKey {
 			public PrivateKey(byte[] rawKeyBytes, ECDSAKeyType keyType, X9ECParameters curveParams, ECDomainParameters domainParams) :
 				base(rawKeyBytes, keyType, curveParams, domainParams) {
-				Parameters = Tools.Values.LazyLoad(() => new ECPrivateKeyParameters("ECDSA", AsInteger.Value, DomainParams));
+				Parameters = Tools.Values.Future.LazyLoad(() => new ECPrivateKeyParameters("ECDSA", AsInteger.Value, DomainParams));
 			}
 
 			public IFuture<ECPrivateKeyParameters> Parameters { get; }
@@ -169,8 +169,8 @@ namespace Hydrogen.CryptoEx.EC {
 		public class PublicKey : Key, IPublicKey {
 			public PublicKey(ECPoint point, ECDSAKeyType keyType, X9ECParameters curveParams, ECDomainParameters domainParams) :
 				base(point.GetEncoded(true), keyType, curveParams, domainParams) {
-				AsPoint = Tools.Values.LazyLoad(() => point);
-				Parameters = Tools.Values.LazyLoad(() => new ECPublicKeyParameters("ECDSA", AsPoint.Value, DomainParams));
+				AsPoint = Tools.Values.Future.LazyLoad(() => point);
+				Parameters = Tools.Values.Future.LazyLoad(() => new ECPublicKeyParameters("ECDSA", AsPoint.Value, DomainParams));
 			}
 
 			public IFuture<ECPublicKeyParameters> Parameters { get; }

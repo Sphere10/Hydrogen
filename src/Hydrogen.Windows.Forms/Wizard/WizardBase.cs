@@ -34,7 +34,7 @@ namespace Hydrogen.Windows.Forms {
         private string _title;
 
         protected WizardBase(string title, T model, string finishText = null) {
-            _screens = Tools.Values.LazyLoad<IList<WizardScreen<T>>>(() => ConstructScreens().ToList());
+            _screens = Tools.Values.Future.LazyLoad<IList<WizardScreen<T>>>(() => ConstructScreens().ToList());
             Model = model;
             _started = false;
             _nextText = "Next";

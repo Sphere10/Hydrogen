@@ -35,7 +35,7 @@ namespace Hydrogen.Application {
 		public Sphere10Framework() {
 			IsStarted = false;
 			_threadLock = new object();
-			ModuleConfigurations = Tools.Values.LazyLoad(() =>
+			ModuleConfigurations = Tools.Values.Future.LazyLoad(() =>
 			   AppDomain
 				   .CurrentDomain
 				   .GetNonFrameworkAssemblies()

@@ -23,7 +23,7 @@ namespace Hydrogen.DApp.Core.Blockchain {
 
 		IBlockTree BlockTree { get; }
 
-		bool TryLoadBlock(long blockID, out Future<Stream> blockData);
+		bool TryLoadBlock(long blockID, out IFuture<Stream> blockData);
 
 		bool TrySaveBlock(Stream blockData, out long blockID);
 

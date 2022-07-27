@@ -393,7 +393,7 @@ public class Schnorr : StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schno
 			KeyType = keyType;
 			CurveParams = curveParams;
 			DomainParams = domainParams;
-			AsInteger = Tools.Values.LazyLoad(() => BytesToBigIntPositive(RawBytes));
+			AsInteger = Tools.Values.Future.LazyLoad(() => BytesToBigIntPositive(RawBytes));
 		}
 
 		public ECDSAKeyType KeyType { get; }
@@ -427,7 +427,7 @@ public class Schnorr : StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schno
 			keyType,
 			curveParams,
 			domainParams) {
-			Parameters = Tools.Values.LazyLoad(() => new ECPrivateKeyParameters("ECDSA", AsInteger.Value, DomainParams));
+			Parameters = Tools.Values.Future.LazyLoad(() => new ECPrivateKeyParameters("ECDSA", AsInteger.Value, DomainParams));
 		}
 
 		public IFuture<ECPrivateKeyParameters> Parameters { get; }
@@ -440,8 +440,8 @@ public class Schnorr : StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schno
 				keyType,
 				curveParams,
 				domainParams) {
-			AsPoint = Tools.Values.LazyLoad(() => point);
-			Parameters = Tools.Values.LazyLoad(() => new ECPublicKeyParameters("ECDSA", AsPoint.Value, DomainParams));
+			AsPoint = Tools.Values.Future.LazyLoad(() => point);
+			Parameters = Tools.Values.Future.LazyLoad(() => new ECPublicKeyParameters("ECDSA", AsPoint.Value, DomainParams));
 		}
 
 		public IFuture<ECPublicKeyParameters> Parameters { get; }

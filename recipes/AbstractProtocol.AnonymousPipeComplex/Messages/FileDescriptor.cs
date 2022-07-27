@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 
 namespace AbstractProtocol.AnonymousPipeComplex {
@@ -16,7 +17,7 @@ namespace AbstractProtocol.AnonymousPipeComplex {
 
         internal static FileDescriptor GenRandom() {
             var rootFolder = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
-            var files = Tools.FileSystem.GetFiles(rootFolder);
+            var files = Tools.FileSystem.GetFiles(rootFolder).ToArray();
             return new FileDescriptor(new FileInfo(files.Length > 0 ? files[0] : Assembly.GetExecutingAssembly().Location));
         }
         

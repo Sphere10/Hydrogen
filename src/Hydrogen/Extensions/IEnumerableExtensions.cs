@@ -17,6 +17,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Collections.Concurrent;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -27,6 +28,27 @@ namespace Hydrogen {
 
 	public static class IEnumerableExtensions {
 
+		public static IEnumerable<TResult> TakeUntilInclusive<TResult>(this IEnumerable<TResult> data, Predicate<TResult> predicate) {
+            using var enumerator = data.GetEnumerator();
+            while (enumerator.MoveNext()) {
+				yield return enumerator.Current;
+                if (predicate(enumerator.Current)) 
+					yield break;
+            }
+        }
+
+		public static IEnumerable<TResult> TakeWhileInclusive<TResult>(this IEnumerable<TResult> data, Predicate<TResult> predicate) {
+            using var enumerator = data.GetEnumerator();
+            while (enumerator.MoveNext()) {
+				yield return enumerator.Current;
+                if (!predicate(enumerator.Current)) 
+					yield break;
+            }
+        }
+		
+		/// <summary>
+		/// Selects the items within the <paramref name="enumerable"/> and handles any exceptions during enumeration using <paramref name="handler"/>. 
+		/// </summary>
 		public static IEnumerable<TResult> SelectWithExceptionHandler<T, TResult>(this IEnumerable<T> enumerable, Func<T, TResult> func, Action<T, Exception> handler)
 			=> enumerable
 				.Select(x => {

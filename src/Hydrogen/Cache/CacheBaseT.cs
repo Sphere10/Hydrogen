@@ -20,13 +20,13 @@ namespace Hydrogen {
 
 	public abstract  class CacheBase<TKey, TValue> : CacheBase, ICache<TKey, TValue> {
         public new event EventHandlerEx<TKey, TValue> ItemFetched {
-	        add => base.ItemFetched += ToBaseListener(value);
-	        remove => base.ItemFetched -= ToBaseListener(value);
+	        add => ((CacheBase)this).ItemFetched += ToBaseListener(value);
+	        remove => ((CacheBase)this).ItemFetched -= ToBaseListener(value);
         } 
 
         public new event EventHandlerEx<TKey, CachedItem<TValue>> ItemRemoved {
-	        add => base.ItemRemoved += ToBaseListener(value);
-	        remove => base.ItemRemoved -= ToBaseListener(value);
+	        add => ((CacheBase)this).ItemRemoved += ToBaseListener(value);
+	        remove => ((CacheBase)this).ItemRemoved -= ToBaseListener(value);
         }
 
 		protected CacheBase(
@@ -40,36 +40,33 @@ namespace Hydrogen {
         ) : base(new CastedEqualityComparer<TKey, object>(keyComparer ?? EqualityComparer<TKey>.Default), reapStrategy, expirationStrategy, maxCapacity, expirationDuration, nullValuePolicy, reaper) {
         }
 
-        public new IEnumerable<CachedItem<TValue>> CachedItems => base.CachedItems.Cast<CachedItem<TValue>>();
+        public new IEnumerable<CachedItem<TValue>> CachedItems => ((CacheBase)this).CachedItems.Cast<CachedItem<TValue>>(); 
 
-        public bool ContainsCachedItem(TKey key)
-	        => base.ContainsCachedItem(key);
+        public bool ContainsCachedItem(TKey key) => ((CacheBase)this).ContainsCachedItem(key);
 
-        public virtual void Invalidate(TKey key)
-	        => base.Invalidate(key);
+        public void Invalidate(TKey key) => ((CacheBase)this).Invalidate(key); 
 
-		public CachedItem<TValue> Get(TKey key)
-	        => (CachedItem<TValue>)base.Get(key);
+		public CachedItem<TValue> Get(TKey key) => (CachedItem<TValue>)((CacheBase)this).Get(key); 
 
-		public void Set(TKey key, TValue value)
-			=> base.Set(key, value);
+		public void Set(TKey key, TValue value) => ((CacheBase)this).Set(key, value);
 
-		public TValue this[TKey index] {
-			get => (TValue)base[index];
-			set => base[index] = value;
+		public TValue this[TKey index] { 
+			get => (TValue)((CacheBase)this)[index];
+			set => ((CacheBase)this)[index] = value;
 		}
 
-        public virtual void BulkLoad(IEnumerable<KeyValuePair<TKey, TValue>> bulkLoadedValues)
-	        => base.BulkLoad(bulkLoadedValues.Select(x => new KeyValuePair<object, object>(x.Key, x.Value)));
+        public void BulkLoad(IEnumerable<KeyValuePair<TKey, TValue>> bulkLoadedValues)
+	        => ((CacheBase)this).BulkLoad(bulkLoadedValues.Select(x => new KeyValuePair<object, object>(x.Key, x.Value))); 
 
-        public virtual void Remove(TKey key)
-	        => base.Remove(key);
+        public void Remove(TKey key)
+	        => ((CacheBase)this).Remove(key);
 
         protected override CachedItem NewCachedItem(object key, object value) {
-			Guard.ArgumentCast<TKey>(key, out var typedKey, nameof(key));
-			Guard.ArgumentCast<TValue>(value, out var typedValue, nameof(value));
+			Guard.ArgumentCast<TKey>(key, out _, nameof(key));
+			if (value != null)
+				Guard.ArgumentCast<TValue>(value, out _, nameof(value));
 			return new CachedItem<TValue> {
-				Value = typedValue
+				Value = value != null ? (TValue)value : default
 			};
 		}
 

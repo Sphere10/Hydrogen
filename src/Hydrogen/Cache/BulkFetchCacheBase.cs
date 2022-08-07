@@ -54,7 +54,7 @@ namespace Hydrogen {
 			return result;
 		}
 
-	    public override void Remove(TKey key) {
+	    public override void Remove(object key) {
 	        throw new NotSupportedException("Items cannot be manually removed from a bulk fetch cache");
 	    }
 

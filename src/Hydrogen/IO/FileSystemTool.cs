@@ -462,7 +462,6 @@ namespace Tools {
 			return subDirs.ToArray();
         }
 
-
         public static IEnumerable<string> GetFiles(string directory, string pattern = "*", bool recursive = false, FileSystemPathType pathType = FileSystemPathType.Relative) {
 			var files = Directory.EnumerateFiles(directory, pattern);
 

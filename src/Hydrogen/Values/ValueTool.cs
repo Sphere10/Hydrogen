@@ -192,9 +192,14 @@ namespace Tools {
 			public static IFuture<T> AlwaysLoad<T>(Func<T> valueLoader)
 				=> new ProxyValue<T>(valueLoader);
 
+			public static IFuture<T> BackgroundFetched<TSource, T>(IFuture<TSource> future, Func<T> valueLoader) {
+				return new BackgroundFetchedValue<T>(valueLoader);
+			}
+
 			public static IFuture<T> Projection<TSource, T>(IFuture<TSource> future, Func<TSource, T> projection) {
 				return LazyLoad(() => projection(future.Value));
 			}
+
 
 		}
 

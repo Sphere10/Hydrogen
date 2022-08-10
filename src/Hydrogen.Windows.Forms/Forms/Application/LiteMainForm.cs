@@ -121,7 +121,7 @@ namespace Hydrogen.Windows.Forms {
 						cancelExit = cancelArgs.Cancel;
 						// If no aborts, ask framework to confirm exit
 						if (!cancelExit) {
-							Sphere10Framework.Instance.EndWinFormsApplication(out cancelExit, out cancelReason);
+							HydrogenFramework.Instance.EndWinFormsApplication(out cancelExit, out cancelReason);
 						}
 
 

@@ -21,9 +21,9 @@ using Hydrogen;
 using Hydrogen.Application;
 
 namespace Hydrogen.Windows.Forms {
-    public static class Sphere10FrameworkExtensions {
+    public static class HydrogenFrameworkExtensions {
 
-        public static void StartWinFormsApplication(this Sphere10Framework framework) {
+        public static void StartWinFormsApplication(this HydrogenFramework framework) {
             if (!framework.IsStarted)
                 framework.StartFramework();
             var mainForm = ComponentRegistry.Instance.Resolve<IMainForm>();
@@ -38,13 +38,13 @@ namespace Hydrogen.Windows.Forms {
             System.Windows.Forms.Application.Run(mainForm as Form);
         }
 
-        public static void StartWinFormsApplication<TMainForm>(this Sphere10Framework framework)
+        public static void StartWinFormsApplication<TMainForm>(this HydrogenFramework framework)
             where TMainForm : class, IMainForm {
             ComponentRegistry.Instance.RegisterMainForm<TMainForm>();
             framework.StartWinFormsApplication();
         }
 
-        public static void EndWinFormsApplication(this Sphere10Framework applicationLifecycle, out bool abort, out string abortReason) {
+        public static void EndWinFormsApplication(this HydrogenFramework applicationLifecycle, out bool abort, out string abortReason) {
             applicationLifecycle.EndFramework(out abort, out abortReason);
         }
     }

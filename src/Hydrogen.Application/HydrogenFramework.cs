@@ -18,7 +18,7 @@ using System.IO;
 using System.Linq;
 
 namespace Hydrogen.Application {
-	public class Sphere10Framework {
+	public class HydrogenFramework {
 		private readonly object _threadLock;
 		private bool _registeredConfig;
 		private bool _registeredModuleComponents;
@@ -28,11 +28,11 @@ namespace Hydrogen.Application {
 		public event EventHandlerEx Ending;
 		public event EventHandlerEx Finalizing;
 
-		static Sphere10Framework() {
-			Instance = new Sphere10Framework();
+		static HydrogenFramework() {
+			Instance = new HydrogenFramework();
 		}
 
-		public Sphere10Framework() {
+		public HydrogenFramework() {
 			IsStarted = false;
 			_threadLock = new object();
 			ModuleConfigurations = Tools.Values.Future.LazyLoad(() =>
@@ -49,7 +49,7 @@ namespace Hydrogen.Application {
 			);
 		}
 
-		public static Sphere10Framework Instance { get; }
+		public static HydrogenFramework Instance { get; }
 
 		public bool IsStarted { get; private set; }
 

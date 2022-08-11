@@ -447,11 +447,29 @@ namespace Hydrogen {
 			return updated;
 		}
 
+
+		public static int Update<T>(this IEnumerable<T> source, Action<T, int> action) {
+			var updated = 0;
+			foreach (var item in source)
+				action(item, updated++);
+			return updated;
+		}
+
 		// NOTE: ForEach applies action to all items then return enumerable, Apply applies action during enumeration
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static IEnumerable<T> Apply<T>(this IEnumerable<T> source, Action<T> action) {
 			foreach (var item in source) {
 				action(item);
+				yield return item;
+			}
+		}
+
+		// NOTE: ForEach applies action to all items then return enumerable, Apply applies action during enumeration
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static IEnumerable<T> Apply<T>(this IEnumerable<T> source, Action<T, int> action) {
+			var c = 0;
+			foreach (var item in source) {
+				action(item, c++);
 				yield return item;
 			}
 		}

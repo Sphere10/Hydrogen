@@ -48,11 +48,18 @@ namespace Hydrogen {
 		public static bool StartsWithAny(this string @string, StringComparison comparison, params string[] strings)
 			=> strings.Any(x => @string.StartsWith(x, comparison));
 
-		public static string ToNullIfWhitespace(this string @string)
-			=> @string.ToValueIfNullOrWhitespace(null);
+		public static string ToNullWhenEmpty(this string text)
+			=> text.ToValueWhenNullOrEmpty(null);
 
-		public static string ToValueIfNullOrWhitespace(this string @string, string value)
+		public static string ToNullWhenWhitespace(this string text)
+			=> text.ToValueWhenNullOrWhitespace(null);
+
+		public static string ToValueWhenNullOrEmpty(this string @string, string value)
+			=> string.IsNullOrEmpty(@string) ? value : @string;
+
+		public static string ToValueWhenNullOrWhitespace(this string @string, string value)
 			=> string.IsNullOrWhiteSpace(@string) ? value : @string;
+
 
 		public static string Repeat(this string @string, int times) {
 			var stringBuilder = new StringBuilder(@string.Length * times);
@@ -338,13 +345,6 @@ namespace Hydrogen {
 			var match = Regex.Match(input, pattern, RegexOptions.IgnoreCase);
 			return match.Groups[@group].Success ? match.Groups[@group].Value : null;
 		}
-
-		public static string NullIfEmpty(this string text) {
-			if (string.IsNullOrEmpty(text))
-				return null;
-			return text;
-		}
-
 
 		#endregion
 

@@ -137,7 +137,7 @@ namespace Hydrogen.Application {
 			=> CreateApplicationLogger(Tools.Text.FormatEx("{ProductName}"), visibleToAllUsers: visibleToAllUsers);
 
 		public ILogger CreateApplicationLogger(string logName, bool visibleToAllUsers = false)
-			=> CreateApplicationLogger(logName, 10, Tools.Memory.ToBytes(1, MemoryMetric.Megabyte), visibleToAllUsers: visibleToAllUsers);
+			=> CreateApplicationLogger(logName, visibleToAllUsers: visibleToAllUsers);
 
 		public ILogger CreateApplicationLogger(string logFileName, int maxFiles, int maxFileSize, bool visibleToAllUsers = false)
 			=> new ThreadIdLogger(

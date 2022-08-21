@@ -286,43 +286,43 @@ namespace DevAge.Configuration
 			}
 		}
 
-		protected virtual void ReadFromCommandLine(CommandLineParameters commandArguments, string itemPrefix, bool matchCase, bool throwErrorOnUnrecognizedParameter)
-		{
-//			foreach (PersistableItem item in m_Dictionary.Values)
-//			{
-//				string val = commandArguments[itemPrefix + item.Name];
-//				if (val != null)
-//				{
-//					item.Value = item.Validator.StringToValue(val);
-//				}
-//			}
+//		protected virtual void ReadFromCommandLine(CommandLineParameters commandArguments, string itemPrefix, bool matchCase, bool throwErrorOnUnrecognizedParameter)
+//		{
+////			foreach (PersistableItem item in m_Dictionary.Values)
+////			{
+////				string val = commandArguments[itemPrefix + item.Name];
+////				if (val != null)
+////				{
+////					item.Value = item.Validator.StringToValue(val);
+////				}
+////			}
 
-			throw new NotImplementedException();
-			//foreach (string key in commandArguments.Keys)
-			//{
-			//	string cmdParam = key;
-			//	if (matchCase == false)
-			//		cmdParam = cmdParam.ToUpper();
+//			throw new NotImplementedException();
+//			//foreach (string key in commandArguments.Keys)
+//			//{
+//			//	string cmdParam = key;
+//			//	if (matchCase == false)
+//			//		cmdParam = cmdParam.ToUpper();
 
-			//	bool found = false;
-			//	foreach (PersistableItem item in m_Dictionary.Values)
-			//	{
-			//		string itemName = (itemPrefix + item.Name);
-			//		if (matchCase == false)
-			//			itemName = itemName.ToUpper();
+//			//	bool found = false;
+//			//	foreach (PersistableItem item in m_Dictionary.Values)
+//			//	{
+//			//		string itemName = (itemPrefix + item.Name);
+//			//		if (matchCase == false)
+//			//			itemName = itemName.ToUpper();
 
-			//		if (cmdParam == itemName)
-			//		{
-			//			item.Value = item.Validator.StringToValue( commandArguments[cmdParam] );
-			//			found = true;
-			//			break;
-			//		}
-			//	}
+//			//		if (cmdParam == itemName)
+//			//		{
+//			//			item.Value = item.Validator.StringToValue( commandArguments[cmdParam] );
+//			//			found = true;
+//			//			break;
+//			//		}
+//			//	}
 
-			//	if (found == false && throwErrorOnUnrecognizedParameter)
-			//		throw new UnrecognizedCommandLineParametersException(key);
-			//}
-		}
+//			//	if (found == false && throwErrorOnUnrecognizedParameter)
+//			//		throw new UnrecognizedCommandLineParametersException(key);
+//			//}
+//		}
 
 		/// <summary>
 		/// Clone all fields using the ValueToString and StringToValue methods

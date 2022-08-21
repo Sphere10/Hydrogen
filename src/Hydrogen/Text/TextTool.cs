@@ -19,6 +19,7 @@ using System.Text;
 using System.IO;
 using System.Text.RegularExpressions;
 using Hydrogen;
+using static System.Net.Mime.MediaTypeNames;
 
 // ReSharper disable CheckNamespace
 namespace Tools {
@@ -26,7 +27,42 @@ namespace Tools {
 
 	public static class Text {
 
-        public static string FormatEx(string formatString, params object[] formatArgs)
+		public static IEnumerable<string> FindSentencesWithText(string paragraph, string text) {
+			/*
+				From: https://stackoverflow.com/questions/27592440/extract-sentence-containing-a-word-from-text
+
+				string text = @"Stack Overflow is a question and answer site for professional and enthusiast programmers. 
+								It's built and run by you as part of the Stack Exchange network of Q&A sites.
+								With your help, we're working together to build a library of detailed answers to 
+								every question about programming.";
+
+				Output: Stack Overflow is a question and answer site for professional and enthusiast programmers.
+
+			 */
+			var regex = new Regex($"[^.!?;]*({text})[^.?!;]*[.?!;]");
+
+			var results = regex.Matches(paragraph);
+
+			for (var i = 0; i < results.Count; i++)
+				yield return results[i].Value.Trim();
+		}
+
+
+		public static IEnumerable<string> EnumerateSentences(string paragraph) {
+			var regex = new Regex($"[^.!?;]*[.?!;]");
+
+			var results = regex.Matches(paragraph);
+
+			if (results.Count > 0) {
+				for (var i = 0; i < results.Count; i++)
+					yield return results[i].Value.Trim();
+			} else {
+				yield return paragraph;
+			}
+
+		}
+
+		public static string FormatEx(string formatString, params object[] formatArgs)
             => StringFormatter.FormatEx(formatString, formatArgs);
 
         public static string FormatEx(string formatString, Func<string, string> userTokenResolver, params object[] formatArgs)

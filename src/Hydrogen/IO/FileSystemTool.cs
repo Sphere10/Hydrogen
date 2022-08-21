@@ -58,7 +58,17 @@ namespace Tools {
 				result += "_";
 	         return result;
         }
+
+        public static string ToAbsolutePathIfRelative(string path) 
+			=> ToAbsolutePathIfRelative(path, Environment.CurrentDirectory);
 			
+        public static string ToAbsolutePathIfRelative(string path, string baseFolder) {
+			Guard.ArgumentNotNullOrWhitespace(path, nameof(path));
+			Guard.ArgumentNotNullOrWhitespace(baseFolder, nameof(baseFolder));
+			if (!Path.IsPathFullyQualified(path))
+				return Path.Combine(baseFolder, path);
+			return path;
+        }
 
         public static bool IsWellFormedDirectoryPath(string path) {
             if (String.IsNullOrWhiteSpace(path))
@@ -493,5 +503,6 @@ namespace Tools {
             var files = new HashSet<string>(GetFiles(directory));
             return filenames.All(files.Contains);
         }
+
     }
 }

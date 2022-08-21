@@ -47,6 +47,7 @@ namespace Hydrogen.Application {
 
 			string defaultKey = Tools.Exceptions.TryOrDefault( () => manager.GetAssemblyDefaultProductKey(), string.Empty);
 
+
 			return new ProductInformation {
 				CompanyName = Tools.Exceptions.TryOrDefault(() => manager.GetAssemblyCompany(), string.Empty),
                 CompanyNumber = Tools.Exceptions.TryOrDefault(() =>  manager.GetAssemblyCompanyNumber(), string.Empty),
@@ -59,6 +60,8 @@ namespace Hydrogen.Application {
 				ProductName = Tools.Exceptions.TryOrDefault(() =>  manager.GetAssemblyProduct(), string.Empty),
 				ProductPurchaseUrl = Tools.Exceptions.TryOrDefault(() =>  manager.GetAssemblyProductPurchaseLink(), string.Empty),
 				ProductUrl = Tools.Exceptions.TryOrDefault(() =>  manager.GetAssemblyProductLink(), string.Empty),
+				AuthorName = Tools.Exceptions.TryOrDefault(() =>  manager.GetAssemblyAuthorName(), string.Empty),
+				AuthorEmail = Tools.Exceptions.TryOrDefault(() =>  manager.GetAssemblyAuthorEmail(), string.Empty),
 				ProductVersion = shortVersion,
                 HelpResources = Tools.Exceptions.TryOrDefault(() =>  manager.GetAssemblyProductHelpResources(), null)
             };

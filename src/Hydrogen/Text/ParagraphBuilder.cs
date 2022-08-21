@@ -24,7 +24,7 @@ namespace Hydrogen {
 
 		static ParagraphBuilder() {
 			ParagraphBreak = Environment.NewLine + Environment.NewLine;
-			SentenceFinalizers = new char[] { '.', '!', '?' };
+			SentenceFinalizers = new char[] { '.', '!', '?', ';' };
 			DefaultSentenceFinalizer = '.';
 		}
 

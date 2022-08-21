@@ -31,6 +31,8 @@ namespace Hydrogen.Application {
 		public string CopyrightNotice { get; set; }
 		public string CompanyUrl { get; set; }
 		public string ProductUrl { get; set; }
+		public string AuthorName { get; set; }
+		public string AuthorEmail { get; set; }
 		public string ProductPurchaseUrl { get; set; }
 		public string DefaultProductKey { get; set; }
 		public string Path { get; set; }

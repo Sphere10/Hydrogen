@@ -11,12 +11,37 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
+using System;
+using System.Runtime.Serialization;
+
 namespace Hydrogen {
 
 	public enum LogLevel {
+		[EnumMember(Value = "none")]
+		None,
+
+		[EnumMember(Value = "debug")]
 		Debug,
+
+		[EnumMember(Value = "info")]
 		Info,
+
+		[EnumMember(Value = "warning")]
 		Warning,
+
+		[EnumMember(Value = "error")]
 		Error
+	}
+
+	public static class LogLevelExtensions  {
+		public static LogOptions ToLogOptions(this LogLevel logLevel) => 
+			logLevel switch {
+				LogLevel.None => 0,
+				LogLevel.Debug => LogOptions.ErrorEnabled | LogOptions.WarningEnabled | LogOptions.InfoEnabled | LogOptions.DebugEnabled,
+				LogLevel.Info => LogOptions.ErrorEnabled | LogOptions.WarningEnabled | LogOptions.InfoEnabled,
+				LogLevel.Warning => LogOptions.ErrorEnabled | LogOptions.WarningEnabled,
+				LogLevel.Error => LogOptions.ErrorEnabled,
+				_ => throw new NotSupportedException(logLevel.ToString())
+			};
 	}
 }

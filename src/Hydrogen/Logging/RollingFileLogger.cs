@@ -27,11 +27,14 @@ namespace Hydrogen {
 	/// web_20211014110100.log
 	/// </example>>
 	public class RollingFileLogger : LoggerBase, IDisposable {
+		public const int DefaultMaxFiles = 10;
+		public const int DefaultMaxFileSizeB = 1000000;
 		private readonly string _directory;
 		private readonly string _fileName;
 		private FileAppendTextWriter _textWriter;
 		private int _currentFileSizeBytes;
 		private readonly int _effectiveMaxSize;
+
 
 		/// <summary>
 		/// Constructor.
@@ -40,7 +43,7 @@ namespace Hydrogen {
 		/// <param name="maxFiles">Maximum number of files to keep in the directory. As new log files are created, older ones are deleted.</param>
 		/// <param name="maxFileSize">The maximum byte-size of a log-file before further logging is rolled-over into a new log-file.</param>
 		/// <param name="encoding">Text-encoding for file. Default is ASCII.</param>
-		public RollingFileLogger(string logFilePath, int maxFiles, int maxFileSize, Encoding encoding = default) {
+		public RollingFileLogger(string logFilePath, int maxFiles = DefaultMaxFiles, int maxFileSize = DefaultMaxFileSizeB, Encoding encoding = default) {
 			encoding ??= Encoding.ASCII;
 			Guard.ArgumentInRange(maxFiles, 1, 9999, nameof(maxFiles));
 			Guard.ArgumentInRange(maxFileSize, 32, int.MaxValue, nameof(maxFileSize));

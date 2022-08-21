@@ -30,7 +30,7 @@ namespace Hydrogen.Application {
 
 		public IConfigurationServices ConfigurationServices { get; private set; }
 
-		public AssemblyAttributesManager AssemblyAttributesManager { get; private set; }
+		internal AssemblyAttributesManager AssemblyAttributesManager { get; private set; }
 
 		public bool HasDefaultLicenseKey() {
 			return AssemblyAttributesManager.HasAssemblyDefaultProductKey();

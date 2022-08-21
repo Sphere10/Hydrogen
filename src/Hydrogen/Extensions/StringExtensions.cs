@@ -29,6 +29,11 @@ namespace Hydrogen {
 
 		#region General
 
+		public static string Truncate(this string value, int maxLength, string truncationSuffix = "…") {
+			return value?.Length > maxLength
+				? value.Substring(0, maxLength) + truncationSuffix
+				: value;
+		}
 		public static int CountSubstring(this string text, string value, StringComparison comparison = StringComparison.Ordinal) {
 			var count = 0;
 			var minIndex = text.IndexOf(value, 0, comparison);

@@ -22,7 +22,7 @@ using Tools;
 
 namespace Hydrogen.Application {
 
-	public class AssemblyAttributesManager {
+	internal class AssemblyAttributesManager {
 		public const string DefaultLink = "www.sphere10.com";
 
         public AssemblyAttributesManager() {
@@ -119,6 +119,21 @@ namespace Hydrogen.Application {
             .AsReadOnly();
         }
 
+        public string GetAssemblyAuthorName() {
+	        var attributes = Tools.Runtime.GetEntryAssembly().GetCustomAttributesOfType<AssemblyAuthorAttribute>(false);
+	        if (!attributes.Any()) {
+		        return DefaultLink;
+	        }
+	        return attributes.First().Name;
+        }
+
+        public string GetAssemblyAuthorEmail() {
+	        var attributes = Tools.Runtime.GetEntryAssembly().GetCustomAttributesOfType<AssemblyAuthorAttribute>(false);
+	        if (!attributes.Any()) {
+		        return DefaultLink;
+	        }
+	        return attributes.First().Email;
+        }
 
     
     }

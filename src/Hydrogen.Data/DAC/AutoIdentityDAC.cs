@@ -19,7 +19,7 @@ using System.Text;
 using Hydrogen.Data;
 
 namespace Hydrogen.Data {
-	
+
 
 	/// <summary>
 	/// Insert method will always return the primary key value. It can also generate a primary key for you using a variety of strategies.

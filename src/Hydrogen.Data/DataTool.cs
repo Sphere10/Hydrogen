@@ -22,7 +22,7 @@ using Hydrogen.Data.Csv;
 
 // ReSharper disable CheckNamespace
 namespace Tools {
-	
+
 	public static partial class Data {
 
 		public static readonly System.DateTime SQLDateTimeMinValue = new System.DateTime(1753, 1, 1);

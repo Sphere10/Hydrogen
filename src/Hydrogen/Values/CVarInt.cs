@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace Hydrogen.Values {
+namespace Hydrogen {
 	
 	//Compact Variable integer - LEB128 compression based on NBitcoin CompactVarInt. Useful for 
 	// serializing small integers in a single byte. Larger integers may also be encoded but will be 

@@ -17,11 +17,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Hydrogen;
 using Hydrogen.Application;
 
 namespace Hydrogen.Windows.Forms {
-    public static class HydrogenFrameworkExtensions {
+	public static class HydrogenFrameworkExtensions {
 
         public static void StartWinFormsApplication(this HydrogenFramework framework) {
             if (!framework.IsStarted)

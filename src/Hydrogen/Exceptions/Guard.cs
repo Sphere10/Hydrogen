@@ -53,7 +53,7 @@ namespace Hydrogen {
 #endif
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static void FileNotExists(string path) {
-			if (!File.Exists(path))
+			if (File.Exists(path))
 				throw new FileAlreadyExistsException("File already exists", path);
 		}
 

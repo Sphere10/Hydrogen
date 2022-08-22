@@ -17,6 +17,7 @@ using System.Linq;
 using System.Text;
 using System.Xml.Serialization;
 
+
 namespace Hydrogen.Data {
 
 	//<ArtificialKeys>
@@ -24,27 +25,27 @@ namespace Hydrogen.Data {
 	//        <PrimaryKey name="PK1" autoIncrement="true" sequence="generatorName">
 	//            <Column name="ID"/>
 	//        </PrimaryKey>
-		
+
 	//        <ForeignKey name="FK1" referenceTable="Table2">
 	//            <Column name="A" references="U">
 	//            <Column name="B" references="V">
 	//            <Column name="C" references="W">
 	//        </ForeignKey>
-	
+
 	//        <UniqueConstraint name="UC1">
 	//            <Column>X</Column>
 	//            <Column>Y</Column>
 	//        </UniqueConstraint>
 	//    </Table>
-	
+
 	//    <Table name="Table2">
 	//        <PrimaryKey name="PK1" sequence="Sequence1">
 	//            <Column name="A"/>
 	//        </PrimaryKey>
 	//    </Table>
-	
+
 	//</ArtificialKeys>
-	
+
 	[XmlRoot("ArtificialKeys")]
 	public class ArtificialKeys {
 

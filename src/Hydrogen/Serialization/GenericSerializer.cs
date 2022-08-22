@@ -5,7 +5,6 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using Hydrogen.FastReflection;
-using Hydrogen.Values;
 
 namespace Hydrogen {
 

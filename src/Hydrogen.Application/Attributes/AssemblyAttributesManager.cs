@@ -28,6 +28,8 @@ namespace Hydrogen.Application {
         public AssemblyAttributesManager() {
         }
 
+		public static AssemblyAttributesManager Instance  { get; } = new ();
+
 		public string GetAssemblyTitle() {
 			var attributes = Tools.Runtime.GetEntryAssembly().GetCustomAttributesOfType<AssemblyTitleAttribute>(false);
 			if (attributes.Any()) {

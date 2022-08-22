@@ -20,9 +20,9 @@ using System.Text;
 
 namespace Hydrogen.Data {
 
-    // Need to change implementation
-    // - InternalStatements gets appended on statement finish/tostring/iteration 
-    // - PreviousStatements is a page-cached list
+	// Need to change implementation
+	// - InternalStatements gets appended on statement finish/tostring/iteration 
+	// - PreviousStatements is a page-cached list
 	public abstract class SQLBuilderBase : ISQLBuilder {
 	    private const int ScriptPageSize = 1*1000000; // 1 MB
         // Need to use a paged list here of SQLStatementType

@@ -81,6 +81,10 @@ namespace Hydrogen.Application {
 		}
         
 
+		public ProductDistribution GetAssemblyProductDistribution() {
+			return Tools.Runtime.GetEntryAssembly().GetCustomAttributeOfType<AssemblyProductDistributionAttribute>(false).Distribution;
+		}
+
         public string GetAssemblyCopyright() {
 			return Tools.Runtime.GetEntryAssembly().GetCustomAttributeOfType<AssemblyCopyrightAttribute>(false).Copyright.Replace("{CurrentYear}", DateTime.Now.Year.ToString());
         }

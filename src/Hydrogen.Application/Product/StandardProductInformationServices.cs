@@ -38,6 +38,7 @@ namespace Hydrogen.Application {
 		protected ProductInformation GetProductInformation() {
 			var manager = new AssemblyAttributesManager();
 
+			var releaseType = Tools.Exceptions.TryOrDefault(() => manager.GetAssemblyProductDistribution(), ProductDistribution.ReleaseCandidate);
 			string longVersion = manager.GetAssemblyVersion();
 			string shortVersion = longVersion;
 			string[] versions = longVersion.Split('.');
@@ -62,7 +63,7 @@ namespace Hydrogen.Application {
 				ProductUrl = Tools.Exceptions.TryOrDefault(() =>  manager.GetAssemblyProductLink(), string.Empty),
 				AuthorName = Tools.Exceptions.TryOrDefault(() =>  manager.GetAssemblyAuthorName(), string.Empty),
 				AuthorEmail = Tools.Exceptions.TryOrDefault(() =>  manager.GetAssemblyAuthorEmail(), string.Empty),
-				ProductVersion = shortVersion,
+				ProductVersion = ($"{shortVersion} ({releaseType})").Trim(),
                 HelpResources = Tools.Exceptions.TryOrDefault(() =>  manager.GetAssemblyProductHelpResources(), null)
             };
 		}

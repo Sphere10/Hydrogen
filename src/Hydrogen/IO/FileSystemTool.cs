@@ -499,10 +499,24 @@ namespace Tools {
             return files;
         }
 
+        public static int GetDirectoryContents(string directory, out string[] files, out string[] folders) {
+	        files = Directory.GetFiles(directory);
+			folders = Directory.GetDirectories(directory);
+			return files.Length  + folders.Length;
+        }
+
         public static bool DirectoryContainsFiles(string directory, params string[] filenames) {
             var files = new HashSet<string>(GetFiles(directory));
             return filenames.All(files.Contains);
         }
 
+        public static bool IsDirectoryEmpty(string getParentDirectoryPath) 
+			=> CountDirectoryContents(getParentDirectoryPath) == 0;
+
+        public static int CountDirectoryContents(string directory) 
+			=> GetDirectoryContents(directory, out _, out _);
+
+
+        
     }
 }

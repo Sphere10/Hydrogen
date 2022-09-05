@@ -3,7 +3,7 @@
 namespace Hydrogen {
 
 	/// <summary>
-	/// A future whose value is fetched on first rqeuest and retained for further requests.
+	/// A future whose value is fetched on first request and retained for further requests.
 	/// </summary>
 	/// <typeparam name="T"></typeparam>
 	public class LazyLoad<T> : IFuture<T> {

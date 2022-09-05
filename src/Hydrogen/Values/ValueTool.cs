@@ -180,26 +180,19 @@ namespace Tools {
 
 		public static class Future {
 
-			public static IFuture<T> Explicit<T>()
-				=> new ExplicitFuture<T>();
+			public static ExplicitFuture<T> Explicit<T>() => new();
 
-			public static IFuture<T> Explicit<T>(T value)
-				=> ExplicitFuture<T>.For(value);
+			public static ExplicitFuture<T> Explicit<T>(T value) => ExplicitFuture<T>.For(value);
 
-			public static IFuture<T> LazyLoad<T>(Func<T> valueLoader)
-				=> new LazyLoad<T>(valueLoader);
+			public static LazyLoad<T> LazyLoad<T>(Func<T> valueLoader) => new(valueLoader);
 
-			public static IFuture<T> AlwaysLoad<T>(Func<T> valueLoader)
-				=> new ProxyValue<T>(valueLoader);
+			public static Reloadable<T> Reloadable<T>(Func<T> valueLoader) => new(valueLoader);
 
-			public static IFuture<T> BackgroundFetched<TSource, T>(IFuture<TSource> future, Func<T> valueLoader) {
-				return new BackgroundFetchedValue<T>(valueLoader);
-			}
+			public static ProxyValue<T> AlwaysLoad<T>(Func<T> valueLoader) => new(valueLoader);
 
-			public static IFuture<T> Projection<TSource, T>(IFuture<TSource> future, Func<TSource, T> projection) {
-				return LazyLoad(() => projection(future.Value));
-			}
+			public static BackgroundFetchedValue<T> BackgroundFetched<TSource, T>(IFuture<TSource> future, Func<T> valueLoader) => new(valueLoader);
 
+			public static IFuture<T> Projection<TSource, T>(IFuture<TSource> future, Func<TSource, T> projection)  => LazyLoad(() => projection(future.Value));
 
 		}
 

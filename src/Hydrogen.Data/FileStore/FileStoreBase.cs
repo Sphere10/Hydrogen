@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------
-// <copyright file="FileStore.cs" company="Sphere 10 Software">
+// <copyright file="FileStoreBase.cs" company="Sphere 10 Software">
 //
 // Copyright (c) Sphere 10 Software. All rights reserved. (http://www.sphere10.com)
 //
@@ -20,7 +20,7 @@ using System.Text;
 
 namespace Hydrogen.Data;
 
-public abstract class FileStoreBase<TFileKey> : Disposable, IFileStoreBase<TFileKey> {
+public abstract class FileStoreBase<TFileKey> : Disposable, IFileStore<TFileKey> {
 
 	#region Properties
 

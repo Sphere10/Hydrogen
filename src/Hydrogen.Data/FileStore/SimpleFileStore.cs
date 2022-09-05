@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------
-// <copyright file="FileStore.cs" company="Sphere 10 Software">
+// <copyright file="FileStoreBase.cs" company="Sphere 10 Software">
 //
 // Copyright (c) Sphere 10 Software. All rights reserved. (http://www.sphere10.com)
 //

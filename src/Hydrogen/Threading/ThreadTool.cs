@@ -107,11 +107,11 @@ namespace Tools {
         }
 
         public static void QueueAction(Action action) {
-            ThreadPool.QueueUserWorkItem((o) => action());
+            ThreadPool.QueueUserWorkItem(_ => action());
         }
 
         public static void QueueActionIgnoringException(Action action) {
-            ThreadPool.QueueUserWorkItem((o) => Tools.Exceptions.ExecuteIgnoringException(action));
+            ThreadPool.QueueUserWorkItem(_ => Tools.Exceptions.ExecuteIgnoringException(action));
         }
 
     }

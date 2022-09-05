@@ -88,7 +88,7 @@ namespace Hydrogen.DApp.Node.UI {
 					s = sb.ToString();
 					_log.AppendLog(s);
 				}));
-				_outputLogger.Options = LogOptions.DebugBuildDefaults;
+				_outputLogger.Options = LogOptions.VerboseProfile;
 				this.Add(_log);
 
 				var statsFrame = new FrameView("Statistics") {

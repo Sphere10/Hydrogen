@@ -20,15 +20,12 @@ using System.Threading.Tasks;
 using Hydrogen;
 
 namespace Hydrogen.Windows {
-    public class EventLogLogger : ILogger {
-        private System.Diagnostics.EventLog _eventLog;
-        private readonly string _source;
+    public class EventLogLogger : LoggerBase {
+	    private readonly string _source;
         private readonly string _logName;
 
-
-
         public EventLogLogger(string sourceName, string logName = "Application") {
-            Options = LogOptions.DebugBuildDefaults;
+            Options = LogOptions.VerboseProfile;
             _source = sourceName;
             _logName = logName;
             if (!EventLog.SourceExists(_source)) {
@@ -36,29 +33,17 @@ namespace Hydrogen.Windows {
             }
         }
 
-        public LogOptions Options { get; set; }
-        public void Debug(string message) {
-            if (Options.HasFlag(LogOptions.DebugEnabled)) {
-                EventLog.WriteEntry(_source, "DEBUG: " + message, EventLogEntryType.Information);   
-            }
+        protected override void Log(LogLevel logLevel, string message) {
+	        var eventLogEntryType = logLevel switch {
+		        LogLevel.Debug => EventLogEntryType.Information,
+		        LogLevel.Info => EventLogEntryType.Information,
+		        LogLevel.Warning => EventLogEntryType.Warning,
+		        LogLevel.Error => EventLogEntryType.Error,
+		        _ => throw new NotSupportedException($"{logLevel}")
+	        };
+			EventLog.WriteEntry(_source, message, eventLogEntryType);
         }
+		
 
-        public void Info(string message) {
-            if (Options.HasFlag(LogOptions.InfoEnabled)) {
-                EventLog.WriteEntry(_source, message, EventLogEntryType.Information);
-            }
-        }
-
-        public void Warning(string message) {
-            if (Options.HasFlag(LogOptions.WarningEnabled)) {
-                EventLog.WriteEntry(_source, message, EventLogEntryType.Warning);
-            }
-        }
-
-        public void Error(string message) {
-            if (Options.HasFlag(LogOptions.ErrorEnabled)) {
-                EventLog.WriteEntry(_source, message, EventLogEntryType.Error);
-            }
-        }
     }
 }

@@ -169,69 +169,69 @@
 
 @code {
 
-        /*
-        public class DataSource1<TItem> : IDataSource<TestClass>
-        {
-        List<TestClass> AllItems = new List<TestClass>();
+                    /*
+                    public class DataSource1<TItem> : IDataSource<TestClass>
+                    {
+                    List<TestClass> AllItems = new List<TestClass>();
 
-        public event EventHandlerEx<DataSourceMutatedItems<TestClass>> MutatedItems;
+                        public event EventHandlerEx<DataSourceMutatedItems<TestClass>> MutatedItems;
 
         public void RefreshData()
-            {
-            AllItems = LoadData(73);
-            }
-
-            // create some dummy data
-            public DataSource1()
-                {
-                RefreshData();
-                }
-
-                event EventHandlerEx<DataSourceMutatedItems<TestClass>> IDataSource<TestClass>.MutatedItems {
-                    add {
-                    throw new NotImplementedException();
-                    }
-
-                    remove {
-                    throw new NotImplementedException();
-                    }
-                    }
-
-                    static List<TestClass> LoadData(int size)
-                    {
-                        var testData = new List<TestClass>();
-
-                        for (int i = 0; i < size; i++)
         {
-        var testObject = new TestClass();
-                        testObject.FillWithTestData(i);
-                        testData.Add(testObject);
+        AllItems = LoadData(73);
                         }
 
-                        return testData;
+                        // create some dummy data
+                        public DataSource1()
+                        {
+                        RefreshData();
                         }
+
+                        event EventHandlerEx<DataSourceMutatedItems<TestClass>> IDataSource<TestClass>.MutatedItems {
+                            add {
+                            throw new NotImplementedException();
+                            }
+
+                            remove {
+                            throw new NotImplementedException();
+                            }
+                            }
+
+                            static List<TestClass> LoadData(int size)
+                            {
+                            var testData = new List<TestClass>();
+
+                            for (int i = 0; i < size; i++)
+                            {
+                            var testObject = new TestClass();
+                            testObject.FillWithTestData(i);
+                        testData.Add(testObject);
+        }
+
+        return testData;
+        }
 
                         public async Task Create(IEnumerable<TestClass> entities)
-                            {
-                            AllItems.AddRange(entities);
-                            }
-
-                            public async Task Delete(IEnumerable<TestClass> entities)
-                            {
-                            foreach (var entity in entities)
-                            {
-                            var index = AllItems.IndexOf(entity);
-                            if (index >= 0) AllItems.RemoveAt(index);
-                            }
-                    }
-
-        public Task<IEnumerable<TestClass>> New(int count)
-        {
-        var returnList = new List<TestClass>();
-                        var newId = AllItems.Max(x => x.Id) + 1;
-
-                        for (int i = 0; i < count; i++)
                         {
+                        AllItems.AddRange(entities);
+            }
+
+            public async Task Delete(IEnumerable<TestClass> entities)
+            {
+            foreach (var entity in entities)
+            {
+            var index = AllItems.IndexOf(entity);
+            if (index >= 0) AllItems.RemoveAt(index);
+            }
+            }
+
+            public Task<IEnumerable<TestClass>> New(int count)
+            {
+            var returnList = new List<TestClass>();
+            var newId = AllItems.Max(x => x.Id) + 1;
+
+            for (int i = 0; i < count; i++)
+            {
             var newEntity = new TestClass();
             newEntity.FillWithTestData(newId++);
             AllItems.Add(newEntity);
@@ -243,29 +243,29 @@
 
             //void New(int count) {
             //    throw new NotImplementedException();
-            //}
+        //}
 
-            public Task<IEnumerable<TestClass>> Read(string searchTerm, int pageLength, ref int page, string sortProperty, SortDirection sortDirection, out int totalItems)
-            {
-            // make sure the requested page is logical
-            if (page < 0) page = 0;
-            else if (page > AllItems.Count / pageLength) page = AllItems.Count / pageLength;
+        public Task<IEnumerable<TestClass>> Read(string searchTerm, int pageLength, ref int page, string sortProperty, SortDirection sortDirection, out int totalItems)
+        {
+        // make sure the requested page is logical
+        if (page < 0) page = 0;
+        else if (page > AllItems.Count / pageLength) page = AllItems.Count / pageLength;
 
             var startIndex = pageLength * page;
 
             // the last page might not have a full [page of data
             if (startIndex + pageLength >= AllItems.Count) pageLength = AllItems.Count - startIndex;
 
-        var items = (IEnumerable<TestClass>)AllItems.GetRange(startIndex, pageLength);
+            var items = (IEnumerable<TestClass>)AllItems.GetRange(startIndex, pageLength);
 
-        totalItems = AllItems.Count();
-        return Task.FromResult(items);
+            totalItems = AllItems.Count();
+            return Task.FromResult(items);
 
-        //return Task.Run(() => (IEnumerable<TestClass>)AllItems.GetRange(startIndex, pageLength));
-        }
+            //return Task.Run(() => (IEnumerable<TestClass>)AllItems.GetRange(startIndex, pageLength));
+            }
 
-        public Task Refresh(TestClass[] entity)
-        {
+            public Task Refresh(TestClass[] entity)
+            {
             throw new NotImplementedException();
             }
 
@@ -273,12 +273,12 @@
             {
             var test = entities.ToArray()[0].ToString();
 
-            return Task.Run(() =>
+        return Task.Run(() =>
             {
-            foreach (var entity in entities)
-            {
-            for (int i = 0; i < AllItems.Count; i++)
-            {
+        foreach (var entity in entities)
+        {
+        for (int i = 0; i < AllItems.Count; i++)
+        {
             if (AllItems[i].Id == entity.Id)
             {
             AllItems[i] = entity;
@@ -290,16 +290,16 @@
             );
             }
 
-            public Task<Result> Validate(IEnumerable<(TestClass entity, CrudAction action)> actions)
+        public Task<Result> Validate(IEnumerable<(TestClass entity, CrudAction action)> actions)
         {
         throw new NotImplementedException();
         }
 
         Task IDataSource<TestClass>.Create(IEnumerable<TestClass> entities) {
         throw new NotImplementedException();
-            }
+        }
 
-            Task<IEnumerable<TestClass>> IDataSource<TestClass>.Read(string searchTerm, int pageLength, ref int page, string sortProperty, SortDirection sortDirection, out int totalItems) {
+        Task<IEnumerable<TestClass>> IDataSource<TestClass>.Read(string searchTerm, int pageLength, ref int page, string sortProperty, SortDirection sortDirection, out int totalItems) {
         throw new NotImplementedException();
         }
 
@@ -315,21 +315,21 @@
         throw new NotImplementedException();
         }
 
-        Task IDataSource<TestClass>.Delete(IEnumerable<TestClass> entities) {
-        throw new NotImplementedException();
+    Task IDataSource<TestClass>.Delete(IEnumerable<TestClass> entities) {
+    throw new NotImplementedException();
         }
 
         Task<Result> IDataSource<TestClass>.Validate(IEnumerable<(TestClass entity, CrudAction action)> actions) {
-        throw new NotImplementedException();
-        }
+    throw new NotImplementedException();
+    }
 
 
-        void IDataSource<TestClass>.NewDelayed(int count) {
-        throw new NotImplementedException();
+    void IDataSource<TestClass>.NewDelayed(int count) {
+    throw new NotImplementedException();
     }
 
     void IDataSource<TestClass>.CreateDelayed(IEnumerable<TestClass> entities) {
-        throw new NotImplementedException();
+    throw new NotImplementedException();
     }
 
     void IDataSource<TestClass>.ReadDelayed(string searchTerm, int pageLength, int page, string sortProperty, SortDirection sortDirection) {
@@ -445,8 +445,8 @@
 
     //return Task.Run(() => {
     //    foreach (var entity in entities) {
-    //        for (int i = 0; i < AllItems.Count; i++) {
-        //            if (AllItems[i].Id == entity.Id) {
+        //        for (int i = 0; i < AllItems.Count; i++) {
+    //            if (AllItems[i].Id == entity.Id) {
     //                AllItems[i] = entity;
     //                break;
     //            }
@@ -496,7 +496,7 @@
         var f4 = new Filter<char>();
     }
 
-    public class WebLogger : ILogger {
+    public class WebLogger : LoggerBase {
 
         public delegate void DisplayTextDelegate(string text);
 
@@ -505,24 +505,11 @@
         public WebLogger(DisplayTextDelegate displayTextFunction) {
             DisplayTextFunction = displayTextFunction;
         }
-
-        LogOptions ILogger.Options { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-
-        void ILogger.Debug(string message) {
-            DisplayTextFunction("DEBUG: " + message);
+        
+        protected override void Log(LogLevel logLevel, string message) {
+            DisplayTextFunction($"{logLevel}: {message}");
         }
 
-        void ILogger.Error(string message) {
-            DisplayTextFunction("ERROR: " + message);
-        }
-
-        void ILogger.Info(string message) {
-            DisplayTextFunction("INFO: " + message);
-        }
-
-        void ILogger.Warning(string message) {
-            DisplayTextFunction("WARNING: " + message);
-        }
     }
 
 

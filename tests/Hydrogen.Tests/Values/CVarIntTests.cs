@@ -2,7 +2,6 @@
 using System.IO;
 using FluentAssertions;
 using NUnit.Framework;
-using Hydrogen.Values;
 
 namespace Hydrogen.Tests.Values {
 	public class CVarIntTests {

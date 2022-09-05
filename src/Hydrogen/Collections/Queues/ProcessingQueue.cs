@@ -11,6 +11,7 @@ namespace Hydrogen {
 	/// any blocking on the enqueue.
 	/// </summary>
 	/// <typeparam name="T"></typeparam>
+	[Obsolete("Use SerialThreadPool instead")]
 	public class ProcessingQueue<T> {
 		public const int DefaultMaxMessages = 1000000;
 		public EventHandlerEx<T> Succeeded;

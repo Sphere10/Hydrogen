@@ -11,6 +11,8 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
+using System;
+
 namespace Hydrogen {
 	public class LoggerDecorator : ILogger {
 
@@ -39,6 +41,10 @@ namespace Hydrogen {
 
 		public virtual void Error(string message) {
 			_decoratedLogger.Error(message);
+		}
+
+		public virtual void Exception(Exception exception) {
+			_decoratedLogger.Exception(exception);
 		}
 	}
 }

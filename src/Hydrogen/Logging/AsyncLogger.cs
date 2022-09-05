@@ -14,32 +14,35 @@
 using System;
 using System.Collections.Generic;
 
-namespace Hydrogen {
+namespace Hydrogen;
 
 
-	public class AsyncLogger : LoggerDecorator {
+public class AsyncLogger : LoggerDecorator {
 
-		private readonly BackgroundProcessor _backgroundProcessor;
+	private readonly SerialThreadPool _serialThreadPool;
 
-		public AsyncLogger(ILogger decoratedLogger, Action<Exception> errorHandler = null) : base(decoratedLogger) {
-			_backgroundProcessor = new BackgroundProcessor(new List<Action>(), errorHandler);	
-		}
-
-		public override void Debug(string message) {
-			_backgroundProcessor.QueueForExecution(() => base.Debug(message));
-		}
-
-		public override void Info(string message) {
-			_backgroundProcessor.QueueForExecution(() => base.Info(message));
-		}
-
-		public override void Warning(string message) {
-			_backgroundProcessor.QueueForExecution(() => base.Warning(message));
-		}
-
-		public override void Error(string message) {
-			_backgroundProcessor.QueueForExecution(() => base.Error(message));
-		}
-
+	public AsyncLogger(ILogger decoratedLogger, Action<Exception> errorHandler = null) : base(decoratedLogger) {
+		_serialThreadPool = new SerialThreadPool(errorHandler);
 	}
-}
+
+	public override void Debug(string message) {
+		_serialThreadPool.QueueUserWorkItem(() => base.Debug(message));
+	}
+
+	public override void Info(string message) {
+		_serialThreadPool.QueueUserWorkItem(() => base.Info(message));
+	}
+
+	public override void Warning(string message) {
+		_serialThreadPool.QueueUserWorkItem(() => base.Warning(message));
+	}
+
+	public override void Error(string message) {
+		_serialThreadPool.QueueUserWorkItem(() => base.Error(message));
+	}
+
+	public override void Exception(Exception exception) {
+		_serialThreadPool.QueueUserWorkItem(() => base.Exception(exception));
+	}
+};
+

@@ -13,18 +13,18 @@
 
 using System.IO;
 
-namespace Hydrogen {
-	public class FileAppendLogger : TextWriterLogger {
-        public FileAppendLogger(string file) : this(file, false) {
-        }
- 
-        public FileAppendLogger(string file, bool createDirectories)
-            : base(new FileAppendTextWriter(file)) {
-            if (createDirectories) {
-                if (!File.Exists(file)) {
-                    Tools.FileSystem.CreateBlankFile(file, true);
-                }
-            }
-        }
-    }
+namespace Hydrogen;
+public class FileAppendLogger : TextWriterLogger {
+	public FileAppendLogger(string file) : this(file, false) {
+	}
+
+	public FileAppendLogger(string file, bool createDirectories)
+		: base(new FileAppendTextWriter(file)) {
+		if (createDirectories) {
+			if (!File.Exists(file)) {
+				Tools.FileSystem.CreateBlankFile(file, true);
+			}
+		}
+	}
 }
+

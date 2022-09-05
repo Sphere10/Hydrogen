@@ -15,88 +15,97 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Hydrogen {
+namespace Hydrogen;
 
-	public class MulticastLogger : ILogger {
-		private readonly bool _multiThreaded;
-		private readonly SynchronizedList<ILogger> _loggers;
+public class MulticastLogger : ILogger {
 
-		public MulticastLogger(bool multiThreaded = false)
-			: this(new List<ILogger>()) {
-			_multiThreaded = multiThreaded;
-			Options = LogOptions.DebugBuildDefaults;
-		}
+	private readonly SynchronizedList<ILogger> _loggers;
 
-		public MulticastLogger(params ILogger[] loggers)
-			: this(new List<ILogger>(loggers)) {
-		}
-
-		public MulticastLogger(IEnumerable<ILogger> loggers)
-			: this(new List<ILogger>(loggers)) {
-		}
-
-		public MulticastLogger(IList<ILogger> loggers) {
-			_loggers = new SynchronizedList<ILogger>();
-			loggers.ForEach(_loggers.Add);
-		}
-
-		public LogOptions Options {
-			get => throw new NotSupportedException("Options can only be set in MultiCastLogger");
-			set {
-				using (_loggers.EnterWriteScope()) {
-					_loggers.ForEach(l => l.Options = value);
-				}
-			}
-		}
-
-		public void Add(ILogger logger) {
-			_loggers.Add(logger);
-		}
-
-		public bool Remove(ILogger logger) {
-			return _loggers.Remove(logger);
-		}
-
-		public void Clear() {
-			_loggers.Clear();
-		}
-
-		public void Debug(string message) {
-			using (_loggers.EnterReadScope()) {
-				if (_multiThreaded)
-					Parallel.ForEach(_loggers, (logger) => Tools.Exceptions.ExecuteIgnoringException(() => logger.Debug(message)));
-				else
-					_loggers.ForEach((logger) => Tools.Exceptions.ExecuteIgnoringException(() => logger.Debug(message)));
-			}
-		}
-
-		public void Info(string message) {
-			using (_loggers.EnterReadScope()) {
-				if (_multiThreaded)
-					Parallel.ForEach(_loggers, (logger) => Tools.Exceptions.ExecuteIgnoringException(() => logger.Info(message)));
-				else
-					_loggers.ForEach((logger) => Tools.Exceptions.ExecuteIgnoringException(() => logger.Info(message)));
-
-			}
-		}
-
-		public void Warning(string message) {
-			using (_loggers.EnterReadScope()) {
-				if (_multiThreaded)
-					Parallel.ForEach(_loggers, (logger) => Tools.Exceptions.ExecuteIgnoringException(() => logger.Warning(message)));
-				else
-					_loggers.ForEach((logger) => Tools.Exceptions.ExecuteIgnoringException(() => logger.Warning(message)));
-			}
-		}
-
-		public void Error(string message) {
-			using (_loggers.EnterReadScope()) {
-				if (_multiThreaded)
-					Parallel.ForEach(_loggers, (logger) => Tools.Exceptions.ExecuteIgnoringException(() => logger.Error(message)));
-				else
-					_loggers.ForEach((logger) => Tools.Exceptions.ExecuteIgnoringException(() => logger.Error(message)));
-			}
-		}
-
+	public MulticastLogger()
+		: this(new List<ILogger>()) {
 	}
+
+	public MulticastLogger(params ILogger[] loggers)
+		: this(new List<ILogger>(loggers)) {
+	}
+
+	public MulticastLogger(IEnumerable<ILogger> loggers)
+		: this(new List<ILogger>(loggers)) {
+	}
+
+	public MulticastLogger(IList<ILogger> loggers) {
+		_loggers = new SynchronizedList<ILogger>();
+		loggers.ForEach(_loggers.Add);
+	}
+
+	public bool MultiThreaded { get; init; } = false;
+
+	public LogOptions Options {
+		get => throw new NotSupportedException("Options can only be set in MultiCastLogger");
+		set {
+			using (_loggers.EnterWriteScope()) {
+				_loggers.ForEach(l => l.Options = value);
+			}
+		}
+	}
+
+	public void Add(ILogger logger) {
+		_loggers.Add(logger);
+	}
+
+	public bool Remove(ILogger logger) {
+		return _loggers.Remove(logger);
+	}
+
+	public void Clear() {
+		_loggers.Clear();
+	}
+
+	public void Debug(string message) {
+		using (_loggers.EnterReadScope()) {
+			if (MultiThreaded)
+				Parallel.ForEach(_loggers, (logger) => Tools.Exceptions.ExecuteIgnoringException(() => logger.Debug(message)));
+			else
+				_loggers.ForEach((logger) => Tools.Exceptions.ExecuteIgnoringException(() => logger.Debug(message)));
+		}
+	}
+
+	public void Info(string message) {
+		using (_loggers.EnterReadScope()) {
+			if (MultiThreaded)
+				Parallel.ForEach(_loggers, (logger) => Tools.Exceptions.ExecuteIgnoringException(() => logger.Info(message)));
+			else
+				_loggers.ForEach((logger) => Tools.Exceptions.ExecuteIgnoringException(() => logger.Info(message)));
+
+		}
+	}
+
+	public void Warning(string message) {
+		using (_loggers.EnterReadScope()) {
+			if (MultiThreaded)
+				Parallel.ForEach(_loggers, (logger) => Tools.Exceptions.ExecuteIgnoringException(() => logger.Warning(message)));
+			else
+				_loggers.ForEach((logger) => Tools.Exceptions.ExecuteIgnoringException(() => logger.Warning(message)));
+		}
+	}
+
+	public void Error(string message) {
+		using (_loggers.EnterReadScope()) {
+			if (MultiThreaded)
+				Parallel.ForEach(_loggers, (logger) => Tools.Exceptions.ExecuteIgnoringException(() => logger.Error(message)));
+			else
+				_loggers.ForEach((logger) => Tools.Exceptions.ExecuteIgnoringException(() => logger.Error(message)));
+		}
+	}
+
+	public void Exception(Exception exception) {
+		using (_loggers.EnterReadScope()) {
+			if (MultiThreaded)
+				Parallel.ForEach(_loggers, (logger) => Tools.Exceptions.ExecuteIgnoringException(() => logger.Exception(exception)));
+			else
+				_loggers.ForEach((logger) => Tools.Exceptions.ExecuteIgnoringException(() => logger.Exception(exception)));
+		}
+	}
+
 }
+

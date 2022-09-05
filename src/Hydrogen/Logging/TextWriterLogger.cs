@@ -40,7 +40,7 @@ namespace Hydrogen {
 	    /// <remarks></remarks>
 	    public TextWriterLogger(TextWriter writer) {
 		    _writer = writer;
-		    Options = LogOptions.DebugBuildDefaults;
+		    Options = LogOptions.VerboseProfile;
 		}
 
 	

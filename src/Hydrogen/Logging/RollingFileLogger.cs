@@ -55,7 +55,7 @@ namespace Hydrogen {
 			MaxFiles = maxFiles;
 			MaxFileSize = maxFileSize;
 			_effectiveMaxSize = MaxFileSize - Encoding.GetByteCount(Environment.NewLine);
-			Options = LogOptions.DebugBuildDefaults;
+			Options = LogOptions.VerboseProfile;
 			OpenLogFile(logFilePath, encoding);
 		}
 

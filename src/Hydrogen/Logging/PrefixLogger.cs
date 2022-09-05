@@ -11,32 +11,16 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using System;
+namespace Hydrogen;
 
-namespace Hydrogen {
+public class PrefixLogger : PrefixLoggerBase {
+	private readonly string _prefix;
 
-	public class PrefixLogger : LoggerDecorator {
-		private readonly string _prefix;
+	public PrefixLogger(ILogger decoratedLogger, string prefix)
+		: base(decoratedLogger) {
+		_prefix = prefix;
+	}
 
-		public PrefixLogger(ILogger decoratedLogger, string prefix)
-			: base(decoratedLogger) {
-			_prefix = prefix;
-		}
-
-		public override void Debug(string message) {
-			base.Debug(_prefix + message);
-		}
-
-		public override void Info(string message) {
-			base.Info(_prefix + message);
-		}
-
-		public override void Warning(string message) {
-			base.Warning(_prefix + message);
-		}
-
-		public override void Error(string message) {
-			base.Error(_prefix + message);
-		}
-	}	
+	protected override string GetPrefix() => _prefix;
 }
+

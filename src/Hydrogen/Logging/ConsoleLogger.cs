@@ -11,11 +11,9 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace Hydrogen {
-	public class ConsoleLogger : TextWriterLogger {
-		public ConsoleLogger()
-			: base(new ConsoleTextWriter()) {
-		}
+namespace Hydrogen;
+public class ConsoleLogger : TextWriterLogger {
+	public ConsoleLogger()
+		: base(new ConsoleTextWriter()) {
 	}
-
 }

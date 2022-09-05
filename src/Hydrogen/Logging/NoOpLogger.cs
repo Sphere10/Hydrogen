@@ -11,53 +11,18 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
+using System;
+
 namespace Hydrogen {
 
 	/// <summary>
 	/// No-operation logger. Does nothing.
 	/// </summary>
 	/// <remarks></remarks>
-	public class NoOpLogger : ILogger {
-	    public LogOptions Options { get; set; }
-	    /// <summary>
-		/// Logs a debug message.
-		/// </summary>
-		/// <param name="message">The message.</param>
-		/// <param name="formatOptions">The format options (if any)</param>
-		/// <remarks></remarks>
-		public void Debug(string message) {
+	public class NoOpLogger : LoggerBase {
+
+		protected override void Log(LogLevel logLevel, string message) {
 			// do nothing
 		}
-
-		/// <summary>
-		/// Logs an information message.
-		/// </summary>
-		/// <param name="message">The message.</param>
-		/// <param name="formatOptions">The format options (if any)</param>
-		/// <remarks></remarks>
-		public void Info(string message) {
-			// do nothing
-		}
-
-		/// <summary>
-		/// Logs a warning message.
-		/// </summary>
-		/// <param name="message">The message.</param>
-		/// <param name="formatOptions">The format options (if any)</param>
-		/// <remarks></remarks>
-		public void Warning(string message) {
-			// do nothing
-		}
-
-		/// <summary>
-		/// Logs an error message.
-		/// </summary>
-		/// <param name="message">The message.</param>
-		/// <param name="formatOptions">The format options (if any)</param>
-		/// <remarks></remarks>
-		public void Error(string message) {
-			// do nothing
-		}
-
 	}
 }

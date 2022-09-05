@@ -47,18 +47,22 @@ namespace Hydrogen {
 		/// <param name="message">The message.</param>
 		void Error(string message);
 
+		/// <summary>
+		/// Logs an exception message.
+		/// </summary>
+		/// <param name="exception">The exception.</param>
+		void Exception(Exception exception);
 	}
+
 
 	public static class ILoggerExtensions {
 
-		public static void LogException(this ILogger logger, Exception exception) {
-			logger.Error(exception.ToDiagnosticString());
-		}
+		//public static void LogException(this ILogger logger, Exception exception)  
+		//	logger.Error(TryHydrateErrorMessage(exception, logger.Options));
 
-		public static void LogException(this ILogger logger, string componentName, string methodName, Exception exception) {
-			logger.Error($"{ComponentPrefix(componentName, methodName)} {exception.ToDiagnosticString()}");
-		}
-
+		//public static void LogException(this ILogger logger, string componentName, string methodName, Exception exception) {
+		//	logger.Error($"{ComponentPrefix(componentName, methodName)} {exception.ToDiagnosticString()}");
+		//}
 
 		public static void Debug(this ILogger logger, string componentName, string methodName, string message) {
 			logger.Debug($"{ComponentPrefix(componentName, methodName)} {message}");
@@ -92,6 +96,7 @@ namespace Hydrogen {
                 () => logger.Debug($"{messagePrefix ?? string.Empty} ({(long)DateTime.Now.Subtract(start).TotalMilliseconds} ms)")
             );
         }
+
 
 		private static string ComponentPrefix(string componentName, string methodName)
 			=> $"[{componentName}::{methodName}]";

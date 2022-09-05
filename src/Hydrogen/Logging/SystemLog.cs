@@ -29,7 +29,7 @@ namespace Hydrogen {
 		/// </summary>
 		/// <remarks></remarks>
 		static SystemLog() {
-			_logger = new MulticastLogger(false);
+			_logger = new MulticastLogger();
 		}
 
 		/// <summary>
@@ -86,12 +86,12 @@ namespace Hydrogen {
 			_logger.Error(componentName, methodName, message);
 		}
 
-		public static void Exception(Exception exception) {
-			_logger.LogException(exception);
-		}
+
+		public static void Exception(Exception exception) => _logger.Exception(exception);
 
 		public static void Exception(string componentName, string methodName, Exception exception) {
-			_logger.LogException(componentName, methodName, exception);
+			if (LoggerHelper.TryHydrateErrorMessage(exception, _logger.Options, out var message))
+				_logger.Error(componentName, methodName, message);
 		}
 
 		/// <summary>

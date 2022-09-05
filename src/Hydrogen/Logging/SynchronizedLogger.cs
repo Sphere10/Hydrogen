@@ -1,3 +1,5 @@
+using System;
+
 namespace Hydrogen;
 
 public class SynchronizedLogger : SynchronizedObject, ILogger {
@@ -7,7 +9,6 @@ public class SynchronizedLogger : SynchronizedObject, ILogger {
 		Guard.ArgumentNotNull(internalLogger, nameof(internalLogger));
 		_internalLogger = internalLogger;
 	}
-
 
 	public LogOptions Options {
 		get {
@@ -39,5 +40,10 @@ public class SynchronizedLogger : SynchronizedObject, ILogger {
 	public void Error(string message) {
 		using (EnterWriteScope())
 			_internalLogger.Error(message);
+	}
+
+	public void Exception(Exception exception) {
+		using (EnterWriteScope())
+			_internalLogger.Exception(exception);
 	}
 }

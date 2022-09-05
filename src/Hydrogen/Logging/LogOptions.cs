@@ -20,7 +20,10 @@ namespace Hydrogen {
         InfoEnabled         = 1 << 1,
         WarningEnabled      = 1 << 2,
         ErrorEnabled        = 1 << 3,
-        DebugBuildDefaults = DebugEnabled | InfoEnabled | WarningEnabled | ErrorEnabled,
-        ReleaseBuildDefaults = WarningEnabled | ErrorEnabled
+        ExceptionDetailEnabled  = 1 << 4,
+        
+		VerboseProfile = DebugEnabled | InfoEnabled | WarningEnabled | ErrorEnabled | ExceptionDetailEnabled,
+        StandardProfile = WarningEnabled | ErrorEnabled | ExceptionDetailEnabled,
+        UserDisplayProfile = InfoEnabled | WarningEnabled | ErrorEnabled,
     }
 }

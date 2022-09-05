@@ -16,19 +16,14 @@ using System.Threading;
 
 namespace Hydrogen {
 
+
 	/// <summary>
-	/// This class uses a read writer lock to provide data synchronization, but the design of the IList interface itself can lead to
-	/// race conditions. Beware of it's use. 
+	/// This class uses a read writer lock to provide data synchronization.
 	/// </summary>
-	/// <typeparam name="TItem"></typeparam>
-	public class SynchronizedCollection<TItem> : CollectionDecorator<TItem>, ISynchronizedObject {
+	public class SynchronizedCollection<TItem, TConcrete> : CollectionDecorator<TItem, TConcrete>, ISynchronizedObject where TConcrete : ICollection<TItem> {
 		private readonly SynchronizedObject _lock;
 
-		public SynchronizedCollection() 
-			: this(new List<TItem>()) {
-		}
-
-		public SynchronizedCollection(ICollection<TItem> internalList) 
+		public SynchronizedCollection(TConcrete internalList) 
 			: base(internalList) {
 			_lock = new SynchronizedObject();
 		}
@@ -55,6 +50,17 @@ namespace Hydrogen {
 
 		public Scope EnterWriteScope() {
 			return _lock.EnterWriteScope();
+		}
+	}
+
+	public class SynchronizedCollection<TItem> : SynchronizedCollection<TItem, ICollection<TItem>>{
+
+		public SynchronizedCollection() 
+			: this(new List<TItem>()) {
+		}
+
+		public SynchronizedCollection(ICollection<TItem> internalList) 
+			: base(internalList) {
 		}
 	}
 

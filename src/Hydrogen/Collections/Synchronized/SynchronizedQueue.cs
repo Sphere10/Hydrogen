@@ -11,54 +11,42 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using System;
 using System.Collections.Generic;
-using System.Collections;
+using System.Collections.ObjectModel;
+namespace Hydrogen;
 
-namespace Hydrogen {
+public class SynchronizedQueue<T> : SynchronizedCollection<T, IQueue<T>> {
 
-	public class SynchronizedQueue<T> : SynchronizedObject, ICollection<T>, IReadOnlyCollection<T> {
-		private readonly Queue<T> _internalQueue;
-
-		public SynchronizedQueue()
-            : this(new Queue<T>()) {
-		}
-        public SynchronizedQueue(Queue<T> internalQueue) {
-            _internalQueue = internalQueue;
-		}
-
-        #region ICollection Implementation
-
-        public void Add(T item) { using (EnterWriteScope()) _internalQueue.Enqueue(item); }
-        public void Clear() { using(EnterWriteScope()) _internalQueue.Clear(); }
-        public bool Contains(T item) { using (EnterReadScope()) return _internalQueue.Contains(item); }
-        public int Count { get { using (EnterReadScope()) return _internalQueue.Count; } }
-        public bool IsReadOnly => false;
-        public void CopyTo(T[] array, int arrayIndex) { using (EnterReadScope())  _internalQueue.CopyTo(array, arrayIndex); }
-        public bool Remove(T item) { throw new NotSupportedException();}
-        public IEnumerator<T> GetEnumerator() { using (EnterReadScope()) return _internalQueue.GetEnumerator(); }
-        IEnumerator IEnumerable.GetEnumerator() { using (EnterReadScope()) return (_internalQueue as IEnumerable).GetEnumerator(); }
-
-        #endregion
-
-		#region Methods
-
-        public T Peek() {
-            using (EnterReadScope())
-                return _internalQueue.Peek();
-        }
-
-	    public void Enqueue(T value) {
-            Add(value);
-	    }
-
-        public T Dequeue() {
-            using (EnterWriteScope())
-                return _internalQueue.Dequeue();
-        }
-
-		#endregion
+	public SynchronizedQueue()
+		: this(new Queue<T>()) {
 	}
 
-}
+	public SynchronizedQueue(Queue<T> internalQueue) 
+		: this(new QueueAdapter<T>(internalQueue)){
+	}
+
+	public SynchronizedQueue(IQueue<T> internalCollection) 
+		: base(internalCollection) {
+	}
+
+	#region Methods
+
+	public T Peek() {
+		using (EnterReadScope())
+			return  InternalCollection.Peek();
+	}
+
+	public void Enqueue(T value) {
+		using (EnterWriteScope())
+			InternalCollection.Enqueue(value);
+	}
+
+	public T Dequeue() {
+		using (EnterWriteScope())
+			return InternalCollection.Dequeue();
+	}
+
+	#endregion
+};
+
 

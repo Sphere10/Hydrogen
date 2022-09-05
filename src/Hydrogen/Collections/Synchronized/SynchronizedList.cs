@@ -21,7 +21,6 @@ namespace Hydrogen {
 	/// This class uses a read writer lock to provide data synchronization, but the design of the IList interface itself can lead to
 	/// race conditions. Beware of it's use. 
 	/// </summary>
-	/// <typeparam name="TItem"></typeparam>
 	public class SynchronizedList<TItem, TList> : ListDecorator<TItem, TList>, ISynchronizedObject
 		where TList : IList<TItem> {
 

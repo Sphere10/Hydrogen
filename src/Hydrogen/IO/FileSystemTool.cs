@@ -250,7 +250,6 @@ namespace Tools {
             await Task.Run(() => DeleteFile(path));
         }
 
-
         public static async Task CopyFileAsync(string sourcePath, string destPath, bool overwrite = false, bool createDirectories = false) {
             await Task.Run( () => CopyFile(sourcePath, destPath, overwrite, createDirectories));
         }

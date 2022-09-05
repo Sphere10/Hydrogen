@@ -110,7 +110,7 @@ namespace Hydrogen.Utils.WinFormsTester {
                 _outputTextBox.Text = Tools.Xml.WriteToString(cr);
             } catch (Exception error) {
                 _outputTextBox.Clear();
-                _outputTextLogger.LogException(error);
+                _outputTextLogger.Exception(error);
             }
         }
 
@@ -129,7 +129,7 @@ namespace Hydrogen.Utils.WinFormsTester {
                 }
             } catch (Exception error) {
                 _outputTextBox.Clear();
-                _outputTextLogger.LogException(error);
+                _outputTextLogger.Exception(error);
             }
         }
 
@@ -138,18 +138,18 @@ namespace Hydrogen.Utils.WinFormsTester {
 
             } catch (Exception error) {
                 _outputTextBox.Clear();
-                _outputTextLogger.LogException(error);
+                _outputTextLogger.Exception(error);
             }
         }
         
 
         private void _loadConfigButton_Click(object sender, EventArgs e) {
             try {
-                Sphere10Framework.Instance.RegisterAppConfig();
+                HydrogenFramework.Instance.RegisterAppConfig();
                 _outputTextBox.AppendText("Passed");
             } catch (Exception error) {
                 _outputTextBox.Clear();
-                _outputTextLogger.LogException(error);
+                _outputTextLogger.Exception(error);
             }
         }
 

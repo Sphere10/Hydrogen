@@ -43,7 +43,7 @@ namespace Hydrogen.Utils.WinFormsTester {
 				var beta = container.Resolve<IBeta>();
 				var gamma = container.Resolve<IGamma>();
 			} catch (Exception error) {
-				_logger.LogException(error);
+				_logger.Exception(error);
 			}
 		}
 	}

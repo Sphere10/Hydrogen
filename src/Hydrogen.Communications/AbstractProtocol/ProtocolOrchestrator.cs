@@ -225,7 +225,7 @@ namespace Hydrogen.Communications {
 					commandHandler.Execute(this, command);
 				} catch (Exception error) {
 					Logger.Error($"Command handler for '{commandType.Name}' failed (mode: {ActiveMode})");
-					Logger.LogException(error);
+					Logger.Exception(error);
 				}
 			});
 		}
@@ -244,7 +244,7 @@ namespace Hydrogen.Communications {
 					SendMessage(envelope);
 				} catch (Exception error) {
 					Logger.Error($"Request handler for '{requestType.Name}' failed (mode: {ActiveMode})");
-					Logger.LogException(error);
+					Logger.Exception(error);
 				}
 			});
 		}
@@ -264,7 +264,7 @@ namespace Hydrogen.Communications {
 					responseHandler.Execute(this, request, response);
 				} catch (Exception error) {
 					Logger.Error($"Response handler for '{responseType.Name}' failed");
-					Logger.LogException(error);
+					Logger.Exception(error);
 				}
 			});
 		}

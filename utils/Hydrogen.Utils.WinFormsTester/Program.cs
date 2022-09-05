@@ -37,16 +37,6 @@ namespace Hydrogen.Utils.WinFormsTester {
     /// </summary>
     static class Program {
 
-        public static CommandLineParameters Parameters = new() {
-            Commands = new CommandLineCommand[] {
-                new("anonymouspipeclient", "AnonymousPipeClient child process tester") {
-                    Parameters = new CommandLineParameter[] {
-                        new("read", "AnonymousPipeClient child process tester", CommandLineParameterOptions.Mandatory),
-                        new("write", "AnonymousPipeClient child process tester", CommandLineParameterOptions.Mandatory),
-                    }
-                }
-            },
-        };
 
 
         /// <summary>
@@ -54,29 +44,16 @@ namespace Hydrogen.Utils.WinFormsTester {
         /// </summary>
         [STAThread]
         static void Main(string[] args) {
-            Result<CommandLineResults> arguments = Parameters.TryParseArguments(args);
-            if (arguments.Failure) {
-                // Todo: should only fail if wrong, not empty
-                Parameters.PrintHeader();
-                foreach (string errorMessage in arguments.ErrorMessages) {
-                    Console.WriteLine(errorMessage);
-                }
-            } 
-            if (arguments.Value.HelpRequested) {
-                Parameters.PrintHelp();
-            }
-
-                        
+  
             System.Windows.Forms.Application.EnableVisualStyles();
             System.Windows.Forms.Application.SetCompatibleTextRenderingDefault(false);
             AppDomain.CurrentDomain.UnhandledException += (s, e) => Tools.Lambda.ActionIgnoringExceptions(() => ExceptionDialog.Show("Error", (Exception)e.ExceptionObject)).Invoke();
             System.Windows.Forms.Application.ThreadException += (xs, xe) => Tools.Lambda.ActionIgnoringExceptions(() => ExceptionDialog.Show("Error", xe.Exception)).Invoke();
             SystemLog.RegisterLogger(new ConsoleLogger());
 
-            ComponentRegistry.Instance.RegisterComponentInstance<CommandLineResults>(arguments.Value);
             ComponentRegistry.Instance.RegisterApplicationBlock<TestBlock>(1);
             ComponentRegistry.Instance.RegisterApplicationBlock<TestBlock2>(2);
-            Sphere10Framework.Instance.StartWinFormsApplication<BlockMainForm>();
+            HydrogenFramework.Instance.StartWinFormsApplication<BlockMainForm>();
         }
     }
 }

@@ -1,7 +1,7 @@
 ﻿using System;
-using System.Buffers;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 
@@ -86,6 +86,31 @@ namespace Hydrogen {
 			try {
 				hasher.Transform(left);
 				hasher.Transform(right);
+				hasher.GetResult(result);
+			} finally {
+				hashers.Push(hasher);
+			}
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static byte[] JoinHash(CHF algorithm, params byte[][] inputs) {
+			var digestSize = DigestByteSizes[(int)algorithm];
+			var result = new byte[digestSize > 0 ? digestSize : inputs.Sum(l => l.Length)];
+			JoinHash(algorithm, result, inputs);
+			return result;
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static void JoinHash(CHF algorithm, Span<byte> result, params byte[][] inputs) {
+			var hashers = HasherStack[(int)algorithm];
+			Guard.Ensure(hashers is not null, $"No implementation for {algorithm} found");
+			if (!hashers.TryPop(out var hasher)) {
+				hasher = Constructors[(int)algorithm].Invoke();
+			} else hasher.Reset();
+
+			try {
+				foreach(var input in inputs)
+					hasher.Transform(input);
 				hasher.GetResult(result);
 			} finally {
 				hashers.Push(hasher);

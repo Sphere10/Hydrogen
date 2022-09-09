@@ -64,7 +64,6 @@ namespace Hydrogen {
 	                    case CollectionConflictPolicy.Throw:
 	                    default:
 	                        throw new Exception(string.Format("Dictionary already contains a value with key '{0}'", value.Key));
-	                        break;
 	                }
 	            }
 	        }

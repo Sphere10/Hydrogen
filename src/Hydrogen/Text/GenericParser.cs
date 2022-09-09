@@ -26,12 +26,11 @@ namespace Hydrogen {
 
         public static bool TryParse(Type type, string input, out object value) {
             // Special case: when input is empty and T is nullable, then parsed correctly as null
-            if (input == string.Empty && type.IsGenericType) {
+            if (input == string.Empty && type.IsNullable()) {
                 value = default;
                 return true;
+                // Note: the NULL case is handled by nullable converter
             }
-
-            // Note: that NULL case is handled by nullable converter            
 
             // Use component model type convertors
             var converter = TypeDescriptorEx.GetConverter(type);
@@ -40,11 +39,10 @@ namespace Hydrogen {
                 return true;
             }
 
-            if (type.IsEnum) {
-	            if (Enum.TryParse(type, input, out value)) {
+            // Try enum 
+            if (type.IsEnum) 
+	            if (Enum.TryParse(type, input, out value)) 
 		            return true;
-	            }
-            }
 
             value = default;
             return false;

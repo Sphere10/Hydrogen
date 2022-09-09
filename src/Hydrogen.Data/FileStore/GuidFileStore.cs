@@ -36,8 +36,11 @@ public class GuidFileStore : FileStoreBase<Guid> {
 		Directory
 		.EnumerateDirectories(BaseDirectory)
 		.SelectMany(prefixDir => Directory.EnumerateFiles(prefixDir, $"*{FileExtension}"))
-		.Select(x => x.TrimEnd(FileExtension).Split(Path.DirectorySeparatorChar, StringSplitOptions.RemoveEmptyEntries).TakeLast(2).ToDelimittedString(string.Empty))
-		.Select(Guid.Parse);
+		.Select(x => Path.GetRelativePath(BaseDirectory, x)) // remove BaseDirectory
+		.Select(x => x.TrimEnd(FileExtension).Split(Path.DirectorySeparatorChar, StringSplitOptions.RemoveEmptyEntries).Take(2).ToDelimittedString(string.Empty))
+		.Select(x => (Guid.TryParse(x, out var val), val))  // ignores file system entries that don't parse as guid
+		.Where(x => x.Item1)
+		.Select(x => x.Item2);
 
 	public FileStorePersistencePolicy PersistencePolicy { get; init; } = FileStorePersistencePolicy.Perist;
 

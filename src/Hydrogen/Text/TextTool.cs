@@ -66,7 +66,7 @@ namespace Tools {
             => StringFormatter.FormatEx(formatString, formatArgs);
 
         public static string FormatEx(string formatString, Func<string, string> userTokenResolver, params object[] formatArgs)
-            => StringFormatter.FormatEx(formatString, userTokenResolver, formatArgs);
+            => StringFormatter.FormatEx(formatString, userTokenResolver, true, formatArgs);
 
 		public static string FormatWithDictionary(string formatString, IDictionary<string, object> userTokenResolver, bool recursive, params object[] formatArgs)
 			=> StringFormatter.FormatWithDictionary(formatString, userTokenResolver, recursive, formatArgs);

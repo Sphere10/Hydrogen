@@ -131,15 +131,9 @@ namespace CommandLine.Core
 
         private static object ToEnum(this string value, Type conversionType, bool ignoreValueCase)
         {
-            object parsedValue;
-            try
-            {
-                parsedValue = Enum.Parse(conversionType, value, ignoreValueCase);
-            }
-            catch (ArgumentException)
-            {
-                throw new FormatException();
-            }
+			if (!Tools.Enums.TryParseEnum(conversionType, value, ignoreValueCase, out var parsedValue))
+				throw new FormatException();
+            
             if (IsDefinedEx(parsedValue))
             {
                 return parsedValue;

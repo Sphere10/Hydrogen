@@ -111,10 +111,12 @@ namespace CommandLine.Infrastructure
        public static IEnumerable<string> GetNamesOfEnum(Type t)
         {
             if (t.IsEnum)
-                return Enum.GetNames(t);
+                //return Enum.GetNames(t);
+				return Tools.Enums.GetSerializableNames(t);
             Type u = Nullable.GetUnderlyingType(t);
             if (u != null && u.IsEnum)
-                return Enum.GetNames(u);
+                //return Enum.GetNames(u);
+	            return Tools.Enums.GetSerializableNames(t);
             return Enumerable.Empty<string>();
         }
     }

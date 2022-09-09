@@ -13,7 +13,7 @@ namespace Hydrogen {
 		private static readonly IFuture<ITokenResolver[]> Resolvers = Tools.Values.Future.LazyLoad(() => new []{ new DefaultTokenResolver() }.Concat(TinyIoC.TinyIoCContainer.Current.ResolveAll<ITokenResolver>(true)).ToArray());
 
         public static string FormatEx(string formatString, params object[] formatArgs) {
-            return FormatEx(formatString, ResolveInternalToken, false, formatArgs);
+            return FormatEx(formatString, ResolveInternalToken, true, formatArgs);
         }
 
         public static string FormatWithDictionary(string formatString, IDictionary<string, object> userTokenResolver, bool recursive, params object[] formatArgs) {
@@ -111,7 +111,7 @@ namespace Hydrogen {
 		        if (IsStandardFormatIndex(token, out var formatIndex, out var formatOptions)) {
 			        if (formatIndex >= formatArgs.Length)
 				        return false;
-			        tokenValue = formatArgs[formatIndex];
+			        tokenValue =string.Format("{0" + (formatOptions ?? string.Empty) + "}", formatArgs[formatIndex]); 
 					return true;
 				}
 		        

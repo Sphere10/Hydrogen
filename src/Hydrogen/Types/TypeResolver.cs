@@ -161,7 +161,6 @@ namespace Hydrogen {
             }
         }
 
-
         private static string AppDllDirectory => AppDomain.CurrentDomain.BaseDirectory;
 
 		public class AssemblyInfo {

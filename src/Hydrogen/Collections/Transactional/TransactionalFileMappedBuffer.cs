@@ -85,7 +85,7 @@ namespace Hydrogen {
 				Enumerable
 					.Range(0, logicalPageCount - 1)
 					.Select((x, i) =>
-						new PageImpl(base.Stream, PageMarkerRepo.GetMarkerFilename(i, PageMarkerType.UncommittedPage), i, PageSize) {
+						new PageImpl(Stream, PageMarkerRepo.GetMarkerFilename(i, PageMarkerType.UncommittedPage), i, PageSize) {
 							Number = i,
 							StartPosition = i * sizeof(byte) * PageSize,
 							StartIndex = i * PageSize,
@@ -97,7 +97,7 @@ namespace Hydrogen {
 						}
 					).Concat(
 						// Last page
-						new PageImpl(base.Stream, PageMarkerRepo.GetMarkerFilename(logicalPageCount - 1, PageMarkerType.UncommittedPage), logicalPageCount - 1, PageSize) {
+						new PageImpl(Stream, PageMarkerRepo.GetMarkerFilename(logicalPageCount - 1, PageMarkerType.UncommittedPage), logicalPageCount - 1, PageSize) {
 							Number = logicalPageCount - 1,
 							StartPosition = (logicalPageCount - 1) * sizeof(byte) * PageSize,
 							StartIndex = (logicalPageCount - 1) * PageSize,
@@ -156,7 +156,6 @@ namespace Hydrogen {
 				var bytesRead = stream.Read(memBuff.AsSpan());
 				Guard.Ensure(bytesRead == stream.Length, "Read less bytes than expected");
 			}
-
 
 		}
 	}

@@ -90,6 +90,18 @@ namespace Hydrogen {
         }
 
 		/// <summary>
+		/// Throws an exception if an argument does not parse as the given type.
+		/// </summary>
+		/// <param name="value">The value to be tested</param>
+		/// <param name="name">The name of the argument</param>
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static void ArgumentParse<T>(string value, string name, out T parsedValue) {
+			if (!GenericParser.TryParse(value, out parsedValue))
+				throw new ArgumentException($"Argument could not be parsed as {typeof(T).Name}", name);
+		}
+
+		/// <summary>
 		/// Throws an exception if a string argument is null or empty
 		/// </summary>
 		/// <param name="value">The value to be tested</param>

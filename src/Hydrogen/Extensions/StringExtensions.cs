@@ -365,14 +365,6 @@ namespace Hydrogen {
 			}
 		}
 
-		public static string ToPathSafe(this string path) {
-			Array.ForEach(
-				InvalidFilePathChars,
-				  c => path = path.Replace(c.ToString(), String.Empty)
-			);
-			return path == ".." ? string.Empty : path;
-		}
-
 		static public string EscapeCSV(this string value, string delimiter = ",") {
 			var needsQuotes = value.Contains(delimiter);
 			var isQuoted = value.StartsWith("\"") && !value.StartsWith("\"\"") && value.EndsWith("\"") && !value.EndsWith("\"\""); // doesn't handle """"text"""" scenarios

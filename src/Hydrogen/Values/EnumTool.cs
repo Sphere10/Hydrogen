@@ -38,6 +38,13 @@ namespace Tools {
 			return names.ToArray();
 		}
 
+		public static string GetSerializableName(Enum @enum) {
+			var attributes =  @enum.GetAttributes<EnumMemberAttribute>();
+			if (attributes.Any())
+				return attributes.First().Value;
+			return @enum.ToString();
+		}
+
 		public static IEnumerable<T> GetValues<T>() {
 			return Enum.GetValues(typeof(T)).Cast<T>();
 		}

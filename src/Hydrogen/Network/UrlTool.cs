@@ -22,7 +22,6 @@ using Hydrogen;
 // ReSharper disable CheckNamespace
 namespace Tools {
 
-
 	public static class Url {
 		static readonly Regex WordDelimiters = new Regex(@"[\s—–_]", RegexOptions.Compiled); // white space, em-dash, en-dash, underscore
 		static readonly Regex InvalidChars = new Regex(@"[^a-z0-9\-]", RegexOptions.Compiled); // characters that are not valid
@@ -65,7 +64,7 @@ namespace Tools {
 					sb.Append(c);
 				else if (c == ' ')
 					sb.Append('+');
-				else 
+				else
 					sb.AppendFormat("%{0:X2}", (int)c);
 			}
 			return sb.ToString();
@@ -103,19 +102,23 @@ namespace Tools {
 			return result;
 		}
 
-		public static string ExtractVideoIdFromYouTubeUrl(string url) {
-			return ExtractVideoIdFromYouTubeUrl(url, true);
-		}
+		public static bool IsYouTubeUrl(string url)
+			=> TryParseYouTubeUrl(url, out _);
 
-		public static string ExtractVideoIdFromYouTubeUrl(string url, bool allowIdOnly) {
+		public static bool TryParseYouTubeUrl(string url, out string videoID)
+			=> TryParseYouTubeUrl(url, true, out videoID);
+
+		public static bool TryParseYouTubeUrl(string url, bool allowIdOnly, out string videoID) {
 			Guard.ArgumentNotNullOrWhitespace(url, nameof(url));
 
-			return url.GetRegexMatch(@"youtube.com/watch\?v=(?<videoid>[a-zA-Z0-9_-]+)", "videoid") ??
+			videoID = url.GetRegexMatch(@"youtube.com/watch\?v=(?<videoid>[a-zA-Z0-9_-]+)", "videoid") ??
 				   url.GetRegexMatch(@"youtu.be/watch\?v=(?<videoid>[a-zA-Z0-9_-]+)", "videoid") ??
 				   url.GetRegexMatch(@"youtu.be/(?<videoid>[a-zA-Z0-9_-]+)", "videoid") ??
 				   url.GetRegexMatch(@"youtube.com/embed/(?<videoid>[a-zA-Z0-9_-]+)", "videoid") ??
 				   url.GetRegexMatch(@"youtube.com/v/(?<videoid>[a-zA-Z0-9_-]+)", "videoid") ??
 				   (allowIdOnly ? url.GetRegexMatch(@"^(?<videoid>[a-zA-Z0-9_-]+)$", "videoid") : null);
+
+			return videoID != null;
 		}
 
 		public static string AppendQueryStringToUrl(string url, NameValueCollection queryParams) {

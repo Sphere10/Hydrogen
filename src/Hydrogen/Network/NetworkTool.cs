@@ -16,16 +16,18 @@ using System.Text;
 using System.Net;
 using System.Net.Sockets;
 using Hydrogen;
+using System;
 
 // ReSharper disable CheckNamespace
 namespace Tools {
 
-
 	public static class Network {
 
 		public static string GetMimeType(string filePathOrExt)
-			=> MimeHelper.ToMimeType(filePathOrExt);
+			=> TryGetMimeType(filePathOrExt, out var mimeType) ? mimeType : throw new InvalidOperationException($"Unable to determine mimetype for {filePathOrExt}");
 
+		public static bool TryGetMimeType(string filePathOrExt, out string mimeType)
+			=> MimeHelper.TryGetMimeTypeFromFileExt(filePathOrExt, out mimeType);
 		public static IPAddress GetNetworkAddress() {
 
 			// HS 2019-02-26: Android specifics refactored out in NET STANDARD 2
@@ -45,8 +47,6 @@ namespace Tools {
 			}
 			return null;
 		}
-
-
 
 		/// <summary>
 		/// Finds the MAC address of the NIC with maximum speed.

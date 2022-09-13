@@ -29,12 +29,13 @@ namespace Tools {
         public static readonly string DirectorySeparatorString;
         public static readonly char[] CrossPlatformInvalidFileNameChars;
         public static readonly string[] CrossPlatformForbiddenFileNames;
-
+		public const int MaxWindowsFileNameLength = 260;
+		public const int MaxLinuxFileNameLength = 255;
         static FileSystem() {
             DirectorySeparatorString = new string(new[] { Path.DirectorySeparatorChar });
             var asciiControlChars = Enumerable.Range(0, 31).Select(x => (char)x).ToArray();
             CrossPlatformInvalidFileNameChars = new [] {'<', '>', ':', '\"', '/', '\\', '|', '?', '*'}.Union(asciiControlChars).Union(Path.GetInvalidFileNameChars()).ToArray(); // https://stackoverflow.com/questions/1976007/what-characters-are-forbidden-in-windows-and-linux-directory-names
-			CrossPlatformForbiddenFileNames = new [] { "CON", "PRN", "AUX", "NUL", "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9" };
+			CrossPlatformForbiddenFileNames = new [] { "CON", "PRN", "AUX", "NUL", "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9", ".", ".."};
         }
 
 		public static byte[] CalculateContentHash(string filename, CHF chf) {
@@ -90,12 +91,27 @@ namespace Tools {
         }
 
         public static bool IsWellFormedFileName(string fileName) {
+			if (fileName.Length > MaxLinuxFileNameLength)
+				return false;
+
             var invalidFileNameChars = new string(CrossPlatformInvalidFileNameChars);
             var containsABadCharacter = new Regex("[" + Regex.Escape(invalidFileNameChars) + "]");
             if (containsABadCharacter.IsMatch(fileName))
                 return false;
-            else
-                return true;
+            return true;
+        }
+
+        public static string ToWellFormedPath(string path) {
+			foreach(var c in CrossPlatformInvalidFileNameChars) 
+		       path = path.Replace(c.ToString(), String.Empty);
+	        return path.IsIn(CrossPlatformForbiddenFileNames) ? "_" : path;
+        }
+
+        public static string ToWellFormedFileName(string path) {
+			path = ToWellFormedPath(path);
+			if (path.Length > MaxLinuxFileNameLength)
+				path.Substring(0, MaxLinuxFileNameLength);
+			return path;
         }
 
         public static string GetParentDirectoryPath(string path, int parentLevel = 1) {
@@ -352,7 +368,6 @@ namespace Tools {
                 }
             }
         }
-
         public static Task DeleteAllFilesAsync(string directory, bool deleteSubDirectories = true,
             bool ignoreIfLocked = false) {
             return Task.Run(() => DeleteAllFiles(directory, deleteSubDirectories, ignoreIfLocked));
@@ -517,8 +532,6 @@ namespace Tools {
 
         public static int CountDirectoryContents(string directory) 
 			=> GetDirectoryContents(directory, out _, out _);
-
-
         
     }
 }

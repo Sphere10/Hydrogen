@@ -1118,6 +1118,9 @@ namespace CommandLine.Text
             if (value is string)
                 return value.ToStringLocal();
 
+			if (value is Enum @enum) 
+				return Tools.Enums.GetSerializableName(@enum);
+
             var asEnumerable = value as IEnumerable;
             if (asEnumerable == null)
                 return value.ToStringLocal();

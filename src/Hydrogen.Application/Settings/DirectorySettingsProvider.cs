@@ -97,7 +97,7 @@ namespace Hydrogen.Application {
 		}
 
 		protected virtual string CombineExtensionlessFilenameWithID(string extensionlessFilename, string id) {
-			return extensionlessFilename + "_" + id.ToPathSafe();
+			return extensionlessFilename + "_" + Tools.FileSystem.ToWellFormedFileName(id);
 		}
 
 		protected virtual string AddFileExtension(string partialFilename) {

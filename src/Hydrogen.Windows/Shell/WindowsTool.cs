@@ -47,8 +47,8 @@ namespace Tools {
                     "{1}{0}{2}.LNK",
                     Path.DirectorySeparatorChar,
                     Environment.GetFolderPath(Environment.SpecialFolder.Startup),
-                    applicationName.ToPathSafe()
-                    );
+                    Tools.FileSystem.ToWellFormedPath(applicationName)
+                );
         }
 
         public static void AddProgramAsStartup(string startPath) {

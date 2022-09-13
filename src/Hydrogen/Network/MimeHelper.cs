@@ -11,6 +11,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
+using System;
 using System.IO;
 
 // ReSharper disable CheckNamespace
@@ -19,18 +20,13 @@ namespace Hydrogen;
 // See: https://www.iana.org/assignments/media-types/media-types.xhtml
 public static class MimeHelper {
 
-
-	/// <summary>
-	/// Maps file extension to mime type
-	/// </summary>
-	/// <param name="filePath"></param>
-	/// <returns></returns>
-	public static string ToMimeType(string filePath)
-		=> GetMimeTypeFromFileExt(Path.GetExtension(filePath));
-
-	public static string GetMimeTypeFromFileExt(string fileExt) {
-		Guard.ArgumentNotNullOrWhitespace(fileExt, nameof(fileExt));
-		return $".{fileExt.TrimStart('.').ToLowerInvariant()}" switch {
+	public static bool TryGetMimeTypeFromFileExt(string fileExt, out string mimeType) {
+		if (string.IsNullOrWhiteSpace(fileExt)) {
+			mimeType = default;
+			return false;
+		}
+		
+		mimeType = $".{fileExt.TrimStart('.').ToLowerInvariant()}" switch {
 			".3dm" => "x-world/x-3dmf",
 			".3dmf" => "x-world/x-3dmf",
 			".3gp" => "application/3gpp",
@@ -505,6 +501,7 @@ public static class MimeHelper {
 			".zsh" => "text/x-script.zsh",
 			_ => "application/octet-stream"
 		};
+		return true;
 	}
 
 }

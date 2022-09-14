@@ -65,7 +65,6 @@ namespace Hydrogen {
 		public static string ToValueWhenNullOrWhitespace(this string @string, string value)
 			=> string.IsNullOrWhiteSpace(@string) ? value : @string;
 
-
 		public static string Repeat(this string @string, int times) {
 			var stringBuilder = new StringBuilder(@string.Length * times);
 			for (var i = 0; i < times; i++)
@@ -185,7 +184,6 @@ namespace Hydrogen {
 			);
 		}
 
-
 		public static string ChompStart(this string inputString, params string[] delimitters) {
 			var sb = new StringBuilder(inputString);
 			foreach(var delimitter in delimitters) 
@@ -254,11 +252,8 @@ namespace Hydrogen {
 			return String.Format(_string, _params);
 		}
 
-
 		public static string FormatWithDictionary(this string _string, IDictionary<string, object> userTokenResolver, bool recursive = false)
 			=> StringFormatter.FormatWithDictionary(_string, userTokenResolver, recursive);
-
-
 
 		/// <summary>
 		/// Parse a string into an enumeration
@@ -274,6 +269,9 @@ namespace Hydrogen {
 
 			return (TEnum)Enum.Parse(t, source);
 		}
+
+		public static string AsAmendmentIf(this string text, bool condition) 
+			=> condition ? $" {text}" : string.Empty;
 
 		public static string EscapeBraces(string text) {
 			Debug.Assert(text != null);

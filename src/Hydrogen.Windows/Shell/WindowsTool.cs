@@ -22,7 +22,6 @@ namespace Tools {
 
     public static partial class WinShell {
 
-
         //public static void CreateShortcutForRunningApplication(string shortcutPath, bool overwrite = true) {
         //    CreateShortcutForApplication(Application.ExecutablePath, shortcutPath, overwrite);
         //}
@@ -39,8 +38,6 @@ namespace Tools {
                 shortcut.Save(shortcutPath);
             }
         }
-
-
         public static string DetermineStartupShortcutFilename(string applicationName) {
             return
                 string.Format(
@@ -50,7 +47,6 @@ namespace Tools {
                     Tools.FileSystem.ToWellFormedPath(applicationName)
                 );
         }
-
         public static void AddProgramAsStartup(string startPath) {
 
 

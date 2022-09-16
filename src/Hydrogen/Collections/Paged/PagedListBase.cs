@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 
 namespace Hydrogen {
 
@@ -60,6 +60,8 @@ namespace Hydrogen {
 			}
 			NotifyLoaded();
 		}
+
+		public Task LoadAsync() => Task.Run(Load);
 
 		public override IEnumerable<bool> ContainsRange(IEnumerable<TItem> items) => throw new NotSupportedException();
 

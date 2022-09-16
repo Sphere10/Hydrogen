@@ -5,6 +5,7 @@ using System.Collections.Specialized;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Hydrogen {
 
@@ -95,6 +96,8 @@ namespace Hydrogen {
 			RequiresLoad = false;
 			NotifyLoaded();
 		}
+
+		public Task LoadAsync() => Task.Run(Load);
 
 		public TKey ReadKey(int index) {
 			if (Storage.IsNull(KVPList.Storage.Header.ReservedRecords + index))

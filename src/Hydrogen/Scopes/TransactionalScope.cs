@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Hydrogen {
 
-	public abstract class TransactionalScope<TScope, TTransaction> : ScopeContext<TScope>
+	public abstract class TransactionalScope<TScope, TTransaction> : SyncContextScopeBase<TScope>
 		where TScope : TransactionalScope<TScope, TTransaction> { 
 
 		private bool _scopeOwnsTransaction;
@@ -17,14 +17,14 @@ namespace Hydrogen {
 		private TransactionAction? _defaultCloseAction;
 
 		protected TransactionalScope(
-			ScopeContextPolicy policy,
-			string contextName,
+			ContextScopePolicy policy,
+			string contextId,
 			Func<TScope, TTransaction> beginTransactionFunc,
 			Action<TScope, TTransaction> commitTransactionFunc,
 			Action<TScope, TTransaction> rollbackTransactionFunc,
 			Action<TScope, TTransaction> disposeTransactionFunc,
 			TransactionAction? defaultCloseAction = null)
-			: base(contextName, policy) {
+			: base(policy, contextId) {
 
 			if (IsRootScope) {
 				Transaction = default;
@@ -110,7 +110,7 @@ namespace Hydrogen {
 			OnScopeEndInternal(rootScope, inException, errors);
 
 			if (scopeWasInOpenTransaction && !inException) {
-				errors.Add(new SoftwareException("DACScope transaction was left open. Please call Commit or Rollback explicitly to close the transaction."));
+				errors.Add(new SoftwareException("DacScope transaction was left open. Please call Commit or Rollback explicitly to close the transaction."));
 			}
 
 			if (!inException) {
@@ -149,7 +149,7 @@ namespace Hydrogen {
 				_voteRollback = false;
 				RootScope._voteRollback = false;
 
-				// reset flags to allow consequtive txn's
+				// reset flags to allow consecutive txn's
 				_scopeOwnsTransaction = false;
 				_transactionOwner = null;
 				RootScope._transactionOwner = null;

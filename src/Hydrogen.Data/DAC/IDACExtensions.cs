@@ -20,18 +20,18 @@ using System.Threading.Tasks;
 namespace Hydrogen.Data {
 	public static class IDACExtensions {
 
-        public static DACScope BeginScope(this IDAC dac, bool openConnection = true, ScopeContextPolicy policy = ScopeContextPolicy.None) {
+        public static DacScope BeginScope(this IDAC dac, bool openConnection = true, ContextScopePolicy policy = ContextScopePolicy.None) {
             if (dac.UseScopeOsmosis)
-                return new DACScope(dac, policy, openConnection);
+                return new DacScope(dac, policy, openConnection);
 
-            if (policy == ScopeContextPolicy.MustBeNested)
+            if (policy == ContextScopePolicy.MustBeNested)
                 throw new ArgumentException("Policy cannot be MustBeNested for DAC that uses direct connections (i.e. UseScopeOsmosis == false).", "policy");
 
-            return new DACScope(dac, ScopeContextPolicy.None, openConnection, string.Format("{0}:", dac.InstanceID.ToStrictAlphaString()));
+            return new DacScope(dac, ContextScopePolicy.None, openConnection, string.Format("{0}:", dac.InstanceID.ToStrictAlphaString()));
         }
 
-        public static DACScope BeginDirtyReadScope(this IDAC dac, bool openConnection = true) {
-            var scope = new DACScope(dac, ScopeContextPolicy.None, openConnection, defaultCloseAction: TransactionAction.Rollback);
+        public static DacScope BeginDirtyReadScope(this IDAC dac, bool openConnection = true) {
+            var scope = new DacScope(dac, ContextScopePolicy.None, openConnection, defaultCloseAction: TransactionAction.Rollback);
             scope.BeginTransaction(IsolationLevel.ReadUncommitted);
             return scope;
         }

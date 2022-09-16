@@ -19,7 +19,6 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <Folder Include="CommandLine\" />
 	  <Folder Include="ObjectSpace\" />
 	</ItemGroup>
 </Project>

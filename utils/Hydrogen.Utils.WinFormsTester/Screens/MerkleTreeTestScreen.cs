@@ -14,8 +14,9 @@ using Hydrogen.Collections;
 using Hydrogen.Maths;
 using Hydrogen.Windows.Forms;
 
-namespace Hydrogen.Utils.WinFormsTester {
-	public partial class MerkleTreeTestScreen : ApplicationScreen {
+namespace Hydrogen.Utils.WinFormsTester
+{
+    public partial class MerkleTreeTestScreen : ApplicationScreen {
 		private TextWriter _outputWriter;
 
 		public MerkleTreeTestScreen() {

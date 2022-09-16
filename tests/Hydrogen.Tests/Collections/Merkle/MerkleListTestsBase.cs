@@ -8,9 +8,10 @@ using Hydrogen;
 using Hydrogen.Maths;
 using Hydrogen.NUnit;
 
-namespace Hydrogen.Tests {
+namespace Hydrogen.Tests
+{
 
-	public abstract class MerkleListTestsBase {
+    public abstract class MerkleListTestsBase {
 
 		protected abstract IDisposable CreateMerkleList(CHF chf, out IMerkleList<string> merkleList);
 
@@ -23,7 +24,7 @@ namespace Hydrogen.Tests {
 				merkleList.Insert(0, "Beta");
 				merkleList.Insert(0, "AlphaX");
 				merkleList[0] = "Alpha";
-				Assert.That(merkleList.MerkleTree.Root, Is.EqualTo(Tools.MerkleTree.ComputeMerkleRoot(new[] { "Alpha", "Beta", "Gamma" }, chf)));
+				Assert.That(merkleList.MerkleTree.Root, Is.EqualTo(MerkleTree.ComputeMerkleRoot(new[] { "Alpha", "Beta", "Gamma" }, chf)));
 			}
 		}
 
@@ -39,29 +40,29 @@ namespace Hydrogen.Tests {
 			clusteredList.Update(2, "gamma");
 			clusteredList.Add("epsilon");
 			Assert.That(clusteredList.ToArray(), Is.EqualTo(new[] { "alpha", "beta", "gamma", "delta", "epsilon" }));
-			Assert.That(clusteredList.MerkleTree.Root, Is.EqualTo(Tools.MerkleTree.ComputeMerkleRoot(new[] { "alpha", "beta", "gamma", "delta", "epsilon" }, chf)));
+			Assert.That(clusteredList.MerkleTree.Root, Is.EqualTo(MerkleTree.ComputeMerkleRoot(new[] { "alpha", "beta", "gamma", "delta", "epsilon" }, chf)));
 		}
 
 		[Test]
 		public void TestSimple_3([Values(CHF.SHA2_256, CHF.Blake2b_128)] CHF chf) {
 			using (CreateMerkleList(chf, out var merkleList)) {
 				merkleList.AddRange(new[] { "Alpha", "Beta", "Gamma" });
-				Assert.That(merkleList.MerkleTree.Root, Is.EqualTo(Tools.MerkleTree.ComputeMerkleRoot(new[] { "Alpha", "Beta", "Gamma" }, chf)));
+				Assert.That(merkleList.MerkleTree.Root, Is.EqualTo(MerkleTree.ComputeMerkleRoot(new[] { "Alpha", "Beta", "Gamma" }, chf)));
 
 				merkleList.Remove("Beta");
-				Assert.That(merkleList.MerkleTree.Root, Is.EqualTo(Tools.MerkleTree.ComputeMerkleRoot(new[] { "Alpha", "Gamma" }, chf)));
+				Assert.That(merkleList.MerkleTree.Root, Is.EqualTo(MerkleTree.ComputeMerkleRoot(new[] { "Alpha", "Gamma" }, chf)));
 				
 				merkleList.RemoveAt(0);
-				Assert.That(merkleList.MerkleTree.Root, Is.EqualTo(Tools.MerkleTree.ComputeMerkleRoot(new[] { "Gamma" }, chf)));
+				Assert.That(merkleList.MerkleTree.Root, Is.EqualTo(MerkleTree.ComputeMerkleRoot(new[] { "Gamma" }, chf)));
 
 				merkleList.Insert(0, "Beta");
-				Assert.That(merkleList.MerkleTree.Root, Is.EqualTo(Tools.MerkleTree.ComputeMerkleRoot(new[] { "Beta", "Gamma" }, chf)));
+				Assert.That(merkleList.MerkleTree.Root, Is.EqualTo(MerkleTree.ComputeMerkleRoot(new[] { "Beta", "Gamma" }, chf)));
 
 				merkleList.Insert(0, "AlphaX");
-				Assert.That(merkleList.MerkleTree.Root, Is.EqualTo(Tools.MerkleTree.ComputeMerkleRoot(new[] { "AlphaX", "Beta", "Gamma" }, chf)));
+				Assert.That(merkleList.MerkleTree.Root, Is.EqualTo(MerkleTree.ComputeMerkleRoot(new[] { "AlphaX", "Beta", "Gamma" }, chf)));
 
 				merkleList[0] = "Alpha";
-				Assert.That(merkleList.MerkleTree.Root, Is.EqualTo(Tools.MerkleTree.ComputeMerkleRoot(new[] { "Alpha", "Beta", "Gamma" }, chf)));
+				Assert.That(merkleList.MerkleTree.Root, Is.EqualTo(MerkleTree.ComputeMerkleRoot(new[] { "Alpha", "Beta", "Gamma" }, chf)));
 
 			}
 		}
@@ -74,13 +75,13 @@ namespace Hydrogen.Tests {
 				Assert.That(merkleList.MerkleTree.Root, Is.EqualTo(nullHashValue));
 
 				Assert.That(() => merkleList.Insert(0, null), Throws.Nothing);
-				Assert.That(merkleList.MerkleTree.Root,  Is.EqualTo(Tools.MerkleTree.ComputeMerkleRoot(new string[] { null, null }, chf)));
+				Assert.That(merkleList.MerkleTree.Root,  Is.EqualTo(MerkleTree.ComputeMerkleRoot(new string[] { null, null }, chf)));
 
 				merkleList.Add("alpha");
-				Assert.That(merkleList.MerkleTree.Root, Is.EqualTo(Tools.MerkleTree.ComputeMerkleRoot(new string[] { null, null, "alpha" }, chf)));
+				Assert.That(merkleList.MerkleTree.Root, Is.EqualTo(MerkleTree.ComputeMerkleRoot(new string[] { null, null, "alpha" }, chf)));
 
 				Assert.That(() => merkleList.Update(2, null), Throws.Nothing);
-				Assert.That(merkleList.MerkleTree.Root, Is.EqualTo(Tools.MerkleTree.ComputeMerkleRoot(new string[] { null, null, null }, chf)));
+				Assert.That(merkleList.MerkleTree.Root, Is.EqualTo(MerkleTree.ComputeMerkleRoot(new string[] { null, null, null }, chf)));
 
 				merkleList.Clear();
 				Assert.That(merkleList.MerkleTree.Root, Is.Null);
@@ -91,22 +92,22 @@ namespace Hydrogen.Tests {
 		public void TestSimple_4([Values(CHF.SHA2_256, CHF.Blake2b_128)] CHF chf) {
 			using (CreateMerkleList(chf, out var merkleList)) {
 				merkleList.AddRange(new[] { "Alpha", "Beta", "Gamma" });
-				Assert.That(merkleList.MerkleTree.Root, Is.EqualTo(Tools.MerkleTree.ComputeMerkleRoot(new[] { "Alpha", "Beta", "Gamma" }, chf)));
+				Assert.That(merkleList.MerkleTree.Root, Is.EqualTo(MerkleTree.ComputeMerkleRoot(new[] { "Alpha", "Beta", "Gamma" }, chf)));
 
 				merkleList.Remove("Beta");
-				Assert.That(merkleList.MerkleTree.Root, Is.EqualTo(Tools.MerkleTree.ComputeMerkleRoot(new[] { "Alpha", "Gamma" }, chf)));
+				Assert.That(merkleList.MerkleTree.Root, Is.EqualTo(MerkleTree.ComputeMerkleRoot(new[] { "Alpha", "Gamma" }, chf)));
 
 				merkleList.RemoveAt(0);
-				Assert.That(merkleList.MerkleTree.Root, Is.EqualTo(Tools.MerkleTree.ComputeMerkleRoot(new[] { "Gamma" }, chf)));
+				Assert.That(merkleList.MerkleTree.Root, Is.EqualTo(MerkleTree.ComputeMerkleRoot(new[] { "Gamma" }, chf)));
 
 				merkleList.Insert(0, "Beta");
-				Assert.That(merkleList.MerkleTree.Root, Is.EqualTo(Tools.MerkleTree.ComputeMerkleRoot(new[] { "Beta", "Gamma" }, chf)));
+				Assert.That(merkleList.MerkleTree.Root, Is.EqualTo(MerkleTree.ComputeMerkleRoot(new[] { "Beta", "Gamma" }, chf)));
 
 				merkleList.Insert(0, "AlphaX");
-				Assert.That(merkleList.MerkleTree.Root, Is.EqualTo(Tools.MerkleTree.ComputeMerkleRoot(new[] { "AlphaX", "Beta", "Gamma" }, chf)));
+				Assert.That(merkleList.MerkleTree.Root, Is.EqualTo(MerkleTree.ComputeMerkleRoot(new[] { "AlphaX", "Beta", "Gamma" }, chf)));
 
 				merkleList[0] = "Alpha";
-				Assert.That(merkleList.MerkleTree.Root, Is.EqualTo(Tools.MerkleTree.ComputeMerkleRoot(new[] { "Alpha", "Beta", "Gamma" }, chf)));
+				Assert.That(merkleList.MerkleTree.Root, Is.EqualTo(MerkleTree.ComputeMerkleRoot(new[] { "Alpha", "Beta", "Gamma" }, chf)));
 
 			}
 		}
@@ -156,7 +157,7 @@ namespace Hydrogen.Tests {
 					false,
 					iterations,
 					expectedList,
-					() => Assert.That(merkleList.MerkleTree.Root, Is.EqualTo(Tools.MerkleTree.ComputeMerkleRoot(expectedList, chf)))
+					() => Assert.That(merkleList.MerkleTree.Root, Is.EqualTo(MerkleTree.ComputeMerkleRoot(expectedList, chf)))
 				);
 			}
 		}

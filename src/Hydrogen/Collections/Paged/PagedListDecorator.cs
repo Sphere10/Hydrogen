@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Hydrogen {
 	public abstract class PagedListDecorator<TItem, TPagedList> : ExtendedListDecorator<TItem, TPagedList>, IPagedList<TItem> where TPagedList : IPagedList<TItem> {
@@ -46,6 +47,8 @@ namespace Hydrogen {
 
 
 		public void Load() => InternalCollection.Load();
+
+		public Task LoadAsync() => Task.Run(Load);
 
 		public IDisposable EnterOpenPageScope(IPage<TItem> page) => InternalCollection.EnterOpenPageScope(page);
 

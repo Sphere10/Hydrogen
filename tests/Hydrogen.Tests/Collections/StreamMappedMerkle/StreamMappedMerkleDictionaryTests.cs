@@ -8,6 +8,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using NUnit.Framework;
 using Hydrogen.NUnit;
 using Tools;
+using Hydrogen;
 
 namespace Hydrogen.Tests;
 

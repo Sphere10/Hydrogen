@@ -5,11 +5,11 @@ namespace Hydrogen {
 	public class FileTransactionScope : TransactionalScope<FileTransactionScope, FileTransaction> {
 		private const string ContextIDPrefix = "FileTransactionContext:71C280A0-7DEA-41C0-BCE6-CC34DD99BD64";
 
-		public FileTransactionScope(string baseDir, ScopeContextPolicy policy = ScopeContextPolicy.None) 
+		public FileTransactionScope(string baseDir, ContextScopePolicy policy = ContextScopePolicy.None) 
 		   : this(GenTransactionFileName(), baseDir, policy) {
 		}
 
-		private FileTransactionScope(string transactionFile, string uncommittedPageDir, ScopeContextPolicy policy)
+		private FileTransactionScope(string transactionFile, string uncommittedPageDir, ContextScopePolicy policy)
 			: base(policy,
 				ContextIDPrefix,
 				  (scope) => new FileTransaction(transactionFile, uncommittedPageDir),
@@ -48,8 +48,8 @@ namespace Hydrogen {
 		}
 
 		public static FileTransactionScope GetCurrent() {
-			//return ScopeContext<FileTransactionScope>.GetCurrent(ToContextName(transactionFile));
-			return ScopeContext<FileTransactionScope>.GetCurrent(ContextIDPrefix);
+			//return ContextScopeBase<FileTransactionScope>.GetCurrent(ToContextName(transactionFile));
+			return ContextScopeBase<FileTransactionScope>.GetCurrent(ContextIDPrefix);
 		}
 
 		public static void ProcessDanglingTransactions(string baseDir) {

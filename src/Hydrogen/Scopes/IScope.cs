@@ -1,7 +1,7 @@
 using System;
 
 namespace Hydrogen {
-	public interface IScope : IDisposable {
+	public interface IScope : IAsyncDisposable, IDisposable {
         event EventHandlerEx ScopeEnd;
     }
 

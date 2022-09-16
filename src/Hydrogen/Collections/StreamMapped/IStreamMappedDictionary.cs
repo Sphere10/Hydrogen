@@ -1,6 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
+﻿using System.Collections.Generic;
+
 
 namespace Hydrogen {
 
@@ -17,8 +16,6 @@ namespace Hydrogen {
 		bool TryFindValue(TKey key, out int index, out TValue value);
 
 		void RemoveAt(int index);
-
-		
 
 	}
 	

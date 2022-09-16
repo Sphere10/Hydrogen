@@ -59,21 +59,21 @@ namespace Hydrogen.Utils.WinFormsTester {
 		private void _scopedContextTestButton_Click(object sender, EventArgs e) {
 			var writer = new TextBoxWriter(_clipTestTextBox);
 
-			TestScopePolicy(writer, ScopeContextPolicy.None, ScopeContextPolicy.None);
-			TestScopePolicy(writer, ScopeContextPolicy.None, ScopeContextPolicy.MustBeNested);
-			TestScopePolicy(writer, ScopeContextPolicy.None, ScopeContextPolicy.MustBeRoot);
+			TestScopePolicy(writer, ContextScopePolicy.None, ContextScopePolicy.None);
+			TestScopePolicy(writer, ContextScopePolicy.None, ContextScopePolicy.MustBeNested);
+			TestScopePolicy(writer, ContextScopePolicy.None, ContextScopePolicy.MustBeRoot);
 
-			TestScopePolicy(writer, ScopeContextPolicy.MustBeNested, ScopeContextPolicy.None);
-			TestScopePolicy(writer, ScopeContextPolicy.MustBeNested, ScopeContextPolicy.MustBeNested);
-			TestScopePolicy(writer, ScopeContextPolicy.MustBeNested, ScopeContextPolicy.MustBeRoot);
+			TestScopePolicy(writer, ContextScopePolicy.MustBeNested, ContextScopePolicy.None);
+			TestScopePolicy(writer, ContextScopePolicy.MustBeNested, ContextScopePolicy.MustBeNested);
+			TestScopePolicy(writer, ContextScopePolicy.MustBeNested, ContextScopePolicy.MustBeRoot);
 
-			TestScopePolicy(writer, ScopeContextPolicy.MustBeRoot, ScopeContextPolicy.None);
-			TestScopePolicy(writer, ScopeContextPolicy.MustBeRoot, ScopeContextPolicy.MustBeNested);
-			TestScopePolicy(writer, ScopeContextPolicy.MustBeRoot, ScopeContextPolicy.MustBeRoot);
+			TestScopePolicy(writer, ContextScopePolicy.MustBeRoot, ContextScopePolicy.None);
+			TestScopePolicy(writer, ContextScopePolicy.MustBeRoot, ContextScopePolicy.MustBeNested);
+			TestScopePolicy(writer, ContextScopePolicy.MustBeRoot, ContextScopePolicy.MustBeRoot);
 
 		}
 
-		private static void TestScopePolicy(TextBoxWriter writer, ScopeContextPolicy rootPolicy, ScopeContextPolicy childPolicy) {
+		private static void TestScopePolicy(TextBoxWriter writer, ContextScopePolicy rootPolicy, ContextScopePolicy childPolicy) {
 			try {
 				ScopeContextTest.TextWriter = writer;
 				writer.WriteLine("Testing Scoped Context: RootPolicy={0}, ChildPolicy={1}", rootPolicy, childPolicy);
@@ -92,10 +92,10 @@ namespace Hydrogen.Utils.WinFormsTester {
 		}
 
 
-		public class ScopeContextTest : ScopeContext<ScopeContextTest> {
+		public class ScopeContextTest : SyncContextScopeBase<ScopeContextTest> {
 			public static TextWriter TextWriter;
 
-			public ScopeContextTest(ScopeContextPolicy policy) : base("myTlsSlotName", policy) {
+			public ScopeContextTest(ContextScopePolicy policy) : base(policy, "myTlsSlotName") {
 				if (IsRootScope) {
 					TextWriter.WriteLine("[Begin Root Scope]");
 

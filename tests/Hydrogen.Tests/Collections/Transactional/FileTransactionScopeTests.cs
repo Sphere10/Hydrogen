@@ -411,7 +411,7 @@ namespace Hydrogen.Tests {
 
 			void LoopTransactions(string filepath, int loops) {
 				for (var i = 0; i < loops; i++) {
-					using (var scope = new FileTransactionScope(txnBaseDir, ScopeContextPolicy.MustBeRoot)) {
+					using (var scope = new FileTransactionScope(txnBaseDir, ContextScopePolicy.MustBeRoot)) {
 						scope.BeginTransaction();
 						var file = scope.EnlistFile(filepath, 100, 1*100);
 						file.AsBuffer.AddRange(RNG.NextBytes(100));

@@ -16,13 +16,14 @@ using System.Collections.Generic;
 using NUnit.Framework;
 using System.IO;
 using System.Linq;
-using Hydrogen;
 using Hydrogen.Maths;
 using Hydrogen.NUnit;
+using Hydrogen;
 
-namespace Hydrogen.Tests {
+namespace Hydrogen.Tests
+{
 
-	[TestFixture]
+    [TestFixture]
 	[Parallelizable(ParallelScope.Children)]
 	public class MerkleMathTests {
 

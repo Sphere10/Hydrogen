@@ -12,6 +12,7 @@
 //-----------------------------------------------------------------------
 
 using System;
+using System.Threading.Tasks;
 
 namespace Hydrogen {
 
@@ -25,15 +26,22 @@ namespace Hydrogen {
 	// directly create a native resource like a file handle
 	// or memory in the unmanaged heap.
 
-	public abstract class Disposable : IDisposable {
+	public abstract class Disposable : IAsyncDisposable,  IDisposable {
         private bool _disposed;
 
         public void Dispose() {
             Dispose(true);
+            GC.SuppressFinalize(this); // Use SupressFinalize in case a subclass of this type implements a finalizer.
+        }
 
-            // Use SupressFinalize in case a subclass
-            // of this type implements a finalizer.
-            GC.SuppressFinalize(this);
+        public async ValueTask DisposeAsync() {
+	        await FreeManagedResourcesAsync().ConfigureAwait(false);
+
+	        Dispose(disposing: false);
+
+#pragma warning disable CA1816 // Dispose methods should call SuppressFinalize
+	        GC.SuppressFinalize(this);
+#pragma warning restore CA1816 // Dispose methods should call SuppressFinalize
         }
 
         protected virtual void Dispose(bool disposing) {
@@ -51,7 +59,11 @@ namespace Hydrogen {
             _disposed = true;
         }
 
+        protected virtual async ValueTask FreeManagedResourcesAsync() => FreeManagedResources();
+
         protected abstract void FreeManagedResources();
+
         protected virtual void FreeUnmanagedResources() { }
-    }
+
+	}
 }

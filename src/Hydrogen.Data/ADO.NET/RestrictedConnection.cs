@@ -28,18 +28,18 @@ namespace Hydrogen.Data {
         public IDbConnection DangerousInternalConnection => base.InternalConnection;
 
 		public sealed override IDbTransaction BeginTransaction() {
-            throw new NotSupportedException("Please use DACScope.BeginTransaction. Creating Transactions directly from Connection is prohibited.");
+            throw new NotSupportedException("Please use DacScope.BeginTransaction. Creating Transactions directly from Connection is prohibited.");
         }
 
         public sealed override IDbTransaction BeginTransaction(IsolationLevel il) {
-            throw new NotSupportedException("Please use DACScope.BeginTransaction. Creating Transactions directly from Connection is prohibited.");
+            throw new NotSupportedException("Please use DacScope.BeginTransaction. Creating Transactions directly from Connection is prohibited.");
         }
 
         public override void Close() {
-            throw new NotSupportedException("Cannot Close Connection as it is being managed by DACScope.");
+            throw new NotSupportedException("Cannot Close Connection as it is being managed by DacScope.");
         }
         public sealed override void Dispose() {
-            throw new NotSupportedException("Cannot Dispose Connection as it is being managed by DACScope.");
+            throw new NotSupportedException("Cannot Dispose Connection as it is being managed by DacScope.");
         }
 
 

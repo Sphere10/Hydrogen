@@ -3,13 +3,14 @@ using NUnit.Framework;
 using System.IO;
 using System.Linq;
 using System.Text;
-using Hydrogen;
 using Hydrogen.Maths;
 using Hydrogen.NUnit;
+using Hydrogen;
 
-namespace Hydrogen.Tests {
+namespace Hydrogen.Tests
+{
 
-	[TestFixture]
+    [TestFixture]
 	[Parallelizable(ParallelScope.Children)]
 	public class MerkleListAdapterTests : MerkleListTestsBase {
 
@@ -30,7 +31,7 @@ namespace Hydrogen.Tests {
 					false,
 					iterations,
 					expectedList,
-					() => Assert.That(merkleList.MerkleTree.Root, Is.EqualTo(Tools.MerkleTree.ComputeMerkleRoot(expectedList, chf)))
+					() => Assert.That(merkleList.MerkleTree.Root, Is.EqualTo(MerkleTree.ComputeMerkleRoot(expectedList, chf)))
 				);
 			}
 		}

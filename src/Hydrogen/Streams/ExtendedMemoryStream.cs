@@ -15,6 +15,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Hydrogen {
 	/// <summary>
@@ -51,6 +52,14 @@ namespace Hydrogen {
 			if (_source is ILoadable { RequiresLoad: true } loadable) {
 				Loading?.Invoke(this);
 				loadable.Load();
+				Loaded?.Invoke(this);
+			}
+		}
+
+		public async Task LoadAsync() {
+			if (_source is ILoadable { RequiresLoad: true } loadable) {
+				Loading?.Invoke(this);
+				await loadable.LoadAsync();
 				Loaded?.Invoke(this);
 			}
 		}

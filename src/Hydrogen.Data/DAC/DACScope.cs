@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------
-// <copyright file="DACScope.cs" company="Sphere 10 Software">
+// <copyright file="DacScope.cs" company="Sphere 10 Software">
 //
 // Copyright (c) Sphere 10 Software. All rights reserved. (http://www.sphere10.com)
 //
@@ -18,14 +18,14 @@ using System.Data;
 
 namespace Hydrogen.Data {
 
-	public sealed class DACScope : TransactionalScope<DACScope, IDbTransaction> {
+	public sealed class DacScope : TransactionalScope<DacScope, IDbTransaction> {
         private const string DefaultContextPrefix = "EA9CC911-C209-42B9-B113-84562706145D";
-        private const string ContextNameTemplate = "DACScope:{0}:{1}";
+        private const string ContextNameTemplate = "DacScope:{0}:{1}";
         private readonly bool _scopeOwnsConnection;
 	    private RestrictedConnection _connection;
 	    private bool _withinSystemTransactionScope;
 		private IsolationLevel _transactionIsolationLevel;
-		internal DACScope(IDAC dac, ScopeContextPolicy policy, bool openConnection, string contextPrefix = DefaultContextPrefix, TransactionAction? defaultCloseAction = null)
+		internal DacScope(IDAC dac, ContextScopePolicy policy, bool openConnection, string contextPrefix = DefaultContextPrefix, TransactionAction? defaultCloseAction = null)
 			: base(
 				  policy, 
 				  string.Format(ContextNameTemplate, contextPrefix, dac.ConnectionString),
@@ -64,7 +64,7 @@ namespace Hydrogen.Data {
 
 		public void EnlistInSystemTransaction() {
 	        if (Transaction != null) {
-	            throw new SoftwareException("Unable to enlist in system transaction as DACScope has declared it's own transaction");
+	            throw new SoftwareException("Unable to enlist in system transaction as DacScope has declared it's own transaction");
 	        }
 
 	        var systemTransaction = System.Transactions.Transaction.Current;
@@ -84,7 +84,7 @@ namespace Hydrogen.Data {
 			if (_withinSystemTransactionScope) {
 	            _withinSystemTransactionScope = System.Transactions.Transaction.Current != null; // may have been removed
 	            if (_withinSystemTransactionScope) {
-	                throw new SoftwareException("DACScope transactions cannot be used a System.Transactions.TransactionScope.");
+	                throw new SoftwareException("DacScope transactions cannot be used a System.Transactions.TransactionScope.");
 	            }
 	        }
 
@@ -97,19 +97,19 @@ namespace Hydrogen.Data {
 
 	    public override void Rollback() {
             if (_withinSystemTransactionScope) {
-                throw new SoftwareException("DACScope transactions cannot be used within a System.Transactions.TransactionScope.");
+                throw new SoftwareException("DacScope transactions cannot be used within a System.Transactions.TransactionScope.");
             }
 			base.Rollback();
 	    }
 
 	    public override void Commit() {
 	        if (_withinSystemTransactionScope) {
-	            throw new SoftwareException("DACScope transactions cannot be used a System.Transactions.TransactionScope.");
+	            throw new SoftwareException("DacScope transactions cannot be used a System.Transactions.TransactionScope.");
 	        }
 			base.Commit();
 	    }
 
-	    protected override void OnScopeEndInternal(DACScope rootScope, bool inException, List<Exception> errors) {
+	    protected override void OnScopeEndInternal(DacScope rootScope, bool inException, List<Exception> errors) {
 	        if (_scopeOwnsConnection) {
 	            Tools.Exceptions.ExecuteIgnoringException(_connection.CloseInternal, errors);
 	            Tools.Exceptions.ExecuteIgnoringException(_connection.DisposeInternal, errors);
@@ -117,12 +117,12 @@ namespace Hydrogen.Data {
 	        }
 	    }
 
-	    public new static DACScope GetCurrent(string connectionString) {
-	        return ScopeContext<DACScope>.GetCurrent(string.Format(ContextNameTemplate, DefaultContextPrefix, connectionString));
+	    public new static DacScope GetCurrent(string connectionString) {
+	        return ContextScopeBase<DacScope>.GetCurrent(string.Format(ContextNameTemplate, DefaultContextPrefix, connectionString));
 	    }
 
-        public static DACScope GetCurrent(string connectionString, string contextPrefix) {
-            return ScopeContext<DACScope>.GetCurrent(string.Format(ContextNameTemplate, contextPrefix, connectionString));
+        public static DacScope GetCurrent(string connectionString, string contextPrefix) {
+            return ContextScopeBase<DacScope>.GetCurrent(string.Format(ContextNameTemplate, contextPrefix, connectionString));
         }
     
 	}

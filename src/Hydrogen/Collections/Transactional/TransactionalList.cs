@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Hydrogen {
 
@@ -93,6 +94,8 @@ namespace Hydrogen {
 		public IClusteredStorage Storage => _clustered.Storage;
 
 		public void Load() => _transactionalBuffer.Load();
+
+		public Task LoadAsync() => Task.Run(Load);
 
 		public Scope EnterReadScope() => _items.EnterReadScope();
 

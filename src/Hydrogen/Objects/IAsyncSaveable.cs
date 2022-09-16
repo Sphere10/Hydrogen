@@ -1,10 +1,10 @@
-using System.Threading.Tasks;
+//using System.Threading.Tasks;
 
-namespace Hydrogen;
+//namespace Hydrogen;
 
-public interface IAsyncSaveable {
-	event EventHandlerEx<object> Saving;
-	event EventHandlerEx<object> Saved;
-	bool RequiresSave { get; }
-	Task Save();
-}
+//public interface IAsyncSaveable {
+//	event EventHandlerEx<object> Saving;
+//	event EventHandlerEx<object> Saved;
+//	bool RequiresSave { get; }
+//	Task Save();
+//}

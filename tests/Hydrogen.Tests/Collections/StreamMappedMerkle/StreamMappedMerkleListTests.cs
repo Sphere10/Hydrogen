@@ -4,13 +4,14 @@ using NUnit.Framework;
 using System.IO;
 using System.Linq;
 using System.Text;
-using Hydrogen;
 using Hydrogen.Maths;
 using Hydrogen.NUnit;
+using Hydrogen;
 
-namespace Hydrogen.Tests {
+namespace Hydrogen.Tests
+{
 
-	[TestFixture]
+    [TestFixture]
 	[Parallelizable(ParallelScope.Children)]
 	public class StreamMappedMerkleListTests : MerkleListTestsBase {
 		private const int DefaultClusterSize = 256;
@@ -28,7 +29,7 @@ namespace Hydrogen.Tests {
 			using (clusteredList.EnterAddScope("delta"));
 			using (clusteredList.EnterUpdateScope(2, "gamma"));
 			using (clusteredList.EnterAddScope("epsilon"));
-			Assert.That(clusteredList.MerkleTree.Root, Is.EqualTo(Tools.MerkleTree.ComputeMerkleRoot(new [] { "alpha", "beta", "gamma", "delta", "epsilon" }, chf)));
+			Assert.That(clusteredList.MerkleTree.Root, Is.EqualTo(MerkleTree.ComputeMerkleRoot(new [] { "alpha", "beta", "gamma", "delta", "epsilon" }, chf)));
 		}
 
 		protected override IDisposable CreateMerkleList([Values(CHF.SHA2_256, CHF.Blake2b_128)] CHF chf, out IMerkleList<string> merkleList) {

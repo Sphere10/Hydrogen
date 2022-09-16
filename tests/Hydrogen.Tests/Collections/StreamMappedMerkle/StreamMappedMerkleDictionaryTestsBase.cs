@@ -9,10 +9,11 @@ using Microsoft.Diagnostics.Tracing;
 using Microsoft.Diagnostics.Tracing.Parsers.Kernel;
 using NUnit.Framework;
 using Hydrogen.NUnit;
-using Tools;
+using Hydrogen;
 
-namespace Hydrogen.Tests {
-	
+namespace Hydrogen.Tests
+{
+
 	public abstract class StreamMappedMerkleDictionaryTestsBase : StreamPersistedCollectionTestsBase {
 		protected abstract IDisposable CreateDictionary(CHF chf, out StreamMappedMerkleDictionary<string, TestObject> merkleDictionary);
 
@@ -141,7 +142,7 @@ namespace Hydrogen.Tests {
 							var item = clusteredDictionary.ReadValue(i);
 							return itemHasher.Hash(item);
 						}).ToArray(); ;
-						Assert.That(clusteredDictionary.MerkleTree.Root, Is.EqualTo(Tools.MerkleTree.ComputeMerkleRoot(itemHashes, chf)));
+						Assert.That(clusteredDictionary.MerkleTree.Root, Is.EqualTo(MerkleTree.ComputeMerkleRoot(itemHashes, chf)));
 					}
 				);
 			}

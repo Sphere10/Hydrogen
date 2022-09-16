@@ -8,9 +8,10 @@ using Hydrogen;
 using Hydrogen.Maths;
 using Hydrogen.NUnit;
 
-namespace Hydrogen.Tests {
+namespace Hydrogen.Tests
+{
 
-	[TestFixture]
+    [TestFixture]
 	[Parallelizable(ParallelScope.Children)]
 	public class MerkleTreeTests {
 

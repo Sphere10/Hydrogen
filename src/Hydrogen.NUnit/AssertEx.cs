@@ -8,6 +8,7 @@ using System.Text.RegularExpressions;
 using NUnit.Framework;
 using Hydrogen.Collections;
 using Hydrogen.Misc;
+using Hydrogen;
 
 namespace Hydrogen.NUnit {
 

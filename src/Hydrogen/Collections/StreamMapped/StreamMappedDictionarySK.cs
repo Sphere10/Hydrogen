@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 
 namespace Hydrogen {
 
@@ -106,6 +107,7 @@ namespace Hydrogen {
 			NotifyLoaded();
 		}
 
+		public Task LoadAsync() => Task.Run(Load);
 		public TKey ReadKey(int index) {
 			if (Storage.IsNull(_valueStore.Storage.Header.ReservedRecords + index))
 				throw new InvalidOperationException($"Stream record {index} is null");

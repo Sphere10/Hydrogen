@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.Diagnostics;
+﻿using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
+
 
 namespace Hydrogen {
 
@@ -60,6 +56,8 @@ namespace Hydrogen {
 		public IClusteredStorage Storage => InternalDictionary.Storage;
 
 		public void Load() => InternalDictionary.Load();
+
+		public Task LoadAsync() => Task.Run(Load);
 
 		public override bool Add(TItem item) {
 			Guard.ArgumentNotNull(item, nameof(item));

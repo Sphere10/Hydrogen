@@ -23,7 +23,8 @@ using NUnit.Framework.Constraints;
 using Hydrogen;
 using Hydrogen.NUnit;
 
-namespace Hydrogen.Tests {
+namespace Hydrogen.Tests
+{
 
     [TestFixture]
     [Parallelizable(ParallelScope.Children)]

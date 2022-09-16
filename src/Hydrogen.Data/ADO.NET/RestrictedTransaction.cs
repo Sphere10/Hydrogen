@@ -38,11 +38,11 @@ namespace Hydrogen.Data {
         }
 
         public override void Commit() {
-            throw new NotSupportedException("Please use DACScope.Commit. Committing Transactions directly is prohibited.");
+            throw new NotSupportedException("Please use DacScope.Commit. Committing Transactions directly is prohibited.");
         }
 
         public override void Rollback() {
-            throw new NotSupportedException("Please use DACScope.Rollback. Rolling back Transactions directly is prohibited.");
+            throw new NotSupportedException("Please use DacScope.Rollback. Rolling back Transactions directly is prohibited.");
         }
 
         public override void Dispose() {

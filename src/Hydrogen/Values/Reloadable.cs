@@ -46,8 +46,8 @@ public class Reloadable<T> : SynchronizedObject, IFuture<T> {
 		}
 	}
 
-	public static LazyLoad<T> From(Func<T> valueLoader) {
-		return new LazyLoad<T>(valueLoader);
+	public static Reloadable<T> From(Func<T> valueLoader) {
+		return new Reloadable<T>(valueLoader);
 	}
 
 	public override string ToString() {

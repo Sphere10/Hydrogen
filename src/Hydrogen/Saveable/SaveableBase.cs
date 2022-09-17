@@ -47,7 +47,7 @@ public abstract class SaveableBase : ISaveable {
 		if (SuppressNotifications)
 			return;
 		await OnSavingAsync();
-		Saving?.Invoke(this);
+		await Task.Run( () => Saving?.Invoke(this));
 	}
 
 	protected void NotifySaved() {
@@ -62,6 +62,6 @@ public abstract class SaveableBase : ISaveable {
 		if (SuppressNotifications)
 			return;
 		await OnSavedAsync();
-		Saved?.Invoke(this);
+		await Task.Run( () => Saved?.Invoke(this));
 	}
 }

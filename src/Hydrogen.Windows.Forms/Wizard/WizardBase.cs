@@ -18,10 +18,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Hydrogen;
 
 namespace Hydrogen.Windows.Forms {
-    public abstract class WizardBase<T> : Disposable, IWizard<T> {
+	public abstract class WizardBase<T> : SyncDisposable, IWizard<T> {
         public event EventHandlerEx Finished;
         private Form _owner;
         private WizardDialog<T> _dialog;

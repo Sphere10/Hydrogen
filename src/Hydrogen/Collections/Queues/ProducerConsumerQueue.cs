@@ -18,7 +18,7 @@ using System.Linq;
 using System.Threading;
 
 namespace Hydrogen {
-	public class ProducerConsumerQueue<T> : Disposable {
+	public class ProducerConsumerQueue<T> : SyncDisposable {
 		private readonly object _threadLock;
 		private readonly Func<T, long> _sizeEstimator;
 		private readonly long _maxCapacity;

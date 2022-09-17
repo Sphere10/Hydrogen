@@ -47,7 +47,7 @@ public abstract class LoadableBase : ILoadable {
 		if (SuppressNotifications)
 			return;
 		await OnLoadingAsync();
-		Loading?.Invoke(this);
+		await Task.Run( () => Loading?.Invoke(this));
 	}
 
 	protected void NotifyLoaded() {
@@ -62,6 +62,6 @@ public abstract class LoadableBase : ILoadable {
 		if (SuppressNotifications)
 			return;
 		await OnLoadedAsync();
-		Loaded?.Invoke(this);
+		await Task.Run( () => Loaded?.Invoke(this));
 	}
 }

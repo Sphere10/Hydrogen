@@ -19,7 +19,7 @@ using Timer = System.Timers.Timer;
 
 namespace Hydrogen {
 
-	public class Scheduler<TJob, TJobSchedule> : Disposable where TJob : class, IJob where TJobSchedule : class, IJobSchedule, IComparable<TJobSchedule> {
+	public class Scheduler<TJob, TJobSchedule> : SyncDisposable where TJob : class, IJob where TJobSchedule : class, IJobSchedule, IComparable<TJobSchedule> {
 		private readonly object _threadLock;    // only used for start, stop & interrupt method
 		private readonly ElapsedEventHandler _timerHandler;
 		private readonly Timer _timer;

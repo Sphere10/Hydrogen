@@ -26,44 +26,44 @@ namespace Hydrogen {
 	// directly create a native resource like a file handle
 	// or memory in the unmanaged heap.
 
-	public abstract class Disposable : IAsyncDisposable,  IDisposable {
-        private bool _disposed;
+	public abstract class Disposable : IAsyncDisposable, IDisposable {
+		private bool _disposed;
 
-        public void Dispose() {
-            Dispose(true);
-            GC.SuppressFinalize(this); // Use SupressFinalize in case a subclass of this type implements a finalizer.
-        }
+		public void Dispose() {
+			Dispose(true);
+			GC.SuppressFinalize(this); // Use SupressFinalize in case a subclass of this type implements a finalizer.
+		}
 
-        public async ValueTask DisposeAsync() {
-	        await FreeManagedResourcesAsync().ConfigureAwait(false);
+		public async ValueTask DisposeAsync() {
+			await FreeManagedResourcesAsync().ConfigureAwait(false);
 
-	        Dispose(disposing: false);
+			Dispose(disposing: false);
 
 #pragma warning disable CA1816 // Dispose methods should call SuppressFinalize
-	        GC.SuppressFinalize(this);
+			GC.SuppressFinalize(this);
 #pragma warning restore CA1816 // Dispose methods should call SuppressFinalize
-        }
+		}
 
-        protected virtual void Dispose(bool disposing) {
-            if (_disposed) return;
+		protected virtual void Dispose(bool disposing) {
+			if (_disposed) return;
 
-            // If you need thread safety, use a lock around these 
-            // operations, as well as in your methods that use the resource.
+			// If you need thread safety, use a lock around these 
+			// operations, as well as in your methods that use the resource.
 
-            if (disposing) {
-                FreeManagedResources();
-            }
+			if (disposing) {
+				FreeManagedResources();
+			}
 
-            FreeUnmanagedResources();
+			FreeUnmanagedResources();
 
-            _disposed = true;
-        }
+			_disposed = true;
+		}
 
-        protected virtual async ValueTask FreeManagedResourcesAsync() => FreeManagedResources();
+		protected abstract ValueTask FreeManagedResourcesAsync();
 
-        protected abstract void FreeManagedResources();
+		protected abstract void FreeManagedResources();
 
-        protected virtual void FreeUnmanagedResources() { }
+		protected virtual void FreeUnmanagedResources() { }
 
 	}
 }

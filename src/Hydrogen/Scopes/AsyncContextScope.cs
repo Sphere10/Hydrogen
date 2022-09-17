@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace Hydrogen;
 
-public sealed class AsyncContextScope : AsyncContextScopeBase<SyncContextScope> {
+public sealed class AsyncContextScope : AsyncContextScopeBase<AsyncContextScope> {
 	private readonly Func<Task> _rootScopeFinalizer;
 	private readonly Func<Task> _thisScopeFinalizer;
 	private readonly bool _invokeOnException;
@@ -14,9 +14,9 @@ public sealed class AsyncContextScope : AsyncContextScopeBase<SyncContextScope> 
 		_invokeOnException = invokeOnException;
 	}
 
-	protected override async ValueTask OnScopeEndAsync(SyncContextScope rootScope, bool inException) {
+	protected override async ValueTask OnScopeEndAsync(AsyncContextScope rootScope, bool inException) {
 		if (!inException || inException && _invokeOnException) {
-			if (_rootScopeFinalizer != null)
+			if (_thisScopeFinalizer != null)
 				await _thisScopeFinalizer();
 
 			if (IsRootScope &&  _rootScopeFinalizer != null)

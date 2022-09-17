@@ -10,7 +10,7 @@ namespace Hydrogen {
 	/// </summary>
 	/// <remarks>This was created as a replacement for <see cref="SemaphoreSlim"/> which was believed to be a cause of a bug. Turns out Semaphore's can become very slow if logical threads >> physical cores and they wait on a semaphore.
 	/// <see cref="ProducerConsumerLock"/> comments for discussion).</remarks>
-	internal class SemaphoreMin : Disposable {
+	internal class SemaphoreMin : SyncDisposable {
 
 		private readonly object _lock;
 		private long _currentCount;

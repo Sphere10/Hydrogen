@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Hydrogen.Communications {
 
-	public class UDPServer : Disposable {
+	public class UDPServer : AsyncDisposable {
 
 		public EventHandlerEx<UDPServerChannel> ChannelCreated;
 		public EventHandlerEx<UDPServerChannel> ChannelDestroyed;
@@ -76,7 +76,7 @@ namespace Hydrogen.Communications {
 		protected virtual bool IsEndpointAccepted(IPEndPoint channel) => true;
 
 
-		protected override void FreeManagedResources() {
+		protected override async ValueTask FreeManagedResourcesAsync() {
 			if (Running)
 				Stop();
 		}

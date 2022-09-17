@@ -14,13 +14,12 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
 
 
 namespace Hydrogen.Data;
 
-public abstract class FileStoreBase<TFileKey> : Disposable, IFileStore<TFileKey> {
+public abstract class FileStoreBase<TFileKey> : SyncDisposable, IFileStore<TFileKey> {
 
 	#region Properties
 

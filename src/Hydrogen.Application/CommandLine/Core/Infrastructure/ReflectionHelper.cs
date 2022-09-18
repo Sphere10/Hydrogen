@@ -112,11 +112,11 @@ namespace CommandLine.Infrastructure
         {
             if (t.IsEnum)
                 //return Enum.GetNames(t);
-				return Tools.Enums.GetSerializableNames(t);
+				return Tools.Enums.GetSerializableOrientedNames(t);
             Type u = Nullable.GetUnderlyingType(t);
             if (u != null && u.IsEnum)
                 //return Enum.GetNames(u);
-	            return Tools.Enums.GetSerializableNames(t);
+	            return Tools.Enums.GetSerializableOrientedNames(t);
             return Enumerable.Empty<string>();
         }
     }

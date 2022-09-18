@@ -1119,7 +1119,7 @@ namespace CommandLine.Text
                 return value.ToStringLocal();
 
 			if (value is Enum @enum) 
-				return Tools.Enums.GetSerializableName(@enum);
+				return Tools.Enums.GetEnumNameCandidates(@enum).Reverse().First();  // reversing picks attribute names first
 
             var asEnumerable = value as IEnumerable;
             if (asEnumerable == null)

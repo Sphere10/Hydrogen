@@ -24,25 +24,34 @@ namespace Tools {
 
 	public static class Enums {
 		
-		public static string[] GetSerializableNames<T>() where T : struct
-			=> GetSerializableNames(typeof(T));
+		public static string[] GetSerializableOrientedNames<T>() where T : struct
+			=> GetSerializableOrientedNames(typeof(T)).ToArray();
 
+		public static string[] GetSerializableOrientedNames(Type enumType) 
+			// here we reverse the set to pick EnumValueAttribute/Description names with precedence
+			=> GetNameCandidates(enumType).Select(x => x.Reverse().First()).ToArray();  
 
-		public static string[] GetSerializableNames(Type enumType) {
-			var names = new List<string>();
+		public static string GetSerializableOrientedName(Enum @enum) 
+			=> GetEnumNameCandidates(@enum).Reverse().First();
+
+			
+		/// <summary>
+		/// For all enums, returns all their name candidates. An enum can have multiple serializable names based on attributes
+		/// </summary>
+		/// <param name="enumType"></param>
+		/// <returns></returns>
+		internal static IEnumerable<string[]> GetNameCandidates(Type enumType) {
 			Guard.ArgumentNotNull(enumType, nameof(enumType));
-			foreach (var field in enumType.GetFields().Where(f => !f.IsSpecialName) ) {
-				var enumMemberAttribute = field.GetCustomAttributeOfType<EnumMemberAttribute>(false, false);
-				names.Add( enumMemberAttribute != null ? enumMemberAttribute.Value : field.Name);
-			}
-			return names.ToArray();
+			foreach (var value in Enum.GetValues(enumType))
+				yield return GetEnumNameCandidates(value as Enum).ToArray();
 		}
 
-		public static string GetSerializableName(Enum @enum) {
+
+		public static IEnumerable<string> GetEnumNameCandidates(Enum @enum) {
+			yield return @enum.ToString();
 			var attributes =  @enum.GetAttributes<EnumMemberAttribute>();
 			if (attributes.Any())
-				return attributes.First().Value;
-			return @enum.ToString();
+				yield return attributes.First().Value;
 		}
 
 		public static IEnumerable<T> GetValues<T>() {
@@ -160,13 +169,15 @@ namespace Tools {
 			// Get all the possible names and their value for enum 
 			// todo: cache this for efficiency
 			var enumInfo = new Dictionary<string, object>(ignoreValueCase ? StringComparer.InvariantCultureIgnoreCase : StringComparer.InvariantCulture);
-			var enumNames = System.Enum.GetNames(enumType).Zip(Tools.Enums.GetSerializableNames(enumType)).ToArray();
-			for (var i = 0; i < enumNames.Length; i++) {
+			
+
+			var enumNameCandidates =  Tools.Enums.GetNameCandidates(enumType).ToArray(); 
+			for (var i = 0; i < enumNameCandidates.Length; i++) {
+				var enumNames = enumNameCandidates[i];
 				var enumVal = enumValues.GetValue(i);
-				enumInfo.Add(enumNames[i].Item1, enumVal);
-				if (enumNames[i].Item1 != enumNames[i].Item2)
-					if (!enumInfo.ContainsKey(enumNames[i].Item2))
-						enumInfo.Add(enumNames[i].Item2, enumVal);
+				foreach(var enumName in enumNames) 
+					if (!enumInfo.ContainsKey(enumName))
+						enumInfo.Add(enumName, enumVal);
 			}
 
 			// Try to match name manually

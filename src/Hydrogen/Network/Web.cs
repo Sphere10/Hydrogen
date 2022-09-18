@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using Hydrogen;
 
@@ -22,18 +23,18 @@ public static class Web {
 		stream.CopyToAsync(fileStream);
 	}
 
-	public static async Task<string> DownloadFileAsync(string url, string destPath, bool verifySSLCert = true) {
+	public static async Task<string> DownloadFileAsync(string url, string destPath, bool verifySSLCert = true, CancellationToken cancellationToken = default) {
 		using var httpClientHandler = new HttpClientHandler();
 		if (!verifySSLCert)
 			httpClientHandler.ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true;
 		using var client = new HttpClient(httpClientHandler);
 		client.DefaultRequestHeaders.Clear();
 		client.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "none");
-		var response = await client.GetAsync(url);
+		var response = await client.GetAsync(url, cancellationToken);
 		var mimeType = response.Content.Headers.ContentType.MediaType;
-		await using var stream = await response.Content.ReadAsStreamAsync();
+		await using var stream = await response.Content.ReadAsStreamAsync().WithCancellationToken(cancellationToken);
 		await using var fileStream = new FileStream(destPath, FileMode.OpenOrCreate);
-		await stream.CopyToAsync(fileStream);
+		await stream.CopyToAsync(fileStream, cancellationToken);
 		return mimeType;
 	}
 

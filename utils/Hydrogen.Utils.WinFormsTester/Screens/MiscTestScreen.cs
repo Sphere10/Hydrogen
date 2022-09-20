@@ -19,6 +19,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using System.Transactions;
 using System.Windows.Forms;
 using System.Xml;
@@ -92,7 +93,7 @@ namespace Hydrogen.Utils.WinFormsTester {
 		}
 
 
-		public class ScopeContextTest : SyncContextScopeBase<ScopeContextTest> {
+		public class ScopeContextTest : SyncContextScope {
 			public static TextWriter TextWriter;
 
 			public ScopeContextTest(ContextScopePolicy policy) : base(policy, "myTlsSlotName") {
@@ -104,10 +105,14 @@ namespace Hydrogen.Utils.WinFormsTester {
 				}
 			}
 
-
-			protected override void OnScopeEnd(ScopeContextTest rootScope, bool inException) {
-				TextWriter.WriteLine(rootScope != this ? "[End Child Scope: inException = {0}]" : "[End Root Scope: inException = {0}]", inException);
+			protected override void OnScopeEndInternal() {
+				TextWriter.WriteLine(RootScope != this ? "[End Child Scope: inException = {0}]" : "[End Root Scope: inException = {0}]", InException);
 			}
+
+            protected override void OnContextEnd() {
+                TextWriter.WriteLine("Context end");
+            }
+
 		}
 
 

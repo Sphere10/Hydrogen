@@ -21,6 +21,10 @@ public class ActionContextScope : SyncContextScope {
 	private readonly Action _scopeFinalizer;
 	private readonly bool _invokeOnException;
 
+	public ActionContextScope(Action contextFinalizer, ContextScopePolicy policy, string contextName, bool invokeOnException = true)
+		: this(contextFinalizer, default, policy, contextName, invokeOnException) {
+	}
+
 	public ActionContextScope(Action contextFinalizer, Action scopeFinalizer, ContextScopePolicy policy, string contextName, bool invokeOnException = true) : base(policy, contextName) {
 		_contextFinalizer = contextFinalizer;
 		_scopeFinalizer = scopeFinalizer;

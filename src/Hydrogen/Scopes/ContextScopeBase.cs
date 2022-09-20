@@ -20,7 +20,7 @@ namespace Hydrogen;
 /// used share state and behaviour within the disparate call contexts (e.g. to implement database style commit/abort transactional scopes).
 /// </summary>
 /// <typeparam name="TScope">The Subclass type (needed to properly type the <see cref="RootScope"/>)</typeparam>
-public abstract class ContextScopeBase<TScope> : Scope where TScope : ContextScopeBase<TScope> {
+public abstract class ContextScopeBase<TScope> : ScopeBase where TScope : ContextScopeBase<TScope> {
 
 	protected ContextScopeBase(ContextScopePolicy policy, string contextID) {
 		Guard.ArgumentNotNullOrWhitespace(contextID, nameof(contextID));
@@ -63,7 +63,7 @@ public abstract class ContextScopeBase<TScope> : Scope where TScope : ContextSco
 		return CallContext.LogicalGetData(contextID) as TScope;
 	}
 
-	protected sealed override void FreeManagedResources() {
+	protected sealed override void OnScopeEnd() {
 		var inException = Tools.Runtime.IsInExceptionContext();
 		// Remove from registry
 		if (IsRootScope) 
@@ -73,7 +73,7 @@ public abstract class ContextScopeBase<TScope> : Scope where TScope : ContextSco
 		OnScopeEnd(RootScope, inException);
 	}
 
-	protected sealed override ValueTask FreeManagedResourcesAsync() {
+	protected sealed override ValueTask OnScopeEndAsync() {
 		var inException = Tools.Runtime.IsInExceptionContext();
 		// Remove from registry
 		if (IsRootScope)

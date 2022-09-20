@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------
-// <copyright file="ScopeContextTest.cs" company="Sphere 10 Software">
+// <copyright file="ContextScopeTest.cs" company="Sphere 10 Software">
 //
 // Copyright (c) Sphere 10 Software. All rights reserved. (http://www.sphere10.com)
 //
@@ -20,7 +20,7 @@ namespace Hydrogen.Tests {
 
     [TestFixture]
 	[Parallelizable(ParallelScope.Children)]
-    public class ScopeContextTest {
+    public class ContextScopeTest {
 
 
         [Test]
@@ -177,11 +177,11 @@ namespace Hydrogen.Tests {
         
         private bool ExceptionOccured(ContextScopePolicy rootPolicy, ContextScopePolicy childPolicy, int delay1 = 0, int delay2 = 0, int delay3 = 0) {
             try {
-                using (new ScopeContextDemo(rootPolicy)) {
+                using (new ContextScopeDemo(rootPolicy)) {
                     System.Threading.Thread.Sleep(delay1);
-                    using (new ScopeContextDemo(childPolicy)) {
+                    using (new ContextScopeDemo(childPolicy)) {
                         System.Threading.Thread.Sleep(delay2);
-                        using (new ScopeContextDemo(childPolicy)) {
+                        using (new ContextScopeDemo(childPolicy)) {
                             System.Threading.Thread.Sleep(delay3);
                         }
                     }
@@ -206,7 +206,7 @@ namespace Hydrogen.Tests {
         private async Task AsyncTest(params Tuple<ContextScopePolicy, int>[] policies) {
             if (policies.Any()) {
                 var head = policies.First();
-                using (new ScopeContextDemo(head.Item1)) {
+                using (new ContextScopeDemo(head.Item1)) {
                     System.Threading.Thread.Sleep(head.Item2);
                     var tail = policies.Skip(1).ToArray();
                     await AsyncTest(tail);
@@ -215,15 +215,15 @@ namespace Hydrogen.Tests {
         }
 
 
-        public class ScopeContextDemo : SyncContextScopeBase<ScopeContextDemo> {
+        public class ContextScopeDemo : SyncContextScopeBase<ContextScopeDemo> {
             
 
-            public ScopeContextDemo(ContextScopePolicy policy)
-                : base(policy, "ScopedContextDemo") {
+            public ContextScopeDemo(ContextScopePolicy policy)
+                : base(policy, "ContextScopeDemo") {
             }
 
 
-            protected override void OnScopeEnd(ScopeContextDemo rootScope, bool inException) {
+            protected override void OnScopeEnd(ContextScopeDemo rootContextScope, bool inException) {
             }
         }
     }

@@ -12,28 +12,30 @@
 //-----------------------------------------------------------------------
 
 using System;
+using System.Threading.Tasks;
 
-namespace Hydrogen {
+namespace Hydrogen;
 
-	public class ActionScope : SyncScopeBase {
-		private readonly Action _endAction;
+public class TaskScope : AsyncScopeBase {
+	private readonly Func<Task> _scopeFinalizer;
 
-        public ActionScope(Action endAction) {
-            _endAction = endAction;
-		}
-
-        protected override void OnScopeEnd() {
-            _endAction?.Invoke();
-        }
+	public TaskScope(Func<Task> scopeFinalizer) {
+		_scopeFinalizer = scopeFinalizer;
 	}
 
-    public class ActionScope<T> : ActionScope, IScope<T> {
-
-		public ActionScope(T item, Action<T> endAction) 
-			: base(() => endAction(item)) {
-			Item = item;
-		}
-
-		public T Item { get; }
+	protected override async ValueTask OnScopeEndAsync() {
+		if (_scopeFinalizer != null)
+			await _scopeFinalizer();
 	}
 }
+
+public class TaskScope<T> : TaskScope, IScope<T> {
+
+	public TaskScope(T item, Func<Task> scopeFinalizer)
+		: base(scopeFinalizer) {
+		Item = item;
+	}
+
+	public T Item { get; }
+}
+

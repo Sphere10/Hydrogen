@@ -1,32 +1,16 @@
 using System;
 using System.Threading.Tasks;
+using System.Threading.Tasks.Sources;
 
 namespace Hydrogen;
 
-public class Scope : Disposable, IScope {
-	public event EventHandlerEx ScopeEnd;
+public class Scope : ScopeBase {
 
-	protected virtual void OnScopeEnd() {
+	protected override void OnScopeEnd() {
 	}
 
-	protected virtual ValueTask OnScopeEndAsync() => new(Task.CompletedTask);
-
-	private void NotifyScopeEnd() {
-		OnScopeEnd();
-		ScopeEnd?.Invoke();
+	protected override async ValueTask OnScopeEndAsync() {
 	}
-
-	private async ValueTask NotifyScopeEndAsync() {
-		await OnScopeEndAsync();
-		await Task.Run(() => ScopeEnd?.Invoke());
-	}
-
-	protected override void FreeManagedResources()
-		=> NotifyScopeEnd();
-
-
-	protected override ValueTask FreeManagedResourcesAsync()
-		=> NotifyScopeEndAsync();
 
 }
 

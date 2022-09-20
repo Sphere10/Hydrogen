@@ -12,6 +12,8 @@
 //-----------------------------------------------------------------------
 
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -26,34 +28,36 @@ namespace Hydrogen {
 		/// <param name="task">The task</param>
 		/// <returns>Wrapped task</returns>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static Task IgnoringExceptions(this Task task)
-			=> task.IgnoringExceptionOfType<Exception>();
+		public static Task IgnoringExceptions(this Task task, ICollection<Exception> captureList = null)
+			=> task.IgnoringExceptionOfType<Exception>(captureList);
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static Task<T> IgnoringExceptions<T>(this Task<T> task)
-			=> task.IgnoringExceptionOfType<T, Exception>();
+		public static Task<T> IgnoringExceptions<T>(this Task<T> task, ICollection<Exception> captureList = null)
+			=> task.IgnoringExceptionOfType<T, Exception>(captureList);
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static Task IgnoringCancellationException(this Task task)
-			=> task.IgnoringExceptionOfType<OperationCanceledException>();
+		public static Task IgnoringCancellationException(this Task task, ICollection<Exception> captureList = null)
+			=> task.IgnoringExceptionOfType<OperationCanceledException>(captureList);
 		
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static Task<T> IgnoringCancellationException<T>(this Task<T> task)
-			=> task.IgnoringExceptionOfType<T, OperationCanceledException>();
+		public static Task<T> IgnoringCancellationException<T>(this Task<T> task, ICollection<Exception> captureList = null)
+			=> task.IgnoringExceptionOfType<T, OperationCanceledException>(captureList);
 
-        public static async Task IgnoringExceptionOfType<TException>(this Task task) where TException : Exception {
+        public static async Task IgnoringExceptionOfType<TException>(this Task task, ICollection<Exception> captureList = null) where TException : Exception {
         	try {
         		 await task;
-        	} catch (TException) {
+        	} catch (TException exception) {
+	            captureList?.Add(exception);
         	}
         }
 
-        public static async Task<T> IgnoringExceptionOfType<T, TException>(this Task<T> task) where TException : Exception {
+        public static async Task<T> IgnoringExceptionOfType<T, TException>(this Task<T> task, ICollection<Exception> captureList = null) where TException : Exception {
 			T result;
 			try {
 				result = await task;
-			} catch (TException) {
+			} catch (TException exception) {
 				result = default;
+				captureList?.Add(exception);
 			}
 			return result;
 		}

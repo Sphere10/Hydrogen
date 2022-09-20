@@ -103,7 +103,7 @@ namespace Hydrogen {
 			var scopeWasInOpenTransaction = _scopeHasOpenTransaction;
 			var errors = new List<Exception>();
 			if (Transaction != null && _scopeOwnsTransaction) {
-				Tools.Exceptions.ExecuteIgnoringException(CloseTransaction, errors);
+				Tools.Exceptions.ExecuteCapturingException(CloseTransaction, errors);
 			}
 
 			// Allow sub-class to cleanup

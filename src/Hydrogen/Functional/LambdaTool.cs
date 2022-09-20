@@ -74,12 +74,6 @@ namespace Tools {
                 };
         }
 
-        /// <summary>
-        /// Returns the action to run asyncronously (queued in the ThreadPool).
-        /// </summary>
-        /// <param name="action">The action</param>
-        /// <param name="dismissExceptions">Whether or not to propagate exceptions</param>
-        /// <returns></returns>
         public static Action ActionAsAsyncronous(Action action) => () => Task.Factory.StartNew(action.Invoke);
 
         public static Action<T1> ActionAsAsyncronous<T1>(Action<T1> action) => (a1) => Task.Factory.StartNew(() => action.Invoke(a1));

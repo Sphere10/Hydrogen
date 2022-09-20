@@ -29,11 +29,10 @@ namespace Tools {
 
 		public static string[] GetSerializableOrientedNames(Type enumType) 
 			// here we reverse the set to pick EnumValueAttribute/Description names with precedence
-			=> GetNameCandidates(enumType).Select(x => x.Reverse().First()).ToArray();  
+			=> GetNameCandidates(!enumType.IsNullable() ? enumType : Nullable.GetUnderlyingType(enumType)).Select(x => x.Reverse().First()).ToArray();  
 
 		public static string GetSerializableOrientedName(Enum @enum) 
 			=> GetEnumNameCandidates(@enum).Reverse().First();
-
 			
 		/// <summary>
 		/// For all enums, returns all their name candidates. An enum can have multiple serializable names based on attributes
@@ -45,7 +44,6 @@ namespace Tools {
 			foreach (var value in Enum.GetValues(enumType))
 				yield return GetEnumNameCandidates(value as Enum).ToArray();
 		}
-
 
 		public static IEnumerable<string> GetEnumNameCandidates(Enum @enum) {
 			yield return @enum.ToString();

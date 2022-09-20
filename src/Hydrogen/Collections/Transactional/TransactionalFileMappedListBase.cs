@@ -325,7 +325,7 @@ namespace Hydrogen {
 				foreach (var pageMarkers in _pageMarkers) {
 					foreach (var marker in pageMarkers) {
 						var path = GetMarkerFilename(pageMarkers.Key, marker);
-						Tools.Exceptions.ExecuteIgnoringException(() => File.Delete(path), exceptions);
+						Tools.Exceptions.ExecuteCapturingException(() => File.Delete(path), exceptions);
 					}
 				}
 				_pageMarkers.Clear();
@@ -337,7 +337,7 @@ namespace Hydrogen {
 				var exceptions = new List<Exception>();
 				foreach (var marker in _fileMarkers) {
 					var path = GetMarkerFilename(marker);
-					Tools.Exceptions.ExecuteIgnoringException(() => File.Delete(path), exceptions);
+					Tools.Exceptions.ExecuteCapturingException(() => File.Delete(path), exceptions);
 				}
 				_fileMarkers.Clear();
 				if (exceptions.Any())

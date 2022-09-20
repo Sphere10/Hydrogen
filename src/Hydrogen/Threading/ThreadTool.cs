@@ -80,10 +80,8 @@ namespace Tools {
                     try {
                         action();
                     } catch (Exception error) {
-                        using (errors.EnterWriteScope()) {
-                            errors.Add(error);
-                        }
-                    }
+                        errors.Add(error);
+					}
                     waitHandler.Set();
                 }
 

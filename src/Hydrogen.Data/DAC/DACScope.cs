@@ -111,8 +111,8 @@ namespace Hydrogen.Data {
 
 	    protected override void OnScopeEndInternal(DacScope rootScope, bool inException, List<Exception> errors) {
 	        if (_scopeOwnsConnection) {
-	            Tools.Exceptions.ExecuteIgnoringException(_connection.CloseInternal, errors);
-	            Tools.Exceptions.ExecuteIgnoringException(_connection.DisposeInternal, errors);
+	            Tools.Exceptions.ExecuteCapturingException(_connection.CloseInternal, errors);
+	            Tools.Exceptions.ExecuteCapturingException(_connection.DisposeInternal, errors);
 	            _connection = null;
 	        }
 	    }

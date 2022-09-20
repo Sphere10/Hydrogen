@@ -23,22 +23,22 @@ namespace Tools {
 
 	public static class Exceptions {
 
-        public static void ExecuteIgnoringException(Action action, Action<Exception> handler = null) {
-            Exception discard;
-            ExecuteIgnoringException(action, out discard);
-	        if (handler != null && discard != null) {
-		        ExecuteIgnoringException(()=> handler(discard));
-	        }
+		public static void ExecuteIgnoringException(Action action) 
+			=> ExecuteWithExceptionHandler(action, null);
+
+        public static void ExecuteWithExceptionHandler(Action action, Action<Exception> handler) {
+	        ExecuteCapturingException(action, out var exception);
+	        if (exception != null && handler != null) 
+		        ExecuteIgnoringException( () => handler(exception) );
         }
 
-        public static void ExecuteIgnoringException(Action action, ICollection<Exception> exceptionList) {
-            Exception error;
-            ExecuteIgnoringException(action, out error);
+        public static void ExecuteCapturingException(Action action, ICollection<Exception> exceptionList) {
+	        ExecuteCapturingException(action, out var error);
             if (error != null)
                 exceptionList.Add(error);
         }
 
-        public static void ExecuteIgnoringException(Action action, out Exception caughtError) {
+        public static void ExecuteCapturingException(Action action, out Exception caughtError) {
             try {
                 action();
                 caughtError = null;

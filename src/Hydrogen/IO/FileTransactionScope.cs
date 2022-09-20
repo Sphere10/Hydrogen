@@ -1,8 +1,9 @@
 using System;
+using System.Transactions;
 
 namespace Hydrogen {
 
-	public class FileTransactionScope : TransactionalScope<FileTransactionScope, FileTransaction> {
+	public class FileTransactionScope : TransactionalScope<FileTransaction> {
 		private const string ContextIDPrefix = "FileTransactionContext:71C280A0-7DEA-41C0-BCE6-CC34DD99BD64";
 
 		public FileTransactionScope(string baseDir, ContextScopePolicy policy = ContextScopePolicy.None) 
@@ -11,6 +12,7 @@ namespace Hydrogen {
 
 		private FileTransactionScope(string transactionFile, string uncommittedPageDir, ContextScopePolicy policy)
 			: base(policy,
+				//$"{ContextIDPrefix}:{transactionFile}",
 				ContextIDPrefix,
 				  (scope) => new FileTransaction(transactionFile, uncommittedPageDir),
 				  (scope, txn) => txn.Commit(),
@@ -21,6 +23,8 @@ namespace Hydrogen {
 		}
 
 		public string TransactionFile { get; }
+
+		public new FileTransactionScope RootScope => (FileTransactionScope)base.RootScope;
 
 		public ITransactionalFile EnlistFile(string filename, int pageSize, long maxMemory) {
 			CheckTransactionExists();
@@ -48,8 +52,8 @@ namespace Hydrogen {
 		}
 
 		public static FileTransactionScope GetCurrent() {
-			//return ContextScopeBase<FileTransactionScope>.GetCurrent(ToContextName(transactionFile));
-			return ContextScopeBase<FileTransactionScope>.GetCurrent(ContextIDPrefix);
+			//return ContextScope<FileTransactionScope>.GetCurrent(ToContextName(transactionFile));
+			return FileTransactionScope.GetCurrent(ContextIDPrefix);
 		}
 
 		public static void ProcessDanglingTransactions(string baseDir) {
@@ -58,7 +62,8 @@ namespace Hydrogen {
 			
 		}
 
-		//private static string ToContextName(Guid guid) => $"{ContextIDPrefix}{guid.ToStrictAlphaString()}";
+		protected new static FileTransactionScope GetCurrent(string contextID) 
+			=> TransactionalScope<FileTransaction>.GetCurrent(contextID) as FileTransactionScope;
 
 		private static string GenTransactionFileName() => $"FTXN_{Guid.NewGuid().ToStrictAlphaString()}.txn";
 	}

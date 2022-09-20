@@ -16,7 +16,7 @@ using System.Threading.Tasks;
 
 namespace Hydrogen;
 
-public class TaskScope : AsyncScopeBase {
+public class TaskScope : AsyncScope {
 	private readonly Func<Task> _scopeFinalizer;
 
 	public TaskScope(Func<Task> scopeFinalizer) {

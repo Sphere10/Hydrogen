@@ -1,16 +1,13 @@
-//using System.Threading.Tasks;
+using System.Threading.Tasks;
 
-//namespace Hydrogen;
+namespace Hydrogen;
 
-//public interface IContextScope : IScope {
-	
-//	string ContextID { get; }
+public interface IContextScope : IScope {
 
-//	void InitializeContext();
+	string ContextID { get; }
 
-//	ValueTask InitializeContextAsync();
+	ContextScopePolicy Policy { get; }
 
-//	void FinalizeContext();
+	IContextScope RootScope { get; }
 
-//	ValueTask FinalizeContextAsync();
-//}
+}

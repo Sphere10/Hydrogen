@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------
-// <copyright file="ActionScope.cs" company="Sphere 10 Software">
+// <copyright file="ContextScope.cs" company="Sphere 10 Software">
 //
 // Copyright (c) Sphere 10 Software. All rights reserved. (http://www.sphere10.com)
 //
@@ -7,7 +7,7 @@
 // LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
 //
 // <author>Herman Schoenfeld</author>
-// <date>2018</date>
+// <date>2022</date>
 // </copyright>
 //-----------------------------------------------------------------------
 
@@ -17,39 +17,76 @@ using System.Threading.Tasks;
 namespace Hydrogen;
 
 /// <summary>
-/// A ContextScope that implements both synchronous and asynchronous finalization.
+/// Base class to handle scopes which are aware of other scope instances activated within the call context. These can be
+/// used share state and behaviour within the disparate call contexts (e.g. to implement database style commit/abort transactional scopes).
 /// </summary>
-public sealed class ContextScope : ContextScopeBase<ContextScope> {
-	private readonly Func<Task> _asyncRootScopeFinalizer;
-	private readonly Func<Task> _asyncThisScopeFinalizer;
-	private readonly Action _syncRootScopeFinalizer;
-	private readonly Action _syncThisScopeFinalizer;
-	private readonly bool _invokeOnException;
-	public ContextScope(Action syncRootScopeFinalizer, Func<Task> asyncRootScopeFinalizer, Action syncThisScopeFinalizer,
-	                        Func<Task> asyncThisFinalizer, ContextScopePolicy policy, string contextID,
-	                        bool invokeOnException = true) : base(policy, contextID) {
-		_asyncRootScopeFinalizer = asyncRootScopeFinalizer;
-		_asyncThisScopeFinalizer = asyncThisFinalizer;
-		_syncRootScopeFinalizer = syncRootScopeFinalizer;
-		_syncThisScopeFinalizer = syncThisScopeFinalizer;
-		_invokeOnException = invokeOnException;
-	}
-	
-	protected override void OnScopeEnd(ContextScope rootScope, bool inException) {
-		if (!inException || inException && _invokeOnException) {
-			_syncThisScopeFinalizer?.Invoke();
-			if (base.IsRootScope)
-				_syncRootScopeFinalizer?.Invoke();
+public abstract class ContextScope : ScopeBase, IContextScope {
+
+	protected ContextScope(ContextScopePolicy policy, string contextID) {
+		Guard.ArgumentNotNullOrWhitespace(contextID, nameof(contextID));
+		Policy = policy;
+		ContextID = contextID;
+		if (CallContext.LogicalGetData(ContextID) is IContextScope contextObject) {
+			// Nested
+			if (Policy == ContextScopePolicy.MustBeRoot)
+				throw new SoftwareException($"A scope context '{contextID}' has already been declared within the calling context");
+			RootScope = contextObject;
+		} else {
+			// Root
+			if (Policy == ContextScopePolicy.MustBeNested)
+				throw new SoftwareException($"No scope context '{contextID}' exists within the calling context");
+			RootScope = this;
+			CallContext.LogicalSetData(ContextID, this);
+			OnContextStart();
 		}
 	}
 
-	protected override async ValueTask OnScopeEndAsync(ContextScope rootScope, bool inException) {
-		if (!inException || inException && _invokeOnException) {
-			if (_asyncThisScopeFinalizer != null)
-				await _asyncThisScopeFinalizer();
-			if (base.IsRootScope)
-				await _asyncRootScopeFinalizer?.Invoke();
+	/// <summary>
+	/// An identifier used to distinguish scopes types within a call context. This generally 1-1 to the repository
+	/// instance name that the scope context is being used on.
+	/// </summary>
+	public string ContextID { get; }
+
+	public ContextScopePolicy Policy { get; }
+
+	public IContextScope RootScope { get; }
+
+	protected bool IsRootScope => Object.ReferenceEquals(this, RootScope);
+
+	protected bool InException { get; set; }
+
+	protected sealed override void OnScopeEnd() {
+		InException = Tools.Runtime.IsInExceptionContext();
+		OnScopeEndInternal();
+		if (IsRootScope) {
+			CallContext.LogicalSetData(ContextID, null);
+			OnContextEnd();
 		}
 	}
 
+	protected sealed override async ValueTask OnScopeEndAsync() {
+		InException = Tools.Runtime.IsInExceptionContext();
+		await OnScopeEndInternalAsync();
+		if (IsRootScope) {
+			CallContext.LogicalSetData(ContextID, null);
+			await OnContextEndAsync();
+		}
+	}
+
+	protected virtual void OnScopeEndInternal() {
+	}
+
+	protected virtual async ValueTask OnScopeEndInternalAsync() {
+	}
+
+	protected virtual void OnContextStart() {
+	}
+
+	protected abstract void OnContextEnd();
+
+	protected abstract ValueTask OnContextEndAsync();
+
+	protected static IContextScope GetCurrent(string contextID) {
+		return CallContext.LogicalGetData(contextID) as IContextScope;
+	}
 }

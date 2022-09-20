@@ -18,7 +18,7 @@ using System.Data;
 
 namespace Hydrogen.Data {
 
-	public sealed class DacScope : TransactionalScope<DacScope, IDbTransaction> {
+	public sealed class DacScope : TransactionalScope<IDbTransaction> {
         private const string DefaultContextPrefix = "EA9CC911-C209-42B9-B113-84562706145D";
         private const string ContextNameTemplate = "DacScope:{0}:{1}";
         private readonly bool _scopeOwnsConnection;
@@ -29,7 +29,7 @@ namespace Hydrogen.Data {
 			: base(
 				  policy, 
 				  string.Format(ContextNameTemplate, contextPrefix, dac.ConnectionString),
-				  (scope) => scope._connection.BeginTransactionInternal(scope._transactionIsolationLevel), 
+				  (scope) => ((DacScope)scope)._connection.BeginTransactionInternal(((DacScope)scope)._transactionIsolationLevel), 
 				  (scope, txn) => ((RestrictedTransaction)txn).DangerousInternalTransaction.Commit(),
 				  (scope, txn) => ((RestrictedTransaction)txn).DangerousInternalTransaction.Rollback(),
 				  (scope, txn) => ((RestrictedTransaction)txn).DangerousInternalTransaction.Dispose(),
@@ -52,6 +52,8 @@ namespace Hydrogen.Data {
                 DAC.EnlistInSystemTransaction(_connection.DangerousInternalConnection, System.Transactions.Transaction.Current);
 			_transactionIsolationLevel = DAC.DefaultIsolationLevel;
 		}
+
+		public new DacScope RootScope => (DacScope)base.RootScope;
 
         public IDAC DAC { get; internal set; }
 
@@ -109,7 +111,7 @@ namespace Hydrogen.Data {
 			base.Commit();
 	    }
 
-	    protected override void OnScopeEndInternal(DacScope rootScope, bool inException, List<Exception> errors) {
+	    protected override void OnTransactionalScopeEnd(List<Exception> errors) {
 	        if (_scopeOwnsConnection) {
 	            Tools.Exceptions.ExecuteCapturingException(_connection.CloseInternal, errors);
 	            Tools.Exceptions.ExecuteCapturingException(_connection.DisposeInternal, errors);
@@ -118,11 +120,11 @@ namespace Hydrogen.Data {
 	    }
 
 	    public new static DacScope GetCurrent(string connectionString) {
-	        return ContextScopeBase<DacScope>.GetCurrent(string.Format(ContextNameTemplate, DefaultContextPrefix, connectionString));
+	        return ContextScope.GetCurrent(string.Format(ContextNameTemplate, DefaultContextPrefix, connectionString)) as DacScope;
 	    }
 
         public static DacScope GetCurrent(string connectionString, string contextPrefix) {
-            return ContextScopeBase<DacScope>.GetCurrent(string.Format(ContextNameTemplate, contextPrefix, connectionString));
+            return ContextScope.GetCurrent(string.Format(ContextNameTemplate, contextPrefix, connectionString)) as DacScope;
         }
     
 	}

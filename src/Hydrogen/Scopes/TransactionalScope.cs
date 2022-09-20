@@ -3,28 +3,28 @@ using System.Collections.Generic;
 
 namespace Hydrogen {
 
-	public abstract class TransactionalScope<TScope, TTransaction> : SyncContextScopeBase<TScope>
-		where TScope : TransactionalScope<TScope, TTransaction> { 
+	// Note: needs refactoring to support async impl
+	public abstract class TransactionalScope<TTransaction> : SyncContextScope { 
 
 		private bool _scopeOwnsTransaction;
-		private TScope _transactionOwner;
+		private TransactionalScope<TTransaction> _transactionOwner;
 		private bool _scopeHasOpenTransaction;
 		private bool _voteRollback;
-		private readonly Func<TScope, TTransaction> _beginTransactionFunc;
-		private readonly Action<TScope, TTransaction> _commitTransactionFunc;
-		private readonly Action<TScope, TTransaction> _rollbackTransactionFunc;
-		private readonly Action<TScope, TTransaction> _disposeTransactionFunc;
+		private readonly Func<IContextScope, TTransaction> _beginTransactionFunc;
+		private readonly Action<IContextScope, TTransaction> _commitTransactionFunc;
+		private readonly Action<IContextScope, TTransaction> _rollbackTransactionFunc;
+		private readonly Action<IContextScope, TTransaction> _disposeTransactionFunc;
 		private TransactionAction? _defaultCloseAction;
 
 		protected TransactionalScope(
 			ContextScopePolicy policy,
-			string contextId,
-			Func<TScope, TTransaction> beginTransactionFunc,
-			Action<TScope, TTransaction> commitTransactionFunc,
-			Action<TScope, TTransaction> rollbackTransactionFunc,
-			Action<TScope, TTransaction> disposeTransactionFunc,
+			string contextID,
+			Func<IContextScope, TTransaction> beginTransactionFunc,
+			Action<IContextScope, TTransaction> commitTransactionFunc,
+			Action<IContextScope, TTransaction> rollbackTransactionFunc,
+			Action<IContextScope, TTransaction> disposeTransactionFunc,
 			TransactionAction? defaultCloseAction = null)
-			: base(policy, contextId) {
+			: base(policy, contextID) {
 
 			if (IsRootScope) {
 				Transaction = default;
@@ -45,15 +45,17 @@ namespace Hydrogen {
 		}
 
 		public TTransaction Transaction { get; private set; }
+		
+		public new TransactionalScope<TTransaction> RootScope => (TransactionalScope<TTransaction>)base.RootScope;
 
 		public virtual void BeginTransaction() {
 			if (Transaction == null) {
-				Transaction = _beginTransactionFunc((TScope)this);
+				Transaction = _beginTransactionFunc(this);
 				_scopeOwnsTransaction = true;
-				_transactionOwner = (TScope)this;
+				_transactionOwner = this;
 				// make sure child scopes can see this transaction and owner by placing it in rootscope (cleaned up on exit)
 				RootScope.Transaction = Transaction;
-				RootScope._transactionOwner = (TScope)this;
+				RootScope._transactionOwner = this;
 			} else {
 				// if this is the parent scope, error
 				if (_scopeOwnsTransaction)
@@ -68,7 +70,7 @@ namespace Hydrogen {
 		public virtual void Rollback() {
 			CheckTransactionExists();
 			if (_scopeOwnsTransaction) {
-				_rollbackTransactionFunc((TScope)this, Transaction);
+				_rollbackTransactionFunc(this, Transaction);
 			} else {
 				_transactionOwner._voteRollback = true;
 			}
@@ -79,16 +81,16 @@ namespace Hydrogen {
 			CheckTransactionExists();
 			if (_scopeOwnsTransaction) {
 				if (!_voteRollback) {
-					_commitTransactionFunc((TScope)this, Transaction);
+					_commitTransactionFunc(this, Transaction);
 				} else {
-					_rollbackTransactionFunc((TScope)this, Transaction);
+					_rollbackTransactionFunc(this, Transaction);
 				}
 			}
 			CloseTransaction();
 		}
 
-		protected sealed override void OnScopeEnd(TScope rootScope, bool inException) {
-			if (!inException && _scopeHasOpenTransaction && _defaultCloseAction.HasValue) {
+		protected sealed override void OnScopeEndInternal() {
+			if (!InException && _scopeHasOpenTransaction && _defaultCloseAction.HasValue) {
 				switch (_defaultCloseAction.Value) {
 					case TransactionAction.Commit:
 						Commit();
@@ -107,13 +109,13 @@ namespace Hydrogen {
 			}
 
 			// Allow sub-class to cleanup
-			OnScopeEndInternal(rootScope, inException, errors);
+			OnTransactionalScopeEnd(errors);
 
-			if (scopeWasInOpenTransaction && !inException) {
+			if (scopeWasInOpenTransaction && !InException) {
 				errors.Add(new SoftwareException("DacScope transaction was left open. Please call Commit or Rollback explicitly to close the transaction."));
 			}
 
-			if (!inException) {
+			if (!InException) {
 				switch (errors.Count) {
 					case 0:
 						break;
@@ -125,7 +127,11 @@ namespace Hydrogen {
 			}
 		}
 
-		protected virtual void OnScopeEndInternal(TScope rootScope, bool inException, List<Exception> errors) {
+		protected override void OnContextEnd() {
+			// nothing to do, handled by scope end
+		}
+
+		protected virtual void OnTransactionalScopeEnd(List<Exception> errors) {
 		}
 
 		/// <summary>
@@ -140,7 +146,7 @@ namespace Hydrogen {
 
 				// dispose transaction and remove from root scope
 				if (Transaction != null) {
-					_disposeTransactionFunc((TScope)this, Transaction);
+					_disposeTransactionFunc(this, Transaction);
 					Transaction = default;
 					RootScope.Transaction = default;
 				}

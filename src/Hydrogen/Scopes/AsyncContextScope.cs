@@ -1,26 +1,11 @@
-using System;
-using System.Threading.Tasks;
-
 namespace Hydrogen;
 
-public sealed class AsyncContextScope : AsyncContextScopeBase<AsyncContextScope> {
-	private readonly Func<Task> _contextFinalizer;
-	private readonly Func<Task> _scopeFinalizer;
-	private readonly bool _invokeOnException;
-
-	public AsyncContextScope(Func<Task> contextFinalizer, Func<Task> scopeFinalizer, ContextScopePolicy policy, string contextName, bool invokeOnException = true) : base(policy, contextName) {
-		_contextFinalizer = contextFinalizer;
-		_scopeFinalizer = scopeFinalizer;
-		_invokeOnException = invokeOnException;
+public abstract class AsyncContextScope : ContextScope {
+	protected AsyncContextScope(ContextScopePolicy policy, string contextID) : base(policy, contextID) {
 	}
 
-	protected override async ValueTask OnScopeEndAsync(AsyncContextScope rootScope, bool inException) {
-		if (!inException || inException && _invokeOnException) {
-			if (_scopeFinalizer != null)
-				await _scopeFinalizer();
+	protected sealed override void OnScopeEndInternal() => OnScopeEndAsync().AsTask().WaitSafe();
 
-			if (IsRootScope && _contextFinalizer != null)
-				await _contextFinalizer();
-		}
-	}
+	protected sealed override void OnContextEnd() => OnContextEndAsync().AsTask().WaitSafe();
+
 }

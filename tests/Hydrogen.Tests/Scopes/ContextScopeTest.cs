@@ -13,6 +13,7 @@
 
 using System;
 using System.Linq;
+
 using System.Threading.Tasks;
 using NUnit.Framework;
 
@@ -104,8 +105,18 @@ namespace Hydrogen.Tests {
         }
 
         [Test]
+        public async Task TestNested_None_None_Async2() {
+            Assert.False(await ExceptionOccuredAsync2(ContextScopePolicy.None, ContextScopePolicy.None));
+        }
+
+        [Test]
         public void TestNested_None_MustBeNested_Async() {
             Assert.False(ExceptionOccuredAsync(ContextScopePolicy.None, ContextScopePolicy.MustBeNested));
+        }
+
+        [Test]
+        public async Task TestNested_None_MustBeNested_Async2() {
+            Assert.False(await ExceptionOccuredAsync2(ContextScopePolicy.None, ContextScopePolicy.MustBeNested));
         }
 
         [Test]
@@ -114,8 +125,18 @@ namespace Hydrogen.Tests {
         }
 
         [Test]
+        public async Task TestNested_None_MustBeRoot_Async2() {
+            Assert.True(await ExceptionOccuredAsync2(ContextScopePolicy.None, ContextScopePolicy.MustBeRoot));
+        }
+
+        [Test]
         public void TestNested_MustBeNested_None_Async() {
             Assert.True(ExceptionOccuredAsync(ContextScopePolicy.MustBeNested, ContextScopePolicy.None));
+        }
+
+        [Test]
+        public async Task TestNested_MustBeNested_None_Async2() {
+            Assert.True(await ExceptionOccuredAsync2(ContextScopePolicy.MustBeNested, ContextScopePolicy.None));
         }
 
         [Test]
@@ -124,8 +145,18 @@ namespace Hydrogen.Tests {
         }
 
         [Test]
+        public async Task TestNested_MustBeNested_MustBeNested_Async2() {
+            Assert.True(await ExceptionOccuredAsync2(ContextScopePolicy.MustBeNested, ContextScopePolicy.MustBeNested));
+        }
+
+        [Test]
         public void TestNested_MustBeNested_MustBeRoot_Async() {
             Assert.True(ExceptionOccuredAsync(ContextScopePolicy.MustBeNested, ContextScopePolicy.MustBeRoot));
+        }
+
+        [Test]
+        public async Task TestNested_MustBeNested_MustBeRoot_Async2() {
+            Assert.True(await ExceptionOccuredAsync2(ContextScopePolicy.MustBeNested, ContextScopePolicy.MustBeRoot));
         }
 
         [Test]
@@ -134,8 +165,18 @@ namespace Hydrogen.Tests {
         }
 
         [Test]
+        public async Task TestNested_MustBeRoot_None_Async2() {
+            Assert.False(await ExceptionOccuredAsync2(ContextScopePolicy.MustBeRoot, ContextScopePolicy.None));
+        }
+
+        [Test]
         public void TestNested_MustBeRoot_MustBeNested_Async() {
             Assert.False(ExceptionOccuredAsync(ContextScopePolicy.MustBeRoot, ContextScopePolicy.MustBeNested));
+        }
+
+        [Test]
+        public async Task TestNested_MustBeRoot_MustBeNested_Async2() {
+            Assert.False(await ExceptionOccuredAsync2(ContextScopePolicy.MustBeRoot, ContextScopePolicy.MustBeNested));
         }
 
 
@@ -146,10 +187,21 @@ namespace Hydrogen.Tests {
 
 
         [Test]
+        public async Task TestNested_MustBeRoot_MustBeRoot_Async2() {
+            Assert.True(await ExceptionOccuredAsync2(ContextScopePolicy.MustBeRoot, ContextScopePolicy.MustBeRoot));
+        }
+
+        [Test]
         public void MultiThreaded_0_Async() {
             Assert.IsTrue(Enumerable.Range(1, 10).All(x => !ExceptionOccuredAsync(ContextScopePolicy.MustBeRoot, ContextScopePolicy.MustBeNested, Tools.Maths.RNG.Next(0, 100), Tools.Maths.RNG.Next(0, 100), Tools.Maths.RNG.Next(0, 100))));
         }
 
+        //[Test]
+        //public async Task MultiThreaded_0_Async2() {
+        //    Assert.IsTrue(AsyncEnumerable.Range(1, 10).AllAsync(async x => await !ExceptionOccuredAsync2(ContextScopePolicy.MustBeRoot, ContextScopePolicy.MustBeNested, Tools.Maths.RNG.Next(0, 100), Tools.Maths.RNG.Next(0, 100), Tools.Maths.RNG.Next(0, 100))
+            
+        //    ));
+        //}
 
         [Test]
         public void MultiThreaded_1_Async() {
@@ -201,6 +253,15 @@ namespace Hydrogen.Tests {
             return false;
         }
 
+        
+        private async Task<bool> ExceptionOccuredAsync2(ContextScopePolicy rootPolicy, ContextScopePolicy childPolicy, int delay1 = 0, int delay2 = 0, int delay3 = 0) {
+            try {
+                await AsyncTest2(Tuple.Create(rootPolicy, delay1), Tuple.Create(childPolicy, delay2), Tuple.Create(ContextScopePolicy.None, delay3));
+            } catch (Exception error) {
+                return true;
+            }
+            return false;
+        }
 
 
         private async Task AsyncTest(params Tuple<ContextScopePolicy, int>[] policies) {
@@ -214,16 +275,30 @@ namespace Hydrogen.Tests {
             }
         }
 
+        private async Task AsyncTest2(params Tuple<ContextScopePolicy, int>[] policies) {
+            if (policies.Any()) {
+                var head = policies.First();
+                await using (new ContextScopeDemo(head.Item1)) {
+                    await Task.Delay(head.Item2);
+                    var tail = policies.Skip(1).ToArray();
+                    await AsyncTest2(tail);
+                }
+            }
+        }
 
-        public class ContextScopeDemo : SyncContextScopeBase<ContextScopeDemo> {
+
+
+        public class ContextScopeDemo : SyncContextScope {
             
 
             public ContextScopeDemo(ContextScopePolicy policy)
                 : base(policy, "ContextScopeDemo") {
             }
 
+            protected override void OnScopeEndInternal() {
+            }
 
-            protected override void OnScopeEnd(ContextScopeDemo rootContextScope, bool inException) {
+            protected override void OnContextEnd() {
             }
         }
     }

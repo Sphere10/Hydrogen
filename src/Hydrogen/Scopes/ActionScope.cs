@@ -15,7 +15,7 @@ using System;
 
 namespace Hydrogen {
 
-	public class ActionScope : SyncScopeBase {
+	public class ActionScope : SyncScope {
 		private readonly Action _endAction;
 
         public ActionScope(Action endAction) {

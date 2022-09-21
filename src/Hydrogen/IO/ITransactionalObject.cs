@@ -1,3 +1,5 @@
+using System.Threading.Tasks;
+
 namespace Hydrogen {
 
 	public interface ITransactionalObject {
@@ -8,9 +10,15 @@ namespace Hydrogen {
 		event EventHandlerEx<object> RolledBack; 
 
 		void Commit();
+		
+		Task CommitAsync();
 
 		void Rollback();
 
+		Task RollbackAsync();
+
 	}
+
+
 
 }

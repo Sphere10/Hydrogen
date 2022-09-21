@@ -240,10 +240,6 @@ namespace Hydrogen {
             Task.Run(() => task.Wait(cancellationToken), cancellationToken);
         }
 
-        public static void RunSyncronouslySafe(this Task task) {
-            Task.Run(task.RunSynchronously);
-        }
-
         public static T ResultSafe<T>(this Task<T> task) {
             return Task.Run(() => task.Result).Result;
         }

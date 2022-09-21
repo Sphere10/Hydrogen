@@ -1,3 +1,5 @@
+using Hydrogen;
+
 namespace Hydrogen;
 
 public abstract class AsyncContextScope : ContextScope {

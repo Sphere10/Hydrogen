@@ -35,7 +35,7 @@ namespace Hydrogen {
 
 		public static IEnumerable<object> LogicalSearchData(string prefix) {
 			using (State.EnterReadScope()) {
-				foreach(var (key, _) in State) {
+				foreach (var (key, _) in State) {
 					if (key.StartsWith(prefix))
 						yield return key;
 				}

@@ -5,7 +5,7 @@ namespace Hydrogen;
 
 public abstract class SyncScope : ScopeBase {
 
-	protected sealed override async ValueTask OnScopeEndAsync() => OnScopeEnd();
+	protected sealed override async ValueTask OnScopeEndAsync() => await Task.Run(OnScopeEnd);
 
 
 }

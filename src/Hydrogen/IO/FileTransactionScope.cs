@@ -1,30 +1,34 @@
 using System;
-using System.Transactions;
 
 namespace Hydrogen {
 
-	public class FileTransactionScope : TransactionalScope<FileTransaction> {
+	public class FileTransactionScope : SyncTransactionalScope<FileTransaction> {
 		private const string ContextIDPrefix = "FileTransactionContext:71C280A0-7DEA-41C0-BCE6-CC34DD99BD64";
-
+		
 		public FileTransactionScope(string baseDir, ContextScopePolicy policy = ContextScopePolicy.None) 
 		   : this(GenTransactionFileName(), baseDir, policy) {
 		}
 
 		private FileTransactionScope(string transactionFile, string uncommittedPageDir, ContextScopePolicy policy)
-			: base(policy,
-				//$"{ContextIDPrefix}:{transactionFile}",
-				ContextIDPrefix,
-				  (scope) => new FileTransaction(transactionFile, uncommittedPageDir),
-				  (scope, txn) => txn.Commit(),
-				  (scope, txn) => txn.Rollback(),
-				  (scope, txn) => txn.Dispose(),
-				  TransactionAction.Rollback) {
+			: base(policy, ContextIDPrefix) {
+			DefaultCloseAction = TransactionAction.Rollback;
 			TransactionFile = this.IsRootScope ? transactionFile : RootScope.TransactionFile;
+			PagePath = uncommittedPageDir;
 		}
 
 		public string TransactionFile { get; }
 
+		public string PagePath { get; }
+
 		public new FileTransactionScope RootScope => (FileTransactionScope)base.RootScope;
+
+		protected override FileTransaction BeginTransactionInternal() => new(TransactionFile, PagePath);
+
+		protected override void CloseTransactionInternal(FileTransaction transaction) => transaction.Dispose();
+
+		protected override void CommitInternal(FileTransaction transaction) => transaction.Commit();
+
+		protected override void RollbackInternal(FileTransaction transaction) => transaction.Rollback();
 
 		public ITransactionalFile EnlistFile(string filename, int pageSize, long maxMemory) {
 			CheckTransactionExists();
@@ -63,7 +67,7 @@ namespace Hydrogen {
 		}
 
 		protected new static FileTransactionScope GetCurrent(string contextID) 
-			=> TransactionalScope<FileTransaction>.GetCurrent(contextID) as FileTransactionScope;
+			=> ActionTransactionalScope<FileTransaction>.GetCurrent(contextID) as FileTransactionScope;
 
 		private static string GenTransactionFileName() => $"FTXN_{Guid.NewGuid().ToStrictAlphaString()}.txn";
 	}

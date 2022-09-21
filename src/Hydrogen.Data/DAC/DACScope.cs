@@ -14,27 +14,21 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
-
+using Tools;
 
 namespace Hydrogen.Data {
 
-	public sealed class DacScope : TransactionalScope<IDbTransaction> {
+	public sealed class DacScope : SyncTransactionalScope<IDbTransaction> {
         private const string DefaultContextPrefix = "EA9CC911-C209-42B9-B113-84562706145D";
         private const string ContextNameTemplate = "DacScope:{0}:{1}";
         private readonly bool _scopeOwnsConnection;
 	    private RestrictedConnection _connection;
 	    private bool _withinSystemTransactionScope;
 		private IsolationLevel _transactionIsolationLevel;
+
 		internal DacScope(IDAC dac, ContextScopePolicy policy, bool openConnection, string contextPrefix = DefaultContextPrefix, TransactionAction? defaultCloseAction = null)
-			: base(
-				  policy, 
-				  string.Format(ContextNameTemplate, contextPrefix, dac.ConnectionString),
-				  (scope) => ((DacScope)scope)._connection.BeginTransactionInternal(((DacScope)scope)._transactionIsolationLevel), 
-				  (scope, txn) => ((RestrictedTransaction)txn).DangerousInternalTransaction.Commit(),
-				  (scope, txn) => ((RestrictedTransaction)txn).DangerousInternalTransaction.Rollback(),
-				  (scope, txn) => ((RestrictedTransaction)txn).DangerousInternalTransaction.Dispose(),
-				  defaultCloseAction
-				) {
+			: base(policy, string.Format(ContextNameTemplate, contextPrefix, dac.ConnectionString)) {
+			DefaultCloseAction = defaultCloseAction;
 			DAC = dac ?? throw new ArgumentNullException(nameof(dac));
 		    if (IsRootScope) {
                 _connection = new RestrictedConnection( DAC.CreateConnection());
@@ -110,6 +104,18 @@ namespace Hydrogen.Data {
 	        }
 			base.Commit();
 	    }
+
+	    protected override IDbTransaction BeginTransactionInternal()
+			=> _connection.BeginTransactionInternal(_transactionIsolationLevel);
+
+		protected override void CloseTransactionInternal(IDbTransaction transaction) 
+			=> ((RestrictedTransaction)transaction).DangerousInternalTransaction.Dispose();
+
+	    protected override void CommitInternal(IDbTransaction transaction) 
+			=> ((RestrictedTransaction)transaction).DangerousInternalTransaction.Commit();
+
+	    protected override void RollbackInternal(IDbTransaction transaction) 
+			=> ((RestrictedTransaction)transaction).DangerousInternalTransaction.Rollback();
 
 	    protected override void OnTransactionalScopeEnd(List<Exception> errors) {
 	        if (_scopeOwnsConnection) {

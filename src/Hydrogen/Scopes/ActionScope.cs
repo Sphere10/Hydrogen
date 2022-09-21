@@ -13,27 +13,27 @@
 
 using System;
 
-namespace Hydrogen {
+namespace Hydrogen;
 
-	public class ActionScope : SyncScope {
-		private readonly Action _endAction;
+public class ActionScope : SyncScope {
+	private readonly Action _endAction;
 
-        public ActionScope(Action endAction) {
-            _endAction = endAction;
-		}
-
-        protected override void OnScopeEnd() {
-            _endAction?.Invoke();
-        }
+	public ActionScope(Action endAction) {
+		_endAction = endAction;
 	}
 
-    public class ActionScope<T> : ActionScope, IScope<T> {
-
-		public ActionScope(T item, Action<T> endAction) 
-			: base(() => endAction(item)) {
-			Item = item;
-		}
-
-		public T Item { get; }
+	protected override void OnScopeEnd() {
+		_endAction?.Invoke();
 	}
 }
+
+public class ActionScope<T> : ActionScope, IScope<T> {
+
+	public ActionScope(T item, Action<T> endAction)
+		: base(() => endAction(item)) {
+		Item = item;
+	}
+
+	public T Item { get; }
+}
+

@@ -51,7 +51,7 @@ public abstract class ContextScope : ScopeBase, IContextScope {
 
 	public IContextScope RootScope { get; }
 
-	protected bool IsRootScope => Object.ReferenceEquals(this, RootScope);
+	protected bool IsRootScope => ReferenceEquals(this, RootScope);
 
 	protected bool InException { get; set; }
 

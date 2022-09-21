@@ -40,5 +40,5 @@ public class ActionContextScope : SyncContextScope {
 		if (!InException || InException && _invokeOnException && _contextFinalizer != null)
 			_contextFinalizer();
 	}
-	
+
 }

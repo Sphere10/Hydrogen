@@ -103,7 +103,11 @@ namespace Hydrogen {
 
 		public void Commit() => _transactionalBuffer.Commit();
 
+		public async Task CommitAsync() => Commit();
+
 		public void Rollback() => _transactionalBuffer.Rollback();
+
+		public async Task RollbackAsync() => Rollback();
 
 		public void Dispose() {
 			_transactionalBuffer?.Dispose();

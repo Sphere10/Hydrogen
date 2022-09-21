@@ -17,6 +17,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Hydrogen {
 
@@ -86,6 +87,8 @@ namespace Hydrogen {
 			NotifyCommitted();
 		}
 
+		public Task CommitAsync() => Task.Run(Commit);
+
 		public void Rollback() {
 			CheckScopeInStatusIfExists(FileTransactionState.RollingBack);
 			NotifyRollingBack();
@@ -99,6 +102,8 @@ namespace Hydrogen {
 			Load();
 			NotifyRolledBack();
 		}
+
+		public Task RollbackAsync() => Task.Run(Rollback);
 
 		public override void Dispose() {
 			if (PageMarkerRepo.FileMarkers.Any() || PageMarkerRepo.PageMarkers.Any())

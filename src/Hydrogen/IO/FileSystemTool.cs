@@ -342,9 +342,17 @@ namespace Tools {
             DeleteDirectories(false, directories);
         }
 
+        public static Task DeleteDirectoriesAsync(params string[] directories) 
+			=> DeleteDirectoriesAsync(false, directories);
+
         public static void DeleteDirectories(bool ignoreIfLocked, params string[] directories) {
             foreach (var dir in directories)
                 DeleteDirectory(dir, ignoreIfLocked);
+        }
+
+        public static async Task DeleteDirectoriesAsync(bool ignoreIfLocked, params string[] directories) {
+	        foreach (var dir in directories)
+		        await DeleteDirectoryAsync(dir, ignoreIfLocked);
         }
 		
         public static Task DeleteDirectoryAsync(string directory, bool ignoreIfLocked = false) {

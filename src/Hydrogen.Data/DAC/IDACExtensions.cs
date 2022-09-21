@@ -19,18 +19,18 @@ using System.Linq;
 namespace Hydrogen.Data {
 	public static class IDACExtensions {
 
-        public static DacScope BeginScope(this IDAC dac, bool openConnection = true, ContextScopePolicy policy = ContextScopePolicy.None) {
+        public static DACScope BeginScope(this IDAC dac, bool openConnection = true, ContextScopePolicy policy = ContextScopePolicy.None) {
             if (dac.UseScopeOsmosis)
-                return new DacScope(dac, policy, openConnection);
+                return new DACScope(dac, policy, openConnection);
 
             if (policy == ContextScopePolicy.MustBeNested)
                 throw new ArgumentException("Policy cannot be MustBeNested for DAC that uses direct connections (i.e. UseScopeOsmosis == false).", "policy");
 
-            return new DacScope(dac, ContextScopePolicy.None, openConnection, string.Format("{0}:", dac.InstanceID.ToStrictAlphaString()));
+            return new DACScope(dac, ContextScopePolicy.None, openConnection, string.Format("{0}:", dac.InstanceID.ToStrictAlphaString()));
         }
 
-        public static DacScope BeginDirtyReadScope(this IDAC dac, bool openConnection = true) {
-            var scope = new DacScope(dac, ContextScopePolicy.None, openConnection, defaultCloseAction: TransactionAction.Rollback);
+        public static DACScope BeginDirtyReadScope(this IDAC dac, bool openConnection = true) {
+            var scope = new DACScope(dac, ContextScopePolicy.None, openConnection, defaultCloseAction: TransactionAction.Rollback);
             scope.BeginTransaction(IsolationLevel.ReadUncommitted);
             return scope;
         }

@@ -13,6 +13,7 @@
 
 using System;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Hydrogen {
 
@@ -38,7 +39,7 @@ namespace Hydrogen {
 	///				}
 	///			}
 	/// </example>
-	public class SingleApplicationInstanceScope : IDisposable {
+	public class SingleApplicationInstanceScope : SyncScope {
 		public Mutex _mutex;
 
 		public SingleApplicationInstanceScope(bool throwInsteadOfQuit = false, int exitCode = -1) {
@@ -52,9 +53,10 @@ namespace Hydrogen {
 			}
 		}
 
-		public void Dispose() {
+		protected override void OnScopeEnd() {
 			((IDisposable)_mutex).Dispose();
 		}
+
 	}
 
 }

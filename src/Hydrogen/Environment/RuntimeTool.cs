@@ -16,12 +16,13 @@ using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading.Tasks;
 using Hydrogen;
 
 // ReSharper disable CheckNamespace
 namespace Tools {
 
-    public static class Runtime {
+	public static class Runtime {
         private static readonly object _threadLock = new object();
         private static bool _hasDeterminedDesignMode = false;
         private static bool _isDesignMode = false;

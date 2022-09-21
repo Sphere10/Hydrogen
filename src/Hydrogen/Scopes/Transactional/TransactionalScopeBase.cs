@@ -4,7 +4,11 @@ using System.Threading.Tasks;
 
 namespace Hydrogen;
 
-// Note: needs refactoring to support async impl
+/// <summary>
+/// Base implementation of <see cref="ITransactionalScope"/> suitable for implementing ACID
+/// transactions in a repository.
+/// </summary>
+/// <typeparam name="TTransaction">Type of transaction</typeparam>
 public abstract class TransactionalScopeBase<TTransaction> : ContextScope, ITransactionalScope {
 
 	public event EventHandlerEx<object> Committing;
@@ -281,7 +285,6 @@ public abstract class TransactionalScopeBase<TTransaction> : ContextScope, ITran
 		}
 	}
 
-
 	protected override void OnContextEnd() {
 		// nothing to do since handled by scope end
 	}
@@ -293,32 +296,27 @@ public abstract class TransactionalScopeBase<TTransaction> : ContextScope, ITran
 	protected virtual void OnTransactionalScopeEnd(List<Exception> errors) {
 	}
 
-	protected virtual async Task OnTransactionalScopeEndAsync(List<Exception> errors) {
-	}
+	protected virtual Task OnTransactionalScopeEndAsync(List<Exception> errors) => Task.CompletedTask;
 
 	protected virtual void OnCommitting() {
 	}
 
-	protected virtual async Task OnCommittingAsync() {
-	}
+	protected virtual Task OnCommittingAsync() => Task.CompletedTask;
 
 	protected virtual void OnCommitted() {
 	}
 
-	protected virtual async Task OnCommittedAsync() {
-	}
+	protected virtual Task OnCommittedAsync() => Task.CompletedTask;
 
 	protected virtual void OnRollingBack() {
 	}
 
-	protected virtual async Task OnRollingBackAsync() {
-	}
+	protected virtual Task OnRollingBackAsync() => Task.CompletedTask;
 
 	protected virtual void OnRolledBack() {
 	}
 
-	protected virtual async Task OnRolledBackAsync() {
-	}
+	protected virtual Task OnRolledBackAsync() => Task.CompletedTask;
 
 	private void NotifyCommitting() {
 		OnCommitting();

@@ -2,7 +2,7 @@ using System;
 
 namespace Hydrogen;
 
-public interface IScope : IAsyncDisposable, IDisposable {
+public interface IScope : IDisposable, IAsyncDisposable {
 	event EventHandlerEx ScopeEnd;
 }
 

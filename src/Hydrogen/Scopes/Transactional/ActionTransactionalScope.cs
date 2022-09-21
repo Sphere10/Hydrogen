@@ -2,7 +2,6 @@ using System;
 
 namespace Hydrogen;
 
-// Note: needs refactoring to support async impl
 public sealed class ActionTransactionalScope<TTransaction> : SyncTransactionalScope<TTransaction> {
 
 	private readonly Func<TTransaction> _beginTransactionFunc;

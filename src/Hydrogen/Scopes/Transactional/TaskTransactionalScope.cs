@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 
 namespace Hydrogen;
 
-// Note: needs refactoring to support async impl
 public sealed class TaskTransactionalScope<TTransaction> : AsyncTransactionalScope<TTransaction> {
 
 	private readonly Func<Task<TTransaction>> _beginTransactionFunc;

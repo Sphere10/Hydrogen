@@ -38,6 +38,28 @@ namespace Tools {
 			CrossPlatformForbiddenFileNames = new [] { "CON", "PRN", "AUX", "NUL", "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9", ".", ".."};
         }
 
+
+		public static IDisposable MonitorFile(string filePath, Action<WatcherChangeTypes, string> handler) {
+			var watcher = new FileSystemWatcher();
+			watcher.Path = Path.GetDirectoryName(filePath);
+			watcher.Filter = Path.GetFileName(filePath);
+			watcher.EnableRaisingEvents = true;
+			watcher.Changed += (_, args) => {
+				handler.Invoke(args.ChangeType, filePath);
+			};
+			watcher.Deleted += (_, args) => {
+				handler.Invoke(WatcherChangeTypes.Deleted, filePath);
+			};
+			watcher.Created += (_, args) => {
+				handler.Invoke(WatcherChangeTypes.Created, filePath);
+			};
+			watcher.Renamed  += (_, args) => {
+				handler.Invoke(WatcherChangeTypes.Renamed, filePath);
+			};
+
+			return new Disposables(watcher);
+		}
+
 		public static byte[] CalculateContentHash(string filename, CHF chf) {
 			using var fileStream = File.OpenRead(filename);
 			using var hashingStream = new HashingStream(chf);

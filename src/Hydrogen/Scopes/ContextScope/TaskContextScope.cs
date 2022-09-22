@@ -19,13 +19,15 @@ public sealed class TaskContextScope : AsyncContextScope {
 	}
 
 	protected override async ValueTask OnScopeEndInternalAsync() {
-		if (!InException || InException && _invokeOnException && _scopeFinalizer != null)
-			await _scopeFinalizer();
+		if (!InException || InException && _invokeOnException)
+			if (_scopeFinalizer != null)
+				await _scopeFinalizer();
 	}
 
 	protected override async ValueTask OnContextEndAsync() {
-		if (!InException || InException && _invokeOnException && _contextFinalizer != null)
-			await _contextFinalizer();
+		if (!InException || InException && _invokeOnException)
+			if (_contextFinalizer != null)
+				await _contextFinalizer();
 	}
 
 }

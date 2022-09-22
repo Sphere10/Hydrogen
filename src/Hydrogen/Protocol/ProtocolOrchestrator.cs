@@ -131,7 +131,7 @@ namespace Hydrogen.Communications {
 			State = ProtocolOrchestratorState.Finished;
 		}
 
-		public Task RunToEnd() => RunToEnd(new CancellationTokenSource().Token);
+		public Task RunToEnd() => RunToEnd(default);
 
 		public async Task RunToEnd(CancellationToken cancellationToken) {
 			CheckState(ProtocolOrchestratorState.Started);

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Threading.Tasks;
 
 namespace Hydrogen;
@@ -41,6 +42,8 @@ public abstract class TransactionalScopeBase<TTransaction> : ContextScope, ITran
 	public TransactionAction? DefaultCloseAction { get; init; } = null;
 
 	public TTransaction Transaction { get; private set; }
+
+	public virtual bool ParticipatesWithinTransaction => Transaction != null;
 
 	public new TransactionalScopeBase<TTransaction> RootScope => (TransactionalScopeBase<TTransaction>)base.RootScope;
 

@@ -261,6 +261,10 @@ namespace Hydrogen.Windows.Forms {
             }
         }
 
+		[Category("LoadingCircle")]
+		[Description("Shows this control when animating and hides it when stopped")]
+		public Control HideStopControl { get; set; }
+		
 
 
         // Construtor ========================================================
@@ -366,18 +370,23 @@ namespace Hydrogen.Windows.Forms {
 
             if (containerToDisable != null) {
                 _parentContainerToDisable = containerToDisable;
-                _exclusionControls = exclusionControls.Union(this).ToArray();
+                _exclusionControls = exclusionControls.Union(this).Union( Tools.Collection.AsEnumerable(HideStopControl) ).ToArray();
                 _parentContainerToDisable.EnableChildren(false, _exclusionControls);
                 //this.Parent.Enabled = false;
                 this.Enabled = true;
             }
             this.Visible = true;
             this.Active = true;
+			if (HideStopControl != null)
+				HideStopControl.Visible = true;
         }
 
         public void StopAnimating() {
             this.Active = false;
             this.Visible = false;
+            if (HideStopControl != null)
+	            HideStopControl.Visible = false;
+
             if (_parentContainerToDisable != null) {
                 _parentContainerToDisable.EnableChildren(true, _exclusionControls);
             }
@@ -413,9 +422,11 @@ namespace Hydrogen.Windows.Forms {
             });
         }
 
-        public IDisposable BeginAnimationScope(Control containerToDisable = null, params Control[] exclusionControls) {
-            StartAnimating(containerToDisable, exclusionControls);
-            return new ActionScope(StopAnimating);
+        public IDisposable BeginAnimationScope() => BeginAnimationScope(null);
+
+        public IDisposable BeginAnimationScope(Control containerToDisable, params Control[] exclusionControls) {
+	        StartAnimating(containerToDisable, exclusionControls);
+	        return new ActionScope(StopAnimating);
         }
 
         //[Obsolete("Use BeginAnimationScope")]

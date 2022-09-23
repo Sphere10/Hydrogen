@@ -17,16 +17,21 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Hydrogen;
+using Void = Hydrogen.Void;
 
 // ReSharper disable CheckNamespace
 namespace Tools {
 
 	public static class Collection {
 
-			public static IEnumerable<object> Infinity {
+			public static IEnumerable<T> AsEnumerable<T>(T item) where T : class
+				=> item != null ? new[] { item } : Enumerable.Empty<T>();
+			
+
+			public static IEnumerable<Void> Infinity {
 				get {
 					while (true)
-						yield return null;
+						yield return Void.Value;
 				}
 			}
 

@@ -86,6 +86,7 @@ namespace Tools {
                     lock (_threadLock) {
                         if (!_hasDeterminedDesignMode) {
                             var processName = Process.GetCurrentProcess().ProcessName.ToUpperInvariant();
+							
                             //System.IO.File.AppendAllText("c:/temp/a.txt", processName);
                             _isDesignMode = processName.IsIn("DEVENV", "SHARPDEVELOP", "DESIGNTOOLSSERVER");
                             _hasDeterminedDesignMode = true;

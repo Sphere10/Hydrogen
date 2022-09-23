@@ -21,6 +21,7 @@ using System.Net;
 using System.Text.RegularExpressions;
 using System.Diagnostics;
 using Hydrogen;
+using Debug = System.Diagnostics.Debug;
 
 // ReSharper disable CheckNamespace
 namespace Tools {

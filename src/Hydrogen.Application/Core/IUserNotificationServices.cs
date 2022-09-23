@@ -13,29 +13,28 @@
 
 using System;
 
-namespace Hydrogen.Application {
+namespace Hydrogen.Application;
 
 
-	public interface IUserNotificationServices  {
+public interface IUserNotificationServices {
 
-		void ShowSendCommentDialog();
+	void ShowSendCommentDialog();
 
-		void ShowSubmitBugReportDialog();
+	void ShowSubmitBugReportDialog();
 
-		void ShowRequestFeatureDialog();
+	void ShowRequestFeatureDialog();
 
-		void ShowAboutBox();
+	void ShowAboutBox();
 
-		void ReportError(Exception e);
+	void ReportError(Exception e);
 
-		void ReportError(string msg);
+	void ReportError(string msg);
 
-		void ReportError(string title, string msg);
+	void ReportError(string title, string msg);
 
-		void ReportFatalError(string title, string msg);
+	void ReportFatalError(string title, string msg);
 
-		void ReportInfo(string title, string msg);
+	void ReportInfo(string title, string msg);
 
-		bool AskYN(string question);
-	}
+	bool AskYN(string question);
 }

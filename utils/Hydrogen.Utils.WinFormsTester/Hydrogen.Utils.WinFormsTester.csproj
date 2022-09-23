@@ -40,9 +40,7 @@
 			<AutoGen>True</AutoGen>
 			<DependentUpon>Resources.resx</DependentUpon>
 		</Compile>
-		<Compile Update="Screens\TransactionalCollectionScreen.cs">
-		  <SubType>UserControl</SubType>
-		</Compile>
+		<Compile Update="Screens\TransactionalCollectionScreen.cs" />
 		<Compile Update="Screens\WAMSTestScreen.cs" />
 		<Compile Update="Wizard\DemoWizardScreenBase.cs" />
 		<Compile Update="Wizard\EnterAgeScreen.cs" />

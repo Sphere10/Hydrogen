@@ -1,0 +1,3 @@
+﻿Move Hydrogen.Windows.Forms/Application interfaces/clases into here
+
+Make them cross-platform for macOS, Windows, Linux, Blazor applications

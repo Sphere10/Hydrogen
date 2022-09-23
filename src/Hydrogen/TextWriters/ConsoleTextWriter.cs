@@ -16,7 +16,7 @@ namespace Hydrogen {
 	/// <summary>
 	/// TextWriter which outputs to Console.
 	/// </summary>
-	public class ConsoleTextWriter : BaseTextWriter {
+	public class ConsoleTextWriter : SyncTextWriter {
 
 		protected override void InternalWrite(string value) {
 			System.Console.Write(value);

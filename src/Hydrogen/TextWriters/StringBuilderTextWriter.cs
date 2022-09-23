@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------
-// <copyright file="TextBoxWriter.cs" company="Sphere 10 Software">
+// <copyright file="Action.cs" company="Sphere 10 Software">
 //
 // Copyright (c) Sphere 10 Software. All rights reserved. (http://www.sphere10.com)
 //
@@ -12,25 +12,23 @@
 //-----------------------------------------------------------------------
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Windows.Forms;
-using Hydrogen;
 
-namespace Hydrogen.Windows.Forms;
-public class TextBoxWriter : SyncTextWriter {
-	private readonly TextBox _textBox;
+namespace Hydrogen;
 
-	public TextBoxWriter(TextBox textBox) {
-		_textBox = textBox;
+
+public class StringBuilderTextWriter : SyncTextWriter {
+
+	public StringBuilderTextWriter() : this(new StringBuilder()) {}
+
+	public StringBuilderTextWriter(StringBuilder stringBuilder) {
+		Builder = stringBuilder;
 	}
+
+	public StringBuilder Builder { get; }
 
 	protected override void InternalWrite(string value) {
-		_textBox.InvokeEx(() => {
-			if (!_textBox.IsDisposed)
-				_textBox.AppendText(value);
-		});
+		Builder.Append(value);
 	}
-}
 
+}

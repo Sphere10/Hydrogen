@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------
-// <copyright file="ActionTextWriterDecorator.cs" company="Sphere 10 Software">
+// <copyright file="TextWriterTransformer.cs" company="Sphere 10 Software">
 //
 // Copyright (c) Sphere 10 Software. All rights reserved. (http://www.sphere10.com)
 //
@@ -17,11 +17,11 @@ using System.IO;
 namespace Hydrogen {
 
 
-	public sealed class ActionTextWriterDecorator : TextWriterDecorator {
+	public sealed class TextWriterTransformer : TextWriterDecorator {
 
 		private readonly Func<string, string> valueMutator;
 
-		public ActionTextWriterDecorator(Func<string, string> valueMutator, TextWriter internalTextWrtier) : base(internalTextWrtier) {
+		public TextWriterTransformer(Func<string, string> valueMutator, TextWriter internalTextWrtier) : base(internalTextWrtier) {
 			if (valueMutator == null) {
 				throw new ArgumentNullException("valueMutator");
 			}

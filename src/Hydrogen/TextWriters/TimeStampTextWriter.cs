@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------
-// <copyright file="TimeStampTextWriterDecorator.cs" company="Sphere 10 Software">
+// <copyright file="TimeStampTextWriter.cs" company="Sphere 10 Software">
 //
 // Copyright (c) Sphere 10 Software. All rights reserved. (http://www.sphere10.com)
 //
@@ -20,15 +20,15 @@ namespace Hydrogen {
 	/// Decorates a TextWriter by applying time-stamp to the message.
 	/// </summary>
 	/// <remarks></remarks>
-	public class TimeStampTextWriterDecorator : TextWriterDecorator<TextWriter> {
+	public class TimeStampTextWriter : TextWriterDecorator<TextWriter> {
 		public const string DefaultDateFormat = "yyyy-MM-dd HH:mm:ss";
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="TimeStampTextWriterDecorator"/> class.
+		/// Initializes a new instance of the <see cref="TimeStampTextWriter"/> class.
 		/// </summary>
 		/// <param name="plug">The plug.</param>
 		/// <remarks></remarks>
-		public TimeStampTextWriterDecorator(TextWriter plug, string dateFormat = DefaultDateFormat, DateTimeKind dateTimeKind = DateTimeKind.Utc)
+		public TimeStampTextWriter(TextWriter plug, string dateFormat = DefaultDateFormat, DateTimeKind dateTimeKind = DateTimeKind.Utc)
 			: base(plug) {
 				DateFormat = dateFormat;
 		}

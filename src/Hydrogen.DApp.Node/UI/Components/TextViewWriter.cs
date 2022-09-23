@@ -3,7 +3,7 @@ using Terminal.Gui;
 
 namespace Hydrogen.DApp.Node.UI {
 
-	public class TextViewWriter : BaseTextWriter {
+	public class TextViewWriter : SyncTextWriter {
 		private readonly TextView _textBox;
 
 		public TextViewWriter(TextView textBox) {

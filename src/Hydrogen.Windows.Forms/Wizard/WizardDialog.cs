@@ -38,6 +38,8 @@ namespace Hydrogen.Windows.Forms {
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         internal new bool Closing { get; private set; }
 
+		public Size DialogSizeOverhead => new Size( Width - _contentPanel.Width, Height - _contentPanel.Height );
+
         public async Task SetContent(WizardScreen<T> screen) {
             if (_contentPanel.Controls.Count > 0) {
                 _contentPanel.RemoveAllControls();                
@@ -69,7 +71,6 @@ namespace Hydrogen.Windows.Forms {
         protected override void OnFormClosed(FormClosedEventArgs e) {
             base.OnFormClosed(e);
         }
-
 
         private async void _previousButton_Click(object sender, EventArgs e) {
             try {

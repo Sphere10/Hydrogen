@@ -61,6 +61,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="System.Data.SqlClient" Version="4.8.3" />
+		<PackageReference Include="System.ServiceProcess.ServiceController" Version="6.0.0" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -68,6 +69,7 @@
 		<ProjectReference Include="..\Hydrogen.Data\Hydrogen.Data.csproj" />
 		<ProjectReference Include="..\Hydrogen.Drawing\Hydrogen.Drawing.csproj" />
 		<ProjectReference Include="..\Hydrogen.Windows\Hydrogen.Windows.csproj" />
+		<ProjectReference Include="..\Hydrogen\Hydrogen.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -83,6 +85,9 @@
 		<Compile Update="Application\Controls\ApplicationBanner.cs" />
 		<Compile Update="Application\Controls\ApplicationBanner.Designer.cs">
 			<DependentUpon>ApplicationBanner.cs</DependentUpon>
+		</Compile>
+		<Compile Update="Controls\ServiceStatusControl.cs">
+		  <SubType>UserControl</SubType>
 		</Compile>
 		<Compile Update="Forms\ApplicationForm.cs" />
 		<Compile Update="Application\Controls\BasicContactDetailsControl.cs" />

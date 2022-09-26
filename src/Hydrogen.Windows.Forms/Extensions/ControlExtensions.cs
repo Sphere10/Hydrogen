@@ -177,7 +177,6 @@ namespace Hydrogen {
                         child.Enabled = enabled;
                     }
                     child.EnableChildrenInternal(nestingLevel + 1, enabled, preserveControls);
-
                 }
             }
             if (nestingLevel == 0) {

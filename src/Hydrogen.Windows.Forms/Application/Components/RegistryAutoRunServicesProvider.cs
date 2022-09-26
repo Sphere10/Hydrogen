@@ -74,13 +74,13 @@ namespace Hydrogen.Windows.Forms {
 			RegistryKey key;
 			switch (type) {
 				case AutoRunType.AllUsers:
-					key = Registry.LocalMachine.OpenSubKey("Software\\Microsoft\\Windows\\CurrentVersion\\Run");
+					key = Registry.LocalMachine.OpenSubKey("Software\\Microsoft\\Windows\\CurrentVersion\\RunAsync");
 					break;
 				case AutoRunType.AllUsersRunOnce:
 					key = Registry.LocalMachine.OpenSubKey("Software\\Microsoft\\Windows\\CurrentVersion\\RunOnce");
 					break;
 				case AutoRunType.CurrentUser:
-					key = Registry.CurrentUser.OpenSubKey("Software\\Microsoft\\Windows\\CurrentVersion\\Run");
+					key = Registry.CurrentUser.OpenSubKey("Software\\Microsoft\\Windows\\CurrentVersion\\RunAsync");
 					break;
 				case AutoRunType.CurrentUserRunOnce:
 					key = Registry.CurrentUser.OpenSubKey("Software\\Microsoft\\Windows\\CurrentVersion\\RunRunOnce");

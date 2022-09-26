@@ -128,7 +128,7 @@ namespace Hydrogen.Windows.Forms {
                 await screen.Initialize();
             var maxWidth = _screens.Value.Max(x => x.Size.Width);
             var maxHeight = _screens.Value.Max(x => x.Size.Height);
-            _dialog.Size = new Size(maxWidth, maxHeight);
+            _dialog.Size = new Size(maxWidth, maxHeight) + _dialog.DialogSizeOverhead;
             await PresentScreen(_screens.Value[_currentScreenIndex]);
             _dialog.Show(_owner);
             await tcs.Task;
@@ -145,18 +145,7 @@ namespace Hydrogen.Windows.Forms {
             await _currentVisibleScreen.OnNext();
             if (HasNext) {
                 await PresentScreen(_screens.Value[++_currentScreenIndex]);
-            } else {
-                var finishResult = await Finish();
-                if (finishResult.Failure) {
-	                DialogEx.Show(_dialog, SystemIconType.Error, "Error", finishResult.ErrorMessages.ToParagraphCase(true), "OK");
-                    WizardResult = WizardResult.Error;
-                    return;
-                } else
-                    WizardResult = WizardResult.Success;
-                FireFinishedEvent();
-                _dialog.CloseDialog();
-                Dispose();
-            }
+            } else await Complete();
         }
 
         public async Task Previous() {
@@ -179,6 +168,8 @@ namespace Hydrogen.Windows.Forms {
             formsToRemove.ForEach(f => _screens.Value.Remove(f));
         }
 
+        public void RemoveSubsequentScreensOfType<U>() => RemoveSubsequentScreensOfType(typeof(U));
+
         public async Task InjectScreen(WizardScreen<T> screen) {
             CheckStarted();
             await screen.Initialize();
@@ -189,6 +180,27 @@ namespace Hydrogen.Windows.Forms {
         public void RemoveScreen(WizardScreen<T> screen) {
             _screens.Value.Remove(screen);
         }
+
+
+		protected async Task Complete() {
+			var validation = await Validate();
+			if (validation.Failure) {
+				DialogEx.Show(_dialog, SystemIconType.Error, "Error", validation.ErrorMessages.ToParagraphCase(), "OK");
+				return;
+			};
+			var finishResult = await Finish();
+			if (finishResult.Failure) {
+				DialogEx.Show(_dialog, SystemIconType.Error, "Error", finishResult.ErrorMessages.ToParagraphCase(true), "OK");
+				WizardResult = WizardResult.Error;
+				return;
+			} else
+				WizardResult = WizardResult.Success;
+			FireFinishedEvent();
+			_dialog.CloseDialog();
+			await DisposeAsync();
+		}
+
+		protected virtual Task<Result> Validate() => Task.FromResult(Result.Default);
 
         protected abstract Task<Result> Finish();
 

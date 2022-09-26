@@ -77,7 +77,7 @@ namespace DevAge.Data
 		protected virtual void SaveToFile(DataSet pDataSet)
 		{
 			if (m_FileName == null)
-				throw new ApplicationException("FileName is null");
+				throw new ApplicationException("ExecutableFileName is null");
 			
 			byte[] completeByteArray;
 			using (System.IO.MemoryStream fileMemStream = new System.IO.MemoryStream())
@@ -132,7 +132,7 @@ namespace DevAge.Data
 		protected virtual DataSet LoadFromFile()
 		{
 			if (m_FileName == null)
-				throw new ApplicationException("FileName is null");
+				throw new ApplicationException("ExecutableFileName is null");
 
 			System.Xml.XmlDocument xmlDoc = new System.Xml.XmlDocument();
 			xmlDoc.Load(m_FileName);

@@ -35,5 +35,8 @@ namespace Hydrogen.Windows.Forms {
         Task InjectScreen(WizardScreen<T> screen);
         void RemoveScreen(WizardScreen<T> screen);
         void RemoveSubsequentScreensOfType(Type type);
+        void RemoveSubsequentScreensOfType<U>();
+
     }
+
 }

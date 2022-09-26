@@ -74,7 +74,7 @@ namespace DevAge.Windows.Forms
 		#endregion
 
 		private PositionRecorderIsolatedStorage m_Setting = new PositionRecorderIsolatedStorage();
-		[Description("Isolated Storage FileName where the form save the position information")]
+		[Description("Isolated Storage ExecutableFileName where the form save the position information")]
 		public virtual string StorageFileName
 		{
 			get{return m_Setting.StorageFileName;}

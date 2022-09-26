@@ -7,15 +7,17 @@ using System.Threading.Tasks;
 namespace Hydrogen;
 
 public class ProcessSentry {
-	
 	private readonly SynchronizedObject _lock;
 	private Process _runningProcess;
-	public ProcessSentry(string fileName) {
-		FileName = fileName;
+
+	public ProcessSentry(string executableFileName) {
+		ExecutableFileName = executableFileName;
+		_lock = new SynchronizedObject();
 	}
 
+	public string ExecutableFileName { get; }
 
-	public string FileName { get; init; }
+	public TextWriter Output { get; init; } = new NoOpTextWriter();
 
 	protected Process RunningProcess => _runningProcess;
 
@@ -23,24 +25,35 @@ public class ProcessSentry {
 			DefaultBreakProcess(_runningProcess);
 	}
 
-	public virtual async Task<bool> CanRun(CancellationToken cancellationToken = default)  {
+	public virtual async Task RunWithErrorCodeCheckAsync(string arguments = null, int expectedErrorCode = 0, CancellationToken cancellationToken = default) {
+		using (_lock.EnterWriteScope()) {
+			var stringBuilderTextWriter = new StringBuilderTextWriter();
+
+			var errorCode = await RunAsync(arguments, cancellationToken);
+			if (errorCode != expectedErrorCode)
+				throw new ProcessSentryException(ExecutableFileName, errorCode, stringBuilderTextWriter.Builder.ToString());
+		}
+	}
+
+	public virtual async Task<int> RunAsync(string arguments = null, CancellationToken cancellationToken = default)  {
+		using (_lock.EnterWriteScope() ) {
+			_runningProcess = new Process();
+			var _ = new ActionDisposable(() => _runningProcess = null);
+			return await  RunProcess(_runningProcess, ExecutableFileName, arguments, Output, cancellationToken);
+		}
+	}
+
+	public static async Task<bool> CanRunAsync(string executableFileName, CancellationToken cancellationToken = default)  {
 		try {
-			await RunProcess(FileName, null, null, cancellationToken);
+			var sentry = new ProcessSentry(executableFileName);
+			await sentry.RunAsync(cancellationToken: cancellationToken);
 		} catch {
 			return false;
 		}
 		return true;
 	}
-
-	public virtual async Task<int> Run(string arguments = null, TextWriter output = null, CancellationToken cancellationToken = default)  {
-		using (_lock.EnterWriteScope() ) {
-			_runningProcess = new Process();
-			var _ = new ActionDisposable(() => _runningProcess = null);
-			return await  RunProcess(_runningProcess, FileName, arguments, output, cancellationToken);
-		}
-	}
-
-	public static Task<int> RunProcess(string fileName, string arguments = null,  TextWriter output = null, CancellationToken cancellationToken = default) 
+	
+	public static Task<int> RunAsync(string fileName, string arguments = null, TextWriter output = null, CancellationToken cancellationToken = default) 
 		=> RunProcess(new Process(), fileName, arguments, output, cancellationToken);
 	
 	private static async Task<int> RunProcess(Process process, string fileName, string arguments = null,  TextWriter output = null, CancellationToken cancellationToken = default) {
@@ -51,6 +64,7 @@ public class ProcessSentry {
 		process.StartInfo.UseShellExecute = false; 
 		process.StartInfo.CreateNoWindow = true;
 		process.StartInfo.RedirectStandardInput = true;
+		process.StartInfo.Verb = "runas";
 
 		if (output != null) {
 			process.StartInfo.RedirectStandardOutput = true;
@@ -75,7 +89,7 @@ public class ProcessSentry {
 		
 	}
 
-	public static void DefaultBreakProcess(Process process) {
+	private static void DefaultBreakProcess(Process process) {
 		process.StandardInput.Close(); // sends ctrl-c (but doesn't work 99% of time)
 	}
 }

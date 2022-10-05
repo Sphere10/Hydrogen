@@ -26,7 +26,7 @@ public class NssmSentry : ProcessSentry {
 
 	public Task RemoveAsync(string name, CancellationToken cancellationToken = default) {
 		Guard.ArgumentNotNull(name, nameof(name));
-		return base.RunWithErrorCodeCheckAsync($"remove \"{name}\"", cancellationToken: cancellationToken);
+		return base.RunWithErrorCodeCheckAsync($"remove \"{name}\" confirm", cancellationToken: cancellationToken);
 	}
 
 	public Task StartAsync(string name, CancellationToken cancellationToken = default) {

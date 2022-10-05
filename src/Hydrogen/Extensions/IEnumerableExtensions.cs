@@ -27,6 +27,10 @@ namespace Hydrogen {
 
 	public static class IEnumerableExtensions {
 
+		
+		public static IEnumerable<TItem> Distinct<TItem, TKey>(this IEnumerable<TItem> enumerable, Func<TItem, TKey> projection, IEqualityComparer<TKey> comparer = null) 
+			=> enumerable.Distinct(new ProjectionEqualityComparer<TItem, TKey>(projection, comparer));
+
 		public static IEnumerable<TResult> TakeUntilInclusive<TResult>(this IEnumerable<TResult> data, Predicate<TResult> predicate) {
             using var enumerator = data.GetEnumerator();
             while (enumerator.MoveNext()) {

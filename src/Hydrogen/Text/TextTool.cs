@@ -17,6 +17,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.IO;
+using System.Linq.Expressions;
 using System.Text.RegularExpressions;
 using Hydrogen;
 using static System.Net.Mime.MediaTypeNames;
@@ -24,8 +25,90 @@ using static System.Net.Mime.MediaTypeNames;
 // ReSharper disable CheckNamespace
 namespace Tools {
 
-
 	public static class Text {
+
+		public static object ToCasing(TextCasing style, string text, bool isVariableName = false, char defaultVariableFirstChar = '_') {
+			var separator = style switch {
+				TextCasing.PascalCase => string.Empty,
+				TextCasing.CamelCase => string.Empty,
+				TextCasing.SnakeCase => "_",
+				TextCasing.KebabCase => "-",
+				_ => throw new NotSupportedException(style.ToString())
+			};
+
+			 text = Regex
+				.Replace(text, 
+				// (Match any non punctuation) & then ignore any punctuation
+				@"([^(\p{P}\s)]+)[\p{P}\s]*", 
+				match => {
+					var word = match.Groups[1].Value;
+					if (string.IsNullOrEmpty(word))
+						return string.Empty;
+					
+					var firstChar = style switch {
+						TextCasing.PascalCase => char.ToUpperInvariant(word[0]),
+						TextCasing.CamelCase => char.ToLowerInvariant(word[0]),
+						TextCasing.SnakeCase => char.ToUpperInvariant(word[0]),
+						TextCasing.KebabCase => char.ToLowerInvariant(word[0]),
+						_ => throw new NotSupportedException(style.ToString())
+					};
+
+					// Flip to PascalCase after first match
+					if (style == TextCasing.CamelCase)
+						style = TextCasing.PascalCase;
+
+					var rest = word.Substring(1);
+					if (!string.IsNullOrEmpty(rest)) {
+						rest = style switch {
+							TextCasing.PascalCase => PascalizeTail(firstChar, rest),
+							TextCasing.CamelCase => PascalizeTail(firstChar, rest),
+							TextCasing.SnakeCase => rest.ToUpperInvariant(),
+							TextCasing.KebabCase => rest.ToLowerInvariant(),
+							_ => throw new NotSupportedException(style.ToString())
+						};
+					}
+
+					return $"{separator}{firstChar}{rest}";
+				})
+				.TrimStart(separator.ToCharArray()); 
+
+
+			if (isVariableName && text.Length > 0) {
+				if (!char.IsLetter(text[0]) && text[0] != '_')
+					text = defaultVariableFirstChar + text;
+			}
+			return text;
+
+			string PascalizeTail(char startChar, string value) {
+				// This processes the tail section of a string (same for Pascal or Camel case)
+				// This starts as lower
+				var sb = new StringBuilder();
+				var inUpperCase = char.IsUpper(startChar);
+				for(var i = 0; i < value.Length; i++) {
+					var ch = value[i];
+					switch(inUpperCase) {
+						case false:
+							if (char.IsUpper(ch))
+								inUpperCase = true;
+							else if (i == 0 && char.IsDigit(startChar) || i > 0 && char.IsDigit(value[i-1]))
+								ch = char.ToUpperInvariant(ch);
+
+							sb.Append(ch);
+							break;
+						case true:
+							if (char.IsLower(ch)) {
+								inUpperCase = false;
+							} else {
+								ch = char.ToLowerInvariant(ch);
+							}
+							sb.Append(ch);
+							break;
+					}
+				}
+				return sb.ToString();
+			}
+
+		}
 
 		public static IEnumerable<string> FindSentencesWithText(string paragraph, string text) {
 			/*
@@ -187,5 +270,5 @@ namespace Tools {
             }
         }
 
-    }
+	}
 }

@@ -54,6 +54,13 @@ namespace Hydrogen {
 			return result;
 		}
 
+        public override bool ContainsCachedItem(object key) {
+			if (_fetchCount == 0) {
+				ForceRefresh();
+			}
+			return base.ContainsCachedItem(key);
+		}
+
 	    public override void Remove(object key) {
 	        throw new NotSupportedException("Items cannot be manually removed from a bulk fetch cache");
 	    }

@@ -27,6 +27,18 @@ namespace Tools {
 		static readonly Regex InvalidChars = new Regex(@"[^a-z0-9\-]", RegexOptions.Compiled); // characters that are not valid
 		static readonly Regex MultipleHyphens = new Regex(@"-{2,}", RegexOptions.Compiled); // multiple hyphens
 
+		public static string StripAnchorTag(string url) {
+			var ix = url.LastIndexOf('#');
+			if (ix != -1) {
+				url = url.Substring(0, ix);
+			}
+			return url;
+		}
+
+		public static string ToHtmlDOMObjectID(string text, string prefix) {
+			return prefix + ToUrlSlug(text);
+		}
+
 		public static string ToUrlSlug(string value) {
 			// convert to lower case
 			value = value.ToLowerInvariant();
@@ -46,11 +58,7 @@ namespace Tools {
 			// trim hyphens (-) from ends
 			return value.Trim('-');
 		}
-
-		public static string CodeNameForUrl(string s) {
-			return s.ToCamelCase(false, true, '-');
-		}
-
+		
 		public static string EncodeUrl(string s) {
 			return EncodeUrl(s, null);
 		}

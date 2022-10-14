@@ -35,7 +35,7 @@ namespace Hydrogen {
             IEqualityComparer<TKey> keyComparer = null,
             ICacheReaper reaper = null)
         : base(reapStrategy, expirationStrategy, maxCapacity, expirationDuration, nullValuePolicy, staleValuePolicy, keyComparer, reaper) {
-			Guard.ArgumentNotNull(_fetchFunc, nameof(valueFetcher));
+			Guard.ArgumentNotNull(valueFetcher, nameof(valueFetcher));
             _fetchFunc = valueFetcher;
             _estimateSizeFunc = sizeEstimator;
             _stalenessChecker = stalenessChecker;

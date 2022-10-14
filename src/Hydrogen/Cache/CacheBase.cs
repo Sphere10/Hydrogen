@@ -19,6 +19,7 @@ namespace Hydrogen {
 
 	public abstract class CacheBase : SynchronizedObject, ICache, IDisposable {
 
+		public event EventHandlerEx<object> ItemFetching;
 		public event EventHandlerEx<object, object> ItemFetched;
 		public event EventHandlerEx<object, CachedItem> ItemRemoved;
 
@@ -31,6 +32,7 @@ namespace Hydrogen {
             long maxCapacity = int.MaxValue,
             TimeSpan? expirationDuration = null,
             NullValuePolicy nullValuePolicy = NullValuePolicy.CacheNormally,
+			StaleValuePolicy staleValuePolicy = StaleValuePolicy.AssumeNeverStale,
             ICacheReaper reaper = null
 		) {
 			Guard.ArgumentNotNull(keyComparer, nameof(keyComparer));
@@ -38,6 +40,7 @@ namespace Hydrogen {
             expirationDuration ??= TimeSpan.MaxValue;
             InternalStorage = new Dictionary<object, CachedItem>(keyComparer);
 			NullValuePolicy = nullValuePolicy;
+			StaleValuePolicy = staleValuePolicy;
             ReapPolicy = reapStrategy;
             ExpirationPolicy = expirationStrategy;
             MaxCapacity = maxCapacity;
@@ -68,6 +71,8 @@ namespace Hydrogen {
 
         public NullValuePolicy NullValuePolicy { get; internal set; }
 
+        public StaleValuePolicy StaleValuePolicy { get; internal set; }
+
         public ExpirationPolicy ExpirationPolicy { get; internal set; }
 
 		protected ICacheReaper Reaper { get; }
@@ -91,13 +96,19 @@ namespace Hydrogen {
 			if (!InternalStorage.TryGetValue(key, out var item)) {
 				using (EnterWriteScope()) {
 					if (!InternalStorage.TryGetValue(key, out item)) {
-						item = AddItemInternal(key, Fetch(key));
+						NotifyItemFetching(key);
+						var fetchedVal = Fetch(key);
+						item = AddItemInternal(key, fetchedVal);
+						NotifyItemFetched(key, fetchedVal);
 					}
 				}
-			} else if (IsExpired(item)) {
+			} else if (IsExpired(item) || IsStale(key, item)) {
 				using (EnterWriteScope()) {
+					NotifyItemFetching(key);
 					RemoveItemInternal(key);
-					item = AddItemInternal(key, Fetch(key));
+					var fetchedVal = Fetch(key);
+					item = AddItemInternal(key, fetchedVal);
+					NotifyItemFetched(key, fetchedVal);
 				}
 			}
 			TotalAccesses++;
@@ -156,6 +167,17 @@ namespace Hydrogen {
 			return ExpirationPolicy != ExpirationPolicy.None && DateTime.Now.Subtract(from) > ExpirationDuration;
 		}
 
+		public bool IsStale(object key, CachedItem item) {
+			switch (StaleValuePolicy) {
+				case StaleValuePolicy.AssumeNeverStale:
+					return false;
+				case StaleValuePolicy.CheckStaleOnDemand:
+					return CheckStaleness(key, item);
+				default:
+					throw new ArgumentOutOfRangeException();
+			}
+		}
+
 		public virtual void Flush() {
 			using (this.EnterWriteScope()) {
 				foreach (var key in InternalStorage.Keys.ToArray())
@@ -180,6 +202,9 @@ namespace Hydrogen {
 			Reaper.Deregister(this);
 		}
 
+		protected virtual void OnItemFetching(object key) {
+		}
+
 		protected virtual void OnItemFetched(object key, object val) {
 		}
 
@@ -190,14 +215,22 @@ namespace Hydrogen {
 
 		protected abstract object Fetch(object key);
 
-		protected void NotifyItemRemoved(object key, CachedItem val) {
-			OnItemRemoved(key, val);
-			ItemRemoved?.Invoke(key, val);
+		protected abstract bool CheckStaleness(object key, CachedItem item);
+
+		protected void NotifyItemFetching(object key) {
+			OnItemFetching(key);
+			ItemFetching?.Invoke(key);
 		}
+
 
 		protected void NotifyItemFetched(object key, object val) {
 			OnItemFetched(key, val);
 			ItemFetched?.Invoke(key, val);
+		}
+
+		protected void NotifyItemRemoved(object key, CachedItem val) {
+			OnItemRemoved(key, val);
+			ItemRemoved?.Invoke(key, val);
 		}
 
 		protected abstract CachedItem NewCachedItem(object key, object value);

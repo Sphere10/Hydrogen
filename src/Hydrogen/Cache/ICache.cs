@@ -20,8 +20,8 @@ namespace Hydrogen {
 	// ICache is a fully functional cache of <object, object>
 	public interface ICache : ISynchronizedObject {
 
+		event EventHandlerEx<object> ItemFetching;
 		event EventHandlerEx<object, object> ItemFetched;
-		
 		event EventHandlerEx<object, CachedItem> ItemRemoved;
 
 		IEnumerable<CachedItem> CachedItems { get; }

@@ -21,20 +21,28 @@ namespace Hydrogen {
 	/// </summary>
 	public sealed class BulkFetchActionCache<TKey, TValue> : BulkFetchCacheBase<TKey, TValue> {
 		private readonly Func<IDictionary<TKey, TValue>> _bulkFetcher = null;
+		private readonly Func<TKey, CachedItem<TValue>, bool> _stalenessChecker = null;
+
 		public BulkFetchActionCache(
 			Func<IDictionary<TKey, TValue>> bulkFetcher,
 			ExpirationPolicy expirationStrategy = ExpirationPolicy.None,
 			TimeSpan? expirationDuration = null,
 			bool fetchOnceOnly = false,
 			NullValuePolicy nullValuePolicy = NullValuePolicy.CacheNormally,
+			StaleValuePolicy staleValuePolicy = StaleValuePolicy.AssumeNeverStale,
+			Func<TKey, CachedItem<TValue>, bool> stalenessChecker = null,
 			IEqualityComparer<TKey> keyComparer = null
-		) : base(expirationStrategy, expirationDuration, fetchOnceOnly, nullValuePolicy, keyComparer) {
+		) : base(expirationStrategy, expirationDuration, fetchOnceOnly, nullValuePolicy, staleValuePolicy, keyComparer) {
 			_bulkFetcher = bulkFetcher;
+			_stalenessChecker = stalenessChecker;
 		}
 
-		protected override IDictionary<TKey, TValue> BulkFetch() {
-			return _bulkFetcher();
-		}
+		protected override IDictionary<TKey, TValue> BulkFetch() 
+			=> _bulkFetcher();
+
+		protected override bool CheckStaleness(TKey key, CachedItem<TValue> item) 
+			=> _stalenessChecker?.Invoke(key, item) ?? false;
+
 
 	}
 }

@@ -37,14 +37,6 @@ namespace Hydrogen {
             base.Get(sessionID); // refresh cache
         }
 
-        protected override long EstimateSize(T value) {
-            return 0;
-        }
-
-        protected override T Fetch(K key) {
-            throw new Exception($"Session '{key}' does not exist or has expired");
-        }
-
         public virtual void Cleanup() {
             using (base.EnterWriteScope()) {				
                 var expired = base.InternalStorage.Where(kvp => IsExpired(kvp.Value)).ToArray();
@@ -58,5 +50,12 @@ namespace Hydrogen {
             _cleaner.Stop();
             _cleaner.Dispose();
         }
+
+        protected override long EstimateSize(T value) => 0;
+
+        protected override T Fetch(K key) => throw new Exception($"Session '{key}' does not exist or has expired");
+
+        protected override bool CheckStaleness(K key, CachedItem<T> item) => false;
+
     }
 }

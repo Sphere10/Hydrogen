@@ -20,6 +20,7 @@ namespace Hydrogen {
 
         private readonly Func<TKey, TValue> _fetchFunc = null;
         private readonly Func<TValue, long> _estimateSizeFunc = null;
+		private readonly Func<TKey, CachedItem<TValue>, bool> _stalenessChecker = null;
 
         public ActionCache(
             Func<TKey, TValue> valueFetcher,
@@ -29,24 +30,23 @@ namespace Hydrogen {
             long maxCapacity = long.MaxValue,
             TimeSpan? expirationDuration = null,
             NullValuePolicy nullValuePolicy = NullValuePolicy.CacheNormally,
+			StaleValuePolicy staleValuePolicy = StaleValuePolicy.AssumeNeverStale,
+			Func<TKey, CachedItem<TValue>, bool> stalenessChecker = null,
             IEqualityComparer<TKey> keyComparer = null,
             ICacheReaper reaper = null)
-        : base(reapStrategy, expirationStrategy, maxCapacity, expirationDuration, nullValuePolicy, keyComparer, reaper) {
+        : base(reapStrategy, expirationStrategy, maxCapacity, expirationDuration, nullValuePolicy, staleValuePolicy, keyComparer, reaper) {
+			Guard.ArgumentNotNull(_fetchFunc, nameof(valueFetcher));
             _fetchFunc = valueFetcher;
             _estimateSizeFunc = sizeEstimator;
+            _stalenessChecker = stalenessChecker;
         }
 
-        protected override TValue Fetch(TKey key) {
-            var val = _fetchFunc(key);
-            NotifyItemFetched(key, val);
-            return val;
-        }
+        protected override TValue Fetch(TKey key) => _fetchFunc(key);
 
-        protected override long EstimateSize(TValue value) {
-            if (_estimateSizeFunc != null) {
-                return _estimateSizeFunc(value);
-            }
-            return 0;
-        }
-    }
+        protected override bool CheckStaleness(TKey key, CachedItem<TValue> item) 
+			=> _stalenessChecker?.Invoke(key, item) ?? false;
+
+        protected override long EstimateSize(TValue value) 
+			=> _estimateSizeFunc?.Invoke(value) ?? 0;
+	}
 }

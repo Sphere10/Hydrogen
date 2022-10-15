@@ -49,6 +49,9 @@ namespace Tools {
 			// ensure all word delimiters are hyphens
 			value = WordDelimiters.Replace(value, "-");
 
+			// convert amperstands to n
+			value = value.Replace('&', 'n');
+
 			// strip out invalid characters
 			value = InvalidChars.Replace(value, "");
 

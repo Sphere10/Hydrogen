@@ -26,6 +26,7 @@ namespace Tools {
 		static readonly Regex WordDelimiters = new Regex(@"[\s—–_]", RegexOptions.Compiled); // white space, em-dash, en-dash, underscore
 		static readonly Regex InvalidChars = new Regex(@"[^a-z0-9\-]", RegexOptions.Compiled); // characters that are not valid
 		static readonly Regex MultipleHyphens = new Regex(@"-{2,}", RegexOptions.Compiled); // multiple hyphens
+		static readonly Regex AsciiLetters = new Regex(@"[a-zA-Z]", RegexOptions.Compiled); // characters that are not valid
 
 		public static string StripAnchorTag(string url) {
 			var ix = url.LastIndexOf('#');
@@ -35,8 +36,11 @@ namespace Tools {
 			return url;
 		}
 
-		public static string ToHtmlDOMObjectID(string text, string prefix) {
-			return prefix + ToUrlSlug(text);
+		public static string ToHtmlDOMObjectID(string text, string prefixIfRequired = "obj_") {
+			var slug = ToUrlSlug(text);
+			if (slug.Length == 0 || !AsciiLetters.IsMatch(slug[0].ToString()))
+				slug = prefixIfRequired + slug;
+			return slug;
 		}
 
 		public static string ToUrlSlug(string value) {
@@ -46,11 +50,11 @@ namespace Tools {
 			// remove diacritics (accents)
 			value = value.RemoveDiacritics();
 
-			// ensure all word delimiters are hyphens
-			value = WordDelimiters.Replace(value, "-");
-
 			// convert amperstands to n
 			value = value.Replace('&', 'n');
+
+			// ensure all word delimiters are hyphens
+			value = WordDelimiters.Replace(value, "-");
 
 			// strip out invalid characters
 			value = InvalidChars.Replace(value, "");

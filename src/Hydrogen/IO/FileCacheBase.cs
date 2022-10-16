@@ -21,7 +21,7 @@ namespace Hydrogen {
 		}
 
 		protected override bool CheckStaleness(string key, CachedItem<TContent> item) 
-			=>  _lastModified.TryGetValue(key, out var lastKnownModifiedTime) && File.GetLastWriteTime(key) > lastKnownModifiedTime; 
+			=>  !_lastModified.TryGetValue(key, out var lastKnownModifiedTime) || File.GetLastWriteTime(key) > lastKnownModifiedTime; 
 
 		protected override void OnItemFetching(string key) {
 			base.OnItemFetching(key);

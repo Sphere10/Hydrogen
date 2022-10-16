@@ -104,8 +104,8 @@ namespace Hydrogen {
 				}
 			} else if (IsExpired(item) || IsStale(key, item)) {
 				using (EnterWriteScope()) {
-					NotifyItemFetching(key);
 					RemoveItemInternal(key);
+					NotifyItemFetching(key);
 					var fetchedVal = Fetch(key);
 					item = AddItemInternal(key, fetchedVal);
 					NotifyItemFetched(key, fetchedVal);

@@ -23,12 +23,10 @@ namespace Hydrogen.Tests;
 
 [TestFixture]
 [Parallelizable(ParallelScope.Children)]
-public class TextFileCacheTests
-{
+public class TextFileCacheTests {
 
     [Test]
-    public void Simple()
-    {
+    public void Simple() {
         using var disposables = new Disposables();
         var file = Path.GetTempFileName();
         disposables.Add(() => File.Delete(file));
@@ -49,9 +47,45 @@ public class TextFileCacheTests
         Assert.That(fetchedCount, Is.EqualTo(2));
         Assert.That(cache[file], Is.EqualTo("BETA"));
         Assert.That(fetchedCount, Is.EqualTo(2));
-
     }
 
+    [Test]
+    public void RetainsCacheWhenRetainCachedOnDeleteWhenIsTrue() {
+        using var disposables = new Disposables();
+        var file = Path.GetTempFileName();
+        disposables.Add(() => File.Delete(file));
+
+        File.WriteAllText(file, "ALPHA");
+
+        var fetchedCount = 0;
+        var cache = new TextFileCache { RetainCacheOnDelete = true };
+        cache.ItemFetching += _ => fetchedCount++;
+
+        Assert.That(cache[file], Is.EqualTo("ALPHA"));
+        File.Delete(file);
+        Assert.That(cache[file], Is.EqualTo("ALPHA"));
+        Assert.That(fetchedCount, Is.EqualTo(1));
+        File.WriteAllText(file, "ALPHA");
+        Assert.That(cache[file], Is.EqualTo("ALPHA"));
+        Assert.That(fetchedCount, Is.EqualTo(2));
+    }
+
+    [Test]
+    public void ThrowsWhenRetainCachedOnDeleteIsFalse() {
+        using var disposables = new Disposables();
+        var file = Path.GetTempFileName();
+        disposables.Add(() => File.Delete(file));
+
+        File.WriteAllText(file, "ALPHA");
+
+        var fetchedCount = 0;
+        var cache = new TextFileCache { RetainCacheOnDelete = false };
+        cache.ItemFetching += _ => fetchedCount++;
+
+        Assert.That(cache[file], Is.EqualTo("ALPHA"));
+        File.Delete(file);
+        Assert.That(() => cache[file], Throws.Exception);
+    }
 
 }
 

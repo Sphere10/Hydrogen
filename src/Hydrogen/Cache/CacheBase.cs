@@ -93,6 +93,7 @@ namespace Hydrogen {
 		}
 
 		public virtual CachedItem Get(object key) {
+			Guard.ArgumentNotNull(key, nameof(key));
 			if (!InternalStorage.TryGetValue(key, out var item)) {
 				using (EnterWriteScope()) {
 					if (!InternalStorage.TryGetValue(key, out item)) {

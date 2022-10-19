@@ -40,5 +40,11 @@ namespace Hydrogen {
 		public static string ToStringSafe<T>(this T @object) => @object?.ToString() ?? "<null>";
 
 
+		public static IEnumerable<T> _Concat<T>(this T head, IEnumerable<T> tail) => new [] { head }.Concat(tail);
+
+		public static IEnumerable<T> _Union<T>(this T head, IEnumerable<T> tail) => new [] { head }.Union(tail);
+
+		public static IEnumerable<T> _Union<T>(this T head, T tail) => _Union(head, new [] { tail });
+
     }
 }

@@ -67,7 +67,7 @@ namespace Hydrogen {
 
 		public ushort GetTypeCode(Type type) => _typeCodeMap[type];
 
-		public ushort GenerateTypeCode() => _typeCodeMap.Count > 0 ? (ushort)(_typeCodeMap.Values.MaxBy(x => x) + 1) : (ushort)0;
+		public ushort GenerateTypeCode() => _typeCodeMap.Count > 0 ? (ushort)(_typeCodeMap.Values.MaxByEx(x => x) + 1) : (ushort)0;
 
 		private IItemSerializer<TBase> GetConcreteSerializer(TBase item) => GetConcreteSerializer(GetTypeCode(item));
 

@@ -272,6 +272,77 @@ namespace Hydrogen.Tests {
 
         #endregion
 
+        #region C# variable name tests
+
+        [Test]
+        public void CSharp_1() {
+            Assert.That(Tools.Text.ToCasing(TextCasing.CamelCase, "alpha 1  2 3", FirstCharacterPolicy.CSharpVar),  Is.EqualTo("alpha123"));
+        }
+
+        [Test]
+        public void CSharp_2() {
+            Assert.That(Tools.Text.ToCasing(TextCasing.CamelCase, "_alphaBETA123", FirstCharacterPolicy.CSharpVar),  Is.EqualTo("_alphaBeta123"));
+        }
+
+
+        [Test]
+        public void CSharp_3() {
+            Assert.That(Tools.Text.ToCasing(TextCasing.CamelCase, "123 alpha", FirstCharacterPolicy.CSharpVar),  Is.EqualTo("_123Alpha"));
+        }
+
+        [Test]
+        public void CSharp_4() {
+            Assert.That(Tools.Text.ToCasing(TextCasing.CamelCase, "123 alpha", FirstCharacterPolicy.CSharpVar, "Z"),  Is.EqualTo($"Z123Alpha"));
+        }
+
+        [Test]
+        public void CSharp_5() {
+            Assert.That(Tools.Text.ToCasing(TextCasing.CamelCase, "1", FirstCharacterPolicy.CSharpVar),  Is.EqualTo("_1"));
+        }
+        
+        [Test]
+        public void CSharp_6() {
+            Assert.That(Tools.Text.ToCasing(TextCasing.CamelCase, string.Empty, FirstCharacterPolicy.CSharpVar),  Is.EqualTo(string.Empty));
+        }
+
+        #endregion
+
+        #region CHTml variable name tests
+
+        [Test]
+        public void Html_1() {
+            Assert.That(Tools.Text.ToCasing(TextCasing.KebabCase, "alpha 1  2 3", FirstCharacterPolicy.HtmlDomObj),  Is.EqualTo("alpha-1-2-3"));
+        }
+
+        [Test]
+        public void Html_2() {
+            Assert.That(Tools.Text.ToCasing(TextCasing.KebabCase, "_alphaBETA123", FirstCharacterPolicy.HtmlDomObj),  Is.EqualTo("v_-alphabeta123"));
+        }
+
+
+        [Test]
+        public void Html_3() {
+            Assert.That(Tools.Text.ToCasing(TextCasing.KebabCase, "123 alpha", FirstCharacterPolicy.HtmlDomObj),  Is.EqualTo("v123-alpha"));
+        }
+
+        [Test]
+        public void Html_4() {
+            Assert.That(Tools.Text.ToCasing(TextCasing.KebabCase, "123 alpha", FirstCharacterPolicy.HtmlDomObj, "z"),  Is.EqualTo($"z123-alpha"));
+        }
+
+        [Test]
+        public void Html_5() {
+            Assert.That(Tools.Text.ToCasing(TextCasing.KebabCase, "1-variable-name1-23", FirstCharacterPolicy.HtmlDomObj),  Is.EqualTo("v1-variable-name1-23"));
+        }
+        
+        [Test]
+        public void Html_6() {
+            Assert.That(Tools.Text.ToCasing(TextCasing.KebabCase, string.Empty, FirstCharacterPolicy.HtmlDomObj),  Is.EqualTo(string.Empty));
+        }
+
+        #endregion
+
+
         private class PunctuatorValues : ValuesAttribute {
             public PunctuatorValues() : base("\t", " ", "\t  ", "-", "_", ":", "--", ".", ",") {
             }

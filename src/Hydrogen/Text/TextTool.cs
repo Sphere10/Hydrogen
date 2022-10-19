@@ -17,11 +17,8 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.IO;
-using System.IO.Compression;
-using System.Linq.Expressions;
 using System.Text.RegularExpressions;
 using Hydrogen;
-using static System.Net.Mime.MediaTypeNames;
 
 // ReSharper disable CheckNamespace
 namespace Tools {
@@ -29,7 +26,7 @@ namespace Tools {
 	public static class Text {
 		public static readonly Regex AsciiLetterRegex = new ("[a-zA-Z]");
 
-		public static object ToCasing(TextCasing style, string text, FirstCharacterPolicy firstCharacterPolicy = FirstCharacterPolicy.Anything, string prefixIfPolicyInvalid = null) {
+		public static string ToCasing(TextCasing style, string text, FirstCharacterPolicy firstCharacterPolicy = FirstCharacterPolicy.Anything, string prefixIfPolicyInvalid = null) {
 			const string DefaultFirstChar = "_";
 			const string DefaultLetterOnlyFirstChar = "v";
 			const string DefaultDigitOnlyFirstChar = "0";

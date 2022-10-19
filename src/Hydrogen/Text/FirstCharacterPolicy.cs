@@ -1,6 +1,6 @@
 using System;
 
-namespace Tools;
+namespace Hydrogen;
 
 [Flags]
 public enum FirstCharacterPolicy {

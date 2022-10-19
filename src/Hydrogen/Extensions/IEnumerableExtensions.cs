@@ -773,14 +773,14 @@ namespace Hydrogen {
 			return sequence.ElementAt(Tools.Maths.RNG.Next(0, sequence.Count()));
 		}
 
-		public static T MaxBy<T, R>(this IEnumerable<T> source, Func<T, R> selector) where R : IComparable<R> {
+		public static T MaxByEx<T, R>(this IEnumerable<T> source, Func<T, R> selector) where R : IComparable<R> {
 			return
 				source
 				.Select(t => new Tuple<T, R>(t, selector(t)))
 				.Aggregate((max, next) => next.Item2.CompareTo(max.Item2) > 0 ? next : max).Item1;
 		}
 
-		public static T MinBy<T, R>(this IEnumerable<T> source, Func<T, R> selector) where R : IComparable<R> {
+		public static T MinByEx<T, R>(this IEnumerable<T> source, Func<T, R> selector) where R : IComparable<R> {
 			return
 				source
 				.Select(t => new Tuple<T, R>(t, selector(t)))

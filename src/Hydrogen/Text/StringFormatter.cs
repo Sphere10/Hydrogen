@@ -64,23 +64,50 @@ namespace Hydrogen {
 							if (inFormatItem) {
 								currentFormatItemBuilder.Append("}");
 								if (--depth == 0) {
-									// end of format item, process and add to string
-									var token = currentFormatItemBuilder.ToString();
-									if (!TryResolveFormatItem(alreadyResolved, token.Chomp(TokenTrimDelimitters), out var value, recursive, resolver, formatArgs))
-										value = token;
-									else if (recursive) {
-										if (!alreadyResolved.ContainsKey(token)) {
-											alreadyResolved.Add(token, token); // on infinite recursive loop short circuit to token name itself 
-											value = FormatExInternal(value?.ToString() ?? string.Empty);
-											alreadyResolved[token] = value; 
+									// Here we encountered the last }
+									var potentialToken = currentFormatItemBuilder.ToString();
+
+									// Get the contents (i.e. all text within the { })
+									var potentialTokenContents = potentialToken.Chomp(TokenTrimDelimitters);
+
+									// Attempt to resolve the potential token 
+									if (!TryResolveFormatItem(alreadyResolved, potentialTokenContents, out var value, recursive, resolver, formatArgs)) {
+										// The potential token has not resolved to anything but could 3 cases remain: 
+										// (1) we're recursive mode and potential token is json-like object with actual sub-tokens inside
+										// (2) we're recursive mode and potential token is json-like object without any sub-tokens
+										// (3) we're not recursive and token is json-like object that may or may not have sub-tokens inside
+
+										if (recursive) {
+											var tokenWithSubtokenResolutions = FormatExInternal(potentialTokenContents);
+											if (!tokenWithSubtokenResolutions.Equals(potentialTokenContents)) {
+												// (1)
+												value = "{" + tokenWithSubtokenResolutions + "}";
+											} else {
+												// (2)
+												value = potentialToken;
+											}
 										} else {
-											value = alreadyResolved[token];
+											// (3)
+											value = potentialToken;
+										}
+										alreadyResolved[potentialToken] = value;
+									}
+
+									// We have resolved the potential token to a value, but the resolution 
+									// itself may need to be recursively resolved
+									if (recursive) {
+										if (!alreadyResolved.ContainsKey(potentialToken)) {
+											alreadyResolved.Add(potentialToken, potentialToken); // on infinite recursive loop short circuit to token name itself 
+											value = FormatExInternal(value?.ToString() ?? string.Empty);
+											alreadyResolved[potentialToken] = value; 
+										} else {
+											value = alreadyResolved[potentialToken];
 										}
 									}
 									resultBuilder.Append(value);
 									inFormatItem = false;
 									currentFormatItemBuilder.Clear();
-								}
+								} 
 							} else if (splits.Count > 0 && splits.Peek() == "}") {
 								// Escaped }}
 								splits.Pop();

@@ -185,6 +185,9 @@ namespace Hydrogen {
 		}
 
 		public static string ChompStart(this string inputString, params string[] delimiters) {
+			if (inputString == string.Empty)
+				return string.Empty;
+
 			var sb = new StringBuilder(inputString);
 			foreach(var delimitter in delimiters) 
 				sb.Replace(delimitter, string.Empty, 0, 1);
@@ -196,6 +199,9 @@ namespace Hydrogen {
 
 
 		public static string ChompEnd(this string inputString, params string[] delimiters) {
+			if (inputString == string.Empty)
+				return string.Empty;
+
 			var sb = new StringBuilder(inputString);
 			foreach(var delimitter in delimiters) { 
 				var startIX = sb.Length - delimitter.Length;
@@ -210,6 +216,9 @@ namespace Hydrogen {
 
 
 		public static string Chomp(this string inputString, params string[] delimiters) {
+			if (inputString == string.Empty)
+				return string.Empty;
+
 			var sb = new StringBuilder(inputString);
 			foreach(var delimitter in delimiters) { 
 				sb.Replace(delimitter, string.Empty, 0, 1);

@@ -184,20 +184,20 @@ namespace Hydrogen {
 			);
 		}
 
-		public static string ChompStart(this string inputString, params string[] delimitters) {
+		public static string ChompStart(this string inputString, params string[] delimiters) {
 			var sb = new StringBuilder(inputString);
-			foreach(var delimitter in delimitters) 
+			foreach(var delimitter in delimiters) 
 				sb.Replace(delimitter, string.Empty, 0, 1);
 			return sb.ToString();
 		}
 
-		public static string ChompStart(this string inputString, params char[] delimitters) 
-			=> ChompStart(inputString, delimitters.Select(x => x.ToString()).ToArray());
+		public static string ChompStart(this string inputString, params char[] delimiters) 
+			=> ChompStart(inputString, delimiters.Select(x => x.ToString()).ToArray());
 
 
-		public static string ChompEnd(this string inputString, params string[] delimitters) {
+		public static string ChompEnd(this string inputString, params string[] delimiters) {
 			var sb = new StringBuilder(inputString);
-			foreach(var delimitter in delimitters) { 
+			foreach(var delimitter in delimiters) { 
 				var startIX = sb.Length - delimitter.Length;
 				if (startIX >= 0)
 					sb.Replace(delimitter, string.Empty, startIX, sb.Length - startIX);
@@ -205,13 +205,13 @@ namespace Hydrogen {
 			return sb.ToString();
 		}
 
-		public static string ChompEnd(this string inputString, params char[] delimitters) 
-			=> ChompEnd(inputString, delimitters.Select(x => x.ToString()).ToArray());
+		public static string ChompEnd(this string inputString, params char[] delimiters) 
+			=> ChompEnd(inputString, delimiters.Select(x => x.ToString()).ToArray());
 
 
-		public static string Chomp(this string inputString, params string[] delimitters) {
+		public static string Chomp(this string inputString, params string[] delimiters) {
 			var sb = new StringBuilder(inputString);
-			foreach(var delimitter in delimitters) { 
+			foreach(var delimitter in delimiters) { 
 				sb.Replace(delimitter, string.Empty, 0, 1);
 				var startIX = sb.Length - delimitter.Length;
 				if (startIX >= 0)
@@ -220,9 +220,16 @@ namespace Hydrogen {
 			return sb.ToString();
 		}
 
-		public static string Chomp(this string inputString, params char[] delimitters) 
-			=> Chomp(inputString, delimitters.Select(x => x.ToString()).ToArray());
+		public static string Chomp(this string inputString, params char[] delimiters) 
+			=> Chomp(inputString, delimiters.Select(x => x.ToString()).ToArray());
 
+
+		public static string TrimWithCapture(this string value, out string trimmedStart, out string trimmedEnd) {
+			// Slow implementation here
+			trimmedStart = new string( value.TakeWhile(char.IsWhiteSpace).ToArray());
+			trimmedEnd = new string( value.Reverse().TakeWhile(char.IsWhiteSpace).Reverse().ToArray());
+			return value.Trim();
+		}
 
 		public static string ReplaceMany(this string inputString, params string[] subStrings) {
 			var sb = new StringBuilder(inputString);

@@ -30,7 +30,7 @@ namespace Hydrogen {
 		}
 
 		public static string FormatEx(string @string, Func<string, object> userTokenResolver, bool recursive, params object[] formatArgs) {
-			var alreadyVisited = new HashSet<string>();
+			var alreadyResolved = new Dictionary<string, object>();
 
 			return FormatExInternal(@string);
 
@@ -66,11 +66,16 @@ namespace Hydrogen {
 								if (--depth == 0) {
 									// end of format item, process and add to string
 									var token = currentFormatItemBuilder.ToString();
-									if (!TryResolveFormatItem(token.Chomp(TokenTrimDelimitters), out var value, recursive, resolver, formatArgs))
+									if (!TryResolveFormatItem(alreadyResolved, token.Chomp(TokenTrimDelimitters), out var value, recursive, resolver, formatArgs))
 										value = token;
-									else if (recursive && !alreadyVisited.Contains(token)) {
-										alreadyVisited.Add(token);
-										value = FormatExInternal(value?.ToString() ?? string.Empty);
+									else if (recursive) {
+										if (!alreadyResolved.ContainsKey(token)) {
+											alreadyResolved.Add(token, token); // on infinite recursive loop short circuit to token name itself 
+											value = FormatExInternal(value?.ToString() ?? string.Empty);
+											alreadyResolved[token] = value; 
+										} else {
+											value = alreadyResolved[token];
+										}
 									}
 									resultBuilder.Append(value);
 									inFormatItem = false;
@@ -85,9 +90,9 @@ namespace Hydrogen {
 							}
 							break;
 						default:
-							if (inFormatItem)
+							if (inFormatItem) {
 								currentFormatItemBuilder.Append(split);
-							else
+							} else
 								resultBuilder.Append(split);
 							break;
 					}
@@ -99,50 +104,54 @@ namespace Hydrogen {
 			}
 		}
 
-		private static bool TryResolveFormatItem(string token, out object value, bool recursive, Func<string, object> resolver, params object[] formatArgs) {
-			var alreadyVisited = new HashSet<string>();
-			return _TryResolveFormatItem(token, out value);
+		private static bool TryResolveFormatItem(Dictionary<string, object> alreadyVisited, string token, out object value, bool recursive, Func<string, object> resolver, params object[] formatArgs) {
+			token = token.TrimWithCapture(out var trimmedStart, out var trimmedEnd);
+			value = null;
+			
+			if (alreadyVisited.TryGetValue(token, out value))
+				return true;
+			
 
-			bool _TryResolveFormatItem(string token, out object tokenValue) {
-				token = token.TrimEnd();
-				tokenValue = null;
-				
-				// This is an indexed .NET format argument (e.g. {0:yyyy-MM-dd}), so do not try to resolve this
-		        if (IsStandardFormatIndex(token, out var formatIndex, out var formatOptions)) {
-			        if (formatIndex >= formatArgs.Length)
-				        return false;
-			        tokenValue =string.Format("{0" + (formatOptions ?? string.Empty) + "}", formatArgs[formatIndex]); 
-					return true;
-				}
-		        
-				// This is a formatted item that needs to be looked up
-				var tokenSplits = token.Split(':');
-				if (tokenSplits.Length > 1 && token.CountSubstring("://") != 1) {   // Note :// is used for url-looking tokens (i.e. https://www.sphere10.com);
-					token = tokenSplits[0].TrimEnd();
-					formatOptions = ":" + tokenSplits.Skip(1).Select(s => s.Trim()).ToDelimittedString(":");
-				}
-
-				// Lookup the token
-				tokenValue = resolver(token);
-				
-				// Found token, pass it through string.Format with any formatting options if specified
-				if (tokenValue != null) {
-					tokenValue = string.Format("{0" + (formatOptions ?? string.Empty) + "}", tokenValue);
-					return true;
-				}
-
-				// Token not found, if recursive mode is on and token name has nested tokens, try to resolve them and try again
-
-				if (recursive && !alreadyVisited.Contains(token) && token.IndexOf(TokenStartChar) < token.IndexOf(TokenEndChar)) {
-					// token itself contains tokens, to recursively resolve the token name itself
-					alreadyVisited.Add(token);
-					token = FormatEx(token, resolver, recursive, formatArgs);
-					return _TryResolveFormatItem(token, out tokenValue); 
-				}
-		
-				// Couldn't resolve it, default to internal token resolution (i.e. these are registered in config files and framework)
-				return TryResolveInternalToken(token, out tokenValue);
+			// This is an indexed .NET format argument (e.g. {0:yyyy-MM-dd}), so do not try to resolve this
+	        if (IsStandardFormatIndex(token, out var formatIndex, out var formatOptions)) {
+		        if (formatIndex >= formatArgs.Length)
+			        return false;
+		        value =string.Format("{0" + (formatOptions ?? string.Empty) + "}", formatArgs[formatIndex]); 
+				return true;
 			}
+	        
+			// This is a formatted item that needs to be looked up
+			var tokenSplits = token.Split(':');
+			if (tokenSplits.Length > 1 && token.CountSubstring("://") != 1) {   // Note :// is used for url-looking tokens (i.e. https://www.sphere10.com);
+				token = tokenSplits[0].TrimEnd();
+				formatOptions = ":" + tokenSplits.Skip(1).Select(s => s.Trim()).ToDelimittedString(":");
+			}
+
+			// Lookup the token
+			value = resolver(token);
+			
+			// Found token, pass it through string.Format with any formatting options if specified
+			if (value != null) {
+				value = string.Format("{0" + (formatOptions ?? string.Empty) + "}", value);
+				return true;
+			}
+
+			// Token not found, if recursive mode is on and token name has nested tokens, try to resolve them and try again
+			if (recursive && token.IndexOf(TokenStartChar) < token.IndexOf(TokenEndChar)) {
+				// token itself contains tokens, to recursively resolve the token name itself
+				alreadyVisited.Add(token, token); // infinite recursion short circuit
+				var modifiedToken = FormatEx(token, resolver, recursive, formatArgs);
+				if (!TryResolveFormatItem(alreadyVisited, modifiedToken, out value, recursive, resolver, formatArgs)) {
+					// resolved token name didn't resolve to anything, but since token contained token names, return the resolved token name
+					value = "{" + trimmedStart +  modifiedToken + trimmedEnd + "}"; 
+				}
+				alreadyVisited[token] = value;
+				return true; 
+			}
+	
+			// Couldn't resolve it, default to internal token resolution (i.e. these are registered in config files and framework)
+			return TryResolveInternalToken(token, out value);
+		
 		}
 
         private static bool IsStandardFormatIndex(string token, out int number, out string formatOptions) {

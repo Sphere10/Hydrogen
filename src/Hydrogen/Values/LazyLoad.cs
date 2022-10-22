@@ -32,7 +32,7 @@ namespace Hydrogen {
 		}
 
 		public override string ToString() {
-			return _loaded ? Convert.ToString(_value) : null;
+			return _loaded ? Convert.ToString(_value) : "Future value has not currently been determined";
 		}
 	}
 

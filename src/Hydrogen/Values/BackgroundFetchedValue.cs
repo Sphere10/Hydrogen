@@ -13,6 +13,7 @@ namespace Hydrogen {
 		private T _value;
 
 		public BackgroundFetchedValue(Func<T> valueLoader) {
+			Guard.ArgumentNotNull(valueLoader, nameof(valueLoader));
 			_resetEvent = new ManualResetEventSlim(false);
 			_value = default;
 			_fetchError = null;
@@ -25,24 +26,26 @@ namespace Hydrogen {
 					_resetEvent.Set();
 				}
 			});
-
 		}
 
 		public T Value {
 			get {
-				_resetEvent.Wait();
+				if (!_resetEvent.IsSet)
+					_resetEvent.Wait();
+
 				if (_fetchError != null)
 					throw new AggregateException(_fetchError);
+
 				return _value;
 			}
 		}
 
-		public static LazyLoad<T> From(Func<T> valueLoader) {
-			return new LazyLoad<T>(valueLoader);
+		public static BackgroundFetchedValue<T> From(Func<T> valueLoader) {
+			return new BackgroundFetchedValue<T>(valueLoader);
 		}
 
 		public override string ToString() {
-			return _resetEvent.IsSet ? Convert.ToString(_value) : null;
+			return _resetEvent.IsSet ? Convert.ToString(_value) : "Future value has not currently been determined";
 		}
 	}
 

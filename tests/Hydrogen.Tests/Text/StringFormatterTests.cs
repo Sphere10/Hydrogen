@@ -290,7 +290,30 @@ namespace Hydrogen.Tests {
             var problematicString = "{\"stringsElement\": \"#typed-strings-{object_id}\", \"startDelay\": 500, \"backSpeed\": 15, \"backDelay\":5000, \"stringsElement2\": \"#typed-strings2-{object_id}\"}";
             var expectedString = "{\"stringsElement\": \"#typed-strings-309c96b2-5ac0-48d0-b75e-502ce962baf2\", \"startDelay\": 500, \"backSpeed\": 15, \"backDelay\":5000, \"stringsElement2\": \"#typed-strings2-309c96b2-5ac0-48d0-b75e-502ce962baf2\"}";
             Assert.That( StringFormatter.FormatWithDictionary(problematicString, tokens, true), Is.EqualTo(expectedString));
+        }
 
+
+        [Test]
+        public void LocalNotionBugCase_1_Variant_2() {
+            var tokens = new Dictionary<string, object> {
+                ["A"] = Tools.Values.Future.AlwaysLoad ( () =>  "{\"stringsElement\": \"#typed-strings-{object_id}\", \"startDelay\": 500, \"backSpeed\": 15, \"backDelay\":5000, \"stringsElement2\": \"#typed-strings2-{object_id}\"}"),
+                ["object_id"] = "309c96b2-5ac0-48d0-b75e-502ce962baf2",
+            };
+            var problematicString = "{A}";
+            var expectedString = "{\"stringsElement\": \"#typed-strings-309c96b2-5ac0-48d0-b75e-502ce962baf2\", \"startDelay\": 500, \"backSpeed\": 15, \"backDelay\":5000, \"stringsElement2\": \"#typed-strings2-309c96b2-5ac0-48d0-b75e-502ce962baf2\"}";
+            Assert.That( StringFormatter.FormatWithDictionary(problematicString, tokens, true), Is.EqualTo(expectedString));
+        }
+
+
+        [Test]
+        public void LocalNotionBugCase_1_Variant_3() {
+            var tokens = new Dictionary<string, object> {
+                ["A"] = Tools.Values.Future.AlwaysLoad ( () =>  "{\"stringsElement\": \"#typed-strings-{object_id}\", \"startDelay\": 500, \"backSpeed\": 15, \"backDelay\":5000, \"stringsElement2\": \"#typed-strings2-{object_id}\"}"),
+                ["object_id"] = Tools.Values.Future.AlwaysLoad ( () => "309c96b2-5ac0-48d0-b75e-502ce962baf2" ),
+            };
+            var problematicString = "Some text with {A}";
+            var expectedString = "Some text with {\"stringsElement\": \"#typed-strings-309c96b2-5ac0-48d0-b75e-502ce962baf2\", \"startDelay\": 500, \"backSpeed\": 15, \"backDelay\":5000, \"stringsElement2\": \"#typed-strings2-309c96b2-5ac0-48d0-b75e-502ce962baf2\"}";
+            Assert.That( StringFormatter.FormatWithDictionary(problematicString, tokens, true), Is.EqualTo(expectedString));
         }
 
     }

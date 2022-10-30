@@ -22,7 +22,11 @@ namespace Hydrogen {
     /// </summary>
     /// <remarks></remarks>
     public static class UniversalExtensions {
-        public static void Swap<T>(ref T fromX, ref T fromY) {
+        
+	    public static IEnumerable<TItem> Visit<TItem>(this TItem node, Func<TItem, IEnumerable<TItem>> edgeIterator, IEqualityComparer<TItem> comparer = null) 
+			=> new [] { node }.Visit(edgeIterator, comparer);
+		
+		public static void Swap<T>(ref T fromX, ref T fromY) {
             T temp = default(T);
             temp = fromX;
             fromX = fromY;

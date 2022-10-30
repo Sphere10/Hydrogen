@@ -27,7 +27,23 @@ namespace Hydrogen {
 
 	public static class IEnumerableExtensions {
 
-		
+		public static IEnumerable<TItem> Visit<TItem>(this IEnumerable<TItem> graph, Func<TItem, IEnumerable<TItem>> edgeIterator, IEqualityComparer<TItem> comparer = null) {
+			var visited = new HashSet<TItem>(comparer ?? EqualityComparer<TItem>.Default);
+			return VisitInternal(graph);
+
+			IEnumerable<TItem> VisitInternal(IEnumerable<TItem> nodes) {
+				foreach(var node in nodes) {
+					if (visited.Contains(node))
+						continue;
+					yield return node;
+					visited.Add(node);
+					foreach (var connectedNode in VisitInternal(edgeIterator(node)))
+						yield return connectedNode;
+				}
+			}
+		}
+
+
 		public static IEnumerable<TItem> Distinct<TItem, TKey>(this IEnumerable<TItem> enumerable, Func<TItem, TKey> projection, IEqualityComparer<TKey> comparer = null) 
 			=> enumerable.Distinct(new ProjectionEqualityComparer<TItem, TKey>(projection, comparer));
 
@@ -809,7 +825,7 @@ namespace Hydrogen {
 		  this IEnumerable<TEntity> allItems,
 		  Func<TEntity, TProperty> idProperty,
 		  Func<TEntity, TProperty> parentIdProperty) where TEntity : class {
-			return CreateHierarchy(allItems, default(TEntity), idProperty, parentIdProperty, null, 0, 0);
+			return CreateHierarchy(allItems, default, idProperty, parentIdProperty, default, 0, 0);
 		}
 
 		/// <summary>
@@ -826,8 +842,8 @@ namespace Hydrogen {
 		  this IEnumerable<TEntity> allItems,
 		  Func<TEntity, TProperty> idProperty,
 		  Func<TEntity, TProperty> parentIdProperty,
-		  object rootItemId) where TEntity : class {
-			return CreateHierarchy(allItems, default(TEntity), idProperty, parentIdProperty, rootItemId, 0, 0);
+		  TProperty rootItemId) where TEntity : class {
+			return CreateHierarchy(allItems, default, idProperty, parentIdProperty, rootItemId, 0, 0);
 		}
 
 		/// <summary>
@@ -845,9 +861,9 @@ namespace Hydrogen {
 		  this IEnumerable<TEntity> allItems,
 		  Func<TEntity, TProperty> idProperty,
 		  Func<TEntity, TProperty> parentIdProperty,
-		  object rootItemId,
+		  TProperty rootItemId,
 		  int maxDepth) where TEntity : class {
-			return CreateHierarchy(allItems, default(TEntity), idProperty, parentIdProperty, rootItemId, maxDepth, 0);
+			return CreateHierarchy(allItems, default, idProperty, parentIdProperty, rootItemId, maxDepth, 0);
 		}
 
 
@@ -856,31 +872,34 @@ namespace Hydrogen {
 			TEntity parentItem,
 			Func<TEntity, TProperty> idProperty,
 			Func<TEntity, TProperty> parentIdProperty,
-			object rootItemId,
+			TProperty rootItemId,
 			int maxDepth,
-			int depth) where TEntity : class {
+			int depth,
+			IEqualityComparer<TProperty> idComparer = null) where TEntity : class {
+			
+			idComparer ??= EqualityComparer<TProperty>.Default;
+
 			IEnumerable<TEntity> childs;
 
 			if (rootItemId != null) {
 				childs = allItems.Where(i => idProperty(i).Equals(rootItemId));
 			} else {
-				if (parentItem == null) {
-					childs = allItems.Where(i => parentIdProperty(i).Equals(default(TProperty)));
-				} else {
-					childs = allItems.Where(i => parentIdProperty(i).Equals(idProperty(parentItem)));
-				}
+				childs = 
+					parentItem == null ?
+					allItems.Where(i => parentIdProperty(i).Equals(default(TProperty))) : 
+					allItems.Where(i => parentIdProperty(i).Equals(idProperty(parentItem)));
 			}
 
-			if (childs.Count() > 0) {
+			if (childs.Any()) {
 				depth++;
 
-				if ((depth <= maxDepth) || (maxDepth == 0)) {
+				if (depth <= maxDepth || maxDepth == 0) {
 					foreach (var item in childs)
 						yield return
-						  new HierarchyNode<TEntity>() {
+						  new HierarchyNode<TEntity> {
 							  Entity = item,
 							  ChildNodes =
-								CreateHierarchy(allItems.AsEnumerable(), item, idProperty, parentIdProperty, null, maxDepth, depth),
+								CreateHierarchy(allItems, item, idProperty, parentIdProperty, default, maxDepth, depth),
 							  Depth = depth,
 							  Parent = parentItem
 						  };

@@ -43,7 +43,7 @@ public class TextFileCacheTests {
         Assert.That(fetchedCount, Is.EqualTo(1));
 
         File.WriteAllText(file, "BETA");
-        Thread.Sleep(200); // allow file flushing (github test runner having issues)
+        Thread.Sleep(400); // allow slow file monitoring (github test runner having issues)
         Assert.That(cache[file], Is.EqualTo("BETA"));
         Assert.That(fetchedCount, Is.EqualTo(2));
         Assert.That(cache[file], Is.EqualTo("BETA"));
@@ -67,7 +67,7 @@ public class TextFileCacheTests {
         Assert.That(cache[file], Is.EqualTo("ALPHA"));
         Assert.That(fetchedCount, Is.EqualTo(1));
         File.WriteAllText(file, "ALPHA");
-        Thread.Sleep(200); // allow file flushing (github test runner having issues)
+        Thread.Sleep(400); // allow slow file monitoring (github test runner having issues)
         Assert.That(cache[file], Is.EqualTo("ALPHA"));
         Assert.That(fetchedCount, Is.EqualTo(2));
     }
@@ -79,7 +79,7 @@ public class TextFileCacheTests {
         disposables.Add(() => File.Delete(file));
 
         File.WriteAllText(file, "ALPHA");
-        
+        Thread.Sleep(400); // allow slow file monitoring (github test runner having issues)
 
         var fetchedCount = 0;
         var cache = new TextFileCache { RetainCacheOnDelete = false };

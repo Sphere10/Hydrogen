@@ -20,6 +20,10 @@ using System.Linq;
 namespace Hydrogen {
 
 	public static class ILookupExtensions {
+
+		public static IDictionary<TKey, TAggregatedValue> AggregateValue<TKey, TValue, TAggregatedValue>(this ILookup<TKey, TValue> lookup, TAggregatedValue seed, Func<TAggregatedValue, TValue, TAggregatedValue> valueAggregator) 
+			=> lookup.ToDictionary(x => x.Key, x => x.Aggregate(seed, valueAggregator));
+
 		public static ILookup<TKey, TValueOut> Transform<TKey, TValue, TValueOut>(
 			   this ILookup<TKey, TValue> lookup,
 			   Func<TValue, TValueOut> selector) {

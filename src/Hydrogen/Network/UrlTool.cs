@@ -53,6 +53,10 @@ namespace Tools {
 			// convert amperstands to n
 			value = value.Replace('&', 'n');
 
+			// remove single/double quotes
+			value = value.Replace("'", string.Empty);
+			value = value.Replace("\"", string.Empty);
+
 			// ensure all word delimiters are hyphens
 			value = WordDelimiters.Replace(value, "-");
 

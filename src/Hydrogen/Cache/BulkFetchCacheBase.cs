@@ -69,6 +69,11 @@ namespace Hydrogen {
 			_fetchCount++;
 		}
 
+		public override void Flush() {
+			base.Flush();
+			_fetchCount = 0;
+		}
+
 		public override void Remove(object key) {
 			throw new NotSupportedException("Items cannot be manually removed from a bulk fetch cache");
 		}

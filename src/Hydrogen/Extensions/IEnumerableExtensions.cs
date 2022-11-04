@@ -32,7 +32,13 @@ namespace Hydrogen {
 			return VisitInternal(graph);
 
 			IEnumerable<TItem> VisitInternal(IEnumerable<TItem> nodes) {
+				if (graph == null)
+					yield break;
+
 				foreach(var node in nodes) {
+					if (node == null)
+						yield break;
+
 					if (visited.Contains(node))
 						continue;
 					yield return node;
@@ -43,6 +49,8 @@ namespace Hydrogen {
 			}
 		}
 
+
+		public static IEnumerable<TItem> ToEmptyIfNull<TItem>(this IEnumerable<TItem> enumerable) => enumerable ?? Enumerable.Empty<TItem>();
 
 		public static IEnumerable<TItem> Distinct<TItem, TKey>(this IEnumerable<TItem> enumerable, Func<TItem, TKey> projection, IEqualityComparer<TKey> comparer = null) 
 			=> enumerable.Distinct(new ProjectionEqualityComparer<TItem, TKey>(projection, comparer));

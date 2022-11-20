@@ -53,6 +53,12 @@ namespace Hydrogen {
 		public static bool StartsWithAny(this string @string, StringComparison comparison, params string[] strings)
 			=> strings.Any(x => @string.StartsWith(x, comparison));
 
+		public static bool IsNullOrEmpty(this string text)
+			=> String.IsNullOrEmpty(text);
+
+		public static bool IsNullOrWhiteSpace(this string text)
+			=> String.IsNullOrWhiteSpace(text);
+
 		public static string ToNullWhenEmpty(this string text)
 			=> text.ToValueWhenNullOrEmpty(null);
 

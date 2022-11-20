@@ -3,7 +3,7 @@
 namespace Hydrogen;
 
 /// <summary>
-/// A future whose value is fetched lazily and which can be invalidated by client. 
+/// A future whose value is fetched lazily and which can be invalidated by client. By invalidating the value, the future re-loads the value.
 /// </summary>
 /// <typeparam name="T"></typeparam>
 public class Reloadable<T> : SynchronizedObject, IFuture<T> {
@@ -52,7 +52,7 @@ public class Reloadable<T> : SynchronizedObject, IFuture<T> {
 
 	public override string ToString() {
 		using (EnterReadScope()) {
-			return _loaded ? Convert.ToString(_value) : null;
+			return _loaded ? Convert.ToString(_value) : "Future value has not currently been determined";
 		}
 	}
 }

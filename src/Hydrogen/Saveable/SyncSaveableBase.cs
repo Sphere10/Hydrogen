@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 namespace Hydrogen;
 
 /// <summary>
-/// A <see cref="SaveableBase"/> abstraction that implements it's asynchronous members using <see cref="Task.Run(System.Action)"/>.
+/// A <see cref="SaveableBase"/> abstraction that implements it's asynchronous members using <see cref="Task.Run(Action)"/>.
 /// </summary>
 public abstract class SyncSaveableBase : SaveableBase {
 	

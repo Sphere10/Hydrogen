@@ -190,20 +190,26 @@ namespace Hydrogen {
 			);
 		}
 
-		public static string ChompStart(this string inputString, params string[] delimitters) {
+		public static string ChompStart(this string inputString, params string[] delimiters) {
+			if (inputString == string.Empty)
+				return string.Empty;
+
 			var sb = new StringBuilder(inputString);
-			foreach(var delimitter in delimitters) 
+			foreach(var delimitter in delimiters) 
 				sb.Replace(delimitter, string.Empty, 0, 1);
 			return sb.ToString();
 		}
 
-		public static string ChompStart(this string inputString, params char[] delimitters) 
-			=> ChompStart(inputString, delimitters.Select(x => x.ToString()).ToArray());
+		public static string ChompStart(this string inputString, params char[] delimiters) 
+			=> ChompStart(inputString, delimiters.Select(x => x.ToString()).ToArray());
 
 
-		public static string ChompEnd(this string inputString, params string[] delimitters) {
+		public static string ChompEnd(this string inputString, params string[] delimiters) {
+			if (inputString == string.Empty)
+				return string.Empty;
+
 			var sb = new StringBuilder(inputString);
-			foreach(var delimitter in delimitters) { 
+			foreach(var delimitter in delimiters) { 
 				var startIX = sb.Length - delimitter.Length;
 				if (startIX >= 0)
 					sb.Replace(delimitter, string.Empty, startIX, sb.Length - startIX);
@@ -211,13 +217,16 @@ namespace Hydrogen {
 			return sb.ToString();
 		}
 
-		public static string ChompEnd(this string inputString, params char[] delimitters) 
-			=> ChompEnd(inputString, delimitters.Select(x => x.ToString()).ToArray());
+		public static string ChompEnd(this string inputString, params char[] delimiters) 
+			=> ChompEnd(inputString, delimiters.Select(x => x.ToString()).ToArray());
 
 
-		public static string Chomp(this string inputString, params string[] delimitters) {
+		public static string Chomp(this string inputString, params string[] delimiters) {
+			if (inputString == string.Empty)
+				return string.Empty;
+
 			var sb = new StringBuilder(inputString);
-			foreach(var delimitter in delimitters) { 
+			foreach(var delimitter in delimiters) { 
 				sb.Replace(delimitter, string.Empty, 0, 1);
 				var startIX = sb.Length - delimitter.Length;
 				if (startIX >= 0)
@@ -226,9 +235,16 @@ namespace Hydrogen {
 			return sb.ToString();
 		}
 
-		public static string Chomp(this string inputString, params char[] delimitters) 
-			=> Chomp(inputString, delimitters.Select(x => x.ToString()).ToArray());
+		public static string Chomp(this string inputString, params char[] delimiters) 
+			=> Chomp(inputString, delimiters.Select(x => x.ToString()).ToArray());
 
+
+		public static string TrimWithCapture(this string value, out string trimmedStart, out string trimmedEnd) {
+			// Slow implementation here
+			trimmedStart = new string( value.TakeWhile(char.IsWhiteSpace).ToArray());
+			trimmedEnd = new string( value.Reverse().TakeWhile(char.IsWhiteSpace).Reverse().ToArray());
+			return value.Trim();
+		}
 
 		public static string ReplaceMany(this string inputString, params string[] subStrings) {
 			var sb = new StringBuilder(inputString);
@@ -628,72 +644,6 @@ namespace Hydrogen {
 			Debug.Assert(IsUNCPath(path));
 			var uri = new Uri(path);
 			return Uri.UnescapeDataString(uri.Host);
-		}
-
-		public static string ToCamelCase(this string s) {
-			return s.ToCamelCase(true, false);
-		}
-
-		public static string ToCamelCase(this string s, bool startWithLetter, bool hyphenate) {
-			return s.ToCamelCase(true, false, '-');
-		}
-
-		public static string ToCamelCase(this string @string, bool startWithLetter, bool hyphenate, char hyphen) {
-			StringBuilder sb = new StringBuilder();
-
-			bool wantStart = startWithLetter;
-			bool makeUpper = true;
-			bool addHyphen = false;
-			bool wantFirst = true;
-
-			for (int i = 0; i < @string.Length; i++) {
-				char c = @string[i];
-
-				// If we want a starting character at this point, ignore non-letters
-				if (wantStart && !Char.IsLetter(c))
-					continue;
-				wantStart = false;
-
-				// Pretend apostrophies are not in the name
-				if (c == '\'')
-					continue;
-
-				if (!Char.IsLetterOrDigit(c)) {
-					makeUpper = true;
-					if (hyphenate)
-						addHyphen = true;
-					continue;
-				}
-
-				// Until something is added, do not add a hyphen
-				// so that we avoid a hyphen being the first character
-				if (!wantFirst && addHyphen)
-					sb.Append(hyphen);
-				addHyphen = false;
-				wantFirst = false;
-
-				if (makeUpper)
-					sb.Append(Char.ToUpper(c));
-				else
-					sb.Append(Char.ToLower(c));
-				makeUpper = false;
-			}
-			return sb.ToString();
-		}
-
-		public static string CamelCaseExpand(this string @string) {
-			return
-				Regex.Replace(
-					Regex.Replace(
-						Regex.Replace(
-							@string,
-							@"([\p{Ll}])([\p{Lu}])",
-							"$1 $2"),
-						@"([\p{L}])(-)([\p{Lu}])",
-						"$1 $2 $3"),
-					@"([\p{L}])_([\p{Lu}])",
-					"$1 $2"
-					);
 		}
 
 		/// See: http://www.siao2.com/2007/05/14/2629747.aspx

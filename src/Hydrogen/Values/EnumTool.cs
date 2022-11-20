@@ -286,6 +286,19 @@ namespace Tools {
 
 			return true;
 		}
+
+		public static object ParseEnum(Type enumType, string value, bool ignoreValueCase) 
+			=> TryParseEnum(enumType, value, ignoreValueCase, out var result) ? result : throw new FormatException($"Invalid formatted {enumType.Name} enum: {value}");
+
+		public static object ParseEnumOrDefault(Type enumType, string value, bool ignoreValueCase, object defaultValue) 
+			=> TryParseEnum(enumType, value, ignoreValueCase, out var result) ? result : defaultValue;
+
+		public static TEnum ParseEnum<TEnum>(string value, bool ignoreValueCase) 
+			=> (TEnum)ParseEnum(typeof(TEnum), value, ignoreValueCase);
+
+		public static TEnum ParseEnumOrDefault<TEnum>(Type enumType, string value, bool ignoreValueCase, TEnum defaultValue) 
+			=> ParseEnumOrDefault(typeof(TEnum), value, ignoreValueCase, defaultValue);
+
 	}
 }
 

@@ -11,12 +11,14 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
+using System.Threading.Tasks;
+
 namespace Hydrogen {
 	/// <summary>
 	/// Do-nothing Text Writer. Does nothing by design.
 	/// </summary>
 
-	public class NoOpTextWriter : BaseTextWriter {
+	public class NoOpTextWriter : TextWriterBase {
 		/// <summary>
 		/// Initializes a new instance of the <see cref="T:System.MarshalByRefObject"/> class.
 		/// </summary>
@@ -25,6 +27,8 @@ namespace Hydrogen {
 
 		protected override void InternalWrite(string value) {
 		}
+
+		protected override Task InternalWriteAsync(string value) => Task.CompletedTask;
 	}
 
 }

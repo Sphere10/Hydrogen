@@ -20,12 +20,14 @@ namespace Hydrogen {
 		public PreloadedCache(
             IDictionary<TKey,TValue> preloadedValues,
             IEqualityComparer<TKey> keyComparer = null
-        ) : base (ExpirationPolicy.None, null, true, NullValuePolicy.CacheNormally, keyComparer) {
+        ) : base (ExpirationPolicy.None, null, true, NullValuePolicy.CacheNormally, StaleValuePolicy.AssumeNeverStale, keyComparer) {
 			_preloadedValues = preloadedValues;
 		}
 
 		protected override IDictionary<TKey, TValue> BulkFetch() {
 		        return _preloadedValues;
 		}
-    }
+
+		protected override bool CheckStaleness(TKey key, CachedItem<TValue> item) => false;
+	}
 }

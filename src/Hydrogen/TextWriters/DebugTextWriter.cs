@@ -17,7 +17,7 @@ namespace Hydrogen {
 	/// <summary>
 	/// TextWriter which outputs to Debug output.
 	/// </summary>
-	public class DebugTextWriter : BaseTextWriter {
+	public class DebugTextWriter : SyncTextWriter {
 		protected override void InternalWrite(string value) {
 			System.Diagnostics.Debug.Write(value);
 		}

@@ -78,7 +78,7 @@ namespace Hydrogen {
 
 		public bool RequiresLoad => _transactionalBuffer.RequiresLoad || _clustered.RequiresLoad;
 
-		public ISynchronizedObject<Scope, Scope> ParentSyncObject {
+		public ISynchronizedObject ParentSyncObject {
 			get => _dictionary.ParentSyncObject;
 			set => _dictionary.ParentSyncObject = value;
 		}
@@ -98,9 +98,9 @@ namespace Hydrogen {
 
 		public Task LoadAsync() => Task.Run(Load);
 
-		public Scope EnterReadScope() => _dictionary.EnterReadScope();
+		public IDisposable EnterReadScope() => _dictionary.EnterReadScope();
 
-		public Scope EnterWriteScope() => _dictionary.EnterWriteScope();
+		public IDisposable EnterWriteScope() => _dictionary.EnterWriteScope();
 
 		public void Commit() => _transactionalBuffer.Commit();
 

@@ -99,7 +99,7 @@ namespace Hydrogen {
 		/// <remarks></remarks>
 		public override void Write(char[] buffer, int index, int count) {
 			lock (_textWriters)
-				foreach (TextWriter textWriter in _textWriters)
+				foreach (var textWriter in _textWriters)
 					textWriter.Write(buffer, index, count);
 		}
 
@@ -108,13 +108,7 @@ namespace Hydrogen {
 		/// </summary>
 		/// <returns>The Encoding in which the output is written.</returns>
 		/// <remarks></remarks>
-		public override Encoding Encoding {
-#if !__WP8__
-			get { return System.Text.Encoding.Default; }
-#else
-            get { return System.Text.Encoding.Unicode; }
-#endif
-		}
+		public override Encoding Encoding => System.Text.Encoding.Default;
 	}
 
 }

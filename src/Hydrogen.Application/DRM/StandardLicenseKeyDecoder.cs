@@ -12,7 +12,6 @@
 //-----------------------------------------------------------------------
 
 using System;
-using Hydrogen.Application.Components;
 using System.Reflection;
 
 namespace Hydrogen.Application {

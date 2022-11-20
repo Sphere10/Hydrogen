@@ -18,7 +18,13 @@ using System.Threading.Tasks;
 
 namespace Hydrogen {
 
-	public abstract  class CacheBase<TKey, TValue> : CacheBase, ICache<TKey, TValue> {
+	public abstract class CacheBase<TKey, TValue> : CacheBase, ICache<TKey, TValue> {
+
+		public new event EventHandlerEx<TKey> ItemFetching {
+			add => ((CacheBase)this).ItemFetching += ToBaseListener(value);
+			remove => ((CacheBase)this).ItemFetching -= ToBaseListener(value);
+		} 
+
         public new event EventHandlerEx<TKey, TValue> ItemFetched {
 	        add => ((CacheBase)this).ItemFetched += ToBaseListener(value);
 	        remove => ((CacheBase)this).ItemFetched -= ToBaseListener(value);
@@ -35,9 +41,10 @@ namespace Hydrogen {
 	        long maxCapacity = int.MaxValue,
 	        TimeSpan? expirationDuration = null,
 	        NullValuePolicy nullValuePolicy = NullValuePolicy.CacheNormally,
+	        StaleValuePolicy staleValuePolicy = StaleValuePolicy.AssumeNeverStale,
 	        IEqualityComparer<TKey> keyComparer = null,
 	        ICacheReaper reaper = null
-        ) : base(new CastedEqualityComparer<TKey, object>(keyComparer ?? EqualityComparer<TKey>.Default), reapStrategy, expirationStrategy, maxCapacity, expirationDuration, nullValuePolicy, reaper) {
+        ) : base(new CastedEqualityComparer<TKey, object>(keyComparer ?? EqualityComparer<TKey>.Default), reapStrategy, expirationStrategy, maxCapacity, expirationDuration, nullValuePolicy, staleValuePolicy, reaper) {
         }
 
         public new IEnumerable<CachedItem<TValue>> CachedItems => ((CacheBase)this).CachedItems.Cast<CachedItem<TValue>>(); 
@@ -73,12 +80,20 @@ namespace Hydrogen {
         protected sealed override long EstimateSize(object value)
 	        => EstimateSize((TValue)value);
 		
-        protected override object Fetch(object key)
+        protected sealed override object Fetch(object key)
 	        => Fetch((TKey)key);
+
+        protected sealed override bool CheckStaleness(object key, CachedItem item) 
+			=> CheckStaleness((TKey)key, (CachedItem<TValue>)item);
 
         protected abstract long EstimateSize(TValue value);
 
         protected abstract TValue Fetch(TKey key);
+
+		protected abstract bool CheckStaleness(TKey key, CachedItem<TValue> item);
+
+		protected sealed override void OnItemFetching(object key)
+			=> OnItemFetching((TKey)key);
 
         protected sealed override void OnItemFetched(object key, object val)
 	        => OnItemFetched((TKey)key, (TValue)val);
@@ -86,10 +101,18 @@ namespace Hydrogen {
         protected sealed override void OnItemRemoved(object key, CachedItem val)
 	        => OnItemRemoved((TKey)key, (CachedItem<TValue>)val);
 
+
+        protected virtual void OnItemFetching(TKey key) {
+        }
+
 		protected virtual void OnItemFetched(TKey key, TValue val) {
         }
 
         protected virtual void OnItemRemoved(TKey key, CachedItem<TValue> val) {
+        }
+
+        private static EventHandlerEx<object> ToBaseListener(EventHandlerEx<TKey> listener) {
+	        return (k) => listener((TKey)k);
         }
 
 		private static EventHandlerEx<object, object> ToBaseListener(EventHandlerEx<TKey, TValue> listener) {

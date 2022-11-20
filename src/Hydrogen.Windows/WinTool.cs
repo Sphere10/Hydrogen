@@ -15,9 +15,12 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
+using System.ServiceProcess;
 using System.Text;
+using System.Threading.Tasks;
 using Microsoft.Win32;
 using Hydrogen;
 using Hydrogen.Windows;
@@ -25,6 +28,18 @@ using Hydrogen.Windows;
 namespace Tools {
 
     public class WinTool {
+
+		#region Services
+
+		public static bool IsServiceInstalled(string serviceName)  
+			=> TryGetServiceController(serviceName, out _);
+		
+		public static bool TryGetServiceController(string serviceName, out ServiceController serviceController) {
+			serviceController = ServiceController.GetServices().FirstOrDefault(s => s.ServiceName == serviceName);
+			return serviceController != null;
+		}
+
+		#endregion
 
         #region Registry
 
@@ -246,4 +261,5 @@ namespace Tools {
 
 		#endregion
     }
+
 }

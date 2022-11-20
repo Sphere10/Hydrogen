@@ -36,7 +36,7 @@ namespace Hydrogen {
 		/// </summary>
 		/// <returns>A string representation of the value if available, null otherwise</returns>
 		public override string ToString() {
-			return _valueSet ? Convert.ToString(_value) : null;
+			return _valueSet ? Convert.ToString(_value) : "Future value has not currently been determined";
 		}
 	}
 

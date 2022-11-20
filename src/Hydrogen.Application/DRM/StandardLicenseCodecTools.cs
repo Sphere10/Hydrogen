@@ -14,7 +14,7 @@
 using System;
 using System.Reflection;
 
-namespace Hydrogen.Application.Components {
+namespace Hydrogen.Application {
 	[Obfuscation(Feature = "encryptmethod", Exclude = false)]
 	internal static class StandardLicenseCodecTools
 	{

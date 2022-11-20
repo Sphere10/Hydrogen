@@ -20,7 +20,7 @@ namespace Hydrogen {
 	/// </summary>
 	/// <remarks>Handy for in-place implementation of TextWriter
 	///			 i.e. var writer = new ActionTextWriter(str => System.Console.WriteLine(str));</remarks>
-	public class ActionTextWriter : BaseTextWriter {
+	public class ActionTextWriter : SyncTextWriter {
 
 		protected Action<string> action;
 

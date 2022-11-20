@@ -19,13 +19,119 @@ using System.Text;
 using System.IO;
 using System.Text.RegularExpressions;
 using Hydrogen;
-using static System.Net.Mime.MediaTypeNames;
 
 // ReSharper disable CheckNamespace
 namespace Tools {
 
-
 	public static class Text {
+		public static readonly Regex AsciiLetterRegex = new ("[a-zA-Z]");
+
+		public static string ToCasing(TextCasing style, string text, FirstCharacterPolicy firstCharacterPolicy = FirstCharacterPolicy.Anything, string prefixIfPolicyInvalid = null) {
+			const string DefaultFirstChar = "_";
+			const string DefaultLetterOnlyFirstChar = "v";
+			const string DefaultDigitOnlyFirstChar = "0";
+
+			if (firstCharacterPolicy != FirstCharacterPolicy.Anything && prefixIfPolicyInvalid == null) {
+				if (firstCharacterPolicy.HasFlag(FirstCharacterPolicy.AllowUnderscore))
+					prefixIfPolicyInvalid = DefaultFirstChar;
+				else if (firstCharacterPolicy.HasFlag(FirstCharacterPolicy.AllowAsciiLetters))
+					prefixIfPolicyInvalid = DefaultLetterOnlyFirstChar;
+				else if (firstCharacterPolicy.HasFlag(FirstCharacterPolicy.AllowDigits))
+					prefixIfPolicyInvalid = DefaultDigitOnlyFirstChar;
+				else throw new ArgumentException("Unable to determine default first variable character based on policy", nameof(firstCharacterPolicy));
+			}
+
+			var separator = style switch {
+				TextCasing.PascalCase => string.Empty,
+				TextCasing.CamelCase => string.Empty,
+				TextCasing.SnakeCase => "_",
+				TextCasing.KebabCase => "-",
+				_ => throw new NotSupportedException(style.ToString())
+			};
+
+			 text = Regex
+				.Replace(text, 
+				// (Match any non punctuation) & then ignore any punctuation
+				@"([^(\p{P}\s)]+)[\p{P}\s]*", 
+				match => {
+					var word = match.Groups[1].Value;
+					if (string.IsNullOrEmpty(word))
+						return string.Empty;
+					
+					var firstChar = style switch {
+						TextCasing.PascalCase => char.ToUpperInvariant(word[0]),
+						TextCasing.CamelCase => char.ToLowerInvariant(word[0]),
+						TextCasing.SnakeCase => char.ToUpperInvariant(word[0]),
+						TextCasing.KebabCase => char.ToLowerInvariant(word[0]),
+						_ => throw new NotSupportedException(style.ToString())
+					};
+
+					// Flip to PascalCase after first match in CamelCase
+					if (style == TextCasing.CamelCase)
+						style = TextCasing.PascalCase;
+
+					var rest = word.Substring(1);
+					if (!string.IsNullOrEmpty(rest)) {
+						rest = style switch {
+							TextCasing.PascalCase => PascalizeTail(firstChar, rest),
+							TextCasing.CamelCase => PascalizeTail(firstChar, rest),
+							TextCasing.SnakeCase => rest.ToUpperInvariant(),
+							TextCasing.KebabCase => rest.ToLowerInvariant(),
+							_ => throw new NotSupportedException(style.ToString())
+						};
+					}
+
+					return $"{separator}{firstChar}{rest}";
+				})
+				.TrimStart(separator.ToCharArray()); 
+
+			// apply first char policy
+			if (text.Length > 0 && firstCharacterPolicy != FirstCharacterPolicy.Anything) {
+				var firstLetter = text[0];
+				var isAsciiLetter = IsAsciiLetter(firstLetter);
+				var isDigit = char.IsDigit(firstLetter);
+				var isUnderscore = firstLetter == '_';
+
+				if ((!isUnderscore || !firstCharacterPolicy.HasFlag(FirstCharacterPolicy.AllowUnderscore)) &&
+				    (!isAsciiLetter || !firstCharacterPolicy.HasFlag(FirstCharacterPolicy.AllowAsciiLetters)) &&
+				    (!isDigit || !firstCharacterPolicy.HasFlag(FirstCharacterPolicy.AllowDigits)))
+					text = prefixIfPolicyInvalid + text;
+			}
+	
+			return text;
+
+			string PascalizeTail(char startChar, string value) {
+				// This processes the tail section of a string (same for Pascal or Camel case)
+				// This starts as lower
+				var sb = new StringBuilder();
+				var inUpperCase = char.IsUpper(startChar);
+				for(var i = 0; i < value.Length; i++) {
+					var ch = value[i];
+					switch(inUpperCase) {
+						case false:
+							if (char.IsUpper(ch))
+								inUpperCase = true;
+							else if (i == 0 && char.IsDigit(startChar) || i > 0 && char.IsDigit(value[i-1]))
+								ch = char.ToUpperInvariant(ch);
+
+							sb.Append(ch);
+							break;
+						case true:
+							if (char.IsLower(ch)) {
+								inUpperCase = false;
+							} else {
+								ch = char.ToLowerInvariant(ch);
+							}
+							sb.Append(ch);
+							break;
+					}
+				}
+				return sb.ToString();
+			}
+
+		}
+		
+		public static bool IsAsciiLetter(char c) => AsciiLetterRegex.IsMatch(c.ToString());
 
 		public static IEnumerable<string> FindSentencesWithText(string paragraph, string text) {
 			/*
@@ -71,26 +177,10 @@ namespace Tools {
 		public static string FormatWithDictionary(string formatString, IDictionary<string, object> userTokenResolver, bool recursive, params object[] formatArgs)
 			=> StringFormatter.FormatWithDictionary(formatString, userTokenResolver, recursive, formatArgs);
 
-        public static bool IsValidHexString(IEnumerable<char> hexString) {
-            return !hexString.Any(c => !(c >= '0' && c <= '9') && !(c >= 'a' && c <= 'f') && !(c >= 'A' && c <= 'F'));
-        }
-
         public static bool HasNoLettersOrDigits(string value) {
             return value == null || value.All(c => !Char.IsLetterOrDigit(c));
         }
 
-        public static bool TryNewRegex(string pattern, out Regex regex)
-            => TryNewRegex(pattern, RegexOptions.None, 30, out regex);
-
-		public static bool TryNewRegex(string pattern, RegexOptions options, int timeoutSec, out Regex regex) {
-            regex = null;	
-            try {
-                regex = new Regex(pattern, RegexOptions.None, TimeSpan.FromSeconds(timeoutSec));
-            } catch {
-				return false;
-			}
-            return true;
-        }
 
         /// <summary>
         /// Return a random string of the given length with the default character set of a-Z, 0-9
@@ -166,26 +256,24 @@ namespace Tools {
             Action<Stream, Stream> compressor = Streams.GZipCompress;
             Action<Stream, Stream> encryptor = (source, dest) => Streams.Encrypt<TSymmetricAlgorithm>(source, dest, password, null, paddingMode, cipherMode);
             Action<Stream, Stream> noop = (source, dest) => Streams.RouteStream(source, dest);
-            using (var sourceStream = new MemoryStream(ConvertToByteArray(text)))
-            using (var destStream = new MemoryStream())
-            using (var streamPipeline = new StreamPipeline(compressor, hasPassword ? encryptor : noop)) {
-                streamPipeline.Run(sourceStream, destStream);
-                return destStream.ToArray();
-            }
+            using var sourceStream = new MemoryStream(ConvertToByteArray(text));
+            using var destStream = new MemoryStream();
+            using var streamPipeline = new StreamPipeline(compressor, hasPassword ? encryptor : noop);
+            streamPipeline.Run(sourceStream, destStream);
+            return destStream.ToArray();
         }
 
         public static string DecompressText<TSymmetricAlgorithm>(byte[] bytes, string password = null, PaddingMode paddingMode = PaddingMode.PKCS7, CipherMode cipherMode = CipherMode.CBC) where TSymmetricAlgorithm : SymmetricAlgorithm, new() {
             var hasPassword = !String.IsNullOrEmpty(password);
-            Action<Stream, Stream> decryptor = (source, dest) => Streams.Decrypt<TSymmetricAlgorithm>(source, dest, password, null, paddingMode, cipherMode);
             Action<Stream, Stream> decompressor = Streams.GZipDecompress;
+			Action<Stream, Stream> decryptor = (source, dest) => Streams.Decrypt<TSymmetricAlgorithm>(source, dest, password, null, paddingMode, cipherMode);
             Action<Stream, Stream> noop = (source, dest) => Streams.RouteStream(source, dest);
-            using (var sourceStream = new MemoryStream(bytes))
-            using (var destStream = new MemoryStream())
-            using (var streamPipeline = new StreamPipeline(hasPassword ? decryptor : noop, decompressor)) {
-                streamPipeline.Run(sourceStream, destStream);
-                return ConvertToString(destStream.ToArray());
-            }
+            using var sourceStream = new MemoryStream(bytes);
+            using var destStream = new MemoryStream();
+            using var streamPipeline = new StreamPipeline(hasPassword ? decryptor : noop, decompressor);
+            streamPipeline.Run(sourceStream, destStream);
+            return ConvertToString(destStream.ToArray());
         }
 
-    }
+	}
 }

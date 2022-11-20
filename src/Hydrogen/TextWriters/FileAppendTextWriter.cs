@@ -13,6 +13,7 @@
 
 using System.IO;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Hydrogen {
 
@@ -20,7 +21,7 @@ namespace Hydrogen {
 	/// TextWriter which appends to a file.
 	/// </summary>
 	/// <remarks></remarks>
-	public class FileAppendTextWriter : BaseTextWriter {
+	public class FileAppendTextWriter : TextWriterBase {
 
 		/// <summary>
 		/// This is the default encoding used by StreamWriter, which File.AppendAllText uses internally.
@@ -47,8 +48,11 @@ namespace Hydrogen {
 
 		public string FilePath { get; set; }
         
-		protected override void InternalWrite(string value) {
-			File.AppendAllText(FilePath, value, _swEncoding);
-		}
+		protected override void InternalWrite(string value) 
+			=> File.AppendAllText(FilePath, value, _swEncoding);
+		
+		protected override Task InternalWriteAsync(string value) 
+			=> File.AppendAllTextAsync(FilePath, value, _swEncoding);
+	
 	}
 }

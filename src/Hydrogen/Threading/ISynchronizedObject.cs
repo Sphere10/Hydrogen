@@ -12,20 +12,26 @@
 //-----------------------------------------------------------------------
 
 
+using System;
 using System.Threading;
 
 namespace Hydrogen {
 
-	public interface ISynchronizedObject : ISynchronizedObject<Scope, Scope> {
+	public interface ISynchronizedObject {
+		ISynchronizedObject ParentSyncObject { get; set; }
+		ReaderWriterLockSlim ThreadLock { get; }
+		IDisposable EnterReadScope();
+		IDisposable EnterWriteScope();
+
 	}
 
-    public interface ISynchronizedObject<TReadScope, TWriteScope> 
-        where TReadScope : IScope
-        where TWriteScope : IScope {
-		ISynchronizedObject<TReadScope, TWriteScope> ParentSyncObject { get; set; }
+    public interface ISynchronizedObject<TReadScope, TWriteScope> : ISynchronizedObject
+        where TReadScope : IDisposable
+        where TWriteScope : IDisposable {
+		new ISynchronizedObject<TReadScope, TWriteScope> ParentSyncObject { get; set; }
         ReaderWriterLockSlim ThreadLock { get; }
-        TReadScope EnterReadScope();
-        TWriteScope EnterWriteScope();
+        new TReadScope EnterReadScope();
+        new TWriteScope EnterWriteScope();
     }
 
 }

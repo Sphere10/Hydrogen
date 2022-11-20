@@ -26,6 +26,23 @@ namespace Tools {
 		static readonly Regex WordDelimiters = new Regex(@"[\s—–_]", RegexOptions.Compiled); // white space, em-dash, en-dash, underscore
 		static readonly Regex InvalidChars = new Regex(@"[^a-z0-9\-]", RegexOptions.Compiled); // characters that are not valid
 		static readonly Regex MultipleHyphens = new Regex(@"-{2,}", RegexOptions.Compiled); // multiple hyphens
+		static readonly Regex AsciiLetters = new Regex(@"[a-zA-Z]", RegexOptions.Compiled); // characters that are not valid
+
+		public static string StripAnchorTag(string url) {
+			var ix = url.LastIndexOf('#');
+			if (ix != -1) {
+				url = url.Substring(0, ix);
+			}
+			return url;
+		}
+
+
+		public static string ToHtml4DOMObjectID(string text, string prefixIfRequired = "obj_") {
+			var slug = ToUrlSlug(text);
+			if (slug.Length == 0 || !AsciiLetters.IsMatch(slug[0].ToString()))
+				slug = prefixIfRequired + slug;
+			return slug;
+		}
 
 		public static string ToUrlSlug(string value) {
 			// convert to lower case
@@ -33,6 +50,13 @@ namespace Tools {
 
 			// remove diacritics (accents)
 			value = value.RemoveDiacritics();
+
+			// convert amperstands to n
+			value = value.Replace('&', 'n');
+
+			// remove single/double quotes
+			value = value.Replace("'", string.Empty);
+			value = value.Replace("\"", string.Empty);
 
 			// ensure all word delimiters are hyphens
 			value = WordDelimiters.Replace(value, "-");
@@ -46,11 +70,7 @@ namespace Tools {
 			// trim hyphens (-) from ends
 			return value.Trim('-');
 		}
-
-		public static string CodeNameForUrl(string s) {
-			return s.ToCamelCase(false, true, '-');
-		}
-
+		
 		public static string EncodeUrl(string s) {
 			return EncodeUrl(s, null);
 		}
@@ -102,6 +122,10 @@ namespace Tools {
 			return result;
 		}
 
+		public static bool IsVideoSharingUrl(string url) 
+			=> IsYouTubeUrl(url) || IsVimeoUrl(url);
+
+
 		public static bool IsYouTubeUrl(string url)
 			=> TryParseYouTubeUrl(url, out _);
 
@@ -118,6 +142,16 @@ namespace Tools {
 				   url.GetRegexMatch(@"youtube.com/v/(?<videoid>[a-zA-Z0-9_-]+)", "videoid") ??
 				   (allowIdOnly ? url.GetRegexMatch(@"^(?<videoid>[a-zA-Z0-9_-]+)$", "videoid") : null);
 
+			return videoID != null;
+		}
+
+
+		public static bool IsVimeoUrl(string url)
+			=> TryParseVimeoUrl(url, out _);
+
+		public static bool TryParseVimeoUrl(string url, out string videoID) {
+			Guard.ArgumentNotNullOrWhitespace(url, nameof(url));
+			videoID = url.GetRegexMatch(@"player.vimeo.com/video/(?<videoid>[0-9_-]+)", "videoid");
 			return videoID != null;
 		}
 

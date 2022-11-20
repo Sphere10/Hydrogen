@@ -37,6 +37,7 @@
     [Parameter]
     public Func<Task<bool>> OnCloseFunc { get; set; } = () => Task.FromResult(true);
 
+#warning These paramters were commented out in WizardModal.razor due to latest lang .NET compilation issues. Resolve!
     [Parameter]
     public (int min, int max)? Width { get; set; }
 

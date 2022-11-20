@@ -79,7 +79,7 @@ namespace Hydrogen.Windows.Forms {
 					// Design-time mode
 					return this.m_checkBox.Text;
 				} else {
-					// Run-time
+					// RunAsync-time
 					return " "; // Set the text of the GroupBox to a space, so the gap appears before the CheckBox.
 				}
 			}

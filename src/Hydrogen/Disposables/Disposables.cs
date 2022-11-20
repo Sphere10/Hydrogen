@@ -14,6 +14,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Hydrogen {
 
@@ -49,8 +50,12 @@ namespace Hydrogen {
 		}
 
         public void Add(Action disposeAction) {
-            base.Add(new ActionScope(disposeAction));
+            base.Add(new ActionDisposable(disposeAction));
 		}
+
+        public void Add(Func<Task> disposeTask) {
+	        base.Add(new TaskDisposable(disposeTask));
+        }
 
 		public static Disposables None { get; }
 

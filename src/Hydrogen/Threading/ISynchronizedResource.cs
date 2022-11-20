@@ -13,7 +13,7 @@
 
 namespace Hydrogen {
 
-	public interface ISynchronizedResource : ISynchronizedResource<Scope, Scope>, ISynchronizedObject {
+	public interface ISynchronizedResource : ISynchronizedResource<Scope, Scope> {
 	}
 
     public interface ISynchronizedResource<TReadScope, TWriteScope> : ISynchronizedObject<TReadScope, TWriteScope>

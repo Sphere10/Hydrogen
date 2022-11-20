@@ -11,6 +11,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
+using System;
 using System.Collections.Generic;
 using System.Threading;
 
@@ -37,18 +38,18 @@ namespace Hydrogen {
 		public override bool Remove(TItem item) { using (EnterWriteScope()) return base.Remove(item); }
 		public override IEnumerator<TItem> GetEnumerator() { var readScope = EnterReadScope(); return base.GetEnumerator().OnDispose(readScope.Dispose); }
 
-		public ISynchronizedObject<Scope, Scope> ParentSyncObject { 
+		public ISynchronizedObject ParentSyncObject { 
 			get => _lock.ParentSyncObject; 
 			set => _lock.ParentSyncObject = value;
 		}
 
 		public ReaderWriterLockSlim ThreadLock => _lock.ThreadLock;
 
-		public Scope EnterReadScope() {
+		public IDisposable EnterReadScope() {
 			return _lock.EnterReadScope();
 		}
 
-		public Scope EnterWriteScope() {
+		public IDisposable EnterWriteScope() {
 			return _lock.EnterWriteScope();
 		}
 	}

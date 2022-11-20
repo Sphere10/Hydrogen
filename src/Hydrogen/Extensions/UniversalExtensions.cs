@@ -22,7 +22,14 @@ namespace Hydrogen {
     /// </summary>
     /// <remarks></remarks>
     public static class UniversalExtensions {
-        public static void Swap<T>(ref T fromX, ref T fromY) {
+        
+	    public static IEnumerable<TItem> Visit<TItem>(this TItem node, Func<TItem, TItem> ancestorIterator, IEqualityComparer<TItem> comparer = null) 
+			=> Visit(node, x => x != null ? new [] { ancestorIterator(x) } : Array.Empty<TItem>(), comparer);
+
+	    public static IEnumerable<TItem> Visit<TItem>(this TItem node, Func<TItem, IEnumerable<TItem>> edgeIterator, IEqualityComparer<TItem> comparer = null) 
+			=> new [] { node }.Visit(edgeIterator, comparer);
+		
+		public static void Swap<T>(ref T fromX, ref T fromY) {
             T temp = default(T);
             temp = fromX;
             fromX = fromY;
@@ -39,6 +46,12 @@ namespace Hydrogen {
 
 		public static string ToStringSafe<T>(this T @object) => @object?.ToString() ?? "<null>";
 
+
+		public static IEnumerable<T> ConcatWith<T>(this T head, IEnumerable<T> tail) => new [] { head }.Concat(tail);
+
+		public static IEnumerable<T> UnionWith<T>(this T head, IEnumerable<T> tail) => new [] { head }.Union(tail);
+
+		public static IEnumerable<T> UnionWith<T>(this T head, T tail) => UnionWith(head, new [] { tail });
 
     }
 }

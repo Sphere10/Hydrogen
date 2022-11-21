@@ -1,0 +1,35 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <AssemblyName>Hydrogen.Web.AspNetCore</AssemblyName>
+    <RootNamespace>Hydrogen.Web.AspNetCore</RootNamespace>
+    <LangVersion>preview</LangVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="lib\**" />
+    <EmbeddedResource Remove="lib\**" />
+    <None Remove="lib\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="Forms\hydrogen-bootstrap-forms-1.0.0.js" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Forms\hydrogen-bootstrap-forms-1.0.0.js" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="System.Drawing.Common" Version="6.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Hydrogen\src\Hydrogen.Drawing\Hydrogen.Drawing.csproj" />
+    <ProjectReference Include="..\..\..\Hydrogen\src\Hydrogen\Hydrogen.csproj" />
+  </ItemGroup>
+
+</Project>

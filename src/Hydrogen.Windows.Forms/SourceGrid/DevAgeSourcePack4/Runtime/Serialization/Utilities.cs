@@ -34,10 +34,13 @@ namespace DevAge.Runtime.Serialization
         /// <returns></returns>
 		public static object BinDeserialize(Stream p_Stream)
 		{
-			BinaryFormatter f = new BinaryFormatter();
-			object tmp;
-			tmp = f.Deserialize(p_Stream);
-			return tmp;
+			// BinaryFormattter Deprecated in .NET 7
+			// TODO use GenericSerializer from Hydrogen, test for Stream's
+			throw new NotImplementedException("BinaryFormattter Deprecated in .NET 7"); 
+			//BinaryFormatter f = new BinaryFormatter();
+			//object tmp;
+			//tmp = f.Deserialize(p_Stream);
+			//return tmp;
 		}
 
         /// <summary>
@@ -47,8 +50,11 @@ namespace DevAge.Runtime.Serialization
         /// <param name="p_Object"></param>
 		public static void BinSerialize(Stream p_Stream, object p_Object)
 		{
-			BinaryFormatter f = new BinaryFormatter();
-			f.Serialize(p_Stream,p_Object);
+			// BinaryFormattter Deprecated in .NET 7
+			// TODO use GenericSerializer from Hydrogen, test for Stream's
+			throw new NotImplementedException("BinaryFormattter Deprecated in .NET 7"); 
+			//BinaryFormatter f = new BinaryFormatter();
+			//f.Serialize(p_Stream,p_Object);
 		}
 
         /// <summary>

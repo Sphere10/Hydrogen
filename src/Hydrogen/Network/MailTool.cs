@@ -11,8 +11,6 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-#if !__WP8__
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -167,6 +165,7 @@ namespace Tools {
 					smtpClient.UseDefaultCredentials = false;
 					smtpClient.Credentials = new NetworkCredential(username, password, domain);
 				}
+
 				smtpClient.Send(mailMessage);
 			}
 
@@ -174,5 +173,3 @@ namespace Tools {
 
 	}
 
-
-#endif

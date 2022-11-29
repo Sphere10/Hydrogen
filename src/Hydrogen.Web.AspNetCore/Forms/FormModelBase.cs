@@ -5,10 +5,9 @@ using Microsoft.AspNetCore.Mvc;
 namespace Hydrogen.Web.AspNetCore {
 
     public abstract class FormModelBase {
-        [Required]
-        [HiddenInput(DisplayValue = false)]
-        public Guid ID { get; set; } = Guid.NewGuid();
 
-        public abstract string FormName { get; }
+	    [Required]
+	    [HiddenInput(DisplayValue = false)]
+	    public string ID { get; set; } =  Tools.Url.ToHtml4DOMObjectID(Guid.NewGuid().ToStrictAlphaString().ToLowerInvariant(), "_");
     }
 }

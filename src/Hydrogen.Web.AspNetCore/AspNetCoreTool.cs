@@ -21,7 +21,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
-namespace Tools {
+namespace Tools.Web {
 
     public static partial class AspNetCore {
 

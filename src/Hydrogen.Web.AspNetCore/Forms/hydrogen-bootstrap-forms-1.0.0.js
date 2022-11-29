@@ -52,6 +52,8 @@ function F_BeforeSubmit(formId, o) {
 
     // remove prior validation errors
     form.find(".field-validation-error").remove();
+    form.find(".is-invalid").removeClass("is-invalid");
+    form.find(".input-validation-error").removeClass("input-validation-error");
 
     // clear the results
     $('#' + formId + '_result').replaceWith(' <div id = "' + formId + '_result' + '"></div>');
@@ -93,10 +95,10 @@ function F_Success(formId, result) {
             break;
     }
 
-    if (result.result) {
-        form[0].reset();
-        form.find('input[type=text], textarea').val('');
-    }
+    // Reset form (if applicable)
+    if (result.result == true && form[0].options.clearOnSuccess == true)
+        F_Reset(formId);
+
 }
 
 function F_Error(formId, status, error) {
@@ -130,9 +132,62 @@ function F_Completed(formId) {
 
 }
 
-function F_Init(formId) {
+function F_Init(formId, options) {
     $(document).ready(function () {
-        $('#' + formId).on("submit", function (event) {
+        var form = $('#' + formId);
+
+        // On first time initializing, we save a backup of the form for future resets
+        if ($(window).data(formId) == null)
+            $(window).data(formId, form.html())
+
+        // set form options
+        if (options == null)
+            options = {
+                clearOnSuccess: false
+            };
+        form[0].options = options;
+
+        // re-init choices for fetched form (choices.js)
+        form[0].querySelectorAll('[sp10-choices]').forEach((toggle) => {
+            const elementOptions = toggle.dataset.choices ? JSON.parse(toggle.dataset.choices) : {};
+
+            const defaultOptions = {
+                shouldSort: false,
+                searchEnabled: false,
+                classNames: {
+                    containerInner: toggle.className,
+                    input: 'form-control',
+                    inputCloned: 'form-control-xs',
+                    listDropdown: 'dropdown-menu',
+                    itemChoice: 'dropdown-item',
+                    activeState: 'show',
+                    selectedState: 'active',
+                },
+            };
+
+            const options = {
+                ...elementOptions,
+                ...defaultOptions,
+            };
+
+            var choices = $(toggle).data('choices');
+
+            if (choices)
+                choices.destroy();
+
+            choices = new Choices(toggle, options);
+            $(toggle).data('choices', choices);
+        });
+
+        // Init bootstrap tool-tips (WARNING: not sure if these are repeatable safe)
+        form.find('[data-bs-toggle="tooltip"]').tooltip();
+
+        // Init bootstrap pop-overs (WARNING: not sure if these are repeatable safe)
+        form.find('[data-bs-toggle="popover"]').popover();
+
+
+        // Add the AJAX handler
+        form.on("submit", function (event) {
             var formId = $(this).attr("id");
             event.preventDefault();
             var formValues = $(this).serialize();
@@ -157,4 +212,25 @@ function F_Init(formId) {
             });
         });
     });
+}
+
+function F_Finalize(formId) {
+    var form = $('#' + formId);
+    // destroy form event handlers
+    form.off();
+    // destroy choices objects
+    form[0].querySelectorAll('[sp10-choices]').forEach((toggle) => {
+        var choices = $(toggle).data('choices');
+        if (choices)
+            choices.destroy();
+    });
+
+}
+
+function F_Reset(formId) {
+    F_Finalize(formId);
+
+    // Restore form from original backup
+    var form = $('#' + formId);
+    form.html($(window).data(formId)); // this restores the original backed-up form html which contains the javascript to call F_Init
 }

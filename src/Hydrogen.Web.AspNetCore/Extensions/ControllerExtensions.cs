@@ -65,7 +65,11 @@ namespace Hydrogen.Web.AspNetCore {
 					new HtmlHelperOptions()
 				);
 
+				try {
 				await viewResult.View.RenderAsync(viewContext);
+				} catch (Exception ex) {
+					var xxx = ex;
+				}
 
 				return writer.GetStringBuilder().ToString();
 			}

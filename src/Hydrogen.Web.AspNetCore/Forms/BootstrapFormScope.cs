@@ -1,12 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text.Encodings.Web;
+using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Newtonsoft.Json;
 
 namespace Hydrogen.Web.AspNetCore;
 
-public sealed class BootstrapFormScope : IDisposable {
+public sealed class BootstrapFormScope<TModel> : IDisposable where TModel : FormModelBase {
 	public const string DefaultFormClasses = "";
 	public const string ButtonHtmlSnippet =
 		"""
@@ -18,9 +21,9 @@ public sealed class BootstrapFormScope : IDisposable {
 """;
 
 	public const string FormEndHtmlSnippet = """
-<div id="{formId}_result_marker" class="invisible"></div>
+<div id="{formId}_result_marker" class="invisible pb-5"></div>
 <script language="javascript">
-    F_Init('{formId}');
+    F_Init('{formId}', {formOptions});
 </script>
 """;
 
@@ -28,10 +31,14 @@ public sealed class BootstrapFormScope : IDisposable {
 	private readonly string _formClass;
 	private readonly IHtmlHelper _htmlHelper;
 	private readonly FormScopeOptions _options;
-
-
-	public BootstrapFormScope(IHtmlHelper htmlHelper, string action, string controller, string formId, string clientFormClasses = null, FormScopeOptions options = FormScopeOptions.Default) {
-		_formID = Tools.Url.ToHtml4DOMObjectID(formId, "_");
+	
+	public BootstrapFormScope(IHtmlHelper<TModel> htmlHelper, string action, string controller, TModel formModel, string formClass = null, FormScopeOptions options = FormScopeOptions.Default) {
+		Guard.ArgumentNotNull(htmlHelper, nameof(htmlHelper));
+		Guard.ArgumentNotNull(action, nameof(action));
+		Guard.ArgumentNotNull(controller, nameof(controller));
+		Guard.ArgumentNotNull(formModel, nameof(formModel));
+	
+		_formID = formModel.ID;
 		_htmlHelper = htmlHelper;
 		_formClass = DefaultFormClasses;
 		_options = options;
@@ -43,22 +50,27 @@ public sealed class BootstrapFormScope : IDisposable {
 				FormMethod.Post,
 				new {
 					id = _formID,
-					@class = _formClass + (!string.IsNullOrWhiteSpace(clientFormClasses) ? (" " + clientFormClasses) : string.Empty)
+					@class = _formClass + (!string.IsNullOrWhiteSpace(formClass) ? (" " + formClass) : string.Empty)
 				});
 
-			Write(htmlHelper.Hidden("id", _formID));
+			Write(htmlHelper.HiddenFor(m => m.ID, _formID));
 		}
-
 	}
 
-
 	public void Dispose() {
+		Write(
+			Tools.Text.FormatWithDictionary(FormEndHtmlSnippet, 
+				new Dictionary<string, object> { 
+					["formId"] = _formID,
+					["formOptions"] = JsonConvert.SerializeObject(ToSerializableSurrogate(_options), Formatting.None)
+				},
+				false
+			)
+		);
 		if (!_options.HasFlag(FormScopeOptions.OmitFormTag)) {
 			_htmlHelper.EndForm();
 		}
-		Write(Tools.Text.FormatWithDictionary(FormEndHtmlSnippet, new Dictionary<string, object> { ["formId"] = _formID }, false));
 	}
-
 
 	private void Write(HtmlString text) {
 		Write(text.Value);
@@ -80,5 +92,17 @@ public sealed class BootstrapFormScope : IDisposable {
 			_htmlHelper.ViewContext.Writer.Write(text);
 		else
 			_htmlHelper.ViewContext.Writer.Write(text, formatArgs);
+	}
+
+	private SerializableFormScopeOptions ToSerializableSurrogate(FormScopeOptions options) {
+		var result = new SerializableFormScopeOptions();
+		result.ClearOnSuccess = options.HasFlag(FormScopeOptions.ClearOnSuccess);
+		return result;
+	}
+
+	private class SerializableFormScopeOptions {
+
+		[JsonProperty("clearOnSuccess")]
+		public bool ClearOnSuccess { get; set; }
 	}
 }

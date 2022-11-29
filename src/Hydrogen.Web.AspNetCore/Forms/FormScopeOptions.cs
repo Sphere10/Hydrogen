@@ -8,12 +8,13 @@ public enum FormScopeOptions {
 	/// <summary>
 	/// Data is retained in the form after submit (e.g. CRUD editor), or cleared after submit (e.g. contact form)
 	/// </summary>
-	ResetOnSuccess = 1 << 0,
+	ClearOnSuccess = 1 << 0,
 
 	/// <summary>
 	/// Ommit form tag.
 	/// </summary>
 	OmitFormTag = 1 << 1,
 
-	Default = ResetOnSuccess
+	Default = ClearOnSuccess,
+
 }

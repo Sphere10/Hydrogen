@@ -47,5 +47,7 @@ namespace Hydrogen {
 			return true;
 		}
 
+		public static bool HasAttribute<T>(this ICustomAttributeProvider attributesProvider, bool inherited) where T : Attribute 
+			=> attributesProvider.TryGetCustomAttributeOfType<T>(true, out _);
 	}
 }

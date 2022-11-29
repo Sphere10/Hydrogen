@@ -5,9 +5,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Hydrogen;
 
-namespace Tools;
+namespace Tools.Web;
 
-public static class Web {
+public static class Downloader {
 
 	public static void DownloadFile(string url, string destPath, out string mimeType, bool verifySSLCert = true) {
 		using var httpClientHandler = new HttpClientHandler();

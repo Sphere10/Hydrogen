@@ -49,25 +49,10 @@ namespace Hydrogen.Web.AspNetCore {
 				? default(TProperty)
 				: expression.Compile()(htmlHelper.ViewData.Model);
 
-			return htmlHelper.DropDownList(inputName, ToSelectList(typeof(TProperty), value.ToString()));
+			return htmlHelper.DropDownList(inputName, Tools.Web.Html.ToSelectList(typeof(TProperty), value as Enum));
 		}
 
-		public static SelectList ToSelectList(Type enumType, string selectedItem) {
-			List<SelectListItem> items = new List<SelectListItem>();
-			foreach (var item in Enum.GetValues(enumType)) {
-				FieldInfo fi = enumType.GetField(item.ToString());
-				var attribute = fi.GetCustomAttributes(typeof(DescriptionAttribute), true).FirstOrDefault();
-				var title = attribute == null ? item.ToString() : ((DescriptionAttribute)attribute).Description;
-				var listItem = new SelectListItem {
-					Value = ((int)item).ToString(),
-					Text = title,
-					Selected = selectedItem == ((int)item).ToString()
-				};
-				items.Add(listItem);
-			}
 
-			return new SelectList(items, "Value", "Text");
-		}
 
 		public static List<SelectListItem> ToSelectList<T>(
 				this IEnumerable<T> enumerable,

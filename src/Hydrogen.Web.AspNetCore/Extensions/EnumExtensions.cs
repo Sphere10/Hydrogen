@@ -20,8 +20,19 @@ namespace Hydrogen.Web.AspNetCore {
 
         public static SelectList ToSelectList<TEnum>(this TEnum enumObj)
               where TEnum : struct, IComparable, IFormattable, IConvertible {
-            return Tools.AspNetCore.ToSelectList<TEnum>(enumObj);
+            return Tools.Web.AspNetCore.ToSelectList<TEnum>(enumObj);
         }
+
+        //public static SelectList ToSelectList<TEnum>(this TEnum @enum)
+	       // where TEnum : struct, IComparable, IFormattable, IConvertible {
+	       // var values = Enum.GetValues(typeof(TEnum))
+	       //                  .Cast<TEnum>()
+	       //                  .Select(e => new {
+		      //                   Id = e,
+		      //                   Name = e.ToString(CultureInfo.InvariantCulture)
+	       //                  });
+	       // return new SelectList(values, "Id", "Name", @enum);
+        //}
 
 	}
 }

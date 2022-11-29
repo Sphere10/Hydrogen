@@ -12,12 +12,17 @@
 //-----------------------------------------------------------------------
 
 using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
+using System.Reflection;
 using Hydrogen;
 using Hydrogen;
 using Hydrogen.Web.AspNetCore.AnimateCss;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 // ReSharper disable CheckNamespace
-namespace Tools {
+namespace Tools.Web {
 
 	public static partial class Html {
 
@@ -137,6 +142,28 @@ namespace Tools {
 			Animation.zoomOutUp
             #endregion
         };
+
+		public static SelectList ToSelectList<TEnum>(object selectedItem = default)  where TEnum : Enum
+			=> ToSelectList(typeof(TEnum), selectedItem);
+
+		public static SelectList ToSelectList(Type enumType, object selectedItem) {
+			List<SelectListItem> items = new List<SelectListItem>();
+			foreach (Enum item in Enum.GetValues(enumType)) {
+				FieldInfo fi = enumType.GetField(item.ToString());
+				//var attribute =  fi.GetCustomAttributes(typeof(DescriptionAttribute), true).FirstOrDefault();
+				var title = Tools.Enums.GetDescription(item); //  attribute == null ? item.ToString() : ((DescriptionAttribute)attribute).Description;
+				var listItem = new SelectListItem {
+					Value = item.ToString(),
+					Text = title,
+					Selected = selectedItem switch { null => false, _ => selectedItem.Equals(item) }
+				};
+				items.Add(listItem);
+			}
+
+			return new SelectList(items, "Value", "Text");
+		}
+
+
 
 		public static string Beautify(object obj) {
 

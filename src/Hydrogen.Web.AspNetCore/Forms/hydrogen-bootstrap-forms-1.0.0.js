@@ -66,6 +66,10 @@ function F_BeforeSubmit(formId, o) {
 function F_Success(formId, result) {
     var form = $('#' + formId);
 
+    // Reset form (if applicable)
+    if (result.result == true && form[0].options.clearOnSuccess == true)
+        F_Reset(formId);
+
     switch (result.type) {
         case "redirect":
             location.assign(result.url);
@@ -95,9 +99,7 @@ function F_Success(formId, result) {
             break;
     }
 
-    // Reset form (if applicable)
-    if (result.result == true && form[0].options.clearOnSuccess == true)
-        F_Reset(formId);
+
 
 }
 

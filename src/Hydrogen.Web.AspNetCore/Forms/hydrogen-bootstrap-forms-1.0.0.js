@@ -195,7 +195,7 @@ function F_Init(formId, options) {
             var action = $(this).attr("action");
             if (form[0].options.botProtect)
                 action = atob(action);
-            alert(action);
+
             $.ajax({
                 url: action,
                 type: "POST",

@@ -13,6 +13,9 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 namespace Hydrogen.Web.AspNetCore;
 public static class HtmlHelperExtensions {
 
+	public static IDisposable BeginBootstrapForm<TModel>(this IHtmlHelper<TModel> htmlHelper, string url, TModel formModel, string formClass = null, FormScopeOptions options = FormScopeOptions.Default) where TModel : FormModelBase {
+		return new BootstrapFormScope<TModel>(htmlHelper, url, formModel, formClass, options);
+	}
 
 	public static IDisposable BeginBootstrapForm<TModel>(this IHtmlHelper<TModel> htmlHelper, string action, string controller, TModel formModel, string formClass = null, FormScopeOptions options = FormScopeOptions.Default) where TModel : FormModelBase {
 		return new BootstrapFormScope<TModel>(htmlHelper, action, controller, formModel, formClass, options);

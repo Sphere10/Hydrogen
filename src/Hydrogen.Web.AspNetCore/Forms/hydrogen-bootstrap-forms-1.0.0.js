@@ -99,8 +99,6 @@ function F_Success(formId, result) {
             break;
     }
 
-
-
 }
 
 function F_Error(formId, status, error) {
@@ -145,7 +143,8 @@ function F_Init(formId, options) {
         // set form options
         if (options == null)
             options = {
-                clearOnSuccess: false
+                clearOnSuccess: false,
+                botProtect: false
             };
         form[0].options = options;
 
@@ -193,8 +192,12 @@ function F_Init(formId, options) {
             var formId = $(this).attr("id");
             event.preventDefault();
             var formValues = $(this).serialize();
+            var action = $(this).attr("action");
+            if (form[0].options.botProtect)
+                action = atob(action);
+            alert(action);
             $.ajax({
-                url: "/contact/form",
+                url: action,
                 type: "POST",
                 data: formValues,
                 cache: false,

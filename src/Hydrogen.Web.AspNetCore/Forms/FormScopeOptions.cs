@@ -15,6 +15,25 @@ public enum FormScopeOptions {
 	/// </summary>
 	OmitFormTag = 1 << 1,
 
-	Default = ClearOnSuccess,
+	
+	/// <summary>
+	/// Provides protection from generalized bot form submissions (not targeted attacks)
+	/// </summary>
+	BotProtect = 1 << 3,
+
+
+	/// <summary>
+	/// Sends form via HTTP POST with fields inside the request
+	/// </summary>
+	UsePost = 1 << 2,
+
+	/// <summary>
+	/// Sends form via HTTP GET field fields encoded in url query string
+	/// </summary>
+	UseGet = 1 << 3,
+
+	Default = ClearOnSuccess | UsePost,
+
+	DefaultButKeepValues = UsePost
 
 }

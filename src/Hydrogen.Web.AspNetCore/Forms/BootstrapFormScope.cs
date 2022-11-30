@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Text.Encodings.Web;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Routing;
 using Newtonsoft.Json;
 
 namespace Hydrogen.Web.AspNetCore;
@@ -32,30 +34,48 @@ public sealed class BootstrapFormScope<TModel> : IDisposable where TModel : Form
 	private readonly IHtmlHelper _htmlHelper;
 	private readonly FormScopeOptions _options;
 	
-	public BootstrapFormScope(IHtmlHelper<TModel> htmlHelper, string action, string controller, TModel formModel, string formClass = null, FormScopeOptions options = FormScopeOptions.Default) {
+
+	public BootstrapFormScope(IHtmlHelper<TModel> htmlHelper, string action, string controller, TModel formModel, string formClass = null, FormScopeOptions options = FormScopeOptions.Default) 
+		: this(htmlHelper, action, controller, null, formModel, formClass, options) {
+	}
+
+	public BootstrapFormScope(IHtmlHelper<TModel> htmlHelper, string url, TModel formModel, string formClass = null, FormScopeOptions options = FormScopeOptions.Default) 
+		: this(htmlHelper, null, null, url, formModel, formClass, options) {
+	}
+
+	private BootstrapFormScope(IHtmlHelper<TModel> htmlHelper,  string action, string controller, string url, TModel formModel, string formClass = null, FormScopeOptions options = FormScopeOptions.Default) {
 		Guard.ArgumentNotNull(htmlHelper, nameof(htmlHelper));
-		Guard.ArgumentNotNull(action, nameof(action));
-		Guard.ArgumentNotNull(controller, nameof(controller));
 		Guard.ArgumentNotNull(formModel, nameof(formModel));
-	
+		if (options.HasFlag(FormScopeOptions.BotProtect))
+			Guard.ArgumentNotNullOrWhitespace(url, nameof(url), "Must be provided when using BotProtect option");
+		Guard.Against((!string.IsNullOrEmpty(action) || !string.IsNullOrEmpty(action)) && options.HasFlag(FormScopeOptions.BotProtect), "Cannot use controller/action when BotProtect option is enabled, instead use overload method and pass explicit form action url");
+		
 		_formID = formModel.ID;
 		_htmlHelper = htmlHelper;
 		_formClass = DefaultFormClasses;
 		_options = options;
+
+		if (options.HasFlag(FormScopeOptions.BotProtect))
+			url = url.ToBase64();
+
+		var routeValues = new RouteValueDictionary();
+		routeValues["id"] = _formID;
+		if (url != null)
+			routeValues["action"] = url;
+		routeValues["class"] = _formClass + (!string.IsNullOrWhiteSpace(formClass) ? (" " + formClass) : string.Empty);
 
 		if (!options.HasFlag(FormScopeOptions.OmitFormTag)) {
 			htmlHelper.BeginForm(
 				action,
 				controller,
 				FormMethod.Post,
-				new {
-					id = _formID,
-					@class = _formClass + (!string.IsNullOrWhiteSpace(formClass) ? (" " + formClass) : string.Empty)
-				});
+				routeValues
+			);
 
 			Write(htmlHelper.HiddenFor(m => m.ID, _formID));
 		}
 	}
+
 
 	public void Dispose() {
 		Write(
@@ -97,6 +117,7 @@ public sealed class BootstrapFormScope<TModel> : IDisposable where TModel : Form
 	private SerializableFormScopeOptions ToSerializableSurrogate(FormScopeOptions options) {
 		var result = new SerializableFormScopeOptions();
 		result.ClearOnSuccess = options.HasFlag(FormScopeOptions.ClearOnSuccess);
+		result.BotProtect = options.HasFlag(FormScopeOptions.BotProtect);
 		return result;
 	}
 
@@ -104,5 +125,8 @@ public sealed class BootstrapFormScope<TModel> : IDisposable where TModel : Form
 
 		[JsonProperty("clearOnSuccess")]
 		public bool ClearOnSuccess { get; set; }
+
+		[JsonProperty("botProtect")]
+		public bool BotProtect { get; set; }
 	}
 }

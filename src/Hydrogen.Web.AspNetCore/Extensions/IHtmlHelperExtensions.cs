@@ -5,6 +5,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Runtime.CompilerServices;
 using Hydrogen;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -60,7 +61,8 @@ public static class HtmlHelperExtensions {
 		return htmlHelper.TextBoxFor(expression, display, attributes );
 	}
 
-	public static IHtmlContent BootstrapTextAreaFor<T, TProperty>(this IHtmlHelper<T> htmlHelper, Expression<Func<T, TProperty>> expression, int rows){
+	public static IHtmlContent BootstrapTextAreaFor<T, TProperty>(this IHtmlHelper<T> htmlHelper, Expression<Func<T, TProperty>> expression, int approxRows = 5){
+		Guard.ArgumentInRange(approxRows, 1, 9999, nameof(approxRows));
 		var member = expression.ResolveMember();
 		var display = member.TryGetCustomAttributeOfType<DisplayNameAttribute>(true, out var displayName) ? displayName.DisplayName : string.Empty;
 		if (member.HasAttribute<RequiredAttribute>(true)) {
@@ -69,8 +71,9 @@ public static class HtmlHelperExtensions {
 		var hasError = htmlHelper.ViewData.ModelState.TryGetValue(member.Name, out var value ) && value.ValidationState == ModelValidationState.Invalid;
 		var attributes = new Dictionary<string, object>() {
 			["placeholder"] = display,
-			["class"] = "form-control",
-			["rows"] = rows
+			["class"] = $"form-control",
+			["style"] = $"height: {Math.Round(1.85*approxRows, 2).ClipTo(4, double.MaxValue)}em"
+			//["rows"] = rows   // Do not use rows in Bootstrap textareas, uses height instead
 		};
 
 		if (hasError) {

@@ -295,6 +295,15 @@ namespace Hydrogen {
 		public static string AsAmendmentIf(this string text, bool condition) 
 			=> condition ? $" {text}" : string.Empty;
 
+		public static string AsAmendmentIfNotNull(this string text) 
+			=> AsAmendmentIf(text, text != null);
+
+		public static string AsAmendmentIfNotNullOrEmpty(this string text) 
+			=> AsAmendmentIf(text, string.IsNullOrEmpty(text));
+
+		public static string AsAmendmentIfNotNullOrWhitespace(this string text) 
+			=> AsAmendmentIf(text, string.IsNullOrWhiteSpace(text));
+
 		public static string EscapeBraces(string text) {
 			Debug.Assert(text != null);
 			return text.Replace("{", "{{").Replace("}", "}}");

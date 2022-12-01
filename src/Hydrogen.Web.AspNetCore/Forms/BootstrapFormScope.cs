@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
+using System.Linq;
 using System.Text.Encodings.Web;
-using System.Text.Json.Serialization;
-using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Newtonsoft.Json;
 
 namespace Hydrogen.Web.AspNetCore;
@@ -15,7 +13,7 @@ public sealed class BootstrapFormScope<TModel> : IDisposable where TModel : Form
 	public const string DefaultFormClasses = "";
 	public const string ButtonHtmlSnippet =
 		"""
-<button class="btn btn-primary" type="submit" form="{formId}">
+<button class="btn btn-primary {class}" type="submit" form="{formId}">
     <span id="{formId}_left_spinner" class="spinner-border spinner-border-sm me-2 invisible" role="status" aria-hidden="true"></span>
     {text}
     <span id="{formId}_right_spinner" class="spinner-border spinner-border-sm ms-2 invisible" role="status" aria-hidden="true"></span>
@@ -35,15 +33,15 @@ public sealed class BootstrapFormScope<TModel> : IDisposable where TModel : Form
 	private readonly FormScopeOptions _options;
 	
 
-	public BootstrapFormScope(IHtmlHelper<TModel> htmlHelper, string action, string controller, TModel formModel, string formClass = null, FormScopeOptions options = FormScopeOptions.Default) 
-		: this(htmlHelper, action, controller, null, formModel, formClass, options) {
+	public BootstrapFormScope(IHtmlHelper<TModel> htmlHelper, string action, string controller, TModel formModel, AttributeDictionary attributes = null, FormScopeOptions options = FormScopeOptions.Default) 
+		: this(htmlHelper, action, controller, null, formModel, attributes, options) {
 	}
 
-	public BootstrapFormScope(IHtmlHelper<TModel> htmlHelper, string url, TModel formModel, string formClass = null, FormScopeOptions options = FormScopeOptions.Default) 
-		: this(htmlHelper, null, null, url, formModel, formClass, options) {
+	public BootstrapFormScope(IHtmlHelper<TModel> htmlHelper, string url, TModel formModel, AttributeDictionary attributes = null, FormScopeOptions options = FormScopeOptions.Default) 
+		: this(htmlHelper, null, null, url, formModel, attributes, options) {
 	}
 
-	private BootstrapFormScope(IHtmlHelper<TModel> htmlHelper,  string action, string controller, string url, TModel formModel, string formClass = null, FormScopeOptions options = FormScopeOptions.Default) {
+	private BootstrapFormScope(IHtmlHelper<TModel> htmlHelper,  string action, string controller, string url, TModel formModel, AttributeDictionary attributes = null, FormScopeOptions options = FormScopeOptions.Default) {
 		Guard.ArgumentNotNull(htmlHelper, nameof(htmlHelper));
 		Guard.ArgumentNotNull(formModel, nameof(formModel));
 		if (options.HasFlag(FormScopeOptions.BotProtect))
@@ -58,21 +56,21 @@ public sealed class BootstrapFormScope<TModel> : IDisposable where TModel : Form
 		if (options.HasFlag(FormScopeOptions.BotProtect))
 			url = url.ToBase64();
 
-		var routeValues = new RouteValueDictionary();
-		routeValues["id"] = _formID;
+		attributes ??= new AttributeDictionary();
+		attributes["id"] = _formID;
 		if (url != null)
-			routeValues["action"] = url;
-		routeValues["class"] = _formClass + (!string.IsNullOrWhiteSpace(formClass) ? (" " + formClass) : string.Empty);
+			attributes["action"] = url;
 
 		if (!options.HasFlag(FormScopeOptions.OmitFormTag)) {
 			htmlHelper.BeginForm(
 				action,
 				controller,
 				FormMethod.Post,
-				routeValues
+				attributes?.ToDictionary( x => x.Key, x => x.Value as object)
 			);
 
 			Write(htmlHelper.HiddenFor(m => m.ID, _formID));
+			Write(htmlHelper.HiddenFor(m => m.IsResponse));
 		}
 	}
 

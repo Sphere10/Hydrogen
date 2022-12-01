@@ -148,6 +148,9 @@ function F_Init(formId, options) {
             };
         form[0].options = options;
 
+        // Set response property
+        form.find('input:hidden[name="IsResponse"]').val("True");
+
         // re-init choices for fetched form (choices.js)
         form[0].querySelectorAll('[sp10-choices]').forEach((toggle) => {
             const elementOptions = toggle.dataset.choices ? JSON.parse(toggle.dataset.choices) : {};

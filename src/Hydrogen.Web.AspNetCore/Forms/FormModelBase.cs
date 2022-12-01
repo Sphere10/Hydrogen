@@ -9,5 +9,9 @@ namespace Hydrogen.Web.AspNetCore {
 	    [Required]
 	    [HiddenInput(DisplayValue = false)]
 	    public string ID { get; set; } =  Tools.Url.ToHtml4DOMObjectID(Guid.NewGuid().ToStrictAlphaString().ToLowerInvariant(), "_");
+
+		[Required]
+		[HiddenInput(DisplayValue = false)]
+		public bool IsResponse  { get; set; }
     }
 }

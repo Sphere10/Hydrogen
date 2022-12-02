@@ -98,7 +98,6 @@ function F_Success(formId, result) {
 
             break;
     }
-
 }
 
 function F_Error(formId, status, error) {
@@ -149,7 +148,11 @@ function F_Init(formId, options) {
         form[0].options = options;
 
         // Set response property
-        form.find('input:hidden[name="IsResponse"]').val("True");
+
+        var isResponseProp = form.find('input:hidden[name="IsResponse"]');
+        var isResponse = isResponseProp.val() == "True"
+        if (!isResponse)
+            isResponseProp.val("True");
 
         // re-init choices for fetched form (choices.js)
         form[0].querySelectorAll('[sp10-choices]').forEach((toggle) => {
@@ -232,7 +235,6 @@ function F_Finalize(formId) {
         if (choices)
             choices.destroy();
     });
-
 }
 
 function F_Reset(formId) {

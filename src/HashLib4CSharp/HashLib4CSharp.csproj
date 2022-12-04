@@ -2,8 +2,8 @@
 
     <PropertyGroup>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-        <LangVersion>7.3</LangVersion>
-        <TargetFramework>netstandard2.1</TargetFramework>
+        <LangVersion>11</LangVersion>
+        <TargetFramework>net7.0</TargetFramework>
         <Title>HashLib4CSharp</Title>
         <Authors>Ugochukwu Mmaduekwe</Authors>
         <Description>HashLib4CSharp is a C# library that provides an easy to use interface for computing hashes and checksums of strings (with a specified encoding), files, streams, byte arrays and untyped data.</Description>
@@ -27,6 +27,10 @@
     <ItemGroup>
       <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
       <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6.0.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Hydrogen\Hydrogen.csproj" />
     </ItemGroup>
 
 </Project>

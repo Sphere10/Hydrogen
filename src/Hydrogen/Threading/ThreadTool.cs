@@ -112,6 +112,14 @@ namespace Tools {
             ThreadPool.QueueUserWorkItem(_ => Tools.Exceptions.ExecuteIgnoringException(action));
         }
 
+        public static Task<TimeSpan> MeasureDuration(Action p0) 
+			=> MeasureDuration(Task.Factory.StartNew(p0));
+
+        public static async Task<TimeSpan> MeasureDuration(Task task) {
+			var start = DateTime.Now;;
+			await task;
+			return DateTime.Now.Subtract(start);
+        }
     }
 }
 

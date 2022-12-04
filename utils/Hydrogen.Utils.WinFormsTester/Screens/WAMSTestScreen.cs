@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using Hydrogen;
 using Hydrogen.Collections;
+using Hydrogen.CryptoEx;
 using Hydrogen.Maths;
 using Hydrogen.Windows.Forms;
 
@@ -107,7 +108,7 @@ namespace Hydrogen.Utils.WinFormsTester {
 		}
 
 		private async void _miscButton2_Click(object sender, EventArgs e) {
-
+			const int totalSigs = 1000;
 
 			//| OTS | CHF bits | Winternitz | Private Key Size | Public Key Length | Signature Length |
 			//	| ---- | -------- | ---------- | ---------------- | ----------------- | ---------------- |
@@ -116,7 +117,7 @@ namespace Hydrogen.Utils.WinFormsTester {
 
 			var referenceConfig = new WAMS(0, 8, CHF.SHA2_256);
 			 
-			foreach (var chf in new[] { CHF.Blake2b_128, CHF.Blake2b_160, CHF.Blake2b_256 })
+			foreach (var chf in new[] { CHF.Blake2b_128_Fast, CHF.Blake2b_160_Fast, CHF.Blake2b_256_Fast })
 				foreach (var w in new[] { 2, 4, 8 })
 					foreach (var h in new[] { 0, 8, 16 })
 						foreach (var amsots in new[] { AMSOTS.WOTS, AMSOTS.WOTS_Sharp }) {
@@ -125,7 +126,19 @@ namespace Hydrogen.Utils.WinFormsTester {
 						var messageDigest = Hashers.Hash(wams.Config.OTS.HashFunction, Encoding.ASCII.GetBytes("Testing bla bla bla"));
 						var publicKey = await Task.Run(() => wams.DerivePublicKeyForBatch(privateKey, (ulong)0));
 						var signature = await Task.Run(() => wams.SignDigest(privateKey, messageDigest, 0, 0));
-						_outputLogger.Info($"| {amsots.GetDescription()} | {Hashers.GetDigestSizeBytes(chf) * 8} | {w} | {h} | {privateKey.RawBytes.Length} | {publicKey.RawBytes.Length} | {signature.Length} |");
+                        Guard.Ensure(wams.VerifyDigest(signature, messageDigest, publicKey));
+                        var signTime = await Tools.Threads.MeasureDuration(() => {
+							for(var i = 0; i < totalSigs; i++) 
+                                wams.SignDigest(privateKey, messageDigest, 0, 0);
+						});
+                        var verifyTime = await Tools.Threads.MeasureDuration(() => {
+                            var sig = wams.SignDigest(privateKey, messageDigest, 0, 0);
+                            for(var i = 0; i < totalSigs; i++) 
+                                wams.VerifyDigest(sig, messageDigest, publicKey);
+                        });
+                        var sigTps = totalSigs / signTime.TotalSeconds;
+                        var verTps = totalSigs / verifyTime.TotalSeconds;
+						_outputLogger.Info($"| {amsots.GetDescription()} | {Hashers.GetDigestSizeBytes(chf) * 8} | {w} | {h} | {publicKey.RawBytes.Length} | {signature.Length} | {sigTps:.} | {verTps:.}");
 					}
 
 			
@@ -136,7 +149,16 @@ namespace Hydrogen.Utils.WinFormsTester {
 		}
 
 		private void _regFastButton_Click(object sender, EventArgs e) {
-			throw new NotImplementedException("address this");
+            Hashers.Register(CHF.Blake2b_512_Fast, () => new Blake2bFastAdapter(64));
+            Hashers.Register(CHF.Blake2b_384_Fast, () => new Blake2bFastAdapter(48));
+            Hashers.Register(CHF.Blake2b_256_Fast, () => new Blake2bFastAdapter(32));
+            Hashers.Register(CHF.Blake2b_128_Fast, () => new Blake2bFastAdapter(16));
+            Hashers.Register(CHF.Blake2b_224_Fast, () => new Blake2bFastAdapter(28));
+            Hashers.Register(CHF.Blake2b_160_Fast, () => new Blake2bFastAdapter(20));
+            Hashers.Register(CHF.Blake2s_256_Fast, () => new Blake2sFastAdapter(32));
+            Hashers.Register(CHF.Blake2s_224_Fast, () => new Blake2sFastAdapter(28));
+            Hashers.Register(CHF.Blake2s_160_Fast, () => new Blake2sFastAdapter(20));
+            Hashers.Register(CHF.Blake2s_128_Fast, () => new Blake2sFastAdapter(16));
 			//HashLibAdapter.RegisterHashLibHashers();
 		}
 	}

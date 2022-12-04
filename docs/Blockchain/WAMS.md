@@ -1,4 +1,4 @@
-# Winternitz Abstracted Merkle Signatures (WAMS)
+# WAMS - Winternitz Abstract Merkle Signature Scheme
 
 <pre>
   Author: Herman Schoenfeld <herman@sphere10.com>
@@ -7,26 +7,23 @@
   Copyright: (c) Sphere 10 Software Pty Ltd
   License: MIT
 </pre>
-
 **Abstract**
 
-A quantum-resistant, many-time signature scheme combining Winternitz and Merkle signature schemes is proposed. This construction is compatible with the Abstract Merkle Signature scheme (AMS)[^1] and thus is an AMS-algorithm called "WAMS". 
+A quantum-resistant, many-time signature scheme combining Winternitz and Merkle-Signature schemes is proposed. This construction is compatible with the Abstract Merkle Signature (AMS) Scheme [^1] and thus is an AMS-algorithm called "WAMS". 
 
 ## 1. Introduction
 
-WAMS is a specialization of the AMS[^1] scheme parameterized with the standard Winternitz one-time signature scheme (W-OTS).  WAMS is the quantum-resistant cryptographic scheme used within the VelocityNET P2P platform.
+WAMS is a specialization of the AMS[^1] scheme parameterized with the standard Winternitz one-time signature scheme (W-OTS).  WAMS is a quantum-resistant cryptographic scheme suitable for blockchain-based applications.
 
-This document focuses on the OTS-layer aspect of WAMS.  Merkle-Signature Scheme aspects are performed in the AMS-layer of WAMS which is defined in the AMS document[^1]. The reader should familiarize themselves with the AMS document as it provides the background and context for AMS-algorithms of which WAMS is one. 
+This document focuses only on the OTS-layer of WAMS. The merkle signatures themselves are performed as part of the AMS-layer of WAMS which is defined in the AMS document[^1]. The reader should familiarize themselves with the AMS document as it provides the background context for AMS-algorithms of which WAMS is one. 
 
 ## 2. WAMS Scheme
 
-The Winternitz Abstracted Merkle Signature Scheme (WAMS) is a general purpose, quantum-resistant signature scheme.
+The Winternitz Abstracted Merkle Signature (WAMS) Scheme  is a general purpose, quantum-resistant digital signature scheme. WAMS is an AMS algorithm that selects the standard Winternitz OTS (W-OTS) as the OTS parameter. As part of the parameter set inherited from AMS, WAMS includes the additional parameters `H` a cryptographic hash function and `w`, the Winternitz parameter.
 
-WAMS is an AMS algorithm that selects the standard Winternitz scheme (W-OTS)  as the underlying the OTS scheme. As part of the parameter set inherited from AMS, WAMS includes the additional parameters `H` a cryptographic hash function and `w`, the Winternitz parameter.
+The cryptographic hash function used is fundamental to the security of WAMS (an analysis of which is not provided in this document). So long as the user selects a standard Cryptographic Hash Function (CHF) such as `SHA2-256` or `Blake2b` the security of WAMS is equivalent to standard W-OTS constructions. For performance, the use of W-OTS# may be used in conjunction with `Blake2b-128` to reduce signature sizes without introducing vulnerability to birthday-class attacks.
 
-The cryptographic hash function used is fundamental to the security of WAMS (an analysis of which is not provided in this document). So long as the user selects a standard CHF such as `SHA2-256` or `Blake2b` the security of WAMS follows that of other equivalent standard W-OTS constructions. For performance, the use of `Blake2b-128` can be used with an (acceptable) lowering of security for blockchain/DLT applications.
-
-In this construction, the Winternitz parameter `w` refers to the number of bits being simultaneously signed  as famously proposed by Merkle[^3] (who was inspired by Winternitz).  Varying the  parameter `w` changes the size/speed trade-off without affecting security. For example, the higher the value the more expensive (and slower) the computations but the shorter the signature and private key size. The lower the value the faster the computation but larger the signature and key size.  The range of values for `w` supported in WAMS is `1 <= w <= 16`.
+In this construction, the Winternitz parameter `w` refers to the number of bits being simultaneously signed as famously proposed by Merkle[^3] (who was inspired by Winternitz).  Varying the  parameter `w` changes the size/speed trade-off without affecting security. For example, the higher the value the more expensive (and slower) the computations but the shorter the signature and private key size. The lower the value the faster the computation but larger the signature and key size.  The range of values for `w` supported in WAMS is `1 <= w <= 16`.
 
 Since the WAMS scheme inherits the AMS scheme, it is required to define the following:
 
@@ -108,13 +105,13 @@ For example, in the case of `w=8` the digits simply become bytes since each digi
 
 For example, to sign the byte `b` (for `w=8`), a signer first derives a "private digit key" as `K = H(secret)` and a "public digit key" `P = H^255(K)`. Notice that all the values of `b` map to a unique hash in that chain of hashes.  The signer advertises the "public digit key" prior to signing any digit. When signing a digit `b`, the signer provides the verifier the value `S=H^(255-b)(K)` referred to as the "signature of `b`". The verifier need only perform `b` more iterations on the signature `s` to arrive at the public key `P`, since `H^b(S) = H^b(H^(255-b)(K)) = H^255(K) = P`. 
 
-At this point, the verifier has cryptographically determined the signer had knowledge of `K` since the signature `S` was the `b'th` pre-image of `P`. This process of signing digits is repeated for each digit in the message and each digit signature concatenated to form the signature. The message being signed is always a digest of an actual logical message, and thus referred to as the "message-digest". 
+At this point, the verifier has cryptographically determined the signer had knowledge of `K` since the signature `S` was the `b'th` pre-image of `P`. This process of signing digits is repeated for each digit in the message and each digit signature is concatenated to form the signature. The message being signed is always a digest of an actual logical message, and thus referred to as the "message-digest". 
 
-In W-OTS, the individual "digit keys" and "digit signatures" are concatenated to comprise the "key" and "signatures" respectively. This results in order of magnitude larger keys and signature objects than typical elliptic-curve or discrete logarithm cryptography schemes. This is a significant down-side of OTS schemes used in post-quantum cryptography (PQC). The burden of large keys can be optimized by using the public key hash as WAMS prescribes.  The burden of large signatures can be halved by choosing shorter hash functions without impacting security, as prescribed by the W-OTS#[^4] variant. .
+In W-OTS, the individual "digit keys" and "digit signatures" are concatenated to comprise the "key" and "signatures" respectively. This results in order of magnitude larger key and signature objects when compared to traditional elliptic-curve / discrete logarithm schemes. This is a significant down-side of OTS schemes when used in post-quantum cryptography (PQC) use cases. The burden of large keys can be optimized by using the hash of a public key as WAMSD prescribes.  The burden of large signatures can be halved by choosing shorter hash functions without impacting security, as prescribed by the W-OTS#[^4] variant. .
 
 **NOTE** In order to prevent signature forgeries arising from digit signature re-use for prior messages, a checksum is calculated and appended to the message-digest and co-signed.   The checksum is calculated in such a way that any increment to a message digit necessarily decreases a checksum digit. Thus it is impossible to forge a signature since it requires the pre-image of at least one checksum digit signature. 
 
-The reader can further their understanding of  the theory and basics of W-OTS by reviewing the literature and through this succinct diagram[^2].
+The reader can further their understanding of the theory and basics of W-OTS by reviewing the literature and through this succinct diagram[^2].
 
 #### 2.4.1 W-OTS Private Key
 
@@ -248,79 +245,72 @@ The WAMS# implementation is virtually identical to WAMS except for the following
 
 The reader is referred to the reference implementation of WAMS# which succinctly overloads WAMS with these minor changes.
 
+## 4. Object Lengths & Throughput
 
-
-## 4. Object Lengths
-
-Throughput is normalized to the throughput of configuration `W-OTS w=256, h=0` which is the standard-bearer for PQC. Thus they give a relative measure of performance and interpreted as "how many times faster than standard W-OTS". On the test machine, this base configuration signed XXX messages per second and verified YYY per second.
+A C# implementation in .NET 7 was developed and object lengths and performance metrics are measured below. All tests were performed on a single thread on an Intel Core i9-10900K CPU 3.70 GHz with 32GB RAM. The implementation was not performance tuned so the throughput metrics are useful when compared relative to each other. 
 
 | OTS    | CHF bits | Winternitz `w` | Height `h` | Public Key Length (b) | Signature Length (b) | Sign Throughput | Verify Throughput |
 | ------ | -------- | -------------- | ---------- | --------------------- | -------------------- | --------------- | ----------------- |
-| W-OTS  | 128      | 2              | 1          | 32                    | 2163                 |                 |                   |
-| W-OTS# | 128      | 2              | 1          | 32                    | 2211                 |                 |                   |
-| W-OTS  | 128      | 2              | 8          | 32                    | 2163                 |                 |                   |
-| W-OTS# | 128      | 2              | 8          | 32                    | 2211                 |                 |                   |
-| W-OTS  | 128      | 2              | 16         | 32                    | 2163                 |                 |                   |
-| W-OTS# | 128      | 2              | 16         | 32                    | 2211                 |                 |                   |
-| W-OTS  | 128      | 4              | 1          | 32                    | 1107                 |                 |                   |
-| W-OTS# | 128      | 4              | 1          | 32                    | 1155                 |                 |                   |
-| W-OTS  | 128      | 4              | 8          | 32                    | 1107                 |                 |                   |
-| W-OTS# | 128      | 4              | 8          | 32                    | 1155                 |                 |                   |
-| W-OTS  | 128      | 4              | 16         | 32                    | 1107                 |                 |                   |
-| W-OTS# | 128      | 4              | 16         | 32                    | 1155                 |                 |                   |
-| W-OTS  | 128      | 8              | 1          | 32                    | 579                  |                 |                   |
-| W-OTS# | 128      | 8              | 1          | 32                    | 627                  |                 |                   |
-| W-OTS  | 128      | 8              | 8          | 32                    | 579                  |                 |                   |
-| W-OTS# | 128      | 8              | 8          | 32                    | 627                  |                 |                   |
-| W-OTS  | 128      | 8              | 16         | 32                    | 579                  |                 |                   |
-| W-OTS# | 128      | 8              | 16         | 32                    | 627                  |                 |                   |
-| W-OTS  | 160      | 2              | 1          | 36                    | 2703                 |                 |                   |
-| W-OTS# | 160      | 2              | 1          | 36                    | 2763                 |                 |                   |
-| W-OTS  | 160      | 2              | 8          | 36                    | 2703                 |                 |                   |
-| W-OTS# | 160      | 2              | 8          | 36                    | 2763                 |                 |                   |
-| W-OTS  | 160      | 2              | 16         | 36                    | 2703                 |                 |                   |
-| W-OTS# | 160      | 2              | 16         | 36                    | 2763                 |                 |                   |
-| W-OTS  | 160      | 4              | 1          | 36                    | 1383                 |                 |                   |
-| W-OTS# | 160      | 4              | 1          | 36                    | 1443                 |                 |                   |
-| W-OTS  | 160      | 4              | 8          | 36                    | 1383                 |                 |                   |
-| W-OTS# | 160      | 4              | 8          | 36                    | 1443                 |                 |                   |
-| W-OTS  | 160      | 4              | 16         | 36                    | 1383                 |                 |                   |
-| W-OTS# | 160      | 4              | 16         | 36                    | 1443                 |                 |                   |
-| W-OTS  | 160      | 8              | 1          | 36                    | 723                  |                 |                   |
-| W-OTS# | 160      | 8              | 1          | 36                    | 783                  |                 |                   |
-| W-OTS  | 160      | 8              | 8          | 36                    | 723                  |                 |                   |
-| W-OTS# | 160      | 8              | 8          | 36                    | 783                  |                 |                   |
-| W-OTS  | 160      | 8              | 16         | 36                    | 723                  |                 |                   |
-| W-OTS# | 160      | 8              | 16         | 36                    | 783                  |                 |                   |
-| W-OTS  | 256      | 2              | 1          | 48                    | 4323                 |                 |                   |
-| W-OTS# | 256      | 2              | 1          | 48                    | 4419                 |                 |                   |
-| W-OTS  | 256      | 2              | 8          | 48                    | 4323                 |                 |                   |
-| W-OTS# | 256      | 2              | 8          | 48                    | 4419                 |                 |                   |
-| W-OTS  | 256      | 2              | 16         | 48                    | 4323                 |                 |                   |
-| W-OTS# | 256      | 2              | 16         | 48                    | 4419                 |                 |                   |
-| W-OTS  | 256      | 4              | 1          | 48                    | 2211                 |                 |                   |
-| W-OTS# | 256      | 4              | 1          | 48                    | 2307                 |                 |                   |
-| W-OTS  | 256      | 4              | 8          | 48                    | 2211                 |                 |                   |
-| W-OTS# | 256      | 4              | 8          | 48                    | 2307                 |                 |                   |
-| W-OTS  | 256      | 4              | 16         | 48                    | 2211                 |                 |                   |
-| W-OTS# | 256      | 4              | 16         | 48                    | 2307                 |                 |                   |
-| W-OTS  | 256      | 8              | 1          | 48                    | 1155                 |                 |                   |
-| W-OTS# | 256      | 8              | 1          | 48                    | 1251                 |                 |                   |
-| W-OTS  | 256      | 8              | 8          | 48                    | 1155                 |                 |                   |
-| W-OTS# | 256      | 8              | 8          | 48                    | 1251                 |                 |                   |
-| W-OTS  | 256      | 8              | 16         | 48                    | 1155                 |                 |                   |
-| W-OTS# | 256      | 8              | 16         | 48                    | 1251                 |                 |                   |
+| W-OTS | 128 | 2 | 0 | 32 | 2163 | 3620 | 18098 |
+| W-OTS# | 128 | 2 | 0 | 32 | 2211 | 3425 | 13139 |
+| W-OTS | 128 | 2 | 8 | 32 | 2163 | 3832 | 17919 |
+| W-OTS# | 128 | 2 | 8 | 32 | 2211 | 3523 | 12056 |
+| W-OTS | 128 | 2 | 16 | 32 | 2163 | 3759 | 18137 |
+| W-OTS# | 128 | 2 | 16 | 32 | 2211 | 3528 | 12111 |
+| W-OTS | 128 | 4 | 0 | 32 | 1107 | 2821 | 11479 |
+| W-OTS# | 128 | 4 | 0 | 32 | 1155 | 2619 | 10403 |
+| W-OTS | 128 | 4 | 8 | 32 | 1107 | 2803 | 13454 |
+| W-OTS# | 128 | 4 | 8 | 32 | 1155 | 2610 | 9861 |
+| W-OTS | 128 | 4 | 16 | 32 | 1107 | 2810 | 13470 |
+| W-OTS# | 128 | 4 | 16 | 32 | 1155 | 2602 | 9515 |
+| W-OTS | 128 | 8 | 0 | 32 | 579 | 432 | 2406 |
+| W-OTS# | 128 | 8 | 0 | 32 | 627 | 414 | 2079 |
+| W-OTS | 128 | 8 | 8 | 32 | 579 | 434 | 2403 |
+| W-OTS# | 128 | 8 | 8 | 32 | 627 | 419 | 2749 |
+| W-OTS | 128 | 8 | 16 | 32 | 579 | 432 | 2411 |
+| W-OTS# | 128 | 8 | 16 | 32 | 627 | 404 | 2749 |
+| W-OTS | 160 | 2 | 0 | 36 | 2703 | 3850 | 17026 |
+| W-OTS# | 160 | 2 | 0 | 36 | 2763 | 3607 | 11620 |
+| W-OTS | 160 | 2 | 8 | 36 | 2703 | 3828 | 16875 |
+| W-OTS# | 160 | 2 | 8 | 36 | 2763 | 3567 | 11800 |
+| W-OTS | 160 | 2 | 16 | 36 | 2703 | 3871 | 16969 |
+| W-OTS# | 160 | 2 | 16 | 36 | 2763 | 3551 | 11572 |
+| W-OTS | 160 | 4 | 0 | 36 | 1383 | 2864 | 12419 |
+| W-OTS# | 160 | 4 | 0 | 36 | 1443 | 2702 | 9318 |
+| W-OTS | 160 | 4 | 8 | 36 | 1383 | 2841 | 12564 |
+| W-OTS# | 160 | 4 | 8 | 36 | 1443 | 2685 | 9841 |
+| W-OTS | 160 | 4 | 16 | 36 | 1383 | 2854 | 12586 |
+| W-OTS# | 160 | 4 | 16 | 36 | 1443 | 2680 | 9120 |
+| W-OTS | 160 | 8 | 0 | 36 | 723 | 434 | 2154 |
+| W-OTS# | 160 | 8 | 0 | 36 | 783 | 417 | 2184 |
+| W-OTS | 160 | 8 | 8 | 36 | 723 | 428 | 2145 |
+| W-OTS# | 160 | 8 | 8 | 36 | 783 | 422 | 2425 |
+| W-OTS | 160 | 8 | 16 | 36 | 723 | 427 | 2156 |
+| W-OTS# | 160 | 8 | 16 | 36 | 783 | 421 | 2032 |
+| W-OTS | 256 | 2 | 0 | 48 | 4323 | 3937 | 12474 |
+| W-OTS# | 256 | 2 | 0 | 48 | 4419 | 3662 | 9235 |
+| W-OTS | 256 | 2 | 8 | 48 | 4323 | 3951 | 12275 |
+| W-OTS# | 256 | 2 | 8 | 48 | 4419 | 3620 | 8829 |
+| W-OTS | 256 | 2 | 16 | 48 | 4323 | 3905 | 12373 |
+| W-OTS# | 256 | 2 | 16 | 48 | 4419 | 3666 | 9168 |
+| W-OTS | 256 | 4 | 0 | 48 | 2211 | 3059 | 8653 |
+| W-OTS# | 256 | 4 | 0 | 48 | 2307 | 2885 | 7711 |
+| W-OTS | 256 | 4 | 8 | 48 | 2211 | 3081 | 8549 |
+| W-OTS# | 256 | 4 | 8 | 48 | 2307 | 2873 | 7151 |
+| W-OTS | 256 | 4 | 16 | 48 | 2211 | 3025 | 8527 |
+| W-OTS# | 256 | 4 | 16 | 48 | 2307 | 2865 | 7035 |
+| W-OTS | 256 | 8 | 0 | 48 | 1155 | 485 | 1299 |
+| W-OTS# | 256 | 8 | 0 | 48 | 1251 | 464 | 1849 |
+| W-OTS | 256 | 8 | 8 | 48 | 1155 | 489 | 1345 |
+| W-OTS# | 256 | 8 | 8 | 48 | 1251 | 471 | 1372 |
+| W-OTS | 256 | 8 | 16 | 48 | 1155 | 487 | 1331 |
+| W-OTS# | 256 | 8 | 16 | 48 | 1251 | 458 | 1502 |
 
-
-
-
-## 4. Reference Implementation
-
-See [https://github.com/Sphere10/Hydrogen/tree/master/src/Hydrogen/Crypto/PQC](https://github.com/Sphere10/Hydrogen/tree/master/src/Hydrogen/Crypto/PQC).
+*Throughput is measured in "Signatures Per Second"*
 
 ## References
 
-[^1]: Herman Schoenfeld. "Abstracted Merkle Signatures (AMS)", 2020. 
+[^1]: Herman Schoenfeld. "AMS - Abstract Merkle Signature Scheme", 2020. 
 
 [^2]:  Crypto4A. "Hash Chains and the Winternitz One-Time Signature Scheme". URL: https://crypto4a.com/sectorization-defunct/W-OTS/. Accessed on: 2020-07-20.
 

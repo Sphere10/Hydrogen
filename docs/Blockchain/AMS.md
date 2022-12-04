@@ -1,4 +1,4 @@
-# Abstracted Merkle Signatures (AMS)
+# AMS - Abstract Merkle Signature Scheme
 
 <pre>
   Author: Herman Schoenfeld <i>&lt;herman@sphere10.com&gt;</i>
@@ -7,22 +7,21 @@
   Copyright: (c) Sphere 10 Software Pty Ltd
   License: MIT
 </pre>
-
 **Abstract**
 
-A post-quantum digital signature scheme that takes as a parameter a one-time signature scheme (OTS) and transforms it for "many-time" use.  The approach follows that originally proposed by the Merkle-Signature Scheme but without a coupling to any specific OTS. This construction comprises a bit-level specification for such a scheme.
+An abstract post-quantum digital signature scheme is presented that parameterizes a one-time signature scheme (OTS) for "many-time" use. This scheme permits a single key-pair to efficiently sign and verify a (great) many messages without security degradation. It achieves this by following the original Merkle-Signature Scheme but without a coupling to a specific OTS. Various improvements include a reduction in signature size, resistance to denial-of-service attacks and smaller keys. This construction comprises a bit-level specification for the Abstract Merkle Signature Scheme (AMS).
 
 # 1. Introduction
 
-The Abstracted Merkle-Signature (AMS) scheme is a quantum-resistant cryptographic scheme that provides hash-based digital signatures without any dependency on elliptic-curves or discrete logarithms.  AMS is formalization of the scheme originally proposed by Ralph Merkle[^1] but in an OTS-agnostic manner. 
+Abstract Merkle Signatures (AMS) are a class of a quantum-resistant digital signature schemes that utilize hash-based cryptography without any dependency on elliptic-curves or discrete logarithms. AMS is a formalization of the scheme originally proposed by Ralph Merkle[^1] but in an OTS-agnostic manner. 
 
-AMS is a "high-level" scheme that takes as a parameter a one-time signature scheme (OTS) and transforms it into a "many-time" equivalent. To this end, AMS serves as an "algorithm wrapper". AMS achieves this goal by encapsulating the cryptography of the OTS in an ephemeral manner[^*] and by isolating the complexities of managing multiple OTS keys through the use of hash-trees (merkle-trees).
+AMS is a "high-level abstract" scheme that takes as a parameter a one-time signature scheme (OTS) and transforms it into a "many-time" equivalent. To this end, AMS serves as an "algorithm wrapper" of the parameterized OTS algorithm. AMS achieves this goal by encapsulating the cryptography of the OTS in an ephemeral manner[^*] and by isolating the complexity of multiple OTS keys through the use of merkle-trees.
 
 AMS is similar in goal and scope to XMSS[^2] but without a coupling to a specific OTS, with simplified tree structuring and with DoS-vulnerability hardening.  An AMS algorithm generally retains the performance, memory and security characteristics of the underlying OTS scheme but adds additional computational complexity in it's key generation. This arises from the fact that an AMS key is essentially a commitment to many pre-generated OTS keys.
 
-The AMS-layer of an AMS-algorithm requires the use of a cryptographic hash function (CHF) which is typically chosen to be the same as that employed by the OTS-layer of the algorithm, although this is not a strict requirement. The AMS-layer is itself quantum-resistant as it relies solely on the proper use of cryptographic hash function transformations. Thus, if the OTS-layer is also quantum-resistant then the full AMS-algorithm is quantum-resistant. 
+In practice, an AMS implementation comprises of two layers, the OTS and AMS layers respectively. The AMS-layer of an AMS-algorithm requires the use of a cryptographic hash function (CHF) which is typically chosen to be the same as that employed by the OTS-layer of the algorithm (although this is not a strict requirement). The AMS-layer is itself quantum-resistant as it relies solely on the proper use of a cryptographic hash function. Thus, if the OTS-layer is quantum-resistant then the full AMS-algorithm is quantum-resistant. 
 
-Whilst this document focuses on the AMS-layer and the integration points than an OTS-layer must comply with, it does not cover specific implementations of OTS-layers. 
+Whilst this document focuses on the AMS-layer and the integration points that an OTS-layer must comply with, it does not cover specific implementations of OTS-layers. 
 
 [*]: *When an OTS algorithm is encapsulated within an AMS algorithm, the OTS key and signature objects are always short-lived and only computed when needed. In this sense they are ephemeral. As such, only the AMS key and signature objects are ever persisted or transmitted.*
 
@@ -32,11 +31,11 @@ AMS is a general-purpose, quantum-resistant cryptographic scheme offering the fo
 
 * Multi-use keys: a single private/public key-pair can be used to securely sign and verify many messages.
 * Compact keys: keys are small and contain (compressed) hash commitments to OTS keys.
-* Efficient comparisons: testing if a public key derives from a private key is fast efficient.
+* Efficient comparisons: testing if a public key derives from a private key is time efficient.
 * Parameterized: the underlying OTS and CHF can be changed without affecting the AMS-layer whatsoever.
 * Quantum-resistant: AMS inherits all the PQC characteristics of the selected OTS algorithm.
 
-Whilst AMS is strictly a "stateful" algorithm in that the signer must "remember information" about the most recent signature, it can used in a "practically stateless" manner for blockchain/DLT use-cases. This is possible since changes to the key-store are not required in this scheme, only remembering the index of last used OTS key is necessary. In blockchain/DLT applications, rather than maintaining this index in a local key-store, a strictly increasing nonce field associated with to the signer object and stored in the public consensus database can be used. So long as this nonce is atomically and strictly increased within the same transactions that contains the signatures, no risk key re-use arising from local data corruption exists.
+Whilst AMS is strictly a "stateful" algorithm in that the signer must "remember information" about the most recent signature, it can used in a "practically stateless" manner in blockchain/DLT use-cases. This is possible since changes to the key-store are not required in this scheme, only remembering the index of last used OTS key is necessary. Thus in blockchain/DLT applications, rather than maintaining this index in a local key-store, the blockchain maintains a public strictly increasing nonce that is associated with the signer. Every time a signature is generated by the signer, the public nonce field is correspondingly incremented on the public ledger as part of the consensus rules. So long as this nonce is atomically and strictly increased within the same transaction that contains the signature, no risk key re-use arises (which could if relying on local data-stores susceptible to local corruption).
 
 The AMS-layer of the scheme relies on a single cryptographic hash function (CHF) for all processing without any dependency on elliptic-curves or discrete logarithms. This CHF is also parameterized and, by convention, chosen to match that of the selected OTS scheme (although not strictly required).
 
@@ -49,7 +48,7 @@ The construction can be basically summarized as follows:
 
 ### 2.1 Notation & Definitions
 
-1. `||` is operator that denotes byte array concatenation. If the operand is a BYTE, DWORD, QWORD it is implicitly converted to byte array using `ToBytes` function.
+1. `||` is operator that denotes byte array concatenation. If the operand is a `BYTE`, `DWORD`, `QWORD` it is implicitly converted to byte array using `ToBytes` function.
 2. `H(x)` is a one-way cryptographic hash function (CHF) of `U`-bits.
 3. `H^n` is cryptographic hash function that iterates the `H` function `n` times such that `H^0(x) = x, H^1(x) = H(x), H^2 = H(H(x)), etc`.
 4. `LastDWord(arr)` is a function that extracts the last 4 bytes of byte array `arr` and re-interprets it as a little-endian 32-bit unsigned integer.
@@ -165,9 +164,9 @@ R = MerkleRoot( H(K'_0), ..., H(K'_n) )
 
 Here the batch-root commits to a set ephemeral OTS keys which will be used in signature generation and verification. Selection of the OTS key-pair is performed by the signer during the signing process and care should be taken to **never re-use** an OTS key. 
 
-**REMARK** In VelocityNET[^3], this is achieved by using a strictly increasing Nonce field associated to the signer identity and stored in a public consensus database. The nonce is strictly incremented after every signature and part of transaction itself. Since the transaction update is ACID, it can be reliably used to for OTS key selection. 
+**REMARK** In blockchain-based applications, this is achieved by using a strictly increasing Nonce field associated to the signer identity and stored in a public consensus database. The nonce is strictly incremented after every signature and part of transaction itself. Since the transaction update is ACID, it can be reliably used to for OTS key selection. 
 
-Merkle-tree roots and proofs follow this Merkle-Math[^4] construction developed by the author and used within VelocityNET project.
+Merkle-tree roots and proofs follow standard merkle-tree constructions constructions widely documented and developed. 
 
 **NOTE** In the definition above, the leaf-set of of the merkle-tree comprise of public key hashes. If the OTS-layer of the AMS-algorithm passes up a public key hash, and matching CHF's are used, it need not be hashed again. Re-using the public key value is sufficient (as it is already a hash digest).
 
@@ -203,7 +202,7 @@ For any message `M`, private key `P` and public key `K` a signature `S` is deriv
 | `R`                     | The batch-root of the batch which contains `K'_i`            | `U`               |
 | `GenOTSKeys(x,y,z)`     | OTS-layer function that generates the `z'th` OTS key-pair in batch `y` for private key `x` |                   |
 | `GenOTSSig(x,y)`        | OTS-layer function that generates an OTS signature of message-digest `x` using OTS private key `y` |                   |
-| `GenMerkleProof(x,y,z)` | Merkle-Math[^4] function that generates a merkle-proof that `x` is `y'th` leaf of a merkle-tree with root `z` |                   |
+| `GenMerkleProof(x,y,z)` | A standard merkle-tree function that generates a merkle-proof that `x` is `y'th` leaf of a merkle-tree with root `z` |                   |
 | `OTS_SigBits`           | Length of the OTS signature as returned by the OTS layer     |                   |
 | `OTS_PrivKeyBits`       | Length of an OTS signature as returned by the OTS layer      |                   |
 | `OTS_PubKeyBits`        | Length of an OTS signature as returned by the OTS layer. See Note below. |                   |
@@ -214,7 +213,7 @@ Signatures are `(48 + OTS_PubKeyLenLength(S') + (h+1)*(U/8))` bytes in length, t
 
 #### 2.4.1 OTS Index
 
-When signing. the selection of `i` is performed by the signer and care should be taken to not re-use a previously used one-time key. In VelocityNET, this is achieved by using the strictly increasing Nonce field from signing identity object stored in a public consensus database. Since this does not require local database updates, and the Nonce is always updated across a consensus database after a signed transaction is confirmed, there is no risk of accidental key reuse arising from local state corruption. Signature re-use could still exist but this would arise from a bug or attack to the client code (no different to traditional cryptographic schemes). When used in this manner, the AMS scheme can be considered "practically stateless", however it is not strictly so. 
+When signing. the selection of `i` is performed by the signer and care should be taken to not re-use a previously used one-time key. In blockchain-based applications, this is achieved by using the strictly increasing Nonce field from signing identity object stored in a public consensus database. Since this does not require local database updates, and the Nonce is always updated across a consensus database after a signed transaction is confirmed, there is no risk of accidental key reuse arising from local state corruption. Signature re-use could still exist but this would arise from a bug or attack to the client code (no different to traditional cryptographic schemes). When used in this manner, the AMS scheme can be considered "practically stateless", however it is not strictly so. 
 
 In non-blockchain/DLT applications, care should be taken to remember the index of the last OTS signature so as not to re-use. Note, if an attacker is able to trick the code into re-using an OTS key, it's security could be totally compromised after a few re-uses.
 
@@ -251,14 +250,10 @@ In non-blockchain/DLT applications, care should be taken to remember the index o
 
 The `VerMerkleProof` term ensures that the OTS key used by the signature was committed to by the public key and the `VerOTSSig` term verifies the OTS signature verifies to that OTS key. With these two steps, the verifier has determined the AMS signature contains a valid OTS signature and that the OTS public key in the signature was committed to by the AMS public key. Since only the bearer of the AMS private key can know the OTS private key, it follows the AMS signature was signed by the bearer of the AMS private key.
 
-**NOTE** that the Merkle tree scheme[^4] employed in VelocityNET does not require that proofs contain left/right flags for evaluation. Instead they are implicit and inferred from index of the leaf-node and the cardinality of the set of leaf nodes. Merkle "existence proof" only ever contain the minimal set of parent-node hashes required to evaluate the proof.
+**NOTE** it is desirable that the merkle-tree construction employed within AMS should not require existence proofs to contain direction flags when traversing the tree. Instead these directions ought to be implicit and inferred from the index of the leaf-node being traversed from and the cardinality of the set of leaf nodes. Merkle "existence proof" should only ever contain the minimal set of parent-node hashes required to evaluate the proof.
 
 ## References
 
 [^1]: Ralph Merkle. "Secrecy, authentication and public key systems / A certified digital signature". Ph.D. dissertation, Dept. of Electrical Engineering, Stanford University, 1979. Url: http://www.merkle.com/papers/Certified1979.pdf
 
 [^2]: IRTF.  "XMSS: eXtended Merkle Signature Scheme". Accessed: 2020-07-01, URL: https://tools.ietf.org/html/rfc8391
-
-[^3]: VelocityNET Project.  "Velocity Network: P2P Liberty Platform". Accessed: 2020-07-01, URL: https://velocitynet.io
-
-[^4]: Schoenfeld, H.  "Enhanced Merkle-Trees" . URL: TODO

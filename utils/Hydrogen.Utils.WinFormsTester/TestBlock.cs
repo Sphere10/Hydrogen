@@ -101,7 +101,7 @@ namespace Hydrogen.Utils.WinFormsTester
                             new ScreenMenuItem("ValidationIndicator",typeof(ValidationIndicatorTestScreen),null),
                             new ScreenMenuItem("RegionTool",typeof(RegionToolTestScreen),null),
                             new ScreenMenuItem("CustomComboBox",typeof(CustomComboBoxScreen),null),
-                            new ScreenMenuItem("Misc",typeof(MiscTestScreen),null),
+                            new ScreenMenuItem("Misc",typeof(MiscTestScreen),null, false, false, true),
                             new ScreenMenuItem("ConnectionPanel",typeof(ConnectionPanelTestScreen),null),
                             new ScreenMenuItem("DraggableControls",typeof(DraggableControlsTestScreen),null),
                             new ScreenMenuItem("EncryptedCompression",typeof(EncryptedCompressionTestScreen),null),

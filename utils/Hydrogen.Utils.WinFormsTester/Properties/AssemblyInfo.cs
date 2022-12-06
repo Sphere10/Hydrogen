@@ -23,6 +23,7 @@ using Hydrogen.Application;
 //[assembly: AssemblyDescription("Tests Hydrogen Framework")]
 //[assembly: AssemblyConfiguration("")]
 //[assembly: AssemblyCompany("Sphere 10 Software")]
+[assembly: AssemblyProductSecret("7cb63ab9cedd8465cf5dad3417c78e5241ada42f460e65b80492fce89b10667a")]
 [assembly: AssemblyCompanyNumber("ABN 39600596316")]
 [assembly: AssemblyCompanyLink("www.sphere10.com")]
 //[assembly: AssemblyProduct("Sphere10.Application.Tester")]

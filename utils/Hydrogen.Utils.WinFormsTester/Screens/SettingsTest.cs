@@ -33,10 +33,38 @@ namespace Hydrogen.Utils.WinFormsTester {
             _outputWriter = new TextBoxWriter(_outputTextBox);
         }
 
-        private void _test1Button_Click(object sender, EventArgs e) {
-            var settingsObject = UserSettings.Get<Test1Settings>();
+        private async void _test1Button_Click(object sender, EventArgs e) {
+            
+            var userSettings = UserSettings.Get<Test1Settings>();
+            await _outputWriter.WriteLineAsync($"USER SETTINGS");
+            await _outputWriter.WriteLineAsync($"DBMSType: {userSettings.DBMSType}");
+            await _outputWriter.WriteLineAsync($"ConnectionString: {userSettings.ConnectionString}");
+            await _outputWriter.WriteLineAsync($"ActiveLanguage: {userSettings.ActiveLanguage}");
+            await _outputWriter.WriteLineAsync($"FirstTimeRun: {userSettings.FirstTimeRun}");
+            await _outputWriter.WriteLineAsync($"RunCount: {userSettings.RunCount}");
+            await _outputWriter.WriteLineAsync($"FirstRunDate: {userSettings.FirstRunDate}");
+            await _outputWriter.WriteLineAsync($"Secret: {userSettings.Secret}");
+            await _outputWriter.WriteLineAsync("");
 
-            var x = 1;
+            var globalSettings = GlobalSettings.Get<Test1Settings>();
+            await _outputWriter.WriteLineAsync($"Global SETTINGS");
+            await _outputWriter.WriteLineAsync($"DBMSType: {globalSettings.DBMSType}");
+            await _outputWriter.WriteLineAsync($"ConnectionString: {globalSettings.ConnectionString}");
+            await _outputWriter.WriteLineAsync($"ActiveLanguage: {globalSettings.ActiveLanguage}");
+            await _outputWriter.WriteLineAsync($"FirstTimeRun: {globalSettings.FirstTimeRun}");
+            await _outputWriter.WriteLineAsync($"RunCount: {globalSettings.RunCount}");
+            await _outputWriter.WriteLineAsync($"FirstRunDate: {globalSettings.FirstRunDate}");
+            await _outputWriter.WriteLineAsync($"Secret: {globalSettings.Secret}");
+            await _outputWriter.WriteLineAsync("");
+
+            userSettings.RunCount++;
+            userSettings.Secret = $"Hello! {userSettings.RunCount}";
+
+            globalSettings.RunCount++;
+            globalSettings.Secret = $"Hello! {userSettings.RunCount}";
+
+            userSettings.Save();
+            globalSettings.Save();
         }
     }
 
@@ -62,6 +90,9 @@ namespace Hydrogen.Utils.WinFormsTester {
 
         [DefaultDate(true, 0, 0, 0, 0, 0, 0, 0)]
         public DateTime FirstRunDate { get; set; }
+
+        [Encrypted]
+        public string Secret { get; set; } = "Hello!";
 
     }
 }

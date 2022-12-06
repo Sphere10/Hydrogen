@@ -304,7 +304,17 @@ namespace Hydrogen.Utils.WinFormsTester {
 			}
 		}
 
-
+		
+        private async void _systemPathsButton_Click(object sender, EventArgs e)
+        {
+            var writer = new TextBoxWriter(_clipTestTextBox);
+            try {
+				foreach(var specialFolder in Tools.Enums.GetValues<Environment.SpecialFolder>()) 
+					await writer.WriteLineAsync($"{specialFolder} -> {Environment.GetFolderPath(specialFolder)}");
+            } catch (Exception error) {
+                writer.WriteLine(error.ToDiagnosticString());
+            }
+        }
 
 
 		#region Sqlite
@@ -628,7 +638,5 @@ namespace Hydrogen.Utils.WinFormsTester {
 			}
 		}
 
-
-
-	}
+    }
 }

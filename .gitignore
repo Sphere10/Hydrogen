@@ -197,3 +197,4 @@ project.lock.json
 **/wwwroot/lib/
 **/wwwroot/**/*.min.*
 *.DS_Store
+/utils/Hydrogen.Utils.WinFormsTester/Properties/PublishProfiles/FolderProfile.pubxml

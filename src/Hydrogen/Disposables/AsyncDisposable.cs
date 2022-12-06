@@ -18,6 +18,6 @@ namespace Hydrogen;
 
 public abstract class AsyncDisposable : Disposable {
 
-	protected sealed override void FreeManagedResources() => Task.Run(FreeManagedResourcesAsync);
+	protected sealed override void FreeManagedResources() => FreeManagedResourcesAsync().AsTask().WaitSafe();
 }
 

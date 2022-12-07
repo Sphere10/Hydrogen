@@ -21,6 +21,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Hydrogen;
+using Hydrogen.Application;
 using Hydrogen.Windows.Forms;
 using TinyIoC;
 
@@ -34,10 +35,10 @@ namespace Hydrogen.Utils.WinFormsTester {
 
 		private void _testButton_Click(object sender, EventArgs e) {
 			try {
-				var container = new TinyIoCContainer();
-				container.Register<IAlpha, Alpha>();
-				container.Register<IBeta, Beta>();
-				//container.Register<IGamma, Gamma>();
+				var container = new ComponentRegistry();
+				container.RegisterComponent<IAlpha, Alpha>();
+				container.RegisterComponent<IBeta, Beta>();
+				//container.RegisterComponent<IGamma, Gamma>();
 
 				var alpha = container.Resolve<IAlpha>();
 				var beta = container.Resolve<IBeta>();

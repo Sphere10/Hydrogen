@@ -29,7 +29,7 @@ namespace Hydrogen.Tests {
         [Test]
         public void RegisterFactory() {
 	        var count = 0;
-	        var reg = new ComponentRegistry(new TinyIoCContainer());
+	        var reg = new ComponentRegistry();
             reg.RegisterComponentFactory<ISampleInterface>(r => {
 	            count++;
 	            return new SampleImplementation();
@@ -42,7 +42,7 @@ namespace Hydrogen.Tests {
         [Test]
         public void ResolveFactory() {
 	        var count = 0;
-	        var reg = new ComponentRegistry(new TinyIoCContainer());
+	        var reg = new ComponentRegistry();
 	        reg.RegisterComponentFactory<ISampleInterface>(r => {
 		        count++;
 		        return new SampleImplementation();

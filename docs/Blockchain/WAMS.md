@@ -7,6 +7,7 @@
   Copyright: (c) Sphere 10 Software Pty Ltd
   License: MIT
 </pre>
+
 **Abstract**
 
 A quantum-resistant, many-time signature scheme combining Winternitz and Merkle-Signature schemes is proposed. This construction is compatible with the Abstract Merkle Signature (AMS) Scheme [^1] and thus is an AMS-algorithm called "WAMS". 
@@ -310,9 +311,9 @@ A C# implementation in .NET 7 was developed and object lengths and performance m
 
 ## References
 
-[^1]: Herman Schoenfeld. "AMS - Abstract Merkle Signature Scheme", 2020. 
+[^1]: Herman Schoenfeld. "AMS - Abstract Merkle Signature Scheme", 2020. URL: https://vixra.org/abs/2212.0019   
 
-[^2]:  Crypto4A. "Hash Chains and the Winternitz One-Time Signature Scheme". URL: https://crypto4a.com/sectorization-defunct/W-OTS/. Accessed on: 2020-07-20.
+[^2]:  Sphere 10. "Winternitz One-Time Signature Scheme (W-OTS)". URL: https://sphere10.com/articles/cryptography/pqc/wots.
 
 [^3]: Ralph Merkle. "Secrecy, authentication and public key systems / A certified digital signature". Ph.D. dissertation, Dept. of Electrical Engineering, Stanford University, 1979. URL: http://www.merkle.com/papers/Certified1979.pdf.
 

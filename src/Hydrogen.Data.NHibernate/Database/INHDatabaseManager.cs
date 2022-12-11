@@ -1,7 +1,7 @@
 ﻿using NHibernate;
 
 namespace Hydrogen.Data.NHibernate {
-	public interface INHibernateSessionProvider {
+	public interface INHDatabaseManager : IDatabaseManager {
 		ISessionFactory OpenDatabase(string connectionString);
 	}
 }

@@ -12,16 +12,19 @@ public sealed class DataAccessScope : TransactionalScopeBase<ITransaction> {
 	private readonly bool _scopeOwnsSession;
 	private IsolationLevel? _transactionIsolationLevel;
 
-	public DataAccessScope(INHibernateSessionProvider sessionProvider, DBMSType dbmsType, string connectionString, ContextScopePolicy policy = ContextScopePolicy.None, string contextPrefix = DefaultContextPrefix, TransactionAction? autoTransactionFinalizerAction = null)
-		: base(policy, string.Format(ContextNameTemplate, contextPrefix, dbmsType, connectionString)) {
+	public DataAccessScope(INHDatabaseManager sessionProvider, DBMSType dbmsType, string connectionString, ContextScopePolicy policy = ContextScopePolicy.None, string contextPrefix = DefaultContextPrefix, TransactionAction? autoTransactionFinalizerAction = null)
+		: this(sessionProvider, new DBReference(dbmsType, connectionString), policy) {
+	}
 
+	public DataAccessScope(INHDatabaseManager sessionProvider, DBReference databaseReference, ContextScopePolicy policy = ContextScopePolicy.None, string contextPrefix = DefaultContextPrefix, TransactionAction? autoTransactionFinalizerAction = null)
+		: base(policy, string.Format(ContextNameTemplate, contextPrefix, databaseReference.DBMSType, databaseReference.ConnectionString)) {
+		DatabaseReference = databaseReference;
 		var withinSystemTransactionScope = System.Transactions.Transaction.Current != null;
 		if (withinSystemTransactionScope)
 			throw new Exception("System transactions not supported, please use DataAccessScope transactions only");
 
-
 		if (IsRootScope) {
-			var sessionFactory = sessionProvider.OpenDatabase(connectionString);
+			var sessionFactory = sessionProvider.OpenDatabase(databaseReference.ConnectionString);
 			Session = sessionFactory.OpenSession();
 			Guard.Ensure(Session != null);
 			_scopeOwnsSession = true;
@@ -35,6 +38,7 @@ public sealed class DataAccessScope : TransactionalScopeBase<ITransaction> {
 
 	public new DataAccessScope RootScope => base.RootScope as DataAccessScope;
 
+	public DBReference DatabaseReference { get; }
 	public ISession Session { get; }
 
 	public sealed override void BeginTransaction() {

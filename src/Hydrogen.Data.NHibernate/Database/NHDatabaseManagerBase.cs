@@ -10,10 +10,9 @@ using Hydrogen.Data;
 
 namespace Hydrogen.Data.NHibernate {
 
+	public abstract class NHDatabaseManagerBase : DatabaseManagerDecorator, INHDatabaseManager {
 
-	public abstract class NHibernateDatabaseManagerBase : DatabaseManagerDecorator, INHibernateSessionProvider {
-
-        public NHibernateDatabaseManagerBase(IDatabaseManager internalDatabaseGenerator)
+		protected NHDatabaseManagerBase(IDatabaseManager internalDatabaseGenerator)
 			: base(internalDatabaseGenerator) {
 		}
 
@@ -22,20 +21,15 @@ namespace Hydrogen.Data.NHibernate {
 				GetFluentConfig(connectionString)
 				.ExposeConfiguration(config => SetCreateDatabaseConfiguration(connectionString, databaseName, config));
 
-			using (var sessionFactory = sessionConfig.BuildSessionFactory()) {
-				this.OnDatabaseCreated(connectionString, false);
-				IDataGenerator dataPopulator = null;
-				switch (dataPolicy) {
-					case DatabaseGenerationDataPolicy.NoData:
-						dataPopulator = new EmptyDataGenerator();
-						break;
-					case DatabaseGenerationDataPolicy.DemoData:
-					case DatabaseGenerationDataPolicy.PrimingData:
-						dataPopulator = CreateDataGenerator(sessionFactory, databaseName, dataPolicy);
-						break;
-				}
-				dataPopulator?.Populate();
-			}
+			using var sessionFactory = sessionConfig.BuildSessionFactory();
+			this.OnDatabaseCreated(connectionString, false);
+			IDataGenerator dataPopulator = dataPolicy switch {
+				DatabaseGenerationDataPolicy.NoData => new EmptyDataGenerator(),
+				DatabaseGenerationDataPolicy.DemoData => CreateDataGenerator(sessionFactory, databaseName, dataPolicy),
+				DatabaseGenerationDataPolicy.PrimingData => CreateDataGenerator(sessionFactory, databaseName, dataPolicy),
+				_ => null
+			};
+			dataPopulator?.Populate();
 		}
 
 		public ISessionFactory OpenDatabase(string connectionString) 

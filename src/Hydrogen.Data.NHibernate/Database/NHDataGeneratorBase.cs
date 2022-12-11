@@ -6,9 +6,9 @@ using NHibernate;
 using System.Threading.Tasks;
 using Hydrogen;
 
-namespace Hydrogen.Data.NHibernatee {
-    public abstract class NHibernateDataGeneratorBase : IDataGenerator {
-	    protected NHibernateDataGeneratorBase(ISessionFactory sessionFactory)  {
+namespace Hydrogen.Data.NHibernate {
+    public abstract class NHDataGeneratorBase : IDataGenerator {
+	    protected NHDataGeneratorBase(ISessionFactory sessionFactory)  {
 			SessionFactory = sessionFactory;
 	    }
 

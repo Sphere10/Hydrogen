@@ -33,7 +33,7 @@ namespace Hydrogen {
 
 		[XmlIgnore]
 		[IgnoreDataMember]
-		public List<ResultCode> ResultCodes  { get; }
+		public List<ResultCode> ResultCodes  { get; private set; }
 
 		[XmlIgnore]
 		[IgnoreDataMember]
@@ -102,10 +102,17 @@ namespace Hydrogen {
 		public void AddException(Exception exception) {
 			AddError(exception.ToDiagnosticString());
 		}
+	
+		public void Merge(IEnumerable<Result> results) 
+			=> results.ForEach(Merge);
 
 		public void Merge(Result result) {
 			ResultCodes.AddRange(result.ResultCodes);
 		}
+
+		public Result CombineWith(IEnumerable<Result> results) => Combine(this.ConcatWith(results));
+
+		public static Result Combine(IEnumerable<Result> results) => new() { ResultCodes = results.SelectMany(x => x.ResultCodes).ToList() };
 
 		public void ThrowOnFailure() {
 			if (Failure)

@@ -16,6 +16,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 
 namespace Hydrogen {
 
@@ -33,6 +34,11 @@ namespace Hydrogen {
 			"SMDiagnostics,",
 		};
 
+
+		public static string GetEmbeddedResourceString(this Assembly assembly, string resourceName) {
+			using var stream = assembly.GetManifestResourceStream(resourceName);
+			return Convert.ToString(stream.ReadAll());
+		}
 
 		public static void ExtractEmbeddedResource(this Assembly assembly, string resourceName, string filePath, bool createDirectories = false) {
 			using var stream = assembly.GetManifestResourceStream(resourceName);

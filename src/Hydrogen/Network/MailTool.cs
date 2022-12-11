@@ -18,6 +18,7 @@ using System.Net.Mail;
 using System.Net;
 using System.Text.RegularExpressions;
 using System.Diagnostics;
+using System.Threading.Tasks;
 using Hydrogen;
 using Debug = System.Diagnostics.Debug;
 
@@ -169,6 +170,85 @@ namespace Tools {
 				smtpClient.Send(mailMessage);
 			}
 
+		public static Task SendEmailAsync(
+				string smtpServer,
+				string from,
+				string subject,
+				string body,
+				IEnumerable<string> toUsers,
+				IEnumerable<string> ccUsers = null,
+				IEnumerable<string> bccUsers = null,
+				IEnumerable<Attachment> attachments = null,
+				IEnumerable<AlternateView> alternativeViews = null,
+				bool requiresSSL = false,
+				string username = null,
+				string password = null,
+				string domain = null,
+				int? port = null,
+				bool bodyHtml = false
+			) {
+				#region Pre-Conditions
+				Debug.Assert(toUsers != null);
+				Debug.Assert(from != null);
+				if (toUsers == null) {
+					throw new ArgumentNullException("toUsers");
+				}
+				if (from == null) {
+					throw new ArgumentNullException("from");
+				}
+
+				var badEmails = new List<string>();
+				toUsers
+					.Union(ccUsers ?? new string[0])
+					.Union(bccUsers ?? new string[0])
+					.ForEach(u => {
+						if (!IsValidEmail(u)) {
+							badEmails.Add(u);
+						}
+					});
+				if (badEmails.Count > 0) {
+					throw new SoftwareException("Unable to send email as TO, CC and/or BCC included the following bad emails {0}", badEmails.ToDelimittedString(", "));
+				}
+
+				#endregion
+
+				if (port == null)
+					port = requiresSSL ? SecureSMTPPort : SMTPPort;
+
+				bool requiresLogon = !string.IsNullOrEmpty(username);
+
+				var mailMessage = new MailMessage { Subject = subject, Body = body, IsBodyHtml = bodyHtml, From = new MailAddress(@from) };
+
+				toUsers.Distinct().ForEach(u => mailMessage.To.Insert(0, new MailAddress(u)));
+
+				if (ccUsers != null) {
+					ccUsers.Distinct().ForEach(u => mailMessage.CC.Insert(0, new MailAddress(u)));
+				}
+
+				if (bccUsers != null) {
+					bccUsers.Distinct().ForEach(u => mailMessage.Bcc.Insert(0, new MailAddress(u)));
+				}
+
+				if (attachments != null) {
+					attachments.ForEach(a => mailMessage.Attachments.Add(a));
+				}
+
+				if (alternativeViews != null) {
+					alternativeViews.ForEach(av => mailMessage.AlternateViews.Add(av));
+				}
+
+				var smtpClient = new SmtpClient(smtpServer, port.Value);
+				if (requiresSSL) {
+					smtpClient.EnableSsl = true;
+					ServicePointManager.ServerCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) => true;
+				}
+				if (requiresLogon) {
+					smtpClient.UseDefaultCredentials = false;
+					smtpClient.Credentials = new NetworkCredential(username, password, domain);
+				}
+
+				return smtpClient.SendMailAsync(mailMessage);
+			}
 		}
 
 	}

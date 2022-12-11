@@ -174,6 +174,9 @@ namespace Tools {
         public static string FormatEx(string formatString, Func<string, string> userTokenResolver, params object[] formatArgs)
             => StringFormatter.FormatEx(formatString, userTokenResolver, true, formatArgs);
 
+        public static string FormatWithDictionary(string formatString, IDictionary<string, string> userTokenResolver, bool recursive, params object[] formatArgs) 
+			=> FormatWithDictionary(formatString, userTokenResolver.ToDictionary(x => x.Key, x => x.Value as object), recursive, formatArgs);
+
 		public static string FormatWithDictionary(string formatString, IDictionary<string, object> userTokenResolver, bool recursive, params object[] formatArgs)
 			=> StringFormatter.FormatWithDictionary(formatString, userTokenResolver, recursive, formatArgs);
 

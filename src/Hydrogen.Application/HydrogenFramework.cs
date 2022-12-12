@@ -11,6 +11,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
+using RailwaySharp.ErrorHandling;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -22,11 +23,14 @@ namespace Hydrogen.Application {
 		private readonly object _threadLock;
 		private bool _registeredConfig;
 		private bool _registeredModuleComponents;
+		private bool _initializedModules;
+		private bool _executedApplicationInitializers;
 
 		public event EventHandlerEx Initializing;
-		public event EventHandlerEx Starting;
-		public event EventHandlerEx Ending;
+		public event EventHandlerEx Initialized;
 		public event EventHandlerEx Finalizing;
+		public event EventHandlerEx Finalized;
+		
 
 		static HydrogenFramework() {
 			Instance = new HydrogenFramework();
@@ -54,12 +58,12 @@ namespace Hydrogen.Application {
 		public bool IsStarted { get; private set; }
 
 		private IFuture<IModuleConfiguration[]> ModuleConfigurations { get; set; }
-
+		
 		public void StartFramework() {
 			CheckNotStarted();
+			Initializing?.Invoke();
 
 			// Register App/Web Config components
-
 			if (!_registeredConfig)
 				RegisterAppConfig();
 
@@ -67,26 +71,13 @@ namespace Hydrogen.Application {
 				RegisterAllModuleComponents();
 
 			// Initialize Modules
-			ModuleConfigurations.Value.Update(moduleConfiguration => Tools.Exceptions.ExecuteIgnoringException(moduleConfiguration.OnInitialize));
+			if (!_initializedModules)
+				InitializeModules();
 
-			// Execute all the application initialization tasks synchronously and in sequence
-			ComponentRegistry
-				.Instance
-				.ResolveAll<IApplicationInitializeTask>()
-				.OrderBy(initTask => initTask.Priority)
-				.ForEach(
-					initTask => Tools.Exceptions.ExecuteIgnoringException(initTask.Initialize)
-				);
-			Initializing?.Invoke();
+			if (!_executedApplicationInitializers)
+				InitializeApplication();
 
-			// Execute all the start tasks asynchronously
-			ComponentRegistry
-				.Instance
-				.ResolveAll<IApplicationStartTask>()
-				.ForEach(
-					startTask => Tools.Lambda.ActionAsAsyncronous(startTask.Start).IgnoringExceptions().Invoke()
-				);
-			Starting?.Invoke();
+			Initialized?.Invoke();
 
 			IsStarted = true;
 		}
@@ -96,41 +87,21 @@ namespace Hydrogen.Application {
 
 		public void EndFramework(out bool abort, out string abortReason) {
 			CheckStarted();
-
 			abortReason = string.Empty;
 			abort = false;
 
-			var results = new List<Result>();
-			ComponentRegistry
-				.Instance
-				.ResolveAll<IApplicationEndTask>()
-				.ForEach(
-					endTask => Tools.Exceptions.Execute(endTask.End, error => results.Add(Result.Error(error.ToDisplayString())))
-				);
-			Ending?.Invoke();
-
-			if (results.Any(r => r.Failure)) {
-				var textBuilder = new ParagraphBuilder();
-				results.ForEach(
-					result => {
-						result.ErrorMessages.ForEach(
-							notification => textBuilder.AppendSentence(notification));
-						textBuilder.AppendParagraphBreak();
-					}
-				 );
-				abort = true;
-				abortReason = textBuilder.ToString();
-			}
-
-			// Finalize modules
-			ModuleConfigurations.Value.Update(moduleConfiguration => Tools.Exceptions.ExecuteIgnoringException(moduleConfiguration.OnFinalize));
 			Finalizing?.Invoke();
 
-			DeregisterAllModuleComponents();
+			var result = FinalizeApplication();
+			if (result.Failure) {
+				abort = true;
+				abortReason = result.ToString();
+				return;
+			}
 
-			ComponentRegistry.Instance.Dispose();
-
+			FinalizeModules();
 			IsStarted = false;
+			Finalized?.Invoke();
 		}
 
 		public ILogger CreateApplicationLogger(bool visibleToAllUsers = false)
@@ -149,9 +120,8 @@ namespace Hydrogen.Application {
 					)
 				)
 			);
-				
 
-		public void RegisterAppConfig(string configSectionName = "ComponentRegistry") {
+		internal void RegisterAppConfig(string configSectionName = "ComponentRegistry") {
 			CheckNotStarted();
 
 			if (_registeredConfig)
@@ -166,7 +136,7 @@ namespace Hydrogen.Application {
 			}
 		}
 
-		private void RegisterAllModuleComponents() {
+		internal void RegisterAllModuleComponents() {
 			CheckNotStarted();
 
 			if (_registeredModuleComponents)
@@ -179,7 +149,58 @@ namespace Hydrogen.Application {
 			}
 		}
 
-		private void DeregisterAllModuleComponents() {
+		internal void InitializeModules() {
+			CheckNotStarted();
+			if (_initializedModules)
+				throw new SoftwareException("All modules have already been initialized, cannot initialize again.");
+
+			ModuleConfigurations.Value.Update(moduleConfiguration => Tools.Exceptions.ExecuteIgnoringException(moduleConfiguration.OnInitialize));
+		}
+
+		internal void InitializeApplication() {
+			CheckNotStarted();
+			Initializing?.Invoke();
+			// Execute all the application initialization tasks synchronously and in sequence
+			ComponentRegistry
+				.Instance
+				.ResolveAll<IApplicationInitializer>()
+				.Where(x => !x.Parallelizable)
+				.OrderBy(initTask => initTask.Priority)
+				.ForEach(
+					initTask => Tools.Exceptions.ExecuteIgnoringException(initTask.Initialize)
+				);
+			
+
+			// Execute all the start tasks asynchronously
+			ComponentRegistry
+				.Instance
+				.ResolveAll<IApplicationInitializer>()
+				.Where(x => !x.Parallelizable)
+				.OrderBy(initTask => initTask.Priority)
+				.ForEach(
+					startTask => Tools.Lambda.ActionAsAsyncronous(startTask.Initialize).IgnoringExceptions().Invoke()
+				);
+		}
+
+		internal Result FinalizeApplication() {
+			var results = new List<Result>();
+			ComponentRegistry
+				.Instance
+				.ResolveAll<IApplicationFinalizer>()
+				.ForEach(
+					endTask => Tools.Exceptions.Execute(endTask.Finalize, error => results.Add(Result.Error(error.ToDisplayString())))
+				);
+			return Result.Combine(results);
+		}
+
+		internal void FinalizeModules() {
+			ModuleConfigurations.Value.Update(moduleConfiguration => Tools.Exceptions.ExecuteIgnoringException(moduleConfiguration.OnFinalize));
+			DeregisterAllModuleComponents();
+			ComponentRegistry.Instance.Dispose();
+
+		}
+
+		internal void DeregisterAllModuleComponents() {
 			CheckStarted();
 			if (!_registeredModuleComponents) return;
 

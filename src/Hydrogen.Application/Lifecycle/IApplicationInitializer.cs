@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------
-// <copyright file="IApplicationInitializeTask.cs" company="Sphere 10 Software">
+// <copyright file="IApplicationInitializer.cs" company="Sphere 10 Software">
 //
 // Copyright (c) Sphere 10 Software. All rights reserved. (http://www.sphere10.com)
 //
@@ -13,9 +13,11 @@
 
 namespace Hydrogen.Application {
 
-	public interface IApplicationInitializeTask {
+	public interface IApplicationInitializer {
 
 		int Priority { get; }
+
+		bool Parallelizable { get; }
 
 		void Initialize();
 	}

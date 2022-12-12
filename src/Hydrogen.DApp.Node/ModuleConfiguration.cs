@@ -25,8 +25,8 @@ namespace Hydrogen.DApp.Node {
 
 		public override void RegisterComponents(ComponentRegistry registry) {
 			// Init tasks
-			registry.RegisterInitializationTask<HydrogenInitializer>();
-			registry.RegisterInitializationTask<IncrementUsageByOneTask>();
+			registry.RegisterInitializer<HydrogenInitializer>();
+			registry.RegisterInitializer<IncrementUsageByOneTask>();
 
 			// Start Tasks
 			// none
@@ -38,7 +38,7 @@ namespace Hydrogen.DApp.Node {
 		}
 
 		public override void DeregisterComponents(ComponentRegistry registry) {
-			registry.DeregisterInitializationTask<HydrogenInitializer>();
+			registry.DeregisterInitializer<HydrogenInitializer>();
 		}
 	}
 }

@@ -14,68 +14,46 @@
 namespace Hydrogen.Application {
 	public static class ComponentRegistryExtensions {
 
-        public static void RegisterInitializationTask<TApplicationInitializeTask>(this ComponentRegistry componentRegistry)
-            where TApplicationInitializeTask : class, IApplicationInitializeTask {
-            componentRegistry.RegisterComponent<IApplicationInitializeTask, TApplicationInitializeTask>(
+        public static void RegisterInitializer<TApplicationInitializeTask>(this ComponentRegistry componentRegistry)
+            where TApplicationInitializeTask : class, IApplicationInitializer {
+            componentRegistry.RegisterComponent<IApplicationInitializer, TApplicationInitializeTask>(
                 typeof(TApplicationInitializeTask).FullName
             );
         }
 
-		public static void DeregisterInitializationTask<TApplicationInitializeTask>(this ComponentRegistry componentRegistry)
-			where TApplicationInitializeTask : class, IApplicationInitializeTask {
+		public static void DeregisterInitializer<TApplicationInitializeTask>(this ComponentRegistry componentRegistry)
+			where TApplicationInitializeTask : class, IApplicationInitializer {
 			componentRegistry.DeregisterComponent<TApplicationInitializeTask>(
 				typeof(TApplicationInitializeTask).FullName
 			);
 		}
 
 
-		public static bool HasInitializationTask<TApplicationInitializeTask>(this ComponentRegistry componentRegistry) 
-            where TApplicationInitializeTask : class, IApplicationInitializeTask {
-            return componentRegistry.HasImplementationFor<IApplicationInitializeTask>(
+		public static bool HasInitializer<TApplicationInitializeTask>(this ComponentRegistry componentRegistry) 
+            where TApplicationInitializeTask : class, IApplicationInitializer {
+            return componentRegistry.HasImplementationFor<IApplicationInitializer>(
                 typeof(TApplicationInitializeTask).FullName
             );
         }
 
-        public static void RegisterStartTask<TApplicationStartTask>(this ComponentRegistry componentRegistry)
-        where TApplicationStartTask : class, IApplicationStartTask {
-            componentRegistry.RegisterComponent<IApplicationStartTask, TApplicationStartTask>(
-                typeof(TApplicationStartTask).FullName
+		public static void RegisterFinalizer<TApplicationFinalizer>(this ComponentRegistry componentRegistry)
+            where TApplicationFinalizer : class, IApplicationFinalizer {
+            componentRegistry.RegisterComponent<IApplicationFinalizer, TApplicationFinalizer>(
+                typeof(TApplicationFinalizer).FullName
             );
         }
 
-
-		public static void DeregisterStartTask<TApplicationStartTask>(this ComponentRegistry componentRegistry)
-			where TApplicationStartTask : class, IApplicationStartTask {
-			componentRegistry.DeregisterComponent<TApplicationStartTask>(
-				typeof(TApplicationStartTask).FullName
+		public static void DeregisterFinalizer<TApplicationFinalizer>(this ComponentRegistry componentRegistry)
+			where TApplicationFinalizer : class, IApplicationFinalizer {
+			componentRegistry.DeregisterComponent<TApplicationFinalizer>(
+				typeof(TApplicationFinalizer).FullName
 			);
 		}
 
-		public static void RegisterEndTask<TApplicationEndTask>(this ComponentRegistry componentRegistry)
-            where TApplicationEndTask : class, IApplicationEndTask {
-            componentRegistry.RegisterComponent<IApplicationEndTask, TApplicationEndTask>(
-                typeof(TApplicationEndTask).FullName
-            );
-        }
-
-		public static void DeregisterEndTask<TApplicationEndTask>(this ComponentRegistry componentRegistry)
-			where TApplicationEndTask : class, IApplicationEndTask {
-			componentRegistry.DeregisterComponent<TApplicationEndTask>(
-				typeof(TApplicationEndTask).FullName
-			);
-		}
-
-		public static bool HasStartTask<TApplicationStartTask>(this ComponentRegistry componentRegistry) 
-            where TApplicationStartTask : class, IApplicationStartTask {
-            return componentRegistry.HasImplementationFor<IApplicationStartTask>(
-                typeof(TApplicationStartTask).FullName
-            );
-        }
-
-        public static bool HasEndTask<TApplicationEndTask>(this ComponentRegistry componentRegistry) 
-            where TApplicationEndTask : class, IApplicationEndTask {
-            return componentRegistry.HasImplementationFor<IApplicationEndTask>(
-                typeof(TApplicationEndTask).FullName
+        public static bool HasFinalizer<TApplicationFinalizer>(this ComponentRegistry componentRegistry) 
+            where TApplicationFinalizer : class, IApplicationFinalizer {
+            return componentRegistry.HasImplementationFor<TApplicationFinalizer>(
+                typeof(TApplicationFinalizer).FullName
             );
         }
 

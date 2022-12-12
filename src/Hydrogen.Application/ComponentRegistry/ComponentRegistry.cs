@@ -13,6 +13,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Xml.Serialization;
 using Hydrogen;
@@ -114,12 +115,12 @@ namespace Hydrogen.Application {
 			}
 		}
 
-		public void RegisterComponentInstance<TInterface>(TInterface instance, string name = null)
-			where TInterface : class {
+		public void RegisterComponentInstance<TType>(TType instance, string name = null)
+			where TType : class {
 			name ??= string.Empty;
 			lock (_threadLock) {
 				_tinyIoCContainer.Register(instance, name);
-				RegisterInternal(Registration.From(instance, name));
+				RegisterInternal(Registration.From(instance, name, ActivationType.Singleton));
 			}
 		}
 
@@ -186,31 +187,40 @@ namespace Hydrogen.Application {
 			}
 		}
 
-		public void RegisterProxyComponent<TInterface, TProxy>(string name = null)
+		public void RegisterProxyComponent<TInterface, TProxy>(string name = null, ActivationType activationType = ActivationType.Instance)
 			where TInterface : class
 			where TProxy : class {
 			name ??= string.Empty;
 			lock (_threadLock) {
 				_tinyIoCContainer.Register((container, _) => container.Resolve<TProxy>() as TInterface, name);
-				RegisterInternal(Registration.FromProxy<TInterface, TProxy>(name));
+				RegisterInternal(Registration.FromProxy<TInterface, TProxy>(name, activationType));
 			}
 		}
 
-		public void RegisterProxyComponent(Type interfaceType, Type proxyType, string name = null) {
+		public void RegisterProxyComponent(Type interfaceType, Type proxyType, string name = null, ActivationType activationType = ActivationType.Instance) {
 			name ??= string.Empty;
 			lock (_threadLock) {
 				if (!proxyType.IsAssignableFrom(proxyType))
 					throw new SoftwareException("Unable to register proxy component '{0}' as it is not a sub-type of '{1}'", proxyType.FullName, interfaceType.FullName);
 				_tinyIoCContainer.Register(interfaceType, (container, overloads) => container.Resolve(proxyType, overloads), name);
-				RegisterInternal(Registration.FromProxy(interfaceType, proxyType, name));
+				RegisterInternal(Registration.FromProxy(interfaceType, proxyType, name, activationType));
 
 			}
 		}
 
-		public void RegisterComponentFactory<TInterface>(Func<ComponentRegistry, TInterface> factory, ActivationType activation = ActivationType.Instance, string name = null) where TInterface : class {
+		public void RegisterComponentFactory<TType>(Func<TType> factory, ActivationType activation = ActivationType.Instance, string name = null) where TType : class 
+			=> RegisterComponentFactory( _ => factory(), activation, name);
+
+		public void RegisterComponentFactory<TType>(Func<ComponentRegistry, TType> factory, ActivationType activation = ActivationType.Instance, string name = null) where TType : class 
+			=> RegisterComponentFactory( (c, _) => factory(c), activation, name);
+
+		public void RegisterComponentFactory<TType>(Func<ComponentRegistry, Dictionary<string, object>, TType> factory, ActivationType activation = ActivationType.Instance, string name = null) where TType : class 
+			=> RegisterComponentFactory(typeof(TType), factory, activation, name);
+
+		public void RegisterComponentFactory(Type type, Func<ComponentRegistry, Dictionary<string, object>, object> factory, ActivationType activation = ActivationType.Instance, string name = null) {
 			name ??= string.Empty;
 			lock (_threadLock) {
-				var options = _tinyIoCContainer.Register(typeof(TInterface), (container, overloads) => factory(this), name);
+				var options = _tinyIoCContainer.Register(type, (container, overloads) => factory(this, overloads), name);
 				switch (activation) {
 					case ActivationType.Instance:
 						// Factory called each time 
@@ -223,7 +233,7 @@ namespace Hydrogen.Application {
 					default:
 						throw new ArgumentOutOfRangeException(nameof(activation), activation, null);
 				}
-				RegisterInternal(Registration.FromFactory(typeof(TInterface), name));
+				RegisterInternal(Registration.FromFactory(type, name, activation));
 			}
 		}
 
@@ -389,7 +399,7 @@ namespace Hydrogen.Application {
 
 		public class Registration {
 
-			public Registration(Type interfaceType, Type implementationType, string name, ActualActivationType activationType) {
+			public Registration(Type interfaceType, Type implementationType, string name, ActivationType activationType) {
 				name ??= string.Empty;
 				InterfaceType = interfaceType;
 				ImplementationType = implementationType;
@@ -403,57 +413,36 @@ namespace Hydrogen.Application {
 
 			public string Name { get; set; }
 
-			public ActualActivationType ActivationType { get; set; }
+			public ActivationType ActivationType { get; set; }
 
-			public static Registration From<TInterface>(TInterface instance, string name)
+			public static Registration From<TInterface>(TInterface instance, string name, ActivationType activationType)
 				where TInterface : class {
-				return new Registration(typeof(TInterface), instance.GetType(), name, ActualActivationType.ExistingInstance);
+				return new Registration(typeof(TInterface), instance.GetType(), name, activationType);
 			}
 
 			public static Registration From<TInterface, TImplementation>(string name, ActivationType activationType) {
-				return new Registration(typeof(TInterface), typeof(TImplementation), name, Convert(activationType));
+				return new Registration(typeof(TInterface), typeof(TImplementation), name, activationType);
 			}
 
 			public static Registration From(Type @interface, Type implementation, string name, ActivationType activationType) {
-				return new Registration(@interface, implementation, name, Convert(activationType));
+				return new Registration(@interface, implementation, name, activationType);
 			}
 
-			public static Registration FromProxy<TInterface, TImplementation>(string name) {
-				return new Registration(typeof(TInterface), typeof(TImplementation), name, ActualActivationType.Proxy);
+			public static Registration FromProxy<TInterface, TImplementation>(string name, ActivationType activationType) {
+				return new Registration(typeof(TInterface), typeof(TImplementation), name, activationType);
 			}
 
-			public static Registration FromProxy(Type @interface, Type implementation, string name) {
-				return new Registration(@interface, implementation, name, ActualActivationType.Proxy);
+			public static Registration FromProxy(Type @interface, Type implementation, string name, ActivationType activationType) {
+				return new Registration(@interface, implementation, name, activationType);
 			}
 
-			public static Registration FromFactory(Type @interface, string name) {
-				return new Registration(@interface, null, name, ActualActivationType.Factory);
+			public static Registration FromFactory(Type @interface, string name, ActivationType activationType) {
+				return new Registration(@interface, null, name, activationType);
 			}
 
-			private static ActualActivationType Convert(ActivationType activationType) {
-				switch (activationType) {
-					case Application.ActivationType.Instance:
-						return ActualActivationType.NewInstance;
-					case Application.ActivationType.Singleton:
-						return ActualActivationType.Singleton;
-					case Application.ActivationType.PerRequest:
-						return ActualActivationType.PerRequest;
-					default:
-						throw new ArgumentOutOfRangeException(nameof(activationType), activationType, null);
-				}
-			}
 		}
 
-
-		public enum ActualActivationType {
-			ExistingInstance,
-			NewInstance,
-			Singleton,
-			PerRequest,
-			Proxy,
-			Factory,
-		}
-
+		
 		#endregion
 
 	}

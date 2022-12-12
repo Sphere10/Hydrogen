@@ -32,6 +32,12 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\Hydrogen\src\Hydrogen.Drawing\Hydrogen.Drawing.csproj" />
     <ProjectReference Include="..\..\..\Hydrogen\src\Hydrogen\Hydrogen.csproj" />
+    <ProjectReference Include="..\Hydrogen.Application\Hydrogen.Application.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Lifecycle\" />
+    <Folder Include="Application\" />
   </ItemGroup>
 
 </Project>

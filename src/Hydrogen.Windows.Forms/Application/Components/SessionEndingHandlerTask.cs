@@ -29,7 +29,7 @@ namespace Hydrogen.Windows.Forms {
 	/// You can test this via
 	/// C:\Program Files (x86)\Microsoft Corporation\Logo Testing Tools for Windows\Restart Manager\x86>rmtool.exe -p PIDHERE -S
 	/// </summary>
-	public class SessionEndingHandlerTask : BaseApplicationInitializeTask {
+	public class SessionEndingHandlerTask : BaseApplicationInitializer {
 
 		public override void Initialize() {
 			SystemEvents.SessionEnding += SystemEventsOnSessionEnding;

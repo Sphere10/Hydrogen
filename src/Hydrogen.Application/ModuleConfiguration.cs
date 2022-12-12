@@ -90,8 +90,8 @@ namespace Hydrogen.Application {
 			}
 
 			// HS 2021-07-12: top-level application should register this, since it is optional
-			//if (!registry.HasInitializationTask<IncrementUsageByOneTask>())
-			//	registry.RegisterInitializationTask<IncrementUsageByOneTask>();
+			//if (!registry.HasInitializer<IncrementUsageByOneTask>())
+			//	registry.RegisterInitializer<IncrementUsageByOneTask>();
 
 			// Start Tasks
 			// ....

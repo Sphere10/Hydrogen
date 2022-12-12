@@ -11,24 +11,22 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace Hydrogen.Application {
+namespace Hydrogen.Application;
 
 
 
-	public class IncrementUsageByOneTask : IApplicationInitializeTask {
+public class IncrementUsageByOneTask : BaseApplicationInitializer {
 
-		public IncrementUsageByOneTask(IProductUsageServices productUsageServices) {
-			ProductUsageServices = productUsageServices;
-		}
-
-		public IProductUsageServices ProductUsageServices { get; private set; }
-
-		public void Initialize() {
-			ProductUsageServices.IncrementUsageByOne();
-		}
-
-		// Critical to run this early on
-		public int Priority => 1;
+	public IncrementUsageByOneTask(IProductUsageServices productUsageServices) {
+		ProductUsageServices = productUsageServices;
 	}
-}
 
+	public IProductUsageServices ProductUsageServices { get; private set; }
+
+	public override int Priority => 1;
+
+	public override void Initialize() {
+		ProductUsageServices.IncrementUsageByOne();
+	}
+
+}

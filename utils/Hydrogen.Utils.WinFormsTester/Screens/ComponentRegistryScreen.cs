@@ -77,7 +77,7 @@ namespace Hydrogen.Utils.WinFormsTester {
                         new ComponentRegistryDefinition.ComponentRegistrationDefinition { Interface = "IWebsiteLauncher", Implementation = "StandardWebsiteLauncher"},
 
                         new ComponentRegistryDefinition.ComponentSetRegistrationDefinition {
-                            Interface = "IApplicationInitializeTask",
+                            Interface = "IApplicationInitializer",
                             RegistrationsDefinition  = new [] {
                                 new ComponentRegistryDefinition.ComponentRegistrationDefinition { Implementation = "StandardProductUsageProvider.Initializer" },
                                 new ComponentRegistryDefinition.ComponentRegistrationDefinition { Implementation = "IncrementUsageByOneTask" },
@@ -145,8 +145,9 @@ namespace Hydrogen.Utils.WinFormsTester {
 
         private void _loadConfigButton_Click(object sender, EventArgs e) {
             try {
-                HydrogenFramework.Instance.RegisterAppConfig();
-                _outputTextBox.AppendText("Passed");
+                throw new NotSupportedException();
+                //HydrogenFramework.Instance.RegisterAppConfig();
+                //_outputTextBox.AppendText("Passed");
             } catch (Exception error) {
                 _outputTextBox.Clear();
                 _outputTextLogger.Exception(error);

@@ -30,7 +30,7 @@ namespace Hydrogen.Tests {
         public void RegisterFactory() {
 	        var count = 0;
 	        var reg = new ComponentRegistry();
-            reg.RegisterComponentFactory<ISampleInterface>(r => {
+            reg.RegisterComponentFactory<ISampleInterface>(r  => {
 	            count++;
 	            return new SampleImplementation();
             });

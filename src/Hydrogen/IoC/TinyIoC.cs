@@ -3111,9 +3111,12 @@ namespace TinyIoC
             public void Dispose()
             {
                 var disposable = _instance as IDisposable;
+				// HS 2022-12-12
+				// An Instance factory does not dispose the instance, since it was activated by the user and thus
+				// should be disposed by the user.
 
-                if (disposable != null)
-                    disposable.Dispose();
+                //if (disposable != null)
+                //    disposable.Dispose();
             }
         }
 

@@ -1,10 +1,11 @@
-﻿using Microsoft.Extensions.Logging;
+﻿//using Microsoft.Extensions.DependencyInjection;
+//using Microsoft.Extensions.Logging;
 
-namespace Hydrogen.Web.AspNetCore;
+//namespace Hydrogen.Web.AspNetCore;
 
-public static class ILoggingBuilderExtensions {
-	public static ILoggingBuilder AddHydrogenLogger(this ILoggingBuilder builder, Hydrogen.ILogger logger) {
-		builder.Services.AddHydrogenLogger(logger); 
-		return builder;
-	}
-}
+//public static class ILoggingBuilderExtensions {
+//	public static ILoggingBuilder AddHydrogenLogger(this ILoggingBuilder builder, Hydrogen.ILogger logger) {
+//		builder.Services.AddHydrogenLogger(logger); 
+//		return builder;
+//	}
+//}

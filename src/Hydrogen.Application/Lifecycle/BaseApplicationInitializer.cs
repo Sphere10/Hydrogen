@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------
-// <copyright file="IApplicationStartTask.cs" company="Sphere 10 Software">
+// <copyright file="BaseApplicationInitializer.cs" company="Sphere 10 Software">
 //
 // Copyright (c) Sphere 10 Software. All rights reserved. (http://www.sphere10.com)
 //
@@ -13,8 +13,15 @@
 
 namespace Hydrogen.Application {
 
-	public interface IApplicationStartTask {
-		// TODO add properties to start async/sync and priority
-		void Start();
+
+    public abstract class BaseApplicationInitializer : IApplicationInitializer {
+		public const int DefaultPriority = 100;
+
+		public virtual int Priority => DefaultPriority;
+		
+		public virtual bool Parallelizable => false;
+
+		public abstract void Initialize();
+
 	}
 }

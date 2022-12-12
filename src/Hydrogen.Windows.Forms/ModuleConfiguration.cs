@@ -105,7 +105,7 @@ namespace Hydrogen.Windows.Forms {
 
             // Initialize Tasks
             if (!registry.HasImplementation<SessionEndingHandlerTask>())
-                registry.RegisterInitializationTask<SessionEndingHandlerTask>();
+                registry.RegisterInitializer<SessionEndingHandlerTask>();
 
 
             // Start Tasks
@@ -167,7 +167,7 @@ namespace Hydrogen.Windows.Forms {
 //    </ComponentSet>
     
 //    <!-- Application Initialize Tasks -->
-//    <ComponentSet interface="IApplicationInitializeTask">
+//    <ComponentSet interface="IApplicationInitializer">
 //      <Component implementation = "StandardProductUsageProvider+Initializer" />
 //      < Component implementation="IncrementUsageByOneTask" />
 //      <Component implementation = "RegisterSettingsViaIocTask" />

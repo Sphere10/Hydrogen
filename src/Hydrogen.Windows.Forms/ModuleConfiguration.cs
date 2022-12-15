@@ -20,34 +20,42 @@ using System.Windows.Forms;
 using Hydrogen;
 using Hydrogen.Application;
 using Hydrogen.Windows;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Win32;
 
 namespace Hydrogen.Windows.Forms {
     public class ModuleConfiguration : ModuleConfigurationBase {
-        public override void RegisterComponents(ComponentRegistry registry) {
+        public override void RegisterComponents(IServiceCollection serviceCollection) {
 
-            if (!registry.HasImplementationFor<IAboutBox>())
-                registry.RegisterComponent<IAboutBox, StandardAboutBox>();
+			if (!serviceCollection.HasImplementationFor<IWinFormsApplicationServices>()) 
+				serviceCollection.AddSingleton<IWinFormsApplicationServices, WinFormsWinFormsApplicationServices>();
 
-            if (!registry.HasImplementationFor<INagDialog>())
-                registry.RegisterComponent<INagDialog, StandardNagDialog>();
+			if (!serviceCollection.HasImplementationFor<IApplicationServices>()) 
+				serviceCollection.AddSingleton<IApplicationServices, IWinFormsApplicationServices>(provider => provider.GetService<IWinFormsApplicationServices>());
 
-            if (!registry.HasImplementationFor<IReportBugDialog>())
-                registry.RegisterComponent<IReportBugDialog, StandardReportBugDialog>();
+	        if (!serviceCollection.HasImplementationFor<IAboutBox>())
+	            serviceCollection.AddTransient<IAboutBox, StandardAboutBox>();
 
-            if (!registry.HasImplementationFor<IRequestFeatureDialog>())
-                registry.RegisterComponent<IRequestFeatureDialog, StandardRequestFeatureDialog>();
+            if (!serviceCollection.HasImplementationFor<INagDialog>())
+	            serviceCollection.AddTransient<INagDialog, StandardNagDialog>();
 
-            if (!registry.HasImplementationFor<ISendCommentsDialog>())
-                registry.RegisterComponent<ISendCommentsDialog, StandardSendCommentsDialog>();
+            if (!serviceCollection.HasImplementationFor<IReportBugDialog>())
+	            serviceCollection.AddTransient<IReportBugDialog, StandardReportBugDialog>();
 
-            if (!registry.HasImplementationFor<IActiveApplicationMonitor>())
-                registry.RegisterComponent<IActiveApplicationMonitor, PollDrivenActiveApplicationMonitor>();
+            if (!serviceCollection.HasImplementationFor<IRequestFeatureDialog>())
+	            serviceCollection.AddTransient<IRequestFeatureDialog, StandardRequestFeatureDialog>();
 
-            if (!registry.HasImplementationFor<IMouseHook>())
-                registry.RegisterComponent<IMouseHook, WindowsMouseHook>(ActivationType.Singleton);
+            if (!serviceCollection.HasImplementationFor<ISendCommentsDialog>())
+	            serviceCollection.AddTransient<ISendCommentsDialog, StandardSendCommentsDialog>();
 
-            if (!registry.HasImplementationFor<IKeyboardHook>())
-                registry.RegisterComponent<IKeyboardHook, WindowsKeyboardHook>(ActivationType.Singleton);
+            if (!serviceCollection.HasImplementationFor<IActiveApplicationMonitor>())
+	            serviceCollection.AddTransient<IActiveApplicationMonitor, PollDrivenActiveApplicationMonitor>();
+
+            if (!serviceCollection.HasImplementationFor<IMouseHook>())
+	            serviceCollection.AddSingleton<IMouseHook, WindowsMouseHook>();
+
+            if (!serviceCollection.HasImplementationFor<IKeyboardHook>())
+	            serviceCollection.AddSingleton<IKeyboardHook, WindowsKeyboardHook>();
 
 			//if (registry.Registrations.Count(r =>
 			//	r.InterfaceType == typeof(IBackgroundLicenseVerifier) &&
@@ -57,55 +65,53 @@ namespace Hydrogen.Windows.Forms {
    //             throw new SoftwareException("Illegal tampering with IBackgroundLicenseVerifier");
    //         }
 
-            if (!registry.HasImplementationFor<IAutoRunServices>())
-                registry.RegisterComponent<IAutoRunServices, StartupFolderAutoRunServicesProvider>();
+            if (!serviceCollection.HasImplementationFor<IAutoRunServices>())
+	            serviceCollection.AddTransient<IAutoRunServices, StartupFolderAutoRunServicesProvider>();
 
             // This is the primary form of the application, so register it as a provider of the below services
+           
+            if (!serviceCollection.HasControlStateEventProvider<FormEx>())
+                serviceCollection.AddControlStateEventProvider<FormEx, FormEx.StateEventProvider>();
 
-            if (!ControlStateEventProviderManager.Instance.HasControlStateProvider<FormEx>())
-                registry.RegisterControlStateEventProvider<FormEx, FormEx.StateEventProvider>();
+            if (!serviceCollection.HasControlStateEventProvider<UserControlEx>())
+				serviceCollection.AddControlStateEventProvider<UserControlEx, UserControlEx.StateEventProvider>();
 
-            if (!ControlStateEventProviderManager.Instance.HasControlStateProvider<UserControlEx>())
-				registry.RegisterControlStateEventProvider<UserControlEx, UserControlEx.StateEventProvider>();
+            if (!serviceCollection.HasControlStateEventProvider<SplitContainer>())
+	            serviceCollection.AddControlStateEventProvider<SplitContainer, SplitContainerControlStateEventProvider>();
 
-            if (!ControlStateEventProviderManager.Instance.HasControlStateProvider<SplitContainer>())
-	            registry.RegisterControlStateEventProvider<SplitContainer, SplitContainerControlStateEventProvider>();
+            if (!serviceCollection.HasControlStateEventProvider<Panel>())
+                serviceCollection.AddControlStateEventProvider<Panel, ContainerControlStateEventProvider>();
 
+            if (!serviceCollection.HasControlStateEventProvider<GroupBox>())
+                serviceCollection.AddControlStateEventProvider<GroupBox, ContainerControlStateEventProvider>();
 
-            if (!ControlStateEventProviderManager.Instance.HasControlStateProvider<Panel>())
-                registry.RegisterControlStateEventProvider<Panel, ContainerControlStateEventProvider>();
+            if (!serviceCollection.HasControlStateEventProvider<PathSelectorControl>())
+                serviceCollection.AddControlStateEventProvider<PathSelectorControl, PathSelectorControl.StateEventProvider>();
 
-            if (!ControlStateEventProviderManager.Instance.HasControlStateProvider<GroupBox>())
-                registry.RegisterControlStateEventProvider<GroupBox, ContainerControlStateEventProvider>();
+            if (!serviceCollection.HasControlStateEventProvider<NumericUpDown>())
+				serviceCollection.AddControlStateEventProvider<NumericUpDown, CommonControlStateEventProvider>();
 
-            if (!ControlStateEventProviderManager.Instance.HasControlStateProvider<PathSelectorControl>())
-                registry.RegisterControlStateEventProvider<PathSelectorControl, PathSelectorControl.StateEventProvider>();
+			if (!serviceCollection.HasControlStateEventProvider<TextBox>())
+				serviceCollection.AddControlStateEventProvider<TextBox, CommonControlStateEventProvider>();
 
-            if (!ControlStateEventProviderManager.Instance.HasControlStateProvider<NumericUpDown>())
-				registry.RegisterControlStateEventProvider<NumericUpDown, CommonControlStateEventProvider>();
+			if (!serviceCollection.HasControlStateEventProvider<ComboBox>())
+				serviceCollection.AddControlStateEventProvider<ComboBox, CommonControlStateEventProvider>();
 
-			if (!ControlStateEventProviderManager.Instance.HasControlStateProvider<TextBox>())
-				registry.RegisterControlStateEventProvider<TextBox, CommonControlStateEventProvider>();
+			if (!serviceCollection.HasControlStateEventProvider<RadioButton>())
+				serviceCollection.AddControlStateEventProvider<RadioButton, CommonControlStateEventProvider>();
 
-			if (!ControlStateEventProviderManager.Instance.HasControlStateProvider<ComboBox>())
-				registry.RegisterControlStateEventProvider<ComboBox, CommonControlStateEventProvider>();
+			if (!serviceCollection.HasControlStateEventProvider<CheckBox>())
+				serviceCollection.AddControlStateEventProvider<CheckBox, CommonControlStateEventProvider>();
 
-			if (!ControlStateEventProviderManager.Instance.HasControlStateProvider<RadioButton>())
-				registry.RegisterControlStateEventProvider<RadioButton, CommonControlStateEventProvider>();
+			if (!serviceCollection.HasControlStateEventProvider<CheckedListBox>())
+				serviceCollection.AddControlStateEventProvider<CheckedListBox, CommonControlStateEventProvider>();
 
-			if (!ControlStateEventProviderManager.Instance.HasControlStateProvider<CheckBox>())
-				registry.RegisterControlStateEventProvider<CheckBox, CommonControlStateEventProvider>();
-
-			if (!ControlStateEventProviderManager.Instance.HasControlStateProvider<CheckedListBox>())
-				registry.RegisterControlStateEventProvider<CheckedListBox, CommonControlStateEventProvider>();
-
-			if (!ControlStateEventProviderManager.Instance.HasControlStateProvider<DateTimePicker>())
-				registry.RegisterControlStateEventProvider<DateTimePicker, CommonControlStateEventProvider>();
-
+			if (!serviceCollection.HasControlStateEventProvider<DateTimePicker>())
+				serviceCollection.AddControlStateEventProvider<DateTimePicker, CommonControlStateEventProvider>();
 
             // Initialize Tasks
-            if (!registry.HasImplementation<SessionEndingHandlerTask>())
-                registry.RegisterInitializer<SessionEndingHandlerTask>();
+            if (!serviceCollection.HasImplementation<SessionEndingHandlerInitializer>())
+	            serviceCollection.AddInitializer<SessionEndingHandlerInitializer>();
 
 
             // Start Tasks

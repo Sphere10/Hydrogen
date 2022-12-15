@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------
-// <copyright file="StandardConfigurationServices.cs" company="Sphere 10 Software">
+// <copyright file="IncrementUsageByOneTask.cs" company="Sphere 10 Software">
 //
 // Copyright (c) Sphere 10 Software. All rights reserved. (http://www.sphere10.com)
 //
@@ -14,16 +14,19 @@
 namespace Hydrogen.Application;
 
 
-public class StandardConfigurationServices : BaseConfigurationServices {
 
-	public StandardConfigurationServices(Global<ISettingsProvider> globalSettings, Local<ISettingsProvider> userSettings) {
-		SystemSettings = globalSettings.Item;
-		UserSettings = userSettings.Item;
+public class IncrementUsageByOneInitializer : ApplicationInitializerBase {
+
+	public IncrementUsageByOneInitializer(IProductUsageServices productUsageServices) {
+		ProductUsageServices = productUsageServices;
 	}
 
-	public override ISettingsProvider SystemSettings { get; }
+	public IProductUsageServices ProductUsageServices { get; private set; }
 
-	public override ISettingsProvider UserSettings { get; }
+	public override int Priority => 1;
+
+	public override void Initialize() {
+		ProductUsageServices.IncrementUsageByOne();
+	}
 
 }
-

@@ -11,19 +11,24 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
+using System;
 using System.Windows.Forms;
 
 namespace Hydrogen.Windows.Forms {
-    public abstract class ControlStateEventProviderBase<TControl> : IControlStateEventProvider where TControl : Control {
+    public abstract class ControlStateEventProviderBase<TControl> : IControlStateEventProvider<TControl> where TControl : Control {
         public event EventHandlerEx StateChanged;
 
-        protected TControl Control { get; private set; }
+
+        public Type ControlType => typeof(TControl);
+
+        public TControl Control { get; private set; }
 
         public void Clear() {
             if (Control != null)
                 DeregisterStateChangedListener(Control, NotifyStateChanged);
             Control = null;
         }
+
 
         public void SetControl(Control control) {
             Guard.ArgumentCast<TControl>(control, out var tctrl, nameof(control));

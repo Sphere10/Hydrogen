@@ -14,19 +14,27 @@
 using System;
 
 namespace Hydrogen.Application {
-    public interface ISettingsProvider {
+
+	public interface ISettingsProvider {
+		
 		bool AutoSaveNewSettings { get; }
+		
 		bool EncryptSettings { get; }
+		
 		SettingsObject NewSetting(Type settingsObjectType, object id = null);
+		
 		bool ContainsSetting(Type settingsObjectType, object id = null);
+		
 		SettingsObject LoadSetting(Type settingsObjectType, object id = null);
+		
 		void SaveSetting(SettingsObject settings);
+		
 		void DeleteSetting(SettingsObject settings);
+		
 		void ClearSettings();
 
 		public bool Has<T>(object id = null) where T : SettingsObject 
 			=> ContainsSetting(typeof(T), id);
-
 
 		public T Get<T>(object id = null) where T : SettingsObject {
             SettingsObject settings;
@@ -51,13 +59,6 @@ namespace Hydrogen.Application {
 			Tools.Object.CopyMembers(setting, reloaded);
 		}
 
-		/*public static bool Contains<T>(this ISettingsProvider settingsProvider, object id = null) where T : SettingsObject {
-			return settingsProvider.ContainsSetting(typeof(T), id);
-		}
-
-		public static bool ContainsSetting<T>(this ISettingsProvider settingsProvider, SettingsObject settings) {
-			return settingsProvider.ContainsSetting(settings.GetType(), settings.ID);
-		}*/
 	}
 
 

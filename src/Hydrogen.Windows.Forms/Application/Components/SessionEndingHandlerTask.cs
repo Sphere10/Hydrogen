@@ -29,7 +29,13 @@ namespace Hydrogen.Windows.Forms {
 	/// You can test this via
 	/// C:\Program Files (x86)\Microsoft Corporation\Logo Testing Tools for Windows\Restart Manager\x86>rmtool.exe -p PIDHERE -S
 	/// </summary>
-	public class SessionEndingHandlerTask : BaseApplicationInitializer {
+	public class SessionEndingHandlerInitializer : ApplicationInitializerBase {
+
+		public SessionEndingHandlerInitializer(IServiceProvider serviceProvider) {
+			ServiceProvider = serviceProvider;
+		}
+
+		protected IServiceProvider ServiceProvider { get; }
 
 		public override void Initialize() {
 			SystemEvents.SessionEnding += SystemEventsOnSessionEnding;
@@ -38,19 +44,20 @@ namespace Hydrogen.Windows.Forms {
 
 		protected virtual void SystemEventsOnSessionEnded(object sender, SessionEndedEventArgs sessionEndedEventArgs) {
 			SystemEvents.SessionEnded -= SystemEventsOnSessionEnded;
+			
 
 			// Note: have to resolve here since if passed in as constructor then has issues with
 			// WinForms applications that register the IUserInterfaceServices when main form is created (and after framework
 			// initialization which this component is created in). Must be resolved here as a result.
-			if (ComponentRegistry.Instance.TryResolve<IUserInterfaceServices>(out var userInterfaceServices)) {
+			if (ServiceProvider.TryGetService<IUserInterfaceServices>(out var userInterfaceServices)) {
 				userInterfaceServices.Exit(true);
-			} else
+			} else {
+				HydrogenFramework.Instance.EndFramework();
 				Environment.Exit(-1);
+			}
 		}
 
 		protected virtual void SystemEventsOnSessionEnding(object sender, SessionEndingEventArgs sessionEndingEventArgs) {
-			SystemEvents.SessionEnding -= SystemEventsOnSessionEnding;
-			// Maybe should cancel here but start exit procedure (without user notification)
 		}
 
 	}

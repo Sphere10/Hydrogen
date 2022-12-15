@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using Microsoft.Extensions.DependencyInjection;
 using Hydrogen;
@@ -14,9 +15,9 @@ namespace Hydrogen.DApp.Presentation2.Logic {
 
 		IApplicationBlock[] Blocks { get; }
 
-		ComponentRegistry IoCContainer { get; }
+		IServiceProvider IoCContainer { get; }
 
-		void Load(ComponentRegistry secureComponentRegistry);
+		void Load(IServiceCollection secureComponentRegistry);
 		
 		void Unload();
 

@@ -25,19 +25,19 @@ using System.Threading;
 using Hydrogen;
 using Hydrogen.Application;
 using Hydrogen.Windows.Forms;
-
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Hydrogen.Windows.Forms {
 
     public class ApplicationForm : FormEx {
-
+		private readonly IFuture<IWinFormsApplicationServices> _winFormsApplicationServices;
         public ApplicationForm() {
-            WinFormsApplicationServices = new WinFormsWinFormsApplicationServices();
+	        _winFormsApplicationServices = Tools.Values.Future.LazyLoad( () => HydrogenFramework.Instance.ServiceProvider.GetService<IWinFormsApplicationServices>());
         }
 
         [Browsable(false)]
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        protected IWinFormsApplicationServices WinFormsApplicationServices { get; private set; }
+        protected IWinFormsApplicationServices WinFormsApplicationServices => _winFormsApplicationServices.Value;
 
         protected override void PopulatePrimingData() {
             base.PopulatePrimingData();

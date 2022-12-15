@@ -11,41 +11,39 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace Hydrogen.Application {
+namespace Hydrogen.Application;
 
 
-	public class ProductServices : IProductServices {
+public class ProductServices : IProductServices {
 
-		public ProductServices() {
-		}
+	public ProductServices(IProductInformationServices productInformationServices, IProductUsageServices productUsageServices, IProductInstancesCounter productInstancesCounter) {
+		InformationServices = productInformationServices;
+		UsageServices = productUsageServices;
+		InstancesCounter = productInstancesCounter;
+	}
 
-		private IProductInformationServices InformationServices { get { return ComponentRegistry.Instance.Resolve<IProductInformationServices>(); } }
+	private IProductInformationServices InformationServices { get; }
 
-		private IProductUsageServices UsageServices { get { return ComponentRegistry.Instance.Resolve<IProductUsageServices>(); } }
+	private IProductUsageServices UsageServices { get; }
 
-		private IProductInstancesCounter InstancesCounter { get { return ComponentRegistry.Instance.Resolve<IProductInstancesCounter>(); } }
+	private IProductInstancesCounter InstancesCounter { get; }
 
-		public ProductInformation ProductInformation {
-			get { return InformationServices.ProductInformation; }
-		}
+	public ProductInformation ProductInformation => InformationServices.ProductInformation;
 
-		public ProductUsageInformation ProductUsageInformation {
-			get { return UsageServices.ProductUsageInformation; }
-		}
+	public ProductUsageInformation ProductUsageInformation => UsageServices.ProductUsageInformation;
 
-		public int CountNumberOfRunningInstances() {
-			return InstancesCounter.CountNumberOfRunningInstances();
-		}
+	public int CountNumberOfRunningInstances() {
+		return InstancesCounter.CountNumberOfRunningInstances();
+	}
 
+	public void IncrementUsageByOne() {
+		UsageServices.IncrementUsageByOne();
+	}
 
-		public void IncrementUsageByOne() {
-			UsageServices.IncrementUsageByOne();
-		}
-
-		public string ProcessString(string str) {
-			str = ProductInformation.ProcessTokensInString(str);
-			str = ProductUsageInformation.ProcessTokensInString(str);
-			return str;
-		}
+	public string ProcessString(string str) {
+		str = ProductInformation.ProcessTokensInString(str);
+		str = ProductUsageInformation.ProcessTokensInString(str);
+		return str;
 	}
 }
+

@@ -17,20 +17,19 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Hydrogen.Application {
 	public class HydrogenFramework {
 		private readonly object _threadLock;
-		private bool _registeredConfig;
-		private bool _registeredModuleComponents;
-		private bool _initializedModules;
-		private bool _executedApplicationInitializers;
+		private bool _registeredModules;
+		private bool _frameworkOwnsServicesProvider;
 
 		public event EventHandlerEx Initializing;
 		public event EventHandlerEx Initialized;
 		public event EventHandlerEx Finalizing;
 		public event EventHandlerEx Finalized;
-		
 
 		static HydrogenFramework() {
 			Instance = new HydrogenFramework();
@@ -38,6 +37,8 @@ namespace Hydrogen.Application {
 
 		public HydrogenFramework() {
 			IsStarted = false;
+			_registeredModules = false;
+			_frameworkOwnsServicesProvider = false;
 			_threadLock = new object();
 			ModuleConfigurations = Tools.Values.Future.LazyLoad(() =>
 			   AppDomain
@@ -55,53 +56,96 @@ namespace Hydrogen.Application {
 
 		public static HydrogenFramework Instance { get; }
 
+		public IServiceProvider ServiceProvider { get; private set; }
+
 		public bool IsStarted { get; private set; }
 
 		private IFuture<IModuleConfiguration[]> ModuleConfigurations { get; set; }
-		
-		public void StartFramework() {
+
+		public IServiceCollection RegisterModules(IServiceCollection serviceCollection) {
 			CheckNotStarted();
+			Guard.Against(_registeredModules, "Modules have already been registered");
+			lock (_threadLock) {
+				ModuleConfigurations.Value.ForEach(m => m.RegisterComponents(serviceCollection));
+				_registeredModules = true;
+			}
+			return serviceCollection;
+		}
+
+		public void StartFramework() 
+			=>  StartFramework(_ => { });
+
+		public void StartFramework(Action<IServiceCollection> configure) {
+			var serviceCollection = new ServiceCollection();
+			if (configure != null)
+				configure(serviceCollection);
+			RegisterModules(serviceCollection);
+			StartFramework(serviceCollection.BuildServiceProvider());
+			_frameworkOwnsServicesProvider = true;
+		}
+
+		public void StartFramework(IServiceProvider serviceProvider) {
+			CheckNotStarted();
+			Guard.Ensure(_registeredModules, "Modules have not been registered");
+			Guard.Against(IsStarted, "Hydrogen framework has already been started");
+			ServiceProvider = serviceProvider;
 			Initializing?.Invoke();
-
-			// Register App/Web Config components
-			if (!_registeredConfig)
-				RegisterAppConfig();
-
-			if (!_registeredModuleComponents)
-				RegisterAllModuleComponents();
-
-			// Initialize Modules
-			if (!_initializedModules)
-				InitializeModules();
-
-			if (!_executedApplicationInitializers)
-				InitializeApplication();
-
+			InitializeModules(serviceProvider);
+			InitializeApplication();
 			Initialized?.Invoke();
-
 			IsStarted = true;
 		}
 
-		public void EndFramework()
-			=> EndFramework(out _, out _);
-
-		public void EndFramework(out bool abort, out string abortReason) {
+		public void EndFramework() {
 			CheckStarted();
-			abortReason = string.Empty;
-			abort = false;
-
 			Finalizing?.Invoke();
-
-			var result = FinalizeApplication();
-			if (result.Failure) {
-				abort = true;
-				abortReason = result.ToString();
-				return;
-			}
-
-			FinalizeModules();
+			FinalizeApplication();
+			FinalizeModules(ServiceProvider);
+			if (_frameworkOwnsServicesProvider && ServiceProvider is IDisposable disposable)
+				try {
+				disposable.Dispose();
+				} catch (Exception ex) {
+					var xxx = ex.ToString();
+				}
 			IsStarted = false;
 			Finalized?.Invoke();
+		}
+
+		private void InitializeModules(IServiceProvider serviceProvider) 
+			=> ModuleConfigurations
+				.Value
+				.ForEach(moduleConfiguration => Tools.Exceptions.ExecuteIgnoringException(() => moduleConfiguration.OnInitialize(serviceProvider)));
+		
+		private void InitializeApplication() {
+			Initializing?.Invoke();
+
+			var initializers = ServiceProvider.GetServices<IApplicationInitializer>().ToArray();
+
+			// Execute non-parallelizable initializers in sequence first
+			initializers
+				.Where(x => !x.Parallelizable)
+				.OrderBy(initTask => initTask.Priority)
+				.ForEach(initTask => initTask.Initialize());
+
+
+			// Parallel execute all parallelizable initialzers 
+			Parallel.ForEach(initializers
+			                 .Where(x => x.Parallelizable)
+			                 .OrderBy(initTask => initTask.Priority),
+				startTask => startTask.Initialize()
+			);
+			                      
+		}
+
+		internal void FinalizeModules(IServiceProvider serviceProvider) 
+			=> ModuleConfigurations
+				.Value
+				.Update(moduleConfiguration => moduleConfiguration.OnFinalize(serviceProvider));
+		
+		private void FinalizeApplication() {
+			ServiceProvider
+				.GetServices<IApplicationFinalizer>()
+				.ForEach(f => f.Finalize());
 		}
 
 		public ILogger CreateApplicationLogger(bool visibleToAllUsers = false)
@@ -120,95 +164,6 @@ namespace Hydrogen.Application {
 					)
 				)
 			);
-
-		internal void RegisterAppConfig(string configSectionName = "ComponentRegistry") {
-			CheckNotStarted();
-
-			if (_registeredConfig)
-				throw new SoftwareException("Components defined in App/Web config have already been registered");
-
-			lock (_threadLock) {
-				if (_registeredConfig) return;
-				if (ConfigurationManager.GetSection(configSectionName) is ComponentRegistryDefinition definition) {
-					ComponentRegistry.Instance.RegisterDefinition(definition);
-				}
-				_registeredConfig = true;
-			}
-		}
-
-		internal void RegisterAllModuleComponents() {
-			CheckNotStarted();
-
-			if (_registeredModuleComponents)
-				throw new SoftwareException("All modules have already been initialized, cannot initialize again.");
-
-			lock (_threadLock) {
-				if (_registeredModuleComponents) return;
-				ModuleConfigurations.Value.Update(mconf => mconf.RegisterComponents(ComponentRegistry.Instance));
-				_registeredModuleComponents = true;
-			}
-		}
-
-		internal void InitializeModules() {
-			CheckNotStarted();
-			if (_initializedModules)
-				throw new SoftwareException("All modules have already been initialized, cannot initialize again.");
-
-			ModuleConfigurations.Value.Update(moduleConfiguration => Tools.Exceptions.ExecuteIgnoringException(moduleConfiguration.OnInitialize));
-		}
-
-		internal void InitializeApplication() {
-			CheckNotStarted();
-			Initializing?.Invoke();
-			// Execute all the application initialization tasks synchronously and in sequence
-			ComponentRegistry
-				.Instance
-				.ResolveAll<IApplicationInitializer>()
-				.Where(x => !x.Parallelizable)
-				.OrderBy(initTask => initTask.Priority)
-				.ForEach(
-					initTask => Tools.Exceptions.ExecuteIgnoringException(initTask.Initialize)
-				);
-			
-
-			// Execute all the start tasks asynchronously
-			ComponentRegistry
-				.Instance
-				.ResolveAll<IApplicationInitializer>()
-				.Where(x => !x.Parallelizable)
-				.OrderBy(initTask => initTask.Priority)
-				.ForEach(
-					startTask => Tools.Lambda.ActionAsAsyncronous(startTask.Initialize).IgnoringExceptions().Invoke()
-				);
-		}
-
-		internal Result FinalizeApplication() {
-			var results = new List<Result>();
-			ComponentRegistry
-				.Instance
-				.ResolveAll<IApplicationFinalizer>()
-				.ForEach(
-					endTask => Tools.Exceptions.Execute(endTask.Finalize, error => results.Add(Result.Error(error.ToDisplayString())))
-				);
-			return Result.Combine(results);
-		}
-
-		internal void FinalizeModules() {
-			ModuleConfigurations.Value.Update(moduleConfiguration => Tools.Exceptions.ExecuteIgnoringException(moduleConfiguration.OnFinalize));
-			DeregisterAllModuleComponents();
-			ComponentRegistry.Instance.Dispose();
-
-		}
-
-		internal void DeregisterAllModuleComponents() {
-			CheckStarted();
-			if (!_registeredModuleComponents) return;
-
-			lock (_threadLock) {
-				ModuleConfigurations.Value.Update(mconf => mconf.DeregisterComponents(ComponentRegistry.Instance));
-				_registeredModuleComponents = false;
-			}
-		}
 
 		private void CheckStarted() {
 			if (!IsStarted)

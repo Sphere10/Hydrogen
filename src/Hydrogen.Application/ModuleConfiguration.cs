@@ -13,79 +13,84 @@
 
 using System;
 using System.IO;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Hydrogen.Application {
 	public class ModuleConfiguration : ModuleConfigurationBase {
 
 		public override int Priority => int.MinValue; // last to execute
 
-		public override void RegisterComponents(ComponentRegistry registry) {
+		public override void RegisterComponents(IServiceCollection serviceCollection) {
 
-			if (!registry.HasImplementationFor<IBackgroundLicenseVerifier>())
-				registry.RegisterComponent<IBackgroundLicenseVerifier, NoOpBackgroundLicenseVerifier>();
+			if (!serviceCollection.HasImplementationFor<IBackgroundLicenseVerifier>())
+				serviceCollection.AddTransient<IBackgroundLicenseVerifier, NoOpBackgroundLicenseVerifier>();
 
-			if (!registry.HasImplementationFor<IConfigurationServices>())
-				registry.RegisterComponent<IConfigurationServices, StandardConfigurationServices>(activation: ActivationType.Singleton);
+			if (!serviceCollection.HasImplementationFor<IConfigurationServices>())
+				serviceCollection.AddSingleton<IConfigurationServices, StandardConfigurationServices>();
 
-			if (!registry.HasImplementationFor<IDuplicateProcessDetector>())
-				registry.RegisterComponent<IDuplicateProcessDetector, StandardDuplicateProcessDetector>();
+			if (!serviceCollection.HasImplementationFor<IDuplicateProcessDetector>())
+				serviceCollection.AddTransient<IDuplicateProcessDetector, StandardDuplicateProcessDetector>();
 
-			if (!registry.HasImplementationFor<IHelpServices>())
-				registry.RegisterComponent<IHelpServices, StandardHelpServices>();
+			if (!serviceCollection.HasImplementationFor<IHelpServices>())
+				serviceCollection.AddTransient<IHelpServices, StandardHelpServices>();
 
-			if (registry.HasImplementationFor<ILicenseEnforcer>())
+			if (serviceCollection.HasImplementationFor<ILicenseEnforcer>())
 				throw new SoftwareException("Illegal tampering with ILicenseEnforcer");
-			registry.RegisterComponent<ILicenseEnforcer, StandardLicenseEnforcer>(activation: ActivationType.Singleton);
+			serviceCollection.AddSingleton<ILicenseEnforcer, StandardLicenseEnforcer>();
 
-			if (registry.HasImplementationFor<ILicenseKeyDecoder>())
+			if (serviceCollection.HasImplementationFor<ILicenseKeyDecoder>())
 				throw new SoftwareException("Illegal tampering with ILicenseKeyDecoder");
-			registry.RegisterComponent<ILicenseKeyDecoder, StandardLicenseKeyDecoder>();
+			serviceCollection.AddTransient<ILicenseKeyDecoder, StandardLicenseKeyDecoder>();
 
-			if (registry.HasImplementationFor<ILicenseKeyValidator>())
+			if (serviceCollection.HasImplementationFor<ILicenseKeyValidator>())
 				throw new SoftwareException("Illegal tampering with ILicenseKeyValidator");
-			registry.RegisterComponent<ILicenseKeyValidator, StandardLicenseKeyValidatorWithVersionCheck>();
+			serviceCollection.AddTransient<ILicenseKeyValidator, StandardLicenseKeyValidatorWithVersionCheck>();
 
-			if (registry.HasImplementationFor<ILicenseKeyEncoder>())
+			if (serviceCollection.HasImplementationFor<ILicenseKeyEncoder>())
 				throw new SoftwareException("Illegal tampering with ILicenseKeyEncoder");
-			registry.RegisterComponent<ILicenseKeyEncoder, StandardLicenseKeyEncoder>();
+			serviceCollection.AddTransient<ILicenseKeyEncoder, StandardLicenseKeyEncoder>();
 
-			if (registry.HasImplementationFor<ILicenseKeyServices>())
+			if (serviceCollection.HasImplementationFor<ILicenseKeyServices>())
 				throw new SoftwareException("Illegal tampering with ILicenseKeyServices");
-			registry.RegisterComponent<ILicenseKeyServices, StandardLicenseKeyProvider>();
+			serviceCollection.AddTransient<ILicenseKeyServices, StandardLicenseKeyProvider>();
 
-			if (registry.HasImplementationFor<ILicenseServices>())
+			if (serviceCollection.HasImplementationFor<ILicenseServices>())
 				throw new SoftwareException("Illegal tampering with ILicenseServices");
-			registry.RegisterComponent<ILicenseServices, StandardLicenseServices>(activation: ActivationType.Singleton);
+			serviceCollection.AddSingleton<ILicenseServices, StandardLicenseServices>();
 
-			if (registry.HasImplementationFor<IProductInformationServices>())
+			if (serviceCollection.HasImplementationFor<IProductInformationServices>())
 				throw new SoftwareException("Illegal tampering with IProductInformationServices");
-			registry.RegisterComponent<IProductInformationServices, StandardProductInformationServices>(activation: ActivationType.Singleton);
-			
-			if (!registry.HasImplementationFor<IProductInstancesCounter>())
-				registry.RegisterComponent<IProductInstancesCounter, StandardProductInstancesCounter>();
+			serviceCollection.AddSingleton<IProductInformationServices, StandardProductInformationServices>();
 
-			if (!registry.HasImplementationFor<IProductUsageServices>())
-				registry.RegisterComponent<IProductUsageServices, StandardProductUsageServices>(activation: ActivationType.Singleton);
+			if (!serviceCollection.HasImplementationFor<IProductInstancesCounter>())
+				serviceCollection.AddTransient<IProductInstancesCounter, StandardProductInstancesCounter>();
 
-			if (!registry.HasImplementationFor<IWebsiteLauncher>())
-				registry.RegisterComponent<IWebsiteLauncher, StandardWebsiteLauncher>();
+			if (!serviceCollection.HasImplementationFor<IProductUsageServices>())
+				serviceCollection.AddSingleton<IProductUsageServices, StandardProductUsageServices>();
 
-			registry.RegisterComponent<ITokenResolver, ApplicationTokenResolver>();
+			if (!serviceCollection.HasImplementationFor<IWebsiteLauncher>())
+				serviceCollection.AddTransient<IWebsiteLauncher, StandardWebsiteLauncher>();
+
+			serviceCollection.AddTransient<ITokenResolver, ApplicationTokenResolver>();
 
 			// Register settings provider last
-			if (!registry.HasImplementationFor<ISettingsProvider>("UserSettings")) {
-				registry.RegisterComponentInstance<ISettingsProvider>(
-					new CachedSettingsProvider(
-						new DirectorySettingsProvider(Path.Combine(Tools.Text.FormatEx("{UserDataDir}"), Tools.Text.FormatEx("{ProductName}")))
-					), "UserSettings"
+			if (!serviceCollection.HasImplementationFor<Local<ISettingsProvider>>()) {
+				serviceCollection.AddSingleton(
+					new Local<ISettingsProvider>(
+						new CachedSettingsProvider(
+							new DirectorySettingsProvider(Path.Combine(Tools.Text.FormatEx("{UserDataDir}"), Tools.Text.FormatEx("{ProductName}")))
+						)
+					)
 				);
 			}
 
-			if (!registry.HasImplementationFor<ISettingsProvider>("SystemSettings")) {
-				registry.RegisterComponentInstance<ISettingsProvider>(
-					new CachedSettingsProvider(
-						new DirectorySettingsProvider(Path.Combine(Tools.Text.FormatEx("{SystemDataDir}"), Tools.Text.FormatEx("{ProductName}")))
-					), "SystemSettings"
+			if (!serviceCollection.HasImplementationFor<Global<ISettingsProvider>>()) {
+				serviceCollection.AddSingleton(
+					new Global<ISettingsProvider>(
+						new CachedSettingsProvider(
+							new DirectorySettingsProvider(Path.Combine(Tools.Text.FormatEx("{SystemDataDir}"), Tools.Text.FormatEx("{ProductName}")))
+						)
+					)
 				);
 			}
 
@@ -98,14 +103,16 @@ namespace Hydrogen.Application {
 
 
 			// End Tasks
-	
+
 		}
 
-        public override void OnInitialize() {
-            base.OnInitialize();
+		public override void OnInitialize(IServiceProvider serviceProvider) {
+			base.OnInitialize(serviceProvider);
 			if (Tools.Runtime.GetEntryAssembly().TryGetCustomAttributeOfType<AssemblyProductSecretAttribute>(false, out var attribute)) {
 				EncryptedAttribute.ApplicationSharedSecret = attribute.Secret;
 			}
-        }
-    }
+			GlobalSettings.Provider = serviceProvider.GetService<Global<ISettingsProvider>>()?.Item;
+			UserSettings.Provider = serviceProvider.GetService<Local<ISettingsProvider>>()?.Item;
+		}
+	}
 }

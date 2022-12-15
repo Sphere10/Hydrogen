@@ -20,12 +20,12 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using Hydrogen;
 using Hydrogen.Application;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Hydrogen.Windows.Forms {
 
     public class ControlStateEventProviderManager {
-        private readonly HashSet<Type> _controlStateEventProviders;
-        private int _lastKnownComponentRegistryState;
+        private readonly HashSet<Type> _controlStateEventProviders;  
 
         static ControlStateEventProviderManager() {
             Instance = new ControlStateEventProviderManager();
@@ -33,7 +33,7 @@ namespace Hydrogen.Windows.Forms {
 
         public ControlStateEventProviderManager() {
             _controlStateEventProviders = new HashSet<Type>();
-            _lastKnownComponentRegistryState = -1;
+			Refresh();
         }
 
         public static ControlStateEventProviderManager Instance { get; }
@@ -41,15 +41,13 @@ namespace Hydrogen.Windows.Forms {
 
         public void Refresh() {
             _controlStateEventProviders.Clear();
-            foreach (var registration in ComponentRegistry.Instance.Registrations.Where(r => r.InterfaceType == typeof(IControlStateEventProvider))) {
-                _controlStateEventProviders.Add(TypeResolver.Resolve(registration.Name));
+            foreach (var eventProvider in NamedLookupInfo.GetMap(typeof(IControlStateEventProvider))) {
+				var controlType = Tools.Object.ResolveType(eventProvider.Key);
+                _controlStateEventProviders.Add(controlType);
             }
-            _lastKnownComponentRegistryState = ComponentRegistry.Instance.State;
         }
 
         public bool HasControlStateProvider<TControl>() {
-            if (_lastKnownComponentRegistryState != ComponentRegistry.Instance.State)
-                Refresh();
             return HasControlStateEventProvider(typeof(TControl));
         }
 
@@ -57,9 +55,6 @@ namespace Hydrogen.Windows.Forms {
 	        => FindControlStateEventProvider(type, false, out _);
 
         public bool FindControlStateEventProvider(Type controlType, bool searchSubClasses, out Type implementationForBaseType) {
-	        if (_lastKnownComponentRegistryState != ComponentRegistry.Instance.State)
-		        Refresh();
-
             var typesToSearch = new[] { controlType };
             if (searchSubClasses)
                 typesToSearch = typesToSearch.Concat(controlType.GetAncestorClasses().Where(c => c.IsAssignableTo(typeof(Control)))).ToArray();
@@ -83,11 +78,9 @@ namespace Hydrogen.Windows.Forms {
         }
 
         public bool TryGetControlStateProvider(Type controlType, out IControlStateEventProvider provider) {
-            if (_lastKnownComponentRegistryState != ComponentRegistry.Instance.State)
-                Refresh();
 
             if (FindControlStateEventProvider(controlType, true, out var actualType)) {
-	            provider = ComponentRegistry.Instance.Resolve<IControlStateEventProvider>(actualType.FullName);
+	            provider = HydrogenFramework.Instance.ServiceProvider.GetNamedService<IControlStateEventProvider>(actualType.FullName);
                 return true;
             }
             provider = null;

@@ -11,22 +11,20 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace Hydrogen.Application;
+using Hydrogen.Application;
+using Microsoft.Extensions.Hosting;
 
+namespace Hydrogen.Web.AspNetCore;
 
+public class AspNetCoreLifecycleMonitorInitializer : ApplicationInitializerBase {
 
-public class IncrementUsageByOneTask : BaseApplicationInitializer {
-
-	public IncrementUsageByOneTask(IProductUsageServices productUsageServices) {
-		ProductUsageServices = productUsageServices;
+	public AspNetCoreLifecycleMonitorInitializer(IHostApplicationLifetime hostApplicationLifetime) {
+		HostApplicationLifetime = hostApplicationLifetime;
 	}
-
-	public IProductUsageServices ProductUsageServices { get; private set; }
-
-	public override int Priority => 1;
+	protected IHostApplicationLifetime HostApplicationLifetime { get; }
 
 	public override void Initialize() {
-		ProductUsageServices.IncrementUsageByOne();
+		HostApplicationLifetime.ApplicationStopped.Register(HydrogenFramework.Instance.EndFramework);
 	}
 
 }

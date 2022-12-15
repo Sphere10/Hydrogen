@@ -36,7 +36,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Lifecycle\" />
     <Folder Include="Application\" />
   </ItemGroup>
 

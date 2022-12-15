@@ -22,11 +22,17 @@ using Hydrogen;
 namespace Hydrogen.Windows.Forms {
 
 	public class WinFormsWinFormsApplicationServices : ApplicationServices, IWinFormsApplicationServices{
-	    private IApplicationIconProvider ApplicationIconProvider { get { return ComponentRegistry.Instance.Resolve<IApplicationIconProvider>(); } }
 
-		public Icon ApplicationIcon {
-			get { return ApplicationIconProvider.ApplicationIcon; }
+		public WinFormsWinFormsApplicationServices(IProductInformationServices productInformationServices, IProductUsageServices productUsageServices, IProductInstancesCounter productInstancesCounter, IConfigurationServices configurationServices, ILicenseServices licenseServices, ILicenseEnforcer licenseEnforcer, IHelpServices helpServices, IUserInterfaceServices userInterfaceServices, IUserNotificationServices userNotificationServices, IWebsiteLauncher websiteLauncher, IAutoRunServices autoRunServices, IApplicationIconProvider applicationIconProvider)
+			: base(productInformationServices, productUsageServices, productInstancesCounter, configurationServices, licenseServices, licenseEnforcer, helpServices, userInterfaceServices, userNotificationServices, websiteLauncher, autoRunServices) {
+			ApplicationIconProvider = applicationIconProvider;
 		}
+
+		private IApplicationIconProvider ApplicationIconProvider { get; }
+
+
+		public Icon ApplicationIcon => ApplicationIconProvider.ApplicationIcon;
+
 	}
 }
 

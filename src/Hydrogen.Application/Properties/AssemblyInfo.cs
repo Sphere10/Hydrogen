@@ -17,4 +17,5 @@ using System.Runtime.InteropServices;
 
 [assembly: Guid("29c19a83-8956-417c-9b82-08a6ac8497f9")]
 [assembly: InternalsVisibleTo("Hydrogen.Web.AspNetCore")]
+[assembly: InternalsVisibleTo("Hydrogen.Windows.Forms")]
 [assembly: InternalsVisibleTo("Sphere10.Company.Website")]

@@ -20,7 +20,8 @@ namespace Hydrogen.Windows.Forms {
 #warning Add 8x8 special icon (outlook bar bottom)
 
     public interface IApplicationBlock : IDisposable {
-        string Name { get; }
+        int Position { get; }
+		string Name { get; }
         IMenu[] Menus { get; }
         Image Image32x32 { get; }
         Image Image8x8 { get; }

@@ -1,5 +1,5 @@
 ﻿//-----------------------------------------------------------------------
-// <copyright file="BaseApplicationInitializer.cs" company="Sphere 10 Software">
+// <copyright file="ApplicationInitializerBase.cs" company="Sphere 10 Software">
 //
 // Copyright (c) Sphere 10 Software. All rights reserved. (http://www.sphere10.com)
 //
@@ -12,7 +12,7 @@
 //-----------------------------------------------------------------------
 
 namespace Hydrogen.Application {
-    public abstract class BaseApplicationFinalizer : IApplicationFinalizer {
+    public abstract class ApplicationFinalizerBase : IApplicationFinalizer {
 	    public const int DefaultPriority = 100;
 
 	    public virtual int Priority => DefaultPriority;

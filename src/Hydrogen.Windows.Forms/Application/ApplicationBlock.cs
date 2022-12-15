@@ -32,8 +32,7 @@ namespace Hydrogen.Windows.Forms {
 
 
         public ApplicationBlock()
-            : this(string.Empty, null, null, null)
-        {
+            : this(string.Empty, null, null, null) {
         }
 
         public ApplicationBlock(string title, Image image32x32, Image image8x8, string helpFile)
@@ -45,8 +44,7 @@ namespace Hydrogen.Windows.Forms {
             : this(title, false, false, image32x32, image8x8, helpFile, menus) {
         }
 
-        public ApplicationBlock(string title, bool showInToolStrip, bool showInMenuStrip, Image image32x32, Image image8x8, string helpFile, Menu[] menus) 
-        {
+        public ApplicationBlock(string title, bool showInToolStrip, bool showInMenuStrip, Image image32x32, Image image8x8, string helpFile, Menu[] menus) {
             _showInMenuStrip = showInMenuStrip;
             _showInToolStrip = showInToolStrip;
             _helpFile = helpFile;
@@ -59,6 +57,7 @@ namespace Hydrogen.Windows.Forms {
                     AddMenu(menu);
                 }
             }
+	        Position = 0;
         }
 
         public bool ShowInToolStrip {
@@ -74,6 +73,8 @@ namespace Hydrogen.Windows.Forms {
                 _showInMenuStrip = value;
             }
         }
+
+        public int Position { get; }
 
         public virtual string Name {
             get { return _name; }

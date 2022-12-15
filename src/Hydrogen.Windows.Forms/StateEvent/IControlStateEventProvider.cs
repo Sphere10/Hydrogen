@@ -23,4 +23,9 @@ namespace Hydrogen.Windows.Forms {
 		void SetControl(Control control);
 		void Clear();
 	}
+
+	public interface IControlStateEventProvider<out TControl> : IControlStateEventProvider where TControl : Control {
+		TControl Control { get;}
+		
+	}
 }

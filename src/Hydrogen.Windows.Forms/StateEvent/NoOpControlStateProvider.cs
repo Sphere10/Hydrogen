@@ -11,6 +11,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
+using System;
 using System.Windows.Forms;
 
 namespace Hydrogen.Windows.Forms {
@@ -20,6 +21,8 @@ namespace Hydrogen.Windows.Forms {
         public void Clear() {
             // do nothing
         }
+
+        public Type ControlType => typeof(Control);
 
         public void SetControl(Control control) {
             // do nothing

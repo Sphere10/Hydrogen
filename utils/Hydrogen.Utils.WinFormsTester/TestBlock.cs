@@ -115,7 +115,6 @@ namespace Hydrogen.Utils.WinFormsTester
                             new ScreenMenuItem("TextAreaTests",typeof(TextAreaTestsScreen),null),
                             new ScreenMenuItem("BloomFilterAnalysisScreen",typeof(BloomFilterAnalysisScreen),null),
                             new ScreenMenuItem("UrlID",typeof(UrlIDTestScreen),null),
-                            new ScreenMenuItem("ComponentRegistry",typeof(ComponentRegistryScreen),null),
                         }
                     ),
 

@@ -44,9 +44,7 @@ namespace Hydrogen.Application {
 			Provider.ClearSettings();
 		}
 
-		private static void CheckProvider() {
-			if (_provider == null)
-				_provider = ComponentRegistry.Instance.Resolve<ISettingsProvider>("SystemSettings");
-		}
+		private static void CheckProvider() 
+			=> Guard.Ensure(_provider != null, "Global settings provider has not been set");
 	}
 }

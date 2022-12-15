@@ -7,7 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Hydrogen;
 using Hydrogen.Application;
-using TinyIoC;
+
 
 
 namespace Hydrogen.DApp.Presentation2.Logic {
@@ -35,15 +35,15 @@ namespace Hydrogen.DApp.Presentation2.Logic {
 			NotifyInitializing();
             hostBuilder.Services.AddSingleton(typeof(IApplication), this);
             //Configuration = hostBuilder.Configuration;
-			var componentRegistry = AdaptBlazorIoCContainerToSphere10Framework(hostBuilder.Services);
-            RegisterServices(componentRegistry);
+			//var componentRegistry = AdaptBlazorIoCContainerToSphere10Framework(hostBuilder.Services);
+   //         RegisterServices(componentRegistry);
             Guard.Ensure(_plugins.Count == 0);
             _plugins.Clear();
             foreach(var pluginType in GetPlugins()) {
                 var plugin = Activator.CreateInstance(pluginType) as IPlugin;
                 Guard.Ensure(plugin != null, $"'{pluginType.Name}' was not an {nameof(IPlugin)}");
-				var pluginContainer = componentRegistry.CreateChildRegistry();
-                plugin.Load(pluginContainer);
+				//var pluginContainer = componentRegistry.CreateChildRegistry();
+                plugin.Load(hostBuilder.Services);
 				_plugins.Add(plugin);
             }
             
@@ -58,8 +58,8 @@ namespace Hydrogen.DApp.Presentation2.Logic {
 
 		protected abstract IEnumerable<Type> GetPlugins();
 
-        protected virtual void RegisterServices(ComponentRegistry componentRegistry) {
-        }
+        //protected virtual void RegisterServices(ComponentRegistry componentRegistry) {
+        //}
 
         protected virtual void Configure(WebAssemblyHostBuilder hostBuilder) {
         }
@@ -75,12 +75,12 @@ namespace Hydrogen.DApp.Presentation2.Logic {
 		protected virtual void OnFinishing() {
 		}
 
-		private ComponentRegistry AdaptBlazorIoCContainerToSphere10Framework(IServiceCollection serviceCollection) {
-			///
-			///  TODO
-			///
-			return ComponentRegistry.Instance.CreateChildRegistry(); 
-		}
+		//private ComponentRegistry AdaptBlazorIoCContainerToSphere10Framework(IServiceCollection serviceCollection) {
+		//	///
+		//	///  TODO
+		//	///
+		//	return ComponentRegistry.Instance.CreateChildRegistry(); 
+		//}
 
 		private void NotifyInitializing() {
 			OnInitializing();

@@ -20,6 +20,7 @@ using System.Windows.Forms;
 using System.Globalization;
 using Hydrogen;
 using Hydrogen.Application;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Hydrogen.Windows.Forms {
 
@@ -29,13 +30,14 @@ namespace Hydrogen.Windows.Forms {
 	/// </summary>
 	public partial class ApplicationControl : UserControlEx {
 
-		public ApplicationControl() {
-			ApplicationServices = new WinFormsWinFormsApplicationServices();
-		}
+		private readonly IFuture<IWinFormsApplicationServices> _winFormsApplicationServices;
+        public ApplicationControl() {
+	        _winFormsApplicationServices = Tools.Values.Future.LazyLoad( () => HydrogenFramework.Instance.ServiceProvider.GetService<IWinFormsApplicationServices>());
+        }
 
-		[Browsable(false)]
-		[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-		protected IWinFormsApplicationServices ApplicationServices { get; private set; }
-
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        protected IWinFormsApplicationServices ApplicationServices => _winFormsApplicationServices.Value;
+	
 	}
 }

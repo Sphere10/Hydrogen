@@ -44,15 +44,11 @@ namespace Hydrogen.Utils.WinFormsTester {
         /// </summary>
         [STAThread]
         static void Main(string[] args) {
-  
             System.Windows.Forms.Application.EnableVisualStyles();
             System.Windows.Forms.Application.SetCompatibleTextRenderingDefault(false);
             AppDomain.CurrentDomain.UnhandledException += (s, e) => Tools.Lambda.ActionIgnoringExceptions(() => ExceptionDialog.Show("Error", (Exception)e.ExceptionObject)).Invoke();
             System.Windows.Forms.Application.ThreadException += (xs, xe) => Tools.Lambda.ActionIgnoringExceptions(() => ExceptionDialog.Show("Error", xe.Exception)).Invoke();
             SystemLog.RegisterLogger(new ConsoleLogger());
-
-            ComponentRegistry.Instance.RegisterApplicationBlock<TestBlock>(1);
-            ComponentRegistry.Instance.RegisterApplicationBlock<TestBlock2>(2);
             HydrogenFramework.Instance.StartWinFormsApplication<BlockMainForm>();
         }
     }

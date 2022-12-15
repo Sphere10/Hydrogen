@@ -36,7 +36,7 @@ namespace Hydrogen.Windows.Forms {
 			try {
 				throw new NotImplementedException();
 				// HS: 2019-02-24 need updating
-				//ISphere10SoftwareService2 softwareService = ComponentRegistry.Instance.Resolve<ISphere10SoftwareService2>();
+				//ISphere10SoftwareService2 softwareService = HydrogenFramework.Instance.ServiceProvider.GetService<ISphere10SoftwareService2>();
 				//string email = _basicContactDetailsControl.ContactEmail;
 				//if (email.ToUpper() != "ANONYMOUS" && !Tools.Mail.IsValidEmail(email)) {
 				//	WinFormsWinFormsApplicationServices.ReportError("Malformed Email", "Please enter a correct email");

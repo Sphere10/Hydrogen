@@ -1,0 +1,20 @@
+﻿using System;
+using System.Collections.Generic;
+
+namespace Hydrogen.Application;
+
+public class NamedLookup<T> : INamedLookup<T> {
+	private readonly IReadOnlyDictionary<string, Type> _serviceMap;
+
+	private readonly IServiceProvider _serviceProvider;
+
+	public NamedLookup(IServiceProvider serviceProvider) {
+		_serviceProvider = serviceProvider;
+		if (!NamedLookupInfo.TryGetMap(typeof(T), out var serviceMap))
+			throw new ArgumentException($"There is no service map for return type {typeof(T).Name} registered");
+		_serviceMap = serviceMap;
+	}
+
+	public T this[string name]
+		=> _serviceMap.TryGetValue(name, out var serviceType) ? (T)_serviceProvider.GetService(serviceType) : default;
+}

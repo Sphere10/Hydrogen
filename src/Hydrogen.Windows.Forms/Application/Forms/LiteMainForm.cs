@@ -25,10 +25,11 @@ using System.Runtime.InteropServices;
 using Hydrogen;
 using Hydrogen.Application;
 using Hydrogen.Windows.Forms;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Hydrogen.Windows.Forms {
 
-	public partial class LiteMainForm : ApplicationForm, IApplicationIconProvider, IUserInterfaceServices, IUserNotificationServices, IMainForm {
+	public partial class LiteMainForm : ApplicationForm, IMainForm {
 		private volatile INagDialog _nagDialogInstance;
 		public event EventHandler FirstActivation;
 		public event EventHandler FirstTimeExecutedBySystemEvent;
@@ -88,7 +89,7 @@ namespace Hydrogen.Windows.Forms {
 				#endregion
 
 				// trigger license verify 
-				ComponentRegistry.Instance.Resolve<IBackgroundLicenseVerifier>().VerifyLicense();
+				HydrogenFramework.Instance.ServiceProvider.GetService<IBackgroundLicenseVerifier>().VerifyLicense();
 
 				if ((WindowState == FormWindowState.Minimized || !Visible) && !Nagged) {
 					Nagged = true;
@@ -121,22 +122,23 @@ namespace Hydrogen.Windows.Forms {
 						cancelExit = cancelArgs.Cancel;
 						// If no aborts, ask framework to confirm exit
 						if (!cancelExit) {
-							HydrogenFramework.Instance.EndWinFormsApplication(out cancelExit, out cancelReason);
+							HydrogenFramework.Instance.EndWinFormsApplication();
+							//HydrogenFramework.Instance.EndWinFormsApplication(out cancelExit, out cancelReason);
 						}
 
 
-						if (cancelExit) {
-							// An observer or framework exit task somewhere has cancelled the exit.
-							// Ask user to exit anyway
-							if (WinFormsApplicationServices.AskYN(ParagraphBuilder.Combine("The application failed to exit properly",
-							                                                       cancelReason ?? string.Empty,
-							                                                       "You may lose unsaved data if you exit", "Exit anyway?"))) {
-								// This will force an exit
-								Exit(true);
-							} else {
-								cancelArgs.Cancel = true;
-							}
-						}
+						//if (cancelExit) {
+						//	// An observer or framework exit task somewhere has cancelled the exit.
+						//	// Ask user to exit anyway
+						//	if (WinFormsApplicationServices.AskYN(ParagraphBuilder.Combine("The application failed to exit properly",
+						//	                                                       cancelReason ?? string.Empty,
+						//	                                                       "You may lose unsaved data if you exit", "Exit anyway?"))) {
+						//		// This will force an exit
+						//		Exit(true);
+						//	} else {
+						//		cancelArgs.Cancel = true;
+						//	}
+						//}
 					} else {
 						cancelArgs.Cancel = true;
 					}
@@ -230,7 +232,7 @@ namespace Hydrogen.Windows.Forms {
 			ExecuteInUIFriendlyContext(
 				() => {
 					if (_nagDialogInstance == null) {
-						_nagDialogInstance = ComponentRegistry.Instance.Resolve<INagDialog>();
+						_nagDialogInstance = HydrogenFramework.Instance.ServiceProvider.GetService<INagDialog>();
 						var parent = WinFormsApplicationServices.PrimaryUIController as IWin32Window;
 						if (parent != null && parent is Form && ((Form)parent).WindowState == FormWindowState.Minimized) {
 							_nagDialogInstance.StartPosition = FormStartPosition.CenterScreen;
@@ -257,22 +259,22 @@ namespace Hydrogen.Windows.Forms {
 		#region IUserNotificationServices Implementation
 
 		public virtual void ShowSendCommentDialog() {
-			var dialog = ComponentRegistry.Instance.Resolve<ISendCommentsDialog>();
+			var dialog = HydrogenFramework.Instance.ServiceProvider.GetService<ISendCommentsDialog>();
 			dialog.ShowDialog();
 		}
 
 		public virtual void ShowSubmitBugReportDialog() {
-			var dialog = ComponentRegistry.Instance.Resolve<IReportBugDialog>();
+			var dialog = HydrogenFramework.Instance.ServiceProvider.GetService<IReportBugDialog>();
 			dialog.ShowDialog();
 		}
 
 		public virtual void ShowRequestFeatureDialog() {
-			var dialog = ComponentRegistry.Instance.Resolve<IRequestFeatureDialog>();
+			var dialog = HydrogenFramework.Instance.ServiceProvider.GetService<IRequestFeatureDialog>();
 			dialog.ShowDialog();
 		}
 
 		public virtual void ShowAboutBox() {
-			var dialog = ComponentRegistry.Instance.Resolve<IAboutBox>();
+			var dialog = HydrogenFramework.Instance.ServiceProvider.GetService<IAboutBox>();
 			dialog.ShowDialog();
 		}
 

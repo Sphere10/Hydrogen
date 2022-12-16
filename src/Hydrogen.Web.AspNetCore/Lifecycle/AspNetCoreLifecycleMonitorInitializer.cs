@@ -16,7 +16,7 @@ using Microsoft.Extensions.Hosting;
 
 namespace Hydrogen.Web.AspNetCore;
 
-public class AspNetCoreLifecycleMonitorInitializer : ApplicationInitializerBase {
+internal class AspNetCoreLifecycleMonitorInitializer : ApplicationInitializerBase {
 
 	public AspNetCoreLifecycleMonitorInitializer(IHostApplicationLifetime hostApplicationLifetime) {
 		HostApplicationLifetime = hostApplicationLifetime;

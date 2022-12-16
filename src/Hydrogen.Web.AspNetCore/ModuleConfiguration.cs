@@ -22,9 +22,9 @@ namespace Hydrogen.Web.AspNetCore {
 		public override int Priority => int.MinValue; // last to execute
 
 		public override void RegisterComponents(IServiceCollection serviceCollection) {
-		
+
 			// register initializers
-			serviceCollection.AddTransient<IApplicationInitializer, AspNetCoreLifecycleMonitorInitializer>();
+			serviceCollection.AddInitializer<AspNetCoreLifecycleMonitorInitializer>();
 		}
 
 		public override void OnInitialize(IServiceProvider serviceProvider) {

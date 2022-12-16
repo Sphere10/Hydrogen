@@ -31,153 +31,143 @@ namespace Tools {
 	/// </summary>
 
 	public static class Mail {
-			public const int SMTPPort = 25;
-			public const int SMTPSubmissionPort = 587;
-			public const int SMTPAlternatePort = 2525;
-			public const int SecureSMTPPort = 465;
-			public const int POP3 = 110;
-			public const int SecurePOP3 = 995;
-			public const int IMAP4 = 143;
-			public const int SecureImap4 = 993;
+		public const int SMTPPort = 25;
+		public const int SMTPSubmissionPort = 587;
+		public const int SMTPAlternatePort = 2525;
+		public const int SecureSMTPPort = 465;
+		public const int POP3 = 110;
+		public const int SecurePOP3 = 995;
+		public const int IMAP4 = 143;
+		public const int SecureImap4 = 993;
 
-			private static readonly Regex EmailValidatorRegex = new Regex(@"\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*");
-
-
+		private static readonly Regex EmailValidatorRegex = new Regex(@"\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*");
 
 
-			/// <summary>
-			/// Validates email address syntax, not whether it actually exists or not.
-			/// </summary>
-			/// <param name="email">Email address to validate</param>
-			/// <returns>Whether email is validly formed</returns>
-			public static bool IsValidEmail(string email) {
-				return EmailValidatorRegex.IsMatch(email);
+		/// <summary>
+		/// Validates email address syntax, not whether it actually exists or not.
+		/// </summary>
+		/// <param name="email">Email address to validate</param>
+		/// <returns>Whether email is validly formed</returns>
+		public static bool IsValidEmail(string email) {
+			return EmailValidatorRegex.IsMatch(email);
+		}
+
+		public static void SendEmail(
+			string smtpServer,
+			string from,
+			string subject,
+			string body,
+			string toUser,
+			IEnumerable<string> ccRecipients = null,
+			IEnumerable<string> bccRecipients = null,
+			IEnumerable<string> replyToRecipients = null,
+			IEnumerable<Attachment> attachments = null,
+			IEnumerable<AlternateView> alternativeViews = null,
+			bool requiresSSL = false,
+			string username = null,
+			string password = null,
+			string domain = null,
+			int? port = null,
+			bool bodyHtml = false
+		) {
+			SendEmail(
+				smtpServer,
+				from,
+				subject,
+				body,
+				new[] { toUser },
+				ccRecipients,
+				bccRecipients,
+				replyToRecipients,
+				attachments,
+				alternativeViews,
+				requiresSSL,
+				username,
+				password,
+				domain,
+				port
+			);
+		}
+
+
+		public static void SendEmail(
+			string smtpServer,
+			string from,
+			string subject,
+			string body,
+			IEnumerable<string> toRecipients,
+			IEnumerable<string> ccRecipients = null,
+			IEnumerable<string> bccRecipients = null,
+			IEnumerable<string> replyToRecipients = null,
+			IEnumerable<Attachment> attachments = null,
+			IEnumerable<AlternateView> alternativeViews = null,
+			bool requiresSSL = false,
+			string username = null,
+			string password = null,
+			string domain = null,
+			int? port = null,
+			bool bodyHtml = false
+		) {
+			#region Pre-Conditions
+			Guard.ArgumentNotNull(toRecipients, nameof(toRecipients));
+			Guard.ArgumentNotNull(from, nameof(from));
+
+			var badEmails = new List<string>();
+			toRecipients
+				.Union(ccRecipients ?? System.Array.Empty<string>())
+				.Union(bccRecipients ?? System.Array.Empty<string>())
+				.Union(replyToRecipients ?? System.Array.Empty<string>())
+				.ForEach(u => {
+					if (!IsValidEmail(u)) {
+						badEmails.Add(u);
+					}
+				});
+
+			if (badEmails.Count > 0) 
+				throw new SoftwareException("Unable to send email as TO, CC BCC and/or REPLY-TO included the following bad emails {0}", badEmails.ToDelimittedString(", "));
+
+			#endregion
+
+			port ??= requiresSSL ? SecureSMTPPort : SMTPPort;
+
+			var requiresLogon = !string.IsNullOrEmpty(username);
+
+			var mailMessage = new MailMessage { Subject = subject, Body = body, IsBodyHtml = bodyHtml, From = new MailAddress(@from) };
+
+			toRecipients.Distinct().ForEach(u => mailMessage.To.Add(new MailAddress(u)));
+
+			ccRecipients?.Distinct().ForEach(u => mailMessage.CC.Add(new MailAddress(u)));
+
+			bccRecipients?.Distinct().ForEach(u => mailMessage.Bcc.Add(new MailAddress(u)));
+			 
+			replyToRecipients?.Distinct().ForEach(u => mailMessage.ReplyToList.Add(new MailAddress(u)));
+
+			attachments?.ForEach(a => mailMessage.Attachments.Add(a));
+
+			alternativeViews?.ForEach(av => mailMessage.AlternateViews.Add(av));
+
+			var smtpClient = new SmtpClient(smtpServer, port.Value);
+			if (requiresSSL) {
+				smtpClient.EnableSsl = true;
+				ServicePointManager.ServerCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) => true;
+			}
+			if (requiresLogon) {
+				smtpClient.UseDefaultCredentials = false;
+				smtpClient.Credentials = new NetworkCredential(username, password, domain);
 			}
 
-			public static void SendEmail(
-				string smtpServer,
-				string from,
-				string subject,
-				string body,
-				string toUser,
-				IEnumerable<string> ccUsers = null,
-				IEnumerable<string> bccUsers = null,
-				IEnumerable<Attachment> attachments = null,
-				IEnumerable<AlternateView> alternativeViews = null,
-				bool requiresSSL = false,
-				string username = null,
-				string password = null,
-				string domain = null,
-				int? port = null,
-				bool bodyHtml = false
-			) {
-				SendEmail(
-					smtpServer,
-					from,
-					subject,
-					body,
-					new[] { toUser },
-					ccUsers,
-					bccUsers,
-					attachments,
-					alternativeViews,
-					requiresSSL,
-					username,
-					password,
-					domain,
-					port
-				);
-			}
-
-
-			public static void SendEmail(
-				string smtpServer,
-				string from,
-				string subject,
-				string body,
-				IEnumerable<string> toUsers,
-				IEnumerable<string> ccUsers = null,
-				IEnumerable<string> bccUsers = null,
-				IEnumerable<Attachment> attachments = null,
-				IEnumerable<AlternateView> alternativeViews = null,
-				bool requiresSSL = false,
-				string username = null,
-				string password = null,
-				string domain = null,
-				int? port = null,
-				bool bodyHtml = false
-			) {
-				#region Pre-Conditions
-				Debug.Assert(toUsers != null);
-				Debug.Assert(from != null);
-				if (toUsers == null) {
-					throw new ArgumentNullException("toUsers");
-				}
-				if (from == null) {
-					throw new ArgumentNullException("from");
-				}
-
-				var badEmails = new List<string>();
-				toUsers
-					.Union(ccUsers ?? new string[0])
-					.Union(bccUsers ?? new string[0])
-					.ForEach(u => {
-						if (!IsValidEmail(u)) {
-							badEmails.Add(u);
-						}
-					});
-				if (badEmails.Count > 0) {
-					throw new SoftwareException("Unable to send email as TO, CC and/or BCC included the following bad emails {0}", badEmails.ToDelimittedString(", "));
-				}
-
-				#endregion
-
-				if (port == null)
-					port = requiresSSL ? SecureSMTPPort : SMTPPort;
-
-				bool requiresLogon = !string.IsNullOrEmpty(username);
-
-				var mailMessage = new MailMessage { Subject = subject, Body = body, IsBodyHtml = bodyHtml, From = new MailAddress(@from) };
-
-				toUsers.Distinct().ForEach(u => mailMessage.To.Insert(0, new MailAddress(u)));
-
-				if (ccUsers != null) {
-					ccUsers.Distinct().ForEach(u => mailMessage.CC.Insert(0, new MailAddress(u)));
-				}
-
-				if (bccUsers != null) {
-					bccUsers.Distinct().ForEach(u => mailMessage.Bcc.Insert(0, new MailAddress(u)));
-				}
-
-				if (attachments != null) {
-					attachments.ForEach(a => mailMessage.Attachments.Add(a));
-				}
-
-				if (alternativeViews != null) {
-					alternativeViews.ForEach(av => mailMessage.AlternateViews.Add(av));
-				}
-
-				var smtpClient = new SmtpClient(smtpServer, port.Value);
-				if (requiresSSL) {
-					smtpClient.EnableSsl = true;
-					ServicePointManager.ServerCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) => true;
-				}
-				if (requiresLogon) {
-					smtpClient.UseDefaultCredentials = false;
-					smtpClient.Credentials = new NetworkCredential(username, password, domain);
-				}
-
-				smtpClient.Send(mailMessage);
-			}
+			smtpClient.Send(mailMessage);
+		}
 
 		public static Task SendEmailAsync(
 				string smtpServer,
 				string from,
 				string subject,
 				string body,
-				IEnumerable<string> toUsers,
-				IEnumerable<string> ccUsers = null,
-				IEnumerable<string> bccUsers = null,
+				IEnumerable<string> toRecipients,
+				IEnumerable<string> ccRecipients = null,
+				IEnumerable<string> bccRecipients = null,
+				IEnumerable<string> replyToRecipients = null,
 				IEnumerable<Attachment> attachments = null,
 				IEnumerable<AlternateView> alternativeViews = null,
 				bool requiresSSL = false,
@@ -187,69 +177,58 @@ namespace Tools {
 				int? port = null,
 				bool bodyHtml = false
 			) {
-				#region Pre-Conditions
-				Debug.Assert(toUsers != null);
-				Debug.Assert(from != null);
-				if (toUsers == null) {
-					throw new ArgumentNullException("toUsers");
-				}
-				if (from == null) {
-					throw new ArgumentNullException("from");
-				}
+			#region Pre-Conditions
+			Guard.ArgumentNotNull(toRecipients, nameof(toRecipients));
+			Guard.ArgumentNotNull(from, nameof(from));
 
-				var badEmails = new List<string>();
-				toUsers
-					.Union(ccUsers ?? new string[0])
-					.Union(bccUsers ?? new string[0])
-					.ForEach(u => {
-						if (!IsValidEmail(u)) {
-							badEmails.Add(u);
-						}
-					});
-				if (badEmails.Count > 0) {
-					throw new SoftwareException("Unable to send email as TO, CC and/or BCC included the following bad emails {0}", badEmails.ToDelimittedString(", "));
-				}
+			var badEmails = new List<string>();
+			toRecipients
+				.Union(ccRecipients ?? System.Array.Empty<string>())
+				.Union(bccRecipients ?? System.Array.Empty<string>())
+				.Union(replyToRecipients ?? System.Array.Empty<string>())
+				.ForEach(u => {
+					if (!IsValidEmail(u)) {
+						badEmails.Add(u);
+					}
+				});
 
-				#endregion
+			if (badEmails.Count > 0) 
+				throw new SoftwareException("Unable to send email as TO, CC BCC and/or REPLY-TO included the following bad emails {0}", badEmails.ToDelimittedString(", "));
 
-				if (port == null)
-					port = requiresSSL ? SecureSMTPPort : SMTPPort;
+			#endregion
 
-				bool requiresLogon = !string.IsNullOrEmpty(username);
+			port ??= requiresSSL ? SecureSMTPPort : SMTPPort;
 
-				var mailMessage = new MailMessage { Subject = subject, Body = body, IsBodyHtml = bodyHtml, From = new MailAddress(@from) };
+			var requiresLogon = !string.IsNullOrEmpty(username);
 
-				toUsers.Distinct().ForEach(u => mailMessage.To.Insert(0, new MailAddress(u)));
+			var mailMessage = new MailMessage { Subject = subject, Body = body, IsBodyHtml = bodyHtml, From = new MailAddress(@from) };
 
-				if (ccUsers != null) {
-					ccUsers.Distinct().ForEach(u => mailMessage.CC.Insert(0, new MailAddress(u)));
-				}
+			toRecipients.Distinct().ForEach(u => mailMessage.To.Add(new MailAddress(u)));
 
-				if (bccUsers != null) {
-					bccUsers.Distinct().ForEach(u => mailMessage.Bcc.Insert(0, new MailAddress(u)));
-				}
+			ccRecipients?.Distinct().ForEach(u => mailMessage.CC.Add(new MailAddress(u)));
 
-				if (attachments != null) {
-					attachments.ForEach(a => mailMessage.Attachments.Add(a));
-				}
+			bccRecipients?.Distinct().ForEach(u => mailMessage.Bcc.Add(new MailAddress(u)));
+			 
+			replyToRecipients?.Distinct().ForEach(u => mailMessage.ReplyToList.Add(new MailAddress(u)));
+			
+			attachments?.ForEach(a => mailMessage.Attachments.Add(a));
 
-				if (alternativeViews != null) {
-					alternativeViews.ForEach(av => mailMessage.AlternateViews.Add(av));
-				}
+			alternativeViews?.ForEach(av => mailMessage.AlternateViews.Add(av));
 
-				var smtpClient = new SmtpClient(smtpServer, port.Value);
-				if (requiresSSL) {
-					smtpClient.EnableSsl = true;
-					ServicePointManager.ServerCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) => true;
-				}
-				if (requiresLogon) {
-					smtpClient.UseDefaultCredentials = false;
-					smtpClient.Credentials = new NetworkCredential(username, password, domain);
-				}
-
-				return smtpClient.SendMailAsync(mailMessage);
+			var smtpClient = new SmtpClient(smtpServer, port.Value);
+			if (requiresSSL) {
+				smtpClient.EnableSsl = true;
+				ServicePointManager.ServerCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) => true;
 			}
-		}
 
+			if (requiresLogon) {
+				smtpClient.UseDefaultCredentials = false;
+				smtpClient.Credentials = new NetworkCredential(username, password, domain);
+			}
+
+			return smtpClient.SendMailAsync(mailMessage);
+		}
 	}
+
+}
 

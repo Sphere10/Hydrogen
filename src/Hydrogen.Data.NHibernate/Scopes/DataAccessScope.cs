@@ -56,6 +56,15 @@ public sealed class DataAccessScope : TransactionalScopeBase<ITransaction> {
 		base.BeginTransaction();
 	}
 
+	public override Task BeginTransactionAsync() 
+		=> BeginTransactionAsync(IsolationLevel.ReadCommitted);
+
+	public Task BeginTransactionAsync(IsolationLevel isolationLevel) {
+		CheckNoSystemTransaction();
+		_transactionIsolationLevel = isolationLevel;
+		return base.BeginTransactionAsync();
+	}
+
 	protected override ITransaction BeginTransactionInternal() {
 		Guard.Ensure(_transactionIsolationLevel != null, "Isolation level was not set");
 		return Session.BeginTransaction(_transactionIsolationLevel.Value);

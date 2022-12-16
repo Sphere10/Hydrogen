@@ -37,6 +37,8 @@ namespace Tools {
 		public static string GetSerializableOrientedNameOrDefault(Enum @enum, string @default = "Unknown") 
 			=> @enum != null ? GetEnumNameCandidates(@enum).Reverse().First() : @default;
 
+		public static string GetDescriptionOrSerializableOrientedNameOrDefault(Enum @enum, string @default = "Unknown") 
+			=> GetDescription(@enum) ?? GetDescriptionOrSerializableOrientedNameOrDefault(@enum);
 			
 		/// <summary>
 		/// For all enums, returns all their name candidates. An enum can have multiple serializable names based on attributes

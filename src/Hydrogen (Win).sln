@@ -99,11 +99,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hydrogen.Data.NHibernate", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hydrogen.Web.AspNetCore", "Hydrogen.Web.AspNetCore\Hydrogen.Web.AspNetCore.csproj", "{A8332068-9A08-49D1-85CE-A6B82D7EAE35}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hydrogen.Utils.WorkflowTester", "..\utils\Hydrogen.Utils.WorkflowTester\Hydrogen.Utils.WorkflowTester.csproj", "{9D137EF7-597C-425F-A801-066213871B1E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hydrogen.Utils.WorkflowTester", "..\utils\Hydrogen.Utils.WorkflowTester\Hydrogen.Utils.WorkflowTester.csproj", "{9D137EF7-597C-425F-A801-066213871B1E}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WorkflowCore", "..\..\..\workflow-core\src\WorkflowCore\WorkflowCore.csproj", "{E3E4AF05-C61F-4430-A4BB-138072686CC9}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WorkflowCore.Persistence.SqlServer", "..\..\..\workflow-core\src\providers\WorkflowCore.Persistence.SqlServer\WorkflowCore.Persistence.SqlServer.csproj", "{D85B1D22-6075-4775-8628-AF9F92BC6308}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WorkflowCore.Persistence.EntityFramework", "..\..\..\workflow-core\src\providers\WorkflowCore.Persistence.EntityFramework\WorkflowCore.Persistence.EntityFramework.csproj", "{2D111341-D015-46A0-A29B-31EE0083F632}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -497,6 +499,14 @@ Global
 		{D85B1D22-6075-4775-8628-AF9F92BC6308}.Release|Any CPU.Build.0 = Release|Any CPU
 		{D85B1D22-6075-4775-8628-AF9F92BC6308}.Release|x86.ActiveCfg = Release|Any CPU
 		{D85B1D22-6075-4775-8628-AF9F92BC6308}.Release|x86.Build.0 = Release|Any CPU
+		{2D111341-D015-46A0-A29B-31EE0083F632}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2D111341-D015-46A0-A29B-31EE0083F632}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2D111341-D015-46A0-A29B-31EE0083F632}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{2D111341-D015-46A0-A29B-31EE0083F632}.Debug|x86.Build.0 = Debug|Any CPU
+		{2D111341-D015-46A0-A29B-31EE0083F632}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2D111341-D015-46A0-A29B-31EE0083F632}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2D111341-D015-46A0-A29B-31EE0083F632}.Release|x86.ActiveCfg = Release|Any CPU
+		{2D111341-D015-46A0-A29B-31EE0083F632}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

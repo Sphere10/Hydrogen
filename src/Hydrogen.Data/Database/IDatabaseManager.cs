@@ -10,6 +10,7 @@ namespace Hydrogen.Data {
     public interface IDatabaseManager {
 
         event EventHandlerEx<DatabaseCreatedEventArgs> DatabaseCreated;
+        event EventHandlerEx<DatabaseSchemasCreatedEventArgs> DatabaseSchemasCreated;
         event EventHandlerEx<string> DatabaseDropped;
 
         string GenerateConnectionString(string server, string database, string username, string password, int? port);

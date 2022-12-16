@@ -7,6 +7,7 @@ using FluentNHibernate.Cfg.Db;
 using NHibernate;
 using NHibernate.Cfg;
 using Hydrogen.Data;
+using NHibernate.Tool.hbm2ddl;
 
 namespace Hydrogen.Data.NHibernate {
 
@@ -22,7 +23,7 @@ namespace Hydrogen.Data.NHibernate {
 				.ExposeConfiguration(config => SetCreateDatabaseConfiguration(connectionString, databaseName, config));
 
 			using var sessionFactory = sessionConfig.BuildSessionFactory();
-			this.OnDatabaseCreated(connectionString, false);
+			this.OnDatabaseSchemasCreated(connectionString);
 			IDataGenerator dataPopulator = dataPolicy switch {
 				DatabaseGenerationDataPolicy.NoData => new EmptyDataGenerator(),
 				DatabaseGenerationDataPolicy.DemoData => CreateDataGenerator(sessionFactory, databaseName, dataPolicy),
@@ -39,7 +40,11 @@ namespace Hydrogen.Data.NHibernate {
 
 		protected abstract FluentConfiguration GetFluentConfig(string connectionString);
 
-		protected abstract void SetCreateDatabaseConfiguration(string connectionString, string databaseName, Configuration configuration);
+		protected virtual void SetCreateDatabaseConfiguration(string connectionString, string databaseName, Configuration configuration) {
+			var schemaExport = new SchemaExport(configuration);
+			//schemaExport.Drop(false, true);
+			schemaExport.Create(false, true);
+		}
 
 	
 	}

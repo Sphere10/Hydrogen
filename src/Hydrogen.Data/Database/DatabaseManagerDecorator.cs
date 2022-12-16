@@ -2,12 +2,14 @@
     public class DatabaseManagerDecorator : IDatabaseManager {
 
         public event EventHandlerEx<DatabaseCreatedEventArgs> DatabaseCreated { add => InternalDatabaseManager.DatabaseCreated += value; remove => InternalDatabaseManager.DatabaseCreated -= value; }
+        public event EventHandlerEx<DatabaseSchemasCreatedEventArgs> DatabaseSchemasCreated { add => InternalDatabaseManager.DatabaseSchemasCreated += value; remove => InternalDatabaseManager.DatabaseSchemasCreated -= value; }
         public event EventHandlerEx<string> DatabaseDropped { add => InternalDatabaseManager.DatabaseDropped += value; remove => InternalDatabaseManager.DatabaseDropped -= value; }
 
         protected DatabaseManagerDecorator(IDatabaseManager internalDatabaseManager) {
             Guard.ArgumentNotNull(internalDatabaseManager, nameof(internalDatabaseManager));
             InternalDatabaseManager = internalDatabaseManager;
-            InternalDatabaseManager.DatabaseCreated += args => OnDatabaseCreated(args.ConnectionString, args.CreatedEmptyDatabase);
+            InternalDatabaseManager.DatabaseCreated += args => OnDatabaseCreated(args.ConnectionString);
+            InternalDatabaseManager.DatabaseSchemasCreated += args => OnDatabaseSchemasCreated(args.ConnectionString);
             InternalDatabaseManager.DatabaseDropped += OnDatabaseDropped;
 
         }
@@ -29,7 +31,9 @@
         public virtual string GenerateConnectionString(string server, string database, string username, string password, int? port)
             => InternalDatabaseManager.GenerateConnectionString(server, database, username, password, port);
 
-        protected virtual void OnDatabaseCreated(string connectionString, bool createdEmptyDatabase) {
+        protected virtual void OnDatabaseCreated(string connectionString) { }
+
+        protected virtual void OnDatabaseSchemasCreated(string connectionString) {
         }
 
         protected virtual void OnDatabaseDropped(string connectionString) {

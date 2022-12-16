@@ -34,33 +34,26 @@ namespace Hydrogen.Application {
 			if (!serviceCollection.HasImplementationFor<IHelpServices>())
 				serviceCollection.AddTransient<IHelpServices, StandardHelpServices>();
 
-			if (serviceCollection.HasImplementationFor<ILicenseEnforcer>())
-				throw new SoftwareException("Illegal tampering with ILicenseEnforcer");
-			serviceCollection.AddSingleton<ILicenseEnforcer, StandardLicenseEnforcer>();
+			if (!serviceCollection.HasImplementationFor<ILicenseEnforcer>())
+				serviceCollection.AddSingleton<ILicenseEnforcer, NoOpLicenseEnforcer>();
 
-			if (serviceCollection.HasImplementationFor<ILicenseKeyDecoder>())
-				throw new SoftwareException("Illegal tampering with ILicenseKeyDecoder");
-			serviceCollection.AddTransient<ILicenseKeyDecoder, StandardLicenseKeyDecoder>();
+			if (!serviceCollection.HasImplementationFor<ILicenseKeyDecoder>())
+				serviceCollection.AddTransient<ILicenseKeyDecoder, StandardLicenseKeyDecoder>();
 
-			if (serviceCollection.HasImplementationFor<ILicenseKeyValidator>())
-				throw new SoftwareException("Illegal tampering with ILicenseKeyValidator");
-			serviceCollection.AddTransient<ILicenseKeyValidator, StandardLicenseKeyValidatorWithVersionCheck>();
+			if (!serviceCollection.HasImplementationFor<ILicenseKeyValidator>())
+				serviceCollection.AddTransient<ILicenseKeyValidator, StandardLicenseKeyValidatorWithVersionCheck>();
 
-			if (serviceCollection.HasImplementationFor<ILicenseKeyEncoder>())
-				throw new SoftwareException("Illegal tampering with ILicenseKeyEncoder");
-			serviceCollection.AddTransient<ILicenseKeyEncoder, StandardLicenseKeyEncoder>();
+			if (!serviceCollection.HasImplementationFor<ILicenseKeyEncoder>())
+				serviceCollection.AddTransient<ILicenseKeyEncoder, StandardLicenseKeyEncoder>();
 
-			if (serviceCollection.HasImplementationFor<ILicenseKeyServices>())
-				throw new SoftwareException("Illegal tampering with ILicenseKeyServices");
-			serviceCollection.AddTransient<ILicenseKeyServices, StandardLicenseKeyProvider>();
+			if (!serviceCollection.HasImplementationFor<ILicenseKeyServices>())
+				serviceCollection.AddTransient<ILicenseKeyServices, StandardLicenseKeyProvider>();
 
-			if (serviceCollection.HasImplementationFor<ILicenseServices>())
-				throw new SoftwareException("Illegal tampering with ILicenseServices");
-			serviceCollection.AddSingleton<ILicenseServices, StandardLicenseServices>();
+			if (!serviceCollection.HasImplementationFor<ILicenseServices>())
+				serviceCollection.AddSingleton<ILicenseServices, StandardLicenseServices>();
 
-			if (serviceCollection.HasImplementationFor<IProductInformationServices>())
-				throw new SoftwareException("Illegal tampering with IProductInformationServices");
-			serviceCollection.AddSingleton<IProductInformationServices, StandardProductInformationServices>();
+			if (!serviceCollection.HasImplementationFor<IProductInformationServices>())
+				serviceCollection.AddSingleton<IProductInformationServices, StandardProductInformationServices>();
 
 			if (!serviceCollection.HasImplementationFor<IProductInstancesCounter>())
 				serviceCollection.AddTransient<IProductInstancesCounter, StandardProductInstancesCounter>();

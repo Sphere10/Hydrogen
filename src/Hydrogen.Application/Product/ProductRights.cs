@@ -18,28 +18,36 @@ using System.Reflection;
 namespace Hydrogen.Application {
 	[Obfuscation(Exclude = true)]
     public class ProductRights {
-		private static ProductRights _none;
 
-		static ProductRights() {
-			_none = new ProductRights();
-		}
+		public static ProductRights None { get; } = new() {
+			ExpiresAfterDate = true,
+			ExpirationDateUTC = DateTime.UtcNow,
+			HasFiniteUses = true,
+			UsesRemaining = 0,
+			TotalUsesAllowed = 0,
+			HasFiniteDays = true,
+			DaysRemaining = 0,
+			TotalDaysAllowed = 0,
+			HasFiniteInstances = true,
+			InstancesRemaining = 0,
+			TotalInstancesAllowed = 0,
+			FeatureRights = ProductFeatureRights.None,
+		};
 
-		public ProductRights() {
-			ExpiresAfterDate = true;
-			ExpirationDateUTC = DateTime.UtcNow;
-			HasFiniteUses = true;
-			UsesRemaining = 0;
-			TotalUsesAllowed = 0;
-			HasFiniteDays = true;
-			DaysRemaining = 0;
-			TotalDaysAllowed = 0;
-			HasFiniteInstances = true;
-			InstancesRemaining = 0;
-			TotalInstancesAllowed = 0;
-			FeatureRights = ProductFeatureRights.None;
-		}
-
-		public static ProductRights None { get { return _none; } }
+		public static ProductRights Full { get; } = new() {
+			ExpiresAfterDate = false,
+			ExpirationDateUTC = DateTime.MaxValue,
+			HasFiniteUses = false,
+			UsesRemaining = int.MaxValue,
+			TotalUsesAllowed = int.MaxValue,
+			HasFiniteDays = false,
+			DaysRemaining = int.MaxValue,
+			TotalDaysAllowed = int.MaxValue,
+			HasFiniteInstances = false,
+			InstancesRemaining = int.MaxValue,
+			TotalInstancesAllowed = int.MaxValue,
+			FeatureRights = ProductFeatureRights.Full,
+		};
 
 		public bool HasFiniteUses { get; set; }
 

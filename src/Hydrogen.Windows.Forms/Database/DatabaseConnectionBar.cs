@@ -65,10 +65,16 @@ namespace Hydrogen.Windows.Forms {
 
 		[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         [Browsable(false)]
-        public virtual DBReference Database => new DBReference {
-			DBMSType = SelectedDBMSType,
-			ConnectionString = ConnectionString
-		};
+        public virtual DBReference Database { 
+			get => new () {
+				DBMSType = SelectedDBMSType,
+				ConnectionString = ConnectionString
+			};
+			set {
+				this.SelectedDBMSType = value.DBMSType;
+				this.ConnectionString = value.ConnectionString;
+			}
+		}
 
 		protected virtual void SelectDefaultBar() {		   
 			ChangeConnectionBar(MSSQLConnectionBarTypeName);

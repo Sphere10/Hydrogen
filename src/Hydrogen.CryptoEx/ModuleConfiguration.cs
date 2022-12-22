@@ -11,7 +11,6 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using static HashLib4CSharp.Base.HashFactory.Adapter;
 using static HashLib4CSharp.Base.HashFactory.Crypto;
 
 namespace Hydrogen.CryptoEx {

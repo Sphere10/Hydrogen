@@ -4,6 +4,7 @@ using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using Hydrogen;
 using Hydrogen.Application;
+using System;
 
 namespace Hydrogen.DApp.Presentation2.Logic {
 
@@ -20,19 +21,18 @@ namespace Hydrogen.DApp.Presentation2.Logic {
 
 		public IApplicationBlock[] Blocks { get; init; }
 
-		public ComponentRegistry IoCContainer { get; private set; }
+		public IServiceProvider IoCContainer { get; private set; }
 
 		public virtual void Load() {
 			NotifyLoaded();
 		}
 
-		public void Load(ComponentRegistry secureComponentRegistry) {
-			IoCContainer = secureComponentRegistry;
+		public void Load(IServiceCollection serviceCollection) {
+			//IoCContainer = secureComponentRegistry;
 			NotifyLoaded();
 		}
 
 		public virtual void Unload() {
-			IoCContainer.Dispose();
 			NotifyUnloaded();
 		}
 

@@ -201,7 +201,8 @@ namespace Hydrogen {
 			Guard.Ensure(hashers is not null, $"No implementation for {algorithm} found");
 			if (!hashers.TryPop(out hasher)) {
 				hasher = Constructors[(int)algorithm].Invoke();
-			} else hasher.Reset();
+			}
+			hasher.Reset();
 			var hasherObj = hasher;
 			return new ActionScope(() => hashers.Push(hasherObj));
 		}		

@@ -7,7 +7,7 @@ namespace Hydrogen.DApp.Node {
 	public interface IHydrogenA {
 	}
 
-	public class HydrogenInitializer : BaseApplicationInitializer {
+	public class HydrogenInitializer : ApplicationInitializerBase {
 		
 		public override void Initialize() {
 			SystemLog.RegisterLogger(new TimestampLogger(new ConsoleLogger()));

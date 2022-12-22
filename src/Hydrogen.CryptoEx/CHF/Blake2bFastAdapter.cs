@@ -13,7 +13,9 @@ public class Blake2bFastAdapter : HashFunctionBase {
 
 	public override int DigestSize { get; }
 
+	bool _calledInit = false;
 	public override void Initialize() {
+		_calledInit = true;
 		base.Initialize();
 		_hasher = Blake2Fast.Blake2b.CreateIncrementalHasher(DigestSize);
 	}

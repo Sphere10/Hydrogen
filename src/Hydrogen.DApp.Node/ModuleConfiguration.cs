@@ -18,15 +18,16 @@ using System.Text;
 using System.Threading.Tasks;
 using Hydrogen;
 using Hydrogen.Application;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Hydrogen.DApp.Node {
 
 	public class ModuleConfiguration : ModuleConfigurationBase {
 
-		public override void RegisterComponents(ComponentRegistry registry) {
+		public override void RegisterComponents(IServiceCollection serviceCollection) {
 			// Init tasks
-			registry.RegisterInitializer<HydrogenInitializer>();
-			registry.RegisterInitializer<IncrementUsageByOneTask>();
+			serviceCollection.AddInitializer<HydrogenInitializer>();
+			serviceCollection.AddInitializer<IncrementUsageByOneInitializer>();
 
 			// Start Tasks
 			// none
@@ -37,8 +38,5 @@ namespace Hydrogen.DApp.Node {
 			
 		}
 
-		public override void DeregisterComponents(ComponentRegistry registry) {
-			registry.DeregisterInitializer<HydrogenInitializer>();
-		}
 	}
 }

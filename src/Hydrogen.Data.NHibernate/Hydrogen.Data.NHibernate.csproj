@@ -16,4 +16,8 @@
 		<ProjectReference Include="..\Hydrogen\Hydrogen.csproj" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Folder Include="Listeners\" />
+	</ItemGroup>
+
 </Project>

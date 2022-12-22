@@ -13,16 +13,17 @@
 
 using System;
 using System.Reflection;
+using System.Xml.Schema;
 
 namespace Hydrogen.FastReflection {
 
 	public static class FastReflectionCaches {
         static FastReflectionCaches() {
             EnumNamesCache = new ActionCache<Type, string[]>( t => t.GetEnumNames());
-            MethodInvokerCache = new ActionCache<MethodInfo, MethodInvoker>(mi => new MethodInvoker(mi));
-            PropertyAccessorCache = new ActionCache<PropertyInfo, PropertyAccessor>(pi => new PropertyAccessor(pi));
-            FieldAccessorCache = new ActionCache<FieldInfo, FieldAccessor>(fi => new FieldAccessor(fi));
-            ConstructorInvokerCache = new ActionCache<ConstructorInfo, ConstructorInvoker>( ci => new ConstructorInvoker(ci));
+            MethodInvokerCache = new ActionCache<MethodInfo, MethodInvoker>(mi => new MethodInvoker(mi), keyComparer: new MemberInfoComparer<MethodInfo>());
+            PropertyAccessorCache = new ActionCache<PropertyInfo, PropertyAccessor>(pi => new PropertyAccessor(pi), keyComparer: new MemberInfoComparer<PropertyInfo>());
+            FieldAccessorCache = new ActionCache<FieldInfo, FieldAccessor>(fi => new FieldAccessor(fi), keyComparer: new MemberInfoComparer<FieldInfo>());
+            ConstructorInvokerCache = new ActionCache<ConstructorInfo, ConstructorInvoker>( ci => new ConstructorInvoker(ci), keyComparer: new MemberInfoComparer<ConstructorInfo>());
         }
 
 		public static ICache<Type, string[]> EnumNamesCache { get; set; }
@@ -36,4 +37,5 @@ namespace Hydrogen.FastReflection {
         public static ICache<ConstructorInfo, ConstructorInvoker> ConstructorInvokerCache { get; set; }
 
     }
+
 }

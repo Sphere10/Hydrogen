@@ -6,7 +6,7 @@ using NHibernate.Engine;
 using NHibernate.Persister.Entity;
 using NHibernate.Proxy;
 
-namespace Hydrogen.Data.NHibernate.Extensions {
+namespace Hydrogen.Data.NHibernate {
 	public static class SessionExtensions {
 	 public static T Attach<T>(this ISession session, T entity, LockMode mode = null)
 	 {

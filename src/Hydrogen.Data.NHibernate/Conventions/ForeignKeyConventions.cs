@@ -7,5 +7,6 @@ namespace Hydrogen.Data.NHibernate {
         protected override string GetKeyName(Member property, Type type) {
             return property == null ? type.Name + "ID" : property.Name + "ID";
         }
+
     }
 }

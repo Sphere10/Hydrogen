@@ -68,6 +68,34 @@ public static class HtmlHelperExtensions {
 		return htmlHelper.TextBoxFor(expression, display, attributes?.ToDictionary(x => x.Key, x => x.Value as object));
 	}
 
+	public static IHtmlContent BootstrapPasswordFor<T, TProperty>(this IHtmlHelper<T> htmlHelper, Expression<Func<T, TProperty>> expression, AttributeDictionary attributes = null){
+		var member = expression.ResolveMember();
+		var display = member.TryGetCustomAttributeOfType<DisplayNameAttribute>(true, out var displayName) ? displayName.DisplayName : string.Empty;
+		if (member.HasAttribute<RequiredAttribute>(true)) {
+			display += " *";
+		}
+		var hasError = htmlHelper.ViewData.ModelState.TryGetValue(member.Name, out var value ) && value.ValidationState == ModelValidationState.Invalid;
+
+		attributes ??= new AttributeDictionary();
+		if (!attributes.ContainsKey("class"))
+			attributes["class"] = string.Empty;
+
+		attributes["placeholder"] = display;
+		attributes["class"] += $"form-control";
+	
+
+		if (hasError) {
+			attributes["class"] += $" is-invalid";
+			attributes["data-bs-toggle"] = "tooltip";
+			attributes["data-bs-placement"] = "top";
+			attributes["data-bs-original-title"] = value.Errors.Select(x => x.ErrorMessage).ToDelimittedString(" ");
+		}
+
+		return htmlHelper.PasswordFor(expression, attributes?.ToDictionary(x => x.Key, x => x.Value as object));
+	}
+
+	
+
 	public static IHtmlContent BootstrapTextAreaFor<T, TProperty>(this IHtmlHelper<T> htmlHelper, Expression<Func<T, TProperty>> expression, int approxRows = 5, AttributeDictionary attributes = null){
 		Guard.ArgumentInRange(approxRows, 1, 9999, nameof(approxRows));
 		var member = expression.ResolveMember();

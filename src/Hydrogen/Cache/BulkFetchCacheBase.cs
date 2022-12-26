@@ -56,6 +56,13 @@ namespace Hydrogen {
 			return result;
 		}
 
+		public override CachedItem Get(object key) {
+			if (_fetchCount == 0)
+				ForceRefresh();
+
+			return base.Get(key);
+		}
+
 		public override bool ContainsCachedItem(object key) {
 			if (_fetchCount == 0)
 				ForceRefresh();

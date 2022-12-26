@@ -12,6 +12,6 @@ namespace Hydrogen.Web.AspNetCore {
 
 		[Required]
 		[HiddenInput(DisplayValue = false)]
-		public bool IsResponse  { get; set; }
+		public int SubmitCount  { get; set; } = 0;
     }
 }

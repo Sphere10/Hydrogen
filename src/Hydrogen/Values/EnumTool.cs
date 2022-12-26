@@ -37,8 +37,8 @@ namespace Tools {
 		public static string GetSerializableOrientedNameOrDefault(Enum @enum, string @default = "Unknown") 
 			=> @enum != null ? GetEnumNameCandidates(@enum).Reverse().First() : @default;
 
-		public static string GetDescriptionOrSerializableOrientedNameOrDefault(Enum @enum, string @default = "Unknown") 
-			=> GetDescription(@enum) ?? GetDescriptionOrSerializableOrientedNameOrDefault(@enum);
+		public static string GetHumanReadableName(Enum @enum) 
+			=> GetDescription(@enum) ?? GetDisplayName(@enum) ?? @enum.ToString();
 			
 		/// <summary>
 		/// For all enums, returns all their name candidates. An enum can have multiple serializable names based on attributes
@@ -95,7 +95,14 @@ namespace Tools {
 			return GetAttributes<DescriptionAttribute>(value).Select(x => x.Description);
 		}
 
-		public static string GetDescription(Enum value, string @default = null) => GetDescriptions(value).FirstOrDefault() ?? @default ?? value.ToString();
+		public static string GetDisplayName(Enum value, string @default = null) {
+			var displayNameAttrs = GetAttributes<DisplayNameAttribute>(value).ToArray();
+			return displayNameAttrs.Length > 0 ? displayNameAttrs[0].DisplayName : @default;
+		}
+
+
+		public static string GetDescription(Enum value, string @default = null) 
+			=> GetDescriptions(value).FirstOrDefault() ?? @default ?? value.ToString();
 
 		public static T GetValueFromDescription<T>(string description) {
 			return (T)GetValueFromDescription(typeof(T), description);

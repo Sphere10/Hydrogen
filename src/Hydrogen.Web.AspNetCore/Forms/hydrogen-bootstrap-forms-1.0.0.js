@@ -62,7 +62,6 @@ function F_BeforeSubmit(formId, o) {
     form.find(".form-blocker-overlay").removeClass("invisible");
 }
 
-
 function F_Success(formId, result) {
     var form = $('#' + formId);
 
@@ -77,7 +76,7 @@ function F_Success(formId, result) {
 
         case "message":
             var alertType = result.result ? "success" : "danger";
-            var alertHeader = result.result ? "Okay!" : "Apologies";
+            var alertHeader = result.result ? "" : "";
             var alertIcon = result.result ? "fa fa-check" : "fa fa-exclamation";
             F_ShowError(formId, alertType, alertIcon, alertHeader, result.message);
             break;
@@ -108,7 +107,7 @@ function F_Error(formId, status, error) {
 }
 
 function F_ShowError(formId, alertType, alertIcon, title, message) {
-    var htmlToInject = '<div id="' + formId + '_result" class="form-result alert alert-dismissible alert-' + alertType + ' fade show"><strong><i class="' + alertIcon + '"></i> ' + title + '</strong> ' + message + '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>' + '</div>';
+    var htmlToInject = '<div id="' + formId + '_result" class="form-result alert alert-dismissible alert-' + alertType + ' mb-0 mt-3 fade show"><strong><i class="' + alertIcon + '"></i> ' + title + '</strong> ' + message + '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>' + '</div>';
     var resultDiv = $('#' + formId + '_result');
     if (resultDiv.length > 0)
         resultDiv.replaceWith(htmlToInject);
@@ -146,13 +145,6 @@ function F_Init(formId, options) {
                 botProtect: false
             };
         form[0].options = options;
-
-        // Set response property
-
-        var isResponseProp = form.find('input:hidden[name="IsResponse"]');
-        var isResponse = isResponseProp.val() == "True"
-        if (!isResponse)
-            isResponseProp.val("True");
 
         // re-init choices for fetched form (choices.js)
         form[0].querySelectorAll('[sp10-choices]').forEach((toggle) => {
@@ -195,6 +187,10 @@ function F_Init(formId, options) {
 
         // Add the AJAX handler
         form.on("submit", function (event) {
+            // Increment submit counter
+            var submitProp = form.find('input:hidden[name="SubmitCount"]');
+            submitProp.val(parseInt(submitProp.val()) + 1);
+
             var formId = $(this).attr("id");
             event.preventDefault();
             var formValues = $(this).serialize();

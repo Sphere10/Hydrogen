@@ -21,11 +21,14 @@ public sealed class BootstrapFormScope<TModel> : IDisposable where TModel : Form
 """;
 
 	public const string FormEndHtmlSnippet = """
-<div id="{formId}_result_marker" class="invisible pb-5"></div>
+<div id="{formId}_result_marker" class="invisible"></div>
 <script language="javascript">
     F_Init('{formId}', {formOptions});
 </script>
 """;
+
+	public const string FormBlockerOverlaySnippet = """<div class="form-blocker-overlay invisible" style="position: absolute; width: 100%; height: 100%; display:block; z-index: 999; background-color:white; opacity: 0.25;"></div>""";
+	public const string SmallerFormBlockerOverlaySnippet = """<div class="form-blocker-overlay invisible" style="position: absolute; width: 90%; height: 90%; display:block; z-index: 999; background-color:white; opacity: 0.25;"></div>""";
 
 	private readonly string _formID;
 	private readonly string _formClass;
@@ -69,11 +72,17 @@ public sealed class BootstrapFormScope<TModel> : IDisposable where TModel : Form
 				attributes?.ToDictionary( x => x.Key, x => x.Value as object)
 			);
 
+			if (options.HasFlag(FormScopeOptions.AddAntiForgeryToken))
+				Write(htmlHelper.AntiForgeryToken());
+
 			Write(htmlHelper.HiddenFor(m => m.ID, _formID));
-			Write(htmlHelper.HiddenFor(m => m.IsResponse));
+			Write(htmlHelper.HiddenFor(m => m.SubmitCount));
+			if (options.HasFlag(FormScopeOptions.SmallerBlockerOverlay))
+				Write(SmallerFormBlockerOverlaySnippet);
+			else
+				Write(FormBlockerOverlaySnippet);
 		}
 	}
-
 
 	public void Dispose() {
 		Write(

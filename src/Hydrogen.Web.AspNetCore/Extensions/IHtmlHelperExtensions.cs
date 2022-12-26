@@ -29,7 +29,7 @@ public static class HtmlHelperExtensions {
 		attributes ??= new AttributeDictionary();
 		if (!attributes.ContainsKey("class"))
 			attributes["class"] = string.Empty;
-		attributes["class"] += $"label label-warning{"float-end".AsAmendmentIf(floatEnd)}";
+		attributes["class"] += $" label label-warning{"float-end".AsAmendmentIf(floatEnd)}";
 		return helper.ValidationMessageFor(expression, null, attributes?.ToDictionary(x => x.Key, x => x.Value as object));
 	}
 
@@ -55,7 +55,7 @@ public static class HtmlHelperExtensions {
 			attributes["class"] = string.Empty;
 
 		attributes["placeholder"] = display;
-		attributes["class"] += $"form-control";
+		attributes["class"] += $" form-control";
 	
 
 		if (hasError) {
@@ -81,7 +81,7 @@ public static class HtmlHelperExtensions {
 			attributes["class"] = string.Empty;
 
 		attributes["placeholder"] = display;
-		attributes["class"] += $"form-control";
+		attributes["class"] += $" form-control";
 	
 
 		if (hasError) {
@@ -110,7 +110,7 @@ public static class HtmlHelperExtensions {
 
 		if (!attributes.ContainsKey("class"))
 			attributes["class"] = string.Empty;
-		attributes["class"] += $"form-control";
+		attributes["class"] += $" form-control";
 
 		if (!attributes.ContainsKey("style"))
 			attributes["style"] = string.Empty;
@@ -140,7 +140,7 @@ public static class HtmlHelperExtensions {
 			attributes["class"] = string.Empty;
 
 		attributes["placeholder"] = display;
-		attributes["class"] += $"form-select";
+		attributes["class"] += $" form-select";
 	
 
 		if (hasError) {

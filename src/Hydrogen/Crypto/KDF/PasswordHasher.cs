@@ -27,32 +27,56 @@ namespace Hydrogen {
         public const int SALT_INDEX = 1;
         public const int PBKDF2_INDEX = 2;
 
-        /// <summary>
-        /// Creates a salted PBKDF2 hash of the password.
-        /// </summary>
-        /// <param name="password">The password to hash.</param>
-        /// <returns>The hash of the password.</returns>
-        public static string CreateHash(string password) {
-            Guard.ArgumentNotNull(password, nameof(password));
-            var salt = Tools.Crypto.GenerateCryptographicallyRandomBytes(SALT_BYTE_SIZE);
-            var hash = PBKDF2.DeriveKey(password, salt, PBKDF2_ITERATIONS, HASH_BYTE_SIZE);
-            return PBKDF2_ITERATIONS + ":" + Convert.ToBase64String(salt) + ":" + Convert.ToBase64String(hash);
+        private PasswordHasher() {
         }
 
         /// <summary>
-        /// Validates a password given a hash of the correct one.
+        /// Creates a salted PBKDF2 hash of the username/password pair.
         /// </summary>
-        /// <param name="password">The password to check.</param>
-        /// <param name="correctHash">A hash of the correct password.</param>
-        /// <returns>True if the password is correct. False otherwise.</returns>
-        public static bool ValidatePassword(string password, string correctHash) {
+        /// <param name="username">The username to hash</param>
+        /// <param name="password">The password to hash</param>
+        /// <returns>The hash of the password</returns>
+        public static string CreateHash(string username, string password) 
+			=> CreateHash($"{username}:{password}");
+
+        /// <summary>
+        /// Creates a salted PBKDF2 hash of the secret.
+        /// </summary>
+        /// <param name="secret">The password to hash.</param>
+        /// <returns>The hash of the password.</returns>
+        public static string CreateHash(string secret) {
+            Guard.ArgumentNotNull(secret, nameof(secret));
+            var salt = Tools.Crypto.GenerateCryptographicallyRandomBytes(SALT_BYTE_SIZE);
+            var hash = PBKDF2.DeriveKey(secret, salt, PBKDF2_ITERATIONS, HASH_BYTE_SIZE);
+            return PBKDF2_ITERATIONS + ":" + Convert.ToBase64String(salt) + ":" + Convert.ToBase64String(hash);
+        }
+
+
+        /// <summary>
+        /// Validates a secret given a hash of the correct one.
+        /// </summary>
+        /// <param name="username">The username to check</param>
+		/// <param name="password">The password to check</param>
+        /// <param name="correctHash">A hash of the correct secret</param>
+        /// <returns>True if the secret is correct. False otherwise.</returns>
+        public static bool ValidatePassword(string username, string password, string correctHash) 
+			=> ValidatePassword($"{username}:{password}", correctHash);
+
+
+		/// <summary>
+		/// Validates a secret given a hash of the correct one.
+		/// </summary>
+		/// <param name="secret">The secret to check.</param>
+		/// <param name="correctHash">A hash of the correct secret.</param>
+		/// <returns>True if the secret is correct. False otherwise.</returns>
+		public static bool ValidatePassword(string secret, string correctHash) {
             // Extract the parameters from the hash
             char[] delimiter = {':'};
             var split = correctHash.Split(delimiter);
             var iterations = Int32.Parse(split[ITERATION_INDEX]);
             var salt = Convert.FromBase64String(split[SALT_INDEX]);
             var hash = Convert.FromBase64String(split[PBKDF2_INDEX]);
-            var testHash = PBKDF2.DeriveKey(password, salt, iterations, hash.Length);
+            var testHash = PBKDF2.DeriveKey(secret, salt, iterations, hash.Length);
             return SlowEquals(hash, testHash);
         }
 

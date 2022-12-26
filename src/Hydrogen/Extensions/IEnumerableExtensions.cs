@@ -49,6 +49,10 @@ namespace Hydrogen {
 			}
 		}
 
+		public static bool TrySingle<TItem>(this IEnumerable<TItem> enumerable, Func<TItem, bool> predicate, out TItem value) {
+			value = enumerable.SingleOrDefault(predicate);
+			return value.Equals(default);
+		}
 
 		public static IEnumerable<TItem> ToEmptyIfNull<TItem>(this IEnumerable<TItem> enumerable) => enumerable ?? Enumerable.Empty<TItem>();
 

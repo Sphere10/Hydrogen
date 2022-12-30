@@ -274,6 +274,10 @@ namespace Hydrogen {
 			return String.Format(_string, _params);
 		}
 
+		public static string FormatWithDictionary(this string _string, IDictionary<string, string> userTokenResolver, bool recursive = false)
+			=> StringFormatter.FormatWithDictionary(_string, userTokenResolver.ToDictionary(x => x.Key, x => (object)x.Value), recursive);
+
+
 		public static string FormatWithDictionary(this string _string, IDictionary<string, object> userTokenResolver, bool recursive = false)
 			=> StringFormatter.FormatWithDictionary(_string, userTokenResolver, recursive);
 

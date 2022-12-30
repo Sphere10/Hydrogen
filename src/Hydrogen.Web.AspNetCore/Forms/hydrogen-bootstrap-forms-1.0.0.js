@@ -101,7 +101,7 @@ function F_Success(formId, result) {
 
 function F_Error(formId, status, error) {
     var alertType = "danger";
-    var alertHeader = "Apologies";
+    var alertHeader = "";
     var alertIcon = "fa fa-exclamation";
     F_ShowError(formId, alertType, alertIcon, alertHeader, status + '-' + error);
 }

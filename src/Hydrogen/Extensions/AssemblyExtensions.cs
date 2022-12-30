@@ -37,12 +37,14 @@ namespace Hydrogen {
 
 		public static string GetEmbeddedResourceString(this Assembly assembly, string resourceName) {
 			using var stream = assembly.GetManifestResourceStream(resourceName);
+			Guard.Ensure(stream != null, $"No embedded resource with name 'resourceName' was found");
 			using var reader = new StreamReader(stream);
 			return Convert.ToString(reader.ReadToEnd());
 		}
 
 		public static void ExtractEmbeddedResource(this Assembly assembly, string resourceName, string filePath, bool createDirectories = false) {
 			using var stream = assembly.GetManifestResourceStream(resourceName);
+			Guard.Ensure(stream != null, $"No embedded resource with name 'resourceName' was found");
 			if (!File.Exists(filePath))
 				Tools.FileSystem.CreateBlankFile(filePath, createDirectories);
 			Tools.FileSystem.WriteAllBytes(filePath, stream);

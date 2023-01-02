@@ -23,16 +23,15 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 
 namespace Hydrogen {
-
-
 	public static class IEnumerableExtensions {
 
-		public static IEnumerable<TItem> Visit<TItem>(this IEnumerable<TItem> graph, Func<TItem, IEnumerable<TItem>> edgeIterator, IEqualityComparer<TItem> comparer = null) {
+		public static IEnumerable<TItem> Visit<TItem>(this IEnumerable<TItem> nodes, Func<TItem, IEnumerable<TItem>> edgeIterator, Func<TItem, bool> discriminator = null, IEqualityComparer<TItem> comparer = null) {
+			discriminator ??= _ => true;
 			var visited = new HashSet<TItem>(comparer ?? EqualityComparer<TItem>.Default);
-			return VisitInternal(graph);
+			return VisitInternal(nodes);
 
 			IEnumerable<TItem> VisitInternal(IEnumerable<TItem> nodes) {
-				if (graph == null)
+				if (nodes == null)
 					yield break;
 
 				foreach(var node in nodes) {
@@ -41,6 +40,10 @@ namespace Hydrogen {
 
 					if (visited.Contains(node))
 						continue;
+
+					if (!discriminator(node))
+						continue;
+
 					yield return node;
 					visited.Add(node);
 					foreach (var connectedNode in VisitInternal(edgeIterator(node)))

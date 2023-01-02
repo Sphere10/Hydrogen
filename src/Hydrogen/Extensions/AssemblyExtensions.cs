@@ -71,8 +71,20 @@ namespace Hydrogen {
 
 		}
 
+		public static IEnumerable<Assembly> GetReferencedAssemblies(this AppDomain domain, Func<AssemblyName, bool> shouldDrillDown = null) {
+			shouldDrillDown ??= _ => true;
+			return domain
+				.GetAssemblies().Visit( 
+					x => x
+					     .GetReferencedAssemblies()
+					     .Where(shouldDrillDown)
+						 .Select(Assembly.Load),
+					x => shouldDrillDown(x.GetName())
+				); 
+		}
+
 		public static IEnumerable<Assembly> GetNonFrameworkAssemblies(this AppDomain domain) {
-			return domain.GetAssemblies().Where(x => !FrameworkPrefixes.Any(p => x.FullName.StartsWith(p)));
+			return domain.GetReferencedAssemblies(n => !FrameworkPrefixes.Any(p => n.FullName.StartsWith(p)));
 		}
 		public static IEnumerable<Type> GetDerivedTypes<T>(this Assembly assembly) {
 			return assembly.GetDerivedTypes(typeof(T));

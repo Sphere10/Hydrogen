@@ -5,10 +5,12 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Security.Claims;
+using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Microsoft.Extensions.Hosting;
 
 namespace Hydrogen.Web.AspNetCore;
 public static class HtmlHelperExtensions {
@@ -94,8 +96,6 @@ public static class HtmlHelperExtensions {
 		return htmlHelper.PasswordFor(expression, attributes?.ToDictionary(x => x.Key, x => x.Value as object));
 	}
 
-	
-
 	public static IHtmlContent BootstrapTextAreaFor<T, TProperty>(this IHtmlHelper<T> htmlHelper, Expression<Func<T, TProperty>> expression, int approxRows = 5, AttributeDictionary attributes = null){
 		Guard.ArgumentInRange(approxRows, 1, 9999, nameof(approxRows));
 		var member = expression.ResolveMember();
@@ -125,8 +125,6 @@ public static class HtmlHelperExtensions {
 
 		return htmlHelper.TextAreaFor(expression, attributes?.ToDictionary(x => x.Key, x => x.Value as object));
 	}
-
-
 
 	public static IHtmlContent BootstrapDropDownListFor<T, TProperty>(this IHtmlHelper<T> htmlHelper, Expression<Func<T, TProperty>> expression, IEnumerable<SelectListItem> selectList, AttributeDictionary attributes = null, bool useChoicesJS = true){
 		var member = expression.ResolveMember();
@@ -158,6 +156,81 @@ public static class HtmlHelperExtensions {
 		// @Html.DropDownListFor(o => o.Budget, budgets, "Estimated Budget", new { @class = "form-select input-validated", @data_choices=""  })
 	}
 
+	public static IHtmlContent BootstrapCheckBoxAndLabelFor<T>(this IHtmlHelper<T> htmlHelper, Expression<Func<T, bool>> expression, AttributeDictionary inputAttributes = null, AttributeDictionary labelAttributes = null){
+		var member = expression.ResolveMember();
+		var display = member.TryGetCustomAttributeOfType<DisplayNameAttribute>(true, out var displayName) ? displayName.DisplayName : string.Empty;
+		if (member.HasAttribute<RequiredAttribute>(true)) {
+			display += " *";
+		}
+		var hasError = htmlHelper.ViewData.ModelState.TryGetValue(member.Name, out var value ) && value.ValidationState == ModelValidationState.Invalid;
+		
+		var htmlContentBuilder = new HtmlContentBuilder();
+		
+		htmlContentBuilder.AppendHtml(
+			htmlHelper.Raw(
+				"""
+				<div class="form-check">
+				""" 
+			)
+		);
+
+		htmlContentBuilder.AppendHtml( WriteCheckbox() );
+		htmlContentBuilder.AppendHtml( WriteLabel() );
+
+		htmlContentBuilder.AppendHtml(
+			htmlHelper.Raw(
+				"""
+				</div>
+				"""
+			)	
+		);
+		
+		return htmlContentBuilder.ToHtmlContent(HtmlEncoder.Default);
+
+		#region Nested Functions
+
+		IHtmlContent WriteCheckbox() {
+
+			inputAttributes ??= new AttributeDictionary();
+			if (!inputAttributes.ContainsKey("class"))
+				inputAttributes["class"] = string.Empty;
+
+			inputAttributes["placeholder"] = display;
+			inputAttributes["class"] += $" form-check-input";
+	
+
+			if (hasError) {
+				inputAttributes["class"] += $" is-invalid";
+				inputAttributes["data-bs-toggle"] = "tooltip";
+				inputAttributes["data-bs-placement"] = "top";
+				inputAttributes["data-bs-original-title"] = value.Errors.Select(x => x.ErrorMessage).ToDelimittedString(" ");
+			}
+
+			return htmlHelper.CheckBoxFor(expression, inputAttributes?.ToDictionary(x => x.Key, x => x.Value as object));
+		}
+
+		IHtmlContent WriteLabel() {
+			labelAttributes ??= new AttributeDictionary();
+			if (!labelAttributes.ContainsKey("class"))
+				labelAttributes["class"] = string.Empty;
+
+			labelAttributes["placeholder"] = display;
+			labelAttributes["class"] += $" form-check-label";
+	
+
+			// TODO: remove error stuff from label?
+			if (hasError) {
+				labelAttributes["class"] += $" is-invalid";
+				labelAttributes["data-bs-toggle"] = "tooltip";
+				labelAttributes["data-bs-placement"] = "top";
+				labelAttributes["data-bs-original-title"] = value.Errors.Select(x => x.ErrorMessage).ToDelimittedString(" ");
+			}
+
+			return htmlHelper.LabelFor(expression, labelAttributes?.ToDictionary(x => x.Key, x => x.Value as object));
+		}
+
+		#endregion
+	}
 
 }
 

@@ -13,11 +13,13 @@
 
 using System;
 using System.IO;
+using System.Linq;
 using System.Xml.Serialization;
 using System.Text;
 using System.Xml;
 using Hydrogen;
 using Hydrogen.Data;
+using System.Xml.Linq;
 
 namespace Tools {
 	/// <summary>
@@ -126,10 +128,13 @@ namespace Tools {
 			return CachedSerializers[type].Deserialize(reader);
 		}
 
-		public static string WriteToString<T>(T obj) {
+		public static string WriteToString<T>(T obj) 
+			=> WriteToString(obj, Encoding.UTF8);
+
+		public static string WriteToString<T>(T obj, Encoding encoding) {
 			string retval = string.Empty;
-			using (TextWriter writer = new StringWriter()) {
-				Write(obj, Encoding.Unicode, writer);
+			using (TextWriter writer = new StringWriterEx(encoding)) {
+				Write(obj, encoding, writer);
 				retval = writer.ToString();
 			}
 			return retval;
@@ -139,7 +144,7 @@ namespace Tools {
 			WriteToFile<T>(filename, obj, Encoding.UTF8, fileMode);
 		}
 
-		public static void WriteToFile<T>(string filename, T obj, Encoding encoding, FileMode fileMode = FileMode.Create) {
+		public static void WriteToFile<T>(string filename, T obj, Encoding encoding, FileMode fileMode = FileMode.Create, string xmlNamespace = null) {
 			using (var stream = new FileStream(filename, fileMode)) {
 				using (var writer = new StreamWriter(stream, encoding)) {
 					Write(obj, encoding, writer);
@@ -149,11 +154,19 @@ namespace Tools {
 		}
 
 		public static void Write<T>(T obj, Encoding encoding, TextWriter writer) {
-			using (var xmlWriter = XmlWriter.Create(writer, new XmlWriterSettings { Indent = true })) {
-				CachedSerializers[obj.GetType()].Serialize(xmlWriter, obj, new XmlSerializerNamespaces(new[] { XmlQualifiedName.Empty }));
+			Guard.ArgumentNotNull(obj, nameof(obj));
+			Guard.ArgumentNotNull(encoding, nameof(encoding));
+			Guard.ArgumentNotNull(writer, nameof(writer));
+
+			using (var xmlWriter = XmlWriter.Create(writer, new XmlWriterSettings { Indent = true, Encoding = encoding})) {
+				var xmlns = XmlQualifiedName.Empty;
+				var xmlRoot = obj.GetType().GetCustomAttributesOfType<XmlRootAttribute>(true).FirstOrDefault();
+				if (xmlRoot != null && !string.IsNullOrWhiteSpace(xmlRoot.Namespace)) {
+					xmlns = new XmlQualifiedName("", xmlRoot.Namespace);
+				}
+				CachedSerializers[obj.GetType()].Serialize(xmlWriter, obj, new XmlSerializerNamespaces(new[] { xmlns }));
 			}
 		}
-
 
 		public static string DeepWriteToString<T>(T obj) {
 			var deepSerializer = new XmlDeepSerializer();

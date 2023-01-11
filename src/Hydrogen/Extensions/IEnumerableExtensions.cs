@@ -466,8 +466,7 @@ namespace Hydrogen {
 
 		public static async Task ForEachAsync<T>(this IEnumerable<T> source, Func<T, Task> asyncAction, CancellationToken cancellationToken) {
 			foreach (var value in source) {
-				if (cancellationToken.IsCancellationRequested)
-					throw new OperationCanceledException(cancellationToken);
+				cancellationToken.ThrowIfCancellationRequested();
 				await asyncAction(value).WithCancellationToken(cancellationToken);
 			}
 		}

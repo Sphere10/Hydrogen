@@ -37,7 +37,7 @@ namespace Tools {
 
 
 
-        public static Func<bool> IsInExceptionContext { get; set; } = () => false;  // this has to be set by platform-specific initialization since it's broken in .NET standard, works in .NET Core 3+ or .NET 
+//        public static Func<bool> IsInExceptionContext => throw new NotSupportedException(".NET Standard & Core no longer support this. Refactor your code to avoid it");
 	        //=> Marshal.GetExceptionPointers() != IntPtr.Zero ||  Marshal.GetExceptionCode() != 0;
 
         public static bool IsDebugBuild {

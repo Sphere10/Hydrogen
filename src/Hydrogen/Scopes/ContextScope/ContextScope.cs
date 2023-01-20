@@ -53,10 +53,8 @@ public abstract class ContextScope : ScopeBase, IContextScope {
 
 	protected bool IsRootScope => ReferenceEquals(this, RootScope);
 
-	protected bool InException { get; set; }
 
 	protected sealed override void OnScopeEnd() {
-		InException = Tools.Runtime.IsInExceptionContext();
 		OnScopeEndInternal();
 		if (IsRootScope) {
 			CallContext.LogicalSetData(ContextID, null);
@@ -65,7 +63,6 @@ public abstract class ContextScope : ScopeBase, IContextScope {
 	}
 
 	protected sealed override async ValueTask OnScopeEndAsync() {
-		InException = Tools.Runtime.IsInExceptionContext();
 		await OnScopeEndInternalAsync();
 		if (IsRootScope) {
 			CallContext.LogicalSetData(ContextID, null);

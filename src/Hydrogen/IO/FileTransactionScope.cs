@@ -11,7 +11,6 @@ namespace Hydrogen {
 
 		private FileTransactionScope(string transactionFile, string uncommittedPageDir, ContextScopePolicy policy)
 			: base(policy, ContextIDPrefix) {
-			DefaultCloseAction = TransactionAction.Rollback;
 			TransactionFile = this.IsRootScope ? transactionFile : RootScope.TransactionFile;
 			PagePath = uncommittedPageDir;
 		}

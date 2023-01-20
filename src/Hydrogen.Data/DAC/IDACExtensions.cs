@@ -30,7 +30,7 @@ namespace Hydrogen.Data {
         }
 
         public static DACScope BeginDirtyReadScope(this IDAC dac, bool openConnection = true) {
-            var scope = new DACScope(dac, ContextScopePolicy.None, openConnection, defaultCloseAction: TransactionAction.Rollback);
+            var scope = new DACScope(dac, ContextScopePolicy.None, openConnection);
             scope.BeginTransaction(IsolationLevel.ReadUncommitted);
             return scope;
         }

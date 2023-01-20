@@ -39,8 +39,6 @@ public abstract class TransactionalScopeBase<TTransaction> : ContextScope, ITran
 		_scopeHasOpenTransaction = false;
 	}
 
-	public TransactionAction? DefaultCloseAction { get; init; } = null;
-
 	public TTransaction Transaction { get; private set; }
 
 	public virtual bool ParticipatesWithinTransaction => Transaction != null;
@@ -213,18 +211,6 @@ public abstract class TransactionalScopeBase<TTransaction> : ContextScope, ITran
 	protected abstract Task RollbackInternalAsync(TTransaction transaction);
 
 	protected sealed override void OnScopeEndInternal() {
-		if (!InException && _scopeHasOpenTransaction && DefaultCloseAction.HasValue) {
-			switch (DefaultCloseAction.Value) {
-				case TransactionAction.Commit:
-					Commit();
-					break;
-				case TransactionAction.Rollback:
-					Rollback();
-					break;
-				default:
-					throw new NotSupportedException(DefaultCloseAction.Value.ToString());
-			}
-		}
 		var scopeWasInOpenTransaction = _scopeHasOpenTransaction;
 		var errors = new List<Exception>();
 		if (Transaction != null && _scopeOwnsTransaction) {
@@ -234,35 +220,9 @@ public abstract class TransactionalScopeBase<TTransaction> : ContextScope, ITran
 		// Allow sub-class to cleanup
 		OnTransactionalScopeEnd(errors);
 
-		if (scopeWasInOpenTransaction && !InException) {
-			errors.Add(new SoftwareException("DacScope transaction was left open. Please call Commit or Rollback explicitly to close the transaction."));
-		}
-
-		if (!InException) {
-			switch (errors.Count) {
-				case 0:
-					break;
-				case 1:
-					throw errors[0];
-				default:
-					throw new AggregateException(errors);
-			}
-		}
 	}
 
 	protected sealed override async ValueTask OnScopeEndInternalAsync() {
-		if (!InException && _scopeHasOpenTransaction && DefaultCloseAction.HasValue) {
-			switch (DefaultCloseAction.Value) {
-				case TransactionAction.Commit:
-					await CommitAsync();
-					break;
-				case TransactionAction.Rollback:
-					await RollbackAsync();
-					break;
-				default:
-					throw new NotSupportedException(DefaultCloseAction.Value.ToString());
-			}
-		}
 		var scopeWasInOpenTransaction = _scopeHasOpenTransaction;
 		var errors = new List<Exception>();
 		if (Transaction != null && _scopeOwnsTransaction) {
@@ -271,21 +231,6 @@ public abstract class TransactionalScopeBase<TTransaction> : ContextScope, ITran
 
 		// Allow sub-class to cleanup
 		await OnTransactionalScopeEndAsync(errors);
-
-		if (scopeWasInOpenTransaction && !InException) {
-			errors.Add(new SoftwareException("DacScope transaction was left open. Please call Commit or Rollback explicitly to close the transaction."));
-		}
-
-		if (!InException) {
-			switch (errors.Count) {
-				case 0:
-					break;
-				case 1:
-					throw errors[0];
-				default:
-					throw new AggregateException(errors);
-			}
-		}
 	}
 
 	protected override void OnContextEnd() {

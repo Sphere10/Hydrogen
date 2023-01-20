@@ -26,9 +26,8 @@ public sealed class DACScope : SyncTransactionalScope<IDbTransaction> {
 	private bool _withinSystemTransactionScope;
 	private IsolationLevel _transactionIsolationLevel;
 
-	internal DACScope(IDAC dac, ContextScopePolicy policy, bool openConnection, string contextPrefix = DefaultContextPrefix, TransactionAction? defaultCloseAction = null)
+	internal DACScope(IDAC dac, ContextScopePolicy policy, bool openConnection, string contextPrefix = DefaultContextPrefix)
 		: base(policy, string.Format(ContextNameTemplate, contextPrefix, dac.ConnectionString)) {
-		DefaultCloseAction = defaultCloseAction;
 		DAC = dac ?? throw new ArgumentNullException(nameof(dac));
 		if (IsRootScope) {
 			_connection = new RestrictedConnection(DAC.CreateConnection());

@@ -49,7 +49,7 @@ namespace Hydrogen.Web.AspNetCore {
 				? default(TProperty)
 				: expression.Compile()(htmlHelper.ViewData.Model);
 
-			return htmlHelper.DropDownList(inputName, Tools.Web.Html.ToSelectList(typeof(TProperty), value as Enum));
+			return htmlHelper.DropDownList(inputName, Tools.Web.AspNetCore.ToSelectList(typeof(TProperty), value as Enum));
 		}
 
 

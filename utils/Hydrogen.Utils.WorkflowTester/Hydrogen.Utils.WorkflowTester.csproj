@@ -9,8 +9,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\workflow-core\src\providers\WorkflowCore.Persistence.SqlServer\WorkflowCore.Persistence.SqlServer.csproj" />
-    <ProjectReference Include="..\..\..\..\workflow-core\src\WorkflowCore\WorkflowCore.csproj" />
+    <PackageReference Include="WorkflowCore.Persistence.EntityFramework" Version="3.8.1" />
+    <PackageReference Include="WorkflowCore.Persistence.SqlServer" Version="3.8.1" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\src\Hydrogen.Application\Hydrogen.Application.csproj" />
     <ProjectReference Include="..\..\src\Hydrogen.Windows.Forms\Hydrogen.Windows.Forms.csproj" />
     <ProjectReference Include="..\..\src\Hydrogen.Windows\Hydrogen.Windows.csproj" />

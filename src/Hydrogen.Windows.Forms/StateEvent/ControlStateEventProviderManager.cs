@@ -41,10 +41,12 @@ namespace Hydrogen.Windows.Forms {
 
         public void Refresh() {
             _controlStateEventProviders.Clear();
-            foreach (var eventProvider in NamedLookupInfo.GetMap(typeof(IControlStateEventProvider))) {
-				var controlType = Tools.Object.ResolveType(eventProvider.Key);
-                _controlStateEventProviders.Add(controlType);
-            }
+            if (NamedLookupInfo.TryGetMap(typeof(IControlStateEventProvider), out var serviceMap)) {
+	            foreach (var eventProvider in serviceMap) {
+					var controlType = Tools.Object.ResolveType(eventProvider.Key);
+	                _controlStateEventProviders.Add(controlType);
+	            }
+			}
         }
 
         public bool HasControlStateProvider<TControl>() {

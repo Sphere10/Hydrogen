@@ -12,6 +12,7 @@
 //-----------------------------------------------------------------------
 
 using System;
+using System.Data.SqlTypes;
 using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -36,8 +37,8 @@ namespace Tools {
 
 
 
-        public static bool IsInExceptionContext()
-	        => /*Marshal.GetExceptionPointers() != IntPtr.Zero || */ Marshal.GetExceptionCode() != 0;
+        public static Func<bool> IsInExceptionContext { get; set; } = () => false;  // this has to be set by platform-specific initialization since it's broken in .NET standard, works in .NET Core 3+ or .NET 
+	        //=> Marshal.GetExceptionPointers() != IntPtr.Zero ||  Marshal.GetExceptionCode() != 0;
 
         public static bool IsDebugBuild {
             get {

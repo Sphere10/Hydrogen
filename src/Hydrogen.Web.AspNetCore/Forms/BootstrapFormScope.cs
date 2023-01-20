@@ -13,19 +13,24 @@ public sealed class BootstrapFormScope<TModel> : IDisposable where TModel : Form
 	public const string DefaultFormClasses = "";
 	public const string ButtonHtmlSnippet =
 		"""
-<button class="btn btn-primary {class}" type="submit" form="{formId}">
-    <span id="{formId}_left_spinner" class="spinner-border spinner-border-sm me-2 invisible" role="status" aria-hidden="true"></span>
-    {text}
-    <span id="{formId}_right_spinner" class="spinner-border spinner-border-sm ms-2 invisible" role="status" aria-hidden="true"></span>
-</button>
-""";
+		<button class="btn btn-primary {class}" type="submit" form="{formId}">
+		    <span id="{formId}_left_spinner" class="spinner-border spinner-border-sm me-2 invisible" role="status" aria-hidden="true"></span>
+		    {text}
+		    <span id="{formId}_right_spinner" class="spinner-border spinner-border-sm ms-2 invisible" role="status" aria-hidden="true"></span>
+		</button>
+		""";
 
-	public const string FormEndHtmlSnippet = """
-<div id="{formId}_result_marker" class="invisible"></div>
-<script language="javascript">
-    F_Init('{formId}', {formOptions});
-</script>
-""";
+	public const string FormMessageMarker =  
+		"""
+		<div id="{formId}_message_marker" class="invisible"></div>
+		""";
+
+	public const string FormEndHtmlSnippet = 
+		"""
+		<script language="javascript">
+		    F_Init('{formId}', {formOptions});
+		</script>
+		""";
 
 	public const string FormBlockerOverlaySnippet = """<div class="form-blocker-overlay invisible" style="position: absolute; width: 100%; height: 100%; display:block; z-index: 999; background-color:white; opacity: 0.25;"></div>""";
 	public const string SmallerFormBlockerOverlaySnippet = """<div class="form-blocker-overlay invisible" style="position: absolute; width: 90%; height: 90%; display:block; z-index: 999; background-color:white; opacity: 0.25;"></div>""";
@@ -34,7 +39,7 @@ public sealed class BootstrapFormScope<TModel> : IDisposable where TModel : Form
 	private readonly string _formClass;
 	private readonly IHtmlHelper _htmlHelper;
 	private readonly FormScopeOptions _options;
-	
+	private bool _messageMarkerWritten;	
 
 	public BootstrapFormScope(IHtmlHelper<TModel> htmlHelper, string action, string controller, TModel formModel, AttributeDictionary attributes = null, FormScopeOptions options = FormScopeOptions.Default) 
 		: this(htmlHelper, action, controller, null, formModel, attributes, options) {
@@ -55,6 +60,7 @@ public sealed class BootstrapFormScope<TModel> : IDisposable where TModel : Form
 		_htmlHelper = htmlHelper;
 		_formClass = DefaultFormClasses;
 		_options = options;
+		_messageMarkerWritten = false;
 
 		if (options.HasFlag(FormScopeOptions.BotProtect))
 			url = url.ToBase64();
@@ -84,21 +90,33 @@ public sealed class BootstrapFormScope<TModel> : IDisposable where TModel : Form
 		}
 	}
 
+	public string FormID => _formID;
+
+	public IHtmlContent MessageMarker() {
+		Guard.Ensure(_messageMarkerWritten == false, "Message marker has already been written");
+		_messageMarkerWritten = true;
+		return new HtmlString(FormatText(FormMessageMarker));
+	}
+
 	public void Dispose() {
-		Write(
-			Tools.Text.FormatWithDictionary(FormEndHtmlSnippet, 
-				new Dictionary<string, object> { 
-					["formId"] = _formID,
-					["formOptions"] = JsonConvert.SerializeObject(ToSerializableSurrogate(_options), Formatting.None)
-				},
-				false
-			)
-		);
+		if (!_messageMarkerWritten)
+			Write(MessageMarker());
+		Write(FormatText(FormEndHtmlSnippet));
 		if (!_options.HasFlag(FormScopeOptions.OmitFormTag)) {
 			_htmlHelper.EndForm();
 		}
 	}
 
+	private string FormatText(string text) 
+		=> Tools.Text.FormatWithDictionary(
+			text, 
+			new Dictionary<string, object> { 
+				["formId"] = _formID,
+				["formOptions"] = JsonConvert.SerializeObject(ToSerializableSurrogate(_options), Formatting.None)
+			},
+			false
+		);
+	
 	private void Write(HtmlString text) {
 		Write(text.Value);
 	}
@@ -123,17 +141,25 @@ public sealed class BootstrapFormScope<TModel> : IDisposable where TModel : Form
 
 	private SerializableFormScopeOptions ToSerializableSurrogate(FormScopeOptions options) {
 		var result = new SerializableFormScopeOptions();
+		result.UseLoadingOverlay = options.HasFlag(FormScopeOptions.UseLoadingOverlay);
 		result.ClearOnSuccess = options.HasFlag(FormScopeOptions.ClearOnSuccess);
 		result.BotProtect = options.HasFlag(FormScopeOptions.BotProtect);
+		result.HttpMethod = options.HasFlag(FormScopeOptions.UseGet) ? "GET" : "POST";
 		return result;
 	}
 
 	private class SerializableFormScopeOptions {
+
+		[JsonProperty("useLoadingOverlay")]
+		public bool UseLoadingOverlay { get; set; }
 
 		[JsonProperty("clearOnSuccess")]
 		public bool ClearOnSuccess { get; set; }
 
 		[JsonProperty("botProtect")]
 		public bool BotProtect { get; set; }
+
+		[JsonProperty("httpMethod")]
+		public string HttpMethod { get; set; }
 	}
 }

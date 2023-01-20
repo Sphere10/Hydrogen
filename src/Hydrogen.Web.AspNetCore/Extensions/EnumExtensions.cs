@@ -18,10 +18,10 @@ namespace Hydrogen.Web.AspNetCore {
 
     public static class EnumExtensions {
 
-        public static SelectList ToSelectList<TEnum>(this TEnum enumObj)
-              where TEnum : struct, IComparable, IFormattable, IConvertible {
-            return Tools.Web.AspNetCore.ToSelectList<TEnum>(enumObj);
-        }
+        //public static SelectList ToSelectList<TEnum>(this TEnum enumObj)
+        //      where TEnum : struct, IComparable, IFormattable, IConvertible {
+        //    return Tools.Web.AspNetCore.ToSelectList<TEnum>(enumObj);
+        //}
 
         //public static SelectList ToSelectList<TEnum>(this TEnum @enum)
 	       // where TEnum : struct, IComparable, IFormattable, IConvertible {

@@ -15,7 +15,7 @@ using Microsoft.Extensions.Hosting;
 namespace Hydrogen.Web.AspNetCore;
 public static class HtmlHelperExtensions {
 
-	public static IDisposable BeginBootstrapForm<TModel>(this IHtmlHelper<TModel> htmlHelper, string url, TModel formModel, AttributeDictionary attributes = null, FormScopeOptions options = FormScopeOptions.Default) where TModel : FormModelBase {
+	public static BootstrapFormScope<TModel> BeginBootstrapForm<TModel>(this IHtmlHelper<TModel> htmlHelper, string url, TModel formModel, AttributeDictionary attributes = null, FormScopeOptions options = FormScopeOptions.Default) where TModel : FormModelBase {
 		return new BootstrapFormScope<TModel>(htmlHelper, url, formModel, attributes, options);
 	}
 
@@ -44,7 +44,7 @@ public static class HtmlHelperExtensions {
 		return htmlHelper.LabelFor(expression, display, attributes?.ToDictionary(x => x.Key, x => x.Value as object));
 	}
 
-	public static IHtmlContent BootstrapTextBoxFor<T, TProperty>(this IHtmlHelper<T> htmlHelper, Expression<Func<T, TProperty>> expression, AttributeDictionary attributes = null){
+	public static IHtmlContent BootstrapTextBoxFor<T, TProperty>(this IHtmlHelper<T> htmlHelper, Expression<Func<T, TProperty>> expression, AttributeDictionary attributes = null, bool @readonly = false){
 		var member = expression.ResolveMember();
 		var display = member.TryGetCustomAttributeOfType<DisplayNameAttribute>(true, out var displayName) ? displayName.DisplayName : string.Empty;
 		if (member.HasAttribute<RequiredAttribute>(true)) {
@@ -67,7 +67,11 @@ public static class HtmlHelperExtensions {
 			attributes["data-bs-original-title"] = value.Errors.Select(x => x.ErrorMessage).ToDelimittedString(" ");
 		}
 
-		return htmlHelper.TextBoxFor(expression, display, attributes?.ToDictionary(x => x.Key, x => x.Value as object));
+		if (@readonly) {
+			attributes["readonly"] = string.Empty;
+		}
+
+		return htmlHelper.TextBoxFor(expression, attributes?.ToDictionary(x => x.Key, x => x.Value as object));
 	}
 
 	public static IHtmlContent BootstrapPasswordFor<T, TProperty>(this IHtmlHelper<T> htmlHelper, Expression<Func<T, TProperty>> expression, AttributeDictionary attributes = null){

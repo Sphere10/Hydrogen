@@ -21,8 +21,6 @@ namespace Hydrogen.Data.NHibernate {
                     data.ForEach(session.SaveOrUpdate);
                     transaction.Commit();
                 }
-                session.Flush();
-                session.Close();
             } 
         }
 

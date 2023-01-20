@@ -6,17 +6,18 @@ using NHibernate;
 
 namespace Hydrogen.Data.NHibernate;
 
-public sealed class DataAccessScope : TransactionalScopeBase<ITransaction> {
+public class DataAccessScope : TransactionalScopeBase<ITransaction> {
 	private const string DefaultContextPrefix = "A8BFD7F5-FB72-4105-9E2C-A924E903500F";
 	private const string ContextNameTemplate = "DataAccessScope:{0}:{1}:{2}";
-	private readonly bool _scopeOwnsSession;
 	private IsolationLevel? _transactionIsolationLevel;
+	protected readonly bool ScopeOwnsSession;
+	 
 
-	public DataAccessScope(INHDatabaseManager sessionProvider, DBMSType dbmsType, string connectionString, ContextScopePolicy policy = ContextScopePolicy.None, string contextPrefix = DefaultContextPrefix, TransactionAction? autoTransactionFinalizerAction = null)
+	public DataAccessScope(INHDatabaseManager sessionProvider, DBMSType dbmsType, string connectionString, ContextScopePolicy policy = ContextScopePolicy.None, string contextPrefix = DefaultContextPrefix)
 		: this(sessionProvider, new DBReference(dbmsType, connectionString), policy) {
 	}
 
-	public DataAccessScope(INHDatabaseManager sessionProvider, DBReference databaseReference, ContextScopePolicy policy = ContextScopePolicy.None, string contextPrefix = DefaultContextPrefix, TransactionAction? autoTransactionFinalizerAction = null)
+	public DataAccessScope(INHDatabaseManager sessionProvider, DBReference databaseReference, ContextScopePolicy policy = ContextScopePolicy.None, string contextPrefix = DefaultContextPrefix)
 		: base(policy, string.Format(ContextNameTemplate, contextPrefix, databaseReference.DBMSType, databaseReference.ConnectionString)) {
 		DatabaseReference = databaseReference;
 		var withinSystemTransactionScope = System.Transactions.Transaction.Current != null;
@@ -27,12 +28,12 @@ public sealed class DataAccessScope : TransactionalScopeBase<ITransaction> {
 			var sessionFactory = sessionProvider.OpenDatabase(databaseReference.ConnectionString);
 			Session = sessionFactory.OpenSession();
 			Guard.Ensure(Session != null);
-			_scopeOwnsSession = true;
+			ScopeOwnsSession = true;
 			_transactionIsolationLevel = null;
 		} else {
 			Session = RootScope.Session ?? throw new InternalErrorException("609D85A1-785E-4E80-8429-933D5381B4DA");
 			_transactionIsolationLevel = RootScope._transactionIsolationLevel;
-			_scopeOwnsSession = false;
+			ScopeOwnsSession = false;
 		}
 	}
 
@@ -94,20 +95,18 @@ public sealed class DataAccessScope : TransactionalScopeBase<ITransaction> {
 		=> transaction.RollbackAsync();
 
 	protected override void OnTransactionalScopeEnd(List<Exception> errors) {
-		if (_scopeOwnsSession) {
+		if (ScopeOwnsSession) {
 			Tools.Exceptions.ExecuteCapturingException(Session.Flush, errors);
 			Tools.Exceptions.ExecuteCapturingException(() => Session.Close(), errors);
 			Tools.Exceptions.ExecuteCapturingException(Session.Dispose, errors);
-			//Session = null;
 		}
 	}
 
 	protected override async Task OnTransactionalScopeEndAsync(List<Exception> errors) {
-		if (_scopeOwnsSession) {
+		if (ScopeOwnsSession) {
 			await Session.FlushAsync().IgnoringExceptions(errors);
 			Tools.Exceptions.ExecuteCapturingException(() => Session.Close(), errors);
 			Tools.Exceptions.ExecuteCapturingException(Session.Dispose, errors);
-			//Session = null;
 		}
 	}
 
@@ -116,4 +115,3 @@ public sealed class DataAccessScope : TransactionalScopeBase<ITransaction> {
 	}
 	
 }
-

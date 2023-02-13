@@ -24,7 +24,7 @@ public class MerkleListAdapter<TItem, TList> : ExtendedListDecorator<TItem, TLis
 	}
 
 	public MerkleListAdapter(TList internalList, IItemSerializer<TItem> serializer, CHF hashAlgorithm, Endianness endianness = Endianness.LittleEndian)
-		: this(internalList, new ItemHasher<TItem>(hashAlgorithm, serializer, endianness), new FlatMerkleTree(hashAlgorithm)) {
+		: this(internalList, new ItemDigestor<TItem>(hashAlgorithm, serializer, endianness), new FlatMerkleTree(hashAlgorithm)) {
 	}
 
 	public MerkleListAdapter(TList internalList, IItemHasher<TItem> hasher, IEditableMerkleTree merkleTreeImpl)
@@ -123,7 +123,7 @@ public class MerkleListAdapter<TItem> : MerkleListAdapter<TItem, IExtendedList<T
 	}
 
 	public MerkleListAdapter(IExtendedList<TItem> internalList, IItemSerializer<TItem> serializer, CHF hashAlgorithm)
-		: base(internalList, new ItemHasher<TItem>(hashAlgorithm, serializer), new FlatMerkleTree(hashAlgorithm)) {
+		: base(internalList, new ItemDigestor<TItem>(hashAlgorithm, serializer), new FlatMerkleTree(hashAlgorithm)) {
 	}
 
 	public MerkleListAdapter(IExtendedList<TItem> internalList, IItemHasher<TItem> hasher, IEditableMerkleTree merkleTreeImpl)

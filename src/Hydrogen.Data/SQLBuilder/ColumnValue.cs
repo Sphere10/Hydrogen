@@ -42,7 +42,7 @@ namespace Hydrogen.Data {
 		}
 
 		public override int GetHashCode() {
-			return Tools.Object.CombineHashCodes(ColumnName.GetHashCode(), Value != null ? Value.GetHashCode() : 0);
+			return HashCode.Combine(ColumnName.GetHashCode(), Value != null ? Value.GetHashCode() : 0);
 		}
 	}
 

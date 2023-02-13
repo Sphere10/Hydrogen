@@ -67,7 +67,7 @@ namespace Hydrogen {
 
 
 		public static IItemSerializer<TItem> ToStaticSizeSerializer<TItem>(this IItemSerializer<TItem> serializer, int staticSize) 
-			=> new StaticSizeSerializerAdapter<TItem>(staticSize, serializer);
+			=> new PaddedSerializer<TItem>(staticSize, serializer);
 		
 	}
 }

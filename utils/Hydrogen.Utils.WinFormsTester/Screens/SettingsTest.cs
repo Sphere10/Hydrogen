@@ -91,7 +91,7 @@ namespace Hydrogen.Utils.WinFormsTester {
         [DefaultDate(true, 0, 0, 0, 0, 0, 0, 0)]
         public DateTime FirstRunDate { get; set; }
 
-        [Encrypted]
+        [EncryptedString]
         public string Secret { get; set; } = "Hello!";
 
     }

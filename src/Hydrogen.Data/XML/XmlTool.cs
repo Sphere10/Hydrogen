@@ -186,5 +186,17 @@ namespace Tools {
 			return (T)deepDeserializer.Deserialize(filename);
 		}
 
+		public static bool IsXmlFile(string file) {
+			using var fs = new FileStream(file, FileMode.Open, FileAccess.Read);;
+			using var textReader = new StreamReader(fs);
+			
+			string text;
+			do {
+				text = textReader.ReadLine();
+			} while (text.Trim() == string.Empty);
+			
+			return text.Trim().StartsWith("<?xml");
+			
+		}
 	}
 }

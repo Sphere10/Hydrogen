@@ -20,46 +20,33 @@ using System.Runtime.Serialization;
 using System.Xml.Serialization;
 using System.Text;
 using Hydrogen.Collections;
+using Tools;
 
 namespace Hydrogen {
 
 	[XmlRoot]
 	[DataContract]
-	public class Result {
+	public class Result : IEquatable<Result> {
 		
-		public Result() {
-			ResultCodes = new List<ResultCode>();
-		}
 
-		[XmlIgnore]
-		[IgnoreDataMember]
-		public List<ResultCode> ResultCodes  { get; private set; }
-
-		[XmlIgnore]
-		[IgnoreDataMember]
-		public IEnumerable<string> InformationMessages =>
-			ResultCodes
-				.Where(x => (x.Traits & ResultCodeTraits.InfoMessage) == ResultCodeTraits.InfoMessage)
-				.Select(x => x.Message);
-
-		[XmlIgnore]
-		[IgnoreDataMember]
-		public IEnumerable<ResultCode> InformationCodes =>
-			ResultCodes
-				.Where(x => (x.Traits & ResultCodeTraits.InfoCode) == ResultCodeTraits.InfoCode);
+		//[XmlIgnore]
+		//[IgnoreDataMember]
+		[XmlElement]
+		[DataMember(Name = "resultCodes", EmitDefaultValue = false)]
+		public List<ResultCode> ResultCodes  { get; private set; } = new();
 
 		[XmlIgnore]
 		[IgnoreDataMember]
 		public IEnumerable<string> ErrorMessages =>
 			ResultCodes
-				.Where(x => (x.Traits & ResultCodeTraits.ErrorMessage) == ResultCodeTraits.ErrorMessage)
-				.Select(x => x.Message);
+				.Where(x => x.Type == ResultCodeType.Message && x.Severity == LogLevel.Error)
+				.Select(x => x.Payload);
 
 		[XmlIgnore]
 		[IgnoreDataMember]
 		public IEnumerable<ResultCode> ErrorCodes =>
 			ResultCodes
-				.Where(x => (x.Traits & ResultCodeTraits.ErrorCode) == ResultCodeTraits.ErrorCode);
+				.Where(x => x.Type == ResultCodeType.Enum);
 
 		[XmlIgnore]
 		[IgnoreDataMember]
@@ -67,52 +54,53 @@ namespace Hydrogen {
 
 		[XmlIgnore]
 		[IgnoreDataMember]
-		public bool Failure => ResultCodes.Any(x => x.Traits.HasFlag(ResultCodeTraits.ErrorSeverity));
+		public bool Failure => ResultCodes.Any(x => x.Severity == LogLevel.Error);
 
 		[XmlIgnore]
 		[IgnoreDataMember]
-		public bool HasInformation => ResultCodes.Any(x => x.Traits.HasFlag(ResultCodeTraits.InfoSeverity));
+		public bool HasInformation => ResultCodes.Any() && ResultCodes.All(x => x.Severity != LogLevel.Error);
 
 		public void Add(ResultCode resultCode) {
 			ResultCodes.Add(resultCode);
 		}
 
-		public void AddInfo(string message, params object[] formatArgs) {
-			if (formatArgs != null && formatArgs.Length > 0)
+		public void Add(LogLevel severity, string message, params object[] formatArgs) {
+			if (formatArgs is { Length: > 0 })
 				message = string.Format(message, formatArgs);
-			Add(ResultCode.FromInfo(message));
+			Add(ResultCode.From(severity, message));
 		}
 
-		public void AddInfo(Enum enumValue, params object[] formatArgs) {
+		public void Add(LogLevel severity, Enum enumVal, params object[] formatArgs) {
 			var formatArgsStr = formatArgs?.Select(x => x.ToString()).ToArray();
-			Add(ResultCode.FromInfo(enumValue, formatArgsStr));
+			Add(ResultCode.From(severity, enumVal, formatArgsStr));
 		}
 
-		public void AddError(string message, params object[] formatArgs) {
-			if (formatArgs != null && formatArgs.Length > 0)
-				message = string.Format(message, formatArgs);
-			Add(ResultCode.FromError(message));
-		}
+		public void AddInfo(string message, params object[] formatArgs) 
+			=> Add(LogLevel.Info, message, formatArgs);
 
-		public void AddError(Enum enumValue, params object[] formatArgs) {
-			var formatArgsStr = formatArgs?.Select(x => x.ToString()).ToArray();
-			Add(ResultCode.FromError(enumValue, formatArgsStr));
-		}
+		public void AddInfo(Enum enumValue, params object[] formatArgs) 
+			=> Add(LogLevel.Info, enumValue, formatArgs);
 
-		public void AddException(Exception exception) {
-			AddError(exception.ToDiagnosticString());
-		}
-	
+		public void AddError(string message, params object[] formatArgs) 
+			=> Add(LogLevel.Error, message, formatArgs);
+
+		public void AddError(Enum enumValue, params object[] formatArgs) 
+			=> Add(LogLevel.Info, enumValue, formatArgs);
+
+		public void AddException(Exception exception) 
+			=> AddError(exception.ToDiagnosticString());
+
 		public void Merge(IEnumerable<Result> results) 
 			=> results.ForEach(Merge);
 
-		public void Merge(Result result) {
-			ResultCodes.AddRange(result.ResultCodes);
-		}
+		public void Merge(Result result) 
+			=> ResultCodes.AddRange(result.ResultCodes);
+		
+		public Result CombineWith(IEnumerable<Result> results) 
+			=> Combine(this.ConcatWith(results));
 
-		public Result CombineWith(IEnumerable<Result> results) => Combine(this.ConcatWith(results));
-
-		public static Result Combine(IEnumerable<Result> results) => new() { ResultCodes = results.SelectMany(x => x.ResultCodes).ToList() };
+		public static Result Combine(IEnumerable<Result> results) 
+			=> new() { ResultCodes = results.SelectMany(x => x.ResultCodes).ToList() };
 
 		public void ThrowOnFailure() {
 			if (Failure)
@@ -140,143 +128,115 @@ namespace Hydrogen {
 			var stringBuilder = new StringBuilder();
 			var logger = new TextWriterLogger( new StringWriter(stringBuilder) );
 			foreach(var code in ResultCodes) {
-				var message = 
-					code.Traits.HasFlag(ResultCodeTraits.IsStringValue) ? 
-					code.Message : 
-					code.EnumType.Name + "." + code.EnumValueType.Name;
-
-				if (code.Traits.HasFlag(ResultCodeTraits.ErrorSeverity))
-					logger.Error(message);
-				else if (code.Traits.HasFlag(ResultCodeTraits.InfoSeverity))
-					logger.Info(message);
-				else
-					logger.Debug(message);
+				var message = code.Payload;
+				logger.Log(code.Severity,  message);
 			}
 			return stringBuilder.ToString();
 		}
 
+		public bool Equals(Result other) {
+			if (ReferenceEquals(null, other))
+				return false;
+			if (ReferenceEquals(this, other))
+				return true;
+			return new EnumerableEqualityComparer<ResultCode>().Equals(ResultCodes, other.ResultCodes);
+			
+		}
 		public override bool Equals(object obj) {
-			var resultObj = obj as Result;
-			if (resultObj != null)
-				return Equals(resultObj);
-			return base.Equals(obj);
+			if (ReferenceEquals(null, obj))
+				return false;
+			if (ReferenceEquals(this, obj))
+				return true;
+			if (obj.GetType() != this.GetType())
+				return false;
+			return Equals((Result)obj);
 		}
-
-		public virtual bool Equals(Result other) {
-			var comparer = new EnumerableEqualityComparer<ResultCode>();
-			return comparer.Equals(ResultCodes, other.ResultCodes);
-		}
-
 		public override int GetHashCode() {
 			return (ResultCodes != null ? ResultCodes.GetHashCode() : 0);
 		}
 
 		#region Inner Classes
 
-		public enum ResultCodeTraits {
-			InfoSeverity = 1 << 0,
-			ErrorSeverity = 1 << 1,
-			IsEnumValue = 1 << 2,
-			IsStringValue = 1 << 3,
+		[DataContract]
+		public enum ResultCodeType {
+			[EnumMember(Value = "message")]
+			Message,
 
-			InfoCode = InfoSeverity | IsEnumValue,
-			InfoMessage = InfoSeverity | IsStringValue,
-			ErrorCode = ErrorSeverity | IsEnumValue,
-			ErrorMessage = ErrorSeverity | IsStringValue
+			[EnumMember(Value = "enum")]
+			Enum
 		}
 
 		[XmlRoot("ResultCode")]
 		[DataContract]
-		public class ResultCode {
+		public class ResultCode : IEquatable<ResultCode> {
 
 			[XmlAttribute]
-			[DataMember]
-			public ResultCodeTraits Traits { get; set; }
+			[DataMember( Name = "severity", EmitDefaultValue = false)]
+
+			public LogLevel Severity { get; set; }
+
+			[XmlAttribute]
+			[DataMember( Name = "type", EmitDefaultValue = false)]
+			public ResultCodeType Type { get; set; }
+
 
 			[XmlElement]
-			[DataMember]
-			public string Message { get; set; }
+			[DataMember(Name = "payload", EmitDefaultValue = false)]
+			public string Payload { get; set; }
 
 			[XmlElement]
-			[DataMember]
-			public Type EnumType { get; set; }
-
-			[XmlElement]
-			[DataMember]
-			public Type EnumValueType { get; set; }
-
-			[XmlElement]
-			[DataMember]
+			[DataMember(Name = "formatArgs", EmitDefaultValue = false)]
 			public string[] FormatArgs { get; set; }
 
-			public static ResultCode From(bool error, string stringVal) {
+			public static ResultCode From(LogLevel severity, string stringVal) {
 				return new ResultCode {
-					Traits = (error ? ResultCodeTraits.ErrorSeverity : ResultCodeTraits.InfoSeverity) | ResultCodeTraits.IsStringValue,
-					Message = stringVal
+					Type = ResultCodeType.Message,
+					Severity = severity,
+					Payload = stringVal
 				};
 			}
 
-			public static ResultCode From(bool error, Enum enumVal, params string[] formatArgs) {
+			public static ResultCode From(LogLevel severity, Enum enumVal, params string[] formatArgs) {
 				var enumValType = enumVal.GetType();
 				return new ResultCode {
-					Traits = (error ? ResultCodeTraits.ErrorSeverity : ResultCodeTraits.InfoSeverity) | ResultCodeTraits.IsEnumValue,
-					EnumType = enumValType.GetEnumUnderlyingType(),
-					EnumValueType = enumValType,
+					Type = ResultCodeType.Message,
+					Severity = severity,
+					Payload = enumVal.GetType().AssemblyQualifiedName,
 					FormatArgs = formatArgs
 				};
 			}
 
-			public static ResultCode FromInfo(string stringVal) {
-				return From(false, stringVal);
-			}
 
-			public static ResultCode FromInfo(Enum enumVal, params string[] formatArgs) {
-				return From(false, enumVal, formatArgs);
+			public bool Equals(ResultCode other) {
+				if (ReferenceEquals(null, other))
+					return false;
+				if (ReferenceEquals(this, other))
+					return true;
+				return Severity == other.Severity && Type == other.Type && Payload == other.Payload && Equals(FormatArgs, other.FormatArgs);
 			}
-
-			public static ResultCode FromError(string stringVal) {
-				return From(true, stringVal);
-			}
-
-			public static ResultCode FromError(Enum enumVal, params string[] formatArgs) {
-				return From(true, enumVal, formatArgs);
-			}
-
 			public override bool Equals(object obj) {
-				if (obj is Result resultObj)
-					return Equals(resultObj);
-				return base.Equals(obj);
+				if (ReferenceEquals(null, obj))
+					return false;
+				if (ReferenceEquals(this, obj))
+					return true;
+				if (obj.GetType() != this.GetType())
+					return false;
+				return Equals((ResultCode)obj);
 			}
-
-			public virtual bool Equals(ResultCode other) {
-				return 
-					Traits == other.Traits && 
-					Message == other.Message && 
-					EnumType == other.EnumType && 
-					EnumValueType == other.EnumValueType && 
-					Equals(FormatArgs, other.FormatArgs);
-			}
-
 			public override int GetHashCode() {
-				unchecked {
-					var hashCode = (int)Traits;
-					hashCode = (hashCode * 397) ^ (Message != null ? Message.GetHashCode() : 0);
-					hashCode = (hashCode * 397) ^ (EnumType != null ? EnumType.GetHashCode() : 0);
-					hashCode = (hashCode * 397) ^ (EnumValueType != null ? EnumValueType.GetHashCode() : 0);
-					hashCode = (hashCode * 397) ^ (FormatArgs != null ? FormatArgs.GetHashCode() : 0);
-					return hashCode;
-				}
+				return HashCode.Combine((int)Severity, (int)Type, Payload, FormatArgs);
 			}
 		}
 
 		#endregion
+
 	}
 
 	
 
 	[XmlRoot]
 	[DataContract]
-	public sealed class Result<TValue> : Result {
+	public sealed class Result<TValue> : Result, IEquatable<Result<TValue>> {
 
 		public Result() : this(default) {
 		}
@@ -286,7 +246,7 @@ namespace Hydrogen {
 		}
 
 		[XmlElement]
-		[DataMember]
+		[DataMember(Name = "value", EmitDefaultValue = false)]
 		public TValue Value { get; set; }
 
 		[XmlIgnore]
@@ -321,20 +281,20 @@ namespace Hydrogen {
 			return result.Value;
 		}
 
-		public override bool Equals(object obj) {
-			if (obj is Result<TValue> resultObj)
-				return this.Equals(resultObj);
-			return base.Equals(obj);
+		public bool Equals(Result<TValue> other) {
+			if (ReferenceEquals(null, other))
+				return false;
+			if (ReferenceEquals(this, other))
+				return true;
+			return base.Equals(other) && EqualityComparer<TValue>.Default.Equals(Value, other.Value);
 		}
 
-		public bool Equals(Result<TValue> other) {
-			return EqualityComparer<TValue>.Default.Equals(Value, other.Value) && base.Equals(other);
+		public override bool Equals(object obj) {
+			return ReferenceEquals(this, obj) || obj is Result<TValue> other && Equals(other);
 		}
 
 		public override int GetHashCode() {
-			unchecked {
-				return (base.GetHashCode() * 397) ^ (Value != null ? EqualityComparer<TValue>.Default.GetHashCode(Value) : 0);
-			}
+			return HashCode.Combine(base.GetHashCode(), Value);
 		}
 	}
 

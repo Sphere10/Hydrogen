@@ -77,11 +77,11 @@ namespace Hydrogen.Data {
                     CreateFileForFirstTime();
                     Save();
 					if (File.Exists(Filename)) {
-						var xxx = _useSimpleXmlSerialization ?
+						var surrogate = _useSimpleXmlSerialization ?
 							Tools.Xml.ReadFromFile<SerializableDictionarySurrogate<T1, T2>>(Filename) :
 							Tools.Xml.DeepReadFromFile<SerializableDictionarySurrogate<T1, T2>>(Filename);
-						if (xxx != null) {
-							xxx.ToDictionary(this);
+						if (surrogate != null) {
+							surrogate.ToDictionary(this);
 						}
                     }
                 } catch (Exception innerError) {

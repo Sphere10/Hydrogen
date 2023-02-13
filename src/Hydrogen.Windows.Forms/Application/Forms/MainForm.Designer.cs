@@ -39,7 +39,7 @@ namespace Hydrogen.Windows.Forms {
 			this._menuStrip = new System.Windows.Forms.MenuStrip();
 			this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this._helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.HelpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this._userguideToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this._contextHelpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
@@ -47,7 +47,7 @@ namespace Hydrogen.Windows.Forms {
 			this.sendACommentToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.reportABugToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
-			this._purchaseFullVersionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.PurchaseFullVersionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this._aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this._statusStrip = new System.Windows.Forms.StatusStrip();
 			this._statusLabel = new System.Windows.Forms.ToolStripStatusLabel();
@@ -60,7 +60,7 @@ namespace Hydrogen.Windows.Forms {
 			// 
 			this._menuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.fileToolStripMenuItem,
-            this._helpToolStripMenuItem});
+            this.HelpToolStripMenuItem});
 			this._menuStrip.Location = new System.Drawing.Point(0, 0);
 			this._menuStrip.Name = "_menuStrip";
 			this._menuStrip.Size = new System.Drawing.Size(664, 24);
@@ -84,7 +84,7 @@ namespace Hydrogen.Windows.Forms {
 			// 
 			// _helpToolStripMenuItem
 			// 
-			this._helpToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+			this.HelpToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this._userguideToolStripMenuItem,
             this._contextHelpToolStripMenuItem,
             this.toolStripSeparator1,
@@ -92,11 +92,11 @@ namespace Hydrogen.Windows.Forms {
             this.sendACommentToolStripMenuItem,
             this.reportABugToolStripMenuItem,
             this.toolStripSeparator4,
-            this._purchaseFullVersionToolStripMenuItem,
+            this.PurchaseFullVersionToolStripMenuItem,
             this._aboutToolStripMenuItem});
-			this._helpToolStripMenuItem.Name = "_helpToolStripMenuItem";
-			this._helpToolStripMenuItem.Size = new System.Drawing.Size(44, 20);
-			this._helpToolStripMenuItem.Text = "Help";
+			this.HelpToolStripMenuItem.Name = "HelpToolStripMenuItem";
+			this.HelpToolStripMenuItem.Size = new System.Drawing.Size(44, 20);
+			this.HelpToolStripMenuItem.Text = "Help";
 			// 
 			// _userguideToolStripMenuItem
 			// 
@@ -146,10 +146,10 @@ namespace Hydrogen.Windows.Forms {
 			// 
 			// _purchaseFullVersionToolStripMenuItem
 			// 
-			this._purchaseFullVersionToolStripMenuItem.Name = "_purchaseFullVersionToolStripMenuItem";
-			this._purchaseFullVersionToolStripMenuItem.Size = new System.Drawing.Size(186, 22);
-			this._purchaseFullVersionToolStripMenuItem.Text = "Purchase Full Version";
-			this._purchaseFullVersionToolStripMenuItem.Click += new System.EventHandler(this.PurchaseFullVersion_Click);
+			this.PurchaseFullVersionToolStripMenuItem.Name = "PurchaseFullVersionToolStripMenuItem";
+			this.PurchaseFullVersionToolStripMenuItem.Size = new System.Drawing.Size(186, 22);
+			this.PurchaseFullVersionToolStripMenuItem.Text = "Purchase Full Version";
+			this.PurchaseFullVersionToolStripMenuItem.Click += new System.EventHandler(this.PurchaseFullVersion_Click);
 			// 
 			// _aboutToolStripMenuItem
 			// 
@@ -202,7 +202,6 @@ namespace Hydrogen.Windows.Forms {
 
 		private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem exitToolStripMenuItem;
-		private System.Windows.Forms.ToolStripMenuItem _helpToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem _userguideToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem _contextHelpToolStripMenuItem;
 		private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
@@ -210,7 +209,6 @@ namespace Hydrogen.Windows.Forms {
 		private System.Windows.Forms.ToolStripMenuItem sendACommentToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem reportABugToolStripMenuItem;
 		private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
-		private System.Windows.Forms.ToolStripMenuItem _purchaseFullVersionToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem _aboutToolStripMenuItem;
 		private System.Windows.Forms.ToolStripStatusLabel _statusLabel;
 		protected System.Windows.Forms.MenuStrip _menuStrip;

@@ -22,163 +22,140 @@ using System.Linq;
 using Hydrogen.Application;
 using Hydrogen.Windows.Forms;
 using Hydrogen.Windows.Forms.Components.BlockFramework;
+using Microsoft.Extensions.DependencyInjection;
+
+namespace Hydrogen.Windows.Forms;
+
+/// <summary>
+/// Application UIs can be presented as a screen. It is a proxy ApplicationServiceProvider
+/// routing to parent provider. 
+/// 
+/// NOTE: The ApplicationServiceProvider property, which defines the underlying provider all
+/// such  calls are routed to, is guaranteed to be set post-construction.
+/// </summary>
+public class ApplicationScreen : ApplicationControl, IHelpableObject {
+	private int _showCount;
+	private readonly List<ToolStripItem> _menuStripItems;
+
+	public event EventHandler ScreenLoaded;
+	public event EventHandler ScreenDisplayed;
+	public event EventHandler ScreenDisplayedFirstTime;
+	public event EventHandler<HideScreenEventArgs> ScreenHidden;
+	public event EventHandler ScreenDestroyed;
+
+	public ApplicationScreen()
+		: this(null) {
+	}
+
+	public ApplicationScreen(IApplicationBlock applicationBlock) {
+		ApplicationBlock = applicationBlock;
+		Url = FileName = null;
+		Type = HelpType.None;
+		_menuStripItems = new List<ToolStripItem>();
+		_showCount = 0;
+	}
 
 
-namespace Hydrogen.Windows.Forms {
+	[Browsable(true), Category("Appearance")]
+	public string ApplicationMenuStripText { get; set; }
 
-    /// <summary>
-    /// Application UIs can be presented as a screen. It is a proxy ApplicationServiceProvider
-    /// routing to parent provider. 
-    /// 
-    /// NOTE: The ApplicationServiceProvider property, which defines the underlying provider all
-    /// such  calls are routed to, is guaranteed to be set post-construction.
-    /// </summary>
-    public class ApplicationScreen : ApplicationControl, IHelpableObject {
-		private int _showCount;
-		private readonly List<ToolStripItem> _menuStripItems;
+	[Browsable(true), Category("Appearance")]
+	public bool ShowInApplicationMenuStrip { get; set; }
 
-	    public event EventHandler ScreenLoaded;
-		public event EventHandler ScreenDisplayed;
-		public event EventHandler ScreenDisplayedFirstTime;
-		public event EventHandler<HideScreenEventArgs> ScreenHidden;
-	    public event EventHandler ScreenDestroyed;
+	[Browsable(true), Category("Layout"), Description("How this screen will be displayed to the user")]
+	public ScreenDisplayMode DisplayMode { get; set; }
 
-		public ApplicationScreen()
-            : this(null) {
-		}
+	[Browsable(true), Category("Behavior"), Description("How this screen will be displayed to the user")]
+	public ScreenActivationMode ActivationMode { get; set; }
 
-        public ApplicationScreen(IApplicationBlock applicationBlock) {
-            ApplicationBlock = applicationBlock;
-			Url = FileName = null;
-			Type = HelpType.None;
-            _menuStripItems = new List<ToolStripItem>();
-	        _showCount = 0;
-		}
+	[Browsable(false)]
+	public IApplicationBlock ApplicationBlock { get; set; }
 
-		[Browsable(true), Category("Appearance")]
-		public string ApplicationMenuStripText { get; set; }
+	//[Category("Behavior")]
+	//[DesignerSerializationVisibility(DesignerSerializationVisibility.Visible)]
+	//[DefaultValue(true)]
+	//public bool AutoSave { get; set; }
 
-		[Browsable(true), Category("Appearance")]
-		public bool ShowInApplicationMenuStrip { get; set; }
+	/// <summary>
+	/// The menu items associated with this screen.
+	/// </summary>
+	[Browsable(false)]
+	public ToolStripItem[] MenuItems => _menuStripItems.ToArray();
 
-        [Browsable(true), Category("Layout"), Description("How this screen will be displayed to the user")]
-        public ScreenDisplayMode DisplayMode { get; set; }
+	/// <summary>
+	/// The toolbar associated with this screen.
+	/// </summary>
+	[Browsable(true), Category("Behavior"), Description("The toolbar associated with this screen.")]
+	public ToolStrip ToolBar { get; set; }
 
-        [Browsable(true), Category("Behavior"), Description("How this screen will be displayed to the user")]
-        public ScreenActivationMode ActivationMode { get; set; }
+	public HelpType Type { get; }
 
-		[Browsable(false)]
-        public IApplicationBlock ApplicationBlock { get; set; }
+	public string FileName { get; }
 
-	    //[Category("Behavior")]
-	    //[DesignerSerializationVisibility(DesignerSerializationVisibility.Visible)]
-	    //[DefaultValue(true)]
-	    //public bool AutoSave { get; set; }
-        
-        /// <summary>
-        /// The menu items associated with this screen.
-        /// </summary>
-        [Browsable(false)]
-        public ToolStripItem[] MenuItems {
-            get {
-                return _menuStripItems.ToArray();
-            }
-        }
+	public string Url { get; }
 
-        /// <summary>
-        /// The toolbar associated with this screen.
-        /// </summary>
-        [Browsable(true), Category("Behavior"), Description("The toolbar associated with this screen.")]
-        public ToolStrip ToolBar { get; set; }
+	public int? PageNumber { get; }
 
-	    public HelpType Type {
-		    get;
-		    private set;
-	    }
+	public int? HelpTopicID { get; }
 
-	    public string FileName {
-		    get;
-		    private set;
-	    }
+	public int? HelpTopicAlias { get; }
 
-	    public string Url {
-		    get;
-		    private set;
-	    }
+	public override void SetLocalizedText(CultureInfo culture = null) {
+		base.SetLocalizedText(culture);
+		SetLocalizedTextInApplicationControls(this.Controls);
+	}
 
-	    public int? PageNumber {
-		    get;
-		    private set;
-	    }
+	protected virtual void OnShowFirstTime() {
+	}
 
-	    public int? HelpTopicID {
-		    get;
-		    private set;
-	    }
+	protected virtual void OnShow() {
+		if (_showCount++ == 0)
+			NotifyShowScreenFirstTime();
+	}
 
-	    public int? HelpTopicAlias {
-		    get;
-		    private set;
-	    }
+	protected virtual void OnHide(ref bool cancelHide) {
+	}
 
-		public override void SetLocalizedText(CultureInfo culture = null) {
-			base.SetLocalizedText(culture);
-            SetLocalizedTextInApplicationControls(this.Controls);
-        }
+	protected virtual void OnDestroyScreen() {
+	}
 
-		protected virtual void OnShowFirstTime() {
-		}
+	protected void RegisterMenuItem(ToolStripItem item) {
+		_menuStripItems.Add(item);
+	}
 
-		protected virtual void OnShow() {
-			if (_showCount++ == 0)
-				NotifyShowScreenFirstTime();
-		}
-
-	    protected virtual void OnHide(ref bool cancelHide) {
-        }
-
-	    protected virtual void OnDestroyScreen() {
-	    }
-
-        protected void RegisterMenuItem(ToolStripItem item) {
-            _menuStripItems.Add(item);
-        }
-
-        private void SetLocalizedTextInApplicationControls(ControlCollection controls) {
-            if (controls != null) {
-                foreach (Control control in controls) {
-                    if (control is ApplicationControl) {
-                        ((ApplicationControl)control).SetLocalizedText();
-                    }
-                    SetLocalizedTextInApplicationControls(
-                        control.Controls
-                    );
-                }
-            }
-        }
-
-	    internal void NotifyShow() {
-			OnShow();
-			ScreenDisplayed?.Invoke(this, EventArgs.Empty);
-		}
-
-		internal void NotifyShowScreenFirstTime() {
-			OnShowFirstTime();
-			ScreenDisplayedFirstTime?.Invoke(this, EventArgs.Empty);
-		}
-
-		internal void NotifyHideScreen(ref bool cancel) {
-			OnHide(ref cancel);
-			if (!cancel) {
-				var cancelArgs = new HideScreenEventArgs();
-				ScreenHidden?.Invoke(this, cancelArgs);
+	private void SetLocalizedTextInApplicationControls(ControlCollection controls) {
+		if (controls != null) {
+			foreach (Control control in controls) {
+				if (control is ApplicationControl) {
+					((ApplicationControl)control).SetLocalizedText();
+				}
+				SetLocalizedTextInApplicationControls(
+					control.Controls
+				);
 			}
 		}
+	}
 
-		internal void NotifyScreenDestroyed() {
-			OnDestroyScreen();
-			ScreenDestroyed?.Invoke(this, EventArgs.Empty);
+	internal void NotifyShow() {
+		OnShow();
+		ScreenDisplayed?.Invoke(this, EventArgs.Empty);
+	}
+
+	internal void NotifyShowScreenFirstTime() {
+		OnShowFirstTime();
+		ScreenDisplayedFirstTime?.Invoke(this, EventArgs.Empty);
+	}
+
+	internal void NotifyHideScreen(ref bool cancel) {
+		OnHide(ref cancel);
+		if (!cancel) {
+			var cancelArgs = new HideScreenEventArgs();
+			ScreenHidden?.Invoke(this, cancelArgs);
 		}
 	}
-}
 
+	internal void NotifyScreenDestroyed() {
+		OnDestroyScreen();
+		ScreenDestroyed?.Invoke(this, EventArgs.Empty);
+	}
+}

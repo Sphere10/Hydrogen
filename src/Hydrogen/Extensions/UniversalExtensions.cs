@@ -22,8 +22,25 @@ namespace Hydrogen {
     /// </summary>
     /// <remarks></remarks>
     public static class UniversalExtensions {
-        
-	    public static IEnumerable<TItem> Visit<TItem>(this TItem node, Func<TItem, TItem> ancestorIterator, Func<TItem, bool> discriminator = null, IEqualityComparer<TItem> comparer = null) 
+	
+		public static SignedItem<TItem> AsSignedItem<TItem>(this TItem item, IItemSerializer<TItem> serializer, CHF chf, DSS dss, byte[] privateKey, ulong signerNonce = 0, Endianness endianness = Endianness.LittleEndian) {
+			var scheme = Signers.Create(dss);
+			var key = scheme.ParsePrivateKey(privateKey);
+			var digestor = new ItemDigestor<TItem>(chf, serializer, endianness);
+			var signer = new ItemSigner<TItem>(digestor, scheme);
+			return AsSignedItem(item, signer, key, signerNonce);
+		}
+
+		public static SignedItem<TItem> AsSignedItem<TItem>(this TItem item, IItemDigestor<TItem> digestor, IDigitalSignatureScheme dss, IPrivateKey privateKey, ulong signerNonce = 0) 
+			=> AsSignedItem(item, new ItemSigner<TItem>(digestor, dss), privateKey, signerNonce);
+
+		public static SignedItem<TItem> AsSignedItem<TItem>(this TItem item,IItemSigner<TItem> signer, IPrivateKey privateKey, ulong signerNonce = 0) 
+			=> new() {
+				Item = item,
+				Signature = signer.Sign(item, privateKey, signerNonce)
+			};
+
+		public static IEnumerable<TItem> Visit<TItem>(this TItem node, Func<TItem, TItem> ancestorIterator, Func<TItem, bool> discriminator = null, IEqualityComparer<TItem> comparer = null) 
 			=> Visit(node, x => x != null ? new [] { ancestorIterator(x) } : Array.Empty<TItem>(), discriminator, comparer);
 
 	    public static IEnumerable<TItem> Visit<TItem>(this TItem node, Func<TItem, IEnumerable<TItem>> edgeIterator, Func<TItem, bool> discriminator = null,  IEqualityComparer<TItem> comparer = null) 
@@ -44,7 +61,7 @@ namespace Hydrogen {
             return collection.Contains(@object);
         }
 
-		public static string ToStringSafe<T>(this T @object) => @object?.ToString() ?? "<null>";
+		//public static string ToStringSafe<T>(this T @object) => @object?.ToString() ?? "<null>";
 
 
 		public static IEnumerable<T> ConcatWith<T>(this T head, IEnumerable<T> tail) => new [] { head }.Concat(tail);

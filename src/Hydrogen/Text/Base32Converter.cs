@@ -22,7 +22,6 @@ namespace Hydrogen {
         private static string ValidChars = "QAZ2WSX3" + "EDC4RFV5" + "TGB6YHN7" + "UJM8K9LP";
 
 
-#if !__WP8__
         public static string ToBase32String(string asciiString) {
             return ToBase32String(asciiString.ToAsciiByteArray());
         }
@@ -61,7 +60,6 @@ namespace Hydrogen {
             }
             return sb.ToString();
         }
-#endif
 
         /// <summary>
         /// Converts a Base32-k string into an array of bytes.

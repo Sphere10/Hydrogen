@@ -27,7 +27,7 @@ namespace Hydrogen.Application {
 					CompanyName = string.Empty,
 					CompanyUrl = string.Empty,
 					CopyrightNotice = string.Empty,
-					DefaultProductKey = string.Empty,
+					DefaultProductLicense = null,
 					ProductCode = Guid.Empty,
 					ProductDescription = string.Empty,
 					ProductLongVersion = string.Empty,

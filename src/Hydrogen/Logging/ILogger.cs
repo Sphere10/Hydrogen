@@ -64,6 +64,26 @@ namespace Hydrogen {
 		//	logger.Error($"{ComponentPrefix(componentName, methodName)} {exception.ToDiagnosticString()}");
 		//}
 
+		public static void Log(this ILogger logger, LogLevel logLevel, string message) {
+			switch(logLevel) {
+				case LogLevel.None:
+					break;
+				case LogLevel.Debug:
+					logger.Debug(message);
+					break;
+				case LogLevel.Info:
+					logger.Info(message);
+					break;
+				case LogLevel.Warning:
+					logger.Warning(message);
+					break;
+				case LogLevel.Error:
+					logger.Error(message);
+					break;
+				default:
+					throw new ArgumentOutOfRangeException(nameof(logLevel), logLevel, null);
+			}
+		}
 		public static void Debug(this ILogger logger, string componentName, string methodName, string message) {
 			logger.Debug($"{ComponentPrefix(componentName, methodName)} {message}");
 		}
@@ -81,13 +101,8 @@ namespace Hydrogen {
 		}
 
 		public static void Result(this ILogger logger, string componentName, string methodName, Result result) {
-			if (result.HasInformation) {
-				foreach(var info in result.InformationMessages) 
-					logger.Info(componentName, methodName, info);
-
-				foreach (var error in result.ErrorMessages)
-					logger.Info(componentName, methodName, error);
-			}
+			foreach(var code in result.ErrorCodes) 
+				logger.Log(code.Severity, $"{ComponentPrefix(componentName, methodName)} {code.Payload}");
 		}
 
 		public static IDisposable LogDuration(this ILogger logger, string messagePrefix) {

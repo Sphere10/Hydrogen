@@ -15,6 +15,7 @@ public static class IServiceCollectionExtensions {
 	}
 
 	public static IServiceCollection AddHydrogenLogger(this IServiceCollection serviceCollection, Hydrogen.ILogger logger) {
-		return serviceCollection.AddSingleton<ILoggerProvider>( _ => new HydrogenLoggingProvider(logger));
+		return serviceCollection.AddTransient<ILoggerProvider>( _ => new HydrogenLoggerProvider(logger));
 	}
+
 }

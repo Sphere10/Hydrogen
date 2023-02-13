@@ -24,9 +24,9 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Hydrogen.Windows.Forms; public static class HydrogenFrameworkExtensions {
 
-	public static void StartWinFormsApplication<TMainForm>(this HydrogenFramework framework, Size? size = null)
+	public static void StartWinFormsApplication<TMainForm>(this HydrogenFramework framework, Size? size = null, HydrogenFrameworkOptions options = HydrogenFrameworkOptions.Default)
 		where TMainForm : class, IMainForm {
-		HydrogenFramework.Instance.StartFramework(serviceCollection => serviceCollection.AddMainForm<TMainForm>());
+		HydrogenFramework.Instance.StartFramework(serviceCollection => serviceCollection.AddMainForm<TMainForm>(), options);
 		framework.StartWinFormsApplication(size);
 	}
 

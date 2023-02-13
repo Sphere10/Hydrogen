@@ -13,23 +13,68 @@
 
 using NUnit.Framework;
 
-namespace Hydrogen.Tests {
+namespace Hydrogen.Tests;
 
-    [TestFixture]
-	[Parallelizable(ParallelScope.Children)]
-    public class ResultTests {
+[TestFixture]
+[Parallelizable(ParallelScope.Children)]
+public class ResultTests {
 
 
-        [Test]
-        public void ValueTypeCast_Bool() {
-            Assert.IsTrue((bool)Result<bool>.From(true));
-            Assert.IsFalse((bool)Result<bool>.From(false));
-        }
+	[Test]
+	public void ValueTypeCast_Bool() {
+		Assert.IsTrue((bool)Result<bool>.From(true));
+		Assert.IsFalse((bool)Result<bool>.From(false));
+	}
 
-        [Test]
-        public void ValueTypeCast_Result_Bool() {
-            Assert.AreEqual(Result<bool>.From(true), (Result<bool>)true);
-            Assert.AreEqual(Result<bool>.From(false), (Result<bool>)false);
-        }
+	[Test]
+	public void ValueTypeCast_Result_Bool() {
+		Assert.AreEqual(Result<bool>.From(true), (Result<bool>)true);
+		Assert.AreEqual(Result<bool>.From(false), (Result<bool>)false);
+	}
+
+    [Test]
+    public void JsonSerialize_1() {
+        Result expected = Result.Default;
+
+        var json = Tools.Json.WriteToString(expected);
+        var actual = Tools.Json.ReadFromString<Result<int>>(json);
+
+        Assert.That(actual, Is.EqualTo(expected));
+    }
+    
+	[Test]
+    public void JsonSerialize_2() {
+        Result expected = Result.Error("Hello", "World!");
+
+        var json = Tools.Json.WriteToString(expected);
+        var actual = Tools.Json.ReadFromString<Result<int>>(json);
+
+        Assert.That(actual, Is.EqualTo(expected));
+    }
+
+	[Test]
+	public void JsonSerialize_3() {
+		Result<int> expected = Result<int>.Error("Hello", "World!");
+		expected.Value = 11;
+
+		var json = Tools.Json.WriteToString(expected);
+		var actual = Tools.Json.ReadFromString<Result<int>>(json);
+
+		Assert.That(actual, Is.EqualTo(expected));
+	}
+
+	
+    [Test]
+    public void JsonSerialize_4() {
+        Result<int> inner = Result<int>.Error("Hello", "World!");
+        inner.Value = 11;
+		Result<Result<int>> expected = Result<Result<int>>.From(inner);
+        expected.AddInfo("Info");        
+
+        var json = Tools.Json.WriteToString(expected);
+        var actual = Tools.Json.ReadFromString<Result<Result<int>>>(json);
+
+        Assert.That(actual, Is.EqualTo(expected));
     }
 }
+

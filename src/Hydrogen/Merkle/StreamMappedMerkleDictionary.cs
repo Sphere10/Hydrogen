@@ -27,7 +27,7 @@ namespace Hydrogen {
 					rootStream,
 					clusterSize,
 					hashAlgorithm,
-				 	new ProjectionHasher<KeyValuePair<TKey, TValue>, TValue>(kvp => kvp.Value, new ItemHasher<TValue>(hashAlgorithm, valueSerializer, endianness).WithNullHash(hashAlgorithm)),
+				 	new ProjectionHasher<KeyValuePair<TKey, TValue>, TValue>(kvp => kvp.Value, new ItemDigestor<TValue>(hashAlgorithm, valueSerializer, endianness).WithNullHash(hashAlgorithm)),
 					new KeyValuePairSerializer<TKey, TValue>(
 						keySerializer,
 						valueSerializer

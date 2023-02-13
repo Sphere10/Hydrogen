@@ -16,5 +16,5 @@ using Hydrogen.Application;
 
 namespace Hydrogen.Windows.Forms;
 
-public interface IMainForm : IApplicationIconProvider, IUserInterfaceServices, IUserNotificationServices {
+public interface IMainForm : IApplicationIconProvider, IUserInterfaceServices {
 }

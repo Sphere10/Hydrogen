@@ -25,10 +25,6 @@ namespace Hydrogen.Tests {
 	[Parallelizable(ParallelScope.Children)]
 	public class MiscellaneousTests {
 
-		[Test]
-		public void ToStringSafe() {
-			Assert.AreEqual("<null>", ((object)null).ToStringSafe());
-		}
 
 		[Test]
 		public void InterpolateNullAssumption() {

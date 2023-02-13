@@ -96,6 +96,7 @@ namespace Hydrogen.Windows.Forms {
         private Control[] _exclusionControls;
 
         // Properties ========================================================
+
         /// <summary>
         /// Gets or sets the lightest color of the circle.
         /// </summary>
@@ -294,6 +295,7 @@ namespace Hydrogen.Windows.Forms {
             ActiveTimer();
 
             this.Resize += new EventHandler(LoadingCircle_Resize);
+
         }
 
         // Events ============================================================

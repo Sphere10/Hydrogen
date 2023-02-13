@@ -81,7 +81,7 @@ namespace Hydrogen.DApp.Core.Tests {
 			input.StartsWith("0x") ? HexEncoding.Decode(input) : Encoding.ASCII.GetBytes(input);
 
 		static RandomHash2TestBase() {
-			ModuleConfiguration.Initialize();
+			ExplicitModuleConfiguration.Initialize();
 		}
 	}
 

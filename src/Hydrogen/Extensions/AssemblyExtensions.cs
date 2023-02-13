@@ -83,15 +83,13 @@ namespace Hydrogen {
 				); 
 		}
 
-		public static IEnumerable<Assembly> GetNonFrameworkAssemblies(this AppDomain domain) {
-			return domain.GetReferencedAssemblies(n => !FrameworkPrefixes.Any(p => n.FullName.StartsWith(p)));
-		}
-		public static IEnumerable<Type> GetDerivedTypes<T>(this Assembly assembly) {
-			return assembly.GetDerivedTypes(typeof(T));
-		}
+		public static IEnumerable<Assembly> GetNonFrameworkAssemblies(this AppDomain domain) 
+			=> domain.GetReferencedAssemblies(n => !FrameworkPrefixes.Any(p => n.FullName.StartsWith(p)));
 
-		public static IEnumerable<Type> GetDerivedTypes(this Assembly assembly, Type baseType) {
-			return assembly.GetTypes().Where(t => t != baseType && baseType.IsAssignableFrom(t));
-		}
+		public static IEnumerable<Type> GetDerivedTypes<T>(this Assembly assembly) 
+			=> assembly.GetDerivedTypes(typeof(T));
+
+		public static IEnumerable<Type> GetDerivedTypes(this Assembly assembly, Type baseType) 
+			=> assembly.GetTypes().Where(t => t != baseType && baseType.IsAssignableFrom(t));
 	}
 }

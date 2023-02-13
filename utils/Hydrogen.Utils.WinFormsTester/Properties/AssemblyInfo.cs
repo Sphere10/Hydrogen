@@ -27,11 +27,6 @@ using Hydrogen.Application;
 [assembly: AssemblyCompanyNumber("ABN 39600596316")]
 [assembly: AssemblyCompanyLink("www.sphere10.com")]
 //[assembly: AssemblyProduct("Sphere10.Application.Tester")]
-[assembly: AssemblyProductCode("00000000-0000-0000-0000-000000000000")]
-[assembly: AssemblyProductLink("www.sphere10.com")]
-[assembly: AssemblyCopyright("Copyright © Sphere 10 Software 2008 - {CurrentYear}")]
-[assembly: AssemblyProductPurchaseLink("www.sphere10.com")]
-[assembly: AssemblyDefaultProductKey("K5PS-JA9A-9R9R-2AFS")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

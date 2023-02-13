@@ -15,6 +15,8 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Globalization;
+using System.Linq;
+using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
 using Hydrogen;
@@ -70,7 +72,7 @@ namespace Tools {
 			// trim hyphens (-) from ends
 			return value.Trim('-');
 		}
-		
+
 		public static string EncodeUrl(string s) {
 			return EncodeUrl(s, null);
 		}
@@ -122,7 +124,7 @@ namespace Tools {
 			return result;
 		}
 
-		public static bool IsVideoSharingUrl(string url) 
+		public static bool IsVideoSharingUrl(string url)
 			=> IsYouTubeUrl(url) || IsVimeoUrl(url);
 
 
@@ -169,6 +171,57 @@ namespace Tools {
 
 			return url;
 		}
+
+		public static string AddQueryString(string uri, string name, string value) {
+			Guard.ArgumentNotNull(uri, nameof(uri));
+			Guard.ArgumentNotNull(name, nameof(name));
+			Guard.ArgumentNotNull(value, nameof(value));
+			return AddQueryString(uri, new[] { new KeyValuePair<string, string>(name, value) });
+		}
+
+		public static string AddQueryString(string uri, IDictionary<string, string> queryParams) {
+			Guard.ArgumentNotNull(uri, nameof(uri));
+			Guard.ArgumentNotNull(queryParams, nameof(queryParams));
+			return AddQueryString(uri, (IEnumerable<KeyValuePair<string, string>>)queryParams);
+		}
+
+		private static string AddQueryString(string uri, IEnumerable<KeyValuePair<string, string>> queryParams) {
+			Guard.ArgumentNotNull(uri, nameof(uri));
+			Guard.ArgumentNotNull(queryParams, nameof(queryParams));
+
+			queryParams = RemoveEmptyValueQueryParams(queryParams);
+
+			var anchorIndex = uri.IndexOf('#');
+			var uriToBeAppended = uri;
+			var anchorText = "";
+
+			if (anchorIndex != -1) {
+				anchorText = uri.Substring(anchorIndex);
+				uriToBeAppended = uri.Substring(0, anchorIndex);
+			}
+
+			var queryIndex = uriToBeAppended.IndexOf('?');
+			var hasQuery = queryIndex != -1;
+
+			var sb = new StringBuilder();
+			sb.Append(uriToBeAppended);
+			foreach (var parameter in queryParams) {
+				sb.Append(hasQuery ? '&' : '?');
+				sb.Append(WebUtility.UrlEncode(parameter.Key));
+				sb.Append('=');
+				sb.Append(WebUtility.UrlEncode(parameter.Value));
+				hasQuery = true;
+			}
+
+			sb.Append(anchorText);
+			return sb.ToString();
+		}
+
+		private static IEnumerable<KeyValuePair<string, string>> RemoveEmptyValueQueryParams(IEnumerable<KeyValuePair<string, string>> queryParams) {
+			return queryParams.Where(x => !string.IsNullOrWhiteSpace(x.Value));
+		}
+
+
 
 		public static string Combine(string url1, string url2) {
 			Guard.ArgumentNotNullOrWhitespace(url1, nameof(url1));

@@ -172,7 +172,11 @@ namespace Tools {
 	        return quoted.ToString();
         }
 
-    }
+        public static void TouchAssembly(Type type) {
+	        // used to introduce assembly into domain so it can be reflected
+			var assembly = type.Assembly;
+        }
+	}
 
 
 }

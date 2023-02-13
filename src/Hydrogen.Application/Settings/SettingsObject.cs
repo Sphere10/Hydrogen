@@ -14,6 +14,7 @@
 using System;
 using System.ComponentModel;
 using System.Xml.Serialization;
+using Newtonsoft.Json;
 
 namespace Hydrogen.Application {
 
@@ -21,9 +22,11 @@ namespace Hydrogen.Application {
 	[Serializable]
 	public abstract class SettingsObject : ObjectWithDefaultValues  {
 
+		[JsonProperty("id", NullValueHandling = NullValueHandling.Ignore)]
 		public object ID { get; set; } = null;
 
 		[XmlIgnore]
+		[JsonIgnore]
 		public ISettingsProvider Provider { get; set; }
 
 		public virtual void Load() {

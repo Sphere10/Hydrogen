@@ -12,14 +12,10 @@
 //-----------------------------------------------------------------------
 
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
-using System.Drawing.Imaging;
-using System.Text;
-using System.Windows.Forms;
-using Hydrogen;
-
+using Hydrogen.Application;
+using Microsoft.Extensions.DependencyInjection;
 
 
 namespace Hydrogen.Windows.Forms {
@@ -36,7 +32,12 @@ namespace Hydrogen.Windows.Forms {
 			CompanyName = _companyNameLabel.Text;
 			Version = _versionLabel.Text;
 			Title = _productNameLabel.Text;
+			if (!Tools.Runtime.IsDesignMode) {
+				IconProvider = HydrogenFramework.Instance.ServiceProvider.GetService<IApplicationIconProvider>();
+			}
 		}
+
+		protected IApplicationIconProvider IconProvider { get ; }
 
 		protected override void OnLoad(EventArgs e) {
 			base.OnLoad(e);
@@ -44,11 +45,11 @@ namespace Hydrogen.Windows.Forms {
 
 		protected override void InitializeUIPrimingData() {
 			base.InitializeUIPrimingData();
-			_iconPanel.BackgroundImage = ApplicationServices.ApplicationIcon.ToBitmap().Resize(new Size(_iconPanel.Width, _iconPanel.Height), ResizeMethod.AspectFit);
+			_iconPanel.BackgroundImage = IconProvider.ApplicationIcon.ToBitmap().Resize(new Size(_iconPanel.Width, _iconPanel.Height), ResizeMethod.AspectFit);
 			// Upload to child controls the processed strings. Visual inheritance can be used to change these strings.
-			_companyNameLabel.Text = ApplicationServices.ProductInformation.ProcessTokensInString(CompanyName);
-			_productNameLabel.Text = ApplicationServices.ProductInformation.ProcessTokensInString(Title);
-			_versionLabel.Text = ApplicationServices.ProductInformation.ProcessTokensInString(Version);
+			_companyNameLabel.Text = Hydrogen.StringFormatter.FormatEx(CompanyName);
+			_productNameLabel.Text = Hydrogen.StringFormatter.FormatEx(Title);
+			_versionLabel.Text = Hydrogen.StringFormatter.FormatEx(Version);
 		}
 
 
@@ -62,7 +63,7 @@ namespace Hydrogen.Windows.Forms {
 					_companyNameLabel.Text = _companyName;
 				}
 				if (Loaded) {
-					_companyNameLabel.Text = ApplicationServices.ProductInformation.ProcessTokensInString(_companyName);
+					_companyNameLabel.Text = Hydrogen.StringFormatter.FormatEx(_companyName);
 				}
 				Invalidate();
 			}
@@ -78,7 +79,7 @@ namespace Hydrogen.Windows.Forms {
 					_versionLabel.Text = _version;
 				}
 				if (Loaded) {
-					_versionLabel.Text = ApplicationServices.ProductInformation.ProcessTokensInString(_version);
+					_versionLabel.Text = Hydrogen.StringFormatter.FormatEx(_version);
 				}
 				Invalidate();
 			}
@@ -94,7 +95,7 @@ namespace Hydrogen.Windows.Forms {
 					_productNameLabel.Text = _title;
 				}
 				if (Loaded) {
-					_productNameLabel.Text = ApplicationServices.ProductInformation.ProcessTokensInString(_title);
+					_productNameLabel.Text = Hydrogen.StringFormatter.FormatEx(_title);
 				}
 				Invalidate();
 			}
@@ -122,7 +123,7 @@ namespace Hydrogen.Windows.Forms {
 
 		private void _iconPanel_SizeChanged(object sender, EventArgs e) {
 			if (Loaded) {
-				_iconPanel.BackgroundImage = ApplicationServices.ApplicationIcon.ToBitmap(_iconPanel.Width, _iconPanel.Height);
+				_iconPanel.BackgroundImage = IconProvider.ApplicationIcon.ToBitmap(_iconPanel.Width, _iconPanel.Height);
 			}
 		}
 

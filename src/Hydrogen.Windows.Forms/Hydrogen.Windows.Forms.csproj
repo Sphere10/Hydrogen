@@ -73,6 +73,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<Compile Update="Application\DRM\DRMAboutBox.cs" />
 		<Compile Update="Common\ImageAttachmentSelectorControl.cs" />
 		<Compile Update="Common\ImageAttachmentSelectorControl.Designer.cs">
 			<DependentUpon>ImageAttachmentSelectorControl.cs</DependentUpon>
@@ -89,19 +90,44 @@
 		<Compile Update="Controls\ServiceStatusControl.cs">
 		  <SubType>UserControl</SubType>
 		</Compile>
-		<Compile Update="Forms\ApplicationForm.cs" />
-		<Compile Update="Application\Controls\BasicContactDetailsControl.cs" />
-		<Compile Update="Application\Controls\BasicContactDetailsControl.designer.cs">
-			<DependentUpon>BasicContactDetailsControl.cs</DependentUpon>
+		<Compile Update="Application\DRM\BasicContactDetailsControl.cs">
+		  <SubType>UserControl</SubType>
 		</Compile>
+		<Compile Update="Application\DRM\BasicContactDetailsControl.designer.cs">
+		  <DependentUpon>BasicContactDetailsControl.cs</DependentUpon>
+		</Compile>
+		<Compile Update="Application\DRM\DRMNagDialog.cs">
+		  <SubType>Form</SubType>
+		</Compile>
+		<Compile Update="Application\DRM\DRMProductActivationForm.cs">
+		  <SubType>Form</SubType>
+		</Compile>
+		<Compile Update="Application\Product\ProductProductReportBugDialog.cs">
+		  <SubType>Form</SubType>
+		</Compile>
+		<Compile Update="Application\Product\ProductProductRequestFeatureDialog.cs">
+		  <SubType>Form</SubType>
+		</Compile>
+		<Compile Update="Application\Product\ProductProductSendCommentsDialog.cs">
+		  <SubType>Form</SubType>
+		</Compile>
+		<Compile Update="Application\DRM\ProductExpirationDetailsControl.cs">
+		  <SubType>UserControl</SubType>
+		</Compile>
+		<Compile Update="Application\DRM\ProductExpirationDetailsControl.Designer.cs">
+		  <DependentUpon>ProductExpirationDetailsControl.cs</DependentUpon>
+		</Compile>
+		<Compile Update="Application\DRM\WhoAreYouControl.cs">
+		  <SubType>UserControl</SubType>
+		</Compile>
+		<Compile Update="Application\DRM\WhoAreYouControl.Designer.cs">
+		  <DependentUpon>WhoAreYouControl.cs</DependentUpon>
+		</Compile>
+		<Compile Update="Forms\ApplicationForm.cs" />
 		<Compile Update="Dialogs\ExceptionDialog.cs" />
 		<Compile Update="Forms\LiteMainForm.cs" />
 		<Compile Update="Forms\LiteMainForm.Designer.cs">
 			<DependentUpon>LiteMainForm.cs</DependentUpon>
-		</Compile>
-		<Compile Update="Application\Controls\NagMessageControl.cs" />
-		<Compile Update="Application\Controls\NagMessageControl.Designer.cs">
-			<DependentUpon>NagMessageControl.cs</DependentUpon>
 		</Compile>
 		<Compile Update="Forms\ProductActivationForm.cs" />
 		<Compile Update="Forms\ProductActivationForm.Designer.cs">
@@ -110,10 +136,6 @@
 		<Compile Update="Forms\ServerPostBackForm.cs" />
 		<Compile Update="Forms\ServerPostBackForm.Designer.cs">
 			<DependentUpon>ServerPostBackForm.cs</DependentUpon>
-		</Compile>
-		<Compile Update="Application\Controls\WhoAreYouControl.cs" />
-		<Compile Update="Application\Controls\WhoAreYouControl.Designer.cs">
-			<DependentUpon>WhoAreYouControl.cs</DependentUpon>
 		</Compile>
 		<Compile Update="AppointmentBook\AppointmentBook.cs" />
 		<Compile Update="AppointmentBook\BaseAppointmentBook.cs" />
@@ -306,12 +328,16 @@
 			<SubType>Designer</SubType>
 			<DependentUpon>ApplicationBanner.cs</DependentUpon>
 		</EmbeddedResource>
+		<EmbeddedResource Update="Application\DRM\ProductExpirationDetailsControl.resx">
+		  <SubType>Designer</SubType>
+		  <DependentUpon>ProductExpirationDetailsControl.cs</DependentUpon>
+		</EmbeddedResource>
+		<EmbeddedResource Update="Application\DRM\WhoAreYouControl.resx">
+		  <SubType>Designer</SubType>
+		  <DependentUpon>WhoAreYouControl.cs</DependentUpon>
+		</EmbeddedResource>
 		<EmbeddedResource Update="Forms\LiteMainForm.resx">
 			<DependentUpon>LiteMainForm.cs</DependentUpon>
-		</EmbeddedResource>
-		<EmbeddedResource Update="Application\Controls\NagMessageControl.resx">
-			<SubType>Designer</SubType>
-			<DependentUpon>NagMessageControl.cs</DependentUpon>
 		</EmbeddedResource>
 		<EmbeddedResource Update="Forms\ProductActivationForm.resx">
 			<SubType>Designer</SubType>
@@ -320,10 +346,6 @@
 		<EmbeddedResource Update="Forms\ServerPostBackForm.resx">
 			<SubType>Designer</SubType>
 			<DependentUpon>ServerPostBackForm.cs</DependentUpon>
-		</EmbeddedResource>
-		<EmbeddedResource Update="Application\Controls\WhoAreYouControl.resx">
-			<SubType>Designer</SubType>
-			<DependentUpon>WhoAreYouControl.cs</DependentUpon>
 		</EmbeddedResource>
 		<EmbeddedResource Update="AppointmentBook\AppointmentBook.resx">
 			<DependentUpon>AppointmentBook.cs</DependentUpon>

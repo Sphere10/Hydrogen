@@ -24,6 +24,8 @@ using System.Threading;
 using System.Runtime.InteropServices;
 using Hydrogen;
 using Hydrogen.Application;
+using Microsoft.Extensions.DependencyInjection;
+using System.ComponentModel.Design;
 
 namespace Hydrogen.Windows.Forms {
 
@@ -35,15 +37,15 @@ namespace Hydrogen.Windows.Forms {
 
 		#region Form Properties
 
-		public ToolStrip ToolStrip { get { return _toolStrip; } }
+		public ToolStrip ToolStrip => _toolStrip;
 
-		public MenuStrip MenuStrip { get { return _menuStrip; } }
+		public MenuStrip MenuStrip => _menuStrip;
 
-		public ToolStripStatusLabel StatusLabel { get { return _statusLabel; } }
+		public ToolStripStatusLabel StatusLabel { get => _statusLabel; }
 
-		public ToolStripMenuItem PurchaseFullVersionToolStripMenuItem { get { return _purchaseFullVersionToolStripMenuItem; } }
+		public ToolStripMenuItem PurchaseFullVersionToolStripMenuItem { get; private set; }
 
-		public ToolStripMenuItem HelpToolStripMenuItem { get { return _helpToolStripMenuItem; } }
+		public ToolStripMenuItem HelpToolStripMenuItem { get; private set; }
 
 		#endregion
 
@@ -52,11 +54,17 @@ namespace Hydrogen.Windows.Forms {
 		protected override void OnFirstActivated() {
 			base.OnFirstActivated();
 			if (!Tools.Runtime.IsDesignMode) {
-				// Show/Hide register menu item based on what's happened with the user nag screen
-				if (WinFormsApplicationServices.Rights.FeatureRights != ProductFeatureRights.Full) {
-					PurchaseFullVersionToolStripMenuItem.Visible = true;
-				} else {
-					PurchaseFullVersionToolStripMenuItem.Visible = false;
+				try {
+					var licenseProvider = HydrogenFramework.Instance.ServiceProvider.GetService<IProductLicenseProvider>();
+					// Show/Hide register menu item based on what's happened with the user nag screen
+					if (licenseProvider.TryGetLicense(out var license) && license.License.Item.FeatureLevel == ProductLicenseFeatureLevelDTO.Free) {
+						PurchaseFullVersionToolStripMenuItem.Visible = true;
+					} else {
+						PurchaseFullVersionToolStripMenuItem.Visible = false;
+					}
+				} catch (ProductLicenseTamperedException error) {
+					ReportError(error);
+					Exit(true);
 				}
 			}
 		}
@@ -79,39 +87,80 @@ namespace Hydrogen.Windows.Forms {
 		#region Event Handlers
 
 		protected virtual void RequestAFeature_Click(object sender, EventArgs e) {
-			WinFormsApplicationServices.ShowRequestFeatureDialog();
+			try {
+				ShowRequestFeatureDialog();
+			} catch (Exception error) {
+				ReportError(error);
+			}
 		}
 
 		protected virtual void SendComment_Click(object sender, EventArgs e) {
-			WinFormsApplicationServices.ShowSendCommentDialog();
+			try {
+				ShowSendCommentDialog();
+			} catch (Exception error) {
+				ReportError(error);
+			}
 		}
 
 		protected virtual void ReportABug_Click(object sender, EventArgs e) {
-			WinFormsApplicationServices.ShowSubmitBugReportDialog();
+			try {
+				ShowSubmitBugReportDialog();
+			} catch (Exception error) {
+				ReportError(error);
+			}
 		}
 
 		protected virtual void About_Click(object sender, EventArgs e) {
-			WinFormsApplicationServices.ShowAboutBox();
+			try {
+				ShowAboutBox();
+			} catch (Exception error) {
+				ReportError(error);
+			}
 		}
 
 		protected virtual void ContextHelp_Click(object sender, EventArgs e) {
-			WinFormsApplicationServices.ShowHelp();
+			try {
+				var helpServices = HydrogenFramework.Instance.ServiceProvider.GetService<IHelpServices>();
+				helpServices.ShowHelp();
+			} catch (Exception error) {
+				ReportError(error);
+			}
 		}
 
 		protected virtual void UserGuide_Click(object sender, EventArgs e) {
-			WinFormsApplicationServices.ShowHelp();
+			try {
+				var helpServices = HydrogenFramework.Instance.ServiceProvider.GetService<IHelpServices>();
+				helpServices.ShowHelp();
+			} catch (Exception error) {
+				ReportError(error);
+			}
 		}
 
 		protected virtual void PurchaseFullVersion_Click(object sender, EventArgs e) {
-			WinFormsApplicationServices.ShowNagScreen(true);
+			try {
+				var productLicenseEnforcer = HydrogenFramework.Instance.ServiceProvider.GetService<IProductLicenseEnforcer>();
+				productLicenseEnforcer.CalculateRights(out var nagMessage);
+				ShowNagScreen(nagMessage);
+			} catch (Exception error) {
+				ReportError(error);
+			}
 		}
 
 		protected virtual void Exit_Click(object sender, EventArgs e) {
-			WinFormsApplicationServices.Exit(false);
+			try {
+				Exit(false);
+			} catch (Exception error) {
+				ReportError(error);
+			}
 		}
 
 		protected virtual void MainForm_HelpRequested(object sender, HelpEventArgs hlpevent) {
-			WinFormsApplicationServices.ShowHelp();
+			try {
+				var helpServices = HydrogenFramework.Instance.ServiceProvider.GetService<IHelpServices>();
+				helpServices.ShowHelp();
+			} catch (Exception error) {
+				ReportError(error);
+			}
 		}
 
 		#endregion

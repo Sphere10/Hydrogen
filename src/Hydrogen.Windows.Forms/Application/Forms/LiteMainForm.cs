@@ -30,7 +30,6 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Hydrogen.Windows.Forms {
 
 	public partial class LiteMainForm : ApplicationForm, IMainForm {
-		private volatile INagDialog _nagDialogInstance;
 		public event EventHandler FirstActivation;
 		public event EventHandler FirstTimeExecutedBySystemEvent;
 		public event EventHandler NotFirstTimeExecutedBySystemEvent;
@@ -42,18 +41,16 @@ namespace Hydrogen.Windows.Forms {
 			System.Windows.Forms.Application.ThreadException += ApplicationOnThreadException;
 			InitializeComponent();
 			Nagged = false;
-			_nagDialogInstance = null;
 			NumberActivations = 0;
 		}
+	
 
 		#region Form Methods
 
 
 		protected virtual void OnFirstActivated() {
-			if (!Tools.Runtime.IsDesignMode) {
-				// This is a blocking call (will show a nag if necessary)
-				WinFormsApplicationServices.ApplyLicense();
-			}
+			if (!Tools.Runtime.IsDesignMode) 
+				EnforceLicense();
 		}
 
 		// Shown every time window becomes active window
@@ -67,35 +64,27 @@ namespace Hydrogen.Windows.Forms {
 		}
 
 
-		protected override void OnLoad(EventArgs e) {
+		protected override async void OnLoad(EventArgs e) {
 			base.OnLoad(e);
 			if (!Tools.Runtime.IsDesignMode) {
 
 				//// initialize local members
 				#region Fire First Time Use Events
-
-				if (WinFormsApplicationServices.ProductUsageInformation.NumberOfUsesBySystem == 1) {
+				var productUsageServices = HydrogenFramework.Instance.ServiceProvider.GetService<IProductUsageServices>();
+				var usageInfo = productUsageServices.ProductUsageInformation;
+				if (usageInfo.NumberOfUsesBySystem == 1) {
 					FireFirstTimeExecutedBySystemEvent();
 				} else {
 					FireNotFirstTimeExecutedBySystemEvent();
 				}
 
-				if (WinFormsApplicationServices.ProductUsageInformation.NumberOfUsesByUser == 1) {
+				if (usageInfo.NumberOfUsesByUser == 1) {
 					FireFirstTimeExecutedByUserEvent();
 				} else {
 					FireNotFirstTimeExecutedByUserEvent();
 				}
 
 				#endregion
-
-				// trigger license verify 
-				HydrogenFramework.Instance.ServiceProvider.GetService<IBackgroundLicenseVerifier>().VerifyLicense();
-
-				if ((WindowState == FormWindowState.Minimized || !Visible) && !Nagged) {
-					Nagged = true;
-					// This is a blocking call (will show a nag if necessary)
-					WinFormsApplicationServices.ApplyLicense();
-				}
 			}
 		}
 
@@ -116,7 +105,7 @@ namespace Hydrogen.Windows.Forms {
 					string cancelReason = string.Empty;
 
 					// Ask user to confirm exit
-					if (WinFormsApplicationServices.AskYN("Are you sure you want to exit?")) {
+					if (this.AskYN("Are you sure you want to exit?")) {
 						// Now ask form observers to confirm exit
 						FireApplicationExitingEvent(cancelArgs);
 						cancelExit = cancelArgs.Cancel;
@@ -130,7 +119,7 @@ namespace Hydrogen.Windows.Forms {
 						//if (cancelExit) {
 						//	// An observer or framework exit task somewhere has cancelled the exit.
 						//	// Ask user to exit anyway
-						//	if (WinFormsApplicationServices.AskYN(ParagraphBuilder.Combine("The application failed to exit properly",
+						//	if (WinFormsApplicationProvider.AskYN(ParagraphBuilder.Combine("The application failed to exit properly",
 						//	                                                       cancelReason ?? string.Empty,
 						//	                                                       "You may lose unsaved data if you exit", "Exit anyway?"))) {
 						//		// This will force an exit
@@ -228,27 +217,17 @@ namespace Hydrogen.Windows.Forms {
 			}
 		}
 
-		public virtual void ShowNagScreen(bool modal = false, string nagMessage = null) {
-			ExecuteInUIFriendlyContext(
-				() => {
-					if (_nagDialogInstance == null) {
-						_nagDialogInstance = HydrogenFramework.Instance.ServiceProvider.GetService<INagDialog>();
-						var parent = WinFormsApplicationServices.PrimaryUIController as IWin32Window;
-						if (parent != null && parent is Form && ((Form)parent).WindowState == FormWindowState.Minimized) {
-							_nagDialogInstance.StartPosition = FormStartPosition.CenterScreen;
-						}
-						_nagDialogInstance.ShowDialog(parent);
-						_nagDialogInstance = null;
-					} else {
-						// this is being entered by non-UI thread, what if closed at this point?
-						if (_nagDialogInstance.Visible) {
-							_nagDialogInstance.Refresh();
-						}
-					}
-				},
-				executeAsync: !modal
-				);
+		public virtual void ShowNagScreen(string nagMessage) {
+			ExecuteInUIFriendlyContext(() => {
+				var nagDialogInstance = HydrogenFramework.Instance.ServiceProvider.GetService<INagDialog>();
+				if (WindowState == FormWindowState.Minimized) {
+					nagDialogInstance.StartPosition = FormStartPosition.CenterScreen;
+				}
+				nagDialogInstance.NagMessage = nagMessage;
+				nagDialogInstance.ShowDialog(this);
+			});
 		}
+
 
 		public virtual object PrimaryUIController {
 			get { return this; }
@@ -259,17 +238,17 @@ namespace Hydrogen.Windows.Forms {
 		#region IUserNotificationServices Implementation
 
 		public virtual void ShowSendCommentDialog() {
-			var dialog = HydrogenFramework.Instance.ServiceProvider.GetService<ISendCommentsDialog>();
+			var dialog = HydrogenFramework.Instance.ServiceProvider.GetService<IProductSendCommentsDialog>();
 			dialog.ShowDialog();
 		}
 
 		public virtual void ShowSubmitBugReportDialog() {
-			var dialog = HydrogenFramework.Instance.ServiceProvider.GetService<IReportBugDialog>();
+			var dialog = HydrogenFramework.Instance.ServiceProvider.GetService<IProductReportBugDialog>();
 			dialog.ShowDialog();
 		}
 
 		public virtual void ShowRequestFeatureDialog() {
-			var dialog = HydrogenFramework.Instance.ServiceProvider.GetService<IRequestFeatureDialog>();
+			var dialog = HydrogenFramework.Instance.ServiceProvider.GetService<IProductRequestFeatureDialog>();
 			dialog.ShowDialog();
 		}
 
@@ -279,7 +258,7 @@ namespace Hydrogen.Windows.Forms {
 		}
 
 		public virtual void ReportError(Exception error) {
-		    WinFormsApplicationServices.ExecuteInUIFriendlyContext(() => ExceptionDialog.Show(this, error));
+			ExecuteInUIFriendlyContext(() => ExceptionDialog.Show(this, error));
 		}
 
 		public virtual void ReportError(string msg) {
@@ -287,7 +266,7 @@ namespace Hydrogen.Windows.Forms {
 		}
 
 		public virtual void ReportError(string title, string msg) {
-			WinFormsApplicationServices.ExecuteInUIFriendlyContext(
+			ExecuteInUIFriendlyContext(
 				() =>
 					MessageBox.Show(
 						msg,
@@ -300,16 +279,16 @@ namespace Hydrogen.Windows.Forms {
 		}
 
 		public virtual void ReportFatalError(string title, string msg) {
-			WinFormsApplicationServices.ExecuteInUIFriendlyContext(
+			ExecuteInUIFriendlyContext(
 				() => {
 					ReportError(title, msg);
-					WinFormsApplicationServices.Exit(true);
+					Exit(true);
 				}
 			);
 		}
 
 		public virtual void ReportInfo(string title, string msg) {
-			WinFormsApplicationServices.ExecuteInUIFriendlyContext(
+			ExecuteInUIFriendlyContext(
 				() => DialogEx.Show(
 						this,
 						SystemIconType.Information,
@@ -337,6 +316,11 @@ namespace Hydrogen.Windows.Forms {
 		#endregion
 
 		#region Auxillary Methods
+
+		private void EnforceLicense() {
+			var licenseEnforcer = HydrogenFramework.Instance.ServiceProvider.GetService<IProductLicenseEnforcer>();
+			licenseEnforcer.EnforceLicense(false);
+		}
 
 		private void FireFirstActivatedEvent() {
 			OnFirstActivated();

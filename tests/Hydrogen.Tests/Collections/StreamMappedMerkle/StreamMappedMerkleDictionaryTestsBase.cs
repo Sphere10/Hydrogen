@@ -137,7 +137,7 @@ namespace Hydrogen.Tests
 					endOfIterTest: () => {
 						// Manually test the merkle root
 						var itemSerializer = new TestObjectSerializer();
-						var itemHasher = new ItemHasher<TestObject>(chf, itemSerializer, Endianness.LittleEndian).WithNullHash(chf);
+						var itemHasher = new ItemDigestor<TestObject>(chf, itemSerializer, Endianness.LittleEndian).WithNullHash(chf);
 						var itemHashes = Enumerable.Range(0, clusteredDictionary.Storage.Count - clusteredDictionary.Storage.Header.ReservedRecords).Select(i => {
 							var item = clusteredDictionary.ReadValue(i);
 							return itemHasher.Hash(item);

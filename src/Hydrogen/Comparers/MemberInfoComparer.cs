@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 
@@ -10,6 +11,6 @@ namespace Hydrogen.FastReflection;
 public class MemberInfoComparer<T> : IEqualityComparer<T> where T : MemberInfo {
 	public bool Equals(T x, T y) =>  (x == null && y == null) || x.ReflectedType != null && x.Equals(y) && x.ReflectedType == y.ReflectedType;
 
-	public int GetHashCode(T obj) => Tools.Object.CombineHashCodes(obj.GetHashCode(), obj.ReflectedType.GetHashCode());
+	public int GetHashCode(T obj) => HashCode.Combine(obj.GetHashCode(), obj.ReflectedType.GetHashCode());
 		
 }

@@ -31,7 +31,7 @@ namespace Hydrogen {
             ApplyInternal(obj, (attr, val) => attr.Encrypt(val));
         }
 
-        private static void ApplyInternal(object obj, Func<EncryptedAttribute, string, string> func) {
+        private static void ApplyInternal(object obj, Func<EncryptedStringAttribute, string, string> func) {
             var bindingFlags = BindingFlags.Instance | BindingFlags.FlattenHierarchy | BindingFlags.Public | BindingFlags.SetField;
 	        // HS: Removed 2019-02-19, .NET Standard 2.0 assume has unrestricted
 	        //if (Tools.CodeAccessSecurity.HasUnrestrictedFeatureSet)
@@ -39,7 +39,7 @@ namespace Hydrogen {
 	        bindingFlags |= BindingFlags.NonPublic;
 
 			foreach (var field in obj.GetType().GetFields(bindingFlags)) {
-                var encryptionAttributes = field.GetCustomAttributesOfType<EncryptedAttribute>().ToArray();
+                var encryptionAttributes = field.GetCustomAttributesOfType<EncryptedStringAttribute>().ToArray();
                 if (!encryptionAttributes.Any())
                     continue;
                 if (encryptionAttributes.Count() != 1)
@@ -51,7 +51,7 @@ namespace Hydrogen {
                 var encryptionAttribute = encryptionAttributes.Single();
 
 #if USE_FAST_REFLECTION
-					field.SetValue(obj, func(encryptionAttribute, field.FastGetValue(obj).ToString()));  // using FastReflection
+				field.SetValue(obj, func(encryptionAttribute, field.FastGetValue(obj).ToString()));  // using FastReflection
 #else
                 field.SetValue(obj, func(encryptionAttribute, field.GetValue(obj).ToString())); // using standard reflection
 #endif
@@ -64,7 +64,7 @@ namespace Hydrogen {
 	        bindingFlags |= BindingFlags.NonPublic;
 
 			foreach (var property in obj.GetType().GetProperties(bindingFlags)) {
-                var encryptionAttributes = property.GetCustomAttributesOfType<EncryptedAttribute>().ToArray();
+                var encryptionAttributes = property.GetCustomAttributesOfType<EncryptedStringAttribute>().ToArray();
                 if (!encryptionAttributes.Any())
                     continue;
                 if (encryptionAttributes.Count() != 1)
@@ -76,7 +76,7 @@ namespace Hydrogen {
                 var encryptionAttribute = encryptionAttributes.Single();
 
 #if USE_FAST_REFLECTION
-					property.FastSetValue(obj, func(encryptionAttribute, property.FastGetValue(obj).ToString()));  // using FastReflection
+					property.FastSetValue(obj, func(encryptionAttribute, property.FastGetValue(obj)?.ToString()));  // using FastReflection
 #else
                 property.SetValue(obj, func(encryptionAttribute, property.GetValue(obj).ToString())); // using standard reflectio
 #endif

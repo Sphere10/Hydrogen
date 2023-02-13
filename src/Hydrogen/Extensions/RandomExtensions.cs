@@ -64,9 +64,9 @@ namespace Hydrogen {
 			=> Tools.Collection.Generate(() => random.NextBytes(size)).Take(count).ToArray();
 
 		public static int[] NextInts(this Random random, int count) {
-			var xxx = new ReinterpretArray();
-			xxx.AsByteArray = random.NextBytes(count * 4);
-			int[] source = xxx.AsInt32Array;
+			var reinterpretArray = new ReinterpretArray();
+			reinterpretArray.AsByteArray = random.NextBytes(count * 4);
+			int[] source = reinterpretArray.AsInt32Array;
 			var result = new int[count];
 			for (var i = 0; i < count; i++)
 				result[i] = source[i];

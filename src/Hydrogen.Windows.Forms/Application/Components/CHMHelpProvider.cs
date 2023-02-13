@@ -32,10 +32,10 @@ namespace Hydrogen.Windows.Forms {
             SyncObject = new object();
         }
 
-        public CHMHelpProvider(IUserInterfaceServices userInterfaceServices, IProductInformationServices productInformationServices) {
+        public CHMHelpProvider(IUserInterfaceServices userInterfaceServices, IProductInformationProvider productInformationProvider) {
 
             UserInterfaceServices = userInterfaceServices;
-            ProductInformationServices = productInformationServices;
+            ProductInformationProvider = productInformationProvider;
             CHMFile = null;
 
 
@@ -43,14 +43,14 @@ namespace Hydrogen.Windows.Forms {
 
         public IUserInterfaceServices UserInterfaceServices { get; private set; }
 
-        public IProductInformationServices ProductInformationServices { get; private set; }
+        public IProductInformationProvider ProductInformationProvider { get; private set; }
 
         public string CHMFile {
             get {
                 if (_chmFile == null) {
                     lock (SyncObject) {
                         if (_chmFile == null) {
-                            var chmQuery = ProductInformationServices.ProductInformation.HelpResources.Where(hr => hr.Item1 == HelpType.CHM);
+                            var chmQuery = ProductInformationProvider.ProductInformation.HelpResources.Where(hr => hr.Item1 == HelpType.CHM);
                             if (!chmQuery.Any()) {
                                 throw new SoftwareException("No default CHM help file is defined");
                             }
@@ -64,7 +64,7 @@ namespace Hydrogen.Windows.Forms {
                 if (value == null) {
                     _chmFile = null;
                 } else {
-                    _chmFile = ProductInformationServices.ProductInformation.ProcessTokensInString(value);
+                    _chmFile = StringFormatter.FormatEx(value);
                     if (!File.Exists(_chmFile)) {
                         throw new SoftwareException("File does not exist '{0}'", _chmFile);
                     }

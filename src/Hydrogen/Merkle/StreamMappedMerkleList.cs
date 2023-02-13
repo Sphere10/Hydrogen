@@ -18,7 +18,7 @@ public class StreamMappedMerkleList<TItem> : MerkleListAdapter<TItem, IStreamMap
 			  rootStream,
 			  clusterSize,
 			  hashAlgorithm,
-			  new ItemHasher<TItem>(hashAlgorithm, itemSerializer, endianness).WithNullHash(hashAlgorithm),
+			  new ItemDigestor<TItem>(hashAlgorithm, itemSerializer, endianness).WithNullHash(hashAlgorithm),
 			  itemSerializer,
 			  itemComparer,
 			  policy,

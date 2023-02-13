@@ -27,35 +27,6 @@ namespace Tools.Web {
     public static partial class AspNetCore {
 
 
-		public static SelectList ToFriendlyCountryList() {
-			var sortedCountries = ToSelectList<ISO3166Country>(sort:SortDirection.Ascending);
-			var betterList = new List<SelectListItem>();
-			// United States
-			var usa = sortedCountries.Items.Cast<SelectListItem>().Single(x => x.Value == ISO3166Country.UnitedStatesOfAmerica.ToString());
-
-			// Canada
-			var canada = sortedCountries.Items.Cast<SelectListItem>().Single(x => x.Value == ISO3166Country.Canada.ToString());
-
-			// United Kingdom
-			var uk = sortedCountries.Items.Cast<SelectListItem>().Single(x => x.Value == ISO3166Country.UnitedKingdom.ToString());
-
-			// India
-			var india = sortedCountries.Items.Cast<SelectListItem>().Single(x => x.Value == ISO3166Country.India.ToString());
-
-			// China
-			var china = sortedCountries.Items.Cast<SelectListItem>().Single(x => x.Value == ISO3166Country.China.ToString());
-
-			// Australia
-			var australia = sortedCountries.Items.Cast<SelectListItem>().Single(x => x.Value == ISO3166Country.Australia.ToString());
-
-			var privilegedCountries = new[] { usa, canada, uk, india, china, australia };
-
-			betterList = privilegedCountries.Concat(sortedCountries.Except(privilegedCountries)).ToList();
-			return new SelectList(betterList, "Value", "Text");
-			
-		}
-
-
 
 		public static SelectList ToSelectList<TEnum>(object selectedItem = default, SortDirection? sort = null) where TEnum : Enum
 			=> ToSelectList(typeof(TEnum), selectedItem, sort);

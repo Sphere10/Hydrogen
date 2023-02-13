@@ -18,7 +18,7 @@ namespace Hydrogen {
 		private readonly IItemHasher<TItem> _hasher;
 
 		public StreamMappedHashSet(Stream rootStream, int clusterSize, IItemSerializer<TItem> serializer, CHF chf, IEqualityComparer<TItem> comparer = null, ClusteredStoragePolicy policy = ClusteredStoragePolicy.DictionaryDefault, int reservedRecords = 0, Endianness endianness = Endianness.LittleEndian)
-			: this(rootStream, clusterSize, serializer, new ItemHasher<TItem>(chf, serializer), comparer, policy, reservedRecords, endianness) {
+			: this(rootStream, clusterSize, serializer, new ItemDigestor<TItem>(chf, serializer), comparer, policy, reservedRecords, endianness) {
 		}
 
 		public StreamMappedHashSet(Stream rootStream, int clusterSize, IItemSerializer<TItem> serializer, IItemHasher<TItem> hasher, IEqualityComparer<TItem> comparer = null, ClusteredStoragePolicy policy = ClusteredStoragePolicy.DictionaryDefault, int reservedRecords = 0, Endianness endianness = Endianness.LittleEndian)

@@ -27,21 +27,5 @@ namespace Hydrogen.Application {
 		public int NumberOfUsesByUser { get; set; }
 
 
-
-		public string ProcessTokensInString(string source) {
-			source = source.Replace("{FirstUsedDateBySystemUTC}", string.Format("{0:yyyy-MM-dd}",FirstUsedDateBySystemUTC));
-			source = source.Replace("{DaysUsedBySystem}", DaysUsedBySystem.ToString());
-			source = source.Replace("{NumberOfUsesBySystem}", NumberOfUsesBySystem.ToString());
-			source = source.Replace("{FirstUsedDateByUserUTC}", string.Format("{0:yyyy-MM-dd}", FirstUsedDateByUserUTC));
-			source = source.Replace("{DaysUsedByUser}", DaysUsedByUser.ToString());
-			source = source.Replace("{NumberOfUsesByUser}", NumberOfUsesByUser.ToString());
-
-			// System specific stuff
-			source = source.Replace("{CurrentYear}", DateTime.Now.Year.ToString());
-			source = source.Replace("{StartPath}", Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
-			return source;
-		}
-
-
 	}
 }

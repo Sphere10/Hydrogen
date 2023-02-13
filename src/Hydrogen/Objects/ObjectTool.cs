@@ -83,14 +83,14 @@ namespace Tools {
             ObjectEncryptor.EncryptMembers(obj);
         }
 
-        public static int CombineHashCodes(int hashCode1, int hashCode2) {
-            unchecked {
-                var hash = 17;
-                hash = hash * 31 + hashCode1;
-                hash = hash * 31 + hashCode2;
-                return hash;
-            }
-        }
+        //public static int CombineHashCodes(int hashCode1, int hashCode2) {
+        //    unchecked {
+        //        var hash = 17;
+        //        hash = hash * 31 + hashCode1;
+        //        hash = hash * 31 + hashCode2;
+        //        return hash;
+        //    }
+        //}
 
         public static void SetDefaultValues(object obj) {
             ObjectWithDefaultValues.SetDefaults(obj);

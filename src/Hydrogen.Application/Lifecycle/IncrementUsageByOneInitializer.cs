@@ -13,8 +13,6 @@
 
 namespace Hydrogen.Application;
 
-
-
 public class IncrementUsageByOneInitializer : ApplicationInitializerBase {
 
 	public IncrementUsageByOneInitializer(IProductUsageServices productUsageServices) {

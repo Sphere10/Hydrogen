@@ -308,19 +308,19 @@ namespace Hydrogen {
 		public static string AsAmendmentIfNotNullOrWhitespace(this string text) 
 			=> AsAmendmentIf(text, string.IsNullOrWhiteSpace(text));
 
-		public static string EscapeBraces(string text) {
+		public static string EscapeBraces(this string text) {
 			Debug.Assert(text != null);
 			return text.Replace("{", "{{").Replace("}", "}}");
 		}
 
-		public static string TrimToLength(string @string, int len, string append = "...") {
+		public static string TrimToLength(this string @string, int len, string append = "") {
 			if (@string == null || @string.Length <= len)
 				return @string;
 
 			return @string.Substring(0, len) + append;
 		}
 
-		public static string TrimWordsToLength(this string @string, int len, string append = "...") {
+		public static string TrimWordsToLength(this string @string, int len, string append = "") {
 			if (null == @string || @string.Length <= len)
 				return @string;
 

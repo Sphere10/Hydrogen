@@ -14,6 +14,7 @@
 using System;
 using System.IO;
 using Microsoft.Extensions.DependencyInjection;
+using Sphere10.DRM;
 
 namespace Hydrogen.Application {
 	public class ModuleConfiguration : ModuleConfigurationBase {
@@ -21,12 +22,13 @@ namespace Hydrogen.Application {
 		public override int Priority => int.MinValue; // last to execute
 
 		public override void RegisterComponents(IServiceCollection serviceCollection) {
+			if (HydrogenFramework.Instance.Options.HasFlag(HydrogenFrameworkOptions.EnableDrm))
+				EnableDRM(serviceCollection);
+			else
+				DisableDRM(serviceCollection);
 
-			if (!serviceCollection.HasImplementationFor<IBackgroundLicenseVerifier>())
-				serviceCollection.AddTransient<IBackgroundLicenseVerifier, NoOpBackgroundLicenseVerifier>();
-
-			if (!serviceCollection.HasImplementationFor<IConfigurationServices>())
-				serviceCollection.AddSingleton<IConfigurationServices, StandardConfigurationServices>();
+			if (!serviceCollection.HasImplementationFor<ISettingsServices>())
+				serviceCollection.AddSingleton<ISettingsServices, StandardSettingsServices>();
 
 			if (!serviceCollection.HasImplementationFor<IDuplicateProcessDetector>())
 				serviceCollection.AddTransient<IDuplicateProcessDetector, StandardDuplicateProcessDetector>();
@@ -34,44 +36,32 @@ namespace Hydrogen.Application {
 			if (!serviceCollection.HasImplementationFor<IHelpServices>())
 				serviceCollection.AddTransient<IHelpServices, StandardHelpServices>();
 
-			if (!serviceCollection.HasImplementationFor<ILicenseEnforcer>())
-				serviceCollection.AddSingleton<ILicenseEnforcer, NoOpLicenseEnforcer>();
-
-			if (!serviceCollection.HasImplementationFor<ILicenseKeyDecoder>())
-				serviceCollection.AddTransient<ILicenseKeyDecoder, StandardLicenseKeyDecoder>();
-
-			if (!serviceCollection.HasImplementationFor<ILicenseKeyValidator>())
-				serviceCollection.AddTransient<ILicenseKeyValidator, StandardLicenseKeyValidatorWithVersionCheck>();
-
-			if (!serviceCollection.HasImplementationFor<ILicenseKeyEncoder>())
-				serviceCollection.AddTransient<ILicenseKeyEncoder, StandardLicenseKeyEncoder>();
-
-			if (!serviceCollection.HasImplementationFor<ILicenseKeyServices>())
-				serviceCollection.AddTransient<ILicenseKeyServices, StandardLicenseKeyProvider>();
-
-			if (!serviceCollection.HasImplementationFor<ILicenseServices>())
-				serviceCollection.AddSingleton<ILicenseServices, StandardLicenseServices>();
-
-			if (!serviceCollection.HasImplementationFor<IProductInformationServices>())
-				serviceCollection.AddSingleton<IProductInformationServices, StandardProductInformationServices>();
+			if (!serviceCollection.HasImplementationFor<IProductInformationProvider>())
+				serviceCollection.AddSingleton<IProductInformationProvider, AssemblyAttributesProductInformationProvider>();
 
 			if (!serviceCollection.HasImplementationFor<IProductInstancesCounter>())
 				serviceCollection.AddTransient<IProductInstancesCounter, StandardProductInstancesCounter>();
 
 			if (!serviceCollection.HasImplementationFor<IProductUsageServices>())
-				serviceCollection.AddSingleton<IProductUsageServices, StandardProductUsageServices>();
+				serviceCollection.AddSingleton<IProductUsageServices, ProductUsageServices>();
 
 			if (!serviceCollection.HasImplementationFor<IWebsiteLauncher>())
 				serviceCollection.AddTransient<IWebsiteLauncher, StandardWebsiteLauncher>();
 
 			serviceCollection.AddTransient<ITokenResolver, ApplicationTokenResolver>();
+			serviceCollection.AddTransient<ITokenResolver, ProductInformationTokenResolver>();
+			serviceCollection.AddTransient<ITokenResolver, ProductUsageInformationTokenResolver>();
 
 			// Register settings provider last
 			if (!serviceCollection.HasImplementationFor<Local<ISettingsProvider>>()) {
 				serviceCollection.AddSingleton(
 					new Local<ISettingsProvider>(
 						new CachedSettingsProvider(
-							new DirectorySettingsProvider(Path.Combine(Tools.Text.FormatEx("{UserDataDir}"), Tools.Text.FormatEx("{ProductName}")))
+							new DirectoryFileSettingsProvider(
+								Tools.Values.Future.LazyLoad(
+									() => Path.Combine(Tools.Text.FormatEx("{UserDataDir}"), Tools.Text.FormatEx("{ProductName}"))
+								)
+							)
 						)
 					)
 				);
@@ -81,31 +71,74 @@ namespace Hydrogen.Application {
 				serviceCollection.AddSingleton(
 					new Global<ISettingsProvider>(
 						new CachedSettingsProvider(
-							new DirectorySettingsProvider(Path.Combine(Tools.Text.FormatEx("{SystemDataDir}"), Tools.Text.FormatEx("{ProductName}")))
+							new DirectoryFileSettingsProvider(
+								Tools.Values.Future.LazyLoad( 
+									() => Path.Combine(Tools.Text.FormatEx("{SystemDataDir}"), Tools.Text.FormatEx("{ProductName}"))
+								)
+							)
 						)
 					)
 				);
 			}
 
-			// HS 2021-07-12: top-level application should register this, since it is optional
-			//if (!registry.HasInitializer<IncrementUsageByOneTask>())
-			//	registry.RegisterInitializer<IncrementUsageByOneTask>();
+			// Initializers/Finalizers
+			serviceCollection.AddInitializer<IncrementUsageByOneInitializer>();
 
-			// Start Tasks
-			// ....
+		}
 
+		private void EnableDRM(IServiceCollection serviceCollection) {
 
-			// End Tasks
+			if (!serviceCollection.HasImplementationFor<IProductLicenseEnforcer>())
+				serviceCollection.AddSingleton<IProductLicenseEnforcer, ProductLicenseEnforcer>();
+
+			if (!serviceCollection.HasImplementationFor<IProductLicenseStorage>())
+				serviceCollection.AddTransient<IProductLicenseStorage, ProductLicenseSettingsStorage>();
+		
+			if (!serviceCollection.HasImplementationFor<IProductLicenseProvider>())
+				serviceCollection.AddTransient<IProductLicenseProvider, ProductLicenseProvider>();
+
+			if (!serviceCollection.HasImplementationFor<IProductLicenseClient>())
+				serviceCollection.AddTransient<IProductLicenseClient, AssemblyAttributeConfiguredProductLicenseClient>();
+			
+			if (!serviceCollection.HasImplementationFor<IProductLicenseActivator>())
+				serviceCollection.AddTransient<IProductLicenseActivator, ProductLicenseActivator>();
+
+			if (HydrogenFramework.Instance.Options.HasFlag(HydrogenFrameworkOptions.BackgroundLicenseVerify)) 
+				if (!serviceCollection.HasImplementationFor<IBackgroundLicenseVerifier>()) {
+					serviceCollection.AddTransient<IBackgroundLicenseVerifier, ClientBackgroundLicenseVerifier>();
+					serviceCollection.AddInitializer<VerifyLicenseInitializer>();
+				}
+		}
+
+		private void DisableDRM(IServiceCollection serviceCollection) { 
+			if (!serviceCollection.HasImplementationFor<IProductLicenseEnforcer>())
+				serviceCollection.AddSingleton<IProductLicenseEnforcer, NoOpProductLicenseEnforcer>();
+
+			if (!serviceCollection.HasImplementationFor<IProductLicenseStorage>())
+				serviceCollection.AddTransient<IProductLicenseStorage, NoOpProductLicenseStorage>();
+		
+			if (!serviceCollection.HasImplementationFor<IProductLicenseProvider>())
+				serviceCollection.AddTransient<IProductLicenseProvider, NoOpProductLicenseProvider>();
+
+			if (!serviceCollection.HasImplementationFor<IProductLicenseClient>())
+				serviceCollection.AddTransient<IProductLicenseClient, NoOpProductLicenseClient>();
+			
+			if (!serviceCollection.HasImplementationFor<IProductLicenseActivator>())
+				serviceCollection.AddTransient<IProductLicenseActivator, NoOpProductLicenseActivator>();
+
+			if (!serviceCollection.HasImplementationFor<IBackgroundLicenseVerifier>())
+				serviceCollection.AddTransient<IBackgroundLicenseVerifier, NoOpBackgroundLicenseVerifier>();
 
 		}
 
 		public override void OnInitialize(IServiceProvider serviceProvider) {
 			base.OnInitialize(serviceProvider);
 			if (Tools.Runtime.GetEntryAssembly().TryGetCustomAttributeOfType<AssemblyProductSecretAttribute>(false, out var attribute)) {
-				EncryptedAttribute.ApplicationSharedSecret = attribute.Secret;
+				EncryptedStringAttribute.ApplicationSharedSecret = attribute.Secret;
 			}
 			GlobalSettings.Provider = serviceProvider.GetService<Global<ISettingsProvider>>()?.Item;
 			UserSettings.Provider = serviceProvider.GetService<Local<ISettingsProvider>>()?.Item;
+			StringFormatter.RegisterResolvers(serviceProvider.GetServices<ITokenResolver>());
 		}
 	}
 }

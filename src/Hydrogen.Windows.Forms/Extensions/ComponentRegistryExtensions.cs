@@ -29,7 +29,6 @@ namespace Hydrogen.Windows.Forms {
 			serviceCollection.AddSingleton<IMainForm, TMainForm>();
 			serviceCollection.AddSingleton<IApplicationIconProvider>( provider => provider.GetService<IMainForm>());
 			serviceCollection.AddSingleton<IUserInterfaceServices>( provider => provider.GetService<IMainForm>());
-			serviceCollection.AddSingleton<IUserNotificationServices>( provider => provider.GetService<IMainForm>());
 			if (typeof(TMainForm).IsSubclassOf(typeof(IBlockManager))) 
 				serviceCollection.AddSingleton(provider => (IBlockManager)provider.GetService<IMainForm>());
 		}

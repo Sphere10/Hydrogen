@@ -13,7 +13,7 @@ namespace Hydrogen.DApp.Node {
 			SystemLog.RegisterLogger(new TimestampLogger(new ConsoleLogger()));
 
 			//NOTE: Until HydrogenInitializer gets to properly reference CryptoEx module, we init it here.
-			Hydrogen.CryptoEx.ModuleConfiguration.Initialize();
+			Hydrogen.CryptoEx.ExplicitModuleConfiguration.Initialize();
 			//SystemLog.RegisterLogger(new TimestampLogger(new DebugLogger()));
 
 

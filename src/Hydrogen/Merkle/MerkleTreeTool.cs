@@ -12,7 +12,7 @@ public static class MerkleTree {
 		=> ComputeMerkleRoot(items, CHF.SHA2_256);
 
 	public static byte[] ComputeMerkleRoot<TItem>(IEnumerable<TItem> items, CHF chf, IItemSerializer<TItem> serializer = null)
-		=> ComputeMerkleRoot(items, new ItemHasher<TItem>(chf, serializer ?? ItemSerializer<TItem>.Default), chf);
+		=> ComputeMerkleRoot(items, new ItemDigestor<TItem>(chf, serializer ?? ItemSerializer<TItem>.Default), chf);
 
 	public static byte[] ComputeMerkleRoot<TItem>(IEnumerable<TItem> items, IItemHasher<TItem> hasher, CHF chf) {
 		hasher = hasher.WithNullHash(Array.Gen<byte>(Hashers.GetDigestSizeBytes(chf), 0));

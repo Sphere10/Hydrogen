@@ -26,6 +26,7 @@ using Hydrogen;
 using Hydrogen.Windows.Forms;
 using System.Linq;
 using Hydrogen.Application;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Hydrogen.Windows.Forms {
 
@@ -149,7 +150,7 @@ namespace Hydrogen.Windows.Forms {
                 plugin.Dispose();
                 RebuildToolBar();
             } catch (Exception e) {
-                WinFormsApplicationServices.ReportError(e.Message);
+                ExceptionDialog.Show(e);
             }
         }
 
@@ -177,7 +178,7 @@ namespace Hydrogen.Windows.Forms {
                     ExecuteLinkMenuItem(menuItem as ILinkMenuItem);
                 }
             } catch (Exception e) {
-                WinFormsApplicationServices.ReportError(e);
+	            ExceptionDialog.Show(e);
             }
         }
 
@@ -581,8 +582,8 @@ namespace Hydrogen.Windows.Forms {
                 }
                 #endregion
                 // set screen context if activation did not do so
-                //if (screen.WinFormsWinFormsApplicationServices == null) {
-                //    screen.WinFormsWinFormsApplicationServices = base.WinFormsWinFormsApplicationServices;
+                //if (screen.WinFormsWinFormsApplicationProvider == null) {
+                //    screen.WinFormsWinFormsApplicationProvider = base.WinFormsWinFormsApplicationProvider;
                 //}
                 if (screen.ApplicationBlock == null) {
                     screen.ApplicationBlock = owner;
@@ -689,8 +690,12 @@ namespace Hydrogen.Windows.Forms {
         #region Misc
 
         public virtual void ShowActiveScreenContextHelp() {
+			var helpServices = HydrogenFramework.Instance.ServiceProvider.GetService<IHelpServices>();
+			if (helpServices == null)
+				return;
+
             if (ActiveBlock != null && ActiveScreen != null) {
-                WinFormsApplicationServices.ShowContextHelp(ActiveScreen);
+	            helpServices.ShowContextHelp(ActiveScreen);
             }
         }
 

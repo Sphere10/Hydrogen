@@ -15,28 +15,26 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Hydrogen {
+namespace Hydrogen;
 
-	public class EnumerableEqualityComparer<T> : IEqualityComparer<IEnumerable<T>> {
-		private readonly IEqualityComparer<T> _elementComparer;
+public class EnumerableEqualityComparer<T> : IEqualityComparer<IEnumerable<T>> {
+	private readonly IEqualityComparer<T> _elementComparer;
 
-		public EnumerableEqualityComparer() {
-			_elementComparer = EqualityComparer<T>.Default;
-		}
+	public EnumerableEqualityComparer()
+		: this(EqualityComparer<T>.Default) {
+	}
 
-		public EnumerableEqualityComparer(IEqualityComparer<T> comparer) {
-			_elementComparer = comparer;
-		}
+	public EnumerableEqualityComparer(IEqualityComparer<T> comparer) {
+		_elementComparer = comparer;
+	}
 
-		public bool Equals(IEnumerable<T> x, IEnumerable<T> y) {
-            return Object.ReferenceEquals(x, y) || (x != null && y != null && x.SequenceEqual(y, _elementComparer));
-        }
+	public bool Equals(IEnumerable<T> x, IEnumerable<T> y)
+		=> ReferenceEquals(x, y) || (x != null && y != null && x.SequenceEqual(y, _elementComparer));
 
-        public int GetHashCode(IEnumerable<T> obj) {
-            if (obj == null)
-                return 0;
+	public int GetHashCode(IEnumerable<T> obj) {
+		if (obj == null)
+			return 0;
 
-            return unchecked(obj.Select(e => e.GetHashCode()).Aggregate(0, (a, b) => (((23 * 37) + a) * 37) + b)); 
-        }
-    }
+		return obj.Select(e => e.GetHashCode()).Aggregate(0, HashCode.Combine);
+	}
 }

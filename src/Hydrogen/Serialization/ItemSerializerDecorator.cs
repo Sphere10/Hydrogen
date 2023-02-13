@@ -9,10 +9,10 @@ namespace Hydrogen {
 			: base(internalSerializer) {
 		}
 
-		public bool TrySerialize(TItem item, EndianBinaryWriter writer, out int bytesWritten)
+		public virtual bool TrySerialize(TItem item, EndianBinaryWriter writer, out int bytesWritten)
 			=> Internal.TrySerialize(item, writer, out bytesWritten);
 
-		public bool TryDeserialize(int byteSize, EndianBinaryReader reader, out TItem item) 
+		public virtual bool TryDeserialize(int byteSize, EndianBinaryReader reader, out TItem item) 
 			=> Internal.TryDeserialize(byteSize, reader, out item);
 	}
 

@@ -11,8 +11,11 @@ namespace Hydrogen {
 		private static readonly char[] TokenTrimDelimitters = { TokenStartChar, TokenEndChar };
 
 		// TODO: add ApplicationInitializers in appropriate modules to add other resolvers
-		internal static readonly List<ITokenResolver> Resolvers = new List<ITokenResolver>(new [] { new StringFormatter.DefaultTokenResolver() });
+		private static readonly HashSet<ITokenResolver> _resolvers = new  (new [] { new DefaultTokenResolver() });
 		
+		public static void RegisterResolvers(IEnumerable<ITokenResolver> resolvers) 
+			=> _resolvers.AddRange(resolvers);
+
         public static string FormatEx(string formatString, params object[] formatArgs) {
             return FormatEx(formatString, ResolveInternalToken, true, formatArgs);
         }
@@ -202,7 +205,7 @@ namespace Hydrogen {
 
         private static bool TryResolveInternalToken(string token, out object value) {
 	        value = default;
-	        foreach (var resolver in Resolvers) 
+	        foreach (var resolver in _resolvers) 
 		        if (resolver.TryResolve(token, out value))
 			        return true;
 	        return false;

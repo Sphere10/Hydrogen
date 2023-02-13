@@ -32,7 +32,7 @@ namespace Hydrogen.Data.NHibernate {
 			var typeofEnum = typeof(TEnum);
 			foreach (Enum @enum in Enum.GetValues(typeofEnum)) {
 				var entity = new TypeTable<TEnum> {
-					ID = (int) Enum.Parse(typeof(TEnum), @enum.ToString()),
+					ID = Convert.ToInt32( Enum.Parse(typeof(TEnum), @enum.ToString())),
 					Name = Enum.GetName(typeofEnum, @enum),
 					Description =  Tools.Enums.GetDescription(@enum)
 				};

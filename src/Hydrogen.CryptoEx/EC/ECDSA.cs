@@ -50,7 +50,7 @@ namespace Hydrogen.CryptoEx.EC {
 				return false;
 			}
 			var pubKey = bytes.ToArray();
-			// we only allows compressed ECDSA public keys
+			// we only allow compressed ECDSA public keys
 			if (pubKey[0] != 0x02 && pubKey[0] != 0x03) {
 				return false;
 			}

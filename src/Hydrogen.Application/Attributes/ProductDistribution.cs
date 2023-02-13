@@ -2,7 +2,7 @@ using System.Runtime.Serialization;
 
 namespace Hydrogen.Application;
 
-public enum  ProductDistribution {
+public enum ProductDistribution {
 	[EnumMember(Value = "Alpha")]
 	Alpha,
 
@@ -12,6 +12,6 @@ public enum  ProductDistribution {
 	[EnumMember(Value = "RC")]
 	ReleaseCandidate,
 
-	[EnumMember(Value = "IR")]
+	[EnumMember(Value = "Internal")]
 	InternalRelease
 }

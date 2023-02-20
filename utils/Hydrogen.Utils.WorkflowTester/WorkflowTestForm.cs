@@ -8,6 +8,7 @@ namespace Hydrogen.Utils.WorkflowTester {
 	public partial class WorkflowTestForm : Form {
 
 		protected static TextWriter OutputWriter;
+		protected static bool CancelSubscription;
 		protected static int ErrorStep;
 		protected static bool Delay;
 		protected IWorkflowHost _workflowHost;
@@ -37,9 +38,11 @@ namespace Hydrogen.Utils.WorkflowTester {
 			IServiceProvider serviceProvider = ConfigureServices();
 			_knownWorkflowInstances = new List<string>();
 			_workflowHost = serviceProvider.GetService<IWorkflowHost>();
+			_workflowHost.RegisterWorkflow<SubscriptionWorkflow, SubscriptionBag>();
 			_workflowHost.RegisterWorkflow<TestWorkflow1>();
 			_workflowHost.RegisterWorkflow<TestWorkflow2>();
 			_workflowHost.Start();
+			CancelSubscription = _cancelSubscriptionCheckBox.Checked;
 		}
 
 		public void SetErrorStep() {
@@ -63,13 +66,25 @@ namespace Hydrogen.Utils.WorkflowTester {
 		}
 
 
-
 		#region Handlers
+
+
+		private void _cancelSubscriptionCheckBox_CheckedChanged(object sender, EventArgs e) {
+			CancelSubscription = _cancelSubscriptionCheckBox.Checked;
+		}
+
+		private async void _subscriptionButton_Click(object sender, EventArgs e) {
+			try {
+				var workflowInstanceId = await _workflowHost.StartWorkflow("Subscription");
+				_knownWorkflowInstances.Add(workflowInstanceId);
+				await OutputWriter.WriteLineAsync($"New Workflow Instance: {workflowInstanceId}");
+			} catch (Exception error) {
+				ExceptionDialog.Show(error);
+			}
+		}
 
 		private async void _test1Button_Click(object sender, EventArgs e) {
 			try {
-
-				//start the workflow host
 				var workflowInstanceId = await _workflowHost.StartWorkflow("Workflow1");
 				_knownWorkflowInstances.Add(workflowInstanceId);
 				await OutputWriter.WriteLineAsync($"New Workflow Instance: {workflowInstanceId}");
@@ -81,7 +96,6 @@ namespace Hydrogen.Utils.WorkflowTester {
 
 		private async void _test2Button_Click(object sender, EventArgs e) {
 			try {
-				//start the workflow host
 				var workflowInstanceId = await _workflowHost.StartWorkflow("Workflow2");
 				_knownWorkflowInstances.Add(workflowInstanceId);
 				await OutputWriter.WriteLineAsync($"New Workflow Instance: {workflowInstanceId}");
@@ -157,6 +171,68 @@ namespace Hydrogen.Utils.WorkflowTester {
 		#endregion
 
 		#region Inner Classes
+
+		public class SubscriptionBag {
+
+			public SubscriptionBag() {
+			}
+
+			public int WarningSeconds { get; set; } = 1;
+
+			public int DurationSeconds { get; set; } = 5;
+
+			public bool Active { get; set; } = true;
+
+			public int TimesCharged { get; set; } = 0;
+
+		}
+
+		public class SubscriptionWorkflow : IWorkflow<SubscriptionBag> {
+			public void Build(IWorkflowBuilder<SubscriptionBag> builder) {
+
+				var chargeBranch = builder.CreateBranch()
+					.StartWith(bag => OutputWriter.WriteLine("CHARGED"));
+
+				var cancelBranch = builder.CreateBranch()
+					.StartWith(bag => OutputWriter.WriteLine("CANCELLED"));
+
+
+				builder
+					.UseDefaultErrorBehavior(WorkflowErrorHandling.Suspend)
+					.StartWith(_ => OutputWriter.WriteLine("STARTING"))
+					.While(bag => bag.Active).Do(then => then
+						.Delay(bag => TimeSpan.FromSeconds(bag.DurationSeconds - bag.WarningSeconds))
+						.Then(_ => OutputWriter.WriteLine("WARNING ABOUT TO CHARGE"))
+						.Delay(bag => TimeSpan.FromSeconds(bag.WarningSeconds))
+						.Then(_ => OutputWriter.WriteLine("PROCESS SUBSCRIPTION (CHARGE OR CANCEL)"))
+						.Output(bag => bag.Active, step => !CancelSubscription)
+					)
+					.Then(_ => OutputWriter.WriteLine("FINISHED"));
+
+
+
+				//builder
+				//	.UseDefaultErrorBehavior(WorkflowErrorHandling.Suspend)
+				//	.Schedule(bag => TimeSpan.FromSeconds(bag.DurationSeconds) - TimeSpan.FromSeconds(bag.WarningSeconds)).Do(then =>
+				//		then.StartWith(bag => OutputWriter.WriteLine("WARNING ABOUT TO CHARGE"))
+				//			.Schedule(bag => TimeSpan.FromSeconds(bag.WarningSeconds)).Do(
+				//				then => then.Decide(bag => bag.Active)
+				//					.Branch(true, chargeBranch)
+				//					.Branch(false, cancelBranch)
+				//			)
+				//	);
+
+			}
+
+			// .StartWith(bag =>  bag.St { if(bag.TimesCharged == 2) bag. })
+
+
+			public string Id => "Subscription";
+			public int Version { get; } = 1;
+
+		}
+
+
 
 		public class TestWorkflow1 : IWorkflow {
 			public void Build(IWorkflowBuilder<object> builder) {
@@ -290,6 +366,7 @@ namespace Hydrogen.Utils.WorkflowTester {
 
 
 		#endregion
+
 
 
 	}

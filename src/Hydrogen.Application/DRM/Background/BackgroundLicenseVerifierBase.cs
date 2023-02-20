@@ -48,9 +48,24 @@ public abstract class BackgroundLicenseVerifierBase : IBackgroundLicenseVerifier
 
 			// Now save the override command from DRM server if and only if the users license was an activated license (not default) and it didn't 
 			// change since before the notification (note: it can change if long-running server response and user changed in UI in that time)
-			if (LicenseStorage.TryGetActivatedLicense(out var currentActivation2))
-				if (currentActivation2.License.Item.ProductKey == currentActivation.License.Item.ProductKey)
+			if (LicenseStorage.TryGetActivatedLicense(out var activatedLicense)) {
+				if (activatedLicense.License.Item.ProductKey == currentActivation.License.Item.ProductKey)
 					LicenseStorage.SaveOverrideCommand(commandResult.Value); 
+
+				// SPECIAL CASE: if the license is about to expire by a hard date, try to silently re-activate in case the license was renewed via a subscription
+				if (activatedLicense.License.Item.ExpirationDate.HasValue && activatedLicense.License.Item.ExpirationDate >= DateTime.UtcNow - TimeSpan.FromDays(14))  {
+					try {
+						// This works because licenses expires generally 14 days after a subscription ends thus a subscription will generally be renewed 14 days before license will expire
+						// By doing this, the license will seamlessly re-activate for subscription based products
+						// If not reactivated, the the above override command will generally disable it.
+						// At worst, a user can get 14 extra days of free before expiration
+						await LicenseActivator.ActivateLicense(currentActivation.License.Item.ProductKey);
+					} catch (Exception ex) {
+						// Logger.Exception(ex)
+						// We don't want to deal with exceptions here since this is a silent process
+					}
+				}
+			}
 
 			
 			// NOTE: no license enforcement is performed in the background. If the DRM Server responded with a disable command,

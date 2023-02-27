@@ -129,8 +129,7 @@ internal static class HydrogenAssemblyAttributesHelper {
 
 	public static string GetAssemblyAuthorEmail() {
 		var attributes = Tools.Runtime.GetEntryAssembly().GetCustomAttributesOfType<AssemblyAuthorAttribute>(false);
-		return !attributes.Any() ? null : StringFormatter.FormatEx(attributes.First().Email);
+		return !attributes.Any() ? null : StringFormatter.FormatEx(attributes.First().Email ?? string.Empty);
 	}
-
 
 }

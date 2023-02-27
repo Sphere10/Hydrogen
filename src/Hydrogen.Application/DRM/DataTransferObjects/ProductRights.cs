@@ -77,7 +77,14 @@ public class ProductRights {
 	public int Version { get; set; }
 
 	public ProductLicenseFeatureLevelDTO FeatureRights;
-
+	
+	public int? LimitFeatureA { get; set; }
+	
+	public int? LimitFeatureB { get; set; }
+	
+	public int? LimitFeatureC { get; set; }
+	
+	public int? LimitFeatureD { get; set; }
 
 	public void Disable() {
 		FeatureRights = ProductLicenseFeatureLevelDTO.None;
@@ -103,8 +110,8 @@ public class ProductRights {
 		AppliesToVersion = false;
 		HasFiniteUses = false;
 		HasFiniteDays = false;
-		ExpiresAfterDate = false;
+		if (ExpiresAfterDate && ExpirationDateUTC <= DateTime.UtcNow)
+			ExpiresAfterDate = false;
 		HasFiniteInstances = false;
-		
 	}
 }

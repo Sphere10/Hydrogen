@@ -103,11 +103,11 @@ namespace Hydrogen.Application {
 			if (!serviceCollection.HasImplementationFor<IProductLicenseActivator>())
 				serviceCollection.AddTransient<IProductLicenseActivator, ProductLicenseActivator>();
 
+			if (!serviceCollection.HasImplementationFor<IBackgroundLicenseVerifier>())
+				serviceCollection.AddTransient<IBackgroundLicenseVerifier, ClientBackgroundLicenseVerifier>();
+
 			if (HydrogenFramework.Instance.Options.HasFlag(HydrogenFrameworkOptions.BackgroundLicenseVerify)) 
-				if (!serviceCollection.HasImplementationFor<IBackgroundLicenseVerifier>()) {
-					serviceCollection.AddTransient<IBackgroundLicenseVerifier, ClientBackgroundLicenseVerifier>();
-					serviceCollection.AddInitializer<VerifyLicenseInitializer>();
-				}
+				serviceCollection.AddInitializer<VerifyLicenseInitializer>();
 		}
 
 		private void DisableDRM(IServiceCollection serviceCollection) { 

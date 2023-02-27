@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Xml.Serialization;
 using Hydrogen;
 using Hydrogen.Application;
@@ -60,6 +61,7 @@ public class ProductLicenseSettingsStorage : IProductLicenseStorage {
 		[JsonProperty("licenseActivation")]
 		[EncryptedString]
 		public string LicenseActivationJson { get; set; }
+
 	}
 	
 }

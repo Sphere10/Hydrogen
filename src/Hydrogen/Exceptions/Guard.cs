@@ -241,6 +241,9 @@ namespace Hydrogen {
 				throw new ArgumentException(message, paramName);
 		}
 
+#if OMIT_GUARD
+		[Conditional("DEBUG")]
+#endif
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static TType ArgumentCast<TType>(object @object, string parameter) {
 			ArgumentCast<TType>(@object, out var result, parameter);
@@ -287,6 +290,23 @@ namespace Hydrogen {
             if (!condition)
                 throw new InvalidOperationException(message ?? "Internal error");
         }
+
+
+		
+#if OMIT_GUARD
+		[Conditional("DEBUG")]
+#endif
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static TType EnsureCast<TType>(object @object, string message) {
+			EnsureCast<TType>(@object, out var result, message);
+			return result;
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static void EnsureCast<TType>(object @object, out TType castedObject, string message) {
+			Ensure(@object is TType, message);
+			castedObject = (TType)@object;
+		}
 
 	}
 }

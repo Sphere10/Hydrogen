@@ -32,7 +32,15 @@ public class DirectoryFileSettingsProvider : BaseSettingsProvider {
 	public DirectorySettingsProviderPolicy Policy { get; protected set; }
 
 	public override bool ContainsSetting(Type settingsObjectType, object id = null) {
-		return File.Exists(DetermineFilepath(settingsObjectType, id));
+		var path = DetermineFilepath(settingsObjectType, id);
+		if (!File.Exists(path))
+			return false;
+
+		if (!Tools.FileSystem.IsFileEmpty(path))
+			return true;
+
+		File.Delete(path);
+		return false;
 	}
 
 	public override void DeleteSetting(SettingsObject settings) {

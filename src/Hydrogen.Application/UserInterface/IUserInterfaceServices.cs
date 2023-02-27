@@ -13,40 +13,39 @@
 
 using System;
 
-namespace Hydrogen.Application {
+namespace Hydrogen.Application;
 
 
-	public interface IUserInterfaceServices  {
+public interface IUserInterfaceServices {
 
-		void Exit(bool force = false);
+	void Exit(bool force = false);
 
-		bool ApplicationExiting { get; set; }
+	bool ApplicationExiting { get; set; }
 
-		string Status { get; set; }
+	string Status { get; set; }
 
-		void ShowNagScreen(string nagMessage);
+	void ShowNagScreen(string nagMessage);
 
-		object PrimaryUIController { get; }
+	object PrimaryUIController { get; }
 
-		void ShowSendCommentDialog();
+	void ShowSendCommentDialog();
 
-		void ShowSubmitBugReportDialog();
+	void ShowSubmitBugReportDialog();
 
-		void ShowRequestFeatureDialog();
+	void ShowRequestFeatureDialog();
 
-		void ShowAboutBox();
+	void ShowAboutBox();
 
-		void ReportError(Exception e);
+	void ReportError(Exception e);
 
-		void ReportError(string msg);
+	void ReportError(string msg);
 
-		void ReportError(string title, string msg);
+	void ReportError(string title, string msg);
 
-		void ReportFatalError(string title, string msg);
+	void ReportFatalError(string title, string msg);
 
-		void ReportInfo(string title, string msg);
+	void ReportInfo(string title, string msg);
 
-		bool AskYN(string question);
+	bool AskYN(string question);
 
-	}
 }

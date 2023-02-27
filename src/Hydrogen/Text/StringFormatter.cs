@@ -34,6 +34,7 @@ namespace Hydrogen {
 		}
 
 		public static string FormatEx(string @string, Func<string, object> userTokenResolver, bool recursive, params object[] formatArgs) {
+			Guard.ArgumentNotNull(@string, nameof(@string));			
 			var alreadyResolved = new Dictionary<string, object>();
 
 			return FormatExInternal(@string);

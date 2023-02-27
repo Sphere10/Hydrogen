@@ -27,7 +27,7 @@ namespace Hydrogen {
 		}
 	}
 
-	public class ObservableDictionary<TKey, TValue, TConcrete> : ObservableCollection<KeyValuePair<TKey, TValue>, TConcrete> 
+	public class ObservableDictionary<TKey, TValue, TConcrete> : ObservableCollection<KeyValuePair<TKey, TValue>, TConcrete>, IDictionary<TKey, TValue>
 		where TConcrete : IDictionary<TKey, TValue> {
 
 		public event EventHandlerEx<object, SearchingMembershipEventArgs<TKey>> SearchingKeyMembership;

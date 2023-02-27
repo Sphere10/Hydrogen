@@ -27,8 +27,8 @@ public class ProductLicenseEnforcer : IProductLicenseEnforcer {
 	public const string TrialVersionNagText = "You are using an evaluation version of this software.";
 	public const string DisabledVersionNagText = "Your evaluation period has expired.";
 	public const string DowngradeMessageText = "Your license has expired and your product rights are defaulted to default free license shipped with product.";
-	public const string DateExpiresText = "Your license is valid up and until {0:yyyy-MM-dd}.";
-	public const string DateExpiredText = "Your license expired on the {0:yyyy-MM-dd}.";
+	public const string DateExpiresText = "Your license is valid up to and until {0:yyyy-MM-dd}.";
+	public const string DateExpiredText = "Your license expired on {0:yyyy-MM-dd}.";
 	public const string DaysExpiredText = "You have exceeded the maximum number of days permitted in your evalation period.";
 	public const string NumDaysUsedText = "This is day {0} out of the {1} day evaluation period.";
 	public const string InstancesExpiredText = "You are running too many instances of this application.";
@@ -230,10 +230,6 @@ public class ProductLicenseEnforcer : IProductLicenseEnforcer {
 		}
 	}
 
-	protected virtual void ApplyExpirationPolicy(ref ProductRights rights, ProductLicenseExpirationPolicyDTO licenseExpirationPolicy, ProductLicenseActionDTO commandOverride) {
-	}
-
-
 	protected virtual ProductRights CalculateLicenseRights(ProductLicenseActivationDTO licenseActivation, out bool isExpired, out string nagMessage) {
 		var messageBuilder = new ParagraphBuilder();
 		isExpired = false;
@@ -251,6 +247,12 @@ public class ProductLicenseEnforcer : IProductLicenseEnforcer {
 		}
 		var rights = ProductRights.None;
 		var license = licenseActivation.License.Item;
+
+		// Copy limit features first
+		rights.LimitFeatureA = license.LimitFeatureA;
+		rights.LimitFeatureB = license.LimitFeatureB;
+		rights.LimitFeatureC = license.LimitFeatureC;
+		rights.LimitFeatureD = license.LimitFeatureD;
 
 		if (license.MajorVersionApplicable.HasValue) {
 			rights.AppliesToVersion = true;
@@ -356,9 +358,9 @@ public class ProductLicenseEnforcer : IProductLicenseEnforcer {
 
 		if (rights.FeatureRights == ProductLicenseFeatureLevelDTO.None) {
 			messageBuilder.AppendSentence(DisabledVersionNagText);
-		} else if (rights.FeatureRights == ProductLicenseFeatureLevelDTO.Free || rights.HasFiniteDays || rights.HasFiniteUses || rights.ExpiresAfterDate) {
+		} else if (rights.FeatureRights == ProductLicenseFeatureLevelDTO.Free) {
 			messageBuilder.AppendSentence(TrialVersionNagText);
-		} else if (rights.FeatureRights == ProductLicenseFeatureLevelDTO.Full) {
+		} else {
 			messageBuilder.AppendSentence(FullVersionText);
 		}
 

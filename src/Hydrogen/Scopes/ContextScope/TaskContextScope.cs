@@ -6,7 +6,7 @@ namespace Hydrogen;
 public sealed class TaskContextScope : AsyncContextScope {
 	private readonly Func<Task> _contextFinalizer;
 	private readonly Func<Task> _scopeFinalizer;
-	private readonly bool _invokeOnException;
+
 
 	public TaskContextScope(Func<Task> contextFinalizer, ContextScopePolicy policy, string contextName)
 		: this(contextFinalizer, default, policy, contextName) {
@@ -18,15 +18,13 @@ public sealed class TaskContextScope : AsyncContextScope {
 	}
 
 	protected override async ValueTask OnScopeEndInternalAsync() {
-		if (_invokeOnException)
-			if (_scopeFinalizer != null)
-				await _scopeFinalizer();
+		if (_scopeFinalizer != null)
+			await _scopeFinalizer();
 	}
 
 	protected override async ValueTask OnContextEndAsync() {
-		if (_invokeOnException)
-			if (_contextFinalizer != null)
-				await _contextFinalizer();
+		if (_contextFinalizer != null)
+			await _contextFinalizer();
 	}
 
 }

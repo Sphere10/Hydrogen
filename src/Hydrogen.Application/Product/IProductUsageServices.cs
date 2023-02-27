@@ -11,13 +11,18 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace Hydrogen.Application {
+using System.Collections.Generic;
 
-	public interface IProductUsageServices {
+namespace Hydrogen.Application;
 
-		ProductUsageInformation ProductUsageInformation { get; }
+public interface IProductUsageServices {
 
-		void IncrementUsageByOne();
+	ProductUsageInformation ProductUsageInformation { get; }
 
-	 }
+	void IncrementUsageByOne();
+
+	IDictionary<string, object> UserEncryptedProperties { get; }
+
+	IDictionary<string, object> SystemEncryptedProperties { get; }
+
 }

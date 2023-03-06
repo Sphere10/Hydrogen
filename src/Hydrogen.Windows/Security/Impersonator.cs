@@ -18,32 +18,33 @@ using System.ComponentModel;
 
 namespace Hydrogen.Windows.Security {
 
+	/////////////////////////////////////////////////////////////////////////
+	/// <summary>
+	/// Impersonation of a user. Allows to execute code under another
+	/// user context.
+	/// Please note that the account that instantiates the Impersonator class
+	/// needs to have the 'Act as part of operating system' privilege set.
+	/// </summary>
+	/// <remarks>	
+	/// This class is based on the information in the Microsoft knowledge base
+	/// article http://support.microsoft.com/default.aspx?scid=kb;en-us;Q306158
+	/// 
+	/// Encapsulate an instance into a using-directive like e.g.:
+	///
+	///		Impersonator.RunAs("myUsername", "myDomainname", "myPassword", action);
+	///		...
+	///		using (Impersonator.Scope( ) )
+	///		{
+	///			...
+	///			[code that executes under the new context]
+	///			...
+	///		}
+	///		...
+	/// 
+	/// </remarks>
     public class Impersonator {
 
-        /////////////////////////////////////////////////////////////////////////
-        /// <summary>
-        /// Impersonation of a user. Allows to execute code under another
-        /// user context.
-        /// Please note that the account that instantiates the Impersonator class
-        /// needs to have the 'Act as part of operating system' privilege set.
-        /// </summary>
-        /// <remarks>	
-        /// This class is based on the information in the Microsoft knowledge base
-        /// article http://support.microsoft.com/default.aspx?scid=kb;en-us;Q306158
-        /// 
-        /// Encapsulate an instance into a using-directive like e.g.:
-        /// 
-        ///		...
-        ///		using ( new Impersonator( "myUsername", "myDomainname", "myPassword" ) )
-        ///		{
-        ///			...
-        ///			[code that executes under the new context]
-        ///			...
-        ///		}
-        ///		...
-        /// 
-        /// </remarks>
-        public static void RunImpersonated(
+        public static void RunAs(
                        string userName,
                        string domain,
                        string password,
@@ -96,7 +97,7 @@ namespace Hydrogen.Windows.Security {
             }
         }
 
-    }
+	}
 }
 
 

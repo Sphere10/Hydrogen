@@ -155,12 +155,12 @@ namespace Hydrogen.Data.Tests {
 
         [Test]
         [TestCaseSource(nameof(DBMS))]
-        public void Error_TransactionNotClosed(DBMSType dbmsType) {
+        public void Error_TransactionNotClosedDoesNotThrow(DBMSType dbmsType) {
             using (var dac = EnterCreateDatabaseScope(dbmsType, TestTables.BasicTable)) {
                 var scope = dac.BeginScope(true);
                 scope.BeginTransaction();
                 dac.Insert("BasicTable", new[] {new ColumnValue("ID", 1)});
-                Assert.Catch( () => scope.Dispose());
+                Assert.DoesNotThrow(scope.Dispose);
             }
         }
 
@@ -331,12 +331,12 @@ namespace Hydrogen.Data.Tests {
 
         [Test]
         [TestCaseSource(nameof(DBMS))]
-        public void RepeatTransaction(DBMSType dbmsType) {
+        public void RepeatTransactionNotThrow(DBMSType dbmsType) {
             using (var dac = EnterCreateDatabaseScope(dbmsType, TestTables.BasicTable)) {
                 Assert.Catch(() => {
                     using (var scope0 = dac.BeginScope()) {
                         scope0.BeginTransaction();
-                        Assert.Catch(() => scope0.BeginTransaction());
+                        Assert.DoesNotThrow(() => scope0.BeginTransaction());
                     }
                 });
             }

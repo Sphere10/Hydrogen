@@ -15,7 +15,7 @@ public class DateTimeSerializer : StaticSizeItemSerializerBase<DateTime> {
 		=> _longSerializer.TrySerialize(item.ToBinary(), writer);
 
 	public override bool TryDeserialize(EndianBinaryReader reader, out DateTime item) {
-		if (_longSerializer.TryDeserialize(reader, out var binVal)) {
+		if (!_longSerializer.TryDeserialize(reader, out var binVal)) {
 			item = default;
 			return false;
 		}

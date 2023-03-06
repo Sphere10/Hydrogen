@@ -26,12 +26,20 @@ using Hydrogen.Windows.Security;
 namespace Hydrogen.UnitTests {
     [TestFixture]
     public class WindowsSecurityTests {
-        public static readonly string RemoteHostName = "ANTARIS";
+        public string RemoteHostName;
+
+
+		[OneTimeSetUp]
+		public void Init() {
+			// NOTE: this is just the local machine being referenced as a remote machine
+			RemoteHostName = Environment.MachineName;
+		}
 
         #region Basic tests
 
         [Test]
         public void TestClass_NTRemoteObject() {
+			
             NTHost host = NTHost.CurrentMachine;
 
             NTRemoteObject obj = new NTRemoteObject(
@@ -171,7 +179,7 @@ namespace Hydrogen.UnitTests {
             NTHost host = NTHost.CurrentMachine;
             // find a unique user name
             string userName = GenerateUserName(host);
-            NTLocalUser user = host.CreateLocalUser(userName, "P4ssw0rd123");
+            NTLocalUser user = host.CreateLocalUser(userName, "pPnNmm*&");
             Assert.IsNotNull(user);
             Assert.IsTrue(ContainsObjectByName(host.GetLocalUsers(), userName));
             user.Delete();
@@ -183,7 +191,7 @@ namespace Hydrogen.UnitTests {
             NTHost host = NTHost.CurrentMachine;
             // find a unique user name
             string userName = GenerateUserName(host);
-            NTLocalUser user = host.CreateLocalUser(userName, "P4ssw0rd123");
+            NTLocalUser user = host.CreateLocalUser(userName, "pPnNmm*&");
             try {
                 Assert.IsNotNull(user.SID);
             } finally {
@@ -196,7 +204,7 @@ namespace Hydrogen.UnitTests {
             NTHost host = NTHost.CurrentMachine;
             // find a unique user name
             string userName = GenerateUserName(host);
-            NTLocalUser user = host.CreateLocalUser(userName, "P4ssw0rd123");
+            NTLocalUser user = host.CreateLocalUser(userName, "pPnNmm*&");
             try {
                 Assert.AreEqual(user.SID.AccountDomainSid, host.SID);
             } finally {
@@ -210,7 +218,7 @@ namespace Hydrogen.UnitTests {
             string value = "c:\\";
             // find a unique user name
             string userName = GenerateUserName(host);
-            NTLocalUser user = host.CreateLocalUser(userName, "P4ssw0rd123");
+            NTLocalUser user = host.CreateLocalUser(userName, "pPnNmm*&");
             try {
                 user.HomeDirectory = value;
                 user.Update();
@@ -227,7 +235,7 @@ namespace Hydrogen.UnitTests {
             DateTime value = DateTime.MinValue;
             // find a unique user name
             string userName = GenerateUserName(host);
-            NTLocalUser user = host.CreateLocalUser(userName, "P4ssw0rd123");
+            NTLocalUser user = host.CreateLocalUser(userName, "pPnNmm*&");
             try {
                 user.Update();
                 user = GetObjectByName(host.GetLocalUsers(), userName);
@@ -243,7 +251,7 @@ namespace Hydrogen.UnitTests {
             DateTime value = DateTime.MinValue;
             // find a unique user name
             string userName = GenerateUserName(host);
-            NTLocalUser user = host.CreateLocalUser(userName, "P4ssw0rd123");
+            NTLocalUser user = host.CreateLocalUser(userName, "pPnNmm*&");
             try {
                 user.Update();
                 user = GetObjectByName(host.GetLocalUsers(), userName);
@@ -259,7 +267,7 @@ namespace Hydrogen.UnitTests {
             byte[] value = new byte[21] { 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1 };
             // find a unique user name
             string userName = GenerateUserName(host);
-            NTLocalUser user = host.CreateLocalUser(userName, "P4ssw0rd123");
+            NTLocalUser user = host.CreateLocalUser(userName, "pPnNmm*&");
             user.LogonHours = value;
             user.Update();
             user = GetObjectByName(host.GetLocalUsers(), userName);
@@ -272,7 +280,7 @@ namespace Hydrogen.UnitTests {
             NTHost host = NTHost.CurrentMachine;
             // find a unique user name
             string userName = GenerateUserName(host);
-            NTLocalUser user = host.CreateLocalUser(userName, "P4ssw0rd123");
+            NTLocalUser user = host.CreateLocalUser(userName, "pPnNmm*&");
             try {
                 Assert.AreEqual("\\\\*", user.LogonServer);
             } finally {
@@ -286,7 +294,7 @@ namespace Hydrogen.UnitTests {
             uint value = 1000;
             // find a unique user name
             string userName = GenerateUserName(host);
-            NTLocalUser user = host.CreateLocalUser(userName, "P4ssw0rd123");
+            NTLocalUser user = host.CreateLocalUser(userName, "pPnNmm*&");
             try {
 //                user.Flags |= UserFlags.
                 user.MaxStorage = value;
@@ -303,7 +311,7 @@ namespace Hydrogen.UnitTests {
             NTHost host = NTHost.CurrentMachine;
             // find a unique user name
             string userName = GenerateUserName(host);
-            NTLocalUser user = host.CreateLocalUser(userName, "P4ssw0rd123");
+            NTLocalUser user = host.CreateLocalUser(userName, "pPnNmm*&");
             try {
                 Assert.AreEqual(user.Name, userName);
             } finally {
@@ -316,7 +324,7 @@ namespace Hydrogen.UnitTests {
             NTHost host = NTHost.CurrentMachine;
             // find a unique user name
             string userName = GenerateUserName(host);
-            NTLocalUser user = host.CreateLocalUser(userName, "P4ssw0rd123");
+            NTLocalUser user = host.CreateLocalUser(userName, "pPnNmm*&");
             try {
                 Assert.AreEqual(user.NumberOfLogons, 0);
             } finally {
@@ -330,7 +338,7 @@ namespace Hydrogen.UnitTests {
             string value = "AbCn1122CeF123";
             // find a unique user name
             string userName = GenerateUserName(host);
-            NTLocalUser user = host.CreateLocalUser(userName, "P4ssw0rd123");
+            NTLocalUser user = host.CreateLocalUser(userName, "pPnNmm*&");
             user.Password = value;
             user.Update();
             user.Delete();
@@ -341,7 +349,7 @@ namespace Hydrogen.UnitTests {
             NTHost host = NTHost.CurrentMachine;
             // find a unique user name
             string userName = GenerateUserName(host);
-            NTLocalUser user = host.CreateLocalUser(userName, "P4ssw0rd123");
+            NTLocalUser user = host.CreateLocalUser(userName, "pPnNmm*&");
             try {
                 Assert.IsTrue(0 <= user.PasswordAge.TotalSeconds && user.PasswordAge.TotalSeconds <= 2);
             } finally {
@@ -354,7 +362,7 @@ namespace Hydrogen.UnitTests {
             NTHost host = NTHost.CurrentMachine;
             // find a unique user name
             string userName = GenerateUserName(host);
-            NTLocalUser user = host.CreateLocalUser(userName, "P4ssw0rd123");
+            NTLocalUser user = host.CreateLocalUser(userName, "pPnNmm*&");
             try {
                 Assert.AreEqual(user.Privilege, UserPrivilege.Guest);
             } finally {
@@ -365,10 +373,10 @@ namespace Hydrogen.UnitTests {
         [Test]
         public void TestLocalUserUpdateScriptPath() {
             NTHost host = NTHost.CurrentMachine;
-            string value = Process.GetCurrentProcess().StartInfo.FileName;
+            string value = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System), "xcopy.exe");
             // find a unique user name
             string userName = GenerateUserName(host);
-            NTLocalUser user = host.CreateLocalUser(userName, "P4ssw0rd123");
+            NTLocalUser user = host.CreateLocalUser(userName, "pPnNmm*&");
             try {
                 user.ScriptPath = value;
                 user.Update();
@@ -386,7 +394,7 @@ namespace Hydrogen.UnitTests {
             uint value = 5;
             // find a unique user name
             string userName = GenerateUserName(host);
-            NTLocalUser user = host.CreateLocalUser(userName, "P4ssw0rd123");
+            NTLocalUser user = host.CreateLocalUser(userName, "pPnNmm*&");
             try {
                 user.UnitsPerWeek = value;
                 user.Update();
@@ -403,7 +411,7 @@ namespace Hydrogen.UnitTests {
             string[] value = new string[] { "W1", "w2" };
             // find a unique user name
             string userName = GenerateUserName(host);
-            NTLocalUser user = host.CreateLocalUser(userName, "P4ssw0rd123");
+            NTLocalUser user = host.CreateLocalUser(userName, "pPnNmm*&");
             try {
                 user.Workstations = value;
                 user.Update();
@@ -420,7 +428,7 @@ namespace Hydrogen.UnitTests {
             // find a unique user name
             NTLocalUser user = null;
             try {
-                user = host.CreateLocalUser(GenerateUserName(host), "P4ssw0rd123");
+                user = host.CreateLocalUser(GenerateUserName(host), "pPnNmm*&");
                 CollectionAssert.IsEmpty(user.GetMembership());
             } finally {
                 try {
@@ -440,7 +448,7 @@ namespace Hydrogen.UnitTests {
             NTLocalGroup group = null;
             try {
                 group = host.CreateLocalGroup(GenerateGroupName(host), null);
-                user = host.CreateLocalUser(GenerateUserName(host), "P4ssw0rd123");
+                user = host.CreateLocalUser(GenerateUserName(host), "pPnNmm*&");
                 user.AddMembership(group.Name);
                 Assert.IsTrue(ContainsObjectByName(user.GetMembership(), group.Name));
             } finally {
@@ -478,8 +486,8 @@ namespace Hydrogen.UnitTests {
                 Assert.IsNotNull(group3);
 
 
-                user1 = host.CreateLocalUser(GenerateUserName(host), "P4ssw0rd123");
-                user2 = host.CreateLocalUser(GenerateUserName(host), "P4ssw0rd123");
+                user1 = host.CreateLocalUser(GenerateUserName(host), "pPnNmm*&");
+                user2 = host.CreateLocalUser(GenerateUserName(host), "pPnNmm*&");
 
                 user1.AddMembership(group1.Name);
                 user1.AddMembership(group2.Name);
@@ -606,7 +614,7 @@ namespace Hydrogen.UnitTests {
             NTLocalGroup group = null;
             try {
                 group = host.CreateLocalGroup(GenerateGroupName(host), null);
-                user = host.CreateLocalUser(GenerateUserName(host), "P4ssw0rd123");
+                user = host.CreateLocalUser(GenerateUserName(host), "pPnNmm*&");
                 group.AddLocalMember(user.Name);
                 Assert.IsTrue(ContainsObjectByName(group.GetLocalMembers(), user.Name));
             } finally {
@@ -634,7 +642,7 @@ namespace Hydrogen.UnitTests {
             NTLocalGroup group = null;
             try {
                 group = host.CreateLocalGroup(GenerateGroupName(host), null);
-                user = host.CreateLocalUser(GenerateUserName(host), "P4ssw0rd123");
+                user = host.CreateLocalUser(GenerateUserName(host), "pPnNmm*&");
                 group.AddLocalMember(user.Name);
                 Assert.IsTrue(ContainsObjectByName(group.GetLocalMembers(), user.Name));
                 group.DeleteMember(user);
@@ -664,7 +672,7 @@ namespace Hydrogen.UnitTests {
             NTLocalGroup group = null;
             try {
                 group = host.CreateLocalGroup(GenerateGroupName(host), null);
-                user = host.CreateLocalUser(GenerateUserName(host), "P4ssw0rd123");
+                user = host.CreateLocalUser(GenerateUserName(host), "pPnNmm*&");
                 group.AddLocalMember(user.Name);
                 Assert.IsTrue(ContainsObjectByName(group.GetLocalMembers(), user.Name));
                 group.DeleteMember(user.SID);
@@ -694,7 +702,7 @@ namespace Hydrogen.UnitTests {
             NTLocalGroup group = null;
             try {
                 group = host.CreateLocalGroup(GenerateGroupName(host), null);
-                user = host.CreateLocalUser(GenerateUserName(host), "P4ssw0rd123");
+                user = host.CreateLocalUser(GenerateUserName(host), "pPnNmm*&");
                 group.AddLocalMember(user.Name);
                 Assert.IsTrue(ContainsObjectByName(group.GetLocalMembers(), user.Name));
                 group.DeleteLocalMember(user.Name);
@@ -734,8 +742,8 @@ namespace Hydrogen.UnitTests {
                 Assert.IsNotNull(group3);
 
 
-                user1 = host.CreateLocalUser(GenerateUserName(host), "P4ssw0rd123");
-                user2 = host.CreateLocalUser(GenerateUserName(host), "P4ssw0rd123");
+                user1 = host.CreateLocalUser(GenerateUserName(host), "pPnNmm*&");
+                user2 = host.CreateLocalUser(GenerateUserName(host), "pPnNmm*&");
 
                 group1.AddLocalMember(user1.Name);
                 group1.AddLocalMember(user2.Name);
@@ -812,8 +820,8 @@ namespace Hydrogen.UnitTests {
                 Assert.IsNotNull(group3);
 
 
-                user1 = host.CreateLocalUser(GenerateUserName(host), "P4ssw0rd123");
-                user2 = host.CreateLocalUser(GenerateUserName(host), "P4ssw0rd123");
+                user1 = host.CreateLocalUser(GenerateUserName(host), "pPnNmm*&");
+                user2 = host.CreateLocalUser(GenerateUserName(host), "pPnNmm*&");
 
                 group1.AddLocalMember(user1.Name);
                 group1.AddLocalMember(user2.Name);
@@ -893,8 +901,8 @@ namespace Hydrogen.UnitTests {
                 group3 = host.CreateLocalGroup(GenerateGroupName(host), "description");
                 Assert.IsNotNull(group3);
 
-                user1 = host.CreateLocalUser(GenerateUserName(host), "P4ssw0rd123");
-                user2 = host.CreateLocalUser(GenerateUserName(host), "P4ssw0rd123");
+                user1 = host.CreateLocalUser(GenerateUserName(host), "pPnNmm*&");
+                user2 = host.CreateLocalUser(GenerateUserName(host), "pPnNmm*&");
 
                 group1.AddLocalMember(user1.Name);
                 group1.AddLocalMember(user2.Name);
@@ -973,8 +981,8 @@ namespace Hydrogen.UnitTests {
                 Assert.IsNotNull(group3);
 
 
-                user1 = host.CreateLocalUser(GenerateUserName(host), "P4ssw0rd123");
-                user2 = host.CreateLocalUser(GenerateUserName(host), "P4ssw0rd123");
+                user1 = host.CreateLocalUser(GenerateUserName(host), "pPnNmm*&");
+                user2 = host.CreateLocalUser(GenerateUserName(host), "pPnNmm*&");
 
                 group1.AddLocalMember(user1.Name);
                 group1.AddLocalMember(user2.Name);

@@ -96,7 +96,7 @@ namespace Hydrogen {
 											value = potentialToken;
 										}
 										alreadyResolved[potentialToken] = value;
-									}
+									} 
 
 									// We have resolved the potential token to a value, but the resolution 
 									// itself may need to be recursively resolved
@@ -118,7 +118,7 @@ namespace Hydrogen {
 								splits.Pop();
 								resultBuilder.Append("}");
 							} else {
-								currentFormatItemBuilder.Append("}");
+								resultBuilder.Append("}");
 							}
 							break;
 						default:
@@ -137,12 +137,11 @@ namespace Hydrogen {
 		}
 
 		private static bool TryResolveFormatItem(Dictionary<string, object> alreadyVisited, string token, out object value, bool recursive, Func<string, object> resolver, params object[] formatArgs) {
-			token = token.TrimWithCapture(out var trimmedStart, out var trimmedEnd);
-			value = null;
-			
 			if (alreadyVisited.TryGetValue(token, out value))
 				return true;
-			
+
+			value = null;
+			token = token.TrimWithCapture(out var trimmedStart, out var trimmedEnd);
 
 			// This is an indexed .NET format argument (e.g. {0:yyyy-MM-dd}), so do not try to resolve this
 	        if (IsStandardFormatIndex(token, out var formatIndex, out var formatOptions)) {
@@ -169,12 +168,15 @@ namespace Hydrogen {
 			}
 
 			// Token not found, if recursive mode is on and token name has nested tokens, try to resolve them and try again
-			if (recursive && token.IndexOf(TokenStartChar) < token.IndexOf(TokenEndChar)) {
+			var indexTokenStartChar = token.IndexOf(TokenStartChar);
+			var indexTokenEndChar = token.IndexOf(TokenEndChar);
+			if (recursive && indexTokenStartChar >= 0 && indexTokenStartChar < indexTokenEndChar) {
 				// token itself contains tokens, to recursively resolve the token name itself
-				alreadyVisited.Add(token, token); // infinite recursion short circuit
+				//alreadyVisited.Add(token, token); // infinite recursion short circuit
+				alreadyVisited[token] = token;
 				var modifiedToken = FormatEx(token, resolver, recursive, formatArgs);
-				if (!TryResolveFormatItem(alreadyVisited, modifiedToken, out value, recursive, resolver, formatArgs)) {
-					// resolved token name didn't resolve to anything, but since token contained token names, return the resolved token name
+				if (!TryResolveFormatItem(alreadyVisited, modifiedToken, out value, recursive, resolver, formatArgs) || modifiedToken.Equals(value)) {
+					// resolved token name didn't resolve to anything (or resolved to itself), but since token contained token names, return the resolved token name
 					value = "{" + trimmedStart +  modifiedToken + trimmedEnd + "}"; 
 				}
 				alreadyVisited[token] = value;

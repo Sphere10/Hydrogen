@@ -13,6 +13,7 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.Diagnostics.Tracing.Parsers.AspNet;
 using NUnit.Framework;
 
 namespace Hydrogen.Tests {
@@ -316,5 +317,275 @@ namespace Hydrogen.Tests {
             Assert.That( StringFormatter.FormatWithDictionary(problematicString, tokens, true), Is.EqualTo(expectedString));
         }
 
+        [Test]
+        public void LocalNotionBugCase_2() {
+			var input = 
+				"""
+				function MakeDownloadLink(target) {
+					var text = $(target).html().toUpperCase();
+					var isWindows = text.startsWith("WIN");
+					var isMacOs = text.startsWith("MAC");
+					var isLinux = text.startsWith("LIN");
+					var isDownload = isWindows || isMacOS || isLinux;
+					if (isDownload) {
+						$(target).attr('class', 'btn btn-primary me-1 lift');
+					}
+				}
+
+				$(document).ready(function() {
+					$("a").each( function() {
+						MakeDownloadLink(this);
+					});
+				});
+				""";
+	        Assert.That( StringFormatter.FormatWithDictionary(input, new Dictionary<string, object> { ["foo"]="bar" }, true), Is.EqualTo(input));
+        }
+
+        [Test]
+        public void LocalNotionBugCase_2_Variant_1() {
+	        var input = "{ { } }";
+	        Assert.That( StringFormatter.FormatWithDictionary(input, new Dictionary<string, object> { ["foo"]="bar" }, true), Is.EqualTo(input));
+        }
+
+		
+        [Test]
+        public void LocalNotionBugCase_2_Variant_2() {
+	        var input = "{ }";
+	        Assert.That( StringFormatter.FormatWithDictionary(input, new Dictionary<string, object> { ["foo"]="bar" }, true), Is.EqualTo(input));
+        }
+
+        [Test]
+        public void LocalNotionBugCase_2_Variant_3() {
+	        var input = " { } ";
+	        Assert.That( StringFormatter.FormatWithDictionary(input, new Dictionary<string, object> { ["foo"]="bar" }, true), Is.EqualTo(input));
+        }
+
+        [Test]
+        public void LocalNotionBugCase_2_Variant_4() {
+	        var input = " {} ";
+	        Assert.That( StringFormatter.FormatWithDictionary(input, new Dictionary<string, object> { ["foo"]="bar" }, true), Is.EqualTo(input));
+        }
+
+        [Test]
+        public void LocalNotionBugCase_2_Variant_5() {
+	        var input = "{";
+	        Assert.That( StringFormatter.FormatWithDictionary(input, new Dictionary<string, object> { ["foo"]="bar" }, true), Is.EqualTo(input));
+        }
+
+        [Test]
+        public void LocalNotionBugCase_2_Variant_6() {
+	        var input = "{ {";
+	        Assert.That( StringFormatter.FormatWithDictionary(input, new Dictionary<string, object> { ["foo"]="bar" }, true), Is.EqualTo(input));
+        }
+
+        [Test]
+        public void LocalNotionBugCase_2_Variant_7() {
+	        var input = "{ {}";
+	        Assert.That( StringFormatter.FormatWithDictionary(input, new Dictionary<string, object> { ["foo"]="bar" }, true), Is.EqualTo(input));
+        }
+
+        [Test]
+        public void LocalNotionBugCase_2_Variant_8() {
+	        var input = "{ { } ";
+	        Assert.That( StringFormatter.FormatWithDictionary(input, new Dictionary<string, object> { ["foo"]="bar" }, true), Is.EqualTo(input));
+        }
+
+        [Test]
+        public void LocalNotionBugCase_2_Variant_9() {
+	        var input = "}";
+	        Assert.That( StringFormatter.FormatWithDictionary(input, new Dictionary<string, object> { ["foo"]="bar" }, true), Is.EqualTo(input));
+        }
+
+        [Test]
+        public void LocalNotionBugCase_2_Variant_10() {
+	        var input = "} }";
+	        Assert.That( StringFormatter.FormatWithDictionary(input, new Dictionary<string, object> { ["foo"]="bar" }, true), Is.EqualTo(input));
+        }
+
+        [Test]
+        public void LocalNotionBugCase_2_Variant_11() {
+	        var input = "{} }";
+	        Assert.That( StringFormatter.FormatWithDictionary(input, new Dictionary<string, object> { ["foo"]="bar" }, true), Is.EqualTo(input));
+        }
+
+        [Test]
+        public void LocalNotionBugCase_2_Variant_12() {
+	        var input = "}{";
+	        Assert.That( StringFormatter.FormatWithDictionary(input, new Dictionary<string, object> { ["foo"]="bar" }, true), Is.EqualTo(input));
+        }
+
+        [Test]
+        public void LocalNotionBugCase_2_Variant_13() {
+	        var input = "}{ { ";
+	        Assert.That( StringFormatter.FormatWithDictionary(input, new Dictionary<string, object> { ["foo"]="bar" }, true), Is.EqualTo(input));
+        }
+
+
+        [Test]
+        public void LocalNotionBugCase_2_Variant_14() {
+	        var input = "}{ {  {   }";
+	        Assert.That( StringFormatter.FormatWithDictionary(input, new Dictionary<string, object> { ["foo"]="bar" }, true), Is.EqualTo(input));
+        }
+		
+
+        [Test]
+        public void LocalNotionBugCase_2_Variant_15() {
+	        var input = "}{ {  {   } } { { }{}{  { } }";
+	        Assert.That( StringFormatter.FormatWithDictionary(input, new Dictionary<string, object> { ["foo"]="bar" }, true), Is.EqualTo(input));
+        }
+
+        [Test]
+        public void LocalNotionBugCase_2_Variant_16() {
+	        var input = "}{ {  {   } } { { }{}{  { } }{ {} } } { }{} }{}{} }{} }{    } {";
+	        Assert.That( StringFormatter.FormatWithDictionary(input, new Dictionary<string, object> { ["foo"]="bar" }, true), Is.EqualTo(input));
+        }
+
+        [Test]
+        public void LocalNotionBugCase_2_Variant_17() {
+	        var input = "}{ {  {   } } { { }{}{  { } }{ {} } } { }{} }";
+			//            1 2  3   2 1 2 3 2323  4 3 23 43 2 1 2 121 0 	
+	        Assert.That( StringFormatter.FormatWithDictionary(input, new Dictionary<string, object> { ["foo"]="bar" }, true), Is.EqualTo(input));
+        }
+
+        [Test]
+        public void LocalNotionBugCase_2_Variant_18() {
+	        var input = "  {   } { {}}";
+	        //            1 2  3   2 1 2 3 2323  4 3 23 43 2 1 2 121 0 	
+	        Assert.That( StringFormatter.FormatWithDictionary(input, new Dictionary<string, object> { ["foo"]="bar" }, true), Is.EqualTo(input));
+        }
+
+		
+        [Test]
+        public void LocalNotionBugCase_2_Variant_19() {
+	        var input = "{}{ {} }";
+	        Assert.That( StringFormatter.FormatWithDictionary(input, new Dictionary<string, object> { ["foo"]="bar" }, true), Is.EqualTo(input));
+        }
+
+        [Test]
+        public void LocalNotionBugCase_2_Variant_Stress([Values(0,1,11,17,97)] int size, [Values(0,1,11,17,97)] int rounds) {
+	        var inputChars = new char[size];
+			var rng = new Random(31337);
+			for(var i = 0; i < rounds; i++) {
+				for(var j = 0; j < size; j++) 
+					inputChars[j] = ' ';
+				var numOpenBrance = rng.Next(0, size);
+				var numCloseBrance = rng.Next(0, size);
+				for(var j = 0; j < numOpenBrance; j++) 
+					inputChars[rng.Next(0, size)] = '{';
+				for(var j = 0; j < numCloseBrance; j++) 
+					inputChars[rng.Next(0, size)] = '}';
+
+				var input = new string(inputChars);
+				
+				// Keep reducing string from escape { and }
+				while(input.Length != (input = input.Replace("{{", "{").Replace("}}", "}")).Length);
+				var expected = input;
+				var actual = StringFormatter.FormatWithDictionary(expected, new Dictionary<string, object> { ["foo"]="bar" }, true);
+				Assert.That( actual, Is.EqualTo(expected));
+			}
+        }
+
+
+		
+        [Test]
+        public void LocalNotionBugCase_2_Variant_Finder_3Char() {
+	        var inputChars = new char[3];
+	        var charset = new[] { ' ', '{', '}' };
+
+	        foreach(var char1 in charset)
+	        foreach(var char2 in charset)
+	        foreach(var char3 in charset) {
+		        var input = new string(new []{ char1, char2, char3});
+		        while(input.Length != (input = input.Replace("{{", "{").Replace("}}", "}")).Length);
+		        var expected = input;
+		        var actual = StringFormatter.FormatWithDictionary(expected, new Dictionary<string, object> { ["foo"]="bar" }, true);
+		        Assert.That( actual, Is.EqualTo(expected));
+
+	        }
+		
+        }
+
+        [Test]
+        public void LocalNotionBugCase_2_Variant_Finder_5Char() {
+	        var inputChars = new char[5];
+			var charset = new[] { ' ', '{', '}' };
+
+			foreach(var char1 in charset)
+			foreach(var char2 in charset)
+			foreach(var char3 in charset)
+			foreach(var char4 in charset)
+			foreach(var char5 in charset) {
+				var input = new string(new []{ char1, char2, char3, char4, char5 });
+				while(input.Length != (input = input.Replace("{{", "{").Replace("}}", "}")).Length);
+				var expected = input;
+				var actual = StringFormatter.FormatWithDictionary(expected, new Dictionary<string, object> { ["foo"]="bar" }, true);
+				Assert.That( actual, Is.EqualTo(expected));
+
+			}
+		
+        }
+
+        [Test]
+        public void LocalNotionBugCase_2_Variant_Finder_6Char() {
+	        var inputChars = new char[5];
+	        var charset = new[] { ' ', '{', '}' };
+
+	        foreach(var char1 in charset)
+	        foreach(var char2 in charset)
+	        foreach(var char3 in charset)
+	        foreach(var char4 in charset)
+	        foreach(var char5 in charset)
+	        foreach(var char6 in charset) {
+		        var input = new string(new []{ char1, char2, char3, char4, char5, char6 });
+		        while(input.Length != (input = input.Replace("{{", "{").Replace("}}", "}")).Length);
+		        var expected = input;
+		        var actual = StringFormatter.FormatWithDictionary(expected, new Dictionary<string, object> { ["foo"]="bar" }, true);
+		        Assert.That( actual, Is.EqualTo(expected));
+
+	        }
+        }
+
+        [Test]
+        public void LocalNotionBugCase_2_Variant_Finder_7Char() {
+	        var inputChars = new char[5];
+	        var charset = new[] { ' ', '{', '}' };
+
+	        foreach(var char1 in charset)
+	        foreach(var char2 in charset)
+	        foreach(var char3 in charset)
+	        foreach(var char4 in charset)
+	        foreach(var char5 in charset)
+	        foreach(var char6 in charset)
+	        foreach(var char7 in charset) {
+		        var input = new string(new []{ char1, char2, char3, char4, char5, char6, char7 });
+		        while(input.Length != (input = input.Replace("{{", "{").Replace("}}", "}")).Length);
+		        var expected = input;
+		        var actual = StringFormatter.FormatWithDictionary(expected, new Dictionary<string, object> { ["foo"]="bar" }, true);
+		        Assert.That( actual, Is.EqualTo(expected));
+
+	        }
+        }
+
+        [Test]
+        public void LocalNotionBugCase_2_Variant_Finder_8Char() {
+	        var inputChars = new char[5];
+	        var charset = new[] { ' ', '{', '}' };
+
+	        foreach(var char1 in charset)
+	        foreach(var char2 in charset)
+	        foreach(var char3 in charset)
+	        foreach(var char4 in charset)
+	        foreach(var char5 in charset)
+	        foreach(var char6 in charset)
+	        foreach(var char7 in charset)
+	        foreach(var char8 in charset) {
+		        var input = new string(new []{ char1, char2, char3, char4, char5, char6, char7, char8 });
+		        while(input.Length != (input = input.Replace("{{", "{").Replace("}}", "}")).Length);
+		        var expected = input;
+		        var actual = StringFormatter.FormatWithDictionary(expected, new Dictionary<string, object> { ["foo"]="bar" }, true);
+		        Assert.That( actual, Is.EqualTo(expected));
+
+	        }
+        }
     }
 }

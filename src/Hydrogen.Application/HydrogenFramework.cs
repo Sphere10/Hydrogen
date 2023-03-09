@@ -150,14 +150,14 @@ public class HydrogenFramework {
 	public ILogger CreateApplicationLogger(bool visibleToAllUsers = false)
 		=> CreateApplicationLogger(Tools.Text.FormatEx("{ProductName}"), visibleToAllUsers: visibleToAllUsers);
 
-	public ILogger CreateApplicationLogger(string logName, bool visibleToAllUsers = false)
-		=> CreateApplicationLogger(logName, RollingFileLogger.DefaultMaxFiles, RollingFileLogger.DefaultMaxFileSizeB, visibleToAllUsers);
+	public ILogger CreateApplicationLogger(string fileName, bool visibleToAllUsers = false)
+		=> CreateApplicationLogger(fileName, RollingFileLogger.DefaultMaxFiles, RollingFileLogger.DefaultMaxFileSizeB, visibleToAllUsers);
 
-	public ILogger CreateApplicationLogger(string logFileName, int maxFiles, int maxFileSize, bool visibleToAllUsers = false)
+	public ILogger CreateApplicationLogger(string fileName, int maxFiles, int maxFileSize, bool visibleToAllUsers = false)
 		=> new ThreadIdLogger(
 			new TimestampLogger(
 				new RollingFileLogger(
-					Path.Combine(Tools.Text.FormatEx(visibleToAllUsers ? "{SystemDataDir}" : "{UserDataDir}"), Tools.Text.FormatEx("{ProductName}"), "logs", logFileName),
+					Path.Combine(Tools.Text.FormatEx(visibleToAllUsers ? "{SystemDataDir}" : "{UserDataDir}"), Tools.Text.FormatEx("{ProductName}"), "logs", fileName),
 					maxFiles,
 					maxFileSize
 				)

@@ -14,7 +14,7 @@ public class ApplicationTokenResolver : ITokenResolver {
 	public bool TryResolve(string token, out object value) {
 		value = token.ToUpperInvariant() switch {
 			"USERDATADIR" => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)),
-			"SYSTEMDATADIR" => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData)),
+			"SYSTEMDATADIR" => Path.Combine(Environment.GetFolderPath(Environment.OSVersion.Platform != PlatformID.Unix ? Environment.SpecialFolder.CommonApplicationData : Environment.SpecialFolder.LocalApplicationData)),  // CommonApplicationData is readonly on Linux
 			"COMPANYNAME" => ProductInformationProvider.ProductInformation.CompanyName,
 			"COMPANYNUMBER" => ProductInformationProvider.ProductInformation.CompanyNumber,
 			"PRODUCTNAME" => ProductInformationProvider.ProductInformation.ProductName,

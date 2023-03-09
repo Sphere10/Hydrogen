@@ -110,7 +110,7 @@ namespace Hydrogen.Windows.BITS
                 string localPatchFile =
                     string.Format(
                         "{0}{1}RSIWarriorPatch.cs",
-                        Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
+                        Tools.Text.FormatEx("{SystemDataDir}"),
                         Path.DirectorySeparatorChar
                     );
                 return localPatchFile;

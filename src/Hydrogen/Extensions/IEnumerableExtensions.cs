@@ -186,10 +186,9 @@ namespace Hydrogen {
 		) {
 			int i = 0;
 			foreach (T element in elements) {
-				yield return element;
-				if (predicate(element, i)) {
+				if (predicate(element, i)) 
 					yield break;
-				}
+				yield return element;
 				i++;
 			}
 		}

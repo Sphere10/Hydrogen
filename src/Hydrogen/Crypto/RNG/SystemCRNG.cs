@@ -6,11 +6,11 @@ namespace Hydrogen;
 /// <summary>
 /// A non-deterministic cryptographically secure random number generator that uses system libraries under the hood.
 /// </summary>
-public class CRNG : ICRNG {
+public class SystemCRNG : IRandomNumberGenerator {
 
 	private readonly RNGCryptoServiceProvider _rng;
 
-	public CRNG() {
+	public SystemCRNG() {
 		_rng = new RNGCryptoServiceProvider();
 	}
 

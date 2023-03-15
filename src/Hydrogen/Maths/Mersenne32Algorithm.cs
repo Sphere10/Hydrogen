@@ -1,6 +1,6 @@
-﻿namespace Hydrogen {
+﻿namespace Hydrogen.Maths {
 
-	public sealed class Mersenne32 {
+	public sealed class Mersenne32Algorithm {
 		// Define MT19937 constants (32-bit RNG)
 		private const int N = 624;
 		private const int M = 397;
@@ -13,21 +13,21 @@
 		private const uint A = 0x9908B0DF;
 		private const uint B = 0x9D2C5680;
 		private const uint C = 0xEFC60000;
-		private const uint MaskLower = (uint)(((ulong)(1) << R) - 1);
-		private const uint MaskUpper = (uint)((ulong)(1) << R);
+		private const uint MaskLower = (uint)(((ulong)1 << R) - 1);
+		private const uint MaskUpper = (uint)((ulong)1 << R);
 
 		private ushort _index;
 		private readonly uint[] _mt = new uint[N];
 
 
-		public Mersenne32(uint aSeed) {
+		public Mersenne32Algorithm(uint aSeed) {
 			Initialize(aSeed);
 		}
 
 		public void Initialize(uint aSeed) {
 			_mt[0] = aSeed;
 			for (var i = 1; i < N; i++) {
-				_mt[i] = (uint)(F * (_mt[i - 1] ^ (_mt[i - 1] >> 30)) + i);
+				_mt[i] = (uint)(F * (_mt[i - 1] ^ _mt[i - 1] >> 30) + i);
 			}
 			_index = N;
 		}
@@ -46,10 +46,10 @@
 
 			var result = _mt[i];
 			_index = (ushort)(i + 1);
-			result ^= (_mt[i] >> U);
-			result ^= (result << S) & B;
-			result ^= (result << T) & C;
-			result ^= (result >> L);
+			result ^= _mt[i] >> U;
+			result ^= result << S & B;
+			result ^= result << T & C;
+			result ^= result >> L;
 			return result;
 		}
 
@@ -63,14 +63,14 @@
 
 		private void Twist() {
 			for (var i = 0; i <= N - M - 1; i++) {
-				_mt[i] = _mt[i + M] ^ (((_mt[i] & MaskUpper) | (_mt[i + 1] & MaskLower)) >> 1) ^
-					((uint)(-(_mt[i + 1] & 1)) & A);
+				_mt[i] = _mt[i + M] ^ (_mt[i] & MaskUpper | _mt[i + 1] & MaskLower) >> 1 ^
+					(uint)-(_mt[i + 1] & 1) & A;
 			}
 			for (var i = N - M; i <= N - 2; i++) {
-				_mt[i] = _mt[i + (M - N)] ^ (((_mt[i] & MaskUpper) | (_mt[i + 1] & MaskLower)) >> 1) ^
-					((uint)(-(_mt[i + 1] & 1)) & A);
-				_mt[N - 1] = _mt[M - 1] ^ (((_mt[N - 1] & MaskUpper) | (_mt[0] & MaskLower)) >> 1) ^
-					((uint)(-(_mt[0] & 1)) & A);
+				_mt[i] = _mt[i + (M - N)] ^ (_mt[i] & MaskUpper | _mt[i + 1] & MaskLower) >> 1 ^
+					(uint)-(_mt[i + 1] & 1) & A;
+				_mt[N - 1] = _mt[M - 1] ^ (_mt[N - 1] & MaskUpper | _mt[0] & MaskLower) >> 1 ^
+					(uint)-(_mt[0] & 1) & A;
 			}
 			_index = 0;
 		}

@@ -34,7 +34,7 @@ namespace Tools {
 		public static Guid NewCryptographicGuid() => CryptographicallySecureGUIDGenerator.NewCryptographicGuid();
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static byte[] GenerateCryptographicallyRandomBytes(int count) => new CRNG().NextBytes(count);
+		public static byte[] GenerateCryptographicallyRandomBytes(int count) => new SystemCRNG().NextBytes(count);
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static string PasswordHash(string password) 

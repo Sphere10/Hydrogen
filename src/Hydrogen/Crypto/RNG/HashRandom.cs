@@ -10,7 +10,7 @@ namespace Hydrogen.Maths;
 /// A deterministic cryptographically-secure random number generator suitable for blockchain consensus. It works by extracting bytes from an iteratively hashed seed. The cryptographic security
 /// of <see cref="HashRandom"/> derives from that of the underlying <see cref="CHF"/>. It will always generate the same sequence of bytes given a seed.
 /// </summary>
-public sealed class HashRandom : ICRNG {
+public sealed class HashRandom : IRandomNumberGenerator {
 	public const int MinimumSeedLength = 16;
 	private readonly CHF _chf;
 	private byte[] _data;

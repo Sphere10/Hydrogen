@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using Hydrogen.Maths;
 
 namespace Hydrogen.DApp.Core.Maths {
 
@@ -124,7 +125,7 @@ namespace Hydrogen.DApp.Core.Maths {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		protected static byte[] Compress(byte[][] inputs, uint seed) {
 			var result = new byte[100];
-			var generator = new Mersenne32(seed);
+			var generator = new Mersenne32Algorithm(seed);
 			for (var idx = 0; idx <= 99; idx++) {
 				var source = inputs[generator.NextUInt32() % inputs.Length];
 				result[idx] = source[generator.NextUInt32() % source.Length];
@@ -243,7 +244,7 @@ namespace Hydrogen.DApp.Core.Maths {
 		}
 
 		private static byte[] Expand(byte[] input, int expansionFactor, uint seed) {
-			var generator = new Mersenne32(seed);
+			var generator = new Mersenne32Algorithm(seed);
 			var size = input.Length + expansionFactor * M;
 			var result = RandomHashUtils.Clone(input);
 			var bytesToAdd = size - input.Length;
@@ -300,7 +301,7 @@ namespace Hydrogen.DApp.Core.Maths {
 				throw new ArgumentOutOfRangeException(InvalidRound);
 
 			var roundOutputsList = new List<byte[]>();
-			var generator = new Mersenne32(0);
+			var generator = new Mersenne32Algorithm(0);
 			byte[] roundInput;
 			uint seed;
 			if (round == 1) {

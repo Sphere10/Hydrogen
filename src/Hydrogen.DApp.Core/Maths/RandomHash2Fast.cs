@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using Hydrogen.Maths;
 
 namespace Hydrogen.DApp.Core.Maths {
 	public sealed class RandomHash2Fast : RandomHash2 {
@@ -188,7 +189,7 @@ namespace Hydrogen.DApp.Core.Maths {
 		}
 
 		private static byte[] Expand(byte[] input, int expansionFactor, uint seed) {
-			var generator = new Mersenne32(seed);
+			var generator = new Mersenne32Algorithm(seed);
 			var inputLength = input.Length;
 			var result = new byte[inputLength + expansionFactor * M];
 			// Copy the genesis blob
@@ -267,7 +268,7 @@ namespace Hydrogen.DApp.Core.Maths {
 			}
 
 			var roundOutputsList = new List<byte[]>();
-			var generator = new Mersenne32(0);
+			var generator = new Mersenne32Algorithm(0);
 			byte[] roundInput;
 			uint seed;
 			if (round == 1) {

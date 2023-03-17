@@ -43,7 +43,7 @@ public class TextFileCacheTests {
         Assert.That(fetchedCount, Is.EqualTo(1));
 
         File.WriteAllText(file, "BETA");
-        Thread.Sleep(400); // allow slow file monitoring (github test runner having issues)
+        Thread.Sleep(1000); // allow slow file monitoring (github test runner having issues)
         Assert.That(cache[file], Is.EqualTo("BETA"));
         Assert.That(fetchedCount, Is.EqualTo(2));
         Assert.That(cache[file], Is.EqualTo("BETA"));

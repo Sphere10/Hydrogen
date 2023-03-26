@@ -144,7 +144,6 @@ public static class HtmlHelperExtensions {
 		attributes["placeholder"] = display;
 		attributes["class"] += $" form-select";
 	
-
 		if (hasError) {
 			attributes["class"] += $" is-invalid";
 			attributes["data-bs-toggle"] = "tooltip";
@@ -180,7 +179,6 @@ public static class HtmlHelperExtensions {
 
 		htmlContentBuilder.AppendHtml( WriteCheckbox() );
 		htmlContentBuilder.AppendHtml( WriteLabel() );
-
 		htmlContentBuilder.AppendHtml(
 			htmlHelper.Raw(
 				"""

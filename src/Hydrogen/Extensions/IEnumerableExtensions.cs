@@ -323,7 +323,7 @@ namespace Hydrogen {
 			return source.Concat(new[] { element });
 		}
 
-		public static ISet<T> ToSet<T>(this IEnumerable<T> source, IEqualityComparer<T> comparer = null) {
+		public static HashSet<T> ToSet<T>(this IEnumerable<T> source, IEqualityComparer<T> comparer = null) {
 			comparer ??= EqualityComparer<T>.Default;
 			var hashSet = new HashSet<T>(comparer);
 			foreach (var item in source)
@@ -331,10 +331,10 @@ namespace Hydrogen {
 			return hashSet;
 		}
 
-		public static IDictionary<TKey, TValue> ToDictionary<TKey, TValue>(this IEnumerable<KeyValuePair<TKey, TValue>> items, IEqualityComparer<TKey> keyComparer = null)
+		public static Dictionary<TKey, TValue> ToDictionary<TKey, TValue>(this IEnumerable<KeyValuePair<TKey, TValue>> items, IEqualityComparer<TKey> keyComparer = null)
 			=> new Dictionary<TKey, TValue>(items, keyComparer);
 
-		public static IDictionary<K, List<T>> ToMultiValueDictionary<K, T>(this IEnumerable<T> source, Func<T, K> keySelector, IEqualityComparer<K> keyComparer = null) {
+		public static Dictionary<K, List<T>> ToMultiValueDictionary<K, T>(this IEnumerable<T> source, Func<T, K> keySelector, IEqualityComparer<K> keyComparer = null) {
 			var result = new Dictionary<K, List<T>>(keyComparer);
 
 			foreach (var item in source) {
@@ -347,7 +347,7 @@ namespace Hydrogen {
 			return result;
 		}
 
-		public static IDictionary<K, List<V>> ToMultiValueDictionary<K, V, T>(this IEnumerable<T> source, Func<T, K> keySelector, Func<T, V> valueSelector, IEqualityComparer<K> keyComparer = null) {
+		public static Dictionary<K, List<V>> ToMultiValueDictionary<K, V, T>(this IEnumerable<T> source, Func<T, K> keySelector, Func<T, V> valueSelector, IEqualityComparer<K> keyComparer = null) {
 			var result = new Dictionary<K, List<V>>(keyComparer);
 			foreach (var item in source) {
 				var itemKey = keySelector(item);

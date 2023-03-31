@@ -1072,14 +1072,20 @@ namespace Hydrogen.Windows {
                 public short wParamH;
             }
 
-
             [StructLayout(LayoutKind.Explicit)]
-            public struct INPUT {
-                [FieldOffset(0)] internal INPUT_TYPE type;
-                [FieldOffset(4)] internal MOUSEINPUT mi;
-                [FieldOffset(4)] internal KEYBOARDINPUT ki;
-                [FieldOffset(4)] internal HARDWAREINPUT hi;
+            public struct DEVICEINPUTUNION {
+	            [FieldOffset(0)] internal MOUSEINPUT mi;
+	            [FieldOffset(0)] internal KEYBOARDINPUT ki;
+	            [FieldOffset(0)] internal HARDWAREINPUT hi;
+            }
 
+
+            [StructLayout(LayoutKind.Sequential)]
+            public struct INPUT {
+                internal INPUT_TYPE type;
+                // DEVICEINPUTUNION is used to avoid explicit field offset specifying, since changes between x32 and x64
+				// e.g. in x32, would be FieldOffset(4) but in x64 would be FieldOffset(8). This approach works on both.
+				internal DEVICEINPUTUNION di;   
                 public static int Size {
                     get { return Marshal.SizeOf(typeof (INPUT)); }
                 }

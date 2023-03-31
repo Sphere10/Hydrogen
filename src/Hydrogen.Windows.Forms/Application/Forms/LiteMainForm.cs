@@ -216,7 +216,7 @@ namespace Hydrogen.Windows.Forms {
 				Invoke(function);
 			}
 		}
-
+		
 		public virtual void ShowNagScreen(string nagMessage) {
 			ExecuteInUIFriendlyContext(() => {
 				var nagDialogInstance = HydrogenFramework.Instance.ServiceProvider.GetService<INagDialog>();
@@ -312,6 +312,7 @@ namespace Hydrogen.Windows.Forms {
 				   //MessageBoxDefaultButton.Button2
 			   ) == DialogResult.Yes ? true : false;
 		}
+
 
 		#endregion
 

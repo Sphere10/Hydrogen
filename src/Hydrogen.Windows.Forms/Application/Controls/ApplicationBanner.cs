@@ -32,20 +32,17 @@ namespace Hydrogen.Windows.Forms {
 			CompanyName = _companyNameLabel.Text;
 			Version = _versionLabel.Text;
 			Title = _productNameLabel.Text;
-			if (!Tools.Runtime.IsDesignMode) {
-				IconProvider = HydrogenFramework.Instance.ServiceProvider.GetService<IApplicationIconProvider>();
-			}
+			ApplicationIcon = Tools.Values.Future.LazyLoad( () => HydrogenFramework.Instance.ServiceProvider.GetService<IApplicationIconProvider>().ApplicationIcon);
 		}
 
-		protected IApplicationIconProvider IconProvider { get ; }
-
+		protected IFuture<Icon> ApplicationIcon { get; }
 		protected override void OnLoad(EventArgs e) {
 			base.OnLoad(e);
 		}
 
 		protected override void InitializeUIPrimingData() {
 			base.InitializeUIPrimingData();
-			_iconPanel.BackgroundImage = IconProvider.ApplicationIcon.ToBitmap().Resize(new Size(_iconPanel.Width, _iconPanel.Height), ResizeMethod.AspectFit);
+			_iconPanel.BackgroundImage = ApplicationIcon.Value.ToBitmap().Resize(new Size(_iconPanel.Width, _iconPanel.Height), ResizeMethod.AspectFit);
 			// Upload to child controls the processed strings. Visual inheritance can be used to change these strings.
 			_companyNameLabel.Text = Hydrogen.StringFormatter.FormatEx(CompanyName);
 			_productNameLabel.Text = Hydrogen.StringFormatter.FormatEx(Title);
@@ -123,7 +120,7 @@ namespace Hydrogen.Windows.Forms {
 
 		private void _iconPanel_SizeChanged(object sender, EventArgs e) {
 			if (Loaded) {
-				_iconPanel.BackgroundImage = IconProvider.ApplicationIcon.ToBitmap(_iconPanel.Width, _iconPanel.Height);
+				_iconPanel.BackgroundImage = ApplicationIcon.Value.ToBitmap(_iconPanel.Width, _iconPanel.Height);
 			}
 		}
 

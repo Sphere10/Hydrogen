@@ -57,4 +57,8 @@ public class ConsoleApplicationUserInterfaceServices : IUserInterfaceServices {
 	public bool AskYN(string question) {
 		throw new NotSupportedException();
 	}
+
+	public void ExecuteInUIFriendlyContext(Action action, bool executeAsync = false) {
+		action?.Invoke();
+	}
 }

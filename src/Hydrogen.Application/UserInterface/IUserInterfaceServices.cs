@@ -48,4 +48,6 @@ public interface IUserInterfaceServices {
 
 	bool AskYN(string question);
 
+	void ExecuteInUIFriendlyContext(Action action, bool executeAsync = false);
+
 }

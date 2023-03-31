@@ -28,9 +28,11 @@ namespace Hydrogen.Windows {
 			var inputs = new WinAPI.USER32.INPUT[] {
 				new WinAPI.USER32.INPUT {
 					type = WinAPI.USER32.INPUT_TYPE.INPUT_KEYBOARD,
-					ki = {
-						wScan = scanCode,
-						dwFlags = WinAPI.USER32.KEYEVENTF.SCANCODE | (keyState == KeyState.Up ? WinAPI.USER32.KEYEVENTF.KEYUP : 0) 
+					di = new WinAPI.USER32.DEVICEINPUTUNION { 
+						ki = {
+							wScan = scanCode,
+							dwFlags = WinAPI.USER32.KEYEVENTF.SCANCODE | (keyState == KeyState.Up ? WinAPI.USER32.KEYEVENTF.KEYUP : 0)
+						}
 					}
 				}
 			};
@@ -38,7 +40,7 @@ namespace Hydrogen.Windows {
 			if (WinAPI.USER32.SendInput((uint)inputs.Length, inputs, WinAPI.USER32.INPUT.Size) == 0) {
 				throw new Exception("Failed to emulate keyboard event");
 			}
-		
+
 		}
 
 		public static void SimulateMouseDeviceAction(MouseButton button, MouseButtonState state, int x, int y) {
@@ -49,10 +51,12 @@ namespace Hydrogen.Windows {
 				inputs.Add(
 					new WinAPI.USER32.INPUT {
 						type = WinAPI.USER32.INPUT_TYPE.INPUT_MOUSE,
-						mi = {
-							dx = x,
-							dy = y,
-							dwFlags = WinAPI.USER32.MOUSEEVENTF.MOVE_NOCOALESCE
+						di = new WinAPI.USER32.DEVICEINPUTUNION {
+							mi = {
+								dx = x,
+								dy = y,
+								dwFlags = WinAPI.USER32.MOUSEEVENTF.MOVE_NOCOALESCE
+							}
 						}
 					}
 				);
@@ -77,10 +81,12 @@ namespace Hydrogen.Windows {
 				inputs.Add(
 					new WinAPI.USER32.INPUT {
 						type = WinAPI.USER32.INPUT_TYPE.INPUT_MOUSE,
-						mi = {
-							dx = x,
-							dy = y,
-							dwFlags = WinAPI.USER32.MOUSEEVENTF.ABSOLUTE | buttonFlag
+						di = new WinAPI.USER32.DEVICEINPUTUNION {
+							mi = {
+								dx = x,
+								dy = y,
+								dwFlags = WinAPI.USER32.MOUSEEVENTF.ABSOLUTE | buttonFlag
+							}
 						}
 					}
 				);

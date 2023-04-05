@@ -54,8 +54,8 @@ public class ProductLicenseEnforcer : IProductLicenseEnforcer {
 		LoadSettings();
 	}
 
-
 	protected IProductLicenseStorage ProductLicenseStorage { get; }
+
 	protected IProductInformationProvider ProductInformationProvider { get; }
 
 	protected IProductUsageServices ProductUsageServices { get; }
@@ -65,7 +65,6 @@ public class ProductLicenseEnforcer : IProductLicenseEnforcer {
 	protected IDuplicateProcessDetector DuplicateProcessDetector { get; }
 
 	protected ISettingsServices SettingsServices { get; }
-
 
 	public virtual bool ValidateLicense(ProductLicenseActivationDTO licenseActivation, ProductLicenseAuthorityDTO licenseAuthority) {
 		Guard.ArgumentNotNull(licenseActivation, nameof(licenseActivation));

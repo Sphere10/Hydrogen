@@ -56,6 +56,8 @@ namespace Hydrogen {
 		    return new SizeF(x, y);
 	    }
 
+	    public static Size ScaleBy(this SizeF size, float scale) => new((int)Math.Round(size.Width * scale), (int)Math.Round(size.Height * scale));
+
 	    public static Size ToSize(this SizeF sizef) {
 		    return new Size((int)Math.Ceiling(sizef.Width), (int)Math.Ceiling(sizef.Height));
 	    }

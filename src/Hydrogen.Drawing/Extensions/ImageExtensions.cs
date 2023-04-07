@@ -93,8 +93,6 @@ namespace Hydrogen {
 			}
 		}
 
-
-
 		public static Bitmap Resize(
 			this Image image,
             Size requestedSize,

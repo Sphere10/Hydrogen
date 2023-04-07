@@ -11,6 +11,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
+using System;
 using System.Drawing;
 
 namespace Hydrogen {
@@ -54,6 +55,7 @@ namespace Hydrogen {
 			return new Size(x, y);
 		}
 
+		public static Size ScaleBy(this Size size, double scale) => new((int)Math.Round(size.Width * scale), (int)Math.Round(size.Height * scale));
 
 		public static SizeF ToSizeF(this Size size) {
 			return new SizeF(size.Width, size.Height);

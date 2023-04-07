@@ -22,7 +22,7 @@ using Hydrogen.Application;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Hydrogen.Windows.Forms {
-	public static class DependencyInjectionExtensions {
+	public static class IoCExtensions {
 
 		public static void AddMainForm<TMainForm>(this IServiceCollection serviceCollection)
 			where TMainForm : class, IMainForm {

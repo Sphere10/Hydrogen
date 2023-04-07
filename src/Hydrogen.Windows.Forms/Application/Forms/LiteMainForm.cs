@@ -168,7 +168,7 @@ namespace Hydrogen.Windows.Forms {
 
 		public virtual Icon ApplicationIcon {
 			get {
-				return Icon;
+				return new Icon(this.Icon, 128, 128);
 			}
 		}
 

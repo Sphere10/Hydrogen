@@ -24,47 +24,57 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Hydrogen.Windows.Forms;
 
-public partial class DRMNagDialog : ApplicationForm, INagDialog {
+public partial class DRMNagDialog : ApplicationForm, INagDialog
+{
 
-	public DRMNagDialog() {
+	public DRMNagDialog()
+	{
 		InitializeComponent();
 	}
 
-	public string NagMessage { 
+	public string NagMessage
+	{
 		get => _expirationControl.Text;
 		set => _expirationControl.Text = value;
 	}
 
-	protected override void PopulatePrimingData() {
+	protected override void PopulatePrimingData()
+	{
 		base.PopulatePrimingData();
 		SetLicenseMessage();
 	}
 
-	private void SetLicenseMessage() {
+	private void SetLicenseMessage()
+	{
 		var productLicenseEnforcer = HydrogenFramework.Instance.ServiceProvider.GetService<IProductLicenseEnforcer>();
 		productLicenseEnforcer.CalculateRights(out var nag);
 		NagMessage = nag;
 	}
 
-	private void ShowActivationForm() {
+	private void ShowActivationForm()
+	{
 		DRMProductActivationForm form = new DRMProductActivationForm();
-		if (form.ShowDialog() == DialogResult.OK) {
+		if (form.ShowDialog() == DialogResult.OK)
+		{
 			Close();
 		}
 	}
 
-	private void _enterKeyButton_Click(object sender, EventArgs e) {
+	private void _enterKeyButton_Click(object sender, EventArgs e)
+	{
 		ShowActivationForm();
 	}
 
-	private void _closeButton_Click(object sender, EventArgs e) {
+	private void _closeButton_Click(object sender, EventArgs e)
+	{
 		Close();
 	}
 
-	private void _buyNowLink_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e) {
+	private void _buyNowLink_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+	{
 		var websiteLauncher = HydrogenFramework.Instance.ServiceProvider.GetService<IWebsiteLauncher>();
 		websiteLauncher.LaunchProductPurchaseWebsite();
 	}
 
-	
+
 }

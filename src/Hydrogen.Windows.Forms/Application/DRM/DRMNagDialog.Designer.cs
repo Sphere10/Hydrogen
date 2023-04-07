@@ -101,10 +101,11 @@ namespace Hydrogen.Windows.Forms
 			// _shoppingCartPictureBox
 			// 
 			_shoppingCartPictureBox.Image = (System.Drawing.Image)resources.GetObject("_shoppingCartPictureBox.Image");
-			_shoppingCartPictureBox.Location = new System.Drawing.Point(29, 232);
+			_shoppingCartPictureBox.Location = new System.Drawing.Point(33, 232);
 			_shoppingCartPictureBox.Margin = new System.Windows.Forms.Padding(0);
 			_shoppingCartPictureBox.Name = "_shoppingCartPictureBox";
-			_shoppingCartPictureBox.Size = new System.Drawing.Size(24, 24);
+			_shoppingCartPictureBox.Size = new System.Drawing.Size(20, 20);
+			_shoppingCartPictureBox.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
 			_shoppingCartPictureBox.TabIndex = 10;
 			_shoppingCartPictureBox.TabStop = false;
 			// 
@@ -115,6 +116,7 @@ namespace Hydrogen.Windows.Forms
 			applicationBanner1.FromColor = System.Drawing.Color.RoyalBlue;
 			applicationBanner1.Location = new System.Drawing.Point(0, 0);
 			applicationBanner1.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+			applicationBanner1.MaximumSize = new System.Drawing.Size(9999, 111);
 			applicationBanner1.Name = "applicationBanner1";
 			applicationBanner1.Size = new System.Drawing.Size(586, 111);
 			applicationBanner1.TabIndex = 11;

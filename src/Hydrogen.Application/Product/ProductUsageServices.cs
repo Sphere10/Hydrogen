@@ -84,8 +84,10 @@ public class ProductUsageServices : IProductUsageServices {
 	public void IncrementUsageByOne() {
 		_userSettings.FirstRunDate ??= DateTime.UtcNow;
 		_userSettings.NumberOfRuns++;
+		_userSettings.Save();
 		_systemSettings.FirstRunDate ??= DateTime.UtcNow;
 		_systemSettings.NumberOfRuns++;
+		_systemSettings.Save();
 
 	}
 

@@ -23,40 +23,39 @@ using Hydrogen;
 using Hydrogen.Application;
 using Hydrogen.Windows;
 
-namespace Hydrogen.Windows.Forms {
+namespace Hydrogen.Windows.Forms;
 
+public class StartupFolderAutoRunServicesProvider : IAutoRunServices {
 
-	public class StartupFolderAutoRunServicesProvider : IAutoRunServices {
-
-
-		public bool DoesAutoRun(AutoRunType type, string applicationName, string executable) {
-			switch (type) {
-				case AutoRunType.CurrentUser:
-                    return File.Exists(Tools.WinShell.DetermineStartupShortcutFilename(applicationName));
-					break;
-				default:
-					throw new SoftwareException("AutoRunType '{0}' not supported", type);
-			}
-		}
-
-		public void SetAutoRun(AutoRunType type, string applicationName, string executable) {
-			switch (type) {
-				case AutoRunType.CurrentUser:
-                    Tools.WinShell.CreateShortcutForApplication(executable, Tools.WinShell.DetermineStartupShortcutFilename(applicationName));
-					break;
-				default:
-					throw new SoftwareException("AutoRunType '{0}' not supported", type);
-			}
-		}
-
-		public void RemoveAutoRun(AutoRunType type, string applicationName, string executable) {
-			switch (type) {
-				case AutoRunType.CurrentUser:
-                    File.Delete(Tools.WinShell.DetermineStartupShortcutFilename(applicationName));
-					break;
-				default:
-					throw new SoftwareException("AutoRunType '{0}' not supported", type);
-			}
+	public bool DoesAutoRun(AutoRunType type, string applicationName, string executable) {
+		switch (type) {
+			case AutoRunType.CurrentUser:
+				return File.Exists(Tools.WinShell.DetermineStartupShortcutFilename(applicationName));
+				break;
+			default:
+				throw new SoftwareException("AutoRunType '{0}' not supported", type);
 		}
 	}
+
+	public void SetAutoRun(AutoRunType type, string applicationName, string executable, string arguments) {
+		switch (type) {
+			case AutoRunType.CurrentUser:
+				Tools.WinShell.CreateShortcutForApplication(executable, Tools.WinShell.DetermineStartupShortcutFilename(applicationName), arguments, displayMode: GetShortcutDisplayMode());
+				break;
+			default:
+				throw new SoftwareException("AutoRunType '{0}' not supported", type);
+		}
+	}
+
+	public void RemoveAutoRun(AutoRunType type, string applicationName, string executable) {
+		switch (type) {
+			case AutoRunType.CurrentUser:
+				File.Delete(Tools.WinShell.DetermineStartupShortcutFilename(applicationName));
+				break;
+			default:
+				throw new SoftwareException("AutoRunType '{0}' not supported", type);
+		}
+	}
+
+	protected virtual ShellLink.LinkDisplayMode GetShortcutDisplayMode() => ShellLink.LinkDisplayMode.Normal;
 }

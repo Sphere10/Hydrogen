@@ -26,12 +26,13 @@ namespace Tools {
         //    CreateShortcutForApplication(Application.ExecutablePath, shortcutPath, overwrite);
         //}
 
-        public static void CreateShortcutForApplication(string executablePath, string shortcutPath, bool overwrite = true, ShellLink.LinkDisplayMode displayMode = ShellLink.LinkDisplayMode.Normal) {
+        public static void CreateShortcutForApplication(string executablePath, string shortcutPath, string arguments = null, bool overwrite = true, ShellLink.LinkDisplayMode displayMode = ShellLink.LinkDisplayMode.Normal) {
             using (ShellLink shortcut = new ShellLink()) {
                 shortcut.Target = executablePath;
                 shortcut.WorkingDirectory = Path.GetDirectoryName(executablePath);
                 shortcut.Description = "My Shorcut Name Here";
                 shortcut.DisplayMode = displayMode;
+				shortcut.Arguments = arguments;
                 if (File.Exists(shortcutPath) && overwrite) {
                     File.Delete(shortcutPath);
                 }

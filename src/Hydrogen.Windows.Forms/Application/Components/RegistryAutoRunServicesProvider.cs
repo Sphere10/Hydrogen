@@ -44,10 +44,10 @@ namespace Hydrogen.Windows.Forms {
 			}
 		}
 
-		public void SetAutoRun(AutoRunType type, string applicationName, string executable) {
+		public void SetAutoRun(AutoRunType type, string applicationName, string executable, string arguments) {
 			var key = GetRegistryKey(type);
 			try {
-				key.SetValue(applicationName ?? DetermineKeyFromExecutable(executable), executable);
+				key.SetValue(applicationName ?? CalculateKeyFromExecutable(executable, arguments), executable);
 			}
 			finally {
 				key.Close();
@@ -91,8 +91,8 @@ namespace Hydrogen.Windows.Forms {
 			return key;
 		}
 
-		protected virtual string DetermineKeyFromExecutable(string executable) {
-			return Path.GetFileNameWithoutExtension(executable).RemoveCamelCase();
+		protected virtual string CalculateKeyFromExecutable(string executable, string arguments) {
+			return Path.GetFileNameWithoutExtension(executable).RemoveCamelCase() + (arguments ?? string.Empty);
 		}
 
 

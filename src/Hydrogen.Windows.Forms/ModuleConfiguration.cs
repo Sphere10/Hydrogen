@@ -45,11 +45,6 @@ public class ModuleConfiguration : ModuleConfigurationBase {
 			serviceCollection.AddTransient<IProductSendCommentsDialog, ProductProductSendCommentsDialog>();
 
 
-
-		//////////////////////////////////////////////////////////////////////
-		if (!serviceCollection.HasImplementationFor<IAutoRunServices>())
-			serviceCollection.AddTransient<IAutoRunServices, StartupFolderAutoRunServicesProvider>();
-
 		// This is the primary form of the application, so register it as a provider of the below services
 
 		if (!serviceCollection.HasControlStateEventProvider<FormEx>())
@@ -60,6 +55,10 @@ public class ModuleConfiguration : ModuleConfigurationBase {
 
 		if (!serviceCollection.HasControlStateEventProvider<SplitContainer>())
 			serviceCollection.AddControlStateEventProvider<SplitContainer, SplitContainerControlStateEventProvider>();
+
+		if (!serviceCollection.HasControlStateEventProvider<TabControl>())
+			serviceCollection.AddControlStateEventProvider<TabControl, TabControlStateEventProvider>();
+
 
 		if (!serviceCollection.HasControlStateEventProvider<Panel>())
 			serviceCollection.AddControlStateEventProvider<Panel, ContainerControlStateEventProvider>();

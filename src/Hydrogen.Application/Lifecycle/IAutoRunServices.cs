@@ -17,7 +17,7 @@ namespace Hydrogen.Application {
 
 		bool DoesAutoRun(AutoRunType type, string applicationName, string executable);
 
-		void SetAutoRun(AutoRunType type, string applicationName, string executable);
+		void SetAutoRun(AutoRunType type, string applicationName, string executable, string arguments);
 
 		void RemoveAutoRun(AutoRunType type, string applicationName, string executable);
 

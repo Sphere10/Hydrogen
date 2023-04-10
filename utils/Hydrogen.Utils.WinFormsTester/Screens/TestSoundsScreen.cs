@@ -18,6 +18,7 @@ using System.Data;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Media;
 using System.Text;
 using System.Threading;
 using System.Windows.Forms;
@@ -40,7 +41,7 @@ namespace Hydrogen.Utils.WinFormsTester {
 			ds.SetCooperativeLevel(this.Handle, CooperativeLevel.Priority);
 
 
-			WaveFormat format =  WaveFormat.CreateCustomFormat(
+			WaveFormat format = WaveFormat.CreateCustomFormat(
 				WaveFormatEncoding.Pcm,
 				44100,
 				2,
@@ -83,6 +84,15 @@ namespace Hydrogen.Utils.WinFormsTester {
 
 		private void button4_Click(object sender, EventArgs e) {
 			PlaySound(Resources.RightClickUp);
+		}
+
+		private void _systemPlayerButton_Click(object sender, EventArgs e) {
+			try {
+				using var leftClickDownSoundPlayer = new SoundPlayer(Resources.LeftClickDown);
+				leftClickDownSoundPlayer.Play();
+			} catch (Exception ex) {
+				ExceptionDialog.Show(ex);
+			}
 		}
 	}
 }

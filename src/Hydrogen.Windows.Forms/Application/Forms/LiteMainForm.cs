@@ -19,6 +19,7 @@ using System.Text;
 using System.Windows.Forms;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Enumeration;
 using System.Reflection;
 using System.Threading;
 using System.Runtime.InteropServices;
@@ -26,6 +27,7 @@ using Hydrogen;
 using Hydrogen.Application;
 using Hydrogen.Windows.Forms;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Win32;
 
 namespace Hydrogen.Windows.Forms {
 
@@ -44,6 +46,7 @@ namespace Hydrogen.Windows.Forms {
 			NumberActivations = 0;
 		}
 	
+		protected bool SuppressExitConfirmation { get; set; }
 
 		#region Form Methods
 
@@ -92,50 +95,28 @@ namespace Hydrogen.Windows.Forms {
 			base.OnClosing(cancelArgs);
 			if (cancelArgs.Cancel) {
 				// Base canceled closing because it probably hid and/or minimized the form
-				ApplicationExiting = true;
-			} else {
-
-				bool cancelExit = false;
-				try {
-					// Set application exiting if not already done so
-					if (!ApplicationExiting) {
-						ApplicationExiting = true;
-					}
-
-					string cancelReason = string.Empty;
-
-					// Ask user to confirm exit
-					if (this.AskYN("Are you sure you want to exit?")) {
-						// Now ask form observers to confirm exit
-						FireApplicationExitingEvent(cancelArgs);
-						cancelExit = cancelArgs.Cancel;
-						// If no aborts, ask framework to confirm exit
-						if (!cancelExit) {
-							HydrogenFramework.Instance.EndWinFormsApplication();
-							//HydrogenFramework.Instance.EndWinFormsApplication(out cancelExit, out cancelReason);
-						}
-
-
-						//if (cancelExit) {
-						//	// An observer or framework exit task somewhere has cancelled the exit.
-						//	// Ask user to exit anyway
-						//	if (WinFormsApplicationProvider.AskYN(ParagraphBuilder.Combine("The application failed to exit properly",
-						//	                                                       cancelReason ?? string.Empty,
-						//	                                                       "You may lose unsaved data if you exit", "Exit anyway?"))) {
-						//		// This will force an exit
-						//		Exit(true);
-						//	} else {
-						//		cancelArgs.Cancel = true;
-						//	}
-						//}
-					} else {
-						cancelArgs.Cancel = true;
-					}
-				} finally {
-					ApplicationExiting = cancelExit;
-				}
+				ApplicationExiting = false;
+				return;
 			}
+			
+			try {
+				// Set application exiting if not already done so
+				if (!ApplicationExiting) 
+					ApplicationExiting = true;
 
+				// Ask user to confirm exit
+				if (SuppressExitConfirmation || this.AskYN("Are you sure you want to exit?")) {
+					// Now ask form observers to confirm exit
+					FireApplicationExitingEvent(cancelArgs);
+					// If no aborts, ask framework to confirm exit
+					if (!cancelArgs.Cancel) 
+						HydrogenFramework.Instance.EndWinFormsApplication();
+				} else {
+					cancelArgs.Cancel = true;
+				}
+			} finally {
+				ApplicationExiting = !cancelArgs.Cancel;
+			}
 		}
 
 		protected virtual void OnApplicationExiting(CancelEventArgs cancelEventArgs) {
@@ -174,42 +155,47 @@ namespace Hydrogen.Windows.Forms {
 
 		#endregion
 
-		#region IUserInterfaceServices Implementation 
+		#region IUserInterfaceServices Implementation
+		
+		protected override void WndProc(ref Message m) {
+			const int WM_QUERYENDSESSION = 0x11;
+			if (m.Msg==WM_QUERYENDSESSION) {
+				// CloseActions Hide | Minimize will hold up session shutdown, and SystemEvents doesn't get fired!
+				CloseAction = FormCloseAction.Close;
+				SuppressExitConfirmation = true;
+			}
+			base.WndProc(ref m);
+		}
 
 		public virtual void Exit(bool force = false) {
-            try {
-                if (force || this.Disposing) {
-					try {
-						ApplicationExiting = true;
-					} finally {
-						System.Windows.Forms.Application.Exit();
-					}
-                    return;
+			SuppressExitConfirmation = force;
+			ExecuteInUIFriendlyContext(
+                () => {
+                    var oldAction = this.CloseAction;
+                    try {
+                        CloseAction = FormCloseAction.Close;
+                        Close();
+                        System.Windows.Forms.Application.Exit();
+                    } catch {
+						try {
+							System.Windows.Forms.Application.Exit();
+						} catch {
+							System.Environment.Exit(-1);
+						}
+                    }
+                    finally {
+                        // This runs if close is aborted
+                        CloseAction = oldAction;
+                    } 
                 }
-                ExecuteInUIFriendlyContext(
-                    () => {
-                        var oldAction = this.CloseAction;
-                        try {
-                            CloseAction = FormCloseAction.Close;
-                            Close();
-                        } catch {
-                            Exit(true);
-                        }
-                        finally {
-                            // This runs if close is aborted
-                            oldAction = oldAction;
-                        } 
-                    });
-            } catch {
-                Exit(true);
-            }
+			);
 		}
 
 		public virtual bool ApplicationExiting { get; set; }
 			
 		public virtual string Status { get; set; }
 
-		public virtual void ExecuteInUIFriendlyContext(Action function, bool executeAsync = false) {
+		public virtual async void ExecuteInUIFriendlyContext(Action function, bool executeAsync = false) {
 			if (executeAsync) {
 				BeginInvoke(function);
 			} else {
@@ -375,6 +361,7 @@ namespace Hydrogen.Windows.Forms {
 			try {
 				this.ReportError(threadExceptionEventArgs.Exception);
 			} catch {
+				// ignored
 			}
 		}
 

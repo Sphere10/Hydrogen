@@ -9,6 +9,7 @@ public class ConsoleApplicationUserInterfaceServices : IUserInterfaceServices {
 	}
 
 	public bool ApplicationExiting { get; set; } = false;
+
 	public string Status { get; set; } = string.Empty;
 
 	public void ShowNagScreen(string nagMessage) {

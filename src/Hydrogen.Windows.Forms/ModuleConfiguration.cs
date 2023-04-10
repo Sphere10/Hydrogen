@@ -94,7 +94,6 @@ public class ModuleConfiguration : ModuleConfigurationBase {
 		if (!serviceCollection.HasImplementation<SessionEndingHandlerInitializer>())
 			serviceCollection.AddInitializer<SessionEndingHandlerInitializer>();
 
-
 		// Start Tasks
 
 		// End Tasks

@@ -27,7 +27,7 @@ public class ApplicationTokenResolver : ITokenResolver {
 			"PRODUCTURL" => ProductInformationProvider.ProductInformation.ProductUrl,
 			"PRODUCTPURCHASEURL" => ProductInformationProvider.ProductInformation.ProductPurchaseUrl,
 			"CURRENTYEAR" => DateTime.Now.Year.ToString(),
-			"STARTPATH" => Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
+			"STARTPATH" => Path.GetDirectoryName(Tools.Runtime.GetExecutablePath()),
 			_ => null
 		};
 		return value != null;

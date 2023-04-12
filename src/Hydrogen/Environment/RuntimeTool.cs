@@ -30,12 +30,8 @@ namespace Tools {
         private static Assembly _entryAssembly = null;
         private static bool? _isWebApp = null;
         
-        public static string GetExecutablePath() {
-            // https://stackoverflow.com/questions/64581054/how-do-i-get-the-name-of-the-current-executable-in-c-net-5-edition
-            return Process.GetCurrentProcess().MainModule.FileName;
-        }
-
-
+        // https://stackoverflow.com/questions/64581054/how-do-i-get-the-name-of-the-current-executable-in-c-net-5-edition
+        public static string GetExecutablePath() =>Process.GetCurrentProcess().MainModule.FileName;
 
 //        public static Func<bool> IsInExceptionContext => throw new NotSupportedException(".NET Standard & Core no longer support this. Refactor your code to avoid it");
 	        //=> Marshal.GetExceptionPointers() != IntPtr.Zero ||  Marshal.GetExceptionCode() != 0;

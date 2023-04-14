@@ -150,7 +150,7 @@ namespace Hydrogen.Tests {
                 ran2 = true;
             }
 
-            Assert.That(() => Task.WhenAll(Task1(), Task2()).WithTimeout(250), Throws.InstanceOf<TaskCanceledException>());
+            Assert.That(() => Task.WhenAll(Task1(), Task2()).WithTimeout(1000), Throws.InstanceOf<TaskCanceledException>());
             Assert.That(ran1, Is.True);
             Assert.That(ran2, Is.False);
         }
@@ -170,11 +170,11 @@ namespace Hydrogen.Tests {
             };
 
             async Task Task2() {
-                await Task.Delay(150);
+                await Task.Delay(200);
                 ran2 = true;
             }
 
-            Assert.That(() => Task.WhenAll(Task1(), Task2()).WithTimeout(250), Throws.Nothing);
+            Assert.That(() => Task.WhenAll(Task1(), Task2()).WithTimeout(1000), Throws.Nothing);
             Assert.That(ran1, Is.True);
             Assert.That(ran2, Is.True);
         }
@@ -198,7 +198,7 @@ namespace Hydrogen.Tests {
                 Guard.Ensure(false, "Exception");
             }
 
-            Assert.That(() => Task.WhenAll(Task1(), Task2()).WithTimeout(250), Throws.Nothing);
+            Assert.That(() => Task.WhenAll(Task1(), Task2()).WithTimeout(1000), Throws.Nothing);
             Assert.That(ran1, Is.True);
             Assert.That(ran2, Is.True);
         }

@@ -25,25 +25,27 @@ namespace Hydrogen {
 			MouseMotionType moveType,
 			int x,
 			int y,
-			int deltaFromMotionStart,
-			int deltaFromLastEvent,
-			int deltaFromLastClick,
+			double distanceSinceMotionStart,
+			double deltaFromLastEvent,
+			double distanceSinceLastClick,
 			DateTime time
 			) : base(processName, x, y, time) {
-            DeltaFromLastClick = deltaFromLastClick;
+            DistanceSinceLastClick = distanceSinceLastClick;
 			DeltaFromLastEvent = deltaFromLastEvent;
-			DeltaFromMotionStart = deltaFromMotionStart;
+			DistanceSinceMotionStart = distanceSinceMotionStart;
 			MoveType = moveType;
 
         }
 
 		public MouseMotionType MoveType {	get; private set; }
 
-		public int DeltaFromLastClick { get; private set; }
+		public double DistanceSinceMotionStart { get; private set; }
+		
+		public double DistanceSinceLastClick { get; private set; }
 
-		public int DeltaFromLastEvent { get; private set; }
+		public double DeltaFromLastEvent { get; private set; }
 
-		public int DeltaFromMotionStart { get; private set; }
+		
 
 
     }

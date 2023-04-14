@@ -22,13 +22,12 @@ namespace Hydrogen {
 		public event EventHandler<KeyEvent>  KeyActivity;
 
 
-		public IList<Key> InterceptKeys { get; private set; }
-
 		protected IActiveApplicationMonitor ActiveApplicationMonitor { get; private set; }
-		public BaseKeyboardHook(IActiveApplicationMonitor activeApplicationMonitor) {
+		protected BaseKeyboardHook(IActiveApplicationMonitor activeApplicationMonitor) {
 			ActiveApplicationMonitor = activeApplicationMonitor;
-			InterceptKeys = new SynchronizedList<Key>();
 		}
+
+		public Func<Key, KeyState, bool> ShouldIntercept { get; set; } = null;
 
 		protected virtual void ProcessKeyEvent(char asciiChar, Key key, ScanCode scanCode, KeyState keyState, bool shiftPressed, bool ctrlPressed, bool altPressed) {
 			var keyEvent = new KeyEvent(

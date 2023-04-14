@@ -109,9 +109,7 @@ namespace Hydrogen.Windows {
                             keyState = KeyState.Up;
                         }
 
-                        if (InterceptKeys.Contains(key)) {
-                            intercept = true;
-                        }
+						intercept = ShouldIntercept?.Invoke(key,  keyState) ?? false;
 
                         // Base method will process rest of logic
                         base.ContinueOutsideCriticalExecutionContext(
@@ -123,7 +121,7 @@ namespace Hydrogen.Windows {
                                     keyState,
                                     virtualKey.HasFlag(VirtualKey.Shift),
                                     virtualKey.HasFlag(VirtualKey.Control),
-                                    virtualKey.HasFlag(VirtualKey.A)
+                                    virtualKey.HasFlag(VirtualKey.Alt)
                                 )
                         );
                     }

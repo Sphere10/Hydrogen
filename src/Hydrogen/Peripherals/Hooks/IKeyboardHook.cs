@@ -20,6 +20,7 @@ namespace Hydrogen {
 		 event EventHandler<KeyEvent> KeyActivity;
 		 event EventHandler<KeyEvent> KeyUp;
 
-		 IList<Key> InterceptKeys { get; }
+		 Func<Key, KeyState, bool> ShouldIntercept { get; set; }
+ 
 	}
 }

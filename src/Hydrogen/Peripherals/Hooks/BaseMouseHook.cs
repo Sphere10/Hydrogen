@@ -12,43 +12,28 @@
 //-----------------------------------------------------------------------
 
 using System;
+using System.Runtime.CompilerServices;
 using System.Threading;
 
 
 namespace Hydrogen {
 
-	public abstract class BaseMouseHook : BaseDeviceHook, IMouseHook  {
-		
-		public event EventHandler<MouseMoveEvent>  MotionStart;
-		public event EventHandler<MouseMoveEvent>  Motion;
-		public event EventHandler<MouseMoveEvent>  MotionStop;
+	public abstract class BaseMouseHook : BaseDeviceHook, IMouseHook {
+
+		public event EventHandler<MouseMoveEvent> MotionStart;
+		public event EventHandler<MouseMoveEvent> Motion;
+		public event EventHandler<MouseMoveEvent> MotionStop;
 		public event EventHandler<MouseWheelEvent> Scroll;
-		public event EventHandler<MouseClickEvent>  Click;
-		public event EventHandler<MouseEvent>  Activity;
-		
-		public int CurrentMouseX { get; protected set; }
-		public int CurrentMouseY { get; protected set; }
-		public int LastClickX { get; protected set; }
-		public int LastClickY { get; protected set; }
-		public int MotionStartX { get; protected set; }
-		public int MotionStartY { get; protected set; }
+		public event EventHandler<MouseClickEvent> Click;
+		public event EventHandler<MouseEvent> Activity;
 
-		protected IActiveApplicationMonitor ActiveApplicationMonitor { get; private set; }
-		protected TimeSpan MovingStoppedInterval { get; private set; }
-		protected int PreviousMouseX { get; private set; }
-		protected int PreviousMouseY { get; private set; }
-
-
-		private bool _mouseStoppedMonitorActive = false;
-		private Thread _mouseStoppedMonitorThread = null;
 		private bool _inMotion = false;
 		private DateTime _lastMouseMoveOn = DateTime.UtcNow;
-		private int _largestDistanceMovedSinceMotionStart = 0;
-		private int _largestDistanceMovedSinceLastClick = 0;
-		private DateTime _lastAppEventRaised = DateTime.UtcNow;
-		SemaphoreSlim  _detectingMouseStoppedSemaphore = new SemaphoreSlim(1);
+		private double _distanceMovedSinceStart;
+		private double _distanceMovedSinceClick ;
+		private readonly SemaphoreSlim _detectingMouseStoppedSemaphore = new(1);
 
-		public BaseMouseHook(IActiveApplicationMonitor activeApplicationMonitor, TimeSpan movingStoppedInterval) {
+		protected BaseMouseHook(IActiveApplicationMonitor activeApplicationMonitor, TimeSpan movingStoppedInterval) {
 			MovingStoppedInterval = movingStoppedInterval;
 			ActiveApplicationMonitor = activeApplicationMonitor;
 			CurrentMouseX = 0;
@@ -59,18 +44,23 @@ namespace Hydrogen {
 			LastClickY = 0;
 			MotionStartX = 0;
 			MotionStartY = 0;
+			_distanceMovedSinceStart = 0D;
+			_distanceMovedSinceClick = 0D;
 		}
 
-		public override void StartHook() {
-			base.StartHook();
-		}
-		public override void StopHook() {
-			base.StopHook();
-		}
+		public int CurrentMouseX { get; protected set; }
+		public int CurrentMouseY { get; protected set; }
+		public int LastClickX { get; protected set; }
+		public int LastClickY { get; protected set; }
+		public int MotionStartX { get; protected set; }
+		public int MotionStartY { get; protected set; }
+		protected IActiveApplicationMonitor ActiveApplicationMonitor { get; private set; }
+		protected TimeSpan MovingStoppedInterval { get; private set; }
+		protected int PreviousMouseX { get; private set; }
+		protected int PreviousMouseY { get; private set; }
 
 		public abstract void Simulate(MouseButton button, MouseButtonState buttonState, int screenX, int screenY);
-
-
+		
 		protected virtual void OnClick(MouseClickEvent mouseClickEvent) {
 		}
 
@@ -131,9 +121,6 @@ namespace Hydrogen {
 			}
 		}
 
-
-
-		
 		protected virtual void ProcessMouseActivity(int currentX, int currentY, MouseButton buttonClicked, MouseButtonState buttonState, MouseClickType clickType, int wheelDelta) {
 			lock (this) {
 				string activeProcessName = ActiveApplicationMonitor.GetActiveApplicationName();
@@ -142,8 +129,7 @@ namespace Hydrogen {
 					#region Mouse was clicked
 					LastClickX = CurrentMouseX;
 					LastClickY = CurrentMouseY;
-					_largestDistanceMovedSinceLastClick = 0;
-
+					_distanceMovedSinceClick = 0D;
 					// Fire click event
 					FireClickEvent(
 						new MouseClickEvent(
@@ -154,8 +140,8 @@ namespace Hydrogen {
 							buttonState,
 							clickType,
 							now
-							)
-						);
+						)
+					);
 					#endregion
 				}
 
@@ -168,25 +154,14 @@ namespace Hydrogen {
 					CurrentMouseY = currentY;
 
 					// Keep track of distances moved by mouse
-					int distanceFromStart =
-						(int)
-						Math.Round(Math.Sqrt(Math.Pow(CurrentMouseX - MotionStartX, 2) + Math.Pow(CurrentMouseY - MotionStartY, 2)), 0);
-					if (distanceFromStart > _largestDistanceMovedSinceMotionStart) {
-						_largestDistanceMovedSinceMotionStart = distanceFromStart;
-					}
-					int distanceFromClick =
-						(int) Math.Round(Math.Sqrt(Math.Pow(CurrentMouseX - LastClickX, 2) + Math.Pow(CurrentMouseY - LastClickY, 2)), 0);
-					if (distanceFromClick > _largestDistanceMovedSinceLastClick) {
-						_largestDistanceMovedSinceLastClick = distanceFromClick;
-					}
-					int distanceFromLastEvent =
-						(int)
-						Math.Round(Math.Sqrt(Math.Pow(CurrentMouseX - PreviousMouseX, 2) + Math.Pow(CurrentMouseY - PreviousMouseY, 2)), 0);
-
+					var distanceSinceLastEvent = Math.Sqrt(Math.Pow(CurrentMouseX - PreviousMouseX, 2) + Math.Pow(CurrentMouseY - PreviousMouseY, 2));
+					_distanceMovedSinceStart += distanceSinceLastEvent;
+					_distanceMovedSinceClick += distanceSinceLastEvent;
+		
 					if (!_inMotion) {
 						// Mouse was previously stationary, now begins motion
 						_inMotion = true;
-						_largestDistanceMovedSinceMotionStart = 0;
+						_distanceMovedSinceStart = 0D;
 						MotionStartX = CurrentMouseX;
 						MotionStartY = CurrentMouseY;
 						PreviousMouseX = CurrentMouseX;
@@ -199,45 +174,48 @@ namespace Hydrogen {
 								MouseMotionType.Started,
 								CurrentMouseX,
 								CurrentMouseY,
-								distanceFromStart,
-								distanceFromLastEvent,
-								distanceFromClick,
+								_distanceMovedSinceStart,
+								distanceSinceLastEvent,
+								_distanceMovedSinceClick,
 								now
-								)
-							);
+							)
+						);
 					}
-
 
 					if (_inMotion) {
 						#region Detect mouse stopped
 						if (_detectingMouseStoppedSemaphore.Wait(0)) {
 							// We detect a stop in motion when the mouse hasn't moved within MovingStoppedInterval
-							Tools.Lambda.ActionAsAsyncronous(
-								() => {
-									try {
-										while (DateTime.Now.Subtract(_lastMouseMoveOn) < MovingStoppedInterval) {
-											Thread.Sleep(MovingStoppedInterval);
-										}
-										_inMotion = false;
+							if (_inMotion) {
+								Tools.Lambda.ActionAsAsyncronous(
+									() => {
+										try {
+											while (DateTime.Now.Subtract(_lastMouseMoveOn) < MovingStoppedInterval) {
+												Thread.Sleep(MovingStoppedInterval / 2);
+											}
+											_inMotion = false;
 
-										// The mouse hasn't moved in MovingStoppedInterval, so fire a mouse stopped event
-										FireMotionStopEvent(
-											new MouseMoveEvent(
-												ActiveApplicationMonitor.GetActiveApplicationName(),
-												MouseMotionType.Stopped,
-												CurrentMouseX,
-												CurrentMouseY,
-												_largestDistanceMovedSinceMotionStart,
-												0,
-												_largestDistanceMovedSinceLastClick,
-												DateTime.UtcNow
-											)
-										);
-									} finally {
-										_detectingMouseStoppedSemaphore.Release();
+											// The mouse hasn't moved in MovingStoppedInterval, so fire a mouse stopped event
+											FireMotionStopEvent(
+												new MouseMoveEvent(
+													ActiveApplicationMonitor.GetActiveApplicationName(),
+													MouseMotionType.Stopped,
+													CurrentMouseX,
+													CurrentMouseY,
+													_distanceMovedSinceStart,
+													distanceSinceLastEvent,
+													_distanceMovedSinceClick,
+													DateTime.UtcNow
+												)
+											);
+										} finally {
+											_detectingMouseStoppedSemaphore.Release();
+										}
 									}
-								}).Invoke();
-						#endregion
+								).Invoke();
+							}
+							#endregion
+
 						}
 					}
 
@@ -248,19 +226,19 @@ namespace Hydrogen {
 							MouseMotionType.Move,
 							CurrentMouseX,
 							CurrentMouseY,
-							distanceFromStart,
-							distanceFromLastEvent,
-							distanceFromClick,
+							_distanceMovedSinceStart,
+							distanceSinceLastEvent,
+							_distanceMovedSinceClick,
 							now
-							)
-						);
+						)
+					);
 					#endregion
 				}
 
 				if (wheelDelta != 0) {
 					#region Mouse was scrolled
 					FireScrollEvent(
-						new MouseWheelEvent (
+						new MouseWheelEvent(
 							activeProcessName,
 							currentX,
 							currentY,
@@ -278,10 +256,10 @@ namespace Hydrogen {
 						currentX,
 						currentY,
 						now
-						)
-					);
+					)
+				);
 			}
 		}
-		
+
 	}
 }

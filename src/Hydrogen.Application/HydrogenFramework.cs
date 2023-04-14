@@ -90,13 +90,13 @@ public class HydrogenFramework {
 		CheckNotStarted();
 		Guard.Ensure(_registeredModules, "Modules have not been registered");
 		Guard.Against(IsStarted, "Hydrogen framework has already been started");
+		Options = options;
 		ServiceProvider = serviceProvider;
 		Initializing?.Invoke();
 		InitializeModules(serviceProvider);
 		InitializeApplication();
 		Initialized?.Invoke();
 		IsStarted = true;
-		Options = options;
 	}
 
 	public void EndFramework() {

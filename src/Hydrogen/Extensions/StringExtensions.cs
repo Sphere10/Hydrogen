@@ -538,9 +538,11 @@ namespace Hydrogen {
 			}
 		}
 
-		public static string ReplaceNewLinesWithBR(string @string) {
+		public static string ReplaceNewLinesWithBR(this string @string) {
 			return @string.Replace("\n", "<br/>");
 		}
+
+		public static string RemoveAnchorTag(this string @string) => Tools.Url.StripAnchorTag(@string);
 
 		public static Dictionary<string, string> ParseQueryString(this string encdata) {
 			return Tools.Url.ParseQueryString(encdata);

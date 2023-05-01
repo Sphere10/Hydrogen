@@ -49,7 +49,7 @@ namespace Tools {
 		/// <param name="email">Email address to validate</param>
 		/// <returns>Whether email is validly formed</returns>
 		public static bool IsValidEmail(string email) {
-			return EmailValidatorRegex.IsMatch(email);
+			return !string.IsNullOrWhiteSpace(email) && EmailValidatorRegex.IsMatch(email);
 		}
 
 		public static void SendEmail(

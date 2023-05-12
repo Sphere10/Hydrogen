@@ -1,30 +1,27 @@
 # Dynamic Merkle-Trees
 
-By Herman Schoenfeld <i>&lt;herman@sphere10.com&gt;</i>
-Copyright (c) Sphere 10 Software Pty Ltd. All Rights Reserved.
-Written in year 2020 (from Jan - Oct 23), published 2021 (Dec).
+<pre>
+  Author: Herman Schoenfeld <herman@sphere10.com>
+  Version: 1.1
+  Date: 2020-01-01 - 2020-10-23
+  Copyright: (c) <a href="https://sphere10.com">Sphere 10 Software Pty Ltd</a>. All Rights Reserved.
+</pre>
 
 **Abstract**
 
-This paper presents a formal construction of dynamic merkle-trees and a deep-dive into their mathematical structure. In doing so, new and interesting artefacts are revealed worthy of further study. New security proof constructions are provided that permit a full range of tree transformations including appending, updating and deleting leaf nodes without requiring pre-knowledge of those leaf nodes. New concepts are explored including "perfect trees",  "sub-trees", "sub-roots" and "flat coordinates" through various lemmas, theorems and algorithms. Also, a "flat-tree" implementation of merkle-trees is developed suitable for addressing nodes in a 1-dimensional contiguous block of memory that can grow and shrink from the right. Also, a "long-tree" implementation is developed which permits (practically) unbounded tree construction in $O(\frac{1}{2} \log_2N)$ space and time complexity using a novel algorithm.
-
-
+This paper presents a formal construction of dynamic merkle-trees and a deep-dive into their mathematical structure. In doing so, new and interesting artefacts are presented as well as novel security proof constructions that enable proofs for a full range of tree transformations including append, update and deletion of leaf nodes (without requiring knowledge of those nodes). Novel concepts are explored including "perfect trees",  "sub-trees", "sub-roots" and "flat coordinates" through various lemmas, theorems and algorithms. In particular, a "flat-tree" implementation of merkle-trees is presented suitable for storing trees as a contiguous block of memory that can grow and shrink from the right-side. Of note, a "long-tree" implementation is presented which permits arbitrarily large tree construction in $O(\frac{1}{2} \log_2N)$ space and time complexity using a novel algorithm. Finally, a reference implementation accompanies this paper which contains a fully implemented and thoroughly tested implementation of dynamic merkle-trees.
 
 # 1. Introduction
 
-Merkle-trees are a cryptographic construction that permit a collection of objects to be cryptographically hashed in such a way that the knowledge of the membership of those objects in the collection is not lost. They permit statements about the collection, and their objects, to be verified knowing only the root hash and the objects in question. This is achieved through formally constructed security proofs composed of a sequence of hash digests. The ability to verify statements about the tree without needing to store the tree is the primary innovation and purpose of merkle-trees. For example, proving that a leaf-node exists within a merkle-tree requires knowing only the root, the leaf and the path from that leaf to the root. The path here comprises the "existence-proof" of the leaf in the tree. The verifier can cryptographically prove the existence of the leaf in the tree by evaluating the hash-path and comparing the end result with the known root. If it matches, the object is a leaf of the tree. 
+Merkle-trees are a cryptographic construction that enable a collection of objects to be hashed together in a way that preserves information about their individual membership within the collection.  Merkle-trees permit statements about the collection, and their objects, to be verified without knowledge of the entire set of objects but only of the objects in question. This is achieved through formally constructed security proofs. The ability to verify statements about the tree without needing to store (or have knowledge of) the tree is the primary innovation and essential purpose of merkle-trees. For example, proving that a leaf-node exists within a merkle-tree requires knowing only the root, the leaf and the path from that leaf to the root. The path here comprises an "existence-proof" of the leaf in the tree. The verifier can cryptographically prove the existence of the leaf in the tree by evaluating the hash-path and comparing the end result with the known root. If it matches, the object is a leaf of the tree. 
 
-This initial idea was originally proposed[^1] by Ralph Merkle for the specific purpose of overcoming the limitations of "one-time keys" in the Lamport/Winternitz digital signature schemes. He found he was able to transform a "one-time" scheme into a "many-time" scheme by encoding multiple one-time keys as leaves in a merkle-tree. The root of the tree serves as the many-time key which represents a cryptographic commitment to all the one-time keys. Each signature chooses a one-time key and provides an existence-proof of that key along with the digital signature signed by that key. By choosing different one-time keys for each signature, the one-time signature scheme thus transforms into an equivalent many-time scheme.
+This initial idea was originally proposed[^1] by Ralph Merkle for the specific purposes of overcoming the limitations of "one-time keys" in the Lamport/Winternitz digital signature schemes. He found he was able to transform a "one-time" scheme into a "many-time" scheme by encoding multiple one-time keys as leaves in a merkle-tree. The root of the tree served as the many-time key which represented a cryptographic commitment to all the one-time keys (the leaf nodes). Each signature chose a one-time key and provided an existence-proof of that key along with the digital signature signed by that key. By choosing different one-time keys for each signature, the one-time signature scheme thus transformed into an equivalent many-time scheme.
 
 Since that time, merkle-trees have found a wide domain of applicability. Whilst primarily used in cryptography, many areas of computer science utilize merkle-trees including database management systems, certificate management, peer-to-peer file streaming, blockchains, distributed ledger technology many other established and emerging fields.
 
-This paper extends the primary utility of merkle-trees not just with new proofs for membership and consistency but for general purpose leaf-set transformations including update, delete, append, insert, to name a few. These proofs are sufficient to compose all general leaf-set transformations. Also, a  "flat coordinate scheme" for merkle-trees is provided that allows addressing of nodes in a 1-dimensional contiguous block of memory suitable for unbounded trees. Of particular achievement is a  tree implementation with $O(\frac{1}{2}\log_2N)$ space and time complexity suitable for building arbitrarily large merkle-trees efficiently.
+This paper extends the primary utility of merkle-trees not just with new proofs for membership and consistency but with general purpose leaf-set transformations including update, delete, append, insert, to name a few. These proofs are sufficient to compose all general leaf-set transformations. Also, a  "flat coordinate scheme" for merkle-trees is provided that allows addressing of nodes in a 1-dimensional contiguous block of memory suitable for unbounded trees. Of particular achievement is a  tree implementation with $O(\frac{1}{2}\log_2N)$ space and time complexity suitable for building arbitrarily large merkle-trees efficiently.
 
 One of the issues with merkle-trees are their lack of formalization in the literature. In the opinion of the author, this arises from a certain complexity associated with an obscure aspect of the merkle-tree construction. Specifically, it is in how authors deal with odd numbered leaf sets (or level sets in general). This seemingly obscure concern turns out to be fundamentally important aspect of merkle-trees, as shown in this paper. Whereas other treatments ignore this issue, by-pass the issue entirely by assuming "perfect trees" or implement ad hoc work-arounds like double-hashing odd-indexed end nodes as Bitcoin does, this paper tackles the problem and it's transitive complexity head-on. In doing so, interesting new aspects of merkle-trees are revealed and explored and whose insights are employed in novel algorithm development.
-
-
-
-
 
 # 2. Merkle-Tree Construction
 
@@ -38,36 +35,28 @@ In [Fig 1](#Fig-1), every node in the merkle-tree can be addressed by a 2D $(x,y
 
 
 
-
-
-
-
-
-
-
-
 ## 2.1 Formal definition
 
 For any sequence of $N$ binary objects $$O=\{O_1, ..., O_{N}\}$$ where $$O_i = \{0,1\}^*$$ and cryptographic hash function $$\textbf{H}:\{0,1\}^* \rarr \{0,1\}^n$$, the merkle-tree $$L:(O, x \in \Z_0, y \in \Z_0) \rarr \{0,1\}^n$$ is defined as the piece-wise chaining-function:
+
+
 $$
-L^{y}_{x}(O) = \begin{cases} 
-    \textbf{H}(O_{x+1}) &\quad \text{$y=0$ and $0 \le x < N$} &\quad \text{(leaf node)}\\
-    H(L^{y-1}_{2x}, L^{y-1}_{2x+1}) &\quad \text{$0 < y < h$ and $0 \le x < \frac{\|L^{y-1}\|-1}{2}$} &\quad \text{(parent node)}\\
-    L^{y-1}_{2x} &\quad \text{$y>0$ and $x = \frac{\|L^{y-1}\|-1}{2}$ and $\|L^{y-1}\| = 1 \pmod{2}$} &\quad \text{(bubble-up node)}\\
-    \empty &\quad \text{otherwise} &\quad \text{(null node)}\\
+L^{y}_{x}(O) = \begin{cases}
+\textbf{H}(O_{x+1}) &\quad \text{$y=0$ and $0 \le x < N$} &\quad \text{(leaf node)}\\
+H(L^{y-1}_{2x}, L^{y-1}_{2x+1}) &\quad \text{$0 < y < h$ and $0 \le x < \frac{\|L^{y-1}\|-1}{2}$} &\quad \text{(parent node)}\\
+L^{y-1}_{2x} &\quad \text{$y>0$ and $x = \frac{\|L^{y-1}\|-1}{2}$ and $\|L^{y-1}\| = 1 \pmod{2}$} &\quad \text{(bubble-up node)}\\
+\empty &\quad \text{otherwise} &\quad \text{(null node)}\\
 \end{cases} \\
-$$
-
-$$\qquad \qquad \qquad \qquad \qquad \qquad \qquad \text{where}$$
-
-$$
+\text{where} \\
 \begin{align*}
-    N &= \|L^0\| = \|O\| &\quad \text{(cardinality of the leaf set)} \\
-    h &= \lceil\log_2N\rceil+1 &\qquad\text{(height of merkle-tree)} \\
-    \|L^n\| &= \left\lceil\frac{N}{2^n}\right\rceil &\qquad \text{(cardinality of level $n$)} \\
-    H(l,r) &= \textbf{H}(l || r) &\qquad\text{(node hash function)}\\
+N &= \|L^0\| = \|O\| &\quad \text{(cardinality of the leaf set)} \\
+h &= \lceil\log_2N\rceil+1 &\qquad\text{(height of merkle-tree)} \\
+\|L^n\| &= \left\lceil\frac{N}{2^n}\right\rceil &\qquad \text{(cardinality of level $n$)} \\
+H(l,r) &= \textbf{H}(l || r) &\qquad\text{(node hash function)}\\
 \end{align*}
 $$
+
+
 
 In this definition, a merkle-tree $L$ maps a sequence of objects $O$ and two positive integers $(x,y)$ to a hash digest $\{0,1\}^n$. The arguments $(x,y)$ are the "merkle-coordinates" of a node (digest) in the merkle-tree and are always denoted as super/subscripts of $L$ (so as to convey their equivalence relation / chaining function nature). However, in this treatment they are strictly arguments of $L$.
 
@@ -172,7 +161,7 @@ See [table 2.4.7](#Table 2.4.7 Pow-2 Partitions of N) for examples of pow-2 part
 
 The powers-of-2 partition of $N$ are a strictly decreasing set $C$ such that $C_{i} > C_{i+1}$ for all $1 \le i < \|C\|$. 
 
-**Proof:** By definition $C$ is an ordered decreasing set thus $C_{i} \ge C_{i+1}$. To be strictly decreasing then $C_i > C_{i+1}$. If it is assumed that two adjacent exponents where equal such that $C_{i} = C_{i+1} = x$  then   $2^{C_i}+2^{C_{i+1}}=2^x+2^x=2^1 2^x=2^{x+1}$. As this is itself a power of 2, one could replace both exponents $C_i$ , $C_{i+1}$  with single exponent $x+1$ in $C$. This would necessarily shorten the cardinality of $C$ thus contradicting the requirement of [definition 2.4.2](#Definition 2.4.2: The exponents of the powers of 2) that it be the partition with least cardinality. Thus since no adjacent exponents in $C$ can ever equal by virtue of $C$ being defined as the shortest partition, it follows $C$ is strictly decreasing. **QED.**
+**Proof:** By definition $C$ is an ordered decreasing set thus $C_{i} \ge C_{i+1}$. To be strictly decreasing then $C_i > C_{i+1}$. If it is assumed that two adjacent exponents where equal such that $C_{i} = C_{i+1} = x$  then   $2^{C_i}+2^{C_{i+1}}=2^x+2^x=2^1 2^x=2^{x+1}$. As this is itself a power of 2, one could replace both exponents $C_i$ , $C_{i+1}$  with single exponent $x+1$ in $C$. This would necessarily shorten the cardinality of $C$ thus contradicting the requirement of [definition 2.4.2](#Definition 2.4.2: Pow-2 Partition) that it be the partition with least cardinality. Thus since no adjacent exponents in $C$ can ever equal by virtue of $C$ being defined as the shortest partition, it follows $C$ is strictly decreasing. **QED.**
 
 ##### Algorithm 2.4.5 CalcPow2Partition
 
@@ -222,12 +211,6 @@ Reduces an arbitrary sum of powers of 2 to an ordered pow-2 partition of the sum
 ```
 
 Integers when represented as powers of 2 partitions follow an interesting pattern.
-
-
-
-
-
-
 
 ##### Table 2.4.7 Pow-2 Partitions of N
 
@@ -320,6 +303,14 @@ See [Algorithm 2.6.4: Aggregate Roots](#algorithm-2.6.4:-aggregate-roots) for a 
 
 
 
+
+
+
+
+
+
+
+
 ##### Algorithm 2.6.4: Aggregate Roots
 
 Calculates the merkle-root from the sub-roots as per [theorem 2.6.3](#theorem-2.6.3:-sub-root-Aggregation).
@@ -336,10 +327,6 @@ Calculates the merkle-root from the sub-roots as per [theorem 2.6.3](#theorem-2.
  9:         Result = H(S[i], Result)   ; transposed H^T(l,r) = H(r,l)
 10: end algorithm
 ```
-
-
-
-
 
 ## 2.7 Node Traversal
 
@@ -385,25 +372,15 @@ Such a proof system is desirable for applications where maintaining merkle-trees
 
 *: not necessarily contiguous     **:without specifying leaves
 
-
-
 ## 3.1 Proof Construction
 
-A security proof consists of start digest $D_0$, a set of digests $D=\{D_1, ... D_n\}$, a set of direction flags $F=\{F_1, ..., F_n\}$ and a root-digest $R$. To verify the proof, the verifier must hash of the set of digests $D$ in a chain using a cryptographic node-hash function $H(l,r)$ and starting with $D_0$. In each step of the aggregation, the ordering of the arguments in $H$ is determined by the corresponding flag in $F$.  See reference implementation[^2] for specification and [Fig 3](#Fig 3: Existence proof example) for an example .
-
-
-
-
-
-
-
-
+A security proof consists of start digest $D_0$, a set of digests $D=\{D_1, ... D_n\}$, a set of direction flags $F=\{F_1, ..., F_n\}$ and a root-digest $R$. To verify the proof, the verifier must hash of the set of digests $D$ in a chain using a cryptographic node-hash function $H(l,r)$ and starting with $D_0$. In each step of the aggregation, the ordering of the arguments in $H$ is determined by the corresponding flag in $F$.  See reference implementation[^2] for specification and [Fig 4](#Fig 4: Existence proof example) for an example .
 
 ## 3.2 Existence
 
 An existence proof is a proof that a node exists within a tree. Specifically, it is a proof that the node $L^y_x$  has value $z$ for a tree $L$ with root $R$. Existence proofs are generally used to prove the existence of leaf nodes. However, in this paper, they are also used to prove the existence of sub-roots which can be anywhere in the tree. See Algorithms A.9 - A.10 for details. This algorithm is well-known in the literature as an "audit proof", and provided here for brevity.
 
-##### Fig 3: Existence proof example
+##### Fig 4: Existence proof example
 
 ![diagram-1](resources/existence-1-75pct.png)
 
@@ -411,7 +388,7 @@ An existence proof is a proof that a node exists within a tree. Specifically, it
 
 The existence-proof for $\text{Obj 3}$ comprises of the hash-path $D=\{L^0_2, L^1_0, L^2_1, L^3_1\}$ and the object $\text{Obj 3}$ and the index $i=3$ of the object. The verifier has the merkle-root $R$ and knows the total leaf-count $N=9$. Knowing the index $i$, the verifier computes the direction flags $F=\{0, 0, 1, 1\}$ which represent which side of the hash-function a node's digest is an argument of. The verifier then computes the start digest $D_0=L^0_3$ by hashing $\text{Obj 3}$.  The verifier then performs $R' = H(H(H(D_2, H(D_1, D_0)), D_3), D_4)$ noting that the ordering of the hash arguments $D_i$ is determined by flag $F_i$. The verifier knows if $R'=R$ then proof is valid and $\text{Obj 3}$ exists at index $i=3$ , otherwise it is invalid.
 
-##### Fig 4: Existence proof example 2
+##### Fig 5: Existence proof example 2
 
 ![diagram-1](resources/existence-2-75pct.png)
 
@@ -419,25 +396,15 @@ The existence-proof for $\text{Obj 3}$ comprises of the hash-path $D=\{L^0_2, L^
 
 Similarly, the existence-proof for object 8 comprises of start digest $D_0=L^0_8$ , hash-path $D=\{L^0_9, L^3_0\}$, flags $F=\{1, 0\}$ and root $R$. The verifier checks that $R=H(D_2, H(D_0, D_1))$.  Of note in Fig 4 is the implicit traversal of bubble-nodes by virtue of the logical parent/siblings algorithms found the reference implementation[^2].
 
-
-
-
-
-.
-
 ## 3.3  Ranged Existence 
 
 A ranged-existence-proof extends an existence-proof to multiple **leaf** nodes (not necessarily adjacent). The purpose is to provide $1$ proof that $N$ leaves exist rather that relying on $N$ proofs that $1$ leaf exists. Since neighbouring leaf nodes tend to share antecedent nodes, by taking the union of all their individual existence-proof paths a significant saving in space complexity is achieved. See reference implementation[^2]for specification.
-
-
 
 ## 3.4 Right Delete (Consistency)
 
 A consistency-proof proves that the first $M$ leaves of two trees are equal. In other words, it proves that a merkle-tree $L$ with $M$ leaves and root $R$  has the same first $M$ leaves as tree $L'$ with $N \ge M$ leaves and root $R'$. The consistency-proof construction in this paper is unique and differs from commonly known implementations. In the opinion of the author, the construction here is more elegant and simpler. It works by proving that the invariant right-most sub-root $k$ of the smaller tree $L$ exists in the larger tree $L'$. If the trees are consistent to $M$ leaves, the existence-proof of $k$ in $L'$ necessarily traverses the existence-path of $k$ in $L$. This allows $R$ to be recovered from the existence-proof of $k$ in $L'$ alone. By verifying $R$ indeed derives from the existence-proof of $k$ in $L$, and the existence proof itself validates to $R'$,  then the verifier shown $L$ and $L'$ are consistent up to and including $M$ leaves.  See reference implementation[^2] for specification.
 
 **REMARK 3.4.1:** In other treatments, consistency proofs are proffered as a (weak) proof that a tree was appended to with new leaves.  In the opinion of the author, consistency-proofs are a weak form of proving an append since they only prove that a count of leaves were appended but say nothing about the appended leaves themselves. In practice, knowing that items were appended to a list but without knowing what those items were can lead to insecure assumptions about the system. A consistency-proof only proves the post-transformation leaf-set of a tree is **consistent** with the pre-transformation leaf-set and nothing more. With this in mind, it is the opinion of the author that a "consistency proof" ought to be correctly interpreted as a "right-delete-proof" in reverse. In other words, a right-delete-proof proves that a tree $L'$ with $N$ leaves and root $R'$ becomes a tree $L$ with $M<=N$ leaves with root $R$. This is equivalent to a consistency proof in reverse but is "strong" in the sense that it completely proves the "right-deletion" (rather than "weakly" proves an append). By preference to elegancy, the primary form of this proof ought be a right-delete-proof and a consistency-proof ought to be considered a delete-proof in reverse. However, to maintain parity with existing convention, we treat a "right-delete-proof" as a reverse of a "consistency-proof".
-
-
 
 ## 3.5 Append
 
@@ -481,23 +448,15 @@ A remove-proof allows a verifier to prove that specific leaves were removed from
 
 An update proof is a new type of security proof that permits a verifier to prove, knowing only the merkle-root $R$, that a single node $k$ was updated to $k'$ resulting in a new root $R'$. The update proof comprises simply of an existence-proof of $k$ in $R$ denoted $P$, bundled with $k$ and $k'$.  Having the root $R$, the verifier first confirms $k$ exists in $R$ by running $P$ using the start-digest $k$. Once confirmed, the verifier re-runs $P$ using start-digest $k'$ to recover the new root $R'$.
 
-
-
-
-
-
-
 ## 3.8  Ranged Update
 
 A ranged-update-proof extends an update-proof in much the same way that a ranged-existence-proof extends an existence-proof. It provides a single proof that $N$ **leaves** were updated which is far more space and time efficient than $N$ proofs of $1$ leaf update. This construction comprises of a ranged-existence-proof of the old leaf values coupled with the old leaf values themselves. The verifier first runs an existence-proof of the old leaf values to ensure  the root old $R$ is recovered. The verifier then maps the digests in the proof to their corresponding nodes in a partial merkle-tree, by calculating the path of that proof. It then proceeds to iteratively update the tree for every new appended leaf value.  It concludes by verifying that the root of the updated tree matches the expected new root. If it does, it proves that the only change from $R$ to $R'$ was the update of the leaves. This construction is provided in the reference implementation[^2].
 
-
-
-
-
 ## 3.9 Insert
 
-An insert-proof is a general proof of insertion into the tree leaf-set. This is a high-level proof composed of base proofs [3.2](#3.2 Existence) - [3.5](#3.5 Append). it proves that the set of leaves $I$ are inserted after $A$ and before $B$.
+An insert-proof is a general proof of insertion into the tree leaf-set. This is a high-level proof composed of base proofs [3.2](#3.2 Existence) - [3.5](#3.5 Append). it proves that the neighbourhood of leaves $I$ are inserted after $A$ and before $B$.
+
+**Fig 6: Insert Proof**
 
 ![insert-proof](resources/insert-proof.png)
 
@@ -518,21 +477,13 @@ Proving that a tree with root $R$ had leaves $I$ inserted after $A$ and before $
 4. An append-proof of $B$ to $R_2$ resulting in $R'$.
 ![insert-proof step 4](resources/insert-proof-step4.png)
 
-In practice, an insert proof would be implemented as an ordered sequence of the sub-proofs. A verifier would evaluate the proof by evaluating the sub-proofs in order, ensuring each step verifies to the root that was outputed by the preceding step (the first step verifies to to start root).
-
-
-
-
-
-
-
-
-
-
+In practice, an insert proof would be implemented as an ordered sequence of the sub-proofs. A verifier would evaluate the proof by evaluating the sub-proofs in order, ensuring each step verifies to the root that was the output of the preceding step (the first step verifies to to start root).
 
 ## 3.10 Delete
 
 A delete-proof is a general proof of deletion from the tree leaf-set. Specifically, it proves that a neighbourhood of leaves $D$ after $A$ and before $B$ was removed.
+
+**Fig 7: Delete Proof**
 
 ![insert-proof](resources/delete-proof.png)
 
@@ -547,7 +498,7 @@ Proving that a tree with root $R$ had  leaf neighbourhood $D$ removed resulting 
 3. An append-proof of $B$ to $R_1$ resulting root $R'$.
 ![delete-proof step 3](resources/delete-proof-step3.png)
 
-  
+ 
 
 ## 3.11 Subset
 
@@ -557,139 +508,172 @@ Subset proofs only work for leaf-descendants of perfect-nodes which is generally
 
 The verifier proceeds to verify the existence of $p$ in $L$ and $p'$ in $K$  by assuming $p'$=$p$. If both both proofs pass then it has been proven that $S$ exists in both trees and their respective offsets.
 
-**REMARK:** Due to the requirement that $S$ be the leaf descendants of a perfect-node, it greatly restricts the possible sets $S$ applicable for this proof due to odd index numbers and neighbourhoods overlapping subtree leaf-boundaries. Furthermore, when $S$ is in a different location in $K$, the restriction exacerbates by applying twice (once per tree). Any attempt to split the neighbourhood $S$ into acceptable sub-neighbourhoods rapidly converges to $\|S\|$ splits, one per node. Thus such attempts are equivalent to a ranged-existence proof. 
+**REMARK 3.11.1:** Due to the requirement that $S$ be the leaf descendants of a perfect-node, it greatly restricts the possible sets $S$ applicable for this proof due to odd index numbers and neighbourhoods overlapping subtree leaf-boundaries. Furthermore, when $S$ is in a different location in $K$, the restriction exacerbates by applying twice (once per tree). Any attempt to split the neighbourhood $S$ into acceptable sub-neighbourhoods rapidly converges to $\|S\|$ splits, one per node. Thus such attempts are equivalent to a ranged-existence proof. 
 
 ## 3.12 Substitution
 
-Following from [subset-proof](#3.11 Subset), a substitution proof is a proof that a neighbourhood of leaves $S$ was replaced by another neighbourhood $S'$ (of equal magnitude) without affecting any other leaf. This is similar in construction to the subset-proof but simpler in that the prover only solves for antecedent node  $p$ of the neighbourhood $S$ once, and just sends the existence proof of $p$ in $L$ to the verifier (along with the old and new digest values for $p$ and $p'$). The old value $p$ denotes the commitment to the old neighbourhood $S$ whereas $p'$ a commitment to neighbourhood $S'$. The verifier begins by validating the existence of $p$ in $L$ and then re-running the proof using $p'$. If the result matches the post-transformation root $R'$, the proof has shown that $S'$ replaces $S$ in $L$.
+Following from [subset-proof](#3.11 Subset), a substitution proof is a proof that a neighbourhood of leaves $S$ was replaced by another neighbourhood $S'$ (of equal magnitude) with all other leaf nodes remaining invariant. This is similar in construction to the subset-proof but simpler in that the prover only solves for antecedent node  $p$ of the neighbourhood $S$ once, and just sends the existence proof of $p$ in $L$ to the verifier (along with the old and new digest values for $p$ and $p'$). The old value $p$ denotes the commitment to the old neighbourhood $S$ whereas $p'$ a commitment to neighbourhood $S'$. The verifier begins by validating the existence of $p$ in $L$ and then re-running the proof using $p'$. If the result matches the post-transformation root $R'$, the proof has shown that $S'$ replaces $S$ in $L$.
 
-**REMARK** Like subset-proof, the substitution-proof suffers from limited domain of applicability. However, since only one tree is involved it less severe thus could find utility in specialized cryptographic constructions and consensus workflows.
+**REMARK 3.12.1** Like subset-proof, the substitution-proof suffers from limited domain of applicability. However, since only one tree is involved it less severe thus could find utility in specialized cryptographic constructions and consensus workflows.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
 # 4. Tree Implementations 
 
-This section discusses merkle-tree implementations of relevance. A "flat-tree" is described which permits efficient storage of a tree in a single contiguous block of memory. Appending or right-deleting leaves grow and shrink the buffer without invalidating other nodes. Also an implementation called "long trees" is discussed which permit unboundedly large tree construction with negligible storage. 
+This section discusses merkle-tree implementations of relevance. A "flat-tree" is described which permits efficient storage of a tree as a single contiguous block of memory. Appending or right-deleting leaves grow and shrink the memory buffer without invalidating other nodes. In addition, a merkle-tree implementation called "long trees" is discussed which permit unboundedly large tree construction with negligible storage. 
 
 ## 4.1 Flat Coordinates
+
+**Fig 8: Float Coordinates**
 
 ![merkle-tree-5](resources/flat-tree-7-75pct.png)
 
 In this section, a system of merkle-coordinates is constructed that flatten the $(x,y)$ 2-tuple into a single positive integer value $z \in \Z_0$. The purpose of these flat coordinate addressing is to permit storage of a dynamic merkle-tree in contiguous memory. In other words, as new nodes are appended to the tree the node buffer can be expanded without affecting prior node values, and similarly when shrinking.
 
-The flat-coordinate line traces out the tree nodes in an interesting diagonal "wave" pattern emanating from $0$ and covering the perfect nodes in order of creation. This ordered set of nodes is coined the "ordinal nodes" of the tree. Imperfect nodes are not traced by flat coordinates as they are transient by nature and thus subject to change with the tree as it is appended (unlike ordinal nodes) . As a result, imperfect nodes must be computed on-the-fly.  Flat coordinates solve the memory fragmentation problem when dealing with large trees. Due to their high node count, allocating each node separately can lead to excessive fragmentation which exhausts memory by future preventing contiguous block allocation. This causes out-of-memory despite such memory being available.
+The flat-coordinate line traces out the tree nodes in an interesting diagonal "wave" pattern emanating from $0$ and covering the perfect nodes in ordered sequence. This ordered set of nodes is coined the "ordinal nodes" of the tree. Imperfect nodes are not traced by flat coordinates as they are transient by nature and thus subject to change with the tree as it is appended (unlike ordinal nodes) . As a result, imperfect nodes must be computed on-the-fly.  Flat coordinates solve the memory fragmentation problem when dealing with large trees. Due to their high node count, allocating each node separately can lead to excessive memory fragmentation which exhausts memory by future preventing allocations. This can lead to out-of-memory issues despite such memory being available.
 
 The coordinate transformations from merkle-coordinates to flat coordinates is a function $F : (\Z_0,\Z_0) \rarr \Z_0$  and described by [algorithm 4.1.2](# Algorithm 4.1.2 To Flat Index). Similarly, the inverse transformation from flat coordinates to merkle-coordinates $F^{-1} : \Z_0 \rarr (\Z_0,\Z_0)$ is described by algorithm [algorithm 4.1.3](# Algorithm 4.1.3 From Flat Index). 
 
-The following C# algorithms describe the coordinate transformation algorithms:
+Refer to the following C# algorithms for algorithm implementations:
 
 ##### Algorithm 4.1.2 To Flat Index
 
 ```csharp
 public static ulong ToFlatIndex(MerkleCoordinate coordinate) {
-    // Step 1: Find the closest perfect root ancestor
-    var numNodesBefore = (1UL << (coordinate.Level + 1)) * ((ulong)coordinate.Index + 1) - 1;
-    var rootLevel = Array.BinarySearch(_perfectLeftMostIndices, numNodesBefore);
-    if (rootLevel < 0)
-        rootLevel = ~rootLevel;
-    var perfectRoot = MerkleCoordinate.From(rootLevel, 0);
+	// Step 1: Find the closest perfect root ancestor
+	var numNodesBefore = (1UL << coordinate.Level + 1) * ((ulong)coordinate.Index + 1) - 1;
+	var rootLevel = Array.BinarySearch(PerfectLeftMostIndices, numNodesBefore);
+	if (rootLevel < 0)
+		rootLevel = ~rootLevel;
+	var perfectRoot = MerkleCoordinate.From(rootLevel, 0);
+	Debug.Assert(perfectRoot.Level >= coordinate.Level);
 
-    // Step 2: calculate the path to root, tracking left/right turns
-    var flags = new int[perfectRoot.Level - coordinate.Level];
-    for (var i = 0; i < flags.Length; i++) {
-        flags[i] = coordinate.Index % 2;
-        coordinate = MerkleCoordinate.From(coordinate.Level + 1, coordinate.Index / 2);
-    }
+	// Step 2: calculate the path to root, tracking left/right turns
+	var flags = new int[perfectRoot.Level - coordinate.Level];
+	for (var i = 0; i < flags.Length; i++) {
+		flags[i] = coordinate.Index % 2;
+		coordinate = MerkleCoordinate.From(coordinate.Level + 1, coordinate.Index / 2);
+	}
 
-    // Step 2: Traverse from root down to the node, adjusting the flat index along the way
-    var flatIX = _perfectLeftMostIndices[rootLevel];
-    for (var i = 0; i < flags.Length; i++) {
-        if (flags[flags.Length - i - 1] == 0)
-            // moving to left child, so flat index decreases by the difference between the corresponding roots.
-            flatIX -= _perfectLeftMostIndices[rootLevel - i] - _perfectLeftMostIndices[rootLevel - i - 1];
-        else
-            flatIX--;  // moving to right child, so flat index decreases by one
-    }
-    return flatIX - 1;  // decrease by one, since 0-based indexing
+	// Step 2: Traverse from root down to the node, adjusting the flat index along the way
+	var flatIX = PerfectLeftMostIndices[rootLevel];
+	for (var i = 0; i < flags.Length; i++) {
+		if (flags[flags.Length - i - 1] == 0)
+			// moving to left child, so flat index decreases by the difference between the corresponding roots.
+			flatIX -= PerfectLeftMostIndices[rootLevel - i] - PerfectLeftMostIndices[rootLevel - i - 1];
+		else
+			flatIX--;  // moving to right child, so flat index decreases by one
+	}
+	return flatIX - 1;  // decrease by one, since 0-based indexing
 }
 ```
 
 ##### Algorithm 4.1.3 From Flat Index
 ```csharp
-public static MerkleCoordinate FromFlatIndex(ulong flatIndex) {
-    flatIndex++; // algorithm below based on 1-based indexing
-    var rootLevel = Array.BinarySearch(_perfectLeftMostIndices, flatIndex);
-    if (rootLevel < 0)
-        rootLevel = ~rootLevel; // didn't find, so take next larger index
+MerkleCoordinate FromFlatIndex(ulong flatIndex) {
+	flatIndex++; // algorithm below based on 1-based indexing
+	var rootLevel = Array.BinarySearch(PerfectLeftMostIndices, flatIndex);
+	if (rootLevel < 0)
+		rootLevel = ~rootLevel; // didn't find, so take next larger index
 
-    var index = 0;
-    var rootFlatIX = _perfectLeftMostIndices[rootLevel];
-    while (flatIndex != rootFlatIX) {
-        var isRight = flatIndex > (rootFlatIX >> 1);
-        index = 2 * index + (isRight ? 1 : 0);
-        rootFlatIX = _perfectLeftMostIndices[--rootLevel];
-        if (isRight)
-            flatIndex -= rootFlatIX;
-    }
-    return MerkleCoordinate.From(rootLevel, (int)index);
+	var index = 0;
+	var rootFlatIX = PerfectLeftMostIndices[rootLevel];
+	while (flatIndex != rootFlatIX) {
+		var isRight = flatIndex > rootFlatIX >> 1;
+		index = 2 * index + (isRight ? 1 : 0);
+		rootFlatIX = PerfectLeftMostIndices[--rootLevel];
+		if (isRight)
+			flatIndex -= rootFlatIX;
+	}
+	return MerkleCoordinate.From(rootLevel, index);
 }
 ```
 Noting that,
 
 ```csharp
-_perfectLeftMostIndices = new ulong[63];
+PerfectLeftMostIndices = new ulong[63];
 for (var i = 1; i < 64; i++) {
-	_perfectLeftMostIndices[i - 1] = (1UL << i) - 1;
+	PerfectLeftMostIndices[i - 1] = (1UL << i) - 1;
 }
 ```
 
-##### Definition 4.1.3 Ordinal Nodes
+##### Definition 4.1.4 Ordinal Nodes
 
 The ordinal nodes of a merkle-tree $L$ are the set $E=\{F(i) | \forall i \in Z_0 \and 0 \le i < W \}$ where $F$ is [algorithm 4.3.1](#Algorithm 4.1.3 From Flat Index) and  $W$ the cardinality of the ordinal nodes.
 
-##### Lemma 4.1.4 Cardinality of Ordinal Nodes
+##### Lemma 4.1.5 Cardinality of Ordinal Nodes
 
 For merkle-tree $L$ with leaf-count $N$, the cardinality of the ordinal nodes of $L$ is $W=\sum_i (2^{C_i} - 1)$ where $C$ is the [pow-2 partition](#Definition 2.4.2: Pow-2 Partition) of $N$.
 
 **Proof:** This follows directly from [Lemma 2.5.3: Perfect Nodes](#Lemma 2.5.3: Perfect Nodes).
 
-## 4.3 Flat Trees
-
-A flat tree is a merkle-tree implemented under the hood using [flat coordinates](#4.1 Flat Coordinates). A flat-tree tracks all it's ordinal nodes in a contiguous block of memory. If $N$ is the leaf-count of a tree, the number of perfect nodes is $W=\sum_i (2^{C_i} - 1)$ where $C$ is the [pow-2 partition](#Definition 2.4.2: Pow-2 Partition) of $N$ ([lemma 4.1.4](#Lemma 4.1.4 Cardinality of Ordinal Nodes)). Thus if $h$ is the **byte**-length of the underlying cryptographic hash function $\text{H}$, a flat-tree with $N$ leaves consumes a buffer of size $Wh$ bytes. A flat-tree also maintains a bit vector of length $W$ that tracks which ordinal nodes is "dirty" and requires recalculation from their child nodes digests. Flat-trees never stores imperfect/bubble-up nodes due to their transience, and computed on the fly if needed.  Thus when fetching a node at $(x,y)$, if the coordinate is imperfect it's digest is calculated recursively fetching it's child-nodes and node hashing them. When fetching an ordinal (perfect) node, then the flat coordinate $z=F(x,y)$ is determined where $F$ is given by [algorithm 4.1.2](#Algorithm 4.1.2 To Flat Index). Then the dirty bit for $z$ is examined in the bit vector. If $0$ then the node value is already calculated and fetched from the buffer at offset $zh$ with length $h$. If the dirty bit is $1$ then it's child nodes for $(x,y)$ are recursively fetched (ensuring they too are calculated). The left child $l$ and right child $r$ are then node-hashed via $H(l, r)$ and the buffer at $zh$ is updated with the value. The dirty bit set to $0$, and the value returned. 
-
-Inserting, updating and deleting from the leaf-sets requires similar maintenance of the dirty bit vector and manipulating of ordinal nodes. These algorithms are straightforward but cumbersome thus omitted from this paper. The reader is referred to the reference implementation[^2] for specification.
-
 ## 4.2 Long Trees
 
-A long-tree is a specialized merkle-tree suitable for building unbounded lists of objects in $O(\frac{1}{2}\log_2N)$ space and time complexity. Long merkle-trees are suitable for use-cases where very large trees need to be constructed rapidly and/or maintained indefinitely. These mutations occur through append-only operations (although not strictly required). Example use-cases for these trees include efficient big block construction in blockchain consensus systems as well as high-frequency blockchains.
+A long-tree is a specialized merkle-tree suitable for tracking an unbounded lists of objects in $O(\frac{1}{2}\log_2N)$ space and time complexity. Long merkle-trees are suitable for use-cases where very large trees need to be constructed rapidly and/or maintained indefinitely. These mutations occur through append-only operations (although not strictly required). Example use-cases for these trees include efficient "big block" construction in blockchain consensus systems as well as high-frequency blockchains.
 
-Under the hood, long-trees only maintain the sub-roots of the tree and nothing else.  When appending a leaf node the sub-roots are mutated in accordance with [algorithm 3.5.1](#Algorithm 3.5.1 Append Leaf). Long-trees can only be mutated intrinsically through leaf append transformations. By this we mean that by knowing only the sub-roots it's only possible to append to the tree, not delete, insert, etc. However, through the use of security proofs constructed by fuller tree implementations (such as long-trees), the tree can be mutated arbitrarily. To achieve this, the security proofs should never refer to merkle-roots directly but always to their sub-roots. The merkle-root can be easily calculated from the sub-roots when needed, however the sub-roots can never be recovered from the root. Thus a system of proofs that bundles the sub-roots in place of roots allows a long-tree to adopt those sub-roots after verifying the proofs. It's important to note that whilst long-trees can mutate arbitrarily through security proofs, the proofs themselves must be constructed by trees that maintain fuller node sets. Thus a consensus network could not comprise exclusively of long-tree nodes. They necessarily require nodes which maintain the full tree (such as flat-trees) in order to construct the general mutation proofs which can be verified by long-tree peers.
+Under the hood, long-trees only maintain the sub-roots of the tree and nothing else.  When appending a leaf node the sub-roots are mutated in accordance with [algorithm 3.5.1](#Algorithm 3.5.1 Append Leaf). Long-trees can only be mutated intrinsically through leaf append transformations. By this we mean that by knowing only the sub-roots it's only possible to append to the tree, not delete, insert, etc. However, through the use of security proofs constructed by fuller tree implementations (such as long-trees), the tree can be mutated arbitrarily. To achieve this, the security proofs should never refer to merkle-roots directly but always to their sub-roots. The merkle-root can be easily calculated from the sub-roots when needed, however the sub-roots can never be recovered from the root. Thus a system of proofs that bundles the sub-roots in place of roots allows a long-tree to adopt those sub-roots after verifying the proofs. It's important to note that whilst long-trees can mutate arbitrarily through security proofs, the proofs themselves must be constructed by trees that maintain fuller node sets. Thus a consensus network could not comprise exclusively of long-tree nodes. They necessarily require nodes which maintain the full tree (such as flat-trees) in order to construct the general mutation proofs which can be verified by long-tree peers. The reader is referred to the [reference implementation](#Reference Implementation)[^4] for specification.
 
-##### REMARK 4.2.1
+**REMARK 4.2.1**  A hybrid implementation of long-tree that tracks a neighbourhood of leaves (the last $M$ leaves) would allow all the peers in P2P consensus network to verify and construct a full set of dynamic merkle-proofs for that neighbourhood. With this approach, peers in P2P consensus network can be comprised of peers that all use a hybrid long-tree implementation.  Use-cases here include "deletable blockchains" with checkpoints. The the view of author, long-trees are a significant innovation in the field of merkle-trees. 
 
-A hybrid implementation of long-tree that tracks a neighbourhood of leaves (the last $M$ leaves) would allow all the peers in P2P consensus network to verify and construct a full set of dynamic merkle-proofs for that neighbourhood. With this approach, peers in P2P consensus network can be comprised of peers that all use a hybrid long-tree implementation.  Use-cases here include "deletable blockchains" with checkpoints. The the view of author, long-trees are a significant innovation in the field of merkle-trees. The reader is referred to the reference implementation[^2] for specification.
+## 4.3 Flat Trees
+
+A flat tree is a merkle-tree implemented under the hood using [flat coordinates](#4.1 Flat Coordinates). A flat-tree tracks all it's ordinal nodes in a contiguous block of memory. If $N$ is the leaf-count of a tree, the number of perfect nodes is $W=\sum_i (2^{C_i} - 1)$ where $C$ is the [pow-2 partition](#Definition 2.4.2: Pow-2 Partition) of $N$ ([lemma 4.1.5](#Lemma 4.1.5 Cardinality of Ordinal Nodes)). Thus if $h$ is the **byte**-length of the underlying cryptographic hash function $\text{H}$, a flat-tree with $N$ leaves consumes a buffer of size $Wh$ bytes. A flat-tree also maintains a bit vector of length $W$ that tracks which ordinal nodes are "dirty" and require recalculation from their child nodes digests. Flat-trees never store imperfect/bubble-up nodes due to their transience, and are instead computed on the fly if needed.  Thus when fetching a node at $(x,y)$, if the coordinate is imperfect its digest is calculated recursively by fetching it's child-nodes and node hashing them. When fetching an ordinal (perfect) node, then the flat coordinate $z=F(x,y)$ is determined where $F$ is given by [algorithm 4.1.2](#Algorithm 4.1.2 To Flat Index). Then the dirty bit for $z$ is examined in the bit vector. If $0$ the node value is already calculated and fetched from the buffer at offset $zh$ with length $h$. If the dirty bit is $1$ then it's child nodes for $(x,y)$ are recursively fetched (ensuring they too are calculated). The left child $l$ and right child $r$ are then node-hashed via $H(l, r)$ and the buffer at $zh$ is updated with the value. The dirty bit set to $0$, and the value returned. 
+
+Inserting, updating and deleting from the leaf-sets requires similar maintenance of the dirty bit vector and manipulating of ordinal nodes. These algorithms are straightforward but cumbersome thus omitted from this paper. The reader is referred to the [reference implementation](#Reference Implementation)[^3] for specification.
+
+# 5. Reference Implementation
+
+This section contains an overview of the full reference implementation[^2] which accompanies this paper. The reference implementation is complete and is thoroughly tested.
+
+Of particular relevance are the following source files:
+
+- The `MerkleMath.cs` file which implements most of the algorithms and proofs described in this paper: https://github.com/Sphere10/Hydrogen/blob/master/src/Hydrogen/Merkle/MerkleMath.cs
+- The `Pow2.cs` file which implements the powers-of-2 algorithms such as `reduce`: https://github.com/Sphere10/Hydrogen/blob/master/src/Hydrogen/Maths/Pow2.cs
+- The `LongMerkleTree.cs` file which implements the memory-efficient long-tree implementation of dynamic merkle-trees:
+https://github.com/Sphere10/Hydrogen/blob/master/src/Hydrogen/Merkle/LongMerkleTree.cs
+- The `FlatMerkleTree.cs` source file which implements the contiguous-memory flat-tree implementation of dynamic merkle-trees:
+https://github.com/Sphere10/Hydrogen/blob/master/src/Hydrogen/Merkle/FlatMerkleTree.cs
 
 
 
-# Reference Implementation
-
-The full source-code respository for Dynamic Merkle Trees, proof generations and validations can be found at reference [^2 ]
-
-Of particular interest are the following source files:
-
-- The `MerkleMath.cs` source file which implements almost all the algorithms described herein:
- https://github.com/Sphere10/Framework/blob/master/src/Hydrogen/Collections/Merkle/MerkleMath.cs
-- The `Pow2.cs` source file which implements the Powers-of-2 algorithms such as `reduce`:
-   https://github.com/Sphere10/Framework/blob/master/src/Hydrogen/Maths/Pow2.cs
-- The `LongMerkleTree.cs` source file which implements the memory-efficient long-tree:
-https://github.com/Sphere10/Framework/blob/master/src/Hydrogen/Collections/Merkle/LongMerkleTree.cs
-- The `FlatMerkleTree.cs` source file which implements the contiguous-memory flat-tree:
-https://github.com/Sphere10/Framework/blob/master/src/Hydrogen/Collections/Merkle/FlatMerkleTree.cs
 
 
 
-# References
+
+
+
+
+
+
+
+
+
+# 6. References
 
 [^1]: Ralph Merkle. "Secrecy, authentication and public key systems / A certified digital signature". Ph.D. dissertation, Dept. of Electrical Engineering, Stanford University, 1979. Url: http://www.merkle.com/papers/Certified1979.pdf
-[^2]: Github. Hydrogen Framework, Dynamic Merkle-Trees Module. Url: https://github.com/Sphere10/Framework/tree/master/src/Hydrogen/Collections/Merkle
+[^2]: Github. Hydrogen Framework, Dynamic Merkle-Trees implementation. Url: https://github.com/Sphere10/Hydrogen/tree/master/src/Hydrogen/Merkle
 
+[^3]: Github. Hydrogen Framework, Flat-Tree implementation. Url: https://github.com/Sphere10/Hydrogen/blob/master/src/Hydrogen/Merkle/FlatMerkleTree.cs
+[^4]: Github. Hydrogen Framework, Long-Tree implementation. Url: https://github.com/Sphere10/Hydrogen/blob/master/src/Hydrogen/Merkle/LongMerkleTree.cs

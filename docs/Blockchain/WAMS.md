@@ -2,11 +2,12 @@
 
 <pre>
   Author: Herman Schoenfeld <herman@sphere10.com>
-  Version: 1.0
+  Version: 1.1
   Date: 2020-07-20
-  Copyright: (c) Sphere 10 Software Pty Ltd
-  License: MIT
+  Copyright: (c) <a href="https://sphere10.com">Sphere 10 Software Pty Ltd</a>. All Rights Reserved.
 </pre>
+
+
 
 **Abstract**
 
@@ -20,11 +21,11 @@ This document focuses only on the OTS-layer of WAMS. The merkle signatures thems
 
 ## 2. WAMS Scheme
 
-The Winternitz Abstracted Merkle Signature (WAMS) Scheme  is a general purpose, quantum-resistant digital signature scheme. WAMS is an AMS algorithm that selects the standard Winternitz OTS (W-OTS) as the OTS parameter. As part of the parameter set inherited from AMS, WAMS includes the additional parameters `H` a cryptographic hash function and `w`, the Winternitz parameter.
+The Winternitz Abstracted Merkle Signature (WAMS) Scheme  is a general purpose, quantum-resistant digital signature scheme. WAMS is an AMS algorithm that selects the standard Winternitz OTS (W-OTS) as the OTS parameter. As part of the parameter set inherited from AMS, WAMS includes the additional parameters `H`, a cryptographic hash function and `w`, the Winternitz parameter.
 
-The cryptographic hash function used is fundamental to the security of WAMS (an analysis of which is not provided in this document). So long as the user selects a standard Cryptographic Hash Function (CHF) such as `SHA2-256` or `Blake2b` the security of WAMS is equivalent to standard W-OTS constructions. For performance, the use of W-OTS# may be used in conjunction with `Blake2b-128` to reduce signature sizes without introducing vulnerability to birthday-class attacks.
+The selected cryptographic hash function  `H`  is fundamental to the security of WAMS, an analysis of which is not provided in this paper. So long as the user selects a standard CHF such as `SHA2-256` or `Blake2b`, the security of WAMS is equivalent to standard W-OTS constructions. For performance, the use of W-OTS#[^4] may be used in conjunction with `Blake2b-128` in order to reduce signature sizes without introducing vulnerability to birthday-class attacks.
 
-In this construction, the Winternitz parameter `w` refers to the number of bits being simultaneously signed as famously proposed by Merkle[^3] (who was inspired by Winternitz).  Varying the  parameter `w` changes the size/speed trade-off without affecting security. For example, the higher the value the more expensive (and slower) the computations but the shorter the signature and private key size. The lower the value the faster the computation but larger the signature and key size.  The range of values for `w` supported in WAMS is `1 <= w <= 16`.
+In the presented construction herein, the Winternitz parameter `w` refers to the number of bits being simultaneously signed as famously proposed by Merkle[^3] (who was inspired by Winternitz).  Varying the  parameter `w` changes the size/speed trade-off without affecting security. For example, the higher the value the more expensive (and slower) the computations but the shorter the signature and private key size. The lower the value the faster the computation but larger the signature and key size.  The range of values for `w` supported in WAMS is `1 <= w <= 16`.
 
 Since the WAMS scheme inherits the AMS scheme, it is required to define the following:
 
@@ -67,7 +68,7 @@ Bit-ordering within `ReadBits` and `WriteBits` are such that the
 | Parameters | Description                                                  | Bits |
 | ---------- | ------------------------------------------------------------ | ---- |
 | `h`        | Tree height (used in AMS layer)                              | 8    |
-| `w`        | Winternitz parameter, how many bits are simultaneously signed via the Winternitz process | 8    |
+| `w`        | Winternitz parameter, how many bits are simultaneously signed via the Winternitz gadget | 8    |
 | `H`        | Cryptographic hash function, and security parameter for the scheme (digest length) | 8    |
 
 Note that the Winternitz `w` and `H` are stored in the RESERVED part of the AMS private key. The cryptographic hash function is stored as a code, defined as follows:
@@ -97,7 +98,6 @@ During key generation, signing and verification the following variables are calc
 | `OTS_KeyDigits` | `SigDigits + CheckDigits`        | Number of "digit keys" in a W-OTS private key (used by AMS-layer) |
 | `OTS_SigLen`    | `OTS_KeyDigits`                  | Number of "digit signatures" in a W-OTS sig (used by AMS-layer) |
 
-
 ### 2.4 W-OTS Theory Basics 
 
 The W-OTS scheme follows the Lamport[^5] signature approach but allows a signer to sign `w`  bits of a message-digest simultaneously rather than 1. This collection of bits is a treated as a "digit" of base `2^w`.
@@ -112,7 +112,11 @@ In W-OTS, the individual "digit keys" and "digit signatures" are concatenated to
 
 **NOTE** In order to prevent signature forgeries arising from digit signature re-use for prior messages, a checksum is calculated and appended to the message-digest and co-signed.   The checksum is calculated in such a way that any increment to a message digit necessarily decreases a checksum digit. Thus it is impossible to forge a signature since it requires the pre-image of at least one checksum digit signature. 
 
-The reader can further their understanding of the theory and basics of W-OTS by reviewing the literature and through this succinct diagram[^2].
+The reader can further their understanding of the theory and basics of W-OTS by reviewing the literature and through the below diagram[^2].
+
+![Diagram 1: Winternitz gadget](resources\WinternitzGadget.png)
+
+
 
 #### 2.4.1 W-OTS Private Key
 
@@ -309,14 +313,323 @@ A C# implementation in .NET 7 was developed and object lengths and performance m
 
 *Throughput is measured in "Signatures Per Second"*
 
-## References
+## 5. Reference Implementation
+
+This section contains snippets for the full [reference implementation](https://github.com/Sphere10/Hydrogen/tree/master/src/Hydrogen/Crypto/PQC)[^6] . The reference implementation is part of the PQC library within the [Hydrogen Framework](https://github.com/Sphere10/Hydrogen)[^7] .
+
+### 5.1 AMS-Compatible W-OTS
+
+This implementation of W-OTS can be used as an OTS within the AMS implementation[^1].
+
+```c#
+public class WOTS : IOTSAlgorithm {
+
+	public WOTS() 
+		: this(Configuration.Default) {
+	}
+
+	public WOTS(int w, bool usePublicKeyHashOptimization = false)
+		: this(w, Configuration.Default.HashFunction, usePublicKeyHashOptimization) {
+	}
+
+	public WOTS(int w, CHF hashFunction, bool usePublicKeyHashOptimization = false)
+		: this(new Configuration(w, hashFunction, usePublicKeyHashOptimization)) {
+	}
+
+	public WOTS(Configuration config) {
+		Config = (Configuration)config.Clone();
+	}
+
+	public Configuration Config { get; }
+
+	OTSConfig IOTSAlgorithm.Config => Config;
+
+	public void SerializeParameters(Span<byte> buffer) {
+		buffer[0] = (byte)Config.W;
+	}
+
+	public byte[,] GeneratePrivateKey() 
+		=> GenerateKeys().PrivateKey;
+
+	public byte[,] DerivePublicKey(byte[,] privateKey) {
+		var publicKey = new byte[Config.KeySize.Length, Config.KeySize.Width];
+		for (var i = 0; i < Config.KeySize.Length; i++) {
+			publicKey.SetRow(i,  Hashers.Iterate(Config.HashFunction, privateKey.GetRow(i), Config.ChainLength));
+		}
+		return Config.UsePublicKeyHashOptimization ? ToOptimizedPublicKey(publicKey) : publicKey;
+	}
+
+	public OTSKeyPair GenerateKeys() 
+		=> GenerateKeys(Tools.Crypto.GenerateCryptographicallyRandomBytes(Config.DigestSize - 1));
+
+	public OTSKeyPair GenerateKeys(ReadOnlySpan<byte> seed) {
+		var enumeratedSeed = new byte[seed.Length + 1];
+		seed.CopyTo(enumeratedSeed.AsSpan(1));
+		return GenerateKeys(i => {
+			enumeratedSeed[0] = (byte)i;
+			return Hashers.Iterate(Config.HashFunction, enumeratedSeed, 2);
+		});
+	}
+
+	public OTSKeyPair GenerateKeys(Func<int, byte[]> gen) {
+		var priv = new byte[Config.KeySize.Length, Config.KeySize.Width];
+		var pub = new byte[Config.KeySize.Length, Config.KeySize.Width];  // actual W-OTS pubkey is same size as priv key, we may optimize below
+		for (var i = 0; i < Config.KeySize.Length; i++) {
+			var randomBytes = gen(i);
+			priv.SetRow(i, randomBytes);
+			pub.SetRow(i, Hashers.Iterate(Config.HashFunction, randomBytes, Config.ChainLength));
+		}
+
+		IFuture<byte[]> pubKeyHash;
+		if (Config.UsePublicKeyHashOptimization) {
+			pub = ToOptimizedPublicKey(pub);
+			pubKeyHash = ExplicitFuture<byte[]>.For(pub.ToFlatArray());
+		} else {
+			pubKeyHash = LazyLoad<byte[]>.From(() => ToOptimizedPublicKey(pub).ToFlatArray());
+		}
+
+		return new OTSKeyPair(priv, pub, pubKeyHash);
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public virtual byte[,] Sign(byte[,] privateKey, ReadOnlySpan<byte> message) 
+        => SignDigest(privateKey, ComputeMessageDigest(message));
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public virtual byte[,] SignDigest(byte[,] privateKey, ReadOnlySpan<byte> digest) {
+		var signature = new byte[Config.SignatureSize.Length, Config.SignatureSize.Width];
+
+		// Sign the digest (and build the checksum in process)
+		uint checksum = 0U;
+		for (var i = 0; i < Config.SignatureDigits; i++) {
+			var signValue = (int)Bits.ReadBinaryNumber(digest, Config.W * i, Config.W, IterateDirection.LeftToRight);
+			var c = Config.ChainLength - signValue;
+			checksum += (uint)c;
+			signature.SetRow(i, Hashers.Iterate(Config.HashFunction, privateKey.GetRow(i), c));
+		}
+
+		// Sign the checksum
+		var checksumBytes = new byte[4];
+		Bits.WriteBinaryNumber(checksum, checksumBytes, 0, 32, IterateDirection.LeftToRight);
+		for (var i = 0; i < Config.ChecksumDigits; i++) {
+			var signValue = (int)Bits.ReadBinaryNumber(checksumBytes, Config.W * i, Config.W, IterateDirection.LeftToRight);
+			var c = Config.ChainLength - signValue;
+			var row = Config.SignatureDigits + i;
+			signature.SetRow(row, Hashers.Iterate(Config.HashFunction, privateKey.GetRow(row), c));
+		}
+
+		return signature;
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public bool Verify(byte[,] signature, byte[,] publicKey, ReadOnlySpan<byte> message) 
+        =>  VerifyDigest(signature, publicKey, ComputeMessageDigest(message));
+
+	public virtual bool VerifyDigest(byte[,] signature, byte[,] publicKey, ReadOnlySpan<byte> digest) {
+		var verify = new byte[Config.KeySize.Length, Config.KeySize.Width];
+
+		// Verify Digest
+		uint checksum = 0U;
+		for (var i = 0; i < Config.SignatureDigits; i++) {
+			var signValue = (int)Bits.ReadBinaryNumber(digest, Config.W * i, Config.W, IterateDirection.LeftToRight);
+			var c = Config.ChainLength - signValue;
+			checksum += (uint)c;
+			verify.SetRow(i, Hashers.Iterate(Config.HashFunction, signature.GetRow(i), signValue));
+		}
+
+		// Verify checksum
+		var checksumBytes = new byte[4];
+		Bits.WriteBinaryNumber(checksum, checksumBytes, 0, 32, IterateDirection.LeftToRight);
+		for (var i = 0; i < Config.ChecksumDigits; i++) {
+			var signValue = (int)Bits.ReadBinaryNumber(checksumBytes, Config.W * i, Config.W, IterateDirection.LeftToRight);
+			var row = Config.SignatureDigits + i;
+			verify.SetRow(row, Hashers.Iterate(Config.HashFunction, signature.GetRow(row), signValue));
+		}
+
+		return (Config.UsePublicKeyHashOptimization ? this.ComputeKeyHash(verify) : verify.AsFlatSpan()).SequenceEqual(publicKey.AsFlatSpan());
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public void ComputeKeyHash(byte[,] key, Span<byte> result) {
+		ComputeKeyHash(key.AsFlatSpan(), result);
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public void ComputeKeyHash(ReadOnlySpan<byte> key, Span<byte> result) {
+		Hashers.Hash(Config.HashFunction, key, result);
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	protected byte[,] ToOptimizedPublicKey(byte[,] publicKey) {
+		var publicKeyHash = new byte[1, Config.DigestSize];
+		ComputeKeyHash(publicKey, publicKeyHash.AsFlatSpan());
+		return publicKeyHash;
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public byte[] ComputeMessageDigest(ReadOnlySpan<byte> message)
+		=> Hashers.Hash(Config.HashFunction, message);
+
+	
+	public class Configuration : OTSConfig {
+		public static readonly Configuration Default;
+
+		static Configuration() {
+			Default = new Configuration(8, CHF.SHA2_256, false);
+		}
+
+		public Configuration() : this(Default.W, Default.HashFunction, Default.UsePublicKeyHashOptimization) {
+		}
+
+		public Configuration(int w, CHF hasher, bool usePubKeyHashOptimization) 
+			: this(
+				  w,
+				  hasher,
+				  usePubKeyHashOptimization,
+				  AMSOTS.WOTS, 
+				  Hashers.GetDigestSizeBytes(hasher), 
+				  new OTSKeySize(
+					  Hashers.GetDigestSizeBytes(hasher), 
+					  (int)Math.Ceiling(256.0 / w) + (int)Math.Floor(Math.Log(((1 << w) - 1) * (256 / w), 1 << w)) + 1
+				  ),
+  				new OTSKeySize(
+					Hashers.GetDigestSizeBytes(hasher),
+					usePubKeyHashOptimization ? 1 : (int)Math.Ceiling(256.0 / w) + (int)Math.Floor(Math.Log(((1 << w) - 1) * (256 / w), 1 << w)) + 1
+				),
+				new OTSKeySize(
+			        Hashers.GetDigestSizeBytes(hasher),
+					(int)Math.Ceiling(256.0 / w) + (int)Math.Floor(Math.Log(((1 << w) - 1) * (256 / w), 1 << w)) + 1
+				)
+			) {
+		}
+
+		protected Configuration(int w, CHF hasher, bool usePubKeyHashOptimization, AMSOTS id, int digestSize, OTSKeySize keySize, OTSKeySize publicKeySize, OTSKeySize signatureSize) 
+			: base(id, hasher, digestSize, usePubKeyHashOptimization, keySize, publicKeySize, signatureSize) {
+			Guard.ArgumentInRange(w, 1, 16, nameof(w));
+			W = (byte)w;
+			ChainLength = (1 << w) - 1; // 2^w - 1 (length of Winternitz chain)
+			SignatureDigits = (int)Math.Ceiling(256.0 / w); // how many chains required; 
+			ChecksumDigits = (int)Math.Floor(Math.Log(((1 << w) - 1) * (256 / w), 1 << w)) + 1; // floor ( log_b (2^w - 1) * (256/w) ) where b = 2^w
+		}
+
+		public int W { get; }
+
+		public int ChainLength { get; }
+
+		public int SignatureDigits { get; }
+
+		public int ChecksumDigits { get; }
+
+		public override object Clone() => new Configuration(W, HashFunction, UsePublicKeyHashOptimization, AMSID, DigestSize, KeySize, PublicKeySize, SignatureSize);
+
+	}
+
+}
+```
+
+### 5.2 AMS-Compatible W-OTS#
+
+This implementation of W-OTS# can be used as an OTS within the AMS implementation[^1].
+
+```c#
+public class WOTSSharp : WOTS {
+
+	public WOTSSharp() 
+		: this(WOTSSharp.Configuration.Default) {
+	}
+
+	public WOTSSharp(int w, bool usePublicKeyHashOptimization = false)
+		: this(w, Configuration.Default.HashFunction, usePublicKeyHashOptimization) {
+	}
+
+	public WOTSSharp(int w, CHF hashFunction, bool usePublicKeyHashOptimization = false)
+		: this(new Configuration(w, hashFunction, usePublicKeyHashOptimization)) {
+	}
+
+	public WOTSSharp(Configuration config) 
+		: base(config) {
+	}
+
+	public override byte[,] SignDigest(byte[,] privateKey, ReadOnlySpan<byte> digest)
+		=> SignDigest(privateKey, digest, Tools.Crypto.GenerateCryptographicallyRandomBytes(digest.Length));
+
+	public byte[,] SignDigest(byte[,] privateKey, ReadOnlySpan<byte> digest, ReadOnlySpan<byte> seed) {
+		Guard.Argument(seed.Length == digest.Length, nameof(seed), "Must be same size as digest");
+		var wotsSig = base.SignDigest(privateKey, HMAC(digest, seed));
+		Debug.Assert(wotsSig.Length == Config.SignatureSize.Length * Config.SignatureSize.Width);
+		seed.CopyTo(wotsSig.GetRow(Config.SignatureSize.Length - 1)); // concat seed to sig
+		return wotsSig;
+	}
+
+	public override bool VerifyDigest(byte[,] signature, byte[,] publicKey, ReadOnlySpan<byte> digest) {
+		Debug.Assert(signature.Length == Config.SignatureSize.Length * Config.SignatureSize.Width);
+		var seed = signature.GetRow(Config.SignatureSize.Length - 1);
+		return base.VerifyDigest(signature, publicKey, HMAC(digest, seed));
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	private byte[] SMAC(ReadOnlySpan<byte> message, ReadOnlySpan<byte> seed)
+		=> HMAC(ComputeMessageDigest(message), seed);
+
+	private byte[] HMAC(ReadOnlySpan<byte> digest, ReadOnlySpan<byte> seed) {
+		using (Hashers.BorrowHasher(Config.HashFunction, out var hasher)) {
+			hasher.Transform(seed);
+			hasher.Transform(digest);
+			var innerHash = hasher.GetResult();
+			hasher.Transform(seed);
+			hasher.Transform(innerHash);
+			return hasher.GetResult();
+		}
+	}
+
+	public new class Configuration : WOTS.Configuration {
+		public new static readonly Configuration Default;
+
+		static Configuration() {
+			Default = new Configuration(4, CHF.Blake2b_128, true);
+		}
+
+		public Configuration() 
+			: this(Default.W, Default.HashFunction, Default.UsePublicKeyHashOptimization) {
+		}
+
+		public Configuration(int w, CHF hasher, bool usePubKeyHashOptimization)
+			: base(
+				w,
+				hasher,
+				usePubKeyHashOptimization,
+				AMSOTS.WOTS_Sharp,
+				Hashers.GetDigestSizeBytes(hasher),
+				new OTSKeySize(
+					Hashers.GetDigestSizeBytes(hasher),
+					(int)Math.Ceiling(256.0 / w) + (int)Math.Floor(Math.Log(((1 << w) - 1) * (256 / w), 1 << w)) + 1
+				),
+				new OTSKeySize(
+					Hashers.GetDigestSizeBytes(hasher),
+					usePubKeyHashOptimization ? 1 : (int)Math.Ceiling(256.0 / w) + (int)Math.Floor(Math.Log(((1 << w) - 1) * (256 / w), 1 << w)) + 1
+				),
+				new OTSKeySize(
+					Hashers.GetDigestSizeBytes(hasher),
+					(int)Math.Ceiling(256.0 / w) + (int)Math.Floor(Math.Log(((1 << w) - 1) * (256 / w), 1 << w)) + 1  + 1 // Adds extra row for seed here
+				)
+			) {
+		}
+	}
+}
+```
+
+## 6. References
 
 [^1]: Herman Schoenfeld. "AMS - Abstract Merkle Signature Scheme", 2020. URL: https://vixra.org/abs/2212.0019   
 
-[^2]:  Sphere 10. "Winternitz One-Time Signature Scheme (W-OTS)". URL: https://sphere10.com/articles/cryptography/pqc/wots.
+[^2]:  Sphere 10 Software. "Winternitz One-Time Signature Scheme". URL: https://sphere10.com/articles/cryptography/pqc/wots. Accessed on: 2023-05-09.
 
 [^3]: Ralph Merkle. "Secrecy, authentication and public key systems / A certified digital signature". Ph.D. dissertation, Dept. of Electrical Engineering, Stanford University, 1979. URL: http://www.merkle.com/papers/Certified1979.pdf.
 
 [^4]:  Herman Schoenfeld.  "W-OTS# - Shorter and Faster Winternitz Signatures". URL: https://vixra.org/abs/2007.0194. Accessed on: 2020-07-20.
 
 [^5]:  L. Lamport. "Constructing digital signatures from a one-way function". Technical Report SRI-CSL-98, SRI International Computer Science Laboratory, Oct. 1979.
+
+[^6]:   Sphere 10 Software. PQC Library. Url: https://github.com/Sphere10/Hydrogen/tree/master/src/Hydrogen/Crypto/PQC. Accessed 2023-05-09.
+
+[^7]:   Sphere 10 Software. Hydrogen Framework. Url: https://github.com/Sphere10/Hydrogen. Accessed 2023-05-09

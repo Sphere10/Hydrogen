@@ -4,10 +4,10 @@ using System.Collections.Generic;
 namespace Hydrogen {
 
 	/// <summary>
-	/// An <see cref="IEditableMerkleTree"/> that maintains only a subset of the nodes. This is useful for constructing
+	/// An <see cref="IDynamicMerkleTree"/> that maintains only a subset of the nodes. This is useful for constructing
 	/// and verifying multi-item proofs.
 	/// </summary>
-	public sealed class PartialMerkleTree : Dictionary<MerkleCoordinate, byte[]>, IEditableMerkleTree {
+	public sealed class PartialMerkleTree : Dictionary<MerkleCoordinate, byte[]>, IDynamicMerkleTree {
 
 		public PartialMerkleTree(CHF hashAlgorithm, int leafCount, IEnumerable<KeyValuePair<MerkleCoordinate, byte[]>> nodes) {
 			HashAlgorithm = hashAlgorithm;

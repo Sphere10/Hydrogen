@@ -15,7 +15,7 @@ namespace Hydrogen {
 	/// Update Complexity: O(N)
 	/// Memory Complexity: O(N LogN)
 	/// </summary>
-	public class FlatMerkleTree : IEditableMerkleTree {
+	public class FlatMerkleTree : IDynamicMerkleTree {
 		public const int DefaultLeafGrowth = 4096;
 		public const int DefaultMaxLeaf = 1 << 24;
 		private IBuffer _nodeBuffer;

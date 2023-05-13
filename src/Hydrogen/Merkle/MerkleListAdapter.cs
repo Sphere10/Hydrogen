@@ -13,7 +13,7 @@ namespace Hydrogen;
 public class MerkleListAdapter<TItem, TList> : ExtendedListDecorator<TItem, TList>, IMerkleList<TItem>
 	where TList : IExtendedList<TItem> {
 	protected readonly IItemHasher<TItem> ItemHasher;
-	protected readonly IEditableMerkleTree InternalMerkleTree;
+	protected readonly IDynamicMerkleTree InternalMerkleTree;
 
 	public MerkleListAdapter(TList internalList)
 		: this(internalList, CHF.SHA2_256) {
@@ -27,7 +27,7 @@ public class MerkleListAdapter<TItem, TList> : ExtendedListDecorator<TItem, TLis
 		: this(internalList, new ItemDigestor<TItem>(hashAlgorithm, serializer, endianness), new FlatMerkleTree(hashAlgorithm)) {
 	}
 
-	public MerkleListAdapter(TList internalList, IItemHasher<TItem> hasher, IEditableMerkleTree merkleTreeImpl)
+	public MerkleListAdapter(TList internalList, IItemHasher<TItem> hasher, IDynamicMerkleTree merkleTreeImpl)
 		: base(internalList) {
 		ItemHasher = hasher is not IWithNullValueItemHasher<TItem> ? hasher.WithNullHash(merkleTreeImpl.HashAlgorithm) : hasher;
 		InternalMerkleTree = merkleTreeImpl;
@@ -126,7 +126,7 @@ public class MerkleListAdapter<TItem> : MerkleListAdapter<TItem, IExtendedList<T
 		: base(internalList, new ItemDigestor<TItem>(hashAlgorithm, serializer), new FlatMerkleTree(hashAlgorithm)) {
 	}
 
-	public MerkleListAdapter(IExtendedList<TItem> internalList, IItemHasher<TItem> hasher, IEditableMerkleTree merkleTreeImpl)
+	public MerkleListAdapter(IExtendedList<TItem> internalList, IItemHasher<TItem> hasher, IDynamicMerkleTree merkleTreeImpl)
 		: base(internalList, hasher, merkleTreeImpl) {
 	}
 }

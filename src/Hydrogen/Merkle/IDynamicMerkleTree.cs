@@ -1,6 +1,7 @@
 ﻿namespace Hydrogen {
 
-	public interface IEditableMerkleTree : IMerkleTree {
+
+	public interface IDynamicMerkleTree : IMerkleTree {
 		IExtendedList<byte[]> Leafs { get; }
 	}
 

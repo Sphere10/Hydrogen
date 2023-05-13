@@ -12,7 +12,7 @@ namespace Hydrogen {
 	///  
 	/// Not suitable for "large" trees. Not thread-safe.
 	/// </summary>
-	public class SimpleMerkleTree : IEditableMerkleTree {
+	public class SimpleMerkleTree : IDynamicMerkleTree {
 		private readonly IExtendedList<IExtendedList<byte[]>> _levels;
 		private readonly MerkleSize _size;
 

@@ -20,7 +20,7 @@ namespace Hydrogen {
 			: this(buffer, new FlatMerkleTree(chf)) {
 		}
 
-		public MerklePagedBuffer(IMemoryPagedBuffer buffer, IEditableMerkleTree merkleTreeImpl)
+		public MerklePagedBuffer(IMemoryPagedBuffer buffer, IDynamicMerkleTree merkleTreeImpl)
 			: base(buffer) {
 			Guard.ArgumentNotNull(buffer, nameof(buffer));
 			Guard.ArgumentNotNull(merkleTreeImpl, nameof(merkleTreeImpl));
@@ -119,9 +119,9 @@ namespace Hydrogen {
 
 		private void MarkMerkleDirty(IPage<byte> page, bool dirty) => _merklePagesDirty[page.Number] = dirty;
 
-		private class MerkleTreeImpl : EditableMerkleTreeDecorator {
+		private class MerkleTreeImpl : DynamicMerkleTreeDecorator {
 			private readonly MerklePagedBuffer _parent;
-			public MerkleTreeImpl(MerklePagedBuffer parent, IEditableMerkleTree internalMerkleTree)
+			public MerkleTreeImpl(MerklePagedBuffer parent, IDynamicMerkleTree internalMerkleTree)
 				: base(internalMerkleTree) {
 				_parent = parent;
 			}

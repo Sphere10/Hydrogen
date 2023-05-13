@@ -270,11 +270,11 @@ namespace Hydrogen.Tests
 		}
 
 
-		private IEditableMerkleTree CreateReferenceTree(CHF chf, IEnumerable<byte[]> leafs = null)
+		private IDynamicMerkleTree CreateReferenceTree(CHF chf, IEnumerable<byte[]> leafs = null)
 			=> CreateMerkleTree(MerkleTreeImpl.Simple, chf);
 		
 
-		private IEditableMerkleTree CreateMerkleTree(MerkleTreeImpl impl, CHF chf, IEnumerable<byte[]> leafs = null) {
+		private IDynamicMerkleTree CreateMerkleTree(MerkleTreeImpl impl, CHF chf, IEnumerable<byte[]> leafs = null) {
 			switch (impl) {
 				case MerkleTreeImpl.Simple:
 					return new SimpleMerkleTree(chf, leafs);

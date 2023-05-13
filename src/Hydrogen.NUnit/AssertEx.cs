@@ -527,7 +527,7 @@ namespace Hydrogen.NUnit {
 		}
 
 
-		public static void AreEqual(IEditableMerkleTree expected, IEditableMerkleTree actual) {
+		public static void AreEqual(IDynamicMerkleTree expected, IDynamicMerkleTree actual) {
 			Assert.AreEqual(expected.Size, actual.Size);
 			Assert.AreEqual(expected.Leafs.Count, actual.Leafs.Count);
 			Assert.AreEqual(expected.Leafs.ToArray(), actual.Leafs.ToArray());

@@ -15,7 +15,7 @@ namespace Hydrogen {
 	//  - verifying and generating append-proofs 
 	//  - appending leaves
 	// TODO: write ExtendedList that keeps partial items only
-	public class LongMerkleTree : IEditableMerkleTree {
+	public class LongMerkleTree : IDynamicMerkleTree {
 		private readonly List<MerkleSubRoot> _subRoots;
 		private List<MerkleCoordinate> _subRootCoords;
 		private readonly ObservableExtendedList<byte[]> _observableLeafs;

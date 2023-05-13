@@ -96,21 +96,11 @@
 		<Compile Update="Application\DRM\BasicContactDetailsControl.designer.cs">
 		  <DependentUpon>BasicContactDetailsControl.cs</DependentUpon>
 		</Compile>
-		<Compile Update="Application\DRM\DRMNagDialog.cs">
-		  <SubType>Form</SubType>
-		</Compile>
-		<Compile Update="Application\DRM\DRMProductActivationForm.cs">
-		  <SubType>Form</SubType>
-		</Compile>
-		<Compile Update="Application\Product\ProductProductReportBugDialog.cs">
-		  <SubType>Form</SubType>
-		</Compile>
-		<Compile Update="Application\Product\ProductProductRequestFeatureDialog.cs">
-		  <SubType>Form</SubType>
-		</Compile>
-		<Compile Update="Application\Product\ProductProductSendCommentsDialog.cs">
-		  <SubType>Form</SubType>
-		</Compile>
+		<Compile Update="Application\DRM\DRMNagDialog.cs" />
+		<Compile Update="Application\DRM\DRMProductActivationForm.cs" />
+		<Compile Update="Application\Product\ProductProductReportBugDialog.cs" />
+		<Compile Update="Application\Product\ProductProductRequestFeatureDialog.cs" />
+		<Compile Update="Application\Product\ProductProductSendCommentsDialog.cs" />
 		<Compile Update="Application\DRM\ProductExpirationDetailsControl.cs">
 		  <SubType>UserControl</SubType>
 		</Compile>

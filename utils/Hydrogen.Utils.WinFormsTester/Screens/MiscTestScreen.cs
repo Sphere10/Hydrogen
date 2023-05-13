@@ -1,15 +1,10 @@
-//-----------------------------------------------------------------------
-// <copyright file="MiscTestForm.cs" company="Sphere 10 Software">
-//
-// Copyright (c) Sphere 10 Software. All rights reserved. (http://www.sphere10.com)
+// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
 // LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
 //
-// <author>Herman Schoenfeld</author>
-// <date>2018</date>
-// </copyright>
-//-----------------------------------------------------------------------
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
 using System.Collections.Generic;
@@ -435,7 +430,7 @@ public partial class MiscTestScreen : ApplicationScreen {
 	private async void button3_Click(object sender, EventArgs e) {
 		try {
 			//var writer = new TextBoxWriter(_clipTestTextBox);
-			//var shortnedUrl = await Hydrogen.UrlShortner.GoogleAsync("http://www.sphere10.com", "AIzaSyCt4dKG_UgO8qeusgM0BtrxB1Pb_-7KKDw");
+			//var shortnedUrl = await Hydrogen.UrlShortner.GoogleAsync("https://sphere10.com", "AIzaSyCt4dKG_UgO8qeusgM0BtrxB1Pb_-7KKDw");
 			//writer.WriteLine("TinyURL: " + shortnedUrl);
 			var xxx =
 				@"<?xml version=""1.0"" encoding=""utf-8""?>

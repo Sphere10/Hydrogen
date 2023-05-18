@@ -15,6 +15,8 @@ using Hydrogen;
 namespace Tools {
 	public static class NUnit {
 
+		public static bool IsGitHubAction => Environment.GetEnvironmentVariable("GITHUB_ACTIONS") == "true";
+
 		public static string Convert2DArrayToString<T>(string header, IEnumerable<IEnumerable<T>> arr2D) {
             var textBuilder = new StringBuilder();
             textBuilder.AppendLine("{0}:", header);
@@ -49,5 +51,5 @@ namespace Tools {
             }
         }
 
-    }
+	}
 }

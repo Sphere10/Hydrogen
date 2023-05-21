@@ -14,6 +14,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<ProjectReference Include="..\Hydrogen.CryptoEx\Hydrogen.CryptoEx.csproj" />
 		<ProjectReference Include="..\Hydrogen.Data\Hydrogen.Data.csproj" />
 		<ProjectReference Include="..\Hydrogen\Hydrogen.csproj" />
 	</ItemGroup>

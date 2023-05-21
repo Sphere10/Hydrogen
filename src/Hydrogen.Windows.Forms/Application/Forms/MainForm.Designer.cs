@@ -31,166 +31,137 @@ namespace Hydrogen.Windows.Forms {
 		/// the contents of this method with the code editor.
 		/// </summary>
 		private void InitializeComponent() {
-			this._menuStrip = new System.Windows.Forms.MenuStrip();
-			this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.HelpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this._userguideToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this._contextHelpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
-			this._requestAFeatureToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.sendACommentToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.reportABugToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
-			this.PurchaseFullVersionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this._aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this._statusStrip = new System.Windows.Forms.StatusStrip();
-			this._statusLabel = new System.Windows.Forms.ToolStripStatusLabel();
-			this._toolStrip = new System.Windows.Forms.ToolStrip();
-			this._menuStrip.SuspendLayout();
-			this._statusStrip.SuspendLayout();
-			this.SuspendLayout();
+			_menuStrip = new Hydrogen.Windows.Forms.MergeableMenuStrip();
+			fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			_userguideToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			_contextHelpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
+			_requestAFeatureToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			sendACommentToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			reportABugToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
+			_aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			_statusStrip = new Hydrogen.Windows.Forms.MergeableStatusStrip();
+			_statusLabel = new System.Windows.Forms.ToolStripStatusLabel();
+			_toolStrip = new Hydrogen.Windows.Forms.MergeableToolStrip();
+			_menuStrip.SuspendLayout();
+			_statusStrip.SuspendLayout();
+			SuspendLayout();
 			// 
 			// _menuStrip
 			// 
-			this._menuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.fileToolStripMenuItem,
-            this.HelpToolStripMenuItem});
-			this._menuStrip.Location = new System.Drawing.Point(0, 0);
-			this._menuStrip.Name = "_menuStrip";
-			this._menuStrip.Size = new System.Drawing.Size(664, 24);
-			this._menuStrip.TabIndex = 3;
-			this._menuStrip.Text = "menuStrip1";
+			_menuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { fileToolStripMenuItem });
+			_menuStrip.Location = new System.Drawing.Point(0, 0);
+			_menuStrip.Name = "_menuStrip";
+			_menuStrip.Size = new System.Drawing.Size(664, 24);
+			_menuStrip.TabIndex = 3;
+			_menuStrip.Text = "menuStrip1";
 			// 
 			// fileToolStripMenuItem
 			// 
-			this.fileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.exitToolStripMenuItem});
-			this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
-			this.fileToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
-			this.fileToolStripMenuItem.Text = "File";
+			fileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { exitToolStripMenuItem });
+			fileToolStripMenuItem.Name = "fileToolStripMenuItem";
+			fileToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
+			fileToolStripMenuItem.Text = "File";
 			// 
 			// exitToolStripMenuItem
 			// 
-			this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-			this.exitToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
-			this.exitToolStripMenuItem.Text = "E&xit";
-			this.exitToolStripMenuItem.Click += new System.EventHandler(this.Exit_Click);
-			// 
-			// _helpToolStripMenuItem
-			// 
-			this.HelpToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this._userguideToolStripMenuItem,
-            this._contextHelpToolStripMenuItem,
-            this.toolStripSeparator1,
-            this._requestAFeatureToolStripMenuItem,
-            this.sendACommentToolStripMenuItem,
-            this.reportABugToolStripMenuItem,
-            this.toolStripSeparator4,
-            this.PurchaseFullVersionToolStripMenuItem,
-            this._aboutToolStripMenuItem});
-			this.HelpToolStripMenuItem.Name = "HelpToolStripMenuItem";
-			this.HelpToolStripMenuItem.Size = new System.Drawing.Size(44, 20);
-			this.HelpToolStripMenuItem.Text = "Help";
+			exitToolStripMenuItem.Name = "exitToolStripMenuItem";
+			exitToolStripMenuItem.Size = new System.Drawing.Size(93, 22);
+			exitToolStripMenuItem.Text = "E&xit";
+			exitToolStripMenuItem.Click += Exit_Click;
 			// 
 			// _userguideToolStripMenuItem
 			// 
-			this._userguideToolStripMenuItem.Name = "_userguideToolStripMenuItem";
-			this._userguideToolStripMenuItem.Size = new System.Drawing.Size(186, 22);
-			this._userguideToolStripMenuItem.Text = "User Guide";
-			this._userguideToolStripMenuItem.Click += new System.EventHandler(this.UserGuide_Click);
+			_userguideToolStripMenuItem.Name = "_userguideToolStripMenuItem";
+			_userguideToolStripMenuItem.Size = new System.Drawing.Size(186, 22);
+			_userguideToolStripMenuItem.Text = "User Guide";
+			_userguideToolStripMenuItem.Click += UserGuide_Click;
 			// 
 			// _contextHelpToolStripMenuItem
 			// 
-			this._contextHelpToolStripMenuItem.Image = global::Hydrogen.Windows.Forms.Resources.Help_16x16x32;
-			this._contextHelpToolStripMenuItem.Name = "_contextHelpToolStripMenuItem";
-			this._contextHelpToolStripMenuItem.Size = new System.Drawing.Size(186, 22);
-			this._contextHelpToolStripMenuItem.Text = "Context Help";
-			this._contextHelpToolStripMenuItem.Click += new System.EventHandler(this.ContextHelp_Click);
+			_contextHelpToolStripMenuItem.Image = Resources.Help_16x16x32;
+			_contextHelpToolStripMenuItem.Name = "_contextHelpToolStripMenuItem";
+			_contextHelpToolStripMenuItem.Size = new System.Drawing.Size(186, 22);
+			_contextHelpToolStripMenuItem.Text = "Context Help";
+			_contextHelpToolStripMenuItem.Click += ContextHelp_Click;
 			// 
 			// toolStripSeparator1
 			// 
-			this.toolStripSeparator1.Name = "toolStripSeparator1";
-			this.toolStripSeparator1.Size = new System.Drawing.Size(183, 6);
+			toolStripSeparator1.Name = "toolStripSeparator1";
+			toolStripSeparator1.Size = new System.Drawing.Size(183, 6);
 			// 
 			// _requestAFeatureToolStripMenuItem
 			// 
-			this._requestAFeatureToolStripMenuItem.Name = "_requestAFeatureToolStripMenuItem";
-			this._requestAFeatureToolStripMenuItem.Size = new System.Drawing.Size(186, 22);
-			this._requestAFeatureToolStripMenuItem.Text = "Request a feature";
-			this._requestAFeatureToolStripMenuItem.Click += new System.EventHandler(this.RequestAFeature_Click);
+			_requestAFeatureToolStripMenuItem.Name = "_requestAFeatureToolStripMenuItem";
+			_requestAFeatureToolStripMenuItem.Size = new System.Drawing.Size(186, 22);
+			_requestAFeatureToolStripMenuItem.Text = "Request a feature";
+			_requestAFeatureToolStripMenuItem.Click += RequestAFeature_Click;
 			// 
 			// sendACommentToolStripMenuItem
 			// 
-			this.sendACommentToolStripMenuItem.Name = "sendACommentToolStripMenuItem";
-			this.sendACommentToolStripMenuItem.Size = new System.Drawing.Size(186, 22);
-			this.sendACommentToolStripMenuItem.Text = "Send a comment";
-			this.sendACommentToolStripMenuItem.Click += new System.EventHandler(this.SendComment_Click);
+			sendACommentToolStripMenuItem.Name = "sendACommentToolStripMenuItem";
+			sendACommentToolStripMenuItem.Size = new System.Drawing.Size(186, 22);
+			sendACommentToolStripMenuItem.Text = "Send a comment";
+			sendACommentToolStripMenuItem.Click += SendComment_Click;
 			// 
 			// reportABugToolStripMenuItem
 			// 
-			this.reportABugToolStripMenuItem.Name = "reportABugToolStripMenuItem";
-			this.reportABugToolStripMenuItem.Size = new System.Drawing.Size(186, 22);
-			this.reportABugToolStripMenuItem.Text = "Report a bug";
-			this.reportABugToolStripMenuItem.Click += new System.EventHandler(this.ReportABug_Click);
+			reportABugToolStripMenuItem.Name = "reportABugToolStripMenuItem";
+			reportABugToolStripMenuItem.Size = new System.Drawing.Size(186, 22);
+			reportABugToolStripMenuItem.Text = "Report a bug";
+			reportABugToolStripMenuItem.Click += ReportABug_Click;
 			// 
 			// toolStripSeparator4
 			// 
-			this.toolStripSeparator4.Name = "toolStripSeparator4";
-			this.toolStripSeparator4.Size = new System.Drawing.Size(183, 6);
-			// 
-			// _purchaseFullVersionToolStripMenuItem
-			// 
-			this.PurchaseFullVersionToolStripMenuItem.Name = "PurchaseFullVersionToolStripMenuItem";
-			this.PurchaseFullVersionToolStripMenuItem.Size = new System.Drawing.Size(186, 22);
-			this.PurchaseFullVersionToolStripMenuItem.Text = "Purchase Full Version";
-			this.PurchaseFullVersionToolStripMenuItem.Click += new System.EventHandler(this.PurchaseFullVersion_Click);
+			toolStripSeparator4.Name = "toolStripSeparator4";
+			toolStripSeparator4.Size = new System.Drawing.Size(183, 6);
 			// 
 			// _aboutToolStripMenuItem
 			// 
-			this._aboutToolStripMenuItem.Name = "_aboutToolStripMenuItem";
-			this._aboutToolStripMenuItem.Size = new System.Drawing.Size(186, 22);
-			this._aboutToolStripMenuItem.Text = "About";
-			this._aboutToolStripMenuItem.Click += new System.EventHandler(this.About_Click);
+			_aboutToolStripMenuItem.Name = "_aboutToolStripMenuItem";
+			_aboutToolStripMenuItem.Size = new System.Drawing.Size(186, 22);
+			_aboutToolStripMenuItem.Text = "About";
+			_aboutToolStripMenuItem.Click += About_Click;
 			// 
 			// _statusStrip
 			// 
-			this._statusStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this._statusLabel});
-			this._statusStrip.Location = new System.Drawing.Point(0, 393);
-			this._statusStrip.Name = "_statusStrip";
-			this._statusStrip.Size = new System.Drawing.Size(664, 22);
-			this._statusStrip.TabIndex = 4;
-			this._statusStrip.Text = "statusStrip";
+			_statusStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { _statusLabel });
+			_statusStrip.Location = new System.Drawing.Point(0, 393);
+			_statusStrip.Name = "_statusStrip";
+			_statusStrip.Size = new System.Drawing.Size(664, 22);
+			_statusStrip.TabIndex = 4;
+			_statusStrip.Text = "statusStrip";
 			// 
 			// _statusLabel
 			// 
-			this._statusLabel.Name = "_statusLabel";
-			this._statusLabel.Size = new System.Drawing.Size(82, 17);
-			this._statusLabel.Text = "Design Time...";
+			_statusLabel.Name = "_statusLabel";
+			_statusLabel.Size = new System.Drawing.Size(81, 17);
+			_statusLabel.Text = "Design Time...";
 			// 
 			// _toolStrip
 			// 
-			this._toolStrip.Location = new System.Drawing.Point(0, 24);
-			this._toolStrip.Name = "_toolStrip";
-			this._toolStrip.Size = new System.Drawing.Size(664, 25);
-			this._toolStrip.TabIndex = 5;
-			this._toolStrip.Text = "toolStrip1";
+			_toolStrip.Location = new System.Drawing.Point(0, 24);
+			_toolStrip.Name = "_toolStrip";
+			_toolStrip.Size = new System.Drawing.Size(664, 25);
+			_toolStrip.TabIndex = 5;
+			_toolStrip.Text = "toolStrip1";
 			// 
 			// MainForm
 			// 
-			this.ClientSize = new System.Drawing.Size(664, 415);
-			this.Controls.Add(this._toolStrip);
-			this.Controls.Add(this._statusStrip);
-			this.Controls.Add(this._menuStrip);
-			this.Name = "MainForm";
-			this._menuStrip.ResumeLayout(false);
-			this._menuStrip.PerformLayout();
-			this._statusStrip.ResumeLayout(false);
-			this._statusStrip.PerformLayout();
-			this.ResumeLayout(false);
-			this.PerformLayout();
-
+			AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
+			ClientSize = new System.Drawing.Size(664, 415);
+			Controls.Add(_toolStrip);
+			Controls.Add(_statusStrip);
+			Controls.Add(_menuStrip);
+			Name = "MainForm";
+			_menuStrip.ResumeLayout(false);
+			_menuStrip.PerformLayout();
+			_statusStrip.ResumeLayout(false);
+			_statusStrip.PerformLayout();
+			ResumeLayout(false);
+			PerformLayout();
 		}
 
 		#endregion
@@ -206,11 +177,11 @@ namespace Hydrogen.Windows.Forms {
 		private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
 		private System.Windows.Forms.ToolStripMenuItem _aboutToolStripMenuItem;
 		private System.Windows.Forms.ToolStripStatusLabel _statusLabel;
-		protected System.Windows.Forms.MenuStrip _menuStrip;
-		protected System.Windows.Forms.StatusStrip _statusStrip;
-		protected System.Windows.Forms.ToolStrip _toolStrip;
+		protected Hydrogen.Windows.Forms.MergeableMenuStrip _menuStrip;
+		protected Hydrogen.Windows.Forms.MergeableStatusStrip _statusStrip;
+		protected Hydrogen.Windows.Forms.MergeableToolStrip _toolStrip;
 
-	
+
 
 
 

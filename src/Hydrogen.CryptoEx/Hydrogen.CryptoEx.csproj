@@ -20,7 +20,6 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\HashLib4CSharp\HashLib4CSharp.csproj" />
-		<ProjectReference Include="..\Hydrogen.Application\Hydrogen.Application.csproj" />
 		<ProjectReference Include="..\Hydrogen\Hydrogen.csproj" />
 	</ItemGroup>
 

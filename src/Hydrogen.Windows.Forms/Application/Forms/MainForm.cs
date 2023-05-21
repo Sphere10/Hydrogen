@@ -53,9 +53,11 @@ namespace Hydrogen.Windows.Forms {
 					var licenseProvider = HydrogenFramework.Instance.ServiceProvider.GetService<IProductLicenseProvider>();
 					// Show/Hide register menu item based on what's happened with the user nag screen
 					if (licenseProvider.TryGetLicense(out var license) && license.License.Item.FeatureLevel == ProductLicenseFeatureLevelDTO.Free) {
-						PurchaseFullVersionToolStripMenuItem.Visible = true;
+						if (PurchaseFullVersionToolStripMenuItem != null)
+							PurchaseFullVersionToolStripMenuItem.Visible = true;
 					} else {
-						PurchaseFullVersionToolStripMenuItem.Visible = false;
+						if (PurchaseFullVersionToolStripMenuItem != null)
+							PurchaseFullVersionToolStripMenuItem.Visible = false;
 					}
 				} catch (ProductLicenseTamperedException error) {
 					ReportError(error);
@@ -73,7 +75,7 @@ namespace Hydrogen.Windows.Forms {
 				return _statusLabel.Text;
 			}
 			set {
-				ExecuteInUIFriendlyContext( () => _statusLabel.Text = value );
+				ExecuteInUIFriendlyContext(() => _statusLabel.Text = value);
 			}
 		}
 
@@ -161,6 +163,6 @@ namespace Hydrogen.Windows.Forms {
 		#endregion
 
 
-	
+
 	}
 }

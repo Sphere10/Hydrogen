@@ -11,7 +11,7 @@ using Hydrogen.CryptoEx.EC.Schnorr;
 using static HashLib4CSharp.Base.HashFactory.Crypto;
 
 namespace Hydrogen.CryptoEx;
-public static class ExplicitModuleConfiguration {
+public static class HydrogenFrameworkIntegration {
 
 	public static void Initialize() {
 		Signers.Register(DSS.ECDSA_SECP256k1, () => new ECDSA(ECDSAKeyType.SECP256K1));

@@ -46,7 +46,6 @@ namespace Hydrogen.Data {
 
         protected virtual void OnDatabaseDropped(string connectionString) {
         }
-
     }
 }
 

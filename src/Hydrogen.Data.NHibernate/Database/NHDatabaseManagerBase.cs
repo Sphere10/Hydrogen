@@ -54,6 +54,7 @@ namespace Hydrogen.Data.NHibernate {
 			schemaExport.Create(false, true);
 		}
 
-	
+
+
 	}
 }

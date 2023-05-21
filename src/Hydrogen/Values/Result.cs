@@ -32,11 +32,8 @@ namespace Hydrogen {
 
 		[XmlIgnore]
 		[IgnoreDataMember]
-		public IEnumerable<string> ErrorMessages =>
-			ResultCodes
-				.Where(x => x.Type == ResultCodeType.Message && x.Severity == LogLevel.Error)
-				.Select(x => x.Payload);
-
+		public IEnumerable<string> ErrorMessages => GetMessages(new [] { LogLevel.Error });
+	
 		[XmlIgnore]
 		[IgnoreDataMember]
 		public IEnumerable<ResultCode> ErrorCodes =>
@@ -54,6 +51,13 @@ namespace Hydrogen {
 		[XmlIgnore]
 		[IgnoreDataMember]
 		public bool HasInformation => ResultCodes.Any() && ResultCodes.All(x => x.Severity != LogLevel.Error);
+
+		public IEnumerable<string> GetMessages(LogLevel[] logLevels = null) {
+			logLevels ??= new[] { LogLevel.None, LogLevel.Debug, LogLevel.Info, LogLevel.Warning, LogLevel.Error }; // default to all
+			return ResultCodes
+				.Where(x => x.Type == ResultCodeType.Message && logLevels.Contains(x.Severity))
+				.Select(x => x.Payload);
+		}
 
 		public void Add(ResultCode resultCode) {
 			ResultCodes.Add(resultCode);

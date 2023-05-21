@@ -78,7 +78,6 @@ namespace Hydrogen.Application {
 
 			// Initializers/Finalizers
 			serviceCollection.AddInitializer<IncrementUsageByOneInitializer>();
-
 		}
 
 		private void EnableDRM(IServiceCollection serviceCollection) {
@@ -134,6 +133,12 @@ namespace Hydrogen.Application {
 			GlobalSettings.Provider = serviceProvider.GetService<Global<ISettingsProvider>>()?.Item;
 			UserSettings.Provider = serviceProvider.GetService<Local<ISettingsProvider>>()?.Item;
 			StringFormatter.RegisterResolvers(serviceProvider.GetServices<ITokenResolver>());
+			Hydrogen.CryptoEx.HydrogenFrameworkIntegration.Initialize();
+		}
+
+		public override void OnFinalize(IServiceProvider serviceProvider) {
+			base.OnFinalize(serviceProvider);
+			Hydrogen.CryptoEx.HydrogenFrameworkIntegration.Finalize();
 		}
 	}
 }

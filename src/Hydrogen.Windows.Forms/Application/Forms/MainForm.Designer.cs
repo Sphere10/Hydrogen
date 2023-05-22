@@ -31,7 +31,7 @@ namespace Hydrogen.Windows.Forms {
 		/// the contents of this method with the code editor.
 		/// </summary>
 		private void InitializeComponent() {
-			_menuStrip = new Hydrogen.Windows.Forms.MergeableMenuStrip();
+			_menuStrip = new System.Windows.Forms.MenuStrip();
 			fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			_userguideToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -42,9 +42,9 @@ namespace Hydrogen.Windows.Forms {
 			reportABugToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
 			_aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			_statusStrip = new Hydrogen.Windows.Forms.MergeableStatusStrip();
+			_statusStrip = new System.Windows.Forms.StatusStrip();
 			_statusLabel = new System.Windows.Forms.ToolStripStatusLabel();
-			_toolStrip = new Hydrogen.Windows.Forms.MergeableToolStrip();
+			_toolStrip = new System.Windows.Forms.ToolStrip();
 			_menuStrip.SuspendLayout();
 			_statusStrip.SuspendLayout();
 			SuspendLayout();
@@ -177,13 +177,9 @@ namespace Hydrogen.Windows.Forms {
 		private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
 		private System.Windows.Forms.ToolStripMenuItem _aboutToolStripMenuItem;
 		private System.Windows.Forms.ToolStripStatusLabel _statusLabel;
-		protected Hydrogen.Windows.Forms.MergeableMenuStrip _menuStrip;
-		protected Hydrogen.Windows.Forms.MergeableStatusStrip _statusStrip;
-		protected Hydrogen.Windows.Forms.MergeableToolStrip _toolStrip;
-
-
-
-
-
+		protected System.Windows.Forms.MenuStrip _menuStrip;
+		protected System.Windows.Forms.StatusStrip _statusStrip;
+		protected System.Windows.Forms.ToolStrip _toolStrip;
+		
 	}
 }

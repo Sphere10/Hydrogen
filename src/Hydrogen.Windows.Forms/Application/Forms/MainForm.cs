@@ -32,15 +32,21 @@ namespace Hydrogen.Windows.Forms {
 
 		#region Form Properties
 
-		public ToolStrip ToolStrip => _toolStrip;
 
-		public MenuStrip MenuStrip => _menuStrip;
 
-		public ToolStripStatusLabel StatusLabel { get => _statusLabel; }
+		[Browsable(false)]
+		protected ToolStripMenuItem PurchaseFullVersionToolStripMenuItem { get; private set; }
 
-		public ToolStripMenuItem PurchaseFullVersionToolStripMenuItem { get; private set; }
+		[Browsable(false)]
+		protected ToolStripMenuItem HelpToolStripMenuItem { get; private set; }
 
-		public ToolStripMenuItem HelpToolStripMenuItem { get; private set; }
+		[Browsable(false)]
+		protected ToolStrip ToolStrip => _toolStrip;
+
+		[Browsable(false)]
+		protected MenuStrip MenuStrip => _menuStrip;
+
+		protected ToolStripStatusLabel StatusLabel { get => _statusLabel; }
 
 		#endregion
 
@@ -48,7 +54,7 @@ namespace Hydrogen.Windows.Forms {
 
 		protected override void OnFirstActivated() {
 			base.OnFirstActivated();
-			if (!Tools.Runtime.IsDesignMode) {
+			if (!Tools.Runtime.IsDesignMode && !ApplicationExiting) {
 				try {
 					var licenseProvider = HydrogenFramework.Instance.ServiceProvider.GetService<IProductLicenseProvider>();
 					// Show/Hide register menu item based on what's happened with the user nag screen

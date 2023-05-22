@@ -57,7 +57,8 @@ namespace Hydrogen.Windows.Forms {
 			base.OnActivated(e);
 			if (!Nagged) {
                 Nagged = true;
-				FireFirstActivatedEvent();
+				if (!ApplicationExiting)
+					FireFirstActivatedEvent();
 			}
 		}
 
@@ -163,27 +164,31 @@ namespace Hydrogen.Windows.Forms {
 		}
 
 		public virtual void Exit(bool force = false) {
-			SuppressExitConfirmation = force;
-			ExecuteInUIFriendlyContext(
-                () => {
-                    var oldAction = this.CloseAction;
-                    try {
-                        CloseAction = FormCloseAction.Close;
-                        Close();
-                        System.Windows.Forms.Application.Exit();
-                    } catch {
-						try {
-							System.Windows.Forms.Application.Exit();
-						} catch {
-							System.Environment.Exit(-1);
-						}
-                    }
-                    finally {
-                        // This runs if close is aborted
-                        CloseAction = oldAction;
-                    } 
-                }
-			);
+			if (!this.IsDisposed) {
+				ExecuteInUIFriendlyContext(ExitInternal);
+			} else {
+				ExitInternal();
+			}
+	
+			void ExitInternal() {
+				SuppressExitConfirmation = force;
+				var oldAction = this.CloseAction;
+				try {
+					CloseAction = FormCloseAction.Close;
+					Close();
+					System.Windows.Forms.Application.Exit();
+				} catch {
+					try {
+						System.Windows.Forms.Application.Exit();
+					} catch {
+						System.Environment.Exit(-1);
+					}
+				}
+				finally {
+					// This runs if close is aborted
+					CloseAction = oldAction;
+				} 
+			}
 		}
 
 		public virtual bool ApplicationExiting { get; set; }

@@ -32,8 +32,6 @@ namespace Hydrogen.Windows.Forms {
 
 		#region Form Properties
 
-
-
 		[Browsable(false)]
 		protected ToolStripMenuItem PurchaseFullVersionToolStripMenuItem { get; private set; }
 
@@ -46,7 +44,8 @@ namespace Hydrogen.Windows.Forms {
 		[Browsable(false)]
 		protected MenuStrip MenuStrip => _menuStrip;
 
-		protected ToolStripStatusLabel StatusLabel { get => _statusLabel; }
+		[Browsable(false)]
+		protected StatusStrip StatusStrip => _statusStrip;
 
 		#endregion
 
@@ -77,9 +76,7 @@ namespace Hydrogen.Windows.Forms {
 		#region IUserInterfaceServices Overrides
 
 		public override string Status {
-			get {
-				return _statusLabel.Text;
-			}
+			get => _statusLabel.Text;
 			set {
 				ExecuteInUIFriendlyContext(() => _statusLabel.Text = value);
 			}
@@ -167,8 +164,6 @@ namespace Hydrogen.Windows.Forms {
 		}
 
 		#endregion
-
-
 
 	}
 }

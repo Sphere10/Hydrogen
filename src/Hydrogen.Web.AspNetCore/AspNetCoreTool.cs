@@ -11,10 +11,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Globalization;
 using System.IO;
+using System.Net;
 using System.Reflection;
 using System.Threading.Tasks;
 using Hydrogen;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace Tools.Web {
@@ -22,6 +24,29 @@ namespace Tools.Web {
     public static partial class AspNetCore {
 
 
+	    public static IPNetwork ParseNetwork(string cidr)
+	    {
+		    var parts = cidr.Split('/');
+		    var ipAddressString = parts[0];
+		    var prefixLength = int.Parse(parts[1]);
+
+		    var ipAddress = IPAddress.Parse(ipAddressString);
+		    var ipAddressBytes = ipAddress.GetAddressBytes();
+
+		    var bits = ipAddressBytes.Length * 8;
+		    var networkMask = (1 << prefixLength) - 1;
+		    var networkBytes = new byte[ipAddressBytes.Length];
+		    for (var i = 0; i < ipAddressBytes.Length; i++)
+		    {
+			    networkBytes[i] = (byte)(ipAddressBytes[i] & (networkMask >> (bits - 8)));
+			    bits -= 8;
+		    }
+
+		    var networkAddress = new IPAddress(networkBytes);
+		    var network = new IPNetwork(networkAddress, prefixLength);
+
+		    return network;
+	    }
 
 		public static SelectList ToSelectList<TEnum>(object selectedItem = default, SortDirection? sort = null) where TEnum : Enum
 			=> ToSelectList(typeof(TEnum), selectedItem, sort);

@@ -14,7 +14,7 @@ using NUnit.Framework;
 namespace Hydrogen.CryptoEx.Tests {
 	public abstract class HashTestBase {
 		static HashTestBase() {
-			ExplicitModuleConfiguration.Initialize();
+			HydrogenFrameworkIntegration.Initialize();
 		}
 
 

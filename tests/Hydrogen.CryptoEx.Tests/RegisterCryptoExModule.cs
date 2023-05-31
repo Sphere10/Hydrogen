@@ -15,11 +15,11 @@ public class RegisterCryptoExModule {
 
 	[OneTimeSetUp]
 	public void RegisterModule() {
-		ExplicitModuleConfiguration.Initialize();
+		HydrogenFrameworkIntegration.Initialize();
 	}
 
 	[OneTimeTearDown]
 	public void DeregisterModule() {
-		ExplicitModuleConfiguration.Finalize();
+		HydrogenFrameworkIntegration.Finalize();
 	}
 }

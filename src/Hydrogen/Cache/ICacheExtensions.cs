@@ -13,6 +13,9 @@ namespace Hydrogen {
 	public static class ICacheExtensions {
 
 		public static IEnumerable<V> GetAllCachedValues<K, V>(this ICache<K, V> cache) {
+			if (cache is BulkFetchCacheBase<K, V> bulkFetchCache && bulkFetchCache.FetchCount == 0) {
+				bulkFetchCache.ForceRefresh();
+			}
 			using (cache.EnterReadScope()) {
 				return cache.CachedItems.Select(c => c.Value).ToArray();
 			}

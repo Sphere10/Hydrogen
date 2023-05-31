@@ -13,18 +13,18 @@ namespace Hydrogen {
 
 	public abstract class BulkFetchCacheBase<TKey, TValue> : CacheBase<TKey, TValue> {
 		private readonly bool _fetchOnceOnly;
-		private uint _fetchCount;
+		internal uint FetchCount;
 
 		protected BulkFetchCacheBase(ExpirationPolicy expirationStrategy, TimeSpan? expirationDuration = null, bool fetchOnceOnly = false, NullValuePolicy nullValuePolicy = NullValuePolicy.CacheNormally, StaleValuePolicy staleValuePolicy = StaleValuePolicy.AssumeNeverStale, IEqualityComparer<TKey> keyComparer = null)
 			: base(CacheReapPolicy.None, expirationStrategy, uint.MaxValue, expirationDuration, nullValuePolicy, staleValuePolicy, keyComparer, new IsolatedCacheReaper()) {
 			_fetchOnceOnly = fetchOnceOnly;
-			_fetchCount = 0;
+			FetchCount = 0;
 		}
 
 		protected sealed override TValue Fetch(TKey key) {
 			TValue result;
 			using (EnterWriteScope()) {
-				if (!_fetchOnceOnly || _fetchCount == 0) {
+				if (!_fetchOnceOnly || FetchCount == 0) {
 					NotifyItemFetching(key);
 					ForceRefresh();
 				}
@@ -52,14 +52,14 @@ namespace Hydrogen {
 		}
 
 		public override CachedItem Get(object key) {
-			if (_fetchCount == 0)
+			if (FetchCount == 0)
 				ForceRefresh();
 
 			return base.Get(key);
 		}
 
 		public override bool ContainsCachedItem(object key) {
-			if (_fetchCount == 0)
+			if (FetchCount == 0)
 				ForceRefresh();
 
 			return base.ContainsCachedItem(key);
@@ -68,12 +68,12 @@ namespace Hydrogen {
 		public void ForceRefresh() {
 			Flush();
 			BulkLoad(BulkFetch());
-			_fetchCount++;
+			FetchCount++;
 		}
 
 		public override void Flush() {
 			base.Flush();
-			_fetchCount = 0;
+			FetchCount = 0;
 		}
 
 		public override void Remove(object key) {

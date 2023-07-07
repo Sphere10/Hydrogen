@@ -13,6 +13,7 @@ namespace Hydrogen;
 public class ItemDigestor<TItem> : ItemSerializerDecorator<TItem>, IItemDigestor<TItem> {
 	private readonly CHF _hashAlgorithm;
 	private readonly Endianness _endianness;
+	private readonly HashChecksummer _hashChecksummer;
 
 	public ItemDigestor(IItemSerializer<TItem> internalSerializer, Endianness endianness = Endianness.LittleEndian)
 		: this(CHF.SHA2_256, internalSerializer, endianness) {
@@ -22,6 +23,7 @@ public class ItemDigestor<TItem> : ItemSerializerDecorator<TItem>, IItemDigestor
 		: base(internalSerializer ?? ItemSerializer<TItem>.Default) {
 		_hashAlgorithm = hashAlgorithm;
 		_endianness = endianness;
+		_hashChecksummer = new HashChecksummer();
 		DigestLength = Hashers.GetDigestSizeBytes(_hashAlgorithm);
 	}
 
@@ -32,4 +34,6 @@ public class ItemDigestor<TItem> : ItemSerializerDecorator<TItem>, IItemDigestor
 	}
 
 	public int DigestLength { get; }
+
+	public int CalculateChecksum(TItem item) => _hashChecksummer.CalculateChecksum(Hash(item));
 }

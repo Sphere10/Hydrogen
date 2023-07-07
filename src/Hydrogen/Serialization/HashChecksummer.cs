@@ -8,6 +8,7 @@
 
 namespace Hydrogen;
 
-public interface IItemChecksum<in TItem> {
-	int Calculate(TItem item);
+public class HashChecksummer : IItemChecksummer<byte[]> {
+
+	public int CalculateChecksum(byte[] item) => LittleEndianBitConverter.Little.ToInt32(item, 0);
 }

@@ -16,7 +16,7 @@ namespace Hydrogen {
 	public class TransactionalDictionary<TKey, TValue> : TransactionalDictionaryBase<TKey, TValue>  {
 
 		/// <inheritdoc />
-		public TransactionalDictionary(string filename, string uncommittedPageFileDir, IItemSerializer<TKey> keySerializer, IItemSerializer<TValue> valueSerializer, IItemChecksum<TKey> keyChecksum = null, IEqualityComparer<TKey> keyComparer = null, IEqualityComparer<TValue> valueComparer = null, int transactionalPageSizeBytes = DefaultTransactionalPageSize, long maxMemory = DefaultMaxMemory, int clusterSize = DefaultClusterSize, ClusteredStoragePolicy policy = ClusteredStoragePolicy.DictionaryDefault, int reservedRecords = 0, Endianness endianness = Endianness.LittleEndian, bool readOnly = false)
+		public TransactionalDictionary(string filename, string uncommittedPageFileDir, IItemSerializer<TKey> keySerializer, IItemSerializer<TValue> valueSerializer, IItemChecksummer<TKey> keyChecksum = null, IEqualityComparer<TKey> keyComparer = null, IEqualityComparer<TValue> valueComparer = null, int transactionalPageSizeBytes = DefaultTransactionalPageSize, long maxMemory = DefaultMaxMemory, int clusterSize = DefaultClusterSize, ClusteredStoragePolicy policy = ClusteredStoragePolicy.DictionaryDefault, int reservedRecords = 0, Endianness endianness = Endianness.LittleEndian, bool readOnly = false)
 			 : base(
 				   filename, 
 				   uncommittedPageFileDir, 
@@ -27,7 +27,7 @@ namespace Hydrogen {
 				) {
 		}
 			
-		protected static IStreamMappedDictionary<TKey, TValue> CreateStreamMappedDictionary(IBuffer buffer, IItemSerializer<TKey> keySerializer, IItemSerializer<TValue> valueSerializer, IItemChecksum<TKey> keyChecksum, IEqualityComparer<TKey> keyComparer, IEqualityComparer<TValue> valueComparer, int clusterSize, ClusteredStoragePolicy policy, int reservedRecords, Endianness endianness) 
+		protected static IStreamMappedDictionary<TKey, TValue> CreateStreamMappedDictionary(IBuffer buffer, IItemSerializer<TKey> keySerializer, IItemSerializer<TValue> valueSerializer, IItemChecksummer<TKey> keyChecksum, IEqualityComparer<TKey> keyComparer, IEqualityComparer<TValue> valueComparer, int clusterSize, ClusteredStoragePolicy policy, int reservedRecords, Endianness endianness) 
 			=> new StreamMappedDictionary<TKey, TValue>(
 				new ExtendedMemoryStream(
 					buffer,

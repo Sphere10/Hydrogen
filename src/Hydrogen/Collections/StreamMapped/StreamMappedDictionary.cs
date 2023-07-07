@@ -34,12 +34,12 @@ namespace Hydrogen {
 		protected readonly IStreamMappedList<KeyValuePair<TKey, TValue>> KVPList;
 		private readonly IEqualityComparer<TKey> _keyComparer;
 		private readonly IEqualityComparer<TValue> _valueComparer;
-		private readonly IItemChecksum<TKey> _keyChecksum;
+		private readonly IItemChecksummer<TKey> _keyChecksum;
 		private readonly LookupEx<int, int> _checksumToIndexLookup;
 		private readonly SortedList<int> _unusedRecords;
 		private bool _requiresLoad;
 
-		public StreamMappedDictionary(Stream rootStream, int clusterSize, IItemSerializer<TKey> keySerializer = null, IItemSerializer<TValue> valueSerializer = null, IItemChecksum<TKey> keyChecksum = null, IEqualityComparer<TKey> keyComparer = null, IEqualityComparer<TValue> valueComparer = null, ClusteredStoragePolicy policy = ClusteredStoragePolicy.DictionaryDefault, int reservedRecords = 0, Endianness endianness = Endianness.LittleEndian)
+		public StreamMappedDictionary(Stream rootStream, int clusterSize, IItemSerializer<TKey> keySerializer = null, IItemSerializer<TValue> valueSerializer = null, IItemChecksummer<TKey> keyChecksummer = null, IEqualityComparer<TKey> keyComparer = null, IEqualityComparer<TValue> valueComparer = null, ClusteredStoragePolicy policy = ClusteredStoragePolicy.DictionaryDefault, int reservedRecords = 0, Endianness endianness = Endianness.LittleEndian)
 			: this(
 				new StreamMappedList<KeyValuePair<TKey, TValue>>(
 					rootStream,
@@ -57,19 +57,22 @@ namespace Hydrogen {
 					reservedRecords,
 					endianness
 				),
-				keyChecksum,
+				keySerializer,
+				keyChecksummer,
 				keyComparer,
-				valueComparer
+				valueComparer,
+				endianness
 			) {
 			Guard.Argument(policy.HasFlag(ClusteredStoragePolicy.TrackChecksums), nameof(policy), $"Checksum tracking must be enabled in {nameof(StreamMappedDictionary<TKey, TValue>)} implementations.");
 		}
 
-		public StreamMappedDictionary(IStreamMappedList<KeyValuePair<TKey, TValue>> kvpStore, IItemChecksum<TKey> keyChecksum = null, IEqualityComparer<TKey> keyComparer = null, IEqualityComparer<TValue> valueComparer = null) {
+		public StreamMappedDictionary(IStreamMappedList<KeyValuePair<TKey, TValue>> kvpStore, IItemSerializer<TKey> keySerializer, IItemChecksummer<TKey> keyChecksummer = null, IEqualityComparer<TKey> keyComparer = null, IEqualityComparer<TValue> valueComparer = null, Endianness endianness = Endianness.LittleEndian) {
 			Guard.ArgumentNotNull(kvpStore, nameof(kvpStore));
+			Guard.ArgumentNotNull(keySerializer, nameof(keySerializer));
 			_keyComparer = keyComparer ?? EqualityComparer<TKey>.Default;
 			_valueComparer = valueComparer ?? EqualityComparer<TValue>.Default;
 			KVPList = kvpStore;
-			_keyChecksum = keyChecksum ?? new ActionChecksum<TKey>(DefaultCalculateKeyChecksum);
+			_keyChecksum = keyChecksummer ?? new ItemDigestor<TKey>(keySerializer, endianness);
 			_checksumToIndexLookup = new LookupEx<int, int>();
 			_unusedRecords = new();
 			_requiresLoad = true; //KVPList.Storage.Records.Count > KVPList.Storage.Header.ReservedRecords;
@@ -177,7 +180,7 @@ namespace Hydrogen {
 			Guard.ArgumentNotNull(key, nameof(key));
 			CheckLoaded();
 			return
-				_checksumToIndexLookup[_keyChecksum.Calculate(key)]
+				_checksumToIndexLookup[_keyChecksum.CalculateChecksum(key)]
 					.Where(index => !IsUnusedRecord(index))
 					.Select(ReadKey)
 					.Any(item => _keyComparer.Equals(item, key));
@@ -202,7 +205,7 @@ namespace Hydrogen {
 
 		public bool TryFindKey(TKey key, out int index) {
 			Debug.Assert(key != null);
-			foreach (var i in _checksumToIndexLookup[_keyChecksum.Calculate(key)]) {
+			foreach (var i in _checksumToIndexLookup[_keyChecksum.CalculateChecksum(key)]) {
 				var candidateKey = ReadKey(i);
 				if (_keyComparer.Equals(candidateKey, key)) {
 					index = i;
@@ -215,7 +218,7 @@ namespace Hydrogen {
 
 		public bool TryFindValue(TKey key, out int index, out TValue value) {
 			Debug.Assert(key != null);
-			foreach (var i in _checksumToIndexLookup[_keyChecksum.Calculate(key)]) {
+			foreach (var i in _checksumToIndexLookup[_keyChecksum.CalculateChecksum(key)]) {
 				var candidateKey = ReadKey(i);
 				if (_keyComparer.Equals(candidateKey, key)) {
 					index = i;
@@ -332,7 +335,7 @@ namespace Hydrogen {
 			// Mark record as used
 			using (scope) {
 				Guard.Ensure(!scope.Record.Traits.HasFlag(ClusteredStreamTraits.IsUsed), "Record not in unused state");
-				scope.Record.KeyChecksum = _keyChecksum.Calculate(item.Key);
+				scope.Record.KeyChecksum = _keyChecksum.CalculateChecksum(item.Key);
 				scope.Record.Traits = scope.Record.Traits.CopyAndSetFlags(ClusteredStreamTraits.IsUsed, true);
 				_checksumToIndexLookup.Add(scope.Record.KeyChecksum, index);
 				// note: scope Dispose ends up updating the record
@@ -344,7 +347,7 @@ namespace Hydrogen {
 			// Updating value only, records (and checksum) don't change  when updating
 			using var scope = KVPList.EnterUpdateScope(index, item);
 			scope.Record.Traits = scope.Record.Traits.CopyAndSetFlags(ClusteredStreamTraits.IsUsed, true);
-			scope.Record.KeyChecksum = _keyChecksum.Calculate(item.Key);
+			scope.Record.KeyChecksum = _keyChecksum.CalculateChecksum(item.Key);
 		}
 
 		private bool IsUnusedRecord(int index) => _unusedRecords.Contains(index);
@@ -354,9 +357,6 @@ namespace Hydrogen {
 			_unusedRecords.RemoveAt(0);
 			return index;
 		}
-
-		private int DefaultCalculateKeyChecksum(TKey key)
-			=> _keyComparer.GetHashCode(key);
 
 		private void RefreshChecksumToIndexLookup() {
 			_checksumToIndexLookup.Clear();

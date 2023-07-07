@@ -33,7 +33,7 @@ namespace Hydrogen {
 		/// <summary>
 		/// Constructs using an <see cref="StreamMappedMerkleDictionary{TKey,TValue}"/> using an <see cref="StreamMappedDictionary{TKey,TValue}"/> under the hood.
 		/// </summary>
-		public StreamMappedMerkleDictionary(Stream rootStream, int clusterSize, CHF hashAlgorithm = CHF.SHA2_256, IItemSerializer<TKey> keySerializer = null, IItemSerializer<TValue> valueSerializer = null, IItemChecksum<TKey> keyChecksum = null, IEqualityComparer<TKey> keyComparer = null, IEqualityComparer<TValue> valueComparer = null, ClusteredStoragePolicy policy = ClusteredStoragePolicy.DictionaryDefault, int reservedRecords = 1, Endianness endianness = Endianness.LittleEndian)
+		public StreamMappedMerkleDictionary(Stream rootStream, int clusterSize, CHF hashAlgorithm = CHF.SHA2_256, IItemSerializer<TKey> keySerializer = null, IItemSerializer<TValue> valueSerializer = null, IItemChecksummer<TKey> keyChecksummer = null, IEqualityComparer<TKey> keyComparer = null, IEqualityComparer<TValue> valueComparer = null, ClusteredStoragePolicy policy = ClusteredStoragePolicy.DictionaryDefault, int reservedRecords = 1, Endianness endianness = Endianness.LittleEndian)
 			: this(
 				new StreamMappedMerkleList<KeyValuePair<TKey, TValue>>(
 					rootStream,
@@ -53,7 +53,7 @@ namespace Hydrogen {
 					reservedRecords,
 					endianness
 				),
-				keyChecksum,
+				keyChecksummer,
 				keyComparer,
 				valueComparer
 			) {
@@ -63,7 +63,7 @@ namespace Hydrogen {
 		/// <summary>
 		/// Constructs using an <see cref="StreamMappedMerkleDictionary{TKey,TValue}"/> using an <see cref="StreamMappedDictionarySK{TKey,TValue}"/> under the hood.
 		/// </summary>
-		public StreamMappedMerkleDictionary(Stream rootStream, int clusterSize, IItemSerializer<TKey> staticSizedKeySerializer, CHF hashAlgorithm = CHF.SHA2_256, IItemSerializer<TValue> valueSerializer = null, IItemChecksum<TKey> keyChecksum = null, IEqualityComparer<TKey> keyComparer = null, IEqualityComparer<TValue> valueComparer = null, ClusteredStoragePolicy policy = ClusteredStoragePolicy.DictionaryDefault, int reservedRecords = 1, Endianness endianness = Endianness.LittleEndian)
+		public StreamMappedMerkleDictionary(Stream rootStream, int clusterSize, IItemSerializer<TKey> staticSizedKeySerializer, CHF hashAlgorithm = CHF.SHA2_256, IItemSerializer<TValue> valueSerializer = null, IItemChecksummer<TKey> keyChecksummer = null, IEqualityComparer<TKey> keyComparer = null, IEqualityComparer<TValue> valueComparer = null, ClusteredStoragePolicy policy = ClusteredStoragePolicy.DictionaryDefault, int reservedRecords = 1, Endianness endianness = Endianness.LittleEndian)
 			: this(
 				new StreamMappedMerkleList<TValue>(
 					rootStream,
@@ -78,7 +78,7 @@ namespace Hydrogen {
 				),
 				staticSizedKeySerializer,
 				valueSerializer,
-				keyChecksum,
+				keyChecksummer,
 				keyComparer,
 				valueComparer
 			) {
@@ -88,13 +88,15 @@ namespace Hydrogen {
 		/// <summary>
 		/// Constructs using an <see cref="StreamMappedMerkleDictionary{TKey,TValue}"/> using an <see cref="StreamMappedDictionary{TKey,TValue}"/> under the hood.
 		/// </summary>
-		public StreamMappedMerkleDictionary(StreamMappedMerkleList<KeyValuePair<TKey, TValue>> merkleizedKvpStore, IItemChecksum<TKey> keyChecksum = null, IEqualityComparer<TKey> keyComparer = null, IEqualityComparer<TValue> valueComparer = null)
+		public StreamMappedMerkleDictionary(StreamMappedMerkleList<KeyValuePair<TKey, TValue>> merkleizedKvpStore, IItemChecksummer<TKey> keyChecksummer = null, IEqualityComparer<TKey> keyComparer = null, IEqualityComparer<TValue> valueComparer = null, Endianness endianness = Endianness.LittleEndian )
 			: this(
 				  new StreamMappedDictionary<TKey, TValue>(
 					  merkleizedKvpStore,
-					  keyChecksum,
+					  ((KeyValuePairSerializer<TKey, TValue>)merkleizedKvpStore.ItemSerializer).KeySerializer,
+					  keyChecksummer,
 					  keyComparer,
-					  valueComparer
+					  valueComparer,
+					  endianness
 				  ),
 				  merkleizedKvpStore.MerkleTree
 			) {
@@ -103,7 +105,7 @@ namespace Hydrogen {
 		/// <summary>
 		/// Constructs using an <see cref="StreamMappedMerkleDictionary{TKey,TValue}"/> using an <see cref="StreamMappedDictionarySK{TKey,TValue}"/> under the hood.
 		/// </summary>
-		public StreamMappedMerkleDictionary(StreamMappedMerkleList<TValue> merkleizedKvpStore, IItemSerializer<TKey> staticSizedKeySerializer, IItemSerializer<TValue> valueSerializer = null, IItemChecksum<TKey> keyChecksum = null, IEqualityComparer<TKey> keyComparer = null, IEqualityComparer<TValue> valueComparer = null)
+		public StreamMappedMerkleDictionary(StreamMappedMerkleList<TValue> merkleizedKvpStore, IItemSerializer<TKey> staticSizedKeySerializer, IItemSerializer<TValue> valueSerializer = null, IItemChecksummer<TKey> keyChecksum = null, IEqualityComparer<TKey> keyComparer = null, IEqualityComparer<TValue> valueComparer = null)
 			: this(
 				  new StreamMappedDictionarySK<TKey, TValue>(
 					  merkleizedKvpStore,

@@ -21,6 +21,7 @@ namespace Hydrogen {
 	/// <typeparam name="TValue"></typeparam>
 	/// <remarks>Serialization format: [KeyLength (uint32)] [KeyBytes....] [ValueLength (uint32)] [ValueBytes....] such that if total KVP bytes excludes ValueLength, than Value is inferred null</remarks>
 	public class KeyValuePairSerializer<TKey, TValue> : ItemSerializer<KeyValuePair<TKey, TValue>> {
+		
 		private readonly IItemSerializer<TKey> _keySerializer;
 		private readonly IItemSerializer<TValue> _valueSerializer;
 
@@ -28,6 +29,10 @@ namespace Hydrogen {
 			_keySerializer = keySerializer ?? ItemSerializer<TKey>.Default;
 			_valueSerializer = valueSerializer ?? ItemSerializer<TValue>.Default;
 		}
+		public IItemSerializer<TKey> KeySerializer => _keySerializer;
+
+		public IItemSerializer<TValue> ValueSerializer => _valueSerializer;
+	
 
 		public override int CalculateSize(KeyValuePair<TKey, TValue> item) {
 			var size = sizeof(uint);

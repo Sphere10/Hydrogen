@@ -8,5 +8,5 @@
 
 namespace Hydrogen;
 
-public interface IItemDigestor<TItem> : IItemSerializer<TItem>, IItemHasher<TItem> {
+public interface IItemDigestor<TItem> : IItemSerializer<TItem>, IItemHasher<TItem>, IItemChecksummer<TItem> {
 }

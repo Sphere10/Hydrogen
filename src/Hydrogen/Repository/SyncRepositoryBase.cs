@@ -15,7 +15,7 @@ public abstract class SyncRepositoryBase<TEntity, TIdentity> : RepositoryBase<TE
 		=> Task.Run(() => Contains(identity));
 
 	public override Task<(bool, TEntity)> TryGetAsync(TIdentity identity) 
-		=> Task.Run( () => TryGet(identity, out var entity) ? (true, entity) : (false, entity) );
+		=> Task.Run( () => TryGet(identity, out var entity) ? (true, entity) : (false, entity) ).ContinueOnSameThread();
 
 	public override Task CreateAsync(TEntity entity) 
 		=> Task.Run(() => Create(entity));

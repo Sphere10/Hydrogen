@@ -41,7 +41,7 @@ namespace Hydrogen {
 					new StaticSizeByteArraySerializer(hasher.DigestLength),
 					hashAlgorithm,
 					serializer,
-					new HashChecksum(),
+					new HashChecksummer(),
 					new ByteArrayEqualityComparer(),
 					comparer,
 					policy,

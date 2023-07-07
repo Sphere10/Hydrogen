@@ -36,7 +36,7 @@ namespace Hydrogen {
 					clusterSize,
 					new StaticSizeByteArraySerializer(hasher.DigestLength),
 					serializer,
-					new HashChecksum(),
+					new HashChecksummer(),
 					new ByteArrayEqualityComparer(),
 					comparer,
 					policy,

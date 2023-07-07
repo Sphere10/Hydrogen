@@ -10,13 +10,13 @@ using System;
 
 namespace Hydrogen;
 
-public class ActionChecksum<TItem> : IItemChecksum<TItem> {
+public class ActionChecksum<TItem> : IItemChecksummer<TItem> {
 	private readonly Func<TItem, int> _actionChecksum;
 
 	public ActionChecksum(Func<TItem, int> actionChecksum) {
 		_actionChecksum = actionChecksum;
 	}
 
-	public int Calculate(TItem item) => _actionChecksum(item);
+	public int CalculateChecksum(TItem item) => _actionChecksum(item);
 
 }

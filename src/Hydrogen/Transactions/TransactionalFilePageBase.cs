@@ -14,6 +14,7 @@ namespace Hydrogen {
 
 	public abstract class TransactionalFilePageBase<TItem> : FilePageBase<TItem>, ITransactionalFilePage<TItem> {
 
+		 private const int StreamCopyDefaultBlockSize = 262144; // 256k read blocks
 		protected TransactionalFilePageBase(FileStream sourceFile, IItemSizer<TItem> sizer, string uncommittedPageFileName, int pageNumber, int pageSize, IExtendedList<TItem> memoryStore)
 			: base(sourceFile, sizer, pageNumber, pageSize, memoryStore) {
 			UncommittedPageFileName = uncommittedPageFileName;
@@ -41,7 +42,7 @@ namespace Hydrogen {
 			// When created, it contains the original source data.
 			using (var readStream = OpenSourceReadStream())
 			using (var uncommittedPageStream = File.Open(UncommittedPageFileName, FileMode.Truncate, FileAccess.Write))
-				Tools.Streams.RouteStream(readStream, uncommittedPageStream, readStream.Length, blockSizeInBytes: 262144); // 256k read blocks
+				Tools.Streams.RouteStream(readStream, uncommittedPageStream, readStream.Length, blockSizeInBytes: StreamCopyDefaultBlockSize); 
 
 			HasUncommittedData = true;
 		}

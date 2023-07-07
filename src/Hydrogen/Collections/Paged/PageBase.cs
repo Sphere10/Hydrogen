@@ -63,14 +63,10 @@ namespace Hydrogen {
 			var appendItems = updateCount > 0 ? itemsArr.Skip(updateCount).ToArray() : itemsArr;
 			var appendCount = 0;
 			if (appendItems.Length > 0) {
-				try {
-					appendCount = AppendInternal(appendItems, out var appendedItemsSpace);
-					Count += appendCount;
-					EndIndex += appendCount;
-					Size += appendedItemsSpace;
-				} catch (Exception ex) {
-					var xxx = 1;
-				}
+				appendCount = AppendInternal(appendItems, out var appendedItemsSpace);
+				Count += appendCount;
+				EndIndex += appendCount;
+				Size += appendedItemsSpace;
 			}
 
 			var totalWriteCount = updateCount + appendCount;

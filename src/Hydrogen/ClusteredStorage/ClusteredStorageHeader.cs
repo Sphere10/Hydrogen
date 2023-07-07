@@ -8,11 +8,13 @@
 
 using System;
 using System.IO;
+using System.Threading;
 using System.Xml.Schema;
 
 namespace Hydrogen {
 
 	public class ClusteredStorageHeader {
+		private readonly object _lock;
 		public const int ByteLength = 256;
 		public const int MerkleRootLength = 32;
 		public const int MasterKeyLength = 32;
@@ -41,7 +43,11 @@ namespace Hydrogen {
 		
 		private byte[] _merkleRoot;
 		private byte[] _masterKey;
-		
+
+		internal ClusteredStorageHeader(object _lock) {
+			this._lock = _lock;
+
+		}
 
 		public byte Version {
 			get {
@@ -51,8 +57,9 @@ namespace Hydrogen {
 				}
 				return _version.Value;
 			}
-			set {
+			internal set {
 				Guard.Argument(value == 1, nameof(value), "Only version 1 supported");
+				Guard.Ensure(Monitor.IsEntered(_lock), "Clustered storage must be locked when updating header");
 				if (_version == value)
 					return;
 				_version = value;
@@ -69,7 +76,8 @@ namespace Hydrogen {
 				}
 				return _policy.Value;
 			}
-			set {
+			internal set {
+				Guard.Ensure(Monitor.IsEntered(_lock), "Clustered storage must be locked when updating header");
 				if (_policy == value)
 					return;
 				_policy = value;
@@ -86,7 +94,8 @@ namespace Hydrogen {
 				}
 				return _records.Value;
 			}
-			set {
+			internal set {
+				Guard.Ensure(Monitor.IsEntered(_lock), "Clustered storage must be locked when updating header");
 				if (_records == value)
 					return;
 				_records = value;
@@ -103,7 +112,8 @@ namespace Hydrogen {
 				}
 				return _recordKeySize.Value;
 			}
-			set {
+			internal set {
+				Guard.Ensure(Monitor.IsEntered(_lock), "Clustered storage must be locked when updating header");
 				if (_recordKeySize == value)
 					return;
 				_recordKeySize = value;
@@ -120,7 +130,9 @@ namespace Hydrogen {
 				}
 				return _reservedRecords.Value;
 			}
-			set {
+			internal set {
+				Guard.Ensure(Monitor.IsEntered(_lock), "Clustered storage must be locked when updating header");
+
 				if (_reservedRecords == value)
 					return;
 				if (value == 0 && Policy.HasFlag(ClusteredStoragePolicy.TrackKey))
@@ -143,7 +155,8 @@ namespace Hydrogen {
 				}
 				return _clusterSize.Value;
 			}
-			set {
+			internal set {
+				Guard.Ensure(Monitor.IsEntered(_lock), "Clustered storage must be locked when updating header");
 				if (_clusterSize == value)
 					return;
 				_clusterSize = value;
@@ -160,7 +173,8 @@ namespace Hydrogen {
 				}
 				return _totalClusters.Value;
 			}
-			set {
+			internal set {
+				Guard.Ensure(Monitor.IsEntered(_lock), "Clustered storage must be locked when updating header");
 				if (_totalClusters == value)
 					return;
 				_totalClusters = value;
@@ -177,7 +191,8 @@ namespace Hydrogen {
 				}
 				return _merkleRoot;
 			}
-			set {
+			internal set {
+				Guard.Ensure(Monitor.IsEntered(_lock), "Clustered storage must be locked when updating header");
 				if (ByteArrayEqualityComparer.Instance.Equals(_merkleRoot, value))
 					return;
 				_merkleRoot = value;
@@ -194,7 +209,8 @@ namespace Hydrogen {
 				}
 				return _masterKey;
 			}
-			set {
+			internal set {
+				Guard.Ensure(Monitor.IsEntered(_lock), "Clustered storage must be locked when updating header");
 				if (ByteArrayEqualityComparer.Instance.Equals(_masterKey, value))
 					return;
 				_masterKey = value;

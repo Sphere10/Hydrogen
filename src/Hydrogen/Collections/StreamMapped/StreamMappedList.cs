@@ -14,6 +14,7 @@ using System.Linq;
 using System.Resources;
 using System.Runtime.CompilerServices;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Hydrogen {
 
@@ -22,6 +23,10 @@ namespace Hydrogen {
 	/// </summary>
 	/// <typeparam name="TItem"></typeparam>
 	public class StreamMappedList<TItem> : SingularListBase<TItem>, IStreamMappedList<TItem> {
+
+		public event EventHandlerEx<object> Loading { add => Storage.Loading += value; remove => Storage.Loading -= value; }
+		public event EventHandlerEx<object> Loaded { add => Storage.Loaded += value; remove => Storage.Loaded -= value; }
+
 		private int _version;
 
 		public StreamMappedList(Stream rootStream, int clusterSize, IItemSerializer<TItem> itemSerializer = null, IEqualityComparer<TItem> itemComparer = null, ClusteredStoragePolicy policy = ClusteredStoragePolicy.Default, int recordKeySize = 0, int reservedRecords = 0, Endianness endianness = Endianness.LittleEndian)
@@ -43,6 +48,12 @@ namespace Hydrogen {
 		public IItemSerializer<TItem> ItemSerializer { get; }
 
 		public IEqualityComparer<TItem> ItemComparer { get; }
+
+		public bool RequiresLoad => Storage.RequiresLoad;
+
+		public void Load() => Storage.Load();
+
+		public Task LoadAsync() => Storage.LoadAsync();
 
 		public override TItem Read(int index) {
 			CheckIndex(index, true);
@@ -132,7 +143,6 @@ namespace Hydrogen {
 			}
 		}
 	
-
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		private void UpdateVersion() => Interlocked.Increment(ref _version);
 

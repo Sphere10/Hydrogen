@@ -20,11 +20,15 @@ namespace Hydrogen {
         }
 
 		#region IDictionary Implementation
+
+		public virtual ICollection<TKey> Keys => InternalDictionary.Keys;
+
+		public virtual ICollection<TValue> Values => InternalDictionary.Values;
+
 		public virtual void Add(TKey key, TValue value) => InternalDictionary.Add(key, value);
 		public virtual bool ContainsKey(TKey key) => InternalDictionary.ContainsKey(key);
-		public virtual ICollection<TKey> Keys => InternalDictionary.Keys;
+
 		public virtual bool TryGetValue(TKey key, out TValue value) => InternalDictionary.TryGetValue(key, out value);
-		public virtual ICollection<TValue> Values => InternalDictionary.Values;
 		public virtual TValue this[TKey key] {
 			get => InternalDictionary[key];
 			set => InternalDictionary[key] = value;

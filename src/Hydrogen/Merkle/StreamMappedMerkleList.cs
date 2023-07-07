@@ -13,6 +13,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Threading.Tasks;
 using Hydrogen.Collections;
 using Hydrogen;
 
@@ -25,6 +26,11 @@ namespace Hydrogen;
 /// <typeparam name="TItem"></typeparam>
 public class StreamMappedMerkleList<TItem> : MerkleListAdapter<TItem, IStreamMappedList<TItem>>, IStreamMappedList<TItem> {
 	private const int MerkleTreeStreamIndex = 0;
+
+	public event EventHandlerEx<object> Loading { add => Storage.Loading += value; remove => Storage.Loading -= value; }
+	public event EventHandlerEx<object> Loaded { add => Storage.Loaded += value; remove => Storage.Loaded -= value; }
+
+
 	public StreamMappedMerkleList(Stream rootStream, int clusterSize, CHF hashAlgorithm = CHF.SHA2_256, IItemSerializer<TItem> itemSerializer = null, IEqualityComparer<TItem> itemComparer = null, ClusteredStoragePolicy policy = ClusteredStoragePolicy.Default, int recordKeySize = 0, int reservedRecords = 1, Endianness endianness = Endianness.LittleEndian)
 		: this(
 			  rootStream,
@@ -61,7 +67,6 @@ public class StreamMappedMerkleList<TItem> : MerkleListAdapter<TItem, IStreamMap
 
 	public StreamMappedMerkleList(IStreamMappedList<TItem> clusteredList, IItemHasher<TItem> hasher, CHF hashAlgorithm)
 		: base(clusteredList, hasher, new ClusteredStorageMerkleTreeStream(clusteredList.Storage, MerkleTreeStreamIndex, hashAlgorithm)) {
-		Guard.Ensure(clusteredList.Storage.Header.ReservedRecords > 0, "Clustered storage requires at least 1 reserved stream to store merkle-tree");
 	}
 
 	public IClusteredStorage Storage => InternalCollection.Storage;
@@ -69,6 +74,15 @@ public class StreamMappedMerkleList<TItem> : MerkleListAdapter<TItem, IStreamMap
 	public IItemSerializer<TItem> ItemSerializer => InternalCollection.ItemSerializer;
 
 	public IEqualityComparer<TItem> ItemComparer => InternalCollection.ItemComparer;
+	
+	public bool RequiresLoad => Storage.RequiresLoad;
+
+	public void Load()  {
+		Storage.Load();
+		Guard.Ensure(InternalCollection.Storage.Header.ReservedRecords > 0, "Clustered storage requires at least 1 reserved stream to store merkle-tree");
+	}
+
+	public Task LoadAsync() => Storage.LoadAsync();
 
 	public ClusteredStreamScope EnterAddScope(TItem item) {
 		InternalMerkleTree.Leafs.Add(ItemHasher.Hash(item));

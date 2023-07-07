@@ -46,7 +46,7 @@ namespace Hydrogen {
         {
 			var surrogate = (IntervalScheduleSerializableSurrogate)scheduleSurrogate;
 
-			TotalIterations = surrogate.TotalIterations.ToUintOrDefault();
+			TotalIterations = surrogate.TotalIterations.ToUIntOrDefault();
 			InitialStartTime = surrogate.InitialStartTime.ToDateTimeOrDefault();
 
 			IterationsExecuted = surrogate.IterationsExecuted;

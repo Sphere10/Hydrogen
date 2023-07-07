@@ -17,6 +17,7 @@ using System.Collections.Specialized;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Hydrogen;
 
 namespace Hydrogen {
@@ -25,6 +26,8 @@ namespace Hydrogen {
 	/// A set implementation that is both an <see cref="IStreamMappedHashSet{TItem}"/> and an <see cref="IMerkleSet{TItem}"/>.
 	/// </summary>
 	public class StreamMappedMerkleHashSet<TItem> : SetDecorator<TItem, StreamMappedHashSet<TItem>>, IStreamMappedHashSet<TItem>, IMerkleSet<TItem> {
+		public event EventHandlerEx<object> Loading { add => InternalSet.Loading += value; remove => InternalSet.Loading -= value; }
+		public event EventHandlerEx<object> Loaded { add => InternalSet.Loaded += value; remove => InternalSet.Loaded -= value; }
 
 		public StreamMappedMerkleHashSet(Stream rootStream, int clusterSize, IItemSerializer<TItem> serializer, CHF hashAlgorithm = CHF.SHA2_256, IEqualityComparer<TItem> comparer = null, ClusteredStoragePolicy policy = ClusteredStoragePolicy.DictionaryDefault, int reservedRecords = 1, Endianness endianness = Endianness.LittleEndian)
 			: this(rootStream, clusterSize, serializer, new ItemDigestor<TItem>(hashAlgorithm, serializer, endianness), hashAlgorithm, comparer, policy, reservedRecords, endianness) {
@@ -60,8 +63,14 @@ namespace Hydrogen {
 			Guard.ArgumentCast<IMerkleObject>(internalSet.InternalDictionary, out _, nameof(internalSet.InternalDictionary), "Internal dictionary is not merkleized");
 		}
 
+		public bool RequiresLoad => InternalSet.RequiresLoad;
+
 		public IClusteredStorage Storage => InternalSet.Storage;
 
 		public IMerkleTree MerkleTree => ((IMerkleObject)InternalSet.InternalDictionary).MerkleTree;
+		
+		public void Load() => InternalSet.Load();
+
+		public Task LoadAsync() => InternalSet.LoadAsync();
 	}
 }

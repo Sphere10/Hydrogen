@@ -24,6 +24,9 @@ namespace Hydrogen {
 		public static void RegisterResolvers(IEnumerable<ITokenResolver> resolvers) 
 			=> _resolvers.AddRange(resolvers);
 
+		public static void RegisterResolver(ITokenResolver resolver) 
+			=> _resolvers.AddRange(new []{resolver});
+
         public static string FormatEx(string formatString, params object[] formatArgs) {
             return FormatEx(formatString, ResolveInternalToken, true, formatArgs);
         }
@@ -227,7 +230,7 @@ namespace Hydrogen {
 		        value = token.ToUpperInvariant() switch {
 			        "CURRENTDATE" => $"{DateTime.Now:yyyy-MM-dd HH:mm:ss}",
 			        "CURRENTYEAR" => DateTime.Now.Year.ToString(),
-			        "STARTPATH" => System.IO.Path.GetDirectoryName(Tools.Runtime.GetEntryAssembly().Location),
+			        "STARTPATH" => System.IO.Path.GetDirectoryName(Tools.FileSystem.GetParentDirectoryPath(Tools.Runtime.GetExecutablePath())),
 			        _ => null
 		        };
 				return value != null;

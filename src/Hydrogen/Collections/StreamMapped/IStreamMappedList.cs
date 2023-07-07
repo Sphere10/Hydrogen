@@ -6,13 +6,11 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
 using System.Collections.Generic;
-using System.IO;
 
 namespace Hydrogen {
 
-	public interface IStreamMappedList<TItem> : IExtendedList<TItem> {
+	public interface IStreamMappedList<TItem> : IExtendedList<TItem>, ILoadable {
 		IClusteredStorage Storage { get; }
 
 		IItemSerializer<TItem> ItemSerializer { get; }

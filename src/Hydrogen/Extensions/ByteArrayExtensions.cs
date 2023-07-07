@@ -80,9 +80,13 @@ namespace Hydrogen {
                 map[bitIndex >> 3] &= (byte)(~bitMask);
         }
 
-        public static string ToBase62(this byte[] buffer) {
+        public static string ToBase62String(this byte[] buffer) {
 	        return Base62Converter.ToBase62String(buffer);
 	    }
+
+        public static string ToBase32String(this byte[] buffer) {
+	        return Base32Converter.ToBase32String(buffer);
+        }
         
 		public static BinaryReader AsReader(this byte[] buffer, EndianBitConverter bitConverter) {
             return new BinaryReader(new MemoryStream(buffer));
@@ -97,22 +101,7 @@ namespace Hydrogen {
 			return enc.GetString(asciiByteArray);
 		}
 
-        public static string ToHexString(this byte[] byteArray, bool ommit_0x = false) {
-			if (byteArray == null)
-				return string.Empty;
-
-			if (byteArray.Length == 0)
-				return ommit_0x ? string.Empty : "0x0";
-
-			var hexBuilder = new StringBuilder(byteArray.Length * 2);
-			if (!ommit_0x)
-				hexBuilder.Append("0x");
-
-			foreach (var @byte in byteArray)
-				hexBuilder.AppendFormat("{0:x2}", @byte);
-
-			return hexBuilder.ToString();
-		}
+        public static string ToHexString(this byte[] byteArray, bool ommit_0x = false) => HexEncoding.Encode(byteArray, !ommit_0x);
 
 		/// <summary>
 		/// Converts a byte array to an object

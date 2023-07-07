@@ -12,7 +12,7 @@ using System.IO;
 
 namespace Hydrogen {
 
-	public interface IClusteredStorage {
+	public interface IClusteredStorage : ILoadable {
 
 		event EventHandlerEx<ClusteredStreamRecord> RecordCreated;
 		event EventHandlerEx<int, ClusteredStreamRecord> RecordAdded;
@@ -31,8 +31,7 @@ namespace Hydrogen {
 		Endianness Endianness { get; }
 
 		ClusteredStreamRecord GetRecord(int index);
-
-
+		
 		ClusteredStreamScope Add();
 
 		ClusteredStreamScope Open(int index);
@@ -49,12 +48,14 @@ namespace Hydrogen {
 
 		ClusteredStreamScope EnterLoadItemScope<TItem>(int index, IItemSerializer<TItem> serializer, out TItem item);
 
+		internal IDisposable EnterLockScope();
 	}
 
 	public static class IClusteredStorageExtensions {
 
-		public static bool IsNull(this IClusteredStorage storage, int index) 
-			=> storage.GetRecord(index).Traits.HasFlag(ClusteredStreamTraits.IsNull);
+		public static bool IsNull(this IClusteredStorage storage, int index) {
+			return storage.GetRecord(index).Traits.HasFlag(ClusteredStreamTraits.IsNull);
+		}
 		
 
 		public static byte[] ReadAll(this IClusteredStorage storage, int index) {

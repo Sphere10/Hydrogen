@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -6,12 +6,12 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 namespace Hydrogen;
-public interface ITokenResolver {
-	bool TryResolve(string token, out object value);
+
+public abstract class AsyncTransactionalObjectBase : TransactionalObjectBase {
+
+	public override void Commit() => CommitAsync().WaitSafe();
+
+	public override void Rollback() => RollbackAsync().WaitSafe();
+
 }

@@ -40,7 +40,7 @@ namespace Hydrogen.Tests
 		public void TestSimple_2([Values(CHF.SHA2_256, CHF.Blake2b_128)] CHF chf) {
 			var memStream = new MemoryStream();
 			var clusteredList = new StreamMappedMerkleList<string>(memStream, 256, chf);
-
+			clusteredList.Load();
 			clusteredList.Add("beta");
 			clusteredList.Insert(0, "alpha");
 			clusteredList.Insert(2, "gammaa");

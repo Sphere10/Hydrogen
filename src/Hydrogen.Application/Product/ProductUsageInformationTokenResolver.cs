@@ -26,8 +26,25 @@ public class ProductUsageInformationTokenResolver : ITokenResolver {
 
 	protected IFuture<IProductUsageServices> ProductUsageServices { get; }
 
+	private static bool InfiniteResolveDefectProtectionGadget = false;
 	public bool TryResolve(string token, out object value) {
-		var info = ProductUsageServices.Value.ProductUsageInformation;
+		if (InfiniteResolveDefectProtectionGadget) {
+			// Extremely ugly hack to prevent infinite recursion. The ISettingsProvider pattern with GlobalSettings
+			// and UserSettings are fundamentally broken and can lead to infinite recursion when ITokenResolver are
+			// needed to resolve a settings path, but those resolvers need settings to fill their tokens. This
+			// occurs mainly with ProductInformationProvider here. This needs to be fixed with a considered
+			// refactoring of the Settings pattern.
+			InfiniteResolveDefectProtectionGadget = false;
+			value = default;
+			return false;
+		}
+		ProductUsageInformation info;
+		try {
+			InfiniteResolveDefectProtectionGadget = true;
+			info = ProductUsageServices.Value.ProductUsageInformation;
+		} finally {
+			InfiniteResolveDefectProtectionGadget = false;
+		}
 		value = token.ToUpperInvariant() switch {
 			"FIRSTUSEDDATEBYSYSTEMUTC" => string.Format("{0:yyyy-MM-dd}", info.FirstUsedDateBySystemUTC),
 			"DAYSUSEDBYSYSTEM" => info.DaysUsedBySystem.ToString(),

@@ -61,11 +61,6 @@ namespace Hydrogen {
 			_transactionalBuffer.RollingBack += _ => OnRollingBack();
 			_transactionalBuffer.RolledBack += _ => OnRolledBack();
 
-
-			// NOTE: needs removal
-			if (_transactionalBuffer.RequiresLoad)
-				_transactionalBuffer.Load();
-
 			_clustered = new StreamMappedList<T>(
 				new ExtendedMemoryStream(
 					_transactionalBuffer,
@@ -84,8 +79,6 @@ namespace Hydrogen {
 			InternalCollection = _items;
 		}
 
-		public bool RequiresLoad => _transactionalBuffer.RequiresLoad;
-
 		public ISynchronizedObject ParentSyncObject {
 			get => _items.ParentSyncObject;
 			set => _items.ParentSyncObject = value;
@@ -101,9 +94,23 @@ namespace Hydrogen {
 
 		public IClusteredStorage Storage => _clustered.Storage;
 
-		public void Load() => _transactionalBuffer.Load();
+		public bool RequiresLoad => _transactionalBuffer.RequiresLoad || _clustered.RequiresLoad;
 
-		public Task LoadAsync() => Task.Run(Load);
+		public void Load() {
+			if (_transactionalBuffer.RequiresLoad)
+				_transactionalBuffer.Load();
+
+			if (_clustered.RequiresLoad)
+				_clustered.Load();
+		}
+
+		public async Task LoadAsync() {
+			if (_transactionalBuffer.RequiresLoad)
+				await _transactionalBuffer.LoadAsync();
+
+			if (_clustered.RequiresLoad)
+				await _clustered.LoadAsync();
+		}
 
 		public IDisposable EnterReadScope() => _items.EnterReadScope();
 

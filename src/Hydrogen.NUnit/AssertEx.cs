@@ -22,6 +22,7 @@ namespace Hydrogen.NUnit {
 
 	public static class AssertEx {
 
+
 		public static void ListIntegrationTest<T>(IExtendedList<T> list, int maxCapacity, Func<Random, int, T[]> randomItemGenerator, bool mutateFromEndOnly = false, int iterations = 100, IList<T> expected = null,  Action endOfIterTest = null, IEqualityComparer<T> itemComparer = null) {
 			var RNG = new Random(31337);
 			expected ??= new List<T>();

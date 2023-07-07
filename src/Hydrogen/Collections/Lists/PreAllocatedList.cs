@@ -143,7 +143,7 @@ namespace Hydrogen {
 
 		public override void RemoveRange(int index, int count) {
 			// TODO: this could be optimized by copying bounded ranges instead of 1-by-1. Will 
-			// improve stream record performance in ClusteredStorage
+			// improve stream record performance in ClusteredStorage (but has to be in partitioned to avoid memory exhaustion on huge ranges)
 			CheckRange(index, count);
 
 			var movedRegionFromStartIX = index + count;

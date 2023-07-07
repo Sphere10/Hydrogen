@@ -37,6 +37,7 @@ namespace Hydrogen {
 		private readonly IItemChecksum<TKey> _keyChecksum;
 		private readonly LookupEx<int, int> _checksumToIndexLookup;
 		private readonly SortedList<int> _unusedRecords;
+		private bool _requiresLoad;
 
 		public StreamMappedDictionary(Stream rootStream, int clusterSize, IItemSerializer<TKey> keySerializer = null, IItemSerializer<TValue> valueSerializer = null, IItemChecksum<TKey> keyChecksum = null, IEqualityComparer<TKey> keyComparer = null, IEqualityComparer<TValue> valueComparer = null, ClusteredStoragePolicy policy = ClusteredStoragePolicy.DictionaryDefault, int reservedRecords = 0, Endianness endianness = Endianness.LittleEndian)
 			: this(
@@ -71,7 +72,7 @@ namespace Hydrogen {
 			_keyChecksum = keyChecksum ?? new ActionChecksum<TKey>(DefaultCalculateKeyChecksum);
 			_checksumToIndexLookup = new LookupEx<int, int>();
 			_unusedRecords = new();
-			RequiresLoad = KVPList.Storage.Records.Count > KVPList.Storage.Header.ReservedRecords;
+			_requiresLoad = true; //KVPList.Storage.Records.Count > KVPList.Storage.Header.ReservedRecords;
 		}
 
 		public IClusteredStorage Storage => KVPList.Storage;
@@ -86,8 +87,11 @@ namespace Hydrogen {
 				}
 			}
 		}
-
-		public bool RequiresLoad { get; private set; }
+		
+		public bool RequiresLoad { 
+			get => KVPList.RequiresLoad || _requiresLoad;
+			private set => _requiresLoad = value;
+		}
 
 		public override int Count {
 			get {
@@ -100,6 +104,10 @@ namespace Hydrogen {
 
 		public void Load() {
 			NotifyLoading();
+
+			if (KVPList.RequiresLoad)
+				KVPList.Load();
+
 			RefreshChecksumToIndexLookup();
 			RequiresLoad = false;
 			NotifyLoaded();
@@ -108,17 +116,21 @@ namespace Hydrogen {
 		public Task LoadAsync() => Task.Run(Load);
 
 		public TKey ReadKey(int index) {
-			if (Storage.IsNull(KVPList.Storage.Header.ReservedRecords + index))
-				throw new InvalidOperationException($"Stream record {index} is null");
+			using (Storage.EnterLockScope()) {
+				if (Storage.IsNull(KVPList.Storage.Header.ReservedRecords + index))
+					throw new InvalidOperationException($"Stream record {index} is null");
+			}
 			using var scope = Storage.Open(KVPList.Storage.Header.ReservedRecords + index);
 			var reader = new EndianBinaryReader(EndianBitConverter.For(Storage.Endianness), scope.Stream);
 			return ((KeyValuePairSerializer<TKey, TValue>)KVPList.ItemSerializer).DeserializeKey(scope.Record.Size, reader);
+			
 		}
 
 		public TValue ReadValue(int index) {
-			if (Storage.IsNull(KVPList.Storage.Header.ReservedRecords + index))
-				throw new InvalidOperationException($"Stream record {index} is null");
-				
+			using (Storage.EnterLockScope()) {
+				if (Storage.IsNull(KVPList.Storage.Header.ReservedRecords + index))
+					throw new InvalidOperationException($"Stream record {index} is null");
+			}
 			using var scope = Storage.Open(KVPList.Storage.Header.ReservedRecords + index);
 			var reader = new EndianBinaryReader(EndianBitConverter.For(Storage.Endianness), scope.Stream);
 			return ((KeyValuePairSerializer<TKey, TValue>)KVPList.ItemSerializer).DeserializeValue(scope.Record.Size, reader);

@@ -40,6 +40,8 @@ public class StreamMappedMerkleDictionaryTests : StreamMappedMerkleDictionaryTes
 			valueComparer: new TestObjectComparer(),
 			valueSerializer: new TestObjectSerializer()
 		);
+		if (streamMappedMerkleDictionary.RequiresLoad)
+			streamMappedMerkleDictionary.Load();
 		return memoryStream; ;
 	}
 

@@ -21,20 +21,20 @@ public class NullableStructSerializer<T> : ItemSerializer<T?> where T : struct {
 		=> 1 + (item != null ? _underlyingSerializer.CalculateSize(item.Value) : 0);
 
 	public override bool TrySerialize(T? item, EndianBinaryWriter writer, out int bytesWritten) {
-		var isNull = item is null;
-		writer.Write(!isNull);
+		var hasValue = item is not null;
+		writer.Write(hasValue);
 		bytesWritten = 1;
-		if (isNull) 
+		if (!hasValue) 
 			return true;
-		var result = _underlyingSerializer.TrySerialize((T)item, writer, out bytesWritten);
-		bytesWritten += bytesWritten;
+		var result = _underlyingSerializer.TrySerialize((T)item, writer, out var restBytesWritten);
+		bytesWritten += restBytesWritten;
 		return result;
 	}
 
 	public override bool TryDeserialize(int byteSize, EndianBinaryReader reader, out T? item) {
 		item = default;
-		var isNull = reader.ReadBoolean();
-		if (isNull)  
+		var hasValue = reader.ReadBoolean();
+		if (!hasValue)  
 			return true;
 		
 		if (!_underlyingSerializer.TryDeserialize(byteSize - 1, reader, out var value)) 

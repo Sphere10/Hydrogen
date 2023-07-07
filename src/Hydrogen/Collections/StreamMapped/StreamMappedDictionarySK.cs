@@ -42,6 +42,7 @@ namespace Hydrogen {
 		private readonly IEqualityComparer<TValue> _valueComparer;
 		private readonly LookupEx<int, int> _checksumToIndexLookup;
 		private readonly SortedList<int> _unusedRecords;
+		private bool _requiresLoad;
 
 		public StreamMappedDictionarySK(Stream rootStream, int clusterSize, IItemSerializer<TKey> keyStaticSizedSerializer, IItemSerializer<TValue> valueSerializer = null, IItemChecksum<TKey> keyChecksum = null, IEqualityComparer<TKey> keyComparer = null, IEqualityComparer<TValue> valueComparer = null, ClusteredStoragePolicy policy = ClusteredStoragePolicy.DictionaryDefault, int reservedRecords = 0, Endianness endianness = Endianness.LittleEndian)
 			: this(
@@ -65,7 +66,7 @@ namespace Hydrogen {
 
 		public StreamMappedDictionarySK(IStreamMappedList<TValue> valueStore, IItemSerializer<TKey> keyStaticSizedSerializer, IItemSerializer<TValue> valueSerializer = null, IItemChecksum<TKey> keyChecksum = null, IEqualityComparer<TKey> keyComparer = null, IEqualityComparer<TValue> valueComparer = null) {
 			Guard.ArgumentNotNull(keyStaticSizedSerializer, nameof(keyStaticSizedSerializer));
-			Guard.Argument(keyStaticSizedSerializer.IsStaticSize, nameof(keyStaticSizedSerializer),"Keys must be statically sized");
+			Guard.Argument(keyStaticSizedSerializer.IsStaticSize, nameof(keyStaticSizedSerializer), "Keys must be statically sized");
 			Guard.Argument(valueStore.Storage.Policy.HasFlag(ClusteredStoragePolicy.TrackChecksums), nameof(valueStore), $"Checksum tracking must be enabled in {nameof(StreamMappedDictionarySK<TKey, TValue>)} implementations.");
 			Guard.Argument(valueStore.Storage.Policy.HasFlag(ClusteredStoragePolicy.TrackKey), nameof(valueStore), $"Checksum tracking must be enabled in {nameof(StreamMappedDictionarySK<TKey, TValue>)} implementations.");
 
@@ -77,7 +78,7 @@ namespace Hydrogen {
 			_keyChecksum = keyChecksum ?? new ActionChecksum<TKey>(DefaultCalculateKeyChecksum);
 			_checksumToIndexLookup = new LookupEx<int, int>();
 			_unusedRecords = new();
-			RequiresLoad = _valueStore.Storage.Records.Count > _valueStore.Storage.Header.ReservedRecords;
+			_requiresLoad = true; //_valueStore.Storage.Records.Count > _valueStore.Storage.Header.ReservedRecords;
 			UnusedKeyBytes = Tools.Array.Gen<byte>(_keySerializer.StaticSize, 0);
 		}
 
@@ -97,7 +98,10 @@ namespace Hydrogen {
 			}
 		}
 
-		public bool RequiresLoad { get; private set; }
+		public bool RequiresLoad {
+			get => _valueStore.RequiresLoad || _requiresLoad;
+			private set => _requiresLoad = value;
+		}
 
 		public override int Count {
 			get {
@@ -110,6 +114,8 @@ namespace Hydrogen {
 
 		public void Load() {
 			NotifyLoading();
+			if (_valueStore.RequiresLoad)
+				_valueStore.Load();
 			RefreshChecksumToIndexLookup();
 			RequiresLoad = false;
 			NotifyLoaded();
@@ -117,17 +123,21 @@ namespace Hydrogen {
 
 		public Task LoadAsync() => Task.Run(Load);
 		public TKey ReadKey(int index) {
-			if (Storage.IsNull(_valueStore.Storage.Header.ReservedRecords + index))
-				throw new InvalidOperationException($"Stream record {index} is null");
-			var record = Storage.GetRecord(_valueStore.Storage.Header.ReservedRecords + index);
-			return _keySerializer.Deserialize(record.Key, Storage.Endianness);
+			using (Storage.EnterLockScope()) {
+				if (Storage.IsNull(_valueStore.Storage.Header.ReservedRecords + index))
+					throw new InvalidOperationException($"Stream record {index} is null");
+				var record = Storage.GetRecord(_valueStore.Storage.Header.ReservedRecords + index);
+				return _keySerializer.Deserialize(record.Key, Storage.Endianness);
+			}
 		}
 
 		public TValue ReadValue(int index) {
-			if (Storage.IsNull(_valueStore.Storage.Header.ReservedRecords + index))
-				//throw new InvalidOperationException($"Stream record {index} is null");
-				return default;
-			return _valueStore.Read(index);
+			using (Storage.EnterLockScope()) {
+				if (Storage.IsNull(_valueStore.Storage.Header.ReservedRecords + index))
+					//throw new InvalidOperationException($"Stream record {index} is null");
+					return default;
+				return _valueStore.Read(index);
+			}
 		}
 
 		public override void Add(TKey key, TValue value) {

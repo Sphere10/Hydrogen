@@ -48,7 +48,6 @@ public class RestClient : IRestClient {
 		JsonSerializerSettings serializerSettings = null,
 		CancellationToken cancellationToken = default) {
 		var response = await SendAsync(Tools.Url.Combine(BaseUrl, urlPostfix), HttpMethod.Get, queryParams, headers, cancellationToken: cancellationToken);
-		//var xxx = response.Content.ReadAsStringAsync();
 		return await response.ParseStreamAsync<T>(serializerSettings);
 	}
 

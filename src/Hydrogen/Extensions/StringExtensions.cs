@@ -153,30 +153,15 @@ namespace Hydrogen {
 			return sb.ToString();
 		}
 
-		public static byte[] ToAsciiByteArray(this string asciiString) {
-			var encoding = new ASCIIEncoding();
+		public static byte[] ToAsciiByteArray(this string asciiString) => asciiString.ToByteArray(Encoding.ASCII);
+
+		public static byte[] ToByteArray(this string asciiString, Encoding encoding) {
 			return encoding.GetBytes(asciiString);
 		}
 
-		public static byte[] ToHexByteArray(this string hex) {
-			if (String.IsNullOrEmpty(hex))
-				return new byte[0];
 
-			var offset = 0;
-			if (hex.StartsWith("0x"))
-				offset = 2;
-
-			if ((hex.Length - offset) % 2 != 0)
-				throw new FormatException("Hex-formatted string has odd number of nibbles");
-
-			var numberBytes = (hex.Length - offset) / 2;
-
-			var bytes = new byte[numberBytes];
-			for (var i = 0; i < numberBytes; i++)
-				bytes[i] = Convert.ToByte(new string(new char[2] { hex[offset + 2 * i], hex[offset + 2 * i + 1] }), 16);
-
-			return bytes;
-		}
+		public static byte[] ToHexByteArray(this string hexString) => HexEncoding.Decode(hexString);
+		
 
 		public static IEnumerable<string> GetLines(this string str, bool removeEmptyLines = false) {
 			return str.Split(

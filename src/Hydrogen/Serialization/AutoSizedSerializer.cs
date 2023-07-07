@@ -6,6 +6,8 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using System;
+
 namespace Hydrogen;
 
 public class AutoSizedSerializer<TItem> : ItemSerializerDecorator<TItem>  {
@@ -29,13 +31,20 @@ public class AutoSizedSerializer<TItem> : ItemSerializerDecorator<TItem>  {
 
 	public override bool TryDeserialize(int byteSize, EndianBinaryReader reader, out TItem item) {
 		// Caller trying to read item passing explicit size, so check length matches
-		var len = reader.Read();
+		var len = reader.ReadInt32();
 		Guard.ArgumentEquals(byteSize, sizeof(int) + len, nameof(byteSize), "Read overflow"); 
-		return base.TryDeserialize(byteSize - sizeof(uint), reader, out item);
+		return base.TryDeserialize(len, reader, out item);
 	}
 
 	public bool TryDeserialize(EndianBinaryReader reader, out TItem item) {
-		var len = reader.Read();
+		var len = reader.ReadInt32();
 		return base.TryDeserialize(len, reader, out item);
 	}
+
+	public TItem Deserialize(EndianBinaryReader reader) {
+		if (!TryDeserialize(reader, out var item))
+			throw new InvalidOperationException($"Unable to deserialize object");
+		return item;
+	}
+
 }

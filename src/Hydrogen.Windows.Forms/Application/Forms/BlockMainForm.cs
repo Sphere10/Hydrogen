@@ -95,6 +95,8 @@ namespace Hydrogen.Windows.Forms {
             Debug.Assert(!PluginBindings.ContainsKey(plugin));
             #endregion
 
+			this.Text = plugin.Name;
+
             TaskPane taskPane = CreateApplicationBlockPane(plugin);
             taskPane.AutoScroll = true;
             taskPane.Dock = DockStyle.Fill;

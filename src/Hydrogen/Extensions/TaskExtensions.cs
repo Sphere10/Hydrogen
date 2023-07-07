@@ -18,6 +18,68 @@ namespace Hydrogen {
 	public static class TaskExtensions {
 
 		/// <summary>
+		/// Creates a continuation that executes asynchronously on the same thread when the target <paramref name="task"/> completes.
+		/// </summary>
+		/// <param name="task">The target <see cref="Task"/>.</param>
+		/// <returns>A new continuation <see cref="Task"/>.</returns>
+		public static Task ContinueOnSameThread(this Task task) {
+			var tcs = new TaskCompletionSource<bool>();
+
+			// Start a new operation on the custom synchronization context.
+			// This operation will wait for the original task to complete, 
+			// and then set the result or exception on the TaskCompletionSource.
+			// It does NOT need to be awaited.
+			SameThreadSynchronizationContext.Run(async () => {
+				try {
+					// Await the original task.
+					await task;
+
+					// If the original task completes successfully, set the result on the TaskCompletionSource.
+					tcs.SetResult(true);
+				} catch (Exception e) {
+					// If the original task throws an exception, set it on the TaskCompletionSource.
+					tcs.SetException(e);
+				}
+			});
+
+			// Return the Task from the TaskCompletionSource.
+			// When the original task completes, this task will also complete.
+			return tcs.Task;
+		}
+
+		/// <summary>
+		/// Creates a continuation that executes asynchronously on the same thread when the target <paramref name="task"/> completes.
+		/// This version is for tasks that return a value.
+		/// </summary>
+		/// <typeparam name="T">The type of the result produced by the target <paramref name="task"/>.</typeparam>
+		/// <param name="task">The target <see cref="Task{TResult}"/>.</param>
+		/// <returns>A new continuation <see cref="Task{TResult}"/>.</returns>
+		public static Task<T> ContinueOnSameThread<T>(this Task<T> task) {
+			var tcs = new TaskCompletionSource<T>();
+
+			// Start a new operation on the custom synchronization context.
+			// This operation will wait for the original task to complete, 
+			// and then set the result or exception on the TaskCompletionSource.
+			// It does NOT need to be awaited.
+			SameThreadSynchronizationContext.Run(async () => {
+				try {
+					// Await the original task.
+					T result = await task;
+
+					// If the original task completes successfully, set the result on the TaskCompletionSource.
+					tcs.SetResult(result);
+				} catch (Exception e) {
+					// If the original task throws an exception, set it on the TaskCompletionSource.
+					tcs.SetException(e);
+				}
+			});
+
+			// Return the Task from the TaskCompletionSource.
+			// When the original task completes, this task will also complete.
+			return tcs.Task;
+		}
+
+		/// <summary>
 		/// Wraps the task with a try/catch that ignores all exceptions.
 		/// </summary>
 		/// <param name="task">The task</param>
@@ -33,20 +95,20 @@ namespace Hydrogen {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static Task IgnoringCancellationException(this Task task, ICollection<Exception> captureList = null)
 			=> task.IgnoringExceptionOfType<OperationCanceledException>(captureList);
-		
+
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static Task<T> IgnoringCancellationException<T>(this Task<T> task, ICollection<Exception> captureList = null)
 			=> task.IgnoringExceptionOfType<T, OperationCanceledException>(captureList);
 
-        public static async Task IgnoringExceptionOfType<TException>(this Task task, ICollection<Exception> captureList = null) where TException : Exception {
-        	try {
-        		 await task;
-        	} catch (TException exception) {
-	            captureList?.Add(exception);
-        	}
-        }
+		public static async Task IgnoringExceptionOfType<TException>(this Task task, ICollection<Exception> captureList = null) where TException : Exception {
+			try {
+				await task;
+			} catch (TException exception) {
+				captureList?.Add(exception);
+			}
+		}
 
-        public static async Task<T> IgnoringExceptionOfType<T, TException>(this Task<T> task, ICollection<Exception> captureList = null) where TException : Exception {
+		public static async Task<T> IgnoringExceptionOfType<T, TException>(this Task<T> task, ICollection<Exception> captureList = null) where TException : Exception {
 			T result;
 			try {
 				result = await task;
@@ -84,7 +146,7 @@ namespace Hydrogen {
 		/// <param name="failAction">Action to execute when a failure occurs (e.g. could log, sleep, etc)</param>
 		/// <param name="onComplete">Action to execute when task completes</param>
 		/// <returns></returns>
-		public static Task WithRetry(this Task task, int retryCount, Action<int, Exception> failAction = null, Action<int> onComplete = null) 
+		public static Task WithRetry(this Task task, int retryCount, Action<int, Exception> failAction = null, Action<int> onComplete = null)
 			=> task.WithFailOver(
 				(attempt, error) => {
 					failAction?.Invoke(attempt, error);
@@ -200,59 +262,58 @@ namespace Hydrogen {
 		}
 
 		public static async Task<T> WithCancellationToken<T>(this Task<T> task, CancellationToken cancellationToken) {
-            // We create a TaskCompletionSource of decimal
-            var taskCompletionSource = new TaskCompletionSource<T>();
+			// We create a TaskCompletionSource of decimal
+			var taskCompletionSource = new TaskCompletionSource<T>();
 
-            // Registering a lambda into the cancellationToken
-            cancellationToken.Register(() =>
-            {
-                // We received a cancellation message, cancel the TaskCompletionSource.Task
-                taskCompletionSource.TrySetCanceled();
-            });
+			// Registering a lambda into the cancellationToken
+			cancellationToken.Register(() => {
+				// We received a cancellation message, cancel the TaskCompletionSource.Task
+				taskCompletionSource.TrySetCanceled();
+			});
 
-            // Wait for the first task to finish among the two
-            var completedTask = await Task.WhenAny(task, taskCompletionSource.Task);
+			// Wait for the first task to finish among the two
+			var completedTask = await Task.WhenAny(task, taskCompletionSource.Task);
 
-            // If the completed task is our long running operation we set its result.
-            if (completedTask == task) {
-                // Extract the result, the task is finished and the await will return immediately
-                var result = await task;
+			// If the completed task is our long running operation we set its result.
+			if (completedTask == task) {
+				// Extract the result, the task is finished and the await will return immediately
+				var result = await task;
 
-                // Set the taskCompletionSource result
-                taskCompletionSource.TrySetResult(result);
-            } 
-            // Note a cancellation exception is thrown if the completedTask was the taskCompletionSource
+				// Set the taskCompletionSource result
+				taskCompletionSource.TrySetResult(result);
+			}
+			// Note a cancellation exception is thrown if the completedTask was the taskCompletionSource
 
-            // Return the result of the TaskCompletionSource.Task
-            return await taskCompletionSource.Task;
-        }
+			// Return the result of the TaskCompletionSource.Task
+			return await taskCompletionSource.Task;
+		}
 
-        public static void WaitSafe(this Task task) {
-            Task.Run(task.Wait);
-        }
+		public static void WaitSafe(this Task task) {
+			Task.Run(task.Wait);
+		}
 
-        public static void WaitSafe(this Task task, CancellationToken cancellationToken) {
-            Task.Run(() => task.Wait(cancellationToken), cancellationToken);
-        }
+		public static void WaitSafe(this Task task, CancellationToken cancellationToken) {
+			Task.Run(() => task.Wait(cancellationToken), cancellationToken);
+		}
 
-        public static T ResultSafe<T>(this Task<T> task) {
-            return Task.Run(() => task.Result).Result;
-        }
-        public static T ResultSafe<T>(this Task<T> task, CancellationToken cancellationToken) {
-            return Task.Run(() => task.Result, cancellationToken).Result;
-        }
+		public static T ResultSafe<T>(this Task<T> task) {
+			return Task.Run(() => task.Result).Result;
+		}
+		public static T ResultSafe<T>(this Task<T> task, CancellationToken cancellationToken) {
+			return Task.Run(() => task.Result, cancellationToken).Result;
+		}
 
-        public static async Task WithAggregateException(this Task task, bool unwrapSingleAggregateException = true) {
-            try {
-                await task;
-            } catch (Exception) {
-                if (task.Exception == null)
-                    throw;
-                if (unwrapSingleAggregateException && task.Exception.InnerExceptions.Count == 1) {
-                    throw task.Exception.InnerExceptions[0];
-                }                
-                throw task.Exception;
-            }            
-        }
-    }
+		public static async Task WithAggregateException(this Task task, bool unwrapSingleAggregateException = true) {
+			try {
+				await task;
+			} catch (Exception) {
+				if (task.Exception == null)
+					throw;
+				if (unwrapSingleAggregateException && task.Exception.InnerExceptions.Count == 1) {
+					throw task.Exception.InnerExceptions[0];
+				}
+				throw task.Exception;
+			}
+		}
+	}
 }

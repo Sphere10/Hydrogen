@@ -132,7 +132,7 @@ namespace Hydrogen.Application {
 			}
 			GlobalSettings.Provider = serviceProvider.GetService<Global<ISettingsProvider>>()?.Item;
 			UserSettings.Provider = serviceProvider.GetService<Local<ISettingsProvider>>()?.Item;
-			StringFormatter.RegisterResolvers(serviceProvider.GetServices<ITokenResolver>());
+			StringFormatter.RegisterResolvers(serviceProvider.GetServices<ITokenResolver>()); // this should be after provider
 			Hydrogen.CryptoEx.HydrogenFrameworkIntegration.Initialize();
 		}
 

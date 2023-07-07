@@ -27,6 +27,13 @@ namespace Hydrogen {
 			=> TryDeserialize(reader, out item);
 
 		public abstract bool TryDeserialize(EndianBinaryReader reader, out TItem item);
+
+
+		public TItem Deserialize(EndianBinaryReader reader) {
+			if (!TryDeserialize(reader, out var item))
+				throw new InvalidOperationException($"Unable to deserialize object");
+			return item;
+		}
 	}
 
 

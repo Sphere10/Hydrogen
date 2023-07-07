@@ -24,6 +24,8 @@ namespace Hydrogen.Tests {
 		private IDisposable CreateList(ClusteredStoragePolicy policy, int reserved, out StreamMappedList<TestObject> clusteredList) {
 			var stream = new MemoryStream();
 			clusteredList = new StreamMappedList<TestObject>(stream, 32, new TestObjectSerializer(), reservedRecords: reserved, policy: policy);
+			if (clusteredList.RequiresLoad)
+				clusteredList.Load();
 			return stream;
 		}
 
@@ -56,11 +58,11 @@ namespace Hydrogen.Tests {
 				}
 			}
 		}
-	
+
 		[Test]
 		public void ConstructorArgumentsAreGuarded([ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy, [Values(0, ReservedRecordsInStorage)] int reserved) {
 			Assert.Throws<ArgumentNullException>(() => new StreamMappedList<int>(null, 1, new PrimitiveSerializer<int>(), reservedRecords: reserved, policy: policy));
-			Assert.DoesNotThrow(() => new StreamMappedList<int>(new MemoryStream(), 1,  null, reservedRecords: reserved, policy: policy));
+			Assert.DoesNotThrow(() => new StreamMappedList<int>(new MemoryStream(), 1, null, reservedRecords: reserved, policy: policy));
 			Assert.Throws<ArgumentOutOfRangeException>(() => new StreamMappedList<int>(new MemoryStream(), 0, null, reservedRecords: reserved, policy: policy));
 		}
 
@@ -70,7 +72,8 @@ namespace Hydrogen.Tests {
 			string[] inputs = Enumerable.Range(0, random.Next(5, 10)).Select(x => random.NextString(1, 100)).ToArray();
 			using var stream = new MemoryStream();
 			var list = new StreamMappedList<string>(stream, 32, new StringSerializer(Encoding.UTF8), reservedRecords: reserved, policy: policy);
-
+			if (list.RequiresLoad)
+				list.Load();
 			list.AddRange(inputs);
 
 			var read = list
@@ -85,8 +88,12 @@ namespace Hydrogen.Tests {
 		[Test]
 		public void ReadRangeInvalidArguments([ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy, [Values(0, ReservedRecordsInStorage)] int reserved) {
 			using var stream = new MemoryStream();
-			var list = new StreamMappedList<int>(stream, 1,  new PrimitiveSerializer<int>(), reservedRecords: reserved, policy: policy);
+			var list = new StreamMappedList<int>(stream, 1, new PrimitiveSerializer<int>(), reservedRecords: reserved, policy: policy);
+			if (list.RequiresLoad) 
+				list.Load();
 			list.AddRange(999, 1000, 1001, 1002);
+			if (list.RequiresLoad) 
+				list.Load();
 
 			Assert.Throws<ArgumentOutOfRangeException>(() => _ = list.ReadRange(-1, 1).ToList());
 			Assert.Throws<ArgumentOutOfRangeException>(() => _ = list.ReadRange(0, 5).ToList());
@@ -95,7 +102,10 @@ namespace Hydrogen.Tests {
 		[Test]
 		public void ReadRangeEmpty([ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy, [Values(0, ReservedRecordsInStorage)] int reserved) {
 			using var stream = new MemoryStream();
-			var list = new StreamMappedList<int>(stream, 1,  new PrimitiveSerializer<int>(), reservedRecords: reserved, policy: policy);
+			var list = new StreamMappedList<int>(stream, 1, new PrimitiveSerializer<int>(), reservedRecords: reserved, policy: policy);
+			if (list.RequiresLoad)
+				list.Load();
+
 			list.AddRange(999, 1000, 1001, 1002);
 			Assert.IsEmpty(list.ReadRange(0, 0));
 
@@ -106,7 +116,9 @@ namespace Hydrogen.Tests {
 		[Test]
 		public void AddRangeEmptyNullStrings([ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy, [Values(0, ReservedRecordsInStorage)] int reserved) {
 			using var stream = new MemoryStream();
-			var list = new StreamMappedList<string>(stream, 32,  new StringSerializer(Encoding.UTF8), reservedRecords: reserved, policy: policy);
+			var list = new StreamMappedList<string>(stream, 32, new StringSerializer(Encoding.UTF8), reservedRecords: reserved, policy: policy);
+			if (list.RequiresLoad)
+				list.Load();
 			string[] input = { string.Empty, null, string.Empty, null };
 			list.AddRange(input);
 			Assert.That(list.Count, Is.EqualTo(4));
@@ -116,7 +128,9 @@ namespace Hydrogen.Tests {
 		[Test]
 		public void IndexOf_NullEmptyStrings([ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy, [Values(0, ReservedRecordsInStorage)] int reserved) {
 			using var stream = new MemoryStream();
-			var list = new StreamMappedList<string>(stream, 32,  new StringSerializer(Encoding.UTF8), reservedRecords: reserved, policy: policy);
+			var list = new StreamMappedList<string>(stream, 32, new StringSerializer(Encoding.UTF8), reservedRecords: reserved, policy: policy);
+			if (list.RequiresLoad)
+				list.Load();
 			string[] input = { string.Empty, null, string.Empty, null };
 			list.AddRange(input);
 			Assert.That(list.IndexOf(null), Is.EqualTo(1));
@@ -130,7 +144,9 @@ namespace Hydrogen.Tests {
 		[Test]
 		public void AddRangeNullEmptyCollections([ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy, [Values(0, ReservedRecordsInStorage)] int reserved) {
 			using var stream = new MemoryStream();
-			var list = new StreamMappedList<string>(stream, 32,  new StringSerializer(Encoding.UTF8), reservedRecords: reserved, policy: policy);
+			var list = new StreamMappedList<string>(stream, 32, new StringSerializer(Encoding.UTF8), reservedRecords: reserved, policy: policy);
+			if (list.RequiresLoad)
+				list.Load();
 			Assert.Throws<ArgumentNullException>(() => list.AddRange(null));
 			Assert.DoesNotThrow(() => list.AddRange(new string[0]));
 		}
@@ -140,8 +156,9 @@ namespace Hydrogen.Tests {
 			var random = new Random(31337);
 			string[] inputs = Enumerable.Range(0, random.Next(1, 100)).Select(x => random.NextString(1, 100)).ToArray();
 			using var stream = new MemoryStream();
-			var list = new StreamMappedList<string>(stream, 32,  new StringSerializer(Encoding.UTF8), reservedRecords: reserved, policy: policy);
-
+			var list = new StreamMappedList<string>(stream, 32, new StringSerializer(Encoding.UTF8), reservedRecords: reserved, policy: policy);
+			if (list.RequiresLoad)
+				list.Load();
 			list.AddRange(inputs);
 
 			string update = random.NextString(0, 100);
@@ -154,7 +171,9 @@ namespace Hydrogen.Tests {
 		[Test]
 		public void UpdateRangeInvalidArguments([ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy, [Values(0, ReservedRecordsInStorage)] int reserved) {
 			using var stream = new MemoryStream();
-			var list = new StreamMappedList<int>(stream, 32,  new PrimitiveSerializer<int>(), reservedRecords: reserved, policy: policy);
+			var list = new StreamMappedList<int>(stream, 32, new PrimitiveSerializer<int>(), reservedRecords: reserved, policy: policy);
+			if (list.RequiresLoad) 
+				list.Load();
 
 			list.AddRange(999, 1000, 1001, 1002);
 			list.UpdateRange(0, new[] { 998 });
@@ -170,6 +189,8 @@ namespace Hydrogen.Tests {
 			string[] inputs = Enumerable.Range(0, random.Next(1, 100)).Select(x => random.NextString(1, 100)).ToArray();
 			using var stream = new MemoryStream();
 			var list = new StreamMappedList<string>(stream, 32, new StringSerializer(Encoding.UTF8), reservedRecords: reserved, policy: policy);
+			if (list.RequiresLoad)
+				list.Load();
 
 			list.AddRange(inputs);
 			list.RemoveRange(0, 1);
@@ -182,6 +203,8 @@ namespace Hydrogen.Tests {
 		public void RemoveRangeInvalidArguments([ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy, [Values(0, ReservedRecordsInStorage)] int reserved) {
 			using var stream = new MemoryStream();
 			var list = new StreamMappedList<int>(stream, 32, new PrimitiveSerializer<int>(), reservedRecords: reserved, policy: policy);
+			if (list.RequiresLoad) 
+				list.Load();
 
 			list.Add(999);
 
@@ -198,7 +221,8 @@ namespace Hydrogen.Tests {
 			string[] inputs = Enumerable.Range(1, 10).Select(x => random.NextString(1, 100)).ToArray();
 			using var stream = new MemoryStream();
 			var list = new StreamMappedList<string>(stream, 32, new StringSerializer(Encoding.UTF8), reservedRecords: reserved, policy: policy);
-
+			if (list.RequiresLoad)
+				list.Load();
 			list.AddRange(inputs);
 
 			IEnumerable<int> indexes = list.IndexOfRange(inputs[..5]);
@@ -209,8 +233,9 @@ namespace Hydrogen.Tests {
 		[Test]
 		public void IndexOfInvalidArguments([ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy, [Values(0, ReservedRecordsInStorage)] int reserved) {
 			using var stream = new MemoryStream();
-			var list = new StreamMappedList<int>(stream, 32,  new PrimitiveSerializer<int>(), reservedRecords: reserved, policy: policy);
-			list.AddRange(999, 1000, 1001, 1002);
+			var list = new StreamMappedList<int>(stream, 32, new PrimitiveSerializer<int>(), reservedRecords: reserved, policy: policy);
+			if (list.RequiresLoad)
+				list.Load(); list.AddRange(999, 1000, 1001, 1002);
 
 			Assert.Throws<ArgumentNullException>(() => list.IndexOfRange(null));
 			Assert.DoesNotThrow(() => list.IndexOfRange(Array.Empty<int>()));
@@ -221,8 +246,9 @@ namespace Hydrogen.Tests {
 			var random = new Random(31337);
 			string[] inputs = Enumerable.Range(0, random.Next(1, 100)).Select(x => random.NextString(1, 100)).ToArray();
 			using var stream = new MemoryStream();
-			var list = new StreamMappedList<string>(stream, 32,  new StringSerializer(Encoding.UTF8), reservedRecords: reserved, policy: policy);
-
+			var list = new StreamMappedList<string>(stream, 32, new StringSerializer(Encoding.UTF8), reservedRecords: reserved, policy: policy);
+			if (list.RequiresLoad)
+				list.Load();
 			Assert.AreEqual(0, list.Count);
 			list.AddRange(inputs);
 
@@ -234,7 +260,9 @@ namespace Hydrogen.Tests {
 			var random = new Random(31337);
 			string[] inputs = Enumerable.Range(1, random.Next(1, 5)).Select(x => random.NextString(1, 5)).ToArray();
 			using var stream = new MemoryStream();
-			var list = new StreamMappedList<string>(stream, 32,  new StringSerializer(Encoding.UTF8), reservedRecords: reserved, policy: policy);
+			var list = new StreamMappedList<string>(stream, 32, new StringSerializer(Encoding.UTF8), reservedRecords: reserved, policy: policy);
+			if (list.RequiresLoad)
+				list.Load();
 
 			list.AddRange(inputs);
 			list.InsertRange(0, new[] { random.NextString(1, 100) });
@@ -246,7 +274,9 @@ namespace Hydrogen.Tests {
 		[Test]
 		public void InsertRangeInvalidArguments([ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy, [Values(0, ReservedRecordsInStorage)] int reserved) {
 			using var stream = new MemoryStream();
-			var list = new StreamMappedList<int>(stream, 32,  new PrimitiveSerializer<int>(), reservedRecords: reserved, policy: policy);
+			var list = new StreamMappedList<int>(stream, 32, new PrimitiveSerializer<int>(), reservedRecords: reserved, policy: policy);
+			if (list.RequiresLoad) 
+				list.Load();
 
 			list.AddRange(999, 1000, 1001, 1002);
 
@@ -261,8 +291,9 @@ namespace Hydrogen.Tests {
 			var random = new Random(31337);
 			string[] inputs = Enumerable.Range(0, random.Next(1, 100)).Select(x => random.NextString(1, 100)).ToArray();
 			using var stream = new MemoryStream();
-			var list = new StreamMappedList<string>(stream, 32,  new StringSerializer(Encoding.UTF8), reservedRecords: reserved, policy: policy);
-
+			var list = new StreamMappedList<string>(stream, 32, new StringSerializer(Encoding.UTF8), reservedRecords: reserved, policy: policy);
+			if (list.RequiresLoad)
+				list.Load();
 			list.AddRange(inputs);
 			list.Clear();
 			Assert.AreEqual(0, list.Count);
@@ -275,6 +306,9 @@ namespace Hydrogen.Tests {
 		public void IntegrationTests_String([ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy, [Values(0, ReservedRecordsInStorage)] int reserved) {
 			using var stream = new MemoryStream();
 			var list = new StreamMappedList<string>(stream, 32, new StringSerializer(Encoding.UTF8), reservedRecords: reserved, policy: policy);
+			if (list.RequiresLoad) 
+				list.Load();
+
 			AssertEx.ListIntegrationTest(list,
 				100,
 				(rng, i) => Enumerable.Range(0, i)
@@ -290,11 +324,15 @@ namespace Hydrogen.Tests {
 			using (Tools.Scope.ExecuteOnDispose(() => File.Delete(fileName))) {
 				using (var fileStream = new FileStream(fileName, FileMode.Open)) {
 					var list = new StreamMappedList<string>(fileStream, 32, new StringSerializer(Encoding.UTF8), reservedRecords: reserved, policy: policy);
+					if (list.RequiresLoad) 
+						list.Load();
 					list.AddRange(input);
 				}
 
 				using (var fileStream = new FileStream(fileName, FileMode.Open)) {
 					var list = new StreamMappedList<string>(fileStream, 32, new StringSerializer(Encoding.UTF8), reservedRecords: reserved, policy: policy);
+					if (list.RequiresLoad) 
+						list.Load();
 					Assert.AreEqual(input.Length, list.Count);
 					Assert.AreEqual(input, list);
 
@@ -312,6 +350,9 @@ namespace Hydrogen.Tests {
 			var rng = new Random(31337);
 			using (CreateStream(storage, 5000, out Stream stream)) {
 				var list = new StreamMappedList<TestObject>(stream, 100, new TestObjectSerializer(), new TestObjectComparer(), reservedRecords: reserved, policy: policy);
+				if (list.RequiresLoad) 
+					list.Load();
+
 				AssertEx.ListIntegrationTest(list,
 					100,
 					(rng, i) => Enumerable.Range(0, i).Select(x => new TestObject(rng)).ToArray(),

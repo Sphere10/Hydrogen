@@ -28,6 +28,8 @@ namespace Hydrogen.Tests
 		public void TestAdaptedScopes([Values(CHF.SHA2_256, CHF.Blake2b_128)] CHF chf) {
 			var memStream = new MemoryStream();
 			var clusteredList = new StreamMappedMerkleList<string>(memStream, 256, chf);
+			if (clusteredList.RequiresLoad) 
+				clusteredList.Load();
 
 			using (clusteredList.EnterAddScope("beta"));
 			using (clusteredList.EnterInsertScope(0, "alpha"));
@@ -43,6 +45,9 @@ namespace Hydrogen.Tests
 		protected override IDisposable CreateMerkleList([Values(CHF.SHA2_256, CHF.Blake2b_128)] CHF chf, out IMerkleList<string> merkleList) {
 			var memStream = new MemoryStream();
 			var clusteredList = new StreamMappedMerkleList<string>(memStream, DefaultClusterSize, chf);
+			if (clusteredList.RequiresLoad)
+				clusteredList.Load();
+
 			merkleList = clusteredList;
 			return memStream;
 		}

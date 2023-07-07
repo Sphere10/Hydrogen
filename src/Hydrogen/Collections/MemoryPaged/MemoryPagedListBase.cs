@@ -109,7 +109,8 @@ namespace Hydrogen {
 			if (FlushOnDispose)
 				Flush();
 			Disposing = true;
-			Clear();
+			if (!RequiresLoad)
+				Clear();
 			Disposed = true;
 		}
 

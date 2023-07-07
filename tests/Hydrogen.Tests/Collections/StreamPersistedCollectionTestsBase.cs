@@ -66,6 +66,9 @@ namespace Hydrogen.Tests {
                 default:
                     throw new ArgumentOutOfRangeException(nameof(storageType), storageType, null);
             }
+			if (stream is ILoadable loadable)
+				loadable.Load();
+
             return disposables;
         }
 
@@ -94,7 +97,7 @@ namespace Hydrogen.Tests {
         }
 
         public class TestObjectSerializer : ItemSerializer<TestObject> {
-			private readonly IItemSerializer<string> _stringSerializer = new StringSerializer(Encoding.UTF8);
+			private readonly AutoSizedSerializer<string> _stringSerializer = new(new StringSerializer(Encoding.UTF8));
 
 			public override int CalculateSize(TestObject item) 
 				=> _stringSerializer.CalculateSize(item.A) + sizeof(int) + sizeof(bool);
@@ -110,8 +113,7 @@ namespace Hydrogen.Tests {
 			}
 
 			public override bool TryDeserialize(int byteSize, EndianBinaryReader reader, out TestObject item) {
-				int stringSize = byteSize - sizeof(int) - sizeof(bool);
-				item = new(_stringSerializer.Deserialize(stringSize, reader), reader.ReadInt32(), reader.ReadBoolean());
+				item = new(_stringSerializer.Deserialize(reader), reader.ReadInt32(), reader.ReadBoolean());
 				return true;
 			}
 

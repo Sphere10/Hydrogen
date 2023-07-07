@@ -1,0 +1,58 @@
+﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
+
+using System;
+using System.Collections.Generic;
+
+namespace Hydrogen;
+
+public class DictionaryRepositoryAdapter<TEntity, TIdentity> : SyncRepositoryBase<TEntity, TIdentity> {
+
+	private readonly IDictionary<TIdentity, TEntity> _dictionary;
+	private readonly Func<TEntity, TIdentity> _identityFunc;
+
+	public DictionaryRepositoryAdapter(IDictionary<TIdentity, TEntity> dictionary, Func<TEntity, TIdentity> identityFunc) {
+		_dictionary = dictionary;
+		_identityFunc = identityFunc;
+	}
+
+	public override bool Contains(TIdentity identity) 
+		=> _dictionary.ContainsKey(identity);
+
+	public override bool TryGet(TIdentity identity, out TEntity entity) 
+		=> _dictionary.TryGetValue(identity, out entity);
+	
+
+	public override void Create(TEntity entity)  {
+		var identity = _identityFunc(entity);
+		if (_dictionary.ContainsKey(identity)) 
+			throw new Exception($"Item with identity '{identity}' already exists");
+		_dictionary.Add(identity, entity);
+	}
+
+	public override void Update(TEntity entity) {
+		var identity = _identityFunc(entity);
+		if (!_dictionary.ContainsKey(identity)) 
+			throw new Exception($"Item with identity '{identity}' not found");
+		_dictionary[identity] = entity;
+	}
+
+	public override void Delete(TIdentity identity) {
+		if (!_dictionary.ContainsKey(identity)) 
+			throw new Exception($"Item with identity '{identity}' not found");
+		_dictionary.Remove(identity);
+	}
+
+	public override void Clear()  
+		=> _dictionary.Clear();
+
+	protected override void FreeManagedResources() {
+		if (_dictionary is IDisposable disposableDictionary) 
+			disposableDictionary.Dispose();
+	}
+}

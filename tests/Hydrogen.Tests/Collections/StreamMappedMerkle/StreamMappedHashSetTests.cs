@@ -21,7 +21,10 @@ public class StreamMappedHashMerkleSetTests : SetTestsBase {
 	protected override IDisposable CreateSet<TValue>(IEqualityComparer<TValue> comparer, out ISet<TValue> set) {
 		var serializer = ItemSerializer<TValue>.Default;
 		var stream = new MemoryStream();
-		set = new StreamMappedMerkleHashSet<TValue>(stream, DefaultClusterDataSize, serializer, CHF.SHA2_256, comparer);
+		var merkleSet = new StreamMappedMerkleHashSet<TValue>(stream, DefaultClusterDataSize, serializer, CHF.SHA2_256, comparer);
+		if (merkleSet.RequiresLoad)
+			merkleSet.Load();
+		set = merkleSet;
 		return stream;
 	}
 }

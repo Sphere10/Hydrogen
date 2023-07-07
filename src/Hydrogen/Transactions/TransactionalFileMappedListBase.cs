@@ -101,8 +101,14 @@ namespace Hydrogen {
 		public Task RollbackAsync() => Task.Run(Rollback);
 
 		public override void Dispose() {
+			// Need to flush before disposing to ensure all data is written to disk and no page markers get left dangling
+			if (FlushOnDispose) {
+				Flush();
+				FlushOnDispose = false;
+			}
 			if (PageMarkerRepo.FileMarkers.Any() || PageMarkerRepo.PageMarkers.Any())
 				Rollback();
+			
 			base.Dispose();
 		}
 

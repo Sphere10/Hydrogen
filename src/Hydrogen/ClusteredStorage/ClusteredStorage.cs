@@ -22,8 +22,6 @@ namespace Hydrogen {
 	/// A container of <see cref="Stream"/>'s whose contents are stored across clusters of data over a root <see cref="Stream"/> (similar in principle to how a file-system works).
 	/// Fundamentally, this class can function as a "virtual file system" allowing an arbitrary number of <see cref="Stream"/>'s to be stored (and changed). This class
 	/// also serves as the base container for implementations of <see cref="IStreamMappedList{TItem}"/>'s, <see cref="IStreamMappedDictionary{TKey,TValue}"/>'s and <see cref="IStreamMappedHashSet{TItem}"/>'s.
-	/// <typeparam name="TRecord">Type which maintains the stream record (customizable)</typeparam>
-	/// <typeparam name="THeader">Type which maintains the header of the stream storage (customizable)</typeparam>
 	/// <remarks>
 	/// The structure of the underlying stream is depicted below:
 	/// [HEADER] Version: 1, Cluster Size: 32, Total Clusters: 10, Records: 5
@@ -54,7 +52,7 @@ namespace Hydrogen {
 	///  - Records always link to the (First | Data) cluster of their stream.
 	///  - Clusters with traits (First | Data) re-purpose the Prev field to denote the record.
 	/// </remarks>
-	public class ClusteredStorage : IClusteredStorage {
+	public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 
 		public event EventHandlerEx<ClusteredStreamRecord> RecordCreated;
 		public event EventHandlerEx<int, ClusteredStreamRecord> RecordAdded;
@@ -64,17 +62,23 @@ namespace Hydrogen {
 
 		private const long DefaultRecordCacheSize = 1 << 20; // 1mb
 
-		private readonly StreamPagedList<Cluster> _clusters;
-		private readonly FragmentProvider _recordsFragmentProvider;
-		private readonly PreAllocatedList<ClusteredStreamRecord> _records;
-		private readonly ICache<int, ClusteredStreamRecord> _recordCache;
-
+		private StreamPagedList<Cluster> _clusters;
+		private FragmentProvider _recordsFragmentProvider;
+		private PreAllocatedList<ClusteredStreamRecord> _records;
+		private ICache<int, ClusteredStreamRecord> _recordCache;
+		private ClusteredStorageHeader _header;
 		private ClusteredStreamScope _openScope;
-		
+
+		private bool _initialized;
+		private readonly Stream _rootStream;
+		private readonly int _clusterSize;
+		private readonly int _recordKeySize;
+		private readonly int _reservedRecords;
 		private readonly object _lock;
 		private readonly bool _integrityChecks;
 		private readonly bool _preAllocateOptimization;
-		private readonly int _clusteredRecordKeySize;
+		private int _clusterEnvelopeSize;
+		private int _allRecordsSize;
 
 		public ClusteredStorage(Stream rootStream, int clusterSize, ClusteredStoragePolicy policy = ClusteredStoragePolicy.Default, int recordKeySize = 0, int reservedRecords = 0, Endianness endianness = Endianness.LittleEndian) {
 			Guard.ArgumentNotNull(rootStream, nameof(rootStream));
@@ -83,77 +87,26 @@ namespace Hydrogen {
 			Guard.ArgumentGTE(reservedRecords, 0, nameof(reservedRecords));
 			if (Policy.HasFlag(ClusteredStoragePolicy.TrackKey))
 				Guard.Argument(recordKeySize > 0, nameof(recordKeySize), $"Must be greater than 0 when {nameof(ClusteredStoragePolicy.TrackKey)}");
+			_rootStream = rootStream;
+			_clusterSize = clusterSize;
 			Policy = policy;
+			_recordKeySize = recordKeySize;
+			_reservedRecords = reservedRecords;
 			Endianness = endianness;
-			_clusteredRecordKeySize = recordKeySize;
-			var recordSerializer = new ClusteredStreamRecordSerializer(policy, _clusteredRecordKeySize);
-			var clusterSerializer = new ClusterSerializer(clusterSize);
-			Header = CreateHeader();
-			var wasEmptyStream = rootStream.Length == 0;
-			if (!wasEmptyStream) {
-				Header.AttachTo(rootStream, endianness);
-				Header.CheckHeaderIntegrity();
-				CheckHeaderDataIntegrity((int)rootStream.Length, Header, clusterSerializer, recordSerializer);
-			} else {
-				Header.CreateIn(1, rootStream, clusterSize, recordKeySize, reservedRecords, endianness);
-			}
-			Guard.Argument(ClusterSize == clusterSize, nameof(rootStream), $"Inconsistent cluster sizes (stream header had '{ClusterSize}')");
-			AllRecordsSize = Header.RecordsCount * recordSerializer.StaticSize;
-
-			// Clusters are stored in a StreamPagedList (single page, statically sized items)
-			_clusters = new StreamPagedList<Cluster>(
-				clusterSerializer,
-				new NonClosingStream(new BoundedStream(rootStream, ClusteredStorageHeader.ByteLength, long.MaxValue) { UseRelativeOffset = true, AllowInnerResize = true }),
-				endianness
-			) { IncludeListHeader = false };
-			if (_clusters.RequiresLoad)
-				_clusters.Load();
-
-			// Records are stored in record 0 as StreamPagedList (single page, statically sized items) which maps over the fragmented stream 
-			_recordsFragmentProvider = new FragmentProvider(this, ClusterDataType.Record);
-			var recordStorage = new StreamPagedList<ClusteredStreamRecord>(
-				recordSerializer,
-				new FragmentedStream(_recordsFragmentProvider, Header.RecordsCount * recordSerializer.StaticSize),
-				endianness
-			) { IncludeListHeader = false };
-			if (recordStorage.RequiresLoad)
-				recordStorage.Load();
-
-			// The actual records collection is a PreAllocated list over the StreamPagedList which allows INSERTS in the form of UPDATES.
-			_records = new PreAllocatedList<ClusteredStreamRecord>(
-				recordStorage,
-				Header.RecordsCount,
-				PreAllocationPolicy.MinimumRequired,
-				0,
-				NewRecord
-			);
-			_recordCache = Policy.HasFlag(ClusteredStoragePolicy.CacheRecords) ? 
-				new ActionCache<int, ClusteredStreamRecord>(
-					FetchRecord,
-					sizeEstimator: _ => recordSerializer.StaticSize,
-					reapStrategy: CacheReapPolicy.LeastUsed,
-					ExpirationPolicy.SinceLastAccessedTime,
-					maxCapacity: DefaultRecordCacheSize
-				) : 
-				null;
-
-			_lock = new object();
+			_lock = new object(); // new NonReentrantLock();
 			_openScope = null;
 			_preAllocateOptimization = Policy.HasFlag(ClusteredStoragePolicy.FastAllocate);
 			_integrityChecks = Policy.HasFlag(ClusteredStoragePolicy.IntegrityChecks);
 			ZeroClusterBytes = Tools.Array.Gen<byte>(clusterSize, 0);
-			ClusterEnvelopeSize = clusterSerializer.StaticSize - ClusterSize;
-
-			if (wasEmptyStream)
-				CreateReservedRecords();
+			_header = null;
+			_initialized = false;
 		}
-	
 
-		public static ClusteredStorage Load(Stream rootStream, Endianness endianness = Endianness.LittleEndian) {
+		public static ClusteredStorage FromStream(Stream rootStream, Endianness endianness = Endianness.LittleEndian) {
 			if (rootStream.Length < ClusteredStorageHeader.ByteLength)
 				throw new CorruptDataException($"Corrupt header (stream was too small {rootStream.Length} bytes)");
 			var reader = new EndianBinaryReader(EndianBitConverter.For(endianness), rootStream);
-			
+
 			// read cluster size
 			rootStream.Seek(ClusteredStorageHeader.ClusterSizeOffset, SeekOrigin.Begin);
 			var clusterSize = reader.ReadInt32();
@@ -173,40 +126,163 @@ namespace Hydrogen {
 			var reservedRecords = reader.ReadInt32();
 
 			rootStream.Position = 0;
-			return new ClusteredStorage(rootStream, clusterSize, policy, (int)recordKeySize, reservedRecords, endianness);
+			var storage = new ClusteredStorage(rootStream, clusterSize, policy, (int)recordKeySize, reservedRecords, endianness);
+			storage.Load();
+			return storage;
 		}
 
-		public ClusteredStorageHeader Header { get; }
+		public override bool RequiresLoad { get => !_initialized || base.RequiresLoad; set => base.RequiresLoad = value; }
+
+		public ClusteredStorageHeader Header {
+			get {
+				CheckInitialized();
+				return _header;
+			}
+			private set => _header = value;
+		}
 
 		public ClusteredStoragePolicy Policy { get; }
 
 		public Endianness Endianness { get; }
 
 		public long RecordCacheSize {
-			get => _recordCache.MaxCapacity;
+			get {
+				CheckInitialized();
+				return _recordCache.MaxCapacity;
+			}
 			set {
+				CheckInitialized();
 				throw new NotImplementedException();
 			}
 		}
 
-		public int Count => Header.RecordsCount;
+		public int Count {
+			get {
+				CheckInitialized();
+				return Header.RecordsCount;
+			}
+		}
 
-		public IReadOnlyList<ClusteredStreamRecord> Records => _records;
+		public IReadOnlyList<ClusteredStreamRecord> Records {
+			get {
+				CheckInitialized();
+				return _records;
+			}
+		}
 
-		internal IReadOnlyList<Cluster> Clusters => _clusters;
+		internal IReadOnlyList<Cluster> Clusters {
+			get {
+				CheckInitialized();
+				return _clusters;
+			}
+		}
 
-		internal int ClusterSize => Header.ClusterSize;
+		internal int ClusterSize {
+			get {
+				CheckInitialized();
+				return Header.ClusterSize;
+			}
+		}
 
-		internal int ClusterEnvelopeSize { get; }
+		internal int ClusterEnvelopeSize {
+			get {
+				CheckInitialized();
+				return _clusterEnvelopeSize;
+			}
+			private set => _clusterEnvelopeSize = value;
+		}
 
-		internal int AllRecordsSize { get; private set; }
+		internal int AllRecordsSize {
+			get {
+				CheckInitialized();
+				return _allRecordsSize;
+			}
+			private set => _allRecordsSize = value;
+		}
+
+		internal bool IsLocked => Monitor.IsEntered(_lock);  // _lock?.IsLocked ?? false;
 
 		private ReadOnlyMemory<byte> ZeroClusterBytes { get; }
 
+		#region Initialization & Loading
+
+		protected override void LoadInternal() {
+			using (EnterLockScope()) {
+				if (!_initialized)
+					Initialize();
+
+				if (_clusters.RequiresLoad)
+					_clusters.Load();
+			}
+		}
+
+		private void Initialize() {
+			var recordSerializer = new ClusteredStreamRecordSerializer(Policy, _recordKeySize);
+			var clusterSerializer = new ClusterSerializer(_clusterSize);
+
+			_header = new ClusteredStorageHeader(_lock);
+			var wasEmptyStream = _rootStream.Length == 0;
+			if (!wasEmptyStream) {
+				_header.AttachTo(_rootStream, Endianness);
+				_header.CheckHeaderIntegrity();
+				CheckHeaderDataIntegrity((int)_rootStream.Length, _header, clusterSerializer, recordSerializer);
+			} else {
+				_header.CreateIn(1, _rootStream, _clusterSize, _recordKeySize, _reservedRecords, Endianness);
+			}
+
+			Guard.Ensure(_header.ClusterSize == _clusterSize, $"Inconsistent cluster size {_clusterSize} (stream header had '{_header.ClusterSize}')");
+			AllRecordsSize = _header.RecordsCount * recordSerializer.StaticSize;
+			ClusterEnvelopeSize = clusterSerializer.StaticSize - _header.ClusterSize;
+
+			// Clusters are stored in a StreamPagedList (single page, statically sized items)
+			_clusters = new StreamPagedList<Cluster>(
+				clusterSerializer,
+				new NonClosingStream(new BoundedStream(_rootStream, ClusteredStorageHeader.ByteLength, long.MaxValue) { UseRelativeOffset = true, AllowInnerResize = true }),
+				Endianness
+			) { IncludeListHeader = false };
+			if (_clusters.RequiresLoad)
+				_clusters.Load();
+
+			// Records are stored in record 0 as StreamPagedList (single page, statically sized items) which maps over the fragmented stream 
+			_recordsFragmentProvider = new FragmentProvider(this, ClusterDataType.Record);
+			var recordStorage = new StreamPagedList<ClusteredStreamRecord>(
+				recordSerializer,
+				new FragmentedStream(_recordsFragmentProvider, _header.RecordsCount * recordSerializer.StaticSize),
+				Endianness
+			) { IncludeListHeader = false };
+			if (recordStorage.RequiresLoad)
+				recordStorage.Load();
+
+			// The actual records collection is a PreAllocated list over the StreamPagedList which allows INSERTS in the form of UPDATES.
+			_records = new PreAllocatedList<ClusteredStreamRecord>(
+				recordStorage,
+				_header.RecordsCount,
+				PreAllocationPolicy.MinimumRequired,
+				0,
+				NewRecord
+			);
+			_recordCache = Policy.HasFlag(ClusteredStoragePolicy.CacheRecords) ?
+				new ActionCache<int, ClusteredStreamRecord>(
+					FetchRecord,
+					sizeEstimator: _ => recordSerializer.StaticSize,
+					reapStrategy: CacheReapPolicy.LeastUsed,
+					ExpirationPolicy.SinceLastAccessedTime,
+					maxCapacity: DefaultRecordCacheSize
+				) :
+				null;
+
+			_initialized = true;
+
+			if (wasEmptyStream)
+				CreateReservedRecords();
+		}
+
+		#endregion
+
 		#region Streams
-		
 
 		public ClusteredStreamScope EnterSaveItemScope<TItem>(int index, TItem item, IItemSerializer<TItem> serializer, ListOperationType operationType) {
+			CheckInitialized();
 			var scope = operationType switch {
 				ListOperationType.Add => Add(),
 				ListOperationType.Update => Open(index),
@@ -249,6 +325,7 @@ namespace Hydrogen {
 		}
 
 		public ClusteredStreamScope EnterLoadItemScope<TItem>(int index, IItemSerializer<TItem> serializer, out TItem item) {
+			CheckInitialized();
 			var scope = Open(index);
 			if (!_openScope.Record.Traits.HasFlag(ClusteredStreamTraits.IsNull)) {
 				var reader = new EndianBinaryReader(EndianBitConverter.For(Endianness), _openScope.Stream);
@@ -257,51 +334,64 @@ namespace Hydrogen {
 			return scope;
 		}
 
+		public IDisposable EnterLockScope() {
+			Monitor.Enter(_lock);
+			return new ActionDisposable(() => Monitor.Exit(_lock));
+		}
+
 		public ClusteredStreamScope Add() {
+			CheckInitialized();
 			lock (_lock) {
 				CheckNotOpened();
 				AddRecord(out var index, NewRecord());  // the first record add will allocate cluster 0 for the records stream
-				return Open(index);
+				return BeginOpenScope(index); // scope will release _lock when closed
 			}
 		}
 
 		public ClusteredStreamScope Open(int index) {
-			CheckRecordIndex(index);
+			CheckInitialized();
 			lock (_lock) {
+				CheckRecordIndex(index);
 				CheckNotOpened();
-				BeginOpenScope(index);
-				return _openScope;
+				return BeginOpenScope(index); // scope will release _lock when closed
 			}
 		}
 
 		public void Remove(int index) {
-			CheckRecordIndex(index);
+			CheckInitialized();
 			lock (_lock) {
+				var countBeforeRemove = Header.RecordsCount;
+				CheckRecordIndex(index);
 				CheckNotOpened();
 				var record = GetRecord(index);
 				if (record.StartCluster != -1)
 					RemoveClusterChain(record.StartCluster);
 				RemoveRecord(index); // record must be removed last, in case it deletes genesis cluster
+				var countAfterRemove = Header.RecordsCount;
+				if (countAfterRemove != countBeforeRemove - 1)
+					throw new InvalidOperationException("Failed to remove record");
 			}
 		}
 
 		public ClusteredStreamScope Insert(int index) {
-			CheckRecordIndex(index, allowEnd: true);
+			CheckInitialized();
 			lock (_lock) {
+				CheckRecordIndex(index, allowEnd: true);
 				CheckNotOpened();
 				InsertRecord(index, NewRecord());
-				return Open(index);
+				return BeginOpenScope(index); // scope will release _lock when closed
 			}
 		}
 
 		public void Swap(int first, int second) {
-			CheckRecordIndex(first);
-			CheckRecordIndex(second);
+			CheckInitialized();
+			using (EnterLockScope()) {
+				CheckRecordIndex(first);
+				CheckRecordIndex(second);
 
-			if (first == second)
-				return;
+				if (first == second)
+					return;
 
-			lock (_lock) {
 				CheckNotOpened();
 
 				// Get records
@@ -324,14 +414,18 @@ namespace Hydrogen {
 		}
 
 		public void Clear(int index) {
-			CheckRecordIndex(index);
-			using (var scope = Open(index)) {
-				scope.Stream.SetLength(0);
+			CheckInitialized();
+			lock(_lock) {
+				CheckRecordIndex(index); 
+				using (var scope = Open(index)) {
+					scope.Stream.SetLength(0);
+				}
 			}
 		}
 
 		public void Clear() {
-			lock (_lock) {
+			CheckInitialized();
+			using (EnterLockScope()) {
 				CheckNotOpened();
 				_records.Clear();
 				_recordCache?.Flush();
@@ -345,48 +439,64 @@ namespace Hydrogen {
 		}
 
 		public void Optimize() {
+			CheckInitialized();
 			// TODO: 
 			//	- Organize clusters in sequential order
 			//  - Do not try to organize nested ClusteredStreamStorage (dont know how to activate them)
 			throw new NotImplementedException();
 		}
 
-		public override string ToString() => Header.ToString();
-
-		internal string ToStringFullContents() {
-			var stringBuilder = new FastStringBuilder();
-			stringBuilder.AppendLine(this.ToString());
-			stringBuilder.AppendLine("Records:");
-			for (var i = 0; i < _records.Count; i++) {
-				var record = GetRecord(i);
-				stringBuilder.AppendLine($"\t{i}: {record}");
-			}
-			stringBuilder.AppendLine("Clusters:");
-			for (var i = 0; i < _clusters.Count; i++) {
-				var cluster = _clusters[i];
-				stringBuilder.AppendLine($"\t{i}: {cluster}");
-			}
-
-			return stringBuilder.ToString();
+		public override string ToString() {
+			CheckInitialized();
+			return Header.ToString();
 		}
 
-		private ClusteredStorageHeader CreateHeader() => new();
+		internal string ToStringFullContents() {
+			CheckInitialized();
+			using (EnterLockScope()) {
+				var stringBuilder = new FastStringBuilder();
+				stringBuilder.AppendLine(this.ToString());
+				stringBuilder.AppendLine("Records:");
+				for (var i = 0; i < _records.Count; i++) {
+					var record = GetRecord(i);
+					stringBuilder.AppendLine($"\t{i}: {record}");
+				}
+				stringBuilder.AppendLine("Clusters:");
+				for (var i = 0; i < _clusters.Count; i++) {
+					var cluster = _clusters[i];
+					stringBuilder.AppendLine($"\t{i}: {cluster}");
+				}
+				return stringBuilder.ToString();
+			}
+		}
 
 		#endregion
 
 		#region Stream Scope
 
-		private void BeginOpenScope(int index) {
-			Guard.Ensure(_openScope == null);
-			_openScope = new ClusteredStreamScope(index, GetRecord(index), EndOpenScope);
-			// TODO: improve _openScope must be set before we can create FragmentProvider(this, ...) because it uses parent._openScope
-			_openScope.Stream = new FragmentedStream(new FragmentProvider(this, ClusterDataType.Stream));
+		private ClusteredStreamScope BeginOpenScope(int index) {
+			Guard.Ensure(_openScope == null, "A scope was already opened");
+			Monitor.Enter(_lock);
+			try {
+				_openScope = new ClusteredStreamScope(index, GetRecord(index), EndOpenScope);
+				// TODO: improve _openScope must be set before we can create FragmentProvider(this, ...) because it uses parent._openScope
+				_openScope.Stream = new FragmentedStream(new FragmentProvider(this, ClusterDataType.Stream));
+				return _openScope;
+			} catch {
+				Monitor.Exit(_lock);
+				throw;
+			}
 		}
 
-		internal void EndOpenScope() {
-			Guard.Ensure(_openScope != null);
-			UpdateRecord(_openScope.RecordIndex, _openScope.Record, false);
-			_openScope = null;
+		private void EndOpenScope() {
+			try {
+				Guard.Ensure(_openScope != null);
+				UpdateRecord(_openScope.RecordIndex, _openScope.Record, false);
+				_openScope = null;
+				//_lock.Release();
+			} finally {
+				Monitor.Exit(_lock);
+			}
 		}
 
 		#endregion
@@ -394,10 +504,11 @@ namespace Hydrogen {
 		#region Records
 
 		private ClusteredStreamRecord NewRecord() {
+			Debug.Assert(IsLocked, "Mutating without a lock can lead to race-conditions and data corruption in multi-threaded scenarios");
 			var record = new ClusteredStreamRecord();
 			record.Size = 0;
 			record.StartCluster = -1;
-			record.Key = Tools.Array.Gen<byte>(_clusteredRecordKeySize, 0);
+			record.Key = Tools.Array.Gen<byte>(_recordKeySize, 0);
 			NotifyRecordCreated(record);
 			return record;
 		}
@@ -408,10 +519,14 @@ namespace Hydrogen {
 			UpdateRecord(index, record, true);
 		}
 
-		public ClusteredStreamRecord GetRecord(int index) => _recordCache is not null ? _recordCache[index] : FetchRecord(index);
+		public ClusteredStreamRecord GetRecord(int index) {
+			CheckInitialized();
+			return _recordCache is not null ? _recordCache[index] : FetchRecord(index);
+		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		private ClusteredStreamRecord FetchRecord(int index) {
+			Debug.Assert(IsLocked, "Fetching results in mutation and requires a lock to avoid race-conditions and data corruption in multi-threaded scenarios");
 			if (_openScope != null && index == _openScope.RecordIndex)
 				return _openScope.Record;
 
@@ -422,6 +537,7 @@ namespace Hydrogen {
 		}
 
 		private ClusteredStreamRecord AddRecord(out int index, ClusteredStreamRecord record) {
+			Debug.Assert(IsLocked, "Mutating without a lock can lead to race-conditions and data corruption in multi-threaded scenarios");
 			_records.Add(record);
 			index = Header.RecordsCount++;
 			_recordCache?.Set(index, record);
@@ -429,12 +545,16 @@ namespace Hydrogen {
 			return record;
 		}
 
+
+		/// <remarks>
+		/// This has O(N) complexity in worst case (inserting at 0), use with care
+		/// </remarks>
 		private void InsertRecord(int index, ClusteredStreamRecord record) {
-			Debug.Assert(_openScope == null);
+			Debug.Assert(IsLocked, "Mutating without a lock can lead to race-conditions and data corruption in multi-threaded scenarios");
 			// Update genesis clusters 
 			for (var i = _records.Count - 1; i >= index; i--) {
 				var shiftedRecord = GetRecord(i);
-				if (shiftedRecord.StartCluster != -1) 
+				if (shiftedRecord.StartCluster != -1)
 					FastWriteClusterPrev(shiftedRecord.StartCluster, i + 1);
 				_recordCache?.Invalidate(i);
 				_recordCache?.Set(i + 1, shiftedRecord);
@@ -446,6 +566,7 @@ namespace Hydrogen {
 		}
 
 		private void UpdateRecord(int index, ClusteredStreamRecord record, bool resetTrackingIfOpen) {
+			Debug.Assert(IsLocked, "Mutating without a lock can lead to race-conditions and data corruption in multi-threaded scenarios");
 			if (_integrityChecks)
 				CheckRecordIntegrity(index, record);
 
@@ -460,12 +581,13 @@ namespace Hydrogen {
 		}
 
 		private void RemoveRecord(int index) {
+			Debug.Assert(IsLocked, "Mutating without a lock can lead to race-conditions and data corruption in multi-threaded scenarios");
 			for (var i = index + 1; i < _records.Count; i++) {
 				var higherRecord = GetRecord(i);
 				if (higherRecord.StartCluster != -1) {
 					FastWriteClusterPrev(higherRecord.StartCluster, i - 1);
 				}
-				_recordCache?.Set(i - 1, higherRecord); 
+				_recordCache?.Set(i - 1, higherRecord);
 			}
 			_records.RemoveAt(index);
 			_recordCache?.Invalidate(index);
@@ -486,7 +608,7 @@ namespace Hydrogen {
 			var clusters = new Cluster[quantity];
 			startClusterIX = _clusters.Count;
 			var zeroData = ZeroClusterBytes.ToArray();
-			for(var i = 0; i < quantity; i++) {
+			for (var i = 0; i < quantity; i++) {
 				clusters[i] = new Cluster {
 					Traits = typeTrait,
 					Prev = startClusterIX + i - 1,
@@ -495,8 +617,15 @@ namespace Hydrogen {
 				};
 			}
 			// Fix first new cluster
-			if (allocateFirst) 
+			if (allocateFirst) {
 				clusters[0].Traits |= ClusterTraits.First;
+				clusters[0].Prev = -1;
+			} else {
+				clusters[0].Prev = previousCluster;
+			}
+			// fix last cluster
+			clusters[^1].Next = -1;
+
 			if (previousCluster != -1)
 				FastWriteClusterNext(previousCluster, startClusterIX);
 			switch (clusterDataType) {
@@ -529,7 +658,15 @@ namespace Hydrogen {
 			return cluster;
 		}
 
-		private void UpdateCluster(int clusterIndex, Cluster cluster) => _clusters[clusterIndex] = cluster;
+		private void UpdateCluster(int clusterIndex, Cluster cluster) {
+			if (_integrityChecks) {
+				CheckClusterTraits(clusterIndex, cluster.Traits);
+				CheckClusterIndex(cluster.Next);
+				if (!cluster.Traits.HasFlag(ClusterTraits.First | ClusterTraits.Data))
+					CheckClusterIndex(cluster.Prev);
+			}
+			_clusters[clusterIndex] = cluster;
+		}
 
 		private void RemoveCluster(int clusterIndex) {
 			var next = FastReadClusterNext(clusterIndex);
@@ -576,6 +713,7 @@ namespace Hydrogen {
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		internal ClusterTraits FastReadClusterTraits(int clusterIndex) {
+			CheckInitialized();
 			_clusters.ReadItemRaw(clusterIndex, 0, 1, out var bytes);
 			var traits = (ClusterTraits)bytes[0];
 			if (_integrityChecks)
@@ -585,6 +723,7 @@ namespace Hydrogen {
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		internal void FastWriteClusterTraits(int clusterIndex, ClusterTraits traits) {
+			CheckInitialized();
 			_clusters.WriteItemBytes(clusterIndex, 0, new byte[(byte)traits]);
 		}
 
@@ -599,6 +738,7 @@ namespace Hydrogen {
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		internal void FastWriteClusterPrev(int clusterIndex, int prev) {
+			CheckInitialized();
 			var bytes = _clusters.Writer.BitConverter.GetBytes(prev);
 			_clusters.WriteItemBytes(clusterIndex, sizeof(byte), bytes);
 		}
@@ -613,12 +753,14 @@ namespace Hydrogen {
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		internal void FastWriteClusterNext(int clusterIndex, int next) {
+			CheckInitialized();
 			var bytes = _clusters.Writer.BitConverter.GetBytes(next);
 			_clusters.WriteItemBytes(clusterIndex, sizeof(byte) + sizeof(int), bytes);
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		internal void FastWriteClusterData(int clusterIndex, int offset, ReadOnlySpan<byte> data) {
+			CheckInitialized();
 			_clusters.WriteItemBytes(clusterIndex, sizeof(byte) + sizeof(int) + sizeof(int) + offset, data);
 		}
 
@@ -670,6 +812,13 @@ namespace Hydrogen {
 
 		#region Aux methods
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		private void CheckInitialized() {
+			if (!_initialized)
+				throw new InvalidOperationException("Clustered Storage not initialized");
+		}
+
+
 		private void CheckHeaderDataIntegrity(int rootStreamLength, ClusteredStorageHeader header, IItemSerializer<Cluster> clusterSerializer, IItemSerializer<ClusteredStreamRecord> recordSerializer) {
 			var clusterEnvelopeSize = clusterSerializer.StaticSize - header.ClusterSize;
 			var recordClusters = (int)Math.Ceiling(header.RecordsCount * recordSerializer.StaticSize / (float)header.ClusterSize);
@@ -683,7 +832,7 @@ namespace Hydrogen {
 		private void CreateReservedRecords() {
 			Guard.Ensure(Header.RecordsCount == 0, "Records are already existing");
 			while (Header.RecordsCount < Header.ReservedRecords) {
-				using var scope = Add();
+				AddRecord(out var index, NewRecord());
 			}
 		}
 
@@ -787,18 +936,18 @@ namespace Hydrogen {
 				_clusterDataType = clusterDataType;
 				_fragmentCache = new FragmentCache();
 				_enableCache = clusterDataType == ClusterDataType.Record && parent.Policy.HasFlag(ClusteredStoragePolicy.CacheRecordClusters) ||
-				               clusterDataType == ClusterDataType.Stream && parent.Policy.HasFlag(ClusteredStoragePolicy.CacheOpenClusters);
+							   clusterDataType == ClusterDataType.Stream && parent.Policy.HasFlag(ClusteredStoragePolicy.CacheOpenClusters);
 				Reset();
-				
+
 			}
 
 			public long TotalBytes => _clusterDataType switch {
-				ClusterDataType.Record => _parent.AllRecordsSize,
+				ClusterDataType.Record => _parent._allRecordsSize,
 				ClusterDataType.Stream => _parent._openScope.Record.Size,
 				_ => throw new ArgumentOutOfRangeException()
 			};
 
-			public int FragmentCount => (int)Math.Ceiling(TotalBytes / (float)_parent.ClusterSize);
+			public int FragmentCount => (int)Math.Ceiling(TotalBytes / (float)_parent._clusterSize);
 
 			public ReadOnlySpan<byte> GetFragment(int index) {
 				Guard.ArgumentInRange(index, 0, FragmentCount - 1, nameof(index));
@@ -807,8 +956,8 @@ namespace Hydrogen {
 			}
 
 			public bool TryMapStreamPosition(long position, out int fragmentIndex, out int fragmentPosition) {
-				fragmentIndex = (int)(position / _parent.ClusterSize);
-				fragmentPosition = (int)(position % _parent.ClusterSize);
+				fragmentIndex = (int)(position / _parent._clusterSize);
+				fragmentPosition = (int)(position % _parent._clusterSize);
 				return true;
 			}
 
@@ -834,7 +983,7 @@ namespace Hydrogen {
 					var newClusters = newTotalClusters - currentTotalClusters;
 					var needsFirstCluster = currentTotalClusters == 0;
 					_parent.AllocateNextClusters(_clusterDataType, _parent._openScope?.RecordIndex ?? -1, _currentCluster, newClusters, needsFirstCluster, out var newStartIX);
-					
+
 					for (var i = 0; i < newClusters; i++) {
 						var newClusterIX = newStartIX + i;
 						var newFragmentIX = _currentFragment + i + 1;
@@ -909,8 +1058,8 @@ namespace Hydrogen {
 			internal void ResetClusterPointer() {
 				switch (_clusterDataType) {
 					case ClusterDataType.Record:
-						_currentFragment = _parent.Header.RecordsCount > 0 && _parent.Header.TotalClusters > 0 ? 0 : -1;
-						_currentCluster = _parent.Header.RecordsCount > 0 && _parent.Header.TotalClusters > 0 ? 0 : -1;
+						_currentFragment = _parent._header.RecordsCount > 0 && _parent._header.TotalClusters > 0 ? 0 : -1;
+						_currentCluster = _parent._header.RecordsCount > 0 && _parent._header.TotalClusters > 0 ? 0 : -1;
 						break;
 					case ClusterDataType.Stream:
 						_currentFragment = _parent._openScope.Record.StartCluster > 0 ? 0 : -1;
@@ -1014,7 +1163,7 @@ namespace Hydrogen {
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			private void CheckSteps(int steps) {
 				if (steps > FragmentCount)
-					throw new CorruptDataException(_parent.Header, $"Unable to traverse the cluster-chain due to cyclic dependency (detected at cluster {_currentCluster})");
+					throw new CorruptDataException(_parent._header, $"Unable to traverse the cluster-chain due to cyclic dependency (detected at cluster {_currentCluster})");
 			}
 
 		}
@@ -1065,6 +1214,7 @@ namespace Hydrogen {
 		}
 
 		#endregion
+
 	}
 
 }

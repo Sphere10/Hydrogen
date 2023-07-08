@@ -19,7 +19,6 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <Folder Include="Collections\Transactional\" />
 	  <Folder Include="ObjectSpace\" />
 	  <Folder Include="Scopes\Transactional\" />
 	</ItemGroup>

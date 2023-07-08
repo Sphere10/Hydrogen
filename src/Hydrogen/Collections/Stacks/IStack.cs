@@ -24,14 +24,14 @@ public interface IStack<T> : ICollection<T> {
 
 public static class IStackExtensions {
 	public static T Pop<T>(this IStack<T> stack) {
-		Guard.Ensure(stack.Count > 0, "Insufficient items");
+		Guard.Ensure(stack.Count > 0, "Stack is empty");
 		if (!stack.TryPop(out var value))
 			throw new InvalidOperationException("Unable to pop from stack");
 		return value;
 	}
 
 	public static T Peek<T>(this IStack<T> stack) {
-		Guard.Ensure(stack.Count > 1, "Insufficient items");
+		Guard.Ensure(stack.Count > 1, "Stack is empty");
 		if (!stack.TryPeek(out var value))
 			throw new InvalidOperationException("Unable to pop from stack");
 		return value;

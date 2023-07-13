@@ -6,16 +6,11 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+namespace Hydrogen.Data;
 
-namespace Hydrogen.Data {
-	public enum SQLBuilderStringValueKind {
-		LiteralValue,
-		SQLCode,
-		VariableName,
-		Auto
-	}
+public enum SQLBuilderStringValueKind {
+	LiteralValue,
+	SQLCode,
+	VariableName,
+	Auto
 }

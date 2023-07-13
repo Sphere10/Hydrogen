@@ -9,23 +9,22 @@
 using System;
 using System.Collections.Generic;
 
-namespace Hydrogen {
+namespace Hydrogen;
 
-	public class KeyValuePairEqualityComparer<TKey, TValue> : IEqualityComparer<KeyValuePair<TKey, TValue>> {
-		private readonly IEqualityComparer<TKey> _keyComparer;
-		private readonly IEqualityComparer<TValue> _valueComparer;
+public class KeyValuePairEqualityComparer<TKey, TValue> : IEqualityComparer<KeyValuePair<TKey, TValue>> {
+	private readonly IEqualityComparer<TKey> _keyComparer;
+	private readonly IEqualityComparer<TValue> _valueComparer;
 
-		public KeyValuePairEqualityComparer(IEqualityComparer<TKey> keyComparer = null, IEqualityComparer<TValue> valueComparer = null) {
-			_keyComparer = keyComparer ?? EqualityComparer<TKey>.Default;
-			_valueComparer = valueComparer ?? EqualityComparer<TValue>.Default;
-		}
+	public KeyValuePairEqualityComparer(IEqualityComparer<TKey> keyComparer = null, IEqualityComparer<TValue> valueComparer = null) {
+		_keyComparer = keyComparer ?? EqualityComparer<TKey>.Default;
+		_valueComparer = valueComparer ?? EqualityComparer<TValue>.Default;
+	}
 
-		public bool Equals(KeyValuePair<TKey, TValue> x, KeyValuePair<TKey, TValue> y) {
-			return _keyComparer.Equals(x.Key, y.Key) && _valueComparer.Equals(x.Value, y.Value);
-		}
+	public bool Equals(KeyValuePair<TKey, TValue> x, KeyValuePair<TKey, TValue> y) {
+		return _keyComparer.Equals(x.Key, y.Key) && _valueComparer.Equals(x.Value, y.Value);
+	}
 
-		public int GetHashCode(KeyValuePair<TKey, TValue> obj) {
-			return HashCode.Combine(_keyComparer.GetHashCode(obj.Key), _valueComparer.GetHashCode(obj.Value));
-		}
+	public int GetHashCode(KeyValuePair<TKey, TValue> obj) {
+		return HashCode.Combine(_keyComparer.GetHashCode(obj.Key), _valueComparer.GetHashCode(obj.Value));
 	}
 }

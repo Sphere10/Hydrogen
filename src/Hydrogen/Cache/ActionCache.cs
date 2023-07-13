@@ -9,39 +9,38 @@
 using System;
 using System.Collections.Generic;
 
-namespace Hydrogen {
+namespace Hydrogen;
 
-	public sealed class ActionCache<TKey, TValue> : CacheBase<TKey, TValue> {
+public sealed class ActionCache<TKey, TValue> : CacheBase<TKey, TValue> {
 
-        private readonly Func<TKey, TValue> _fetchFunc = null;
-        private readonly Func<TValue, long> _estimateSizeFunc = null;
-		private readonly Func<TKey, CachedItem<TValue>, bool> _stalenessChecker = null;
+	private readonly Func<TKey, TValue> _fetchFunc = null;
+	private readonly Func<TValue, long> _estimateSizeFunc = null;
+	private readonly Func<TKey, CachedItem<TValue>, bool> _stalenessChecker = null;
 
-        public ActionCache(
-            Func<TKey, TValue> valueFetcher,
-            Func<TValue, long> sizeEstimator = null,
-            CacheReapPolicy reapStrategy = CacheReapPolicy.None,
-            ExpirationPolicy expirationStrategy = ExpirationPolicy.None,
-            long maxCapacity = long.MaxValue,
-            TimeSpan? expirationDuration = null,
-            NullValuePolicy nullValuePolicy = NullValuePolicy.CacheNormally,
-			StaleValuePolicy staleValuePolicy = StaleValuePolicy.AssumeNeverStale,
-			Func<TKey, CachedItem<TValue>, bool> stalenessChecker = null,
-            IEqualityComparer<TKey> keyComparer = null,
-            ICacheReaper reaper = null)
-        : base(reapStrategy, expirationStrategy, maxCapacity, expirationDuration, nullValuePolicy, staleValuePolicy, keyComparer, reaper) {
-			Guard.ArgumentNotNull(valueFetcher, nameof(valueFetcher));
-            _fetchFunc = valueFetcher;
-            _estimateSizeFunc = sizeEstimator;
-            _stalenessChecker = stalenessChecker;
-        }
-
-        protected override TValue Fetch(TKey key) => _fetchFunc(key);
-
-        protected override bool CheckStaleness(TKey key, CachedItem<TValue> item) 
-			=> _stalenessChecker?.Invoke(key, item) ?? false;
-
-        protected override long EstimateSize(TValue value) 
-			=> _estimateSizeFunc?.Invoke(value) ?? 0;
+	public ActionCache(
+		Func<TKey, TValue> valueFetcher,
+		Func<TValue, long> sizeEstimator = null,
+		CacheReapPolicy reapStrategy = CacheReapPolicy.None,
+		ExpirationPolicy expirationStrategy = ExpirationPolicy.None,
+		long maxCapacity = long.MaxValue,
+		TimeSpan? expirationDuration = null,
+		NullValuePolicy nullValuePolicy = NullValuePolicy.CacheNormally,
+		StaleValuePolicy staleValuePolicy = StaleValuePolicy.AssumeNeverStale,
+		Func<TKey, CachedItem<TValue>, bool> stalenessChecker = null,
+		IEqualityComparer<TKey> keyComparer = null,
+		ICacheReaper reaper = null)
+		: base(reapStrategy, expirationStrategy, maxCapacity, expirationDuration, nullValuePolicy, staleValuePolicy, keyComparer, reaper) {
+		Guard.ArgumentNotNull(valueFetcher, nameof(valueFetcher));
+		_fetchFunc = valueFetcher;
+		_estimateSizeFunc = sizeEstimator;
+		_stalenessChecker = stalenessChecker;
 	}
+
+	protected override TValue Fetch(TKey key) => _fetchFunc(key);
+
+	protected override bool CheckStaleness(TKey key, CachedItem<TValue> item)
+		=> _stalenessChecker?.Invoke(key, item) ?? false;
+
+	protected override long EstimateSize(TValue value)
+		=> _estimateSizeFunc?.Invoke(value) ?? 0;
 }

@@ -6,21 +6,20 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using System.Windows.Forms;
-using Hydrogen;
 
-namespace Hydrogen.Windows.Forms {
-    public interface IWizardScreen<T> {
-        IWizard<T> Wizard { get; }
-        Task Initialize();
-        Task OnPresent();
-        Task OnPrevious();
-        Task OnNext();
-        Task<Result> Validate();
-    }
+namespace Hydrogen.Windows.Forms;
+
+public interface IWizardScreen<T> {
+	IWizard<T> Wizard { get; }
+
+	Task Initialize();
+
+	Task OnPresent();
+
+	Task OnPrevious();
+
+	Task OnNext();
+
+	Task<Result> Validate();
 }

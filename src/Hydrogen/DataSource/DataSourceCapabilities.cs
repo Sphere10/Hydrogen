@@ -7,21 +7,18 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
-namespace Hydrogen {
-	[Flags]
-	public enum DataSourceCapabilities {
-		CanCreate	= 1 << 0,
-		CanRead		= 1 << 1,
-		CanUpdate	= 1 << 2 | CanRead,
-		CanDelete	= 1 << 3,
-		CanSearch	= 1 << 4 | CanRead,
-		CanSort		= 1 << 5 | CanRead,
-		CanPage		= 1 << 6 | CanRead,
-		Default = CanCreate | CanRead | CanUpdate | CanDelete | CanSearch | CanSort | CanPage,
-		ComboBoxDefault = CanRead | CanSearch | CanSort
-	}
+namespace Hydrogen;
+
+[Flags]
+public enum DataSourceCapabilities {
+	CanCreate = 1 << 0,
+	CanRead = 1 << 1,
+	CanUpdate = 1 << 2 | CanRead,
+	CanDelete = 1 << 3,
+	CanSearch = 1 << 4 | CanRead,
+	CanSort = 1 << 5 | CanRead,
+	CanPage = 1 << 6 | CanRead,
+	Default = CanCreate | CanRead | CanUpdate | CanDelete | CanSearch | CanSort | CanPage,
+	ComboBoxDefault = CanRead | CanSearch | CanSort
 }

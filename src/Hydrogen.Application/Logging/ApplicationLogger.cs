@@ -7,28 +7,27 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System.Configuration;
-using System.IO;
 
-namespace Hydrogen.Application {
-	public class ApplicationLogger : LoggerDecorator {
+namespace Hydrogen.Application;
 
-		public ApplicationLogger() : base(CreateLogger("Logging")) {
-		}
+public class ApplicationLogger : LoggerDecorator {
 
-		public static ILogger CreateLogger(string sectionName) {
-			var section = ConfigurationManager.GetSection("LoggingConfiguration") as LoggingConfiguration;
-			if (section == null)
-				return new NoOpLogger();
-			var logger = new RollingFileLogger(section.LogFilePath, section.MaxLogFiles, section.MaxLogFileSize);
-			if (section.EnableDebug)
-				logger.Options = logger.Options | LogOptions.DebugEnabled;
-			if (section.EnableInfo)
-				logger.Options = logger.Options | LogOptions.InfoEnabled;
-			if (section.EnableWarning)
-				logger.Options = logger.Options | LogOptions.WarningEnabled;
-			if (section.EnableError)
-				logger.Options = logger.Options | LogOptions.ErrorEnabled;
-			return logger;
-		}
+	public ApplicationLogger() : base(CreateLogger("Logging")) {
+	}
+
+	public static ILogger CreateLogger(string sectionName) {
+		var section = ConfigurationManager.GetSection("LoggingConfiguration") as LoggingConfiguration;
+		if (section == null)
+			return new NoOpLogger();
+		var logger = new RollingFileLogger(section.LogFilePath, section.MaxLogFiles, section.MaxLogFileSize);
+		if (section.EnableDebug)
+			logger.Options = logger.Options | LogOptions.DebugEnabled;
+		if (section.EnableInfo)
+			logger.Options = logger.Options | LogOptions.InfoEnabled;
+		if (section.EnableWarning)
+			logger.Options = logger.Options | LogOptions.WarningEnabled;
+		if (section.EnableError)
+			logger.Options = logger.Options | LogOptions.ErrorEnabled;
+		return logger;
 	}
 }

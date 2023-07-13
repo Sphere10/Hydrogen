@@ -9,31 +9,29 @@
 using System.Data;
 using System.Linq;
 
-namespace Hydrogen.Data {
+namespace Hydrogen.Data;
 
-	public static class SQLBuilderExtensions {
+public static class SQLBuilderExtensions {
 
-		public static ISQLBuilder Insert(this ISQLBuilder @this, DataRow dataRow) {
-			var primaryKeyCols = dataRow.Table.PrimaryKey;
-			var allCols = dataRow.Table.Columns.Cast<DataColumn>();
-			return
-				@this.Insert(
-					dataRow.Table.TableName,
-					(dataRow.Table.HasAutoIncrementPrimaryKey() ? allCols.Except(primaryKeyCols) : allCols)
-						.Select(c => new ColumnValue(c.ColumnName, dataRow[c])));
-		}
+	public static ISQLBuilder Insert(this ISQLBuilder @this, DataRow dataRow) {
+		var primaryKeyCols = dataRow.Table.PrimaryKey;
+		var allCols = dataRow.Table.Columns.Cast<DataColumn>();
+		return
+			@this.Insert(
+				dataRow.Table.TableName,
+				(dataRow.Table.HasAutoIncrementPrimaryKey() ? allCols.Except(primaryKeyCols) : allCols)
+				.Select(c => new ColumnValue(c.ColumnName, dataRow[c])));
+	}
 
-		public static ISQLBuilder Update(this ISQLBuilder @this, DataRow dataRow) {
+	public static ISQLBuilder Update(this ISQLBuilder @this, DataRow dataRow) {
 
-			var primaryKeyCols = dataRow.Table.PrimaryKey;
-			var allCols = dataRow.Table.Columns.Cast<DataColumn>();
-			return
-				@this.Update(
-					dataRow.Table.TableName,
-					allCols.Except(primaryKeyCols).Select(c => new ColumnValue(c.ColumnName, dataRow[c])),
-					matchColumns: primaryKeyCols.Select(c => new ColumnValue(c.ColumnName, dataRow[c])));
-		}
-
+		var primaryKeyCols = dataRow.Table.PrimaryKey;
+		var allCols = dataRow.Table.Columns.Cast<DataColumn>();
+		return
+			@this.Update(
+				dataRow.Table.TableName,
+				allCols.Except(primaryKeyCols).Select(c => new ColumnValue(c.ColumnName, dataRow[c])),
+				matchColumns: primaryKeyCols.Select(c => new ColumnValue(c.ColumnName, dataRow[c])));
 	}
 
 }

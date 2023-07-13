@@ -48,11 +48,9 @@
 
     [Parameter]
     public ModalOptions Options { get; set; } = new();
-    
-    private string SizeClass
-    {
-        get
-        {
+
+    private string SizeClass {
+        get {
             return Options.Size switch
             {
                 ModalSize.Small => "modal-sm",
@@ -62,10 +60,8 @@
         }
     }
 
-    private async Task OnCloseAsync()
-    {
-        if (await OnCloseFunc())
-        {
+    private async Task OnCloseAsync() {
+        if (await OnCloseFunc()) {
             await JsRuntime.InvokeVoidAsync("hideModal");
         }
     }

@@ -9,20 +9,19 @@
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Hydrogen {
+namespace Hydrogen;
 
-	public class ReadOnlyListAdapter<TItem> : IReadOnlyList<TItem> {
-		private readonly IList<TItem> _internalList;
-		public ReadOnlyListAdapter(IList<TItem> internalList) {
-			_internalList = internalList;
-        }
+public class ReadOnlyListAdapter<TItem> : IReadOnlyList<TItem> {
+	private readonly IList<TItem> _internalList;
+	public ReadOnlyListAdapter(IList<TItem> internalList) {
+		_internalList = internalList;
+	}
 
-        public TItem this[int index] => (TItem)_internalList[index];
+	public TItem this[int index] => (TItem)_internalList[index];
 
-        public int Count => _internalList.Count;
+	public int Count => _internalList.Count;
 
-		public IEnumerator<TItem> GetEnumerator() => _internalList.GetEnumerator();
+	public IEnumerator<TItem> GetEnumerator() => _internalList.GetEnumerator();
 
-        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-    }
+	IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 }

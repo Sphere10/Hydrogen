@@ -6,22 +6,20 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
+namespace Hydrogen.Communications;
 
-namespace Hydrogen.Communications {
-	public class AnonymousPipeEndpoint {
+public class AnonymousPipeEndpoint {
 
-		public AnonymousPipeEndpoint() : this(null, null) {
-		}
-
-		public AnonymousPipeEndpoint(string readHandle, string writeHandle) {
-			ReaderHandle = readHandle;
-			WriterHandle = writeHandle;
-		}
-
-		public string WriterHandle { get; init; }
-		public string ReaderHandle { get; init; }
-
-		public static AnonymousPipeEndpoint Empty => new() { ReaderHandle = string.Empty, WriterHandle = string.Empty };
+	public AnonymousPipeEndpoint() : this(null, null) {
 	}
+
+	public AnonymousPipeEndpoint(string readHandle, string writeHandle) {
+		ReaderHandle = readHandle;
+		WriterHandle = writeHandle;
+	}
+
+	public string WriterHandle { get; init; }
+	public string ReaderHandle { get; init; }
+
+	public static AnonymousPipeEndpoint Empty => new() { ReaderHandle = string.Empty, WriterHandle = string.Empty };
 }

@@ -6,11 +6,11 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen.Application {
-	public interface IApplicationFinalizer {
+namespace Hydrogen.Application;
 
-		int Priority { get; }
+public interface IApplicationFinalizer {
 
-		void Finalize();
-	}
+	int Priority { get; }
+
+	void Finalize();
 }

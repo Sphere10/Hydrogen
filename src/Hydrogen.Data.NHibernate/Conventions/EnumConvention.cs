@@ -15,13 +15,12 @@ using FluentNHibernate.Conventions.Instances;
 namespace Hydrogen.Data.NHibernate;
 
 public class EnumConvention :
-	IPropertyConvention, 
-	IPropertyConventionAcceptance
-{
+	IPropertyConvention,
+	IPropertyConventionAcceptance {
+
 	#region IPropertyConvention Members
 
-	public void Apply(IPropertyInstance instance)
-	{
+	public void Apply(IPropertyInstance instance) {
 		instance.CustomType(instance.Property.PropertyType);
 	}
 
@@ -29,14 +28,14 @@ public class EnumConvention :
 
 	#region IPropertyConventionAcceptance Members
 
-	public void Accept(IAcceptanceCriteria<IPropertyInspector> criteria)
-	{
+	public void Accept(IAcceptanceCriteria<IPropertyInspector> criteria) {
 		criteria.Expect(x => x.Property.PropertyType.IsEnum ||
-		                     (x.Property.PropertyType.IsGenericType && 
+		                     (x.Property.PropertyType.IsGenericType &&
 		                      x.Property.PropertyType.GetGenericTypeDefinition() == typeof(Nullable<>) &&
 		                      x.Property.PropertyType.GetGenericArguments()[0].IsEnum)
 		);
 	}
 
 	#endregion
+
 }

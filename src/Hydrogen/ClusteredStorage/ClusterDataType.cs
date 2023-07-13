@@ -6,9 +6,9 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen {
-	internal enum ClusterDataType {
-		Record,
-		Stream
-	}
+namespace Hydrogen;
+
+internal enum ClusterDataType {
+	Record,
+	Stream
 }

@@ -6,15 +6,10 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
+namespace SourceGrid.Cells.Models;
 
-namespace SourceGrid.Cells.Models
-{
-	/// <summary>
-	/// A generic model interface
-	/// </summary>
-	public interface IModel
-	{
-	}
+/// <summary>
+/// A generic model interface
+/// </summary>
+public interface IModel {
 }
-

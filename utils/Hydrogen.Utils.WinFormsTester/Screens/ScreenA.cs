@@ -7,24 +7,16 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Drawing;
-using System.Text;
-using System.Windows.Forms;
 using Hydrogen.Windows.Forms;
 
-namespace Hydrogen.Utils.WinFormsTester
-{
-    public partial class ScreenA : ApplicationScreen
-    {
-        public ScreenA() {
-            InitializeComponent();
-        }
+namespace Hydrogen.Utils.WinFormsTester;
 
-        private void toolStripButton1_Click(object sender, EventArgs e) {
-            radioButton1.Checked = true;
-        }
-    }
+public partial class ScreenA : ApplicationScreen {
+	public ScreenA() {
+		InitializeComponent();
+	}
+
+	private void toolStripButton1_Click(object sender, EventArgs e) {
+		radioButton1.Checked = true;
+	}
 }
-

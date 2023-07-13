@@ -6,13 +6,11 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen.DApp.Core.Keys {
+namespace Hydrogen.DApp.Core.Keys;
 
-	public enum KeyType : byte {
-		Burned = 0,
-		WAMS,
-		Schnorr,
-		ACL
-	}
-
+public enum KeyType : byte {
+	Burned = 0,
+	WAMS,
+	Schnorr,
+	ACL
 }

@@ -19,5 +19,5 @@ public enum SerialThreadPoolPolicy {
 	/// When a thread is acquired, the next queued item is processed then it is released. The next item waits in the thread-pool to acquire an available thread.
 	/// </summary>
 	Intermittent
-	
+
 }

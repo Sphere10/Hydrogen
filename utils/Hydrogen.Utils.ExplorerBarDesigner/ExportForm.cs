@@ -6,23 +6,18 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Drawing;
-using System.Text;
 using System.Windows.Forms;
 
-namespace Hydrogen.Utils.ExplorerBarDesigner {
-    public partial class ExportForm : Form {
-        public ExportForm() {
-            InitializeComponent();
-        }
+namespace Hydrogen.Utils.ExplorerBarDesigner;
 
-        public static void ShowDialog(IWin32Window parent, string text) {
-            ExportForm form = new ExportForm();
-            form.textBox1.Text = text;
-            form.ShowDialog(parent);
-        }
-    }
+public partial class ExportForm : Form {
+	public ExportForm() {
+		InitializeComponent();
+	}
+
+	public static void ShowDialog(IWin32Window parent, string text) {
+		ExportForm form = new ExportForm();
+		form.textBox1.Text = text;
+		form.ShowDialog(parent);
+	}
 }

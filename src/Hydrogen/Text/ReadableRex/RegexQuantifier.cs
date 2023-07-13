@@ -6,55 +6,55 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen {
-	public class RegexQuantifier {
-        readonly RegexPattern _quantifiedExpression;
+namespace Hydrogen;
 
-        internal RegexQuantifier(RegexPattern quantifiedExpression) {
-            _quantifiedExpression = quantifiedExpression;
-        }
+public class RegexQuantifier {
+	readonly RegexPattern _quantifiedExpression;
 
-        public virtual RegexPattern Exactly(int timesToRepeat) {
-            _quantifiedExpression.RegEx("{" + timesToRepeat + "}");
-            return _quantifiedExpression;
-        }
+	internal RegexQuantifier(RegexPattern quantifiedExpression) {
+		_quantifiedExpression = quantifiedExpression;
+	}
 
-        public virtual RegexPattern ZeroOrMore {
-            get {
-                _quantifiedExpression.RegEx("*");
-                return _quantifiedExpression;
-            }
-        }
+	public virtual RegexPattern Exactly(int timesToRepeat) {
+		_quantifiedExpression.RegEx("{" + timesToRepeat + "}");
+		return _quantifiedExpression;
+	}
 
-        public virtual RegexPattern OneOrMore {
-            get {
-                _quantifiedExpression.RegEx("+");
-                return _quantifiedExpression;
-            }
-        }
+	public virtual RegexPattern ZeroOrMore {
+		get {
+			_quantifiedExpression.RegEx("*");
+			return _quantifiedExpression;
+		}
+	}
 
-        public virtual RegexPattern Optional {
-            get {
-                _quantifiedExpression.RegEx("?");
-                return _quantifiedExpression;
-            }
-        }
+	public virtual RegexPattern OneOrMore {
+		get {
+			_quantifiedExpression.RegEx("+");
+			return _quantifiedExpression;
+		}
+	}
 
-        public virtual RegexPattern AtLeast(int timesToRepeat) {
-            _quantifiedExpression.RegEx("{" + timesToRepeat + ",}");
-            return _quantifiedExpression;
-        }
+	public virtual RegexPattern Optional {
+		get {
+			_quantifiedExpression.RegEx("?");
+			return _quantifiedExpression;
+		}
+	}
 
-        public virtual RegexPattern AtMost(int timesToRepeat) {
-            _quantifiedExpression.RegEx("{," + timesToRepeat + "}");
-            return _quantifiedExpression;
-        }
+	public virtual RegexPattern AtLeast(int timesToRepeat) {
+		_quantifiedExpression.RegEx("{" + timesToRepeat + ",}");
+		return _quantifiedExpression;
+	}
 
-        public virtual RegexPattern InRange(int minimum, int maximum) {
-            _quantifiedExpression.RegEx("{" + minimum + "," + maximum + "}");
-            return _quantifiedExpression;
-        }
+	public virtual RegexPattern AtMost(int timesToRepeat) {
+		_quantifiedExpression.RegEx("{," + timesToRepeat + "}");
+		return _quantifiedExpression;
+	}
 
-        public RegexQuantifier Lazy => new RegexLazyQuantifier(_quantifiedExpression);
-    }
+	public virtual RegexPattern InRange(int minimum, int maximum) {
+		_quantifiedExpression.RegEx("{" + minimum + "," + maximum + "}");
+		return _quantifiedExpression;
+	}
+
+	public RegexQuantifier Lazy => new RegexLazyQuantifier(_quantifiedExpression);
 }

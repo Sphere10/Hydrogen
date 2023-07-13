@@ -21,4 +21,3 @@ public sealed class ActionDisposable : SyncDisposable {
 		_endAction?.Invoke();
 	}
 }
-

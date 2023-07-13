@@ -7,13 +7,11 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Hydrogen.Maths;
 
 public sealed class Mersenne32 : IRandomNumberGenerator {
-	private readonly Mersenne32Algorithm _Mersenne32; 
+	private readonly Mersenne32Algorithm _Mersenne32;
 
 	public Mersenne32(int seed) {
 		_Mersenne32 = new Mersenne32Algorithm((uint)seed);

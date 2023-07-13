@@ -7,49 +7,46 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
-using System.Text;
 
-namespace Hydrogen.Windows.Forms.AppointmentBook {
-	public class Appointment {
-		public Appointment() {
-			Color = Color.LightGray;
-		}
+namespace Hydrogen.Windows.Forms.AppointmentBook;
 
-		public string ID { get; set; }
-
-		public object UserObject { get; set; }
-
-		public string Subject { get; set; }
-
-		public string LocationPart1 { get; set; }
-
-		public string LocationPart2 { get; set; }
-
-		public string Notes { get; set; }
-
-		public DateTime StartTime { get; set; }
-
-		public DateTime EndTime { get; set; }
-
-		public Color Color { get; set; }
-
-		public override bool Equals(object obj) {
-			if (ReferenceEquals(null, obj)) return false;
-			if (ReferenceEquals(this, obj)) return true;
-			if (obj.GetType() != this.GetType()) return false;
-			return Equals((Appointment) obj);
-		}
-
-		protected bool Equals(Appointment other) {
-			return ID == other.ID;
-		}
-
-		public override int GetHashCode() {
-			return (UserObject != null ? UserObject.GetHashCode() : 0);
-		}
-
+public class Appointment {
+	public Appointment() {
+		Color = Color.LightGray;
 	}
+
+	public string ID { get; set; }
+
+	public object UserObject { get; set; }
+
+	public string Subject { get; set; }
+
+	public string LocationPart1 { get; set; }
+
+	public string LocationPart2 { get; set; }
+
+	public string Notes { get; set; }
+
+	public DateTime StartTime { get; set; }
+
+	public DateTime EndTime { get; set; }
+
+	public Color Color { get; set; }
+
+	public override bool Equals(object obj) {
+		if (ReferenceEquals(null, obj)) return false;
+		if (ReferenceEquals(this, obj)) return true;
+		if (obj.GetType() != this.GetType()) return false;
+		return Equals((Appointment)obj);
+	}
+
+	protected bool Equals(Appointment other) {
+		return ID == other.ID;
+	}
+
+	public override int GetHashCode() {
+		return (UserObject != null ? UserObject.GetHashCode() : 0);
+	}
+
 }

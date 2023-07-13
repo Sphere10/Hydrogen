@@ -6,30 +6,21 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using NUnit.Framework;
-using System.Threading;
-using System.Linq;
-using System.IO;
-using Hydrogen;
 using Hydrogen.Data;
 
 
-namespace Hydrogen.Tests {
+namespace Hydrogen.Tests;
 
-	[TestFixture]
-	[NonParallelizable]
-	public class HydrogenJsonSerializerTests {
+[TestFixture]
+[NonParallelizable]
+public class HydrogenJsonSerializerTests {
 
 
-
-		[Test]
-		public void NullSerializesNormal() {
-			var serializer = new HydrogenJsonSerializer();
-			Assert.That(serializer.Serialize<string>(null), Is.EqualTo("null"));
-		}
-
+	[Test]
+	public void NullSerializesNormal() {
+		var serializer = new HydrogenJsonSerializer();
+		Assert.That(serializer.Serialize<string>(null), Is.EqualTo("null"));
 	}
+
 }

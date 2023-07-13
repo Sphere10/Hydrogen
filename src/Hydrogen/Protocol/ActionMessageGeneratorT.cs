@@ -8,17 +8,16 @@
 
 using System;
 
-namespace Hydrogen.Communications {
-    public class ActionMessageGeneratorT<TMessage> : MessageGeneratorBase<TMessage> {
-		private readonly Func<ProtocolOrchestrator, TMessage> _initiator;
+namespace Hydrogen.Communications;
 
-		public ActionMessageGeneratorT(Func<ProtocolOrchestrator, TMessage> initiator) {
-			Guard.ArgumentNotNull(initiator, nameof(initiator));
-			_initiator = initiator;
-		}
+public class ActionMessageGeneratorT<TMessage> : MessageGeneratorBase<TMessage> {
+	private readonly Func<ProtocolOrchestrator, TMessage> _initiator;
 
-		protected override TMessage ExecuteInternal(ProtocolOrchestrator orchestrator)
-			=> _initiator.Invoke(orchestrator);
-    }
+	public ActionMessageGeneratorT(Func<ProtocolOrchestrator, TMessage> initiator) {
+		Guard.ArgumentNotNull(initiator, nameof(initiator));
+		_initiator = initiator;
+	}
 
+	protected override TMessage ExecuteInternal(ProtocolOrchestrator orchestrator)
+		=> _initiator.Invoke(orchestrator);
 }

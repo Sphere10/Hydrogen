@@ -16,7 +16,7 @@ namespace Hydrogen;
 /// Wraps a <see cref="Queue"/> as an <see cref="ICollection{T}"/>
 /// </summary>
 /// <typeparam name="T"></typeparam>
-public class QueueListAdapter<T> : IQueue<T>   {
+public class QueueListAdapter<T> : IQueue<T> {
 	private readonly IList<T> _queue;
 	public QueueListAdapter(IList<T> queue) : this(queue, false) {
 	}
@@ -38,13 +38,13 @@ public class QueueListAdapter<T> : IQueue<T>   {
 
 	public void CopyTo(T[] array, int arrayIndex) => _queue.CopyTo(array, arrayIndex);
 
-	public bool Remove(T item) =>  throw new NotSupportedException();
+	public bool Remove(T item) => throw new NotSupportedException();
 
 	public IEnumerator<T> GetEnumerator() => _queue.GetEnumerator();
-	
+
 	IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-	public bool TryPeek(out T value) { 
+	public bool TryPeek(out T value) {
 		if (_queue.Count < 1) {
 			value = default;
 			return false;
@@ -60,8 +60,8 @@ public class QueueListAdapter<T> : IQueue<T>   {
 			return false;
 		}
 		value = _queue[^1];
-		return true;		
+		return true;
 	}
 
-	public void Enqueue(T item)  => _queue.Add(item);
+	public void Enqueue(T item) => _queue.Add(item);
 }

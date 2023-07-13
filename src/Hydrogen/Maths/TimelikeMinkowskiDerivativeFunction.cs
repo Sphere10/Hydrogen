@@ -8,17 +8,16 @@
 
 using Hydrogen.Maths;
 
-namespace Hydrogen {
-	public class TimelikeMinkowskiDerivativeFunction : IFunction {
-		private readonly IFunction _derivativeFunction = null;
+namespace Hydrogen;
 
-		public TimelikeMinkowskiDerivativeFunction(IFunction function) {
-			_derivativeFunction = new FunctionDerivative(function);
-		}
+public class TimelikeMinkowskiDerivativeFunction : IFunction {
+	private readonly IFunction _derivativeFunction = null;
 
-		public double Eval(double x) {
-			return System.Math.Sqrt(1 - System.Math.Pow(_derivativeFunction.Eval(x), 2));
-		}
+	public TimelikeMinkowskiDerivativeFunction(IFunction function) {
+		_derivativeFunction = new FunctionDerivative(function);
+	}
+
+	public double Eval(double x) {
+		return System.Math.Sqrt(1 - System.Math.Pow(_derivativeFunction.Eval(x), 2));
 	}
 }
-

@@ -7,10 +7,8 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Collections.Generic;
 
 namespace Hydrogen;
-
 
 public class AsyncLogger : LoggerDecorator {
 
@@ -40,4 +38,3 @@ public class AsyncLogger : LoggerDecorator {
 		_serialThreadPool.QueueUserWorkItem(() => base.Exception(exception));
 	}
 };
-

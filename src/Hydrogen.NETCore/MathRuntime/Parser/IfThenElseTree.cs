@@ -6,34 +6,26 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System.Collections.Generic;
-using System.Text;
+namespace Hydrogen.Maths.Compiler;
 
-namespace Hydrogen.Maths.Compiler
-{
-    public class IfThenElseTree : IfThenTree
-    {
-        private SyntaxTree _elseExpression;
+public class IfThenElseTree : IfThenTree {
+	private SyntaxTree _elseExpression;
 
-        public IfThenElseTree()
-            : base()
-        {
-        }
+	public IfThenElseTree()
+		: base() {
+	}
 
-        public SyntaxTree ElseExpression
-        {
-            get { return _elseExpression; }
-            set { _elseExpression = value; }
-        }
+	public SyntaxTree ElseExpression {
+		get { return _elseExpression; }
+		set { _elseExpression = value; }
+	}
 
-        public override string ToString()
-        {
-            return string.Format(
-                "IFTHENELSE({0},{1},{2})",
-                Condition.ToString(),
-                Expression.ToString(),
-                ElseExpression.ToString()
-            );
-        }
-    }
+	public override string ToString() {
+		return string.Format(
+			"IFTHENELSE({0},{1},{2})",
+			Condition.ToString(),
+			Expression.ToString(),
+			ElseExpression.ToString()
+		);
+	}
 }

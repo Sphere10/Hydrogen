@@ -6,16 +6,11 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+namespace Hydrogen.Data;
 
-namespace Hydrogen.Data {
-	public class DBTriggerSchema : DBObject {
+public class DBTriggerSchema : DBObject {
 
-		public override string Name { get; set; }
+	public override string Name { get; set; }
 
-		public override string SQL { get; set; }
-	}
+	public override string SQL { get; set; }
 }

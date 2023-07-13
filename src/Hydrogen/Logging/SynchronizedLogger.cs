@@ -20,12 +20,12 @@ public class SynchronizedLogger : SynchronizedObject, ILogger {
 
 	public LogOptions Options {
 		get {
-			using (EnterReadScope()) 
+			using (EnterReadScope())
 				return _internalLogger.Options;
 		}
 
 		set {
-			using (EnterWriteScope()) 
+			using (EnterWriteScope())
 				_internalLogger.Options = value;
 		}
 	}

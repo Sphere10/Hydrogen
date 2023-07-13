@@ -8,9 +8,10 @@
 
 using System.Collections.Generic;
 
-namespace Hydrogen {
-	public interface IHeap<T> : IEnumerable<T>, ICollection<T> {
-		T Peek();
-		T Pop();
-	}
+namespace Hydrogen;
+
+public interface IHeap<T> : IEnumerable<T>, ICollection<T> {
+	T Peek();
+
+	T Pop();
 }

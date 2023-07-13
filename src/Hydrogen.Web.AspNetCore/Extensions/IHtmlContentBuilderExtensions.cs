@@ -9,9 +9,7 @@
 using System.Text;
 using System.Text.Encodings.Web;
 using Hydrogen;
-using Hydrogen.Web.AspNetCore;
 using Microsoft.AspNetCore.Html;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Extensions.Hosting;
 
@@ -22,6 +20,6 @@ public static class IHtmlContentBuilderExtensions {
 		contentBuilder.WriteTo(writer, encoder);
 		return new HtmlString(content.ToString());
 	}
-		
-	
+
+
 }

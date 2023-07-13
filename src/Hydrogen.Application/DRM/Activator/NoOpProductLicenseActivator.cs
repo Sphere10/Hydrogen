@@ -6,14 +6,13 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
 using System.Threading.Tasks;
 
 namespace Hydrogen.Application;
 
 internal class NoOpProductLicenseActivator : IProductLicenseActivator {
 
-	public Task ActivateLicense(string productKey) 
+	public Task ActivateLicense(string productKey)
 		=> Task.CompletedTask;
 
 	public Task ApplyLicense(ProductLicenseActivationDTO licenseActivation) => Task.CompletedTask;

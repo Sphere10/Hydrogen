@@ -9,27 +9,23 @@
 using System;
 using System.Collections.Generic;
 
-namespace SourceGrid
-{
+namespace SourceGrid;
+
+/// <summary>
+/// A collection of elements of type Range
+/// </summary>
+[Serializable]
+public class RangeCollection : List<CellRange> {
 	/// <summary>
-	/// A collection of elements of type Range
+	/// Returns true if the specified cell position is present in any range in the current collection.
 	/// </summary>
-	[Serializable]
-	public class RangeCollection : List<CellRange>
-	{
-		/// <summary>
-		/// Returns true if the specified cell position is present in any range in the current collection.
-		/// </summary>
-		/// <param name="p_Position"></param>
-		/// <returns></returns>
-		public bool ContainsCell(Position p_Position)
-		{
-			foreach(CellRange range in this)
-			{
-				if ( range.Contains(p_Position) )
-					return true;
-			}
-			return false;
+	/// <param name="p_Position"></param>
+	/// <returns></returns>
+	public bool ContainsCell(Position p_Position) {
+		foreach (CellRange range in this) {
+			if (range.Contains(p_Position))
+				return true;
 		}
+		return false;
 	}
 }

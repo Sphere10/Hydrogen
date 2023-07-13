@@ -8,20 +8,24 @@
 
 using System.Collections.Generic;
 
-namespace Hydrogen {
+namespace Hydrogen;
 
-	public interface IWriteOnlyExtendedCollection<in T> {
-		void Add(T item);
-		void AddRange(IEnumerable<T> items);
-		bool Remove(T item);
-		IEnumerable<bool> RemoveRange(IEnumerable<T> items);
-		void Clear();
-	}
+public interface IWriteOnlyExtendedCollection<in T> {
+	void Add(T item);
 
-	public static class IWriteOnlyExtendedCollectionExtensions {
+	void AddRange(IEnumerable<T> items);
 
-		public static void AddRange<T>(this IWriteOnlyExtendedCollection<T> collection, params T[] items) {
-			collection.AddRange((IEnumerable<T>)items);
-		}
+	bool Remove(T item);
+
+	IEnumerable<bool> RemoveRange(IEnumerable<T> items);
+
+	void Clear();
+}
+
+
+public static class IWriteOnlyExtendedCollectionExtensions {
+
+	public static void AddRange<T>(this IWriteOnlyExtendedCollection<T> collection, params T[] items) {
+		collection.AddRange((IEnumerable<T>)items);
 	}
 }

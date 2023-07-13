@@ -6,7 +6,6 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
 using System.Threading.Tasks;
 
 namespace Hydrogen;
@@ -16,4 +15,3 @@ public abstract class SyncDisposable : Disposable {
 	protected sealed override async ValueTask FreeManagedResourcesAsync() => FreeManagedResources();
 
 }
-

@@ -6,17 +6,16 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using System.Text;
 
 namespace Hydrogen;
 
 public sealed class ReferenceEqualityComparer : IEqualityComparer<object?>, IEqualityComparer {
 
-	public ReferenceEqualityComparer() { }
+	public ReferenceEqualityComparer() {
+	}
 
 	/// <summary>
 	/// Gets the singleton <see cref="ReferenceEqualityComparer"/> instance.

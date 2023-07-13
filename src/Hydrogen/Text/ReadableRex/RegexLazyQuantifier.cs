@@ -8,30 +8,31 @@
 
 using System;
 
-namespace Hydrogen {
-	public class RegexLazyQuantifier : RegexQuantifier {
-        public RegexLazyQuantifier(RegexPattern quantifiedExpression) : base(quantifiedExpression) { }
+namespace Hydrogen;
 
-        public override RegexPattern ZeroOrMore => base.ZeroOrMore.RegEx("?");
+public class RegexLazyQuantifier : RegexQuantifier {
+	public RegexLazyQuantifier(RegexPattern quantifiedExpression) : base(quantifiedExpression) {
+	}
 
-        public override RegexPattern OneOrMore => base.OneOrMore.RegEx("?");
+	public override RegexPattern ZeroOrMore => base.ZeroOrMore.RegEx("?");
 
-        public override RegexPattern Exactly(int timesToRepeat) {
-            return base.Exactly(timesToRepeat).RegEx("?");
-        }
+	public override RegexPattern OneOrMore => base.OneOrMore.RegEx("?");
 
-        public override RegexPattern AtLeast(int timesToRepeat) {
-            return base.AtLeast(timesToRepeat).RegEx("?");
-        }
+	public override RegexPattern Exactly(int timesToRepeat) {
+		return base.Exactly(timesToRepeat).RegEx("?");
+	}
 
-        public override RegexPattern Optional => base.Optional.RegEx("?");
+	public override RegexPattern AtLeast(int timesToRepeat) {
+		return base.AtLeast(timesToRepeat).RegEx("?");
+	}
 
-        public override RegexPattern InRange(int minimum, int maximum) {
-            return base.InRange(minimum, maximum).RegEx("?");
-        }
+	public override RegexPattern Optional => base.Optional.RegEx("?");
 
-        public override RegexPattern AtMost(int timesToRepeat) {
-            throw new InvalidOperationException("You cannot perform lazy evaluation of the AtMost {,n} quantifier.");
-        }
-    }
+	public override RegexPattern InRange(int minimum, int maximum) {
+		return base.InRange(minimum, maximum).RegEx("?");
+	}
+
+	public override RegexPattern AtMost(int timesToRepeat) {
+		throw new InvalidOperationException("You cannot perform lazy evaluation of the AtMost {,n} quantifier.");
+	}
 }

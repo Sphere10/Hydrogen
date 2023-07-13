@@ -26,6 +26,7 @@ public class ProxyValue<T> : IFuture<T> {
 	public static ProxyValue<T> From(Func<T> valueLoader) {
 		return new ProxyValue<T>(valueLoader);
 	}
+
 	public override string ToString() => Value.ToString();
 
 }

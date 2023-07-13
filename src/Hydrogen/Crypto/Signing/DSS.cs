@@ -7,7 +7,7 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System.Runtime.Serialization;
-using Tools;
+
 namespace Hydrogen;
 
 public enum DSS : byte {
@@ -36,9 +36,7 @@ public enum DSS : byte {
 	[EnumMember(Value = "schnorr-sect283k1")]
 	SCHNORR_SECT283K1,
 
-	[EnumMember(Value = "pqc-wams")]
-	PQC_WAMS,
+	[EnumMember(Value = "pqc-wams")] PQC_WAMS,
 
-	[EnumMember(Value = "pqc-wams#")]
-	PQC_WAMSSharp,
+	[EnumMember(Value = "pqc-wams#")] PQC_WAMSSharp,
 }

@@ -113,7 +113,7 @@
 //			_miners.ForEach(x => x.Stop());
 //			Started = false;
 //		}
-	
+
 //		private void RefreshStats() {
 
 //		}
@@ -148,7 +148,7 @@
 //						miner.Start();
 //				}
 //			}
-					
+
 //		}
 
 //		private static void ValidateMinerField(TextChangingEventArgs args) {
@@ -171,8 +171,6 @@
 //	}
 
 
-
-
-
-
 //}
+
+

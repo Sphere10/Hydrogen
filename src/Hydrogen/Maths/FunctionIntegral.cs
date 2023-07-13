@@ -6,21 +6,20 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen.Maths {
+namespace Hydrogen.Maths;
 
-	public class FunctionIntegral {
-        private IFunction _function = null;
-        private double _from;
+public class FunctionIntegral {
+	private IFunction _function = null;
+	private double _from;
 
-        public FunctionIntegral(IFunction function, double fromParam) {
-            _function = function;
-            _from = fromParam;
-        }
+	public FunctionIntegral(IFunction function, double fromParam) {
+		_function = function;
+		_from = fromParam;
+	}
 
-        public double Eval(double x) {
-            return Tools.MathPlus.Integrate(_function, _from, x);
-        }
+	public double Eval(double x) {
+		return Tools.MathPlus.Integrate(_function, _from, x);
+	}
 
 
-    }
 }

@@ -9,24 +9,21 @@
 using System;
 using System.IO;
 
-namespace Hydrogen {
+namespace Hydrogen;
 
+public sealed class TextWriterTransformer : TextWriterDecorator {
 
-	public sealed class TextWriterTransformer : TextWriterDecorator {
+	private readonly Func<string, string> valueMutator;
 
-		private readonly Func<string, string> valueMutator;
-
-		public TextWriterTransformer(Func<string, string> valueMutator, TextWriter internalTextWrtier) : base(internalTextWrtier) {
-			if (valueMutator == null) {
-				throw new ArgumentNullException("valueMutator");
-			}
-			this.valueMutator = valueMutator;
+	public TextWriterTransformer(Func<string, string> valueMutator, TextWriter internalTextWrtier) : base(internalTextWrtier) {
+		if (valueMutator == null) {
+			throw new ArgumentNullException("valueMutator");
 		}
+		this.valueMutator = valueMutator;
+	}
 
-		protected override string DecorateText(string text) {
-			return valueMutator(text);
-		}
-
+	protected override string DecorateText(string text) {
+		return valueMutator(text);
 	}
 
 }

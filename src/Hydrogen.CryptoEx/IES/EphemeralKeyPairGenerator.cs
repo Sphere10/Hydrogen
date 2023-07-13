@@ -8,24 +8,21 @@
 
 using Org.BouncyCastle.Crypto;
 
-namespace Hydrogen.CryptoEx.IES {
-	public class EphemeralKeyPairGenerator
-    {
-        private readonly IAsymmetricCipherKeyPairGenerator _gen;
-        private readonly KeyEncoder _keyEncoder;
+namespace Hydrogen.CryptoEx.IES;
 
-        public EphemeralKeyPairGenerator(IAsymmetricCipherKeyPairGenerator gen, KeyEncoder keyEncoder)
-        {
-            _gen = gen;
-            _keyEncoder = keyEncoder;
-        }
+public class EphemeralKeyPairGenerator {
+	private readonly IAsymmetricCipherKeyPairGenerator _gen;
+	private readonly KeyEncoder _keyEncoder;
 
-        public EphemeralKeyPair Generate()
-        {
-            AsymmetricCipherKeyPair eph = _gen.GenerateKeyPair();
+	public EphemeralKeyPairGenerator(IAsymmetricCipherKeyPairGenerator gen, KeyEncoder keyEncoder) {
+		_gen = gen;
+		_keyEncoder = keyEncoder;
+	}
 
-            // Encode the ephemeral public key
-            return new EphemeralKeyPair(eph, _keyEncoder);
-        }
-    }
+	public EphemeralKeyPair Generate() {
+		AsymmetricCipherKeyPair eph = _gen.GenerateKeyPair();
+
+		// Encode the ephemeral public key
+		return new EphemeralKeyPair(eph, _keyEncoder);
+	}
 }

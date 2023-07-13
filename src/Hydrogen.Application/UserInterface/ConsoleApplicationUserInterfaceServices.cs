@@ -53,7 +53,7 @@ public class ConsoleApplicationUserInterfaceServices : IUserInterfaceServices {
 	public void ReportError(string title, string msg) {
 		Console.WriteLine(msg);
 	}
-	
+
 	public void ReportFatalError(string title, string msg) {
 		Console.WriteLine(msg);
 		Exit(true);

@@ -6,16 +6,12 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
+namespace Hydrogen;
 
-namespace Hydrogen {
+public interface ITransactionalFile : ITransactionalObject {
 
-	public interface ITransactionalFile : ITransactionalObject {
+	string Path { get; }
 
-		string Path { get; }
-
-		TransactionalFileMappedBuffer AsBuffer { get; }
-
-	}
+	TransactionalFileMappedBuffer AsBuffer { get; }
 
 }

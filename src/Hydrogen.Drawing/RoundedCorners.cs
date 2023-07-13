@@ -7,17 +7,15 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace Hydrogen {
-    [Flags]
-    public enum RoundedCorners {
-        None = 0x00,
-        TopLeft = 0x02,
-        TopRight = 0x04,
-        BottomLeft = 0x08,
-        BottomRight = 0x10,
-        All = 0x1F
-    }
+namespace Hydrogen;
+
+[Flags]
+public enum RoundedCorners {
+	None = 0x00,
+	TopLeft = 0x02,
+	TopRight = 0x04,
+	BottomLeft = 0x08,
+	BottomRight = 0x10,
+	All = 0x1F
 }

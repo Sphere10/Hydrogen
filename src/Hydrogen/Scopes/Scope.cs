@@ -6,9 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
 using System.Threading.Tasks;
-using System.Threading.Tasks.Sources;
 
 namespace Hydrogen;
 
@@ -21,6 +19,7 @@ public class Scope : ScopeBase {
 	}
 
 }
+
 
 public class Scope<T> : Scope, IScope<T> {
 	public T Item { get; set; }

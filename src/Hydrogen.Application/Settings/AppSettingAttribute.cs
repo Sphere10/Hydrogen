@@ -9,20 +9,19 @@
 using System.ComponentModel;
 using System.Configuration;
 
-namespace Hydrogen.Application {
-	public class AppSettingAttribute : DefaultValueAttribute {
+namespace Hydrogen.Application;
 
-		public AppSettingAttribute(string key)
-            : base(GetAppSetting(key)) {
-			Key = key;
-		}
+public class AppSettingAttribute : DefaultValueAttribute {
 
-		public string Key { get; }
+	public AppSettingAttribute(string key)
+		: base(GetAppSetting(key)) {
+		Key = key;
+	}
 
-		public override object Value => GetAppSetting(Key);
+	public string Key { get; }
 
-        private static string GetAppSetting(string key) 
-            => ConfigurationManager.AppSettings[key];
-    }
+	public override object Value => GetAppSetting(Key);
+
+	private static string GetAppSetting(string key)
+		=> ConfigurationManager.AppSettings[key];
 }
-

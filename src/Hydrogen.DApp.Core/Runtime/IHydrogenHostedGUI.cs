@@ -6,7 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen.DApp.Core.Runtime {
-	public interface IHydrogenHostedGUI {
-	}
+namespace Hydrogen.DApp.Core.Runtime;
+
+public interface IHydrogenHostedGUI {
 }

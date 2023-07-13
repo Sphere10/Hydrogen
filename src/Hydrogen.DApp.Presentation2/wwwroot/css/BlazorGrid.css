@@ -7,12 +7,11 @@
 th, td {
 
     white-space: nowrap;
-    overflow-x:hidden;
+    overflow-x: hidden;
     text-overflow: ellipsis;
 }
 
-.TableHeaderClass {
-}
+.TableHeaderClass { }
 
 .TableDataClass {
     padding: 0px 0px 0px 0px !important;
@@ -27,9 +26,7 @@ th, td {
     color: black;
 }
 
-.ResizableClass {
-    width: -webkit-fill-available;
-}
+.ResizableClass { width: -webkit-fill-available; }
 
 input[type="date"]::-webkit-calendar-picker-indicator {
     padding: 0;
@@ -39,17 +36,15 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     height: 20px;
 }
 
-input[type="number"]::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-}
+input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
 
-.ActionButton{
+.ActionButton {
     padding: 1px;
     margin: 1px;
     border: 1px;
 }
 
-.PagingInput{
+.PagingInput {
     width: 50px;
     padding: 0px 5px 0px 5px;
 }

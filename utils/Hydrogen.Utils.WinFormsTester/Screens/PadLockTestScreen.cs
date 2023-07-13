@@ -6,32 +6,23 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Windows.Forms;
 using Hydrogen.Windows.Forms;
 
 
-namespace Hydrogen.Utils.WinFormsTester {
-	public partial class PadLockTestScreen : ApplicationScreen {
-		private readonly TextWriter _outputTextWriter;
-		public PadLockTestScreen() {
-			InitializeComponent();
-			_outputTextWriter = new TextBoxWriter(_outputTextBox);
-		}
+namespace Hydrogen.Utils.WinFormsTester;
 
-
-
-		private void padLockButton1_PadLockStateChanged(PadLockButton arg1, PadLockButton.PadLockState arg2) {
-			_outputTextWriter.WriteLine("{0}: {1}", arg1.Name, arg2);
-		}
-
-
+public partial class PadLockTestScreen : ApplicationScreen {
+	private readonly TextWriter _outputTextWriter;
+	public PadLockTestScreen() {
+		InitializeComponent();
+		_outputTextWriter = new TextBoxWriter(_outputTextBox);
 	}
+
+
+	private void padLockButton1_PadLockStateChanged(PadLockButton arg1, PadLockButton.PadLockState arg2) {
+		_outputTextWriter.WriteLine("{0}: {1}", arg1.Name, arg2);
+	}
+
+
 }

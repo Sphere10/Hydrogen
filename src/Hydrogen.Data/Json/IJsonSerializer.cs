@@ -6,15 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
-using Newtonsoft.Json.Serialization;
-
 namespace Hydrogen.Data;
-
 
 public interface IJsonSerializer {
 	string Serialize<T>(T value);
@@ -22,4 +14,3 @@ public interface IJsonSerializer {
 	T Deserialize<T>(string value);
 
 }
-

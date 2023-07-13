@@ -13,7 +13,7 @@ namespace Hydrogen;
 public abstract class LoadableBase : ILoadable {
 	public event EventHandlerEx<object> Loading;
 	public event EventHandlerEx<object> Loaded;
-	
+
 	public virtual bool RequiresLoad { get; set; } = false;
 
 	protected virtual bool SuppressNotifications { get; set; } = false;
@@ -55,7 +55,7 @@ public abstract class LoadableBase : ILoadable {
 		if (SuppressNotifications)
 			return;
 		await OnLoadingAsync();
-		await Task.Run( () => Loading?.Invoke(this));
+		await Task.Run(() => Loading?.Invoke(this));
 	}
 
 	protected void NotifyLoaded() {
@@ -70,6 +70,6 @@ public abstract class LoadableBase : ILoadable {
 		if (SuppressNotifications)
 			return;
 		await OnLoadedAsync();
-		await Task.Run( () => Loaded?.Invoke(this));
+		await Task.Run(() => Loaded?.Invoke(this));
 	}
 }

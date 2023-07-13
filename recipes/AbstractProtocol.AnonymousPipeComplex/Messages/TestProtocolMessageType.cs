@@ -6,21 +6,21 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace AbstractProtocol.AnonymousPipeComplex {
-    public enum AppProtocolMessageType {
-        Sync,
-        Ack,
-        Verack,
-        Ping,
-        Pong,
-        RequestListFolder,
-        FileDescriptor,
-        DirectoryDescriptor,
-        FolderContents,
-        RequestFilePart,
-        FilePart,
-        NotifyLayer2Message,
-        NotifyNewBlock,
-        NotifyNewTransaction,
-    }
+namespace AbstractProtocol.AnonymousPipeComplex;
+
+public enum AppProtocolMessageType {
+	Sync,
+	Ack,
+	Verack,
+	Ping,
+	Pong,
+	RequestListFolder,
+	FileDescriptor,
+	DirectoryDescriptor,
+	FolderContents,
+	RequestFilePart,
+	FilePart,
+	NotifyLayer2Message,
+	NotifyNewBlock,
+	NotifyNewTransaction,
 }

@@ -6,22 +6,19 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
+namespace Hydrogen;
 
-namespace Hydrogen {
+public class FactorySerializerBuilder<TBase> : FactorySerializerBuilderBase<TBase, FactorySerializerBuilder<TBase>> {
 
-    public class FactorySerializerBuilder<TBase> : FactorySerializerBuilderBase<TBase, FactorySerializerBuilder<TBase>> {
-
-		public FactorySerializerBuilder() : this(new FactorySerializer<TBase>()) {
-        }
-
-		internal FactorySerializerBuilder(IFactorySerializer<TBase> serializer) 
-			: base(serializer) {
-        }
-
-		public IFactorySerializer<TBase> Build() {
-			return Serializer;
-		}
-
+	public FactorySerializerBuilder() : this(new FactorySerializer<TBase>()) {
 	}
+
+	internal FactorySerializerBuilder(IFactorySerializer<TBase> serializer)
+		: base(serializer) {
+	}
+
+	public IFactorySerializer<TBase> Build() {
+		return Serializer;
+	}
+
 }

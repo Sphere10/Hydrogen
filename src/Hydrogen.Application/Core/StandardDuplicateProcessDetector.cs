@@ -9,13 +9,12 @@
 using System.Linq;
 using System.Diagnostics;
 
-namespace Hydrogen.Application {
+namespace Hydrogen.Application;
 
-	public class StandardDuplicateProcessDetector : IDuplicateProcessDetector {
-		
-		public int CountRunningInstancesOfThisApplication() {
-			return Process.GetProcessesByName(Process.GetCurrentProcess().ProcessName).Count();
-		}
+public class StandardDuplicateProcessDetector : IDuplicateProcessDetector {
 
+	public int CountRunningInstancesOfThisApplication() {
+		return Process.GetProcessesByName(Process.GetCurrentProcess().ProcessName).Count();
 	}
+
 }

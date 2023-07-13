@@ -8,15 +8,14 @@
 
 using System.Threading.Tasks;
 using Hydrogen.Data;
-using Hydrogen;
 
-namespace Hydrogen.Windows.Forms {
+namespace Hydrogen.Windows.Forms;
 
-	public interface IDatabaseConnectionProvider {
-		IDAC GetDAC();
-		Task<Result> TestConnection();
-		string ConnectionString { get; set; }
-        string DatabaseName { get; }
-	}
+public interface IDatabaseConnectionProvider {
+	IDAC GetDAC();
 
+	Task<Result> TestConnection();
+
+	string ConnectionString { get; set; }
+	string DatabaseName { get; }
 }

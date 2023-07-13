@@ -10,12 +10,9 @@
 // Web: https://sphere10.com/tech/dynamic-merkle-trees
 // e-print: https://vixra.org/abs/2305.0087
 
-using System.Collections;
 using System.Collections.Generic;
 
-namespace Hydrogen {
+namespace Hydrogen;
 
-	public interface IMerkleCollection<TItem> : ICollection<TItem>, IMerkleObject {
-	}
-
+public interface IMerkleCollection<TItem> : ICollection<TItem>, IMerkleObject {
 }

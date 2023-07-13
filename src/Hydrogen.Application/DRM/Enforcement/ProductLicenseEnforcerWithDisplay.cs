@@ -19,12 +19,12 @@ public class ProductLicenseEnforcerWithDisplay : IProductLicenseEnforcer {
 	}
 
 	private IUserInterfaceServices UserInterfaceServices { get; }
-		
 
-	public bool ValidateLicense(ProductLicenseActivationDTO licenseActivation, ProductLicenseAuthorityDTO licenseAuthority) 
+
+	public bool ValidateLicense(ProductLicenseActivationDTO licenseActivation, ProductLicenseAuthorityDTO licenseAuthority)
 		=> _internalEnforcer.ValidateLicense(licenseActivation, licenseAuthority);
 
-	public bool ValidateLicenseCommand(ProductLicenseActivationDTO licenseActivation, SignedItem<ProductLicenseCommandDTO> command) 
+	public bool ValidateLicenseCommand(ProductLicenseActivationDTO licenseActivation, SignedItem<ProductLicenseCommandDTO> command)
 		=> _internalEnforcer.ValidateLicenseCommand(licenseActivation, command);
 
 
@@ -35,7 +35,7 @@ public class ProductLicenseEnforcerWithDisplay : IProductLicenseEnforcer {
 
 	public void ClearDrmServerErrors() => _internalEnforcer.ClearDrmServerErrors();
 
-	public void EnforceLicense(bool suppressNag) 
+	public void EnforceLicense(bool suppressNag)
 		=> _internalEnforcer.EnforceLicense(suppressNag);
 
 	public ProductRights CalculateRights(out string nagMessage)

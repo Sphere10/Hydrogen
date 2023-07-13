@@ -7,37 +7,34 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Collections.Generic;
 using System.Data;
-using System.Linq;
-using System.Text;
 
-namespace Hydrogen.Data.Firebird {
-	public class FirebirdCorrectingReader : DataReaderDecorator {
+namespace Hydrogen.Data.Firebird;
 
-		public FirebirdCorrectingReader(IDataReader internalReader) : base(internalReader) {
-		}
-	
-		public override object GetValue(int i) {
-			var result = InternalReader.GetValue(i);
-			if (result is Guid) {
-				result = CorrectGuid((Guid)result);
-			}
-			return result;
-		}
+public class FirebirdCorrectingReader : DataReaderDecorator {
 
-		public override Guid GetGuid(int i) {
-			return CorrectGuid(InternalReader.GetGuid(i));
-		}
+	public FirebirdCorrectingReader(IDataReader internalReader) : base(internalReader) {
+	}
 
-		public static Guid CorrectGuid(Guid badlyParsedGuid) {
-			var rfc4122bytes = badlyParsedGuid.ToByteArray();
-			if (BitConverter.IsLittleEndian) {
-				Array.Reverse(rfc4122bytes, 0, 4);
-				Array.Reverse(rfc4122bytes, 4, 2);
-				Array.Reverse(rfc4122bytes, 6, 2);
-			}
-			return new Guid(rfc4122bytes);
+	public override object GetValue(int i) {
+		var result = InternalReader.GetValue(i);
+		if (result is Guid) {
+			result = CorrectGuid((Guid)result);
 		}
+		return result;
+	}
+
+	public override Guid GetGuid(int i) {
+		return CorrectGuid(InternalReader.GetGuid(i));
+	}
+
+	public static Guid CorrectGuid(Guid badlyParsedGuid) {
+		var rfc4122bytes = badlyParsedGuid.ToByteArray();
+		if (BitConverter.IsLittleEndian) {
+			Array.Reverse(rfc4122bytes, 0, 4);
+			Array.Reverse(rfc4122bytes, 4, 2);
+			Array.Reverse(rfc4122bytes, 6, 2);
+		}
+		return new Guid(rfc4122bytes);
 	}
 }

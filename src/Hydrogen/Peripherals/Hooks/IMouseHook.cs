@@ -8,24 +8,23 @@
 
 using System;
 
-namespace Hydrogen {
+namespace Hydrogen;
 
-	public interface IMouseHook : IDeviceHook  {
-		event EventHandler<MouseMoveEvent> MotionStart;
-		event EventHandler<MouseMoveEvent>  Motion;
-		event EventHandler<MouseMoveEvent> MotionStop;
-		event EventHandler<MouseClickEvent> Click;
-		event EventHandler<MouseEvent> Activity;
+public interface IMouseHook : IDeviceHook {
+	event EventHandler<MouseMoveEvent> MotionStart;
+	event EventHandler<MouseMoveEvent> Motion;
+	event EventHandler<MouseMoveEvent> MotionStop;
+	event EventHandler<MouseClickEvent> Click;
+	event EventHandler<MouseEvent> Activity;
 
-		int CurrentMouseX { get; } 
-		int CurrentMouseY { get; }
-		int LastClickX { get; }
-		int LastClickY { get; }
-		int MotionStartX { get; }
-		int MotionStartY { get; }
+	int CurrentMouseX { get; }
+	int CurrentMouseY { get; }
+	int LastClickX { get; }
+	int LastClickY { get; }
+	int MotionStartX { get; }
+	int MotionStartY { get; }
 
 
-		void Simulate(MouseButton button, MouseButtonState buttonState, int screenX, int screenY);
+	void Simulate(MouseButton button, MouseButtonState buttonState, int screenX, int screenY);
 
-	}
 }

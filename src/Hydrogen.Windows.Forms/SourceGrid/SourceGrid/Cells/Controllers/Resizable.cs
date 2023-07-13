@@ -10,237 +10,216 @@ using System;
 using System.Drawing;
 using System.Windows.Forms;
 
-namespace SourceGrid.Cells.Controllers
-{
-    /// <summary>
-    /// Implement the mouse resize features of a cell. This behavior can be shared between multiple cells.
-    /// </summary>
-    public class Resizable : ControllerBase
-    {
-        /// <summary>
-        /// Resize both width nd height behavior
-        /// </summary>
-        public readonly static Resizable ResizeBoth = new Resizable(CellResizeMode.Both);
-        /// <summary>
-        /// Resize width behavior
-        /// </summary>
-        public readonly static Resizable ResizeWidth = new Resizable(CellResizeMode.Width);
-        /// <summary>
-        /// Resize height behavior
-        /// </summary>
-        public readonly static Resizable ResizeHeight = new Resizable(CellResizeMode.Height);
+namespace SourceGrid.Cells.Controllers;
 
-        /// <summary>
-        /// Border used to calculate the region where the resize is enabled.
-        /// </summary>
-        public DevAge.Drawing.RectangleBorder LogicalBorder = new DevAge.Drawing.RectangleBorder(new DevAge.Drawing.BorderLine(System.Drawing.Color.Black, 4), new DevAge.Drawing.BorderLine(System.Drawing.Color.Black, 4));
+/// <summary>
+/// Implement the mouse resize features of a cell. This behavior can be shared between multiple cells.
+/// </summary>
+public class Resizable : ControllerBase {
+	/// <summary>
+	/// Resize both width nd height behavior
+	/// </summary>
+	public readonly static Resizable ResizeBoth = new Resizable(CellResizeMode.Both);
 
-        /// <summary>
-        /// Constructor
-        /// </summary>
-        /// <param name="p_Mode"></param>
-        public Resizable(CellResizeMode p_Mode)
-        {
-            m_ResizeMode = p_Mode;
-        }
+	/// <summary>
+	/// Resize width behavior
+	/// </summary>
+	public readonly static Resizable ResizeWidth = new Resizable(CellResizeMode.Width);
 
-        private MouseCursor mWidthCursor = new MouseCursor(System.Windows.Forms.Cursors.VSplit, false);
-        private MouseCursor mHeightCursor = new MouseCursor(System.Windows.Forms.Cursors.HSplit, false);
+	/// <summary>
+	/// Resize height behavior
+	/// </summary>
+	public readonly static Resizable ResizeHeight = new Resizable(CellResizeMode.Height);
 
-        #region IBehaviorModel Members
+	/// <summary>
+	/// Border used to calculate the region where the resize is enabled.
+	/// </summary>
+	public DevAge.Drawing.RectangleBorder LogicalBorder = new DevAge.Drawing.RectangleBorder(new DevAge.Drawing.BorderLine(System.Drawing.Color.Black, 4), new DevAge.Drawing.BorderLine(System.Drawing.Color.Black, 4));
 
-        public override void OnMouseDown(CellContext sender, MouseEventArgs e)
-        {
-            base.OnMouseDown(sender, e);
+	/// <summary>
+	/// Constructor
+	/// </summary>
+	/// <param name="p_Mode"></param>
+	public Resizable(CellResizeMode p_Mode) {
+		m_ResizeMode = p_Mode;
+	}
 
-            m_IsHeightResize = false;
-            m_IsWidthResize = false;
+	private MouseCursor mWidthCursor = new MouseCursor(System.Windows.Forms.Cursors.VSplit, false);
+	private MouseCursor mHeightCursor = new MouseCursor(System.Windows.Forms.Cursors.HSplit, false);
 
-            Rectangle l_CellRect = sender.Grid.PositionToRectangle(sender.Position);
-            Point mousePoint = new Point(e.X, e.Y);
+	#region IBehaviorModel Members
 
-            DevAge.Drawing.RectanglePartType partType = LogicalBorder.GetPointPartType(l_CellRect, mousePoint, out mDistanceFromBorder);
+	public override void OnMouseDown(CellContext sender, MouseEventArgs e) {
+		base.OnMouseDown(sender, e);
 
-            if (((ResizeMode & CellResizeMode.Width) == CellResizeMode.Width) &&
-                        partType == DevAge.Drawing.RectanglePartType.RightBorder)
-                m_IsWidthResize = true;
-            else if (((ResizeMode & CellResizeMode.Height) == CellResizeMode.Height) &&
-                        partType == DevAge.Drawing.RectanglePartType.BottomBorder)
-                m_IsHeightResize = true;
-        }
+		m_IsHeightResize = false;
+		m_IsWidthResize = false;
 
-        public override void OnMouseUp(CellContext sender, MouseEventArgs e)
-        {
-            base.OnMouseUp(sender, e);
+		Rectangle l_CellRect = sender.Grid.PositionToRectangle(sender.Position);
+		Point mousePoint = new Point(e.X, e.Y);
 
-            m_IsWidthResize = false;
-            m_IsHeightResize = false;
-        }
+		DevAge.Drawing.RectanglePartType partType = LogicalBorder.GetPointPartType(l_CellRect, mousePoint, out mDistanceFromBorder);
 
-        public override void OnMouseMove(CellContext sender, MouseEventArgs e)
-        {
-            base.OnMouseMove(sender, e);
+		if (((ResizeMode & CellResizeMode.Width) == CellResizeMode.Width) &&
+		    partType == DevAge.Drawing.RectanglePartType.RightBorder)
+			m_IsWidthResize = true;
+		else if (((ResizeMode & CellResizeMode.Height) == CellResizeMode.Height) &&
+		         partType == DevAge.Drawing.RectanglePartType.BottomBorder)
+			m_IsHeightResize = true;
+	}
 
-            Rectangle cellRect = sender.Grid.PositionToRectangle(sender.Position);
-            if (cellRect.IsEmpty)
-                return;
+	public override void OnMouseUp(CellContext sender, MouseEventArgs e) {
+		base.OnMouseUp(sender, e);
 
-            Point mousePoint = new Point(e.X, e.Y);
+		m_IsWidthResize = false;
+		m_IsHeightResize = false;
+	}
 
-            float dummy;
-            DevAge.Drawing.RectanglePartType partType = LogicalBorder.GetPointPartType(cellRect, mousePoint, out dummy);
+	public override void OnMouseMove(CellContext sender, MouseEventArgs e) {
+		base.OnMouseMove(sender, e);
 
-            //sono già in fase di resizing
-            if (sender.Grid.MouseDownPosition == sender.Position)
-            {
-                if (m_IsWidthResize)
-                {
-                    int newWidth = mousePoint.X - cellRect.Left;
+		Rectangle cellRect = sender.Grid.PositionToRectangle(sender.Position);
+		if (cellRect.IsEmpty)
+			return;
 
-                    if (newWidth > 0)
-                        SetWidth(sender.Grid, sender.Position, (int)(newWidth + mDistanceFromBorder));
+		Point mousePoint = new Point(e.X, e.Y);
 
-                    mWidthCursor.ApplyCursor(sender, e);
-                    mHeightCursor.ResetCursor(sender, e);
-                }
-                else if (m_IsHeightResize)
-                {
-                    int newHeight = mousePoint.Y - cellRect.Top;
+		float dummy;
+		DevAge.Drawing.RectanglePartType partType = LogicalBorder.GetPointPartType(cellRect, mousePoint, out dummy);
 
-                    if (newHeight > 0)
-                        SetHeight(sender.Grid, sender.Position, (int)(newHeight + mDistanceFromBorder));
+		//sono già in fase di resizing
+		if (sender.Grid.MouseDownPosition == sender.Position) {
+			if (m_IsWidthResize) {
+				int newWidth = mousePoint.X - cellRect.Left;
 
-                    mHeightCursor.ApplyCursor(sender, e);
-                    mWidthCursor.ResetCursor(sender, e);
-                }
-            }
-            else
-            {
-                if (partType == DevAge.Drawing.RectanglePartType.RightBorder && (ResizeMode & CellResizeMode.Width) == CellResizeMode.Width)
-                    mWidthCursor.ApplyCursor(sender, e);
-                else if (partType == DevAge.Drawing.RectanglePartType.BottomBorder && (ResizeMode & CellResizeMode.Height) == CellResizeMode.Height)
-                    mHeightCursor.ApplyCursor(sender, e);
-                else
-                {
-                    mWidthCursor.ResetCursor(sender, e);
-                    mHeightCursor.ResetCursor(sender, e);
-                }
-            }
-        }
+				if (newWidth > 0)
+					SetWidth(sender.Grid, sender.Position, (int)(newWidth + mDistanceFromBorder));
 
-        private void SetWidth(GridVirtual grid, Position position, int width)
-        {
-            CellRange range = grid.PositionToCellRange(position);
-            int widthForCol = width / range.ColumnsCount;
-            for (int c = range.Start.Column; c <= range.End.Column; c++)
-                grid.Columns.SetWidth(c, widthForCol);
-        }
-        private void SetHeight(GridVirtual grid, Position position, int height)
-        {
-            CellRange range = grid.PositionToCellRange(position);
-            int heightForCol = height / range.RowsCount;
-            for (int r = range.Start.Row; r <= range.End.Row; r++)
-                grid.Rows.SetHeight(r, heightForCol);
-        }
+				mWidthCursor.ApplyCursor(sender, e);
+				mHeightCursor.ResetCursor(sender, e);
+			} else if (m_IsHeightResize) {
+				int newHeight = mousePoint.Y - cellRect.Top;
 
-        public override void OnMouseLeave(CellContext sender, EventArgs e)
-        {
-            base.OnMouseLeave(sender, e);
+				if (newHeight > 0)
+					SetHeight(sender.Grid, sender.Position, (int)(newHeight + mDistanceFromBorder));
 
-            mWidthCursor.ResetCursor(sender, e);
-            mHeightCursor.ResetCursor(sender, e);
-            m_IsWidthResize = false;
-            m_IsHeightResize = false;
-        }
+				mHeightCursor.ApplyCursor(sender, e);
+				mWidthCursor.ResetCursor(sender, e);
+			}
+		} else {
+			if (partType == DevAge.Drawing.RectanglePartType.RightBorder && (ResizeMode & CellResizeMode.Width) == CellResizeMode.Width)
+				mWidthCursor.ApplyCursor(sender, e);
+			else if (partType == DevAge.Drawing.RectanglePartType.BottomBorder && (ResizeMode & CellResizeMode.Height) == CellResizeMode.Height)
+				mHeightCursor.ApplyCursor(sender, e);
+			else {
+				mWidthCursor.ResetCursor(sender, e);
+				mHeightCursor.ResetCursor(sender, e);
+			}
+		}
+	}
 
-        public override void OnDoubleClick(CellContext sender, EventArgs e)
-        {
-            base.OnDoubleClick(sender, e);
+	private void SetWidth(GridVirtual grid, Position position, int width) {
+		CellRange range = grid.PositionToCellRange(position);
+		int widthForCol = width / range.ColumnsCount;
+		for (int c = range.Start.Column; c <= range.End.Column; c++)
+			grid.Columns.SetWidth(c, widthForCol);
+	}
+	private void SetHeight(GridVirtual grid, Position position, int height) {
+		CellRange range = grid.PositionToCellRange(position);
+		int heightForCol = height / range.RowsCount;
+		for (int r = range.Start.Row; r <= range.End.Row; r++)
+			grid.Rows.SetHeight(r, heightForCol);
+	}
 
-            Point currentPoint = sender.Grid.PointToClient(System.Windows.Forms.Control.MousePosition);
-            Rectangle cellRect = sender.Grid.PositionToRectangle(sender.Position);
+	public override void OnMouseLeave(CellContext sender, EventArgs e) {
+		base.OnMouseLeave(sender, e);
 
-            float distance;
-            DevAge.Drawing.RectanglePartType partType = LogicalBorder.GetPointPartType(cellRect, currentPoint, out distance);
+		mWidthCursor.ResetCursor(sender, e);
+		mHeightCursor.ResetCursor(sender, e);
+		m_IsWidthResize = false;
+		m_IsHeightResize = false;
+	}
 
-            if ((ResizeMode & CellResizeMode.Width) == CellResizeMode.Width &&
-                partType == DevAge.Drawing.RectanglePartType.RightBorder)
-            {
-                sender.Grid.Columns.AutoSizeColumn(sender.Position.Column);
-            }
-            else if ((ResizeMode & CellResizeMode.Height) == CellResizeMode.Height &&
-                partType == DevAge.Drawing.RectanglePartType.BottomBorder)
-            {
-                sender.Grid.Rows.AutoSizeRow(sender.Position.Row);
-            }
-        }
+	public override void OnDoubleClick(CellContext sender, EventArgs e) {
+		base.OnDoubleClick(sender, e);
 
-        #endregion
+		Point currentPoint = sender.Grid.PointToClient(System.Windows.Forms.Control.MousePosition);
+		Rectangle cellRect = sender.Grid.PositionToRectangle(sender.Position);
 
-        private CellResizeMode m_ResizeMode = CellResizeMode.Both;
+		float distance;
+		DevAge.Drawing.RectanglePartType partType = LogicalBorder.GetPointPartType(cellRect, currentPoint, out distance);
 
-        /// <summary>
-        /// Resize mode of the cell
-        /// </summary>
-        public CellResizeMode ResizeMode
-        {
-            get { return m_ResizeMode; }
-        }
+		if ((ResizeMode & CellResizeMode.Width) == CellResizeMode.Width &&
+		    partType == DevAge.Drawing.RectanglePartType.RightBorder) {
+			sender.Grid.Columns.AutoSizeColumn(sender.Position.Column);
+		} else if ((ResizeMode & CellResizeMode.Height) == CellResizeMode.Height &&
+		           partType == DevAge.Drawing.RectanglePartType.BottomBorder) {
+			sender.Grid.Rows.AutoSizeRow(sender.Position.Row);
+		}
+	}
 
-        //		private Cursor m_ModelCursor = new Cursor();
+	#endregion
 
-        //Queste variabili indicano lo stato del resize (essendo usate però in un contesto di MouseEnter e MouseLeave possono essere tranquillamente condivise tra più cello o griglie, visto che il mouse in un dato momento sarà solo in una cella particolare, di un thread particolare, ...). Questo è un motivo in più per non poter usare questo controllo in multi thread (cosa che nessun controllo windows forms può fare ...)
-        private bool m_IsWidthResize = false;
-        private bool m_IsHeightResize = false;
-        private float mDistanceFromBorder = 0;
+	private CellResizeMode m_ResizeMode = CellResizeMode.Both;
 
-        /// <summary>
-        /// Indicates if the behavior is currently resizing a cell width
-        /// </summary>
-        public bool IsWidthResizing
-        {
-            get { return m_IsWidthResize; }
-        }
+	/// <summary>
+	/// Resize mode of the cell
+	/// </summary>
+	public CellResizeMode ResizeMode {
+		get { return m_ResizeMode; }
+	}
 
-        /// <summary>
-        /// Indicates if the behavior is currently resizing a cell height
-        /// </summary>
-        public bool IsHeightResizing
-        {
-            get { return m_IsHeightResize; }
-        }
+	//		private Cursor m_ModelCursor = new Cursor();
 
-        //		#region Support Functions
-        //		/// <summary>
-        //		/// 
-        //		/// </summary>
-        //		/// <param name="p_CellRectangle">A grid relative rectangle</param>
-        //		/// <param name="p"></param>
-        //		/// <returns></returns>
-        //		public static bool IsInResizeHorRegion(Rectangle p_CellRectangle, Point p)
-        //		{
-        //			if (p.X >= p_CellRectangle.Right-c_MouseDelta && p.X <= p_CellRectangle.Right)
-        //				return true;
-        //			else
-        //				return false;
-        //		}
-        //
-        //		/// <summary>
-        //		/// 
-        //		/// </summary>
-        //		/// <param name="p_CellRectangle">A grid relative rectangle</param>
-        //		/// <param name="p"></param>
-        //		/// <returns></returns>
-        //		public static bool IsInResizeVerRegion(Rectangle p_CellRectangle, Point p)
-        //		{
-        //			if (p.Y >= p_CellRectangle.Bottom-c_MouseDelta && p.Y <= p_CellRectangle.Bottom)
-        //				return true;
-        //			else
-        //				return false;
-        //		}
-        //
-        //		private const int c_MouseDelta = 4;
-        //
-        //		#endregion
-    }
+	//Queste variabili indicano lo stato del resize (essendo usate però in un contesto di MouseEnter e MouseLeave possono essere tranquillamente condivise tra più cello o griglie, visto che il mouse in un dato momento sarà solo in una cella particolare, di un thread particolare, ...). Questo è un motivo in più per non poter usare questo controllo in multi thread (cosa che nessun controllo windows forms può fare ...)
+	private bool m_IsWidthResize = false;
+	private bool m_IsHeightResize = false;
+	private float mDistanceFromBorder = 0;
+
+	/// <summary>
+	/// Indicates if the behavior is currently resizing a cell width
+	/// </summary>
+	public bool IsWidthResizing {
+		get { return m_IsWidthResize; }
+	}
+
+	/// <summary>
+	/// Indicates if the behavior is currently resizing a cell height
+	/// </summary>
+	public bool IsHeightResizing {
+		get { return m_IsHeightResize; }
+	}
+
+	//		#region Support Functions
+	//		/// <summary>
+	//		/// 
+	//		/// </summary>
+	//		/// <param name="p_CellRectangle">A grid relative rectangle</param>
+	//		/// <param name="p"></param>
+	//		/// <returns></returns>
+	//		public static bool IsInResizeHorRegion(Rectangle p_CellRectangle, Point p)
+	//		{
+	//			if (p.X >= p_CellRectangle.Right-c_MouseDelta && p.X <= p_CellRectangle.Right)
+	//				return true;
+	//			else
+	//				return false;
+	//		}
+	//
+	//		/// <summary>
+	//		/// 
+	//		/// </summary>
+	//		/// <param name="p_CellRectangle">A grid relative rectangle</param>
+	//		/// <param name="p"></param>
+	//		/// <returns></returns>
+	//		public static bool IsInResizeVerRegion(Rectangle p_CellRectangle, Point p)
+	//		{
+	//			if (p.Y >= p_CellRectangle.Bottom-c_MouseDelta && p.Y <= p_CellRectangle.Bottom)
+	//				return true;
+	//			else
+	//				return false;
+	//		}
+	//
+	//		private const int c_MouseDelta = 4;
+	//
+	//		#endregion
 }

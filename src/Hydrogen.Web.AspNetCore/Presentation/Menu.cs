@@ -8,37 +8,30 @@
 
 using System.Xml.Serialization;
 
-namespace Hydrogen.Web.AspNetCore {
+namespace Hydrogen.Web.AspNetCore;
 
-    [XmlRoot("Menu")]
-	public class Menu {
+[XmlRoot("Menu")]
+public class Menu {
 
-		public Menu() {
-			SubMenus = new Menu[0];
-			Url = "#";
-		}
-
-		public Menu(string text, string url, string glyph = null) : this() {
-			Text = text;
-			Url = url;
-			Glyph = glyph;
-		}
-
-		[XmlAttribute("text")]
-		public string Text { get; set; }
-
-		[XmlAttribute("url")]
-		public string Url { get; set; }
-
-		[XmlAttribute("icon")]
-		public string Icon { get; set; }
-
-		[XmlAttribute("glyph")]
-		public string Glyph { get; set; }
-
-		[XmlElement("Menu")]
-		public Menu[] SubMenus { get; set; }
-
+	public Menu() {
+		SubMenus = new Menu[0];
+		Url = "#";
 	}
+
+	public Menu(string text, string url, string glyph = null) : this() {
+		Text = text;
+		Url = url;
+		Glyph = glyph;
+	}
+
+	[XmlAttribute("text")] public string Text { get; set; }
+
+	[XmlAttribute("url")] public string Url { get; set; }
+
+	[XmlAttribute("icon")] public string Icon { get; set; }
+
+	[XmlAttribute("glyph")] public string Glyph { get; set; }
+
+	[XmlElement("Menu")] public Menu[] SubMenus { get; set; }
 
 }

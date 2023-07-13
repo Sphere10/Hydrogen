@@ -6,51 +6,47 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
-using System.Collections.Generic;
-using System.Text;
+namespace Hydrogen.Maths.Compiler;
 
-namespace Hydrogen.Maths.Compiler {
-    /// <summary>
-    /// Tokens grammar
-    /// Number = Digit Digit*
-    /// Real = 
-    /// Letter = [a..z]|[A..Z]
-    /// Digit = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
-    /// </summary>
-    public enum TokenType {
-        Scalar,             // Digit(Digit)*[.][E][+|-]Digit(Digit)*
-        Identifier,         // Letter(Letter|Digit)*
-        Plus,               // +
-        Minus,              // -
-        Multiply,           // *
-        Divide,             // /
-        Power,              // ^
-        Assignment,         // =
-        Equality,           // ==
-        And,                // &&
-        Or,                 // ||
-        OpenBracket,        // [
-        CloseBracket,       // ]
-        OpenParenthesis,    // (
-        CloseParenthesis,   // )
-        BeginBracket,       // {
-        EndBracket,         // }
-        Comma,              // ,
-        Dot,                // .
-        Let,                // LET (case insensitive)
-        If,                 // IF
-        Then,               // THEN
-        Else,               // ELSE
-        SemiColon,          // ;
-        Not,                // !
-        Inequality,         // !=
-        Modulus,            // %
-        LessThan,           // <
-        LessThanEqualTo,    // <= 
-        GreaterThan,        // >
-        GreaterThanEqualTo, // >=
-        EndOfCode
+/// <summary>
+/// Tokens grammar
+/// Number = Digit Digit*
+/// Real = 
+/// Letter = [a..z]|[A..Z]
+/// Digit = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
+/// </summary>
+public enum TokenType {
+	Scalar, // Digit(Digit)*[.][E][+|-]Digit(Digit)*
+	Identifier, // Letter(Letter|Digit)*
+	Plus, // +
+	Minus, // -
+	Multiply, // *
+	Divide, // /
+	Power, // ^
+	Assignment, // =
+	Equality, // ==
+	And, // &&
+	Or, // ||
+	OpenBracket, // [
+	CloseBracket, // ]
+	OpenParenthesis, // (
+	CloseParenthesis, // )
+	BeginBracket, // {
+	EndBracket, // }
+	Comma, // ,
+	Dot, // .
+	Let, // LET (case insensitive)
+	If, // IF
+	Then, // THEN
+	Else, // ELSE
+	SemiColon, // ;
+	Not, // !
+	Inequality, // !=
+	Modulus, // %
+	LessThan, // <
+	LessThanEqualTo, // <= 
+	GreaterThan, // >
+	GreaterThanEqualTo, // >=
+	EndOfCode
 
-    }
 }

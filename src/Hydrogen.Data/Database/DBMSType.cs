@@ -6,24 +6,16 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
-using System.Text;
 
-namespace Hydrogen.Data {
-	public enum DBMSType {
-        [Description("SQL Server")]
-		SQLServer			= 1,
+namespace Hydrogen.Data;
 
-        [Description("Sqlite")]
-		Sqlite				= 2,
+public enum DBMSType {
+	[Description("SQL Server")] SQLServer = 1,
 
-        [Description("Firebird")]
-        Firebird			= 3,
+	[Description("Sqlite")] Sqlite = 2,
 
-        [Description("Firebird Embedded")]
-        FirebirdFile		= 4,
-	}
+	[Description("Firebird")] Firebird = 3,
+
+	[Description("Firebird Embedded")] FirebirdFile = 4,
 }

@@ -6,15 +6,12 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
 using System.Collections.Generic;
 
-namespace SourceGrid
-{
-	/// <summary>
-	/// A collection of elements of type Position
-	/// </summary>
-	public class PositionCollection : List<Position>
-	{
-	}
+namespace SourceGrid;
+
+/// <summary>
+/// A collection of elements of type Position
+/// </summary>
+public class PositionCollection : List<Position> {
 }

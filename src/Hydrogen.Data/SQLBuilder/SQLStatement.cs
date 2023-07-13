@@ -7,30 +7,25 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.Serialization;
-using System.Text;
 
-namespace Hydrogen.Data {
+namespace Hydrogen.Data;
 
-    [Serializable]
-	public struct SQLStatement  {
-		public SQLStatementType Type;
-		public string SQL;
+[Serializable]
+public struct SQLStatement {
+	public SQLStatementType Type;
+	public string SQL;
 
-		public bool Equals(SQLStatement other) {
-			return Type == other.Type && string.Equals(SQL, other.SQL);
+	public bool Equals(SQLStatement other) {
+		return Type == other.Type && string.Equals(SQL, other.SQL);
+	}
+
+	public override int GetHashCode() {
+		unchecked {
+			return ((int)Type * 397) ^ (SQL != null ? SQL.GetHashCode() : 0);
 		}
-
-		public override int GetHashCode() {
-			unchecked {
-				return ((int)Type * 397) ^ (SQL != null ? SQL.GetHashCode() : 0);
-			}
-		}
-		public override bool Equals(object obj) {
-			if (ReferenceEquals(null, obj)) return false;
-			return obj is SQLStatement && Equals((SQLStatement) obj);
-		}
+	}
+	public override bool Equals(object obj) {
+		if (ReferenceEquals(null, obj)) return false;
+		return obj is SQLStatement && Equals((SQLStatement)obj);
 	}
 }

@@ -22,7 +22,7 @@
 //			: base(productInformationProvider, websiteLauncher, licenseServices, productLicenseEnforcer) {
 
 //		}
-		
+
 //		public override void VerifyLicense() {
 //			var verifyJob = new BITSLicenseCommandDownloadJob(
 //				base.LicenseServices,
@@ -35,7 +35,8 @@
 //			verifyJob.Start();
 //		}
 
-	
 
 //	}
 //}
+
+

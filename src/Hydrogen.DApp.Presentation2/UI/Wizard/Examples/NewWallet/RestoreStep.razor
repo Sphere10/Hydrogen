@@ -5,8 +5,6 @@
 // LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
-
-@using Hydrogen
 @inherits WizardStep<NewWalletModel>
 
 <h6 class="mb-3">Restore from seed </h6>
@@ -21,14 +19,10 @@
 @code {
     public override string Title { get; } = "Restore wallet";
 
-    public override Task<Result> OnNextAsync()
-    {
-        if (string.IsNullOrEmpty(Model.Seed))
-        {
+    public override Task<Result> OnNextAsync() {
+        if (string.IsNullOrEmpty(Model.Seed)) {
             return Task.FromResult(Result.Error("Seed is required."));
-        }
-        else
-        {
+        } else {
             return Task.FromResult(Result.Valid);
         }
     }

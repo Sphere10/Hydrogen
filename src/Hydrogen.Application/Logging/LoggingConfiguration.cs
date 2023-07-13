@@ -6,14 +6,14 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen.Application {
-	public class LoggingConfiguration {		
-		public string LogFilePath { get; set; }
-		public int MaxLogFiles { get; set; }
-		public int MaxLogFileSize { get; set; }
-		public bool EnableDebug { get; set; }
-		public bool EnableInfo { get; set; }
-		public bool EnableWarning { get; set; }
-		public bool EnableError { get; set; }
-	}
+namespace Hydrogen.Application;
+
+public class LoggingConfiguration {
+	public string LogFilePath { get; set; }
+	public int MaxLogFiles { get; set; }
+	public int MaxLogFileSize { get; set; }
+	public bool EnableDebug { get; set; }
+	public bool EnableInfo { get; set; }
+	public bool EnableWarning { get; set; }
+	public bool EnableError { get; set; }
 }

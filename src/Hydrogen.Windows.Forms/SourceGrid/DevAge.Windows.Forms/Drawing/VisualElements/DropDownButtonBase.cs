@@ -7,54 +7,50 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace DevAge.Drawing.VisualElements
-{
-    public interface IDropDownButton : IVisualElement
-    {
-        ButtonStyle Style
-        {
-            get;
-            set;
-        }
-    }
+namespace DevAge.Drawing.VisualElements;
 
-    [Serializable]
-    public abstract class DropDownButtonBase : VisualElementBase, IDropDownButton
-    {
-        #region Constuctor
-        /// <summary>
-        /// Default constructor
-        /// </summary>
-        public DropDownButtonBase()
-        {
-        }
-
-        /// <summary>
-        /// Copy constructor
-        /// </summary>
-        /// <param name="other"></param>
-        public DropDownButtonBase(DropDownButtonBase other)
-            : base(other)
-        {
-            Style = other.Style;
-        }
-        #endregion
+public interface IDropDownButton : IVisualElement {
+	ButtonStyle Style { get; set; }
+}
 
 
-        #region Properties
-        private ButtonStyle mControlDrawStyle = ButtonStyle.Normal;
-        public virtual ButtonStyle Style
-        {
-            get { return mControlDrawStyle; }
-            set { mControlDrawStyle = value; }
-        }
-        protected virtual bool ShouldSerializeStyle()
-        {
-            return Style != ButtonStyle.Normal;
-        }
-        #endregion
-    }
+[Serializable]
+public abstract class DropDownButtonBase : VisualElementBase, IDropDownButton {
+
+	#region Constuctor
+
+	/// <summary>
+	/// Default constructor
+	/// </summary>
+	public DropDownButtonBase() {
+	}
+
+	/// <summary>
+	/// Copy constructor
+	/// </summary>
+	/// <param name="other"></param>
+	public DropDownButtonBase(DropDownButtonBase other)
+		: base(other) {
+		Style = other.Style;
+	}
+
+	#endregion
+
+
+	#region Properties
+
+	private ButtonStyle mControlDrawStyle = ButtonStyle.Normal;
+
+	public virtual ButtonStyle Style {
+		get { return mControlDrawStyle; }
+		set { mControlDrawStyle = value; }
+	}
+
+	protected virtual bool ShouldSerializeStyle() {
+		return Style != ButtonStyle.Normal;
+	}
+
+	#endregion
+
 }

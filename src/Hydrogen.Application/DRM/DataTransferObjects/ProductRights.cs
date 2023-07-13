@@ -71,13 +71,13 @@ public class ProductRights {
 	public int Version { get; set; }
 
 	public ProductLicenseFeatureLevelDTO FeatureRights;
-	
+
 	public int? LimitFeatureA { get; set; }
-	
+
 	public int? LimitFeatureB { get; set; }
-	
+
 	public int? LimitFeatureC { get; set; }
-	
+
 	public int? LimitFeatureD { get; set; }
 
 	public void Disable() {

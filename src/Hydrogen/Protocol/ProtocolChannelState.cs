@@ -6,11 +6,11 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen.Communications {
-	public enum ProtocolChannelState {
-		Opening,
-		Open, 
-		Closing,
-		Closed
-	}
+namespace Hydrogen.Communications;
+
+public enum ProtocolChannelState {
+	Opening,
+	Open,
+	Closing,
+	Closed
 }

@@ -6,13 +6,9 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
 using System.Collections.Generic;
-using System.Text;
 
-namespace SourceGrid.Decorators
-{
-    public class DecoratorList : List<DecoratorBase>
-    {
-    }
+namespace SourceGrid.Decorators;
+
+public class DecoratorList : List<DecoratorBase> {
 }

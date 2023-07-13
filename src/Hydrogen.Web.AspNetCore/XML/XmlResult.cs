@@ -16,7 +16,7 @@ public class XmlResult : ContentResult {
 	public XmlResult() : this(200) {
 	}
 
-	public XmlResult(int statusCode) : this(string.Empty, 200){
+	public XmlResult(int statusCode) : this(string.Empty, 200) {
 	}
 
 	public XmlResult(string xml) : this(xml, 200) {
@@ -35,4 +35,3 @@ public class XmlResult : ContentResult {
 	}
 
 }
-

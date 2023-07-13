@@ -9,19 +9,18 @@
 using System.Runtime.Serialization;
 using System.Xml.Serialization;
 
-namespace Hydrogen {
+namespace Hydrogen;
 
-	/// <summary>
-	///  A cross-platform reference to a target, typically a UI object. On some platforms the target and it's owner
-	/// are needed, in others not. This object should be used in cross-platform code to referencing such targets.
-	/// </summary>
-	[XmlRoot]
-    [DataContract]
-	public class UITargetReference {
+/// <summary>
+///  A cross-platform reference to a target, typically a UI object. On some platforms the target and it's owner
+/// are needed, in others not. This object should be used in cross-platform code to referencing such targets.
+/// </summary>
+[XmlRoot]
+[DataContract]
+public class UITargetReference {
 
-        public object Target { get; set; }
+	public object Target { get; set; }
 
-        public object TargetOwner { get; set; }
+	public object TargetOwner { get; set; }
 
-    }
 }

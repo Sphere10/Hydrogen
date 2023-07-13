@@ -21,13 +21,13 @@ public class TextFileCache : FileCacheBase<string> {
 		TimeSpan? expirationDuration = null,
 		IEqualityComparer<string> fileNameComparer = null,
 		ICacheReaper reaper = null
-	) : base(reapStrategy, expirationStrategy, maxCapacity, expirationDuration, fileNameComparer, reaper){
+	) : base(reapStrategy, expirationStrategy, maxCapacity, expirationDuration, fileNameComparer, reaper) {
 	}
 
-	protected override long EstimateSize(string value) 
+	protected override long EstimateSize(string value)
 		=> value.Length * sizeof(char);
 
-	protected override string Fetch(string key) 
+	protected override string Fetch(string key)
 		=> File.ReadAllText(key);
-		
+
 }

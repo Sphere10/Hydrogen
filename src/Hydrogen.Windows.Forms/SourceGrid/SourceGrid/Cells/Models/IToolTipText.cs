@@ -6,19 +6,15 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
+namespace SourceGrid.Cells.Models;
 
-namespace SourceGrid.Cells.Models
-{
+/// <summary>
+/// Interface for informations about a tooltiptext
+/// </summary>
+public interface IToolTipText : IModel {
 	/// <summary>
-	/// Interface for informations about a tooltiptext
+	/// Get the tooltiptext of the specified cell
 	/// </summary>
-	public interface IToolTipText : IModel
-	{
-		/// <summary>
-		/// Get the tooltiptext of the specified cell
-		/// </summary>
-		/// <param name="cellContext"></param>
-		string GetToolTipText(CellContext cellContext);
-	}
+	/// <param name="cellContext"></param>
+	string GetToolTipText(CellContext cellContext);
 }

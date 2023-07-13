@@ -6,10 +6,8 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen {
-	public interface IFunction {
-        double Eval(double x);
-    }
+namespace Hydrogen;
 
-
+public interface IFunction {
+	double Eval(double x);
 }

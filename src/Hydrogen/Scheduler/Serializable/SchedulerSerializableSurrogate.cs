@@ -8,11 +8,10 @@
 
 using System.Xml.Serialization;
 
-namespace Hydrogen {
-	[XmlRoot("Scheduler")]
-	public class SchedulerSerializableSurrogate {
+namespace Hydrogen;
 
-		[XmlElement("Job")]
-		public JobSerializableSurrogate[] Jobs { get; set; }
-	}
+[XmlRoot("Scheduler")]
+public class SchedulerSerializableSurrogate {
+
+	[XmlElement("Job")] public JobSerializableSurrogate[] Jobs { get; set; }
 }

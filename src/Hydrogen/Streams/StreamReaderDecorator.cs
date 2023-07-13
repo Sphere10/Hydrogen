@@ -6,11 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
-using System.Collections.Generic;
-using System.Text;
+namespace Hydrogen;
 
-namespace Hydrogen {
-	internal class StreamReaderDecorator {
-	}
+internal class StreamReaderDecorator {
 }

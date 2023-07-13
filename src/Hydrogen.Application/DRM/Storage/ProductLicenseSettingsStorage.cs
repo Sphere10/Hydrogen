@@ -7,8 +7,6 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Collections.Generic;
-using System.Xml.Serialization;
 using Hydrogen;
 using Hydrogen.Application;
 using Newtonsoft.Json;
@@ -46,7 +44,7 @@ public class ProductLicenseSettingsStorage : IProductLicenseStorage {
 
 	public void SaveActivatedLicense(ProductLicenseActivationDTO licenseActivation) {
 		Guard.ArgumentNotNull(licenseActivation, nameof(licenseActivation));
-		_settings.LicenseActivationJson =Tools.Json.WriteToString(licenseActivation);
+		_settings.LicenseActivationJson = Tools.Json.WriteToString(licenseActivation);
 		_settings.Save();
 	}
 
@@ -60,10 +58,11 @@ public class ProductLicenseSettingsStorage : IProductLicenseStorage {
 			throw new InvalidOperationException("No license has been activated");
 		var licenseActivation = Tools.Json.ReadFromString<ProductLicenseActivationDTO>(_settings.LicenseActivationJson);
 		licenseActivation.Command = command;
-		_settings.LicenseActivationJson =Tools.Json.WriteToString(licenseActivation);
+		_settings.LicenseActivationJson = Tools.Json.WriteToString(licenseActivation);
 		_settings.Save();
 	}
-	
+
+
 	public class DRMSettings : SettingsObject {
 
 		[JsonProperty("licenseActivation")]
@@ -71,5 +70,5 @@ public class ProductLicenseSettingsStorage : IProductLicenseStorage {
 		public string LicenseActivationJson { get; set; }
 
 	}
-	
+
 }

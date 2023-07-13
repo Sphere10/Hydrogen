@@ -7,55 +7,38 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Drawing;
-using System.Data;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using Hydrogen;
 
-namespace Hydrogen.Windows.Forms.TextBoxes {
-    public partial class TextLog : UserControl {
-        private readonly ProducerConsumerQueue<char> _appendQueue; 
-        private readonly LargeCollection<char> _data;
-        private readonly Throttle _throttle;
-        public TextLog() {
-            InitializeComponent();
-            _appendQueue = new ProducerConsumerQueue<char>((c) => sizeof (char), 100000);
-            _data = new LargeCollection<char>(65536, 1, (c) => sizeof(char));
-            _throttle = new Throttle(2.0f);
-        }
+namespace Hydrogen.Windows.Forms.TextBoxes;
 
-        public void AppendText() {
-            
-        }
-        public int SelectionStart {
-            get {
-                throw new NotImplementedException();
-            }
-            set {
-                throw new NotImplementedException();
-            }
-        }
+public partial class TextLog : UserControl {
+	private readonly ProducerConsumerQueue<char> _appendQueue;
+	private readonly LargeCollection<char> _data;
+	private readonly Throttle _throttle;
+	public TextLog() {
+		InitializeComponent();
+		_appendQueue = new ProducerConsumerQueue<char>((c) => sizeof(char), 100000);
+		_data = new LargeCollection<char>(65536, 1, (c) => sizeof(char));
+		_throttle = new Throttle(2.0f);
+	}
 
-        public int SelectionLength {
-            get {
-                throw new NotImplementedException();
-            }
-            set {
-                throw new NotImplementedException();
-            }
-        }
+	public void AppendText() {
 
-        public string SelectedText {
-            get {
-                throw new NotImplementedException();
-            }
-        }
+	}
 
-        
-    }
+	public int SelectionStart {
+		get { throw new NotImplementedException(); }
+		set { throw new NotImplementedException(); }
+	}
+
+	public int SelectionLength {
+		get { throw new NotImplementedException(); }
+		set { throw new NotImplementedException(); }
+	}
+
+	public string SelectedText {
+		get { throw new NotImplementedException(); }
+	}
+
+
 }

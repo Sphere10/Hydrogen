@@ -9,25 +9,14 @@
 @page "/"
 @using Hydrogen.DApp.Presentation2.Logic.Modal
 @using Hydrogen.DApp.Presentation2.Logic.Wizard
-@using Hydrogen.DApp.Presentation2.UI.Wizard
-@using Hydrogen.DApp.Presentation2.UI.Wizard.Examples
 @using Hydrogen.DApp.Presentation2.UI.Wizard.Examples.NewWallet
 @using Hydrogen.DApp.Presentation2.UI.Controls
 @using Hydrogen.DApp.Presentation2.UI.Controls.BlazorGrid
 @using Hydrogen.DApp.Presentation2.UI.Controls.BlazorGrid.Classes
-@using Hydrogen.DApp.Presentation2.UI.Controls.BlazorGrid.Components
-
-@using System
 @using System.Threading
 @using System.Linq
-@using System.Net
-@using System.IO
-@using System.Runtime.Serialization.Formatters.Binary
-@using System.Text
 @using Microsoft.JSInterop
 @using Newtonsoft.Json
-
-@using Hydrogen
 @using Hydrogen.Communications;
 
 
@@ -35,33 +24,33 @@
 
 @implements IDisposable
 
-<body style="overflow:hidden">
+<body style="overflow: hidden">
 @*<body oncontextmenu="return false;" style="overflow:hidden">*@
 
 <button @onclick="() => Test()">Test</button>
-    <div class="row">
-        <div class="col-10">
-            <div class="card">
-                <div class="card-header">
-                    <ul class="nav nav-tabs card-header-tabs pull-right" role="tablist">
-                        <li class="nav-item">
-                            <a class="nav-link active" data-toggle="tab" href="#tab-1">Table</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" data-toggle="tab" href="#tab-2">Virtual</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" data-toggle="tab" href="#tab-3">Rapid</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" data-toggle="tab" href="#tab-4">New Grid</a>
-                        </li>
-                    </ul>
-                </div>
-                <div class="card-body">
-                    <div class="tab-content">
+<div class="row">
+    <div class="col-10">
+        <div class="card">
+            <div class="card-header">
+                <ul class="nav nav-tabs card-header-tabs pull-right" role="tablist">
+                    <li class="nav-item">
+                        <a class="nav-link active" data-toggle="tab" href="#tab-1">Table</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-toggle="tab" href="#tab-2">Virtual</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-toggle="tab" href="#tab-3">Rapid</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-toggle="tab" href="#tab-4">New Grid</a>
+                    </li>
+                </ul>
+            </div>
+            <div class="card-body">
+                <div class="tab-content">
 
-@*
+                    @*
                         <div class="tab-pane fade active show" id="tab-1">
                             <h5 class="card-title">Paged table</h5>
                             <PagedTable Items="Enumerable.Range(1, 100)"
@@ -120,33 +109,35 @@
                             </RapidTable>
                         </div>*@
 
-                        <div class="tab-pane fade" id="tab-4">
-                            <h5 class="card-title">Grid New</h5>
-                            <p>Testing of new Grid</p>
-                            <BlazorGrid TItem="TestClass"
-                                        Id="TestGrid"
-                                        PageSize="10"
-                                        DataSource="WebDataSource"
-                                        GridType="BlazorGrid<TestClass>.GridTypes.ActionColumn | BlazorGrid<TestClass>.GridTypes.NewItem"
-                                        Actions="DataActions"
-                                        ColumnDefinitions="ColumnDefinitions">
+                    <div class="tab-pane fade" id="tab-4">
+                        <h5 class="card-title">Grid New</h5>
+                        <p>Testing of new Grid</p>
+                        <BlazorGrid TItem="TestClass"
+                                    Id="TestGrid"
+                                    PageSize="10"
+                                    DataSource="WebDataSource"
+                                    GridType="BlazorGrid<TestClass>.GridTypes.ActionColumn | BlazorGrid<TestClass>.GridTypes.NewItem"
+                                    Actions="DataActions"
+                                    ColumnDefinitions="ColumnDefinitions">
 
-                                @* comments
+                            @* comments
                                 *@
 
-                            </BlazorGrid>
-                        </div>
+                        </BlazorGrid>
+                    </div>
 
-@*                        <button @onclick="StartWebSockets">Start Web Sockets</button>
+                    @*                        <button @onclick="StartWebSockets">Start Web Sockets</button>
                         <button @onclick="SendData">SendData</button>*@
 
-                        <div><textarea id="Output" rows="10" cols="60"></textarea></div>
+                    <div>
+                        <textarea id="Output" rows="10" cols="60"></textarea>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
 
-        @*<div class="col-4">
+    @*<div class="col-4">
             <div class="card">
                 <div class="card-header">
                     <h5 class="card-title"> Dialogs</h5>
@@ -173,12 +164,12 @@
             </div>
         </div>*@
 
-    </div>
+</div>
 </body>
 
 @code {
 
-                    /*
+    /*
                     public class DataSource1<TItem> : IDataSource<TestClass>
                     {
                     List<TestClass> AllItems = new List<TestClass>();
@@ -476,8 +467,7 @@
 
     #region Javascript
 
-    void Alert(string text)
-    {
+    void Alert(string text) {
         JSRuntime.InvokeAsync<object>("AlertWrite", text);
     }
 
@@ -505,16 +495,18 @@
         var f4 = new Filter<char>();
     }
 
+
     public class WebLogger : LoggerBase {
 
         public delegate void DisplayTextDelegate(string text);
+
 
         DisplayTextDelegate DisplayTextFunction { get; init; }
 
         public WebLogger(DisplayTextDelegate displayTextFunction) {
             DisplayTextFunction = displayTextFunction;
         }
-        
+
         protected override void Log(LogLevel logLevel, string message) {
             DisplayTextFunction($"{logLevel}: {message}");
         }
@@ -522,34 +514,32 @@
     }
 
 
-    protected override async void OnInitialized()
-    {
+    protected override async void OnInitialized() {
         SystemLog.RegisterLogger(new WebLogger(WriteOutput));
 
-        // LAN
-        //var connectionString = "ws://192.168.1.171:80/service";
+    // LAN
+    //var connectionString = "ws://192.168.1.171:80/service";
         var connectionString = "ws://192.168.224.1:80/service";
-        // WIFI
-        //var connectionString = "ws://192.168.1.106:80/service";
-        // Virtual Machine
-        //var connectionString = "ws://192.168.1.108:80/service";
+    // WIFI
+    //var connectionString = "ws://192.168.1.106:80/service";
+    // Virtual Machine
+    //var connectionString = "ws://192.168.1.108:80/service";
         WebDataSource = new ClientWebSocketsDataSource<TestClass>(connectionString, false, InitializeItem, UpdateItem, IdItem);
 
-        //SystemLog.Info($"ClientWebSocketsDataSource Created");
-        //DataActions.Add(new GridAction<TestClass>("Action1", Action1, "😄⛔", IsAction1Available));
+    //SystemLog.Info($"ClientWebSocketsDataSource Created");
+    //DataActions.Add(new GridAction<TestClass>("Action1", Action1, "😄⛔", IsAction1Available));
         DataActions.Add(new GridAction<TestClass>("DeleteAction", DeleteAction, "❌✡", IsDeleteAvailable));
-        //DataActions.Add(new GridAction<TestClass>("Action2", Action2, "⚽", IsAction2Available));
+    //DataActions.Add(new GridAction<TestClass>("Action2", Action2, "⚽", IsAction2Available));
 
-        //ColumnDefinitions.Add(new DataEnd<TestClass, TestClass2>("Data End 1", TestDataExtractor1));
+    //ColumnDefinitions.Add(new DataEnd<TestClass, TestClass2>("Data End 1", TestDataExtractor1));
         ColumnDefinitions.Add(new DataEnd<TestClass, TestClass3>("Data End 2", TestDataExtractor2));
 
-        //Timer = new System.Timers.Timer(1000); // 1 seconds
-        //Timer.Elapsed += CountDownTimer;
-        //Timer.Start();
+    //Timer = new System.Timers.Timer(1000); // 1 seconds
+    //Timer.Elapsed += CountDownTimer;
+    //Timer.Start();
     }
 
-    string InitializeItem(TestClass item, int id)
-    {
+    string InitializeItem(TestClass item, int id) {
         try {
             item.FillWithTestData(id);
         } catch (Exception ex) {
@@ -561,7 +551,7 @@
 
     string UpdateItem(TestClass item) {
         try {
-            // do something here
+    // do something here
 
         } catch (Exception ex) {
             return ex.Message;
@@ -575,58 +565,52 @@
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender) {
-        //    CountDownTimer(null, null);
+    //    CountDownTimer(null, null);
 
-        //        TestGrid.LoadJavascript();
-        //        Alert("OnAfterRenderAsync Index");
+    //        TestGrid.LoadJavascript();
+    //        Alert("OnAfterRenderAsync Index");
     }
 
-    async void StartWebSockets()
-    {
+    async void StartWebSockets() {
         try {
-            // Virtual Machine
-            //Channel = new ClientWebSocketsChannel("ws://192.168.1.108:80/service", false);
+    // Virtual Machine
+    //Channel = new ClientWebSocketsChannel("ws://192.168.1.108:80/service", false);
 
-            // Local Machine
-            //Channel = new ClientWebSocketsChannel("ws://192.168.1.171:80/service", false);
-            //Channel.ReceivedBytes += delegate (ReadOnlyMemory<byte> memory)
-            //{
-            //    WriteOutput(System.Text.Encoding.ASCII.GetString(memory.Span));
-            //};
-            //await Channel.Open();
+    // Local Machine
+    //Channel = new ClientWebSocketsChannel("ws://192.168.1.171:80/service", false);
+    //Channel.ReceivedBytes += delegate (ReadOnlyMemory<byte> memory)
+    //{
+    //    WriteOutput(System.Text.Encoding.ASCII.GetString(memory.Span));
+    //};
+    //await Channel.Open();
 
-            //            WebDataSource.New
-        }
-        catch (Exception ex) {
+    //            WebDataSource.New
+        } catch (Exception ex) {
 
         }
     }
 
-    void SendData()
-    {
-        try
-        {
+    void SendData() {
+        try {
             var testData = new TestClass();
             testData.FillWithTestData(666);
             var jsonData = JsonConvert.SerializeObject(testData);
             var testPacket = new WebSocketsPacket("new 7", jsonData);
             Channel.TrySendBytes(testPacket.ToBytes());
 
-            //Channel.TrySendBytes(Encoding.ASCII.GetBytes("Hello 666"));
-        }
-        catch (Exception ex) {
+    //Channel.TrySendBytes(Encoding.ASCII.GetBytes("Hello 666"));
+        } catch (Exception ex) {
 
         }
-        //Channel.TrySendBytes(System.Text.Encoding.ASCII.GetBytes("Hello from Server 666"));
-        //this sends but is not AbandonedMutexException data
+    //Channel.TrySendBytes(System.Text.Encoding.ASCII.GetBytes("Hello from Server 666"));
+    //this sends but is not AbandonedMutexException data
     }
 
 
-    TestClass2 TestDataExtractor1(object data)
-    {
+    TestClass2 TestDataExtractor1(object data) {
         var useData = (TestClass)data;
 
-        // this is a simple example
+    // this is a simple example
         var text = $"Test: {useData.Name}";
         var value = (decimal)Math.PI;
         var locked = (new Random()).NextBool();
@@ -634,15 +618,13 @@
         return new TestClass2(text, value, locked);
     }
 
-    TestClass3 TestDataExtractor2(object data)
-    {
+    TestClass3 TestDataExtractor2(object data) {
         var useData = (TestClass)data;
 
         return new TestClass3(useData.Name);
     }
 
-    bool IsDeleteAvailable(TestClass item)
-    {
+    bool IsDeleteAvailable(TestClass item) {
         if (item.Name == "Polkadot") {
             return false;
         }
@@ -650,27 +632,25 @@
         return true;
     }
 
-    TestClass DeleteAction(TestClass item)
-    {
-        WebDataSource.DeleteDelayed(new List<TestClass>() { item });
+    TestClass DeleteAction(TestClass item) {
+        WebDataSource.DeleteDelayed(new List<TestClass>() {
+            item
+        });
 
         return item;
     }
 
-    TestClass Action2(TestClass item)
-    {
+    TestClass Action2(TestClass item) {
         Alert($"Action 2 pressed for Id: {item.Id}");
 
         return item;
     }
 
-    bool IsAction1Available(TestClass item)
-    {
+    bool IsAction1Available(TestClass item) {
         return true;
     }
 
-    bool IsAction2Available(TestClass item)
-    {
+    bool IsAction2Available(TestClass item) {
         return item.Name == "Bitcoin";
     }
 
@@ -682,42 +662,34 @@
     //}
 
     #region Original Code
-    private async Task Confirm()
-    {
+
+    private async Task Confirm() {
         bool result = await ViewService.ConfirmDialogAsync("Confirm", "Are you sure you want to do that ?", "Yes");
     }
 
-    private async Task Info()
-    {
+    private async Task Info() {
         int i = await ViewService.DialogAsync("Information", "Something important has happened.", "Ignore", "Decline", "Accept");
 
         Console.WriteLine(i);
     }
 
-    private async Task Warning()
-    {
+    private async Task Warning() {
         await ViewService.DialogAsync("An error occured", "Something went wrong", "Dismiss");
     }
 
-    private async Task Exception()
-    {
-        try
-        {
+    private async Task Exception() {
+        try {
             decimal zero = decimal.Zero;
             decimal snafu = 1 / zero;
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             await ViewService.DialogAsync(e, "Error");
         }
     }
 
-    private async Task Custom()
-    {
-        //Build a custom render fragment to show in the dialog. Could be a prebuilt component in another file as well.
+    private async Task Custom() {
+    //Build a custom render fragment to show in the dialog. Could be a prebuilt component in another file as well.
 
-        RenderFragment frag = builder =>
-        {
+        RenderFragment frag = builder => {
             builder.OpenElement(0, "div");
             builder.AddAttribute(0, "class", "text-center");
             builder.OpenElement(1, "img");
@@ -735,8 +707,7 @@
         await ViewService.DialogAsync(frag, "A custom dialog");
     }
 
-    private async Task Wizard()
-    {
+    private async Task Wizard() {
         var builder = new DefaultWizardBuilder<NewWalletModel>();
         var wizard = builder.NewWizard("New Wallet")
             .AddStep<WalletNameStep>()
@@ -748,36 +719,32 @@
         await ViewService.WizardDialogAsync(wizard);
     }
 
-    private async Task OnRowSelectAsync(int i)
-    {
+    private async Task OnRowSelectAsync(int i) {
         await ViewService.DialogAsync("Number", i.ToString());
     }
 
     List<int> Items = new(Enumerable.Range(1, 9999));
 
-    private Task<ItemsResponse<int>> ItemsProvider(ItemRequest request)
-    {
+    private Task<ItemsResponse<int>> ItemsProvider(ItemRequest request) {
         return Task.FromResult(new ItemsResponse<int>(Items.Skip(request.Index).Take(request.Count), Items.Count));
     }
 
     private CancellationTokenSource EnumeratorCts { get; } = new();
 
-    private async IAsyncEnumerable<int> GetIntAsync()
-    {
+    private async IAsyncEnumerable<int> GetIntAsync() {
         int last = 0;
         Random rand = new();
 
-        while (!EnumeratorCts.IsCancellationRequested)
-        {
+        while (!EnumeratorCts.IsCancellationRequested) {
             await Task.Delay(rand.Next(1000, 3000));
             yield return last++;
         }
     }
 
-    public void Dispose()
-    {
+    public void Dispose() {
         EnumeratorCts.Cancel();
     }
 
     #endregion
+
 }

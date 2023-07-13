@@ -8,24 +8,19 @@
 
 using System;
 
-namespace Hydrogen.Application {
+namespace Hydrogen.Application;
 
-	[AttributeUsage(AttributeTargets.Assembly, Inherited = false)]
-    public abstract class AssemblyProductHelpResourceAttribute : Attribute {
+[AttributeUsage(AttributeTargets.Assembly, Inherited = false)]
+public abstract class AssemblyProductHelpResourceAttribute : Attribute {
 
-        public AssemblyProductHelpResourceAttribute(HelpType helpType, string path)
-        {
-            HelpType = helpType;
-            Path = path;
-        }
+	public AssemblyProductHelpResourceAttribute(HelpType helpType, string path) {
+		HelpType = helpType;
+		Path = path;
+	}
 
-        public HelpType HelpType { get; set; }
+	public HelpType HelpType { get; set; }
 
-    	public string Path { get; set; }
+	public string Path { get; set; }
 
-        
-    }
 
 }
-
-

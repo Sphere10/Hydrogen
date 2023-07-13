@@ -8,38 +8,38 @@
 
 using System;
 
-namespace Hydrogen {
-	public class LoggerDecorator : ILogger {
+namespace Hydrogen;
 
-		private readonly ILogger _decoratedLogger;
+public class LoggerDecorator : ILogger {
 
-		public LoggerDecorator(ILogger decoratedLogger) {
-			_decoratedLogger = decoratedLogger;
-		}
+	private readonly ILogger _decoratedLogger;
 
-        public LogOptions Options { 
-			get => _decoratedLogger.Options;
-			set => _decoratedLogger.Options = value;
-		}
+	public LoggerDecorator(ILogger decoratedLogger) {
+		_decoratedLogger = decoratedLogger;
+	}
 
-	    public virtual void Debug(string message) {
-			_decoratedLogger.Debug(message);	
-		}
+	public LogOptions Options {
+		get => _decoratedLogger.Options;
+		set => _decoratedLogger.Options = value;
+	}
 
-		public virtual void Info(string message) {
-			_decoratedLogger.Info(message);
-		}
+	public virtual void Debug(string message) {
+		_decoratedLogger.Debug(message);
+	}
 
-		public virtual void Warning(string message) {
-			_decoratedLogger.Warning(message);
-		}
+	public virtual void Info(string message) {
+		_decoratedLogger.Info(message);
+	}
 
-		public virtual void Error(string message) {
-			_decoratedLogger.Error(message);
-		}
+	public virtual void Warning(string message) {
+		_decoratedLogger.Warning(message);
+	}
 
-		public virtual void Exception(Exception exception) {
-			_decoratedLogger.Exception(exception);
-		}
+	public virtual void Error(string message) {
+		_decoratedLogger.Error(message);
+	}
+
+	public virtual void Exception(Exception exception) {
+		_decoratedLogger.Exception(exception);
 	}
 }

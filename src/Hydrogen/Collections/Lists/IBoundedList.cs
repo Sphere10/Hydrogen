@@ -6,9 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen {
+namespace Hydrogen;
 
-	public interface IBoundedList<T> : IExtendedList<T>, IReadOnlyBoundedList<T> {
-	}
-
+public interface IBoundedList<T> : IExtendedList<T>, IReadOnlyBoundedList<T> {
 }

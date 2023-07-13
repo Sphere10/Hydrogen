@@ -10,12 +10,14 @@ using System;
 using System.IO;
 
 namespace Hydrogen.Application;
+
 public class DirectoryFileSettingsProvider : BaseSettingsProvider {
 
 	private readonly IFuture<string> _baseDirectory;
 
 	public DirectoryFileSettingsProvider(string directory, DirectorySettingsProviderPolicy policy = DirectorySettingsProviderPolicy.Default)
-		: this(Tools.Values.Future.Explicit(directory), policy) { }
+		: this(Tools.Values.Future.Explicit(directory), policy) {
+	}
 
 	public DirectoryFileSettingsProvider(IFuture<string> directory, DirectorySettingsProviderPolicy policy = DirectorySettingsProviderPolicy.Default) {
 		_baseDirectory = directory;
@@ -96,9 +98,7 @@ public class DirectoryFileSettingsProvider : BaseSettingsProvider {
 		Guard.ArgumentNotNull(settingsObjectType, "settingsObjectType");
 		string filename = null;
 		filename =
-			Policy.HasFlag(DirectorySettingsProviderPolicy.UseFullyQualifiedTypeNameInFilename) ?
-			settingsObjectType.FullName :
-			settingsObjectType.GetShortName();
+			Policy.HasFlag(DirectorySettingsProviderPolicy.UseFullyQualifiedTypeNameInFilename) ? settingsObjectType.FullName : settingsObjectType.GetShortName();
 
 		if (id != null)
 			filename = CombineExtensionlessFilenameWithID(filename, id.ToString());

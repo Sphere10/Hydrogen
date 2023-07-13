@@ -8,8 +8,8 @@
 
 using System;
 
-namespace Hydrogen.Application.Help {
-	public class ContextHelpAttribute : Attribute {
-		public int ID { get; set; }
-	}
+namespace Hydrogen.Application.Help;
+
+public class ContextHelpAttribute : Attribute {
+	public int ID { get; set; }
 }

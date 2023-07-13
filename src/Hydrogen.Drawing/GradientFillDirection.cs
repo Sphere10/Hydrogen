@@ -6,13 +6,9 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
-using System.Collections.Generic;
-using System.Text;
+namespace Hydrogen;
 
-namespace Hydrogen {
-    public enum GradientFillDirection {
-        Horizontal = 0x00000000,
-        Vertical = 0x00000001
-    }
+public enum GradientFillDirection {
+	Horizontal = 0x00000000,
+	Vertical = 0x00000001
 }

@@ -6,25 +6,17 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+namespace Hydrogen.Data;
 
-namespace Hydrogen.Data {
-
-	public class DBPrimaryKeySchema : DBObject {
-		public DBPrimaryKeySchema() {
-			ColumnNames = new string[0];
-		}
-
-		public override string Name { get; set; }
-		public DBKeyType KeyType { get; internal set; }
-		public string[] ColumnNames { get; set; }
-		public string Sequence { get; set; }
-		public override string SQL { get; set; }
-		public bool ColumnsAlsoForeignKeys { get; internal set; }
+public class DBPrimaryKeySchema : DBObject {
+	public DBPrimaryKeySchema() {
+		ColumnNames = new string[0];
 	}
 
-
+	public override string Name { get; set; }
+	public DBKeyType KeyType { get; internal set; }
+	public string[] ColumnNames { get; set; }
+	public string Sequence { get; set; }
+	public override string SQL { get; set; }
+	public bool ColumnsAlsoForeignKeys { get; internal set; }
 }

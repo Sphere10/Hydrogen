@@ -6,22 +6,19 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using Hydrogen;
 using Terminal.Gui;
 
-namespace Hydrogen.DApp.Node.UI {
+namespace Hydrogen.DApp.Node.UI;
 
-	public class TextViewWriter : SyncTextWriter {
-		private readonly TextView _textBox;
+public class TextViewWriter : SyncTextWriter {
+	private readonly TextView _textBox;
 
-		public TextViewWriter(TextView textBox) {
-			_textBox = textBox;
-		}
-
-		protected override void InternalWrite(string value) {
-			_textBox.Text += value;
-			_textBox.SetNeedsDisplay();
-		}
+	public TextViewWriter(TextView textBox) {
+		_textBox = textBox;
 	}
 
+	protected override void InternalWrite(string value) {
+		_textBox.Text += value;
+		_textBox.SetNeedsDisplay();
+	}
 }

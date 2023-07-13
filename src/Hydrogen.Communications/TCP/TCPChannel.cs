@@ -7,6 +7,7 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 //TODO: needs rewrite, use stream extensions to build buffer
+
 using System;
 using System.Net;
 using System.Net.Sockets;
@@ -14,74 +15,73 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Hydrogen.Communications {
-	public class TCPChannel : ProtocolChannel {
+namespace Hydrogen.Communications;
 
-		public IPEndPoint LocalEndpoint { get; }
-		public IPEndPoint RemoteEndpoint { get; }
-		private TcpListener _tcpListener;
+public class TCPChannel : ProtocolChannel {
 
-		public TCPChannel(IPEndPoint localEndpoint, IPEndPoint remoteEndpoint, CommunicationRole role) {
-			LocalEndpoint = localEndpoint;
-			RemoteEndpoint = remoteEndpoint;
-			LocalRole = role;
-			_tcpListener = new TcpListener(LocalEndpoint.Address, LocalEndpoint.Port);
-		}
+	public IPEndPoint LocalEndpoint { get; }
+	public IPEndPoint RemoteEndpoint { get; }
+	private TcpListener _tcpListener;
 
-		public override CommunicationRole LocalRole { get; }
+	public TCPChannel(IPEndPoint localEndpoint, IPEndPoint remoteEndpoint, CommunicationRole role) {
+		LocalEndpoint = localEndpoint;
+		RemoteEndpoint = remoteEndpoint;
+		LocalRole = role;
+		_tcpListener = new TcpListener(LocalEndpoint.Address, LocalEndpoint.Port);
+	}
 
-		protected override async Task OpenInternal() {
-			_tcpListener.Start();
-SystemLog.Info("TCPChannel Opened");
-		}
+	public override CommunicationRole LocalRole { get; }
 
-		protected override async Task CloseInternal() {
-			_tcpListener?.Stop();
-SystemLog.Info("TCPChannel Closed");
-		}
+	protected override async Task OpenInternal() {
+		_tcpListener.Start();
+		SystemLog.Info("TCPChannel Opened");
+	}
 
-		public override bool IsConnectionAlive() {
-			return _tcpListener != null;
-		}
+	protected override async Task CloseInternal() {
+		_tcpListener?.Stop();
+		SystemLog.Info("TCPChannel Closed");
+	}
 
-		protected override async Task<byte[]> ReceiveBytesInternal(CancellationToken cancellationToken) {
+	public override bool IsConnectionAlive() {
+		return _tcpListener != null;
+	}
+
+	protected override async Task<byte[]> ReceiveBytesInternal(CancellationToken cancellationToken) {
 
 //SystemLog.Info("TCPChannel About to Block Waiting for Connection");
-			using (var client = await _tcpListener.AcceptTcpClientAsync().WithCancellationToken(cancellationToken)) {
+		using (var client = await _tcpListener.AcceptTcpClientAsync().WithCancellationToken(cancellationToken)) {
 //SystemLog.Info("TCPChannel Accepted Connection");
-				using (var stream = client.GetStream()) {
-					var buffer = new byte[1024]; 
+			using (var stream = client.GetStream()) {
+				var buffer = new byte[1024];
 
-					using (var memoryStream = new MemoryStream()) {
-						while (stream.DataAvailable) {
-							var size = await stream.ReadAsync(buffer, cancellationToken);
-							memoryStream.Write(buffer, 0, size);
-						}
-
-						return memoryStream.ToArray();
+				using (var memoryStream = new MemoryStream()) {
+					while (stream.DataAvailable) {
+						var size = await stream.ReadAsync(buffer, cancellationToken);
+						memoryStream.Write(buffer, 0, size);
 					}
+
+					return memoryStream.ToArray();
 				}
 			}
 		}
+	}
 
-		protected override async Task<bool> TrySendBytesInternal(ReadOnlyMemory<byte> bytes, CancellationToken cancellationToken) {
+	protected override async Task<bool> TrySendBytesInternal(ReadOnlyMemory<byte> bytes, CancellationToken cancellationToken) {
 
-			try {
+		try {
 //SystemLog.Info($"TCP Channel Sending to: {RemoteEndpoint.Address} Port: {RemoteEndpoint.Port}");
 
-				using (var sender = new TcpClient(RemoteEndpoint.Address.ToString(), RemoteEndpoint.Port)) {
-					using (var stream = sender.GetStream()) {
-						stream.WriteBytes(bytes.ToArray());
-						return true;
-					}
+			using (var sender = new TcpClient(RemoteEndpoint.Address.ToString(), RemoteEndpoint.Port)) {
+				using (var stream = sender.GetStream()) {
+					stream.WriteBytes(bytes.ToArray());
+					return true;
 				}
-			} 
-			catch (Exception e) {
-
-				SystemLog.Info($"ERROR Sending {e.Message}");
-
-				return false;
 			}
+		} catch (Exception e) {
+
+			SystemLog.Info($"ERROR Sending {e.Message}");
+
+			return false;
 		}
 	}
 }

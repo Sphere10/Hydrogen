@@ -6,11 +6,10 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen {
+namespace Hydrogen;
 
-	public class IllegalValueException : SoftwareException {
-        public IllegalValueException(string value, string description = null) 
-            : base($"An illegal value of '{value ?? "NULL"}' was encountered.{(description != null ? " " + description : string.Empty)}") {
-        }
-    }
+public class IllegalValueException : SoftwareException {
+	public IllegalValueException(string value, string description = null)
+		: base($"An illegal value of '{value ?? "NULL"}' was encountered.{(description != null ? " " + description : string.Empty)}") {
+	}
 }

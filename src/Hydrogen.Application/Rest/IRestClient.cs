@@ -13,7 +13,6 @@ using Newtonsoft.Json;
 
 namespace Hydrogen;
 
-
 public interface IRestClient {
 	Task<T> GetAsync<T>(
 		string uri,

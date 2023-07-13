@@ -6,25 +6,24 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen {
+namespace Hydrogen;
 
-	public class WAMS : AMS {
+public class WAMS : AMS {
 
-		public WAMS() 
-			: this(Configuration.DefaultHeight) {
-		}
-
-		public WAMS(int h) 
-			: this(h, WOTS.Configuration.Default.W, CHF.SHA2_256) {
-		}
-
-		public WAMS(int h, int w)
-			: this(h, w, CHF.SHA2_256) {
-		}
-
-		public WAMS(int h, int w, CHF chf) 
-			: base(new WOTS(new WOTS.Configuration(w, chf, true)), h) {
-		}
-
+	public WAMS()
+		: this(Configuration.DefaultHeight) {
 	}
+
+	public WAMS(int h)
+		: this(h, WOTS.Configuration.Default.W, CHF.SHA2_256) {
+	}
+
+	public WAMS(int h, int w)
+		: this(h, w, CHF.SHA2_256) {
+	}
+
+	public WAMS(int h, int w, CHF chf)
+		: base(new WOTS(new WOTS.Configuration(w, chf, true)), h) {
+	}
+
 }

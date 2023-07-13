@@ -7,18 +7,16 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.ComponentModel;
 
-namespace Hydrogen {
-	public class FileExtensionAttribute : Attribute {
+namespace Hydrogen;
 
-		public FileExtensionAttribute(string fileExtension) {
-			Guard.ArgumentNotNull(fileExtension, nameof(fileExtension));
-			FileExtension = fileExtension;
-		}
+public class FileExtensionAttribute : Attribute {
 
-		public string FileExtension { get; init; }
-
+	public FileExtensionAttribute(string fileExtension) {
+		Guard.ArgumentNotNull(fileExtension, nameof(fileExtension));
+		FileExtension = fileExtension;
 	}
-}
 
+	public string FileExtension { get; init; }
+
+}

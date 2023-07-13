@@ -8,13 +8,12 @@
 
 using System.Collections.Generic;
 
-namespace Hydrogen {
+namespace Hydrogen;
 
-	public static class HashSetExtensions {
+public static class HashSetExtensions {
 
-		public static HashSet<T> AddRange<T>(this HashSet<T> source, IEnumerable<T> values) {
-			values.ForEach(obj => source.Add(obj));
-			return source;
-		}
+	public static HashSet<T> AddRange<T>(this HashSet<T> source, IEnumerable<T> values) {
+		values.ForEach(obj => source.Add(obj));
+		return source;
 	}
 }

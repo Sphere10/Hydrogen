@@ -6,17 +6,16 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen.Application {
+namespace Hydrogen.Application;
 
-	public interface IWebsiteLauncher {
+public interface IWebsiteLauncher {
 
-		void LaunchWebsite(string url);
+	void LaunchWebsite(string url);
 
-		void LaunchCompanyWebsite();
+	void LaunchCompanyWebsite();
 
-		void LaunchProductWebsite();
+	void LaunchProductWebsite();
 
-		void LaunchProductPurchaseWebsite();
+	void LaunchProductPurchaseWebsite();
 
-	}
 }

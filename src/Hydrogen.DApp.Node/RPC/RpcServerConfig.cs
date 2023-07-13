@@ -6,16 +6,11 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using Hydrogen;
-using Hydrogen.Communications.RPC;
+namespace Hydrogen.DApp.Node.RPC;
 
-namespace Hydrogen.DApp.Node.RPC {
+public class RpcServerConfig {
 
-	public class RpcServerConfig {
-
-		public bool IsLocal { get; set; }
-		public int Port { get; set; }
-		public int MaxListeners { get; set; }
-	}
+	public bool IsLocal { get; set; }
+	public int Port { get; set; }
+	public int MaxListeners { get; set; }
 }
-

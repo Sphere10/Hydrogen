@@ -7,28 +7,26 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using Hydrogen;
 
-namespace Hydrogen {
-	public class ActionJob : BaseJob  {
-		private readonly Action _action;
+namespace Hydrogen;
 
-		public ActionJob(Action action, string name = null) {
-			_action = action;
-			Name = name ?? $"Action Job {Guid.NewGuid().ToStrictAlphaString()}";
-		}
+public class ActionJob : BaseJob {
+	private readonly Action _action;
 
-		public override void Execute() {
-			_action();
-		}
+	public ActionJob(Action action, string name = null) {
+		_action = action;
+		Name = name ?? $"Action Job {Guid.NewGuid().ToStrictAlphaString()}";
+	}
 
-        public override JobSerializableSurrogate ToSerializableSurrogate() {
-			throw new NotSupportedException("Cannot serialize action jobs");
-		}
+	public override void Execute() {
+		_action();
+	}
 
-		public override void FromSerializableSurrogate(JobSerializableSurrogate jobSurrogate)
-		{
-			throw new NotSupportedException("Cannot deserialize action jobs");
-		}
+	public override JobSerializableSurrogate ToSerializableSurrogate() {
+		throw new NotSupportedException("Cannot serialize action jobs");
+	}
+
+	public override void FromSerializableSurrogate(JobSerializableSurrogate jobSurrogate) {
+		throw new NotSupportedException("Cannot deserialize action jobs");
 	}
 }

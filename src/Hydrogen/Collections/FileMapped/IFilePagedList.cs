@@ -6,9 +6,9 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen {
-	public interface IFilePagedList<TItem> : IMemoryPagedList<TItem>  {
-        string Path { get; }
+namespace Hydrogen;
 
-    }
+public interface IFilePagedList<TItem> : IMemoryPagedList<TItem> {
+	string Path { get; }
+
 }

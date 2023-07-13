@@ -42,7 +42,7 @@ public class ContainerControlStateEventProviderBase<TControl> : ControlStateEven
 			provider.StateChanged += eventHandler;
 			_childEventProviders.Add(control, provider);
 			return true;
-		} 
+		}
 		return false;
 	}
 

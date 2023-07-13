@@ -9,33 +9,33 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Hydrogen;
 
-namespace Hydrogen.DApp.Presentation.Components.Wizard {
-    /// <summary>
-    /// Wizard!
-    /// </summary>
-    public interface IWizard<TModel> : IWizard {
-        TModel Model { get; }
-    }
+namespace Hydrogen.DApp.Presentation.Components.Wizard;
 
-    public interface IWizard {
-        string Title { get; }
+/// <summary>
+/// Wizard!
+/// </summary>
+public interface IWizard<TModel> : IWizard {
+	TModel Model { get; }
+}
 
-        Type CurrentStep { get; }
 
-        bool HasNext { get; }
+public interface IWizard {
+	string Title { get; }
 
-        bool HasPrevious { get; }
+	Type CurrentStep { get; }
 
-        void UpdateSteps(StepUpdateType updateType, IEnumerable<Type> steps);
+	bool HasNext { get; }
 
-        Result<bool> Next();
+	bool HasPrevious { get; }
 
-        Result<bool> Previous();
+	void UpdateSteps(StepUpdateType updateType, IEnumerable<Type> steps);
 
-        Task<Result<bool>> FinishAsync();
+	Result<bool> Next();
 
-        Task<Result<bool>> CancelAsync();
-    }
+	Result<bool> Previous();
+
+	Task<Result<bool>> FinishAsync();
+
+	Task<Result<bool>> CancelAsync();
 }

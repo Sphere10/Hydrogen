@@ -9,23 +9,19 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace Hydrogen.Application {
+namespace Hydrogen.Application;
 
-	[ComVisible(true)]
-    [AttributeUsage(AttributeTargets.Assembly, Inherited = false)]
-    public sealed class AssemblyProductHelp : Attribute {
+[ComVisible(true)]
+[AttributeUsage(AttributeTargets.Assembly, Inherited = false)]
+public sealed class AssemblyProductHelp : Attribute {
 
-		public AssemblyProductHelp() {
-			Path = null;
-			HelpType = HelpType.None;
-        }
+	public AssemblyProductHelp() {
+		Path = null;
+		HelpType = HelpType.None;
+	}
 
-		public HelpType HelpType { get; set; }
+	public HelpType HelpType { get; set; }
 
-    	public string Path { get; set; }
-    	
-    }
+	public string Path { get; set; }
 
 }
-
-

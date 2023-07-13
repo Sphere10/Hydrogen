@@ -6,11 +6,10 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen {
-	public enum Metric {
-        Euclidean,
-        TimelikeMinkowski,
-        SpacelikeMinkowski
-    }
-}
+namespace Hydrogen;
 
+public enum Metric {
+	Euclidean,
+	TimelikeMinkowski,
+	SpacelikeMinkowski
+}

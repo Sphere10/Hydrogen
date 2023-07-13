@@ -1,6 +1,4 @@
-﻿.bg-colour-alternate {
-    background-color: #050e2b;
-}
+﻿.bg-colour-alternate { background-color: #050e2b; }
 
 .bottom-sidebar {
     position: absolute;
@@ -9,7 +7,5 @@
 }
 
 @media (max-width: 768px) {
-    .sidebar.toggled .bottom-sidebar {
-        display: none
-    }
+    .sidebar.toggled .bottom-sidebar { display: none }
 }

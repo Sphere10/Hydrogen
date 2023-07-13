@@ -6,15 +6,14 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
 using System.Text;
 
 namespace Hydrogen;
 
-
 public class StringBuilderTextWriter : SyncTextWriter {
 
-	public StringBuilderTextWriter() : this(new StringBuilder()) {}
+	public StringBuilderTextWriter() : this(new StringBuilder()) {
+	}
 
 	public StringBuilderTextWriter(StringBuilder stringBuilder) {
 		Builder = stringBuilder;

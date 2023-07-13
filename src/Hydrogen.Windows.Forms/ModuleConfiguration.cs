@@ -6,20 +6,12 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using Hydrogen;
 using Hydrogen.Application;
-using Hydrogen.Windows;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Win32;
-using Sphere10.DRM;
 
 namespace Hydrogen.Windows.Forms;
+
 public class ModuleConfiguration : ModuleConfigurationBase {
 	public override void RegisterComponents(IServiceCollection serviceCollection) {
 		if (HydrogenFramework.Instance.Options.HasFlag(HydrogenFrameworkOptions.EnableDrm))
@@ -111,7 +103,7 @@ public class ModuleConfiguration : ModuleConfigurationBase {
 
 		if (!serviceCollection.HasImplementationFor<IAboutBox>())
 			serviceCollection.AddTransient<IAboutBox, DRMAboutBox>();
-		
+
 		if (!serviceCollection.HasImplementationFor<INagDialog>())
 			serviceCollection.AddTransient<INagDialog, DRMNagDialog>();
 	}

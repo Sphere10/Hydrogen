@@ -8,17 +8,16 @@
 
 using System;
 
-namespace Hydrogen {
+namespace Hydrogen;
 
-	public interface IMemoryPagedList<TItem> : IPagedList<TItem>, IDisposable {
+public interface IMemoryPagedList<TItem> : IPagedList<TItem>, IDisposable {
 
-		event EventHandlerEx<object, IMemoryPage<TItem>> PageLoading;
-		event EventHandlerEx<object, IMemoryPage<TItem>> PageLoaded;
-		event EventHandlerEx<object, IMemoryPage<TItem>> PageSaving;
-		event EventHandlerEx<object, IMemoryPage<TItem>> PageSaved;
-		event EventHandlerEx<object, IMemoryPage<TItem>> PageUnloading;
-		event EventHandlerEx<object, IMemoryPage<TItem>> PageUnloaded;
+	event EventHandlerEx<object, IMemoryPage<TItem>> PageLoading;
+	event EventHandlerEx<object, IMemoryPage<TItem>> PageLoaded;
+	event EventHandlerEx<object, IMemoryPage<TItem>> PageSaving;
+	event EventHandlerEx<object, IMemoryPage<TItem>> PageSaved;
+	event EventHandlerEx<object, IMemoryPage<TItem>> PageUnloading;
+	event EventHandlerEx<object, IMemoryPage<TItem>> PageUnloaded;
 
-		void Flush();
-	}
+	void Flush();
 }

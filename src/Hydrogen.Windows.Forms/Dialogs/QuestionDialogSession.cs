@@ -8,30 +8,27 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
-namespace Hydrogen.Windows.Forms {
+namespace Hydrogen.Windows.Forms;
 
-	public class QuestionDialogSession {
-		private readonly IDictionary<Guid, DialogExResult> _autoAnswers;
+public class QuestionDialogSession {
+	private readonly IDictionary<Guid, DialogExResult> _autoAnswers;
 
-		public QuestionDialogSession() {
-			_autoAnswers = new Dictionary<Guid, DialogExResult>();
-		}
-
-		public DialogExResult AskQuestion(Guid questionID, SystemIconType iconType, string title, string text, params string[] buttonNames) {
-			if (_autoAnswers.ContainsKey(questionID))
-				return _autoAnswers[questionID];
-
-			var dialog = new QuestionDialog(iconType, title, text, buttonNames);
-			dialog.ShowDialog();
-
-			if (dialog.AlwaysFlag)
-				_autoAnswers[questionID] = dialog.DialogResult;
-
-			return dialog.DialogResult;
-		}
-
+	public QuestionDialogSession() {
+		_autoAnswers = new Dictionary<Guid, DialogExResult>();
 	}
+
+	public DialogExResult AskQuestion(Guid questionID, SystemIconType iconType, string title, string text, params string[] buttonNames) {
+		if (_autoAnswers.ContainsKey(questionID))
+			return _autoAnswers[questionID];
+
+		var dialog = new QuestionDialog(iconType, title, text, buttonNames);
+		dialog.ShowDialog();
+
+		if (dialog.AlwaysFlag)
+			_autoAnswers[questionID] = dialog.DialogResult;
+
+		return dialog.DialogResult;
+	}
+
 }

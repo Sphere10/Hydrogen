@@ -6,39 +6,34 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
-using System.Collections.Generic;
 using System.Data;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Hydrogen.Data {
-    public abstract class DbTransactionDecorator : IDbTransaction {
-        protected readonly IDbTransaction InternalTransaction;
+namespace Hydrogen.Data;
 
-        protected DbTransactionDecorator(IDbTransaction internalTransaction) {
-            InternalTransaction = internalTransaction;
-        }
+public abstract class DbTransactionDecorator : IDbTransaction {
+	protected readonly IDbTransaction InternalTransaction;
 
-        public virtual void Dispose() {
-            InternalTransaction.Dispose();
-        }
+	protected DbTransactionDecorator(IDbTransaction internalTransaction) {
+		InternalTransaction = internalTransaction;
+	}
 
-        public virtual void Commit() {
-            InternalTransaction.Commit();
-        }
+	public virtual void Dispose() {
+		InternalTransaction.Dispose();
+	}
 
-        public virtual void Rollback() {
-            InternalTransaction.Rollback();
-        }
+	public virtual void Commit() {
+		InternalTransaction.Commit();
+	}
 
-        public virtual IDbConnection Connection {
-            get { return InternalTransaction.Connection; }
-        }
+	public virtual void Rollback() {
+		InternalTransaction.Rollback();
+	}
 
-        public virtual IsolationLevel IsolationLevel {
-            get { return InternalTransaction.IsolationLevel; }
-        }
-    }
+	public virtual IDbConnection Connection {
+		get { return InternalTransaction.Connection; }
+	}
+
+	public virtual IsolationLevel IsolationLevel {
+		get { return InternalTransaction.IsolationLevel; }
+	}
 }

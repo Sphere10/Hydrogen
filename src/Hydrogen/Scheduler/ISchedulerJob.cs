@@ -6,10 +6,8 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen
-{
-    public interface ISchedulerJob
-    {
-        void Execute(IJob job);
-    }
+namespace Hydrogen;
+
+public interface ISchedulerJob {
+	void Execute(IJob job);
 }

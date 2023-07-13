@@ -9,380 +9,379 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 
-namespace Hydrogen.Communications {
-	public class ClientWebSocketsDataSource<TItem> : ProtocolChannelDataSource<TItem> {
-		public override Task<int> Count => throw new NotImplementedException();
+namespace Hydrogen.Communications;
 
-		public event EventHandlerEx<DataSourceMutatedItems<TItem>> MutatedItems;
-		public InitializeDelegate InitializeItem { get; init; }
-		public UpdateDelegate UpdateItem { get; set; }
-		public IdDelegate IdItem { get; set; }
+public class ClientWebSocketsDataSource<TItem> : ProtocolChannelDataSource<TItem> {
+	public override Task<int> Count => throw new NotImplementedException();
 
-		public ClientWebSocketsDataSource(string uri, bool secure, InitializeDelegate initializeItem, UpdateDelegate updateItem, IdDelegate idItem)
-			: base(new ClientWebSocketsChannel(uri, secure)) {
+	public event EventHandlerEx<DataSourceMutatedItems<TItem>> MutatedItems;
+	public InitializeDelegate InitializeItem { get; init; }
+	public UpdateDelegate UpdateItem { get; set; }
+	public IdDelegate IdItem { get; set; }
 
-			InitializeItem = initializeItem;
-			UpdateItem = updateItem;
-			IdItem = idItem;
+	public ClientWebSocketsDataSource(string uri, bool secure, InitializeDelegate initializeItem, UpdateDelegate updateItem, IdDelegate idItem)
+		: base(new ClientWebSocketsChannel(uri, secure)) {
 
-			ProtocolChannel.ReceivedBytes += ProtocolChannel_ReceivedBytes;
+		InitializeItem = initializeItem;
+		UpdateItem = updateItem;
+		IdItem = idItem;
+
+		ProtocolChannel.ReceivedBytes += ProtocolChannel_ReceivedBytes;
+	}
+
+	async public void Close() {
+		await ProtocolChannel.Close();
+	}
+
+	private void ProtocolChannel_ReceivedBytes(ReadOnlyMemory<byte> message) {
+		var returnPacket = new WebSocketsPacket(message.ToArray());
+
+		if (!returnPacket.Tokens.Any()) {
+			throw new Exception("1 XXXXXXXXX ClientWebSocketsDataSource received bad packet");
 		}
 
-		async public void Close() {
-			await ProtocolChannel.Close();
+		var totalItems = 0;
+		if (!int.TryParse(returnPacket.Tokens[1], out totalItems)) {
+			throw new Exception("2 XXXXXXXXX ClientWebSocketsDataSource received bad packet");
 		}
 
-		private void ProtocolChannel_ReceivedBytes(ReadOnlyMemory<byte> message) {
-			var returnPacket = new WebSocketsPacket(message.ToArray());
+		var returnData = JsonConvert.DeserializeObject<List<TItem>>(returnPacket.JsonData);
+		var mutatedItems = new DataSourceMutatedItems<TItem>();
+		mutatedItems.TotalItems = totalItems; // this is the count of all items, not just the count of the returned items
+		switch (returnPacket.Tokens[0]) {
 
-			if (!returnPacket.Tokens.Any()) {
-				throw new Exception("1 XXXXXXXXX ClientWebSocketsDataSource received bad packet");
-			}
+			case "newreturn":
+			case "createreturn":
+				foreach (var returnItem in returnData) {
+					mutatedItems.UpdatedItems.Add(new CrudActionItem<TItem>(CrudAction.Create, returnItem));
+				}
+				break;
 
-			var totalItems = 0;
-			if (!int.TryParse(returnPacket.Tokens[1], out totalItems)) {
-				throw new Exception("2 XXXXXXXXX ClientWebSocketsDataSource received bad packet");
-			}
+			case "readreturn":
+			case "refreshreturn":
+				foreach (var returnItem in returnData) {
+					mutatedItems.UpdatedItems.Add(new CrudActionItem<TItem>(CrudAction.Read, returnItem));
+				}
+				break;
 
-			var returnData = JsonConvert.DeserializeObject<List<TItem>>(returnPacket.JsonData);
-			var mutatedItems = new DataSourceMutatedItems<TItem>();
-			mutatedItems.TotalItems = totalItems; // this is the count of all items, not just the count of the returned items
-			switch (returnPacket.Tokens[0]) {
+			case "updatereturn":
+			case "validatereturn":
+				foreach (var returnItem in returnData) {
+					mutatedItems.UpdatedItems.Add(new CrudActionItem<TItem>(CrudAction.Update, returnItem));
+				}
+				break;
 
-				case "newreturn":
-				case "createreturn":
-					foreach (var returnItem in returnData) {
-						mutatedItems.UpdatedItems.Add(new CrudActionItem<TItem>(CrudAction.Create, returnItem));
-					}
-					break;
+			case "deletereturn":
+				foreach (var returnItem in returnData) {
+					mutatedItems.UpdatedItems.Add(new CrudActionItem<TItem>(CrudAction.Delete, returnItem));
+				}
+				break;
 
-				case "readreturn":
-				case "refreshreturn":
-					foreach (var returnItem in returnData) {
-						mutatedItems.UpdatedItems.Add(new CrudActionItem<TItem>(CrudAction.Read, returnItem));
-					}
-					break;
+			case "countreturn":
+				// the total items have already been filled in 
+				break;
 
-				case "updatereturn":
-				case "validatereturn":
-					foreach (var returnItem in returnData) {
-						mutatedItems.UpdatedItems.Add(new CrudActionItem<TItem>(CrudAction.Update, returnItem));
-					}
-					break;
-
-				case "deletereturn":
-					foreach (var returnItem in returnData) {
-						mutatedItems.UpdatedItems.Add(new CrudActionItem<TItem>(CrudAction.Delete, returnItem));
-					}
-					break;
-
-				case "countreturn":
-					// the total items have already been filled in 
-					break;
-
-				default:
-					break;
-			}
-
-			MutatedItems.Invoke(mutatedItems);
+			default:
+				break;
 		}
 
-		public override IEnumerable<TItem> New(int count) {
-			throw new NotImplementedException();
-		}
-		public override void NewDelayed(int count) {
-			var id = ((ClientWebSocketsChannel)ProtocolChannel).Id;
+		MutatedItems.Invoke(mutatedItems);
+	}
 
-			var sendPacket = new WebSocketsPacket(id, $"new {count}");
-			SendBytes(sendPacket.ToBytes());
-		}
+	public override IEnumerable<TItem> New(int count) {
+		throw new NotImplementedException();
+	}
+	public override void NewDelayed(int count) {
+		var id = ((ClientWebSocketsChannel)ProtocolChannel).Id;
 
-		public override Task Create(IEnumerable<TItem> entities) {
-			throw new NotImplementedException();
-		}
-		public override void CreateDelayed(IEnumerable<TItem> entities) {
-			throw new NotImplementedException();
-		}
+		var sendPacket = new WebSocketsPacket(id, $"new {count}");
+		SendBytes(sendPacket.ToBytes());
+	}
 
-		public override Task<IEnumerable<TItem>> Read(string searchTerm, int pageLength, ref int page, string sortProperty, SortDirection sortDirection, out int totalItems) {
+	public override Task Create(IEnumerable<TItem> entities) {
+		throw new NotImplementedException();
+	}
+	public override void CreateDelayed(IEnumerable<TItem> entities) {
+		throw new NotImplementedException();
+	}
 
-			var usePage = page;
-			var returnData = new List<TItem>();
+	public override Task<IEnumerable<TItem>> Read(string searchTerm, int pageLength, ref int page, string sortProperty, SortDirection sortDirection, out int totalItems) {
 
-			var task = Task.Run(async () => {
-				// start the blocking
-				var tcs = new TaskCompletionSourceEx();
+		var usePage = page;
+		var returnData = new List<TItem>();
 
-				ProtocolChannel.ReceivedBytes += message => {
+		var task = Task.Run(async () => {
+			// start the blocking
+			var tcs = new TaskCompletionSourceEx();
 
-					var returnPacket = new WebSocketsPacket(message.ToArray());
+			ProtocolChannel.ReceivedBytes += message => {
 
-					var totalItems = 0;
-					if (returnPacket.Tokens.Length != 2 && returnPacket.Tokens[0] != "readreturn" && !int.TryParse(returnPacket.Tokens[1], out totalItems))
-						throw new Exception("ClientWebSocketsDataSource Read() received bad message");
+				var returnPacket = new WebSocketsPacket(message.ToArray());
 
-					totalItems = int.Parse(returnPacket.Tokens[1]);
+				var totalItems = 0;
+				if (returnPacket.Tokens.Length != 2 && returnPacket.Tokens[0] != "readreturn" && !int.TryParse(returnPacket.Tokens[1], out totalItems))
+					throw new Exception("ClientWebSocketsDataSource Read() received bad message");
 
-					returnData = JsonConvert.DeserializeObject<List<TItem>>(returnPacket.JsonData);
+				totalItems = int.Parse(returnPacket.Tokens[1]);
 
-					var mutatedItems = new DataSourceMutatedItems<TItem>();
-					mutatedItems.TotalItems = totalItems;
-					foreach (var returnItem in returnData) {
-						mutatedItems.UpdatedItems.Add(new CrudActionItem<TItem>(CrudAction.Create, returnItem));
-					}
-					MutatedItems.Invoke(mutatedItems);
+				returnData = JsonConvert.DeserializeObject<List<TItem>>(returnPacket.JsonData);
 
-					// end the blocking
-					tcs.SetResult();
-				};
+				var mutatedItems = new DataSourceMutatedItems<TItem>();
+				mutatedItems.TotalItems = totalItems;
+				foreach (var returnItem in returnData) {
+					mutatedItems.UpdatedItems.Add(new CrudActionItem<TItem>(CrudAction.Create, returnItem));
+				}
+				MutatedItems.Invoke(mutatedItems);
 
-				var id = ((ClientWebSocketsChannel)ProtocolChannel).Id;
-
-				// if the search term has a comma, we're screwed
-				var sendPacket = new WebSocketsPacket(id, $"read {searchTerm} {pageLength} {usePage} {sortProperty} {sortDirection}");
-				SendBytes(sendPacket.ToBytes());
-
-				tcs.Task.Wait();
-
-				//await tcs.Task;
-				//	totalItems = returnData.Count;
-
-				//		return (IEnumerable<TItem>)returnData;
-			});
-
-			task.Wait();
-
-			//totalItems = returnData.Count;
-			//return (IEnumerable<TItem>)returnData;
-
-			totalItems = returnData.Count;
-
-			return Task.FromResult((IEnumerable<TItem>)returnData);
-		}
-
-		public override Task<DataSourceItems<TItem>> Read(string searchTerm, int pageLength, int page, string sortProperty, SortDirection sortDirection) {
-			throw new NotImplementedException();
-		}
-		public override void ReadDelayed(string searchTerm, int pageLength, int page, string sortProperty, SortDirection sortDirection) {
-			var usePage = page;
+				// end the blocking
+				tcs.SetResult();
+			};
 
 			var id = ((ClientWebSocketsChannel)ProtocolChannel).Id;
 
 			// if the search term has a comma, we're screwed
 			var sendPacket = new WebSocketsPacket(id, $"read {searchTerm} {pageLength} {usePage} {sortProperty} {sortDirection}");
 			SendBytes(sendPacket.ToBytes());
-		}
 
-		public override Task Refresh(TItem[] entities) {
-			throw new NotImplementedException();
-		}
-		public override void RefreshDelayed(IEnumerable<TItem> entities) {
-			var jsonData = JsonConvert.SerializeObject(entities);
-			var id = ((ClientWebSocketsChannel)ProtocolChannel).Id;
-			var sendPacket = new WebSocketsPacket(id, $"refresh {entities.Count()}", jsonData);
-			SendBytes(sendPacket.ToBytes());
-		}
+			tcs.Task.Wait();
 
-		public override Task Update(IEnumerable<TItem> entities) {
+			//await tcs.Task;
+			//	totalItems = returnData.Count;
 
-			var task = Task.Run(async () => {
-				// start the blocking
-				var tcs = new TaskCompletionSourceEx();
+			//		return (IEnumerable<TItem>)returnData;
+		});
 
-				ProtocolChannel.ReceivedBytes += message => {
-					var returnPacket = new WebSocketsPacket(message.ToArray());
-					var totalItems = 0;
-					if (returnPacket.Tokens.Length != 2 && returnPacket.Tokens[0] != "updatereturn" && !int.TryParse(returnPacket.Tokens[1], out totalItems))
-						throw new Exception("ClientWebSocketsDataSource New received bad message");
+		task.Wait();
 
-					totalItems = int.Parse(returnPacket.Tokens[1]);
+		//totalItems = returnData.Count;
+		//return (IEnumerable<TItem>)returnData;
 
-					var mutatedItems = new DataSourceMutatedItems<TItem>();
-					mutatedItems.TotalItems = totalItems;
+		totalItems = returnData.Count;
 
-					// don't send the actual items to the Event 
-					//foreach (var returnItem in returnData) {
-					//	mutatedItems.UpdatedItems.Add(new CrudActionItem<TItem>(CrudAction.Create, returnItem));
-					//}
+		return Task.FromResult((IEnumerable<TItem>)returnData);
+	}
 
-					MutatedItems.Invoke(mutatedItems);
+	public override Task<DataSourceItems<TItem>> Read(string searchTerm, int pageLength, int page, string sortProperty, SortDirection sortDirection) {
+		throw new NotImplementedException();
+	}
+	public override void ReadDelayed(string searchTerm, int pageLength, int page, string sortProperty, SortDirection sortDirection) {
+		var usePage = page;
 
-					// end the blocking
-					tcs.SetResult();
-				};
+		var id = ((ClientWebSocketsChannel)ProtocolChannel).Id;
 
-				UpdateDelayed(entities);
+		// if the search term has a comma, we're screwed
+		var sendPacket = new WebSocketsPacket(id, $"read {searchTerm} {pageLength} {usePage} {sortProperty} {sortDirection}");
+		SendBytes(sendPacket.ToBytes());
+	}
 
-				await tcs.Task;
-			});
+	public override Task Refresh(TItem[] entities) {
+		throw new NotImplementedException();
+	}
+	public override void RefreshDelayed(IEnumerable<TItem> entities) {
+		var jsonData = JsonConvert.SerializeObject(entities);
+		var id = ((ClientWebSocketsChannel)ProtocolChannel).Id;
+		var sendPacket = new WebSocketsPacket(id, $"refresh {entities.Count()}", jsonData);
+		SendBytes(sendPacket.ToBytes());
+	}
 
-			return task;
-		}
-		public override void UpdateDelayed(IEnumerable<TItem> entities) {
-			var jsonData = JsonConvert.SerializeObject(entities);
-			var id = ((ClientWebSocketsChannel)ProtocolChannel).Id;
-			var sendPacket = new WebSocketsPacket(id, $"update {entities.Count()}", jsonData);
-			SendBytes(sendPacket.ToBytes());
-		}
+	public override Task Update(IEnumerable<TItem> entities) {
 
-		public override Task Delete(IEnumerable<TItem> entities) {
-			throw new NotImplementedException();
-		}
-		public override void DeleteDelayed(IEnumerable<TItem> entities) {
-			var jsonData = JsonConvert.SerializeObject(entities);
-			var id = ((ClientWebSocketsChannel)ProtocolChannel).Id;
-			var sendPacket = new WebSocketsPacket(id, $"delete {entities.Count()}", jsonData);
-			SendBytes(sendPacket.ToBytes());
-		}
+		var task = Task.Run(async () => {
+			// start the blocking
+			var tcs = new TaskCompletionSourceEx();
 
-		public override Task<Result> Validate(IEnumerable<(TItem entity, CrudAction action)> actions) {
-			throw new NotImplementedException();
-		}
-		public override void ValidateDelayed(IEnumerable<(TItem entity, CrudAction action)> actions) {
-			throw new NotImplementedException();
-		}
+			ProtocolChannel.ReceivedBytes += message => {
+				var returnPacket = new WebSocketsPacket(message.ToArray());
+				var totalItems = 0;
+				if (returnPacket.Tokens.Length != 2 && returnPacket.Tokens[0] != "updatereturn" && !int.TryParse(returnPacket.Tokens[1], out totalItems))
+					throw new Exception("ClientWebSocketsDataSource New received bad message");
 
-		/*		public override IEnumerable<TItem> New(int count) {
+				totalItems = int.Parse(returnPacket.Tokens[1]);
 
-					var returnData = new List<TItem>();
+				var mutatedItems = new DataSourceMutatedItems<TItem>();
+				mutatedItems.TotalItems = totalItems;
 
-					var task = Task.Run(async () => {
-						// start the blocking
-						var tcs = new TaskCompletionSourceEx();
+				// don't send the actual items to the Event 
+				//foreach (var returnItem in returnData) {
+				//	mutatedItems.UpdatedItems.Add(new CrudActionItem<TItem>(CrudAction.Create, returnItem));
+				//}
 
-						ProtocolChannel.ReceivedBytes += message => {
-							var returnPacket = new WebSocketsPacket(message.ToArray());
-							var totalItems = 0;
-							if (returnPacket.Tokens.Length != 2 && returnPacket.Tokens[0] != "newreturn" && !int.TryParse(returnPacket.Tokens[1], out totalItems)) 
-								throw new Exception("ClientWebSocketsDataSource New received bad message");
+				MutatedItems.Invoke(mutatedItems);
 
-							totalItems = int.Parse(returnPacket.Tokens[1]);
+				// end the blocking
+				tcs.SetResult();
+			};
 
-							//if (returnPacket.Message != "newreturn") throw new Exception("ClientWebSocketsDataSource New received bad message");
+			UpdateDelayed(entities);
 
-							returnData = JsonConvert.DeserializeObject<List<TItem>>(returnPacket.JsonData);
+			await tcs.Task;
+		});
 
-							var mutatedItems = new DataSourceMutatedItems<TItem>();
-							mutatedItems.TotalItems = totalItems;
+		return task;
+	}
+	public override void UpdateDelayed(IEnumerable<TItem> entities) {
+		var jsonData = JsonConvert.SerializeObject(entities);
+		var id = ((ClientWebSocketsChannel)ProtocolChannel).Id;
+		var sendPacket = new WebSocketsPacket(id, $"update {entities.Count()}", jsonData);
+		SendBytes(sendPacket.ToBytes());
+	}
 
-							// don't send the actual items to the Event 
-							//foreach (var returnItem in returnData) {
-							//	mutatedItems.UpdatedItems.Add(new CrudActionItem<TItem>(CrudAction.Create, returnItem));
-							//}
+	public override Task Delete(IEnumerable<TItem> entities) {
+		throw new NotImplementedException();
+	}
+	public override void DeleteDelayed(IEnumerable<TItem> entities) {
+		var jsonData = JsonConvert.SerializeObject(entities);
+		var id = ((ClientWebSocketsChannel)ProtocolChannel).Id;
+		var sendPacket = new WebSocketsPacket(id, $"delete {entities.Count()}", jsonData);
+		SendBytes(sendPacket.ToBytes());
+	}
 
-							MutatedItems.Invoke(mutatedItems);
+	public override Task<Result> Validate(IEnumerable<(TItem entity, CrudAction action)> actions) {
+		throw new NotImplementedException();
+	}
+	public override void ValidateDelayed(IEnumerable<(TItem entity, CrudAction action)> actions) {
+		throw new NotImplementedException();
+	}
 
-							// end the blocking
-							tcs.SetResult();
-						};
+	/*		public override IEnumerable<TItem> New(int count) {
 
-						var sendPacket = new WebSocketsPacket($"new {count}");
-						SendBytes(sendPacket.ToBytes());
+				var returnData = new List<TItem>();
 
-						await tcs.Task;
-					});
+				var task = Task.Run(async () => {
+					// start the blocking
+					var tcs = new TaskCompletionSourceEx();
 
-					task.Wait();
+					ProtocolChannel.ReceivedBytes += message => {
+						var returnPacket = new WebSocketsPacket(message.ToArray());
+						var totalItems = 0;
+						if (returnPacket.Tokens.Length != 2 && returnPacket.Tokens[0] != "newreturn" && !int.TryParse(returnPacket.Tokens[1], out totalItems)) 
+							throw new Exception("ClientWebSocketsDataSource New received bad message");
 
-					return returnData;
-				}
-		*/
-		/*
-						private void ProtocolChannel_ReceivedNewBytes(ReadOnlyMemory<byte> message) {
-							var returnPacket = new WebSocketsPacket(message.ToArray());
-							var totalItems = 0;
-							if (returnPacket.Tokens.Length != 2 && returnPacket.Tokens[0] != "newreturn" && !int.TryParse(returnPacket.Tokens[1], out totalItems))
-								throw new Exception("ClientWebSocketsDataSource New received bad message");
+						totalItems = int.Parse(returnPacket.Tokens[1]);
 
-							totalItems = int.Parse(returnPacket.Tokens[1]);
+						//if (returnPacket.Message != "newreturn") throw new Exception("ClientWebSocketsDataSource New received bad message");
 
-							var returnData = JsonConvert.DeserializeObject<List<TItem>>(returnPacket.JsonData);
+						returnData = JsonConvert.DeserializeObject<List<TItem>>(returnPacket.JsonData);
 
-							var mutatedItems = new DataSourceMutatedItems<TItem>();
-							mutatedItems.TotalItems = totalItems;
+						var mutatedItems = new DataSourceMutatedItems<TItem>();
+						mutatedItems.TotalItems = totalItems;
 
-							// don't send the actual items to the Event 
-							//foreach (var returnItem in returnData) {
-							//	mutatedItems.UpdatedItems.Add(new CrudActionItem<TItem>(CrudAction.Create, returnItem));
-							//}
+						// don't send the actual items to the Event 
+						//foreach (var returnItem in returnData) {
+						//	mutatedItems.UpdatedItems.Add(new CrudActionItem<TItem>(CrudAction.Create, returnItem));
+						//}
 
-							MutatedItems.Invoke(mutatedItems);
+						MutatedItems.Invoke(mutatedItems);
 
-							ProtocolChannel.ReceivedBytes -= ProtocolChannel_ReceivedNewBytes;
-						}
-				*/
-		/*
-				private void ProtocolChannel_ReceivedReadSyncBytes(ReadOnlyMemory<byte> message) {
-					var returnPacket = new WebSocketsPacket(message.ToArray());
+						// end the blocking
+						tcs.SetResult();
+					};
 
-					var totalItems = 0;
-					if (returnPacket.Tokens.Length != 2 && returnPacket.Tokens[0] != "readreturn" && !int.TryParse(returnPacket.Tokens[1], out totalItems))
-						throw new Exception("ClientWebSocketsDataSource Read() received bad message");
+					var sendPacket = new WebSocketsPacket($"new {count}");
+					SendBytes(sendPacket.ToBytes());
 
-					totalItems = int.Parse(returnPacket.Tokens[1]);
+					await tcs.Task;
+				});
 
-					var mutatedItems = new DataSourceMutatedItems<TItem>();
-					var returnData = JsonConvert.DeserializeObject<List<TItem>>(returnPacket.JsonData);
-					mutatedItems.TotalItems = totalItems;
-					foreach (var returnItem in returnData) {
-						mutatedItems.UpdatedItems.Add(new CrudActionItem<TItem>(CrudAction.Create, returnItem));
+				task.Wait();
+
+				return returnData;
+			}
+	*/
+	/*
+					private void ProtocolChannel_ReceivedNewBytes(ReadOnlyMemory<byte> message) {
+						var returnPacket = new WebSocketsPacket(message.ToArray());
+						var totalItems = 0;
+						if (returnPacket.Tokens.Length != 2 && returnPacket.Tokens[0] != "newreturn" && !int.TryParse(returnPacket.Tokens[1], out totalItems))
+							throw new Exception("ClientWebSocketsDataSource New received bad message");
+
+						totalItems = int.Parse(returnPacket.Tokens[1]);
+
+						var returnData = JsonConvert.DeserializeObject<List<TItem>>(returnPacket.JsonData);
+
+						var mutatedItems = new DataSourceMutatedItems<TItem>();
+						mutatedItems.TotalItems = totalItems;
+
+						// don't send the actual items to the Event 
+						//foreach (var returnItem in returnData) {
+						//	mutatedItems.UpdatedItems.Add(new CrudActionItem<TItem>(CrudAction.Create, returnItem));
+						//}
+
+						MutatedItems.Invoke(mutatedItems);
+
+						ProtocolChannel.ReceivedBytes -= ProtocolChannel_ReceivedNewBytes;
 					}
+			*/
+	/*
+			private void ProtocolChannel_ReceivedReadSyncBytes(ReadOnlyMemory<byte> message) {
+				var returnPacket = new WebSocketsPacket(message.ToArray());
 
-					MutatedItems.Invoke(mutatedItems);
-					ProtocolChannel.ReceivedBytes -= ProtocolChannel_ReceivedReadSyncBytes;
+				var totalItems = 0;
+				if (returnPacket.Tokens.Length != 2 && returnPacket.Tokens[0] != "readreturn" && !int.TryParse(returnPacket.Tokens[1], out totalItems))
+					throw new Exception("ClientWebSocketsDataSource Read() received bad message");
+
+				totalItems = int.Parse(returnPacket.Tokens[1]);
+
+				var mutatedItems = new DataSourceMutatedItems<TItem>();
+				var returnData = JsonConvert.DeserializeObject<List<TItem>>(returnPacket.JsonData);
+				mutatedItems.TotalItems = totalItems;
+				foreach (var returnItem in returnData) {
+					mutatedItems.UpdatedItems.Add(new CrudActionItem<TItem>(CrudAction.Create, returnItem));
 				}
-		*/
-		/*
-				public override Task Update(IEnumerable<TItem> entities) {
 
-					var task = Task.Run(async () => {
-						// start the blocking
-						var tcs = new TaskCompletionSourceEx();
+				MutatedItems.Invoke(mutatedItems);
+				ProtocolChannel.ReceivedBytes -= ProtocolChannel_ReceivedReadSyncBytes;
+			}
+	*/
+	/*
+			public override Task Update(IEnumerable<TItem> entities) {
 
-						ProtocolChannel.ReceivedBytes += message => {
-							var returnPacket = new WebSocketsPacket(message.ToArray());
-							var totalItems = 0;
-							if (returnPacket.Tokens.Length != 2 && returnPacket.Tokens[0] != "newreturn" && !int.TryParse(returnPacket.Tokens[1], out totalItems))
-								throw new Exception("ClientWebSocketsDataSource New received bad message");
+				var task = Task.Run(async () => {
+					// start the blocking
+					var tcs = new TaskCompletionSourceEx();
 
-							totalItems = int.Parse(returnPacket.Tokens[1]);
+					ProtocolChannel.ReceivedBytes += message => {
+						var returnPacket = new WebSocketsPacket(message.ToArray());
+						var totalItems = 0;
+						if (returnPacket.Tokens.Length != 2 && returnPacket.Tokens[0] != "newreturn" && !int.TryParse(returnPacket.Tokens[1], out totalItems))
+							throw new Exception("ClientWebSocketsDataSource New received bad message");
 
-							//if (returnPacket.Message != "newreturn") throw new Exception("ClientWebSocketsDataSource New received bad message");
+						totalItems = int.Parse(returnPacket.Tokens[1]);
 
-							returnData = JsonConvert.DeserializeObject<List<TItem>>(returnPacket.JsonData);
+						//if (returnPacket.Message != "newreturn") throw new Exception("ClientWebSocketsDataSource New received bad message");
 
-							var mutatedItems = new DataSourceMutatedItems<TItem>();
-							mutatedItems.TotalItems = totalItems;
+						returnData = JsonConvert.DeserializeObject<List<TItem>>(returnPacket.JsonData);
 
-							// don't send the actual items to the Event 
-							//foreach (var returnItem in returnData) {
-							//	mutatedItems.UpdatedItems.Add(new CrudActionItem<TItem>(CrudAction.Create, returnItem));
-							//}
+						var mutatedItems = new DataSourceMutatedItems<TItem>();
+						mutatedItems.TotalItems = totalItems;
 
-							MutatedItems.Invoke(mutatedItems);
+						// don't send the actual items to the Event 
+						//foreach (var returnItem in returnData) {
+						//	mutatedItems.UpdatedItems.Add(new CrudActionItem<TItem>(CrudAction.Create, returnItem));
+						//}
 
-							// end the blocking
-							tcs.SetResult();
-						};
+						MutatedItems.Invoke(mutatedItems);
 
-						var sendPacket = new WebSocketsPacket($"new {count}");
-						SendBytes(sendPacket.ToBytes());
+						// end the blocking
+						tcs.SetResult();
+					};
 
-						await tcs.Task;
-					});
+					var sendPacket = new WebSocketsPacket($"new {count}");
+					SendBytes(sendPacket.ToBytes());
 
-					task.Wait();
+					await tcs.Task;
+				});
 
-		//			throw new NotImplementedException();
-				}
-		*/
+				task.Wait();
 
-		public override void CountDelayed() {
-			throw new NotImplementedException();
-		}
+	//			throw new NotImplementedException();
+			}
+	*/
+
+	public override void CountDelayed() {
+		throw new NotImplementedException();
 	}
 }

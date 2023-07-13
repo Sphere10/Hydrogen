@@ -7,23 +7,17 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 
-using System;
-using System.Collections.Generic;
-using System.Text;
+namespace Hydrogen.Maths.Compiler;
 
-namespace Hydrogen.Maths.Compiler {
+public interface IMathContext {
+	IMathContext ParentContext { get; set; }
 
-    public interface IMathContext {
-        IMathContext ParentContext { get; set; }
+	IVariableContext Variables { get; }
 
-        IVariableContext Variables { get; }
+	IFunctionContext Functions { get; }
 
-        IFunctionContext Functions { get; }
+	IFunction GenerateFunction(string expression);
 
-        IFunction GenerateFunction(string expression);
-
-        IFunction GenerateFunction(string expression, string parameterName);
-
-    }
+	IFunction GenerateFunction(string expression, string parameterName);
 
 }

@@ -7,104 +7,99 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Windows.Forms;
-using Hydrogen;
 using Hydrogen.Data;
 using Hydrogen.Windows.Forms;
 
-namespace Hydrogen.Utils.WinFormsTester {
-	public partial class TestArtificialKeysScreen : ApplicationScreen {
-		public TestArtificialKeysScreen() {
-			InitializeComponent();
-		}
+namespace Hydrogen.Utils.WinFormsTester;
 
-		private void _testButton_Click(object sender, EventArgs e) {
-			try {
-				var artificialKeys =
-					#region Create test object
-					 new ArtificialKeys {
-						 Tables = new[] {
-							new ArtificialKeys.Table() {
-								Name = "Table1",
-                      			PrimaryKey = new ArtificialKeys.PrimaryKey {
+public partial class TestArtificialKeysScreen : ApplicationScreen {
+	public TestArtificialKeysScreen() {
+		InitializeComponent();
+	}
+
+	private void _testButton_Click(object sender, EventArgs e) {
+		try {
+			var artificialKeys =
+
+				#region Create test object
+
+				new ArtificialKeys {
+					Tables = new[] {
+						new ArtificialKeys.Table() {
+							Name = "Table1",
+							PrimaryKey = new ArtificialKeys.PrimaryKey {
+								Name = "PK1",
+								AutoIncrement = true,
+								Columns = new[] {
+									new ArtificialKeys.Column {
+										Name = "ID"
+									}
+								}
+							},
+							ForeignKeys = new[] {
+								new ArtificialKeys.ForeignKey {
 									Name = "PK1",
-									AutoIncrement = true,
-									Columns = new [] {
+									ReferenceTable = "Table2",
+									Columns = new[] {
 										new ArtificialKeys.Column {
 											Name = "ID"
 										}
 									}
-								},
-                      			ForeignKeys = new[] {
-									new ArtificialKeys.ForeignKey {
-										Name = "PK1",
-										ReferenceTable = "Table2",
-										Columns = new [] {
-											new ArtificialKeys.Column {
-												Name = "ID"
-											}
-										}
-									}
-								},
-								UniqueConstraints = new[] {
-									new ArtificialKeys.UniqueConstraint {
-										Name = "UC1",
-	                             		Columns = new [] {
-		                             		new ArtificialKeys.Column {
-												Name = "X"			                             		                          
-											},	                 
-		                             		new ArtificialKeys.Column {
-			                             		Name = "Y"                 
-											},	                 
-
-										}
-									}                   
-								},
+								}
 							},
-							new ArtificialKeys.Table() {
-								Name = "Table2",
-                      			PrimaryKey = new ArtificialKeys.PrimaryKey {
-									Name = "PK1",
-									Sequence = "Sequence1",
-									Columns = new [] {
+							UniqueConstraints = new[] {
+								new ArtificialKeys.UniqueConstraint {
+									Name = "UC1",
+									Columns = new[] {
 										new ArtificialKeys.Column {
-											Name = "A"
+											Name = "X"
 										},
 										new ArtificialKeys.Column {
-											Name = "B"
+											Name = "Y"
 										},
-										new ArtificialKeys.Column {
-											Name = "C"
-										}
+
+									}
+								}
+							},
+						},
+						new ArtificialKeys.Table() {
+							Name = "Table2",
+							PrimaryKey = new ArtificialKeys.PrimaryKey {
+								Name = "PK1",
+								Sequence = "Sequence1",
+								Columns = new[] {
+									new ArtificialKeys.Column {
+										Name = "A"
+									},
+									new ArtificialKeys.Column {
+										Name = "B"
+									},
+									new ArtificialKeys.Column {
+										Name = "C"
 									}
 								}
 							}
 						}
-					};
-					#endregion
+					}
+				};
 
-				var serialized = Tools.Xml.WriteToString(artificialKeys);
+			#endregion
 
-				var deserialized = Tools.Xml.ReadFromString<ArtificialKeys>(serialized);
+			var serialized = Tools.Xml.WriteToString(artificialKeys);
 
-				textBox1.Clear();
-				textBox1.AppendText(serialized);
+			var deserialized = Tools.Xml.ReadFromString<ArtificialKeys>(serialized);
 
-				var reserialized = Tools.Xml.WriteToString(deserialized);
-				if (reserialized != serialized ) {
-					textBox1.AppendText("Deserialization did not match - " + Environment.NewLine);
-					textBox1.AppendText(reserialized);
-				}
-			} catch(Exception error) {
-				textBox1.Clear();
-				textBox1.AppendText(error.ToDiagnosticString());
+			textBox1.Clear();
+			textBox1.AppendText(serialized);
+
+			var reserialized = Tools.Xml.WriteToString(deserialized);
+			if (reserialized != serialized) {
+				textBox1.AppendText("Deserialization did not match - " + Environment.NewLine);
+				textBox1.AppendText(reserialized);
 			}
+		} catch (Exception error) {
+			textBox1.Clear();
+			textBox1.AppendText(error.ToDiagnosticString());
 		}
 	}
 }

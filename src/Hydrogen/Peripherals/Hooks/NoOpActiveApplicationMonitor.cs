@@ -8,15 +8,12 @@
 
 using System;
 
-namespace Hydrogen {
-	public class NoOpActiveApplicationMonitor : IActiveApplicationMonitor
-    {
-        public event EventHandler<ApplicationChangedEvent> ApplicationChanged;
+namespace Hydrogen;
 
-        public string GetActiveApplicationName()
-        {
-            return "N/A";
-        }
-    }
+public class NoOpActiveApplicationMonitor : IActiveApplicationMonitor {
+	public event EventHandler<ApplicationChangedEvent> ApplicationChanged;
+
+	public string GetActiveApplicationName() {
+		return "N/A";
+	}
 }
-

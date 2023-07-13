@@ -10,31 +10,31 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Hydrogen {
+namespace Hydrogen;
 
-	public class ReferenceDictionary<TKey, TVal> : Dictionary<Reference<TKey>, TVal> where TKey : class {
-	    private readonly Func<TVal, TKey> _keyExtractor;
+public class ReferenceDictionary<TKey, TVal> : Dictionary<Reference<TKey>, TVal> where TKey : class {
+	private readonly Func<TVal, TKey> _keyExtractor;
 
-        public ReferenceDictionary(Func<TVal, TKey> keyExtractor) : this(keyExtractor, Enumerable.Empty<TVal>()) {
-        }
-
-	    public ReferenceDictionary(Func<TVal, TKey> keyExtractor, IEnumerable<TVal> items) {
-	        _keyExtractor = keyExtractor;
-            AddMany(items);
-	    }
-
-
-	    public void AddMany(IEnumerable<TVal> items) {
-	        foreach(var item in items)
-                Add(Reference.For(_keyExtractor(item)), item);
-	    }	
+	public ReferenceDictionary(Func<TVal, TKey> keyExtractor) : this(keyExtractor, Enumerable.Empty<TVal>()) {
 	}
 
-    public class ReferenceDictionary<T> : ReferenceDictionary<T, T> where T : class {
-        public ReferenceDictionary() : this(Enumerable.Empty<T>()) {
-        }
+	public ReferenceDictionary(Func<TVal, TKey> keyExtractor, IEnumerable<TVal> items) {
+		_keyExtractor = keyExtractor;
+		AddMany(items);
+	}
 
-        public ReferenceDictionary(IEnumerable<T> items) : base((x) => x, items) {
-        }
-    }
+
+	public void AddMany(IEnumerable<TVal> items) {
+		foreach (var item in items)
+			Add(Reference.For(_keyExtractor(item)), item);
+	}
+}
+
+
+public class ReferenceDictionary<T> : ReferenceDictionary<T, T> where T : class {
+	public ReferenceDictionary() : this(Enumerable.Empty<T>()) {
+	}
+
+	public ReferenceDictionary(IEnumerable<T> items) : base((x) => x, items) {
+	}
 }

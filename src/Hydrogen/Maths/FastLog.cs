@@ -9,71 +9,63 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace Hydrogen {
-	public static class FastLog {
-        [StructLayout(LayoutKind.Explicit)]
-        private struct Ieee754 {
-            [FieldOffset(0)]
-            public float Single;
-            [FieldOffset(0)]
-            public uint UnsignedBits;
-            [FieldOffset(0)]
-            public int SignedBits;
+namespace Hydrogen;
 
-            public uint Sign {
-                get {
-                    return UnsignedBits >> 31;
-                }
-            }
+public static class FastLog {
+	[StructLayout(LayoutKind.Explicit)]
+	private struct Ieee754 {
+		[FieldOffset(0)] public float Single;
+		[FieldOffset(0)] public uint UnsignedBits;
+		[FieldOffset(0)] public int SignedBits;
 
-            public int Exponent {
-                get {
-                    return (SignedBits >> 23) & 0xFF;
-                }
-            }
+		public uint Sign {
+			get { return UnsignedBits >> 31; }
+		}
 
-            public uint Mantissa {
-                get {
-                    return UnsignedBits & 0x007FFFFF;
-                }
-            }
-        }
+		public int Exponent {
+			get { return (SignedBits >> 23) & 0xFF; }
+		}
 
-        private static readonly float[] MantissaLogs = new float[(int)System.Math.Pow(2, 23)];
-        private const float Base10 = 3.321928F;
-        private const float BaseE = 1.442695F;
+		public uint Mantissa {
+			get { return UnsignedBits & 0x007FFFFF; }
+		}
+	}
 
-        static FastLog() {
-            //creating lookup table
-            for (uint i = 0; i < MantissaLogs.Length; i++) {
-                var n = new Ieee754 { UnsignedBits = i | 0x3F800000 }; //added the implicit 1 leading bit
-                MantissaLogs[i] = (float)Math.Log(n.Single, 2);
-            }
-        }
 
-        public static float Log2(float value) {
-            if (value == 0F)
-                return float.NegativeInfinity;
+	private static readonly float[] MantissaLogs = new float[(int)System.Math.Pow(2, 23)];
+	private const float Base10 = 3.321928F;
+	private const float BaseE = 1.442695F;
 
-            var number = new Ieee754 { Single = value };
+	static FastLog() {
+		//creating lookup table
+		for (uint i = 0; i < MantissaLogs.Length; i++) {
+			var n = new Ieee754 { UnsignedBits = i | 0x3F800000 }; //added the implicit 1 leading bit
+			MantissaLogs[i] = (float)Math.Log(n.Single, 2);
+		}
+	}
 
-            if (number.UnsignedBits >> 31 == 1) //NOTE: didn't call Sign property for higher performance
-                return float.NaN;
+	public static float Log2(float value) {
+		if (value == 0F)
+			return float.NegativeInfinity;
 
-            return (((number.SignedBits >> 23) & 0xFF) - 127) + MantissaLogs[number.UnsignedBits & 0x007FFFFF];
-            //NOTE: didn't call Exponent and Mantissa properties for higher performance
-        }
+		var number = new Ieee754 { Single = value };
 
-        public static float Log10(float value) {
-            return Log2(value) / Base10;
-        }
+		if (number.UnsignedBits >> 31 == 1) //NOTE: didn't call Sign property for higher performance
+			return float.NaN;
 
-        public static float Ln(float value) {
-            return Log2(value) / BaseE;
-        }
+		return (((number.SignedBits >> 23) & 0xFF) - 127) + MantissaLogs[number.UnsignedBits & 0x007FFFFF];
+		//NOTE: didn't call Exponent and Mantissa properties for higher performance
+	}
 
-        public static float Log(float value, float valueBase) {
-            return Log2(value) / Log2(valueBase);
-        }
-    }
+	public static float Log10(float value) {
+		return Log2(value) / Base10;
+	}
+
+	public static float Ln(float value) {
+		return Log2(value) / BaseE;
+	}
+
+	public static float Log(float value, float valueBase) {
+		return Log2(value) / Log2(valueBase);
+	}
 }

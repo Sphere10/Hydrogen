@@ -6,18 +6,14 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using CommandLine.Core;
 using System.Runtime.Serialization;
 
 namespace Hydrogen.Application;
 
 public enum ProductLicenseExpirationPolicyDTO : byte {
-	[EnumMember(Value = "none")]
-	None = 1,
+	[EnumMember(Value = "none")] None = 1,
 
-	[EnumMember(Value = "downgrade")]
-	Downgrade,
+	[EnumMember(Value = "downgrade")] Downgrade,
 
-	[EnumMember(Value = "disable")]
-	Disable
+	[EnumMember(Value = "disable")] Disable
 }

@@ -7,47 +7,45 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Data;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Hydrogen;
 using Hydrogen.Data;
 
-namespace Hydrogen.Windows.Forms {
-	public partial class ExecuteScriptForm : Form {
-		public ExecuteScriptForm(IDAC dac, ISQLBuilder script) {
-			InitializeComponent();
-			_scriptTextBox.Text = script.ToString();
-			_scriptTextBox.FocusAtEnd();
-			_databaseConnectionStringLabel.Text = dac.ConnectionString;
-			DAC = dac;
-			Script = script;
-			DialogResult = DialogResult.Cancel;
-		}
+namespace Hydrogen.Windows.Forms;
 
-		public IDAC DAC { get; private set; }
-
-		public ISQLBuilder Script { get; private set; }
-
-
-		private async void _executeScriptButton_Click(object sender, EventArgs e) {
-			try {
-			    using (LoadingCircle.EnterAnimationScope(this, disableControls:true)) {
-			       await Task.Run( () =>  DAC.ExecuteBatch(Script));
-			    }
-			    this.DialogResult = DialogResult.OK;
-
-				Close();
-			} catch (Exception error) {
-				ExceptionDialog.Show("Error", error);
-			} finally {
-			}
-		}
-
-		private void _copyToClipboardButton_Click(object sender, EventArgs e) {
-			Clipboard.SetText(_scriptTextBox.Text);
-		}
-
-
+public partial class ExecuteScriptForm : Form {
+	public ExecuteScriptForm(IDAC dac, ISQLBuilder script) {
+		InitializeComponent();
+		_scriptTextBox.Text = script.ToString();
+		_scriptTextBox.FocusAtEnd();
+		_databaseConnectionStringLabel.Text = dac.ConnectionString;
+		DAC = dac;
+		Script = script;
+		DialogResult = DialogResult.Cancel;
 	}
+
+	public IDAC DAC { get; private set; }
+
+	public ISQLBuilder Script { get; private set; }
+
+
+	private async void _executeScriptButton_Click(object sender, EventArgs e) {
+		try {
+			using (LoadingCircle.EnterAnimationScope(this, disableControls: true)) {
+				await Task.Run(() => DAC.ExecuteBatch(Script));
+			}
+			this.DialogResult = DialogResult.OK;
+
+			Close();
+		} catch (Exception error) {
+			ExceptionDialog.Show("Error", error);
+		} finally {
+		}
+	}
+
+	private void _copyToClipboardButton_Click(object sender, EventArgs e) {
+		Clipboard.SetText(_scriptTextBox.Text);
+	}
+
+
 }

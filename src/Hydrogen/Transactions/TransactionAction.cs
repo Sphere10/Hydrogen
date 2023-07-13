@@ -12,4 +12,3 @@ public enum TransactionAction {
 	Commit,
 	Rollback
 }
-

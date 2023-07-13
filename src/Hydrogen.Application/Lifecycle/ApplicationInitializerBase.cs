@@ -6,17 +6,15 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen.Application {
+namespace Hydrogen.Application;
 
+public abstract class ApplicationInitializerBase : IApplicationInitializer {
+	public const int DefaultPriority = 100;
 
-    public abstract class ApplicationInitializerBase : IApplicationInitializer {
-		public const int DefaultPriority = 100;
+	public virtual int Priority => DefaultPriority;
 
-		public virtual int Priority => DefaultPriority;
-		
-		public virtual bool Parallelizable => false;
+	public virtual bool Parallelizable => false;
 
-		public abstract void Initialize();
+	public abstract void Initialize();
 
-	}
 }

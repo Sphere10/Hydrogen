@@ -6,18 +6,18 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen {
-	public class FileAlreadyExistsException : SoftwareException {
-        public FileAlreadyExistsException(string filename) 
-            : this($"File already exists", filename) {
+namespace Hydrogen;
 
-        }
+public class FileAlreadyExistsException : SoftwareException {
+	public FileAlreadyExistsException(string filename)
+		: this($"File already exists", filename) {
 
-		public FileAlreadyExistsException(string message, string filename)
-			: base(message) {
-            Path = filename;
-		}
+	}
 
-        public string Path { get; }
-    }
+	public FileAlreadyExistsException(string message, string filename)
+		: base(message) {
+		Path = filename;
+	}
+
+	public string Path { get; }
 }

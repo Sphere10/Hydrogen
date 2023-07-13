@@ -10,91 +10,91 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Hydrogen {
-	public sealed class LookupEx<TKey, TValue> : ILookup<TKey, TValue> {
-		private readonly Dictionary<TKey, List<TValue>> _map;
+namespace Hydrogen;
 
-		public LookupEx()
-			: this(EqualityComparer<TKey>.Default) {
-		}
+public sealed class LookupEx<TKey, TValue> : ILookup<TKey, TValue> {
+	private readonly Dictionary<TKey, List<TValue>> _map;
 
-		public LookupEx(IEqualityComparer<TKey> comparer) {
-			_map = new Dictionary<TKey, List<TValue>>(comparer);
-		}
+	public LookupEx()
+		: this(EqualityComparer<TKey>.Default) {
+	}
 
-		public LookupEx(ILookup<TKey, TValue> values) : this(values, EqualityComparer<TKey>.Default) {
-		}
+	public LookupEx(IEqualityComparer<TKey> comparer) {
+		_map = new Dictionary<TKey, List<TValue>>(comparer);
+	}
 
-		public LookupEx(ILookup<TKey, TValue> values, IEqualityComparer<TKey> comparer) {
-			_map = new Dictionary<TKey, List<TValue>>(values.ToDictionary(v => v.Key, v => v.ToList()), comparer);
-		}
+	public LookupEx(ILookup<TKey, TValue> values) : this(values, EqualityComparer<TKey>.Default) {
+	}
 
-		public IEnumerable<TKey> Keys => _map.Keys;
+	public LookupEx(ILookup<TKey, TValue> values, IEqualityComparer<TKey> comparer) {
+		_map = new Dictionary<TKey, List<TValue>>(values.ToDictionary(v => v.Key, v => v.ToList()), comparer);
+	}
 
-		public void Add(TKey key) {
-			FetchMap(key);
-		}
+	public IEnumerable<TKey> Keys => _map.Keys;
 
-		public void Add(TKey key, TValue value) {
-			FetchMap(key).Add(value);
-		}
+	public void Add(TKey key) {
+		FetchMap(key);
+	}
 
-		public void Remove(TKey key, TValue value) {
-			FetchMap(key).Remove(value);
-		}
+	public void Add(TKey key, TValue value) {
+		FetchMap(key).Add(value);
+	}
 
-		public void AddRange(TKey key, IEnumerable<TValue> collection) {
-			FetchMap(key).AddRange(collection);
-		}
+	public void Remove(TKey key, TValue value) {
+		FetchMap(key).Remove(value);
+	}
 
-		public int Count => _map.Count;
+	public void AddRange(TKey key, IEnumerable<TValue> collection) {
+		FetchMap(key).AddRange(collection);
+	}
 
-		public IEnumerable<TValue> this[TKey key] {
-			get {
-				if (!_map.TryGetValue(key, out var list)) {
-					return Enumerable.Empty<TValue>();
-				}
-				return list.AsReadOnly();
+	public int Count => _map.Count;
+
+	public IEnumerable<TValue> this[TKey key] {
+		get {
+			if (!_map.TryGetValue(key, out var list)) {
+				return Enumerable.Empty<TValue>();
 			}
-			set { _map[key] = value.ToList(); }
+			return list.AsReadOnly();
 		}
+		set { _map[key] = value.ToList(); }
+	}
 
-		public int CountForKey(TKey key) {
-			if (_map.ContainsKey(key)) {
-				return _map[key].Count;
-			}
-			return 0;
+	public int CountForKey(TKey key) {
+		if (_map.ContainsKey(key)) {
+			return _map[key].Count;
 		}
+		return 0;
+	}
 
-		public bool Contains(TKey key) {
-			return _map.ContainsKey(key);
+	public bool Contains(TKey key) {
+		return _map.ContainsKey(key);
+	}
+
+	public IDictionary<TKey, TValue[]> ToDictionary()
+		=> _map.ToDictionary(x => x.Key, x => x.Value.ToArray());
+
+
+	public IEnumerator<IGrouping<TKey, TValue>> GetEnumerator() {
+		return _map.Keys
+			.Select(key => new Grouping<TKey, TValue>(key, _map[key]))
+			.Cast<IGrouping<TKey, TValue>>()
+			.GetEnumerator();
+	}
+
+	IEnumerator IEnumerable.GetEnumerator() {
+		return GetEnumerator();
+	}
+
+	public void Clear() {
+		_map.Clear();
+	}
+
+	private List<TValue> FetchMap(TKey key) {
+		if (!_map.TryGetValue(key, out var values)) {
+			values = new List<TValue>();
+			_map[key] = values;
 		}
-
-		public IDictionary<TKey, TValue[]> ToDictionary() 
-			=> _map.ToDictionary(x => x.Key, x => x.Value.ToArray());
-		
-
-		public IEnumerator<IGrouping<TKey, TValue>> GetEnumerator() {
-			return _map.Keys
-				.Select(key => new Grouping<TKey, TValue>(key, _map[key]))
-				.Cast<IGrouping<TKey, TValue>>()
-				.GetEnumerator();
-		}
-
-		IEnumerator IEnumerable.GetEnumerator() {
-			return GetEnumerator();
-		}
-
-		public void Clear() {
-			_map.Clear();
-		}
-
-		private List<TValue> FetchMap(TKey key) {
-			if (!_map.TryGetValue(key, out var values)) {
-				values = new List<TValue>();
-				_map[key] = values;
-			}
-			return values;
-		}
+		return values;
 	}
 }

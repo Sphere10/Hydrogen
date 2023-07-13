@@ -6,22 +6,21 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
 using System.Collections.Generic;
 
-namespace Hydrogen {
-	public class CastedEqualityComparer<TItem, TBase> : IEqualityComparer<TBase> where TItem : TBase {
-		private readonly IEqualityComparer<TItem> _comparer;
+namespace Hydrogen;
 
-		public CastedEqualityComparer(IEqualityComparer<TItem> equalityComparer) {
-			Guard.ArgumentNotNull(equalityComparer, nameof(equalityComparer));
-			_comparer = equalityComparer;
-		}
+public class CastedEqualityComparer<TItem, TBase> : IEqualityComparer<TBase> where TItem : TBase {
+	private readonly IEqualityComparer<TItem> _comparer;
 
-		public bool Equals(TBase? x, TBase? y)
-			=> _comparer.Equals((TItem)x, (TItem)y);
-
-		public int GetHashCode(TBase obj)
-			=> _comparer.GetHashCode((TItem)obj);
+	public CastedEqualityComparer(IEqualityComparer<TItem> equalityComparer) {
+		Guard.ArgumentNotNull(equalityComparer, nameof(equalityComparer));
+		_comparer = equalityComparer;
 	}
+
+	public bool Equals(TBase? x, TBase? y)
+		=> _comparer.Equals((TItem)x, (TItem)y);
+
+	public int GetHashCode(TBase obj)
+		=> _comparer.GetHashCode((TItem)obj);
 }

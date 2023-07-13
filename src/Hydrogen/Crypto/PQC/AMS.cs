@@ -7,39 +7,37 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using Hydrogen.Collections.Spans;
-using Hydrogen;
 using System;
-using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
-namespace Hydrogen {
+namespace Hydrogen;
 
 public class AMS : DigitalSignatureSchemeBase<AMS.PrivateKey, AMS.PublicKey> {
 	public const int MaxHeight = 20;
 	public const byte Version = 1;
 	private readonly IOTSAlgorithm _ots;
 
-	public AMS(AMSOTS ots) 
+	public AMS(AMSOTS ots)
 		: this(InstantiateOTSAlgorithm(ots)) {
 	}
 
 	public AMS(AMSOTS ots, int h)
 		: this(InstantiateOTSAlgorithm(ots), h) {
 	}
-	
-	public AMS(IOTSAlgorithm algorithm) 
+
+	public AMS(IOTSAlgorithm algorithm)
 		: this(algorithm, Configuration.DefaultHeight) {
 	}
 
-	public AMS(IOTSAlgorithm algorithm, int h) 
-		: this (algorithm, new Configuration(algorithm.Config, h)) {
+	public AMS(IOTSAlgorithm algorithm, int h)
+		: this(algorithm, new Configuration(algorithm.Config, h)) {
 	}
 
-	public AMS(IOTSAlgorithm algorithm, Configuration config) 
+	public AMS(IOTSAlgorithm algorithm, Configuration config)
 		: base(algorithm.Config.HashFunction) {
 		Config = config;
 		_ots = algorithm;
@@ -50,7 +48,7 @@ public class AMS : DigitalSignatureSchemeBase<AMS.PrivateKey, AMS.PublicKey> {
 
 	public override IIESAlgorithm IES => throw new NotSupportedException("PQC algorithms have no known IES algorithms");
 
-	public override bool TryParsePublicKey(ReadOnlySpan<byte> bytes, out PublicKey publicKey) 
+	public override bool TryParsePublicKey(ReadOnlySpan<byte> bytes, out PublicKey publicKey)
 		=> PublicKey.TryParse(bytes, _ots.Config.HashFunction, out publicKey);
 
 	public override bool TryParsePrivateKey(ReadOnlySpan<byte> bytes, out PrivateKey privateKey)
@@ -121,9 +119,7 @@ public class AMS : DigitalSignatureSchemeBase<AMS.PrivateKey, AMS.PublicKey> {
 			publicKeyWithBatch = privateKey.DerivedKeys[batchNo];
 		}
 		var otsPubKey =
-			Config.OTS.UsePublicKeyHashOptimization ?
-			publicKeyWithBatch.Batch.GetValue(MerkleCoordinate.LeafAt(otsIndex)): 
-			this.GetOTSKeys(privateKey, batchNo, otsIndex).PublicKey.AsFlatSpan();
+			Config.OTS.UsePublicKeyHashOptimization ? publicKeyWithBatch.Batch.GetValue(MerkleCoordinate.LeafAt(otsIndex)) : this.GetOTSKeys(privateKey, batchNo, otsIndex).PublicKey.AsFlatSpan();
 
 		Debug.Assert(otsPubKey.Length == Config.OTS.PublicKeySize.Length * Config.OTS.PublicKeySize.Width);
 		builder.Append(otsPubKey);
@@ -149,11 +145,11 @@ public class AMS : DigitalSignatureSchemeBase<AMS.PrivateKey, AMS.PublicKey> {
 
 	public override bool VerifyDigest(ReadOnlySpan<byte> signature, ReadOnlySpan<byte> digest, ReadOnlySpan<byte> publicKey) {
 		Guard.Argument(IsWellFormedSignature(signature), nameof(signature), "Not a valid AMS signature");
-		Guard.Argument(digest.Length == _ots.Config.DigestSize, nameof(digest), $"Message digest must be { _ots.Config.DigestSize } bytes");
+		Guard.Argument(digest.Length == _ots.Config.DigestSize, nameof(digest), $"Message digest must be {_ots.Config.DigestSize} bytes");
 		var reader = new ByteSpanReader(EndianBitConverter.Little);
 		var height = reader.ReadByte(signature);
 		var otsIndex = reader.ReadUInt16(signature);
-		var otsPubKey = reader.ReadBytes2D(signature, _ots.Config.PublicKeySize.Length , _ots.Config.PublicKeySize.Width);
+		var otsPubKey = reader.ReadBytes2D(signature, _ots.Config.PublicKeySize.Length, _ots.Config.PublicKeySize.Width);
 		var otsSig = reader.ReadBytes2D(signature, _ots.Config.SignatureSize.Length, _ots.Config.SignatureSize.Width);
 		var proof = new byte[height][];
 		for (var i = 0; i < proof.Length; i++)
@@ -174,24 +170,22 @@ public class AMS : DigitalSignatureSchemeBase<AMS.PrivateKey, AMS.PublicKey> {
 		var h = signature[0];
 		return signature.Length == (
 			3
-			+ (_ots.Config.PublicKeySize.Length * _ots.Config.PublicKeySize.Width) 
-			+ (_ots.Config.SignatureSize.Length * _ots.Config.SignatureSize.Width) 
+			+ (_ots.Config.PublicKeySize.Length * _ots.Config.PublicKeySize.Width)
+			+ (_ots.Config.SignatureSize.Length * _ots.Config.SignatureSize.Width)
 			+ h * _ots.Config.DigestSize);
 	}
 
 	private IMerkleTree CalculateBatch(PrivateKey privateKey, ulong batchNo, out uint spamCode) {
 		var batchSize = 1 << privateKey.Height;
 		var batchLeafs = new byte[batchSize][];
-		Parallel.For(0, batchSize, i => {
-			batchLeafs[i] = GetOTSKeys(privateKey, batchNo, i).PublicKeyHash.Value;
-		});
+		Parallel.For(0, batchSize, i => { batchLeafs[i] = GetOTSKeys(privateKey, batchNo, i).PublicKeyHash.Value; });
 		spamCode = CalculateSpamCode(batchLeafs[0]);
 		var merkleTree = new SimpleMerkleTree(_ots.Config.HashFunction);
 		merkleTree.Leafs.AddRange(batchLeafs);
 		return merkleTree;
 	}
 
-	private uint CalculateSpamCode(PrivateKey privateKey, ulong batchNo) 
+	private uint CalculateSpamCode(PrivateKey privateKey, ulong batchNo)
 		=> CalculateSpamCode(GetOTSKeys(privateKey, batchNo, 0).PublicKeyHash.Value);
 
 	private uint CalculateSpamCode(ReadOnlySpan<byte> wotsKey0)
@@ -216,6 +210,7 @@ public class AMS : DigitalSignatureSchemeBase<AMS.PrivateKey, AMS.PublicKey> {
 		}
 	}
 
+
 	public abstract class Key : IKey {
 
 		protected Key(byte[] immutableRawBytes) {
@@ -239,11 +234,15 @@ public class AMS : DigitalSignatureSchemeBase<AMS.PrivateKey, AMS.PublicKey> {
 		public override int GetHashCode() {
 			return (RawBytes != null ? RawBytes.GetHashCode() : 0);
 		}
-		
+
 		#region IKey
+
 		byte[] IKey.RawBytes => RawBytes;
+
 		#endregion
+
 	}
+
 
 	public class PrivateKey : Key, IPrivateKey {
 
@@ -287,6 +286,7 @@ public class AMS : DigitalSignatureSchemeBase<AMS.PrivateKey, AMS.PublicKey> {
 
 	}
 
+
 	public class PublicKey : Key, IPublicKey {
 		public readonly ulong BatchNo;
 		public readonly uint KeyCode;
@@ -327,6 +327,7 @@ public class AMS : DigitalSignatureSchemeBase<AMS.PrivateKey, AMS.PublicKey> {
 		}
 	}
 
+
 	public class PublicKeyWithBatch : PublicKey {
 		public readonly IMerkleTree Batch;
 
@@ -336,6 +337,7 @@ public class AMS : DigitalSignatureSchemeBase<AMS.PrivateKey, AMS.PublicKey> {
 		}
 
 	}
+
 
 	public sealed class Configuration : ICloneable {
 		public const int DefaultHeight = 8;
@@ -357,5 +359,4 @@ public class AMS : DigitalSignatureSchemeBase<AMS.PrivateKey, AMS.PublicKey> {
 
 	}
 
-}
 }

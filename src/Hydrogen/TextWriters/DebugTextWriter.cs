@@ -6,16 +6,13 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen {
+namespace Hydrogen;
 
-
-	/// <summary>
-	/// TextWriter which outputs to Debug output.
-	/// </summary>
-	public class DebugTextWriter : SyncTextWriter {
-		protected override void InternalWrite(string value) {
-			System.Diagnostics.Debug.Write(value);
-		}
+/// <summary>
+/// TextWriter which outputs to Debug output.
+/// </summary>
+public class DebugTextWriter : SyncTextWriter {
+	protected override void InternalWrite(string value) {
+		System.Diagnostics.Debug.Write(value);
 	}
-
 }

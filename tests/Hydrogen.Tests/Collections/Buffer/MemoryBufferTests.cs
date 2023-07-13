@@ -6,26 +6,22 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using NUnit.Framework;
 using Hydrogen.NUnit;
 
-namespace Hydrogen.Tests {
+namespace Hydrogen.Tests;
 
-	[TestFixture]
-	[Parallelizable(ParallelScope.Children)]
-	public class MemoryBufferTests {
+[TestFixture]
+[Parallelizable(ParallelScope.Children)]
+public class MemoryBufferTests {
 
 
-		[Test]
-		public void IntegrationTests(
-			[Values(0, 3, 111)] int startCapacity,
-			[Values(1, 391)] int growCapacity,
-			[Values(71, 2177)] int maxCapacity) {
-			var list = new MemoryBuffer(startCapacity, growCapacity, maxCapacity);
-			AssertEx.ListIntegrationTest<byte>(list, maxCapacity, (rng, i) => rng.NextBytes(i), mutateFromEndOnly: true);
-		}
+	[Test]
+	public void IntegrationTests(
+		[Values(0, 3, 111)] int startCapacity,
+		[Values(1, 391)] int growCapacity,
+		[Values(71, 2177)] int maxCapacity) {
+		var list = new MemoryBuffer(startCapacity, growCapacity, maxCapacity);
+		AssertEx.ListIntegrationTest<byte>(list, maxCapacity, (rng, i) => rng.NextBytes(i), mutateFromEndOnly: true);
 	}
 }

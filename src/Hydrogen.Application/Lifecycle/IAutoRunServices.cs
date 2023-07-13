@@ -6,15 +6,14 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen.Application {
+namespace Hydrogen.Application;
 
-	public interface IAutoRunServices {
+public interface IAutoRunServices {
 
-		bool DoesAutoRun(AutoRunType type, string applicationName, string executable);
+	bool DoesAutoRun(AutoRunType type, string applicationName, string executable);
 
-		void SetAutoRun(AutoRunType type, string applicationName, string executable, string arguments);
+	void SetAutoRun(AutoRunType type, string applicationName, string executable, string arguments);
 
-		void RemoveAutoRun(AutoRunType type, string applicationName, string executable);
+	void RemoveAutoRun(AutoRunType type, string applicationName, string executable);
 
-	}
 }

@@ -6,11 +6,9 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen.DApp.Core.Mining {
+namespace Hydrogen.DApp.Core.Mining;
 
-	public enum MinerStatus {
-		Idle,
-		Mining
-	}
-
+public enum MinerStatus {
+	Idle,
+	Mining
 }

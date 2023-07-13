@@ -6,26 +6,19 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
 using System.Windows.Forms;
 
-namespace Hydrogen.Windows.Forms {
-	public partial class TextEditorForm : Form {
-		public TextEditorForm() {
-			InitializeComponent();
-		}
+namespace Hydrogen.Windows.Forms;
 
-
-		public TextEditorForm(string text) {
-			InitializeComponent();
-			_textBox.Text = text;
-		}
-
+public partial class TextEditorForm : Form {
+	public TextEditorForm() {
+		InitializeComponent();
 	}
+
+
+	public TextEditorForm(string text) {
+		InitializeComponent();
+		_textBox.Text = text;
+	}
+
 }

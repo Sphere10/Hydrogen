@@ -8,20 +8,19 @@
 
 using System;
 
-namespace Hydrogen {
+namespace Hydrogen;
 
-	public class InvalidDataFormatException : SoftwareException {
+public class InvalidDataFormatException : SoftwareException {
 
-        public InvalidDataFormatException() 
-         : this("Invalid data format") {
-        }
+	public InvalidDataFormatException()
+		: this("Invalid data format") {
+	}
 
-        public InvalidDataFormatException(string errorMessage)
-            : this(errorMessage, null) {
-        }
+	public InvalidDataFormatException(string errorMessage)
+		: this(errorMessage, null) {
+	}
 
-        public InvalidDataFormatException(string errorMessage, Exception innerException)
-            : base(errorMessage, innerException) {            
-        }
-    }
+	public InvalidDataFormatException(string errorMessage, Exception innerException)
+		: base(errorMessage, innerException) {
+	}
 }

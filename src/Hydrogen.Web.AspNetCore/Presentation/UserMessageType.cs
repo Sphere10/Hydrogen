@@ -6,11 +6,10 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen.Web.AspNetCore {
-    public enum UserMessageType
-    {
-        Information,
-        Warning,
-        Error
-    }
+namespace Hydrogen.Web.AspNetCore;
+
+public enum UserMessageType {
+	Information,
+	Warning,
+	Error
 }

@@ -10,92 +10,91 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 
-namespace Hydrogen {
+namespace Hydrogen;
 
-	public interface IClusteredStorage : ILoadable {
+public interface IClusteredStorage : ILoadable {
 
-		event EventHandlerEx<ClusteredStreamRecord> RecordCreated;
-		event EventHandlerEx<int, ClusteredStreamRecord> RecordAdded;
-		event EventHandlerEx<int, ClusteredStreamRecord> RecordInserted;
-		event EventHandlerEx<int, ClusteredStreamRecord> RecordUpdated;
-		event EventHandlerEx<int> RecordRemoved;
+	event EventHandlerEx<ClusteredStreamRecord> RecordCreated;
+	event EventHandlerEx<int, ClusteredStreamRecord> RecordAdded;
+	event EventHandlerEx<int, ClusteredStreamRecord> RecordInserted;
+	event EventHandlerEx<int, ClusteredStreamRecord> RecordUpdated;
+	event EventHandlerEx<int> RecordRemoved;
 
-		ClusteredStorageHeader Header { get; }
+	ClusteredStorageHeader Header { get; }
 
-		ClusteredStoragePolicy Policy { get; }
+	ClusteredStoragePolicy Policy { get; }
 
-		int Count { get; }
+	int Count { get; }
 
-		IReadOnlyList<ClusteredStreamRecord> Records { get; }
+	IReadOnlyList<ClusteredStreamRecord> Records { get; }
 
-		Endianness Endianness { get; }
+	Endianness Endianness { get; }
 
-		ClusteredStreamRecord GetRecord(int index);
-		
-		ClusteredStreamScope Add();
+	ClusteredStreamRecord GetRecord(int index);
 
-		ClusteredStreamScope Open(int index);
+	ClusteredStreamScope Add();
 
-		void Remove(int index);
+	ClusteredStreamScope Open(int index);
 
-		ClusteredStreamScope Insert(int index);
+	void Remove(int index);
 
-		void Swap(int first, int second);
+	ClusteredStreamScope Insert(int index);
 
-		void Clear();
+	void Swap(int first, int second);
 
-		ClusteredStreamScope EnterSaveItemScope<TItem>(int index, TItem item, IItemSerializer<TItem> serializer, ListOperationType operationType);
+	void Clear();
 
-		ClusteredStreamScope EnterLoadItemScope<TItem>(int index, IItemSerializer<TItem> serializer, out TItem item);
+	ClusteredStreamScope EnterSaveItemScope<TItem>(int index, TItem item, IItemSerializer<TItem> serializer, ListOperationType operationType);
 
-		internal IDisposable EnterLockScope();
+	ClusteredStreamScope EnterLoadItemScope<TItem>(int index, IItemSerializer<TItem> serializer, out TItem item);
+
+	internal IDisposable EnterLockScope();
+}
+
+
+public static class IClusteredStorageExtensions {
+
+	public static bool IsNull(this IClusteredStorage storage, int index) {
+		return storage.GetRecord(index).Traits.HasFlag(ClusteredStreamTraits.IsNull);
 	}
 
-	public static class IClusteredStorageExtensions {
 
-		public static bool IsNull(this IClusteredStorage storage, int index) {
-			return storage.GetRecord(index).Traits.HasFlag(ClusteredStreamTraits.IsNull);
-		}
-		
+	public static byte[] ReadAll(this IClusteredStorage storage, int index) {
+		using var scope = storage.Open(index);
+		return scope.Stream.ReadAll();
+	}
 
-		public static byte[] ReadAll(this IClusteredStorage storage, int index) {
-			using var scope = storage.Open(index);
-			return scope.Stream.ReadAll();
-		}
+	public static void AddBytes(this IClusteredStorage storage, ReadOnlySpan<byte> bytes) {
+		using var scope = storage.Add();
+		scope.Stream.Write(bytes);
+	}
 
-		public static void AddBytes(this IClusteredStorage storage, ReadOnlySpan<byte> bytes) {
-			using var scope = storage.Add();
-			scope.Stream.Write(bytes);
-		}
+	public static void UpdateBytes(this IClusteredStorage storage, int index, ReadOnlySpan<byte> bytes) {
+		using var scope = storage.Open(index);
+		scope.Stream.SetLength(0);
+		scope.Stream.Write(bytes);
+	}
 
-		public static void UpdateBytes(this IClusteredStorage storage, int index, ReadOnlySpan<byte> bytes) {
-			using var scope = storage.Open(index);
-			scope.Stream.SetLength(0);
-			scope.Stream.Write(bytes);
-		}
+	public static void AppendBytes(this IClusteredStorage storage, int index, ReadOnlySpan<byte> bytes) {
+		using var scope = storage.Open(index);
+		scope.Stream.Seek(scope.Stream.Length, SeekOrigin.Current);
+		scope.Stream.Write(bytes);
+	}
 
-		public static void AppendBytes(this IClusteredStorage storage, int index, ReadOnlySpan<byte> bytes) {
-			using var scope = storage.Open(index);
+	public static void InsertBytes(this IClusteredStorage storage, int index, ReadOnlySpan<byte> bytes) {
+		using var scope = storage.Insert(index);
+		if (bytes != null) {
 			scope.Stream.Seek(scope.Stream.Length, SeekOrigin.Current);
 			scope.Stream.Write(bytes);
 		}
-
-		public static void InsertBytes(this IClusteredStorage storage, int index, ReadOnlySpan<byte> bytes) {
-			using var scope = storage.Insert(index);
-			if (bytes != null) {
-				scope.Stream.Seek(scope.Stream.Length, SeekOrigin.Current);
-				scope.Stream.Write(bytes);
-			}
-		}
-
-		public static void SaveItem<TItem>(this IClusteredStorage storage, int index, TItem item, IItemSerializer<TItem> serializer, ListOperationType operationType) {
-			using var scope = storage.EnterSaveItemScope(index, item, serializer, operationType);
-		}
-
-		public static TItem LoadItem<TItem>(this IClusteredStorage storage, int index, IItemSerializer<TItem> serializer) {
-			using var scope = storage.EnterLoadItemScope(index, serializer, out var item);
-			return item;
-		}
 	}
 
+	public static void SaveItem<TItem>(this IClusteredStorage storage, int index, TItem item, IItemSerializer<TItem> serializer, ListOperationType operationType) {
+		using var scope = storage.EnterSaveItemScope(index, item, serializer, operationType);
+	}
+
+	public static TItem LoadItem<TItem>(this IClusteredStorage storage, int index, IItemSerializer<TItem> serializer) {
+		using var scope = storage.EnterLoadItemScope(index, serializer, out var item);
+		return item;
+	}
 }

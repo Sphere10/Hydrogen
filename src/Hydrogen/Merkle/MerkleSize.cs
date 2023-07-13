@@ -10,24 +10,22 @@
 // Web: https://sphere10.com/tech/dynamic-merkle-trees
 // e-print: https://vixra.org/abs/2305.0087
 
-namespace Hydrogen {
+namespace Hydrogen;
 
-	public record MerkleSize {
-		public int LeafCount;
-		public int Height;
+public record MerkleSize {
+	public int LeafCount;
+	public int Height;
 
-		public static MerkleSize FromLeafCount(int leafCount) {
-			Guard.ArgumentInRange(leafCount, 0, int.MaxValue, nameof(leafCount));
-			return new MerkleSize {
-				LeafCount = leafCount,
-				Height = MerkleMath.CalculateHeight(leafCount)
-			};
-		}
+	public static MerkleSize FromLeafCount(int leafCount) {
+		Guard.ArgumentInRange(leafCount, 0, int.MaxValue, nameof(leafCount));
+		return new MerkleSize {
+			LeafCount = leafCount,
+			Height = MerkleMath.CalculateHeight(leafCount)
+		};
+	}
 
-		public override string ToString() {
-			return $"(H:{Height}, LC:{LeafCount})";
-		}
-
+	public override string ToString() {
+		return $"(H:{Height}, LC:{LeafCount})";
 	}
 
 }

@@ -8,19 +8,15 @@
 
 using System.Runtime.Serialization;
 
-namespace Hydrogen.Web.AspNetCore {
-	public enum FormResultType {
-		
-		[EnumMember(Value = "message")]
-		ShowMessage,
+namespace Hydrogen.Web.AspNetCore;
 
-		[EnumMember(Value = "redirect")]
-		Redirect,
+public enum FormResultType {
 
-		[EnumMember(Value = "replace_page")]
-		ReplacePage,
+	[EnumMember(Value = "message")] ShowMessage,
 
-		[EnumMember(Value = "replace_form")]
-		ReplaceForm
-	}
+	[EnumMember(Value = "redirect")] Redirect,
+
+	[EnumMember(Value = "replace_page")] ReplacePage,
+
+	[EnumMember(Value = "replace_form")] ReplaceForm
 }

@@ -6,101 +6,92 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using System.Text;
-using System.Xml.Schema;
-using Hydrogen;
-using Hydrogen.DApp.Core.DataObjects;
 
 
-namespace Hydrogen.DApp.Core.Storage {
+namespace Hydrogen.DApp.Core.Storage;
 
-    public class ZipPackage : KeyValueStoreBase<string> {
-        protected FileStream _stream;
-        protected ZipArchive _archive;
+public class ZipPackage : KeyValueStoreBase<string> {
+	protected FileStream _stream;
+	protected ZipArchive _archive;
 
-        public ZipPackage(string filename) {
-            FilePath = filename;
-        }
-        
-        public virtual string Name {
-            get => Path.GetFileName(FilePath);
-            set => Tools.FileSystem.RenameFile(FilePath, value);
-        }
+	public ZipPackage(string filename) {
+		FilePath = filename;
+	}
 
-        public string FilePath { get; set; }
+	public virtual string Name {
+		get => Path.GetFileName(FilePath);
+		set => Tools.FileSystem.RenameFile(FilePath, value);
+	}
 
-        public void ExtractTo(string directory, bool overwrite = false) {
-            EnsureReadable();
-            if (overwrite && Directory.Exists(directory))
-                Tools.FileSystem.DeleteAllFiles(directory, true);
-            _archive.ExtractToDirectory(directory);
-        }
+	public string FilePath { get; set; }
 
-        protected override Stream OpenReadInternal(string key) {
-            var entry = _archive.GetEntry(key);
-            return entry.Open();
-        }
+	public void ExtractTo(string directory, bool overwrite = false) {
+		EnsureReadable();
+		if (overwrite && Directory.Exists(directory))
+			Tools.FileSystem.DeleteAllFiles(directory, true);
+		_archive.ExtractToDirectory(directory);
+	}
 
-        protected override IQueryable<string> GetKeysInternal() {
-            return _archive.Entries.Select(x => x.FullName).AsQueryable();
-        }
+	protected override Stream OpenReadInternal(string key) {
+		var entry = _archive.GetEntry(key);
+		return entry.Open();
+	}
 
-        protected override Stream OpenWriteInternal(string key) {
-            ZipArchiveEntry entry;
-            switch (_archive.Mode) {
-                case ZipArchiveMode.Create:
-                    entry = _archive.CreateEntry(key);
-                    break;
-                case ZipArchiveMode.Update:
-                    entry = _archive.GetEntry(key);
-                    if (entry == null)
-                        entry = _archive.CreateEntry(key);
-                    break;
-                default:
-                    entry = _archive.GetEntry(key);
-                    break;
-            }
-            return entry.Open();
-        }
+	protected override IQueryable<string> GetKeysInternal() {
+		return _archive.Entries.Select(x => x.FullName).AsQueryable();
+	}
 
-        protected override void InitializeReadScope() {
-            if (!File.Exists(FilePath))
-                throw new FileNotFoundException("Package not found", FilePath);
-            _stream = File.OpenRead(FilePath);
-            _archive = new ZipArchive(_stream, ZipArchiveMode.Read);
-        }
+	protected override Stream OpenWriteInternal(string key) {
+		ZipArchiveEntry entry;
+		switch (_archive.Mode) {
+			case ZipArchiveMode.Create:
+				entry = _archive.CreateEntry(key);
+				break;
+			case ZipArchiveMode.Update:
+				entry = _archive.GetEntry(key);
+				if (entry == null)
+					entry = _archive.CreateEntry(key);
+				break;
+			default:
+				entry = _archive.GetEntry(key);
+				break;
+		}
+		return entry.Open();
+	}
 
-        protected override void InitializeWriteScope() {
-            var exists = File.Exists(FilePath);
-            _stream = File.Open(FilePath, FileMode.OpenOrCreate);
-            _archive = new ZipArchive(_stream, exists ? ZipArchiveMode.Update : ZipArchiveMode.Create);
-        }
+	protected override void InitializeReadScope() {
+		if (!File.Exists(FilePath))
+			throw new FileNotFoundException("Package not found", FilePath);
+		_stream = File.OpenRead(FilePath);
+		_archive = new ZipArchive(_stream, ZipArchiveMode.Read);
+	}
 
-        protected override void FinalizeReadScope() {
-            _archive.Dispose();
-            _stream.Dispose();
-        }
+	protected override void InitializeWriteScope() {
+		var exists = File.Exists(FilePath);
+		_stream = File.Open(FilePath, FileMode.OpenOrCreate);
+		_archive = new ZipArchive(_stream, exists ? ZipArchiveMode.Update : ZipArchiveMode.Create);
+	}
 
-        protected override void FinalizeWriteScope() {
-            _stream.Flush(true);
-            _archive.Dispose();
-            _stream.Dispose();
-        }
+	protected override void FinalizeReadScope() {
+		_archive.Dispose();
+		_stream.Dispose();
+	}
 
-        public static ZipPackage Create(string filename) {
-            var package = new ZipPackage(filename);
-            using (package.EnterWriteScope()) {
-                // file should be created
-            }
-            return package;
-        }
+	protected override void FinalizeWriteScope() {
+		_stream.Flush(true);
+		_archive.Dispose();
+		_stream.Dispose();
+	}
 
-    }
+	public static ZipPackage Create(string filename) {
+		var package = new ZipPackage(filename);
+		using (package.EnterWriteScope()) {
+			// file should be created
+		}
+		return package;
+	}
+
 }

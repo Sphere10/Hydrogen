@@ -6,20 +6,16 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
-using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
-using System.Text;
 
-namespace Hydrogen.Windows.Forms.AppointmentBook {
-	internal class AppointmentDragObject {
-		public AppointmentColumn SourceColumn { get; set; }
-		public Appointment Appointment { get; set; }
-		public Bitmap CanDropAppointmentBitmap { get; set; }
-		public Bitmap CannotDropAppointmentBitmap { get; set; }
-		public Point CursorOffset { get; set;  }
+namespace Hydrogen.Windows.Forms.AppointmentBook;
 
-		internal AppointmentColumn LastColumnOver { get; set; }
-	}
+internal class AppointmentDragObject {
+	public AppointmentColumn SourceColumn { get; set; }
+	public Appointment Appointment { get; set; }
+	public Bitmap CanDropAppointmentBitmap { get; set; }
+	public Bitmap CannotDropAppointmentBitmap { get; set; }
+	public Point CursorOffset { get; set; }
+
+	internal AppointmentColumn LastColumnOver { get; set; }
 }

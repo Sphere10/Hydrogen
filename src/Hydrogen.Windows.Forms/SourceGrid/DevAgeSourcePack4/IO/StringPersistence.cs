@@ -6,10 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
-
-namespace DevAge.IO
-{
+namespace DevAge.IO;
 //	/// <summary>
 //	/// Summary description for StringPersistence.
 //	/// </summary>
@@ -227,4 +224,3 @@ namespace DevAge.IO
 //		#endregion
 //
 //	}
-}

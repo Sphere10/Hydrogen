@@ -8,8 +8,8 @@
 
 using System;
 
-namespace Hydrogen.Web.AspNetCore {
-    public class ParameterAttribute : Attribute {
-		public string Name { get; set; }
-	}
+namespace Hydrogen.Web.AspNetCore;
+
+public class ParameterAttribute : Attribute {
+	public string Name { get; set; }
 }

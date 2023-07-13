@@ -6,12 +6,13 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen {
-	internal class Cluster {
-		public ClusterTraits Traits { get; set; }
-		public int Prev { get; set; }
-		public int Next { get; set; }
-		public byte[] Data { get; set; }
-		public override string ToString() => $"[{nameof(Cluster)}] {nameof(Traits)}: {Traits}, {nameof(Prev)}: {Prev}, {nameof(Next)}: {Next}, {nameof(Data)}: {Data.ToHexString(true)}";
-	}
+namespace Hydrogen;
+
+internal class Cluster {
+	public ClusterTraits Traits { get; set; }
+	public int Prev { get; set; }
+	public int Next { get; set; }
+	public byte[] Data { get; set; }
+
+	public override string ToString() => $"[{nameof(Cluster)}] {nameof(Traits)}: {Traits}, {nameof(Prev)}: {Prev}, {nameof(Next)}: {Next}, {nameof(Data)}: {Data.ToHexString(true)}";
 }

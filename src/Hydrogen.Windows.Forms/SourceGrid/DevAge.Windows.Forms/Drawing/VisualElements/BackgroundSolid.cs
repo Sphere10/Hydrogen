@@ -7,69 +7,63 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Drawing;
 
-namespace DevAge.Drawing.VisualElements
-{
-    [Serializable]
-    public class BackgroundSolid : VisualElementBase
-    {
-        #region Constructor
-        public BackgroundSolid()
-        {
-        }
+namespace DevAge.Drawing.VisualElements;
 
-        public BackgroundSolid(Color backcolor)
-        {
-            BackColor = backcolor;
-        }
+[Serializable]
+public class BackgroundSolid : VisualElementBase {
 
-        public BackgroundSolid(BackgroundSolid other)
-            : base(other)
-        {
-            BackColor = other.BackColor;
-        }
-        #endregion
+	#region Constructor
 
-        #region Properties
-        private Color mBackColor = Color.Empty;
-        /// <summary>
-        /// Gets or sets the back color of the content.
-        /// </summary>
-        public virtual Color BackColor
-        {
-            get { return mBackColor; }
-            set { mBackColor = value; }
-        }
-        protected virtual bool ShouldSerializeBackColor()
-        {
-            return BackColor != Color.Empty;
-        }
-        #endregion
+	public BackgroundSolid() {
+	}
 
-        protected override void OnDraw(GraphicsCache graphics, System.Drawing.RectangleF area)
-        {
-            if (BackColor != Color.Empty)
-            {
-                SolidBrush brush = graphics.BrushsCache.GetBrush(BackColor);
-                graphics.Graphics.FillRectangle(brush, area);
-            }
-        }
+	public BackgroundSolid(Color backcolor) {
+		BackColor = backcolor;
+	}
 
-        protected override SizeF OnMeasureContent(MeasureHelper measure, SizeF maxSize)
-        {
-            return SizeF.Empty;
-        }
+	public BackgroundSolid(BackgroundSolid other)
+		: base(other) {
+		BackColor = other.BackColor;
+	}
 
-        /// <summary>
-        /// Clone
-        /// </summary>
-        /// <returns></returns>
-        public override object Clone()
-        {
-            return new BackgroundSolid(this);
-        }
-    }
+	#endregion
+
+	#region Properties
+
+	private Color mBackColor = Color.Empty;
+
+	/// <summary>
+	/// Gets or sets the back color of the content.
+	/// </summary>
+	public virtual Color BackColor {
+		get { return mBackColor; }
+		set { mBackColor = value; }
+	}
+
+	protected virtual bool ShouldSerializeBackColor() {
+		return BackColor != Color.Empty;
+	}
+
+	#endregion
+
+	protected override void OnDraw(GraphicsCache graphics, System.Drawing.RectangleF area) {
+		if (BackColor != Color.Empty) {
+			SolidBrush brush = graphics.BrushsCache.GetBrush(BackColor);
+			graphics.Graphics.FillRectangle(brush, area);
+		}
+	}
+
+	protected override SizeF OnMeasureContent(MeasureHelper measure, SizeF maxSize) {
+		return SizeF.Empty;
+	}
+
+	/// <summary>
+	/// Clone
+	/// </summary>
+	/// <returns></returns>
+	public override object Clone() {
+		return new BackgroundSolid(this);
+	}
 }

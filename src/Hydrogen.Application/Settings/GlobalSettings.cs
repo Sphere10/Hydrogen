@@ -6,40 +6,36 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
-using System.IO;
+namespace Hydrogen.Application;
 
-namespace Hydrogen.Application {
+/// <summary>
+/// Settings that are system-wide and shared by all users.
+/// </summary>
+public static class GlobalSettings {
 
-	/// <summary>
-	/// Settings that are system-wide and shared by all users.
-	/// </summary>
-	public static class GlobalSettings {
+	private static ISettingsProvider _provider;
 
-		private static ISettingsProvider _provider;
-
-		public static ISettingsProvider Provider {
-			get {
-				CheckProvider();
-				return _provider;
-			}
-			set => _provider = value;
-		}
-
-		public static bool Has<T>(object id = null) where T : SettingsObject, new() {
-			return Provider.Has<T>(id);
-		}
-
-		public static T Get<T>(object id = null) where T : SettingsObject, new() {
-			return Provider.Get<T>(id);
-		}
-
-		public static void Clear() {
+	public static ISettingsProvider Provider {
+		get {
 			CheckProvider();
-			Provider.ClearSettings();
+			return _provider;
 		}
-
-		private static void CheckProvider() 
-			=> Guard.Ensure(_provider != null, "Global settings provider has not been set");
+		set => _provider = value;
 	}
+
+	public static bool Has<T>(object id = null) where T : SettingsObject, new() {
+		return Provider.Has<T>(id);
+	}
+
+	public static T Get<T>(object id = null) where T : SettingsObject, new() {
+		return Provider.Get<T>(id);
+	}
+
+	public static void Clear() {
+		CheckProvider();
+		Provider.ClearSettings();
+	}
+
+	private static void CheckProvider()
+		=> Guard.Ensure(_provider != null, "Global settings provider has not been set");
 }

@@ -6,13 +6,12 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen.Application {
-	public interface IHelpServices  {
+namespace Hydrogen.Application;
 
-		void ShowContextHelp(IHelpableObject helpableObject);
+public interface IHelpServices {
 
-		void ShowHelp();
+	void ShowContextHelp(IHelpableObject helpableObject);
 
-	}
+	void ShowHelp();
+
 }
-

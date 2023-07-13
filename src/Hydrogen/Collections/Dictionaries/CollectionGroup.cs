@@ -10,33 +10,33 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Hydrogen {
+namespace Hydrogen;
 
-	public class CollectionGroup<TKey, TElement, TCollection> : IGrouping<TKey, TElement> where TCollection : ICollection<TElement>, new(){
-        
-        public CollectionGroup(TKey key, IEnumerable<TElement> elements) {
-            Key = key;
-            Elements = new TCollection();
-            foreach (var element in elements)
-	            Elements.Add(element); 
-        }
+public class CollectionGroup<TKey, TElement, TCollection> : IGrouping<TKey, TElement> where TCollection : ICollection<TElement>, new() {
 
-		public TKey Key { get; }
+	public CollectionGroup(TKey key, IEnumerable<TElement> elements) {
+		Key = key;
+		Elements = new TCollection();
+		foreach (var element in elements)
+			Elements.Add(element);
+	}
 
-		public TCollection Elements { get; }
+	public TKey Key { get; }
 
-		public IEnumerator<TElement> GetEnumerator() {
-            return Elements.GetEnumerator();
-        }
+	public TCollection Elements { get; }
 
-        IEnumerator IEnumerable.GetEnumerator() {
-            return GetEnumerator();
-        }
-    }
+	public IEnumerator<TElement> GetEnumerator() {
+		return Elements.GetEnumerator();
+	}
 
-    public class CollectionGroup<TKey, TElement> : CollectionGroup<TKey, TElement, List<TElement>> {
-        public CollectionGroup(TKey key, IEnumerable<TElement> elements)
-            : base(key, elements) {
-        }
-    }
+	IEnumerator IEnumerable.GetEnumerator() {
+		return GetEnumerator();
+	}
+}
+
+
+public class CollectionGroup<TKey, TElement> : CollectionGroup<TKey, TElement, List<TElement>> {
+	public CollectionGroup(TKey key, IEnumerable<TElement> elements)
+		: base(key, elements) {
+	}
 }

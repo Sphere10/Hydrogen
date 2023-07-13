@@ -8,23 +8,21 @@
 
 using System.Threading.Tasks;
 
-namespace Hydrogen {
+namespace Hydrogen;
 
-	public interface ITransactionalObject {
+public interface ITransactionalObject {
 
-		event EventHandlerEx<object> Committing;
-		event EventHandlerEx<object> Committed;
-		event EventHandlerEx<object> RollingBack;
-		event EventHandlerEx<object> RolledBack; 
+	event EventHandlerEx<object> Committing;
+	event EventHandlerEx<object> Committed;
+	event EventHandlerEx<object> RollingBack;
+	event EventHandlerEx<object> RolledBack;
 
-		void Commit();
-		
-		Task CommitAsync();
+	void Commit();
 
-		void Rollback();
+	Task CommitAsync();
 
-		Task RollbackAsync();
+	void Rollback();
 
-	}
+	Task RollbackAsync();
 
 }

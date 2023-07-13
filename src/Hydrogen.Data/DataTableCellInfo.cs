@@ -6,24 +6,19 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
+namespace Hydrogen.Data;
 
-namespace Hydrogen.Data {
+public class DataTableCellInfo {
 
-	public class DataTableCellInfo {
-
-		public DataTableCellInfo(string columnName, string cellValue, bool columnVisible = true) {
-			ColumnName = columnName;
-			CellValue = cellValue;
-			ColumnVisible = columnVisible;
-		}
-
-		public string ColumnName { get; set; }
-
-		public bool ColumnVisible { get; set; }
-
-		public string CellValue { get; set; }
+	public DataTableCellInfo(string columnName, string cellValue, bool columnVisible = true) {
+		ColumnName = columnName;
+		CellValue = cellValue;
+		ColumnVisible = columnVisible;
 	}
 
-}
+	public string ColumnName { get; set; }
 
+	public bool ColumnVisible { get; set; }
+
+	public string CellValue { get; set; }
+}

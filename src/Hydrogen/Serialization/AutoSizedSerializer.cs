@@ -10,15 +10,15 @@ using System;
 
 namespace Hydrogen;
 
-public class AutoSizedSerializer<TItem> : ItemSerializerDecorator<TItem>  {
-		
-	public AutoSizedSerializer(IItemSerializer<TItem> internalSerializer) 
-		: base(internalSerializer){
+public class AutoSizedSerializer<TItem> : ItemSerializerDecorator<TItem> {
+
+	public AutoSizedSerializer(IItemSerializer<TItem> internalSerializer)
+		: base(internalSerializer) {
 	}
 
 	public override int CalculateSize(TItem item) => sizeof(int) + base.CalculateSize(item);
 
-	public bool TrySerialize(TItem item, EndianBinaryWriter writer) 
+	public bool TrySerialize(TItem item, EndianBinaryWriter writer)
 		=> TrySerialize(item, writer, out _);
 
 	public override bool TrySerialize(TItem item, EndianBinaryWriter writer, out int bytesWritten) {
@@ -32,7 +32,7 @@ public class AutoSizedSerializer<TItem> : ItemSerializerDecorator<TItem>  {
 	public override bool TryDeserialize(int byteSize, EndianBinaryReader reader, out TItem item) {
 		// Caller trying to read item passing explicit size, so check length matches
 		var len = reader.ReadInt32();
-		Guard.ArgumentEquals(byteSize, sizeof(int) + len, nameof(byteSize), "Read overflow"); 
+		Guard.ArgumentEquals(byteSize, sizeof(int) + len, nameof(byteSize), "Read overflow");
 		return base.TryDeserialize(len, reader, out item);
 	}
 

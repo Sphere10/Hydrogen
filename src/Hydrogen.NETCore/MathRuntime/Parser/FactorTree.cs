@@ -6,29 +6,18 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System.Collections.Generic;
-using System.Text;
+namespace Hydrogen.Maths.Compiler;
 
-namespace Hydrogen.Maths.Compiler
-{
+public class FactorTree : SyntaxTree {
 
+	public FactorTree() {
+	}
 
-    public class FactorTree : SyntaxTree
-    {
+	public FactorTree(Token token)
+		: base(token) {
+	}
 
-        public FactorTree()
-        {
-        }
-
-        public FactorTree(Token token)
-            : base(token)
-        {
-        }
-
-        public override string ToString()
-        {
-            return string.Format("{0}({1})", Token.TokenType, Token.Value);
-        }
-    }
-
+	public override string ToString() {
+		return string.Format("{0}({1})", Token.TokenType, Token.Value);
+	}
 }

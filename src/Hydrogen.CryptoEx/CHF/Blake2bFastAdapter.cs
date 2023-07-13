@@ -7,11 +7,10 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Collections.Generic;
-using System.Text;
 using Blake2Fast;
 
 namespace Hydrogen.CryptoEx;
+
 public class Blake2bFastAdapter : HashFunctionBase {
 	IBlake2Incremental _hasher;
 
@@ -42,6 +41,7 @@ public class Blake2bFastAdapter : HashFunctionBase {
 		throw new NotSupportedException();
 	}
 }
+
 
 public class Blake2sFastAdapter : HashFunctionBase {
 	IBlake2Incremental _hasher;

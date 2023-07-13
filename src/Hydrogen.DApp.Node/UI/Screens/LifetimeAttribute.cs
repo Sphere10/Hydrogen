@@ -7,16 +7,13 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using Hydrogen.DApp.Node.Screens;
 
-namespace Hydrogen.DApp.Node.UI {
+namespace Hydrogen.DApp.Node.UI;
 
-	public class LifetimeAttribute : Attribute {
-		public LifetimeAttribute(ScreenLifetime lifetime) {
-			Lifetime = lifetime;
-		}
-
-		public ScreenLifetime Lifetime { get; private set; }
+public class LifetimeAttribute : Attribute {
+	public LifetimeAttribute(ScreenLifetime lifetime) {
+		Lifetime = lifetime;
 	}
 
+	public ScreenLifetime Lifetime { get; private set; }
 }

@@ -6,24 +6,17 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Drawing;
-using System.Text;
-using System.Windows.Forms;
 using Hydrogen.Windows.Forms;
 
-namespace Hydrogen.Utils.WinFormsTester {
-    public partial class ScreenB : ApplicationScreen {
-        public ScreenB() {
-            InitializeComponent();
+namespace Hydrogen.Utils.WinFormsTester;
 
-	        listMerger1.LeftHeader = "Left Stuff";
-            listMerger1.LeftItems = new object[] { "L1", "L2", "L3" };
-            listMerger1.RightHeader = "Right Stuff";
-            listMerger1.RightItems = new object[] { "R1", "R2", "R3" };
-        }
-    }
+public partial class ScreenB : ApplicationScreen {
+	public ScreenB() {
+		InitializeComponent();
+
+		listMerger1.LeftHeader = "Left Stuff";
+		listMerger1.LeftItems = new object[] { "L1", "L2", "L3" };
+		listMerger1.RightHeader = "Right Stuff";
+		listMerger1.RightItems = new object[] { "R1", "R2", "R3" };
+	}
 }
-

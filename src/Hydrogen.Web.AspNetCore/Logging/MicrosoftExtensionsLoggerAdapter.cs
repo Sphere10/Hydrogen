@@ -8,6 +8,7 @@
 
 using System;
 
+
 public class MicrosoftExtensionsLoggerAdapter : Hydrogen.LoggerDecorator, Microsoft.Extensions.Logging.ILogger {
 	public MicrosoftExtensionsLoggerAdapter(Hydrogen.ILogger decoratedLogger)
 		: base(decoratedLogger) {
@@ -15,7 +16,7 @@ public class MicrosoftExtensionsLoggerAdapter : Hydrogen.LoggerDecorator, Micros
 
 	public IDisposable BeginScope<TState>(TState state) => Hydrogen.Disposables.None; // 
 
-	public bool IsEnabled(Microsoft.Extensions.Logging.LogLevel logLevel) 
+	public bool IsEnabled(Microsoft.Extensions.Logging.LogLevel logLevel)
 		=> logLevel switch {
 			Microsoft.Extensions.Logging.LogLevel.Trace => Options.HasFlag(Hydrogen.LogOptions.DebugEnabled),
 			Microsoft.Extensions.Logging.LogLevel.Debug => Options.HasFlag(Hydrogen.LogOptions.DebugEnabled),
@@ -28,7 +29,7 @@ public class MicrosoftExtensionsLoggerAdapter : Hydrogen.LoggerDecorator, Micros
 		};
 
 	public void Log<TState>(Microsoft.Extensions.Logging.LogLevel logLevel, Microsoft.Extensions.Logging.EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter) {
-		switch(logLevel) {
+		switch (logLevel) {
 			case Microsoft.Extensions.Logging.LogLevel.None:
 				break;
 			case Microsoft.Extensions.Logging.LogLevel.Trace:
@@ -47,10 +48,10 @@ public class MicrosoftExtensionsLoggerAdapter : Hydrogen.LoggerDecorator, Micros
 				break;
 			default:
 				throw new NotSupportedException($"{logLevel}");
-		};
-			
-	}
+		}
+		;
 
+	}
 
 
 }

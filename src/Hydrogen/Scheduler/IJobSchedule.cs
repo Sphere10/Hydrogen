@@ -7,22 +7,24 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using Hydrogen;
 
-namespace Hydrogen {
+namespace Hydrogen;
 
-	public interface IJobSchedule : IComparable<IJobSchedule> {
-		IJob Job { get; }
-		DateTime? LastStartTime { get; }
-		DateTime? LastEndTime { get; }
-		DateTime NextStartTime { get; }
-		DateTime? EndDate { get; }
-		ReschedulePolicy ReschedulePolicy { get; }
-		uint IterationsRemaining { get; }
-		uint IterationsExecuted { get; }
-		void NotifyStart(DateTime start);
-		void NotifyExecution(DateTime start, DateTime end);
-		JobScheduleSerializableSurrogate ToSerializableSurrogate();
-		void FromSerializableSurrogate(JobScheduleSerializableSurrogate scheduleSurrogate);
-	}
+public interface IJobSchedule : IComparable<IJobSchedule> {
+	IJob Job { get; }
+	DateTime? LastStartTime { get; }
+	DateTime? LastEndTime { get; }
+	DateTime NextStartTime { get; }
+	DateTime? EndDate { get; }
+	ReschedulePolicy ReschedulePolicy { get; }
+	uint IterationsRemaining { get; }
+	uint IterationsExecuted { get; }
+
+	void NotifyStart(DateTime start);
+
+	void NotifyExecution(DateTime start, DateTime end);
+
+	JobScheduleSerializableSurrogate ToSerializableSurrogate();
+
+	void FromSerializableSurrogate(JobScheduleSerializableSurrogate scheduleSurrogate);
 }

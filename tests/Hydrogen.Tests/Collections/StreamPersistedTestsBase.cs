@@ -98,7 +98,7 @@
 
 //			public override int CalculateSize(TestObject item) 
 //				=> _stringSerializer.CalculateSize(item.A) + sizeof(int) + sizeof(bool);
-			
+
 
 //			public override bool TrySerialize(TestObject item, EndianBinaryWriter writer, out int bytesWritten) {
 //				int stringBytesCount = _stringSerializer.Serialize(item.A, writer);
@@ -146,3 +146,5 @@
 //		}
 //	}
 //}
+
+

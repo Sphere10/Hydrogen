@@ -6,12 +6,8 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System.Threading.Tasks;
+namespace Hydrogen.Communications;
 
-namespace Hydrogen.Communications {
-
-    public interface IRequestHandler {
-		object Execute(ProtocolOrchestrator orchestrator, object request);
-	}
-
+public interface IRequestHandler {
+	object Execute(ProtocolOrchestrator orchestrator, object request);
 }

@@ -10,35 +10,35 @@ using System.Xml;
 using System.Xml.Schema;
 using System.Xml.Serialization;
 
-namespace Hydrogen.Data {
-	public class CDataString : IXmlSerializable {
-		private string _value;
-		public CDataString() : this(null) {
-		}
+namespace Hydrogen.Data;
 
-		public CDataString(string value) {
-			_value = value;
-		}
-		public XmlSchema GetSchema() {
-			return null;
+public class CDataString : IXmlSerializable {
+	private string _value;
+	public CDataString() : this(null) {
+	}
 
-		}
-		public void ReadXml(XmlReader reader) {
-			_value = reader.ReadElementContentAsString();
-		}
-
-		public void WriteXml(XmlWriter writer) {
-			writer.WriteCData(_value);
-		}
-		
-		public static implicit operator CDataString(string s) {
-			var cdatastring = new CDataString(s);
-			return cdatastring;
-		}
-
-		public static implicit operator string(CDataString cdata) {
-			return cdata._value;
-		}
+	public CDataString(string value) {
+		_value = value;
+	}
+	public XmlSchema GetSchema() {
+		return null;
 
 	}
+	public void ReadXml(XmlReader reader) {
+		_value = reader.ReadElementContentAsString();
+	}
+
+	public void WriteXml(XmlWriter writer) {
+		writer.WriteCData(_value);
+	}
+
+	public static implicit operator CDataString(string s) {
+		var cdatastring = new CDataString(s);
+		return cdatastring;
+	}
+
+	public static implicit operator string(CDataString cdata) {
+		return cdata._value;
+	}
+
 }

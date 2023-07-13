@@ -6,16 +6,15 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen.Communications {
+namespace Hydrogen.Communications;
 
-    public abstract class CommandHandlerBase<TMessage> : CommandHandlerBase, ICommandHandler<TMessage> {
+public abstract class CommandHandlerBase<TMessage> : CommandHandlerBase, ICommandHandler<TMessage> {
 
-        public override void Execute(ProtocolOrchestrator orchestrator, object command) {
-            Guard.ArgumentCast<TMessage>(command, out var commandT, nameof(command));
-            Execute(orchestrator, commandT);
-        }
+	public override void Execute(ProtocolOrchestrator orchestrator, object command) {
+		Guard.ArgumentCast<TMessage>(command, out var commandT, nameof(command));
+		Execute(orchestrator, commandT);
+	}
 
-        public abstract void Execute(ProtocolOrchestrator orchestrator, TMessage command);
+	public abstract void Execute(ProtocolOrchestrator orchestrator, TMessage command);
 
-    }
 }

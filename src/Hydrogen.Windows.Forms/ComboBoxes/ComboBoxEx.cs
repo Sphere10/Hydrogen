@@ -6,42 +6,34 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
-using System.Text;
 using System.Windows.Forms;
 
-namespace Hydrogen.Windows.Forms {
-	public class ComboBoxEx : ComboBox {
-		private PlaceHolderTextExtender _placeHolderTextExtender;
-		private System.ComponentModel.IContainer components;
+namespace Hydrogen.Windows.Forms;
 
-		public ComboBoxEx() {
-			InitializeComponent();
-		}
+public class ComboBoxEx : ComboBox {
+	private PlaceHolderTextExtender _placeHolderTextExtender;
+	private System.ComponentModel.IContainer components;
 
-		[Category("Appearance")]
-		[DefaultValue("")]
-		public string PlaceHolderText {
-			get {
-				return _placeHolderTextExtender.GetPlaceHolderText(this);
-			}
-			set {
-				_placeHolderTextExtender.SetPlaceHolderText(this, value);
-			}
-		}
+	public ComboBoxEx() {
+		InitializeComponent();
+	}
 
-		private void InitializeComponent() {
-			this.components = new System.ComponentModel.Container();
-			this._placeHolderTextExtender = new Hydrogen.Windows.Forms.PlaceHolderTextExtender(this.components);
-			this.SuspendLayout();
-			// 
-			// TextBoxEx
-			// 
-			this._placeHolderTextExtender.SetPlaceHolderText(this, "");
-			this.ResumeLayout(false);
-		}
+	[Category("Appearance")]
+	[DefaultValue("")]
+	public string PlaceHolderText {
+		get { return _placeHolderTextExtender.GetPlaceHolderText(this); }
+		set { _placeHolderTextExtender.SetPlaceHolderText(this, value); }
+	}
+
+	private void InitializeComponent() {
+		this.components = new System.ComponentModel.Container();
+		this._placeHolderTextExtender = new Hydrogen.Windows.Forms.PlaceHolderTextExtender(this.components);
+		this.SuspendLayout();
+		// 
+		// TextBoxEx
+		// 
+		this._placeHolderTextExtender.SetPlaceHolderText(this, "");
+		this.ResumeLayout(false);
 	}
 }

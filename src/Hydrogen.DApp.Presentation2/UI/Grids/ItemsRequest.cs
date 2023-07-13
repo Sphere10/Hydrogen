@@ -7,5 +7,5 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 namespace Hydrogen.DApp.Presentation2.UI.Grids {
-    public record ItemRequest(int Index, int Count, string SortBy, string SortDirection);
+	public record ItemRequest(int Index, int Count, string SortBy, string SortDirection);
 }

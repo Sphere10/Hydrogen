@@ -7,32 +7,23 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using SourceGrid.Cells.Views;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace SourceGrid.Conditions
-{
-    public static class ConditionBuilder
-    {
-        public static ICondition AlternateView(
-                                            IView view,
-                                            System.Drawing.Color alternateBackcolor,
-                                            System.Drawing.Color alternateForecolor)
-        {
-            SourceGrid.Cells.Views.IView viewAlternate = (SourceGrid.Cells.Views.IView)view.Clone();
-            viewAlternate.BackColor = alternateBackcolor;
-            viewAlternate.ForeColor = alternateForecolor;
+namespace SourceGrid.Conditions;
 
-            SourceGrid.Conditions.ConditionView condition =
-                        new SourceGrid.Conditions.ConditionView(viewAlternate);
+public static class ConditionBuilder {
+	public static ICondition AlternateView(
+		IView view,
+		System.Drawing.Color alternateBackcolor,
+		System.Drawing.Color alternateForecolor) {
+		SourceGrid.Cells.Views.IView viewAlternate = (SourceGrid.Cells.Views.IView)view.Clone();
+		viewAlternate.BackColor = alternateBackcolor;
+		viewAlternate.ForeColor = alternateForecolor;
 
-            condition.EvaluateFunction = delegate(SourceGrid.DataGridColumn column, int gridRow, object itemRow)
-                                    {
-                                        return (gridRow & 1) == 1;
-                                    };
+		SourceGrid.Conditions.ConditionView condition =
+			new SourceGrid.Conditions.ConditionView(viewAlternate);
 
-            return condition;
-        }
-    }
+		condition.EvaluateFunction = delegate(SourceGrid.DataGridColumn column, int gridRow, object itemRow) { return (gridRow & 1) == 1; };
+
+		return condition;
+	}
 }

@@ -6,16 +6,14 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen {
+namespace Hydrogen;
 
-	public static class XorShift {
+public static class XorShift {
 
-        public static uint Next(ref uint aState) {
-            aState = aState ^ (aState << 13);
-            aState = aState ^ (aState >> 17);
-            aState = aState ^ (aState << 5);
-            return aState;
-        }
-    }
-
+	public static uint Next(ref uint aState) {
+		aState = aState ^ (aState << 13);
+		aState = aState ^ (aState >> 17);
+		aState = aState ^ (aState << 5);
+		return aState;
+	}
 }

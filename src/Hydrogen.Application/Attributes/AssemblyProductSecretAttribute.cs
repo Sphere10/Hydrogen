@@ -9,18 +9,14 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace Hydrogen.Application {
+namespace Hydrogen.Application;
 
-	[ComVisible(true)]
-    [AttributeUsage(AttributeTargets.Assembly, Inherited = false)]
-    public sealed class AssemblyProductSecretAttribute : Attribute {
-    	public AssemblyProductSecretAttribute(string secret) {
-            Secret = secret;
-        }
+[ComVisible(true)]
+[AttributeUsage(AttributeTargets.Assembly, Inherited = false)]
+public sealed class AssemblyProductSecretAttribute : Attribute {
+	public AssemblyProductSecretAttribute(string secret) {
+		Secret = secret;
+	}
 
-    	public string Secret { get; set; }
-    }
-
+	public string Secret { get; set; }
 }
-
-

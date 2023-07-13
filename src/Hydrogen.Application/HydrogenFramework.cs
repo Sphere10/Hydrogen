@@ -6,16 +6,14 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using RailwaySharp.ErrorHandling;
 using System;
-using System.Collections.Generic;
-using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Hydrogen.Application;
+
 public class HydrogenFramework {
 	private readonly object _threadLock;
 	private bool _registeredModules;
@@ -37,15 +35,14 @@ public class HydrogenFramework {
 		_threadLock = new object();
 		ModuleConfigurations = Tools.Values.Future.LazyLoad(() =>
 			AppDomain
-			   .CurrentDomain
-			   .GetNonFrameworkAssemblies()
-			   .SelectMany(a => a.GetTypes())
-			   .Where(t => t.IsClass && !t.IsAbstract && typeof(IModuleConfiguration).IsAssignableFrom(t))
-			   .Select(TypeActivator.Create)
-			   .Cast<IModuleConfiguration>()
-			   .OrderByDescending(x => x.Priority)
-			   .ToArray()
-
+				.CurrentDomain
+				.GetNonFrameworkAssemblies()
+				.SelectMany(a => a.GetTypes())
+				.Where(t => t.IsClass && !t.IsAbstract && typeof(IModuleConfiguration).IsAssignableFrom(t))
+				.Select(TypeActivator.Create)
+				.Cast<IModuleConfiguration>()
+				.OrderByDescending(x => x.Priority)
+				.ToArray()
 		);
 	}
 
@@ -124,8 +121,8 @@ public class HydrogenFramework {
 
 		// Parallel execute all parallelizable initialzers 
 		Parallel.ForEach(initializers
-						 .Where(x => x.Parallelizable)
-						 .OrderBy(initTask => initTask.Priority),
+				.Where(x => x.Parallelizable)
+				.OrderBy(initTask => initTask.Priority),
 			startTask => startTask.Initialize()
 		);
 

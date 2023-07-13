@@ -52,8 +52,7 @@
 //		//			{ typeof(IPAddress), s => }
 //		        };
 
- 
-        
+
 //        /// <summary>
 //        /// Parses the specified value. Can parse primitive types or nullable primitive types. 
 //        /// </summary>
@@ -147,8 +146,6 @@
 //            if (!enumType.IsEnum)
 //                throw new ArgumentException(string.Format("Type '{0}' is not an enum", enumType.FullName));
 
-
-            
 
 //            // Try to parse the value directly 
 //            if (System.Enum.IsDefined(enumType, value)) {
@@ -577,3 +574,5 @@
 //    }
 
 //}
+
+

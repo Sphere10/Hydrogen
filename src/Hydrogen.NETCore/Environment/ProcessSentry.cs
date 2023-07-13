@@ -29,8 +29,8 @@ public class ProcessSentry {
 
 	protected Process RunningProcess => _runningProcess;
 
-	public virtual void BreakRunningProcess()  {
-			DefaultBreakProcess(_runningProcess);
+	public virtual void BreakRunningProcess() {
+		DefaultBreakProcess(_runningProcess);
 	}
 
 	public virtual async Task RunWithErrorCodeCheckAsync(string arguments = null, int expectedErrorCode = 0, CancellationToken cancellationToken = default) {
@@ -43,15 +43,15 @@ public class ProcessSentry {
 		}
 	}
 
-	public virtual async Task<int> RunAsync(string arguments = null, CancellationToken cancellationToken = default)  {
-		using (_lock.EnterWriteScope() ) {
+	public virtual async Task<int> RunAsync(string arguments = null, CancellationToken cancellationToken = default) {
+		using (_lock.EnterWriteScope()) {
 			_runningProcess = new Process();
 			var _ = new ActionDisposable(() => _runningProcess = null);
-			return await  RunProcess(_runningProcess, ExecutableFileName, arguments, Output, cancellationToken);
+			return await RunProcess(_runningProcess, ExecutableFileName, arguments, Output, cancellationToken);
 		}
 	}
 
-	public static async Task<bool> CanRunAsync(string executableFileName, CancellationToken cancellationToken = default)  {
+	public static async Task<bool> CanRunAsync(string executableFileName, CancellationToken cancellationToken = default) {
 		try {
 			var sentry = new ProcessSentry(executableFileName);
 			await sentry.RunAsync(cancellationToken: cancellationToken);
@@ -60,16 +60,16 @@ public class ProcessSentry {
 		}
 		return true;
 	}
-	
-	public static Task<int> RunAsync(string fileName, string arguments = null, TextWriter output = null, CancellationToken cancellationToken = default) 
+
+	public static Task<int> RunAsync(string fileName, string arguments = null, TextWriter output = null, CancellationToken cancellationToken = default)
 		=> RunProcess(new Process(), fileName, arguments, output, cancellationToken);
-	
-	private static async Task<int> RunProcess(Process process, string fileName, string arguments = null,  TextWriter output = null, CancellationToken cancellationToken = default) {
+
+	private static async Task<int> RunProcess(Process process, string fileName, string arguments = null, TextWriter output = null, CancellationToken cancellationToken = default) {
 		Guard.ArgumentNotNull(process, nameof(process));
 		process.StartInfo.FileName = fileName;
 		process.StartInfo.Arguments = arguments;
 		process.StartInfo.ErrorDialog = false;
-		process.StartInfo.UseShellExecute = false; 
+		process.StartInfo.UseShellExecute = false;
 		process.StartInfo.CreateNoWindow = true;
 		process.StartInfo.RedirectStandardInput = true;
 		process.StartInfo.Verb = "runas";
@@ -79,7 +79,7 @@ public class ProcessSentry {
 			process.StartInfo.RedirectStandardError = true;
 			var syncObj = new SynchronizedObject();
 			process.OutputDataReceived += async (_, data) => {
-				using (syncObj.EnterWriteScope()) 
+				using (syncObj.EnterWriteScope())
 					output.WriteLine(data.Data);
 			};
 		}
@@ -94,7 +94,7 @@ public class ProcessSentry {
 
 		await process.WaitForExitAsync();
 		return process.ExitCode;
-		
+
 	}
 
 	private static void DefaultBreakProcess(Process process) {

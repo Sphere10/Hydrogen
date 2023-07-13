@@ -7,19 +7,16 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
-namespace Hydrogen.Data {
-	/// <summary>
-	///  http://www.orafaq.com/faq/what_are_the_difference_between_ddl_dml_and_dcl_commands
-	/// </summary>
-    [Serializable]
-	public enum SQLStatementType {
-		DDL,		// Data Definition Language (i.e. create table, etc
-		DML,		// Data Manipulation Language (i.e. select, insert, delete, etc)
-		DCL,		// Data Control Language  (i.e. grant, revoke, etc)
-		TCL			// Transaction Control Language (i.e. begin transaction, commit, rollback, etc)
-	}
+namespace Hydrogen.Data;
+
+/// <summary>
+///  http://www.orafaq.com/faq/what_are_the_difference_between_ddl_dml_and_dcl_commands
+/// </summary>
+[Serializable]
+public enum SQLStatementType {
+	DDL, // Data Definition Language (i.e. create table, etc
+	DML, // Data Manipulation Language (i.e. select, insert, delete, etc)
+	DCL, // Data Control Language  (i.e. grant, revoke, etc)
+	TCL // Transaction Control Language (i.e. begin transaction, commit, rollback, etc)
 }

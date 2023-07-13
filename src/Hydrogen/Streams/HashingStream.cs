@@ -21,9 +21,9 @@ public sealed class HashingStream : WriteOnlyStream {
 	public HashingStream(CHF hashFunction)
 		: base(new MemoryStream()) {
 		_disposables = new Disposables();
-		_disposables.Add( Hashers.BorrowHasher(hashFunction, out _hashFunction));
+		_disposables.Add(Hashers.BorrowHasher(hashFunction, out _hashFunction));
 		_canWrite = true;
-}
+	}
 
 	public byte[] GetDigest() {
 		_canWrite = false;

@@ -6,8 +6,8 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen.Communications {
-    public interface IResponseHandler<in TRequest, in TResponse> : IResponseHandler {
-		void Execute(ProtocolOrchestrator orchestrator, TRequest request, TResponse response);
-	}
+namespace Hydrogen.Communications;
+
+public interface IResponseHandler<in TRequest, in TResponse> : IResponseHandler {
+	void Execute(ProtocolOrchestrator orchestrator, TRequest request, TResponse response);
 }

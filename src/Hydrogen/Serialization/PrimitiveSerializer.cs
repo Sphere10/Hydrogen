@@ -14,7 +14,7 @@ public class PrimitiveSerializer<T> : StaticSizeItemSerializerBase<T> {
 	private readonly Action<EndianBinaryWriter, T> _writePrimitive;
 	private readonly Func<EndianBinaryReader, T> _readPrimitive;
 
-	public PrimitiveSerializer() 
+	public PrimitiveSerializer()
 		: base(Tools.Memory.SizeOfPrimitive(typeof(T))) {
 		Guard.Argument(Tools.Memory.IsSerializationPrimitive(typeof(T)), nameof(T), $" {typeof(T)} is not a primitive type");
 		var typeCode = Type.GetTypeCode(typeof(T));

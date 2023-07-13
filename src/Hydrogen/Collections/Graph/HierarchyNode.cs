@@ -8,21 +8,19 @@
 
 using System.Collections.Generic;
 
-namespace Hydrogen {
+namespace Hydrogen;
 
-	/// <summary>
-	/// Hierarchy node class which contains a nested collection of hierarchy nodes
-	/// </summary>
-	/// <typeparam name="T">Entity</typeparam>
-	public class HierarchyNode<T> : SimpleGraph<T,  HierarchyNode<T>> where T : class {
-		public int Depth { get; set; }
-		public T Parent { get; set; }
-		public IEnumerable<HierarchyNode<T>> ChildNodes { 
-			get => Connections;
-			set => Connections = value;
-		}
+/// <summary>
+/// Hierarchy node class which contains a nested collection of hierarchy nodes
+/// </summary>
+/// <typeparam name="T">Entity</typeparam>
+public class HierarchyNode<T> : SimpleGraph<T, HierarchyNode<T>> where T : class {
+	public int Depth { get; set; }
+	public T Parent { get; set; }
 
+	public IEnumerable<HierarchyNode<T>> ChildNodes {
+		get => Connections;
+		set => Connections = value;
 	}
-
 
 }

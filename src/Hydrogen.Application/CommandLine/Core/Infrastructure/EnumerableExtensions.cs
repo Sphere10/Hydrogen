@@ -4,65 +4,54 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace CommandLine.Infrastructure
-{
-    static class EnumerableExtensions
-    {
-        public static int IndexOf<TSource>(this IEnumerable<TSource> source, Func<TSource, bool> predicate)
-        {
-            var index = -1;
-            foreach (var item in source)
-            {
-                index++;
-                if (predicate(item))
-                {
-                    break;
-                }
-            }
-            return index;
-        }
+namespace CommandLine.Infrastructure;
 
-        public static object ToUntypedArray(this IEnumerable<object> value, Type type)
-        {
-            var array = Array.CreateInstance(type, value.Count());
-            value.ToArray().CopyTo(array, 0);
-            return array;
-        }
+static class EnumerableExtensions {
+	public static int IndexOf<TSource>(this IEnumerable<TSource> source, Func<TSource, bool> predicate) {
+		var index = -1;
+		foreach (var item in source) {
+			index++;
+			if (predicate(item)) {
+				break;
+			}
+		}
+		return index;
+	}
 
-        public static bool Empty<TSource>(this IEnumerable<TSource> source)
-        {
-            return !source.Any();
-        }
+	public static object ToUntypedArray(this IEnumerable<object> value, Type type) {
+		var array = Array.CreateInstance(type, value.Count());
+		value.ToArray().CopyTo(array, 0);
+		return array;
+	}
 
-        /// <summary>
-        /// Breaks a collection into groups of a specified size.
-        /// </summary>
-        /// <param name="source">A collection of <typeparam name="T"/>.</param>
-        /// <param name="groupSize">The number of items each group shall contain.</param>
-        /// <returns>An enumeration of T[].</returns>
-        /// <remarks>An incomplete group at the end of the source collection will be silently dropped.</remarks>
-        public static IEnumerable<T[]> Group<T>(this IEnumerable<T> source, int groupSize)
-        {
-            if (groupSize < 1)
-            {
-                throw new ArgumentOutOfRangeException(nameof(groupSize));
-            }
+	public static bool Empty<TSource>(this IEnumerable<TSource> source) {
+		return !source.Any();
+	}
 
-            T[] group = new T[groupSize];
-            int groupIndex = 0;
+	/// <summary>
+	/// Breaks a collection into groups of a specified size.
+	/// </summary>
+	/// <param name="source">A collection of <typeparam name="T"/>.</param>
+	/// <param name="groupSize">The number of items each group shall contain.</param>
+	/// <returns>An enumeration of T[].</returns>
+	/// <remarks>An incomplete group at the end of the source collection will be silently dropped.</remarks>
+	public static IEnumerable<T[]> Group<T>(this IEnumerable<T> source, int groupSize) {
+		if (groupSize < 1) {
+			throw new ArgumentOutOfRangeException(nameof(groupSize));
+		}
 
-            foreach (var item in source)
-            {
-                group[groupIndex++] = item;
+		T[] group = new T[groupSize];
+		int groupIndex = 0;
 
-                if (groupIndex == groupSize)
-                {
-                    yield return group;
+		foreach (var item in source) {
+			group[groupIndex++] = item;
 
-                    group = new T[groupSize];
-                    groupIndex = 0;
-                }
-            }
-        }
-    }
+			if (groupIndex == groupSize) {
+				yield return group;
+
+				group = new T[groupSize];
+				groupIndex = 0;
+			}
+		}
+	}
 }

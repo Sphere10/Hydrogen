@@ -9,22 +9,21 @@
 using System;
 using System.Drawing;
 
-namespace Hydrogen.Windows.Forms {
+namespace Hydrogen.Windows.Forms;
 
 #warning Add Option Dialogs
 #warning Add 8x8 special icon (outlook bar bottom)
 
-    public interface IApplicationBlock : IDisposable {
-        int Position { get; }
-		string Name { get; }
-        IMenu[] Menus { get; }
-        Image Image32x32 { get; }
-        Image Image8x8 { get; }
-        string HelpFileCHM { get; }
-        bool ShowInMenuStrip { get; }
-        bool ShowInToolStrip { get; }
 
-        Type DefaultScreen { get; }
-    }
+public interface IApplicationBlock : IDisposable {
+	int Position { get; }
+	string Name { get; }
+	IMenu[] Menus { get; }
+	Image Image32x32 { get; }
+	Image Image8x8 { get; }
+	string HelpFileCHM { get; }
+	bool ShowInMenuStrip { get; }
+	bool ShowInToolStrip { get; }
 
+	Type DefaultScreen { get; }
 }

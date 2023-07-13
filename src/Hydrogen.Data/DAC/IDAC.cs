@@ -10,52 +10,53 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 
-namespace Hydrogen.Data {
-	public interface IDAC {
+namespace Hydrogen.Data;
 
-	    event EventHandlerEx<IDAC, string> Executing;
-        event EventHandlerEx<IDAC, string> Executed;
-            
-        Guid InstanceID { get; }
+public interface IDAC {
 
-        bool UseScopeOsmosis { get; set; }
+	event EventHandlerEx<IDAC, string> Executing;
+	event EventHandlerEx<IDAC, string> Executed;
 
-        IsolationLevel DefaultIsolationLevel { get; set; }
+	Guid InstanceID { get; }
 
-        DBMSType DBMSType { get; }
+	bool UseScopeOsmosis { get; set; }
 
-		string ConnectionString { get; }
+	IsolationLevel DefaultIsolationLevel { get; set; }
 
-		ArtificialKeys ArtificialKeys { get; set;  }
+	DBMSType DBMSType { get; }
 
-		ILogger Log { get; set; }
+	string ConnectionString { get; }
 
-		IDbConnection CreateConnection();
+	ArtificialKeys ArtificialKeys { get; set; }
 
-		ISQLBuilder CreateSQLBuilder();
+	ILogger Log { get; set; }
 
-        void EnlistInSystemTransaction(IDbConnection connection, System.Transactions.Transaction transaction);
+	IDbConnection CreateConnection();
 
-		int ExecuteNonQuery(string query);
+	ISQLBuilder CreateSQLBuilder();
 
-		object ExecuteScalar(string query);
+	void EnlistInSystemTransaction(IDbConnection connection, System.Transactions.Transaction transaction);
 
-		DataTable[] ExecuteBatch(ISQLBuilder sqlBuilder);
+	int ExecuteNonQuery(string query);
 
-		IDataReader ExecuteReader(string query);
-	
-        // TODO: Make ext method
-		long Insert(string tableName, IEnumerable<ColumnValue> values);
+	object ExecuteScalar(string query);
 
-        // TODO: Make ext method
-        long Update(string tableName, IEnumerable<ColumnValue> setValues, IEnumerable<ColumnValue> whereValues);
+	DataTable[] ExecuteBatch(ISQLBuilder sqlBuilder);
 
-        // TODO: Make ext method
-        long Delete(string tableName, IEnumerable<ColumnValue> matchColumns);
+	IDataReader ExecuteReader(string query);
 
-	    void BulkInsert(DataTable table, BulkInsertOptions bulkInsertOptions, TimeSpan timeout);
-		DBSchema GetSchema();
+	// TODO: Make ext method
+	long Insert(string tableName, IEnumerable<ColumnValue> values);
+
+	// TODO: Make ext method
+	long Update(string tableName, IEnumerable<ColumnValue> setValues, IEnumerable<ColumnValue> whereValues);
+
+	// TODO: Make ext method
+	long Delete(string tableName, IEnumerable<ColumnValue> matchColumns);
+
+	void BulkInsert(DataTable table, BulkInsertOptions bulkInsertOptions, TimeSpan timeout);
+
+	DBSchema GetSchema();
 
 
-	}
 }

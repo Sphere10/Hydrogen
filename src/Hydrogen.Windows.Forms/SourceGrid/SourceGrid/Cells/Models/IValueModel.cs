@@ -6,30 +6,29 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
+namespace SourceGrid.Cells.Models;
 
-namespace SourceGrid.Cells.Models
-{
+/// <summary>
+/// A Model interface specific to contain the value of the cell.
+/// </summary>
+public interface IValueModel : IModel {
+
+	#region GetValue, SetValue
+
 	/// <summary>
-	/// A Model interface specific to contain the value of the cell.
+	/// Get the value of the cell at the specified position
 	/// </summary>
-	public interface IValueModel : IModel
-	{
-		#region GetValue, SetValue
-		/// <summary>
-		/// Get the value of the cell at the specified position
-		/// </summary>
-		/// <param name="cellContext"></param>
-		/// <returns></returns>
-		object GetValue(CellContext cellContext);
+	/// <param name="cellContext"></param>
+	/// <returns></returns>
+	object GetValue(CellContext cellContext);
 
-		/// <summary>
-		/// Set the value of the cell at the specified position. This method must call OnValueChanging and OnValueChanged() event.
-		/// </summary>
-		/// <param name="cellContext"></param>
-		/// <param name="p_Value"></param>
-		void SetValue(CellContext cellContext, object p_Value);
-		#endregion
-	}
+	/// <summary>
+	/// Set the value of the cell at the specified position. This method must call OnValueChanging and OnValueChanged() event.
+	/// </summary>
+	/// <param name="cellContext"></param>
+	/// <param name="p_Value"></param>
+	void SetValue(CellContext cellContext, object p_Value);
+
+	#endregion
+
 }
-

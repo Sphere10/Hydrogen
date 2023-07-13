@@ -6,21 +6,21 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen {
-	public class XmlSchedulerSerializer : ISchedulerSerializer {
+namespace Hydrogen;
 
-		public XmlSchedulerSerializer(string filepath) {
-			FilePath = filepath;
-		}
+public class XmlSchedulerSerializer : ISchedulerSerializer {
 
-		public string FilePath { get; init; }
+	public XmlSchedulerSerializer(string filepath) {
+		FilePath = filepath;
+	}
 
-		public void Serialize(SchedulerSerializableSurrogate scheduler) {
-			Tools.Xml.WriteToFile(FilePath, scheduler);
-		}
+	public string FilePath { get; init; }
 
-		public SchedulerSerializableSurrogate Deserialize() {
-			return Tools.Xml.ReadFromFile<SchedulerSerializableSurrogate>(FilePath);
-		}
+	public void Serialize(SchedulerSerializableSurrogate scheduler) {
+		Tools.Xml.WriteToFile(FilePath, scheduler);
+	}
+
+	public SchedulerSerializableSurrogate Deserialize() {
+		return Tools.Xml.ReadFromFile<SchedulerSerializableSurrogate>(FilePath);
 	}
 }

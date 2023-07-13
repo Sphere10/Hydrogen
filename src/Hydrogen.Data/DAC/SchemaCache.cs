@@ -6,46 +6,41 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+namespace Hydrogen.Data;
 
-namespace Hydrogen.Data {
-	public static class SchemaCache {
-		private static readonly SynchronizedDictionary<string, DBSchema> _schemaCache;
-		
-
-		static SchemaCache() {
-			_schemaCache = new SynchronizedDictionary<string, DBSchema>(); 
-		}
-	
-		public static DBSchema GetSchemaCached(this IDAC dac) {
-			using (_schemaCache.EnterWriteScope()) {
-				var connectionString = dac.ConnectionString;
-				if (!_schemaCache.ContainsKey(connectionString))
-					_schemaCache[connectionString] = dac.GetSchema();
-				return _schemaCache[connectionString];
-			}
-		}
-
-		public static void InvalidateCachedSchema(this IDAC dac) {
-			using (_schemaCache.EnterWriteScope()) {
-				var connectionString = dac.ConnectionString;
-				if (_schemaCache.ContainsKey(connectionString))
-					_schemaCache.Remove(connectionString);
-			}
-		}
+public static class SchemaCache {
+	private static readonly SynchronizedDictionary<string, DBSchema> _schemaCache;
 
 
-		public static void InvalidateSchema(string connectionString) {
-			_schemaCache[connectionString] = null;
-		}
-
-		public static void InvalidateAllSchemas() {
-			_schemaCache.Clear();
-		}
-		
-
+	static SchemaCache() {
+		_schemaCache = new SynchronizedDictionary<string, DBSchema>();
 	}
+
+	public static DBSchema GetSchemaCached(this IDAC dac) {
+		using (_schemaCache.EnterWriteScope()) {
+			var connectionString = dac.ConnectionString;
+			if (!_schemaCache.ContainsKey(connectionString))
+				_schemaCache[connectionString] = dac.GetSchema();
+			return _schemaCache[connectionString];
+		}
+	}
+
+	public static void InvalidateCachedSchema(this IDAC dac) {
+		using (_schemaCache.EnterWriteScope()) {
+			var connectionString = dac.ConnectionString;
+			if (_schemaCache.ContainsKey(connectionString))
+				_schemaCache.Remove(connectionString);
+		}
+	}
+
+
+	public static void InvalidateSchema(string connectionString) {
+		_schemaCache[connectionString] = null;
+	}
+
+	public static void InvalidateAllSchemas() {
+		_schemaCache.Clear();
+	}
+
+
 }

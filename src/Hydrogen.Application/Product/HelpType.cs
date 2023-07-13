@@ -9,15 +9,13 @@
 
 using System.Reflection;
 
-namespace Hydrogen.Application {
+namespace Hydrogen.Application;
 
-	[Obfuscation(Exclude = true)]
-    public enum HelpType : uint
-    {
-        None = 0x00000000,
-        PDF = 0x00000001,
-        CHM = 0x00000010,
-        RTF = 0x00000100,
-        URL = 0x00001000,
-    }
+[Obfuscation(Exclude = true)]
+public enum HelpType : uint {
+	None = 0x00000000,
+	PDF = 0x00000001,
+	CHM = 0x00000010,
+	RTF = 0x00000100,
+	URL = 0x00001000,
 }

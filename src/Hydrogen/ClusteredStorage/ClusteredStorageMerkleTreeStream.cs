@@ -8,7 +8,6 @@
 
 using System;
 using System.Collections.Generic;
-using Hydrogen;
 
 namespace Hydrogen.Collections;
 
@@ -55,6 +54,7 @@ internal sealed class ClusteredStorageMerkleTreeStream : IDynamicMerkleTree {
 		disposables.Add(streamScope); // when scope finishes, dispose the stream scope
 		return disposables;
 	}
+
 
 	private sealed class LeafList : RangedListBase<byte[]> {
 		private readonly ClusteredStorageMerkleTreeStream _parent;

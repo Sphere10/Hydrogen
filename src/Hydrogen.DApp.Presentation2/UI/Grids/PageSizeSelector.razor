@@ -31,10 +31,12 @@
     /// <summary>
     /// Gets or sets a callback that updates the bound value.
     /// </summary>
-    [Parameter] public EventCallback<int> ValueChanged { get; set; }
+    [Parameter]
+    public EventCallback<int> ValueChanged { get; set; }
 
     /// <summary>
     /// Gets or sets an expression that identifies the bound value.
     /// </summary>
-    [Parameter] public Expression<Func<int>>? ValueExpression { get; set; }
+    [Parameter]
+    public Expression<Func<int>>? ValueExpression { get; set; }
 }

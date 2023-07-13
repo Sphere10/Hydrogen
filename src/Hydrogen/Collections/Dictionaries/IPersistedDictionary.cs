@@ -8,11 +8,12 @@
 
 using System.Collections.Generic;
 
-namespace Hydrogen {
+namespace Hydrogen;
 
-	public interface IPersistedDictionary<T1, T2> : IDictionary<T1, T2> {
-		void Load();
-		void Save();
-		void Delete();
-    }
+public interface IPersistedDictionary<T1, T2> : IDictionary<T1, T2> {
+	void Load();
+
+	void Save();
+
+	void Delete();
 }

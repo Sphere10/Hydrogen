@@ -17,7 +17,7 @@ namespace Hydrogen.Web.AspNetCore;
 /// </summary>
 /// <typeparam name="TFilter"></typeparam>
 public abstract class FilterFactoryBase<TFilter> : Attribute, IFilterFactory where TFilter : IFilterMetadata {
-	public IFilterMetadata CreateInstance(IServiceProvider serviceProvider) 
+	public IFilterMetadata CreateInstance(IServiceProvider serviceProvider)
 		=> serviceProvider.GetService<TFilter>();
 	public bool IsReusable => false;
 }

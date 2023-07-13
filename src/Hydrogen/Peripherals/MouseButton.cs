@@ -9,17 +9,15 @@
 using System;
 using System.Reflection;
 
-namespace Hydrogen {
-	[Obfuscation(Exclude = true)]
-    [Flags]
-    public enum MouseButton
-    {
-		None		= 0,
-		Left,
-		Right,
-		Middle,
-        XButton1,
-        XButton2
-    }
+namespace Hydrogen;
 
+[Obfuscation(Exclude = true)]
+[Flags]
+public enum MouseButton {
+	None = 0,
+	Left,
+	Right,
+	Middle,
+	XButton1,
+	XButton2
 }

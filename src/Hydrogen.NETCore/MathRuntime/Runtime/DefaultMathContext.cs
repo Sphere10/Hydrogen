@@ -6,55 +6,41 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
-using System.Collections.Generic;
-using System.Text;
+namespace Hydrogen.Maths.Compiler;
 
-namespace Hydrogen.Maths.Compiler {
+public class DefaultMathContext : IMathContext {
 
-    public class DefaultMathContext : IMathContext {
+	private IMathContext _parentContext;
+	private IVariableContext _variableContext;
+	private IFunctionContext _functionContext;
 
-        private IMathContext _parentContext;
-        private IVariableContext _variableContext;
-        private IFunctionContext _functionContext;
+	public DefaultMathContext() {
+		_parentContext = null;
+		_variableContext = new DefaultVariableContext(this);
+		_functionContext = new DefaultFunctionContext(this);
+	}
 
-        public DefaultMathContext() {
-            _parentContext = null;
-            _variableContext = new DefaultVariableContext(this);
-            _functionContext = new DefaultFunctionContext(this);
-        }
+	public IMathContext ParentContext {
+		get { return _parentContext; }
+		set { _parentContext = value; }
+	}
 
-        public IMathContext ParentContext {
-            get {
-                return _parentContext;
-            }
-            set {
-                _parentContext = value;
-            }
-        }
+	public IVariableContext Variables {
+		get { return _variableContext; }
+	}
 
-        public IVariableContext Variables {
-            get {
-                return _variableContext;
-            }
-        }
+	public IFunctionContext Functions {
+		get { return _functionContext; }
+	}
 
-        public IFunctionContext Functions {
-            get {
-                return _functionContext;
-            }
-        }
+	public IFunction GenerateFunction(string expression) {
+		return GenerateFunction(expression, "x");
+	}
 
-        public IFunction GenerateFunction(string expression) {
-            return GenerateFunction(expression, "x");
-        }
+	public IFunction GenerateFunction(string expression, string parameterName) {
+		BasicFunctionGenerator functionGenerator = new BasicFunctionGenerator(this);
+		functionGenerator.FunctionParameterName = parameterName;
+		return functionGenerator.GenerateFunctionFromExpression(expression);
+	}
 
-        public IFunction GenerateFunction(string expression, string parameterName)
-        {
-            BasicFunctionGenerator functionGenerator = new BasicFunctionGenerator(this);
-            functionGenerator.FunctionParameterName = parameterName;
-            return functionGenerator.GenerateFunctionFromExpression(expression);
-        }
-
-    }
 }

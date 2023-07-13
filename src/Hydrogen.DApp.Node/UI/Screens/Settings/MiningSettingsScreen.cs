@@ -6,14 +6,10 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using Hydrogen.DApp.Node.UI;
+namespace Hydrogen.DApp.Node.UI;
 
-namespace Hydrogen.DApp.Node.UI {
-
-	[Title("Mining")]
-	[Lifetime(ScreenLifetime.WhenVisible)]
-	[MenuLocation(AppMenu.Settings, "Mining", 3)]
-	public class MiningSettingsScreen : MockScreen {
-	}
-
+[Title("Mining")]
+[Lifetime(ScreenLifetime.WhenVisible)]
+[MenuLocation(AppMenu.Settings, "Mining", 3)]
+public class MiningSettingsScreen : MockScreen {
 }

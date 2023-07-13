@@ -9,7 +9,6 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
-using Tools;
 
 namespace Hydrogen.Data;
 
@@ -128,4 +127,3 @@ public sealed class DACScope : SyncTransactionalScope<IDbTransaction> {
 		}
 	}
 }
-

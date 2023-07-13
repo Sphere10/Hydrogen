@@ -6,19 +6,13 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using Hydrogen;
-using System.Linq;
-using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.IO;
 
 // ReSharper disable CheckNamespace
+
 namespace Tools;
 
 public static class NHibernate {
 
-	public static int NVarCharMaxValue = 4001;  // NHibernate has weird rule that defaults int.MaxValue -> 255, this works around it
+	public static int NVarCharMaxValue = 4001; // NHibernate has weird rule that defaults int.MaxValue -> 255, this works around it
 
 }
-

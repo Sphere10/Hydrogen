@@ -4,41 +4,34 @@ using System;
 using System.Reflection;
 using CSharpx;
 
-namespace CommandLine.Core
-{
-    class SpecificationProperty
-    {
-        private readonly Specification specification;
-        private readonly PropertyInfo property;
-        private readonly Maybe<object> value;
+namespace CommandLine.Core;
 
-        private SpecificationProperty(Specification specification, PropertyInfo property, Maybe<object> value)
-        {
-            this.property = property;
-            this.specification = specification;
-            this.value = value;
-        }
+class SpecificationProperty {
+	private readonly Specification specification;
+	private readonly PropertyInfo property;
+	private readonly Maybe<object> value;
 
-        public static SpecificationProperty Create(Specification specification, PropertyInfo property, Maybe<object> value)
-        {
-            if (value == null) throw new ArgumentNullException("value");
+	private SpecificationProperty(Specification specification, PropertyInfo property, Maybe<object> value) {
+		this.property = property;
+		this.specification = specification;
+		this.value = value;
+	}
 
-            return new SpecificationProperty(specification, property, value);
-        }
+	public static SpecificationProperty Create(Specification specification, PropertyInfo property, Maybe<object> value) {
+		if (value == null) throw new ArgumentNullException("value");
 
-        public Specification Specification
-        {
-            get { return specification; }
-        }
+		return new SpecificationProperty(specification, property, value);
+	}
 
-        public PropertyInfo Property
-        {
-            get { return property; }
-        }
+	public Specification Specification {
+		get { return specification; }
+	}
 
-        public Maybe<object> Value
-        {
-            get { return value; }
-        }
-    }
+	public PropertyInfo Property {
+		get { return property; }
+	}
+
+	public Maybe<object> Value {
+		get { return value; }
+	}
 }

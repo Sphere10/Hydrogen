@@ -9,13 +9,13 @@
 using System;
 using Microsoft.AspNetCore.Mvc.Routing;
 
-namespace Hydrogen.Web.AspNetCore {
-    public static class UrlExtensions {
-		public static string Content(this UrlHelper urlHelper, string contentPath, bool toAbsolute = false) {
-			var path = urlHelper.Content(contentPath);
-			var url = new Uri(HttpContextEx.Current.Request.GetUri(), path);
+namespace Hydrogen.Web.AspNetCore;
 
-			return toAbsolute ? url.AbsoluteUri : path;
-		}
+public static class UrlExtensions {
+	public static string Content(this UrlHelper urlHelper, string contentPath, bool toAbsolute = false) {
+		var path = urlHelper.Content(contentPath);
+		var url = new Uri(HttpContextEx.Current.Request.GetUri(), path);
+
+		return toAbsolute ? url.AbsoluteUri : path;
 	}
 }

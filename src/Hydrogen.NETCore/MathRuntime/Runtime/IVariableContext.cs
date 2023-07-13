@@ -6,18 +6,15 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
-using System.Collections.Generic;
-using System.Text;
+namespace Hydrogen.Maths.Compiler;
 
-namespace Hydrogen.Maths.Compiler {
+public interface IVariableContext {
+	IMathContext MathContext { get; }
 
-    public interface IVariableContext {
-        IMathContext MathContext { get; }
-        bool ContainsVariable(string name);
-        void RemoveVariable(string name);
-        double this[string var] { get; set; }
+	bool ContainsVariable(string name);
 
-    }
+	void RemoveVariable(string name);
+
+	double this[string var] { get; set; }
 
 }

@@ -8,21 +8,20 @@
 
 using System.Collections.Generic;
 
-namespace Hydrogen {
+namespace Hydrogen;
 
-	public sealed class PreloadedCache<TKey, TValue> : BulkFetchCacheBase<TKey, TValue> {
-		private readonly IDictionary<TKey, TValue> _preloadedValues = null;
-		public PreloadedCache(
-            IDictionary<TKey,TValue> preloadedValues,
-            IEqualityComparer<TKey> keyComparer = null
-        ) : base (ExpirationPolicy.None, null, true, NullValuePolicy.CacheNormally, StaleValuePolicy.AssumeNeverStale, keyComparer) {
-			_preloadedValues = preloadedValues;
-		}
-
-		protected override IDictionary<TKey, TValue> BulkFetch() {
-		        return _preloadedValues;
-		}
-
-		protected override bool CheckStaleness(TKey key, CachedItem<TValue> item) => false;
+public sealed class PreloadedCache<TKey, TValue> : BulkFetchCacheBase<TKey, TValue> {
+	private readonly IDictionary<TKey, TValue> _preloadedValues = null;
+	public PreloadedCache(
+		IDictionary<TKey, TValue> preloadedValues,
+		IEqualityComparer<TKey> keyComparer = null
+	) : base(ExpirationPolicy.None, null, true, NullValuePolicy.CacheNormally, StaleValuePolicy.AssumeNeverStale, keyComparer) {
+		_preloadedValues = preloadedValues;
 	}
+
+	protected override IDictionary<TKey, TValue> BulkFetch() {
+		return _preloadedValues;
+	}
+
+	protected override bool CheckStaleness(TKey key, CachedItem<TValue> item) => false;
 }

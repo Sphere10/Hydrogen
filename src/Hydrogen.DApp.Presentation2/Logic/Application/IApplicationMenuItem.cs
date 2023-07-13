@@ -6,8 +6,6 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using Hydrogen;
-
 namespace Hydrogen.DApp.Presentation2.Logic {
 	public interface IApplicationMenuItem {
 		event EventHandlerEx Hover;

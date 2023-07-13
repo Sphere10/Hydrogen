@@ -7,134 +7,120 @@ using System.Reflection;
 using CommandLine.Infrastructure;
 using CSharpx;
 
-namespace CommandLine.Core
-{
-    enum SpecificationType
-    {
-        Option,
-        Value
-    }
+namespace CommandLine.Core;
 
-    enum TargetType
-    {
-        Switch,
-        Scalar,
-        Sequence
-    }
+enum SpecificationType {
+	Option,
+	Value
+}
 
-    abstract class Specification
-    {
-        private readonly SpecificationType tag;
-        private readonly bool required;
-        private readonly bool hidden;
-        private readonly Maybe<int> min;
-        private readonly Maybe<int> max;
-        private readonly Maybe<object> defaultValue;
-        private readonly string helpText;
-        private readonly string metaValue;
-        private readonly IEnumerable<string> enumValues;
-        /// This information is denormalized to decouple Specification from PropertyInfo.
-        private readonly Type conversionType;
-        private readonly TargetType targetType;
 
-        protected Specification(SpecificationType tag, bool required, Maybe<int> min, Maybe<int> max,
-            Maybe<object> defaultValue, string helpText, string metaValue, IEnumerable<string> enumValues,
-            Type conversionType, TargetType targetType, bool hidden = false)
-        {
-            this.tag = tag;
-            this.required = required;
-            this.min = min;
-            this.max = max;
-            this.defaultValue = defaultValue;
-            this.conversionType = conversionType;
-            this.targetType = targetType;
-            this.helpText = helpText;
-            this.metaValue = metaValue;
-            this.enumValues = enumValues;
-            this.hidden = hidden;
-        }
+enum TargetType {
+	Switch,
+	Scalar,
+	Sequence
+}
 
-        public SpecificationType Tag 
-        {
-            get { return tag; }
-        }
 
-        public bool Required
-        {
-            get { return required; }
-        }
+abstract class Specification {
+	private readonly SpecificationType tag;
+	private readonly bool required;
+	private readonly bool hidden;
+	private readonly Maybe<int> min;
+	private readonly Maybe<int> max;
+	private readonly Maybe<object> defaultValue;
+	private readonly string helpText;
+	private readonly string metaValue;
+	private readonly IEnumerable<string> enumValues;
 
-        public Maybe<int> Min
-        {
-            get { return min; }
-        }
+	/// This information is denormalized to decouple Specification from PropertyInfo.
+	private readonly Type conversionType;
 
-        public Maybe<int> Max
-        {
-            get { return max; }
-        }
+	private readonly TargetType targetType;
 
-        public Maybe<object> DefaultValue
-        {
-            get { return defaultValue; }
-        }
+	protected Specification(SpecificationType tag, bool required, Maybe<int> min, Maybe<int> max,
+	                        Maybe<object> defaultValue, string helpText, string metaValue, IEnumerable<string> enumValues,
+	                        Type conversionType, TargetType targetType, bool hidden = false) {
+		this.tag = tag;
+		this.required = required;
+		this.min = min;
+		this.max = max;
+		this.defaultValue = defaultValue;
+		this.conversionType = conversionType;
+		this.targetType = targetType;
+		this.helpText = helpText;
+		this.metaValue = metaValue;
+		this.enumValues = enumValues;
+		this.hidden = hidden;
+	}
 
-        public string HelpText
-        {
-            get { return helpText; }
-        }
+	public SpecificationType Tag {
+		get { return tag; }
+	}
 
-        public string MetaValue
-        {
-            get { return metaValue; }
-        }
+	public bool Required {
+		get { return required; }
+	}
 
-        public IEnumerable<string> EnumValues
-        {
-            get { return enumValues; }
-        }
+	public Maybe<int> Min {
+		get { return min; }
+	}
 
-        public Type ConversionType
-        {
-            get { return conversionType; }
-        }
+	public Maybe<int> Max {
+		get { return max; }
+	}
 
-        public TargetType TargetType
-        {
-            get { return targetType; }
-        }
+	public Maybe<object> DefaultValue {
+		get { return defaultValue; }
+	}
 
-        public bool Hidden
-        {
-            get { return hidden; }
-        }
+	public string HelpText {
+		get { return helpText; }
+	}
 
-        public static Specification FromProperty(PropertyInfo property)
-        {       
-            var attrs = property.GetCustomAttributes(true);
-            var oa = attrs.OfType<OptionAttribute>();
-            if (oa.Count() == 1)
-            {
-                var spec = OptionSpecification.FromAttribute(oa.Single(), property.PropertyType,
-                    ReflectionHelper.GetNamesOfEnum(property.PropertyType)); 
+	public string MetaValue {
+		get { return metaValue; }
+	}
 
-                if (spec.ShortName.Length == 0 && spec.LongName.Length == 0)
-                {
-                    return spec.WithLongName(property.Name.ToLowerInvariant());
-                }
-                return spec;
-            }
+	public IEnumerable<string> EnumValues {
+		get { return enumValues; }
+	}
 
-            var va = attrs.OfType<ValueAttribute>();
-            if (va.Count() == 1)
-            {
-                return ValueSpecification.FromAttribute(va.Single(), property.PropertyType,
-                    property.PropertyType.GetTypeInfo().IsEnum
-                        ? Enum.GetNames(property.PropertyType)
-                        : Enumerable.Empty<string>());
-            }
+	public Type ConversionType {
+		get { return conversionType; }
+	}
 
-            throw new InvalidOperationException();
-        }
-    }
+	public TargetType TargetType {
+		get { return targetType; }
+	}
+
+	public bool Hidden {
+		get { return hidden; }
+	}
+
+	public static Specification FromProperty(PropertyInfo property) {
+		var attrs = property.GetCustomAttributes(true);
+		var oa = attrs.OfType<OptionAttribute>();
+		if (oa.Count() == 1) {
+			var spec = OptionSpecification.FromAttribute(oa.Single(),
+				property.PropertyType,
+				ReflectionHelper.GetNamesOfEnum(property.PropertyType));
+
+			if (spec.ShortName.Length == 0 && spec.LongName.Length == 0) {
+				return spec.WithLongName(property.Name.ToLowerInvariant());
+			}
+			return spec;
+		}
+
+		var va = attrs.OfType<ValueAttribute>();
+		if (va.Count() == 1) {
+			return ValueSpecification.FromAttribute(va.Single(),
+				property.PropertyType,
+				property.PropertyType.GetTypeInfo().IsEnum
+					? Enum.GetNames(property.PropertyType)
+					: Enumerable.Empty<string>());
+		}
+
+		throw new InvalidOperationException();
+	}
 }

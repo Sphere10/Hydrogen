@@ -67,7 +67,7 @@ public class MuSig {
 		};
 	}
 	internal MuSigNonceData GenerateNonce(byte[] sessionId, byte[] privateKey, byte[] messageDigest, byte[] aggregatePubKey,
-										  byte[] extraInput = null) {
+	                                      byte[] extraInput = null) {
 
 		Schnorr.ValidateArray(nameof(sessionId), sessionId);
 		Schnorr.ValidateArray(nameof(privateKey), privateKey);
@@ -188,7 +188,7 @@ public class MuSig {
 	}
 
 	public SignerMuSigSession InitializeSignerSession(byte[] sessionId, BigInteger privateKey, byte[] publicKey, byte[] messageDigest,
-											byte[] ell, byte[] secondPublicKey) {
+	                                                  byte[] ell, byte[] secondPublicKey) {
 		Schnorr.ValidatePrivateKeyRange(nameof(privateKey), privateKey);
 		Schnorr.ValidateArray(nameof(sessionId), sessionId);
 		Schnorr.ValidateArray(nameof(publicKey), publicKey);

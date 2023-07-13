@@ -10,15 +10,14 @@ using System;
 using System.Drawing;
 
 
-namespace Hydrogen {
+namespace Hydrogen;
 
-	public static class IconExtensions {
+public static class IconExtensions {
 
-		public static Bitmap ToBitmap(this Icon icon, int width, int height) {
-			using (var properIcon = new Icon(icon, Math.Max(width, height), Math.Max(width, height))) {
-				return properIcon.ToBitmap().ResizeAndDispose(new Size(width, height), ResizeMethod.AspectFitPadded);
-			}
+	public static Bitmap ToBitmap(this Icon icon, int width, int height) {
+		using (var properIcon = new Icon(icon, Math.Max(width, height), Math.Max(width, height))) {
+			return properIcon.ToBitmap().ResizeAndDispose(new Size(width, height), ResizeMethod.AspectFitPadded);
 		}
-
 	}
+
 }

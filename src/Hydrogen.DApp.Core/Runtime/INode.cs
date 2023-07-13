@@ -6,24 +6,18 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Hydrogen;
-using Hydrogen.Communications;
-using Hydrogen.DApp.Core.Mining;
 
-namespace Hydrogen.DApp.Core.Runtime {
-	public interface INode {
-		event EventHandlerEx GuiStarted;
-		event EventHandlerEx GuiEnded;
+namespace Hydrogen.DApp.Core.Runtime;
 
-		NodeTraits Traits { get; }
+public interface INode {
+	event EventHandlerEx GuiStarted;
+	event EventHandlerEx GuiEnded;
 
-		NodeExitCode Run(CancellationToken cancellationToken);
+	NodeTraits Traits { get; }
 
-		Task RequestShutdown();
-	}
+	NodeExitCode Run(CancellationToken cancellationToken);
+
+	Task RequestShutdown();
 }

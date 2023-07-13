@@ -6,14 +6,14 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen {
-	public class CrudActionItem<TItem> {
-		public CrudAction CrudAction { get; init; }
-		public TItem Item { get; set; }
+namespace Hydrogen;
 
-		public CrudActionItem(CrudAction crudAction, TItem item) {	
-			CrudAction = crudAction;
-			Item = item;
-		}
+public class CrudActionItem<TItem> {
+	public CrudAction CrudAction { get; init; }
+	public TItem Item { get; set; }
+
+	public CrudActionItem(CrudAction crudAction, TItem item) {
+		CrudAction = crudAction;
+		Item = item;
 	}
 }

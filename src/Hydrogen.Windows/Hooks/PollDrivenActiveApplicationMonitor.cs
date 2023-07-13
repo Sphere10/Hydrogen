@@ -7,10 +7,7 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Reflection;
-using System.Threading;
 using System.Diagnostics;
-using Hydrogen;
 
 
 namespace Hydrogen.Windows;
@@ -50,7 +47,7 @@ public class PollDrivenActiveApplicationMonitor : IActiveApplicationMonitor {
 				WinAPI.USER32.GetWindowThreadProcessId(hwnd, out activeProcessID);
 				string newActiveProcess =
 					Process.GetProcessById(
-					(int)activeProcessID).MainModule.FileName;
+						(int)activeProcessID).MainModule.FileName;
 
 				// Raise on application changed event
 				if (newActiveProcess != _activeProcess && _activeProcess != string.Empty) {
@@ -78,4 +75,3 @@ public class PollDrivenActiveApplicationMonitor : IActiveApplicationMonitor {
 		return _activeProcess;
 	}
 }
-

@@ -9,112 +9,90 @@
 using System;
 using System.Drawing;
 
-namespace SourceGrid.Exporter
-{
-    /// <summary>
-    /// An utility class to export a grid to a csv delimited format file.
-    /// </summary>
-    public class Image
-    {
-        public Image()
-        {
-        }
+namespace SourceGrid.Exporter;
 
-        public virtual System.Drawing.Bitmap Export(GridVirtual grid, CellRange rangeToExport)
-        {
-            System.Drawing.Bitmap bitmap = null;
+/// <summary>
+/// An utility class to export a grid to a csv delimited format file.
+/// </summary>
+public class Image {
+	public Image() {
+	}
 
-            try
-            {
-                System.Drawing.Size size = grid.RangeToSize(rangeToExport);
+	public virtual System.Drawing.Bitmap Export(GridVirtual grid, CellRange rangeToExport) {
+		System.Drawing.Bitmap bitmap = null;
 
-                bitmap = new System.Drawing.Bitmap(size.Width, size.Height);
+		try {
+			System.Drawing.Size size = grid.RangeToSize(rangeToExport);
 
-                using (System.Drawing.Graphics graphic = System.Drawing.Graphics.FromImage(bitmap))
-                {
-                    Export(grid, graphic, rangeToExport, new System.Drawing.Point(0, 0));
-                }
-            }
-            catch (Exception)
-            {
-                if (bitmap != null)
-                {
-                    bitmap.Dispose();
-                    bitmap = null;
-                }
+			bitmap = new System.Drawing.Bitmap(size.Width, size.Height);
 
-                throw;
-            }
+			using (System.Drawing.Graphics graphic = System.Drawing.Graphics.FromImage(bitmap)) {
+				Export(grid, graphic, rangeToExport, new System.Drawing.Point(0, 0));
+			}
+		} catch (Exception) {
+			if (bitmap != null) {
+				bitmap.Dispose();
+				bitmap = null;
+			}
 
-            return bitmap;
-        }
+			throw;
+		}
 
-        public virtual void Export(GridVirtual grid, System.Drawing.Graphics graphics, 
-                                CellRange rangeToExport, System.Drawing.Point destinationLocation)
-        {
-            if (rangeToExport.IsEmpty())
-                return;
+		return bitmap;
+	}
 
-            System.Drawing.Point cellPoint = destinationLocation;
+	public virtual void Export(GridVirtual grid, System.Drawing.Graphics graphics,
+	                           CellRange rangeToExport, System.Drawing.Point destinationLocation) {
+		if (rangeToExport.IsEmpty())
+			return;
 
-            using (DevAge.Drawing.GraphicsCache graphicsCache = new DevAge.Drawing.GraphicsCache(graphics))
-            {
-                for (int r = rangeToExport.Start.Row; r <= rangeToExport.End.Row; r++)
-                {
-                    int rowHeight = grid.Rows.GetHeight(r);
+		System.Drawing.Point cellPoint = destinationLocation;
 
-                    for (int c = rangeToExport.Start.Column; c <= rangeToExport.End.Column; c++)
-                    {
-                        Rectangle cellRectangle;
-                        Position pos = new Position(r, c);
+		using (DevAge.Drawing.GraphicsCache graphicsCache = new DevAge.Drawing.GraphicsCache(graphics)) {
+			for (int r = rangeToExport.Start.Row; r <= rangeToExport.End.Row; r++) {
+				int rowHeight = grid.Rows.GetHeight(r);
 
-                        Size cellSize = new Size(grid.Columns.GetWidth(c), rowHeight);
+				for (int c = rangeToExport.Start.Column; c <= rangeToExport.End.Column; c++) {
+					Rectangle cellRectangle;
+					Position pos = new Position(r, c);
 
-                        CellRange range = grid.PositionToCellRange(pos);
+					Size cellSize = new Size(grid.Columns.GetWidth(c), rowHeight);
 
-                        //support for RowSpan or ColSpan 
-                        //Note: for now I draw only the merged cell at the first position 
-                        // (this can cause a problem if you export partial range that contains a partial merged cells)
-                        if ( range.ColumnsCount > 1 || range.RowsCount > 1)
-                        {
-                            //Is the first position
-                            if (range.Start == pos)
-                            {
-                                Size rangeSize = grid.RangeToSize(range);
+					CellRange range = grid.PositionToCellRange(pos);
 
-                                cellRectangle = new Rectangle(cellPoint,
-                                                              rangeSize);
-                            }
-                            else
-                                cellRectangle = Rectangle.Empty;
-                        }
-                        else
-                        {
-                            cellRectangle = new Rectangle(cellPoint, cellSize);
-                        }
+					//support for RowSpan or ColSpan 
+					//Note: for now I draw only the merged cell at the first position 
+					// (this can cause a problem if you export partial range that contains a partial merged cells)
+					if (range.ColumnsCount > 1 || range.RowsCount > 1) {
+						//Is the first position
+						if (range.Start == pos) {
+							Size rangeSize = grid.RangeToSize(range);
 
-                        if (cellRectangle.IsEmpty == false)
-                        {
-                            Cells.ICellVirtual cell = grid.GetCell(pos);
-                            CellContext context = new CellContext(grid, pos, cell);
-                            ExportCell(context, graphicsCache, cellRectangle);
-                        }
+							cellRectangle = new Rectangle(cellPoint,
+								rangeSize);
+						} else
+							cellRectangle = Rectangle.Empty;
+					} else {
+						cellRectangle = new Rectangle(cellPoint, cellSize);
+					}
 
-                        cellPoint = new Point(cellPoint.X + cellSize.Width, cellPoint.Y);
-                    }
+					if (cellRectangle.IsEmpty == false) {
+						Cells.ICellVirtual cell = grid.GetCell(pos);
+						CellContext context = new CellContext(grid, pos, cell);
+						ExportCell(context, graphicsCache, cellRectangle);
+					}
 
-                    cellPoint = new Point(destinationLocation.X, cellPoint.Y + rowHeight);
-                }
-            }
-        }
+					cellPoint = new Point(cellPoint.X + cellSize.Width, cellPoint.Y);
+				}
 
-        protected virtual void ExportCell(CellContext context, DevAge.Drawing.GraphicsCache graphics, System.Drawing.Rectangle rectangle)
-        {
-            if (context.Cell != null)
-            {
-                context.Cell.View.DrawCell(context, graphics, rectangle);
-            }
-        }
-    }
+				cellPoint = new Point(destinationLocation.X, cellPoint.Y + rowHeight);
+			}
+		}
+	}
 
+	protected virtual void ExportCell(CellContext context, DevAge.Drawing.GraphicsCache graphics, System.Drawing.Rectangle rectangle) {
+		if (context.Cell != null) {
+			context.Cell.View.DrawCell(context, graphics, rectangle);
+		}
+	}
 }

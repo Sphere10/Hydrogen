@@ -9,7 +9,6 @@
 using System;
 using System.ComponentModel;
 using System.Drawing;
-using System.Linq;
 using System.ServiceProcess;
 
 
@@ -84,22 +83,17 @@ public partial class ServiceStatusControl : UserControlEx {
 		}
 	}
 
-	[Category("Behavior")]
-	public string ServiceName { get; set; }
+	[Category("Behavior")] public string ServiceName { get; set; }
 
 	public void Start() {
 		var job = JobBuilder
-				  .For(MonitorService)
-				  .Repeat.OnInterval(DateTime.Now, TimeSpan.FromSeconds(RefreshRateSec))
-				  .RunSyncronously()
-				  .Build();
+			.For(MonitorService)
+			.Repeat.OnInterval(DateTime.Now, TimeSpan.FromSeconds(RefreshRateSec))
+			.RunSyncronously()
+			.Build();
 		Scheduler.Synchronous.AddJob(job);
-		ParentForm.Disposed += (sender, args) => {
-			Scheduler.Synchronous.RemoveJob(job);
-		};
+		ParentForm.Disposed += (sender, args) => { Scheduler.Synchronous.RemoveJob(job); };
 	}
-
-
 
 
 	private void MonitorService() {
@@ -163,4 +157,3 @@ public partial class ServiceStatusControl : UserControlEx {
 		}
 	}
 }
-

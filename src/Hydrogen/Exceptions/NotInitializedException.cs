@@ -6,12 +6,13 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen {
-	public class NotInitializedException : SoftwareException {
+namespace Hydrogen;
 
-        public NotInitializedException() : this("Not initliazed exception") { } 
-        public NotInitializedException(string description, params object[] formatArgs)
-            : base(description, formatArgs) {
-        }
-    }
+public class NotInitializedException : SoftwareException {
+
+	public NotInitializedException() : this("Not initliazed exception") {
+	}
+	public NotInitializedException(string description, params object[] formatArgs)
+		: base(description, formatArgs) {
+	}
 }

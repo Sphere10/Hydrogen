@@ -17,8 +17,8 @@ namespace Hydrogen.FastReflection;
 /// </summary>
 /// <typeparam name="T"></typeparam>
 public class MemberInfoComparer<T> : IEqualityComparer<T> where T : MemberInfo {
-	public bool Equals(T x, T y) =>  (x == null && y == null) || x.ReflectedType != null && x.Equals(y) && x.ReflectedType == y.ReflectedType;
+	public bool Equals(T x, T y) => (x == null && y == null) || x.ReflectedType != null && x.Equals(y) && x.ReflectedType == y.ReflectedType;
 
 	public int GetHashCode(T obj) => HashCode.Combine(obj.GetHashCode(), obj.ReflectedType.GetHashCode());
-		
+
 }

@@ -8,18 +8,16 @@
 
 using System.ComponentModel;
 
-namespace Hydrogen {
-	public enum AuthenticationErrorCode {
-		[Description("Logged on")]
-		Success,
+namespace Hydrogen;
 
-		[Description("Logon aborted")]
-		Aborted,
+public enum AuthenticationErrorCode {
+	[Description("Logged on")] Success,
 
-		[Description("Wrong username and/or password")]
-		InvalidCredentials,
+	[Description("Logon aborted")] Aborted,
 
-		[Description("Server was unavailable")]
-		ServerUnavailable
-	}
+	[Description("Wrong username and/or password")]
+	InvalidCredentials,
+
+	[Description("Server was unavailable")]
+	ServerUnavailable
 }

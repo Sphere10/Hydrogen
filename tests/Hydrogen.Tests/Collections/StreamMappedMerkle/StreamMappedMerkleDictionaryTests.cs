@@ -7,19 +7,10 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using NUnit.Framework;
-using Hydrogen.NUnit;
-using Tools;
-using Hydrogen;
 
 namespace Hydrogen.Tests;
-
 
 [TestFixture]
 [Parallelizable(ParallelScope.Children)]
@@ -42,7 +33,8 @@ public class StreamMappedMerkleDictionaryTests : StreamMappedMerkleDictionaryTes
 		);
 		if (streamMappedMerkleDictionary.RequiresLoad)
 			streamMappedMerkleDictionary.Load();
-		return memoryStream; ;
+		return memoryStream;
+		;
 	}
 
 
@@ -56,5 +48,3 @@ public class StreamMappedMerkleDictionaryTests : StreamMappedMerkleDictionaryTes
 	}
 
 }
-
-

@@ -6,20 +6,13 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+namespace Hydrogen.Data;
 
-namespace Hydrogen.Data {
-    public enum ConstraintType {
-        PrimaryKey,
-        Unique,
-        NotNull,
-        Check,
-        DefaultValue,
-        Collate
-    }
+public enum ConstraintType {
+	PrimaryKey,
+	Unique,
+	NotNull,
+	Check,
+	DefaultValue,
+	Collate
 }

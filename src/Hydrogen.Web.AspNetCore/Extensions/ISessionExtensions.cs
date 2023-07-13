@@ -8,11 +8,9 @@
 
 using System;
 using System.Text;
-using Hydrogen.Application;
-using Hydrogen.Web.AspNetCore;
-using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Http;
+
 public static class ISessionExtensions {
 	public static void SetJsonObject<T>(this ISession session, string key, T item) {
 		var bytes = Encoding.UTF8.GetBytes(Tools.Json.WriteToString(item));
@@ -33,7 +31,7 @@ public static class ISessionExtensions {
 		return obj;
 	}
 
-	public static T GetOrCreateJsonObject<T>(this ISession session, string key) where T : new() 
+	public static T GetOrCreateJsonObject<T>(this ISession session, string key) where T : new()
 		=> session.GetOrCreateJsonObject<T>(key, () => new());
 
 	public static T GetOrCreateJsonObject<T>(this ISession session, string key, Func<T> factory) {
@@ -49,6 +47,4 @@ public static class ISessionExtensions {
 	}
 
 
-
 }
-

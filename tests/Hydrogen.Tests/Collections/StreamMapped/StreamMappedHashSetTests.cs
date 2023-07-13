@@ -10,7 +10,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using NUnit.Framework;
-using Hydrogen.NUnit;
 
 namespace Hydrogen.Tests;
 

@@ -6,18 +6,16 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen.DApp.Core.Keys {
+namespace Hydrogen.DApp.Core.Keys;
 
-	public static class KeyTool {
-		public static bool TryParseKeyType(byte[] accountKey, out KeyType keyType) {
-			if (Tools.Enums.IsInRange<KeyType>(accountKey[0])) {
-				keyType = (KeyType)accountKey[0];
-				return true;
-			}
-			keyType = 0;
-			return false;
+public static class KeyTool {
+	public static bool TryParseKeyType(byte[] accountKey, out KeyType keyType) {
+		if (Tools.Enums.IsInRange<KeyType>(accountKey[0])) {
+			keyType = (KeyType)accountKey[0];
+			return true;
 		}
-
+		keyType = 0;
+		return false;
 	}
 
 }

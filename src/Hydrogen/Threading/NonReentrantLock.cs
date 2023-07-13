@@ -56,7 +56,7 @@ public class NonReentrantLock {
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public void Acquire() {
 		var currentThreadId = Thread.CurrentThread.ManagedThreadId;
-		if (_owningThreadId == currentThreadId) 
+		if (_owningThreadId == currentThreadId)
 			throw new InvalidOperationException("Reentry is not allowed.");
 		_semaphore.Wait();
 		_owningThreadId = currentThreadId;
@@ -69,7 +69,7 @@ public class NonReentrantLock {
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public void Release() {
 		var currentThreadId = Thread.CurrentThread.ManagedThreadId;
-		if (_owningThreadId != currentThreadId) 
+		if (_owningThreadId != currentThreadId)
 			throw new InvalidOperationException("The lock can only be released by the thread that acquired it.");
 		_owningThreadId = null;
 		_semaphore.Release();

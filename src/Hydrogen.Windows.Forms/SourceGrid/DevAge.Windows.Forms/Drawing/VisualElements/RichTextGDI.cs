@@ -9,317 +9,298 @@
 using System;
 using System.Drawing;
 using System.Runtime.InteropServices;
-using System.Windows.Forms;
 
-namespace DevAge.Drawing.VisualElements
-{
-    [Serializable]
-    public class RichTextGDI : RichText
-    {
-        #region Constructor
+namespace DevAge.Drawing.VisualElements;
 
-        /// <summary>
-        /// Default constructor
-        /// </summary>
-        public RichTextGDI()
-            : base()
-        {
-        }
+[Serializable]
+public class RichTextGDI : RichText {
 
-        /// <summary>
-        /// Constructor
-        /// </summary>
-        /// <param name="value"></param>
-        public RichTextGDI(DevAge.Windows.Forms.RichText value)
-            : base(value)
-        {
-        }
+	#region Constructor
 
-        /// <summary>
-        /// Copy constructor
-        /// </summary>
-        /// <param name="other"></param>
-        public RichTextGDI(RichTextGDI other)
-            : base(other)
-        {
-        }
+	/// <summary>
+	/// Default constructor
+	/// </summary>
+	public RichTextGDI()
+		: base() {
+	}
 
-        /// <summary>
-        /// Init rich text box control
-        /// </summary>
-        protected virtual void AssertRichTextBoxEditor()
-        {
-            if (RichTextBoxEditor == null)
-            {
-                RichTextBoxEditor = new SourceGrid.Cells.Editors.RichTextBox();
-            }
+	/// <summary>
+	/// Constructor
+	/// </summary>
+	/// <param name="value"></param>
+	public RichTextGDI(DevAge.Windows.Forms.RichText value)
+		: base(value) {
+	}
 
-            RichTextBoxEditor.Control.Clear();
+	/// <summary>
+	/// Copy constructor
+	/// </summary>
+	/// <param name="other"></param>
+	public RichTextGDI(RichTextGDI other)
+		: base(other) {
+	}
 
-            RichTextBoxEditor.Control.Value = Value;
-            if (ForeColor != Color.FromKnownColor(KnownColor.WindowText))
-            {
-                RichTextBoxEditor.Control.SelectAll();
-                RichTextBoxEditor.Control.SelectionColor = ForeColor;
-            }
-            if (TextAlignment != ContentAlignment.MiddleLeft)
-            {
-                RichTextBoxEditor.Control.SelectAll();
-                RichTextBoxEditor.Control.SelectionAlignment = DevAge.Windows.Forms.Utilities.ContentToHorizontalAlignment(TextAlignment);
-            }
-            if (Font != System.Windows.Forms.Control.DefaultFont)
-            {
-                RichTextBoxEditor.Control.SelectAll();
-                RichTextBoxEditor.Control.SelectionFont = Font;
-            }
-        }
+	/// <summary>
+	/// Init rich text box control
+	/// </summary>
+	protected virtual void AssertRichTextBoxEditor() {
+		if (RichTextBoxEditor == null) {
+			RichTextBoxEditor = new SourceGrid.Cells.Editors.RichTextBox();
+		}
 
-        #endregion
+		RichTextBoxEditor.Control.Clear();
 
-        #region Members
+		RichTextBoxEditor.Control.Value = Value;
+		if (ForeColor != Color.FromKnownColor(KnownColor.WindowText)) {
+			RichTextBoxEditor.Control.SelectAll();
+			RichTextBoxEditor.Control.SelectionColor = ForeColor;
+		}
+		if (TextAlignment != ContentAlignment.MiddleLeft) {
+			RichTextBoxEditor.Control.SelectAll();
+			RichTextBoxEditor.Control.SelectionAlignment = DevAge.Windows.Forms.Utilities.ContentToHorizontalAlignment(TextAlignment);
+		}
+		if (Font != System.Windows.Forms.Control.DefaultFont) {
+			RichTextBoxEditor.Control.SelectAll();
+			RichTextBoxEditor.Control.SelectionFont = Font;
+		}
+	}
 
-        /// <summary>
-        /// Will be used to draw picture of rich text. Is static for performance reasons
-        /// and therefore needs to be locked.
-        /// </summary>
-        private static SourceGrid.Cells.Editors.RichTextBox m_RichTextBoxEditor = null;
-        public SourceGrid.Cells.Editors.RichTextBox RichTextBoxEditor
-        {
-            get { return m_RichTextBoxEditor; }
-            set { m_RichTextBoxEditor = value; }
-        }
+	#endregion
 
-        #endregion
+	#region Members
 
-        #region Win32Api Layout
+	/// <summary>
+	/// Will be used to draw picture of rich text. Is static for performance reasons
+	/// and therefore needs to be locked.
+	/// </summary>
+	private static SourceGrid.Cells.Editors.RichTextBox m_RichTextBoxEditor = null;
 
-        /// <summary>
-        /// Convert between 1/100 inch (unit used by the .NET framework)
-        /// and twips (1/1440 inch, used by Win32 API calls)
-        /// </summary>
-        /// <param name="n">Value in 1/100 inch</param>
-        /// <returns>Value in twips</returns>
-        private Int32 HundredthInchToTwips(float n)
-        {
-            return (Int32)(n * 14.4);
-        }
+	public SourceGrid.Cells.Editors.RichTextBox RichTextBoxEditor {
+		get { return m_RichTextBoxEditor; }
+		set { m_RichTextBoxEditor = value; }
+	}
 
-        [StructLayout(LayoutKind.Sequential)]
-        private struct STRUCT_RECT
-        {
-            public int Left;
-            public int Top;
-            public int Right;
-            public int Bottom;
-        }
+	#endregion
 
-        [StructLayout(LayoutKind.Sequential)]
-        private struct STRUCT_CHARRANGE
-        {
-            public int cpMin;         //First character of range (0 for start of doc)
-            public int cpMax;         //Last character of range (-1 for end of doc)
-        }
+	#region Win32Api Layout
 
-        [StructLayout(LayoutKind.Sequential)]
-        private struct STRUCT_FORMATRANGE
-        {
-            public IntPtr hdc;             //Actual DC to draw on
-            public IntPtr hdcTarget;       //Target DC for determining text formatting
-            public STRUCT_RECT rc;                //Region of the DC to draw to (in twips)
-            public STRUCT_RECT rcPage;            //Region of the whole DC (page size) (in twips)
-            public STRUCT_CHARRANGE chrg;         //Range of text to draw (see earlier declaration)
-        }
+	/// <summary>
+	/// Convert between 1/100 inch (unit used by the .NET framework)
+	/// and twips (1/1440 inch, used by Win32 API calls)
+	/// </summary>
+	/// <param name="n">Value in 1/100 inch</param>
+	/// <returns>Value in twips</returns>
+	private Int32 HundredthInchToTwips(float n) {
+		return (Int32)(n * 14.4);
+	}
 
-        [DllImport("USER32.dll")]
-        private static extern Int32 SendMessage(IntPtr hWnd, Int32 msg, Int32 wParam, IntPtr lParam);
-        private const int WM_USER = 0x0400;
-        private const int EM_FORMATRANGE = WM_USER + 57;
 
-        /// <summary>
-        /// Calculate or render the contents of our RichTextBox for printing
-        /// </summary>
-        /// <param name="measureOnly">If true, only the calculation is performed,
-        /// otherwise the text is rendered as well</param>
-        /// <param name="b"></param>
-        /// <param name="rtb"></param>
-        /// <param name="charFrom">Index of first character to be printed</param>
-        /// <param name="charTo">Index of last character to be printed</param>
-        /// <returns>(Index of last character that fitted on the
-        /// page) + 1</returns>
-        //public int FormatRange(bool measureOnly, PrintPageEventArgs e, int charFrom, int charTo)
-        public int FormatRange(bool measureOnly, DevAge.Windows.Forms.DevAgeRichTextBox rtb,
-            ref Bitmap b, int charFrom, int charTo)
-        {
-            // Specify which characters to print
-            STRUCT_CHARRANGE cr;
-            cr.cpMin = charFrom;
-            cr.cpMax = charTo;
+	[StructLayout(LayoutKind.Sequential)]
+	private struct STRUCT_RECT {
+		public int Left;
+		public int Top;
+		public int Right;
+		public int Bottom;
+	}
 
-            // Specify the area inside page margins
-            STRUCT_RECT rc;
-            rc.Top = HundredthInchToTwips(0);
-            rc.Bottom = HundredthInchToTwips(b.Height);
-            rc.Left = HundredthInchToTwips(0);
-            rc.Right = HundredthInchToTwips(b.Width);
 
-            // Specify the page area
-            STRUCT_RECT rcPage;
-            rcPage.Top = HundredthInchToTwips(0);
-            rcPage.Bottom = HundredthInchToTwips(b.Height);
-            rcPage.Left = HundredthInchToTwips(0);
-            rcPage.Right = HundredthInchToTwips(b.Width);
+	[StructLayout(LayoutKind.Sequential)]
+	private struct STRUCT_CHARRANGE {
+		public int cpMin; //First character of range (0 for start of doc)
+		public int cpMax; //Last character of range (-1 for end of doc)
+	}
 
-            // Get device context of output device
-            Graphics g = Graphics.FromImage(b);
-            IntPtr hdc = g.GetHdc();
 
-            // Fill in the FORMATRANGE struct
-            STRUCT_FORMATRANGE fr;
-            fr.chrg = cr;
-            fr.hdc = hdc;
-            fr.hdcTarget = hdc;
-            fr.rc = rc;
-            fr.rcPage = rcPage;
+	[StructLayout(LayoutKind.Sequential)]
+	private struct STRUCT_FORMATRANGE {
+		public IntPtr hdc; //Actual DC to draw on
+		public IntPtr hdcTarget; //Target DC for determining text formatting
+		public STRUCT_RECT rc; //Region of the DC to draw to (in twips)
+		public STRUCT_RECT rcPage; //Region of the whole DC (page size) (in twips)
+		public STRUCT_CHARRANGE chrg; //Range of text to draw (see earlier declaration)
+	}
 
-            // Non-Zero wParam means render, Zero means measure
-            Int32 wParam = (measureOnly ? 0 : 1);
 
-            // Allocate memory for the FORMATRANGE struct and
-            // copy the contents of our struct to this memory
-            IntPtr lParam = Marshal.AllocCoTaskMem(Marshal.SizeOf(fr));
-            Marshal.StructureToPtr(fr, lParam, false);
+	[DllImport("USER32.dll")]
+	private static extern Int32 SendMessage(IntPtr hWnd, Int32 msg, Int32 wParam, IntPtr lParam);
+	private const int WM_USER = 0x0400;
+	private const int EM_FORMATRANGE = WM_USER + 57;
 
-            // Send the actual Win32 message
-            int res = SendMessage(rtb.Handle, EM_FORMATRANGE, wParam, lParam);
+	/// <summary>
+	/// Calculate or render the contents of our RichTextBox for printing
+	/// </summary>
+	/// <param name="measureOnly">If true, only the calculation is performed,
+	/// otherwise the text is rendered as well</param>
+	/// <param name="b"></param>
+	/// <param name="rtb"></param>
+	/// <param name="charFrom">Index of first character to be printed</param>
+	/// <param name="charTo">Index of last character to be printed</param>
+	/// <returns>(Index of last character that fitted on the
+	/// page) + 1</returns>
+	//public int FormatRange(bool measureOnly, PrintPageEventArgs e, int charFrom, int charTo)
+	public int FormatRange(bool measureOnly, DevAge.Windows.Forms.DevAgeRichTextBox rtb,
+	                       ref Bitmap b, int charFrom, int charTo) {
+		// Specify which characters to print
+		STRUCT_CHARRANGE cr;
+		cr.cpMin = charFrom;
+		cr.cpMax = charTo;
 
-            // Free allocated memory
-            Marshal.FreeCoTaskMem(lParam);
+		// Specify the area inside page margins
+		STRUCT_RECT rc;
+		rc.Top = HundredthInchToTwips(0);
+		rc.Bottom = HundredthInchToTwips(b.Height);
+		rc.Left = HundredthInchToTwips(0);
+		rc.Right = HundredthInchToTwips(b.Width);
 
-            // and release the device context
-            g.ReleaseHdc(hdc);
+		// Specify the page area
+		STRUCT_RECT rcPage;
+		rcPage.Top = HundredthInchToTwips(0);
+		rcPage.Bottom = HundredthInchToTwips(b.Height);
+		rcPage.Left = HundredthInchToTwips(0);
+		rcPage.Right = HundredthInchToTwips(b.Width);
 
-            g.Dispose();
+		// Get device context of output device
+		Graphics g = Graphics.FromImage(b);
+		IntPtr hdc = g.GetHdc();
 
-            return res;
-        }
+		// Fill in the FORMATRANGE struct
+		STRUCT_FORMATRANGE fr;
+		fr.chrg = cr;
+		fr.hdc = hdc;
+		fr.hdcTarget = hdc;
+		fr.rc = rc;
+		fr.rcPage = rcPage;
 
-        /// <summary>
-        /// Free cached data from rich edit control after printing
-        /// </summary>
-        public void FormatRangeDone(DevAge.Windows.Forms.DevAgeRichTextBox RTB)
-        {
-            IntPtr lParam = new IntPtr(0);
-            SendMessage(RTB.Handle, EM_FORMATRANGE, 0, lParam);
-        }
+		// Non-Zero wParam means render, Zero means measure
+		Int32 wParam = (measureOnly ? 0 : 1);
 
-        #endregion
+		// Allocate memory for the FORMATRANGE struct and
+		// copy the contents of our struct to this memory
+		IntPtr lParam = Marshal.AllocCoTaskMem(Marshal.SizeOf(fr));
+		Marshal.StructureToPtr(fr, lParam, false);
 
-        #region Draw
+		// Send the actual Win32 message
+		int res = SendMessage(rtb.Handle, EM_FORMATRANGE, wParam, lParam);
 
-        /// <summary>
-        /// Helper method to get bitmap with size according its area and rotate flip type
-        /// </summary>
-        /// <param name="area"></param>
-        /// <param name="rotateFlipType"></param>
-        /// <returns></returns>
-        protected Bitmap GetBitmapArea(RectangleF area, RotateFlipType rotateFlipType)
-        {
-            int height = (int)area.Height;
-            int width = (int)area.Width;
+		// Free allocated memory
+		Marshal.FreeCoTaskMem(lParam);
 
-            // when rotation is 90 (resp. 270 which is equivalent)
-            // height and width values need to be swapped
-            if (rotateFlipType == RotateFlipType.Rotate90FlipNone
-                || rotateFlipType == RotateFlipType.Rotate90FlipX
-                || rotateFlipType == RotateFlipType.Rotate90FlipY
-                || rotateFlipType == RotateFlipType.Rotate90FlipXY)
-            {
-                height = width;
-                width = (int)area.Height;
-            }
+		// and release the device context
+		g.ReleaseHdc(hdc);
 
-            return new Bitmap(width, height);
-        }
+		g.Dispose();
 
-        /// <summary>
-        /// Render RichTextBox as GDI
-        /// </summary>
-        /// <param name="graphics"></param>
-        /// <param name="area"></param>
-        protected override void OnDraw(GraphicsCache graphics, RectangleF area)
-        {
-            // Do not call base.OnDraw as it would overwrite our drawing
-            //base.OnDraw(graphics, area);
+		return res;
+	}
 
-            lock (this)
-            {
-                // create bitmap
-                Bitmap bmp = null;
-                if (area.Width > 0 && area.Height > 0)
-                {
-                    AssertRichTextBoxEditor();
-                    bmp = GetBitmapArea(area, RotateFlipType);
+	/// <summary>
+	/// Free cached data from rich edit control after printing
+	/// </summary>
+	public void FormatRangeDone(DevAge.Windows.Forms.DevAgeRichTextBox RTB) {
+		IntPtr lParam = new IntPtr(0);
+		SendMessage(RTB.Handle, EM_FORMATRANGE, 0, lParam);
+	}
 
-                    // render image
-                    FormatRange(false, RichTextBoxEditor.Control, ref bmp, 0,
-                        RichTextBoxEditor.Control.Text.Length);
-                    FormatRangeDone(RichTextBoxEditor.Control);
-                }
-                else
-                {
-                    // create empty picture, in case the area is empty
-                    bmp = new Bitmap(1, 1);
-                }
+	#endregion
 
-                DrawImage(graphics, area, bmp);
-            }
-        }
+	#region Draw
 
-        /// <summary>
-        /// Draw actual picture
-        /// </summary>
-        protected virtual void DrawImage(GraphicsCache graphics, RectangleF area, Bitmap bmp)
-        {
-            bmp.MakeTransparent(Color.White);
-            bmp.RotateFlip(RotateFlipType);
-            graphics.Graphics.DrawImage(bmp, area);
-        }
+	/// <summary>
+	/// Helper method to get bitmap with size according its area and rotate flip type
+	/// </summary>
+	/// <param name="area"></param>
+	/// <param name="rotateFlipType"></param>
+	/// <returns></returns>
+	protected Bitmap GetBitmapArea(RectangleF area, RotateFlipType rotateFlipType) {
+		int height = (int)area.Height;
+		int width = (int)area.Width;
 
-        #endregion
+		// when rotation is 90 (resp. 270 which is equivalent)
+		// height and width values need to be swapped
+		if (rotateFlipType == RotateFlipType.Rotate90FlipNone
+		    || rotateFlipType == RotateFlipType.Rotate90FlipX
+		    || rotateFlipType == RotateFlipType.Rotate90FlipY
+		    || rotateFlipType == RotateFlipType.Rotate90FlipXY) {
+			height = width;
+			width = (int)area.Height;
+		}
 
-        #region Measure
+		return new Bitmap(width, height);
+	}
 
-        /// <summary>
-        /// Measure the current content of the VisualElement.
-        /// </summary>
-        /// <param name="measure"></param>
-        /// <param name="maxSize">If empty is not used.</param>
-        /// <returns></returns>
-        protected override SizeF OnMeasureContent(MeasureHelper measure, System.Drawing.SizeF maxSize)
-        {
-            String s = String.Empty;
+	/// <summary>
+	/// Render RichTextBox as GDI
+	/// </summary>
+	/// <param name="graphics"></param>
+	/// <param name="area"></param>
+	protected override void OnDraw(GraphicsCache graphics, RectangleF area) {
+		// Do not call base.OnDraw as it would overwrite our drawing
+		//base.OnDraw(graphics, area);
 
-            if (Value != null && Value.Rtf.Length > 0)
-            {
-                s = DevAge.Windows.Forms.RichTextConversion.RichTextToString(Value);
-            }
+		lock (this) {
+			// create bitmap
+			Bitmap bmp = null;
+			if (area.Width > 0 && area.Height > 0) {
+				AssertRichTextBoxEditor();
+				bmp = GetBitmapArea(area, RotateFlipType);
 
-            return measure.Graphics.MeasureString(s, Font, maxSize);
-        }
+				// render image
+				FormatRange(false,
+					RichTextBoxEditor.Control,
+					ref bmp,
+					0,
+					RichTextBoxEditor.Control.Text.Length);
+				FormatRangeDone(RichTextBoxEditor.Control);
+			} else {
+				// create empty picture, in case the area is empty
+				bmp = new Bitmap(1, 1);
+			}
 
-        #endregion
+			DrawImage(graphics, area, bmp);
+		}
+	}
 
-        #region Clone
+	/// <summary>
+	/// Draw actual picture
+	/// </summary>
+	protected virtual void DrawImage(GraphicsCache graphics, RectangleF area, Bitmap bmp) {
+		bmp.MakeTransparent(Color.White);
+		bmp.RotateFlip(RotateFlipType);
+		graphics.Graphics.DrawImage(bmp, area);
+	}
 
-        /// <summary>
-        /// Clone
-        /// </summary>
-        /// <returns></returns>
-        public override object Clone()
-        {
-            return new RichTextGDI(this);
-        }
+	#endregion
 
-        #endregion
-    }
+	#region Measure
+
+	/// <summary>
+	/// Measure the current content of the VisualElement.
+	/// </summary>
+	/// <param name="measure"></param>
+	/// <param name="maxSize">If empty is not used.</param>
+	/// <returns></returns>
+	protected override SizeF OnMeasureContent(MeasureHelper measure, System.Drawing.SizeF maxSize) {
+		String s = String.Empty;
+
+		if (Value != null && Value.Rtf.Length > 0) {
+			s = DevAge.Windows.Forms.RichTextConversion.RichTextToString(Value);
+		}
+
+		return measure.Graphics.MeasureString(s, Font, maxSize);
+	}
+
+	#endregion
+
+	#region Clone
+
+	/// <summary>
+	/// Clone
+	/// </summary>
+	/// <returns></returns>
+	public override object Clone() {
+		return new RichTextGDI(this);
+	}
+
+	#endregion
+
 }

@@ -8,38 +8,38 @@
 
 using System.Collections.Generic;
 
-namespace Hydrogen.Misc {
-	/// <summary>
-	/// Compares two sequences.
-	/// </summary>
-	/// <typeparam name="T">Type of item in the sequences.</typeparam>
-	public class EnumerableComparer<T> : IComparer<IEnumerable<T>> {
-		private readonly IComparer<T> _elementComparer;
+namespace Hydrogen.Misc;
 
-		public EnumerableComparer() {
-            _elementComparer = Comparer<T>.Default;
-        }
+/// <summary>
+/// Compares two sequences.
+/// </summary>
+/// <typeparam name="T">Type of item in the sequences.</typeparam>
+public class EnumerableComparer<T> : IComparer<IEnumerable<T>> {
+	private readonly IComparer<T> _elementComparer;
 
-        public EnumerableComparer(IComparer<T> comparer) {
-            _elementComparer = comparer;
-        }
+	public EnumerableComparer() {
+		_elementComparer = Comparer<T>.Default;
+	}
 
-        public int Compare(IEnumerable<T> x, IEnumerable<T> y) {
-	        using IEnumerator<T> leftIt = x.GetEnumerator();
-	        using IEnumerator<T> rightIt = y.GetEnumerator();
-	        while (true) {
-		        bool left = leftIt.MoveNext();
-		        bool right = rightIt.MoveNext();
+	public EnumerableComparer(IComparer<T> comparer) {
+		_elementComparer = comparer;
+	}
 
-		        if (!(left || right)) return 0;
+	public int Compare(IEnumerable<T> x, IEnumerable<T> y) {
+		using IEnumerator<T> leftIt = x.GetEnumerator();
+		using IEnumerator<T> rightIt = y.GetEnumerator();
+		while (true) {
+			bool left = leftIt.MoveNext();
+			bool right = rightIt.MoveNext();
 
-		        if (!left) return -1;
-		        if (!right) return 1;
+			if (!(left || right)) return 0;
 
-		        int itemResult = _elementComparer.Compare(leftIt.Current, rightIt.Current);
-		        if (itemResult != 0) return itemResult;
-	        }
+			if (!left) return -1;
+			if (!right) return 1;
 
-        }
-    }
+			int itemResult = _elementComparer.Compare(leftIt.Current, rightIt.Current);
+			if (itemResult != 0) return itemResult;
+		}
+
+	}
 }

@@ -7,30 +7,22 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using System.Text;
 
-namespace Hydrogen.Windows.LevelDB
-{
-    public class LevelDBException : Exception
-    {
-        public LevelDBException(string message) : base(message) { }
+namespace Hydrogen.Windows.LevelDB;
 
-        public static void Check(IntPtr error)
-        {
-            if (error != IntPtr.Zero)
-            {
-                try
-                {
-                    var message = Marshal.PtrToStringAnsi(error);
-                    throw new LevelDBException(message);
-                }
-                finally
-                {
-                    LevelDBInterop.leveldb_free(error);
-                }
-            }
-        }
-    }
+public class LevelDBException : Exception {
+	public LevelDBException(string message) : base(message) {
+	}
+
+	public static void Check(IntPtr error) {
+		if (error != IntPtr.Zero) {
+			try {
+				var message = Marshal.PtrToStringAnsi(error);
+				throw new LevelDBException(message);
+			} finally {
+				LevelDBInterop.leveldb_free(error);
+			}
+		}
+	}
 }

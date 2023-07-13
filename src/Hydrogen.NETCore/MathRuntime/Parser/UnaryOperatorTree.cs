@@ -7,40 +7,32 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 
-using System.Collections.Generic;
-using System.Text;
 using System.Diagnostics;
 
-namespace Hydrogen.Maths.Compiler
-{
-    public class UnaryOperatorTree : SyntaxTree
-    {
-        private SyntaxTree _operand;
-        private Operator _operator;
+namespace Hydrogen.Maths.Compiler;
+
+public class UnaryOperatorTree : SyntaxTree {
+	private SyntaxTree _operand;
+	private Operator _operator;
 
 
+	public UnaryOperatorTree(Token token)
+		: base(token) {
+	}
 
-        public UnaryOperatorTree(Token token)
-            : base(token)
-        {
-        }
+	public SyntaxTree Operand {
+		get { return _operand; }
+		set { _operand = value; }
+	}
 
-        public SyntaxTree Operand
-        {
-            get { return _operand; }
-            set { _operand = value; }
-        }
+	public Operator Operator {
+		get { return _operator; }
+		set { _operator = value; }
 
-        public Operator Operator
-        {
-            get { return _operator; }
-            set { _operator = value; }
+	}
 
-        }
-        public override string ToString()
-        {
-            Debug.Assert(_operand != null);
-            return string.Format("{0}({1})", Operator, Operand.ToString());
-        }
-    }
+	public override string ToString() {
+		Debug.Assert(_operand != null);
+		return string.Format("{0}({1})", Operator, Operand.ToString());
+	}
 }

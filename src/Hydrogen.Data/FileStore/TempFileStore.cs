@@ -9,22 +9,21 @@
 using System;
 using System.IO;
 
-namespace Hydrogen.Data {
+namespace Hydrogen.Data;
 
-	/// <summary>
-	/// A <see cref="SimpleFileStore"/> that only keeps file ephemerally (will delete on dispose).
-	/// </summary>
-	public class TempFileStore : SimpleFileStore {
+/// <summary>
+/// A <see cref="SimpleFileStore"/> that only keeps file ephemerally (will delete on dispose).
+/// </summary>
+public class TempFileStore : SimpleFileStore {
 
-		public TempFileStore() : this(Guid.NewGuid().ToStrictAlphaString()) {
-		}
-
-		public TempFileStore(string subDir) : base(Path.Combine(Path.GetTempPath(), subDir), new NotPersistedDictionary<string,string>(), FileStorePersistencePolicy.DeleteOnDispose) {
-		}
-
-		protected override string GenerateInternalRelFilePath(string fileKey) {
-			return Path.Combine(base.BaseDirectory, Path.GetFileName(Guid.NewGuid().ToStrictAlphaString()));
-		}
-
+	public TempFileStore() : this(Guid.NewGuid().ToStrictAlphaString()) {
 	}
+
+	public TempFileStore(string subDir) : base(Path.Combine(Path.GetTempPath(), subDir), new NotPersistedDictionary<string, string>(), FileStorePersistencePolicy.DeleteOnDispose) {
+	}
+
+	protected override string GenerateInternalRelFilePath(string fileKey) {
+		return Path.Combine(base.BaseDirectory, Path.GetFileName(Guid.NewGuid().ToStrictAlphaString()));
+	}
+
 }

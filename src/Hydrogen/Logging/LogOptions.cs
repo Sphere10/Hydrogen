@@ -8,17 +8,17 @@
 
 using System;
 
-namespace Hydrogen {
-	[Flags]
-    public enum LogOptions {
-        DebugEnabled        = 1 << 0,
-        InfoEnabled         = 1 << 1,
-        WarningEnabled      = 1 << 2,
-        ErrorEnabled        = 1 << 3,
-        ExceptionDetailEnabled  = 1 << 4,
-        
-		VerboseProfile = DebugEnabled | InfoEnabled | WarningEnabled | ErrorEnabled | ExceptionDetailEnabled,
-        StandardProfile = WarningEnabled | ErrorEnabled | ExceptionDetailEnabled,
-        UserDisplayProfile = InfoEnabled | WarningEnabled | ErrorEnabled,
-    }
+namespace Hydrogen;
+
+[Flags]
+public enum LogOptions {
+	DebugEnabled = 1 << 0,
+	InfoEnabled = 1 << 1,
+	WarningEnabled = 1 << 2,
+	ErrorEnabled = 1 << 3,
+	ExceptionDetailEnabled = 1 << 4,
+
+	VerboseProfile = DebugEnabled | InfoEnabled | WarningEnabled | ErrorEnabled | ExceptionDetailEnabled,
+	StandardProfile = WarningEnabled | ErrorEnabled | ExceptionDetailEnabled,
+	UserDisplayProfile = InfoEnabled | WarningEnabled | ErrorEnabled,
 }

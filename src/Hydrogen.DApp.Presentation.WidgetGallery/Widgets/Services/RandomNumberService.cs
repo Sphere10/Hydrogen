@@ -8,15 +8,15 @@
 
 using System;
 
-namespace Hydrogen.DApp.Presentation.WidgetGallery.Widgets.Services {
+namespace Hydrogen.DApp.Presentation.WidgetGallery.Widgets.Services;
 
-    public class RandomNumberService : IRandomNumberService {
-        public int GetRandomNumber() => Random.Next();
+public class RandomNumberService : IRandomNumberService {
+	public int GetRandomNumber() => Random.Next();
 
-        private Random Random { get; } = new();
-    }
+	private Random Random { get; } = new();
+}
 
-    public interface IRandomNumberService {
-        int GetRandomNumber();
-    }
+
+public interface IRandomNumberService {
+	int GetRandomNumber();
 }

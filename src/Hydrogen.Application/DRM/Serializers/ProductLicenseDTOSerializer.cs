@@ -12,7 +12,7 @@ using System.Text;
 namespace Hydrogen.Application;
 
 public class ProductLicenseDTOSerializer : ItemSerializer<ProductLicenseDTO> {
-	private readonly AutoSizedSerializer<string> _stringSerializer = new AutoSizedSerializer<string>( new NullableObjectSerializer<string>(new StringSerializer(Encoding.ASCII)));
+	private readonly AutoSizedSerializer<string> _stringSerializer = new AutoSizedSerializer<string>(new NullableObjectSerializer<string>(new StringSerializer(Encoding.ASCII)));
 	private readonly GuidSerializer _guidSerializer = new();
 	private readonly NullableStructSerializer<short> _nullableShortSerializer = new(new PrimitiveSerializer<short>());
 	private readonly NullableStructSerializer<int> _nullableIntSerializer = new(new PrimitiveSerializer<int>());

@@ -6,17 +6,13 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
-using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
-using System.Text;
 
-namespace Hydrogen.Windows.Forms.AppointmentBook {
-	public class SuperscriptRowHeaderCellView : SourceGrid.Cells.Views.RowHeader {
-		public SuperscriptRowHeaderCellView()   {
-			Font = new System.Drawing.Font(SystemFonts.DefaultFont.FontFamily, 7);
-			TextAlignment = DevAge.Drawing.ContentAlignment.TopCenter;
-		}
+namespace Hydrogen.Windows.Forms.AppointmentBook;
+
+public class SuperscriptRowHeaderCellView : SourceGrid.Cells.Views.RowHeader {
+	public SuperscriptRowHeaderCellView() {
+		Font = new System.Drawing.Font(SystemFonts.DefaultFont.FontFamily, 7);
+		TextAlignment = DevAge.Drawing.ContentAlignment.TopCenter;
 	}
 }

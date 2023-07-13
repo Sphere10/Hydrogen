@@ -12,4 +12,3 @@ public enum FileStorePersistencePolicy {
 	Perist,
 	DeleteOnDispose
 }
-

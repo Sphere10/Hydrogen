@@ -8,8 +8,8 @@
 
 using System;
 
-namespace Hydrogen {
-	public interface ISequentialGuidGenerator {
-		Guid NextSequentialGuid();
-	}
+namespace Hydrogen;
+
+public interface ISequentialGuidGenerator {
+	Guid NextSequentialGuid();
 }

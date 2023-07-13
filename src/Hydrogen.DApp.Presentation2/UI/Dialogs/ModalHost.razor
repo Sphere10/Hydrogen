@@ -41,21 +41,18 @@
     /// <param name="options"> modal options</param>
     /// <typeparam name="T"> type of modal component to be rendered in the host</typeparam>
     /// <returns> modal result.</returns>
-    public async Task<ModalResult> ShowAsync<T>(ParameterView parameters, ModalOptions options = null) where T : ModalComponent
-    {
-        Content = builder =>
-        {
+    public async Task<ModalResult> ShowAsync<T>(ParameterView parameters, ModalOptions options = null) where T : ModalComponent {
+        Content = builder => {
             int seq = 0;
             builder.OpenComponent<T>(seq);
 
             builder.AddAttribute(seq++, nameof(ModalComponent.Options), options);
 
-            foreach (var parameterValue in parameters)
-            {
+            foreach (var parameterValue in parameters) {
                 builder.AddAttribute(seq++, parameterValue.Name, parameterValue.Value);
             }
 
-            builder.AddComponentReferenceCapture(seq++, o => _modalComponent = (ModalComponent) o);
+            builder.AddComponentReferenceCapture(seq++, o => _modalComponent = (ModalComponent)o);
             builder.CloseComponent();
         };
 
@@ -77,8 +74,7 @@
         return result;
     }
 
-    private async Task DispatchContentLoadedEventAsync()
-    {
+    private async Task DispatchContentLoadedEventAsync() {
         await JsRuntime.InvokeVoidAsync("dispatchContentLoadedEvent");
     }
 
@@ -86,21 +82,16 @@
     /// Delays until the modal content component has been rendered and the component reference is no longer null.
     /// </summary>
     /// <returns> a task. modal content is rendered and ref available once complete</returns>
-    private async Task AwaitModalComponentRender()
-    {
+    private async Task AwaitModalComponentRender() {
         int attempts = 100;
-        while (_modalComponent is null && attempts >= 0)
-        {
+        while (_modalComponent is null && attempts >= 0) {
             attempts--;
             await Task.Delay(5);
         }
 
-        if (_modalComponent is null)
-        {
+        if (_modalComponent is null) {
             throw new InvalidOperationException("Modal content did not render in time.");
-        }
-        else
-        {
+        } else {
             await _modalComponent.ModalRendered;
         }
     }

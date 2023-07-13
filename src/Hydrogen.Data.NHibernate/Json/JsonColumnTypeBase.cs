@@ -70,12 +70,10 @@ public abstract class JsonColumnTypeBase<T> : IUserType where T : class {
 
 	public object Replace(object original, object target, object owner) => original;
 
-	public T Deserialize(string jsonString) 
-		=> string.IsNullOrWhiteSpace(jsonString) ? 
-			CreateObject(typeof(T)) : 
-			Serializer.Deserialize<T>(jsonString);
+	public T Deserialize(string jsonString)
+		=> string.IsNullOrWhiteSpace(jsonString) ? CreateObject(typeof(T)) : Serializer.Deserialize<T>(jsonString);
 
-	public string Serialize(T obj) => Serializer.Serialize(obj);  //obj == null ? "{}" : JsonWorker.Serialize(obj);
+	public string Serialize(T obj) => Serializer.Serialize(obj); //obj == null ? "{}" : JsonWorker.Serialize(obj);
 
 	private static T CreateObject(Type jsonType) {
 		object result;

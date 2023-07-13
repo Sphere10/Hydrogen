@@ -8,14 +8,13 @@
 
 using System.Reflection;
 
-namespace Hydrogen.Application {
+namespace Hydrogen.Application;
 
-	[Obfuscation(Exclude = true)]
-    public enum UserType {
-		System,
-        HomeUser,
-        SmallBusiness,
-        MediumBusiness,
-        Corporation
-    }
+[Obfuscation(Exclude = true)]
+public enum UserType {
+	System,
+	HomeUser,
+	SmallBusiness,
+	MediumBusiness,
+	Corporation
 }

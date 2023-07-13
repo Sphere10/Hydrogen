@@ -6,38 +6,31 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
-namespace Hydrogen.Data {
+namespace Hydrogen.Data;
 
-    public class SQLExpression  {
-        
-        internal SQLExpression(SQLOperator op, IEnumerable<SQLExpression> expressions) {
-            Type = SQLExpressionType.Node;
-            Operator = op;
-            Expressions = expressions;
-            ValueKind = SQLExpressionValueType.None;
-            Value = null;
-        }
+public class SQLExpression {
 
-        internal SQLExpression(SQLExpressionValueType valueKind, object value) {
-            Type = SQLExpressionType.Leaf;
-            ValueKind = valueKind;
-            Value = value;
-        }
+	internal SQLExpression(SQLOperator op, IEnumerable<SQLExpression> expressions) {
+		Type = SQLExpressionType.Node;
+		Operator = op;
+		Expressions = expressions;
+		ValueKind = SQLExpressionValueType.None;
+		Value = null;
+	}
 
-        public readonly SQLExpressionType Type;
-        public readonly SQLOperator Operator;
-        public readonly IEnumerable<SQLExpression> Expressions;
-        public readonly SQLExpressionValueType ValueKind;
-        public readonly object Value;
+	internal SQLExpression(SQLExpressionValueType valueKind, object value) {
+		Type = SQLExpressionType.Leaf;
+		ValueKind = valueKind;
+		Value = value;
+	}
+
+	public readonly SQLExpressionType Type;
+	public readonly SQLOperator Operator;
+	public readonly IEnumerable<SQLExpression> Expressions;
+	public readonly SQLExpressionValueType ValueKind;
+	public readonly object Value;
 
 
-    }
-
-
-    
 }

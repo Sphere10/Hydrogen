@@ -9,19 +9,14 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace Hydrogen.Application {
+namespace Hydrogen.Application;
 
-	[ComVisible(true)]
-    [AttributeUsage(AttributeTargets.Assembly, Inherited = false)]
-    public sealed class AssemblyProductHelpCHMAttribute : AssemblyProductHelpResourceAttribute {
+[ComVisible(true)]
+[AttributeUsage(AttributeTargets.Assembly, Inherited = false)]
+public sealed class AssemblyProductHelpCHMAttribute : AssemblyProductHelpResourceAttribute {
 
-        public AssemblyProductHelpCHMAttribute(string path)
-            : base(HelpType.CHM, path)
-        {
-        }
-           
-    }
+	public AssemblyProductHelpCHMAttribute(string path)
+		: base(HelpType.CHM, path) {
+	}
 
 }
-
-

@@ -10,14 +10,14 @@ using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
-namespace Hydrogen {
+namespace Hydrogen;
 
-	/// <summary>
-	/// W-OTS# scheme, a salt-hardened W-OTS variant that facilitates shorter/faster hash functions.
-	/// </summary>
+/// <summary>
+/// W-OTS# scheme, a salt-hardened W-OTS variant that facilitates shorter/faster hash functions.
+/// </summary>
 public class WOTSSharp : WOTS {
 
-	public WOTSSharp() 
+	public WOTSSharp()
 		: this(WOTSSharp.Configuration.Default) {
 	}
 
@@ -29,7 +29,7 @@ public class WOTSSharp : WOTS {
 		: this(new Configuration(w, hashFunction, usePublicKeyHashOptimization)) {
 	}
 
-	public WOTSSharp(Configuration config) 
+	public WOTSSharp(Configuration config)
 		: base(config) {
 	}
 
@@ -65,6 +65,7 @@ public class WOTSSharp : WOTS {
 		}
 	}
 
+
 	public new class Configuration : WOTS.Configuration {
 		public new static readonly Configuration Default;
 
@@ -72,7 +73,7 @@ public class WOTSSharp : WOTS {
 			Default = new Configuration(4, CHF.Blake2b_128, true);
 		}
 
-		public Configuration() 
+		public Configuration()
 			: this(Default.W, Default.HashFunction, Default.UsePublicKeyHashOptimization) {
 		}
 
@@ -93,10 +94,9 @@ public class WOTSSharp : WOTS {
 				),
 				new OTSKeySize(
 					Hashers.GetDigestSizeBytes(hasher),
-					(int)Math.Ceiling(256.0 / w) + (int)Math.Floor(Math.Log(((1 << w) - 1) * (256 / w), 1 << w)) + 1  + 1 // Adds extra row for seed here
+					(int)Math.Ceiling(256.0 / w) + (int)Math.Floor(Math.Log(((1 << w) - 1) * (256 / w), 1 << w)) + 1 + 1 // Adds extra row for seed here
 				)
 			) {
 		}
 	}
-}
 }

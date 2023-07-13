@@ -6,26 +6,22 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Windows.Forms;
 
-namespace Hydrogen {
+namespace Hydrogen;
 
-	public static class ListBoxExtensions {
+public static class ListBoxExtensions {
 
 
-		/// <summary>
-		/// Removes the selected items from a listbox.
-		/// </summary>
-		/// <param name="listBox">The listbox to clear selected items from.</param>
-		public static void RemoveSelectedItems(this ListBox listBox) {
-			object[] selectedItems = listBox.SelectedItems.Cast<object>().ToArray();
-			foreach (object obj in selectedItems) {
-				listBox.Items.Remove(obj);
-			}
+	/// <summary>
+	/// Removes the selected items from a listbox.
+	/// </summary>
+	/// <param name="listBox">The listbox to clear selected items from.</param>
+	public static void RemoveSelectedItems(this ListBox listBox) {
+		object[] selectedItems = listBox.SelectedItems.Cast<object>().ToArray();
+		foreach (object obj in selectedItems) {
+			listBox.Items.Remove(obj);
 		}
 	}
 }

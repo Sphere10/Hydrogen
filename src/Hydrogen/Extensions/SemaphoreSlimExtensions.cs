@@ -10,14 +10,12 @@ using System;
 using System.Threading;
 
 
+namespace Hydrogen;
 
-namespace Hydrogen {
+public static class SemaphoreSlimExtensions {
+	public static IDisposable EnterWaitScope(this SemaphoreSlim semaphore) {
+		semaphore.Wait();
+		return new ActionScope(() => semaphore.Release());
+	}
 
-	public static class SemaphoreSlimExtensions {
-        public static IDisposable EnterWaitScope(this SemaphoreSlim semaphore) {
-            semaphore.Wait();
-            return new ActionScope(() => semaphore.Release());
-        }
-
-    }
 }

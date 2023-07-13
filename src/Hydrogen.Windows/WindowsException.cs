@@ -7,35 +7,30 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Collections.Generic;
-using System.Text;
-using Hydrogen;
 
 
-namespace Hydrogen.Windows {
+namespace Hydrogen.Windows;
 
-    public class WindowsException : SoftwareException {
+public class WindowsException : SoftwareException {
 
-        public WindowsException(string message, params object[] formatArgs)
-            : base(message, formatArgs) {
-        }
+	public WindowsException(string message, params object[] formatArgs)
+		: base(message, formatArgs) {
+	}
 
 
-        public WindowsException(int winApiResult, string message, params object[] formatArgs)
-            : base (
-                string.Format(
-                    "{0}.{1}",
-                    message != null ? " " + string.Format(message , formatArgs) : string.Empty,
-                    ErrorCodeToDescription(winApiResult)
-                )
-            ) {
-        }
-		
-        public static string ErrorCodeToDescription(int win32ApiResult) {
-            Exception winError = new System.ComponentModel.Win32Exception(win32ApiResult);
-            return winError.Message;
-        }
+	public WindowsException(int winApiResult, string message, params object[] formatArgs)
+		: base(
+			string.Format(
+				"{0}.{1}",
+				message != null ? " " + string.Format(message, formatArgs) : string.Empty,
+				ErrorCodeToDescription(winApiResult)
+			)
+		) {
+	}
 
-    }
+	public static string ErrorCodeToDescription(int win32ApiResult) {
+		Exception winError = new System.ComponentModel.Win32Exception(win32ApiResult);
+		return winError.Message;
+	}
+
 }
-                

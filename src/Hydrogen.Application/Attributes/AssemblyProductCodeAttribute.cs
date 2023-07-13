@@ -9,32 +9,23 @@
 using System.Runtime.InteropServices;
 using System;
 
-namespace Hydrogen.Application {
+namespace Hydrogen.Application;
 
-	[ComVisible(true)]
-    [AttributeUsage(AttributeTargets.Assembly, Inherited = false)]
-    public sealed class AssemblyProductCodeAttribute : Attribute
-    {
-        private Guid _productCode = Guid.Empty;
+[ComVisible(true)]
+[AttributeUsage(AttributeTargets.Assembly, Inherited = false)]
+public sealed class AssemblyProductCodeAttribute : Attribute {
+	private Guid _productCode = Guid.Empty;
 
-        public AssemblyProductCodeAttribute(string code) 
-            : this(new Guid(code)) {
-        }
+	public AssemblyProductCodeAttribute(string code)
+		: this(new Guid(code)) {
+	}
 
-        public AssemblyProductCodeAttribute(Guid guid) {
-            ProductCode = guid;
-        }
+	public AssemblyProductCodeAttribute(Guid guid) {
+		ProductCode = guid;
+	}
 
-        public Guid ProductCode {
-            get
-            {
-                return _productCode;
-            }
-            set
-            {
-                _productCode = value;
-            }
-        }
-    }
-
+	public Guid ProductCode {
+		get { return _productCode; }
+		set { _productCode = value; }
+	}
 }

@@ -6,12 +6,10 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen {
+namespace Hydrogen;
 
-	public interface IItemHasher<in TItem> {
-		byte[] Hash(TItem item);
+public interface IItemHasher<in TItem> {
+	byte[] Hash(TItem item);
 
-		int DigestLength { get; }
-	}
-
+	int DigestLength { get; }
 }

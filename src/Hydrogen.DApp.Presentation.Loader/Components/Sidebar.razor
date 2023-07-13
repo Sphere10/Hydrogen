@@ -30,8 +30,7 @@
 
 @code
 {
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
+    protected override async Task OnAfterRenderAsync(bool firstRender) {
         await JsRuntime.InvokeVoidAsync("import", "./js/sb-admin-2.min.js");
         await JsRuntime.InvokeVoidAsync("initializeToolTips");
         await JsRuntime.InvokeVoidAsync("initializeSearchDropdowns");

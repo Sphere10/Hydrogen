@@ -8,12 +8,12 @@
 
 using System;
 
-namespace Hydrogen {
-	public class InvalidInterceptedValueException : SoftwareException {
+namespace Hydrogen;
 
-		public InvalidInterceptedValueException(object intercept, Type expected)
-			: base($"Intercept object had type `{intercept?.GetType().Name ?? "<NULL>"}`, expected `{expected.Name}`") {
-		}
+public class InvalidInterceptedValueException : SoftwareException {
 
+	public InvalidInterceptedValueException(object intercept, Type expected)
+		: base($"Intercept object had type `{intercept?.GetType().Name ?? "<NULL>"}`, expected `{expected.Name}`") {
 	}
+
 }

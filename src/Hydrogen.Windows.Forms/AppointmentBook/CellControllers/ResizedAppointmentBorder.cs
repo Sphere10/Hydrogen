@@ -6,14 +6,9 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+namespace Hydrogen.Windows.Forms.AppointmentBook;
 
-namespace Hydrogen.Windows.Forms.AppointmentBook {
-	public enum ResizedAppointmentBorder {
-		Top,
-		Bottom
-	}
+public enum ResizedAppointmentBorder {
+	Top,
+	Bottom
 }

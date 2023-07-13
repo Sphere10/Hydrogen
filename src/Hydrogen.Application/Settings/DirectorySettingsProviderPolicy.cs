@@ -8,11 +8,11 @@
 
 using System;
 
-namespace Hydrogen.Application {
-    [Flags]
-	public enum DirectorySettingsProviderPolicy {
-		CreateDirectoryIfNotExists				= 1 << 0,
-		UseFullyQualifiedTypeNameInFilename		= 1 << 1,
-		Default									= CreateDirectoryIfNotExists
-	}
+namespace Hydrogen.Application;
+
+[Flags]
+public enum DirectorySettingsProviderPolicy {
+	CreateDirectoryIfNotExists = 1 << 0,
+	UseFullyQualifiedTypeNameInFilename = 1 << 1,
+	Default = CreateDirectoryIfNotExists
 }

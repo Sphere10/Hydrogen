@@ -11,16 +11,16 @@ using System.Threading.Tasks;
 namespace Hydrogen;
 
 public abstract class ScopeBase : Disposable, IScope {
-	
+
 	public event EventHandlerEx ScopeEnd;
 
 	protected abstract void OnScopeEnd();
 
 	protected abstract ValueTask OnScopeEndAsync();
-	
+
 	protected override void FreeManagedResources()
 		=> NotifyScopeEnd();
-	
+
 	protected override ValueTask FreeManagedResourcesAsync()
 		=> NotifyScopeEndAsync();
 

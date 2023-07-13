@@ -6,7 +6,6 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -29,8 +28,8 @@ public class ProductUsageServices : IProductUsageServices {
 		SettingsServices = settingsServices;
 		_userSettings = SettingsServices.UserSettings.Get<UsageSettings>();
 		_systemSettings = SettingsServices.SystemSettings.Get<UsageSettings>();
-		_userPropertiesFuture = Tools.Values.Future.LazyLoad( () => TamperCheckLoad(_userSettings.EncryptedPropertiesJson));
-		_systemPropertiesFuture = Tools.Values.Future.LazyLoad( () => TamperCheckLoad( _systemSettings.EncryptedPropertiesJson));
+		_userPropertiesFuture = Tools.Values.Future.LazyLoad(() => TamperCheckLoad(_userSettings.EncryptedPropertiesJson));
+		_systemPropertiesFuture = Tools.Values.Future.LazyLoad(() => TamperCheckLoad(_systemSettings.EncryptedPropertiesJson));
 	}
 
 	public ISettingsServices SettingsServices { get; set; }
@@ -53,7 +52,7 @@ public class ProductUsageServices : IProductUsageServices {
 	}
 
 	protected virtual int NumberOfUsesByUser {
-		get =>_userSettings.NumberOfRuns;
+		get => _userSettings.NumberOfRuns;
 		set {
 			_userSettings.NumberOfRuns = value;
 			_userSettings.Save();
@@ -61,14 +60,14 @@ public class ProductUsageServices : IProductUsageServices {
 	}
 
 	protected virtual DateTime? FirstUTCTimeExecutedBySystem {
-		get =>_systemSettings.FirstRunDate;
+		get => _systemSettings.FirstRunDate;
 		set {
 			_systemSettings.FirstRunDate = value;
 			_systemSettings.Save();
 		}
 	}
 
-	protected virtual int NumberOfUsesBySystem  {
+	protected virtual int NumberOfUsesBySystem {
 		get => _systemSettings.NumberOfRuns;
 		set {
 			_systemSettings.NumberOfRuns = value;
@@ -109,34 +108,27 @@ public class ProductUsageServices : IProductUsageServices {
 	}
 
 	private IDictionary<string, object> TamperCheckLoad(string encryptedJson) {
-		
+
 		if (string.IsNullOrWhiteSpace(encryptedJson))
 			if (NumberOfUsesBySystem > 1)
 				throw new ProductLicenseTamperedException();
 
-		var dict = encryptedJson != null ?  Tools.Json.ReadFromString<IDictionary<string, object>>(encryptedJson) : new Dictionary<string, object> { [TamperCheckKey] = TamperCheckValue };
+		var dict = encryptedJson != null ? Tools.Json.ReadFromString<IDictionary<string, object>>(encryptedJson) : new Dictionary<string, object> { [TamperCheckKey] = TamperCheckValue };
 
 		if (!dict.TryGetValue(TamperCheckKey, out var value) || !StringComparer.InvariantCulture.Equals(value, TamperCheckValue))
-			throw new ProductLicenseTamperedException(); 
+			throw new ProductLicenseTamperedException();
 
 		return dict;
 	}
 
 
 	public class UsageSettings : SettingsObject {
-		[DefaultValue(null)]
-		public DateTime? FirstRunDate { get; set; }
+		[DefaultValue(null)] public DateTime? FirstRunDate { get; set; }
 
-		[DefaultValue(0)]
-		public int NumberOfRuns { get; set; }
+		[DefaultValue(0)] public int NumberOfRuns { get; set; }
 
-		[EncryptedString]
-		public string EncryptedPropertiesJson { get; set; }
+		[EncryptedString] public string EncryptedPropertiesJson { get; set; }
 	}
 
 
-
-
 }
-
-

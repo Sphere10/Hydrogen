@@ -12,101 +12,101 @@ using System.Linq;
 using NUnit.Framework;
 using Hydrogen.NUnit;
 
-namespace Hydrogen.Tests {
-	public class BitVectorTests {
-		
-		[Test]
-		public void InsertRangeEnd() {
-			var random = new Random(31337);
-			using var memoryStream = new MemoryStream();
-			var list = new BitVector(memoryStream);
+namespace Hydrogen.Tests;
 
-			var inputs = Enumerable.Repeat(true, 20).ToArray();
-			list.AddRange(inputs);
+public class BitVectorTests {
 
-			var insert = Enumerable.Repeat(false, 20).ToArray();
-			list.InsertRange(20, insert);
+	[Test]
+	public void InsertRangeEnd() {
+		var random = new Random(31337);
+		using var memoryStream = new MemoryStream();
+		var list = new BitVector(memoryStream);
 
-			Assert.AreEqual(inputs.Concat(insert), list);
-		}
+		var inputs = Enumerable.Repeat(true, 20).ToArray();
+		list.AddRange(inputs);
 
-		[Test]
-		public void ReadRange() {
-			var random = new Random(31337);
-			using var memoryStream = new MemoryStream();
-			var list = new BitVector(memoryStream);
+		var insert = Enumerable.Repeat(false, 20).ToArray();
+		list.InsertRange(20, insert);
 
-			var inputs = random.NextBools(16);
-			list.AddRange(inputs);
-			Assert.AreEqual(inputs, list);
+		Assert.AreEqual(inputs.Concat(insert), list);
+	}
 
-			var range = list.ReadRange(9, 7)
-				.ToList();
+	[Test]
+	public void ReadRange() {
+		var random = new Random(31337);
+		using var memoryStream = new MemoryStream();
+		var list = new BitVector(memoryStream);
 
-			Assert.AreEqual(inputs[9..], range);
-		}
+		var inputs = random.NextBools(16);
+		list.AddRange(inputs);
+		Assert.AreEqual(inputs, list);
 
-		[Test]
-		public void IndexOfRange() {
-			var random = new Random(31337);
-			using var memoryStream = new MemoryStream();
-			var list = new BitVector(memoryStream);
+		var range = list.ReadRange(9, 7)
+			.ToList();
 
-			var inputs = new[] { false, false, false, false, false, false, false, false, true };
-			list.AddRange(inputs);
+		Assert.AreEqual(inputs[9..], range);
+	}
 
-			Assert.AreEqual(new[] { 8, 8, 8 }, list.IndexOfRange(new[] { true, true, true }));
-			Assert.AreEqual(new[] { 7 }, list.IndexOfRange(new[] { false }));
-		}
+	[Test]
+	public void IndexOfRange() {
+		var random = new Random(31337);
+		using var memoryStream = new MemoryStream();
+		var list = new BitVector(memoryStream);
 
-		[Test]
-		public void RemoveRange() {
-			using var memoryStream = new MemoryStream();
-			var list = new BitVector(memoryStream);
+		var inputs = new[] { false, false, false, false, false, false, false, false, true };
+		list.AddRange(inputs);
 
-			var inputs = new[] { false, false, false, false, false, false, false, false, true };
+		Assert.AreEqual(new[] { 8, 8, 8 }, list.IndexOfRange(new[] { true, true, true }));
+		Assert.AreEqual(new[] { 7 }, list.IndexOfRange(new[] { false }));
+	}
 
-			list.AddRange(inputs);
-			list.RemoveRange(8, 1);
-			Assert.AreEqual(8, list.Count);
-			Assert.AreEqual(inputs[..^1], list);
+	[Test]
+	public void RemoveRange() {
+		using var memoryStream = new MemoryStream();
+		var list = new BitVector(memoryStream);
 
-			list.RemoveRange(0, list.Count);
-			Assert.AreEqual(0, list.Count);
-		}
+		var inputs = new[] { false, false, false, false, false, false, false, false, true };
 
-		[Test]
-		public void UpdateRange() {
-			var random = new Random(31337);
-			using var memoryStream = new MemoryStream();
-			var list = new BitVector(memoryStream);
-			var expected = new ExtendedList<bool>();
+		list.AddRange(inputs);
+		list.RemoveRange(8, 1);
+		Assert.AreEqual(8, list.Count);
+		Assert.AreEqual(inputs[..^1], list);
 
-			var inputs = random.NextBools(100);
-			var update = random.NextBools(inputs.Length);
+		list.RemoveRange(0, list.Count);
+		Assert.AreEqual(0, list.Count);
+	}
 
-			list.AddRange(inputs);
-			expected.AddRange(inputs);
+	[Test]
+	public void UpdateRange() {
+		var random = new Random(31337);
+		using var memoryStream = new MemoryStream();
+		var list = new BitVector(memoryStream);
+		var expected = new ExtendedList<bool>();
 
-			list.UpdateRange(0, update);
-			expected.UpdateRange(0, update);
+		var inputs = random.NextBools(100);
+		var update = random.NextBools(inputs.Length);
 
-			Assert.AreEqual(expected, list);
+		list.AddRange(inputs);
+		expected.AddRange(inputs);
 
-			int randomIndex = random.Next(0, list.Count - 1);
-			var randomUpdate = random.NextBools(list.Count - randomIndex);
+		list.UpdateRange(0, update);
+		expected.UpdateRange(0, update);
 
-			list.UpdateRange(randomIndex, randomUpdate);
-			expected.UpdateRange(randomIndex, randomUpdate);
+		Assert.AreEqual(expected, list);
 
-			Assert.AreEqual(expected, list);
-		}
+		int randomIndex = random.Next(0, list.Count - 1);
+		var randomUpdate = random.NextBools(list.Count - randomIndex);
 
-		[Test]
-		public void IntegrationTest() {
-			using var memoryStream = new MemoryStream();
-			var list = new BitVector(memoryStream);
-			AssertEx.ListIntegrationTest(list, 1000, (Random, i) => Random.NextBools(i), true);
-		}
+		list.UpdateRange(randomIndex, randomUpdate);
+		expected.UpdateRange(randomIndex, randomUpdate);
+
+		Assert.AreEqual(expected, list);
+	}
+
+	[Test]
+	public void IntegrationTest() {
+		using var memoryStream = new MemoryStream();
+		var list = new BitVector(memoryStream);
+		AssertEx.ListIntegrationTest(list, 1000, (Random, i) => Random.NextBools(i), true);
 	}
 }

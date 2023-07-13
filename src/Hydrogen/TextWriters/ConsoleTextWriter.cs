@@ -6,17 +6,15 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen {
+namespace Hydrogen;
 
-	/// <summary>
-	/// TextWriter which outputs to Console.
-	/// </summary>
-	public class ConsoleTextWriter : SyncTextWriter {
+/// <summary>
+/// TextWriter which outputs to Console.
+/// </summary>
+public class ConsoleTextWriter : SyncTextWriter {
 
-		protected override void InternalWrite(string value) {
-			System.Console.Write(value);
-		}
-
+	protected override void InternalWrite(string value) {
+		System.Console.Write(value);
 	}
 
 }

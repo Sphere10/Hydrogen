@@ -9,23 +9,26 @@
 using System;
 using System.Threading;
 
-namespace Hydrogen {
+namespace Hydrogen;
 
-	public interface ISynchronizedObject {
-		ISynchronizedObject ParentSyncObject { get; set; }
-		ReaderWriterLockSlim ThreadLock { get; }
-		IDisposable EnterReadScope();
-		IDisposable EnterWriteScope();
+public interface ISynchronizedObject {
+	ISynchronizedObject ParentSyncObject { get; set; }
+	ReaderWriterLockSlim ThreadLock { get; }
 
-	}
+	IDisposable EnterReadScope();
 
-    public interface ISynchronizedObject<TReadScope, TWriteScope> : ISynchronizedObject
-        where TReadScope : IDisposable
-        where TWriteScope : IDisposable {
-		new ISynchronizedObject<TReadScope, TWriteScope> ParentSyncObject { get; set; }
-        ReaderWriterLockSlim ThreadLock { get; }
-        new TReadScope EnterReadScope();
-        new TWriteScope EnterWriteScope();
-    }
+	IDisposable EnterWriteScope();
 
+}
+
+
+public interface ISynchronizedObject<TReadScope, TWriteScope> : ISynchronizedObject
+	where TReadScope : IDisposable
+	where TWriteScope : IDisposable {
+	new ISynchronizedObject<TReadScope, TWriteScope> ParentSyncObject { get; set; }
+	ReaderWriterLockSlim ThreadLock { get; }
+
+	new TReadScope EnterReadScope();
+
+	new TWriteScope EnterWriteScope();
 }

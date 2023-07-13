@@ -6,15 +6,15 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen {
-	public interface ICacheReaper {
+namespace Hydrogen;
 
-		void Register(ICache cache);
+public interface ICacheReaper {
 
-		void Deregister(ICache cache);
+	void Register(ICache cache);
 
-		long AvailableSpace();
+	void Deregister(ICache cache);
 
-		long MakeSpace(ICache requestingCache, long requestedBytes);
-	}
+	long AvailableSpace();
+
+	long MakeSpace(ICache requestingCache, long requestedBytes);
 }

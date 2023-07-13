@@ -6,13 +6,13 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen {
-	public class ApplicationAlreadyRunningException : SoftwareException {
+namespace Hydrogen;
 
-		public ApplicationAlreadyRunningException()
-			: base("An instance of this application is already running") {
-		}
+public class ApplicationAlreadyRunningException : SoftwareException {
 
-
+	public ApplicationAlreadyRunningException()
+		: base("An instance of this application is already running") {
 	}
+
+
 }

@@ -8,16 +8,14 @@
 
 using System.Text;
 
-namespace Hydrogen {
+namespace Hydrogen;
 
-	public class StringSizer : ItemSizer<string> {
-		protected Encoding Encoding;
+public class StringSizer : ItemSizer<string> {
+	protected Encoding Encoding;
 
-		public StringSizer(Encoding encoding) {
-			Encoding = encoding;
-		}
-
-		public override int CalculateSize(string item) => Encoding.GetByteCount(item);
+	public StringSizer(Encoding encoding) {
+		Encoding = encoding;
 	}
 
+	public override int CalculateSize(string item) => Encoding.GetByteCount(item);
 }

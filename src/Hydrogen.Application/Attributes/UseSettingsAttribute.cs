@@ -8,15 +8,14 @@
 
 using System;
 
-namespace Hydrogen.Application {
+namespace Hydrogen.Application;
 
-	public class UseSettingsAttribute : Attribute {
+public class UseSettingsAttribute : Attribute {
 
-		public UseSettingsAttribute(Type settingsTypeToUse) {
-			SettingsTypeToUse = settingsTypeToUse;
-		}
-
-		public Type SettingsTypeToUse { get; set; }
-
+	public UseSettingsAttribute(Type settingsTypeToUse) {
+		SettingsTypeToUse = settingsTypeToUse;
 	}
+
+	public Type SettingsTypeToUse { get; set; }
+
 }

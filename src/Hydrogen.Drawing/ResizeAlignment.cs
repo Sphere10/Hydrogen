@@ -6,20 +6,16 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
-using System.Collections.Generic;
-using System.Text;
+namespace Hydrogen;
 
-namespace Hydrogen {
-    public enum ResizeAlignment {
-        TopLeft=1,
-        TopCenter,
-        TopRight,
-        CenterLeft,
-        CenterCenter,
-        CenterRight,
-        BottomLeft,
-        BottomCenter,
-        BottomRight
-    }
+public enum ResizeAlignment {
+	TopLeft = 1,
+	TopCenter,
+	TopRight,
+	CenterLeft,
+	CenterCenter,
+	CenterRight,
+	BottomLeft,
+	BottomCenter,
+	BottomRight
 }

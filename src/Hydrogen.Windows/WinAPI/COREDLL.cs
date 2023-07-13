@@ -7,24 +7,21 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
 
-namespace Hydrogen.Windows {
-    public static partial class WinAPI {
+namespace Hydrogen.Windows;
 
-        public static class COREDLL {
+public static partial class WinAPI {
 
-            [DllImport("coredll.dll")]
-            public static extern void mouse_event(uint dwFlags, uint dx, uint dy, uint dwData, UIntPtr dwExtraInfo);
+	public static class COREDLL {
 
-
-            [DllImport("coredll.dll")]
-            public static extern bool keybd_event(byte bVk, byte bScan, uint dwFlags, UIntPtr dwExtraInfo);
+		[DllImport("coredll.dll")]
+		public static extern void mouse_event(uint dwFlags, uint dx, uint dy, uint dwData, UIntPtr dwExtraInfo);
 
 
-        }
-    }
+		[DllImport("coredll.dll")]
+		public static extern bool keybd_event(byte bVk, byte bScan, uint dwFlags, UIntPtr dwExtraInfo);
+
+
+	}
 }

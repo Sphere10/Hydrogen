@@ -6,18 +6,15 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
+namespace Hydrogen;
 
-namespace Hydrogen {
+/// <summary>
+/// No-operation logger. Does nothing.
+/// </summary>
+/// <remarks></remarks>
+public class NoOpLogger : LoggerBase {
 
-	/// <summary>
-	/// No-operation logger. Does nothing.
-	/// </summary>
-	/// <remarks></remarks>
-	public class NoOpLogger : LoggerBase {
-
-		protected override void Log(LogLevel logLevel, string message) {
-			// do nothing
-		}
+	protected override void Log(LogLevel logLevel, string message) {
+		// do nothing
 	}
 }

@@ -9,12 +9,15 @@
 using System;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Hydrogen.Application {
-	public interface IModuleConfiguration {
-		int Priority { get; }
-        void RegisterComponents(IServiceCollection services);
-        void OnInitialize(IServiceProvider serviceProvider);
-        void OnFinalize(IServiceProvider serviceProvider);
-        
-    }
+namespace Hydrogen.Application;
+
+public interface IModuleConfiguration {
+	int Priority { get; }
+
+	void RegisterComponents(IServiceCollection services);
+
+	void OnInitialize(IServiceProvider serviceProvider);
+
+	void OnFinalize(IServiceProvider serviceProvider);
+
 }

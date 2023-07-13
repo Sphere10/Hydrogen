@@ -7,27 +7,23 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 <ul class="validation-errors">
-    @foreach (var error in ErrorMessages)
-    {
+    @foreach (var error in ErrorMessages) {
         <li class="validation-message"> @error</li>
     }
 </ul>
 
-@if (CurrentStep is not null)
-{
+@if (CurrentStep is not null) {
     @CurrentStep
 }
 
-@if (CurrentStepInstance is not null)
-{
+@if (CurrentStepInstance is not null) {
     <div class="row position-absolute mb-2 w-100" style="bottom: 0">
         <div class="col-6 text-left">
             <button class="@(Wizard.Options.BackButtonClass ?? "btn btn-info btn-sm modal-btn")" disabled="@IsDisabled()" @onclick="PreviousAsync">@CurrentStepInstance!.BackButtonText</button>
         </div>
 
         <div class="col-6 text-right">
-            @if (CurrentStepInstance.IsCancellable)
-            {
+            @if (CurrentStepInstance.IsCancellable) {
                 <button class="@(Wizard.Options.CancelButtonClass ?? "btn btn-secondary btn-sm mr-3 modal-btn")" @onclick="@CancelAsync"> @CurrentStepInstance!.CancelButtonText</button>
             }
 

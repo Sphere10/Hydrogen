@@ -6,23 +6,16 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Reflection;
 
-namespace SourceGrid.Selection
-{
-	public class RangeComparerByRows : IComparer<CellRange>
-	{
-		public int Compare(CellRange x, CellRange y)
-		{
-			if (x.Start.Row == y.Start.Row)
-				return 0;
-			if (x.Start.Row > y.Start.Row)
-				return 1;
-			return -1;
-		}
+namespace SourceGrid.Selection;
+
+public class RangeComparerByRows : IComparer<CellRange> {
+	public int Compare(CellRange x, CellRange y) {
+		if (x.Start.Row == y.Start.Row)
+			return 0;
+		if (x.Start.Row > y.Start.Row)
+			return 1;
+		return -1;
 	}
 }
-

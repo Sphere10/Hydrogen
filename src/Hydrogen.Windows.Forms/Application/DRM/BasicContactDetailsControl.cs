@@ -7,52 +7,41 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Drawing;
-using System.Text;
 using System.Windows.Forms;
 
-namespace Hydrogen.Windows.Forms
-{
-    public partial class BasicContactDetailsControl : UserControl {
-        public BasicContactDetailsControl() {
-            InitializeComponent();
-        }
+namespace Hydrogen.Windows.Forms;
 
-        private void EnableDisableControls() {
-            _emailTextBox.Enabled = _emailButton.Checked;
-        }
+public partial class BasicContactDetailsControl : UserControl {
+	public BasicContactDetailsControl() {
+		InitializeComponent();
+	}
 
-        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public bool ContactIsAnonymous {
-            get {
-                return _anonymousButton.Checked;
-            }
-            set {
-                _anonymousButton.Checked = value;
-            }
-        }
+	private void EnableDisableControls() {
+		_emailTextBox.Enabled = _emailButton.Checked;
+	}
 
-        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public string ContactEmail {
-            get {
-                if (ContactIsAnonymous) {
-                    return "Anonymous";
-                } else {
-                    return _emailTextBox.Text;
-                }
-            }
-            set {
-                _emailTextBox.Text = value;
-            }
-        }
+	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	public bool ContactIsAnonymous {
+		get { return _anonymousButton.Checked; }
+		set { _anonymousButton.Checked = value; }
+	}
 
-        private void _emailButton_CheckedChanged(object sender, EventArgs e) {
-            EnableDisableControls();
-        }
+	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	public string ContactEmail {
+		get {
+			if (ContactIsAnonymous) {
+				return "Anonymous";
+			} else {
+				return _emailTextBox.Text;
+			}
+		}
+		set { _emailTextBox.Text = value; }
+	}
+
+	private void _emailButton_CheckedChanged(object sender, EventArgs e) {
+		EnableDisableControls();
+	}
 
 
-
-    }
 }

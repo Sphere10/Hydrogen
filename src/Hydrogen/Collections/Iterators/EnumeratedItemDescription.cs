@@ -8,13 +8,13 @@
 
 using System;
 
-namespace Hydrogen {
-	[Flags]
-    public enum EnumeratedItemDescription {
-        First = 1,
-        Last = 2,
-        Interior = 4,
-        Even = 8,
-        Odd = 16,
-    }
+namespace Hydrogen;
+
+[Flags]
+public enum EnumeratedItemDescription {
+	First = 1,
+	Last = 2,
+	Interior = 4,
+	Even = 8,
+	Odd = 16,
 }

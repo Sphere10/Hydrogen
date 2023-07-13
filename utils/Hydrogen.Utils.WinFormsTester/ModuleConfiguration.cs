@@ -10,16 +10,16 @@ using Hydrogen.Application;
 using Hydrogen.Windows.Forms;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Hydrogen.Utils.WinFormsTester {
-    public class ModuleConfiguration : ModuleConfigurationBase {
-        public override void RegisterComponents(IServiceCollection serviceCollection) {
+namespace Hydrogen.Utils.WinFormsTester;
 
-            serviceCollection.AddInitializer<IncrementUsageByOneInitializer>();
+public class ModuleConfiguration : ModuleConfigurationBase {
+	public override void RegisterComponents(IServiceCollection serviceCollection) {
 
-            serviceCollection.AddApplicationBlock<TestBlock>();
-            serviceCollection.AddApplicationBlock<TestBlock2>();
+		serviceCollection.AddInitializer<IncrementUsageByOneInitializer>();
 
-        }
+		serviceCollection.AddApplicationBlock<TestBlock>();
+		serviceCollection.AddApplicationBlock<TestBlock2>();
 
-    }
+	}
+
 }

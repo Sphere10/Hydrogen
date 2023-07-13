@@ -6,17 +6,13 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using SourceGrid;
 using System;
-using System.Drawing;
 
-namespace QuadTreeLib
-{
-    /// <summary>
-    /// An interface that defines and object with a rectangle
-    /// </summary>
-    public interface IHasRect
-    {
-        Range Rectangle { get; }
-    }
+namespace QuadTreeLib;
+
+/// <summary>
+/// An interface that defines and object with a rectangle
+/// </summary>
+public interface IHasRect {
+	Range Rectangle { get; }
 }

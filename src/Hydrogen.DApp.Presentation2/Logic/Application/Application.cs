@@ -8,20 +8,15 @@
 
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Hydrogen;
-using Hydrogen.Application;
-
 
 
 namespace Hydrogen.DApp.Presentation2.Logic {
 
 	public abstract class Application : Disposable, IApplication {
-        //private static IConfiguration Configuration { get; set; } = null!;
+		//private static IConfiguration Configuration { get; set; } = null!;
 
 		private readonly ExtendedList<IPlugin> _plugins = new ExtendedList<IPlugin>();
 
@@ -35,27 +30,27 @@ namespace Hydrogen.DApp.Presentation2.Logic {
 
 		public IApplicationBlock ActiveBlock { get; private set; }
 
-        public IPlugin ActivePlugin { get; internal set; }
+		public IPlugin ActivePlugin { get; internal set; }
 
-        public IApplicationScreen ActiveScreen{ get; private set; }
+		public IApplicationScreen ActiveScreen { get; private set; }
 
 		public async Task Initialize(WebAssemblyHostBuilder hostBuilder) {
 			NotifyInitializing();
-            hostBuilder.Services.AddSingleton(typeof(IApplication), this);
-            //Configuration = hostBuilder.Configuration;
+			hostBuilder.Services.AddSingleton(typeof(IApplication), this);
+			//Configuration = hostBuilder.Configuration;
 			//var componentRegistry = AdaptBlazorIoCContainerToSphere10Framework(hostBuilder.Services);
-   //         RegisterServices(componentRegistry);
-            Guard.Ensure(_plugins.Count == 0);
-            _plugins.Clear();
-            foreach(var pluginType in GetPlugins()) {
-                var plugin = Activator.CreateInstance(pluginType) as IPlugin;
-                Guard.Ensure(plugin != null, $"'{pluginType.Name}' was not an {nameof(IPlugin)}");
+			//         RegisterServices(componentRegistry);
+			Guard.Ensure(_plugins.Count == 0);
+			_plugins.Clear();
+			foreach (var pluginType in GetPlugins()) {
+				var plugin = Activator.CreateInstance(pluginType) as IPlugin;
+				Guard.Ensure(plugin != null, $"'{pluginType.Name}' was not an {nameof(IPlugin)}");
 				//var pluginContainer = componentRegistry.CreateChildRegistry();
-                plugin.Load(hostBuilder.Services);
+				plugin.Load(hostBuilder.Services);
 				_plugins.Add(plugin);
-            }
-            
-            Configure(hostBuilder);
+			}
+
+			Configure(hostBuilder);
 			NotifyInitialized();
 		}
 
@@ -66,11 +61,11 @@ namespace Hydrogen.DApp.Presentation2.Logic {
 
 		protected abstract IEnumerable<Type> GetPlugins();
 
-        //protected virtual void RegisterServices(ComponentRegistry componentRegistry) {
-        //}
+		//protected virtual void RegisterServices(ComponentRegistry componentRegistry) {
+		//}
 
-        protected virtual void Configure(WebAssemblyHostBuilder hostBuilder) {
-        }
+		protected virtual void Configure(WebAssemblyHostBuilder hostBuilder) {
+		}
 
 
 		protected virtual void OnInitializing() {
@@ -106,5 +101,5 @@ namespace Hydrogen.DApp.Presentation2.Logic {
 			Finishing?.Invoke();
 		}
 
-    }
+	}
 }

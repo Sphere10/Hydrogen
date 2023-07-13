@@ -78,7 +78,6 @@
 //		}
 
 
-
 //		private int ComputeSeal(IEntityPersister persister, object[] state) {
 //			var bytes = new ByteArrayBuilder();
 //			foreach (var val in GatherSealableColumns(persister, state)) {
@@ -162,7 +161,6 @@
 //				TypeSwitch.Case<byte[]>(n => result = n),
 
 
-
 //				// TODO: Dealing with foreign keys?
 
 //				// Exception Default
@@ -190,3 +188,5 @@
 
 //	}
 //}
+
+

@@ -7,54 +7,55 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace Hydrogen.Consensus {
-	
-	public abstract class ConsensusEventHeader {
+namespace Hydrogen.Consensus;
 
-		public UInt32 Version { get; }
-		
-		public abstract ConsensusEventType Type { get; }
+public abstract class ConsensusEventHeader {
 
-		public byte[] EventHistoryRoot { get; }
+	public UInt32 Version { get; }
 
-		public byte[] StateHistoryRoot { get; }
+	public abstract ConsensusEventType Type { get; }
 
-		public byte[] LeaderSignature { get; }
+	public byte[] EventHistoryRoot { get; }
 
-	}
+	public byte[] StateHistoryRoot { get; }
 
-	public class GenesisEventHeader : ConsensusEventHeader {
-		
-		public override ConsensusEventType Type => ConsensusEventType.Genesis;
+	public byte[] LeaderSignature { get; }
 
-		public byte[] StartPolicy { get; }
+}
 
-	}
 
-	public class LeaderSelectionEventHeader : ConsensusEventHeader {
-		public override ConsensusEventType Type => ConsensusEventType.LeaderSelection;
+public class GenesisEventHeader : ConsensusEventHeader {
 
-		public ulong PreviousLeaderAccount { get; }
-		
-		public byte[] LeaderKey { get; }
-		
-	}
+	public override ConsensusEventType Type => ConsensusEventType.Genesis;
 
-	public class DataEventHeader : ConsensusEventHeader {
-		
-		public override ConsensusEventType Type => ConsensusEventType.Data;
-		
-		public ulong AccruedFees { get; }
+	public byte[] StartPolicy { get; }
 
-		public byte[] TransactionRoot { get; }
-	}
+}
 
-	public enum ConsensusEventType : byte {
-		Genesis,
-		LeaderSelection,
-		Data,
-	}
+
+public class LeaderSelectionEventHeader : ConsensusEventHeader {
+	public override ConsensusEventType Type => ConsensusEventType.LeaderSelection;
+
+	public ulong PreviousLeaderAccount { get; }
+
+	public byte[] LeaderKey { get; }
+
+}
+
+
+public class DataEventHeader : ConsensusEventHeader {
+
+	public override ConsensusEventType Type => ConsensusEventType.Data;
+
+	public ulong AccruedFees { get; }
+
+	public byte[] TransactionRoot { get; }
+}
+
+
+public enum ConsensusEventType : byte {
+	Genesis,
+	LeaderSelection,
+	Data,
 }

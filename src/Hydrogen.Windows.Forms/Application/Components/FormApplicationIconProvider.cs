@@ -6,22 +6,14 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
+namespace Hydrogen.Windows.Forms.Components;
+//public partial class FormApplicationIconProvider : Component, IApplicationIconProvider {
+//    public FormApplicationIconProvider() {
+//        InitializeComponent();
+//    }
 
-namespace Hydrogen.Windows.Forms.Components {
-	//public partial class FormApplicationIconProvider : Component, IApplicationIconProvider {
-	//    public FormApplicationIconProvider() {
-	//        InitializeComponent();
-	//    }
-
-	//    public FormApplicationIconProvider(IContainer container) {
-	//        container.Add(this);
-	//        InitializeComponent();
-	//    }
-	//}
-}
+//    public FormApplicationIconProvider(IContainer container) {
+//        container.Add(this);
+//        InitializeComponent();
+//    }
+//}

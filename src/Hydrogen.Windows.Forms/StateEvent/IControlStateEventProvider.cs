@@ -6,21 +6,20 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Windows.Forms;
 
-namespace Hydrogen.Windows.Forms {
-	public interface IControlStateEventProvider {
-		event EventHandlerEx StateChanged;
-		void SetControl(Control control);
-		void Clear();
-	}
+namespace Hydrogen.Windows.Forms;
 
-	public interface IControlStateEventProvider<out TControl> : IControlStateEventProvider where TControl : Control {
-		TControl Control { get;}
-		
-	}
+public interface IControlStateEventProvider {
+	event EventHandlerEx StateChanged;
+
+	void SetControl(Control control);
+
+	void Clear();
+}
+
+
+public interface IControlStateEventProvider<out TControl> : IControlStateEventProvider where TControl : Control {
+	TControl Control { get; }
+
 }

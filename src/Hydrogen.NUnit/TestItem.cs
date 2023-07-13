@@ -6,21 +6,16 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
-using System.Collections.Generic;
-using System.Text;
+namespace Hydrogen.NUnit;
 
-namespace Hydrogen.NUnit {
+public class TestItem<TInput, TExpected> {
+	public TInput Input { get; set; }
+	public TExpected Expected { get; set; }
+}
 
-	public class TestItem<TInput, TExpected> {
-		public TInput Input { get; set; }
-		public TExpected Expected { get; set; }
-	}
 
-	public class TestItem<TInput1, TInput2, TExpected> {
-		public TInput1 Input1 { get; set; }
-		public TInput2 Input2 { get; set; }
-		public TExpected Expected { get; set; }
-	}
-	
+public class TestItem<TInput1, TInput2, TExpected> {
+	public TInput1 Input1 { get; set; }
+	public TInput2 Input2 { get; set; }
+	public TExpected Expected { get; set; }
 }

@@ -6,11 +6,9 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using NHibernate.SqlCommand;
-
 namespace Hydrogen.Data.NHibernate;
 
-public class EncryptedJsonColumnTypeBase<T> : JsonColumnTypeBase<T> where T : class  {
+public class EncryptedJsonColumnTypeBase<T> : JsonColumnTypeBase<T> where T : class {
 	public EncryptedJsonColumnTypeBase(string password)
 		: base(new EncryptedJsonSerializer(new HydrogenJsonSerializer(), password)) {
 	}

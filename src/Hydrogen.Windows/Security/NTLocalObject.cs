@@ -6,40 +6,32 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Security.Principal;
+namespace Hydrogen.Windows.Security;
 
+/// <summary>
+/// Represents a local object like a local user or local group. 
+/// </summary>
+public abstract class NTLocalObject : NTObject {
+	private string _description;
 
-namespace Hydrogen.Windows.Security {
+	public string Description {
+		get { return _description; }
+		set { _description = value; }
+	}
 
-    /// <summary>
-    /// Represents a local object like a local user or local group. 
-    /// </summary>
-    public abstract class NTLocalObject : NTObject {
-        private string _description;
+	/// <summary>
+	/// Updates local state of object to host.
+	/// </summary>
+	public abstract void Update();
 
-        public string Description {
-            get { return _description; }
-            set { _description = value; }
-        }
+	/// <summary>
+	/// Refreshes state from host.
+	/// </summary>
+	public abstract void Refresh();
 
-        /// <summary>
-        /// Updates local state of object to host.
-        /// </summary>
-        public abstract void Update();
-
-        /// <summary>
-        /// Refreshes state from host.
-        /// </summary>
-        public abstract void Refresh();
-
-        /// <summary>
-        /// Deletes this object from host.
-        /// </summary>
-        public abstract void Delete();
-
-    }
+	/// <summary>
+	/// Deletes this object from host.
+	/// </summary>
+	public abstract void Delete();
 
 }

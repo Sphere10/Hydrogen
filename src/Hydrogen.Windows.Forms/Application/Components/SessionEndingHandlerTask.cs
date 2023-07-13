@@ -7,16 +7,10 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Reflection;
 using Hydrogen.Application;
 using Microsoft.Win32;
 
 namespace Hydrogen.Windows.Forms;
-
 
 /// <summary>
 /// Sets a handler to catch the system shutdown event, so the application can close properly.

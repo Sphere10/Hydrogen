@@ -19,7 +19,7 @@ public class DataAccessScope : TransactionalScopeBase<ITransaction> {
 	private const string ContextNameTemplate = "DataAccessScope:{0}:{1}:{2}";
 	private IsolationLevel? _transactionIsolationLevel;
 	protected readonly bool ScopeOwnsSession;
-	 
+
 
 	public DataAccessScope(INHDatabaseManager sessionProvider, DBMSType dbmsType, string connectionString, ContextScopePolicy policy = ContextScopePolicy.None, string contextPrefix = DefaultContextPrefix)
 		: this(sessionProvider, new DBReference(dbmsType, connectionString), policy) {
@@ -65,7 +65,7 @@ public class DataAccessScope : TransactionalScopeBase<ITransaction> {
 		base.BeginTransaction();
 	}
 
-	public override Task BeginTransactionAsync() 
+	public override Task BeginTransactionAsync()
 		=> BeginTransactionAsync(IsolationLevel.ReadCommitted);
 
 	public Task BeginTransactionAsync(IsolationLevel isolationLevel) {
@@ -79,7 +79,7 @@ public class DataAccessScope : TransactionalScopeBase<ITransaction> {
 		return Session.BeginTransaction(_transactionIsolationLevel.Value);
 	}
 
-	protected override Task<ITransaction> BeginTransactionInternalAsync() 
+	protected override Task<ITransaction> BeginTransactionInternalAsync()
 		=> Task.Run(BeginTransactionInternal);
 
 	protected override void CloseTransactionInternal(ITransaction transaction) {
@@ -87,13 +87,13 @@ public class DataAccessScope : TransactionalScopeBase<ITransaction> {
 		_transactionIsolationLevel = null;
 	}
 
-	protected override Task CloseTransactionInternalAsync(ITransaction transaction) 
+	protected override Task CloseTransactionInternalAsync(ITransaction transaction)
 		=> Task.Run(() => CloseTransactionInternal(transaction));
 
-	protected override void CommitInternal(ITransaction transaction) 
+	protected override void CommitInternal(ITransaction transaction)
 		=> transaction.Commit();
 
-	protected override Task CommitInternalAsync(ITransaction transaction) 
+	protected override Task CommitInternalAsync(ITransaction transaction)
 		=> transaction.CommitAsync();
 
 	protected override void RollbackInternal(ITransaction transaction)
@@ -119,7 +119,7 @@ public class DataAccessScope : TransactionalScopeBase<ITransaction> {
 	}
 
 	private void CheckNoSystemTransaction() {
-		Guard.Against( System.Transactions.Transaction.Current != null, "DACScope transactions cannot be used a System.Transactions.TransactionScope.");
+		Guard.Against(System.Transactions.Transaction.Current != null, "DACScope transactions cannot be used a System.Transactions.TransactionScope.");
 	}
-	
+
 }

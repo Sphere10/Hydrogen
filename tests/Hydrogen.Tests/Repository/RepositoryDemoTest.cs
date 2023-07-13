@@ -234,40 +234,44 @@ public class RepositoryTests {
 
 			// create odds
 			var createOdds = factory.StartNew(() => {
-				Parallel.For(0, records, i => {
-					// 1, 3, 5, ...
-					if (i % 2 == 0)
-						return;
-					repo.Create(new PlayerRecord {
-						TID = $"username{i}",
-						PID = i,
-						FirstSeen = now,
-						LastSeen = null
+				Parallel.For(0,
+					records,
+					i => {
+						// 1, 3, 5, ...
+						if (i % 2 == 0)
+							return;
+						repo.Create(new PlayerRecord {
+							TID = $"username{i}",
+							PID = i,
+							FirstSeen = now,
+							LastSeen = null
+						});
 					});
-				});
 			});
 
 			// update all odds records (and delete odds records in 20's)
 			var updateOdds = factory.StartNew(() => {
-				Parallel.For(0, records, i => {
-					// 1, 3, 5, ...
-					if (i % 2 == 0)
-						return;
-
-					while (!repo.Contains($"username{i}")) {
-						Thread.Sleep(1);
-					}
-
-					using (repo.EnterWriteScope()) {
-						if (i >= 20 && i <= 29) {
-							repo.Delete($"username{i}");
+				Parallel.For(0,
+					records,
+					i => {
+						// 1, 3, 5, ...
+						if (i % 2 == 0)
 							return;
+
+						while (!repo.Contains($"username{i}")) {
+							Thread.Sleep(1);
 						}
-						var item = repo.Get($"username{i}");
-						item.LastSeen = item.FirstSeen.Value.AddDays(i);
-						repo.Update(item);
-					}
-				});
+
+						using (repo.EnterWriteScope()) {
+							if (i >= 20 && i <= 29) {
+								repo.Delete($"username{i}");
+								return;
+							}
+							var item = repo.Get($"username{i}");
+							item.LastSeen = item.FirstSeen.Value.AddDays(i);
+							repo.Update(item);
+						}
+					});
 			});
 
 			await Task.WhenAll(createEvens, updateEvens, createOdds, updateOdds);
@@ -363,41 +367,45 @@ public class RepositoryTests {
 
 			// create odds
 			var createOdds = factory.StartNew(() => {
-				Parallel.For(0, records, i => {
-					// 1, 3, 5, ...
-					if (i % 2 == 0)
-						return;
+				Parallel.For(0,
+					records,
+					i => {
+						// 1, 3, 5, ...
+						if (i % 2 == 0)
+							return;
 
-					repo.CreateAsync(new PlayerRecord {
-						TID = $"username{i}",
-						PID = i,
-						FirstSeen = now,
-						LastSeen = null
-					}).Wait();
-				});
+						repo.CreateAsync(new PlayerRecord {
+							TID = $"username{i}",
+							PID = i,
+							FirstSeen = now,
+							LastSeen = null
+						}).Wait();
+					});
 			});
 
 			// update all odds records (and delete odds records in 20's)
 			var updateOdds = factory.StartNew(() => {
-				Parallel.For(0, records, i => {
-					// 1, 3, 5, ...
-					if (i % 2 == 0)
-						return;
-
-					while (!repo.ContainsAsync($"username{i}").Result) {
-						Thread.Sleep(1);
-					}
-
-					using (repo.EnterWriteScope()) {
-						if (i >= 20 && i <= 29) {
-							repo.Delete($"username{i}");
+				Parallel.For(0,
+					records,
+					i => {
+						// 1, 3, 5, ...
+						if (i % 2 == 0)
 							return;
+
+						while (!repo.ContainsAsync($"username{i}").Result) {
+							Thread.Sleep(1);
 						}
-						var item = repo.Get($"username{i}");
-						item.LastSeen = item.FirstSeen.Value.AddDays(i);
-						repo.UpdateAsync(item).Wait();
-					}
-				});
+
+						using (repo.EnterWriteScope()) {
+							if (i >= 20 && i <= 29) {
+								repo.Delete($"username{i}");
+								return;
+							}
+							var item = repo.Get($"username{i}");
+							item.LastSeen = item.FirstSeen.Value.AddDays(i);
+							repo.UpdateAsync(item).Wait();
+						}
+					});
 			});
 
 
@@ -437,7 +445,6 @@ public class RepositoryTests {
 }
 
 
-
 public class PlayerRecord {
 
 	public string TID { get; set; }
@@ -449,6 +456,7 @@ public class PlayerRecord {
 	public DateTime? LastSeen { get; set; }
 
 }
+
 
 public class PlayerRecordSerializer : ItemSerializer<PlayerRecord> {
 
@@ -507,20 +515,75 @@ public class PlayerRecordSerializer : ItemSerializer<PlayerRecord> {
 
 public class PlayerRepository : IRepository<PlayerRecord, string>, ISynchronizedObject, ITransactionalObject {
 
-	public event EventHandlerEx<PlayerRecord>? Changing { add => _repoAdapter.Changing += value; remove => _repoAdapter.Changing -= value; }
-	public event EventHandlerEx<PlayerRecord>? Changed { add => _repoAdapter.Changed += value; remove => _repoAdapter.Changed -= value; }
-	public event EventHandlerEx<PlayerRecord>? Saving { add => _repoAdapter.Saving += value; remove => _repoAdapter.Saving -= value; }
-	public event EventHandlerEx<PlayerRecord>? Saved { add => _repoAdapter.Saved += value; remove => _repoAdapter.Saved -= value; }
-	public event EventHandlerEx? Clearing { add => _repoAdapter.Clearing += value; remove => _repoAdapter.Clearing -= value; }
-	public event EventHandlerEx? Cleared { add => _repoAdapter.Cleared += value; remove => _repoAdapter.Cleared -= value; }
-	public event EventHandlerEx<PlayerRecord>? Adding { add => _repoAdapter.Adding += value; remove => _repoAdapter.Adding -= value; }
-	public event EventHandlerEx<PlayerRecord>? Added { add => _repoAdapter.Changing += value; remove => _repoAdapter.Changing -= value; }
-	public event EventHandlerEx<PlayerRecord>? Updating { add => _repoAdapter.Updating += value; remove => _repoAdapter.Updating -= value; }
-	public event EventHandlerEx<PlayerRecord>? Updated { add => _repoAdapter.Updated += value; remove => _repoAdapter.Updated -= value; }
-	public event EventHandlerEx<object>? Committing { add => _transactionalDict.Committing += value; remove => _transactionalDict.Committing -= value; }
-	public event EventHandlerEx<object>? Committed { add => _transactionalDict.Committed += value; remove => _transactionalDict.Committed -= value; }
-	public event EventHandlerEx<object>? RollingBack { add => _transactionalDict.RollingBack += value; remove => _transactionalDict.RollingBack -= value; }
-	public event EventHandlerEx<object>? RolledBack { add => _transactionalDict.RolledBack += value; remove => _transactionalDict.RolledBack -= value; }
+	public event EventHandlerEx<PlayerRecord>? Changing {
+		add => _repoAdapter.Changing += value;
+		remove => _repoAdapter.Changing -= value;
+	}
+
+	public event EventHandlerEx<PlayerRecord>? Changed {
+		add => _repoAdapter.Changed += value;
+		remove => _repoAdapter.Changed -= value;
+	}
+
+	public event EventHandlerEx<PlayerRecord>? Saving {
+		add => _repoAdapter.Saving += value;
+		remove => _repoAdapter.Saving -= value;
+	}
+
+	public event EventHandlerEx<PlayerRecord>? Saved {
+		add => _repoAdapter.Saved += value;
+		remove => _repoAdapter.Saved -= value;
+	}
+
+	public event EventHandlerEx? Clearing {
+		add => _repoAdapter.Clearing += value;
+		remove => _repoAdapter.Clearing -= value;
+	}
+
+	public event EventHandlerEx? Cleared {
+		add => _repoAdapter.Cleared += value;
+		remove => _repoAdapter.Cleared -= value;
+	}
+
+	public event EventHandlerEx<PlayerRecord>? Adding {
+		add => _repoAdapter.Adding += value;
+		remove => _repoAdapter.Adding -= value;
+	}
+
+	public event EventHandlerEx<PlayerRecord>? Added {
+		add => _repoAdapter.Changing += value;
+		remove => _repoAdapter.Changing -= value;
+	}
+
+	public event EventHandlerEx<PlayerRecord>? Updating {
+		add => _repoAdapter.Updating += value;
+		remove => _repoAdapter.Updating -= value;
+	}
+
+	public event EventHandlerEx<PlayerRecord>? Updated {
+		add => _repoAdapter.Updated += value;
+		remove => _repoAdapter.Updated -= value;
+	}
+
+	public event EventHandlerEx<object>? Committing {
+		add => _transactionalDict.Committing += value;
+		remove => _transactionalDict.Committing -= value;
+	}
+
+	public event EventHandlerEx<object>? Committed {
+		add => _transactionalDict.Committed += value;
+		remove => _transactionalDict.Committed -= value;
+	}
+
+	public event EventHandlerEx<object>? RollingBack {
+		add => _transactionalDict.RollingBack += value;
+		remove => _transactionalDict.RollingBack -= value;
+	}
+
+	public event EventHandlerEx<object>? RolledBack {
+		add => _transactionalDict.RolledBack += value;
+		remove => _transactionalDict.RolledBack -= value;
+	}
 
 	private readonly DictionaryRepositoryAdapter<PlayerRecord, string> _repoAdapter;
 	private readonly TransactionalDictionary<string, PlayerRecord> _transactionalDict;
@@ -540,10 +603,13 @@ public class PlayerRepository : IRepository<PlayerRecord, string>, ISynchronized
 			_transactionalDict.Load();
 
 		_repoAdapter = new DictionaryRepositoryAdapter<PlayerRecord, string>(_transactionalDict, p => p.TID);
-		
+
 	}
 
-	public ISynchronizedObject ParentSyncObject { get => _transactionalDict.ParentSyncObject; set => _transactionalDict.ParentSyncObject = value; }
+	public ISynchronizedObject ParentSyncObject {
+		get => _transactionalDict.ParentSyncObject;
+		set => _transactionalDict.ParentSyncObject = value;
+	}
 
 	public ReaderWriterLockSlim ThreadLock => _transactionalDict.ParentSyncObject.ThreadLock;
 

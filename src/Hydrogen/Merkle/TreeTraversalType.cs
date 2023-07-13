@@ -10,11 +10,11 @@
 // Web: https://sphere10.com/tech/dynamic-merkle-trees
 // e-print: https://vixra.org/abs/2305.0087
 
-namespace Hydrogen {
-	public enum TreeTraversalType {
-		PreOrder,
-		PostOrder,
-		InOrder,
-		LevelOrder
-	}
+namespace Hydrogen;
+
+public enum TreeTraversalType {
+	PreOrder,
+	PostOrder,
+	InOrder,
+	LevelOrder
 }

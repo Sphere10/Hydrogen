@@ -8,13 +8,12 @@
 
 using System;
 
-namespace Hydrogen {
+namespace Hydrogen;
 
-	[Flags]
-	public enum SchedulerPolicy {
-		ForceSyncronous		= 1 << 0,
-		DontThrow			= 1 << 1,
-		RemoveJobOnError	= 1 << 2,
-		DisposeWhenFinished	= 1 << 3,
-	}
+[Flags]
+public enum SchedulerPolicy {
+	ForceSyncronous = 1 << 0,
+	DontThrow = 1 << 1,
+	RemoveJobOnError = 1 << 2,
+	DisposeWhenFinished = 1 << 3,
 }

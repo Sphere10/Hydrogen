@@ -12,7 +12,7 @@ namespace Hydrogen;
 
 public class PaddedSerializer<TItem> : StaticSizeItemSerializerBase<TItem> {
 	private readonly IItemSerializer<TItem> _dynamicSerializer;
-	public PaddedSerializer(int fixedSize, IItemSerializer<TItem> dynamicSerializer) 
+	public PaddedSerializer(int fixedSize, IItemSerializer<TItem> dynamicSerializer)
 		: base(fixedSize) {
 		_dynamicSerializer = dynamicSerializer;
 	}
@@ -37,7 +37,7 @@ public class PaddedSerializer<TItem> : StaticSizeItemSerializerBase<TItem> {
 		if (bytesWritten > StaticSize)
 			return false;
 
-		var remaining  = StaticSize - bytesWritten;
+		var remaining = StaticSize - bytesWritten;
 		// TODO: should chunk this out
 		var padding = Tools.Array.Gen<byte>(remaining, 0);
 		writer.Write(padding);
@@ -46,7 +46,7 @@ public class PaddedSerializer<TItem> : StaticSizeItemSerializerBase<TItem> {
 		return true;
 	}
 
-	public override bool TryDeserialize( EndianBinaryReader reader, out TItem item) {
+	public override bool TryDeserialize(EndianBinaryReader reader, out TItem item) {
 		var itemSize = reader.ReadInt32();
 		if (itemSize > StaticSize - sizeof(int)) {
 			item = default;

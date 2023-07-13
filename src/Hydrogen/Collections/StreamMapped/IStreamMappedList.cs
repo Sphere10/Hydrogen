@@ -8,20 +8,18 @@
 
 using System.Collections.Generic;
 
-namespace Hydrogen {
+namespace Hydrogen;
 
-	public interface IStreamMappedList<TItem> : IExtendedList<TItem>, ILoadable {
-		IClusteredStorage Storage { get; }
+public interface IStreamMappedList<TItem> : IExtendedList<TItem>, ILoadable {
+	IClusteredStorage Storage { get; }
 
-		IItemSerializer<TItem> ItemSerializer { get; }
+	IItemSerializer<TItem> ItemSerializer { get; }
 
-		IEqualityComparer<TItem> ItemComparer { get; }
+	IEqualityComparer<TItem> ItemComparer { get; }
 
-		ClusteredStreamScope EnterAddScope(TItem item);
+	ClusteredStreamScope EnterAddScope(TItem item);
 
-		ClusteredStreamScope EnterInsertScope(int index, TItem item);
+	ClusteredStreamScope EnterInsertScope(int index, TItem item);
 
-		ClusteredStreamScope EnterUpdateScope(int index, TItem item);
-	}
-
+	ClusteredStreamScope EnterUpdateScope(int index, TItem item);
 }

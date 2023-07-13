@@ -10,11 +10,8 @@
 // Web: https://sphere10.com/tech/dynamic-merkle-trees
 // e-print: https://vixra.org/abs/2305.0087
 
-namespace Hydrogen {
+namespace Hydrogen;
 
-
-	public interface IDynamicMerkleTree : IMerkleTree {
-		IExtendedList<byte[]> Leafs { get; }
-	}
-
+public interface IDynamicMerkleTree : IMerkleTree {
+	IExtendedList<byte[]> Leafs { get; }
 }

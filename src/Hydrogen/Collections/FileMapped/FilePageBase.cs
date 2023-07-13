@@ -8,49 +8,49 @@
 
 using System.IO;
 
-namespace Hydrogen {
-	public abstract class FilePageBase<TItem> : MemoryPageBase<TItem>, IFilePage<TItem> {
+namespace Hydrogen;
 
-		protected FilePageBase(Stream stream, IItemSizer<TItem> sizer, int pageNumber, int pageSize, IExtendedList<TItem> memoryStore)
-			: base(pageSize, sizer, memoryStore) {
-			Stream = new BoundedStream(stream, (long)pageNumber * pageSize, (long)(pageNumber + 1) * pageSize - 1);
-		}
+public abstract class FilePageBase<TItem> : MemoryPageBase<TItem>, IFilePage<TItem> {
 
-		internal BoundedStream Stream { get; }
+	protected FilePageBase(Stream stream, IItemSizer<TItem> sizer, int pageNumber, int pageSize, IExtendedList<TItem> memoryStore)
+		: base(pageSize, sizer, memoryStore) {
+		Stream = new BoundedStream(stream, (long)pageNumber * pageSize, (long)(pageNumber + 1) * pageSize - 1);
+	}
 
-		public long StartPosition { get; set; }
+	internal BoundedStream Stream { get; }
 
-		public long EndPosition { get; set; }
+	public long StartPosition { get; set; }
 
-		public override void Dispose() {
-			// Stream is managed by client		
-		}
+	public long EndPosition { get; set; }
 
-		protected override int AppendInternal(TItem[] items, out int newItemsSpace) {
-			var appendCount = base.AppendInternal(items, out newItemsSpace);
-			EndPosition += newItemsSpace;
-			return appendCount;
-		}
+	public override void Dispose() {
+		// Stream is managed by client		
+	}
 
-		protected override void UpdateInternal(int index, TItem[] items, out int oldItemsSpace, out int newItemsSpace) {
-			base.UpdateInternal(index, items, out oldItemsSpace, out newItemsSpace);
-			var spaceDiff = newItemsSpace - oldItemsSpace;
-			EndPosition += spaceDiff;
-		}
+	protected override int AppendInternal(TItem[] items, out int newItemsSpace) {
+		var appendCount = base.AppendInternal(items, out newItemsSpace);
+		EndPosition += newItemsSpace;
+		return appendCount;
+	}
 
-		protected override void EraseFromEndInternal(int count, out int oldItemsSpace) {
-			base.EraseFromEndInternal(count, out oldItemsSpace);
-			EndPosition -= oldItemsSpace;
-		}
+	protected override void UpdateInternal(int index, TItem[] items, out int oldItemsSpace, out int newItemsSpace) {
+		base.UpdateInternal(index, items, out oldItemsSpace, out newItemsSpace);
+		var spaceDiff = newItemsSpace - oldItemsSpace;
+		EndPosition += spaceDiff;
+	}
 
-		protected override Stream OpenReadStream() {
-			Stream.Seek(Stream.MinAbsolutePosition, SeekOrigin.Begin);
-			return new NonClosingStream(Stream);
-		}
+	protected override void EraseFromEndInternal(int count, out int oldItemsSpace) {
+		base.EraseFromEndInternal(count, out oldItemsSpace);
+		EndPosition -= oldItemsSpace;
+	}
 
-		protected override Stream OpenWriteStream() {
-			Stream.Seek(Stream.MinAbsolutePosition, SeekOrigin.Begin);
-			return new NonClosingStream(Stream);
-		}
+	protected override Stream OpenReadStream() {
+		Stream.Seek(Stream.MinAbsolutePosition, SeekOrigin.Begin);
+		return new NonClosingStream(Stream);
+	}
+
+	protected override Stream OpenWriteStream() {
+		Stream.Seek(Stream.MinAbsolutePosition, SeekOrigin.Begin);
+		return new NonClosingStream(Stream);
 	}
 }

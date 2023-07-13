@@ -75,5 +75,3 @@ public abstract class LoggerBase : ILogger {
 	/// <param name="message">The message.</param>
 	protected abstract void Log(LogLevel logLevel, string message);
 }
-
-

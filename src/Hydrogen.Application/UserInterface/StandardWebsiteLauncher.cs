@@ -8,37 +8,35 @@
 
 using System.Diagnostics;
 
-namespace Hydrogen.Application {
+namespace Hydrogen.Application;
 
-	public class StandardWebsiteLauncher : IWebsiteLauncher {
+public class StandardWebsiteLauncher : IWebsiteLauncher {
 
-		public StandardWebsiteLauncher(IProductInformationProvider productProvider) {
-			ProductProvider = productProvider;
-
-		}
-
-		public IProductInformationProvider ProductProvider { get; private set; }
-
-		public void LaunchWebsite(string url) {
-			Process.Start(new ProcessStartInfo {
-				FileName = $"{url.Trim('"')}",
-				UseShellExecute = true,
-			});
-		}
-
-		public void LaunchCompanyWebsite() {
-			LaunchWebsite(ProductProvider.ProductInformation.CompanyUrl);
-		}
-
-		public void LaunchProductWebsite() {
-			LaunchWebsite(ProductProvider.ProductInformation.ProductUrl);
-		}
-
-		public void LaunchProductPurchaseWebsite() {
-			LaunchWebsite(ProductProvider.ProductInformation.ProductPurchaseUrl);
-		}
-
-		
+	public StandardWebsiteLauncher(IProductInformationProvider productProvider) {
+		ProductProvider = productProvider;
 
 	}
+
+	public IProductInformationProvider ProductProvider { get; private set; }
+
+	public void LaunchWebsite(string url) {
+		Process.Start(new ProcessStartInfo {
+			FileName = $"{url.Trim('"')}",
+			UseShellExecute = true,
+		});
+	}
+
+	public void LaunchCompanyWebsite() {
+		LaunchWebsite(ProductProvider.ProductInformation.CompanyUrl);
+	}
+
+	public void LaunchProductWebsite() {
+		LaunchWebsite(ProductProvider.ProductInformation.ProductUrl);
+	}
+
+	public void LaunchProductPurchaseWebsite() {
+		LaunchWebsite(ProductProvider.ProductInformation.ProductPurchaseUrl);
+	}
+
+
 }

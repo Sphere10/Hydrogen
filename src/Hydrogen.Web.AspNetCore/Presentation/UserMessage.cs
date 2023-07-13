@@ -6,26 +6,23 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen.Web.AspNetCore {
-    /// <summary>
-    /// Describes a message to a user. Currently used within the MVC pipeline (BPM) to pass warning messages in TransferResults.
-    /// </summary>
-    public sealed class UserMessage
-    {
-        public string Message { get; set; }
-        public UserMessageType MessageType { get; set; }
+namespace Hydrogen.Web.AspNetCore;
 
-        public UserMessage()
-        {
-            Message = string.Empty;
-            MessageType = UserMessageType.Information;
-        }
+/// <summary>
+/// Describes a message to a user. Currently used within the MVC pipeline (BPM) to pass warning messages in TransferResults.
+/// </summary>
+public sealed class UserMessage {
+	public string Message { get; set; }
+	public UserMessageType MessageType { get; set; }
 
-        public UserMessage(string message, UserMessageType messageType)
-        {
-            Message = message;
-            MessageType = messageType;
-        }
+	public UserMessage() {
+		Message = string.Empty;
+		MessageType = UserMessageType.Information;
+	}
 
-    }
+	public UserMessage(string message, UserMessageType messageType) {
+		Message = message;
+		MessageType = messageType;
+	}
+
 }

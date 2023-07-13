@@ -7,7 +7,6 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Linq;
 using Org.BouncyCastle.Asn1;
 using Org.BouncyCastle.Crypto.Signers;
 using Org.BouncyCastle.Math;

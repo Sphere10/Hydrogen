@@ -14,13 +14,11 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen.DApp.Presentation.Plugins {
+namespace Hydrogen.DApp.Presentation.Plugins;
 
-    public interface INamedItem {
-        /// <summary>
-        /// Gets the name of the item, useful for displaying in menus or headings.
-        /// </summary>
-        public string Name { get; }
-    }
-
+public interface INamedItem {
+	/// <summary>
+	/// Gets the name of the item, useful for displaying in menus or headings.
+	/// </summary>
+	public string Name { get; }
 }

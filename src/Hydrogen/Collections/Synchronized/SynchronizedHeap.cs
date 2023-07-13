@@ -8,27 +8,28 @@
 
 using System;
 
-namespace Hydrogen {
-	public class SynchronizedHeap<T> : SynchronizedCollection<T>, IHeap<T> where T : IComparable<T> {
-		private readonly IHeap<T> _internalHeap;
+namespace Hydrogen;
 
-		public SynchronizedHeap() : this(new BinaryHeap<T>()) {
-		}
+public class SynchronizedHeap<T> : SynchronizedCollection<T>, IHeap<T> where T : IComparable<T> {
+	private readonly IHeap<T> _internalHeap;
 
-		public SynchronizedHeap(IHeap<T> internalHeap) : base(internalHeap) {
-			_internalHeap = internalHeap;
-		}
-
-		#region IHeap Implementation
-
-		public T Pop() {
-			using (EnterWriteScope()) return _internalHeap.Pop();
-		}
-
-		public T Peek() {
-			using (EnterReadScope()) return _internalHeap.Peek();
-		}
-
-		#endregion
+	public SynchronizedHeap() : this(new BinaryHeap<T>()) {
 	}
+
+	public SynchronizedHeap(IHeap<T> internalHeap) : base(internalHeap) {
+		_internalHeap = internalHeap;
+	}
+
+	#region IHeap Implementation
+
+	public T Pop() {
+		using (EnterWriteScope()) return _internalHeap.Pop();
+	}
+
+	public T Peek() {
+		using (EnterReadScope()) return _internalHeap.Peek();
+	}
+
+	#endregion
+
 }

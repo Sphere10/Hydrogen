@@ -6,47 +6,40 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace Hydrogen.Windows.Forms {
-	public partial class EnterTextDialog : Form {
-		public EnterTextDialog() : this(null) {
-		}
+namespace Hydrogen.Windows.Forms;
 
-		public EnterTextDialog(string prefill) {
-			InitializeComponent();
-			if (prefill != null)
-				_textBox.Text = prefill;
-		}
+public partial class EnterTextDialog : Form {
+	public EnterTextDialog() : this(null) {
+	}
 
-		public string Instructions {
-			get { return _userInstructionLabel.Text; }
-			set { _userInstructionLabel.Text = value; }
-		}
+	public EnterTextDialog(string prefill) {
+		InitializeComponent();
+		if (prefill != null)
+			_textBox.Text = prefill;
+	}
 
-		public string UserInput { get; set; }
+	public string Instructions {
+		get { return _userInstructionLabel.Text; }
+		set { _userInstructionLabel.Text = value; }
+	}
 
-		protected override void OnClosing(CancelEventArgs e) {
-			base.OnClosing(e);
-			UserInput = _textBox.Text;
-		}
+	public string UserInput { get; set; }
 
-		public static bool Show(IWin32Window owner, string title, string text, out string userInput, string prefill = null) {
-			var form = new EnterTextDialog(prefill) {
-				Text = title,
-				Instructions = text,
-			};
-			var result = form.ShowDialog();
-			userInput = form.UserInput;
-			return result == DialogResult.OK;
-		}
+	protected override void OnClosing(CancelEventArgs e) {
+		base.OnClosing(e);
+		UserInput = _textBox.Text;
+	}
+
+	public static bool Show(IWin32Window owner, string title, string text, out string userInput, string prefill = null) {
+		var form = new EnterTextDialog(prefill) {
+			Text = title,
+			Instructions = text,
+		};
+		var result = form.ShowDialog();
+		userInput = form.UserInput;
+		return result == DialogResult.OK;
 	}
 }

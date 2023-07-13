@@ -6,49 +6,38 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Diagnostics;
 
-namespace Hydrogen.Maths.Compiler
-{
-    public class BinaryOperatorTree : SyntaxTree
-    {
-        private SyntaxTree _leftHandSide;
-        private SyntaxTree _rightHandSide;
-        private Operator _operator;
+namespace Hydrogen.Maths.Compiler;
+
+public class BinaryOperatorTree : SyntaxTree {
+	private SyntaxTree _leftHandSide;
+	private SyntaxTree _rightHandSide;
+	private Operator _operator;
 
 
+	public BinaryOperatorTree(Token token)
+		: base(token) {
+	}
 
-        public BinaryOperatorTree(Token token)
-            : base(token)
-        {
-        }
+	public Operator Operator {
+		get { return _operator; }
+		set { _operator = value; }
+	}
 
-        public Operator Operator
-        {
-            get { return _operator; }
-            set { _operator = value; }
-        }
+	public SyntaxTree LeftHandSide {
+		get { return _leftHandSide; }
+		set { _leftHandSide = value; }
+	}
 
-        public SyntaxTree LeftHandSide
-        {
-            get { return _leftHandSide; }
-            set { _leftHandSide = value; }
-        }
+	public SyntaxTree RightHandSide {
+		get { return _rightHandSide; }
+		set { _rightHandSide = value; }
+	}
 
-        public SyntaxTree RightHandSide
-        {
-            get { return _rightHandSide; }
-            set { _rightHandSide = value; }
-        }
-
-        public override string ToString()
-        {
-            Debug.Assert(_leftHandSide != null);
-            Debug.Assert(_rightHandSide != null);
-            return string.Format("{0}({1},{2})", Operator, LeftHandSide.ToString(), RightHandSide.ToString());
-        }
-    }
+	public override string ToString() {
+		Debug.Assert(_leftHandSide != null);
+		Debug.Assert(_rightHandSide != null);
+		return string.Format("{0}({1},{2})", Operator, LeftHandSide.ToString(), RightHandSide.ToString());
+	}
 }

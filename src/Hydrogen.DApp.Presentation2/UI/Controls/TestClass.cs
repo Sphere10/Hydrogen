@@ -11,10 +11,15 @@ using System;
 namespace Hydrogen.DApp.Presentation2.UI.Controls {
 	public class TestClass {
 
-		public enum TestEnum 
-		{
-			Black, White, Yellow, Purple, Brown , Blue
+		public enum TestEnum {
+			Black,
+			White,
+			Yellow,
+			Purple,
+			Brown,
+			Blue
 		}
+
 
 		public int Id { get; set; }
 		public string Name { get; set; }
@@ -29,8 +34,7 @@ namespace Hydrogen.DApp.Presentation2.UI.Controls {
 
 		static Random Random { get; set; } = new Random((int)DateTime.Now.Ticks);
 
-		public void FillWithTestData(int id) 
-		{
+		public void FillWithTestData(int id) {
 			Id = id;
 			Name = Names[Random.Next(Names.Length - 1)];
 			Color = Colors[Random.Next(Colors.Length - 1)];
@@ -40,8 +44,7 @@ namespace Hydrogen.DApp.Presentation2.UI.Controls {
 			Note = "Test Note";
 		}
 
-		public override string ToString() 
-		{
+		public override string ToString() {
 			return $"Id: {Id} Name: {Name} Color: {Color} CreationDate: {CreationDate.ToShortDateString()} Age: {Age} Details: {Details} Note: {Note}";
 		}
 	}

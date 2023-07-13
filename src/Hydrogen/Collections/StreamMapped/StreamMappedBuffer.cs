@@ -10,7 +10,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 
 namespace Hydrogen.Collections;
 
@@ -22,7 +21,7 @@ namespace Hydrogen.Collections;
 ///  - <see cref="IndexOfRange"/>
 /// </remarks>
 public class StreamMappedBuffer : RangedListBase<byte>, IBuffer {
-	public const int DefaultBlockSize = 1 << 18;  // 256 kb
+	public const int DefaultBlockSize = 1 << 18; // 256 kb
 	private readonly Stream _stream;
 	private readonly int _blockSize;
 
@@ -40,13 +39,13 @@ public class StreamMappedBuffer : RangedListBase<byte>, IBuffer {
 
 	public override int Count => (int)_stream.Length;
 
-	public override void AddRange(IEnumerable<byte> items) 
+	public override void AddRange(IEnumerable<byte> items)
 		=> AddRange(items as byte[] ?? items?.ToArray() ?? throw new ArgumentNullException(nameof(items)));
 
 	public void AddRange(ReadOnlySpan<byte> span)
 		=> InsertRange(Count, span);
 
-	public override IEnumerable<int> IndexOfRange(IEnumerable<byte> items) 
+	public override IEnumerable<int> IndexOfRange(IEnumerable<byte> items)
 		=> throw new NotSupportedException();
 
 	public override IEnumerable<byte> ReadRange(int index, int count)
@@ -61,7 +60,7 @@ public class StreamMappedBuffer : RangedListBase<byte>, IBuffer {
 		return _stream.ReadBytes(count);
 	}
 
-	public override void UpdateRange(int index, IEnumerable<byte> items) 
+	public override void UpdateRange(int index, IEnumerable<byte> items)
 		=> UpdateRange(index, items as byte[] ?? items?.ToArray() ?? throw new ArgumentNullException(nameof(items)));
 
 	public void UpdateRange(int index, ReadOnlySpan<byte> items) {
@@ -70,7 +69,7 @@ public class StreamMappedBuffer : RangedListBase<byte>, IBuffer {
 		_stream.Write(items);
 	}
 
-	public override void InsertRange(int index, IEnumerable<byte> items) 
+	public override void InsertRange(int index, IEnumerable<byte> items)
 		=> InsertRange(index, items as byte[] ?? items?.ToArray() ?? throw new ArgumentNullException(nameof(items)));
 
 	public void InsertRange(int index, ReadOnlySpan<byte> items) {
@@ -100,6 +99,4 @@ public class StreamMappedBuffer : RangedListBase<byte>, IBuffer {
 	public void ExpandBy(int newBytes) => ExpandTo(Count + newBytes);
 
 
-
 }
-

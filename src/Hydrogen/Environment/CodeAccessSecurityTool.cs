@@ -9,8 +9,8 @@
 using System;
 
 // ReSharper disable CheckNamespace
-namespace Tools {
-	public static class CodeAccessSecurity {
-		public static bool HasUnrestrictedFeatureSet => AppDomain.CurrentDomain.IsFullyTrusted;
-	}
+namespace Tools;
+
+public static class CodeAccessSecurity {
+	public static bool HasUnrestrictedFeatureSet => AppDomain.CurrentDomain.IsFullyTrusted;
 }

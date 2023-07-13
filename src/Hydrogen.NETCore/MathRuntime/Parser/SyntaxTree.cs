@@ -6,27 +6,21 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Diagnostics;
+namespace Hydrogen.Maths.Compiler;
 
-namespace Hydrogen.Maths.Compiler {
+public class SyntaxTree {
+	Token _token;
 
-    public class SyntaxTree {
-        Token _token;
+	public SyntaxTree(Token token) {
+		Token = token;
+	}
 
-        public SyntaxTree(Token token) {
-            Token = token;
-        }
+	public SyntaxTree() {
+	}
 
-        public SyntaxTree() {
-        }
+	public Token Token {
+		get { return _token; }
+		set { _token = value; }
+	}
 
-        public Token Token {
-            get { return _token; }
-            set { _token = value; }
-        }
-
-    }
 }

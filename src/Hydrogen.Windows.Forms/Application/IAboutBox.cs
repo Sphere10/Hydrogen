@@ -6,14 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Drawing;
+namespace Hydrogen.Windows.Forms;
 
-namespace Hydrogen.Windows.Forms {
-
-	public interface IAboutBox : IApplicationDialog {
-	}
-
+public interface IAboutBox : IApplicationDialog {
 }

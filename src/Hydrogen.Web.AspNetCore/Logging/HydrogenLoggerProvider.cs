@@ -6,13 +6,8 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Hydrogen;
-
 namespace Hydrogen.Web.AspNetCore;
+
 public class HydrogenLoggerProvider : Microsoft.Extensions.Logging.ILoggerProvider {
 
 	public HydrogenLoggerProvider(Hydrogen.ILogger hydrogenLogger) {

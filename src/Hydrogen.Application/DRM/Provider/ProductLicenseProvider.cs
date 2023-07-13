@@ -6,12 +6,10 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
-
 namespace Hydrogen.Application;
 
 public class ProductLicenseProvider : IProductLicenseProvider {
-	
+
 
 	public ProductLicenseProvider(IProductLicenseStorage productLicenseStorage, IProductLicenseEnforcer productLicenseEnforcer) {
 		Storage = productLicenseStorage;
@@ -23,7 +21,7 @@ public class ProductLicenseProvider : IProductLicenseProvider {
 	public bool TryGetLicense(out ProductLicenseActivationDTO licenseActivation) {
 		Storage.TryGetActivatedLicense(out licenseActivation);
 		Storage.TryGetDefaultLicense(out var defaultLicense);
-		
+
 		var authority = defaultLicense.Authority ?? licenseActivation.Authority; // The authority is the default one shipped with product, or the one provided by server if none (protects against MItM attack)		
 
 		if (licenseActivation != null && !ProductLicenseEnforcer.ValidateLicense(licenseActivation, authority))
@@ -48,5 +46,5 @@ public class ProductLicenseProvider : IProductLicenseProvider {
 	public void ClearActivatedLicense() {
 		Storage.RemoveActivatedLicense();
 	}
-	
+
 }

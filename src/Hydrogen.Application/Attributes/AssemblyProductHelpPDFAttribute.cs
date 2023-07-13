@@ -9,21 +9,14 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace Hydrogen.Application {
+namespace Hydrogen.Application;
 
-	[ComVisible(true)]
-    [AttributeUsage(AttributeTargets.Assembly, Inherited = false)]
-    public sealed class AssemblyProductHelpPDFAttribute : AssemblyProductHelpResourceAttribute
-    {
+[ComVisible(true)]
+[AttributeUsage(AttributeTargets.Assembly, Inherited = false)]
+public sealed class AssemblyProductHelpPDFAttribute : AssemblyProductHelpResourceAttribute {
 
-        public AssemblyProductHelpPDFAttribute(string path)
-            : base(HelpType.PDF, path)
-        {
-        }
-
-    }
-
+	public AssemblyProductHelpPDFAttribute(string path)
+		: base(HelpType.PDF, path) {
+	}
 
 }
-
-

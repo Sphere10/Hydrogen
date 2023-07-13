@@ -6,14 +6,14 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen.DApp.Core.Blockchain {
-	public interface IInvalidBlockRepo {
+namespace Hydrogen.DApp.Core.Blockchain;
 
-		bool IsInvalid(byte[] blockHash);
+public interface IInvalidBlockRepo {
 
-		void InvalidateBlock(byte[] blockHash);
+	bool IsInvalid(byte[] blockHash);
 
-		void RevokeInvalidation(byte[] blockHash);
+	void InvalidateBlock(byte[] blockHash);
 
-	}
+	void RevokeInvalidation(byte[] blockHash);
+
 }

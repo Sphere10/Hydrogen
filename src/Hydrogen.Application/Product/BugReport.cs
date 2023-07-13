@@ -12,23 +12,22 @@ using System.Linq;
 using System.Reflection;
 
 
-namespace Hydrogen.Application {
+namespace Hydrogen.Application;
 
-	[Obfuscation(Exclude = true)]
-    public class BugReport : ClientRequest {
-        public BugReport()
-            : base() {
-        }
+[Obfuscation(Exclude = true)]
+public class BugReport : ClientRequest {
+	public BugReport()
+		: base() {
+	}
 
-        public BugReport(UserType userType, string sender, ProductInformation senderProductInformation, string bugReportText, Exception exception = null, IEnumerable<string> logEntries = null)
-			: base(userType, sender, senderProductInformation, bugReportText) {
-				Exception = exception.ToDiagnosticString();
-				LogEntries = logEntries != null ? logEntries.ToArray() : new string[0];
-        }
+	public BugReport(UserType userType, string sender, ProductInformation senderProductInformation, string bugReportText, Exception exception = null, IEnumerable<string> logEntries = null)
+		: base(userType, sender, senderProductInformation, bugReportText) {
+		Exception = exception.ToDiagnosticString();
+		LogEntries = logEntries != null ? logEntries.ToArray() : new string[0];
+	}
 
-		public string Exception { get; set; }
+	public string Exception { get; set; }
 
-        public string[] LogEntries { get; set; }
+	public string[] LogEntries { get; set; }
 
-    }
 }

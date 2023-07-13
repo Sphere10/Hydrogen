@@ -8,68 +8,67 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text;
 
-namespace Hydrogen.Maths.Compiler {
-    public class DefaultVariableContext : IVariableContext {
-        private IMathContext _mathContext;
-        private IDictionary<string, double> _variableDictionary;
+namespace Hydrogen.Maths.Compiler;
 
-        public DefaultVariableContext(IMathContext context) {
-            _mathContext = context;
-            _variableDictionary = new Dictionary<string, double>();
-        }
+public class DefaultVariableContext : IVariableContext {
+	private IMathContext _mathContext;
+	private IDictionary<string, double> _variableDictionary;
 
-        public IMathContext MathContext {
-            get { return _mathContext; }
-        }
+	public DefaultVariableContext(IMathContext context) {
+		_mathContext = context;
+		_variableDictionary = new Dictionary<string, double>();
+	}
 
-        public bool ContainsVariable(string name) {
-            bool containsVariable = false;
-            containsVariable = _variableDictionary.ContainsKey(name);
-            if (!containsVariable && MathContext.ParentContext != null) {
-                containsVariable = MathContext.ParentContext.Variables.ContainsVariable(name);
-            }
-            return containsVariable;
-        }
+	public IMathContext MathContext {
+		get { return _mathContext; }
+	}
 
-        public void RemoveVariable(string name) {
-            if (_variableDictionary.ContainsKey(name)) {
-                _variableDictionary.Remove(name);
-            } else {
-                if (MathContext.ParentContext != null) {
-                    MathContext.ParentContext.Variables.RemoveVariable(name);
-                }
-            }
-        }
+	public bool ContainsVariable(string name) {
+		bool containsVariable = false;
+		containsVariable = _variableDictionary.ContainsKey(name);
+		if (!containsVariable && MathContext.ParentContext != null) {
+			containsVariable = MathContext.ParentContext.Variables.ContainsVariable(name);
+		}
+		return containsVariable;
+	}
 
-        public double this[string var] {
-            get {
-                double value = 0;
-                if (_variableDictionary.ContainsKey(var)) {
-                    value = _variableDictionary[var];
-                } else if (MathContext.ParentContext != null) {
-                    return MathContext.ParentContext.Variables[var];
-                } else {
-                    throw new ApplicationException(
-                        string.Format(
-                            "The variable '{0}' is not defined in the math context.",
-                            var
-                            )
-                        );
-                }
-                return value;
-            }
-            set {
-                // if variable defined in parent context, set it in parent context
-                if (MathContext.ParentContext != null &&
-                    MathContext.ParentContext.Variables.ContainsVariable(var)) {
-                    MathContext.ParentContext.Variables[var] = value;
-                } else {
-                    // else set variable in current context
-                    _variableDictionary[var] = value;
-                }
-            }
-        }
-    }
+	public void RemoveVariable(string name) {
+		if (_variableDictionary.ContainsKey(name)) {
+			_variableDictionary.Remove(name);
+		} else {
+			if (MathContext.ParentContext != null) {
+				MathContext.ParentContext.Variables.RemoveVariable(name);
+			}
+		}
+	}
+
+	public double this[string var] {
+		get {
+			double value = 0;
+			if (_variableDictionary.ContainsKey(var)) {
+				value = _variableDictionary[var];
+			} else if (MathContext.ParentContext != null) {
+				return MathContext.ParentContext.Variables[var];
+			} else {
+				throw new ApplicationException(
+					string.Format(
+						"The variable '{0}' is not defined in the math context.",
+						var
+					)
+				);
+			}
+			return value;
+		}
+		set {
+			// if variable defined in parent context, set it in parent context
+			if (MathContext.ParentContext != null &&
+			    MathContext.ParentContext.Variables.ContainsVariable(var)) {
+				MathContext.ParentContext.Variables[var] = value;
+			} else {
+				// else set variable in current context
+				_variableDictionary[var] = value;
+			}
+		}
+	}
 }

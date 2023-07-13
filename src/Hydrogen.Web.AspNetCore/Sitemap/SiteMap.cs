@@ -18,10 +18,11 @@ public class SiteMap {
 	private Dictionary<string, SitemapNode> _nodes = new();
 
 	public bool HasNode(string url) => _nodes.ContainsKey(url);
+
 	public void Add(string url, DateTime? lastModified = null, SitemapFrequency? frequency = null, double? priority = null)
 		=> _nodes.Add(
-			url, 
-			new SitemapNode { 
+			url,
+			new SitemapNode {
 				Url = url,
 				LastModified = lastModified,
 				Frequency = frequency,
@@ -30,8 +31,8 @@ public class SiteMap {
 		);
 
 	[XmlElement("url", typeof(SitemapNode))]
-	public SitemapNode[] Nodes { 
+	public SitemapNode[] Nodes {
 		get => _nodes.Values.ToArray();
 		set => _nodes = value != null ? value.ToDictionary(x => x.Url) : new();
-	} 
+	}
 }

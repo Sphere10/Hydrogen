@@ -7,6 +7,7 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 namespace Hydrogen;
+
 public class ConsoleLogger : TextWriterLogger {
 	public ConsoleLogger()
 		: base(new ConsoleTextWriter()) {

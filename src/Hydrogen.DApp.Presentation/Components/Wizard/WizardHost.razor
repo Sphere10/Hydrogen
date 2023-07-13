@@ -33,7 +33,7 @@
             @if (ViewModel.Wizard.HasNext) {
                 <button class="@(NextButtonClass ?? "btn btn-info btn-sm")" @onclick="ViewModel.NextAsync">@ViewModel.CurrentStepInstance!.NextButtonText</button>
             } else {
-                <button class="@(FinishButtonClass?? "btn btn-info btn-sm")" @onclick="ViewModel!.FinishAsync">@ViewModel.CurrentStepInstance!.FinishButtonText</button>
+                <button class="@(FinishButtonClass ?? "btn btn-info btn-sm")" @onclick="ViewModel!.FinishAsync">@ViewModel.CurrentStepInstance!.FinishButtonText</button>
             }
         </div>
     </div>

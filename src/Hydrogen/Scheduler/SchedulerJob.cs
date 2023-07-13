@@ -6,81 +6,63 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using Hydrogen;
 using System;
 using System.Linq;
 
-namespace Hydrogen
-{
-    public class SchedulerJob : BaseJob
-    {
-        private Type JobType { get; set; }
+namespace Hydrogen;
 
-        public SchedulerJob()
-        {
-        }
+public class SchedulerJob : BaseJob {
+	private Type JobType { get; set; }
 
-        public SchedulerJob(Type jobType)
-        {
-            if (typeof(ISchedulerJob).IsAssignableFrom(jobType) == false)
-            {
-                throw new ArgumentException("Job must inherit ISchedulerJob");
-            }
+	public SchedulerJob() {
+	}
 
-            JobType = jobType;
-        }
+	public SchedulerJob(Type jobType) {
+		if (typeof(ISchedulerJob).IsAssignableFrom(jobType) == false) {
+			throw new ArgumentException("Job must inherit ISchedulerJob");
+		}
 
-        public override void Execute()
-        {
-            var instance = (ISchedulerJob)Activator.CreateInstance(JobType);
-            instance.Execute(this);
-        }
+		JobType = jobType;
+	}
 
-        public override JobSerializableSurrogate ToSerializableSurrogate()
-        {
-            var surrogate = new JobSerializableSurrogate
-            {
-                JobType = JobType.ToString(),
-                Name = Name,
-                Policy = Policy,
-                Status = Status,
-                Schedules = Schedules.Select(x => x.ToSerializableSurrogate()).ToArray()
-            };
-            return surrogate;
-        }
+	public override void Execute() {
+		var instance = (ISchedulerJob)Activator.CreateInstance(JobType);
+		instance.Execute(this);
+	}
 
-        public override void FromSerializableSurrogate(JobSerializableSurrogate jobSurrogate)
-        {
-            JobType = TypeResolver.ResolveTypeInAllAssemblies(jobSurrogate.JobType);
-            Name = jobSurrogate.Name;
-            Status = jobSurrogate.Status;
-            Policy = jobSurrogate.Policy;
+	public override JobSerializableSurrogate ToSerializableSurrogate() {
+		var surrogate = new JobSerializableSurrogate {
+			JobType = JobType.ToString(),
+			Name = Name,
+			Policy = Policy,
+			Status = Status,
+			Schedules = Schedules.Select(x => x.ToSerializableSurrogate()).ToArray()
+		};
+		return surrogate;
+	}
 
-            foreach (var surrogateSchedule in jobSurrogate.Schedules)
-            {
-                if (surrogateSchedule is IntervalScheduleSerializableSurrogate)
-                {
-                    var schedule = new OnIntervalSchedule<SchedulerJob>();
-                    schedule.FromSerializableSurrogate(surrogateSchedule);
-                    AddSchedule(schedule);
-                }
-                else if (surrogateSchedule is DayOfWeekScheduleSerializableSurrogate)
-                {
-                    var schedule = new OnDayOfWeekScheduler<SchedulerJob>();
-                    schedule.FromSerializableSurrogate(surrogateSchedule);
-                    AddSchedule(schedule);
-                }
-                else if (surrogateSchedule is DayOfMonthScheduleSerializableSurrogate)
-                {
-                    var schedule = new OnDayOfMonthScheduler<SchedulerJob>();
-                    schedule.FromSerializableSurrogate(surrogateSchedule);
-                    AddSchedule(schedule);
-                }
-                else
-                {
-                    throw new ArgumentOutOfRangeException($"Unknown schedule type {surrogateSchedule.GetType().Name}");
-                }
-            }
-        }
-    }
+	public override void FromSerializableSurrogate(JobSerializableSurrogate jobSurrogate) {
+		JobType = TypeResolver.ResolveTypeInAllAssemblies(jobSurrogate.JobType);
+		Name = jobSurrogate.Name;
+		Status = jobSurrogate.Status;
+		Policy = jobSurrogate.Policy;
+
+		foreach (var surrogateSchedule in jobSurrogate.Schedules) {
+			if (surrogateSchedule is IntervalScheduleSerializableSurrogate) {
+				var schedule = new OnIntervalSchedule<SchedulerJob>();
+				schedule.FromSerializableSurrogate(surrogateSchedule);
+				AddSchedule(schedule);
+			} else if (surrogateSchedule is DayOfWeekScheduleSerializableSurrogate) {
+				var schedule = new OnDayOfWeekScheduler<SchedulerJob>();
+				schedule.FromSerializableSurrogate(surrogateSchedule);
+				AddSchedule(schedule);
+			} else if (surrogateSchedule is DayOfMonthScheduleSerializableSurrogate) {
+				var schedule = new OnDayOfMonthScheduler<SchedulerJob>();
+				schedule.FromSerializableSurrogate(surrogateSchedule);
+				AddSchedule(schedule);
+			} else {
+				throw new ArgumentOutOfRangeException($"Unknown schedule type {surrogateSchedule.GetType().Name}");
+			}
+		}
+	}
 }

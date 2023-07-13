@@ -9,7 +9,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Hydrogen;
 using Org.BouncyCastle.Math;
 
 namespace Hydrogen.CryptoEx.EC.Schnorr;
@@ -28,7 +27,9 @@ public class MuSigBuilder {
 	private MuSigSessionCache _muSigSessionCache;
 	private byte[] _publicKey;
 	private byte[] _publicNonce;
+
 	private byte[] _partialSignature;
+
 	// used to check if a MuSigBuilder instance has signed a message before to avoid reuse.
 	private bool _hasSignedBefore;
 
@@ -116,7 +117,7 @@ public class MuSigBuilder {
 		}
 		var aggregatedSigs = _muSig.AggregatePartialSignatures(_muSigSessionCache.FinalNonce,
 			_partialSignatures.Select(x => Schnorr.BytesToBigIntPositive(x.Value))
-							  .ToArray());
+				.ToArray());
 		return new MuSigData {
 			AggregatedSignature = aggregatedSigs,
 			AggregatedPublicKey = _muSig.Schnorr.BytesOfXCoord(_aggregatedPublicKey.CombinedPoint)
@@ -156,16 +157,14 @@ public class MuSigBuilder {
 		}
 
 		var keyCoefficients = _keyAggregationCoefficients.Select(item =>
-		new Tuple<byte[], BigInteger>
-		(
-			item.Key,
-			item.Value
-		)).ToArray();
+			new Tuple<byte[], BigInteger>(
+				item.Key,
+				item.Value
+			)).ToArray();
 		// aggregate public keys.
-		_aggregatedPublicKey = _muSig.AggregatePublicKeys
-		(
+		_aggregatedPublicKey = _muSig.AggregatePublicKeys(
 			keyCoefficients.Select(x => x.Item2).ToArray(),
-	keyCoefficients.Select(x => x.Item1).ToArray()
+			keyCoefficients.Select(x => x.Item1).ToArray()
 		);
 	}
 

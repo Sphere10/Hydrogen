@@ -6,13 +6,12 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using Hydrogen.Web.AspNetCore;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Extensions.Hosting;
 
 public static class IHostBuilderExtensions {
-	public static IHostBuilder UseHydrogenFramework(this IHostBuilder hostBuilder) 
+	public static IHostBuilder UseHydrogenFramework(this IHostBuilder hostBuilder)
 		=> hostBuilder.ConfigureServices(x => x.AddHydrogenFramework());
-	
+
 }

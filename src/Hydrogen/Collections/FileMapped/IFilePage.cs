@@ -6,14 +6,12 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen {
+namespace Hydrogen;
 
-	public interface IFilePage<TItem> : IMemoryPage<TItem> {
-        
-        long StartPosition { get; set; }
-        
-        long EndPosition { get; set; }
+public interface IFilePage<TItem> : IMemoryPage<TItem> {
 
-    }
+	long StartPosition { get; set; }
+
+	long EndPosition { get; set; }
 
 }

@@ -17,7 +17,7 @@ public abstract class SyncLoadableBase : LoadableBase {
 
 	protected override Task LoadInternalAsync() => Task.Run(LoadInternal);
 
-	protected sealed override Task  OnLoadingAsync() => Task.Run(OnLoading);
+	protected sealed override Task OnLoadingAsync() => Task.Run(OnLoading);
 
 	protected sealed override Task OnLoadedAsync() => Task.Run(OnLoaded);
 }

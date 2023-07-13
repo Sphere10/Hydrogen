@@ -6,19 +6,11 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Windows.Forms;
+namespace Hydrogen.Windows.Forms.AppointmentBook;
 
-namespace Hydrogen.Windows.Forms.AppointmentBook {
-
-	internal class EmptyCellController : BaseCellController {
-		internal EmptyCellController(BaseAppointmentBook owner) : base(owner) {
-		}
-
-
+internal class EmptyCellController : BaseCellController {
+	internal EmptyCellController(BaseAppointmentBook owner) : base(owner) {
 	}
+
+
 }

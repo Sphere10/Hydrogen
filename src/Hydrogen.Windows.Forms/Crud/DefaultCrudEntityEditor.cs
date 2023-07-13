@@ -6,82 +6,74 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Drawing;
-using System.Data;
 using System.Linq;
-using System.Text;
 using System.Windows.Forms;
-using Hydrogen;
 
-namespace Hydrogen.Windows.Forms {
-	public partial class DefaultCrudEntityEditor : UserControl, ICrudEntityEditor<object> {
-		private object _entity;
-		private object _backupEntity;
-		private bool _isNewEntity;
-		private DataSourceCapabilities _crudCapabilities;
-		
+namespace Hydrogen.Windows.Forms;
 
-		public DefaultCrudEntityEditor() {
-			InitializeComponent();
-			_isNewEntity = false;
-		}
-
-		#region IEntityEditor<object> Implementation
-
-		public Control AsControl() {
-			return this;
-		}
-
-		public void SetEntity(DataSourceCapabilities capabilities, object entity, bool isNewEntity) {
-			_crudCapabilities = capabilities;
-			_entity = entity;
-			_isNewEntity = isNewEntity;
-			CreateBackup();
-			BindToPropertyGrid();
-		}
-
-		public object GetEntityWithChanges() {
-			return _entity;
-		}
-
-		public bool HasChanges {
-			get {
-				return !Tools.Object.Compare(_backupEntity, _entity);
-			}
-		}
-
-		public void UndoChanges() {
-			Tools.Object.CopyMembers(_backupEntity, _entity, true);
-		}
-
-		public void AcceptChanges() {
-			CreateBackup();
-		}
-
-		public IEnumerable<string> Validate() {
-			return Enumerable.Empty<string>();
-		}
-
-		#endregion
+public partial class DefaultCrudEntityEditor : UserControl, ICrudEntityEditor<object> {
+	private object _entity;
+	private object _backupEntity;
+	private bool _isNewEntity;
+	private DataSourceCapabilities _crudCapabilities;
 
 
-		#region Binding
-
-		private void BindToPropertyGrid() {
-			if (_backupEntity != null) {
-				_propertyGrid.SelectedObject = _entity;
-			}
-			_propertyGrid.Enabled = (_isNewEntity && _crudCapabilities.HasFlag(DataSourceCapabilities.CanCreate)) || (!_isNewEntity && _crudCapabilities.HasFlag(DataSourceCapabilities.CanUpdate));
-		}
-
-		private void CreateBackup() {
-			_backupEntity = Tools.Object.CloneObject(_entity, true);
-		}
-
-		#endregion
-
+	public DefaultCrudEntityEditor() {
+		InitializeComponent();
+		_isNewEntity = false;
 	}
+
+	#region IEntityEditor<object> Implementation
+
+	public Control AsControl() {
+		return this;
+	}
+
+	public void SetEntity(DataSourceCapabilities capabilities, object entity, bool isNewEntity) {
+		_crudCapabilities = capabilities;
+		_entity = entity;
+		_isNewEntity = isNewEntity;
+		CreateBackup();
+		BindToPropertyGrid();
+	}
+
+	public object GetEntityWithChanges() {
+		return _entity;
+	}
+
+	public bool HasChanges {
+		get { return !Tools.Object.Compare(_backupEntity, _entity); }
+	}
+
+	public void UndoChanges() {
+		Tools.Object.CopyMembers(_backupEntity, _entity, true);
+	}
+
+	public void AcceptChanges() {
+		CreateBackup();
+	}
+
+	public IEnumerable<string> Validate() {
+		return Enumerable.Empty<string>();
+	}
+
+	#endregion
+
+
+	#region Binding
+
+	private void BindToPropertyGrid() {
+		if (_backupEntity != null) {
+			_propertyGrid.SelectedObject = _entity;
+		}
+		_propertyGrid.Enabled = (_isNewEntity && _crudCapabilities.HasFlag(DataSourceCapabilities.CanCreate)) || (!_isNewEntity && _crudCapabilities.HasFlag(DataSourceCapabilities.CanUpdate));
+	}
+
+	private void CreateBackup() {
+		_backupEntity = Tools.Object.CloneObject(_entity, true);
+	}
+
+	#endregion
+
 }

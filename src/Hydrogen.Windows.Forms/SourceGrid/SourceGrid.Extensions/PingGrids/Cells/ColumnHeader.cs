@@ -6,18 +6,13 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
+namespace SourceGrid.Extensions.PingGrids.Cells;
 
-namespace SourceGrid.Extensions.PingGrids.Cells
-{
-	/// <summary>
-	/// A cell header used for the columns. Usually used in the HeaderCell property of a DataGridColumn.
-	/// </summary>
-	public class ColumnHeader : SourceGrid.Cells.Virtual.ColumnHeader
-	{
-	    public ColumnHeader(string pCaption)
-	    {
-	        Model.AddModel(new SourceGrid.Cells.Models.ValueModel(pCaption));
-	    }
+/// <summary>
+/// A cell header used for the columns. Usually used in the HeaderCell property of a DataGridColumn.
+/// </summary>
+public class ColumnHeader : SourceGrid.Cells.Virtual.ColumnHeader {
+	public ColumnHeader(string pCaption) {
+		Model.AddModel(new SourceGrid.Cells.Models.ValueModel(pCaption));
 	}
 }

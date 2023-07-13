@@ -7,31 +7,24 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
 using System.Windows.Forms;
-using Hydrogen;
 using Hydrogen.Windows.Forms;
 
-namespace Hydrogen.Utils.WinFormsTester {
-	public partial class ApplicationServicesTestScreen : ApplicationScreen {
-		public ApplicationServicesTestScreen() {
-			InitializeComponent();
-		}
+namespace Hydrogen.Utils.WinFormsTester;
 
-		private void _callTestMethodButton_Click(object sender, EventArgs e) {
-			try {
-				throw new NotImplementedException();
-				// HS: 2019-02-24 disabled due to .net standard upgrade
-				//var services = new SoftwareService2WebServiceClient();
-				//services.Test();
-			} catch (Exception error) {
-				MessageBox.Show(this, error.ToDisplayString());
-			}
+public partial class ApplicationServicesTestScreen : ApplicationScreen {
+	public ApplicationServicesTestScreen() {
+		InitializeComponent();
+	}
+
+	private void _callTestMethodButton_Click(object sender, EventArgs e) {
+		try {
+			throw new NotImplementedException();
+			// HS: 2019-02-24 disabled due to .net standard upgrade
+			//var services = new SoftwareService2WebServiceClient();
+			//services.Test();
+		} catch (Exception error) {
+			MessageBox.Show(this, error.ToDisplayString());
 		}
 	}
 }

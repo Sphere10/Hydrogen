@@ -11,7 +11,10 @@ using System;
 namespace Hydrogen.Application;
 
 public abstract class BaseSettingsServices : ISettingsServices {
-	public event EventHandler ConfigurationChanged { add => throw new NotImplementedException(); remove => throw new NotImplementedException(); }
+	public event EventHandler ConfigurationChanged {
+		add => throw new NotImplementedException();
+		remove => throw new NotImplementedException();
+	}
 
 	protected virtual void OnConfigurationChanged() => throw new NotImplementedException();
 

@@ -6,25 +6,21 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using Hydrogen;
-using Hydrogen.Data;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
+namespace Hydrogen.Data;
 
-namespace Hydrogen.Data {
+public interface IDatabaseManager {
 
-    public interface IDatabaseManager {
+	event EventHandlerEx<DatabaseCreatedEventArgs> DatabaseCreated;
+	event EventHandlerEx<DatabaseSchemasCreatedEventArgs> DatabaseSchemasCreated;
+	event EventHandlerEx<string> DatabaseDropped;
 
-        event EventHandlerEx<DatabaseCreatedEventArgs> DatabaseCreated;
-        event EventHandlerEx<DatabaseSchemasCreatedEventArgs> DatabaseSchemasCreated;
-        event EventHandlerEx<string> DatabaseDropped;
+	string GenerateConnectionString(string server, string database, string username, string password, int? port);
 
-        string GenerateConnectionString(string server, string database, string username, string password, int? port);
-        bool DatabaseExists(string connectionString);
-        void DropDatabase(string connectionString);
-        void CreateEmptyDatabase(string connectionString);
-        void CreateApplicationDatabase(string connectionString, DatabaseGenerationDataPolicy dataPolicy, string databaseName);
-    }
+	bool DatabaseExists(string connectionString);
+
+	void DropDatabase(string connectionString);
+
+	void CreateEmptyDatabase(string connectionString);
+
+	void CreateApplicationDatabase(string connectionString, DatabaseGenerationDataPolicy dataPolicy, string databaseName);
 }

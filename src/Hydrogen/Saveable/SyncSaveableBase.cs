@@ -14,7 +14,7 @@ namespace Hydrogen;
 /// A <see cref="SaveableBase"/> abstraction that implements it's asynchronous members using <see cref="Task.Run(Action)"/>.
 /// </summary>
 public abstract class SyncSaveableBase : SaveableBase {
-	
+
 	protected override Task SaveInternalAsync() => Task.Run(SaveInternal);
 
 	protected sealed override Task OnSavingAsync() => Task.Run(OnSaving);

@@ -7,21 +7,18 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
-namespace Hydrogen.Windows.Forms.AppointmentBook {
-	public class AppointmentDraggingEvent : AppointmentEvent {
+namespace Hydrogen.Windows.Forms.AppointmentBook;
 
-		public AppointmentDraggingEvent() {
-			DestinationColumn = null;
-			IsDestinationCompatible = true;
-		}
+public class AppointmentDraggingEvent : AppointmentEvent {
 
-		public AppointmentColumn DestinationColumn { get; set; }
-		public DateTime DestinationStartTime { get; set; }
-		public DateTime DestinationEndTime { get; set; }
-		public bool IsDestinationCompatible { get; set; }
+	public AppointmentDraggingEvent() {
+		DestinationColumn = null;
+		IsDestinationCompatible = true;
 	}
+
+	public AppointmentColumn DestinationColumn { get; set; }
+	public DateTime DestinationStartTime { get; set; }
+	public DateTime DestinationEndTime { get; set; }
+	public bool IsDestinationCompatible { get; set; }
 }

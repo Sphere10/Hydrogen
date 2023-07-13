@@ -6,11 +6,10 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen.DApp.Core.Wallets {
-	public enum WalletKeyCapability {
-		None = 0,
-		CanWatch = 1,
-		CanSign
-	}
-	
+namespace Hydrogen.DApp.Core.Wallets;
+
+public enum WalletKeyCapability {
+	None = 0,
+	CanWatch = 1,
+	CanSign
 }

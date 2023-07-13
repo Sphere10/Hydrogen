@@ -8,23 +8,21 @@
 
 using System;
 
-namespace Hydrogen {
+namespace Hydrogen;
 
-	public class MouseWheelEvent : MouseEvent
-    {
+public class MouseWheelEvent : MouseEvent {
 
-		public MouseWheelEvent(
-			string processName,
-			int x,
-			int y,
-			DateTime time,
-			int delta
-		) : base(processName, x, y, time) {
-			Delta = delta;
-        }
-		
-		public int Delta { get; private set; }
+	public MouseWheelEvent(
+		string processName,
+		int x,
+		int y,
+		DateTime time,
+		int delta
+	) : base(processName, x, y, time) {
+		Delta = delta;
+	}
+
+	public int Delta { get; private set; }
 
 
-    }
 }

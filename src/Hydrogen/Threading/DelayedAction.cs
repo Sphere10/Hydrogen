@@ -8,58 +8,57 @@
 
 using System;
 
-namespace Hydrogen.Threading {
-	public class DelayedAction {
-		private readonly object _threadLock;
-		private readonly Action _action;
-		private readonly TimeSpan _waitDuration;
-		private DateTime _lastPing;
-		private WaitState _waitState;
+namespace Hydrogen.Threading;
 
-		public DelayedAction(Action action, TimeSpan durationToWaitTillExecution) {
-			_threadLock = new object();
-			_action = action;
-			_waitDuration = durationToWaitTillExecution;
-			_waitState = WaitState.Idle;
-		}
-		
-		public void Ping() {
-			lock (_threadLock) {
-				_lastPing = DateTime.Now;
-				if (_waitState == WaitState.Idle) {
-					_waitState = WaitState.Waiting;
-					Tools.Threads.QueueAction(ExecuteAction);
-				}
-			}
-		}
+public class DelayedAction {
+	private readonly object _threadLock;
+	private readonly Action _action;
+	private readonly TimeSpan _waitDuration;
+	private DateTime _lastPing;
+	private WaitState _waitState;
 
-		private void ExecuteAction() {
-			TimeSpan durationToSleep = TimeSpan.Zero;
-			lock(_threadLock) {
-				if (_lastPing.TimeElapsed() < _waitDuration) {
-					durationToSleep = _waitDuration.Subtract(DateTime.Now.Subtract(_lastPing));
-					if (durationToSleep.TotalMilliseconds < 0)
-						durationToSleep = TimeSpan.Zero;
-				}
-			}
+	public DelayedAction(Action action, TimeSpan durationToWaitTillExecution) {
+		_threadLock = new object();
+		_action = action;
+		_waitDuration = durationToWaitTillExecution;
+		_waitState = WaitState.Idle;
+	}
 
-			if (durationToSleep == TimeSpan.Zero) {
-				try {
-					_action();
-				} finally {
-					_waitState = WaitState.Idle;
-				}
-			} else {
-				System.Threading.Thread.Sleep(durationToSleep);
+	public void Ping() {
+		lock (_threadLock) {
+			_lastPing = DateTime.Now;
+			if (_waitState == WaitState.Idle) {
+				_waitState = WaitState.Waiting;
 				Tools.Threads.QueueAction(ExecuteAction);
 			}
 		}
+	}
 
-		private enum WaitState {
-			Idle,
-			Waiting,
+	private void ExecuteAction() {
+		TimeSpan durationToSleep = TimeSpan.Zero;
+		lock (_threadLock) {
+			if (_lastPing.TimeElapsed() < _waitDuration) {
+				durationToSleep = _waitDuration.Subtract(DateTime.Now.Subtract(_lastPing));
+				if (durationToSleep.TotalMilliseconds < 0)
+					durationToSleep = TimeSpan.Zero;
+			}
+		}
+
+		if (durationToSleep == TimeSpan.Zero) {
+			try {
+				_action();
+			} finally {
+				_waitState = WaitState.Idle;
+			}
+		} else {
+			System.Threading.Thread.Sleep(durationToSleep);
+			Tools.Threads.QueueAction(ExecuteAction);
 		}
 	}
 
 
+	private enum WaitState {
+		Idle,
+		Waiting,
+	}
 }

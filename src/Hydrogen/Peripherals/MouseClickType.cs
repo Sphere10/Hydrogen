@@ -8,16 +8,15 @@
 
 using System.Reflection;
 
-namespace Hydrogen {
-	/// <summary>
-	/// Summary description for MouseClickType.
-	/// </summary>
-	[Obfuscation(Exclude = true)]
-    public enum MouseClickType
-    {
-		None = 0,
-        Single,
-        Double,
-        Tripple
-    }
+namespace Hydrogen;
+
+/// <summary>
+/// Summary description for MouseClickType.
+/// </summary>
+[Obfuscation(Exclude = true)]
+public enum MouseClickType {
+	None = 0,
+	Single,
+	Double,
+	Tripple
 }

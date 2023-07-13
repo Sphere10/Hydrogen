@@ -8,11 +8,10 @@
 
 using System.IO;
 
-namespace Hydrogen {
+namespace Hydrogen;
 
-	public static class FileInfoExtensions {
-		public static string GetMimeType(this FileInfo fileInfo) {
-			return Tools.Network.GetMimeType(fileInfo.FullName); 
-		}
+public static class FileInfoExtensions {
+	public static string GetMimeType(this FileInfo fileInfo) {
+		return Tools.Network.GetMimeType(fileInfo.FullName);
 	}
 }

@@ -10,21 +10,20 @@ using System;
 using System.Collections.Generic;
 
 
-namespace Hydrogen {
+namespace Hydrogen;
 
-	public static class LinkedListExtensions {
+public static class LinkedListExtensions {
 
-        public static LinkedListNode<T> Find<T>(this LinkedList<T> linkedList, Predicate<T> predicate) {
-            if (linkedList.Count > 0) {
-                var currNode = linkedList.First;
-                while (currNode != null) {
-                    if (predicate(currNode.Value))
-                        return currNode;
-                    currNode = currNode.Next;
-                }                
-            }
-            return null;
-        }  
+	public static LinkedListNode<T> Find<T>(this LinkedList<T> linkedList, Predicate<T> predicate) {
+		if (linkedList.Count > 0) {
+			var currNode = linkedList.First;
+			while (currNode != null) {
+				if (predicate(currNode.Value))
+					return currNode;
+				currNode = currNode.Next;
+			}
+		}
+		return null;
+	}
 
-    }
 }

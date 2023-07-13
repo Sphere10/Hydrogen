@@ -6,19 +6,11 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
-using System.Collections.Generic;
-using System.Text;
-using Hydrogen.Application;
+namespace Hydrogen.Windows.Forms;
 
-namespace Hydrogen.Windows.Forms {
-
-
-    public enum ScreenDisplayMode
-    {
-        Normal,
-        Maximized,
-        Filled,
-        FilledAndMaximized
-    }
+public enum ScreenDisplayMode {
+	Normal,
+	Maximized,
+	Filled,
+	FilledAndMaximized
 }

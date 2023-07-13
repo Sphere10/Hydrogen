@@ -8,12 +8,11 @@
 
 using System;
 
-namespace Hydrogen {
-	[Flags]
-    public enum MouseButtonState
-    {
-		None = 0,
-        Down,
-        Up,
-    }
+namespace Hydrogen;
+
+[Flags]
+public enum MouseButtonState {
+	None = 0,
+	Down,
+	Up,
 }

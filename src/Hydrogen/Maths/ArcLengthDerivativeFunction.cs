@@ -9,18 +9,17 @@
 using System;
 using Hydrogen.Maths;
 
-namespace Hydrogen {
+namespace Hydrogen;
 
-	public class ArcLengthDerivativeFunction : IFunction {
-        private readonly IFunction _derivativeFunction = null;
+public class ArcLengthDerivativeFunction : IFunction {
+	private readonly IFunction _derivativeFunction = null;
 
-        public ArcLengthDerivativeFunction(IFunction function) {
-            _derivativeFunction = new FunctionDerivative(function);
-        }
+	public ArcLengthDerivativeFunction(IFunction function) {
+		_derivativeFunction = new FunctionDerivative(function);
+	}
 
-        public double Eval(double x) {
-            return Math.Sqrt(1 + Math.Pow(_derivativeFunction.Eval(x), 2));
+	public double Eval(double x) {
+		return Math.Sqrt(1 + Math.Pow(_derivativeFunction.Eval(x), 2));
 
-        }
-    }
+	}
 }

@@ -11,52 +11,43 @@ using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Crypto.Generators;
 using Org.BouncyCastle.Crypto.Parameters;
 
-namespace Hydrogen.CryptoEx.PascalCoin {
-	public class PascalCoinEciesKdfBytesGenerator : BaseKdfBytesGenerator
-    {
-        private byte[] _shared;
+namespace Hydrogen.CryptoEx.PascalCoin;
 
-        public PascalCoinEciesKdfBytesGenerator(IDigest digest) : base(0, digest)
-        {
-        }
+public class PascalCoinEciesKdfBytesGenerator : BaseKdfBytesGenerator {
+	private byte[] _shared;
 
-        public override void Init(IDerivationParameters parameters)
-        {
-            KdfParameters kdfParameters = (KdfParameters) parameters;
-            if (kdfParameters != null)
-            {
-                _shared = kdfParameters.GetSharedSecret();
-            }
-            else
-            {
-                throw new ArgumentException("KDF Parameters Required For KDF Generator");
-            }
-        }
+	public PascalCoinEciesKdfBytesGenerator(IDigest digest) : base(0, digest) {
+	}
 
-        public override int GenerateBytes(byte[] output, int outOff, int length)
-        {
-            if ((output.Length - length) < outOff)
-            {
-                throw new DataLengthException("Output Buffer too Small");
-            }
+	public override void Init(IDerivationParameters parameters) {
+		KdfParameters kdfParameters = (KdfParameters)parameters;
+		if (kdfParameters != null) {
+			_shared = kdfParameters.GetSharedSecret();
+		} else {
+			throw new ArgumentException("KDF Parameters Required For KDF Generator");
+		}
+	}
 
-            int outLen = Digest.GetDigestSize();
+	public override int GenerateBytes(byte[] output, int outOff, int length) {
+		if ((output.Length - length) < outOff) {
+			throw new DataLengthException("Output Buffer too Small");
+		}
 
-            if (length > outLen)
-            {
-                throw new DataLengthException(
-                    "Specified Hash Cannot Produce Sufficient Data for the Specified Operation.");
-            }
+		int outLen = Digest.GetDigestSize();
 
-            byte[] temp = new byte[Digest.GetDigestSize()];
+		if (length > outLen) {
+			throw new DataLengthException(
+				"Specified Hash Cannot Produce Sufficient Data for the Specified Operation.");
+		}
 
-            Digest.BlockUpdate(_shared, 0, _shared.Length);
-            Digest.DoFinal(temp, 0);
+		byte[] temp = new byte[Digest.GetDigestSize()];
 
-            Array.Copy(temp, 0, output, outOff, length);
+		Digest.BlockUpdate(_shared, 0, _shared.Length);
+		Digest.DoFinal(temp, 0);
 
-            Digest.Reset();
-            return length;
-        }
-    }
+		Array.Copy(temp, 0, output, outOff, length);
+
+		Digest.Reset();
+		return length;
+	}
 }

@@ -8,19 +8,19 @@
 
 using System.Collections.Generic;
 
-namespace Hydrogen {
+namespace Hydrogen;
 
-	public class SimpleGraph<TNode> : ISimpleGraph<TNode>
-		where TNode : ISimpleGraph<TNode> {
-		public virtual IEnumerable<TNode> Connections { get; set; }
-	}
-
-	public class SimpleGraph : SimpleGraph<SimpleGraph> {
-	}
+public class SimpleGraph<TNode> : ISimpleGraph<TNode>
+	where TNode : ISimpleGraph<TNode> {
+	public virtual IEnumerable<TNode> Connections { get; set; }
+}
 
 
-	public class SimpleGraph<TEntity, TNode> : SimpleGraph<TNode>, ISimpleGraph<TEntity, TNode>
-		where TNode : ISimpleGraph<TEntity, TNode> {
-		public TEntity Entity { get; set; }
-	}
+public class SimpleGraph : SimpleGraph<SimpleGraph> {
+}
+
+
+public class SimpleGraph<TEntity, TNode> : SimpleGraph<TNode>, ISimpleGraph<TEntity, TNode>
+	where TNode : ISimpleGraph<TEntity, TNode> {
+	public TEntity Entity { get; set; }
 }

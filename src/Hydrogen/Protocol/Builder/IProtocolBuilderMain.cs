@@ -6,22 +6,21 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen.Communications {
+namespace Hydrogen.Communications;
 
-	public interface IProtocolBuilderMain {
+public interface IProtocolBuilderMain {
 
-		ProtocolHandshakeBuilder Handshake { get; }
+	ProtocolHandshakeBuilder Handshake { get; }
 
-		ProtocolRequestBuilder Requests { get; }
+	ProtocolRequestBuilder Requests { get; }
 
-		ProtocolResponseBuilder Responses { get; }
+	ProtocolResponseBuilder Responses { get; }
 
-		ProtocolCommandBuilder Commands { get; }
+	ProtocolCommandBuilder Commands { get; }
 
-		ProtocolMessageBuilder Messages { get; }
+	ProtocolMessageBuilder Messages { get; }
 
-		ProtocolBuilder SetMode(int mode);
+	ProtocolBuilder SetMode(int mode);
 
-		Protocol Build();
-	}
+	Protocol Build();
 }

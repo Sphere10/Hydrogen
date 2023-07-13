@@ -7,10 +7,10 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 
-namespace Hydrogen.DApp.Presentation.Plugins {
-    /// <summary>
-    /// App block page
-    /// </summary>
-    public interface IAppBlockPage : IRoutablePage, INamedItem, IIconItem, IMenuProvider {
-    }
+namespace Hydrogen.DApp.Presentation.Plugins;
+
+/// <summary>
+/// App block page
+/// </summary>
+public interface IAppBlockPage : IRoutablePage, INamedItem, IIconItem, IMenuProvider {
 }

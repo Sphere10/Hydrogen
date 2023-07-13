@@ -9,11 +9,10 @@
 using System;
 using System.IO;
 
-namespace Hydrogen {
+namespace Hydrogen;
 
-	public interface IStreamProvider : IDisposable {
-		Stream OpenReadStream();
-		Stream OpenWriteStream();
-	}
+public interface IStreamProvider : IDisposable {
+	Stream OpenReadStream();
 
+	Stream OpenWriteStream();
 }

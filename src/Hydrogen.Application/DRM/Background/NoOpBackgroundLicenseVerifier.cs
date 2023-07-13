@@ -12,6 +12,6 @@ using System.Threading.Tasks;
 namespace Hydrogen.Application;
 
 public class NoOpBackgroundLicenseVerifier : IBackgroundLicenseVerifier {
-	public Task VerifyLicense(CancellationToken cancellationToken) 
+	public Task VerifyLicense(CancellationToken cancellationToken)
 		=> Task.CompletedTask;
 }

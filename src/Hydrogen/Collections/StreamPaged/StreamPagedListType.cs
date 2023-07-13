@@ -6,9 +6,9 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen {
-	public enum StreamPagedListType {
-		Dynamic,
-		Static
-	}
+namespace Hydrogen;
+
+public enum StreamPagedListType {
+	Dynamic,
+	Static
 }

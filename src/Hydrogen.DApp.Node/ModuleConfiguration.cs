@@ -6,32 +6,25 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Hydrogen;
 using Hydrogen.Application;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Hydrogen.DApp.Node {
+namespace Hydrogen.DApp.Node;
 
-	public class ModuleConfiguration : ModuleConfigurationBase {
+public class ModuleConfiguration : ModuleConfigurationBase {
 
-		public override void RegisterComponents(IServiceCollection serviceCollection) {
-			// Init tasks
-			serviceCollection.AddInitializer<HydrogenInitializer>();
-			serviceCollection.AddInitializer<IncrementUsageByOneInitializer>();
+	public override void RegisterComponents(IServiceCollection serviceCollection) {
+		// Init tasks
+		serviceCollection.AddInitializer<HydrogenInitializer>();
+		serviceCollection.AddInitializer<IncrementUsageByOneInitializer>();
 
-			// Start Tasks
-			// none
-			// End Tasks
-			
+		// Start Tasks
+		// none
+		// End Tasks
 
-			// Components
-			
-		}
+
+		// Components
 
 	}
+
 }

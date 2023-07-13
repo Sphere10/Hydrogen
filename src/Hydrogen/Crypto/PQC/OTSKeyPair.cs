@@ -6,17 +6,15 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen {
+namespace Hydrogen;
 
-	public class OTSKeyPair {
-		public OTSKeyPair(byte[,] privateKey, byte[,] publicKey, IFuture<byte[]> publicKeyHash) {
-			PrivateKey = privateKey;
-			PublicKey = publicKey;
-			PublicKeyHash = publicKeyHash;
-		}
-		public readonly byte[,] PrivateKey;
-		public readonly byte[,] PublicKey;
-		public readonly IFuture<byte[]> PublicKeyHash;
+public class OTSKeyPair {
+	public OTSKeyPair(byte[,] privateKey, byte[,] publicKey, IFuture<byte[]> publicKeyHash) {
+		PrivateKey = privateKey;
+		PublicKey = publicKey;
+		PublicKeyHash = publicKeyHash;
 	}
-
+	public readonly byte[,] PrivateKey;
+	public readonly byte[,] PublicKey;
+	public readonly IFuture<byte[]> PublicKeyHash;
 }

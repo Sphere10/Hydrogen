@@ -8,16 +8,11 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Windows.Forms;
-using System.Diagnostics;
 using System.ComponentModel;
 using System.Globalization;
-using System.Linq;
 using Hydrogen.Application;
-using Hydrogen.Windows.Forms;
 using Hydrogen.Windows.Forms.Components.BlockFramework;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Hydrogen.Windows.Forms;
 
@@ -63,8 +58,7 @@ public class ApplicationScreen : ApplicationControl, IHelpableObject {
 	[Browsable(true), Category("Behavior"), Description("How this screen will be displayed to the user")]
 	public ScreenActivationMode ActivationMode { get; set; }
 
-	[Browsable(false)]
-	public IApplicationBlock ApplicationBlock { get; set; }
+	[Browsable(false)] public IApplicationBlock ApplicationBlock { get; set; }
 
 	//[Category("Behavior")]
 	//[DesignerSerializationVisibility(DesignerSerializationVisibility.Visible)]

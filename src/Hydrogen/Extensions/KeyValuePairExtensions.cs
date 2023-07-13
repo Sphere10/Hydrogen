@@ -8,8 +8,8 @@
 
 using System.Collections.Generic;
 
-namespace Hydrogen {
-    public static class KeyValuePairExtensions {
-        public static KeyValuePair<V, U> ToInverse<U, V>(this KeyValuePair<U, V> kvp) => new KeyValuePair<V, U>(kvp.Value, kvp.Key);
-    }
+namespace Hydrogen;
+
+public static class KeyValuePairExtensions {
+	public static KeyValuePair<V, U> ToInverse<U, V>(this KeyValuePair<U, V> kvp) => new KeyValuePair<V, U>(kvp.Value, kvp.Key);
 }

@@ -6,11 +6,10 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen {
+namespace Hydrogen;
 
-	interface INullOp<T> {
-		bool HasValue(T value);
-		bool AddIfNotNull(ref T accumulator, T value);
-	}
+interface INullOp<T> {
+	bool HasValue(T value);
 
+	bool AddIfNotNull(ref T accumulator, T value);
 }

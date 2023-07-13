@@ -6,53 +6,43 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Drawing;
 
-namespace Hydrogen.Windows.Forms {
-    public class LinkMenuItem : MenuItem, ILinkMenuItem
-    {
-        private string _text;
+namespace Hydrogen.Windows.Forms;
 
-        public LinkMenuItem()
-            : this(string.Empty) {
-        }
+public class LinkMenuItem : MenuItem, ILinkMenuItem {
+	private string _text;
 
-        public LinkMenuItem(string text)
-            : this(text, null) {
-        }
+	public LinkMenuItem()
+		: this(string.Empty) {
+	}
 
-        public LinkMenuItem(string text, Image image16x16)
-            : this(text, image16x16, true, true, false) {
-        }
+	public LinkMenuItem(string text)
+		: this(text, null) {
+	}
 
-        public LinkMenuItem(string text, Image image16x16, bool showOnExplorerBar, bool showOnToolBar, bool executeOnLoad )
-            : base(image16x16, showOnExplorerBar, showOnToolBar, executeOnLoad) 
-        {
-            
-            _text = text;
-        }
+	public LinkMenuItem(string text, Image image16x16)
+		: this(text, image16x16, true, true, false) {
+	}
 
+	public LinkMenuItem(string text, Image image16x16, bool showOnExplorerBar, bool showOnToolBar, bool executeOnLoad)
+		: base(image16x16, showOnExplorerBar, showOnToolBar, executeOnLoad) {
 
-        public virtual string Text {
-            get {
-                return _text;
-            }
-            set {
-                _text = value;
-            }
-        }
+		_text = text;
+	}
 
 
+	public virtual string Text {
+		get { return _text; }
+		set { _text = value; }
+	}
 
-        public virtual void OnSelect() {
-        }
 
-        public override void Dispose() {
-            base.Dispose();
-        }
+	public virtual void OnSelect() {
+	}
 
-    }
+	public override void Dispose() {
+		base.Dispose();
+	}
+
 }

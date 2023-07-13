@@ -6,12 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using NUnit.Framework;
 
 namespace Hydrogen.Tests;
@@ -90,4 +85,3 @@ public class TextFileCacheTests {
 	}
 
 }
-

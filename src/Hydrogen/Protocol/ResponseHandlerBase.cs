@@ -6,8 +6,8 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen.Communications {
-    public abstract class ResponseHandlerBase : IResponseHandler {
-        public abstract void Execute(ProtocolOrchestrator orchestrator, object request, object response);
-    }
+namespace Hydrogen.Communications;
+
+public abstract class ResponseHandlerBase : IResponseHandler {
+	public abstract void Execute(ProtocolOrchestrator orchestrator, object request, object response);
 }

@@ -29,7 +29,7 @@ public class ClusteredStreamScope : IDisposable {
 		((ClusteredStorage.FragmentProvider)((FragmentedStream)Stream).FragmentProvider).InvalidateCluster(cluster);
 	}
 
-	public void  ResetTracking() {
+	public void ResetTracking() {
 		((ClusteredStorage.FragmentProvider)((FragmentedStream)Stream).FragmentProvider).Reset();
 	}
 

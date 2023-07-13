@@ -9,27 +9,27 @@
 using System;
 using System.Collections.Generic;
 
-namespace Hydrogen {
-	public class ComparableWrapper<T> : IComparable<T>, IComparable, IEquatable<T> {
-		public readonly T @Object;
-		private readonly Comparer<T> _comparer;
+namespace Hydrogen;
 
-		public ComparableWrapper(T internalObject) {
-			@Object = internalObject;
-			_comparer = Comparer<T>.Default;
-		}
+public class ComparableWrapper<T> : IComparable<T>, IComparable, IEquatable<T> {
+	public readonly T @Object;
+	private readonly Comparer<T> _comparer;
+
+	public ComparableWrapper(T internalObject) {
+		@Object = internalObject;
+		_comparer = Comparer<T>.Default;
+	}
 
 
-		public int CompareTo(T other) {
-			return _comparer.Compare(@Object, other);
-		}
+	public int CompareTo(T other) {
+		return _comparer.Compare(@Object, other);
+	}
 
-		public int CompareTo(object obj) {
-			return Comparer<object>.Default.Compare(@Object, obj);
-		}
+	public int CompareTo(object obj) {
+		return Comparer<object>.Default.Compare(@Object, obj);
+	}
 
-		public bool Equals(T other) {
-			return CompareTo(other) == 0;
-		}
+	public bool Equals(T other) {
+		return CompareTo(other) == 0;
 	}
 }

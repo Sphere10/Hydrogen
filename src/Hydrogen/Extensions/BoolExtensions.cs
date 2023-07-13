@@ -6,23 +6,20 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen {
-	public static class BoolExtensions
-	{
-		public static string YesNo(this bool value)
-		{
-			if (value)
-				return "Yes";
-			else
-				return "No";
-		}
+namespace Hydrogen;
 
-		public static string OpenClosed(this bool value)
-		{
-			if (value)
-				return "Closed";
-			else
-				return "Open";
-		}
+public static class BoolExtensions {
+	public static string YesNo(this bool value) {
+		if (value)
+			return "Yes";
+		else
+			return "No";
+	}
+
+	public static string OpenClosed(this bool value) {
+		if (value)
+			return "Closed";
+		else
+			return "Open";
 	}
 }

@@ -8,22 +8,21 @@
 
 using System;
 
-namespace Hydrogen {
-	/// <summary>
-	/// Summary description for ApplicationEvent.
-	/// </summary>
-	public class ApplicationChangedEvent : EventArgs 
-	{
-		public ApplicationChangedEvent(string targetAppName, string sourceApplicationName, DateTime switchedOn, TimeSpan openedFor) {
-			TargetProcessName = targetAppName;
-			SourceProcessName = sourceApplicationName;
-			SwitchedOn = switchedOn;
-			SourceOpenedFor = openedFor;
-		}
+namespace Hydrogen;
 
-		public string TargetProcessName {	get; private set; }
-		public string SourceProcessName { get; private set; }
-		public DateTime SwitchedOn { get; private set; }
-		public TimeSpan SourceOpenedFor { get; private set; }
+/// <summary>
+/// Summary description for ApplicationEvent.
+/// </summary>
+public class ApplicationChangedEvent : EventArgs {
+	public ApplicationChangedEvent(string targetAppName, string sourceApplicationName, DateTime switchedOn, TimeSpan openedFor) {
+		TargetProcessName = targetAppName;
+		SourceProcessName = sourceApplicationName;
+		SwitchedOn = switchedOn;
+		SourceOpenedFor = openedFor;
 	}
+
+	public string TargetProcessName { get; private set; }
+	public string SourceProcessName { get; private set; }
+	public DateTime SwitchedOn { get; private set; }
+	public TimeSpan SourceOpenedFor { get; private set; }
 }

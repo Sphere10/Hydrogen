@@ -6,17 +6,6 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Drawing;
-using System.Text;
-using System.Windows.Forms;
-using Hydrogen;
-using Hydrogen.Application;
-using Hydrogen.Windows.Forms;
-using Microsoft.Extensions.DependencyInjection;
-
 namespace Hydrogen.Windows.Forms;
 
 public partial class ProductExpirationDetailsControl : ApplicationControl {
@@ -30,4 +19,3 @@ public partial class ProductExpirationDetailsControl : ApplicationControl {
 	}
 
 }
-

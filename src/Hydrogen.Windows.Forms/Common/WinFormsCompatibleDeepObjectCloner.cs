@@ -6,26 +6,21 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Hydrogen;
 
-namespace Hydrogen.Windows.Forms {
-    public class WinFormsCompatibleDeepObjectCloner : DeepObjectCloner {
-        public WinFormsCompatibleDeepObjectCloner() {
-            base.DontCloneTypes.AddRange(new[] { typeof(Font), typeof(Color)});
-        }
+namespace Hydrogen.Windows.Forms;
 
-        protected override object DeepClone(object source, IDictionary<Reference<object>, object> clones) {
-            if (source is Bitmap) {
-                return new Bitmap((Bitmap) source);
-            }
-            return base.DeepClone(source, clones);
-        }
+public class WinFormsCompatibleDeepObjectCloner : DeepObjectCloner {
+	public WinFormsCompatibleDeepObjectCloner() {
+		base.DontCloneTypes.AddRange(new[] { typeof(Font), typeof(Color) });
+	}
 
-    }
+	protected override object DeepClone(object source, IDictionary<Reference<object>, object> clones) {
+		if (source is Bitmap) {
+			return new Bitmap((Bitmap)source);
+		}
+		return base.DeepClone(source, clones);
+	}
+
 }

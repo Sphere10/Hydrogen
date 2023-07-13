@@ -6,9 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System.Threading.Tasks;
-
 namespace Hydrogen;
 
-	public interface IPersistable : ILoadable, ISaveable {
-	}
+public interface IPersistable : ILoadable, ISaveable {
+}

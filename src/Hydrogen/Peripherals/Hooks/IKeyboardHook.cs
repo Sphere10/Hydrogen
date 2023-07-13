@@ -7,15 +7,14 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Collections.Generic;
-namespace Hydrogen {
 
-	public interface IKeyboardHook : IDeviceHook  {
-		 event EventHandler<KeyEvent> KeyDown;
-		 event EventHandler<KeyEvent> KeyActivity;
-		 event EventHandler<KeyEvent> KeyUp;
+namespace Hydrogen;
 
-		 Func<Key, KeyState, bool> ShouldIntercept { get; set; }
- 
-	}
+public interface IKeyboardHook : IDeviceHook {
+	event EventHandler<KeyEvent> KeyDown;
+	event EventHandler<KeyEvent> KeyActivity;
+	event EventHandler<KeyEvent> KeyUp;
+
+	Func<Key, KeyState, bool> ShouldIntercept { get; set; }
+
 }

@@ -7,26 +7,20 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+namespace Hydrogen.Data;
 
-namespace Hydrogen.Data {
-
-	public class DBForeignKeySchema : DBObject{
-		public override string Name { get; set; }
-		public DBKeyType KeyType { get; internal set; }
-		public string ForeignKeyTable { get; set; }
-		public string[] ForeignKeyColumns { get; set; }
-		public string ReferenceTable { get; set; }
-		public string[] ReferenceColumns { get; set; }
-		public string[] ReferenceTablePrimaryKey { get; internal set; }
-		public bool IsNullable { get; set; }
-		public bool ReferenceIsUniqueConstraint { get; set; }
-		public bool CascadesOnUpdate { get; set; }
-		public bool CascadesOnDelete { get; set; }
-		public int Position { get; set; }
-		public override string SQL { get; set; }
-	}
+public class DBForeignKeySchema : DBObject {
+	public override string Name { get; set; }
+	public DBKeyType KeyType { get; internal set; }
+	public string ForeignKeyTable { get; set; }
+	public string[] ForeignKeyColumns { get; set; }
+	public string ReferenceTable { get; set; }
+	public string[] ReferenceColumns { get; set; }
+	public string[] ReferenceTablePrimaryKey { get; internal set; }
+	public bool IsNullable { get; set; }
+	public bool ReferenceIsUniqueConstraint { get; set; }
+	public bool CascadesOnUpdate { get; set; }
+	public bool CascadesOnDelete { get; set; }
+	public int Position { get; set; }
+	public override string SQL { get; set; }
 }

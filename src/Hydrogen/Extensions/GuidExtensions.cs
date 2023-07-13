@@ -8,12 +8,12 @@
 
 using System;
 
-namespace Hydrogen {
-	public static class GuidExtensions {
+namespace Hydrogen;
 
-		public static string ToStrictAlphaString(this Guid guid) {
-			return guid.ToString().Replace("-","").Replace("{","").Replace("}","");
-		}
+public static class GuidExtensions {
 
+	public static string ToStrictAlphaString(this Guid guid) {
+		return guid.ToString().Replace("-", "").Replace("{", "").Replace("}", "");
 	}
+
 }

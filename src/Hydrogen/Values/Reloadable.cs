@@ -64,4 +64,3 @@ public class Reloadable<T> : SynchronizedObject, IFuture<T> {
 		}
 	}
 }
-

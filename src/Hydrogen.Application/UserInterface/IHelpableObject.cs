@@ -6,19 +6,19 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen.Application {
-	public interface IHelpableObject {
+namespace Hydrogen.Application;
 
-		HelpType Type { get; }
+public interface IHelpableObject {
 
-		string FileName { get; }
+	HelpType Type { get; }
 
-		string Url { get; } 
+	string FileName { get; }
 
-		int? PageNumber { get;}
+	string Url { get; }
 
-		int? HelpTopicID { get; }
+	int? PageNumber { get; }
 
-		int? HelpTopicAlias { get; }
-	}
+	int? HelpTopicID { get; }
+
+	int? HelpTopicAlias { get; }
 }

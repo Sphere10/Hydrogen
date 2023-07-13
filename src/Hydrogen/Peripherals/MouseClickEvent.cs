@@ -8,25 +8,21 @@
 
 using System;
 
-namespace Hydrogen {
+namespace Hydrogen;
 
-	public class MouseClickEvent : MouseEvent
-    {
+public class MouseClickEvent : MouseEvent {
 
-		public MouseClickEvent(string processName, int x, int y, MouseButton clickedButtons, MouseButtonState buttonState, MouseClickType clickType, DateTime time)
-			: base(processName, x, y, time) {
-				Buttons = clickedButtons;
-				ButtonState = buttonState;
-				ClickType = clickType;
-		}
- 
-
-		public MouseButton Buttons { get; private set; }
-        public MouseButtonState ButtonState { get; private set; }
-		public MouseClickType ClickType { get; private set; }
+	public MouseClickEvent(string processName, int x, int y, MouseButton clickedButtons, MouseButtonState buttonState, MouseClickType clickType, DateTime time)
+		: base(processName, x, y, time) {
+		Buttons = clickedButtons;
+		ButtonState = buttonState;
+		ClickType = clickType;
+	}
 
 
-    }
+	public MouseButton Buttons { get; private set; }
+	public MouseButtonState ButtonState { get; private set; }
+	public MouseClickType ClickType { get; private set; }
+
+
 }
-
-

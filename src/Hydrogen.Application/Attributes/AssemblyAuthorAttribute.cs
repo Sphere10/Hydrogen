@@ -9,24 +9,22 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace Hydrogen.Application {
+namespace Hydrogen.Application;
 
-	[ComVisible(true)]
-    [AttributeUsage(AttributeTargets.Assembly, Inherited = false)]
-    public sealed class AssemblyAuthorAttribute : Attribute {
-	    
-	    public AssemblyAuthorAttribute(string name) : this(name, null) {
-	    }
+[ComVisible(true)]
+[AttributeUsage(AttributeTargets.Assembly, Inherited = false)]
+public sealed class AssemblyAuthorAttribute : Attribute {
 
-	    public AssemblyAuthorAttribute(string name, string email) {
-		    Name = name;
-			Email = email;
-	    }
-
-	    public string Name { get; init; }
-
-	    public string Email { get; init; }
-
+	public AssemblyAuthorAttribute(string name) : this(name, null) {
 	}
-}
 
+	public AssemblyAuthorAttribute(string name, string email) {
+		Name = name;
+		Email = email;
+	}
+
+	public string Name { get; init; }
+
+	public string Email { get; init; }
+
+}

@@ -6,11 +6,9 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen {
+namespace Hydrogen;
 
-	public enum IterateDirection {
-		LeftToRight,
-		RightToLeft
-	}
-
+public enum IterateDirection {
+	LeftToRight,
+	RightToLeft
 }

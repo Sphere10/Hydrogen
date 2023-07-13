@@ -6,10 +6,8 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen {
+namespace Hydrogen;
 
-	public interface IReadOnlyBoundedList<T> : IReadOnlyExtendedList<T> {
-		int FirstIndex { get; }
-	}
-
+public interface IReadOnlyBoundedList<T> : IReadOnlyExtendedList<T> {
+	int FirstIndex { get; }
 }

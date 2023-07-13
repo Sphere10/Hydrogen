@@ -8,16 +8,14 @@
 
 using System.IO;
 
-namespace Hydrogen {
-	public interface ITransactionalFilePage<TItem> : IFilePage<TItem> {
-		string UncommittedPageFileName { get; }
+namespace Hydrogen;
 
-		bool HasUncommittedData { get; set; }
+public interface ITransactionalFilePage<TItem> : IFilePage<TItem> {
+	string UncommittedPageFileName { get; }
 
-		Stream OpenSourceReadStream();
+	bool HasUncommittedData { get; set; }
 
-		Stream OpenSourceWriteStream();
-	}
+	Stream OpenSourceReadStream();
 
-
+	Stream OpenSourceWriteStream();
 }

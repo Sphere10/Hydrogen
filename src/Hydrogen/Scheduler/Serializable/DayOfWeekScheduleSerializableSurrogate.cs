@@ -9,14 +9,12 @@
 using System;
 using System.Xml.Serialization;
 
-namespace Hydrogen {
-	public class DayOfWeekScheduleSerializableSurrogate : JobScheduleSerializableSurrogate {
+namespace Hydrogen;
 
-		[XmlAttribute]
-		public DayOfWeek DayOfWeek { get; set; }
+public class DayOfWeekScheduleSerializableSurrogate : JobScheduleSerializableSurrogate {
 
-		[XmlAttribute]
-		public long TimeOfDay;
+	[XmlAttribute] public DayOfWeek DayOfWeek { get; set; }
 
-	}
+	[XmlAttribute] public long TimeOfDay;
+
 }

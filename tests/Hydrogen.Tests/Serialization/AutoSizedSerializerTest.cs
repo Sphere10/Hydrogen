@@ -6,30 +6,21 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices;
 using System.Text;
-using AutoFixture;
-using FluentAssertions;
 using NUnit.Framework;
 
-namespace Hydrogen.Tests {
+namespace Hydrogen.Tests;
 
-	[TestFixture]
-	[Parallelizable]
-	public class AutoSizedSerializerTest {
+[TestFixture]
+[Parallelizable]
+public class AutoSizedSerializerTest {
 
-		[Test]
-		public void String([Values("", "A", "Hello World!")] string arg) {
-			var serializer = new AutoSizedSerializer<string>(new StringSerializer(Encoding.UTF8));
-			var serializedBytes = serializer.SerializeLE(arg);
-			var deserializedItem = serializer.DeserializeLE(serializedBytes);
-			Assert.That(deserializedItem, Is.EqualTo(arg));
-		}
-
+	[Test]
+	public void String([Values("", "A", "Hello World!")] string arg) {
+		var serializer = new AutoSizedSerializer<string>(new StringSerializer(Encoding.UTF8));
+		var serializedBytes = serializer.SerializeLE(arg);
+		var deserializedItem = serializer.DeserializeLE(serializedBytes);
+		Assert.That(deserializedItem, Is.EqualTo(arg));
 	}
+
 }

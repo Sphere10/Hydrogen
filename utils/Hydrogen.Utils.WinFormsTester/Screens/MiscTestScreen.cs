@@ -7,24 +7,16 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Transactions;
-using System.Windows.Forms;
-using System.Xml;
-using System.Xml.Schema;
 using System.Xml.Serialization;
-using Hydrogen;
 using Hydrogen.Data;
 using Hydrogen.Windows.Forms;
 
 namespace Hydrogen.Utils.WinFormsTester;
+
 public partial class MiscTestScreen : ApplicationScreen {
 	public MiscTestScreen() {
 		InitializeComponent();
@@ -37,10 +29,12 @@ public partial class MiscTestScreen : ApplicationScreen {
 		listMerger1.LeftItems = objs;
 	}
 
+
 	public class TestObject {
 		public int ID { get; set; }
 		public string Name { get; set; }
 	}
+
 
 	private void _clipTestButton_Click(object sender, EventArgs e) {
 		var teststring = "01234567890123456789012345678901234567890123456789";
@@ -113,7 +107,8 @@ public partial class MiscTestScreen : ApplicationScreen {
 
 	private void _compressTestButton_Click(object sender, EventArgs e) {
 		var writer = new TextBoxWriter(_outputTextBox);
-		var seedString = "Hello world! This is a compressed string which contains some text that is used to compress and encrypt data. It is important that compression then encryption results in a smaller file than encryption alone. Hopefully this will show that indeed this is the case. Good luck!";
+		var seedString =
+			"Hello world! This is a compressed string which contains some text that is used to compress and encrypt data. It is important that compression then encryption results in a smaller file than encryption alone. Hopefully this will show that indeed this is the case. Good luck!";
 		for (int i = 0; i < 1000; i++) {
 			var stringBuilder = new StringBuilder();
 			stringBuilder.Append(seedString);
@@ -123,7 +118,12 @@ public partial class MiscTestScreen : ApplicationScreen {
 			var compressedEncrypted = Tools.Text.CompressText(testString, "password");
 			var compressed = Tools.Text.CompressText(testString);
 			var encryptedOnly = Tools.Crypto.EncryptStringAES(testString, "password", "asdfasasdfasdfasdfasdfasdfasdf");
-			writer.WriteLine("Orignal Size:{0}  Compressed:{1}  CompressedEncypted:{2} Encrypted:{3} Uncompressing worked: {4}", testString.Length, compressed.Length, compressedEncrypted.Length, encryptedOnly.Length, testString == Tools.Text.DecompressText(compressed) && testString == Tools.Text.DecompressText(compressedEncrypted, "password"));
+			writer.WriteLine("Orignal Size:{0}  Compressed:{1}  CompressedEncypted:{2} Encrypted:{3} Uncompressing worked: {4}",
+				testString.Length,
+				compressed.Length,
+				compressedEncrypted.Length,
+				encryptedOnly.Length,
+				testString == Tools.Text.DecompressText(compressed) && testString == Tools.Text.DecompressText(compressedEncrypted, "password"));
 		}
 	}
 
@@ -368,7 +368,6 @@ public partial class MiscTestScreen : ApplicationScreen {
 	#endregion
 
 
-
 	#region SQL Server
 
 	public string CreateTempMSSQLDB() {
@@ -474,6 +473,7 @@ public partial class MiscTestScreen : ApplicationScreen {
 		}
 	}
 
+
 	[XmlRoot("Menu")]
 	public class Menu {
 
@@ -489,27 +489,20 @@ public partial class MiscTestScreen : ApplicationScreen {
 		}
 
 
+		[XmlAttribute("text")] public string Text { get; set; }
 
+		[XmlAttribute("url")] public string Url { get; set; }
 
-		[XmlAttribute("text")]
-		public string Text { get; set; }
+		[XmlAttribute("open")] public bool Open { get; set; }
 
-		[XmlAttribute("url")]
-		public string Url { get; set; }
+		[XmlAttribute("icon")] public string FontAwesomeIcon { get; set; }
 
-		[XmlAttribute("open")]
-		public bool Open { get; set; }
+		[XmlAttribute("glyph")] public string Glyph { get; set; }
 
-		[XmlAttribute("icon")]
-		public string FontAwesomeIcon { get; set; }
-
-		[XmlAttribute("glyph")]
-		public string Glyph { get; set; }
-
-		[XmlElement("Menu")]
-		public Menu[] SubMenus { get; set; }
+		[XmlElement("Menu")] public Menu[] SubMenus { get; set; }
 
 	}
+
 
 	public class SideBarModelBuilder {
 
@@ -517,16 +510,16 @@ public partial class MiscTestScreen : ApplicationScreen {
 			return new Menu {
 				SubMenus =
 					new[] { CreateDashboardMenu() }
-					.Concat(CreateAssetsMenu())
-					.Concat(CreateUsersMenu())
-					.Concat(CreateAccountsMenu())
-					.Concat(CreateTransactionsMenu())
-					.Concat(CreateCardMenu())
-					.Concat(CreateTransformersMenu())
-					.Concat(CreateAuditMenu())
-					.Concat(CreateReportsMenu())
-					.Concat(CreateConfigurationMenu())
-					.ToArray()
+						.Concat(CreateAssetsMenu())
+						.Concat(CreateUsersMenu())
+						.Concat(CreateAccountsMenu())
+						.Concat(CreateTransactionsMenu())
+						.Concat(CreateCardMenu())
+						.Concat(CreateTransformersMenu())
+						.Concat(CreateAuditMenu())
+						.Concat(CreateReportsMenu())
+						.Concat(CreateConfigurationMenu())
+						.ToArray()
 			};
 		}
 

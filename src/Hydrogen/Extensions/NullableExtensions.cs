@@ -6,13 +6,11 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen {
-	public static class NullableExtensions
-	{
-		public static bool IsZeroOrEmpty(this int? val)
-		{
-			return val == null || val == 0;
-		}
+namespace Hydrogen;
 
+public static class NullableExtensions {
+	public static bool IsZeroOrEmpty(this int? val) {
+		return val == null || val == 0;
 	}
+
 }

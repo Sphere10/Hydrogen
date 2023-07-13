@@ -9,15 +9,13 @@
 using System;
 using System.Reflection;
 
-namespace Hydrogen.Application {
+namespace Hydrogen.Application;
 
-	[Obfuscation(Exclude=true)]
-	[Flags]
-	public enum AutoRunType {
-		AllUsers,
-		AllUsersRunOnce,
-		CurrentUser,
-		CurrentUserRunOnce
-	}
-
+[Obfuscation(Exclude = true)]
+[Flags]
+public enum AutoRunType {
+	AllUsers,
+	AllUsersRunOnce,
+	CurrentUser,
+	CurrentUserRunOnce
 }

@@ -6,20 +6,18 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
+namespace Hydrogen.Communications;
 
-namespace Hydrogen.Communications {
-	public abstract class MessageGeneratorBase<TMessage> : MessageGeneratorBase, IMessageGenerator<TMessage> {
+public abstract class MessageGeneratorBase<TMessage> : MessageGeneratorBase, IMessageGenerator<TMessage> {
 
-		TMessage IMessageGenerator<TMessage>.Execute(ProtocolOrchestrator orchestrator)
-			=> ExecuteInternal(orchestrator);
+	TMessage IMessageGenerator<TMessage>.Execute(ProtocolOrchestrator orchestrator)
+		=> ExecuteInternal(orchestrator);
 
-		public sealed override object Execute(ProtocolOrchestrator orchestrator) {
-			Guard.ArgumentNotNull(orchestrator, nameof(orchestrator));
-			return ((IMessageGenerator<TMessage>)this).Execute(orchestrator);
-		}
-
-		protected abstract TMessage ExecuteInternal(ProtocolOrchestrator orchestrator);
-
+	public sealed override object Execute(ProtocolOrchestrator orchestrator) {
+		Guard.ArgumentNotNull(orchestrator, nameof(orchestrator));
+		return ((IMessageGenerator<TMessage>)this).Execute(orchestrator);
 	}
+
+	protected abstract TMessage ExecuteInternal(ProtocolOrchestrator orchestrator);
+
 }

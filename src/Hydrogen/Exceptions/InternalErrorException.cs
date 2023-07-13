@@ -8,28 +8,28 @@
 
 using System;
 
-namespace Hydrogen {
-	public class InternalErrorException : SoftwareException {
+namespace Hydrogen;
+
+public class InternalErrorException : SoftwareException {
 
 
-        public InternalErrorException() 
-         : this("An unexpected error has occured") {
-        }
+	public InternalErrorException()
+		: this("An unexpected error has occured") {
+	}
 
-        public InternalErrorException(string error)
-            : this(error, "0") {
-        }
+	public InternalErrorException(string error)
+		: this(error, "0") {
+	}
 
-        public InternalErrorException(string error, params object[] formatArgs)
-            : this(null, error, formatArgs) {
-        }
-        
-        public InternalErrorException(Exception innerException, string error, params object[] formatArgs)
-            : this(string.Format(error, formatArgs), innerException) {
-        }
+	public InternalErrorException(string error, params object[] formatArgs)
+		: this(null, error, formatArgs) {
+	}
 
-        public InternalErrorException(string error, Exception innerException)
-            : base(error, innerException) {            
-        }
-    }
+	public InternalErrorException(Exception innerException, string error, params object[] formatArgs)
+		: this(string.Format(error, formatArgs), innerException) {
+	}
+
+	public InternalErrorException(string error, Exception innerException)
+		: base(error, innerException) {
+	}
 }

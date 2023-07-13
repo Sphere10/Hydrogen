@@ -6,25 +6,24 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen {
+namespace Hydrogen;
 
-	public class WAMSSharp : AMS {
+public class WAMSSharp : AMS {
 
-		public WAMSSharp() 
-			: this(Configuration.DefaultHeight) {
-		}
-
-		public WAMSSharp(int h) 
-			: this(h, WOTSSharp.Configuration.Default.W) {
-		}
-
-		public WAMSSharp(int h, int w)
-			: this(h, w, WOTSSharp.Configuration.Default.HashFunction) {
-		}
-
-		public WAMSSharp(int h, int w, CHF chf) 
-			: base(new WOTSSharp(new WOTSSharp.Configuration(w, chf, true)), h) {
-		}
-
+	public WAMSSharp()
+		: this(Configuration.DefaultHeight) {
 	}
+
+	public WAMSSharp(int h)
+		: this(h, WOTSSharp.Configuration.Default.W) {
+	}
+
+	public WAMSSharp(int h, int w)
+		: this(h, w, WOTSSharp.Configuration.Default.HashFunction) {
+	}
+
+	public WAMSSharp(int h, int w, CHF chf)
+		: base(new WOTSSharp(new WOTSSharp.Configuration(w, chf, true)), h) {
+	}
+
 }

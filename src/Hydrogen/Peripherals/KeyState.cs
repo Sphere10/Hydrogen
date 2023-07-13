@@ -6,11 +6,10 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen {
-	public enum KeyState
-    {
-        Down,
-        Up,
-		Unknown
-    }
+namespace Hydrogen;
+
+public enum KeyState {
+	Down,
+	Up,
+	Unknown
 }

@@ -9,12 +9,12 @@
 using System;
 using System.Threading.Tasks;
 
-namespace Hydrogen.DApp.Presentation.Services {
-    public interface IGenericEventAggregator {
-        void Subscribe<T>(Action<T> handler);
+namespace Hydrogen.DApp.Presentation.Services;
 
-        void Unsubscribe<T>(Action<T> eventHandler);
+public interface IGenericEventAggregator {
+	void Subscribe<T>(Action<T> handler);
 
-        Task PublishAsync<T>(T data);
-    }
+	void Unsubscribe<T>(Action<T> eventHandler);
+
+	Task PublishAsync<T>(T data);
 }

@@ -15,121 +15,121 @@ using FirebirdSql.Data.FirebirdClient;
 using Hydrogen.Data.Firebird;
 using IsolationLevel = System.Data.IsolationLevel;
 
-namespace Hydrogen.Data {
+namespace Hydrogen.Data;
 
-	public class FirebirdDAC : DACBase {
+public class FirebirdDAC : DACBase {
 
-		public FirebirdDAC(string connectionString, ILogger logger = null)
-			: base(connectionString, logger) {
+	public FirebirdDAC(string connectionString, ILogger logger = null)
+		: base(connectionString, logger) {
+	}
+
+	public override DBMSType DBMSType {
+		get {
+			if (ConnectionString != null && ConnectionString.RemoveNonAlphaNumeric().ToUpper().Contains("SERVERTYPE1"))
+				return DBMSType.FirebirdFile;
+			return DBMSType.Firebird;
 		}
+	}
 
-        public override DBMSType DBMSType {
-            get {
-                if (ConnectionString != null && ConnectionString.RemoveNonAlphaNumeric().ToUpper().Contains("SERVERTYPE1"))
-                    return DBMSType.FirebirdFile;
-                return DBMSType.Firebird;
-            }
-        }
+	public override IDbConnection CreateConnection() {
+		return
+			new FbConnection {
+				ConnectionString = ConnectionString
+			};
+	}
 
-		public override IDbConnection CreateConnection() {
-			return
-				new FbConnection {
-					ConnectionString = ConnectionString
-				};
+	public override void EnlistInSystemTransaction(IDbConnection connection, Transaction transaction) {
+		var fbConn = connection as FbConnection;
+		if (fbConn == null)
+			throw new ArgumentException("Not an FbConnection", "connection");
+		fbConn.EnlistTransaction(transaction);
+	}
+
+	public override object ExecuteScalar(string query) {
+		var result = base.ExecuteScalar(query);
+		if (result is Guid) {
+			result = FirebirdCorrectingReader.CorrectGuid((Guid)result);
 		}
-
-        public override void EnlistInSystemTransaction(IDbConnection connection, Transaction transaction) {
-            var fbConn = connection as FbConnection;
-            if (fbConn == null)
-                throw new ArgumentException("Not an FbConnection", "connection");
-            fbConn.EnlistTransaction(transaction);
-        }
-
-		public override object ExecuteScalar(string query) {
-			var result =  base.ExecuteScalar(query);
-			if (result is Guid) {
-				result = FirebirdCorrectingReader.CorrectGuid((Guid)result);
-			}
-			return result;
-		}
+		return result;
+	}
 
 
-		public override IDataReader ExecuteReader(string query) {
-			return new FirebirdCorrectingReader(base.ExecuteReader(query));
-		}
+	public override IDataReader ExecuteReader(string query) {
+		return new FirebirdCorrectingReader(base.ExecuteReader(query));
+	}
 
-	    public override void BulkInsert(DataTable table, BulkInsertOptions bulkInsertOptions, TimeSpan timeout) {
-	        throw new NotImplementedException();
-	    }
+	public override void BulkInsert(DataTable table, BulkInsertOptions bulkInsertOptions, TimeSpan timeout) {
+		throw new NotImplementedException();
+	}
 
-	    public override DataTable[] ExecuteBatch(ISQLBuilder sqlBuilder) {
-			// Firebird doesn't like mixing DDL with DML, so we break up
-			// DDL's that contains CREATE into an initial transaction
-			// Then rest of statements in another transaction
+	public override DataTable[] ExecuteBatch(ISQLBuilder sqlBuilder) {
+		// Firebird doesn't like mixing DDL with DML, so we break up
+		// DDL's that contains CREATE into an initial transaction
+		// Then rest of statements in another transaction
 
-			var statements = sqlBuilder.Statements.Where(s => s.Type.IsIn(SQLStatementType.DDL, SQLStatementType.DML)).ToList();
-			statements.RemoveAll(s => string.IsNullOrEmpty(s.SQL));
+		var statements = sqlBuilder.Statements.Where(s => s.Type.IsIn(SQLStatementType.DDL, SQLStatementType.DML)).ToList();
+		statements.RemoveAll(s => string.IsNullOrEmpty(s.SQL));
 
-			var ddls = statements.Where(statement => statement.Type == SQLStatementType.DDL && statement.SQL.TrimStart().StartsWith("CREATE") ).ToList();
-			statements.RemoveAll(ddls.Contains);
+		var ddls = statements.Where(statement => statement.Type == SQLStatementType.DDL && statement.SQL.TrimStart().StartsWith("CREATE")).ToList();
+		statements.RemoveAll(ddls.Contains);
 
+		var results = new List<DataTable>();
+
+		if (ddls.Count > 0)
+			results.AddRange(ExecuteStatementBatch(ddls.Select(s => s.SQL)));
+		if (statements.Count > 0)
+			results.AddRange(ExecuteStatementBatch(statements.Select(s => s.SQL)));
+		return results.ToArray();
+	}
+
+	protected DataTable[] ExecuteStatementBatch(IEnumerable<string> statements) {
+		try {
 			var results = new List<DataTable>();
-
-			if (ddls.Count > 0)
-				results.AddRange(ExecuteStatementBatch(ddls.Select(s => s.SQL)));
-			if (statements.Count > 0)
-				results.AddRange(ExecuteStatementBatch(statements.Select(s => s.SQL)));
-			return results.ToArray();
-		}
-
-		protected DataTable[] ExecuteStatementBatch(IEnumerable<string> statements) {
-			try {
-				var results = new List<DataTable>();
-                using (var scope = this.BeginScope()) { 
-                    scope.BeginTransaction(IsolationLevel.ReadCommitted);
-                    using (var command = scope.Connection.CreateCommand()) {
-						command.CommandTimeout = 0;
-						command.CommandType = CommandType.Text;
-                        if (scope.Transaction != null)
-						    command.Transaction = ((RestrictedTransaction)scope.Transaction).DangerousInternalTransaction;
-						foreach (var statement in statements) {
-							command.CommandText = statement;
-							Log.Debug(Environment.NewLine + statement);
-							try {
-								using (var reader = new FirebirdCorrectingReader( command.ExecuteReader(CommandBehavior.Default) )) {
-									results.AddRange(reader.ToDataTables());
-								}
-							} catch (Exception error) {
-								throw new SoftwareException(error, "An error happened excuting statement: '{0}", statement);
+			using (var scope = this.BeginScope()) {
+				scope.BeginTransaction(IsolationLevel.ReadCommitted);
+				using (var command = scope.Connection.CreateCommand()) {
+					command.CommandTimeout = 0;
+					command.CommandType = CommandType.Text;
+					if (scope.Transaction != null)
+						command.Transaction = ((RestrictedTransaction)scope.Transaction).DangerousInternalTransaction;
+					foreach (var statement in statements) {
+						command.CommandText = statement;
+						Log.Debug(Environment.NewLine + statement);
+						try {
+							using (var reader = new FirebirdCorrectingReader(command.ExecuteReader(CommandBehavior.Default))) {
+								results.AddRange(reader.ToDataTables());
 							}
+						} catch (Exception error) {
+							throw new SoftwareException(error, "An error happened excuting statement: '{0}", statement);
 						}
 					}
-					scope.Commit();
 				}
-				return results.ToArray();
-			} catch (Exception error) {
-				Log.Error(error.ToDiagnosticString());
-				throw;
+				scope.Commit();
 			}
+			return results.ToArray();
+		} catch (Exception error) {
+			Log.Error(error.ToDiagnosticString());
+			throw;
 		}
+	}
 
 
-		protected override IEnumerable<string> GetBatches(ISQLBuilder sqlBuilder) {
-			return
-				sqlBuilder
+	protected override IEnumerable<string> GetBatches(ISQLBuilder sqlBuilder) {
+		return
+			sqlBuilder
 				.Statements
 				.Where(s => s.Type != SQLStatementType.TCL && !string.IsNullOrEmpty(s.SQL))
 				.Select(statement => statement.SQL);
-		}
+	}
 
-		public override ISQLBuilder CreateSQLBuilder() {
-			return new FirebirdSQLBuilder();
-		}
+	public override ISQLBuilder CreateSQLBuilder() {
+		return new FirebirdSQLBuilder();
+	}
 
-	    protected override DataTable GetDenormalizedTableDescriptions() {
-			// Useful link: http://www.alberton.info/firebird_sql_meta_info.html#.Uari3UDI2MA
-			return this.ExecuteQuery(
-@"SELECT
+	protected override DataTable GetDenormalizedTableDescriptions() {
+		// Useful link: http://www.alberton.info/firebird_sql_meta_info.html#.Uari3UDI2MA
+		return this.ExecuteQuery(
+			@"SELECT
 	A.RDB$RELATION_NAME ""TableName"",
 	B.RDB$FIELD_NAME ""ColumnName"",
 	B.RDB$FIELD_POSITION ""Position"",
@@ -220,13 +220,11 @@ FROM
 WHERE 
 	A.RDB$SYSTEM_FLAG = 0 AND
   	B.RDB$VIEW_CONTEXT IS NULL"
-				);
-		}
+		);
+	}
 
-		protected override DataTable GetDenormalizedTriggerDescriptions() {
-			return this.ExecuteQuery("SELECT RDB$TRIGGER_NAME \"Name\" FROM RDB$TRIGGERS WHERE RDB$SYSTEM_FLAG=0");
-	
-		}
+	protected override DataTable GetDenormalizedTriggerDescriptions() {
+		return this.ExecuteQuery("SELECT RDB$TRIGGER_NAME \"Name\" FROM RDB$TRIGGERS WHERE RDB$SYSTEM_FLAG=0");
 
 	}
 

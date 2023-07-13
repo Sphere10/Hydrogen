@@ -6,17 +6,13 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
-using System.ComponentModel;
+namespace SourceGrid.Extensions.PingGrids;
 
-namespace SourceGrid.Extensions.PingGrids
-{
-	public interface IPingData
-	{
-		int Count {get;}
-		bool AllowSort{get;set;}
-		void ApplySort(string propertyName, bool ascending);
-		
-		object GetItemValue(int index, string propertyName);
-	}
+public interface IPingData {
+	int Count { get; }
+	bool AllowSort { get; set; }
+
+	void ApplySort(string propertyName, bool ascending);
+
+	object GetItemValue(int index, string propertyName);
 }

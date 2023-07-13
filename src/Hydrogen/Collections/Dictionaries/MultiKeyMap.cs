@@ -8,39 +8,37 @@
 
 using System.Collections.Generic;
 
-namespace Hydrogen {
+namespace Hydrogen;
 
+public class MultiKeyMap<K, V, C> : EnumerableKeyDictionary<K, C> where C : ICollection<V>, new() {
 
-	public class MultiKeyMap<K, V, C> : EnumerableKeyDictionary<K, C> where C : ICollection<V>, new() {
-
-		public MultiKeyMap() {
-		}
-
-		public MultiKeyMap(IEqualityComparer<K> comparer) : base(comparer) {
-		}
-
-		public void Add(IEnumerable<K> key, V value) {
-			this[key].Add(value);
-		}
-
-		public void Remove(IEnumerable<K> key, V value) {
-			C list;
-			if (base.TryGetValue(key, out list)) {
-				list.Remove(value);
-			}
-		}
-
-		public override bool TryGetValue(IEnumerable<K> key, out C value) {
-			if (!base.TryGetValue(key, out value)) {
-				base.Add(key, new C());
-				value = base[key];
-			}
-			return true;
-		}
-
+	public MultiKeyMap() {
 	}
 
-	public class MultiKeyMap<K, V> : MultiKeyMap<K, V, List<V>> {
+	public MultiKeyMap(IEqualityComparer<K> comparer) : base(comparer) {
 	}
 
+	public void Add(IEnumerable<K> key, V value) {
+		this[key].Add(value);
+	}
+
+	public void Remove(IEnumerable<K> key, V value) {
+		C list;
+		if (base.TryGetValue(key, out list)) {
+			list.Remove(value);
+		}
+	}
+
+	public override bool TryGetValue(IEnumerable<K> key, out C value) {
+		if (!base.TryGetValue(key, out value)) {
+			base.Add(key, new C());
+			value = base[key];
+		}
+		return true;
+	}
+
+}
+
+
+public class MultiKeyMap<K, V> : MultiKeyMap<K, V, List<V>> {
 }

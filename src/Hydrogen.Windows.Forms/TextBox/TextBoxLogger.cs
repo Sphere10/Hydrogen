@@ -6,18 +6,13 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Windows.Forms;
-using Hydrogen;
 
-namespace Hydrogen.Windows.Forms {
-	public class TextBoxLogger : LoggerDecorator {
+namespace Hydrogen.Windows.Forms;
 
-		public TextBoxLogger(TextBox textBox) : base( new TimestampLogger(new AsyncLogger(new TextWriterLogger(new TextBoxWriter(textBox)))) ) {
-		}
+public class TextBoxLogger : LoggerDecorator {
 
+	public TextBoxLogger(TextBox textBox) : base(new TimestampLogger(new AsyncLogger(new TextWriterLogger(new TextBoxWriter(textBox))))) {
 	}
+
 }

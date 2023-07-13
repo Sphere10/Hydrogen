@@ -7,18 +7,14 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Hydrogen.Data;
 
 namespace Hydrogen.NUnit {
-    public class UnitTestDAC : DACDecorator, IDisposable {
+	public class UnitTestDAC : DACDecorator, IDisposable {
 
-        public UnitTestDAC(Action endAction, IDAC innerDAC) : base(innerDAC) {
-            EndAction = endAction;
-        }
+		public UnitTestDAC(Action endAction, IDAC innerDAC) : base(innerDAC) {
+			EndAction = endAction;
+		}
 
 		public Action EndAction { get; private set; }
 
@@ -27,5 +23,5 @@ namespace Hydrogen.NUnit {
 				EndAction();
 			}
 		}
-    }
+	}
 }

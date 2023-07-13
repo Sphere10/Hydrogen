@@ -10,23 +10,22 @@
 using System.IO;
 using System.Drawing;
 
-namespace Hydrogen {
+namespace Hydrogen;
 
-	public static class DrawingByteArrayExtensions {
+public static class DrawingByteArrayExtensions {
 
-		/// <summary>
-		/// Converts the byte array to an Image object.
-		/// </summary>
-		/// <param name="bytes"></param>
-		/// <returns></returns>
-		public static Image ToImage(this byte[] bytes) {
-			if (bytes == null || bytes.Length == 0)
-				return null;
+	/// <summary>
+	/// Converts the byte array to an Image object.
+	/// </summary>
+	/// <param name="bytes"></param>
+	/// <returns></returns>
+	public static Image ToImage(this byte[] bytes) {
+		if (bytes == null || bytes.Length == 0)
+			return null;
 
-			using (var mem = new MemoryStream(bytes)) {
-				return Image.FromStream(mem);
-			}
+		using (var mem = new MemoryStream(bytes)) {
+			return Image.FromStream(mem);
 		}
-
 	}
+
 }

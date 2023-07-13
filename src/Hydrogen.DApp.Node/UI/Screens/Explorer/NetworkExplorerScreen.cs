@@ -6,14 +6,10 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using Hydrogen.DApp.Node.UI;
+namespace Hydrogen.DApp.Node.UI;
 
-namespace Hydrogen.DApp.Node.UI {
-
-	[Title("Network")]
-	[Lifetime(ScreenLifetime.WhenVisible)]
-    [MenuLocation(AppMenu.Explorer, "Network", 3)]
-	public class NetworkExplorerScreen : MockScreen {
-	}
-
+[Title("Network")]
+[Lifetime(ScreenLifetime.WhenVisible)]
+[MenuLocation(AppMenu.Explorer, "Network", 3)]
+public class NetworkExplorerScreen : MockScreen {
 }

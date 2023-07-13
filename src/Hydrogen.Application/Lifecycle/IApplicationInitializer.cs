@@ -6,15 +6,13 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen.Application {
+namespace Hydrogen.Application;
 
-	public interface IApplicationInitializer {
+public interface IApplicationInitializer {
 
-		int Priority { get; }
+	int Priority { get; }
 
-		bool Parallelizable { get; }
+	bool Parallelizable { get; }
 
-		void Initialize();
-	}
-
+	void Initialize();
 }

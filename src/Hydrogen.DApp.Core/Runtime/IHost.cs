@@ -7,17 +7,19 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System.Threading.Tasks;
-using Hydrogen;
 using Hydrogen.Communications;
 
-namespace Hydrogen.DApp.Core.Runtime {
-	public interface IHost {
-		event EventHandlerEx<AnonymousPipe> NodeStarted;
-		event EventHandlerEx NodeEnded;
-		HostStatus Status { get; }
-		IApplicationPaths Paths { get; }
-		Task DeployHAP(string newHapPath);
-		Task Run();
-		Task RequestShutdown();
-	}
+namespace Hydrogen.DApp.Core.Runtime;
+
+public interface IHost {
+	event EventHandlerEx<AnonymousPipe> NodeStarted;
+	event EventHandlerEx NodeEnded;
+	HostStatus Status { get; }
+	IApplicationPaths Paths { get; }
+
+	Task DeployHAP(string newHapPath);
+
+	Task Run();
+
+	Task RequestShutdown();
 }

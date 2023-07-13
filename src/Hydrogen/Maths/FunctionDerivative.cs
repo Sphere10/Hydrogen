@@ -6,16 +6,16 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen.Maths {
-	public class FunctionDerivative : IFunction {
-        private IFunction _function = null;
+namespace Hydrogen.Maths;
 
-        public FunctionDerivative(IFunction function) {
-            _function = function;
-        }
+public class FunctionDerivative : IFunction {
+	private IFunction _function = null;
 
-        public double Eval(double x) {
-            return Tools.MathPlus.Derivative(_function, x);
-        }
-    }
+	public FunctionDerivative(IFunction function) {
+		_function = function;
+	}
+
+	public double Eval(double x) {
+		return Tools.MathPlus.Derivative(_function, x);
+	}
 }

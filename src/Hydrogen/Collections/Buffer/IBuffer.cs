@@ -8,39 +8,39 @@
 
 using System;
 
-namespace Hydrogen {
-	public interface IBuffer : IExtendedList<byte> {
+namespace Hydrogen;
 
-		ReadOnlySpan<byte> ReadSpan(int index, int count);
+public interface IBuffer : IExtendedList<byte> {
 
-		void AddRange(ReadOnlySpan<byte> span);
+	ReadOnlySpan<byte> ReadSpan(int index, int count);
 
-		void UpdateRange(int index, ReadOnlySpan<byte> items);
+	void AddRange(ReadOnlySpan<byte> span);
 
-		void InsertRange(int index, ReadOnlySpan<byte> items);
+	void UpdateRange(int index, ReadOnlySpan<byte> items);
 
-		Span<byte> AsSpan(int index, int count);
+	void InsertRange(int index, ReadOnlySpan<byte> items);
 
-		void ExpandTo(int totalBytes);
+	Span<byte> AsSpan(int index, int count);
 
-		void ExpandBy(int newBytes);
+	void ExpandTo(int totalBytes);
+
+	void ExpandBy(int newBytes);
+}
+
+
+public static class IBufferExtensions {
+
+	public static ReadOnlySpan<byte> ReadSpan(this IBuffer memoryBuffer, Range range) {
+		var (start, count) = range.GetOffsetAndLength(memoryBuffer.Count);
+		return memoryBuffer.ReadSpan(start, count);
 	}
 
 
-	public static class IBufferExtensions {
-
-		public static ReadOnlySpan<byte> ReadSpan(this IBuffer memoryBuffer, Range range) {
-			var (start, count) = range.GetOffsetAndLength(memoryBuffer.Count);
-			return memoryBuffer.ReadSpan(start, count);
-		}
-
-
-		public static Span<byte> AsSpan(this IBuffer memoryBuffer, Range range) {
-			var (start, count) = range.GetOffsetAndLength(memoryBuffer.Count);
-			return memoryBuffer.AsSpan(start, count);
-		}
-
-		public static Span<byte> AsSpan(this IBuffer memoryBuffer, Index startIndex)
-			=> memoryBuffer.AsSpan(Range.StartAt(startIndex));
+	public static Span<byte> AsSpan(this IBuffer memoryBuffer, Range range) {
+		var (start, count) = range.GetOffsetAndLength(memoryBuffer.Count);
+		return memoryBuffer.AsSpan(start, count);
 	}
+
+	public static Span<byte> AsSpan(this IBuffer memoryBuffer, Index startIndex)
+		=> memoryBuffer.AsSpan(Range.StartAt(startIndex));
 }

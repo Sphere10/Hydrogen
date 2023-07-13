@@ -6,23 +6,23 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen {
+namespace Hydrogen;
 
-	public interface ISynchronizedResource : ISynchronizedResource<Scope, Scope> {
-	}
+public interface ISynchronizedResource : ISynchronizedResource<Scope, Scope> {
+}
 
-    public interface ISynchronizedResource<TReadScope, TWriteScope> : ISynchronizedObject<TReadScope, TWriteScope>
-		where TReadScope : IScope
-        where TWriteScope : IScope {
 
-		event EventHandlerEx<object> InitializingRead;
-		event EventHandlerEx<object> InitializedRead;
-		event EventHandlerEx<object> FinalizingRead;
-		event EventHandlerEx<object> FinalizedRead;
-		event EventHandlerEx<object> InitializingWrite;
-		event EventHandlerEx<object> InitializedWrite;
-		event EventHandlerEx<object> FinalizingWrite;
-		event EventHandlerEx<object> FinalizedWrite;
-		
-	}
+public interface ISynchronizedResource<TReadScope, TWriteScope> : ISynchronizedObject<TReadScope, TWriteScope>
+	where TReadScope : IScope
+	where TWriteScope : IScope {
+
+	event EventHandlerEx<object> InitializingRead;
+	event EventHandlerEx<object> InitializedRead;
+	event EventHandlerEx<object> FinalizingRead;
+	event EventHandlerEx<object> FinalizedRead;
+	event EventHandlerEx<object> InitializingWrite;
+	event EventHandlerEx<object> InitializedWrite;
+	event EventHandlerEx<object> FinalizingWrite;
+	event EventHandlerEx<object> FinalizedWrite;
+
 }

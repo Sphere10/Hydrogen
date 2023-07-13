@@ -11,7 +11,7 @@ using System;
 namespace Hydrogen;
 
 internal static class LoggerHelper {
-	public static bool TryHydrateErrorMessage(Exception exception, LogOptions logOptions, out string message) { 
+	public static bool TryHydrateErrorMessage(Exception exception, LogOptions logOptions, out string message) {
 		if ((logOptions & LogOptions.ErrorEnabled) == 0) {
 			message = null;
 			return false;

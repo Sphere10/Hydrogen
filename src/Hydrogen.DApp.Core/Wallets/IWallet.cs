@@ -6,31 +6,26 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
 using System.Collections.Generic;
-using System.Text;
 
-namespace Hydrogen.DApp.Core.Wallets {
+namespace Hydrogen.DApp.Core.Wallets;
 
-	public interface IWallet {
-		bool IsLocked { get; }
-		void Unlock(string password);
+public interface IWallet {
+	bool IsLocked { get; }
 
-		void Lock();
+	void Unlock(string password);
 
-		void ChangePassword(string newPassword);
+	void Lock();
 
-		void AddPrivateKey(string name, byte[] privateKey);
+	void ChangePassword(string newPassword);
 
-		void AddWatchOnlyPublicKey(string name, byte[] publicKey);
+	void AddPrivateKey(string name, byte[] privateKey);
 
-		WalletKeyCapability ClassifyKey(byte[] publicKey);
+	void AddWatchOnlyPublicKey(string name, byte[] publicKey);
 
-		IEnumerable<IWalletKey> Keys { get; }
+	WalletKeyCapability ClassifyKey(byte[] publicKey);
 
-
-	}
+	IEnumerable<IWalletKey> Keys { get; }
 
 
-	
 }

@@ -9,18 +9,14 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace Hydrogen.Application {
+namespace Hydrogen.Application;
 
-    [ComVisible(true)]
-    [AttributeUsage(AttributeTargets.Assembly, Inherited = false)]
-    public sealed class AssemblyProductLinkAttribute : Attribute {
-        public AssemblyProductLinkAttribute(string url) {
-            ProductLink = url;
-        }
+[ComVisible(true)]
+[AttributeUsage(AttributeTargets.Assembly, Inherited = false)]
+public sealed class AssemblyProductLinkAttribute : Attribute {
+	public AssemblyProductLinkAttribute(string url) {
+		ProductLink = url;
+	}
 
-        public string ProductLink { get; set; }
-    }
-
+	public string ProductLink { get; set; }
 }
-
-

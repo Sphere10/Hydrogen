@@ -8,17 +8,15 @@
 
 using System.Collections.Generic;
 
-namespace Hydrogen {
+namespace Hydrogen;
 
-	public interface IItemSizer<T> {
+public interface IItemSizer<T> {
 
-		bool IsStaticSize { get; }
+	bool IsStaticSize { get; }
 
-		int StaticSize { get; }
+	int StaticSize { get; }
 
-		int CalculateTotalSize(IEnumerable<T> items, bool calculateIndividualItems, out int[] itemSizes);
+	int CalculateTotalSize(IEnumerable<T> items, bool calculateIndividualItems, out int[] itemSizes);
 
-		int CalculateSize(T item);
-	}
-
+	int CalculateSize(T item);
 }

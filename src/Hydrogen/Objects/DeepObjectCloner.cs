@@ -23,44 +23,44 @@ namespace Hydrogen {
 
 	public class DeepObjectCloner : IObjectCloner {
 
-	    protected readonly HashSet<Type> DontCloneTypes;
+		protected readonly HashSet<Type> DontCloneTypes;
 
-	    public DeepObjectCloner() : this(Enumerable.Empty<Type>()) {	            
-	    }
+		public DeepObjectCloner() : this(Enumerable.Empty<Type>()) {
+		}
 
-        public DeepObjectCloner(params Type[] dontClone) : this(dontClone.ToList()) {
-        }
+		public DeepObjectCloner(params Type[] dontClone) : this(dontClone.ToList()) {
+		}
 
-        public DeepObjectCloner(IEnumerable<Type> dontClone) {
-            DontCloneTypes = new HashSet<Type> {typeof (string)};
-            if (dontClone != null)
-                DontCloneTypes.AddRange(dontClone);
-        }
+		public DeepObjectCloner(IEnumerable<Type> dontClone) {
+			DontCloneTypes = new HashSet<Type> { typeof(string) };
+			if (dontClone != null)
+				DontCloneTypes.AddRange(dontClone);
+		}
 
 		public virtual object Clone(object source) {
-            return DeepClone(source, new Dictionary<Reference<object>, object>());
+			return DeepClone(source, new Dictionary<Reference<object>, object>());
 		}
 
 		public virtual void Copy(object source, object dest) {
 			DeepCopyMembers(source, dest, new Dictionary<Reference<object>, object>());
 		}
 
-	    protected virtual object ActivateObject(Type type, object sourceObjectHint) {
-            return Tools.Object.Create(type); // create object    
-	    }
-
-		protected virtual object DeepClone(object source, IDictionary<Reference<object>, object> clones) {
-            // This method will clone the object if not already cloned
-		    var key = Reference.For(source);
-		    if (!clones.ContainsKey(key)) {
-		        var dest = ActivateObject(source.GetType(), source);
-		        clones.Add(key, dest); // register empty object as clone (handles cyclic dependencies)
-		        DeepCopyMembers(source, dest, clones); // copy the members
-		    }
-		    return clones[key];
+		protected virtual object ActivateObject(Type type, object sourceObjectHint) {
+			return Tools.Object.Create(type); // create object    
 		}
 
-        protected virtual void DeepCopyMembers(object source, object dest, IDictionary<Reference<object>, object> clones) {
+		protected virtual object DeepClone(object source, IDictionary<Reference<object>, object> clones) {
+			// This method will clone the object if not already cloned
+			var key = Reference.For(source);
+			if (!clones.ContainsKey(key)) {
+				var dest = ActivateObject(source.GetType(), source);
+				clones.Add(key, dest); // register empty object as clone (handles cyclic dependencies)
+				DeepCopyMembers(source, dest, clones); // copy the members
+			}
+			return clones[key];
+		}
+
+		protected virtual void DeepCopyMembers(object source, object dest, IDictionary<Reference<object>, object> clones) {
 			if (!source.GetType().IsInstanceOfType(dest))
 				throw new ArgumentException("Source and dest types do not match", "dest");
 
@@ -70,12 +70,13 @@ namespace Hydrogen {
 
 			// Copy everythig (including private members if possible)
 			var bindingFlags = BindingFlags.Instance | BindingFlags.FlattenHierarchy | BindingFlags.Public | BindingFlags.SetField;
-	        // HS: Removed 2019-02-19, .NET Standard 2.0 assume has unrestricted
-	        //if (Tools.CodeAccessSecurity.HasUnrestrictedFeatureSet)
-	        //    bindingFlags |= BindingFlags.NonPublic;
-	        bindingFlags |= BindingFlags.NonPublic;
+			// HS: Removed 2019-02-19, .NET Standard 2.0 assume has unrestricted
+			//if (Tools.CodeAccessSecurity.HasUnrestrictedFeatureSet)
+			//    bindingFlags |= BindingFlags.NonPublic;
+			bindingFlags |= BindingFlags.NonPublic;
 
 			#region Copy Fields
+
 			var sourceFields = source.GetType().GetFields(bindingFlags);
 			var destFields = dest.GetType().GetFields(bindingFlags);
 
@@ -96,12 +97,12 @@ namespace Hydrogen {
 #endif
 				if (fieldBinding.DestField.FieldType.IsValueType || DontCloneTypes.Contains(fieldBinding.DestField.FieldType) || sourceValue == null) {
 #if USE_FAST_REFLECTION
-					fieldBinding.DestField.SetValue(dest, sourceValue);	// using FastReflection lib
+					fieldBinding.DestField.SetValue(dest, sourceValue); // using FastReflection lib
 #else
 					fieldBinding.DestField.SetValue(dest, sourceValue); // using standrad Reflection
 #endif
 				} else {
-				    sourceValue = DeepClone(sourceValue, clones);
+					sourceValue = DeepClone(sourceValue, clones);
 
 #if USE_FAST_REFLECTION
 					fieldBinding.DestField.SetValue(dest, sourceValue);
@@ -110,14 +111,16 @@ namespace Hydrogen {
 #endif
 				}
 			}
+
 			#endregion
 
 			#region Copy Properties
+
 			bindingFlags = BindingFlags.Instance | BindingFlags.FlattenHierarchy | BindingFlags.Public | BindingFlags.SetProperty;
-	        // HS: Removed 2019-02-19, .NET Standard 2.0 assume has unrestricted
-	        //if (Tools.CodeAccessSecurity.HasUnrestrictedFeatureSet)
-	        //    bindingFlags |= BindingFlags.NonPublic;
-	        bindingFlags |= BindingFlags.NonPublic;
+			// HS: Removed 2019-02-19, .NET Standard 2.0 assume has unrestricted
+			//if (Tools.CodeAccessSecurity.HasUnrestrictedFeatureSet)
+			//    bindingFlags |= BindingFlags.NonPublic;
+			bindingFlags |= BindingFlags.NonPublic;
 
 			var sourceProperties = source.GetType().GetProperties(bindingFlags);
 			var destProperties = dest.GetType().GetProperties(bindingFlags);
@@ -140,14 +143,14 @@ namespace Hydrogen {
 #else
 			    var sourceValue = propertyBinding.SourceProperty.GetValue(source);
 #endif
-                if (propertyBinding.DestProperty.PropertyType.IsValueType || DontCloneTypes.Contains(propertyBinding.DestProperty.PropertyType) || sourceValue == null) {
+				if (propertyBinding.DestProperty.PropertyType.IsValueType || DontCloneTypes.Contains(propertyBinding.DestProperty.PropertyType) || sourceValue == null) {
 #if USE_FAST_REFLECTION
-					propertyBinding.DestProperty.FastSetValue(dest, sourceValue);  // using FastReflection lib			
+					propertyBinding.DestProperty.FastSetValue(dest, sourceValue); // using FastReflection lib			
 #else
 					propertyBinding.DestProperty.SetValue(dest, sourceValue, null);  // using standard Reflection
 #endif
 				} else {
-                    sourceValue = DeepClone(sourceValue, clones);
+					sourceValue = DeepClone(sourceValue, clones);
 #if USE_FAST_REFLECTION
 					propertyBinding.DestProperty.FastSetValue(dest, sourceValue);
 #else
@@ -155,13 +158,14 @@ namespace Hydrogen {
 #endif
 				}
 			}
+
 			#endregion
 
 		}
 
 
-	    protected virtual bool ShouldDeepCopyType(Type type) {
-	        return !DontCloneTypes.Contains(type);
-	    }
+		protected virtual bool ShouldDeepCopyType(Type type) {
+			return !DontCloneTypes.Contains(type);
+		}
 	}
 }

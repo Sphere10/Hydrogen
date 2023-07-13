@@ -6,10 +6,9 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen.CryptoEx.EC {
+namespace Hydrogen.CryptoEx.EC;
 
-	public sealed class SECP521R1 : ECDSA {
-		public SECP521R1() : base(ECDSAKeyType.SECP521R1) { }
+public sealed class SECP521R1 : ECDSA {
+	public SECP521R1() : base(ECDSAKeyType.SECP521R1) {
 	}
-
 }

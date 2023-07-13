@@ -6,15 +6,9 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+namespace Hydrogen.Windows.Forms;
 
-namespace Hydrogen.Windows.Forms {
-    public enum ProgressBarDisplayText {
-        Percentage,
-        CustomText
-    }
+public enum ProgressBarDisplayText {
+	Percentage,
+	CustomText
 }

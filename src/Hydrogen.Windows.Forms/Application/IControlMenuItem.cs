@@ -12,4 +12,3 @@ public interface IControlMenuItem : IMenuItem {
 	ApplicationControl ControlToShow { get; }
 
 }
-

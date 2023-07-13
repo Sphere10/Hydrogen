@@ -7,210 +7,209 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Threading;
 
-namespace Hydrogen.Windows.BITS {
-    /// <summary>
-    /// Use the IBackgroundCopyManager interface to create transfer jobs, 
-    /// retrieve an enumerator object that contains the jobs in the queue, 
-    /// and to retrieve individual jobs from the queue.
-    /// </summary>
-    public class BitsManager : IDisposable {
-        private IBackgroundCopyManager manager;
-        private BitsNotification notificationHandler;
-        private BitsJobs jobs;
-        private EventHandler<NotificationEventArgs> onJobModified;
-        private EventHandler<NotificationEventArgs> onJobTransfered;
-        private EventHandler<ErrorNotificationEventArgs> onJobErrored;
-        private EventHandler<NotificationEventArgs> onJobAdded;
-        private EventHandler<NotificationEventArgs> onJobRemoved;
-        private EventHandler<BitsInterfaceNotificationEventArgs> onInterfaceError;
-        private bool disposed;
+namespace Hydrogen.Windows.BITS;
 
-        public BitsManager() {
-            // Set threading apartment
-            System.Threading.Thread.CurrentThread.TrySetApartmentState(ApartmentState.STA);
-            WinAPI.OLE32.CoInitializeSecurity(IntPtr.Zero, -1, IntPtr.Zero, IntPtr.Zero, WinAPI.OLE32.RpcAuthnLevel.Connect, WinAPI.OLE32.RpcImpLevel.Impersonate, IntPtr.Zero, WinAPI.OLE32.EoAuthnCap.None, IntPtr.Zero);
+/// <summary>
+/// Use the IBackgroundCopyManager interface to create transfer jobs, 
+/// retrieve an enumerator object that contains the jobs in the queue, 
+/// and to retrieve individual jobs from the queue.
+/// </summary>
+public class BitsManager : IDisposable {
+	private IBackgroundCopyManager manager;
+	private BitsNotification notificationHandler;
+	private BitsJobs jobs;
+	private EventHandler<NotificationEventArgs> onJobModified;
+	private EventHandler<NotificationEventArgs> onJobTransfered;
+	private EventHandler<ErrorNotificationEventArgs> onJobErrored;
+	private EventHandler<NotificationEventArgs> onJobAdded;
+	private EventHandler<NotificationEventArgs> onJobRemoved;
+	private EventHandler<BitsInterfaceNotificationEventArgs> onInterfaceError;
+	private bool disposed;
 
-            this.manager = new BackgroundCopyManager() as IBackgroundCopyManager;
-            this.notificationHandler = new BitsNotification(this);
-            this.notificationHandler.OnJobErrorEvent += new EventHandler<ErrorNotificationEventArgs>(notificationHandler_OnJobErrorEvent);
-            this.notificationHandler.OnJobModifiedEvent += new EventHandler<NotificationEventArgs>(notificationHandler_OnJobModifiedEvent);
-            this.notificationHandler.OnJobTransferredEvent += new EventHandler<NotificationEventArgs>(notificationHandler_OnJobTransferredEvent);
-        }
+	public BitsManager() {
+		// Set threading apartment
+		System.Threading.Thread.CurrentThread.TrySetApartmentState(ApartmentState.STA);
+		WinAPI.OLE32.CoInitializeSecurity(IntPtr.Zero, -1, IntPtr.Zero, IntPtr.Zero, WinAPI.OLE32.RpcAuthnLevel.Connect, WinAPI.OLE32.RpcImpLevel.Impersonate, IntPtr.Zero, WinAPI.OLE32.EoAuthnCap.None, IntPtr.Zero);
 
-        #region Event Handler For Notication Interface
+		this.manager = new BackgroundCopyManager() as IBackgroundCopyManager;
+		this.notificationHandler = new BitsNotification(this);
+		this.notificationHandler.OnJobErrorEvent += new EventHandler<ErrorNotificationEventArgs>(notificationHandler_OnJobErrorEvent);
+		this.notificationHandler.OnJobModifiedEvent += new EventHandler<NotificationEventArgs>(notificationHandler_OnJobModifiedEvent);
+		this.notificationHandler.OnJobTransferredEvent += new EventHandler<NotificationEventArgs>(notificationHandler_OnJobTransferredEvent);
+	}
 
-        private void notificationHandler_OnJobTransferredEvent(object sender, NotificationEventArgs e) {
-            System.Threading.Thread.SpinWait(0);
-            // route the event to the job
-            BitsJob job = this.jobs[e.Job.JobId];
-            if (null != job)
-                job.OnJobTransferred(sender, e);
-            //publish the event to other subscribers
-            if (this.onJobTransfered != null)
-                this.onJobTransfered(sender, e);
-        }
+	#region Event Handler For Notication Interface
 
-        private void notificationHandler_OnJobModifiedEvent(object sender, NotificationEventArgs e) {
-            System.Threading.Thread.SpinWait(0);
-            // route the event to the job
-            BitsJob job = this.jobs[e.Job.JobId];
-            if (null != job)
-                job.OnJobModified(sender, e);
-            //publish the event to other subscribers
-            if (this.onJobModified != null)
-                this.onJobModified(sender, e);
-        }
+	private void notificationHandler_OnJobTransferredEvent(object sender, NotificationEventArgs e) {
+		System.Threading.Thread.SpinWait(0);
+		// route the event to the job
+		BitsJob job = this.jobs[e.Job.JobId];
+		if (null != job)
+			job.OnJobTransferred(sender, e);
+		//publish the event to other subscribers
+		if (this.onJobTransfered != null)
+			this.onJobTransfered(sender, e);
+	}
 
-        private void notificationHandler_OnJobErrorEvent(object sender, ErrorNotificationEventArgs e) {
-            System.Threading.Thread.SpinWait(0);
-            // route the event to the job
-            BitsJob job = this.jobs[e.Job.JobId];
-            if (null != job)
-                job.OnJobError(sender, e);
-            //publish the event to other subscribers
-            if (this.onJobErrored != null)
-                this.onJobErrored(sender, e);
-        }
+	private void notificationHandler_OnJobModifiedEvent(object sender, NotificationEventArgs e) {
+		System.Threading.Thread.SpinWait(0);
+		// route the event to the job
+		BitsJob job = this.jobs[e.Job.JobId];
+		if (null != job)
+			job.OnJobModified(sender, e);
+		//publish the event to other subscribers
+		if (this.onJobModified != null)
+			this.onJobModified(sender, e);
+	}
 
-        #endregion
+	private void notificationHandler_OnJobErrorEvent(object sender, ErrorNotificationEventArgs e) {
+		System.Threading.Thread.SpinWait(0);
+		// route the event to the job
+		BitsJob job = this.jobs[e.Job.JobId];
+		if (null != job)
+			job.OnJobError(sender, e);
+		//publish the event to other subscribers
+		if (this.onJobErrored != null)
+			this.onJobErrored(sender, e);
+	}
 
-        public BitsJobs EnumJobs() {
-            return this.EnumJobs(JobOwner.CurrentUser);
-        }
+	#endregion
 
-        public BitsJobs EnumJobs(JobOwner jobType) {
-            IEnumBackgroundCopyJobs jobList = null;
+	public BitsJobs EnumJobs() {
+		return this.EnumJobs(JobOwner.CurrentUser);
+	}
 
-            this.manager.EnumJobs(Convert.ToUInt32(jobType), out jobList);
-            if (this.jobs == null) {
-                this.jobs = new BitsJobs(this, jobList);
-            } else {
-                this.jobs.Update(jobList);
-            }
+	public BitsJobs EnumJobs(JobOwner jobType) {
+		IEnumBackgroundCopyJobs jobList = null;
 
-            return this.jobs;
-        }
+		this.manager.EnumJobs(Convert.ToUInt32(jobType), out jobList);
+		if (this.jobs == null) {
+			this.jobs = new BitsJobs(this, jobList);
+		} else {
+			this.jobs.Update(jobList);
+		}
 
-        /// <summary>
-        /// Creates a new transfer job.
-        /// </summary>
-        /// <param name="displayName">Null-terminated string that contains a display name for the job. 
-        /// Typically, the display name is used to identify the job in a user interface. 
-        /// Note that more than one job may have the same display name. Must not be NULL. 
-        /// The name is limited to 256 characters, not including the null terminator.</param>
-        /// <param name="jobType"> Type of transfer job, such as JobType.Download. For a list of transfer types, see the JobType enumeration</param>
-        /// <returns></returns>
-        public BitsJob CreateJob(string displayName, JobType jobType) {
-            Guid guid;
-            IBackgroundCopyJob pJob;
-            this.manager.CreateJob(displayName, (BG_JOB_TYPE)jobType, out guid, out pJob);
-            BitsJob job = new BitsJob(this, pJob);
-            this.jobs.Add(guid, job);
-            if (null != this.onJobAdded)
-                this.onJobAdded(this, new NotificationEventArgs(job));
-            return job;
-        }
+		return this.jobs;
+	}
 
-        public BitsJobs Jobs {
-            get { return this.jobs; }
-        }
+	/// <summary>
+	/// Creates a new transfer job.
+	/// </summary>
+	/// <param name="displayName">Null-terminated string that contains a display name for the job. 
+	/// Typically, the display name is used to identify the job in a user interface. 
+	/// Note that more than one job may have the same display name. Must not be NULL. 
+	/// The name is limited to 256 characters, not including the null terminator.</param>
+	/// <param name="jobType"> Type of transfer job, such as JobType.Download. For a list of transfer types, see the JobType enumeration</param>
+	/// <returns></returns>
+	public BitsJob CreateJob(string displayName, JobType jobType) {
+		Guid guid;
+		IBackgroundCopyJob pJob;
+		this.manager.CreateJob(displayName, (BG_JOB_TYPE)jobType, out guid, out pJob);
+		BitsJob job = new BitsJob(this, pJob);
+		this.jobs.Add(guid, job);
+		if (null != this.onJobAdded)
+			this.onJobAdded(this, new NotificationEventArgs(job));
+		return job;
+	}
 
-        #region Convert HResult into meaningful error message
+	public BitsJobs Jobs {
+		get { return this.jobs; }
+	}
 
-        public string GetErrorDescription(int hResult) {
-            string description;
-            this.manager.GetErrorDescription(hResult, Convert.ToUInt32(Thread.CurrentThread.CurrentUICulture.LCID), out description);
-            return description;
-        }
+	#region Convert HResult into meaningful error message
 
-        #endregion
+	public string GetErrorDescription(int hResult) {
+		string description;
+		this.manager.GetErrorDescription(hResult, Convert.ToUInt32(Thread.CurrentThread.CurrentUICulture.LCID), out description);
+		return description;
+	}
 
-        #region Notification Interface
+	#endregion
 
-        #region Internal Notification Handling
+	#region Notification Interface
 
-        internal BitsNotification NotificationHandler {
-            get { return this.notificationHandler; }
-        }
+	#region Internal Notification Handling
 
-        internal void NotifyOnJobRemoval(BitsJob job) {
-            if (null != this.onJobRemoved)
-                this.onJobRemoved(this, new NotificationEventArgs(job));
-        }
+	internal BitsNotification NotificationHandler {
+		get { return this.notificationHandler; }
+	}
 
-        internal void PublishException(BitsJob job, COMException exception) {
-            if (this.onInterfaceError != null) {
-                string description = this.GetErrorDescription(exception.ErrorCode);
-                this.onInterfaceError(this, new BitsInterfaceNotificationEventArgs(job, exception, description));
-            }
+	internal void NotifyOnJobRemoval(BitsJob job) {
+		if (null != this.onJobRemoved)
+			this.onJobRemoved(this, new NotificationEventArgs(job));
+	}
 
-        }
+	internal void PublishException(BitsJob job, COMException exception) {
+		if (this.onInterfaceError != null) {
+			string description = this.GetErrorDescription(exception.ErrorCode);
+			this.onInterfaceError(this, new BitsInterfaceNotificationEventArgs(job, exception, description));
+		}
 
-        #endregion
+	}
 
-        #region Public Events
+	#endregion
 
-        public event EventHandler<NotificationEventArgs> OnJobModifiedEvent {
-            add { this.onJobModified += value; }
-            remove { this.onJobModified -= value; }
-        }
+	#region Public Events
 
-        public event EventHandler<NotificationEventArgs> OnJobTransferredEvent {
-            add { this.onJobTransfered += value; }
-            remove { this.onJobTransfered -= value; }
-        }
+	public event EventHandler<NotificationEventArgs> OnJobModifiedEvent {
+		add { this.onJobModified += value; }
+		remove { this.onJobModified -= value; }
+	}
 
-        public event EventHandler<ErrorNotificationEventArgs> OnJobErrorEvent {
-            add { this.onJobErrored += value; }
-            remove { this.onJobErrored -= value; }
-        }
+	public event EventHandler<NotificationEventArgs> OnJobTransferredEvent {
+		add { this.onJobTransfered += value; }
+		remove { this.onJobTransfered -= value; }
+	}
 
-        public event EventHandler<NotificationEventArgs> OnJobAdded {
-            add { this.onJobAdded += value; }
-            remove { this.onJobAdded -= value; }
-        }
+	public event EventHandler<ErrorNotificationEventArgs> OnJobErrorEvent {
+		add { this.onJobErrored += value; }
+		remove { this.onJobErrored -= value; }
+	}
 
-        public event EventHandler<NotificationEventArgs> OnJobRemoved {
-            add { this.onJobRemoved += value; }
-            remove { this.onJobRemoved -= value; }
-        }
+	public event EventHandler<NotificationEventArgs> OnJobAdded {
+		add { this.onJobAdded += value; }
+		remove { this.onJobAdded -= value; }
+	}
 
-        public event EventHandler<BitsInterfaceNotificationEventArgs> OnInterfaceError {
-            add { this.onInterfaceError += value; }
-            remove { this.onInterfaceError -= value; }
-        }
+	public event EventHandler<NotificationEventArgs> OnJobRemoved {
+		add { this.onJobRemoved += value; }
+		remove { this.onJobRemoved -= value; }
+	}
 
-        #endregion
+	public event EventHandler<BitsInterfaceNotificationEventArgs> OnInterfaceError {
+		add { this.onInterfaceError += value; }
+		remove { this.onInterfaceError -= value; }
+	}
 
-        #endregion
+	#endregion
 
-        internal IBackgroundCopyManager BackgroundCopyManager {
-            get { return this.manager; }
-        }
+	#endregion
 
-        #region IDisposable Members
+	internal IBackgroundCopyManager BackgroundCopyManager {
+		get { return this.manager; }
+	}
 
-        public void Dispose() {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
+	#region IDisposable Members
 
-        protected virtual void Dispose(bool disposing) {
-            if (!this.disposed) {
-                if (disposing) {
-                    Marshal.ReleaseComObject(notificationHandler);
-                    Marshal.ReleaseComObject(manager);
-                    manager = null;
-                }
-            }
-            disposed = true;
-        }
-      
-        #endregion
-    }
+	public void Dispose() {
+		Dispose(true);
+		GC.SuppressFinalize(this);
+	}
+
+	protected virtual void Dispose(bool disposing) {
+		if (!this.disposed) {
+			if (disposing) {
+				Marshal.ReleaseComObject(notificationHandler);
+				Marshal.ReleaseComObject(manager);
+				manager = null;
+			}
+		}
+		disposed = true;
+	}
+
+	#endregion
+
 }

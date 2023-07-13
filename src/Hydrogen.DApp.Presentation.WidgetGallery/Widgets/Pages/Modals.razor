@@ -25,16 +25,18 @@
 @code {
 
     private async Task ShowInfoModalAsync() {
-        await ModalService.ShowAsync<InfoDialog>(new Dictionary<string, object>
-        {
-            {nameof(InfoDialog.Message), "This is a informational message."}
+        await ModalService.ShowAsync<InfoDialog>(new Dictionary<string, object> {
+            {
+                nameof(InfoDialog.Message), "This is a informational message."
+            }
         });
     }
 
     private async Task ShowConfirmModalAsync() {
-        await ModalService.ShowAsync<ConfirmDialog>(new Dictionary<string, object>
-        {
-            {nameof(ConfirmDialog.Message), "Do you wish to proceed?"}
+        await ModalService.ShowAsync<ConfirmDialog>(new Dictionary<string, object> {
+            {
+                nameof(ConfirmDialog.Message), "Do you wish to proceed?"
+            }
         });
     }
 }

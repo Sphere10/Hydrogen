@@ -9,22 +9,21 @@
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Hydrogen {
+namespace Hydrogen;
 
-	public class ReadOnlyListDecorator<TFrom, TTo> : IReadOnlyList<TTo>  where TTo : TFrom {
+public class ReadOnlyListDecorator<TFrom, TTo> : IReadOnlyList<TTo> where TTo : TFrom {
 
-        public ReadOnlyListDecorator(IReadOnlyList<TFrom> internalList) {
-            InternalList = internalList;
-        }
+	public ReadOnlyListDecorator(IReadOnlyList<TFrom> internalList) {
+		InternalList = internalList;
+	}
 
-        protected IReadOnlyList<TFrom> InternalList;
+	protected IReadOnlyList<TFrom> InternalList;
 
-        public TTo this[int index] => (TTo)InternalList[index];
+	public TTo this[int index] => (TTo)InternalList[index];
 
-        public int Count => InternalList.Count;
+	public int Count => InternalList.Count;
 
-        public IEnumerator<TTo> GetEnumerator() => new EnumeratorDecorator<TFrom, TTo>(InternalList.GetEnumerator());
+	public IEnumerator<TTo> GetEnumerator() => new EnumeratorDecorator<TFrom, TTo>(InternalList.GetEnumerator());
 
-        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-    }
+	IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 }

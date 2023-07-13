@@ -6,9 +6,8 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen.Communications {
+namespace Hydrogen.Communications;
 
-    public interface ICommandHandler<in TMessage> : ICommandHandler {
-		void Execute(ProtocolOrchestrator orchestrator, TMessage command);
-	}
+public interface ICommandHandler<in TMessage> : ICommandHandler {
+	void Execute(ProtocolOrchestrator orchestrator, TMessage command);
 }

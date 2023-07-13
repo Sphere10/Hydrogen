@@ -6,12 +6,8 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
 using System.Text;
-using Tools;
 
 namespace Hydrogen;
 
@@ -44,5 +40,3 @@ public class StringSerializer : ItemSerializer<string> {
 		return true;
 	}
 }
-
-

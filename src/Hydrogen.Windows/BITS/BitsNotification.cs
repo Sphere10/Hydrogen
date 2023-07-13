@@ -7,184 +7,156 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using System.Text;
 
-namespace Hydrogen.Windows.BITS
-{
-    #region Notification Event Arguments
-    public class JobNotificationEventArgs : System.EventArgs
-    {
-    }
+namespace Hydrogen.Windows.BITS;
 
-    public class JobErrorNotificationEventArgs : JobNotificationEventArgs
-    {
+#region Notification Event Arguments
 
-        private BitsError error;
+public class JobNotificationEventArgs : System.EventArgs {
+}
 
-        internal JobErrorNotificationEventArgs(BitsError error)
-            : base()
-        {
-            this.error = error;
-        }
 
-        public BitsError Error
-        {
-            get { return this.error; }
-        }
-    }
+public class JobErrorNotificationEventArgs : JobNotificationEventArgs {
 
-    public class NotificationEventArgs : JobNotificationEventArgs
-    {
-        private BitsJob job;
+	private BitsError error;
 
-        internal NotificationEventArgs(BitsJob job)
-        {
-            this.job = job;
-        }
+	internal JobErrorNotificationEventArgs(BitsError error)
+		: base() {
+		this.error = error;
+	}
 
-        public BitsJob Job
-        {
-            get { return job; }
-        }
-    }
+	public BitsError Error {
+		get { return this.error; }
+	}
+}
 
-    public class ErrorNotificationEventArgs : NotificationEventArgs
-    {
 
-        private BitsError error;
+public class NotificationEventArgs : JobNotificationEventArgs {
+	private BitsJob job;
 
-        internal ErrorNotificationEventArgs(BitsJob job, BitsError error)
-            : base(job)
-        {
-            this.error = error;
-        }
+	internal NotificationEventArgs(BitsJob job) {
+		this.job = job;
+	}
 
-        public BitsError Error
-        {
-            get { return this.error; }
-        }
-    }
+	public BitsJob Job {
+		get { return job; }
+	}
+}
 
-    public class BitsInterfaceNotificationEventArgs : NotificationEventArgs
-    {
-        private COMException exception;
-        private string description;
 
-        internal BitsInterfaceNotificationEventArgs(BitsJob job, COMException exception, string description)
-            : base(job)
-        {
-            this.description = description;
-            this.exception = exception;
-        }
+public class ErrorNotificationEventArgs : NotificationEventArgs {
 
-        public string Message
-        {
-            get { return this.exception.Message; }
-        }
+	private BitsError error;
 
-        public string Description
-        {
-            get { return this.description; }
-        }
+	internal ErrorNotificationEventArgs(BitsJob job, BitsError error)
+		: base(job) {
+		this.error = error;
+	}
 
-        public int HResult
-        {
-            get { return this.exception.ErrorCode; }
-        }
-    }
+	public BitsError Error {
+		get { return this.error; }
+	}
+}
 
-    #endregion
 
-    internal class BitsNotification : IBackgroundCopyCallback
-    {
-        #region IBackgroundCopyCallback Members
-        private EventHandler<NotificationEventArgs> onJobModified;
-        private EventHandler<NotificationEventArgs> onJobTransfered;
-        private EventHandler<ErrorNotificationEventArgs> onJobErrored;
-        private BitsManager manager;
+public class BitsInterfaceNotificationEventArgs : NotificationEventArgs {
+	private COMException exception;
+	private string description;
 
-        internal BitsNotification(BitsManager manager)
-        {
-            this.manager = manager;
-            ;
-        }
+	internal BitsInterfaceNotificationEventArgs(BitsJob job, COMException exception, string description)
+		: base(job) {
+		this.description = description;
+		this.exception = exception;
+	}
 
-        public void JobTransferred(IBackgroundCopyJob pJob)
-        {
-            BitsJob job;
-            if (null != this.onJobTransfered)
-            {
-                Guid guid;
-                pJob.GetId(out guid);
-                if (manager.Jobs.ContainsKey(guid))
-                {
-                    job = manager.Jobs[guid];
-                }
-                else
-                {
-                    job = new BitsJob(manager, pJob);
-                }
-                this.onJobTransfered(this, new NotificationEventArgs(job));
-            }
-        }
+	public string Message {
+		get { return this.exception.Message; }
+	}
 
-        public void JobError(IBackgroundCopyJob pJob, IBackgroundCopyError pError)
-        {
-            BitsJob job;
-            if (null != this.onJobErrored)
-            {
-                Guid guid;
-                pJob.GetId(out guid);
-                if (manager.Jobs.ContainsKey(guid))
-                {
-                    job = manager.Jobs[guid];
-                }
-                else
-                {
-                    job = new BitsJob(manager, pJob);
-                }
-                this.onJobErrored(this, new ErrorNotificationEventArgs(job, new BitsError(job, pError)));
-            }
-        }
+	public string Description {
+		get { return this.description; }
+	}
 
-        public void JobModification(IBackgroundCopyJob pJob, uint dwReserved)
-        {
-            BitsJob job;
-            if (null != this.onJobModified)
-            {
-                Guid guid;
-                pJob.GetId(out guid);
-                if (manager.Jobs.ContainsKey(guid))
-                {
-                    job = manager.Jobs[guid];
-                }
-                else
-                {
-                    job = new BitsJob(manager, pJob);
-                }
-                this.onJobModified(this, new NotificationEventArgs(job));
-            }
-        }
+	public int HResult {
+		get { return this.exception.ErrorCode; }
+	}
+}
 
-        public event EventHandler<NotificationEventArgs> OnJobModifiedEvent
-        {
-            add { this.onJobModified += value; }
-            remove { this.onJobModified -= value; }
-        }
+#endregion
 
-        public event EventHandler<NotificationEventArgs> OnJobTransferredEvent
-        {
-            add { this.onJobTransfered += value; }
-            remove { this.onJobTransfered -= value; }
-        }
 
-        public event EventHandler<ErrorNotificationEventArgs> OnJobErrorEvent
-        {
-            add { this.onJobErrored += value; }
-            remove { this.onJobErrored -= value; }
-        }
-        #endregion
-    }
+internal class BitsNotification : IBackgroundCopyCallback {
+
+	#region IBackgroundCopyCallback Members
+
+	private EventHandler<NotificationEventArgs> onJobModified;
+	private EventHandler<NotificationEventArgs> onJobTransfered;
+	private EventHandler<ErrorNotificationEventArgs> onJobErrored;
+	private BitsManager manager;
+
+	internal BitsNotification(BitsManager manager) {
+		this.manager = manager;
+		;
+	}
+
+	public void JobTransferred(IBackgroundCopyJob pJob) {
+		BitsJob job;
+		if (null != this.onJobTransfered) {
+			Guid guid;
+			pJob.GetId(out guid);
+			if (manager.Jobs.ContainsKey(guid)) {
+				job = manager.Jobs[guid];
+			} else {
+				job = new BitsJob(manager, pJob);
+			}
+			this.onJobTransfered(this, new NotificationEventArgs(job));
+		}
+	}
+
+	public void JobError(IBackgroundCopyJob pJob, IBackgroundCopyError pError) {
+		BitsJob job;
+		if (null != this.onJobErrored) {
+			Guid guid;
+			pJob.GetId(out guid);
+			if (manager.Jobs.ContainsKey(guid)) {
+				job = manager.Jobs[guid];
+			} else {
+				job = new BitsJob(manager, pJob);
+			}
+			this.onJobErrored(this, new ErrorNotificationEventArgs(job, new BitsError(job, pError)));
+		}
+	}
+
+	public void JobModification(IBackgroundCopyJob pJob, uint dwReserved) {
+		BitsJob job;
+		if (null != this.onJobModified) {
+			Guid guid;
+			pJob.GetId(out guid);
+			if (manager.Jobs.ContainsKey(guid)) {
+				job = manager.Jobs[guid];
+			} else {
+				job = new BitsJob(manager, pJob);
+			}
+			this.onJobModified(this, new NotificationEventArgs(job));
+		}
+	}
+
+	public event EventHandler<NotificationEventArgs> OnJobModifiedEvent {
+		add { this.onJobModified += value; }
+		remove { this.onJobModified -= value; }
+	}
+
+	public event EventHandler<NotificationEventArgs> OnJobTransferredEvent {
+		add { this.onJobTransfered += value; }
+		remove { this.onJobTransfered -= value; }
+	}
+
+	public event EventHandler<ErrorNotificationEventArgs> OnJobErrorEvent {
+		add { this.onJobErrored += value; }
+		remove { this.onJobErrored -= value; }
+	}
+
+	#endregion
+
 }

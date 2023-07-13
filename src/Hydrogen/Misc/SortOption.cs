@@ -6,16 +6,16 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen {
-	public class SortOption {
+namespace Hydrogen;
 
-	    public SortOption(string name, SortDirection direction) {
-	        Name = name;
-	        Direction = direction;
-	    }
+public class SortOption {
 
-        public string Name { get; set; }
-
-        public SortDirection Direction { get; set; }
+	public SortOption(string name, SortDirection direction) {
+		Name = name;
+		Direction = direction;
 	}
+
+	public string Name { get; set; }
+
+	public SortDirection Direction { get; set; }
 }

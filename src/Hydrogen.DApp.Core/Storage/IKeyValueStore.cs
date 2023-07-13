@@ -6,18 +6,15 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using Hydrogen;
 
-namespace Hydrogen.DApp.Core.Storage {
+namespace Hydrogen.DApp.Core.Storage;
 
-    public interface IKeyValueStore<T> : ISynchronizedObject {
-        IQueryable<T> GetKeys();
-        Stream OpenRead(T key);
-        Stream OpenWrite(T key);
-    }
+public interface IKeyValueStore<T> : ISynchronizedObject {
+	IQueryable<T> GetKeys();
+
+	Stream OpenRead(T key);
+
+	Stream OpenWrite(T key);
 }

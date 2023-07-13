@@ -6,13 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using CommandLine;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Hydrogen.Application;
 
@@ -39,7 +33,8 @@ public class ProductLicenseEnforcer : IProductLicenseEnforcer {
 	private Settings _settings;
 	private readonly object _lock = new object();
 
-	public ProductLicenseEnforcer(IProductLicenseStorage productLicenseStorage, IProductInformationProvider productInformationProvider, IProductUsageServices productUsageServices, IUserInterfaceServices userInterfaceServices, IDuplicateProcessDetector duplicateProcessDetector, ISettingsServices settingsServices) {
+	public ProductLicenseEnforcer(IProductLicenseStorage productLicenseStorage, IProductInformationProvider productInformationProvider, IProductUsageServices productUsageServices, IUserInterfaceServices userInterfaceServices,
+	                              IDuplicateProcessDetector duplicateProcessDetector, ISettingsServices settingsServices) {
 		ProductLicenseStorage = productLicenseStorage;
 		ProductInformationProvider = productInformationProvider;
 		ProductUsageServices = productUsageServices;
@@ -138,7 +133,7 @@ public class ProductLicenseEnforcer : IProductLicenseEnforcer {
 					// Show nag screen, allow user opportunity to add new license
 					UserInterfaceServices.ShowNagScreen(message);
 					nagged = true;
-					rights = CalculateRights(out message);  // user may have updated license in nag screen
+					rights = CalculateRights(out message); // user may have updated license in nag screen
 				}
 
 				if (rights.FeatureRights == ProductLicenseFeatureLevelDTO.None) {

@@ -12,11 +12,11 @@ public sealed class WithNullValueItemHasher<TItem, TItemHasher> : ItemHasherDeco
 	where TItemHasher : IItemHasher<TItem> {
 
 	private readonly byte[] _nullItemHash;
-	public WithNullValueItemHasher(TItemHasher internalHasher, byte[] nullItemHash) 
+	public WithNullValueItemHasher(TItemHasher internalHasher, byte[] nullItemHash)
 		: base(internalHasher) {
 		_nullItemHash = nullItemHash;
 	}
 
-	public override byte[] Hash(TItem item) 
+	public override byte[] Hash(TItem item)
 		=> item == null ? Tools.Array.Clone(_nullItemHash) : base.Hash(item);
 }

@@ -12,22 +12,20 @@
 
 using System;
 
-namespace Hydrogen {
+namespace Hydrogen;
 
-	public record MerkleNode : IEquatable<MerkleNode> {
-		public readonly MerkleCoordinate Coordinate;
-		public readonly byte[] Hash;
+public record MerkleNode : IEquatable<MerkleNode> {
+	public readonly MerkleCoordinate Coordinate;
+	public readonly byte[] Hash;
 
-		public MerkleNode(MerkleCoordinate coordinate, byte[] hash) {
-			Coordinate = coordinate;
-			Hash = hash;
-		}
-
-		public override int GetHashCode() {
-			unchecked {
-				return Coordinate.GetHashCode() * 397 ^ ByteArrayEqualityComparer.Instance.GetHashCode(Hash);
-			}
-		}
+	public MerkleNode(MerkleCoordinate coordinate, byte[] hash) {
+		Coordinate = coordinate;
+		Hash = hash;
 	}
 
+	public override int GetHashCode() {
+		unchecked {
+			return Coordinate.GetHashCode() * 397 ^ ByteArrayEqualityComparer.Instance.GetHashCode(Hash);
+		}
+	}
 }

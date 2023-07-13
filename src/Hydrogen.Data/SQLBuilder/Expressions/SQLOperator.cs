@@ -6,37 +6,31 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+namespace Hydrogen.Data;
 
-namespace Hydrogen.Data {
-    public enum SQLOperator {
-        IsNull,
-        IsNotNull,
-        Equal,
-        NotEqual,
-        In,
-        Like,
-        Plus,
-        Mul,
-        Div,
-        BitwiseOr,
-        BitwiseAnd,
-        BitwiseXor,
-        Minus,
-        BitwiseComplement,
-        InnerJoin,
-        LeftJoin,
-        RightJoin,
-        ColumnAlias,
-        TableAlias,
-        GreaterThan,
-        GreaterThanEqualTo,
-        LessThan,
-        LessThanEqualTo,
-        Exists
-    }
+public enum SQLOperator {
+	IsNull,
+	IsNotNull,
+	Equal,
+	NotEqual,
+	In,
+	Like,
+	Plus,
+	Mul,
+	Div,
+	BitwiseOr,
+	BitwiseAnd,
+	BitwiseXor,
+	Minus,
+	BitwiseComplement,
+	InnerJoin,
+	LeftJoin,
+	RightJoin,
+	ColumnAlias,
+	TableAlias,
+	GreaterThan,
+	GreaterThanEqualTo,
+	LessThan,
+	LessThanEqualTo,
+	Exists
 }

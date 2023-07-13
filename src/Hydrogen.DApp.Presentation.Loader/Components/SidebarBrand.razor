@@ -10,26 +10,22 @@
 
 <div class="sidebar-brand d-flex align-items-center justify-content-center dropdown-toggle" id="datasource-dropdown" data-toggle="dropdown">
     <img class="sidebar-brand-img" src="img/brand-icon.svg" alt=""/>
-   
+
     <div class="dropdown-menu dropdown-menu-right shadow">
-        @foreach (Uri uri in ViewModel!.Endpoints)
-        {
+        @foreach (Uri uri in ViewModel!.Endpoints) {
             bool active = IsActive(uri);
 
             <a class="dropdown-item" role="button" @onmousedown="() => ViewModel!.OnSelectEndpointAsync(uri)">
-                @if (active)
-                {
+                @if (active) {
                     <i class="fas fa-check fa-sm fa-fw mr-2 text-success"></i>
-                }
-                else
-                {
+                } else {
                     <i class="fas fa-server fa-sm fa-fw mr-2 text-gray-400"></i>
                 }
                 @uri
             </a>
         }
     </div>
-    
+
 </div>
 
 @code

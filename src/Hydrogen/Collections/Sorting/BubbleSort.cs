@@ -8,24 +8,22 @@
 
 using System.Collections.Generic;
 
-namespace Hydrogen {
+namespace Hydrogen;
 
-	public sealed class BubbleSort<T> : SortAlgorithm<T> {
-		
-		public override void Execute(IExtendedList<T> list, IComparer<T> comparer) {
-			bool swap = false;
+public sealed class BubbleSort<T> : SortAlgorithm<T> {
 
-			do {
-				swap = false;
-				for (int i = 0; i < list.Count - 1; i++) {
-					if (comparer.Compare( list[i], list[i + 1]) > 0) {
-						this.Swap(list, i, (i + 1));
-						swap = true;
-					}
+	public override void Execute(IExtendedList<T> list, IComparer<T> comparer) {
+		bool swap = false;
+
+		do {
+			swap = false;
+			for (int i = 0; i < list.Count - 1; i++) {
+				if (comparer.Compare(list[i], list[i + 1]) > 0) {
+					this.Swap(list, i, (i + 1));
+					swap = true;
 				}
 			}
-			while (swap == true);
-		}
-
+		} while (swap == true);
 	}
+
 }

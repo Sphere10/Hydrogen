@@ -9,7 +9,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
 
 
@@ -100,5 +99,3 @@ public interface IFileStore<TFileKeyType> : IDisposable {
 	public void AppendAllText(TFileKeyType fileKey, string contents, Encoding encoding);
 
 }
-
-

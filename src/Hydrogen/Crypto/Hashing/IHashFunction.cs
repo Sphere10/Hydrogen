@@ -9,35 +9,34 @@
 using System;
 using System.Runtime.CompilerServices;
 
-namespace Hydrogen {
+namespace Hydrogen;
 
-	public interface IHashFunction : ICloneable, IDisposable {
+public interface IHashFunction : ICloneable, IDisposable {
 
-		int DigestSize { get; }
+	int DigestSize { get; }
 
-		void Compute(ReadOnlySpan<byte> input, Span<byte> output);
+	void Compute(ReadOnlySpan<byte> input, Span<byte> output);
 
-		void Transform(ReadOnlySpan<byte> data);
+	void Transform(ReadOnlySpan<byte> data);
 
-		void GetResult(Span<byte> result);
+	void GetResult(Span<byte> result);
 
-		void Reset();
+	void Reset();
+}
+
+
+public static class IHashFunctionExtensions {
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static byte[] GetResult(this IHashFunction chf) {
+		var result = new byte[chf.DigestSize];
+		chf.GetResult(result);
+		return result;
 	}
 
-	public static class IHashFunctionExtensions {
-	
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static byte[] GetResult(this IHashFunction chf) {
-			var result = new byte[chf.DigestSize];
-			chf.GetResult(result);
-			return result;
-		}
-
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static byte[] Compute(this IHashFunction chf, ReadOnlySpan<byte> input) {
-			chf.Transform(input);
-			return chf.GetResult();
-		}
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static byte[] Compute(this IHashFunction chf, ReadOnlySpan<byte> input) {
+		chf.Transform(input);
+		return chf.GetResult();
 	}
-
 }

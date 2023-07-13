@@ -8,27 +8,21 @@
 
 using Newtonsoft.Json;
 
-namespace Hydrogen.Communications.RPC {
- 
-    [JsonObject(MemberSerialization.OptIn)]
-    public class JsonRequest {
-        public JsonRequest() {}
+namespace Hydrogen.Communications.RPC;
 
-        [JsonProperty("jsonrpc")]
-        public string JsonRpc
-        {
-            get { return "2.0"; }
-        }
+[JsonObject(MemberSerialization.OptIn)]
+public class JsonRequest {
+	public JsonRequest() {
+	}
 
-        [JsonProperty("method")]
-        public string Method { get; set; }
+	[JsonProperty("jsonrpc")]
+	public string JsonRpc {
+		get { return "2.0"; }
+	}
 
-        [JsonProperty("params")]
-        public object Params { get; set; }
+	[JsonProperty("method")] public string Method { get; set; }
 
-        [JsonProperty("id")]
-        public object Id { get; set; }
-    }
+	[JsonProperty("params")] public object Params { get; set; }
+
+	[JsonProperty("id")] public object Id { get; set; }
 }
-
-

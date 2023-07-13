@@ -9,18 +9,14 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace Hydrogen.Application {
+namespace Hydrogen.Application;
 
-	[ComVisible(true)]
-	[AttributeUsage(AttributeTargets.Assembly, Inherited = false)]
-	public sealed class AssemblyProductDistributionAttribute : Attribute {
-		public AssemblyProductDistributionAttribute(ProductDistribution distribution) {
-			Distribution = distribution;
-		}
-
-		public ProductDistribution Distribution { get; set; }
+[ComVisible(true)]
+[AttributeUsage(AttributeTargets.Assembly, Inherited = false)]
+public sealed class AssemblyProductDistributionAttribute : Attribute {
+	public AssemblyProductDistributionAttribute(ProductDistribution distribution) {
+		Distribution = distribution;
 	}
 
+	public ProductDistribution Distribution { get; set; }
 }
-
-

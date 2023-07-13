@@ -6,10 +6,6 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using Hydrogen;
 using Hydrogen.Application;
 using Hydrogen.Web.AspNetCore;
 using Microsoft.Extensions.Logging;
@@ -23,7 +19,7 @@ public static class IServiceCollectionExtensions {
 	}
 
 	public static IServiceCollection AddHydrogenLogger(this IServiceCollection serviceCollection, Hydrogen.ILogger logger) {
-		return serviceCollection.AddTransient<ILoggerProvider>( _ => new HydrogenLoggerProvider(logger));
+		return serviceCollection.AddTransient<ILoggerProvider>(_ => new HydrogenLoggerProvider(logger));
 	}
 
 }

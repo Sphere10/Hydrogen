@@ -6,14 +6,10 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using Hydrogen.DApp.Node.UI;
+namespace Hydrogen.DApp.Node.UI;
 
-namespace Hydrogen.DApp.Node.UI {
-
-	[Title("Storage")]
-	[Lifetime(ScreenLifetime.WhenVisible)]
-	[MenuLocation(AppMenu.Settings, "Storage", 1)]
-	public class StorageSettingsScreen : MockScreen {
-	}
-
+[Title("Storage")]
+[Lifetime(ScreenLifetime.WhenVisible)]
+[MenuLocation(AppMenu.Settings, "Storage", 1)]
+public class StorageSettingsScreen : MockScreen {
 }

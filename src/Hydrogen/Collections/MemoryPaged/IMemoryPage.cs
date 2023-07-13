@@ -8,28 +8,28 @@
 
 using System;
 
-namespace Hydrogen {
-	public interface IMemoryPage<TItem> : IPage<TItem>, IDisposable {
+namespace Hydrogen;
 
-		/// <summary>
-		/// The maximum byte size of the page.
-		/// </summary>
-		int MaxSize { get; set; }
+public interface IMemoryPage<TItem> : IPage<TItem>, IDisposable {
 
-		/// <summary>
-		/// Saves the page to storage.
-		/// </summary>
-		void Save();
-	
-		/// <summary>
-		/// Loads the page from storage.
-		/// </summary>
-		void Load();
+	/// <summary>
+	/// The maximum byte size of the page.
+	/// </summary>
+	int MaxSize { get; set; }
 
-		/// <summary>
-		/// Unloads the page from memory.
-		/// </summary>
-		void Unload();
+	/// <summary>
+	/// Saves the page to storage.
+	/// </summary>
+	void Save();
 
-	}
+	/// <summary>
+	/// Loads the page from storage.
+	/// </summary>
+	void Load();
+
+	/// <summary>
+	/// Unloads the page from memory.
+	/// </summary>
+	void Unload();
+
 }

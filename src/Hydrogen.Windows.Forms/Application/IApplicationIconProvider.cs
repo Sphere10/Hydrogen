@@ -10,6 +10,6 @@ using System.Drawing;
 
 namespace Hydrogen.Windows.Forms;
 
-	public interface IApplicationIconProvider {
-		Icon ApplicationIcon { get; }
-	}
+public interface IApplicationIconProvider {
+	Icon ApplicationIcon { get; }
+}

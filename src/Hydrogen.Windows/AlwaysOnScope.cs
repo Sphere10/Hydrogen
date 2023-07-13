@@ -7,27 +7,22 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Hydrogen;
 
-namespace Hydrogen.Windows {
-    public class AlwaysOnScope : IDisposable {
-        private readonly uint _priorState ;
-        public AlwaysOnScope(bool system,  bool display) {
-            var mode = (uint)WinAPI.KERNEL32.ES_CONTINUOUS;
-            if (system)
-                mode = mode | WinAPI.KERNEL32.ES_SYSTEM_REQUIRED;
-            if (display)
-                mode = mode | WinAPI.KERNEL32.ES_DISPLAY_REQUIRED;
-           _priorState = WinAPI.KERNEL32.SetThreadExecutionState(mode);
+namespace Hydrogen.Windows;
 
-        }
+public class AlwaysOnScope : IDisposable {
+	private readonly uint _priorState;
+	public AlwaysOnScope(bool system, bool display) {
+		var mode = (uint)WinAPI.KERNEL32.ES_CONTINUOUS;
+		if (system)
+			mode = mode | WinAPI.KERNEL32.ES_SYSTEM_REQUIRED;
+		if (display)
+			mode = mode | WinAPI.KERNEL32.ES_DISPLAY_REQUIRED;
+		_priorState = WinAPI.KERNEL32.SetThreadExecutionState(mode);
 
-        public void Dispose() {
-            WinAPI.KERNEL32.SetThreadExecutionState(_priorState);
-        }
-    }
+	}
+
+	public void Dispose() {
+		WinAPI.KERNEL32.SetThreadExecutionState(_priorState);
+	}
 }

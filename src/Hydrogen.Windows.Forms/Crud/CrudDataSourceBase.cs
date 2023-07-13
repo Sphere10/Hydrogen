@@ -6,21 +6,22 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Hydrogen;
 
-namespace Hydrogen.Windows.Forms {
+namespace Hydrogen.Windows.Forms;
 
-	public abstract class CrudDataSourceBase<TEntity> : ICrudDataSource<TEntity> {
-		public abstract TEntity New();
-		public abstract void Create(TEntity entity);
-		public abstract IEnumerable<TEntity> Read(string searchTerm, int pageLength, ref int page, string sortProperty, SortDirection sortDirection, out int totalItems);
-		public abstract TEntity Refresh(TEntity entity);
-		public abstract void Update(TEntity entity);
-		public abstract void Delete(TEntity entity);
-		public abstract  IEnumerable<string> Validate(TEntity entity, CrudAction action);
-	}
+public abstract class CrudDataSourceBase<TEntity> : ICrudDataSource<TEntity> {
+	public abstract TEntity New();
+
+	public abstract void Create(TEntity entity);
+
+	public abstract IEnumerable<TEntity> Read(string searchTerm, int pageLength, ref int page, string sortProperty, SortDirection sortDirection, out int totalItems);
+
+	public abstract TEntity Refresh(TEntity entity);
+
+	public abstract void Update(TEntity entity);
+
+	public abstract void Delete(TEntity entity);
+
+	public abstract IEnumerable<string> Validate(TEntity entity, CrudAction action);
 }

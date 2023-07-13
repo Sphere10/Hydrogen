@@ -10,7 +10,7 @@
 //	public long ID { get; }
 
 //	public int TypeCode { get; }
-	
+
 //	public int Index { get; }
 
 //	public void Load();
@@ -40,7 +40,6 @@
 ////		public int ReferenceCount { get; set; }
 
 ////	}
-
 
 
 ////	// 1. Hash the MutatedObjectsInitialState and add them to MutatedObjectProof trees
@@ -86,9 +85,9 @@
 ////		}
 
 
-		
-
 ////	}
 
-    
+
 ////}
+
+

@@ -9,6 +9,7 @@
 using System.IO;
 
 namespace Hydrogen;
+
 public class FileAppendLogger : TextWriterLogger {
 	public FileAppendLogger(string file) : this(file, false) {
 	}
@@ -22,4 +23,3 @@ public class FileAppendLogger : TextWriterLogger {
 		}
 	}
 }
-

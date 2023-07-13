@@ -18,4 +18,3 @@ public class PrefixLogger : PrefixLoggerBase {
 
 	protected override string GetPrefix() => _prefix;
 }
-

@@ -6,19 +6,20 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Windows.Forms;
 
-namespace Hydrogen.Windows.Forms {
-	public interface ICrudEntityEditor<TEntity> {
-		Control AsControl();
-		void SetEntity(DataSourceCapabilities capabilities, TEntity entity, bool isNewEntity);
-		TEntity GetEntityWithChanges();
-		bool HasChanges { get; }
-		void UndoChanges();
-		void AcceptChanges();
-	}
+namespace Hydrogen.Windows.Forms;
+
+public interface ICrudEntityEditor<TEntity> {
+	Control AsControl();
+
+	void SetEntity(DataSourceCapabilities capabilities, TEntity entity, bool isNewEntity);
+
+	TEntity GetEntityWithChanges();
+
+	bool HasChanges { get; }
+
+	void UndoChanges();
+
+	void AcceptChanges();
 }

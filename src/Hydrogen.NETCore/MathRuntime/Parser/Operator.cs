@@ -7,101 +7,98 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace Hydrogen.Maths.Compiler
-{
-    public enum Operator
-    {
-        
-        [OpAttr(10, Aryness.Binary, Associativity.Left)]
-        MemberSelection,
+namespace Hydrogen.Maths.Compiler;
 
-        [OpAttr(9, Aryness.Unary, Associativity.Right)]
-        UnaryNot,
+public enum Operator {
 
-        [OpAttr(8, Aryness.Binary, Associativity.Right)]
-        Power,
+	[OpAttr(10, Aryness.Binary, Associativity.Left)]
+	MemberSelection,
 
-        [OpAttr(7, Aryness.Unary, Associativity.Right)]
-        UnaryMinus,
+	[OpAttr(9, Aryness.Unary, Associativity.Right)]
+	UnaryNot,
 
-        [OpAttr(7, Aryness.Unary, Associativity.Right)]
-        UnaryPlus,
+	[OpAttr(8, Aryness.Binary, Associativity.Right)]
+	Power,
 
-        [OpAttr(6, Aryness.Binary, Associativity.Left)]
-        Division,
+	[OpAttr(7, Aryness.Unary, Associativity.Right)]
+	UnaryMinus,
 
-        [OpAttr(5, Aryness.Binary, Associativity.Left)]
-        Multiplication,
+	[OpAttr(7, Aryness.Unary, Associativity.Right)]
+	UnaryPlus,
 
-        [OpAttr(5, Aryness.Binary, Associativity.Left)]
-        Modulus,
+	[OpAttr(6, Aryness.Binary, Associativity.Left)]
+	Division,
 
-        [OpAttr(4, Aryness.Binary, Associativity.Left)]
-        Addition,
+	[OpAttr(5, Aryness.Binary, Associativity.Left)]
+	Multiplication,
 
-        [OpAttr(4, Aryness.Binary, Associativity.Left)]
-        Subtraction,
+	[OpAttr(5, Aryness.Binary, Associativity.Left)]
+	Modulus,
 
-        [OpAttr(3, Aryness.Binary, Associativity.Left)]
-        LessThan,
+	[OpAttr(4, Aryness.Binary, Associativity.Left)]
+	Addition,
 
-        [OpAttr(3, Aryness.Binary, Associativity.Left)]
-        GreaterThan,
+	[OpAttr(4, Aryness.Binary, Associativity.Left)]
+	Subtraction,
 
-        [OpAttr(3, Aryness.Binary, Associativity.Left)]
-        LessThanEqualTo,
+	[OpAttr(3, Aryness.Binary, Associativity.Left)]
+	LessThan,
 
-        [OpAttr(3, Aryness.Binary, Associativity.Left)]
-        GreaterThanEqualTo,
+	[OpAttr(3, Aryness.Binary, Associativity.Left)]
+	GreaterThan,
 
-        [OpAttr(2, Aryness.Binary, Associativity.Left)]
-        Equality,
+	[OpAttr(3, Aryness.Binary, Associativity.Left)]
+	LessThanEqualTo,
 
-        [OpAttr(2, Aryness.Binary, Associativity.Left)]
-        Inequality,
+	[OpAttr(3, Aryness.Binary, Associativity.Left)]
+	GreaterThanEqualTo,
 
-        [OpAttr(1, Aryness.Binary, Associativity.Left)]
-        And,
+	[OpAttr(2, Aryness.Binary, Associativity.Left)]
+	Equality,
 
-        [OpAttr(0, Aryness.Binary, Associativity.Left)]
-        Or,
+	[OpAttr(2, Aryness.Binary, Associativity.Left)]
+	Inequality,
 
-    }
+	[OpAttr(1, Aryness.Binary, Associativity.Left)]
+	And,
 
-    public enum Aryness {
-        Unary,
-        Binary
-    }
+	[OpAttr(0, Aryness.Binary, Associativity.Left)]
+	Or,
 
-    public class OpAttr : Attribute {
-        int _precedence;
-        Associativity _associativity;
-        Aryness _aryness;
+}
 
 
+public enum Aryness {
+	Unary,
+	Binary
+}
 
-        public OpAttr(int precedence, Aryness aryness, Associativity associativity) {
-            Precedence = precedence;
-            Associativity = associativity;
-            Aryness = aryness;
-        }
 
-        public int Precedence {
-            get { return _precedence; }
-            set { _precedence = value; }
-        }
-        public Associativity Associativity {
-            get { return _associativity; }
-            set { _associativity = value; }
-        }
+public class OpAttr : Attribute {
+	int _precedence;
+	Associativity _associativity;
+	Aryness _aryness;
 
-        public Aryness Aryness {
-            get { return _aryness; }
-            set { _aryness = value; }
-        }
-    }
 
+	public OpAttr(int precedence, Aryness aryness, Associativity associativity) {
+		Precedence = precedence;
+		Associativity = associativity;
+		Aryness = aryness;
+	}
+
+	public int Precedence {
+		get { return _precedence; }
+		set { _precedence = value; }
+	}
+
+	public Associativity Associativity {
+		get { return _associativity; }
+		set { _associativity = value; }
+	}
+
+	public Aryness Aryness {
+		get { return _aryness; }
+		set { _aryness = value; }
+	}
 }

@@ -10,26 +10,23 @@ using System.Collections;
 using System.Linq;
 using System.Collections.Generic;
 
-namespace Hydrogen {
+namespace Hydrogen;
 
-	public sealed class Grouping<TKey, TElement> : IGrouping<TKey, TElement> {
-		private readonly IEnumerable<TElement> _elements;
+public sealed class Grouping<TKey, TElement> : IGrouping<TKey, TElement> {
+	private readonly IEnumerable<TElement> _elements;
 
-		public Grouping(TKey key, IEnumerable<TElement> elements) {
-			Key = key;
-			_elements = elements;
-		}
-
-		public TKey Key { get; }
-
-		public IEnumerator<TElement> GetEnumerator() {
-			return _elements.GetEnumerator();
-		}
-
-		IEnumerator IEnumerable.GetEnumerator() {
-			return GetEnumerator();
-		}
+	public Grouping(TKey key, IEnumerable<TElement> elements) {
+		Key = key;
+		_elements = elements;
 	}
 
-}
+	public TKey Key { get; }
 
+	public IEnumerator<TElement> GetEnumerator() {
+		return _elements.GetEnumerator();
+	}
+
+	IEnumerator IEnumerable.GetEnumerator() {
+		return GetEnumerator();
+	}
+}

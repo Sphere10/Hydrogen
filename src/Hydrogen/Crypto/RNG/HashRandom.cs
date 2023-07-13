@@ -7,12 +7,8 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Hydrogen.Maths;
-
-
 
 /// <summary>
 /// A deterministic cryptographically-secure random number generator suitable for blockchain consensus. It works by extracting bytes from an iteratively hashed seed. The cryptographic security
@@ -25,7 +21,7 @@ public sealed class HashRandom : IRandomNumberGenerator {
 	private int _index;
 
 
-	public HashRandom(byte[] seed) 
+	public HashRandom(byte[] seed)
 		: this(CHF.SHA2_256, seed) {
 	}
 

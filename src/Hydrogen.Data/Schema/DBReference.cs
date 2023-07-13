@@ -6,27 +6,19 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Xml.Serialization;
 
-namespace Hydrogen.Data {
+namespace Hydrogen.Data;
 
-    [XmlRoot("ConnectionString")]
-    public struct DBReference {
+[XmlRoot("ConnectionString")]
+public struct DBReference {
 
-        public DBReference(DBMSType dbmsType, string connectionString) {
-            DBMSType = dbmsType;
-            ConnectionString = connectionString;
-        }
+	public DBReference(DBMSType dbmsType, string connectionString) {
+		DBMSType = dbmsType;
+		ConnectionString = connectionString;
+	}
 
-        [XmlAttribute("DBMS")]
-        public DBMSType DBMSType { get; set; }
+	[XmlAttribute("DBMS")] public DBMSType DBMSType { get; set; }
 
-        [XmlAttribute("Value")]
-        public string ConnectionString { get; set; }
-    }
+	[XmlAttribute("Value")] public string ConnectionString { get; set; }
 }

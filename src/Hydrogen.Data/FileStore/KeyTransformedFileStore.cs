@@ -30,7 +30,7 @@ public class KeyTransformedFileStore<TFromKey, TToKey> : IFileStore<TToKey> {
 
 	public IEnumerable<TToKey> FileKeys => InternalFileStore.FileKeys.Select(_fromTransformer);
 
-	public TToKey RecommendFileKey(string externalFilePath)  => _fromTransformer(InternalFileStore.RecommendFileKey(externalFilePath));
+	public TToKey RecommendFileKey(string externalFilePath) => _fromTransformer(InternalFileStore.RecommendFileKey(externalFilePath));
 
 	public string GetFilePath(TToKey fileKey) => InternalFileStore.GetFilePath(_toTransformer(fileKey));
 
@@ -111,5 +111,3 @@ public class KeyTransformedFileStore<TFromKey, TToKey> : IFileStore<TToKey> {
 	public void AppendAllText(TToKey fileKey, string contents, Encoding encoding) => InternalFileStore.AppendAllText(_toTransformer(fileKey), contents, encoding);
 
 }
-
-

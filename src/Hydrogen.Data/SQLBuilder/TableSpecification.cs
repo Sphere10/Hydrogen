@@ -7,14 +7,12 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
-namespace Hydrogen.Data {
-	public class TableSpecification {
-		public string Name { get; set; }
-		public TableType Type { get; set; }
-		public IEnumerable<ColumnSpecification> Columns { get; set; }
-		public PrimaryKeySpecification PrimaryKey { get; set; }
-	}
+namespace Hydrogen.Data;
+
+public class TableSpecification {
+	public string Name { get; set; }
+	public TableType Type { get; set; }
+	public IEnumerable<ColumnSpecification> Columns { get; set; }
+	public PrimaryKeySpecification PrimaryKey { get; set; }
 }

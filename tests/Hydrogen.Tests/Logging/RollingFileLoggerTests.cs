@@ -41,7 +41,7 @@
 
 //                Action a4 = () => new RollingFileLogger(dir, string.Empty, 0, 1);
 //                a4.Should().Throw<ArgumentOutOfRangeException>("Max file counts must be greater than 0");
-                
+
 //                Action a5 = () => new RollingFileLogger(dir, new string(Path.GetInvalidFileNameChars()), 1, 1);
 //                a5.Should().Throw<ArgumentException>(
 //                    "Log file name template contains invalid file name / path characters");
@@ -145,3 +145,5 @@
 //        }
 //    }
 //}
+
+

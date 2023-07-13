@@ -7,12 +7,10 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 
-using System.Runtime.InteropServices;
-
 namespace Hydrogen.Application;
 
 public interface IProductLicenseStorage {
-	
+
 	bool TryGetDefaultLicense(out ProductLicenseActivationDTO licenseActivation);
 
 	bool TryGetActivatedLicense(out ProductLicenseActivationDTO licenseActivation);

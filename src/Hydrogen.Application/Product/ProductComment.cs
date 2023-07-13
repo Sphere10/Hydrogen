@@ -8,17 +8,15 @@
 
 using System.Reflection;
 
-namespace Hydrogen.Application {
+namespace Hydrogen.Application;
 
-	[Obfuscation(Exclude = true)]
-    public class ProductComment : ClientRequest {
-        public ProductComment()
-            : base() {
-        }
+[Obfuscation(Exclude = true)]
+public class ProductComment : ClientRequest {
+	public ProductComment()
+		: base() {
+	}
 
-        public ProductComment(UserType userType, string sender, ProductInformation senderProductInformation, string featureDescription)
-            : base(userType, sender, senderProductInformation, featureDescription) {
-        }
-    }
-
+	public ProductComment(UserType userType, string sender, ProductInformation senderProductInformation, string featureDescription)
+		: base(userType, sender, senderProductInformation, featureDescription) {
+	}
 }

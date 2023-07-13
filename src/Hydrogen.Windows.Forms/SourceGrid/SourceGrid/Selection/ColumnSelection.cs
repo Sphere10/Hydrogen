@@ -8,133 +8,107 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text;
 
-namespace SourceGrid.Selection
-{
-    public class ColumnSelection : SelectionBase
-    {
-        public ColumnSelection()
-        {
-        }
+namespace SourceGrid.Selection;
 
-        public override void BindToGrid(GridVirtual p_grid)
-        {
-            base.BindToGrid(p_grid);
+public class ColumnSelection : SelectionBase {
+	public ColumnSelection() {
+	}
 
-            mDecorator = new Decorators.DecoratorSelection(this);
-            Grid.Decorators.Add(mDecorator);
-        }
+	public override void BindToGrid(GridVirtual p_grid) {
+		base.BindToGrid(p_grid);
 
-        public override void UnBindToGrid()
-        {
-            Grid.Decorators.Remove(mDecorator);
+		mDecorator = new Decorators.DecoratorSelection(this);
+		Grid.Decorators.Add(mDecorator);
+	}
 
-            base.UnBindToGrid();
-        }
+	public override void UnBindToGrid() {
+		Grid.Decorators.Remove(mDecorator);
 
-        private Decorators.DecoratorSelection mDecorator;
+		base.UnBindToGrid();
+	}
 
-        private List<int> mList = new List<int>();
+	private Decorators.DecoratorSelection mDecorator;
 
-        public override bool IsSelectedColumn(int column)
-        {
-            return mList.Contains(column);
-        }
+	private List<int> mList = new List<int>();
 
-        public override void SelectColumn(int column, bool select)
-        {
-            if (select && mList.Contains(column) == false)
-            {
-                mList.Add(column);
+	public override bool IsSelectedColumn(int column) {
+		return mList.Contains(column);
+	}
 
-                OnSelectionChanged(new RangeRegionChangedEventArgs(Grid.Columns.GetRange(column) , CellRange.Empty));
-            }
-            else if (!select && mList.Contains(column))
-            {
-                mList.Remove(column);
+	public override void SelectColumn(int column, bool select) {
+		if (select && mList.Contains(column) == false) {
+			mList.Add(column);
 
-                OnSelectionChanged(new RangeRegionChangedEventArgs(CellRange.Empty, Grid.Columns.GetRange(column)));
-            } 
-        }
+			OnSelectionChanged(new RangeRegionChangedEventArgs(Grid.Columns.GetRange(column), CellRange.Empty));
+		} else if (!select && mList.Contains(column)) {
+			mList.Remove(column);
 
-        public override bool IsSelectedRow(int row)
-        {
-            return false;
-        }
+			OnSelectionChanged(new RangeRegionChangedEventArgs(CellRange.Empty, Grid.Columns.GetRange(column)));
+		}
+	}
 
-        public override void SelectRow(int row, bool select)
-        {
-            throw new Exception("The method or operation is not implemented.");
-        }
+	public override bool IsSelectedRow(int row) {
+		return false;
+	}
 
-        public override bool IsSelectedCell(Position position)
-        {
-            return IsSelectedColumn(position.Column);
-        }
+	public override void SelectRow(int row, bool select) {
+		throw new Exception("The method or operation is not implemented.");
+	}
 
-        public override void SelectCell(Position position, bool select)
-        {
-            SelectColumn(position.Column, select);
-        }
+	public override bool IsSelectedCell(Position position) {
+		return IsSelectedColumn(position.Column);
+	}
 
-        public override bool IsSelectedRange(CellRange range)
-        {
-            for (int c = range.Start.Column; c <= range.End.Column; c++)
-            {
-                if (IsSelectedColumn(c) == false)
-                    return false;
-            }
+	public override void SelectCell(Position position, bool select) {
+		SelectColumn(position.Column, select);
+	}
 
-            return true;
-        }
+	public override bool IsSelectedRange(CellRange range) {
+		for (int c = range.Start.Column; c <= range.End.Column; c++) {
+			if (IsSelectedColumn(c) == false)
+				return false;
+		}
 
-        public override void SelectRange(CellRange range, bool select)
-        {
-            for (int c = range.Start.Column; c <= range.End.Column; c++)
-            {
-                SelectColumn(c, select);
-            }
-        }
+		return true;
+	}
 
-        protected override void OnResetSelection()
-        {
-            RangeRegion prevRange = GetSelectionRegion();
+	public override void SelectRange(CellRange range, bool select) {
+		for (int c = range.Start.Column; c <= range.End.Column; c++) {
+			SelectColumn(c, select);
+		}
+	}
 
-            mList.Clear();
+	protected override void OnResetSelection() {
+		RangeRegion prevRange = GetSelectionRegion();
 
-            OnSelectionChanged(new RangeRegionChangedEventArgs(null, prevRange));
-        }
+		mList.Clear();
 
-        public override bool IsEmpty()
-        {
-            return mList.Count == 0;
-        }
+		OnSelectionChanged(new RangeRegionChangedEventArgs(null, prevRange));
+	}
 
-        public override RangeRegion GetSelectionRegion()
-        {
-            RangeRegion region = new RangeRegion();
+	public override bool IsEmpty() {
+		return mList.Count == 0;
+	}
 
-            if (Grid.Rows.Count > 0)
-            {
-                foreach (int col in mList)
-                {
-                    region.Add(ValidateRange(new CellRange(Grid.FixedRows, col, Grid.Rows.Count - 1, col)));
-                }
-            }
+	public override RangeRegion GetSelectionRegion() {
+		RangeRegion region = new RangeRegion();
 
-            return region;
-        }
+		if (Grid.Rows.Count > 0) {
+			foreach (int col in mList) {
+				region.Add(ValidateRange(new CellRange(Grid.FixedRows, col, Grid.Rows.Count - 1, col)));
+			}
+		}
 
-        public override bool IntersectsWith(CellRange rng)
-        {
-            for (int c = rng.Start.Column; c <= rng.End.Column; c++)
-            {
-                if (IsSelectedColumn(c))
-                    return true;
-            }
+		return region;
+	}
 
-            return false;
-        }
-    }
+	public override bool IntersectsWith(CellRange rng) {
+		for (int c = rng.Start.Column; c <= rng.End.Column; c++) {
+			if (IsSelectedColumn(c))
+				return true;
+		}
+
+		return false;
+	}
 }

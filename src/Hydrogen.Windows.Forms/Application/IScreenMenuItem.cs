@@ -13,4 +13,3 @@ namespace Hydrogen.Windows.Forms;
 public interface IScreenMenuItem : ILinkMenuItem {
 	Type Screen { get; }
 }
-

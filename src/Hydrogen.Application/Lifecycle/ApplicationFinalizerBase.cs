@@ -11,14 +11,14 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace Hydrogen.Application {
-    public abstract class ApplicationFinalizerBase : IApplicationFinalizer {
-	    public const int DefaultPriority = 100;
+namespace Hydrogen.Application;
 
-	    public virtual int Priority => DefaultPriority;
+public abstract class ApplicationFinalizerBase : IApplicationFinalizer {
+	public const int DefaultPriority = 100;
 
-        public virtual bool Parallelizable => false;
+	public virtual int Priority => DefaultPriority;
 
-        public abstract void Finalize();
-    }
+	public virtual bool Parallelizable => false;
+
+	public abstract void Finalize();
 }

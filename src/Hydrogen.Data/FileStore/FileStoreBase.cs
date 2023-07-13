@@ -177,5 +177,3 @@ public abstract class FileStoreBase<TFileKey> : SyncDisposable, IFileStore<TFile
 	#endregion
 
 }
-
-

@@ -13,95 +13,94 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Transactions;
 
-namespace Hydrogen.Data
-{
+namespace Hydrogen.Data;
 
-    public class MSSQLDAC : DACBase {
+public class MSSQLDAC : DACBase {
 
-		public MSSQLDAC(string connectionString, ILogger logger = null)
-			: base(connectionString, logger) {
-		}
+	public MSSQLDAC(string connectionString, ILogger logger = null)
+		: base(connectionString, logger) {
+	}
 
-        public override DBMSType DBMSType {
-            get { return DBMSType.SQLServer; }
-        }
+	public override DBMSType DBMSType {
+		get { return DBMSType.SQLServer; }
+	}
 
-        public override IDbConnection CreateConnection() {
-			return
-				new SqlConnection {
-					ConnectionString = ConnectionString
-				};
-		}
+	public override IDbConnection CreateConnection() {
+		return
+			new SqlConnection {
+				ConnectionString = ConnectionString
+			};
+	}
 
-		public override ISQLBuilder CreateSQLBuilder() {
-			return new MSSQLBuilder();
-		}
+	public override ISQLBuilder CreateSQLBuilder() {
+		return new MSSQLBuilder();
+	}
 
-	    public override void EnlistInSystemTransaction(IDbConnection connection, Transaction transaction) {
-	        var mssqlConnection = connection as SqlConnection;
-	        if (mssqlConnection == null)
-	            throw new ArgumentException("Not an SqlConnection", "connection");
-            mssqlConnection.EnlistTransaction(transaction);
-	    }
+	public override void EnlistInSystemTransaction(IDbConnection connection, Transaction transaction) {
+		var mssqlConnection = connection as SqlConnection;
+		if (mssqlConnection == null)
+			throw new ArgumentException("Not an SqlConnection", "connection");
+		mssqlConnection.EnlistTransaction(transaction);
+	}
 
-	    public bool IsAzure() {
-            return this.ExecuteScalar<bool>("SELECT CASE WHEN SERVERPROPERTY('EngineEdition') = 5 THEN 1 ELSE 0 END");
-	    }
+	public bool IsAzure() {
+		return this.ExecuteScalar<bool>("SELECT CASE WHEN SERVERPROPERTY('EngineEdition') = 5 THEN 1 ELSE 0 END");
+	}
 
-        // This needs to be done properly!
-		protected override IEnumerable<string> GetBatches(ISQLBuilder sqlBuilder) {
-			yield return "SET XACT_ABORT ON;";
-		    yield return "BEGIN TRANSACTION;";
-            // TODO: issue batches in smaller chunks
-			var currentBatch = new FastStringBuilder();
-			foreach (var statement in sqlBuilder.Statements.Where(x => x.Type != SQLStatementType.TCL)) {
-				if (statement.Type == SQLStatementType.DDL) {
-					if (currentBatch.Length > 0) {
-						yield return currentBatch.ToString();
-						currentBatch.Clear();
-					}
-					yield return statement.SQL;
-				} else {
-					currentBatch.Append(statement.SQL);
+	// This needs to be done properly!
+	protected override IEnumerable<string> GetBatches(ISQLBuilder sqlBuilder) {
+		yield return "SET XACT_ABORT ON;";
+		yield return "BEGIN TRANSACTION;";
+		// TODO: issue batches in smaller chunks
+		var currentBatch = new FastStringBuilder();
+		foreach (var statement in sqlBuilder.Statements.Where(x => x.Type != SQLStatementType.TCL)) {
+			if (statement.Type == SQLStatementType.DDL) {
+				if (currentBatch.Length > 0) {
+					yield return currentBatch.ToString();
+					currentBatch.Clear();
 				}
+				yield return statement.SQL;
+			} else {
+				currentBatch.Append(statement.SQL);
 			}
-			if (currentBatch.Length > 0)
-				yield return currentBatch.ToString();
-		    yield return "COMMIT TRANSACTION;";
 		}
+		if (currentBatch.Length > 0)
+			yield return currentBatch.ToString();
+		yield return "COMMIT TRANSACTION;";
+	}
 
-        public override void BulkInsert(DataTable table, BulkInsertOptions bulkInsertOptions, TimeSpan timeout) {
-            using (var scope = this.BeginScope()) {
-                using (var copy = new SqlBulkCopy(
-                    (SqlConnection)((RestrictedConnection)scope.Connection).DangerousInternalConnection,
-                    ConvertOptions(bulkInsertOptions), 
-                    (SqlTransaction)(scope.Transaction as RestrictedTransaction)?.DangerousInternalTransaction
-                )) {
-                    copy.BulkCopyTimeout = (int)Math.Round(timeout.TotalSeconds,0);
-                    copy.DestinationTableName = table.TableName;
-                    copy.WriteToServer(table);
-                }
-            }
-        }
+	public override void BulkInsert(DataTable table, BulkInsertOptions bulkInsertOptions, TimeSpan timeout) {
+		using (var scope = this.BeginScope()) {
+			using (var copy = new SqlBulkCopy(
+				       (SqlConnection)((RestrictedConnection)scope.Connection).DangerousInternalConnection,
+				       ConvertOptions(bulkInsertOptions),
+				       (SqlTransaction)(scope.Transaction as RestrictedTransaction)?.DangerousInternalTransaction
+			       )) {
+				copy.BulkCopyTimeout = (int)Math.Round(timeout.TotalSeconds, 0);
+				copy.DestinationTableName = table.TableName;
+				copy.WriteToServer(table);
+			}
+		}
+	}
 
-	    private static SqlBulkCopyOptions ConvertOptions(BulkInsertOptions bulkInsertOptions) {
-	        var options = (SqlBulkCopyOptions) 0;
-            if (bulkInsertOptions.HasFlag(BulkInsertOptions.Default))
-                options |= SqlBulkCopyOptions.Default;
-	        
-            if (bulkInsertOptions.HasFlag(BulkInsertOptions.KeepIdentity))
-                options |= SqlBulkCopyOptions.KeepIdentity;
+	private static SqlBulkCopyOptions ConvertOptions(BulkInsertOptions bulkInsertOptions) {
+		var options = (SqlBulkCopyOptions)0;
+		if (bulkInsertOptions.HasFlag(BulkInsertOptions.Default))
+			options |= SqlBulkCopyOptions.Default;
 
-	        if (bulkInsertOptions.HasFlag(BulkInsertOptions.MaintainForeignKeys))
-	            options |= SqlBulkCopyOptions.CheckConstraints;
+		if (bulkInsertOptions.HasFlag(BulkInsertOptions.KeepIdentity))
+			options |= SqlBulkCopyOptions.KeepIdentity;
 
-	        return options;
-	    }
+		if (bulkInsertOptions.HasFlag(BulkInsertOptions.MaintainForeignKeys))
+			options |= SqlBulkCopyOptions.CheckConstraints;
+
+		return options;
+	}
 
 
-	    protected override DataTable GetDenormalizedTableDescriptions() {
-			return this.ExecuteQuery(
-@"SELECT 
+	protected override DataTable GetDenormalizedTableDescriptions() {
+		return this.ExecuteQuery(
+			@"SELECT 
 	DISTINCT
 	T.name AS TableName,
 	C.name AS ColumnName,
@@ -146,13 +145,11 @@ FROM
 			sys.foreign_keys F INNER JOIN
 			sys.foreign_key_columns FC  on FC.constraint_object_id = F.object_id
 	) B ON T.object_id = B.object_id AND C.column_id = B.column_id"
-				);
-		}
-
-		protected override DataTable GetDenormalizedTriggerDescriptions() {
-			return this.ExecuteQuery(@"SELECT Name FROM sys.triggers");
-
-		}
+		);
 	}
 
+	protected override DataTable GetDenormalizedTriggerDescriptions() {
+		return this.ExecuteQuery(@"SELECT Name FROM sys.triggers");
+
+	}
 }

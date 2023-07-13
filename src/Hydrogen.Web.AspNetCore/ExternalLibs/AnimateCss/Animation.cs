@@ -7,249 +7,174 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System.ComponentModel;
+
 // ReSharper disable InconsistentNaming
 
-namespace Hydrogen.Web.AspNetCore.AnimateCss {
+namespace Hydrogen.Web.AspNetCore.AnimateCss;
 
-	public enum Animation {
-		// Attenion Seekers
-		[Description("bounce")]
-		bounce,
+public enum Animation {
+	// Attenion Seekers
+	[Description("bounce")] bounce,
 
-		[Description("flash")]
-		flash,
+	[Description("flash")] flash,
 
-		[Description("pulse")]
-		pulse,
+	[Description("pulse")] pulse,
 
-		[Description("rubberBand")]
-		rubberBand,
+	[Description("rubberBand")] rubberBand,
 
-		[Description("shake")]
-		shake,
+	[Description("shake")] shake,
 
-		[Description("swing")]
-		swing,
+	[Description("swing")] swing,
 
-		[Description("tada")]
-		tada,
+	[Description("tada")] tada,
 
-		[Description("wobble")]
-		wobble,
+	[Description("wobble")] wobble,
 
-		[Description("jello")]
-		jello,
+	[Description("jello")] jello,
 
-		// Bouncing Entrances
-		[Description("bounceIn")]
-		bounceIn,
+	// Bouncing Entrances
+	[Description("bounceIn")] bounceIn,
 
-		[Description("bounceInDown")]
-		bounceInDown,
+	[Description("bounceInDown")] bounceInDown,
 
-		[Description("bounceInLeft")]
-		bounceInLeft,
+	[Description("bounceInLeft")] bounceInLeft,
 
-		[Description("bounceInRight")]
-		bounceInRight,
+	[Description("bounceInRight")] bounceInRight,
 
-		[Description("bounceInUp")]
-		bounceInUp,
+	[Description("bounceInUp")] bounceInUp,
 
-		// Bouncing Exits   
-		[Description("bounceOut")]
-		bounceOut,
+	// Bouncing Exits   
+	[Description("bounceOut")] bounceOut,
 
-		[Description("bounceOutDown")]
-		bounceOutDown,
+	[Description("bounceOutDown")] bounceOutDown,
 
-		[Description("bounceOutLeft")]
-		bounceOutLeft,
+	[Description("bounceOutLeft")] bounceOutLeft,
 
-		[Description("bounceOutRight")]
-		bounceOutRight,
+	[Description("bounceOutRight")] bounceOutRight,
 
-		[Description("bounceOutUp")]
-		bounceOutUp,
+	[Description("bounceOutUp")] bounceOutUp,
 
-		// Fading Entrances
-		[Description("fadeIn")]
-		fadeIn,
+	// Fading Entrances
+	[Description("fadeIn")] fadeIn,
 
-		[Description("fadeInDown")]
-		fadeInDown,
+	[Description("fadeInDown")] fadeInDown,
 
-		[Description("fadeInDownBig")]
-		fadeInDownBig,
+	[Description("fadeInDownBig")] fadeInDownBig,
 
-		[Description("fadeInLeft")]
-		fadeInLeft,
+	[Description("fadeInLeft")] fadeInLeft,
 
-		[Description("fadeInLeftBig")]
-		fadeInLeftBig,
+	[Description("fadeInLeftBig")] fadeInLeftBig,
 
-		[Description("fadeInRight")]
-		fadeInRight,
+	[Description("fadeInRight")] fadeInRight,
 
-		[Description("fadeInRightBig")]
-		fadeInRightBig,
+	[Description("fadeInRightBig")] fadeInRightBig,
 
-		[Description("fadeInUp")]
-		fadeInUp,
+	[Description("fadeInUp")] fadeInUp,
 
-		[Description("fadeInUpBig")]
-		fadeInUpBig,
+	[Description("fadeInUpBig")] fadeInUpBig,
 
-		// Fading Exits
-		[Description("fadeOut")]
-		fadeOut,
+	// Fading Exits
+	[Description("fadeOut")] fadeOut,
 
-		[Description("fadeOutDown")]
-		fadeOutDown,
+	[Description("fadeOutDown")] fadeOutDown,
 
-		[Description("fadeOutDownBig")]
-		fadeOutDownBig,
+	[Description("fadeOutDownBig")] fadeOutDownBig,
 
-		[Description("fadeOutLeft")]
-		fadeOutLeft,
+	[Description("fadeOutLeft")] fadeOutLeft,
 
-		[Description("fadeOutLeftBig")]
-		fadeOutLeftBig,
+	[Description("fadeOutLeftBig")] fadeOutLeftBig,
 
-		[Description("fadeOutRight")]
-		fadeOutRight,
+	[Description("fadeOutRight")] fadeOutRight,
 
-		[Description("fadeOutRightBig")]
-		fadeOutRightBig,
+	[Description("fadeOutRightBig")] fadeOutRightBig,
 
-		[Description("fadeOutUp")]
-		fadeOutUp,
+	[Description("fadeOutUp")] fadeOutUp,
 
-		[Description("fadeOutUpBig")]
-		fadeOutUpBig,
+	[Description("fadeOutUpBig")] fadeOutUpBig,
 
-		// Flippers
-		[Description("flip")]
-		flip,
+	// Flippers
+	[Description("flip")] flip,
 
-		[Description("flipInX")]
-		flipInX,
+	[Description("flipInX")] flipInX,
 
-		[Description("flipInY")]
-		flipInY,
+	[Description("flipInY")] flipInY,
 
-		[Description("flipOutX")]
-		flipOutX,
+	[Description("flipOutX")] flipOutX,
 
-		[Description("flipOutY")]
-		flipOutY,
+	[Description("flipOutY")] flipOutY,
 
-		// Lightspeed
-		[Description("lightSpeedIn")]
-		lightSpeedIn,
+	// Lightspeed
+	[Description("lightSpeedIn")] lightSpeedIn,
 
-		[Description("lightSpeedOut")]
-		lightSpeedOut,
+	[Description("lightSpeedOut")] lightSpeedOut,
 
-		// Rotating Entraces
-		[Description("rotateIn")]
-		rotateIn,
+	// Rotating Entraces
+	[Description("rotateIn")] rotateIn,
 
-		[Description("rotateInDownLeft")]
-		rotateInDownLeft,
+	[Description("rotateInDownLeft")] rotateInDownLeft,
 
-		[Description("rotateInDownRight")]
-		rotateInDownRight,
+	[Description("rotateInDownRight")] rotateInDownRight,
 
-		[Description("rotateInUpLeft")]
-		rotateInUpLeft,
+	[Description("rotateInUpLeft")] rotateInUpLeft,
 
-		[Description("rotateInUpRight")]
-		rotateInUpRight,
+	[Description("rotateInUpRight")] rotateInUpRight,
 
-		// Rotating Exits
-		[Description("rotateOut")]
-		rotateOut,
+	// Rotating Exits
+	[Description("rotateOut")] rotateOut,
 
-		[Description("rotateOutDownLeft")]
-		rotateOutDownLeft,
+	[Description("rotateOutDownLeft")] rotateOutDownLeft,
 
-		[Description("rotateOutDownRight")]
-		rotateOutDownRight,
+	[Description("rotateOutDownRight")] rotateOutDownRight,
 
-		[Description("rotateOutUpLeft")]
-		rotateOutUpLeft,
+	[Description("rotateOutUpLeft")] rotateOutUpLeft,
 
-		[Description("rotateOutUpRight")]
-		rotateOutUpRight,
+	[Description("rotateOutUpRight")] rotateOutUpRight,
 
-		// Sliding Entrances
-		[Description("slideInUp")]
-		slideInUp,
+	// Sliding Entrances
+	[Description("slideInUp")] slideInUp,
 
-		[Description("slideInDown")]
-		slideInDown,
+	[Description("slideInDown")] slideInDown,
 
-		[Description("slideInLeft")]
-		slideInLeft,
+	[Description("slideInLeft")] slideInLeft,
 
-		[Description("slideInRight")]
-		slideInRight,
+	[Description("slideInRight")] slideInRight,
 
-		// Sliding Exits
+	// Sliding Exits
 
-		[Description("slideOutUp")]
-		slideOutUp,
+	[Description("slideOutUp")] slideOutUp,
 
-		[Description("slideOutDown")]
-		slideOutDown,
+	[Description("slideOutDown")] slideOutDown,
 
-		[Description("slideOutLeft")]
-		slideOutLeft,
+	[Description("slideOutLeft")] slideOutLeft,
 
-		[Description("slideOutRight")]
-		slideOutRight,
+	[Description("slideOutRight")] slideOutRight,
 
-		// Specials
-		[Description("hinge")]
-		hinge,
+	// Specials
+	[Description("hinge")] hinge,
 
-		[Description("rollIn")]
-		rollIn,
+	[Description("rollIn")] rollIn,
 
-		[Description("rollOut")]
-		rollOut,
+	[Description("rollOut")] rollOut,
 
-		// Zoom Entrances 
-		[Description("zoomIn")]
-		zoomIn,
+	// Zoom Entrances 
+	[Description("zoomIn")] zoomIn,
 
-		[Description("zoomInDown")]
-		zoomInDown,
+	[Description("zoomInDown")] zoomInDown,
 
-		[Description("zoomInLeft")]
-		zoomInLeft,
+	[Description("zoomInLeft")] zoomInLeft,
 
-		[Description("zoomInRight")]
-		zoomInRight,
+	[Description("zoomInRight")] zoomInRight,
 
-		[Description("zoomInUp")]
-		zoomInUp,
+	[Description("zoomInUp")] zoomInUp,
 
-		// Zoom Exists
-		[Description("zoomOut")]
-		zoomOut,
+	// Zoom Exists
+	[Description("zoomOut")] zoomOut,
 
-		[Description("zoomOutDown")]
-		zoomOutDown,
+	[Description("zoomOutDown")] zoomOutDown,
 
-		[Description("zoomOutLeft")]
-		zoomOutLeft,
+	[Description("zoomOutLeft")] zoomOutLeft,
 
-		[Description("zoomOutRight")]
-		zoomOutRight,
+	[Description("zoomOutRight")] zoomOutRight,
 
-		[Description("zoomOutUp")]
-		zoomOutUp
-	}
+	[Description("zoomOutUp")] zoomOutUp
 }

@@ -7,15 +7,12 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
-namespace Hydrogen.Data {
-	public class ColumnSpecification {
-		public string Name;
-		public Type Type;
-		public string DataType;
-		public bool Nullable;
-	}
+namespace Hydrogen.Data;
+
+public class ColumnSpecification {
+	public string Name;
+	public Type Type;
+	public string DataType;
+	public bool Nullable;
 }

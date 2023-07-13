@@ -6,14 +6,12 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen {
+namespace Hydrogen;
 
-	public interface IObjectCloner {
+public interface IObjectCloner {
 
-		object Clone(object @object);
+	object Clone(object @object);
 
-		void Copy(object source, object dest);
-
-	}
+	void Copy(object source, object dest);
 
 }

@@ -9,18 +9,18 @@
 using System;
 using System.Windows.Forms;
 
-namespace Hydrogen.Windows.Forms {
-    public sealed class NoOpControlStateProvider : IControlStateEventProvider {
-        public event EventHandlerEx StateChanged;
+namespace Hydrogen.Windows.Forms;
 
-        public void Clear() {
-            // do nothing
-        }
+public sealed class NoOpControlStateProvider : IControlStateEventProvider {
+	public event EventHandlerEx StateChanged;
 
-        public Type ControlType => typeof(Control);
+	public void Clear() {
+		// do nothing
+	}
 
-        public void SetControl(Control control) {
-            // do nothing
-        }
-    }
+	public Type ControlType => typeof(Control);
+
+	public void SetControl(Control control) {
+		// do nothing
+	}
 }

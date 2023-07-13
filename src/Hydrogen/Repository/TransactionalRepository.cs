@@ -1,7 +1,4 @@
-﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -20,7 +17,7 @@ namespace Hydrogen;
 //	public event EventHandlerEx<object> Committed { add => _transactionalObject.Committed += value; remove => _transactionalObject.Committed -= value; }
 //	public event EventHandlerEx<object> RollingBack { add => _transactionalObject.RollingBack += value; remove => _transactionalObject.RollingBack -= value; }
 //	public event EventHandlerEx<object> RolledBack { add => _transactionalObject.RolledBack += value; remove => _transactionalObject.RolledBack -= value; }
-	
+
 //	private readonly ITransactionalObject _transactionalObject;
 
 //	public TransactionalRepository(IRepository<TEntity, TIdentity> innerRepository, ITransactionalObject transactionalObject) 

@@ -38,4 +38,3 @@ public static class ObjectExtensions {
 	/// <returns>A dynamic collection of properties associated with an object instance.</returns>
 	public static dynamic GetExtensionProperties(this object obj) => extendedData.GetValue(obj, _ => new ExpandoObject());
 }
-

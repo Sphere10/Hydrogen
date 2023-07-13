@@ -6,20 +6,16 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
+namespace SourceGrid.Cells.Models;
 
-namespace SourceGrid.Cells.Models
-{
+/// <summary>
+/// Interface for informations about an image.
+/// </summary>
+public interface IImage : IModel {
 	/// <summary>
-	/// Interface for informations about an image.
+	/// Get the image of the specified cell. 
 	/// </summary>
-	public interface IImage : IModel
-	{
-		/// <summary>
-		/// Get the image of the specified cell. 
-		/// </summary>
-		/// <param name="cellContext"></param>
-		/// <returns></returns>
-		System.Drawing.Image GetImage(CellContext cellContext);
-	}
+	/// <param name="cellContext"></param>
+	/// <returns></returns>
+	System.Drawing.Image GetImage(CellContext cellContext);
 }

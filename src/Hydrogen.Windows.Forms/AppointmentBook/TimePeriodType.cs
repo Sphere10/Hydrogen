@@ -6,24 +6,16 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
-using System.Text;
 
-namespace Hydrogen.Windows.Forms.AppointmentBook {
-	public enum TimePeriodType {
-		[Description("By Hour")]
-		DailyHourly,
+namespace Hydrogen.Windows.Forms.AppointmentBook;
 
-		[Description("By Half Hour")]
-		DailyHalfHourly,
+public enum TimePeriodType {
+	[Description("By Hour")] DailyHourly,
 
-		[Description("By Quater Hour")]
-		DailyQuaterHourly,
+	[Description("By Half Hour")] DailyHalfHourly,
 
-		[Description("By Monthly")]
-		Monthly
-	}
+	[Description("By Quater Hour")] DailyQuaterHourly,
+
+	[Description("By Monthly")] Monthly
 }

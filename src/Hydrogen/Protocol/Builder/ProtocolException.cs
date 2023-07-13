@@ -9,15 +9,14 @@
 
 using System;
 
-namespace Hydrogen.Communications {
-    public class ProtocolBuilderException : SoftwareException {
+namespace Hydrogen.Communications;
 
-		public ProtocolBuilderException(string error) : base(error) {
-		}
+public class ProtocolBuilderException : SoftwareException {
 
-		public ProtocolBuilderException(string error, Exception innerException) : base(error, innerException) {
-		}
+	public ProtocolBuilderException(string error) : base(error) {
+	}
 
+	public ProtocolBuilderException(string error, Exception innerException) : base(error, innerException) {
 	}
 
 }

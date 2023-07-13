@@ -6,23 +6,17 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Drawing;
-using System.Text;
-using System.Windows.Forms;
 using Hydrogen.Windows.Forms;
 
-namespace Hydrogen.Utils.WinFormsTester {
-    public partial class ScreenC : ApplicationScreen {
-        public ScreenC() {
-            InitializeComponent();
-            taskPane1.Padding.Bottom = 0;
-            taskPane1.Padding.Left = 0;
-            taskPane1.Padding.Right = 0;
-            taskPane1.Padding.Top = 0;
+namespace Hydrogen.Utils.WinFormsTester;
 
-        }
-    }
+public partial class ScreenC : ApplicationScreen {
+	public ScreenC() {
+		InitializeComponent();
+		taskPane1.Padding.Bottom = 0;
+		taskPane1.Padding.Left = 0;
+		taskPane1.Padding.Right = 0;
+		taskPane1.Padding.Top = 0;
+
+	}
 }

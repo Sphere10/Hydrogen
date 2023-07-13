@@ -48,7 +48,7 @@ public abstract class RepositoryBase<TEntity, TIdentity> : Disposable, IReposito
 
 	public abstract Task ClearAsync();
 
-	protected virtual void OnChanging(TEntity entity) { 
+	protected virtual void OnChanging(TEntity entity) {
 	}
 
 	protected virtual void OnChanged(TEntity entity) {

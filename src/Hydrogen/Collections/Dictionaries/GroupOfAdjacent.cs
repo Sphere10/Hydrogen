@@ -10,22 +10,22 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Hydrogen {
-	public class GroupOfAdjacent<TSource, TKey> : IEnumerable<TSource>, IGrouping<TKey, TSource> {
-		public TKey Key { get; set; }
-		private List<TSource> GroupList { get; set; }
+namespace Hydrogen;
 
-		IEnumerator IEnumerable.GetEnumerator() {
-			return ((IEnumerable<TSource>) this).GetEnumerator();
-		}
+public class GroupOfAdjacent<TSource, TKey> : IEnumerable<TSource>, IGrouping<TKey, TSource> {
+	public TKey Key { get; set; }
+	private List<TSource> GroupList { get; set; }
 
-		IEnumerator<TSource> IEnumerable<TSource>.GetEnumerator() {
-			return ((IEnumerable<TSource>) GroupList).GetEnumerator();
-		}
+	IEnumerator IEnumerable.GetEnumerator() {
+		return ((IEnumerable<TSource>)this).GetEnumerator();
+	}
 
-		public GroupOfAdjacent(List<TSource> source, TKey key) {
-			GroupList = source;
-			Key = key;
-		}
+	IEnumerator<TSource> IEnumerable<TSource>.GetEnumerator() {
+		return ((IEnumerable<TSource>)GroupList).GetEnumerator();
+	}
+
+	public GroupOfAdjacent(List<TSource> source, TKey key) {
+		GroupList = source;
+		Key = key;
 	}
 }

@@ -9,25 +9,19 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace Hydrogen.Application {
+namespace Hydrogen.Application;
 
-	[ComVisible(true)]
-    [AttributeUsage(AttributeTargets.Assembly, Inherited = false)]
-    public sealed class AssemblyCompanyLinkAttribute : Attribute {
-        private string _companyLink = null;
-    
-        public AssemblyCompanyLinkAttribute(string url) {
-            CompanyLink = url;
-        }
+[ComVisible(true)]
+[AttributeUsage(AttributeTargets.Assembly, Inherited = false)]
+public sealed class AssemblyCompanyLinkAttribute : Attribute {
+	private string _companyLink = null;
 
-        public string CompanyLink {
-            get {
-                return _companyLink;
-            }
-            set {
-                _companyLink = value;
-            }
-        }
-    }
+	public AssemblyCompanyLinkAttribute(string url) {
+		CompanyLink = url;
+	}
+
+	public string CompanyLink {
+		get { return _companyLink; }
+		set { _companyLink = value; }
+	}
 }
-

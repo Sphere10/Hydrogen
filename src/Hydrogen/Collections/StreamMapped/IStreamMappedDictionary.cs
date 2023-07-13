@@ -9,22 +9,20 @@
 using System.Collections.Generic;
 
 
-namespace Hydrogen {
+namespace Hydrogen;
 
-	public interface IStreamMappedDictionary<TKey, TValue> : IDictionary<TKey, TValue>, ILoadable {
+public interface IStreamMappedDictionary<TKey, TValue> : IDictionary<TKey, TValue>, ILoadable {
 
-		IClusteredStorage Storage { get; }
+	IClusteredStorage Storage { get; }
 
-		TKey ReadKey(int index);
+	TKey ReadKey(int index);
 
-		TValue ReadValue(int index);
+	TValue ReadValue(int index);
 
-		bool TryFindKey(TKey key, out int index);
+	bool TryFindKey(TKey key, out int index);
 
-		bool TryFindValue(TKey key, out int index, out TValue value);
+	bool TryFindValue(TKey key, out int index, out TValue value);
 
-		void RemoveAt(int index);
+	void RemoveAt(int index);
 
-	}
-	
 }

@@ -9,7 +9,6 @@
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -19,7 +18,7 @@ using Newtonsoft.Json.Serialization;
 namespace Hydrogen.Application;
 
 public class RestClient : IRestClient {
-	
+
 	private readonly ILogger _logger;
 	private HttpClient _httpClient;
 
@@ -29,14 +28,14 @@ public class RestClient : IRestClient {
 		Guard.ArgumentNotNull(baseUrl, nameof(baseUrl));
 		BaseUrl = baseUrl;
 		_logger = logger ?? new NoOpLogger();
-		_defaultSerializerSettings 
+		_defaultSerializerSettings
 			= defaultSerializerSettings ??
-			new JsonSerializerSettings {
-				NullValueHandling = NullValueHandling.Ignore,
-				ContractResolver = new DefaultContractResolver {
-					NamingStrategy = new CamelCaseNamingStrategy()
-				}
-			};
+			  new JsonSerializerSettings {
+				  NullValueHandling = NullValueHandling.Ignore,
+				  ContractResolver = new DefaultContractResolver {
+					  NamingStrategy = new CamelCaseNamingStrategy()
+				  }
+			  };
 	}
 
 	public string BaseUrl { get; }
@@ -51,7 +50,8 @@ public class RestClient : IRestClient {
 		return await response.ParseStreamAsync<T>(serializerSettings);
 	}
 
-	public async Task<T> PostAsync<T>(string urlPostfix, object body, IDictionary<string, string> queryParams = null, IDictionary<string, string> headers = null, JsonSerializerSettings responseSerializerSettings = null, CancellationToken cancellationToken = default) {
+	public async Task<T> PostAsync<T>(string urlPostfix, object body, IDictionary<string, string> queryParams = null, IDictionary<string, string> headers = null, JsonSerializerSettings responseSerializerSettings = null,
+	                                  CancellationToken cancellationToken = default) {
 		void AttachContent(HttpRequestMessage httpRequest) {
 			httpRequest.Content = new StringContent(JsonConvert.SerializeObject(body, _defaultSerializerSettings), Encoding.UTF8, "application/json");
 		}
@@ -61,7 +61,8 @@ public class RestClient : IRestClient {
 		return await response.ParseStreamAsync<T>(responseSerializerSettings);
 	}
 
-	public async Task<T> PatchAsync<T>(string urlPostfix, object body, IDictionary<string, string> queryParams = null, IDictionary<string, string> headers = null, JsonSerializerSettings responseSerializerSettings = null, CancellationToken cancellationToken = default) {
+	public async Task<T> PatchAsync<T>(string urlPostfix, object body, IDictionary<string, string> queryParams = null, IDictionary<string, string> headers = null, JsonSerializerSettings responseSerializerSettings = null,
+	                                   CancellationToken cancellationToken = default) {
 		void AttachContent(HttpRequestMessage httpRequest) {
 			var serializedBody = JsonConvert.SerializeObject(body, _defaultSerializerSettings);
 			httpRequest.Content = new StringContent(serializedBody, Encoding.UTF8, "application/json");
@@ -72,16 +73,17 @@ public class RestClient : IRestClient {
 		return await response.ParseStreamAsync<T>(responseSerializerSettings);
 	}
 
-	public async Task DeleteAsync(string urlPostfix, IDictionary<string, string> queryParams = null, IDictionary<string, string> headers = null, JsonSerializerSettings responseSerializerSettings = null, CancellationToken cancellationToken = default) {
+	public async Task DeleteAsync(string urlPostfix, IDictionary<string, string> queryParams = null, IDictionary<string, string> headers = null, JsonSerializerSettings responseSerializerSettings = null,
+	                              CancellationToken cancellationToken = default) {
 		await SendAsync(Tools.Url.Combine(BaseUrl, urlPostfix), HttpMethod.Delete, queryParams, headers, null, cancellationToken);
 	}
 
 	public async Task<HttpResponseMessage> SendAsync(string url,
-													 HttpMethod httpMethod,
-													 IDictionary<string, string> queryParams = null,
-													 IDictionary<string, string> headers = null,
-													 Action<HttpRequestMessage> attachContent = null,
-													 CancellationToken cancellationToken = default) {
+	                                                 HttpMethod httpMethod,
+	                                                 IDictionary<string, string> queryParams = null,
+	                                                 IDictionary<string, string> headers = null,
+	                                                 Action<HttpRequestMessage> attachContent = null,
+	                                                 CancellationToken cancellationToken = default) {
 		EnsureHttpClient();
 
 		url = queryParams == null ? url : Tools.Url.AddQueryString(url, queryParams);
@@ -122,6 +124,7 @@ public class RestClient : IRestClient {
 		return _httpClient;
 	}
 
+
 	private class LoggingHandler : DelegatingHandler {
 		private readonly ILogger _logger;
 		private readonly LogLevel _logLevel;
@@ -143,5 +146,3 @@ public class RestClient : IRestClient {
 		}
 	}
 }
-
-

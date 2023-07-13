@@ -218,12 +218,11 @@
 
 @code
 {
-    #nullable enable
+#nullable enable
 
     private SearchInput.SearchProviderDelegate SearchProvider { get; set; } = null!;
 
-    protected override void OnInitialized()
-    {
+    protected override void OnInitialized() {
         List<SearchResult> results = Enumerable.Repeat(1, 25).Select(x => Guid.NewGuid().ToString())
             .Select(x => new SearchResult(x, new Uri("/"))).ToList();
 

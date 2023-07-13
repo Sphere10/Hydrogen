@@ -9,42 +9,43 @@
 using System;
 using System.Collections.Generic;
 
-namespace Hydrogen {
+namespace Hydrogen;
 
-	public class PreGenSequentialGuidGenerator : ISequentialGuidGenerator {
-		private Stack<Guid> _guidStack;
+public class PreGenSequentialGuidGenerator : ISequentialGuidGenerator {
+	private Stack<Guid> _guidStack;
 
-		public PreGenSequentialGuidGenerator(long capacity, bool regenerateWhenEmpty = true) {
-			Capacity = capacity;
-			RegenerateWhenEmpty = regenerateWhenEmpty; 
-			GenerateGuids();
+	public PreGenSequentialGuidGenerator(long capacity, bool regenerateWhenEmpty = true) {
+		Capacity = capacity;
+		RegenerateWhenEmpty = regenerateWhenEmpty;
+		GenerateGuids();
+	}
+
+	public long Capacity { get; set; }
+
+	public bool RegenerateWhenEmpty { get; set; }
+
+	public int Count {
+		get { return _guidStack.Count; }
+	}
+
+	public Guid NextSequentialGuid() {
+		if (_guidStack.Count == 0) {
+			if (RegenerateWhenEmpty)
+				GenerateGuids();
+			else throw new SoftwareException("No more guids are available");
 		}
+		return _guidStack.Pop();
+	}
 
-		public long Capacity { get; set; }
+	protected void GenerateGuids() {
+		var list = new List<Guid>();
+		for (var i = 0; i < Capacity; i++)
+			list.Add(Guid.NewGuid());
 
-		public bool RegenerateWhenEmpty { get; set; }
-
-		public int Count { get { return _guidStack.Count; } }
-
-		public Guid NextSequentialGuid() {
-			if (_guidStack.Count == 0) {
-				if (RegenerateWhenEmpty)
-					GenerateGuids();
-				else throw new SoftwareException("No more guids are available");
-			}
-			return _guidStack.Pop();
-		}
-
-		protected void GenerateGuids() {
-			var list = new List<Guid>();
-			for (var i = 0; i < Capacity; i++)
-				list.Add(Guid.NewGuid());
-
-			list.Sort();
-			list.Reverse(); 
-			_guidStack = new Stack<Guid>(list);
-	
-		}
+		list.Sort();
+		list.Reverse();
+		_guidStack = new Stack<Guid>(list);
 
 	}
+
 }

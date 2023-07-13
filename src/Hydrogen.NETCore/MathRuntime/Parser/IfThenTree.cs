@@ -6,38 +6,27 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
-using System.Collections.Generic;
-using System.Text;
+namespace Hydrogen.Maths.Compiler;
 
-namespace Hydrogen.Maths.Compiler
-{
+public class IfThenTree : SyntaxTree {
+	private SyntaxTree _condition;
+	private SyntaxTree _expression;
 
-    public class IfThenTree : SyntaxTree
-    {
-        private SyntaxTree _condition;
-        private SyntaxTree _expression;
+	public IfThenTree()
+		: base() {
+	}
 
-        public IfThenTree()
-            : base()
-        {
-        }
+	public SyntaxTree Condition {
+		get { return _condition; }
+		set { _condition = value; }
+	}
 
-        public SyntaxTree Condition
-        {
-            get { return _condition; }
-            set { _condition = value; }
-        }
+	public SyntaxTree Expression {
+		get { return _expression; }
+		set { _expression = value; }
+	}
 
-        public SyntaxTree Expression
-        {
-            get { return _expression; }
-            set { _expression = value; }
-        }
-
-        public override string ToString()
-        {
-            return string.Format("IFTHEN({0},{1})", Condition, Expression);
-        }
-    }
+	public override string ToString() {
+		return string.Format("IFTHEN({0},{1})", Condition, Expression);
+	}
 }

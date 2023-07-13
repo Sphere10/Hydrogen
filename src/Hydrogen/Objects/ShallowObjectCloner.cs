@@ -56,7 +56,7 @@ namespace Hydrogen {
 
 			foreach (var fieldBinding in fieldBindings) {
 #if USE_FAST_REFLECTION
-				fieldBinding.DestField.SetValue(dest, fieldBinding.SourceField.FastGetValue(source));	// using FastReflection lib		
+				fieldBinding.DestField.SetValue(dest, fieldBinding.SourceField.FastGetValue(source)); // using FastReflection lib		
 #else
 				fieldBinding.DestField.SetValue(dest, fieldBinding.SourceField.GetValue(source)); // using standrad Reflection
 #endif
@@ -84,7 +84,7 @@ namespace Hydrogen {
 
 			foreach (var propertyBinding in propertyBindings) {
 #if USE_FAST_REFLECTION
-				propertyBinding.DestProperty.FastSetValue(dest, propertyBinding.SourceProperty.FastGetValue(source));  // using FastReflection lib			
+				propertyBinding.DestProperty.FastSetValue(dest, propertyBinding.SourceProperty.FastGetValue(source)); // using FastReflection lib			
 #else
 				propertyBinding.DestProperty.SetValue(dest, propertyBinding.SourceProperty.GetValue(source, null), null);  // using standard Reflection			
 #endif

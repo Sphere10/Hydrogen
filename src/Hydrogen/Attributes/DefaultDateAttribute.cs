@@ -9,16 +9,15 @@
 using System;
 using System.ComponentModel;
 
-namespace Hydrogen {
-	public class DefaultDateAttribute : DefaultValueAttribute {
+namespace Hydrogen;
 
-		public DefaultDateAttribute(string dateTimeString) : base(DateTime.Parse(dateTimeString)) {
-		}
+public class DefaultDateAttribute : DefaultValueAttribute {
 
-		public DefaultDateAttribute(bool useUTC, int nowYearOffset, int nowMonthOffset, int nowDayOffset, int nowHourOffset, int nowMinuteOffset, int nowSecondOffset, int nowMillisecondOffset)
-			: base(( useUTC ? DateTime.UtcNow : DateTime.Now).AddYears(nowYearOffset).AddMonths(nowMonthOffset).AddDays(nowDayOffset).AddMinutes(nowMinuteOffset).AddSeconds(nowDayOffset).AddMilliseconds(nowMillisecondOffset)) {
-		}
-
+	public DefaultDateAttribute(string dateTimeString) : base(DateTime.Parse(dateTimeString)) {
 	}
-}
 
+	public DefaultDateAttribute(bool useUTC, int nowYearOffset, int nowMonthOffset, int nowDayOffset, int nowHourOffset, int nowMinuteOffset, int nowSecondOffset, int nowMillisecondOffset)
+		: base((useUTC ? DateTime.UtcNow : DateTime.Now).AddYears(nowYearOffset).AddMonths(nowMonthOffset).AddDays(nowDayOffset).AddMinutes(nowMinuteOffset).AddSeconds(nowDayOffset).AddMilliseconds(nowMillisecondOffset)) {
+	}
+
+}

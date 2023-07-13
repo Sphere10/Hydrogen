@@ -23,5 +23,5 @@ public class ScopeDecorator<TScope> : IScope where TScope : IScope {
 	public virtual void Dispose() => Internal.Dispose();
 
 	public virtual ValueTask DisposeAsync() => Internal.DisposeAsync();
-	
+
 }

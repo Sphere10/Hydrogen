@@ -7,18 +7,19 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System.Collections.Generic;
-using Hydrogen;
 
-namespace Hydrogen {
-	public interface IJob {
-		
-		string Name { get; }
-		JobPolicy Policy { get; }
-		JobStatus Status { get; set; }
-		IEnumerable<IJobSchedule> Schedules { get; }
-		void Execute();
-		JobSerializableSurrogate ToSerializableSurrogate();
+namespace Hydrogen;
 
-		ILogger Log { get; set; }
-	}
+public interface IJob {
+
+	string Name { get; }
+	JobPolicy Policy { get; }
+	JobStatus Status { get; set; }
+	IEnumerable<IJobSchedule> Schedules { get; }
+
+	void Execute();
+
+	JobSerializableSurrogate ToSerializableSurrogate();
+
+	ILogger Log { get; set; }
 }

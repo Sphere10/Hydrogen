@@ -8,17 +8,11 @@
 
 using System.Xml.Serialization;
 
-namespace Hydrogen {
+namespace Hydrogen;
 
+public class DayOfMonthScheduleSerializableSurrogate : JobScheduleSerializableSurrogate {
 
-	public class DayOfMonthScheduleSerializableSurrogate : JobScheduleSerializableSurrogate {
-		
-		[XmlAttribute]
-		public int DayOfMonth { get; set; }
+	[XmlAttribute] public int DayOfMonth { get; set; }
 
-		[XmlAttribute]
-		public long TimeOfDay;
-	}
-
-
+	[XmlAttribute] public long TimeOfDay;
 }

@@ -10,16 +10,14 @@
 // Web: https://sphere10.com/tech/dynamic-merkle-trees
 // e-print: https://vixra.org/abs/2305.0087
 
-namespace Hydrogen {
+namespace Hydrogen;
 
-	public record MerkleSubRoot {
-		public readonly int Height;
-		public readonly byte[] Hash;
+public record MerkleSubRoot {
+	public readonly int Height;
+	public readonly byte[] Hash;
 
-		public MerkleSubRoot(int height, byte[] hash) {
-			Height = height;
-			Hash = hash;
-		}
+	public MerkleSubRoot(int height, byte[] hash) {
+		Height = height;
+		Hash = hash;
 	}
-
 }

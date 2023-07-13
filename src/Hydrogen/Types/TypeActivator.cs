@@ -10,46 +10,43 @@ using System;
 using System.Linq;
 
 
-namespace Hydrogen {
-	public static class TypeActivator {
+namespace Hydrogen;
 
-        public static object Create(string typeName, string assemblyHint, params object[] parameters) { 
-            // resolve the type
-            var targetType = TypeResolver.Resolve(typeName, assemblyHint);
-            return Create(targetType, parameters);
-        }
+public static class TypeActivator {
 
-        public static object Create(string typeName, params object[] parameters) {
-            // resolve the type
-            var targetType = TypeResolver.Resolve(typeName);
-            return Create(targetType, parameters);
-        }
+	public static object Create(string typeName, string assemblyHint, params object[] parameters) {
+		// resolve the type
+		var targetType = TypeResolver.Resolve(typeName, assemblyHint);
+		return Create(targetType, parameters);
+	}
 
-        public static object Create(Type targetType) {
-            return Create(targetType, new object[0]);
-        }
+	public static object Create(string typeName, params object[] parameters) {
+		// resolve the type
+		var targetType = TypeResolver.Resolve(typeName);
+		return Create(targetType, parameters);
+	}
 
-        public static object Create(Type targetType, params object[] parameters) {
+	public static object Create(Type targetType) {
+		return Create(targetType, new object[0]);
+	}
 
-            // get the default constructor and instantiate
-            var types = parameters?.Where(x => x != null).Select(x => x.GetType()).ToArray() ?? new Type[0];
-            var info = targetType.GetConstructor(types);
-            if (info == null)
-                throw new ArgumentException("Can't instantiate type " + targetType.FullName);
+	public static object Create(Type targetType, params object[] parameters) {
+
+		// get the default constructor and instantiate
+		var types = parameters?.Where(x => x != null).Select(x => x.GetType()).ToArray() ?? new Type[0];
+		var info = targetType.GetConstructor(types);
+		if (info == null)
+			throw new ArgumentException("Can't instantiate type " + targetType.FullName);
 #if USE_FAST_REFLECTION
 		    var targetObject = info.FastInvoke(parameters);		// using FastReflectionLib
 #else
-            var targetObject = info.Invoke(parameters); // using standard Reflection
+		var targetObject = info.Invoke(parameters); // using standard Reflection
 #endif
-            if (targetObject == null)
-                throw new ArgumentException("Can't instantiate type " + targetType.FullName);
+		if (targetObject == null)
+			throw new ArgumentException("Can't instantiate type " + targetType.FullName);
 
-            return targetObject;
-        }
+		return targetObject;
+	}
 
 
-
-    }
 }
-
-

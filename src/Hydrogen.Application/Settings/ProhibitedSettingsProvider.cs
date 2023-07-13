@@ -8,30 +8,30 @@
 
 using System;
 
-namespace Hydrogen.Application {
-	public class ProhibitedSettingsProvider : ISettingsProvider {
-		private const string ExceptionMessage = "Settings are prohibited in this application";
-		public bool AutoSaveNewSettings => throw new NotSupportedException(ExceptionMessage);
+namespace Hydrogen.Application;
 
-		public bool EncryptSettings => throw new NotSupportedException(ExceptionMessage);
+public class ProhibitedSettingsProvider : ISettingsProvider {
+	private const string ExceptionMessage = "Settings are prohibited in this application";
+	public bool AutoSaveNewSettings => throw new NotSupportedException(ExceptionMessage);
 
-		public void ClearSettings() => throw new NotSupportedException(ExceptionMessage);
+	public bool EncryptSettings => throw new NotSupportedException(ExceptionMessage);
 
-
-		public bool ContainsSetting(Type settingsObjectType, object id = null) => throw new NotSupportedException(ExceptionMessage);
+	public void ClearSettings() => throw new NotSupportedException(ExceptionMessage);
 
 
-		public void DeleteSetting(SettingsObject settings) => throw new NotSupportedException(ExceptionMessage);
+	public bool ContainsSetting(Type settingsObjectType, object id = null) => throw new NotSupportedException(ExceptionMessage);
 
 
-		public SettingsObject LoadSetting(Type settingsObjectType, object id = null) => throw new NotSupportedException(ExceptionMessage);
+	public void DeleteSetting(SettingsObject settings) => throw new NotSupportedException(ExceptionMessage);
 
 
-		public SettingsObject NewSetting(Type settingsObjectType, object id = null) => throw new NotSupportedException(ExceptionMessage);
+	public SettingsObject LoadSetting(Type settingsObjectType, object id = null) => throw new NotSupportedException(ExceptionMessage);
 
 
-		public void SaveSetting(SettingsObject settings) =>	throw new NotSupportedException(ExceptionMessage);
-		
+	public SettingsObject NewSetting(Type settingsObjectType, object id = null) => throw new NotSupportedException(ExceptionMessage);
 
-	}
+
+	public void SaveSetting(SettingsObject settings) => throw new NotSupportedException(ExceptionMessage);
+
+
 }

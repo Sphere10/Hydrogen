@@ -9,61 +9,61 @@
 using System;
 using System.Threading.Tasks;
 
-namespace Hydrogen {
-	
-	public static class AsyncTypeSwitch {
-		public class CaseInfo {
-			public bool IsDefault { get; set; }
-			public Type Target { get; set; }
-			public Func<object, Task> Action { get; set; }
-		}
+namespace Hydrogen;
 
-		public static async Task For(object source, params CaseInfo[] cases) {
-			var found = false;
-			var type = source.GetType();
-			foreach (var entry in cases) {
-				if (entry.IsDefault || entry.Target.IsAssignableFrom(type)) {
-					await entry.Action(source);
-					found = true;
-					break;
-				}
+public static class AsyncTypeSwitch {
+	public class CaseInfo {
+		public bool IsDefault { get; set; }
+		public Type Target { get; set; }
+		public Func<object, Task> Action { get; set; }
+	}
+
+
+	public static async Task For(object source, params CaseInfo[] cases) {
+		var found = false;
+		var type = source.GetType();
+		foreach (var entry in cases) {
+			if (entry.IsDefault || entry.Target.IsAssignableFrom(type)) {
+				await entry.Action(source);
+				found = true;
+				break;
 			}
-			if (!found)
-				throw new InvalidOperationException($"Unrecognized type '{type}'");
 		}
+		if (!found)
+			throw new InvalidOperationException($"Unrecognized type '{type}'");
+	}
 
-		public static async Task ForType(Type type, params CaseInfo[] cases) {
-			var found = false;
-			foreach (var entry in cases) {
-				if (entry.IsDefault || entry.Target.IsAssignableFrom(type)) {
-					await entry.Action(type);
-					found = true;
-					break;
-				}
+	public static async Task ForType(Type type, params CaseInfo[] cases) {
+		var found = false;
+		foreach (var entry in cases) {
+			if (entry.IsDefault || entry.Target.IsAssignableFrom(type)) {
+				await entry.Action(type);
+				found = true;
+				break;
 			}
-			if (!found)
-				throw new InvalidOperationException($"Unrecognized type '{type}'");
 		}
+		if (!found)
+			throw new InvalidOperationException($"Unrecognized type '{type}'");
+	}
 
-		public static CaseInfo Case<T>(Func<Task> action) {
-			return new CaseInfo() {
-				Action = x => action(),
-				Target = typeof(T)
-			};
-		}
+	public static CaseInfo Case<T>(Func<Task> action) {
+		return new CaseInfo() {
+			Action = x => action(),
+			Target = typeof(T)
+		};
+	}
 
-		public static CaseInfo Case<T>(Func<T, Task> action) {
-			return new CaseInfo() {
-				Action = (x) => action((T)x),
-				Target = typeof(T)
-			};
-		}
+	public static CaseInfo Case<T>(Func<T, Task> action) {
+		return new CaseInfo() {
+			Action = (x) => action((T)x),
+			Target = typeof(T)
+		};
+	}
 
-		public static CaseInfo Default(Func<Task> action) {
-			return new CaseInfo() {
-				Action = x => action(),
-				IsDefault = true
-			};
-		}
+	public static CaseInfo Default(Func<Task> action) {
+		return new CaseInfo() {
+			Action = x => action(),
+			IsDefault = true
+		};
 	}
 }

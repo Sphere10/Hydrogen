@@ -28,70 +28,63 @@ using System.Drawing;
 using System.Windows.Forms;
 using System.Windows.Forms.Design;
 
-namespace Hydrogen.Windows.Forms
-{
-    [ToolStripItemDesignerAvailability(ToolStripItemDesignerAvailability.All)]
-    public class LoadingCircleToolStripMenuItem : ToolStripControlHost
-    {
-        // Constants =========================================================
+namespace Hydrogen.Windows.Forms;
 
-        // Attributes ========================================================
+[ToolStripItemDesignerAvailability(ToolStripItemDesignerAvailability.All)]
+public class LoadingCircleToolStripMenuItem : ToolStripControlHost {
+	// Constants =========================================================
 
-        // Properties ========================================================
-        /// <summary>
-        /// Gets the loading circle control.
-        /// </summary>
-        /// <value>The loading circle control.</value>
-        [RefreshProperties(RefreshProperties.All),
-        DesignerSerializationVisibility(DesignerSerializationVisibility.Content)]
-        public Hydrogen.Windows.Forms.LoadingCircle LoadingCircleControl
-        {
-            get { return Control as Hydrogen.Windows.Forms.LoadingCircle; }
-        }
+	// Attributes ========================================================
 
-        // Constructor ========================================================
-        /// <summary>
-        /// Initializes a new instance of the <see cref="LoadingCircleToolStripMenuItem"/> class.
-        /// </summary>
-        public LoadingCircleToolStripMenuItem()
-            : base(new Hydrogen.Windows.Forms.LoadingCircle())
-        {
-        }
+	// Properties ========================================================
+	/// <summary>
+	/// Gets the loading circle control.
+	/// </summary>
+	/// <value>The loading circle control.</value>
+	[RefreshProperties(RefreshProperties.All),
+	 DesignerSerializationVisibility(DesignerSerializationVisibility.Content)]
+	public Hydrogen.Windows.Forms.LoadingCircle LoadingCircleControl {
+		get { return Control as Hydrogen.Windows.Forms.LoadingCircle; }
+	}
 
-        /// <summary>
-        /// Retrieves the size of a rectangular area into which a control can be fitted.
-        /// </summary>
-        /// <param name="constrainingSize">The custom-sized area for a control.</param>
-        /// <returns>
-        /// An ordered pair of type <see cref="T:System.Drawing.Size"></see> representing the width and height of a rectangle.
-        /// </returns>
-        /// <PermissionSet><IPermission class="System.Security.Permissions.EnvironmentPermission, mscorlib, Version=2.0.3600.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" version="1" Unrestricted="true"/><IPermission class="System.Security.Permissions.FileIOPermission, mscorlib, Version=2.0.3600.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" version="1" Unrestricted="true"/><IPermission class="System.Security.Permissions.SecurityPermission, mscorlib, Version=2.0.3600.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" version="1" Flags="UnmanagedCode, ControlEvidence"/><IPermission class="System.Diagnostics.PerformanceCounterPermission, System, Version=2.0.3600.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" version="1" Unrestricted="true"/></PermissionSet>
-        public override Size GetPreferredSize(Size constrainingSize)
-        {
-            //return base.GetPreferredSize(constrainingSize);
-            return this.LoadingCircleControl.GetPreferredSize(constrainingSize);
-        }
+	// Constructor ========================================================
+	/// <summary>
+	/// Initializes a new instance of the <see cref="LoadingCircleToolStripMenuItem"/> class.
+	/// </summary>
+	public LoadingCircleToolStripMenuItem()
+		: base(new Hydrogen.Windows.Forms.LoadingCircle()) {
+	}
 
-        /// <summary>
-        /// Subscribes events from the hosted control.
-        /// </summary>
-        /// <param name="control">The control from which to subscribe events.</param>
-        protected override void OnSubscribeControlEvents(Control control)
-        {
-            base.OnSubscribeControlEvents(control);
+	/// <summary>
+	/// Retrieves the size of a rectangular area into which a control can be fitted.
+	/// </summary>
+	/// <param name="constrainingSize">The custom-sized area for a control.</param>
+	/// <returns>
+	/// An ordered pair of type <see cref="T:System.Drawing.Size"></see> representing the width and height of a rectangle.
+	/// </returns>
+	/// <PermissionSet><IPermission class="System.Security.Permissions.EnvironmentPermission, mscorlib, Version=2.0.3600.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" version="1" Unrestricted="true"/><IPermission class="System.Security.Permissions.FileIOPermission, mscorlib, Version=2.0.3600.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" version="1" Unrestricted="true"/><IPermission class="System.Security.Permissions.SecurityPermission, mscorlib, Version=2.0.3600.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" version="1" Flags="UnmanagedCode, ControlEvidence"/><IPermission class="System.Diagnostics.PerformanceCounterPermission, System, Version=2.0.3600.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" version="1" Unrestricted="true"/></PermissionSet>
+	public override Size GetPreferredSize(Size constrainingSize) {
+		//return base.GetPreferredSize(constrainingSize);
+		return this.LoadingCircleControl.GetPreferredSize(constrainingSize);
+	}
 
-            //Add your code here to subsribe to Control Events
-        }
+	/// <summary>
+	/// Subscribes events from the hosted control.
+	/// </summary>
+	/// <param name="control">The control from which to subscribe events.</param>
+	protected override void OnSubscribeControlEvents(Control control) {
+		base.OnSubscribeControlEvents(control);
 
-        /// <summary>
-        /// Unsubscribes events from the hosted control.
-        /// </summary>
-        /// <param name="control">The control from which to unsubscribe events.</param>
-        protected override void OnUnsubscribeControlEvents(Control control)
-        {
-            base.OnUnsubscribeControlEvents(control);
+		//Add your code here to subsribe to Control Events
+	}
 
-            //Add your code here to unsubscribe from control events.
-        }
-    }
+	/// <summary>
+	/// Unsubscribes events from the hosted control.
+	/// </summary>
+	/// <param name="control">The control from which to unsubscribe events.</param>
+	protected override void OnUnsubscribeControlEvents(Control control) {
+		base.OnUnsubscribeControlEvents(control);
+
+		//Add your code here to unsubscribe from control events.
+	}
 }

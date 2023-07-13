@@ -6,13 +6,11 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen {
+namespace Hydrogen;
 
-	public enum FileTransactionState {
-		Unchanged,
-		HasChanges,
-		Committing,
-		RollingBack,
-	}
-
+public enum FileTransactionState {
+	Unchanged,
+	HasChanges,
+	Committing,
+	RollingBack,
 }

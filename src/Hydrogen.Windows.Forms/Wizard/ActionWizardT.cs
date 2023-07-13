@@ -7,19 +7,14 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Dynamic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using Hydrogen;
 
-namespace Hydrogen.Windows.Forms {
+namespace Hydrogen.Windows.Forms;
 
-    public class ActionWizard : ActionWizard<IDictionary<string, object>> {
-        public ActionWizard(string title, IDictionary<string, object> propertyBag, IEnumerable<WizardScreen<IDictionary<string, object>>> forms, Func<IDictionary<string, object>, Task<Result>> finishFunc, Func<IDictionary<string, object>, Result> cancelFunc = null)
-            : base(title, propertyBag, forms, finishFunc, cancelFunc) {
-        }
-    }
+public class ActionWizard : ActionWizard<IDictionary<string, object>> {
+	public ActionWizard(string title, IDictionary<string, object> propertyBag, IEnumerable<WizardScreen<IDictionary<string, object>>> forms, Func<IDictionary<string, object>, Task<Result>> finishFunc,
+	                    Func<IDictionary<string, object>, Result> cancelFunc = null)
+		: base(title, propertyBag, forms, finishFunc, cancelFunc) {
+	}
 }

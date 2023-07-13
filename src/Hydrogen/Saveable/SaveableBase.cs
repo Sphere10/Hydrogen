@@ -13,7 +13,7 @@ namespace Hydrogen;
 public abstract class SaveableBase : ISaveable {
 	public event EventHandlerEx<object> Saving;
 	public event EventHandlerEx<object> Saved;
-	
+
 	public virtual bool RequiresSave { get; set; } = false;
 
 	protected virtual bool SuppressNotifications { get; set; } = false;
@@ -55,7 +55,7 @@ public abstract class SaveableBase : ISaveable {
 		if (SuppressNotifications)
 			return;
 		await OnSavingAsync();
-		await Task.Run( () => Saving?.Invoke(this));
+		await Task.Run(() => Saving?.Invoke(this));
 	}
 
 	protected void NotifySaved() {
@@ -70,6 +70,6 @@ public abstract class SaveableBase : ISaveable {
 		if (SuppressNotifications)
 			return;
 		await OnSavedAsync();
-		await Task.Run( () => Saved?.Invoke(this));
+		await Task.Run(() => Saved?.Invoke(this));
 	}
 }

@@ -8,10 +8,9 @@
 
 using System;
 
-namespace Hydrogen {
+namespace Hydrogen;
 
-	[Flags]
-	public enum JobPolicy {		
-		Asyncronous		=	1 << 0
-	}
+[Flags]
+public enum JobPolicy {
+	Asyncronous = 1 << 0
 }

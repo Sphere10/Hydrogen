@@ -6,9 +6,8 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen.CryptoEx.IES {
-	public interface IAlgorithmParameterSpec
-    {
-        
-    }
+namespace Hydrogen.CryptoEx.IES;
+
+public interface IAlgorithmParameterSpec {
+
 }

@@ -6,14 +6,14 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen {
-	public enum CacheReapPolicy {
-        LeastUsed,
-        Largest,
-        Smallest,
-		LongestIdle, 
-        Oldest,
-        ASAP,
-        None
-    }
+namespace Hydrogen;
+
+public enum CacheReapPolicy {
+	LeastUsed,
+	Largest,
+	Smallest,
+	LongestIdle,
+	Oldest,
+	ASAP,
+	None
 }

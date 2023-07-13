@@ -6,31 +6,25 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+namespace Hydrogen.Windows.Forms.AppointmentBook;
 
-namespace Hydrogen.Windows.Forms.AppointmentBook {
+public sealed class ColumnViewModel {
 
-	public sealed class ColumnViewModel {
-
-		public ColumnViewModel(
-			string name,
-			AppointmentViewModel[] appointments,
-			AppointmentColumn columnDataObject) {
-			Name = name;
-			Appointments = appointments;
-			ColumnDataObject = columnDataObject;
-		}
-
-		public string Name { get; internal set; }
-
-		public int Index { get; internal set; }
-
-		public AppointmentViewModel[] Appointments { get; internal set; }
-
-		public AppointmentColumn ColumnDataObject { get; internal set; }
-
+	public ColumnViewModel(
+		string name,
+		AppointmentViewModel[] appointments,
+		AppointmentColumn columnDataObject) {
+		Name = name;
+		Appointments = appointments;
+		ColumnDataObject = columnDataObject;
 	}
+
+	public string Name { get; internal set; }
+
+	public int Index { get; internal set; }
+
+	public AppointmentViewModel[] Appointments { get; internal set; }
+
+	public AppointmentColumn ColumnDataObject { get; internal set; }
+
 }

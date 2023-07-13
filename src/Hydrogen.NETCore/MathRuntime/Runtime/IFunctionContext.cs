@@ -6,17 +6,14 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
-using System.Collections.Generic;
-using System.Text;
+namespace Hydrogen.Maths.Compiler;
 
-namespace Hydrogen.Maths.Compiler {
+public interface IFunctionContext {
+	IMathContext MathContext { get; }
 
-    public interface IFunctionContext {
-        IMathContext MathContext { get; }
-        bool ContainsFunction(string name);
-        void RemoveFunction(string name);
-        IFunction this[string var] { get; set; }
-    }
+	bool ContainsFunction(string name);
 
+	void RemoveFunction(string name);
+
+	IFunction this[string var] { get; set; }
 }

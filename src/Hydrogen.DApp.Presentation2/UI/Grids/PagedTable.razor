@@ -20,10 +20,9 @@
     <thead>
     @HeaderTemplate
     </thead>
-    
+
     <tbody>
-    @foreach (TItem item in Page)
-    {
+    @foreach (TItem item in Page) {
         <span style="display: contents" onclick="@EventCallback.Factory.Create(this, () => OnRowSelect.InvokeAsync(item))">
             @ItemTemplate(item)
         </span>
@@ -33,7 +32,7 @@
 
 <div class="row">
     <div class="col-md-5 text-left">
-        Showing @((CurrentPage - 1) * PageSize == 0 ? 1 : (CurrentPage - 1) * PageSize) 
+        Showing @((CurrentPage - 1) * PageSize == 0 ? 1 : (CurrentPage - 1) * PageSize)
         to @((CurrentPage - 1) * PageSize + Page.Count()) of @Items.Count() entries
     </div>
     <div class="col-md-7 text-right">
@@ -42,8 +41,7 @@
                 <li class="page-item @(HasPrevPage ? string.Empty : "disabled")">
                     <a class="page-link" @onclick="PrevPageAsync" tabindex="-1">Previous</a>
                 </li>
-                @if (HasPrevPage)
-                {
+                @if (HasPrevPage) {
                     <li class="page-item">
                         <a class="page-link" @onclick="PrevPageAsync"> @(CurrentPage - 1)</a>
                     </li>
@@ -55,8 +53,7 @@
                     </a>
                 </li>
 
-                @if (HasNextPage)
-                {
+                @if (HasNextPage) {
                     <li class="page-item">
                         <a class="page-link" @onclick="NextPageAsync">@(CurrentPage + 1)</a>
                     </li>

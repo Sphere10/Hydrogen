@@ -7,77 +7,65 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using NUnit.Framework;
-using System.Threading;
-using System.Linq;
 using System.IO;
-using Hydrogen;
 
 
-namespace Hydrogen.Tests {
+namespace Hydrogen.Tests;
 
-    [TestFixture]
-	[NonParallelizable]
-	public class SchedulerXmlSerializerTest {
+[TestFixture]
+[NonParallelizable]
+public class SchedulerXmlSerializerTest {
 
-        
 
-		[Test]
-		public void SerializeScheduler_ToFromXmlFile_ShouldBeEqual()
-        {
-			var schedulerPolicy = SchedulerPolicy.ForceSyncronous;
+	[Test]
+	public void SerializeScheduler_ToFromXmlFile_ShouldBeEqual() {
+		var schedulerPolicy = SchedulerPolicy.ForceSyncronous;
 
-			// Create a scheduler and add jobs to it.
-			var scheduler = new Scheduler(schedulerPolicy);
+		// Create a scheduler and add jobs to it.
+		var scheduler = new Scheduler(schedulerPolicy);
 
-			var job1 = JobBuilder
-				.For(typeof(SchedulerTestNopJob))
-				.Called("SyncJob1")
-				.RunOnce(DateTime.Now.AddMinutes(1))
-				.RunSyncronously()
-				.Build();
-			scheduler.AddJob(job1);
+		var job1 = JobBuilder
+			.For(typeof(SchedulerTestNopJob))
+			.Called("SyncJob1")
+			.RunOnce(DateTime.Now.AddMinutes(1))
+			.RunSyncronously()
+			.Build();
+		scheduler.AddJob(job1);
 
-			var job2 = JobBuilder
-				.For(typeof(SchedulerTestNopJob))
-				.Called("SyncJob2")
-				.RunOnce(DateTime.Now.AddMinutes(1))
-				.RunSyncronously()
-				.Repeat
-				.OnInterval(TimeSpan.FromSeconds(1), endDate: DateTime.Now.AddMinutes(2))
-				.Build();
-			scheduler.AddJob(job2);
+		var job2 = JobBuilder
+			.For(typeof(SchedulerTestNopJob))
+			.Called("SyncJob2")
+			.RunOnce(DateTime.Now.AddMinutes(1))
+			.RunSyncronously()
+			.Repeat
+			.OnInterval(TimeSpan.FromSeconds(1), endDate: DateTime.Now.AddMinutes(2))
+			.Build();
+		scheduler.AddJob(job2);
 
-			var path = Path.GetTempFileName();
-			try
-			{
-				var serializer = new XmlSchedulerSerializer(path);
+		var path = Path.GetTempFileName();
+		try {
+			var serializer = new XmlSchedulerSerializer(path);
 
-				// Convert scheduler to XML and save to a file.
-				var surrogate = scheduler.ToSerializableSurrogate();
-				serializer.Serialize(surrogate);
+			// Convert scheduler to XML and save to a file.
+			var surrogate = scheduler.ToSerializableSurrogate();
+			serializer.Serialize(surrogate);
 
-				// Load the XML from the file into a surrogate.
-				var convertedSurrogate = serializer.Deserialize();
+			// Load the XML from the file into a surrogate.
+			var convertedSurrogate = serializer.Deserialize();
 
-				// Convert the surrogate back to the scheduler.
-				var convertedScheduler = new Scheduler(schedulerPolicy);
-				convertedScheduler.FromSerializableSurrogate(convertedSurrogate);
+			// Convert the surrogate back to the scheduler.
+			var convertedScheduler = new Scheduler(schedulerPolicy);
+			convertedScheduler.FromSerializableSurrogate(convertedSurrogate);
 
-				// Compare the two schedulers - should be the same.
-				SchedulerTest.CompareSchedulers(scheduler, convertedScheduler);
-			}
-			finally
-			{
-				if (!string.IsNullOrEmpty(path) && File.Exists(path))
-				{
-					File.Delete(path);
-				}
+			// Compare the two schedulers - should be the same.
+			SchedulerTest.CompareSchedulers(scheduler, convertedScheduler);
+		} finally {
+			if (!string.IsNullOrEmpty(path) && File.Exists(path)) {
+				File.Delete(path);
 			}
 		}
-
-	
 	}
+
+
 }

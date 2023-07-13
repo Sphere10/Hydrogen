@@ -7,7 +7,8 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 public class Program {
-	static void Main(string[] args) { }
+	static void Main(string[] args) {
+	}
 }
 //using Hydrogen;
 //using Hydrogen.Communications;
@@ -23,6 +24,7 @@ public class Program {
 //using System.Runtime.CompilerServices;
 //using System.Threading;
 //using System.Threading.Tasks;
+
 
 //namespace Hydrogen.DApp.Host {
 

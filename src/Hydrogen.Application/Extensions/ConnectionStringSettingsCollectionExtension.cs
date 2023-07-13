@@ -8,14 +8,14 @@
 
 using System.Configuration;
 
-namespace Hydrogen.Application {
-	public static class Extension {
-        public static bool HasConnectionString(this ConnectionStringSettingsCollection value, string key) {
-            try {
-                return value[key].ConnectionString.Length > 0;
-            } catch {
-                return false;
-            }
-        }
-    }
+namespace Hydrogen.Application;
+
+public static class Extension {
+	public static bool HasConnectionString(this ConnectionStringSettingsCollection value, string key) {
+		try {
+			return value[key].ConnectionString.Length > 0;
+		} catch {
+			return false;
+		}
+	}
 }

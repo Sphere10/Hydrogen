@@ -21,38 +21,38 @@ public class DictionaryRepositoryAdapter<TEntity, TIdentity> : SyncRepositoryBas
 		_identityFunc = identityFunc;
 	}
 
-	public override bool Contains(TIdentity identity) 
+	public override bool Contains(TIdentity identity)
 		=> _dictionary.ContainsKey(identity);
 
-	public override bool TryGet(TIdentity identity, out TEntity entity) 
+	public override bool TryGet(TIdentity identity, out TEntity entity)
 		=> _dictionary.TryGetValue(identity, out entity);
-	
 
-	public override void Create(TEntity entity)  {
+
+	public override void Create(TEntity entity) {
 		var identity = _identityFunc(entity);
-		if (_dictionary.ContainsKey(identity)) 
+		if (_dictionary.ContainsKey(identity))
 			throw new Exception($"Item with identity '{identity}' already exists");
 		_dictionary.Add(identity, entity);
 	}
 
 	public override void Update(TEntity entity) {
 		var identity = _identityFunc(entity);
-		if (!_dictionary.ContainsKey(identity)) 
+		if (!_dictionary.ContainsKey(identity))
 			throw new Exception($"Item with identity '{identity}' not found");
 		_dictionary[identity] = entity;
 	}
 
 	public override void Delete(TIdentity identity) {
-		if (!_dictionary.ContainsKey(identity)) 
+		if (!_dictionary.ContainsKey(identity))
 			throw new Exception($"Item with identity '{identity}' not found");
 		_dictionary.Remove(identity);
 	}
 
-	public override void Clear()  
+	public override void Clear()
 		=> _dictionary.Clear();
 
 	protected override void FreeManagedResources() {
-		if (_dictionary is IDisposable disposableDictionary) 
+		if (_dictionary is IDisposable disposableDictionary)
 			disposableDictionary.Dispose();
 	}
 }

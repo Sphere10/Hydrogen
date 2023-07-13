@@ -8,33 +8,32 @@
 
 using System.Collections.Generic;
 
-namespace Hydrogen {
-	public sealed class InsertionSort<T> : SortAlgorithm<T>{
-		
-		public override void Execute(IExtendedList<T> list, IComparer<T> comparer) {
-			for (int i = 1; i < list.Count; i++) {
-				T value = list[i];
+namespace Hydrogen;
 
-				int j = i - 1;
+public sealed class InsertionSort<T> : SortAlgorithm<T> {
 
-				bool done = false;
+	public override void Execute(IExtendedList<T> list, IComparer<T> comparer) {
+		for (int i = 1; i < list.Count; i++) {
+			T value = list[i];
 
-				do {
-					if (comparer.Compare(list[j], value) > 0) {
-						list[j + 1] = list[j];
-						j--;
+			int j = i - 1;
 
-						if (j < 0) {
-							done = true;
-						}
-					} else {
+			bool done = false;
+
+			do {
+				if (comparer.Compare(list[j], value) > 0) {
+					list[j + 1] = list[j];
+					j--;
+
+					if (j < 0) {
 						done = true;
 					}
+				} else {
+					done = true;
 				}
-				while (done == false);
+			} while (done == false);
 
-				list[j + 1] = value;
-			}
+			list[j + 1] = value;
 		}
 	}
 }

@@ -7,21 +7,18 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
-namespace Hydrogen.Windows.Forms {
-	public class ValidationIndicatorEvent : EventArgs {
+namespace Hydrogen.Windows.Forms;
 
-		public ValidationIndicatorEvent() {
-			ValidationResult = true;
-			ValidationMessage = string.Empty;
-		}
+public class ValidationIndicatorEvent : EventArgs {
 
-		public bool ValidationResult { get; set; }
-
-		public string ValidationMessage { get; set; }
-
+	public ValidationIndicatorEvent() {
+		ValidationResult = true;
+		ValidationMessage = string.Empty;
 	}
+
+	public bool ValidationResult { get; set; }
+
+	public string ValidationMessage { get; set; }
+
 }

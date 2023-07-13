@@ -16,6 +16,7 @@ internal class MuSigNonceData {
 	internal byte[] PublicNonce { get; set; }
 }
 
+
 internal class MuSigPrivateNonce {
 	internal byte[] K1 { get; set; }
 	internal byte[] K2 { get; set; }
@@ -25,6 +26,7 @@ internal class MuSigPrivateNonce {
 	}
 }
 
+
 internal class MuSigPublicNonce {
 	internal byte[] R1 { get; set; }
 	internal byte[] R2 { get; set; }
@@ -33,6 +35,7 @@ internal class MuSigPublicNonce {
 		return Arrays.Concatenate(R1, R2);
 	}
 }
+
 
 public class AggregatedPublicNonce {
 	public byte[] AggregatedNonce { get; internal set; }

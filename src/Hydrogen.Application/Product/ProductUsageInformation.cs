@@ -7,20 +7,17 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.IO;
-using System.Reflection;
 
-namespace Hydrogen.Application {
+namespace Hydrogen.Application;
 
-	public class ProductUsageInformation {
+public class ProductUsageInformation {
 
-		public DateTime FirstUsedDateBySystemUTC { get; set; }
-		public int DaysUsedBySystem { get; set; }
-		public int NumberOfUsesBySystem { get; set; }
-		public DateTime FirstUsedDateByUserUTC { get; set; }
-		public int DaysUsedByUser { get; set; }
-		public int NumberOfUsesByUser { get; set; }
+	public DateTime FirstUsedDateBySystemUTC { get; set; }
+	public int DaysUsedBySystem { get; set; }
+	public int NumberOfUsesBySystem { get; set; }
+	public DateTime FirstUsedDateByUserUTC { get; set; }
+	public int DaysUsedByUser { get; set; }
+	public int NumberOfUsesByUser { get; set; }
 
 
-	}
 }

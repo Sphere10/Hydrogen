@@ -7,26 +7,18 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Windows.Forms;
-using Hydrogen;
 using Hydrogen.Windows.Forms;
 
-namespace Hydrogen.Utils.WinFormsTester {
-	public partial class DraggableControlsTestScreen : ApplicationScreen {
-		public DraggableControlsTestScreen() {
-			InitializeComponent();
-			_pictureBox1.Draggable(true);
-			_pictureBox2.Draggable(true);
-			_pictureBox3.Draggable(true);
-		}
+namespace Hydrogen.Utils.WinFormsTester;
 
-        private void _pictureBox1_Click(object sender, EventArgs e) {
-        }
+public partial class DraggableControlsTestScreen : ApplicationScreen {
+	public DraggableControlsTestScreen() {
+		InitializeComponent();
+		_pictureBox1.Draggable(true);
+		_pictureBox2.Draggable(true);
+		_pictureBox3.Draggable(true);
+	}
+
+	private void _pictureBox1_Click(object sender, EventArgs e) {
 	}
 }

@@ -7,12 +7,12 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using Newtonsoft.Json;
 
 namespace Tools;
+
 public static class Json {
 	public static T ReadFromString<T>(string stringValue) {
 		using (TextReader reader = new StringReader(stringValue)) {
@@ -85,4 +85,3 @@ public static class Json {
 	}
 
 }
-

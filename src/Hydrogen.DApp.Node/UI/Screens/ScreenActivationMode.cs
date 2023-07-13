@@ -6,27 +6,25 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen.DApp.Node.UI {
+namespace Hydrogen.DApp.Node.UI;
+
+/// <summary>
+/// Determine when the screen is created and destroyed
+/// </summary>
+public enum ScreenLifetime {
+	/// <summary>
+	/// Screen is created on application startup and destroyed on application shutdown
+	/// </summary>
+	Application,
 
 	/// <summary>
-	/// Determine when the screen is created and destroyed
+	/// Screen is created on first show and destroyed on application shutdown
 	/// </summary>
-	public enum ScreenLifetime {
-		/// <summary>
-		/// Screen is created on application startup and destroyed on application shutdown
-		/// </summary>
-		Application,
+	LazyLoad,
 
-		/// <summary>
-		/// Screen is created on first show and destroyed on application shutdown
-		/// </summary>
-		LazyLoad,
-
-		/// <summary>
-		/// Screen is created on when shown and destroyed not shown
-		/// </summary>
-		WhenVisible,
-		
-	}
+	/// <summary>
+	/// Screen is created on when shown and destroyed not shown
+	/// </summary>
+	WhenVisible,
 
 }

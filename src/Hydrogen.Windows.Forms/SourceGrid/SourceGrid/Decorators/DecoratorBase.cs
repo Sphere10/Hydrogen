@@ -6,16 +6,10 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
-using System.Collections.Generic;
-using System.Text;
+namespace SourceGrid.Decorators;
 
-namespace SourceGrid.Decorators
-{
-    public abstract class DecoratorBase
-    {
-        public abstract bool IntersectWith(CellRange range);
+public abstract class DecoratorBase {
+	public abstract bool IntersectWith(CellRange range);
 
-        public abstract void Draw(RangePaintEventArgs e);
-    }
+	public abstract void Draw(RangePaintEventArgs e);
 }

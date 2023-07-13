@@ -21,7 +21,7 @@ public class NssmSentry : ProcessSentry {
 	public NssmSentry() : base(ExecutableFileName) {
 	}
 
-	public new static Task<bool> CanRunAsync(CancellationToken cancellationToken = default)  
+	public new static Task<bool> CanRunAsync(CancellationToken cancellationToken = default)
 		=> ProcessSentry.CanRunAsync(ExecutableFileName, cancellationToken);
 
 	public Task InstallAsync(string serviceName, string appFileName, string appArgs, CancellationToken cancellationToken = default) {

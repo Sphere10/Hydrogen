@@ -6,25 +6,25 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen {
-	public sealed class Synchronized<T> : SynchronizedObject {
-		private T _value;
+namespace Hydrogen;
 
-		public Synchronized(T @object) {
-            _value = @object;
-        }
+public sealed class Synchronized<T> : SynchronizedObject {
+	private T _value;
 
-        public T Value {
-			get {
-				using (EnterReadScope())
-					return _value;
-			}
-			set {
-				using (EnterWriteScope())
-					_value = value;
-			}
-		}
-      
-
+	public Synchronized(T @object) {
+		_value = @object;
 	}
+
+	public T Value {
+		get {
+			using (EnterReadScope())
+				return _value;
+		}
+		set {
+			using (EnterWriteScope())
+				_value = value;
+		}
+	}
+
+
 }

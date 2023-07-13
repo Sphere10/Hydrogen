@@ -6,9 +6,6 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
-using System.IO;
-using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Hydrogen.Application;
@@ -18,8 +15,8 @@ public class ProductUsageInformationTokenResolver : ITokenResolver {
 	public ProductUsageInformationTokenResolver() {
 		// Since implementations of IProductUsageServices depend on token resolvers, we resort
 		// to service locator pattern here. Exceptional case.
-		ProductUsageServices = 
-			Tools.Values.Future.LazyLoad( 
+		ProductUsageServices =
+			Tools.Values.Future.LazyLoad(
 				() => HydrogenFramework.Instance.ServiceProvider.GetService<IProductUsageServices>()
 			);
 	}

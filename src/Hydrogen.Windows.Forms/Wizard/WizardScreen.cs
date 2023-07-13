@@ -11,39 +11,30 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Drawing;
-using System.Data;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using System.Windows.Forms;
-using Hydrogen;
 
-namespace Hydrogen.Windows.Forms {
-    public class WizardScreen<T> : UserControlEx, IWizardScreen<T> {
-        public IWizard<T> Wizard { get; internal set; }
+namespace Hydrogen.Windows.Forms;
 
-        public T Model => Wizard.Model;
+public class WizardScreen<T> : UserControlEx, IWizardScreen<T> {
+	public IWizard<T> Wizard { get; internal set; }
 
-        public virtual async Task Initialize() {            
-        }
+	public T Model => Wizard.Model;
 
-        public virtual async Task OnPresent() {
-            CopyModelToUI();
-        }
+	public virtual async Task Initialize() {
+	}
 
-        public virtual async Task OnPrevious() {            
-        }
-		
-        public virtual async Task OnNext() {            
-        }
+	public virtual async Task OnPresent() {
+		CopyModelToUI();
+	}
 
-        public virtual async Task<Result> Validate() {
-            return Result.Default;
-        }
+	public virtual async Task OnPrevious() {
+	}
 
-    }
+	public virtual async Task OnNext() {
+	}
+
+	public virtual async Task<Result> Validate() {
+		return Result.Default;
+	}
+
 }

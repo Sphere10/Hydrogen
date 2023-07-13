@@ -16,9 +16,9 @@ public class GuidSerializer : StaticSizeItemSerializerBase<Guid> {
 	public GuidSerializer() : base(GuidByteCount) {
 	}
 
-	public override bool TrySerialize(Guid item, EndianBinaryWriter writer) 
+	public override bool TrySerialize(Guid item, EndianBinaryWriter writer)
 		=> _byteArraySerializer.TrySerialize(item.ToByteArray(), writer);
-	
+
 	public override bool TryDeserialize(EndianBinaryReader reader, out Guid item) {
 		if (_byteArraySerializer.TryDeserialize(reader, out var bytes)) {
 			item = new Guid(bytes);
@@ -27,5 +27,5 @@ public class GuidSerializer : StaticSizeItemSerializerBase<Guid> {
 		item = default;
 		return false;
 	}
-	
+
 }

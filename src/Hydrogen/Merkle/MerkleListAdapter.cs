@@ -13,7 +13,6 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using Hydrogen;
 
 namespace Hydrogen;
 
@@ -121,7 +120,7 @@ public class MerkleListAdapter<TItem> : MerkleListAdapter<TItem, IExtendedList<T
 	}
 
 	public MerkleListAdapter(CHF chf)
-	: this(new ExtendedList<TItem>(), chf) {
+		: this(new ExtendedList<TItem>(), chf) {
 	}
 	public MerkleListAdapter(IExtendedList<TItem> internalList)
 		: base(internalList, CHF.SHA2_256) {

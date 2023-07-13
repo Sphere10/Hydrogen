@@ -8,16 +8,14 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Hydrogen;
 
-namespace Hydrogen.Windows.Forms {
-	public interface ICrudGrid {
-		Type EntityEditorDisplay { get; }
-		string GridTitle { get; }
-		DataSourceCapabilities Capabilities { get; }
-		IEnumerable<ICrudGridColumn> GridBindings { get; }
-		void SetDataSource<TEntity>(ICrudDataSource<TEntity> dataSource);
-	}
+namespace Hydrogen.Windows.Forms;
+
+public interface ICrudGrid {
+	Type EntityEditorDisplay { get; }
+	string GridTitle { get; }
+	DataSourceCapabilities Capabilities { get; }
+	IEnumerable<ICrudGridColumn> GridBindings { get; }
+
+	void SetDataSource<TEntity>(ICrudDataSource<TEntity> dataSource);
 }

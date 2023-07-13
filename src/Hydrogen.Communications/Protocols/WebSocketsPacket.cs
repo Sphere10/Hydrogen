@@ -5,46 +5,47 @@
 // LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
+
 using System.Text;
 using Newtonsoft.Json;
 
-namespace Hydrogen.Communications {
-	public class WebSocketsPacket {
-		public string Id { get; set; }
-		public string Message { get; set; }
-		public string[] Tokens { get; private set; } = new string[0];
-		public string JsonData { get; set; }
+namespace Hydrogen.Communications;
 
-		public WebSocketsPacket() {
-		}
+public class WebSocketsPacket {
+	public string Id { get; set; }
+	public string Message { get; set; }
+	public string[] Tokens { get; private set; } = new string[0];
+	public string JsonData { get; set; }
 
-		public WebSocketsPacket(byte[] bytes) {
+	public WebSocketsPacket() {
+	}
 
-			var text = Encoding.ASCII.GetString(bytes);
-			WebSocketsPacket packet = JsonConvert.DeserializeObject<WebSocketsPacket>(text);
+	public WebSocketsPacket(byte[] bytes) {
 
-			Id = packet.Id;
-			Message = packet.Message;
-			Tokens = Message.Split(" ");
-			JsonData = packet.JsonData;
-		}
+		var text = Encoding.ASCII.GetString(bytes);
+		WebSocketsPacket packet = JsonConvert.DeserializeObject<WebSocketsPacket>(text);
 
-		public WebSocketsPacket(string id, string message, string jsonData) {
-			Id = id;
-			Message = message;
-			Tokens = Message.Split(" ");
-			JsonData = jsonData;
-		}
+		Id = packet.Id;
+		Message = packet.Message;
+		Tokens = Message.Split(" ");
+		JsonData = packet.JsonData;
+	}
 
-		public WebSocketsPacket(string id, string message) {
-			Id = id;
-			Message = message;
-			Tokens = Message.Split(" ");
-		}
+	public WebSocketsPacket(string id, string message, string jsonData) {
+		Id = id;
+		Message = message;
+		Tokens = Message.Split(" ");
+		JsonData = jsonData;
+	}
 
-		public byte[] ToBytes() {
-			var jsonData = JsonConvert.SerializeObject(this);
-			return Encoding.ASCII.GetBytes(jsonData);
-		}
+	public WebSocketsPacket(string id, string message) {
+		Id = id;
+		Message = message;
+		Tokens = Message.Split(" ");
+	}
+
+	public byte[] ToBytes() {
+		var jsonData = JsonConvert.SerializeObject(this);
+		return Encoding.ASCII.GetBytes(jsonData);
 	}
 }

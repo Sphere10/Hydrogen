@@ -6,52 +6,49 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using Hydrogen;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Hydrogen.DApp.Core.Blockchain {
-	public interface IBlockchainLayer<TBlock> {
+namespace Hydrogen.DApp.Core.Blockchain;
 
-		byte[] StateRoot { get; }
+public interface IBlockchainLayer<TBlock> {
 
-		ApplyBlockResult ApplyTipBlock(TBlock block);
+	byte[] StateRoot { get; }
 
-		UndoBlockResult UndoTipBlock(TBlock block);
+	ApplyBlockResult ApplyTipBlock(TBlock block);
+
+	UndoBlockResult UndoTipBlock(TBlock block);
+}
+
+
+public interface IBlockRepository<TBlock> {
+
+	void Initialize(Progress<int> progressCallback);
+
+	IBlockTree BlockTree { get; }
+
+	bool TryLoadBlock(long blockID, out IFuture<Stream> blockData);
+
+	bool TrySaveBlock(Stream blockData, out long blockID);
+
+}
+
+
+public interface IBlockchainRepository {
+	long Height { get; }
+
+	bool TryGetBlock(long blockNo, out long blockID);
+}
+
+
+public abstract class BlockchainLayerBase<TBlock> : IBlockchainLayer<TBlock> {
+	public abstract byte[] StateRoot { get; }
+
+	public ApplyBlockResult ApplyTipBlock(TBlock block) {
+		throw new NotImplementedException();
 	}
 
-
-	public interface IBlockRepository<TBlock> {
-
-		void Initialize(Progress<int> progressCallback);
-
-		IBlockTree BlockTree { get; }
-
-		bool TryLoadBlock(long blockID, out IFuture<Stream> blockData);
-
-		bool TrySaveBlock(Stream blockData, out long blockID);
-
-	}
-
-	public interface IBlockchainRepository {
-		long Height { get; }
-
-		bool TryGetBlock(long blockNo, out long blockID);
-	}
-
-	public abstract class BlockchainLayerBase<TBlock> : IBlockchainLayer<TBlock> {
-		public abstract byte[] StateRoot { get; }
-
-		public ApplyBlockResult ApplyTipBlock(TBlock block) {
-			throw new NotImplementedException();
-		}
-
-		public UndoBlockResult UndoTipBlock(TBlock block) {
-			throw new NotImplementedException();
-		}
+	public UndoBlockResult UndoTipBlock(TBlock block) {
+		throw new NotImplementedException();
 	}
 }

@@ -9,11 +9,10 @@
 using System;
 
 
-namespace Hydrogen {
+namespace Hydrogen;
 
-	public interface IActiveApplicationMonitor  {
-		event EventHandler<ApplicationChangedEvent> ApplicationChanged;
+public interface IActiveApplicationMonitor {
+	event EventHandler<ApplicationChangedEvent> ApplicationChanged;
 
-		string GetActiveApplicationName();
-	}
+	string GetActiveApplicationName();
 }

@@ -13,20 +13,23 @@ using System.Threading.Tasks;
 namespace Hydrogen;
 
 public class SynchronizedRepository<TEntity, TIdentity> : RepositoryDecorator<TEntity, TIdentity>, ISynchronizedObject {
-	
+
 	private readonly SynchronizedObject _innerSyncObject;
 
-	public SynchronizedRepository(IRepository<TEntity, TIdentity> innerRepository, LockRecursionPolicy lockRecursion = LockRecursionPolicy.SupportsRecursion) 
+	public SynchronizedRepository(IRepository<TEntity, TIdentity> innerRepository, LockRecursionPolicy lockRecursion = LockRecursionPolicy.SupportsRecursion)
 		: this(innerRepository, new SynchronizedObject(lockRecursion)) {
 	}
 
-	public SynchronizedRepository(IRepository<TEntity, TIdentity> innerRepository, SynchronizedObject innerSyncObject) 
+	public SynchronizedRepository(IRepository<TEntity, TIdentity> innerRepository, SynchronizedObject innerSyncObject)
 		: base(innerRepository) {
 		Guard.ArgumentNotNull(innerSyncObject, nameof(innerSyncObject));
 		_innerSyncObject = innerSyncObject;
 	}
 
-	public ISynchronizedObject ParentSyncObject { get => _innerSyncObject.ParentSyncObject; set => _innerSyncObject.ParentSyncObject = value; }
+	public ISynchronizedObject ParentSyncObject {
+		get => _innerSyncObject.ParentSyncObject;
+		set => _innerSyncObject.ParentSyncObject = value;
+	}
 
 	public ReaderWriterLockSlim ThreadLock => _innerSyncObject.ThreadLock;
 
@@ -35,63 +38,66 @@ public class SynchronizedRepository<TEntity, TIdentity> : RepositoryDecorator<TE
 	public IDisposable EnterWriteScope() => _innerSyncObject.EnterWriteScope();
 
 	public override bool Contains(TIdentity identity) {
-		using (EnterReadScope()) 
+		using (EnterReadScope())
 			return base.Contains(identity);
 	}
 
 	public override async Task<bool> ContainsAsync(TIdentity identity) {
-		using (EnterReadScope()) 
-			return await base.ContainsAsync(identity).ContinueOnSameThread();;
+		using (EnterReadScope())
+			return await base.ContainsAsync(identity).ContinueOnSameThread();
+		;
 	}
 
 	public override bool TryGet(TIdentity identity, out TEntity entity) {
-		using (EnterReadScope()) 
+		using (EnterReadScope())
 			return base.TryGet(identity, out entity);
 	}
 
-	public override async Task<(bool, TEntity)> TryGetAsync(TIdentity identity) { 
+	public override async Task<(bool, TEntity)> TryGetAsync(TIdentity identity) {
 		using (EnterReadScope())
 			return await base.TryGetAsync(identity).ContinueOnSameThread();
 	}
 
-	public override void Create(TEntity entity) { 
-		using (EnterWriteScope()) 
+	public override void Create(TEntity entity) {
+		using (EnterWriteScope())
 			base.Create(entity);
 	}
 
-	public override async Task CreateAsync(TEntity entity) { 
-		using (EnterWriteScope()) 
+	public override async Task CreateAsync(TEntity entity) {
+		using (EnterWriteScope())
 			await base.CreateAsync(entity).ContinueOnSameThread();
 	}
 
-	public override void Update(TEntity entity) { 
-		using (EnterWriteScope()) 
+	public override void Update(TEntity entity) {
+		using (EnterWriteScope())
 			base.Update(entity);
 	}
 
 	public override async Task UpdateAsync(TEntity entity) {
-		using (EnterWriteScope()) 
-			await base.UpdateAsync(entity).ContinueOnSameThread();;
+		using (EnterWriteScope())
+			await base.UpdateAsync(entity).ContinueOnSameThread();
+		;
 	}
 
-	public override void Delete(TIdentity identity) { 
-		using (EnterWriteScope()) 
+	public override void Delete(TIdentity identity) {
+		using (EnterWriteScope())
 			base.Delete(identity);
 	}
 
-	public override async Task DeleteAsync(TIdentity identity) { 
-		using (EnterWriteScope()) 
+	public override async Task DeleteAsync(TIdentity identity) {
+		using (EnterWriteScope())
 			await base.DeleteAsync(identity).ContinueOnSameThread();
 	}
 
-	public override void Clear() { 
-		using (EnterWriteScope()) 
+	public override void Clear() {
+		using (EnterWriteScope())
 			base.Clear();
 	}
 
-	public override async Task ClearAsync() { 
-		using (EnterWriteScope()) 
-			await base.ClearAsync().ContinueOnSameThread();;
+	public override async Task ClearAsync() {
+		using (EnterWriteScope())
+			await base.ClearAsync().ContinueOnSameThread();
+		;
 	}
 
 	public override void Dispose() {
@@ -99,8 +105,9 @@ public class SynchronizedRepository<TEntity, TIdentity> : RepositoryDecorator<TE
 			InternalCollection.Dispose();
 	}
 
-	public override async ValueTask DisposeAsync() { 
-		using (EnterWriteScope()) 
-			await base.DisposeAsync().ContinueOnSameThread();;
+	public override async ValueTask DisposeAsync() {
+		using (EnterWriteScope())
+			await base.DisposeAsync().ContinueOnSameThread();
+		;
 	}
 }

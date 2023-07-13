@@ -6,18 +6,15 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
-using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using Hydrogen.Application;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Hydrogen.Windows.Forms; public static class HydrogenFrameworkExtensions {
+namespace Hydrogen.Windows.Forms;
+
+public static class HydrogenFrameworkExtensions {
 
 	public static void StartWinFormsApplication<TMainForm>(this HydrogenFramework framework, Size? size = null, HydrogenFrameworkOptions options = HydrogenFrameworkOptions.Default)
 		where TMainForm : class, IMainForm {
@@ -50,4 +47,3 @@ namespace Hydrogen.Windows.Forms; public static class HydrogenFrameworkExtension
 		applicationLifecycle.EndFramework();
 	}
 }
-

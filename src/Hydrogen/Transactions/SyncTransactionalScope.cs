@@ -28,7 +28,7 @@ public abstract class SyncTransactionalScope<TTransaction> : TransactionalScopeB
 
 	protected sealed override async ValueTask OnContextEndAsync() => await Task.Run(OnContextEnd);
 
-	protected sealed override Task OnTransactionalScopeEndAsync(List<Exception> errors) => Task.Run(() =>OnTransactionalScopeEnd(errors));
+	protected sealed override Task OnTransactionalScopeEndAsync(List<Exception> errors) => Task.Run(() => OnTransactionalScopeEnd(errors));
 
 	protected sealed override Task OnCommittingAsync() => Task.Run(OnCommitting);
 

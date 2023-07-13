@@ -17,17 +17,40 @@ namespace Hydrogen;
 /// no restrictions on this dictionary, items may be added, mutated and removed arbitrarily. This class is essentially a light-weight database.
 /// </summary>
 public abstract class TransactionalDictionaryBase<TKey, TValue> : ObservableDictionary<TKey, TValue>, ITransactionalDictionary<TKey, TValue> {
-		
-	public const int DefaultTransactionalPageSize = 1 << 18;  // 256kb
-	public const int DefaultClusterSize = 256;   // 256b
+
+	public const int DefaultTransactionalPageSize = 1 << 18; // 256kb
+	public const int DefaultClusterSize = 256; // 256b
 	public const int DefaultMaxMemory = int.MaxValue; //  10 * (1 << 20);// 10mb
 
-	public event EventHandlerEx<object> Loading { add => StreamMappedDictionary.Loading += value; remove => StreamMappedDictionary.Loading -= value; }
-	public event EventHandlerEx<object> Loaded { add => StreamMappedDictionary.Loaded += value; remove => StreamMappedDictionary.Loaded -= value; }
-	public event EventHandlerEx<object> Committing { add => _transactionalBuffer.Committing += value; remove => _transactionalBuffer.Committing -= value; }
-	public event EventHandlerEx<object> Committed { add => _transactionalBuffer.Committed += value; remove => _transactionalBuffer.Committed -= value; }
-	public event EventHandlerEx<object> RollingBack { add => _transactionalBuffer.RollingBack += value; remove => _transactionalBuffer.RollingBack -= value; }
-	public event EventHandlerEx<object> RolledBack { add => _transactionalBuffer.RolledBack += value; remove => _transactionalBuffer.RolledBack -= value; }
+	public event EventHandlerEx<object> Loading {
+		add => StreamMappedDictionary.Loading += value;
+		remove => StreamMappedDictionary.Loading -= value;
+	}
+
+	public event EventHandlerEx<object> Loaded {
+		add => StreamMappedDictionary.Loaded += value;
+		remove => StreamMappedDictionary.Loaded -= value;
+	}
+
+	public event EventHandlerEx<object> Committing {
+		add => _transactionalBuffer.Committing += value;
+		remove => _transactionalBuffer.Committing -= value;
+	}
+
+	public event EventHandlerEx<object> Committed {
+		add => _transactionalBuffer.Committed += value;
+		remove => _transactionalBuffer.Committed -= value;
+	}
+
+	public event EventHandlerEx<object> RollingBack {
+		add => _transactionalBuffer.RollingBack += value;
+		remove => _transactionalBuffer.RollingBack -= value;
+	}
+
+	public event EventHandlerEx<object> RolledBack {
+		add => _transactionalBuffer.RolledBack += value;
+		remove => _transactionalBuffer.RolledBack -= value;
+	}
 
 	private readonly TransactionalFileMappedBuffer _transactionalBuffer;
 	private readonly SynchronizedDictionary<TKey, TValue> _dictionary;
@@ -45,7 +68,8 @@ public abstract class TransactionalDictionaryBase<TKey, TValue> : ObservableDict
 	/// <param name="maxMemory">How much of the list can be kept in memory at any time</param>
 	/// <param name="clusterSize">To support random access reads/writes the file is broken into discontinuous clusters of this size (similar to how disk storage) works. <remarks>Try to fit your average object in 1 cluster for performance. However, spare space in a cluster cannot be used.</remarks> </param>
 	/// <param name="readOnly">Whether or not file is opened in readonly mode.</param>
-	protected TransactionalDictionaryBase(string filename, string uncommittedPageFileDir, Func<IBuffer, IStreamMappedDictionary<TKey, TValue>> streamMappedDictionaryActivator, int transactionalPageSizeBytes = DefaultTransactionalPageSize, long maxMemory = DefaultMaxMemory, bool readOnly = false) {
+	protected TransactionalDictionaryBase(string filename, string uncommittedPageFileDir, Func<IBuffer, IStreamMappedDictionary<TKey, TValue>> streamMappedDictionaryActivator, int transactionalPageSizeBytes = DefaultTransactionalPageSize,
+	                                      long maxMemory = DefaultMaxMemory, bool readOnly = false) {
 		Guard.ArgumentNotNull(filename, nameof(filename));
 		Guard.ArgumentNotNull(uncommittedPageFileDir, nameof(uncommittedPageFileDir));
 

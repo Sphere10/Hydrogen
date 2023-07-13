@@ -9,22 +9,22 @@
 using System;
 using System.Collections.Generic;
 
-namespace Hydrogen {
-    /// <summary>
-    /// A Serializer that works for base-level objects by delegating actual serialization to registered concrete-level serializers. 
-    /// </summary>
-    /// <typeparam name="TBase">The type of object which is serialized/deserialized</typeparam>
-    public interface IFactorySerializer<TBase> : IItemSerializer<TBase> {
+namespace Hydrogen;
 
-        IEnumerable<Type> RegisteredTypes { get; }
+/// <summary>
+/// A Serializer that works for base-level objects by delegating actual serialization to registered concrete-level serializers. 
+/// </summary>
+/// <typeparam name="TBase">The type of object which is serialized/deserialized</typeparam>
+public interface IFactorySerializer<TBase> : IItemSerializer<TBase> {
 
-		public void RegisterSerializer<TConcrete>(ushort typeCode, IItemSerializer<TConcrete> concreteSerializer) where TConcrete : TBase;
+	IEnumerable<Type> RegisteredTypes { get; }
 
-        ushort GetTypeCode<TConcrete>(TConcrete item) where TConcrete : TBase => GetTypeCode(item.GetType());
+	public void RegisterSerializer<TConcrete>(ushort typeCode, IItemSerializer<TConcrete> concreteSerializer) where TConcrete : TBase;
 
-        ushort GetTypeCode(Type type);
+	ushort GetTypeCode<TConcrete>(TConcrete item) where TConcrete : TBase => GetTypeCode(item.GetType());
 
-        ushort GenerateTypeCode();
+	ushort GetTypeCode(Type type);
 
-    }
+	ushort GenerateTypeCode();
+
 }

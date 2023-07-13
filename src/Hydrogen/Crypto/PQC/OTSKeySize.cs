@@ -6,17 +6,15 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen {
+namespace Hydrogen;
 
-	public readonly struct OTSKeySize {
+public readonly struct OTSKeySize {
 
-		public OTSKeySize(int width, int height) {
-			Width = width;
-			Length = height;
-		}
-
-		public readonly int Width;
-		public readonly int Length;
+	public OTSKeySize(int width, int height) {
+		Width = width;
+		Length = height;
 	}
 
+	public readonly int Width;
+	public readonly int Length;
 }

@@ -7,29 +7,24 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
-namespace Hydrogen.Windows.Forms {
+namespace Hydrogen.Windows.Forms;
 
-    internal class UpdateScope : IDisposable {
-	    private readonly FinishedUpdateBehaviour _behaviour;
-	    private readonly IUpdatable _updateable;
+internal class UpdateScope : IDisposable {
+	private readonly FinishedUpdateBehaviour _behaviour;
+	private readonly IUpdatable _updateable;
 
-        public UpdateScope(IUpdatable updateable, FinishedUpdateBehaviour behaviour) {
-            if (!updateable.Updating) {
-                _updateable = updateable;
-                _updateable.BeginUpdate();
-                _behaviour = behaviour;
-            }
-        }
+	public UpdateScope(IUpdatable updateable, FinishedUpdateBehaviour behaviour) {
+		if (!updateable.Updating) {
+			_updateable = updateable;
+			_updateable.BeginUpdate();
+			_behaviour = behaviour;
+		}
+	}
 
-        public void Dispose() {
-            if (_updateable != null) {
-                _updateable.FinishUpdate(_behaviour);
-            }
-        }
-    }
-
+	public void Dispose() {
+		if (_updateable != null) {
+			_updateable.FinishUpdate(_behaviour);
+		}
+	}
 }

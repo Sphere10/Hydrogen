@@ -21,13 +21,13 @@ public class BinaryFileCache : FileCacheBase<byte[]> {
 		TimeSpan? expirationDuration = null,
 		IEqualityComparer<string> fileNameComparer = null,
 		ICacheReaper reaper = null
-	) : base(reapStrategy, expirationStrategy, maxCapacity, expirationDuration, fileNameComparer, reaper){
+	) : base(reapStrategy, expirationStrategy, maxCapacity, expirationDuration, fileNameComparer, reaper) {
 	}
 
-	protected override long EstimateSize(byte[] value) 
+	protected override long EstimateSize(byte[] value)
 		=> value.Length * sizeof(byte);
 
-	protected override byte[] Fetch(string key) 
+	protected override byte[] Fetch(string key)
 		=> File.ReadAllBytes(key);
-		
+
 }

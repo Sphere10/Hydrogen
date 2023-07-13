@@ -8,22 +8,20 @@
 
 using System.Threading.Tasks;
 
-namespace Hydrogen {
+namespace Hydrogen;
+
+/// <summary>
+/// Do-nothing Text Writer. Does nothing by design.
+/// </summary>
+public class NoOpTextWriter : TextWriterBase {
 	/// <summary>
-	/// Do-nothing Text Writer. Does nothing by design.
+	/// Initializes a new instance of the <see cref="T:System.MarshalByRefObject"/> class.
 	/// </summary>
-
-	public class NoOpTextWriter : TextWriterBase {
-		/// <summary>
-		/// Initializes a new instance of the <see cref="T:System.MarshalByRefObject"/> class.
-		/// </summary>
-		public NoOpTextWriter() {
-		}
-
-		protected override void InternalWrite(string value) {
-		}
-
-		protected override Task InternalWriteAsync(string value) => Task.CompletedTask;
+	public NoOpTextWriter() {
 	}
 
+	protected override void InternalWrite(string value) {
+	}
+
+	protected override Task InternalWriteAsync(string value) => Task.CompletedTask;
 }

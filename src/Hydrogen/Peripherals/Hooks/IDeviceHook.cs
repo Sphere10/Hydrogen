@@ -8,15 +8,19 @@
 
 using System;
 
-namespace Hydrogen {
+namespace Hydrogen;
 
-	public interface IDeviceHook : IDisposable  {
-		DeviceHookStatus Status { get; }
-		bool ProcessAsyncronously { get; set; }
-		void InstallHook();
-		void StartHook();
-		void StopHook();
-		void DisableHook(TimeSpan timespan);
-		void UninstallHook();
-	}
+public interface IDeviceHook : IDisposable {
+	DeviceHookStatus Status { get; }
+	bool ProcessAsyncronously { get; set; }
+
+	void InstallHook();
+
+	void StartHook();
+
+	void StopHook();
+
+	void DisableHook(TimeSpan timespan);
+
+	void UninstallHook();
 }

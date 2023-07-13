@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 namespace Hydrogen.Application;
+
 public interface IBackgroundLicenseVerifier {
 
 	Task VerifyLicense(CancellationToken cancellationToken);

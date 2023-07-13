@@ -44,7 +44,7 @@ public class ActionLogger : LoggerBase {
 					_warningAction(message);
 					break;
 				case LogLevel.Error:
-				//case LogLevel.ErrorDetail:
+					//case LogLevel.ErrorDetail:
 					_errorAction(message);
 					break;
 				default:
@@ -56,4 +56,3 @@ public class ActionLogger : LoggerBase {
 	}
 
 }
-

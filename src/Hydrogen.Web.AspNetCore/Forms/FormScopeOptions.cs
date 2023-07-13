@@ -12,7 +12,7 @@ namespace Hydrogen.Web.AspNetCore;
 
 [Flags]
 public enum FormScopeOptions {
-		
+
 	/// <summary>
 	/// Shows a loading overlay over the form during the ajax submit.
 	/// </summary>
@@ -32,7 +32,7 @@ public enum FormScopeOptions {
 	/// Adds an anti-forgery token
 	/// </summary>
 	AddAntiForgeryToken = 1 << 3,
-	
+
 	/// <summary>
 	/// Provides protection from generalized bot form submissions (not targeted attacks)
 	/// </summary>
@@ -56,6 +56,6 @@ public enum FormScopeOptions {
 	/// <summary>
 	/// Default but retains input (does not clear on success)
 	/// </summary>
-	DefaultRetainInput =  UseLoadingOverlay | AddAntiForgeryToken | BotProtect,
+	DefaultRetainInput = UseLoadingOverlay | AddAntiForgeryToken | BotProtect,
 
 }

@@ -7,23 +7,19 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace Hydrogen.Maths.Compiler {
-    
+namespace Hydrogen.Maths.Compiler;
 
-    /// <summary>
-    /// Base exception class for all compiler generated exceptions.
-    /// </summary>
-    public class CompilerException : ApplicationException {
+/// <summary>
+/// Base exception class for all compiler generated exceptions.
+/// </summary>
+public class CompilerException : ApplicationException {
 
-        public CompilerException(string errMsg) 
-            : this(errMsg, null) {
-        }
+	public CompilerException(string errMsg)
+		: this(errMsg, null) {
+	}
 
-        public CompilerException(string errMsg, Exception innerException)
-            : base (errMsg, innerException) {
-        }
-    }
+	public CompilerException(string errMsg, Exception innerException)
+		: base(errMsg, innerException) {
+	}
 }

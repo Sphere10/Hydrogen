@@ -8,8 +8,8 @@
 
 using System;
 
-namespace AbstractProtocol.UDPSimple {
-	[Serializable]
-	public class Verack {
-	}
+namespace AbstractProtocol.UDPSimple;
+
+[Serializable]
+public class Verack {
 }

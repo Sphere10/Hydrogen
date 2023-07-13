@@ -12,7 +12,6 @@ using System.Linq;
 using System.Reflection;
 using System.IO;
 using Tools;
-using System.Xml.Linq;
 
 namespace Hydrogen.Application;
 
@@ -70,7 +69,8 @@ internal static class HydrogenAssemblyAttributesHelper {
 
 	public static string GetAssemblyCopyright() {
 		var attributes = Tools.Runtime.GetEntryAssembly().GetCustomAttributesOfType<AssemblyCopyrightAttribute>(false);
-		return !attributes.Any() ? null : StringFormatter.FormatEx(attributes.First().Copyright); ;
+		return !attributes.Any() ? null : StringFormatter.FormatEx(attributes.First().Copyright);
+		;
 	}
 
 	public static string GetAssemblyCompany() {
@@ -110,11 +110,11 @@ internal static class HydrogenAssemblyAttributesHelper {
 
 	public static IList<Tuple<HelpType, string>> GetAssemblyProductHelpResources() {
 		return (
-			from helpAttribute in Tools.Runtime.GetEntryAssembly().GetCustomAttributesOfType<AssemblyProductHelpResourceAttribute>(false)
-			select Tuple.Create(helpAttribute.HelpType, helpAttribute.Path)
-		)
-		.ToList()
-		.AsReadOnly();
+				from helpAttribute in Tools.Runtime.GetEntryAssembly().GetCustomAttributesOfType<AssemblyProductHelpResourceAttribute>(false)
+				select Tuple.Create(helpAttribute.HelpType, helpAttribute.Path)
+			)
+			.ToList()
+			.AsReadOnly();
 	}
 
 	public static string GetAssemblyAuthorName() {

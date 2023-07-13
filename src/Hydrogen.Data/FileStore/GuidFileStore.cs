@@ -10,7 +10,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 
 namespace Hydrogen.Data;
 
@@ -27,15 +26,15 @@ public class GuidFileStore : FileStoreBase<Guid> {
 		BaseDirectory = baseDirectory;
 	}
 
-	public override IEnumerable<Guid> FileKeys => 
+	public override IEnumerable<Guid> FileKeys =>
 		Directory
-		.EnumerateDirectories(BaseDirectory)
-		.SelectMany(prefixDir => Directory.EnumerateFiles(prefixDir, $"*{FileExtension}"))
-		.Select(x => Path.GetRelativePath(BaseDirectory, x)) // remove BaseDirectory
-		.Select(x => x.TrimEnd(FileExtension).Split(Path.DirectorySeparatorChar, StringSplitOptions.RemoveEmptyEntries).Take(2).ToDelimittedString(string.Empty))
-		.Select(x => (Guid.TryParse(x, out var val), val))  // ignores file system entries that don't parse as guid
-		.Where(x => x.Item1)
-		.Select(x => x.Item2);
+			.EnumerateDirectories(BaseDirectory)
+			.SelectMany(prefixDir => Directory.EnumerateFiles(prefixDir, $"*{FileExtension}"))
+			.Select(x => Path.GetRelativePath(BaseDirectory, x)) // remove BaseDirectory
+			.Select(x => x.TrimEnd(FileExtension).Split(Path.DirectorySeparatorChar, StringSplitOptions.RemoveEmptyEntries).Take(2).ToDelimittedString(string.Empty))
+			.Select(x => (Guid.TryParse(x, out var val), val)) // ignores file system entries that don't parse as guid
+			.Where(x => x.Item1)
+			.Select(x => x.Item2);
 
 	public FileStorePersistencePolicy PersistencePolicy { get; init; } = FileStorePersistencePolicy.Perist;
 
@@ -43,15 +42,15 @@ public class GuidFileStore : FileStoreBase<Guid> {
 
 	public string FileExtension { get; init; } = string.Empty;
 
-	public override Guid RecommendFileKey(string externalFilePath) 
+	public override Guid RecommendFileKey(string externalFilePath)
 		=> Guid.NewGuid();
 
 	public override string GetFilePath(Guid fileKey) {
-        var sanitizedGuid = ToGuidString(fileKey);
-        return Path.Combine(BaseDirectory, sanitizedGuid.Substring(0, 2), sanitizedGuid.Substring(2) + FileExtension);
+		var sanitizedGuid = ToGuidString(fileKey);
+		return Path.Combine(BaseDirectory, sanitizedGuid.Substring(0, 2), sanitizedGuid.Substring(2) + FileExtension);
 	}
 
-    public override bool ContainsFile(Guid fileKey) 
+	public override bool ContainsFile(Guid fileKey)
 		=> File.Exists(GetFilePath(fileKey));
 
 	public override Guid NewFile() {
@@ -60,31 +59,31 @@ public class GuidFileStore : FileStoreBase<Guid> {
 		return fileKey;
 	}
 
-    public override string[] RegisterMany(IEnumerable<Guid> fileKeys) {
+	public override string[] RegisterMany(IEnumerable<Guid> fileKeys) {
 		var filePaths = new List<string>();
-		foreach(var fileKey in fileKeys) {
+		foreach (var fileKey in fileKeys) {
 			var filePath = GetFilePath(fileKey);
-			Guard.Against(File.Exists(filePath), $"File '{fileKey}' already exists"); 
+			Guard.Against(File.Exists(filePath), $"File '{fileKey}' already exists");
 			Tools.FileSystem.CreateBlankFile(filePath, true);
 			filePaths.Add(filePath);
 		}
 		return filePaths.ToArray();
-    }
+	}
 
-    public override void DeleteMany(IEnumerable<Guid> fileKeys) {
-		foreach(var fileKey in fileKeys) {
+	public override void DeleteMany(IEnumerable<Guid> fileKeys) {
+		foreach (var fileKey in fileKeys) {
 			var filePath = GetFilePath(fileKey);
-			Guard.Ensure(File.Exists(filePath), $"File '{fileKey}' not found"); 
+			Guard.Ensure(File.Exists(filePath), $"File '{fileKey}' not found");
 			Tools.FileSystem.DeleteFile(filePath);
 			var parent = Tools.FileSystem.GetParentDirectoryPath(filePath, 1);
 			if (!Directory.EnumerateFileSystemEntries(parent).Any())
 				Tools.FileSystem.DeleteDirectory(parent);
 		}
-    }
+	}
 
-    public override void Clear() {
-        Tools.FileSystem.DeleteAllFiles(BaseDirectory, true);
-    }
+	public override void Clear() {
+		Tools.FileSystem.DeleteAllFiles(BaseDirectory, true);
+	}
 
 	protected override void FreeManagedResources() {
 		if (PersistencePolicy == FileStorePersistencePolicy.DeleteOnDispose) {
@@ -92,8 +91,7 @@ public class GuidFileStore : FileStoreBase<Guid> {
 		}
 	}
 
-	private string ToGuidString(Guid guid) 
+	private string ToGuidString(Guid guid)
 		=> guid.ToStrictAlphaString().ToLowerInvariant();
 
 }
-

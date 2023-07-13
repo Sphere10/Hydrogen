@@ -8,22 +8,21 @@
 
 using System;
 
-namespace Hydrogen {
+namespace Hydrogen;
 
-	public class TimestampLogger : PrefixLoggerBase {
+public class TimestampLogger : PrefixLoggerBase {
 
-		public const string DefaultDateFormat = "yyyy-MM-dd HH:mm:ss";
+	public const string DefaultDateFormat = "yyyy-MM-dd HH:mm:ss";
 
-		public TimestampLogger(ILogger decoratedLogger, string dateFormat = default) : base(decoratedLogger) {
-			Format = dateFormat ?? DefaultDateFormat;
-		}
+	public TimestampLogger(ILogger decoratedLogger, string dateFormat = default) : base(decoratedLogger) {
+		Format = dateFormat ?? DefaultDateFormat;
+	}
 
-		public string Format { get; set; }
-		
-		protected override string GetPrefix() {
-			return string.Format("{0:"+ Format + "}: ", DateTime.Now);
-		}
+	public string Format { get; set; }
+
+	protected override string GetPrefix() {
+		return string.Format("{0:" + Format + "}: ", DateTime.Now);
+	}
 
 
-	}	
 }

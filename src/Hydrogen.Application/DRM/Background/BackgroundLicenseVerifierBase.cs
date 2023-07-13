@@ -10,13 +10,13 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Hydrogen.Data;
 
 namespace Hydrogen.Application;
 
 public abstract class BackgroundLicenseVerifierBase : IBackgroundLicenseVerifier {
 
-	protected BackgroundLicenseVerifierBase(IUserInterfaceServices userInterfaceServices, IProductLicenseStorage productLicenseStorage, IProductInformationProvider productInformationProvider, IProductLicenseProvider productLicenseProvider, IProductLicenseActivator productLicenseActivator, IProductLicenseEnforcer productLicenseEnforcer) {
+	protected BackgroundLicenseVerifierBase(IUserInterfaceServices userInterfaceServices, IProductLicenseStorage productLicenseStorage, IProductInformationProvider productInformationProvider, IProductLicenseProvider productLicenseProvider,
+	                                        IProductLicenseActivator productLicenseActivator, IProductLicenseEnforcer productLicenseEnforcer) {
 		UserInterfaceServices = userInterfaceServices;
 		LicenseStorage = productLicenseStorage;
 		InformationProvider = productInformationProvider;
@@ -105,9 +105,6 @@ public abstract class BackgroundLicenseVerifierBase : IBackgroundLicenseVerifier
 	}
 
 	protected abstract Task<Result<SignedItem<ProductLicenseCommandDTO>>> NotifyServerOfLicenseUsage(Guid productCode, string productKey, string machineName, string[] macAddresses);
-
-
-
 
 
 }

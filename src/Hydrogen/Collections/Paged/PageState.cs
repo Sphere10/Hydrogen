@@ -6,15 +6,13 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen {
+namespace Hydrogen;
 
-	public enum PageState {
-		Loading,
-		Loaded,
-		Unloading,
-		Unloaded,
-		Deleting,
-		Deleted
-	}
-
+public enum PageState {
+	Loading,
+	Loaded,
+	Unloading,
+	Unloaded,
+	Deleting,
+	Deleted
 }

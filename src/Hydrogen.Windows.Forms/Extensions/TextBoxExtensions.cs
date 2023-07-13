@@ -7,27 +7,23 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Windows.Forms;
 
-namespace Hydrogen {
+namespace Hydrogen;
 
-	public static class TextBoxExtensions {
+public static class TextBoxExtensions {
 
-		public static void FocusAtEnd(this TextBox textBox) {
-			textBox.Select(textBox.Text.Length, 0);
-			textBox.Focus();
-		}
+	public static void FocusAtEnd(this TextBox textBox) {
+		textBox.Select(textBox.Text.Length, 0);
+		textBox.Focus();
+	}
 
-		public static void AppendText(this TextBox textBox, string text) {
-			textBox.Text += text;
-			textBox.FocusAtEnd();
-		}
+	public static void AppendText(this TextBox textBox, string text) {
+		textBox.Text += text;
+		textBox.FocusAtEnd();
+	}
 
-		public static void AppendLine(this TextBox textBox, string text) {
-			textBox.AppendText(text + Environment.NewLine);
-		}
+	public static void AppendLine(this TextBox textBox, string text) {
+		textBox.AppendText(text + Environment.NewLine);
 	}
 }

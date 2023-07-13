@@ -6,6 +6,11 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen.Communications {
-	public enum ProtocolOrchestratorState { NotStarted, Handshaking, Started, Finished };
-}
+namespace Hydrogen.Communications;
+
+public enum ProtocolOrchestratorState {
+	NotStarted,
+	Handshaking,
+	Started,
+	Finished
+};

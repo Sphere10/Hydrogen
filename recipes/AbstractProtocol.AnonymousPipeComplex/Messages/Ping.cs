@@ -8,11 +8,9 @@
 
 using System;
 
-namespace AbstractProtocol.AnonymousPipeComplex {
+namespace AbstractProtocol.AnonymousPipeComplex;
 
-	[Serializable]
-	public class Ping {
-		internal static Ping GenRandom() => new() {  };
-	}
-
+[Serializable]
+public class Ping {
+	internal static Ping GenRandom() => new() { };
 }

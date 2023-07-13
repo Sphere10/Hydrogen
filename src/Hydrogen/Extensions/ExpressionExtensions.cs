@@ -7,23 +7,19 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 
-namespace Hydrogen {
+namespace Hydrogen;
 
-	public static class ExpressionExtensions {
+public static class ExpressionExtensions {
 
-		public static MemberInfo ResolveMember<T, V>(this Expression<Func<T, V>> expression)
-		{
-			var memberExpression = expression.Body as MemberExpression;
-			if (memberExpression == null)
-				throw new InvalidOperationException("Expression must be a member expression");
+	public static MemberInfo ResolveMember<T, V>(this Expression<Func<T, V>> expression) {
+		var memberExpression = expression.Body as MemberExpression;
+		if (memberExpression == null)
+			throw new InvalidOperationException("Expression must be a member expression");
 
-			return memberExpression.Member;
-		}
-
+		return memberExpression.Member;
 	}
+
 }

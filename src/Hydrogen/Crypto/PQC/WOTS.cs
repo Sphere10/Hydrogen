@@ -7,17 +7,16 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Linq;
 using System.Runtime.CompilerServices;
 
-namespace Hydrogen {
+namespace Hydrogen;
 
-	/// <summary>
-	/// Winternitz One-Time Signature scheme (W-OTS).
-	/// </summary>
+/// <summary>
+/// Winternitz One-Time Signature scheme (W-OTS).
+/// </summary>
 public class WOTS : IOTSAlgorithm {
 
-	public WOTS() 
+	public WOTS()
 		: this(Configuration.Default) {
 	}
 
@@ -41,18 +40,18 @@ public class WOTS : IOTSAlgorithm {
 		buffer[0] = (byte)Config.W;
 	}
 
-	public byte[,] GeneratePrivateKey() 
+	public byte[,] GeneratePrivateKey()
 		=> GenerateKeys().PrivateKey;
 
 	public byte[,] DerivePublicKey(byte[,] privateKey) {
 		var publicKey = new byte[Config.KeySize.Length, Config.KeySize.Width];
 		for (var i = 0; i < Config.KeySize.Length; i++) {
-			publicKey.SetRow(i,  Hashers.Iterate(Config.HashFunction, privateKey.GetRow(i), Config.ChainLength));
+			publicKey.SetRow(i, Hashers.Iterate(Config.HashFunction, privateKey.GetRow(i), Config.ChainLength));
 		}
 		return Config.UsePublicKeyHashOptimization ? ToOptimizedPublicKey(publicKey) : publicKey;
 	}
 
-	public OTSKeyPair GenerateKeys() 
+	public OTSKeyPair GenerateKeys()
 		=> GenerateKeys(Tools.Crypto.GenerateCryptographicallyRandomBytes(Config.DigestSize - 1));
 
 	public OTSKeyPair GenerateKeys(ReadOnlySpan<byte> seed) {
@@ -66,7 +65,7 @@ public class WOTS : IOTSAlgorithm {
 
 	public OTSKeyPair GenerateKeys(Func<int, byte[]> gen) {
 		var priv = new byte[Config.KeySize.Length, Config.KeySize.Width];
-		var pub = new byte[Config.KeySize.Length, Config.KeySize.Width];  // actual W-OTS pubkey is same size as priv key, we may optimize below
+		var pub = new byte[Config.KeySize.Length, Config.KeySize.Width]; // actual W-OTS pubkey is same size as priv key, we may optimize below
 		for (var i = 0; i < Config.KeySize.Length; i++) {
 			var randomBytes = gen(i);
 			priv.SetRow(i, randomBytes);
@@ -85,8 +84,8 @@ public class WOTS : IOTSAlgorithm {
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public virtual byte[,] Sign(byte[,] privateKey, ReadOnlySpan<byte> message) 
-        => SignDigest(privateKey, ComputeMessageDigest(message));
+	public virtual byte[,] Sign(byte[,] privateKey, ReadOnlySpan<byte> message)
+		=> SignDigest(privateKey, ComputeMessageDigest(message));
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public virtual byte[,] SignDigest(byte[,] privateKey, ReadOnlySpan<byte> digest) {
@@ -115,8 +114,8 @@ public class WOTS : IOTSAlgorithm {
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public bool Verify(byte[,] signature, byte[,] publicKey, ReadOnlySpan<byte> message) 
-        =>  VerifyDigest(signature, publicKey, ComputeMessageDigest(message));
+	public bool Verify(byte[,] signature, byte[,] publicKey, ReadOnlySpan<byte> message)
+		=> VerifyDigest(signature, publicKey, ComputeMessageDigest(message));
 
 	public virtual bool VerifyDigest(byte[,] signature, byte[,] publicKey, ReadOnlySpan<byte> digest) {
 		var verify = new byte[Config.KeySize.Length, Config.KeySize.Width];
@@ -163,7 +162,7 @@ public class WOTS : IOTSAlgorithm {
 	public byte[] ComputeMessageDigest(ReadOnlySpan<byte> message)
 		=> Hashers.Hash(Config.HashFunction, message);
 
-	
+
 	public class Configuration : OTSConfig {
 		public static readonly Configuration Default;
 
@@ -174,29 +173,29 @@ public class WOTS : IOTSAlgorithm {
 		public Configuration() : this(Default.W, Default.HashFunction, Default.UsePublicKeyHashOptimization) {
 		}
 
-		public Configuration(int w, CHF hasher, bool usePubKeyHashOptimization) 
+		public Configuration(int w, CHF hasher, bool usePubKeyHashOptimization)
 			: this(
-				  w,
-				  hasher,
-				  usePubKeyHashOptimization,
-				  AMSOTS.WOTS, 
-				  Hashers.GetDigestSizeBytes(hasher), 
-				  new OTSKeySize(
-					  Hashers.GetDigestSizeBytes(hasher), 
-					  (int)Math.Ceiling(256.0 / w) + (int)Math.Floor(Math.Log(((1 << w) - 1) * (256 / w), 1 << w)) + 1
-				  ),
-  				new OTSKeySize(
+				w,
+				hasher,
+				usePubKeyHashOptimization,
+				AMSOTS.WOTS,
+				Hashers.GetDigestSizeBytes(hasher),
+				new OTSKeySize(
+					Hashers.GetDigestSizeBytes(hasher),
+					(int)Math.Ceiling(256.0 / w) + (int)Math.Floor(Math.Log(((1 << w) - 1) * (256 / w), 1 << w)) + 1
+				),
+				new OTSKeySize(
 					Hashers.GetDigestSizeBytes(hasher),
 					usePubKeyHashOptimization ? 1 : (int)Math.Ceiling(256.0 / w) + (int)Math.Floor(Math.Log(((1 << w) - 1) * (256 / w), 1 << w)) + 1
 				),
 				new OTSKeySize(
-			        Hashers.GetDigestSizeBytes(hasher),
+					Hashers.GetDigestSizeBytes(hasher),
 					(int)Math.Ceiling(256.0 / w) + (int)Math.Floor(Math.Log(((1 << w) - 1) * (256 / w), 1 << w)) + 1
 				)
 			) {
 		}
 
-		protected Configuration(int w, CHF hasher, bool usePubKeyHashOptimization, AMSOTS id, int digestSize, OTSKeySize keySize, OTSKeySize publicKeySize, OTSKeySize signatureSize) 
+		protected Configuration(int w, CHF hasher, bool usePubKeyHashOptimization, AMSOTS id, int digestSize, OTSKeySize keySize, OTSKeySize publicKeySize, OTSKeySize signatureSize)
 			: base(id, hasher, digestSize, usePubKeyHashOptimization, keySize, publicKeySize, signatureSize) {
 			Guard.ArgumentInRange(w, 1, 16, nameof(w));
 			W = (byte)w;
@@ -216,7 +215,5 @@ public class WOTS : IOTSAlgorithm {
 		public override object Clone() => new Configuration(W, HashFunction, UsePublicKeyHashOptimization, AMSID, DigestSize, KeySize, PublicKeySize, SignatureSize);
 
 	}
-
-}
 
 }

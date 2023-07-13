@@ -7,7 +7,6 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Hydrogen;
@@ -46,4 +45,3 @@ public sealed class TaskTransactionalScope<TTransaction> : AsyncTransactionalSco
 
 	protected override Task RollbackInternalAsync(TTransaction transaction) => _rollbackTransactionFunc(transaction);
 }
-

@@ -6,23 +6,22 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System.Linq;
 using Hydrogen.Application;
 using Microsoft.Extensions.Hosting;
 
-namespace Hydrogen.Web.AspNetCore {
-	public static class HydrogenFrameworkExtensions {
-		private static IHost _host;
-        public static void SetAspNetCoreHost(this HydrogenFramework framework, IHost host) 
-			=> _host = host;
+namespace Hydrogen.Web.AspNetCore;
 
-        public static IHost GetAspNetCoreHost(this HydrogenFramework framework) {
-			CheckSet();
-			return _host;
-		}
+public static class HydrogenFrameworkExtensions {
+	private static IHost _host;
+	public static void SetAspNetCoreHost(this HydrogenFramework framework, IHost host)
+		=> _host = host;
 
-		private static void CheckSet() 
-			=> Guard.Ensure(_host != null, $"Hydrogen framework is not informed of the AspNetCore host. Please call {nameof(IHostExtensions.StartHydrogenFramework)} before running host.");
-
+	public static IHost GetAspNetCoreHost(this HydrogenFramework framework) {
+		CheckSet();
+		return _host;
 	}
+
+	private static void CheckSet()
+		=> Guard.Ensure(_host != null, $"Hydrogen framework is not informed of the AspNetCore host. Please call {nameof(IHostExtensions.StartHydrogenFramework)} before running host.");
+
 }

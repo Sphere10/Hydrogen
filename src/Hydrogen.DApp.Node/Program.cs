@@ -7,8 +7,10 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 public class Program {
-	static void Main(string[] args) { }
+	static void Main(string[] args) {
+	}
 }
+
 
 //using Hydrogen;
 //using System;
@@ -49,7 +51,6 @@ public class Program {
 
 //			Options = CommandLineArgumentOptions.DoubleDash | CommandLineArgumentOptions.PrintHelpOnH
 //		};
-
 
 
 //		static async Task Main(string[] args) {

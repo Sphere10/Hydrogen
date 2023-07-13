@@ -6,34 +6,32 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System.Collections.Generic;
-using System.Linq;
 using System.Windows.Forms;
 
-namespace Hydrogen.Windows.Forms {
-    public class SplitContainerControlStateEventProvider : ControlStateEventProviderBase<Control> {
-	    private ContainerControlStateEventProvider _panel1Listener;
-	    private ContainerControlStateEventProvider _panel2Listener;
+namespace Hydrogen.Windows.Forms;
+
+public class SplitContainerControlStateEventProvider : ControlStateEventProviderBase<Control> {
+	private ContainerControlStateEventProvider _panel1Listener;
+	private ContainerControlStateEventProvider _panel2Listener;
 
 
-        public SplitContainerControlStateEventProvider() {
-        }
+	public SplitContainerControlStateEventProvider() {
+	}
 
-        protected override void RegisterStateChangedListener(Control control, EventHandlerEx eventHandler) {
-            Guard.ArgumentCast<SplitContainer>(control, out var splitContainer, nameof(control));
-            _panel1Listener = new ContainerControlStateEventProvider();
-            _panel2Listener = new ContainerControlStateEventProvider();
-            _panel1Listener.SetControl(splitContainer.Panel1);
-            _panel2Listener.SetControl(splitContainer.Panel2);
-            _panel1Listener.StateChanged += eventHandler;
-            _panel2Listener.StateChanged += eventHandler;
-        }
+	protected override void RegisterStateChangedListener(Control control, EventHandlerEx eventHandler) {
+		Guard.ArgumentCast<SplitContainer>(control, out var splitContainer, nameof(control));
+		_panel1Listener = new ContainerControlStateEventProvider();
+		_panel2Listener = new ContainerControlStateEventProvider();
+		_panel1Listener.SetControl(splitContainer.Panel1);
+		_panel2Listener.SetControl(splitContainer.Panel2);
+		_panel1Listener.StateChanged += eventHandler;
+		_panel2Listener.StateChanged += eventHandler;
+	}
 
-        protected override void DeregisterStateChangedListener(Control control, EventHandlerEx eventHandler) {
-	        _panel1Listener.StateChanged -= eventHandler;
-	        _panel2Listener.StateChanged -= eventHandler;
-        }
+	protected override void DeregisterStateChangedListener(Control control, EventHandlerEx eventHandler) {
+		_panel1Listener.StateChanged -= eventHandler;
+		_panel2Listener.StateChanged -= eventHandler;
+	}
 
 
-    }
 }

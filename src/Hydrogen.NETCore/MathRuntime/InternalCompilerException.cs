@@ -6,23 +6,16 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
-using System.Collections.Generic;
-using System.Text;
+namespace Hydrogen.Maths.Compiler;
 
-namespace Hydrogen.Maths.Compiler {
-    
-    public class InternalCompilerException : CompilerException {
+public class InternalCompilerException : CompilerException {
 
-        public InternalCompilerException(string errMsg) 
-            : base(errMsg) {
-        }
+	public InternalCompilerException(string errMsg)
+		: base(errMsg) {
+	}
 
-        public override string Message {
-            get {
-                return string.Format("Internal Error: {0}", base.Message);
-            }
-        }
+	public override string Message {
+		get { return string.Format("Internal Error: {0}", base.Message); }
+	}
 
-    }
 }

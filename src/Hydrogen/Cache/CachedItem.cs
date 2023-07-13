@@ -8,42 +8,42 @@
 
 using System;
 
-namespace Hydrogen {
+namespace Hydrogen;
 
-	public abstract class CachedItem : IDisposable {
+public abstract class CachedItem : IDisposable {
 
-		protected CachedItem() {
-			Traits = CachedItemTraits.Default;
-		}
-
-		public object Value { get; internal set; }
-
-		public CachedItemTraits Traits { get; internal set; }
-
-		public DateTime FetchedOn { get; internal set; }
-
-		public DateTime LastAccessedOn { get; internal set; }
-
-		public uint AccessedCount { get; internal set; }
-
-		public long Size { get; internal set; }
-
-		public bool CanPurge {
-			get => Traits.HasFlag(CachedItemTraits.CanPurge);
-			set => Traits = Traits.CopyAndSetFlags(CachedItemTraits.CanPurge, value);
-		}
-
-		public virtual void Dispose() {
-			if (Value is IDisposable disposable) {
-				disposable.Dispose();
-			}
-		}
+	protected CachedItem() {
+		Traits = CachedItemTraits.Default;
 	}
 
-	public class CachedItem<T> : CachedItem {
-		public new T Value { 
-			get => (T)base.Value;
-			internal set => base.Value = value;
+	public object Value { get; internal set; }
+
+	public CachedItemTraits Traits { get; internal set; }
+
+	public DateTime FetchedOn { get; internal set; }
+
+	public DateTime LastAccessedOn { get; internal set; }
+
+	public uint AccessedCount { get; internal set; }
+
+	public long Size { get; internal set; }
+
+	public bool CanPurge {
+		get => Traits.HasFlag(CachedItemTraits.CanPurge);
+		set => Traits = Traits.CopyAndSetFlags(CachedItemTraits.CanPurge, value);
+	}
+
+	public virtual void Dispose() {
+		if (Value is IDisposable disposable) {
+			disposable.Dispose();
 		}
+	}
+}
+
+
+public class CachedItem<T> : CachedItem {
+	public new T Value {
+		get => (T)base.Value;
+		internal set => base.Value = value;
 	}
 }

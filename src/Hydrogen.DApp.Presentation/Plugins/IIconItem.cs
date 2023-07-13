@@ -6,15 +6,14 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen.DApp.Presentation.Plugins {
+namespace Hydrogen.DApp.Presentation.Plugins;
 
-    /// <summary>
-    /// Implementers of this interface have a font-awesome css icon to be displayed in lists etc.
-    /// </summary>
-    public interface IIconItem {
-        /// <summary>
-        /// Gets the icon font-awesome ccs classes for this app block.
-        /// </summary>
-        public string Icon { get; }
-    }
+/// <summary>
+/// Implementers of this interface have a font-awesome css icon to be displayed in lists etc.
+/// </summary>
+public interface IIconItem {
+	/// <summary>
+	/// Gets the icon font-awesome ccs classes for this app block.
+	/// </summary>
+	public string Icon { get; }
 }

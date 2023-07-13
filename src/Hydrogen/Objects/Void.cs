@@ -6,11 +6,10 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen {
+namespace Hydrogen;
 
-
-	public sealed class Void {
-		private Void() { }
-		public static Void Value => null;
+public sealed class Void {
+	private Void() {
 	}
+	public static Void Value => null;
 }

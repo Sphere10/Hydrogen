@@ -8,10 +8,8 @@
 
 using System;
 
-namespace SourceGrid
-{
-	public class RangeNotFoundException: Exception
-	{
-		
-	}
+namespace SourceGrid;
+
+public class RangeNotFoundException : Exception {
+
 }

@@ -16,11 +16,11 @@ public class ProductLicenseAuthorityDTOSerializer : ItemSerializer<ProductLicens
 	private readonly StringSerializer _stringSerializer = new(Encoding.ASCII);
 	private readonly ByteArraySerializer _byteArraySerializer = new();
 
-	public override int CalculateSize(ProductLicenseAuthorityDTO item) 
-		=> 
-		sizeof(int) + _stringSerializer.CalculateSize(item.Name) + 
-		1 + 
-		sizeof(int) + item.LicensePublicKey.Length;
+	public override int CalculateSize(ProductLicenseAuthorityDTO item)
+		=>
+			sizeof(int) + _stringSerializer.CalculateSize(item.Name) +
+			1 +
+			sizeof(int) + item.LicensePublicKey.Length;
 
 	public override bool TrySerialize(ProductLicenseAuthorityDTO item, EndianBinaryWriter writer, out int bytesWritten) {
 		bytesWritten = 0;

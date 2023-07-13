@@ -6,9 +6,6 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using NUnit.Framework;
 using System.IO;
 using Hydrogen.Collections;
@@ -50,11 +47,12 @@ public class StreamMappedBufferTests {
 
 	[Test]
 	public void IntegrationTests(
-		[Values(1, 3, 11, 111, StreamMappedBuffer.DefaultBlockSize)] int blockSize,
-		[Values(1, 2, 3, 11, 111, 1111, 11111)] int maxCapacity) {
+		[Values(1, 3, 11, 111, StreamMappedBuffer.DefaultBlockSize)]
+		int blockSize,
+		[Values(1, 2, 3, 11, 111, 1111, 11111)]
+		int maxCapacity) {
 		using var stream = new MemoryStream();
 		var buffer = new StreamMappedBuffer(stream, blockSize);
 		AssertEx.BufferIntegrationTest(buffer, maxCapacity);
 	}
 }
-

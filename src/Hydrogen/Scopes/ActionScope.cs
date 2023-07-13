@@ -22,6 +22,7 @@ public class ActionScope : SyncScope {
 	}
 }
 
+
 public class ActionScope<T> : ActionScope, IScope<T> {
 
 	public ActionScope(T item, Action<T> endAction)
@@ -31,4 +32,3 @@ public class ActionScope<T> : ActionScope, IScope<T> {
 
 	public T Item { get; }
 }
-

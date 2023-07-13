@@ -65,5 +65,4 @@ public abstract class TransactionalObjectBase : ITransactionalObject {
 	}
 
 
-
 }

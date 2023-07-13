@@ -7,19 +7,15 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
-namespace Hydrogen.Windows.Forms.AppointmentBook {
+namespace Hydrogen.Windows.Forms.AppointmentBook;
 
-	public class AppointmentBookFreeRegionSelected : AppointmentBookEvent {
+public class AppointmentBookFreeRegionSelected : AppointmentBookEvent {
 
-		public AppointmentColumn Column { get; internal set; }
+	public AppointmentColumn Column { get; internal set; }
 
-		public DateTime StartTime { get; internal set; }
+	public DateTime StartTime { get; internal set; }
 
-		public DateTime EndTime { get; internal set; }
-		
-	}
+	public DateTime EndTime { get; internal set; }
+
 }

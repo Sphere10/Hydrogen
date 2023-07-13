@@ -12,7 +12,6 @@ using System.Threading.Tasks;
 
 namespace Hydrogen;
 
-
 public abstract class TextWriterBase : TextWriter {
 
 
@@ -27,7 +26,7 @@ public abstract class TextWriterBase : TextWriter {
 	public sealed override Task WriteAsync(string value)
 		=> InternalWriteAsync(value);
 
-	public override Task WriteAsync(char[] buffer, int index, int count) 
+	public override Task WriteAsync(char[] buffer, int index, int count)
 		=> InternalWriteAsync(new string(buffer, index, count));
 
 	protected abstract void InternalWrite(string value);

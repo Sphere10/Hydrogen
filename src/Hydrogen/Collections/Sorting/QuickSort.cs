@@ -8,49 +8,49 @@
 
 using System.Collections.Generic;
 
-namespace Hydrogen {
-	public sealed class QuickSort<T> : SortAlgorithm<T>  {
-		
-		public override void Execute(IExtendedList<T> list, IComparer<T> comparer) {
-			this.ExecuteRecursive(list, 0, list.Count - 1, comparer);
-		}
+namespace Hydrogen;
 
-		private void ExecuteRecursive(IExtendedList<T> list, int left, int right, IComparer<T> comparer) {
-			int segmentLeft = left;
-			int segmentRight = right;
+public sealed class QuickSort<T> : SortAlgorithm<T> {
 
-			var pivot = list[(left + right) / 2];
+	public override void Execute(IExtendedList<T> list, IComparer<T> comparer) {
+		this.ExecuteRecursive(list, 0, list.Count - 1, comparer);
+	}
 
-			do {
-				while (comparer.Compare(list[segmentLeft],pivot) < 0 && segmentLeft < right) {
-					segmentLeft++;
-				}
+	private void ExecuteRecursive(IExtendedList<T> list, int left, int right, IComparer<T> comparer) {
+		int segmentLeft = left;
+		int segmentRight = right;
 
-				while (comparer.Compare(pivot, list[segmentRight]) < 0 && segmentRight > left) {
-					segmentRight--;
-				}
+		var pivot = list[(left + right) / 2];
 
-				if (segmentLeft <= segmentRight) {
-					this.Swap(list, segmentLeft, segmentRight);
-					segmentLeft++; segmentRight--;
-				}
-
-			}
-			while (segmentLeft <= segmentRight);
-
-			if (left < segmentRight) {
-				this.ExecuteRecursive(list, left, segmentRight, comparer);
+		do {
+			while (comparer.Compare(list[segmentLeft], pivot) < 0 && segmentLeft < right) {
+				segmentLeft++;
 			}
 
-			if (segmentLeft < right) {
-				this.ExecuteRecursive(list, segmentLeft, right, comparer);
+			while (comparer.Compare(pivot, list[segmentRight]) < 0 && segmentRight > left) {
+				segmentRight--;
 			}
+
+			if (segmentLeft <= segmentRight) {
+				this.Swap(list, segmentLeft, segmentRight);
+				segmentLeft++;
+				segmentRight--;
+			}
+
+		} while (segmentLeft <= segmentRight);
+
+		if (left < segmentRight) {
+			this.ExecuteRecursive(list, left, segmentRight, comparer);
 		}
 
-
-		public static void Run(IExtendedList<T> list, IComparer<T> comparer) {
-			var sorter = new QuickSort<T>();
-			sorter.Execute(list, comparer);
+		if (segmentLeft < right) {
+			this.ExecuteRecursive(list, segmentLeft, right, comparer);
 		}
+	}
+
+
+	public static void Run(IExtendedList<T> list, IComparer<T> comparer) {
+		var sorter = new QuickSort<T>();
+		sorter.Execute(list, comparer);
 	}
 }

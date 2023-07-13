@@ -24,6 +24,7 @@ public class TaskScope : AsyncScope {
 	}
 }
 
+
 public class TaskScope<T> : TaskScope, IScope<T> {
 
 	public TaskScope(T item, Func<Task> scopeFinalizer)
@@ -33,4 +34,3 @@ public class TaskScope<T> : TaskScope, IScope<T> {
 
 	public T Item { get; }
 }
-

@@ -7,8 +7,10 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 // TODO: Refactor command line
+
 public class Program {
-    static void Main(string[] args) { }
+	static void Main(string[] args) {
+	}
 }
 //using Hydrogen;
 //using System;
@@ -20,6 +22,7 @@ public class Program {
 //using Hydrogen.Communications;
 //using System.Threading;
 //using System.Text;
+
 
 //namespace AbstractProtocol.AnonymousPipeComplex {
 
@@ -121,8 +124,8 @@ public class Program {
 
 //				// Both client and server start
 //				await orchestrator.Start();
-			
-				
+
+
 //				// Both client and server will ping each other (each will pong to the other)
 //				orchestrator.SendMessage(ProtocolDispatchType.Request, new Ping());
 
@@ -133,7 +136,7 @@ public class Program {
 //				//	orchestrator.SendMessage(dispatchType, message);
 //				//	await Task.Delay(TimeSpan.FromMilliseconds(Tools.Maths.RNG.Next(1000)));
 //				//}
-				
+
 //				// Client: Wait 2 seconds before closing
 //				if (isClient) {
 //					await Task.Delay(TimeSpan.FromSeconds(5));
@@ -152,7 +155,7 @@ public class Program {
 //		}
 
 //		private static object GenerateRandomSendableMessage(out ProtocolDispatchType dispatchType) {
-			
+
 //			switch (new[] { AppProtocolMessageType.Ping, AppProtocolMessageType.RequestListFolder, AppProtocolMessageType.RequestFilePart, AppProtocolMessageType.NotifyNewTransaction, AppProtocolMessageType.NotifyNewBlock, AppProtocolMessageType.NotifyLayer2Message }.Randomize().ToArray()[0]) {
 //				case AppProtocolMessageType.Ping:
 //					dispatchType = ProtocolDispatchType.Request;

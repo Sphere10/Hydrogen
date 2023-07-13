@@ -6,10 +6,10 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen.Data {
-    public enum DatabaseGenerationAlreadyExistsPolicy {
-        Error,
-        Append,
-        Overwrite
-    }
+namespace Hydrogen.Data;
+
+public enum DatabaseGenerationAlreadyExistsPolicy {
+	Error,
+	Append,
+	Overwrite
 }

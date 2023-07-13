@@ -7,13 +7,10 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 
-namespace SourceGrid.Extensions.PingGrids.Cells
-{
-	public class Link : SourceGrid.Cells.Virtual.Link
-	{
-	        public Link()
-		{
-	            Model.AddModel(new PingGridValueModel());
-		}
+namespace SourceGrid.Extensions.PingGrids.Cells;
+
+public class Link : SourceGrid.Cells.Virtual.Link {
+	public Link() {
+		Model.AddModel(new PingGridValueModel());
 	}
 }

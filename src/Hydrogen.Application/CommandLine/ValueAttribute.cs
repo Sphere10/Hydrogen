@@ -2,44 +2,36 @@
 
 using System;
 
-namespace CommandLine
-{
-    /// <summary>
-    /// Models an value specification, or better how to handle values not bound to options.
-    /// </summary>
-    [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
-    public sealed class ValueAttribute : BaseAttribute
-    {
-        private readonly int index;
-        private string metaName; 
+namespace CommandLine;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="CommandLine.ValueAttribute"/> class.
-        /// </summary>
-        public ValueAttribute(int index) : base()
-        {
-            this.index = index;
-            this.metaName = string.Empty;
-        }
+/// <summary>
+/// Models an value specification, or better how to handle values not bound to options.
+/// </summary>
+[AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
+public sealed class ValueAttribute : BaseAttribute {
+	private readonly int index;
+	private string metaName;
 
-        /// <summary>
-        /// Gets the position this option has on the command line.
-        /// </summary>
-        public int Index
-        {
-            get { return index; }
-        }
+	/// <summary>
+	/// Initializes a new instance of the <see cref="CommandLine.ValueAttribute"/> class.
+	/// </summary>
+	public ValueAttribute(int index) : base() {
+		this.index = index;
+		this.metaName = string.Empty;
+	}
 
-        /// <summary>
-        /// Gets or sets name of this positional value specification.
-        /// </summary>
-        public string MetaName
-        {
-            get { return metaName; }
-            set
-            {
-                metaName = value ?? throw new ArgumentNullException("value");
-            }
-        }
-    }
+	/// <summary>
+	/// Gets the position this option has on the command line.
+	/// </summary>
+	public int Index {
+		get { return index; }
+	}
+
+	/// <summary>
+	/// Gets or sets name of this positional value specification.
+	/// </summary>
+	public string MetaName {
+		get { return metaName; }
+		set { metaName = value ?? throw new ArgumentNullException("value"); }
+	}
 }

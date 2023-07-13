@@ -6,8 +6,6 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using Hydrogen.Application;
-
 namespace Hydrogen.Windows.Forms;
 
 public interface INagDialog : IApplicationDialog {

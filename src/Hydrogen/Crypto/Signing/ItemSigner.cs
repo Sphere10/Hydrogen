@@ -6,17 +6,15 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
-
 namespace Hydrogen;
 
 public class ItemSigner<TItem> : IItemSigner<TItem> {
-	
-	public ItemSigner(IItemSerializer<TItem> serializer, CHF chf, DSS dss, Endianness endianness = Endianness.LittleEndian) 
+
+	public ItemSigner(IItemSerializer<TItem> serializer, CHF chf, DSS dss, Endianness endianness = Endianness.LittleEndian)
 		: this(new ItemDigestor<TItem>(chf, serializer, endianness), Signers.Create(dss)) {
 	}
-	
-	public ItemSigner(IItemDigestor<TItem> digestor, DSS dss) 
+
+	public ItemSigner(IItemDigestor<TItem> digestor, DSS dss)
 		: this(digestor, Signers.Create(dss)) {
 	}
 

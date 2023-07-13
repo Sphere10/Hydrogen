@@ -11,6 +11,7 @@ using Hydrogen.CryptoEx.EC.Schnorr;
 using static HashLib4CSharp.Base.HashFactory.Crypto;
 
 namespace Hydrogen.CryptoEx;
+
 public static class HydrogenFrameworkIntegration {
 
 	public static void Initialize() {

@@ -27,25 +27,25 @@ public class ResultTests {
 		Assert.AreEqual(Result<bool>.From(false), (Result<bool>)false);
 	}
 
-    [Test]
-    public void JsonSerialize_1() {
-        Result expected = Result.Default;
-
-        var json = Tools.Json.WriteToString(expected);
-        var actual = Tools.Json.ReadFromString<Result<int>>(json);
-
-        Assert.That(actual, Is.EqualTo(expected));
-    }
-    
 	[Test]
-    public void JsonSerialize_2() {
-        Result expected = Result.Error("Hello", "World!");
+	public void JsonSerialize_1() {
+		Result expected = Result.Default;
 
-        var json = Tools.Json.WriteToString(expected);
-        var actual = Tools.Json.ReadFromString<Result<int>>(json);
+		var json = Tools.Json.WriteToString(expected);
+		var actual = Tools.Json.ReadFromString<Result<int>>(json);
 
-        Assert.That(actual, Is.EqualTo(expected));
-    }
+		Assert.That(actual, Is.EqualTo(expected));
+	}
+
+	[Test]
+	public void JsonSerialize_2() {
+		Result expected = Result.Error("Hello", "World!");
+
+		var json = Tools.Json.WriteToString(expected);
+		var actual = Tools.Json.ReadFromString<Result<int>>(json);
+
+		Assert.That(actual, Is.EqualTo(expected));
+	}
 
 	[Test]
 	public void JsonSerialize_3() {
@@ -58,18 +58,17 @@ public class ResultTests {
 		Assert.That(actual, Is.EqualTo(expected));
 	}
 
-	
-    [Test]
-    public void JsonSerialize_4() {
-        Result<int> inner = Result<int>.Error("Hello", "World!");
-        inner.Value = 11;
+
+	[Test]
+	public void JsonSerialize_4() {
+		Result<int> inner = Result<int>.Error("Hello", "World!");
+		inner.Value = 11;
 		Result<Result<int>> expected = Result<Result<int>>.From(inner);
-        expected.AddInfo("Info");        
+		expected.AddInfo("Info");
 
-        var json = Tools.Json.WriteToString(expected);
-        var actual = Tools.Json.ReadFromString<Result<Result<int>>>(json);
+		var json = Tools.Json.WriteToString(expected);
+		var actual = Tools.Json.ReadFromString<Result<Result<int>>>(json);
 
-        Assert.That(actual, Is.EqualTo(expected));
-    }
+		Assert.That(actual, Is.EqualTo(expected));
+	}
 }
-

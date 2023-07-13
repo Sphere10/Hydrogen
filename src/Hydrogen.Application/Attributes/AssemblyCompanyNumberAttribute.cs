@@ -9,22 +9,15 @@
 using System.Runtime.InteropServices;
 using System;
 
-namespace Hydrogen.Application {
+namespace Hydrogen.Application;
 
-	[ComVisible(true)]
-    [AttributeUsage(AttributeTargets.Assembly, Inherited = false)]
-    public sealed class AssemblyCompanyNumberAttribute : Attribute
-    {
+[ComVisible(true)]
+[AttributeUsage(AttributeTargets.Assembly, Inherited = false)]
+public sealed class AssemblyCompanyNumberAttribute : Attribute {
 
-        public AssemblyCompanyNumberAttribute(string companyNumber) {
-            CompanyNumber = companyNumber;
-        }
+	public AssemblyCompanyNumberAttribute(string companyNumber) {
+		CompanyNumber = companyNumber;
+	}
 
-        public string CompanyNumber
-        {
-            get;
-            set;
-        }
-    }
-
+	public string CompanyNumber { get; set; }
 }

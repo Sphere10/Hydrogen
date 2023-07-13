@@ -6,8 +6,8 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen {
-	public static class MemberInfoExtensions {
+namespace Hydrogen;
 
-	}
+public static class MemberInfoExtensions {
+
 }

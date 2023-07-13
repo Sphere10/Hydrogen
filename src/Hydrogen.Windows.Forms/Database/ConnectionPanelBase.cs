@@ -7,62 +7,53 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Drawing;
-using System.Data;
-using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using System.Windows.Forms;
-using Hydrogen;
 using Hydrogen.Data;
 
-namespace Hydrogen.Windows.Forms {
-	public partial class ConnectionPanelBase : UserControlEx, IDatabaseConnectionProvider {
-		public ConnectionPanelBase() {
-			InitializeComponent();
-		}
+namespace Hydrogen.Windows.Forms;
 
-		public IDAC GetDAC() {
-			var dac = GetDACInternal();
-			return dac;
-		}
-
-		[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-		[Browsable(false)]
-		public virtual string ConnectionString {
-			get { throw new NotImplementedException(); }
-			set { throw new NotImplementedException(); }
-		}
-
-        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        [Browsable(false)]
-        public virtual string DatabaseName {
-            get { throw new NotImplementedException(); }
-        }
-
-		protected virtual IDAC GetDACInternal() {
-			throw new NotImplementedException();
-		}
-
-
-
-        public virtual async Task<Result> TestConnection() {
-            var result = Result.Default;
-            var dac = GetDAC();
-            try {
-                await Task.Run(() => {
-                    using (var scope = dac.BeginScope(openConnection: true)) {
-
-                    }
-                });
-            } catch (Exception error) {
-                result.AddError(error.ToDisplayString());
-            }
-            return result;
-        }
-
+public partial class ConnectionPanelBase : UserControlEx, IDatabaseConnectionProvider {
+	public ConnectionPanelBase() {
+		InitializeComponent();
 	}
+
+	public IDAC GetDAC() {
+		var dac = GetDACInternal();
+		return dac;
+	}
+
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	[Browsable(false)]
+	public virtual string ConnectionString {
+		get { throw new NotImplementedException(); }
+		set { throw new NotImplementedException(); }
+	}
+
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	[Browsable(false)]
+	public virtual string DatabaseName {
+		get { throw new NotImplementedException(); }
+	}
+
+	protected virtual IDAC GetDACInternal() {
+		throw new NotImplementedException();
+	}
+
+
+	public virtual async Task<Result> TestConnection() {
+		var result = Result.Default;
+		var dac = GetDAC();
+		try {
+			await Task.Run(() => {
+				using (var scope = dac.BeginScope(openConnection: true)) {
+
+				}
+			});
+		} catch (Exception error) {
+			result.AddError(error.ToDisplayString());
+		}
+		return result;
+	}
+
 }

@@ -48,11 +48,9 @@
 //			).Take(2).ToArray();
 
 //			await Task.WhenAll(tasks).IgnoringExceptions();
-			
+
 //			// All tasks finished, otherwise would run forever
 //		}
-
-
 
 
 //		[Test]
@@ -99,7 +97,6 @@
 //			Thread.Sleep(200);
 //			Assert.AreEqual(new int[] { 1, 2 }, result.ToArray());
 //		}
-
 
 
 //		[Test]
@@ -195,3 +192,5 @@
 //	}
 
 //}
+
+

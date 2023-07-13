@@ -6,26 +6,18 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
-using System.Collections.Generic;
-using System.Text;
+namespace Hydrogen.Windows.LevelDB;
 
-namespace Hydrogen.Windows.LevelDB
-{
-    /// <summary>
-    /// A default environment to access operating system functionality like 
-    /// the filesystem etc of the current operating system.
-    /// </summary>
-    public class Env : LevelDBHandle
-    {
-        public Env()
-        {
-            Handle = LevelDBInterop.leveldb_create_default_env();
-        }
+/// <summary>
+/// A default environment to access operating system functionality like 
+/// the filesystem etc of the current operating system.
+/// </summary>
+public class Env : LevelDBHandle {
+	public Env() {
+		Handle = LevelDBInterop.leveldb_create_default_env();
+	}
 
-        protected override void FreeUnManagedObjects()
-        {
-            LevelDBInterop.leveldb_env_destroy(Handle);
-        }
-    }
+	protected override void FreeUnManagedObjects() {
+		LevelDBInterop.leveldb_env_destroy(Handle);
+	}
 }

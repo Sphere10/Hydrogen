@@ -12,88 +12,87 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Hydrogen.Communications {
-	public class UDPChannel : ProtocolChannel, IDisposable {
-		private readonly UdpClient _client;
+namespace Hydrogen.Communications;
 
-		public UDPChannel(IPEndPoint localEndpoint, IPEndPoint remoteEndpoint, CommunicationRole role) {
+public class UDPChannel : ProtocolChannel, IDisposable {
+	private readonly UdpClient _client;
 
-			if (localEndpoint.Address == IPAddress.Broadcast) {
+	public UDPChannel(IPEndPoint localEndpoint, IPEndPoint remoteEndpoint, CommunicationRole role) {
 
-				var localHost = Dns.GetHostEntry(Dns.GetHostName());
+		if (localEndpoint.Address == IPAddress.Broadcast) {
 
-				var myIPAddress = string.Empty;
-				foreach (var ipAddress in localHost.AddressList) {
-					if (ipAddress.AddressFamily == AddressFamily.InterNetworkV6) continue;
+			var localHost = Dns.GetHostEntry(Dns.GetHostName());
 
-					var ipString = ipAddress.ToString();
-					var addressFamiliy = ipAddress.AddressFamily;
+			var myIPAddress = string.Empty;
+			foreach (var ipAddress in localHost.AddressList) {
+				if (ipAddress.AddressFamily == AddressFamily.InterNetworkV6) continue;
 
-					if (ipString.Contains("192.168")) {
-						myIPAddress = ipString;
-					}
+				var ipString = ipAddress.ToString();
+				var addressFamiliy = ipAddress.AddressFamily;
+
+				if (ipString.Contains("192.168")) {
+					myIPAddress = ipString;
 				}
-
-				_client = new UdpClient();
-//				_client.Client.Bind(new IPEndPoint(IPAddress.Parse("127.0.0.1"), localEndpoint.Port));
-				_client.Client.Bind(new IPEndPoint(IPAddress.Parse(myIPAddress), localEndpoint.Port));
-			} 
-			else { 
-				_client = new UdpClient(localEndpoint);
 			}
 
-	//		if (remoteEndpoint.Address == IPAddress.Broadcast) {
-	//			remoteEndpoint.Address = IPAddress.Any;
-	//		}
-
-			LocalEndpoint = localEndpoint;
-			RemoteEndpoint = remoteEndpoint;
-			LocalRole = role;
+			_client = new UdpClient();
+//				_client.Client.Bind(new IPEndPoint(IPAddress.Parse("127.0.0.1"), localEndpoint.Port));
+			_client.Client.Bind(new IPEndPoint(IPAddress.Parse(myIPAddress), localEndpoint.Port));
+		} else {
+			_client = new UdpClient(localEndpoint);
 		}
 
-		public override CommunicationRole LocalRole { get; }
+		//		if (remoteEndpoint.Address == IPAddress.Broadcast) {
+		//			remoteEndpoint.Address = IPAddress.Any;
+		//		}
 
-		public IPEndPoint LocalEndpoint { get; }
+		LocalEndpoint = localEndpoint;
+		RemoteEndpoint = remoteEndpoint;
+		LocalRole = role;
+	}
 
-		public IPEndPoint RemoteEndpoint { get; }
+	public override CommunicationRole LocalRole { get; }
 
-		protected override async Task OpenInternal() {
-			_client?.Connect(RemoteEndpoint);
-SystemLog.Info($"UDPChannel Opened Listening On {LocalEndpoint.Address}:{LocalEndpoint.Port}  to  {RemoteEndpoint.Address}:{RemoteEndpoint.Port}");
-		}
+	public IPEndPoint LocalEndpoint { get; }
 
-		protected override async Task CloseInternal() {
-			_client?.Close();
-SystemLog.Info("UDPChannel Closed");
-		}
+	public IPEndPoint RemoteEndpoint { get; }
 
-		protected override async Task<byte[]> ReceiveBytesInternal(CancellationToken cancellationToken) {
+	protected override async Task OpenInternal() {
+		_client?.Connect(RemoteEndpoint);
+		SystemLog.Info($"UDPChannel Opened Listening On {LocalEndpoint.Address}:{LocalEndpoint.Port}  to  {RemoteEndpoint.Address}:{RemoteEndpoint.Port}");
+	}
+
+	protected override async Task CloseInternal() {
+		_client?.Close();
+		SystemLog.Info("UDPChannel Closed");
+	}
+
+	protected override async Task<byte[]> ReceiveBytesInternal(CancellationToken cancellationToken) {
 //SystemLog.Info("UDPChannel About to Block Waiting for Connection");
-			var result = await _client.ReceiveAsync().WithCancellationToken(cancellationToken);
+		var result = await _client.ReceiveAsync().WithCancellationToken(cancellationToken);
 //SystemLog.Info("UDPChannel Received Data");
 
-			return result.Buffer;
-		}
+		return result.Buffer;
+	}
 
-		protected override async Task<bool> TrySendBytesInternal(ReadOnlyMemory<byte> bytes, CancellationToken cancellationToken) {
-			try {
-SystemLog.Info($"UDP Channel Sending to: {RemoteEndpoint.Address} Port: {RemoteEndpoint.Port}");
-				var sentLength = await _client.SendAsync(bytes.ToArray(), bytes.Length).WithCancellationToken(cancellationToken);
-				if (sentLength != bytes.Length)
-					return false;
-			} catch (Exception ex) {
+	protected override async Task<bool> TrySendBytesInternal(ReadOnlyMemory<byte> bytes, CancellationToken cancellationToken) {
+		try {
+			SystemLog.Info($"UDP Channel Sending to: {RemoteEndpoint.Address} Port: {RemoteEndpoint.Port}");
+			var sentLength = await _client.SendAsync(bytes.ToArray(), bytes.Length).WithCancellationToken(cancellationToken);
+			if (sentLength != bytes.Length)
 				return false;
-			}
-			return true;
+		} catch (Exception ex) {
+			return false;
 		}
+		return true;
+	}
 
-		public override bool IsConnectionAlive() {
-			// UDP has no concept of a connection being alive
-			return true;
-		}
+	public override bool IsConnectionAlive() {
+		// UDP has no concept of a connection being alive
+		return true;
+	}
 
-		public new void Dispose() {
-			_client?.Dispose();
-		}
+	public new void Dispose() {
+		_client?.Dispose();
 	}
 }

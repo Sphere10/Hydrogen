@@ -7,15 +7,11 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 
-using Hydrogen.DApp.Node.UI;
+namespace Hydrogen.DApp.Node.UI;
 
-namespace Hydrogen.DApp.Node.UI {
-
-	[Title("Dashboard")]
-	[Lifetime(ScreenLifetime.WhenVisible)]
-	[MenuLocation(AppMenu.File, "Dashboard", 1)]
-	public class DashboardScreen : MockScreen {
-		
-	}
+[Title("Dashboard")]
+[Lifetime(ScreenLifetime.WhenVisible)]
+[MenuLocation(AppMenu.File, "Dashboard", 1)]
+public class DashboardScreen : MockScreen {
 
 }

@@ -8,12 +8,10 @@
 
 using System;
 
-namespace Hydrogen.DApp.Core {
+namespace Hydrogen.DApp.Core;
 
-	public class VelocityNETException : Exception {
-		public VelocityNETException(string message) : base(message) {
-			
-		}
+public class VelocityNETException : Exception {
+	public VelocityNETException(string message) : base(message) {
+
 	}
-
 }

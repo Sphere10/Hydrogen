@@ -6,26 +6,19 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+namespace Hydrogen.Windows.Forms;
 
-namespace Hydrogen.Windows.Forms {
+/// <summary>
+/// Defines the state of an Expandos title bar
+/// </summary>
+public enum FocusStates {
+	/// <summary>
+	/// Normal state
+	/// </summary>
+	None = 0,
 
 	/// <summary>
-	/// Defines the state of an Expandos title bar
+	/// The mouse is over the title bar
 	/// </summary>
-	public enum FocusStates {
-		/// <summary>
-		/// Normal state
-		/// </summary>
-		None = 0,
-
-		/// <summary>
-		/// The mouse is over the title bar
-		/// </summary>
-		Mouse = 1
-	}
-
+	Mouse = 1
 }

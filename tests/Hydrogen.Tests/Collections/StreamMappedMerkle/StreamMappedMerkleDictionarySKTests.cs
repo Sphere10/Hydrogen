@@ -7,19 +7,11 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using NUnit.Framework;
 using Hydrogen.NUnit;
-using Tools;
-using Hydrogen;
 
 namespace Hydrogen.Tests;
-
 
 [TestFixture]
 [Parallelizable(ParallelScope.Children)]
@@ -44,7 +36,8 @@ public class StreamMappedMerkleDictionarySKTests : StreamMappedMerkleDictionaryT
 		);
 		if (streamMappedMerkleDictionary.RequiresLoad)
 			streamMappedMerkleDictionary.Load();
-		return memoryStream; ;
+		return memoryStream;
+		;
 	}
 
 	[Test]
@@ -69,16 +62,11 @@ public class StreamMappedMerkleDictionarySKTests : StreamMappedMerkleDictionaryT
 				(rng) => ($"{keyGens++}_{rng.NextString(0, 100)}", new TestObject(rng)),
 				iterations: 10,
 				valueComparer: new TestObjectComparer(),
-				endOfIterTest: () => {
-					Assert.That(clusteredDictionary.MerkleTree.Root, Is.EqualTo(referenceDictionary.MerkleTree.Root));
-				},
+				endOfIterTest: () => { Assert.That(clusteredDictionary.MerkleTree.Root, Is.EqualTo(referenceDictionary.MerkleTree.Root)); },
 				expected: referenceDictionary
 			);
 		}
 	}
 
 
-
 }
-
-

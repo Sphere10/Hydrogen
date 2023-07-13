@@ -6,21 +6,16 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
+namespace SourceGrid.Extensions.PingGrids;
 
-namespace SourceGrid.Extensions.PingGrids
-{
-	public class ReflectionPropertyResolver : IPropertyResolver
-	{
-		public static ReflectionPropertyResolver SharedInstance = new ReflectionPropertyResolver();
-		
-		public object ReadValue(object obj, string propertyPath)
-		{
-			var propertyInfo = obj.GetType().GetProperty(propertyPath);
-			if (propertyInfo == null)
-				return string.Empty;
-			return propertyInfo.GetValue(obj, null);
-		}
-		
+public class ReflectionPropertyResolver : IPropertyResolver {
+	public static ReflectionPropertyResolver SharedInstance = new ReflectionPropertyResolver();
+
+	public object ReadValue(object obj, string propertyPath) {
+		var propertyInfo = obj.GetType().GetProperty(propertyPath);
+		if (propertyInfo == null)
+			return string.Empty;
+		return propertyInfo.GetValue(obj, null);
 	}
+
 }

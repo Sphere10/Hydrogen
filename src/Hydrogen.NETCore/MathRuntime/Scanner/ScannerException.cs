@@ -6,41 +6,37 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
-using System.Collections.Generic;
-using System.Text;
+namespace Hydrogen.Maths.Compiler;
 
-namespace Hydrogen.Maths.Compiler {
-    public class ScannerException : CodeErrorException {
+public class ScannerException : CodeErrorException {
 
-        public ScannerException(ScannerErrorState error, int line, int startPos, int endPos)
-            : base(line, startPos, endPos, ConstructErrorMessage(error)) {
-        }
+	public ScannerException(ScannerErrorState error, int line, int startPos, int endPos)
+		: base(line, startPos, endPos, ConstructErrorMessage(error)) {
+	}
 
-        private static string ConstructErrorMessage(ScannerErrorState error) {
-            string errMsg = string.Empty;
-            switch (error) {
-                case ScannerErrorState.CannotHaveBlankExponent:
-                    errMsg = "Cannot have blank exponent";
-                    break;
-                case ScannerErrorState.CannotHaveBlankMantissa:
-                    errMsg = "Cannot have blank mantissa";
-                    break;
-                case ScannerErrorState.InternalErrorCouldNotResolveTokenType:
-                    errMsg = "Internal error could not resolve token type";
-                    break;
-                case ScannerErrorState.InternalErrorCouldNotTransitionState:
-                    errMsg = "Internal error could not transition scanner state";
-                    break;
-                case ScannerErrorState.UnexpectedCharacter:
-                    errMsg = "Unexpected character";
-                    break;
-                case ScannerErrorState.UnexpectedSymbol:
-                    errMsg = "Unexpected symbol";
-                    break;
-            }
-            return errMsg;
-        }
+	private static string ConstructErrorMessage(ScannerErrorState error) {
+		string errMsg = string.Empty;
+		switch (error) {
+			case ScannerErrorState.CannotHaveBlankExponent:
+				errMsg = "Cannot have blank exponent";
+				break;
+			case ScannerErrorState.CannotHaveBlankMantissa:
+				errMsg = "Cannot have blank mantissa";
+				break;
+			case ScannerErrorState.InternalErrorCouldNotResolveTokenType:
+				errMsg = "Internal error could not resolve token type";
+				break;
+			case ScannerErrorState.InternalErrorCouldNotTransitionState:
+				errMsg = "Internal error could not transition scanner state";
+				break;
+			case ScannerErrorState.UnexpectedCharacter:
+				errMsg = "Unexpected character";
+				break;
+			case ScannerErrorState.UnexpectedSymbol:
+				errMsg = "Unexpected symbol";
+				break;
+		}
+		return errMsg;
+	}
 
-    }
 }

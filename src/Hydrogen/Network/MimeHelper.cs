@@ -6,10 +6,9 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
-using System.IO;
 
 // ReSharper disable CheckNamespace
+
 namespace Hydrogen;
 
 // See: https://www.iana.org/assignments/media-types/media-types.xhtml
@@ -20,7 +19,7 @@ public static class MimeHelper {
 			mimeType = default;
 			return false;
 		}
-		
+
 		mimeType = $".{fileExt.TrimStart('.').ToLowerInvariant()}" switch {
 			".3dm" => "x-world/x-3dmf",
 			".3dmf" => "x-world/x-3dmf",
@@ -399,7 +398,7 @@ public static class MimeHelper {
 			".tgz" => "application/x-compressed",
 			".tif" => "image/tiff",
 			".tiff" => "image/tiff",
-			".torrent" => "application/x-bittorrent", 
+			".torrent" => "application/x-bittorrent",
 			".tr" => "application/x-troff",
 			".tsi" => "audio/tsp-audio",
 			".tsp" => "application/dsptype",
@@ -500,5 +499,3 @@ public static class MimeHelper {
 	}
 
 }
-
-

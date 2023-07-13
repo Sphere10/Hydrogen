@@ -6,24 +6,22 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen.DApp.Presentation2.UI.Wizard.Examples.NewWallet
-{
+namespace Hydrogen.DApp.Presentation2.UI.Wizard.Examples.NewWallet {
 
-    public class NewWalletModel
-    {
-        public WalletType Type { get; set; } = WalletType.Standard;
+	public class NewWalletModel {
+		public WalletType Type { get; set; } = WalletType.Standard;
 
-        public string Password { get; set; }
+		public string Password { get; set; }
 
-        public string Name { get; set; } = "wallet_1";
-        
-        public string Seed { get; set; } 
-    }
+		public string Name { get; set; } = "wallet_1";
 
-    public enum WalletType
-    {
-        Standard,
-        Restore
-    }
+		public string Seed { get; set; }
+	}
+
+
+	public enum WalletType {
+		Standard,
+		Restore
+	}
 
 }

@@ -8,29 +8,29 @@
 
 using System;
 
-namespace Hydrogen.Application {
-    public class SettingsProviderDecorator : ISettingsProvider {
+namespace Hydrogen.Application;
 
-        public SettingsProviderDecorator(ISettingsProvider internalSettingsProvider) {
-			InternalSettingsProvider = internalSettingsProvider;
-        }
+public class SettingsProviderDecorator : ISettingsProvider {
 
-        public virtual bool AutoSaveNewSettings => InternalSettingsProvider.AutoSaveNewSettings;
+	public SettingsProviderDecorator(ISettingsProvider internalSettingsProvider) {
+		InternalSettingsProvider = internalSettingsProvider;
+	}
 
-        public virtual bool EncryptSettings => InternalSettingsProvider.EncryptSettings;
+	public virtual bool AutoSaveNewSettings => InternalSettingsProvider.AutoSaveNewSettings;
 
-        protected virtual ISettingsProvider InternalSettingsProvider { get; }
+	public virtual bool EncryptSettings => InternalSettingsProvider.EncryptSettings;
 
-        public virtual void ClearSettings() => InternalSettingsProvider.ClearSettings();
+	protected virtual ISettingsProvider InternalSettingsProvider { get; }
 
-        public virtual bool ContainsSetting(Type settingsObjectType, object id = null) => InternalSettingsProvider.ContainsSetting(settingsObjectType, id);
+	public virtual void ClearSettings() => InternalSettingsProvider.ClearSettings();
 
-        public virtual void DeleteSetting(SettingsObject settings) => InternalSettingsProvider.DeleteSetting(settings);
+	public virtual bool ContainsSetting(Type settingsObjectType, object id = null) => InternalSettingsProvider.ContainsSetting(settingsObjectType, id);
 
-        public virtual SettingsObject LoadSetting(Type settingsObjectType, object id = null) => InternalSettingsProvider.LoadSetting(settingsObjectType, id);
+	public virtual void DeleteSetting(SettingsObject settings) => InternalSettingsProvider.DeleteSetting(settings);
 
-        public virtual SettingsObject NewSetting(Type settingsObjectType, object id = null) => InternalSettingsProvider.NewSetting(settingsObjectType, id);
+	public virtual SettingsObject LoadSetting(Type settingsObjectType, object id = null) => InternalSettingsProvider.LoadSetting(settingsObjectType, id);
 
-        public virtual void SaveSetting(SettingsObject settings) => InternalSettingsProvider.SaveSetting(settings);
-    }
+	public virtual SettingsObject NewSetting(Type settingsObjectType, object id = null) => InternalSettingsProvider.NewSetting(settingsObjectType, id);
+
+	public virtual void SaveSetting(SettingsObject settings) => InternalSettingsProvider.SaveSetting(settings);
 }

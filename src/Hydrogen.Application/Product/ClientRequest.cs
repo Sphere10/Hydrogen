@@ -10,48 +10,47 @@
 using System;
 using System.Reflection;
 
-namespace Hydrogen.Application {
+namespace Hydrogen.Application;
 
-	[Obfuscation(Exclude = true)]
-    public abstract class ClientRequest {
+[Obfuscation(Exclude = true)]
+public abstract class ClientRequest {
 
-        public ClientRequest()
-            : this(
-                UserType.HomeUser,
-                string.Empty,
-                new ProductInformation {
-					CompanyName = string.Empty,
-					CompanyUrl = string.Empty,
-					CopyrightNotice = string.Empty,
-					DefaultProductLicense = null,
-					ProductCode = Guid.Empty,
-					ProductDescription = string.Empty,
-					ProductLongVersion = string.Empty,
-					ProductName = string.Empty,
-					ProductPurchaseUrl = string.Empty,
-					ProductUrl = string.Empty,
-					ProductVersion = string.Empty
-				},
-                string.Empty
-              ) {
-        }
+	public ClientRequest()
+		: this(
+			UserType.HomeUser,
+			string.Empty,
+			new ProductInformation {
+				CompanyName = string.Empty,
+				CompanyUrl = string.Empty,
+				CopyrightNotice = string.Empty,
+				DefaultProductLicense = null,
+				ProductCode = Guid.Empty,
+				ProductDescription = string.Empty,
+				ProductLongVersion = string.Empty,
+				ProductName = string.Empty,
+				ProductPurchaseUrl = string.Empty,
+				ProductUrl = string.Empty,
+				ProductVersion = string.Empty
+			},
+			string.Empty
+		) {
+	}
 
-        public ClientRequest(UserType userType, string sender, ProductInformation senderProductInformation, string featureDescription) {
-            UserType = userType;
-            Sender = sender;
-            SenderProductInformation = senderProductInformation;
-            Description = featureDescription;
-        }
+	public ClientRequest(UserType userType, string sender, ProductInformation senderProductInformation, string featureDescription) {
+		UserType = userType;
+		Sender = sender;
+		SenderProductInformation = senderProductInformation;
+		Description = featureDescription;
+	}
 
-        public int ServiceVersion { get; set; }
+	public int ServiceVersion { get; set; }
 
-        public UserType UserType { get; set; }
+	public UserType UserType { get; set; }
 
-        public string Sender { get; set; }
+	public string Sender { get; set; }
 
-        public string Description { get; set; }
+	public string Description { get; set; }
 
-        public ProductInformation SenderProductInformation { get; set; }
+	public ProductInformation SenderProductInformation { get; set; }
 
-    }
 }

@@ -6,44 +6,36 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Collections;
 using System.Windows.Forms.Design;
 
-namespace Hydrogen.Windows.Forms {
-	
+namespace Hydrogen.Windows.Forms;
 
+/// <summary>
+/// A custom designer used by TaskItems to remove unwanted 
+/// properties from the Property window in the designer
+/// </summary>
+internal class TaskItemDesigner : ControlDesigner {
 	/// <summary>
-	/// A custom designer used by TaskItems to remove unwanted 
-	/// properties from the Property window in the designer
+	/// Initializes a new instance of the TaskItemDesigner class
 	/// </summary>
-	internal class TaskItemDesigner : ControlDesigner {
-		/// <summary>
-		/// Initializes a new instance of the TaskItemDesigner class
-		/// </summary>
-		public TaskItemDesigner() {
+	public TaskItemDesigner() {
 
-		}
-
-
-		/// <summary>
-		/// Adjusts the set of properties the component exposes through 
-		/// a TypeDescriptor
-		/// </summary>
-		/// <param name="properties">An IDictionary containing the properties 
-		/// for the class of the component</param>
-		protected override void PreFilterProperties(IDictionary properties) {
-			base.PreFilterProperties(properties);
-
-			properties.Remove("BackgroundImage");
-			properties.Remove("Cursor");
-			properties.Remove("ForeColor");
-			properties.Remove("FlatStyle");
-		}
 	}
 
-	
+
+	/// <summary>
+	/// Adjusts the set of properties the component exposes through 
+	/// a TypeDescriptor
+	/// </summary>
+	/// <param name="properties">An IDictionary containing the properties 
+	/// for the class of the component</param>
+	protected override void PreFilterProperties(IDictionary properties) {
+		base.PreFilterProperties(properties);
+
+		properties.Remove("BackgroundImage");
+		properties.Remove("Cursor");
+		properties.Remove("ForeColor");
+		properties.Remove("FlatStyle");
+	}
 }

@@ -5,8 +5,6 @@
 // LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
-
-@using Hydrogen
 @inherits ModalComponent
 
 <ModalTemplate Options="@Options">
@@ -19,8 +17,7 @@
         </CascadingValue>
     </BodyTemplate>
     <FooterTemplate>
-        @foreach ((string buttonText, int i) in ButtonsText.WithIndex())
-        {
+        @foreach ((string buttonText, int i) in ButtonsText.WithIndex()) {
             <div class="btn-group">
                 <a type="button" class="btn btn-primary btn-sm" @onclick="() => OkData(i)">@buttonText</a>
             </div>
@@ -43,10 +40,8 @@
     [Parameter]
     public string[] ButtonsText { get; set; }
 
-    protected override void OnParametersSet()
-    {
-        if (Body is null)
-        {
+    protected override void OnParametersSet() {
+        if (Body is null) {
             throw new InvalidOperationException("Body parameter is required.");
         }
     }

@@ -60,12 +60,10 @@
 
     private string? MaxHeight => Height is null ? null : $"{Height.Value.max}px";
 
-    private string? ToPixelString(int? value) => value is null ? null : $"{value.Value}px"; 
+    private string? ToPixelString(int? value) => value is null ? null : $"{value.Value}px";
 
-    private async Task OnCloseAsync()
-    {
-        if (await OnCloseFunc())
-        {
+    private async Task OnCloseAsync() {
+        if (await OnCloseFunc()) {
             await JsRuntime.InvokeVoidAsync("hideModal");
         }
     }

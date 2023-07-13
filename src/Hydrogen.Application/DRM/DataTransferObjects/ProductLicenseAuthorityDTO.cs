@@ -14,15 +14,13 @@ namespace Hydrogen.Application;
 
 public class ProductLicenseAuthorityDTO : IEquatable<ProductLicenseAuthorityDTO> {
 
-	[JsonProperty("name")]
-	public string Name { get; set; }
+	[JsonProperty("name")] public string Name { get; set; }
 
 	[JsonProperty("dss")]
 	[JsonConverter(typeof(StringEnumConverter))]
 	public DSS LicenseDSS { get; set; }
 
-	[JsonProperty("publicKey")]
-	public byte[] LicensePublicKey { get; set; }
+	[JsonProperty("publicKey")] public byte[] LicensePublicKey { get; set; }
 
 	public bool Equals(ProductLicenseAuthorityDTO other) {
 		if (ReferenceEquals(null, other))

@@ -6,23 +6,21 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
 using System.Threading;
 
-namespace Hydrogen {
+namespace Hydrogen;
 
-	public class ThreadIdLogger : PrefixLoggerBase {
+public class ThreadIdLogger : PrefixLoggerBase {
 
-		public const string DefaultThreadIdFormat = "(TID: {0})";
+	public const string DefaultThreadIdFormat = "(TID: {0})";
 
-		public ThreadIdLogger(ILogger decoratedLogger, string threadIdFormat = null) : base(decoratedLogger) {
-			Format = threadIdFormat ?? DefaultThreadIdFormat;
-		}
+	public ThreadIdLogger(ILogger decoratedLogger, string threadIdFormat = null) : base(decoratedLogger) {
+		Format = threadIdFormat ?? DefaultThreadIdFormat;
+	}
 
-		public string Format { get; set; }
+	public string Format { get; set; }
 
-		protected override string GetPrefix() 
-			=> string.Format(Format, Thread.CurrentThread.ManagedThreadId) + " ";
+	protected override string GetPrefix()
+		=> string.Format(Format, Thread.CurrentThread.ManagedThreadId) + " ";
 
-	}	
 }

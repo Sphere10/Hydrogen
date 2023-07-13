@@ -10,14 +10,11 @@ using System.Threading.Tasks;
 
 namespace Hydrogen;
 
-public static class ValueTaskExtensions
-{
-	public static Task ContinueOnSameThread(this ValueTask task)
-	{
+public static class ValueTaskExtensions {
+	public static Task ContinueOnSameThread(this ValueTask task) {
 		var tcs = new TaskCompletionSource<bool>();
 
-		SameThreadSynchronizationContext.Run(async () =>
-		{
+		SameThreadSynchronizationContext.Run(async () => {
 			await task;
 			tcs.SetResult(true);
 		});
@@ -25,12 +22,10 @@ public static class ValueTaskExtensions
 		return tcs.Task;
 	}
 
-	public static Task<T> ContinueOnSameThread<T>(this ValueTask<T> task)
-	{
+	public static Task<T> ContinueOnSameThread<T>(this ValueTask<T> task) {
 		var tcs = new TaskCompletionSource<T>();
 
-		SameThreadSynchronizationContext.Run(async () =>
-		{
+		SameThreadSynchronizationContext.Run(async () => {
 			T result = await task;
 			tcs.SetResult(result);
 		});

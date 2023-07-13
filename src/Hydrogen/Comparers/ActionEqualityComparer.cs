@@ -9,25 +9,25 @@
 using System;
 using System.Collections.Generic;
 
-namespace Hydrogen {
-	public class ActionEqualityComparer<T> : IEqualityComparer<T> {
-		private readonly Func<T, T, bool> _comparerFunc;
+namespace Hydrogen;
 
-		public ActionEqualityComparer(Func<T, T, bool> comparerFunc) {
-			_comparerFunc = comparerFunc;
-		}
+public class ActionEqualityComparer<T> : IEqualityComparer<T> {
+	private readonly Func<T, T, bool> _comparerFunc;
 
-		public bool Equals(T x, T y) {
-			return _comparerFunc(x, y);
-		}
-
-		public int GetHashCode(T obj) {
-			return obj.GetHashCode();
-		}
-
-        public static ActionEqualityComparer<T> From(Func<T, T, bool> comparer) {
-            return new ActionEqualityComparer<T>(comparer);
-        }
-
+	public ActionEqualityComparer(Func<T, T, bool> comparerFunc) {
+		_comparerFunc = comparerFunc;
 	}
+
+	public bool Equals(T x, T y) {
+		return _comparerFunc(x, y);
+	}
+
+	public int GetHashCode(T obj) {
+		return obj.GetHashCode();
+	}
+
+	public static ActionEqualityComparer<T> From(Func<T, T, bool> comparer) {
+		return new ActionEqualityComparer<T>(comparer);
+	}
+
 }

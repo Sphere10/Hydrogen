@@ -8,7 +8,6 @@
 
 using System;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Threading.Tasks;
 
 namespace Hydrogen.Application;
@@ -38,9 +37,9 @@ public class ProductLicenseActivator : IProductLicenseActivator {
 	public async Task ApplyLicense(ProductLicenseActivationDTO licenseActivation) {
 		Guard.ArgumentNotNull(licenseActivation, nameof(licenseActivation));
 		var authority = Storage.TryGetDefaultLicense(out var trialActivation) ? trialActivation.Authority : licenseActivation.Authority;
-		if (!ProductLicenseEnforcer.ValidateLicense(licenseActivation, authority)) 
+		if (!ProductLicenseEnforcer.ValidateLicense(licenseActivation, authority))
 			throw new ProductLicenseTamperedException();
-	
+
 		// All good, store this license
 		Storage.SaveActivatedLicense(licenseActivation);
 		ProductLicenseEnforcer.EnforceLicense(true);

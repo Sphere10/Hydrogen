@@ -6,26 +6,18 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
-using System.Collections.Generic;
-using System.Text;
-using Hydrogen;
+namespace Hydrogen.DApp.Core.Mining;
 
-namespace Hydrogen.DApp.Core.Mining {
+public interface IMiningManager {
 
-	public interface IMiningManager {
+	public event EventHandlerEx<object, MiningPuzzle, MiningSolutionResult> SolutionSubmited;
 
-		public event EventHandlerEx<object, MiningPuzzle, MiningSolutionResult> SolutionSubmited;
+	uint MiningTarget { get; }
 
-		uint MiningTarget { get; }
+	uint BlockHeight { get; }
 
-		uint BlockHeight { get; }
-		
-		MiningPuzzle RequestPuzzle(string minerTag);
+	MiningPuzzle RequestPuzzle(string minerTag);
 
-		MiningSolutionResult SubmitSolution(MiningPuzzle puzzle);
-
-	}
-
+	MiningSolutionResult SubmitSolution(MiningPuzzle puzzle);
 
 }

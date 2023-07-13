@@ -8,24 +8,19 @@
 
 using System.Collections.Generic;
 
-namespace Hydrogen {
+namespace Hydrogen;
 
-	public class NotPersistedDictionary<T1, T2> : DictionaryDecorator<T1, T2>, IPersistedDictionary<T1, T2> {
+public class NotPersistedDictionary<T1, T2> : DictionaryDecorator<T1, T2>, IPersistedDictionary<T1, T2> {
 
-        public NotPersistedDictionary() : base(new Dictionary<T1, T2>()){
+	public NotPersistedDictionary() : base(new Dictionary<T1, T2>()) {
 
-        }
-		public void Load() {
-		}
+	}
+	public void Load() {
+	}
 
-		public void Save() {
-		}
+	public void Save() {
+	}
 
-		public void Delete() {
-		}
+	public void Delete() {
 	}
 }
-
-
-
-	

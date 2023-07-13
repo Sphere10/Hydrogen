@@ -7,22 +7,19 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Collections.Generic;
-using System.Windows.Forms;
 
 
-namespace Hydrogen.Utils.ExplorerBarDesigner {
+namespace Hydrogen.Utils.ExplorerBarDesigner;
 
-    static class Program {
-        /// <summary>
-        /// The main entry point for the application.
-        /// </summary>
-        [STAThread]
-        static void Main() {
-            System.Windows.Forms.Application.EnableVisualStyles();
-            System.Windows.Forms.Application.SetCompatibleTextRenderingDefault(false);
-            System.Windows.Forms.Application.Run(new DesignerForm());
-            
-        }
-    }
+static class Program {
+	/// <summary>
+	/// The main entry point for the application.
+	/// </summary>
+	[STAThread]
+	static void Main() {
+		System.Windows.Forms.Application.EnableVisualStyles();
+		System.Windows.Forms.Application.SetCompatibleTextRenderingDefault(false);
+		System.Windows.Forms.Application.Run(new DesignerForm());
+
+	}
 }

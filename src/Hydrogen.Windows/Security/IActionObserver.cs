@@ -6,25 +6,20 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
-using System.Collections.Generic;
-using System.Text;
+namespace Hydrogen.Windows.Security;
 
-namespace Hydrogen.Windows.Security {
-    
-    public interface IActionObserver {
+public interface IActionObserver {
 
-        void NotifyAction(string actionName, string objectType, string sourceName, string destName);
+	void NotifyAction(string actionName, string objectType, string sourceName, string destName);
 
-        void NotifyActionFailed(string action, string objectType, string sourceName, string destName, string reason);
+	void NotifyActionFailed(string action, string objectType, string sourceName, string destName, string reason);
 
-        void NotifyInformation(string info, params object[] formatArgs);
+	void NotifyInformation(string info, params object[] formatArgs);
 
-        void NotifyWarning(string info, params object[] formatArgs);
+	void NotifyWarning(string info, params object[] formatArgs);
 
-        void NotifyError(string info, params object[] formatArgs);
+	void NotifyError(string info, params object[] formatArgs);
 
-        void NotifyCompleted();
+	void NotifyCompleted();
 
-    }
 }

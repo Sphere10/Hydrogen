@@ -7,23 +7,22 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.IO;
 using Hydrogen.Application;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Hydrogen.Web.AspNetCore {
-	public class ModuleConfiguration : ModuleConfigurationBase {
+namespace Hydrogen.Web.AspNetCore;
 
-		public override int Priority => int.MinValue; // last to execute
+public class ModuleConfiguration : ModuleConfigurationBase {
 
-		public override void RegisterComponents(IServiceCollection serviceCollection) {
+	public override int Priority => int.MinValue; // last to execute
 
-			// register initializers
-			serviceCollection.AddInitializer<AspNetCoreLifecycleMonitorInitializer>();
-		}
+	public override void RegisterComponents(IServiceCollection serviceCollection) {
 
-		public override void OnInitialize(IServiceProvider serviceProvider) {
-			base.OnInitialize(serviceProvider);
-		}
+		// register initializers
+		serviceCollection.AddInitializer<AspNetCoreLifecycleMonitorInitializer>();
+	}
+
+	public override void OnInitialize(IServiceProvider serviceProvider) {
+		base.OnInitialize(serviceProvider);
 	}
 }

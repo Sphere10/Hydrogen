@@ -6,20 +6,18 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen {
+namespace Hydrogen;
 
-	public class ItemHasherDecorator<TItem, TItemHasher> : IItemHasher<TItem> 
-		where TItemHasher : IItemHasher<TItem> {
+public class ItemHasherDecorator<TItem, TItemHasher> : IItemHasher<TItem>
+	where TItemHasher : IItemHasher<TItem> {
 
-		protected readonly TItemHasher InternalHasher;
+	protected readonly TItemHasher InternalHasher;
 
-		public ItemHasherDecorator(TItemHasher internalHasher) {
-			InternalHasher = internalHasher;
-		}
-
-		public virtual byte[] Hash(TItem item) => InternalHasher.Hash(item);
-
-		public int DigestLength => InternalHasher.DigestLength;
+	public ItemHasherDecorator(TItemHasher internalHasher) {
+		InternalHasher = internalHasher;
 	}
 
+	public virtual byte[] Hash(TItem item) => InternalHasher.Hash(item);
+
+	public int DigestLength => InternalHasher.DigestLength;
 }

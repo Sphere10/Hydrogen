@@ -9,14 +9,12 @@
 using System.Linq;
 using System.Diagnostics;
 
-namespace Hydrogen.Application {
+namespace Hydrogen.Application;
 
-	public class StandardProductInstancesCounter : IProductInstancesCounter {
+public class StandardProductInstancesCounter : IProductInstancesCounter {
 
-		public int CountNumberOfRunningInstances() {
-			return Process.GetProcessesByName(Process.GetCurrentProcess().ProcessName).Count();
-		}
-
+	public int CountNumberOfRunningInstances() {
+		return Process.GetProcessesByName(Process.GetCurrentProcess().ProcessName).Count();
 	}
-}
 
+}

@@ -7,106 +7,83 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Runtime.InteropServices;
 
-namespace Hydrogen.Windows.BITS
-{
-    public class BitsFile : IDisposable
-    {
-        private IBackgroundCopyFile file;
-        private FileProgress progress;
-        private bool disposed;
-        private BitsJob job;
+namespace Hydrogen.Windows.BITS;
 
-        internal BitsFile(BitsJob job, IBackgroundCopyFile file)
-        {
-            if (null == file)
-                throw new ArgumentNullException("IBackgroundCopyFile");
-            this.file = file;
-            this.job = job;
-        }
+public class BitsFile : IDisposable {
+	private IBackgroundCopyFile file;
+	private FileProgress progress;
+	private bool disposed;
+	private BitsJob job;
 
-        #region public properties
-        public string LocalName
-        {
-            get
-            {
-                string name = string.Empty;
-                try
-                {
-                    this.file.GetLocalName(out name);
-                }
-                catch (COMException exception)
-                {
-                    this.job.PublishException(exception);
-                }
-                return name;
-            }
-        }
+	internal BitsFile(BitsJob job, IBackgroundCopyFile file) {
+		if (null == file)
+			throw new ArgumentNullException("IBackgroundCopyFile");
+		this.file = file;
+		this.job = job;
+	}
 
-        public string RemoteName
-        {
-            get
-            {
-                string name = string.Empty;
-                try
-                {
-                    this.file.GetRemoteName(out name);
-                }
-                catch (COMException exception)
-                {
-                    this.job.PublishException(exception);
-                }
-                return name;
-            }
-        }
+	#region public properties
 
-        public FileProgress Progress
-        {
-            get
-            {
-                if (null == this.progress)
-                {
-                    BG_FILE_PROGRESS progress;
-                    try
-                    {
-                        this.file.GetProgress(out progress);
-                        this.progress = new FileProgress(progress);
-                    }
-                    catch (COMException exception)
-                    {
-                        this.job.PublishException(exception);
-                    }
-                }
-                return this.progress;
-            }
-        }
-        #endregion
+	public string LocalName {
+		get {
+			string name = string.Empty;
+			try {
+				this.file.GetLocalName(out name);
+			} catch (COMException exception) {
+				this.job.PublishException(exception);
+			}
+			return name;
+		}
+	}
 
-        #region IDisposable Members
+	public string RemoteName {
+		get {
+			string name = string.Empty;
+			try {
+				this.file.GetRemoteName(out name);
+			} catch (COMException exception) {
+				this.job.PublishException(exception);
+			}
+			return name;
+		}
+	}
 
+	public FileProgress Progress {
+		get {
+			if (null == this.progress) {
+				BG_FILE_PROGRESS progress;
+				try {
+					this.file.GetProgress(out progress);
+					this.progress = new FileProgress(progress);
+				} catch (COMException exception) {
+					this.job.PublishException(exception);
+				}
+			}
+			return this.progress;
+		}
+	}
 
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
+	#endregion
 
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!this.disposed)
-            {
-                if (disposing)
-                {
-                    //TODO: release COM resource
-                    this.file = null;
-                }
-            }
-            disposed = true;
-        }
+	#region IDisposable Members
 
-        #endregion
-    }
+	public void Dispose() {
+		Dispose(true);
+		GC.SuppressFinalize(this);
+	}
+
+	protected virtual void Dispose(bool disposing) {
+		if (!this.disposed) {
+			if (disposing) {
+				//TODO: release COM resource
+				this.file = null;
+			}
+		}
+		disposed = true;
+	}
+
+	#endregion
+
 }

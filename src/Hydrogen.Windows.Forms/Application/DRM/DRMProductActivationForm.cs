@@ -7,14 +7,8 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Drawing;
-using System.Text;
 using System.Windows.Forms;
-using System.Reflection;
 using Hydrogen.Application;
-using Hydrogen.Windows.Forms;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Hydrogen.Windows.Forms;
@@ -24,7 +18,6 @@ public sealed partial class DRMProductActivationForm : ApplicationForm {
 	public DRMProductActivationForm() {
 		InitializeComponent();
 	}
-
 
 
 	private async void _activateButton_Click(object sender, EventArgs e) {
@@ -47,9 +40,9 @@ public sealed partial class DRMProductActivationForm : ApplicationForm {
 		} catch (Exception error) {
 			var userInterfaceServices = HydrogenFramework.Instance.ServiceProvider.GetService<IUserInterfaceServices>();
 			userInterfaceServices.ReportError(
-				 "Activation Error",
-				 $"Your key is invalid. Please enter correct key. {error.ToDisplayString()}"
-			 );
+				"Activation Error",
+				$"Your key is invalid. Please enter correct key. {error.ToDisplayString()}"
+			);
 		}
 	}
 

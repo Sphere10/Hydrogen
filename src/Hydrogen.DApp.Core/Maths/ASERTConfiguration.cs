@@ -8,13 +8,11 @@
 
 using System;
 
-namespace Hydrogen.DApp.Core.Maths {
-    public class ASERTConfiguration {
+namespace Hydrogen.DApp.Core.Maths;
 
-        public TimeSpan BlockTime { get; set; }
+public class ASERTConfiguration {
 
-        public TimeSpan RelaxationTime { get; set; }
-    }
+	public TimeSpan BlockTime { get; set; }
 
-
+	public TimeSpan RelaxationTime { get; set; }
 }

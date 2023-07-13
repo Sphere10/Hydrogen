@@ -6,15 +6,10 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
+namespace SourceGrid.Extensions.PingGrids.Cells;
 
-namespace SourceGrid.Extensions.PingGrids.Cells
-{
-	public class Image : SourceGrid.Cells.Virtual.Image
-	{
-	        public Image()
-		{
-	            Model.AddModel(new PingGridValueModel());
-		}
+public class Image : SourceGrid.Cells.Virtual.Image {
+	public Image() {
+		Model.AddModel(new PingGridValueModel());
 	}
 }

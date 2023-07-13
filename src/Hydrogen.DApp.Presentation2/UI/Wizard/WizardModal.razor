@@ -7,7 +7,6 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 @using Hydrogen.DApp.Presentation2.Logic.Wizard
-@using Hydrogen
 @inherits ModalComponent
 
 <ModalTemplate OnCloseFunc="RequestCloseAsync" Options="@Options">
@@ -60,12 +59,10 @@
     private EventCallback OnStepChange { get; set; }
 
     /// <inheritdoc />
-    protected override void OnParametersSet()
-    {
+    protected override void OnParametersSet() {
         base.OnParametersSet();
 
-        if (Wizard is null)
-        {
+        if (Wizard is null) {
             throw new InvalidOperationException("Wizard parameter is required");
         }
 
@@ -77,17 +74,13 @@
     /// <summary>
     /// Modal closed result. Passes request to the wizard instance to determine whether close OK.
     /// </summary>
-    public override async Task<bool> RequestCloseAsync()
-    {
+    public override async Task<bool> RequestCloseAsync() {
         Result<bool> result = await Wizard.CancelAsync();
 
-        if (result)
-        {
+        if (result) {
             await base.RequestCloseAsync();
             return result;
-        }
-        else
-        {
+        } else {
             _wizardHost.ErrorMessages.Clear();
             _wizardHost.ErrorMessages.AddRange(result.ErrorMessages);
             return result;

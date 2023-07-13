@@ -6,11 +6,9 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
+namespace Hydrogen.Communications.RPC;
 
-namespace Hydrogen.Communications.RPC {
-	//Provide support classes that do not derive ApiService so they can be represented as an ApiService [As-A relation]
-	public class ApiServiceProxy: ApiService {
-		public object proxy = null;
-	}
+//Provide support classes that do not derive ApiService so they can be represented as an ApiService [As-A relation]
+public class ApiServiceProxy : ApiService {
+	public object proxy = null;
 }

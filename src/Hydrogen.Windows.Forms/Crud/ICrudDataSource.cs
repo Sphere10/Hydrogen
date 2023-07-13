@@ -8,16 +8,20 @@
 
 using System.Collections.Generic;
 
-namespace Hydrogen {
+namespace Hydrogen;
 
-	public interface ICrudDataSource<TEntity>  {
-		TEntity New();
-		void Create(TEntity entity);
-		IEnumerable<TEntity> Read(string searchTerm, int pageLength, ref int page, string sortProperty, SortDirection sortDirection, out int totalItems);
-		TEntity Refresh(TEntity entity);
-		void Update(TEntity entity);
-		void Delete(TEntity entity);
-		IEnumerable<string> Validate(TEntity entity, CrudAction action);
-	}
+public interface ICrudDataSource<TEntity> {
+	TEntity New();
 
+	void Create(TEntity entity);
+
+	IEnumerable<TEntity> Read(string searchTerm, int pageLength, ref int page, string sortProperty, SortDirection sortDirection, out int totalItems);
+
+	TEntity Refresh(TEntity entity);
+
+	void Update(TEntity entity);
+
+	void Delete(TEntity entity);
+
+	IEnumerable<string> Validate(TEntity entity, CrudAction action);
 }

@@ -7,28 +7,23 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Reflection;
 using Newtonsoft.Json;
 
-namespace Hydrogen.Communications.RPC {
+namespace Hydrogen.Communications.RPC;
 
-	[Serializable]
-	[JsonObject(MemberSerialization.OptIn)]
-	public class JsonRpcException : System.Exception {
-		[JsonProperty]
-		public int code { get; set; }
+[Serializable]
+[JsonObject(MemberSerialization.OptIn)]
+public class JsonRpcException : System.Exception {
+	[JsonProperty] public int code { get; set; }
 
-		[JsonProperty("Message")]
-		public string text { get; set; }
+	[JsonProperty("Message")] public string text { get; set; }
 
-		public override string ToString() {
-			return $"RPC error {code}: {text}";
-		}
+	public override string ToString() {
+		return $"RPC error {code}: {text}";
+	}
 
-		public JsonRpcException(int _code, string _text):base(_text) {
-			code = _code;
-			text = _text;
-		}
+	public JsonRpcException(int _code, string _text) : base(_text) {
+		code = _code;
+		text = _text;
 	}
 }
-

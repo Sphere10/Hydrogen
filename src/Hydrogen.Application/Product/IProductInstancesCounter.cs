@@ -6,8 +6,8 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen.Application {
-	public interface IProductInstancesCounter {
-		int CountNumberOfRunningInstances();
-	}
+namespace Hydrogen.Application;
+
+public interface IProductInstancesCounter {
+	int CountNumberOfRunningInstances();
 }

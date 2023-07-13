@@ -10,5 +10,5 @@ using Hydrogen.Application;
 
 namespace Hydrogen.Windows.Forms;
 
-public interface IMainFrame : IUserInterfaceServices, IApplicationIconProvider, IBlockManager  {
+public interface IMainFrame : IUserInterfaceServices, IApplicationIconProvider, IBlockManager {
 }

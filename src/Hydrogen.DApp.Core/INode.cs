@@ -6,18 +6,12 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System.Collections;
-using System.ComponentModel.Design;
-using System.Linq;
-using System.Text;
+namespace Hydrogen.DApp.Core;
 
-namespace Hydrogen.DApp.Core {
- 
-    interface INode {
-        //ICommunications Communications { get; set; }
-        //IConsensusRules Consensus { get; set; }
-        //IMemPool MemPool { get; set; }
-        //IAccountSpace AccountSpace { get; set; }
-        //IBlockChain BlockChain { get; set; }
-    }
+interface INode {
+	//ICommunications Communications { get; set; }
+	//IConsensusRules Consensus { get; set; }
+	//IMemPool MemPool { get; set; }
+	//IAccountSpace AccountSpace { get; set; }
+	//IBlockChain BlockChain { get; set; }
 }

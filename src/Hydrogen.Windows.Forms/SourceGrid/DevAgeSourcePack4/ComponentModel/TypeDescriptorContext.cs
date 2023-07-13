@@ -7,93 +7,83 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace DevAge.ComponentModel
-{
-    /// <summary>
-    /// Class used to implement an empty ITypeDescriptorContext.
-    /// This class seems to be required by the mono framework, ms framework accept null as ITypeDescriptorContext
-    /// </summary>
-    public class EmptyTypeDescriptorContext : System.ComponentModel.ITypeDescriptorContext
-    {
-        /// <summary>
-        /// Empty ITypeDescriptorContext instance. For now I use null because mono seems to don't like this class (and throw anyway an exception)
-        /// </summary>
-        public static readonly EmptyTypeDescriptorContext Empty = null; //new EmptyTypeDescriptorContext();
+namespace DevAge.ComponentModel;
 
-        private EmptyContainer container = new EmptyContainer();
+/// <summary>
+/// Class used to implement an empty ITypeDescriptorContext.
+/// This class seems to be required by the mono framework, ms framework accept null as ITypeDescriptorContext
+/// </summary>
+public class EmptyTypeDescriptorContext : System.ComponentModel.ITypeDescriptorContext {
+	/// <summary>
+	/// Empty ITypeDescriptorContext instance. For now I use null because mono seems to don't like this class (and throw anyway an exception)
+	/// </summary>
+	public static readonly EmptyTypeDescriptorContext Empty = null; //new EmptyTypeDescriptorContext();
 
-        #region ITypeDescriptorContext Members
+	private EmptyContainer container = new EmptyContainer();
 
-        public System.ComponentModel.IContainer Container
-        {
-            get { return container; }
-        }
+	#region ITypeDescriptorContext Members
 
-        public object Instance
-        {
-            get { return null; }
-        }
+	public System.ComponentModel.IContainer Container {
+		get { return container; }
+	}
 
-        public void OnComponentChanged()
-        {
+	public object Instance {
+		get { return null; }
+	}
 
-        }
+	public void OnComponentChanged() {
 
-        public bool OnComponentChanging()
-        {
-            return true;
-        }
+	}
 
-        public System.ComponentModel.PropertyDescriptor PropertyDescriptor
-        {
-            get { return null; }
-        }
+	public bool OnComponentChanging() {
+		return true;
+	}
 
-        #endregion
+	public System.ComponentModel.PropertyDescriptor PropertyDescriptor {
+		get { return null; }
+	}
 
-        #region IServiceProvider Members
+	#endregion
 
-        public object GetService(Type serviceType)
-        {
-            return null;
-        }
+	#region IServiceProvider Members
 
-        #endregion
-    }
+	public object GetService(Type serviceType) {
+		return null;
+	}
 
-    public class EmptyContainer : System.ComponentModel.IContainer
-    {
-        #region IContainer Members
-        public void Add(System.ComponentModel.IComponent component, string name)
-        {
-            throw new NotImplementedException();
-        }
+	#endregion
 
-        public void Add(System.ComponentModel.IComponent component)
-        {
-            throw new NotImplementedException();
-        }
+}
 
-        public System.ComponentModel.ComponentCollection Components
-        {
-            get { return new System.ComponentModel.ComponentCollection(null); }
-        }
 
-        public void Remove(System.ComponentModel.IComponent component)
-        {
-            throw new NotImplementedException();
-        }
+public class EmptyContainer : System.ComponentModel.IContainer {
 
-        #endregion
+	#region IContainer Members
 
-        #region IDisposable Members
-        public void Dispose()
-        {
-        }
-        #endregion
-    }
+	public void Add(System.ComponentModel.IComponent component, string name) {
+		throw new NotImplementedException();
+	}
+
+	public void Add(System.ComponentModel.IComponent component) {
+		throw new NotImplementedException();
+	}
+
+	public System.ComponentModel.ComponentCollection Components {
+		get { return new System.ComponentModel.ComponentCollection(null); }
+	}
+
+	public void Remove(System.ComponentModel.IComponent component) {
+		throw new NotImplementedException();
+	}
+
+	#endregion
+
+	#region IDisposable Members
+
+	public void Dispose() {
+	}
+
+	#endregion
 
 }

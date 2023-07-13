@@ -8,16 +8,16 @@
 
 using System;
 
-namespace Hydrogen {
-	[Flags]
-	public enum EncryptionSaltPolicy {
-		None = 1,
-		MACAddress = 1 << 1,
-		ExecutableFileCreationTime = 1 << 2,
-		OperatingSystemVersion = 1 << 3,
-		MachineName = 1 << 4,
-		UserName = 1 << 5,
-		ProcessorCount = 1 << 6,
-		Custom = 1 << 7
-	}
+namespace Hydrogen;
+
+[Flags]
+public enum EncryptionSaltPolicy {
+	None = 1,
+	MACAddress = 1 << 1,
+	ExecutableFileCreationTime = 1 << 2,
+	OperatingSystemVersion = 1 << 3,
+	MachineName = 1 << 4,
+	UserName = 1 << 5,
+	ProcessorCount = 1 << 6,
+	Custom = 1 << 7
 }

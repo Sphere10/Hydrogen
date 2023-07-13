@@ -19,6 +19,7 @@ namespace Hydrogen.Web.AspNetCore;
 
 public sealed class BootstrapFormScope<TModel> : IDisposable where TModel : FormModelBase {
 	public const string DefaultFormClasses = "";
+
 	public const string ButtonHtmlSnippet =
 		"""
 		<button class="btn btn-primary {class}" type="submit" form="{formId}">
@@ -28,12 +29,12 @@ public sealed class BootstrapFormScope<TModel> : IDisposable where TModel : Form
 		</button>
 		""";
 
-	public const string FormMessageMarker =  
+	public const string FormMessageMarker =
 		"""
 		<div id="{formId}_message_marker" class="invisible"></div>
 		""";
 
-	public const string FormEndHtmlSnippet = 
+	public const string FormEndHtmlSnippet =
 		"""
 		<script language="javascript">
 		    F_Init('{formId}', {formOptions});
@@ -47,23 +48,24 @@ public sealed class BootstrapFormScope<TModel> : IDisposable where TModel : Form
 	private readonly string _formClass;
 	private readonly IHtmlHelper _htmlHelper;
 	private readonly FormScopeOptions _options;
-	private bool _messageMarkerWritten;	
+	private bool _messageMarkerWritten;
 
-	public BootstrapFormScope(IHtmlHelper<TModel> htmlHelper, string action, string controller, TModel formModel, AttributeDictionary attributes = null, FormScopeOptions options = FormScopeOptions.Default) 
+	public BootstrapFormScope(IHtmlHelper<TModel> htmlHelper, string action, string controller, TModel formModel, AttributeDictionary attributes = null, FormScopeOptions options = FormScopeOptions.Default)
 		: this(htmlHelper, action, controller, null, formModel, attributes, options) {
 	}
 
-	public BootstrapFormScope(IHtmlHelper<TModel> htmlHelper, string url, TModel formModel, AttributeDictionary attributes = null, FormScopeOptions options = FormScopeOptions.Default) 
+	public BootstrapFormScope(IHtmlHelper<TModel> htmlHelper, string url, TModel formModel, AttributeDictionary attributes = null, FormScopeOptions options = FormScopeOptions.Default)
 		: this(htmlHelper, null, null, url, formModel, attributes, options) {
 	}
 
-	private BootstrapFormScope(IHtmlHelper<TModel> htmlHelper,  string action, string controller, string url, TModel formModel, AttributeDictionary attributes = null, FormScopeOptions options = FormScopeOptions.Default) {
+	private BootstrapFormScope(IHtmlHelper<TModel> htmlHelper, string action, string controller, string url, TModel formModel, AttributeDictionary attributes = null, FormScopeOptions options = FormScopeOptions.Default) {
 		Guard.ArgumentNotNull(htmlHelper, nameof(htmlHelper));
 		Guard.ArgumentNotNull(formModel, nameof(formModel));
 		if (options.HasFlag(FormScopeOptions.BotProtect))
 			Guard.ArgumentNotNullOrWhitespace(url, nameof(url), "Must be provided when using BotProtect option");
-		Guard.Against((!string.IsNullOrEmpty(action) || !string.IsNullOrEmpty(action)) && options.HasFlag(FormScopeOptions.BotProtect), "Cannot use controller/action when BotProtect option is enabled, instead use overload method and pass explicit form action url");
-		
+		Guard.Against((!string.IsNullOrEmpty(action) || !string.IsNullOrEmpty(action)) && options.HasFlag(FormScopeOptions.BotProtect),
+			"Cannot use controller/action when BotProtect option is enabled, instead use overload method and pass explicit form action url");
+
 		_formID = formModel.ID;
 		_htmlHelper = htmlHelper;
 		_formClass = DefaultFormClasses;
@@ -83,7 +85,7 @@ public sealed class BootstrapFormScope<TModel> : IDisposable where TModel : Form
 				action,
 				controller,
 				FormMethod.Post,
-				attributes?.ToDictionary( x => x.Key, x => x.Value as object)
+				attributes?.ToDictionary(x => x.Key, x => x.Value as object)
 			);
 
 			if (options.HasFlag(FormScopeOptions.AddAntiForgeryToken))
@@ -115,16 +117,16 @@ public sealed class BootstrapFormScope<TModel> : IDisposable where TModel : Form
 		}
 	}
 
-	private string FormatText(string text) 
+	private string FormatText(string text)
 		=> Tools.Text.FormatWithDictionary(
-			text, 
-			new Dictionary<string, object> { 
+			text,
+			new Dictionary<string, object> {
 				["formId"] = _formID,
 				["formOptions"] = JsonConvert.SerializeObject(ToSerializableSurrogate(_options), Formatting.None)
 			},
 			false
 		);
-	
+
 	private void Write(HtmlString text) {
 		Write(text.Value);
 	}
@@ -156,18 +158,15 @@ public sealed class BootstrapFormScope<TModel> : IDisposable where TModel : Form
 		return result;
 	}
 
+
 	private class SerializableFormScopeOptions {
 
-		[JsonProperty("useLoadingOverlay")]
-		public bool UseLoadingOverlay { get; set; }
+		[JsonProperty("useLoadingOverlay")] public bool UseLoadingOverlay { get; set; }
 
-		[JsonProperty("clearOnSuccess")]
-		public bool ClearOnSuccess { get; set; }
+		[JsonProperty("clearOnSuccess")] public bool ClearOnSuccess { get; set; }
 
-		[JsonProperty("botProtect")]
-		public bool BotProtect { get; set; }
+		[JsonProperty("botProtect")] public bool BotProtect { get; set; }
 
-		[JsonProperty("httpMethod")]
-		public string HttpMethod { get; set; }
+		[JsonProperty("httpMethod")] public string HttpMethod { get; set; }
 	}
 }

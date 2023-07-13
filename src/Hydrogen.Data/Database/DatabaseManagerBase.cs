@@ -6,14 +6,6 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Hydrogen;
-using Hydrogen.Data;
-
 namespace Hydrogen.Data;
 
 public abstract class DatabaseManagerBase : IDatabaseManager {
@@ -23,7 +15,9 @@ public abstract class DatabaseManagerBase : IDatabaseManager {
 	public event EventHandlerEx<string> DatabaseDropped;
 
 	public abstract string GenerateConnectionString(string server, string database, string username, string password, int? port);
+
 	public abstract bool DatabaseExists(string connectionString);
+
 	public abstract void CreateApplicationDatabase(string connectionString, DatabaseGenerationDataPolicy dataPolicy, string databaseName);
 
 	public void CreateEmptyDatabase(string connectionString) {

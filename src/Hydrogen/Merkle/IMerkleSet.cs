@@ -12,9 +12,7 @@
 
 using System.Collections.Generic;
 
-namespace Hydrogen {
+namespace Hydrogen;
 
-	public interface IMerkleSet<TItem> : ISet<TItem>, IMerkleCollection<TItem> {
-	}
-
+public interface IMerkleSet<TItem> : ISet<TItem>, IMerkleCollection<TItem> {
 }

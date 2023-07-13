@@ -13,7 +13,8 @@ namespace Hydrogen.Application;
 
 public class ClientBackgroundLicenseVerifier : BackgroundLicenseVerifierBase {
 
-	public ClientBackgroundLicenseVerifier(IUserInterfaceServices userInterfaceServices,  IProductLicenseStorage productLicenseStorage, IProductLicenseClient licenseClient, IProductInformationProvider productInformationProvider,  IProductLicenseProvider productLicenseProvider, IProductLicenseActivator productLicenseActivator, IProductLicenseEnforcer productLicenseEnforcer)
+	public ClientBackgroundLicenseVerifier(IUserInterfaceServices userInterfaceServices, IProductLicenseStorage productLicenseStorage, IProductLicenseClient licenseClient, IProductInformationProvider productInformationProvider,
+	                                       IProductLicenseProvider productLicenseProvider, IProductLicenseActivator productLicenseActivator, IProductLicenseEnforcer productLicenseEnforcer)
 		: base(userInterfaceServices, productLicenseStorage, productInformationProvider, productLicenseProvider, productLicenseActivator, productLicenseEnforcer) {
 		LicenseClient = licenseClient;
 	}

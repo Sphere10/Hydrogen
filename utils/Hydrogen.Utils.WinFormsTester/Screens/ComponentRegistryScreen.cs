@@ -137,7 +137,7 @@
 //                _outputTextLogger.Exception(error);
 //            }
 //        }
-        
+
 
 //        private void _loadConfigButton_Click(object sender, EventArgs e) {
 //            try {
@@ -153,3 +153,5 @@
 //        #endregion
 //    }
 //}
+
+

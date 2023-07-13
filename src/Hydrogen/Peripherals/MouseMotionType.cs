@@ -6,14 +6,13 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen {
-	/// <summary>
-	/// Summary description for MouseMoveType.
-	/// </summary>
-	public enum MouseMotionType
-    {
-        Started,
-		Move,
-        Stopped
-    }
+namespace Hydrogen;
+
+/// <summary>
+/// Summary description for MouseMoveType.
+/// </summary>
+public enum MouseMotionType {
+	Started,
+	Move,
+	Stopped
 }

@@ -18,6 +18,25 @@ namespace Hydrogen;
 
 public static class IEnumerableExtensions {
 
+	public static IEnumerable<T> TakeL<T>(this IEnumerable<T> source, long count) {
+		Guard.ArgumentNotNull(source, nameof(source));
+		Guard.ArgumentGTE(count, 0, nameof(count));
+		foreach (var item in source) {
+			if (count-- <= 0)
+				yield break;
+			yield return item;
+		}
+	}
+
+	public static IEnumerable<T> SkipL<T>(this IEnumerable<T> source, long count) {
+		Guard.ArgumentNotNull(source, nameof(source));
+		Guard.ArgumentGTE(count, 0, nameof(count));
+		foreach (var item in source) {
+			if (count-- > 0) continue;
+			yield return item;
+		}
+	}
+
 	public static IEnumerable<TItem> Visit<TItem>(this IEnumerable<TItem> nodes, Func<TItem, IEnumerable<TItem>> edgeIterator, Func<TItem, bool> discriminator = null, IEqualityComparer<TItem> comparer = null) {
 		discriminator ??= _ => true;
 		var visited = new HashSet<TItem>(comparer ?? EqualityComparer<TItem>.Default);
@@ -750,7 +769,7 @@ public static class IEnumerableExtensions {
 	/// <param name="source">A sequence containing elements.</param>
 	/// <param name="item">The item to locate.</param>        
 	/// <returns>The index of the entry if it was found in the sequence; otherwise, -1.</returns>
-	public static int EnumeratedIndexOf<TSource>(this IEnumerable<TSource> source, TSource item) {
+	public static long EnumeratedIndexOf<TSource>(this IEnumerable<TSource> source, TSource item) {
 		return EnumeratedIndexOf(source, item, EqualityComparer<TSource>.Default);
 	}
 
@@ -765,12 +784,12 @@ public static class IEnumerableExtensions {
 	/// <param name="item">The item to locate.</param>
 	/// <param name="itemComparer">The item equality comparer to use.  Pass null to use the default comparer.</param>
 	/// <returns>The index of the entry if it was found in the sequence; otherwise, -1.</returns>
-	public static int EnumeratedIndexOf<T>(this IEnumerable<T> source, T item, IEqualityComparer<T> itemComparer) {
+	public static long EnumeratedIndexOf<T>(this IEnumerable<T> source, T item, IEqualityComparer<T> itemComparer) {
 		if (source == null) {
 			throw new ArgumentNullException(nameof(source));
 		}
 
-		int i = 0;
+		var i = 0L;
 		foreach (T possibleItem in source) {
 			if (itemComparer.Equals(item, possibleItem)) {
 				return i;
@@ -780,7 +799,7 @@ public static class IEnumerableExtensions {
 		return -1;
 	}
 
-	public static int EnumeratedIndexOf<TSource>(this IEnumerable<TSource> source, TSource item, Func<TSource, TSource, bool> itemComparer) {
+	public static long EnumeratedIndexOf<TSource>(this IEnumerable<TSource> source, TSource item, Func<TSource, TSource, bool> itemComparer) {
 		return source.EnumeratedIndexOf(item, new ActionEqualityComparer<TSource>(itemComparer));
 	}
 

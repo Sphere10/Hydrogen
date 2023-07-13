@@ -23,9 +23,10 @@ public static class StreamExtensions {
 	public static bool CanRead(this Stream stream, int byteCount) =>
 		stream.CanRead && (stream.Length - stream.Position) >= byteCount;
 
-	public static byte[] ReadBytes(this Stream stream, int count) {
+	public static byte[] ReadBytes(this Stream stream, long count) {
 		var result = new byte[count];
-		var bytesRead = stream.Read(result, 0, count);
+		var countI = Tools.Collection.CheckNotImplemented64bitAddressingLength(count);
+		var bytesRead = stream.Read(result, 0, countI);
 		if (bytesRead != result.Length)
 			Array.Resize(ref result, bytesRead);
 		return result;

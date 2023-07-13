@@ -14,10 +14,10 @@ public class NullableObjectSerializer<T> : ItemSerializerDecorator<T> {
 		: base(valueSerializer) {
 	}
 
-	public override int CalculateSize(T item)
-		=> 1 + (item != null ? base.CalculateSize(item) : 0);
+	public override long CalculateSize(T item)
+		=> sizeof(bool) + (item != null ? base.CalculateSize(item) : 0);
 
-	public override bool TrySerialize(T item, EndianBinaryWriter writer, out int bytesWritten) {
+	public override bool TrySerialize(T item, EndianBinaryWriter writer, out long bytesWritten) {
 		var isNull = item is null;
 		writer.Write(!isNull);
 		bytesWritten = 1;
@@ -28,7 +28,7 @@ public class NullableObjectSerializer<T> : ItemSerializerDecorator<T> {
 		return result;
 	}
 
-	public override bool TryDeserialize(int byteSize, EndianBinaryReader reader, out T item) {
+	public override bool TryDeserialize(long byteSize, EndianBinaryReader reader, out T item) {
 		item = default;
 		var isNull = reader.ReadBoolean();
 		if (isNull)

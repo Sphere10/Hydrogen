@@ -111,7 +111,7 @@ public class MerklePagedBufferTest {
 			for (var i = 0; i < 10; i++) {
 				// add a random amount
 				var remainingCapacity = maxCapacity - merkleBuffer.Count;
-				var newItemsCount = RNG.Next(0, remainingCapacity + 1);
+				var newItemsCount = RNG.Next(0, (int)remainingCapacity + 1);
 				IEnumerable<byte> newItems = RNG.NextBytes(newItemsCount);
 				merkleBuffer.AddRange(newItems);
 				expected.AddRange(newItems);
@@ -119,22 +119,22 @@ public class MerklePagedBufferTest {
 
 				// update a random amount
 				if (merkleBuffer.Count > 0) {
-					var range = RNG.NextRange(merkleBuffer.Count);
+					var range = RNG.NextRange(expected.Count);
 					newItems = RNG.NextBytes(range.End - range.Start + 1);
 					expected.UpdateRangeSequentially(range.Start, newItems);
 					merkleBuffer.UpdateRange(range.Start, newItems);
 
 					// shuffle a random amount
-					range = RNG.NextRange(merkleBuffer.Count);
+					range = RNG.NextRange(expected.Count);
 					newItems = merkleBuffer.ReadRange(range.Start, range.End - range.Start + 1);
 					var expectedNewItems = expected.GetRange(range.Start, range.End - range.Start + 1);
 
-					range = RNG.NextRange(merkleBuffer.Count, rangeLength: newItems.Count());
+					range = RNG.NextRange(expected.Count, rangeLength: newItems.Count());
 					expected.UpdateRangeSequentially(range.Start, expectedNewItems);
 					merkleBuffer.UpdateRange(range.Start, newItems);
 
 					// remove a random amount (FROM END OF LIST)
-					range = new ValueRange<int>(RNG.Next(0, merkleBuffer.Count), merkleBuffer.Count - 1);
+					range = new ValueRange<int>(RNG.Next(0, (int)merkleBuffer.Count), (int)merkleBuffer.Count - 1);
 					merkleBuffer.RemoveRange(range.Start, range.End - range.Start + 1);
 					expected.RemoveRange(range.Start, range.End - range.Start + 1);
 				}

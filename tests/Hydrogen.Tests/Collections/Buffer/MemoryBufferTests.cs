@@ -15,7 +15,6 @@ namespace Hydrogen.Tests;
 [Parallelizable(ParallelScope.Children)]
 public class MemoryBufferTests {
 
-
 	[Test]
 	public void IntegrationTests(
 		[Values(0, 3, 111)] int startCapacity,

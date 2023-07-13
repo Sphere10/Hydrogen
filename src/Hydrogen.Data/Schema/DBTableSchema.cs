@@ -61,7 +61,7 @@ public class DBTableSchema : DBObject {
 			var foreignKeysInvolvingColumn = ForeignKeys.Where(fk => column.Name.IsIn(fk.ForeignKeyColumns));
 			if (foreignKeysInvolvingColumn.Any()) {
 				var foreignKey = foreignKeysInvolvingColumn.Single();
-				int index = foreignKey.ForeignKeyColumns.EnumeratedIndexOf(column.Name);
+				var index = foreignKey.ForeignKeyColumns.EnumeratedIndexOf(column.Name);
 				var referenceColumnName = foreignKey.ReferenceColumns[index];
 				var referenceTable = this.Owner[foreignKey.ReferenceTable];
 				reference = referenceTable[referenceColumnName];

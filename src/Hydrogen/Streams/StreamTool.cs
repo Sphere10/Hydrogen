@@ -21,7 +21,7 @@ public static class Streams {
 	public const int DefaultBufferReadBlockSize = 32768;
 	public const int OptimalCompressWriteBlockSize = 8192;
 
-	public static void ShiftBytes(Stream stream, int fromIndex, int count, int toIndex, int blockSize = DefaultBufferReadBlockSize) {
+	public static void ShiftBytes(Stream stream, long fromIndex, long count, long toIndex, int blockSize = DefaultBufferReadBlockSize) {
 		Guard.ArgumentNotNull(stream, nameof(stream));
 		Guard.ArgumentGT(blockSize, 0, nameof(blockSize));
 		if (count == 0)
@@ -43,7 +43,8 @@ public static class Streams {
 			var fromEndIndex = fromIndex + count - 1;
 			if (toIndex <= fromEndIndex) {
 				var rightOverlapSectionLength = fromEndIndex - toIndex + 1;
-				rightOverlapSection = stream.ReadBytes(rightOverlapSectionLength);
+				var rightOverLapSectionLengthI = Tools.Collection.CheckNotImplemented64bitAddressingLength(rightOverlapSectionLength);
+				rightOverlapSection = stream.ReadBytes(rightOverLapSectionLengthI);
 				if (rightOverlapSection.Length != rightOverlapSectionLength)
 					throw new InternalErrorException("Unable to read overlapping section");
 			}
@@ -53,13 +54,15 @@ public static class Streams {
 		var readPosition = stream.Position;
 		var writePosition = (long)toIndex + rightOverlapSection.Length;
 		var block = new byte[blockSize];
-		foreach (var nextBlockSize in Tools.Collection.Partition(count - rightOverlapSection.Length, blockSize)) {
+
+		foreach (var nextBlockSize in Tools.Collection.Partition(count - rightOverlapSection.LongLength, blockSize)) {
+			Debug.Assert(nextBlockSize <= blockSize);
 			stream.Seek(readPosition, SeekOrigin.Begin);
-			if (stream.Read(block, 0, nextBlockSize) != nextBlockSize)
+			if (stream.Read(block, 0, unchecked((int)nextBlockSize)) != nextBlockSize)
 				throw new InternalErrorException("Failed to read bytes from stream");
 			readPosition = stream.Position;
 			stream.Seek(writePosition, SeekOrigin.Begin);
-			stream.Write(block, 0, nextBlockSize);
+			stream.Write(block, 0, unchecked((int)nextBlockSize));
 			writePosition = stream.Position;
 		}
 

@@ -12,16 +12,17 @@ namespace Hydrogen;
 
 public interface IWriteOnlyExtendedList<in T> : IWriteOnlyExtendedCollection<T> {
 	T this[int index] { set; }
+	T this[long index] { set; }
 
-	void Update(int index, T item);
+	void Update(long index, T item);
 
-	void UpdateRange(int index, IEnumerable<T> items);
+	void UpdateRange(long index, IEnumerable<T> items);
 
-	void Insert(int index, T item);
+	void Insert(long index, T item);
 
-	void InsertRange(int index, IEnumerable<T> items);
+	void InsertRange(long index, IEnumerable<T> items);
 
-	void RemoveAt(int index);
+	void RemoveAt(long index);
 
-	void RemoveRange(int index, int count);
+	void RemoveRange(long index, long count);
 }

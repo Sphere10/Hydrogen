@@ -40,7 +40,7 @@ The bit indexes of the 16-bit array C are such that:
 public class BitVector : RangedListBase<bool> {
 
 	private readonly Stream _stream;
-	private int _count;
+	private long _count;
 
 	public BitVector(Stream stream) {
 		Guard.ArgumentNotNull(stream, nameof(stream));
@@ -49,17 +49,17 @@ public class BitVector : RangedListBase<bool> {
 		_count = (int)(stream.Length * 8);
 	}
 
-	public override int Count => _count;
+	public override long Count => _count;
 
-	public override IEnumerable<int> IndexOfRange(IEnumerable<bool> items) {
+	public override IEnumerable<long> IndexOfRange(IEnumerable<bool> items) {
 		Guard.ArgumentNotNull(items, nameof(items));
 
 		var itemsArray = items as bool[] ?? items.ToArray();
 		if (!itemsArray.Any()) {
-			return new List<int>();
+			return new List<long>();
 		}
 
-		var results = new int[itemsArray.Length];
+		var results = new long[itemsArray.Length];
 		_stream.Seek(0, SeekOrigin.Begin);
 
 		for (var i = 0; i < _stream.Length; i++) {
@@ -110,7 +110,7 @@ public class BitVector : RangedListBase<bool> {
 		_count += itemsArray.Length;
 	}
 
-	public override void InsertRange(int index, IEnumerable<bool> items) {
+	public override void InsertRange(long index, IEnumerable<bool> items) {
 		Guard.ArgumentNotNull(items, nameof(items));
 		Guard.ArgumentInRange(index, 0, Math.Max(0, _count), nameof(index));
 
@@ -125,7 +125,7 @@ public class BitVector : RangedListBase<bool> {
 			throw new NotSupportedException("This collection can only be inserted from the end");
 	}
 
-	public override IEnumerable<bool> ReadRange(int index, int count) {
+	public override IEnumerable<bool> ReadRange(long index, long count) {
 		CheckRange(index, count);
 
 		var startBitIndex = index % 8;
@@ -150,7 +150,7 @@ public class BitVector : RangedListBase<bool> {
 		}
 	}
 
-	public override void RemoveRange(int index, int count) {
+	public override void RemoveRange(long index, long count) {
 		CheckRange(index, count, rightAligned: true);
 
 		if (index + count != Count)
@@ -161,7 +161,7 @@ public class BitVector : RangedListBase<bool> {
 		_count -= count;
 	}
 
-	public override void UpdateRange(int index, IEnumerable<bool> items) {
+	public override void UpdateRange(long index, IEnumerable<bool> items) {
 		Guard.ArgumentNotNull(items, nameof(items));
 		var itemsArray = items as bool[] ?? items.ToArray();
 		CheckRange(index, itemsArray.Length);
@@ -223,10 +223,10 @@ public class BitVector : RangedListBase<bool> {
 	/// <param name="indices"></param>
 	/// <returns></returns>
 	/// <remarks>NOT TESTED</remarks>
-	public long FastFindBits(long fromOffset, int quantity, bool searchValue, bool value, out int[] indices) {
+	public long FastFindBits(long fromOffset, long quantity, bool searchValue, bool value, out long[] indices) {
 		fromOffset = FastFindStreamOffsetContainingBitValue(fromOffset, value);
 		// TODO: update this to search bit values using QWORD's
-		var indicesL = new List<int>();
+		var indicesL = new List<long>();
 		var startSearchBit = fromOffset * 8;
 		for (var i = startSearchBit; i < _count || indicesL.Count < quantity; i++)
 			if (Read((int)i) == searchValue)

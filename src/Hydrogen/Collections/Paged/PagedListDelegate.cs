@@ -14,13 +14,13 @@ namespace Hydrogen;
 internal class PagedListDelegate<TItem> : IPagedListDelegate<TItem> {
 
 	public PagedListDelegate(
-		Action<int> incCount,
-		Action<int> decCount,
+		Action<long> incCount,
+		Action<long> decCount,
 		Action updateVersion,
 		Action checkRequiresLoad,
-		Action<int, int, bool> checkRange,
+		Action<long, long, bool> checkRange,
 		Func<IPage<TItem>, IDisposable> enterOpenPageScope,
-		Func<int, int, List<Tuple<IPage<TItem>, int, int>>> getPageSegments,
+		Func<long, long, List<Tuple<IPage<TItem>, long, long>>> getPageSegments,
 		Func<IReadOnlyList<IPage<TItem>>> internalPages,
 		Func<IPage<TItem>> createNextPage,
 		Action notifyAccessing,
@@ -50,21 +50,21 @@ internal class PagedListDelegate<TItem> : IPagedListDelegate<TItem> {
 		GetPageSegments = getPageSegments;
 	}
 
-	public Action<int> IncCount { get; }
+	public Action<long> IncCount { get; }
 
-	public Action<int> DecCount { get; }
+	public Action<long> DecCount { get; }
 
 	public Action UpdateVersion { get; }
 
 	public Action CheckRequiresLoad { get; }
 
-	public Action<int, int, bool> CheckRange { get; }
+	public Action<long, long, bool> CheckRange { get; }
 
 	public Func<IReadOnlyList<IPage<TItem>>> InternalPages { get; }
 
 	public Func<IPage<TItem>, IDisposable> EnterOpenPageScope { get; }
 
-	public Func<int, int, List<Tuple<IPage<TItem>, int, int>>> GetPageSegments { get; }
+	public Func<long, long, List<Tuple<IPage<TItem>, long, long>>> GetPageSegments { get; }
 
 	public Func<IPage<TItem>> CreateNextPage { get; }
 

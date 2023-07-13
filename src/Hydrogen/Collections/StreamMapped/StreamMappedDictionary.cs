@@ -100,7 +100,8 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 	public override int Count {
 		get {
 			CheckLoaded();
-			return KVPList.Count - _unusedRecords.Count;
+			var kvpListCountI = Tools.Collection.CheckNotImplemented64bitAddressingLength(KVPList.Count);
+			return kvpListCountI - _unusedRecords.Count;
 		}
 	}
 
@@ -302,7 +303,7 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 
 	protected override IEnumerator<TKey> GetKeysEnumerator() {
 		CheckLoaded();
-		return Enumerable.Range(0, KVPList.Count)
+		return Enumerable.Range(0, Tools.Collection.CheckNotImplemented64bitAddressingLength(KVPList.Count))
 			.Where(i => !_unusedRecords.Contains(i))
 			.Select(ReadKey)
 			.GetEnumerator();
@@ -310,7 +311,7 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 
 	protected override IEnumerator<TValue> GetValuesEnumerator() {
 		CheckLoaded();
-		return Enumerable.Range(0, KVPList.Count)
+		return Enumerable.Range(0, Tools.Collection.CheckNotImplemented64bitAddressingLength(KVPList.Count))
 			.Where(i => !_unusedRecords.Contains(i))
 			.Select(ReadValue)
 			.GetEnumerator();
@@ -363,7 +364,8 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 		_checksumToIndexLookup.Clear();
 		_unusedRecords.Clear();
 		for (var i = 0; i < KVPList.Count; i++) {
-			var record = KVPList.Storage.Records[KVPList.Storage.Header.ReservedRecords + i];
+			var reservedRecordsI = Tools.Collection.CheckNotImplemented64bitAddressingLength(KVPList.Storage.Header.ReservedRecords);
+			var record = KVPList.Storage.Records[reservedRecordsI + i];
 			if (record.Traits.HasFlag(ClusteredStreamTraits.IsUsed))
 				_checksumToIndexLookup.Add(record.KeyChecksum, i);
 			else

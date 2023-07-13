@@ -68,7 +68,7 @@ public class StreamMappedMerkleDictionary<TKey, TValue> : DictionaryDecorator<TK
 	/// </summary>
 	public StreamMappedMerkleDictionary(Stream rootStream, int clusterSize, IItemSerializer<TKey> staticSizedKeySerializer, CHF hashAlgorithm = CHF.SHA2_256, IItemSerializer<TValue> valueSerializer = null,
 	                                    IItemChecksummer<TKey> keyChecksummer = null, IEqualityComparer<TKey> keyComparer = null, IEqualityComparer<TValue> valueComparer = null,
-	                                    ClusteredStoragePolicy policy = ClusteredStoragePolicy.DictionaryDefault, int reservedRecords = 1, Endianness endianness = Endianness.LittleEndian)
+	                                    ClusteredStoragePolicy policy = ClusteredStoragePolicy.DictionaryDefault, long reservedRecords = 1, Endianness endianness = Endianness.LittleEndian)
 		: this(
 			new StreamMappedMerkleList<TValue>(
 				rootStream,

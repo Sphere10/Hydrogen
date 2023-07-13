@@ -22,7 +22,7 @@ public abstract class PagedListBase<TItem> : RangedListBase<TItem>, IPagedList<T
 	public event EventHandlerEx<object> Loaded;
 	public event EventHandlerEx<object, IPage<TItem>> PageAccessing;
 	public event EventHandlerEx<object, IPage<TItem>> PageAccessed;
-	public event EventHandlerEx<object, int> PageCreating;
+	public event EventHandlerEx<object, long> PageCreating;
 	public event EventHandlerEx<object, IPage<TItem>> PageCreated;
 	public event EventHandlerEx<object, IPage<TItem>> PageReading;
 	public event EventHandlerEx<object, IPage<TItem>> PageRead;
@@ -31,21 +31,21 @@ public abstract class PagedListBase<TItem> : RangedListBase<TItem>, IPagedList<T
 	public event EventHandlerEx<object, IPage<TItem>> PageDeleting;
 	public event EventHandlerEx<object, IPage<TItem>> PageDeleted;
 
-	private int _count;
-	private int _lastFoundPage;
+	private long _count;
+	private long _lastFoundPage;
 	private readonly ReadOnlyListAdapter<IPage<TItem>> _pagesAdapter;
-	protected List<IPage<TItem>> InternalPages;
+	protected IExtendedList<IPage<TItem>> InternalPages;
 
 	protected PagedListBase() {
 		RequiresLoad = false;
 		IsLoading = false;
-		InternalPages = new List<IPage<TItem>>();
+		InternalPages = new ExtendedList<IPage<TItem>>();
 		_count = 0;
 		_pagesAdapter = new ReadOnlyListAdapter<IPage<TItem>>(InternalPages);
 		_lastFoundPage = -1;
 	}
 
-	public override int Count => _count;
+	public override long Count => _count;
 
 	public virtual IReadOnlyList<IPage<TItem>> Pages => _pagesAdapter;
 
@@ -73,13 +73,13 @@ public abstract class PagedListBase<TItem> : RangedListBase<TItem>, IPagedList<T
 
 	public override IEnumerable<bool> ContainsRange(IEnumerable<TItem> items) => throw new NotSupportedException();
 
-	public override IEnumerable<int> IndexOfRange(IEnumerable<TItem> items) => throw new NotSupportedException();
+	public override IEnumerable<long> IndexOfRange(IEnumerable<TItem> items) => throw new NotSupportedException();
 
-	public override IEnumerable<TItem> ReadRange(int index, int count) {
+	public override IEnumerable<TItem> ReadRange(long index, long count) {
 		return ReadRangeByPage(index, count).SelectMany(x => x);
 	}
 
-	public virtual IEnumerable<IEnumerable<TItem>> ReadRangeByPage(int index, int count) {
+	public virtual IEnumerable<IEnumerable<TItem>> ReadRangeByPage(long index, long count) {
 		CheckRange(index, count);
 		CheckRequiresLoad();
 		NotifyAccessing();
@@ -129,7 +129,7 @@ public abstract class PagedListBase<TItem> : RangedListBase<TItem>, IPagedList<T
 		NotifyAccessed();
 	}
 
-	public override void UpdateRange(int index, IEnumerable<TItem> items) {
+	public override void UpdateRange(long index, IEnumerable<TItem> items) {
 		Guard.ArgumentNotNull(items, nameof(items));
 		CheckRequiresLoad();
 		NotifyAccessing();
@@ -160,7 +160,7 @@ public abstract class PagedListBase<TItem> : RangedListBase<TItem>, IPagedList<T
 		NotifyAccessed();
 	}
 
-	public override void InsertRange(int index, IEnumerable<TItem> items) {
+	public override void InsertRange(long index, IEnumerable<TItem> items) {
 		if (index == Count)
 			AddRange(items);
 		else throw new NotSupportedException("This collection can only be mutated from the end");
@@ -168,7 +168,7 @@ public abstract class PagedListBase<TItem> : RangedListBase<TItem>, IPagedList<T
 
 	public override IEnumerable<bool> RemoveRange(IEnumerable<TItem> items) => throw new NotSupportedException();
 
-	public override void RemoveRange(int index, int count) {
+	public override void RemoveRange(long index, long count) {
 		CheckRange(index, count, rightAligned: true);
 		CheckRequiresLoad();
 		NotifyAccessing();
@@ -205,7 +205,7 @@ public abstract class PagedListBase<TItem> : RangedListBase<TItem>, IPagedList<T
 		CheckRequiresLoad();
 		NotifyAccessing();
 		while (InternalPages.Count > 0)
-			DeletePage(InternalPages[^1]);
+			DeletePage(InternalPages[InternalPages.Count - 1]);
 		InternalPages.Clear();
 		_lastFoundPage = -1;
 		_count = 0;
@@ -232,7 +232,7 @@ public abstract class PagedListBase<TItem> : RangedListBase<TItem>, IPagedList<T
 				);
 	}
 
-	protected abstract IPage<TItem> NewPageInstance(int pageNumber);
+	protected abstract IPage<TItem> NewPageInstance(long pageNumber);
 
 	protected abstract IPage<TItem>[] LoadPages();
 
@@ -277,8 +277,8 @@ public abstract class PagedListBase<TItem> : RangedListBase<TItem>, IPagedList<T
 		NotifyPageAccessed(page);
 	}
 
-	protected List<Tuple<IPage<TItem>, int, int>> GetPageSegments(int startIndex, int count) {
-		var pageSegments = new List<Tuple<IPage<TItem>, int, int>>();
+	protected List<Tuple<IPage<TItem>, long, long>> GetPageSegments(long startIndex, long count) {
+		var pageSegments = new List<Tuple<IPage<TItem>, long, long>>();
 		if (count == 0)
 			return pageSegments;
 
@@ -294,7 +294,7 @@ public abstract class PagedListBase<TItem> : RangedListBase<TItem>, IPagedList<T
 		return pageSegments;
 	}
 
-	protected List<IPage<TItem>> GetPagesInRange(int startIndex, int endIndex) {
+	protected List<IPage<TItem>> GetPagesInRange(long startIndex, long endIndex) {
 		var index = FindPageContainingIndex(startIndex);
 		var pages = new List<IPage<TItem>>();
 		IPage<TItem> page;
@@ -305,12 +305,12 @@ public abstract class PagedListBase<TItem> : RangedListBase<TItem>, IPagedList<T
 		return pages;
 	}
 
-	protected int FindPageContainingIndex(int index) {
+	protected long FindPageContainingIndex(long index) {
 		var internalPagesCount = InternalPages.Count;
 		if (internalPagesCount == 0)
 			return -1;
 
-		int lower, upper;
+		long lower, upper;
 		if (_lastFoundPage != -1) {
 			// Optimization 1: check the last binary searched page again (index seeks tend to be clustered together)
 			var currentPage = InternalPages[_lastFoundPage];
@@ -365,18 +365,18 @@ public abstract class PagedListBase<TItem> : RangedListBase<TItem>, IPagedList<T
 			throw new InvalidOperationException("Paged collection has not been loaded");
 	}
 
-	protected override void CheckIndex(int index, bool allowAtEnd = false) {
+	protected override void CheckIndex(long index, bool allowAtEnd = false) {
 		Guard.Ensure(InternalPages.Count > 0, "No pages");
 		var startIX = InternalPages[0].StartIndex;
-		var lastIX = InternalPages[^-1].EndIndex;
+		var lastIX = InternalPages[InternalPages.Count - 1].EndIndex;
 		var collectionCount = lastIX - startIX + 1;
 		Guard.CheckIndex(index, startIX, collectionCount, allowAtEnd);
 	}
 
-	protected override void CheckRange(int index, int count, bool rightAligned = false) {
+	protected override void CheckRange(long index, long count, bool rightAligned = false) {
 		Guard.Ensure(InternalPages.Count > 0, "No pages");
 		var startIX = InternalPages[0].StartIndex;
-		var lastIX = InternalPages[^1].EndIndex;
+		var lastIX = InternalPages[InternalPages.Count - 1].EndIndex;
 		var collectionCount = lastIX - startIX + 1;
 		Guard.CheckRange(index, count, rightAligned, startIX, collectionCount);
 	}
@@ -401,7 +401,7 @@ public abstract class PagedListBase<TItem> : RangedListBase<TItem>, IPagedList<T
 	protected virtual void OnPageAccessed(IPage<TItem> page) {
 	}
 
-	protected virtual void OnPageCreating(int pageNumber) {
+	protected virtual void OnPageCreating(long pageNumber) {
 	}
 
 	protected virtual void OnPageCreated(IPage<TItem> page) {
@@ -462,7 +462,7 @@ public abstract class PagedListBase<TItem> : RangedListBase<TItem>, IPagedList<T
 		PageAccessed?.Invoke(this, page);
 	}
 
-	protected void NotifyPageCreating(int pageNumber) {
+	protected void NotifyPageCreating(long pageNumber) {
 		OnPageCreating(pageNumber);
 		PageCreating?.Invoke(this, pageNumber);
 	}

@@ -99,7 +99,7 @@ public class FileTransaction : IDisposable {
 		}
 	}
 
-	public TransactionalFileMappedBuffer EnlistFile(string filename, int pageSize, long maxMemory) {
+	public TransactionalFileMappedBuffer EnlistFile(string filename, long pageSize, long maxMemory) {
 		Guard.ArgumentNotNullOrEmpty(filename, nameof(filename));
 
 		if (File.Exists(filename)) {
@@ -253,7 +253,7 @@ public class FileTransaction : IDisposable {
 	[Serializable]
 	public class TransactionalFileSerializableSurrogate {
 		public string Filename { get; set; }
-		public int PageSize { get; set; }
+		public long PageSize { get; set; }
 		public long MaxMemory { get; set; }
 
 		public TransactionalFileSerializableSurrogate() {

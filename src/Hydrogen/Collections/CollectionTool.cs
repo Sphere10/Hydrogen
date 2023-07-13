@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Hydrogen;
 using Void = Hydrogen.Void;
 
@@ -18,9 +19,16 @@ namespace Tools;
 
 public static class Collection {
 
-	public static IEnumerable<T> AsEnumerable<T>(T item) where T : class
-		=> item != null ? new[] { item } : Enumerable.Empty<T>();
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static IEnumerable<T> AsEnumerable<T>(T item) {
+		yield return item;
+	}
 
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static IEnumerable<T> AsEnumerableWhenNotNull<T>(T item) where T : class {
+		if (item != null)
+			yield return item;
+	}
 
 	public static IEnumerable<Void> Infinity {
 		get {
@@ -50,6 +58,16 @@ public static class Collection {
 			action();
 	}
 
+	public static void Repeat(Action action, long count) {
+		for (var i = 0L; i < count; i++)
+			action();
+	}
+
+	public static IEnumerable<T> RepeatValue<T>(T value, long count) {
+		for (var i = 0L; i < count; i++)
+			yield return value;
+	}
+
 
 	public static bool ValidIndex<T>(IEnumerable<T> collection, int index) {
 		if (index < 0)
@@ -64,7 +82,14 @@ public static class Collection {
 		}
 	}
 
-	public static int BinarySearch<TItem, TSearch>(IList<TItem> list, TSearch value, int lower, int upper, Func<TSearch, TItem, int> comparer) {
+	public static IEnumerable<long> Partition(long number, long chunk) {
+		while (number > 0) {
+			yield return chunk < number ? chunk : number;
+			number -= chunk;
+		}
+	}
+
+	public static long BinarySearch<TItem, TSearch>(IExtendedList<TItem> list, TSearch value, long lower, long upper, Func<TSearch, TItem, int> comparer) {
 		Debug.Assert(list != null);
 		Guard.ArgumentNotNull(comparer, nameof(comparer));
 		while (lower <= upper) {
@@ -80,5 +105,55 @@ public static class Collection {
 		}
 		return ~lower;
 	}
+
+	public static int BinarySearch<TItem, TSearch>(TItem[] list, TSearch value, int lower, int upper, Func<TSearch, TItem, int> comparer) {
+		Debug.Assert(list != null);
+		Guard.ArgumentNotNull(comparer, nameof(comparer));
+		while (lower <= upper) {
+			var middle = lower + (upper - lower) / 2;
+			var comparisonResult = comparer(value, list[middle]);
+			if (comparisonResult < 0) {
+				upper = middle - 1;
+			} else if (comparisonResult > 0) {
+				lower = middle + 1;
+			} else {
+				return middle;
+			}
+		}
+		return ~lower;
+	}
+
+	public static IEnumerable<long> RangeL(long start, long count) {
+		for (var i = 0L; i < count; i++)
+			yield return start + i;
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static int CheckNotImplemented64bitAddressingLength(long value) {
+		if (value < int.MinValue)
+			throw new NotImplementedException("64-bit addressing is not currently implemented in Hydrogen");
+
+		if (value > int.MaxValue)
+			throw new NotImplementedException("64-bit addressing is not currently implemented in Hydrogen");
+
+		unchecked {
+			return (int)value;
+		}
+	}
+
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static int CheckNotImplemented64bitAddressingIndex(long value) {
+		if (value < int.MinValue)
+			throw new NotImplementedException("64-bit addressing is not currently implemented in Hydrogen");
+
+		if (value > int.MaxValue)
+			throw new NotImplementedException("64-bit addressing is not currently implemented in Hydrogen");
+
+		unchecked {
+			return (int)value;
+		}
+	}
+
 
 }

@@ -110,7 +110,7 @@ public class MemoryPagedListTests {
 			Assert.AreEqual(0, unloads);
 			Assert.AreEqual(collection.Count, 0);
 			Assert.AreEqual(collection.Pages.Count, 0);
-			AssertEx.HasLoadedPages(collection, new int[0]);
+			AssertEx.HasLoadedPages(collection, Array.Empty<long>());
 
 			collection.Add("page1");
 			Assert.AreEqual(1, created);
@@ -257,7 +257,7 @@ public class MemoryPagedListTests {
 			Assert.AreEqual(0, unloads);
 			Assert.AreEqual(collection.Count, 0);
 			Assert.AreEqual(collection.Pages.Count(), 0);
-			AssertEx.HasLoadedPages(collection, new int[0]);
+			AssertEx.HasLoadedPages(collection, Array.Empty<long>());
 
 			// page 1
 			collection.Add("01");
@@ -358,8 +358,8 @@ public class MemoryPagedListTests {
 			collection.Add("56");
 			AssertEx.HasLoadedPages(collection, 2);
 
-			var loads = new List<int>();
-			var unloads = new List<int>();
+			var loads = new List<long>();
+			var unloads = new List<long>();
 			collection.PageLoaded += (o, page) => loads.Add(page.Number);
 			collection.PageUnloaded += (o, page) => unloads.Add(page.Number);
 			foreach (var item in collection.WithDescriptions()) {
@@ -453,8 +453,8 @@ public class MemoryPagedListTests {
 
 	[Test]
 	public void TestTwoPages1() {
-		var pageLoads = new List<int>();
-		var pageUnloads = new List<int>();
+		var pageLoads = new List<long>();
+		var pageUnloads = new List<long>();
 		using (var collection = new MemoryPagedList<string>(100, 1 * 100, str => str.Length * sizeof(char))) {
 			collection.PageLoaded += (largeCollection, page) => pageLoads.Add(page.Number);
 			collection.PageUnloaded += (largeCollection, page) => pageUnloads.Add(page.Number);
@@ -489,8 +489,8 @@ public class MemoryPagedListTests {
 
 	[Test]
 	public void TestTwoPages2() {
-		var pageLoads = new List<int>();
-		var pageUnloads = new List<int>();
+		var pageLoads = new List<long>();
+		var pageUnloads = new List<long>();
 		using (var collection = new MemoryPagedList<string>(100, 1 * 100, str => str.Length * sizeof(char))) {
 			collection.PageLoaded += (largeCollection, page) => pageLoads.Add(page.Number);
 			collection.PageUnloaded += (largeCollection, page) => pageUnloads.Add(page.Number);
@@ -650,7 +650,7 @@ public class MemoryPagedListTests {
 			for (var i = 0; i < 100; i++) {
 				collection.Add(Tools.Text.GenerateRandomString(Tools.Maths.RNG.Next(100, 1000)));
 				for (var j = 0; j < 3; j++) {
-					var str = collection[Tools.Maths.RNG.Next(0, collection.Count - 1)];
+					var str = collection[Tools.Maths.RNG.Next(0, (int)collection.Count - 1)];
 				}
 			}
 		}

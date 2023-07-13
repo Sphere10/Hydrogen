@@ -11,17 +11,17 @@ using System.Collections.Generic;
 namespace Hydrogen;
 
 public interface IPage<TItem> : IEnumerable<TItem> {
-	int Number { get; set; }
-	int StartIndex { get; set; }
-	int EndIndex { get; set; }
-	int Count { get; set; }
-	int Size { get; set; }
+	long Number { get; set; }
+	long StartIndex { get; set; }
+	long EndIndex { get; set; }
+	long Count { get; set; }
+	long Size { get; set; }
 	bool Dirty { get; set; }
 	PageState State { get; set; }
 
-	IEnumerable<TItem> Read(int index, int count);
+	IEnumerable<TItem> Read(long index, long count);
 
-	bool Write(int index, IEnumerable<TItem> items, out IEnumerable<TItem> overflow);
+	bool Write(long index, IEnumerable<TItem> items, out IEnumerable<TItem> overflow);
 
-	void EraseFromEnd(int count);
+	void EraseFromEnd(long count);
 }

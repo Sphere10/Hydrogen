@@ -15,11 +15,11 @@ namespace Hydrogen;
 internal class ExtendedListHelper {
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static int IndexOfSequenceImpl<T>(IExtendedList<T> extendedList, IEnumerable<T> items) {
+	public static long IndexOfSequenceImpl<T>(IExtendedList<T> extendedList, IEnumerable<T> items) {
 		var indices = extendedList.IndexOfRange(items).ToArray();
 		if (indices.Length == 0)
 			return -1;
-		return Enumerable.Range(indices[0], indices.Length).SequenceEqual(indices) ? indices[0] : -1;
+		return Tools.Collection.RangeL(indices[0], indices.Length).SequenceEqual(indices) ? indices[0] : -1;
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]

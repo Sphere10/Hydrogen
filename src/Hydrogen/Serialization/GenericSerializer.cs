@@ -24,7 +24,7 @@ namespace Hydrogen;
 public class GenericSerializer<T> : GenericSerializerBase, IItemSerializer<T> {
 	public bool IsStaticSize => false;
 
-	public int StaticSize => -1;
+	public long StaticSize => -1;
 
 	/// <summary>
 	/// Initialize a new instance of <see cref="GenericSerializerBase"/>. Registers generic type param
@@ -38,10 +38,10 @@ public class GenericSerializer<T> : GenericSerializerBase, IItemSerializer<T> {
 
 	public static IItemSerializer<T> Default => DefaultInstance.Value;
 
-	public int CalculateTotalSize(IEnumerable<T> items, bool calculateIndividualItems, out int[] itemSizes) {
+	public long CalculateTotalSize(IEnumerable<T> items, bool calculateIndividualItems, out long[] itemSizes) {
 
 		var itemsArray = items as T[] ?? items.ToArray();
-		var sizes = new int[itemsArray.Length];
+		var sizes = new long[itemsArray.Length];
 
 		for (int i = 0; i < itemsArray.Length; i++)
 			sizes[i] = CalculateSize(itemsArray[i]);
@@ -50,21 +50,21 @@ public class GenericSerializer<T> : GenericSerializerBase, IItemSerializer<T> {
 		return sizes.Sum(x => x);
 	}
 
-	public int CalculateSize(T item) {
+	public long CalculateSize(T item) {
 		var context = new SerializationContext();
 		SerializeInternal(typeof(T), item, context);
 
-		return (int)context.SizeBytes;
+		return context.SizeBytes;
 	}
 
-	public bool TrySerialize(T item, EndianBinaryWriter writer, out int bytesWritten) {
+	public bool TrySerialize(T item, EndianBinaryWriter writer, out long bytesWritten) {
 		var context = new SerializationContext(writer);
 		SerializeInternal(typeof(T), item, context);
 		bytesWritten = (int)context.SizeBytes;
 		return true;
 	}
 
-	public bool TryDeserialize(int byteSize, EndianBinaryReader reader, out T item) {
+	public bool TryDeserialize(long byteSize, EndianBinaryReader reader, out T item) {
 		var context = new SerializationContext(reader);
 		item = (T)DeserializeInternal(typeof(T), context);
 		return true;
@@ -250,7 +250,7 @@ public class GenericSerializer<T> : GenericSerializerBase, IItemSerializer<T> {
 	}
 
 	private object DeserializeCustom(IItemSerializer<object> serializer, SerializationContext context) {
-		var byteSize = (int)(ulong)context.Reader.ReadCVarInt(sizeof(int));
+		var byteSize = (int)(ulong)context.Reader.ReadCVarInt();
 		return serializer.Deserialize(byteSize, context.Reader);
 	}
 
@@ -266,19 +266,19 @@ public class GenericSerializer<T> : GenericSerializerBase, IItemSerializer<T> {
 			return reader.ReadInt16();
 
 		if (t == typeof(ushort))
-			return (ushort)CVarInt.Read(sizeof(ushort), context.Reader.BaseStream);
+			return (ushort)CVarInt.Read(context.Reader.BaseStream);
 
 		if (t == typeof(int))
 			return reader.ReadInt32();
 
 		if (t == typeof(uint))
-			return (uint)CVarInt.Read(sizeof(uint), context.Reader.BaseStream);
+			return (uint)CVarInt.Read(context.Reader.BaseStream);
 
 		if (t == typeof(long))
 			return reader.ReadInt64();
 
 		if (t == typeof(ulong))
-			return (ulong)CVarInt.Read(sizeof(ulong), context.Reader.BaseStream);
+			return (ulong)CVarInt.Read(context.Reader.BaseStream);
 
 		if (t == typeof(double))
 			return reader.ReadDouble();

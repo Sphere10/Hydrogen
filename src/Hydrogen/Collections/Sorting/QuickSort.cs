@@ -16,9 +16,9 @@ public sealed class QuickSort<T> : SortAlgorithm<T> {
 		this.ExecuteRecursive(list, 0, list.Count - 1, comparer);
 	}
 
-	private void ExecuteRecursive(IExtendedList<T> list, int left, int right, IComparer<T> comparer) {
-		int segmentLeft = left;
-		int segmentRight = right;
+	private void ExecuteRecursive(IExtendedList<T> list, long left, long right, IComparer<T> comparer) {
+		var segmentLeft = left;
+		var segmentRight = right;
 
 		var pivot = list[(left + right) / 2];
 

@@ -27,7 +27,7 @@ public abstract class TransactionalFileMappedListBase<TItem> : FilePagedListBase
 	protected TransactionalFileMappedListBase(
 		string filename,
 		string uncommittedPageFileDir,
-		int pageSize,
+		long pageSize,
 		long maxMemory,
 		bool readOnly = false,
 		bool autoLoad = false)
@@ -111,7 +111,7 @@ public abstract class TransactionalFileMappedListBase<TItem> : FilePagedListBase
 		base.Dispose();
 	}
 
-	protected abstract int GetCommittedPageCount();
+	protected abstract long GetCommittedPageCount();
 
 	protected override void OnLoaded() {
 		base.OnLoaded();
@@ -125,7 +125,7 @@ public abstract class TransactionalFileMappedListBase<TItem> : FilePagedListBase
 			Rollback();
 	}
 
-	protected override void OnPageCreating(int pageNumber) {
+	protected override void OnPageCreating(long pageNumber) {
 		base.OnPageCreating(pageNumber);
 		if (IsLoading || Disposing)
 			return;
@@ -247,7 +247,7 @@ public abstract class TransactionalFileMappedListBase<TItem> : FilePagedListBase
 	/// </summary>
 	public class MarkerRepository {
 		readonly HashSet<FileMarkerType> _fileMarkers;
-		readonly LookupEx<int, PageMarkerType> _pageMarkers;
+		readonly LookupEx<long, PageMarkerType> _pageMarkers;
 
 		public MarkerRepository(string baseDir, Guid fileID) {
 			BaseDir = baseDir;
@@ -261,9 +261,9 @@ public abstract class TransactionalFileMappedListBase<TItem> : FilePagedListBase
 
 		public IEnumerable<FileMarkerType> FileMarkers => _fileMarkers;
 
-		public ILookup<int, PageMarkerType> PageMarkers => _pageMarkers;
+		public ILookup<long, PageMarkerType> PageMarkers => _pageMarkers;
 
-		public int? LowestDeletedPageNumber {
+		public long? LowestDeletedPageNumber {
 			get {
 				var deletedMarkers = PageMarkers.Where(markers => markers.Contains(PageMarkerType.DeletedMarker)).Select(x => x.Key).ToArray();
 				if (deletedMarkers.Length > 0)
@@ -272,7 +272,7 @@ public abstract class TransactionalFileMappedListBase<TItem> : FilePagedListBase
 			}
 		}
 
-		public int? HighestChangedPageNumber {
+		public long? HighestChangedPageNumber {
 			get {
 				var pageMarkers = PageMarkers.Where(markers => markers.Contains(PageMarkerType.UncommittedPage)).Select(x => x.Key).ToArray();
 				if (pageMarkers.Length > 0)
@@ -281,7 +281,7 @@ public abstract class TransactionalFileMappedListBase<TItem> : FilePagedListBase
 			}
 		}
 
-		public void Add(PageMarkerType marker, int pageNumber) {
+		public void Add(PageMarkerType marker, long pageNumber) {
 			var addMarker = !_pageMarkers.Contains(pageNumber) || !_pageMarkers[pageNumber].Contains(marker);
 			if (addMarker) {
 				var file = GeneratePageMarkerFileName(BaseDir, FileID, marker, pageNumber);
@@ -290,7 +290,7 @@ public abstract class TransactionalFileMappedListBase<TItem> : FilePagedListBase
 			}
 		}
 
-		public void Remove(PageMarkerType marker, int pageNumber) {
+		public void Remove(PageMarkerType marker, long pageNumber) {
 			var removeMarker = _pageMarkers.Contains(pageNumber) && _pageMarkers[pageNumber].Contains(marker);
 			if (removeMarker) {
 				var file = GeneratePageMarkerFileName(BaseDir, FileID, marker, pageNumber);
@@ -317,11 +317,11 @@ public abstract class TransactionalFileMappedListBase<TItem> : FilePagedListBase
 			}
 		}
 
-		public void RemoveAllPageMarkersExcept(PageMarkerType except, int pageNumber) {
+		public void RemoveAllPageMarkersExcept(PageMarkerType except, long pageNumber) {
 			RemoveAllPageMakers(pageNumber, except);
 		}
 
-		public void RemoveAllPageMakers(int pageNumber, params PageMarkerType[] except) {
+		public void RemoveAllPageMakers(long pageNumber, params PageMarkerType[] except) {
 			except = except ?? new PageMarkerType[0];
 			foreach (var marker in Tools.Enums.GetValues<PageMarkerType>().Except(except)) {
 				Remove(marker, pageNumber);
@@ -356,7 +356,7 @@ public abstract class TransactionalFileMappedListBase<TItem> : FilePagedListBase
 			return _fileMarkers.Contains(marker);
 		}
 
-		public bool Contains(PageMarkerType marker, int pageNumber) {
+		public bool Contains(PageMarkerType marker, long pageNumber) {
 			return _pageMarkers.Contains(pageNumber) && _pageMarkers[pageNumber].Contains(marker);
 		}
 
@@ -364,12 +364,12 @@ public abstract class TransactionalFileMappedListBase<TItem> : FilePagedListBase
 			return GenerateFileMarkerFileName(BaseDir, FileID, marker);
 		}
 
-		public string GetMarkerFilename(int pageNumber, PageMarkerType marker) {
+		public string GetMarkerFilename(long pageNumber, PageMarkerType marker) {
 			return GeneratePageMarkerFileName(BaseDir, FileID, marker, pageNumber);
 		}
 
-		public static void ScanPersistedFileMarkers(string baseDir, Guid fileID, out LookupEx<int, PageMarkerType> pagerMarkers, out HashSet<FileMarkerType> fileMarkers) {
-			pagerMarkers = new LookupEx<int, PageMarkerType>();
+		public static void ScanPersistedFileMarkers(string baseDir, Guid fileID, out LookupEx<long, PageMarkerType> pagerMarkers, out HashSet<FileMarkerType> fileMarkers) {
+			pagerMarkers = new LookupEx<long, PageMarkerType>();
 			fileMarkers = new HashSet<FileMarkerType>();
 			var filenameWithoutExtension = fileID.ToStrictAlphaString().ToLowerInvariant();
 			var files = Tools.FileSystem.GetFiles(baseDir, $"{filenameWithoutExtension}.*");
@@ -387,7 +387,7 @@ public abstract class TransactionalFileMappedListBase<TItem> : FilePagedListBase
 			}
 		}
 
-		public static bool TryParseMarker(string path, out FileMarkerType? fileMarker, out PageMarkerType? pageMarker, out Guid? fileID, out int? pageNumber) {
+		public static bool TryParseMarker(string path, out FileMarkerType? fileMarker, out PageMarkerType? pageMarker, out Guid? fileID, out long? pageNumber) {
 			var tokens = path.Split(new[] { '.' }, StringSplitOptions.RemoveEmptyEntries);
 			fileMarker = null;
 			pageMarker = null;
@@ -436,7 +436,7 @@ public abstract class TransactionalFileMappedListBase<TItem> : FilePagedListBase
 			return true;
 		}
 
-		public static string GeneratePageMarkerFileName(string baseDir, Guid fileID, PageMarkerType marker, int pageNumber) {
+		public static string GeneratePageMarkerFileName(string baseDir, Guid fileID, PageMarkerType marker, long pageNumber) {
 			string postfix;
 			switch (marker) {
 				case PageMarkerType.DeletedMarker:

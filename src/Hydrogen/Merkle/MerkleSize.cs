@@ -13,11 +13,11 @@
 namespace Hydrogen;
 
 public record MerkleSize {
-	public int LeafCount;
+	public long LeafCount;
 	public int Height;
 
-	public static MerkleSize FromLeafCount(int leafCount) {
-		Guard.ArgumentInRange(leafCount, 0, int.MaxValue, nameof(leafCount));
+	public static MerkleSize FromLeafCount(long leafCount) {
+		Guard.ArgumentInRange(leafCount, 0, long.MaxValue, nameof(leafCount));
 		return new MerkleSize {
 			LeafCount = leafCount,
 			Height = MerkleMath.CalculateHeight(leafCount)

@@ -41,15 +41,15 @@ public class FlatMerkleTree : IDynamicMerkleTree {
 		: this(hashAlgorithm, 0, DefaultLeafGrowth, DefaultMaxLeaf, initialLeafs) {
 	}
 
-	public FlatMerkleTree(CHF hashAlgorithm, int initialLeafCapacity, int leafGrowthCapacity)
+	public FlatMerkleTree(CHF hashAlgorithm, long initialLeafCapacity, long leafGrowthCapacity)
 		: this(hashAlgorithm, initialLeafCapacity, leafGrowthCapacity, DefaultMaxLeaf) {
 	}
 
-	public FlatMerkleTree(CHF hashAlgorithm, int initialLeafCapacity, int leafGrowthCapacity, int maxCapacity)
+	public FlatMerkleTree(CHF hashAlgorithm, long initialLeafCapacity, long leafGrowthCapacity, long maxCapacity)
 		: this(hashAlgorithm, initialLeafCapacity, leafGrowthCapacity, maxCapacity, Enumerable.Empty<byte[]>()) {
 	}
 
-	public FlatMerkleTree(CHF hashAlgorithm, int initialLeafCapacity, int leafGrowthCapacity, int maxLeafCapacity, IEnumerable<byte[]> initialLeafs)
+	public FlatMerkleTree(CHF hashAlgorithm, long initialLeafCapacity, long leafGrowthCapacity, long maxLeafCapacity, IEnumerable<byte[]> initialLeafs)
 		: this(
 			hashAlgorithm,
 			new MemoryBuffer(
@@ -61,7 +61,7 @@ public class FlatMerkleTree : IDynamicMerkleTree {
 		Leafs.AddRange(initialLeafs ?? Enumerable.Empty<byte[]>());
 	}
 
-	public FlatMerkleTree(CHF hashAlgorithm, IBuffer nodeBuffer, int? leafCount = null) {
+	public FlatMerkleTree(CHF hashAlgorithm, IBuffer nodeBuffer, long? leafCount = null) {
 		Guard.Argument(hashAlgorithm != CHF.ConcatBytes, nameof(hashAlgorithm), "Must be digest size CHF");
 		HashAlgorithm = hashAlgorithm;
 		_digestSize = Hashers.GetDigestSizeBytes(hashAlgorithm);
@@ -96,11 +96,11 @@ public class FlatMerkleTree : IDynamicMerkleTree {
 		return MerkleMath.NodeHash(HashAlgorithm, GetValue(childNodes.Left), GetValue(childNodes.Right));
 	}
 
-	public void SetLeafDirty(int index, bool value) {
+	public void SetLeafDirty(long index, bool value) {
 		SetDirty((int)MerkleMath.ToFlatIndex(MerkleCoordinate.LeafAt(index)), value);
 	}
 
-	private void EnsureComputed(MerkleCoordinate coordinate, int flatIndex) {
+	private void EnsureComputed(MerkleCoordinate coordinate, long flatIndex) {
 		// leafs case
 		if (coordinate.Level == 0)
 			if (IsDirty(flatIndex))
@@ -132,26 +132,31 @@ public class FlatMerkleTree : IDynamicMerkleTree {
 		SetDirty(flatIndex, false);
 	}
 
-	internal void AttachBuffer(IBuffer buffer, int leafCount) {
+	internal void AttachBuffer(IBuffer buffer, long leafCount) {
 		Guard.Argument(buffer.Count % _digestSize == 0, nameof(buffer), "Size was not a multiple of digest length");
 		_nodeBuffer = buffer;
 		var flatNodeCount = buffer.Count / _digestSize;
-		_dirtyNodes = new BitArray(flatNodeCount);
+		var flatNodeCountI = Tools.Collection.CheckNotImplemented64bitAddressingLength(flatNodeCount);
+		_dirtyNodes = new BitArray(flatNodeCountI);
 		_size = MerkleSize.FromLeafCount(leafCount);
 		//Guard.Ensure((ulong)flatNodeCount == MerkleMath.CountFlatNodes(_size.LeafCount), $"Inconsistent buffer size (flatNodes: {flatNodeCount}, leafCount: {leafCount})");
 	}
 
-	private bool IsDirty(int flatIndex) {
-		return _dirtyNodes.Get(flatIndex);
+	private bool IsDirty(long flatIndex) {
+		var flatIndexI = Tools.Collection.CheckNotImplemented64bitAddressingLength(flatIndex);
+		return _dirtyNodes.Get(flatIndexI);
 	}
 
-	private void SetDirty(int index, bool value) {
-		_dirtyNodes.Set(index, value);
+	private void SetDirty(long index, bool value) {
+		var indexI = Tools.Collection.CheckNotImplemented64bitAddressingLength(index);
+		_dirtyNodes.Set(indexI, value);
 	}
 
-	private void SetDirty(int from, int count, bool value) {
-		for (var i = 0; i < count; i++)
-			_dirtyNodes.Set(from + i, value);
+	private void SetDirty(long from, long count, bool value) {
+		for (var i = 0L; i < count; i++) {
+			var indexI = Tools.Collection.CheckNotImplemented64bitAddressingLength(from + i);
+			_dirtyNodes.Set(indexI, value);
+		}
 	}
 
 
@@ -162,7 +167,7 @@ public class FlatMerkleTree : IDynamicMerkleTree {
 			_parent = parent;
 		}
 
-		public override int Count => _parent._size.LeafCount;
+		public override long Count => _parent._size.LeafCount;
 
 		public override void AddRange(IEnumerable<byte[]> items) {
 			var itemsArr = items as byte[][] ?? items.ToArray();
@@ -171,12 +176,13 @@ public class FlatMerkleTree : IDynamicMerkleTree {
 			// Expand node buffer for new tree nodes
 			var newLeafCount = _parent._size.LeafCount + itemsArr.Length;
 			var oldTotalFlatNodes = _parent._nodeBuffer.Count / _parent._digestSize;
-			var newTotalFlatNodes = (int)MerkleMath.CountFlatNodes(newLeafCount);
+			var newTotalFlatNodes = checked((long)MerkleMath.CountFlatNodes(newLeafCount));
 			var newFlatNodes = newTotalFlatNodes - oldTotalFlatNodes;
 			_parent._nodeBuffer.ExpandBy(newFlatNodes * _parent._digestSize);
 
 			// Mark all those new nodes dirty
-			_parent._dirtyNodes.Length += newFlatNodes;
+			var newFlatNodesI = Tools.Collection.CheckNotImplemented64bitAddressingLength(newFlatNodes);
+			_parent._dirtyNodes.Length += newFlatNodesI;
 			_parent.SetDirty(oldTotalFlatNodes, newFlatNodes, true);
 
 			// Add each leaf node
@@ -188,11 +194,11 @@ public class FlatMerkleTree : IDynamicMerkleTree {
 			_parent._size = MerkleSize.FromLeafCount(_parent._size.LeafCount + itemsArr.Length);
 		}
 
-		public override IEnumerable<int> IndexOfRange(IEnumerable<byte[]> items) {
+		public override IEnumerable<long> IndexOfRange(IEnumerable<byte[]> items) {
 			throw new NotImplementedException();
 		}
 
-		public override IEnumerable<byte[]> ReadRange(int index, int count) {
+		public override IEnumerable<byte[]> ReadRange(long index, long count) {
 			Guard.ArgumentInRange(index, 0, _parent.Size.LeafCount, nameof(index));
 			Guard.ArgumentInRange(count, 0, _parent.Size.LeafCount - index, nameof(count));
 			for (var i = index; i < index + count; i++) {
@@ -200,7 +206,7 @@ public class FlatMerkleTree : IDynamicMerkleTree {
 			}
 		}
 
-		public override void UpdateRange(int index, IEnumerable<byte[]> items) {
+		public override void UpdateRange(long index, IEnumerable<byte[]> items) {
 			Guard.ArgumentNotNull(items, nameof(items));
 			var itemsArr = items as byte[][] ?? items.ToArray();
 			Guard.Argument(itemsArr.All(x => x.Length == _parent._digestSize), nameof(items), "Improper digest size(s)");
@@ -222,7 +228,7 @@ public class FlatMerkleTree : IDynamicMerkleTree {
 			}
 		}
 
-		public override void InsertRange(int index, IEnumerable<byte[]> items) {
+		public override void InsertRange(long index, IEnumerable<byte[]> items) {
 			var itemsArr = items as byte[][] ?? items.ToArray();
 			Guard.Argument(itemsArr.All(x => x.Length == _parent._digestSize), nameof(items), "Improper digest size(s)");
 
@@ -239,7 +245,8 @@ public class FlatMerkleTree : IDynamicMerkleTree {
 
 			// Backup nodes after insert which are moved forward
 			var movedLeafs = new byte[movedLeafCount * _parent._digestSize];
-			var movedLeafsDirtyBit = new BitArray(movedLeafCount);
+			var movedLeafCountI = Tools.Collection.CheckNotImplemented64bitAddressingLength(movedLeafCount);
+			var movedLeafsDirtyBit = new BitArray(movedLeafCountI);
 			for (var i = 0; i < movedLeafCount; i++) {
 				var movedFlatIX = MerkleCoordinate.LeafAt(index + i).ToFlatIndex();
 				_parent
@@ -271,7 +278,7 @@ public class FlatMerkleTree : IDynamicMerkleTree {
 			_parent._size = MerkleSize.FromLeafCount(newLeafCount);
 		}
 
-		public override void RemoveRange(int index, int count) {
+		public override void RemoveRange(long index, long count) {
 			Guard.ArgumentInRange(index, 0, _parent.Size.LeafCount, nameof(index));
 			Guard.ArgumentInRange(count, 0, _parent.Size.LeafCount - index, nameof(count));
 
@@ -285,7 +292,8 @@ public class FlatMerkleTree : IDynamicMerkleTree {
 
 			// Backup nodes that will be moved after remove
 			var movedLeafs = new byte[movedLeafCount * _parent._digestSize];
-			var movedLeafDirtyBit = new BitArray(movedLeafCount);
+			var movedLeafCountI = Tools.Collection.CheckNotImplemented64bitAddressingLength(movedLeafCount);
+			var movedLeafDirtyBit = new BitArray(movedLeafCountI);
 			for (var i = 0; i < movedLeafCount; i++) {
 				var movedFlatIX = MerkleCoordinate.LeafAt(index + count + i).ToFlatIndex();
 				_parent

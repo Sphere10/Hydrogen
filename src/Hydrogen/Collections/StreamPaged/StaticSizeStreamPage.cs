@@ -21,7 +21,7 @@ namespace Hydrogen;
 /// Unlike <see cref="DynamicStreamPage{TItem}"/> no header is stored for the page.
 /// </remarks>
 internal class StaticStreamPage<TItem> : StreamPageBase<TItem> {
-	private readonly int _item0Offset;
+	private readonly long _item0Offset;
 	private volatile int _version;
 
 	public StaticStreamPage(StreamPagedList<TItem> parent) : base(parent) {
@@ -31,16 +31,16 @@ internal class StaticStreamPage<TItem> : StreamPageBase<TItem> {
 		_version = 0;
 		_item0Offset = Parent.IncludeListHeader ? StreamPagedList<TItem>.ListHeaderSize : 0;
 		base.State = PageState.Loaded;
-		base.StartIndex = 0;
-		base.EndIndex = (int)(Stream.Length - _item0Offset) / ItemSize - 1;
+		base.StartIndex = 0L;
+		base.EndIndex = (Stream.Length - _item0Offset) / ItemSize - 1;
 		StartPosition = _item0Offset;
 	}
 
-	public int MaxItems => Parent.PageSize / ItemSize;
+	public long MaxItems => Parent.PageSize / ItemSize;
 
-	public override int Count => (int)(Stream.Length - _item0Offset) / ItemSize;
+	public override long Count => (Stream.Length - _item0Offset) / ItemSize;
 
-	public override int Size => Count * ItemSize;
+	public override long Size => Count * ItemSize;
 
 	public override IEnumerator<TItem> GetEnumerator() {
 		var currentVersion = _version;
@@ -55,17 +55,17 @@ internal class StaticStreamPage<TItem> : StreamPageBase<TItem> {
 			.OnMoveNext(CheckVersion);
 	}
 
-	protected override IEnumerable<TItem> ReadInternal(int index, int count) {
+	protected override IEnumerable<TItem> ReadInternal(long index, long count) {
 		var startIndex = index * ItemSize + _item0Offset;
 
-		for (var i = 0; i < count; i++) {
+		for (var i = 0L; i < count; i++) {
 			Stream.Seek(startIndex + i * ItemSize, SeekOrigin.Begin);
 
 			yield return Serializer.Deserialize(ItemSize, Reader);
 		}
 	}
 
-	protected override int AppendInternal(TItem[] items, out int newItemsSize) {
+	protected override long AppendInternal(TItem[] items, out long newItemsSize) {
 		if (!items.Any()) {
 			newItemsSize = items.Length;
 			return items.Length;
@@ -87,7 +87,7 @@ internal class StaticStreamPage<TItem> : StreamPageBase<TItem> {
 		return items.Length;
 	}
 
-	protected override void UpdateInternal(int index, TItem[] items, out int oldItemsSize, out int newItemsSize) {
+	protected override void UpdateInternal(long index, TItem[] items, out long oldItemsSize, out long newItemsSize) {
 		CheckPageState(PageState.Loaded);
 		Guard.Ensure(index + items.Length <= Count, "Update outside bounds of list");
 
@@ -106,7 +106,7 @@ internal class StaticStreamPage<TItem> : StreamPageBase<TItem> {
 		Interlocked.Increment(ref _version);
 	}
 
-	protected override void EraseFromEndInternal(int count, out int oldItemsSize) {
+	protected override void EraseFromEndInternal(long count, out long oldItemsSize) {
 		var erasedBytes = ItemSize * count;
 		Stream.SetLength(Stream.Length - erasedBytes);
 		oldItemsSize = erasedBytes;
@@ -121,10 +121,10 @@ internal class StaticStreamPage<TItem> : StreamPageBase<TItem> {
 	/// <param name="byteLength"></param>
 	/// <param name="result"></param>
 	/// <returns>Number of bytes actually read</returns>
-	public override int ReadItemBytes(int itemIndex, int byteOffset, int byteLength, out byte[] result) {
+	public override long ReadItemBytes(long itemIndex, long byteOffset, long byteLength, out byte[] result) {
 		Guard.ArgumentInRange(itemIndex, 0, Count - 1, nameof(itemIndex));
 
-		int offset = itemIndex * ItemSize + _item0Offset + byteOffset;
+		var offset = itemIndex * ItemSize + _item0Offset + byteOffset;
 
 		Stream.Seek(offset, SeekOrigin.Begin);
 		result = Reader.ReadBytes(byteLength);
@@ -132,9 +132,9 @@ internal class StaticStreamPage<TItem> : StreamPageBase<TItem> {
 	}
 
 
-	public override void WriteItemBytes(int itemIndex, int byteOffset, ReadOnlySpan<byte> bytes) {
+	public override void WriteItemBytes(long itemIndex, long byteOffset, ReadOnlySpan<byte> bytes) {
 		Guard.ArgumentInRange(itemIndex, 0, Count - 1, nameof(itemIndex));
-		int offset = itemIndex * ItemSize + _item0Offset + byteOffset;
+		var offset = itemIndex * ItemSize + _item0Offset + byteOffset;
 		Stream.Seek(offset, SeekOrigin.Begin);
 		Writer.Write(bytes);
 	}

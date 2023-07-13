@@ -53,32 +53,32 @@ namespace Hydrogen;
 public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 
 	public event EventHandlerEx<ClusteredStreamRecord> RecordCreated;
-	public event EventHandlerEx<int, ClusteredStreamRecord> RecordAdded;
-	public event EventHandlerEx<int, ClusteredStreamRecord> RecordInserted;
-	public event EventHandlerEx<int, ClusteredStreamRecord> RecordUpdated;
-	public event EventHandlerEx<int> RecordRemoved;
+	public event EventHandlerEx<long, ClusteredStreamRecord> RecordAdded;
+	public event EventHandlerEx<long, ClusteredStreamRecord> RecordInserted;
+	public event EventHandlerEx<long, ClusteredStreamRecord> RecordUpdated;
+	public event EventHandlerEx<long> RecordRemoved;
 
 	private const long DefaultRecordCacheSize = 1 << 20; // 1mb
 
 	private StreamPagedList<Cluster> _clusters;
 	private FragmentProvider _recordsFragmentProvider;
 	private PreAllocatedList<ClusteredStreamRecord> _records;
-	private ICache<int, ClusteredStreamRecord> _recordCache;
+	private ICache<long, ClusteredStreamRecord> _recordCache;
 	private ClusteredStorageHeader _header;
 	private ClusteredStreamScope _openScope;
 
 	private bool _initialized;
 	private readonly Stream _rootStream;
 	private readonly int _clusterSize;
-	private readonly int _recordKeySize;
-	private readonly int _reservedRecords;
+	private readonly long _recordKeySize;
+	private readonly long _reservedRecords;
 	private readonly object _lock;
 	private readonly bool _integrityChecks;
 	private readonly bool _preAllocateOptimization;
 	private int _clusterEnvelopeSize;
-	private int _allRecordsSize;
+	private long _allRecordsSize;
 
-	public ClusteredStorage(Stream rootStream, int clusterSize, ClusteredStoragePolicy policy = ClusteredStoragePolicy.Default, int recordKeySize = 0, int reservedRecords = 0, Endianness endianness = Endianness.LittleEndian) {
+	public ClusteredStorage(Stream rootStream, int clusterSize, ClusteredStoragePolicy policy = ClusteredStoragePolicy.Default, long recordKeySize = 0, long reservedRecords = 0, Endianness endianness = Endianness.LittleEndian) {
 		Guard.ArgumentNotNull(rootStream, nameof(rootStream));
 		Guard.ArgumentGTE(clusterSize, 1, nameof(clusterSize));
 		Guard.ArgumentInRange(recordKeySize, 0, ushort.MaxValue, nameof(recordKeySize));
@@ -113,18 +113,18 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 
 		// read policy
 		rootStream.Seek(ClusteredStorageHeader.PolicyOffset, SeekOrigin.Begin);
-		var policy = (ClusteredStoragePolicy)reader.ReadInt32();
+		var policy = (ClusteredStoragePolicy)reader.ReadUInt32();
 
 		// read record key size
 		rootStream.Seek(ClusteredStorageHeader.RecordKeySizeOffset, SeekOrigin.Begin);
-		var recordKeySize = (ClusteredStoragePolicy)reader.ReadUInt16();
+		var recordKeySize = reader.ReadUInt16();
 
 		// read records offset
 		rootStream.Seek(ClusteredStorageHeader.ReservedRecordsOffset, SeekOrigin.Begin);
-		var reservedRecords = reader.ReadInt32();
+		var reservedRecords = reader.ReadInt64();
 
 		rootStream.Position = 0;
-		var storage = new ClusteredStorage(rootStream, clusterSize, policy, (int)recordKeySize, reservedRecords, endianness);
+		var storage = new ClusteredStorage(rootStream, clusterSize, policy, recordKeySize, reservedRecords, endianness);
 		storage.Load();
 		return storage;
 	}
@@ -157,7 +157,7 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 		}
 	}
 
-	public int Count {
+	public long Count {
 		get {
 			CheckInitialized();
 			return Header.RecordsCount;
@@ -193,7 +193,7 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 		private set => _clusterEnvelopeSize = value;
 	}
 
-	internal int AllRecordsSize {
+	internal long AllRecordsSize {
 		get {
 			CheckInitialized();
 			return _allRecordsSize;
@@ -226,14 +226,14 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 		if (!wasEmptyStream) {
 			_header.AttachTo(_rootStream, Endianness);
 			_header.CheckHeaderIntegrity();
-			CheckHeaderDataIntegrity((int)_rootStream.Length, _header, clusterSerializer, recordSerializer);
+			CheckHeaderDataIntegrity(_rootStream.Length, _header, clusterSerializer, recordSerializer);
 		} else {
 			_header.CreateIn(1, _rootStream, _clusterSize, _recordKeySize, _reservedRecords, Endianness);
 		}
 
 		Guard.Ensure(_header.ClusterSize == _clusterSize, $"Inconsistent cluster size {_clusterSize} (stream header had '{_header.ClusterSize}')");
 		AllRecordsSize = _header.RecordsCount * recordSerializer.StaticSize;
-		ClusterEnvelopeSize = clusterSerializer.StaticSize - _header.ClusterSize;
+		ClusterEnvelopeSize = checked((int)clusterSerializer.StaticSize) - _header.ClusterSize; // the serializer includes the envelope, the header is the data size
 
 		// Clusters are stored in a StreamPagedList (single page, statically sized items)
 		_clusters = new StreamPagedList<Cluster>(
@@ -263,7 +263,7 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 			NewRecord
 		);
 		_recordCache = Policy.HasFlag(ClusteredStoragePolicy.CacheRecords)
-			? new ActionCache<int, ClusteredStreamRecord>(
+			? new ActionCache<long, ClusteredStreamRecord>(
 				FetchRecord,
 				sizeEstimator: _ => recordSerializer.StaticSize,
 				reapStrategy: CacheReapPolicy.LeastUsed,
@@ -282,7 +282,7 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 
 	#region Streams
 
-	public ClusteredStreamScope EnterSaveItemScope<TItem>(int index, TItem item, IItemSerializer<TItem> serializer, ListOperationType operationType) {
+	public ClusteredStreamScope EnterSaveItemScope<TItem>(long index, TItem item, IItemSerializer<TItem> serializer, ListOperationType operationType) {
 		CheckInitialized();
 		var scope = operationType switch {
 			ListOperationType.Add => Add(),
@@ -325,7 +325,7 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 		return scope;
 	}
 
-	public ClusteredStreamScope EnterLoadItemScope<TItem>(int index, IItemSerializer<TItem> serializer, out TItem item) {
+	public ClusteredStreamScope EnterLoadItemScope<TItem>(long index, IItemSerializer<TItem> serializer, out TItem item) {
 		CheckInitialized();
 		var scope = Open(index);
 		if (!_openScope.Record.Traits.HasFlag(ClusteredStreamTraits.IsNull)) {
@@ -349,7 +349,7 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 		}
 	}
 
-	public ClusteredStreamScope Open(int index) {
+	public ClusteredStreamScope Open(long index) {
 		CheckInitialized();
 		lock (_lock) {
 			CheckRecordIndex(index);
@@ -358,7 +358,7 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 		}
 	}
 
-	public void Remove(int index) {
+	public void Remove(long index) {
 		CheckInitialized();
 		lock (_lock) {
 			var countBeforeRemove = Header.RecordsCount;
@@ -374,7 +374,7 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 		}
 	}
 
-	public ClusteredStreamScope Insert(int index) {
+	public ClusteredStreamScope Insert(long index) {
 		CheckInitialized();
 		lock (_lock) {
 			CheckRecordIndex(index, allowEnd: true);
@@ -384,7 +384,7 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 		}
 	}
 
-	public void Swap(int first, int second) {
+	public void Swap(long first, long second) {
 		CheckInitialized();
 		using (EnterLockScope()) {
 			CheckRecordIndex(first);
@@ -414,7 +414,7 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 		}
 	}
 
-	public void Clear(int index) {
+	public void Clear(long index) {
 		CheckInitialized();
 		lock (_lock) {
 			CheckRecordIndex(index);
@@ -475,7 +475,7 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 
 	#region Stream Scope
 
-	private ClusteredStreamScope BeginOpenScope(int index) {
+	private ClusteredStreamScope BeginOpenScope(long index) {
 		Guard.Ensure(_openScope == null, "A scope was already opened");
 		Monitor.Enter(_lock);
 		try {
@@ -509,24 +509,24 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 		var record = new ClusteredStreamRecord();
 		record.Size = 0;
 		record.StartCluster = -1;
-		record.Key = Tools.Array.Gen<byte>(_recordKeySize, 0);
+		record.Key = new byte[_recordKeySize];
 		NotifyRecordCreated(record);
 		return record;
 	}
 
 	// This is the interface implementation of UpdateRecord (used by friendly classes)
-	public void UpdateRecord(int index, ClusteredStreamRecord record) {
+	public void UpdateRecord(long index, ClusteredStreamRecord record) {
 		//Guard.ArgumentCast<TRecord>(record, out var recordT, nameof(record));
 		UpdateRecord(index, record, true);
 	}
 
-	public ClusteredStreamRecord GetRecord(int index) {
+	public ClusteredStreamRecord GetRecord(long index) {
 		CheckInitialized();
 		return _recordCache is not null ? _recordCache[index] : FetchRecord(index);
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	private ClusteredStreamRecord FetchRecord(int index) {
+	private ClusteredStreamRecord FetchRecord(long index) {
 		Debug.Assert(IsLocked, "Fetching results in mutation and requires a lock to avoid race-conditions and data corruption in multi-threaded scenarios");
 		if (_openScope != null && index == _openScope.RecordIndex)
 			return _openScope.Record;
@@ -537,7 +537,7 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 		return record;
 	}
 
-	private ClusteredStreamRecord AddRecord(out int index, ClusteredStreamRecord record) {
+	private ClusteredStreamRecord AddRecord(out long index, ClusteredStreamRecord record) {
 		Debug.Assert(IsLocked, "Mutating without a lock can lead to race-conditions and data corruption in multi-threaded scenarios");
 		_records.Add(record);
 		index = Header.RecordsCount++;
@@ -546,11 +546,10 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 		return record;
 	}
 
-
 	/// <remarks>
 	/// This has O(N) complexity in worst case (inserting at 0), use with care
 	/// </remarks>
-	private void InsertRecord(int index, ClusteredStreamRecord record) {
+	private void InsertRecord(long index, ClusteredStreamRecord record) {
 		Debug.Assert(IsLocked, "Mutating without a lock can lead to race-conditions and data corruption in multi-threaded scenarios");
 		// Update genesis clusters 
 		for (var i = _records.Count - 1; i >= index; i--) {
@@ -566,7 +565,7 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 		NotifyRecordInserted(index, record);
 	}
 
-	private void UpdateRecord(int index, ClusteredStreamRecord record, bool resetTrackingIfOpen) {
+	private void UpdateRecord(long index, ClusteredStreamRecord record, bool resetTrackingIfOpen) {
 		Debug.Assert(IsLocked, "Mutating without a lock can lead to race-conditions and data corruption in multi-threaded scenarios");
 		if (_integrityChecks)
 			CheckRecordIntegrity(index, record);
@@ -581,7 +580,7 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 		NotifyRecordUpdated(index, record);
 	}
 
-	private void RemoveRecord(int index) {
+	private void RemoveRecord(long index) {
 		Debug.Assert(IsLocked, "Mutating without a lock can lead to race-conditions and data corruption in multi-threaded scenarios");
 		for (var i = index + 1; i < _records.Count; i++) {
 			var higherRecord = GetRecord(i);
@@ -600,7 +599,7 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 
 	#region Clusters
 
-	private void AllocateNextClusters(ClusterDataType clusterDataType, int recordIndex, int previousCluster, int quantity, bool allocateFirst, out int startClusterIX) {
+	private void AllocateNextClusters(ClusterDataType clusterDataType, long recordIndex, long previousCluster, long quantity, bool allocateFirst, out long startClusterIX) {
 		if (quantity == 0) {
 			startClusterIX = -1;
 			return;
@@ -648,8 +647,9 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	private Cluster GetCluster(int clusterIndex) {
+	private Cluster GetCluster(long clusterIndex) {
 		var cluster = _clusters[clusterIndex];
+		Debug.Assert(cluster != null);
 		if (_integrityChecks) {
 			CheckClusterTraits(clusterIndex, cluster.Traits);
 			CheckClusterIndex(cluster.Next);
@@ -659,7 +659,7 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 		return cluster;
 	}
 
-	private void UpdateCluster(int clusterIndex, Cluster cluster) {
+	private void UpdateCluster(long clusterIndex, Cluster cluster) {
 		if (_integrityChecks) {
 			CheckClusterTraits(clusterIndex, cluster.Traits);
 			CheckClusterIndex(cluster.Next);
@@ -669,7 +669,11 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 		_clusters[clusterIndex] = cluster;
 	}
 
-	private void RemoveCluster(int clusterIndex) {
+	private void RemoveCluster(long clusterIndex) {
+		if (_integrityChecks) {
+			CheckClusterIndex(clusterIndex, false);
+		}
+
 		var next = FastReadClusterNext(clusterIndex);
 		Guard.Ensure(next == -1, $"Can only remove a cluster from end of cluster-linked chain (clusterIndex = {clusterIndex})");
 		var traits = FastReadClusterTraits(clusterIndex);
@@ -690,14 +694,14 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 		Header.TotalClusters--;
 	}
 
-	private void RemoveClusterChain(int startCluster) {
+	private void RemoveClusterChain(long startCluster) {
 		var clustersRemoved = 0;
 		var cluster = startCluster;
 		Guard.Ensure(FastReadClusterTraits(cluster).HasFlag(ClusterTraits.First), "Cluster not a start cluster");
 
 		while (cluster != -1) {
 			var nextCluster = FastReadClusterNext(cluster);
-			CheckClusterIndex(nextCluster, "Corrupt data");
+			CheckClusterIndex(nextCluster);
 			var tipIX = _clusters.Count - clustersRemoved - 1;
 			// if next is the tip about to be migrated to cluster, the next is cluster
 			if (tipIX == nextCluster)
@@ -713,7 +717,7 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	internal ClusterTraits FastReadClusterTraits(int clusterIndex) {
+	internal ClusterTraits FastReadClusterTraits(long clusterIndex) {
 		CheckInitialized();
 		_clusters.ReadItemRaw(clusterIndex, 0, 1, out var bytes);
 		var traits = (ClusterTraits)bytes[0];
@@ -723,29 +727,30 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	internal void FastWriteClusterTraits(int clusterIndex, ClusterTraits traits) {
+	internal void FastWriteClusterTraits(long clusterIndex, ClusterTraits traits) {
 		CheckInitialized();
-		_clusters.WriteItemBytes(clusterIndex, 0, new byte[(byte)traits]);
+		_clusters.WriteItemBytes(clusterIndex, Cluster.TraitsOffset, new[] { (byte)traits });
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	internal int FastReadClusterPrev(int clusterIndex) {
-		_clusters.ReadItemRaw(clusterIndex, sizeof(byte), 4, out var bytes);
+	internal int FastReadClusterPrev(long clusterIndex) {
+		_clusters.ReadItemRaw(clusterIndex, Cluster.PrevOffset, Cluster.PrevLength, out var bytes);
 		var prevCluster = _clusters.Reader.BitConverter.ToInt32(bytes);
 		if (_integrityChecks)
 			CheckLinkedCluster(clusterIndex, prevCluster);
 		return prevCluster;
 	}
 
+
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	internal void FastWriteClusterPrev(int clusterIndex, int prev) {
+	internal void FastWriteClusterPrev(long clusterIndex, long prev) {
 		CheckInitialized();
 		var bytes = _clusters.Writer.BitConverter.GetBytes(prev);
-		_clusters.WriteItemBytes(clusterIndex, sizeof(byte), bytes);
+		_clusters.WriteItemBytes(clusterIndex, Cluster.PrevOffset, bytes);
 	}
 
-	private int FastReadClusterNext(int clusterIndex) {
-		_clusters.ReadItemRaw(clusterIndex, sizeof(byte) + sizeof(int), 4, out var bytes);
+	internal long FastReadClusterNext(long clusterIndex) {
+		_clusters.ReadItemRaw(clusterIndex, Cluster.NextOffset, Cluster.NextLength, out var bytes);
 		var nextValue = _clusters.Reader.BitConverter.ToInt32(bytes);
 		if (_integrityChecks)
 			CheckLinkedCluster(clusterIndex, nextValue);
@@ -753,16 +758,16 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	internal void FastWriteClusterNext(int clusterIndex, int next) {
+	internal void FastWriteClusterNext(long clusterIndex, long next) {
 		CheckInitialized();
 		var bytes = _clusters.Writer.BitConverter.GetBytes(next);
-		_clusters.WriteItemBytes(clusterIndex, sizeof(byte) + sizeof(int), bytes);
+		_clusters.WriteItemBytes(clusterIndex, Cluster.NextOffset, bytes);
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	internal void FastWriteClusterData(int clusterIndex, int offset, ReadOnlySpan<byte> data) {
+	internal void FastWriteClusterData(long clusterIndex, long offset, ReadOnlySpan<byte> data) {
 		CheckInitialized();
-		_clusters.WriteItemBytes(clusterIndex, sizeof(byte) + sizeof(int) + sizeof(int) + offset, data);
+		_clusters.WriteItemBytes(clusterIndex, Cluster.DataOffset + offset, data);
 	}
 
 	#endregion
@@ -772,16 +777,16 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 	protected virtual void OnRecordCreated(ClusteredStreamRecord record) {
 	}
 
-	protected virtual void OnRecordAdded(int index, ClusteredStreamRecord record) {
+	protected virtual void OnRecordAdded(long index, ClusteredStreamRecord record) {
 	}
 
-	protected virtual void OnRecordInserted(int index, ClusteredStreamRecord record) {
+	protected virtual void OnRecordInserted(long index, ClusteredStreamRecord record) {
 	}
 
-	protected virtual void OnRecordUpdated(int index, ClusteredStreamRecord record) {
+	protected virtual void OnRecordUpdated(long index, ClusteredStreamRecord record) {
 	}
 
-	protected virtual void OnRecordRemoved(int index) {
+	protected virtual void OnRecordRemoved(long index) {
 	}
 
 	private void NotifyRecordCreated(ClusteredStreamRecord record) {
@@ -789,22 +794,22 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 		RecordCreated?.Invoke(record);
 	}
 
-	private void NotifyRecordAdded(int index, ClusteredStreamRecord record) {
+	private void NotifyRecordAdded(long index, ClusteredStreamRecord record) {
 		OnRecordAdded(index, record);
 		RecordAdded?.Invoke(index, record);
 	}
 
-	private void NotifyRecordInserted(int index, ClusteredStreamRecord record) {
+	private void NotifyRecordInserted(long index, ClusteredStreamRecord record) {
 		OnRecordInserted(index, record);
 		RecordInserted?.Invoke(index, record);
 	}
 
-	private void NotifyRecordUpdated(int index, ClusteredStreamRecord record) {
+	private void NotifyRecordUpdated(long index, ClusteredStreamRecord record) {
 		OnRecordUpdated(index, record);
 		RecordUpdated?.Invoke(index, record);
 	}
 
-	private void NotifyRecordRemoved(int index) {
+	private void NotifyRecordRemoved(long index) {
 		OnRecordRemoved(index);
 		RecordRemoved?.Invoke(index);
 	}
@@ -819,10 +824,9 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 			throw new InvalidOperationException("Clustered Storage not initialized");
 	}
 
-
-	private void CheckHeaderDataIntegrity(int rootStreamLength, ClusteredStorageHeader header, IItemSerializer<Cluster> clusterSerializer, IItemSerializer<ClusteredStreamRecord> recordSerializer) {
+	private void CheckHeaderDataIntegrity(long rootStreamLength, ClusteredStorageHeader header, IItemSerializer<Cluster> clusterSerializer, IItemSerializer<ClusteredStreamRecord> recordSerializer) {
 		var clusterEnvelopeSize = clusterSerializer.StaticSize - header.ClusterSize;
-		var recordClusters = (int)Math.Ceiling(header.RecordsCount * recordSerializer.StaticSize / (float)header.ClusterSize);
+		var recordClusters = (long)Math.Ceiling(header.RecordsCount * recordSerializer.StaticSize / (float)header.ClusterSize);
 		if (header.TotalClusters < recordClusters)
 			throw new CorruptDataException($"Inconsistency in {nameof(ClusteredStorageHeader.TotalClusters)}/{nameof(ClusteredStorageHeader.RecordsCount)}");
 		var minStreamSize = header.TotalClusters * (header.ClusterSize + clusterEnvelopeSize) + ClusteredStorageHeader.ByteLength;
@@ -838,10 +842,10 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	private void CheckRecordIndex(int index, string msg = null, bool allowEnd = false)
+	private void CheckRecordIndex(long index, string msg = null, bool allowEnd = false)
 		=> Guard.CheckIndex(index, 0, _records.Count, allowEnd);
 
-	private void CheckRecordIntegrity(int index, ClusteredStreamRecord record) {
+	private void CheckRecordIntegrity(long index, ClusteredStreamRecord record) {
 		if (record.Size == 0) {
 			if (record.StartCluster != -1)
 				throw new CorruptDataException(Header, $"Empty record {index} should have start cluster -1 but was {record.StartCluster}");
@@ -850,11 +854,14 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	private void CheckClusterIndex(int index, string msg = null)
-		=> Guard.Argument(index == -1 || (0 <= index && index < _clusters.Count), nameof(index), msg ?? "Cluster index out of bounds (or not -1)");
+	private void CheckClusterIndex(long index, bool allowNegOne = true, string msg = null) {
+		if (allowNegOne && index == -1 || (0 <= index && index < _clusters.Count))
+			return;
+		throw new CorruptDataException(msg ?? $"Cluster index {index} out of bounds (or not -1)");
+	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	private void CheckLinkedCluster(int sourceCluster, int linkedCluster, string msg = null) {
+	private void CheckLinkedCluster(long sourceCluster, int linkedCluster, string msg = null) {
 		Guard.Argument(sourceCluster >= 0, nameof(sourceCluster), "Must be greater than or equal to 0");
 
 		if (linkedCluster == -1)
@@ -867,7 +874,7 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 			throw new CorruptDataException(Header, sourceCluster, msg ?? $"Cluster {sourceCluster} pointed to non-existent cluster {linkedCluster}");
 	}
 
-	private void CheckClusterTraits(int cluster, ClusterTraits traits) {
+	private void CheckClusterTraits(long cluster, ClusterTraits traits) {
 		var bTraits = (byte)traits;
 		if (bTraits == 0 || bTraits > 7 || ((traits & ClusterTraits.Data) > 0 && (traits & ClusterTraits.Record) > 0))
 			throw new CorruptDataException(Header, cluster, "Invalid traits");
@@ -880,9 +887,9 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	private void MigrateTipClusterTo(int to) => MigrateTipClusterTo(_clusters.Count - 1, to);
+	private void MigrateTipClusterTo(long to) => MigrateTipClusterTo(_clusters.Count - 1, to);
 
-	private void MigrateTipClusterTo(int tipIndex, int to) {
+	private void MigrateTipClusterTo(long tipIndex, long to) {
 		// Moved the right-most cluster into 'to' so that right-most can be deleted (since 'to' is now available).
 		Guard.ArgumentInRange(to, 0, _clusters.Count - 1, nameof(to));
 		Guard.Argument(to <= tipIndex, nameof(to), $"Cannot be greater than {nameof(tipIndex)}");
@@ -914,7 +921,7 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 		_clusters.Update(to, toCluster);
 	}
 
-	private void InvalidateCachedCluster(int cluster) {
+	private void InvalidateCachedCluster(long cluster) {
 		_recordsFragmentProvider.InvalidateCluster(cluster);
 		_openScope?.InvalidateCluster(cluster);
 	}
@@ -928,8 +935,8 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 		private readonly FragmentCache _fragmentCache;
 		private readonly ClusterDataType _clusterDataType;
 		private readonly bool _enableCache;
-		private int _currentFragment;
-		private int _currentCluster;
+		private long _currentFragment;
+		private long _currentCluster;
 
 
 		public FragmentProvider(ClusteredStorage parent, ClusterDataType clusterDataType) {
@@ -948,36 +955,37 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 			_ => throw new ArgumentOutOfRangeException()
 		};
 
-		public int FragmentCount => (int)Math.Ceiling(TotalBytes / (float)_parent._clusterSize);
+		public long FragmentCount => (long)Math.Ceiling(TotalBytes / (float)_parent._clusterSize);
 
-		public ReadOnlySpan<byte> GetFragment(int index) {
+		public ReadOnlySpan<byte> GetFragment(long index) {
 			Guard.ArgumentInRange(index, 0, FragmentCount - 1, nameof(index));
 			TraverseToFragment(index);
 			return _parent.GetCluster(_currentCluster).Data;
 		}
 
-		public bool TryMapStreamPosition(long position, out int fragmentIndex, out int fragmentPosition) {
-			fragmentIndex = (int)(position / _parent._clusterSize);
-			fragmentPosition = (int)(position % _parent._clusterSize);
+		public bool TryMapStreamPosition(long position, out long fragmentIndex, out long fragmentPosition) {
+			fragmentIndex = position / _parent._clusterSize;
+			fragmentPosition = position % _parent._clusterSize;
 			return true;
 		}
 
-		public void UpdateFragment(int fragmentIndex, int fragmentPosition, ReadOnlySpan<byte> updateSpan) {
+		public void UpdateFragment(long fragmentIndex, long fragmentPosition, ReadOnlySpan<byte> updateSpan) {
 			TraverseToFragment(fragmentIndex);
 			var cluster = _parent.GetCluster(_currentCluster);
-			updateSpan.CopyTo(cluster.Data.AsSpan(fragmentPosition));
+			var fragmentPositionI = Tools.Collection.CheckNotImplemented64bitAddressingLength(fragmentPosition);
+			updateSpan.CopyTo(cluster.Data.AsSpan(fragmentPositionI));
 			_parent.UpdateCluster(_currentCluster, cluster);
 		}
 
-		public bool TrySetTotalBytes(long length, out int[] newFragments, out int[] deletedFragments) {
+		public bool TrySetTotalBytes(long length, out long[] newFragments, out long[] deletedFragments) {
 			var oldLength = TotalBytes;
-			var newTotalClusters = (int)Math.Ceiling(length / (float)_parent.ClusterSize);
+			var newTotalClusters = (long)Math.Ceiling(length / (float)_parent.ClusterSize);
 			var oldTotalClusters = FragmentCount;
 			var currentTotalClusters = oldTotalClusters;
-			var newFragmentsL = new List<int>();
-			var newClustersL = new List<int>();
-			var deletedFragmentsL = new List<int>();
-			var deletedClustersL = new List<int>();
+			var newFragmentsL = new List<long>();
+			var newClustersL = new List<long>();
+			var deletedFragmentsL = new List<long>();
+			var deletedClustersL = new List<long>();
 			TraverseToEnd();
 			if (newTotalClusters > currentTotalClusters) {
 				// Fast Implementation, adds clusters in range
@@ -1029,20 +1037,22 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 
 			// Erase unused portion of tip cluster when shrinking stream
 			if (length < oldLength) {
-				var unusedTipClusterBytes = (int)(newTotalClusters * _parent.ClusterSize - length);
-				if (unusedTipClusterBytes > 0)
-					_parent.FastWriteClusterData(_currentCluster, _parent.ClusterSize - unusedTipClusterBytes, _parent.ZeroClusterBytes.Span.Slice(..unusedTipClusterBytes));
+				var unusedTipClusterBytes = newTotalClusters * _parent.ClusterSize - length;
+				if (unusedTipClusterBytes > 0) {
+					var unusedTipClusterBytesI = Tools.Collection.CheckNotImplemented64bitAddressingLength(unusedTipClusterBytes);
+					_parent.FastWriteClusterData(_currentCluster, _parent.ClusterSize - unusedTipClusterBytes, _parent.ZeroClusterBytes.Span.Slice(..unusedTipClusterBytesI));
+				}
 			}
 
 			// Update record if applicable
 			if (_clusterDataType == ClusterDataType.Stream) {
-				_parent._openScope.Record.Size = (int)length;
+				_parent._openScope.Record.Size = length;
 				if (_parent._openScope.Record.Size == 0)
 					_parent._openScope.Record.StartCluster = -1;
 				if (oldTotalClusters == 0 && newTotalClusters > 0)
 					_parent._openScope.Record.StartCluster = newClustersL[0];
 			} else {
-				_parent.AllRecordsSize = (int)length;
+				_parent.AllRecordsSize = length;
 			}
 
 			newFragments = newFragmentsL.ToArray();
@@ -1071,7 +1081,7 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 			}
 		}
 
-		internal void InvalidateCluster(int cluster) {
+		internal void InvalidateCluster(long cluster) {
 			if (cluster == _currentCluster)
 				ResetClusterPointer();
 			if (_enableCache)
@@ -1079,7 +1089,7 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		private bool IsStartCluster(int cluster) => _clusterDataType switch {
+		private bool IsStartCluster(long cluster) => _clusterDataType switch {
 			ClusterDataType.Record => cluster == 0,
 			ClusterDataType.Stream => cluster == _parent._openScope.Record.StartCluster,
 			_ => throw new NotSupportedException($"{_clusterDataType}")
@@ -1099,7 +1109,7 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 				CheckSteps(steps++);
 		}
 
-		private void TraverseToFragment(int index) {
+		private void TraverseToFragment(long index) {
 			if (_currentFragment == index)
 				return;
 
@@ -1130,7 +1140,7 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 
 			_currentFragment--;
 			// note: _currentCluster still points to current at this point
-			var prevCluster = 0;
+			var prevCluster = 0L;
 			if (!(_enableCache && _fragmentCache.TryGetCluster(_currentFragment, out prevCluster))) {
 				_currentCluster = _parent.FastReadClusterPrev(_currentCluster);
 				if (_enableCache)
@@ -1171,39 +1181,39 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 
 
 	internal class FragmentCache {
-		private readonly IDictionary<int, int> _fragmentToClusterMap;
-		private readonly IDictionary<int, int> _clusterToFragmentMap;
+		private readonly IDictionary<long, long> _fragmentToClusterMap;
+		private readonly IDictionary<long, long> _clusterToFragmentMap;
 
 		public FragmentCache() {
-			_fragmentToClusterMap = new Dictionary<int, int>();
-			_clusterToFragmentMap = new Dictionary<int, int>();
+			_fragmentToClusterMap = new Dictionary<long, long>();
+			_clusterToFragmentMap = new Dictionary<long, long>();
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public bool TryGetCluster(int fragment, out int cluster) {
+		public bool TryGetCluster(long fragment, out long cluster) {
 			return _fragmentToClusterMap.TryGetValue(fragment, out cluster);
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public void SetCluster(int fragment, int cluster) {
+		public void SetCluster(long fragment, long cluster) {
 			_fragmentToClusterMap[fragment] = cluster;
 			_clusterToFragmentMap[cluster] = fragment;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public void Invalidate(int fragment, int cluster) {
+		public void Invalidate(long fragment, long cluster) {
 			_fragmentToClusterMap.Remove(fragment);
 			_clusterToFragmentMap.Remove(cluster);
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public void InvalidateFragment(int fragment) {
+		public void InvalidateFragment(long fragment) {
 			if (_fragmentToClusterMap.TryGetValue(fragment, out var cluster))
 				Invalidate(fragment, cluster);
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public void InvalidateCluster(int cluster) {
+		public void InvalidateCluster(long cluster) {
 			if (_clusterToFragmentMap.TryGetValue(cluster, out var fragment))
 				Invalidate(fragment, cluster);
 		}

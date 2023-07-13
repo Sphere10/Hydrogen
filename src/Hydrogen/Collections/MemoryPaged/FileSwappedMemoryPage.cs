@@ -13,11 +13,11 @@ namespace Hydrogen;
 public abstract class FileSwappedMemoryPage<TItem> : MemoryPageBase<TItem> {
 	private readonly string _file;
 
-	protected FileSwappedMemoryPage(int pageSize, IItemSizer<TItem> sizer, IExtendedList<TItem> memoryStore)
+	protected FileSwappedMemoryPage(long pageSize, IItemSizer<TItem> sizer, IExtendedList<TItem> memoryStore)
 		: this(pageSize, Tools.FileSystem.GetTempFileName(false), sizer, memoryStore) {
 	}
 
-	protected FileSwappedMemoryPage(int pageSize, string fileStore, IItemSizer<TItem> sizer, IExtendedList<TItem> memoryStore)
+	protected FileSwappedMemoryPage(long pageSize, string fileStore, IItemSizer<TItem> sizer, IExtendedList<TItem> memoryStore)
 		: base(pageSize, sizer, memoryStore) {
 		_file = fileStore;
 	}

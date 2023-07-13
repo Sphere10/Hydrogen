@@ -20,7 +20,7 @@ public class CorruptDataException : InvalidOperationException {
 		: this($"{msg} - [ClusteredStorage]: {containerHeader}") {
 	}
 
-	public CorruptDataException(ClusteredStorageHeader containerHeader, int cluster, string? msg = null)
+	public CorruptDataException(ClusteredStorageHeader containerHeader, long cluster, string? msg = null)
 		: this(containerHeader, $"Corrupt Cluster {cluster} ({msg ?? "Unexpected value in cluster envelope"})") {
 	}
 }

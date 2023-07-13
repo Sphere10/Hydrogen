@@ -14,7 +14,7 @@ namespace Hydrogen;
 public abstract class TransactionalFilePageBase<TItem> : FilePageBase<TItem>, ITransactionalFilePage<TItem> {
 
 	private const int StreamCopyDefaultBlockSize = 262144; // 256k read blocks
-	protected TransactionalFilePageBase(FileStream sourceFile, IItemSizer<TItem> sizer, string uncommittedPageFileName, int pageNumber, int pageSize, IExtendedList<TItem> memoryStore)
+	protected TransactionalFilePageBase(FileStream sourceFile, IItemSizer<TItem> sizer, string uncommittedPageFileName, long pageNumber, long pageSize, IExtendedList<TItem> memoryStore)
 		: base(sourceFile, sizer, pageNumber, pageSize, memoryStore) {
 		UncommittedPageFileName = uncommittedPageFileName;
 		HasUncommittedData = File.Exists(UncommittedPageFileName);

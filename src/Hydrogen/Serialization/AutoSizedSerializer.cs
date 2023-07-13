@@ -11,34 +11,58 @@ using System;
 namespace Hydrogen;
 
 public class AutoSizedSerializer<TItem> : ItemSerializerDecorator<TItem> {
+	private readonly SizeDescriptorSerializer _sizeDescriptorSerializer;
 
-	public AutoSizedSerializer(IItemSerializer<TItem> internalSerializer)
+	public AutoSizedSerializer(IItemSerializer<TItem> internalSerializer, SizeDescriptorStrategy sizeDescriptorStrategy)
 		: base(internalSerializer) {
+		_sizeDescriptorSerializer = new SizeDescriptorSerializer(sizeDescriptorStrategy);
 	}
 
-	public override int CalculateSize(TItem item) => sizeof(int) + base.CalculateSize(item);
+	public override bool IsStaticSize => _sizeDescriptorSerializer.IsStaticSize && base.IsStaticSize;
+
+	public override long CalculateSize(TItem item) {
+		var itemSize = base.CalculateSize(item);
+		return _sizeDescriptorSerializer.CalculateSize(itemSize) + itemSize;
+	}
 
 	public bool TrySerialize(TItem item, EndianBinaryWriter writer)
 		=> TrySerialize(item, writer, out _);
 
-	public override bool TrySerialize(TItem item, EndianBinaryWriter writer, out int bytesWritten) {
-		var len = item != null ? base.CalculateSize(item) : 0;
-		writer.Write(len);
-		var res = base.TrySerialize(item, writer, out bytesWritten);
-		bytesWritten += sizeof(int);
-		return res;
+	public override bool TrySerialize(TItem item, EndianBinaryWriter writer, out long bytesWritten) {
+		bytesWritten = 0;
+		var itemSize = item != null ? base.CalculateSize(item) : 0;
+		if (!_sizeDescriptorSerializer.TrySerialize(itemSize, writer, out var sizeDescriptorBytesWritten))
+			return false;
+
+		if (!base.TrySerialize(item, writer, out var itemBytesWritten))
+			return false;
+
+		bytesWritten = sizeDescriptorBytesWritten + itemBytesWritten;
+		return true;
 	}
 
-	public override bool TryDeserialize(int byteSize, EndianBinaryReader reader, out TItem item) {
+	public override bool TryDeserialize(long byteSize, EndianBinaryReader reader, out TItem item) {
 		// Caller trying to read item passing explicit size, so check length matches
-		var len = reader.ReadInt32();
-		Guard.ArgumentEquals(byteSize, sizeof(int) + len, nameof(byteSize), "Read overflow");
-		return base.TryDeserialize(len, reader, out item);
+		item = default;
+		if (!_sizeDescriptorSerializer.TryDeserialize(reader, out var itemSize)) {
+			return false;
+		}
+
+		var sizeDescriptorSize = _sizeDescriptorSerializer.CalculateSize(itemSize);
+
+		Guard.ArgumentEquals(byteSize, sizeDescriptorSize + itemSize, nameof(byteSize), "Read overflow");
+
+		return base.TryDeserialize(itemSize, reader, out item);
 	}
 
 	public bool TryDeserialize(EndianBinaryReader reader, out TItem item) {
-		var len = reader.ReadInt32();
-		return base.TryDeserialize(len, reader, out item);
+		// Caller trying to read item passing explicit size, so check length matches
+		item = default;
+		if (!_sizeDescriptorSerializer.TryDeserialize(reader, out var itemSize)) {
+			return false;
+		}
+
+		return base.TryDeserialize(itemSize, reader, out item);
 	}
 
 	public TItem Deserialize(EndianBinaryReader reader) {

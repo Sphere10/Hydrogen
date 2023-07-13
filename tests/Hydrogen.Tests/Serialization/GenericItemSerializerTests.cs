@@ -262,7 +262,7 @@ public class GenericItemSerializerTests {
 		var calculatedTotalSize = serializer.CalculateTotalSize(items, true, out var sizes);
 		Assert.AreEqual(0, memoryStream.Length);
 
-		int serializedTotal = 0;
+		var serializedTotal = 0L;
 		foreach (var item in items) {
 			serializedTotal += serializer.Serialize(item, writer);
 		}

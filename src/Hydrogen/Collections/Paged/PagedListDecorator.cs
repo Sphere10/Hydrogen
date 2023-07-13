@@ -44,7 +44,7 @@ public abstract class PagedListDecorator<TItem, TPagedList> : ExtendedListDecora
 		remove => InternalCollection.PageAccessed -= value;
 	}
 
-	public event EventHandlerEx<object, int> PageCreating {
+	public event EventHandlerEx<object, long> PageCreating {
 		add => InternalCollection.PageCreating += value;
 		remove => InternalCollection.PageCreating -= value;
 	}
@@ -133,7 +133,7 @@ public abstract class PagedListDecorator<TItem, TPagedList> : ExtendedListDecora
 	protected virtual void OnPageAccessed(IPage<TItem> page) {
 	}
 
-	protected virtual void OnPageCreating(int pageNumber) {
+	protected virtual void OnPageCreating(long pageNumber) {
 	}
 
 	protected virtual void OnPageCreated(IPage<TItem> page) {

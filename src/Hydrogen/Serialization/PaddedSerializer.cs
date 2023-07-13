@@ -6,40 +6,55 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using System;
 using System.Diagnostics;
 
 namespace Hydrogen;
 
 public class PaddedSerializer<TItem> : StaticSizeItemSerializerBase<TItem> {
 	private readonly IItemSerializer<TItem> _dynamicSerializer;
-	public PaddedSerializer(int fixedSize, IItemSerializer<TItem> dynamicSerializer)
+	private readonly SizeDescriptorSerializer _sizeDescriptorSerializer;
+	public PaddedSerializer(long fixedSize, IItemSerializer<TItem> dynamicSerializer, SizeDescriptorStrategy sizeDescriptorStrategy)
 		: base(fixedSize) {
+		Guard.ArgumentNotNull(dynamicSerializer, nameof(dynamicSerializer));
 		_dynamicSerializer = dynamicSerializer;
+		_sizeDescriptorSerializer = new SizeDescriptorSerializer(sizeDescriptorStrategy);
 	}
 
 	public override bool TrySerialize(TItem item, EndianBinaryWriter writer) {
-		var bytesWritten = 0;
+		const int StackAllocPaddingThreshold = 2048;
+
+		var bytesWritten = 0L;
 		var expectedSize = _dynamicSerializer.CalculateSize(item);
-		if (expectedSize > StaticSize - sizeof(int)) {
-			// Item is too large to fit in StaticSize bytes
+		var sizeDescriptorSize = _sizeDescriptorSerializer.CalculateSize(expectedSize);
+		if (expectedSize + sizeDescriptorSize > StaticSize) {
+			throw new InvalidOperationException($"Item is too large to fit in {StaticSize} bytes");
 			return false;
 		}
 
-		writer.Write(expectedSize);
-		bytesWritten += sizeof(int);
-		if (!_dynamicSerializer.TrySerialize(item, writer, out var itemBytes))
+		if (!_sizeDescriptorSerializer.TrySerialize(expectedSize, writer, out var sizeDescriptorBytes))
 			return false;
 
-		if (itemBytes != expectedSize)
+
+		bytesWritten += sizeDescriptorBytes;
+
+		if (!_dynamicSerializer.TrySerialize(item, writer, out var itemBytes)) {
+			throw new InvalidOperationException($"Failed to serialize item size descriptor");
 			return false;
+		}
+
+		if (itemBytes != expectedSize) {
+			throw new InvalidOperationException($"Item size mismatch. Expected to serialize {expectedSize} bytes, but serialized {itemBytes} bytes");
+			return false;
+		}
 
 		bytesWritten += itemBytes;
-		if (bytesWritten > StaticSize)
-			return false;
+		Debug.Assert(bytesWritten <= StaticSize);
 
 		var remaining = StaticSize - bytesWritten;
+
 		// TODO: should chunk this out
-		var padding = Tools.Array.Gen<byte>(remaining, 0);
+		Span<byte> padding = remaining <= StackAllocPaddingThreshold ? stackalloc byte[unchecked((int)remaining)] : new byte[remaining];
 		writer.Write(padding);
 		bytesWritten += remaining;
 		Debug.Assert(bytesWritten == StaticSize);
@@ -47,16 +62,22 @@ public class PaddedSerializer<TItem> : StaticSizeItemSerializerBase<TItem> {
 	}
 
 	public override bool TryDeserialize(EndianBinaryReader reader, out TItem item) {
-		var itemSize = reader.ReadInt32();
-		if (itemSize > StaticSize - sizeof(int)) {
-			item = default;
+		item = default;
+		if (!_sizeDescriptorSerializer.TryDeserialize(reader, out var itemSize)) {
+			throw new InvalidOperationException($"Failed to deserialize item size descriptor");
+			return false;
+		}
+		var sizeDescriptorSize = _sizeDescriptorSerializer.CalculateSize(itemSize);
+		if (itemSize + sizeDescriptorSize > StaticSize) {
+			throw new InvalidOperationException($"Item size too large");
 			return false;
 		}
 
-		if (!_dynamicSerializer.TryDeserialize(itemSize, reader, out item))
+		if (!_dynamicSerializer.TryDeserialize(itemSize, reader, out item)) {
 			return false;
+		}
 
-		var padding = StaticSize - itemSize - sizeof(int);
+		var padding = StaticSize - itemSize - sizeDescriptorSize;
 		var _ = reader.ReadBytes(padding);
 		return true;
 	}

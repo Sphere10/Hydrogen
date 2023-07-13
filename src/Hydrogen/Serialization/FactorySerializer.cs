@@ -42,12 +42,12 @@ public class FactorySerializer<TBase> : IItemSerializer<TBase>, IFactorySerializ
 
 	public bool IsStaticSize => false;
 
-	public int StaticSize => -1;
+	public long StaticSize => -1;
 
-	public int CalculateTotalSize(IEnumerable<TBase> items, bool calculateIndividualItems, out int[] itemSizes) {
-		var itemSizesL = new List<int>();
+	public long CalculateTotalSize(IEnumerable<TBase> items, bool calculateIndividualItems, out long[] itemSizes) {
+		var itemSizesL = new List<long>();
 		var totalSize = items.Aggregate(
-			0,
+			0L,
 			(i, o) => {
 				var itemSize = GetConcreteSerializer(GetTypeCode(o.GetType())).CalculateSize(o);
 				if (calculateIndividualItems)
@@ -58,15 +58,15 @@ public class FactorySerializer<TBase> : IItemSerializer<TBase>, IFactorySerializ
 		return totalSize;
 	}
 
-	public int CalculateSize(TBase item) => GetConcreteSerializer(item).CalculateSize(item);
+	public long CalculateSize(TBase item) => GetConcreteSerializer(item).CalculateSize(item);
 
-	public bool TrySerialize(TBase item, EndianBinaryWriter writer, out int bytesWritten) {
+	public bool TrySerialize(TBase item, EndianBinaryWriter writer, out long bytesWritten) {
 		var typeCode = GetTypeCode(item);
 		writer.Write(typeCode);
 		return GetConcreteSerializer(typeCode).TrySerialize(item, writer, out bytesWritten);
 	}
 
-	public bool TryDeserialize(int byteSize, EndianBinaryReader reader, out TBase item) {
+	public bool TryDeserialize(long byteSize, EndianBinaryReader reader, out TBase item) {
 		var typeCode = reader.ReadUInt16();
 		return GetConcreteSerializer(typeCode).TryDeserialize(byteSize, reader, out item);
 	}

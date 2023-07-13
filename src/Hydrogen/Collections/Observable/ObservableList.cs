@@ -43,7 +43,7 @@ public class ObservableList<TItem, TConcrete> : ObservableCollection<TItem, TCon
 		EventTraits.Search,
 		() => InternalCollection.IndexOf(item),
 		() => new SearchingLocationEventArgs<TItem> { CallArgs = new ItemsCallArgs<TItem>(item) },
-		result => new SearchedLocationEventArgs<TItem> { Result = new[] { result } },
+		result => new SearchedLocationEventArgs<TItem> { Result = new long[] { result } },
 		(preEventArgs) => {
 			OnSearchingLocation(preEventArgs);
 			SearchingLocation?.Invoke(this, preEventArgs);

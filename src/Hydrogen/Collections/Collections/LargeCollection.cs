@@ -39,7 +39,7 @@ public class LargeCollection<TItem> : CollectionDecorator<TItem>, IDisposable {
 		_pagesDecorator = new ReadOnlyListDecorator<IPage<TItem>, IMemoryPage<TItem>>(InternalPagedList.Pages);
 	}
 
-	public LargeCollection(int pageSize, long maxMemory, Func<TItem, int> itemSizer)
+	public LargeCollection(int pageSize, long maxMemory, Func<TItem, long> itemSizer)
 		: base(new MemoryPagedList<TItem>(pageSize, maxMemory, itemSizer)) {
 	}
 

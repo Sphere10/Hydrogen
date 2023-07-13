@@ -6,6 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using System;
 using System.Text;
 using NUnit.Framework;
 
@@ -16,11 +17,34 @@ namespace Hydrogen.Tests;
 public class AutoSizedSerializerTest {
 
 	[Test]
-	public void String([Values("", "A", "Hello World!")] string arg) {
-		var serializer = new AutoSizedSerializer<string>(new StringSerializer(Encoding.UTF8));
-		var serializedBytes = serializer.SerializeLE(arg);
-		var deserializedItem = serializer.DeserializeLE(serializedBytes);
-		Assert.That(deserializedItem, Is.EqualTo(arg));
+	public void IntegrationTest(
+		[Values(0, 1, 11, 17, byte.MaxValue, byte.MaxValue + 1, ushort.MaxValue, ushort.MaxValue + 1)]
+		int stringSize,
+		[Values] SizeDescriptorStrategy strategy
+	) {
+		var rng = new Random(31337);
+		var @string = rng.NextString(stringSize);
+		var serializer = new AutoSizedSerializer<string>(new StringSerializer(Encoding.ASCII), strategy);
+
+		var expectThrow =
+			stringSize > byte.MaxValue && strategy == SizeDescriptorStrategy.UseByte ||
+			stringSize > ushort.MaxValue && strategy == SizeDescriptorStrategy.UseUInt16;
+
+		if (expectThrow) {
+			Assert.That(() => serializer.SerializeLE(@string), Throws.InstanceOf<ArgumentOutOfRangeException>());
+		} else {
+			var serializedBytes = serializer.SerializeLE(@string);
+			var deserializedItem = serializer.DeserializeLE(serializedBytes);
+			Assert.That(deserializedItem, Is.EqualTo(@string));
+		}
+	}
+
+	[Test]
+	public void StringTooLargeForByteDescriptor() {
+		var rng = new Random(31337);
+		var @string = rng.NextString(256);
+		var serializer = new AutoSizedSerializer<string>(new StringSerializer(Encoding.ASCII), SizeDescriptorStrategy.UseByte);
+		Assert.That(() => serializer.SerializeLE(@string), Throws.InstanceOf<ArgumentOutOfRangeException>());
 	}
 
 }

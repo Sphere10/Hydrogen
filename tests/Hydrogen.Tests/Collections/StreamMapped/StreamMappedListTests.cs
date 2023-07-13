@@ -41,6 +41,7 @@ public class StreamMappedListTests : StreamPersistedCollectionTestsBase {
 		using (CreateList(policy, reserved, out var clusteredList)) {
 			var obj = new TestObject(rng);
 			clusteredList.Add(obj);
+			var item = clusteredList.Read(0);
 			Assert.That(clusteredList.Count, Is.EqualTo(1));
 			Assert.That(clusteredList[0], Is.EqualTo(obj).Using(new TestObjectComparer()));
 		}
@@ -225,7 +226,7 @@ public class StreamMappedListTests : StreamPersistedCollectionTestsBase {
 			list.Load();
 		list.AddRange(inputs);
 
-		IEnumerable<int> indexes = list.IndexOfRange(inputs[..5]);
+		IEnumerable<long> indexes = list.IndexOfRange(inputs[..5]);
 
 		Assert.AreEqual(new[] { 0, 1, 2, 3, 4 }, indexes);
 	}

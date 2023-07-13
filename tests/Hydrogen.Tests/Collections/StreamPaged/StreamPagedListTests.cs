@@ -188,7 +188,7 @@ public class StreamPagedListTests {
 	}
 
 	[Test]
-	public void V1_IntegrationTests([Values(0, 1, 17, 1000)] int maxCapacity, [Values] bool includeListHeader) {
+	public void V1_IntegrationTests([Values(0, 1, 17, 1000, 2213)] int maxCapacity, [Values] bool includeListHeader) {
 		using (var stream = new MemoryStream()) {
 			var list = new StreamPagedList<int>(new PrimitiveSerializer<int>(), stream) { IncludeListHeader = includeListHeader };
 			AssertEx.ListIntegrationTest(list, maxCapacity, (rng, i) => rng.NextInts(i), mutateFromEndOnly: true);

@@ -31,13 +31,13 @@ public static class MerkleMath {
 
 	#region Base math
 
-	public static int CalculateHeight(int leafCount) {
+	public static int CalculateHeight(long leafCount) {
 		if (leafCount == 0)
 			return 0;
 		return (int)Math.Ceiling(Tools.Maths.EpsilonTrunc(Math.Log(leafCount, 2))) + 1;
 	}
 
-	public static int CalculateLevelLength(int leafCount, int level) {
+	public static long CalculateLevelLength(long leafCount, int level) {
 		if (level == 0)
 			return leafCount;
 		// note: below follows from theorem: ceil(ceil(x/m)/n) = ceil(x/(m*n))
@@ -223,9 +223,9 @@ public static class MerkleMath {
 		Debug.Assert(perfectRoot.Level >= coordinate.Level);
 
 		// Step 2: calculate the path to root, tracking left/right turns
-		var flags = new int[perfectRoot.Level - coordinate.Level];
+		var flags = new long[perfectRoot.Level - coordinate.Level];
 		for (var i = 0; i < flags.Length; i++) {
-			flags[i] = coordinate.Index % 2;
+			flags[i] = coordinate.Index % 2L;
 			coordinate = MerkleCoordinate.From(coordinate.Level + 1, coordinate.Index / 2);
 		}
 
@@ -241,7 +241,7 @@ public static class MerkleMath {
 		return flatIX - 1; // decrease by one, since 0-based indexing
 	}
 
-	public static ulong CountFlatNodes(int leafCount) {
+	public static ulong CountFlatNodes(long leafCount) {
 		return (ulong)Pow2.CalculatePow2Partition(leafCount).Sum(x => (1L << x + 1) - 1);
 	}
 
@@ -252,10 +252,10 @@ public static class MerkleMath {
 	/// <returns></returns>
 	/// <exception cref="InternalErrorException"></exception>
 	/// <remarks>Limited to Int.MaxValue flat nodes, needs updating to support Long.MaxValue</remarks>
-	public static int SlowCalculateLeafCountFromFlatNodes(int flatNodeCount) {
-		var lower = 0;
+	public static long SlowCalculateLeafCountFromFlatNodes(long flatNodeCount) {
+		var lower = 0L;
 		var upper = flatNodeCount;
-		var comparer = Comparer<int>.Default;
+		var comparer = Comparer<long>.Default;
 		while (lower <= upper) {
 			var middle = lower + (upper - lower) / 2;
 			var comparisonResult = comparer.Compare(flatNodeCount, (int)CountFlatNodes(middle));
@@ -300,7 +300,7 @@ public static class MerkleMath {
 		}
 	}
 
-	public static IEnumerable<MerkleCoordinate> CalculateSubRoots(int leafCount) {
+	public static IEnumerable<MerkleCoordinate> CalculateSubRoots(long leafCount) {
 		return CalculateSubRoots(Pow2.CalculatePow2Partition(leafCount));
 	}
 
@@ -346,7 +346,7 @@ public static class MerkleMath {
 		// Last item, the root node, is skipped (verifier has this)
 	}
 
-	public static IEnumerable<MerkleCoordinate> CalculateConsistencyProofPath(int m, int n, out int[] oldRootProofPath) {
+	public static IEnumerable<MerkleCoordinate> CalculateConsistencyProofPath(long m, long n, out long[] oldRootProofPath) {
 		Guard.Argument(n >= m, nameof(n), $"Must be greater than {nameof(m)}");
 		// When appending to a merkle tree, the append proof contains the minimum hash path
 		// that can be used to reconstruct both the old root and the new root.
@@ -356,7 +356,7 @@ public static class MerkleMath {
 
 		// If old tree was empty, then append proof is empty
 		if (m == 0) {
-			oldRootProofPath = Array.Empty<int>(); // old root does not exist since old tree was empty
+			oldRootProofPath = Array.Empty<long>(); // old root does not exist since old tree was empty
 			return Enumerable.Empty<MerkleCoordinate>();
 		}
 
@@ -375,7 +375,7 @@ public static class MerkleMath {
 
 	}
 
-	public static IEnumerable<MerkleCoordinate> CalculateContainsProofPath(MerkleSize size, IEnumerable<int> leafsIndices) {
+	public static IEnumerable<MerkleCoordinate> CalculateContainsProofPath(MerkleSize size, IEnumerable<long> leafsIndices) {
 		var leafs = leafsIndices.Select(MerkleCoordinate.LeafAt).ToArray();
 		var path = leafs.Aggregate(
 			Enumerable.Empty<MerkleCoordinate>(),
@@ -384,7 +384,7 @@ public static class MerkleMath {
 		return path.Except(leafs);
 	}
 
-	public static IEnumerable<MerkleCoordinate> CalculateUpdateProofPath(MerkleSize size, IEnumerable<int> leafsIndices) {
+	public static IEnumerable<MerkleCoordinate> CalculateUpdateProofPath(MerkleSize size, IEnumerable<long> leafsIndices) {
 		var leafs = leafsIndices.Select(MerkleCoordinate.LeafAt).ToArray();
 		var path = leafs.Aggregate(
 			Enumerable.Empty<MerkleCoordinate>(),
@@ -402,19 +402,19 @@ public static class MerkleMath {
 	public static IEnumerable<byte[]> GenerateExistenceProof(IMerkleTree merkleTree, MerkleCoordinate node, out IEnumerable<bool> flags)
 		=> GenerateProof(merkleTree, CalculateExistenceProofPath(merkleTree.Size, node), out flags);
 
-	public static IEnumerable<byte[]> GenerateConsistencyProof(IMerkleTree tree, int priorLeafCount, out IEnumerable<bool> flags)
+	public static IEnumerable<byte[]> GenerateConsistencyProof(IMerkleTree tree, long priorLeafCount, out IEnumerable<bool> flags)
 		=> GenerateProof(tree, CalculateConsistencyProofPath(priorLeafCount, tree.Size.LeafCount, out _), out flags);
 
-	public static IEnumerable<byte[]> GenerateContainsProof(IMerkleTree tree, IEnumerable<int> leafIndices, out IEnumerable<bool> flags)
+	public static IEnumerable<byte[]> GenerateContainsProof(IMerkleTree tree, IEnumerable<long> leafIndices, out IEnumerable<bool> flags)
 		=> GenerateProof(tree, CalculateContainsProofPath(tree.Size, leafIndices), out flags);
 
-	public static IEnumerable<byte[]> GenerateUpdateProof(IMerkleTree tree, IEnumerable<int> leafIndices, out IEnumerable<bool> flags)
+	public static IEnumerable<byte[]> GenerateUpdateProof(IMerkleTree tree, IEnumerable<long> leafIndices, out IEnumerable<bool> flags)
 		=> GenerateProof(tree, CalculateUpdateProofPath(tree.Size, leafIndices), out flags);
 
 	public static IEnumerable<byte[]> GenerateAppendProof(IMerkleTree tree)
 		=> GenerateProof(tree, CalculateSubRoots(tree.Size.LeafCount), out _);
 
-	public static IEnumerable<byte[]> GenerateDeleteProof(IMerkleTree tree, int deletedLeafCount, out IEnumerable<bool> flags)
+	public static IEnumerable<byte[]> GenerateDeleteProof(IMerkleTree tree, long deletedLeafCount, out IEnumerable<bool> flags)
 		=> GenerateConsistencyProof(tree, tree.Size.LeafCount - deletedLeafCount, out flags);
 
 	public static bool VerifyProof(CHF hashAlgorithm, ReadOnlySpan<byte> startHash, IEnumerable<byte[]> proof, IEnumerable<bool> flags, ReadOnlySpan<byte> expectedHash) {
@@ -470,17 +470,17 @@ public static class MerkleMath {
 		return true;
 	}
 
-	public static bool VerifyContainsProof(CHF hashAlgorithm, ReadOnlySpan<byte> root, MerkleSize treeSize, int index, IEnumerable<byte[]> leafs, IEnumerable<byte[]> proof) {
+	public static bool VerifyContainsProof(CHF hashAlgorithm, ReadOnlySpan<byte> root, MerkleSize treeSize, long index, IEnumerable<byte[]> leafs, IEnumerable<byte[]> proof) {
 		Guard.ArgumentNotNull(leafs, nameof(leafs));
 		var leafsArr = leafs as byte[][] ?? leafs.ToArray();
-		return VerifyContainsProof(hashAlgorithm, root, treeSize, Enumerable.Range(index, leafsArr.Length).Zip(leafsArr, Tuple.Create), proof);
+		return VerifyContainsProof(hashAlgorithm, root, treeSize, Tools.Collection.RangeL(index, leafsArr.Length).Zip(leafsArr, Tuple.Create), proof);
 	}
 
-	public static bool VerifyContainsProof(CHF hashAlgorithm, ReadOnlySpan<byte> root, MerkleSize treeSize, IEnumerable<Tuple<int, byte[]>> leafs, IEnumerable<byte[]> proof) {
+	public static bool VerifyContainsProof(CHF hashAlgorithm, ReadOnlySpan<byte> root, MerkleSize treeSize, IEnumerable<Tuple<long, byte[]>> leafs, IEnumerable<byte[]> proof) {
 		Guard.ArgumentNotNull(proof, nameof(proof));
 		Guard.ArgumentNotNull(leafs, nameof(leafs));
 		var proofArr = proof as byte[][] ?? proof.ToArray();
-		var leafsArr = leafs as Tuple<int, byte[]>[] ?? leafs.ToArray();
+		var leafsArr = leafs as Tuple<long, byte[]>[] ?? leafs.ToArray();
 		var leafIndices = leafsArr.Select(x => x.Item1).ToArray();
 
 		// Rebuild the range proof path
@@ -505,17 +505,17 @@ public static class MerkleMath {
 		return true;
 	}
 
-	public static bool VerifyUpdateProof(CHF hashAlgorithm, ReadOnlySpan<byte> oldRoot, MerkleSize treeSize, ReadOnlySpan<byte> newRoot, int index, IEnumerable<byte[]> updatedLeafs, IEnumerable<byte[]> proof) {
+	public static bool VerifyUpdateProof(CHF hashAlgorithm, ReadOnlySpan<byte> oldRoot, MerkleSize treeSize, ReadOnlySpan<byte> newRoot, long index, IEnumerable<byte[]> updatedLeafs, IEnumerable<byte[]> proof) {
 		Guard.ArgumentNotNull(updatedLeafs, nameof(updatedLeafs));
 		var updatedLeafsArr = updatedLeafs as byte[][] ?? updatedLeafs.ToArray();
-		return VerifyUpdateProof(hashAlgorithm, oldRoot, treeSize, newRoot, Enumerable.Range(index, updatedLeafsArr.Length).Zip(updatedLeafsArr), proof);
+		return VerifyUpdateProof(hashAlgorithm, oldRoot, treeSize, newRoot, Tools.Collection.RangeL(index, updatedLeafsArr.Length).Zip(updatedLeafsArr), proof);
 	}
 
-	public static bool VerifyUpdateProof(CHF hashAlgorithm, ReadOnlySpan<byte> oldRoot, MerkleSize treeSize, ReadOnlySpan<byte> newRoot, IEnumerable<Tuple<int, byte[]>> updatedLeafs, IEnumerable<byte[]> proof) {
+	public static bool VerifyUpdateProof(CHF hashAlgorithm, ReadOnlySpan<byte> oldRoot, MerkleSize treeSize, ReadOnlySpan<byte> newRoot, IEnumerable<Tuple<long, byte[]>> updatedLeafs, IEnumerable<byte[]> proof) {
 		Guard.ArgumentNotNull(proof, nameof(proof));
 		Guard.ArgumentNotNull(updatedLeafs, nameof(updatedLeafs));
 		var proofArr = proof as byte[][] ?? proof.ToArray();
-		var updatedLeafsArr = updatedLeafs as Tuple<int, byte[]>[] ?? updatedLeafs.ToArray();
+		var updatedLeafsArr = updatedLeafs as Tuple<long, byte[]>[] ?? updatedLeafs.ToArray();
 		var updatedLeafIndices = updatedLeafsArr.Select(x => x.Item1).ToArray();
 
 		// Rebuild the range proof path

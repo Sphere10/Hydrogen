@@ -11,9 +11,9 @@ using System;
 namespace Hydrogen;
 
 public interface IBufferPage : IMemoryPage<byte> {
-	ReadOnlySpan<byte> ReadSpan(int index, int count);
+	ReadOnlySpan<byte> ReadSpan(long index, long count);
 
 	bool AppendSpan(ReadOnlySpan<byte> items, out ReadOnlySpan<byte> overflow);
 
-	void UpdateSpan(int index, ReadOnlySpan<byte> items);
+	void UpdateSpan(long index, ReadOnlySpan<byte> items);
 }

@@ -16,11 +16,11 @@ namespace Hydrogen;
 
 public class DateTimeOffsetSerializer : IItemSerializer<DateTimeOffset> {
 	public bool IsStaticSize => true;
-	public int StaticSize => _dateTimeSerializer.StaticSize + sizeof(short);
+	public long StaticSize => _dateTimeSerializer.StaticSize + sizeof(short);
 
 	public readonly IItemSerializer<DateTime> _dateTimeSerializer = new DateTimeSerializer();
-	public int CalculateTotalSize(IEnumerable<DateTimeOffset> items, bool calculateIndividualItems, out int[] itemSizes) {
-		itemSizes = Array.Empty<int>();
+	public long CalculateTotalSize(IEnumerable<DateTimeOffset> items, bool calculateIndividualItems, out long[] itemSizes) {
+		itemSizes = Array.Empty<long>();
 		var count = items.Count();
 
 		if (calculateIndividualItems)
@@ -29,11 +29,11 @@ public class DateTimeOffsetSerializer : IItemSerializer<DateTimeOffset> {
 		return StaticSize * count;
 	}
 
-	public int CalculateSize(DateTimeOffset item) {
+	public long CalculateSize(DateTimeOffset item) {
 		return StaticSize;
 	}
 
-	public bool TrySerialize(DateTimeOffset item, EndianBinaryWriter writer, out int bytesWritten) {
+	public bool TrySerialize(DateTimeOffset item, EndianBinaryWriter writer, out long bytesWritten) {
 		try {
 			var dateTimeField = typeof(DateTimeOffset).GetField("_dateTime", BindingFlags.NonPublic | BindingFlags.Instance);
 			var offsetMinutesField = typeof(DateTimeOffset).GetField("_offsetMinutes", BindingFlags.NonPublic | BindingFlags.Instance);
@@ -52,7 +52,7 @@ public class DateTimeOffsetSerializer : IItemSerializer<DateTimeOffset> {
 		}
 	}
 
-	public bool TryDeserialize(int byteSize, EndianBinaryReader reader, out DateTimeOffset item) {
+	public bool TryDeserialize(long byteSize, EndianBinaryReader reader, out DateTimeOffset item) {
 		try {
 			DateTime datetime = _dateTimeSerializer.Deserialize(byteSize, reader);
 			short offsetMinutes = reader.ReadInt16();

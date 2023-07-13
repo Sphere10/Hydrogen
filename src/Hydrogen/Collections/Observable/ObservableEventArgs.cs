@@ -14,7 +14,7 @@ public sealed class CountingEventArgs : PreEventArgs<CallArgs> {
 }
 
 
-public sealed class CountedEventArgs : PostEventArgs<CallArgs, int> {
+public sealed class CountedEventArgs : PostEventArgs<CallArgs, long> {
 }
 
 
@@ -30,7 +30,7 @@ public sealed class SearchingLocationEventArgs<T> : PreEventArgs<ItemsCallArgs<T
 }
 
 
-public sealed class SearchedLocationEventArgs<T> : PostEventArgs<ItemsCallArgs<T>, IEnumerable<int>> {
+public sealed class SearchedLocationEventArgs<T> : PostEventArgs<ItemsCallArgs<T>, IEnumerable<long>> {
 }
 
 

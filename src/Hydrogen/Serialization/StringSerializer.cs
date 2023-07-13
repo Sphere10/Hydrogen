@@ -24,9 +24,9 @@ public class StringSerializer : ItemSerializer<string> {
 
 	public Encoding TextEncoding { get; }
 
-	public override int CalculateSize(string item) => item != null ? TextEncoding.GetByteCount(item) : 0;
+	public override long CalculateSize(string item) => item != null ? TextEncoding.GetByteCount(item) : 0;
 
-	public override bool TrySerialize(string item, EndianBinaryWriter writer, out int bytesWritten) {
+	public override bool TrySerialize(string item, EndianBinaryWriter writer, out long bytesWritten) {
 		var bytes = item != null ? TextEncoding.GetBytes(item) : System.Array.Empty<byte>();
 		Debug.Assert(bytes.Length == CalculateSize(item));
 		writer.Write(bytes);
@@ -34,7 +34,7 @@ public class StringSerializer : ItemSerializer<string> {
 		return true;
 	}
 
-	public override bool TryDeserialize(int byteSize, EndianBinaryReader reader, out string item) {
+	public override bool TryDeserialize(long byteSize, EndianBinaryReader reader, out string item) {
 		var bytes = reader.ReadBytes(byteSize);
 		item = TextEncoding.GetString(bytes);
 		return true;

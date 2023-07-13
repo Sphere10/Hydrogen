@@ -15,10 +15,10 @@ public class NullableStructSerializer<T> : ItemSerializer<T?> where T : struct {
 		_underlyingSerializer = valueSerializer;
 	}
 
-	public override int CalculateSize(T? item)
+	public override long CalculateSize(T? item)
 		=> 1 + (item != null ? _underlyingSerializer.CalculateSize(item.Value) : 0);
 
-	public override bool TrySerialize(T? item, EndianBinaryWriter writer, out int bytesWritten) {
+	public override bool TrySerialize(T? item, EndianBinaryWriter writer, out long bytesWritten) {
 		var hasValue = item is not null;
 		writer.Write(hasValue);
 		bytesWritten = 1;
@@ -29,7 +29,7 @@ public class NullableStructSerializer<T> : ItemSerializer<T?> where T : struct {
 		return result;
 	}
 
-	public override bool TryDeserialize(int byteSize, EndianBinaryReader reader, out T? item) {
+	public override bool TryDeserialize(long byteSize, EndianBinaryReader reader, out T? item) {
 		item = default;
 		var hasValue = reader.ReadBoolean();
 		if (!hasValue)

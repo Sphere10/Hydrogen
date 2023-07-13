@@ -462,29 +462,29 @@ public class FileTransactionTests {
 	private void MutateLists(List<byte> expected, TransactionalFileMappedBuffer file, int maxCapacity, Random RNG) {
 		// add a random amount
 		var remainingCapacity = maxCapacity - file.Count;
-		var newItemsCount = RNG.Next(0, remainingCapacity + 1);
+		var newItemsCount = RNG.Next(0, (int)remainingCapacity + 1);
 		IEnumerable<byte> newItems = RNG.NextBytes(newItemsCount);
 		file.AddRange(newItems);
 		expected.AddRange(newItems);
 
 		// update a random amount
 		if (file.Count > 0) {
-			var range = RNG.NextRange(file.Count);
+			var range = RNG.NextRange((int)file.Count);
 			newItems = RNG.NextBytes(range.End - range.Start + 1);
 			expected.UpdateRangeSequentially(range.Start, newItems);
 			file.UpdateRange(range.Start, newItems);
 
 			// shuffle a random amount
-			range = RNG.NextRange(file.Count);
+			range = RNG.NextRange((int)file.Count);
 			newItems = file.ReadRange(range.Start, range.End - range.Start + 1);
 			var expectedNewItems = expected.GetRange(range.Start, range.End - range.Start + 1);
 
-			range = RNG.NextRange(file.Count, rangeLength: newItems.Count());
+			range = RNG.NextRange((int)file.Count, rangeLength: newItems.Count());
 			expected.UpdateRangeSequentially(range.Start, expectedNewItems);
 			file.UpdateRange(range.Start, newItems);
 
 			// remove a random amount (FROM END OF LIST)
-			range = new ValueRange<int>(RNG.Next(0, file.Count), file.Count - 1);
+			range = new ValueRange<int>(RNG.Next(0, (int)file.Count), (int)file.Count - 1);
 			file.RemoveRange(range.Start, range.End - range.Start + 1);
 			expected.RemoveRange(range.Start, range.End - range.Start + 1);
 		}

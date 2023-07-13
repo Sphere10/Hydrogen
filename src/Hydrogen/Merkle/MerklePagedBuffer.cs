@@ -126,9 +126,15 @@ public class MerklePagedBuffer : MemoryPagedBufferDecorator, IMerkleList<byte> {
 		MarkMerkleDirty(page, false);
 	}
 
-	private bool IsMerkleDirty(IPage<byte> page) => _merklePagesDirty[page.Number];
+	private bool IsMerkleDirty(IPage<byte> page) {
+		var pageNumberI = Tools.Collection.CheckNotImplemented64bitAddressingIndex(page.Number);
+		return _merklePagesDirty[pageNumberI];
+	}
 
-	private void MarkMerkleDirty(IPage<byte> page, bool dirty) => _merklePagesDirty[page.Number] = dirty;
+	private void MarkMerkleDirty(IPage<byte> page, bool dirty) {
+		var pageNumberI = Tools.Collection.CheckNotImplemented64bitAddressingIndex(page.Number);
+		_merklePagesDirty[pageNumberI] = dirty;
+	}
 
 
 	private class MerkleTreeImpl : DynamicMerkleTreeDecorator {

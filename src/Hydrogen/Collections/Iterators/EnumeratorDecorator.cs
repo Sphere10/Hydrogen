@@ -14,25 +14,25 @@ namespace Hydrogen;
 public class EnumeratorDecorator<TFrom, TTo> : IEnumerator<TTo> where TTo : TFrom {
 
 	public EnumeratorDecorator(IEnumerator<TFrom> enumerator) {
-		InternalEumerator = enumerator;
+		InternalEnumerator = enumerator;
 	}
 
-	protected readonly IEnumerator<TFrom> InternalEumerator;
+	protected readonly IEnumerator<TFrom> InternalEnumerator;
 
 	public virtual bool MoveNext() {
-		return InternalEumerator.MoveNext();
+		return InternalEnumerator.MoveNext();
 	}
 
 	public virtual void Reset() {
-		InternalEumerator.Reset();
+		InternalEnumerator.Reset();
 	}
 
-	public virtual TTo Current => (TTo)InternalEumerator.Current;
+	public virtual TTo Current => (TTo)InternalEnumerator.Current;
 
 	object IEnumerator.Current => Current;
 
 	public virtual void Dispose() {
-		InternalEumerator.Dispose();
+		InternalEnumerator.Dispose();
 	}
 
 }

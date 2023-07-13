@@ -14,27 +14,27 @@ using System.Linq;
 
 namespace Hydrogen;
 
-public abstract class PageBase<TItem> : IEnumerable<TItem>, IPage<TItem> {
+public abstract class PageBase<TItem> : IPage<TItem> {
 
 	protected PageBase() {
 		State = PageState.Unloaded;
 	}
 
-	public virtual int Number { get; set; }
-	public virtual int StartIndex { get; set; }
-	public virtual int EndIndex { get; set; }
-	public virtual int Count { get; set; }
-	public virtual int Size { get; set; }
+	public virtual long Number { get; set; }
+	public virtual long StartIndex { get; set; }
+	public virtual long EndIndex { get; set; }
+	public virtual long Count { get; set; }
+	public virtual long Size { get; set; }
 	public virtual bool Dirty { get; set; }
 	public virtual PageState State { get; set; }
 
-	public IEnumerable<TItem> Read(int index, int count) {
+	public IEnumerable<TItem> Read(long index, long count) {
 		CheckPageState(PageState.Loaded);
 		CheckRange(index, count);
 		return ReadInternal(index, count);
 	}
 
-	public bool Write(int index, IEnumerable<TItem> items, out IEnumerable<TItem> overflow) {
+	public bool Write(long index, IEnumerable<TItem> items, out IEnumerable<TItem> overflow) {
 		Guard.ArgumentNotNull(items, nameof(items));
 		var itemsArr = items as TItem[] ?? items.ToArray();
 		CheckPageState(PageState.Loaded);
@@ -49,7 +49,7 @@ public abstract class PageBase<TItem> : IEnumerable<TItem>, IPage<TItem> {
 		// Update segment
 		var updateCount = Math.Min(StartIndex + Count - index, itemsArr.Length);
 		if (updateCount > 0) {
-			var updateItems = itemsArr.Take(updateCount).ToArray();
+			var updateItems = itemsArr.TakeL(updateCount).ToArray();
 			UpdateInternal(index, updateItems, out var oldItemsSpace, out var newItemsSpace);
 
 			// TODO: support this scenario if ever needed, lots of complexity in ensuring updated page doesn't overflow max size from superclasses.
@@ -61,8 +61,8 @@ public abstract class PageBase<TItem> : IEnumerable<TItem>, IPage<TItem> {
 		}
 
 		// Append segment
-		var appendItems = updateCount > 0 ? itemsArr.Skip(updateCount).ToArray() : itemsArr;
-		var appendCount = 0;
+		var appendItems = updateCount > 0 ? itemsArr.SkipL(updateCount).ToArray() : itemsArr;
+		var appendCount = 0L;
 		if (appendItems.Length > 0) {
 			appendCount = AppendInternal(appendItems, out var appendedItemsSpace);
 			Count += appendCount;
@@ -76,12 +76,12 @@ public abstract class PageBase<TItem> : IEnumerable<TItem>, IPage<TItem> {
 
 		if (totalWriteCount > 0)
 			Dirty = true;
-		overflow = totalWriteCount < itemsArr.Length ? itemsArr.Skip(totalWriteCount).ToArray() : Enumerable.Empty<TItem>();
+		overflow = totalWriteCount < itemsArr.Length ? itemsArr.SkipL(totalWriteCount).ToArray() : Enumerable.Empty<TItem>();
 		Debug.Assert(totalWriteCount <= itemsArr.Length);
 		return totalWriteCount == itemsArr.Length;
 	}
 
-	public void EraseFromEnd(int count) {
+	public void EraseFromEnd(long count) {
 		Guard.ArgumentInRange(count, 0, Count, nameof(count));
 		if (count <= 0)
 			return;
@@ -99,15 +99,15 @@ public abstract class PageBase<TItem> : IEnumerable<TItem>, IPage<TItem> {
 		return GetEnumerator();
 	}
 
-	protected abstract IEnumerable<TItem> ReadInternal(int index, int count);
+	protected abstract IEnumerable<TItem> ReadInternal(long index, long count);
 
-	protected abstract int AppendInternal(TItem[] items, out int newItemsSize);
+	protected abstract long AppendInternal(TItem[] items, out long newItemsSize);
 
-	protected abstract void UpdateInternal(int index, TItem[] items, out int oldItemsSize, out int newItemsSize);
+	protected abstract void UpdateInternal(long index, TItem[] items, out long oldItemsSize, out long newItemsSize);
 
-	protected abstract void EraseFromEndInternal(int count, out int oldItemsSize);
+	protected abstract void EraseFromEndInternal(long count, out long oldItemsSize);
 
-	internal void CheckRange(int index, int count) {
+	internal void CheckRange(long index, long count) {
 		var startIX = StartIndex;
 		var lastIX = startIX + (Count - 1).ClipTo(startIX, int.MaxValue);
 		Guard.ArgumentInRange(index, startIX, lastIX, nameof(index));

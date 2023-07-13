@@ -59,7 +59,7 @@ public static class Array {
 			arr[i] = val;
 	}
 
-	public static T[] Gen<T>(int size, T val) {
+	public static T[] Gen<T>(long size, T val) {
 		var arr = new T[size];
 		Fill(arr, val);
 		return arr;

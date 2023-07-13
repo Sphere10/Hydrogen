@@ -95,14 +95,14 @@ public class StreamPersistedCollectionTestsBase {
 
 
 	public class TestObjectSerializer : ItemSerializer<TestObject> {
-		private readonly AutoSizedSerializer<string> _stringSerializer = new(new StringSerializer(Encoding.UTF8));
+		private readonly AutoSizedSerializer<string> _stringSerializer = new(new StringSerializer(Encoding.UTF8), SizeDescriptorStrategy.UseVarInt);
 
-		public override int CalculateSize(TestObject item)
+		public override long CalculateSize(TestObject item)
 			=> _stringSerializer.CalculateSize(item.A) + sizeof(int) + sizeof(bool);
 
 
-		public override bool TrySerialize(TestObject item, EndianBinaryWriter writer, out int bytesWritten) {
-			int stringBytesCount = _stringSerializer.Serialize(item.A, writer);
+		public override bool TrySerialize(TestObject item, EndianBinaryWriter writer, out long bytesWritten) {
+			var stringBytesCount = _stringSerializer.Serialize(item.A, writer);
 			writer.Write(item.B);
 			writer.Write(item.C);
 
@@ -110,7 +110,7 @@ public class StreamPersistedCollectionTestsBase {
 			return true;
 		}
 
-		public override bool TryDeserialize(int byteSize, EndianBinaryReader reader, out TestObject item) {
+		public override bool TryDeserialize(long byteSize, EndianBinaryReader reader, out TestObject item) {
 			item = new(_stringSerializer.Deserialize(reader), reader.ReadInt32(), reader.ReadBoolean());
 			return true;
 		}

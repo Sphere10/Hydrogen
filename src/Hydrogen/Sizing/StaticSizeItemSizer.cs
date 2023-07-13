@@ -14,25 +14,25 @@ namespace Hydrogen;
 // ReSharper disable PossibleInvalidOperationException
 public class StaticSizeItemSizer<TItem> : IItemSizer<TItem> {
 
-	public StaticSizeItemSizer(int staticSize) {
+	public StaticSizeItemSizer(long staticSize) {
 		Guard.ArgumentInRange(staticSize, 0, int.MaxValue, nameof(staticSize));
 		StaticSize = staticSize;
 	}
 
 	public bool IsStaticSize => true;
 
-	public int StaticSize { get; }
+	public long StaticSize { get; }
 
-	public int CalculateTotalSize(IEnumerable<TItem> items, bool calculateIndividualItems, out int[] itemSizes) {
+	public long CalculateTotalSize(IEnumerable<TItem> items, bool calculateIndividualItems, out long[] itemSizes) {
 		return CalculateTotalSize(items.Count(), calculateIndividualItems, out itemSizes);
 	}
 
-	public int CalculateTotalSize(int itemsCount, bool calculateIndividualItems, out int[] itemSizes) {
+	public long CalculateTotalSize(long itemsCount, bool calculateIndividualItems, out long[] itemSizes) {
 		var val = StaticSize;
 		var size = itemsCount * val;
 		itemSizes = calculateIndividualItems ? Tools.Array.Gen(itemsCount, val) : null;
 		return size;
 	}
 
-	public int CalculateSize(TItem item) => StaticSize;
+	public long CalculateSize(TItem item) => StaticSize;
 }

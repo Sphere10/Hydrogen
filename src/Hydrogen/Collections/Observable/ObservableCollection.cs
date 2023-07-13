@@ -11,17 +11,6 @@ using System.Collections.Generic;
 
 namespace Hydrogen;
 
-public class ObservableCollection<TItem> : ObservableCollection<TItem, ICollection<TItem>> {
-
-	public ObservableCollection()
-		: this(new ExtendedList<TItem>()) {
-	}
-	public ObservableCollection(ICollection<TItem> internalCollection)
-		: base(internalCollection) {
-	}
-}
-
-
 public class ObservableCollection<TItem, TConcrete> : CollectionDecorator<TItem, TConcrete>, IObservableCollection
 	where TConcrete : ICollection<TItem> {
 
@@ -61,14 +50,8 @@ public class ObservableCollection<TItem, TConcrete> : CollectionDecorator<TItem,
 			() => base.Count,
 			() => new CountingEventArgs(),
 			result => new CountedEventArgs { Result = result },
-			(preEventArgs) => {
-				OnCounting(preEventArgs);
-				Counting?.Invoke(this, preEventArgs);
-			},
-			(postEventArgs) => {
-				OnCounted(postEventArgs);
-				Counted?.Invoke(this, postEventArgs);
-			}
+			NotifyCounting,
+			NotifyCounted
 		);
 
 	public override bool Contains(TItem item) =>
@@ -224,6 +207,16 @@ public class ObservableCollection<TItem, TConcrete> : CollectionDecorator<TItem,
 	protected virtual void OnEnumeratedItem(EnumeratedItemEventArgs<TItem> args) {
 	}
 
+	protected void NotifyCounting(CountingEventArgs args) {
+		OnCounting(args);
+		Counting?.Invoke(this, args);
+	}
+
+	protected void NotifyCounted(CountedEventArgs args) {
+		OnCounted(args);
+		Counted?.Invoke(this, args);
+	}
+
 	protected void NotifySearchingMembership(SearchingMembershipEventArgs<TItem> args) {
 		SearchingMembership?.Invoke(this, args);
 	}
@@ -360,4 +353,15 @@ public class ObservableCollection<TItem, TConcrete> : CollectionDecorator<TItem,
 		}
 	}
 
+}
+
+
+public class ObservableCollection<TItem> : ObservableCollection<TItem, ICollection<TItem>> {
+
+	public ObservableCollection()
+		: this(new ExtendedList<TItem>()) {
+	}
+	public ObservableCollection(ICollection<TItem> internalCollection)
+		: base(internalCollection) {
+	}
 }

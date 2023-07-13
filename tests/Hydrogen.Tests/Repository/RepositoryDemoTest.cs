@@ -460,17 +460,17 @@ public class PlayerRecord {
 
 public class PlayerRecordSerializer : ItemSerializer<PlayerRecord> {
 
-	private readonly AutoSizedSerializer<string> _stringSerializer = new(new StringSerializer(Encoding.UTF8));
+	private readonly AutoSizedSerializer<string> _stringSerializer = new(new StringSerializer(Encoding.UTF8), SizeDescriptorStrategy.UseUInt32);
 	private readonly PrimitiveSerializer<long> _int64Serializer = new PrimitiveSerializer<long>();
 	private readonly NullableStructSerializer<DateTime> _dateTimeSerializer = new NullableStructSerializer<DateTime>(new DateTimeSerializer());
 
-	public override int CalculateSize(PlayerRecord item)
+	public override long CalculateSize(PlayerRecord item)
 		=> _stringSerializer.CalculateSize(item.TID) +
 		   _int64Serializer.CalculateSize(item.PID) +
 		   _dateTimeSerializer.CalculateSize(item.FirstSeen) +
 		   _dateTimeSerializer.CalculateSize(item.LastSeen);
 
-	public override bool TrySerialize(PlayerRecord item, EndianBinaryWriter writer, out int bytesWritten) {
+	public override bool TrySerialize(PlayerRecord item, EndianBinaryWriter writer, out long bytesWritten) {
 		bytesWritten = 0;
 		if (!_stringSerializer.TrySerialize(item.TID, writer, out var stringBytesWritten))
 			return false;
@@ -488,7 +488,7 @@ public class PlayerRecordSerializer : ItemSerializer<PlayerRecord> {
 		return true;
 	}
 
-	public override bool TryDeserialize(int byteSize, EndianBinaryReader reader, out PlayerRecord item) {
+	public override bool TryDeserialize(long byteSize, EndianBinaryReader reader, out PlayerRecord item) {
 		item = default;
 		if (!_stringSerializer.TryDeserialize(reader, out var TID))
 			return false;

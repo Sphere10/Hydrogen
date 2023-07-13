@@ -19,7 +19,7 @@ public interface IStreamMappedList<TItem> : IExtendedList<TItem>, ILoadable {
 
 	ClusteredStreamScope EnterAddScope(TItem item);
 
-	ClusteredStreamScope EnterInsertScope(int index, TItem item);
+	ClusteredStreamScope EnterInsertScope(long index, TItem item);
 
-	ClusteredStreamScope EnterUpdateScope(int index, TItem item);
+	ClusteredStreamScope EnterUpdateScope(long index, TItem item);
 }

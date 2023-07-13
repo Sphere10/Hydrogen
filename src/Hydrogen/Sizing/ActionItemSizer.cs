@@ -13,22 +13,22 @@ using System.Linq;
 namespace Hydrogen;
 
 public class ActionItemSizer<T> : IItemSizer<T> {
-	private readonly Func<T, int> _sizer;
+	private readonly Func<T, long> _sizer;
 
-	public ActionItemSizer(Func<T, int> sizer) {
+	public ActionItemSizer(Func<T, long> sizer) {
 		Guard.ArgumentNotNull(sizer, nameof(sizer));
 		_sizer = sizer;
 	}
 
 	public bool IsStaticSize => false;
 
-	public int StaticSize => -1;
+	public long StaticSize => -1;
 
-	public int CalculateTotalSize(IEnumerable<T> items, bool calculateIndividualItems, out int[] itemSizes) {
-		var sizes = items.Select(CalculateSize).ToArray();
+	public long CalculateTotalSize(IEnumerable<T> items, bool calculateIndividualItems, out long[] itemSizes) {
+		var sizes = items.Select(item => CalculateSize(item)).ToArray();
 		itemSizes = calculateIndividualItems ? sizes : null;
 		return sizes.Sum();
 	}
 
-	public int CalculateSize(T item) => _sizer(item);
+	public long CalculateSize(T item) => _sizer(item);
 }

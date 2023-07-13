@@ -37,7 +37,7 @@ public class StreamMappedMerkleList<TItem> : MerkleListAdapter<TItem, IStreamMap
 
 
 	public StreamMappedMerkleList(Stream rootStream, int clusterSize, CHF hashAlgorithm = CHF.SHA2_256, IItemSerializer<TItem> itemSerializer = null, IEqualityComparer<TItem> itemComparer = null,
-	                              ClusteredStoragePolicy policy = ClusteredStoragePolicy.Default, int recordKeySize = 0, int reservedRecords = 1, Endianness endianness = Endianness.LittleEndian)
+	                              ClusteredStoragePolicy policy = ClusteredStoragePolicy.Default, long recordKeySize = 0, long reservedRecords = 1, Endianness endianness = Endianness.LittleEndian)
 		: this(
 			rootStream,
 			clusterSize,
@@ -53,7 +53,7 @@ public class StreamMappedMerkleList<TItem> : MerkleListAdapter<TItem, IStreamMap
 	}
 
 	public StreamMappedMerkleList(Stream rootStream, int clusterSize, CHF hashAlgorithm, IItemHasher<TItem> hasher, IItemSerializer<TItem> itemSerializer = null, IEqualityComparer<TItem> itemComparer = null,
-	                              ClusteredStoragePolicy policy = ClusteredStoragePolicy.Default, int recordKeySize = 0, int reservedRecords = 1, Endianness endianness = Endianness.LittleEndian)
+	                              ClusteredStoragePolicy policy = ClusteredStoragePolicy.Default, long recordKeySize = 0, long reservedRecords = 1, Endianness endianness = Endianness.LittleEndian)
 		: this(
 			new StreamMappedList<TItem>(
 				rootStream,
@@ -96,12 +96,12 @@ public class StreamMappedMerkleList<TItem> : MerkleListAdapter<TItem, IStreamMap
 		return InternalCollection.EnterAddScope(item);
 	}
 
-	public ClusteredStreamScope EnterInsertScope(int index, TItem item) {
+	public ClusteredStreamScope EnterInsertScope(long index, TItem item) {
 		InternalMerkleTree.Leafs.Insert(index, ItemHasher.Hash(item));
 		return InternalCollection.EnterInsertScope(index, item);
 	}
 
-	public ClusteredStreamScope EnterUpdateScope(int index, TItem item) {
+	public ClusteredStreamScope EnterUpdateScope(long index, TItem item) {
 		InternalMerkleTree.Leafs.Update(index, ItemHasher.Hash(item));
 		return InternalCollection.EnterUpdateScope(index, item);
 	}

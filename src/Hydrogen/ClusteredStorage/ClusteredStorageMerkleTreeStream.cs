@@ -62,7 +62,7 @@ internal sealed class ClusteredStorageMerkleTreeStream : IDynamicMerkleTree {
 			_parent = parent;
 		}
 
-		public override int Count => _parent._storage.Count - _parent._storage.Header.ReservedRecords;
+		public override long Count => _parent._storage.Count - _parent._storage.Header.ReservedRecords;
 
 		public override void AddRange(IEnumerable<byte[]> items) {
 			using (_parent.EnterAccessMerkleTreeScope(out var merkleTree)) {
@@ -70,31 +70,31 @@ internal sealed class ClusteredStorageMerkleTreeStream : IDynamicMerkleTree {
 			}
 		}
 
-		public override IEnumerable<int> IndexOfRange(IEnumerable<byte[]> items) {
+		public override IEnumerable<long> IndexOfRange(IEnumerable<byte[]> items) {
 			using (_parent.EnterAccessMerkleTreeScope(out var merkleTree)) {
 				return merkleTree.Leafs.IndexOfRange(items);
 			}
 		}
 
-		public override IEnumerable<byte[]> ReadRange(int index, int count) {
+		public override IEnumerable<byte[]> ReadRange(long index, long count) {
 			using (_parent.EnterAccessMerkleTreeScope(out var merkleTree)) {
 				return merkleTree.Leafs.ReadRange(index, count);
 			}
 		}
 
-		public override void UpdateRange(int index, IEnumerable<byte[]> items) {
+		public override void UpdateRange(long index, IEnumerable<byte[]> items) {
 			using (_parent.EnterAccessMerkleTreeScope(out var merkleTree)) {
 				merkleTree.Leafs.UpdateRange(index, items);
 			}
 		}
 
-		public override void InsertRange(int index, IEnumerable<byte[]> items) {
+		public override void InsertRange(long index, IEnumerable<byte[]> items) {
 			using (_parent.EnterAccessMerkleTreeScope(out var merkleTree)) {
 				merkleTree.Leafs.InsertRange(index, items);
 			}
 		}
 
-		public override void RemoveRange(int index, int count) {
+		public override void RemoveRange(long index, long count) {
 			using (_parent.EnterAccessMerkleTreeScope(out var merkleTree)) {
 				merkleTree.Leafs.RemoveRange(index, count);
 			}

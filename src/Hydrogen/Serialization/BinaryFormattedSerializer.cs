@@ -22,27 +22,27 @@ namespace Hydrogen;
 public sealed class BinaryFormattedSerializer<TItem> : IItemSerializer<TItem> {
 
 	public bool IsStaticSize => false;
-	public int StaticSize => -1;
+	public long StaticSize => -1;
 
-	public int CalculateTotalSize(IEnumerable<TItem> items, bool calculateIndividualItems, out int[] itemSizes) {
+	public long CalculateTotalSize(IEnumerable<TItem> items, bool calculateIndividualItems, out long[] itemSizes) {
 		var itemsArr = items as TItem[] ?? items.ToArray();
 
 		if (calculateIndividualItems) {
-			itemSizes = new int[itemsArr.Length];
+			itemSizes = new long[itemsArr.Length];
 			for (int i = 0; i < itemsArr.Length; i++) {
 				itemSizes[i] = CalculateSize(itemsArr[i]);
 			}
 		}
 
-		int sum = 0;
+		var sum = 0L;
 		for (int i = 0; i < itemsArr.Length; i++) {
 			sum += CalculateSize(itemsArr[i]);
 		}
-		itemSizes = Array.Empty<int>();
+		itemSizes = Array.Empty<long>();
 		return sum;
 	}
 
-	public int CalculateSize(TItem item) {
+	public long CalculateSize(TItem item) {
 		var formatter = new BinaryFormatter();
 		using var memoryStream = new MemoryStream();
 		formatter.Serialize(memoryStream, item);
@@ -50,7 +50,7 @@ public sealed class BinaryFormattedSerializer<TItem> : IItemSerializer<TItem> {
 		return objectRawBytes.Length;
 	}
 
-	public bool TrySerialize(TItem item, EndianBinaryWriter writer, out int bytesWritten) {
+	public bool TrySerialize(TItem item, EndianBinaryWriter writer, out long bytesWritten) {
 		try {
 			var formatter = new BinaryFormatter();
 			using var memoryStream = new MemoryStream();
@@ -66,7 +66,7 @@ public sealed class BinaryFormattedSerializer<TItem> : IItemSerializer<TItem> {
 		}
 	}
 
-	public bool TryDeserialize(int byteSize, EndianBinaryReader reader, out TItem item) {
+	public bool TryDeserialize(long byteSize, EndianBinaryReader reader, out TItem item) {
 		try {
 			var bytes = reader.ReadBytes(byteSize);
 			var formatter = new BinaryFormatter();

@@ -18,15 +18,15 @@ public abstract class BufferDecorator<TBuffer> : ExtendedListDecorator<byte, TBu
 
 	public virtual void AddRange(ReadOnlySpan<byte> span) => InternalCollection.AddRange(span);
 
-	public virtual Span<byte> AsSpan(int index, int count) => InternalCollection.AsSpan(index, count);
+	public virtual Span<byte> AsSpan(long index, long count) => InternalCollection.AsSpan(index, count);
 
-	public virtual void InsertRange(int index, ReadOnlySpan<byte> items) => InternalCollection.InsertRange(index, items);
+	public virtual void InsertRange(long index, ReadOnlySpan<byte> items) => InternalCollection.InsertRange(index, items);
 
-	public virtual ReadOnlySpan<byte> ReadSpan(int index, int count) => InternalCollection.ReadSpan(index, count);
+	public virtual ReadOnlySpan<byte> ReadSpan(long index, long count) => InternalCollection.ReadSpan(index, count);
 
-	public virtual void UpdateRange(int index, ReadOnlySpan<byte> items) => InternalCollection.UpdateRange(index, items);
+	public virtual void UpdateRange(long index, ReadOnlySpan<byte> items) => InternalCollection.UpdateRange(index, items);
 
-	public virtual void ExpandTo(int totalBytes) => InternalCollection.ExpandTo(totalBytes);
+	public virtual void ExpandTo(long totalBytes) => InternalCollection.ExpandTo(totalBytes);
 
-	public virtual void ExpandBy(int newBytes) => InternalCollection.ExpandBy(newBytes);
+	public virtual void ExpandBy(long newBytes) => InternalCollection.ExpandBy(newBytes);
 }

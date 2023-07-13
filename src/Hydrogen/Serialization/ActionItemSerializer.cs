@@ -11,10 +11,10 @@ using System;
 namespace Hydrogen;
 
 public class ActionItemSerializer<T> : ActionItemSizer<T>, IItemSerializer<T> {
-	private readonly Func<T, EndianBinaryWriter, int> _serializer;
-	private readonly Func<int, EndianBinaryReader, T> _deserializer;
+	private readonly Func<T, EndianBinaryWriter, long> _serializer;
+	private readonly Func<long, EndianBinaryReader, T> _deserializer;
 
-	public ActionItemSerializer(Func<T, int> sizer, Func<T, EndianBinaryWriter, int> serializer, Func<int, EndianBinaryReader, T> deserializer)
+	public ActionItemSerializer(Func<T, long> sizer, Func<T, EndianBinaryWriter, long> serializer, Func<long, EndianBinaryReader, T> deserializer)
 		: base(sizer) {
 		Guard.ArgumentNotNull(serializer, nameof(serializer));
 		Guard.ArgumentNotNull(deserializer, nameof(deserializer));
@@ -22,23 +22,13 @@ public class ActionItemSerializer<T> : ActionItemSizer<T>, IItemSerializer<T> {
 		_deserializer = deserializer;
 	}
 
-	public bool TrySerialize(T item, EndianBinaryWriter writer, out int bytesWritten) {
-		try {
-			bytesWritten = _serializer(item, writer);
-			return true;
-		} catch (Exception) {
-			bytesWritten = 0;
-			return false;
-		}
+	public bool TrySerialize(T item, EndianBinaryWriter writer, out long bytesWritten) {
+		bytesWritten = _serializer(item, writer);
+		return true;
 	}
 
-	public bool TryDeserialize(int byteSize, EndianBinaryReader reader, out T item) {
-		try {
-			item = _deserializer(byteSize, reader);
-			return true;
-		} catch (Exception) {
-			item = default;
-			return false;
-		}
+	public bool TryDeserialize(long byteSize, EndianBinaryReader reader, out T item) {
+		item = _deserializer(byteSize, reader);
+		return true;
 	}
 }

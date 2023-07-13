@@ -10,9 +10,9 @@ namespace Hydrogen;
 
 public class ClusteredStreamRecordSerializer : StaticSizeItemSerializerBase<ClusteredStreamRecord> {
 	private readonly ClusteredStoragePolicy _policy;
-	private readonly int _keySize;
+	private readonly long _keySize;
 
-	public ClusteredStreamRecordSerializer(ClusteredStoragePolicy policy, int keySize)
+	public ClusteredStreamRecordSerializer(ClusteredStoragePolicy policy, long keySize)
 		: base(DetermineSizeBasedOnPolicy(policy, keySize)) {
 		_policy = policy;
 		_keySize = keySize;
@@ -20,10 +20,10 @@ public class ClusteredStreamRecordSerializer : StaticSizeItemSerializerBase<Clus
 
 	public override bool TrySerialize(ClusteredStreamRecord item, EndianBinaryWriter writer) {
 		writer.Write((byte)item.Traits);
-		writer.Write(item.StartCluster);
-		writer.Write(item.Size);
+		writer.Write((long)item.StartCluster);
+		writer.Write((long)item.Size);
 		if (_policy.HasFlag(ClusteredStoragePolicy.TrackChecksums))
-			writer.Write(item.KeyChecksum);
+			writer.Write((int)item.KeyChecksum);
 
 		if (_policy.HasFlag(ClusteredStoragePolicy.TrackKey)) {
 			if (item.Key?.Length != _keySize)
@@ -37,8 +37,8 @@ public class ClusteredStreamRecordSerializer : StaticSizeItemSerializerBase<Clus
 	public override bool TryDeserialize(EndianBinaryReader reader, out ClusteredStreamRecord item) {
 		item = new ClusteredStreamRecord {
 			Traits = (ClusteredStreamTraits)reader.ReadByte(),
-			StartCluster = reader.ReadInt32(),
-			Size = reader.ReadInt32()
+			StartCluster = reader.ReadInt64(),
+			Size = reader.ReadInt64()
 		};
 
 		if (_policy.HasFlag(ClusteredStoragePolicy.TrackChecksums))
@@ -51,15 +51,15 @@ public class ClusteredStreamRecordSerializer : StaticSizeItemSerializerBase<Clus
 	}
 
 
-	static int DetermineSizeBasedOnPolicy(ClusteredStoragePolicy policy, int keySize) {
-		var size = sizeof(byte) + sizeof(int) + sizeof(int); // Traits + StartCluster + Size
+	static long DetermineSizeBasedOnPolicy(ClusteredStoragePolicy policy, long keySize) {
+		long size = sizeof(byte) + sizeof(long) + sizeof(long); // Traits + StartCluster + Size
 
 		if (policy.HasFlag(ClusteredStoragePolicy.TrackChecksums))
 			size += sizeof(int);
 
-		if (policy.HasFlag(ClusteredStoragePolicy.TrackKey)) {
+		if (policy.HasFlag(ClusteredStoragePolicy.TrackKey))
 			size += keySize;
-		}
+
 		return size;
 	}
 }

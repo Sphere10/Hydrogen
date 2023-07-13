@@ -10,8 +10,8 @@ namespace Hydrogen;
 
 public interface IItemSerializer<TItem> : IItemSizer<TItem> {
 
-	bool TrySerialize(TItem item, EndianBinaryWriter writer, out int bytesWritten);
+	bool TrySerialize(TItem item, EndianBinaryWriter writer, out long bytesWritten);
 
-	bool TryDeserialize(int byteSize, EndianBinaryReader reader, out TItem item);
+	bool TryDeserialize(long byteSize, EndianBinaryReader reader, out TItem item);
 
 }

@@ -11,16 +11,16 @@ using System.Text;
 namespace Hydrogen.Application;
 
 public class ProductLicenseCommandDTOSerializer : ItemSerializer<ProductLicenseCommandDTO> {
-	private readonly AutoSizedSerializer<string> _stringSerializer = new AutoSizedSerializer<string>(new NullableObjectSerializer<string>(new StringSerializer(Encoding.ASCII)));
+	private readonly AutoSizedSerializer<string> _stringSerializer = new(new NullableObjectSerializer<string>(new StringSerializer(Encoding.ASCII)), SizeDescriptorStrategy.UseUInt32);
 
-	public override int CalculateSize(ProductLicenseCommandDTO item)
+	public override long CalculateSize(ProductLicenseCommandDTO item)
 		=> _stringSerializer.CalculateSize(item.ProductKey) +
 		   1 +
 		   _stringSerializer.CalculateSize(item.NotificationMessage) +
 		   _stringSerializer.CalculateSize(item.BuyNowLink);
 
 
-	public override bool TrySerialize(ProductLicenseCommandDTO item, EndianBinaryWriter writer, out int bytesWritten) {
+	public override bool TrySerialize(ProductLicenseCommandDTO item, EndianBinaryWriter writer, out long bytesWritten) {
 		bytesWritten = 0;
 		writer.Write((byte)item.Action);
 		bytesWritten++;
@@ -38,7 +38,7 @@ public class ProductLicenseCommandDTOSerializer : ItemSerializer<ProductLicenseC
 		return true;
 	}
 
-	public override bool TryDeserialize(int byteSize, EndianBinaryReader reader, out ProductLicenseCommandDTO item) {
+	public override bool TryDeserialize(long byteSize, EndianBinaryReader reader, out ProductLicenseCommandDTO item) {
 		item = new ProductLicenseCommandDTO();
 		if (!_stringSerializer.TryDeserialize(reader, out var strVal))
 			return false;

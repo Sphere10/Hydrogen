@@ -364,7 +364,7 @@ public partial class LoadingCircle : Control {
 
 		if (containerToDisable != null) {
 			_parentContainerToDisable = containerToDisable;
-			_exclusionControls = exclusionControls.Union(this).Union(Tools.Collection.AsEnumerable(HideStopControl)).ToArray();
+			_exclusionControls = exclusionControls.Union(this).Union(Tools.Collection.AsEnumerableWhenNotNull(HideStopControl)).ToArray();
 			_parentContainerToDisable.EnableChildren(false, _exclusionControls);
 			//this.Parent.Enabled = false;
 			this.Enabled = true;

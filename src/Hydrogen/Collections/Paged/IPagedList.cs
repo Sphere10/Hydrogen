@@ -17,7 +17,7 @@ public interface IPagedList<TItem> : IExtendedList<TItem>, ILoadable {
 	event EventHandlerEx<object> Accessed;
 	event EventHandlerEx<object, IPage<TItem>> PageAccessing;
 	event EventHandlerEx<object, IPage<TItem>> PageAccessed;
-	event EventHandlerEx<object, int> PageCreating;
+	event EventHandlerEx<object, long> PageCreating;
 	event EventHandlerEx<object, IPage<TItem>> PageCreated;
 	event EventHandlerEx<object, IPage<TItem>> PageReading;
 	event EventHandlerEx<object, IPage<TItem>> PageRead;

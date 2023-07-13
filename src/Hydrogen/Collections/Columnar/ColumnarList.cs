@@ -21,7 +21,7 @@ public class ColumnarList : RangedListBase<object[]> {
 		_columnStore = columnStore;
 	}
 
-	public override int Count => _columnStore[0].Count;
+	public override long Count => _columnStore[0].Count;
 
 	public override bool IsReadOnly => false;
 
@@ -37,11 +37,11 @@ public class ColumnarList : RangedListBase<object[]> {
 			_columnStore[i].AddRange(columnarItems[i]);
 	}
 
-	public override IEnumerable<int> IndexOfRange(IEnumerable<object[]> items) {
+	public override IEnumerable<long> IndexOfRange(IEnumerable<object[]> items) {
 		throw new NotSupportedException();
 	}
 
-	public override void InsertRange(int index, IEnumerable<object[]> items) {
+	public override void InsertRange(long index, IEnumerable<object[]> items) {
 		CheckIndex(index, true);
 		var rowItems = items as object[][] ?? items.ToArray();
 		if (rowItems.Length == 0)
@@ -52,7 +52,7 @@ public class ColumnarList : RangedListBase<object[]> {
 			_columnStore[i].InsertRange(index, columnarItems[i]);
 	}
 
-	public override IEnumerable<object[]> ReadRange(int index, int count) {
+	public override IEnumerable<object[]> ReadRange(long index, long count) {
 		CheckRange(index, count);
 
 		if (count == 0)
@@ -67,7 +67,7 @@ public class ColumnarList : RangedListBase<object[]> {
 		return Tools.Array.Transpose(colData);
 	}
 
-	public override void RemoveRange(int index, int count) {
+	public override void RemoveRange(long index, long count) {
 		CheckRange(index, count);
 
 		if (count == 0)
@@ -77,7 +77,7 @@ public class ColumnarList : RangedListBase<object[]> {
 			_columnStore[i].RemoveRange(index, count);
 	}
 
-	public override void UpdateRange(int index, IEnumerable<object[]> items) {
+	public override void UpdateRange(long index, IEnumerable<object[]> items) {
 		Guard.ArgumentNotNull(items, nameof(items));
 		var rowItems = items as object[][] ?? items.ToArray();
 		CheckRange(index, rowItems.Length);
@@ -95,7 +95,6 @@ public class ColumnarList : RangedListBase<object[]> {
 		foreach (var col in _columnStore)
 			col.Clear();
 	}
-
 
 	private void CheckDimension(int dim) {
 		Guard.ArgumentEquals(dim, Columns.Length, nameof(dim));

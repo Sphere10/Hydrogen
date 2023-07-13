@@ -18,9 +18,9 @@ internal abstract class StreamPageBase<TItem> : PageBase<TItem> {
 
 	public long StartPosition { get; protected set; }
 
-	public abstract int ReadItemBytes(int itemIndex, int byteOffset, int byteLength, out byte[] bytes);
+	public abstract long ReadItemBytes(long itemIndex, long byteOffset, long byteLength, out byte[] bytes);
 
-	public abstract void WriteItemBytes(int itemIndex, int byteOffset, ReadOnlySpan<byte> bytes);
+	public abstract void WriteItemBytes(long itemIndex, long byteOffset, ReadOnlySpan<byte> bytes);
 
 	protected StreamPagedList<TItem> Parent { get; }
 
@@ -28,7 +28,7 @@ internal abstract class StreamPageBase<TItem> : PageBase<TItem> {
 
 	protected EndianBinaryReader Reader => Parent.Reader;
 
-	protected int ItemSize => Parent.Serializer.StaticSize;
+	protected long ItemSize => Parent.Serializer.StaticSize;
 
 	protected IItemSerializer<TItem> Serializer => Parent.Serializer;
 

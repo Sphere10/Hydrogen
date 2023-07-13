@@ -6,12 +6,14 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using System.Diagnostics;
+
 namespace Hydrogen;
 
 internal class ClusterSerializer : StaticSizeItemSerializerBase<Cluster> {
 	private readonly int _clusterDataSize;
 
-	public ClusterSerializer(int clusterDataSize) : base(sizeof(byte) + sizeof(int) + sizeof(int) + clusterDataSize) {
+	public ClusterSerializer(int clusterDataSize) : base(Cluster.TraitsLength + Cluster.PrevLength + Cluster.NextLength + clusterDataSize) {
 		// cluster has an envelope of 9 bytes
 		Guard.ArgumentInRange(clusterDataSize, 1, int.MaxValue, nameof(clusterDataSize));
 		_clusterDataSize = clusterDataSize;
@@ -24,6 +26,7 @@ internal class ClusterSerializer : StaticSizeItemSerializerBase<Cluster> {
 		writer.Write((byte)item.Traits);
 		writer.Write(item.Prev);
 		writer.Write(item.Next);
+		Debug.Assert(item.Data.Length == _clusterDataSize);
 		writer.Write(item.Data);
 		return true;
 	}
@@ -32,8 +35,8 @@ internal class ClusterSerializer : StaticSizeItemSerializerBase<Cluster> {
 		Guard.ArgumentNotNull(reader, nameof(reader));
 		item = new Cluster {
 			Traits = (ClusterTraits)reader.ReadByte(),
-			Prev = reader.ReadInt32(),
-			Next = reader.ReadInt32(),
+			Prev = reader.ReadInt64(),
+			Next = reader.ReadInt64(),
 			Data = reader.ReadBytes(_clusterDataSize),
 		};
 		return true;

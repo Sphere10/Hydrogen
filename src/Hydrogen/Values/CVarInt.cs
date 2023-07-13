@@ -8,22 +8,41 @@
 
 using System;
 using System.IO;
+using System.Runtime.CompilerServices;
 
 namespace Hydrogen;
 
-//Compact Variable integer - LEB128 compression based on NBitcoin CompactVarInt. Useful for 
-// serializing small integers in a single byte. Larger integers may also be encoded but will be 
-// less efficient than other formats.
+/// <summary>
+/// Compact Variable integer - LEB128 compression based on NBitcoin CompactVarInt. Useful for 
+/// serializing small integers in a single byte. Larger integers may also be encoded but will be 
+/// less efficient than other formats.
+/// </summary>
 public readonly struct CVarInt {
 	private readonly ulong _value;
+
+	public CVarInt() : this(0UL) {
+	}
 
 	public CVarInt(ulong value) {
 		_value = value;
 	}
 
-	public CVarInt(byte[] bytes) {
-		ulong n = 0;
+	public static int SizeOf(ulong value) {
+		var len = 1;
+		var n = value;
+		while (n > 0x7F) {
+			n = (n >> 7) - 1;
+			len++;
+		}
 
+		return len;
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static CVarInt From(ReadOnlySpan<byte> bytes) => new(Read(bytes));
+
+	public static ulong Read(ReadOnlySpan<byte> bytes) {
+		ulong n = 0;
 		for (var i = 0; i < bytes.Length; i++) {
 			var chData = bytes[i];
 			var a = n << 7;
@@ -34,17 +53,10 @@ public readonly struct CVarInt {
 			else
 				break;
 		}
-
-		_value = n;
+		return n;
 	}
 
-	/// <summary>
-	/// Read <see cref="CVarInt"/> from stream.
-	/// </summary>
-	/// <param name="size"> value size e.g. sizeof(uint)</param>
-	/// <param name="stream"> stream to read value from</param>
-	/// <returns> cvarint</returns>
-	public static CVarInt Read(int size, Stream stream) {
+	public static ulong Read(Stream stream) {
 		ulong n = 0;
 		while (true) {
 			var chData = (byte)stream.ReadByte();
@@ -56,25 +68,23 @@ public readonly struct CVarInt {
 			else
 				break;
 		}
-		return new CVarInt(n);
+		return n;
 	}
 
-	/// <summary>
-	/// write cvarint value as bytes to stream.
-	/// </summary>
-	/// <param name="stream"></param>
-	public void Write(Stream stream) {
-		var n = _value;
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public void Write(Stream stream) => Write(_value, stream);
+
+	public static void Write(ulong value, Stream stream) {
 		Span<byte> tmp = stackalloc byte[(sizeof(long) * 8 + 6) / 7];
 
 		var len = 0;
 		while (true) {
-			var a = (byte)(n & 0x7F);
+			var a = (byte)(value & 0x7F);
 			var b = (byte)(len != 0 ? 0x80 : 0x00);
 			tmp[len] = (byte)(a | b);
-			if (n <= 0x7F)
+			if (value <= 0x7F)
 				break;
-			n = (n >> 7) - 1;
+			value = (value >> 7) - 1;
 			len++;
 		}
 		do
@@ -82,35 +92,38 @@ public readonly struct CVarInt {
 		while (len-- != 0);
 	}
 
-	/// <summary>
-	/// encodes the cvarint value as bytes.
-	/// </summary>
-	/// <returns></returns>
 	public byte[] ToBytes() {
 		using var stream = new MemoryStream();
 		Write(stream);
 		return stream.ToArray();
 	}
 
+
+	public ulong ToLong() => _value;
+
 	public static implicit operator ulong(CVarInt v) => v._value;
 
 	public static implicit operator CVarInt(ulong v) => new(v);
 
-	public ulong ToLong() => _value;
+	public static CVarInt operator +(CVarInt a, CVarInt b) => new(a._value + b._value);
 
-	/// <summary>
-	/// Returns the number of bytes the value will require when encoded as <see cref="CVarInt"/>
-	/// </summary>
-	/// <param name="value"></param>
-	/// <returns> size in bytes</returns>
-	public static int SizeOf(ulong value) {
-		var len = 1;
-		var n = value;
-		while (n > 0x7F) {
-			n = (n >> 7) - 1;
-			len++;
-		}
+	//public static VarInt operator +(VarInt a, ulong b) => new (a._value + b);
 
-		return len;
-	}
+	public static CVarInt operator -(CVarInt a, CVarInt b) => new(a._value - b._value);
+
+	//public static VarInt operator -(VarInt a, ulong b) => new (a._value - b);
+
+	public static CVarInt operator *(CVarInt a, CVarInt b) => new(a._value * b._value);
+
+	//public static VarInt operator *(VarInt a, ulong b) => new (a._value * b);
+
+	public static CVarInt operator /(CVarInt a, CVarInt b) => b._value == 0 ? throw new DivideByZeroException() : new CVarInt(a._value / b._value);
+
+	//	public static VarInt operator /(VarInt a, ulong b) => b == 0 ? throw new DivideByZeroException() : new VarInt(a._value / b);
+
+	public static CVarInt operator ++(CVarInt a) => new CVarInt(a._value + 1);
+
+	public static CVarInt operator --(CVarInt a) => new CVarInt(a._value - 1);
+
+
 }

@@ -22,7 +22,7 @@ public static class IItemSerializerExtensions {
 		return bytes;
 	}
 
-	public static int Serialize<TItem>(this IItemSerializer<TItem> serializer, TItem item, EndianBinaryWriter writer) {
+	public static long Serialize<TItem>(this IItemSerializer<TItem> serializer, TItem item, EndianBinaryWriter writer) {
 		if (!serializer.TrySerialize(item, writer, out var bytesWritten))
 			throw new InvalidOperationException($"Unable to serialize object of type '{item?.GetType().Name ?? "NULL"}'");
 		return bytesWritten;
@@ -46,21 +46,36 @@ public static class IItemSerializerExtensions {
 	public static bool TryDeserializeLE<TItem>(this IItemSerializer<TItem> serializer, ReadOnlySpan<byte> bytes, out TItem item)
 		=> serializer.TryDeserialize(bytes, out item, Endianness.LittleEndian);
 
-	public static bool TryDeserialize<TItem>(this IItemSerializer<TItem> serializer, ReadOnlySpan<byte> bytes, out TItem item, Endianness endianness) {
-		using var stream = new MemoryStream(bytes.ToArray());
+	public static bool TryDeserializeLE<TItem>(this IItemSerializer<TItem> serializer, byte[] bytes, out TItem item)
+		=> serializer.TryDeserialize(bytes, out item, Endianness.LittleEndian);
+
+	public static bool TryDeserialize<TItem>(this IItemSerializer<TItem> serializer, ReadOnlySpan<byte> bytes, out TItem item, Endianness endianness)
+		=> TryDeserialize(serializer, bytes.ToArray(), out item, endianness);
+
+	public static bool TryDeserialize<TItem>(this IItemSerializer<TItem> serializer, byte[] bytes, out TItem item, Endianness endianness) {
+		using var stream = new MemoryStream(bytes);
 		using var reader = new EndianBinaryReader(EndianBitConverter.For(endianness), stream);
 		return serializer.TryDeserialize(bytes.Length, reader, out item);
 	}
 
-	public static TItem Deserialize<TItem>(this IItemSerializer<TItem> serializer, int byteSize, EndianBinaryReader reader) {
+	public static TItem Deserialize<TItem>(this IItemSerializer<TItem> serializer, long byteSize, EndianBinaryReader reader) {
 		if (!serializer.TryDeserialize(byteSize, reader, out var item))
 			throw new InvalidOperationException($"Unable to deserialize object of size {byteSize}b");
 		return item;
 	}
 
+	public static TItem DeserializeLE<TItem>(this IItemSerializer<TItem> serializer, byte[] bytes)
+		=> serializer.Deserialize(bytes, Endianness.LittleEndian);
+
 	public static TItem DeserializeLE<TItem>(this IItemSerializer<TItem> serializer, ReadOnlySpan<byte> bytes)
 		=> serializer.Deserialize(bytes, Endianness.LittleEndian);
 
+
+	public static TItem Deserialize<TItem>(this IItemSerializer<TItem> serializer, byte[] bytes, Endianness endianness) {
+		if (!serializer.TryDeserialize(bytes, out var item, endianness))
+			throw new InvalidOperationException($"Unable to little-endian deserialize object of type '{item?.GetType().Name ?? "NULL"}'");
+		return item;
+	}
 
 	public static TItem Deserialize<TItem>(this IItemSerializer<TItem> serializer, ReadOnlySpan<byte> bytes, Endianness endianness) {
 		if (!serializer.TryDeserialize(bytes, out var item, endianness))
@@ -73,7 +88,7 @@ public static class IItemSerializerExtensions {
 		=> new CastedSerializer<TBase, TItem>(serializer);
 
 
-	public static IItemSerializer<TItem> ToStaticSizeSerializer<TItem>(this IItemSerializer<TItem> serializer, int staticSize)
-		=> new PaddedSerializer<TItem>(staticSize, serializer);
+	public static IItemSerializer<TItem> ToStaticSizeSerializer<TItem>(this IItemSerializer<TItem> serializer, long staticSize, SizeDescriptorStrategy sizeDescriptorStrategy)
+		=> new PaddedSerializer<TItem>(staticSize, serializer, sizeDescriptorStrategy);
 
 }

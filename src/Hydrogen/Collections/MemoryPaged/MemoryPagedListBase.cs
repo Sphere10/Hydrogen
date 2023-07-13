@@ -21,19 +21,19 @@ public abstract class MemoryPagedListBase<TItem> : PagedListBase<TItem>, IMemory
 	public event EventHandlerEx<object, IMemoryPage<TItem>> PageUnloading;
 	public event EventHandlerEx<object, IMemoryPage<TItem>> PageUnloaded;
 
-	private readonly ICache<int, IMemoryPage<TItem>> _loadedPages;
+	private readonly ICache<long, IMemoryPage<TItem>> _loadedPages;
 	private readonly ReadOnlyListDecorator<IPage<TItem>, IMemoryPage<TItem>> _pagesDecorator;
 
 	protected bool Disposing;
 
-	protected MemoryPagedListBase(int pageSize, long maxMemory) {
+	protected MemoryPagedListBase(long pageSize, long maxMemory) {
 		Guard.ArgumentInRange(pageSize, 1, int.MaxValue, nameof(pageSize));
 		Guard.ArgumentInRange(maxMemory, pageSize, long.MaxValue, nameof(maxMemory));
 		PageSize = pageSize;
 		FlushOnDispose = false;
 		Disposing = false;
 		_pagesDecorator = new ReadOnlyListDecorator<IPage<TItem>, IMemoryPage<TItem>>(new ReadOnlyListAdapter<IPage<TItem>>(InternalPages));
-		_loadedPages = new ActionCache<int, IMemoryPage<TItem>>(
+		_loadedPages = new ActionCache<long, IMemoryPage<TItem>>(
 			(page) => {
 				Guard.ArgumentInRange(page, 0, InternalPages.Count - 1, nameof(page), "Page not contained in list");
 				var memPage = (IMemoryPage<TItem>)InternalPages[page];
@@ -75,22 +75,19 @@ public abstract class MemoryPagedListBase<TItem> : PagedListBase<TItem>, IMemory
 
 	public new IReadOnlyList<IMemoryPage<TItem>> Pages => _pagesDecorator;
 
-	public int PageSize { get; }
+	public long PageSize { get; }
 
-	public int CurrentOpenPages => _loadedPages.ItemCount;
+	public long CurrentOpenPages => _loadedPages.ItemCount;
 
 	public bool Disposed { get; protected set; }
 
-	public long MaxMemory {
-		get => (int)_loadedPages.MaxCapacity;
-		//internal set => _loadedPages.MaxCapacity = value;
-	}
+	public long MaxMemory => _loadedPages.MaxCapacity;
 
 	public virtual bool Dirty => InternalPages.Any(p => p.Dirty);
 
 	public bool FlushOnDispose { get; set; }
 
-	public int CalculateTotalSize() => InternalPages.Sum(p => p.Size);
+	public long CalculateTotalSize() => InternalPages.Sum(p => p.Size);
 
 	public sealed override IDisposable EnterOpenPageScope(IPage<TItem> page) {
 		// dont need to do much since cache manages life-cycle of page

@@ -14,9 +14,9 @@ public interface IItemSizer<T> {
 
 	bool IsStaticSize { get; }
 
-	int StaticSize { get; }
+	long StaticSize { get; }
 
-	int CalculateTotalSize(IEnumerable<T> items, bool calculateIndividualItems, out int[] itemSizes);
+	long CalculateTotalSize(IEnumerable<T> items, bool calculateIndividualItems, out long[] itemSizes);
 
-	int CalculateSize(T item);
+	long CalculateSize(T item);
 }

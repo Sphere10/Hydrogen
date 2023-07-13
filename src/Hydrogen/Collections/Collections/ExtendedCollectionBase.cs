@@ -13,7 +13,7 @@ namespace Hydrogen;
 
 public abstract class ExtendedCollectionBase<T> : IExtendedCollection<T> {
 
-	public abstract int Count { get; }
+	public abstract long Count { get; }
 
 	public abstract bool IsReadOnly { get; }
 
@@ -37,7 +37,13 @@ public abstract class ExtendedCollectionBase<T> : IExtendedCollection<T> {
 
 	#region ICollection wrapper
 
-	int ICollection<T>.Count => Count;
+	int ICollection<T>.Count {
+		get {
+			checked {
+				return (int)Count;
+			}
+		}
+	}
 
 	void ICollection<T>.Add(T item) {
 		Add(item);
@@ -63,7 +69,13 @@ public abstract class ExtendedCollectionBase<T> : IExtendedCollection<T> {
 
 	#region IReadOnlyExtendedCollection wrapper
 
-	int IReadOnlyCollection<T>.Count => Count;
+	int IReadOnlyCollection<T>.Count {
+		get {
+			checked {
+				return (int)Count;
+			}
+		}
+	}
 
 	void IReadOnlyExtendedCollection<T>.CopyTo(T[] array, int arrayIndex) {
 		CopyTo(array, arrayIndex);

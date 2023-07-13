@@ -87,7 +87,7 @@ public class SimpleMerkleTree : IDynamicMerkleTree {
 		while ((level = ComputeNextLevel(level)).Count > 0) {
 			_levels.Add(level);
 		}
-		_size.Height = _levels.Count > 1 ? _levels.Count : _levels[0].Count > 0 ? 1 : 0;
+		_size.Height = checked((int)(_levels.Count > 1 ? _levels.Count : _levels[0].Count > 0 ? 1 : 0));
 		_size.LeafCount = _size.Height > 0 ? _levels[0].Count : 0;
 	}
 

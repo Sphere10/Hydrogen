@@ -15,6 +15,7 @@ namespace Hydrogen.Tests.Values;
 
 public class VarIntTests {
 	[Test]
+	[TestCase(0UL, 1)]
 	[TestCase(ulong.MinValue, 1)]
 	[TestCase((ulong)0xFC, 1)]
 	[TestCase((ulong)0xFD, 3)]
@@ -48,7 +49,7 @@ public class VarIntTests {
 		var bytes = a.ToBytes();
 		bytes.Length.Should().Be(expectedByteLength);
 
-		ulong b = new VarInt(bytes);
+		ulong b = VarInt.From(bytes);
 		b.Should().Be(a);
 	}
 
@@ -63,13 +64,17 @@ public class VarIntTests {
 		((ulong)(new VarInt(1) * 2)).Should().Be(2);
 	}
 
+
 	[Test]
 	public void IntegrationTest([Values(1000000)] int iterations) {
 		var rng = new Random(31337);
+		using var memStream = new MemoryStream();
 		for (var i = 0; i < iterations; i++) {
+			memStream.SetLength(0);
 			ulong val = (uint)rng.Next() + (uint)rng.Next();
-			VarInt varInt = val;
-			Assert.AreEqual(val, varInt.ToLong());
+			VarInt.Write(val, memStream);
+			memStream.Seek(0, SeekOrigin.Begin);
+			Assert.AreEqual(val, VarInt.Read(memStream));
 		}
 	}
 

@@ -16,7 +16,7 @@ namespace Hydrogen;
 
 public sealed class BinaryFormattedPage<TItem> : FileSwappedMemoryPage<TItem> {
 
-	public BinaryFormattedPage(int pageSize, IItemSizer<TItem> sizer)
+	public BinaryFormattedPage(long pageSize, IItemSizer<TItem> sizer)
 		: base(pageSize, sizer, new ExtendedList<TItem>()) {
 	}
 

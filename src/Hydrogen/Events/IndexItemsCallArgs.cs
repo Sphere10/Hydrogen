@@ -11,13 +11,13 @@ using System.Collections.Generic;
 namespace Hydrogen;
 
 public class IndexItemsCallArgs<T> : CallArgs {
-	public IndexItemsCallArgs(int index, T item) : base(index, new[] { item }) {
+	public IndexItemsCallArgs(long index, T item) : base(index, new[] { item }) {
 	}
 
-	public IndexItemsCallArgs(int index, IEnumerable<T> items) : base(index, items) {
+	public IndexItemsCallArgs(long index, IEnumerable<T> items) : base(index, items) {
 	}
 
-	public int Index {
+	public long Index {
 		get => (int)base[0];
 		set => base[0] = value;
 	}

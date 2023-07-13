@@ -11,8 +11,10 @@ using System.Collections.Generic;
 
 namespace Hydrogen;
 
-public interface IExtendedList<T> : IExtendedCollection<T>, IList<T>, IReadOnlyExtendedList<T>, IWriteOnlyExtendedList<T> {
+public interface IExtendedList<T> : IExtendedCollection<T>, IReadOnlyExtendedList<T>, IWriteOnlyExtendedList<T>, IList<T> {
+	// Below interface methods resolve ambiguities between IReadOnlyExtendedList<T> and IList<T>
 	new T this[int index] { get; set; }
+	new T this[long index] { get; set; }
 
 	new int IndexOf(T item);
 
@@ -25,7 +27,7 @@ public interface IExtendedList<T> : IExtendedCollection<T>, IList<T>, IReadOnlyE
 public static class IExtendedListExtensions {
 
 	public static void RemoveRange<T>(this IExtendedList<T> list, Range range) {
-		var (offset, length) = range.GetOffsetAndLength(list.Count);
+		var (offset, length) = range.GetOffsetAndLength(((IList<T>)list).Count);
 		list.RemoveRange(offset, length);
 	}
 

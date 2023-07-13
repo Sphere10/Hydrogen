@@ -13,19 +13,19 @@ namespace Hydrogen;
 
 public class ClusteredStreamScope : IDisposable {
 	private readonly Action _closeAction;
-	public ClusteredStreamScope(int recordIndex, ClusteredStreamRecord record, Action closeAction) {
+	public ClusteredStreamScope(long recordIndex, ClusteredStreamRecord record, Action closeAction) {
 		RecordIndex = recordIndex;
 		Record = record;
 		_closeAction = closeAction;
 	}
 
-	public int RecordIndex { get; }
+	public long RecordIndex { get; }
 
 	public ClusteredStreamRecord Record; // TODO: MAKE PROPERTY (check won't break when is struct)
 
 	public Stream Stream;
 
-	public void InvalidateCluster(int cluster) {
+	public void InvalidateCluster(long cluster) {
 		((ClusteredStorage.FragmentProvider)((FragmentedStream)Stream).FragmentProvider).InvalidateCluster(cluster);
 	}
 

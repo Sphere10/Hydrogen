@@ -27,29 +27,29 @@ public abstract class SingularListDecorator<TItem, TConcrete> : ExtendedListDeco
 		return items.Select(Contains).ToArray();
 	}
 
-	public sealed override IEnumerable<int> IndexOfRange(IEnumerable<TItem> items) {
+	public sealed override IEnumerable<long> IndexOfRange(IEnumerable<TItem> items) {
 		Guard.ArgumentNotNull(items, nameof(items));
-		return items.Select(IndexOf);
+		return items.Select(IndexOfL);
 	}
 
-	public sealed override IEnumerable<TItem> ReadRange(int index, int count) {
+	public sealed override IEnumerable<TItem> ReadRange(long index, long count) {
 		Guard.ArgumentGTE(count, 0, nameof(index));
-		return Enumerable.Range(index, count).Select(Read);
+		return Tools.Collection.RangeL(index, count).Select(Read);
 	}
 
-	public sealed override void UpdateRange(int index, IEnumerable<TItem> items) {
+	public sealed override void UpdateRange(long index, IEnumerable<TItem> items) {
 		Guard.ArgumentNotNull(items, nameof(items));
 		foreach (var x in items)
 			Update(index++, x);
 	}
 
-	public sealed override void InsertRange(int index, IEnumerable<TItem> items) {
+	public sealed override void InsertRange(long index, IEnumerable<TItem> items) {
 		Guard.ArgumentNotNull(items, nameof(items));
 		foreach (var x in items)
 			Insert(index++, x);
 	}
 
-	public sealed override void RemoveRange(int index, int count) {
+	public sealed override void RemoveRange(long index, long count) {
 		Guard.ArgumentGTE(count, 0, nameof(index));
 		Tools.Collection.Repeat(() => RemoveAt(index), count);
 	}

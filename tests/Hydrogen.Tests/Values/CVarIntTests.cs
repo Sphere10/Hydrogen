@@ -28,7 +28,7 @@ public class CVarIntTests {
 		Assert.AreEqual(expectedByteLength, stream.Length);
 
 		stream.Seek(0, SeekOrigin.Begin);
-		ulong b = CVarInt.Read(size, stream);
+		ulong b = CVarInt.Read(stream);
 		b.Should().Be(a).And.Be(value);
 	}
 
@@ -45,7 +45,7 @@ public class CVarIntTests {
 		stream.Write(a.ToBytes());
 		Assert.AreEqual(expectedByteLength, stream.Length);
 
-		ulong b = new CVarInt(stream.ToArray());
+		ulong b = CVarInt.From(stream.ToArray());
 		b.Should().Be(a).And.Be(value);
 	}
 
@@ -62,10 +62,13 @@ public class CVarIntTests {
 	[Test]
 	public void IntegrationTest([Values(1000000)] int iterations) {
 		var rng = new Random(31337);
+		using var memStream = new MemoryStream();
 		for (var i = 0; i < iterations; i++) {
+			memStream.SetLength(0);
 			ulong val = (uint)rng.Next() + (uint)rng.Next();
-			CVarInt varInt = val;
-			Assert.AreEqual(val, varInt.ToLong());
+			CVarInt.Write(val, memStream);
+			memStream.Seek(0, SeekOrigin.Begin);
+			Assert.AreEqual(val, CVarInt.Read(memStream));
 		}
 	}
 }

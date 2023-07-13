@@ -15,13 +15,13 @@ namespace Hydrogen;
 public abstract class MemoryPageBase<TItem> : PageBase<TItem>, IMemoryPage<TItem> {
 	internal readonly IExtendedList<TItem> MemoryStore;
 
-	protected MemoryPageBase(int maxSize, IItemSizer<TItem> sizer, IExtendedList<TItem> store) {
+	protected MemoryPageBase(long maxSize, IItemSizer<TItem> sizer, IExtendedList<TItem> store) {
 		MaxSize = maxSize;
 		MemoryStore = store;
 		Sizer = sizer;
 	}
 
-	public int MaxSize { get; set; }
+	public long MaxSize { get; set; }
 
 	public IItemSizer<TItem> Sizer { get; }
 
@@ -62,18 +62,18 @@ public abstract class MemoryPageBase<TItem> : PageBase<TItem>, IMemoryPage<TItem
 		return MemoryStore.GetEnumerator();
 	}
 
-	protected override IEnumerable<TItem> ReadInternal(int index, int count) => MemoryStore.ReadRange(index - StartIndex, count);
+	protected override IEnumerable<TItem> ReadInternal(long index, long count) => MemoryStore.ReadRange(index - StartIndex, count);
 
-	protected override int AppendInternal(TItem[] items, out int newItemsSpace) {
+	protected override long AppendInternal(TItem[] items, out long newItemsSpace) {
 		TItem[] appendItems;
 		if (Sizer.IsStaticSize) {
 			// Optimized for constant sized objects (primitive types like bytes)
 			var maxAppendCount = (MaxSize - Size) / Sizer.StaticSize;
-			appendItems = items.Take(maxAppendCount).ToArray();
+			appendItems = items.TakeL(maxAppendCount).ToArray();
 			newItemsSpace = appendItems.Length * Sizer.StaticSize;
 		} else {
 			// Used for variable length objects
-			var newSpace = 0;
+			var newSpace = 0L;
 			appendItems = items.TakeWhile(item => {
 				var itemSize = Sizer.CalculateSize(item);
 				if (Size + newSpace + itemSize > MaxSize)
@@ -87,31 +87,31 @@ public abstract class MemoryPageBase<TItem> : PageBase<TItem>, IMemoryPage<TItem
 		return appendItems.Length;
 	}
 
-	protected override void UpdateInternal(int index, TItem[] items, out int oldItemsSpace, out int newItemsSpace) {
+	protected override void UpdateInternal(long index, TItem[] items, out long oldItemsSpace, out long newItemsSpace) {
 		if (Sizer.IsStaticSize) {
 			oldItemsSpace = Sizer.StaticSize * items.Length;
 			newItemsSpace = oldItemsSpace;
 			MemoryStore.UpdateRange(index - StartIndex, items);
 		} else {
 			oldItemsSpace = MeasureConsumedSpace(index, items.Length, false, out _);
-			newItemsSpace = items.Select(Sizer.CalculateSize).Sum();
+			newItemsSpace = items.Select(item => Sizer.CalculateSize(item)).Sum();
 			MemoryStore.UpdateRange(index - StartIndex, items);
 		}
 	}
 
-	protected override void EraseFromEndInternal(int count, out int oldItemsSpace) {
+	protected override void EraseFromEndInternal(long count, out long oldItemsSpace) {
 		var index = EndIndex - count + 1;
 		oldItemsSpace = MeasureConsumedSpace(index, count, false, out _);
 		MemoryStore.RemoveRange(index - StartIndex, count);
 	}
 
-	protected virtual int MeasureConsumedSpace(int index, int count, bool fetchIndividualSizes, out int[] sizes) {
+	protected virtual long MeasureConsumedSpace(long index, long count, bool fetchIndividualSizes, out long[] sizes) {
 		CheckRange(index, count);
 		if (Sizer.IsStaticSize) {
-			sizes = fetchIndividualSizes ? Tools.Array.Gen(count, Sizer.StaticSize) : null;
+			sizes = fetchIndividualSizes ? Tools.Array.Gen<long>(count, Sizer.StaticSize) : null;
 			return Sizer.StaticSize * count;
 		} else {
-			sizes = MemoryStore.ReadRange(index - StartIndex, count).Select(Sizer.CalculateSize).ToArray();
+			sizes = MemoryStore.ReadRange(index - StartIndex, count).Select(x => (long)Sizer.CalculateSize(x)).ToArray();
 			var totalSize = sizes.Sum();
 			if (!fetchIndividualSizes)
 				sizes = null;

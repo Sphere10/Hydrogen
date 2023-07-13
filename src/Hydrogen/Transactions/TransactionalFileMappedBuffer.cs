@@ -27,11 +27,11 @@ public sealed class TransactionalFileMappedBuffer : TransactionalFileMappedListB
 	private readonly IPagedListDelegate<byte> _friend;
 	private readonly ReadOnlyListDecorator<IPage<byte>, IBufferPage> _pagesDecorator;
 
-	public TransactionalFileMappedBuffer(string filename, int pageSize, long maxMemory, bool readOnly = false, bool autoLoad = false)
+	public TransactionalFileMappedBuffer(string filename, long pageSize, long maxMemory, bool readOnly = false, bool autoLoad = false)
 		: this(filename, System.IO.Path.GetDirectoryName(filename), pageSize, maxMemory, readOnly, autoLoad) {
 	}
 
-	public TransactionalFileMappedBuffer(string filename, string uncommittedPageFileDir, int pageSize, long maxMemory, bool readOnly = false, bool autoLoad = false)
+	public TransactionalFileMappedBuffer(string filename, string uncommittedPageFileDir, long pageSize, long maxMemory, bool readOnly = false, bool autoLoad = false)
 		: base(filename, uncommittedPageFileDir, pageSize, maxMemory, readOnly, autoLoad) {
 		_friend = CreateFriendDelegate();
 		_pagesDecorator = new ReadOnlyListDecorator<IPage<byte>, IBufferPage>(new ReadOnlyListAdapter<IPage<byte>>(base.InternalPages));
@@ -41,19 +41,19 @@ public sealed class TransactionalFileMappedBuffer : TransactionalFileMappedListB
 
 	public override TransactionalFileMappedBuffer AsBuffer => this;
 
-	public ReadOnlySpan<byte> ReadSpan(int index, int count) => PagedBufferImplementationHelper.ReadRange(_friend, index, count);
+	public ReadOnlySpan<byte> ReadSpan(long index, long count) => PagedBufferImplementationHelper.ReadRange(_friend, index, count);
 
 	public void AddRange(ReadOnlySpan<byte> span) => PagedBufferImplementationHelper.AddRange(_friend, span);
 
-	public void UpdateRange(int index, ReadOnlySpan<byte> items) => PagedBufferImplementationHelper.UpdateRange(_friend, index, items);
+	public void UpdateRange(long index, ReadOnlySpan<byte> items) => PagedBufferImplementationHelper.UpdateRange(_friend, index, items);
 
-	public void InsertRange(int index, ReadOnlySpan<byte> items) => PagedBufferImplementationHelper.InsertRange(_friend, Count, index, items);
+	public void InsertRange(long index, ReadOnlySpan<byte> items) => PagedBufferImplementationHelper.InsertRange(_friend, Count, index, items);
 
-	public Span<byte> AsSpan(int index, int count) => PagedBufferImplementationHelper.AsSpan(_friend, index, count);
+	public Span<byte> AsSpan(long index, long count) => PagedBufferImplementationHelper.AsSpan(_friend, index, count);
 
-	public void ExpandTo(int totalBytes) => PagedBufferImplementationHelper.ExpandTo(_friend, totalBytes);
+	public void ExpandTo(long totalBytes) => PagedBufferImplementationHelper.ExpandTo(_friend, totalBytes);
 
-	public void ExpandBy(int newBytes) => PagedBufferImplementationHelper.ExpandBy(_friend, newBytes);
+	public void ExpandBy(long newBytes) => PagedBufferImplementationHelper.ExpandBy(_friend, newBytes);
 
 	protected override IPage<byte>[] LoadPages() {
 		var lowestDeletedPageNumber = PageMarkerRepo.LowestDeletedPageNumber ?? int.MaxValue;
@@ -65,9 +65,9 @@ public sealed class TransactionalFileMappedBuffer : TransactionalFileMappedListB
 		if (lastLogicalPageNumber < 0)
 			return Array.Empty<IPage<byte>>();
 
-		var lastPageLength = 0;
+		var lastPageLength = 0L;
 		if (PageMarkerRepo.Contains(PageMarkerType.UncommittedPage, lastLogicalPageNumber)) {
-			lastPageLength = (int)Tools.FileSystem.GetFileSize(PageMarkerRepo.GetMarkerFilename(highestChangedPageNumber, PageMarkerType.UncommittedPage));
+			lastPageLength = Tools.FileSystem.GetFileSize(PageMarkerRepo.GetMarkerFilename(highestChangedPageNumber, PageMarkerType.UncommittedPage));
 		} else {
 			var remainder = (int)Stream.Length % PageSize;
 			lastPageLength = remainder == 0 ? PageSize : remainder;
@@ -78,8 +78,8 @@ public sealed class TransactionalFileMappedBuffer : TransactionalFileMappedListB
 			return Array.Empty<IPage<byte>>();
 
 		return
-			Enumerable
-				.Range(0, logicalPageCount - 1)
+			Tools.Collection
+				.RangeL(0, logicalPageCount - 1)
 				.Select((x, i) =>
 					new PageImpl(Stream, PageMarkerRepo.GetMarkerFilename(i, PageMarkerType.UncommittedPage), i, PageSize) {
 						Number = i,
@@ -108,11 +108,11 @@ public sealed class TransactionalFileMappedBuffer : TransactionalFileMappedListB
 				.ToArray();
 	}
 
-	protected override int GetCommittedPageCount() {
+	protected override long GetCommittedPageCount() {
 		return (int)Math.Ceiling(Stream.Length / (double)PageSize);
 	}
 
-	protected override IPage<byte> NewPageInstance(int pageNumber) {
+	protected override IPage<byte> NewPageInstance(long pageNumber) {
 		return new PageImpl(
 			Stream,
 			PageMarkerRepo.GetMarkerFilename(pageNumber, PageMarkerType.UncommittedPage),
@@ -124,17 +124,17 @@ public sealed class TransactionalFileMappedBuffer : TransactionalFileMappedListB
 
 	private class PageImpl : TransactionalFilePageBase<byte>, IBufferPage {
 
-		public PageImpl(FileStream stream, string uncommittedPageFileName, int pageNumber, int pageSize)
+		public PageImpl(FileStream stream, string uncommittedPageFileName, long pageNumber, long pageSize)
 			: base(stream, new StaticSizeItemSizer<byte>(sizeof(byte)), uncommittedPageFileName, pageNumber, pageSize, new MemoryBuffer(0, pageSize, pageSize)) {
 		}
 
-		public ReadOnlySpan<byte> ReadSpan(int index, int count)
+		public ReadOnlySpan<byte> ReadSpan(long index, long count)
 			=> PagedBufferImplementationHelper.ReadPageSpan(this, (MemoryBuffer)MemoryStore, index, count);
 
 		public bool AppendSpan(ReadOnlySpan<byte> items, out ReadOnlySpan<byte> overflow)
 			=> PagedBufferImplementationHelper.AppendPageSpan(this, MemoryStore as MemoryBuffer, items, out overflow);
 
-		public void UpdateSpan(int index, ReadOnlySpan<byte> items) =>
+		public void UpdateSpan(long index, ReadOnlySpan<byte> items) =>
 			PagedBufferImplementationHelper.UpdatePageSpan(this, MemoryStore as MemoryBuffer, index, items);
 
 		protected override void SaveInternal(IExtendedList<byte> memoryPage, Stream stream) {

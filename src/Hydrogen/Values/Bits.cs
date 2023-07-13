@@ -90,7 +90,7 @@ public class Bits {
 	/// <param name="readDirection">Reads backwards when true</param>
 	/// <param name="writeDirection">Writes backwards when true</param>
 	/// <returns>Number of bits copied</returns>
-	public static int CopyBits(ReadOnlySpan<byte> source, int sourceBitOffset, Span<byte> dest, int destBitOffset, int bitCount, IterateDirection readDirection = IterateDirection.LeftToRight,
+	public static int CopyBits(ReadOnlySpan<byte> source, long sourceBitOffset, Span<byte> dest, long destBitOffset, long bitCount, IterateDirection readDirection = IterateDirection.LeftToRight,
 	                           IterateDirection writeDirection = IterateDirection.LeftToRight) {
 		// Base-case
 		if (source.Length == 0 || bitCount == 0)
@@ -117,13 +117,18 @@ public class Bits {
 		       writeLeftBitBoundary <= writeBitIndex && writeBitIndex <= writeRightBitBoundary &&
 		       bitsCopied < bitCount) {
 
+			var readByteIndexI = Tools.Collection.CheckNotImplemented64bitAddressingIndex(readByteIndex);
+			var readByteBitIndexI = Tools.Collection.CheckNotImplemented64bitAddressingIndex(readByteBitIndex);
+			var writeByteIndexI = Tools.Collection.CheckNotImplemented64bitAddressingIndex(writeByteIndex);
+			var writeByteBitIndexI = Tools.Collection.CheckNotImplemented64bitAddressingIndex(writeByteBitIndex);
+
 			// Copy current bit 
-			if ((source[readByteIndex] & (0x1 << (7 - readByteBitIndex))) != 0) {
+			if ((source[readByteIndexI] & (0x1 << (7 - readByteBitIndexI))) != 0) {
 				// Read a 1, so write a 1
-				dest[writeByteIndex] = (byte)(dest[writeByteIndex] | (0x1 << (7 - writeByteBitIndex)));
+				dest[writeByteIndexI] = (byte)(dest[writeByteIndexI] | (0x1 << (7 - writeByteBitIndexI)));
 			} else {
 				// Read a 0, so write a 0
-				dest[writeByteIndex] = (byte)(dest[writeByteIndex] & (0xffffffff - (0x1 << (7 - writeByteBitIndex))));
+				dest[writeByteIndexI] = (byte)(dest[writeByteIndexI] & (0xffffffff - (0x1 << (7 - writeByteBitIndexI))));
 			}
 
 			// Update read/write indexes
@@ -174,7 +179,7 @@ public class Bits {
 	}
 
 	// TODO: needs testing
-	public static void SetBit(Span<byte> dest, int index, bool value) {
+	public static void SetBit(Span<byte> dest, long index, bool value) {
 		byte valueByte = value ? (byte)1 : (byte)0;
 		// 00000000   (false)
 		// 00000001   (true)
@@ -188,7 +193,7 @@ public class Bits {
 	}
 
 	// TODO: needs testing
-	public static bool ReadBit(Span<byte> source, int index) {
+	public static bool ReadBit(Span<byte> source, long index) {
 		// 00000000   (false)
 		// 00000001   (true)
 

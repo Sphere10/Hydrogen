@@ -10,25 +10,26 @@ using System.Collections.Generic;
 
 namespace Hydrogen;
 
-public class ObservableExtendedCollection<TItem> : ObservableExtendedCollection<TItem, IExtendedCollection<TItem>> {
-
-	public ObservableExtendedCollection()
-		: this(new ExtendedList<TItem>()) {
-	}
-
-	public ObservableExtendedCollection(IExtendedCollection<TItem> internalCollection)
-		: base(internalCollection) {
-	}
-
-}
-
-
 public class ObservableExtendedCollection<TItem, TConcrete> : ObservableCollection<TItem, TConcrete>, IExtendedCollection<TItem>
 	where TConcrete : IExtendedCollection<TItem> {
 
 	public ObservableExtendedCollection(TConcrete internalCollection)
 		: base(internalCollection) {
 	}
+
+
+	int ICollection<TItem>.Count => checked((int)Count);
+
+	public new virtual long Count =>
+		DoOperation(
+			EventTraits.Count,
+			() => base.Count,
+			() => new CountingEventArgs(),
+			result => new CountedEventArgs { Result = result },
+			NotifyCounting,
+			NotifyCounted
+		);
+
 
 	public virtual IEnumerable<bool> ContainsRange(IEnumerable<TItem> items) =>
 		DoOperation(
@@ -80,4 +81,17 @@ public class ObservableExtendedCollection<TItem, TConcrete> : ObservableCollecti
 				NotifyRemovedItems(postEventArgs);
 			}
 		);
+}
+
+
+public class ObservableExtendedCollection<TItem> : ObservableExtendedCollection<TItem, IExtendedCollection<TItem>> {
+
+	public ObservableExtendedCollection()
+		: this(new ExtendedList<TItem>()) {
+	}
+
+	public ObservableExtendedCollection(IExtendedCollection<TItem> internalCollection)
+		: base(internalCollection) {
+	}
+
 }

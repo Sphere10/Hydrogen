@@ -14,6 +14,10 @@ namespace Hydrogen;
 public abstract class CollectionDecorator<TItem, TConcrete> : ICollection<TItem> where TConcrete : ICollection<TItem> {
 	protected TConcrete InternalCollection;
 
+	public virtual int Count => InternalCollection.Count;
+
+	public virtual bool IsReadOnly => InternalCollection.IsReadOnly;
+
 	protected CollectionDecorator(TConcrete innerCollection) {
 		InternalCollection = innerCollection;
 	}
@@ -46,9 +50,6 @@ public abstract class CollectionDecorator<TItem, TConcrete> : ICollection<TItem>
 		return InternalCollection.Remove(item);
 	}
 
-	public virtual int Count => InternalCollection.Count;
-
-	public virtual bool IsReadOnly => InternalCollection.IsReadOnly;
 }
 
 

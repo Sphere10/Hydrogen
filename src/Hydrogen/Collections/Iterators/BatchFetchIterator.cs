@@ -34,7 +34,6 @@ public class BatchFetchIterator<T> : IEnumerable<T> {
 		_batches = batches;
 	}
 
-
 	public IEnumerator<T> GetEnumerator() {
 		foreach (var batchFetcher in _batches) {
 			var batchItems = batchFetcher();

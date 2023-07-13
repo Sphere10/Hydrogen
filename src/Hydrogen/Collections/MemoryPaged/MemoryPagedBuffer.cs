@@ -17,12 +17,11 @@ namespace Hydrogen;
 /// A buffer whose contents are paged on memory and suitable for arbitrarily large buffers.
 /// </summary>
 /// <remarks>The underlying implementation relies on a <see cref="MemoryPagedList{TItem}"/> whose pages are <see cref="MemoryBuffer"/>'s.</remarks>
-public class
-	MemoryPagedBuffer : MemoryPagedListBase<byte>, IMemoryPagedBuffer {
+public class MemoryPagedBuffer : MemoryPagedListBase<byte>, IMemoryPagedBuffer {
 	private readonly IPagedListDelegate<byte> _friend;
 	private readonly ReadOnlyListDecorator<IPage<byte>, IBufferPage> _pagesDecorator;
 
-	public MemoryPagedBuffer(int pageSize, long maxMemory)
+	public MemoryPagedBuffer(long pageSize, long maxMemory)
 		: base(pageSize, maxMemory) {
 		_friend = CreateFriendDelegate();
 		_pagesDecorator = new ReadOnlyListDecorator<IPage<byte>, IBufferPage>(new ReadOnlyListAdapter<IPage<byte>>(base.InternalPages));
@@ -30,7 +29,7 @@ public class
 
 	public new IReadOnlyList<IBufferPage> Pages => _pagesDecorator;
 
-	protected override IPage<byte> NewPageInstance(int pageNumber) {
+	protected override IPage<byte> NewPageInstance(long pageNumber) {
 		return new BufferPage(PageSize);
 	}
 
@@ -38,10 +37,10 @@ public class
 		throw new NotSupportedException($"Pages are not loadable across runtime sessions in this implementation. See {nameof(FileMappedBuffer)} class.");
 	}
 
-	public override IEnumerable<byte> ReadRange(int index, int count)
+	public override IEnumerable<byte> ReadRange(long index, long count)
 		=> ReadSpan(index, count).ToArray();
 
-	public ReadOnlySpan<byte> ReadSpan(int index, int count)
+	public ReadOnlySpan<byte> ReadSpan(long index, long count)
 		=> PagedBufferImplementationHelper.ReadRange(_friend, index, count);
 
 	public override void AddRange(IEnumerable<byte> items)
@@ -50,26 +49,26 @@ public class
 	public void AddRange(ReadOnlySpan<byte> span)
 		=> PagedBufferImplementationHelper.AddRange(_friend, span);
 
-	public override void UpdateRange(int index, IEnumerable<byte> items)
+	public override void UpdateRange(long index, IEnumerable<byte> items)
 		=> UpdateRange(index, (items as byte[] ?? items?.ToArray()).AsSpan());
 
-	public void UpdateRange(int index, ReadOnlySpan<byte> items)
+	public void UpdateRange(long index, ReadOnlySpan<byte> items)
 		=> PagedBufferImplementationHelper.UpdateRange(_friend, index, items);
 
-	public override void InsertRange(int index, IEnumerable<byte> items)
+	public override void InsertRange(long index, IEnumerable<byte> items)
 		=> InsertRange(index, (items as byte[] ?? items?.ToArray()).AsSpan());
 
-	public void InsertRange(int index, ReadOnlySpan<byte> items)
+	public void InsertRange(long index, ReadOnlySpan<byte> items)
 		=> PagedBufferImplementationHelper.InsertRange(_friend, Count, index, items);
 
-	public Span<byte> AsSpan(int index, int count)
+	public Span<byte> AsSpan(long index, long count)
 		=> PagedBufferImplementationHelper.AsSpan(_friend, index, count);
 
-	public void ExpandTo(int totalBytes) {
+	public void ExpandTo(long totalBytes) {
 		throw new NotImplementedException();
 	}
 
-	public void ExpandBy(int newBytes) {
+	public void ExpandBy(long newBytes) {
 		throw new NotImplementedException();
 	}
 
@@ -79,17 +78,17 @@ public class
 	/// </summary>
 	public sealed class BufferPage : FileSwappedMemoryPage<byte>, IBufferPage {
 
-		public BufferPage(int pageSize)
+		public BufferPage(long pageSize)
 			: base(pageSize, new StaticSizeItemSizer<byte>(sizeof(byte)), new MemoryBuffer(0, pageSize, pageSize)) {
 		}
 
-		public ReadOnlySpan<byte> ReadSpan(int index, int count)
+		public ReadOnlySpan<byte> ReadSpan(long index, long count)
 			=> PagedBufferImplementationHelper.ReadPageSpan(this, MemoryStore as MemoryBuffer, index, count);
 
 		public bool AppendSpan(ReadOnlySpan<byte> items, out ReadOnlySpan<byte> overflow)
 			=> PagedBufferImplementationHelper.AppendPageSpan(this, MemoryStore as MemoryBuffer, items, out overflow);
 
-		public void UpdateSpan(int index, ReadOnlySpan<byte> items) =>
+		public void UpdateSpan(long index, ReadOnlySpan<byte> items) =>
 			PagedBufferImplementationHelper.UpdatePageSpan(this, MemoryStore as MemoryBuffer, index, items);
 
 		protected override void SaveInternal(IExtendedList<byte> memoryPage, Stream stream) {

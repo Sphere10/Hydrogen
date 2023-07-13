@@ -13,7 +13,7 @@ namespace Hydrogen;
 public abstract class SortAlgorithm<T> {
 	public abstract void Execute(IExtendedList<T> list, IComparer<T> comparer);
 
-	protected virtual void Swap(IExtendedList<T> list, int leftIdx, int rightIdx) {
+	protected virtual void Swap(IExtendedList<T> list, long leftIdx, long rightIdx) {
 		T temp = list[leftIdx];
 		list[leftIdx] = list[rightIdx];
 		list[rightIdx] = temp;

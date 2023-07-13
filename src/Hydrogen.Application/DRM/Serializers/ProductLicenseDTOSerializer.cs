@@ -12,13 +12,13 @@ using System.Text;
 namespace Hydrogen.Application;
 
 public class ProductLicenseDTOSerializer : ItemSerializer<ProductLicenseDTO> {
-	private readonly AutoSizedSerializer<string> _stringSerializer = new AutoSizedSerializer<string>(new NullableObjectSerializer<string>(new StringSerializer(Encoding.ASCII)));
+	private readonly AutoSizedSerializer<string> _stringSerializer = new AutoSizedSerializer<string>(new NullableObjectSerializer<string>(new StringSerializer(Encoding.ASCII)), SizeDescriptorStrategy.UseUInt32);
 	private readonly GuidSerializer _guidSerializer = new();
 	private readonly NullableStructSerializer<short> _nullableShortSerializer = new(new PrimitiveSerializer<short>());
 	private readonly NullableStructSerializer<int> _nullableIntSerializer = new(new PrimitiveSerializer<int>());
 	private readonly NullableStructSerializer<DateTime> _nullableDateTimeSerializer = new(new DateTimeSerializer());
 
-	public override int CalculateSize(ProductLicenseDTO item)
+	public override long CalculateSize(ProductLicenseDTO item)
 		=> _stringSerializer.CalculateSize(item.Name) +
 		   _stringSerializer.CalculateSize(item.ProductKey) +
 		   _guidSerializer.StaticSize +
@@ -36,7 +36,7 @@ public class ProductLicenseDTOSerializer : ItemSerializer<ProductLicenseDTO> {
 		   _nullableIntSerializer.CalculateSize(item.LimitFeatureD);
 
 
-	public override bool TrySerialize(ProductLicenseDTO item, EndianBinaryWriter writer, out int bytesWritten) {
+	public override bool TrySerialize(ProductLicenseDTO item, EndianBinaryWriter writer, out long bytesWritten) {
 		bytesWritten = 0;
 
 		var res = _stringSerializer.TrySerialize(item.Name, writer, out var nameBytes);
@@ -114,7 +114,7 @@ public class ProductLicenseDTOSerializer : ItemSerializer<ProductLicenseDTO> {
 
 	}
 
-	public override bool TryDeserialize(int byteSize, EndianBinaryReader reader, out ProductLicenseDTO item) {
+	public override bool TryDeserialize(long byteSize, EndianBinaryReader reader, out ProductLicenseDTO item) {
 		item = new ProductLicenseDTO();
 
 		if (!_stringSerializer.TryDeserialize(reader, out var strVal))

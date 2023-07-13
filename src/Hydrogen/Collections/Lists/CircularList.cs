@@ -13,21 +13,21 @@ namespace Hydrogen;
 
 public class CircularList<TItem> : SingularListBase<TItem> {
 
-	public readonly IList<TItem> _list;
-	private int _startIndex;
-	private readonly int _maxSize;
+	public readonly IExtendedList<TItem> _list;
+	private long _startIndex;
+	private readonly long _maxSize;
 
-	public CircularList(int maxSize)
-		: this(new List<TItem>(maxSize), maxSize) {
+	public CircularList(long maxSize)
+		: this(new ExtendedList<TItem>(maxSize), maxSize) {
 	}
 
-	public CircularList(IList<TItem> list, int maxSize) {
+	public CircularList(IExtendedList<TItem> list, long maxSize) {
 		_startIndex = 0;
 		_maxSize = maxSize;
 		_list = list;
 	}
 
-	public override int Count => _list.Count;
+	public override long Count => _list.Count;
 
 	public override bool IsReadOnly => false;
 
@@ -41,7 +41,7 @@ public class CircularList<TItem> : SingularListBase<TItem> {
 		}
 	}
 
-	public override TItem Read(int index) {
+	public override TItem Read(long index) {
 		if (index < 0 || index >= _list.Count)
 			throw new IndexOutOfRangeException();
 
@@ -56,11 +56,11 @@ public class CircularList<TItem> : SingularListBase<TItem> {
 		}
 	}
 
-	public override void Insert(int index, TItem item) {
+	public override void Insert(long index, TItem item) {
 		throw new NotSupportedException();
 	}
 
-	public override void Update(int index, TItem item) {
+	public override void Update(long index, TItem item) {
 		var realIndex = (_startIndex + index) % _maxSize;
 		_list[realIndex] = item;
 	}
@@ -69,7 +69,7 @@ public class CircularList<TItem> : SingularListBase<TItem> {
 		throw new NotSupportedException();
 	}
 
-	public override void RemoveAt(int index) {
+	public override void RemoveAt(long index) {
 		throw new NotSupportedException();
 	}
 
@@ -77,7 +77,7 @@ public class CircularList<TItem> : SingularListBase<TItem> {
 		return _list.Contains(item);
 	}
 
-	public override int IndexOf(TItem item) {
+	public override long IndexOfL(TItem item) {
 		var baseIndex = _list.IndexOf(item);
 		if (baseIndex == -1) // not found?
 			return -1;
@@ -94,8 +94,9 @@ public class CircularList<TItem> : SingularListBase<TItem> {
 	}
 
 	public override void CopyTo(TItem[] array, int arrayIndex) {
+		var startIndexI = Tools.Collection.CheckNotImplemented64bitAddressingIndex(_startIndex);
 		for (int i = 0; i < _list.Count; i++) {
-			int realIndex = (_startIndex + i) % _maxSize;
+			var realIndex = (startIndexI + i) % _maxSize;
 			array[arrayIndex + i] = _list[realIndex];
 		}
 	}

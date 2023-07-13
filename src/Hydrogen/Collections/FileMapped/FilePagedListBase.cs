@@ -17,7 +17,7 @@ namespace Hydrogen;
 /// <typeparam name="TItem"></typeparam>
 public abstract class FilePagedListBase<TItem> : MemoryPagedListBase<TItem>, IFilePagedList<TItem> {
 
-	protected FilePagedListBase(string filename, int pageSize, long maxMemory, bool readOnly = false)
+	protected FilePagedListBase(string filename, long pageSize, long maxMemory, bool readOnly = false)
 		: base(pageSize, maxMemory) {
 		IsReadOnly = readOnly;
 		var fileExists = File.Exists(filename);
@@ -39,7 +39,7 @@ public abstract class FilePagedListBase<TItem> : MemoryPagedListBase<TItem>, IFi
 
 	internal FileStream Stream { get; }
 
-	public override int Count {
+	public override long Count {
 		get {
 			CheckRequiresLoad();
 			return base.Count;

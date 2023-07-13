@@ -57,10 +57,10 @@ public class ClusteredStorageMultiThreadedTests {
 		streamContainer.Load();
 
 		// add a bunch of strings in parallel
-		Parallel.For(0,
+		Parallel.For(0L,
 			itemCount,
 			i => {
-				var streamIndex = rng.Next(0, streamContainer.Count + 1);
+				var streamIndex = rng.Next(0, (int)streamContainer.Count + 1);
 				streamContainer.InsertBytes(streamIndex, $"Hello World! - {i}".ToByteArray(Encoding.UTF8));
 			});
 

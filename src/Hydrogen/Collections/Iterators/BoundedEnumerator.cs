@@ -11,10 +11,10 @@ using System.Collections.Generic;
 namespace Hydrogen;
 
 public sealed class BoundedEnumerator<T> : EnumeratorDecorator<T> {
-	private readonly int _maxCount;
-	private int _count;
+	private readonly long _maxCount;
+	private long _count;
 
-	public BoundedEnumerator(IEnumerator<T> enumerator, int maxCount)
+	public BoundedEnumerator(IEnumerator<T> enumerator, long maxCount)
 		: base(enumerator) {
 		_maxCount = maxCount;
 		_count = 0;

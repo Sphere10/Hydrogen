@@ -27,24 +27,24 @@ namespace Hydrogen;
 /// so as to ensure only the logical objects are searched (avoids false positives). Same is true for <see cref="Remove"/> and <see cref="RemoveRange(int,int)"/>.
 /// </remarks>
 public class PreAllocatedList<TItem> : ExtendedListDecorator<TItem> {
-	private int _count;
+	private long _count;
 	private readonly PreAllocationPolicy _preAllocationPolicy;
-	private readonly int _blockSize;
+	private readonly long _blockSize;
 	private readonly Func<TItem> _activator;
 
 	public PreAllocatedList(Func<TItem> itemActivator)
 		: this(PreAllocationPolicy.MinimumRequired, 0, itemActivator) {
 	}
 
-	public PreAllocatedList(int preallocatedItemCount, Func<TItem> itemActivator)
+	public PreAllocatedList(long preallocatedItemCount, Func<TItem> itemActivator)
 		: this(PreAllocationPolicy.Fixed, preallocatedItemCount, itemActivator) {
 	}
 
-	public PreAllocatedList(PreAllocationPolicy preAllocationPolicy, int blockSize, Func<TItem> itemActivator)
+	public PreAllocatedList(PreAllocationPolicy preAllocationPolicy, long blockSize, Func<TItem> itemActivator)
 		: this(new ExtendedList<TItem>(), 0, preAllocationPolicy, blockSize, itemActivator) {
 	}
 
-	public PreAllocatedList(IExtendedList<TItem> internalStore, int internalStoreCount, PreAllocationPolicy preAllocationPolicy, int blockSize, Func<TItem> itemActivator)
+	public PreAllocatedList(IExtendedList<TItem> internalStore, long internalStoreCount, PreAllocationPolicy preAllocationPolicy, long blockSize, Func<TItem> itemActivator)
 		: base(internalStore) {
 		_count = internalStoreCount;
 		if (preAllocationPolicy.IsIn(PreAllocationPolicy.ByBlock, PreAllocationPolicy.Fixed)) {
@@ -57,28 +57,28 @@ public class PreAllocatedList<TItem> : ExtendedListDecorator<TItem> {
 
 		// Ensure enough capacity when in Fixed mode (since never allocates again)
 		if (preAllocationPolicy == PreAllocationPolicy.Fixed) {
-			internalStore.AddRange(Enumerable.Repeat(_activator(), Math.Max(0, _blockSize - internalStore.Count)));
+			internalStore.AddRange(Tools.Collection.RepeatValue(_activator(), Math.Max(0L, _blockSize - internalStore.Count)));
 		}
 	}
 
-	public override int Count => _count;
+	public override long Count => _count;
 
-	public virtual int Capacity => base.Count;
+	public virtual long Capacity => base.Count;
 
-	public override int IndexOf(TItem item) => ToLogicalIndex(base.IndexOf(item));
+	public override long IndexOfL(TItem item) => ToLogicalIndex(base.IndexOf(item));
 
-	public override IEnumerable<int> IndexOfRange(IEnumerable<TItem> items) => base.IndexOfRange(items).Select(ToLogicalIndex);
+	public override IEnumerable<long> IndexOfRange(IEnumerable<TItem> items) => base.IndexOfRange(items).Select(ToLogicalIndex);
 
 	public override bool Contains(TItem item) => IndexOf(item) > 0;
 
 	public override IEnumerable<bool> ContainsRange(IEnumerable<TItem> items) => IndexOfRange(items).Select(ix => ix > 0);
 
-	public override TItem Read(int index) {
+	public override TItem Read(long index) {
 		CheckIndex(index);
 		return base.Read(index);
 	}
 
-	public override IEnumerable<TItem> ReadRange(int index, int count) {
+	public override IEnumerable<TItem> ReadRange(long index, long count) {
 		CheckRange(index, count);
 		return base.ReadRange(index, count);
 	}
@@ -93,21 +93,21 @@ public class PreAllocatedList<TItem> : ExtendedListDecorator<TItem> {
 		_count += itemsArr.Length;
 	}
 
-	public override void Update(int index, TItem item) {
+	public override void Update(long index, TItem item) {
 		CheckIndex(index);
 		UpdateRange(index, new[] { item });
 	}
 
-	public override void UpdateRange(int index, IEnumerable<TItem> items) {
+	public override void UpdateRange(long index, IEnumerable<TItem> items) {
 		Guard.ArgumentNotNull(items, nameof(items));
 		var itemsArr = items as TItem[] ?? items.ToArray();
 		CheckRange(index, itemsArr.Length);
 		base.UpdateRange(index, itemsArr);
 	}
 
-	public override void Insert(int index, TItem item) => this.InsertRange(index, new[] { item });
+	public override void Insert(long index, TItem item) => this.InsertRange(index, new[] { item });
 
-	public override void InsertRange(int index, IEnumerable<TItem> items) {
+	public override void InsertRange(long index, IEnumerable<TItem> items) {
 		Guard.ArgumentNotNull(items, nameof(items));
 		var itemsArr = items as TItem[] ?? items.ToArray();
 		CheckIndex(index, true);
@@ -139,9 +139,9 @@ public class PreAllocatedList<TItem> : ExtendedListDecorator<TItem> {
 		throw new NotImplementedException();
 	}
 
-	public override void RemoveAt(int index) => this.RemoveRange(index, 1);
+	public override void RemoveAt(long index) => this.RemoveRange(index, 1);
 
-	public override void RemoveRange(int index, int count) {
+	public override void RemoveRange(long index, long count) {
 		// TODO: this could be optimized by copying bounded ranges instead of 1-by-1. Will 
 		// improve stream record performance in ClusteredStorage (but has to be in partitioned to avoid memory exhaustion on huge ranges)
 		CheckRange(index, count);
@@ -173,14 +173,14 @@ public class PreAllocatedList<TItem> : ExtendedListDecorator<TItem> {
 
 	public override IEnumerator<TItem> GetEnumerator() => base.GetEnumerator().WithBoundary(_count);
 
-	private void EnsureSpace(int quantity) {
+	private void EnsureSpace(long quantity) {
 		var spareCapacity = (Capacity - Count) - quantity;
 		if (spareCapacity < 0) {
 			var required = -spareCapacity;
 			var newPreAllocatedItems = _preAllocationPolicy switch {
 				PreAllocationPolicy.Fixed => Enumerable.Empty<TItem>().ToArray(),
-				PreAllocationPolicy.MinimumRequired => Enumerable.Repeat(_activator(), required).ToArray(),
-				PreAllocationPolicy.ByBlock => Enumerable.Repeat(_activator(), _blockSize * (int)Math.Ceiling(required / (float)_blockSize)).ToArray(),
+				PreAllocationPolicy.MinimumRequired => Tools.Collection.RepeatValue(_activator(), required).ToArray(),
+				PreAllocationPolicy.ByBlock => Tools.Collection.RepeatValue(_activator(), _blockSize * (long)Math.Ceiling(required / (float)_blockSize)).ToArray(),
 				_ => throw new ArgumentOutOfRangeException(nameof(_preAllocationPolicy), _preAllocationPolicy, null)
 			};
 			InternalCollection.AddRange(newPreAllocatedItems);
@@ -192,25 +192,26 @@ public class PreAllocatedList<TItem> : ExtendedListDecorator<TItem> {
 	private void ReduceExcessCapacity() {
 		Debug.Assert(_preAllocationPolicy == PreAllocationPolicy.MinimumRequired);
 		var spareCapacity = (Capacity - Count);
-		if (spareCapacity > 0) {
+		var spareCapacityI = Tools.Collection.CheckNotImplemented64bitAddressingLength(spareCapacity);
+		if (spareCapacityI > 0) {
 			if (typeof(TItem).HasSubType(typeof(IDisposable)))
-				foreach (var item in InternalCollection.ReadRange(^spareCapacity..).Cast<IDisposable>())
+				foreach (var item in InternalCollection.ReadRange(^spareCapacityI..).Cast<IDisposable>())
 					item.Dispose();
 
-			InternalCollection.RemoveRange(^spareCapacity..);
+			InternalCollection.RemoveRange(^spareCapacityI..);
 		}
 	}
 
-	private int ToLogicalIndex(int index) {
+	private long ToLogicalIndex(long index) {
 		if (0 <= index && index <= _count - 1)
 			return index;
 		return -1;
 	}
 
-	protected bool ValidIndex(int index, bool allowAtEnd = false) => 0 <= index && (allowAtEnd ? index <= Count : index < Count);
+	protected bool ValidIndex(long index, bool allowAtEnd = false) => 0 <= index && (allowAtEnd ? index <= Count : index < Count);
 
-	protected void CheckIndex(int index, bool allowAtEnd = false) => Guard.CheckIndex(index, 0, Count, allowAtEnd);
+	protected void CheckIndex(long index, bool allowAtEnd = false) => Guard.CheckIndex(index, 0, Count, allowAtEnd);
 
-	protected void CheckRange(int index, int count, bool rightAligned = false) => Guard.CheckRange(index, count, rightAligned, 0, Count);
+	protected void CheckRange(long index, long count, bool rightAligned = false) => Guard.CheckRange(index, count, rightAligned, 0, Count);
 
 }

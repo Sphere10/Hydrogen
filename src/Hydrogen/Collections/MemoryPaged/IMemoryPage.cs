@@ -15,7 +15,7 @@ public interface IMemoryPage<TItem> : IPage<TItem>, IDisposable {
 	/// <summary>
 	/// The maximum byte size of the page.
 	/// </summary>
-	int MaxSize { get; set; }
+	long MaxSize { get; set; }
 
 	/// <summary>
 	/// Saves the page to storage.

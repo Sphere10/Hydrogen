@@ -13,9 +13,9 @@ public struct ClusteredStreamRecord {
 
 	public ClusteredStreamTraits Traits { get; set; }
 
-	public int Size { get; set; }
+	public long StartCluster { get; set; }
 
-	public int StartCluster { get; set; }
+	public long Size { get; set; }
 
 	public int KeyChecksum { get; set; }
 

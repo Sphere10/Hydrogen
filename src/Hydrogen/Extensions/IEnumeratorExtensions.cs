@@ -28,7 +28,7 @@ public static class IEnumeratorExtensions {
 	public static IEnumerator<T> WithMemory<T>(this IEnumerator<T> enumerator)
 		=> new MemorizingEnumerator<T>(enumerator);
 
-	public static IEnumerator<T> WithBoundary<T>(this IEnumerator<T> enumerator, int maxCount)
+	public static IEnumerator<T> WithBoundary<T>(this IEnumerator<T> enumerator, long maxCount)
 		=> new BoundedEnumerator<T>(enumerator, maxCount);
 
 	public static IEnumerable<T> AsEnumerable<T>(this IEnumerator<T> enumerator) {

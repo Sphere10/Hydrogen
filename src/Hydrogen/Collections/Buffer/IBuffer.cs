@@ -12,32 +12,33 @@ namespace Hydrogen;
 
 public interface IBuffer : IExtendedList<byte> {
 
-	ReadOnlySpan<byte> ReadSpan(int index, int count);
+	ReadOnlySpan<byte> ReadSpan(long index, long count);
 
 	void AddRange(ReadOnlySpan<byte> span);
 
-	void UpdateRange(int index, ReadOnlySpan<byte> items);
+	void UpdateRange(long index, ReadOnlySpan<byte> items);
 
-	void InsertRange(int index, ReadOnlySpan<byte> items);
+	void InsertRange(long index, ReadOnlySpan<byte> items);
 
-	Span<byte> AsSpan(int index, int count);
+	Span<byte> AsSpan(long index, long count);
 
-	void ExpandTo(int totalBytes);
+	void ExpandTo(long totalBytes);
 
-	void ExpandBy(int newBytes);
+	void ExpandBy(long newBytes);
 }
 
 
 public static class IBufferExtensions {
 
 	public static ReadOnlySpan<byte> ReadSpan(this IBuffer memoryBuffer, Range range) {
-		var (start, count) = range.GetOffsetAndLength(memoryBuffer.Count);
+		var countI = Tools.Collection.CheckNotImplemented64bitAddressingLength(memoryBuffer.Count);
+		var (start, count) = range.GetOffsetAndLength(countI);
 		return memoryBuffer.ReadSpan(start, count);
 	}
 
-
 	public static Span<byte> AsSpan(this IBuffer memoryBuffer, Range range) {
-		var (start, count) = range.GetOffsetAndLength(memoryBuffer.Count);
+		var countI = Tools.Collection.CheckNotImplemented64bitAddressingLength(memoryBuffer.Count);
+		var (start, count) = range.GetOffsetAndLength(countI);
 		return memoryBuffer.AsSpan(start, count);
 	}
 

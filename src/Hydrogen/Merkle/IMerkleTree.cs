@@ -55,22 +55,22 @@ public static class IMerkleTreeExtensions {
 			.CalculatePathToRoot(tree.Size, nodeCoordinate, logicalNodesOnly)
 			.Select(tree.GetNodeAt);
 
-	public static IEnumerable<byte[]> GenerateExistenceProof(this IMerkleTree tree, int leafIndex) =>
+	public static IEnumerable<byte[]> GenerateExistenceProof(this IMerkleTree tree, long leafIndex) =>
 		MerkleMath.GenerateExistenceProof(tree, MerkleCoordinate.LeafAt(leafIndex), out _);
 
-	public static IEnumerable<byte[]> GenerateConsistencyProof(this IMerkleTree tree, int priorLeafCount) =>
+	public static IEnumerable<byte[]> GenerateConsistencyProof(this IMerkleTree tree, long priorLeafCount) =>
 		MerkleMath.GenerateConsistencyProof(tree, priorLeafCount, out _);
 
-	public static IEnumerable<byte[]> GenerateContainsProof(this IMerkleTree tree, int index, int count) =>
-		tree.GenerateContainsProof(Enumerable.Range(index, count));
+	public static IEnumerable<byte[]> GenerateContainsProof(this IMerkleTree tree, long index, long count) =>
+		tree.GenerateContainsProof(Tools.Collection.RangeL(index, count));
 
-	public static IEnumerable<byte[]> GenerateContainsProof(this IMerkleTree tree, IEnumerable<int> leafIndices) =>
+	public static IEnumerable<byte[]> GenerateContainsProof(this IMerkleTree tree, IEnumerable<long> leafIndices) =>
 		MerkleMath.GenerateContainsProof(tree, leafIndices, out _);
 
-	public static IEnumerable<byte[]> GenerateUpdateProof(this IMerkleTree tree, int index, int count) =>
-		tree.GenerateUpdateProof(Enumerable.Range(index, count));
+	public static IEnumerable<byte[]> GenerateUpdateProof(this IMerkleTree tree, long index, long count) =>
+		tree.GenerateUpdateProof(Tools.Collection.RangeL(index, count));
 
-	public static IEnumerable<byte[]> GenerateUpdateProof(this IMerkleTree tree, IEnumerable<int> leafIndices) =>
+	public static IEnumerable<byte[]> GenerateUpdateProof(this IMerkleTree tree, IEnumerable<long> leafIndices) =>
 		MerkleMath.GenerateUpdateProof(tree, leafIndices, out _);
 
 	public static IEnumerable<byte[]> GenerateAppendProof(this IMerkleTree tree)

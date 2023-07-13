@@ -14,7 +14,7 @@ namespace Hydrogen;
 
 public static class Pow2 {
 
-	public static IEnumerable<int> CalculatePow2Partition(int number) {
+	public static IEnumerable<int> CalculatePow2Partition(long number) {
 		while (number >= 1) {
 			var log2 = Tools.Maths.EpsilonTrunc(Math.Log(number, 2));
 			var x = Math.Floor(log2); // x of 2^x of this term

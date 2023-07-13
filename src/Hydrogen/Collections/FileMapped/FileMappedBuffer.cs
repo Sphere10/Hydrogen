@@ -26,7 +26,7 @@ public sealed class FileMappedBuffer : FilePagedListBase<byte>, IMemoryPagedBuff
 	private readonly IPagedListDelegate<byte> _friend;
 	private readonly ReadOnlyListDecorator<IPage<byte>, IBufferPage> _pagesDecorator;
 
-	public FileMappedBuffer(string filename, int pageSize, long maxMemory, bool readOnly = false)
+	public FileMappedBuffer(string filename, long pageSize, long maxMemory, bool readOnly = false)
 		: base(filename, pageSize, maxMemory, readOnly) {
 		_friend = CreateFriendDelegate();
 		_pagesDecorator = new ReadOnlyListDecorator<IPage<byte>, IBufferPage>(new ReadOnlyListAdapter<IPage<byte>>(base.InternalPages));
@@ -34,21 +34,21 @@ public sealed class FileMappedBuffer : FilePagedListBase<byte>, IMemoryPagedBuff
 
 	public new IReadOnlyList<IBufferPage> Pages => _pagesDecorator;
 
-	public ReadOnlySpan<byte> ReadSpan(int index, int count) => PagedBufferImplementationHelper.ReadRange(_friend, index, count);
+	public ReadOnlySpan<byte> ReadSpan(long index, long count) => PagedBufferImplementationHelper.ReadRange(_friend, index, count);
 
 	public void AddRange(ReadOnlySpan<byte> span) => PagedBufferImplementationHelper.AddRange(_friend, span);
 
-	public void UpdateRange(int index, ReadOnlySpan<byte> items) => PagedBufferImplementationHelper.UpdateRange(_friend, index, items);
+	public void UpdateRange(long index, ReadOnlySpan<byte> items) => PagedBufferImplementationHelper.UpdateRange(_friend, index, items);
 
-	public void InsertRange(int index, ReadOnlySpan<byte> items) => PagedBufferImplementationHelper.InsertRange(_friend, Count, index, items);
+	public void InsertRange(long index, ReadOnlySpan<byte> items) => PagedBufferImplementationHelper.InsertRange(_friend, Count, index, items);
 
-	public Span<byte> AsSpan(int index, int count) => PagedBufferImplementationHelper.AsSpan(_friend, index, count);
+	public Span<byte> AsSpan(long index, long count) => PagedBufferImplementationHelper.AsSpan(_friend, index, count);
 
-	public void ExpandTo(int totalBytes) => PagedBufferImplementationHelper.ExpandTo(_friend, totalBytes);
+	public void ExpandTo(long totalBytes) => PagedBufferImplementationHelper.ExpandTo(_friend, totalBytes);
 
-	public void ExpandBy(int newBytes) => PagedBufferImplementationHelper.ExpandBy(_friend, newBytes);
+	public void ExpandBy(long newBytes) => PagedBufferImplementationHelper.ExpandBy(_friend, newBytes);
 
-	protected override IPage<byte> NewPageInstance(int pageNumber) {
+	protected override IPage<byte> NewPageInstance(long pageNumber) {
 		return new PageImpl(Stream, pageNumber, PageSize);
 	}
 
@@ -121,7 +121,7 @@ public sealed class FileMappedBuffer : FilePagedListBase<byte>, IMemoryPagedBuff
 	/// </summary>
 	public class PageImpl : FilePageBase<byte>, IBufferPage {
 
-		public PageImpl(Stream stream, int pageNumber, int pageSize)
+		public PageImpl(Stream stream, long pageNumber, long pageSize)
 			: base(stream, new StaticSizeItemSizer<byte>(sizeof(byte)), pageNumber, pageSize, new MemoryBuffer(0, pageSize, pageSize)) {
 		}
 
@@ -141,11 +141,11 @@ public sealed class FileMappedBuffer : FilePagedListBase<byte>, IMemoryPagedBuff
 			Guard.Ensure(bytesRead == stream.Length, "Read less bytes than expected");
 		}
 
-		public ReadOnlySpan<byte> ReadSpan(int index, int count)
+		public ReadOnlySpan<byte> ReadSpan(long index, long count)
 			=> PagedBufferImplementationHelper.ReadPageSpan(this, (MemoryBuffer)MemoryStore, index, count);
 
-		public void UpdateSpan(int index, ReadOnlySpan<byte> items) {
-			int beforeUpdateSize = Size;
+		public void UpdateSpan(long index, ReadOnlySpan<byte> items) {
+			var beforeUpdateSize = Size;
 			PagedBufferImplementationHelper.UpdatePageSpan(this, MemoryStore as MemoryBuffer, index, items);
 			EndPosition += Size - beforeUpdateSize;
 		}

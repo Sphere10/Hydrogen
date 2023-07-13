@@ -25,17 +25,17 @@ public class CastedSerializer<TBase, TConcrete> : IItemSerializer<TBase> where T
 
 	public bool IsStaticSize => _concreteSerializer.IsStaticSize;
 
-	public int StaticSize => _concreteSerializer.StaticSize;
+	public long StaticSize => _concreteSerializer.StaticSize;
 
-	public int CalculateTotalSize(IEnumerable<TBase> items, bool calculateIndividualItems, out int[] itemSizes)
+	public long CalculateTotalSize(IEnumerable<TBase> items, bool calculateIndividualItems, out long[] itemSizes)
 		=> _concreteSerializer.CalculateTotalSize(items.Cast<TConcrete>(), calculateIndividualItems, out itemSizes);
 
-	public int CalculateSize(TBase item) => _concreteSerializer.CalculateSize((TConcrete)item);
+	public long CalculateSize(TBase item) => _concreteSerializer.CalculateSize((TConcrete)item);
 
-	public bool TrySerialize(TBase item, EndianBinaryWriter writer, out int bytesWritten)
+	public bool TrySerialize(TBase item, EndianBinaryWriter writer, out long bytesWritten)
 		=> _concreteSerializer.TrySerialize((TConcrete)item, writer, out bytesWritten);
 
-	public bool TryDeserialize(int byteSize, EndianBinaryReader reader, out TBase item) {
+	public bool TryDeserialize(long byteSize, EndianBinaryReader reader, out TBase item) {
 		var result = _concreteSerializer.TryDeserialize(byteSize, reader, out var concrete);
 		item = concrete;
 		return result;

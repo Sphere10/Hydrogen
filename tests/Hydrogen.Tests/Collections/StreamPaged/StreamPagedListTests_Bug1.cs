@@ -42,7 +42,7 @@ public class StreamPagedListTests_Bug1 {
 			_simulateBug = simulateBug;
 		}
 
-		public bool TrySerialize(TestStruct item, EndianBinaryWriter writer, out int bytesWritten) {
+		public bool TrySerialize(TestStruct item, EndianBinaryWriter writer, out long bytesWritten) {
 			writer.Write(item.X);
 			writer.Write(item.Y);
 			writer.Write(item.Z);
@@ -51,7 +51,7 @@ public class StreamPagedListTests_Bug1 {
 			return true;
 		}
 
-		public bool TryDeserialize(int byteSize, EndianBinaryReader reader, out TestStruct item) {
+		public bool TryDeserialize(long byteSize, EndianBinaryReader reader, out TestStruct item) {
 			item = new TestStruct();
 			item.X = reader.ReadInt32();
 			item.Y = reader.ReadInt32();

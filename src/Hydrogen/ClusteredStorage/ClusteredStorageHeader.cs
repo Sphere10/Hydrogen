@@ -18,14 +18,22 @@ public class ClusteredStorageHeader {
 	public const int MerkleRootLength = 32;
 	public const int MasterKeyLength = 32;
 
+	internal const int VersionLength = sizeof(byte);
+	internal const int PolicyLength = sizeof(uint);
+	internal const int RecordsLength = sizeof(long);
+	internal const int RecordKeySizeLength = sizeof(ushort);
+	internal const int ReservedRecordsLength = sizeof(long);
+	internal const int ClusterSizeLength = sizeof(int);
+	internal const int TotalClustersLength = sizeof(long);
+
 	internal const int VersionOffset = 0;
-	internal const int PolicyOffset = VersionOffset + sizeof(byte);
-	internal const int RecordsOffset = PolicyOffset + sizeof(uint);
-	internal const int RecordKeySizeOffset = RecordsOffset + sizeof(int);
-	internal const int ReservedRecordsOffset = RecordKeySizeOffset + sizeof(ushort);
-	internal const int ClusterSizeOffset = ReservedRecordsOffset + sizeof(int);
-	internal const int TotalClustersOffset = ClusterSizeOffset + sizeof(int);
-	internal const int MerkleRootOffset = TotalClustersOffset + sizeof(int);
+	internal const int PolicyOffset = VersionOffset + VersionLength;
+	internal const int RecordsOffset = PolicyOffset + PolicyLength;
+	internal const int RecordKeySizeOffset = RecordsOffset + RecordsLength;
+	internal const int ReservedRecordsOffset = RecordKeySizeOffset + RecordKeySizeLength;
+	internal const int ClusterSizeOffset = ReservedRecordsOffset + ReservedRecordsLength;
+	internal const int TotalClustersOffset = ClusterSizeOffset + ClusterSizeLength;
+	internal const int MerkleRootOffset = TotalClustersOffset + TotalClustersLength;
 	internal const int MasterKeyOffset = MerkleRootOffset + MerkleRootLength;
 
 	private Stream _headerStream;
@@ -34,11 +42,11 @@ public class ClusteredStorageHeader {
 
 	private byte? _version;
 	private ClusteredStoragePolicy? _policy;
-	private int? _records;
+	private long? _records;
 	private ushort? _recordKeySize;
-	private int? _reservedRecords;
+	private long? _reservedRecords;
 	private int? _clusterSize;
-	private int? _totalClusters;
+	private long? _totalClusters;
 
 	private byte[] _merkleRoot;
 	private byte[] _masterKey;
@@ -85,11 +93,11 @@ public class ClusteredStorageHeader {
 		}
 	}
 
-	public int RecordsCount {
+	public long RecordsCount {
 		get {
 			if (!_records.HasValue) {
 				_headerStream.Seek(RecordsOffset, SeekOrigin.Begin);
-				_records = _reader.ReadInt32();
+				_records = _reader.ReadInt64();
 			}
 			return _records.Value;
 		}
@@ -121,11 +129,11 @@ public class ClusteredStorageHeader {
 		}
 	}
 
-	public int ReservedRecords {
+	public long ReservedRecords {
 		get {
 			if (!_reservedRecords.HasValue) {
 				_headerStream.Seek(ReservedRecordsOffset, SeekOrigin.Begin);
-				_reservedRecords = _reader.ReadUInt16();
+				_reservedRecords = _reader.ReadInt64();
 			}
 			return _reservedRecords.Value;
 		}
@@ -146,6 +154,7 @@ public class ClusteredStorageHeader {
 		}
 	}
 
+	// TODO: obviously too large, make it a unshort maybe? 65k clusters, or int?
 	public int ClusterSize {
 		get {
 			if (!_clusterSize.HasValue) {
@@ -164,11 +173,11 @@ public class ClusteredStorageHeader {
 		}
 	}
 
-	public int TotalClusters {
+	public long TotalClusters {
 		get {
 			if (!_totalClusters.HasValue) {
 				_headerStream.Seek(TotalClustersOffset, SeekOrigin.Begin);
-				_totalClusters = _reader.ReadInt32();
+				_totalClusters = _reader.ReadInt64();
 			}
 			return _totalClusters.Value;
 		}
@@ -235,7 +244,7 @@ public class ClusteredStorageHeader {
 		_masterKey = null;
 	}
 
-	public void CreateIn(byte version, Stream rootStream, int clusterSize, int recordKeySize, int reservedRecords, Endianness endianness) {
+	public void CreateIn(byte version, Stream rootStream, int clusterSize, long recordKeySize, long reservedRecords, Endianness endianness) {
 		Guard.ArgumentNotNull(rootStream, nameof(rootStream));
 		Guard.Argument(rootStream.Length == 0, nameof(rootStream), "Must be empty");
 		Guard.ArgumentGTE(clusterSize, 1, nameof(clusterSize));
@@ -243,17 +252,34 @@ public class ClusteredStorageHeader {
 		Guard.ArgumentGTE(reservedRecords, 0, nameof(reservedRecords));
 		rootStream.Seek(0, SeekOrigin.Begin);
 		var writer = new EndianBinaryWriter(EndianBitConverter.For(endianness), rootStream);
-		writer.Write(version); // Version
-		writer.Write((int)0); // Policy
-		writer.Write((int)0); // Records
+		Guard.Ensure(rootStream.Position == VersionOffset);
+		writer.Write((byte)version); // Version
+
+		Guard.Ensure(rootStream.Position == PolicyOffset);
+		writer.Write((uint)0); // Policy
+
+		Guard.Ensure(rootStream.Position == RecordsOffset);
+		writer.Write((long)0L); // Records
+
+		Guard.Ensure(rootStream.Position == RecordKeySizeOffset);
 		writer.Write((ushort)recordKeySize); // RecordKeySize
-		writer.Write((int)reservedRecords); // ReservedRecords
-		writer.Write(clusterSize); // ClusterSize
-		writer.Write((int)0); // TotalClusters 
+
+		Guard.Ensure(rootStream.Position == ReservedRecordsOffset);
+		writer.Write((long)reservedRecords); // ReservedRecords
+
+		Guard.Ensure(rootStream.Position == ClusterSizeOffset);
+		writer.Write((int)clusterSize); // ClusterSize
+
+		Guard.Ensure(rootStream.Position == TotalClustersOffset);
+		writer.Write((long)0L); // TotalClusters 
+
+		Guard.Ensure(rootStream.Position == MerkleRootOffset);
 		writer.Write(new byte[MerkleRootLength]); // MerkleRoot 
+
+		Guard.Ensure(rootStream.Position == MasterKeyOffset);
 		writer.Write(new byte[MasterKeyLength]); // MasterKey
 
-		writer.Write(Tools.Array.Gen<byte>(ByteLength - (int)rootStream.Position, 0)); // header padding
+		writer.Write(new byte[ByteLength - rootStream.Position]); // header padding
 		Guard.Ensure(rootStream.Position == ByteLength);
 		AttachTo(rootStream, endianness);
 	}

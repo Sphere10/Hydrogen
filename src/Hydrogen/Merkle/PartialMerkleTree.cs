@@ -58,7 +58,7 @@ public sealed class PartialMerkleTree : Dictionary<MerkleCoordinate, byte[]>, ID
 
 		public override bool Contains(byte[] item) => throw new NotImplementedException();
 
-		public override int Count => _parent.Size.LeafCount;
+		public override long Count => _parent.Size.LeafCount;
 
 		public override void Add(byte[] item) => throw new NotSupportedException();
 
@@ -66,14 +66,14 @@ public sealed class PartialMerkleTree : Dictionary<MerkleCoordinate, byte[]>, ID
 
 		public override bool IsReadOnly => true;
 
-		public override int IndexOf(byte[] item) => throw new NotSupportedException();
+		public override long IndexOfL(byte[] item) => throw new NotSupportedException();
 
-		public override void Insert(int index, byte[] item) => throw new NotSupportedException();
+		public override void Insert(long index, byte[] item) => throw new NotSupportedException();
 
-		public override void RemoveAt(int index) => throw new NotSupportedException();
+		public override void RemoveAt(long index) => throw new NotSupportedException();
 
-		public override byte[] Read(int index) => throw new NotImplementedException();
+		public override byte[] Read(long index) => throw new NotImplementedException();
 
-		public override void Update(int index, byte[] item) => throw new NotImplementedException();
+		public override void Update(long index, byte[] item) => throw new NotImplementedException();
 	}
 }

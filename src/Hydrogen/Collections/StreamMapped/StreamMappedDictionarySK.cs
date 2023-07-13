@@ -40,7 +40,7 @@ public class StreamMappedDictionarySK<TKey, TValue> : DictionaryBase<TKey, TValu
 	private bool _requiresLoad;
 
 	public StreamMappedDictionarySK(Stream rootStream, int clusterSize, IItemSerializer<TKey> keyStaticSizedSerializer, IItemSerializer<TValue> valueSerializer = null, IItemChecksummer<TKey> keyChecksum = null,
-	                                IEqualityComparer<TKey> keyComparer = null, IEqualityComparer<TValue> valueComparer = null, ClusteredStoragePolicy policy = ClusteredStoragePolicy.DictionaryDefault, int reservedRecords = 0,
+	                                IEqualityComparer<TKey> keyComparer = null, IEqualityComparer<TValue> valueComparer = null, ClusteredStoragePolicy policy = ClusteredStoragePolicy.DictionaryDefault, long reservedRecords = 0,
 	                                Endianness endianness = Endianness.LittleEndian)
 		: this(
 			new StreamMappedList<TValue>(
@@ -105,7 +105,8 @@ public class StreamMappedDictionarySK<TKey, TValue> : DictionaryBase<TKey, TValu
 	public override int Count {
 		get {
 			CheckLoaded();
-			return _valueStore.Count - _unusedRecords.Count;
+			var valueStoreCountI = Tools.Collection.CheckNotImplemented64bitAddressingIndex(_valueStore.Count);
+			return valueStoreCountI - _unusedRecords.Count;
 		}
 	}
 
@@ -303,7 +304,7 @@ public class StreamMappedDictionarySK<TKey, TValue> : DictionaryBase<TKey, TValu
 
 	protected override IEnumerator<TKey> GetKeysEnumerator() {
 		CheckLoaded();
-		return Enumerable.Range(0, _valueStore.Count)
+		return Enumerable.Range(0, Tools.Collection.CheckNotImplemented64bitAddressingLength(_valueStore.Count))
 			.Where(i => !_unusedRecords.Contains(i))
 			.Select(ReadKey)
 			.GetEnumerator();
@@ -311,7 +312,7 @@ public class StreamMappedDictionarySK<TKey, TValue> : DictionaryBase<TKey, TValu
 
 	protected override IEnumerator<TValue> GetValuesEnumerator() {
 		CheckLoaded();
-		return Enumerable.Range(0, _valueStore.Count)
+		return Enumerable.Range(0, Tools.Collection.CheckNotImplemented64bitAddressingLength(_valueStore.Count))
 			.Where(i => !_unusedRecords.Contains(i))
 			.Select(ReadValue)
 			.GetEnumerator();
@@ -369,7 +370,8 @@ public class StreamMappedDictionarySK<TKey, TValue> : DictionaryBase<TKey, TValu
 		_checksumToIndexLookup.Clear();
 		_unusedRecords.Clear();
 		for (var i = 0; i < _valueStore.Count; i++) {
-			var record = _valueStore.Storage.Records[_valueStore.Storage.Header.ReservedRecords + i];
+			var reservedRecordsI = Tools.Collection.CheckNotImplemented64bitAddressingLength(_valueStore.Storage.Header.ReservedRecords);
+			var record = _valueStore.Storage.Records[reservedRecordsI + i];
 			if (record.Traits.HasFlag(ClusteredStreamTraits.IsUsed))
 				_checksumToIndexLookup.Add(record.KeyChecksum, i);
 			else

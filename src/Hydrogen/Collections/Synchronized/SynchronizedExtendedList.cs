@@ -29,7 +29,7 @@ public class SynchronizedExtendedList<TItem, TInternalList> : ExtendedListDecora
 
 	public ReaderWriterLockSlim ThreadLock => _lock.ThreadLock;
 
-	public override int Count {
+	public override long Count {
 		get {
 			using (EnterReadScope())
 				return InternalCollection.Count;
@@ -51,12 +51,12 @@ public class SynchronizedExtendedList<TItem, TInternalList> : ExtendedListDecora
 		return _lock.EnterWriteScope();
 	}
 
-	public override int IndexOf(TItem item) {
+	public override long IndexOfL(TItem item) {
 		using (EnterReadScope())
-			return base.IndexOf(item);
+			return base.IndexOfL(item);
 	}
 
-	public override IEnumerable<int> IndexOfRange(IEnumerable<TItem> items) {
+	public override IEnumerable<long> IndexOfRange(IEnumerable<TItem> items) {
 		using (EnterReadScope())
 			return base.IndexOfRange(items);
 	}
@@ -72,12 +72,12 @@ public class SynchronizedExtendedList<TItem, TInternalList> : ExtendedListDecora
 			return base.ContainsRange(items);
 	}
 
-	public override TItem Read(int index) {
+	public override TItem Read(long index) {
 		using (EnterReadScope())
 			return base.Read(index);
 	}
 
-	public override IEnumerable<TItem> ReadRange(int index, int count) {
+	public override IEnumerable<TItem> ReadRange(long index, long count) {
 		using (EnterReadScope())
 			return base.ReadRange(index, count);
 	}
@@ -92,22 +92,22 @@ public class SynchronizedExtendedList<TItem, TInternalList> : ExtendedListDecora
 			base.AddRange(items);
 	}
 
-	public override void Update(int index, TItem item) {
+	public override void Update(long index, TItem item) {
 		using (EnterWriteScope())
 			base.Update(index, item);
 	}
 
-	public override void UpdateRange(int index, IEnumerable<TItem> items) {
+	public override void UpdateRange(long index, IEnumerable<TItem> items) {
 		using (EnterWriteScope())
 			base.UpdateRange(index, items);
 	}
 
-	public override void Insert(int index, TItem item) {
+	public override void Insert(long index, TItem item) {
 		using (EnterWriteScope())
 			base.Insert(index, item);
 	}
 
-	public override void InsertRange(int index, IEnumerable<TItem> items) {
+	public override void InsertRange(long index, IEnumerable<TItem> items) {
 		using (EnterWriteScope())
 			base.InsertRange(index, items);
 	}
@@ -117,7 +117,7 @@ public class SynchronizedExtendedList<TItem, TInternalList> : ExtendedListDecora
 			return base.Remove(item);
 	}
 
-	public override void RemoveAt(int index) {
+	public override void RemoveAt(long index) {
 		using (EnterWriteScope())
 			base.RemoveAt(index);
 	}
@@ -127,7 +127,7 @@ public class SynchronizedExtendedList<TItem, TInternalList> : ExtendedListDecora
 			return base.RemoveRange(items);
 	}
 
-	public override void RemoveRange(int index, int count) {
+	public override void RemoveRange(long index, long count) {
 		using (EnterWriteScope())
 			base.RemoveRange(index, count);
 	}

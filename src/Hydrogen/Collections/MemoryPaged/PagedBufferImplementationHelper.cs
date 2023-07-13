@@ -18,9 +18,8 @@ namespace Hydrogen;
 /// </summary>
 /// <remarks>PagedBuffer span operations implemented in a not-so-great way. Relying on page operations to do the bulk insertions</remarks>
 internal static class PagedBufferImplementationHelper {
-	public static ReadOnlySpan<byte> ReadRange(IPagedListDelegate<byte> source, int index, int count) {
+	public static ReadOnlySpan<byte> ReadRange(IPagedListDelegate<byte> source, long index, long count) {
 		var builder = new ByteArrayBuilder();
-
 		source.CheckRequiresLoad();
 		source.NotifyAccessing();
 		source.CheckRange(index, count, false);
@@ -69,7 +68,7 @@ internal static class PagedBufferImplementationHelper {
 		source.NotifyAccessed();
 	}
 
-	public static void UpdateRange(IPagedListDelegate<byte> source, int index, ReadOnlySpan<byte> items) {
+	public static void UpdateRange(IPagedListDelegate<byte> source, long index, ReadOnlySpan<byte> items) {
 		source.CheckRange(index, items.Length, false);
 		source.CheckRequiresLoad();
 		source.NotifyAccessing();
@@ -82,13 +81,16 @@ internal static class PagedBufferImplementationHelper {
 			var bufferPage = (IBufferPage)page;
 			var pageStartIx = pageSegment.Item2;
 			var pageCount = pageSegment.Item3;
-			var pageSpan = items.Slice(pageStartIx - index, pageCount);
+			var indexI = Tools.Collection.CheckNotImplemented64bitAddressingIndex(index);
+			var pageStartIxI = Tools.Collection.CheckNotImplemented64bitAddressingIndex(pageStartIx);
+			var pageCountI = Tools.Collection.CheckNotImplemented64bitAddressingLength(pageCount);
+			var pageSpan = items.Slice(pageStartIxI - indexI, pageCountI);
 			source.DecCount(bufferPage.Count);
 			using (source.EnterOpenPageScope(page)) {
 				source.NotifyPageAccessing(page);
 				source.NotifyPageWriting(page);
 				source.UpdateVersion();
-				bufferPage.UpdateSpan(pageStartIx, pageSpan);
+				bufferPage.UpdateSpan(pageStartIxI, pageSpan);
 				source.IncCount(bufferPage.Count);
 				source.NotifyPageWrite(page);
 			}
@@ -97,13 +99,13 @@ internal static class PagedBufferImplementationHelper {
 		source.NotifyAccessed();
 	}
 
-	public static void InsertRange(IPagedListDelegate<byte> source, in int count, in int index, in ReadOnlySpan<byte> items) {
+	public static void InsertRange(IPagedListDelegate<byte> source, in long count, in long index, in ReadOnlySpan<byte> items) {
 		if (index == count)
 			AddRange(source, items);
 		else throw new NotSupportedException("This collection can only be appended from the end");
 	}
 
-	public static Span<byte> AsSpan(IPagedListDelegate<byte> source, int index, int count) {
+	public static Span<byte> AsSpan(IPagedListDelegate<byte> source, long index, long count) {
 		// TODO: this needs to check if the span range covers a contiguous region of a page, and if not throw
 		// returns span for the page (needs to provide a locking scope to ensure the page isn't swapped)
 		var readOnlySpan = ReadRange(source, index, count);
@@ -112,16 +114,16 @@ internal static class PagedBufferImplementationHelper {
 		return MemoryMarshal.CreateSpan(ref MemoryMarshal.GetReference(readOnlySpan), readOnlySpan.Length);
 	}
 
-	public static void ExpandTo(IPagedListDelegate<byte> source, int totalBytes) {
+	public static void ExpandTo(IPagedListDelegate<byte> source, long totalBytes) {
 		throw new NotImplementedException();
 	}
 
-	public static void ExpandBy(IPagedListDelegate<byte> source, int newBytes) {
+	public static void ExpandBy(IPagedListDelegate<byte> source, long newBytes) {
 		throw new NotImplementedException();
 	}
 
 
-	public static ReadOnlySpan<byte> ReadPageSpan(MemoryPageBase<byte> page, MemoryBuffer memoryStore, int index, int count) {
+	public static ReadOnlySpan<byte> ReadPageSpan(MemoryPageBase<byte> page, MemoryBuffer memoryStore, long index, long count) {
 		page.CheckPageState(PageState.Loaded);
 		page.CheckRange(index, count);
 		return memoryStore.ReadSpan(index - page.StartIndex, count);
@@ -137,7 +139,7 @@ internal static class PagedBufferImplementationHelper {
 		}
 
 		var remainingPageBytes = page.MaxSize - page.Size;
-		var writeSpan = items.Slice(0, Math.Min(remainingPageBytes, items.Length));
+		var writeSpan = items.Slice(0, (int)Math.Min(remainingPageBytes, items.Length));
 
 		memoryStore.Write(page.Size, writeSpan);
 
@@ -159,7 +161,7 @@ internal static class PagedBufferImplementationHelper {
 		return totalWriteCount == items.Length;
 	}
 
-	public static void UpdatePageSpan(MemoryPageBase<byte> page, MemoryBuffer memoryStore, in int index, in ReadOnlySpan<byte> items) {
+	public static void UpdatePageSpan(MemoryPageBase<byte> page, MemoryBuffer memoryStore, in long index, in ReadOnlySpan<byte> items) {
 		page.CheckPageState(PageState.Loaded);
 		Guard.ArgumentInRange(index, page.StartIndex, Math.Max(page.StartIndex, page.EndIndex) + 1, nameof(index));
 		Guard.Ensure(index - page.StartIndex + items.Length - 1 <= page.MaxSize, "Update span would not fit on page.");
@@ -169,7 +171,6 @@ internal static class PagedBufferImplementationHelper {
 			return;
 
 		var newBytesCount = Math.Max(index - page.StartIndex + items.Length - 1, page.Size) - page.Size;
-
 		memoryStore.Write(index - page.StartIndex, items);
 
 		page.Count += newBytesCount;

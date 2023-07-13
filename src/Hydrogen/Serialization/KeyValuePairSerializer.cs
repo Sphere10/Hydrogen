@@ -8,6 +8,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 
 namespace Hydrogen;
@@ -22,94 +23,127 @@ public class KeyValuePairSerializer<TKey, TValue> : ItemSerializer<KeyValuePair<
 
 	private readonly IItemSerializer<TKey> _keySerializer;
 	private readonly IItemSerializer<TValue> _valueSerializer;
+	private readonly SizeDescriptorSerializer _sizeDescriptorSerializer;
 
-	public KeyValuePairSerializer(IItemSerializer<TKey> keySerializer = null, IItemSerializer<TValue> valueSerializer = null) {
+	public KeyValuePairSerializer(IItemSerializer<TKey> keySerializer = null, IItemSerializer<TValue> valueSerializer = null, SizeDescriptorStrategy sizeDescriptorStrategy = SizeDescriptorStrategy.UseUInt32) {
 		_keySerializer = keySerializer ?? ItemSerializer<TKey>.Default;
 		_valueSerializer = valueSerializer ?? ItemSerializer<TValue>.Default;
+		_sizeDescriptorSerializer = new SizeDescriptorSerializer(sizeDescriptorStrategy);
 	}
 	public IItemSerializer<TKey> KeySerializer => _keySerializer;
 
 	public IItemSerializer<TValue> ValueSerializer => _valueSerializer;
 
-
-	public override int CalculateSize(KeyValuePair<TKey, TValue> item) {
-		var size = sizeof(uint);
-		if (item.Key != null)
-			size += _keySerializer.CalculateSize(item.Key);
-		if (item.Value != null) {
-			size += sizeof(int);
-			size += _valueSerializer.CalculateSize(item.Value);
-		}
-		return size;
+	public override long CalculateSize(KeyValuePair<TKey, TValue> item) {
+		var keySize = item.Key is not null ? _keySerializer.CalculateSize(item.Key) : 0;
+		var keySizeDescriptorSize = _sizeDescriptorSerializer.CalculateSize(keySize);
+		var valueSize = item.Value is not null ? _valueSerializer.CalculateSize(item.Value) : 0;
+		var valueSizeDescriptorSize = _sizeDescriptorSerializer.CalculateSize(valueSize);
+		return keySizeDescriptorSize + keySize + (item.Value is not null ? valueSizeDescriptorSize + valueSize : 0);
 	}
 
-	public override bool TrySerialize(KeyValuePair<TKey, TValue> item, EndianBinaryWriter writer, out int bytesWritten) {
+	public override bool TrySerialize(KeyValuePair<TKey, TValue> item, EndianBinaryWriter writer, out long bytesWritten) {
 		bytesWritten = 0;
 
-		var keyBytes = Array.Empty<byte>();
-		if (item.Key != null)
-			if (!_keySerializer.TrySerialize(item.Key, out keyBytes, writer.BitConverter.Endianness))
-				return false;
+		// write key size
+		var keySize = item.Key is not null ? _keySerializer.CalculateSize(item.Key) : 0;
+		if (!_sizeDescriptorSerializer.TrySerialize(keySize, writer, out var keySizeDescriptorBytesWritten))
+			return false;
+		bytesWritten += keySizeDescriptorBytesWritten;
 
-		writer.Write(keyBytes.Length);
-		writer.Write(keyBytes);
-		bytesWritten = sizeof(int) + keyBytes.Length;
-		if (item.Value != null) {
-			if (!_valueSerializer.TrySerialize(item.Value, out var valueBytes, writer.BitConverter.Endianness))
+		// write key if applicable
+		if (item.Key is not null) {
+			if (!_keySerializer.TrySerialize(item.Key, writer, out var keyBytesWritten))
 				return false;
+			Debug.Assert(keyBytesWritten == keySize);
+			bytesWritten += keyBytesWritten;
+		}
 
-			writer.Write(valueBytes.Length);
-			writer.Write(valueBytes);
-			bytesWritten += sizeof(int) + valueBytes.Length;
+		if (item.Value is not null) {
+			var valueSize = _valueSerializer.CalculateSize(item.Value);
+			if (!_sizeDescriptorSerializer.TrySerialize(valueSize, writer, out var valueSizeDescriptorBytesWritten))
+				return false;
+			bytesWritten += valueSizeDescriptorBytesWritten;
+
+			if (!_valueSerializer.TrySerialize(item.Value, writer, out var valueBytesWritten))
+				return false;
+			Debug.Assert(valueBytesWritten == valueSize);
+			bytesWritten += valueBytesWritten;
 		}
 
 		return true;
 	}
 
-	public override bool TryDeserialize(int byteSize, EndianBinaryReader reader, out KeyValuePair<TKey, TValue> item) {
+	public override bool TryDeserialize(long byteSize, EndianBinaryReader reader, out KeyValuePair<TKey, TValue> item) {
 		// TODO: add max length checks on reading byte lengths to avoid attacks with malicious kvp's
 		item = default;
-		var keyBytesLength = reader.ReadUInt32();
-		if (!_keySerializer.TryDeserialize(reader.ReadBytes((int)keyBytesLength), out var key, reader.BitConverter.Endianness))
+
+		// Deserialize key
+		if (!_sizeDescriptorSerializer.TryDeserialize(reader, out var keyBytesLength))
 			return false;
+
+		var keyBytesLengthI = Tools.Collection.CheckNotImplemented64bitAddressingLength(keyBytesLength);
+		if (!_keySerializer.TryDeserialize(reader.ReadBytes(keyBytesLengthI), out var key, reader.BitConverter.Endianness))
+			return false;
+
+		// Deserialize value
 		TValue value = default;
-		if (sizeof(uint) + keyBytesLength < byteSize) {
-			var valueBytesLength = reader.ReadUInt32();
-			if (!_valueSerializer.TryDeserialize(reader.ReadBytes((int)valueBytesLength), out value, reader.BitConverter.Endianness))
+		var keySizeDescriptorSize = _sizeDescriptorSerializer.CalculateSize(keyBytesLength);
+		if (keySizeDescriptorSize + keyBytesLength < byteSize) {
+			// there are left-over bytes which must be the non-null value
+
+			if (!_sizeDescriptorSerializer.TryDeserialize(reader, out var valueBytesLength))
+				return false;
+
+			var valueBytesLengthI = Tools.Collection.CheckNotImplemented64bitAddressingLength(valueBytesLength);
+			if (!_valueSerializer.TryDeserialize(reader.ReadBytes(valueBytesLengthI), out value, reader.BitConverter.Endianness))
 				return false;
 		}
 		item = new KeyValuePair<TKey, TValue>(key, value);
 		return true;
 	}
 
-	public bool TryDeserializeKey(int byteSize, EndianBinaryReader reader, out TKey item) {
+	public bool TryDeserializeKey(long byteSize, EndianBinaryReader reader, out TKey item) {
 		// TODO: add max length checks on reading byte lengths to avoid attacks with malicious kvp's
-		var keyBytesLength = reader.ReadUInt32();
-		if (!_keySerializer.TryDeserialize(reader.ReadBytes((int)keyBytesLength), out item, reader.BitConverter.Endianness))
+		item = default;
+		if (!_sizeDescriptorSerializer.TryDeserialize(reader, out var keyBytesLength))
 			return false;
+
+		var keyBytesLengthI = Tools.Collection.CheckNotImplemented64bitAddressingLength(keyBytesLength);
+		if (!_keySerializer.TryDeserialize(reader.ReadBytes(keyBytesLengthI), out item, reader.BitConverter.Endianness))
+			return false;
+
 		return true;
 	}
 
-	public bool TryDeserializeValue(int byteSize, EndianBinaryReader reader, out TValue item) {
+	public bool TryDeserializeValue(long byteSize, EndianBinaryReader reader, out TValue item) {
 		// TODO: add max length checks on reading byte lengths to avoid attacks with malicious kvp's
 		item = default;
-		var keyBytesLength = reader.ReadUInt32();
+
+		// skip key
+		if (!_sizeDescriptorSerializer.TryDeserialize(reader, out var keyBytesLength))
+			return false;
 		reader.BaseStream.Seek(keyBytesLength, SeekOrigin.Current);
-		if (sizeof(uint) + keyBytesLength < byteSize) {
-			var valueBytesLength = reader.ReadUInt32();
-			if (!_valueSerializer.TryDeserialize(reader.ReadBytes((int)valueBytesLength), out item, reader.BitConverter.Endianness))
+
+		// read value
+		var keySizeDescriptorSize = _sizeDescriptorSerializer.CalculateSize(keyBytesLength);
+		if (keySizeDescriptorSize + keyBytesLength < byteSize) {
+			if (!_sizeDescriptorSerializer.TryDeserialize(reader, out var valueBytesLength))
+				return false;
+			var valueBytesLengthI = Tools.Collection.CheckNotImplemented64bitAddressingLength(valueBytesLength);
+			if (!_valueSerializer.TryDeserialize(reader.ReadBytes(valueBytesLengthI), out item, reader.BitConverter.Endianness))
 				return false;
 		}
 		return true;
 	}
 
-	public TKey DeserializeKey(int byteSize, EndianBinaryReader reader) {
+	public TKey DeserializeKey(long byteSize, EndianBinaryReader reader) {
 		if (!TryDeserializeKey(byteSize, reader, out var item))
 			throw new InvalidOperationException($"Unable to deserialize key from KVP of size {byteSize}b");
 		return item;
 	}
 
-	public TValue DeserializeValue(int byteSize, EndianBinaryReader reader) {
+	public TValue DeserializeValue(long byteSize, EndianBinaryReader reader) {
 		if (!TryDeserializeValue(byteSize, reader, out var item))
 			throw new InvalidOperationException($"Unable to deserialize value from KVP of size {byteSize}b");
 		return item;

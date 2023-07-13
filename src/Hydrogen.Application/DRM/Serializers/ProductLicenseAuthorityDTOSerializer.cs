@@ -16,13 +16,13 @@ public class ProductLicenseAuthorityDTOSerializer : ItemSerializer<ProductLicens
 	private readonly StringSerializer _stringSerializer = new(Encoding.ASCII);
 	private readonly ByteArraySerializer _byteArraySerializer = new();
 
-	public override int CalculateSize(ProductLicenseAuthorityDTO item)
+	public override long CalculateSize(ProductLicenseAuthorityDTO item)
 		=>
 			sizeof(int) + _stringSerializer.CalculateSize(item.Name) +
 			1 +
 			sizeof(int) + item.LicensePublicKey.Length;
 
-	public override bool TrySerialize(ProductLicenseAuthorityDTO item, EndianBinaryWriter writer, out int bytesWritten) {
+	public override bool TrySerialize(ProductLicenseAuthorityDTO item, EndianBinaryWriter writer, out long bytesWritten) {
 		bytesWritten = 0;
 
 		writer.Write(_stringSerializer.CalculateSize(item.Name));
@@ -41,7 +41,7 @@ public class ProductLicenseAuthorityDTOSerializer : ItemSerializer<ProductLicens
 		return true;
 	}
 
-	public override bool TryDeserialize(int byteSize, EndianBinaryReader reader, out ProductLicenseAuthorityDTO item) {
+	public override bool TryDeserialize(long byteSize, EndianBinaryReader reader, out ProductLicenseAuthorityDTO item) {
 		throw new NotImplementedException();
 	}
 }

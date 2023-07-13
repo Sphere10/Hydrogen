@@ -19,10 +19,10 @@ public class ItemSizerDecorator<TItem, TObjectSizer> : IItemSizer<TItem> where T
 
 	public virtual bool IsStaticSize => Internal.IsStaticSize;
 
-	public virtual int StaticSize => Internal.StaticSize;
+	public virtual long StaticSize => Internal.StaticSize;
 
-	public virtual int CalculateTotalSize(IEnumerable<TItem> items, bool calculateIndividualItems, out int[] itemSizes)
+	public virtual long CalculateTotalSize(IEnumerable<TItem> items, bool calculateIndividualItems, out long[] itemSizes)
 		=> Internal.CalculateTotalSize(items, calculateIndividualItems, out itemSizes);
 
-	public virtual int CalculateSize(TItem item) => Internal.CalculateSize(item);
+	public virtual long CalculateSize(TItem item) => Internal.CalculateSize(item);
 }

@@ -164,7 +164,7 @@ public class MerkleTreeTests {
 		tree.Leafs.AddRange(elems.Take(leafCount));
 
 		for (var i = 0; i < Samples; i++) {
-			var indices = Enumerable.Range(0, rng.Next(0, leafCount)).Select(x => rng.Next(0, leafCount)).Distinct().ToArray();
+			var indices = Enumerable.Range(0, rng.Next(0, leafCount)).Select(x => (long)rng.Next(0, leafCount)).Distinct().ToArray();
 			var leafs = indices.Select(i => elems[i]).ToArray();
 			var proof = tree.GenerateContainsProof(indices);
 			var verify = MerkleMath.VerifyContainsProof(chf, tree.Root, tree.Size, indices.Zip(leafs, Tuple.Create), proof);
@@ -218,7 +218,7 @@ public class MerkleTreeTests {
 		oldTree.Leafs.AddRange(elems);
 
 		for (var i = 0; i < Samples; i++) {
-			var indices = Enumerable.Range(0, rng.Next(0, leafCount)).Select(x => rng.Next(0, leafCount)).Distinct().ToArray();
+			var indices = Enumerable.Range(0, rng.Next(0, leafCount)).Select(x => (long)rng.Next(0, leafCount)).Distinct().ToArray();
 			var oldLeafs = indices.Select(i => elems[i]).ToArray();
 			var newLeafs = rng.NextByteArrays(Hashers.GetDigestSizeBytes(chf), oldLeafs.Length);
 

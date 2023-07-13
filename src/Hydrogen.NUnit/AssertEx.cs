@@ -29,11 +29,13 @@ public static class AssertEx {
 		expected.AddRangeSequentially(Enumerable.Empty<T>());
 		list.AddRange(Enumerable.Empty<T>());
 		Assert.That(expected, Is.EqualTo(list).Using(itemComparer));
+		Assert.That(expected.Count, Is.EqualTo(list.Count));
 
 		// Test 2: Insert nothing
 		expected.InsertRangeSequentially(0, Enumerable.Empty<T>());
 		list.InsertRange(0, Enumerable.Empty<T>());
 		Assert.That(expected, Is.EqualTo(list).Using(itemComparer));
+		Assert.That(expected.Count, Is.EqualTo(list.Count));
 
 		if (maxCapacity >= 1) {
 			// Test 3: Insert at 0 when empty 
@@ -41,6 +43,7 @@ public static class AssertEx {
 			expected.Insert(0, item);
 			list.Insert(0, item);
 			Assert.That(expected, Is.EqualTo(list).Using(itemComparer));
+			Assert.That(expected.Count, Is.EqualTo(list.Count));
 		}
 
 		if (maxCapacity >= 2) {
@@ -49,12 +52,14 @@ public static class AssertEx {
 			expected.Insert(1, item);
 			list.Insert(1, item);
 			Assert.That(expected, Is.EqualTo(list).Using(itemComparer));
+			Assert.That(expected.Count, Is.EqualTo(list.Count));
 
 			// Test 5: Delete from beginning of list
 			if (!mutateFromEndOnly) {
 				expected.RemoveAt(0);
 				list.RemoveAt(0);
 				Assert.That(expected, Is.EqualTo(list).Using(itemComparer));
+				Assert.That(expected.Count, Is.EqualTo(list.Count));
 			}
 		}
 
@@ -63,6 +68,7 @@ public static class AssertEx {
 			expected.RemoveAt(^1);
 			list.RemoveAt(^1);
 			Assert.That(expected, Is.EqualTo(list).Using(itemComparer));
+			Assert.That(expected.Count, Is.EqualTo(list.Count));
 		}
 
 		// Test 7: AddRange half capacity
@@ -70,6 +76,7 @@ public static class AssertEx {
 		expected.AddRangeSequentially(newItems);
 		list.AddRange(newItems);
 		Assert.That(expected, Is.EqualTo(list).Using(itemComparer));
+		Assert.That(expected.Count, Is.EqualTo(list.Count));
 
 		// Test 8: Enumerator consistency
 		using (var expectedEnumerator = expected.GetEnumerator())
@@ -85,6 +92,7 @@ public static class AssertEx {
 					Assert.That(expectedEnumerator.Current, Is.EqualTo(enumerator.Current).Using(itemComparer));
 			} while (expectedMoveNext);
 		}
+		Assert.That(expected.Count, Is.EqualTo(list.Count));
 
 		// Test 9: Read/Remove/Update nothing from tip
 		// First fill up
@@ -95,16 +103,19 @@ public static class AssertEx {
 		var expectedRead = expected.ReadRangeSequentially(expected.Count, 0);
 		var actualRead = list.ReadRange(list.Count, 0);
 		Assert.That(expectedRead, Is.EqualTo(actualRead).Using(itemComparer));
+		Assert.That(expected.Count, Is.EqualTo(list.Count));
 
 		// Remove nothing from tip
 		expected.RemoveRangeSequentially(expected.Count, 0);
 		list.RemoveRange(list.Count, 0);
 		Assert.That(expected, Is.EqualTo(list).Using(itemComparer));
+		Assert.That(expected.Count, Is.EqualTo(list.Count));
 
 		// Update nothing from tip
 		expected.UpdateRangeSequentially(expected.Count, Enumerable.Empty<T>());
-		list.UpdateRangeSequentially(list.Count, Enumerable.Empty<T>());
+		list.UpdateRange(list.Count, Enumerable.Empty<T>());
 		Assert.That(expected, Is.EqualTo(list).Using(itemComparer));
+		Assert.That(expected.Count, Is.EqualTo(list.Count));
 
 		// Test 10: Read/Remove/Update range overflow throws
 		Assert.That(() => expected.ReadRangeSequentially(expected.Count / 2, maxCapacity + 1).ToArray(), Throws.InstanceOf<ArgumentException>());
@@ -123,7 +134,7 @@ public static class AssertEx {
 		for (var i = 0; i < 3; i++) {
 			Assert.That(expected, Is.EqualTo(list).Using(itemComparer));
 			// add a random amount
-			var remainingCapacity = maxCapacity - list.Count;
+			var remainingCapacity = maxCapacity - expected.Count;
 			var newItemsCount = RNG.Next(0, remainingCapacity + 1);
 			newItems = randomItemGenerator(RNG, newItemsCount);
 			expected.AddRangeSequentially(newItems);
@@ -137,39 +148,43 @@ public static class AssertEx {
 		for (var i = 0; i < iterations; i++) {
 
 			// add a random amount
-			var remainingCapacity = maxCapacity - list.Count;
+			var remainingCapacity = maxCapacity - expected.Count;
 			var newItemsCount = RNG.Next(0, remainingCapacity + 1);
 			newItems = randomItemGenerator(RNG, newItemsCount);
 			list.AddRange(newItems);
 			expected.AddRangeSequentially(newItems);
 			Assert.That(expected, Is.EqualTo(list).Using(itemComparer));
+			Assert.That(expected.Count, Is.EqualTo(list.Count));
 
-			if (list.Count > 0) {
+			if (expected.Count > 0) {
 				// update a random range
-				var range = RNG.NextRange(list.Count);
+				var range = RNG.NextRange(expected.Count);
 				var rangeLen = Math.Max(0, range.End - range.Start + 1);
 				newItems = randomItemGenerator(RNG, rangeLen);
 				list.UpdateRange(range.Start, newItems);
 				expected.UpdateRangeSequentially(range.Start, newItems);
 				Assert.That(expected, Is.EqualTo(list).Using(itemComparer));
+				Assert.That(expected.Count, Is.EqualTo(list.Count));
 
 				// copy/paste a random range
-				range = RNG.NextRange(list.Count);
+				range = RNG.NextRange(expected.Count);
 				rangeLen = Math.Max(0, range.End - range.Start + 1);
 				newItems = list.ReadRange(range.Start, rangeLen).ToArray();
 				var expectedNewItems = expected.ReadRangeSequentially(range.Start, rangeLen).ToArray();
 
-				range = RNG.NextRange(list.Count, rangeLength: newItems.Length);
+				range = RNG.NextRange(expected.Count, rangeLength: newItems.Length);
 				expected.UpdateRangeSequentially(range.Start, expectedNewItems);
 				list.UpdateRange(range.Start, newItems);
 				Assert.That(expected, Is.EqualTo(list).Using(itemComparer));
+				Assert.That(expected.Count, Is.EqualTo(list.Count));
 
 				// remove a random amount
-				range = RNG.NextRange(list.Count, fromEndOnly: mutateFromEndOnly);
+				range = RNG.NextRange(expected.Count, fromEndOnly: mutateFromEndOnly);
 				rangeLen = Math.Max(0, range.End - range.Start + 1);
 				list.RemoveRange(range.Start, rangeLen);
 				expected.RemoveRangeSequentially(range.Start, rangeLen);
 				Assert.That(expected, Is.EqualTo(list).Using(itemComparer));
+				Assert.That(expected.Count, Is.EqualTo(list.Count));
 
 				// PagedList specific: check page index consistency
 				if (list is IPagedList<T> pagedList) {
@@ -182,13 +197,14 @@ public static class AssertEx {
 			}
 
 			// insert a random amount
-			remainingCapacity = maxCapacity - list.Count;
+			remainingCapacity = maxCapacity - expected.Count;
 			newItemsCount = RNG.Next(0, remainingCapacity + 1);
 			newItems = randomItemGenerator(RNG, newItemsCount);
-			var insertIX = mutateFromEndOnly ? list.Count : RNG.Next(0, list.Count + 1); // + 1 allows inserting from end (same as add)
+			var insertIX = mutateFromEndOnly ? expected.Count : RNG.Next(0, expected.Count + 1); // + 1 allows inserting from end (same as add)
 			list.InsertRange(insertIX, newItems);
 			expected.InsertRangeSequentially(insertIX, newItems);
 			Assert.That(expected, Is.EqualTo(list).Using(itemComparer));
+			Assert.That(expected.Count, Is.EqualTo(list.Count));
 
 		}
 	}
@@ -273,7 +289,7 @@ public static class AssertEx {
 		for (var i = 0; i < 3; i++) {
 			Assert.That(expected, Is.EqualTo(buffer).Using(itemComparer));
 			// add a random amount
-			var remainingCapacity = maxCapacity - buffer.Count;
+			var remainingCapacity = checked((int)(maxCapacity - expected.Count));
 			var newItemsCount = RNG.Next(0, remainingCapacity + 1);
 			newItems = RNG.NextBytes(newItemsCount);
 			expected.AddRange(newItems);
@@ -287,7 +303,7 @@ public static class AssertEx {
 		for (var i = 0; i < iterations; i++) {
 
 			// add a random amount
-			var remainingCapacity = maxCapacity - buffer.Count;
+			var remainingCapacity = checked((int)(maxCapacity - expected.Count));
 			var newItemsCount = RNG.Next(0, remainingCapacity + 1);
 			newItems = RNG.NextBytes(newItemsCount);
 			buffer.AddRange(newItems);
@@ -296,7 +312,7 @@ public static class AssertEx {
 
 			if (buffer.Count > 0) {
 				// update a random range
-				var range = RNG.NextRange(buffer.Count);
+				var range = RNG.NextRange(checked((int)expected.Count));
 				var rangeLen = Math.Max(0, range.End - range.Start + 1);
 				newItems = RNG.NextBytes(rangeLen);
 				buffer.UpdateRange(range.Start, newItems);
@@ -304,18 +320,18 @@ public static class AssertEx {
 				Assert.That(expected, Is.EqualTo(buffer).Using(itemComparer));
 
 				// copy/paste a random range
-				range = RNG.NextRange(buffer.Count);
+				range = RNG.NextRange(checked((int)expected.Count));
 				rangeLen = Math.Max(0, range.End - range.Start + 1);
 				newItems = buffer.ReadRange(range.Start, rangeLen).ToArray();
 				var expectedNewItems = expected.ReadRangeSequentially(range.Start, rangeLen).ToArray();
 
-				range = RNG.NextRange(buffer.Count, rangeLength: newItems.Length);
+				range = RNG.NextRange(checked((int)expected.Count), rangeLength: newItems.Length);
 				expected.UpdateRangeSequentially(range.Start, expectedNewItems);
 				buffer.UpdateRange(range.Start, newItems);
 				Assert.That(expected, Is.EqualTo(buffer).Using(itemComparer));
 
 				// remove a random amount
-				range = RNG.NextRange(buffer.Count, fromEndOnly: mutateFromEndOnly);
+				range = RNG.NextRange(checked((int)expected.Count), fromEndOnly: mutateFromEndOnly);
 				rangeLen = Math.Max(0, range.End - range.Start + 1);
 				buffer.RemoveRange(range.Start, rangeLen);
 				expected.RemoveRangeSequentially(range.Start, rangeLen);
@@ -323,10 +339,10 @@ public static class AssertEx {
 			}
 
 			// insert a random amount
-			remainingCapacity = maxCapacity - buffer.Count;
+			remainingCapacity = checked((int)(maxCapacity - expected.Count));
 			newItemsCount = RNG.Next(0, remainingCapacity + 1);
 			newItems = RNG.NextBytes(newItemsCount);
-			var insertIX = mutateFromEndOnly ? buffer.Count : RNG.Next(0, buffer.Count + 1); // + 1 allows inserting from end (same as add)
+			var insertIX = mutateFromEndOnly ? buffer.Count : RNG.Next(0, checked((int)expected.Count) + 1); // + 1 allows inserting from end (same as add)
 			buffer.InsertRange(insertIX, newItems);
 			expected.InsertRange(insertIX, newItems);
 			Assert.That(expected, Is.EqualTo(buffer).Using(itemComparer));
@@ -620,11 +636,11 @@ public static class AssertEx {
 		Assert.IsTrue(inRange, message ?? $"Value '{actual}' was not approx equal to '{expected}' (tolerance '{tolerance}')");
 	}
 
-	public static void HasLoadedPages<TItem>(PagedListBase<TItem> list, params int[] pageNos) {
+	public static void HasLoadedPages<TItem>(PagedListBase<TItem> list, params long[] pageNos) {
 		Assert.IsEmpty(list.Pages.Where(p => p.State == PageState.Loaded).Select(p => p.Number).Except(pageNos), "Unexpected pages were open");
 	}
 
-	public static void HasDirtyPages<TItem, TPage>(PagedListBase<TItem> list, params int[] pageNos) {
+	public static void HasDirtyPages<TItem, TPage>(PagedListBase<TItem> list, params long[] pageNos) {
 		Assert.IsEmpty(list.Pages.Where(p => p.Dirty).Select(p => p.Number).Except(pageNos), "Unexpected pages were dirty");
 	}
 

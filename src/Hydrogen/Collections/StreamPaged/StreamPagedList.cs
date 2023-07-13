@@ -66,16 +66,16 @@ public class StreamPagedList<TItem> : PagedListBase<TItem> {
 			serializer.IsStaticSize ? StreamPagedListType.Static : throw new ArgumentException(nameof(serializer), $"This constructor only supports {nameof(StreamPagedListType.Static)} items"),
 			serializer,
 			stream,
-			serializer.IsStaticSize ? int.MaxValue : throw new ArgumentException(nameof(serializer), $"This constructor only supports {nameof(StreamPagedListType.Static)} items"),
+			serializer.IsStaticSize ? long.MaxValue : throw new ArgumentException(nameof(serializer), $"This constructor only supports {nameof(StreamPagedListType.Static)} items"),
 			endianness
 		) {
 	}
 
-	public StreamPagedList(IItemSerializer<TItem> serializer, Stream stream, int pageSize, Endianness endianness = Endianness.LittleEndian)
+	public StreamPagedList(IItemSerializer<TItem> serializer, Stream stream, long pageSize, Endianness endianness = Endianness.LittleEndian)
 		: this(serializer.IsStaticSize ? StreamPagedListType.Static : StreamPagedListType.Dynamic, serializer, stream, pageSize, endianness) {
 	}
 
-	public StreamPagedList(StreamPagedListType type, IItemSerializer<TItem> serializer, Stream stream, int pageSize, Endianness endianness = Endianness.LittleEndian) {
+	public StreamPagedList(StreamPagedListType type, IItemSerializer<TItem> serializer, Stream stream, long pageSize, Endianness endianness = Endianness.LittleEndian) {
 		PageSize = pageSize;
 		Serializer = serializer;
 		Stream = stream;
@@ -85,7 +85,7 @@ public class StreamPagedList<TItem> : PagedListBase<TItem> {
 		Type = type;
 	}
 
-	public int PageSize { get; }
+	public long PageSize { get; }
 
 	public bool IncludeListHeader { get; set; } = true;
 
@@ -114,7 +114,7 @@ public class StreamPagedList<TItem> : PagedListBase<TItem> {
 		}
 	}
 
-	public int ReadItemRaw(int itemIndex, int byteOffset, int byteLength, out byte[] result) {
+	public int ReadItemRaw(long itemIndex, long byteOffset, long byteLength, out byte[] result) {
 		CheckRequiresLoad();
 		NotifyAccessing();
 		CheckRange(itemIndex, 1);
@@ -133,21 +133,21 @@ public class StreamPagedList<TItem> : PagedListBase<TItem> {
 		return result.Length;
 	}
 
-	public void WriteItemBytes(int index, int byteOffset, ReadOnlySpan<byte> bytes) {
+	public void WriteItemBytes(long index, long byteOffset, ReadOnlySpan<byte> bytes) {
 		CheckRequiresLoad();
 		NotifyAccessing();
-		var newItems = bytes;
+		//var newItems = bytes;
 		var newItemsCount = bytes.Length;
 		CheckRange(index, 1);
 
 		if (newItemsCount == 0) return;
-		var endIndex = index + newItemsCount - 1;
+		//var endIndex = index + newItemsCount - 1;
 		var pageSegment = GetPageSegments(index, 1).Single();
 
 		var page = (StreamPageBase<TItem>)pageSegment.Item1;
 		var pageStartIX = pageSegment.Item2;
-		var pageCount = pageSegment.Item3;
-		var pageItems = newItems.Slice(pageStartIX - index, pageCount);
+		//var pageCount = pageSegment.Item3;
+		//var pageItems = newItems.Slice(pageStartIX - index, pageCount);
 		using (EnterOpenPageScope(page)) {
 			NotifyPageAccessing(page);
 			NotifyPageWriting(page);
@@ -159,7 +159,7 @@ public class StreamPagedList<TItem> : PagedListBase<TItem> {
 		NotifyAccessed();
 	}
 
-	public virtual IEnumerable<IEnumerable<TItem>> ReadRangeByPage(int index, int count) {
+	public virtual IEnumerable<IEnumerable<TItem>> ReadRangeByPage(long index, long count) {
 		CheckRequiresLoad();
 		NotifyAccessing();
 		CheckRange(index, count);
@@ -202,7 +202,7 @@ public class StreamPagedList<TItem> : PagedListBase<TItem> {
 		return pages.ToArray();
 	}
 
-	protected override void OnPageCreating(int pageNumber) {
+	protected override void OnPageCreating(long pageNumber) {
 		base.OnPageCreating(pageNumber);
 		// Create list header if not created
 		if (IncludeListHeader && Stream.Length == 0) {
@@ -216,7 +216,7 @@ public class StreamPagedList<TItem> : PagedListBase<TItem> {
 			Stream.SetLength(page.Number > 0 ? streamPage.StartPosition : 0L);
 	}
 
-	protected override IPage<TItem> NewPageInstance(int pageNumber) =>
+	protected override IPage<TItem> NewPageInstance(long pageNumber) =>
 		Type switch {
 			StreamPagedListType.Dynamic => pageNumber == 0 ? new DynamicStreamPage<TItem>(this) : new DynamicStreamPage<TItem>((DynamicStreamPage<TItem>)InternalPages.Last()),
 			StreamPagedListType.Static => pageNumber == 0

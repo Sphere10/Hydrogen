@@ -10,18 +10,6 @@ using System.Collections.Generic;
 
 namespace Hydrogen;
 
-public class ObservableExtendedList<TItem> : ObservableExtendedList<TItem, IExtendedList<TItem>> {
-
-	public ObservableExtendedList()
-		: this(new ExtendedList<TItem>()) {
-	}
-
-	public ObservableExtendedList(IExtendedList<TItem> internalExtendedList)
-		: base(internalExtendedList) {
-	}
-}
-
-
 public class ObservableExtendedList<TItem, TConcrete> : ObservableExtendedCollection<TItem, TConcrete>, IExtendedList<TItem>
 	where TConcrete : IExtendedList<TItem> {
 
@@ -41,9 +29,9 @@ public class ObservableExtendedList<TItem, TConcrete> : ObservableExtendedCollec
 	}
 
 
-	public int IndexOf(TItem item) => DoOperation(
+	public virtual long IndexOfL(TItem item) => DoOperation(
 		EventTraits.Search,
-		() => InternalCollection.IndexOf(item),
+		() => InternalCollection.IndexOfL(item),
 		() => new SearchingLocationEventArgs<TItem> { CallArgs = new ItemsCallArgs<TItem>(item) },
 		result => new SearchedLocationEventArgs<TItem> { Result = new[] { result } },
 		(preEventArgs) => {
@@ -57,7 +45,7 @@ public class ObservableExtendedList<TItem, TConcrete> : ObservableExtendedCollec
 	);
 
 
-	public IEnumerable<int> IndexOfRange(IEnumerable<TItem> items) => DoOperation(
+	public virtual IEnumerable<long> IndexOfRange(IEnumerable<TItem> items) => DoOperation(
 		EventTraits.Search,
 		() => InternalCollection.IndexOfRange(items),
 		() => new SearchingLocationEventArgs<TItem> { CallArgs = new ItemsCallArgs<TItem>(items) },
@@ -72,8 +60,7 @@ public class ObservableExtendedList<TItem, TConcrete> : ObservableExtendedCollec
 		}
 	);
 
-
-	public TItem Read(int index) => DoOperation(
+	public virtual TItem Read(long index) => DoOperation(
 		EventTraits.Fetch,
 		() => InternalCollection.Read(index),
 		() => new FetchingByRangeEventArgs { CallArgs = new IndexCountCallArgs(index, 1) },
@@ -90,7 +77,7 @@ public class ObservableExtendedList<TItem, TConcrete> : ObservableExtendedCollec
 		}
 	);
 
-	public IEnumerable<TItem> ReadRange(int index, int count) => DoOperation(
+	public virtual IEnumerable<TItem> ReadRange(long index, long count) => DoOperation(
 		EventTraits.Fetch,
 		() => InternalCollection.ReadRange(index, count),
 		() => new FetchingByRangeEventArgs { CallArgs = new IndexCountCallArgs(index, count) },
@@ -107,14 +94,14 @@ public class ObservableExtendedList<TItem, TConcrete> : ObservableExtendedCollec
 		}
 	);
 
-	public virtual void Update(int index, TItem item) => DoOperation(
+	public virtual void Update(long index, TItem item) => DoOperation(
 		EventTraits.Update,
 		() => {
 			InternalCollection.Update(index, item);
 			return 0;
 		},
 		() => new UpdatingByRangeEventArgs<TItem> { CallArgs = new IndexItemsCallArgs<TItem>(index, item) },
-		result => new UpdatedByRangeEventArgs<TItem>(),
+		_ => new UpdatedByRangeEventArgs<TItem>(),
 		(preEventArgs) => {
 			OnUpdating(preEventArgs);
 			Updating?.Invoke(this, preEventArgs);
@@ -125,7 +112,7 @@ public class ObservableExtendedList<TItem, TConcrete> : ObservableExtendedCollec
 		}
 	);
 
-	public virtual void UpdateRange(int index, IEnumerable<TItem> items) => DoOperation(
+	public virtual void UpdateRange(long index, IEnumerable<TItem> items) => DoOperation(
 		EventTraits.Update,
 		() => {
 			InternalCollection.UpdateRange(index, items);
@@ -143,7 +130,7 @@ public class ObservableExtendedList<TItem, TConcrete> : ObservableExtendedCollec
 		}
 	);
 
-	public virtual void Insert(int index, TItem item) => DoOperation(
+	public virtual void Insert(long index, TItem item) => DoOperation(
 		EventTraits.Insert,
 		() => {
 			InternalCollection.Insert(index, item);
@@ -161,7 +148,7 @@ public class ObservableExtendedList<TItem, TConcrete> : ObservableExtendedCollec
 		}
 	);
 
-	public virtual void InsertRange(int index, IEnumerable<TItem> items) => DoOperation(
+	public virtual void InsertRange(long index, IEnumerable<TItem> items) => DoOperation(
 		EventTraits.Insert,
 		() => {
 			InternalCollection.InsertRange(index, items);
@@ -179,7 +166,7 @@ public class ObservableExtendedList<TItem, TConcrete> : ObservableExtendedCollec
 		}
 	);
 
-	public void RemoveAt(int index) => DoOperation(
+	public virtual void RemoveAt(long index) => DoOperation(
 		EventTraits.Remove,
 		() => {
 			InternalCollection.RemoveAt(index);
@@ -197,7 +184,7 @@ public class ObservableExtendedList<TItem, TConcrete> : ObservableExtendedCollec
 		}
 	);
 
-	public virtual void RemoveRange(int index, int count) => DoOperation(
+	public virtual void RemoveRange(long index, long count) => DoOperation(
 		EventTraits.Remove,
 		() => {
 			InternalCollection.RemoveRange(index, count);
@@ -215,10 +202,32 @@ public class ObservableExtendedList<TItem, TConcrete> : ObservableExtendedCollec
 		}
 	);
 
-	public TItem this[int index] {
+
+	// The indexing operators are implemented to call the Read/Update methods to isolate this functionality
+	// into a single place for decoration
+	public TItem this[long index] {
 		get => Read(index);
 		set => Update(index, value);
 	}
+
+
+	#region Legacy int-indexing members
+
+	// Int-addressing members are implemented by calling the long-based equivalents, to prevent decorating and discourage their use
+
+	public int IndexOf(TItem item) => checked((int)IndexOfL(item));
+
+	public void Insert(int index, TItem item) => Insert((long)index, item);
+
+	public void RemoveAt(int index) => RemoveAt((long)index);
+
+	public TItem this[int index] {
+		get => this[(long)index];
+		set => this[(long)index] = value;
+	}
+
+	#endregion
+
 
 	protected virtual void OnSearchingLocation(SearchingLocationEventArgs<TItem> args) {
 	}
@@ -250,4 +259,14 @@ public class ObservableExtendedList<TItem, TConcrete> : ObservableExtendedCollec
 	protected virtual void OnRemovedRange(RemovedRangeEventArgs args) {
 	}
 
+}
+public class ObservableExtendedList<TItem> : ObservableExtendedList<TItem, IExtendedList<TItem>> {
+
+	public ObservableExtendedList()
+		: this(new ExtendedList<TItem>()) {
+	}
+
+	public ObservableExtendedList(IExtendedList<TItem> internalExtendedList)
+		: base(internalExtendedList) {
+	}
 }

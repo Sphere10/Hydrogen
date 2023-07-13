@@ -27,7 +27,7 @@ public interface IStreamFragmentProvider {
 	/// <summary>
 	/// Fragment count
 	/// </summary>
-	int FragmentCount { get; }
+	long FragmentCount { get; }
 
 	/// <summary>
 	/// Retrieves a fragment's content.
@@ -35,7 +35,7 @@ public interface IStreamFragmentProvider {
 	/// <param name="fragmentIndex">fragment index</param>
 	/// <returns></returns>
 	/// <remarks></remarks>
-	ReadOnlySpan<byte> GetFragment(int fragmentIndex);
+	ReadOnlySpan<byte> GetFragment(long fragmentIndex);
 
 	/// <summary>
 	/// Update an existing fragment with the span bytes from the specified position.
@@ -43,7 +43,7 @@ public interface IStreamFragmentProvider {
 	/// <param name="fragmentIndex">fragment index</param>
 	/// <param name="fragmentPosition"> fragment position</param>
 	/// <param name="updateSpan"> span of bytes to update the fragment with</param>
-	void UpdateFragment(int fragmentIndex, int fragmentPosition, ReadOnlySpan<byte> updateSpan);
+	void UpdateFragment(long fragmentIndex, long fragmentPosition, ReadOnlySpan<byte> updateSpan);
 
 	/// <summary>
 	/// Maps a logical stream position to a fragment and index within fragment.
@@ -52,7 +52,7 @@ public interface IStreamFragmentProvider {
 	/// <param name="fragmentIndex">index of fragment that <see cref="position"/> resolves to</param>
 	/// <param name="fragmentPosition">position within fragment at <see cref="fragmentIndex"/> that <see cref="position"/> resolves to</param>
 	/// <returns>Whether <see cref="position"/> could be mapped to a fragment</returns>
-	bool TryMapStreamPosition(long position, out int fragmentIndex, out int fragmentPosition);
+	bool TryMapStreamPosition(long position, out long fragmentIndex, out long fragmentPosition);
 
 	/// <summary>
 	/// When the <see cref="FragmentedStream"/> resizes, the fragment provider needs to allocate (or deallocate) fragments.
@@ -60,6 +60,6 @@ public interface IStreamFragmentProvider {
 	/// <param name="bytes">Requested new space</param>
 	/// <param name="newFragments">New fragments</param>
 	/// <returns>Whether fragment stores can accomodate total allocation</returns>
-	bool TrySetTotalBytes(long length, out int[] newFragments, out int[] deletedFragments);
+	bool TrySetTotalBytes(long length, out long[] newFragments, out long[] deletedFragments);
 
 }

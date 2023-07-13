@@ -57,23 +57,23 @@ public class MerkleListAdapter<TItem, TList> : ExtendedListDecorator<TItem, TLis
 		base.AddRange(itemsArr);
 	}
 
-	public override void Update(int index, TItem item) {
+	public override void Update(long index, TItem item) {
 		InternalMerkleTree.Leafs.Update(index, ItemHasher.Hash(item));
 		base.Update(index, item);
 	}
 
-	public override void UpdateRange(int fromIndex, IEnumerable<TItem> leafs) {
+	public override void UpdateRange(long fromIndex, IEnumerable<TItem> leafs) {
 		var leafsArr = leafs as TItem[] ?? leafs.ToArray();
 		InternalMerkleTree.Leafs.UpdateRange(fromIndex, leafsArr.Select(ItemHasher.Hash));
 		base.UpdateRange(fromIndex, leafsArr);
 	}
 
-	public override void Insert(int index, TItem item) {
+	public override void Insert(long index, TItem item) {
 		InternalMerkleTree.Leafs.Insert(index, ItemHasher.Hash(item));
 		base.Insert(index, item);
 	}
 
-	public override void InsertRange(int index, IEnumerable<TItem> leafs) {
+	public override void InsertRange(long index, IEnumerable<TItem> leafs) {
 		var leafsArr = leafs as TItem[] ?? leafs.ToArray();
 		InternalMerkleTree.Leafs.InsertRange(index, leafsArr.Select(ItemHasher.Hash));
 		base.InsertRange(index, leafsArr);
@@ -87,7 +87,7 @@ public class MerkleListAdapter<TItem, TList> : ExtendedListDecorator<TItem, TLis
 		return true;
 	}
 
-	public override void RemoveAt(int index) {
+	public override void RemoveAt(long index) {
 		InternalMerkleTree.Leafs.RemoveAt(index);
 		base.RemoveAt(index);
 	}
@@ -95,7 +95,7 @@ public class MerkleListAdapter<TItem, TList> : ExtendedListDecorator<TItem, TLis
 	public override IEnumerable<bool> RemoveRange(IEnumerable<TItem> items)
 		=> items.Select(Remove).ToArray();
 
-	public override void RemoveRange(int fromIndex, int count) {
+	public override void RemoveRange(long fromIndex, long count) {
 		InternalMerkleTree.Leafs.RemoveRange(fromIndex, count);
 		base.RemoveRange(fromIndex, count);
 	}

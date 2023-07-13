@@ -23,22 +23,22 @@ namespace Hydrogen;
 /// </remarks>
 /// </summary>
 public sealed class MemoryBuffer : RangedListBase<byte>, IBuffer {
-	public const int DefaultBlockGrowth = 65536;
-	public const int DefaultMaxSize = int.MaxValue;
+	public const long DefaultBlockGrowth = 65536;
+	public const long DefaultMaxSize = long.MaxValue;
 	private byte[] _internalArray;
-	private int _length;
-	private readonly int _initialCapacity;
-	private readonly int _blockGrowthSize;
-	private readonly int _maxCapacity;
+	private long _length;
+	private readonly long _initialCapacity;
+	private readonly long _blockGrowthSize;
+	private readonly long _maxCapacity;
 
 	public MemoryBuffer() : this(0, DefaultBlockGrowth) {
 	}
 
-	public MemoryBuffer(int initialCapacity, int blockGrowthSize)
+	public MemoryBuffer(long initialCapacity, long blockGrowthSize)
 		: this(initialCapacity, blockGrowthSize, DefaultMaxSize) {
 	}
 
-	public MemoryBuffer(int initialCapacity, int blockGrowthSize, int maxCapacity)
+	public MemoryBuffer(long initialCapacity, long blockGrowthSize, long maxCapacity)
 		: this(new byte[initialCapacity], 0, blockGrowthSize, maxCapacity) {
 	}
 
@@ -46,7 +46,7 @@ public sealed class MemoryBuffer : RangedListBase<byte>, IBuffer {
 		: this(fixedArray, fixedArray.Length, 0, fixedArray.Length) {
 	}
 
-	private MemoryBuffer(byte[] internalArray, int currentSize, int capacityGrowthSize, int maxCapacity) {
+	private MemoryBuffer(byte[] internalArray, long currentSize, long capacityGrowthSize, long maxCapacity) {
 		_internalArray = internalArray;
 		_initialCapacity = internalArray.Length;
 		_length = currentSize;
@@ -54,17 +54,17 @@ public sealed class MemoryBuffer : RangedListBase<byte>, IBuffer {
 		_maxCapacity = maxCapacity;
 	}
 
-	public int CapacityGrowthSize => _blockGrowthSize;
+	public long CapacityGrowthSize => _blockGrowthSize;
 
-	public int MaxCapacity => _maxCapacity;
+	public long MaxCapacity => _maxCapacity;
 
-	public override int Count => _length;
+	public override long Count => _length;
 
-	public override IEnumerable<int> IndexOfRange(IEnumerable<byte> items) {
+	public override IEnumerable<long> IndexOfRange(IEnumerable<byte> items) {
 		Guard.ArgumentNotNull(items, nameof(items));
-		var results = new List<int>();
+		var results = new List<long>();
 		var itemsArr = items as byte[] ?? items.ToArray();
-		for (var i = 0; i < _internalArray.Length; i++) {
+		for (var i = 0L; i < _internalArray.Length; i++) {
 			var arrayByte = _internalArray[i];
 			foreach (var compareByte in itemsArr) {
 				if (compareByte == arrayByte) {
@@ -76,8 +76,9 @@ public sealed class MemoryBuffer : RangedListBase<byte>, IBuffer {
 		return results.ToArray();
 	}
 
-	public override IEnumerable<byte> ReadRange(int index, int count) {
+	public override IEnumerable<byte> ReadRange(long index, long count) {
 		CheckRange(index, count);
+		var indexI = Tools.Collection.CheckNotImplemented64bitAddressingIndex(index);
 		// optimize for single read
 		if (count == 1)
 			return new[] { _internalArray[index] };
@@ -86,13 +87,16 @@ public sealed class MemoryBuffer : RangedListBase<byte>, IBuffer {
 		var readCount = endIndex - index + 1;
 		if (readCount <= 0)
 			return Array.Empty<byte>();
+		var readCountI = Tools.Collection.CheckNotImplemented64bitAddressingLength(readCount);
 		var readResult = new byte[readCount];
-		Buffer.BlockCopy(_internalArray, index, readResult, 0, readCount);
+		Buffer.BlockCopy(_internalArray, indexI, readResult, 0, readCountI);
 		return readResult;
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public ReadOnlySpan<byte> ReadSpan(int index, int count) => AsSpan(index, count);
+	public ReadOnlySpan<byte> ReadSpan(long index, long count) {
+		return AsSpan(index, count);
+	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public override void AddRange(IEnumerable<byte> items) {
@@ -105,7 +109,7 @@ public sealed class MemoryBuffer : RangedListBase<byte>, IBuffer {
 		Write(_length, items);
 	}
 
-	public void Write(int index, ReadOnlySpan<byte> items) {
+	public void Write(long index, ReadOnlySpan<byte> items) {
 		var newBytesCount = Math.Max(index + items.Length, _length) - _length;
 
 		GrowSpaceIfRequired(newBytesCount);
@@ -113,42 +117,46 @@ public sealed class MemoryBuffer : RangedListBase<byte>, IBuffer {
 
 		if (items.Length == 1)
 			_internalArray[index] = items[0];
-		else
-			items.CopyTo(_internalArray.AsSpan(index, items.Length));
+		else {
+			var indexI = Tools.Collection.CheckNotImplemented64bitAddressingIndex(index);
+			items.CopyTo(_internalArray.AsSpan(indexI, items.Length));
+		}
 
 		_length += newBytesCount;
 	}
 
-	public void ExpandTo(int totalBytes) {
+	public void ExpandTo(long totalBytes) {
 		Guard.ArgumentInRange(totalBytes, _length, MaxCapacity, nameof(totalBytes), "Allocated space would either not contain existing items or exceed max capacity");
 		var newBytes = totalBytes - _internalArray.Length;
 		if (newBytes > 0)
 			ExpandBy(newBytes);
 	}
 
-	public void ExpandBy(int newBytes) {
-		Guard.ArgumentInRange(newBytes, 0, int.MaxValue, nameof(newBytes));
+	public void ExpandBy(long newBytes) {
+		Guard.ArgumentInRange(newBytes, 0, long.MaxValue, nameof(newBytes));
 		GrowSpaceIfRequired(newBytes);
 		_length += newBytes;
 	}
 
-	public override void UpdateRange(int index, IEnumerable<byte> items) {
+	public override void UpdateRange(long index, IEnumerable<byte> items) {
 		Guard.ArgumentNotNull(items, nameof(items));
 		UpdateRange(index, items as byte[] ?? items.ToArray());
 	}
 
-	public void UpdateRange(int index, ReadOnlySpan<byte> items) {
+	public void UpdateRange(long index, ReadOnlySpan<byte> items) {
 		CheckRange(index, items.Length);
+		var indexI = Tools.Collection.CheckNotImplemented64bitAddressingIndex(index);
 		UpdateVersion();
-		items.CopyTo(_internalArray.AsSpan(index, items.Length));
+		items.CopyTo(_internalArray.AsSpan(indexI, items.Length));
 	}
 
-	public override void InsertRange(int index, IEnumerable<byte> items) {
+	public override void InsertRange(long index, IEnumerable<byte> items) {
 		InsertRange(index, items as byte[] ?? items.ToArray());
 	}
 
-	public void InsertRange(int index, ReadOnlySpan<byte> items) {
+	public void InsertRange(long index, ReadOnlySpan<byte> items) {
 		CheckIndex(index, allowAtEnd: true);
+		var indexI = Tools.Collection.CheckNotImplemented64bitAddressingIndex(index);
 		GrowSpaceIfRequired(items.Length);
 		UpdateVersion();
 		var capacity = _internalArray.Length - _length;
@@ -157,16 +165,18 @@ public sealed class MemoryBuffer : RangedListBase<byte>, IBuffer {
 
 		// Use Array.Copy to move original items, since handles overlap scenarios
 		Array.Copy(_internalArray, index, _internalArray, index + items.Length, _length - index);
-		items.CopyTo(_internalArray.AsSpan(index, items.Length));
+		items.CopyTo(_internalArray.AsSpan(indexI, items.Length));
 		_length += items.Length;
 	}
 
-	public override void RemoveRange(int index, int count) {
+	public override void RemoveRange(long index, long count) {
 		CheckRange(index, count);
+		var indexI = Tools.Collection.CheckNotImplemented64bitAddressingIndex(index);
+		var countI = Tools.Collection.CheckNotImplemented64bitAddressingLength(count);
 		UpdateVersion();
 
 		// Use Array.Copy to move original items, since handles overlap scenarios
-		Array.Copy(_internalArray, index + count, _internalArray, index, (_length - (index + count)));
+		Array.Copy(_internalArray, indexI + countI, _internalArray, index, (_length - (index + count)));
 		_length -= count;
 	}
 
@@ -174,22 +184,29 @@ public sealed class MemoryBuffer : RangedListBase<byte>, IBuffer {
 	public Span<byte> AsSpan() => AsSpan(0);
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public Span<byte> AsSpan(int index) => AsSpan(index, _length - index);
+	public Span<byte> AsSpan(long index) {
+		var indexI = Tools.Collection.CheckNotImplemented64bitAddressingIndex(index);
+		var lengthI = Tools.Collection.CheckNotImplemented64bitAddressingLength(_length - index);
+		return AsSpan(indexI, lengthI);
+	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public Span<byte> AsSpan(int index, int count) {
+	public Span<byte> AsSpan(long index, long count) {
 		if (index == _length && count == 0)
 			return Span<byte>.Empty;
-		//Guard.CheckRange(index, count, false, 0, _length); // removed for efficiency
-		return _internalArray.AsSpan(index, count);
+
+		var indexI = Tools.Collection.CheckNotImplemented64bitAddressingIndex(index);
+		var countI = Tools.Collection.CheckNotImplemented64bitAddressingLength(count);
+		return _internalArray.AsSpan(indexI, countI);
 	}
 
 	public override void Clear() {
-		Array.Resize(ref _internalArray, _initialCapacity);
+		var initialCapacityI = Tools.Collection.CheckNotImplemented64bitAddressingLength(_initialCapacity);
+		Array.Resize(ref _internalArray, initialCapacityI);
 		_length = 0;
 	}
 
-	private void GrowSpaceIfRequired(int newBytes) {
+	private void GrowSpaceIfRequired(long newBytes) {
 		var newCapacity = _length + newBytes;
 
 		// check if don't need to grow capacity

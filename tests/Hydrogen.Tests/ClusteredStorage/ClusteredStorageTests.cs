@@ -490,7 +490,7 @@ public class ClusteredStorageTests : StreamPersistedCollectionTestsBase {
 		streamContainer.AddBytes(rng.NextBytes(clusterSize));
 		streamContainer.AddBytes(rng.NextBytes(clusterSize));
 		streamContainer.AddBytes(rng.NextBytes(clusterSize));
-		Assert.That(rootStream.Length, Is.EqualTo(ClusteredStorageHeader.ByteLength + 4 * (clusterSize + 9)));
+		Assert.That(rootStream.Length, Is.EqualTo(ClusteredStorageHeader.ByteLength + 4 * (clusterSize + sizeof(byte) + sizeof(long) * 2)));
 	}
 
 	[Test]
@@ -542,6 +542,78 @@ public class ClusteredStorageTests : StreamPersistedCollectionTestsBase {
 
 
 	[Test]
+	public void ConsistentFastReadPrev([ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy) {
+		const int clusterSize = 1;
+		using var rootStream = new MemoryStream();
+		var streamContainer = new ClusteredStorage(rootStream, clusterSize, policy: policy);
+		streamContainer.Load();
+		streamContainer.AddBytes(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 });
+		for (var i = 0; i < streamContainer.Clusters.Count; i++) {
+			var expected = streamContainer.Clusters[i].Prev;
+			var actual = streamContainer.FastReadClusterPrev(i);
+			Assert.That(actual, Is.EqualTo(expected));
+		}
+	}
+
+	[Test]
+	public void ConsistentFastReadNext([ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy) {
+		const int clusterSize = 1;
+		using var rootStream = new MemoryStream();
+		var streamContainer = new ClusteredStorage(rootStream, clusterSize, policy: policy);
+		streamContainer.Load();
+		streamContainer.AddBytes(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 });
+		for (var i = 0; i < streamContainer.Clusters.Count; i++) {
+			var expected = streamContainer.Clusters[i].Next;
+			var actual = streamContainer.FastReadClusterNext(i);
+			Assert.That(actual, Is.EqualTo(expected));
+		}
+	}
+
+	[Test]
+	public void ConsistentFastWritePrev([ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy) {
+		const int clusterSize = 1;
+		using var rootStream = new MemoryStream();
+		var streamContainer = new ClusteredStorage(rootStream, clusterSize, policy: policy);
+		streamContainer.Load();
+		streamContainer.AddBytes(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 });
+		for (var i = 0; i < streamContainer.Clusters.Count; i++) {
+			var expected = streamContainer.Clusters[i].Prev + 31337;
+			streamContainer.FastWriteClusterPrev(i, expected);
+			var actual = streamContainer.Clusters[i].Prev;
+			Assert.That(actual, Is.EqualTo(expected));
+		}
+	}
+
+	[Test]
+	public void ConsistentFastWriteNext([ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy) {
+		const int clusterSize = 1;
+		using var rootStream = new MemoryStream();
+		var streamContainer = new ClusteredStorage(rootStream, clusterSize, policy: policy);
+		streamContainer.Load();
+		streamContainer.AddBytes(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 });
+		for (var i = 0; i < streamContainer.Clusters.Count; i++) {
+			var expected = streamContainer.Clusters[i].Next + 31337;
+			streamContainer.FastWriteClusterNext(i, expected);
+			var actual = streamContainer.Clusters[i].Next;
+			Assert.That(actual, Is.EqualTo(expected));
+		}
+	}
+
+	[Test]
+	public void FastWriteClusterPrevDoesntCorrupt([ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy) {
+		// make a 3 streams, corrupt middle back, should clear no problem
+		const int clusterSize = 1;
+		using var rootStream = new MemoryStream();
+		var streamContainer = new ClusteredStorage(rootStream, clusterSize, policy: policy);
+		streamContainer.Load();
+		streamContainer.AddBytes(new byte[] { 1, 1 });
+		Assert.That(streamContainer.Clusters[0].Next, Is.EqualTo(1));
+		Assert.That(streamContainer.Clusters[1].Prev, Is.EqualTo(0));
+		streamContainer.FastWriteClusterNext(0, 1); // corrupt root-stream by making cyclic dependency between clusters 9 an 10
+		Assert.That(streamContainer.Clusters[0].Next, Is.EqualTo(1));
+	}
+
+	[Test]
 	public void CorruptData_NextPointsNonExistentCluster([ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy) {
 		const int clusterSize = 1;
 		using var rootStream = new MemoryStream();
@@ -549,10 +621,10 @@ public class ClusteredStorageTests : StreamPersistedCollectionTestsBase {
 		streamContainer.Load();
 		streamContainer.AddBytes(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 });
 		// corrupt root-stream, make tip cluster 17 have next to 100 creating a circular linked loop through forward traversal
-		var cluster16NextPrevOffset = rootStream.Length - 9 * (streamContainer.ClusterEnvelopeSize + streamContainer.ClusterSize) + sizeof(byte) + sizeof(int);
+		var cluster16NextPrevOffset = rootStream.Length - 9 * (streamContainer.ClusterEnvelopeSize + streamContainer.ClusterSize) + Cluster.TraitsLength + Cluster.PrevLength;
 		var writer = new EndianBinaryWriter(EndianBitConverter.For(Endianness.LittleEndian), rootStream);
 		rootStream.Seek(cluster16NextPrevOffset, SeekOrigin.Begin);
-		writer.Write((int)123456);
+		writer.Write(123456L);
 		Assert.That(() => streamContainer.AppendBytes(0, new byte[] { 11 }), Throws.TypeOf<CorruptDataException>());
 	}
 
@@ -564,10 +636,10 @@ public class ClusteredStorageTests : StreamPersistedCollectionTestsBase {
 		streamContainer.Load();
 		streamContainer.AddBytes(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 });
 		// corrupt root-stream, make tip cluster 18 have next to 10 creating a circular linked loop through forward traversal
-		var nextOffset = rootStream.Length - clusterSize - sizeof(uint);
+		var nextOffset = rootStream.Length - clusterSize - Cluster.NextLength;
 		var writer = new EndianBinaryWriter(EndianBitConverter.For(Endianness.LittleEndian), rootStream);
 		rootStream.Seek(nextOffset, SeekOrigin.Begin);
-		writer.Write((int)10);
+		writer.Write(10L);
 		Assert.That(() => streamContainer.AppendBytes(0, new byte[] { 11 }), Throws.TypeOf<CorruptDataException>());
 	}
 
@@ -579,23 +651,26 @@ public class ClusteredStorageTests : StreamPersistedCollectionTestsBase {
 		var streamContainer = new ClusteredStorage(rootStream, clusterSize, policy: policy);
 		streamContainer.Load();
 		streamContainer.AddBytes(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 });
-		streamContainer.FastWriteClusterNext(9, 123456); // corrupt root-stream by make cluster 9 prev point back to NON-EXISTANT CLUSTER
+		var firstStartCluster = streamContainer.Records[0].StartCluster;
+		streamContainer.FastWriteClusterPrev(firstStartCluster + 1, long.MaxValue);
 		Assert.That(() => streamContainer.Clear(0), Throws.TypeOf<CorruptDataException>());
 	}
 
 	[Test]
-	public void CorruptData_BackwardsCyclicClusterChain_Graceful([ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy) {
+	public void CorruptData_BackwardsCyclicClusterChainAtFirstData_Graceful([ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy) {
 		// make a 3 streams, corrupt middle back, should clear no problem
 		const int clusterSize = 1;
 		using var rootStream = new MemoryStream();
 		var streamContainer = new ClusteredStorage(rootStream, clusterSize, policy: policy);
 		streamContainer.Load();
-		streamContainer.AddBytes(new byte[] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 });
-		streamContainer.AddBytes(new byte[] { 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 });
-		streamContainer.FastWriteClusterPrev(9, 10); // corrupt root-stream by making cyclic dependency between clusters 9 an 10
-		streamContainer.Clear(0);
-		streamContainer.Clear(0);
-
+		streamContainer.AddBytes(new byte[] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 });
+		streamContainer.AddBytes(new byte[] { 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 });
+		var firstStartCluster = streamContainer.Records[0].StartCluster;
+		var secondStartCluster = streamContainer.Records[1].StartCluster;
+		streamContainer.FastWriteClusterPrev(firstStartCluster, firstStartCluster + 1); // make start's previous point to next
+		streamContainer.FastWriteClusterPrev(secondStartCluster, secondStartCluster + 1); // make start's previous point to next
+		Assert.That(() => streamContainer.Clear(0), Throws.Nothing);
+		Assert.That(() => streamContainer.Clear(0), Throws.Nothing);
 		// note: doesn't seem TraverseBack is ever called in fragment provider, so this error is seemingly inconsequential
 	}
 
@@ -706,7 +781,7 @@ public class ClusteredStorageTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void CorruptData_Records_TooLarge_HandlesGracefully([ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy) {
+	public void CorruptData_Records_TooLarge([ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy) {
 		const int clusterSize = 1;
 		using var rootStream = new MemoryStream();
 		var writer = new EndianBinaryWriter(EndianBitConverter.Little, rootStream);
@@ -714,10 +789,8 @@ public class ClusteredStorageTests : StreamPersistedCollectionTestsBase {
 		streamContainer.Load();
 		streamContainer.AddBytes(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 });
 		rootStream.Position = ClusteredStorageHeader.RecordsOffset;
-		writer.Write(streamContainer.Records.Count + 1);
-		// note: Can't detect this scenario in integrity checks without examining data, so will
-		// end up creating a corrupt data later. This is not ideal, but acceptable.
-		ClusteredStorage.FromStream(rootStream);
+		writer.Write((long)(streamContainer.Records.Count + 1));
+		Assert.That(() => ClusteredStorage.FromStream(rootStream), Throws.InstanceOf<CorruptDataException>());
 	}
 
 	[Test]
@@ -801,7 +874,7 @@ public class ClusteredStorageTests : StreamPersistedCollectionTestsBase {
 					newStream = streamContainer.Add();
 					expectedStreams.Add(expectedStream);
 				} else {
-					var insertIX = rng.Next(0, streamContainer.Count - reservedRecords);
+					var insertIX = rng.Next(0, (int)streamContainer.Count - reservedRecords);
 					expectedStreams.Insert(insertIX, expectedStream);
 					newStream = streamContainer.Insert(insertIX + reservedRecords);
 				}

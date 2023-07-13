@@ -20,7 +20,7 @@ public class ByteArrayStreamFragmentProvider : IStreamFragmentProvider {
 	public ByteArrayStreamFragmentProvider() : this(DefaultNewFragmentSize) {
 	}
 
-	public ByteArrayStreamFragmentProvider(int newFragmentSize)
+	public ByteArrayStreamFragmentProvider(long newFragmentSize)
 		: this(() => new byte[newFragmentSize]) {
 	}
 
@@ -35,21 +35,26 @@ public class ByteArrayStreamFragmentProvider : IStreamFragmentProvider {
 		_fragmentGenerator = fragmentGenerator;
 	}
 
-	public int FragmentCount => _fragments.Count;
+	public long FragmentCount => _fragments.Count;
 
 	public long TotalBytes { get; private set; }
 
-	public ReadOnlySpan<byte> GetFragment(int index) {
-		return _fragments[index];
+	public ReadOnlySpan<byte> GetFragment(long index) {
+		var fragmentIndexI = Tools.Collection.CheckNotImplemented64bitAddressingIndex(index);
+		return _fragments[fragmentIndexI];
 	}
 
-	public void UpdateFragment(int fragmentIndex, int fragmentPosition, ReadOnlySpan<byte> updateSpan)
-		=> updateSpan.CopyTo(_fragments[fragmentIndex].AsSpan(fragmentPosition));
+	public void UpdateFragment(long fragmentIndex, long fragmentPosition, ReadOnlySpan<byte> updateSpan) {
+		var fragmentIndexI = Tools.Collection.CheckNotImplemented64bitAddressingIndex(fragmentIndex);
+		var fragmentPositionI = Tools.Collection.CheckNotImplemented64bitAddressingLength(fragmentPosition);
+		updateSpan.CopyTo(_fragments[fragmentIndexI].AsSpan(fragmentPositionI));
+	}
 
-	public bool TryMapStreamPosition(long position, out int fragmentIndex, out int fragmentPosition) {
+	public bool TryMapStreamPosition(long position, out long fragmentIndex, out long fragmentPosition) {
 		var fragmentPositionL = position;
 		for (fragmentIndex = 0; fragmentIndex < _fragments.Count; fragmentIndex++) {
-			var fragmentLength = _fragments[fragmentIndex].Length;
+			var fragmentIndexI = Tools.Collection.CheckNotImplemented64bitAddressingIndex(fragmentIndex);
+			var fragmentLength = _fragments[fragmentIndexI].Length;
 			if (fragmentPositionL < fragmentLength) {
 				fragmentPosition = (int)fragmentPositionL;
 				return true;
@@ -60,9 +65,9 @@ public class ByteArrayStreamFragmentProvider : IStreamFragmentProvider {
 		return false;
 	}
 
-	public bool TrySetTotalBytes(long length, out int[] newFragments, out int[] deletedFragments) {
-		newFragments = Array.Empty<int>();
-		deletedFragments = Array.Empty<int>();
+	public bool TrySetTotalBytes(long length, out long[] newFragments, out long[] deletedFragments) {
+		newFragments = Array.Empty<long>();
+		deletedFragments = Array.Empty<long>();
 
 		if (length == TotalBytes)
 			return true;
@@ -72,8 +77,8 @@ public class ByteArrayStreamFragmentProvider : IStreamFragmentProvider {
 
 		return TryReleaseSpace(TotalBytes - length, out deletedFragments);
 
-		bool TryGrowSpace(long bytes, out int[] newFragments) {
-			var newFragmentIX = new List<int>();
+		bool TryGrowSpace(long bytes, out long[] newFragments) {
+			var newFragmentIX = new List<long>();
 			while (bytes > 0) {
 				var newFragment = _fragmentGenerator();
 				_fragments.Add(newFragment);
@@ -85,8 +90,8 @@ public class ByteArrayStreamFragmentProvider : IStreamFragmentProvider {
 			return true;
 		}
 
-		bool TryReleaseSpace(long bytes, out int[] releasedFragmentIndexes) {
-			var releasedFragments = new List<int>();
+		bool TryReleaseSpace(long bytes, out long[] releasedFragmentIndexes) {
+			var releasedFragments = new List<long>();
 			for (var i = _fragments.Count - 1; i >= 0; i--) {
 				var fragmentLength = _fragments[i].Length;
 				if (bytes >= fragmentLength) {

@@ -30,20 +30,23 @@ namespace Hydrogen;
 /// </remarks>
 internal class DynamicStreamPage<TItem> : StreamPageBase<TItem> {
 	private const int Page0Offset = 256;
-	private const int CountFieldOffset = 0;
-	private const int CountFieldSize = sizeof(uint);
-	private const int MaxItemsFieldOffset = CountFieldOffset + CountFieldSize;
-	private const int MaxItemsFieldSize = sizeof(uint);
-	private const int PreviousPageOffsetFieldOffset = MaxItemsFieldOffset + MaxItemsFieldSize;
+
+	private const int CountFieldSize = sizeof(ulong);
+	private const int MaxItemsFieldSize = sizeof(ulong);
 	private const int PreviousPageOffsetFieldSize = sizeof(ulong);
-	private const int NextPageOffsetFieldOffset = PreviousPageOffsetFieldOffset + PreviousPageOffsetFieldSize;
 	private const int NextPageOffsetFieldSize = sizeof(ulong);
+	private const int ObjectSizeFieldSize = sizeof(ulong);
+
+	private const int CountFieldOffset = 0;
+	private const int MaxItemsFieldOffset = CountFieldOffset + CountFieldSize;
+	private const int PreviousPageOffsetFieldOffset = MaxItemsFieldOffset + MaxItemsFieldSize;
+	private const int NextPageOffsetFieldOffset = PreviousPageOffsetFieldOffset + PreviousPageOffsetFieldSize;
 	private const int Object0SizeFieldOffset = NextPageOffsetFieldOffset + NextPageOffsetFieldSize;
-	private const int ObjectSizeFieldSize = sizeof(uint);
+
 
 	private volatile int _version;
 	private readonly StreamPagedList<TItem> _parent;
-	private int[] _itemSizes;
+	private long[] _itemSizes;
 	private long _previousPagePosition;
 	private long _nextPagePosition;
 	private long[] _offsets;
@@ -64,19 +67,19 @@ internal class DynamicStreamPage<TItem> : StreamPageBase<TItem> {
 		Guard.ArgumentInRange(previousPagePosition, Page0Offset, startPosition, nameof(previousPagePosition));
 		_version = 0;
 		_parent = parent;
-		_itemSizes = new int[0];
+		_itemSizes = Array.Empty<long>();
 		_offsets = null;
 
 		if (startPosition < parent.Stream.Length) {
 			// CASE: Page already exists in storage, load it
 			Stream.Seek(StartPosition, SeekOrigin.Begin);
 			// NOTE: we set the field not the property to avoid rewriting same value just read
-			var itemCount = Reader.ReadUInt32();
-			base.Count = (int)itemCount;
-			var maxItems = (int)Reader.ReadUInt32();
+			var itemCount = Reader.ReadUInt64();
+			base.Count = (long)itemCount;
+			var maxItems = (long)Reader.ReadUInt64();
 			_previousPagePosition = (long)Reader.ReadUInt64();
 			_nextPagePosition = (long)Reader.ReadUInt64();
-			_itemSizes = Tools.Collection.Generate(Reader.ReadUInt32).Cast<int>().Take(maxItems).ToArray();
+			_itemSizes = Tools.Collection.Generate(Reader.ReadUInt64).Cast<long>().TakeL(maxItems).ToArray();
 		} else if (startPosition == parent.Stream.Length) {
 			// CASE: Page begins end of storage as it is newly appended, so write out default header
 			StartPosition = startPosition;
@@ -84,7 +87,7 @@ internal class DynamicStreamPage<TItem> : StreamPageBase<TItem> {
 			MaxItems = _parent.PageSize;
 			PreviousPagePosition = previousPagePosition;
 			NextPagePosition = GetItem0DataOffset(); // Empty, so next page begins straight after this header
-			SetItemSizes(0, Enumerable.Repeat(0, MaxItems).ToArray(), out _);
+			SetItemSizes(0, new long[MaxItems], out _);
 		} else {
 			// ILLEGAL: Page starts beyond known storage boundary, invalid
 			throw new ArgumentOutOfRangeException(nameof(startPosition), startPosition, "Page start position beyond storage boundary");
@@ -92,23 +95,24 @@ internal class DynamicStreamPage<TItem> : StreamPageBase<TItem> {
 
 	}
 
-	public override int Count {
+	public override long Count {
 		get => base.Count;
 		set {
-			Guard.ArgumentInRange(value, 0, int.MaxValue, "Value");
+			Guard.ArgumentInRange(value, 0, long.MaxValue, "Value");
 			base.Count = value;
 			Stream.Seek(StartPosition + CountFieldOffset, SeekOrigin.Begin);
-			Writer.Write((uint)value);
+			Writer.Write((ulong)value);
 		}
 	}
 
-	public int MaxItems {
+	public long MaxItems {
 		get => _itemSizes.Length;
 		set {
-			Guard.ArgumentInRange(value, 1, int.MaxValue, "Value");
-			Array.Resize(ref _itemSizes, value);
+			Guard.ArgumentInRange(value, 1, long.MaxValue, "Value");
+			var valueI = Tools.Collection.CheckNotImplemented64bitAddressingLength(value);
+			Array.Resize(ref _itemSizes, valueI);
 			Stream.Seek(StartPosition + MaxItemsFieldOffset, SeekOrigin.Begin);
-			Writer.Write((uint)value);
+			Writer.Write((ulong)value);
 			if (State == PageState.Loaded)
 				CalculateOffsets(1);
 		}
@@ -118,7 +122,7 @@ internal class DynamicStreamPage<TItem> : StreamPageBase<TItem> {
 		get => _previousPagePosition;
 		set {
 			_previousPagePosition = value;
-			Guard.ArgumentInRange(value, 0, uint.MaxValue, "Value");
+			Guard.ArgumentInRange(value, 0, long.MaxValue, "Value");
 			Stream.Seek(StartPosition + PreviousPageOffsetFieldOffset, SeekOrigin.Begin);
 			Writer.Write((ulong)value);
 		}
@@ -128,7 +132,7 @@ internal class DynamicStreamPage<TItem> : StreamPageBase<TItem> {
 		get => _nextPagePosition;
 		set {
 			_nextPagePosition = value;
-			Guard.ArgumentInRange(value, 0, uint.MaxValue, "Value");
+			Guard.ArgumentInRange(value, 0, long.MaxValue, "Value");
 			Stream.Seek(StartPosition + NextPageOffsetFieldOffset, SeekOrigin.Begin);
 			Writer.Write((ulong)value);
 		}
@@ -162,20 +166,20 @@ internal class DynamicStreamPage<TItem> : StreamPageBase<TItem> {
 		return ReadInternal(StartIndex, Count).GetEnumerator().OnMoveNext(CheckVersion);
 	}
 
-	public override int ReadItemBytes(int itemIndex, int byteOffset, int byteLength, out byte[] result) {
+	public override long ReadItemBytes(long itemIndex, long byteOffset, long byteLength, out byte[] result) {
 		Stream.Seek(_offsets[itemIndex] + byteOffset, SeekOrigin.Begin);
 		result = Reader.ReadBytes(byteLength);
 
 		return result.Length;
 	}
 
-	public override void WriteItemBytes(int itemIndex, int byteOffset, ReadOnlySpan<byte> bytes) {
+	public override void WriteItemBytes(long itemIndex, long byteOffset, ReadOnlySpan<byte> bytes) {
 		Stream.Seek(_offsets[itemIndex] + byteOffset, SeekOrigin.Begin);
 		Writer.Write(bytes);
 		// TODO: check doesn't overwrite other item
 	}
 
-	protected override IEnumerable<TItem> ReadInternal(int index, int count) {
+	protected override IEnumerable<TItem> ReadInternal(long index, long count) {
 		CheckPageState(PageState.Loaded);
 		// Transform list index into page index
 		index -= StartIndex;
@@ -183,7 +187,7 @@ internal class DynamicStreamPage<TItem> : StreamPageBase<TItem> {
 		yield return Serializer.Deserialize(_itemSizes[index], Reader);
 	}
 
-	protected override int AppendInternal(TItem[] items, out int newItemsSize) {
+	protected override long AppendInternal(TItem[] items, out long newItemsSize) {
 		CheckPageState(PageState.Loaded);
 		var itemsToAdd = Math.Min(items.Length, MaxItems - Count);
 
@@ -192,11 +196,11 @@ internal class DynamicStreamPage<TItem> : StreamPageBase<TItem> {
 			newItemsSize = 0;
 			return 0;
 		}
-		UpdateInternal(StartIndex + Count, items.Take(itemsToAdd).ToArray(), out _, out newItemsSize);
+		UpdateInternal(StartIndex + Count, items.TakeL(itemsToAdd).ToArray(), out _, out newItemsSize);
 		return itemsToAdd;
 	}
 
-	protected override void UpdateInternal(int index, TItem[] items, out int oldItemsSize, out int newItemsSize) {
+	protected override void UpdateInternal(long index, TItem[] items, out long oldItemsSize, out long newItemsSize) {
 		CheckPageState(PageState.Loaded);
 		Guard.Ensure(index + items.Length >= Count, "Illegal page region"); // must cover reach or exceed tip boundary, no internal region
 
@@ -219,10 +223,10 @@ internal class DynamicStreamPage<TItem> : StreamPageBase<TItem> {
 		Interlocked.Increment(ref _version);
 	}
 
-	protected override void EraseFromEndInternal(int count, out int oldItemsSize) {
+	protected override void EraseFromEndInternal(long count, out long oldItemsSize) {
 		CheckPageState(PageState.Loaded);
 		var removeFrom = this.Count - count;
-		SetItemSizes(removeFrom, Enumerable.Repeat(0, count).ToArray(), out oldItemsSize);
+		SetItemSizes(removeFrom, new long[count], out oldItemsSize);
 		Stream.SetLength(Stream.Length - oldItemsSize);
 		Interlocked.Increment(ref _version);
 	}
@@ -231,15 +235,15 @@ internal class DynamicStreamPage<TItem> : StreamPageBase<TItem> {
 		return StartPosition + Object0SizeFieldOffset + MaxItems * ObjectSizeFieldSize;
 	}
 
-	private void SetItemSizes(int index, int[] sizes, out int oldItemsSize) {
+	private void SetItemSizes(long index, long[] sizes, out long oldItemsSize) {
 		Guard.ArgumentInRange(index, 0, MaxItems - 1, nameof(index));
 		Guard.ArgumentNotNull(sizes, nameof(sizes));
 		Guard.Ensure(index + sizes.Length <= MaxItems, "Sizes array is incorrectly sized");
 
-		oldItemsSize = _itemSizes.Skip(index).Take(sizes.Length).Sum();
+		oldItemsSize = _itemSizes.SkipL(index).TakeL(sizes.LongLength).Sum();
 		Array.Copy(sizes, 0, _itemSizes, index, sizes.Length);
 		Stream.Seek(StartPosition + Object0SizeFieldOffset + index * ObjectSizeFieldSize, SeekOrigin.Begin);
-		foreach (var size in sizes.Cast<uint>())
+		foreach (var size in sizes.Cast<ulong>())
 			Writer.Write(size);
 
 		// Calculate the updated offsets if opened
@@ -247,7 +251,7 @@ internal class DynamicStreamPage<TItem> : StreamPageBase<TItem> {
 			CalculateOffsets(index + 1);
 	}
 
-	private void CalculateOffsets(int from) {
+	private void CalculateOffsets(long from) {
 		CheckPageState(PageState.Loading, PageState.Loaded);
 		if (from == 0) {
 			_offsets[0] = GetItem0DataOffset();

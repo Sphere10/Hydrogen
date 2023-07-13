@@ -101,10 +101,12 @@ public class FragmentedStream : Stream {
 		while (bytesToRead > 0) {
 			if (!FragmentProvider.TryMapStreamPosition(Position, out var fragmentIndex, out var fragmentPosition))
 				throw new InvalidOperationException($"Unable to resolve fragment for stream position {Position}");
+			var fragmentPositionI = Tools.Collection.CheckNotImplemented64bitAddressingLength(fragmentPosition);
+
 			var fragment = FragmentProvider.GetFragment(fragmentIndex);
 
-			var bytesToReadFromFragment = (int)Math.Min(fragment.Length - fragmentPosition, bytesToRead);
-			var fragmentSlice = fragment.Slice(fragmentPosition, bytesToReadFromFragment);
+			var bytesToReadFromFragment = (int)Math.Min(fragment.Length - fragmentPositionI, bytesToRead);
+			var fragmentSlice = fragment.Slice(fragmentPositionI, bytesToReadFromFragment);
 			var bufferSlice = bufferSpan.Slice(bufferOffset, bytesToReadFromFragment);
 			fragmentSlice.CopyTo(bufferSlice);
 
@@ -141,18 +143,21 @@ public class FragmentedStream : Stream {
 		while (bytesToWrite > 0) {
 			if (!FragmentProvider.TryMapStreamPosition(Position, out var fragmentIndex, out var fragmentPosition))
 				throw new InvalidOperationException($"Unable to resolve fragment for stream position {Position}");
-			var fragment = FragmentProvider.GetFragment(fragmentIndex).ToArray();
+			var fragmentPositionI = Tools.Collection.CheckNotImplemented64bitAddressingLength(fragmentPosition);
 
-			var bytesToWriteToFragment = Math.Min(fragment.Length - fragmentPosition, (int)bytesToWrite);
-			var fragmentSlice = fragment.AsSpan(fragmentPosition, bytesToWriteToFragment);
-			var bufferSlice = bufferSpan.Slice(bufferOffset, bytesToWriteToFragment);
+			var fragment = FragmentProvider.GetFragment(fragmentIndex).ToArray();
+			var bytesToWriteToFragment = Math.Min(fragment.Length - fragmentPosition, bytesToWrite);
+
+			var bytesToWriteFramentI = Tools.Collection.CheckNotImplemented64bitAddressingLength(bytesToWriteToFragment);
+			var fragmentSlice = fragment.AsSpan(fragmentPositionI, bytesToWriteFramentI);
+			var bufferSlice = bufferSpan.Slice(bufferOffset, bytesToWriteFramentI);
 			bufferSlice.CopyTo(fragmentSlice);
 			FragmentProvider.UpdateFragment(fragmentIndex, fragmentPosition, fragmentSlice);
 
-			bufferOffset += bytesToWriteToFragment;
+			bufferOffset += bytesToWriteFramentI;
 			Position += bytesToWriteToFragment;
-			totalWrites += bytesToWriteToFragment;
-			bytesToWrite -= bytesToWriteToFragment;
+			totalWrites += bytesToWriteFramentI;
+			bytesToWrite -= bytesToWriteFramentI;
 		}
 		Debug.Assert(bytesToWrite == 0);
 	}
@@ -167,10 +172,11 @@ public class FragmentedStream : Stream {
 		while (bytesToRead > 0) {
 			if (!FragmentProvider.TryMapStreamPosition(position, out var fragmentIndex, out var fragmentPosition))
 				throw new InvalidOperationException($"Unable to resolve fragment for stream position {position}");
+			var fragmentPositionI = Tools.Collection.CheckNotImplemented64bitAddressingLength(fragmentPosition);
 
 			var fragment = FragmentProvider.GetFragment(fragmentIndex);
 			var bytesToReadFromFragment = (int)Math.Min(fragment.Length - fragmentPosition, bytesToRead);
-			var fragmentBytes = fragment.Slice(fragmentPosition, bytesToReadFromFragment);
+			var fragmentBytes = fragment.Slice(fragmentPositionI, bytesToReadFromFragment);
 			builder.Append(fragmentBytes);
 
 			position += bytesToReadFromFragment;

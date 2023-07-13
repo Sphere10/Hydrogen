@@ -33,8 +33,8 @@ public class StreamMappedList<TItem> : SingularListBase<TItem>, IStreamMappedLis
 
 	private int _version;
 
-	public StreamMappedList(Stream rootStream, int clusterSize, IItemSerializer<TItem> itemSerializer = null, IEqualityComparer<TItem> itemComparer = null, ClusteredStoragePolicy policy = ClusteredStoragePolicy.Default, int recordKeySize = 0,
-	                        int reservedRecords = 0, Endianness endianness = Endianness.LittleEndian)
+	public StreamMappedList(Stream rootStream, int clusterSize, IItemSerializer<TItem> itemSerializer = null, IEqualityComparer<TItem> itemComparer = null, ClusteredStoragePolicy policy = ClusteredStoragePolicy.Default, long recordKeySize = 0,
+	                        long reservedRecords = 0, Endianness endianness = Endianness.LittleEndian)
 		: this(new ClusteredStorage(rootStream, clusterSize, policy, recordKeySize, reservedRecords, endianness), itemSerializer, itemComparer) {
 	}
 
@@ -46,7 +46,7 @@ public class StreamMappedList<TItem> : SingularListBase<TItem>, IStreamMappedLis
 		_version = 0;
 	}
 
-	public override int Count => Storage.Count - Storage.Header.ReservedRecords;
+	public override long Count => Storage.Count - Storage.Header.ReservedRecords;
 
 	public IClusteredStorage Storage { get; }
 
@@ -60,19 +60,19 @@ public class StreamMappedList<TItem> : SingularListBase<TItem>, IStreamMappedLis
 
 	public Task LoadAsync() => Storage.LoadAsync();
 
-	public override TItem Read(int index) {
+	public override TItem Read(long index) {
 		CheckIndex(index, true);
 		return Storage.LoadItem(Storage.Header.ReservedRecords + index, ItemSerializer); // Index checking deferred to Storage
 	}
 
-	public override int IndexOf(TItem item) {
+	public override long IndexOfL(TItem item) {
 		// TODO: if _storage keeps checksums, use that to quickly filter
 		var listRecords = Count;
 		for (var i = 0; i < listRecords; i++) {
 			if (ItemComparer.Equals(item, Read(i)))
 				return i;
 		}
-		return -1;
+		return -1L;
 	}
 
 	public override bool Contains(TItem item) => IndexOf(item) != -1;
@@ -87,23 +87,23 @@ public class StreamMappedList<TItem> : SingularListBase<TItem>, IStreamMappedLis
 		return Storage.EnterSaveItemScope(Storage.Count, item, ItemSerializer, ListOperationType.Add);
 	}
 
-	public override void Insert(int index, TItem item) {
+	public override void Insert(long index, TItem item) {
 		CheckIndex(index, true);
 		using var _ = EnterInsertScope(index, item);
 	}
 
-	public ClusteredStreamScope EnterInsertScope(int index, TItem item) {
+	public ClusteredStreamScope EnterInsertScope(long index, TItem item) {
 		// Index checking deferred to Storage
 		UpdateVersion();
 		return Storage.EnterSaveItemScope(index + Storage.Header.ReservedRecords, item, ItemSerializer, ListOperationType.Insert);
 	}
 
-	public override void Update(int index, TItem item) {
+	public override void Update(long index, TItem item) {
 		CheckIndex(index, false);
 		using var _ = EnterUpdateScope(index, item);
 	}
 
-	public ClusteredStreamScope EnterUpdateScope(int index, TItem item) {
+	public ClusteredStreamScope EnterUpdateScope(long index, TItem item) {
 		// Index checking deferred to Storage
 		UpdateVersion();
 		return Storage.EnterSaveItemScope(index + Storage.Header.ReservedRecords, item, ItemSerializer, ListOperationType.Update);
@@ -120,7 +120,7 @@ public class StreamMappedList<TItem> : SingularListBase<TItem>, IStreamMappedLis
 		return false;
 	}
 
-	public override void RemoveAt(int index) {
+	public override void RemoveAt(long index) {
 		CheckIndex(index, false);
 		Storage.Remove(Storage.Header.ReservedRecords + index);
 	}

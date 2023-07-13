@@ -22,6 +22,6 @@ public class ExtendedListTests {
 		[Values(19, 7, 13)] int growCapacity,
 		[Values(10, 793, 2000)] int maxCapacity) {
 		var list = new ExtendedList<int>(startCapacity, growCapacity, maxCapacity);
-		AssertEx.ListIntegrationTest(list, list.MaxCapacity, (rng, i) => rng.NextInts(i));
+		AssertEx.ListIntegrationTest(list, (int)list.MaxCapacity, (rng, i) => rng.NextInts(i));
 	}
 }

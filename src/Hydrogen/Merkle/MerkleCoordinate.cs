@@ -20,9 +20,9 @@ namespace Hydrogen;
 /// </summary>
 public record MerkleCoordinate : IEquatable<MerkleCoordinate> {
 	public readonly int Level;
-	public readonly int Index;
+	public readonly long Index;
 
-	private MerkleCoordinate(int level, int index) {
+	private MerkleCoordinate(int level, long index) {
 		Level = level;
 		Index = index;
 	}
@@ -34,17 +34,17 @@ public record MerkleCoordinate : IEquatable<MerkleCoordinate> {
 	public static MerkleCoordinate Null =>
 		new MerkleCoordinate(-1, -1);
 
-	public static MerkleCoordinate LeafAt(int index) {
+	public static MerkleCoordinate LeafAt(long index) {
 		return From(0, index);
 	}
 
-	public static MerkleCoordinate From(int level, int index) {
+	public static MerkleCoordinate From(int level, long index) {
 		Guard.ArgumentInRange(level, 0, int.MaxValue, nameof(level));
-		Guard.ArgumentInRange(index, 0, int.MaxValue, nameof(index));
+		Guard.ArgumentInRange(index, 0, long.MaxValue, nameof(index));
 		return new MerkleCoordinate(level, index);
 	}
 
-	public static MerkleCoordinate Root(int leafCount) {
+	public static MerkleCoordinate Root(long leafCount) {
 		return Root(MerkleSize.FromLeafCount(leafCount));
 	}
 
@@ -52,7 +52,7 @@ public record MerkleCoordinate : IEquatable<MerkleCoordinate> {
 		return size.Height == 0 ? Null : From(size.Height - 1, 0);
 	}
 
-	public static IEnumerable<MerkleCoordinate> SubRoots(int leafCount)
+	public static IEnumerable<MerkleCoordinate> SubRoots(long leafCount)
 		=> MerkleMath.CalculateSubRoots(leafCount);
 
 	public static MerkleCoordinate Next(MerkleCoordinate coordinate) {
@@ -69,7 +69,7 @@ public record MerkleCoordinate : IEquatable<MerkleCoordinate> {
 
 	public override int GetHashCode() {
 		unchecked {
-			return Level * 397 ^ Index;
+			return Level * 397 ^ unchecked((int)Index);
 		}
 	}
 

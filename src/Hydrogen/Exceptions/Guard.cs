@@ -27,7 +27,7 @@ public static class Guard {
 		[Conditional("DEBUG")]
 #endif
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static void CheckIndex(int index, int collectionStartIndex, int collectionCount, bool allowAtEnd) {
+	public static void CheckIndex(long index, long collectionStartIndex, long collectionCount, bool allowAtEnd) {
 		if (allowAtEnd && index == collectionCount)
 			return;
 		CheckRange(index, 1, false, collectionStartIndex, collectionCount);
@@ -37,7 +37,7 @@ public static class Guard {
 		[Conditional("DEBUG")]
 #endif
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static void CheckRange(int index, int count, bool rightMostAligned, int collectionStartIndex, int collectionCount) {
+	public static void CheckRange(long index, long count, bool rightMostAligned, long collectionStartIndex, long collectionCount) {
 		ArgumentGTE(index, collectionStartIndex, nameof(index));
 		ArgumentGTE(count, 0, nameof(count));
 		if (rightMostAligned)

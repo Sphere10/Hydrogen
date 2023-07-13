@@ -12,13 +12,15 @@ using System.Collections.Generic;
 namespace Hydrogen;
 
 public interface IReadOnlyExtendedList<T> : IReadOnlyExtendedCollection<T>, IReadOnlyList<T> {
-	int IndexOf(T item);
+	long IndexOfL(T item);
 
-	IEnumerable<int> IndexOfRange(IEnumerable<T> items);
+	IEnumerable<long> IndexOfRange(IEnumerable<T> items);
 
-	T Read(int index);
+	T Read(long index);
 
-	IEnumerable<T> ReadRange(int index, int count);
+	IEnumerable<T> ReadRange(long index, long count);
+
+	T this[long index] { get; }
 }
 
 

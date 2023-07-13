@@ -27,7 +27,7 @@ public abstract class RangedListBase<T> : ExtendedListBase<T> {
 
 	public override bool IsReadOnly => false;
 
-	public sealed override int IndexOf(T item) {
+	public sealed override long IndexOfL(T item) {
 		return IndexOfRange(new[] { item }).Single();
 	}
 
@@ -37,7 +37,7 @@ public abstract class RangedListBase<T> : ExtendedListBase<T> {
 
 	public override IEnumerable<bool> ContainsRange(IEnumerable<T> items) => IndexOfRange(items).Select(ix => ix >= 0);
 
-	public sealed override T Read(int index) {
+	public sealed override T Read(long index) {
 		return ReadRange(index, 1).Single();
 	}
 
@@ -45,15 +45,15 @@ public abstract class RangedListBase<T> : ExtendedListBase<T> {
 		AddRange(new[] { item });
 	}
 
-	public sealed override void Update(int index, T item) {
+	public sealed override void Update(long index, T item) {
 		UpdateRange(index, new[] { item });
 	}
 
-	public sealed override void Insert(int index, T item) {
+	public sealed override void Insert(long index, T item) {
 		InsertRange(index, new[] { item });
 	}
 
-	public sealed override void RemoveAt(int index) {
+	public sealed override void RemoveAt(long index) {
 		RemoveRange(index, 1);
 	}
 

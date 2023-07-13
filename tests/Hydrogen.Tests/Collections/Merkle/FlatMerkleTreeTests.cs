@@ -80,7 +80,7 @@ public class FlatMerkleTreeTests {
 		for (var i = 0; i < 100; i++) {
 			// add a random amount
 			var remainingCapacity = maxLeafs - tree.Leafs.Count;
-			var newItemsCount = RNG.Next(0, remainingCapacity + 1);
+			var newItemsCount = RNG.Next(0, (int)remainingCapacity + 1);
 			byte[][] newItems = RNG.NextByteArrays(Hashers.GetDigestSizeBytes(CHF.SHA2_256), newItemsCount);
 			tree.Leafs.AddRange(newItems);
 			expected.Leafs.AddRange(newItems);
@@ -88,7 +88,7 @@ public class FlatMerkleTreeTests {
 
 			if (tree.Leafs.Count > 0) {
 				// update a random amount
-				var range = RNG.NextRange(tree.Leafs.Count);
+				var range = RNG.NextRange((int)tree.Leafs.Count);
 				newItems = RNG.NextByteArrays(Hashers.GetDigestSizeBytes(CHF.SHA2_256), range.End - range.Start + 1);
 				tree.Leafs.UpdateRange(range.Start, newItems);
 				expected.Leafs.UpdateRangeSequentially(range.Start, newItems);
@@ -96,7 +96,7 @@ public class FlatMerkleTreeTests {
 				AssertEx.AreEqual(expected, tree);
 
 				// remove a random amount
-				range = RNG.NextRange(tree.Leafs.Count);
+				range = RNG.NextRange((int)tree.Leafs.Count);
 				tree.Leafs.RemoveRange(range.Start, range.End - range.Start + 1);
 				expected.Leafs.RemoveRange(range.Start, range.End - range.Start + 1);
 
@@ -105,8 +105,8 @@ public class FlatMerkleTreeTests {
 
 			// insert a random amount
 			remainingCapacity = maxLeafs - tree.Leafs.Count;
-			newItems = RNG.NextByteArrays(Hashers.GetDigestSizeBytes(CHF.SHA2_256), 0, remainingCapacity + 1);
-			var insertIX = RNG.Next(0, tree.Leafs.Count);
+			newItems = RNG.NextByteArrays(Hashers.GetDigestSizeBytes(CHF.SHA2_256), 0, (int)remainingCapacity + 1);
+			var insertIX = RNG.Next(0, (int)tree.Leafs.Count);
 			tree.Leafs.InsertRange(insertIX, newItems);
 			expected.Leafs.InsertRange(insertIX, newItems);
 
@@ -123,28 +123,28 @@ public class FlatMerkleTreeTests {
 		for (var i = 0; i < 100; i++) {
 			// add a random amount
 			var remainingCapacity = maxLeafs - tree.Leafs.Count;
-			var newItemsCount = RNG.Next(0, remainingCapacity + 1);
+			var newItemsCount = RNG.Next(0, (int)remainingCapacity + 1);
 			byte[][] newItems = RNG.NextByteArrays(Hashers.GetDigestSizeBytes(CHF.SHA2_256), newItemsCount);
 			tree.Leafs.AddRange(newItems);
 			expected.Leafs.AddRange(newItems);
 
 			if (tree.Leafs.Count > 0) {
 				// update a random amount
-				var range = RNG.NextRange(tree.Leafs.Count);
+				var range = RNG.NextRange((int)tree.Leafs.Count);
 				newItems = RNG.NextByteArrays(Hashers.GetDigestSizeBytes(CHF.SHA2_256), range.End - range.Start + 1);
 				tree.Leafs.UpdateRange(range.Start, newItems);
 				expected.Leafs.UpdateRangeSequentially(range.Start, newItems);
 
 				// remove a random amount
-				range = RNG.NextRange(tree.Leafs.Count);
+				range = RNG.NextRange((int)tree.Leafs.Count);
 				tree.Leafs.RemoveRange(range.Start, range.End - range.Start + 1);
 				expected.Leafs.RemoveRange(range.Start, range.End - range.Start + 1);
 			}
 
 			// insert a random amount
 			remainingCapacity = maxLeafs - tree.Leafs.Count;
-			newItems = RNG.NextByteArrays(Hashers.GetDigestSizeBytes(CHF.SHA2_256), 0, remainingCapacity + 1);
-			var insertIX = RNG.Next(0, tree.Leafs.Count);
+			newItems = RNG.NextByteArrays(Hashers.GetDigestSizeBytes(CHF.SHA2_256), 0, (int)remainingCapacity + 1);
+			var insertIX = RNG.Next(0, (int)tree.Leafs.Count);
 			tree.Leafs.InsertRange(insertIX, newItems);
 			expected.Leafs.InsertRange(insertIX, newItems);
 		}

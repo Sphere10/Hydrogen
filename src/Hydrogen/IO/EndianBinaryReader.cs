@@ -9,6 +9,7 @@
 
 using System;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace Hydrogen;
@@ -231,12 +232,18 @@ public class EndianBinaryReader : IDisposable {
 		return _bitConverter.ToUInt64(_buffer, 0);
 	}
 
+
+	/// <summary>
+	/// Reads a VarInt
+	/// </summary>
+	public VarInt ReadVarInt()
+		=> VarInt.Read(_stream);
+
 	/// <summary>
 	/// Reads a Compact-encoded integer
 	/// </summary>
-	/// <returns>The 64-bit unsigned integer read</returns>
-	public CVarInt ReadCVarInt(int valueSize)
-		=> CVarInt.Read(valueSize, _stream);
+	public CVarInt ReadCVarInt()
+		=> CVarInt.Read(_stream);
 
 
 	/// <summary>
@@ -441,6 +448,20 @@ public class EndianBinaryReader : IDisposable {
 		return read;
 	}
 
+
+	/// <summary>
+	/// Fills the span with bytes
+	/// </summary>
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public int Read(Span<byte> buffer) {
+		CheckDisposed();
+		if (buffer == null) {
+			throw new ArgumentNullException(nameof(buffer));
+		}
+		return _stream.Read(buffer);
+	}
+
+
 	/// <summary>
 	/// Reads the specified number of bytes, returning them in a new byte array.
 	/// If not enough bytes are available before the end of the stream, this
@@ -448,15 +469,16 @@ public class EndianBinaryReader : IDisposable {
 	/// </summary>
 	/// <param name="count">The number of bytes to read</param>
 	/// <returns>The bytes read</returns>
-	public byte[] ReadBytes(int count) {
+	public byte[] ReadBytes(long count) {
 		CheckDisposed();
 		if (count < 0) {
 			throw new ArgumentOutOfRangeException(nameof(count));
 		}
+		var countI = Tools.Collection.CheckNotImplemented64bitAddressingLength(count);
 		byte[] ret = new byte[count];
-		int index = 0;
+		var index = 0;
 		while (index < count) {
-			int read = _stream.Read(ret, index, count - index);
+			int read = _stream.Read(ret, index, countI - index);
 			// Stream has finished half way through. That's fine, return what we've got.
 			if (read == 0) {
 				byte[] copy = new byte[index];

@@ -12,7 +12,7 @@ namespace Hydrogen;
 
 public abstract class FilePageBase<TItem> : MemoryPageBase<TItem>, IFilePage<TItem> {
 
-	protected FilePageBase(Stream stream, IItemSizer<TItem> sizer, int pageNumber, int pageSize, IExtendedList<TItem> memoryStore)
+	protected FilePageBase(Stream stream, IItemSizer<TItem> sizer, long pageNumber, long pageSize, IExtendedList<TItem> memoryStore)
 		: base(pageSize, sizer, memoryStore) {
 		Stream = new BoundedStream(stream, (long)pageNumber * pageSize, (long)(pageNumber + 1) * pageSize - 1);
 	}
@@ -27,19 +27,19 @@ public abstract class FilePageBase<TItem> : MemoryPageBase<TItem>, IFilePage<TIt
 		// Stream is managed by client		
 	}
 
-	protected override int AppendInternal(TItem[] items, out int newItemsSpace) {
+	protected override long AppendInternal(TItem[] items, out long newItemsSpace) {
 		var appendCount = base.AppendInternal(items, out newItemsSpace);
 		EndPosition += newItemsSpace;
 		return appendCount;
 	}
 
-	protected override void UpdateInternal(int index, TItem[] items, out int oldItemsSpace, out int newItemsSpace) {
+	protected override void UpdateInternal(long index, TItem[] items, out long oldItemsSpace, out long newItemsSpace) {
 		base.UpdateInternal(index, items, out oldItemsSpace, out newItemsSpace);
 		var spaceDiff = newItemsSpace - oldItemsSpace;
 		EndPosition += spaceDiff;
 	}
 
-	protected override void EraseFromEndInternal(int count, out int oldItemsSpace) {
+	protected override void EraseFromEndInternal(long count, out long oldItemsSpace) {
 		base.EraseFromEndInternal(count, out oldItemsSpace);
 		EndPosition -= oldItemsSpace;
 	}

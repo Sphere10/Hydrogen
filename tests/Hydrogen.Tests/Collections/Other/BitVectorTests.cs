@@ -94,8 +94,8 @@ public class BitVectorTests {
 
 		Assert.AreEqual(expected, list);
 
-		int randomIndex = random.Next(0, list.Count - 1);
-		var randomUpdate = random.NextBools(list.Count - randomIndex);
+		int randomIndex = random.Next(0, (int)list.Count - 1);
+		var randomUpdate = random.NextBools((int)list.Count - randomIndex);
 
 		list.UpdateRange(randomIndex, randomUpdate);
 		expected.UpdateRange(randomIndex, randomUpdate);

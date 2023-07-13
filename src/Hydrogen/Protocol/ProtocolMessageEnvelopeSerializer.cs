@@ -19,10 +19,10 @@ public class ProtocolMessageEnvelopeSerializer : ItemSerializer<ProtocolMessageE
 		_payloadSerializer = payloadSerializer;
 	}
 
-	public override int CalculateSize(ProtocolMessageEnvelope item)
+	public override long CalculateSize(ProtocolMessageEnvelope item)
 		=> MessageEnvelopeMarker.Length + _payloadSerializer.CalculateSize(item.Message);
 
-	public override bool TrySerialize(ProtocolMessageEnvelope item, EndianBinaryWriter writer, out int bytesWritten) {
+	public override bool TrySerialize(ProtocolMessageEnvelope item, EndianBinaryWriter writer, out long bytesWritten) {
 		writer.Write(MessageEnvelopeMarker);
 		writer.Write((byte)item.DispatchType);
 		writer.Write(item.RequestID);
@@ -34,7 +34,7 @@ public class ProtocolMessageEnvelopeSerializer : ItemSerializer<ProtocolMessageE
 		return true;
 	}
 
-	public override bool TryDeserialize(int byteSize, EndianBinaryReader reader, out ProtocolMessageEnvelope envelope) {
+	public override bool TryDeserialize(long byteSize, EndianBinaryReader reader, out ProtocolMessageEnvelope envelope) {
 		//using var readStream = new MemoryStream(bytes.ToArray()); // TODO: uses slow ToArray
 		envelope = null;
 

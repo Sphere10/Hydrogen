@@ -161,7 +161,7 @@ public struct ShortGuid {
 	/// <param name="guid">The Guid to encode</param>
 	/// <returns></returns>
 	public static string Encode(Guid guid) {
-		return Base62Converter.ToBase62String(guid.ToByteArray());
+		return Base62Encoding.ToBase62String(guid.ToByteArray());
 	}
 
 	#endregion
@@ -174,7 +174,7 @@ public struct ShortGuid {
 	/// <param name="value">The base64 encoded string of a Guid</param>
 	/// <returns>A new Guid</returns>
 	public static Guid Decode(string value) {
-		return new Guid(Base62Converter.FromBase62String(value));
+		return new Guid(Base62Encoding.FromBase62String(value));
 	}
 
 	#endregion

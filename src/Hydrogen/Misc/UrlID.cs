@@ -20,7 +20,7 @@ public class UrlID {
 			case Format.HexBE:
 				return EndianBitConverter.Big.GetBytes(permutedID).ToHexString(true);
 			case Format.Base62:
-				return Base62Converter.ToBase62String(permutedID);
+				return Base62Encoding.ToBase62String(permutedID);
 			default:
 				throw new ArgumentOutOfRangeException(nameof(format), format, null);
 		}

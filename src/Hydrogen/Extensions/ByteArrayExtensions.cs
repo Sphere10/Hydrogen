@@ -81,11 +81,11 @@ public static class ByteArrayExtensions {
 	}
 
 	public static string ToBase62String(this byte[] buffer) {
-		return Base62Converter.ToBase62String(buffer);
+		return Base62Encoding.ToBase62String(buffer);
 	}
 
 	public static string ToBase32String(this byte[] buffer) {
-		return Base32Converter.ToBase32String(buffer);
+		return Base32Encoding.Encode(buffer);
 	}
 
 	public static BinaryReader AsReader(this byte[] buffer, EndianBitConverter bitConverter) {

@@ -200,19 +200,19 @@ public static class Text {
 	}
 
 	public static string ToBase62(byte[] bytes) {
-		return Base62Converter.ToBase62String(bytes);
+		return Base62Encoding.ToBase62String(bytes);
 	}
 
 	public static byte[] FromBase62(string text) {
-		return Base62Converter.FromBase62String(text);
+		return Base62Encoding.FromBase62String(text);
 	}
 
 	public static string ToBase32(string text) {
-		return Base32Converter.ToBase32String(text);
+		return Base32Encoding.Encode(text);
 	}
 
 	public static byte[] FromBase32(string text) {
-		return Base32Converter.FromBase32String(text);
+		return Base32Encoding.Decode(text);
 	}
 
 	public static string AsciiToString(byte[] bytes) {

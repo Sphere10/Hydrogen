@@ -11,21 +11,21 @@ using System.Text;
 
 namespace Hydrogen;
 
-public sealed class Base32Converter {
+public sealed class Base32Encoding {
 
 	// the valid chars for the encoding
 	private static string ValidChars = "QAZ2WSX3" + "EDC4RFV5" + "TGB6YHN7" + "UJM8K9LP";
 
 
-	public static string ToBase32String(string asciiString) {
-		return ToBase32String(asciiString.ToAsciiByteArray());
+	public static string Encode(string asciiString) {
+		return Encode(asciiString.ToAsciiByteArray());
 	}
 
 
 	/// <summary>
 	/// Converts an array of bytes to a Base32-k string.
 	/// </summary>
-	public static string ToBase32String(byte[] bytes) {
+	public static string Encode(byte[] bytes) {
 		StringBuilder sb = new StringBuilder(); // holds the base32 chars
 		byte index;
 		int hi = 5;
@@ -61,7 +61,10 @@ public sealed class Base32Converter {
 	/// <exception cref="System.ArgumentException">
 	/// Input string <paramref name="s">s</paramref> contains invalid Base32-k characters.
 	/// </exception>
-	public static byte[] FromBase32String(string str) {
+	public static byte[] Decode(string str) {
+		if (str == string.Empty)
+			return Array.Empty<byte>();
+
 		int numBytes = str.Length * 5 / 8;
 		byte[] bytes = new Byte[numBytes];
 

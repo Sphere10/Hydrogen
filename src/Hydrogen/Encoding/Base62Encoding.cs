@@ -11,7 +11,7 @@ using System.Text;
 
 namespace Hydrogen;
 
-public static class Base62Converter {
+public static class Base62Encoding {
 	private static string Base62CodingSpace = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 
 	/// <summary>

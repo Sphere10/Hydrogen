@@ -14,5 +14,6 @@ namespace Hydrogen.Application;
 public enum HydrogenFrameworkOptions {
 	EnableDrm = 1 << 0,
 	BackgroundLicenseVerify = 1 << 1,
+	EnsureSystemDataDirGloballyAccessible = 1 << 2,
 	Default = 0,
 }

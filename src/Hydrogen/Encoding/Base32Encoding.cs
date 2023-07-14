@@ -11,11 +11,10 @@ using System.Text;
 
 namespace Hydrogen;
 
-public sealed class Base32Encoding {
+public static class Base32Encoding {
 
 	// the valid chars for the encoding
 	private static readonly string ValidChars = "QAZ2WSX3" + "EDC4RFV5" + "TGB6YHN7" + "UJM8K9LP";
-
 
 	public static string Encode(string asciiString) {
 		return Encode(asciiString.ToAsciiByteArray());

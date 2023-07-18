@@ -14,15 +14,15 @@ namespace Hydrogen;
 
 public class SynchronizedDictionary<TKey, TValue> : DictionaryDecorator<TKey, TValue>, ISynchronizedObject {
 
-	private readonly SynchronizedObject _lock;
+	private readonly ISynchronizedObject _lock;
 
 	public SynchronizedDictionary()
 		: this(new Dictionary<TKey, TValue>()) {
 	}
 
-	public SynchronizedDictionary(IDictionary<TKey, TValue> internalDictionary)
+	public SynchronizedDictionary(IDictionary<TKey, TValue> internalDictionary, ISynchronizedObject @lock = null)
 		: base(internalDictionary) {
-		_lock = new SynchronizedObject();
+		_lock = @lock ?? new SynchronizedObject();
 	}
 
 	public override ICollection<TKey> Keys {

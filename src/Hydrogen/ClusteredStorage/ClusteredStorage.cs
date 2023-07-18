@@ -58,6 +58,7 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 	public event EventHandlerEx<long, ClusteredStreamRecord> RecordUpdated;
 	public event EventHandlerEx<long> RecordRemoved;
 
+	private const int DefaultClusterSize = 256; // 256b
 	private const long DefaultRecordCacheSize = 1 << 20; // 1mb
 
 	private StreamPagedList<Cluster> _clusters;
@@ -78,7 +79,7 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 	private int _clusterEnvelopeSize;
 	private long _allRecordsSize;
 
-	public ClusteredStorage(Stream rootStream, int clusterSize, ClusteredStoragePolicy policy = ClusteredStoragePolicy.Default, long recordKeySize = 0, long reservedRecords = 0, Endianness endianness = Endianness.LittleEndian) {
+	public ClusteredStorage(Stream rootStream, int clusterSize = DefaultClusterSize, ClusteredStoragePolicy policy = ClusteredStoragePolicy.Default, long recordKeySize = 0, long reservedRecords = 0, Endianness endianness = Endianness.LittleEndian) {
 		Guard.ArgumentNotNull(rootStream, nameof(rootStream));
 		Guard.ArgumentGTE(clusterSize, 1, nameof(clusterSize));
 		Guard.ArgumentInRange(recordKeySize, 0, ushort.MaxValue, nameof(recordKeySize));
@@ -283,7 +284,7 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 	#region Streams
 
 	public ClusteredStreamScope EnterSaveItemScope<TItem>(long index, TItem item, IItemSerializer<TItem> serializer, ListOperationType operationType) {
-		CheckInitialized();
+		// initialized and reentrancy checks done by one of below called methods
 		var scope = operationType switch {
 			ListOperationType.Add => Add(),
 			ListOperationType.Update => Open(index),
@@ -326,7 +327,7 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 	}
 
 	public ClusteredStreamScope EnterLoadItemScope<TItem>(long index, IItemSerializer<TItem> serializer, out TItem item) {
-		CheckInitialized();
+		// initialized and reentrancy checks done by Open
 		var scope = Open(index);
 		if (!_openScope.Record.Traits.HasFlag(ClusteredStreamTraits.IsNull)) {
 			var reader = new EndianBinaryReader(EndianBitConverter.For(Endianness), _openScope.Stream);
@@ -342,6 +343,7 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 
 	public ClusteredStreamScope Add() {
 		CheckInitialized();
+		CheckReentrantLock();
 		lock (_lock) {
 			CheckNotOpened();
 			AddRecord(out var index, NewRecord()); // the first record add will allocate cluster 0 for the records stream
@@ -351,6 +353,12 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 
 	public ClusteredStreamScope Open(long index) {
 		CheckInitialized();
+		CheckReentrantLock();
+		return OpenInternal(index);
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	protected ClusteredStreamScope OpenInternal(long index) {
 		lock (_lock) {
 			CheckRecordIndex(index);
 			CheckNotOpened();
@@ -358,8 +366,10 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 		}
 	}
 
+
 	public void Remove(long index) {
 		CheckInitialized();
+		CheckReentrantLock();
 		lock (_lock) {
 			var countBeforeRemove = Header.RecordsCount;
 			CheckRecordIndex(index);
@@ -376,6 +386,7 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 
 	public ClusteredStreamScope Insert(long index) {
 		CheckInitialized();
+		CheckReentrantLock();
 		lock (_lock) {
 			CheckRecordIndex(index, allowEnd: true);
 			CheckNotOpened();
@@ -386,6 +397,7 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 
 	public void Swap(long first, long second) {
 		CheckInitialized();
+		CheckReentrantLock();
 		using (EnterLockScope()) {
 			CheckRecordIndex(first);
 			CheckRecordIndex(second);
@@ -416,9 +428,10 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 
 	public void Clear(long index) {
 		CheckInitialized();
+		CheckReentrantLock();
 		lock (_lock) {
 			CheckRecordIndex(index);
-			using (var scope = Open(index)) {
+			using (var scope = OpenInternal(index)) {
 				scope.Stream.SetLength(0);
 			}
 		}
@@ -426,6 +439,7 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 
 	public void Clear() {
 		CheckInitialized();
+		CheckReentrantLock();
 		using (EnterLockScope()) {
 			CheckNotOpened();
 			_records.Clear();
@@ -441,6 +455,7 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 
 	public void Optimize() {
 		CheckInitialized();
+		CheckReentrantLock();
 		// TODO: 
 		//	- Organize clusters in sequential order
 		//  - Do not try to organize nested ClusteredStreamStorage (dont know how to activate them)
@@ -449,11 +464,13 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 
 	public override string ToString() {
 		CheckInitialized();
+		// Reentrancy check not required since Header is statically mapped to stream
 		return Header.ToString();
 	}
 
 	internal string ToStringFullContents() {
 		CheckInitialized();
+		CheckReentrantLock();
 		using (EnterLockScope()) {
 			var stringBuilder = new FastStringBuilder();
 			stringBuilder.AppendLine(this.ToString());
@@ -822,6 +839,11 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 	private void CheckInitialized() {
 		if (!_initialized)
 			throw new InvalidOperationException("Clustered Storage not initialized");
+	}
+
+	private void CheckReentrantLock() {
+		if (Monitor.IsEntered(_lock))
+			throw new InvalidOperationException("A stream has already been opened by the current thread and must be closed");
 	}
 
 	private void CheckHeaderDataIntegrity(long rootStreamLength, ClusteredStorageHeader header, IItemSerializer<Cluster> clusterSerializer, IItemSerializer<ClusteredStreamRecord> recordSerializer) {

@@ -480,6 +480,144 @@ public class ClusteredStorageTests : StreamPersistedCollectionTestsBase {
 		Assert.That(streamContainer.Header.TotalClusters, Is.EqualTo(0));
 	}
 
+
+	[Test]
+	public void ReentrancyCheck_OpenOpen() {
+		var rng = new Random(31337);
+		using var rootStream = new MemoryStream();
+		var streamContainer = new ClusteredStorage(rootStream);
+		streamContainer.Load();
+		streamContainer.AddBytes(rng.NextBytes(1000));
+		using var _ = streamContainer.Open(0);
+		Assert.That(() => streamContainer.Open(0), Throws.InvalidOperationException);
+	}
+
+	[Test]
+	public void ReentrancyCheck_OpenAdd() {
+		var rng = new Random(31337);
+		using var rootStream = new MemoryStream();
+		var streamContainer = new ClusteredStorage(rootStream);
+		streamContainer.Load();
+		streamContainer.AddBytes(rng.NextBytes(1000));
+		using var _ = streamContainer.Open(0);
+		Assert.That(() => streamContainer.AddBytes(rng.NextBytes(1000)), Throws.InvalidOperationException);
+	}
+
+	[Test]
+	public void ReentrancyCheck_OpenInsert() {
+		var rng = new Random(31337);
+		using var rootStream = new MemoryStream();
+		var streamContainer = new ClusteredStorage(rootStream);
+		streamContainer.Load();
+		streamContainer.AddBytes(rng.NextBytes(1000));
+		using var _ = streamContainer.Open(0);
+		Assert.That(() => streamContainer.InsertBytes(0, rng.NextBytes(1000)), Throws.InvalidOperationException);
+	}
+
+	[Test]
+	public void ReentrancyCheck_OpenClear() {
+		var rng = new Random(31337);
+		using var rootStream = new MemoryStream();
+		var streamContainer = new ClusteredStorage(rootStream);
+		streamContainer.Load();
+		streamContainer.AddBytes(rng.NextBytes(1000));
+		using var _ = streamContainer.Open(0);
+		Assert.That(() => streamContainer.Clear(), Throws.InvalidOperationException);
+	}
+
+
+
+	
+	[Test]
+	public void ReentrancyCheck_AddOpen() {
+		var rng = new Random(31337);
+		using var rootStream = new MemoryStream();
+		var streamContainer = new ClusteredStorage(rootStream);
+		streamContainer.Load();
+		streamContainer.AddBytes(rng.NextBytes(1000));
+		using var _ = streamContainer.Add();
+		Assert.That(() => streamContainer.Open(0), Throws.InvalidOperationException);
+	}
+
+	[Test]
+	public void ReentrancyCheck_AddAdd() {
+		var rng = new Random(31337);
+		using var rootStream = new MemoryStream();
+		var streamContainer = new ClusteredStorage(rootStream);
+		streamContainer.Load();
+		streamContainer.AddBytes(rng.NextBytes(1000));
+		using var _ = streamContainer.Add();
+		Assert.That(() => streamContainer.AddBytes(rng.NextBytes(1000)), Throws.InvalidOperationException);
+	}
+
+	[Test]
+	public void ReentrancyCheck_AddInsert() {
+		var rng = new Random(31337);
+		using var rootStream = new MemoryStream();
+		var streamContainer = new ClusteredStorage(rootStream);
+		streamContainer.Load();
+		streamContainer.AddBytes(rng.NextBytes(1000));
+		using var _ = streamContainer.Add();
+		Assert.That(() => streamContainer.InsertBytes(0, rng.NextBytes(1000)), Throws.InvalidOperationException);
+	}
+
+	[Test]
+	public void ReentrancyCheck_AddClear() {
+		var rng = new Random(31337);
+		using var rootStream = new MemoryStream();
+		var streamContainer = new ClusteredStorage(rootStream);
+		streamContainer.Load();
+		streamContainer.AddBytes(rng.NextBytes(1000));
+		using var _ = streamContainer.Add();
+		Assert.That(() => streamContainer.Clear(), Throws.InvalidOperationException);
+	}
+
+
+	[Test]
+	public void ReentrancyCheck_InsertOpen() {
+		var rng = new Random(31337);
+		using var rootStream = new MemoryStream();
+		var streamContainer = new ClusteredStorage(rootStream);
+		streamContainer.Load();
+		streamContainer.AddBytes(rng.NextBytes(1000));
+		using var _ = streamContainer.Insert(0);
+		Assert.That(() => streamContainer.Open(0), Throws.InvalidOperationException);
+	}
+
+	[Test]
+	public void ReentrancyCheck_InsertAdd() {
+		var rng = new Random(31337);
+		using var rootStream = new MemoryStream();
+		var streamContainer = new ClusteredStorage(rootStream);
+		streamContainer.Load();
+		streamContainer.AddBytes(rng.NextBytes(1000));
+		using var _ = streamContainer.Insert(0);
+		Assert.That(() => streamContainer.AddBytes(rng.NextBytes(1000)), Throws.InvalidOperationException);
+	}
+
+	[Test]
+	public void ReentrancyCheck_InsertInsert() {
+		var rng = new Random(31337);
+		using var rootStream = new MemoryStream();
+		var streamContainer = new ClusteredStorage(rootStream);
+		streamContainer.Load();
+		streamContainer.AddBytes(rng.NextBytes(1000));
+		using var _ = streamContainer.Insert(0);
+		Assert.That(() => streamContainer.InsertBytes(0, rng.NextBytes(1000)), Throws.InvalidOperationException);
+	}
+
+	[Test]
+	public void ReentrancyCheck_InsertClear() {
+		var rng = new Random(31337);
+		using var rootStream = new MemoryStream();
+		var streamContainer = new ClusteredStorage(rootStream);
+		streamContainer.Load();
+		streamContainer.AddBytes(rng.NextBytes(1000));
+		using var _ = streamContainer.Insert(0);
+		Assert.That(() => streamContainer.Clear(), Throws.InvalidOperationException);
+	}
+
+
 	[Test]
 	public void TestRootStreamLengthConsistent([ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy) {
 		const int clusterSize = 111;

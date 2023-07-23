@@ -38,11 +38,19 @@ public static class RandomExtensions {
 		return Encoding.ASCII.GetString(random.NextBytes(random.Next(minSize, maxSize)));
 	}
 
-	public static byte[] NextBytes(this Random random, int count) {
+	/// <summary>
+	/// Generates a byte array filled with random bytes.
+	/// </summary>
+	/// <param name="random">The instance of the Random class.</param>
+	/// <param name="count">The number of random bytes to generate.</param>
+	/// <returns>A byte array filled with 'count' random bytes.</returns>
+	public static byte[] NextBytes(this Random random, int count)
+	{
 		var buff = new byte[count];
 		random.NextBytes(buff);
 		return buff;
 	}
+
 
 	/// <summary>
 	/// 

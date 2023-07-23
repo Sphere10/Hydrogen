@@ -24,4 +24,5 @@ public static class IRepositoryExtensions {
 			throw new InvalidOperationException($"Entity `{identity}` not found in repository");
 		return result.Item2;
 	}
+
 }

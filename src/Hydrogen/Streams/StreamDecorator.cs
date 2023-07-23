@@ -68,7 +68,7 @@ public abstract class StreamDecorator<TStream> : Stream where TStream : Stream {
 	public override bool CanTimeout => InnerStream.CanTimeout;
 
 	public override void Close() {
-		base.Close();
+//		base.Close();   // removed because it calls Dispose() which is not what we want (may break 
 		InnerStream.Close();
 	}
 

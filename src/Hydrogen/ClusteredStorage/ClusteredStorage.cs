@@ -63,7 +63,7 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 
 	private StreamPagedList<Cluster> _clusters;
 	private FragmentProvider _recordsFragmentProvider;
-	private PreAllocatedList<ClusteredStreamRecord> _records;
+	private UpdateOnlyList<ClusteredStreamRecord> _records;
 	private ICache<long, ClusteredStreamRecord> _recordCache;
 	private ClusteredStorageHeader _header;
 	private ClusteredStreamScope _openScope;
@@ -256,7 +256,7 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 			recordStorage.Load();
 
 		// The actual records collection is a PreAllocated list over the StreamPagedList which allows INSERTS in the form of UPDATES.
-		_records = new PreAllocatedList<ClusteredStreamRecord>(
+		_records = new UpdateOnlyList<ClusteredStreamRecord>(
 			recordStorage,
 			_header.RecordsCount,
 			PreAllocationPolicy.MinimumRequired,

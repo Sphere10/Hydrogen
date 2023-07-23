@@ -17,7 +17,7 @@ namespace Hydrogen;
 /// A wrapper for <see cref="IExtendedList{T}"/> that implements insertion, deletion and append as update operations over a pre-allocated collection of items.
 /// This is useful for converting an <see cref="IExtendedList{T}"/> that can only be mutated via "UPDATE" operations into one that supports INSERT/UPDATE/DELETE
 /// via sequential UPDATE operations. This is achieved by maintaining a local <see cref="Count"/> property and by overwriting pre-allocated items on
-/// append/insert, and "forgetting" them on delete. When the pre-allocated items are exhaused, a <see cref="PreallocationGrowthPolicy"/> is used to grow
+/// append/insert, and "forgetting" them on delete. When the pre-allocated items are exhausted, a <see cref="PreAllocationPolicy"/> is used to grow
 /// the underlying list. 
 /// </summary>
 /// <remarks>
@@ -26,25 +26,25 @@ namespace Hydrogen;
 /// Additionally, <see cref="Contains"/> and <see cref="ContainsRange"/> are overriden and implemented based on <see cref="IndexOf"/> and <see cref="IndexOfRange"/>
 /// so as to ensure only the logical objects are searched (avoids false positives). Same is true for <see cref="Remove"/> and <see cref="RemoveRange(int,int)"/>.
 /// </remarks>
-public class PreAllocatedList<TItem> : ExtendedListDecorator<TItem> {
+public class UpdateOnlyList<TItem> : ExtendedListDecorator<TItem> {
 	private long _count;
 	private readonly PreAllocationPolicy _preAllocationPolicy;
 	private readonly long _blockSize;
 	private readonly Func<TItem> _activator;
 
-	public PreAllocatedList(Func<TItem> itemActivator)
+	public UpdateOnlyList(Func<TItem> itemActivator)
 		: this(PreAllocationPolicy.MinimumRequired, 0, itemActivator) {
 	}
 
-	public PreAllocatedList(long preallocatedItemCount, Func<TItem> itemActivator)
+	public UpdateOnlyList(long preallocatedItemCount, Func<TItem> itemActivator)
 		: this(PreAllocationPolicy.Fixed, preallocatedItemCount, itemActivator) {
 	}
 
-	public PreAllocatedList(PreAllocationPolicy preAllocationPolicy, long blockSize, Func<TItem> itemActivator)
+	public UpdateOnlyList(PreAllocationPolicy preAllocationPolicy, long blockSize, Func<TItem> itemActivator)
 		: this(new ExtendedList<TItem>(), 0, preAllocationPolicy, blockSize, itemActivator) {
 	}
 
-	public PreAllocatedList(IExtendedList<TItem> internalStore, long internalStoreCount, PreAllocationPolicy preAllocationPolicy, long blockSize, Func<TItem> itemActivator)
+	public UpdateOnlyList(IExtendedList<TItem> internalStore, long internalStoreCount, PreAllocationPolicy preAllocationPolicy, long blockSize, Func<TItem> itemActivator)
 		: base(internalStore) {
 		_count = internalStoreCount;
 		if (preAllocationPolicy.IsIn(PreAllocationPolicy.ByBlock, PreAllocationPolicy.Fixed)) {

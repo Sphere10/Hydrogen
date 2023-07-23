@@ -198,7 +198,7 @@ public partial class TransactionalCollectionScreen : ApplicationScreen {
 					Path.GetTempPath(),
 					new ByteArraySerializer(),
 					policy: policy,
-					transactionalPageSizeBytes: pageSize,
+					transactionalPageSize: pageSize,
 					clusterSize: clusterSize,
 					maxMemory: maxMemory
 				);

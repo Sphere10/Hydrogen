@@ -7,6 +7,7 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
+using System.Linq;
 using System.Text;
 
 namespace Hydrogen;
@@ -95,4 +96,6 @@ public static class Base32Encoding {
 
 		return bytes;
 	}
+
+	public static bool IsValid(string base32String) => !string.IsNullOrEmpty(base32String) && base32String.ToUpper().All(ValidChars.Contains);
 }

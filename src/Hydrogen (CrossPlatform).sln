@@ -19,8 +19,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hydrogen.Drawing", "Hydroge
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hydrogen.NUnit", "Hydrogen.NUnit\Hydrogen.NUnit.csproj", "{C08B47F1-BD56-4BC0-9241-214B67F91470}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hydrogen.NETCore", "Hydrogen.Net8\Hydrogen.NETCore.csproj", "{4759DE91-C740-4C18-9E86-051C28575514}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hydrogen.Communications", "Hydrogen.Communications\Hydrogen.Communications.csproj", "{B9BAB6BC-4023-4689-B2F0-F15473547DA2}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HashLib4CSharp", "HashLib4CSharp\HashLib4CSharp.csproj", "{CD719561-BE76-460D-BC34-48791D1C43D2}"
@@ -72,6 +70,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AbstractProtocol.AnonymousPipeSimple", "..\recipes\AbstractProtocol.AnonymousPipeSimple\AbstractProtocol.AnonymousPipeSimple.csproj", "{5C81E485-4B55-4F18-BAA7-AF5F4147B9AC}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AbstractProtocol.UDPSimple", "..\recipes\AbstractProtocol.UPDSimple\AbstractProtocol.UDPSimple.csproj", "{0A67216B-D8E4-4C72-A461-DE260E5DBF95}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hydrogen.NETCore", "Hydrogen.NETCore\Hydrogen.NETCore.csproj", "{C7E0ACD1-B692-4A16-9516-01CF2717B5B3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -145,14 +145,6 @@ Global
 		{C08B47F1-BD56-4BC0-9241-214B67F91470}.Release|Any CPU.Build.0 = Release|Any CPU
 		{C08B47F1-BD56-4BC0-9241-214B67F91470}.Release|x86.ActiveCfg = Release|Any CPU
 		{C08B47F1-BD56-4BC0-9241-214B67F91470}.Release|x86.Build.0 = Release|Any CPU
-		{4759DE91-C740-4C18-9E86-051C28575514}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{4759DE91-C740-4C18-9E86-051C28575514}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{4759DE91-C740-4C18-9E86-051C28575514}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{4759DE91-C740-4C18-9E86-051C28575514}.Debug|x86.Build.0 = Debug|Any CPU
-		{4759DE91-C740-4C18-9E86-051C28575514}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{4759DE91-C740-4C18-9E86-051C28575514}.Release|Any CPU.Build.0 = Release|Any CPU
-		{4759DE91-C740-4C18-9E86-051C28575514}.Release|x86.ActiveCfg = Release|Any CPU
-		{4759DE91-C740-4C18-9E86-051C28575514}.Release|x86.Build.0 = Release|Any CPU
 		{B9BAB6BC-4023-4689-B2F0-F15473547DA2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{B9BAB6BC-4023-4689-B2F0-F15473547DA2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B9BAB6BC-4023-4689-B2F0-F15473547DA2}.Debug|x86.ActiveCfg = Debug|Any CPU
@@ -345,6 +337,14 @@ Global
 		{0A67216B-D8E4-4C72-A461-DE260E5DBF95}.Release|Any CPU.Build.0 = Release|Any CPU
 		{0A67216B-D8E4-4C72-A461-DE260E5DBF95}.Release|x86.ActiveCfg = Release|Any CPU
 		{0A67216B-D8E4-4C72-A461-DE260E5DBF95}.Release|x86.Build.0 = Release|Any CPU
+		{C7E0ACD1-B692-4A16-9516-01CF2717B5B3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C7E0ACD1-B692-4A16-9516-01CF2717B5B3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C7E0ACD1-B692-4A16-9516-01CF2717B5B3}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{C7E0ACD1-B692-4A16-9516-01CF2717B5B3}.Debug|x86.Build.0 = Debug|Any CPU
+		{C7E0ACD1-B692-4A16-9516-01CF2717B5B3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C7E0ACD1-B692-4A16-9516-01CF2717B5B3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C7E0ACD1-B692-4A16-9516-01CF2717B5B3}.Release|x86.ActiveCfg = Release|Any CPU
+		{C7E0ACD1-B692-4A16-9516-01CF2717B5B3}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

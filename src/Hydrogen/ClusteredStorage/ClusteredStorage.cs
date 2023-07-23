@@ -58,9 +58,6 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 	public event EventHandlerEx<long, ClusteredStreamRecord> RecordUpdated;
 	public event EventHandlerEx<long> RecordRemoved;
 
-	private const int DefaultClusterSize = 256; // 256b
-	private const long DefaultRecordCacheSize = 1 << 20; // 1mb
-
 	private StreamPagedList<Cluster> _clusters;
 	private FragmentProvider _recordsFragmentProvider;
 	private UpdateOnlyList<ClusteredStreamRecord> _records;
@@ -79,7 +76,7 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 	private int _clusterEnvelopeSize;
 	private long _allRecordsSize;
 
-	public ClusteredStorage(Stream rootStream, int clusterSize = DefaultClusterSize, ClusteredStoragePolicy policy = ClusteredStoragePolicy.Default, long recordKeySize = 0, long reservedRecords = 0, Endianness endianness = Endianness.LittleEndian) {
+	public ClusteredStorage(Stream rootStream, int clusterSize = HydrogenDefaults.ClusterSize, ClusteredStoragePolicy policy = ClusteredStoragePolicy.Default, long recordKeySize = 0, long reservedRecords = 0, Endianness endianness = Endianness.LittleEndian) {
 		Guard.ArgumentNotNull(rootStream, nameof(rootStream));
 		Guard.ArgumentGTE(clusterSize, 1, nameof(clusterSize));
 		Guard.ArgumentInRange(recordKeySize, 0, ushort.MaxValue, nameof(recordKeySize));
@@ -131,9 +128,11 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 	}
 
 	public override bool RequiresLoad {
-		get => !_initialized || base.RequiresLoad;
+		get => !_initialized || base.RequiresLoad || RootStream is ILoadable { RequiresLoad: true };
 		set => base.RequiresLoad = value;
 	}
+
+	public Stream RootStream => _rootStream;
 
 	public ClusteredStorageHeader Header {
 		get {
@@ -210,6 +209,9 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 
 	protected override void LoadInternal() {
 		using (EnterLockScope()) {
+			if (_rootStream is ILoadable loadableStream)
+				loadableStream.Load();
+
 			if (!_initialized)
 				Initialize();
 
@@ -269,7 +271,7 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 				sizeEstimator: _ => recordSerializer.StaticSize,
 				reapStrategy: CacheReapPolicy.LeastUsed,
 				ExpirationPolicy.SinceLastAccessedTime,
-				maxCapacity: DefaultRecordCacheSize
+				maxCapacity: HydrogenDefaults.RecordCacheSize
 			)
 			: null;
 

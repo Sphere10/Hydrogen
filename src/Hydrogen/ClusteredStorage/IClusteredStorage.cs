@@ -20,6 +20,8 @@ public interface IClusteredStorage : ILoadable {
 	event EventHandlerEx<long, ClusteredStreamRecord> RecordUpdated;
 	event EventHandlerEx<long> RecordRemoved;
 
+	Stream RootStream { get; }
+
 	ClusteredStorageHeader Header { get; }
 
 	ClusteredStoragePolicy Policy { get; }

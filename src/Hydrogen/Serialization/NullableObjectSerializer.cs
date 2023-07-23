@@ -6,6 +6,8 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using System;
+
 namespace Hydrogen;
 
 public class NullableObjectSerializer<T> : ItemSerializerDecorator<T> {
@@ -35,6 +37,23 @@ public class NullableObjectSerializer<T> : ItemSerializerDecorator<T> {
 			return true;
 
 		if (!base.TryDeserialize(byteSize - 1, reader, out var value))
+			return false;
+
+		item = value;
+		return true;
+	}
+
+	public bool TryDeserialize(EndianBinaryReader reader, out T item) {
+		if (base.Internal is not AutoSizedSerializer<T> autoSerializer)
+			throw new InvalidOperationException("This method can only be used with AutoSizedSerializer");
+
+		item = default;
+		var isNull = reader.ReadBoolean();
+		if (isNull)
+			return true;
+
+
+		if (!autoSerializer.TryDeserialize(reader, out var value))
 			return false;
 
 		item = value;

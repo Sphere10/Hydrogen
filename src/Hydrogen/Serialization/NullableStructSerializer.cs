@@ -6,6 +6,8 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using System;
+
 namespace Hydrogen;
 
 public class NullableStructSerializer<T> : ItemSerializer<T?> where T : struct {
@@ -36,6 +38,22 @@ public class NullableStructSerializer<T> : ItemSerializer<T?> where T : struct {
 			return true;
 
 		if (!_underlyingSerializer.TryDeserialize(byteSize - 1, reader, out var value))
+			return false;
+
+		item = value;
+		return true;
+	}
+
+	public bool TryDeserialize(EndianBinaryReader reader, out T? item) {
+		if (!_underlyingSerializer.IsStaticSize)
+			throw new InvalidOperationException("This method can only be used with static serializers");
+
+		item = default;
+		var hasValue = reader.ReadBoolean();
+		if (!hasValue)
+			return true;
+
+		if (!_underlyingSerializer.TryDeserialize(_underlyingSerializer.StaticSize - 1, reader, out var value))
 			return false;
 
 		item = value;

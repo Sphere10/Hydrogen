@@ -128,7 +128,6 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 		using var scope = Storage.Open(KVPList.Storage.Header.ReservedRecords + index);
 		var reader = new EndianBinaryReader(EndianBitConverter.For(Storage.Endianness), scope.Stream);
 		return ((KeyValuePairSerializer<TKey, TValue>)KVPList.ItemSerializer).DeserializeKey(scope.Record.Size, reader);
-
 	}
 
 	public TValue ReadValue(int index) {

@@ -587,6 +587,7 @@ public class PlayerRepository : IRepository<PlayerRecord, string>, ISynchronized
 
 	private readonly DictionaryRepositoryAdapter<PlayerRecord, string> _repoAdapter;
 	private readonly TransactionalDictionary<string, PlayerRecord> _transactionalDict;
+	private readonly SynchronizedObject _lock = new ();
 
 	public PlayerRepository(string repoPath, string txnDir) {
 		if (!Path.Exists(txnDir))
@@ -607,11 +608,11 @@ public class PlayerRepository : IRepository<PlayerRecord, string>, ISynchronized
 	}
 
 	public ISynchronizedObject ParentSyncObject {
-		get => _transactionalDict.ParentSyncObject;
-		set => _transactionalDict.ParentSyncObject = value;
+		get => _lock.ParentSyncObject;
+		set => _lock.ParentSyncObject = value;
 	}
 
-	public ReaderWriterLockSlim ThreadLock => _transactionalDict.ParentSyncObject.ThreadLock;
+	public ReaderWriterLockSlim ThreadLock => _lock.ParentSyncObject.ThreadLock;
 
 	public bool Contains(string identity) => _repoAdapter.Contains(identity);
 
@@ -643,9 +644,9 @@ public class PlayerRepository : IRepository<PlayerRecord, string>, ISynchronized
 		}
 	}
 
-	public IDisposable EnterReadScope() => _transactionalDict.EnterReadScope();
+	public IDisposable EnterReadScope() => _lock.EnterReadScope();
 
-	public IDisposable EnterWriteScope() => _transactionalDict.EnterWriteScope();
+	public IDisposable EnterWriteScope() => _lock.EnterWriteScope();
 
 	public void Commit() => _transactionalDict.Commit();
 

@@ -7,9 +7,8 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Collections.Generic;
 
 namespace Hydrogen;
 
-public interface ITransactionalDictionary<TKey, TValue> : IDictionary<TKey, TValue>, ITransactionalFile, ILoadable, ISynchronizedObject, IDisposable {
+public interface ITransactionalDictionary<TKey, TValue> : IStreamMappedDictionary<TKey, TValue>, ITransactionalObject, IDisposable {
 }

@@ -40,8 +40,8 @@ public class StreamMappedDictionarySK<TKey, TValue> : DictionaryBase<TKey, TValu
 	private bool _requiresLoad;
 
 	public StreamMappedDictionarySK(Stream rootStream, int clusterSize, IItemSerializer<TKey> keyStaticSizedSerializer, IItemSerializer<TValue> valueSerializer = null, IItemChecksummer<TKey> keyChecksum = null,
-	                                IEqualityComparer<TKey> keyComparer = null, IEqualityComparer<TValue> valueComparer = null, ClusteredStoragePolicy policy = ClusteredStoragePolicy.DictionaryDefault, long reservedRecords = 0,
-	                                Endianness endianness = Endianness.LittleEndian)
+									IEqualityComparer<TKey> keyComparer = null, IEqualityComparer<TValue> valueComparer = null, ClusteredStoragePolicy policy = ClusteredStoragePolicy.DictionaryDefault, long reservedRecords = 0,
+									Endianness endianness = Endianness.LittleEndian)
 		: this(
 			new StreamMappedList<TValue>(
 				rootStream,
@@ -67,7 +67,7 @@ public class StreamMappedDictionarySK<TKey, TValue> : DictionaryBase<TKey, TValu
 		Guard.ArgumentNotNull(keyStaticSizedSerializer, nameof(keyStaticSizedSerializer));
 		Guard.Argument(keyStaticSizedSerializer.IsStaticSize, nameof(keyStaticSizedSerializer), "Keys must be statically sized");
 		Guard.Argument(valueStore.Storage.Policy.HasFlag(ClusteredStoragePolicy.TrackChecksums), nameof(valueStore), $"Checksum tracking must be enabled in {nameof(StreamMappedDictionarySK<TKey, TValue>)} implementations.");
-		Guard.Argument(valueStore.Storage.Policy.HasFlag(ClusteredStoragePolicy.TrackKey), nameof(valueStore), $"Checksum tracking must be enabled in {nameof(StreamMappedDictionarySK<TKey, TValue>)} implementations.");
+		Guard.Argument(valueStore.Storage.Policy.HasFlag(ClusteredStoragePolicy.TrackKey), nameof(valueStore), $"Key tracking must be enabled in {nameof(StreamMappedDictionarySK<TKey, TValue>)} implementations.");
 
 		_keyComparer = keyComparer ?? EqualityComparer<TKey>.Default;
 		_valueComparer = valueComparer ?? EqualityComparer<TValue>.Default;
@@ -127,6 +127,7 @@ public class StreamMappedDictionarySK<TKey, TValue> : DictionaryBase<TKey, TValu
 		using (Storage.EnterLockScope()) {
 			if (Storage.IsNull(_valueStore.Storage.Header.ReservedRecords + index))
 				throw new InvalidOperationException($"Stream record {index} is null");
+	
 			var record = Storage.GetRecord(_valueStore.Storage.Header.ReservedRecords + index);
 			return _keySerializer.Deserialize(record.Key, Storage.Endianness);
 		}
@@ -137,8 +138,8 @@ public class StreamMappedDictionarySK<TKey, TValue> : DictionaryBase<TKey, TValu
 			if (Storage.IsNull(_valueStore.Storage.Header.ReservedRecords + index))
 				//throw new InvalidOperationException($"Stream record {index} is null");
 				return default;
-			return _valueStore.Read(index);
 		}
+		return _valueStore.Read(index);
 	}
 
 	public override void Add(TKey key, TValue value) {

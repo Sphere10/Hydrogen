@@ -35,14 +35,15 @@ public class TransactionalList<T> : StreamMappedList<T>, ITransactionalList<T> {
 		IItemSerializer<T> serializer = null,
 		IEqualityComparer<T> comparer = null,
 		int transactionalPageSize = HydrogenDefaults.TransactionalPageSize, 
-		long maxMemory =  HydrogenDefaults.MaxMemoryPerCollection,
+		long maxMemory = HydrogenDefaults.MaxMemoryPerCollection,
 		int clusterSize = HydrogenDefaults.ClusterSize, 
 		ClusteredStoragePolicy policy = ClusteredStoragePolicy.Default, 
 		int reservedRecords = 0, 
+		long recordKeySize = 0,
 		Endianness endianness = Endianness.LittleEndian, 
 		bool readOnly = false)
 		: this(new TransactionalStream(filename, uncommittedPageFileDir, transactionalPageSize, maxMemory, readOnly, readOnly), 
-			  serializer, comparer, clusterSize, policy, reservedRecords, endianness) {
+			  serializer, comparer, clusterSize, policy, reservedRecords, recordKeySize, endianness) {
 	}
 	public TransactionalList(
 		TransactionalStream transactionalStream, 
@@ -50,9 +51,10 @@ public class TransactionalList<T> : StreamMappedList<T>, ITransactionalList<T> {
 		IEqualityComparer<T> comparer = null, 
 		int clusterSize = HydrogenDefaults.ClusterSize, 
 		ClusteredStoragePolicy policy = ClusteredStoragePolicy.Default, 
-		int reservedRecords = 0, 
+		int reservedRecords = 0,
+		long recordKeySize = 0,
 		Endianness endianness = HydrogenDefaults.Endianness) 
-		: this(new ClusteredStorage(transactionalStream, clusterSize, policy, 0, reservedRecords, endianness), serializer, comparer) {
+		: this(new ClusteredStorage(transactionalStream, clusterSize, policy, recordKeySize, reservedRecords, endianness), serializer, comparer) {
 	}
 
 	public TransactionalList(IClusteredStorage storage, IItemSerializer<T> serializer = null, IEqualityComparer<T> comparer = null)

@@ -28,7 +28,7 @@ public class StreamMappedMerkleDictionarySKTests : StreamMappedMerkleDictionaryT
 		streamMappedMerkleDictionary = new StreamMappedMerkleDictionary<string, TestObject>(
 			memoryStream,
 			DefaultClusterSize,
-			new StringSerializer().ToStaticSizeSerializer(StaticKeySize, SizeDescriptorStrategy.UseUInt32),
+			new StringSerializer().AsStaticSizeSerializer(StaticKeySize, SizeDescriptorStrategy.UseUInt32),
 			chf,
 			reservedRecords: DefaultReservedRecords,
 			valueComparer: new TestObjectComparer(),

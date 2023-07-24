@@ -55,8 +55,10 @@ public class PaddedSerializer<TItem> : StaticSizeItemSerializerBase<TItem> {
 
 		// TODO: should chunk this out
 		Span<byte> padding = remaining <= StackAllocPaddingThreshold ? stackalloc byte[unchecked((int)remaining)] : new byte[remaining];
-		writer.Write(padding);
-		bytesWritten += remaining;
+		if (padding.Length > 0) {
+			writer.Write(padding);
+			bytesWritten += remaining;
+		}
 		Debug.Assert(bytesWritten == StaticSize);
 		return true;
 	}
@@ -78,7 +80,9 @@ public class PaddedSerializer<TItem> : StaticSizeItemSerializerBase<TItem> {
 		}
 
 		var padding = StaticSize - itemSize - sizeDescriptorSize;
-		var _ = reader.ReadBytes(padding);
+		if (padding > 0) {
+			var _ = reader.ReadBytes(padding);
+		}
 		return true;
 	}
 }

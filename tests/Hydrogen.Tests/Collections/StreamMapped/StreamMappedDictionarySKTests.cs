@@ -22,7 +22,7 @@ public class StreamMappedDictionarySKTests : StreamMappedDictionaryTestsBase {
 	public void TestHeader() {
 		var dict = new StreamMappedDictionarySK<string, string>(new MemoryStream(),
 			21,
-			new StringSerializer().ToStaticSizeSerializer(11, SizeDescriptorStrategy.UseUInt32),
+			new StringSerializer().AsStaticSizeSerializer(11, SizeDescriptorStrategy.UseUInt32),
 			new StringSerializer(),
 			reservedRecords: 33,
 			policy: ClusteredStoragePolicy.BlobOptimized);
@@ -38,7 +38,7 @@ public class StreamMappedDictionarySKTests : StreamMappedDictionaryTestsBase {
 		var disposable = base.CreateStream(storageType, estimatedMaxByteSize, out var stream);
 		clusteredDictionary = new StreamMappedDictionarySK<TKey, TValue>(stream,
 			DefaultClusterDataSize,
-			keySerializer.ToStaticSizeSerializer(256, SizeDescriptorStrategy.UseUInt32),
+			keySerializer.AsStaticSizeSerializer(256, SizeDescriptorStrategy.UseUInt32),
 			valueSerializer,
 			null,
 			keyComparer,

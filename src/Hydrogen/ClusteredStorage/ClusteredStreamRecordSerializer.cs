@@ -6,6 +6,8 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using System;
+
 namespace Hydrogen;
 
 public class ClusteredStreamRecordSerializer : StaticSizeItemSerializerBase<ClusteredStreamRecord> {
@@ -26,8 +28,10 @@ public class ClusteredStreamRecordSerializer : StaticSizeItemSerializerBase<Clus
 			writer.Write((int)item.KeyChecksum);
 
 		if (_policy.HasFlag(ClusteredStoragePolicy.TrackKey)) {
-			if (item.Key?.Length != _keySize)
+			if (item.Key?.Length != _keySize) {
+				throw new InvalidOperationException($"Key size mismatch. Expected: {_keySize} but was {item.Key.Length}");
 				return false;
+			}
 			writer.Write(item.Key);
 		}
 

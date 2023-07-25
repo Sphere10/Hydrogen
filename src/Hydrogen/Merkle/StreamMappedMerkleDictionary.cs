@@ -10,8 +10,10 @@
 // Web: https://sphere10.com/tech/dynamic-merkle-trees
 // e-print: https://vixra.org/abs/2305.0087
 
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
 namespace Hydrogen;
@@ -19,24 +21,49 @@ namespace Hydrogen;
 /// <summary>
 /// A dictionary implementation that is both an <see cref="IStreamMappedDictionary{TKey,TValue}"/> and an <see cref="IMerkleDictionary{TKey,TValue}"/>.
 /// </summary>
-public class StreamMappedMerkleDictionary<TKey, TValue> : DictionaryDecorator<TKey, TValue, IStreamMappedDictionary<TKey, TValue>>, IStreamMappedDictionary<TKey, TValue>, IMerkleDictionary<TKey, TValue> {
+public class StreamMappedMerkleDictionary<TKey, TValue, TInner> : DictionaryDecorator<TKey, TValue, TInner>, IStreamMappedDictionary<TKey, TValue>, IMerkleDictionary<TKey, TValue> 
+	where TInner : IStreamMappedDictionary<TKey, TValue> {
 
-	public event EventHandlerEx<object> Loading {
-		add => InternalDictionary.Loading += value;
-		remove => InternalDictionary.Loading -= value;
+	public event EventHandlerEx<object> Loading { add => InternalDictionary.Loading += value; remove => InternalDictionary.Loading -= value; }
+	public event EventHandlerEx<object> Loaded { add => InternalDictionary.Loaded += value; remove => InternalDictionary.Loaded -= value; }
+
+	public StreamMappedMerkleDictionary(TInner innerDictionary, IMerkleTree dictionaryMerkleTree)
+		: base(innerDictionary) {
+		Guard.ArgumentNotNull(innerDictionary, nameof(innerDictionary));
+		Guard.ArgumentNotNull(dictionaryMerkleTree, nameof(dictionaryMerkleTree));
+		MerkleTree = dictionaryMerkleTree;
 	}
 
-	public event EventHandlerEx<object> Loaded {
-		add => InternalDictionary.Loaded += value;
-		remove => InternalDictionary.Loaded -= value;
-	}
+	public IMerkleTree MerkleTree { get; }
+
+	public IClusteredStorage Storage => InternalDictionary.Storage;
+
+	public bool RequiresLoad => InternalDictionary.RequiresLoad;
+
+	public void Load() => InternalDictionary.Load();
+
+	public Task LoadAsync() => Task.Run(Load);
+
+	public TKey ReadKey(int index) => InternalDictionary.ReadKey(index);
+
+	public TValue ReadValue(int index) => InternalDictionary.ReadValue(index);
+
+	public bool TryFindKey(TKey key, out int index) => InternalDictionary.TryFindKey(key, out index);
+
+	public bool TryFindValue(TKey key, out int index, out TValue value) => InternalDictionary.TryFindValue(key, out index, out value);
+
+	public void RemoveAt(int index) => InternalDictionary.RemoveAt(index);
+}
+
+/// <inheritdoc />
+public class StreamMappedMerkleDictionary<TKey, TValue> : StreamMappedMerkleDictionary<TKey, TValue, IStreamMappedDictionary<TKey, TValue>> {
 
 	/// <summary>
 	/// Constructs using an <see cref="StreamMappedMerkleDictionary{TKey,TValue}"/> using an <see cref="StreamMappedDictionary{TKey,TValue}"/> under the hood.
 	/// </summary>
 	public StreamMappedMerkleDictionary(Stream rootStream, int clusterSize, CHF hashAlgorithm = CHF.SHA2_256, IItemSerializer<TKey> keySerializer = null, IItemSerializer<TValue> valueSerializer = null, IItemChecksummer<TKey> keyChecksummer = null,
 	                                    IEqualityComparer<TKey> keyComparer = null, IEqualityComparer<TValue> valueComparer = null, ClusteredStoragePolicy policy = ClusteredStoragePolicy.DictionaryDefault, int reservedRecords = 1,
-	                                    Endianness endianness = Endianness.LittleEndian)
+	                                    int merkleTreeStreamIndex = HydrogenDefaults.ClusteredStorageMerkleTreeStreamIndex, Endianness endianness = Endianness.LittleEndian)
 		: this(
 			new StreamMappedMerkleList<KeyValuePair<TKey, TValue>>(
 				rootStream,
@@ -54,6 +81,7 @@ public class StreamMappedMerkleDictionary<TKey, TValue> : DictionaryDecorator<TK
 				policy,
 				0,
 				reservedRecords,
+				merkleTreeStreamIndex,
 				endianness
 			),
 			keyChecksummer,
@@ -68,7 +96,8 @@ public class StreamMappedMerkleDictionary<TKey, TValue> : DictionaryDecorator<TK
 	/// </summary>
 	public StreamMappedMerkleDictionary(Stream rootStream, int clusterSize, IItemSerializer<TKey> staticSizedKeySerializer, CHF hashAlgorithm = CHF.SHA2_256, IItemSerializer<TValue> valueSerializer = null,
 	                                    IItemChecksummer<TKey> keyChecksummer = null, IEqualityComparer<TKey> keyComparer = null, IEqualityComparer<TValue> valueComparer = null,
-	                                    ClusteredStoragePolicy policy = ClusteredStoragePolicy.DictionaryDefault, long reservedRecords = 1, Endianness endianness = Endianness.LittleEndian)
+	                                    ClusteredStoragePolicy policy = ClusteredStoragePolicy.DictionaryDefault, long reservedRecords = 1, int merkleTreeStreamIndex = HydrogenDefaults.ClusteredStorageMerkleTreeStreamIndex, 
+										Endianness endianness = Endianness.LittleEndian)
 		: this(
 			new StreamMappedMerkleList<TValue>(
 				rootStream,
@@ -79,6 +108,7 @@ public class StreamMappedMerkleDictionary<TKey, TValue> : DictionaryDecorator<TK
 				policy | ClusteredStoragePolicy.TrackKey,
 				staticSizedKeySerializer.StaticSize,
 				reservedRecords,
+				merkleTreeStreamIndex,
 				endianness
 			),
 			staticSizedKeySerializer,
@@ -94,7 +124,7 @@ public class StreamMappedMerkleDictionary<TKey, TValue> : DictionaryDecorator<TK
 	/// Constructs using an <see cref="StreamMappedMerkleDictionary{TKey,TValue}"/> using an <see cref="StreamMappedDictionary{TKey,TValue}"/> under the hood.
 	/// </summary>
 	public StreamMappedMerkleDictionary(StreamMappedMerkleList<KeyValuePair<TKey, TValue>> merkleizedKvpStore, IItemChecksummer<TKey> keyChecksummer = null, IEqualityComparer<TKey> keyComparer = null, IEqualityComparer<TValue> valueComparer = null,
-	                                    Endianness endianness = Endianness.LittleEndian)
+	                                     Endianness endianness = Endianness.LittleEndian)
 		: this(
 			new StreamMappedDictionary<TKey, TValue>(
 				merkleizedKvpStore,
@@ -127,29 +157,7 @@ public class StreamMappedMerkleDictionary<TKey, TValue> : DictionaryDecorator<TK
 	}
 
 	protected StreamMappedMerkleDictionary(IStreamMappedDictionary<TKey, TValue> innerDictionary, IMerkleTree dictionaryMerkleTree)
-		: base(innerDictionary) {
-		Guard.ArgumentNotNull(innerDictionary, nameof(innerDictionary));
-		Guard.ArgumentNotNull(dictionaryMerkleTree, nameof(dictionaryMerkleTree));
-		MerkleTree = dictionaryMerkleTree;
+		: base(innerDictionary, dictionaryMerkleTree) {
 	}
 
-	public IMerkleTree MerkleTree { get; }
-
-	public IClusteredStorage Storage => InternalDictionary.Storage;
-
-	public bool RequiresLoad => InternalDictionary.RequiresLoad;
-
-	public void Load() => InternalDictionary.Load();
-
-	public Task LoadAsync() => Task.Run(Load);
-
-	public TKey ReadKey(int index) => InternalDictionary.ReadKey(index);
-
-	public TValue ReadValue(int index) => InternalDictionary.ReadValue(index);
-
-	public bool TryFindKey(TKey key, out int index) => InternalDictionary.TryFindKey(key, out index);
-
-	public bool TryFindValue(TKey key, out int index, out TValue value) => InternalDictionary.TryFindValue(key, out index, out value);
-
-	public void RemoveAt(int index) => InternalDictionary.RemoveAt(index);
 }

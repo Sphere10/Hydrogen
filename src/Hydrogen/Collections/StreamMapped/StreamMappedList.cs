@@ -115,12 +115,13 @@ public class StreamMappedList<TItem> : SingularListBase<TItem>, IStreamMappedLis
 
 	public override void RemoveAt(long index) {
 		CheckIndex(index, false);
+		UpdateVersion();
 		Storage.Remove(Storage.Header.ReservedRecords + index);
 	}
 
 	public override void Clear() {
-		Storage.Clear();
 		UpdateVersion();
+		Storage.Clear();
 	}
 
 	public override void CopyTo(TItem[] array, int arrayIndex) {

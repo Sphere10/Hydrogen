@@ -11,9 +11,9 @@ using System.Linq;
 
 namespace Hydrogen;
 
-public class BoundedList<T> : ExtendedListDecorator<T>, IBoundedList<T> {
+public class BoundedList<T, TInner> : ExtendedListDecorator<T, TInner>, IBoundedList<T> where TInner : IExtendedList<T> {
 
-	public BoundedList(int startIndex, IExtendedList<T> listImpl)
+	public BoundedList(long startIndex, TInner listImpl)
 		: base(listImpl) {
 		FirstIndex = startIndex;
 	}
@@ -53,4 +53,11 @@ public class BoundedList<T> : ExtendedListDecorator<T>, IBoundedList<T> {
 			Guard.ArgumentInRange(index + count - 1, startIX, lastIX, nameof(count));
 	}
 
+}
+
+public class BoundedList<T> : BoundedList<T, IExtendedList<T>> {
+
+	public BoundedList(long startIndex, IExtendedList<T> listImpl)
+		: base(startIndex, listImpl) {
+	}
 }

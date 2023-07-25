@@ -42,6 +42,7 @@ public class TransactionalList<T> : StreamMappedList<T>, ITransactionalList<T> {
 		: this(new TransactionalStream(filename, uncommittedPageFileDir, transactionalPageSize, maxMemory, readOnly, readOnly), 
 			  serializer, comparer, clusterSize, policy, reservedRecords, recordKeySize, endianness) {
 	}
+
 	public TransactionalList(
 		TransactionalStream transactionalStream, 
 		IItemSerializer<T> serializer = null, 

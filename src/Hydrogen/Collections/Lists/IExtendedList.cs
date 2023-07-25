@@ -36,4 +36,5 @@ public static class IExtendedListExtensions {
 			return casted._from;
 		return new CastedExtendedList<TFrom, TTo>(list);
 	}
+
 }

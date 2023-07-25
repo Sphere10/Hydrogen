@@ -10,8 +10,10 @@
 // Web: https://sphere10.com/tech/dynamic-merkle-trees
 // e-print: https://vixra.org/abs/2305.0087
 
+using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Hydrogen.Collections;
 
@@ -22,58 +24,18 @@ namespace Hydrogen;
 /// </summary>
 /// <remarks>The stream mapping is achieved via use of an internal <see cref="IStreamMappedList{TItem}"/></remarks>
 /// <typeparam name="TItem"></typeparam>
-public class StreamMappedMerkleList<TItem> : MerkleListAdapter<TItem, IStreamMappedList<TItem>>, IStreamMappedList<TItem> {
-	private const int MerkleTreeStreamIndex = 0;
+public class StreamMappedMerkleList<TItem, TInner> : MerkleListAdapter<TItem, TInner>, IStreamMappedList<TItem> where TInner : IStreamMappedList<TItem> {
+	public event EventHandlerEx<object> Loading { add => Storage.Loading += value; remove => Storage.Loading -= value; }
+	public event EventHandlerEx<object> Loaded { add => Storage.Loaded += value; remove => Storage.Loaded -= value; }
 
-	public event EventHandlerEx<object> Loading {
-		add => Storage.Loading += value;
-		remove => Storage.Loading -= value;
-	}
-
-	public event EventHandlerEx<object> Loaded {
-		add => Storage.Loaded += value;
-		remove => Storage.Loaded -= value;
-	}
-
-
-	public StreamMappedMerkleList(Stream rootStream, int clusterSize, CHF hashAlgorithm = CHF.SHA2_256, IItemSerializer<TItem> itemSerializer = null, IEqualityComparer<TItem> itemComparer = null,
-	                              ClusteredStoragePolicy policy = ClusteredStoragePolicy.Default, long recordKeySize = 0, long reservedRecords = 1, Endianness endianness = Endianness.LittleEndian)
-		: this(
-			rootStream,
-			clusterSize,
-			hashAlgorithm,
-			new ItemDigestor<TItem>(hashAlgorithm, itemSerializer, endianness).WithNullHash(hashAlgorithm),
-			itemSerializer,
-			itemComparer,
-			policy,
-			recordKeySize,
-			reservedRecords,
-			endianness
-		) {
-	}
-
-	public StreamMappedMerkleList(Stream rootStream, int clusterSize, CHF hashAlgorithm, IItemHasher<TItem> hasher, IItemSerializer<TItem> itemSerializer = null, IEqualityComparer<TItem> itemComparer = null,
-	                              ClusteredStoragePolicy policy = ClusteredStoragePolicy.Default, long recordKeySize = 0, long reservedRecords = 1, Endianness endianness = Endianness.LittleEndian)
-		: this(
-			new StreamMappedList<TItem>(
-				rootStream,
-				clusterSize,
-				itemSerializer,
-				itemComparer,
-				policy,
-				recordKeySize,
-				reservedRecords,
-				endianness
-			),
-			hasher,
-			hashAlgorithm
-		) {
-		Guard.ArgumentNotNull(hasher, nameof(hasher)); // must be provided with null hash support
-		Guard.ArgumentGTE(reservedRecords, 1, nameof(reservedRecords), "Must be greater than 1 to allow storage of merkle-tree");
-	}
-
-	public StreamMappedMerkleList(IStreamMappedList<TItem> clusteredList, IItemHasher<TItem> hasher, CHF hashAlgorithm)
-		: base(clusteredList, hasher, new ClusteredStorageMerkleTreeStream(clusteredList.Storage, MerkleTreeStreamIndex, hashAlgorithm)) {
+	public StreamMappedMerkleList(TInner clusteredList, IItemHasher<TItem> hasher, CHF hashAlgorithm, int merkleTreeStreamIndex)
+		: base(clusteredList, hasher, new ClusteredStorageMerkleTreeStream(clusteredList.Storage, merkleTreeStreamIndex, hashAlgorithm)) {
+		Guard.ArgumentNotNull(hasher, nameof(hasher)); 
+		try {
+			var _ = hasher.Hash(default);
+		} catch {
+			throw new ArgumentException("Hasher must support null values", nameof(hasher));
+		}
 	}
 
 	public IClusteredStorage Storage => InternalCollection.Storage;
@@ -105,4 +67,48 @@ public class StreamMappedMerkleList<TItem> : MerkleListAdapter<TItem, IStreamMap
 		InternalMerkleTree.Leafs.Update(index, ItemHasher.Hash(item));
 		return InternalCollection.EnterUpdateScope(index, item);
 	}
+}
+
+
+public class StreamMappedMerkleList<TItem> : StreamMappedMerkleList<TItem, IStreamMappedList<TItem>> {
+
+	public StreamMappedMerkleList(Stream rootStream, int clusterSize, CHF hashAlgorithm = CHF.SHA2_256, IItemSerializer<TItem> itemSerializer = null, IEqualityComparer<TItem> itemComparer = null,
+	                              ClusteredStoragePolicy policy = ClusteredStoragePolicy.Default, long recordKeySize = 0, long reservedRecords = 1, int merkleTreeStreamIndex = HydrogenDefaults.ClusteredStorageMerkleTreeStreamIndex,
+	                              Endianness endianness = Endianness.LittleEndian)
+		: this(
+			rootStream,
+			clusterSize,
+			hashAlgorithm,
+			new ItemDigestor<TItem>(hashAlgorithm, itemSerializer, endianness).WithNullHash(hashAlgorithm),
+			itemSerializer,
+			itemComparer,
+			policy,
+			recordKeySize,
+			reservedRecords,
+			merkleTreeStreamIndex,
+			endianness
+		) {
+	}
+
+	public StreamMappedMerkleList(Stream rootStream, int clusterSize, CHF hashAlgorithm, IItemHasher<TItem> hasher, IItemSerializer<TItem> itemSerializer = null, IEqualityComparer<TItem> itemComparer = null,
+	                              ClusteredStoragePolicy policy = ClusteredStoragePolicy.Default, long recordKeySize = 0, long reservedRecords = 1, int merkleTreeStreamIndex = HydrogenDefaults.ClusteredStorageMerkleTreeStreamIndex,
+	                              Endianness endianness = Endianness.LittleEndian)
+		: base(			
+			new StreamMappedList<TItem>(
+				rootStream,
+				clusterSize,
+				itemSerializer,
+				itemComparer,
+				policy,
+				recordKeySize,
+				reservedRecords,
+				endianness
+			),
+			hasher,
+			hashAlgorithm,
+			merkleTreeStreamIndex) {
+		Guard.ArgumentGTE(reservedRecords, 1, nameof(reservedRecords), "Must be greater than 1 to allow storage of merkle-tree");
+	}
+
+	
 }

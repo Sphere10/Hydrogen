@@ -10,7 +10,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 
-
 namespace Hydrogen;
 
 /// <summary>
@@ -18,7 +17,7 @@ namespace Hydrogen;
 ///
 /// </summary>
 /// <remarks>When deleting an item the underlying <see cref="ClusteredStreamRecord"/> is marked nullified but retained and re-used in later calls to <see cref="Add(TItem)"/>.</remarks>
-public class StreamMappedHashSet<TItem> : SetBase<TItem>, IStreamMappedHashSet<TItem>, ILoadable {
+public class StreamMappedHashSet<TItem> : SetBase<TItem>, IStreamMappedHashSet<TItem> {
 	public event EventHandlerEx<object> Loading {
 		add => InternalDictionary.Loading += value;
 		remove => InternalDictionary.Loading -= value;
@@ -55,11 +54,12 @@ public class StreamMappedHashSet<TItem> : SetBase<TItem>, IStreamMappedHashSet<T
 			comparer,
 			hasher
 		) {
-		Guard.Argument(policy.HasFlag(ClusteredStoragePolicy.TrackChecksums), nameof(policy), $"Checksum tracking must be enabled in clustered dictionary implementations.");
 	}
 
 	public StreamMappedHashSet(IStreamMappedDictionary<byte[], TItem> internalDictionary, IEqualityComparer<TItem> comparer, IItemHasher<TItem> hasher)
 		: base(comparer ?? EqualityComparer<TItem>.Default) {
+		Guard.ArgumentNotNull(internalDictionary, nameof(internalDictionary));
+		Guard.Argument(internalDictionary.Storage.Policy.HasFlag(ClusteredStoragePolicy.TrackChecksums), nameof(internalDictionary), $"Checksum tracking must be enabled in clustered dictionary implementations.");
 		InternalDictionary = internalDictionary;
 		_hasher = hasher;
 	}

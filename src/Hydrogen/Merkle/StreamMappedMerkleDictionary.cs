@@ -27,11 +27,11 @@ public class StreamMappedMerkleDictionary<TKey, TValue, TInner> : DictionaryDeco
 	public event EventHandlerEx<object> Loading { add => InternalDictionary.Loading += value; remove => InternalDictionary.Loading -= value; }
 	public event EventHandlerEx<object> Loaded { add => InternalDictionary.Loaded += value; remove => InternalDictionary.Loaded -= value; }
 
-	public StreamMappedMerkleDictionary(TInner innerDictionary, IMerkleTree dictionaryMerkleTree)
+	public StreamMappedMerkleDictionary(TInner innerDictionary, IMerkleTree merkleTree)
 		: base(innerDictionary) {
 		Guard.ArgumentNotNull(innerDictionary, nameof(innerDictionary));
-		Guard.ArgumentNotNull(dictionaryMerkleTree, nameof(dictionaryMerkleTree));
-		MerkleTree = dictionaryMerkleTree;
+		Guard.ArgumentNotNull(merkleTree, nameof(merkleTree));
+		MerkleTree = merkleTree;
 	}
 
 	public IMerkleTree MerkleTree { get; }

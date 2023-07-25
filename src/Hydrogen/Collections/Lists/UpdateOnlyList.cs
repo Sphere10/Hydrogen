@@ -26,27 +26,27 @@ namespace Hydrogen;
 /// Additionally, <see cref="Contains"/> and <see cref="ContainsRange"/> are overriden and implemented based on <see cref="IndexOf"/> and <see cref="IndexOfRange"/>
 /// so as to ensure only the logical objects are searched (avoids false positives). Same is true for <see cref="Remove"/> and <see cref="RemoveRange(int,int)"/>.
 /// </remarks>
-public class UpdateOnlyList<TItem> : ExtendedListDecorator<TItem> {
+public class UpdateOnlyList<TItem, TInner> : ExtendedListDecorator<TItem> where TInner : IExtendedList<TItem> {
 	private long _count;
 	private readonly PreAllocationPolicy _preAllocationPolicy;
 	private readonly long _blockSize;
 	private readonly Func<TItem> _activator;
 
-	public UpdateOnlyList(Func<TItem> itemActivator)
-		: this(PreAllocationPolicy.MinimumRequired, 0, itemActivator) {
+	public UpdateOnlyList(TInner internalStore, Func<TItem> itemActivator)
+		: this(internalStore, PreAllocationPolicy.MinimumRequired, 0, itemActivator) {
 	}
 
-	public UpdateOnlyList(long preallocatedItemCount, Func<TItem> itemActivator)
-		: this(PreAllocationPolicy.Fixed, preallocatedItemCount, itemActivator) {
+	public UpdateOnlyList(TInner internalStore, long preAllocatedItemCount, Func<TItem> itemActivator)
+		: this(internalStore, PreAllocationPolicy.Fixed, preAllocatedItemCount, itemActivator) {
 	}
 
-	public UpdateOnlyList(PreAllocationPolicy preAllocationPolicy, long blockSize, Func<TItem> itemActivator)
-		: this(new ExtendedList<TItem>(), 0, preAllocationPolicy, blockSize, itemActivator) {
+	public UpdateOnlyList(TInner internalStore, PreAllocationPolicy preAllocationPolicy, long blockSize, Func<TItem> itemActivator)
+		: this(internalStore, 0, preAllocationPolicy, blockSize, itemActivator) {
 	}
 
-	public UpdateOnlyList(IExtendedList<TItem> internalStore, long internalStoreCount, PreAllocationPolicy preAllocationPolicy, long blockSize, Func<TItem> itemActivator)
+	public UpdateOnlyList(TInner internalStore, long existingItemsInInternalStore, PreAllocationPolicy preAllocationPolicy, long blockSize, Func<TItem> itemActivator)
 		: base(internalStore) {
-		_count = internalStoreCount;
+		_count = existingItemsInInternalStore;
 		if (preAllocationPolicy.IsIn(PreAllocationPolicy.ByBlock, PreAllocationPolicy.Fixed)) {
 			Guard.Argument(blockSize > 0, nameof(blockSize), $"Must be greater than 0 for policy {preAllocationPolicy}");
 		}
@@ -214,4 +214,23 @@ public class UpdateOnlyList<TItem> : ExtendedListDecorator<TItem> {
 
 	protected void CheckRange(long index, long count, bool rightAligned = false) => Guard.CheckRange(index, count, rightAligned, 0, Count);
 
+}
+
+public class UpdateOnlyList<TItem> : UpdateOnlyList<TItem, IExtendedList<TItem>> {
+
+	public UpdateOnlyList(Func<TItem> itemActivator)
+		: this(PreAllocationPolicy.MinimumRequired, 0, itemActivator) {
+	}
+
+	public UpdateOnlyList(long preallocatedItemCount, Func<TItem> itemActivator)
+		: this(PreAllocationPolicy.Fixed, preallocatedItemCount, itemActivator) {
+	}
+
+	public UpdateOnlyList(PreAllocationPolicy preAllocationPolicy, long blockSize, Func<TItem> itemActivator)
+		: this(new ExtendedList<TItem>(), 0, preAllocationPolicy, blockSize, itemActivator) {
+	}
+
+	public UpdateOnlyList(IExtendedList<TItem> internalStore, long existingItemsInInternalStore, PreAllocationPolicy preAllocationPolicy, long blockSize, Func<TItem> itemActivator)
+		: base(internalStore, existingItemsInInternalStore, preAllocationPolicy, blockSize, itemActivator) {
+	}
 }

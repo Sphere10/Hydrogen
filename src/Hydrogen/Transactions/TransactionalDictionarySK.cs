@@ -15,14 +15,29 @@ public class TransactionalDictionarySK<TKey, TValue> : StreamMappedDictionarySK<
 
 	public TransactionalDictionarySK(string filename, string uncommittedPageFileDir, IItemSerializer<TKey> keySerializer, IItemSerializer<TValue> valueSerializer, IItemChecksummer<TKey> keyChecksum = null, IEqualityComparer<TKey> keyComparer = null,
 	                                 IEqualityComparer<TValue> valueComparer = null, int transactionalPageSize = HydrogenDefaults.TransactionalPageSize, long maxMemory = HydrogenDefaults.MaxMemoryPerCollection, int clusterSize = HydrogenDefaults.ClusterSize,
-	                                 ClusteredStoragePolicy policy = ClusteredStoragePolicy.DictionaryDefault, int reservedRecords = 0, Endianness endianness = HydrogenDefaults.Endianness, bool readOnly = false)
+	                                 ClusteredStoragePolicy policy = ClusteredStoragePolicy.DictionaryDefault, int reservedRecords = 0, Endianness endianness = HydrogenDefaults.Endianness, bool readOnly = false, bool autoLoad = false)
+		: this(
+			new TransactionalStream(filename, uncommittedPageFileDir, transactionalPageSize, maxMemory, readOnly, autoLoad),
+			keySerializer,
+			valueSerializer,
+			keyChecksum,
+			keyComparer,
+			valueComparer,
+			clusterSize,
+			policy,
+			reservedRecords,
+			endianness
+		) {
+	}
+
+	public TransactionalDictionarySK(TransactionalStream transactionalStream, IItemSerializer<TKey> keySerializer, IItemSerializer<TValue> valueSerializer, IItemChecksummer<TKey> keyChecksum = null, IEqualityComparer<TKey> keyComparer = null,
+	                                 IEqualityComparer<TValue> valueComparer = null, int clusterSize = HydrogenDefaults.ClusterSize, ClusteredStoragePolicy policy = ClusteredStoragePolicy.DictionaryDefault, int reservedRecords = 0, Endianness endianness = HydrogenDefaults.Endianness)
 		: this(
 			new TransactionalList<TValue>(
-				filename,
-				uncommittedPageFileDir,
+				transactionalStream,
 				valueSerializer,
 				valueComparer,
-				transactionalPageSize, maxMemory, clusterSize, policy, reservedRecords, keySerializer.StaticSize, endianness, readOnly
+				clusterSize, policy, reservedRecords, keySerializer.StaticSize, endianness
 			),
 			keySerializer,
 			valueSerializer,
@@ -34,7 +49,7 @@ public class TransactionalDictionarySK<TKey, TValue> : StreamMappedDictionarySK<
 	}
 
 	public TransactionalDictionarySK(ITransactionalList<TValue> valueStore, IItemSerializer<TKey> keySerializer, IItemSerializer<TValue> valueSerializer, IItemChecksummer<TKey> keyChecksummer = null, IEqualityComparer<TKey> keyComparer = null,
-	                                 IEqualityComparer<TValue> valueComparer = null, Endianness endianness = Endianness.LittleEndian)
+									 IEqualityComparer<TValue> valueComparer = null, Endianness endianness = Endianness.LittleEndian)
 		: base(valueStore, keySerializer, valueSerializer, keyChecksummer, keyComparer, valueComparer, endianness) {
 		Guard.ArgumentNotNull(valueStore, nameof(valueStore));
 		Guard.ArgumentNotNull(keySerializer, nameof(keySerializer));

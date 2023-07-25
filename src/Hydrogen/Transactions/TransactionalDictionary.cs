@@ -25,12 +25,32 @@ public class TransactionalDictionary<TKey, TValue> : StreamMappedDictionary<TKey
 								   IEqualityComparer<TValue> valueComparer = null, int transactionalPageSize = HydrogenDefaults.TransactionalPageSize, long maxMemory = HydrogenDefaults.MaxMemoryPerCollection, int clusterSize = HydrogenDefaults.ClusterSize,
 								   ClusteredStoragePolicy policy = ClusteredStoragePolicy.DictionaryDefault, int reservedRecords = 0, Endianness endianness = HydrogenDefaults.Endianness, bool readOnly = false)
 		: this(
+			new TransactionalStream(filename, uncommittedPageFileDir, transactionalPageSize, maxMemory, readOnly),
+			keySerializer,
+			valueSerializer,
+			keyChecksum,
+			keyComparer,
+			valueComparer, 
+			clusterSize, 
+			policy, 
+			reservedRecords, 
+			endianness
+		) {
+	}
+
+	public TransactionalDictionary(TransactionalStream transactionalStream, IItemSerializer<TKey> keySerializer, IItemSerializer<TValue> valueSerializer, IItemChecksummer<TKey> keyChecksum = null, IEqualityComparer<TKey> keyComparer = null,
+	                               IEqualityComparer<TValue> valueComparer = null, int clusterSize = HydrogenDefaults.ClusterSize,
+	                               ClusteredStoragePolicy policy = ClusteredStoragePolicy.DictionaryDefault, int reservedRecords = 0, Endianness endianness = HydrogenDefaults.Endianness)
+		: this(
 			new TransactionalList<KeyValuePair<TKey, TValue>>(
-				filename,
-				uncommittedPageFileDir,
+				transactionalStream,
 				new KeyValuePairSerializer<TKey, TValue>(keySerializer, valueSerializer),
 				new KeyValuePairEqualityComparer<TKey, TValue>(keyComparer, valueComparer),
-				transactionalPageSize, maxMemory, clusterSize, policy, reservedRecords, 0, endianness, readOnly
+				clusterSize,
+				policy, 
+				reservedRecords, 
+				0,   // Key's are stored with values, no need to reserve space for them in record header
+				endianness
 			),
 			keySerializer,
 			keyChecksum,

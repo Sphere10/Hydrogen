@@ -28,4 +28,6 @@ public static class HydrogenDefaults {
 	// Serialization
 	public const Endianness Endianness = Hydrogen.Endianness.LittleEndian;
 
+	// Merkleized Clustered Streams
+	public const int ClusteredStorageMerkleTreeStreamIndex = 0;     // Default stream index where merkle-trees are stored
 }

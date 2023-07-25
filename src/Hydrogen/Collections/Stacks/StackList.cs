@@ -10,12 +10,9 @@ using System;
 
 namespace Hydrogen;
 
-public class StackList<T> : ExtendedListDecorator<T>, IStack<T> {
-
-	public StackList() : this(new ExtendedList<T>()) {
-	}
-
-	public StackList(IExtendedList<T> internalExtendedList) : base(internalExtendedList) {
+public class StackList<T, TInner> : ExtendedListDecorator<T, TInner>, IStack<T> where TInner : IExtendedList<T> {
+	
+	public StackList(TInner internalExtendedList) : base(internalExtendedList) {
 	}
 
 	public bool TryPeek(out T value) => TryPeek(out value, 1);
@@ -51,4 +48,11 @@ public class StackList<T> : ExtendedListDecorator<T>, IStack<T> {
 	}
 
 	public void Push(T item) => base.Add(item);
+}
+
+public class StackList<T> : StackList<T, IExtendedList<T>> {
+
+	public StackList() : base(new ExtendedList<T>()) {
+	}
+
 }

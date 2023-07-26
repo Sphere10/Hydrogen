@@ -7,6 +7,7 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
@@ -68,6 +69,8 @@ public class ClusteredStorageMultiThreadedTests {
 		Assert.That(streamContainer.Count, Is.EqualTo(itemCount));
 
 		// read all the strings out in parallel
+		var dict = new System.Collections.Generic.Dictionary<int,int>();
+		var x = dict.ToSynchronized();
 		var dictionary = new SynchronizedDictionary<int, string>();
 		Parallel.For(0,
 			itemCount,

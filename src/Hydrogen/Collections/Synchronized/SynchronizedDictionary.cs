@@ -12,15 +12,11 @@ using System.Threading;
 
 namespace Hydrogen;
 
-public class SynchronizedDictionary<TKey, TValue> : DictionaryDecorator<TKey, TValue>, ISynchronizedObject {
+public class SynchronizedDictionary<TKey, TValue, TInner> : DictionaryDecorator<TKey, TValue>, ISynchronizedObject where TInner : IDictionary<TKey, TValue> {
 
 	private readonly ISynchronizedObject _lock;
 
-	public SynchronizedDictionary()
-		: this(new Dictionary<TKey, TValue>()) {
-	}
-
-	public SynchronizedDictionary(IDictionary<TKey, TValue> internalDictionary, ISynchronizedObject @lock = null)
+	public SynchronizedDictionary(TInner internalDictionary, ISynchronizedObject @lock = null)
 		: base(internalDictionary) {
 		_lock = @lock ?? new SynchronizedObject();
 	}
@@ -32,7 +28,6 @@ public class SynchronizedDictionary<TKey, TValue> : DictionaryDecorator<TKey, TV
 		}
 	}
 
-
 	public override ICollection<TValue> Values {
 		get {
 			using (EnterReadScope())
@@ -40,14 +35,12 @@ public class SynchronizedDictionary<TKey, TValue> : DictionaryDecorator<TKey, TV
 		}
 	}
 
-
 	public ISynchronizedObject ParentSyncObject {
 		get => _lock.ParentSyncObject;
 		set => _lock.ParentSyncObject = value;
 	}
 
 	public ReaderWriterLockSlim ThreadLock => _lock.ThreadLock;
-
 
 	public override void Add(TKey key, TValue value) {
 		using (EnterWriteScope())
@@ -58,7 +51,6 @@ public class SynchronizedDictionary<TKey, TValue> : DictionaryDecorator<TKey, TV
 		using (EnterReadScope())
 			return base.ContainsKey(key);
 	}
-
 
 	public override bool TryGetValue(TKey key, out TValue value) {
 		using (EnterReadScope())
@@ -119,12 +111,10 @@ public class SynchronizedDictionary<TKey, TValue> : DictionaryDecorator<TKey, TV
 				return base.IsReadOnly;
 		}
 	}
-
 	public override IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator() {
 		var readScope = EnterReadScope();
 		return base.GetEnumerator().OnDispose(readScope.Dispose);
 	}
-
 
 	public IDisposable EnterReadScope() {
 		return _lock.EnterReadScope();
@@ -132,5 +122,16 @@ public class SynchronizedDictionary<TKey, TValue> : DictionaryDecorator<TKey, TV
 
 	public IDisposable EnterWriteScope() {
 		return _lock.EnterWriteScope();
+	}
+}
+
+public class SynchronizedDictionary<TKey, TValue> : SynchronizedDictionary<TKey, TValue, IDictionary<TKey, TValue>> {
+
+	public SynchronizedDictionary()
+		: this(new Dictionary<TKey, TValue>()) {
+	}
+
+	public SynchronizedDictionary(IDictionary<TKey, TValue> internalDictionary, ISynchronizedObject @lock = null)
+		: base(internalDictionary, @lock) {
 	}
 }

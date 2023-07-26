@@ -11,12 +11,12 @@ using System.Collections.Generic;
 
 namespace Hydrogen;
 
-public class DictionaryRepositoryAdapter<TEntity, TIdentity> : SyncRepositoryBase<TEntity, TIdentity> {
+public class DictionaryRepositoryAdapter<TEntity, TIdentity, TDict> : SyncRepositoryBase<TEntity, TIdentity> where TDict : IDictionary<TIdentity, TEntity> {
 
-	private readonly IDictionary<TIdentity, TEntity> _dictionary;
+	private readonly TDict _dictionary;
 	private readonly Func<TEntity, TIdentity> _identityFunc;
 
-	public DictionaryRepositoryAdapter(IDictionary<TIdentity, TEntity> dictionary, Func<TEntity, TIdentity> identityFunc) {
+	public DictionaryRepositoryAdapter(TDict dictionary, Func<TEntity, TIdentity> identityFunc) {
 		_dictionary = dictionary;
 		_identityFunc = identityFunc;
 	}
@@ -26,7 +26,6 @@ public class DictionaryRepositoryAdapter<TEntity, TIdentity> : SyncRepositoryBas
 
 	public override bool TryGet(TIdentity identity, out TEntity entity)
 		=> _dictionary.TryGetValue(identity, out entity);
-
 
 	public override void Create(TEntity entity) {
 		var identity = _identityFunc(entity);
@@ -55,4 +54,16 @@ public class DictionaryRepositoryAdapter<TEntity, TIdentity> : SyncRepositoryBas
 		if (_dictionary is IDisposable disposableDictionary)
 			disposableDictionary.Dispose();
 	}
+}
+
+public class DictionaryRepositoryAdapter<TEntity, TIdentity> : DictionaryRepositoryAdapter<TEntity, TIdentity, IDictionary<TIdentity, TEntity>> {
+
+	public DictionaryRepositoryAdapter(Func<TEntity, TIdentity> identityFunc) 
+		: this(new Dictionary<TIdentity, TEntity>(), identityFunc) {
+	}
+
+	public DictionaryRepositoryAdapter(IDictionary<TIdentity, TEntity> dictionary, Func<TEntity, TIdentity> identityFunc)
+		: base(dictionary, identityFunc) {
+	}
+
 }

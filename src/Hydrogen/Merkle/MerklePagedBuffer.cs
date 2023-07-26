@@ -36,14 +36,13 @@ public class MerklePagedBuffer : MemoryPagedBufferDecorator, IMerkleList<byte> {
 		Guard.ArgumentNotNull(buffer, nameof(buffer));
 		Guard.ArgumentNotNull(merkleTreeImpl, nameof(merkleTreeImpl));
 		Guard.Argument(buffer.Count == 0, nameof(buffer), "Must be empty");
-		Guard.Argument(merkleTreeImpl.Leafs.Count == 0, nameof(buffer), "Must be empty");
+		Guard.Argument(merkleTreeImpl.Leafs.Count == 0, nameof(merkleTreeImpl), "Must be empty");
 
 		_merklePagesDirty = new BitArray(buffer.Pages.Count);
 		_merkleTree = new MerkleTreeImpl(this, merkleTreeImpl);
 		_defaultLeafValue = Tools.Array.Gen<byte>(Hashers.GetDigestSizeBytes(_merkleTree.HashAlgorithm), 0);
 		if (!buffer.RequiresLoad)
 			OnLoaded(); // decorated paged list was already loaded before passing here, so call it here
-
 	}
 
 	public bool MerkleDirty {
@@ -135,7 +134,6 @@ public class MerklePagedBuffer : MemoryPagedBufferDecorator, IMerkleList<byte> {
 		var pageNumberI = Tools.Collection.CheckNotImplemented64bitAddressingIndex(page.Number);
 		_merklePagesDirty[pageNumberI] = dirty;
 	}
-
 
 	private class MerkleTreeImpl : DynamicMerkleTreeDecorator {
 		private readonly MerklePagedBuffer _parent;

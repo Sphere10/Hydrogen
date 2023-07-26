@@ -52,7 +52,10 @@ public class StackList<T, TInner> : ExtendedListDecorator<T, TInner>, IStack<T> 
 
 public class StackList<T> : StackList<T, IExtendedList<T>> {
 
-	public StackList() : base(new ExtendedList<T>()) {
+	public StackList() : this(new ExtendedList<T>()) {
+	}
+
+	public StackList(IExtendedList<T> list) : base(list) {
 	}
 
 }

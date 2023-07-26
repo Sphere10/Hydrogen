@@ -106,13 +106,4 @@ public static class StreamExtensions {
 			}
 		}
 	}
-
-	public static Stream OnDispose(this Stream stream, Action action) {
-		return new OnDisposeStream(stream, action);
-	}
-
-	public static Stream OnDispose(this Stream stream, Action<Stream> action) {
-		return new OnDisposeStream(stream, action);
-	}
-
 }

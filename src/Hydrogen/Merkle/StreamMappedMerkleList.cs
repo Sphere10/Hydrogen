@@ -93,7 +93,7 @@ public class StreamMappedMerkleList<TItem> : StreamMappedMerkleList<TItem, IStre
 	public StreamMappedMerkleList(Stream rootStream, int clusterSize, CHF hashAlgorithm, IItemHasher<TItem> hasher, IItemSerializer<TItem> itemSerializer = null, IEqualityComparer<TItem> itemComparer = null,
 	                              ClusteredStoragePolicy policy = ClusteredStoragePolicy.Default, long recordKeySize = 0, long reservedRecords = 1, int merkleTreeStreamIndex = HydrogenDefaults.ClusteredStorageMerkleTreeStreamIndex,
 	                              Endianness endianness = Endianness.LittleEndian)
-		: base(			
+		: this(			
 			new StreamMappedList<TItem>(
 				rootStream,
 				clusterSize,
@@ -108,6 +108,10 @@ public class StreamMappedMerkleList<TItem> : StreamMappedMerkleList<TItem, IStre
 			hashAlgorithm,
 			merkleTreeStreamIndex) {
 		Guard.ArgumentGTE(reservedRecords, 1, nameof(reservedRecords), "Must be greater than 1 to allow storage of merkle-tree");
+	}
+
+	public StreamMappedMerkleList(IStreamMappedList<TItem> clusteredList, IItemHasher<TItem> hasher, CHF hashAlgorithm, int merkleTreeStreamIndex)
+		: base(clusteredList, hasher, hashAlgorithm, merkleTreeStreamIndex) {
 	}
 
 	

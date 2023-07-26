@@ -18,9 +18,9 @@ namespace Hydrogen;
 /// Ensures that all stream read/writes occur within a boundary of a stream. This is used to protect segments of streams within the family <see cref="IFilePagedList{TItem}" /> collections.
 /// </summary>
 /// <remarks>A <see cref="BoundedStream"/> can EXCEEED the boundary of the underlying stream (ex: boundary from 0 - 99 but stream has only 1 byte).</remarks>
-public class BoundedStream : StreamDecorator {
+public class BoundedStream<TStream> : StreamDecorator<TStream> where TStream : Stream {
 
-	public BoundedStream(Stream innerStream, long minPosition, long maxPosition)
+	public BoundedStream(TStream innerStream, long minPosition, long maxPosition)
 		: base(innerStream) {
 		MinAbsolutePosition = minPosition;
 		MaxAbsolutePosition = maxPosition;
@@ -161,5 +161,13 @@ public class BoundedStream : StreamDecorator {
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	private long FromAbsoluteOffset(long offset) => UseRelativeOffset ? offset - MinAbsolutePosition : offset;
+
+}
+
+public class BoundedStream : BoundedStream<Stream>{
+
+	public BoundedStream(Stream innerStream, long minPosition, long maxPosition)
+		: base(innerStream, minPosition, maxPosition) {
+	}
 
 }

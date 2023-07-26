@@ -11,18 +11,6 @@ using System.Collections.Generic;
 
 namespace Hydrogen;
 
-public class ObservableDictionary<TKey, TValue> : ObservableDictionary<TKey, TValue, IDictionary<TKey, TValue>> {
-
-	public ObservableDictionary()
-		: this(new Dictionary<TKey, TValue>()) {
-	}
-
-	public ObservableDictionary(IDictionary<TKey, TValue> internalDictionary)
-		: base(internalDictionary) {
-	}
-}
-
-
 public class ObservableDictionary<TKey, TValue, TConcrete> : ObservableCollection<KeyValuePair<TKey, TValue>, TConcrete>, IDictionary<TKey, TValue>
 	where TConcrete : IDictionary<TKey, TValue> {
 
@@ -222,4 +210,14 @@ public class ObservableDictionary<TKey, TValue, TConcrete> : ObservableCollectio
 	protected virtual void OnRemovedKeys(RemovedItemsEventArgs<TKey> args) {
 	}
 
+}
+public class ObservableDictionary<TKey, TValue> : ObservableDictionary<TKey, TValue, IDictionary<TKey, TValue>> {
+
+	public ObservableDictionary()
+		: this(new Dictionary<TKey, TValue>()) {
+	}
+
+	public ObservableDictionary(IDictionary<TKey, TValue> internalDictionary)
+		: base(internalDictionary) {
+	}
 }

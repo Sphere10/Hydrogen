@@ -10,12 +10,12 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Hydrogen.Collections.Lists;
+namespace Hydrogen;
 
-public sealed class ListAdapter<T> : IList {
+public sealed class LegacyListAdapter<T> : IList {
 	private readonly IList<T> _genericList;
 
-	public ListAdapter(IList<T> wrappedList) {
+	public LegacyListAdapter(IList<T> wrappedList) {
 		Guard.ArgumentNotNull(wrappedList, nameof(wrappedList));
 		_genericList = wrappedList;
 	}

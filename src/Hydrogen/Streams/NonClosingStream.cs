@@ -10,13 +10,20 @@ using System.IO;
 
 namespace Hydrogen;
 
-public sealed class NonClosingStream : StreamDecorator {
-	public NonClosingStream(Stream innerStream)
+public class NonClosingStream<TInner> : StreamDecorator<TInner> where TInner : Stream {
+	public NonClosingStream(TInner innerStream)
 		: base(innerStream) {
 	}
 
 	public override void Close() {
 		// do not close underlying stream
 		// Note: overriding dispose is inconsequential
+	}
+}
+
+
+public class NonClosingStream : NonClosingStream<Stream>{
+	public NonClosingStream(Stream innerStream)
+		: base(innerStream) {
 	}
 }

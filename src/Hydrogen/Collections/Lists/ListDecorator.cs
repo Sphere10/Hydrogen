@@ -49,7 +49,6 @@ public abstract class ListDecorator<TItem, TList> : IList<TItem> where TList : I
 
 }
 
-
 public abstract class ListDecorator<TItem> : ListDecorator<TItem, IList<TItem>> {
 	protected ListDecorator(IList<TItem> internalList)
 		: base(internalList) {

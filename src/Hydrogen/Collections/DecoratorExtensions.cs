@@ -132,6 +132,24 @@ public static class DecoratorExtensions {
 
 	#endregion
 
+	#region ISet
 
+	#region ToSynchronized
+
+	public static SynchronizedSet<T, TInner> ToSynchronizedSet<T, TInner>(this TInner set) where TInner : ISet<T> => new(set);
+
+	public static SynchronizedSet<T> ToSynchronizedSet<T>(this ISet<T> list) => new(list);
+
+	#endregion
+
+	#endregion
+
+	#region IStreamMappedHashSet
+	
+	public static StreamMappedMerkleHashSet<T, TInner> ToMerkleized<T, TInner>(this TInner set, IMerkleTree merkleTree) where TInner : IStreamMappedHashSet<T> => new(set, merkleTree);
+
+	public static StreamMappedMerkleHashSet<T> ToMerkleized<T>(this IStreamMappedHashSet<T> set, IMerkleTree merkleTree) => new(set, merkleTree);
+
+	#endregion
 
 }

@@ -5,6 +5,9 @@ using System.Runtime.CompilerServices;
 
 namespace Hydrogen;
 
+/// <summary>
+/// Implements various extensions for activating decorators, wrappers, adapters.
+/// </summary>
 public static class DecoratorExtensions {
 
 	#region IReadOnlyList

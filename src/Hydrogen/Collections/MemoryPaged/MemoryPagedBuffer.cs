@@ -23,7 +23,7 @@ public class MemoryPagedBuffer : MemoryPagedListBase<byte>, IMemoryPagedBuffer {
 	public MemoryPagedBuffer(long pageSize, long maxMemory)
 		: base(pageSize, maxMemory) {
 		_friend = CreateFriendDelegate();
-		Pages = InternalPages.ToReadOnlyList().ToProjection(x => (IBufferPage)x);
+		Pages = InternalPages.AsReadOnly().WithProjection(x => (IBufferPage)x);
 	}
 
 	public new IReadOnlyList<IBufferPage> Pages { get; }

@@ -32,7 +32,7 @@ public abstract class MemoryPagedListBase<TItem> : PagedListBase<TItem>, IMemory
 		PageSize = pageSize;
 		FlushOnDispose = false;
 		Disposing = false;
-		Pages = InternalPages.ToReadOnlyList().ToProjection(p => (IMemoryPage<TItem>)p);
+		Pages = InternalPages.AsReadOnly().WithProjection(p => (IMemoryPage<TItem>)p);
 		_loadedPages = new ActionCache<long, IMemoryPage<TItem>>(
 			(page) => {
 				Guard.ArgumentInRange(page, 0, InternalPages.Count - 1, nameof(page), "Page not contained in list");

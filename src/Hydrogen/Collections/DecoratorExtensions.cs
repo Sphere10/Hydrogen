@@ -9,98 +9,98 @@ public static class DecoratorExtensions {
 
 	#region IReadOnlyList
 
-	public static IReadOnlyList<TTo> ToProjection<TFrom, TTo>(this IReadOnlyList<TFrom> list, Func<TFrom, TTo> projection) => new ReadOnlyListProjection<TFrom,TTo>(list, projection);
+	public static IReadOnlyList<TTo> WithProjection<TFrom, TTo>(this IReadOnlyList<TFrom> list, Func<TFrom, TTo> projection) => new ReadOnlyListProjection<TFrom,TTo>(list, projection);
 
 	#endregion
 	
 	#region IList
 
-	public static IExtendedList<T> ToExtendedList<T>(this IList<T> list) => new ExtendedListAdapter<T>(list);
+	public static IExtendedList<T> AsExtendedList<T>(this IList<T> list) => new ExtendedListAdapter<T>(list);
 
-	public static IList<T> ToGenericList<T>(this IList list) => new GenericListAdapter<T>(list);
+	public static IList<T> AsGenericList<T>(this IList list) => new GenericListAdapter<T>(list);
 
-	public static IList ToLegacyList<T>(this IList<T> list) => new LegacyListAdapter<T>(list);
+	public static IList AsLegacyList<T>(this IList<T> list) => new LegacyListAdapter<T>(list);
 
-	public static SynchronizedList<T, TInnerList> ToSynchronized_<T, TInnerList>(this TInnerList list) where TInnerList : IList<T> => new (list);
+	public static SynchronizedList<T, TInnerList> AsSynchronized_<T, TInnerList>(this TInnerList list) where TInnerList : IList<T> => new (list);
 
-	public static SynchronizedList<T> ToSynchronized_<T>(this IList<T> list) => new (list);
+	public static SynchronizedList<T> AsSynchronized_<T>(this IList<T> list) => new (list);
 
-	public static IReadOnlyList<T> ToReadOnlyList<T>(this IList<T> list) => new ReadOnlyListAdapter<T>(list);
+	public static IReadOnlyList<T> AsReadOnly<T>(this IList<T> list) => new ReadOnlyListAdapter<T>(list);
 
 	#endregion
 	
 	#region IExtendedList
 
-	#region ToSynchronized
+	#region AsSynchronized
 
-	public static SynchronizedExtendedList<T, TInnerList> ToSynchronized<T, TInnerList>(this TInnerList list) where TInnerList : IExtendedList<T> => new(list);
+	public static SynchronizedExtendedList<T, TInnerList> AsSynchronized<T, TInnerList>(this TInnerList list) where TInnerList : IExtendedList<T> => new(list);
 
-	public static SynchronizedExtendedList<T> ToSynchronized<T>(this IExtendedList<T> list) => new(list);
+	public static SynchronizedExtendedList<T> AsSynchronized<T>(this IExtendedList<T> list) => new(list);
 	
 	#endregion
 
-	#region ToObservable
+	#region AsObservable
 	
-	public static ObservableExtendedList<T, TInnerList> ToObservable<T, TInnerList>(this TInnerList list) where TInnerList : IExtendedList<T> => new(list);
+	public static ObservableExtendedList<T, TInnerList> AsObservable<T, TInnerList>(this TInnerList list) where TInnerList : IExtendedList<T> => new(list);
 
-	public static ObservableExtendedList<T> ToObservable<T>(this IExtendedList<T> list) => new(list);
+	public static ObservableExtendedList<T> AsObservable<T>(this IExtendedList<T> list) => new(list);
 
 	#endregion
 
-	#region ToProjection
+	#region WithProjection
 
-	public static IExtendedList<TTo> ToProjection<TFrom, TTo>(this IExtendedList<TFrom> source, Func<TFrom, TTo> projection, Func<TTo, TFrom> inverseProjection)
+	public static IExtendedList<TTo> WithProjection<TFrom, TTo>(this IExtendedList<TFrom> source, Func<TFrom, TTo> projection, Func<TTo, TFrom> inverseProjection)
 		=> new ProjectedExtendedList<TFrom,TTo>(source, projection, inverseProjection);
 
 	#endregion
 
-	#region ToStack
+	#region AsStack
 
-	public static StackList<T, TInnerList> ToStack<T, TInnerList>(this TInnerList list) where TInnerList : IExtendedList<T> => new(list);
+	public static StackList<T, TInnerList> AsStack<T, TInnerList>(this TInnerList list) where TInnerList : IExtendedList<T> => new(list);
 
-	public static StackList<T> ToStack<T>(this IExtendedList<T> list) => new(list);
-
-	#endregion
-
-	#region ToBounded
-
-	public static BoundedList<T, TInnerList> ToBounded<T, TInnerList>(this TInnerList list, long startIndex) where TInnerList : IExtendedList<T> => new(startIndex, list);
-
-	public static BoundedList<T> ToBounded<T>(this IExtendedList<T> list, long startIndex) => new(startIndex, list);
+	public static StackList<T> AsStack<T>(this IExtendedList<T> list) => new(list);
 
 	#endregion
 
-	#region ToMerkleized
+	#region AsBounded
 
-	public static MerkleListAdapter<T, TInnerList> ToMerkleized<T, TInnerList>(this TInnerList list) where TInnerList : IExtendedList<T> => new(list);
+	public static BoundedList<T, TInnerList> AsBounded<T, TInnerList>(this TInnerList list, long startIndex) where TInnerList : IExtendedList<T> => new(startIndex, list);
 
-	public static MerkleListAdapter<T> ToMerkleized<T>(this IExtendedList<T>  list) => new(list);
+	public static BoundedList<T> AsBounded<T>(this IExtendedList<T> list, long startIndex) => new(startIndex, list);
+
+	#endregion
+
+	#region AsMerkleized
+
+	public static MerkleListAdapter<T, TInnerList> AsMerkleized<T, TInnerList>(this TInnerList list) where TInnerList : IExtendedList<T> => new(list);
+
+	public static MerkleListAdapter<T> AsMerkleized<T>(this IExtendedList<T>  list) => new(list);
 		
-	public static MerkleListAdapter<T, TInnerList> ToMerkleized<T, TInnerList>(this TInnerList list, CHF hashAlgorithm, Endianness endianness = HydrogenDefaults.Endianness) where TInnerList : IExtendedList<T> => new(list, hashAlgorithm, endianness);
+	public static MerkleListAdapter<T, TInnerList> AsMerkleized<T, TInnerList>(this TInnerList list, CHF hashAlgorithm, Endianness endianness = HydrogenDefaults.Endianness) where TInnerList : IExtendedList<T> => new(list, hashAlgorithm, endianness);
 
-	public static MerkleListAdapter<T> ToMerkleized<T>(this IExtendedList<T> list, CHF hashAlgorithm) => new(list, hashAlgorithm);
+	public static MerkleListAdapter<T> AsMerkleized<T>(this IExtendedList<T> list, CHF hashAlgorithm) => new(list, hashAlgorithm);
 
-	public static MerkleListAdapter<T> ToMerkleized<T>(this IExtendedList<T> internalList, IItemSerializer<T> serializer, CHF hashAlgorithm) => new(internalList, serializer, hashAlgorithm);
+	public static MerkleListAdapter<T> AsMerkleized<T>(this IExtendedList<T> internalList, IItemSerializer<T> serializer, CHF hashAlgorithm) => new(internalList, serializer, hashAlgorithm);
 
-	public static MerkleListAdapter<T, TInnerList> ToMerkleized<T, TInnerList>(this TInnerList list, IItemSerializer<T> serializer, CHF hashAlgorithm, Endianness endianness = HydrogenDefaults.Endianness) where TInnerList : IExtendedList<T> => new(list, serializer, hashAlgorithm, endianness);
+	public static MerkleListAdapter<T, TInnerList> AsMerkleized<T, TInnerList>(this TInnerList list, IItemSerializer<T> serializer, CHF hashAlgorithm, Endianness endianness = HydrogenDefaults.Endianness) where TInnerList : IExtendedList<T> => new(list, serializer, hashAlgorithm, endianness);
 
-	public static MerkleListAdapter<T, TInnerList> ToMerkleized<T, TInnerList>(this TInnerList list, IItemHasher<T> hasher, IDynamicMerkleTree merkleTreeImpl) where TInnerList : IExtendedList<T> => new(list, hasher, merkleTreeImpl);
+	public static MerkleListAdapter<T, TInnerList> AsMerkleized<T, TInnerList>(this TInnerList list, IItemHasher<T> hasher, IDynamicMerkleTree merkleTreeImpl) where TInnerList : IExtendedList<T> => new(list, hasher, merkleTreeImpl);
 
-	public static MerkleListAdapter<T> ToMerkleized<T>(this IExtendedList<T> list, IItemHasher<T> hasher, IDynamicMerkleTree merkleTreeImpl) => new(list, hasher, merkleTreeImpl);
+	public static MerkleListAdapter<T> AsMerkleized<T>(this IExtendedList<T> list, IItemHasher<T> hasher, IDynamicMerkleTree merkleTreeImpl) => new(list, hasher, merkleTreeImpl);
 
 	#endregion
 
-	#region ToUpdateOnly
+	#region AsUpdateOnly
 
-	public static UpdateOnlyList<T, TInnerList> ToUpdateOnly<T, TInnerList>(this TInnerList internalStore, Func<T> itemActivator) where TInnerList : IExtendedList<T> => new(internalStore, itemActivator);
+	public static UpdateOnlyList<T, TInnerList> AsUpdateOnly<T, TInnerList>(this TInnerList internalStore, Func<T> itemActivator) where TInnerList : IExtendedList<T> => new(internalStore, itemActivator);
 
-	public static UpdateOnlyList<T> ToUpdateOnly<T>(this IExtendedList<T> internalStore, long existingItemsInStore, PreAllocationPolicy preAllocationPolicy, long blockSize, Func<T> itemActivator) => new(internalStore, existingItemsInStore, preAllocationPolicy, blockSize, itemActivator);
+	public static UpdateOnlyList<T> AsUpdateOnly<T>(this IExtendedList<T> internalStore, long existingItemsInStore, PreAllocationPolicy preAllocationPolicy, long blockSize, Func<T> itemActivator) => new(internalStore, existingItemsInStore, preAllocationPolicy, blockSize, itemActivator);
 
-	public static UpdateOnlyList<T, TInnerList> ToUpdateOnly<T, TInnerList>(this TInnerList internalStore, long preAllocatedItemCount, Func<T> itemActivator) where TInnerList : IExtendedList<T> => new(internalStore, preAllocatedItemCount, itemActivator);
+	public static UpdateOnlyList<T, TInnerList> AsUpdateOnly<T, TInnerList>(this TInnerList internalStore, long preAllocatedItemCount, Func<T> itemActivator) where TInnerList : IExtendedList<T> => new(internalStore, preAllocatedItemCount, itemActivator);
 
-	public static UpdateOnlyList<T, TInnerList> ToUpdateOnly<T, TInnerList>(this TInnerList internalStore, PreAllocationPolicy preAllocationPolicy, long blockSize, Func<T> itemActivator) where TInnerList : IExtendedList<T> => new(internalStore, preAllocationPolicy, blockSize, itemActivator);
+	public static UpdateOnlyList<T, TInnerList> AsUpdateOnly<T, TInnerList>(this TInnerList internalStore, PreAllocationPolicy preAllocationPolicy, long blockSize, Func<T> itemActivator) where TInnerList : IExtendedList<T> => new(internalStore, preAllocationPolicy, blockSize, itemActivator);
 
-	public static UpdateOnlyList<T, TInnerList> ToUpdateOnly<T, TInnerList>(this TInnerList internalStore, long existingItemsInInternalStore, PreAllocationPolicy preAllocationPolicy, long blockSize, Func<T> itemActivator) where TInnerList : IExtendedList<T> => new(internalStore, existingItemsInInternalStore, preAllocationPolicy, blockSize, itemActivator);
+	public static UpdateOnlyList<T, TInnerList> AsUpdateOnly<T, TInnerList>(this TInnerList internalStore, long existingItemsInInternalStore, PreAllocationPolicy preAllocationPolicy, long blockSize, Func<T> itemActivator) where TInnerList : IExtendedList<T> => new(internalStore, existingItemsInInternalStore, preAllocationPolicy, blockSize, itemActivator);
 
 	#endregion
 
@@ -108,44 +108,44 @@ public static class DecoratorExtensions {
 
 	#region IStreamMappedList
 	
-	public static StreamMappedMerkleList<T, TInnerList> ToMerkleized<T, TInnerList>(this TInnerList list, IItemHasher<T> hasher, CHF hashAlgorithm, int merkleTreeStreamIndex) where TInnerList : IStreamMappedList<T> => new(list, hasher, hashAlgorithm, merkleTreeStreamIndex);
+	public static StreamMappedMerkleList<T, TInnerList> AsMerkleized<T, TInnerList>(this TInnerList list, IItemHasher<T> hasher, CHF hashAlgorithm, int merkleTreeStreamIndex) where TInnerList : IStreamMappedList<T> => new(list, hasher, hashAlgorithm, merkleTreeStreamIndex);
 
-	public static StreamMappedMerkleList<T> ToMerkleized<T>(this IStreamMappedList<T> list, IItemHasher<T> hasher, CHF hashAlgorithm, int merkleTreeStreamIndex) => new(list, hasher, hashAlgorithm, merkleTreeStreamIndex);
+	public static StreamMappedMerkleList<T> AsMerkleized<T>(this IStreamMappedList<T> list, IItemHasher<T> hasher, CHF hashAlgorithm, int merkleTreeStreamIndex) => new(list, hasher, hashAlgorithm, merkleTreeStreamIndex);
 
 	#endregion
 
 	#region IMemoryPagedBuffer
 
-	public static MerklePagedBuffer ToMerkleizedBuffer(this IMemoryPagedBuffer buffer, CHF hashAlgorithm) => new(buffer, hashAlgorithm);
+	public static MerklePagedBuffer AsMerkleizedBuffer(this IMemoryPagedBuffer buffer, CHF hashAlgorithm) => new(buffer, hashAlgorithm);
 
-	public static MerklePagedBuffer ToMerkleizedBuffer(this IMemoryPagedBuffer buffer, IDynamicMerkleTree merkleTree) => new(buffer, merkleTree);
+	public static MerklePagedBuffer AsMerkleizedBuffer(this IMemoryPagedBuffer buffer, IDynamicMerkleTree merkleTree) => new(buffer, merkleTree);
 
 	#endregion
 
 	#region IDictionary
 	
-	#region ToSynchronized
+	#region AsSynchronized
 
-	public static SynchronizedDictionary<TKey, TValue, TInner> ToSynchronized<TInner, TKey, TValue>(this TInner dictionary) where TInner : IDictionary<TKey, TValue> => new(dictionary);
+	public static SynchronizedDictionary<TKey, TValue, TInner> AsSynchronized<TInner, TKey, TValue>(this TInner dictionary) where TInner : IDictionary<TKey, TValue> => new(dictionary);
 
-	public static SynchronizedDictionary<TKey, TValue> ToSynchronized<TKey, TValue>(this IDictionary<TKey, TValue> dictionary) => new(dictionary);
+	public static SynchronizedDictionary<TKey, TValue> AsSynchronized<TKey, TValue>(this IDictionary<TKey, TValue> dictionary) => new(dictionary);
 	
 	#endregion
 
-	#region ToObservable
+	#region AsObservable
 
-	public static ObservableDictionary<TKey, TValue, TInner> ToObservable<TKey, TValue, TInner>(this TInner dictionary) where TInner : IDictionary<TKey, TValue> => new(dictionary);
+	public static ObservableDictionary<TKey, TValue, TInner> AsObservable<TKey, TValue, TInner>(this TInner dictionary) where TInner : IDictionary<TKey, TValue> => new(dictionary);
 
-	public static ObservableDictionary<TKey, TValue> ToObservable<TKey, TValue>(this IDictionary<TKey, TValue> dictionary) => new(dictionary);
+	public static ObservableDictionary<TKey, TValue> AsObservable<TKey, TValue>(this IDictionary<TKey, TValue> dictionary) => new(dictionary);
 
 
 	#endregion
 
-	#region ToRepository
+	#region AsRepository
 
-	public static DictionaryRepositoryAdapter<TEntity, TIdentity, TInner> ToRepository<TEntity, TIdentity, TInner>(this TInner dictionary, Func<TEntity, TIdentity> identityFunc) where TInner : IDictionary<TIdentity, TEntity> => new(dictionary, identityFunc);
+	public static DictionaryRepositoryAdapter<TEntity, TIdentity, TInner> AsRepository<TEntity, TIdentity, TInner>(this TInner dictionary, Func<TEntity, TIdentity> identityFunc) where TInner : IDictionary<TIdentity, TEntity> => new(dictionary, identityFunc);
 
-	public static DictionaryRepositoryAdapter<TEntity, TIdentity> ToRepository<TEntity, TIdentity>(this IDictionary<TIdentity, TEntity> dictionary, Func<TEntity, TIdentity> identityFunc) => new(dictionary, identityFunc);
+	public static DictionaryRepositoryAdapter<TEntity, TIdentity> AsRepository<TEntity, TIdentity>(this IDictionary<TIdentity, TEntity> dictionary, Func<TEntity, TIdentity> identityFunc) => new(dictionary, identityFunc);
 
 	#endregion
 
@@ -153,11 +153,11 @@ public static class DecoratorExtensions {
 
 	#region ISet
 
-	#region ToSynchronized
+	#region AsSynchronized
 
-	public static SynchronizedSet<T, TInner> ToSynchronizedSet<T, TInner>(this TInner set) where TInner : ISet<T> => new(set);
+	public static SynchronizedSet<T, TInner> AsSynchronizedSet<T, TInner>(this TInner set) where TInner : ISet<T> => new(set);
 
-	public static SynchronizedSet<T> ToSynchronizedSet<T>(this ISet<T> list) => new(list);
+	public static SynchronizedSet<T> AsSynchronizedSet<T>(this ISet<T> list) => new(list);
 
 	#endregion
 
@@ -165,9 +165,9 @@ public static class DecoratorExtensions {
 
 	#region IStreamMappedHashSet
 	
-	public static StreamMappedMerkleHashSet<T, TInner> ToMerkleized<T, TInner>(this TInner set, IMerkleTree merkleTree) where TInner : IStreamMappedHashSet<T> => new(set, merkleTree);
+	public static StreamMappedMerkleHashSet<T, TInner> AsMerkleized<T, TInner>(this TInner set, IMerkleTree merkleTree) where TInner : IStreamMappedHashSet<T> => new(set, merkleTree);
 
-	public static StreamMappedMerkleHashSet<T> ToMerkleized<T>(this IStreamMappedHashSet<T> set, IMerkleTree merkleTree) => new(set, merkleTree);
+	public static StreamMappedMerkleHashSet<T> AsMerkleized<T>(this IStreamMappedHashSet<T> set, IMerkleTree merkleTree) => new(set, merkleTree);
 
 	#endregion
 

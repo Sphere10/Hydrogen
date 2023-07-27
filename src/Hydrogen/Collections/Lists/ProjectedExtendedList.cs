@@ -14,7 +14,7 @@ using System.Linq;
 namespace Hydrogen;
 
 public sealed class ProjectedExtendedList<TFrom, TTo> : IExtendedList<TTo> {
-	internal readonly IExtendedList<TFrom> _source;
+	private readonly IExtendedList<TFrom> _source;
 	private readonly Func<TFrom, TTo> _projection;
 	private readonly Func<TTo, TFrom> _inverseProjection;
 

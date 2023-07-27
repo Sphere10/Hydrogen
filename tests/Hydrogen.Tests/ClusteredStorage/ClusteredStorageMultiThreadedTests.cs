@@ -68,7 +68,6 @@ public class ClusteredStorageMultiThreadedTests {
 
 		// read all the strings out in parallel
 		var dict = new System.Collections.Generic.Dictionary<int,int>();
-		var x = dict.ToSynchronized();
 		var dictionary = new SynchronizedDictionary<int, string>();
 		Parallel.For(0,
 			itemCount,

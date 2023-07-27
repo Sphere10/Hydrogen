@@ -28,7 +28,7 @@ public sealed class FileMappedBuffer : FilePagedListBase<byte>, IMemoryPagedBuff
 	public FileMappedBuffer(string filename, long pageSize, long maxMemory, bool readOnly = false, bool autoLoad = false)
 		: base(filename, pageSize, maxMemory, readOnly, autoLoad: false) {
 		_friend = CreateFriendDelegate();
-		Pages = InternalPages.ToReadOnlyList().ToProjection(x => (IBufferPage)x);
+		Pages = InternalPages.AsReadOnly().WithProjection(x => (IBufferPage)x);
 		if (autoLoad)
 			Load();
 	}

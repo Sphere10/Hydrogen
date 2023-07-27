@@ -33,7 +33,7 @@ public sealed class TransactionalFileMappedBuffer : TransactionalFileMappedListB
 	public TransactionalFileMappedBuffer(string filename, string uncommittedPageFileDir, long pageSize, long maxMemory, bool readOnly = false, bool autoLoad = false)
 		: base(filename, uncommittedPageFileDir, pageSize, maxMemory, readOnly, autoLoad) {
 		_friend = CreateFriendDelegate();
-		Pages = InternalPages.ToReadOnlyList().ToProjection(x => (IBufferPage)x);
+		Pages = InternalPages.AsReadOnly().WithProjection(x => (IBufferPage)x);
 	}
 
 	public new IReadOnlyList<IBufferPage> Pages { get; }

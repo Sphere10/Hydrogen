@@ -174,4 +174,14 @@ public static class DecoratorExtensions {
 
 	#endregion
 
+	#region IComparer
+
+	public static IComparer<T> AsInverted<T>(this IComparer<T> comparer) {
+		if (comparer is InvertedComparer<T> originalAsInverted) {
+			return originalAsInverted.OriginalComparer;
+		}
+		return new InvertedComparer<T>(comparer);
+	}
+
+	#endregion
 }

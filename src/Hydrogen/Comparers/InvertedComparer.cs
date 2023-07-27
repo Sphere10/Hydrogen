@@ -16,13 +16,12 @@ namespace Hydrogen;
 /// </summary>
 /// <typeparam name="T"></typeparam>
 public sealed class InvertedComparer<T> : IComparer<T> {
-	readonly IComparer<T> _comparer;
 
 	/// <summary>
 	/// Returns the original comparer; this can be useful to avoid multiple
 	/// reversals.
 	/// </summary>
-	public IComparer<T> OriginalComparer => _comparer;
+	public IComparer<T> OriginalComparer { get; }
 
 	/// <summary>
 	/// Creates a new reversing comparer.
@@ -30,12 +29,12 @@ public sealed class InvertedComparer<T> : IComparer<T> {
 	/// <param name="original">The original comparer to use for comparisons.</param>
 	public InvertedComparer(IComparer<T> original) {
 		Guard.ArgumentNotNull(original, nameof(original));
-		_comparer = original;
+		OriginalComparer = original;
 	}
 
 	/// <summary>
 	/// Returns the result of comparing the specified values using the original
 	/// comparer, but reversing the order of comparison.
 	/// </summary>
-	public int Compare(T x, T y) => _comparer.Compare(y, x);
+	public int Compare(T x, T y) => OriginalComparer.Compare(y, x);
 }

@@ -20,13 +20,7 @@ public static class ComparerExt {
 	/// the previous version was reversed (rather than reversing twice).
 	/// In other words, for any comparer X, X==X.Reverse().Reverse().
 	/// </summary>
-	public static IComparer<T> Reverse<T>(this IComparer<T> original) {
-		InvertedComparer<T> originalAsInverted = original as InvertedComparer<T>;
-		if (originalAsInverted != null) {
-			return originalAsInverted.OriginalComparer;
-		}
-		return new InvertedComparer<T>(original);
-	}
+	
 
 	/// <summary>
 	/// Combines a comparer with a second comparer to implement composite sort

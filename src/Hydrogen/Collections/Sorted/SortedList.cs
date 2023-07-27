@@ -11,7 +11,7 @@ using System.Collections.Generic;
 
 namespace Hydrogen;
 
-public class SortedList<T> : CollectionDecorator<T>, ISortedList<T> {
+public class SortedList<T> : ExtendedCollectionDecorator<T>, ISortedList<T> {
 	private readonly IComparer<T> _comparer;
 
 	public SortedList(SortDirection sortDirection = SortDirection.Ascending, IComparer<T> comparer = null)
@@ -19,10 +19,10 @@ public class SortedList<T> : CollectionDecorator<T>, ISortedList<T> {
 	}
 
 	public SortedList(int initialCapacity, SortDirection sortDirection = SortDirection.Ascending, IComparer<T> comparer = null)
-		: this(new List<T>(initialCapacity), sortDirection, comparer) {
+		: this(new ExtendedList<T>(initialCapacity, comparer.AsEqualityComparer()), sortDirection, comparer) {
 	}
 
-	public SortedList(IList<T> internalList, SortDirection sortDirection = SortDirection.Ascending, IComparer<T> comparer = null)
+	public SortedList(IExtendedList<T> internalList, SortDirection sortDirection = SortDirection.Ascending, IComparer<T> comparer = null)
 		: base(internalList) {
 		Guard.ArgumentNotNull(internalList, nameof(internalList));
 		comparer ??= Comparer<T>.Default;
@@ -31,9 +31,12 @@ public class SortedList<T> : CollectionDecorator<T>, ISortedList<T> {
 			SortDirection.Descending => comparer.AsInverted(),
 			_ => throw new ArgumentException("Must be Ascending or Descending (or null)", nameof(sortDirection))
 		};
+		if (internalList.Count > 0) {
+			QuickSort<T>.Run(InternalList, _comparer);
+		}
 	}
 
-	protected IList<T> InternalList => (IList<T>)base.InternalCollection;
+	protected IExtendedList<T> InternalList => (IExtendedList<T>)InternalCollection;
 
 	public override void Add(T item) {
 		var index = InternalList.BinarySearch(item, _comparer);
@@ -41,19 +44,27 @@ public class SortedList<T> : CollectionDecorator<T>, ISortedList<T> {
 		InternalList.Insert(insertionPoint, item);
 	}
 
-	public override bool Contains(T item) => InternalList.BinarySearch(item) >= 0;
+	public override bool Contains(T item) => InternalList.BinarySearch(item, _comparer) >= 0;
 
 	public override bool Remove(T item) {
 		var index = InternalList.BinarySearch(item, _comparer);
-		if (index >= 0) {
-			InternalList.RemoveAt(index);
-			return true;
-		}
-		return false;
+		if (index < 0)
+			return false;
+		InternalList.RemoveAt(index);
+		return true;
 	}
 
-	public virtual void RemoveAt(int index) => InternalList.RemoveAt(index);
+	public virtual void RemoveAt(long index) => InternalList.RemoveAt(index);
 
-	public virtual T this[int index] => InternalList[index];
+	public long IndexOfL(T item) => InternalList.BinarySearch(item, _comparer);
 
+	public IEnumerable<long> IndexOfRange(IEnumerable<T> items) => InternalList.IndexOfRange(items);
+
+	public T Read(long index) => InternalList.Read(index);
+
+	public IEnumerable<T> ReadRange(long index, long count) => InternalList.ReadRange(index, count);
+
+	public virtual T this[long index] => Read(index);
+
+	public T this[int index] => this[(long)index];
 }

@@ -25,7 +25,6 @@ namespace Hydrogen;
 /// </summary>
 public sealed class TransactionalFileMappedBuffer : TransactionalFileMappedListBase<byte>, IMemoryPagedBuffer {
 	private readonly IPagedListDelegate<byte> _friend;
-	private readonly ReadOnlyListDecorator<IPage<byte>, IBufferPage> _pagesDecorator;
 
 	public TransactionalFileMappedBuffer(string filename, long pageSize, long maxMemory, bool readOnly = false, bool autoLoad = false)
 		: this(filename, System.IO.Path.GetDirectoryName(filename), pageSize, maxMemory, readOnly, autoLoad) {
@@ -34,10 +33,10 @@ public sealed class TransactionalFileMappedBuffer : TransactionalFileMappedListB
 	public TransactionalFileMappedBuffer(string filename, string uncommittedPageFileDir, long pageSize, long maxMemory, bool readOnly = false, bool autoLoad = false)
 		: base(filename, uncommittedPageFileDir, pageSize, maxMemory, readOnly, autoLoad) {
 		_friend = CreateFriendDelegate();
-		_pagesDecorator = new ReadOnlyListDecorator<IPage<byte>, IBufferPage>(new ReadOnlyListAdapter<IPage<byte>>(base.InternalPages));
+		Pages = InternalPages.ToReadOnlyList().ToProjection(x => (IBufferPage)x);
 	}
 
-	public new IReadOnlyList<IBufferPage> Pages => _pagesDecorator;
+	public new IReadOnlyList<IBufferPage> Pages { get; }
 
 	public override TransactionalFileMappedBuffer AsBuffer => this;
 

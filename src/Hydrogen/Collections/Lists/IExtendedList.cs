@@ -31,10 +31,10 @@ public static class IExtendedListExtensions {
 		list.RemoveRange(offset, length);
 	}
 
-	public static IExtendedList<TTo> CastListAs<TFrom, TTo>(this IExtendedList<TFrom> list) where TFrom : class where TTo : class {
-		if (list is CastedExtendedList<TTo, TFrom> casted) // if casting back, use original
-			return casted._from;
-		return new CastedExtendedList<TFrom, TTo>(list);
-	}
+	//public static IExtendedList<TTo> CastListAs<TFrom, TTo>(this IExtendedList<TFrom> list) where TFrom : class where TTo : class {
+	//	if (list is ProjectedExtendedList<TTo, TFrom> casted) // if casting back, use original
+	//		return casted._source;
+	//	return new ProjectedExtendedList<TFrom, TTo>(list);
+	//}
 
 }

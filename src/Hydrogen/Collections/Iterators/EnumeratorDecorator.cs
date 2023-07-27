@@ -6,39 +6,11 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System.Collections;
 using System.Collections.Generic;
 
 namespace Hydrogen;
 
-public class EnumeratorDecorator<TFrom, TTo> : IEnumerator<TTo> where TTo : TFrom {
-
-	public EnumeratorDecorator(IEnumerator<TFrom> enumerator) {
-		InternalEnumerator = enumerator;
-	}
-
-	protected readonly IEnumerator<TFrom> InternalEnumerator;
-
-	public virtual bool MoveNext() {
-		return InternalEnumerator.MoveNext();
-	}
-
-	public virtual void Reset() {
-		InternalEnumerator.Reset();
-	}
-
-	public virtual TTo Current => (TTo)InternalEnumerator.Current;
-
-	object IEnumerator.Current => Current;
-
-	public virtual void Dispose() {
-		InternalEnumerator.Dispose();
-	}
-
-}
-
-
-public class EnumeratorDecorator<T> : EnumeratorDecorator<T, T> {
-	protected EnumeratorDecorator(IEnumerator<T> enumerator) : base(enumerator) {
+public class EnumeratorDecorator<T> : ProjectedEnumerator<T, T> {
+	protected EnumeratorDecorator(IEnumerator<T> enumerator) : base(enumerator, x => x) {
 	}
 }

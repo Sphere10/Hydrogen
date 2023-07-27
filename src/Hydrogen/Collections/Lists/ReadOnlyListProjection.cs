@@ -6,24 +6,28 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using System;
 using System.Collections;
 using System.Collections.Generic;
 
 namespace Hydrogen;
 
-public class ReadOnlyListDecorator<TFrom, TTo> : IReadOnlyList<TTo> where TTo : TFrom {
+public class ReadOnlyListProjection<TFrom, TTo> : IReadOnlyList<TTo>  {
 
-	public ReadOnlyListDecorator(IReadOnlyList<TFrom> internalList) {
+	private readonly Func<TFrom, TTo> _projection;
+
+	public ReadOnlyListProjection(IReadOnlyList<TFrom> internalList, Func<TFrom, TTo> projection) {
+		_projection = projection;
 		InternalList = internalList;
 	}
 
 	protected IReadOnlyList<TFrom> InternalList;
 
-	public TTo this[int index] => (TTo)InternalList[index];
+	public TTo this[int index] => _projection(InternalList[index]);
 
 	public int Count => InternalList.Count;
 
-	public IEnumerator<TTo> GetEnumerator() => new EnumeratorDecorator<TFrom, TTo>(InternalList.GetEnumerator());
+	public IEnumerator<TTo> GetEnumerator() => new ProjectedEnumerator<TFrom, TTo>(InternalList.GetEnumerator(), _projection);
 
 	IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 }

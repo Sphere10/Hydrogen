@@ -74,7 +74,7 @@ public class StreamMappedMerkleList<TItem> : StreamMappedMerkleList<TItem, IStre
 
 	public StreamMappedMerkleList(Stream rootStream, int clusterSize, CHF hashAlgorithm = CHF.SHA2_256, IItemSerializer<TItem> itemSerializer = null, IEqualityComparer<TItem> itemComparer = null,
 	                              ClusteredStoragePolicy policy = ClusteredStoragePolicy.Default, long recordKeySize = 0, long reservedRecords = 1, int merkleTreeStreamIndex = HydrogenDefaults.ClusteredStorageMerkleTreeStreamIndex,
-	                              Endianness endianness = Endianness.LittleEndian)
+	                              Endianness endianness = Endianness.LittleEndian, bool autoLoad = false)
 		: this(
 			rootStream,
 			clusterSize,
@@ -86,13 +86,14 @@ public class StreamMappedMerkleList<TItem> : StreamMappedMerkleList<TItem, IStre
 			recordKeySize,
 			reservedRecords,
 			merkleTreeStreamIndex,
-			endianness
+			endianness,
+			autoLoad
 		) {
 	}
 
 	public StreamMappedMerkleList(Stream rootStream, int clusterSize, CHF hashAlgorithm, IItemHasher<TItem> hasher, IItemSerializer<TItem> itemSerializer = null, IEqualityComparer<TItem> itemComparer = null,
 	                              ClusteredStoragePolicy policy = ClusteredStoragePolicy.Default, long recordKeySize = 0, long reservedRecords = 1, int merkleTreeStreamIndex = HydrogenDefaults.ClusteredStorageMerkleTreeStreamIndex,
-	                              Endianness endianness = Endianness.LittleEndian)
+	                              Endianness endianness = Endianness.LittleEndian, bool autoLoad = false)
 		: this(			
 			new StreamMappedList<TItem>(
 				rootStream,
@@ -102,7 +103,8 @@ public class StreamMappedMerkleList<TItem> : StreamMappedMerkleList<TItem, IStre
 				policy,
 				recordKeySize,
 				reservedRecords,
-				endianness
+				endianness,
+				autoLoad
 			),
 			hasher,
 			hashAlgorithm,

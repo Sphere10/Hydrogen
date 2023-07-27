@@ -26,9 +26,10 @@ public class StreamMappedList<TItem> : SingularListBase<TItem>, IStreamMappedLis
 
 	private int _version;
 
-	public StreamMappedList(Stream rootStream, int clusterSize, IItemSerializer<TItem> itemSerializer = null, IEqualityComparer<TItem> itemComparer = null, ClusteredStoragePolicy policy = ClusteredStoragePolicy.Default, long recordKeySize = 0,
-							long reservedRecords = 0, Endianness endianness = Endianness.LittleEndian)
-		: this(new ClusteredStorage(rootStream, clusterSize, policy, recordKeySize, reservedRecords, endianness), itemSerializer, itemComparer) {
+	public StreamMappedList(Stream rootStream, int clusterSize, IItemSerializer<TItem> itemSerializer = null,
+							IEqualityComparer<TItem> itemComparer = null, ClusteredStoragePolicy policy = ClusteredStoragePolicy.Default, long recordKeySize = 0,
+							long reservedRecords = 0, Endianness endianness = Endianness.LittleEndian, bool autoLoad = false)
+		: this(new ClusteredStorage(rootStream, clusterSize, policy, recordKeySize, reservedRecords, endianness, autoLoad), itemSerializer, itemComparer) {
 	}
 
 	public StreamMappedList(IClusteredStorage storage, IItemSerializer<TItem> itemSerializer = null, IEqualityComparer<TItem> itemComparer = null) {

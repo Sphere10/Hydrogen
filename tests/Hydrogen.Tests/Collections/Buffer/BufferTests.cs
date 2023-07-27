@@ -177,8 +177,6 @@ public class BufferTests {
 		}
 
 		var result = CreateMemPagedBuffer(storageType, pageSize, maxMemory, out var memBuffer);
-		if (memBuffer.RequiresLoad)
-			memBuffer.Load();
 		buffer = memBuffer;
 		return result;
 	}
@@ -200,9 +198,7 @@ public class BufferTests {
 			case StorageType.TransactionalBinaryFile:
 				var baseDir = Tools.FileSystem.GetTempEmptyDirectory(true);
 				var fileName = Path.Combine(baseDir, "File.dat");
-				buffer = new TransactionalFileMappedBuffer(fileName, baseDir, pageSize, maxMemory);
-				if (buffer.RequiresLoad)
-					buffer.Load();
+				buffer = new TransactionalFileMappedBuffer(fileName, baseDir, pageSize, maxMemory, autoLoad: true);
 				disposables.Add(new ActionScope(() => Tools.FileSystem.DeleteDirectory(baseDir)));
 				break;
 			default:

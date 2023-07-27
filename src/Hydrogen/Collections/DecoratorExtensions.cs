@@ -7,13 +7,25 @@ namespace Hydrogen;
 
 public static class DecoratorExtensions {
 
+	#region IReadOnlyList
+
+	public static IReadOnlyList<TTo> ToProjection<TFrom, TTo>(this IReadOnlyList<TFrom> list, Func<TFrom, TTo> projection) => new ReadOnlyListProjection<TFrom,TTo>(list, projection);
+
+	#endregion
+	
 	#region IList
 
-	public static GenericListAdapter<T> ToGenericList<T>(this IList list) => new(list);
+	public static IExtendedList<T> ToExtendedList<T>(this IList<T> list) => new ExtendedListAdapter<T>(list);
 
-	public static LegacyListAdapter<T> ToLegacyList<T>(this IList<T> list) => new(list);
+	public static IList<T> ToGenericList<T>(this IList list) => new GenericListAdapter<T>(list);
+
+	public static IList ToLegacyList<T>(this IList<T> list) => new LegacyListAdapter<T>(list);
 
 	public static SynchronizedList<T, TInnerList> ToSynchronized_<T, TInnerList>(this TInnerList list) where TInnerList : IList<T> => new (list);
+
+	public static SynchronizedList<T> ToSynchronized_<T>(this IList<T> list) => new (list);
+
+	public static IReadOnlyList<T> ToReadOnlyList<T>(this IList<T> list) => new ReadOnlyListAdapter<T>(list);
 
 	#endregion
 	
@@ -32,6 +44,13 @@ public static class DecoratorExtensions {
 	public static ObservableExtendedList<T, TInnerList> ToObservable<T, TInnerList>(this TInnerList list) where TInnerList : IExtendedList<T> => new(list);
 
 	public static ObservableExtendedList<T> ToObservable<T>(this IExtendedList<T> list) => new(list);
+
+	#endregion
+
+	#region ToProjection
+
+	public static IExtendedList<TTo> ToProjection<TFrom, TTo>(this IExtendedList<TFrom> source, Func<TFrom, TTo> projection, Func<TTo, TFrom> inverseProjection)
+		=> new ProjectedExtendedList<TFrom,TTo>(source, projection, inverseProjection);
 
 	#endregion
 

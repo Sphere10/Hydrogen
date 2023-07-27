@@ -20,10 +20,7 @@ public class StreamMappedMerkleListTests : MerkleListTestsBase {
 	[Test]
 	public void TestAdaptedScopes([Values(CHF.SHA2_256, CHF.Blake2b_128)] CHF chf) {
 		var memStream = new MemoryStream();
-		var clusteredList = new StreamMappedMerkleList<string>(memStream, 256, chf);
-		if (clusteredList.RequiresLoad)
-			clusteredList.Load();
-
+		var clusteredList = new StreamMappedMerkleList<string>(memStream, 256, chf, autoLoad: true);
 		using (clusteredList.EnterAddScope("beta")) ;
 		using (clusteredList.EnterInsertScope(0, "alpha")) ;
 		using (clusteredList.EnterAddScope("alphaa")) ;
@@ -37,10 +34,7 @@ public class StreamMappedMerkleListTests : MerkleListTestsBase {
 
 	protected override IDisposable CreateMerkleList([Values(CHF.SHA2_256, CHF.Blake2b_128)] CHF chf, out IMerkleList<string> merkleList) {
 		var memStream = new MemoryStream();
-		var clusteredList = new StreamMappedMerkleList<string>(memStream, DefaultClusterSize, chf);
-		if (clusteredList.RequiresLoad)
-			clusteredList.Load();
-
+		var clusteredList = new StreamMappedMerkleList<string>(memStream, DefaultClusterSize, chf, autoLoad: true);
 		merkleList = clusteredList;
 		return memStream;
 	}

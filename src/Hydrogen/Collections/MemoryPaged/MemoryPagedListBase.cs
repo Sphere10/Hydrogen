@@ -22,17 +22,17 @@ public abstract class MemoryPagedListBase<TItem> : PagedListBase<TItem>, IMemory
 	public event EventHandlerEx<object, IMemoryPage<TItem>> PageUnloaded;
 
 	private readonly ICache<long, IMemoryPage<TItem>> _loadedPages;
-	private readonly ReadOnlyListDecorator<IPage<TItem>, IMemoryPage<TItem>> _pagesDecorator;
 
 	protected bool Disposing;
 
-	protected MemoryPagedListBase(long pageSize, long maxMemory) {
+	protected MemoryPagedListBase(long pageSize, long maxMemory, bool autoLoad = false) 
+		: base(autoLoad) {
 		Guard.ArgumentInRange(pageSize, 1, int.MaxValue, nameof(pageSize));
 		Guard.ArgumentInRange(maxMemory, pageSize, long.MaxValue, nameof(maxMemory));
 		PageSize = pageSize;
 		FlushOnDispose = false;
 		Disposing = false;
-		_pagesDecorator = new ReadOnlyListDecorator<IPage<TItem>, IMemoryPage<TItem>>(new ReadOnlyListAdapter<IPage<TItem>>(InternalPages));
+		Pages = InternalPages.ToReadOnlyList().ToProjection(p => (IMemoryPage<TItem>)p);
 		_loadedPages = new ActionCache<long, IMemoryPage<TItem>>(
 			(page) => {
 				Guard.ArgumentInRange(page, 0, InternalPages.Count - 1, nameof(page), "Page not contained in list");
@@ -73,7 +73,7 @@ public abstract class MemoryPagedListBase<TItem> : PagedListBase<TItem>, IMemory
 		};
 	}
 
-	public new IReadOnlyList<IMemoryPage<TItem>> Pages => _pagesDecorator;
+	public new IReadOnlyList<IMemoryPage<TItem>> Pages { get; }
 
 	public long PageSize { get; }
 

@@ -63,7 +63,7 @@ public class StreamMappedMerkleDictionary<TKey, TValue> : StreamMappedMerkleDict
 	/// </summary>
 	public StreamMappedMerkleDictionary(Stream rootStream, int clusterSize, CHF hashAlgorithm = CHF.SHA2_256, IItemSerializer<TKey> keySerializer = null, IItemSerializer<TValue> valueSerializer = null, IItemChecksummer<TKey> keyChecksummer = null,
 	                                    IEqualityComparer<TKey> keyComparer = null, IEqualityComparer<TValue> valueComparer = null, ClusteredStoragePolicy policy = ClusteredStoragePolicy.DictionaryDefault, int reservedRecords = 1,
-	                                    int merkleTreeStreamIndex = HydrogenDefaults.ClusteredStorageMerkleTreeStreamIndex, Endianness endianness = Endianness.LittleEndian)
+	                                    int merkleTreeStreamIndex = HydrogenDefaults.ClusteredStorageMerkleTreeStreamIndex, Endianness endianness = Endianness.LittleEndian, bool autoLoad = false)
 		: this(
 			new StreamMappedMerkleList<KeyValuePair<TKey, TValue>>(
 				rootStream,
@@ -82,7 +82,8 @@ public class StreamMappedMerkleDictionary<TKey, TValue> : StreamMappedMerkleDict
 				0,
 				reservedRecords,
 				merkleTreeStreamIndex,
-				endianness
+				endianness,
+				autoLoad
 			),
 			keyChecksummer,
 			keyComparer,
@@ -97,7 +98,7 @@ public class StreamMappedMerkleDictionary<TKey, TValue> : StreamMappedMerkleDict
 	public StreamMappedMerkleDictionary(Stream rootStream, int clusterSize, IItemSerializer<TKey> staticSizedKeySerializer, CHF hashAlgorithm = CHF.SHA2_256, IItemSerializer<TValue> valueSerializer = null,
 	                                    IItemChecksummer<TKey> keyChecksummer = null, IEqualityComparer<TKey> keyComparer = null, IEqualityComparer<TValue> valueComparer = null,
 	                                    ClusteredStoragePolicy policy = ClusteredStoragePolicy.DictionaryDefault, long reservedRecords = 1, int merkleTreeStreamIndex = HydrogenDefaults.ClusteredStorageMerkleTreeStreamIndex, 
-										Endianness endianness = Endianness.LittleEndian)
+										Endianness endianness = Endianness.LittleEndian, bool autoLoad = false)
 		: this(
 			new StreamMappedMerkleList<TValue>(
 				rootStream,
@@ -109,7 +110,8 @@ public class StreamMappedMerkleDictionary<TKey, TValue> : StreamMappedMerkleDict
 				staticSizedKeySerializer.StaticSize,
 				reservedRecords,
 				merkleTreeStreamIndex,
-				endianness
+				endianness,
+				autoLoad
 			),
 			staticSizedKeySerializer,
 			valueSerializer,
@@ -124,7 +126,7 @@ public class StreamMappedMerkleDictionary<TKey, TValue> : StreamMappedMerkleDict
 	/// Constructs using an <see cref="StreamMappedMerkleDictionary{TKey,TValue}"/> using an <see cref="StreamMappedDictionary{TKey,TValue}"/> under the hood.
 	/// </summary>
 	public StreamMappedMerkleDictionary(StreamMappedMerkleList<KeyValuePair<TKey, TValue>> merkleizedKvpStore, IItemChecksummer<TKey> keyChecksummer = null, IEqualityComparer<TKey> keyComparer = null, IEqualityComparer<TValue> valueComparer = null,
-	                                     Endianness endianness = Endianness.LittleEndian)
+	                                     Endianness endianness = Endianness.LittleEndian, bool autoLoad = false)
 		: this(
 			new StreamMappedDictionary<TKey, TValue>(
 				merkleizedKvpStore,
@@ -132,7 +134,8 @@ public class StreamMappedMerkleDictionary<TKey, TValue> : StreamMappedMerkleDict
 				keyChecksummer,
 				keyComparer,
 				valueComparer,
-				endianness
+				endianness,
+				autoLoad
 			),
 			merkleizedKvpStore.MerkleTree
 		) {

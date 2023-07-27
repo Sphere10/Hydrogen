@@ -36,13 +36,16 @@ public abstract class PagedListBase<TItem> : RangedListBase<TItem>, IPagedList<T
 	private readonly ReadOnlyListAdapter<IPage<TItem>> _pagesAdapter;
 	protected IExtendedList<IPage<TItem>> InternalPages;
 
-	protected PagedListBase() {
+	protected PagedListBase(bool autoLoad) {
 		RequiresLoad = false;
 		IsLoading = false;
 		InternalPages = new ExtendedList<IPage<TItem>>();
 		_count = 0;
 		_pagesAdapter = new ReadOnlyListAdapter<IPage<TItem>>(InternalPages);
 		_lastFoundPage = -1;
+
+		if (autoLoad)
+			Load();
 	}
 
 	public override long Count => _count;

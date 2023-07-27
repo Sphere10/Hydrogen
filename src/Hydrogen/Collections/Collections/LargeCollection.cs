@@ -12,43 +12,27 @@ using System.Collections.Generic;
 namespace Hydrogen;
 
 public class LargeCollection<TItem> : CollectionDecorator<TItem>, IDisposable {
-	public event EventHandlerEx<object, IMemoryPage<TItem>> PageLoading {
-		add => InternalPagedList.PageLoading += value;
-		remove => InternalPagedList.PageLoading -= value;
-	}
+	public event EventHandlerEx<object, IMemoryPage<TItem>> PageLoading { add => InternalCollection.PageLoading += value; remove => InternalCollection.PageLoading -= value; }
+	public event EventHandlerEx<object, IMemoryPage<TItem>> PageLoaded { add => InternalCollection.PageLoaded += value; remove => InternalCollection.PageLoaded -= value; }
+	public event EventHandlerEx<object, IMemoryPage<TItem>> PageUnloading { add => InternalCollection.PageUnloading += value; remove => InternalCollection.PageUnloading -= value; }
+	public event EventHandlerEx<object, IMemoryPage<TItem>> PageUnloaded { add => InternalCollection.PageUnloaded += value; remove => InternalCollection.PageUnloaded -= value; }
 
-	public event EventHandlerEx<object, IMemoryPage<TItem>> PageLoaded {
-		add => InternalPagedList.PageLoaded += value;
-		remove => InternalPagedList.PageLoaded -= value;
-	}
-
-	public event EventHandlerEx<object, IMemoryPage<TItem>> PageUnloading {
-		add => InternalPagedList.PageUnloading += value;
-		remove => InternalPagedList.PageUnloading -= value;
-	}
-
-	public event EventHandlerEx<object, IMemoryPage<TItem>> PageUnloaded {
-		add => InternalPagedList.PageUnloaded += value;
-		remove => InternalPagedList.PageUnloaded -= value;
-	}
-
-	private readonly ReadOnlyListDecorator<IPage<TItem>, IMemoryPage<TItem>> _pagesDecorator;
+	protected new MemoryPagedList<TItem> InternalCollection; 
 
 	public LargeCollection(int pageSize, long maxMemory)
 		: this(pageSize, maxMemory, null) {
-		_pagesDecorator = new ReadOnlyListDecorator<IPage<TItem>, IMemoryPage<TItem>>(InternalPagedList.Pages);
 	}
 
 	public LargeCollection(int pageSize, long maxMemory, Func<TItem, long> itemSizer)
 		: base(new MemoryPagedList<TItem>(pageSize, maxMemory, itemSizer)) {
+		InternalCollection = (MemoryPagedList<TItem>)base.InternalCollection;
+		Pages = InternalCollection.Pages;
 	}
 
-	protected MemoryPagedListBase<TItem> InternalPagedList => (MemoryPagedListBase<TItem>)base.InternalCollection;
-
-	public IReadOnlyList<IMemoryPage<TItem>> Pages => _pagesDecorator;
+	public IReadOnlyList<IMemoryPage<TItem>> Pages { get; }
 
 	public void Dispose() {
-		InternalPagedList.Dispose();
+		InternalCollection.Dispose();
 	}
 
 }

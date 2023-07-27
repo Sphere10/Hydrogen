@@ -39,7 +39,7 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 
 	public StreamMappedDictionary(Stream rootStream, int clusterSize, IItemSerializer<TKey> keySerializer = null, IItemSerializer<TValue> valueSerializer = null, IItemChecksummer<TKey> keyChecksummer = null,
 	                              IEqualityComparer<TKey> keyComparer = null, IEqualityComparer<TValue> valueComparer = null, ClusteredStoragePolicy policy = ClusteredStoragePolicy.DictionaryDefault, int reservedRecords = 0,
-	                              Endianness endianness = Endianness.LittleEndian)
+	                              Endianness endianness = Endianness.LittleEndian, bool autoLoad = false)
 		: this(
 			new StreamMappedList<KeyValuePair<TKey, TValue>>(
 				rootStream,
@@ -55,7 +55,8 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 				policy,
 				0,
 				reservedRecords,
-				endianness
+				endianness,
+				autoLoad
 			),
 			keySerializer,
 			keyChecksummer,
@@ -67,7 +68,7 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 	}
 
 	public StreamMappedDictionary(IStreamMappedList<KeyValuePair<TKey, TValue>> kvpStore, IItemSerializer<TKey> keySerializer, IItemChecksummer<TKey> keyChecksummer = null, IEqualityComparer<TKey> keyComparer = null,
-	                              IEqualityComparer<TValue> valueComparer = null, Endianness endianness = Endianness.LittleEndian) {
+	                              IEqualityComparer<TValue> valueComparer = null, Endianness endianness = Endianness.LittleEndian, bool autoLoad = false) {
 		Guard.ArgumentNotNull(kvpStore, nameof(kvpStore));
 		Guard.ArgumentNotNull(keySerializer, nameof(keySerializer));
 		_keyComparer = keyComparer ?? EqualityComparer<TKey>.Default;
@@ -77,6 +78,8 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 		_checksumToIndexLookup = new LookupEx<int, int>();
 		_unusedRecords = new();
 		_requiresLoad = true; //KVPList.Storage.Records.Count > KVPList.Storage.Header.ReservedRecords;
+		if (autoLoad)
+			Load();
 	}
 
 	public IClusteredStorage Storage => KVPList.Storage;

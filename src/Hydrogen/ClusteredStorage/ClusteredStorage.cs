@@ -76,7 +76,7 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 	private int _clusterEnvelopeSize;
 	private long _allRecordsSize;
 
-	public ClusteredStorage(Stream rootStream, int clusterSize = HydrogenDefaults.ClusterSize, ClusteredStoragePolicy policy = ClusteredStoragePolicy.Default, long recordKeySize = 0, long reservedRecords = 0, Endianness endianness = Endianness.LittleEndian) {
+	public ClusteredStorage(Stream rootStream, int clusterSize = HydrogenDefaults.ClusterSize, ClusteredStoragePolicy policy = ClusteredStoragePolicy.Default, long recordKeySize = 0, long reservedRecords = 0, Endianness endianness = Endianness.LittleEndian, bool autoLoad = false) {
 		Guard.ArgumentNotNull(rootStream, nameof(rootStream));
 		Guard.ArgumentGTE(clusterSize, 1, nameof(clusterSize));
 		Guard.ArgumentInRange(recordKeySize, 0, ushort.MaxValue, nameof(recordKeySize));
@@ -96,6 +96,9 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 		ZeroClusterBytes = Tools.Array.Gen<byte>(clusterSize, 0);
 		_header = null;
 		_initialized = false;
+
+		if (autoLoad)
+			Load();
 	}
 
 	public static ClusteredStorage FromStream(Stream rootStream, Endianness endianness = Endianness.LittleEndian) {

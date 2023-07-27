@@ -17,8 +17,8 @@ namespace Hydrogen;
 /// <typeparam name="TItem"></typeparam>
 public abstract class FilePagedListBase<TItem> : MemoryPagedListBase<TItem>, IFilePagedList<TItem> {
 
-	protected FilePagedListBase(string filename, long pageSize, long maxMemory, bool readOnly = false)
-		: base(pageSize, maxMemory) {
+	protected FilePagedListBase(string filename, long pageSize, long maxMemory, bool readOnly = false, bool autoLoad = false)
+		: base(pageSize, maxMemory, autoLoad: false) {
 		IsReadOnly = readOnly;
 		var fileExists = File.Exists(filename);
 		if (readOnly) {
@@ -31,6 +31,8 @@ public abstract class FilePagedListBase<TItem> : MemoryPagedListBase<TItem>, IFi
 			Stream = File.Open(filename, FileMode.OpenOrCreate, FileAccess.ReadWrite);
 		}
 		RequiresLoad = fileExists && Tools.FileSystem.GetFileSize(filename) > 0;
+		if (RequiresLoad && autoLoad)
+			Load();
 	}
 
 	public override bool IsReadOnly { get; }

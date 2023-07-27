@@ -40,7 +40,7 @@ public class TransactionalStream : TransactionalStream<ExtendedMemoryStream>, IL
 	}
 
 	private static ExtendedMemoryStream CreateInnerStream(string filename, string uncommittedPageFileDir, long pageSize, long maxMemory, bool readOnly, bool autoLoad, out TransactionalFileMappedBuffer transactionalBuffer) {
-		transactionalBuffer =  new TransactionalFileMappedBuffer(filename, uncommittedPageFileDir, pageSize, maxMemory, readOnly, autoLoad);
+		transactionalBuffer = new TransactionalFileMappedBuffer(filename, uncommittedPageFileDir, pageSize, maxMemory, readOnly, autoLoad);
 		var extendedStream = new ExtendedMemoryStream(transactionalBuffer, true);
 		return extendedStream;
 	}

@@ -19,15 +19,14 @@ namespace Hydrogen;
 /// <remarks>The underlying implementation relies on a <see cref="MemoryPagedList{TItem}"/> whose pages are <see cref="MemoryBuffer"/>'s.</remarks>
 public class MemoryPagedBuffer : MemoryPagedListBase<byte>, IMemoryPagedBuffer {
 	private readonly IPagedListDelegate<byte> _friend;
-	private readonly ReadOnlyListDecorator<IPage<byte>, IBufferPage> _pagesDecorator;
 
 	public MemoryPagedBuffer(long pageSize, long maxMemory)
 		: base(pageSize, maxMemory) {
 		_friend = CreateFriendDelegate();
-		_pagesDecorator = new ReadOnlyListDecorator<IPage<byte>, IBufferPage>(new ReadOnlyListAdapter<IPage<byte>>(base.InternalPages));
+		Pages = InternalPages.ToReadOnlyList().ToProjection(x => (IBufferPage)x);
 	}
 
-	public new IReadOnlyList<IBufferPage> Pages => _pagesDecorator;
+	public new IReadOnlyList<IBufferPage> Pages { get; }
 
 	protected override IPage<byte> NewPageInstance(long pageNumber) {
 		return new BufferPage(PageSize);

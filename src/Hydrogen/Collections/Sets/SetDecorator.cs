@@ -60,3 +60,8 @@ public abstract class SetDecorator<TItem, TSet> : ISet<TItem> where TSet : ISet<
 	public virtual bool IsReadOnly => InternalSet.IsReadOnly;
 
 }
+
+public class SetDecorator<TItem> : SetDecorator<TItem, ISet<TItem>> {
+	public SetDecorator(ISet<TItem> internalSet) : base(internalSet) {
+	}
+}

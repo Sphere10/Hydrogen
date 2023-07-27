@@ -15,7 +15,7 @@ namespace Hydrogen;
 /// this simply reverses the original comparison.
 /// </summary>
 /// <typeparam name="T"></typeparam>
-public sealed class ReverseComparer<T> : IComparer<T> {
+public sealed class InvertedComparer<T> : IComparer<T> {
 	readonly IComparer<T> _comparer;
 
 	/// <summary>
@@ -28,7 +28,7 @@ public sealed class ReverseComparer<T> : IComparer<T> {
 	/// Creates a new reversing comparer.
 	/// </summary>
 	/// <param name="original">The original comparer to use for comparisons.</param>
-	public ReverseComparer(IComparer<T> original) {
+	public InvertedComparer(IComparer<T> original) {
 		Guard.ArgumentNotNull(original, nameof(original));
 		_comparer = original;
 	}

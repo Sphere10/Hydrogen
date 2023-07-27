@@ -60,7 +60,7 @@ public static partial class AspNetCore {
 		if (sort != null) {
 			IComparer<SelectListItem> comparer = new ProjectionComparer<SelectListItem, string>(x => x.Text, StringComparer.InvariantCultureIgnoreCase);
 			if (sort.Value == SortDirection.Descending)
-				comparer = new ReverseComparer<SelectListItem>(comparer);
+				comparer = new InvertedComparer<SelectListItem>(comparer);
 			items.Sort(comparer);
 		}
 

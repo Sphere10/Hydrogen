@@ -21,11 +21,11 @@ public static class ComparerExt {
 	/// In other words, for any comparer X, X==X.Reverse().Reverse().
 	/// </summary>
 	public static IComparer<T> Reverse<T>(this IComparer<T> original) {
-		ReverseComparer<T> originalAsReverse = original as ReverseComparer<T>;
-		if (originalAsReverse != null) {
-			return originalAsReverse.OriginalComparer;
+		InvertedComparer<T> originalAsInverted = original as InvertedComparer<T>;
+		if (originalAsInverted != null) {
+			return originalAsInverted.OriginalComparer;
 		}
-		return new ReverseComparer<T>(original);
+		return new InvertedComparer<T>(original);
 	}
 
 	/// <summary>

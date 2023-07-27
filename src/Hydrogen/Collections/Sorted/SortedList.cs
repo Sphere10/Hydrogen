@@ -28,7 +28,7 @@ public class SortedList<T> : CollectionDecorator<T>, ISortedList<T> {
 		comparer ??= Comparer<T>.Default;
 		_comparer = sortDirection switch {
 			SortDirection.Ascending => comparer,
-			SortDirection.Descending => new ReverseComparer<T>(comparer),
+			SortDirection.Descending => new InvertedComparer<T>(comparer),
 			_ => throw new ArgumentException("Must be Ascending or Descending (or null)", nameof(sortDirection))
 		};
 	}

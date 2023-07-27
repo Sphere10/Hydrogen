@@ -607,7 +607,7 @@ public class ClusteredStorageTests : StreamPersistedCollectionTestsBase {
 		Assert.That(streamContainer.Count, Is.EqualTo(0));
 
 		var dataBytes = Encoding.ASCII.GetBytes(data);
-		streamContainer = new ClusteredStorage(rootStream, clusterSize, policy: policy);
+		streamContainer = new ClusteredStorage(rootStream, clusterSize, policy: policy, autoLoad: true);
 		streamContainer.AddBytes(dataBytes);
 		Assert.That(streamContainer.Count, Is.EqualTo(1));
 		Assert.That(streamContainer.ReadAll(0), Is.EqualTo(dataBytes));

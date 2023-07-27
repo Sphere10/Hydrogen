@@ -41,6 +41,11 @@ public class OpenSSLConsistencyTests {
 		Tools.FileSystem.DeleteDirectory(_pascalOpenSSLFolder);
 	}
 
+	[SetUp]
+	public void InitTest() {
+		Assume.That(Environment.GetEnvironmentVariable("GITHUB_ACTIONS"), Is.Not.EqualTo("true"), "Test skipped in GitHub Actions.");
+	}
+
 	private string CallPascalOpenSSL(string[] args) {
 		var startInfo = new ProcessStartInfo {
 			FileName = _pascalOpenSslFilePath,

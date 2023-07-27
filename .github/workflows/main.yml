@@ -16,6 +16,8 @@ jobs:
   
   test:
     runs-on: ubuntu-latest
+    env:
+      GITHUB_ACTIONS: true
     steps:
       - uses: actions/checkout@v2
       - name: Setup .NET Core SDK

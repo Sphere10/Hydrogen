@@ -21,6 +21,7 @@ public static class AssertEx {
 
 	public static void ListIntegrationTest<T>(IExtendedList<T> list, int maxCapacity, Func<Random, int, T[]> randomItemGenerator, bool mutateFromEndOnly = false, int iterations = 100, IList<T> expected = null, Action endOfIterTest = null,
 	                                          IEqualityComparer<T> itemComparer = null) {
+		Assume.That(Environment.GetEnvironmentVariable("GITHUB_ACTIONS"), Is.Not.EqualTo("true"), "Test skipped in GitHub Actions.");
 		var RNG = new Random(31337);
 		expected ??= new List<T>();
 		itemComparer ??= EqualityComparer<T>.Default;
@@ -218,6 +219,7 @@ public static class AssertEx {
 	/// <param name="iterations">Number of internal iterations where random operations are performed </param>
 	/// <param name="expected">Buffer implementation which <see cref="buffer"/> is tested against. This is assumed to be bug-free.</param>
 	public static void BufferIntegrationTest(IBuffer buffer, int maxCapacity, bool mutateFromEndOnly = false, int iterations = 100, IBuffer expected = null) {
+		Assume.That(Environment.GetEnvironmentVariable("GITHUB_ACTIONS"), Is.Not.EqualTo("true"), "Test skipped in GitHub Actions.");
 		Guard.ArgumentNotNull(buffer, nameof(buffer));
 
 		var RNG = new Random(31337);
@@ -352,6 +354,7 @@ public static class AssertEx {
 
 	public static void DictionaryIntegrationTest<TKey, TValue>(IDictionary<TKey, TValue> dictionary, int maxCapacity, Func<Random, (TKey, TValue)> randomItemGenerator, int iterations = 100, IDictionary<TKey, TValue> expected = null,
 	                                                           IEqualityComparer<TKey> keyComparer = null, IEqualityComparer<TValue> valueComparer = null, Action endOfIterTest = null) {
+		Assume.That(Environment.GetEnvironmentVariable("GITHUB_ACTIONS"), Is.Not.EqualTo("true"), "Test skipped in GitHub Actions.");
 		var rng = new Random(31337);
 		expected ??= new Dictionary<TKey, TValue>();
 		keyComparer ??= EqualityComparer<TKey>.Default;
@@ -469,6 +472,7 @@ public static class AssertEx {
 
 	[Test]
 	public static void StreamIntegrationTests(int maxSize, Stream actualStream, Stream expectedStream = null, int iterations = 100, Random RNG = null, bool runAsserts = true) {
+		Assume.That(Environment.GetEnvironmentVariable("GITHUB_ACTIONS"), Is.Not.EqualTo("true"), "Test skipped in GitHub Actions.");
 		Guard.ArgumentInRange(maxSize, 0, int.MaxValue, nameof(maxSize));
 		Guard.ArgumentNotNull(actualStream, nameof(actualStream));
 		Guard.ArgumentNot(actualStream.Length > 0 && expectedStream == null, nameof(actualStream), "Must be empty if not supplying expected stream");

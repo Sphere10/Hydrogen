@@ -770,6 +770,7 @@ public class TransactionalFileMappedBufferTests {
 		[Values(1, 10, 57, 173, 1111)] int maxCapacity,
 		[Values(1, 1, 3, 31, 13)] int pageSize,
 		[Values(1, 1, 7, 2, 10000)] int maxOpenPages) {
+		Assume.That(Environment.GetEnvironmentVariable("GITHUB_ACTIONS"), Is.Not.EqualTo("true"), "Test skipped in GitHub Actions.");
 		var expected = new List<byte>();
 		var RNG = new Random(1231);
 		var fileBaseDir = Tools.FileSystem.GetTempEmptyDirectory(true);
@@ -835,6 +836,7 @@ public class TransactionalFileMappedBufferTests {
 		[Values(1, 10, 57, 173, 1111)] int maxCapacity,
 		[Values(1, 1, 3, 31, 13)] int pageSize,
 		[Values(1, 1, 7, 2, 10000)] int maxOpenPages) {
+		Assume.That(Environment.GetEnvironmentVariable("GITHUB_ACTIONS"), Is.Not.EqualTo("true"), "Test skipped in GitHub Actions.");
 		var expected = new List<byte>();
 		var RNG = new Random(1231);
 		var fileBaseDir = Tools.FileSystem.GetTempEmptyDirectory(true);

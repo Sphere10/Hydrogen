@@ -11,7 +11,7 @@ using System.Collections.Generic;
 
 namespace Hydrogen;
 
-public class SortedList<T> : CollectionDecorator<T>, IReadOnlyList<T> {
+public class SortedList<T> : CollectionDecorator<T>, ISortedList<T> {
 	private readonly IComparer<T> _comparer;
 
 	public SortedList(SortDirection sortDirection = SortDirection.Ascending, IComparer<T> comparer = null)

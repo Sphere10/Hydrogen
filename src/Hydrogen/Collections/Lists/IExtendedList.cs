@@ -7,7 +7,9 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Hydrogen;
 
@@ -31,10 +33,17 @@ public static class IExtendedListExtensions {
 		list.RemoveRange(offset, length);
 	}
 
-	//public static IExtendedList<TTo> CastListAs<TFrom, TTo>(this IExtendedList<TFrom> list) where TFrom : class where TTo : class {
-	//	if (list is ProjectedExtendedList<TTo, TFrom> casted) // if casting back, use original
-	//		return casted._source;
-	//	return new ProjectedExtendedList<TFrom, TTo>(list);
-	//}
-
+	/// <summary>
+	/// Performs a binary search on the specified collection.
+	/// </summary>
+	/// <typeparam name="TItem">The type of the item.</typeparam>
+	/// <param name="list">The list to be searched.</param>
+	/// <param name="value">The value to search for.</param>
+	/// <param name="comparer">The comparer that is used to compare the value with the list items.</param>
+	/// <returns></returns>
+	public static long BinarySearch<TItem>(this IExtendedList<TItem> list, TItem value, IComparer<TItem> comparer = null) {
+		Guard.ArgumentNotNull(list, nameof(list));
+		comparer ??= Comparer<TItem>.Default;
+		return Tools.Collection.BinarySearch(list, value, 0, list.Count - 1, comparer.Compare);
+	}
 }

@@ -22,37 +22,39 @@ public class ExtendedList<T> : RangedListBase<T> {
 	// This can be achieved by using multiple _internalArray's and switching between them based on index
 	private T[] _internalArray;
 	private long _length;
+	private IEqualityComparer<T> _comparer;
 
 	public ExtendedList()
 		: this(4096) {
 	}
 
-	public ExtendedList(long capacity)
-		: this(capacity, int.MaxValue) {
+	public ExtendedList(long capacity, IEqualityComparer<T> comparer = null)
+		: this(capacity, int.MaxValue, comparer) {
 	}
 
-	public ExtendedList(long capacity, long maxCapacity)
-		: this(capacity, capacity, maxCapacity) {
+	public ExtendedList(long capacity, long maxCapacity, IEqualityComparer<T> comparer = null)
+		: this(capacity, capacity, maxCapacity,	comparer) {
 	}
 
-	public ExtendedList(long capacity, long capacityGrowthSize, long maxCapacity)
-		: this(new[] { new T[capacity] }, 0, capacityGrowthSize, maxCapacity) {
+	public ExtendedList(long capacity, long capacityGrowthSize, long maxCapacity, IEqualityComparer<T> comparer = null)
+		: this(new[] { new T[capacity] }, 0, capacityGrowthSize, maxCapacity, comparer) {
 	}
 
-	public ExtendedList(T[] sourceArray)
-		: this(new[] { sourceArray }, sourceArray.Length, 0, sourceArray.Length) {
+	public ExtendedList(T[] sourceArray, IEqualityComparer<T> comparer = null)
+		: this(new[] { sourceArray }, sourceArray.Length, 0, sourceArray.Length, comparer) {
 	}
 
-	public ExtendedList(T[][] sourceArrays) {
+	public ExtendedList(T[][] sourceArrays, IEqualityComparer<T> comparer = null) {
 		Guard.ArgumentNotNull(sourceArrays, nameof(sourceArrays));
 		Guard.ArgumentGT(sourceArrays.Length, 0, nameof(sourceArrays), "Must include at least 1 array");
 		if (sourceArrays.Length != 1)
 			throw new NotImplementedException("Supporting more than 2^32-1 addressing is not currently supported in this implementation");
 		_internalArray = sourceArrays[0];
+		_comparer = comparer ?? EqualityComparer<T>.Default;
 	}
 
 
-	private ExtendedList(T[][] internalArrays, long currentLogicalSize, long capacityGrowthSize, long maxCapacity) {
+	private ExtendedList(T[][] internalArrays, long currentLogicalSize, long capacityGrowthSize, long maxCapacity, IEqualityComparer<T> comparer = null) {
 		Guard.ArgumentGT(internalArrays.Length, 0, nameof(internalArrays), "Must include at least 1 array");
 		Guard.Argument(internalArrays.All(x => x is not null), nameof(internalArrays), "All component arrays must be non-null");
 		Guard.ArgumentInRange(capacityGrowthSize, 0, long.MaxValue, nameof(capacityGrowthSize));
@@ -66,6 +68,7 @@ public class ExtendedList<T> : RangedListBase<T> {
 		_length = currentLogicalSize;
 		CapacityGrowthSize = capacityGrowthSize;
 		MaxCapacity = maxCapacity;
+		_comparer = comparer ?? EqualityComparer<T>.Default;
 	}
 
 	public long CapacityGrowthSize { get; }
@@ -79,12 +82,11 @@ public class ExtendedList<T> : RangedListBase<T> {
 	public override IEnumerable<long> IndexOfRange(IEnumerable<T> items) {
 		// TODO: needs updating to support multiple _internalArray's and 2^64-1 addressable items
 		Guard.ArgumentNotNull(items, nameof(items));
-		var comparer = EqualityComparer<T>.Default;
 		var itemsArr = items as T[] ?? items.ToArray();
 		foreach (var item in itemsArr) {
 			var itemIndex = -1;
 			for (var j = 0; j < _length; j++) {
-				if (comparer.Equals(item, _internalArray[j])) {
+				if (_comparer.Equals(item, _internalArray[j])) {
 					itemIndex = j;
 					break;
 				}

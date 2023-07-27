@@ -18,7 +18,7 @@ public static class DecoratorExtensions {
 	
 	#region IList
 
-	public static IExtendedList<T> AsExtendedList<T>(this IList<T> list) => new ExtendedListAdapter<T>(list);
+	public static IExtendedList<T> AsExtended<T>(this IList<T> list) => new ExtendedListAdapter<T>(list);
 
 	public static IList<T> AsGenericList<T>(this IList list) => new GenericListAdapter<T>(list);
 
@@ -107,6 +107,12 @@ public static class DecoratorExtensions {
 
 	#endregion
 
+	#region AsSorted
+
+	public static ISortedList<T> AsSorted<T>(this IExtendedList<T> list) => new SortedList<T>(list);
+
+	#endregion
+
 	#endregion
 
 	#region IStreamMappedList
@@ -181,6 +187,10 @@ public static class DecoratorExtensions {
 			return originalAsInverted.OriginalComparer;
 		}
 		return new InvertedComparer<T>(comparer);
+	}
+
+	public static IEqualityComparer<T> AsEqualityComparer<T>(this IComparer<T> comparer, IItemChecksummer<T> checksummer = null) {
+		return new EqualityComparerAdapter<T>(comparer, checksummer);
 	}
 
 	#endregion

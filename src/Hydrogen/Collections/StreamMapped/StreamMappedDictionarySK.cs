@@ -106,7 +106,8 @@ public class StreamMappedDictionarySK<TKey, TValue> : DictionaryBase<TKey, TValu
 		get {
 			CheckLoaded();
 			var valueStoreCountI = Tools.Collection.CheckNotImplemented64bitAddressingIndex(_valueStore.Count);
-			return valueStoreCountI - _unusedRecords.Count;
+			var unusedRecordsCountI = Tools.Collection.CheckNotImplemented64bitAddressingIndex(_unusedRecords.Count);
+			return valueStoreCountI - unusedRecordsCountI;
 		}
 	}
 

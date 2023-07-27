@@ -7,6 +7,7 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -106,12 +107,12 @@ public static class Collection {
 		return ~lower;
 	}
 
-	public static int BinarySearch<TItem, TSearch>(TItem[] list, TSearch value, int lower, int upper, Func<TSearch, TItem, int> comparer) {
+	public static int BinarySearch<TItem, TSearch>(IList list, TSearch value, int lower, int upper, Func<TSearch, TItem, int> comparer) {
 		Debug.Assert(list != null);
 		Guard.ArgumentNotNull(comparer, nameof(comparer));
 		while (lower <= upper) {
 			var middle = lower + (upper - lower) / 2;
-			var comparisonResult = comparer(value, list[middle]);
+			var comparisonResult = comparer(value, (TItem)list[middle]);
 			if (comparisonResult < 0) {
 				upper = middle - 1;
 			} else if (comparisonResult > 0) {

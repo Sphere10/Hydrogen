@@ -7,6 +7,7 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -606,15 +607,14 @@ public static class IEnumerableExtensions {
 	/// Performs a binary search on the specified collection.
 	/// </summary>
 	/// <typeparam name="TItem">The type of the item.</typeparam>
-	/// <typeparam name="TSearch">The type of the searched item.</typeparam>
 	/// <param name="list">The list to be searched.</param>
 	/// <param name="value">The value to search for.</param>
 	/// <param name="comparer">The comparer that is used to compare the value with the list items.</param>
 	/// <returns></returns>
-	public static int BinarySearch<TItem, TSearch>(this IEnumerable<TItem> list, TSearch value, Func<TSearch, TItem, int> comparer) {
+	public static int BinarySearch<TItem>(this IEnumerable<TItem> list, TItem value, Func<TItem, TItem, int> comparer) {
 		Guard.ArgumentNotNull(list, nameof(list));
-		var listArr = list as TItem[] ?? list.ToArray();
-		return Tools.Collection.BinarySearch(listArr, value, 0, listArr.Length - 1, comparer);
+		var listArr = list as IList ?? list.ToArray();
+		return Tools.Collection.BinarySearch(listArr, value, 0, listArr.Count - 1, comparer);
 	}
 
 	/// <summary>

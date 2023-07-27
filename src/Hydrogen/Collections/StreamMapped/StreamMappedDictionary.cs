@@ -104,7 +104,8 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 		get {
 			CheckLoaded();
 			var kvpListCountI = Tools.Collection.CheckNotImplemented64bitAddressingLength(KVPList.Count);
-			return kvpListCountI - _unusedRecords.Count;
+			var unusedRecordsCountI = Tools.Collection.CheckNotImplemented64bitAddressingLength(_unusedRecords.Count);
+			return kvpListCountI - unusedRecordsCountI;
 		}
 	}
 

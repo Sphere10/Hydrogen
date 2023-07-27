@@ -72,7 +72,7 @@ public readonly struct ValueRangeIterator<T> : IEnumerable<T> {
 		var includesEnd = Ascending ? Range.IncludesEnd : Range.IncludesStart;
 		var start = Ascending ? Range.Start : Range.End;
 		var end = Ascending ? Range.End : Range.Start;
-		var comparer = Ascending ? Range.Comparer : Range.Comparer.Reverse();
+		var comparer = Ascending ? Range.Comparer : Range.Comparer.AsInverted();
 
 		// Now we can use our local version of the range variables to iterate
 		var value = start;

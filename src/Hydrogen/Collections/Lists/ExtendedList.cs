@@ -22,7 +22,7 @@ public class ExtendedList<T> : RangedListBase<T> {
 	// This can be achieved by using multiple _internalArray's and switching between them based on index
 	private T[] _internalArray;
 	private long _length;
-	private IEqualityComparer<T> _comparer;
+	private readonly IEqualityComparer<T> _comparer;
 
 	public ExtendedList()
 		: this(4096) {

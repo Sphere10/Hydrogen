@@ -11,7 +11,7 @@ using System;
 namespace Hydrogen;
 
 /// <summary>
-/// A future whose value is fetched lazily and which can be invalidated by client. By invalidating the value, the future re-loads the value.
+/// A future whose value is fetched lazily and which can be invalidated by client. By invalidating the value, the future re-loads the value on the subsequent request.
 /// </summary>
 /// <typeparam name="T"></typeparam>
 public class Reloadable<T> : SynchronizedObject, IFuture<T> {

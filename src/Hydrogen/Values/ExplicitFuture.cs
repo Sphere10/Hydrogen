@@ -11,12 +11,12 @@ using System;
 namespace Hydrogen;
 
 /// <summary>
-/// A future whose value will be explicitly set by the client code. If the value is requested before being set, an exception is thrown.
+/// A future whose value will be explicitly set by client. If the value is requested before being set, an exception is thrown.
 /// If the value is attempted to be set after already been set, an exception is thrown. 
 /// </summary>
 public class ExplicitFuture<T> : IFuture<T> {
-	T _value;
-	bool _valueSet;
+	private T _value;
+	private bool _valueSet;
 
 	/// <summary>
 	/// Returns the value of the future, once it has been set
@@ -26,18 +26,17 @@ public class ExplicitFuture<T> : IFuture<T> {
 		get {
 			Guard.Ensure(_valueSet, "No value has been set yet");
 			return _value;
+			
 		}
 		set {
 			Guard.Against(_valueSet, "Value has already been set");
 			_valueSet = true;
-			this._value = value;
+			_value = value;
 		}
 	}
 
 
-	public static ExplicitFuture<T> For(T value) {
-		return new ExplicitFuture<T> { Value = value };
-	}
+	public static ExplicitFuture<T> For(T value) => new() { Value = value };
 
 	/// <summary>
 	/// Returns a string representation of the value if available, null otherwise

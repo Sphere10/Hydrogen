@@ -12,7 +12,7 @@ using System.Threading;
 namespace Hydrogen;
 
 /// <summary>
-/// A future whose value is fetched by a background thread and whose <see cref="Value"/> blocks until that thread complex.
+/// A future whose value is fetched (on activation) by a background thread and whose <see cref="Value"/> property blocks until thread complex.
 /// </summary>
 /// <typeparam name="T"></typeparam>
 public class BackgroundFetchedValue<T> : IFuture<T> {

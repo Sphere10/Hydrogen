@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Data;
 using System.Runtime.CompilerServices;
 
 namespace Hydrogen;
@@ -9,6 +10,14 @@ namespace Hydrogen;
 /// Implements various extensions for activating decorators, wrappers, adapters.
 /// </summary>
 public static class DecoratorExtensions {
+
+	#region ICollection
+
+	public static ICollection<TProjection> AsProjection<T, TProjection>(this ICollection<T> collection, Func<T, TProjection> projection, Func<TProjection, T> inverseProjection) => new ProjectedCollection<T,TProjection>(collection, projection, inverseProjection);
+
+	public static IExtendedCollection<T> AsExtended<T>(this ICollection<T> collection) => new ExtendedCollectionAdapter<T>(collection);
+	
+	#endregion
 
 	#region IReadOnlyList
 
@@ -155,6 +164,24 @@ public static class DecoratorExtensions {
 	public static DictionaryRepositoryAdapter<TEntity, TIdentity, TInner> AsRepository<TEntity, TIdentity, TInner>(this TInner dictionary, Func<TEntity, TIdentity> identityFunc) where TInner : IDictionary<TIdentity, TEntity> => new(dictionary, identityFunc);
 
 	public static DictionaryRepositoryAdapter<TEntity, TIdentity> AsRepository<TEntity, TIdentity>(this IDictionary<TIdentity, TEntity> dictionary, Func<TEntity, TIdentity> identityFunc) => new(dictionary, identityFunc);
+
+	#endregion
+
+	#region AsProjection
+
+	public static IDictionary<TProjectedKey, TProjectedValue> WithProjection<TKey, TValue, TProjectedKey, TProjectedValue>(
+		this IDictionary<TKey, TValue> dictionary,
+		Func<TKey,TProjectedKey> keyProjection,
+		Func<TProjectedKey, TKey> inverseKeyProjection,
+		Func<TValue, TProjectedValue> valueProjection,
+		Func<TProjectedValue, TValue> inverseValueProjection
+	) => new ProjectedDictionary<TKey, TValue, TProjectedKey, TProjectedValue>(dictionary, keyProjection, inverseKeyProjection, valueProjection, inverseValueProjection);
+
+	public static IDictionary<TProjectedKey, TValue> WithKeyProjection<TKey, TValue, TProjectedKey>(this IDictionary<TKey, TValue> dictionary, Func<TKey, TProjectedKey> keyProjection, Func<TProjectedKey, TKey> inverseKeyProjection) 
+		=> dictionary.WithProjection(keyProjection, inverseKeyProjection, v => v, v => v);
+
+	public static IDictionary<TKey, TProjectedValue> WithValueProjection<TKey, TValue, TProjectedValue>(this IDictionary<TKey, TValue> dictionary, Func<TValue, TProjectedValue> valueProjection, Func<TProjectedValue, TValue> inverseValueProjection) 
+		=> dictionary.WithProjection(k => k, k => k, valueProjection, inverseValueProjection);
 
 	#endregion
 

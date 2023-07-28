@@ -16,20 +16,18 @@ namespace Hydrogen;
 /// </summary>
 public static class IComparerExtensions {
 
-	
-
 	/// <summary>
 	/// Combines a comparer with a second comparer to implement composite sort
 	/// behaviour.
 	/// </summary>
 	public static IComparer<T> ThenBy<T>(this IComparer<T> firstComparer, IComparer<T> secondComparer) {
-		return new LinkedComparer<T>(firstComparer, secondComparer);
+		return new CompositeComparer<T>(firstComparer, secondComparer);
 	}
 
 	/// <summary>
 	/// Combines a comparer with a projection to implement composite sort behaviour.
 	/// </summary>
 	public static IComparer<T> ThenBy<T, TKey>(this IComparer<T> firstComparer, Func<T, TKey> projection) {
-		return new LinkedComparer<T>(firstComparer, new ProjectionComparer<T, TKey>(projection));
+		return new CompositeComparer<T>(firstComparer, new ProjectionComparer<T, TKey>(projection));
 	}
 }

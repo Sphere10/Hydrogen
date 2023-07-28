@@ -6,10 +6,17 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using System;
 using System.Collections.Generic;
+using System.Net.Http.Headers;
 
 namespace Hydrogen;
 
 public static class KeyValuePairExtensions {
-	public static KeyValuePair<V, U> ToInverse<U, V>(this KeyValuePair<U, V> kvp) => new KeyValuePair<V, U>(kvp.Value, kvp.Key);
+	public static KeyValuePair<V, U> ToInverse<U, V>(this KeyValuePair<U, V> kvp) => new(kvp.Value, kvp.Key);
+
+	public static KeyValuePair<TProjectedKey, TProjectedValue> AsProjection<TKey, TValue, TProjectedKey, TProjectedValue>(
+		this KeyValuePair<TKey, TValue> kvp,
+		Func<TKey, TProjectedKey> keyProjection,
+		Func<TValue, TProjectedValue> valueProjection) => new(keyProjection(kvp.Key), valueProjection(kvp.Value));
 }

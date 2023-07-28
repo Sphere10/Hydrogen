@@ -11,11 +11,11 @@ using System.Collections.Generic;
 
 namespace Hydrogen;
 
-public class ComparableWrapper<T> : IComparable<T>, IComparable, IEquatable<T> {
+public class LegacyComparableAdapter<T> : IComparable<T>, IComparable, IEquatable<T> {
 	public readonly T @Object;
 	private readonly Comparer<T> _comparer;
 
-	public ComparableWrapper(T internalObject) {
+	public LegacyComparableAdapter(T internalObject) {
 		@Object = internalObject;
 		_comparer = Comparer<T>.Default;
 	}

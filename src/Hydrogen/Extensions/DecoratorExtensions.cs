@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.Runtime.CompilerServices;
+using static Hydrogen.AMS;
 
 namespace Hydrogen;
 
@@ -13,7 +14,7 @@ public static class DecoratorExtensions {
 
 	#region ICollection
 
-	public static ICollection<TProjection> AsProjection<T, TProjection>(this ICollection<T> collection, Func<T, TProjection> projection, Func<TProjection, T> inverseProjection) => new ProjectedCollection<T,TProjection>(collection, projection, inverseProjection);
+	public static ICollection<TProjection> AsProjection<T, TProjection>(this ICollection<T> collection, Func<T, TProjection> projection, Func<TProjection, T> inverseProjection) => new ProjectedCollection<T, TProjection>(collection, projection, inverseProjection);
 
 	public static IExtendedCollection<T> AsExtended<T>(this ICollection<T> collection) => new ExtendedCollectionAdapter<T>(collection);
 	
@@ -21,7 +22,7 @@ public static class DecoratorExtensions {
 
 	#region IReadOnlyList
 
-	public static IReadOnlyList<TTo> WithProjection<TFrom, TTo>(this IReadOnlyList<TFrom> list, Func<TFrom, TTo> projection) => new ReadOnlyListProjection<TFrom,TTo>(list, projection);
+	public static IReadOnlyList<TTo> WithProjection<TFrom, TTo>(this IReadOnlyList<TFrom> list, Func<TFrom, TTo> projection) => new ReadOnlyListProjection<TFrom, TTo>(list, projection);
 
 	#endregion
 	
@@ -62,7 +63,7 @@ public static class DecoratorExtensions {
 	#region WithProjection
 
 	public static IExtendedList<TTo> WithProjection<TFrom, TTo>(this IExtendedList<TFrom> source, Func<TFrom, TTo> projection, Func<TTo, TFrom> inverseProjection)
-		=> new ProjectedExtendedList<TFrom,TTo>(source, projection, inverseProjection);
+		=> new ProjectedExtendedList<TFrom, TTo>(source, projection, inverseProjection);
 
 	#endregion
 
@@ -86,7 +87,7 @@ public static class DecoratorExtensions {
 
 	public static MerkleListAdapter<T, TInnerList> AsMerkleized<T, TInnerList>(this TInnerList list) where TInnerList : IExtendedList<T> => new(list);
 
-	public static MerkleListAdapter<T> AsMerkleized<T>(this IExtendedList<T>  list) => new(list);
+	public static MerkleListAdapter<T> AsMerkleized<T>(this IExtendedList<T> list) => new(list);
 		
 	public static MerkleListAdapter<T, TInnerList> AsMerkleized<T, TInnerList>(this TInnerList list, CHF hashAlgorithm, Endianness endianness = HydrogenDefaults.Endianness) where TInnerList : IExtendedList<T> => new(list, hashAlgorithm, endianness);
 
@@ -171,7 +172,7 @@ public static class DecoratorExtensions {
 
 	public static IDictionary<TProjectedKey, TProjectedValue> WithProjection<TKey, TValue, TProjectedKey, TProjectedValue>(
 		this IDictionary<TKey, TValue> dictionary,
-		Func<TKey,TProjectedKey> keyProjection,
+		Func<TKey, TProjectedKey> keyProjection,
 		Func<TProjectedKey, TKey> inverseKeyProjection,
 		Func<TValue, TProjectedValue> valueProjection,
 		Func<TProjectedValue, TValue> inverseValueProjection
@@ -207,8 +208,24 @@ public static class DecoratorExtensions {
 
 	#endregion
 
-	#region IComparer
+	#region IEqualityComparer
 
+	public static IEqualityComparer<T> AsNegation<T>(this IEqualityComparer<T> comparer) => new NegatedEqualityComparer<T>(comparer);
+
+	public static IEqualityComparer<TTo> AsProjection<TFrom, TTo>(this IEqualityComparer<TFrom> sourceComparer, Func<TTo, TFrom> inverseProjection) => new ProjectedEqualityComparer<TFrom, TTo>(sourceComparer, inverseProjection);
+
+	public static IEqualityComparer<TTo> AsProjection<TFrom, TTo>(this IEqualityComparer<TFrom> sourceComparer, Func<TFrom, TTo> projection, Func<TTo, TFrom> inverseProjection) => sourceComparer.AsProjection(inverseProjection);
+
+	public static IEqualityComparer<TFrom> UsingProjection<TFrom, TTo>(this IEqualityComparer<TFrom> sourceComparer, Func<TFrom, TTo> projection, IEqualityComparer<TTo> projectionComparer = null) => new ProjectionEqualityComparer<TFrom,TTo>(projection, projectionComparer);
+
+	public static IEqualityComparer<T> ThenBy<T>(this IEqualityComparer<T> primary, IEqualityComparer<T> secondary) => new CompositeEqualityComparer<T>(primary, secondary);
+
+	public static IEqualityComparer<T> ThenBy<T, TKey>(this IEqualityComparer<T> primary, Func<T, TKey> projection, IEqualityComparer<TKey> keyComparer = null) => new CompositeEqualityComparer<T>(primary, new ProjectionEqualityComparer<T,TKey>(projection, keyComparer));
+
+	
+	#endregion
+
+	#region IComparer
 	/// <summary>
 	/// Reverses the original comparer; if it was already a reverse comparer,
 	/// the previous version was reversed (rather than reversing twice).
@@ -221,9 +238,25 @@ public static class DecoratorExtensions {
 		return new InvertedComparer<T>(comparer);
 	}
 
-	public static IEqualityComparer<T> AsEqualityComparer<T>(this IComparer<T> comparer, IItemChecksummer<T> checksummer = null) {
-		return new EqualityComparerAdapter<T>(comparer, checksummer);
-	}
+	public static IEqualityComparer<T> AsEqualityComparer<T>(this IComparer<T> comparer, IItemChecksummer<T> checksummer = null) => new EqualityComparerAdapter<T>(comparer, checksummer);
+
+	public static IComparer<TTo> AsProjection<TFrom, TTo>(this IComparer<TFrom> sourceComparer, Func<TTo, TFrom> inverseProjection) => new ProjectedComparer<TFrom, TTo>(sourceComparer, inverseProjection);
+	
+	public static IComparer<TTo> AsProjection<TFrom, TTo>(this IComparer<TFrom> sourceComparer, Func<TFrom, TTo> projection, Func<TTo, TFrom> inverseProjection) => sourceComparer.AsProjection(inverseProjection);
+
+	public static IComparer<TFrom> UsingProjection<TFrom, TTo>(this IComparer<TFrom> sourceComparer, Func<TFrom, TTo> projection, IComparer<TTo> projectionComparer = null) => new ProjectionComparer<TFrom,TTo>(projection, projectionComparer);
+
+	/// <summary>
+	/// Combines a comparer with a second comparer to implement composite sort
+	/// behaviour.
+	/// </summary>
+	public static IComparer<T> ThenBy<T>(this IComparer<T> firstComparer, IComparer<T> secondComparer) => new CompositeComparer<T>(firstComparer, secondComparer);
+
+	/// <summary>
+	/// Combines a comparer with a projection to implement composite sort behaviour.
+	/// </summary>
+	public static IComparer<T> ThenBy<T, TKey>(this IComparer<T> firstComparer, Func<T, TKey> projection, IComparer<TKey> keyComparer = null) => new CompositeComparer<T>(firstComparer, new ProjectionComparer<T, TKey>(projection, keyComparer));
 
 	#endregion
+
 }

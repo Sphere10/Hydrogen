@@ -38,7 +38,8 @@ public abstract class CacheBase<TKey, TValue> : CacheBase, ICache<TKey, TValue> 
 		StaleValuePolicy staleValuePolicy = StaleValuePolicy.AssumeNeverStale,
 		IEqualityComparer<TKey> keyComparer = null,
 		ICacheReaper reaper = null
-	) : base(new CastedEqualityComparer<TKey, object>(keyComparer ?? EqualityComparer<TKey>.Default), reapStrategy, expirationStrategy, maxCapacity, expirationDuration, nullValuePolicy, staleValuePolicy, reaper) {
+	//) : base(new CastedEqualityComparer<TKey, object>(keyComparer ?? EqualityComparer<TKey>.Default), reapStrategy, expirationStrategy, maxCapacity, expirationDuration, nullValuePolicy, staleValuePolicy, reaper) {
+	) : base((keyComparer ?? EqualityComparer<TKey>.Default).AsProjection(x => (object)x, x => (TKey)x), reapStrategy, expirationStrategy, maxCapacity, expirationDuration, nullValuePolicy, staleValuePolicy, reaper) {
 	}
 
 	public new IEnumerable<CachedItem<TValue>> CachedItems => ((CacheBase)this).CachedItems.Cast<CachedItem<TValue>>();

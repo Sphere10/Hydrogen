@@ -8,29 +8,46 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Hydrogen;
 
-/// <summary>
-/// Comparer to daisy-chain two existing comparers and 
-/// apply in sequence (i.e. sort by x then y)
-/// </summary>
-/// <typeparam name="T"></typeparam>
-internal class CompositeComparer<T> : IComparer<T> {
-	private readonly IComparer<T> _primary, _secondary;
+public class CompositeComparer<T> : IComparer<T> {
+	private readonly IComparer<T> _primary;
+	private readonly IComparer<T> _secondary;
 
-	/// <summary>
-	/// Create a new CompositeComparer
-	/// </summary>
-	/// <param name="primary">The first comparison to use</param>
-	/// <param name="secondary">The next level of comparison if the primary returns 0 (equivalent)</param>
-	public CompositeComparer(IComparer<T> primary, IComparer<T> secondary) {
-		_primary = primary ?? throw new ArgumentNullException(nameof(primary));
-		_secondary = secondary ?? throw new ArgumentNullException(nameof(secondary));
+	public CompositeComparer(IComparer<T> single) : this(single, IdempotentComparer<T>.Instance) {
 	}
 
-	int IComparer<T>.Compare(T x, T y) {
+	public CompositeComparer(IEnumerable<IComparer<T>> comparers) 
+		: this(From(comparers)) {
+	}
+
+	public CompositeComparer(IComparer<T> primary, IComparer<T> secondary) {
+		Guard.ArgumentNotNull(primary, nameof(primary));
+		Guard.ArgumentNotNull(secondary, nameof(secondary));
+		_primary = primary;
+		_secondary = secondary;
+	}
+
+	public int Compare(T x, T y) {
 		var result = _primary.Compare(x, y);
 		return result == 0 ? _secondary.Compare(x, y) : result;
 	}
+
+	public static CompositeComparer<T> From(IEnumerable<IComparer<T>> comparers) {
+		Guard.ArgumentNotNull(comparers, nameof(comparers));
+		var comparersArr = comparers as IComparer<T>[] ?? comparers.ToArray();
+		switch(comparersArr.Count()) {
+			case 0: 
+				throw new ArgumentException("Must have at least one comparer", nameof(comparers));
+			case 1:
+				return new CompositeComparer<T>(comparersArr.Single());
+			case 2:
+				return new CompositeComparer<T>(comparersArr.Single(), comparersArr.Skip(1).Single());
+			default:
+				return new CompositeComparer<T>(comparersArr.First(), From(comparersArr.Skip(1)));
+		}
+	}
+
 }

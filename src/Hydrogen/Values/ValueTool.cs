@@ -187,7 +187,7 @@ public class Values {
 
 		public static BackgroundFetchedValue<T> BackgroundFetched<TSource, T>(IFuture<TSource> future, Func<T> valueLoader) => new(valueLoader);
 
-		public static IFuture<T> Projection<TSource, T>(IFuture<TSource> future, Func<TSource, T> projection) => LazyLoad(() => projection(future.Value));
+		public static IFuture<T> Projection<TSource, T>(IFuture<TSource> future, Func<TSource, T> projection) => AlwaysLoad(() => projection(future.Value));
 
 	}
 

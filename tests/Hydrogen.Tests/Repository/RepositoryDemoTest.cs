@@ -16,7 +16,7 @@ using NUnit.Framework;
 
 namespace Hydrogen.Tests;
 
-[TestFixture]
+[TestFixture, Timeout(60000)]
 public class RepositoryTests {
 
 	[Test]

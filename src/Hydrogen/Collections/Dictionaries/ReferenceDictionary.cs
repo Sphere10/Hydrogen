@@ -12,6 +12,14 @@ using System.Linq;
 
 namespace Hydrogen;
 
+
+//public class ReferenceDictionary<TKey, TValue> : Dictionary<TKey, TValue> {
+
+//	public ReferenceDictionary() : base(null, ReferenceEqualityComparer.Instance.With) {
+
+//	}
+//}
+
 public class ReferenceDictionary<TKey, TVal> : Dictionary<Reference<TKey>, TVal> where TKey : class {
 	private readonly Func<TVal, TKey> _keyExtractor;
 

@@ -6,60 +6,10 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-// Based on Jon Skeet's library
-
 using System;
 using System.Collections.Generic;
 
 namespace Hydrogen;
-
-/// <summary>
-/// Non-generic class to produce instances of the generic class,
-/// optionally using type inference.
-/// </summary>
-public static class ProjectionComparer {
-	/// <summary>
-	/// Creates an instance of ProjectionComparer using the specified projection.
-	/// </summary>
-	/// <typeparam name="TSource">Type parameter for the elements to be compared</typeparam>
-	/// <typeparam name="TKey">Type parameter for the keys to be compared, after being projected from the elements</typeparam>
-	/// <param name="projection">Projection to use when determining the key of an element</param>
-	/// <returns>A comparer which will compare elements by projecting each element to its key, and comparing keys</returns>
-	public static ProjectionComparer<TSource, TKey> Create<TSource, TKey>(Func<TSource, TKey> projection) {
-		return new ProjectionComparer<TSource, TKey>(projection);
-	}
-
-	/// <summary>
-	/// Creates an instance of ProjectionComparer using the specified projection.
-	/// The ignored parameter is solely present to aid type inference.
-	/// </summary>
-	/// <typeparam name="TSource">Type parameter for the elements to be compared</typeparam>
-	/// <typeparam name="TKey">Type parameter for the keys to be compared, after being projected from the elements</typeparam>
-	/// <param name="ignored">Value is ignored - type may be used by type inference</param>
-	/// <param name="projection">Projection to use when determining the key of an element</param>
-	/// <returns>A comparer which will compare elements by projecting each element to its key, and comparing keys</returns>
-	public static ProjectionComparer<TSource, TKey> Create<TSource, TKey>(TSource ignored, Func<TSource, TKey> projection) {
-		return new ProjectionComparer<TSource, TKey>(projection);
-	}
-
-}
-
-
-/// <summary>
-/// Class generic in the source only to produce instances of the 
-/// doubly generic class, optionally using type inference.
-/// </summary>
-public static class ProjectionComparer<TSource> {
-	/// <summary>
-	/// Creates an instance of ProjectionComparer using the specified projection.
-	/// </summary>
-	/// <typeparam name="TKey">Type parameter for the keys to be compared, after being projected from the elements</typeparam>
-	/// <param name="projection">Projection to use when determining the key of an element</param>
-	/// <returns>A comparer which will compare elements by projecting each element to its key, and comparing keys</returns>        
-	public static ProjectionComparer<TSource, TKey> Create<TKey>(Func<TSource, TKey> projection) {
-		return new ProjectionComparer<TSource, TKey>(projection);
-	}
-}
 
 
 /// <summary>
@@ -69,9 +19,9 @@ public static class ProjectionComparer<TSource> {
 /// <typeparam name="TSource">Type of elements which this comparer will be asked to compare</typeparam>
 /// <typeparam name="TKey">Type of the key projected from the element</typeparam>
 public class ProjectionComparer<TSource, TKey> : IComparer<TSource> {
-	readonly Func<TSource, TKey> _projection;
-	readonly IComparer<TKey> _comparer;
-
+	private readonly IComparer<TKey> _comparer;
+	private readonly Func<TSource, TKey> _projection;
+	
 	/// <summary>
 	/// Creates a new instance using the specified projection, which must not be null.
 	/// The default comparer for the projected type is used.

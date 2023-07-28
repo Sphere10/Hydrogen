@@ -14,12 +14,8 @@ namespace Hydrogen;
 /// <summary>
 /// Extensions to IComparer
 /// </summary>
-public static class ComparerExt {
-	/// <summary>
-	/// Reverses the original comparer; if it was already a reverse comparer,
-	/// the previous version was reversed (rather than reversing twice).
-	/// In other words, for any comparer X, X==X.Reverse().Reverse().
-	/// </summary>
+public static class IComparerExtensions {
+
 	
 
 	/// <summary>

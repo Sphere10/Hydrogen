@@ -209,6 +209,11 @@ public static class DecoratorExtensions {
 
 	#region IComparer
 
+	/// <summary>
+	/// Reverses the original comparer; if it was already a reverse comparer,
+	/// the previous version was reversed (rather than reversing twice).
+	/// In other words, for any comparer X, X==X.Reverse().Reverse().
+	/// </summary>
 	public static IComparer<T> AsInverted<T>(this IComparer<T> comparer) {
 		if (comparer is InvertedComparer<T> originalAsInverted) {
 			return originalAsInverted.OriginalComparer;

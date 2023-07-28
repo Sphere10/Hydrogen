@@ -6,8 +6,10 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using System.Runtime.CompilerServices;
+
 namespace Hydrogen;
 
 public class ObjectHashCodeChecksummer<T> : IItemChecksummer<T> {
-	public int CalculateChecksum(T item) => item.GetHashCode();
+	public int CalculateChecksum(T item) => RuntimeHelpers.GetHashCode(item);
 }

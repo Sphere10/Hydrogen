@@ -106,8 +106,82 @@ public static class TypeExtensions {
 	/// <returns><see langword="true" /> if <paramref name="type"/> is a constructed type of <paramref name="genericTypeDefinition"/>; otherwise, <see langword="false" />.</returns>
 	/// <remarks>This should be interepreted as "is a constructed generic type of the following pure generic type".</remarks>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static bool IsConstructedGenericTypeOf(this Type type, Type genericTypeDefinition)
-		=> type.IsConstructedGenericType && type.GetGenericTypeDefinition() == genericTypeDefinition;
+	public static bool IsConstructedGenericTypeOf(this Type type, Type genericTypeDefinition) {
+		Guard.ArgumentNotNull(type, nameof(type));
+		Guard.ArgumentNotNull(genericTypeDefinition, nameof(genericTypeDefinition));
+		Guard.Argument(genericTypeDefinition.IsGenericTypeDefinition, nameof(genericTypeDefinition), "Must be a generic type definition.");
+		return type.IsConstructedGenericType && type.GetGenericTypeDefinition() == genericTypeDefinition;
+	}
+
+
+	/// <summary>
+	/// Determines whether the specified type is a subtype of a specified generic type definition.
+	/// </summary>
+	/// <param name="type">The type to check.</param>
+	/// <param name="genericTypeDefinition">The generic type definition to check against.</param>
+	/// <returns>
+	/// <c>true</c> if the specified type is a subtype of the specified generic type definition;
+	/// otherwise, <c>false</c>.
+	/// </returns>
+	/// <exception cref="ArgumentNullException">
+	/// Thrown when either <paramref name="type"/> or <paramref name="genericTypeDefinition"/> is <c>null</c>.
+	/// </exception>
+	/// <exception cref="ArgumentException">
+	/// Thrown when <paramref name="genericTypeDefinition"/> is not a generic type definition.
+	/// </exception>
+	/// <remarks>
+	/// This method checks both the inheritance hierarchy and the interfaces implemented by the specified type.
+	/// A type is considered a subtype of itself.
+	/// </remarks>
+	public static bool IsSubtypeOfGenericType(this Type type, Type genericTypeDefinition) => IsSubtypeOfGenericType(type, genericTypeDefinition, out _);
+
+
+	/// <summary>
+	/// Determines whether the specified type is a subtype of a specified generic type definition.
+	/// </summary>
+	/// <param name="type">The type to check.</param>
+	/// <param name="genericTypeDefinition">The generic type definition to check against.</param>
+	/// <param name="matchedGenericType">Out parameter that returns the first generic type in the inheritance or interface hierarchy of the specified type that matches the specified generic type definition. It returns <c>null</c> if no such type is found.</param>
+	/// <returns>
+	/// <c>true</c> if the specified type is a subtype of the specified generic type definition;
+	/// otherwise, <c>false</c>.
+	/// </returns>
+	/// <exception cref="ArgumentNullException">
+	/// Thrown when either <paramref name="type"/> or <paramref name="genericTypeDefinition"/> is <c>null</c>.
+	/// </exception>
+	/// <exception cref="ArgumentException">
+	/// Thrown when <paramref name="genericTypeDefinition"/> is not a generic type definition.
+	/// </exception>
+	/// <remarks>
+	/// This method checks both the inheritance hierarchy and the interfaces implemented by the specified type.
+	/// A type is considered a subtype of itself.
+	/// </remarks>
+	public static bool IsSubtypeOfGenericType(this Type type, Type genericTypeDefinition, out Type matchedGenericType) {
+		Guard.ArgumentNotNull(type, nameof(type));
+		Guard.ArgumentNotNull(genericTypeDefinition, nameof(genericTypeDefinition));
+		Guard.Argument(genericTypeDefinition.IsGenericTypeDefinition, nameof(genericTypeDefinition), "Must be a generic type definition");
+		matchedGenericType = null!;
+
+		// first check through the implemented interfaces.
+		foreach (var interfaceType in type.GetInterfaces()) {  // GetInterfaces returns flattened list
+			if (interfaceType.IsGenericType && interfaceType.GetGenericTypeDefinition() == genericTypeDefinition) {
+				matchedGenericType = interfaceType;
+				return true;
+			}
+		}
+		
+		// Check base types
+		while (type != null) {
+			if (type.IsGenericType && type.GetGenericTypeDefinition() == genericTypeDefinition) {
+				matchedGenericType = type;
+				return true;
+			}
+			type = type.BaseType;
+		}
+		
+		return false;
+	}
+
 
 	/// <summary>
 	/// Determines whether <paramref name="type"/> is a nullable value type.

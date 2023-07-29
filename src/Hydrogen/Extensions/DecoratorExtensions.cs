@@ -216,6 +216,8 @@ public static class DecoratorExtensions {
 
 	public static IEqualityComparer<TTo> AsProjection<TFrom, TTo>(this IEqualityComparer<TFrom> sourceComparer, Func<TFrom, TTo> projection, Func<TTo, TFrom> inverseProjection) => sourceComparer.AsProjection(inverseProjection);
 
+	public static IEqualityComparer<object> AsPacked<TItem>(this IEqualityComparer<TItem> sourceComparer) => PackedEqualityComparer.Pack(sourceComparer);
+
 	public static IEqualityComparer<TFrom> UsingProjection<TFrom, TTo>(this IEqualityComparer<TFrom> sourceComparer, Func<TFrom, TTo> projection, IEqualityComparer<TTo> projectionComparer = null) => new ProjectionEqualityComparer<TFrom,TTo>(projection, projectionComparer);
 
 	public static IEqualityComparer<T> ThenBy<T>(this IEqualityComparer<T> primary, IEqualityComparer<T> secondary) => new CompositeEqualityComparer<T>(primary, secondary);
@@ -243,6 +245,8 @@ public static class DecoratorExtensions {
 	public static IComparer<TTo> AsProjection<TFrom, TTo>(this IComparer<TFrom> sourceComparer, Func<TTo, TFrom> inverseProjection) => new ProjectedComparer<TFrom, TTo>(sourceComparer, inverseProjection);
 	
 	public static IComparer<TTo> AsProjection<TFrom, TTo>(this IComparer<TFrom> sourceComparer, Func<TFrom, TTo> projection, Func<TTo, TFrom> inverseProjection) => sourceComparer.AsProjection(inverseProjection);
+
+	public static IComparer<object> AsPacked<TItem>(this IComparer<TItem> sourceComparer) => PackedComparer.Pack(sourceComparer);
 
 	public static IComparer<TFrom> UsingProjection<TFrom, TTo>(this IComparer<TFrom> sourceComparer, Func<TFrom, TTo> projection, IComparer<TTo> projectionComparer = null) => new ProjectionComparer<TFrom,TTo>(projection, projectionComparer);
 

@@ -218,12 +218,9 @@ public static class DecoratorExtensions {
 
 	public static IEqualityComparer<object> AsPacked<TItem>(this IEqualityComparer<TItem> sourceComparer) => PackedEqualityComparer.Pack(sourceComparer);
 
-	public static IEqualityComparer<TFrom> UsingProjection<TFrom, TTo>(this IEqualityComparer<TFrom> sourceComparer, Func<TFrom, TTo> projection, IEqualityComparer<TTo> projectionComparer = null) => new ProjectionEqualityComparer<TFrom,TTo>(projection, projectionComparer);
-
 	public static IEqualityComparer<T> ThenBy<T>(this IEqualityComparer<T> primary, IEqualityComparer<T> secondary) => new CompositeEqualityComparer<T>(primary, secondary);
 
 	public static IEqualityComparer<T> ThenBy<T, TKey>(this IEqualityComparer<T> primary, Func<T, TKey> projection, IEqualityComparer<TKey> keyComparer = null) => new CompositeEqualityComparer<T>(primary, new ProjectionEqualityComparer<T,TKey>(projection, keyComparer));
-
 	
 	#endregion
 
@@ -248,18 +245,20 @@ public static class DecoratorExtensions {
 
 	public static IComparer<object> AsPacked<TItem>(this IComparer<TItem> sourceComparer) => PackedComparer.Pack(sourceComparer);
 
-	public static IComparer<TFrom> UsingProjection<TFrom, TTo>(this IComparer<TFrom> sourceComparer, Func<TFrom, TTo> projection, IComparer<TTo> projectionComparer = null) => new ProjectionComparer<TFrom,TTo>(projection, projectionComparer);
-
 	/// <summary>
 	/// Combines a comparer with a second comparer to implement composite sort
 	/// behaviour.
 	/// </summary>
 	public static IComparer<T> ThenBy<T>(this IComparer<T> firstComparer, IComparer<T> secondComparer) => new CompositeComparer<T>(firstComparer, secondComparer);
 
+	public static IComparer<T> ThenByDescending<T>(this IComparer<T> firstComparer, IComparer<T> secondComparer) => firstComparer.ThenBy(secondComparer.AsInverted());
+
 	/// <summary>
 	/// Combines a comparer with a projection to implement composite sort behaviour.
 	/// </summary>
 	public static IComparer<T> ThenBy<T, TKey>(this IComparer<T> firstComparer, Func<T, TKey> projection, IComparer<TKey> keyComparer = null) => new CompositeComparer<T>(firstComparer, new ProjectionComparer<T, TKey>(projection, keyComparer));
+
+	public static IComparer<T> ThenByDescending<T, TKey>(this IComparer<T> firstComparer, Func<T, TKey> projection, IComparer<TKey> keyComparer = null) => firstComparer.ThenBy(projection, (keyComparer ?? Comparer<TKey>.Default).AsInverted());
 
 	#endregion
 

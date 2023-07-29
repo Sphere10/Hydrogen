@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Hydrogen;
 
@@ -11,4 +12,8 @@ public class IdempotentEqualityComparer<T> : IEqualityComparer<T> {
 	public bool Equals(T x, T y) => true;
 
 	public int GetHashCode(T obj) => 0;
+
+	public IEqualityComparer<T> StartWith<TMember>(Func<T, TMember> member, IEqualityComparer<TMember> memberComparer = null) 
+		=> new ProjectionEqualityComparer<T, TMember>(member, memberComparer);
+	
 }

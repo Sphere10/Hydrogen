@@ -186,6 +186,14 @@ public static class DecoratorExtensions {
 
 	#endregion
 
+	#region AsBijective
+
+	public static BijectiveDictionary<TKey, TValue > AsBijection<TKey, TValue>(this IDictionary<TKey, TValue> dictionary) => dictionary.AsBijection(new Dictionary<TValue, TKey>());
+
+	public static BijectiveDictionary<TKey, TValue > AsBijection<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, IDictionary<TValue, TKey> internalBijectiveDictionary) => new(dictionary, internalBijectiveDictionary);
+
+	#endregion
+
 	#endregion
 
 	#region ISet

@@ -11,7 +11,7 @@ using System.Collections.Generic;
 
 namespace Hydrogen;
 
-public class BijectiveDictionary<U, V> : DictionaryDecorator<U, V>, IBijectiveDictionary<U, V> {
+public sealed class BijectiveDictionary<U, V> : DictionaryDecorator<U, V>, IBijectiveDictionary<U, V> {
 	private readonly BijectiveDictionary<V, U> _bijection;
 
 	public BijectiveDictionary() : this(EqualityComparer<U>.Default, EqualityComparer<V>.Default) {
@@ -21,11 +21,16 @@ public class BijectiveDictionary<U, V> : DictionaryDecorator<U, V>, IBijectiveDi
 		: this(new Dictionary<U, V>(equalityComparerU), new Dictionary<V, U>(equalityComparerV)) {
 	}
 
-	public BijectiveDictionary(IDictionary<U, V> internalDictionary, IDictionary<V, U> internalBijectiveDictionary) : base(internalDictionary) {
+	public BijectiveDictionary(IDictionary<U, V> internalDictionary, IDictionary<V, U> internalBijectiveDictionary) 
+		: base(internalDictionary) {
+		MakeSame(internalDictionary, internalBijectiveDictionary);
 		_bijection = new BijectiveDictionary<V, U>(internalBijectiveDictionary, this);
 	}
 
-	public BijectiveDictionary(IDictionary<U, V> internalDictionary, BijectiveDictionary<V, U> bijection) : base(internalDictionary) {
+	public BijectiveDictionary(IDictionary<U, V> internalDictionary, BijectiveDictionary<V, U> bijection) 
+		: base(internalDictionary) {
+		Guard.ArgumentNotNull(bijection, nameof(bijection));
+		MakeSame(internalDictionary, bijection.InternalDictionary);
 		_bijection = bijection;
 	}
 
@@ -70,4 +75,14 @@ public class BijectiveDictionary<U, V> : DictionaryDecorator<U, V>, IBijectiveDi
 		_bijection.InternalDictionary.Clear();
 	}
 
+	private void MakeSame(IDictionary<U, V> internalDictionary, IDictionary<V, U> internalBijectiveDictionary) {
+		foreach (var kvp in internalDictionary) {
+			if (!internalBijectiveDictionary.ContainsKey(kvp.Value))
+				internalBijectiveDictionary.Add(kvp.Value, kvp.Key);
+		}
+		foreach (var kvp in internalBijectiveDictionary) {
+			if (!internalDictionary.ContainsKey(kvp.Value))
+				internalDictionary.Add(kvp.Value, kvp.Key);
+		}
+	}
 }

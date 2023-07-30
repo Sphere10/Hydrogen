@@ -15,6 +15,7 @@ public abstract class DictionaryDecorator<TKey, TValue, TDictionary> : IDictiona
 	protected readonly TDictionary InternalDictionary;
 
 	protected DictionaryDecorator(TDictionary internalDictionary) {
+		Guard.ArgumentNotNull(internalDictionary, nameof(internalDictionary));
 		InternalDictionary = internalDictionary;
 	}
 

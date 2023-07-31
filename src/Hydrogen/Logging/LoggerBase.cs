@@ -63,10 +63,11 @@ public abstract class LoggerBase : ILogger {
 	/// Logs an exception.
 	/// </summary>
 	/// <param name="exception">The exception.</param>
-	public void Exception(Exception exception) {
-		if (LoggerHelper.TryHydrateErrorMessage(exception, Options, out var message))
-			Log(LogLevel.Error, message);
-	}
+	/// <param name="message1"></param>
+	public void Exception(Exception exception, string message = null) {
+		if (LoggerHelper.TryHydrateErrorMessage(exception, Options, out var exceptionMessage))
+			Log(LogLevel.Error, !string.IsNullOrWhiteSpace(message) ? $"{message}. {exceptionMessage}" : exceptionMessage);
+		}
 
 	/// <summary>
 	/// Implemented by sub-class.

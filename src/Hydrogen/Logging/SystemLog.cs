@@ -81,7 +81,7 @@ public static class SystemLog {
 	}
 
 
-	public static void Exception(Exception exception) => _logger.Exception(exception);
+	public static void Exception(Exception exception, string message = null) => _logger.Exception(exception, message);
 
 	public static void Exception(string componentName, string methodName, Exception exception) {
 		if (LoggerHelper.TryHydrateErrorMessage(exception, _logger.Options, out var message))

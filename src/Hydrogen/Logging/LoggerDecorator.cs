@@ -39,7 +39,7 @@ public class LoggerDecorator : ILogger {
 		_decoratedLogger.Error(message);
 	}
 
-	public virtual void Exception(Exception exception) {
-		_decoratedLogger.Exception(exception);
+	public virtual void Exception(Exception exception, string message = null) {
+		_decoratedLogger.Exception(exception, message);
 	}
 }

@@ -46,7 +46,8 @@ public interface ILogger {
 	/// Logs an exception message.
 	/// </summary>
 	/// <param name="exception">The exception.</param>
-	void Exception(Exception exception);
+	/// <param name="message"></param>
+	void Exception(Exception exception, string message = null);
 }
 
 
@@ -98,6 +99,10 @@ public static class ILoggerExtensions {
 	public static void Result(this ILogger logger, string componentName, string methodName, Result result) {
 		foreach (var code in result.ErrorCodes)
 			logger.Log(code.Severity, $"{ComponentPrefix(componentName, methodName)} {code.Payload}");
+	}
+
+	public static void Exception(this ILogger logger, Exception exception,  string componentName, string methodName, string message = null) {
+		logger.Exception(exception, $"{ComponentPrefix(componentName, methodName)} {message}");
 	}
 
 	public static IDisposable LogDuration(this ILogger logger, string messagePrefix) {

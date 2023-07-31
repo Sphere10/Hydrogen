@@ -34,7 +34,7 @@ public class AsyncLogger : LoggerDecorator {
 		_serialThreadPool.QueueUserWorkItem(() => base.Error(message));
 	}
 
-	public override void Exception(Exception exception) {
-		_serialThreadPool.QueueUserWorkItem(() => base.Exception(exception));
+	public override void Exception(Exception exception, string message) {
+		_serialThreadPool.QueueUserWorkItem(() => base.Exception(exception, message));
 	}
 };

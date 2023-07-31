@@ -31,9 +31,9 @@ public abstract class PrefixLoggerBase : LoggerDecorator {
 		base.Error($"{GetPrefix()}" + message);
 	}
 
-	public override void Exception(Exception exception) {
-		if (LoggerHelper.TryHydrateErrorMessage(exception, Options, out var message))
-			Error(message);
+	public override void Exception(Exception exception, string message = null) {
+		if (LoggerHelper.TryHydrateErrorMessage(exception, Options, out var exceptionMessage))
+			Error(!string.IsNullOrWhiteSpace(message) ? $"{message}. {exceptionMessage}" : exceptionMessage);
 	}
 
 	protected abstract string GetPrefix();

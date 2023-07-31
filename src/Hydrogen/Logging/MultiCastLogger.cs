@@ -93,12 +93,12 @@ public class MulticastLogger : ILogger {
 		}
 	}
 
-	public void Exception(Exception exception) {
+	public void Exception(Exception exception, string message = null) {
 		using (_loggers.EnterReadScope()) {
 			if (MultiThreaded)
-				Parallel.ForEach(_loggers, (logger) => Tools.Exceptions.ExecuteIgnoringException(() => logger.Exception(exception)));
+				Parallel.ForEach(_loggers, (logger) => Tools.Exceptions.ExecuteIgnoringException(() => logger.Exception(exception, message)));
 			else
-				_loggers.ForEach((logger) => Tools.Exceptions.ExecuteIgnoringException(() => logger.Exception(exception)));
+				_loggers.ForEach((logger) => Tools.Exceptions.ExecuteIgnoringException(() => logger.Exception(exception, message)));
 		}
 	}
 

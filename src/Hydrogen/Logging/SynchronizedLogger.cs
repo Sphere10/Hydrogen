@@ -50,8 +50,8 @@ public class SynchronizedLogger : SynchronizedObject, ILogger {
 			_internalLogger.Error(message);
 	}
 
-	public void Exception(Exception exception) {
+	public void Exception(Exception exception, string message = null) {
 		using (EnterWriteScope())
-			_internalLogger.Exception(exception);
+			_internalLogger.Exception(exception, message);
 	}
 }

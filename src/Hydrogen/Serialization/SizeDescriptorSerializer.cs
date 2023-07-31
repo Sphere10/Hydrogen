@@ -10,8 +10,7 @@ public class SizeDescriptorSerializer : SizeDescriptorSizer, IItemSerializer<lon
 	public SizeDescriptorSerializer(SizeDescriptorStrategy sizeDescriptorStrategy) : base(sizeDescriptorStrategy) {
 	}
 
-
-	public bool TrySerialize(long item, EndianBinaryWriter writer, out long bytesWritten) {
+	public void SerializeInternal(long item, EndianBinaryWriter writer) {
 		var startPos = writer.BaseStream.Position;
 		switch (SizeDescriptorStrategy) {
 			case SizeDescriptorStrategy.UseVarInt:
@@ -41,24 +40,13 @@ public class SizeDescriptorSerializer : SizeDescriptorSizer, IItemSerializer<lon
 			default:
 				throw new ArgumentOutOfRangeException();
 		}
-		;
-		bytesWritten = writer.BaseStream.Position - startPos;
-		return true;
 	}
 
-	public bool TryDeserialize(long byteSize, EndianBinaryReader reader, out long item) {
-		var startPos = reader.BaseStream.Position;
+	public long DeserializeInternal(long byteSize, EndianBinaryReader reader) 
+		=> Deserialize(reader);
 
-		if (!TryDeserialize(reader, out item))
-			return false;
-
-		var bytesRead = reader.BaseStream.Position - startPos;
-		Guard.Ensure(bytesRead == byteSize, $"Inconsistent read. Expected to read {byteSize} bytes, actual {bytesRead}");
-		return true;
-	}
-
-	public bool TryDeserialize(EndianBinaryReader reader, out long item) {
-		item = SizeDescriptorStrategy switch {
+	public long Deserialize(EndianBinaryReader reader) 
+		=> SizeDescriptorStrategy switch {
 			SizeDescriptorStrategy.UseVarInt => unchecked((long)VarInt.Read(reader.BaseStream)),
 			SizeDescriptorStrategy.UseCVarInt => unchecked((long)CVarInt.Read(reader.BaseStream)),
 			SizeDescriptorStrategy.UseULong => reader.ReadInt64(),
@@ -67,6 +55,17 @@ public class SizeDescriptorSerializer : SizeDescriptorSizer, IItemSerializer<lon
 			SizeDescriptorStrategy.UseByte => reader.ReadByte(),
 			_ => throw new ArgumentOutOfRangeException()
 		};
-		return true;
-	}
+
+	//public bool TryDeserialize(EndianBinaryReader reader, out long item) {
+	//	item = SizeDescriptorStrategy switch {
+	//		SizeDescriptorStrategy.UseVarInt => unchecked((long)VarInt.Read(reader.BaseStream)),
+	//		SizeDescriptorStrategy.UseCVarInt => unchecked((long)CVarInt.Read(reader.BaseStream)),
+	//		SizeDescriptorStrategy.UseULong => reader.ReadInt64(),
+	//		SizeDescriptorStrategy.UseUInt32 => reader.ReadUInt32(),
+	//		SizeDescriptorStrategy.UseUInt16 => reader.ReadUInt16(),
+	//		SizeDescriptorStrategy.UseByte => reader.ReadByte(),
+	//		_ => throw new ArgumentOutOfRangeException()
+	//	};
+	//	return true;
+	//}
 }

@@ -169,8 +169,8 @@ public class ProtocolOrchestrator {
 	}
 
 	protected bool ProcessSendMessage(ProtocolMessageEnvelope envelope) {
-		if (!EnvelopeSerializer.TrySerializeLE(envelope, out var data)) {
-			Logger.Error("Failed to serialize message envelope");
+		if (!EnvelopeSerializer.TrySerializeLE(envelope, out var data, out var error)) {
+			Logger.Exception(error, "Failed to serialize message envelope");
 			return false;
 		}
 
@@ -184,9 +184,9 @@ public class ProtocolOrchestrator {
 	}
 
 	protected void ProcessReceivedBytes(ReadOnlyMemory<byte> bytes) {
-		if (!EnvelopeSerializer.TryDeserializeLE(bytes.Span, out var envelope)) {
+		if (!EnvelopeSerializer.TryDeserializeLE(bytes.Span, out var envelope, out var error)) {
 			// Deal with problematic channel here (blacklist)
-			Logger.Error($"Failed to deserialize message envelope (byte length: {bytes.Length})");
+			Logger.Exception(error, $"Failed to deserialize message envelope (byte length: {bytes.Length})");
 			// TODO: behaviour on error?
 			return;
 		}
@@ -228,8 +228,7 @@ public class ProtocolOrchestrator {
 			try {
 				commandHandler.Execute(this, command);
 			} catch (Exception error) {
-				Logger.Error($"Command handler for '{commandType.Name}' failed (mode: {ActiveMode})");
-				Logger.Exception(error);
+				Logger.Exception(error, $"Command handler for '{commandType.Name}' failed (mode: {ActiveMode})");
 			}
 		});
 	}
@@ -247,8 +246,7 @@ public class ProtocolOrchestrator {
 				};
 				SendMessage(envelope);
 			} catch (Exception error) {
-				Logger.Error($"Request handler for '{requestType.Name}' failed (mode: {ActiveMode})");
-				Logger.Exception(error);
+				Logger.Exception(error, $"Request handler for '{requestType.Name}' failed (mode: {ActiveMode})");
 			}
 		});
 	}
@@ -267,8 +265,7 @@ public class ProtocolOrchestrator {
 			try {
 				responseHandler.Execute(this, request, response);
 			} catch (Exception error) {
-				Logger.Error($"Response handler for '{responseType.Name}' failed");
-				Logger.Exception(error);
+				Logger.Exception(error, $"Response handler for '{responseType.Name}' failed");
 			}
 		});
 	}

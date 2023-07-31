@@ -13,35 +13,24 @@ namespace Hydrogen.Application;
 
 public class ProductLicenseAuthorityDTOSerializer : ItemSerializer<ProductLicenseAuthorityDTO> {
 
-	private readonly StringSerializer _stringSerializer = new(Encoding.ASCII);
-	private readonly ByteArraySerializer _byteArraySerializer = new();
+	private readonly AutoSizedSerializer<string> _stringSerializer = new( new StringSerializer(Encoding.ASCII), SizeDescriptorStrategy.UseUInt32);
+	private readonly AutoSizedSerializer<byte[]> _byteArraySerializer = new( new ByteArraySerializer(), SizeDescriptorStrategy.UseUInt32 );
 
 	public override long CalculateSize(ProductLicenseAuthorityDTO item)
-		=>
-			sizeof(int) + _stringSerializer.CalculateSize(item.Name) +
-			1 +
-			sizeof(int) + item.LicensePublicKey.Length;
+		=> sizeof(int) + _stringSerializer.CalculateSize(item.Name) +
+		   1 +
+		   sizeof(int) + item.LicensePublicKey.Length;
 
-	public override bool TrySerialize(ProductLicenseAuthorityDTO item, EndianBinaryWriter writer, out long bytesWritten) {
-		bytesWritten = 0;
-
-		writer.Write(_stringSerializer.CalculateSize(item.Name));
-		if (!_stringSerializer.TrySerialize(item.Name, writer, out var nameBytes))
-			return false;
-		bytesWritten += nameBytes;
-
+	public override void SerializeInternal(ProductLicenseAuthorityDTO item, EndianBinaryWriter writer) {
+		_stringSerializer.SerializeInternal(item.Name, writer);
 		writer.Write((byte)item.LicenseDSS);
-		bytesWritten += 1;
-
-		writer.Write(item.LicensePublicKey.Length);
-		if (!_byteArraySerializer.TrySerialize(item.LicensePublicKey, writer, out var pubKeyBytes))
-			return false;
-		bytesWritten += pubKeyBytes;
-
-		return true;
+		_byteArraySerializer.SerializeInternal(item.LicensePublicKey, writer);
 	}
 
-	public override bool TryDeserialize(long byteSize, EndianBinaryReader reader, out ProductLicenseAuthorityDTO item) {
-		throw new NotImplementedException();
-	}
+	public override ProductLicenseAuthorityDTO DeserializeInternal(long byteSize, EndianBinaryReader reader) 
+		=> new() {
+			Name = _stringSerializer.Deserialize(reader),
+			LicenseDSS = (DSS)reader.ReadByte(),
+			LicensePublicKey = _byteArraySerializer.Deserialize(reader)
+		};
 }

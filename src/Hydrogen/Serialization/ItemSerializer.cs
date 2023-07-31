@@ -11,9 +11,9 @@ using System.Text;
 namespace Hydrogen;
 
 public abstract class ItemSerializer<TItem> : ItemSizer<TItem>, IItemSerializer<TItem> {
-	public abstract bool TrySerialize(TItem item, EndianBinaryWriter writer, out long bytesWritten);
+	public abstract void SerializeInternal(TItem item, EndianBinaryWriter writer);
 
-	public abstract bool TryDeserialize(long byteSize, EndianBinaryReader reader, out TItem item);
+	public abstract TItem DeserializeInternal(long byteSize, EndianBinaryReader reader);
 
 	public static IItemSerializer<TItem> Default {
 		get {

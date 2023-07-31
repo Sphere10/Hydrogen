@@ -179,7 +179,7 @@ public class GenericItemSerializerTests {
 		serializer.RegisterType<bool>();
 		using var memoryStream = new MemoryStream();
 		var writer = new EndianBinaryWriter(EndianBitConverter.Little, memoryStream);
-		serializer.TrySerialize(item, writer, out var byteCount);
+		var byteCount = serializer.Serialize(item, writer);
 
 		Assert.AreEqual(memoryStream.Length, byteCount);
 
@@ -191,7 +191,7 @@ public class GenericItemSerializerTests {
 		newSerializer.RegisterType<List<int>>();
 		newSerializer.RegisterType<ReferenceTypeObject>();
 		newSerializer.RegisterType<bool>();
-		newSerializer.TryDeserialize(byteCount, reader, out var deserializedItem);
+		var deserializedItem = newSerializer.DeserializeInternal(byteCount, reader);
 
 		deserializedItem.Should().BeEquivalentTo(item);
 	}

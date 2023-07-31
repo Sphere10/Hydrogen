@@ -11,10 +11,10 @@ using System;
 namespace Hydrogen;
 
 public class ActionItemSerializer<T> : ActionItemSizer<T>, IItemSerializer<T> {
-	private readonly Func<T, EndianBinaryWriter, long> _serializer;
+	private readonly Action<T, EndianBinaryWriter> _serializer;
 	private readonly Func<long, EndianBinaryReader, T> _deserializer;
 
-	public ActionItemSerializer(Func<T, long> sizer, Func<T, EndianBinaryWriter, long> serializer, Func<long, EndianBinaryReader, T> deserializer)
+	public ActionItemSerializer(Func<T, long> sizer, Action<T, EndianBinaryWriter> serializer, Func<long, EndianBinaryReader, T> deserializer)
 		: base(sizer) {
 		Guard.ArgumentNotNull(serializer, nameof(serializer));
 		Guard.ArgumentNotNull(deserializer, nameof(deserializer));
@@ -22,13 +22,10 @@ public class ActionItemSerializer<T> : ActionItemSizer<T>, IItemSerializer<T> {
 		_deserializer = deserializer;
 	}
 
-	public bool TrySerialize(T item, EndianBinaryWriter writer, out long bytesWritten) {
-		bytesWritten = _serializer(item, writer);
-		return true;
-	}
+	public void SerializeInternal(T item, EndianBinaryWriter writer) 
+		=> _serializer(item, writer);
 
-	public bool TryDeserialize(long byteSize, EndianBinaryReader reader, out T item) {
-		item = _deserializer(byteSize, reader);
-		return true;
-	}
+	public T DeserializeInternal(long byteSize, EndianBinaryReader reader) 
+		=> _deserializer(byteSize, reader);
+
 }

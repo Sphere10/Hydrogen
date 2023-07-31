@@ -57,17 +57,14 @@ public class GenericSerializer<T> : GenericSerializerBase, IItemSerializer<T> {
 		return context.SizeBytes;
 	}
 
-	public bool TrySerialize(T item, EndianBinaryWriter writer, out long bytesWritten) {
+	public void SerializeInternal(T item, EndianBinaryWriter writer) {
 		var context = new SerializationContext(writer);
 		SerializeInternal(typeof(T), item, context);
-		bytesWritten = (int)context.SizeBytes;
-		return true;
 	}
 
-	public bool TryDeserialize(long byteSize, EndianBinaryReader reader, out T item) {
+	public T DeserializeInternal(long byteSize, EndianBinaryReader reader) {
 		var context = new SerializationContext(reader);
-		item = (T)DeserializeInternal(typeof(T), context);
-		return true;
+		return (T)DeserializeInternal(typeof(T), context);
 	}
 
 	private void SerializeInternal(Type propertyType, object propertyValue, SerializationContext context) {

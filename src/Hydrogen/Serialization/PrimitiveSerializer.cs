@@ -14,6 +14,8 @@ public class PrimitiveSerializer<T> : StaticSizeItemSerializerBase<T> {
 	private readonly Action<EndianBinaryWriter, T> _writePrimitive;
 	private readonly Func<EndianBinaryReader, T> _readPrimitive;
 
+	public static PrimitiveSerializer<T> Instance { get; } = new();
+
 	public PrimitiveSerializer()
 		: base(Tools.Memory.SizeOfPrimitive(typeof(T))) {
 		Guard.Argument(Tools.Memory.IsSerializationPrimitive(typeof(T)), nameof(T), $" {typeof(T)} is not a primitive type");
@@ -22,15 +24,11 @@ public class PrimitiveSerializer<T> : StaticSizeItemSerializerBase<T> {
 		_readPrimitive = GetPrimitiveReader(typeCode);
 	}
 
-	public override bool TrySerialize(T item, EndianBinaryWriter writer) {
-		_writePrimitive(writer, item);
-		return true;
-	}
+	public override void SerializeInternal(T item, EndianBinaryWriter writer) 
+		=> _writePrimitive(writer, item);
 
-	public override bool TryDeserialize(EndianBinaryReader reader, out T item) {
-		item = _readPrimitive(reader);
-		return true;
-	}
+	public override T Deserialize(EndianBinaryReader reader) 
+		=> _readPrimitive(reader);
 
 	public static Action<EndianBinaryWriter, T> GetPrimitiveWriter(TypeCode typeCode) => typeCode switch {
 		TypeCode.Boolean => (writer, item) => writer.Write((bool)(object)item),
@@ -48,7 +46,6 @@ public class PrimitiveSerializer<T> : StaticSizeItemSerializerBase<T> {
 		TypeCode.UInt64 => (writer, item) => writer.Write((ulong)(object)item),
 		_ => throw new NotSupportedException($"{nameof(typeCode)}")
 	};
-
 
 	public static Func<EndianBinaryReader, T> GetPrimitiveReader(TypeCode typeCode) => typeCode switch {
 		TypeCode.Boolean => reader => (T)(object)reader.ReadBoolean(),

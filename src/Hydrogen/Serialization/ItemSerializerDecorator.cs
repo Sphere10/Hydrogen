@@ -15,13 +15,13 @@ public class ItemSerializerDecorator<TItem, TSerializer> : ItemSizerDecorator<TI
 		: base(internalSerializer) {
 	}
 
-	public virtual bool TrySerialize(TItem item, EndianBinaryWriter writer, out long bytesWritten)
-		=> Internal.TrySerialize(item, writer, out bytesWritten);
+	public virtual void SerializeInternal(TItem item, EndianBinaryWriter writer)
+		=> Internal.Serialize(item, writer);
 
-	public virtual bool TryDeserialize(long byteSize, EndianBinaryReader reader, out TItem item)
-		=> Internal.TryDeserialize(byteSize, reader, out item);
+	public virtual TItem DeserializeInternal(long byteSize, EndianBinaryReader reader)
+		=> Internal.Deserialize(byteSize, reader);
+
 }
-
 
 public class ItemSerializerDecorator<TItem> : ItemSerializerDecorator<TItem, IItemSerializer<TItem>> {
 	public ItemSerializerDecorator(IItemSerializer<TItem> internalSerializer)

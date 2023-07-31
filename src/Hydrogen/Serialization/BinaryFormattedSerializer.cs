@@ -50,40 +50,25 @@ public sealed class BinaryFormattedSerializer<TItem> : IItemSerializer<TItem> {
 		return objectRawBytes.Length;
 	}
 
-	public bool TrySerialize(TItem item, EndianBinaryWriter writer, out long bytesWritten) {
-		try {
-			var formatter = new BinaryFormatter();
-			using var memoryStream = new MemoryStream();
-			formatter.Serialize(memoryStream, item);
-			var objectRawBytes = memoryStream.ToArray();
-			writer.Write(objectRawBytes);
-			bytesWritten = objectRawBytes.Length;
-
-			return true;
-		} catch (Exception) {
-			bytesWritten = 0;
-			return false;
-		}
+	public void SerializeInternal(TItem item, EndianBinaryWriter writer) {
+		var formatter = new BinaryFormatter();
+		using var memoryStream = new MemoryStream();
+		formatter.Serialize(memoryStream, item);
+		var objectRawBytes = memoryStream.ToArray();
+		writer.Write(objectRawBytes);
 	}
 
-	public bool TryDeserialize(long byteSize, EndianBinaryReader reader, out TItem item) {
-		try {
-			var bytes = reader.ReadBytes(byteSize);
-			var formatter = new BinaryFormatter();
-			using var memoryStream = new MemoryStream(bytes);
-			var result = formatter.Deserialize(memoryStream);
-			if (result is null)
-				throw new InvalidOperationException("Unexpected null");
-			if (result is not TItem t)
-				throw new InvalidOperationException($"Unexpected type '{result.GetType().Name}'");
+	public TItem DeserializeInternal(long byteSize, EndianBinaryReader reader) {
+		var bytes = reader.ReadBytes(byteSize);
+		var formatter = new BinaryFormatter();
+		using var memoryStream = new MemoryStream(bytes);
+		var result = formatter.Deserialize(memoryStream);
+		if (result is null)
+			throw new InvalidOperationException("Unexpected null");
+		if (result is not TItem t)
+			throw new InvalidOperationException($"Unexpected type '{result.GetType().Name}'");
 
-			item = t;
-			return true;
-
-		} catch (Exception) {
-			item = default;
-			return false;
-		}
+		return t;
 	}
 
 }

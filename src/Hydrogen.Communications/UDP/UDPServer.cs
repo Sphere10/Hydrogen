@@ -70,7 +70,7 @@ public class UDPServer : AsyncDisposable {
 		}
 
 		// close up all the channels
-		await _channels.Values.ForEachAsync(c => DisposeChannel(c).WithExceptionHandler(SystemLog.Exception));
+		await _channels.Values.ForEachAsync(c => DisposeChannel(c).WithExceptionHandler(error => SystemLog.Exception(error)));
 		_channels.Clear();
 	}
 

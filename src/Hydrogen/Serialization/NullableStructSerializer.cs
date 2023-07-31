@@ -18,46 +18,25 @@ public class NullableStructSerializer<T> : ItemSerializer<T?> where T : struct {
 	}
 
 	public override long CalculateSize(T? item)
-		=> 1 + (item != null ? _underlyingSerializer.CalculateSize(item.Value) : 0);
+		=> sizeof(bool) + + (item.HasValue ? _underlyingSerializer.CalculateSize(item.Value) : 0);
 
-	public override bool TrySerialize(T? item, EndianBinaryWriter writer, out long bytesWritten) {
-		var hasValue = item is not null;
-		writer.Write(hasValue);
-		bytesWritten = 1;
-		if (!hasValue)
-			return true;
-		var result = _underlyingSerializer.TrySerialize((T)item, writer, out var restBytesWritten);
-		bytesWritten += restBytesWritten;
-		return result;
+	public override void SerializeInternal(T? item, EndianBinaryWriter writer) {
+		if (item.HasValue) {
+			writer.Write(true);
+			_underlyingSerializer.Serialize(item.Value, writer);
+		} else {
+			writer.Write(false);
+		}
 	}
 
-	public override bool TryDeserialize(long byteSize, EndianBinaryReader reader, out T? item) {
-		item = default;
-		var hasValue = reader.ReadBoolean();
-		if (!hasValue)
-			return true;
+	public override T? DeserializeInternal(long byteSize, EndianBinaryReader reader) 
+		=> reader.ReadBoolean() ? _underlyingSerializer.Deserialize(byteSize - sizeof(bool), reader) : default(T?);
 
-		if (!_underlyingSerializer.TryDeserialize(byteSize - 1, reader, out var value))
-			return false;
-
-		item = value;
-		return true;
-	}
-
-	public bool TryDeserialize(EndianBinaryReader reader, out T? item) {
+	public T? Deserialize(EndianBinaryReader reader) {
 		if (!_underlyingSerializer.IsStaticSize)
 			throw new InvalidOperationException("This method can only be used with static serializers");
 
-		item = default;
-		var hasValue = reader.ReadBoolean();
-		if (!hasValue)
-			return true;
-
-		if (!_underlyingSerializer.TryDeserialize(_underlyingSerializer.StaticSize - 1, reader, out var value))
-			return false;
-
-		item = value;
-		return true;
+		return DeserializeInternal(_underlyingSerializer.StaticSize + sizeof(bool), reader);
 	}
 
 }

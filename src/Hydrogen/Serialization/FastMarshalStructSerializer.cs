@@ -32,26 +32,24 @@ public class FastMarshalStructSerializer<T> : StaticSizeItemSerializerBase<T> wh
 		: base(Marshal.SizeOf(typeof(T))) {
 	}
 
-	public override bool TrySerialize(T item, EndianBinaryWriter writer) {
+	public override void SerializeInternal(T item, EndianBinaryWriter writer) {
 		var bytes = new byte[StaticSize];
 		var handle = GCHandle.Alloc(bytes, GCHandleType.Pinned);
 		try {
 			var bytesPtr = handle.AddrOfPinnedObject();
 			Marshal.StructureToPtr(item, bytesPtr, false);
 			writer.Write(bytes);
-			return true;
 		} finally {
 			handle.Free();
 		}
 	}
 
-	public override bool TryDeserialize(EndianBinaryReader reader, out T item) {
+	public override T Deserialize(EndianBinaryReader reader) {
 		var bytes = reader.ReadBytes(StaticSize);
 		var handle = GCHandle.Alloc(bytes, GCHandleType.Pinned);
 		try {
 			var bytesPtr = handle.AddrOfPinnedObject();
-			item = (T)Marshal.PtrToStructure(bytesPtr, typeof(T));
-			return true;
+			return (T)Marshal.PtrToStructure(bytesPtr, typeof(T));
 		} finally {
 			handle.Free();
 		}

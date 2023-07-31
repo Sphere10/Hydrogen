@@ -20,7 +20,7 @@ public class ClusteredStreamRecordSerializer : StaticSizeItemSerializerBase<Clus
 		_keySize = keySize;
 	}
 
-	public override bool TrySerialize(ClusteredStreamRecord item, EndianBinaryWriter writer) {
+	public override void SerializeInternal(ClusteredStreamRecord item, EndianBinaryWriter writer) {
 		writer.Write((byte)item.Traits);
 		writer.Write((long)item.StartCluster);
 		writer.Write((long)item.Size);
@@ -28,18 +28,14 @@ public class ClusteredStreamRecordSerializer : StaticSizeItemSerializerBase<Clus
 			writer.Write((int)item.KeyChecksum);
 
 		if (_policy.HasFlag(ClusteredStoragePolicy.TrackKey)) {
-			if (item.Key?.Length != _keySize) {
+			if (item.Key?.Length != _keySize) 
 				throw new InvalidOperationException($"Key size mismatch. Expected: {_keySize} but was {item.Key.Length}");
-				return false;
-			}
 			writer.Write(item.Key);
 		}
-
-		return true;
 	}
 
-	public override bool TryDeserialize(EndianBinaryReader reader, out ClusteredStreamRecord item) {
-		item = new ClusteredStreamRecord {
+	public override ClusteredStreamRecord Deserialize(EndianBinaryReader reader) {
+		var item = new ClusteredStreamRecord {
 			Traits = (ClusteredStreamTraits)reader.ReadByte(),
 			StartCluster = reader.ReadInt64(),
 			Size = reader.ReadInt64()
@@ -51,7 +47,7 @@ public class ClusteredStreamRecordSerializer : StaticSizeItemSerializerBase<Clus
 		if (_policy.HasFlag(ClusteredStoragePolicy.TrackKey))
 			item.Key = reader.ReadBytes(_keySize);
 
-		return true;
+		return item;
 	}
 
 

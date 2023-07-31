@@ -20,40 +20,17 @@ public class ProductLicenseCommandDTOSerializer : ItemSerializer<ProductLicenseC
 		   _stringSerializer.CalculateSize(item.BuyNowLink);
 
 
-	public override bool TrySerialize(ProductLicenseCommandDTO item, EndianBinaryWriter writer, out long bytesWritten) {
-		bytesWritten = 0;
+	public override void SerializeInternal(ProductLicenseCommandDTO item, EndianBinaryWriter writer) {
 		writer.Write((byte)item.Action);
-		bytesWritten++;
-
-		var res = _stringSerializer.TrySerialize(item.NotificationMessage, writer, out var notificationMessageBytes);
-		bytesWritten += notificationMessageBytes;
-		if (!res)
-			return false;
-
-		res = _stringSerializer.TrySerialize(item.BuyNowLink, writer, out var buyNotLinkBytes);
-		bytesWritten += buyNotLinkBytes;
-		if (!res)
-			return false;
-
-		return true;
+		_stringSerializer.SerializeInternal(item.NotificationMessage, writer);
+		_stringSerializer.SerializeInternal(item.BuyNowLink, writer);
 	}
 
-	public override bool TryDeserialize(long byteSize, EndianBinaryReader reader, out ProductLicenseCommandDTO item) {
-		item = new ProductLicenseCommandDTO();
-		if (!_stringSerializer.TryDeserialize(reader, out var strVal))
-			return false;
-		item.ProductKey = strVal;
-
-		item.Action = (ProductLicenseActionDTO)reader.ReadByte();
-
-		if (!_stringSerializer.TryDeserialize(reader, out strVal))
-			return false;
-		item.NotificationMessage = strVal;
-
-		if (!_stringSerializer.TryDeserialize(reader, out strVal))
-			return false;
-		item.BuyNowLink = strVal;
-
-		return true;
-	}
+	public override ProductLicenseCommandDTO DeserializeInternal(long byteSize, EndianBinaryReader reader) => 
+		new() {
+		ProductKey = _stringSerializer.Deserialize(reader),
+		Action = (ProductLicenseActionDTO)reader.ReadByte(),
+		NotificationMessage = _stringSerializer.Deserialize(reader),
+		BuyNowLink = _stringSerializer.Deserialize(reader)
+	};
 }

@@ -22,29 +22,22 @@ public class ProtocolMessageEnvelopeSerializer : ItemSerializer<ProtocolMessageE
 	public override long CalculateSize(ProtocolMessageEnvelope item)
 		=> MessageEnvelopeMarker.Length + _payloadSerializer.CalculateSize(item.Message);
 
-	public override bool TrySerialize(ProtocolMessageEnvelope item, EndianBinaryWriter writer, out long bytesWritten) {
+	public override void SerializeInternal(ProtocolMessageEnvelope item, EndianBinaryWriter writer) {
 		writer.Write(MessageEnvelopeMarker);
 		writer.Write((byte)item.DispatchType);
 		writer.Write(item.RequestID);
 		writer.Write(_payloadSerializer.CalculateSize(item.Message));
-		bytesWritten = MessageEnvelopeLength;
-		if (!_payloadSerializer.TrySerialize(item.Message, writer, out var itemBytesWritten))
-			return false;
-		bytesWritten += itemBytesWritten;
-		return true;
+		_payloadSerializer.Serialize(item.Message, writer);
 	}
 
-	public override bool TryDeserialize(long byteSize, EndianBinaryReader reader, out ProtocolMessageEnvelope envelope) {
-		//using var readStream = new MemoryStream(bytes.ToArray()); // TODO: uses slow ToArray
-		envelope = null;
-
+	public override ProtocolMessageEnvelope DeserializeInternal(long byteSize, EndianBinaryReader reader) {
 		if (reader.BaseStream.Length < MessageEnvelopeLength)
-			return false; // Not a message envelope
+			throw new ArgumentException("Stream is too short to be a message envelope");
 
 		// Read magic header for message object 
 		var magicID = reader.ReadBytes(MessageEnvelopeMarker.Length);
 		if (!magicID.AsSpan().SequenceEqual(MessageEnvelopeMarker))
-			return false; // Message Magic ID not found, so not a message
+			throw new ArgumentException("Message Magic ID not found, so not a message");
 
 		// Read envelope
 		var dispatchType = (ProtocolDispatchType)reader.ReadByte();
@@ -52,19 +45,15 @@ public class ProtocolMessageEnvelopeSerializer : ItemSerializer<ProtocolMessageE
 		var messageLength = reader.ReadInt32();
 
 		if (reader.BaseStream.Length < MessageEnvelopeLength + messageLength)
-			return false; // message not present
+			throw new ArgumentException("Message payload not found");
 
 		// Deserialize message
-		if (!_payloadSerializer.TryDeserialize((int)messageLength, reader, out var message))
-			return false; //  Malformed message payload(unable to deserialize message
+		var message = _payloadSerializer.Deserialize(messageLength, reader);
 
-		envelope = new ProtocolMessageEnvelope {
+		return new ProtocolMessageEnvelope {
 			DispatchType = dispatchType,
 			RequestID = requestID,
 			Message = message
 		};
-
-		return true;
 	}
-
 }

@@ -34,7 +34,7 @@ public class SerialThreadPool {
 
 	public SerialThreadPoolPolicy Policy { get; init; } = SerialThreadPoolPolicy.Burst;
 
-	public static SerialThreadPool Global { get; } = new(SystemLog.Exception);
+	public static SerialThreadPool Global { get; } = new(error => SystemLog.Exception(error));
 
 
 	public void QueueUserWorkItem(Action action) {

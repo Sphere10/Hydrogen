@@ -13,18 +13,14 @@ namespace Hydrogen;
 public class DateTimeSerializer : StaticSizeItemSerializerBase<DateTime> {
 	private readonly PrimitiveSerializer<long> _longSerializer = new();
 
+	public static DateTimeSerializer Instance { get; } = new();
+
 	public DateTimeSerializer() : base(8) {
 	}
 
-	public override bool TrySerialize(DateTime item, EndianBinaryWriter writer)
-		=> _longSerializer.TrySerialize(item.ToBinary(), writer);
+	public override void SerializeInternal(DateTime item, EndianBinaryWriter writer)
+		=> _longSerializer.SerializeInternal(item.ToBinary(), writer);
 
-	public override bool TryDeserialize(EndianBinaryReader reader, out DateTime item) {
-		if (!_longSerializer.TryDeserialize(reader, out var binVal)) {
-			item = default;
-			return false;
-		}
-		item = DateTime.FromBinary(binVal);
-		return true;
-	}
+	public override DateTime Deserialize(EndianBinaryReader reader) 
+		=> DateTime.FromBinary(_longSerializer.Deserialize(reader));
 }

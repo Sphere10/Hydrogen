@@ -36,142 +36,39 @@ public class ProductLicenseDTOSerializer : ItemSerializer<ProductLicenseDTO> {
 		   _nullableIntSerializer.CalculateSize(item.LimitFeatureD);
 
 
-	public override bool TrySerialize(ProductLicenseDTO item, EndianBinaryWriter writer, out long bytesWritten) {
-		bytesWritten = 0;
-
-		var res = _stringSerializer.TrySerialize(item.Name, writer, out var nameBytes);
-		bytesWritten += nameBytes;
-		if (!res)
-			return false;
-
-		res = _stringSerializer.TrySerialize(item.ProductKey, writer, out var productKeyBytes);
-		bytesWritten += productKeyBytes;
-		if (!res)
-			return false;
-
-		res = _guidSerializer.TrySerialize(item.ProductCode, writer, out var guidBytes);
-		bytesWritten += guidBytes;
-		if (!res)
-			return false;
-
+	public override void SerializeInternal(ProductLicenseDTO item, EndianBinaryWriter writer) {
+		_stringSerializer.SerializeInternal(item.Name, writer);
+		_stringSerializer.SerializeInternal(item.ProductKey, writer);
+		_guidSerializer.SerializeInternal(item.ProductCode, writer);
 		writer.Write((byte)item.FeatureLevel);
-		bytesWritten++;
-
 		writer.Write((byte)item.ExpirationPolicy);
-		bytesWritten++;
-
-		res = _nullableShortSerializer.TrySerialize(item.MajorVersionApplicable, writer, out var versionBytes);
-		bytesWritten += versionBytes;
-		if (!res)
-			return false;
-
-		res = _nullableDateTimeSerializer.TrySerialize(item.ExpirationDate, writer, out var dateTimeBytes);
-		bytesWritten += dateTimeBytes;
-		if (!res)
-			return false;
-
-		res = _nullableIntSerializer.TrySerialize(item.ExpirationDays, writer, out var expDaysBytes);
-		bytesWritten += expDaysBytes;
-		if (!res)
-			return false;
-
-		res = _nullableIntSerializer.TrySerialize(item.ExpirationLoads, writer, out var expLoadsBytes);
-		bytesWritten += expLoadsBytes;
-		if (!res)
-			return false;
-
-		res = _nullableIntSerializer.TrySerialize(item.MaxConcurrentInstances, writer, out var maxBytesWritten);
-		bytesWritten += maxBytesWritten;
-		if (!res)
-			return false;
-
-		res = _nullableIntSerializer.TrySerialize(item.MaxSeats, writer, out var maxSeatsBytesWritten);
-		bytesWritten += maxSeatsBytesWritten;
-		if (!res)
-			return false;
-
-		res = _nullableIntSerializer.TrySerialize(item.LimitFeatureA, writer, out var limABytes);
-		bytesWritten += limABytes;
-		if (!res)
-			return false;
-
-		res = _nullableIntSerializer.TrySerialize(item.LimitFeatureB, writer, out var limBBytes);
-		bytesWritten += limBBytes;
-		if (!res)
-			return false;
-
-		res = _nullableIntSerializer.TrySerialize(item.LimitFeatureC, writer, out var limCBytes);
-		bytesWritten += limCBytes;
-		if (!res)
-			return false;
-
-		res = _nullableIntSerializer.TrySerialize(item.LimitFeatureD, writer, out var limDBytes);
-		bytesWritten += limDBytes;
-		if (!res)
-			return false;
-
-		return true;
-
+		_nullableShortSerializer.SerializeInternal(item.MajorVersionApplicable, writer);
+		_nullableDateTimeSerializer.SerializeInternal(item.ExpirationDate, writer);
+		_nullableIntSerializer.SerializeInternal(item.ExpirationDays, writer);
+		_nullableIntSerializer.SerializeInternal(item.ExpirationLoads, writer);
+		_nullableIntSerializer.SerializeInternal(item.MaxConcurrentInstances, writer);
+		_nullableIntSerializer.SerializeInternal(item.MaxSeats, writer);
+		_nullableIntSerializer.SerializeInternal(item.LimitFeatureA, writer);
+		_nullableIntSerializer.SerializeInternal(item.LimitFeatureB, writer);
+		_nullableIntSerializer.SerializeInternal(item.LimitFeatureC, writer);
+		_nullableIntSerializer.SerializeInternal(item.LimitFeatureD, writer);
 	}
 
-	public override bool TryDeserialize(long byteSize, EndianBinaryReader reader, out ProductLicenseDTO item) {
-		item = new ProductLicenseDTO();
-
-		if (!_stringSerializer.TryDeserialize(reader, out var strVal))
-			return false;
-		item.Name = strVal;
-
-		if (!_stringSerializer.TryDeserialize(reader, out strVal))
-			return false;
-		item.ProductKey = strVal;
-
-		if (!_guidSerializer.TryDeserialize(reader, out var guidVal))
-			return false;
-		item.ProductCode = guidVal;
-
-		item.FeatureLevel = (ProductLicenseFeatureLevelDTO)reader.ReadByte();
-		item.ExpirationPolicy = (ProductLicenseExpirationPolicyDTO)reader.ReadByte();
-
-		if (!_nullableShortSerializer.TryDeserialize(sizeof(ushort), reader, out var ushortVal))
-			return false;
-		item.MajorVersionApplicable = ushortVal;
-
-		if (!_nullableDateTimeSerializer.TryDeserialize(8, reader, out var dateTimeVal))
-			return false;
-		item.ExpirationDate = dateTimeVal;
-
-		if (!_nullableIntSerializer.TryDeserialize(sizeof(int), reader, out var intVal))
-			return false;
-		item.ExpirationDays = intVal;
-
-		if (!_nullableIntSerializer.TryDeserialize(sizeof(int), reader, out intVal))
-			return false;
-		item.ExpirationLoads = intVal;
-
-		if (!_nullableIntSerializer.TryDeserialize(sizeof(int), reader, out intVal))
-			return false;
-		item.MaxConcurrentInstances = intVal;
-
-		if (!_nullableIntSerializer.TryDeserialize(sizeof(int), reader, out intVal))
-			return false;
-		item.MaxSeats = intVal;
-
-		if (!_nullableIntSerializer.TryDeserialize(sizeof(int), reader, out intVal))
-			return false;
-		item.LimitFeatureA = intVal;
-
-		if (!_nullableIntSerializer.TryDeserialize(sizeof(int), reader, out intVal))
-			return false;
-		item.LimitFeatureB = intVal;
-
-		if (!_nullableIntSerializer.TryDeserialize(sizeof(int), reader, out intVal))
-			return false;
-		item.LimitFeatureC = intVal;
-
-		if (!_nullableIntSerializer.TryDeserialize(sizeof(int), reader, out intVal))
-			return false;
-		item.LimitFeatureD = intVal;
-
-		return true;
-	}
+	public override ProductLicenseDTO DeserializeInternal(long byteSize, EndianBinaryReader reader) => new() {
+		Name = _stringSerializer.Deserialize(reader),
+		ProductKey = _stringSerializer.Deserialize(reader),
+		ProductCode = _guidSerializer.Deserialize(reader),
+		FeatureLevel = (ProductLicenseFeatureLevelDTO)reader.ReadByte(),
+		ExpirationPolicy = (ProductLicenseExpirationPolicyDTO)reader.ReadByte(),
+		MajorVersionApplicable = _nullableShortSerializer.DeserializeInternal(sizeof(ushort), reader),
+		ExpirationDate = _nullableDateTimeSerializer.DeserializeInternal(8, reader),
+		ExpirationDays = _nullableIntSerializer.DeserializeInternal(sizeof(int), reader),
+		ExpirationLoads = _nullableIntSerializer.DeserializeInternal(sizeof(int), reader),
+		MaxConcurrentInstances = _nullableIntSerializer.DeserializeInternal(sizeof(int), reader),
+		MaxSeats = _nullableIntSerializer.DeserializeInternal(sizeof(int), reader),
+		LimitFeatureA = _nullableIntSerializer.DeserializeInternal(sizeof(int), reader),
+		LimitFeatureB = _nullableIntSerializer.DeserializeInternal(sizeof(int), reader),
+		LimitFeatureC = _nullableIntSerializer.DeserializeInternal(sizeof(int), reader),
+		LimitFeatureD = _nullableIntSerializer.DeserializeInternal(sizeof(int), reader)
+	};
 }

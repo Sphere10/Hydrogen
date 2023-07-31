@@ -17,10 +17,10 @@ namespace Hydrogen;
 /// type-code which permits selection of correct concrete type.
 /// </summary>
 /// <typeparam name="TBase">The type of object which is serialized/deserialized</typeparam>
-public class FactorySerializer<TBase> : IItemSerializer<TBase>, IFactorySerializer<TBase> {
+// TODO: use SizeDescriptor to serialize type code
+public class FactorySerializer<TBase> : IFactorySerializer<TBase> {
 	private readonly IDictionary<ushort, IItemSerializer<TBase>> _concreteLookup;
 	private readonly IBijectiveDictionary<Type, ushort> _typeCodeMap;
-
 
 	public FactorySerializer() {
 		_concreteLookup = new Dictionary<ushort, IItemSerializer<TBase>>();
@@ -60,15 +60,15 @@ public class FactorySerializer<TBase> : IItemSerializer<TBase>, IFactorySerializ
 
 	public long CalculateSize(TBase item) => GetConcreteSerializer(item).CalculateSize(item);
 
-	public bool TrySerialize(TBase item, EndianBinaryWriter writer, out long bytesWritten) {
+	public void SerializeInternal(TBase item, EndianBinaryWriter writer) {
 		var typeCode = GetTypeCode(item);
 		writer.Write(typeCode);
-		return GetConcreteSerializer(typeCode).TrySerialize(item, writer, out bytesWritten);
+		GetConcreteSerializer(typeCode).Serialize(item, writer);
 	}
 
-	public bool TryDeserialize(long byteSize, EndianBinaryReader reader, out TBase item) {
+	public TBase DeserializeInternal(long byteSize, EndianBinaryReader reader) {
 		var typeCode = reader.ReadUInt16();
-		return GetConcreteSerializer(typeCode).TryDeserialize(byteSize, reader, out item);
+		return GetConcreteSerializer(typeCode).Deserialize(byteSize, reader);
 	}
 
 	public ushort GetTypeCode<TConcrete>(TConcrete item) where TConcrete : TBase => GetTypeCode(item.GetType());

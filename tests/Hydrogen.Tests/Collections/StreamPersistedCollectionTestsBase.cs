@@ -101,22 +101,16 @@ public class StreamPersistedCollectionTestsBase {
 			=> _stringSerializer.CalculateSize(item.A) + sizeof(int) + sizeof(bool);
 
 
-		public override bool TrySerialize(TestObject item, EndianBinaryWriter writer, out long bytesWritten) {
-			var stringBytesCount = _stringSerializer.Serialize(item.A, writer);
+		public override void SerializeInternal(TestObject item, EndianBinaryWriter writer) {
+			_stringSerializer.SerializeInternal(item.A, writer);
 			writer.Write(item.B);
 			writer.Write(item.C);
-
-			bytesWritten = stringBytesCount + sizeof(int) + sizeof(bool);
-			return true;
 		}
 
-		public override bool TryDeserialize(long byteSize, EndianBinaryReader reader, out TestObject item) {
-			item = new(_stringSerializer.Deserialize(reader), reader.ReadInt32(), reader.ReadBoolean());
-			return true;
-		}
+		public override TestObject DeserializeInternal(long byteSize, EndianBinaryReader reader) 
+			=> new(_stringSerializer.Deserialize(reader), reader.ReadInt32(), reader.ReadBoolean());
 
 	}
-
 
 	public class TestObjectComparer : IEqualityComparer<TestObject> {
 		public bool Equals(TestObject x, TestObject y) {

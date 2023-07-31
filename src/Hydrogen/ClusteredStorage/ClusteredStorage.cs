@@ -303,10 +303,10 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 			if (_preAllocateOptimization) {
 				// pre-setting the stream length before serialization improves performance since it avoids
 				// re-allocating fragmented stream on individual properties of the serialized item
+				Tools.Debugger.CounterA++;
 				var expectedSize = serializer.CalculateSize(item);
 				_openScope.Stream.SetLength(expectedSize);
-				if (!serializer.TrySerialize(item, writer, out var size))
-					throw new SerializationException("Failed to serialize item");
+				var size = serializer.Serialize(item, writer);
 				if (_integrityChecks) {
 					Guard.Ensure(expectedSize == size, "Calculated size did not match serialization size");
 					Guard.Ensure(_openScope.Stream.Position == expectedSize, "Serialization did not serialize expected length");

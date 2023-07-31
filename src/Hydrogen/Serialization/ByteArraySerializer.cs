@@ -10,16 +10,14 @@ namespace Hydrogen;
 
 public class ByteArraySerializer : ItemSerializer<byte[]> {
 
+	public static ByteArraySerializer Instance { get; } = new();
+
 	public override long CalculateSize(byte[] item) => item.Length;
 
-	public override bool TrySerialize(byte[] item, EndianBinaryWriter writer, out long bytesWritten) {
-		writer.Write(item);
-		bytesWritten = item.Length;
-		return true;
-	}
+	public override void SerializeInternal(byte[] item, EndianBinaryWriter writer) 
+		=> writer.Write(item);
 
-	public override bool TryDeserialize(long byteSize, EndianBinaryReader reader, out byte[] item) {
-		item = reader.ReadBytes(byteSize);
-		return true;
-	}
+	public override byte[] DeserializeInternal(long byteSize, EndianBinaryReader reader) 
+		=> reader.ReadBytes(byteSize);
+
 }

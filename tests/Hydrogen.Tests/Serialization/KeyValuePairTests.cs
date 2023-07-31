@@ -27,6 +27,12 @@ public class KeyValuePairTests {
 		Assert.That(deserializedItem, Is.EqualTo(kvp).Using(comparer));
 	}
 
+	//[Test]
+	//public void EmptyValue() {
+	//	RunTest(new KeyValuePair<string, byte[]>("alpha", string.Empty));
+	//}
+
+
 	[Test]
 	public void NullValue() {
 		RunTest(new KeyValuePair<string, byte[]>("alpha", null));

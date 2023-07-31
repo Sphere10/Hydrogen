@@ -14,23 +14,13 @@ public abstract class StaticSizeItemSerializerBase<TItem> : StaticSizeItemSizer<
 	protected StaticSizeItemSerializerBase(long fixedSize) : base(fixedSize) {
 	}
 
-	public bool TrySerialize(TItem item, EndianBinaryWriter writer, out long bytesWritten) {
-		var result = TrySerialize(item, writer);
-		bytesWritten = result ? StaticSize : 0;
-		return result;
+	public abstract void SerializeInternal(TItem item, EndianBinaryWriter writer);
+
+	public TItem DeserializeInternal(long byteSize, EndianBinaryReader reader) {
+		Guard.Ensure(byteSize == StaticSize, "Read overflow");
+		return Deserialize(reader);
 	}
 
-	public abstract bool TrySerialize(TItem item, EndianBinaryWriter writer);
+	public abstract TItem Deserialize(EndianBinaryReader reader);
 
-	public bool TryDeserialize(long byteSize, EndianBinaryReader reader, out TItem item)
-		=> TryDeserialize(reader, out item);
-
-	public abstract bool TryDeserialize(EndianBinaryReader reader, out TItem item);
-
-
-	public TItem Deserialize(EndianBinaryReader reader) {
-		if (!TryDeserialize(reader, out var item))
-			throw new InvalidOperationException($"Unable to deserialize object");
-		return item;
-	}
 }

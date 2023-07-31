@@ -32,13 +32,10 @@ public class CastedSerializer<TBase, TConcrete> : IItemSerializer<TBase> where T
 
 	public long CalculateSize(TBase item) => _concreteSerializer.CalculateSize((TConcrete)item);
 
-	public bool TrySerialize(TBase item, EndianBinaryWriter writer, out long bytesWritten)
-		=> _concreteSerializer.TrySerialize((TConcrete)item, writer, out bytesWritten);
+	public void SerializeInternal(TBase item, EndianBinaryWriter writer)
+		=> _concreteSerializer.Serialize((TConcrete)item, writer);
 
-	public bool TryDeserialize(long byteSize, EndianBinaryReader reader, out TBase item) {
-		var result = _concreteSerializer.TryDeserialize(byteSize, reader, out var concrete);
-		item = concrete;
-		return result;
-	}
+	public TBase DeserializeInternal(long byteSize, EndianBinaryReader reader) 
+		=> _concreteSerializer.Deserialize(byteSize, reader);
 
 }

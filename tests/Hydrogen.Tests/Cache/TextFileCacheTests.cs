@@ -7,6 +7,7 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System.IO;
+using System.Threading;
 using NUnit.Framework;
 
 namespace Hydrogen.Tests;
@@ -36,7 +37,7 @@ public class TextFileCacheTests {
 		Assert.That(fetchedCount, Is.EqualTo(1));
 
 		File.WriteAllText(file, "BETA");
-
+		Thread.Sleep(100);
 		Assert.That(cache[file], Is.EqualTo("BETA"));
 		Assert.That(fetchedCount, Is.EqualTo(2));
 		Assert.That(cache[file], Is.EqualTo("BETA"));
@@ -62,7 +63,7 @@ public class TextFileCacheTests {
 		Assert.That(cache[file], Is.EqualTo("ALPHA"));
 		Assert.That(fetchedCount, Is.EqualTo(1));
 		File.WriteAllText(file, "BETA");
-
+		Thread.Sleep(100);
 		Assert.That(cache[file], Is.EqualTo("BETA"));
 		Assert.That(fetchedCount, Is.EqualTo(2));
 	}

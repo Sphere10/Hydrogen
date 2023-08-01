@@ -116,7 +116,7 @@ public class StreamPagedList<TItem> : PagedListBase<TItem> {
 		}
 	}
 
-	public int ReadItemRaw(long itemIndex, long byteOffset, long byteLength, out byte[] result) {
+	public int ReadItemBytes(long itemIndex, long byteOffset, long byteLength, out byte[] result) {
 		CheckRequiresLoad();
 		NotifyAccessing();
 		CheckRange(itemIndex, 1);

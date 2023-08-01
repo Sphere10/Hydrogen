@@ -751,7 +751,7 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	internal ClusterTraits FastReadClusterTraits(long clusterIndex) {
 		CheckInitialized();
-		_clusters.ReadItemRaw(clusterIndex, Cluster.TraitsOffset, Cluster.TraitsLength, out var bytes);
+		_clusters.ReadItemBytes(clusterIndex, Cluster.TraitsOffset, Cluster.TraitsLength, out var bytes);
 		var traits = (ClusterTraits)bytes[0];
 		if (_integrityChecks)
 			CheckClusterTraits(clusterIndex, traits);
@@ -766,14 +766,14 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 
 	internal void FastMaskClusterTraits(long clusterIndex, ClusterTraits traits, bool on) {
 		CheckInitialized();
-		_clusters.ReadItemRaw(clusterIndex, Cluster.TraitsOffset, Cluster.TraitsLength, out var traitBytes);
+		_clusters.ReadItemBytes(clusterIndex, Cluster.TraitsOffset, Cluster.TraitsLength, out var traitBytes);
 		var newTraits = ((ClusterTraits)traitBytes[0]).CopyAndSetFlags(traits, on);
 		_clusters.WriteItemBytes(clusterIndex, Cluster.TraitsOffset, new[] { (byte)newTraits });
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	internal int FastReadClusterPrev(long clusterIndex) {
-		_clusters.ReadItemRaw(clusterIndex, Cluster.PrevOffset, Cluster.PrevLength, out var bytes);
+		_clusters.ReadItemBytes(clusterIndex, Cluster.PrevOffset, Cluster.PrevLength, out var bytes);
 		var prevCluster = _clusters.Reader.BitConverter.ToInt32(bytes);
 		return prevCluster;
 	}
@@ -786,7 +786,7 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 	}
 
 	internal long FastReadClusterNext(long clusterIndex) {
-		_clusters.ReadItemRaw(clusterIndex, Cluster.NextOffset, Cluster.NextLength, out var bytes);
+		_clusters.ReadItemBytes(clusterIndex, Cluster.NextOffset, Cluster.NextLength, out var bytes);
 		var nextValue = _clusters.Reader.BitConverter.ToInt32(bytes);
 		return nextValue;
 	}

@@ -111,7 +111,7 @@ public class StreamPagedListTests {
 		var mappedList = new StreamPagedList<int>(type, new PrimitiveSerializer<int>(), stream, pageSize);
 
 		mappedList.AddRange(random.NextInts(10));
-		int read = mappedList.ReadItemRaw(1, 1, 3, out var span);
+		int read = mappedList.ReadItemBytes(1, 1, 3, out var span);
 
 		Assert.AreEqual(read, span.Length);
 		Assert.AreEqual(3, span.Length);
@@ -125,7 +125,7 @@ public class StreamPagedListTests {
 		var mappedList = new StreamPagedList<int>(StreamPagedListType.Static, new PrimitiveSerializer<int>(), stream, int.MaxValue);
 
 		mappedList.AddRange(random.NextInts(1));
-		Assert.Throws<ArgumentOutOfRangeException>(() => mappedList.ReadItemRaw(5, 1, 1, out var span));
+		Assert.Throws<ArgumentOutOfRangeException>(() => mappedList.ReadItemBytes(5, 1, 1, out var span));
 
 	}
 

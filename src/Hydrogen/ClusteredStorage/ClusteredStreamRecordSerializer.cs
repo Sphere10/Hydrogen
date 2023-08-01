@@ -23,6 +23,7 @@ public class ClusteredStreamRecordSerializer : StaticSizeItemSerializerBase<Clus
 	public override void SerializeInternal(ClusteredStreamRecord item, EndianBinaryWriter writer) {
 		writer.Write((byte)item.Traits);
 		writer.Write((long)item.StartCluster);
+		writer.Write((long)item.EndCluster);
 		writer.Write((long)item.Size);
 		if (_policy.HasFlag(ClusteredStoragePolicy.TrackChecksums))
 			writer.Write((int)item.KeyChecksum);
@@ -38,6 +39,7 @@ public class ClusteredStreamRecordSerializer : StaticSizeItemSerializerBase<Clus
 		var item = new ClusteredStreamRecord {
 			Traits = (ClusteredStreamTraits)reader.ReadByte(),
 			StartCluster = reader.ReadInt64(),
+			EndCluster = reader.ReadInt64(),
 			Size = reader.ReadInt64()
 		};
 
@@ -52,7 +54,7 @@ public class ClusteredStreamRecordSerializer : StaticSizeItemSerializerBase<Clus
 
 
 	static long DetermineSizeBasedOnPolicy(ClusteredStoragePolicy policy, long keySize) {
-		long size = sizeof(byte) + sizeof(long) + sizeof(long); // Traits + StartCluster + Size
+		long size = sizeof(byte) + sizeof(long) + sizeof(long) + sizeof(long); // Traits + StartCluster + EndCluster + Size
 
 		if (policy.HasFlag(ClusteredStoragePolicy.TrackChecksums))
 			size += sizeof(int);

@@ -15,11 +15,13 @@ public struct ClusteredStreamRecord {
 
 	public long StartCluster { get; set; }
 
+	public long EndCluster { get; set; }
+
 	public long Size { get; set; }
 
 	public int KeyChecksum { get; set; }
 
 	public byte[] Key { get; set; }
 
-	public override string ToString() => $"[{nameof(ClusteredStreamRecord)}] {nameof(Size)}: {Size}, {nameof(StartCluster)}: {StartCluster}, {nameof(Traits)}: {Traits}, {nameof(KeyChecksum)}: {KeyChecksum}, {nameof(Key)}: {Key?.ToHexString(true)}";
+	public override string ToString() => $"[{nameof(ClusteredStreamRecord)}] {nameof(Size)}: {Size}, {nameof(StartCluster)}: {StartCluster}, {nameof(EndCluster)}: {EndCluster}, {nameof(Traits)}: {Traits}, {nameof(KeyChecksum)}: {KeyChecksum}, {nameof(Key)}: {Key?.ToHexString(true)}";
 }

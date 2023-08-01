@@ -51,6 +51,7 @@ namespace Hydrogen;
 ///  - Clusters with traits (First | Data) re-purpose the Prev field to denote the record.
 /// </remarks>
 public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
+	internal const long NullCluster = -1L;
 
 	public event EventHandlerEx<ClusteredStreamRecord> RecordCreated;
 	public event EventHandlerEx<long, ClusteredStreamRecord> RecordAdded;
@@ -380,7 +381,7 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 			CheckRecordIndex(index);
 			CheckNotOpened();
 			var record = GetRecord(index);
-			if (record.StartCluster != -1)
+			if (record.StartCluster != NullCluster)
 				RemoveClusterChain(record.StartCluster);
 			RemoveRecord(index); // record must be removed last, in case it deletes genesis cluster
 			var countAfterRemove = Header.RecordsCount;
@@ -420,13 +421,15 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 			UpdateRecord(first, secondRecord);
 			UpdateRecord(second, firstRecord);
 
-			// Update genesis-to-record links in genesis clusters (if applicable)
-			if (firstRecord.StartCluster != -1) {
+			// Update cluster -> record backlinks  (if applicable)
+			if (firstRecord.StartCluster != NullCluster) {
 				FastWriteClusterPrev(firstRecord.StartCluster, second);
+				//FastWriteClusterNext(firstRecord.EndCluster, second);
 			}
 
-			if (secondRecord.StartCluster != -1) {
+			if (secondRecord.StartCluster != NullCluster) {
 				FastWriteClusterPrev(secondRecord.StartCluster, first);
+			//	FastWriteClusterNext(secondRecord.EndCluster, first);
 			}
 		}
 	}
@@ -530,7 +533,8 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 		Debug.Assert(IsLocked, "Mutating without a lock can lead to race-conditions and data corruption in multi-threaded scenarios");
 		var record = new ClusteredStreamRecord();
 		record.Size = 0;
-		record.StartCluster = -1;
+		record.StartCluster = NullCluster;
+		record.EndCluster = NullCluster;
 		record.Key = new byte[_recordKeySize];
 		NotifyRecordCreated(record);
 		return record;
@@ -576,7 +580,7 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 		// Update genesis clusters 
 		for (var i = _records.Count - 1; i >= index; i--) {
 			var shiftedRecord = GetRecord(i);
-			if (shiftedRecord.StartCluster != -1)
+			if (shiftedRecord.StartCluster != NullCluster)
 				FastWriteClusterPrev(shiftedRecord.StartCluster, i + 1);
 			_recordCache?.Invalidate(i);
 			_recordCache?.Set(i + 1, shiftedRecord);
@@ -606,7 +610,7 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 		Debug.Assert(IsLocked, "Mutating without a lock can lead to race-conditions and data corruption in multi-threaded scenarios");
 		for (var i = index + 1; i < _records.Count; i++) {
 			var higherRecord = GetRecord(i);
-			if (higherRecord.StartCluster != -1) {
+			if (higherRecord.StartCluster != NullCluster) {
 				FastWriteClusterPrev(higherRecord.StartCluster, i - 1);
 			}
 			_recordCache?.Set(i - 1, higherRecord);
@@ -641,28 +645,31 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 		// Fix first new cluster
 		if (allocateFirst) {
 			clusters[0].Traits |= ClusterTraits.First;
-			clusters[0].Prev = -1;
+			clusters[0].Prev = NullCluster;
 		} else {
 			clusters[0].Prev = previousCluster;
 		}
 		// fix last cluster
-		clusters[^1].Next = -1;
+		clusters[^1].Traits |= ClusterTraits.Last;
+		clusters[^1].Next = NullCluster;
 
-		if (previousCluster != -1)
+		if (previousCluster != NullCluster)
 			FastWriteClusterNext(previousCluster, startClusterIX);
+
 		switch (clusterDataType) {
 			case ClusterDataType.Record:
-				clusters[0].Prev = allocateFirst ? -1 : previousCluster;
+				clusters[0].Prev = allocateFirst ? NullCluster : previousCluster;
+				//xxxxxx
+				//clusters[^-1].Next = recordIndex;
 				break;
 			case ClusterDataType.Stream:
 				clusters[0].Prev = allocateFirst ? recordIndex : previousCluster;
+				/// xxxx
+				//clusters[^-1].Next = recordIndex;
 				break;
 			default:
 				throw new ArgumentOutOfRangeException(nameof(clusterDataType), clusterDataType, null);
 		}
-
-		// Fix last new cluster
-		clusters[^1].Next = -1;
 
 		_clusters.AddRange(clusters);
 		Header.TotalClusters += clusters.Length;
@@ -696,16 +703,19 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 			CheckClusterIndex(clusterIndex, false);
 		}
 
-		var next = FastReadClusterNext(clusterIndex);
-		Guard.Ensure(next == -1, $"Can only remove a cluster from end of cluster-linked chain (clusterIndex = {clusterIndex})");
+		//xxx check is End trait 
 		var traits = FastReadClusterTraits(clusterIndex);
+		var next = FastReadClusterNext(clusterIndex);
+		Guard.Ensure(next == NullCluster, $"Can only remove a cluster from end of cluster-linked chain (clusterIndex = {clusterIndex})");
+		//Guard.Ensure(traits.HasFlag(ClusterTraits.Last), $"Can only remove a cluster from end of cluster-linked chain (clusterIndex = {clusterIndex})");
+
 		var prevPointsToRecord = traits.HasFlag(ClusterTraits.First) && traits.HasFlag(ClusterTraits.Data);
 		if (!prevPointsToRecord) {
 			var prev = FastReadClusterPrev(clusterIndex);
 			if (prev >= Header.TotalClusters)
 				throw new CorruptDataException(Header, clusterIndex, $"Prev index pointed to non-existent cluster {clusterIndex}");
-			if (prev != -1)
-				FastWriteClusterNext(prev, -1); // prev.next points to deleted cluster, so make it point to nothing
+			if (prev != NullCluster)
+				FastWriteClusterNext(prev, NullCluster); // prev.next points to deleted cluster, so make it point to nothing
 		}
 		MigrateTipClusterTo(clusterIndex);
 		var tipClusterIX = _clusters.Count - 1;
@@ -721,7 +731,7 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 		var cluster = startCluster;
 		Guard.Ensure(FastReadClusterTraits(cluster).HasFlag(ClusterTraits.First), "Cluster not a start cluster");
 
-		while (cluster != -1) {
+		while (cluster != NullCluster) {
 			var nextCluster = FastReadClusterNext(cluster);
 			CheckClusterIndex(nextCluster);
 			var tipIX = _clusters.Count - clustersRemoved - 1;
@@ -741,7 +751,7 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	internal ClusterTraits FastReadClusterTraits(long clusterIndex) {
 		CheckInitialized();
-		_clusters.ReadItemRaw(clusterIndex, 0, 1, out var bytes);
+		_clusters.ReadItemRaw(clusterIndex, Cluster.TraitsOffset, Cluster.TraitsLength, out var bytes);
 		var traits = (ClusterTraits)bytes[0];
 		if (_integrityChecks)
 			CheckClusterTraits(clusterIndex, traits);
@@ -754,15 +764,19 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 		_clusters.WriteItemBytes(clusterIndex, Cluster.TraitsOffset, new[] { (byte)traits });
 	}
 
+	internal void FastMaskClusterTraits(long clusterIndex, ClusterTraits traits, bool on) {
+		CheckInitialized();
+		_clusters.ReadItemRaw(clusterIndex, Cluster.TraitsOffset, Cluster.TraitsLength, out var traitBytes);
+		var newTraits = ((ClusterTraits)traitBytes[0]).CopyAndSetFlags(traits, on);
+		_clusters.WriteItemBytes(clusterIndex, Cluster.TraitsOffset, new[] { (byte)newTraits });
+	}
+
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	internal int FastReadClusterPrev(long clusterIndex) {
 		_clusters.ReadItemRaw(clusterIndex, Cluster.PrevOffset, Cluster.PrevLength, out var bytes);
 		var prevCluster = _clusters.Reader.BitConverter.ToInt32(bytes);
-		if (_integrityChecks)
-			CheckLinkedCluster(clusterIndex, prevCluster);
 		return prevCluster;
 	}
-
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	internal void FastWriteClusterPrev(long clusterIndex, long prev) {
@@ -774,8 +788,6 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 	internal long FastReadClusterNext(long clusterIndex) {
 		_clusters.ReadItemRaw(clusterIndex, Cluster.NextOffset, Cluster.NextLength, out var bytes);
 		var nextValue = _clusters.Reader.BitConverter.ToInt32(bytes);
-		if (_integrityChecks)
-			CheckLinkedCluster(clusterIndex, nextValue);
 		return nextValue;
 	}
 
@@ -874,24 +886,26 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 
 	private void CheckRecordIntegrity(long index, ClusteredStreamRecord record) {
 		if (record.Size == 0) {
-			if (record.StartCluster != -1)
-				throw new CorruptDataException(Header, $"Empty record {index} should have start cluster -1 but was {record.StartCluster}");
+			if (record.StartCluster != NullCluster)
+				throw new CorruptDataException(Header, $"Empty record {index} should have start cluster {NullCluster} but was {record.StartCluster}");
+			if (record.EndCluster != NullCluster)
+				throw new CorruptDataException(Header, $"Empty record {index} should have start cluster {NullCluster} but was {record.EndCluster}");
 		} else if (!(0 <= record.StartCluster && record.StartCluster < Header.TotalClusters))
 			throw new CorruptDataException(Header, $"Record {index} pointed to to non-existent cluster {record.StartCluster}");
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	private void CheckClusterIndex(long index, bool allowNegOne = true, string msg = null) {
-		if (allowNegOne && index == -1 || (0 <= index && index < _clusters.Count))
+		if (allowNegOne && index == NullCluster || (0 <= index && index < _clusters.Count))
 			return;
-		throw new CorruptDataException(msg ?? $"Cluster index {index} out of bounds (or not -1)");
+		throw new CorruptDataException(msg ?? $"Cluster index {index} out of bounds (or not {NullCluster})");
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	private void CheckLinkedCluster(long sourceCluster, int linkedCluster, string msg = null) {
 		Guard.Argument(sourceCluster >= 0, nameof(sourceCluster), "Must be greater than or equal to 0");
 
-		if (linkedCluster == -1)
+		if (linkedCluster == NullCluster)
 			return;
 
 		if (sourceCluster == linkedCluster)
@@ -903,7 +917,7 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 
 	private void CheckClusterTraits(long cluster, ClusterTraits traits) {
 		var bTraits = (byte)traits;
-		if (bTraits == 0 || bTraits > 7 || ((traits & ClusterTraits.Data) > 0 && (traits & ClusterTraits.Record) > 0))
+		if (bTraits == 0 || bTraits > 15 || ((traits & ClusterTraits.Data) > 0 && (traits & ClusterTraits.Record) > 0))
 			throw new CorruptDataException(Header, cluster, "Invalid traits");
 	}
 
@@ -931,18 +945,23 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 		toCluster.Prev = tipCluster.Prev;
 		toCluster.Next = tipCluster.Next;
 		tipCluster.Data.AsSpan().CopyTo(toCluster.Data);
-		if (tipCluster.Traits.HasFlag(ClusterTraits.First)) {
-			var recordIndex = tipCluster.Prev; // convention, Prev points to Record index in first cluster of BLOB
+		var tipWasFirstCluster = tipCluster.Traits.HasFlag(ClusterTraits.First);
+		var tipWasLastCluster = tipCluster.Traits.HasFlag(ClusterTraits.Last);
+		if (tipWasFirstCluster /* || tipWasLastCluster*/) {
+			var recordIndex = tipWasFirstCluster ? tipCluster.Prev : tipCluster.Next; // convention, Prev points to Record index in first cluster of BLOB
 			if (recordIndex < _records.Count) {
 				var updatedRecord = GetRecord(recordIndex);
-				updatedRecord.StartCluster = to;
+				if (tipWasFirstCluster) 
+					updatedRecord.StartCluster = to;
+				if (tipWasLastCluster)
+					updatedRecord.EndCluster = to;
 				UpdateRecord(recordIndex, updatedRecord);
 			}
 		} else {
 			// Update tip's previous cluster to point to new location of tip
 			FastWriteClusterNext(tipCluster.Prev, to);
 		}
-		if (tipCluster.Next != -1)
+		if (tipCluster.Next != NullCluster)
 			FastWriteClusterPrev(tipCluster.Next, to);
 
 		_clusters.Update(to, toCluster);
@@ -1013,12 +1032,13 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 			var newClustersL = new List<long>();
 			var deletedFragmentsL = new List<long>();
 			var deletedClustersL = new List<long>();
+			long? newRecordEndCluster = null;
 			TraverseToEnd();
 			if (newTotalClusters > currentTotalClusters) {
 				// Fast Implementation, adds clusters in range
 				var newClusters = newTotalClusters - currentTotalClusters;
 				var needsFirstCluster = currentTotalClusters == 0;
-				_parent.AllocateNextClusters(_clusterDataType, _parent._openScope?.RecordIndex ?? -1, _currentCluster, newClusters, needsFirstCluster, out var newStartIX);
+				_parent.AllocateNextClusters(_clusterDataType, _parent._openScope?.RecordIndex ?? NullCluster, _currentCluster, newClusters, needsFirstCluster, out var newStartIX);
 
 				for (var i = 0; i < newClusters; i++) {
 					var newClusterIX = newStartIX + i;
@@ -1032,7 +1052,7 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 				// Set carrot to tip
 				_currentCluster = newClustersL[^1];
 				_currentFragment = newFragmentsL[^1];
-
+				newRecordEndCluster = newStartIX + newClusters - 1;
 			} else if (newTotalClusters < currentTotalClusters) {
 				// remove clusters from tip
 				while (currentTotalClusters > newTotalClusters) {
@@ -1050,7 +1070,7 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 					// Restore remembered position (note: when previous is tip, it got moved to deleted position when deleted was removed)
 					if (wasStartCluster) {
 						// deleted genesis cluster
-						_currentCluster = -1;
+						_currentCluster = NullCluster;
 						_currentFragment = -1;
 					} else {
 						_currentCluster = steppedBackToTip ? deleteCluster : rememberCurrentCluster; // this is because we deleted the tip cluster which moved back to where migrated cluster was
@@ -1059,7 +1079,11 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 					currentTotalClusters--;
 					deletedFragmentsL.Add(deleteFragment);
 					deletedClustersL.Add(deleteCluster);
+
+					// Used to update record at end
+					newRecordEndCluster = _currentCluster;
 				}
+
 			}
 
 			// Erase unused portion of tip cluster when shrinking stream
@@ -1071,15 +1095,32 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 				}
 			}
 
-			// Update record if applicable
 			if (_clusterDataType == ClusterDataType.Stream) {
 				_parent._openScope.Record.Size = length;
+
+				// Update record Start Cluster if applicable
 				if (_parent._openScope.Record.Size == 0)
-					_parent._openScope.Record.StartCluster = -1;
+					_parent._openScope.Record.StartCluster = NullCluster;
 				if (oldTotalClusters == 0 && newTotalClusters > 0)
 					_parent._openScope.Record.StartCluster = newClustersL[0];
-			} else {
+				
+				// Update record End Cluster if applicable
+				if (newRecordEndCluster != null) {
+					var preEndCluster = _parent._openScope.Record.EndCluster;
+					if (preEndCluster != NullCluster && 0 <= preEndCluster && preEndCluster < _parent._clusters.Count)
+						_parent.FastMaskClusterTraits(_parent._openScope.Record.EndCluster, ClusterTraits.Last, false);
+					_parent._openScope.Record.EndCluster = newRecordEndCluster.Value;
+				}
+
+			} else if (_clusterDataType == ClusterDataType.Record) {
+				// Track the total size of records 
 				_parent.AllRecordsSize = length;
+
+				// Update record if applicable
+				//if (newRecordEndCluster != null) {
+				//	_parent.FastMaskClusterTraits(_parent._openScope.Record.EndCluster, ClusterTraits.Last, false);
+				//	_parent._openScope.Record.EndCluster = newRecordEndCluster.Value;
+				//}
 			}
 
 			newFragments = newFragmentsL.ToArray();

@@ -13,6 +13,8 @@ namespace Hydrogen;
 [Flags]
 internal enum ClusterTraits : byte {
 	First = 1 << 0,
-	Record = 1 << 1,
+	Last = 1 << 3,
 	Data = 1 << 2,
+	Record = 1 << 1,
+	
 }

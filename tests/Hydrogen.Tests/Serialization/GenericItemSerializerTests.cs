@@ -206,14 +206,14 @@ public class GenericItemSerializerTests {
 		IItemSerializer<List<PrimitiveTestObject>> serializer = new GenericSerializer<List<PrimitiveTestObject>>();
 
 		var stream = new MemoryStream();
-		serializer.Serialize(list, new EndianBinaryWriter(EndianBitConverter.Little, stream));
+		var len = serializer.Serialize(list, new EndianBinaryWriter(EndianBitConverter.Little, stream));
 		stream.Seek(0, SeekOrigin.Begin);
 		var reader = new EndianBinaryReader(EndianBitConverter.Little, stream);
 		IItemSerializer<List<PrimitiveTestObject>> deserializer = new GenericSerializer<List<PrimitiveTestObject>>();
 
 		// Subclass instance must be registered
 		((GenericSerializer<List<PrimitiveTestObject>>)deserializer).RegisterType<SubClassObj>();
-		var item = deserializer.Deserialize(0, reader);
+		var item = deserializer.Deserialize(len, reader);
 
 		item.Should().BeEquivalentTo(list);
 	}
@@ -224,7 +224,7 @@ public class GenericItemSerializerTests {
 		var item = _fixture.Create<SubClassObj>();
 
 		var stream = new MemoryStream();
-		serializer.Serialize(item, new EndianBinaryWriter(EndianBitConverter.Little, stream));
+		var len = serializer.Serialize(item, new EndianBinaryWriter(EndianBitConverter.Little, stream));
 		stream.Seek(0, SeekOrigin.Begin);
 
 		var reader = new EndianBinaryReader(EndianBitConverter.Little, stream);
@@ -232,7 +232,7 @@ public class GenericItemSerializerTests {
 
 		//Subclass instance must be registered during deserialization. 
 		((GenericSerializer<PrimitiveTestObject>)deserializer).RegisterType<SubClassObj>();
-		var deserialized = deserializer.Deserialize(0, reader);
+		var deserialized = deserializer.Deserialize(len, reader);
 
 		deserialized.Should().BeEquivalentTo(item);
 	}

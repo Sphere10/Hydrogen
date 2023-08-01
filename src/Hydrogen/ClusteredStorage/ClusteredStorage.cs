@@ -1167,8 +1167,7 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 
 			_currentFragment--;
 			// note: _currentCluster still points to current at this point
-			var prevCluster = 0L;
-			if (!(_enableCache && _fragmentCache.TryGetCluster(_currentFragment, out prevCluster))) {
+			if (!(_enableCache && _fragmentCache.TryGetCluster(_currentFragment, out var prevCluster))) {
 				_currentCluster = _parent.FastReadClusterPrev(_currentCluster);
 				if (_enableCache)
 					_fragmentCache.SetCluster(_currentFragment, _currentCluster);

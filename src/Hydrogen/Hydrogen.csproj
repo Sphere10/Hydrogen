@@ -7,6 +7,7 @@
 		<Company>Sphere 10 Software</Company>
 		<Description>General-purpose library for full-stack use. Provides support for Caching, Collections, Comparers, Converion, Environment, Events, Exceptions, IO, FileSystem, Lambdas, Logging, Math, Memory, Scopes, Text, Threading, Scheduling and many other aspects.</Description>
 		<Copyright>Sphere 10 Software Pty Ltd</Copyright>
+		<!--<DefineConstants>ENABLE_CLUSTER_DIAGNOSTICS</DefineConstants>-->
 		<PackageLicenseUrl>https://raw.githubusercontent.com/Sphere10/Framework/master/LICENSE</PackageLicenseUrl>
 		<PackageProjectUrl>https://github.com/Sphere10/Framework</PackageProjectUrl>
 		<PackageIconUrl>https://raw.githubusercontent.com/Sphere10/Framework/master/NugetIcon_64x64.png</PackageIconUrl>

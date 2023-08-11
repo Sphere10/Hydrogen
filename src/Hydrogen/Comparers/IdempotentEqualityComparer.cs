@@ -13,7 +13,7 @@ public class IdempotentEqualityComparer<T> : IEqualityComparer<T> {
 
 	public int GetHashCode(T obj) => 0;
 
-	public IEqualityComparer<T> StartWith<TMember>(Func<T, TMember> member, IEqualityComparer<TMember> memberComparer = null) 
+	public IEqualityComparer<T> By<TMember>(Func<T, TMember> member, IEqualityComparer<TMember> memberComparer = null) 
 		=> new ProjectionEqualityComparer<T, TMember>(member, memberComparer);
 	
 }

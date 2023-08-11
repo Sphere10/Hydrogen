@@ -46,7 +46,7 @@ public class ComparerBuilderTests {
 		var comparer = 
 			EqualityComparerBuilder
 				.For<TestClass>()
-				.StartWith(x => x.Alpha)
+				.By(x => x.Alpha)
 				.ThenBy(x => x.Beta);
 
 		Assert.That(comparer.Equals(new() { Alpha = "A", Beta = 1 }, new() { Alpha = "A", Beta = 1 }));

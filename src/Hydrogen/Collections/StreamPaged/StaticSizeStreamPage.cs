@@ -135,7 +135,8 @@ internal class StaticStreamPage<TItem> : StreamPageBase<TItem> {
 	public override void WriteItemBytes(long itemIndex, long byteOffset, ReadOnlySpan<byte> bytes) {
 		Guard.ArgumentInRange(itemIndex, 0, Count - 1, nameof(itemIndex));
 		var offset = itemIndex * ItemSize + _item0Offset + byteOffset;
-		Stream.Seek(offset, SeekOrigin.Begin);
+		//Stream.Seek(offset, SeekOrigin.Begin);
+		using var _ = Stream.EnterRestorePositionSeek(offset, SeekOrigin.Begin);
 		Writer.Write(bytes);
 	}
 

@@ -26,7 +26,7 @@ namespace Hydrogen;
 /// Additionally, <see cref="Contains"/> and <see cref="ContainsRange"/> are overriden and implemented based on <see cref="IndexOf"/> and <see cref="IndexOfRange"/>
 /// so as to ensure only the logical objects are searched (avoids false positives). Same is true for <see cref="Remove"/> and <see cref="RemoveRange(int,int)"/>.
 /// </remarks>
-public class UpdateOnlyList<TItem, TInner> : ExtendedListDecorator<TItem> where TInner : IExtendedList<TItem> {
+public class UpdateOnlyList<TItem, TInner> : ExtendedListDecorator<TItem, TInner> where TInner : IExtendedList<TItem> {
 	private long _count;
 	private readonly PreAllocationPolicy _preAllocationPolicy;
 	private readonly long _blockSize;

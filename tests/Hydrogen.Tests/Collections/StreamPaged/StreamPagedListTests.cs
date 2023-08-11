@@ -82,7 +82,7 @@ public class StreamPagedListTests {
 	public void FixedSize_Read_NoHeader() {
 		StreamPagedList<int> list;
 		using var stream = new MemoryStream();
-		list = new StreamPagedList<int>(new PrimitiveSerializer<int>(), stream) { IncludeListHeader = false };
+		list = new StreamPagedList<int>(new PrimitiveSerializer<int>(), stream, includeListHeader: false);
 		var added = new[] { 1, 2, 3, 4 };
 		list.AddRange(added);
 		var read = list.ReadRange(2, 2);
@@ -92,7 +92,7 @@ public class StreamPagedListTests {
 	[Test]
 	public void FixedSize_Update() {
 		using var stream = new MemoryStream();
-		StreamPagedList<int> list = new StreamPagedList<int>(new PrimitiveSerializer<int>(), stream) { IncludeListHeader = false };
+		StreamPagedList<int> list = new StreamPagedList<int>(new PrimitiveSerializer<int>(), stream, includeListHeader: false);
 		var added = new[] { 1, 2, 3, 4 };
 		list.AddRange(added);
 		var read = list.ReadRange(0, added.Length);
@@ -190,7 +190,7 @@ public class StreamPagedListTests {
 	[Test]
 	public void V1_IntegrationTests([Values(0, 1, 17, 1000, 2213)] int maxCapacity, [Values] bool includeListHeader) {
 		using (var stream = new MemoryStream()) {
-			var list = new StreamPagedList<int>(new PrimitiveSerializer<int>(), stream) { IncludeListHeader = includeListHeader };
+			var list = new StreamPagedList<int>(new PrimitiveSerializer<int>(), stream, includeListHeader: includeListHeader);
 			AssertEx.ListIntegrationTest(list, maxCapacity, (rng, i) => rng.NextInts(i), mutateFromEndOnly: true);
 		}
 	}

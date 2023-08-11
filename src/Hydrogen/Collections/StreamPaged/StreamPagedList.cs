@@ -61,23 +61,24 @@ public class StreamPagedList<TItem> : PagedListBase<TItem> {
 	public const byte FormatVersion = 1;
 	public const int ListHeaderSize = 256;
 
-	public StreamPagedList(IItemSerializer<TItem> serializer, Stream stream, Endianness endianness = Endianness.LittleEndian, bool autoLoad = false)
+	public StreamPagedList(IItemSerializer<TItem> serializer, Stream stream, Endianness endianness = Endianness.LittleEndian, bool includeListHeader = true, bool autoLoad = false)
 		: this(
 			serializer.IsStaticSize ? StreamPagedListType.Static : throw new ArgumentException(nameof(serializer), $"This constructor only supports {nameof(StreamPagedListType.Static)} items"),
 			serializer,
 			stream,
 			serializer.IsStaticSize ? long.MaxValue : throw new ArgumentException(nameof(serializer), $"This constructor only supports {nameof(StreamPagedListType.Static)} items"),
 			endianness,
+			includeListHeader,
 			autoLoad
 		) {
 	}
 
-	public StreamPagedList(IItemSerializer<TItem> serializer, Stream stream, long pageSize, Endianness endianness = Endianness.LittleEndian, bool autoLoad = false)
-		: this(serializer.IsStaticSize ? StreamPagedListType.Static : StreamPagedListType.Dynamic, serializer, stream, pageSize, endianness, autoLoad) {
+	public StreamPagedList(IItemSerializer<TItem> serializer, Stream stream, long pageSize, Endianness endianness = Endianness.LittleEndian, bool includeListHeader = true, bool autoLoad = false)
+		: this(serializer.IsStaticSize ? StreamPagedListType.Static : StreamPagedListType.Dynamic, serializer, stream, pageSize, endianness, includeListHeader, autoLoad) {
 	}
 
-	public StreamPagedList(StreamPagedListType type, IItemSerializer<TItem> serializer, Stream stream, long pageSize, Endianness endianness = Endianness.LittleEndian, bool autoLoad = false) 
-		: base(autoLoad) {
+	public StreamPagedList(StreamPagedListType type, IItemSerializer<TItem> serializer, Stream stream, long pageSize, Endianness endianness = Endianness.LittleEndian, bool includeListHeader = true,  bool autoLoad = false) 
+		: base(false) {
 		PageSize = pageSize;
 		Serializer = serializer;
 		Stream = stream;
@@ -85,11 +86,14 @@ public class StreamPagedList<TItem> : PagedListBase<TItem> {
 		Writer = new EndianBinaryWriter(EndianBitConverter.For(endianness), Stream);
 		RequiresLoad = Stream.Length > 0;
 		Type = type;
+		IncludeListHeader = includeListHeader;
+		if (autoLoad && RequiresLoad)
+			Load();
 	}
 
 	public long PageSize { get; }
 
-	public bool IncludeListHeader { get; set; } = true;
+	public bool IncludeListHeader { get;}
 
 	public StreamPagedListType Type { get; }
 
@@ -233,6 +237,6 @@ public class StreamPagedList<TItem> : PagedListBase<TItem> {
 		Writer.Write((byte)FormatVersion);
 		Writer.Write((uint)0U); // traits (used in v2)
 		Writer.Write(Tools.Array.Gen(ListHeaderSize - (int)Stream.Position, (byte)0)); // padding
-		Debug.Assert(Stream.Position == ListHeaderSize);
+		Guard.Ensure(Stream.Position == ListHeaderSize, "Head size inconsistency");
 	}
 }

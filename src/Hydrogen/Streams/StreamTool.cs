@@ -27,7 +27,7 @@ public static class Streams {
 		if (count == 0)
 			return;
 
-		// Seek to the initial read position
+		// SeekTo to the initial read position
 		stream.Seek(fromIndex, SeekOrigin.Begin);
 
 		// In cases where the copy/paste overlaps, isolate the overlapping region

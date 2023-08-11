@@ -54,7 +54,7 @@ public class ClusteredStreamRecordSerializer : StaticSizeItemSerializerBase<Clus
 
 
 	static long DetermineSizeBasedOnPolicy(ClusteredStoragePolicy policy, long keySize) {
-		long size = sizeof(byte) + sizeof(long) + sizeof(long) + sizeof(long); // Traits + StartCluster + EndCluster + Size
+		long size = ClusteredStreamRecord.TraitsLength + ClusteredStreamRecord.StartClusterLength + ClusteredStreamRecord.EndClusterLength + ClusteredStreamRecord.SizeLength;
 
 		if (policy.HasFlag(ClusteredStoragePolicy.TrackChecksums))
 			size += sizeof(int);

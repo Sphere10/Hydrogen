@@ -46,7 +46,7 @@ internal sealed class ClusteredStorageMerkleTreeStream : IDynamicMerkleTree {
 
 	private IDisposable EnterAccessMerkleTreeScope(out IDynamicMerkleTree merkleTree) {
 		var disposables = new Disposables(false);
-		var streamScope = _storage.Open(_flatTreeStreamRecord);
+		var streamScope = _storage.OpenWrite(_flatTreeStreamRecord);
 		var flatTreeData = new StreamMappedBuffer(streamScope.Stream);
 		var flatMerkleTree = new FlatMerkleTree(HashAlgorithm, flatTreeData, _storage.Count - _storage.Header.ReservedRecords);
 		merkleTree = flatMerkleTree;

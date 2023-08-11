@@ -9,6 +9,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace Hydrogen;
 
@@ -53,8 +54,7 @@ public class FragmentedStream : Stream {
 
 	public override void SetLength(long value) {
 		Guard.ArgumentInRange(value, 0, int.MaxValue, nameof(value));
-		if (!FragmentProvider.TrySetTotalBytes(value, out _, out _))
-			throw new InvalidOperationException($"Fragment provider unable to accomodate new length request of {value} bytes");
+		FragmentProvider.SetTotalBytes(value);
 
 		if (Position > value)
 			Position = value;
@@ -99,8 +99,7 @@ public class FragmentedStream : Stream {
 		var totalRead = (int)bytesToRead;
 
 		while (bytesToRead > 0) {
-			if (!FragmentProvider.TryMapStreamPosition(Position, out var fragmentIndex, out var fragmentPosition))
-				throw new InvalidOperationException($"Unable to resolve fragment for stream position {Position}");
+			FragmentProvider.MapStreamPosition(Position, out var fragmentIndex, out var fragmentPosition);
 			var fragmentPositionI = Tools.Collection.CheckNotImplemented64bitAddressingLength(fragmentPosition);
 
 			var fragment = FragmentProvider.GetFragment(fragmentIndex);
@@ -132,17 +131,19 @@ public class FragmentedStream : Stream {
 		// Grow stream if required
 		if (bytesToWrite > remainingStreamBytes) {
 			var newStreamLength = Length + (bytesToWrite - remainingStreamBytes);
-			if (!FragmentProvider.TrySetTotalBytes(newStreamLength, out _, out _))
-				throw new InvalidOperationException($"Unable to grow stream to length {newStreamLength}");
+			var prePos = Position;
+			FragmentProvider.SetTotalBytes(newStreamLength);
+			
 			StreamLength = newStreamLength;
+			var postPos = Position;
+			Guard.Ensure(postPos == prePos, "Stream pointer has moved during resize");
 		}
 
 		var bufferSpan = buffer.AsSpan();
 		var bufferOffset = offset;
 		var totalWrites = 0;
 		while (bytesToWrite > 0) {
-			if (!FragmentProvider.TryMapStreamPosition(Position, out var fragmentIndex, out var fragmentPosition))
-				throw new InvalidOperationException($"Unable to resolve fragment for stream position {Position}");
+			FragmentProvider.MapStreamPosition(Position, out var fragmentIndex, out var fragmentPosition);
 			var fragmentPositionI = Tools.Collection.CheckNotImplemented64bitAddressingLength(fragmentPosition);
 
 			var fragment = FragmentProvider.GetFragment(fragmentIndex).ToArray();
@@ -170,8 +171,7 @@ public class FragmentedStream : Stream {
 		var position = 0L;
 		var bytesToRead = Length;
 		while (bytesToRead > 0) {
-			if (!FragmentProvider.TryMapStreamPosition(position, out var fragmentIndex, out var fragmentPosition))
-				throw new InvalidOperationException($"Unable to resolve fragment for stream position {position}");
+			FragmentProvider.MapStreamPosition(position, out var fragmentIndex, out var fragmentPosition);
 			var fragmentPositionI = Tools.Collection.CheckNotImplemented64bitAddressingLength(fragmentPosition);
 
 			var fragment = FragmentProvider.GetFragment(fragmentIndex);
@@ -184,5 +184,25 @@ public class FragmentedStream : Stream {
 		}
 		Debug.Assert(bytesToRead == 0);
 		return builder.ToArray();
+	}
+
+	protected override void Dispose(bool disposing) {
+		base.Dispose(disposing);
+		if (disposing) {
+			if (FragmentProvider is IDisposable disposable)
+				disposable.Dispose();
+		}
+	}
+
+	public override async ValueTask DisposeAsync() {
+		await base.DisposeAsync();
+		switch (FragmentProvider) {
+			case IAsyncDisposable asyncDisposable:
+				await asyncDisposable.DisposeAsync();
+				break;
+			case IDisposable disposable:
+				disposable.Dispose();
+				break;
+		}
 	}
 }

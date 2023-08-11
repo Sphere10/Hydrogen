@@ -609,8 +609,7 @@ public class EndianBinaryReader : IDisposable {
 			// int read = stream.Read(data, index, size - index);
 			int read = _stream.Read(data.Slice(index, size - index));
 			if (read == 0) {
-				throw new EndOfStreamException
-					($"End of stream reached with {size - index} byte{(size - index == 1 ? "s" : "")} left to read.");
+				throw new EndOfStreamException($"End of stream reached with {size - index} byte{(size - index == 1 ? "s" : "")} left to read.");
 			}
 			index += read;
 		}

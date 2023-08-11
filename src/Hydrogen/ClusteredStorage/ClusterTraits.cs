@@ -11,10 +11,8 @@ using System;
 namespace Hydrogen;
 
 [Flags]
-internal enum ClusterTraits : byte {
-	First = 1 << 0,
-	Last = 1 << 3,
-	Data = 1 << 2,
-	Record = 1 << 1,
-	
+public enum ClusterTraits : byte {
+	None = 0,
+	Start = 1 << 0,
+	End = 1 << 1,
 }

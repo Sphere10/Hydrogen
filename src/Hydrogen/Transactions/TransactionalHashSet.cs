@@ -12,7 +12,7 @@ public class TransactionalHashSet<TItem> : StreamMappedHashSet<TItem>, ITransact
 	public event EventHandlerEx<object> RollingBack { add => _internalTransactionalDictionary.RollingBack += value; remove => _internalTransactionalDictionary.RollingBack -= value; }
 	public event EventHandlerEx<object> RolledBack { add => _internalTransactionalDictionary.RolledBack += value; remove => _internalTransactionalDictionary.RolledBack -= value; }
 
-	private readonly ITransactionalDictionary<byte[], TItem> _internalTransactionalDictionary;
+	internal readonly ITransactionalDictionary<byte[], TItem> _internalTransactionalDictionary;
 
 	public TransactionalHashSet(string filename, string uncommittedPageFileDir, IItemSerializer<TItem> serializer, CHF chf = CHF.SHA2_256, IItemChecksummer<byte[]> keyChecksum = null, IEqualityComparer<TItem> comparer = null,
 	                            int transactionalPageSize = HydrogenDefaults.TransactionalPageSize, long maxMemory = HydrogenDefaults.MaxMemoryPerCollection, int clusterSize = HydrogenDefaults.ClusterSize,

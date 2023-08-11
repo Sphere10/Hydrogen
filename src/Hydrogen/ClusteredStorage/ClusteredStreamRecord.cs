@@ -10,6 +10,18 @@ namespace Hydrogen;
 
 //[StructLayout(LayoutKind.Sequential)]
 public struct ClusteredStreamRecord {
+	internal const int TraitsLength = sizeof(byte);
+	internal const int StartClusterLength = sizeof(long);
+	internal const int EndClusterLength = sizeof(long);
+	internal const int SizeLength = sizeof(long);
+	internal const int KeyChecksumLength = sizeof(int);
+
+	internal const long TraitsOffset = 0;
+	internal const long StartClusterOffset = TraitsOffset + TraitsLength;
+	internal const long EndClusterOffset = StartClusterOffset + StartClusterLength;
+	internal const long SizeOffset = EndClusterOffset + EndClusterLength;
+	internal const long KeyChecksumOffset = SizeOffset + SizeLength;
+	internal const long KeyOffset = KeyChecksumOffset + KeyChecksumLength;
 
 	public ClusteredStreamTraits Traits { get; set; }
 

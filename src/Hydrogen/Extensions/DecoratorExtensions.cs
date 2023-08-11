@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Data;
+using System.IO;
 using System.Runtime.CompilerServices;
 using static Hydrogen.AMS;
 
@@ -267,6 +268,13 @@ public static class DecoratorExtensions {
 	public static IComparer<T> ThenBy<T, TKey>(this IComparer<T> firstComparer, Func<T, TKey> projection, IComparer<TKey> keyComparer = null) => new CompositeComparer<T>(firstComparer, new ProjectionComparer<T, TKey>(projection, keyComparer));
 
 	public static IComparer<T> ThenByDescending<T, TKey>(this IComparer<T> firstComparer, Func<T, TKey> projection, IComparer<TKey> keyComparer = null) => firstComparer.ThenBy(projection, (keyComparer ?? Comparer<TKey>.Default).AsInverted());
+
+	#endregion
+
+	#region Transactional Stream
+
+	public static TransactionalStream<TStream> AsTransactional<TStream>(this TStream stream, ITransactionalObject innerTransactionalObject) 
+		where TStream : Stream => new (stream, innerTransactionalObject);
 
 	#endregion
 

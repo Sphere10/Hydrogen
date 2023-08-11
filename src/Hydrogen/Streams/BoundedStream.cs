@@ -24,15 +24,13 @@ public class BoundedStream<TStream> : StreamDecorator<TStream> where TStream : S
 		: base(innerStream) {
 		MinAbsolutePosition = minPosition;
 		MaxAbsolutePosition = maxPosition;
-		UseRelativeOffset = false;
-		AllowInnerResize = true;
 	}
 
 	public long MinAbsolutePosition { get; }
 
 	public long MaxAbsolutePosition { get; }
 
-	public bool AllowInnerResize { get; set; }
+	public bool AllowInnerResize { get; set; } = true;
 
 	public override long Position {
 		get => FromAbsoluteOffset(AbsolutePosition);
@@ -47,7 +45,7 @@ public class BoundedStream<TStream> : StreamDecorator<TStream> where TStream : S
 	/// <summary>
 	/// When true, stream begins at <see cref="Position"/>=0, when false, begins at <see cref="Position"/>=<see cref="MinAbsolutePosition"/>. 
 	/// </summary>
-	public bool UseRelativeOffset { get; set; }
+	public bool UseRelativeOffset { get; set; } = false;
 
 	public override long Seek(long offset, SeekOrigin origin) {
 		switch (origin) {

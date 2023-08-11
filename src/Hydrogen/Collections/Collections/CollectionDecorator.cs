@@ -12,7 +12,7 @@ using System.Collections.Generic;
 namespace Hydrogen;
 
 public abstract class CollectionDecorator<TItem, TConcrete> : ICollection<TItem> where TConcrete : ICollection<TItem> {
-	protected TConcrete InternalCollection;
+	internal TConcrete InternalCollection;
 
 	public virtual int Count => InternalCollection.Count;
 

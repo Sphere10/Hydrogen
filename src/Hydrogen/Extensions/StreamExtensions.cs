@@ -14,6 +14,12 @@ namespace Hydrogen;
 
 public static class StreamExtensions {
 
+	public static IDisposable EnterRestorePositionSeek(this Stream stream, long offset, SeekOrigin origin) {
+		var position = stream.Position;
+		stream.Seek(offset, origin);
+		return new ActionDisposable(() => stream.Position = position);
+	}
+
 	public static byte[] ToArray(this Stream stream) {
 		Guard.ArgumentNotNull(stream, nameof(stream));
 		Guard.ArgumentLTE(stream.Length, int.MaxValue, nameof(string.Length));

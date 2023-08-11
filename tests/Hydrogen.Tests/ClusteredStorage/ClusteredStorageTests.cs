@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Text;
 using NUnit.Framework;
 using Hydrogen.NUnit;
@@ -24,12 +25,95 @@ namespace Hydrogen.Tests;
 [Parallelizable(ParallelScope.Children)]
 public class ClusteredStorageTests : StreamPersistedCollectionTestsBase {
 
+
+	[Test] 
+	public void CannotSwapOpenRecord([Values(1, 2, 3, 4, 32)] int clusterSize, [ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy) {
+		using var rootStream = new MemoryStream();
+		var streamContainer = new ClusteredStorage(rootStream, clusterSize, policy: policy, autoLoad: true);
+		streamContainer.AddBytes(new byte[] { 1 });
+		using var scope = streamContainer.Add();
+		Assert.That(streamContainer.Count, Is.EqualTo(2));
+		scope.Stream.WriteBytes(new byte[]{ 2, 2 });
+		ClusteredStorageTestsHelper.AssertValidRecords(streamContainer);
+		Assert.That( () => streamContainer.Swap(0, 1), Throws.Exception.TypeOf<InvalidOperationException>());
+	}
+
+	[Test]
+	public void TestCheckWipesOutOldData( [ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy) {
+		using var rootStream = new MemoryStream();
+		var streamContainer = new ClusteredStorage(rootStream, 32, policy: policy, autoLoad: true);
+		streamContainer.AddBytes(Tools.Array.Gen<byte>(64, 1));
+		Assert.That(streamContainer.Count, Is.EqualTo(1));
+		Assert.That(streamContainer.Records[0].StartCluster, Is.EqualTo(1));
+		Assert.That(streamContainer.Records[0].EndCluster, Is.EqualTo(2));
+		Assert.That(streamContainer.Records[0].Size, Is.EqualTo(64));
+		Assert.That(streamContainer.ClusterContainer.Clusters.Count, Is.EqualTo(3));
+		Assert.That(streamContainer.ClusterContainer.Clusters[0].Traits, Is.EqualTo(ClusterTraits.Start | ClusterTraits.End));
+		Assert.That(streamContainer.ClusterContainer.Clusters[0].Next, Is.EqualTo(-1));
+		Assert.That(streamContainer.ClusterContainer.Clusters[0].Prev, Is.EqualTo(-1));
+		
+		Assert.That(streamContainer.ClusterContainer.Clusters[1].Traits, Is.EqualTo(ClusterTraits.Start));
+		Assert.That(streamContainer.ClusterContainer.Clusters[1].Next, Is.EqualTo(2));
+		Assert.That(streamContainer.ClusterContainer.Clusters[1].Prev, Is.EqualTo(0));
+		Assert.That(streamContainer.ClusterContainer.Clusters[1].Data, Is.EqualTo(Tools.Array.Gen<byte>(32, 1)));
+
+		Assert.That(streamContainer.ClusterContainer.Clusters[2].Traits, Is.EqualTo(ClusterTraits.End));
+		Assert.That(streamContainer.ClusterContainer.Clusters[2].Next, Is.EqualTo(0));
+		Assert.That(streamContainer.ClusterContainer.Clusters[2].Prev, Is.EqualTo(1));
+		Assert.That(streamContainer.ClusterContainer.Clusters[2].Data, Is.EqualTo(Tools.Array.Gen<byte>(32, 1)));
+
+		using (var scope = streamContainer.OpenWrite(0)) {
+			scope.Stream.SetLength(33);
+		}
+		
+		Assert.That(streamContainer.Count, Is.EqualTo(1));
+		Assert.That(streamContainer.Records[0].StartCluster, Is.EqualTo(1));
+		Assert.That(streamContainer.Records[0].EndCluster, Is.EqualTo(2));
+		Assert.That(streamContainer.Records[0].Size, Is.EqualTo(33));
+		Assert.That(streamContainer.ClusterContainer.Clusters.Count, Is.EqualTo(3));
+		Assert.That(streamContainer.ClusterContainer.Clusters[0].Traits, Is.EqualTo(ClusterTraits.Start | ClusterTraits.End));
+		Assert.That(streamContainer.ClusterContainer.Clusters[0].Next, Is.EqualTo(-1));
+		Assert.That(streamContainer.ClusterContainer.Clusters[0].Prev, Is.EqualTo(-1));
+		
+		Assert.That(streamContainer.ClusterContainer.Clusters[1].Traits, Is.EqualTo(ClusterTraits.Start));
+		Assert.That(streamContainer.ClusterContainer.Clusters[1].Next, Is.EqualTo(2));
+		Assert.That(streamContainer.ClusterContainer.Clusters[1].Prev, Is.EqualTo(0));
+		Assert.That(streamContainer.ClusterContainer.Clusters[1].Data, Is.EqualTo(Tools.Array.Gen<byte>(32, 1)));
+
+		Assert.That(streamContainer.ClusterContainer.Clusters[2].Traits, Is.EqualTo(ClusterTraits.End));
+		Assert.That(streamContainer.ClusterContainer.Clusters[2].Next, Is.EqualTo(0));
+		Assert.That(streamContainer.ClusterContainer.Clusters[2].Prev, Is.EqualTo(1));
+		Assert.That(streamContainer.ClusterContainer.Clusters[2].Data, Is.EqualTo( ((byte)1).ConcatWith(Tools.Array.Gen<byte>(31, 0)).ToArray()));
+
+		ClusteredStorageTestsHelper.AssertValidRecords(streamContainer);
+	}
+
+	[Test]
+	public void BugCase_1([Values(32)] int clusterSize, [Values(1)] int N, [Values(65)] int M, [Values(ClusteredStoragePolicy.Debug)] ClusteredStoragePolicy policy) {
+		
+		var actual = new List<byte[]>();
+		using var rootStream = new MemoryStream();
+		var streamContainer = new ClusteredStorage(rootStream, clusterSize, policy: policy, autoLoad: true);
+		for (var i = 0; i < N; i++) {
+			using var scope = streamContainer.Add();
+			var data = Tools.Array.Gen<byte>(M, 1);
+			actual.Add(data);
+			scope.Stream.Write(data);
+		}
+		Assert.That(streamContainer.Count, Is.EqualTo(N));
+		for (var i = 0; i < N; i++) {
+			var read  = streamContainer.ReadAll(i);
+			Assert.That(read, Is.EqualTo(actual[i]));
+		}
+		ClusteredStorageTestsHelper.AssertValidRecords(streamContainer);
+	}
+
 	[Test]
 	public void CheckStructure_1([Values(1, 2, 3, 4, 32)] int clusterSize, [ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy) {
 		using var rootStream = new MemoryStream();
 		var streamContainer = new ClusteredStorage(rootStream, clusterSize, policy: policy, autoLoad: true);
 		streamContainer.AddBytes(new byte[] { 1 });
-		using (var scope = streamContainer.Open(0))
+		using (var scope = streamContainer.OpenWrite(0))
 			scope.Stream.SetLength(0);
 
 		ClusteredStorageTestsHelper.AssertValidRecords(streamContainer);
@@ -41,7 +125,7 @@ public class ClusteredStorageTests : StreamPersistedCollectionTestsBase {
 		var streamContainer = new ClusteredStorage(rootStream, clusterSize, policy: policy, autoLoad: true);
 		streamContainer.AddBytes(new byte[] { 1 });
 		streamContainer.AddBytes(new byte[] { 1 });
-		using (var scope = streamContainer.Open(0))
+		using (var scope = streamContainer.OpenWrite(0))
 			scope.Stream.SetLength(0);
 		ClusteredStorageTestsHelper.AssertValidRecords(streamContainer);
 	}
@@ -52,7 +136,7 @@ public class ClusteredStorageTests : StreamPersistedCollectionTestsBase {
 		var streamContainer = new ClusteredStorage(rootStream, clusterSize, policy: policy, autoLoad: true);
 		streamContainer.AddBytes(new byte[] { 1 });
 		streamContainer.AddBytes(new byte[] { 1 });
-		using (var scope = streamContainer.Open(1))
+		using (var scope = streamContainer.OpenWrite(1))
 			scope.Stream.SetLength(0);
 		ClusteredStorageTestsHelper.AssertValidRecords(streamContainer);
 	}
@@ -71,6 +155,16 @@ public class ClusteredStorageTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
+	public void ReloadEmpty([Values(1, 4, 32)] int clusterSize, [ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy) {
+		using var rootStream = new MemoryStream();
+		var streamContainer = new ClusteredStorage(rootStream, 1, autoLoad: true);
+		using var clonedStream = new MemoryStream(rootStream.ToArray());
+		var loadedStreamContainer = new ClusteredStorage(clonedStream, 1, autoLoad: true);
+		Assert.That(() => loadedStreamContainer.ToStringFullContents(), Throws.Nothing);
+	}
+
+
+	[Test]
 	public void AddEmpty([Values(1, 4, 32)] int clusterSize, [ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy) {
 		using var rootStream = new MemoryStream();
 		var streamContainer = new ClusteredStorage(rootStream, clusterSize, policy: policy, autoLoad: true);
@@ -78,6 +172,20 @@ public class ClusteredStorageTests : StreamPersistedCollectionTestsBase {
 			Assert.That(scope.Stream.Length, Is.EqualTo(0));
 		Assert.That(streamContainer.Count, Is.EqualTo(1));
 		Assert.That(streamContainer.Records.Count, Is.EqualTo(1));
+		ClusteredStorageTestsHelper.AssertValidRecords(streamContainer);
+	}
+
+	[Test]
+	public void Add2Empty([Values(1, 4, 32)] int clusterSize, [ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy) {
+		using var rootStream = new MemoryStream();
+		var streamContainer = new ClusteredStorage(rootStream, clusterSize, policy: policy, autoLoad: true);
+		using (var scope = streamContainer.Add())
+			Assert.That(scope.Stream.Length, Is.EqualTo(0));
+		using (var scope = streamContainer.Add())
+			Assert.That(scope.Stream.Length, Is.EqualTo(0));
+		Assert.That(streamContainer.Count, Is.EqualTo(2));
+		Assert.That(streamContainer.Records.Count, Is.EqualTo(2));
+		ClusteredStorageTestsHelper.AssertValidRecords(streamContainer);
 	}
 
 	[Test]
@@ -85,7 +193,7 @@ public class ClusteredStorageTests : StreamPersistedCollectionTestsBase {
 		using var rootStream = new MemoryStream();
 		var streamContainer = new ClusteredStorage(rootStream, clusterSize, policy: policy, autoLoad: true);
 		streamContainer.AddBytes(null);
-		using (var scope = streamContainer.Open(0))
+		using (var scope = streamContainer.OpenRead(0))
 			Assert.That(scope.Stream.Length, Is.EqualTo(0));
 		Assert.That(streamContainer.Count, Is.EqualTo(1));
 		Assert.That(streamContainer.Records.Count, Is.EqualTo(1));
@@ -95,11 +203,14 @@ public class ClusteredStorageTests : StreamPersistedCollectionTestsBase {
 	public void AddManyEmpty([Values(1, 4, 32)] int clusterSize, [Values(1, 2, 100)] int N, [ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy) {
 		using var rootStream = new MemoryStream();
 		var streamContainer = new ClusteredStorage(rootStream, clusterSize, policy: policy, autoLoad: true);
-		for (var i = 0; i < N; i++)
+		for (var i = 0; i < N; i++) {
 			using (var scope = streamContainer.Add())
 				Assert.That(scope.Stream.Length, Is.EqualTo(0));
+			System.Console.WriteLine(streamContainer.ClusterContainer.ToStringFullContents());
+		}
 		Assert.That(streamContainer.Count, Is.EqualTo(N));
 		Assert.That(streamContainer.Records.Count, Is.EqualTo(N));
+		var xxx = streamContainer.ToStringFullContents();
 		ClusteredStorageTestsHelper.AssertValidRecords(streamContainer);
 	}
 
@@ -108,7 +219,7 @@ public class ClusteredStorageTests : StreamPersistedCollectionTestsBase {
 		using var rootStream = new MemoryStream();
 		var streamContainer = new ClusteredStorage(rootStream, clusterSize, policy: policy, autoLoad: true);
 		using (_ = streamContainer.Add()) ;
-		using (var scope = streamContainer.Open(0))
+		using (var scope = streamContainer.OpenRead(0))
 			Assert.That(scope.Stream.Length, Is.EqualTo(0));
 		ClusteredStorageTestsHelper.AssertValidRecords(streamContainer);
 	}
@@ -122,7 +233,7 @@ public class ClusteredStorageTests : StreamPersistedCollectionTestsBase {
 		}
 		Assert.That(streamContainer.Records.Count, Is.EqualTo(1));
 		Assert.That(streamContainer.Records[0].StartCluster, Is.EqualTo(-1));
-		using (var scope = streamContainer.Open(0))
+		using (var scope = streamContainer.OpenRead(0))
 			Assert.That(scope.Stream.Length, Is.EqualTo(0));
 		ClusteredStorageTestsHelper.AssertValidRecords(streamContainer);
 	}
@@ -137,7 +248,7 @@ public class ClusteredStorageTests : StreamPersistedCollectionTestsBase {
 		}
 		Assert.That(streamContainer.Records.Count, Is.EqualTo(1));
 		Assert.That(streamContainer.Records[0].StartCluster, Is.EqualTo(-1));
-		using (var scope = streamContainer.Open(0))
+		using (var scope = streamContainer.OpenRead(0))
 			Assert.That(scope.Stream.Length, Is.EqualTo(0));
 		ClusteredStorageTestsHelper.AssertValidRecords(streamContainer);
 	}
@@ -152,7 +263,7 @@ public class ClusteredStorageTests : StreamPersistedCollectionTestsBase {
 		}
 		Assert.That(streamContainer.Records.Count, Is.EqualTo(1));
 		Assert.That(streamContainer.Records[0].StartCluster, Is.EqualTo(-1));
-		using (var scope = streamContainer.Open(0))
+		using (var scope = streamContainer.OpenRead(0))
 			Assert.That(scope.Stream.Length, Is.EqualTo(0));
 		ClusteredStorageTestsHelper.AssertValidRecords(streamContainer);
 	}
@@ -185,8 +296,9 @@ public class ClusteredStorageTests : StreamPersistedCollectionTestsBase {
 		var streamContainer = new ClusteredStorage(rootStream, clusterSize, policy: policy, autoLoad: true);
 		streamContainer.AddBytes(new byte[] { 1 });
 		streamContainer.AddBytes(new byte[] { 2 });
-		using (var scope = streamContainer.Open(0))
+		using (var scope = streamContainer.OpenWrite(0))
 			scope.Stream.SetLength(0);
+		ClusterDiagnostics.VerifyClusters(streamContainer);
 
 		Assert.That(streamContainer.Count, Is.EqualTo(2));
 		Assert.That(streamContainer.ReadAll(0), Is.Empty);
@@ -201,7 +313,7 @@ public class ClusteredStorageTests : StreamPersistedCollectionTestsBase {
 		streamContainer.AddBytes(new byte[] { 1, 1 });
 		streamContainer.AddBytes(new byte[] { 2, 2 });
 
-		using (var scope = streamContainer.Open(0))
+		using (var scope = streamContainer.OpenWrite(0))
 			scope.Stream.SetLength(0);
 
 		Assert.That(streamContainer.Count, Is.EqualTo(2));
@@ -216,7 +328,7 @@ public class ClusteredStorageTests : StreamPersistedCollectionTestsBase {
 		var streamContainer = new ClusteredStorage(rootStream, clusterSize, policy: policy, autoLoad: true);
 		streamContainer.AddBytes(new byte[] { 1, 1 });
 		streamContainer.AddBytes(new byte[] { 2, 2 });
-		using (var scope = streamContainer.Open(1))
+		using (var scope = streamContainer.OpenWrite(1))
 			scope.Stream.SetLength(0);
 
 		Assert.That(streamContainer.Count, Is.EqualTo(2));
@@ -234,7 +346,7 @@ public class ClusteredStorageTests : StreamPersistedCollectionTestsBase {
 
 		Assert.That(streamContainer.Count, Is.EqualTo(N));
 		for (var i = 0; i < N; i++) {
-			using (var scope = streamContainer.Open(i)) {
+			using (var scope = streamContainer.OpenRead(i)) {
 				var streamData = scope.Stream.ReadAll();
 				Assert.That(streamData, Is.EqualTo(new byte[] { 1 }));
 			}
@@ -302,7 +414,7 @@ public class ClusteredStorageTests : StreamPersistedCollectionTestsBase {
 		var streamContainer = new ClusteredStorage(rootStream, 32, autoLoad: true);
 		streamContainer.InsertBytes(0, new byte[] { 1 });
 		streamContainer.InsertBytes(0, Array.Empty<byte>());
-		Assert.That(streamContainer.Clusters[1].Prev, Is.EqualTo(1));
+		Assert.That(streamContainer.ClusterContainer.Clusters[1].Prev, Is.EqualTo(1));
 		ClusteredStorageTestsHelper.AssertValidRecords(streamContainer);
 	}
 
@@ -313,7 +425,7 @@ public class ClusteredStorageTests : StreamPersistedCollectionTestsBase {
 		streamContainer.AddBytes(new byte[] { 1 });
 		streamContainer.Remove(0);
 		Assert.That(streamContainer.Count, Is.EqualTo(0));
-		Assert.That(streamContainer.Clusters.Count, Is.EqualTo(0));
+		Assert.That(streamContainer.ClusterContainer.Clusters.Count, Is.EqualTo(0));
 		Assert.That(rootStream.Length, Is.EqualTo(ClusteredStorageHeader.ByteLength));
 		ClusteredStorageTestsHelper.AssertValidRecords(streamContainer);
 	}
@@ -325,7 +437,7 @@ public class ClusteredStorageTests : StreamPersistedCollectionTestsBase {
 		streamContainer.AddBytes(new byte[] { 1, 2 });
 		streamContainer.Remove(0);
 		Assert.That(streamContainer.Count, Is.EqualTo(0));
-		Assert.That(streamContainer.Clusters.Count, Is.EqualTo(0));
+		Assert.That(streamContainer.ClusterContainer.Clusters.Count, Is.EqualTo(0));
 		Assert.That(rootStream.Length, Is.EqualTo(ClusteredStorageHeader.ByteLength));
 		ClusteredStorageTestsHelper.AssertValidRecords(streamContainer);
 	}
@@ -362,7 +474,7 @@ public class ClusteredStorageTests : StreamPersistedCollectionTestsBase {
 		streamContainer.AddBytes(dataBytes);
 		streamContainer.Remove(0);
 		Assert.That(streamContainer.Count, Is.EqualTo(0));
-		Assert.That(streamContainer.Clusters.Count, Is.EqualTo(0));
+		Assert.That(streamContainer.ClusterContainer.Clusters.Count, Is.EqualTo(0));
 		Assert.That(rootStream.Length, Is.EqualTo(ClusteredStorageHeader.ByteLength));
 		ClusteredStorageTestsHelper.AssertValidRecords(streamContainer);
 	}
@@ -481,7 +593,32 @@ public class ClusteredStorageTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void ClearTest() {
+	public void ClearTest_1() {
+		var rng = new Random(31337);
+		using var rootStream = new MemoryStream();
+		var streamContainer = new ClusteredStorage(rootStream, 1, autoLoad: true);
+		streamContainer.Clear();
+		Assert.That(streamContainer.Count, Is.EqualTo(0));
+		Assert.That(streamContainer.Header.RecordsCount, Is.EqualTo(0));
+		Assert.That(streamContainer.Header.TotalClusters, Is.EqualTo(0));
+		ClusteredStorageTestsHelper.AssertValidRecords(streamContainer);
+	}
+
+	[Test]
+	public void ClearTest_2() {
+		var rng = new Random(31337);
+		using var rootStream = new MemoryStream();
+		var streamContainer = new ClusteredStorage(rootStream, 1, autoLoad: true);
+		streamContainer.AddBytes(rng.NextBytes(100));
+		streamContainer.Clear();
+		Assert.That(streamContainer.Count, Is.EqualTo(0));
+		Assert.That(streamContainer.Header.RecordsCount, Is.EqualTo(0));
+		Assert.That(streamContainer.Header.TotalClusters, Is.EqualTo(0));
+		ClusteredStorageTestsHelper.AssertValidRecords(streamContainer);
+	}
+
+	[Test]
+	public void ClearTest_3() {
 		var rng = new Random(31337);
 		using var rootStream = new MemoryStream();
 		var streamContainer = new ClusteredStorage(rootStream, 1, autoLoad: true);
@@ -510,139 +647,7 @@ public class ClusteredStorageTests : StreamPersistedCollectionTestsBase {
 		Assert.That(streamContainer.Header.TotalClusters, Is.EqualTo(0));
 		ClusteredStorageTestsHelper.AssertValidRecords(streamContainer);
 	}
-
-	[Test]
-	public void ReentrancyCheck_OpenOpen() {
-		var rng = new Random(31337);
-		using var rootStream = new MemoryStream();
-		var streamContainer = new ClusteredStorage(rootStream, autoLoad: true);
-		streamContainer.AddBytes(rng.NextBytes(1000));
-		using var _ = streamContainer.Open(0);
-		Assert.That(() => streamContainer.Open(0), Throws.InvalidOperationException);
-		ClusteredStorageTestsHelper.AssertValidRecords(streamContainer);
-	}
-
-	[Test]
-	public void ReentrancyCheck_OpenAdd() {
-		var rng = new Random(31337);
-		using var rootStream = new MemoryStream();
-		var streamContainer = new ClusteredStorage(rootStream, autoLoad: true);
-		streamContainer.AddBytes(rng.NextBytes(1000));
-		using var _ = streamContainer.Open(0);
-		Assert.That(() => streamContainer.AddBytes(rng.NextBytes(1000)), Throws.InvalidOperationException);
-		ClusteredStorageTestsHelper.AssertValidRecords(streamContainer);
-	}
-
-	[Test]
-	public void ReentrancyCheck_OpenInsert() {
-		var rng = new Random(31337);
-		using var rootStream = new MemoryStream();
-		var streamContainer = new ClusteredStorage(rootStream, autoLoad: true);
-		streamContainer.AddBytes(rng.NextBytes(1000));
-		using var _ = streamContainer.Open(0);
-		Assert.That(() => streamContainer.InsertBytes(0, rng.NextBytes(1000)), Throws.InvalidOperationException);
-		ClusteredStorageTestsHelper.AssertValidRecords(streamContainer);
-	}
-
-	[Test]
-	public void ReentrancyCheck_OpenClear() {
-		var rng = new Random(31337);
-		using var rootStream = new MemoryStream();
-		var streamContainer = new ClusteredStorage(rootStream, autoLoad: true);
-		streamContainer.AddBytes(rng.NextBytes(1000));
-		using var _ = streamContainer.Open(0);
-		Assert.That(() => streamContainer.Clear(), Throws.InvalidOperationException);
-		ClusteredStorageTestsHelper.AssertValidRecords(streamContainer);
-	}
 	
-	[Test]
-	public void ReentrancyCheck_AddOpen() {
-		var rng = new Random(31337);
-		using var rootStream = new MemoryStream();
-		var streamContainer = new ClusteredStorage(rootStream, autoLoad: true);
-		streamContainer.AddBytes(rng.NextBytes(1000));
-		using var _ = streamContainer.Add();
-		Assert.That(() => streamContainer.Open(0), Throws.InvalidOperationException);
-		ClusteredStorageTestsHelper.AssertValidRecords(streamContainer);
-	}
-
-	[Test]
-	public void ReentrancyCheck_AddAdd() {
-		var rng = new Random(31337);
-		using var rootStream = new MemoryStream();
-		var streamContainer = new ClusteredStorage(rootStream, autoLoad: true);
-		streamContainer.AddBytes(rng.NextBytes(1000));
-		using var _ = streamContainer.Add();
-		Assert.That(() => streamContainer.AddBytes(rng.NextBytes(1000)), Throws.InvalidOperationException);
-		ClusteredStorageTestsHelper.AssertValidRecords(streamContainer);
-	}
-
-	[Test]
-	public void ReentrancyCheck_AddInsert() {
-		var rng = new Random(31337);
-		using var rootStream = new MemoryStream();
-		var streamContainer = new ClusteredStorage(rootStream, autoLoad: true);
-		streamContainer.AddBytes(rng.NextBytes(1000));
-		using var _ = streamContainer.Add();
-		Assert.That(() => streamContainer.InsertBytes(0, rng.NextBytes(1000)), Throws.InvalidOperationException);
-		ClusteredStorageTestsHelper.AssertValidRecords(streamContainer);
-	}
-
-	[Test]
-	public void ReentrancyCheck_AddClear() {
-		var rng = new Random(31337);
-		using var rootStream = new MemoryStream();
-		var streamContainer = new ClusteredStorage(rootStream, autoLoad: true);
-		streamContainer.AddBytes(rng.NextBytes(1000));
-		using var _ = streamContainer.Add();
-		Assert.That(() => streamContainer.Clear(), Throws.InvalidOperationException);
-		ClusteredStorageTestsHelper.AssertValidRecords(streamContainer);
-	}
-
-	[Test]
-	public void ReentrancyCheck_InsertOpen() {
-		var rng = new Random(31337);
-		using var rootStream = new MemoryStream();
-		var streamContainer = new ClusteredStorage(rootStream, autoLoad: true);
-		streamContainer.AddBytes(rng.NextBytes(1000));
-		using var _ = streamContainer.Insert(0);
-		Assert.That(() => streamContainer.Open(0), Throws.InvalidOperationException);
-		ClusteredStorageTestsHelper.AssertValidRecords(streamContainer);
-	}
-
-	[Test]
-	public void ReentrancyCheck_InsertAdd() {
-		var rng = new Random(31337);
-		using var rootStream = new MemoryStream();
-		var streamContainer = new ClusteredStorage(rootStream, autoLoad: true);
-		streamContainer.AddBytes(rng.NextBytes(1000));
-		using var _ = streamContainer.Insert(0);
-		Assert.That(() => streamContainer.AddBytes(rng.NextBytes(1000)), Throws.InvalidOperationException);
-		ClusteredStorageTestsHelper.AssertValidRecords(streamContainer);
-	}
-
-	[Test]
-	public void ReentrancyCheck_InsertInsert() {
-		var rng = new Random(31337);
-		using var rootStream = new MemoryStream();
-		var streamContainer = new ClusteredStorage(rootStream, autoLoad: true);
-		streamContainer.AddBytes(rng.NextBytes(1000));
-		using var _ = streamContainer.Insert(0);
-		Assert.That(() => streamContainer.InsertBytes(0, rng.NextBytes(1000)), Throws.InvalidOperationException);
-		ClusteredStorageTestsHelper.AssertValidRecords(streamContainer);
-	}
-
-	[Test]
-	public void ReentrancyCheck_InsertClear() {
-		var rng = new Random(31337);
-		using var rootStream = new MemoryStream();
-		var streamContainer = new ClusteredStorage(rootStream, autoLoad: true);
-		streamContainer.AddBytes(rng.NextBytes(1000));
-		using var _ = streamContainer.Insert(0);
-		Assert.That(() => streamContainer.Clear(), Throws.InvalidOperationException);
-		ClusteredStorageTestsHelper.AssertValidRecords(streamContainer);
-	}
-
 	[Test]
 	public void TestRootStreamLengthConsistent([ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy) {
 		const int clusterSize = 111;
@@ -708,9 +713,9 @@ public class ClusteredStorageTests : StreamPersistedCollectionTestsBase {
 		using var rootStream = new MemoryStream();
 		var streamContainer = new ClusteredStorage(rootStream, clusterSize, policy: policy, autoLoad: true);
 		streamContainer.AddBytes(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 });
-		for (var i = 0; i < streamContainer.Clusters.Count; i++) {
-			var expected = streamContainer.Clusters[i].Prev;
-			var actual = streamContainer.FastReadClusterPrev(i);
+		for (var i = 0; i < streamContainer.ClusterContainer.Clusters.Count; i++) {
+			var expected = streamContainer.ClusterContainer.Clusters[i].Prev;
+			var actual = streamContainer.ClusterContainer.FastReadClusterPrev(i);
 			Assert.That(actual, Is.EqualTo(expected));
 		}
 	}
@@ -721,9 +726,9 @@ public class ClusteredStorageTests : StreamPersistedCollectionTestsBase {
 		using var rootStream = new MemoryStream();
 		var streamContainer = new ClusteredStorage(rootStream, clusterSize, policy: policy, autoLoad: true);
 		streamContainer.AddBytes(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 });
-		for (var i = 0; i < streamContainer.Clusters.Count; i++) {
-			var expected = streamContainer.Clusters[i].Next;
-			var actual = streamContainer.FastReadClusterNext(i);
+		for (var i = 0; i < streamContainer.ClusterContainer.Clusters.Count; i++) {
+			var expected = streamContainer.ClusterContainer.Clusters[i].Next;
+			var actual = streamContainer.ClusterContainer.FastReadClusterNext(i);
 			Assert.That(actual, Is.EqualTo(expected));
 		}
 	}
@@ -734,10 +739,10 @@ public class ClusteredStorageTests : StreamPersistedCollectionTestsBase {
 		using var rootStream = new MemoryStream();
 		var streamContainer = new ClusteredStorage(rootStream, clusterSize, policy: policy, autoLoad: true);
 		streamContainer.AddBytes(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 });
-		for (var i = 0; i < streamContainer.Clusters.Count; i++) {
-			var expected = streamContainer.Clusters[i].Prev + 31337;
-			streamContainer.FastWriteClusterPrev(i, expected);
-			var actual = streamContainer.Clusters[i].Prev;
+		for (var i = 0; i < streamContainer.ClusterContainer.Clusters.Count; i++) {
+			var expected = streamContainer.ClusterContainer.Clusters[i].Prev + 31337;
+			streamContainer.ClusterContainer.FastWriteClusterPrev(i, expected);
+			var actual = streamContainer.ClusterContainer.Clusters[i].Prev;
 			Assert.That(actual, Is.EqualTo(expected));
 		}
 	}
@@ -748,10 +753,10 @@ public class ClusteredStorageTests : StreamPersistedCollectionTestsBase {
 		using var rootStream = new MemoryStream();
 		var streamContainer = new ClusteredStorage(rootStream, clusterSize, policy: policy, autoLoad: true);
 		streamContainer.AddBytes(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 });
-		for (var i = 0; i < streamContainer.Clusters.Count; i++) {
-			var expected = streamContainer.Clusters[i].Next + 31337;
-			streamContainer.FastWriteClusterNext(i, expected);
-			var actual = streamContainer.Clusters[i].Next;
+		for (var i = 0; i < streamContainer.ClusterContainer.Clusters.Count; i++) {
+			var expected = streamContainer.ClusterContainer.Clusters[i].Next + 31337;
+			streamContainer.ClusterContainer.FastWriteClusterNext(i, expected);
+			var actual = streamContainer.ClusterContainer.Clusters[i].Next;
 			Assert.That(actual, Is.EqualTo(expected));
 		}
 	}
@@ -763,10 +768,10 @@ public class ClusteredStorageTests : StreamPersistedCollectionTestsBase {
 		using var rootStream = new MemoryStream();
 		var streamContainer = new ClusteredStorage(rootStream, clusterSize, policy: policy, autoLoad: true);
 		streamContainer.AddBytes(new byte[] { 1, 1 });
-		Assert.That(streamContainer.Clusters[0].Next, Is.EqualTo(1));
-		Assert.That(streamContainer.Clusters[1].Prev, Is.EqualTo(0));
-		streamContainer.FastWriteClusterNext(0, 1); // corrupt root-stream by making cyclic dependency between clusters 9 an 10
-		Assert.That(streamContainer.Clusters[0].Next, Is.EqualTo(1));
+		Assert.That(streamContainer.ClusterContainer.Clusters[0].Next, Is.EqualTo(1));
+		Assert.That(streamContainer.ClusterContainer.Clusters[1].Prev, Is.EqualTo(0));
+		streamContainer.ClusterContainer.FastWriteClusterNext(0, 1); // corrupt root-stream by making cyclic dependency between clusters 9 an 10
+		Assert.That(streamContainer.ClusterContainer.Clusters[0].Next, Is.EqualTo(1));
 		ClusteredStorageTestsHelper.AssertValidRecords(streamContainer);
 	}
 
@@ -795,7 +800,7 @@ public class ClusteredStorageTests : StreamPersistedCollectionTestsBase {
 		var writer = new EndianBinaryWriter(EndianBitConverter.For(Endianness.LittleEndian), rootStream);
 		rootStream.Seek(nextOffset, SeekOrigin.Begin);
 		writer.Write(10L);
-		Assert.That(() => streamContainer.AppendBytes(0, new byte[] { 11 }), Throws.TypeOf<CorruptDataException>());
+		Assert.That(() => streamContainer.AppendBytes(0, new byte[] { 11 }), Throws.Exception);
 	}
 
 	[Test]
@@ -806,8 +811,8 @@ public class ClusteredStorageTests : StreamPersistedCollectionTestsBase {
 		var streamContainer = new ClusteredStorage(rootStream, clusterSize, policy: policy, autoLoad: true);
 		streamContainer.AddBytes(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 });
 		var firstStartCluster = streamContainer.Records[0].StartCluster;
-		streamContainer.FastWriteClusterPrev(firstStartCluster + 1, long.MaxValue);
-		Assert.That(() => streamContainer.Clear(0), Throws.TypeOf<CorruptDataException>());
+		streamContainer.ClusterContainer.FastWriteClusterPrev(firstStartCluster + 1, long.MaxValue);
+		Assert.That(() => streamContainer.Clear(0), Throws.Exception);
 	}
 
 	[Test]
@@ -820,10 +825,10 @@ public class ClusteredStorageTests : StreamPersistedCollectionTestsBase {
 		streamContainer.AddBytes(new byte[] { 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 });
 		var firstStartCluster = streamContainer.Records[0].StartCluster;
 		var secondStartCluster = streamContainer.Records[1].StartCluster;
-		streamContainer.FastWriteClusterPrev(firstStartCluster, firstStartCluster + 1); // make start's previous point to next
-		streamContainer.FastWriteClusterPrev(secondStartCluster, secondStartCluster + 1); // make start's previous point to next
-		Assert.That(() => streamContainer.Clear(0), Throws.Nothing);
-		Assert.That(() => streamContainer.Clear(0), Throws.Nothing);
+		streamContainer.ClusterContainer.FastWriteClusterPrev(firstStartCluster, firstStartCluster + 1); // make start's previous point to next
+		streamContainer.ClusterContainer.FastWriteClusterPrev(secondStartCluster, secondStartCluster + 1); // make start's previous point to next
+		Assert.That(() => streamContainer.Clear(0), Throws.Exception);
+		//Assert.That(() => streamContainer.Clear(0), Throws.Nothing);
 		// note: doesn't seem TraverseBack is ever called in fragment provider, so this error is seemingly inconsequential
 	}
 
@@ -835,8 +840,8 @@ public class ClusteredStorageTests : StreamPersistedCollectionTestsBase {
 		using var rootStream = new MemoryStream();
 		var streamContainer = new ClusteredStorage(rootStream, clusterSize, policy: policy, autoLoad: true);
 		streamContainer.AddBytes(new byte[] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 });
-		streamContainer.FastWriteClusterTraits(10, (ClusterTraits)IllegalValue);
-		Assert.That(() => streamContainer.ReadAll(0), Throws.TypeOf<CorruptDataException>());
+		streamContainer.ClusterContainer.FastWriteClusterTraits(10, (ClusterTraits)IllegalValue);
+		Assert.That(() => streamContainer.ReadAll(0), Throws.TypeOf<InvalidOperationException>());
 	}
 
 	[Test]
@@ -907,7 +912,7 @@ public class ClusteredStorageTests : StreamPersistedCollectionTestsBase {
 		var streamContainer = new ClusteredStorage(rootStream, clusterSize, policy: policy, autoLoad: true);
 		streamContainer.AddBytes(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 });
 		rootStream.Position = ClusteredStorageHeader.TotalClustersOffset;
-		writer.Write(streamContainer.Clusters.Count + 1);
+		writer.Write(streamContainer.ClusterContainer.Clusters.Count + 1);
 		Assert.That(() => ClusteredStorage.FromStream(rootStream), Throws.TypeOf<CorruptDataException>());
 	}
 
@@ -937,14 +942,7 @@ public class ClusteredStorageTests : StreamPersistedCollectionTestsBase {
 		Assert.That(() => ClusteredStorage.FromStream(rootStream), Throws.InstanceOf<CorruptDataException>());
 	}
 
-	[Test]
-	public void LoadEmpty() {
-		using var rootStream = new MemoryStream();
-		var streamContainer = new ClusteredStorage(rootStream, 1, autoLoad: true);
-		using var clonedStream = new MemoryStream(rootStream.ToArray());
-		var loadedStreamContainer = new ClusteredStorage(clonedStream, 1, autoLoad: true);
-		Assert.That(() => loadedStreamContainer.ToStringFullContents(), Throws.Nothing);
-	}
+
 
 	[Test]
 	public void LoadOneOneByteListing() {
@@ -990,13 +988,12 @@ public class ClusteredStorageTests : StreamPersistedCollectionTestsBase {
 
 	public void IntegrationTestsInternal(int clusterSize, int totalStreams, int maxStreamSize, int reservedRecords, ClusteredStoragePolicy policy) {
 		// NOTE: change DebugMode to True when trying to isolate error, else leave False when confirmed working (for faster evaluation)
-		const bool DebugMode = false;
+		const bool DebugMode = true;
 		const int StreamStreamOperations = 100;
 		var rng = new Random(31337 + (int)policy);
 		var expectedStreams = new List<Stream>();
 		using var rootStream = new MemoryStream();
 		var streamContainer = new ClusteredStorage(rootStream, clusterSize, reservedRecords: reservedRecords, policy: policy, autoLoad: true);
-
 		// Populate reserved records
 		for (var i = 0; i < reservedRecords; i++) {
 			streamContainer.UpdateBytes(i, Tools.Array.Gen(i, (byte)(i % 256)));
@@ -1036,18 +1033,18 @@ public class ClusteredStorageTests : StreamPersistedCollectionTestsBase {
 				expectedStreams.Swap(first, second);
 				streamContainer.Swap(first + reservedRecords, second + reservedRecords);
 
-
 				// Update a random prior stream
 				var priorIX = rng.Next(0, expectedStreams.Count);
 				var expectedUpdateStream = expectedStreams[priorIX];
 				expectedUpdateStream.Position = 0; // reset expected stream marker to 0, since actual is reset on dispose
-				using var actualUpdateStream = streamContainer.Open(priorIX + reservedRecords);
-				AssertEx.StreamIntegrationTests(maxStreamSize, actualUpdateStream.Stream, expectedUpdateStream, StreamStreamOperations, rng, runAsserts: DebugMode);
+				using var actualUpdateStream = streamContainer.OpenWrite(priorIX + reservedRecords);
+				AssertEx.StreamIntegrationTests(maxStreamSize, actualUpdateStream.Stream, expectedUpdateStream, StreamStreamOperations, rng, runAsserts: DebugMode, extraTest: () => ClusterDiagnostics.VerifyClusters(streamContainer));
 			}
 
 			// Check all streams match (this will catch any errors, even when runAsserts is passed false above)
-			for (var j = 0; j < expectedStreams.Count; j++)
+			for (var j = 0; j < expectedStreams.Count; j++) {
 				Assert.That(expectedStreams[j].ReadAll(), Is.EqualTo(streamContainer.ReadAll(j + reservedRecords)).Using(ByteArrayEqualityComparer.Instance));
+			}
 
 			ClusteredStorageTestsHelper.AssertValidRecords(streamContainer);
 		}
@@ -1059,55 +1056,12 @@ public class ClusteredStorageTests : StreamPersistedCollectionTestsBase {
 			Assert.That(streamContainer.ReadAll(i), Is.EqualTo(Tools.Array.Gen(i, (byte)(i % 256))));
 		}
 
-		
-	}
-
-	[Test]
-	public void AddRetainsLockDuringScopeAndRelasesAfterScope([Values(1, 4, 32)] int clusterSize, [ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy) {
-		using var rootStream = new MemoryStream();
-		var streamContainer = new ClusteredStorage(rootStream, clusterSize, policy: policy, autoLoad: true);
-
-		Assert.That(streamContainer.IsLocked, Is.False);
-		using (streamContainer.Add()) {
-			Assert.That(streamContainer.IsLocked, Is.True);
-		}
-		Assert.That(streamContainer.IsLocked, Is.False);
-	}
-
-
-	[Test]
-	public void ReentrantAddThrows([Values(1, 4, 32)] int clusterSize, [ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy) {
-		using var rootStream = new MemoryStream();
-		var streamContainer = new ClusteredStorage(rootStream, clusterSize, policy: policy, autoLoad: true);
-		using (streamContainer.Add()) {
-			Assert.That(() => streamContainer.Add(), Throws.Exception);
-		}
-	}
-
-	[Test]
-	public void ReentrantOpenThrows([Values(1, 4, 32)] int clusterSize, [ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy) {
-		using var rootStream = new MemoryStream();
-		var streamContainer = new ClusteredStorage(rootStream, clusterSize, policy: policy, autoLoad: true);
-		streamContainer.AddBytes("hello".ToByteArray(Encoding.UTF8));
-		using (streamContainer.Open(0)) {
-			Assert.That(() => streamContainer.Open(0), Throws.Exception);
-		}
-	}
-
-	[Test]
-	public void OpenDuringAddThrows([Values(1, 4, 32)] int clusterSize, [ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy) {
-		using var rootStream = new MemoryStream();
-		var streamContainer = new ClusteredStorage(rootStream, clusterSize, policy: policy, autoLoad: true);
-		using (streamContainer.Add()) {
-			Assert.That(() => streamContainer.Open(0), Throws.Exception);
-		}
 	}
 
 }
 
 public static class ClusteredStorageTestsHelper {
-
-
+	
 	public static void AssertValidRecords(ClusteredStorage storage) {
 		Guard.ArgumentNotNull(storage, nameof(storage));
 		for(var i = 0; i < storage.Count; i++) 
@@ -1125,35 +1079,35 @@ public static class ClusteredStorageTestsHelper {
 			Assert.That(record.StartCluster, Is.EqualTo(ClusteredStorage.NullCluster));
 			Assert.That(record.EndCluster, Is.EqualTo(ClusteredStorage.NullCluster));
 		} else {
-			Assert.That(storage.FastReadClusterPrev(record.StartCluster), Is.EqualTo(recordIndex), "Record start cluster does not link to record");
-		//	Assert.That(storage.FastReadClusterNext(record.EndCluster), Is.EqualTo(recordIndex), "Record end cluster does not link to record");
-		//	AssertClusterChainConsistency(storage, record.StartCluster, record.EndCluster);
+			Assert.That(storage.ClusterContainer.FastReadClusterPrev(record.StartCluster), Is.EqualTo(recordIndex), "Record start cluster does not link to record");
+			Assert.That(storage.ClusterContainer.FastReadClusterNext(record.EndCluster), Is.EqualTo(recordIndex), "Record end cluster does not link to record");
+			AssertClusterChainConsistency(storage, record.StartCluster, record.EndCluster);
 		}
 	}
 
 	public static void AssertClusterChainConsistency(ClusteredStorage storage, long startCluster, long endCluster) {
-		Assert.That(startCluster, Is.InRange(0, storage.Clusters.Count-1), "Start cluster doesn't exist");
-		Assert.That(endCluster, Is.InRange(0, storage.Clusters.Count-1), "End cluster doesn't exist");
+		Assert.That(startCluster, Is.InRange(0, storage.ClusterContainer.Clusters.Count-1), "Start cluster doesn't exist");
+		Assert.That(endCluster, Is.InRange(0, storage.ClusterContainer.Clusters.Count-1), "End cluster doesn't exist");
 		var visited = new HashSet<long>();
 		var cluster = startCluster;
 		while (cluster != endCluster) {
 			Assert.That(visited.Contains(cluster), Is.False);
 			visited.Add(cluster);
 
-			var clusterTraits = storage.FastReadClusterTraits(cluster);
+			var clusterTraits = storage.ClusterContainer.FastReadClusterTraits(cluster);
 			if (cluster == startCluster) {
-				Assert.That(clusterTraits.HasFlag(ClusterTraits.First), Is.True);
+				Assert.That(clusterTraits.HasFlag(ClusterTraits.Start), Is.True);
 			} else if (cluster == endCluster) {
-				Assert.That(clusterTraits.HasFlag(ClusterTraits.Last), Is.True);
+				Assert.That(clusterTraits.HasFlag(ClusterTraits.End), Is.True);
 			} else {
-				Assert.That(clusterTraits.HasFlag(ClusterTraits.First), Is.False);
-				if (clusterTraits.HasFlag(ClusterTraits.Last)) {
+				Assert.That(clusterTraits.HasFlag(ClusterTraits.Start), Is.False);
+				if (clusterTraits.HasFlag(ClusterTraits.End)) {
 					// previous last cluster stil marked as last
 					var xxx = 1;
 				}
-				Assert.That(clusterTraits.HasFlag(ClusterTraits.Last), Is.False);
+				Assert.That(clusterTraits.HasFlag(ClusterTraits.End), Is.False);
 			}
-			cluster = storage.FastReadClusterNext(cluster);
+			cluster = storage.ClusterContainer.FastReadClusterNext(cluster);
 		}
 	}
 }

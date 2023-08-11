@@ -38,8 +38,8 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 	private bool _requiresLoad;
 
 	public StreamMappedDictionary(Stream rootStream, int clusterSize, IItemSerializer<TKey> keySerializer = null, IItemSerializer<TValue> valueSerializer = null, IItemChecksummer<TKey> keyChecksummer = null,
-	                              IEqualityComparer<TKey> keyComparer = null, IEqualityComparer<TValue> valueComparer = null, ClusteredStoragePolicy policy = ClusteredStoragePolicy.DictionaryDefault, int reservedRecords = 0,
-	                              Endianness endianness = Endianness.LittleEndian, bool autoLoad = false)
+								  IEqualityComparer<TKey> keyComparer = null, IEqualityComparer<TValue> valueComparer = null, ClusteredStoragePolicy policy = ClusteredStoragePolicy.DictionaryDefault, int reservedRecords = 0,
+								  Endianness endianness = Endianness.LittleEndian, bool autoLoad = false)
 		: this(
 			new StreamMappedList<KeyValuePair<TKey, TValue>>(
 				rootStream,
@@ -68,7 +68,7 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 	}
 
 	public StreamMappedDictionary(IStreamMappedList<KeyValuePair<TKey, TValue>> kvpStore, IItemSerializer<TKey> keySerializer, IItemChecksummer<TKey> keyChecksummer = null, IEqualityComparer<TKey> keyComparer = null,
-	                              IEqualityComparer<TValue> valueComparer = null, Endianness endianness = Endianness.LittleEndian, bool autoLoad = false) {
+								  IEqualityComparer<TValue> valueComparer = null, Endianness endianness = Endianness.LittleEndian, bool autoLoad = false) {
 		Guard.ArgumentNotNull(kvpStore, nameof(kvpStore));
 		Guard.ArgumentNotNull(keySerializer, nameof(keySerializer));
 		_keyComparer = keyComparer ?? EqualityComparer<TKey>.Default;
@@ -125,158 +125,187 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 	public Task LoadAsync() => Task.Run(Load);
 
 	public TKey ReadKey(int index) {
-		using (Storage.EnterLockScope()) {
+		using (Storage.EnterReadScope()) {
 			if (Storage.IsNull(KVPList.Storage.Header.ReservedRecords + index))
 				throw new InvalidOperationException($"Stream record {index} is null");
+
+			using var scope = Storage.OpenRead(KVPList.Storage.Header.ReservedRecords + index);
+			var reader = new EndianBinaryReader(EndianBitConverter.For(Storage.Endianness), scope.Stream);
+			return ((KeyValuePairSerializer<TKey, TValue>)KVPList.ItemSerializer).DeserializeKey(reader);
 		}
-		using var scope = Storage.Open(KVPList.Storage.Header.ReservedRecords + index);
-		var reader = new EndianBinaryReader(EndianBitConverter.For(Storage.Endianness), scope.Stream);
-		return ((KeyValuePairSerializer<TKey, TValue>)KVPList.ItemSerializer).DeserializeKey(reader);
 	}
 
 	public TValue ReadValue(int index) {
-		using (Storage.EnterLockScope()) {
+		using (Storage.EnterReadScope()) {
 			if (Storage.IsNull(KVPList.Storage.Header.ReservedRecords + index))
 				throw new InvalidOperationException($"Stream record {index} is null");
+
+			using var scope = Storage.OpenRead(KVPList.Storage.Header.ReservedRecords + index);
+			var reader = new EndianBinaryReader(EndianBitConverter.For(Storage.Endianness), scope.Stream);
+			return ((KeyValuePairSerializer<TKey, TValue>)KVPList.ItemSerializer).DeserializeValue(scope.Record.Size, reader);
 		}
-		using var scope = Storage.Open(KVPList.Storage.Header.ReservedRecords + index);
-		var reader = new EndianBinaryReader(EndianBitConverter.For(Storage.Endianness), scope.Stream);
-		return ((KeyValuePairSerializer<TKey, TValue>)KVPList.ItemSerializer).DeserializeValue(scope.Record.Size, reader);
 	}
 
 	public override void Add(TKey key, TValue value) {
 		Guard.ArgumentNotNull(key, nameof(key));
 		CheckLoaded();
-		if (TryFindKey(key, out _))
-			throw new KeyNotFoundException($"An item with key '{key}' was already added");
-		var kvp = new KeyValuePair<TKey, TValue>(key, value);
-		AddInternal(kvp);
+		using (Storage.EnterWriteScope()) {
+			if (TryFindKey(key, out _))
+				throw new KeyNotFoundException($"An item with key '{key}' was already added");
+			var kvp = new KeyValuePair<TKey, TValue>(key, value);
+			AddInternal(kvp);
+		}
 	}
 
 	public override void Update(TKey key, TValue value) {
-		if (!TryFindKey(key, out var index))
-			throw new KeyNotFoundException($"The key '{key}' was not found");
-		var kvp = new KeyValuePair<TKey, TValue>(key, value);
-		UpdateInternal(index, kvp);
+		using (Storage.EnterWriteScope()) {
+			if (!TryFindKey(key, out var index))
+				throw new KeyNotFoundException($"The key '{key}' was not found");
+			var kvp = new KeyValuePair<TKey, TValue>(key, value);
+			UpdateInternal(index, kvp);
+		}
 	}
 
 	protected override void AddOrUpdate(TKey key, TValue value) {
 		Guard.ArgumentNotNull(key, nameof(key));
 		CheckLoaded();
-		var kvp = new KeyValuePair<TKey, TValue>(key, value);
-		if (TryFindKey(key, out var index)) {
-			UpdateInternal(index, kvp);
-		} else {
-			AddInternal(kvp);
+		using (Storage.EnterWriteScope()) {
+			var kvp = new KeyValuePair<TKey, TValue>(key, value);
+			if (TryFindKey(key, out var index)) {
+				UpdateInternal(index, kvp);
+			} else {
+				AddInternal(kvp);
+			}
 		}
 	}
 
 	public override bool Remove(TKey key) {
 		Guard.ArgumentNotNull(key, nameof(key));
 		CheckLoaded();
-		if (TryFindKey(key, out var index)) {
-			RemoveAt(index);
-			return true;
+		using (Storage.EnterWriteScope()) {
+			if (TryFindKey(key, out var index)) {
+				RemoveAt(index);
+				return true;
+			}
+			return false;
 		}
-		return false;
 	}
 
 	public override bool ContainsKey(TKey key) {
 		Guard.ArgumentNotNull(key, nameof(key));
 		CheckLoaded();
-		return
-			_checksumToIndexLookup[_keyChecksum.CalculateChecksum(key)]
-				.Where(index => !IsUnusedRecord(index))
-				.Select(ReadKey)
-				.Any(item => _keyComparer.Equals(item, key));
+		using (Storage.EnterReadScope()) {
+			return
+				_checksumToIndexLookup[_keyChecksum.CalculateChecksum(key)]
+					.Where(index => !IsUnusedRecord(index))
+					.Select(ReadKey)
+					.Any(item => _keyComparer.Equals(item, key));
+		}
 	}
 
 	public override void Clear() {
 		// Load not required
-		KVPList.Clear();
-		_checksumToIndexLookup.Clear();
-		_unusedRecords.Clear();
+		using (Storage.EnterWriteScope()) {
+			KVPList.Clear();
+			_checksumToIndexLookup.Clear();
+			_unusedRecords.Clear();
+		}
 	}
 
 	public override bool TryGetValue(TKey key, out TValue value) {
 		Guard.ArgumentNotNull(key, nameof(key));
 		CheckLoaded();
-		if (TryFindValue(key, out _, out value)) {
-			return true;
+		using (Storage.EnterReadScope()) {
+			if (TryFindValue(key, out _, out value)) {
+				return true;
+			}
+			value = default;
+			return false;
 		}
-		value = default;
-		return false;
 	}
 
 	public bool TryFindKey(TKey key, out int index) {
 		Debug.Assert(key != null);
-		foreach (var i in _checksumToIndexLookup[_keyChecksum.CalculateChecksum(key)]) {
-			var candidateKey = ReadKey(i);
-			if (_keyComparer.Equals(candidateKey, key)) {
-				index = i;
-				return true;
+		using (Storage.EnterReadScope()) {
+			foreach (var i in _checksumToIndexLookup[_keyChecksum.CalculateChecksum(key)]) {
+				var candidateKey = ReadKey(i);
+				if (_keyComparer.Equals(candidateKey, key)) {
+					index = i;
+					return true;
+				}
 			}
+			index = -1;
+			return false;
 		}
-		index = -1;
-		return false;
 	}
 
 	public bool TryFindValue(TKey key, out int index, out TValue value) {
 		Debug.Assert(key != null);
-		foreach (var i in _checksumToIndexLookup[_keyChecksum.CalculateChecksum(key)]) {
-			var candidateKey = ReadKey(i);
-			if (_keyComparer.Equals(candidateKey, key)) {
-				index = i;
-				value = ReadValue(index);
-				return true;
+		using (Storage.EnterReadScope()) {
+			foreach (var i in _checksumToIndexLookup[_keyChecksum.CalculateChecksum(key)]) {
+				var candidateKey = ReadKey(i);
+				if (_keyComparer.Equals(candidateKey, key)) {
+					index = i;
+					value = ReadValue(index);
+					return true;
+				}
 			}
+			index = -1;
+			value = default;
+			return false;
 		}
-		index = -1;
-		value = default;
-		return false;
 	}
 
 	public override void Add(KeyValuePair<TKey, TValue> item) {
 		Guard.ArgumentNotNull(item, nameof(item));
 		CheckLoaded();
-		if (TryFindKey(item.Key, out _))
-			throw new KeyNotFoundException($"An item with key '{item.Key}' was already added");
-		AddInternal(item);
+		using (Storage.EnterWriteScope()) {
+			if (TryFindKey(item.Key, out _))
+				throw new KeyNotFoundException($"An item with key '{item.Key}' was already added");
+			AddInternal(item);
+		}
 	}
 
 	public override bool Remove(KeyValuePair<TKey, TValue> item) {
 		Guard.ArgumentNotNull(item, nameof(item));
 		CheckLoaded();
-		if (TryFindValue(item.Key, out var index, out var value)) {
-			if (_valueComparer.Equals(item.Value, value)) {
-				RemoveAt(index);
-				return true;
+		using (Storage.EnterWriteScope()) {
+			if (TryFindValue(item.Key, out var index, out var value)) {
+				if (_valueComparer.Equals(item.Value, value)) {
+					RemoveAt(index);
+					return true;
+				}
 			}
+			return false;
 		}
-		return false;
 	}
 
 	public void RemoveAt(int index) {
+		CheckLoaded();
 		// We don't delete the instance, we mark is as unused. Use Shrink to intelligently remove unused records.
-		var kvp = KeyValuePair.Create(default(TKey), default(TValue));
-		using var scope = KVPList.EnterUpdateScope(index, kvp);
+		using (Storage.EnterWriteScope()) {
+			var kvp = KeyValuePair.Create(default(TKey), default(TValue));
+			using var scope = KVPList.EnterUpdateScope(index, kvp);
 
-		// Mark record as unused
-		Guard.Ensure(scope.Record.Traits.HasFlag(ClusteredStreamTraits.IsUsed), "Record not in used state");
-		_checksumToIndexLookup.Remove(scope.Record.KeyChecksum, index);
-		scope.Record.KeyChecksum = -1;
-		scope.Record.Traits = scope.Record.Traits.CopyAndSetFlags(ClusteredStreamTraits.IsUsed, false);
-		_unusedRecords.Add(index);
+			// Mark record as unused
+			Guard.Ensure(scope.Record.Traits.HasFlag(ClusteredStreamTraits.IsUsed), "Record not in used state");
+			_checksumToIndexLookup.Remove(scope.Record.KeyChecksum, index);
+			scope.Record.KeyChecksum = -1;
+			scope.Record.Traits = scope.Record.Traits.CopyAndSetFlags(ClusteredStreamTraits.IsUsed, false);
+			_unusedRecords.Add(index);
 
-		// note: scope Dispose ends up updating the record
+			// note: scope Dispose ends up updating the record
+		}
 	}
 
 	public override bool Contains(KeyValuePair<TKey, TValue> item) {
 		Guard.ArgumentNotNull(item, nameof(item));
 		CheckLoaded();
-		if (!TryFindValue(item.Key, out _, out var value))
-			return false;
-		return _valueComparer.Equals(value, item.Value);
+		using (Storage.EnterReadScope()) {
+			if (!TryFindValue(item.Key, out _, out var value))
+				return false;
+			return _valueComparer.Equals(value, item.Value);
+		}
 	}
 
 	public override void CopyTo(KeyValuePair<TKey, TValue>[] array, int arrayIndex) {

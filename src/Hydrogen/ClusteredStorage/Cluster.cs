@@ -8,7 +8,7 @@
 
 namespace Hydrogen;
 
-internal class Cluster {
+public class Cluster {
 	public const int TraitsLength = sizeof(byte);
 	public const int PrevLength = sizeof(long);
 	public const int NextLength = sizeof(long);

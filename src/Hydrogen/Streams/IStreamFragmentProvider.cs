@@ -13,7 +13,7 @@ namespace Hydrogen;
 /// <summary>
 /// Used by <see cref="FragmentedStream"/> to map a set of non-contiguous byte arrays (fragments) into a logically contiguous stream of bytes.
 /// 
-/// For example, consider how a file is stored on a file-system over random clusters yet the OS assembles that data into a logical contiguous stream of bytes for applications.
+/// For example, consider how a file is stored on a file-system over unordered clusters yet the OS assembles that data into a logical contiguous stream of bytes for applications.
 /// Similarly, a <see cref="FragmentedStream"/> can provide the client a logically contiguous stream of bytes when the underlying store is fragmented arbitrarily. Implementations
 /// of this handle the fragments for <see cref="FragmentedStream"/>.
 /// </summary>
@@ -25,41 +25,34 @@ public interface IStreamFragmentProvider {
 	long TotalBytes { get; }
 
 	/// <summary>
-	/// Fragment count
-	/// </summary>
-	long FragmentCount { get; }
-
-	/// <summary>
 	/// Retrieves a fragment's content.
 	/// </summary>
-	/// <param name="fragmentIndex">fragment index</param>
+	/// <param name="fragmentID"></param>
 	/// <returns></returns>
 	/// <remarks></remarks>
-	ReadOnlySpan<byte> GetFragment(long fragmentIndex);
+	ReadOnlySpan<byte> GetFragment(long fragmentID);
 
 	/// <summary>
 	/// Update an existing fragment with the span bytes from the specified position.
 	/// </summary>
-	/// <param name="fragmentIndex">fragment index</param>
+	/// <param name="fragmentID">fragment index</param>
 	/// <param name="fragmentPosition"> fragment position</param>
 	/// <param name="updateSpan"> span of bytes to update the fragment with</param>
-	void UpdateFragment(long fragmentIndex, long fragmentPosition, ReadOnlySpan<byte> updateSpan);
+	void UpdateFragment(long fragmentID, long fragmentPosition, ReadOnlySpan<byte> updateSpan);
 
 	/// <summary>
 	/// Maps a logical stream position to a fragment and index within fragment.
 	/// </summary>
 	/// <param name="position">logical stream position being resolved</param>
-	/// <param name="fragmentIndex">index of fragment that <see cref="position"/> resolves to</param>
+	/// <param name="fragmentIDdex">index of fragment that <see cref="position"/> resolves to</param>
 	/// <param name="fragmentPosition">position within fragment at <see cref="fragmentIndex"/> that <see cref="position"/> resolves to</param>
-	/// <returns>Whether <see cref="position"/> could be mapped to a fragment</returns>
-	bool TryMapStreamPosition(long position, out long fragmentIndex, out long fragmentPosition);
+	void MapStreamPosition(long position, out long fragmentID, out long fragmentPosition);
 
 	/// <summary>
 	/// When the <see cref="FragmentedStream"/> resizes, the fragment provider needs to allocate (or deallocate) fragments.
 	/// </summary>
-	/// <param name="bytes">Requested new space</param>
-	/// <param name="newFragments">New fragments</param>
+	/// <param name="length">Requested new space</param>
 	/// <returns>Whether fragment stores can accomodate total allocation</returns>
-	bool TrySetTotalBytes(long length, out long[] newFragments, out long[] deletedFragments);
+	void SetTotalBytes(long length);
 
 }

@@ -257,5 +257,18 @@ public class NetFrameworkStandardBehaviour {
 		}
 	}
 
+	[Test]
+	public void ObjectInitializersExecutedAfterConstructor() {
+		int? actual = null;
+		var testClass = new TestClass(v => actual = v) { Property = 1 };
+		Assert.That(actual, Is.EqualTo(0));
+		Assert.That(testClass.Property, Is.EqualTo(1));
+	}
 
+	private class TestClass {
+		public TestClass(Action<int> valueFetcher) {
+			valueFetcher(Property);
+		}
+		public int Property { get; init; } = 0;
+	}
 }

@@ -83,8 +83,9 @@ public abstract class SetTestsBase {
 			for (var i = 0; i < N; i++)
 				set.Add(values[i]);
 
-			for (var i = 0; i < N; i++)
+			for (var i = 0; i < N; i++) {
 				Assert.That(() => set.Remove(values[i]), Is.True);
+			}
 
 			Assert.That(set, Has.Count.Zero);
 		}

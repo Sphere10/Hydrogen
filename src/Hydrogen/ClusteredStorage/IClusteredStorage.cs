@@ -12,12 +12,14 @@ using System.IO;
 
 namespace Hydrogen;
 
-public interface IClusteredStorage : ILoadable {
+public interface IClusteredStorage : ILoadable, ISynchronizedObject {
 
 	event EventHandlerEx<ClusteredStreamRecord> RecordCreated;
 	event EventHandlerEx<long, ClusteredStreamRecord> RecordAdded;
 	event EventHandlerEx<long, ClusteredStreamRecord> RecordInserted;
 	event EventHandlerEx<long, ClusteredStreamRecord> RecordUpdated;
+	event EventHandlerEx<(long, ClusteredStreamRecord), (long, ClusteredStreamRecord)> RecordSwapped;
+	event EventHandlerEx<long, long> RecordSizeChanged;
 	event EventHandlerEx<long> RecordRemoved;
 
 	Stream RootStream { get; }
@@ -30,13 +32,17 @@ public interface IClusteredStorage : ILoadable {
 
 	IReadOnlyList<ClusteredStreamRecord> Records { get; }
 
+	IClusterContainer ClusterContainer { get; }
+
 	Endianness Endianness { get; }
 
 	ClusteredStreamRecord GetRecord(long index);
 
 	ClusteredStreamScope Add();
 
-	ClusteredStreamScope Open(long index);
+	ClusteredStreamScope OpenRead(long index);
+
+	ClusteredStreamScope OpenWrite(long index);
 
 	void Remove(long index);
 
@@ -50,7 +56,6 @@ public interface IClusteredStorage : ILoadable {
 
 	ClusteredStreamScope EnterLoadItemScope<TItem>(long index, IItemSerializer<TItem> serializer, out TItem item);
 
-	internal IDisposable EnterLockScope();
 }
 
 
@@ -62,7 +67,7 @@ public static class IClusteredStorageExtensions {
 
 
 	public static byte[] ReadAll(this IClusteredStorage storage, long index) {
-		using var scope = storage.Open(index);
+		using var scope = storage.OpenRead(index);
 		return scope.Stream.ReadAll();
 	}
 
@@ -72,13 +77,13 @@ public static class IClusteredStorageExtensions {
 	}
 
 	public static void UpdateBytes(this IClusteredStorage storage, long index, ReadOnlySpan<byte> bytes) {
-		using var scope = storage.Open(index);
+		using var scope = storage.OpenWrite(index);
 		scope.Stream.SetLength(0);
 		scope.Stream.Write(bytes);
 	}
 
 	public static void AppendBytes(this IClusteredStorage storage, long index, ReadOnlySpan<byte> bytes) {
-		using var scope = storage.Open(index);
+		using var scope = storage.OpenWrite(index);
 		scope.Stream.Seek(scope.Stream.Length, SeekOrigin.Current);
 		scope.Stream.Write(bytes);
 	}

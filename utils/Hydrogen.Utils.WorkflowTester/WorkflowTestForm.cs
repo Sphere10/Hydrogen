@@ -223,7 +223,7 @@ public partial class WorkflowTestForm : Form {
 			//builder
 			//	.UseDefaultErrorBehavior(WorkflowErrorHandling.Suspend)
 			//	.Schedule(bag => TimeSpan.FromSeconds(bag.DurationSeconds) - TimeSpan.FromSeconds(bag.WarningSeconds)).Do(then =>
-			//		then.StartWith(bag => OutputWriter.WriteLine("WARNING ABOUT TO CHARGE"))
+			//		then.By(bag => OutputWriter.WriteLine("WARNING ABOUT TO CHARGE"))
 			//			.Schedule(bag => TimeSpan.FromSeconds(bag.WarningSeconds)).Do(
 			//				then => then.Decide(bag => bag.Active)
 			//					.Branch(true, chargeBranch)
@@ -233,7 +233,7 @@ public partial class WorkflowTestForm : Form {
 
 		}
 
-		// .StartWith(bag =>  bag.St { if(bag.TimesCharged == 2) bag. })
+		// .By(bag =>  bag.St { if(bag.TimesCharged == 2) bag. })
 
 
 		public string Id => "Subscription";

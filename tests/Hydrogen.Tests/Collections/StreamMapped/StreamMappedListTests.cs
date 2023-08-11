@@ -185,7 +185,7 @@ public class StreamMappedListTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void RemoveRange([ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy, [Values(0, ReservedRecordsInStorage)] int reserved) {
+	public void RemoveRange([ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy, [Values(0, 1, ReservedRecordsInStorage)] int reserved) {
 		var random = new Random(31337);
 		string[] inputs = Enumerable.Range(0, random.Next(1, 100)).Select(x => random.NextString(1, 100)).ToArray();
 		using var stream = new MemoryStream();
@@ -343,6 +343,22 @@ public class StreamMappedListTests : StreamPersistedCollectionTestsBase {
 				Assert.AreEqual(input.Concat(secondInput), list.ReadRange(0, list.Count));
 				list.RemoveRange(0, list.Count);
 				Assert.IsEmpty(list);
+			}
+		}
+	}
+
+	[Test]
+	public void BugCase([Values(100)] int iterations, [Values(ClusteredStoragePolicy.Default)] ClusteredStoragePolicy policy, [Values(1)] int reserved) {
+		var random = new Random(31337 + iterations);
+		var input = Enumerable.Range(0, random.Next(1, 100)).Select(x => random.NextString(0, 100)).ToArray();
+		var fileName = Tools.FileSystem.GetTempFileName(true);
+		using (Tools.Scope.ExecuteOnDispose(() => File.Delete(fileName))) {
+			using (var fileStream = new FileStream(fileName, FileMode.Open)) {
+				var list = new StreamMappedList<string>(fileStream, 32, new StringSerializer(Encoding.UTF8), reservedRecords: reserved, policy: policy, autoLoad: true);
+				list.AddRange(input);
+				var secondInput = Enumerable.Range(0, random.Next(1, 100)).Select(x => random.NextString(1, 100)).ToArray();
+				list.AddRange(secondInput);
+				list.RemoveRange(0, list.Count);
 			}
 		}
 	}

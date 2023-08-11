@@ -11,23 +11,24 @@ using System.Diagnostics;
 namespace Hydrogen;
 
 internal class ClusterSerializer : StaticSizeItemSerializerBase<Cluster> {
-	private readonly int _clusterDataSize;
 
 	public ClusterSerializer(int clusterDataSize) 
 		: base(Cluster.TraitsLength + Cluster.PrevLength + Cluster.NextLength + clusterDataSize) {
 		// cluster has an envelope of 9 bytes
 		Guard.ArgumentInRange(clusterDataSize, 1, int.MaxValue, nameof(clusterDataSize));
-		_clusterDataSize = clusterDataSize;
+		ClusterDataSize = clusterDataSize;
 	}
+
+	public int ClusterDataSize { get; }
 
 	public override void SerializeInternal(Cluster item, EndianBinaryWriter writer) {
 		Guard.ArgumentNotNull(item, nameof(item));
 		Guard.ArgumentNotNull(writer, nameof(writer));
-		Guard.Argument(item.Data.Length == _clusterDataSize, nameof(item), "Unexpected cluster data size");
+		Guard.Argument(item.Data.Length == ClusterDataSize, nameof(item), "Unexpected cluster data size");
 		writer.Write((byte)item.Traits);
 		writer.Write(item.Prev);
 		writer.Write(item.Next);
-		Debug.Assert(item.Data.Length == _clusterDataSize);
+		Debug.Assert(item.Data.Length == ClusterDataSize);
 		writer.Write(item.Data);
 	}
 
@@ -37,7 +38,7 @@ internal class ClusterSerializer : StaticSizeItemSerializerBase<Cluster> {
 			Traits = (ClusterTraits)reader.ReadByte(),
 			Prev = reader.ReadInt64(),
 			Next = reader.ReadInt64(),
-			Data = reader.ReadBytes(_clusterDataSize),
+			Data = reader.ReadBytes(ClusterDataSize),
 		};
 	}
 }

@@ -468,7 +468,7 @@ public static class AssertEx {
 	}
 
 	[Test]
-	public static void StreamIntegrationTests(int maxSize, Stream actualStream, Stream expectedStream = null, int iterations = 100, Random RNG = null, bool runAsserts = true) {
+	public static void StreamIntegrationTests(int maxSize, Stream actualStream, Stream expectedStream = null, int iterations = 100, Random RNG = null, bool runAsserts = true, Action extraTest = null) {
 		Guard.ArgumentInRange(maxSize, 0, int.MaxValue, nameof(maxSize));
 		Guard.ArgumentNotNull(actualStream, nameof(actualStream));
 		Guard.ArgumentNot(actualStream.Length > 0 && expectedStream == null, nameof(actualStream), "Must be empty if not supplying expected stream");
@@ -477,6 +477,7 @@ public static class AssertEx {
 		for (var i = 0; i < iterations; i++) {
 			if (runAsserts)
 				AreEqual(expectedStream, actualStream);
+			extraTest?.Invoke();
 
 			// 1. random seek
 			var seekParam = GenerateRandomSeekParameters(RNG, actualStream.Position, actualStream.Length);
@@ -484,6 +485,7 @@ public static class AssertEx {
 			expectedStream.Seek(seekParam.Item1, seekParam.Item2);
 			if (runAsserts)
 				AreEqual(expectedStream, actualStream);
+			extraTest?.Invoke();
 
 			// 2. write random bytes
 			var remainingCapacity = (int)(maxSize - actualStream.Position);
@@ -498,6 +500,7 @@ public static class AssertEx {
 				}
 				if (runAsserts)
 					AreEqual(expectedStream, actualStream);
+				extraTest?.Invoke();
 			}
 
 			// 3. random read
@@ -510,6 +513,7 @@ public static class AssertEx {
 					Assert.AreEqual(expectedStream.ReadBytes(count), actualStream.ReadBytes(count));
 					AreEqual(expectedStream, actualStream);
 				}
+				extraTest?.Invoke();
 			}
 
 			// 4. resize 
@@ -518,6 +522,7 @@ public static class AssertEx {
 			actualStream.SetLength(newLength);
 			if (runAsserts)
 				AreEqual(expectedStream, actualStream);
+			extraTest?.Invoke();
 		}
 	}
 

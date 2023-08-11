@@ -14,17 +14,17 @@ namespace Hydrogen;
 public enum ClusteredStoragePolicy : uint {
 
 	/// <summary>
-	/// Clusters are pre-allocated when serializing items. This avoids on-the-fly allocation during serialization which can be slow.
+	/// ClusterContainer are pre-allocated when serializing items. This avoids on-the-fly allocation during serialization which can be slow.
 	/// </summary>
 	FastAllocate = 1 << 0,
 
 	/// <summary>
-	/// Clusters for records are cached for faster lookup (can cause memory-bloat when container's stream count in very large scenarios)
+	/// ClusterContainer for records are cached for faster lookup (can cause memory-bloat when container's stream count in very large scenarios)
 	/// </summary>
 	CacheRecordClusters = 1 << 1,
 
 	/// <summary>
-	/// Clusters for opened stream data are cached for faster traversal (can cause memory-bloat for stream's with very large cluster count)
+	/// ClusterContainer for opened stream data are cached for faster traversal (can cause memory-bloat for stream's with very large cluster count)
 	/// </summary>
 	CacheOpenClusters = 1 << 2,
 

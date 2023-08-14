@@ -51,17 +51,16 @@ public class ByteArrayStreamFragmentProvider : IStreamFragmentProvider {
 	}
 
 	public void MapStreamPosition(long position, out long fragmentID, out long fragmentPosition) {
-		var fragmentPositionL = position;
+		fragmentPosition = position;
 		for (fragmentID = 0; fragmentID < _fragments.Count; fragmentID++) {
 			var fragmentIndexI = Tools.Collection.CheckNotImplemented64bitAddressingIndex(fragmentID);
 			var fragmentLength = _fragments[fragmentIndexI].Length;
-			if (fragmentPositionL < fragmentLength) {
-				fragmentPosition = (int)fragmentPositionL;
+			if (position < fragmentLength) {
+				fragmentPosition = position;
+				break;
 			}
-			fragmentPositionL -= fragmentLength;
+			position -= fragmentLength;
 		}
-		fragmentPosition = (int)fragmentPositionL;
-		throw new InvalidOperationException($"Unable to map position {position} to a fragment");
 	}
 
 	public void SetTotalBytes(long length) {

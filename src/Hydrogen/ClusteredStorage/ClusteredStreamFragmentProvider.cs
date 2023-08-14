@@ -11,11 +11,11 @@ internal class ClusteredStreamFragmentProvider : IStreamFragmentProvider, IDispo
 	
 	private long _totalBytes;
 
-	public ClusteredStreamFragmentProvider(IClusterContainer clusteredContainer, long logicalRecordID, long startCluster, long endCluster, long totalBytes) {
+	public ClusteredStreamFragmentProvider(IClusterContainer clusteredContainer, long logicalRecordID, long totalBytes, Func<ClusterChain> clusterChainLoader) {
 		_parent = clusteredContainer;
 		_totalBytes = totalBytes;
 		FragmentCount = clusteredContainer.CalculateClusterChainLength(totalBytes);	
-		Seeker = new ClusterSeeker(clusteredContainer, startCluster, endCluster, FragmentCount, logicalRecordID);
+		Seeker = new ClusterSeeker(clusteredContainer, logicalRecordID, clusterChainLoader);
 		LogicalRecordID = logicalRecordID;
 	}
 
@@ -43,7 +43,7 @@ internal class ClusteredStreamFragmentProvider : IStreamFragmentProvider, IDispo
 	public void MapStreamPosition(long position, out long fragmentID, out long fragmentPosition) {
 		var logicalClusterIndex = position / _parent.ClusterSize;
 		Seeker.SeekTo(logicalClusterIndex);
-		fragmentID = Seeker.CurrentCluster.Value;
+		fragmentID = Seeker.ClusterPointer.Value.CurrentCluster.Value;
 		fragmentPosition = position % _parent.ClusterSize;
 	}
 
@@ -62,11 +62,11 @@ internal class ClusteredStreamFragmentProvider : IStreamFragmentProvider, IDispo
 			if (currentTotalClusters == 0) 
 				_parent.NewClusterChain(newTotalClusters, LogicalRecordID);
 			else 
-				_parent.AppendClustersToEnd(Seeker.EndCluster, newTotalClusters - currentTotalClusters);
+				_parent.AppendClustersToEnd(Seeker.ClusterPointer.Value.Chain.EndCluster, newTotalClusters - currentTotalClusters);
 		} else if (newTotalClusters < currentTotalClusters) {
-			_parent.RemoveBackwards(Seeker.EndCluster, currentTotalClusters - newTotalClusters);
+			_parent.RemoveBackwards(Seeker.ClusterPointer.Value.Chain.EndCluster, currentTotalClusters - newTotalClusters);
 		}
-		
+
 		TotalBytes = length;
 		FragmentCount = newTotalClusters;
 
@@ -75,7 +75,7 @@ internal class ClusteredStreamFragmentProvider : IStreamFragmentProvider, IDispo
 			var unusedTipClusterBytes = newTotalClusters * _parent.ClusterSize - length;
 			if (unusedTipClusterBytes > 0) {
 				var unusedTipClusterBytesI = Tools.Collection.CheckNotImplemented64bitAddressingLength(unusedTipClusterBytes);
-				_parent.FastWriteClusterData(Seeker.EndCluster, _parent.ClusterSize - unusedTipClusterBytes, _parent.ZeroClusterBytes.AsSpan().Slice(..unusedTipClusterBytesI));
+				_parent.FastWriteClusterData(Seeker.ClusterPointer.Value.Chain.EndCluster, _parent.ClusterSize - unusedTipClusterBytes, _parent.ZeroClusterBytes.AsSpan().Slice(..unusedTipClusterBytesI));
 			}
 		}
 

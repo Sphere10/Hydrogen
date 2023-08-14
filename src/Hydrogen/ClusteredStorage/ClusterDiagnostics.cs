@@ -144,7 +144,8 @@ internal static class ClusterDiagnostics {
 			// ensure all records have valid clusters
 			var recordsReferencingOutOfBoundsClusters = 
 				records
-				.Where(x => !IsValidCluster(x.StartCluster) || !IsValidCluster(x.EndCluster))
+				.Select((record, i) => (record, i))
+				.Where(x => !IsValidCluster(x.record.StartCluster) || !IsValidCluster(x.record.EndCluster))
 				.ToArray();
 			if (recordsReferencingOutOfBoundsClusters.Any()) 
 				throw new InvalidOperationException($"Records {recordsReferencingOutOfBoundsClusters.ToDelimittedString(", ")} reference out of bounds clusters (min:{0} max:{clusters.Length})");

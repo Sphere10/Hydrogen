@@ -18,7 +18,14 @@ public class ClusteredStreamScope : IDisposable {
 		RecordIndex = recordIndex;
 		Record = clusteredStorage.GetRecord(recordIndex);
 		ReadOnly = readOnly;
-		_fragmentProvider = new ClusteredStreamFragmentProvider(_clusteredStorage.ClusterContainer, recordIndex, Record.StartCluster, Record.EndCluster, Record.Size);
+		_fragmentProvider = new ClusteredStreamFragmentProvider(
+			_clusteredStorage.ClusterContainer, 
+			recordIndex, 
+			Record.Size, () =>  {
+				var rec = clusteredStorage.GetRecord(recordIndex);
+				return new ClusterChain { StartCluster = rec.StartCluster, EndCluster = rec.EndCluster, TotalClusters = clusteredStorage.ClusterContainer.CalculateClusterChainLength(rec.Size)};
+			}
+		);
 
 		// subscribing to the container events ensures that any shuffles of this record start/end cluster (caused by another opened stream)
 		// will necessarily update this scope's record

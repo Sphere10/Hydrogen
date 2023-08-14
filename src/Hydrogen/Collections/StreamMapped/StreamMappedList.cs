@@ -34,7 +34,6 @@ public class StreamMappedList<TItem> : SingularListBase<TItem>, IStreamMappedLis
 
 	public StreamMappedList(IClusteredStorage storage, IItemSerializer<TItem> itemSerializer = null, IEqualityComparer<TItem> itemComparer = null) {
 		Guard.ArgumentNotNull(storage, nameof(storage));
-		Tools.Debugger.ObjectA = storage;
 		Storage = storage;
 		ItemSerializer = itemSerializer ?? ItemSerializer<TItem>.Default;
 		ItemComparer = itemComparer ?? EqualityComparer<TItem>.Default;

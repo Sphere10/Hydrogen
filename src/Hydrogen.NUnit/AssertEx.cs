@@ -475,6 +475,7 @@ public static class AssertEx {
 		expectedStream ??= new MemoryStream();
 		RNG ??= new Random(31337);
 		for (var i = 0; i < iterations; i++) {
+
 			if (runAsserts)
 				AreEqual(expectedStream, actualStream);
 			extraTest?.Invoke();

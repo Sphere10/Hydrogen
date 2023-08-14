@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.ComponentModel.Design;
 using System.Diagnostics;
 using System.IO;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using System.Threading;
@@ -287,12 +288,18 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 		var recordsFragmentProvider = new ClusteredStreamFragmentProvider(
 			_clusters,
 			-1,
-			recordsCount == 0 ? -1 : 0,
-			recordsCount == 0 ? -1 : _header.RecordsEndCluster,
-			_header.RecordsCount * recordSerializer.StaticSize
+			_header.RecordsCount * recordSerializer.StaticSize,
+			() => {
+				if (_header.RecordsCount == 0) {
+					if (_header.RecordsEndCluster != -1)
+							return new ClusterChain{ StartCluster = 0, EndCluster = _header.RecordsEndCluster, TotalClusters = 1 }; // when it writes first time
+						else
+							return new ClusterChain{ StartCluster = -1, EndCluster = -1, TotalClusters = 0 };
+				}
+				Guard.Ensure(Header.RecordsCount == _records.Count, "Header state / record collection mismatch");
+				return new ClusterChain{ StartCluster = 0, EndCluster = _header.RecordsEndCluster, TotalClusters = _clusters.CalculateClusterChainLength( _records.Count * recordSerializer.StaticSize) };
+			}
 		);
-		Tools.Debugger.ObjectB = recordsFragmentProvider;
-		Tools.Debugger.ObjectC = recordsFragmentProvider.Seeker;
 
 		// track record stream end cluster in header
 		_clusters.ClusterChainCreated += (_, startCluster, endCluster, _, terminalValue) => {
@@ -572,7 +579,7 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 			stringBuilder.AppendLine(this.ToString());
 			stringBuilder.AppendLine("Records:");
 			for (var i = 0; i < _records.Count; i++) {
-				var record = GetRecord(i);
+				var record =  _records.Read(i);
 				stringBuilder.AppendLine($"\t{i}: {record}");
 			}
 			stringBuilder.AppendLine("Cluster Container:");
@@ -636,6 +643,9 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 	
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	private void FastWriteRecordStartCluster(long record, long startCluster) {
+		if (record == 51 && startCluster == 503) {
+			var x= 1;
+		}
 		var bytes = _records.InternalCollection.Writer.BitConverter.GetBytes(startCluster);
 		_records.InternalCollection.WriteItemBytes(record, ClusteredStreamRecord.StartClusterOffset, bytes);
 	}
@@ -706,6 +716,7 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 			scope.RecordSizeChanged += size => {
 				CheckWriteLocked();
 				FastWriteRecordSize(recordIndex, size); 
+				_recordCache?.Invalidate(recordIndex);
 			};
 		}
 		_openScopes.Add(recordIndex);
@@ -815,7 +826,7 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 			if (record.StartCluster != NullCluster)
 				throw new CorruptDataException(Header, $"Empty record {index} should have start cluster {NullCluster} but was {record.StartCluster}");
 			if (record.EndCluster != NullCluster)
-				throw new CorruptDataException(Header, $"Empty record {index} should have start cluster {NullCluster} but was {record.EndCluster}");
+				throw new CorruptDataException(Header, $"Empty record {index} should have end cluster {NullCluster} but was {record.EndCluster}");
 		} else if (!(0 <= record.StartCluster && record.StartCluster < Header.TotalClusters))
 			throw new CorruptDataException(Header, $"Record {index} pointed to to non-existent cluster {record.StartCluster}");
 	}

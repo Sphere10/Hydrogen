@@ -355,15 +355,6 @@ internal class ClusterMap<TInner> : IClusterMap where TInner : IExtendedList<Clu
 
 	public long CalculateClusterChainLength(long byteLength) => (long)Math.Ceiling(byteLength / (double)ClusterSize);
 
-	public string ToStringFullContents() {
-		var stringBuilder = new StringBuilder();
-		for (var i = 0; i < Clusters.Count; i++) {
-			var cluster = Clusters[i];
-			stringBuilder.AppendLine($"\t{i}: {cluster}");
-		}
-		return stringBuilder.ToString();
-	}
-
 	#endregion
 
 	#region Event Notifiers

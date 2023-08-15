@@ -581,22 +581,6 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 		return Header.ToString();
 	}
 
-	public string ToStringFullContents() {
-		CheckInitialized();
-		using (EnterReadScope()) {
-			var stringBuilder = new FastStringBuilder();
-			stringBuilder.AppendLine(this.ToString());
-			stringBuilder.AppendLine("Records:");
-			for (var i = 0; i < _records.Count; i++) {
-				var record =  _records.Read(i);
-				stringBuilder.AppendLine($"\t{i}: {record}");
-			}
-			stringBuilder.AppendLine("Cluster Container:");
-			stringBuilder.AppendLine(ClusterMap.ToStringFullContents());
-			return stringBuilder.ToString();
-		}
-	}
-
 	#endregion
 
 	#region Records

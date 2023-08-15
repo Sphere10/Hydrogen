@@ -1,12 +1,38 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Xml.Schema;
 
 
 namespace Hydrogen;
 
 internal static class ClusterDiagnostics {
+
+	public static string ToTextDump(IClusteredStorage storage) {
+		
+		using (storage.EnterReadScope()) {
+			var stringBuilder = new FastStringBuilder();
+			stringBuilder.AppendLine(storage.ToString());
+			stringBuilder.AppendLine("Records:");
+			for (var i = 0; i < storage.Records.Count; i++) {
+				var record =  storage.Records[i];
+				stringBuilder.AppendLine($"\t{i}: {record}");
+			}
+			stringBuilder.AppendLine("Cluster Container:");
+			stringBuilder.AppendLine(ToTextDump(storage.ClusterMap));
+			return stringBuilder.ToString();
+		}
+	}
+
+	public static string ToTextDump(IClusterMap clusterMap) {
+		var stringBuilder = new StringBuilder();
+		for (var i = 0; i < clusterMap.Clusters.Count; i++) {
+			var cluster = clusterMap.Clusters[i];
+			stringBuilder.AppendLine($"\t{i}: {cluster}");
+		}
+		return stringBuilder.ToString();
+	}
 
 	public static long VerifyPath(Cluster[] clusterContainer, long start, long end, long terminalValue, HashSet<long> visitedClusters) {
 		bool IsValidCluster(long ix) => 0 <= ix && ix < clusterContainer.LongLength;

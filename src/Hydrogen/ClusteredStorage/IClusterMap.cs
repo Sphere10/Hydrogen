@@ -53,5 +53,4 @@ public interface IClusterMap : ISynchronizedObject {
 
 	long CalculateClusterChainLength(long byteLength);
 
-	string ToStringFullContents();
 }

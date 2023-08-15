@@ -160,7 +160,7 @@ public class ClusteredStorageTests : StreamPersistedCollectionTestsBase {
 		var streamContainer = new ClusteredStorage(rootStream, 1, autoLoad: true);
 		using var clonedStream = new MemoryStream(rootStream.ToArray());
 		var loadedStreamContainer = new ClusteredStorage(clonedStream, 1, autoLoad: true);
-		Assert.That(() => loadedStreamContainer.ToStringFullContents(), Throws.Nothing);
+		Assert.That(() => ClusterDiagnostics.ToTextDump(loadedStreamContainer), Throws.Nothing);
 	}
 
 
@@ -206,7 +206,7 @@ public class ClusteredStorageTests : StreamPersistedCollectionTestsBase {
 		for (var i = 0; i < N; i++) {
 			using (var scope = streamContainer.Add())
 				Assert.That(scope.Stream.Length, Is.EqualTo(0));
-			System.Console.WriteLine(streamContainer.ClusterMap.ToStringFullContents());
+			System.Console.WriteLine(ClusterDiagnostics.ToTextDump(streamContainer));
 		}
 		Assert.That(streamContainer.Count, Is.EqualTo(N));
 		Assert.That(streamContainer.Records.Count, Is.EqualTo(N));
@@ -937,7 +937,7 @@ public class ClusteredStorageTests : StreamPersistedCollectionTestsBase {
 		streamContainer.AddBytes(new byte[] { 1 });
 		using var clonedStream = new MemoryStream(rootStream.ToArray());
 		var loadedStreamContainer = new ClusteredStorage(clonedStream, 1, autoLoad: true);
-		Assert.That(streamContainer.ToStringFullContents(), Is.EqualTo(loadedStreamContainer.ToStringFullContents()));
+		Assert.That(ClusterDiagnostics.ToTextDump(streamContainer), Is.EqualTo(ClusterDiagnostics.ToTextDump(loadedStreamContainer)));
 	}
 
 	[Test]
@@ -956,7 +956,7 @@ public class ClusteredStorageTests : StreamPersistedCollectionTestsBase {
 
 		using var clonedStream = new MemoryStream(rootStream.ToArray());
 		var loadedStreamContainer = new ClusteredStorage(clonedStream, clusterSize, policy: policy, autoLoad: true);
-		Assert.That(streamContainer.ToStringFullContents(), Is.EqualTo(loadedStreamContainer.ToStringFullContents()));
+		Assert.That(ClusterDiagnostics.ToTextDump(streamContainer), Is.EqualTo(ClusterDiagnostics.ToTextDump(loadedStreamContainer)));
 		ClusteredStorageTestsHelper.AssertValidRecords(streamContainer);
 
 	}

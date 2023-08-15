@@ -7,15 +7,15 @@ namespace Hydrogen;
 internal class ClusteredStreamFragmentProvider : IStreamFragmentProvider, IDisposable {
 	public event EventHandlerEx<ClusteredStreamFragmentProvider, long> StreamLengthChanged;
 
-	private readonly IClusterContainer _parent;
-	
+	private readonly IClusterMap _parent;
+
 	private long _totalBytes;
 
-	public ClusteredStreamFragmentProvider(IClusterContainer clusteredContainer, long logicalRecordID, long totalBytes, Func<ClusterChain> clusterChainLoader) {
-		_parent = clusteredContainer;
+	public ClusteredStreamFragmentProvider(IClusterMap clusteredMap, long logicalRecordID, long totalBytes, Func<ClusterChain> clusterChainLoader) {
+		_parent = clusteredMap;
 		_totalBytes = totalBytes;
-		FragmentCount = clusteredContainer.CalculateClusterChainLength(totalBytes);	
-		Seeker = new ClusterSeeker(clusteredContainer, logicalRecordID, clusterChainLoader);
+		FragmentCount = clusteredMap.CalculateClusterChainLength(totalBytes);	
+		Seeker = new ClusterSeeker(clusteredMap, logicalRecordID, clusterChainLoader);
 		LogicalRecordID = logicalRecordID;
 	}
 
@@ -35,12 +35,18 @@ internal class ClusteredStreamFragmentProvider : IStreamFragmentProvider, IDispo
 	
 	internal ClusterSeeker Seeker { get; }
 
+	private void CheckNotSurgery() {
+		Guard.Ensure(!_parent.PreventClusterNavigation, "Cannot perform this operation while clusters are being surgically modified.");
+	}
+
 	public ReadOnlySpan<byte> GetFragment(long index) {
+		CheckNotSurgery();
 		Guard.ArgumentInRange(index, 0, _parent.Clusters.Count - 1, nameof(index));
 		return _parent.FastReadClusterData(index, 0, _parent.ClusterSize);
 	}
 
 	public void MapStreamPosition(long position, out long fragmentID, out long fragmentPosition) {
+		CheckNotSurgery();
 		var logicalClusterIndex = position / _parent.ClusterSize;
 		Seeker.SeekTo(logicalClusterIndex);
 		fragmentID = Seeker.ClusterPointer.Value.CurrentCluster.Value;
@@ -48,10 +54,12 @@ internal class ClusteredStreamFragmentProvider : IStreamFragmentProvider, IDispo
 	}
 
 	public void UpdateFragment(long fragmentID, long fragmentPosition, ReadOnlySpan<byte> updateSpan) {
+		CheckNotSurgery();
 		_parent.FastWriteClusterData(fragmentID, fragmentPosition, updateSpan);		
 	}
 
 	public void SetTotalBytes(long length) {
+		CheckNotSurgery();
 		var oldLength = TotalBytes;
 		var newTotalClusters = _parent.CalculateClusterChainLength(length);
 		var oldTotalClusters = FragmentCount;
@@ -84,6 +92,7 @@ internal class ClusteredStreamFragmentProvider : IStreamFragmentProvider, IDispo
 	private void NotifyStreamLengthChanged(long newLength) => StreamLengthChanged?.Invoke(this, newLength);
 
 	public void Dispose() {
+		CheckNotSurgery();
 		Seeker.Dispose();
 	}
 }

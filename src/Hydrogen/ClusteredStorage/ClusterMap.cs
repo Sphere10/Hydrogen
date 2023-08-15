@@ -17,7 +17,7 @@ namespace Hydrogen;
 /// <summary>
 /// Used for managing a collection of clusters as connected chains. 
 /// </summary>
-internal class ClusterContainer<TInner> : IClusterContainer where TInner : IExtendedList<Cluster> {
+internal class ClusterMap<TInner> : IClusterMap where TInner : IExtendedList<Cluster> {
 	public event ClustersCountChangedEventHandler ClusterCountChanged;
 	public event ClusterChainCreatedEventHandler ClusterChainCreated;
 	public event ClusterChainRemovedEventHandler ClusterChainRemoved;
@@ -27,23 +27,27 @@ internal class ClusterContainer<TInner> : IClusterContainer where TInner : IExte
 
 	protected readonly SynchronizedExtendedList<Cluster, TInner> _clusters;
 
-	public ClusterContainer(TInner clusters, int clusterSize)  {
+	public ClusterMap(TInner clusters, int clusterSize) {
 		Guard.ArgumentNotNull(clusters, nameof(clusters));
 		Guard.ArgumentGTE(clusterSize, 0, nameof(clusterSize));
 		_clusters = clusters.AsSynchronized<Cluster, TInner>();
 		ClusterSize = clusterSize;
 		ZeroClusterBytes = new byte[clusterSize];
 	}
-	
+
 	public ISynchronizedObject ParentSyncObject { get => _clusters.ParentSyncObject; set => _clusters.ParentSyncObject = value; }
-	
+
 	public ReaderWriterLockSlim ThreadLock => _clusters.ThreadLock;
 
 	public IReadOnlyExtendedList<Cluster> Clusters => _clusters;
-	
+
 	public int ClusterSize { get; }
 
 	public byte[] ZeroClusterBytes { get; }
+
+	public bool PreventClusterNavigation { get; set; }
+
+	public bool SuppressEvents { get; set; }
 
 	public IDisposable EnterReadScope() => _clusters.EnterReadScope();
 
@@ -66,10 +70,10 @@ internal class ClusterContainer<TInner> : IClusterContainer where TInner : IExte
 			if (quantity > 1) {
 				endCluster = AppendClustersToEnd(startClusterIndex, quantity - 1);
 			}
-			
+
 			return (startClusterIndex, endCluster);
 		}
-		
+
 	}
 
 	public virtual long AppendClustersToEnd(long fromEnd, long quantity) {
@@ -81,7 +85,7 @@ internal class ClusterContainer<TInner> : IClusterContainer where TInner : IExte
 		// (4) B.Prev = A, C.Prev = B, D.Prev = C, E.Prev = D
 		// (5) B.Next = C, C.Next = D, D.Next = E
 		// (6) E.Traits = Last
-	
+
 
 		using (EnterWriteScope()) {
 			Guard.ArgumentInRange(fromEnd, 0, _clusters.Count - 1, nameof(fromEnd));
@@ -90,7 +94,7 @@ internal class ClusterContainer<TInner> : IClusterContainer where TInner : IExte
 
 			// Appending nothing case
 			var newEndCluster = fromEnd;
-			if (quantity == 0) 
+			if (quantity == 0)
 				return newEndCluster;
 
 			// (1) A.Traits = !Last
@@ -127,7 +131,7 @@ internal class ClusterContainer<TInner> : IClusterContainer where TInner : IExte
 				previous = newClusterIX;
 
 				// notify when E is new last cluster
-				if (i == quantity - 1) 
+				if (i == quantity - 1)
 					NotifyClusterChainEndChanged(newClusterIX, endTerminalValue, quantity);
 			}
 			NotifyClusterCountChanged(quantity, endTerminalValue);
@@ -144,7 +148,7 @@ internal class ClusterContainer<TInner> : IClusterContainer where TInner : IExte
 				return 0;
 
 			var toRemove = 1L;
-			while(!FastReadClusterTraits(fromCluster).HasFlag(ClusterTraits.End) && toRemove < quantity ) {
+			while (!FastReadClusterTraits(fromCluster).HasFlag(ClusterTraits.End) && toRemove < quantity) {
 				fromCluster = FastReadClusterNext(fromCluster);
 				toRemove++;
 			}
@@ -153,13 +157,15 @@ internal class ClusterContainer<TInner> : IClusterContainer where TInner : IExte
 	}
 
 	public virtual long RemoveBackwards(long fromCluster, long quantity) {
+
+
 		using (EnterWriteScope()) {
 			Guard.ArgumentInRange(fromCluster, 0, _clusters.Count - 1, nameof(fromCluster));
 			if (quantity == 0)
 				return 0;
 			var fromTraits = FastReadClusterTraits(fromCluster);
 			var fromWasEnd = fromTraits.HasFlag(ClusterTraits.End);
-			var fromNext = FastReadClusterNext(fromCluster);  
+			var fromNext = FastReadClusterNext(fromCluster);
 
 			// Iterate through and remove clusters by tip-substitution
 			var removedStartCluster = false;
@@ -167,37 +173,42 @@ internal class ClusterContainer<TInner> : IClusterContainer where TInner : IExte
 			var removeCluster = fromCluster;
 			var lastRemovedPrev = 0L;
 			var alreadyNotifiedEndClusterMoved = false;
-			while (clustersRemoved < quantity && !removedStartCluster) {
-				var removeClusterTraits = FastReadClusterTraits(removeCluster);
-				var removeClusterIsEndOfRecordStream = removeClusterTraits.HasFlag(ClusterTraits.End) && FastReadClusterNext(removeCluster) == -1;
-				removedStartCluster = removeClusterTraits.HasFlag(ClusterTraits.Start);
-				lastRemovedPrev = FastReadClusterPrev(removeCluster);
-				var logicalClusterCount = _clusters.Count - clustersRemoved;
-				var removedBlockPreviousIsTip = lastRemovedPrev == logicalClusterCount - 1;
-				var tipClusterIndex = logicalClusterCount - 1;
-				if (removeClusterIsEndOfRecordStream && !removedStartCluster) {
-					// since we're moving the end block of the record stream, we need notify this removal now
-					// since the record stream needs to be usable during this loop since event handlers
-					// may require access to records. This notification ensures the record seeker is updated.
-					// To ensure the below doesn't re-do this notification we rely on alreadyNotifiedEndClusterMoved.
-					FastMaskClusterTraits(lastRemovedPrev, ClusterTraits.End, true);
-					FastWriteClusterNext(lastRemovedPrev, -1);
-					NotifyClusterChainEndChanged(lastRemovedPrev, -1, -1);
-					alreadyNotifiedEndClusterMoved = true;
-				}
-				MigrateTipClusterTo(tipClusterIndex, removeCluster);
-				// if the deleted cluster's previous was the tip cluster moved into the deleted clusters spot
-				// then it follows that the deleted cluster's previous is now where the deleted was cluster was
-				if (removedBlockPreviousIsTip && !removedStartCluster)
-					lastRemovedPrev = removeCluster; 
+			PreventClusterNavigation = true;
+			try {
+				while (clustersRemoved < quantity && !removedStartCluster) {
+					var removeClusterTraits = FastReadClusterTraits(removeCluster);
+					var removeClusterIsEndOfRecordStream = removeClusterTraits.HasFlag(ClusterTraits.End) && FastReadClusterNext(removeCluster) == -1;
+					removedStartCluster = removeClusterTraits.HasFlag(ClusterTraits.Start);
+					lastRemovedPrev = FastReadClusterPrev(removeCluster);
+					var logicalClusterCount = _clusters.Count - clustersRemoved;
+					var removedBlockPreviousIsTip = lastRemovedPrev == logicalClusterCount - 1;
+					var tipClusterIndex = logicalClusterCount - 1;
+					if (removeClusterIsEndOfRecordStream && !removedStartCluster) {
+						// since we're moving the end block of the record stream, we need notify this removal now
+						// since the record stream needs to be usable during this loop since event handlers
+						// may require access to records. This notification ensures the record seeker is updated.
+						// To ensure the below doesn't re-do this notification we rely on alreadyNotifiedEndClusterMoved.
+						FastMaskClusterTraits(lastRemovedPrev, ClusterTraits.End, true);
+						FastWriteClusterNext(lastRemovedPrev, -1);
+						NotifyClusterChainEndChanged(lastRemovedPrev, -1, -1);
+						alreadyNotifiedEndClusterMoved = true;
+					}
+					MigrateTipClusterTo(tipClusterIndex, removeCluster);
+					// if the deleted cluster's previous was the tip cluster moved into the deleted clusters spot
+					// then it follows that the deleted cluster's previous is now where the deleted was cluster was
+					if (removedBlockPreviousIsTip && !removedStartCluster)
+						lastRemovedPrev = removeCluster;
 
-				clustersRemoved++;
-				if (!removedStartCluster) {
-					removeCluster = lastRemovedPrev == logicalClusterCount - 1  ? removeCluster : lastRemovedPrev;
-					// TODO: use this once tests passing: removeCluster = lastRemovedPrev;
+					clustersRemoved++;
+					if (!removedStartCluster) {
+						removeCluster = lastRemovedPrev;
+						//removeCluster = lastRemovedPrev == logicalClusterCount - 1  ? removeCluster : lastRemovedPrev;
+						// TODO: use this once tests passing: removeCluster = lastRemovedPrev;
+					}
 				}
-  			}
-
+			} finally {
+				PreventClusterNavigation = false;
+			}
 			long? terminalValue = null;
 			if (removedStartCluster && fromWasEnd) {
 				// removed entire chain, nothing to do
@@ -219,14 +230,14 @@ internal class ClusterContainer<TInner> : IClusterContainer where TInner : IExte
 				// A -> B -> [C] -> [D] -> [E] 
 				// - set B.Traits.Last = true
 				// - set B.Next = E.Next (terminal value propagates)
-				
+
 				terminalValue = fromNext;
 				FastWriteClusterNext(lastRemovedPrev, fromNext);
 				if (!alreadyNotifiedEndClusterMoved) {
 					FastMaskClusterTraits(lastRemovedPrev, ClusterTraits.End, true);
 					NotifyClusterChainEndChanged(lastRemovedPrev, terminalValue.Value, -clustersRemoved); // we already notified in above loop
 				}
-			} else { 
+			} else {
 				// removed from middle to middle
 				// A -> [B] -> [C] -> [D] -> E 
 				// - set A.Next = E
@@ -235,7 +246,7 @@ internal class ClusterContainer<TInner> : IClusterContainer where TInner : IExte
 				terminalValue = null;
 				FastWriteClusterNext(lastRemovedPrev, fromNext);
 				FastWriteClusterPrev(fromNext, lastRemovedPrev);
-			} 
+			}
 
 			// finally remove the old clusters from collection
 			_clusters.RemoveRange(_clusters.Count - clustersRemoved, clustersRemoved);
@@ -257,7 +268,6 @@ internal class ClusterContainer<TInner> : IClusterContainer where TInner : IExte
 		Guard.ArgumentInRange(to, 0, _clusters.Count - 1, nameof(to));
 		Guard.Argument(to <= tipClusterIndex, nameof(to), $"Cannot be greater than {nameof(tipClusterIndex)}");
 
-
 		// If migrating to self, do nothing
 		if (to == tipClusterIndex)
 			return;
@@ -272,7 +282,7 @@ internal class ClusterContainer<TInner> : IClusterContainer where TInner : IExte
 		//  (1) C.Next = B   (iff D is not Start)
 		//  (2) E.Previous = B  (iff D is not End)
 		long? terminalValue = null;
-		if (!tipWasFirstCluster)  {
+		if (!tipWasFirstCluster) {
 			FastWriteClusterNext(tipCluster.Prev, to); // (1)
 		} else {
 			terminalValue = tipCluster.Prev;
@@ -287,7 +297,7 @@ internal class ClusterContainer<TInner> : IClusterContainer where TInner : IExte
 		_clusters.Update(to, tipCluster);
 
 		NotifyClusterMoved(tipClusterIndex, to, tipCluster.Traits, terminalValue);
-	
+
 	}
 
 	protected virtual Cluster CreateCluster() => new() {
@@ -300,7 +310,7 @@ internal class ClusterContainer<TInner> : IClusterContainer where TInner : IExte
 
 	#region Fast Mutators
 
-	public virtual ClusterTraits FastReadClusterTraits(long clusterIndex) 
+	public virtual ClusterTraits FastReadClusterTraits(long clusterIndex)
 		=> _clusters[clusterIndex].Traits;
 
 	public virtual void FastWriteClusterTraits(long clusterIndex, ClusterTraits traits) {
@@ -308,25 +318,25 @@ internal class ClusterContainer<TInner> : IClusterContainer where TInner : IExte
 		cluster.Traits = traits;
 		_clusters[clusterIndex] = cluster;
 	}
-	
+
 	public virtual void FastMaskClusterTraits(long clusterIndex, ClusterTraits traits, bool on) {
 		var cluster = _clusters[clusterIndex];
 		cluster.Traits = cluster.Traits.CopyAndSetFlags(traits, on);
 		_clusters[clusterIndex] = cluster;
 	}
 
-	public virtual long FastReadClusterPrev(long clusterIndex) 
+	public virtual long FastReadClusterPrev(long clusterIndex)
 		=> _clusters[clusterIndex].Prev;
-	
+
 	public virtual void FastWriteClusterPrev(long clusterIndex, long prev) {
 		var cluster = _clusters[clusterIndex];
 		cluster.Prev = prev;
 		_clusters[clusterIndex] = cluster;
 	}
 
-	public virtual long FastReadClusterNext(long clusterIndex) 
+	public virtual long FastReadClusterNext(long clusterIndex)
 		=> _clusters[clusterIndex].Next;
-	
+
 	public virtual void FastWriteClusterNext(long clusterIndex, long next) {
 		var cluster = _clusters[clusterIndex];
 		cluster.Next = next;
@@ -343,7 +353,7 @@ internal class ClusterContainer<TInner> : IClusterContainer where TInner : IExte
 		_clusters[clusterIndex] = cluster;
 	}
 
-	public long CalculateClusterChainLength(long byteLength)  => (long)Math.Ceiling(byteLength / (double)ClusterSize);
+	public long CalculateClusterChainLength(long byteLength) => (long)Math.Ceiling(byteLength / (double)ClusterSize);
 
 	public string ToStringFullContents() {
 		var stringBuilder = new StringBuilder();
@@ -359,29 +369,47 @@ internal class ClusterContainer<TInner> : IClusterContainer where TInner : IExte
 	#region Event Notifiers
 
 	private void NotifyClusterCountChanged(long countDelta, long? terminalValue) {
+		if (SuppressEvents)
+			return;
+
 		ClusterCountChanged?.Invoke(this, countDelta, terminalValue);
 	}
 
 	private void NotifyClusterChainCreated(long startCluster, long endCluster, long clusterCount, long terminalValue) {
+		if (SuppressEvents)
+			return;
+
 		ClusterChainCreated?.Invoke(this, startCluster, endCluster, clusterCount, terminalValue);
 	}
 
 	private void NotifyClusterChainStartChanged(long cluster, long terminalValue, long clusterCountDelta) {
+		if (SuppressEvents)
+			return;
+
 		ClusterChainStartChanged?.Invoke(this, cluster, terminalValue, clusterCountDelta);
 	}
 
 	private void NotifyClusterChainEndChanged(long cluster, long terminalValue, long clusterCountDelta) {
+		if (SuppressEvents)
+			return;
+
 		ClusterChainEndChanged?.Invoke(this, cluster, terminalValue, clusterCountDelta);
 	}
 
 	private void NotifyClusterMoved(long fromCluster, long toCluster, ClusterTraits traits, long? terminalValue) {
+		if (SuppressEvents)
+			return;
+
 		ClusterMoved?.Invoke(this, fromCluster, toCluster, traits, terminalValue);
 	}
 
 	private void NotifyClusterChainRemoved(long terminalValue) {
+		if (SuppressEvents)
+			return;
+
 		ClusterChainRemoved?.Invoke(this, terminalValue);
 	}
-	
+
 	#endregion
 
 	#region Alternative Impl
@@ -476,8 +504,8 @@ public virtual long RemoveClustersFromEnd(long endCluster, long quantity) {
 
 }
 
-internal class ClusterContainer : ClusterContainer<IExtendedList<Cluster>> {
-	public ClusterContainer(IExtendedList<Cluster> clusters, int clusterSize)
+internal class ClusterMap : ClusterMap<IExtendedList<Cluster>> {
+	public ClusterMap(IExtendedList<Cluster> clusters, int clusterSize)
 		: base(clusters, clusterSize) {
 	}
 

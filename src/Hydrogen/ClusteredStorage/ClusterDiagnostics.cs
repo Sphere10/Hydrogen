@@ -63,9 +63,9 @@ internal static class ClusterDiagnostics {
 		return i;
 	}
 
-	public static void VerifyClusters(IClusterContainer clusterContainer) => VerifyClusters(clusterContainer.Clusters.ToArray(), null);
+	public static void VerifyClusters(IClusterMap clusterMap) => VerifyClusters(clusterMap.Clusters.ToArray(), null);
 
-	public static void VerifyClusters(IClusteredStorage clusteredStorage) => VerifyClusters(clusteredStorage.ClusterContainer.Clusters.ToArray(), clusteredStorage.Records.ToArray());
+	public static void VerifyClusters(IClusteredStorage clusteredStorage) => VerifyClusters(clusteredStorage.ClusterMap.Clusters.ToArray(), clusteredStorage.Records.ToArray());
 
 	public static void VerifyClusters(Cluster[] clusters, ClusteredStreamRecord[] records) {
 		Guard.ArgumentNotNull(clusters, nameof(clusters));
@@ -234,8 +234,8 @@ internal static class ClusterDiagnostics {
 
 	#region Seek reset verification
 
-	public static void VerifySeekResetStreamOptimized(IClusterContainer clusterContainer, long start, long end, long totalClusters, long terminalValue, long? currentCluster, long? currentIndex, ClusterTraits? currentTraits, HashSet<long> visitedClusters) {
-		bool IsValidCluster(long ix) => 0 <= ix && ix < clusterContainer.Clusters.Count;
+	public static void VerifySeekResetStreamOptimized(IClusterMap clusterMap, long start, long end, long totalClusters, long terminalValue, long? currentCluster, long? currentIndex, ClusterTraits? currentTraits, HashSet<long> visitedClusters) {
+		bool IsValidCluster(long ix) => 0 <= ix && ix < clusterMap.Clusters.Count;
 
 		if (start == -1 || end == -1 || totalClusters == 0) {
 			Guard.Ensure(start == -1, "Start cluster was not -1");
@@ -254,9 +254,9 @@ internal static class ClusterDiagnostics {
 				throw new InvalidOperationException($"Cluster {cluster} (index: {i}) has already been visited.");
 			}
 
-			var traits = clusterContainer.FastReadClusterTraits(cluster);
-			var prev = clusterContainer.FastReadClusterPrev(cluster);
-			var next = clusterContainer.FastReadClusterNext(cluster);
+			var traits = clusterMap.FastReadClusterTraits(cluster);
+			var prev = clusterMap.FastReadClusterPrev(cluster);
+			var next = clusterMap.FastReadClusterNext(cluster);
 
 			// ensure cluster doesn't point to itself
 			Guard.Against(!traits.HasFlag(ClusterTraits.Start) && prev == cluster, $"Cluster {cluster} prev pointer pointed to itself");
@@ -265,7 +265,7 @@ internal static class ClusterDiagnostics {
 			// check next pointer
 			if (!traits.HasFlag(ClusterTraits.End)) {
 				Guard.Ensure(IsValidCluster(next), $"Cluster {cluster} (index: {i}) next points to non-existent cluster: {next}.");
-				Guard.Ensure(clusterContainer.FastReadClusterPrev(next) == cluster, $"Cluster {cluster} (index: {i}) next cluster {next} does not point back to current cluster.");
+				Guard.Ensure(clusterMap.FastReadClusterPrev(next) == cluster, $"Cluster {cluster} (index: {i}) next cluster {next} does not point back to current cluster.");
 			} else {
 				Guard.Ensure(next == terminalValue, $"Cluster {cluster} (index: {i}) was marked End with terminal value was {next} but was expecting {terminalValue}");
 			}
@@ -273,7 +273,7 @@ internal static class ClusterDiagnostics {
 			// check previous pointer
 			if (!traits.HasFlag(ClusterTraits.Start)) {
 				Guard.Ensure(IsValidCluster(prev), $"Cluster {cluster} (index: {i}) prev points to non-existent cluster: {prev}.");
-				Guard.Ensure(clusterContainer.FastReadClusterNext(prev) == cluster, $"Cluster {cluster} (index: {i}) prev cluster {prev} does not point back to current cluster.");
+				Guard.Ensure(clusterMap.FastReadClusterNext(prev) == cluster, $"Cluster {cluster} (index: {i}) prev cluster {prev} does not point back to current cluster.");
 			} else {
 				Guard.Ensure(prev == terminalValue, $"Cluster {cluster} (index: {i}) was marked Start with terminal value was {prev} but was expecting {terminalValue}");
 			}

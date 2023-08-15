@@ -20,14 +20,14 @@ public class ClusteredContainerTests {
 
 	[Test]
 	public void EmptyOnActivation() {
-		var clusteredContainer = new ClusterContainer(new ExtendedList<Cluster>(), 1);
+		var clusteredContainer = new ClusterMap(new ExtendedList<Cluster>(), 1);
 		Assert.That(clusteredContainer.Clusters.Count, Is.EqualTo(0));
 	}
 
 
 	[Test]
 	public void SingleCluster() {
-		var clusteredContainer = new ClusterContainer(new ExtendedList<Cluster>(), 1);
+		var clusteredContainer = new ClusterMap(new ExtendedList<Cluster>(), 1);
 		clusteredContainer.NewClusterChain(1, 99);
 		Assert.That(clusteredContainer.Clusters.Count, Is.EqualTo(1));
 		var cluster = clusteredContainer.Clusters[0];
@@ -38,7 +38,7 @@ public class ClusteredContainerTests {
 
 	[Test]
 	public void TwoClusters() {
-		var clusteredContainer = new ClusterContainer(new ExtendedList<Cluster>(), 1);
+		var clusteredContainer = new ClusterMap(new ExtendedList<Cluster>(), 1);
 		clusteredContainer.NewClusterChain(2, 99);
 		Assert.That(clusteredContainer.Clusters.Count, Is.EqualTo(2));
 		var cluster1 = clusteredContainer.Clusters[0];
@@ -55,7 +55,7 @@ public class ClusteredContainerTests {
 
 	[Test]
 	public void TwoClusters_ViaAppend() {
-		var clusteredContainer = new ClusterContainer(new ExtendedList<Cluster>(), 1);
+		var clusteredContainer = new ClusterMap(new ExtendedList<Cluster>(), 1);
 		clusteredContainer.NewClusterChain(1, 99);
 		clusteredContainer.AppendClustersToEnd(0, 1);
 		Assert.That(clusteredContainer.Clusters.Count, Is.EqualTo(2));
@@ -74,7 +74,7 @@ public class ClusteredContainerTests {
 
 	[Test]
 	public void ThreeClusters_ExpandMiddle() {
-		var clusteredContainer = new ClusterContainer(new ExtendedList<Cluster>(), 1);
+		var clusteredContainer = new ClusterMap(new ExtendedList<Cluster>(), 1);
 		clusteredContainer.NewClusterChain(1, 99);
 		clusteredContainer.NewClusterChain(1, 88);
 		clusteredContainer.AppendClustersToEnd(0, 1);
@@ -100,7 +100,7 @@ public class ClusteredContainerTests {
 	public void FourClusters_ExpandMiddle() {
 		// Chain 1: [0]		then	[0,2]
 		// Chain 2: [1]		then	[1,3]
-		var clusteredContainer = new ClusterContainer(new ExtendedList<Cluster>(), 1);
+		var clusteredContainer = new ClusterMap(new ExtendedList<Cluster>(), 1);
 		clusteredContainer.NewClusterChain(1, 99);
 		clusteredContainer.NewClusterChain(1, 88);
 		clusteredContainer.AppendClustersToEnd(0, 1);
@@ -133,7 +133,7 @@ public class ClusteredContainerTests {
 	[Test]
 	public void RemoveAll_1() {
 		// chain 1 = [0]
-		var clusteredContainer = new ClusterContainer(new ExtendedList<Cluster>(), 1);
+		var clusteredContainer = new ClusterMap(new ExtendedList<Cluster>(), 1);
 		clusteredContainer.NewClusterChain(1, 99);
 		clusteredContainer.RemoveBackwards(0, 1);
 		Assert.That(clusteredContainer.Clusters.Count, Is.EqualTo(0));
@@ -143,7 +143,7 @@ public class ClusteredContainerTests {
 	public void RemoveFullChainEnd_1() {
 		// chain 1 = [0,1]
 		// chain 2 = [2]
-		var clusteredContainer = new ClusterContainer(new ExtendedList<Cluster>(), 1);
+		var clusteredContainer = new ClusterMap(new ExtendedList<Cluster>(), 1);
 		clusteredContainer.NewClusterChain(2, 99);
 		clusteredContainer.NewClusterChain(1, 88);
 		clusteredContainer.RemoveBackwards(1, 2);
@@ -159,7 +159,7 @@ public class ClusteredContainerTests {
 	public void RemoveFullChainEnd_2() {
 		// chain 1 = [0,2]
 		// chain 2 = [1]
-		var clusteredContainer = new ClusterContainer(new ExtendedList<Cluster>(), 1);
+		var clusteredContainer = new ClusterMap(new ExtendedList<Cluster>(), 1);
 		clusteredContainer.NewClusterChain(1, 99);
 		clusteredContainer.NewClusterChain(1, 88);
 		clusteredContainer.AppendClustersToEnd(0, 1);
@@ -176,7 +176,7 @@ public class ClusteredContainerTests {
 	public void RemoveFullChainEnd_2_ExtraQuantityNoEffect() {
 		// chain 1 = [0,2]
 		// chain 2 = [1]
-		var clusteredContainer = new ClusterContainer(new ExtendedList<Cluster>(), 1);
+		var clusteredContainer = new ClusterMap(new ExtendedList<Cluster>(), 1);
 		clusteredContainer.NewClusterChain(1, 99);
 		clusteredContainer.NewClusterChain(1, 88);
 		clusteredContainer.AppendClustersToEnd(0, 1);
@@ -192,7 +192,7 @@ public class ClusteredContainerTests {
 	public void RemoveFullChainEnd_3() {
 		// chain 1 = [0]
 		// chain 2 = [1,2]
-		var clusteredContainer = new ClusterContainer(new ExtendedList<Cluster>(), 1);
+		var clusteredContainer = new ClusterMap(new ExtendedList<Cluster>(), 1);
 		clusteredContainer.NewClusterChain(1, 99);
 		clusteredContainer.NewClusterChain(2, 88);
 		clusteredContainer.RemoveBackwards(2, 2);
@@ -205,7 +205,7 @@ public class ClusteredContainerTests {
 
 	[Test]
 	public void RemoveFromMiddle_1() {
-		var clusteredContainer = new ClusterContainer(new ExtendedList<Cluster>(), 1);
+		var clusteredContainer = new ClusterMap(new ExtendedList<Cluster>(), 1);
 		clusteredContainer.NewClusterChain(2, 99); // chain 1 = [0,1]
 		clusteredContainer.NewClusterChain(1, 88); // chain 2 = [2]
 		clusteredContainer.RemoveNextClusters(1, 1);  // chain 1 = [0], chain 2 = [1]
@@ -224,7 +224,7 @@ public class ClusteredContainerTests {
 
 	[Test]
 	public void RemoveFromMiddle_2() {
-		var clusteredContainer = new ClusterContainer(new ExtendedList<Cluster>(), 1);
+		var clusteredContainer = new ClusterMap(new ExtendedList<Cluster>(), 1);
 		clusteredContainer.NewClusterChain(1, 99); // chain 1 = [0]
 		clusteredContainer.NewClusterChain(2, 88); // chain 2 = [1,2]
 		clusteredContainer.RemoveNextClusters(1, 1);  // chain 1 = [0], chain 2 = [1]
@@ -244,7 +244,7 @@ public class ClusteredContainerTests {
 
 	[Test]
 	public void RemoveFromMiddle_3() {
-		var clusteredContainer = new ClusterContainer(new ExtendedList<Cluster>(), 1);
+		var clusteredContainer = new ClusterMap(new ExtendedList<Cluster>(), 1);
 		clusteredContainer.NewClusterChain(1, 99); // chain 1 = [0]
 		clusteredContainer.NewClusterChain(1, 88); // chain 2 = [1]
 		clusteredContainer.AppendClustersToEnd(0, 1);  // chain 1 = [0, 2], chain 2 = [1]
@@ -273,7 +273,7 @@ public class ClusteredContainerTests {
 
 		// chain1 = [0,1,2]
 		// chain3 = [3,4,5]
-		var clusteredContainer = new ClusterContainer(new ExtendedList<Cluster>(), 1);
+		var clusteredContainer = new ClusterMap(new ExtendedList<Cluster>(), 1);
 		clusteredContainer.NewClusterChain(3, 99); // chain 1 = [0,1,2]
 		clusteredContainer.NewClusterChain(3, 88); // chain 2 = [3,4,5]
 		clusteredContainer.NewClusterChain(3, 77); // chain 3 = [6,7,8]
@@ -316,7 +316,7 @@ public class ClusteredContainerTests {
 	public void RemoveInterspersed() {
 		// Chain 1: [0,2]		-> [0, 1]
 		// Chain 2: [1,3]		-> removed
-		var clusteredContainer = new ClusterContainer(new ExtendedList<Cluster>(), 1);
+		var clusteredContainer = new ClusterMap(new ExtendedList<Cluster>(), 1);
 		clusteredContainer.NewClusterChain(1, 99);
 		clusteredContainer.NewClusterChain(1, 88);
 		clusteredContainer.AppendClustersToEnd(0, 1);

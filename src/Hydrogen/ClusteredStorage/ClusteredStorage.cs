@@ -25,14 +25,14 @@ namespace Hydrogen;
 /// also serves as the base container for implementations of <see cref="IStreamMappedList{TItem}"/>'s, <see cref="IStreamMappedDictionary{TKey,TValue}"/>'s and <see cref="IStreamMappedHashSet{TItem}"/>'s.
 /// <remarks>
 /// The structure of the underlying stream is depicted below:
-/// [HEADER] Version: 1, Cluster Size: 32, Total ClusterContainer: 10, Records: 5
+/// [HEADER] Version: 1, Cluster Size: 32, Total ClusterMap: 10, Records: 5
 /// [Records]
 ///   0: [StreamRecord] Size: 60, Start Cluster: 3
 ///   1: [StreamRecord] Size: 88, Start Cluster: 7
 ///   2: [StreamRecord] Size: 27, Start Cluster: 2
 ///   3: [StreamRecord] Size: 43, Start Cluster: 1
 ///   4: [StreamRecord] Size: 0, Start Cluster: -1
-/// [ClusterContainer]
+/// [ClusterMap]
 ///   0: [Cluster] Traits: First, Record, Prev: -1, Next: 6, Data: 030000003c0000000700000058000000020000001b000000010000002b000000
 ///   1: [Cluster] Traits: First, Data, Prev: 3, Next: 5, Data: 894538851b6655bb8d8a4b4517eaab2b22ada63e6e0000000000000000000000
 ///   2: [Cluster] Traits: First, Data, Prev: 2, Next: -1, Data: 1e07b1f66b3a237ed9f438ec26093ca50dd05b798baa7de25f093f0000000000
@@ -46,12 +46,12 @@ namespace Hydrogen;
 ///
 ///  Notes:
 ///  - Header is fixed 256b, and can be expanded to include other data (passwords, merkle roots, etc).
-///  - ClusterContainer are bi-directionally linked, to allow dynamic re-sizing on the fly. 
+///  - ClusterMap are bi-directionally linked, to allow dynamic re-sizing on the fly. 
 ///  - Records contain the meta-data of all the streams and the entire records stream is also serialized over clusters.
 ///  - Cluster traits distinguish record clusters from stream clusters. 
 ///  - Cluster 0, when allocated, is always the first record cluster.
 ///  - Records always link to the (First | Data) cluster of their stream.
-///  - ClusterContainer with traits (First | Data) re-purpose the Prev field to denote the record.
+///  - ClusterMap with traits (First | Data) re-purpose the Prev field to denote the record.
 /// </remarks>
 public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 	internal const long NullCluster = -1L;
@@ -64,11 +64,12 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 	public event EventHandlerEx<long, long> RecordSizeChanged;
 	public event EventHandlerEx<long> RecordRemoved;
 
-	private StreamMappedClusterContainer _clusters;
+	private StreamMappedClusterMap _clusters;
 	private UpdateOnlyList<ClusteredStreamRecord, StreamPagedList<ClusteredStreamRecord>> _records;
 	private ICache<long, ClusteredStreamRecord> _recordCache;
 	private ClusteredStorageHeader _header;
 	private readonly HashSet<long> _openScopes;
+	
 
 	private bool _initialized;
 	private readonly Stream _rootStream;
@@ -78,8 +79,8 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 	private readonly bool _integrityChecks;
 	private readonly bool _preAllocateOptimization;
 	private int _clusterEnvelopeSize;
-	private SynchronizedObject _syncRoot;
-	private bool _isClearing;
+	private readonly SynchronizedObject _syncRoot;
+	private bool _suppressEvents;
 
 	public ClusteredStorage(Stream rootStream, int clusterSize = HydrogenDefaults.ClusterSize, ClusteredStoragePolicy policy = ClusteredStoragePolicy.Default, long recordKeySize = 0, long reservedRecords = 0, Endianness endianness = Endianness.LittleEndian, bool autoLoad = false) {
 		Guard.ArgumentNotNull(rootStream, nameof(rootStream));
@@ -101,7 +102,7 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 		_initialized = false;
 		_syncRoot = new SynchronizedObject();
 		_openScopes = new HashSet<long>();
-		_isClearing = false;
+		_suppressEvents = false;
 		if (autoLoad)
 			Load();
 	}
@@ -172,7 +173,7 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 		}
 	}
 
-	public IClusterContainer ClusterContainer {
+	public IClusterMap ClusterMap {
 		get {
 			CheckInitialized();
 			return _clusters;
@@ -195,6 +196,14 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 	}
 
 	private ReadOnlyMemory<byte> ZeroClusterBytes { get; }
+
+	public bool SuppressEvents {
+		get => _suppressEvents && _clusters.SuppressEvents;
+		set {
+			_suppressEvents = value;
+			_clusters.SuppressEvents = value;
+		}
+	}
 
 	#region Initialization & Loading
 	
@@ -229,38 +238,38 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 		}
 		Guard.Ensure(_header.ClusterSize == _clusterSize, $"Inconsistent cluster size {_clusterSize} (stream header had '{_header.ClusterSize}')");
 
-		// ClusterContainer
+		// ClusterMap
 		// - stored in a StreamPagedList (single page, statically sized items)
 		// - when a start/end cluster is moved, we must update the record that points to it (the record is stored as the terminal values of a cluster chain)
 		ClusterEnvelopeSize = checked((int)clusterSerializer.StaticSize) - _header.ClusterSize; // the serializer includes the envelope, the header is the data size
-		_clusters = new StreamMappedClusterContainer(_rootStream, ClusteredStorageHeader.ByteLength, clusterSerializer, Endianness, autoLoad: true);
+		_clusters = new StreamMappedClusterMap(_rootStream, ClusteredStorageHeader.ByteLength, clusterSerializer, Endianness, autoLoad: true);
 		_clusters.ParentSyncObject = this;
 		_clusters.ClusterCountChanged += (_, clusterCountDelta, _) => Header.TotalClusters += clusterCountDelta;   // track total clusters in header
 		
 		// track item stream start/end in record stream
 		_clusters.ClusterChainCreated += (_, startCluster, endCluster, _, terminalValue) => {
-			if (terminalValue != -1 && !_isClearing) {
+			if (terminalValue != -1) {
 				CheckWriteLocked();
 				FastWriteRecordStartCluster(terminalValue, startCluster);
 				FastWriteRecordEndCluster(terminalValue, endCluster);
 			}
 		};
 		_clusters.ClusterChainStartChanged += (_, cluster, terminalValue, _) => {
-			if (terminalValue != -1 && !_isClearing) {
+			if (terminalValue != -1) {
 				CheckWriteLocked();
 				FastWriteRecordStartCluster(terminalValue, cluster);
 				_recordCache?.Invalidate(terminalValue);
 			}
 		};
 		_clusters.ClusterChainEndChanged += (_, cluster, terminalValue, _) => {
-			if (terminalValue != -1 && !_isClearing) {
+			if (terminalValue != -1) {
 				CheckWriteLocked();
 				FastWriteRecordEndCluster(terminalValue, cluster);
 				_recordCache?.Invalidate(terminalValue);
 			}
 		};
 		_clusters.ClusterMoved += (_, fromCluster, toCluster, traits, terminalValue) => {
-			if (terminalValue.HasValue && terminalValue != -1 && !_isClearing) {
+			if (terminalValue.HasValue && terminalValue != -1) {
 				CheckWriteLocked();
 				if (traits.HasFlag(ClusterTraits.Start))
 					FastWriteRecordStartCluster(terminalValue.Value, toCluster);
@@ -270,7 +279,7 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 			}
 		};
 		_clusters.ClusterChainRemoved += (_, terminalValue) => {
-			if (terminalValue != -1 && !_isClearing) {
+			if (terminalValue != -1) {
 				CheckWriteLocked();
 				FastWriteRecordStartCluster(terminalValue, -1);
 				FastWriteRecordEndCluster(terminalValue, -1);
@@ -303,7 +312,7 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 
 		// track record stream end cluster in header
 		_clusters.ClusterChainCreated += (_, startCluster, endCluster, _, terminalValue) => {
-			if (terminalValue == -1 && !_isClearing) {
+			if (terminalValue == -1) {
 				CheckWriteLocked();
 				Guard.Ensure(startCluster == 0, $"Record chain created with invalid start cluster {startCluster}.");
 				Header.RecordsEndCluster = endCluster;
@@ -313,13 +322,13 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 			Guard.Against(terminalValue == -1, "Record cluster chain start cannot be changed");
 		};
 		_clusters.ClusterChainEndChanged += (_, cluster, terminalValue, _) => {
-			if (terminalValue == -1 && !_isClearing) {
+			if (terminalValue == -1) {
 				CheckWriteLocked();
 				Header.RecordsEndCluster = cluster;
 			}
 		};
 		_clusters.ClusterMoved += (_, fromCluster, toCluster, traits, terminalValue) => {
-			if (terminalValue == -1 && !_isClearing) {
+			if (terminalValue == -1) {
 				CheckWriteLocked();
 				Guard.Against(traits.HasFlag(ClusterTraits.Start), "Record cluster chain start cannot be moved");
 				Guard.Ensure(traits.HasFlag(ClusterTraits.End), "Only end of record cluster chain can be moved");
@@ -327,7 +336,7 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 			}
 		};
 		_clusters.ClusterChainRemoved += (_, terminalValue) => {
-			if (terminalValue == -1 && !_isClearing) {
+			if (terminalValue == -1) {
 				CheckWriteLocked();
 				Header.RecordsEndCluster = -1;
 			}
@@ -335,9 +344,10 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 
 		// track record stream length in header
 		recordsFragmentProvider.StreamLengthChanged += (_, newLength) => {
-			CheckWriteLocked();
-			if (_isClearing)
+			if (_suppressEvents) // event generated from fragment provider
 				return;
+
+			CheckWriteLocked();
 			_header.RecordsCount = newLength / recordSerializer.StaticSize;
 		};
 
@@ -532,12 +542,11 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 		}
 	}
 
-
 	public void Clear() {
 		CheckInitialized();
 		using (EnterWriteScope()) {
 			CheckNoOpenScopes();
-			_isClearing = true;
+			SuppressEvents = true;
 			try {
 				_records.Clear();
 				_recordCache?.Flush();
@@ -548,7 +557,7 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 				Header.ResetMerkleRoot();
 				CreateReservedRecords();
 			} finally {
-				_isClearing = false;
+				SuppressEvents = false;
 			}
 			#if ENABLE_CLUSTER_DIAGNOSTICS
 			ClusterDiagnostics.VerifyClusters(this);
@@ -583,7 +592,7 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 				stringBuilder.AppendLine($"\t{i}: {record}");
 			}
 			stringBuilder.AppendLine("Cluster Container:");
-			stringBuilder.AppendLine(ClusterContainer.ToStringFullContents());
+			stringBuilder.AppendLine(ClusterMap.ToStringFullContents());
 			return stringBuilder.ToString();
 		}
 	}
@@ -751,34 +760,55 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 	}
 
 	private void NotifyRecordCreated(ClusteredStreamRecord record) {
+		if (_suppressEvents)
+			return;
+
 		OnRecordCreated(record);
 		RecordCreated?.Invoke(record);
 	}
 
 	private void NotifyRecordAdded(long index, ClusteredStreamRecord record) {
+		if (_suppressEvents)
+			return;
+
 		OnRecordAdded(index, record);
 		RecordAdded?.Invoke(index, record);
 	}
 
 	private void NotifyRecordInserted(long index, ClusteredStreamRecord record) {
+		if (_suppressEvents)
+			return;
+
 		OnRecordInserted(index, record);
 		RecordInserted?.Invoke(index, record);
 	}
 
 	private void NotifyRecordUpdated(long index, ClusteredStreamRecord record) {
+		if (_suppressEvents)
+			return;
+
 		OnRecordUpdated(index, record);
 		RecordUpdated?.Invoke(index, record);
 	}
 
 	private void NotifyRecordSwapped(long record1Index, ClusteredStreamRecord record1Data, long record2Index, ClusteredStreamRecord record2Data) {
+		if (_suppressEvents)
+			return;
+
 		RecordSwapped?.Invoke((record1Index, record1Data), (record2Index, record2Data));
 	}
 
 	private void NotifyRecordSizeChanged(long index, long newSize) {
+		if (_suppressEvents)
+			return;
+
 		RecordSizeChanged?.Invoke(index, newSize);
 	}
 
 	private void NotifyRecordRemoved(long index) {
+		if (_suppressEvents)
+			return;
+
 		OnRecordRemoved(index);
 		RecordRemoved?.Invoke(index);
 	}

@@ -32,7 +32,7 @@ public interface IClusteredStorage : ILoadable, ISynchronizedObject {
 
 	IReadOnlyList<ClusteredStreamRecord> Records { get; }
 
-	IClusterContainer ClusterContainer { get; }
+	IClusterMap ClusterMap { get; }
 
 	Endianness Endianness { get; }
 

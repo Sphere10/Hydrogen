@@ -19,21 +19,21 @@ public class ClusteredStreamScope : IDisposable {
 		Record = clusteredStorage.GetRecord(recordIndex);
 		ReadOnly = readOnly;
 		_fragmentProvider = new ClusteredStreamFragmentProvider(
-			_clusteredStorage.ClusterContainer, 
+			_clusteredStorage.ClusterMap, 
 			recordIndex, 
 			Record.Size, () =>  {
 				var rec = clusteredStorage.GetRecord(recordIndex);
-				return new ClusterChain { StartCluster = rec.StartCluster, EndCluster = rec.EndCluster, TotalClusters = clusteredStorage.ClusterContainer.CalculateClusterChainLength(rec.Size)};
+				return new ClusterChain { StartCluster = rec.StartCluster, EndCluster = rec.EndCluster, TotalClusters = clusteredStorage.ClusterMap.CalculateClusterChainLength(rec.Size)};
 			}
 		);
 
 		// subscribing to the container events ensures that any shuffles of this record start/end cluster (caused by another opened stream)
 		// will necessarily update this scope's record
-		_clusteredStorage.ClusterContainer.ClusterChainCreated += ClusterChainCreatedHandler;
-		_clusteredStorage.ClusterContainer.ClusterChainRemoved += ClusterChainRemovedHandler;
-		_clusteredStorage.ClusterContainer.ClusterChainStartChanged += ClusterChainStartChangedHandler;
-		_clusteredStorage.ClusterContainer.ClusterChainEndChanged += ClusterChainEndChangedHandler;
-		_clusteredStorage.ClusterContainer.ClusterMoved += ClusterMovedHandler;
+		_clusteredStorage.ClusterMap.ClusterChainCreated += ClusterChainCreatedHandler;
+		_clusteredStorage.ClusterMap.ClusterChainRemoved += ClusterChainRemovedHandler;
+		_clusteredStorage.ClusterMap.ClusterChainStartChanged += ClusterChainStartChangedHandler;
+		_clusteredStorage.ClusterMap.ClusterChainEndChanged += ClusterChainEndChangedHandler;
+		_clusteredStorage.ClusterMap.ClusterMoved += ClusterMovedHandler;
 		_clusteredStorage.RecordSwapped += RecordSwappedHandler;
 
 		// track when stream length changes so we can update the scope's record
@@ -60,11 +60,11 @@ public class ClusteredStreamScope : IDisposable {
 	public Stream Stream { get; }
 
 	public void Dispose() {
-		_clusteredStorage.ClusterContainer.ClusterChainCreated -= ClusterChainCreatedHandler;
-		_clusteredStorage.ClusterContainer.ClusterChainRemoved -= ClusterChainRemovedHandler;
-		_clusteredStorage.ClusterContainer.ClusterChainStartChanged -= ClusterChainStartChangedHandler;
-		_clusteredStorage.ClusterContainer.ClusterChainEndChanged -= ClusterChainEndChangedHandler;
-		_clusteredStorage.ClusterContainer.ClusterMoved -= ClusterMovedHandler;
+		_clusteredStorage.ClusterMap.ClusterChainCreated -= ClusterChainCreatedHandler;
+		_clusteredStorage.ClusterMap.ClusterChainRemoved -= ClusterChainRemovedHandler;
+		_clusteredStorage.ClusterMap.ClusterChainStartChanged -= ClusterChainStartChangedHandler;
+		_clusteredStorage.ClusterMap.ClusterChainEndChanged -= ClusterChainEndChangedHandler;
+		_clusteredStorage.ClusterMap.ClusterMoved -= ClusterMovedHandler;
 		_clusteredStorage.RecordSwapped -= RecordSwappedHandler;
 		Stream.Dispose();
 		if (!ReadOnly) {
@@ -72,7 +72,7 @@ public class ClusteredStreamScope : IDisposable {
 		}
 		_finalizeAction?.Invoke();
 		#if ENABLE_CLUSTER_DIAGNOSTICS
-		ClusterDiagnostics.VerifyClusters(_clusteredStorage.ClusterContainer);
+		ClusterDiagnostics.VerifyClusters(_clusteredStorage.ClusterMap);
 		#endif
 	}
 

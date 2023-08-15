@@ -9,7 +9,7 @@ public delegate void ClusterChainRemovedEventHandler(object sender, long termina
 public delegate void ClusterChainBoundaryMovedEventHandler(object sender, long cluster, long terminalValue, long clusterCountDelta);
 public delegate void ClusterMovedEventHandler(object sender, long fromCluster, long toCluster, ClusterTraits traits, long? terminalValue);
 
-public interface IClusterContainer : ISynchronizedObject {
+public interface IClusterMap : ISynchronizedObject {
 	event ClustersCountChangedEventHandler ClusterCountChanged;
 	event ClusterChainCreatedEventHandler ClusterChainCreated;
 	event ClusterChainRemovedEventHandler ClusterChainRemoved;
@@ -22,6 +22,8 @@ public interface IClusterContainer : ISynchronizedObject {
 	public int ClusterSize { get; }
 
 	public byte[] ZeroClusterBytes { get; }
+
+	public bool PreventClusterNavigation { get; set; }
 
 	(long, long) NewClusterChain(long quantity, long terminalValue);
 

@@ -5,11 +5,11 @@ using System.Threading.Tasks;
 
 namespace Hydrogen;
 
-internal class StreamMappedClusterContainer : ClusterContainer<StreamPagedList<Cluster>>, ILoadable {
+internal class StreamMappedClusterMap : ClusterMap<StreamPagedList<Cluster>>, ILoadable {
 	public event EventHandlerEx<object> Loading { add => _clusters.InternalCollection.Loading += value; remove => _clusters.InternalCollection.Loading -= value; }
 	public event EventHandlerEx<object> Loaded { add => _clusters.InternalCollection.Loaded += value; remove => _clusters.InternalCollection.Loaded -= value; }
 
-	public StreamMappedClusterContainer(Stream rootStream, long offset, ClusterSerializer clusterSerializer, Endianness endianness = HydrogenDefaults.Endianness, bool autoLoad = false) 
+	public StreamMappedClusterMap(Stream rootStream, long offset, ClusterSerializer clusterSerializer, Endianness endianness = HydrogenDefaults.Endianness, bool autoLoad = false) 
 		: base( 
 			new StreamPagedList<Cluster>(
 				clusterSerializer,

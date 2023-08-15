@@ -6,17 +6,17 @@
 //namespace Hydrogen;
 
 ///// <summary>
-///// Used to track a (very large) logical sequence of clusters within a <see cref="ClusterContainer{TInner}"/>.
+///// Used to track a (very large) logical sequence of clusters within a <see cref="ClusterMap{TInner}"/>.
 ///// </summary>
 //internal class ClusterSeeker : IDisposable {
 //	// TODO: optimizations include:
 //	// - Intelligent memoization of LogicalCluster -> Cluster. Algorithm should strive for equidistant memoization along chain, eg. max 1024
 //	//   this would minimize seek-time on reused streams.
 
-//	private readonly IClusterContainer _clusters;
+//	private readonly IClusterMap _clusters;
 
-//	public ClusterSeeker(IClusterContainer clusteredContainer, long startCluster, long endCluster, long totalClusters, long terminalValue) {
-//		_clusters = clusteredContainer;
+//	public ClusterSeeker(IClusterMap clusteredMap, long startCluster, long endCluster, long totalClusters, long terminalValue) {
+//		_clusters = clusteredMap;
 //		// The seeker needs to be reset whenever a start/end cluster in the cluster chain is changed
 //		_clusters.ClusterChainCreated += ClusteredChainCreatedHandler;
 //		_clusters.ClusterChainStartChanged += ClusteredChainStartChangedHandler;

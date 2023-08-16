@@ -1,8 +1,6 @@
 ﻿using System;
 using System.IO;
 
-
-
 namespace Hydrogen;
 
 public class ClusteredStreamScope : IDisposable {
@@ -21,20 +19,11 @@ public class ClusteredStreamScope : IDisposable {
 		_fragmentProvider = new ClusteredStreamFragmentProvider(
 			_clusteredStorage.ClusterMap, 
 			recordIndex, 
-			Record.Size, () =>  {
-				var rec = clusteredStorage.GetRecord(recordIndex);
-				return new ClusterChain { StartCluster = rec.StartCluster, EndCluster = rec.EndCluster, TotalClusters = clusteredStorage.ClusterMap.CalculateClusterChainLength(rec.Size)};
-			}
+			Record.Size,
+			Record.StartCluster,
+			Record.EndCluster,
+			clusteredStorage.ClusterMap.CalculateClusterChainLength(Record.Size)
 		);
-
-		// subscribing to the container events ensures that any shuffles of this record start/end cluster (caused by another opened stream)
-		// will necessarily update this scope's record
-		_clusteredStorage.ClusterMap.ClusterChainCreated += ClusterChainCreatedHandler;
-		_clusteredStorage.ClusterMap.ClusterChainRemoved += ClusterChainRemovedHandler;
-		_clusteredStorage.ClusterMap.ClusterChainStartChanged += ClusterChainStartChangedHandler;
-		_clusteredStorage.ClusterMap.ClusterChainEndChanged += ClusterChainEndChangedHandler;
-		_clusteredStorage.ClusterMap.ClusterMoved += ClusterMovedHandler;
-		_clusteredStorage.RecordSwapped += RecordSwappedHandler;
 
 		// track when stream length changes so we can update the scope's record
 		if (!readOnly) {
@@ -49,8 +38,6 @@ public class ClusteredStreamScope : IDisposable {
 			Stream = Stream.AsReadOnly();
 	}
 
-
-
 	public bool ReadOnly { get; }
 
 	public long RecordIndex { get; private set;}
@@ -59,13 +46,49 @@ public class ClusteredStreamScope : IDisposable {
 
 	public Stream Stream { get; }
 
+	public void ProcessClusterMapChanged(ClusterMapChangedEventArgs changedEvent) {
+		
+		// Track any changes to the record's start/end cluster arising from migrating tips
+		if (changedEvent.MovedTerminals.TryGetValue(RecordIndex, out var newTerminal)) {
+			if (newTerminal.NewStart.HasValue)
+				Record.StartCluster = newTerminal.NewStart.Value;
+			
+			if (newTerminal.NewEnd.HasValue)
+				Record.EndCluster = newTerminal.NewEnd.Value;
+		}
+
+		if (changedEvent.ChainTerminal == RecordIndex) {
+			if (changedEvent.AddedChain) {
+				Record.StartCluster = changedEvent.ChainNewStartCluster.Value;
+				Record.EndCluster = changedEvent.ChainNewEndCluster.Value;
+				// Size is determined by fragment provider event
+			} else if (changedEvent.RemovedChain) {
+				Record.StartCluster = -1;
+				Record.EndCluster = -1;
+				Record.Size = 0;
+			} else if (changedEvent.IncreasedChainSize || changedEvent.DecreasedChainSize) {
+				Record.EndCluster = changedEvent.ChainNewEndCluster.Value;
+			}
+		}
+
+		
+		// Inform fragment provider of the changes
+		_fragmentProvider.ProcessClusterMapChanged(changedEvent);
+	}
+
+	public void ProcessRecordSwapped(long record1Index, ClusteredStreamRecord record1Data, long record2Index, ClusteredStreamRecord record2Data) {
+		if (RecordIndex == record1Index) {
+			RecordIndex = record2Index;
+			_fragmentProvider.LogicalRecordID = record2Index;
+		}
+		else if (RecordIndex == record2Index) {
+			RecordIndex = record1Index;
+			_fragmentProvider.LogicalRecordID = record1Index;
+		}
+		_fragmentProvider.ProcessRecordSwapped(record1Index, record1Data, record2Index, record2Data);
+	}
+
 	public void Dispose() {
-		_clusteredStorage.ClusterMap.ClusterChainCreated -= ClusterChainCreatedHandler;
-		_clusteredStorage.ClusterMap.ClusterChainRemoved -= ClusterChainRemovedHandler;
-		_clusteredStorage.ClusterMap.ClusterChainStartChanged -= ClusterChainStartChangedHandler;
-		_clusteredStorage.ClusterMap.ClusterChainEndChanged -= ClusterChainEndChangedHandler;
-		_clusteredStorage.ClusterMap.ClusterMoved -= ClusterMovedHandler;
-		_clusteredStorage.RecordSwapped -= RecordSwappedHandler;
 		Stream.Dispose();
 		if (!ReadOnly) {
 			_clusteredStorage.UpdateRecord(RecordIndex, Record);
@@ -78,56 +101,6 @@ public class ClusteredStreamScope : IDisposable {
 
 	private void NotifyRecordSizeChanged(long newSize) {
 		RecordSizeChanged?.Invoke(newSize);
-	}
-
-	private void ClusterChainCreatedHandler(object sender, long startCluster, long endCluster, long totalClusters, long terminalValue) {
-		if (terminalValue == RecordIndex) {
-			Record.StartCluster = startCluster;
-			Record.EndCluster = endCluster;
-			// Size is determined by fragment provider event
-		}
-	}
-
-	private void ClusterChainRemovedHandler(object sender, long terminalValue) {
-		if (terminalValue == RecordIndex) {
-			Record.StartCluster = -1;
-			Record.EndCluster = -1;
-			Record.Size = 0;
-		}
-	}
-
-	private void ClusterChainStartChangedHandler(object sender, long cluster, long terminalValue, long clusterCountDelta) {
-		if (terminalValue == RecordIndex) {
-			Record.StartCluster = cluster; // update local record copy with new start cluster
-		}
-	}
-
-	private void ClusterChainEndChangedHandler(object sender, long cluster, long terminalValue, long clusterCountDelta) {
-		if (terminalValue == RecordIndex) {
-			Record.EndCluster = cluster; // update local record copy with new end cluster
-		}
-	}
-	
-	private void ClusterMovedHandler(object sender, long fromCluster, long toCluster, ClusterTraits traits, long? terminalValue) {
-		if (terminalValue == RecordIndex) {
-			if (traits.HasFlag(ClusterTraits.Start)) {
-				Record.StartCluster = toCluster;
-			}
-			if (traits.HasFlag(ClusterTraits.End)) {
-				Record.EndCluster = toCluster;
-			}
-		}
-	}
-
-	private void RecordSwappedHandler((long index, ClusteredStreamRecord data) record1, (long index, ClusteredStreamRecord data) record2) {
-		if (RecordIndex == record1.index) {
-			RecordIndex = record2.index;
-			_fragmentProvider.LogicalRecordID = record2.index;
-		}
-		else if (RecordIndex == record2.index) {
-			RecordIndex = record1.index;
-			_fragmentProvider.LogicalRecordID = record1.index;
-		}
 	}
 
 }

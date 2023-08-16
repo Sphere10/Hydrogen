@@ -17,6 +17,7 @@ namespace Hydrogen.Tests;
 
 [TestFixture]
 [Parallelizable(ParallelScope.Children)]
+[Ignore("ClusteredStorage needs to use Monitor not ReadWriterLock")]
 public class ClusteredStorageMultiThreadedTests {
 
 

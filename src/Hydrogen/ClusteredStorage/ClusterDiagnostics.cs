@@ -25,9 +25,11 @@ internal static class ClusterDiagnostics {
 		}
 	}
 
-	public static string ToTextDump(IClusterMap clusterMap) {
+	public static string ToTextDump(IClusterMap clusterMap) => ToTextDump(clusterMap, clusterMap.Clusters.Count);
+
+	public static string ToTextDump(IClusterMap clusterMap, int logicalCount) {
 		var stringBuilder = new StringBuilder();
-		for (var i = 0; i < clusterMap.Clusters.Count; i++) {
+		for (var i = 0; i < logicalCount; i++) {
 			var cluster = clusterMap.Clusters[i];
 			stringBuilder.AppendLine($"\t{i}: {cluster}");
 		}
@@ -280,9 +282,9 @@ internal static class ClusterDiagnostics {
 				throw new InvalidOperationException($"Cluster {cluster} (index: {i}) has already been visited.");
 			}
 
-			var traits = clusterMap.FastReadClusterTraits(cluster);
-			var prev = clusterMap.FastReadClusterPrev(cluster);
-			var next = clusterMap.FastReadClusterNext(cluster);
+			var traits = clusterMap.ReadClusterTraits(cluster);
+			var prev = clusterMap.ReadClusterPrev(cluster);
+			var next = clusterMap.ReadClusterNext(cluster);
 
 			// ensure cluster doesn't point to itself
 			Guard.Against(!traits.HasFlag(ClusterTraits.Start) && prev == cluster, $"Cluster {cluster} prev pointer pointed to itself");
@@ -291,7 +293,7 @@ internal static class ClusterDiagnostics {
 			// check next pointer
 			if (!traits.HasFlag(ClusterTraits.End)) {
 				Guard.Ensure(IsValidCluster(next), $"Cluster {cluster} (index: {i}) next points to non-existent cluster: {next}.");
-				Guard.Ensure(clusterMap.FastReadClusterPrev(next) == cluster, $"Cluster {cluster} (index: {i}) next cluster {next} does not point back to current cluster.");
+				Guard.Ensure(clusterMap.ReadClusterPrev(next) == cluster, $"Cluster {cluster} (index: {i}) next cluster {next} does not point back to current cluster.");
 			} else {
 				Guard.Ensure(next == terminalValue, $"Cluster {cluster} (index: {i}) was marked End with terminal value was {next} but was expecting {terminalValue}");
 			}
@@ -299,7 +301,7 @@ internal static class ClusterDiagnostics {
 			// check previous pointer
 			if (!traits.HasFlag(ClusterTraits.Start)) {
 				Guard.Ensure(IsValidCluster(prev), $"Cluster {cluster} (index: {i}) prev points to non-existent cluster: {prev}.");
-				Guard.Ensure(clusterMap.FastReadClusterNext(prev) == cluster, $"Cluster {cluster} (index: {i}) prev cluster {prev} does not point back to current cluster.");
+				Guard.Ensure(clusterMap.ReadClusterNext(prev) == cluster, $"Cluster {cluster} (index: {i}) prev cluster {prev} does not point back to current cluster.");
 			} else {
 				Guard.Ensure(prev == terminalValue, $"Cluster {cluster} (index: {i}) was marked Start with terminal value was {prev} but was expecting {terminalValue}");
 			}

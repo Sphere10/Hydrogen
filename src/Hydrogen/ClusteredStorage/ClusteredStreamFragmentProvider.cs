@@ -1,21 +1,19 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 
 namespace Hydrogen;
 
-internal class ClusteredStreamFragmentProvider : IStreamFragmentProvider, IDisposable {
+internal class ClusteredStreamFragmentProvider : IStreamFragmentProvider {
 	public event EventHandlerEx<ClusteredStreamFragmentProvider, long> StreamLengthChanged;
 
 	private readonly IClusterMap _parent;
 
 	private long _totalBytes;
 
-	public ClusteredStreamFragmentProvider(IClusterMap clusteredMap, long logicalRecordID, long totalBytes, Func<ClusterChain> clusterChainLoader) {
+	public ClusteredStreamFragmentProvider(IClusterMap clusteredMap, long logicalRecordID, long totalBytes, long startCluster, long endCluster, long totalClusters) {
 		_parent = clusteredMap;
 		_totalBytes = totalBytes;
 		FragmentCount = clusteredMap.CalculateClusterChainLength(totalBytes);	
-		Seeker = new ClusterSeeker(clusteredMap, logicalRecordID, clusterChainLoader);
+		Seeker = new ClusterSeeker(clusteredMap, logicalRecordID, startCluster, endCluster, totalClusters);
 		LogicalRecordID = logicalRecordID;
 	}
 
@@ -35,31 +33,25 @@ internal class ClusteredStreamFragmentProvider : IStreamFragmentProvider, IDispo
 	
 	internal ClusterSeeker Seeker { get; }
 
-	private void CheckNotSurgery() {
-		Guard.Ensure(!_parent.PreventClusterNavigation, "Cannot perform this operation while clusters are being surgically modified.");
-	}
-
 	public ReadOnlySpan<byte> GetFragment(long index) {
-		CheckNotSurgery();
 		Guard.ArgumentInRange(index, 0, _parent.Clusters.Count - 1, nameof(index));
-		return _parent.FastReadClusterData(index, 0, _parent.ClusterSize);
+		return _parent.ReadClusterData(index, 0, _parent.ClusterSize);
 	}
 
 	public void MapStreamPosition(long position, out long fragmentID, out long fragmentPosition) {
-		CheckNotSurgery();
+		CheckNotEmpty();
 		var logicalClusterIndex = position / _parent.ClusterSize;
 		Seeker.SeekTo(logicalClusterIndex);
-		fragmentID = Seeker.ClusterPointer.Value.CurrentCluster.Value;
+		fragmentID = Seeker.Pointer.CurrentCluster;
 		fragmentPosition = position % _parent.ClusterSize;
 	}
 
 	public void UpdateFragment(long fragmentID, long fragmentPosition, ReadOnlySpan<byte> updateSpan) {
-		CheckNotSurgery();
-		_parent.FastWriteClusterData(fragmentID, fragmentPosition, updateSpan);		
+		CheckNotEmpty();
+		_parent.WriteClusterData(fragmentID, fragmentPosition, updateSpan);		
 	}
 
 	public void SetTotalBytes(long length) {
-		CheckNotSurgery();
 		var oldLength = TotalBytes;
 		var newTotalClusters = _parent.CalculateClusterChainLength(length);
 		var oldTotalClusters = FragmentCount;
@@ -70,9 +62,9 @@ internal class ClusteredStreamFragmentProvider : IStreamFragmentProvider, IDispo
 			if (currentTotalClusters == 0) 
 				_parent.NewClusterChain(newTotalClusters, LogicalRecordID);
 			else 
-				_parent.AppendClustersToEnd(Seeker.ClusterPointer.Value.Chain.EndCluster, newTotalClusters - currentTotalClusters);
+				_parent.AppendClustersToEnd(Seeker.Pointer.Chain.EndCluster, newTotalClusters - currentTotalClusters);
 		} else if (newTotalClusters < currentTotalClusters) {
-			_parent.RemoveBackwards(Seeker.ClusterPointer.Value.Chain.EndCluster, currentTotalClusters - newTotalClusters);
+			_parent.RemoveBackwards(Seeker.Pointer.Chain.EndCluster, currentTotalClusters - newTotalClusters);
 		}
 
 		TotalBytes = length;
@@ -83,16 +75,29 @@ internal class ClusteredStreamFragmentProvider : IStreamFragmentProvider, IDispo
 			var unusedTipClusterBytes = newTotalClusters * _parent.ClusterSize - length;
 			if (unusedTipClusterBytes > 0) {
 				var unusedTipClusterBytesI = Tools.Collection.CheckNotImplemented64bitAddressingLength(unusedTipClusterBytes);
-				_parent.FastWriteClusterData(Seeker.ClusterPointer.Value.Chain.EndCluster, _parent.ClusterSize - unusedTipClusterBytes, _parent.ZeroClusterBytes.AsSpan().Slice(..unusedTipClusterBytesI));
+				_parent.WriteClusterData(Seeker.Pointer.Chain.EndCluster, _parent.ClusterSize - unusedTipClusterBytes, _parent.ZeroClusterBytes.AsSpan().Slice(..unusedTipClusterBytesI));
 			}
 		}
 
 	}
 
-	private void NotifyStreamLengthChanged(long newLength) => StreamLengthChanged?.Invoke(this, newLength);
-
-	public void Dispose() {
-		CheckNotSurgery();
-		Seeker.Dispose();
+	public void ProcessClusterMapChanged(ClusterMapChangedEventArgs changedEvent) {
+		Seeker.ProcessClusterMapChanged(changedEvent);
 	}
+
+	public void ProcessRecordSwapped(long record1Index, ClusteredStreamRecord record1Data, long record2Index, ClusteredStreamRecord record2Data) {
+		if (LogicalRecordID == record1Index) {
+			LogicalRecordID = record2Index;
+		}
+		else if (LogicalRecordID == record2Index) {
+			LogicalRecordID = record1Index;
+		}
+		Seeker.ProcessRecordSwapped(record1Index, record1Data, record2Index, record2Data);
+	}
+
+	private void CheckNotEmpty() {
+		Guard.Ensure(TotalBytes > 0, "Stream is empty.");
+	}
+
+	private void NotifyStreamLengthChanged(long newLength) => StreamLengthChanged?.Invoke(this, newLength);
 }

@@ -474,8 +474,8 @@ public static class AssertEx {
 		Guard.ArgumentNot(actualStream.Length > 0 && expectedStream == null, nameof(actualStream), "Must be empty if not supplying expected stream");
 		expectedStream ??= new MemoryStream();
 		RNG ??= new Random(31337);
-		for (var i = 0; i < iterations; i++) {
 
+		for (var i = 0; i < iterations; i++) {
 			if (runAsserts)
 				AreEqual(expectedStream, actualStream);
 			extraTest?.Invoke();
@@ -521,6 +521,7 @@ public static class AssertEx {
 			var newLength = RNG.Next(0, maxSize);
 			expectedStream.SetLength(newLength);
 			actualStream.SetLength(newLength);
+
 			if (runAsserts)
 				AreEqual(expectedStream, actualStream);
 			extraTest?.Invoke();

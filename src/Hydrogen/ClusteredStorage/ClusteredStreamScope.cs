@@ -70,8 +70,7 @@ public class ClusteredStreamScope : IDisposable {
 				Record.EndCluster = changedEvent.ChainNewEndCluster.Value;
 			}
 		}
-
-		
+	
 		// Inform fragment provider of the changes
 		_fragmentProvider.ProcessClusterMapChanged(changedEvent);
 	}

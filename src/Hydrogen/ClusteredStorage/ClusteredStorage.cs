@@ -299,10 +299,6 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 				ExpirationPolicy.SinceLastAccessedTime,
 				maxCapacity: HydrogenDefaults.RecordCacheSize
 			);
-			RecordSwapped += (record1, record2) => {
-				_recordCache.Invalidate(record1.Item1);
-				_recordCache.Invalidate(record2.Item1);
-			};
 		} else {
 			_recordCache = null;
 		}
@@ -739,6 +735,8 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 
 	protected virtual void OnRecordSwapped(long record1Index, ClusteredStreamRecord record1Data, long record2Index, ClusteredStreamRecord record2Data) {
 		CheckWriteLocked();
+		_recordCache?.Invalidate(record1Index);
+		_recordCache?.Invalidate(record2Index);
 		_openScopes.ForEach(x => x.Value.ProcessRecordSwapped(record1Index, record1Data, record2Index, record2Data));
 	}
 

@@ -354,29 +354,13 @@ public class ClusteredStorageHeader : ISynchronizedObject {
 
 	public void CheckHeaderIntegrity() {
 		using (EnterReadScope()) {
-			if (Version != 1)
-				throw new CorruptDataException($"Corrupt header property {nameof(Version)} value was {Version} bytes");
-
-			if (ClusterSize <= 0)
-				throw new CorruptDataException($"Corrupt header property {nameof(ClusterSize)} value was {ClusterSize} bytes");
-
-			if (TotalClusters < 0)
-				throw new CorruptDataException($"Corrupt header property {nameof(TotalClusters)} value was {TotalClusters}");
-
-			if (ClusterSize < 0)
-				throw new CorruptDataException($"Corrupt header property {nameof(ClusterSize)} value was {ClusterSize}");
-
-			if (ReservedRecords < 0)
-				throw new CorruptDataException($"Corrupt header property {nameof(ReservedRecords)} value was {ReservedRecords}");
-
-			if (RecordsCount < 0)
-				throw new CorruptDataException($"Corrupt header property {nameof(RecordsCount)} value was {RecordsCount}");
-
-			if (RecordsEndCluster < Cluster.Null)
-				throw new CorruptDataException($"Corrupt header property {nameof(RecordsEndCluster)} value was {RecordsEndCluster}");
-
-			if (Policy.HasFlag(ClusteredStoragePolicy.TrackKey) && RecordKeySize <= 0)
-				throw new CorruptDataException($"Corrupt header property {nameof(RecordKeySize)} value was {RecordKeySize} but {nameof(Policy)} property value was {RecordKeySize}");
+			Guard.Ensure(Version == 1, $"Corrupt header property {nameof(Version)} value was {Version} bytes");
+			Guard.Ensure(ClusterSize > 0, $"Corrupt header property {nameof(ClusterSize)} value was {ClusterSize} bytes");
+			Guard.Ensure(TotalClusters >= 0, $"Corrupt header property {nameof(TotalClusters)} value was {TotalClusters} bytes");
+			Guard.Ensure(ReservedRecords >= 0, $"Corrupt header property {nameof(ReservedRecords)} value was {ReservedRecords} bytes");
+			Guard.Ensure(RecordsCount >= 0, $"Corrupt header property {nameof(RecordsCount)} value was {RecordsCount} bytes");
+			Guard.Ensure(RecordsEndCluster >= Cluster.Null, $"Corrupt header property {nameof(RecordsEndCluster)} value was {RecordsEndCluster} bytes");
+			Guard.Against(Policy.HasFlag(ClusteredStoragePolicy.TrackKey) && RecordKeySize <= 0, $"Corrupt header property {nameof(RecordKeySize)} value was {RecordKeySize} but {nameof(Policy)} property value was {RecordKeySize}");
 		}
 	}
 
@@ -386,6 +370,5 @@ public class ClusteredStorageHeader : ISynchronizedObject {
 		using (EnterReadScope())
 			return $"[{nameof(ClusteredStorageHeader)}] {nameof(Version)}: {Version}, {nameof(ClusterSize)}: {ClusterSize}, {nameof(TotalClusters)}: {TotalClusters}, {nameof(RecordsCount)}: {RecordsCount}, {nameof(RecordsEndCluster)}: {RecordsEndCluster}, {nameof(ReservedRecords)}: {ReservedRecords}, {nameof(Policy)}: {Policy}, {nameof(MerkleRoot)}: {MerkleRoot.ToHexString(true)}";
 	}
-
 
 }

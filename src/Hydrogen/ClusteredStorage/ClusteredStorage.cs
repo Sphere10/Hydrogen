@@ -108,15 +108,13 @@ public class ClusteredStorage : SyncLoadableBase, ISynchronizedObject {
 	}
 
 	public static ClusteredStorage FromStream(Stream rootStream, Endianness endianness = Endianness.LittleEndian) {
-		if (rootStream.Length < ClusteredStorageHeader.ByteLength)
-			throw new CorruptDataException($"Corrupt header (stream was too small {rootStream.Length} bytes)");
+		Guard.Ensure(rootStream.Length >= ClusteredStorageHeader.ByteLength, $"Corrupt header (stream was too small {rootStream.Length} bytes)");
 		var reader = new EndianBinaryReader(EndianBitConverter.For(endianness), rootStream);
 
 		// read cluster size
 		rootStream.Seek(ClusteredStorageHeader.ClusterSizeOffset, SeekOrigin.Begin);
 		var clusterSize = reader.ReadInt32();
-		if (clusterSize <= 0)
-			throw new CorruptDataException($"Corrupt header (ClusterSize field was {clusterSize} bytes)");
+		Guard.Ensure(clusterSize > 0, $"Corrupt header (ClusterSize field was {clusterSize} bytes)");
 
 		// read policy
 		rootStream.Seek(ClusteredStorageHeader.PolicyOffset, SeekOrigin.Begin);
@@ -812,11 +810,9 @@ public class ClusteredStorage : SyncLoadableBase, ISynchronizedObject {
 	private void CheckHeaderDataIntegrity(long rootStreamLength, ClusteredStorageHeader header, IItemSerializer<Cluster> clusterSerializer, IItemSerializer<ClusteredStreamRecord> recordSerializer) {
 		var clusterEnvelopeSize = clusterSerializer.StaticSize - header.ClusterSize;
 		var recordClusters = (long)Math.Ceiling(header.RecordsCount * recordSerializer.StaticSize / (float)header.ClusterSize);
-		if (header.TotalClusters < recordClusters)
-			throw new CorruptDataException($"Inconsistency in {nameof(ClusteredStorageHeader.TotalClusters)}/{nameof(ClusteredStorageHeader.RecordsCount)}");
+		Guard.Ensure(header.TotalClusters >= recordClusters, $"Inconsistency in {nameof(ClusteredStorageHeader.TotalClusters)}/{nameof(ClusteredStorageHeader.RecordsCount)}");
 		var minStreamSize = header.TotalClusters * (header.ClusterSize + clusterEnvelopeSize) + ClusteredStorageHeader.ByteLength;
-		if (rootStreamLength < minStreamSize)
-			throw new CorruptDataException($"Stream too small (header gives minimum size {minStreamSize} but was {rootStreamLength})");
+		Guard.Ensure(rootStreamLength >= minStreamSize, $"Stream too small (header gives minimum size {minStreamSize} but was {rootStreamLength})");
 	}
 
 	private void CreateReservedRecords() {
@@ -833,12 +829,9 @@ public class ClusteredStorage : SyncLoadableBase, ISynchronizedObject {
 
 	private void CheckRecordIntegrity(long index, ClusteredStreamRecord record) {
 		if (record.Size == 0) {
-			if (record.StartCluster != Cluster.Null)
-				throw new CorruptDataException(Header, $"Empty record {index} should have start cluster {Cluster.Null} but was {record.StartCluster}");
-			if (record.EndCluster != Cluster.Null)
-				throw new CorruptDataException(Header, $"Empty record {index} should have end cluster {Cluster.Null} but was {record.EndCluster}");
-		} else if (!(0 <= record.StartCluster && record.StartCluster < Header.TotalClusters))
-			throw new CorruptDataException(Header, $"Record {index} pointed to to non-existent cluster {record.StartCluster}");
+			Guard.Ensure(record.StartCluster == Cluster.Null, $"Empty record {index} should have start cluster {Cluster.Null} but was {record.StartCluster}");
+			Guard.Ensure(record.EndCluster == Cluster.Null, $"Empty record {index} should have end cluster {Cluster.Null} but was {record.EndCluster}");
+		} else Guard.Ensure(0 <= record.StartCluster && record.StartCluster < Header.TotalClusters, $"Record {index} pointed to to non-existent cluster {record.StartCluster}");
 	}
 	
 	#endregion

@@ -84,8 +84,7 @@ internal class ClusterSeeker  {
 		for (var i = 0; i < steps; i++) {
 			Guard.Against(Pointer.CurrentTraits.HasFlag(ClusterTraits.End), $"Cannot walk past the last cluster on cluster chain ({steps - i} steps to go)");
 			var nextCluster = _clusters.ReadClusterNext(Pointer.CurrentCluster);
-			if (walkedClusters.Contains(nextCluster))
-				throw new CorruptDataException($"Cyclic dependency detected (cluster {Pointer.CurrentCluster} has cyclic next {nextCluster})");
+			Guard.Ensure(!walkedClusters.Contains(nextCluster), $"Cyclic dependency detected (cluster {Pointer.CurrentCluster} has cyclic next {nextCluster})");
 			Pointer.CurrentCluster = nextCluster;
 			Pointer.CurrentIndex++;
 			Pointer.CurrentTraits = CalculateCurrentTraits();
@@ -102,8 +101,7 @@ internal class ClusterSeeker  {
 		for (var i = 0; i < steps; i++) {
 			Guard.Against(Pointer.CurrentTraits.HasFlag(ClusterTraits.Start), "Cannot walk before the first cluster on cluster chain");
 			var prevCluster = _clusters.ReadClusterPrev(Pointer.CurrentCluster);
-			if (walkedClusters.Contains(prevCluster))
-				throw new CorruptDataException($"Cyclic dependency detected (cluster {Pointer.CurrentCluster} has cyclic prev {prevCluster})");
+			Guard.Ensure(!walkedClusters.Contains(prevCluster), $"Cyclic dependency detected (cluster {Pointer.CurrentCluster} has cyclic prev {prevCluster})");
 			Pointer.CurrentCluster = prevCluster;
 			Pointer.CurrentIndex--;
 			Pointer.CurrentTraits = CalculateCurrentTraits();

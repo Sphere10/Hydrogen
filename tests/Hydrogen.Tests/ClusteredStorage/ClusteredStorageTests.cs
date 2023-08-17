@@ -852,7 +852,7 @@ public class ClusteredStorageTests : StreamPersistedCollectionTestsBase {
 		rootStream.Position = ClusteredStorageHeader.VersionOffset;
 		rootStream.WriteByte(2);
 
-		Assert.That(() => ClusteredStorage.FromStream(rootStream), Throws.TypeOf<CorruptDataException>());
+		Assert.That(() => ClusteredStorage.FromStream(rootStream), Throws.TypeOf<InvalidOperationException>());
 	}
 
 	[Test]
@@ -864,7 +864,7 @@ public class ClusteredStorageTests : StreamPersistedCollectionTestsBase {
 		streamContainer.AddBytes(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 });
 		rootStream.Position = ClusteredStorageHeader.ClusterSizeOffset;
 		writer.Write(0);
-		Assert.That(() => ClusteredStorage.FromStream(rootStream), Throws.TypeOf<CorruptDataException>());
+		Assert.That(() => ClusteredStorage.FromStream(rootStream), Throws.TypeOf<InvalidOperationException>());
 	}
 
 	[Test]
@@ -876,7 +876,7 @@ public class ClusteredStorageTests : StreamPersistedCollectionTestsBase {
 		streamContainer.AddBytes(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 });
 		rootStream.Position = ClusteredStorageHeader.ClusterSizeOffset;
 		writer.Write(100);
-		Assert.That(() => ClusteredStorage.FromStream(rootStream), Throws.TypeOf<CorruptDataException>());
+		Assert.That(() => ClusteredStorage.FromStream(rootStream), Throws.TypeOf<InvalidOperationException>());
 	}
 
 	[Test]
@@ -888,7 +888,7 @@ public class ClusteredStorageTests : StreamPersistedCollectionTestsBase {
 		streamContainer.AddBytes(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 });
 		rootStream.Position = ClusteredStorageHeader.ClusterSizeOffset;
 		writer.Write(clusterSize + 1);
-		Assert.That(() => ClusteredStorage.FromStream(rootStream), Throws.TypeOf<CorruptDataException>());
+		Assert.That(() => ClusteredStorage.FromStream(rootStream), Throws.TypeOf<InvalidOperationException>());
 	}
 
 	[Test]
@@ -900,7 +900,7 @@ public class ClusteredStorageTests : StreamPersistedCollectionTestsBase {
 		streamContainer.AddBytes(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 });
 		rootStream.Position = ClusteredStorageHeader.TotalClustersOffset;
 		writer.Write(0);
-		Assert.That(() => ClusteredStorage.FromStream(rootStream), Throws.TypeOf<CorruptDataException>());
+		Assert.That(() => ClusteredStorage.FromStream(rootStream), Throws.TypeOf<InvalidOperationException>());
 	}
 
 	[Test]
@@ -912,7 +912,7 @@ public class ClusteredStorageTests : StreamPersistedCollectionTestsBase {
 		streamContainer.AddBytes(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 });
 		rootStream.Position = ClusteredStorageHeader.TotalClustersOffset;
 		writer.Write(streamContainer.ClusterMap.Clusters.Count + 1);
-		Assert.That(() => ClusteredStorage.FromStream(rootStream), Throws.TypeOf<CorruptDataException>());
+		Assert.That(() => ClusteredStorage.FromStream(rootStream), Throws.TypeOf<InvalidOperationException>());
 	}
 
 	[Test]
@@ -938,7 +938,7 @@ public class ClusteredStorageTests : StreamPersistedCollectionTestsBase {
 		streamContainer.AddBytes(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 });
 		rootStream.Position = ClusteredStorageHeader.RecordsOffset;
 		writer.Write((long)(streamContainer.Records.Count + 1));
-		Assert.That(() => ClusteredStorage.FromStream(rootStream), Throws.InstanceOf<CorruptDataException>());
+		Assert.That(() => ClusteredStorage.FromStream(rootStream), Throws.InstanceOf<InvalidOperationException>());
 	}
 
 	[Test]

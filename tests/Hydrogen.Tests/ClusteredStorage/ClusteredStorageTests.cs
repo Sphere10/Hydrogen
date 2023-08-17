@@ -1075,8 +1075,8 @@ public static class ClusteredStorageTestsHelper {
 		var record = storage.Records[recordIndex];
 		Assert.That(record.Size, Is.GreaterThanOrEqualTo(0));
 		if (record.Size == 0) {
-			Assert.That(record.StartCluster, Is.EqualTo(ClusteredStorage.NullCluster));
-			Assert.That(record.EndCluster, Is.EqualTo(ClusteredStorage.NullCluster));
+			Assert.That(record.StartCluster, Is.EqualTo(Cluster.Null));
+			Assert.That(record.EndCluster, Is.EqualTo(Cluster.Null));
 		} else {
 			Assert.That(storage.ClusterMap.ReadClusterPrev(record.StartCluster), Is.EqualTo(recordIndex), "Record start cluster does not link to record");
 			Assert.That(storage.ClusterMap.ReadClusterNext(record.EndCluster), Is.EqualTo(recordIndex), "Record end cluster does not link to record");

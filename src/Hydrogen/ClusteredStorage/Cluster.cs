@@ -11,15 +11,6 @@ namespace Hydrogen;
 public class Cluster {
 	public const long Null = -1L;
 
-	public const int TraitsLength = sizeof(byte);
-	public const int PrevLength = sizeof(long);
-	public const int NextLength = sizeof(long);
-
-	public const long TraitsOffset = 0;
-	public const long PrevOffset = TraitsOffset + TraitsLength;
-	public const long NextOffset = PrevOffset + PrevLength;
-	public const long DataOffset = NextOffset + NextLength;
-
 	public ClusterTraits Traits { get; set; }
 	public long Prev { get; set; }
 	public long Next { get; set; }

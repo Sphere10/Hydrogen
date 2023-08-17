@@ -802,7 +802,7 @@ public class ClusteredStorageTests : StreamPersistedCollectionTestsBase {
 		var streamContainer = new ClusteredStorage(rootStream, clusterSize, policy: policy, autoLoad: true);
 		streamContainer.AddBytes(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 });
 		// corrupt root-stream, make tip cluster 18 have next to 10 creating a circular linked loop through forward traversal
-		var nextOffset = rootStream.Length - clusterSize - Cluster.NextLength;
+		var nextOffset = rootStream.Length - clusterSize - ClusterSerializer.NextLength;
 		var writer = new EndianBinaryWriter(EndianBitConverter.For(Endianness.LittleEndian), rootStream);
 		rootStream.Seek(nextOffset, SeekOrigin.Begin);
 		writer.Write(10L);

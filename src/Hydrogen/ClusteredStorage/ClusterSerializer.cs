@@ -11,9 +11,17 @@ using System.Diagnostics;
 namespace Hydrogen;
 
 public class ClusterSerializer : StaticSizeItemSerializerBase<Cluster> {
+	public const int TraitsLength = sizeof(byte);
+	public const int PrevLength = sizeof(long);
+	public const int NextLength = sizeof(long);
+
+	public const long TraitsOffset = 0;
+	public const long PrevOffset = TraitsOffset + TraitsLength;
+	public const long NextOffset = PrevOffset + PrevLength;
+	public const long DataOffset = NextOffset + NextLength;
 
 	public ClusterSerializer(int clusterDataSize) 
-		: base(Cluster.TraitsLength + Cluster.PrevLength + Cluster.NextLength + clusterDataSize) {
+		: base(TraitsLength + PrevLength + NextLength + clusterDataSize) {
 		// cluster has an envelope of 9 bytes
 		Guard.ArgumentInRange(clusterDataSize, 1, int.MaxValue, nameof(clusterDataSize));
 		ClusterDataSize = clusterDataSize;

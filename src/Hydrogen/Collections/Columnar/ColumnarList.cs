@@ -13,7 +13,7 @@ using System.Linq;
 namespace Hydrogen;
 
 public class ColumnarList : RangedListBase<object[]> {
-	private IExtendedList<object>[] _columnStore;
+	private readonly IExtendedList<object>[] _columnStore;
 
 	public ColumnarList(params IExtendedList<object>[] columnStore) {
 		Guard.ArgumentNotNull(columnStore, nameof(columnStore));

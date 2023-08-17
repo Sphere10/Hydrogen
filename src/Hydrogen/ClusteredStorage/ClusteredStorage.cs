@@ -359,10 +359,8 @@ public class ClusteredStorage : SyncLoadableBase, ISynchronizedObject {
 					FastWriteRecordStartCluster(changedEvent.ChainTerminal.Value, Cluster.Null);
 					FastWriteRecordEndCluster(changedEvent.ChainTerminal.Value, Cluster.Null);
 					FastWriteRecordSize(changedEvent.ChainTerminal.Value, 0);
-					_recordCache?.Invalidate(changedEvent.ChainTerminal.Value);
 				} else if (changedEvent.IncreasedChainSize || changedEvent.DecreasedChainSize) {
 					FastWriteRecordEndCluster(changedEvent.ChainTerminal.Value, changedEvent.ChainNewEndCluster.Value);
-					_recordCache?.Invalidate(changedEvent.ChainTerminal.Value);
 				}
 			}
 			
@@ -694,7 +692,6 @@ public class ClusteredStorage : SyncLoadableBase, ISynchronizedObject {
 			scope.RecordSizeChanged += size => {
 				CheckWriteLocked();
 				FastWriteRecordSize(recordIndex, size); 
-				_recordCache?.Invalidate(recordIndex);
 			};
 		}
 		_openScopes.Add(recordIndex, scope);

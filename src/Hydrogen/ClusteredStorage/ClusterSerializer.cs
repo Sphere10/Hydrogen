@@ -10,7 +10,7 @@ using System.Diagnostics;
 
 namespace Hydrogen;
 
-internal class ClusterSerializer : StaticSizeItemSerializerBase<Cluster> {
+public class ClusterSerializer : StaticSizeItemSerializerBase<Cluster> {
 
 	public ClusterSerializer(int clusterDataSize) 
 		: base(Cluster.TraitsLength + Cluster.PrevLength + Cluster.NextLength + clusterDataSize) {

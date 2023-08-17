@@ -11,5 +11,5 @@ using System.Collections.Generic;
 namespace Hydrogen;
 
 public interface IStreamMappedHashSet<TItem> : ISet<TItem>, ILoadable {
-	IClusteredStorage Storage { get; }
+	ClusteredStorage Storage { get; }
 }

@@ -32,7 +32,7 @@ public class StreamMappedList<TItem> : SingularListBase<TItem>, IStreamMappedLis
 		: this(new ClusteredStorage(rootStream, clusterSize, policy, recordKeySize, reservedRecords, endianness, autoLoad), itemSerializer, itemComparer) {
 	}
 
-	public StreamMappedList(IClusteredStorage storage, IItemSerializer<TItem> itemSerializer = null, IEqualityComparer<TItem> itemComparer = null) {
+	public StreamMappedList(ClusteredStorage storage, IItemSerializer<TItem> itemSerializer = null, IEqualityComparer<TItem> itemComparer = null) {
 		Guard.ArgumentNotNull(storage, nameof(storage));
 		Storage = storage;
 		ItemSerializer = itemSerializer ?? ItemSerializer<TItem>.Default;
@@ -42,7 +42,7 @@ public class StreamMappedList<TItem> : SingularListBase<TItem>, IStreamMappedLis
 
 	public override long Count => Storage.Count - Storage.Header.ReservedRecords;
 
-	public IClusteredStorage Storage { get; }
+	public ClusteredStorage Storage { get; }
 
 	public IItemSerializer<TItem> ItemSerializer { get; }
 

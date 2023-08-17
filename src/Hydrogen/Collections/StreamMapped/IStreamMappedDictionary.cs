@@ -13,7 +13,7 @@ namespace Hydrogen;
 
 public interface IStreamMappedDictionary<TKey, TValue> : IDictionary<TKey, TValue>, ILoadable {
 
-	IClusteredStorage Storage { get; }
+	ClusteredStorage Storage { get; }
 
 	TKey ReadKey(int index);
 

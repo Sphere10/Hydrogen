@@ -11,7 +11,7 @@ using System.Collections.Generic;
 namespace Hydrogen;
 
 public interface IStreamMappedList<TItem> : IExtendedList<TItem>, ILoadable {
-	IClusteredStorage Storage { get; }
+	ClusteredStorage Storage { get; }
 
 	IItemSerializer<TItem> ItemSerializer { get; }
 

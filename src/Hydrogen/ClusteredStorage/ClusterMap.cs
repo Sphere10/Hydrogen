@@ -18,16 +18,16 @@ namespace Hydrogen;
 /// A cluster map used to store disparate data streams into connected chains of clusters. <see cref="ClusteredStorage"/> uses
 /// this to store multiple streams of data into a single stream.
 /// </summary>
-internal class ClusterMap<TInner> : IClusterMap where TInner : IExtendedList<Cluster> {
+public class ClusterMap  {
 
 	public event EventHandlerEx<object, ClusterMapChangedEventArgs> Changed;
 
-	protected readonly SynchronizedExtendedList<Cluster, TInner> _clusters;
+	protected readonly SynchronizedExtendedList<Cluster> _clusters;
 
-	public ClusterMap(TInner clusters, int clusterSize) {
+	public ClusterMap(IExtendedList<Cluster> clusters, int clusterSize) {
 		Guard.ArgumentNotNull(clusters, nameof(clusters));
 		Guard.ArgumentGTE(clusterSize, 0, nameof(clusterSize));
-		_clusters = clusters.AsSynchronized<Cluster, TInner>();
+		_clusters = clusters.AsSynchronized();
 		ClusterSize = clusterSize;
 		ZeroClusterBytes = new byte[clusterSize];
 	}
@@ -455,9 +455,3 @@ internal class ClusterMap<TInner> : IClusterMap where TInner : IExtendedList<Clu
 
 }
 
-internal class ClusterMap : ClusterMap<IExtendedList<Cluster>> {
-	public ClusterMap(IExtendedList<Cluster> clusters, int clusterSize)
-		: base(clusters, clusterSize) {
-	}
-
-}

@@ -81,7 +81,7 @@ public class StreamMappedDictionarySK<TKey, TValue> : DictionaryBase<TKey, TValu
 		UnusedKeyBytes = Tools.Array.Gen<byte>(_keySerializer.StaticSize, 0);
 	}
 
-	public IClusteredStorage Storage => _valueStore.Storage;
+	public ClusteredStorage Storage => _valueStore.Storage;
 
 	protected IEnumerable<KeyValuePair<TKey, TValue>> KeyValuePairs {
 		get {

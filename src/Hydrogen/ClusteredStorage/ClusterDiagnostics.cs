@@ -5,9 +5,9 @@ using System.Text;
 
 namespace Hydrogen;
 
-internal static class ClusterDiagnostics {
+public static class ClusterDiagnostics {
 
-	public static string ToTextDump(IClusteredStorage storage) {
+	public static string ToTextDump(ClusteredStorage storage) {
 		
 		using (storage.EnterReadScope()) {
 			var stringBuilder = new FastStringBuilder();
@@ -23,9 +23,9 @@ internal static class ClusterDiagnostics {
 		}
 	}
 
-	public static string ToTextDump(IClusterMap clusterMap) => ToTextDump(clusterMap, clusterMap.Clusters.Count);
+	public static string ToTextDump(ClusterMap clusterMap) => ToTextDump(clusterMap, clusterMap.Clusters.Count);
 
-	public static string ToTextDump(IClusterMap clusterMap, int logicalCount) {
+	public static string ToTextDump(ClusterMap clusterMap, int logicalCount) {
 		var stringBuilder = new StringBuilder();
 		for (var i = 0; i < logicalCount; i++) {
 			var cluster = clusterMap.Clusters[i];
@@ -89,9 +89,9 @@ internal static class ClusterDiagnostics {
 		return i;
 	}
 
-	public static void VerifyClusters(IClusterMap clusterMap) => VerifyClusters(clusterMap.Clusters.ToArray(), null);
+	public static void VerifyClusters(ClusterMap clusterMap) => VerifyClusters(clusterMap.Clusters.ToArray(), null);
 
-	public static void VerifyClusters(IClusteredStorage clusteredStorage) => VerifyClusters(clusteredStorage.ClusterMap.Clusters.ToArray(), clusteredStorage.Records.ToArray());
+	public static void VerifyClusters(ClusteredStorage clusteredStorage) => VerifyClusters(clusteredStorage.ClusterMap.Clusters.ToArray(), clusteredStorage.Records.ToArray());
 
 	public static void VerifyClusters(Cluster[] clusters, ClusteredStreamRecord[] records) {
 		Guard.ArgumentNotNull(clusters, nameof(clusters));
@@ -260,7 +260,7 @@ internal static class ClusterDiagnostics {
 
 	#region Seek reset verification
 
-	public static void VerifySeekResetStreamOptimized(IClusterMap clusterMap, long start, long end, long totalClusters, long terminalValue, long? currentCluster, long? currentIndex, ClusterTraits? currentTraits, HashSet<long> visitedClusters) {
+	public static void VerifySeekResetStreamOptimized(ClusterMap clusterMap, long start, long end, long totalClusters, long terminalValue, long? currentCluster, long? currentIndex, ClusterTraits? currentTraits, HashSet<long> visitedClusters) {
 		bool IsValidCluster(long ix) => 0 <= ix && ix < clusterMap.Clusters.Count;
 
 		if (start == -1 || end == -1 || totalClusters == 0) {

@@ -14,9 +14,9 @@ internal class ClusterSeeker  {
 	// - Intelligent memoization of LogicalCluster -> Cluster. Algorithm should strive for equidistant memoization along chain, eg. max 1024
 	//   this would minimize seek-time on reused streams.
 
-	private readonly IClusterMap _clusters;
+	private readonly ClusterMap _clusters;
 
-	public ClusterSeeker(IClusterMap clusteredMap, long terminalValue, long startCluster, long endCluster, long totalClusters) {
+	public ClusterSeeker(ClusterMap clusteredMap, long terminalValue, long startCluster, long endCluster, long totalClusters) {
 		_clusters = clusteredMap;
 		TerminalValue = terminalValue;
 		Pointer = new ClusterPointer {

@@ -33,7 +33,7 @@ public class StreamMappedMerkleHashSet<TItem, TInner> : SetDecorator<TItem, TInn
 
 	public bool RequiresLoad => InternalSet.RequiresLoad;
 
-	public IClusteredStorage Storage => InternalSet.Storage;
+	public ClusteredStorage Storage => InternalSet.Storage;
 
 	public IMerkleTree MerkleTree { get; }
 

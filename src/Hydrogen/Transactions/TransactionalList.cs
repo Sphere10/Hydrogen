@@ -24,7 +24,7 @@ public class TransactionalList<T> : StreamMappedList<T>, ITransactionalList<T> {
 	public event EventHandlerEx<object> RollingBack { add => TransactionalStream.RollingBack += value; remove => TransactionalStream.RollingBack -= value; }
 	public event EventHandlerEx<object> RolledBack { add => TransactionalStream.RolledBack += value; remove => TransactionalStream.RolledBack -= value; }
 
-	private readonly IClusteredStorage _storage;
+	private readonly ClusteredStorage _storage;
 
 	public TransactionalList(
 		string filename, 
@@ -55,7 +55,7 @@ public class TransactionalList<T> : StreamMappedList<T>, ITransactionalList<T> {
 		: this(new ClusteredStorage(transactionalStream, clusterSize, policy, recordKeySize, reservedRecords, endianness), serializer, comparer) {
 	}
 
-	public TransactionalList(IClusteredStorage storage, IItemSerializer<T> serializer = null, IEqualityComparer<T> comparer = null)
+	public TransactionalList(ClusteredStorage storage, IItemSerializer<T> serializer = null, IEqualityComparer<T> comparer = null)
 		: base(storage, serializer, comparer) {
 		Guard.ArgumentNotNull(storage, nameof(storage));
 		Guard.Argument(storage.RootStream is TransactionalStream, nameof(storage), "Storage must use a TransactionalStream");

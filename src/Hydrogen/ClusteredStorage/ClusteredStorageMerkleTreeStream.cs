@@ -18,10 +18,10 @@ namespace Hydrogen.Collections;
 /// <remarks>This class is intended for building <see cref="IMerkleTree"/>'s of items stored in a <see cref="IClusteredStorage"/>-based containers.</remarks>
 internal sealed class ClusteredStorageMerkleTreeStream : IDynamicMerkleTree {
 
-	private readonly IClusteredStorage _storage;
+	private readonly ClusteredStorage _storage;
 	private readonly int _flatTreeStreamRecord;
 
-	public ClusteredStorageMerkleTreeStream(IClusteredStorage clusteredStorage, int merkleTreeStreamIndex, CHF hashAlgorithm) {
+	public ClusteredStorageMerkleTreeStream(ClusteredStorage clusteredStorage, int merkleTreeStreamIndex, CHF hashAlgorithm) {
 		_storage = clusteredStorage;
 		_flatTreeStreamRecord = merkleTreeStreamIndex;
 		HashAlgorithm = hashAlgorithm;

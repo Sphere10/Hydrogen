@@ -5,11 +5,11 @@ namespace Hydrogen;
 internal class ClusteredStreamFragmentProvider : IStreamFragmentProvider {
 	public event EventHandlerEx<ClusteredStreamFragmentProvider, long> StreamLengthChanged;
 
-	private readonly IClusterMap _parent;
+	private readonly ClusterMap _parent;
 
 	private long _totalBytes;
 
-	public ClusteredStreamFragmentProvider(IClusterMap clusteredMap, long logicalRecordID, long totalBytes, long startCluster, long endCluster, long totalClusters) {
+	public ClusteredStreamFragmentProvider(ClusterMap clusteredMap, long logicalRecordID, long totalBytes, long startCluster, long endCluster, long totalClusters) {
 		_parent = clusteredMap;
 		_totalBytes = totalBytes;
 		FragmentCount = clusteredMap.CalculateClusterChainLength(totalBytes);	

@@ -36,7 +36,7 @@ public class StreamMappedMerkleDictionary<TKey, TValue, TInner> : DictionaryDeco
 
 	public IMerkleTree MerkleTree { get; }
 
-	public IClusteredStorage Storage => InternalDictionary.Storage;
+	public ClusteredStorage Storage => InternalDictionary.Storage;
 
 	public bool RequiresLoad => InternalDictionary.RequiresLoad;
 

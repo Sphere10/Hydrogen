@@ -54,7 +54,7 @@ namespace Hydrogen;
 ///  - Records always link to the (First | Data) cluster of their stream.
 ///  - ClusterMap with traits (First | Data) re-purpose the Prev field to denote the record.
 /// </remarks>
-public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
+public class ClusteredStorage : SyncLoadableBase, ISynchronizedObject {
 	internal const long NullCluster = -1L;
 
 	public event EventHandlerEx<ClusteredStreamRecord> RecordCreated;
@@ -180,7 +180,7 @@ public class ClusteredStorage : SyncLoadableBase, IClusteredStorage {
 		}
 	}
 
-	public IClusterMap ClusterMap {
+	internal ClusterMap ClusterMap {
 		get {
 			CheckInitialized();
 			return _clusters;

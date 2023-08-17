@@ -82,7 +82,7 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 			Load();
 	}
 
-	public IClusteredStorage Storage => KVPList.Storage;
+	public ClusteredStorage Storage => KVPList.Storage;
 
 	protected IEnumerable<KeyValuePair<TKey, TValue>> KeyValuePairs {
 		get {

@@ -38,7 +38,7 @@ public class StreamMappedMerkleList<TItem, TInner> : MerkleListAdapter<TItem, TI
 		}
 	}
 
-	public IClusteredStorage Storage => InternalCollection.Storage;
+	public ClusteredStorage Storage => InternalCollection.Storage;
 
 	public IItemSerializer<TItem> ItemSerializer => InternalCollection.ItemSerializer;
 

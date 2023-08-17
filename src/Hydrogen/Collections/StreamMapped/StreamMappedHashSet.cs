@@ -70,7 +70,7 @@ public class StreamMappedHashSet<TItem> : SetBase<TItem>, IStreamMappedHashSet<T
 
 	public bool RequiresLoad => InternalDictionary.RequiresLoad;
 
-	public IClusteredStorage Storage => InternalDictionary.Storage;
+	public ClusteredStorage Storage => InternalDictionary.Storage;
 
 	public void Load() => InternalDictionary.Load();
 

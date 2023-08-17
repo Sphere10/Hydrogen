@@ -9,11 +9,11 @@ internal class ClusteredStreamFragmentProvider : IStreamFragmentProvider {
 
 	private long _totalBytes;
 
-	public ClusteredStreamFragmentProvider(ClusterMap clusteredMap, long logicalRecordID, long totalBytes, long startCluster, long endCluster, long totalClusters) {
+	public ClusteredStreamFragmentProvider(ClusterMap clusteredMap, long logicalRecordID, long totalBytes, long startCluster, long endCluster, long totalClusters, bool integrityChecks) {
 		_parent = clusteredMap;
 		_totalBytes = totalBytes;
 		FragmentCount = clusteredMap.CalculateClusterChainLength(totalBytes);	
-		Seeker = new ClusterSeeker(clusteredMap, logicalRecordID, startCluster, endCluster, totalClusters);
+		Seeker = new ClusterSeeker(clusteredMap, logicalRecordID, startCluster, endCluster, totalClusters, integrityChecks);
 		LogicalRecordID = logicalRecordID;
 	}
 
@@ -78,7 +78,6 @@ internal class ClusteredStreamFragmentProvider : IStreamFragmentProvider {
 				_parent.WriteClusterData(Seeker.Pointer.Chain.EndCluster, _parent.ClusterSize - unusedTipClusterBytes, _parent.ZeroClusterBytes.AsSpan().Slice(..unusedTipClusterBytesI));
 			}
 		}
-
 	}
 
 	public void ProcessClusterMapChanged(ClusterMapChangedEventArgs changedEvent) {

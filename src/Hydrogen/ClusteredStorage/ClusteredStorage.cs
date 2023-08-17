@@ -254,7 +254,8 @@ public class ClusteredStorage : SyncLoadableBase, ISynchronizedObject {
 			_header.RecordsCount * recordSerializer.StaticSize,
 			_header.RecordsCount > 0 ? 0 : Cluster.Null,
 			_header.RecordsCount > 0 ? _header.RecordsEndCluster : Cluster.Null,
-			_header.RecordsCount > 0 ? _clusters.CalculateClusterChainLength(_header.RecordsCount * recordSerializer.StaticSize) : 0
+			_header.RecordsCount > 0 ? _clusters.CalculateClusterChainLength(_header.RecordsCount * recordSerializer.StaticSize) : 0,
+			_integrityChecks
 		);
 
 		// track record stream length in header

@@ -13,9 +13,11 @@ internal class ClusterSeeker  {
 	//   this would minimize seek-time on reused streams.
 
 	private readonly ClusterMap _clusters;
+	private readonly bool _integrityChecks;
 
-	public ClusterSeeker(ClusterMap clusteredMap, long terminalValue, long startCluster, long endCluster, long totalClusters) {
+	public ClusterSeeker(ClusterMap clusteredMap, long terminalValue, long startCluster, long endCluster, long totalClusters, bool integrityChecks) {
 		_clusters = clusteredMap;
+		_integrityChecks = integrityChecks;
 		TerminalValue = terminalValue;
 		Pointer = new ClusterPointer {
 				Chain = new ClusterChain {
@@ -34,25 +36,35 @@ internal class ClusterSeeker  {
 	public long TerminalValue { get; private set; }
 
 	public void SeekStart() {
-		Guard.Ensure(Pointer.Chain.StartCluster >= 0, $"Start cluster {Pointer.Chain.StartCluster} is not defined for empty cluster chain");
+		if (_integrityChecks) {
+			Guard.Ensure(Pointer.Chain.StartCluster >= 0, $"Start cluster {Pointer.Chain.StartCluster} is not defined for empty cluster chain");
+		}
 		Pointer.CurrentCluster = Pointer.Chain.StartCluster;
 		Pointer.CurrentIndex = 0;
 		Pointer.CurrentTraits = CalculateCurrentTraits();
-		Pointer.CheckTraits();
-		Guard.Ensure(Pointer.CurrentTraits.HasFlag(ClusterTraits.Start), $"Start cluster {Pointer.Chain.StartCluster} is not a start cluster");
+		if (_integrityChecks) {
+			Pointer.CheckTraits();
+			Guard.Ensure(Pointer.CurrentTraits.HasFlag(ClusterTraits.Start), $"Start cluster {Pointer.Chain.StartCluster} is not a start cluster");
+		}
 	}
 
 	public void SeekEnd() {
-		Guard.Ensure(Pointer.Chain.EndCluster >= 0, $"Last cluster {Pointer.Chain.EndCluster} is not defined for empty cluster chain");
+		if (_integrityChecks) {
+			Guard.Ensure(Pointer.Chain.EndCluster >= 0, $"Last cluster {Pointer.Chain.EndCluster} is not defined for empty cluster chain");
+		}
 		Pointer.CurrentCluster = Pointer.Chain.EndCluster;
 		Pointer.CurrentIndex = Pointer.Chain.TotalClusters - 1;
 		Pointer.CurrentTraits = CalculateCurrentTraits();
-		Pointer.CheckTraits();
-		Guard.Ensure(Pointer.CurrentTraits.HasFlag(ClusterTraits.End), $"End cluster {Pointer.CurrentCluster} was not marked end");
+		if (_integrityChecks) {
+			Pointer.CheckTraits();
+			Guard.Ensure(Pointer.CurrentTraits.HasFlag(ClusterTraits.End), $"End cluster {Pointer.CurrentCluster} was not marked end");
+		}
 	}
 
 	public void SeekTo(long logicalCluster) {
-		Guard.Ensure(Pointer.Chain.StartCluster >= 0, "Cannot seek as there are no clusters to seek");
+		if (_integrityChecks) {
+			Guard.Ensure(Pointer.Chain.StartCluster >= 0, "Cannot seek as there are no clusters to seek");
+		}
 		FindShortestPathToLogicalCluster(logicalCluster, out var startCluster, out var steps, out var direction);
 		if (startCluster == Pointer.Chain.StartCluster) {
 			SeekStart();
@@ -77,7 +89,9 @@ internal class ClusterSeeker  {
 	}
 
 	public void SeekForward(long steps) {
-		Guard.Ensure(Pointer.Chain.StartCluster >= 0, "Cannot seek as there are no clusters to seek");
+		if (_integrityChecks) {
+			Guard.Ensure(Pointer.Chain.StartCluster >= 0, "Cannot seek as there are no clusters to seek");
+		}
 		var walkedClusters = new HashSet<long> {
 			Pointer.CurrentCluster
 		};
@@ -88,7 +102,9 @@ internal class ClusterSeeker  {
 			Pointer.CurrentCluster = nextCluster;
 			Pointer.CurrentIndex++;
 			Pointer.CurrentTraits = CalculateCurrentTraits();
-			Pointer.CheckTraits();
+			if (_integrityChecks) {
+				Pointer.CheckTraits();
+			}
 			walkedClusters.Add(Pointer.CurrentCluster);
 		}
 	}
@@ -105,7 +121,9 @@ internal class ClusterSeeker  {
 			Pointer.CurrentCluster = prevCluster;
 			Pointer.CurrentIndex--;
 			Pointer.CurrentTraits = CalculateCurrentTraits();
-			Pointer.CheckTraits();
+			if (_integrityChecks) {
+				Pointer.CheckTraits();
+			}
 			walkedClusters.Add(Pointer.CurrentCluster);
 		}
 	}

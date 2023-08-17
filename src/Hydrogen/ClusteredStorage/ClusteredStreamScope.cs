@@ -22,7 +22,8 @@ public class ClusteredStreamScope : IDisposable {
 			Record.Size,
 			Record.StartCluster,
 			Record.EndCluster,
-			clusteredStorage.ClusterMap.CalculateClusterChainLength(Record.Size)
+			clusteredStorage.ClusterMap.CalculateClusterChainLength(Record.Size),
+			clusteredStorage.Policy.HasFlag(ClusteredStoragePolicy.IntegrityChecks)
 		);
 
 		// track when stream length changes so we can update the scope's record

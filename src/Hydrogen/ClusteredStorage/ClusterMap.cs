@@ -19,7 +19,7 @@ public class ClusterMap  {
 
 	public event EventHandlerEx<object, ClusterMapChangedEventArgs> Changed;
 
-	protected readonly SynchronizedExtendedList<Cluster> _clusters;
+	private readonly SynchronizedExtendedList<Cluster> _clusters;
 
 	public ClusterMap(IExtendedList<Cluster> clusters, int clusterSize) {
 		Guard.ArgumentNotNull(clusters, nameof(clusters));

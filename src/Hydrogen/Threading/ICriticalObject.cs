@@ -6,23 +6,18 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using System;
+
 namespace Hydrogen;
 
-public sealed class Synchronized<T> : SynchronizedObject {
-	private T _value;
+public interface ICriticalObject {
 
-	public Synchronized(T @object) {
-		_value = @object;
-	}
+	ICriticalObject ParentCriticalObject { get; set; }
+	
+	object Lock { get; }
 
-	public T Value {
-		get {
-			using (EnterReadScope())
-				return _value;
-		}
-		set {
-			using (EnterWriteScope())
-				_value = value;
-		}
-	}
+	bool IsLocked { get; }
+
+	IDisposable EnterAccessScope();
+
 }

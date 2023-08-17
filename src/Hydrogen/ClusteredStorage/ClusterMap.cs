@@ -7,7 +7,6 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Threading;
 
 namespace Hydrogen;
 
@@ -15,11 +14,12 @@ namespace Hydrogen;
 /// A cluster map used to store disparate data streams into connected chains of clusters. <see cref="ClusteredStorage"/> uses
 /// this to store multiple streams of data into a single stream.
 /// </summary>
-public class ClusterMap  {
+/// <remarks>Not thread-safe.</remarks>
+public class ClusterMap {
 
 	public event EventHandlerEx<object, ClusterMapChangedEventArgs> Changed;
 
-	private readonly SynchronizedExtendedList<Cluster> _clusters;
+	private readonly IExtendedList<Cluster> _clusters;
 
 	public ClusterMap(IExtendedList<Cluster> clusters, int clusterSize) {
 		Guard.ArgumentNotNull(clusters, nameof(clusters));
@@ -29,10 +29,6 @@ public class ClusterMap  {
 		ZeroClusterBytes = new byte[clusterSize];
 	}
 
-	public ISynchronizedObject ParentSyncObject { get => _clusters.ParentSyncObject; set => _clusters.ParentSyncObject = value; }
-
-	public ReaderWriterLockSlim ThreadLock => _clusters.ThreadLock;
-
 	public IReadOnlyExtendedList<Cluster> Clusters => _clusters;
 
 	public int ClusterSize { get; }
@@ -41,33 +37,26 @@ public class ClusterMap  {
 
 	public bool SuppressEvents { get; set; }
 
-	public IDisposable EnterReadScope() => _clusters.EnterReadScope();
-
-	public IDisposable EnterWriteScope() => _clusters.EnterWriteScope();
-
 	public virtual (long, long) NewClusterChain(long quantity, long terminalValue) {
 		Guard.ArgumentGT(quantity, 0, nameof(quantity));
 		var @event = new ClusterMapChangedEventArgs() { ChainTerminal = terminalValue };
-		using (EnterWriteScope()) {
-			var startClusterIndex = _clusters.Count;
-			var endCluster = startClusterIndex;
-			var startCluster = CreateCluster();
-			@event.ClusterCountDelta++;
-			@event.ChainNewStartCluster = startClusterIndex;
-			@event.ChainNewEndCluster = startClusterIndex;
-			@event.AddedClusters.Add(startClusterIndex);
-			@event.AllChanges.Add((ClusterMapChangedEventArgs.MutationType.Added, startClusterIndex));
+		var startClusterIndex = _clusters.Count;
+		var startCluster = CreateCluster();
+		@event.ClusterCountDelta++;
+		@event.ChainNewStartCluster = startClusterIndex;
+		@event.ChainNewEndCluster = startClusterIndex;
+		@event.AddedClusters.Add(startClusterIndex);
+		@event.AllChanges.Add((ClusterMapChangedEventArgs.MutationType.Added, startClusterIndex));
 
-			// Make start cluster FIRST and LAST
-			startCluster.Traits = ClusterTraits.Start | ClusterTraits.End;
-			startCluster.Prev = terminalValue;
-			startCluster.Next = terminalValue;
-			_clusters.Add(startCluster);
-			if (quantity > 1) {
-				endCluster = AppendClustersToEnd(startClusterIndex, quantity - 1, @event);
-				@event.ChainOriginalStartCluster = null; // since we created it in this method (append thinks was pre-existing)
-				@event.ChainOriginalEndCluster = null; // same
-			}
+		// Make start cluster FIRST and LAST
+		startCluster.Traits = ClusterTraits.Start | ClusterTraits.End;
+		startCluster.Prev = terminalValue;
+		startCluster.Next = terminalValue;
+		_clusters.Add(startCluster);
+		if (quantity > 1) {
+			AppendClustersToEnd(startClusterIndex, quantity - 1, @event);
+			@event.ChainOriginalStartCluster = null; // since we created it in this method (append thinks was pre-existing)
+			@event.ChainOriginalEndCluster = null; // same
 		}
 		NotifyClustersChanged(@event);
 		return (@event.ChainNewStartCluster.Value, @event.ChainNewEndCluster.Value);
@@ -90,165 +79,161 @@ public class ClusterMap  {
 		// (5) B.Next = C, C.Next = D, D.Next = E
 		// (6) E.Traits = Last
 
+		Guard.ArgumentInRange(fromEnd, 0, _clusters.Count - 1, nameof(fromEnd));
+		Guard.ArgumentGTE(quantity, 0, nameof(quantity));
+		Guard.Argument(ReadClusterTraits(fromEnd).HasFlag(ClusterTraits.End), nameof(fromEnd), "Can only append from last cluster in chain");
 
-		using (EnterWriteScope()) {
-			Guard.ArgumentInRange(fromEnd, 0, _clusters.Count - 1, nameof(fromEnd));
-			Guard.ArgumentGTE(quantity, 0, nameof(quantity));
-			Guard.Argument(ReadClusterTraits(fromEnd).HasFlag(ClusterTraits.End), nameof(fromEnd), "Can only append from last cluster in chain");
-
-			// Appending nothing case
-			var newEndCluster = fromEnd;
-			if (quantity == 0)
-				return newEndCluster;
-
-			// (1) A.Traits = !Last
-			MaskClusterTraits(fromEnd, ClusterTraits.End, false, @event);
-			var endTerminalValue = ReadClusterNext(fromEnd);  // remember what the end terminal value was
-			@event.ChainTerminal = endTerminalValue;
-			@event.ChainOriginalEndCluster = fromEnd;
-
-			// (4) Simply add new clusters, connecting them along the way
-			var previous = fromEnd;
-			for (var i = 0L; i < quantity; i++) {
-				var newCluster = CreateCluster();
-				var newClusterIX = _clusters.Count;
-				@event.ClusterCountDelta++;
-				@event.AddedClusters.Add(newClusterIX);
-				@event.AllChanges.Add((ClusterMapChangedEventArgs.MutationType.Added, newClusterIX));
-
-				// (4) make new cluster connect to previous
-				newCluster.Prev = previous;
-
-				if (i == 0) {
-					// creating first next cluster (B)
-					WriteClusterNext(previous, newClusterIX, @event); // (3) A.Next = B 
-				}
-
-				if (i < quantity - 1) {
-					// creating first/middle cluster
-					// (5) B.Next = C, C.Next = D, D.Next = E, ...
-					newCluster.Next = newClusterIX + 1;
-				} else {
-					// creating last cluster (E)
-					newCluster.Traits |= ClusterTraits.End; // (6) E.Traits = Last
-					newCluster.Next = endTerminalValue; // (2) E.Next = A.Next
-					newEndCluster = newClusterIX;
-					@event.ChainNewEndCluster = newEndCluster;
-				}
-
-				// finally save cluster to list
-				_clusters.Add(newCluster);
-				previous = newClusterIX;
-
-			}
+		// Appending nothing case
+		var newEndCluster = fromEnd;
+		if (quantity == 0)
 			return newEndCluster;
+
+		// (1) A.Traits = !Last
+		MaskClusterTraits(fromEnd, ClusterTraits.End, false, @event);
+		var endTerminalValue = ReadClusterNext(fromEnd);  // remember what the end terminal value was
+		@event.ChainTerminal = endTerminalValue;
+		@event.ChainOriginalEndCluster = fromEnd;
+
+		// (4) Simply add new clusters, connecting them along the way
+		var previous = fromEnd;
+		for (var i = 0L; i < quantity; i++) {
+			var newCluster = CreateCluster();
+			var newClusterIX = _clusters.Count;
+			@event.ClusterCountDelta++;
+			@event.AddedClusters.Add(newClusterIX);
+			@event.AllChanges.Add((ClusterMapChangedEventArgs.MutationType.Added, newClusterIX));
+
+			// (4) make new cluster connect to previous
+			newCluster.Prev = previous;
+
+			if (i == 0) {
+				// creating first next cluster (B)
+				WriteClusterNext(previous, newClusterIX, @event); // (3) A.Next = B 
+			}
+
+			if (i < quantity - 1) {
+				// creating first/middle cluster
+				// (5) B.Next = C, C.Next = D, D.Next = E, ...
+				newCluster.Next = newClusterIX + 1;
+			} else {
+				// creating last cluster (E)
+				newCluster.Traits |= ClusterTraits.End; // (6) E.Traits = Last
+				newCluster.Next = endTerminalValue; // (2) E.Next = A.Next
+				newEndCluster = newClusterIX;
+				@event.ChainNewEndCluster = newEndCluster;
+			}
+
+			// finally save cluster to list
+			_clusters.Add(newCluster);
+			previous = newClusterIX;
+
 		}
+		return newEndCluster;
+
 	}
 
 	public virtual long RemoveNextClusters(long fromCluster, long quantity = long.MaxValue) {
 		// Walk back cluster chain end and then delete forward	
-		using (EnterWriteScope()) {
-			Guard.ArgumentInRange(fromCluster, 0, _clusters.Count - 1, nameof(fromCluster));
+		Guard.ArgumentInRange(fromCluster, 0, _clusters.Count - 1, nameof(fromCluster));
 
-			if (quantity == 0)
-				return 0;
+		if (quantity == 0)
+			return 0;
 
-			var toRemove = 1L;
-			while (!ReadClusterTraits(fromCluster).HasFlag(ClusterTraits.End) && toRemove < quantity) {
-				fromCluster = ReadClusterNext(fromCluster);
-				toRemove++;
-			}
-			return RemoveBackwards(fromCluster, toRemove);
+		var toRemove = 1L;
+		while (!ReadClusterTraits(fromCluster).HasFlag(ClusterTraits.End) && toRemove < quantity) {
+			fromCluster = ReadClusterNext(fromCluster);
+			toRemove++;
 		}
+		return RemoveBackwards(fromCluster, toRemove);
 	}
 
 	public virtual long RemoveBackwards(long fromCluster, long quantity) {
 		var deferredEvent = new ClusterMapChangedEventArgs();
 		var clustersRemoved = 0L;
-		using (EnterWriteScope()) {
-			Guard.ArgumentInRange(fromCluster, 0, _clusters.Count - 1, nameof(fromCluster));
-			if (quantity == 0)
-				return 0;
-			var fromTraits = ReadClusterTraits(fromCluster);
-			var fromWasEnd = fromTraits.HasFlag(ClusterTraits.End);
-			var fromNext = ReadClusterNext(fromCluster);
 
-			// Iterate through and remove clusters by tip-substitution
-			var removeCluster = fromCluster;
-			var removeClusterPrev = 0L;
-			var removeClusterIsStart = false;
+		Guard.ArgumentInRange(fromCluster, 0, _clusters.Count - 1, nameof(fromCluster));
+		if (quantity == 0)
+			return 0;
+		var fromTraits = ReadClusterTraits(fromCluster);
+		var fromWasEnd = fromTraits.HasFlag(ClusterTraits.End);
+		var fromNext = ReadClusterNext(fromCluster);
 
-			// remove clusters backwards from end until we've removed the requested quantity or we've removed the start cluster
-			while (clustersRemoved < quantity && !removeClusterIsStart) {
-				// Read remove cluster info
-				var removeClusterTraits = ReadClusterTraits(removeCluster);
-				removeClusterIsStart = removeClusterTraits.HasFlag(ClusterTraits.Start);
-				removeClusterPrev = ReadClusterPrev(removeCluster);
+		// Iterate through and remove clusters by tip-substitution
+		var removeCluster = fromCluster;
+		var removeClusterPrev = 0L;
+		var removeClusterIsStart = false;
 
-				// Determine tip cluster
-				var logicalClusterCount = _clusters.Count - clustersRemoved;
-				var tipCluster = logicalClusterCount - 1;
-				var removeClusterPrevIsTip = removeClusterPrev == tipCluster;
+		// remove clusters backwards from end until we've removed the requested quantity or we've removed the start cluster
+		while (clustersRemoved < quantity && !removeClusterIsStart) {
+			// Read remove cluster info
+			var removeClusterTraits = ReadClusterTraits(removeCluster);
+			removeClusterIsStart = removeClusterTraits.HasFlag(ClusterTraits.Start);
+			removeClusterPrev = ReadClusterPrev(removeCluster);
 
-				// Move the tip cluster into the removed cluster's spot
-				MigrateTipClusterTo(tipCluster, removeCluster, deferredEvent);
+			// Determine tip cluster
+			var logicalClusterCount = _clusters.Count - clustersRemoved;
+			var tipCluster = logicalClusterCount - 1;
+			var removeClusterPrevIsTip = removeClusterPrev == tipCluster;
 
-				// if the removed cluster's previous was the tip cluster (just moved into the removed clusters spot)
-				// then it follows that the deleted cluster's previous is now where the deleted was cluster was
-				if (removeClusterPrevIsTip && !removeClusterIsStart)
-					removeClusterPrev = removeCluster;
+			// Move the tip cluster into the removed cluster's spot
+			MigrateTipClusterTo(tipCluster, removeCluster, deferredEvent);
 
-				clustersRemoved++;
-				deferredEvent.ClusterCountDelta--;
+			// if the removed cluster's previous was the tip cluster (just moved into the removed clusters spot)
+			// then it follows that the deleted cluster's previous is now where the deleted was cluster was
+			if (removeClusterPrevIsTip && !removeClusterIsStart)
+				removeClusterPrev = removeCluster;
 
-				if (!removeClusterIsStart) {
-					removeCluster = removeClusterPrev;
-				}
+			clustersRemoved++;
+			deferredEvent.ClusterCountDelta--;
+
+			if (!removeClusterIsStart) {
+				removeCluster = removeClusterPrev;
 			}
-
-			if (removeClusterIsStart && fromWasEnd) {
-				// removed entire chain, nothing to do
-				// [A] -> [B] -> [C] -> [D] -> [E] 
-				Guard.Ensure(removeClusterPrev == fromNext, "Cluster chain had mismatching terminals");
-				deferredEvent.ChainTerminal = removeClusterPrev;
-				deferredEvent.ChainOriginalEndCluster = fromCluster;
-				deferredEvent.ChainOriginalStartCluster = removeCluster;
-				deferredEvent.ChainNewEndCluster = null;
-				deferredEvent.ChainNewStartCluster = null;
-			} else if (removeClusterIsStart && !fromWasEnd) {
-				// removed from middle to beginning
-				// [A] -> [B] -> [C] -> D -> E 
-				// - set D.Traits.Start = true
-				// - set D.Previous = A.Previous (terminal value propagates)
-				MaskClusterTraits(fromNext, ClusterTraits.Start, true, deferredEvent);
-				deferredEvent.ChainTerminal = removeClusterPrev;
-				WriteClusterPrev(fromNext, deferredEvent.ChainTerminal.Value, deferredEvent);
-				deferredEvent.ChainOriginalStartCluster = removeCluster;
-				deferredEvent.ChainNewStartCluster = fromNext;
-			} else if (!removeClusterIsStart && fromWasEnd) {
-				// removed from end to middle
-				// A -> B -> [C] -> [D] -> [E] 
-				// - set B.Traits.End = true
-				// - set B.Next = E.Next (terminal value propagates)
-				deferredEvent.ChainTerminal = fromNext;
-				MaskClusterTraits(removeClusterPrev, ClusterTraits.End, true, deferredEvent);
-				WriteClusterNext(removeClusterPrev, deferredEvent.ChainTerminal.Value, deferredEvent);
-				deferredEvent.ChainOriginalEndCluster = fromCluster;
-				deferredEvent.ChainNewEndCluster = removeClusterPrev;
-			} else {
-				// removed from middle to middle
-				// A -> [B] -> [C] -> [D] -> E 
-				// - set A.Next = E
-				// - set E.Previous = A
-				Guard.Ensure(!removeClusterIsStart && !fromWasEnd, "Internal error: E8F085C8-6025-424D-8F42-C402637DF1A0");
-				//@event.ChainTerminal = null;
-				WriteClusterNext(removeClusterPrev, fromNext, deferredEvent);
-				WriteClusterPrev(fromNext, removeClusterPrev, deferredEvent);
-			}
-
-			// finally remove the old clusters from collection
-			_clusters.RemoveRange(_clusters.Count - clustersRemoved, clustersRemoved);  // Migrate included removals in @event
 		}
+
+		if (removeClusterIsStart && fromWasEnd) {
+			// removed entire chain, nothing to do
+			// [A] -> [B] -> [C] -> [D] -> [E] 
+			Guard.Ensure(removeClusterPrev == fromNext, "Cluster chain had mismatching terminals");
+			deferredEvent.ChainTerminal = removeClusterPrev;
+			deferredEvent.ChainOriginalEndCluster = fromCluster;
+			deferredEvent.ChainOriginalStartCluster = removeCluster;
+			deferredEvent.ChainNewEndCluster = null;
+			deferredEvent.ChainNewStartCluster = null;
+		} else if (removeClusterIsStart && !fromWasEnd) {
+			// removed from middle to beginning
+			// [A] -> [B] -> [C] -> D -> E 
+			// - set D.Traits.Start = true
+			// - set D.Previous = A.Previous (terminal value propagates)
+			MaskClusterTraits(fromNext, ClusterTraits.Start, true, deferredEvent);
+			deferredEvent.ChainTerminal = removeClusterPrev;
+			WriteClusterPrev(fromNext, deferredEvent.ChainTerminal.Value, deferredEvent);
+			deferredEvent.ChainOriginalStartCluster = removeCluster;
+			deferredEvent.ChainNewStartCluster = fromNext;
+		} else if (!removeClusterIsStart && fromWasEnd) {
+			// removed from end to middle
+			// A -> B -> [C] -> [D] -> [E] 
+			// - set B.Traits.End = true
+			// - set B.Next = E.Next (terminal value propagates)
+			deferredEvent.ChainTerminal = fromNext;
+			MaskClusterTraits(removeClusterPrev, ClusterTraits.End, true, deferredEvent);
+			WriteClusterNext(removeClusterPrev, deferredEvent.ChainTerminal.Value, deferredEvent);
+			deferredEvent.ChainOriginalEndCluster = fromCluster;
+			deferredEvent.ChainNewEndCluster = removeClusterPrev;
+		} else {
+			// removed from middle to middle
+			// A -> [B] -> [C] -> [D] -> E 
+			// - set A.Next = E
+			// - set E.Previous = A
+			Guard.Ensure(!removeClusterIsStart && !fromWasEnd, "Internal error: E8F085C8-6025-424D-8F42-C402637DF1A0");
+			//@event.ChainTerminal = null;
+			WriteClusterNext(removeClusterPrev, fromNext, deferredEvent);
+			WriteClusterPrev(fromNext, removeClusterPrev, deferredEvent);
+		}
+
+		// finally remove the old clusters from collection
+		_clusters.RemoveRange(_clusters.Count - clustersRemoved, clustersRemoved);  // Migrate included removals in @event
+
 		NotifyClustersChanged(deferredEvent);
 		return clustersRemoved;
 	}

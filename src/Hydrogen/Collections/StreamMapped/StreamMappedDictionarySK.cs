@@ -125,7 +125,7 @@ public class StreamMappedDictionarySK<TKey, TValue> : DictionaryBase<TKey, TValu
 	public Task LoadAsync() => Task.Run(Load);
 
 	public TKey ReadKey(int index) {
-		using (Storage.EnterReadScope()) {
+		using (Storage.EnterAccessScope()) {
 			if (Storage.IsNull(_valueStore.Storage.Header.ReservedRecords + index))
 				throw new InvalidOperationException($"Stream record {index} is null");
 	
@@ -135,7 +135,7 @@ public class StreamMappedDictionarySK<TKey, TValue> : DictionaryBase<TKey, TValu
 	}
 
 	public TValue ReadValue(int index) {
-		using (Storage.EnterReadScope()) {
+		using (Storage.EnterAccessScope()) {
 			if (Storage.IsNull(_valueStore.Storage.Header.ReservedRecords + index))
 				return default;
 
@@ -146,7 +146,7 @@ public class StreamMappedDictionarySK<TKey, TValue> : DictionaryBase<TKey, TValu
 	public override void Add(TKey key, TValue value) {
 		Guard.ArgumentNotNull(key, nameof(key));
 		CheckLoaded();
-		using (Storage.EnterWriteScope()) {
+		using (Storage.EnterAccessScope()) {
 			if (TryFindKey(key, out _))
 				throw new KeyNotFoundException($"An item with key '{key}' was already added");
 			AddInternal(key, value);
@@ -154,7 +154,7 @@ public class StreamMappedDictionarySK<TKey, TValue> : DictionaryBase<TKey, TValu
 	}
 
 	public override void Update(TKey key, TValue value) {
-		using (Storage.EnterWriteScope()) {
+		using (Storage.EnterAccessScope()) {
 			if (!TryFindKey(key, out var index))
 				throw new KeyNotFoundException($"The key '{key}' was not found");
 			UpdateInternal(index, key, value);
@@ -164,7 +164,7 @@ public class StreamMappedDictionarySK<TKey, TValue> : DictionaryBase<TKey, TValu
 	protected override void AddOrUpdate(TKey key, TValue value) {
 		Guard.ArgumentNotNull(key, nameof(key));
 		CheckLoaded();
-		using (Storage.EnterWriteScope()) {
+		using (Storage.EnterAccessScope()) {
 			if (TryFindKey(key, out var index)) {
 				UpdateInternal(index, key, value);
 			} else {
@@ -177,7 +177,7 @@ public class StreamMappedDictionarySK<TKey, TValue> : DictionaryBase<TKey, TValu
 	public override bool Remove(TKey key) {
 		Guard.ArgumentNotNull(key, nameof(key));
 		CheckLoaded();
-		using (Storage.EnterWriteScope()) {
+		using (Storage.EnterAccessScope()) {
 			if (TryFindKey(key, out var index)) {
 				RemoveAt(index);
 				return true;
@@ -189,7 +189,7 @@ public class StreamMappedDictionarySK<TKey, TValue> : DictionaryBase<TKey, TValu
 	public override bool ContainsKey(TKey key) {
 		Guard.ArgumentNotNull(key, nameof(key));
 		CheckLoaded();
-		using (Storage.EnterReadScope()) {
+		using (Storage.EnterAccessScope()) {
 			return
 				_checksumToIndexLookup[_keyChecksum.CalculateChecksum(key)]
 					.Where(index => !IsUnusedRecord(index))
@@ -200,7 +200,7 @@ public class StreamMappedDictionarySK<TKey, TValue> : DictionaryBase<TKey, TValu
 
 	public override void Clear() {
 		// Load not required
-		using (Storage.EnterWriteScope()) {
+		using (Storage.EnterAccessScope()) {
 			_valueStore.Clear();
 			_checksumToIndexLookup.Clear();
 			_unusedRecords.Clear();
@@ -210,7 +210,7 @@ public class StreamMappedDictionarySK<TKey, TValue> : DictionaryBase<TKey, TValu
 	public override bool TryGetValue(TKey key, out TValue value) {
 		Guard.ArgumentNotNull(key, nameof(key));
 		CheckLoaded();
-		using (Storage.EnterReadScope()) {
+		using (Storage.EnterAccessScope()) {
 			if (TryFindValue(key, out _, out value)) {
 				return true;
 			}
@@ -221,7 +221,7 @@ public class StreamMappedDictionarySK<TKey, TValue> : DictionaryBase<TKey, TValu
 
 	public bool TryFindKey(TKey key, out int index) {
 		Guard.ArgumentNotNull(key, nameof(key));
-		using (Storage.EnterReadScope()) {
+		using (Storage.EnterAccessScope()) {
 			foreach (var i in _checksumToIndexLookup[_keyChecksum.CalculateChecksum(key)]) {
 				var candidateKey = ReadKey(i);
 				if (_keyComparer.Equals(candidateKey, key)) {
@@ -236,7 +236,7 @@ public class StreamMappedDictionarySK<TKey, TValue> : DictionaryBase<TKey, TValu
 
 	public bool TryFindValue(TKey key, out int index, out TValue value) {
 		Guard.ArgumentNotNull(key, nameof(key));
-		using (Storage.EnterReadScope()) {
+		using (Storage.EnterAccessScope()) {
 			foreach (var i in _checksumToIndexLookup[_keyChecksum.CalculateChecksum(key)]) {
 				var candidateKey = ReadKey(i);
 				if (_keyComparer.Equals(candidateKey, key)) {
@@ -254,7 +254,7 @@ public class StreamMappedDictionarySK<TKey, TValue> : DictionaryBase<TKey, TValu
 	public override void Add(KeyValuePair<TKey, TValue> item) {
 		Guard.ArgumentNotNull(item, nameof(item)); // Key not null checked in TrueFindKey
 		CheckLoaded();
-		using (Storage.EnterWriteScope()) {
+		using (Storage.EnterAccessScope()) {
 			if (TryFindKey(item.Key, out _))
 				throw new KeyNotFoundException($"An item with key '{item.Key}' was already added");
 			AddInternal(item.Key, item.Value);
@@ -264,7 +264,7 @@ public class StreamMappedDictionarySK<TKey, TValue> : DictionaryBase<TKey, TValu
 	public override bool Remove(KeyValuePair<TKey, TValue> item) {
 		Guard.ArgumentNotNull(item, nameof(item)); // Key not null checked in TryFindValue
 		CheckLoaded();
-		using (Storage.EnterWriteScope()) {
+		using (Storage.EnterAccessScope()) {
 			if (TryFindValue(item.Key, out var index, out var value)) {
 				if (_valueComparer.Equals(item.Value, value)) {
 					RemoveAt(index);
@@ -393,7 +393,7 @@ public class StreamMappedDictionarySK<TKey, TValue> : DictionaryBase<TKey, TValu
 		_unusedRecords.Clear();
 		for (var i = 0; i < _valueStore.Count; i++) {
 			var reservedRecordsI = Tools.Collection.CheckNotImplemented64bitAddressingLength(_valueStore.Storage.Header.ReservedRecords);
-			var record = _valueStore.Storage.Records[reservedRecordsI + i];
+			var record = _valueStore.Storage.GetRecord(reservedRecordsI + i);
 			if (record.Traits.HasFlag(ClusteredStreamTraits.IsUsed))
 				_checksumToIndexLookup.Add(record.KeyChecksum, i);
 			else

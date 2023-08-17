@@ -18,27 +18,22 @@ namespace Hydrogen;
 /// A stream wrapper that ensures a lock is attained on it before it is used. It also provides a mechanism to acquire a locking scope.
 /// </summary>
 /// <typeparam name="TStream"></typeparam>
-public class ConcurrentStream<TStream> : StreamDecorator<TStream> where TStream : Stream {
+public class ConcurrentStream : StreamDecorator, ICriticalObject {
 	// NOTE: the below calls the InnerStream directly as opposed to calling base method for performance reasons.
-	private readonly object _lock;
+	private readonly ICriticalObject _lock;
 
-	public ConcurrentStream(TStream stream, object @objectLock = null) : base(stream) {
-		_lock = @objectLock ?? new object();
+	public ConcurrentStream(Stream stream, ICriticalObject @lock = null) : base(stream) {
+		_lock = @lock ?? new CriticalObject();
 	}
 
-	public bool IsLocked => Monitor.IsEntered(_lock);
+	public ICriticalObject ParentCriticalObject { get => _lock.ParentCriticalObject; set => _lock.ParentCriticalObject = value; }
 
+	public object Lock => _lock.Lock;
+
+	public bool IsLocked => _lock.IsLocked;
+	
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	private void CheckLocked() {
-		if (!IsLocked)
-			throw new InvalidOperationException("Stream cannot be accessed without acquiring a locking scope");
-	}
-
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public IDisposable EnterAccessScope() {
-		Monitor.Enter(_lock);
-		return new ActionDisposable(() => Monitor.Exit(_lock));
-	}
+	public IDisposable EnterAccessScope() => _lock.EnterAccessScope();
 
 	public override void Flush() {
 		CheckLocked();
@@ -223,11 +218,10 @@ public class ConcurrentStream<TStream> : StreamDecorator<TStream> where TStream 
 	protected override void ObjectInvariant() {
 		throw new NotSupportedException();
 	}
-}
 
-/// <inheritdoc cref="ConcurrentStream{TStream}"/>
-public sealed class ConcurrentStream : ConcurrentStream<Stream> {
-	public ConcurrentStream(Stream stream)
-		: base(stream) {
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	private void CheckLocked() {
+		if (!IsLocked)
+			throw new InvalidOperationException("Stream cannot be accessed without acquiring a locking scope");
 	}
 }

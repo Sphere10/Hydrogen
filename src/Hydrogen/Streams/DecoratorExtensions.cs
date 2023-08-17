@@ -41,6 +41,20 @@ public static class StreamDecoratorExtensions {
 	public static WriteOnlyStream AsWriteOnly(this Stream stream) 
 		=> stream as WriteOnlyStream ?? new (stream);
 
-	public static ConcurrentStream<TInner> AsConcurrent<TInner>(this TInner stream) where TInner : Stream 
-		=> stream as ConcurrentStream<TInner> ?? new (stream);
+
+	public static ConcurrentStream AsConcurrent(this Stream stream) 
+		=> stream as ConcurrentStream ?? new (stream);
+
+	public static ConcurrentStream AsConcurrent(this Stream stream, ICriticalObject @lock) {
+		return new ConcurrentStream(stream, @lock);
+	}
+
+	public static ConcurrentStream AsConcurrent(this Stream stream, object _lock) {
+		if (stream is ConcurrentStream concurrentStream) {
+			if (!ReferenceEquals(concurrentStream.Lock, _lock)) 
+				throw new ArgumentException("Stream is already a concurrent stream with a different lock.", nameof(stream));
+			return concurrentStream;
+		}
+		return new ConcurrentStream(stream);
+	}
 }

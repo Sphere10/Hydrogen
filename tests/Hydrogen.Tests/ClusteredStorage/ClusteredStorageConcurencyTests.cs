@@ -17,12 +17,23 @@ namespace Hydrogen.Tests;
 
 [TestFixture]
 [Parallelizable(ParallelScope.Children)]
-[Ignore("ClusteredStorage needs to use Monitor not ReadWriterLock")]
-public class ClusteredStorageMultiThreadedTests {
+public class ClusteredStorageConcurencyTests {
 
 
 	[Test]
-	public void ParallelAdd_Then_ParallelRead_WithoutErrors([Values(1, 4, 32)] int clusterSize, [ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy, [Values(0, 1, 11, 11111)] int itemCount) {
+	public void OpenedStreamKeepsLockAfterAccessScopeClosed( [ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy) {
+		using var rootStream = new MemoryStream();
+		var streamContainer = new ClusteredStorage(rootStream, 3, policy: policy, autoLoad: true);
+		var scope = streamContainer.EnterAccessScope();
+		var danglingStream = streamContainer.Add();
+		scope.Dispose();
+		Assert.That(streamContainer.IsLocked, Is.True);
+		danglingStream.Dispose();
+		Assert.That(streamContainer.IsLocked, Is.False);
+	}
+
+	[Test]
+	public void ParallelAdd_Then_ParallelRead_WithoutErrors([Values(1, 4, 32)] int clusterSize, [ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy, [Values(0, 1, 11, 7777)] int itemCount) {
 		using var rootStream = new MemoryStream();
 		var streamContainer = new ClusteredStorage(rootStream, clusterSize, policy: policy, autoLoad: true);
 
@@ -87,7 +98,7 @@ public class ClusteredStorageMultiThreadedTests {
 
 
 	[Test]
-	public void ParallelRemove_Then_ParallelRead_WithoutErrors([Values(1, 4, 32)] int clusterSize, [ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy, [Values(0, 1, 11, 444)] int itemCount) {
+	public void ParallelRemove_Then_ParallelRead_WithoutErrors([Values(1, 4, 32)] int clusterSize, [ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy, [Values(0, 1, 11, 333)] int itemCount) {
 		var rng = new Random(31337);
 		using var rootStream = new MemoryStream();
 		var streamContainer = new ClusteredStorage(rootStream, clusterSize, policy: policy, autoLoad: true);

@@ -50,25 +50,25 @@ public class ClusteredStorageMultipeLiveStreamsTests : StreamPersistedCollection
 	}
 
 	[Test]
-	public void MultipleLiveStreams_OpenRead_OpenWrite_Throws() {
+	public void MultipleLiveStreams_OpenRead_OpenWrite() {
 		var rng = new Random(31337);
 		using var rootStream = new MemoryStream();
 		var streamContainer = new ClusteredStorage(rootStream, autoLoad: true);
 		streamContainer.AddBytes(rng.NextBytes(1000));
 		streamContainer.AddBytes(rng.NextBytes(1000));
 		using var _ = streamContainer.OpenRead(0);
-		Assert.That(() => streamContainer.OpenWrite(1), Throws.Exception.InstanceOf<LockRecursionException>());
+		Assert.That(() => streamContainer.OpenWrite(1), Throws.Nothing);
 		ClusteredStorageTestsHelper.AssertValidRecords(streamContainer);
 	}
 
 	[Test]
-	public void MultipleLiveStreams_OpenRead_Add_Throws() {
+	public void MultipleLiveStreams_OpenRead_Add() {
 		var rng = new Random(31337);
 		using var rootStream = new MemoryStream();
 		var streamContainer = new ClusteredStorage(rootStream, autoLoad: true);
 		streamContainer.AddBytes(rng.NextBytes(1000));
 		using var _ = streamContainer.OpenRead(0);
-		Assert.That(() => streamContainer.AddBytes(rng.NextBytes(1000)), Throws.Exception.InstanceOf<LockRecursionException>());
+		Assert.That(() => streamContainer.AddBytes(rng.NextBytes(1000)), Throws.Nothing);
 	}
 
 	[Test]
@@ -78,7 +78,7 @@ public class ClusteredStorageMultipeLiveStreamsTests : StreamPersistedCollection
 		var streamContainer = new ClusteredStorage(rootStream, autoLoad: true);
 		streamContainer.AddBytes(rng.NextBytes(1000));
 		using var _ = streamContainer.OpenRead(0);
-		Assert.That(() => streamContainer.InsertBytes(0, rng.NextBytes(1000)), Throws.Exception.InstanceOf<LockRecursionException>());
+		Assert.That(() => streamContainer.InsertBytes(0, rng.NextBytes(1000)), Throws.InvalidOperationException);
 	}
 
 	[Test]
@@ -98,7 +98,7 @@ public class ClusteredStorageMultipeLiveStreamsTests : StreamPersistedCollection
 		var streamContainer = new ClusteredStorage(rootStream, autoLoad: true);
 		streamContainer.AddBytes(rng.NextBytes(1000));
 		using var _ = streamContainer.OpenRead(0);
-		Assert.That(() => streamContainer.Clear(), Throws.Exception.InstanceOf<LockRecursionException>());
+		Assert.That(() => streamContainer.Clear(), Throws.Exception.InstanceOf<InvalidOperationException>());
 		ClusteredStorageTestsHelper.AssertValidRecords(streamContainer);
 	}
 

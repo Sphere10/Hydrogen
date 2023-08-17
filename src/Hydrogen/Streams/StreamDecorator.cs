@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 namespace Hydrogen;
 
 public abstract class StreamDecorator<TStream> : Stream where TStream : Stream {
-	protected readonly TStream InnerStream;
+	internal readonly TStream InnerStream;
 
 	protected StreamDecorator(TStream stream) {
 		InnerStream = stream;

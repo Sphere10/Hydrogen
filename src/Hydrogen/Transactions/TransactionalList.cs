@@ -19,12 +19,13 @@ namespace Hydrogen;
 /// <typeparam name="T">Type of item</typeparam>
 public class TransactionalList<T> : StreamMappedList<T>, ITransactionalList<T> {
 	
-	public event EventHandlerEx<object> Committing { add => TransactionalStream.Committing += value; remove => TransactionalStream.Committing -= value; }
-	public event EventHandlerEx<object> Committed { add => TransactionalStream.Committed += value; remove => TransactionalStream.Committed -= value; }
-	public event EventHandlerEx<object> RollingBack { add => TransactionalStream.RollingBack += value; remove => TransactionalStream.RollingBack -= value; }
-	public event EventHandlerEx<object> RolledBack { add => TransactionalStream.RolledBack += value; remove => TransactionalStream.RolledBack -= value; }
+	public event EventHandlerEx<object> Committing { add => _transactionalObject.Committing += value; remove => _transactionalObject.Committing -= value; }
+	public event EventHandlerEx<object> Committed { add => _transactionalObject.Committed += value; remove => _transactionalObject.Committed -= value; }
+	public event EventHandlerEx<object> RollingBack { add => _transactionalObject.RollingBack += value; remove => _transactionalObject.RollingBack -= value; }
+	public event EventHandlerEx<object> RolledBack { add => _transactionalObject.RolledBack += value; remove => _transactionalObject.RolledBack -= value; }
 
 	private readonly ClusteredStorage _storage;
+	private readonly ITransactionalObject _transactionalObject;
 
 	public TransactionalList(
 		string filename, 
@@ -52,28 +53,28 @@ public class TransactionalList<T> : StreamMappedList<T>, ITransactionalList<T> {
 		int reservedRecords = 0,
 		long recordKeySize = 0,
 		Endianness endianness = HydrogenDefaults.Endianness) 
-		: this(new ClusteredStorage(transactionalStream, clusterSize, policy, recordKeySize, reservedRecords, endianness), serializer, comparer) {
+		: this(new ClusteredStorage(transactionalStream, clusterSize, policy, recordKeySize, reservedRecords, endianness), transactionalStream, serializer, comparer) {
 	}
 
-	public TransactionalList(ClusteredStorage storage, IItemSerializer<T> serializer = null, IEqualityComparer<T> comparer = null)
+	public TransactionalList(ClusteredStorage storage, ITransactionalObject transactionalObject, IItemSerializer<T> serializer = null, IEqualityComparer<T> comparer = null)
 		: base(storage, serializer, comparer) {
 		Guard.ArgumentNotNull(storage, nameof(storage));
-		Guard.Argument(storage.RootStream is TransactionalStream, nameof(storage), "Storage must use a TransactionalStream");
+		Guard.ArgumentNotNull(transactionalObject, nameof(transactionalObject));
 		_storage = storage;
+		_transactionalObject = transactionalObject;
 	}
-
-	public TransactionalStream TransactionalStream => (TransactionalStream) _storage.RootStream;
 	
-	public virtual void Commit() => TransactionalStream.Commit();
+	public virtual void Commit() => _transactionalObject.Commit();
 
-	public virtual Task CommitAsync() => TransactionalStream.CommitAsync();
+	public virtual Task CommitAsync() => _transactionalObject.CommitAsync();
 
-	public virtual void Rollback() => TransactionalStream.Rollback();
+	public virtual void Rollback() => _transactionalObject.Rollback();
 
-	public virtual Task RollbackAsync() => TransactionalStream.RollbackAsync();
+	public virtual Task RollbackAsync() => _transactionalObject.RollbackAsync();
 
 	public virtual void Dispose() {
-		_storage.RootStream.Dispose();
+		using (_storage.EnterAccessScope()) 
+			_storage.RootStream.Dispose();
 	}
 
 }

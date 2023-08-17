@@ -8,13 +8,12 @@ namespace Hydrogen;
 public static class ClusterDiagnostics {
 
 	public static string ToTextDump(ClusteredStorage storage) {
-		
-		using (storage.EnterReadScope()) {
+		using (storage.EnterAccessScope()) {
 			var stringBuilder = new FastStringBuilder();
 			stringBuilder.AppendLine(storage.ToString());
 			stringBuilder.AppendLine("Records:");
-			for (var i = 0; i < storage.Records.Count; i++) {
-				var record =  storage.Records[i];
+			for (var i = 0; i < storage.Count; i++) {
+				var record = storage.GetRecord(i);
 				stringBuilder.AppendLine($"\t{i}: {record}");
 			}
 			stringBuilder.AppendLine("Cluster Container:");
@@ -91,7 +90,11 @@ public static class ClusterDiagnostics {
 
 	public static void VerifyClusters(ClusterMap clusterMap) => VerifyClusters(clusterMap.Clusters.ToArray(), null);
 
-	public static void VerifyClusters(ClusteredStorage clusteredStorage) => VerifyClusters(clusteredStorage.ClusterMap.Clusters.ToArray(), clusteredStorage.Records.ToArray());
+	public static void VerifyClusters(ClusteredStorage clusteredStorage) {
+		using (clusteredStorage.EnterAccessScope()) {
+			VerifyClusters(clusteredStorage.ClusterMap.Clusters.ToArray(), Tools.Collection.RangeL(0, clusteredStorage.Count).Select(clusteredStorage.GetRecord).ToArray());
+		}
+	}
 
 	public static void VerifyClusters(Cluster[] clusters, ClusteredStreamRecord[] records) {
 		Guard.ArgumentNotNull(clusters, nameof(clusters));
@@ -100,7 +103,7 @@ public static class ClusterDiagnostics {
 			clusters
 				.Select((cluster, i) => (cluster, i))
 				.Where(x => x.cluster.Traits.HasFlag(ClusterTraits.Start)).OrderBy(x => x.cluster.Prev).ToExtendedList();
-		
+
 		// get all the end clusters
 		var endClusters =
 			clusters
@@ -115,7 +118,7 @@ public static class ClusterDiagnostics {
 				.Where(x => x.Count() > 1)
 				.Select(x => $"[Clusters: {x.ToDelimittedString(", ", toStringFunc: y => y.i.ToString())} Terminal: {x.Key}]")
 				.ToArray();
-		if (startClustersWithDuplicateTerminals.Any()) 
+		if (startClustersWithDuplicateTerminals.Any())
 			throw new InvalidOperationException($"Start clusters have duplicate terminals: {startClustersWithDuplicateTerminals.ToDelimittedString(", ")}");
 
 
@@ -126,16 +129,16 @@ public static class ClusterDiagnostics {
 				.Where(x => x.Count() > 1)
 				.Select(x => $"[Clusters: {x.ToDelimittedString(", ", toStringFunc: y => y.i.ToString())} Terminal: {x.Key} ]")
 				.ToArray();
-		if (endClustersWithDuplicateTerminals.Any()) 
+		if (endClustersWithDuplicateTerminals.Any())
 			throw new InvalidOperationException($"End clusters have duplicate terminals: {endClustersWithDuplicateTerminals.ToDelimittedString(", ")}");
 		// ensure same number of start and end clusters
 		Guard.Ensure(startClusters.Count == endClusters.Count, $"Start clusters count {startClusters.Count} does not match end clusters count {endClusters.Count}");
-		
+
 		// ensure all start clusters have commensurate end cluster matched by terminal
 		var endTerminals = endClusters.Select(x => x.cluster.Next).ToHashSet();
-		var startClustersWithoutEndClusters = startClusters.Where(x => !endTerminals.Contains(x.cluster.Prev)).Select(x => (cluster: x.i, terminal:x.cluster.Prev)).ToArray();
+		var startClustersWithoutEndClusters = startClusters.Where(x => !endTerminals.Contains(x.cluster.Prev)).Select(x => (cluster: x.i, terminal: x.cluster.Prev)).ToArray();
 		if (startClustersWithoutEndClusters.Any())
-			throw new InvalidOperationException($"Start clusters {startClustersWithoutEndClusters.ToDelimittedString(", ", toStringFunc: x => $"(Cluster: {x.cluster}, Terminal: {x.terminal}" )} do not have commensurate end clusters.");
+			throw new InvalidOperationException($"Start clusters {startClustersWithoutEndClusters.ToDelimittedString(", ", toStringFunc: x => $"(Cluster: {x.cluster}, Terminal: {x.terminal}")} do not have commensurate end clusters.");
 		// Don't need to check reverse since other checks would've prevented it
 
 		// Ensure all non-start/end clusters do not loop back to themselves
@@ -145,7 +148,7 @@ public static class ClusterDiagnostics {
 			.ToArray();
 		if (loopBackClusters.Any())
 			throw new InvalidOperationException($"Clusters {loopBackClusters.ToDelimittedString(", ", toStringFunc: x => x.ToString())} loop back to themselves.");
-	
+
 		// visit all paths, ensuring no cycles and measuring their lengths
 		var visited = new HashSet<long>();
 		var clusterChains = new Dictionary<long, (long start, long end, long terminal, long length)>();
@@ -166,24 +169,24 @@ public static class ClusterDiagnostics {
 
 		if (records is not null) {
 			bool IsValidCluster(long c) => 0 <= c && c < clusters.Length || c == Cluster.Null;
-			
+
 			// ensure all records have valid clusters
-			var recordsReferencingOutOfBoundsClusters = 
+			var recordsReferencingOutOfBoundsClusters =
 				records
 				.Select((record, i) => (record, i))
 				.Where(x => !IsValidCluster(x.record.StartCluster) || !IsValidCluster(x.record.EndCluster))
 				.ToArray();
-			if (recordsReferencingOutOfBoundsClusters.Any()) 
+			if (recordsReferencingOutOfBoundsClusters.Any())
 				throw new InvalidOperationException($"Records {recordsReferencingOutOfBoundsClusters.ToDelimittedString(", ")} reference out of bounds clusters (min:{0} max:{clusters.Length})");
-	
+
 			// ensure all records have dangling NULL (-1) terminals
 			var recordsWithDanglingTerminals =
 				records
 				.Where(x => x.StartCluster == Cluster.Null && x.EndCluster != Cluster.Null || x.StartCluster != Cluster.Null && x.EndCluster == Cluster.Null)
 				.ToArray();
-			if (recordsWithDanglingTerminals.Any()) 
+			if (recordsWithDanglingTerminals.Any())
 				throw new InvalidOperationException($"Records {recordsWithDanglingTerminals.ToDelimittedString(", ")} have dangling null terminals (start:{0} end:{1})");
-			
+
 			// Ensure no records point to same start cluster
 			var recordsWithDuplicateStartClusters =
 				records
@@ -207,13 +210,13 @@ public static class ClusterDiagnostics {
 				throw new InvalidOperationException($"Records {recordsWithDuplicateEndClusters.SelectMany(x => x).ToDelimittedString(", ")} have duplicate end clusters.");
 
 			// Ensure no records exist that aren't referenced by a chain (except for null records)
-			var recordsNotAddressedByAChain = 
+			var recordsNotAddressedByAChain =
 				records
 					.Where((_, i) => !clusterChains.ContainsKey(i))
 					.Select((r, i) => (record: r, index: i))
 					.Where(x => x.record.StartCluster != Cluster.Null && x.record.EndCluster != Cluster.Null && x.record.Size == 0) // exclude null records
 					.ToArray();
-			if (recordsNotAddressedByAChain.Any()) 
+			if (recordsNotAddressedByAChain.Any())
 				throw new InvalidOperationException($"Non-null records {recordsNotAddressedByAChain.ToDelimittedString(", ", toStringFunc: x => $"(Index: {x.index}, Record: {x.record})")} are not addressed by a cluster chain.");
 
 			// Ensure all chains (except record chain) link to a valid record

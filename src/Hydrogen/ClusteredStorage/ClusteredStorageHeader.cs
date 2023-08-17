@@ -326,7 +326,7 @@ public class ClusteredStorageHeader : ISynchronizedObject {
 			writer.Write((long)0L); // Records
 
 			Guard.Ensure(rootStream.Position == RecordsEndClusterOffset);
-			writer.Write((long)-1L); // RecordsEndCluster
+			writer.Write((long)Cluster.Null); // RecordsEndCluster
 
 			Guard.Ensure(rootStream.Position == RecordKeySizeOffset);
 			writer.Write((ushort)recordKeySize); // RecordKeySize
@@ -372,7 +372,7 @@ public class ClusteredStorageHeader : ISynchronizedObject {
 			if (RecordsCount < 0)
 				throw new CorruptDataException($"Corrupt header property {nameof(RecordsCount)} value was {RecordsCount}");
 
-			if (RecordsEndCluster < -1)
+			if (RecordsEndCluster < Cluster.Null)
 				throw new CorruptDataException($"Corrupt header property {nameof(RecordsEndCluster)} value was {RecordsEndCluster}");
 
 			if (Policy.HasFlag(ClusteredStoragePolicy.TrackKey) && RecordKeySize <= 0)

@@ -24,7 +24,7 @@ internal class ClusterSeeker  {
 					TotalClusters = totalClusters
 				},
 				CurrentCluster = startCluster,
-				CurrentIndex = startCluster != -1 ? 0 : -1,
+				CurrentIndex = startCluster != Cluster.Null ? 0 : Cluster.Null,
 		};
 		Pointer.CurrentTraits = CalculateCurrentTraits(); // method uses Pointer state, don't call within object initializer 
 	}
@@ -153,10 +153,10 @@ internal class ClusterSeeker  {
 				Pointer.CurrentTraits = CalculateCurrentTraits();
 			} else if (changedEvent.RemovedChain) {
 				Pointer.Chain.TotalClusters = 0;
-				Pointer.Chain.StartCluster = -1;
-				Pointer.Chain.EndCluster = -1;
-				Pointer.CurrentCluster = -1;
-				Pointer.CurrentIndex = -1;
+				Pointer.Chain.StartCluster = Cluster.Null;
+				Pointer.Chain.EndCluster = Cluster.Null;
+				Pointer.CurrentCluster = Cluster.Null;
+				Pointer.CurrentIndex = Cluster.Null;
 			} else if (changedEvent.IncreasedChainSize || changedEvent.DecreasedChainSize) {
 				Pointer.Chain.TotalClusters += changedEvent.ClusterCountDelta;
 				Pointer.Chain.EndCluster = changedEvent.ChainNewEndCluster.Value;
@@ -164,7 +164,7 @@ internal class ClusterSeeker  {
 				// current pointer potentially wiped out by resize down
 				if (Pointer.CurrentIndex >= Pointer.Chain.TotalClusters) {
 					Pointer.CurrentCluster = Pointer.Chain.StartCluster;
-					Pointer.CurrentIndex =  Pointer.Chain.StartCluster != -1 ? 0 : -1;
+					Pointer.CurrentIndex =  Pointer.Chain.StartCluster != Cluster.Null ? 0 : Cluster.Null;
 				}
 				// Ensure traits correct
 				Pointer.CurrentTraits = CalculateCurrentTraits();
@@ -207,8 +207,8 @@ internal class ClusterSeeker  {
 
 	private ClusterTraits CalculateCurrentTraits() {
 		var traits = ClusterTraits.None;
-		traits.SetFlags(ClusterTraits.Start, Pointer.Chain.StartCluster != -1 &&  Pointer.CurrentCluster == Pointer.Chain.StartCluster);
-		traits.SetFlags(ClusterTraits.End, Pointer.Chain.EndCluster != -1 && Pointer.CurrentCluster == Pointer.Chain.EndCluster);
+		traits.SetFlags(ClusterTraits.Start, Pointer.Chain.StartCluster != Cluster.Null &&  Pointer.CurrentCluster == Pointer.Chain.StartCluster);
+		traits.SetFlags(ClusterTraits.End, Pointer.Chain.EndCluster != Cluster.Null && Pointer.CurrentCluster == Pointer.Chain.EndCluster);
 		return traits;
 	}
 
@@ -233,7 +233,7 @@ internal class ClusterSeeker  {
 				Guard.Ensure(CurrentIndex == Chain.TotalClusters - 1, $"End cluster {CurrentCluster} is END but index {CurrentIndex} does not match chain total clusters {Chain.TotalClusters}");
 			if (CurrentIndex == 0 && !CurrentTraits.HasFlag(ClusterTraits.Start))
 				Guard.Ensure(CurrentTraits.HasFlag(ClusterTraits.Start), $"Cluster {CurrentCluster} index is 0 but traits {CurrentTraits} do not marked START");
-			if (CurrentIndex == Chain.TotalClusters -1 && !CurrentTraits.HasFlag(ClusterTraits.End))
+			if (CurrentIndex == Chain.TotalClusters - 1 && !CurrentTraits.HasFlag(ClusterTraits.End))
 				Guard.Ensure(CurrentTraits.HasFlag(ClusterTraits.Start), $"Cluster index {CurrentTraits} is end of chain but not marked END");
 		}
 	}

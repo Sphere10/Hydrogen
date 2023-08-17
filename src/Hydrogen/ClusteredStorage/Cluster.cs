@@ -9,6 +9,8 @@
 namespace Hydrogen;
 
 public class Cluster {
+	public const long Null = -1L;
+
 	public const int TraitsLength = sizeof(byte);
 	public const int PrevLength = sizeof(long);
 	public const int NextLength = sizeof(long);

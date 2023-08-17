@@ -300,8 +300,8 @@ public class ClusterMap  {
 
 	protected Cluster CreateCluster() {
 		var cluster = new Cluster() {
-			Prev = -1,
-			Next = -1,
+			Prev = Cluster.Null,
+			Next = Cluster.Null,
 			Traits = ClusterTraits.None,
 			Data = new byte[ClusterSize],
 		};

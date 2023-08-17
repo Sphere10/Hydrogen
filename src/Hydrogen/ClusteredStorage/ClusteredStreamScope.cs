@@ -63,8 +63,8 @@ public class ClusteredStreamScope : IDisposable {
 				Record.EndCluster = changedEvent.ChainNewEndCluster.Value;
 				// Size is determined by fragment provider event
 			} else if (changedEvent.RemovedChain) {
-				Record.StartCluster = -1;
-				Record.EndCluster = -1;
+				Record.StartCluster = Cluster.Null;
+				Record.EndCluster = Cluster.Null;
 				Record.Size = 0;
 			} else if (changedEvent.IncreasedChainSize || changedEvent.DecreasedChainSize) {
 				Record.EndCluster = changedEvent.ChainNewEndCluster.Value;

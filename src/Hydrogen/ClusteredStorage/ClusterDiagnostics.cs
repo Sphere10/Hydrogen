@@ -37,9 +37,9 @@ public static class ClusterDiagnostics {
 	public static long VerifyPath(Cluster[] clusterContainer, long start, long end, long terminalValue, HashSet<long> visitedClusters) {
 		bool IsValidCluster(long ix) => 0 <= ix && ix < clusterContainer.LongLength;
 
-		if (start == -1 || end == -1) {
-			Guard.Ensure(start == -1, "Start cluster was not -1");
-			Guard.Ensure(end == -1, "Start cluster was not -1");
+		if (start == Cluster.Null || end == Cluster.Null) {
+			Guard.Ensure(start == Cluster.Null, $"Start cluster was not {Cluster.Null}");
+			Guard.Ensure(end == Cluster.Null, $"Start cluster was not {Cluster.Null}");
 			return 0;
 		}
 
@@ -154,7 +154,7 @@ public static class ClusterDiagnostics {
 			var end = endClusters[i];
 			Guard.Ensure(start.cluster.Prev == end.cluster.Next, $"Mismatched terminals for start cluster {start.cluster} and end cluster {end.cluster} (terminals were {start.cluster.Prev} and {end.cluster.Next})");
 			var length = VerifyPath(clusters, start.i, end.i, start.cluster.Prev, visited);
-			if (start.cluster.Prev != -1) // ignore record cluster chain (special case chain for tracking all other chains)
+			if (start.cluster.Prev != Cluster.Null) // ignore record cluster chain (special case chain for tracking all other chains)
 				clusterChains.Add(start.cluster.Prev, (start.i, end.i, start.cluster.Prev, length));
 		}
 
@@ -165,7 +165,7 @@ public static class ClusterDiagnostics {
 		}
 
 		if (records is not null) {
-			bool IsValidCluster(long c) => 0 <= c && c < clusters.Length || c == -1;
+			bool IsValidCluster(long c) => 0 <= c && c < clusters.Length || c == Cluster.Null;
 			
 			// ensure all records have valid clusters
 			var recordsReferencingOutOfBoundsClusters = 
@@ -176,10 +176,10 @@ public static class ClusterDiagnostics {
 			if (recordsReferencingOutOfBoundsClusters.Any()) 
 				throw new InvalidOperationException($"Records {recordsReferencingOutOfBoundsClusters.ToDelimittedString(", ")} reference out of bounds clusters (min:{0} max:{clusters.Length})");
 	
-			// ensure all records have dangling -1 terminals
+			// ensure all records have dangling NULL (-1) terminals
 			var recordsWithDanglingTerminals =
 				records
-				.Where(x => x.StartCluster == -1 && x.EndCluster != -1 || x.StartCluster != -1 && x.EndCluster == -1)
+				.Where(x => x.StartCluster == Cluster.Null && x.EndCluster != Cluster.Null || x.StartCluster != Cluster.Null && x.EndCluster == Cluster.Null)
 				.ToArray();
 			if (recordsWithDanglingTerminals.Any()) 
 				throw new InvalidOperationException($"Records {recordsWithDanglingTerminals.ToDelimittedString(", ")} have dangling null terminals (start:{0} end:{1})");
@@ -188,7 +188,7 @@ public static class ClusterDiagnostics {
 			var recordsWithDuplicateStartClusters =
 				records
 					.Select((record, i) => (record, i))
-					.Where(x => x.record.StartCluster != -1)
+					.Where(x => x.record.StartCluster != Cluster.Null)
 					.GroupBy(x => x.record.StartCluster)
 					.Where(x => x.Count() > 1)
 					.ToArray();
@@ -199,7 +199,7 @@ public static class ClusterDiagnostics {
 			var recordsWithDuplicateEndClusters =
 				records
 					.Select((record, i) => (record, i))
-					.Where(x => x.record.EndCluster != -1)
+					.Where(x => x.record.EndCluster != Cluster.Null)
 					.GroupBy(x => x.record.EndCluster)
 					.Where(x => x.Count() > 1)
 					.ToArray();
@@ -211,7 +211,7 @@ public static class ClusterDiagnostics {
 				records
 					.Where((_, i) => !clusterChains.ContainsKey(i))
 					.Select((r, i) => (record: r, index: i))
-					.Where(x => x.record.StartCluster != -1 && x.record.EndCluster != -1 && x.record.Size == 0) // exclude null records
+					.Where(x => x.record.StartCluster != Cluster.Null && x.record.EndCluster != Cluster.Null && x.record.Size == 0) // exclude null records
 					.ToArray();
 			if (recordsNotAddressedByAChain.Any()) 
 				throw new InvalidOperationException($"Non-null records {recordsNotAddressedByAChain.ToDelimittedString(", ", toStringFunc: x => $"(Index: {x.index}, Record: {x.record})")} are not addressed by a cluster chain.");
@@ -228,7 +228,7 @@ public static class ClusterDiagnostics {
 			// Ensure chains link to non-null records
 			var chainsLinkingToNullRecords =
 				clusterChains
-					.Where(x => records[x.Key].StartCluster == -1 || records[x.Key].EndCluster == -1 || records[x.Key].Size == 0)
+					.Where(x => records[x.Key].StartCluster == Cluster.Null || records[x.Key].EndCluster == Cluster.Null || records[x.Key].Size == 0)
 					.Select(x => (start: x.Value.start, end: x.Value.end, record: x.Key))
 					.ToArray();
 			if (chainsLinkingToNullRecords.Any())
@@ -238,7 +238,7 @@ public static class ClusterDiagnostics {
 			// Ensure records don't link to non-terminal clusters
 			var recordsReferencingNonTerminalClusters =
 				records
-					.Where(x => x.StartCluster != -1 && x.EndCluster != -1)
+					.Where(x => x.StartCluster != Cluster.Null && x.EndCluster != Cluster.Null)
 					.Where(x => !clusters[x.StartCluster].Traits.HasFlag(ClusterTraits.Start) || !clusters[x.EndCluster].Traits.HasFlag(ClusterTraits.End))
 					.ToArray();
 			if (recordsReferencingNonTerminalClusters.Any())
@@ -248,7 +248,7 @@ public static class ClusterDiagnostics {
 			var recordsNotMatchingChains =
 				records
 					.Select((r, i) => (record: r, index: i))
-					.Where(x => x.record.StartCluster != -1 && x.record.EndCluster != -1)
+					.Where(x => x.record.StartCluster != Cluster.Null && x.record.EndCluster != Cluster.Null)
 					.Select((r, i) => (record: r.record, chain: clusterChains[r.index]))
 					.Where(x => x.record.StartCluster != x.chain.start || x.record.EndCluster != x.chain.end)
 					.ToArray();
@@ -263,11 +263,10 @@ public static class ClusterDiagnostics {
 	public static void VerifySeekResetStreamOptimized(ClusterMap clusterMap, long start, long end, long totalClusters, long terminalValue, long? currentCluster, long? currentIndex, ClusterTraits? currentTraits, HashSet<long> visitedClusters) {
 		bool IsValidCluster(long ix) => 0 <= ix && ix < clusterMap.Clusters.Count;
 
-		if (start == -1 || end == -1 || totalClusters == 0) {
-			Guard.Ensure(start == -1, "Start cluster was not -1");
-			Guard.Ensure(end == -1, "Start cluster was not -1");
+		if (start == Cluster.Null || end == Cluster.Null || totalClusters == 0) {
+			Guard.Ensure(start == Cluster.Null, $"Start cluster was not {Cluster.Null}");
+			Guard.Ensure(end == Cluster.Null, $"Start cluster was not {Cluster.Null}");
 			Guard.Ensure(totalClusters == 0, "Total clusters was not 0");
-			//Guard.Ensure(terminalValue == -1, "Terminal was not -1");
 			Guard.Ensure(currentCluster == null, "Current cluster was not null");
 			Guard.Ensure(currentIndex == null, "Current index was not null");
 			Guard.Ensure(currentTraits == null, "Current traits was not null");
@@ -341,11 +340,11 @@ public static class ClusterDiagnostics {
 	public static void VerifySeekReset(IReadOnlyExtendedList<Cluster> clusterContainer, long start, long end, long totalClusters, long terminalValue, long? currentCluster, long? currentIndex, ClusterTraits? currentTraits, HashSet<long> visitedClusters) {
 		bool IsValidCluster(long ix) => 0 <= ix && ix < clusterContainer.Count;
 
-		if (start == -1 || end == -1 || totalClusters == 0) {
-			Guard.Ensure(start == -1, "Start cluster was not -1");
-			Guard.Ensure(end == -1, "Start cluster was not -1");
+		if (start == Cluster.Null || end == Cluster.Null || totalClusters == 0) {
+			Guard.Ensure(start == Cluster.Null, $"Start cluster was not {Cluster.Null}");
+			Guard.Ensure(end == Cluster.Null, $"Start cluster was not {Cluster.Null}");
 			Guard.Ensure(totalClusters == 0, "Total clusters was not 0");
-			//Guard.Ensure(terminalValue == -1, "Terminal was not -1");
+			//Guard.Ensure(terminalValue == Cluster.Null, $"Terminal was not {Cluster.Null}");
 			Guard.Ensure(currentCluster == null, "Current cluster was not null");
 			Guard.Ensure(currentIndex == null, "Current index was not null");
 			Guard.Ensure(currentTraits == null, "Current traits was not null");

@@ -50,8 +50,6 @@ namespace Hydrogen;
 ///  - ClusterMap with traits (First | Data) re-purpose the Prev field to denote the record.
 /// </remarks>
 public class ClusteredStorage : SyncLoadableBase, ISynchronizedObject {
-	internal const long NullCluster = -1L;
-
 	public event EventHandlerEx<ClusteredStreamRecord> RecordCreated;
 	public event EventHandlerEx<long, ClusteredStreamRecord> RecordAdded;
 	public event EventHandlerEx<long, ClusteredStreamRecord> RecordInserted;
@@ -256,8 +254,8 @@ public class ClusteredStorage : SyncLoadableBase, ISynchronizedObject {
 			_clusters,
 			-1,
 			_header.RecordsCount * recordSerializer.StaticSize,
-			_header.RecordsCount > 0 ? 0 : -1,
-			_header.RecordsCount > 0 ? _header.RecordsEndCluster : -1,
+			_header.RecordsCount > 0 ? 0 : Cluster.Null,
+			_header.RecordsCount > 0 ? _header.RecordsEndCluster : Cluster.Null,
 			_header.RecordsCount > 0 ? _clusters.CalculateClusterChainLength(_header.RecordsCount * recordSerializer.StaticSize) : 0
 		);
 
@@ -316,7 +314,7 @@ public class ClusteredStorage : SyncLoadableBase, ISynchronizedObject {
 			// 2. Track record's end cluster 
 			
 			// Was it moved?
-			if (movedChainTerminals.Length > 0 && movedChainTerminals[0].Key == -1) {
+			if (movedChainTerminals.Length > 0 && movedChainTerminals[0].Key == Cluster.Null) {
 				var recordTerminalChanges = movedChainTerminals[0];
 				Guard.Against(recordTerminalChanges.Value.NewStart.HasValue, "Record cluster chain start cannot be changed.");
 				Guard.Ensure(recordTerminalChanges.Value.NewEnd.HasValue, "Record cluster chain new end was moved but not defined.");
@@ -324,9 +322,9 @@ public class ClusteredStorage : SyncLoadableBase, ISynchronizedObject {
 			}
 
 			// Was it created/removed?
-			if (changedEvent.ChainTerminal == -1) {
+			if (changedEvent.ChainTerminal == Cluster.Null) {
 				if (changedEvent.RemovedChain) {
-					Header.RecordsEndCluster = -1;
+					Header.RecordsEndCluster = Cluster.Null;
 				} else {
 					if (changedEvent.AddedChain)
 						Guard.Ensure(changedEvent.ChainNewStartCluster == 0, $"Record chain created with invalid start cluster {changedEvent.ChainNewStartCluster.Value}.");
@@ -342,7 +340,7 @@ public class ClusteredStorage : SyncLoadableBase, ISynchronizedObject {
 			
 			// 4. If record terminal for this stream moved, update record's cluster pointers
 			foreach(var movedTerminal in movedChainTerminals) {
-				if (movedTerminal.Key == -1)
+				if (movedTerminal.Key == Cluster.Null)
 					continue; // already processed special record terminal above
 
 				if (movedTerminal.Value.NewStart.HasValue)
@@ -354,13 +352,13 @@ public class ClusteredStorage : SyncLoadableBase, ISynchronizedObject {
 			}
 
 			// 5. For a changed stream, update cluster pointers in relevant record 
-			if (changedEvent.ChainTerminal.HasValue && changedEvent.ChainTerminal.Value != -1) {
+			if (changedEvent.ChainTerminal.HasValue && changedEvent.ChainTerminal.Value != Cluster.Null) {
 				if (changedEvent.AddedChain) {
 					FastWriteRecordStartCluster(changedEvent.ChainTerminal.Value, changedEvent.ChainNewStartCluster.Value);
 					FastWriteRecordEndCluster(changedEvent.ChainTerminal.Value, changedEvent.ChainNewEndCluster.Value);
 				} else if (changedEvent.RemovedChain) {
-					FastWriteRecordStartCluster(changedEvent.ChainTerminal.Value, -1);
-					FastWriteRecordEndCluster(changedEvent.ChainTerminal.Value, -1);
+					FastWriteRecordStartCluster(changedEvent.ChainTerminal.Value, Cluster.Null);
+					FastWriteRecordEndCluster(changedEvent.ChainTerminal.Value, Cluster.Null);
 					FastWriteRecordSize(changedEvent.ChainTerminal.Value, 0);
 					_recordCache?.Invalidate(changedEvent.ChainTerminal.Value);
 				} else if (changedEvent.IncreasedChainSize || changedEvent.DecreasedChainSize) {
@@ -459,7 +457,7 @@ public class ClusteredStorage : SyncLoadableBase, ISynchronizedObject {
 			var countBeforeRemove = Header.RecordsCount;
 			CheckRecordIndex(index);
 			var record = GetRecord(index);
-			Guard.Against(record.Size == 0 && (record.StartCluster != -1 || record.EndCluster != -1), "Invalid empty record");
+			Guard.Against(record.Size == 0 && (record.StartCluster != Cluster.Null || record.EndCluster != Cluster.Null), "Invalid empty record");
 			if (record.Size > 0) {
 				_clusters.RemoveNextClusters(record.StartCluster);
 			}
@@ -503,13 +501,13 @@ public class ClusteredStorage : SyncLoadableBase, ISynchronizedObject {
 			UpdateRecord(second, firstRecord);
 
 			// Update cluster -> record backlinks  (if applicable)
-			if (firstRecord.StartCluster != -1)
+			if (firstRecord.StartCluster != Cluster.Null)
 				_clusters.WriteClusterPrev(firstRecord.StartCluster, second);
-			if (firstRecord.EndCluster != -1)
+			if (firstRecord.EndCluster != Cluster.Null)
 				_clusters.WriteClusterNext(firstRecord.EndCluster, second);
-			if (secondRecord.StartCluster != -1)
+			if (secondRecord.StartCluster != Cluster.Null)
 				_clusters.WriteClusterPrev(secondRecord.StartCluster, first);
-			if (secondRecord.EndCluster != -1)
+			if (secondRecord.EndCluster != Cluster.Null)
 				_clusters.WriteClusterNext(secondRecord.EndCluster, first);
 			
 			NotifyRecordSwapped(first, firstRecord, second, secondRecord);
@@ -541,7 +539,7 @@ public class ClusteredStorage : SyncLoadableBase, ISynchronizedObject {
 				_clusters.Clear();
 				Header.RecordsCount = 0;
 				Header.TotalClusters = 0;
-				Header.RecordsEndCluster = -1;
+				Header.RecordsEndCluster = Cluster.Null;
 				Header.ResetMerkleRoot();
 			} finally {
 				SuppressEvents = false;
@@ -593,8 +591,8 @@ public class ClusteredStorage : SyncLoadableBase, ISynchronizedObject {
 		using (EnterWriteScope()) {
 			var record = new ClusteredStreamRecord();
 			record.Size = 0;
-			record.StartCluster = NullCluster;
-			record.EndCluster = NullCluster;
+			record.StartCluster = Cluster.Null;
+			record.EndCluster = Cluster.Null;
 			record.Key = new byte[_recordKeySize];
 			NotifyRecordCreated(record);
 			return record;
@@ -650,9 +648,9 @@ public class ClusteredStorage : SyncLoadableBase, ISynchronizedObject {
 			// Update genesis clusters 
 			for (var i = _records.Count - 1; i >= index; i--) {
 				var shiftedRecord = GetRecord(i);
-				if (shiftedRecord.StartCluster != NullCluster)
+				if (shiftedRecord.StartCluster != Cluster.Null)
 					_clusters.WriteClusterPrev(shiftedRecord.StartCluster, i + 1);
-				if (shiftedRecord.EndCluster != NullCluster)
+				if (shiftedRecord.EndCluster != Cluster.Null)
 					_clusters.WriteClusterNext(shiftedRecord.EndCluster, i + 1);
 				_recordCache?.Invalidate(i);
 				_recordCache?.Set(i + 1, shiftedRecord);
@@ -670,9 +668,9 @@ public class ClusteredStorage : SyncLoadableBase, ISynchronizedObject {
 			// Need to update terminals of adjacent records (O(N/2) complexity here)
 			for (var i = index + 1; i < _records.Count; i++) {
 				var higherRecord = GetRecord(i);
-				if (higherRecord.StartCluster != NullCluster) 
+				if (higherRecord.StartCluster != Cluster.Null) 
 					_clusters.WriteClusterPrev(higherRecord.StartCluster, i - 1);
-				if (higherRecord.EndCluster != NullCluster) 
+				if (higherRecord.EndCluster != Cluster.Null) 
 					_clusters.WriteClusterNext(higherRecord.EndCluster, i - 1);
 				_recordCache?.Invalidate(i);
 				_recordCache?.Set(i - 1, higherRecord);
@@ -835,10 +833,10 @@ public class ClusteredStorage : SyncLoadableBase, ISynchronizedObject {
 
 	private void CheckRecordIntegrity(long index, ClusteredStreamRecord record) {
 		if (record.Size == 0) {
-			if (record.StartCluster != NullCluster)
-				throw new CorruptDataException(Header, $"Empty record {index} should have start cluster {NullCluster} but was {record.StartCluster}");
-			if (record.EndCluster != NullCluster)
-				throw new CorruptDataException(Header, $"Empty record {index} should have end cluster {NullCluster} but was {record.EndCluster}");
+			if (record.StartCluster != Cluster.Null)
+				throw new CorruptDataException(Header, $"Empty record {index} should have start cluster {Cluster.Null} but was {record.StartCluster}");
+			if (record.EndCluster != Cluster.Null)
+				throw new CorruptDataException(Header, $"Empty record {index} should have end cluster {Cluster.Null} but was {record.EndCluster}");
 		} else if (!(0 <= record.StartCluster && record.StartCluster < Header.TotalClusters))
 			throw new CorruptDataException(Header, $"Record {index} pointed to to non-existent cluster {record.StartCluster}");
 	}

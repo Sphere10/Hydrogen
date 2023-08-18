@@ -917,7 +917,7 @@ public class StreamContainerTests : StreamPersistedCollectionTestsBase {
 		writer.Write(streamContainer.Count - 1);
 		// note: Can't detect this scenario in integrity checks without examining data, so will
 		// end up creating a corrupt data later. This is not ideal, but acceptable.
-		StreamContainer.FromStream(rootStream);
+		Assert.That( () => StreamContainer.FromStream(rootStream), Throws.Nothing);
 	}
 
 	[Test]

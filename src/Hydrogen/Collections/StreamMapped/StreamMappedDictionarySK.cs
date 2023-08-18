@@ -42,7 +42,7 @@ public class StreamMappedDictionarySK<TKey, TValue> : DictionaryBase<TKey, TValu
 
 	public StreamMappedDictionarySK(Stream rootStream, int clusterSize, IItemSerializer<TKey> keyStaticSizedSerializer, IItemSerializer<TValue> valueSerializer = null, IItemChecksummer<TKey> keyChecksum = null,
 									IEqualityComparer<TKey> keyComparer = null, IEqualityComparer<TValue> valueComparer = null, StreamContainerPolicy policy = StreamContainerPolicy.DictionaryDefault, long reservedRecords = 0,
-									Endianness endianness = Endianness.LittleEndian)
+									Endianness endianness = Endianness.LittleEndian, bool autoLoad = false)
 		: this(
 			new StreamMappedList<TValue>(
 				rootStream,
@@ -59,12 +59,13 @@ public class StreamMappedDictionarySK<TKey, TValue> : DictionaryBase<TKey, TValu
 			keyChecksum,
 			keyComparer,
 			valueComparer,
-			endianness
+			endianness,
+			autoLoad
 		) {
 	}
 
 	public StreamMappedDictionarySK(IStreamMappedList<TValue> valueStore, IItemSerializer<TKey> keyStaticSizedSerializer, IItemSerializer<TValue> valueSerializer = null, IItemChecksummer<TKey> keyChecksummer = null,
-	                                IEqualityComparer<TKey> keyComparer = null, IEqualityComparer<TValue> valueComparer = null, Endianness endianness = Endianness.LittleEndian) {
+	                                IEqualityComparer<TKey> keyComparer = null, IEqualityComparer<TValue> valueComparer = null, Endianness endianness = Endianness.LittleEndian, bool autoLoad = false) {
 		Guard.ArgumentNotNull(keyStaticSizedSerializer, nameof(keyStaticSizedSerializer));
 		Guard.Argument(keyStaticSizedSerializer.IsStaticSize, nameof(keyStaticSizedSerializer), "Keys must be statically sized");
 		Guard.Argument(valueStore.Streams.Policy.HasFlag(StreamContainerPolicy.TrackChecksums), nameof(valueStore), $"Checksum tracking must be enabled in {nameof(StreamMappedDictionarySK<TKey, TValue>)} implementations.");
@@ -79,8 +80,10 @@ public class StreamMappedDictionarySK<TKey, TValue> : DictionaryBase<TKey, TValu
 		_checksumToIndexLookup = new LookupEx<int, int>();
 		_unusedDescriptors = new();
 		_requiresLoad = true; //_valueStore.Streams.Records.Count > _valueStore.Streams.Header.ReservedStreams;
-		_preAllocateOptimization = Streams.Policy.HasFlag(StreamContainerPolicy.FastAllocate);
 		UnusedKeyBytes = Tools.Array.Gen<byte>(_keySerializer.StaticSize, 0);
+		_preAllocateOptimization = Streams.Policy.HasFlag(StreamContainerPolicy.FastAllocate);
+		if (autoLoad)
+			Load();
 	}
 
 	public StreamContainer Streams => _valueStore.Streams;

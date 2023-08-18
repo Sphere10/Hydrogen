@@ -11,15 +11,15 @@ using System.Collections.Generic;
 namespace Hydrogen;
 
 public interface IStreamMappedList<TItem> : IExtendedList<TItem>, ILoadable {
-	ClusteredStorage Storage { get; }
+	StreamContainer Streams { get; }
 
 	IItemSerializer<TItem> ItemSerializer { get; }
 
 	IEqualityComparer<TItem> ItemComparer { get; }
 
-	ClusteredStreamScope EnterAddScope(TItem item);
+	ClusteredStream EnterAddScope(TItem item);
 
-	ClusteredStreamScope EnterInsertScope(long index, TItem item);
+	ClusteredStream EnterInsertScope(long index, TItem item);
 
-	ClusteredStreamScope EnterUpdateScope(long index, TItem item);
+	ClusteredStream EnterUpdateScope(long index, TItem item);
 }

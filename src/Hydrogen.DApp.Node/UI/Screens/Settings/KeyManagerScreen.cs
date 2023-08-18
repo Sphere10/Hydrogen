@@ -8,8 +8,8 @@
 
 namespace Hydrogen.DApp.Node.UI;
 
-[Title("Storage")]
+[Title("Streams")]
 [Lifetime(ScreenLifetime.WhenVisible)]
-[MenuLocation(AppMenu.Settings, "Storage", 1)]
+[MenuLocation(AppMenu.Settings, "Streams", 1)]
 public class StorageSettingsScreen : MockScreen {
 }

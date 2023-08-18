@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 namespace Hydrogen;
 
 /// <summary>
-/// A <see cref="LoadableBase"/> abstraction that implements it's asynchronous members using <see cref="Task.Run(Action)"/>.
+/// An <see cref="ILoadable"/> base imlementation, following from <see cref="LoadableBase"/>, that implements it's asynchronous members using <see cref="Task.Run(Action)"/>.
 /// </summary>
 public abstract class SyncLoadableBase : LoadableBase {
 

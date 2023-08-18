@@ -196,7 +196,7 @@ namespace Hydrogen.Data.Csv.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Record index must be 0 or more..
+        ///   Looks up a localized string similar to Descriptor index must be 0 or more..
         /// </summary>
         internal static string RecordIndexLessThanZero {
             get {

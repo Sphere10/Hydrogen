@@ -20,7 +20,7 @@ namespace Hydrogen.Tests;
 public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollectionTestsBase {
 
 	[Test]
-	public void AddNothing([ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy) {
+	public void AddNothing([StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
 		var rng = new Random(31337);
 		using (Create(policy, out var dictionary)) {
 			dictionary.Load();
@@ -29,7 +29,7 @@ public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollecti
 	}
 
 	[Test]
-	public void AddOne([ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy, [Values("alpha", "Unicode😊😊😊", "")] string key) {
+	public void AddOne([StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values("alpha", "Unicode😊😊😊", "")] string key) {
 		var rng = new Random(31337);
 		using (Create(policy, out var dictionary)) {
 			dictionary.Load();
@@ -39,7 +39,7 @@ public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollecti
 	}
 
 	[Test]
-	public void ReuseRecord([ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy, [Values("alpha", "Unicode😊😊😊", "")] string key) {
+	public void ReuseRecord([StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values("alpha", "Unicode😊😊😊", "")] string key) {
 		var rng = new Random(31337);
 		using (Create(policy, out var dictionary)) {
 			dictionary.Load();
@@ -51,7 +51,7 @@ public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollecti
 	}
 
 	[Test]
-	public void ContainsKey([ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy, [Values("alpha", "Unicode😊😊😊", "")] string key) {
+	public void ContainsKey([StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values("alpha", "Unicode😊😊😊", "")] string key) {
 		var rng = new Random(31337);
 		using (Create(policy, out var dictionary)) {
 			dictionary.Load();
@@ -61,7 +61,7 @@ public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollecti
 	}
 
 	[Test]
-	public void DoesNotContainKeyAfterRemove([ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy, [Values("alpha", "Unicode😊😊😊", "")] string key) {
+	public void DoesNotContainKeyAfterRemove([StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values("alpha", "Unicode😊😊😊", "")] string key) {
 		var rng = new Random(31337);
 		using (Create(policy, out var dictionary)) {
 			dictionary.Load();
@@ -72,7 +72,7 @@ public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollecti
 	}
 
 	[Test]
-	public void ContainsKeyValuePair([ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy, [Values("alpha", "Unicode😊😊😊", "")] string key) {
+	public void ContainsKeyValuePair([StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values("alpha", "Unicode😊😊😊", "")] string key) {
 		var rng = new Random(31337);
 		using (Create(policy, out var dictionary)) {
 			dictionary.Load();
@@ -84,7 +84,7 @@ public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollecti
 	}
 
 	[Test]
-	public void DoesNotContainKeyValuePair_SameKeyDifferentValue([ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy, [Values("alpha", "Unicode😊😊😊", "")] string key) {
+	public void DoesNotContainKeyValuePair_SameKeyDifferentValue([StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values("alpha", "Unicode😊😊😊", "")] string key) {
 		var rng = new Random(31337);
 		using (Create(policy, out var dictionary)) {
 			dictionary.Load();
@@ -97,7 +97,7 @@ public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollecti
 	}
 
 	[Test]
-	public void RemoveByKey([ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy, [Values("alpha", "Unicode😊😊😊", "")] string key) {
+	public void RemoveByKey([StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values("alpha", "Unicode😊😊😊", "")] string key) {
 		var rng = new Random(31337);
 		using (Create(policy, out var dictionary)) {
 			dictionary.Load();
@@ -108,7 +108,7 @@ public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollecti
 	}
 
 	[Test]
-	public void RemoveByKeyValuePair([ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy, [Values("alpha", "Unicode😊😊😊", "")] string key) {
+	public void RemoveByKeyValuePair([StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values("alpha", "Unicode😊😊😊", "")] string key) {
 		var rng = new Random(31337);
 		using (Create(policy, out var dictionary)) {
 			dictionary.Load();
@@ -119,14 +119,14 @@ public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollecti
 	}
 
 	[Test]
-	public void IntegrationTests([ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy, [Values(23)] int maxItems) => DoIntegrationTests(policy, maxItems, 30);
+	public void IntegrationTests([StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values(23)] int maxItems) => DoIntegrationTests(policy, maxItems, 30);
 
 #if DEBUG
 	[Test]
-	public void IntegrationTests_Heavy([ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy) => DoIntegrationTests(policy, 250, 250);
+	public void IntegrationTests_Heavy([StreamContainerPolicyTestValues] StreamContainerPolicy policy) => DoIntegrationTests(policy, 250, 250);
 #endif
 
-	private void DoIntegrationTests([ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy, int maxItems, int iterations) {
+	private void DoIntegrationTests([StreamContainerPolicyTestValues] StreamContainerPolicy policy, int maxItems, int iterations) {
 		var keyGens = 0;
 		using (Create(policy, out var dictionary)) {
 			dictionary.Load();
@@ -143,7 +143,7 @@ public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollecti
 	[Test]
 	public void LoadWhenNotRequiredDoesntBreak_BugCase() {
 
-		using (Create<int, int>(new PrimitiveSerializer<int>(), new PrimitiveSerializer<int>(), EqualityComparer<int>.Default, EqualityComparer<int>.Default, ClusteredStoragePolicy.Default, out var dictionary, out _)) {
+		using (Create<int, int>(new PrimitiveSerializer<int>(), new PrimitiveSerializer<int>(), EqualityComparer<int>.Default, EqualityComparer<int>.Default, StreamContainerPolicy.Default, out var dictionary, out _)) {
 			dictionary.Load();
 			Assert.That(dictionary.RequiresLoad, Is.False);
 			dictionary.Load();
@@ -152,7 +152,7 @@ public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollecti
 	}
 
 	[Test]
-	public void CanLoadPreviouslyCommittedState([ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy) {
+	public void CanLoadPreviouslyCommittedState([StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
 		var file = Tools.FileSystem.GenerateTempFilename();
 		var dir = Tools.FileSystem.GetTempEmptyDirectory(true);
 
@@ -166,7 +166,7 @@ public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollecti
 			       null,
 			       EqualityComparer<int>.Default,
 			       EqualityComparer<int>.Default,
-			       policy: ClusteredStoragePolicy.Default | ClusteredStoragePolicy.TrackChecksums)) {
+			       policy: StreamContainerPolicy.Default | StreamContainerPolicy.TrackChecksums)) {
 			dictionary.Load();
 			dictionary.Add(1, 11);
 			dictionary.Commit();
@@ -183,7 +183,7 @@ public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollecti
 			       null,
 			       EqualityComparer<int>.Default,
 			       EqualityComparer<int>.Default,
-			       policy: ClusteredStoragePolicy.Default | ClusteredStoragePolicy.TrackChecksums)) {
+			       policy: StreamContainerPolicy.Default | StreamContainerPolicy.TrackChecksums)) {
 			dictionary.Load();
 			Assert.That(dictionary.RequiresLoad, Is.False);
 			Assert.That(dictionary.Count, Is.EqualTo(1));
@@ -193,7 +193,7 @@ public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollecti
 	}
 
 	[Test]
-	public void CanUpdatePreviouslyCommittedState([ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy) {
+	public void CanUpdatePreviouslyCommittedState([StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
 		var file = Tools.FileSystem.GenerateTempFilename();
 		var dir = Tools.FileSystem.GetTempEmptyDirectory(true);
 
@@ -207,7 +207,7 @@ public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollecti
 			       null,
 			       EqualityComparer<int>.Default,
 			       EqualityComparer<int>.Default,
-			       policy: ClusteredStoragePolicy.Default | ClusteredStoragePolicy.TrackChecksums)) {
+			       policy: StreamContainerPolicy.Default | StreamContainerPolicy.TrackChecksums)) {
 			dictionary.Load();
 			dictionary.Add(1, 11);
 			dictionary.Commit();
@@ -224,7 +224,7 @@ public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollecti
 			       null,
 			       EqualityComparer<int>.Default,
 			       EqualityComparer<int>.Default,
-			       policy: ClusteredStoragePolicy.Default | ClusteredStoragePolicy.TrackChecksums)) {
+			       policy: StreamContainerPolicy.Default | StreamContainerPolicy.TrackChecksums)) {
 			dictionary.Load();
 			Assert.That(dictionary.RequiresLoad, Is.False);
 			Assert.That(dictionary.Count, Is.EqualTo(1));
@@ -238,7 +238,7 @@ public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollecti
 			       null,
 			       EqualityComparer<int>.Default,
 			       EqualityComparer<int>.Default,
-			       policy: ClusteredStoragePolicy.Default | ClusteredStoragePolicy.TrackChecksums)) {
+			       policy: StreamContainerPolicy.Default | StreamContainerPolicy.TrackChecksums)) {
 			dictionary.Load();
 			dictionary[2] = 22;
 			dictionary.Commit();
@@ -251,7 +251,7 @@ public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollecti
 			       null,
 			       EqualityComparer<int>.Default,
 			       EqualityComparer<int>.Default,
-			       policy: ClusteredStoragePolicy.Default | ClusteredStoragePolicy.TrackChecksums)) {
+			       policy: StreamContainerPolicy.Default | StreamContainerPolicy.TrackChecksums)) {
 			dictionary.Load();
 			Assert.That(dictionary.RequiresLoad, Is.False);
 			Assert.That(dictionary.Count, Is.EqualTo(2));
@@ -261,7 +261,7 @@ public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollecti
 	}
 
 	[Test]
-	public void CanUpdatePreviouslyRolledBackState([ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy) {
+	public void CanUpdatePreviouslyRolledBackState([StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
 		var file = Tools.FileSystem.GenerateTempFilename();
 		var dir = Tools.FileSystem.GetTempEmptyDirectory(true);
 
@@ -275,7 +275,7 @@ public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollecti
 			       null,
 			       EqualityComparer<int>.Default,
 			       EqualityComparer<int>.Default,
-			       policy: ClusteredStoragePolicy.Default | ClusteredStoragePolicy.TrackChecksums)) {
+			       policy: StreamContainerPolicy.Default | StreamContainerPolicy.TrackChecksums)) {
 			dictionary.Load();
 			dictionary.Add(1, 11);
 			dictionary.Commit();
@@ -292,7 +292,7 @@ public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollecti
 			       null,
 			       EqualityComparer<int>.Default,
 			       EqualityComparer<int>.Default,
-			       policy: ClusteredStoragePolicy.Default | ClusteredStoragePolicy.TrackChecksums)) {
+			       policy: StreamContainerPolicy.Default | StreamContainerPolicy.TrackChecksums)) {
 			dictionary.Load();
 			Assert.That(dictionary.RequiresLoad, Is.False);
 			Assert.That(dictionary.Count, Is.EqualTo(1));
@@ -306,7 +306,7 @@ public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollecti
 			       null,
 			       EqualityComparer<int>.Default,
 			       EqualityComparer<int>.Default,
-			       policy: ClusteredStoragePolicy.Default | ClusteredStoragePolicy.TrackChecksums)) {
+			       policy: StreamContainerPolicy.Default | StreamContainerPolicy.TrackChecksums)) {
 			dictionary.Load();
 			dictionary[2] = 22;
 			dictionary.Rollback();
@@ -319,7 +319,7 @@ public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollecti
 			       null,
 			       EqualityComparer<int>.Default,
 			       EqualityComparer<int>.Default,
-			       policy: ClusteredStoragePolicy.Default | ClusteredStoragePolicy.TrackChecksums)) {
+			       policy: StreamContainerPolicy.Default | StreamContainerPolicy.TrackChecksums)) {
 			dictionary.Load();
 			Assert.That(dictionary.RequiresLoad, Is.False);
 			Assert.That(dictionary.Count, Is.EqualTo(1));
@@ -328,7 +328,7 @@ public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollecti
 	}
 
 	[Test]
-	public void CanUpdatePreviouslyAbandonedState([ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy) {
+	public void CanUpdatePreviouslyAbandonedState([StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
 		var file = Tools.FileSystem.GenerateTempFilename();
 		var dir = Tools.FileSystem.GetTempEmptyDirectory(true);
 
@@ -342,7 +342,7 @@ public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollecti
 			       null,
 			       EqualityComparer<int>.Default,
 			       EqualityComparer<int>.Default,
-			       policy: ClusteredStoragePolicy.Default | ClusteredStoragePolicy.TrackChecksums)) {
+			       policy: StreamContainerPolicy.Default | StreamContainerPolicy.TrackChecksums)) {
 			dictionary.Load();
 			dictionary.Add(1, 11);
 			dictionary.Commit();
@@ -359,7 +359,7 @@ public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollecti
 			       null,
 			       EqualityComparer<int>.Default,
 			       EqualityComparer<int>.Default,
-			       policy: ClusteredStoragePolicy.Default | ClusteredStoragePolicy.TrackChecksums)) {
+			       policy: StreamContainerPolicy.Default | StreamContainerPolicy.TrackChecksums)) {
 			dictionary.Load();
 			Assert.That(dictionary.RequiresLoad, Is.False);
 			Assert.That(dictionary.Count, Is.EqualTo(1));
@@ -373,7 +373,7 @@ public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollecti
 			       null,
 			       EqualityComparer<int>.Default,
 			       EqualityComparer<int>.Default,
-			       policy: ClusteredStoragePolicy.Default | ClusteredStoragePolicy.TrackChecksums)) {
+			       policy: StreamContainerPolicy.Default | StreamContainerPolicy.TrackChecksums)) {
 			dictionary.Load();
 			dictionary[2] = 22;
 
@@ -386,7 +386,7 @@ public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollecti
 			       null,
 			       EqualityComparer<int>.Default,
 			       EqualityComparer<int>.Default,
-			       policy: ClusteredStoragePolicy.Default | ClusteredStoragePolicy.TrackChecksums)) {
+			       policy: StreamContainerPolicy.Default | StreamContainerPolicy.TrackChecksums)) {
 			dictionary.Load();
 			Assert.That(dictionary.RequiresLoad, Is.False);
 			Assert.That(dictionary.Count, Is.EqualTo(1));
@@ -394,9 +394,9 @@ public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollecti
 		}
 	}
 
-	protected IDisposable Create(ClusteredStoragePolicy policy, out ITransactionalDictionary<string, TestObject> dictionary)
+	protected IDisposable Create(StreamContainerPolicy policy, out ITransactionalDictionary<string, TestObject> dictionary)
 		=> Create(new StringSerializer(Encoding.UTF8), new TestObjectSerializer(), EqualityComparer<string>.Default, new TestObjectComparer(), policy, out dictionary, out _);
 
-	protected abstract IDisposable Create<TKey, TValue>(IItemSerializer<TKey> keySerializer, IItemSerializer<TValue> valueSerializer, IEqualityComparer<TKey> keyComparer, IEqualityComparer<TValue> valueComparer, ClusteredStoragePolicy policy,
+	protected abstract IDisposable Create<TKey, TValue>(IItemSerializer<TKey> keySerializer, IItemSerializer<TValue> valueSerializer, IEqualityComparer<TKey> keyComparer, IEqualityComparer<TValue> valueComparer, StreamContainerPolicy policy,
 	                                           out ITransactionalDictionary<TKey, TValue> clustered, out string file);
 }

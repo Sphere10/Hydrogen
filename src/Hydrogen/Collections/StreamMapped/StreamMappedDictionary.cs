@@ -23,7 +23,7 @@ namespace Hydrogen;
 /// </summary>
 /// <typeparam name="TKey">The type of key stored in the dictionary</typeparam>
 /// <typeparam name="TValue">The type of value stored in the dictionary</typeparam>
-/// <remarks>When deleting an item the underlying <see cref="ClusteredStreamRecord"/> is marked nullified but retained and re-used in later calls to <see cref="Add(TKey,TValue)"/>.</remarks>
+/// <remarks>When deleting an item the underlying <see cref="ClusteredStreamDescriptor"/> is marked nullified but retained and re-used in later calls to <see cref="Add(TKey,TValue)"/>.</remarks>
 // TODO: there are some memory-blowout lookups in this class that need to be refactored out (should be safe for non-huge dictionaries).
 public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>, IStreamMappedDictionary<TKey, TValue> {
 	public event EventHandlerEx<object> Loading;
@@ -38,7 +38,7 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 	private bool _requiresLoad;
 
 	public StreamMappedDictionary(Stream rootStream, int clusterSize, IItemSerializer<TKey> keySerializer = null, IItemSerializer<TValue> valueSerializer = null, IItemChecksummer<TKey> keyChecksummer = null,
-								  IEqualityComparer<TKey> keyComparer = null, IEqualityComparer<TValue> valueComparer = null, ClusteredStoragePolicy policy = ClusteredStoragePolicy.DictionaryDefault, int reservedRecords = 0,
+								  IEqualityComparer<TKey> keyComparer = null, IEqualityComparer<TValue> valueComparer = null, StreamContainerPolicy policy = StreamContainerPolicy.DictionaryDefault, int reservedRecords = 0,
 								  Endianness endianness = Endianness.LittleEndian, bool autoLoad = false)
 		: this(
 			new StreamMappedList<KeyValuePair<TKey, TValue>>(
@@ -64,7 +64,7 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 			valueComparer,
 			endianness
 		) {
-		Guard.Argument(policy.HasFlag(ClusteredStoragePolicy.TrackChecksums), nameof(policy), $"Checksum tracking must be enabled in {nameof(StreamMappedDictionary<TKey, TValue>)} implementations.");
+		Guard.Argument(policy.HasFlag(StreamContainerPolicy.TrackChecksums), nameof(policy), $"Checksum tracking must be enabled in {nameof(StreamMappedDictionary<TKey, TValue>)} implementations.");
 	}
 
 	public StreamMappedDictionary(IStreamMappedList<KeyValuePair<TKey, TValue>> kvpStore, IItemSerializer<TKey> keySerializer, IItemChecksummer<TKey> keyChecksummer = null, IEqualityComparer<TKey> keyComparer = null,
@@ -77,12 +77,12 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 		_keyChecksum = keyChecksummer ?? new ItemDigestor<TKey>(keySerializer, endianness);
 		_checksumToIndexLookup = new LookupEx<int, int>();
 		_unusedRecords = new();
-		_requiresLoad = true; //KVPList.Storage.Records.Count > KVPList.Storage.Header.ReservedRecords;
+		_requiresLoad = true; //KVPList.Streams.Records.Count > KVPList.Streams.Header.ReservedStreams;
 		if (autoLoad)
 			Load();
 	}
 
-	public ClusteredStorage Storage => KVPList.Storage;
+	public StreamContainer Streams => KVPList.Streams;
 
 	protected IEnumerable<KeyValuePair<TKey, TValue>> KeyValuePairs {
 		get {
@@ -125,31 +125,31 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 	public Task LoadAsync() => Task.Run(Load);
 
 	public TKey ReadKey(int index) {
-		using (Storage.EnterAccessScope()) {
-			if (Storage.IsNull(KVPList.Storage.Header.ReservedRecords + index))
+		using (Streams.EnterAccessScope()) {
+			if (Streams.IsNull(KVPList.Streams.Header.ReservedStreams + index))
 				throw new InvalidOperationException($"Stream record {index} is null");
 
-			using var scope = Storage.OpenRead(KVPList.Storage.Header.ReservedRecords + index);
-			var reader = new EndianBinaryReader(EndianBitConverter.For(Storage.Endianness), scope.Stream);
+			using var stream = Streams.OpenRead(KVPList.Streams.Header.ReservedStreams + index);
+			var reader = new EndianBinaryReader(EndianBitConverter.For(Streams.Endianness), stream);
 			return ((KeyValuePairSerializer<TKey, TValue>)KVPList.ItemSerializer).DeserializeKey(reader);
 		}
 	}
 
 	public TValue ReadValue(int index) {
-		using (Storage.EnterAccessScope()) {
-			if (Storage.IsNull(KVPList.Storage.Header.ReservedRecords + index))
+		using (Streams.EnterAccessScope()) {
+			if (Streams.IsNull(KVPList.Streams.Header.ReservedStreams + index))
 				throw new InvalidOperationException($"Stream record {index} is null");
 
-			using var scope = Storage.OpenRead(KVPList.Storage.Header.ReservedRecords + index);
-			var reader = new EndianBinaryReader(EndianBitConverter.For(Storage.Endianness), scope.Stream);
-			return ((KeyValuePairSerializer<TKey, TValue>)KVPList.ItemSerializer).DeserializeValue(scope.Record.Size, reader);
+			using var stream = Streams.OpenRead(KVPList.Streams.Header.ReservedStreams + index);
+			var reader = new EndianBinaryReader(EndianBitConverter.For(Streams.Endianness), stream);
+			return ((KeyValuePairSerializer<TKey, TValue>)KVPList.ItemSerializer).DeserializeValue(stream.Descriptor.Size, reader);
 		}
 	}
 
 	public override void Add(TKey key, TValue value) {
 		Guard.ArgumentNotNull(key, nameof(key));
 		CheckLoaded();
-		using (Storage.EnterAccessScope()) {
+		using (Streams.EnterAccessScope()) {
 			if (TryFindKey(key, out _))
 				throw new KeyNotFoundException($"An item with key '{key}' was already added");
 			var kvp = new KeyValuePair<TKey, TValue>(key, value);
@@ -158,7 +158,7 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 	}
 
 	public override void Update(TKey key, TValue value) {
-		using (Storage.EnterAccessScope()) {
+		using (Streams.EnterAccessScope()) {
 			if (!TryFindKey(key, out var index))
 				throw new KeyNotFoundException($"The key '{key}' was not found");
 			var kvp = new KeyValuePair<TKey, TValue>(key, value);
@@ -169,7 +169,7 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 	protected override void AddOrUpdate(TKey key, TValue value) {
 		Guard.ArgumentNotNull(key, nameof(key));
 		CheckLoaded();
-		using (Storage.EnterAccessScope()) {
+		using (Streams.EnterAccessScope()) {
 			var kvp = new KeyValuePair<TKey, TValue>(key, value);
 			if (TryFindKey(key, out var index)) {
 				UpdateInternal(index, kvp);
@@ -182,7 +182,7 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 	public override bool Remove(TKey key) {
 		Guard.ArgumentNotNull(key, nameof(key));
 		CheckLoaded();
-		using (Storage.EnterAccessScope()) {
+		using (Streams.EnterAccessScope()) {
 			if (TryFindKey(key, out var index)) {
 				RemoveAt(index);
 				return true;
@@ -194,7 +194,7 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 	public override bool ContainsKey(TKey key) {
 		Guard.ArgumentNotNull(key, nameof(key));
 		CheckLoaded();
-		using (Storage.EnterAccessScope()) {
+		using (Streams.EnterAccessScope()) {
 			return
 				_checksumToIndexLookup[_keyChecksum.CalculateChecksum(key)]
 					.Where(index => !IsUnusedRecord(index))
@@ -205,7 +205,7 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 
 	public override void Clear() {
 		// Load not required
-		using (Storage.EnterAccessScope()) {
+		using (Streams.EnterAccessScope()) {
 			KVPList.Clear();
 			_checksumToIndexLookup.Clear();
 			_unusedRecords.Clear();
@@ -215,7 +215,7 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 	public override bool TryGetValue(TKey key, out TValue value) {
 		Guard.ArgumentNotNull(key, nameof(key));
 		CheckLoaded();
-		using (Storage.EnterAccessScope()) {
+		using (Streams.EnterAccessScope()) {
 			if (TryFindValue(key, out _, out value)) {
 				return true;
 			}
@@ -226,7 +226,7 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 
 	public bool TryFindKey(TKey key, out int index) {
 		Debug.Assert(key != null);
-		using (Storage.EnterAccessScope()) {
+		using (Streams.EnterAccessScope()) {
 			foreach (var i in _checksumToIndexLookup[_keyChecksum.CalculateChecksum(key)]) {
 				var candidateKey = ReadKey(i);
 				if (_keyComparer.Equals(candidateKey, key)) {
@@ -241,7 +241,7 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 
 	public bool TryFindValue(TKey key, out int index, out TValue value) {
 		Debug.Assert(key != null);
-		using (Storage.EnterAccessScope()) {
+		using (Streams.EnterAccessScope()) {
 			foreach (var i in _checksumToIndexLookup[_keyChecksum.CalculateChecksum(key)]) {
 				var candidateKey = ReadKey(i);
 				if (_keyComparer.Equals(candidateKey, key)) {
@@ -259,7 +259,7 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 	public override void Add(KeyValuePair<TKey, TValue> item) {
 		Guard.ArgumentNotNull(item, nameof(item));
 		CheckLoaded();
-		using (Storage.EnterAccessScope()) {
+		using (Streams.EnterAccessScope()) {
 			if (TryFindKey(item.Key, out _))
 				throw new KeyNotFoundException($"An item with key '{item.Key}' was already added");
 			AddInternal(item);
@@ -269,7 +269,7 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 	public override bool Remove(KeyValuePair<TKey, TValue> item) {
 		Guard.ArgumentNotNull(item, nameof(item));
 		CheckLoaded();
-		using (Storage.EnterAccessScope()) {
+		using (Streams.EnterAccessScope()) {
 			if (TryFindValue(item.Key, out var index, out var value)) {
 				if (_valueComparer.Equals(item.Value, value)) {
 					RemoveAt(index);
@@ -283,15 +283,15 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 	public void RemoveAt(int index) {
 		CheckLoaded();
 		// We don't delete the instance, we mark is as unused. Use Shrink to intelligently remove unused records.
-		using (Storage.EnterAccessScope()) {
+		using (Streams.EnterAccessScope()) {
 			var kvp = KeyValuePair.Create(default(TKey), default(TValue));
 			using var scope = KVPList.EnterUpdateScope(index, kvp);
 
 			// Mark record as unused
-			Guard.Ensure(scope.Record.Traits.HasFlag(ClusteredStreamTraits.IsUsed), "Record not in used state");
-			_checksumToIndexLookup.Remove(scope.Record.KeyChecksum, index);
-			scope.Record.KeyChecksum = -1;
-			scope.Record.Traits = scope.Record.Traits.CopyAndSetFlags(ClusteredStreamTraits.IsUsed, false);
+			Guard.Ensure(scope.Descriptor.Traits.HasFlag(ClusteredStreamTraits.IsUsed), "Descriptor not in used state");
+			_checksumToIndexLookup.Remove(scope.Descriptor.KeyChecksum, index);
+			scope.Descriptor.KeyChecksum = -1;
+			scope.Descriptor.Traits = scope.Descriptor.Traits.CopyAndSetFlags(ClusteredStreamTraits.IsUsed, false);
 			_unusedRecords.Add(index);
 
 			// note: scope Dispose ends up updating the record
@@ -301,7 +301,7 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 	public override bool Contains(KeyValuePair<TKey, TValue> item) {
 		Guard.ArgumentNotNull(item, nameof(item));
 		CheckLoaded();
-		using (Storage.EnterAccessScope()) {
+		using (Streams.EnterAccessScope()) {
 			if (!TryFindValue(item.Key, out _, out var value))
 				return false;
 			return _valueComparer.Equals(value, item.Value);
@@ -357,7 +357,7 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 
 	private void AddInternal(KeyValuePair<TKey, TValue> item) {
 		int index;
-		ClusteredStreamScope scope;
+		ClusteredStream scope;
 		if (_unusedRecords.Any()) {
 			index = ConsumeUnusedRecord();
 			scope = KVPList.EnterUpdateScope(index, item);
@@ -368,10 +368,10 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 
 		// Mark record as used
 		using (scope) {
-			Guard.Ensure(!scope.Record.Traits.HasFlag(ClusteredStreamTraits.IsUsed), "Record not in unused state");
-			scope.Record.KeyChecksum = _keyChecksum.CalculateChecksum(item.Key);
-			scope.Record.Traits = scope.Record.Traits.CopyAndSetFlags(ClusteredStreamTraits.IsUsed, true);
-			_checksumToIndexLookup.Add(scope.Record.KeyChecksum, index);
+			Guard.Ensure(!scope.Descriptor.Traits.HasFlag(ClusteredStreamTraits.IsUsed), "Descriptor not in unused state");
+			scope.Descriptor.KeyChecksum = _keyChecksum.CalculateChecksum(item.Key);
+			scope.Descriptor.Traits = scope.Descriptor.Traits.CopyAndSetFlags(ClusteredStreamTraits.IsUsed, true);
+			_checksumToIndexLookup.Add(scope.Descriptor.KeyChecksum, index);
 			// note: scope Dispose ends up updating the record
 		}
 
@@ -380,8 +380,8 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 	private void UpdateInternal(int index, KeyValuePair<TKey, TValue> item) {
 		// Updating value only, records (and checksum) don't change  when updating
 		using var scope = KVPList.EnterUpdateScope(index, item);
-		scope.Record.Traits = scope.Record.Traits.CopyAndSetFlags(ClusteredStreamTraits.IsUsed, true);
-		scope.Record.KeyChecksum = _keyChecksum.CalculateChecksum(item.Key);
+		scope.Descriptor.Traits = scope.Descriptor.Traits.CopyAndSetFlags(ClusteredStreamTraits.IsUsed, true);
+		scope.Descriptor.KeyChecksum = _keyChecksum.CalculateChecksum(item.Key);
 	}
 
 	private bool IsUnusedRecord(int index) => _unusedRecords.Contains(index);
@@ -396,8 +396,8 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 		_checksumToIndexLookup.Clear();
 		_unusedRecords.Clear();
 		for (var i = 0; i < KVPList.Count; i++) {
-			var reservedRecordsI = Tools.Collection.CheckNotImplemented64bitAddressingLength(KVPList.Storage.Header.ReservedRecords);
-			var record = KVPList.Storage.GetRecord(reservedRecordsI + i);
+			var reservedRecordsI = Tools.Collection.CheckNotImplemented64bitAddressingLength(KVPList.Streams.Header.ReservedStreams);
+			var record = KVPList.Streams.GetStreamDescriptor(reservedRecordsI + i);
 			if (record.Traits.HasFlag(ClusteredStreamTraits.IsUsed))
 				_checksumToIndexLookup.Add(record.KeyChecksum, i);
 			else

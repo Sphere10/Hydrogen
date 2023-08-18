@@ -202,7 +202,7 @@ public class SqliteSQLBuilder : SQLBuilderBase {
 		} else if (type.IsAssignableFrom(typeof(string)) || type.IsIn(typeof(char))) {
 			return "TEXT";
 		}
-		throw new SoftwareException("Unable to determine SQLite storage class for type '{0}'", type);
+		throw new SoftwareException("Unable to determine SQLite streams class for type '{0}'", type);
 	}
 
 	private string TypeToVariableColumn(Type type) {
@@ -364,7 +364,7 @@ public class SqliteSQLBuilder : SQLBuilderBase {
 		    )
 		   ) return "BLOB";
 
-		throw new SoftwareException("Unable to convert data type '{0}' to an Sqlite storage class.", dataType);
+		throw new SoftwareException("Unable to convert data type '{0}' to an Sqlite streams class.", dataType);
 
 	}
 }

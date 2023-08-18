@@ -190,7 +190,7 @@ public class SQLBuilderWithTableBasedVariables : SQLBuilderDecorator {
 				TypeSwitch.Case<string>(() => storageClass = VariableStorageClass.Text),
 				TypeSwitch.Case<DateTime>(() => storageClass = VariableStorageClass.DateTime),
 				TypeSwitch.Case<byte[]>(() => storageClass = VariableStorageClass.Blob),
-				TypeSwitch.Default(() => { throw new SoftwareException("Unable to map type to variable storage class '{0}'", type.Name); })
+				TypeSwitch.Default(() => { throw new SoftwareException("Unable to map type to variable streams class '{0}'", type.Name); })
 			);
 		}
 		return storageClass;

@@ -19,14 +19,14 @@ namespace Hydrogen.Tests;
 [Parallelizable(ParallelScope.Children)]
 public sealed class TransactionalDictionaryTests : TransactionalDictionaryTestsBase {
 
-	protected override IDisposable Create<TKey, TValue>(IItemSerializer<TKey> keySerializer, IItemSerializer<TValue> valueSerializer, IEqualityComparer<TKey> keyComparer, IEqualityComparer<TValue> valueComparer, ClusteredStoragePolicy policy,
+	protected override IDisposable Create<TKey, TValue>(IItemSerializer<TKey> keySerializer, IItemSerializer<TValue> valueSerializer, IEqualityComparer<TKey> keyComparer, IEqualityComparer<TValue> valueComparer, StreamContainerPolicy policy,
 	                                           out ITransactionalDictionary<TKey, TValue> clustered, out string file) {
 		file = Tools.FileSystem.GenerateTempFilename();
 		var dir = Tools.FileSystem.GetTempEmptyDirectory(true);
 		var fn = file;
 		var disposable1 = Tools.Scope.ExecuteOnDispose(() => Tools.Lambda.ActionIgnoringExceptions(() => File.Delete(fn)));
 		var disposable2 = Tools.Scope.ExecuteOnDispose(() => Tools.Lambda.ActionIgnoringExceptions(() => Tools.FileSystem.DeleteDirectory(dir)));
-		clustered = new TransactionalDictionary<TKey, TValue>(file, dir, keySerializer, valueSerializer, null, keyComparer, valueComparer, policy: policy | ClusteredStoragePolicy.TrackChecksums);
+		clustered = new TransactionalDictionary<TKey, TValue>(file, dir, keySerializer, valueSerializer, null, keyComparer, valueComparer, policy: policy | StreamContainerPolicy.TrackChecksums);
 		return new Disposables(disposable1, disposable2, clustered);
 	}
 

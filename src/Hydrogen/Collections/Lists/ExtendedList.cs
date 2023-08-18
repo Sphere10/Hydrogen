@@ -14,7 +14,7 @@ using System.Linq;
 namespace Hydrogen;
 
 /// <summary>
-/// A generic ExtendedList implementation that uses an underlying array for storage.
+/// A generic ExtendedList implementation that uses an underlying array for streams.
 /// </summary>
 /// <typeparam name="T"></typeparam>
 public class ExtendedList<T> : RangedListBase<T> {

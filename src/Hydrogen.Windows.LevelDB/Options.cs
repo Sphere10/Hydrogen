@@ -146,7 +146,7 @@ public class Options : LevelDBHandle {
 	///    ~200-500MB/s compression
 	///    ~400-800MB/s decompression
 	/// Note that these speeds are significantly faster than most
-	/// persistent storage speeds, and therefore it is typically never
+	/// persistent streams speeds, and therefore it is typically never
 	/// worth switching to kNoCompression.  Even if the input data is
 	/// incompressible, the kSnappyCompression implementation will
 	/// efficiently detect that and will switch to uncompressed mode.

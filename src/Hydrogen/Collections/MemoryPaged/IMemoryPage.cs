@@ -18,12 +18,12 @@ public interface IMemoryPage<TItem> : IPage<TItem>, IDisposable {
 	long MaxSize { get; set; }
 
 	/// <summary>
-	/// Saves the page to storage.
+	/// Saves the page to streams.
 	/// </summary>
 	void Save();
 
 	/// <summary>
-	/// Loads the page from storage.
+	/// Loads the page from streams.
 	/// </summary>
 	void Load();
 

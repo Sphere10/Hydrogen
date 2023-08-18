@@ -16,7 +16,7 @@ namespace Hydrogen;
 
 /// <summary>
 /// A stream that writes to an underlying <see cref="IBuffer"/> rather than a byte array (as <see cref="MemoryStream"/> does).
-/// The purpose of this class is to provide a Stream similar in principle to a  <see cref="MemoryStream"/> but whose underlying storage of bytes
+/// The purpose of this class is to provide a Stream similar in principle to a  <see cref="MemoryStream"/> but whose underlying streams of bytes
 /// is decoupled from "contiguous block of memory". Example use cases include the ability to construct an arbitrarily large memory stream (by passing in an <see cref="MemoryPagedBuffer"/>) whose
 /// contents are file-swapped automatically. The ability to construct a logical memory stream from a multitude of byte-fragments (via <see cref="FragmentedStream"/>).
 /// </summary>

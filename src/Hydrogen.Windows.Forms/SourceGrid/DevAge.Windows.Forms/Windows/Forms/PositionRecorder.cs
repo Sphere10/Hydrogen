@@ -34,7 +34,7 @@ public enum SaveFlags {
 
 
 /// <summary>
-/// A class that can be used to save into the isolated storage the position and the state of a Windows Forms control.
+/// A class that can be used to save into the isolated streams the position and the state of a Windows Forms control.
 /// </summary>
 public class PositionRecorderIsolatedStorage : DevAge.IO.IsolatedStorage.IsolatedStorageSettingVersionBase {
 	public PositionRecorderIsolatedStorage() : base(1) {

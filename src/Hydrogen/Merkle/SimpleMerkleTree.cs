@@ -18,7 +18,7 @@ namespace Hydrogen;
 
 /// <summary>
 /// Merkle-tree implementation that maintains all leaf nodes and lazily computes parent nodes when needed.
-/// Storage is O(2N), root calculation is O(log(n)) all leaf mutations available at O(1). 
+/// Streams is O(2N), root calculation is O(log(n)) all leaf mutations available at O(1). 
 ///  
 /// Not suitable for "large" trees. Not thread-safe.
 /// </summary>

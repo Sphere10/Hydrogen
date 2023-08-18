@@ -3,72 +3,65 @@ using System.IO;
 
 namespace Hydrogen;
 
-public class ClusteredStreamScope : IDisposable {
-	public event EventHandlerEx<long> RecordSizeChanged;
+/// <summary>
+/// A <see cref="Stream"/> whose contents are clustered across a <see cref="ClusterMap"/>. Instances of <see cref="ClusteredStream"/> are
+/// the component streams managed by a <see cref="StreamContainer"/>. A <see cref="ClusteredStream"/> is for all intensive purposes to be
+/// considered a usual <see cref="Stream"/> except it's contents (and <see cref="ClusteredStreamDescriptor"/>) managed entirely by it's
+/// owning <see cref="StreamContainer"/>.
+/// </summary>
+public class ClusteredStream : StreamDecorator {
+	public event EventHandlerEx<long> StreamLengthChanged;
 
-	private readonly ClusteredStorage _clusteredStorage;
+	private readonly StreamContainer _streamContainer;
 	private readonly ClusteredStreamFragmentProvider _fragmentProvider;
 	private readonly Action _finalizeAction;
 
-	internal ClusteredStreamScope(ClusteredStorage clusteredStorage, long recordIndex, bool readOnly, Action finalizeAction = null) {
-		_clusteredStorage = clusteredStorage;
+	internal ClusteredStream(StreamContainer streamContainer, long recordIndex, bool readOnly, Action finalizeAction = null)
+		: base(CreateInternalStream(streamContainer, recordIndex, readOnly, out var streamDescriptor, out var fragmentProvider)) {
+		_streamContainer = streamContainer;
 		_finalizeAction = finalizeAction;
 		RecordIndex = recordIndex;
-		Record = clusteredStorage.GetRecord(recordIndex);
+		Descriptor = streamDescriptor;
 		ReadOnly = readOnly;
-		_fragmentProvider = new ClusteredStreamFragmentProvider(
-			_clusteredStorage.ClusterMap, 
-			recordIndex, 
-			Record.Size,
-			Record.StartCluster,
-			Record.EndCluster,
-			clusteredStorage.ClusterMap.CalculateClusterChainLength(Record.Size),
-			clusteredStorage.Policy.HasFlag(ClusteredStoragePolicy.IntegrityChecks)
-		);
+		_fragmentProvider = fragmentProvider;
 
-		// track when stream length changes so we can update the scope's record
+		// track when stream length changes so we can update the scope's descriptor
 		if (!readOnly) {
 			_fragmentProvider.StreamLengthChanged += (_, length) => {
-				Record.Size = length;
-				NotifyRecordSizeChanged(length);
+				Descriptor.Size = length;
+				NotifyStreamLengthChanged(length);
 			};
 		}
-
-		Stream = new FragmentedStream(_fragmentProvider);
-		if (readOnly)
-			Stream = Stream.AsReadOnly();
 	}
 
 	public bool ReadOnly { get; }
 
 	public long RecordIndex { get; private set;}
 
-	public ClusteredStreamRecord Record; // TODO: MAKE PROPERTY (check won't break when is struct)
-
-	public Stream Stream { get; }
+	public ClusteredStreamDescriptor Descriptor; // TODO: MAKE PROPERTY (check won't break when is struct)
 
 	public void ProcessClusterMapChanged(ClusterMapChangedEventArgs changedEvent) {
 		
-		// Track any changes to the record's start/end cluster arising from migrating tips
+		// Track any changes to the descriptor's start/end cluster arising from migrating tips
 		if (changedEvent.MovedTerminals.TryGetValue(RecordIndex, out var newTerminal)) {
 			if (newTerminal.NewStart.HasValue)
-				Record.StartCluster = newTerminal.NewStart.Value;
+				Descriptor.StartCluster = newTerminal.NewStart.Value;
 			
 			if (newTerminal.NewEnd.HasValue)
-				Record.EndCluster = newTerminal.NewEnd.Value;
+				Descriptor.EndCluster = newTerminal.NewEnd.Value;
 		}
 
 		if (changedEvent.ChainTerminal == RecordIndex) {
 			if (changedEvent.AddedChain) {
-				Record.StartCluster = changedEvent.ChainNewStartCluster.Value;
-				Record.EndCluster = changedEvent.ChainNewEndCluster.Value;
+				Descriptor.StartCluster = changedEvent.ChainNewStartCluster.Value;
+				Descriptor.EndCluster = changedEvent.ChainNewEndCluster.Value;
 				// Size is determined by fragment provider event
 			} else if (changedEvent.RemovedChain) {
-				Record.StartCluster = Cluster.Null;
-				Record.EndCluster = Cluster.Null;
-				Record.Size = 0;
+				Descriptor.StartCluster = Cluster.Null;
+				Descriptor.EndCluster = Cluster.Null;
+				Descriptor.Size = 0;
 			} else if (changedEvent.IncreasedChainSize || changedEvent.DecreasedChainSize) {
-				Record.EndCluster = changedEvent.ChainNewEndCluster.Value;
+				Descriptor.EndCluster = changedEvent.ChainNewEndCluster.Value;
 			}
 		}
 	
@@ -76,31 +69,50 @@ public class ClusteredStreamScope : IDisposable {
 		_fragmentProvider.ProcessClusterMapChanged(changedEvent);
 	}
 
-	public void ProcessRecordSwapped(long record1Index, ClusteredStreamRecord record1Data, long record2Index, ClusteredStreamRecord record2Data) {
-		if (RecordIndex == record1Index) {
-			RecordIndex = record2Index;
-			_fragmentProvider.LogicalRecordID = record2Index;
+	public void ProcessStreamSwapped(long stream1, ClusteredStreamDescriptor streamDescriptor1, long stream2, ClusteredStreamDescriptor stream2Descriptor) {
+		if (RecordIndex == stream1) {
+			RecordIndex = stream2;
+			_fragmentProvider.Terminal = stream2;
 		}
-		else if (RecordIndex == record2Index) {
-			RecordIndex = record1Index;
-			_fragmentProvider.LogicalRecordID = record1Index;
+		else if (RecordIndex == stream2) {
+			RecordIndex = stream1;
+			_fragmentProvider.Terminal = stream1;
 		}
-		_fragmentProvider.ProcessRecordSwapped(record1Index, record1Data, record2Index, record2Data);
+		_fragmentProvider.ProcessStreamSwapped(stream1, streamDescriptor1, stream2, stream2Descriptor);
 	}
 
-	public void Dispose() {
-		Stream.Dispose();
+	// Close() is called by Dispose
+	public override void Close() {
+	
 		if (!ReadOnly) {
-			_clusteredStorage.UpdateRecord(RecordIndex, Record);
+			_streamContainer.UpdateStreamDescriptor(RecordIndex, Descriptor);
 		}
 		_finalizeAction?.Invoke();
-		#if ENABLE_CLUSTER_DIAGNOSTICS
-		ClusterDiagnostics.VerifyClusters(_clusteredStorage.ClusterMap);
-		#endif
+#if ENABLE_CLUSTER_DIAGNOSTICS
+		ClusterDiagnostics.VerifyClusters(_streamContainer.ClusterMap);
+#endif
+		base.Close();
 	}
 
-	private void NotifyRecordSizeChanged(long newSize) {
-		RecordSizeChanged?.Invoke(newSize);
+	private void NotifyStreamLengthChanged(long newSize) {
+		StreamLengthChanged?.Invoke(newSize);
+	}
+
+	private static Stream CreateInternalStream(StreamContainer streamContainer, long streamIndex, bool readOnly, out ClusteredStreamDescriptor streamDescriptor, out ClusteredStreamFragmentProvider fragmentProvider) {
+		streamDescriptor = streamContainer.GetStreamDescriptor(streamIndex);
+		fragmentProvider = new ClusteredStreamFragmentProvider(
+			streamContainer.ClusterMap, 
+			streamIndex, 
+			streamDescriptor.Size,
+			streamDescriptor.StartCluster,
+			streamDescriptor.EndCluster,
+			streamContainer.ClusterMap.CalculateClusterChainLength(streamDescriptor.Size),
+			streamContainer.Policy.HasFlag(StreamContainerPolicy.IntegrityChecks)
+		);
+		Stream stream = new FragmentedStream(fragmentProvider);
+		if (readOnly)
+			stream = stream.AsReadOnly();
+		return stream;
 	}
 
 }

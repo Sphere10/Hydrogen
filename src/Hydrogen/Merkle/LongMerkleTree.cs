@@ -18,7 +18,7 @@ using System.Linq;
 namespace Hydrogen;
 
 // A merkle-tree implementation that only keeps the roots.
-// Storage is O(1), root calculation is O(1) and append leaf operation is O(1). 
+// Streams is O(1), root calculation is O(1) and append leaf operation is O(1). 
 //
 // This tree is suitable for building very large merkle-trees, but is limited to the following use-cases:
 //  - verifying existence proofs (but not generating)

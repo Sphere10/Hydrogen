@@ -588,7 +588,7 @@ public partial class CsvReader
 	///		<paramref name="field"/> not found.
 	/// </exception>
 	/// <exception cref="T:ArgumentOutOfRangeException">
-	///		Record index must be > 0.
+	///		Descriptor index must be > 0.
 	/// </exception>
 	/// <exception cref="T:InvalidOperationException">
 	///		Cannot move to a previous record in forward-only mode.
@@ -622,7 +622,7 @@ public partial class CsvReader
 	///		<paramref name="field"/> must be included in [0, <see cref="M:FieldCount"/>[.
 	/// </exception>
 	/// <exception cref="T:ArgumentOutOfRangeException">
-	///		Record index must be > 0.
+	///		Descriptor index must be > 0.
 	/// </exception>
 	/// <exception cref="T:InvalidOperationException">
 	///		Cannot move to a previous record in forward-only mode.

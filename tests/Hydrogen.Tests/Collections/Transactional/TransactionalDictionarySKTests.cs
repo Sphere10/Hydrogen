@@ -14,7 +14,7 @@ namespace Hydrogen.Tests;
 public sealed class TransactionalDictionarySKTests : TransactionalDictionaryTestsBase {
 
 	[Test]
-	public void BrokenKeySerializerFailsGracefully([ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy) {
+	public void BrokenKeySerializerFailsGracefully([StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
 
 		var rng = new Random(31337);
 		var key = rng.NextString(256 - sizeof(Int32));
@@ -32,7 +32,7 @@ public sealed class TransactionalDictionarySKTests : TransactionalDictionaryTest
 			null,
 			EqualityComparer<string>.Default,
 			new TestObjectComparer(),
-			policy: policy | ClusteredStoragePolicy.TrackChecksums | ClusteredStoragePolicy.TrackKey
+			policy: policy | StreamContainerPolicy.TrackChecksums | StreamContainerPolicy.TrackKey
 		);
 
 		dictionary.Load();
@@ -40,14 +40,14 @@ public sealed class TransactionalDictionarySKTests : TransactionalDictionaryTest
 	}
 
 
-	protected override IDisposable Create<TKey, TValue>(IItemSerializer<TKey> keySerializer, IItemSerializer<TValue> valueSerializer, IEqualityComparer<TKey> keyComparer, IEqualityComparer<TValue> valueComparer, ClusteredStoragePolicy policy,
+	protected override IDisposable Create<TKey, TValue>(IItemSerializer<TKey> keySerializer, IItemSerializer<TValue> valueSerializer, IEqualityComparer<TKey> keyComparer, IEqualityComparer<TValue> valueComparer, StreamContainerPolicy policy,
 	                                           out ITransactionalDictionary<TKey, TValue> clustered, out string file) {
 		file = Tools.FileSystem.GenerateTempFilename();
 		var dir = Tools.FileSystem.GetTempEmptyDirectory(true);
 		var fn = file;
 		var disposable1 = Tools.Scope.ExecuteOnDispose(() => Tools.Lambda.ActionIgnoringExceptions(() => File.Delete(fn)));
 		var disposable2 = Tools.Scope.ExecuteOnDispose(() => Tools.Lambda.ActionIgnoringExceptions(() => Tools.FileSystem.DeleteDirectory(dir)));
-		clustered = new TransactionalDictionarySK<TKey, TValue>(file, dir, new PaddedSerializer<TKey>(256, keySerializer, SizeDescriptorStrategy.UseVarInt), valueSerializer, null, keyComparer, valueComparer, policy: policy | ClusteredStoragePolicy.TrackChecksums | ClusteredStoragePolicy.TrackKey);
+		clustered = new TransactionalDictionarySK<TKey, TValue>(file, dir, new PaddedSerializer<TKey>(256, keySerializer, SizeDescriptorStrategy.UseVarInt), valueSerializer, null, keyComparer, valueComparer, policy: policy | StreamContainerPolicy.TrackChecksums | StreamContainerPolicy.TrackKey);
 		return new Disposables(disposable1, disposable2, clustered);
 	}
 

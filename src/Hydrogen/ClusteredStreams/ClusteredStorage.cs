@@ -16,26 +16,26 @@ using System.Threading;
 namespace Hydrogen;
 
 /// <summary>
-/// A container of <see cref="Stream"/>'s whose contents are stored across clusters of data over a root <see cref="Stream"/> (similar in principle to how a file-system works).
+/// A container of <see cref="Stream"/>'s whose contents are stored in a clustered manner over a root <see cref="Stream"/> (similar in principle to how a file-system works).
 /// Fundamentally, this class can function as a "virtual file system" allowing an arbitrary number of <see cref="Stream"/>'s to be stored (and changed). This class
 /// also serves as the base container for implementations of <see cref="IStreamMappedList{TItem}"/>'s, <see cref="IStreamMappedDictionary{TKey,TValue}"/>'s and <see cref="IStreamMappedHashSet{TItem}"/>'s.
 /// <remarks>
 /// The structure of the underlying stream is depicted below:
 /// [HEADER] Version: 1, Cluster Size: 32, Total ClusterMap: 10, Records: 5
-/// [Records]
-///   0: [StreamRecord] Size: 60, Start Cluster: 3
-///   1: [StreamRecord] Size: 88, Start Cluster: 7
-///   2: [StreamRecord] Size: 27, Start Cluster: 2
-///   3: [StreamRecord] Size: 43, Start Cluster: 1
-///   4: [StreamRecord] Size: 0, Start Cluster: -1
+/// [STREAM DESCRIPTORS]
+///   0: [StreamDescriptor] Size: 60, Start Cluster: 3
+///   1: [StreamDescriptor] Size: 88, Start Cluster: 7
+///   2: [StreamDescriptor] Size: 27, Start Cluster: 2
+///   3: [StreamDescriptor] Size: 43, Start Cluster: 1
+///   4: [StreamDescriptor] Size: 0, Start Cluster: -1
 /// [ClusterMap]
-///   0: [Cluster] Traits: First, Record, Prev: -1, Next: 6, Data: 030000003c0000000700000058000000020000001b000000010000002b000000
-///   1: [Cluster] Traits: First, Data, Prev: 3, Next: 5, Data: 894538851b6655bb8d8a4b4517eaab2b22ada63e6e0000000000000000000000
-///   2: [Cluster] Traits: First, Data, Prev: 2, Next: -1, Data: 1e07b1f66b3a237ed9f438ec26093ca50dd05b798baa7de25f093f0000000000
-///   3: [Cluster] Traits: First, Data, Prev: 0, Next: 9, Data: ce178efbff3e3177069101b78453de5ca2d1a7d72c958485306fb400e0efc1f5
-///   4: [Cluster] Traits: Data, Prev: 8, Next: -1, Data: a3058b9856aaf271ab21153c040a05c15042abbf000000000000000000000000
-///   5: [Cluster] Traits: Data, Prev: 1, Next: -1, Data: 0000000000000000000000000000000000000000000000000000000000000000
-///   6: [Cluster] Traits: Record, Prev: 0, Next: -1, Data: ffffffff00000000000000000000000000000000000000000000000000000000
+///   0: [Cluster] Traits: First, Prev: -1, Next: 6, Data: 030000003c0000000700000058000000020000001b000000010000002b000000
+///   1: [Cluster] Traits: First, Prev: 3, Next: 5, Data: 894538851b6655bb8d8a4b4517eaab2b22ada63e6e0000000000000000000000
+///   2: [Cluster] Traits: First, Prev: 2, Next: -1, Data: 1e07b1f66b3a237ed9f438ec26093ca50dd05b798baa7de25f093f0000000000
+///   3: [Cluster] Traits: First, Prev: 0, Next: 9, Data: ce178efbff3e3177069101b78453de5ca2d1a7d72c958485306fb400e0efc1f5
+///   4: [Cluster] Traits: None, Prev: 8, Next: -1, Data: a3058b9856aaf271ab21153c040a05c15042abbf000000000000000000000000
+///   5: [Cluster] Traits: None, Prev: 1, Next: -1, Data: 0000000000000000000000000000000000000000000000000000000000000000
+///   6: [Cluster] Traits: Descriptor, Prev: 0, Next: -1, Data: ffffffff00000000000000000000000000000000000000000000000000000000
 ///   7: [Cluster] Traits: First, Data, Prev: 1, Next: 8, Data: 5aa2c04b9554fbe9425c2d52aa135ed8107bf9edbf44848326eb92cc9434b828
 ///   8: [Cluster] Traits: Data, Prev: 7, Next: 4, Data: c612bcb3e59fd0d7d88240797e649b5020d5090682c0f3151e3c24a9c12e540d
 ///   9: [Cluster] Traits: Data, Prev: 3, Next: -1, Data: 594ebf3d9241c837ffa3dea9ab0e550516ad18ed0f7b9c000000000000000000
@@ -44,59 +44,59 @@ namespace Hydrogen;
 ///  - Header is fixed 256b, and can be expanded to include other data (passwords, merkle roots, etc).
 ///  - ClusterMap are bi-directionally linked, to allow dynamic re-sizing on the fly. 
 ///  - Records contain the meta-data of all the streams and the entire records stream is also serialized over clusters.
-///  - Cluster traits distinguish record clusters from stream clusters. 
-///  - Cluster 0, when allocated, is always the first record cluster.
+///  - Cluster traits distinguish descriptor clusters from stream clusters. 
+///  - Cluster 0, when allocated, is always the first descriptor cluster.
 ///  - Records always link to the (First | Data) cluster of their stream.
-///  - ClusterMap with traits (First | Data) re-purpose the Prev field to denote the record.
+///  - ClusterMap with traits (First | Data) re-purpose the Prev field to denote the descriptor.
 /// </remarks>
-public class ClusteredStorage : SyncLoadableBase, ICriticalObject {
-	public event EventHandlerEx<ClusteredStreamRecord> RecordCreated;
-	public event EventHandlerEx<long, ClusteredStreamRecord> RecordAdded;
-	public event EventHandlerEx<long, ClusteredStreamRecord> RecordInserted;
-	public event EventHandlerEx<long, ClusteredStreamRecord> RecordUpdated;
-	public event EventHandlerEx<(long, ClusteredStreamRecord), (long, ClusteredStreamRecord)> RecordSwapped;
-	public event EventHandlerEx<long, long> RecordSizeChanged;
-	public event EventHandlerEx<long> RecordRemoved;
+public class StreamContainer : SyncLoadableBase, ICriticalObject {
+	public event EventHandlerEx<ClusteredStreamDescriptor> StreamCreated;
+	public event EventHandlerEx<long, ClusteredStreamDescriptor> StreamAdded;
+	public event EventHandlerEx<long, ClusteredStreamDescriptor> StreamInserted;
+	public event EventHandlerEx<long, ClusteredStreamDescriptor> StreamUpdated;
+	public event EventHandlerEx<(long, ClusteredStreamDescriptor), (long, ClusteredStreamDescriptor)> StreamSwapped;
+	public event EventHandlerEx<long, long> StreamLengthChanged;
+	public event EventHandlerEx<long> StreamRemoved;
 
 	private StreamMappedClusterMap _clusters;
-	ClusteredStreamFragmentProvider _recordsFragmentProvider;
-	private UpdateOnlyList<ClusteredStreamRecord, StreamPagedList<ClusteredStreamRecord>> _records;
-	private ICache<long, ClusteredStreamRecord> _recordCache;
-	private ClusteredStorageHeader _header;
-	private readonly IDictionary<long, ClusteredStreamScope> _openScopes;
+	private ClusteredStreamFragmentProvider _streamDescriptorsFragmentProvider;
+	private UpdateOnlyList<ClusteredStreamDescriptor, StreamPagedList<ClusteredStreamDescriptor>> _streamDescriptors;
+	private ICache<long, ClusteredStreamDescriptor> _streamDescriptorCache;
+	private StreamContainerHeader _header;
+	private readonly IDictionary<long, ClusteredStream> _openStreams;
 
 	private bool _initialized;
 	private readonly ConcurrentStream _rootStream;
 	private readonly int _clusterSize;
-	private readonly long _recordKeySize;
-	private readonly long _reservedRecords;
+	private readonly long _streamDescriptorKeySize;
+	private readonly long _reservedStreams;
 	private readonly bool _integrityChecks;
 	private readonly bool _preAllocateOptimization;
 	private int _clusterEnvelopeSize;
 	private bool _suppressEvents;
 
-	public ClusteredStorage(Stream rootStream, int clusterSize = HydrogenDefaults.ClusterSize, ClusteredStoragePolicy policy = ClusteredStoragePolicy.Default, long recordKeySize = 0, long reservedRecords = 0, Endianness endianness = Endianness.LittleEndian, bool autoLoad = false) {
+	public StreamContainer(Stream rootStream, int clusterSize = HydrogenDefaults.ClusterSize, StreamContainerPolicy policy = StreamContainerPolicy.Default, long streamDescriptorKeySize = 0, long reservedStreams = 0, Endianness endianness = Endianness.LittleEndian, bool autoLoad = false) {
 		Guard.ArgumentNotNull(rootStream, nameof(rootStream));
 		Guard.ArgumentGTE(clusterSize, 1, nameof(clusterSize));
-		Guard.ArgumentInRange(recordKeySize, 0, ushort.MaxValue, nameof(recordKeySize));
-		Guard.ArgumentGTE(reservedRecords, 0, nameof(reservedRecords));
-		if (policy.HasFlag(ClusteredStoragePolicy.TrackKey))
-			Guard.Argument(recordKeySize > 0, nameof(recordKeySize), $"Must be greater than 0 when {nameof(ClusteredStoragePolicy.TrackKey)}");
+		Guard.ArgumentInRange(streamDescriptorKeySize, 0, ushort.MaxValue, nameof(streamDescriptorKeySize));
+		Guard.ArgumentGTE(reservedStreams, 0, nameof(reservedStreams));
+		if (policy.HasFlag(StreamContainerPolicy.TrackKey))
+			Guard.Argument(streamDescriptorKeySize > 0, nameof(streamDescriptorKeySize), $"Must be greater than 0 when {nameof(StreamContainerPolicy.TrackKey)}");
 		Policy = policy;
 		Endianness = endianness;
 		_clusters = null;
-		_recordsFragmentProvider = null;
-		_records = null;
-		_recordCache = null;
+		_streamDescriptorsFragmentProvider = null;
+		_streamDescriptors = null;
+		_streamDescriptorCache = null;
 		_header = null;
-		_openScopes = new Dictionary<long, ClusteredStreamScope>();
+		_openStreams = new Dictionary<long, ClusteredStream>();
 		_initialized = false;
 		_rootStream = rootStream.AsConcurrent();
 		_clusterSize = clusterSize;
-		_recordKeySize = recordKeySize;
-		_reservedRecords = reservedRecords;
-		_integrityChecks = Policy.HasFlag(ClusteredStoragePolicy.IntegrityChecks);
-		_preAllocateOptimization = Policy.HasFlag(ClusteredStoragePolicy.FastAllocate);
+		_streamDescriptorKeySize = streamDescriptorKeySize;
+		_reservedStreams = reservedStreams;
+		_integrityChecks = Policy.HasFlag(StreamContainerPolicy.IntegrityChecks);
+		_preAllocateOptimization = Policy.HasFlag(StreamContainerPolicy.FastAllocate);
 		_clusterEnvelopeSize = 0;
 		_suppressEvents = false;
 
@@ -104,29 +104,29 @@ public class ClusteredStorage : SyncLoadableBase, ICriticalObject {
 			Load();
 	}
 
-	public static ClusteredStorage FromStream(Stream rootStream, Endianness endianness = Endianness.LittleEndian) {
-		Guard.Ensure(rootStream.Length >= ClusteredStorageHeader.ByteLength, $"Corrupt header (stream was too small {rootStream.Length} bytes)");
+	public static StreamContainer FromStream(Stream rootStream, Endianness endianness = Endianness.LittleEndian, bool autoLoad = false) {
+		Guard.Ensure(rootStream.Length >= StreamContainerHeader.ByteLength, $"Corrupt header (stream was too small {rootStream.Length} bytes)");
 		var reader = new EndianBinaryReader(EndianBitConverter.For(endianness), rootStream);
 
 		// read cluster size
-		rootStream.Seek(ClusteredStorageHeader.ClusterSizeOffset, SeekOrigin.Begin);
+		rootStream.Seek(StreamContainerHeader.ClusterSizeOffset, SeekOrigin.Begin);
 		var clusterSize = reader.ReadInt32();
 		Guard.Ensure(clusterSize > 0, $"Corrupt header (ClusterSize field was {clusterSize} bytes)");
 
 		// read policy
-		rootStream.Seek(ClusteredStorageHeader.PolicyOffset, SeekOrigin.Begin);
-		var policy = (ClusteredStoragePolicy)reader.ReadUInt32();
+		rootStream.Seek(StreamContainerHeader.PolicyOffset, SeekOrigin.Begin);
+		var policy = (StreamContainerPolicy)reader.ReadUInt32();
 
-		// read record key size
-		rootStream.Seek(ClusteredStorageHeader.RecordKeySizeOffset, SeekOrigin.Begin);
+		// read descriptor key size
+		rootStream.Seek(StreamContainerHeader.StreamDescriptorKeySizeOffset, SeekOrigin.Begin);
 		var recordKeySize = reader.ReadUInt16();
 
 		// read records offset
-		rootStream.Seek(ClusteredStorageHeader.ReservedRecordsOffset, SeekOrigin.Begin);
-		var reservedRecords = reader.ReadInt64();
+		rootStream.Seek(StreamContainerHeader.StreamDescriptorRecordsOffset, SeekOrigin.Begin);
+		var reservedStreams = reader.ReadInt64();
 
 		rootStream.Position = 0;
-		var storage = new ClusteredStorage(rootStream, clusterSize, policy, recordKeySize, reservedRecords, endianness, autoLoad: true);
+		var storage = new StreamContainer(rootStream, clusterSize, policy, recordKeySize, reservedStreams, endianness, autoLoad: autoLoad);
 
 		return storage;
 	}
@@ -144,7 +144,7 @@ public class ClusteredStorage : SyncLoadableBase, ICriticalObject {
 
 	public Stream RootStream => _rootStream;
 
-	public ClusteredStorageHeader Header {
+	public StreamContainerHeader Header {
 		get {
 			CheckInitialized();
 			return _header;
@@ -152,14 +152,14 @@ public class ClusteredStorage : SyncLoadableBase, ICriticalObject {
 		private set => _header = value;
 	}
 
-	public ClusteredStoragePolicy Policy { get; }
+	public StreamContainerPolicy Policy { get; }
 
 	public Endianness Endianness { get; }
 
 	public long Count {
 		get {
 			CheckInitialized();
-			return Header.RecordsCount;
+			return Header.StreamCount;
 		}
 	}
 
@@ -202,135 +202,135 @@ public class ClusteredStorage : SyncLoadableBase, ICriticalObject {
 			.EnterAccessScope();
 	}
 
-	public ClusteredStreamScope EnterSaveItemScope<TItem>(long index, TItem item, IItemSerializer<TItem> serializer, ListOperationType operationType) {
+	public ClusteredStream EnterSaveItemScope<TItem>(long index, TItem item, IItemSerializer<TItem> serializer, ListOperationType operationType) {
 		// initialized and reentrancy checks done by one of below called methods
-		var scope = operationType switch {
+		var stream = operationType switch {
 			ListOperationType.Add => Add(),
 			ListOperationType.Update => OpenWrite(index),
 			ListOperationType.Insert => Insert(index),
 			_ => throw new ArgumentException($@"List operation type '{operationType}' not supported", nameof(operationType)),
 		};
 		try {
-			using var writer = new EndianBinaryWriter(EndianBitConverter.For(Endianness), scope.Stream);
+			using var writer = new EndianBinaryWriter(EndianBitConverter.For(Endianness), stream);
 			if (item != null) {
-				scope.Record.Traits = scope.Record.Traits.CopyAndSetFlags(ClusteredStreamTraits.IsNull, false);
+				stream.Descriptor.Traits = stream.Descriptor.Traits.CopyAndSetFlags(ClusteredStreamTraits.IsNull, false);
 				if (_preAllocateOptimization) {
 					// pre-setting the stream length before serialization improves performance since it avoids
 					// re-allocating fragmented stream on individual properties of the serialized item
 					var expectedSize = serializer.CalculateSize(item);
-					scope.Stream.SetLength(expectedSize);
+					stream.SetLength(expectedSize);
 					serializer.Serialize(item, writer);
 				} else {
 					var byteLength = serializer.Serialize(item, writer);
-					scope.Stream.SetLength(byteLength);
+					stream.SetLength(byteLength);
 				}
 
 			} else {
-				scope.Record.Traits = scope.Record.Traits.CopyAndSetFlags(ClusteredStreamTraits.IsNull, true);
-				scope.Stream.SetLength(0); // open record will save when closed
+				stream.Descriptor.Traits = stream.Descriptor.Traits.CopyAndSetFlags(ClusteredStreamTraits.IsNull, true);
+				stream.SetLength(0); // open descriptor will save when closed
 			}
-			return scope;
+			return stream;
 		} catch {
 			// need to dispose explicitly if not returned
-			scope.Dispose();
+			stream.Dispose();
 			throw;
 		}
 	}
 
-	public ClusteredStreamScope EnterLoadItemScope<TItem>(long index, IItemSerializer<TItem> serializer, out TItem item) {
+	public ClusteredStream EnterLoadItemScope<TItem>(long index, IItemSerializer<TItem> serializer, out TItem item) {
 		// initialized and reentrancy checks done by Open
-		var scope = OpenWrite(index);
+		var stream = OpenWrite(index);
 		try {
-			if (!scope.Record.Traits.HasFlag(ClusteredStreamTraits.IsNull)) {
-				using var reader = new EndianBinaryReader(EndianBitConverter.For(Endianness), scope.Stream);
-				item = serializer.Deserialize(scope.Record.Size, reader);
+			if (!stream.Descriptor.Traits.HasFlag(ClusteredStreamTraits.IsNull)) {
+				using var reader = new EndianBinaryReader(EndianBitConverter.For(Endianness), stream);
+				item = serializer.Deserialize(stream.Descriptor.Size, reader);
 			} else item = default;
-			return scope;
+			return stream;
 		} catch {
 			// need to dispose explicitly if not returned
-			scope.Dispose();
+			stream.Dispose();
 			throw;
 		}
 	}
 
-	public ClusteredStreamScope Add() {
+	public ClusteredStream Add() {
 		CheckInitialized();
 		using var accessScope = EnterAccessScope();
-		AddRecord(out var index, NewRecord()); // the first record add will allocate cluster 0 for the records stream
-		return NewRecordScope(index, false);
+		AddStreamDescriptor(out var index, NewStreamDescriptor()); // the first descriptor add will allocate cluster 0 for the records stream
+		return OpenStreamInternal(index, false);
 	}
 
-	public ClusteredStreamScope OpenRead(long index) => Open(index, true);
+	public ClusteredStream OpenRead(long index) => Open(index, true);
 
-	public ClusteredStreamScope OpenWrite(long index) => Open(index, false);
+	public ClusteredStream OpenWrite(long index) => Open(index, false);
 
-	public ClusteredStreamScope Open(long index, bool readOnly) {
+	public ClusteredStream Open(long index, bool readOnly) {
 		CheckInitialized();
 		using var accessScope = EnterAccessScope();
-		CheckRecordIndex(index);
-		return NewRecordScope(index, readOnly);
+		CheckStreamDescriptorIndex(index);
+		return OpenStreamInternal(index, readOnly);
 	}
 
 	public void Remove(long index) {
 		CheckInitialized();
 		using var accessScope = EnterAccessScope();
 		CheckNoOpenedStreams();
-		var countBeforeRemove = Header.RecordsCount;
-		CheckRecordIndex(index);
-		var record = GetRecord(index);
-		Guard.Against(record.Size == 0 && (record.StartCluster != Cluster.Null || record.EndCluster != Cluster.Null), "Invalid empty record");
+		var countBeforeRemove = Header.StreamCount;
+		CheckStreamDescriptorIndex(index);
+		var record = GetStreamDescriptor(index);
+		Guard.Against(record.Size == 0 && (record.StartCluster != Cluster.Null || record.EndCluster != Cluster.Null), "Invalid empty descriptor");
 		if (record.Size > 0) {
 			_clusters.RemoveNextClusters(record.StartCluster);
 		}
-		RemoveRecord(index); // record must be removed last, in case it deletes genesis cluster
-		var countAfterRemove = Header.RecordsCount;
-		Guard.Ensure(countAfterRemove == countBeforeRemove - 1, $"Failed to remove record {index}");
+		RemoveStreamDescriptor(index); // descriptor must be removed last, in case it deletes genesis cluster
+		var countAfterRemove = Header.StreamCount;
+		Guard.Ensure(countAfterRemove == countBeforeRemove - 1, $"Failed to remove descriptor {index}");
 #if ENABLE_CLUSTER_DIAGNOSTICS
 		ClusterDiagnostics.VerifyClusters(this);
 #endif
 
 	}
 
-	public ClusteredStreamScope Insert(long index) {
+	public ClusteredStream Insert(long index) {
 		CheckInitialized();
 		using var accessScope = EnterAccessScope();
 		CheckNoOpenedStreams();
-		CheckRecordIndex(index, allowEnd: true);
-		InsertRecord(index, NewRecord());
-		return NewRecordScope(index, false);
+		CheckStreamDescriptorIndex(index, allowEnd: true);
+		InsertStreamDescriptor(index, NewStreamDescriptor());
+		return OpenStreamInternal(index, false);
 	}
 
 	public void Swap(long first, long second) {
 		CheckInitialized();
 		using var accessScope = EnterAccessScope();
-		Guard.Ensure(!_openScopes.ContainsKey(first), $"Cannot swap record {first} it is open");
-		Guard.Ensure(!_openScopes.ContainsKey(second), $"Cannot swap record {second} it is open");
+		Guard.Ensure(!_openStreams.ContainsKey(first), $"Cannot swap stream {first} as it is open");
+		Guard.Ensure(!_openStreams.ContainsKey(second), $"Cannot swap stream {second} as it is open");
 
-		CheckRecordIndex(first);
-		CheckRecordIndex(second);
+		CheckStreamDescriptorIndex(first);
+		CheckStreamDescriptorIndex(second);
 
 		if (first == second)
 			return;
 
 		// Get records
-		var firstRecord = GetRecord(first);
-		var secondRecord = GetRecord(second);
+		var firstDescriptor = GetStreamDescriptor(first);
+		var secondDescriptor = GetStreamDescriptor(second);
 
 		// Swap records
-		UpdateRecord(first, secondRecord);
-		UpdateRecord(second, firstRecord);
+		UpdateStreamDescriptor(first, secondDescriptor);
+		UpdateStreamDescriptor(second, firstDescriptor);
 
-		// Update cluster -> record backlinks  (if applicable)
-		if (firstRecord.StartCluster != Cluster.Null)
-			_clusters.WriteClusterPrev(firstRecord.StartCluster, second);
-		if (firstRecord.EndCluster != Cluster.Null)
-			_clusters.WriteClusterNext(firstRecord.EndCluster, second);
-		if (secondRecord.StartCluster != Cluster.Null)
-			_clusters.WriteClusterPrev(secondRecord.StartCluster, first);
-		if (secondRecord.EndCluster != Cluster.Null)
-			_clusters.WriteClusterNext(secondRecord.EndCluster, first);
+		// Update cluster chain terminals to match new descriptor backlinks  (if applicable)
+		if (firstDescriptor.StartCluster != Cluster.Null)
+			_clusters.WriteClusterPrev(firstDescriptor.StartCluster, second);
+		if (firstDescriptor.EndCluster != Cluster.Null)
+			_clusters.WriteClusterNext(firstDescriptor.EndCluster, second);
+		if (secondDescriptor.StartCluster != Cluster.Null)
+			_clusters.WriteClusterPrev(secondDescriptor.StartCluster, first);
+		if (secondDescriptor.EndCluster != Cluster.Null)
+			_clusters.WriteClusterNext(secondDescriptor.EndCluster, first);
 
-		NotifyRecordSwapped(first, firstRecord, second, secondRecord);
+		NotifyStreamSwapped(first, firstDescriptor, second, secondDescriptor);
 
 #if ENABLE_CLUSTER_DIAGNOSTICS
 		ClusterDiagnostics.VerifyClusters(this);
@@ -340,9 +340,13 @@ public class ClusteredStorage : SyncLoadableBase, ICriticalObject {
 	public void Clear(long index) {
 		CheckInitialized();
 		using var accessScope = EnterAccessScope();
-		CheckRecordIndex(index);
-		using var scope = OpenWrite(index);
-		scope.Stream.SetLength(0);
+		CheckStreamDescriptorIndex(index);
+		using var stream = OpenWrite(index);
+		stream.SetLength(0);
+
+#if ENABLE_CLUSTER_DIAGNOSTICS
+		ClusterDiagnostics.VerifyClusters(this);
+#endif
 	}
 
 	public void Clear() {
@@ -351,17 +355,17 @@ public class ClusteredStorage : SyncLoadableBase, ICriticalObject {
 		CheckNoOpenedStreams();
 		SuppressEvents = true;
 		try {
-			_records.Clear();
-			_recordCache?.Flush();
+			_streamDescriptors.Clear();
+			_streamDescriptorCache?.Flush();
 			_clusters.Clear();
-			Header.RecordsCount = 0;
+			Header.StreamCount = 0;
 			Header.TotalClusters = 0;
-			Header.RecordsEndCluster = Cluster.Null;
+			Header.StreamDescriptorsEndCluster = Cluster.Null;
 			Header.ResetMerkleRoot();
 		} finally {
 			SuppressEvents = false;
 		}
-		CreateReservedRecords();
+		CreateReservedStreams();
 #if ENABLE_CLUSTER_DIAGNOSTICS
 		ClusterDiagnostics.VerifyClusters(this);
 #endif
@@ -379,138 +383,24 @@ public class ClusteredStorage : SyncLoadableBase, ICriticalObject {
 		return Header.ToString();
 	}
 
-	#endregion
-
-	#region Records
-
-	public ClusteredStreamRecord GetRecord(long index) {
-		CheckInitialized();
-		using var accessScope = EnterAccessScope();
-		return _recordCache is not null ? _recordCache[index] : FetchRecord(index);
-	}
-
-	// This is the interface implementation of UpdateRecord (used by friendly classes)
-	internal void UpdateRecord(long index, ClusteredStreamRecord record) {
-		using (EnterAccessScope()) {
-			if (_integrityChecks)
-				CheckRecordIntegrity(index, record);
-			_records.Update(index, record);
-			_recordCache?.Set(index, record);
-			NotifyRecordUpdated(index, record);
-		}
-	}
-
-	private ClusteredStreamRecord NewRecord() {
-		CheckLocked();
-		var record = new ClusteredStreamRecord();
-		record.Size = 0;
-		record.StartCluster = Cluster.Null;
-		record.EndCluster = Cluster.Null;
-		record.Key = new byte[_recordKeySize];
-		NotifyRecordCreated(record);
-		return record;
-	}
-
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	private ClusteredStreamRecord FetchRecord(long index) {
-		CheckLocked();
-		var record = _records.Read(index);
-		if (_integrityChecks)
-			CheckRecordIntegrity(index, record);
-		return record;
-
-	}
-
-	private ClusteredStreamRecord AddRecord(out long index, ClusteredStreamRecord record) {
-		CheckLocked();
-		_records.Add(record);
-		index = Header.RecordsCount - 1;
-		_recordCache?.Set(index, record);
-		NotifyRecordAdded(index, record);
-		return record;
-
-	}
-
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	private void FastWriteRecordStartCluster(long record, long startCluster) {
-		var bytes = _records.InternalCollection.Writer.BitConverter.GetBytes(startCluster);
-		_records.InternalCollection.WriteItemBytes(record, ClusteredStreamRecord.StartClusterOffset, bytes);
-		_recordCache?.Invalidate(record);
-	}
-
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	private void FastWriteRecordEndCluster(long record, long endCluster) {
-		var bytes = _records.InternalCollection.Writer.BitConverter.GetBytes(endCluster);
-		_records.InternalCollection.WriteItemBytes(record, ClusteredStreamRecord.EndClusterOffset, bytes);
-		_recordCache?.Invalidate(record);
-	}
-
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	private void FastWriteRecordSize(long record, long size) {
-		var bytes = _records.InternalCollection.Writer.BitConverter.GetBytes(size);
-		_records.InternalCollection.WriteItemBytes(record, ClusteredStreamRecord.SizeOffset, bytes);
-		_recordCache?.Invalidate(record);
-	}
-
-	/// <remarks>
-	/// This has O(N) complexity in worst case (inserting at 0), use with care
-	/// </remarks>
-	private void InsertRecord(long index, ClusteredStreamRecord record) {
-		CheckLocked();
-		// Update genesis clusters 
-		for (var i = _records.Count - 1; i >= index; i--) {
-			var shiftedRecord = GetRecord(i);
-			if (shiftedRecord.StartCluster != Cluster.Null)
-				_clusters.WriteClusterPrev(shiftedRecord.StartCluster, i + 1);
-			if (shiftedRecord.EndCluster != Cluster.Null)
-				_clusters.WriteClusterNext(shiftedRecord.EndCluster, i + 1);
-			_recordCache?.Invalidate(i);
-			_recordCache?.Set(i + 1, shiftedRecord);
-		}
-		_records.Insert(index, record);
-		_recordCache?.Set(index, record);
-		//Header.RecordsCount++;
-		// TODO: restore this by removing RecordCount setting from handler (after bug fixes)
-		NotifyRecordInserted(index, record);
-	}
-
-	private void RemoveRecord(long index) {
-		CheckLocked();
-		// Need to update terminals of adjacent records (O(N/2) complexity here)
-		for (var i = index + 1; i < _records.Count; i++) {
-			var higherRecord = GetRecord(i);
-			if (higherRecord.StartCluster != Cluster.Null)
-				_clusters.WriteClusterPrev(higherRecord.StartCluster, i - 1);
-			if (higherRecord.EndCluster != Cluster.Null)
-				_clusters.WriteClusterNext(higherRecord.EndCluster, i - 1);
-			_recordCache?.Invalidate(i);
-			_recordCache?.Set(i - 1, higherRecord);
-		}
-
-		_records.RemoveAt(index);
-		_recordCache?.Invalidate(index);
-		// Note: Header.RecordsCount is adjusted automatically when removing from the collection
-		NotifyRecordRemoved(index);
-
-	}
-
-	private ClusteredStreamScope NewRecordScope(long recordIndex, bool readOnly) {
-		Guard.Ensure(!_openScopes.ContainsKey(recordIndex), $"Record {recordIndex} is already open");
+	private ClusteredStream OpenStreamInternal(long streamIndex, bool readOnly) {
+		Guard.Ensure(!_openStreams.ContainsKey(streamIndex), $"Stream {streamIndex} is already open");
 
 		var accessScope = EnterAccessScope();
 		try {
-			var scope = new ClusteredStreamScope(this, recordIndex, readOnly, EndScopeCleanup);
+			var stream = new ClusteredStream(this, streamIndex, readOnly, EndScopeCleanup);
 			if (!readOnly) {
-				scope.RecordSizeChanged += size => {
+				stream.StreamLengthChanged += size => {
 					CheckLocked();
-					FastWriteRecordSize(recordIndex, size);
+					FastWriteStreamDescriptorSize(streamIndex, size);
+					NotifyStreamLengthChanged(streamIndex, size);
 				};
 			}
-			_openScopes.Add(recordIndex, scope);
-			return scope;
+			_openStreams.Add(streamIndex, stream);
+			return stream;
 
 			void EndScopeCleanup() {
-				_openScopes.Remove(recordIndex);
+				_openStreams.Remove(streamIndex);
 				accessScope.Dispose();
 			}
 		} catch {
@@ -519,6 +409,121 @@ public class ClusteredStorage : SyncLoadableBase, ICriticalObject {
 			throw;
 		}
 	}
+
+	#endregion
+
+	#region Stream Descriptors
+
+	public ClusteredStreamDescriptor GetStreamDescriptor(long index) {
+		CheckInitialized();
+		using var accessScope = EnterAccessScope();
+		return _streamDescriptorCache is not null ? _streamDescriptorCache[index] : FetchStreamDescriptor(index);
+	}
+
+	internal void UpdateStreamDescriptor(long index, ClusteredStreamDescriptor descriptor) {
+		using (EnterAccessScope()) {
+			if (_integrityChecks)
+				CheckStreamDescriptorIntegrity(index, descriptor);
+			_streamDescriptors.Update(index, descriptor);
+			_streamDescriptorCache?.Set(index, descriptor);
+			NotifyStreamUpdated(index, descriptor);
+		}
+	}
+
+	private ClusteredStreamDescriptor NewStreamDescriptor() {
+		CheckLocked();
+		var record = new ClusteredStreamDescriptor();
+		record.Size = 0;
+		record.StartCluster = Cluster.Null;
+		record.EndCluster = Cluster.Null;
+		record.Key = new byte[_streamDescriptorKeySize];
+		NotifyStreamCreated(record);
+		return record;
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	private ClusteredStreamDescriptor FetchStreamDescriptor(long index) {
+		CheckLocked();
+		var record = _streamDescriptors.Read(index);
+		if (_integrityChecks)
+			CheckStreamDescriptorIntegrity(index, record);
+		return record;
+
+	}
+
+	private ClusteredStreamDescriptor AddStreamDescriptor(out long index, ClusteredStreamDescriptor descriptor) {
+		CheckLocked();
+		_streamDescriptors.Add(descriptor);
+		index = Header.StreamCount - 1;
+		_streamDescriptorCache?.Set(index, descriptor);
+		NotifyStreamAdded(index, descriptor);
+		return descriptor;
+
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	private void FastWriteStreamDescriptorStartCluster(long record, long startCluster) {
+		var bytes = _streamDescriptors.InternalCollection.Writer.BitConverter.GetBytes(startCluster);
+		_streamDescriptors.InternalCollection.WriteItemBytes(record, ClusteredStreamDescriptorSerializer.StartClusterOffset, bytes);
+		_streamDescriptorCache?.Invalidate(record);
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	private void FastWriteStreamDescriptorEndCluster(long record, long endCluster) {
+		var bytes = _streamDescriptors.InternalCollection.Writer.BitConverter.GetBytes(endCluster);
+		_streamDescriptors.InternalCollection.WriteItemBytes(record, ClusteredStreamDescriptorSerializer.EndClusterOffset, bytes);
+		_streamDescriptorCache?.Invalidate(record);
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	private void FastWriteStreamDescriptorSize(long record, long size) {
+		var bytes = _streamDescriptors.InternalCollection.Writer.BitConverter.GetBytes(size);
+		_streamDescriptors.InternalCollection.WriteItemBytes(record, ClusteredStreamDescriptorSerializer.SizeOffset, bytes);
+		_streamDescriptorCache?.Invalidate(record);
+	}
+
+	/// <remarks>
+	/// This has O(N) complexity in worst case (inserting at 0), use with care
+	/// </remarks>
+	private void InsertStreamDescriptor(long index, ClusteredStreamDescriptor descriptor) {
+		CheckLocked();
+		// Update genesis clusters 
+		for (var i = _streamDescriptors.Count - 1; i >= index; i--) {
+			var shiftedRecord = GetStreamDescriptor(i);
+			if (shiftedRecord.StartCluster != Cluster.Null)
+				_clusters.WriteClusterPrev(shiftedRecord.StartCluster, i + 1);
+			if (shiftedRecord.EndCluster != Cluster.Null)
+				_clusters.WriteClusterNext(shiftedRecord.EndCluster, i + 1);
+			_streamDescriptorCache?.Invalidate(i);
+			_streamDescriptorCache?.Set(i + 1, shiftedRecord);
+		}
+		_streamDescriptors.Insert(index, descriptor);
+		_streamDescriptorCache?.Set(index, descriptor);
+		//Header.StreamCount++;
+		// TODO: restore this by removing RecordCount setting from handler (after bug fixes)
+		NotifyStreamInserted(index, descriptor);
+	}
+
+	private void RemoveStreamDescriptor(long index) {
+		CheckLocked();
+		// Need to update terminals of adjacent records (O(N/2) complexity here)
+		for (var i = index + 1; i < _streamDescriptors.Count; i++) {
+			var higherRecord = GetStreamDescriptor(i);
+			if (higherRecord.StartCluster != Cluster.Null)
+				_clusters.WriteClusterPrev(higherRecord.StartCluster, i - 1);
+			if (higherRecord.EndCluster != Cluster.Null)
+				_clusters.WriteClusterNext(higherRecord.EndCluster, i - 1);
+			_streamDescriptorCache?.Invalidate(i);
+			_streamDescriptorCache?.Set(i - 1, higherRecord);
+		}
+
+		_streamDescriptors.RemoveAt(index);
+		_streamDescriptorCache?.Invalidate(index);
+		// Note: Header.StreamCount is adjusted automatically when removing from the collection
+		NotifyStreamRemoved(index);
+
+	}
+
 
 	#endregion
 
@@ -536,7 +541,7 @@ public class ClusteredStorage : SyncLoadableBase, ICriticalObject {
 	}
 
 	private void Initialize() {
-		var recordSerializer = new ClusteredStreamRecordSerializer(Policy, _recordKeySize);
+		var recordSerializer = new ClusteredStreamDescriptorSerializer(Policy, _streamDescriptorKeySize);
 		var clusterSerializer = new ClusterSerializer(_clusterSize);
 
 		// acquire lock on root stream for entire initialize
@@ -546,80 +551,80 @@ public class ClusteredStorage : SyncLoadableBase, ICriticalObject {
 			loadableStream.Load();
 
 		// Header
-		_header = new ClusteredStorageHeader(_rootStream, Endianness);
+		_header = new StreamContainerHeader(_rootStream, Endianness);
 		var wasEmptyStream = _rootStream.Length == 0;
 		if (!wasEmptyStream) {
 			_header.Load();
 			_header.CheckHeaderIntegrity();
 			CheckHeaderDataIntegrity(_rootStream.Length, _header, clusterSerializer, recordSerializer);
 		} else {
-			_header.Create(1, _clusterSize, _recordKeySize, _reservedRecords);
+			_header.Create(1, _clusterSize, _streamDescriptorKeySize, _reservedStreams);
 		}
-		Guard.Ensure(_header.ClusterSize == _clusterSize, $"Inconsistent cluster size {_clusterSize} (stream header had '{_header.ClusterSize}')");
+		Guard.Ensure(_header.ClusterSize == _clusterSize, $"Inconsistent cluster size {_clusterSize} (header had '{_header.ClusterSize}')");
 
 		// ClusterMap
 		// - stored in a StreamPagedList (single page, statically sized items)
-		// - when a start/end cluster is moved, we must update the record that points to it (the record is stored as the terminal values of a cluster chain)
+		// - when a start/end cluster is moved, we must update the descriptor that points to it (the descriptor is stored as the terminal values of a cluster chain)
 		ClusterEnvelopeSize = checked((int)clusterSerializer.StaticSize) - _header.ClusterSize; // the serializer includes the envelope, the header is the data size
-		_clusters = new StreamMappedClusterMap(_rootStream, ClusteredStorageHeader.ByteLength, clusterSerializer, Endianness, autoLoad: true);
+		_clusters = new StreamMappedClusterMap(_rootStream, StreamContainerHeader.ByteLength, clusterSerializer, Endianness, autoLoad: true);
 		_clusters.Changed += ClusterMapChangedHandler;
 
 		// Records
 		//  - are stored StreamPagedList or ClusteredStreamRecords (single page, statically sized items) which mapped over the cluster chain starting from 0
 		//  - the end cluster of the cluster chain is tracked in the header
-		//  - the record count is also tracked in the header
+		//  - the descriptor count is also tracked in the header
 		//  - this list of records maintains all the other lists stored in the cluster container
-		//var recordsCount = _header.RecordsCount;
-		_recordsFragmentProvider = new ClusteredStreamFragmentProvider(
+		//var recordsCount = _header.StreamCount;
+		_streamDescriptorsFragmentProvider = new ClusteredStreamFragmentProvider(
 			_clusters,
 			-1,
-			_header.RecordsCount * recordSerializer.StaticSize,
-			_header.RecordsCount > 0 ? 0 : Cluster.Null,
-			_header.RecordsCount > 0 ? _header.RecordsEndCluster : Cluster.Null,
-			_header.RecordsCount > 0 ? _clusters.CalculateClusterChainLength(_header.RecordsCount * recordSerializer.StaticSize) : 0,
+			_header.StreamCount * recordSerializer.StaticSize,
+			_header.StreamCount > 0 ? 0 : Cluster.Null,
+			_header.StreamCount > 0 ? _header.StreamDescriptorsEndCluster : Cluster.Null,
+			_header.StreamCount > 0 ? _clusters.CalculateClusterChainLength(_header.StreamCount * recordSerializer.StaticSize) : 0,
 			_integrityChecks
 		);
 
-		// track record stream length in header
-		_recordsFragmentProvider.StreamLengthChanged += (_, newLength) => {
+		// track descriptor stream length in header
+		_streamDescriptorsFragmentProvider.StreamLengthChanged += (_, newLength) => {
 			if (_suppressEvents) // event generated from fragment provider
 				return;
 
-			_header.RecordsCount = newLength / recordSerializer.StaticSize;
+			_header.StreamCount = newLength / recordSerializer.StaticSize;
 		};
 
 		// The actual records collection is stored is update optimized
-		_records =
-			new StreamPagedList<ClusteredStreamRecord>(
+		_streamDescriptors =
+			new StreamPagedList<ClusteredStreamDescriptor>(
 				recordSerializer,
-				new FragmentedStream(_recordsFragmentProvider, _header.RecordsCount * recordSerializer.StaticSize),
+				new FragmentedStream(_streamDescriptorsFragmentProvider, _header.StreamCount * recordSerializer.StaticSize),
 				Endianness,
 				includeListHeader: false,
 				autoLoad: true
 			)
 			.AsUpdateOnly(
-				_header.RecordsCount,
+				_header.StreamCount,
 				PreAllocationPolicy.MinimumRequired,
 				0,
-				NewRecord
+				NewStreamDescriptor
 			);
 
-		if (Policy.HasFlag(ClusteredStoragePolicy.CacheRecords)) {
-			_recordCache = new ActionCache<long, ClusteredStreamRecord>(
-				FetchRecord,
+		if (Policy.HasFlag(StreamContainerPolicy.CacheRecords)) {
+			_streamDescriptorCache = new ActionCache<long, ClusteredStreamDescriptor>(
+				FetchStreamDescriptor,
 				sizeEstimator: _ => recordSerializer.StaticSize,
 				reapStrategy: CacheReapPolicy.LeastUsed,
 				ExpirationPolicy.SinceLastAccessedTime,
 				maxCapacity: HydrogenDefaults.RecordCacheSize
 			);
 		} else {
-			_recordCache = null;
+			_streamDescriptorCache = null;
 		}
 
 		_initialized = true;
 
 		if (wasEmptyStream)
-			CreateReservedRecords();
+			CreateReservedStreams();
 	}
 
 	private void ClusterMapChangedHandler(object source, ClusterMapChangedEventArgs changedEvent) {
@@ -631,62 +636,62 @@ public class ClusteredStorage : SyncLoadableBase, ICriticalObject {
 			// 1. Update header (no clusters affected)
 			Header.TotalClusters += changedEvent.ClusterCountDelta;
 
-			// 2. Track record's end cluster 
+			// 2. Track descriptor's end cluster 
 
 			// Was it moved?
 			if (movedChainTerminals.Length > 0 && movedChainTerminals[0].Key == Cluster.Null) {
 				var recordTerminalChanges = movedChainTerminals[0];
-				Guard.Against(recordTerminalChanges.Value.NewStart.HasValue, "Record cluster chain start cannot be changed.");
-				Guard.Ensure(recordTerminalChanges.Value.NewEnd.HasValue, "Record cluster chain new end was moved but not defined.");
-				Header.RecordsEndCluster = recordTerminalChanges.Value.NewEnd.Value;
+				Guard.Against(recordTerminalChanges.Value.NewStart.HasValue, "Descriptor cluster chain start cannot be changed.");
+				Guard.Ensure(recordTerminalChanges.Value.NewEnd.HasValue, "Descriptor cluster chain new end was moved but not defined.");
+				Header.StreamDescriptorsEndCluster = recordTerminalChanges.Value.NewEnd.Value;
 			}
 
 			// Was it created/removed?
 			if (changedEvent.ChainTerminal == Cluster.Null) {
 				if (changedEvent.RemovedChain) {
-					Header.RecordsEndCluster = Cluster.Null;
+					Header.StreamDescriptorsEndCluster = Cluster.Null;
 				} else {
 					if (changedEvent.AddedChain)
-						Guard.Ensure(changedEvent.ChainNewStartCluster == 0, $"Record chain created with invalid start cluster {changedEvent.ChainNewStartCluster.Value}.");
-					Guard.Ensure(changedEvent.ChainNewEndCluster.HasValue, "Record cluster chain new end was moved but not defined.");
-					Header.RecordsEndCluster = changedEvent.ChainNewEndCluster.Value;
+						Guard.Ensure(changedEvent.ChainNewStartCluster == 0, $"Descriptor chain created with invalid start cluster {changedEvent.ChainNewStartCluster.Value}.");
+					Guard.Ensure(changedEvent.ChainNewEndCluster.HasValue, "Descriptor cluster chain new end was moved but not defined.");
+					Header.StreamDescriptorsEndCluster = changedEvent.ChainNewEndCluster.Value;
 				}
 			}
 
-			// 3. Inform record's fragment provider and seeker of this event 
-			_recordsFragmentProvider.ProcessClusterMapChanged(changedEvent);
+			// 3. Inform descriptor's fragment provider and seeker of this event 
+			_streamDescriptorsFragmentProvider.ProcessClusterMapChanged(changedEvent);
 
 			// At this point the records collection should be usable, process all other streams
 
-			// 4. If record terminal for this stream moved, update record's cluster pointers
+			// 4. If descriptor terminal for this stream moved, update descriptor's cluster pointers
 			foreach (var movedTerminal in movedChainTerminals) {
 				if (movedTerminal.Key == Cluster.Null)
-					continue; // already processed special record terminal above
+					continue; // already processed special descriptor terminal above
 
 				if (movedTerminal.Value.NewStart.HasValue)
-					FastWriteRecordStartCluster(movedTerminal.Key, movedTerminal.Value.NewStart.Value);
+					FastWriteStreamDescriptorStartCluster(movedTerminal.Key, movedTerminal.Value.NewStart.Value);
 
 				if (movedTerminal.Value.NewEnd.HasValue)
-					FastWriteRecordEndCluster(movedTerminal.Key, movedTerminal.Value.NewEnd.Value);
+					FastWriteStreamDescriptorEndCluster(movedTerminal.Key, movedTerminal.Value.NewEnd.Value);
 
 			}
 
-			// 5. For a changed stream, update cluster pointers in relevant record 
+			// 5. For a changed stream, update cluster pointers in relevant descriptor 
 			if (changedEvent.ChainTerminal.HasValue && changedEvent.ChainTerminal.Value != Cluster.Null) {
 				if (changedEvent.AddedChain) {
-					FastWriteRecordStartCluster(changedEvent.ChainTerminal.Value, changedEvent.ChainNewStartCluster.Value);
-					FastWriteRecordEndCluster(changedEvent.ChainTerminal.Value, changedEvent.ChainNewEndCluster.Value);
+					FastWriteStreamDescriptorStartCluster(changedEvent.ChainTerminal.Value, changedEvent.ChainNewStartCluster.Value);
+					FastWriteStreamDescriptorEndCluster(changedEvent.ChainTerminal.Value, changedEvent.ChainNewEndCluster.Value);
 				} else if (changedEvent.RemovedChain) {
-					FastWriteRecordStartCluster(changedEvent.ChainTerminal.Value, Cluster.Null);
-					FastWriteRecordEndCluster(changedEvent.ChainTerminal.Value, Cluster.Null);
-					FastWriteRecordSize(changedEvent.ChainTerminal.Value, 0);
+					FastWriteStreamDescriptorStartCluster(changedEvent.ChainTerminal.Value, Cluster.Null);
+					FastWriteStreamDescriptorEndCluster(changedEvent.ChainTerminal.Value, Cluster.Null);
+					FastWriteStreamDescriptorSize(changedEvent.ChainTerminal.Value, 0);
 				} else if (changedEvent.IncreasedChainSize || changedEvent.DecreasedChainSize) {
-					FastWriteRecordEndCluster(changedEvent.ChainTerminal.Value, changedEvent.ChainNewEndCluster.Value);
+					FastWriteStreamDescriptorEndCluster(changedEvent.ChainTerminal.Value, changedEvent.ChainNewEndCluster.Value);
 				}
 			}
 
-			// 6. Notify all open stream scopes about cluster map change
-			_openScopes.ForEach(x => x.Value.ProcessClusterMapChanged(changedEvent));
+			// 6. Notify all open stream about cluster map change
+			_openStreams.ForEach(x => x.Value.ProcessClusterMapChanged(changedEvent));
 
 		} finally {
 			SuppressEvents = false;
@@ -697,83 +702,83 @@ public class ClusteredStorage : SyncLoadableBase, ICriticalObject {
 
 	#region Event methods
 
-	protected virtual void OnRecordCreated(ClusteredStreamRecord record) {
+	protected virtual void OnStreamCreated(ClusteredStreamDescriptor descriptor) {
 	}
 
-	protected virtual void OnRecordAdded(long index, ClusteredStreamRecord record) {
+	protected virtual void OnStreamAdded(long index, ClusteredStreamDescriptor descriptor) {
 	}
 
-	protected virtual void OnRecordInserted(long index, ClusteredStreamRecord record) {
+	protected virtual void OnStreamInserted(long index, ClusteredStreamDescriptor descriptor) {
 	}
 
-	protected virtual void OnRecordUpdated(long index, ClusteredStreamRecord record) {
+	protected virtual void OnStreamUpdated(long index, ClusteredStreamDescriptor descriptor) {
 	}
 
-	protected virtual void OnRecordSwapped(long record1Index, ClusteredStreamRecord record1Data, long record2Index, ClusteredStreamRecord record2Data) {
+	protected virtual void OnStreamSwapped(long stream1, ClusteredStreamDescriptor stream1Descriptor, long stream2, ClusteredStreamDescriptor stream2Descriptor) {
 		CheckLocked();
-		_recordCache?.Invalidate(record1Index);
-		_recordCache?.Invalidate(record2Index);
-		_openScopes.ForEach(x => x.Value.ProcessRecordSwapped(record1Index, record1Data, record2Index, record2Data));
+		_streamDescriptorCache?.Invalidate(stream1);
+		_streamDescriptorCache?.Invalidate(stream2);
+		_openStreams.ForEach(x => x.Value.ProcessStreamSwapped(stream1, stream1Descriptor, stream2, stream2Descriptor));
 	}
 
-	protected virtual void OnRecordSizeChanged(long index, long newSize) {
+	protected virtual void OnStreamSizeChanged(long index, long newSize) {
 	}
 
-	protected virtual void OnRecordRemoved(long index) {
+	protected virtual void OnStreamRemoved(long index) {
 	}
 
-	private void NotifyRecordCreated(ClusteredStreamRecord record) {
+	private void NotifyStreamCreated(ClusteredStreamDescriptor descriptor) {
 		if (_suppressEvents)
 			return;
 
-		OnRecordCreated(record);
-		RecordCreated?.Invoke(record);
+		OnStreamCreated(descriptor);
+		StreamCreated?.Invoke(descriptor);
 	}
 
-	private void NotifyRecordAdded(long index, ClusteredStreamRecord record) {
+	private void NotifyStreamAdded(long index, ClusteredStreamDescriptor descriptor) {
 		if (_suppressEvents)
 			return;
 
-		OnRecordAdded(index, record);
-		RecordAdded?.Invoke(index, record);
+		OnStreamAdded(index, descriptor);
+		StreamAdded?.Invoke(index, descriptor);
 	}
 
-	private void NotifyRecordInserted(long index, ClusteredStreamRecord record) {
+	private void NotifyStreamInserted(long index, ClusteredStreamDescriptor descriptor) {
 		if (_suppressEvents)
 			return;
 
-		OnRecordInserted(index, record);
-		RecordInserted?.Invoke(index, record);
+		OnStreamInserted(index, descriptor);
+		StreamInserted?.Invoke(index, descriptor);
 	}
 
-	private void NotifyRecordUpdated(long index, ClusteredStreamRecord record) {
+	private void NotifyStreamUpdated(long index, ClusteredStreamDescriptor descriptor) {
 		if (_suppressEvents)
 			return;
 
-		OnRecordUpdated(index, record);
-		RecordUpdated?.Invoke(index, record);
+		OnStreamUpdated(index, descriptor);
+		StreamUpdated?.Invoke(index, descriptor);
 	}
 
-	private void NotifyRecordSwapped(long record1Index, ClusteredStreamRecord record1Data, long record2Index, ClusteredStreamRecord record2Data) {
+	private void NotifyStreamSwapped(long stream1, ClusteredStreamDescriptor stream1Descriptor, long stream2, ClusteredStreamDescriptor stream2Descriptor) {
 		if (_suppressEvents)
 			return;
-		OnRecordSwapped(record1Index, record1Data, record2Index, record2Data);
-		RecordSwapped?.Invoke((record1Index, record1Data), (record2Index, record2Data));
+		OnStreamSwapped(stream1, stream1Descriptor, stream2, stream2Descriptor);
+		StreamSwapped?.Invoke((stream1, stream1Descriptor), (stream2, stream2Descriptor));
 	}
 
-	private void NotifyRecordSizeChanged(long index, long newSize) {
+	private void NotifyStreamLengthChanged(long index, long newSize) {
 		if (_suppressEvents)
 			return;
-		OnRecordSizeChanged(index, newSize);
-		RecordSizeChanged?.Invoke(index, newSize);
+		OnStreamSizeChanged(index, newSize);
+		StreamLengthChanged?.Invoke(index, newSize);
 	}
 
-	private void NotifyRecordRemoved(long index) {
+	private void NotifyStreamRemoved(long index) {
 		if (_suppressEvents)
 			return;
 
-		OnRecordRemoved(index);
-		RecordRemoved?.Invoke(index);
+		OnStreamRemoved(index);
+		StreamRemoved?.Invoke(index);
 	}
 
 	#endregion
@@ -785,39 +790,39 @@ public class ClusteredStorage : SyncLoadableBase, ICriticalObject {
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	private void CheckNoOpenedStreams(string errorMessage = "This operation cannot be executed whilst there are open scopes")
-		=> Guard.Ensure(_openScopes.Count == 0, errorMessage);
+		=> Guard.Ensure(_openStreams.Count == 0, errorMessage);
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	private void CheckInitialized() {
 		if (!_initialized)
-			throw new InvalidOperationException("Clustered Storage not initialized");
+			throw new InvalidOperationException("Clustered Streams not initialized");
 	}
 
-	private void CheckHeaderDataIntegrity(long rootStreamLength, ClusteredStorageHeader header, IItemSerializer<Cluster> clusterSerializer, IItemSerializer<ClusteredStreamRecord> recordSerializer) {
+	private void CheckHeaderDataIntegrity(long rootStreamLength, StreamContainerHeader header, IItemSerializer<Cluster> clusterSerializer, IItemSerializer<ClusteredStreamDescriptor> recordSerializer) {
 		var clusterEnvelopeSize = clusterSerializer.StaticSize - header.ClusterSize;
-		var recordClusters = (long)Math.Ceiling(header.RecordsCount * recordSerializer.StaticSize / (float)header.ClusterSize);
-		Guard.Ensure(header.TotalClusters >= recordClusters, $"Inconsistency in {nameof(ClusteredStorageHeader.TotalClusters)}/{nameof(ClusteredStorageHeader.RecordsCount)}");
-		var minStreamSize = header.TotalClusters * (header.ClusterSize + clusterEnvelopeSize) + ClusteredStorageHeader.ByteLength;
+		var recordClusters = (long)Math.Ceiling(header.StreamCount * recordSerializer.StaticSize / (float)header.ClusterSize);
+		Guard.Ensure(header.TotalClusters >= recordClusters, $"Inconsistency in {nameof(StreamContainerHeader.TotalClusters)}/{nameof(StreamContainerHeader.StreamCount)}");
+		var minStreamSize = header.TotalClusters * (header.ClusterSize + clusterEnvelopeSize) + StreamContainerHeader.ByteLength;
 		Guard.Ensure(rootStreamLength >= minStreamSize, $"Stream too small (header gives minimum size {minStreamSize} but was {rootStreamLength})");
 	}
 
-	private void CreateReservedRecords() {
-		Guard.Ensure(Header.RecordsCount == 0, "Records are already existing");
-		for (var i = 0; i < Header.ReservedRecords; i++) {
-			AddRecord(out var index, NewRecord());
+	private void CreateReservedStreams() {
+		Guard.Ensure(Header.StreamCount == 0, "Records are already existing");
+		for (var i = 0; i < Header.ReservedStreams; i++) {
+			AddStreamDescriptor(out var index, NewStreamDescriptor());
 		}
-		Header.RecordsCount = _records.Count; // this has to be done explicitly here since the handler which sets RecordCount may not be called in certain scenarios
+		Header.StreamCount = _streamDescriptors.Count; // this has to be done explicitly here since the handler which sets RecordCount may not be called in certain scenarios
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	private void CheckRecordIndex(long index, string msg = null, bool allowEnd = false)
-		=> Guard.CheckIndex(index, 0, _records.Count, allowEnd);
+	private void CheckStreamDescriptorIndex(long index, string msg = null, bool allowEnd = false)
+		=> Guard.CheckIndex(index, 0, _streamDescriptors.Count, allowEnd);
 
-	private void CheckRecordIntegrity(long index, ClusteredStreamRecord record) {
-		if (record.Size == 0) {
-			Guard.Ensure(record.StartCluster == Cluster.Null, $"Empty record {index} should have start cluster {Cluster.Null} but was {record.StartCluster}");
-			Guard.Ensure(record.EndCluster == Cluster.Null, $"Empty record {index} should have end cluster {Cluster.Null} but was {record.EndCluster}");
-		} else Guard.Ensure(0 <= record.StartCluster && record.StartCluster < Header.TotalClusters, $"Record {index} pointed to to non-existent cluster {record.StartCluster}");
+	private void CheckStreamDescriptorIntegrity(long index, ClusteredStreamDescriptor descriptor) {
+		if (descriptor.Size == 0) {
+			Guard.Ensure(descriptor.StartCluster == Cluster.Null, $"Empty stream descriptor {index} should have start cluster {Cluster.Null} but was {descriptor.StartCluster}");
+			Guard.Ensure(descriptor.EndCluster == Cluster.Null, $"Empty stream descriptor {index} should have end cluster {Cluster.Null} but was {descriptor.EndCluster}");
+		} else Guard.Ensure(0 <= descriptor.StartCluster && descriptor.StartCluster < Header.TotalClusters, $"Stream descriptor {index} pointed to to non-existent cluster {descriptor.StartCluster}");
 	}
 
 	#endregion

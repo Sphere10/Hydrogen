@@ -21,7 +21,7 @@ namespace Hydrogen.DApp.Presentation.Loader.Services;
 /// </summary>
 public class DefaultEndpointManager : IEndpointManager {
 	/// <summary>
-	/// key that endpoint values are stored against in browser local storage.
+	/// key that endpoint values are stored against in browser local streams.
 	/// </summary>
 	private readonly string _hydrogenEndpointKey = "hydrogen.endpoints";
 
@@ -72,12 +72,12 @@ public class DefaultEndpointManager : IEndpointManager {
 	private IOptions<DataSourceOptions> Configuration { get; }
 
 	/// <summary>
-	/// Gets the sync local storage service
+	/// Gets the sync local streams service
 	/// </summary>
 	private ISyncLocalStorageService SyncLocalStorageService { get; }
 
 	/// <summary>
-	/// Gets the async local storage service
+	/// Gets the async local streams service
 	/// </summary>
 	private ILocalStorageService LocalStorageService { get; }
 

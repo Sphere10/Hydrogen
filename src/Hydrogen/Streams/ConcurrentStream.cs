@@ -15,11 +15,11 @@ using System.Threading.Tasks;
 namespace Hydrogen;
 
 /// <summary>
-/// A stream wrapper that ensures a lock is attained on it before it is used. It also provides a mechanism to acquire a locking scope.
+/// A stream wrapper that ensures a lock is attained before any member is invoked. It also provides a mechanism to acquire a locking scope.
 /// </summary>
-/// <typeparam name="TStream"></typeparam>
 public class ConcurrentStream : StreamDecorator, ICriticalObject {
-	// NOTE: the below calls the InnerStream directly as opposed to calling base method for performance reasons.
+	// NOTE: implementation below calls the InnerStream directly as opposed to calling base method for performance reasons.
+
 	private readonly ICriticalObject _lock;
 
 	public ConcurrentStream(Stream stream, ICriticalObject @lock = null) : base(stream) {
@@ -198,7 +198,6 @@ public class ConcurrentStream : StreamDecorator, ICriticalObject {
 	}
 
 	public override int WriteTimeout {
-
 		get {
 			CheckLocked();
 			return InnerStream.WriteTimeout;

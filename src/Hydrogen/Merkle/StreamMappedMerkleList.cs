@@ -25,11 +25,11 @@ namespace Hydrogen;
 /// <remarks>The stream mapping is achieved via use of an internal <see cref="IStreamMappedList{TItem}"/></remarks>
 /// <typeparam name="TItem"></typeparam>
 public class StreamMappedMerkleList<TItem, TInner> : MerkleListAdapter<TItem, TInner>, IStreamMappedList<TItem> where TInner : IStreamMappedList<TItem> {
-	public event EventHandlerEx<object> Loading { add => Storage.Loading += value; remove => Storage.Loading -= value; }
-	public event EventHandlerEx<object> Loaded { add => Storage.Loaded += value; remove => Storage.Loaded -= value; }
+	public event EventHandlerEx<object> Loading { add => Streams.Loading += value; remove => Streams.Loading -= value; }
+	public event EventHandlerEx<object> Loaded { add => Streams.Loaded += value; remove => Streams.Loaded -= value; }
 
 	public StreamMappedMerkleList(TInner clusteredList, IItemHasher<TItem> hasher, CHF hashAlgorithm, int merkleTreeStreamIndex)
-		: base(clusteredList, hasher, new ClusteredStorageMerkleTreeStream(clusteredList.Storage, merkleTreeStreamIndex, hashAlgorithm)) {
+		: base(clusteredList, hasher, new StreamContainerMerkleTreeStream(clusteredList.Streams, merkleTreeStreamIndex, hashAlgorithm)) {
 		Guard.ArgumentNotNull(hasher, nameof(hasher)); 
 		try {
 			var _ = hasher.Hash(default);
@@ -38,32 +38,32 @@ public class StreamMappedMerkleList<TItem, TInner> : MerkleListAdapter<TItem, TI
 		}
 	}
 
-	public ClusteredStorage Storage => InternalCollection.Storage;
+	public StreamContainer Streams => InternalCollection.Streams;
 
 	public IItemSerializer<TItem> ItemSerializer => InternalCollection.ItemSerializer;
 
 	public IEqualityComparer<TItem> ItemComparer => InternalCollection.ItemComparer;
 
-	public bool RequiresLoad => Storage.RequiresLoad;
+	public bool RequiresLoad => Streams.RequiresLoad;
 
 	public void Load() {
-		Storage.Load();
-		Guard.Ensure(InternalCollection.Storage.Header.ReservedRecords > 0, "Clustered storage requires at least 1 reserved stream to store merkle-tree");
+		Streams.Load();
+		Guard.Ensure(InternalCollection.Streams.Header.ReservedStreams > 0, "Clustered streams requires at least 1 reserved stream to store merkle-tree");
 	}
 
-	public Task LoadAsync() => Storage.LoadAsync();
+	public Task LoadAsync() => Streams.LoadAsync();
 
-	public ClusteredStreamScope EnterAddScope(TItem item) {
+	public ClusteredStream EnterAddScope(TItem item) {
 		InternalMerkleTree.Leafs.Add(ItemHasher.Hash(item));
 		return InternalCollection.EnterAddScope(item);
 	}
 
-	public ClusteredStreamScope EnterInsertScope(long index, TItem item) {
+	public ClusteredStream EnterInsertScope(long index, TItem item) {
 		InternalMerkleTree.Leafs.Insert(index, ItemHasher.Hash(item));
 		return InternalCollection.EnterInsertScope(index, item);
 	}
 
-	public ClusteredStreamScope EnterUpdateScope(long index, TItem item) {
+	public ClusteredStream EnterUpdateScope(long index, TItem item) {
 		InternalMerkleTree.Leafs.Update(index, ItemHasher.Hash(item));
 		return InternalCollection.EnterUpdateScope(index, item);
 	}
@@ -73,7 +73,7 @@ public class StreamMappedMerkleList<TItem, TInner> : MerkleListAdapter<TItem, TI
 public class StreamMappedMerkleList<TItem> : StreamMappedMerkleList<TItem, IStreamMappedList<TItem>> {
 
 	public StreamMappedMerkleList(Stream rootStream, int clusterSize, CHF hashAlgorithm = CHF.SHA2_256, IItemSerializer<TItem> itemSerializer = null, IEqualityComparer<TItem> itemComparer = null,
-	                              ClusteredStoragePolicy policy = ClusteredStoragePolicy.Default, long recordKeySize = 0, long reservedRecords = 1, int merkleTreeStreamIndex = HydrogenDefaults.ClusteredStorageMerkleTreeStreamIndex,
+	                              StreamContainerPolicy policy = StreamContainerPolicy.Default, long recordKeySize = 0, long reservedRecords = 1, int merkleTreeStreamIndex = HydrogenDefaults.ClusteredStorageMerkleTreeStreamIndex,
 	                              Endianness endianness = Endianness.LittleEndian, bool autoLoad = false)
 		: this(
 			rootStream,
@@ -92,7 +92,7 @@ public class StreamMappedMerkleList<TItem> : StreamMappedMerkleList<TItem, IStre
 	}
 
 	public StreamMappedMerkleList(Stream rootStream, int clusterSize, CHF hashAlgorithm, IItemHasher<TItem> hasher, IItemSerializer<TItem> itemSerializer = null, IEqualityComparer<TItem> itemComparer = null,
-	                              ClusteredStoragePolicy policy = ClusteredStoragePolicy.Default, long recordKeySize = 0, long reservedRecords = 1, int merkleTreeStreamIndex = HydrogenDefaults.ClusteredStorageMerkleTreeStreamIndex,
+	                              StreamContainerPolicy policy = StreamContainerPolicy.Default, long recordKeySize = 0, long reservedRecords = 1, int merkleTreeStreamIndex = HydrogenDefaults.ClusteredStorageMerkleTreeStreamIndex,
 	                              Endianness endianness = Endianness.LittleEndian, bool autoLoad = false)
 		: this(			
 			new StreamMappedList<TItem>(
@@ -109,7 +109,7 @@ public class StreamMappedMerkleList<TItem> : StreamMappedMerkleList<TItem, IStre
 			hasher,
 			hashAlgorithm,
 			merkleTreeStreamIndex) {
-		Guard.ArgumentGTE(reservedRecords, 1, nameof(reservedRecords), "Must be greater than 1 to allow storage of merkle-tree");
+		Guard.ArgumentGTE(reservedRecords, 1, nameof(reservedRecords), "Must be greater than 1 to allow streams of merkle-tree");
 	}
 
 	public StreamMappedMerkleList(IStreamMappedList<TItem> clusteredList, IItemHasher<TItem> hasher, CHF hashAlgorithm, int merkleTreeStreamIndex)

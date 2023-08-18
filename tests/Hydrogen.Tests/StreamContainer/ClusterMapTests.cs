@@ -16,7 +16,7 @@ namespace Hydrogen.Tests;
 /// </remarks>
 [TestFixture]
 [Parallelizable(ParallelScope.Children)]
-public class ClusteredContainerTests {
+public class ClusterMapTests {
 
 	[Test]
 	public void EmptyOnActivation() {

@@ -19,7 +19,7 @@ public abstract class StreamMappedDictionaryTestsBase : StreamPersistedCollectio
 	private const int ReservedRecordsInStorage = 11;
 
 	[Test]
-	public void AddNothing([ClusteredStorageStorageTypeValues] StorageType storageType, [ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy, [Values(0, ReservedRecordsInStorage)] int reserved) {
+	public void AddNothing([StreamContainerStorageTypeValues] StorageType storageType, [StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values(0, ReservedRecordsInStorage)] int reserved) {
 		var rng = new Random(31337);
 		using (CreateDictionary(EstimatedTestObjectSize * 1, storageType, reserved, policy, out var clusteredDictionary)) {
 			Assert.That(clusteredDictionary.Count, Is.EqualTo(0));
@@ -27,7 +27,7 @@ public abstract class StreamMappedDictionaryTestsBase : StreamPersistedCollectio
 	}
 
 	[Test]
-	public void AddOne([ClusteredStorageStorageTypeValues] StorageType storageType, [ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy, [Values("alpha", "Unicode😊😊😊", "")] string key,
+	public void AddOne([StreamContainerStorageTypeValues] StorageType storageType, [StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values("alpha", "Unicode😊😊😊", "")] string key,
 	                   [Values(0, ReservedRecordsInStorage)] int reserved) {
 		var rng = new Random(31337);
 		using (CreateDictionary(EstimatedTestObjectSize * 1, storageType, reserved, policy, out var clusteredDictionary)) {
@@ -37,7 +37,7 @@ public abstract class StreamMappedDictionaryTestsBase : StreamPersistedCollectio
 	}
 
 	[Test]
-	public void ReuseRecord([ClusteredStorageStorageTypeValues] StorageType storageType, [ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy, [Values("alpha", "Unicode😊😊😊", "")] string key,
+	public void ReuseRecord([StreamContainerStorageTypeValues] StorageType storageType, [StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values("alpha", "Unicode😊😊😊", "")] string key,
 	                        [Values(0, ReservedRecordsInStorage)] int reserved) {
 		var rng = new Random(31337);
 		using (CreateDictionary(EstimatedTestObjectSize * 1, storageType, reserved, policy, out var clusteredDictionary)) {
@@ -49,7 +49,7 @@ public abstract class StreamMappedDictionaryTestsBase : StreamPersistedCollectio
 	}
 
 	[Test]
-	public void ContainsKey([ClusteredStorageStorageTypeValues] StorageType storageType, [ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy, [Values("alpha", "Unicode😊😊😊", "")] string key,
+	public void ContainsKey([StreamContainerStorageTypeValues] StorageType storageType, [StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values("alpha", "Unicode😊😊😊", "")] string key,
 	                        [Values(0, ReservedRecordsInStorage)] int reserved) {
 		var rng = new Random(31337);
 		using (CreateDictionary(EstimatedTestObjectSize * 1, storageType, reserved, policy, out var clusteredDictionary)) {
@@ -59,7 +59,7 @@ public abstract class StreamMappedDictionaryTestsBase : StreamPersistedCollectio
 	}
 
 	[Test]
-	public void DoesNotContainKeyAfterRemove([ClusteredStorageStorageTypeValues] StorageType storageType, [ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy, [Values("alpha", "Unicode😊😊😊", "")] string key,
+	public void DoesNotContainKeyAfterRemove([StreamContainerStorageTypeValues] StorageType storageType, [StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values("alpha", "Unicode😊😊😊", "")] string key,
 	                                         [Values(0, ReservedRecordsInStorage)] int reserved) {
 		var rng = new Random(31337);
 		using (CreateDictionary(EstimatedTestObjectSize * 1, storageType, reserved, policy, out var clusteredDictionary)) {
@@ -70,7 +70,7 @@ public abstract class StreamMappedDictionaryTestsBase : StreamPersistedCollectio
 	}
 
 	[Test]
-	public void ContainsKeyValuePair([ClusteredStorageStorageTypeValues] StorageType storageType, [ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy, [Values("alpha", "Unicode😊😊😊", "")] string key,
+	public void ContainsKeyValuePair([StreamContainerStorageTypeValues] StorageType storageType, [StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values("alpha", "Unicode😊😊😊", "")] string key,
 	                                 [Values(0, ReservedRecordsInStorage)] int reserved) {
 		var rng = new Random(31337);
 		using (CreateDictionary(EstimatedTestObjectSize * 1, storageType, reserved, policy, out var clusteredDictionary)) {
@@ -82,7 +82,7 @@ public abstract class StreamMappedDictionaryTestsBase : StreamPersistedCollectio
 	}
 
 	[Test]
-	public void DoesNotContainKeyValuePair_SameKeyDifferentValue([ClusteredStorageStorageTypeValues] StorageType storageType, [ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy, [Values("alpha", "Unicode😊😊😊", "")] string key,
+	public void DoesNotContainKeyValuePair_SameKeyDifferentValue([StreamContainerStorageTypeValues] StorageType storageType, [StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values("alpha", "Unicode😊😊😊", "")] string key,
 	                                                             [Values(0, ReservedRecordsInStorage)] int reserved) {
 		var rng = new Random(31337);
 		using (CreateDictionary(EstimatedTestObjectSize * 1, storageType, reserved, policy, out var clusteredDictionary)) {
@@ -95,7 +95,7 @@ public abstract class StreamMappedDictionaryTestsBase : StreamPersistedCollectio
 	}
 
 	[Test]
-	public void RemoveByKey([ClusteredStorageStorageTypeValues] StorageType storageType, [ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy, [Values("alpha", "Unicode😊😊😊", "")] string key,
+	public void RemoveByKey([StreamContainerStorageTypeValues] StorageType storageType, [StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values("alpha", "Unicode😊😊😊", "")] string key,
 	                        [Values(0, ReservedRecordsInStorage)] int reserved) {
 		var rng = new Random(31337);
 		using (CreateDictionary(EstimatedTestObjectSize * 1, storageType, reserved, policy, out var clusteredDictionary)) {
@@ -106,7 +106,7 @@ public abstract class StreamMappedDictionaryTestsBase : StreamPersistedCollectio
 	}
 
 	[Test]
-	public void RemoveByKeyValuePair([ClusteredStorageStorageTypeValues] StorageType storageType, [ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy, [Values("alpha", "Unicode😊😊😊", "")] string key,
+	public void RemoveByKeyValuePair([StreamContainerStorageTypeValues] StorageType storageType, [StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values("alpha", "Unicode😊😊😊", "")] string key,
 	                                 [Values(0, ReservedRecordsInStorage)] int reserved) {
 		var rng = new Random(31337);
 		using (CreateDictionary(EstimatedTestObjectSize * 1, storageType, reserved, policy, out var clusteredDictionary)) {
@@ -118,7 +118,7 @@ public abstract class StreamMappedDictionaryTestsBase : StreamPersistedCollectio
 
 #if DEBUG
 	[Test]
-	public void IntegrationTests_Heavy([Values(StorageType.MemoryStream)] StorageType storageType, [ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy, [Values(250)] int maxItems, [Values(0, ReservedRecordsInStorage)] int reserved) {
+	public void IntegrationTests_Heavy([Values(StorageType.MemoryStream)] StorageType storageType, [StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values(250)] int maxItems, [Values(0, ReservedRecordsInStorage)] int reserved) {
 		var keyGens = 0;
 		using (CreateDictionary(EstimatedTestObjectSize * maxItems, storageType, reserved, policy, out var clusteredDictionary)) {
 			AssertEx.DictionaryIntegrationTest(
@@ -133,7 +133,7 @@ public abstract class StreamMappedDictionaryTestsBase : StreamPersistedCollectio
 #endif
 
 	[Test]
-	public void IntegrationTests([ClusteredStorageStorageTypeValues] StorageType storageType, [ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy, [Values(23)] int maxItems, [Values(0, ReservedRecordsInStorage)] int reserved) {
+	public void IntegrationTests([StreamContainerStorageTypeValues] StorageType storageType, [StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values(23)] int maxItems, [Values(0, ReservedRecordsInStorage)] int reserved) {
 		var keyGens = 0;
 		using (CreateDictionary(maxItems * EstimatedTestObjectSize, storageType, reserved, policy, out var clusteredDictionary)) {
 			AssertEx.DictionaryIntegrationTest(
@@ -146,7 +146,7 @@ public abstract class StreamMappedDictionaryTestsBase : StreamPersistedCollectio
 		}
 	}
 
-	protected IDisposable CreateDictionary(int estimatedMaxByteSize, StorageType storageType, int reservedRecords, ClusteredStoragePolicy policy, out IStreamMappedDictionary<string, TestObject> clusteredDictionary) {
+	protected IDisposable CreateDictionary(int estimatedMaxByteSize, StorageType storageType, int reservedRecords, StreamContainerPolicy policy, out IStreamMappedDictionary<string, TestObject> clusteredDictionary) {
 		var disposables = CreateDictionary(estimatedMaxByteSize,
 			storageType,
 			reservedRecords,
@@ -161,7 +161,7 @@ public abstract class StreamMappedDictionaryTestsBase : StreamPersistedCollectio
 		return disposables;
 	}
 
-	protected abstract IDisposable CreateDictionary<TKey, TValue>(int estimatedMaxByteSize, StorageType storageType, int reservedRecords, ClusteredStoragePolicy policy, IItemSerializer<TKey> keySerializer, IItemSerializer<TValue> valueSerializer,
+	protected abstract IDisposable CreateDictionary<TKey, TValue>(int estimatedMaxByteSize, StorageType storageType, int reservedRecords, StreamContainerPolicy policy, IItemSerializer<TKey> keySerializer, IItemSerializer<TValue> valueSerializer,
 	                                                              IEqualityComparer<TKey> keyComparer, IEqualityComparer<TValue> valueComparer, out IStreamMappedDictionary<TKey, TValue> clusteredDictionary);
 
 }

@@ -10,8 +10,8 @@ using NUnit.Framework;
 
 namespace Hydrogen.Tests;
 
-internal class ClusteredStorageStorageTypeValuesAttribute : ValuesAttribute {
-	public ClusteredStorageStorageTypeValuesAttribute()
-		: base(StreamPersistedCollectionTestsBase.StorageType.MemoryStream) {
+internal class StreamContainerPolicyTestValuesAttribute : ValuesAttribute {
+	public StreamContainerPolicyTestValuesAttribute()
+		: base(StreamContainerPolicy.Default, StreamContainerPolicy.BlobOptimized, StreamContainerPolicy.Debug, StreamContainerPolicy.Default | StreamContainerPolicy.CacheRecords) {
 	}
 }

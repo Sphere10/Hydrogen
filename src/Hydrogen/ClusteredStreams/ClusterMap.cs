@@ -11,7 +11,7 @@ using System;
 namespace Hydrogen;
 
 /// <summary>
-/// A cluster map used to store disparate data streams into connected chains of clusters. <see cref="ClusteredStorage"/> uses
+/// A cluster map used to store disparate data streams into connected chains of clusters. <see cref="StreamContainer"/> uses
 /// this to store multiple streams of data into a single stream.
 /// </summary>
 /// <remarks>Not thread-safe.</remarks>
@@ -73,7 +73,7 @@ public class ClusterMap {
 		// Appending clusters
 		// A -> [B] -> [C] -> [D] -> [E] 
 		// (1) A.Traits = !Last
-		// (2) E.Next = A.Next
+		// (2) E.Next = A.Prev   (terminals)
 		// (3) A.Next = B 
 		// (4) B.Prev = A, C.Prev = B, D.Prev = C, E.Prev = D
 		// (5) B.Next = C, C.Next = D, D.Next = E
@@ -88,13 +88,13 @@ public class ClusterMap {
 		if (quantity == 0)
 			return newEndCluster;
 
-		// (1) A.Traits = !Last
+		// A.Traits = !Last
 		MaskClusterTraits(fromEnd, ClusterTraits.End, false, @event);
 		var endTerminalValue = ReadClusterNext(fromEnd);  // remember what the end terminal value was
 		@event.ChainTerminal = endTerminalValue;
 		@event.ChainOriginalEndCluster = fromEnd;
 
-		// (4) Simply add new clusters, connecting them along the way
+		// Simply add new clusters, connecting them along the way
 		var previous = fromEnd;
 		for (var i = 0L; i < quantity; i++) {
 			var newCluster = CreateCluster();
@@ -103,7 +103,7 @@ public class ClusterMap {
 			@event.AddedClusters.Add(newClusterIX);
 			@event.AllChanges.Add((ClusterMapChangedEventArgs.MutationType.Added, newClusterIX));
 
-			// (4) make new cluster connect to previous
+			// make new cluster connect to previous
 			newCluster.Prev = previous;
 
 			if (i == 0) {
@@ -163,7 +163,7 @@ public class ClusterMap {
 		var removeClusterPrev = 0L;
 		var removeClusterIsStart = false;
 
-		// remove clusters backwards from end until we've removed the requested quantity or we've removed the start cluster
+		// remove clusters backwards from end until we've removed the requested quantity (or we've removed the start cluster of chain)
 		while (clustersRemoved < quantity && !removeClusterIsStart) {
 			// Read remove cluster info
 			var removeClusterTraits = ReadClusterTraits(removeCluster);

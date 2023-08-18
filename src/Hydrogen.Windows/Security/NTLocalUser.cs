@@ -156,7 +156,7 @@ public class NTLocalUser : NTLocalObject {
 
 
 	/// <summary>
-	/// Specifies a the maximum amount of disk space the user can use. A value of -1 indicates unlimited storage.
+	/// Specifies a the maximum amount of disk space the user can use. A value of -1 indicates unlimited streams.
 	/// </summary>
 	public uint MaxStorage { get; set; }
 

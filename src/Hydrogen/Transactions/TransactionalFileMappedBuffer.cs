@@ -20,7 +20,7 @@ namespace Hydrogen;
 /// By varying the pageSize and in inMemoryPages arguments the performance of this list can by tuned to meet the specific use case.
 /// In cases where appending is more demanded, the page sizes should be larger so they are swapped less often.
 /// In cases where random accessing the list, the page sizes should be smaller so they can be loaded faster.
-/// In general, the more pages allowed in memory the less frequently they will be swapped to storage.
+/// In general, the more pages allowed in memory the less frequently they will be swapped to streams.
 /// </remarks>
 /// </summary>
 public sealed class TransactionalFileMappedBuffer : TransactionalFileMappedListBase<byte>, IMemoryPagedBuffer {

@@ -13,7 +13,7 @@ public class Program {
 //using Hydrogen;
 //using Hydrogen.Communications;
 //using Hydrogen.DApp.Core.Runtime;
-//using Hydrogen.DApp.Core.Storage;
+//using Hydrogen.DApp.Core.Streams;
 //using System;
 //using System.Configuration;
 //using System.Diagnostics;

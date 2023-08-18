@@ -18,7 +18,7 @@ namespace Hydrogen.Tests;
 public class TransactionalListTests {
 
 	[Test]
-	public void AddOne([ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy) {
+	public void AddOne([StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
 		var file = Tools.FileSystem.GenerateTempFilename();
 		var dir = Tools.FileSystem.GetTempEmptyDirectory(true);
 		using (Tools.Scope.ExecuteOnDispose(() => Tools.Lambda.ActionIgnoringExceptions(() => File.Delete(file))))
@@ -34,7 +34,7 @@ public class TransactionalListTests {
 
 
 	[Test]
-	public void IntegrationTests_Commit([Values(0, 1, 50)] int maxCapacity, [ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy) {
+	public void IntegrationTests_Commit([Values(0, 1, 50)] int maxCapacity, [StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
 		const int StringMinSize = 0;
 		const int StringMaxSize = 100;
 		var file = Tools.FileSystem.GenerateTempFilename();
@@ -49,7 +49,7 @@ public class TransactionalListTests {
 	}
 
 	[Test]
-	public void IntegrationTests_Rollback([Values(0, 1, 50)] int maxCapacity, [ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy) {
+	public void IntegrationTests_Rollback([Values(0, 1, 50)] int maxCapacity, [StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
 		const int StringMinSize = 0;
 		const int StringMaxSize = 100;
 		var file = Tools.FileSystem.GenerateTempFilename();
@@ -65,7 +65,7 @@ public class TransactionalListTests {
 
 
 	[Test]
-	public void CanLoadPreviouslyCommittedState([ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy) {
+	public void CanLoadPreviouslyCommittedState([StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
 		var file = Tools.FileSystem.GenerateTempFilename();
 		var dir = Tools.FileSystem.GetTempEmptyDirectory(true);
 
@@ -94,7 +94,7 @@ public class TransactionalListTests {
 
 
 	[Test]
-	public void CanUpdatePreviouslyCommittedState([ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy) {
+	public void CanUpdatePreviouslyCommittedState([StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
 		var file = Tools.FileSystem.GenerateTempFilename();
 		var dir = Tools.FileSystem.GetTempEmptyDirectory(true);
 
@@ -135,7 +135,7 @@ public class TransactionalListTests {
 	}
 
 	[Test]
-	public void CanUpdatePreviouslyRolledBackState_1([ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy) {
+	public void CanUpdatePreviouslyRolledBackState_1([StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
 		var file = Tools.FileSystem.GenerateTempFilename();
 		var dir = Tools.FileSystem.GetTempEmptyDirectory(true);
 
@@ -174,7 +174,7 @@ public class TransactionalListTests {
 	}
 
 	[Test]
-	public void CanUpdatePreviouslyAbandonedState_1([ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy) {
+	public void CanUpdatePreviouslyAbandonedState_1([StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
 		var file = Tools.FileSystem.GenerateTempFilename();
 		var dir = Tools.FileSystem.GetTempEmptyDirectory(true);
 
@@ -213,7 +213,7 @@ public class TransactionalListTests {
 	}
 
 	[Test]
-	public void CanUpdatePreviouslyRolledBackState_2([ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy) {
+	public void CanUpdatePreviouslyRolledBackState_2([StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
 		var file = Tools.FileSystem.GenerateTempFilename();
 		var dir = Tools.FileSystem.GetTempEmptyDirectory(true);
 

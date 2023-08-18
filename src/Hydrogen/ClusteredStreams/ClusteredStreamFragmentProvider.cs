@@ -9,12 +9,12 @@ internal class ClusteredStreamFragmentProvider : IStreamFragmentProvider {
 
 	private long _totalBytes;
 
-	public ClusteredStreamFragmentProvider(ClusterMap clusteredMap, long logicalRecordID, long totalBytes, long startCluster, long endCluster, long totalClusters, bool integrityChecks) {
+	public ClusteredStreamFragmentProvider(ClusterMap clusteredMap, long terminal, long totalBytes, long startCluster, long endCluster, long totalClusters, bool integrityChecks) {
 		_parent = clusteredMap;
 		_totalBytes = totalBytes;
 		FragmentCount = clusteredMap.CalculateClusterChainLength(totalBytes);	
-		Seeker = new ClusterSeeker(clusteredMap, logicalRecordID, startCluster, endCluster, totalClusters, integrityChecks);
-		LogicalRecordID = logicalRecordID;
+		Seeker = new ClusterSeeker(clusteredMap, terminal, startCluster, endCluster, totalClusters, integrityChecks);
+		Terminal = terminal;
 	}
 
 	public long TotalBytes { 
@@ -27,7 +27,7 @@ internal class ClusteredStreamFragmentProvider : IStreamFragmentProvider {
 		}
 	}
 
-	public long LogicalRecordID { get; internal set;}
+	public long Terminal { get; internal set;}
 
 	public long FragmentCount { get; private set; }
 	
@@ -57,10 +57,10 @@ internal class ClusteredStreamFragmentProvider : IStreamFragmentProvider {
 		var oldTotalClusters = FragmentCount;
 		var currentTotalClusters = oldTotalClusters;
 		
-		// allocate/deallocate clusters are required
+		// allocate/deallocate clusters as required
 		if (newTotalClusters > currentTotalClusters) {
 			if (currentTotalClusters == 0) 
-				_parent.NewClusterChain(newTotalClusters, LogicalRecordID);
+				_parent.NewClusterChain(newTotalClusters, Terminal);
 			else 
 				_parent.AppendClustersToEnd(Seeker.Pointer.Chain.EndCluster, newTotalClusters - currentTotalClusters);
 		} else if (newTotalClusters < currentTotalClusters) {
@@ -84,14 +84,14 @@ internal class ClusteredStreamFragmentProvider : IStreamFragmentProvider {
 		Seeker.ProcessClusterMapChanged(changedEvent);
 	}
 
-	public void ProcessRecordSwapped(long record1Index, ClusteredStreamRecord record1Data, long record2Index, ClusteredStreamRecord record2Data) {
-		if (LogicalRecordID == record1Index) {
-			LogicalRecordID = record2Index;
+	public void ProcessStreamSwapped(long stream1, ClusteredStreamDescriptor stream1Descriptor, long stream2, ClusteredStreamDescriptor streamDescriptor2) {
+		if (Terminal == stream1) {
+			Terminal = stream2;
 		}
-		else if (LogicalRecordID == record2Index) {
-			LogicalRecordID = record1Index;
+		else if (Terminal == stream2) {
+			Terminal = stream1;
 		}
-		Seeker.ProcessRecordSwapped(record1Index, record1Data, record2Index, record2Data);
+		Seeker.ProcessStreamSwapped(stream1, stream1Descriptor, stream2, streamDescriptor2);
 	}
 
 	private void CheckNotEmpty() {

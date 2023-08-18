@@ -5,7 +5,7 @@ using System.Linq;
 namespace Hydrogen;
 
 /// <summary>
-/// Used to track a (very large) logical sequence of clusters within a <see cref="ClusterMap{TInner}"/>.
+/// Used to track a (very large) logical sequence of clusters within a <see cref="ClusterMap"/>.
 /// </summary>
 internal class ClusterSeeker  {
 	// TODO: optimizations include:
@@ -188,7 +188,7 @@ internal class ClusterSeeker  {
 		}
 	}
 
-	public void ProcessRecordSwapped(long record1Index, ClusteredStreamRecord record1Data, long record2Index, ClusteredStreamRecord record2Data) {
+	public void ProcessStreamSwapped(long record1Index, ClusteredStreamDescriptor descriptor1Data, long record2Index, ClusteredStreamDescriptor descriptor2Data) {
 		if (TerminalValue == record1Index) {
 			TerminalValue = record2Index;
 		}

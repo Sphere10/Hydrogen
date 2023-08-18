@@ -17,13 +17,12 @@ namespace Hydrogen.Tests;
 
 [TestFixture]
 [Parallelizable(ParallelScope.Children)]
-public class ClusteredStorageConcurencyTests {
-
+public class StreamContainerParallelStreamsTests {
 
 	[Test]
-	public void OpenedStreamKeepsLockAfterAccessScopeClosed( [ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy) {
+	public void OpenedStreamKeepsLockAfterAccessScopeClosed( [StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
 		using var rootStream = new MemoryStream();
-		var streamContainer = new ClusteredStorage(rootStream, 3, policy: policy, autoLoad: true);
+		var streamContainer = new StreamContainer(rootStream, 3, policy: policy, autoLoad: true);
 		var scope = streamContainer.EnterAccessScope();
 		var danglingStream = streamContainer.Add();
 		scope.Dispose();
@@ -33,9 +32,9 @@ public class ClusteredStorageConcurencyTests {
 	}
 
 	[Test]
-	public void ParallelAdd_Then_ParallelRead_WithoutErrors([Values(1, 4, 32)] int clusterSize, [ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy, [Values(0, 1, 11, 7777)] int itemCount) {
+	public void ParallelAdd_Then_ParallelRead_WithoutErrors([Values(1, 4, 32)] int clusterSize, [StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values(0, 1, 11, 7777)] int itemCount) {
 		using var rootStream = new MemoryStream();
-		var streamContainer = new ClusteredStorage(rootStream, clusterSize, policy: policy, autoLoad: true);
+		var streamContainer = new StreamContainer(rootStream, clusterSize, policy: policy, autoLoad: true);
 
 		// add a bunch of strings in parallel
 		Parallel.For(0, itemCount, i => { streamContainer.AddBytes($"Hello World! - {i}".ToByteArray(Encoding.UTF8)); });
@@ -62,10 +61,10 @@ public class ClusteredStorageConcurencyTests {
 
 
 	[Test]
-	public void ParallelInsert_Then_ParallelRead_WithoutErrors([Values(1, 4, 32)] int clusterSize, [ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy, [Values(0, 1, 11, 555)] int itemCount) {
+	public void ParallelInsert_Then_ParallelRead_WithoutErrors([Values(1, 4, 32)] int clusterSize, [StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values(0, 1, 11, 555)] int itemCount) {
 		var rng = new Random(31337);
 		using var rootStream = new MemoryStream();
-		var streamContainer = new ClusteredStorage(rootStream, clusterSize, policy: policy, autoLoad: true);
+		var streamContainer = new StreamContainer(rootStream, clusterSize, policy: policy, autoLoad: true);
 
 		// add a bunch of strings in parallel
 		Parallel.For(0L,
@@ -98,10 +97,10 @@ public class ClusteredStorageConcurencyTests {
 
 
 	[Test]
-	public void ParallelRemove_Then_ParallelRead_WithoutErrors([Values(1, 4, 32)] int clusterSize, [ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy, [Values(0, 1, 11, 333)] int itemCount) {
+	public void ParallelRemove_Then_ParallelRead_WithoutErrors([Values(1, 4, 32)] int clusterSize, [StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values(0, 1, 11, 333)] int itemCount) {
 		var rng = new Random(31337);
 		using var rootStream = new MemoryStream();
-		var streamContainer = new ClusteredStorage(rootStream, clusterSize, policy: policy, autoLoad: true);
+		var streamContainer = new StreamContainer(rootStream, clusterSize, policy: policy, autoLoad: true);
 		var deleted = new SynchronizedList<bool>();
 
 		// create initial values
@@ -144,11 +143,11 @@ public class ClusteredStorageConcurencyTests {
 
 
 	[Test]
-	public void AllOps_WithoutErrors([Values(1, 4, 32)] int clusterSize, [ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy, [Values(0, 1, 11, 444)] int itemCount) {
+	public void AllOps_WithoutErrors([Values(1, 4, 32)] int clusterSize, [StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values(0, 1, 11, 444)] int itemCount) {
 		// Note: insert at index 0 is O(N), so we do less of them
 		var rng = new Random(31337);
 		using var rootStream = new MemoryStream();
-		var streamContainer = new ClusteredStorage(rootStream, clusterSize, policy: policy, autoLoad: true);
+		var streamContainer = new StreamContainer(rootStream, clusterSize, policy: policy, autoLoad: true);
 
 		var updated = new SynchronizedList<int>();
 		var deleted = new SynchronizedList<bool>();

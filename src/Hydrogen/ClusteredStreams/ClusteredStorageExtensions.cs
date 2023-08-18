@@ -11,57 +11,56 @@ using System.IO;
 
 namespace Hydrogen;
 
-internal static class ClusteredStorageExtensions {
+internal static class StreamContainerExtensions {
 
-	public static bool IsNull(this ClusteredStorage storage, long index) {
-		using var _ = storage.EnterAccessScope();
-		return storage.GetRecord(index).Traits.HasFlag(ClusteredStreamTraits.IsNull);
+	public static bool IsNull(this StreamContainer streams, long index) {
+		using var _ = streams.EnterAccessScope();
+		return streams.GetStreamDescriptor(index).Traits.HasFlag(ClusteredStreamTraits.IsNull);
 	}
 
-
-	public static byte[] ReadAll(this ClusteredStorage storage, long index) {
-		using var _ = storage.EnterAccessScope();
-		using var scope = storage.OpenWrite(index);
-		return scope.Stream.ReadAll();
+	public static byte[] ReadAll(this StreamContainer streams, long index) {
+		using var _ = streams.EnterAccessScope();
+		using var stream = streams.OpenWrite(index);
+		return stream.ReadAll();
 	}
 
-	public static void AddBytes(this ClusteredStorage storage, ReadOnlySpan<byte> bytes) {
-		using var _ = storage.EnterAccessScope();
-		using var scope = storage.Add();
-		scope.Stream.Write(bytes);
+	public static void AddBytes(this StreamContainer streams, ReadOnlySpan<byte> bytes) {
+		using var _ = streams.EnterAccessScope();
+		using var stream = streams.Add();
+		stream.Write(bytes);
 	}
 
-	public static void UpdateBytes(this ClusteredStorage storage, long index, ReadOnlySpan<byte> bytes) {
-		using var _ = storage.EnterAccessScope();
-		using var scope = storage.OpenWrite(index);
-		scope.Stream.SetLength(0);
-		scope.Stream.Write(bytes);
+	public static void UpdateBytes(this StreamContainer streams, long index, ReadOnlySpan<byte> bytes) {
+		using var _ = streams.EnterAccessScope();
+		using var stream = streams.OpenWrite(index);
+		stream.SetLength(0);
+		stream.Write(bytes);
 	}
 
-	public static void AppendBytes(this ClusteredStorage storage, long index, ReadOnlySpan<byte> bytes) {
-		using var _ = storage.EnterAccessScope();
-		using var scope = storage.OpenWrite(index);
-		scope.Stream.Seek(scope.Stream.Length, SeekOrigin.Current);
-		scope.Stream.Write(bytes);
+	public static void AppendBytes(this StreamContainer streams, long index, ReadOnlySpan<byte> bytes) {
+		using var _ = streams.EnterAccessScope();
+		using var stream = streams.OpenWrite(index);
+		stream.Seek(stream.Length, SeekOrigin.Current);
+		stream.Write(bytes);
 	}
 
-	public static void InsertBytes(this ClusteredStorage storage, long index, ReadOnlySpan<byte> bytes) {
-		using var _ = storage.EnterAccessScope();
-		using var scope = storage.Insert(index);
+	public static void InsertBytes(this StreamContainer streams, long index, ReadOnlySpan<byte> bytes) {
+		using var _ = streams.EnterAccessScope();
+		using var stream = streams.Insert(index);
 		if (bytes != null) {
-			scope.Stream.Seek(scope.Stream.Length, SeekOrigin.Current);
-			scope.Stream.Write(bytes);
+			stream.Seek(stream.Length, SeekOrigin.Current);
+			stream.Write(bytes);
 		}
 	}
 
-	public static void SaveItem<TItem>(this ClusteredStorage storage, long index, TItem item, IItemSerializer<TItem> serializer, ListOperationType operationType) {
-		using var _ = storage.EnterAccessScope();
-		using var scope = storage.EnterSaveItemScope(index, item, serializer, operationType);
+	public static void SaveItem<TItem>(this StreamContainer streams, long index, TItem item, IItemSerializer<TItem> serializer, ListOperationType operationType) {
+		using var _ = streams.EnterAccessScope();
+		using var scope = streams.EnterSaveItemScope(index, item, serializer, operationType);
 	}
 
-	public static TItem LoadItem<TItem>(this ClusteredStorage storage, long index, IItemSerializer<TItem> serializer) {
-		using var _ = storage.EnterAccessScope();
-		using var scope = storage.EnterLoadItemScope(index, serializer, out var item);
+	public static TItem LoadItem<TItem>(this StreamContainer streams, long index, IItemSerializer<TItem> serializer) {
+		using var _ = streams.EnterAccessScope();
+		using var scope = streams.EnterLoadItemScope(index, serializer, out var item);
 		return item;
 	}
 }

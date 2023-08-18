@@ -16,7 +16,7 @@ namespace Hydrogen;
 /// A set whose items are mapped over a stream as a <see cref="StreamMappedList{TItem}"/>. A digest of the items are kept in the clustered record for fast lookup. 
 ///
 /// </summary>
-/// <remarks>When deleting an item the underlying <see cref="ClusteredStreamRecord"/> is marked nullified but retained and re-used in later calls to <see cref="Add(TItem)"/>.</remarks>
+/// <remarks>When deleting an item the underlying <see cref="ClusteredStreamDescriptor"/> is marked nullified but retained and re-used in later calls to <see cref="Add(TItem)"/>.</remarks>
 public class StreamMappedHashSet<TItem> : SetBase<TItem>, IStreamMappedHashSet<TItem> {
 	public event EventHandlerEx<object> Loading {
 		add => InternalDictionary.Loading += value;
@@ -31,12 +31,12 @@ public class StreamMappedHashSet<TItem> : SetBase<TItem>, IStreamMappedHashSet<T
 	internal readonly IStreamMappedDictionary<byte[], TItem> InternalDictionary;
 	private readonly IItemHasher<TItem> _hasher;
 
-	public StreamMappedHashSet(Stream rootStream, int clusterSize, IItemSerializer<TItem> serializer, CHF chf, IEqualityComparer<TItem> comparer = null, ClusteredStoragePolicy policy = ClusteredStoragePolicy.DictionaryDefault,
+	public StreamMappedHashSet(Stream rootStream, int clusterSize, IItemSerializer<TItem> serializer, CHF chf, IEqualityComparer<TItem> comparer = null, StreamContainerPolicy policy = StreamContainerPolicy.DictionaryDefault,
 	                           int reservedRecords = 0, Endianness endianness = Endianness.LittleEndian)
 		: this(rootStream, clusterSize, serializer, new ItemDigestor<TItem>(chf, serializer), comparer, policy, reservedRecords, endianness) {
 	}
 
-	public StreamMappedHashSet(Stream rootStream, int clusterSize, IItemSerializer<TItem> serializer, IItemHasher<TItem> hasher, IEqualityComparer<TItem> comparer = null, ClusteredStoragePolicy policy = ClusteredStoragePolicy.DictionaryDefault,
+	public StreamMappedHashSet(Stream rootStream, int clusterSize, IItemSerializer<TItem> serializer, IItemHasher<TItem> hasher, IEqualityComparer<TItem> comparer = null, StreamContainerPolicy policy = StreamContainerPolicy.DictionaryDefault,
 	                           int reservedRecords = 0, Endianness endianness = Endianness.LittleEndian)
 		: this(
 			new StreamMappedDictionarySK<byte[], TItem>(
@@ -59,7 +59,7 @@ public class StreamMappedHashSet<TItem> : SetBase<TItem>, IStreamMappedHashSet<T
 	public StreamMappedHashSet(IStreamMappedDictionary<byte[], TItem> internalDictionary, IEqualityComparer<TItem> comparer, IItemHasher<TItem> hasher)
 		: base(comparer ?? EqualityComparer<TItem>.Default) {
 		Guard.ArgumentNotNull(internalDictionary, nameof(internalDictionary));
-		Guard.Argument(internalDictionary.Storage.Policy.HasFlag(ClusteredStoragePolicy.TrackChecksums), nameof(internalDictionary), $"Checksum tracking must be enabled in clustered dictionary implementations.");
+		Guard.Argument(internalDictionary.Streams.Policy.HasFlag(StreamContainerPolicy.TrackChecksums), nameof(internalDictionary), $"Checksum tracking must be enabled in clustered dictionary implementations.");
 		InternalDictionary = internalDictionary;
 		_hasher = hasher;
 	}
@@ -70,7 +70,7 @@ public class StreamMappedHashSet<TItem> : SetBase<TItem>, IStreamMappedHashSet<T
 
 	public bool RequiresLoad => InternalDictionary.RequiresLoad;
 
-	public ClusteredStorage Storage => InternalDictionary.Storage;
+	public StreamContainer Streams => InternalDictionary.Streams;
 
 	public void Load() => InternalDictionary.Load();
 

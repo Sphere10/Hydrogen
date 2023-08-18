@@ -31,7 +31,7 @@ public static class IItemSerializerExtensions {
 
 		// NOTE: if a malicious serializer writes more than it says, and rewinds stream Position
 		// to hide its hidden data, any subsequent serializations will overwrite that hidden data.
-		// Thus there is no attack vector here of meaningful consequence here. Attempting to write
+		// Thus there is no attack vector of meaningful consequence here. Attempting to write
 		// bloated data is responsibility of underlying Stream itself and will not result in security
 		// vulnerability.
 	}

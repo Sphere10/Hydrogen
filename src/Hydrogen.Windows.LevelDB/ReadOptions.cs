@@ -17,7 +17,7 @@ public class ReadOptions : LevelDBHandle {
 	}
 
 	/// <summary>
-	/// If true, all data read from underlying storage will be
+	/// If true, all data read from underlying streams will be
 	/// verified against corresponding checksums.
 	/// </summary>
 	public bool VerifyCheckSums {

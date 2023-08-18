@@ -64,7 +64,7 @@ public class FormBase : System.Windows.Forms.Form {
 
 	private PositionRecorderIsolatedStorage m_Setting = new PositionRecorderIsolatedStorage();
 
-	[Description("Isolated Storage ExecutableFileName where the form save the position information")]
+	[Description("Isolated Streams ExecutableFileName where the form save the position information")]
 	public virtual string StorageFileName {
 		get { return m_Setting.StorageFileName; }
 		set { m_Setting.StorageFileName = value; }

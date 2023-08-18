@@ -13,7 +13,7 @@ using System.IO.IsolatedStorage;
 namespace DevAge.IO.IsolatedStorage;
 
 /// <summary>
-/// Abstract class that help to save settings in the isolated storage
+/// Abstract class that help to save settings in the isolated streams
 /// </summary>
 public abstract class IsolatedStorageSettingBase {
 	private string m_FileName;

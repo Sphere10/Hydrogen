@@ -21,7 +21,7 @@ namespace Hydrogen.Tests;
 public class StreamMappedListTests : StreamPersistedCollectionTestsBase {
 	private const int ReservedRecordsInStorage = 11;
 
-	private IDisposable CreateList(ClusteredStoragePolicy policy, int reserved, out StreamMappedList<TestObject> clusteredList) {
+	private IDisposable CreateList(StreamContainerPolicy policy, int reserved, out StreamMappedList<TestObject> clusteredList) {
 		var stream = new MemoryStream();
 		clusteredList = new StreamMappedList<TestObject>(stream, 32, new TestObjectSerializer(), reservedRecords: reserved, policy: policy);
 		if (clusteredList.RequiresLoad)
@@ -30,13 +30,13 @@ public class StreamMappedListTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void HasReservedRecords([ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy, [Values(0, ReservedRecordsInStorage)] int reserved) {
+	public void HasReservedRecords([StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values(0, ReservedRecordsInStorage)] int reserved) {
 		using var scope = CreateList(policy, reserved, out var list);
-		Assert.That(list.Storage.Count, Is.EqualTo(reserved));
+		Assert.That(list.Streams.Count, Is.EqualTo(reserved));
 	}
 
 	[Test]
-	public void AddOneTest([ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy, [Values(0, ReservedRecordsInStorage)] int reserved) {
+	public void AddOneTest([StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values(0, ReservedRecordsInStorage)] int reserved) {
 		var rng = new Random(31337);
 		using (CreateList(policy, reserved, out var clusteredList)) {
 			var obj = new TestObject(rng);
@@ -48,7 +48,7 @@ public class StreamMappedListTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void AddOneRepeat([Values(100)] int iterations, [ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy, [Values(0, ReservedRecordsInStorage)] int reserved) {
+	public void AddOneRepeat([Values(100)] int iterations, [StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values(0, ReservedRecordsInStorage)] int reserved) {
 		var rng = new Random(31337);
 		using (CreateList(policy, reserved, out var clusteredList)) {
 			for (var i = 0; i < iterations; i++) {
@@ -61,14 +61,14 @@ public class StreamMappedListTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void ConstructorArgumentsAreGuarded([ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy, [Values(0, ReservedRecordsInStorage)] int reserved) {
+	public void ConstructorArgumentsAreGuarded([StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values(0, ReservedRecordsInStorage)] int reserved) {
 		Assert.Throws<ArgumentNullException>(() => new StreamMappedList<int>(null, 1, new PrimitiveSerializer<int>(), reservedRecords: reserved, policy: policy));
 		Assert.DoesNotThrow(() => new StreamMappedList<int>(new MemoryStream(), 1, null, reservedRecords: reserved, policy: policy));
 		Assert.Throws<ArgumentOutOfRangeException>(() => new StreamMappedList<int>(new MemoryStream(), 0, null, reservedRecords: reserved, policy: policy));
 	}
 
 	[Test]
-	public void ReadRange([ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy, [Values(0, ReservedRecordsInStorage)] int reserved) {
+	public void ReadRange([StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values(0, ReservedRecordsInStorage)] int reserved) {
 		var random = new Random(31337);
 		string[] inputs = Enumerable.Range(0, random.Next(5, 10)).Select(x => random.NextString(1, 100)).ToArray();
 		using var stream = new MemoryStream();
@@ -87,7 +87,7 @@ public class StreamMappedListTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void ReadRangeInvalidArguments([ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy, [Values(0, ReservedRecordsInStorage)] int reserved) {
+	public void ReadRangeInvalidArguments([StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values(0, ReservedRecordsInStorage)] int reserved) {
 		using var stream = new MemoryStream();
 		var list = new StreamMappedList<int>(stream, 1, new PrimitiveSerializer<int>(), reservedRecords: reserved, policy: policy);
 		if (list.RequiresLoad)
@@ -101,7 +101,7 @@ public class StreamMappedListTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void ReadRangeEmpty([ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy, [Values(0, ReservedRecordsInStorage)] int reserved) {
+	public void ReadRangeEmpty([StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values(0, ReservedRecordsInStorage)] int reserved) {
 		using var stream = new MemoryStream();
 		var list = new StreamMappedList<int>(stream, 1, new PrimitiveSerializer<int>(), reservedRecords: reserved, policy: policy);
 		if (list.RequiresLoad)
@@ -115,7 +115,7 @@ public class StreamMappedListTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void AddRangeEmptyNullStrings([ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy, [Values(0, ReservedRecordsInStorage)] int reserved) {
+	public void AddRangeEmptyNullStrings([StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values(0, ReservedRecordsInStorage)] int reserved) {
 		using var stream = new MemoryStream();
 		var list = new StreamMappedList<string>(stream, 32, new StringSerializer(Encoding.UTF8), reservedRecords: reserved, policy: policy);
 		if (list.RequiresLoad)
@@ -127,7 +127,7 @@ public class StreamMappedListTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void IndexOf_NullEmptyStrings([ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy, [Values(0, ReservedRecordsInStorage)] int reserved) {
+	public void IndexOf_NullEmptyStrings([StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values(0, ReservedRecordsInStorage)] int reserved) {
 		using var stream = new MemoryStream();
 		var list = new StreamMappedList<string>(stream, 32, new StringSerializer(Encoding.UTF8), reservedRecords: reserved, policy: policy);
 		if (list.RequiresLoad)
@@ -143,7 +143,7 @@ public class StreamMappedListTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void AddRangeNullEmptyCollections([ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy, [Values(0, ReservedRecordsInStorage)] int reserved) {
+	public void AddRangeNullEmptyCollections([StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values(0, ReservedRecordsInStorage)] int reserved) {
 		using var stream = new MemoryStream();
 		var list = new StreamMappedList<string>(stream, 32, new StringSerializer(Encoding.UTF8), reservedRecords: reserved, policy: policy);
 		if (list.RequiresLoad)
@@ -153,7 +153,7 @@ public class StreamMappedListTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void UpdateRange([ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy, [Values(0, ReservedRecordsInStorage)] int reserved) {
+	public void UpdateRange([StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values(0, ReservedRecordsInStorage)] int reserved) {
 		var random = new Random(31337);
 		string[] inputs = Enumerable.Range(0, random.Next(1, 100)).Select(x => random.NextString(1, 100)).ToArray();
 		using var stream = new MemoryStream();
@@ -170,7 +170,7 @@ public class StreamMappedListTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void UpdateRangeInvalidArguments([ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy, [Values(0, ReservedRecordsInStorage)] int reserved) {
+	public void UpdateRangeInvalidArguments([StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values(0, ReservedRecordsInStorage)] int reserved) {
 		using var stream = new MemoryStream();
 		var list = new StreamMappedList<int>(stream, 32, new PrimitiveSerializer<int>(), reservedRecords: reserved, policy: policy);
 		if (list.RequiresLoad)
@@ -185,7 +185,7 @@ public class StreamMappedListTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void RemoveRange([ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy, [Values(0, 1, ReservedRecordsInStorage)] int reserved) {
+	public void RemoveRange([StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values(0, 1, ReservedRecordsInStorage)] int reserved) {
 		var random = new Random(31337);
 		string[] inputs = Enumerable.Range(0, random.Next(1, 100)).Select(x => random.NextString(1, 100)).ToArray();
 		using var stream = new MemoryStream();
@@ -201,7 +201,7 @@ public class StreamMappedListTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void RemoveRangeInvalidArguments([ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy, [Values(0, ReservedRecordsInStorage)] int reserved) {
+	public void RemoveRangeInvalidArguments([StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values(0, ReservedRecordsInStorage)] int reserved) {
 		using var stream = new MemoryStream();
 		var list = new StreamMappedList<int>(stream, 32, new PrimitiveSerializer<int>(), reservedRecords: reserved, policy: policy);
 		if (list.RequiresLoad)
@@ -217,7 +217,7 @@ public class StreamMappedListTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void IndexOf([ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy, [Values(0, ReservedRecordsInStorage)] int reserved) {
+	public void IndexOf([StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values(0, ReservedRecordsInStorage)] int reserved) {
 		var random = new Random(31337);
 		string[] inputs = Enumerable.Range(1, 10).Select(x => random.NextString(1, 100)).ToArray();
 		using var stream = new MemoryStream();
@@ -232,7 +232,7 @@ public class StreamMappedListTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void IndexOfInvalidArguments([ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy, [Values(0, ReservedRecordsInStorage)] int reserved) {
+	public void IndexOfInvalidArguments([StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values(0, ReservedRecordsInStorage)] int reserved) {
 		using var stream = new MemoryStream();
 		var list = new StreamMappedList<int>(stream, 32, new PrimitiveSerializer<int>(), reservedRecords: reserved, policy: policy);
 		if (list.RequiresLoad)
@@ -244,7 +244,7 @@ public class StreamMappedListTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void Count([ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy, [Values(0, ReservedRecordsInStorage)] int reserved) {
+	public void Count([StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values(0, ReservedRecordsInStorage)] int reserved) {
 		var random = new Random(31337);
 		string[] inputs = Enumerable.Range(0, random.Next(1, 100)).Select(x => random.NextString(1, 100)).ToArray();
 		using var stream = new MemoryStream();
@@ -258,7 +258,7 @@ public class StreamMappedListTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void InsertRange([ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy, [Values(0, ReservedRecordsInStorage)] int reserved) {
+	public void InsertRange([StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values(0, ReservedRecordsInStorage)] int reserved) {
 		var random = new Random(31337);
 		string[] inputs = Enumerable.Range(1, random.Next(1, 5)).Select(x => random.NextString(1, 5)).ToArray();
 		using var stream = new MemoryStream();
@@ -274,7 +274,7 @@ public class StreamMappedListTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void InsertRangeInvalidArguments([ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy, [Values(0, ReservedRecordsInStorage)] int reserved) {
+	public void InsertRangeInvalidArguments([StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values(0, ReservedRecordsInStorage)] int reserved) {
 		using var stream = new MemoryStream();
 		var list = new StreamMappedList<int>(stream, 32, new PrimitiveSerializer<int>(), reservedRecords: reserved, policy: policy);
 		if (list.RequiresLoad)
@@ -289,7 +289,7 @@ public class StreamMappedListTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void Clear([ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy, [Values(0, ReservedRecordsInStorage)] int reserved) {
+	public void Clear([StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values(0, ReservedRecordsInStorage)] int reserved) {
 		var random = new Random(31337);
 		string[] inputs = Enumerable.Range(0, random.Next(1, 100)).Select(x => random.NextString(1, 100)).ToArray();
 		using var stream = new MemoryStream();
@@ -305,7 +305,7 @@ public class StreamMappedListTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void IntegrationTests_String([ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy, [Values(0, ReservedRecordsInStorage)] int reserved) {
+	public void IntegrationTests_String([StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values(0, ReservedRecordsInStorage)] int reserved) {
 		using var stream = new MemoryStream();
 		var list = new StreamMappedList<string>(stream, 32, new StringSerializer(Encoding.UTF8), reservedRecords: reserved, policy: policy);
 		if (list.RequiresLoad)
@@ -319,7 +319,7 @@ public class StreamMappedListTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void LoadAndUseExistingStream([Values(1, 100)] int iterations, [ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy, [Values(0, ReservedRecordsInStorage)] int reserved) {
+	public void LoadAndUseExistingStream([Values(1, 100)] int iterations, [StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values(0, ReservedRecordsInStorage)] int reserved) {
 		var random = new Random(31337 + iterations);
 		var input = Enumerable.Range(0, random.Next(1, 100)).Select(x => random.NextString(0, 100)).ToArray();
 		var fileName = Tools.FileSystem.GetTempFileName(true);
@@ -348,7 +348,7 @@ public class StreamMappedListTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void BugCase([Values(100)] int iterations, [Values(ClusteredStoragePolicy.Default)] ClusteredStoragePolicy policy, [Values(1)] int reserved) {
+	public void BugCase([Values(100)] int iterations, [Values(StreamContainerPolicy.Default)] StreamContainerPolicy policy, [Values(1)] int reserved) {
 		var random = new Random(31337 + iterations);
 		var input = Enumerable.Range(0, random.Next(1, 100)).Select(x => random.NextString(0, 100)).ToArray();
 		var fileName = Tools.FileSystem.GetTempFileName(true);
@@ -364,7 +364,7 @@ public class StreamMappedListTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void IntegrationTests([ClusteredStorageStorageTypeValues] StorageType storage, [ClusteredStoragePolicyTestValues] ClusteredStoragePolicy policy, [Values(0, ReservedRecordsInStorage)] int reserved) {
+	public void IntegrationTests([StreamContainerStorageTypeValues] StorageType storage, [StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values(0, ReservedRecordsInStorage)] int reserved) {
 		var rng = new Random(31337);
 		using (CreateStream(storage, 5000, out Stream stream)) {
 			var list = new StreamMappedList<TestObject>(stream, 100, new TestObjectSerializer(), new TestObjectComparer(), reservedRecords: reserved, policy: policy);

@@ -16,7 +16,7 @@ public class TransactionalHashSet<TItem> : StreamMappedHashSet<TItem>, ITransact
 
 	public TransactionalHashSet(string filename, string uncommittedPageFileDir, IItemSerializer<TItem> serializer, CHF chf = CHF.SHA2_256, IItemChecksummer<byte[]> keyChecksum = null, IEqualityComparer<TItem> comparer = null,
 	                            int transactionalPageSize = HydrogenDefaults.TransactionalPageSize, long maxMemory = HydrogenDefaults.MaxMemoryPerCollection, int clusterSize = HydrogenDefaults.ClusterSize,
-	                            ClusteredStoragePolicy policy = ClusteredStoragePolicy.DictionaryDefault, int reservedRecords = 0, Endianness endianness = HydrogenDefaults.Endianness, bool readOnly = false)
+	                            StreamContainerPolicy policy = StreamContainerPolicy.DictionaryDefault, int reservedRecords = 0, Endianness endianness = HydrogenDefaults.Endianness, bool readOnly = false)
 		: this(
 			new TransactionalStream(filename, uncommittedPageFileDir, transactionalPageSize, maxMemory, readOnly, readOnly),
 			clusterSize,
@@ -32,7 +32,7 @@ public class TransactionalHashSet<TItem> : StreamMappedHashSet<TItem>, ITransact
 
 	public TransactionalHashSet(string filename, string uncommittedPageFileDir, IItemSerializer<TItem> serializer, IItemHasher<TItem> hasher, IItemChecksummer<byte[]> keyChecksum = null, IEqualityComparer<TItem> comparer = null,
 	                            int transactionalPageSize = HydrogenDefaults.TransactionalPageSize, long maxMemory = HydrogenDefaults.MaxMemoryPerCollection, int clusterSize = HydrogenDefaults.ClusterSize,
-	                            ClusteredStoragePolicy policy = ClusteredStoragePolicy.DictionaryDefault, int reservedRecords = 0, Endianness endianness = HydrogenDefaults.Endianness, bool readOnly = false)
+	                            StreamContainerPolicy policy = StreamContainerPolicy.DictionaryDefault, int reservedRecords = 0, Endianness endianness = HydrogenDefaults.Endianness, bool readOnly = false)
 		: this(
 			  new TransactionalStream(filename, uncommittedPageFileDir, transactionalPageSize, maxMemory, readOnly, readOnly),
 			  clusterSize,
@@ -47,7 +47,7 @@ public class TransactionalHashSet<TItem> : StreamMappedHashSet<TItem>, ITransact
 	}
 
 	public TransactionalHashSet(TransactionalStream transactionalStream, int clusterSize, IItemSerializer<TItem> serializer, IItemHasher<TItem> hasher, IItemChecksummer<byte[]> keyChecksum = null, IEqualityComparer<TItem> comparer = null,
-								ClusteredStoragePolicy policy = ClusteredStoragePolicy.DictionaryDefault, int reservedRecords = 0, Endianness endianness = HydrogenDefaults.Endianness)
+								StreamContainerPolicy policy = StreamContainerPolicy.DictionaryDefault, int reservedRecords = 0, Endianness endianness = HydrogenDefaults.Endianness)
 		: this(
 			new TransactionalDictionarySK<byte[], TItem>(
 				transactionalStream,
@@ -57,14 +57,14 @@ public class TransactionalHashSet<TItem> : StreamMappedHashSet<TItem>, ITransact
 				new ByteArrayEqualityComparer(),
 				comparer,
 				clusterSize,
-				policy | ClusteredStoragePolicy.TrackKey,
+				policy | StreamContainerPolicy.TrackKey,
 				reservedRecords,
 				endianness
 			),
 			comparer,
 			hasher
 		) {
-		Guard.Argument(policy.HasFlag(ClusteredStoragePolicy.TrackChecksums), nameof(policy), $"Checksum tracking must be enabled in clustered dictionary implementations.");
+		Guard.Argument(policy.HasFlag(StreamContainerPolicy.TrackChecksums), nameof(policy), $"Checksum tracking must be enabled in clustered dictionary implementations.");
 	}
 
 	public TransactionalHashSet(ITransactionalDictionary<byte[], TItem> internalTransactionalDictionary, IEqualityComparer<TItem> comparer, IItemHasher<TItem> hasher)

@@ -12,7 +12,7 @@ using System.Threading;
 
 namespace Hydrogen;
 
-public class ClusteredStorageHeader {
+public class StreamContainerHeader {
 
 	public const int ByteLength = 256;
 	public const int MerkleRootLength = 32;
@@ -20,20 +20,20 @@ public class ClusteredStorageHeader {
 
 	internal const int VersionLength = sizeof(byte);
 	internal const int PolicyLength = sizeof(uint);
-	internal const int RecordsLength = sizeof(long);
-	internal const int RecordsEndClusterLength = sizeof(long);
-	internal const int RecordKeySizeLength = sizeof(ushort);
-	internal const int ReservedRecordsLength = sizeof(long);
+	internal const int StreamCountLength = sizeof(long);
+	internal const int StreamDescriptorsEndClusterLength = sizeof(long);
+	internal const int StreamDescriptorKeySizeLength = sizeof(ushort);
+	internal const int ReservedStreamsLength = sizeof(long);
 	internal const int ClusterSizeLength = sizeof(int);
 	internal const int TotalClustersLength = sizeof(long);
 
 	internal const int VersionOffset = 0;
 	internal const int PolicyOffset = VersionOffset + VersionLength;
-	internal const int RecordsOffset = PolicyOffset + PolicyLength;
-	internal const int RecordsEndClusterOffset = RecordsOffset + RecordsLength;
-	internal const int RecordKeySizeOffset = RecordsEndClusterOffset + RecordsEndClusterLength;
-	internal const int ReservedRecordsOffset = RecordKeySizeOffset + RecordKeySizeLength;
-	internal const int ClusterSizeOffset = ReservedRecordsOffset + ReservedRecordsLength;
+	internal const int StreamCountOffset = PolicyOffset + PolicyLength;
+	internal const int StreamDescriptorsEndClusterOffset = StreamCountOffset + StreamCountLength;
+	internal const int StreamDescriptorKeySizeOffset = StreamDescriptorsEndClusterOffset + StreamDescriptorsEndClusterLength;
+	internal const int StreamDescriptorRecordsOffset = StreamDescriptorKeySizeOffset + StreamDescriptorKeySizeLength;
+	internal const int ClusterSizeOffset = StreamDescriptorRecordsOffset + ReservedStreamsLength;
 	internal const int TotalClustersOffset = ClusterSizeOffset + ClusterSizeLength;
 	internal const int MerkleRootOffset = TotalClustersOffset + TotalClustersLength;
 	internal const int MasterKeyOffset = MerkleRootOffset + MerkleRootLength;
@@ -43,18 +43,18 @@ public class ClusteredStorageHeader {
 	private readonly EndianBinaryWriter _writer;
 
 	private byte? _version;
-	private ClusteredStoragePolicy? _policy;
-	private long? _records;
-	private long? _recordsEndCluster;
-	private ushort? _recordKeySize;
-	private long? _reservedRecords;
+	private StreamContainerPolicy? _policy;
+	private long? _streamCount;
+	private long? _streamDescriptorsCluster;
+	private ushort? _streamDescriptorKeySize;
+	private long? _reservedStreams;
 	private int? _clusterSize;
 	private long? _totalClusters;
 	private readonly ICriticalObject _lock;
 	private byte[] _merkleRoot;
 	private byte[] _masterKey;
 
-	internal ClusteredStorageHeader(ConcurrentStream rootStream, Endianness endianness) {
+	internal StreamContainerHeader(ConcurrentStream rootStream, Endianness endianness) {
 		Guard.ArgumentNotNull(rootStream, nameof(rootStream));
 		_headerStream = rootStream.AsBounded(0, 255); 
 		_lock = rootStream;
@@ -85,12 +85,12 @@ public class ClusteredStorageHeader {
 		}
 	}
 
-	public ClusteredStoragePolicy Policy {
+	public StreamContainerPolicy Policy {
 		get {
 			using var accessScope = _lock.EnterAccessScope();
 			if (!_policy.HasValue) {
 				using var _ = _headerStream.EnterRestorePositionSeek(PolicyOffset, SeekOrigin.Begin);
-				_policy = (ClusteredStoragePolicy)_reader.ReadInt32();
+				_policy = (StreamContainerPolicy)_reader.ReadInt32();
 			}
 			return _policy.Value;
 
@@ -106,89 +106,89 @@ public class ClusteredStorageHeader {
 		}
 	}
 
-	public long RecordsCount {
+	public long StreamCount {
 		get {
 			using var accessScope = _lock.EnterAccessScope();
-			if (!_records.HasValue) {
-				using var _ = _headerStream.EnterRestorePositionSeek(RecordsOffset, SeekOrigin.Begin);
-				_records = _reader.ReadInt64();
+			if (!_streamCount.HasValue) {
+				using var _ = _headerStream.EnterRestorePositionSeek(StreamCountOffset, SeekOrigin.Begin);
+				_streamCount = _reader.ReadInt64();
 			}
-			return _records.Value;
+			return _streamCount.Value;
 
 		}
 		internal set {
 			using var accessScope = _lock.EnterAccessScope();
-			if (_records == value)
+			if (_streamCount == value)
 				return;
-			_records = value;
-			using var _ = _headerStream.EnterRestorePositionSeek(RecordsOffset, SeekOrigin.Begin);
-			_writer.Write(_records.Value);
+			_streamCount = value;
+			using var _ = _headerStream.EnterRestorePositionSeek(StreamCountOffset, SeekOrigin.Begin);
+			_writer.Write(_streamCount.Value);
 
 		}
 	}
 
-	public long RecordsEndCluster {
+	public long StreamDescriptorsEndCluster {
 		get {
 			using var accessScope = _lock.EnterAccessScope();
-			if (!_recordsEndCluster.HasValue) {
-				using var _ = _headerStream.EnterRestorePositionSeek(RecordsEndClusterOffset, SeekOrigin.Begin);
-				_recordsEndCluster = _reader.ReadInt64();
+			if (!_streamDescriptorsCluster.HasValue) {
+				using var _ = _headerStream.EnterRestorePositionSeek(StreamDescriptorsEndClusterOffset, SeekOrigin.Begin);
+				_streamDescriptorsCluster = _reader.ReadInt64();
 			}
-			return _recordsEndCluster.Value;
+			return _streamDescriptorsCluster.Value;
 		}
 		internal set {
 			using var accessScope = _lock.EnterAccessScope();
-			if (_recordsEndCluster == value)
+			if (_streamDescriptorsCluster == value)
 				return;
-			_recordsEndCluster = value;
-			using var _ = _headerStream.EnterRestorePositionSeek(RecordsEndClusterOffset, SeekOrigin.Begin);
-			_writer.Write(_recordsEndCluster.Value);
+			_streamDescriptorsCluster = value;
+			using var _ = _headerStream.EnterRestorePositionSeek(StreamDescriptorsEndClusterOffset, SeekOrigin.Begin);
+			_writer.Write(_streamDescriptorsCluster.Value);
 		}
 	}
 
-	public ushort RecordKeySize {
+	public ushort StreamDescriptorKeySize {
 		get {
 			using var accessScope = _lock.EnterAccessScope();
-			if (!_recordKeySize.HasValue) {
-				using var _ = _headerStream.EnterRestorePositionSeek(RecordKeySizeOffset, SeekOrigin.Begin);
-				_recordKeySize = _reader.ReadUInt16();
+			if (!_streamDescriptorKeySize.HasValue) {
+				using var _ = _headerStream.EnterRestorePositionSeek(StreamDescriptorKeySizeOffset, SeekOrigin.Begin);
+				_streamDescriptorKeySize = _reader.ReadUInt16();
 			}
-			return _recordKeySize.Value;
+			return _streamDescriptorKeySize.Value;
 		}
 		internal set {
 			using var accessScope = _lock.EnterAccessScope();
-			if (_recordKeySize == value)
+			if (_streamDescriptorKeySize == value)
 				return;
-			_recordKeySize = value;
-			using var _ = _headerStream.EnterRestorePositionSeek(RecordKeySizeOffset, SeekOrigin.Begin);
-			_writer.Write((ushort)_recordKeySize.Value);
+			_streamDescriptorKeySize = value;
+			using var _ = _headerStream.EnterRestorePositionSeek(StreamDescriptorKeySizeOffset, SeekOrigin.Begin);
+			_writer.Write((ushort)_streamDescriptorKeySize.Value);
 
 		}
 	}
 
-	public long ReservedRecords {
+	public long ReservedStreams {
 		get {
 			using var accessScope = _lock.EnterAccessScope();
-			if (!_reservedRecords.HasValue) {
-				using var _ = _headerStream.EnterRestorePositionSeek(ReservedRecordsOffset, SeekOrigin.Begin);
-				_reservedRecords = _reader.ReadInt64();
+			if (!_reservedStreams.HasValue) {
+				using var _ = _headerStream.EnterRestorePositionSeek(StreamDescriptorRecordsOffset, SeekOrigin.Begin);
+				_reservedStreams = _reader.ReadInt64();
 			}
-			return _reservedRecords.Value;
+			return _reservedStreams.Value;
 		}
 		internal set {
 			using var accessScope = _lock.EnterAccessScope();
 
-			if (_reservedRecords == value)
+			if (_reservedStreams == value)
 				return;
-			if (value == 0 && Policy.HasFlag(ClusteredStoragePolicy.TrackKey))
-				throw new InvalidOperationException($"Cannot set {nameof(ReservedRecords)} to 0 as {nameof(Policy)} has {ClusteredStoragePolicy.TrackKey} enabled");
+			if (value == 0 && Policy.HasFlag(StreamContainerPolicy.TrackKey))
+				throw new InvalidOperationException($"Cannot set {nameof(ReservedStreams)} to 0 as {nameof(Policy)} has {StreamContainerPolicy.TrackKey} enabled");
 
-			if (RecordsCount > _reservedRecords.GetValueOrDefault(0))
-				throw new InvalidOperationException($"Cannot set {nameof(ReservedRecords)} to {value} as records already exist with value");
+			if (StreamCount > _reservedStreams.GetValueOrDefault(0))
+				throw new InvalidOperationException($"Cannot set {nameof(ReservedStreams)} to {value} as records already exist with value");
 
-			_reservedRecords = value;
-			using var _ = _headerStream.EnterRestorePositionSeek(ReservedRecordsOffset, SeekOrigin.Begin);
-			_writer.Write(_reservedRecords.Value);
+			_reservedStreams = value;
+			using var _ = _headerStream.EnterRestorePositionSeek(StreamDescriptorRecordsOffset, SeekOrigin.Begin);
+			_writer.Write(_reservedStreams.Value);
 		}
 	}
 
@@ -278,12 +278,12 @@ public class ClusteredStorageHeader {
 		// Below are lazily loaded
 		_version = null;
 		_policy = null;
-		_recordsEndCluster = null;
-		_recordKeySize = null;
-		_reservedRecords = null;
+		_streamDescriptorsCluster = null;
+		_streamDescriptorKeySize = null;
+		_reservedStreams = null;
 		_clusterSize = null;
 		_totalClusters = null;
-		_records = null;
+		_streamCount = null;
 		_merkleRoot = null;
 		_masterKey = null;
 	}
@@ -304,17 +304,17 @@ public class ClusteredStorageHeader {
 		Guard.Ensure(_headerStream.Position == PolicyOffset);
 		_writer.Write((uint)0); // Policy
 
-		Guard.Ensure(_headerStream.Position == RecordsOffset);
+		Guard.Ensure(_headerStream.Position == StreamCountOffset);
 		_writer.Write((long)0L); // Records
 
-		Guard.Ensure(_headerStream.Position == RecordsEndClusterOffset);
-		_writer.Write((long)Cluster.Null); // RecordsEndCluster
+		Guard.Ensure(_headerStream.Position == StreamDescriptorsEndClusterOffset);
+		_writer.Write((long)Cluster.Null); // StreamDescriptorsEndCluster
 
-		Guard.Ensure(_headerStream.Position == RecordKeySizeOffset);
-		_writer.Write((ushort)recordKeySize); // RecordKeySize
+		Guard.Ensure(_headerStream.Position == StreamDescriptorKeySizeOffset);
+		_writer.Write((ushort)recordKeySize); // StreamDescriptorKeySize
 
-		Guard.Ensure(_headerStream.Position == ReservedRecordsOffset);
-		_writer.Write((long)reservedRecords); // ReservedRecords
+		Guard.Ensure(_headerStream.Position == StreamDescriptorRecordsOffset);
+		_writer.Write((long)reservedRecords); // ReservedStreams
 
 		Guard.Ensure(_headerStream.Position == ClusterSizeOffset);
 		_writer.Write((int)clusterSize); // ClusterSize
@@ -338,17 +338,17 @@ public class ClusteredStorageHeader {
 		Guard.Ensure(Version == 1, $"Corrupt header property {nameof(Version)} value was {Version} bytes");
 		Guard.Ensure(ClusterSize > 0, $"Corrupt header property {nameof(ClusterSize)} value was {ClusterSize} bytes");
 		Guard.Ensure(TotalClusters >= 0, $"Corrupt header property {nameof(TotalClusters)} value was {TotalClusters} bytes");
-		Guard.Ensure(ReservedRecords >= 0, $"Corrupt header property {nameof(ReservedRecords)} value was {ReservedRecords} bytes");
-		Guard.Ensure(RecordsCount >= 0, $"Corrupt header property {nameof(RecordsCount)} value was {RecordsCount} bytes");
-		Guard.Ensure(RecordsEndCluster >= Cluster.Null, $"Corrupt header property {nameof(RecordsEndCluster)} value was {RecordsEndCluster} bytes");
-		Guard.Against(Policy.HasFlag(ClusteredStoragePolicy.TrackKey) && RecordKeySize <= 0, $"Corrupt header property {nameof(RecordKeySize)} value was {RecordKeySize} but {nameof(Policy)} property value was {RecordKeySize}");
+		Guard.Ensure(ReservedStreams >= 0, $"Corrupt header property {nameof(ReservedStreams)} value was {ReservedStreams} bytes");
+		Guard.Ensure(StreamCount >= 0, $"Corrupt header property {nameof(StreamCount)} value was {StreamCount} bytes");
+		Guard.Ensure(StreamDescriptorsEndCluster >= Cluster.Null, $"Corrupt header property {nameof(StreamDescriptorsEndCluster)} value was {StreamDescriptorsEndCluster} bytes");
+		Guard.Against(Policy.HasFlag(StreamContainerPolicy.TrackKey) && StreamDescriptorKeySize <= 0, $"Corrupt header property {nameof(StreamDescriptorKeySize)} value was {StreamDescriptorKeySize} but {nameof(Policy)} property value was {StreamDescriptorKeySize}");
 	}
 
 	public void ResetMerkleRoot() => MerkleRoot = new byte[MerkleRootLength];
 
 	public override string ToString() {
 		using var accessScope = _lock.EnterAccessScope();
-		return $"[{nameof(ClusteredStorageHeader)}] {nameof(Version)}: {Version}, {nameof(ClusterSize)}: {ClusterSize}, {nameof(TotalClusters)}: {TotalClusters}, {nameof(RecordsCount)}: {RecordsCount}, {nameof(RecordsEndCluster)}: {RecordsEndCluster}, {nameof(ReservedRecords)}: {ReservedRecords}, {nameof(Policy)}: {Policy}, {nameof(MerkleRoot)}: {MerkleRoot.ToHexString(true)}";
+		return $"[{nameof(StreamContainerHeader)}] {nameof(Version)}: {Version}, {nameof(ClusterSize)}: {ClusterSize}, {nameof(TotalClusters)}: {TotalClusters}, {nameof(StreamCount)}: {StreamCount}, {nameof(StreamDescriptorsEndCluster)}: {StreamDescriptorsEndCluster}, {nameof(ReservedStreams)}: {ReservedStreams}, {nameof(Policy)}: {Policy}, {nameof(MerkleRoot)}: {MerkleRoot.ToHexString(true)}";
 	}
 
 

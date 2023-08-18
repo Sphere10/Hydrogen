@@ -29,7 +29,7 @@ namespace Hydrogen;
 /// ===================
 /// MagicID (DWORD): special signature number to signify a StreamedList exists here
 /// Version (BYTE): version of the list data format
-/// Traits (DWORD): traits associated with the storage format of this list
+/// Traits (DWORD): traits associated with the streams format of this list
 /// PADDING: 246 bytes
 /// 
 /// Page Format

@@ -578,7 +578,7 @@
 //			txnDir,
 //			new StringSerializer(),
 //			new PlayerRecordSerializer(),
-//			policy: ClusteredStoragePolicy.DictionaryDefault | ClusteredStoragePolicy.TrackChecksums
+//			policy: StreamContainerPolicy.DictionaryDefault | StreamContainerPolicy.TrackChecksums
 //		);
 //		if (_transactionalDict.RequiresLoad)
 //			_transactionalDict.Load();

@@ -7,17 +7,17 @@ namespace Hydrogen;
 
 public static class ClusterDiagnostics {
 
-	public static string ToTextDump(ClusteredStorage storage) {
-		using (storage.EnterAccessScope()) {
+	public static string ToTextDump(StreamContainer streams) {
+		using (streams.EnterAccessScope()) {
 			var stringBuilder = new FastStringBuilder();
-			stringBuilder.AppendLine(storage.ToString());
-			stringBuilder.AppendLine("Records:");
-			for (var i = 0; i < storage.Count; i++) {
-				var record = storage.GetRecord(i);
-				stringBuilder.AppendLine($"\t{i}: {record}");
+			stringBuilder.AppendLine(streams.ToString());
+			stringBuilder.AppendLine("Stream Descriptors:");
+			for (var i = 0; i < streams.Count; i++) {
+				var descriptor = streams.GetStreamDescriptor(i);
+				stringBuilder.AppendLine($"\t{i}: {descriptor}");
 			}
 			stringBuilder.AppendLine("Cluster Container:");
-			stringBuilder.AppendLine(ToTextDump(storage.ClusterMap));
+			stringBuilder.AppendLine(ToTextDump(streams.ClusterMap));
 			return stringBuilder.ToString();
 		}
 	}
@@ -90,13 +90,13 @@ public static class ClusterDiagnostics {
 
 	public static void VerifyClusters(ClusterMap clusterMap) => VerifyClusters(clusterMap.Clusters.ToArray(), null);
 
-	public static void VerifyClusters(ClusteredStorage clusteredStorage) {
-		using (clusteredStorage.EnterAccessScope()) {
-			VerifyClusters(clusteredStorage.ClusterMap.Clusters.ToArray(), Tools.Collection.RangeL(0, clusteredStorage.Count).Select(clusteredStorage.GetRecord).ToArray());
+	public static void VerifyClusters(StreamContainer streamContainer) {
+		using (streamContainer.EnterAccessScope()) {
+			VerifyClusters(streamContainer.ClusterMap.Clusters.ToArray(), Tools.Collection.RangeL(0, streamContainer.Count).Select(streamContainer.GetStreamDescriptor).ToArray());
 		}
 	}
 
-	public static void VerifyClusters(Cluster[] clusters, ClusteredStreamRecord[] records) {
+	public static void VerifyClusters(Cluster[] clusters, ClusteredStreamDescriptor[] streamDescriptors) {
 		Guard.ArgumentNotNull(clusters, nameof(clusters));
 		// get all the start clusters
 		var startClusters =
@@ -167,96 +167,96 @@ public static class ClusterDiagnostics {
 			throw new InvalidOperationException($"Clusters {notVisited.ToDelimittedString(", ")} were not visited.");
 		}
 
-		if (records is not null) {
+		if (streamDescriptors is not null) {
 			bool IsValidCluster(long c) => 0 <= c && c < clusters.Length || c == Cluster.Null;
 
-			// ensure all records have valid clusters
+			// ensure all streamDescriptors have valid clusters
 			var recordsReferencingOutOfBoundsClusters =
-				records
-				.Select((record, i) => (record, i))
-				.Where(x => !IsValidCluster(x.record.StartCluster) || !IsValidCluster(x.record.EndCluster))
+				streamDescriptors
+				.Select((descriptor, i) => (descriptor, i))
+				.Where(x => !IsValidCluster(x.descriptor.StartCluster) || !IsValidCluster(x.descriptor.EndCluster))
 				.ToArray();
 			if (recordsReferencingOutOfBoundsClusters.Any())
-				throw new InvalidOperationException($"Records {recordsReferencingOutOfBoundsClusters.ToDelimittedString(", ")} reference out of bounds clusters (min:{0} max:{clusters.Length})");
+				throw new InvalidOperationException($"Stream descriptors {recordsReferencingOutOfBoundsClusters.ToDelimittedString(", ")} reference out of bounds clusters (min:{0} max:{clusters.Length})");
 
-			// ensure all records have dangling NULL (-1) terminals
+			// ensure all streamDescriptors have dangling NULL (-1) terminals
 			var recordsWithDanglingTerminals =
-				records
+				streamDescriptors
 				.Where(x => x.StartCluster == Cluster.Null && x.EndCluster != Cluster.Null || x.StartCluster != Cluster.Null && x.EndCluster == Cluster.Null)
 				.ToArray();
 			if (recordsWithDanglingTerminals.Any())
-				throw new InvalidOperationException($"Records {recordsWithDanglingTerminals.ToDelimittedString(", ")} have dangling null terminals (start:{0} end:{1})");
+				throw new InvalidOperationException($"Stream descriptors {recordsWithDanglingTerminals.ToDelimittedString(", ")} have dangling null terminals (start:{0} end:{1})");
 
-			// Ensure no records point to same start cluster
+			// Ensure no streamDescriptors point to same start cluster
 			var recordsWithDuplicateStartClusters =
-				records
+				streamDescriptors
 					.Select((record, i) => (record, i))
 					.Where(x => x.record.StartCluster != Cluster.Null)
 					.GroupBy(x => x.record.StartCluster)
 					.Where(x => x.Count() > 1)
 					.ToArray();
 			if (recordsWithDuplicateStartClusters.Any())
-				throw new InvalidOperationException($"Records {recordsWithDuplicateStartClusters.SelectMany(x => x).ToDelimittedString(", ")} have duplicate start cluster(s).");
+				throw new InvalidOperationException($"Stream descriptors {recordsWithDuplicateStartClusters.SelectMany(x => x).ToDelimittedString(", ")} have duplicate start cluster(s).");
 
-			// Ensure no records point to same end cluster
+			// Ensure no streamDescriptors point to same end cluster
 			var recordsWithDuplicateEndClusters =
-				records
+				streamDescriptors
 					.Select((record, i) => (record, i))
 					.Where(x => x.record.EndCluster != Cluster.Null)
 					.GroupBy(x => x.record.EndCluster)
 					.Where(x => x.Count() > 1)
 					.ToArray();
 			if (recordsWithDuplicateEndClusters.Any())
-				throw new InvalidOperationException($"Records {recordsWithDuplicateEndClusters.SelectMany(x => x).ToDelimittedString(", ")} have duplicate end clusters.");
+				throw new InvalidOperationException($"Stream descriptors {recordsWithDuplicateEndClusters.SelectMany(x => x).ToDelimittedString(", ")} have duplicate end clusters.");
 
-			// Ensure no records exist that aren't referenced by a chain (except for null records)
+			// Ensure no streamDescriptors exist that aren't referenced by a chain (except for null streamDescriptors)
 			var recordsNotAddressedByAChain =
-				records
+				streamDescriptors
 					.Where((_, i) => !clusterChains.ContainsKey(i))
-					.Select((r, i) => (record: r, index: i))
-					.Where(x => x.record.StartCluster != Cluster.Null && x.record.EndCluster != Cluster.Null && x.record.Size == 0) // exclude null records
+					.Select((r, i) => (descriptor: r, index: i))
+					.Where(x => x.descriptor.StartCluster != Cluster.Null && x.descriptor.EndCluster != Cluster.Null && x.descriptor.Size == 0) // exclude null streamDescriptors
 					.ToArray();
 			if (recordsNotAddressedByAChain.Any())
-				throw new InvalidOperationException($"Non-null records {recordsNotAddressedByAChain.ToDelimittedString(", ", toStringFunc: x => $"(Index: {x.index}, Record: {x.record})")} are not addressed by a cluster chain.");
+				throw new InvalidOperationException($"Non-null stream descriptors {recordsNotAddressedByAChain.ToDelimittedString(", ", toStringFunc: x => $"(Index: {x.index}, Descriptor: {x.descriptor})")} are not addressed by a cluster chain.");
 
 			// Ensure all chains (except record chain) link to a valid record
 			var chainsLinkingToInvalidRecords =
 				clusterChains
-					.Where(x => !(0 <= x.Key && x.Key <= records.Length))
+					.Where(x => !(0 <= x.Key && x.Key <= streamDescriptors.Length))
 					.Select(x => (start: x.Value.start, end: x.Value.end, record: x.Key))
 					.ToArray();
 			if (chainsLinkingToInvalidRecords.Any())
-				throw new InvalidOperationException($"Cluster Chains {chainsLinkingToInvalidRecords.ToDelimittedString(", ", toStringFunc: x => $"(Start: {x.start}, End: {x.end}, Record: {x.record}")} reference(s) a non-existent record.");
+				throw new InvalidOperationException($"Cluster Chains {chainsLinkingToInvalidRecords.ToDelimittedString(", ", toStringFunc: x => $"(Start: {x.start}, End: {x.end}, Descriptor: {x.record}")} reference(s) a non-existent record.");
 
-			// Ensure chains link to non-null records
+			// Ensure chains link to non-null streamDescriptors
 			var chainsLinkingToNullRecords =
 				clusterChains
-					.Where(x => records[x.Key].StartCluster == Cluster.Null || records[x.Key].EndCluster == Cluster.Null || records[x.Key].Size == 0)
+					.Where(x => streamDescriptors[x.Key].StartCluster == Cluster.Null || streamDescriptors[x.Key].EndCluster == Cluster.Null || streamDescriptors[x.Key].Size == 0)
 					.Select(x => (start: x.Value.start, end: x.Value.end, record: x.Key))
 					.ToArray();
 			if (chainsLinkingToNullRecords.Any())
-				throw new InvalidOperationException($"Cluster Chains {chainsLinkingToNullRecords.ToDelimittedString(", ", toStringFunc: x => $"(Start: {x.start}, End: {x.end}, Record: {x.record}")} reference(s) a null record.");
+				throw new InvalidOperationException($"Cluster Chains {chainsLinkingToNullRecords.ToDelimittedString(", ", toStringFunc: x => $"(Start: {x.start}, End: {x.end}, Descriptor: {x.record}")} reference(s) a null record.");
 
 
-			// Ensure records don't link to non-terminal clusters
+			// Ensure streamDescriptors don't link to non-terminal clusters
 			var recordsReferencingNonTerminalClusters =
-				records
+				streamDescriptors
 					.Where(x => x.StartCluster != Cluster.Null && x.EndCluster != Cluster.Null)
 					.Where(x => !clusters[x.StartCluster].Traits.HasFlag(ClusterTraits.Start) || !clusters[x.EndCluster].Traits.HasFlag(ClusterTraits.End))
 					.ToArray();
 			if (recordsReferencingNonTerminalClusters.Any())
-				throw new InvalidOperationException($"Records {recordsReferencingNonTerminalClusters.ToDelimittedString(", ")} reference(s) non-terminal clusters.");
+				throw new InvalidOperationException($"Stream descriptors {recordsReferencingNonTerminalClusters.ToDelimittedString(", ")} reference(s) non-terminal clusters.");
 
-			// Ensure records match chain terminals
+			// Ensure streamDescriptors match chain terminals
 			var recordsNotMatchingChains =
-				records
-					.Select((r, i) => (record: r, index: i))
-					.Where(x => x.record.StartCluster != Cluster.Null && x.record.EndCluster != Cluster.Null)
-					.Select((r, i) => (record: r.record, chain: clusterChains[r.index]))
+				streamDescriptors
+					.Select((r, i) => (descriptor: r, index: i))
+					.Where(x => x.descriptor.StartCluster != Cluster.Null && x.descriptor.EndCluster != Cluster.Null)
+					.Select((r, i) => (record: r.descriptor, chain: clusterChains[r.index]))
 					.Where(x => x.record.StartCluster != x.chain.start || x.record.EndCluster != x.chain.end)
 					.ToArray();
 			if (recordsNotMatchingChains.Any())
-				throw new InvalidOperationException($"Records {recordsNotMatchingChains.ToDelimittedString(", ", toStringFunc: x => $"(Record: {x.record}, Chain:[{x.chain.start}, {x.chain.end}])")} reference non-terminal clusters.");
+				throw new InvalidOperationException($"Stream descriptors {recordsNotMatchingChains.ToDelimittedString(", ", toStringFunc: x => $"(Descriptor: {x.record}, Chain:[{x.chain.start}, {x.chain.end}])")} reference non-terminal clusters.");
 
 		}
 	}

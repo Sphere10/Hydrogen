@@ -71,7 +71,7 @@ internal class DynamicStreamPage<TItem> : StreamPageBase<TItem> {
 		_offsets = null;
 
 		if (startPosition < parent.Stream.Length) {
-			// CASE: Page already exists in storage, load it
+			// CASE: Page already exists in streams, load it
 			Stream.Seek(StartPosition, SeekOrigin.Begin);
 			// NOTE: we set the field not the property to avoid rewriting same value just read
 			var itemCount = Reader.ReadUInt64();
@@ -81,7 +81,7 @@ internal class DynamicStreamPage<TItem> : StreamPageBase<TItem> {
 			_nextPagePosition = (long)Reader.ReadUInt64();
 			_itemSizes = Tools.Collection.Generate(Reader.ReadUInt64).Cast<long>().TakeL(maxItems).ToArray();
 		} else if (startPosition == parent.Stream.Length) {
-			// CASE: Page begins end of storage as it is newly appended, so write out default header
+			// CASE: Page begins end of streams as it is newly appended, so write out default header
 			StartPosition = startPosition;
 			Count = 0;
 			MaxItems = _parent.PageSize;
@@ -89,8 +89,8 @@ internal class DynamicStreamPage<TItem> : StreamPageBase<TItem> {
 			NextPagePosition = GetItem0DataOffset(); // Empty, so next page begins straight after this header
 			SetItemSizes(0, new long[MaxItems], out _);
 		} else {
-			// ILLEGAL: Page starts beyond known storage boundary, invalid
-			throw new ArgumentOutOfRangeException(nameof(startPosition), startPosition, "Page start position beyond storage boundary");
+			// ILLEGAL: Page starts beyond known streams boundary, invalid
+			throw new ArgumentOutOfRangeException(nameof(startPosition), startPosition, "Page start position beyond streams boundary");
 		}
 
 	}

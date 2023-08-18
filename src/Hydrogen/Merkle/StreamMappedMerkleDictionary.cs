@@ -36,7 +36,7 @@ public class StreamMappedMerkleDictionary<TKey, TValue, TInner> : DictionaryDeco
 
 	public IMerkleTree MerkleTree { get; }
 
-	public ClusteredStorage Storage => InternalDictionary.Storage;
+	public StreamContainer Streams => InternalDictionary.Streams;
 
 	public bool RequiresLoad => InternalDictionary.RequiresLoad;
 
@@ -62,7 +62,7 @@ public class StreamMappedMerkleDictionary<TKey, TValue> : StreamMappedMerkleDict
 	/// Constructs using an <see cref="StreamMappedMerkleDictionary{TKey,TValue}"/> using an <see cref="StreamMappedDictionary{TKey,TValue}"/> under the hood.
 	/// </summary>
 	public StreamMappedMerkleDictionary(Stream rootStream, int clusterSize, CHF hashAlgorithm = CHF.SHA2_256, IItemSerializer<TKey> keySerializer = null, IItemSerializer<TValue> valueSerializer = null, IItemChecksummer<TKey> keyChecksummer = null,
-	                                    IEqualityComparer<TKey> keyComparer = null, IEqualityComparer<TValue> valueComparer = null, ClusteredStoragePolicy policy = ClusteredStoragePolicy.DictionaryDefault, int reservedRecords = 1,
+	                                    IEqualityComparer<TKey> keyComparer = null, IEqualityComparer<TValue> valueComparer = null, StreamContainerPolicy policy = StreamContainerPolicy.DictionaryDefault, int reservedRecords = 1,
 	                                    int merkleTreeStreamIndex = HydrogenDefaults.ClusteredStorageMerkleTreeStreamIndex, Endianness endianness = Endianness.LittleEndian, bool autoLoad = false)
 		: this(
 			new StreamMappedMerkleList<KeyValuePair<TKey, TValue>>(
@@ -89,7 +89,7 @@ public class StreamMappedMerkleDictionary<TKey, TValue> : StreamMappedMerkleDict
 			keyComparer,
 			valueComparer
 		) {
-		Guard.Argument(policy.HasFlag(ClusteredStoragePolicy.TrackChecksums), nameof(policy), $"Checksum tracking must be enabled in {nameof(StreamMappedDictionary<TKey, TValue>)} implementations.");
+		Guard.Argument(policy.HasFlag(StreamContainerPolicy.TrackChecksums), nameof(policy), $"Checksum tracking must be enabled in {nameof(StreamMappedDictionary<TKey, TValue>)} implementations.");
 	}
 
 	/// <summary>
@@ -97,7 +97,7 @@ public class StreamMappedMerkleDictionary<TKey, TValue> : StreamMappedMerkleDict
 	/// </summary>
 	public StreamMappedMerkleDictionary(Stream rootStream, int clusterSize, IItemSerializer<TKey> staticSizedKeySerializer, CHF hashAlgorithm = CHF.SHA2_256, IItemSerializer<TValue> valueSerializer = null,
 	                                    IItemChecksummer<TKey> keyChecksummer = null, IEqualityComparer<TKey> keyComparer = null, IEqualityComparer<TValue> valueComparer = null,
-	                                    ClusteredStoragePolicy policy = ClusteredStoragePolicy.DictionaryDefault, long reservedRecords = 1, int merkleTreeStreamIndex = HydrogenDefaults.ClusteredStorageMerkleTreeStreamIndex, 
+	                                    StreamContainerPolicy policy = StreamContainerPolicy.DictionaryDefault, long reservedRecords = 1, int merkleTreeStreamIndex = HydrogenDefaults.ClusteredStorageMerkleTreeStreamIndex, 
 										Endianness endianness = Endianness.LittleEndian, bool autoLoad = false)
 		: this(
 			new StreamMappedMerkleList<TValue>(
@@ -106,7 +106,7 @@ public class StreamMappedMerkleDictionary<TKey, TValue> : StreamMappedMerkleDict
 				hashAlgorithm,
 				valueSerializer,
 				valueComparer,
-				policy | ClusteredStoragePolicy.TrackKey,
+				policy | StreamContainerPolicy.TrackKey,
 				staticSizedKeySerializer.StaticSize,
 				reservedRecords,
 				merkleTreeStreamIndex,
@@ -119,7 +119,7 @@ public class StreamMappedMerkleDictionary<TKey, TValue> : StreamMappedMerkleDict
 			keyComparer,
 			valueComparer
 		) {
-		Guard.Argument(policy.HasFlag(ClusteredStoragePolicy.TrackChecksums), nameof(policy), $"Checksum tracking must be enabled in {nameof(StreamMappedDictionary<TKey, TValue>)} implementations.");
+		Guard.Argument(policy.HasFlag(StreamContainerPolicy.TrackChecksums), nameof(policy), $"Checksum tracking must be enabled in {nameof(StreamMappedDictionary<TKey, TValue>)} implementations.");
 	}
 
 	/// <summary>

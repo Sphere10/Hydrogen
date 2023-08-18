@@ -24,7 +24,7 @@ public class TransactionalList<T> : StreamMappedList<T>, ITransactionalList<T> {
 	public event EventHandlerEx<object> RollingBack { add => _transactionalObject.RollingBack += value; remove => _transactionalObject.RollingBack -= value; }
 	public event EventHandlerEx<object> RolledBack { add => _transactionalObject.RolledBack += value; remove => _transactionalObject.RolledBack -= value; }
 
-	private readonly ClusteredStorage _storage;
+	private readonly StreamContainer _streams;
 	private readonly ITransactionalObject _transactionalObject;
 
 	public TransactionalList(
@@ -35,7 +35,7 @@ public class TransactionalList<T> : StreamMappedList<T>, ITransactionalList<T> {
 		int transactionalPageSize = HydrogenDefaults.TransactionalPageSize, 
 		long maxMemory = HydrogenDefaults.MaxMemoryPerCollection,
 		int clusterSize = HydrogenDefaults.ClusterSize, 
-		ClusteredStoragePolicy policy = ClusteredStoragePolicy.Default, 
+		StreamContainerPolicy policy = StreamContainerPolicy.Default, 
 		int reservedRecords = 0, 
 		long recordKeySize = 0,
 		Endianness endianness = Endianness.LittleEndian, 
@@ -49,18 +49,18 @@ public class TransactionalList<T> : StreamMappedList<T>, ITransactionalList<T> {
 		IItemSerializer<T> serializer = null, 
 		IEqualityComparer<T> comparer = null, 
 		int clusterSize = HydrogenDefaults.ClusterSize, 
-		ClusteredStoragePolicy policy = ClusteredStoragePolicy.Default, 
+		StreamContainerPolicy policy = StreamContainerPolicy.Default, 
 		int reservedRecords = 0,
 		long recordKeySize = 0,
 		Endianness endianness = HydrogenDefaults.Endianness) 
-		: this(new ClusteredStorage(transactionalStream, clusterSize, policy, recordKeySize, reservedRecords, endianness), transactionalStream, serializer, comparer) {
+		: this(new StreamContainer(transactionalStream, clusterSize, policy, recordKeySize, reservedRecords, endianness), transactionalStream, serializer, comparer) {
 	}
 
-	public TransactionalList(ClusteredStorage storage, ITransactionalObject transactionalObject, IItemSerializer<T> serializer = null, IEqualityComparer<T> comparer = null)
-		: base(storage, serializer, comparer) {
-		Guard.ArgumentNotNull(storage, nameof(storage));
+	public TransactionalList(StreamContainer streams, ITransactionalObject transactionalObject, IItemSerializer<T> serializer = null, IEqualityComparer<T> comparer = null)
+		: base(streams, serializer, comparer) {
+		Guard.ArgumentNotNull(streams, nameof(streams));
 		Guard.ArgumentNotNull(transactionalObject, nameof(transactionalObject));
-		_storage = storage;
+		_streams = streams;
 		_transactionalObject = transactionalObject;
 	}
 	
@@ -73,8 +73,8 @@ public class TransactionalList<T> : StreamMappedList<T>, ITransactionalList<T> {
 	public virtual Task RollbackAsync() => _transactionalObject.RollbackAsync();
 
 	public virtual void Dispose() {
-		using (_storage.EnterAccessScope()) 
-			_storage.RootStream.Dispose();
+		using (_streams.EnterAccessScope()) 
+			_streams.RootStream.Dispose();
 	}
 
 }

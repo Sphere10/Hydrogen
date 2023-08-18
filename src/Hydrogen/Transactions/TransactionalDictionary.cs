@@ -23,7 +23,7 @@ public class TransactionalDictionary<TKey, TValue> : StreamMappedDictionary<TKey
 
 	public TransactionalDictionary(string filename, string uncommittedPageFileDir, IItemSerializer<TKey> keySerializer, IItemSerializer<TValue> valueSerializer, IItemChecksummer<TKey> keyChecksum = null, IEqualityComparer<TKey> keyComparer = null,
 								   IEqualityComparer<TValue> valueComparer = null, int transactionalPageSize = HydrogenDefaults.TransactionalPageSize, long maxMemory = HydrogenDefaults.MaxMemoryPerCollection, int clusterSize = HydrogenDefaults.ClusterSize,
-								   ClusteredStoragePolicy policy = ClusteredStoragePolicy.DictionaryDefault, int reservedRecords = 0, Endianness endianness = HydrogenDefaults.Endianness, bool readOnly = false)
+								   StreamContainerPolicy policy = StreamContainerPolicy.DictionaryDefault, int reservedRecords = 0, Endianness endianness = HydrogenDefaults.Endianness, bool readOnly = false)
 		: this(
 			new TransactionalStream(filename, uncommittedPageFileDir, transactionalPageSize, maxMemory, readOnly),
 			keySerializer,
@@ -40,7 +40,7 @@ public class TransactionalDictionary<TKey, TValue> : StreamMappedDictionary<TKey
 
 	public TransactionalDictionary(TransactionalStream transactionalStream, IItemSerializer<TKey> keySerializer, IItemSerializer<TValue> valueSerializer, IItemChecksummer<TKey> keyChecksum = null, IEqualityComparer<TKey> keyComparer = null,
 	                               IEqualityComparer<TValue> valueComparer = null, int clusterSize = HydrogenDefaults.ClusterSize,
-	                               ClusteredStoragePolicy policy = ClusteredStoragePolicy.DictionaryDefault, int reservedRecords = 0, Endianness endianness = HydrogenDefaults.Endianness)
+	                               StreamContainerPolicy policy = StreamContainerPolicy.DictionaryDefault, int reservedRecords = 0, Endianness endianness = HydrogenDefaults.Endianness)
 		: this(
 			new TransactionalList<KeyValuePair<TKey, TValue>>(
 				transactionalStream,

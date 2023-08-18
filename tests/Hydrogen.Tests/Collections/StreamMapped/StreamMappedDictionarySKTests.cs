@@ -25,15 +25,15 @@ public class StreamMappedDictionarySKTests : StreamMappedDictionaryTestsBase {
 			new StringSerializer().AsStaticSizeSerializer(11, SizeDescriptorStrategy.UseUInt32),
 			new StringSerializer(),
 			reservedRecords: 33,
-			policy: ClusteredStoragePolicy.BlobOptimized);
+			policy: StreamContainerPolicy.BlobOptimized);
 		if (dict.RequiresLoad)
 			dict.Load();
-		Assert.That(dict.Storage.Header.ClusterSize, Is.EqualTo(21));
-		Assert.That(dict.Storage.Header.RecordKeySize, Is.EqualTo(11));
-		Assert.That(dict.Storage.Header.ReservedRecords, Is.EqualTo(33));
+		Assert.That(dict.Streams.Header.ClusterSize, Is.EqualTo(21));
+		Assert.That(dict.Streams.Header.StreamDescriptorKeySize, Is.EqualTo(11));
+		Assert.That(dict.Streams.Header.ReservedStreams, Is.EqualTo(33));
 	}
 
-	protected override IDisposable CreateDictionary<TKey, TValue>(int estimatedMaxByteSize, StorageType storageType, int reservedRecords, ClusteredStoragePolicy policy, IItemSerializer<TKey> keySerializer, IItemSerializer<TValue> valueSerializer,
+	protected override IDisposable CreateDictionary<TKey, TValue>(int estimatedMaxByteSize, StorageType storageType, int reservedRecords, StreamContainerPolicy policy, IItemSerializer<TKey> keySerializer, IItemSerializer<TValue> valueSerializer,
 	                                                              IEqualityComparer<TKey> keyComparer, IEqualityComparer<TValue> valueComparer, out IStreamMappedDictionary<TKey, TValue> clusteredDictionary) {
 		var disposable = base.CreateStream(storageType, estimatedMaxByteSize, out var stream);
 		clusteredDictionary = new StreamMappedDictionarySK<TKey, TValue>(stream,
@@ -43,7 +43,7 @@ public class StreamMappedDictionarySKTests : StreamMappedDictionaryTestsBase {
 			null,
 			keyComparer,
 			valueComparer,
-			policy | ClusteredStoragePolicy.TrackChecksums | ClusteredStoragePolicy.TrackKey,
+			policy | StreamContainerPolicy.TrackChecksums | StreamContainerPolicy.TrackKey,
 			reservedRecords);
 		if (clusteredDictionary.RequiresLoad)
 			clusteredDictionary.Load();

@@ -28,7 +28,7 @@ public class EndianBinaryWriter : IDisposable {
 	private bool disposed = false;
 
 	/// <summary>
-	/// Buffer used for temporary storage during conversion from primitives
+	/// Buffer used for temporary streams during conversion from primitives
 	/// </summary>
 	private byte[] buffer = new byte[16];
 

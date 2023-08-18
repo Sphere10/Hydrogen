@@ -92,7 +92,7 @@ public abstract class MemoryPagedListBase<TItem> : PagedListBase<TItem>, IMemory
 	public sealed override IDisposable EnterOpenPageScope(IPage<TItem> page) {
 		// dont need to do much since cache manages life-cycle of page
 		CheckNotDisposed();
-		var cachedItem = _loadedPages.Get(page.Number); // ensures page is fetched from storage if not cached
+		var cachedItem = _loadedPages.Get(page.Number); // ensures page is fetched from streams if not cached
 		cachedItem.CanPurge = false;
 		return new ActionScope(() => cachedItem.CanPurge = true);
 	}

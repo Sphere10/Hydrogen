@@ -34,12 +34,12 @@ public class EndianBinaryReader : IDisposable {
 	private readonly Decoder _decoder;
 
 	/// <summary>
-	/// Buffer used for temporary storage before conversion into primitives
+	/// Buffer used for temporary streams before conversion into primitives
 	/// </summary>
 	private byte[] _buffer = new byte[16];
 
 	/// <summary>
-	/// Buffer used for temporary storage when reading a single character
+	/// Buffer used for temporary streams when reading a single character
 	/// </summary>
 	private readonly char[] _charBuffer = new char[1];
 

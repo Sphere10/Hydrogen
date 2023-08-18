@@ -786,21 +786,6 @@ public class StreamContainerTests : StreamPersistedCollectionTestsBase {
 		StreamContainerTestsHelper.AssertValidStreamDescriptors(streamContainer);
 	}
 
-	//[Test]
-	//public void CorruptData_NextPointsNonExistentCluster([ClusteredStoragePolicyTestValues] StreamContainerPolicy policy) {
-	//	const int clusterSize = 1;
-	//	using var rootStream = new MemoryStream();
-	//	var streamContainer = new StreamContainer(rootStream, clusterSize, policy: policy, autoLoad: true);
-	//	streamContainer.AddBytes(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 });
-	//	// corrupt root-stream, make tip cluster 17 have next to 100 creating a circular linked loop through forward traversal
-	//	var cluster16NextPrevOffset = rootStream.Length - 9 * (streamContainer.ClusterEnvelopeSize + streamContainer.ClusterSize) + Cluster.TraitsLength + Cluster.PrevLength;
-	//	var writer = new EndianBinaryWriter(EndianBitConverter.For(Endianness.LittleEndian), rootStream);
-	//	rootStream.Seek(cluster16NextPrevOffset, SeekOrigin.Begin);
-	//	writer.Write(123456L);
-	//	Assert.That(() => streamContainer.AppendBytes(0, new byte[] { 11 }), Throws.Exception);
-	//}
-
-
 	[Test]
 	public void CorruptData_ForwardsCyclicClusterChain([StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
 		const int clusterSize = 1;

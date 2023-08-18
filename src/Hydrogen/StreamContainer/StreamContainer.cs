@@ -77,7 +77,6 @@ public class StreamContainer : SyncLoadableBase, ICriticalObject {
 	private readonly long _reservedStreams;
 	private readonly bool _integrityChecks;
 	private readonly bool _preAllocateOptimization;
-	private int _clusterEnvelopeSize;
 	private bool _suppressEvents;
 
 	public StreamContainer(Stream rootStream, int clusterSize = HydrogenDefaults.ClusterSize, StreamContainerPolicy policy = StreamContainerPolicy.Default, long streamDescriptorKeySize = 0, long reservedStreams = 0, Endianness endianness = Endianness.LittleEndian, bool autoLoad = false) {
@@ -102,7 +101,6 @@ public class StreamContainer : SyncLoadableBase, ICriticalObject {
 		_reservedStreams = reservedStreams;
 		_integrityChecks = Policy.HasFlag(StreamContainerPolicy.IntegrityChecks);
 		_preAllocateOptimization = Policy.HasFlag(StreamContainerPolicy.FastAllocate);
-		_clusterEnvelopeSize = 0;
 		_suppressEvents = false;
 
 		if (autoLoad)
@@ -180,14 +178,6 @@ public class StreamContainer : SyncLoadableBase, ICriticalObject {
 			CheckInitialized();
 			return Header.ClusterSize;
 		}
-	}
-
-	internal int ClusterEnvelopeSize {
-		get {
-			CheckInitialized();
-			return _clusterEnvelopeSize;
-		}
-		private set => _clusterEnvelopeSize = value;
 	}
 
 	public bool SuppressEvents {
@@ -570,7 +560,6 @@ public class StreamContainer : SyncLoadableBase, ICriticalObject {
 		// ClusterMap
 		// - stored in a StreamPagedList (single page, statically sized items)
 		// - when a start/end cluster is moved, we must update the descriptor that points to it (the descriptor is stored as the terminal values of a cluster chain)
-		ClusterEnvelopeSize = checked((int)clusterSerializer.StaticSize) - _header.ClusterSize; // the serializer includes the envelope, the header is the data size
 		_clusters = new StreamMappedClusterMap(_rootStream, StreamContainerHeader.ByteLength, clusterSerializer, Endianness, autoLoad: true);
 		_clusters.Changed += ClusterMapChangedHandler;
 

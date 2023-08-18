@@ -124,7 +124,7 @@ public partial class TransactionalCollectionScreen : ApplicationScreen {
 			using (var scope = storage.Add()) {
 				var bytes = rng.NextBytes(65536);
 				while (totalbytes > 0) {
-					var time = Do(() => scope.Stream.WriteBytes(bytes));
+					var time = Do(() => scope.WriteBytes(bytes));
 					_outputWriter.WriteLine($"Appended {bytes.Length} b, Chunk Duration (ms): {time.TotalMilliseconds:#.###}");
 					totalTime += time;
 					totalbytes -= bytes.Length;

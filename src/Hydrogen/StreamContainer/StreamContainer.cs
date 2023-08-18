@@ -21,33 +21,38 @@ namespace Hydrogen;
 /// also serves as the base container for implementations of <see cref="IStreamMappedList{TItem}"/>'s, <see cref="IStreamMappedDictionary{TKey,TValue}"/>'s and <see cref="IStreamMappedHashSet{TItem}"/>'s.
 /// <remarks>
 /// The structure of the underlying stream is depicted below:
-/// [HEADER] Version: 1, Cluster Size: 32, Total ClusterMap: 10, Records: 5
-/// [STREAM DESCRIPTORS]
-///   0: [StreamDescriptor] Size: 60, Start Cluster: 3
-///   1: [StreamDescriptor] Size: 88, Start Cluster: 7
-///   2: [StreamDescriptor] Size: 27, Start Cluster: 2
-///   3: [StreamDescriptor] Size: 43, Start Cluster: 1
-///   4: [StreamDescriptor] Size: 0, Start Cluster: -1
-/// [ClusterMap]
-///   0: [Cluster] Traits: First, Prev: -1, Next: 6, Data: 030000003c0000000700000058000000020000001b000000010000002b000000
-///   1: [Cluster] Traits: First, Prev: 3, Next: 5, Data: 894538851b6655bb8d8a4b4517eaab2b22ada63e6e0000000000000000000000
-///   2: [Cluster] Traits: First, Prev: 2, Next: -1, Data: 1e07b1f66b3a237ed9f438ec26093ca50dd05b798baa7de25f093f0000000000
-///   3: [Cluster] Traits: First, Prev: 0, Next: 9, Data: ce178efbff3e3177069101b78453de5ca2d1a7d72c958485306fb400e0efc1f5
-///   4: [Cluster] Traits: None, Prev: 8, Next: -1, Data: a3058b9856aaf271ab21153c040a05c15042abbf000000000000000000000000
-///   5: [Cluster] Traits: None, Prev: 1, Next: -1, Data: 0000000000000000000000000000000000000000000000000000000000000000
-///   6: [Cluster] Traits: Descriptor, Prev: 0, Next: -1, Data: ffffffff00000000000000000000000000000000000000000000000000000000
-///   7: [Cluster] Traits: First, Data, Prev: 1, Next: 8, Data: 5aa2c04b9554fbe9425c2d52aa135ed8107bf9edbf44848326eb92cc9434b828
-///   8: [Cluster] Traits: Data, Prev: 7, Next: 4, Data: c612bcb3e59fd0d7d88240797e649b5020d5090682c0f3151e3c24a9c12e540d
-///   9: [Cluster] Traits: Data, Prev: 3, Next: -1, Data: 594ebf3d9241c837ffa3dea9ab0e550516ad18ed0f7b9c000000000000000000
-///
+/// [StreamContainerHeader] Version: 1, ClusterSize: 4, TotalClusters: 17, StreamCount: 2, StreamDescriptorsEndCluster: 14, ReservedStreams: 0, Policy: 0, MerkleRoot: 0000000000000000000000000000000000000000000000000000000000000000
+/// [Stream Descriptors]:
+/// 0: [ClusteredStreamDescriptor] Size: 5, StartCluster: 7, EndCluster: 8, Traits: Default, KeyChecksum: 0, Key: 
+/// 1: [ClusteredStreamDescriptor] Size: 5, StartCluster: 15, EndCluster: 16, Traits: Default, KeyChecksum: 0, Key: 
+/// [Cluster Map]:
+/// 0: [Cluster] Traits: Start, Prev: -1, Next: 1, Data: 00070000
+/// 1: [Cluster] Traits: None, Prev: 0, Next: 2, Data: 00000000
+/// 2: [Cluster] Traits: None, Prev: 1, Next: 3, Data: 00080000
+/// 3: [Cluster] Traits: None, Prev: 2, Next: 4, Data: 00000000
+/// 4: [Cluster] Traits: None, Prev: 3, Next: 5, Data: 00050000
+/// 5: [Cluster] Traits: None, Prev: 4, Next: 6, Data: 00000000
+/// 6: [Cluster] Traits: None, Prev: 5, Next: 9, Data: 00000f00
+/// 7: [Cluster] Traits: Start, Prev: 0, Next: 8, Data: 00010203
+/// 8: [Cluster] Traits: End, Prev: 7, Next: 0, Data: 04000000
+/// 9: [Cluster] Traits: None, Prev: 6, Next: 10, Data: 00000000
+/// 10: [Cluster] Traits: None, Prev: 9, Next: 11, Data: 00001000
+/// 11: [Cluster] Traits: None, Prev: 10, Next: 12, Data: 00000000
+/// 12: [Cluster] Traits: None, Prev: 11, Next: 13, Data: 00000500
+/// 13: [Cluster] Traits: None, Prev: 12, Next: 14, Data: 00000000
+/// 14: [Cluster] Traits: End, Prev: 13, Next: -1, Data: 00000000
+/// 15: [Cluster] Traits: Start, Prev: 1, Next: 16, Data: 05060708
+/// 16: [Cluster] Traits: End, Prev: 15, Next: 1, Data: 09000000
+///  
 ///  Notes:
-///  - Header is fixed 256b, and can be expanded to include other data (passwords, merkle roots, etc).
-///  - ClusterMap are bi-directionally linked, to allow dynamic re-sizing on the fly. 
-///  - Records contain the meta-data of all the streams and the entire records stream is also serialized over clusters.
-///  - Cluster traits distinguish descriptor clusters from stream clusters. 
-///  - Cluster 0, when allocated, is always the first descriptor cluster.
-///  - Records always link to the (First | Data) cluster of their stream.
-///  - ClusterMap with traits (First | Data) re-purpose the Prev field to denote the descriptor.
+///  - Header is fixed 256b and has fields for merkle-root and a key for encryption.
+///  - Cluster chains start with a cluster marked Start and end with a cluster marked End.
+///  - Cluster chains are bi-directionally linked, for forward/backward seeking.
+///  - A Start cluster's "previous" link is called a "Terminal" value and is used used to denote the index of the stream.
+///  - An End cluster's "end" pointer is also a Terminal.
+///  - All streams are stored in a single cluster chain.
+///  - Stream Descriptors are metadata describing a Stream, where they start/end and other info.
+///  - Stream Descriptors are are stored in a cluster chain starting at cluster 0 having Terminal -1.
 /// </remarks>
 public class StreamContainer : SyncLoadableBase, ICriticalObject {
 	public event EventHandlerEx<ClusteredStreamDescriptor> StreamCreated;

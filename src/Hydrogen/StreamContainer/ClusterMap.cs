@@ -46,7 +46,6 @@ public class ClusterMap {
 		@event.ChainNewStartCluster = startClusterIndex;
 		@event.ChainNewEndCluster = startClusterIndex;
 		@event.AddedClusters.Add(startClusterIndex);
-		@event.AllChanges.Add((ClusterMapChangedEventArgs.MutationType.Added, startClusterIndex));
 
 		// Make start cluster FIRST and LAST
 		startCluster.Traits = ClusterTraits.Start | ClusterTraits.End;
@@ -101,7 +100,6 @@ public class ClusterMap {
 			var newClusterIX = _clusters.Count;
 			@event.ClusterCountDelta++;
 			@event.AddedClusters.Add(newClusterIX);
-			@event.AllChanges.Add((ClusterMapChangedEventArgs.MutationType.Added, newClusterIX));
 
 			// make new cluster connect to previous
 			newCluster.Prev = previous;
@@ -250,7 +248,6 @@ public class ClusterMap {
 		// If migrating to self, do nothing
 		if (to == tipClusterIndex) {
 			pendingEvent.RemovedClusters.Add(tipClusterIndex);
-			pendingEvent.AllChanges.Add((ClusterMapChangedEventArgs.MutationType.Removed, tipClusterIndex));  // actual remove done by caller
 			return;
 		}
 
@@ -279,8 +276,6 @@ public class ClusterMap {
 		pendingEvent.ModifiedClusters.Add(to);
 		pendingEvent.InformMovedCluster(tipClusterIndex, to);
 		pendingEvent.RemovedClusters.Add(tipClusterIndex);
-		pendingEvent.AllChanges.Add((ClusterMapChangedEventArgs.MutationType.Modified, to));
-		pendingEvent.AllChanges.Add((ClusterMapChangedEventArgs.MutationType.Removed, tipClusterIndex));  // actual remove done by caller
 	}
 
 	protected Cluster CreateCluster() {
@@ -311,7 +306,6 @@ public class ClusterMap {
 	protected void WriteClusterTraits(long cluster, ClusterTraits traits, ClusterMapChangedEventArgs pendingEvent) {
 		WriteClusterTraitsInternal(cluster, traits);
 		pendingEvent.ModifiedClusters.Add(cluster);
-		pendingEvent.AllChanges.Add((ClusterMapChangedEventArgs.MutationType.Modified, cluster));
 	}
 
 	protected virtual void WriteClusterTraitsInternal(long cluster, ClusterTraits traits) {
@@ -333,7 +327,6 @@ public class ClusterMap {
 	protected virtual void MaskClusterTraits(long cluster, ClusterTraits traits, bool on, ClusterMapChangedEventArgs pendingEvent) {
 		MaskClusterTraitsInternal(cluster, traits, on);
 		pendingEvent.ModifiedClusters.Add(cluster);
-		pendingEvent.AllChanges.Add((ClusterMapChangedEventArgs.MutationType.Modified, cluster));
 	}
 
 	protected virtual void MaskClusterTraitsInternal(long cluster, ClusterTraits traits, bool on) {
@@ -361,7 +354,6 @@ public class ClusterMap {
 	protected virtual void WriteClusterPrev(long cluster, long prev, ClusterMapChangedEventArgs pendingEvent) {
 		WriteClusterPrevInternal(cluster, prev);
 		pendingEvent.ModifiedClusters.Add(cluster);
-		pendingEvent.AllChanges.Add((ClusterMapChangedEventArgs.MutationType.Modified, cluster));
 	}
 
 	protected virtual void WriteClusterPrevInternal(long cluster, long prev) {
@@ -389,7 +381,6 @@ public class ClusterMap {
 	public virtual void WriteClusterNext(long cluster, long next, ClusterMapChangedEventArgs pendingEvent) {
 		WriteClusterNextInternal(cluster, next);
 		pendingEvent.ModifiedClusters.Add(cluster);
-		pendingEvent.AllChanges.Add((ClusterMapChangedEventArgs.MutationType.Modified, cluster));
 	}
 
 	protected virtual void WriteClusterNextInternal(long cluster, long next) {
@@ -418,7 +409,6 @@ public class ClusterMap {
 	protected virtual void WriteClusterData(long cluster, long offset, ReadOnlySpan<byte> data, ClusterMapChangedEventArgs pendingEvent) {
 		WriteClusterDataInternal(cluster, offset, data);
 		pendingEvent.ModifiedClusters.Add(cluster);
-		pendingEvent.AllChanges.Add((ClusterMapChangedEventArgs.MutationType.Modified, cluster));
 	}
 
 	protected virtual void WriteClusterDataInternal(long cluster, long offset, ReadOnlySpan<byte> data) {

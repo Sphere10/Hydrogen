@@ -17,7 +17,6 @@ public class ClusterMapChangedEventArgs : EventArgs {
 		ChainNewStartCluster = null;
 		ChainOriginalEndCluster = null;
 		ChainNewEndCluster = null;
-		AllChanges = new List<(MutationType mutation, long Cluster)>();
 	}
 
 	public long ClusterCountDelta { get; set; }
@@ -41,8 +40,6 @@ public class ClusterMapChangedEventArgs : EventArgs {
 	public long? ChainOriginalEndCluster { get; set; }
 
 	public long? ChainNewEndCluster { get; set; }
-
-	public IList<(MutationType mutation, long Cluster)> AllChanges { get; set; }
 
 	public bool AddedChain => !ChainOriginalStartCluster.HasValue && ChainNewStartCluster.HasValue;
 	

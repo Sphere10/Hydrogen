@@ -35,6 +35,7 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 	private readonly IItemChecksummer<TKey> _keyChecksum;
 	private readonly LookupEx<int, int> _checksumToIndexLookup;
 	private readonly SortedList<int> _unusedRecords;
+	private readonly bool _preAllocateOptimization;
 	private bool _requiresLoad;
 
 	public StreamMappedDictionary(Stream rootStream, int clusterSize, IItemSerializer<TKey> keySerializer = null, IItemSerializer<TValue> valueSerializer = null, IItemChecksummer<TKey> keyChecksummer = null,
@@ -78,6 +79,7 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 		_checksumToIndexLookup = new LookupEx<int, int>();
 		_unusedRecords = new();
 		_requiresLoad = true; //KVPList.Streams.Records.Count > KVPList.Streams.Header.ReservedStreams;
+		_preAllocateOptimization = Streams.Policy.HasFlag(StreamContainerPolicy.FastAllocate);
 		if (autoLoad)
 			Load();
 	}
@@ -142,7 +144,7 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 
 			using var stream = Streams.OpenRead(KVPList.Streams.Header.ReservedStreams + index);
 			var reader = new EndianBinaryReader(EndianBitConverter.For(Streams.Endianness), stream);
-			return ((KeyValuePairSerializer<TKey, TValue>)KVPList.ItemSerializer).DeserializeValue(stream.Descriptor.Size, reader);
+			return ((KeyValuePairSerializer<TKey, TValue>)KVPList.ItemSerializer).DeserializeValue(stream.Length, reader);
 		}
 	}
 
@@ -285,13 +287,13 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 		// We don't delete the instance, we mark is as unused. Use Shrink to intelligently remove unused records.
 		using (Streams.EnterAccessScope()) {
 			var kvp = KeyValuePair.Create(default(TKey), default(TValue));
-			using var scope = KVPList.EnterUpdateScope(index, kvp);
+			using var stream = KVPList.EnterUpdateScope(index, kvp);
 
 			// Mark record as unused
-			Guard.Ensure(scope.Descriptor.Traits.HasFlag(ClusteredStreamTraits.IsUsed), "Descriptor not in used state");
-			_checksumToIndexLookup.Remove(scope.Descriptor.KeyChecksum, index);
-			scope.Descriptor.KeyChecksum = -1;
-			scope.Descriptor.Traits = scope.Descriptor.Traits.CopyAndSetFlags(ClusteredStreamTraits.IsUsed, false);
+			Guard.Ensure(stream.Traits.HasFlag(ClusteredStreamTraits.Tomb), "Descriptor not in used state");
+			_checksumToIndexLookup.Remove(stream.KeyChecksum, index);
+			stream.KeyChecksum = -1;
+			stream.IsTomb = true;
 			_unusedRecords.Add(index);
 
 			// note: scope Dispose ends up updating the record
@@ -357,31 +359,31 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 
 	private void AddInternal(KeyValuePair<TKey, TValue> item) {
 		int index;
-		ClusteredStream scope;
+		ClusteredStream stream;
 		if (_unusedRecords.Any()) {
 			index = ConsumeUnusedRecord();
-			scope = KVPList.EnterUpdateScope(index, item);
+			stream = KVPList.EnterUpdateScope(index, item);
 		} else {
-			scope = KVPList.EnterAddScope(item);
+			stream = KVPList.EnterAddScope(item);
+			stream.IsTomb = true;
 			index = Count - 1;
 		}
 
 		// Mark record as used
-		using (scope) {
-			Guard.Ensure(!scope.Descriptor.Traits.HasFlag(ClusteredStreamTraits.IsUsed), "Descriptor not in unused state");
-			scope.Descriptor.KeyChecksum = _keyChecksum.CalculateChecksum(item.Key);
-			scope.Descriptor.Traits = scope.Descriptor.Traits.CopyAndSetFlags(ClusteredStreamTraits.IsUsed, true);
-			_checksumToIndexLookup.Add(scope.Descriptor.KeyChecksum, index);
+		using (stream) {
+			Guard.Ensure(stream.IsTomb, $"Stream {index} is not available for use");
+			stream.KeyChecksum = _keyChecksum.CalculateChecksum(item.Key);
+			stream.IsTomb = false;
+			_checksumToIndexLookup.Add(stream.KeyChecksum, index);
 			// note: scope Dispose ends up updating the record
 		}
-
 	}
 
 	private void UpdateInternal(int index, KeyValuePair<TKey, TValue> item) {
 		// Updating value only, records (and checksum) don't change  when updating
-		using var scope = KVPList.EnterUpdateScope(index, item);
-		scope.Descriptor.Traits = scope.Descriptor.Traits.CopyAndSetFlags(ClusteredStreamTraits.IsUsed, true);
-		scope.Descriptor.KeyChecksum = _keyChecksum.CalculateChecksum(item.Key);
+		using var stream = KVPList.EnterUpdateScope(index, item);
+		stream.IsTomb = false;
+		stream.KeyChecksum = _keyChecksum.CalculateChecksum(item.Key);
 	}
 
 	private bool IsUnusedRecord(int index) => _unusedRecords.Contains(index);
@@ -398,7 +400,7 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 		for (var i = 0; i < KVPList.Count; i++) {
 			var reservedRecordsI = Tools.Collection.CheckNotImplemented64bitAddressingLength(KVPList.Streams.Header.ReservedStreams);
 			var record = KVPList.Streams.GetStreamDescriptor(reservedRecordsI + i);
-			if (record.Traits.HasFlag(ClusteredStreamTraits.IsUsed))
+			if (record.Traits.HasFlag(ClusteredStreamTraits.Tomb))
 				_checksumToIndexLookup.Add(record.KeyChecksum, i);
 			else
 				_unusedRecords.Add(i);

@@ -14,21 +14,22 @@ public class ClusteredStream : StreamDecorator {
 
 	private readonly StreamContainer _streamContainer;
 	private readonly ClusteredStreamFragmentProvider _fragmentProvider;
+	private ClusteredStreamDescriptor _descriptor;
 	private readonly Action _finalizeAction;
 
-	internal ClusteredStream(StreamContainer streamContainer, long recordIndex, bool readOnly, Action finalizeAction = null)
-		: base(CreateInternalStream(streamContainer, recordIndex, readOnly, out var streamDescriptor, out var fragmentProvider)) {
+	internal ClusteredStream(StreamContainer streamContainer, long streamIndex, bool readOnly, Action finalizeAction = null)
+		: base(CreateInternalStream(streamContainer, streamIndex, readOnly, out var streamDescriptor, out var fragmentProvider)) {
 		_streamContainer = streamContainer;
 		_finalizeAction = finalizeAction;
-		RecordIndex = recordIndex;
-		Descriptor = streamDescriptor;
+		StreamIndex = streamIndex;
+		_descriptor = streamDescriptor;
 		ReadOnly = readOnly;
 		_fragmentProvider = fragmentProvider;
 
 		// track when stream length changes so we can update the scope's descriptor
 		if (!readOnly) {
 			_fragmentProvider.StreamLengthChanged += (_, length) => {
-				Descriptor.Size = length;
+				_descriptor.Size = length;
 				NotifyStreamLengthChanged(length);
 			};
 		}
@@ -36,32 +37,46 @@ public class ClusteredStream : StreamDecorator {
 
 	public bool ReadOnly { get; }
 
-	public long RecordIndex { get; private set;}
+	public long StreamIndex { get; private set;}
 
-	public ClusteredStreamDescriptor Descriptor; // TODO: MAKE PROPERTY (check won't break when is struct)
+	public ClusteredStreamTraits Traits => _descriptor.Traits;
+
+	public int KeyChecksum { get => _descriptor.KeyChecksum; set => _descriptor.KeyChecksum = value; }
+
+	public byte[] Key { get => _descriptor.Key; set => _descriptor.Key = value; }
+
+	public bool IsNull { 
+		get => _descriptor.Traits.HasFlag(ClusteredStreamTraits.Null); 
+		set => _descriptor.Traits = _descriptor.Traits.CopyAndSetFlags(ClusteredStreamTraits.Null, value);
+	}
+
+	public bool IsTomb { 
+		get => _descriptor.Traits.HasFlag(ClusteredStreamTraits.Tomb); 
+		set => _descriptor.Traits = _descriptor.Traits.CopyAndSetFlags(ClusteredStreamTraits.Tomb, value);
+	}
 
 	public void ProcessClusterMapChanged(ClusterMapChangedEventArgs changedEvent) {
 		
 		// Track any changes to the descriptor's start/end cluster arising from migrating tips
-		if (changedEvent.MovedTerminals.TryGetValue(RecordIndex, out var newTerminal)) {
+		if (changedEvent.MovedTerminals.TryGetValue(StreamIndex, out var newTerminal)) {
 			if (newTerminal.NewStart.HasValue)
-				Descriptor.StartCluster = newTerminal.NewStart.Value;
+				_descriptor.StartCluster = newTerminal.NewStart.Value;
 			
 			if (newTerminal.NewEnd.HasValue)
-				Descriptor.EndCluster = newTerminal.NewEnd.Value;
+				_descriptor.EndCluster = newTerminal.NewEnd.Value;
 		}
 
-		if (changedEvent.ChainTerminal == RecordIndex) {
+		if (changedEvent.ChainTerminal == StreamIndex) {
 			if (changedEvent.AddedChain) {
-				Descriptor.StartCluster = changedEvent.ChainNewStartCluster.Value;
-				Descriptor.EndCluster = changedEvent.ChainNewEndCluster.Value;
+				_descriptor.StartCluster = changedEvent.ChainNewStartCluster.Value;
+				_descriptor.EndCluster = changedEvent.ChainNewEndCluster.Value;
 				// Size is determined by fragment provider event
 			} else if (changedEvent.RemovedChain) {
-				Descriptor.StartCluster = Cluster.Null;
-				Descriptor.EndCluster = Cluster.Null;
-				Descriptor.Size = 0;
+				_descriptor.StartCluster = Cluster.Null;
+				_descriptor.EndCluster = Cluster.Null;
+				_descriptor.Size = 0;
 			} else if (changedEvent.IncreasedChainSize || changedEvent.DecreasedChainSize) {
-				Descriptor.EndCluster = changedEvent.ChainNewEndCluster.Value;
+				_descriptor.EndCluster = changedEvent.ChainNewEndCluster.Value;
 			}
 		}
 	
@@ -70,22 +85,21 @@ public class ClusteredStream : StreamDecorator {
 	}
 
 	public void ProcessStreamSwapped(long stream1, ClusteredStreamDescriptor streamDescriptor1, long stream2, ClusteredStreamDescriptor stream2Descriptor) {
-		if (RecordIndex == stream1) {
-			RecordIndex = stream2;
+		if (StreamIndex == stream1) {
+			StreamIndex = stream2;
 			_fragmentProvider.Terminal = stream2;
 		}
-		else if (RecordIndex == stream2) {
-			RecordIndex = stream1;
+		else if (StreamIndex == stream2) {
+			StreamIndex = stream1;
 			_fragmentProvider.Terminal = stream1;
 		}
 		_fragmentProvider.ProcessStreamSwapped(stream1, streamDescriptor1, stream2, stream2Descriptor);
 	}
-
-	// Close() is called by Dispose
-	public override void Close() {
 	
+	public override void Close() {
+		// Close() is called by Dispose
 		if (!ReadOnly) {
-			_streamContainer.UpdateStreamDescriptor(RecordIndex, Descriptor);
+			_streamContainer.UpdateStreamDescriptor(StreamIndex, _descriptor);
 		}
 		_finalizeAction?.Invoke();
 #if ENABLE_CLUSTER_DIAGNOSTICS

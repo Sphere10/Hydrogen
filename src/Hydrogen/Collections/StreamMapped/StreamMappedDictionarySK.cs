@@ -36,7 +36,8 @@ public class StreamMappedDictionarySK<TKey, TValue> : DictionaryBase<TKey, TValu
 	private readonly IEqualityComparer<TKey> _keyComparer;
 	private readonly IEqualityComparer<TValue> _valueComparer;
 	private readonly LookupEx<int, int> _checksumToIndexLookup;
-	private readonly SortedList<int> _unusedRecords;
+	private readonly SortedList<int> _unusedDescriptors;
+	private readonly bool _preAllocateOptimization;
 	private bool _requiresLoad;
 
 	public StreamMappedDictionarySK(Stream rootStream, int clusterSize, IItemSerializer<TKey> keyStaticSizedSerializer, IItemSerializer<TValue> valueSerializer = null, IItemChecksummer<TKey> keyChecksum = null,
@@ -76,8 +77,9 @@ public class StreamMappedDictionarySK<TKey, TValue> : DictionaryBase<TKey, TValu
 		_valueSerializer = valueSerializer ?? ItemSerializer<TValue>.Default;
 		_keyChecksum = keyChecksummer ?? new ItemDigestor<TKey>(keyStaticSizedSerializer, endianness);
 		_checksumToIndexLookup = new LookupEx<int, int>();
-		_unusedRecords = new();
+		_unusedDescriptors = new();
 		_requiresLoad = true; //_valueStore.Streams.Records.Count > _valueStore.Streams.Header.ReservedStreams;
+		_preAllocateOptimization = Streams.Policy.HasFlag(StreamContainerPolicy.FastAllocate);
 		UnusedKeyBytes = Tools.Array.Gen<byte>(_keySerializer.StaticSize, 0);
 	}
 
@@ -88,10 +90,10 @@ public class StreamMappedDictionarySK<TKey, TValue> : DictionaryBase<TKey, TValu
 			for (var i = 0; i < _valueStore.Count; i++) {
 				if (IsUnusedRecord(i))
 					continue;
-				var record = _valueStore.Streams.GetStreamDescriptor(_valueStore.Streams.Header.ReservedStreams + i);
+				var descriptor = _valueStore.Streams.GetStreamDescriptor(_valueStore.Streams.Header.ReservedStreams + i);
 				yield return new KeyValuePair<TKey, TValue>(
-					_keySerializer.Deserialize(record.Key, Streams.Endianness),
-					!record.Traits.HasFlag(ClusteredStreamTraits.IsNull) ? _valueStore[i] : default
+					_keySerializer.Deserialize(descriptor.Key, Streams.Endianness),
+					!descriptor.Traits.HasFlag(ClusteredStreamTraits.Null) ? _valueStore[i] : default
 				);
 			}
 		}
@@ -106,7 +108,7 @@ public class StreamMappedDictionarySK<TKey, TValue> : DictionaryBase<TKey, TValu
 		get {
 			CheckLoaded();
 			var valueStoreCountI = Tools.Collection.CheckNotImplemented64bitAddressingIndex(_valueStore.Count);
-			var unusedRecordsCountI = Tools.Collection.CheckNotImplemented64bitAddressingIndex(_unusedRecords.Count);
+			var unusedRecordsCountI = Tools.Collection.CheckNotImplemented64bitAddressingIndex(_unusedDescriptors.Count);
 			return valueStoreCountI - unusedRecordsCountI;
 		}
 	}
@@ -203,7 +205,7 @@ public class StreamMappedDictionarySK<TKey, TValue> : DictionaryBase<TKey, TValu
 		using (Streams.EnterAccessScope()) {
 			_valueStore.Clear();
 			_checksumToIndexLookup.Clear();
-			_unusedRecords.Clear();
+			_unusedDescriptors.Clear();
 		}
 	}
 
@@ -277,15 +279,15 @@ public class StreamMappedDictionarySK<TKey, TValue> : DictionaryBase<TKey, TValu
 
 	public void RemoveAt(int index) {
 		// We don't delete the instance, we mark is as unused. Use Shrink to intelligently remove unused records.
-		using var scope = _valueStore.EnterUpdateScope(index, default);
+		using var stream = _valueStore.EnterUpdateScope(index, default);
 
 		// Mark record as unused
-		Guard.Ensure(scope.Descriptor.Traits.HasFlag(ClusteredStreamTraits.IsUsed), "Descriptor not in used state");
-		_checksumToIndexLookup.Remove(scope.Descriptor.KeyChecksum, index);
-		scope.Descriptor.Key = UnusedKeyBytes;
-		scope.Descriptor.KeyChecksum = -1;
-		scope.Descriptor.Traits = scope.Descriptor.Traits.CopyAndSetFlags(ClusteredStreamTraits.IsUsed, false);
-		_unusedRecords.Add(index);
+		Guard.Ensure(!stream.IsTomb, "Descriptor not in used state");
+		_checksumToIndexLookup.Remove(stream.KeyChecksum, index);
+		stream.Key = UnusedKeyBytes;
+		stream.KeyChecksum = -1;
+		stream.IsTomb = true;
+		_unusedDescriptors.Add(index);
 		// note: scope Dispose updates record
 	}
 
@@ -307,21 +309,21 @@ public class StreamMappedDictionarySK<TKey, TValue> : DictionaryBase<TKey, TValu
 		// deletes item right to left
 		// possible optimization: a connected neighbourhood of unused records can be deleted 
 		CheckLoaded();
-		for (var i = _unusedRecords.Count - 1; i >= 0; i--) {
-			var index = _unusedRecords[i];
+		for (var i = _unusedDescriptors.Count - 1; i >= 0; i--) {
+			var index = _unusedDescriptors[i];
 			_valueStore.RemoveAt(index);
-			_unusedRecords.RemoveAt(i);
+			_unusedDescriptors.RemoveAt(i);
 		}
 	}
 
 	public override IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator() {
 		CheckLoaded();
 		for (var i = 0; i < _valueStore.Count; i++) {
-			if (_unusedRecords.Contains(i))
+			if (_unusedDescriptors.Contains(i))
 				continue;
 			KeyValuePair<TKey, TValue> kvp;
-			using (var scope = _valueStore.Streams.EnterLoadItemScope(Streams.Header.ReservedStreams + i, _valueSerializer, out var value))
-				kvp = new KeyValuePair<TKey, TValue>(_keySerializer.Deserialize(scope.Descriptor.Key, Streams.Endianness), value);
+			using (var stream = _valueStore.Streams.EnterLoadItemScope(Streams.Header.ReservedStreams + i, _valueSerializer, out var value, _preAllocateOptimization))
+				kvp = new KeyValuePair<TKey, TValue>(_keySerializer.Deserialize(stream.Key, Streams.Endianness), value);
 			yield return kvp;
 		}
 	}
@@ -329,7 +331,7 @@ public class StreamMappedDictionarySK<TKey, TValue> : DictionaryBase<TKey, TValu
 	protected override IEnumerator<TKey> GetKeysEnumerator() {
 		CheckLoaded();
 		return Enumerable.Range(0, Tools.Collection.CheckNotImplemented64bitAddressingLength(_valueStore.Count))
-			.Where(i => !_unusedRecords.Contains(i))
+			.Where(i => !_unusedDescriptors.Contains(i))
 			.Select(ReadKey)
 			.GetEnumerator();
 	}
@@ -337,7 +339,7 @@ public class StreamMappedDictionarySK<TKey, TValue> : DictionaryBase<TKey, TValu
 	protected override IEnumerator<TValue> GetValuesEnumerator() {
 		CheckLoaded();
 		return Enumerable.Range(0, Tools.Collection.CheckNotImplemented64bitAddressingLength(_valueStore.Count))
-			.Where(i => !_unusedRecords.Contains(i))
+			.Where(i => !_unusedDescriptors.Contains(i))
 			.Select(ReadValue)
 			.GetEnumerator();
 	}
@@ -350,54 +352,53 @@ public class StreamMappedDictionarySK<TKey, TValue> : DictionaryBase<TKey, TValu
 
 	private void AddInternal(TKey key, TValue value) {
 		int index;
-		ClusteredStream scope;
-		if (_unusedRecords.Any()) {
+		ClusteredStream stream;
+		if (_unusedDescriptors.Any()) {
 			index = ConsumeUnusedRecord();
-			scope = _valueStore.EnterUpdateScope(index, value);
+			stream = _valueStore.EnterUpdateScope(index, value);
 		} else {
-			scope = _valueStore.EnterAddScope(value);
+			stream = _valueStore.EnterAddScope(value);
+			stream.IsTomb = true;
 			index = Count - 1;
 		}
 
-		using (scope) {
+		using (stream) {
 			// Mark record as used and set key
-			Guard.Ensure(!scope.Descriptor.Traits.HasFlag(ClusteredStreamTraits.IsUsed), "Descriptor not in unused state");
-			scope.Descriptor.Key = _keySerializer.Serialize(key, Streams.Endianness);
-			scope.Descriptor.KeyChecksum = _keyChecksum.CalculateChecksum(key);
-			scope.Descriptor.Traits = scope.Descriptor.Traits.CopyAndSetFlags(ClusteredStreamTraits.IsUsed, true);
-			_checksumToIndexLookup.Add(scope.Descriptor.KeyChecksum, index);
-			// note: scope Dispose ends up updating the record
+			Guard.Ensure(stream.IsTomb, $"Stream {index} is not available for use");
+			stream.Key = _keySerializer.Serialize(key, Streams.Endianness);
+			stream.KeyChecksum = _keyChecksum.CalculateChecksum(key);
+			stream.IsTomb = false;
+			_checksumToIndexLookup.Add(stream.KeyChecksum, index);
+			// note: stream disposal updates descriptor to stream
 		}
-
 	}
 
 	private void UpdateInternal(int index, TKey key, TValue value) {
-		// Updating value only, records (and checksum) don't change  when updating
-		using var scope = _valueStore.EnterUpdateScope(index, value);
-		scope.Descriptor.Traits = scope.Descriptor.Traits.CopyAndSetFlags(ClusteredStreamTraits.IsUsed, true);
-		scope.Descriptor.Key = _keySerializer.Serialize(key, Streams.Endianness);
-		scope.Descriptor.KeyChecksum = _keyChecksum.CalculateChecksum(key);
+		using var stream = _valueStore.EnterUpdateScope(index, value);
+		stream.IsTomb = false;
+		stream.Key = _keySerializer.Serialize(key, Streams.Endianness);
+		stream.KeyChecksum = _keyChecksum.CalculateChecksum(key);
 		// note: scope Dispose updates record
 	}
 
-	private bool IsUnusedRecord(int index) => _unusedRecords.Contains(index);
+	private bool IsUnusedRecord(int index) => _unusedDescriptors.Contains(index);
 
 	private int ConsumeUnusedRecord() {
-		var index = _unusedRecords[0];
-		_unusedRecords.RemoveAt(0);
+		var index = _unusedDescriptors[0];
+		_unusedDescriptors.RemoveAt(0);
 		return index;
 	}
 
 	private void RefreshChecksumToIndexLookup() {
 		_checksumToIndexLookup.Clear();
-		_unusedRecords.Clear();
+		_unusedDescriptors.Clear();
 		for (var i = 0; i < _valueStore.Count; i++) {
-			var reservedRecordsI = Tools.Collection.CheckNotImplemented64bitAddressingLength(_valueStore.Streams.Header.ReservedStreams);
-			var record = _valueStore.Streams.GetStreamDescriptor(reservedRecordsI + i);
-			if (record.Traits.HasFlag(ClusteredStreamTraits.IsUsed))
-				_checksumToIndexLookup.Add(record.KeyChecksum, i);
+			var reservedStreamsI = Tools.Collection.CheckNotImplemented64bitAddressingLength(_valueStore.Streams.Header.ReservedStreams);
+			var descriptor = _valueStore.Streams.GetStreamDescriptor(reservedStreamsI + i);
+			if (descriptor.Traits.HasFlag(ClusteredStreamTraits.Tomb))
+				_checksumToIndexLookup.Add(descriptor.KeyChecksum, i);
 			else
-				_unusedRecords.Add(i);
+				_unusedDescriptors.Add(i);
 		}
 	}
 

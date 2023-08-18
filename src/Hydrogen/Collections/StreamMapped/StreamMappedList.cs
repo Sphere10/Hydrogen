@@ -12,6 +12,7 @@ using System.IO;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Tools;
 
 namespace Hydrogen;
 
@@ -25,6 +26,7 @@ public class StreamMappedList<TItem> : SingularListBase<TItem>, IStreamMappedLis
 	public event EventHandlerEx<object> Loaded { add => Streams.Loaded += value; remove => Streams.Loaded -= value; }
 
 	private int _version;
+	private readonly bool _preAllocateOptimization;
 
 	public StreamMappedList(Stream rootStream, int clusterSize, IItemSerializer<TItem> itemSerializer = null,
 							IEqualityComparer<TItem> itemComparer = null, StreamContainerPolicy policy = StreamContainerPolicy.Default, long recordKeySize = 0,
@@ -37,6 +39,7 @@ public class StreamMappedList<TItem> : SingularListBase<TItem>, IStreamMappedLis
 		Streams = streams;
 		ItemSerializer = itemSerializer ?? ItemSerializer<TItem>.Default;
 		ItemComparer = itemComparer ?? EqualityComparer<TItem>.Default;
+		_preAllocateOptimization = Streams.Policy.HasFlag(StreamContainerPolicy.FastAllocate);
 		_version = 0;
 	}
 
@@ -56,7 +59,7 @@ public class StreamMappedList<TItem> : SingularListBase<TItem>, IStreamMappedLis
 
 	public override TItem Read(long index) {
 		CheckIndex(index, true);
-		return Streams.LoadItem(Streams.Header.ReservedStreams + index, ItemSerializer); // Index checking deferred to Streams
+		return Streams.LoadItem(Streams.Header.ReservedStreams + index, ItemSerializer, _preAllocateOptimization); // Index checking deferred to Streams
 	}
 
 	public override long IndexOfL(TItem item) {
@@ -78,7 +81,7 @@ public class StreamMappedList<TItem> : SingularListBase<TItem>, IStreamMappedLis
 	public ClusteredStream EnterAddScope(TItem item) {
 		// Index checking deferred to Streams
 		UpdateVersion();
-		return Streams.EnterSaveItemScope(Streams.Count, item, ItemSerializer, ListOperationType.Add);
+		return Streams.EnterSaveItemScope(Streams.Count, item, ItemSerializer, ListOperationType.Add, _preAllocateOptimization);
 	}
 
 	public override void Insert(long index, TItem item) {
@@ -89,7 +92,7 @@ public class StreamMappedList<TItem> : SingularListBase<TItem>, IStreamMappedLis
 	public ClusteredStream EnterInsertScope(long index, TItem item) {
 		// Index checking deferred to Streams
 		UpdateVersion();
-		return Streams.EnterSaveItemScope(index + Streams.Header.ReservedStreams, item, ItemSerializer, ListOperationType.Insert);
+		return Streams.EnterSaveItemScope(index + Streams.Header.ReservedStreams, item, ItemSerializer, ListOperationType.Insert, _preAllocateOptimization);
 	}
 
 	public override void Update(long index, TItem item) {
@@ -100,7 +103,7 @@ public class StreamMappedList<TItem> : SingularListBase<TItem>, IStreamMappedLis
 	public ClusteredStream EnterUpdateScope(long index, TItem item) {
 		// Index checking deferred to Streams
 		UpdateVersion();
-		return Streams.EnterSaveItemScope(index + Streams.Header.ReservedStreams, item, ItemSerializer, ListOperationType.Update);
+		return Streams.EnterSaveItemScope(index + Streams.Header.ReservedStreams, item, ItemSerializer, ListOperationType.Update, _preAllocateOptimization);
 	}
 
 	public override bool Remove(TItem item) {

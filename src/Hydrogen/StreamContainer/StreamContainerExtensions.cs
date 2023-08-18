@@ -15,7 +15,7 @@ internal static class StreamContainerExtensions {
 
 	public static bool IsNull(this StreamContainer streams, long index) {
 		using var _ = streams.EnterAccessScope();
-		return streams.GetStreamDescriptor(index).Traits.HasFlag(ClusteredStreamTraits.IsNull);
+		return streams.GetStreamDescriptor(index).Traits.HasFlag(ClusteredStreamTraits.Null);
 	}
 
 	public static byte[] ReadAll(this StreamContainer streams, long index) {
@@ -53,14 +53,65 @@ internal static class StreamContainerExtensions {
 		}
 	}
 
-	public static void SaveItem<TItem>(this StreamContainer streams, long index, TItem item, IItemSerializer<TItem> serializer, ListOperationType operationType) {
-		using var _ = streams.EnterAccessScope();
-		using var scope = streams.EnterSaveItemScope(index, item, serializer, operationType);
+	public static ClusteredStream EnterSaveItemScope<TItem>(this StreamContainer streams, long index, TItem item, IItemSerializer<TItem> serializer, ListOperationType operationType, bool preAllocateSpaceOptimization) {
+		// initialized and reentrancy checks done by one of below called methods
+		var stream = operationType switch {
+			ListOperationType.Add => streams.Add(),
+			ListOperationType.Update => streams.OpenWrite(index),
+			ListOperationType.Insert => streams.Insert(index),
+			_ => throw new ArgumentException($@"List operation type '{operationType}' not supported", nameof(operationType)),
+		};
+		try {
+			using var writer = new EndianBinaryWriter(EndianBitConverter.For(streams.Endianness), stream);
+			if (item != null) {
+				stream.IsNull = false;
+				if (preAllocateSpaceOptimization) {
+					// pre-setting the stream length before serialization improves performance since it avoids
+					// re-allocating fragmented stream on individual properties of the serialized item
+					var expectedSize = serializer.CalculateSize(item);
+					stream.SetLength(expectedSize);
+					serializer.Serialize(item, writer);
+				} else {
+					var byteLength = serializer.Serialize(item, writer);
+					stream.SetLength(byteLength);
+				}
+
+			} else {
+				stream.IsNull = true;
+				stream.SetLength(0); // open descriptor will save when closed
+			}
+			return stream;
+		} catch {
+			// need to dispose explicitly if not returned
+			stream.Dispose();
+			throw;
+		}
 	}
 
-	public static TItem LoadItem<TItem>(this StreamContainer streams, long index, IItemSerializer<TItem> serializer) {
+	public static ClusteredStream EnterLoadItemScope<TItem>(this StreamContainer streams, long index, IItemSerializer<TItem> serializer, out TItem item, bool preAllocateSpaceOptimization) {
+		// initialized and reentrancy checks done by Open
+		var stream = streams.OpenWrite(index);
+		try {
+			if (!stream.IsNull) {
+				using var reader = new EndianBinaryReader(EndianBitConverter.For(streams.Endianness), stream);
+				item = serializer.Deserialize(stream.Length, reader);
+			} else item = default;
+			return stream;
+		} catch {
+			// need to dispose explicitly if not returned
+			stream.Dispose();
+			throw;
+		}
+	}
+
+	public static void SaveItem<TItem>(this StreamContainer streams, long index, TItem item, IItemSerializer<TItem> serializer, ListOperationType operationType, bool preAllocateSpaceOptimization) {
 		using var _ = streams.EnterAccessScope();
-		using var scope = streams.EnterLoadItemScope(index, serializer, out var item);
+		using var scope = streams.EnterSaveItemScope(index, item, serializer, operationType, preAllocateSpaceOptimization);
+	}
+
+	public static TItem LoadItem<TItem>(this StreamContainer streams, long index, IItemSerializer<TItem> serializer, bool preAllocateSpaceOptimization) {
+		using var _ = streams.EnterAccessScope();
+		using var scope = streams.EnterLoadItemScope(index, serializer, out var item, preAllocateSpaceOptimization);
 		return item;
 	}
 }

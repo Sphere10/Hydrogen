@@ -20,14 +20,15 @@ public enum ClusteredStreamTraits : byte {
 	/// <summary>
 	/// Stream should be interpreted as null (not empty)
 	/// </summary>
-	IsNull = 1 << 0,
+	Null = 1 << 0,
 
 	/// <summary>
-	/// In Dictionary usage, this bit indicates whether Stream is a part of the Dictionary. When 0, it is available to be used as a slot for the dictionary item.
+	/// Represents a stream which is deleted but whose index can be resurrected for a value.
 	/// </summary>
-	/// TODO: rename to IsTombstone and invert usage
-	IsUsed = 1 << 1,
+	Tomb = 1 << 1,
 
-
+	/// <summary>
+	/// Default tran for a clustered stream
+	/// </summary>
 	Default = None,
 }

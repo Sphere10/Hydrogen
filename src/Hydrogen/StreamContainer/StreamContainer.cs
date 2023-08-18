@@ -76,7 +76,6 @@ public class StreamContainer : SyncLoadableBase, ICriticalObject {
 	private readonly long _streamDescriptorKeySize;
 	private readonly long _reservedStreams;
 	private readonly bool _integrityChecks;
-	private readonly bool _preAllocateOptimization;
 	private bool _suppressEvents;
 
 	public StreamContainer(Stream rootStream, int clusterSize = HydrogenDefaults.ClusterSize, StreamContainerPolicy policy = StreamContainerPolicy.Default, long streamDescriptorKeySize = 0, long reservedStreams = 0, Endianness endianness = Endianness.LittleEndian, bool autoLoad = false) {
@@ -100,7 +99,6 @@ public class StreamContainer : SyncLoadableBase, ICriticalObject {
 		_streamDescriptorKeySize = streamDescriptorKeySize;
 		_reservedStreams = reservedStreams;
 		_integrityChecks = Policy.HasFlag(StreamContainerPolicy.IntegrityChecks);
-		_preAllocateOptimization = Policy.HasFlag(StreamContainerPolicy.FastAllocate);
 		_suppressEvents = false;
 
 		if (autoLoad)
@@ -195,57 +193,6 @@ public class StreamContainer : SyncLoadableBase, ICriticalObject {
 		return
 			_rootStream
 			.EnterAccessScope();
-	}
-
-	public ClusteredStream EnterSaveItemScope<TItem>(long index, TItem item, IItemSerializer<TItem> serializer, ListOperationType operationType) {
-		// initialized and reentrancy checks done by one of below called methods
-		var stream = operationType switch {
-			ListOperationType.Add => Add(),
-			ListOperationType.Update => OpenWrite(index),
-			ListOperationType.Insert => Insert(index),
-			_ => throw new ArgumentException($@"List operation type '{operationType}' not supported", nameof(operationType)),
-		};
-		try {
-			using var writer = new EndianBinaryWriter(EndianBitConverter.For(Endianness), stream);
-			if (item != null) {
-				stream.Descriptor.Traits = stream.Descriptor.Traits.CopyAndSetFlags(ClusteredStreamTraits.IsNull, false);
-				if (_preAllocateOptimization) {
-					// pre-setting the stream length before serialization improves performance since it avoids
-					// re-allocating fragmented stream on individual properties of the serialized item
-					var expectedSize = serializer.CalculateSize(item);
-					stream.SetLength(expectedSize);
-					serializer.Serialize(item, writer);
-				} else {
-					var byteLength = serializer.Serialize(item, writer);
-					stream.SetLength(byteLength);
-				}
-
-			} else {
-				stream.Descriptor.Traits = stream.Descriptor.Traits.CopyAndSetFlags(ClusteredStreamTraits.IsNull, true);
-				stream.SetLength(0); // open descriptor will save when closed
-			}
-			return stream;
-		} catch {
-			// need to dispose explicitly if not returned
-			stream.Dispose();
-			throw;
-		}
-	}
-
-	public ClusteredStream EnterLoadItemScope<TItem>(long index, IItemSerializer<TItem> serializer, out TItem item) {
-		// initialized and reentrancy checks done by Open
-		var stream = OpenWrite(index);
-		try {
-			if (!stream.Descriptor.Traits.HasFlag(ClusteredStreamTraits.IsNull)) {
-				using var reader = new EndianBinaryReader(EndianBitConverter.For(Endianness), stream);
-				item = serializer.Deserialize(stream.Descriptor.Size, reader);
-			} else item = default;
-			return stream;
-		} catch {
-			// need to dispose explicitly if not returned
-			stream.Dispose();
-			throw;
-		}
 	}
 
 	public ClusteredStream Add() {

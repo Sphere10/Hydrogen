@@ -20,6 +20,7 @@ namespace Hydrogen;
 /// Fast, thread-safe static hash methods.
 /// </summary>
 public static class Hashers {
+	// TODO: refactor out the hasher stack and borrowing. It's not really needed and just complicates and slows things.
 	private static readonly Func<IHashFunction>[] Constructors;
 	private static readonly ConcurrentStack<IHashFunction>[] HasherStack;
 	private static readonly int[] DigestByteSizes;
@@ -74,6 +75,9 @@ public static class Hashers {
 			hashers.Push(hasher);
 		}
 	}
+
+	public static byte[] ZeroHash(CHF algorithm) => new byte[DigestByteSizes[(int)algorithm]];  // must be new instance since arrays are mutable and can lead to attack vectors
+
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static byte[] JoinHash(CHF algorithm, ReadOnlySpan<byte> left, ReadOnlySpan<byte> right) {

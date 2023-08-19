@@ -398,7 +398,7 @@ public class StreamMappedDictionarySK<TKey, TValue> : DictionaryBase<TKey, TValu
 		for (var i = 0; i < _valueStore.Count; i++) {
 			var reservedStreamsI = Tools.Collection.CheckNotImplemented64bitAddressingLength(_valueStore.Streams.Header.ReservedStreams);
 			var descriptor = _valueStore.Streams.GetStreamDescriptor(reservedStreamsI + i);
-			if (descriptor.Traits.HasFlag(ClusteredStreamTraits.Tomb))
+			if (!descriptor.Traits.HasFlag(ClusteredStreamTraits.Tomb))
 				_checksumToIndexLookup.Add(descriptor.KeyChecksum, i);
 			else
 				_unusedDescriptors.Add(i);

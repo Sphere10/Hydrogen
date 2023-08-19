@@ -169,6 +169,7 @@ public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollecti
 			       policy: StreamContainerPolicy.Default | StreamContainerPolicy.TrackChecksums)) {
 			dictionary.Load();
 			dictionary.Add(1, 11);
+			Assert.That(dictionary.Count, Is.EqualTo(1));
 			dictionary.Commit();
 		}
 

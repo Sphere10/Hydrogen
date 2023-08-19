@@ -325,7 +325,7 @@ public class StreamMappedDictionarySK<TKey, TValue> : DictionaryBase<TKey, TValu
 			if (_unusedDescriptors.Contains(i))
 				continue;
 			KeyValuePair<TKey, TValue> kvp;
-			using (var stream = _valueStore.Streams.EnterLoadItemScope(Streams.Header.ReservedStreams + i, _valueSerializer, out var value, _preAllocateOptimization))
+			using (var stream = _valueStore.Streams.LoadItemAndReturnStream(Streams.Header.ReservedStreams + i, _valueSerializer, out var value, _preAllocateOptimization))
 				kvp = new KeyValuePair<TKey, TValue>(_keySerializer.Deserialize(stream.Key, Streams.Endianness), value);
 			yield return kvp;
 		}

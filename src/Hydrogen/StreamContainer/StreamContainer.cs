@@ -469,7 +469,6 @@ public class StreamContainer : SyncLoadableBase, ICriticalObject {
 
 	}
 
-
 	#endregion
 
 	#region Initialization & Loading

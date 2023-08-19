@@ -81,7 +81,7 @@ public class StreamMappedList<TItem> : SingularListBase<TItem>, IStreamMappedLis
 	public ClusteredStream EnterAddScope(TItem item) {
 		// Index checking deferred to Streams
 		UpdateVersion();
-		return Streams.EnterSaveItemScope(Streams.Count, item, ItemSerializer, ListOperationType.Add, _preAllocateOptimization);
+		return Streams.SaveItemAndReturnStream(Streams.Count, item, ItemSerializer, ListOperationType.Add, _preAllocateOptimization);
 	}
 
 	public override void Insert(long index, TItem item) {
@@ -92,7 +92,7 @@ public class StreamMappedList<TItem> : SingularListBase<TItem>, IStreamMappedLis
 	public ClusteredStream EnterInsertScope(long index, TItem item) {
 		// Index checking deferred to Streams
 		UpdateVersion();
-		return Streams.EnterSaveItemScope(index + Streams.Header.ReservedStreams, item, ItemSerializer, ListOperationType.Insert, _preAllocateOptimization);
+		return Streams.SaveItemAndReturnStream(index + Streams.Header.ReservedStreams, item, ItemSerializer, ListOperationType.Insert, _preAllocateOptimization);
 	}
 
 	public override void Update(long index, TItem item) {
@@ -103,7 +103,7 @@ public class StreamMappedList<TItem> : SingularListBase<TItem>, IStreamMappedLis
 	public ClusteredStream EnterUpdateScope(long index, TItem item) {
 		// Index checking deferred to Streams
 		UpdateVersion();
-		return Streams.EnterSaveItemScope(index + Streams.Header.ReservedStreams, item, ItemSerializer, ListOperationType.Update, _preAllocateOptimization);
+		return Streams.SaveItemAndReturnStream(index + Streams.Header.ReservedStreams, item, ItemSerializer, ListOperationType.Update, _preAllocateOptimization);
 	}
 
 	public override bool Remove(TItem item) {

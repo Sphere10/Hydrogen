@@ -53,7 +53,18 @@ internal static class StreamContainerExtensions {
 		}
 	}
 
-	public static ClusteredStream EnterSaveItemScope<TItem>(this StreamContainer streams, long index, TItem item, IItemSerializer<TItem> serializer, ListOperationType operationType, bool preAllocateSpaceOptimization) {
+	public static void SaveItem<TItem>(this StreamContainer streams, long index, TItem item, IItemSerializer<TItem> serializer, ListOperationType operationType, bool preAllocateSpaceOptimization) {
+		using var _ = streams.EnterAccessScope();
+		using var stream = streams.SaveItemAndReturnStream(index, item, serializer, operationType, preAllocateSpaceOptimization);
+	}
+
+	public static TItem LoadItem<TItem>(this StreamContainer streams, long index, IItemSerializer<TItem> serializer, bool preAllocateSpaceOptimization) {
+		using var _ = streams.EnterAccessScope();
+		using var stream = streams.LoadItemAndReturnStream(index, serializer, out var item, preAllocateSpaceOptimization);
+		return item;
+	}
+
+	internal static ClusteredStream SaveItemAndReturnStream<TItem>(this StreamContainer streams, long index, TItem item, IItemSerializer<TItem> serializer, ListOperationType operationType, bool preAllocateSpaceOptimization) {
 		// initialized and reentrancy checks done by one of below called methods
 		var stream = operationType switch {
 			ListOperationType.Add => streams.Add(),
@@ -88,7 +99,7 @@ internal static class StreamContainerExtensions {
 		}
 	}
 
-	public static ClusteredStream EnterLoadItemScope<TItem>(this StreamContainer streams, long index, IItemSerializer<TItem> serializer, out TItem item, bool preAllocateSpaceOptimization) {
+	internal static ClusteredStream LoadItemAndReturnStream<TItem>(this StreamContainer streams, long index, IItemSerializer<TItem> serializer, out TItem item, bool preAllocateSpaceOptimization) {
 		// initialized and reentrancy checks done by Open
 		var stream = streams.OpenWrite(index);
 		try {
@@ -104,14 +115,4 @@ internal static class StreamContainerExtensions {
 		}
 	}
 
-	public static void SaveItem<TItem>(this StreamContainer streams, long index, TItem item, IItemSerializer<TItem> serializer, ListOperationType operationType, bool preAllocateSpaceOptimization) {
-		using var _ = streams.EnterAccessScope();
-		using var scope = streams.EnterSaveItemScope(index, item, serializer, operationType, preAllocateSpaceOptimization);
-	}
-
-	public static TItem LoadItem<TItem>(this StreamContainer streams, long index, IItemSerializer<TItem> serializer, bool preAllocateSpaceOptimization) {
-		using var _ = streams.EnterAccessScope();
-		using var scope = streams.EnterLoadItemScope(index, serializer, out var item, preAllocateSpaceOptimization);
-		return item;
-	}
 }

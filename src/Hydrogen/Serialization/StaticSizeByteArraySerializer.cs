@@ -14,10 +14,11 @@ public class StaticSizeByteArraySerializer : StaticSizeItemSerializerBase<byte[]
 	}
 
 	public override void SerializeInternal(byte[] item, EndianBinaryWriter writer) {
-		Guard.Ensure(item.Length == StaticSize, "Incorrectly sized");
+		Guard.ArgumentNotNull(item, nameof(item));
+		Guard.Argument(item.Length == StaticSize, nameof(item), "Incorrectly sized");
 		writer.Write(item);
 	}
 
-	public override byte[] Deserialize(EndianBinaryReader reader) 
-		=>  reader.ReadBytes(StaticSize);
+	public override byte[] Deserialize(EndianBinaryReader reader)
+		=> reader.ReadBytes(StaticSize);
 }

@@ -11,7 +11,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Threading;
+
 
 namespace Hydrogen;
 
@@ -62,6 +62,7 @@ public class StreamContainer : SyncLoadableBase, ICriticalObject {
 	public event EventHandlerEx<(long, ClusteredStreamDescriptor), (long, ClusteredStreamDescriptor)> StreamSwapped;
 	public event EventHandlerEx<long, long> StreamLengthChanged;
 	public event EventHandlerEx<long> StreamRemoved;
+	public event EventHandlerEx Cleared;
 
 	private StreamMappedClusterMap _clusters;
 	private ClusteredStreamFragmentProvider _streamDescriptorsFragmentProvider;
@@ -69,6 +70,7 @@ public class StreamContainer : SyncLoadableBase, ICriticalObject {
 	private ICache<long, ClusteredStreamDescriptor> _streamDescriptorCache;
 	private StreamContainerHeader _header;
 	private readonly IDictionary<long, ClusteredStream> _openStreams;
+	private readonly List<Action> _initActions;
 
 	private bool _initialized;
 	private readonly ConcurrentStream _rootStream;
@@ -93,6 +95,7 @@ public class StreamContainer : SyncLoadableBase, ICriticalObject {
 		_streamDescriptorCache = null;
 		_header = null;
 		_openStreams = new Dictionary<long, ClusteredStream>();
+		_initActions = new List<Action>();
 		_initialized = false;
 		_rootStream = rootStream.AsConcurrent();
 		_clusterSize = clusterSize;
@@ -303,7 +306,6 @@ public class StreamContainer : SyncLoadableBase, ICriticalObject {
 			Header.StreamCount = 0;
 			Header.TotalClusters = 0;
 			Header.StreamDescriptorsEndCluster = Cluster.Null;
-			Header.ResetMerkleRoot();
 		} finally {
 			SuppressEvents = false;
 		}
@@ -311,6 +313,7 @@ public class StreamContainer : SyncLoadableBase, ICriticalObject {
 #if ENABLE_CLUSTER_DIAGNOSTICS
 		ClusterDiagnostics.VerifyClusters(this);
 #endif
+		NotifyCleared();
 	}
 
 	public void Optimize() {
@@ -471,6 +474,13 @@ public class StreamContainer : SyncLoadableBase, ICriticalObject {
 
 	#region Initialization & Loading
 
+	public void RegisterInitAction(Action action) {
+		if (_initialized)
+			action();
+		else
+			_initActions.Add(action);
+	}
+
 	protected override void LoadInternal() {
 		if (_rootStream is ILoadable loadableStream)
 			loadableStream.Load();
@@ -566,6 +576,9 @@ public class StreamContainer : SyncLoadableBase, ICriticalObject {
 
 		if (wasEmptyStream)
 			CreateReservedStreams();
+		
+		// Run sub-class initialization actions
+		_initActions.ForEach(x => x());
 	}
 
 	private void ClusterMapChangedHandler(object source, ClusterMapChangedEventArgs changedEvent) {
@@ -668,6 +681,9 @@ public class StreamContainer : SyncLoadableBase, ICriticalObject {
 	protected virtual void OnStreamRemoved(long index) {
 	}
 
+	protected virtual void OnCleared() {
+	}
+
 	private void NotifyStreamCreated(ClusteredStreamDescriptor descriptor) {
 		if (_suppressEvents)
 			return;
@@ -720,6 +736,14 @@ public class StreamContainer : SyncLoadableBase, ICriticalObject {
 
 		OnStreamRemoved(index);
 		StreamRemoved?.Invoke(index);
+	}
+
+	private void NotifyCleared() {
+		if (_suppressEvents)
+			return;
+
+		OnCleared();
+		Cleared?.Invoke();
 	}
 
 	#endregion

@@ -17,8 +17,7 @@ using System.Linq;
 namespace Hydrogen;
 
 /// <summary>
-/// Adapts a <see cref="TList"/> into an <see cref="IMerkleList{TItem}"/>.
-/// A <see cref="MerkleListAdapter{TItem}"/> can also be used stand-alone in-memory as a merkleized list of items.
+/// Merkleizes an <see cref="IExtendedList{T}"/> by hashing it's items and maintaining those hashes in an <see cref="IDynamicMerkleTree"/> .
 /// </summary>
 /// <typeparam name="TItem"></typeparam>
 public class MerkleListAdapter<TItem, TList> : ExtendedListDecorator<TItem, TList>, IMerkleList<TItem>
@@ -38,10 +37,10 @@ public class MerkleListAdapter<TItem, TList> : ExtendedListDecorator<TItem, TLis
 		: this(internalList, new ItemDigestor<TItem>(hashAlgorithm, serializer, endianness), new FlatMerkleTree(hashAlgorithm)) {
 	}
 
-	public MerkleListAdapter(TList internalList, IItemHasher<TItem> hasher, IDynamicMerkleTree merkleTreeImpl)
+	public MerkleListAdapter(TList internalList, IItemHasher<TItem> hasher, IDynamicMerkleTree internalMerkleTree)
 		: base(internalList) {
-		ItemHasher = hasher is not IWithNullValueItemHasher<TItem> ? hasher.WithNullHash(merkleTreeImpl.HashAlgorithm) : hasher;
-		InternalMerkleTree = merkleTreeImpl;
+		ItemHasher = hasher is not IWithNullValueItemHasher<TItem> ? hasher.WithNullHash(internalMerkleTree.HashAlgorithm) : hasher;
+		InternalMerkleTree = internalMerkleTree;
 	}
 
 	public IMerkleTree MerkleTree => InternalMerkleTree;
@@ -137,7 +136,7 @@ public class MerkleListAdapter<TItem> : MerkleListAdapter<TItem, IExtendedList<T
 		: base(internalList, new ItemDigestor<TItem>(hashAlgorithm, serializer), new FlatMerkleTree(hashAlgorithm)) {
 	}
 
-	public MerkleListAdapter(IExtendedList<TItem> internalList, IItemHasher<TItem> hasher, IDynamicMerkleTree merkleTreeImpl)
-		: base(internalList, hasher, merkleTreeImpl) {
+	public MerkleListAdapter(IExtendedList<TItem> internalList, IItemHasher<TItem> hasher, IDynamicMerkleTree merkleTree)
+		: base(internalList, hasher, merkleTree) {
 	}
 }

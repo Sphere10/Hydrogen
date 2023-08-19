@@ -28,8 +28,8 @@ public class StreamMappedMerkleList<TItem, TInner> : MerkleListAdapter<TItem, TI
 	public event EventHandlerEx<object> Loading { add => Streams.Loading += value; remove => Streams.Loading -= value; }
 	public event EventHandlerEx<object> Loaded { add => Streams.Loaded += value; remove => Streams.Loaded -= value; }
 
-	public StreamMappedMerkleList(TInner clusteredList, IItemHasher<TItem> hasher, CHF hashAlgorithm, int merkleTreeStreamIndex)
-		: base(clusteredList, hasher, new StreamContainerMerkleTreeStream(clusteredList.Streams, merkleTreeStreamIndex, hashAlgorithm)) {
+	public StreamMappedMerkleList(TInner streamMappedList, IItemHasher<TItem> hasher, CHF hashAlgorithm, int merkleTreeStreamIndex)
+		: base(streamMappedList, hasher, new StreamContainerMerkleTreeStream(streamMappedList.Streams, merkleTreeStreamIndex, hashAlgorithm)) {
 		Guard.ArgumentNotNull(hasher, nameof(hasher)); 
 		try {
 			var _ = hasher.Hash(default);
@@ -112,9 +112,8 @@ public class StreamMappedMerkleList<TItem> : StreamMappedMerkleList<TItem, IStre
 		Guard.ArgumentGTE(reservedRecords, 1, nameof(reservedRecords), "Must be greater than 1 to allow streams of merkle-tree");
 	}
 
-	public StreamMappedMerkleList(IStreamMappedList<TItem> clusteredList, IItemHasher<TItem> hasher, CHF hashAlgorithm, int merkleTreeStreamIndex)
-		: base(clusteredList, hasher, hashAlgorithm, merkleTreeStreamIndex) {
+	public StreamMappedMerkleList(IStreamMappedList<TItem> streamMappedList, IItemHasher<TItem> hasher, CHF hashAlgorithm, int merkleTreeStreamIndex)
+		: base(streamMappedList, hasher, hashAlgorithm, merkleTreeStreamIndex) {
 	}
-
 	
 }

@@ -36,10 +36,9 @@ public class StreamContainerHeader {
 	internal const int StreamDescriptorRecordsOffset = StreamDescriptorKeySizeOffset + StreamDescriptorKeySizeLength;
 	internal const int ClusterSizeOffset = StreamDescriptorRecordsOffset + ReservedStreamsLength;
 	internal const int TotalClustersOffset = ClusterSizeOffset + ClusterSizeLength;
-	internal const int MerkleRootOffset = TotalClustersOffset + TotalClustersLength;
-	internal const int MasterKeyOffset = MerkleRootOffset + MerkleRootLength;
 
 	private readonly Stream _headerStream;
+	private readonly Stream _extensionPropertiesStream;
 	private readonly EndianBinaryReader _reader;
 	private readonly EndianBinaryWriter _writer;
 
@@ -53,12 +52,10 @@ public class StreamContainerHeader {
 	private readonly StreamMappedProperty<long> _reservedStreamsProperty;
 	private readonly StreamMappedProperty<int> _clusterSizeProperty;
 	private readonly StreamMappedProperty<long> _totalClustersProperty;
-	private readonly StreamMappedProperty<byte[]> _merkleRootProperty;
-	private readonly StreamMappedProperty<byte[]> _masterKeyProperty;
 
 	internal StreamContainerHeader(ConcurrentStream rootStream, Endianness endianness) {
 		Guard.ArgumentNotNull(rootStream, nameof(rootStream));
-		_headerStream = rootStream.AsBounded(0, 255); 
+		_headerStream = rootStream.AsBounded(0, ByteLength - 1, allowInnerResize: true); 
 		_lock = rootStream;
 		_reader = new EndianBinaryReader(EndianBitConverter.For(endianness), _headerStream);
 		_writer = new EndianBinaryWriter(EndianBitConverter.For(endianness), _headerStream);
@@ -70,8 +67,7 @@ public class StreamContainerHeader {
 		_reservedStreamsProperty = new StreamMappedProperty<long>(_headerStream, StreamDescriptorRecordsOffset, ReservedStreamsLength, PrimitiveSerializer<long>.Instance, _reader, _writer, @lock: _lock);
 		_clusterSizeProperty = new StreamMappedProperty<int>(_headerStream, ClusterSizeOffset, ClusterSizeLength, PrimitiveSerializer<int>.Instance, _reader, _writer, @lock: _lock);
 		_totalClustersProperty = new StreamMappedProperty<long>(_headerStream, TotalClustersOffset, TotalClustersLength, PrimitiveSerializer<long>.Instance, _reader, _writer, @lock: _lock);
-		_merkleRootProperty = new StreamMappedProperty<byte[]>(_headerStream, MerkleRootOffset, MerkleRootLength, new StaticSizeByteArraySerializer(MerkleRootLength), _reader, _writer, @lock: _lock);
-		_masterKeyProperty = new StreamMappedProperty<byte[]>(_headerStream, MasterKeyOffset, MasterKeyLength, new StaticSizeByteArraySerializer(MasterKeyLength), _reader, _writer, @lock: _lock);
+		_extensionPropertiesStream = rootStream.AsBounded(TotalClustersOffset + TotalClustersLength, ByteLength - 1, allowInnerResize: false, useRelativeOffset: true);
 	}
 
 	public byte Version { get => _versionProperty.Value; internal set => _versionProperty.Value = value; }
@@ -104,9 +100,12 @@ public class StreamContainerHeader {
 
 	public long TotalClusters { get => _totalClustersProperty.Value; set => _totalClustersProperty.Value = value; }
 
-	public byte[] MerkleRoot { get => _merkleRootProperty.Value; set => _merkleRootProperty.Value = value; }
-
-	public byte[] MasterKey { get => _masterKeyProperty.Value; set => _masterKeyProperty.Value = value; }
+	public StreamMappedProperty<T> CreateExtensionProperty<T>(long offset, int length, IItemSerializer<T> serializer) {
+		Guard.ArgumentInRange(offset, 0, _extensionPropertiesStream.Length - 1, nameof(offset));
+		Guard.ArgumentInRange(length, 1, _extensionPropertiesStream.Length - offset, nameof(length));
+		Guard.ArgumentNotNull(serializer, nameof(serializer));
+		return new StreamMappedProperty<T>(_extensionPropertiesStream, offset, length, serializer, _reader, _writer, @lock: _lock);
+	}
 
 	public void Load() {
 		using var accessScope = _lock.EnterAccessScope();
@@ -129,10 +128,7 @@ public class StreamContainerHeader {
 		ReservedStreams = reservedRecords;
 		ClusterSize = clusterSize;
 		TotalClusters = 0;
-		MerkleRoot = new byte[MerkleRootLength];
-		MasterKey = new byte[MasterKeyLength];
-		_writer.Write(new byte[ByteLength - _headerStream.Position]); // header padding
-		Guard.Ensure(_headerStream.Position == ByteLength);
+		Guard.Ensure(_headerStream.Position == ByteLength - _extensionPropertiesStream.Length);
 		Load();
 	}
 
@@ -147,11 +143,10 @@ public class StreamContainerHeader {
 		Guard.Against(Policy.HasFlag(StreamContainerPolicy.TrackKey) && StreamDescriptorKeySize <= 0, $"Corrupt header property {nameof(StreamDescriptorKeySize)} value was {StreamDescriptorKeySize} but {nameof(Policy)} property value was {StreamDescriptorKeySize}");
 	}
 
-	public void ResetMerkleRoot() => MerkleRoot = new byte[MerkleRootLength];
 
 	public override string ToString() {
 		using var accessScope = _lock.EnterAccessScope();
-		return $"[{nameof(StreamContainerHeader)}] {nameof(Version)}: {Version}, {nameof(ClusterSize)}: {ClusterSize}, {nameof(TotalClusters)}: {TotalClusters}, {nameof(StreamCount)}: {StreamCount}, {nameof(StreamDescriptorsEndCluster)}: {StreamDescriptorsEndCluster}, {nameof(ReservedStreams)}: {ReservedStreams}, {nameof(Policy)}: {Policy}, {nameof(MerkleRoot)}: {MerkleRoot.ToHexString(true)}";
+		return $"[{nameof(StreamContainerHeader)}] {nameof(Version)}: {Version}, {nameof(ClusterSize)}: {ClusterSize}, {nameof(TotalClusters)}: {TotalClusters}, {nameof(StreamCount)}: {StreamCount}, {nameof(StreamDescriptorsEndCluster)}: {StreamDescriptorsEndCluster}, {nameof(ReservedStreams)}: {ReservedStreams}, {nameof(Policy)}: {Policy}, Extension Data: {_extensionPropertiesStream.ToArray()}";
 	}
 
 }

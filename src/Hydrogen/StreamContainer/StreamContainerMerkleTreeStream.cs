@@ -8,31 +8,44 @@
 
 using System;
 using System.Collections.Generic;
+using System.Security.Cryptography;
 
 namespace Hydrogen.Collections;
 
 /// <summary>
-/// Maps a <see cref="IDynamicMerkleTree"/> onto a <see cref="Stream"/> within a <see cref="IClusteredStorage"/>. The tree data 
+/// Maps a <see cref="IDynamicMerkleTree"/> onto a <see cref="Stream"/> for use within a <see cref="IClusteredStorage"/>. The tree data 
 /// is stored as a <see cref="FlatMerkleTree"/> and mapped to reserved <see cref="ClusteredStreamDescriptor"/> within the <see cref="IClusteredStorage"/>.
 /// </summary>
 /// <remarks>This class is intended for building <see cref="IMerkleTree"/>'s of items stored in a <see cref="IClusteredStorage"/>-based containers.</remarks>
 internal sealed class StreamContainerMerkleTreeStream : IDynamicMerkleTree {
 
 	private readonly StreamContainer _streams;
-	private readonly int _flatTreeStreamRecord;
+	private readonly int _streamIndex;
 
-	public StreamContainerMerkleTreeStream(StreamContainer streamContainer, int merkleTreeStreamIndex, CHF hashAlgorithm) {
+	private StreamMappedProperty<byte[]> _merkleRootProperty;
+
+	public StreamContainerMerkleTreeStream(StreamContainer streamContainer, int streamIndex, CHF hashAlgorithm) {
 		_streams = streamContainer;
-		_flatTreeStreamRecord = merkleTreeStreamIndex;
+		_streamIndex = streamIndex;
 		HashAlgorithm = hashAlgorithm;
 		Leafs = new LeafList(this);
+		_merkleRootProperty = null; // set on initialization
+		streamContainer.RegisterInitAction(Initialize);
+	}
+
+	private void Initialize() {
+		var hashSize = Hashers.GetDigestSizeBytes(HashAlgorithm);
+		using (_streams.EnterAccessScope()) {
+			_merkleRootProperty = _streams.Header.CreateExtensionProperty(0, hashSize, new StaticSizeByteArraySerializer(hashSize));
+		}
+		_streams.Cleared += () => Root = Hashers.ZeroHash(HashAlgorithm);
 	}
 
 	public CHF HashAlgorithm { get; }
 
 	public byte[] Root {
-		get => _streams.Count - _streams.Header.ReservedStreams > 0 ? _streams.Header.MerkleRoot : null;
-		set => _streams.Header.MerkleRoot = value ?? Tools.Array.Gen<byte>(Hashers.GetDigestSizeBytes(HashAlgorithm), 0);
+		get => _merkleRootProperty.Value;
+		set => _merkleRootProperty.Value = value;
 	}
 
 	public MerkleSize Size => MerkleSize.FromLeafCount(_streams.Count - _streams.Header.ReservedStreams);
@@ -46,11 +59,11 @@ internal sealed class StreamContainerMerkleTreeStream : IDynamicMerkleTree {
 
 	private IDisposable EnterAccessMerkleTreeScope(out IDynamicMerkleTree merkleTree) {
 		var disposables = new Disposables(false);
-		var stream = _streams.OpenWrite(_flatTreeStreamRecord);
+		var stream = _streams.OpenWrite(_streamIndex);
 		var flatTreeData = new StreamMappedBuffer(stream);
 		var flatMerkleTree = new FlatMerkleTree(HashAlgorithm, flatTreeData, _streams.Count - _streams.Header.ReservedStreams);
 		merkleTree = flatMerkleTree;
-		disposables.Add(() => { Root = flatMerkleTree.Root; }); // When scope finishes, update streams merkle-root in header
+		disposables.Add(() => { Root = flatMerkleTree.Root ?? Hashers.ZeroHash(HashAlgorithm); }); // When scope finishes, update streams merkle-root in header
 		disposables.Add(stream); // when scope finishes, dispose the stream scope
 		return disposables;
 	}

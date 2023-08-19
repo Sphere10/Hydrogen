@@ -163,7 +163,7 @@ public class StreamContainerTests : StreamPersistedCollectionTestsBase {
 		var streamContainer = new StreamContainer(rootStream, 1, autoLoad: true);
 		using var clonedStream = new MemoryStream(rootStream.ToArray());
 		var loadedStreamContainer = new StreamContainer(clonedStream, 1, autoLoad: true);
-		Assert.That(() => ClusterDiagnostics.ToTextDump(loadedStreamContainer), Throws.Nothing);
+		Assert.That(() => ClusterDiagnostics.VerifyClusters(loadedStreamContainer), Throws.Nothing);
 	}
 
 
@@ -206,7 +206,6 @@ public class StreamContainerTests : StreamPersistedCollectionTestsBase {
 		for (var i = 0; i < N; i++) {
 			using (var stream = streamContainer.Add())
 				Assert.That(stream.Length, Is.EqualTo(0));
-			System.Console.WriteLine(ClusterDiagnostics.ToTextDump(streamContainer));
 		}
 		Assert.That(streamContainer.Count, Is.EqualTo(N));
 		StreamContainerTestsHelper.AssertValidStreamDescriptors(streamContainer);

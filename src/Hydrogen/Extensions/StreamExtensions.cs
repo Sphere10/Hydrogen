@@ -58,8 +58,9 @@ public static class StreamExtensions {
 
 	public static byte[] ReadAll(this Stream stream, int blockSize = Tools.Streams.DefaultBufferReadBlockSize) {
 		// TODO: remove this seek resetting (anti-pattern)
-		long originalPosition = stream.Position;
+		long originalPosition = 0L;
 		if (stream.CanSeek) {
+			originalPosition = stream.Position;
 			stream.Seek(0L, SeekOrigin.Begin);
 		}
 		try {

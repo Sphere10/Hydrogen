@@ -84,7 +84,7 @@ public class StreamContainerConcurrentStreamsTests : StreamPersistedCollectionTe
 		var streamContainer = new StreamContainer(rootStream, autoLoad: true);
 		streamContainer.AddBytes(rng.NextBytes(1000));
 		using var _ = streamContainer.OpenRead(0);
-		Assert.That(() => streamContainer.Remove(0), Throws.Exception.InstanceOf<LockRecursionException>());
+		Assert.That(() => streamContainer.Remove(0), Throws.Exception.InstanceOf<InvalidOperationException>());
 	}
 
 	[Test]

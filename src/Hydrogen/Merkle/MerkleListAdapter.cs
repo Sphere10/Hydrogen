@@ -39,7 +39,7 @@ public class MerkleListAdapter<TItem, TList> : ExtendedListDecorator<TItem, TLis
 
 	public MerkleListAdapter(TList internalList, IItemHasher<TItem> hasher, IDynamicMerkleTree internalMerkleTree)
 		: base(internalList) {
-		ItemHasher = hasher is not IWithNullValueItemHasher<TItem> ? hasher.WithNullHash(internalMerkleTree.HashAlgorithm) : hasher;
+		ItemHasher = hasher is not WithNullValueItemHasher<TItem> ? hasher.WithNullHash(internalMerkleTree.HashAlgorithm) : hasher;
 		InternalMerkleTree = internalMerkleTree;
 	}
 

@@ -15,32 +15,24 @@ namespace Hydrogen;
 /// this to store multiple streams of data into a single stream.
 /// </summary>
 /// <remarks>Not thread-safe.</remarks>
-public class ClusterMap {
+public abstract class ClusterMap {
 
 	public event EventHandlerEx<object, ClusterMapChangedEventArgs> Changed;
 
-	private readonly IExtendedList<Cluster> _clusters;
+	public abstract IReadOnlyExtendedList<Cluster> Clusters { get; }
 
-	public ClusterMap(IExtendedList<Cluster> clusters, int clusterSize) {
-		Guard.ArgumentNotNull(clusters, nameof(clusters));
-		Guard.ArgumentGTE(clusterSize, 0, nameof(clusterSize));
-		_clusters = clusters.AsSynchronized();
-		ClusterSize = clusterSize;
-		ZeroClusterBytes = new byte[clusterSize];
-	}
+	public abstract int ClusterSize { get; }
 
-	public IReadOnlyExtendedList<Cluster> Clusters => _clusters;
-
-	public int ClusterSize { get; }
-
-	public byte[] ZeroClusterBytes { get; }
+	public abstract byte[] ZeroClusterBytes { get; }
 
 	public bool SuppressEvents { get; set; }
+
+	internal abstract long ClusterCount { get; }
 
 	public virtual (long, long) NewClusterChain(long quantity, long terminalValue) {
 		Guard.ArgumentGT(quantity, 0, nameof(quantity));
 		var @event = new ClusterMapChangedEventArgs() { ChainTerminal = terminalValue };
-		var startClusterIndex = _clusters.Count;
+		var startClusterIndex = ClusterCount;
 		var startCluster = CreateCluster();
 		@event.ClusterCountDelta++;
 		@event.ChainNewStartCluster = startClusterIndex;
@@ -51,7 +43,8 @@ public class ClusterMap {
 		startCluster.Traits = ClusterTraits.Start | ClusterTraits.End;
 		startCluster.Prev = terminalValue;
 		startCluster.Next = terminalValue;
-		_clusters.Add(startCluster);
+		AddCluster(startCluster);
+		
 		if (quantity > 1) {
 			AppendClustersToEnd(startClusterIndex, quantity - 1, @event);
 			@event.ChainOriginalStartCluster = null; // since we created it in this method (append thinks was pre-existing)
@@ -78,7 +71,7 @@ public class ClusterMap {
 		// (5) B.Next = C, C.Next = D, D.Next = E
 		// (6) E.Traits = Last
 
-		Guard.ArgumentInRange(fromEnd, 0, _clusters.Count - 1, nameof(fromEnd));
+		Guard.ArgumentInRange(fromEnd, 0, ClusterCount - 1, nameof(fromEnd));
 		Guard.ArgumentGTE(quantity, 0, nameof(quantity));
 		Guard.Argument(ReadClusterTraits(fromEnd).HasFlag(ClusterTraits.End), nameof(fromEnd), "Can only append from last cluster in chain");
 
@@ -97,7 +90,7 @@ public class ClusterMap {
 		var previous = fromEnd;
 		for (var i = 0L; i < quantity; i++) {
 			var newCluster = CreateCluster();
-			var newClusterIX = _clusters.Count;
+			var newClusterIX = ClusterCount;
 			@event.ClusterCountDelta++;
 			@event.AddedClusters.Add(newClusterIX);
 
@@ -122,7 +115,7 @@ public class ClusterMap {
 			}
 
 			// finally save cluster to list
-			_clusters.Add(newCluster);
+			AddCluster(newCluster);
 			previous = newClusterIX;
 
 		}
@@ -132,7 +125,7 @@ public class ClusterMap {
 
 	public virtual long RemoveNextClusters(long fromCluster, long quantity = long.MaxValue) {
 		// Walk back cluster chain end and then delete forward	
-		Guard.ArgumentInRange(fromCluster, 0, _clusters.Count - 1, nameof(fromCluster));
+		Guard.ArgumentInRange(fromCluster, 0, ClusterCount - 1, nameof(fromCluster));
 
 		if (quantity == 0)
 			return 0;
@@ -149,11 +142,12 @@ public class ClusterMap {
 		var deferredEvent = new ClusterMapChangedEventArgs();
 		var clustersRemoved = 0L;
 
-		Guard.ArgumentInRange(fromCluster, 0, _clusters.Count - 1, nameof(fromCluster));
+		Guard.ArgumentInRange(fromCluster, 0, ClusterCount - 1, nameof(fromCluster));
 		if (quantity == 0)
 			return 0;
 		var fromTraits = ReadClusterTraits(fromCluster);
 		var fromWasEnd = fromTraits.HasFlag(ClusterTraits.End);
+		var fromWasStart = fromTraits.HasFlag(ClusterTraits.Start);
 		var fromNext = ReadClusterNext(fromCluster);
 
 		// Iterate through and remove clusters by tip-substitution
@@ -169,12 +163,16 @@ public class ClusterMap {
 			removeClusterPrev = ReadClusterPrev(removeCluster);
 
 			// Determine tip cluster
-			var logicalClusterCount = _clusters.Count - clustersRemoved;
+			var logicalClusterCount = ClusterCount - clustersRemoved;
 			var tipCluster = logicalClusterCount - 1;
 			var removeClusterPrevIsTip = removeClusterPrev == tipCluster;
 
 			// Move the tip cluster into the removed cluster's spot
 			MigrateTipClusterTo(tipCluster, removeCluster, deferredEvent);
+
+			// if the fromNext was migrated, we need to track that
+			if (!fromWasEnd && tipCluster == fromNext)
+				fromNext = removeCluster;
 
 			// if the removed cluster's previous was the tip cluster (just moved into the removed clusters spot)
 			// then it follows that the deleted cluster's previous is now where the deleted was cluster was
@@ -230,7 +228,7 @@ public class ClusterMap {
 		}
 
 		// finally remove the old clusters from collection
-		_clusters.RemoveRange(_clusters.Count - clustersRemoved, clustersRemoved);  // Migrate included removals in @event
+		RemoveEndClusters(clustersRemoved);
 
 		NotifyClustersChanged(deferredEvent);
 		return clustersRemoved;
@@ -238,11 +236,11 @@ public class ClusterMap {
 
 	public long CalculateClusterChainLength(long byteLength) => (long)Math.Ceiling(byteLength / (double)ClusterSize);
 
-	public virtual void Clear() => _clusters.Clear();
+	public virtual void Clear() => ClearClusters();
 
 	private void MigrateTipClusterTo(long tipClusterIndex, long to, ClusterMapChangedEventArgs pendingEvent) {
-		Guard.ArgumentInRange(tipClusterIndex, 0, _clusters.Count - 1, nameof(tipClusterIndex));
-		Guard.ArgumentInRange(to, 0, _clusters.Count - 1, nameof(to));
+		Guard.ArgumentInRange(tipClusterIndex, 0, ClusterCount - 1, nameof(tipClusterIndex));
+		Guard.ArgumentInRange(to, 0, ClusterCount - 1, nameof(to));
 		Guard.Argument(to <= tipClusterIndex, nameof(to), $"Cannot be greater than {nameof(tipClusterIndex)}");
 
 		// If migrating to self, do nothing
@@ -252,7 +250,7 @@ public class ClusterMap {
 		}
 
 		// Fetch clusters in question
-		var tipCluster = _clusters[tipClusterIndex];
+		var tipCluster = GetCluster(tipClusterIndex);
 		var tipWasStartCluster = tipCluster.Traits.HasFlag(ClusterTraits.Start);
 		var tipWasEndCluster = tipCluster.Traits.HasFlag(ClusterTraits.End);
 
@@ -272,7 +270,7 @@ public class ClusterMap {
 			WriteClusterPrev(tipCluster.Next, to, pendingEvent); // (2)
 		}
 
-		_clusters.Update(to, tipCluster);
+		UpdateCluster(to, tipCluster);
 		pendingEvent.ModifiedClusters.Add(to);
 		pendingEvent.InformMovedCluster(tipClusterIndex, to);
 		pendingEvent.RemovedClusters.Add(tipClusterIndex);
@@ -288,142 +286,136 @@ public class ClusterMap {
 		return cluster;
 	}
 
+	protected void NotifyClustersChanged(ClusterMapChangedEventArgs @event) {
+		if (SuppressEvents)
+			return;
+		Changed?.Invoke(this, @event);
+	}
+
+
+	#region Cluster Header
+
+	internal abstract void AddCluster(Cluster cluster);
+
+	internal abstract Cluster GetCluster(long index);
+
+	internal abstract void UpdateCluster(long index, Cluster cluster);
+
+	internal abstract void RemoveEndClusters(long quantity);
+
+	internal abstract void ClearClusters();
+
+	#endregion
 
 	#region ReadClusterTraits
 
-	public virtual ClusterTraits ReadClusterTraits(long cluster) => _clusters[cluster].Traits;
+	internal abstract ClusterTraits ReadClusterTraits(long cluster);
 
 	#endregion
 
 	#region WriteClusterTraits
 
-	public void WriteClusterTraits(long cluster, ClusterTraits traits) {
+	internal void WriteClusterTraits(long cluster, ClusterTraits traits) {
 		var @event = new ClusterMapChangedEventArgs();
 		WriteClusterTraits(cluster, traits, @event);
 		NotifyClustersChanged(@event);
 	}
 
-	protected void WriteClusterTraits(long cluster, ClusterTraits traits, ClusterMapChangedEventArgs pendingEvent) {
+	internal void WriteClusterTraits(long cluster, ClusterTraits traits, ClusterMapChangedEventArgs pendingEvent) {
 		WriteClusterTraitsInternal(cluster, traits);
 		pendingEvent.ModifiedClusters.Add(cluster);
 	}
 
-	protected virtual void WriteClusterTraitsInternal(long cluster, ClusterTraits traits) {
-		var clusterRecord = _clusters[cluster];
-		clusterRecord.Traits = traits;
-		_clusters[cluster] = clusterRecord;
-	}
+	internal abstract void WriteClusterTraitsInternal(long cluster, ClusterTraits traits);
 
 	#endregion
 
 	#region MaskClusterTraits
 
-	public void MaskClusterTraits(long cluster, ClusterTraits traits, bool on) {
+	internal void MaskClusterTraits(long cluster, ClusterTraits traits, bool on) {
 		var @event = new ClusterMapChangedEventArgs();
 		MaskClusterTraits(cluster, traits, on, @event);
 		NotifyClustersChanged(@event);
 	}
 
-	protected virtual void MaskClusterTraits(long cluster, ClusterTraits traits, bool on, ClusterMapChangedEventArgs pendingEvent) {
+	internal void MaskClusterTraits(long cluster, ClusterTraits traits, bool on, ClusterMapChangedEventArgs pendingEvent) {
 		MaskClusterTraitsInternal(cluster, traits, on);
 		pendingEvent.ModifiedClusters.Add(cluster);
 	}
 
-	protected virtual void MaskClusterTraitsInternal(long cluster, ClusterTraits traits, bool on) {
-		var clusterRecord = _clusters[cluster];
-		clusterRecord.Traits = clusterRecord.Traits.CopyAndSetFlags(traits, on);
-		_clusters[cluster] = clusterRecord;
-	}
+	internal abstract void MaskClusterTraitsInternal(long cluster, ClusterTraits traits, bool on);
 
 	#endregion
 
 	#region ReadClusterPrev
 
-	public virtual long ReadClusterPrev(long cluster) => _clusters[cluster].Prev;
+	internal abstract long ReadClusterPrev(long cluster);
 
 	#endregion
 
 	#region WriteClusterPrev
 
-	public void WriteClusterPrev(long cluster, long prev) {
+	internal void WriteClusterPrev(long cluster, long prev) {
 		var @event = new ClusterMapChangedEventArgs();
 		WriteClusterPrev(cluster, prev, @event);
 		NotifyClustersChanged(@event);
 	}
 
-	protected virtual void WriteClusterPrev(long cluster, long prev, ClusterMapChangedEventArgs pendingEvent) {
+	internal void WriteClusterPrev(long cluster, long prev, ClusterMapChangedEventArgs pendingEvent) {
 		WriteClusterPrevInternal(cluster, prev);
 		pendingEvent.ModifiedClusters.Add(cluster);
 	}
 
-	protected virtual void WriteClusterPrevInternal(long cluster, long prev) {
-		var clusterRecord = _clusters[cluster];
-		clusterRecord.Prev = prev;
-		_clusters[cluster] = clusterRecord;
-	}
+	internal abstract void WriteClusterPrevInternal(long cluster, long prev);
 
 	#endregion
 
 	#region ReadClusterNext
 
-	public virtual long ReadClusterNext(long cluster) => _clusters[cluster].Next;
+	internal abstract long ReadClusterNext(long cluster);
 
 	#endregion
 
 	#region WriteClusterNext
 
-	public virtual void WriteClusterNext(long cluster, long next) {
+	internal void WriteClusterNext(long cluster, long next) {
 		var @event = new ClusterMapChangedEventArgs();
 		WriteClusterNext(cluster, next, @event);
 		NotifyClustersChanged(@event);
 	}
 
-	public virtual void WriteClusterNext(long cluster, long next, ClusterMapChangedEventArgs pendingEvent) {
+	internal void WriteClusterNext(long cluster, long next, ClusterMapChangedEventArgs pendingEvent) {
 		WriteClusterNextInternal(cluster, next);
 		pendingEvent.ModifiedClusters.Add(cluster);
 	}
 
-	protected virtual void WriteClusterNextInternal(long cluster, long next) {
-		var clusterRecord = _clusters[cluster];
-		clusterRecord.Next = next;
-		_clusters[cluster] = clusterRecord;
-	}
+	internal abstract void WriteClusterNextInternal(long cluster, long next);
+	
 	#endregion
 
 	#region ReadClusterData
 
-	public virtual byte[] ReadClusterData(long cluster, long offset, long size) {
-		return _clusters[cluster].Data.AsSpan(checked((int)offset), checked((int)size)).ToArray();
-	}
+	internal abstract byte[] ReadClusterData(long cluster, long offset, long size);
 
 	#endregion
 
 	#region WriteClusterData
 
-	public virtual void WriteClusterData(long cluster, long offset, ReadOnlySpan<byte> data) {
+	internal void WriteClusterData(long cluster, long offset, ReadOnlySpan<byte> data) {
 		var @event = new ClusterMapChangedEventArgs();
 		WriteClusterData(cluster, offset, data, @event);
 		NotifyClustersChanged(@event);
 	}
 
-	protected virtual void WriteClusterData(long cluster, long offset, ReadOnlySpan<byte> data, ClusterMapChangedEventArgs pendingEvent) {
+	internal void WriteClusterData(long cluster, long offset, ReadOnlySpan<byte> data, ClusterMapChangedEventArgs pendingEvent) {
 		WriteClusterDataInternal(cluster, offset, data);
 		pendingEvent.ModifiedClusters.Add(cluster);
 	}
 
-	protected virtual void WriteClusterDataInternal(long cluster, long offset, ReadOnlySpan<byte> data) {
-		var clusterRecord = _clusters[cluster];
-		clusterRecord.Data = data.ToArray();
-		_clusters[cluster] = clusterRecord;
-	}
+	internal abstract void WriteClusterDataInternal(long cluster, long offset, ReadOnlySpan<byte> data);
 
 	#endregion
 
-	private void NotifyClustersChanged(ClusterMapChangedEventArgs @event) {
-		if (SuppressEvents)
-			return;
-		Changed?.Invoke(this, @event);
-	}
 
 }
 

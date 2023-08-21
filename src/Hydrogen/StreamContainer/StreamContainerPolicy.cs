@@ -19,29 +19,24 @@ public enum StreamContainerPolicy : uint {
 	FastAllocate = 1 << 0,
 
 	/// <summary>
-	/// ClusterMap for records are cached for faster lookup (can cause memory-bloat when container's stream count in very large scenarios)
+	/// Cache cluster next/previous pointers (fast traversal of cluster map)
 	/// </summary>
-	CacheRecordClusters = 1 << 1,
+	CacheClusterHeaders = 1 << 1,
 
 	/// <summary>
-	/// ClusterMap for opened stream data are cached for faster traversal (can cause memory-bloat for stream's with very large cluster count)
+	/// Cache stream descriptors (saves traversing the descriptor stream)
 	/// </summary>
-	CacheOpenClusters = 1 << 2,
-
-	/// <summary>
-	/// Cache records
-	/// </summary>
-	CacheRecords = 1 << 3,
+	CacheDescriptors = 1 << 2,
 
 	/// <summary>
 	/// Performs real-time integrity checks when processing. Disabling this may improve performance slightly.
 	/// </summary>
-	IntegrityChecks = 1 << 4,
+	IntegrityChecks = 1 << 3,
 
 	///// <summary>
 	///// Tracks a UInt32 checksum of streams in the stream record (used by dictionaries).
 	///// </summary>
-	TrackChecksums = 1 << 5,
+	TrackChecksums = 1 << 4,
 
 
 	///// <summary>
@@ -52,7 +47,7 @@ public enum StreamContainerPolicy : uint {
 	///// <summary>
 	///// Builds a merkle-tree from the streams, stores the root in the header (used for blockchain). 
 	///// </summary>
-	//Merkleized = 1 << 6,
+	//Merkleized = 1 << 5,
 
 	///// <summary>
 	///// Encrypts the underlying data
@@ -62,11 +57,11 @@ public enum StreamContainerPolicy : uint {
 	/// <summary>
 	/// Default policy suitable for most use-cases
 	/// </summary>
-	Default = FastAllocate | CacheRecordClusters | CacheOpenClusters | IntegrityChecks,
+	Default = FastAllocate | CacheDescriptors | CacheClusterHeaders,
 
 	DictionaryDefault = Default | TrackChecksums,
 
-	BlobOptimized = FastAllocate | CacheRecordClusters | IntegrityChecks,
+	BlobOptimized = FastAllocate | CacheDescriptors | IntegrityChecks,
 
 	Debug = IntegrityChecks
 

@@ -516,7 +516,7 @@ public class StreamContainer : SyncLoadableBase, ICriticalObject {
 		// ClusterMap
 		// - stored in a StreamPagedList (single page, statically sized items)
 		// - when a start/end cluster is moved, we must update the descriptor that points to it (the descriptor is stored as the terminal values of a cluster chain)
-		_clusters = new StreamMappedClusterMap(_rootStream, StreamContainerHeader.ByteLength, clusterSerializer, Endianness, autoLoad: true);
+		_clusters = new StreamMappedClusterMap(_rootStream, StreamContainerHeader.ByteLength, clusterSerializer, Policy.HasFlag(StreamContainerPolicy.CacheClusterHeaders), Endianness, autoLoad: true);
 		_clusters.Changed += ClusterMapChangedHandler;
 
 		// Records
@@ -559,7 +559,7 @@ public class StreamContainer : SyncLoadableBase, ICriticalObject {
 				NewStreamDescriptor
 			);
 
-		if (Policy.HasFlag(StreamContainerPolicy.CacheRecords)) {
+		if (Policy.HasFlag(StreamContainerPolicy.CacheDescriptors)) {
 			_streamDescriptorCache = new ActionCache<long, ClusteredStreamDescriptor>(
 				FetchStreamDescriptor,
 				sizeEstimator: _ => recordSerializer.StaticSize,

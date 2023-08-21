@@ -177,6 +177,16 @@ public static class Guard {
 #if OMIT_GUARD
 		[Conditional("DEBUG")]
 #endif
+	public static void ArgumentNotNegative(long value, string paramName, string message = null) {
+		if (value < 0)
+			throw new ArgumentOutOfRangeException(paramName, value, message ?? $"Must not be negative (was {value})");
+	}
+
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+#if OMIT_GUARD
+		[Conditional("DEBUG")]
+#endif
 	public static void ArgumentLT(long value, long operand, string paramName, string message = null) {
 		if (value >= operand)
 			throw new ArgumentOutOfRangeException(paramName, value, message ?? $"Must be less than {operand} but was {value}");

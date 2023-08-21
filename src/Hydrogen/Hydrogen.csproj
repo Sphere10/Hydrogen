@@ -20,6 +20,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <Folder Include="Allocator\" />
 	  <Folder Include="ObjectSpace\" />
 	  <Folder Include="Scopes\Transactional\" />
 	</ItemGroup>

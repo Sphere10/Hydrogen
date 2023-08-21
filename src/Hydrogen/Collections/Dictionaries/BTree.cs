@@ -14,16 +14,18 @@ namespace Hydrogen;
 
 //TODO: refactor so nodes are stored in a IExtended list, then pass that list in (TransactionalList)
 public class BTree<K, V> : IDictionary<K, V> where K : IComparable<K> {
-	private readonly int order;
+	private readonly int _order;
 	private BTreeNode _root;
+	private readonly IComparer<K> _keyComparer;
 
-	public BTree(int order) {
+	public BTree(int order, IComparer<K> keyComparer = null) {
 		if (order < 2) {
 			throw new ArgumentOutOfRangeException($"Order {order} would not be a tree.");
 		}
 
-		this.order = order;
-		this._root = null;
+		_order = order;
+		_root = null;
+		_keyComparer = keyComparer;
 	}
 
 	public int Count { get; private set; }
@@ -57,78 +59,88 @@ public class BTree<K, V> : IDictionary<K, V> where K : IComparable<K> {
 	}
 
 	public void Add(KeyValuePair<K, V> item) {
-		this.Add(item.Key, item.Value);
+		Add(item.Key, item.Value);
 	}
 
-	public void Add(K key, V value) {
-		if (this._root == null) {
-			this._root = new BTreeNode(this.order, key, value);
-			this.Count++;
-		} else {
-			BTreeNode parentNode = null;
-			BTreeNode currentNode = this._root;
+	public void Add(K key, V value) => Set(key, value, false);
 
-			while (!currentNode.IsLeaf || !currentNode.HasRoom) {
-				if (!currentNode.HasRoom) {
-					this.PushSidesDown(currentNode);
-					currentNode = this.AttachSingleNodeToParent(currentNode, parentNode);
-				}
+	public void Set(K key, V value, bool overwriteIfExists) {
+		Tools.Debugger.CounterA++;
+		if (Tools.Debugger.CounterA == 3) {
+			var x = 1;
+		}
+		if (_root == null) {
+			_root = new BTreeNode(_order, key, value);
+			Count++;
+			return;
+		}
+		BTreeNode parentNode = null;
+		BTreeNode currentNode = _root;
 
-				BTreeNodeRecord closest = currentNode.ClosestRecord(key);
-
-				if (key.Equals(closest.Item.Key)) {
-					closest.Item = new KeyValuePair<K, V>(key, value);
-					return;
-				} else {
-					parentNode = currentNode;
-
-					if (key.CompareTo(closest.Item.Key) < 0 && closest.Left != null) {
-						currentNode = closest.Left;
-					} else {
-						currentNode = closest.Right;
-					}
-				}
+		while (!currentNode.IsLeaf || !currentNode.HasRoom) {
+			if (!currentNode.HasRoom) {
+				PushSidesDown(currentNode);
+				currentNode = AttachSingleNodeToParent(currentNode, parentNode);
 			}
 
-			if (currentNode.ContainsKey(key)) {
-				currentNode.ClosestRecord(key).Item = new KeyValuePair<K, V>(key, value);
+			BTreeNodeRecord closest = currentNode.ClosestRecord(key);
+
+			if (key.Equals(closest.Item.Key)) {
+				if (!overwriteIfExists)
+					throw new InvalidOperationException($"Key {key} already exists in tree.");
+				closest.Item = new KeyValuePair<K, V>(key, value);
+				return;
+			}
+			parentNode = currentNode;
+
+			if (key.CompareTo(closest.Item.Key) < 0 && closest.Left != null) {
+				currentNode = closest.Left;
 			} else {
-				currentNode.Records.Add(new BTreeNodeRecord(key, value));
-				currentNode.Records.Sort();
-				this.Count++;
+				currentNode = closest.Right;
 			}
+		}
+
+		if (currentNode.ContainsKey(key)) {
+			if (!overwriteIfExists)
+				throw new InvalidOperationException($"Key {key} already exists in tree.");
+			currentNode.ClosestRecord(key).Item = new KeyValuePair<K, V>(key, value);
+
+		} else {
+			currentNode.Records.Add(new BTreeNodeRecord(key, value));
+			currentNode.Records.Sort();
+			Count++;
 		}
 	}
 
 	public bool Remove(KeyValuePair<K, V> item) {
-		return this.Remove(item.Key);
+		return Remove(item.Key);
 	}
 
 	public bool Remove(K key) {
-		if (this._root == null) {
+		if (_root == null) {
 			return false;
 		}
 
-		BTreeNode foundNode = this.FindNode(this._root, key, -1, true);
+		BTreeNode foundNode = FindNode(_root, key, -1, true);
 
 		if (foundNode == null) {
 			return false;
 		}
 
 		if (foundNode.ClosestRecord(key).Item.Key.Equals(key)) {
-			this.FixPathSingles(key);
+			FixPathSingles(key);
 
-			foundNode = this.FindNode(this._root, key, -1, true);
+			foundNode = FindNode(_root, key, -1, true);
 
 			if (foundNode.IsLeaf) {
 				if (foundNode.Records.Count > 1) {
-					this.RemoveLeaf(key);
+					RemoveLeaf(key);
 				} else {
-					this._root = null;
-					this.Count = 0;
+					_root = null;
+					Count = 0;
 				}
 			} else {
-				this.RemoveInternal(key);
+				RemoveInternal(key);
 			}
 
 			return true;
@@ -138,14 +150,14 @@ public class BTree<K, V> : IDictionary<K, V> where K : IComparable<K> {
 	}
 
 	public void Clear() {
-		this._root = null;
-		this.Count = 0;
+		_root = null;
+		Count = 0;
 	}
 
 	public bool TryGetValue(K key, out V value) {
 		value = default(V);
 
-		BTreeNodeRecord found = this.FindRecord(this._root, key, -1, true);
+		BTreeNodeRecord found = FindRecord(_root, key, -1, true);
 
 		if (found != null) {
 			value = found.Item.Value;
@@ -161,13 +173,13 @@ public class BTree<K, V> : IDictionary<K, V> where K : IComparable<K> {
 				return value;
 			throw new KeyNotFoundException();
 		}
-		set => Add(key, value);
+		set => Set(key, value, true);
 	}
 
 	public bool ContainsKey(K key) {
 		V val = default(V);
 
-		bool found = this.TryGetValue(key, out val);
+		bool found = TryGetValue(key, out val);
 
 		if (found) {
 			return true;
@@ -179,7 +191,7 @@ public class BTree<K, V> : IDictionary<K, V> where K : IComparable<K> {
 	public bool Contains(KeyValuePair<K, V> item) {
 		V val = default(V);
 
-		bool found = this.TryGetValue(item.Key, out val);
+		bool found = TryGetValue(item.Key, out val);
 
 		if (found && val.Equals(item.Value)) {
 			return true;
@@ -191,7 +203,7 @@ public class BTree<K, V> : IDictionary<K, V> where K : IComparable<K> {
 	public void CopyTo(KeyValuePair<K, V>[] array, int arrayIndex) {
 		int copySpots = array.Length - arrayIndex;
 
-		if (this.Count > copySpots) {
+		if (Count > copySpots) {
 			throw new IndexOutOfRangeException();
 		}
 
@@ -201,24 +213,24 @@ public class BTree<K, V> : IDictionary<K, V> where K : IComparable<K> {
 	}
 
 	public IEnumerator GetEnumerator() {
-		if (this._root == null) {
+		if (_root == null) {
 			yield break;
 		}
 
 		if (TraversalType == TreeTraversalType.PostOrder) {
-			foreach (KeyValuePair<K, V> thisOne in this.EnumeratePostOrder(this._root)) {
+			foreach (KeyValuePair<K, V> thisOne in EnumeratePostOrder(_root)) {
 				yield return thisOne;
 			}
 		} else if (TraversalType == TreeTraversalType.PreOrder) {
-			foreach (KeyValuePair<K, V> thisOne in this.EnumeratePreOrder(this._root)) {
+			foreach (KeyValuePair<K, V> thisOne in EnumeratePreOrder(_root)) {
 				yield return thisOne;
 			}
 		} else if (TraversalType == TreeTraversalType.LevelOrder) {
-			foreach (KeyValuePair<K, V> thisOne in this.EnumerateLevelOrder()) {
+			foreach (KeyValuePair<K, V> thisOne in EnumerateLevelOrder()) {
 				yield return thisOne;
 			}
 		} else {
-			foreach (KeyValuePair<K, V> thisOne in this.EnumerateInOrder(this._root)) {
+			foreach (KeyValuePair<K, V> thisOne in EnumerateInOrder(_root)) {
 				yield return thisOne;
 			}
 		}
@@ -242,7 +254,7 @@ public class BTree<K, V> : IDictionary<K, V> where K : IComparable<K> {
 
 		//add sides to current's children
 		if (listLeft.Count > 0) {
-			currentNode.Records[0].Left = new BTreeNode(this.order);
+			currentNode.Records[0].Left = new BTreeNode(_order);
 
 			foreach (BTreeNodeRecord rec in listLeft) {
 				currentNode.Records[0].Left.Records.Add(rec);
@@ -250,7 +262,7 @@ public class BTree<K, V> : IDictionary<K, V> where K : IComparable<K> {
 		}
 
 		if (listRight.Count > 0) {
-			currentNode.Records[0].Right = new BTreeNode(this.order);
+			currentNode.Records[0].Right = new BTreeNode(_order);
 
 			foreach (BTreeNodeRecord rec in listRight) {
 				currentNode.Records[0].Right.Records.Add(rec);
@@ -283,23 +295,23 @@ public class BTree<K, V> : IDictionary<K, V> where K : IComparable<K> {
 	}
 
 	private void RemoveLeaf(K key) {
-		BTreeNode foundNode = this.FindNode(this._root, key, -1, true);
+		BTreeNode foundNode = FindNode(_root, key, -1, true);
 		BTreeNodeRecord foundRecord = foundNode.ClosestRecord(key);
 
 		foundNode.Records.Remove(foundRecord);
-		this.Count--;
+		Count--;
 
 	}
 
 	private void RemoveInternal(K key) {
-		BTreeNodeRecord found = this.FindRecord(this._root, key, -1, true);
-		BTreeNodeRecord nextHighest = this.FindRecord(found.Right, key, -1, false);
+		BTreeNodeRecord found = FindRecord(_root, key, -1, true);
+		BTreeNodeRecord nextHighest = FindRecord(found.Right, key, -1, false);
 
 		KeyValuePair<K, V> temp = nextHighest.Item;
 
-		this.Remove(temp.Key);
+		Remove(temp.Key);
 
-		BTreeNodeRecord foundAnew = this.FindRecord(this._root, key, -1, true);
+		BTreeNodeRecord foundAnew = FindRecord(_root, key, -1, true);
 
 		foundAnew.Item = temp;
 	}
@@ -307,10 +319,10 @@ public class BTree<K, V> : IDictionary<K, V> where K : IComparable<K> {
 	private void FixPathSingles(K key) {
 
 		BTreeNode parentNode = null;
-		BTreeNode currentNode = this._root;
+		BTreeNode currentNode = _root;
 
 		while (currentNode != null) {
-			if (currentNode.Records.Count == 1 && !currentNode.Equals(this._root)) {
+			if (currentNode.Records.Count == 1 && !currentNode.Equals(_root)) {
 				currentNode = FixSingle(parentNode, currentNode);
 			}
 
@@ -319,7 +331,7 @@ public class BTree<K, V> : IDictionary<K, V> where K : IComparable<K> {
 			}
 
 			parentNode = currentNode;
-			currentNode = this.FindNode(currentNode, key, 1, false);
+			currentNode = FindNode(currentNode, key, 1, false);
 		}
 	}
 
@@ -346,15 +358,15 @@ public class BTree<K, V> : IDictionary<K, V> where K : IComparable<K> {
 		BTreeNode nodeToReturn = null;
 
 		if (parentRecordLeft != null && parentRecordLeft.Left != null && parentRecordLeft.Left.VulnerableToTheft) {
-			nodeToReturn = this.RotateFromLeft(node, parentRecordLeft);
+			nodeToReturn = RotateFromLeft(node, parentRecordLeft);
 		} else if (parentRecordRight != null && parentRecordRight.Right != null && parentRecordRight.Right.VulnerableToTheft) {
-			nodeToReturn = this.RotateFromRight(node, parentRecordRight);
+			nodeToReturn = RotateFromRight(node, parentRecordRight);
 		} else if (parent.VulnerableToTheft && parentRecordLeft != null) {
-			nodeToReturn = this.FuseParentAndLeft(node, parent, parentRecordLeft, parentRecordRight);
+			nodeToReturn = FuseParentAndLeft(node, parent, parentRecordLeft, parentRecordRight);
 		} else if (parent.VulnerableToTheft && parentRecordRight != null) {
-			nodeToReturn = this.FuseParentAndRight(node, parent, parentRecordLeft, parentRecordRight);
-		} else if (!parent.VulnerableToTheft && parent.Equals(this._root)) {
-			nodeToReturn = this.FuseNewRoot(parent);
+			nodeToReturn = FuseParentAndRight(node, parent, parentRecordLeft, parentRecordRight);
+		} else if (!parent.VulnerableToTheft && parent.Equals(_root)) {
+			nodeToReturn = FuseNewRoot(parent);
 		}
 
 		return nodeToReturn;
@@ -415,7 +427,7 @@ public class BTree<K, V> : IDictionary<K, V> where K : IComparable<K> {
 		parentRecordLeft.Right = null;
 
 		//make node to fuse to
-		var fused = new BTreeNode(this.order);
+		var fused = new BTreeNode(_order);
 		fused.Records.Add(leftSiblingNodeRecord);
 		fused.Records.Add(parentRecordLeft);
 		fused.Records.Add(nodeRecord);
@@ -450,7 +462,7 @@ public class BTree<K, V> : IDictionary<K, V> where K : IComparable<K> {
 		parentRecordRight.Right = null;
 
 		//make node to fuse to
-		BTreeNode fused = new BTreeNode(this.order);
+		BTreeNode fused = new BTreeNode(_order);
 		fused.Records.Add(nodeRecord);
 		fused.Records.Add(parentRecordRight);
 		fused.Records.Add(rightSiblingNodeRecord);
@@ -474,21 +486,21 @@ public class BTree<K, V> : IDictionary<K, V> where K : IComparable<K> {
 	private BTreeNode FuseNewRoot(BTreeNode parentNode) {
 		//_root == parentNode and has 1 key, so fuse self, root, sibling into 1 new root
 
-		BTreeNodeRecord rootRecord = this._root.Records[0];
+		BTreeNodeRecord rootRecord = _root.Records[0];
 		BTreeNodeRecord leftRecord = rootRecord.Left.Records[0];
 		BTreeNodeRecord rightRecord = rootRecord.Right.Records[0];
 
-		this._root.Records.Insert(0, leftRecord);
-		this._root.Records.Add(rightRecord);
+		_root.Records.Insert(0, leftRecord);
+		_root.Records.Add(rightRecord);
 
 		rootRecord.Left = leftRecord.Right;
 		rootRecord.Right = rightRecord.Left;
 
-		return this._root;
+		return _root;
 	}
 
 	private BTreeNode FindNode(BTreeNode start, K key, int depthRestriction, bool exactMatch) {
-		if (this._root == null) {
+		if (_root == null) {
 			return null;
 		}
 
@@ -532,11 +544,11 @@ public class BTree<K, V> : IDictionary<K, V> where K : IComparable<K> {
 	}
 
 	private BTreeNodeRecord FindRecord(BTreeNode start, K key, int depthRestriction, bool exactMatch) {
-		if (this._root == null) {
+		if (_root == null) {
 			return null;
 		}
 
-		BTreeNode containingNode = this.FindNode(start, key, depthRestriction, exactMatch);
+		BTreeNode containingNode = FindNode(start, key, depthRestriction, exactMatch);
 
 		if (exactMatch && containingNode == null) {
 			return null;
@@ -556,24 +568,24 @@ public class BTree<K, V> : IDictionary<K, V> where K : IComparable<K> {
 	}
 
 	IEnumerator<KeyValuePair<K, V>> IEnumerable<KeyValuePair<K, V>>.GetEnumerator() {
-		if (this._root == null) {
+		if (_root == null) {
 			yield break;
 		}
 
 		if (TraversalType == TreeTraversalType.PostOrder) {
-			foreach (KeyValuePair<K, V> thisOne in this.EnumeratePostOrder(this._root)) {
+			foreach (KeyValuePair<K, V> thisOne in EnumeratePostOrder(_root)) {
 				yield return thisOne;
 			}
 		} else if (TraversalType == TreeTraversalType.PreOrder) {
-			foreach (KeyValuePair<K, V> thisOne in this.EnumeratePreOrder(this._root)) {
+			foreach (KeyValuePair<K, V> thisOne in EnumeratePreOrder(_root)) {
 				yield return thisOne;
 			}
 		} else if (TraversalType == TreeTraversalType.LevelOrder) {
-			foreach (KeyValuePair<K, V> thisOne in this.EnumerateLevelOrder()) {
+			foreach (KeyValuePair<K, V> thisOne in EnumerateLevelOrder()) {
 				yield return thisOne;
 			}
 		} else {
-			foreach (KeyValuePair<K, V> thisOne in this.EnumerateInOrder(this._root)) {
+			foreach (KeyValuePair<K, V> thisOne in EnumerateInOrder(_root)) {
 				yield return thisOne;
 			}
 		}
@@ -584,13 +596,13 @@ public class BTree<K, V> : IDictionary<K, V> where K : IComparable<K> {
 			yield return rec.Item;
 
 			if (rec.Left != null) {
-				foreach (KeyValuePair<K, V> iRec in this.EnumeratePreOrder(rec.Left)) {
+				foreach (KeyValuePair<K, V> iRec in EnumeratePreOrder(rec.Left)) {
 					yield return iRec;
 				}
 			}
 
 			if (rec.Right != null) {
-				foreach (KeyValuePair<K, V> iRec in this.EnumeratePreOrder(rec.Right)) {
+				foreach (KeyValuePair<K, V> iRec in EnumeratePreOrder(rec.Right)) {
 					yield return iRec;
 				}
 			}
@@ -600,7 +612,7 @@ public class BTree<K, V> : IDictionary<K, V> where K : IComparable<K> {
 	private IEnumerable<KeyValuePair<K, V>> EnumerateInOrder(BTreeNode current) {
 		foreach (BTreeNodeRecord rec in current.Records) {
 			if (rec.Left != null) {
-				foreach (KeyValuePair<K, V> iRec in this.EnumerateInOrder(rec.Left)) {
+				foreach (KeyValuePair<K, V> iRec in EnumerateInOrder(rec.Left)) {
 					yield return iRec;
 				}
 			}
@@ -608,7 +620,7 @@ public class BTree<K, V> : IDictionary<K, V> where K : IComparable<K> {
 			yield return rec.Item;
 
 			if (rec.Right != null) {
-				foreach (KeyValuePair<K, V> iRec in this.EnumerateInOrder(rec.Right)) {
+				foreach (KeyValuePair<K, V> iRec in EnumerateInOrder(rec.Right)) {
 					yield return iRec;
 				}
 			}
@@ -618,13 +630,13 @@ public class BTree<K, V> : IDictionary<K, V> where K : IComparable<K> {
 	private IEnumerable<KeyValuePair<K, V>> EnumeratePostOrder(BTreeNode current) {
 		foreach (BTreeNodeRecord rec in current.Records) {
 			if (rec.Left != null) {
-				foreach (KeyValuePair<K, V> iRec in this.EnumeratePostOrder(rec.Left)) {
+				foreach (KeyValuePair<K, V> iRec in EnumeratePostOrder(rec.Left)) {
 					yield return iRec;
 				}
 			}
 
 			if (rec.Right != null) {
-				foreach (KeyValuePair<K, V> iRec in this.EnumeratePostOrder(rec.Right)) {
+				foreach (KeyValuePair<K, V> iRec in EnumeratePostOrder(rec.Right)) {
 					yield return iRec;
 				}
 			}
@@ -636,7 +648,7 @@ public class BTree<K, V> : IDictionary<K, V> where K : IComparable<K> {
 	private IEnumerable<KeyValuePair<K, V>> EnumerateLevelOrder() {
 		var tempQueue = new Queue<BTreeNode>();
 
-		tempQueue.Enqueue(this._root);
+		tempQueue.Enqueue(_root);
 
 		while (tempQueue.Count > 0) {
 			BTreeNode current = tempQueue.Dequeue();
@@ -658,7 +670,7 @@ public class BTree<K, V> : IDictionary<K, V> where K : IComparable<K> {
 
 	protected class BTreeNodeRecord : IComparable, IComparable<BTreeNodeRecord> {
 		public BTreeNodeRecord(K key, V value) {
-			this.Item = new KeyValuePair<K, V>(key, value);
+			Item = new KeyValuePair<K, V>(key, value);
 		}
 
 		public BTreeNode Left { get; set; }
@@ -666,38 +678,37 @@ public class BTree<K, V> : IDictionary<K, V> where K : IComparable<K> {
 
 		public KeyValuePair<K, V> Item { get; set; }
 		public int CompareTo(BTreeNodeRecord other) {
-			return this.Item.Key.CompareTo(other.Item.Key);
+			return Item.Key.CompareTo(other.Item.Key);
 		}
 
 		public int CompareTo(object obj) {
-			return this.CompareTo(obj as BTreeNodeRecord);
+			return CompareTo(obj as BTreeNodeRecord);
 		}
 
 		public override string ToString() {
-			return this.Item.Key.ToString();
+			return Item.Key.ToString();
 		}
 	}
-
 
 	protected class BTreeNode {
 		private int _treeOrder;
 
 		public BTreeNode(int treeOrder) {
-			this._treeOrder = treeOrder;
-			this.Records = new List<BTreeNodeRecord>();
+			_treeOrder = treeOrder;
+			Records = new List<BTreeNodeRecord>();
 		}
 
 		public BTreeNode(int treeOrder, K key, V value) {
-			this._treeOrder = treeOrder;
-			this.Records = new List<BTreeNodeRecord>();
-			this.Records.Add(new BTreeNodeRecord(key, value));
+			_treeOrder = treeOrder;
+			Records = new List<BTreeNodeRecord>();
+			Records.Add(new BTreeNodeRecord(key, value));
 		}
 
 		public List<BTreeNodeRecord> Records { get; set; }
 
 		public bool IsLeaf {
 			get {
-				foreach (var thisRecord in this.Records)
+				foreach (var thisRecord in Records)
 					if (thisRecord.Left != null || thisRecord.Right != null)
 						return false;
 				return true;
@@ -716,37 +727,37 @@ public class BTree<K, V> : IDictionary<K, V> where K : IComparable<K> {
 		}
 
 		public BTreeNodeRecord RightOf(BTreeNodeRecord rec) {
-			BTreeNodeRecord recFound = this.ClosestRecord(rec.Item.Key);
+			BTreeNodeRecord recFound = ClosestRecord(rec.Item.Key);
 
 			if (recFound.Item.Key.CompareTo(rec.Item.Key) != 0) {
 				return null;
 			}
 
-			int idxOf = this.Records.IndexOf(rec);
+			int idxOf = Records.IndexOf(rec);
 
-			if (this.IndexIsInRange(idxOf + 1)) {
-				return this.Records[idxOf + 1];
+			if (IndexIsInRange(idxOf + 1)) {
+				return Records[idxOf + 1];
 			} else {
 				return null;
 			}
 		}
 
 		public BTreeNodeRecord ClosestRecord(K key) {
-			int idx = this.Records.BinarySearch(new BTreeNodeRecord(key, default(V)));
+			int idx = Records.BinarySearch(new BTreeNodeRecord(key, default(V)));
 
 			if (idx < 0) {
 				idx = ~idx;
 			}
 
-			if (idx >= this.Records.Count) {
+			if (idx >= Records.Count) {
 				idx--;
 			}
 
-			return this.Records[idx];
+			return Records[idx];
 		}
 
 		public bool IndexIsInRange(int idx) {
-			if (idx >= 0 && idx < this.Records.Count) {
+			if (idx >= 0 && idx < Records.Count) {
 				return true;
 			}
 
@@ -754,14 +765,14 @@ public class BTree<K, V> : IDictionary<K, V> where K : IComparable<K> {
 		}
 
 		public bool ContainsKey(K key) {
-			BTreeNodeRecord recFound = this.ClosestRecord(key);
+			BTreeNodeRecord recFound = ClosestRecord(key);
 
 			return recFound.Item.Key.Equals(key);
 		}
 
 		public override string ToString() {
 			string retval = "";
-			this.Records.ForEach(record => retval += record.ToString() + ", ");
+			Records.ForEach(record => retval += record.ToString() + ", ");
 			return retval.Remove(retval.Length - 1);
 		}
 	}

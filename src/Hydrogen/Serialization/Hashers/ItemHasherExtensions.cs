@@ -21,7 +21,7 @@ public static class ItemHasherExtensions {
 		where TItemHasher : IItemHasher<TItem> {
 		Guard.ArgumentNotNull(hasher, nameof(hasher));
 		Guard.ArgumentNotNull(nullHashValue, nameof(nullHashValue));
-		return new WithNullValueItemHasher<TItem, TItemHasher>(hasher, nullHashValue);
+		return new WithNullValueItemHasher<TItem>(hasher, nullHashValue);
 	}
 
 }

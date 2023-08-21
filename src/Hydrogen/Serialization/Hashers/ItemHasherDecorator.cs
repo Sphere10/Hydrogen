@@ -21,3 +21,8 @@ public class ItemHasherDecorator<TItem, TItemHasher> : IItemHasher<TItem>
 
 	public int DigestLength => InternalHasher.DigestLength;
 }
+
+public class ItemHasherDecorator<TItem> : ItemHasherDecorator<TItem, IItemHasher<TItem>> {
+	public ItemHasherDecorator(IItemHasher<TItem> internalHasher) : base(internalHasher) {
+	}
+}

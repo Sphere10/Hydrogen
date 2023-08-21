@@ -14,7 +14,7 @@ public abstract class FilePageBase<TItem> : MemoryPageBase<TItem>, IFilePage<TIt
 
 	protected FilePageBase(Stream stream, IItemSizer<TItem> sizer, long pageNumber, long pageSize, IExtendedList<TItem> memoryStore)
 		: base(pageSize, sizer, memoryStore) {
-		Stream = new BoundedStream(stream, (long)pageNumber * pageSize, (long)(pageNumber + 1) * pageSize - 1);
+		Stream = new BoundedStream(stream, pageNumber * pageSize, pageSize);
 	}
 
 	internal BoundedStream Stream { get; }
@@ -45,12 +45,12 @@ public abstract class FilePageBase<TItem> : MemoryPageBase<TItem>, IFilePage<TIt
 	}
 
 	protected override Stream OpenReadStream() {
-		Stream.Seek(Stream.MinAbsolutePosition, SeekOrigin.Begin);
+		Stream.Seek(0L, SeekOrigin.Begin);
 		return new NonClosingStream(Stream);
 	}
 
 	protected override Stream OpenWriteStream() {
-		Stream.Seek(Stream.MinAbsolutePosition, SeekOrigin.Begin);
+		Stream.Seek(0L, SeekOrigin.Begin);
 		return new NonClosingStream(Stream);
 	}
 }

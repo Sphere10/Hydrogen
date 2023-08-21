@@ -36,9 +36,9 @@ internal sealed class StreamContainerMerkleTreeStream : IDynamicMerkleTree {
 	private void Initialize() {
 		var hashSize = Hashers.GetDigestSizeBytes(HashAlgorithm);
 		using (_streams.EnterAccessScope()) {
-			_merkleRootProperty = _streams.Header.CreateExtensionProperty(0, hashSize, new StaticSizeByteArraySerializer(hashSize));
+			_merkleRootProperty = _streams.Header.CreateExtensionProperty(0, hashSize, new StaticSizeByteArraySerializer(hashSize).WithNullSubstitution(Hashers.ZeroHash(HashAlgorithm), ByteArrayEqualityComparer.Instance));
 		}
-		_streams.Cleared += () => Root = Hashers.ZeroHash(HashAlgorithm);
+		_streams.Cleared += () => Root = null;
 	}
 
 	public CHF HashAlgorithm { get; }
@@ -63,7 +63,7 @@ internal sealed class StreamContainerMerkleTreeStream : IDynamicMerkleTree {
 		var flatTreeData = new StreamMappedBuffer(stream);
 		var flatMerkleTree = new FlatMerkleTree(HashAlgorithm, flatTreeData, _streams.Count - _streams.Header.ReservedStreams);
 		merkleTree = flatMerkleTree;
-		disposables.Add(() => { Root = flatMerkleTree.Root ?? Hashers.ZeroHash(HashAlgorithm); }); // When scope finishes, update streams merkle-root in header
+		disposables.Add(() => Root = flatMerkleTree.Root); // When scope finishes, update streams merkle-root in header
 		disposables.Add(stream); // when scope finishes, dispose the stream scope
 		return disposables;
 	}

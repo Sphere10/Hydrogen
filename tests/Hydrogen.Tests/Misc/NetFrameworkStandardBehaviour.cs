@@ -20,6 +20,59 @@ namespace Hydrogen.Tests;
 public class NetFrameworkStandardBehaviour {
 
 	[Test]
+	public void MemoryStream_PositionBehaviour() {
+		// used as a basis to test BoundedStream
+		var memoryStream = new MemoryStream();
+		Assert.That(memoryStream.Position, Is.EqualTo(0));
+		Assert.That(memoryStream.Length, Is.EqualTo(0));
+
+		memoryStream.WriteByte(0);
+		Assert.That(memoryStream.Position, Is.EqualTo(1));
+		Assert.That(memoryStream.Length, Is.EqualTo(1));
+
+		memoryStream.WriteByte(0);
+		Assert.That(memoryStream.Position, Is.EqualTo(2));
+		Assert.That(memoryStream.Length, Is.EqualTo(2));
+
+		memoryStream.Seek(0, SeekOrigin.End);
+		Assert.That(memoryStream.Position, Is.EqualTo(2));
+
+		memoryStream = new MemoryStream(memoryStream.ToArray());
+		memoryStream.Seek(0, SeekOrigin.End);
+		Assert.That(memoryStream.Position, Is.EqualTo(2));
+		Assert.That(() => memoryStream.WriteByte(3), Throws.Exception);
+	}
+
+	[Test]
+	public void MemoryStream_SeekBehaviour() {
+		// used as a basis to test BoundedStream
+		var memoryStream = new MemoryStream(new byte[] { });
+
+		// Allowed to set position past positive boundary
+		Assert.That( () => memoryStream.Position = 1, Throws.Nothing);
+		Assert.That(memoryStream.Position, Is.EqualTo(1));
+
+		// Allowed to seek beyond past positive boundary
+		Assert.That( () => memoryStream.Seek(11, SeekOrigin.Begin), Throws.Nothing);
+		Assert.That(memoryStream.Position, Is.EqualTo(11));
+
+		// Allowed to seek beyond past positive boundary
+		Assert.That( () => memoryStream.Seek(11, SeekOrigin.Begin), Throws.Nothing);
+		Assert.That(memoryStream.Position, Is.EqualTo(11));
+
+		// Throws when breaching negative boundary
+		Assert.That( () => memoryStream.Position = -1, Throws.Exception);
+		Assert.That( () => memoryStream.Seek(-1, SeekOrigin.Begin), Throws.Exception);
+		
+		// Special: Allowed to seek beyond past positive boundary
+		memoryStream = new MemoryStream(new byte[] { 1 });
+		Assert.That( () => memoryStream.Seek(-1, SeekOrigin.End), Throws.Nothing);
+		Assert.That(memoryStream.Position, Is.EqualTo(0));
+	}
+
+
+
+	[Test]
 	public void DictionaryAddDoesntUpdate() {
 		var dictionary = new Dictionary<string, object>();
 		dictionary.Add("alpha", 1);

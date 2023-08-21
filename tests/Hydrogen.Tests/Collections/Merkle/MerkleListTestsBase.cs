@@ -19,9 +19,9 @@ public abstract class MerkleListTestsBase {
 	protected abstract IDisposable CreateMerkleList(CHF chf, out IMerkleList<string> merkleList);
 
 	[Test]
-	public void EmptyHasZeroHash([Values(CHF.SHA2_256, CHF.Blake2b_128)] CHF chf) {
+	public void EmptyHasNullHash([Values(CHF.SHA2_256, CHF.Blake2b_128)] CHF chf) {
 		using (CreateMerkleList(chf, out var merkleList)) {
-			Assert.That(merkleList.MerkleTree.Root, Is.EqualTo(Hashers.ZeroHash(chf)));
+			Assert.That(merkleList.MerkleTree.Root, Is.Null);
 		}
 	}
 
@@ -94,7 +94,7 @@ public abstract class MerkleListTestsBase {
 			Assert.That(merkleList.MerkleTree.Root, Is.EqualTo(MerkleTree.ComputeMerkleRoot(new string[] { null, null, null }, chf)));
 
 			merkleList.Clear();
-			Assert.That(merkleList.MerkleTree.Root, Is.EqualTo(Hashers.ZeroHash(chf)));
+			Assert.That(merkleList.MerkleTree.Root, Is.Null);
 		}
 	}
 
@@ -125,9 +125,9 @@ public abstract class MerkleListTestsBase {
 	[Test]
 	public void Insert_Empty([Values(CHF.SHA2_256, CHF.Blake2b_128)] CHF chf) {
 		using (CreateMerkleList(chf, out var merkleList)) {
-			Assert.That(merkleList.MerkleTree.Root, Is.EqualTo(Hashers.ZeroHash(chf)));
+			Assert.That(merkleList.MerkleTree.Root, Is.Null);
 			merkleList.InsertRange(0, Enumerable.Empty<string>());
-			Assert.That(merkleList.MerkleTree.Root, Is.EqualTo(Hashers.ZeroHash(chf)));
+			Assert.That(merkleList.MerkleTree.Root, Is.Null);
 		}
 	}
 

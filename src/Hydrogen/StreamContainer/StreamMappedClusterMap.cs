@@ -17,7 +17,7 @@ public class StreamMappedClusterMap : ClusterMap, ILoadable {
 			new StreamPagedList<Cluster>(
 				clusterSerializer,
 				rootStream
-					.AsBounded(offset, long.MaxValue, useRelativeOffset: true, allowInnerResize: true)
+					.AsBounded(offset, long.MaxValue - offset, useRelativeOffset: true, allowInnerResize: true)
 					.AsNonClosing(),
 				endianness,
 				includeListHeader: false,

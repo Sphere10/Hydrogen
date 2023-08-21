@@ -15,15 +15,20 @@ using System.Threading.Tasks;
 namespace Hydrogen;
 
 /// <summary>
-/// Ensures that all stream read/writes occur within a boundary of a stream. This is used to protect segments of streams within the family <see cref="IFilePagedList{TItem}" /> collections.
+/// Wraps a stream and ensures that all read/writes occur within a specified boundary of a stream. Also addressing of bytes within the stream
+/// can be made relative or absolute (see <see cref="UseRelativeAddressing"/>).
+/// This is used to protect segments of streams within the family <see cref="IFilePagedList{TItem}" /> collections.
 /// </summary>
-/// <remarks>A <see cref="BoundedStream"/> can EXCEEED the boundary of the underlying stream (ex: boundary from 0 - 99 but stream has only 1 byte).</remarks>
+/// <remarks>A <see cref="BoundedStream"/>'s boundary is not restricted by the length of the stream and can be defined beyond it.</remarks>
 public class BoundedStream<TStream> : StreamDecorator<TStream> where TStream : Stream {
 
-	public BoundedStream(TStream innerStream, long minPosition, long maxPosition)
+	public BoundedStream(TStream innerStream, long minPosition, long length)
 		: base(innerStream) {
+		Guard.ArgumentNotNull(innerStream, nameof(innerStream));
+		Guard.ArgumentNotNegative(minPosition, nameof(minPosition));
+		Guard.ArgumentNotNegative(length, nameof(length));
 		MinAbsolutePosition = minPosition;
-		MaxAbsolutePosition = maxPosition;
+		MaxAbsolutePosition = checked(minPosition + length);
 	}
 
 	public long MinAbsolutePosition { get; }
@@ -33,8 +38,8 @@ public class BoundedStream<TStream> : StreamDecorator<TStream> where TStream : S
 	public bool AllowInnerResize { get; set; } = true;
 
 	public override long Position {
-		get => FromAbsoluteOffset(AbsolutePosition);
-		set => AbsolutePosition = ToAbsoluteOffset(value);
+		get => FromAbsoluteAddress(AbsolutePosition);
+		set => AbsolutePosition = ToAbsoluteAddress(value);
 	}
 
 	protected long AbsolutePosition {
@@ -45,50 +50,48 @@ public class BoundedStream<TStream> : StreamDecorator<TStream> where TStream : S
 	/// <summary>
 	/// When true, stream begins at <see cref="Position"/>=0, when false, begins at <see cref="Position"/>=<see cref="MinAbsolutePosition"/>. 
 	/// </summary>
-	public bool UseRelativeOffset { get; set; } = false;
+	public bool UseRelativeAddressing { get; set; } = false;
 
 	public override long Seek(long offset, SeekOrigin origin) {
+		var newAbsPosition = 0L;
 		switch (origin) {
 			case SeekOrigin.Begin:
-				CheckPosition(offset);
+				newAbsPosition = MinAbsolutePosition + offset;
 				break;
 			case SeekOrigin.Current:
-				CheckPosition(Position + offset);
+				newAbsPosition = AbsolutePosition + offset;
 				break;
 			case SeekOrigin.End:
-				Guard.ArgumentInRange(offset, long.MinValue, 0, nameof(offset));
-				CheckPosition(Length == 0 ? 0 : Length - 1 + offset);
+				newAbsPosition = MaxAbsolutePosition - offset;
 				break;
 			default:
 				throw new ArgumentOutOfRangeException(nameof(origin), origin, null);
 		}
-		var absoluteOffset = ToAbsoluteOffset(offset);
 
-		return base.Seek(absoluteOffset, origin);
+		// NOTE: Seek is allowed to go beyond boundary (consistent with MemoryStream seek behaviour).
+
+		var result = base.Seek(newAbsPosition, origin);
+		return FromAbsoluteAddress(result);
 	}
 
 
 	public override long Length {
 		get {
-			if (MaxAbsolutePosition < MinAbsolutePosition)
+			var innerLength = InnerStream.Length;
+			if (innerLength < MinAbsolutePosition)
 				return 0;
 
-			var streamEndIX = InnerStream.Length - 1;
-			if (streamEndIX < 0)
-				return 0;
-
-			if (MinAbsolutePosition > streamEndIX)
-				return 0;
-
-			var actualEndPosition = MaxAbsolutePosition <= streamEndIX ? MaxAbsolutePosition : streamEndIX;
-
-			return actualEndPosition - MinAbsolutePosition + 1;
+			var streamEndIX = Math.Min(MaxAbsolutePosition, innerLength);
+			var streamStartIX = Math.Max(0L, MinAbsolutePosition);
+			return streamEndIX - streamStartIX;
 		}
 	}
 
+	public long MaxLength => MaxAbsolutePosition - MinAbsolutePosition;
+
 	public override void SetLength(long value) {
 		if (AllowInnerResize)
-			InnerStream.SetLength(ToAbsoluteOffset(value));
+			InnerStream.SetLength(MinAbsolutePosition + value);
 		else throw new NotSupportedException();
 	}
 
@@ -97,75 +100,86 @@ public class BoundedStream<TStream> : StreamDecorator<TStream> where TStream : S
 		// this is valid
 		if (count == 0)
 			return 0;
+		
+		// ensure not reading from beyond boundary
+		var absolutePosition = AbsolutePosition;
+		CheckAbsolutePosition(absolutePosition);
 
+		// Ensure read segment falls within boundary
+		var overflow = absolutePosition + count - MaxAbsolutePosition;
+		if (overflow > 0)
+			count -= (int)overflow;
 
-		CheckRange(count);
 		return base.Read(buffer, offset, count);
 	}
 
 	public override void Write(byte[] buffer, int offset, int count) {
-		CheckRange(count);
+		CheckAbsoluteRange(AbsolutePosition, count);
 		InnerStream.Write(buffer, offset, count);
 	}
 
 	public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback callback, object state) {
-		CheckRange(count);
+		// Ensure not reading from beyond boundary
+		var absolutePosition = AbsolutePosition;
+		CheckAbsolutePosition(absolutePosition);
+
+		// Ensure read segment falls within boundary
+		var overflow = absolutePosition + count - MaxAbsolutePosition;
+		if (overflow > 0)
+			count -= (int)overflow;
+
 		return InnerStream.BeginRead(buffer, offset, count, callback, state);
 	}
 
 	public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state) {
-		CheckRange(count);
+		var absolutePosition = AbsolutePosition;
+		CheckAbsoluteRange(absolutePosition, count);
 		return InnerStream.BeginWrite(buffer, offset, count, callback, state);
 	}
 
 	public override int ReadByte() {
-		CheckCurrentPosition();
+		CheckAbsoluteRange(MaxAbsolutePosition, 1);
 		return InnerStream.ReadByte();
 	}
 
 	public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken) {
-		CheckRange(count);
+		CheckAbsoluteRange(AbsolutePosition, count);
 		return InnerStream.WriteAsync(buffer, offset, count, cancellationToken);
 	}
 
 	public override void WriteByte(byte value) {
-		CheckCurrentPosition();
+		CheckAbsoluteRange(AbsolutePosition, 1);
 		InnerStream.WriteByte(value);
 	}
 
-	protected void CheckCurrentPosition() {
-		CheckPosition(Position);
-	}
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	private long ToAbsoluteAddress(long position) => UseRelativeAddressing ? position + MinAbsolutePosition : position;
 
-	protected void CheckPosition(long position) {
-		CheckRange(position, position);
-	}
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	private long FromAbsoluteAddress(long position) => UseRelativeAddressing ? position - MinAbsolutePosition : position;
 
-	protected void CheckRange(int count) {
-		var position = Position;
-		CheckRange(position, Math.Max(position, position + count - 1));
-	}
-
-	protected void CheckRange(long start, long end) {
-		Guard.Argument(end >= start, nameof(end), $"Must be greater than or equal to {nameof(start)}");
-		var absoluteStart = ToAbsoluteOffset(start);
-		var absoluteEnd = ToAbsoluteOffset(end);
-		if (absoluteStart < MinAbsolutePosition || absoluteEnd > MaxAbsolutePosition)
-			throw new StreamOutOfBoundsException();
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	private void CheckAbsolutePosition(long absolutePos) {
+		if (absolutePos < MinAbsolutePosition || absolutePos > MaxAbsolutePosition)
+			throw new StreamOutOfBoundsException("Operation would result in position outside of stream boundary");
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	private long ToAbsoluteOffset(long offset) => UseRelativeOffset ? offset + MinAbsolutePosition : offset;
+	private void CheckAbsoluteRange(long absoluteFrom, long count) {
+		if (absoluteFrom < MinAbsolutePosition || absoluteFrom > MaxAbsolutePosition)
+			throw new StreamOutOfBoundsException("Operation would result in position outside of stream boundary");
 
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	private long FromAbsoluteOffset(long offset) => UseRelativeOffset ? offset - MinAbsolutePosition : offset;
+		var endIX = absoluteFrom + count;
+		if (endIX < MinAbsolutePosition || endIX > MaxAbsolutePosition)
+			throw new StreamOutOfBoundsException("Operation would result in position outside of stream boundary");
+	}
 
 }
 
 public class BoundedStream : BoundedStream<Stream>{
 
-	public BoundedStream(Stream innerStream, long minPosition, long maxPosition)
-		: base(innerStream, minPosition, maxPosition) {
+	public BoundedStream(Stream innerStream, long minPosition, long length)
+		: base(innerStream, minPosition, length) {
 	}
 
 }

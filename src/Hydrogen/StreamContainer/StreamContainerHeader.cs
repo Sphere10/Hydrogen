@@ -55,7 +55,7 @@ public class StreamContainerHeader {
 
 	internal StreamContainerHeader(ConcurrentStream rootStream, Endianness endianness) {
 		Guard.ArgumentNotNull(rootStream, nameof(rootStream));
-		_headerStream = rootStream.AsBounded(0, ByteLength - 1, allowInnerResize: true); 
+		_headerStream = rootStream.AsBounded(0, ByteLength, allowInnerResize: true); 
 		_lock = rootStream;
 		_reader = new EndianBinaryReader(EndianBitConverter.For(endianness), _headerStream);
 		_writer = new EndianBinaryWriter(EndianBitConverter.For(endianness), _headerStream);
@@ -67,7 +67,7 @@ public class StreamContainerHeader {
 		_reservedStreamsProperty = new StreamMappedProperty<long>(_headerStream, StreamDescriptorRecordsOffset, ReservedStreamsLength, PrimitiveSerializer<long>.Instance, _reader, _writer, @lock: _lock);
 		_clusterSizeProperty = new StreamMappedProperty<int>(_headerStream, ClusterSizeOffset, ClusterSizeLength, PrimitiveSerializer<int>.Instance, _reader, _writer, @lock: _lock);
 		_totalClustersProperty = new StreamMappedProperty<long>(_headerStream, TotalClustersOffset, TotalClustersLength, PrimitiveSerializer<long>.Instance, _reader, _writer, @lock: _lock);
-		_extensionPropertiesStream = rootStream.AsBounded(TotalClustersOffset + TotalClustersLength, ByteLength - 1, allowInnerResize: false, useRelativeOffset: true);
+		_extensionPropertiesStream = rootStream.AsBounded(TotalClustersOffset + TotalClustersLength, ByteLength - TotalClustersLength - ClusterSizeLength - ReservedStreamsLength - StreamDescriptorKeySizeLength - StreamDescriptorsEndClusterLength - StreamCountLength - PolicyOffset - VersionLength, allowInnerResize: false, useRelativeOffset: true);
 	}
 
 	public byte Version { get => _versionProperty.Value; internal set => _versionProperty.Value = value; }

@@ -15,10 +15,10 @@ public static class StreamDecoratorExtensions {
 		=> new (stream, action);
 
 	public static BoundedStream<TInner> AsBounded<TInner>(this TInner stream, long minPosition, long maxPosition, bool allowResize = true, bool useRelativeOffset = false) where TInner : Stream 
-		=> new(stream, minPosition, maxPosition) { AllowInnerResize = allowResize, UseRelativeOffset = useRelativeOffset };
+		=> new(stream, minPosition, maxPosition) { AllowInnerResize = allowResize, UseRelativeAddressing = useRelativeOffset };
 
 	public static BoundedStream AsBounded(this Stream stream, long minPosition, long maxPosition, bool allowInnerResize = true, bool useRelativeOffset = false) 
-		=> new(stream, minPosition, maxPosition) { AllowInnerResize = allowInnerResize, UseRelativeOffset = useRelativeOffset };
+		=> new(stream, minPosition, maxPosition) { AllowInnerResize = allowInnerResize, UseRelativeAddressing = useRelativeOffset };
 
 	public static TransactionalStream<TInner> AsTransactional<TInner>(this TInner stream, ITransactionalObject transactionalObject) where TInner : Stream 
 		=> new(stream, transactionalObject);

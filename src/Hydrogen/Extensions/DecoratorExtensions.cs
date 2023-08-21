@@ -278,4 +278,11 @@ public static class DecoratorExtensions {
 
 	#endregion
 
+	#region Serializer
+
+	public static IItemSerializer<T> WithNullSubstitution<T>(this IItemSerializer<T> serializer, T nullSubstitution, IEqualityComparer<T> comparer = null)
+		=> new WithNullSubstitutionSerializer<T>(serializer, nullSubstitution, comparer);
+	
+
+	#endregion
 }

@@ -8,11 +8,10 @@
 
 namespace Hydrogen;
 
-public sealed class WithNullValueItemHasher<TItem, TItemHasher> : ItemHasherDecorator<TItem, TItemHasher>, IWithNullValueItemHasher<TItem>
-	where TItemHasher : IItemHasher<TItem> {
+public sealed class WithNullValueItemHasher<TItem> : ItemHasherDecorator<TItem> {
 
 	private readonly byte[] _nullItemHash;
-	public WithNullValueItemHasher(TItemHasher internalHasher, byte[] nullItemHash)
+	public WithNullValueItemHasher(IItemHasher<TItem> internalHasher, byte[] nullItemHash)
 		: base(internalHasher) {
 		_nullItemHash = nullItemHash;
 	}

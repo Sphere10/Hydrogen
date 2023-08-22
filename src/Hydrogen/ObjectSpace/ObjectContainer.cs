@@ -59,8 +59,7 @@ public class ObjectContainer : ILoadable {
 
 	public void SaveItem(long index, object item, ListOperationType operationType) {
 		Guard.Argument(operationType != ListOperationType.Remove, nameof(operationType), "Remove operation not supported in this method");
-		if (item != null)
-			CheckType(item.GetType());
+		CheckItemType(item);
 		using var _ = StreamContainer.EnterAccessScope();
 		using var stream = SaveItemAndReturnStream(index, item, operationType);
 	}
@@ -68,6 +67,7 @@ public class ObjectContainer : ILoadable {
 	public object LoadItem(long index) {
 		using var _ = StreamContainer.EnterAccessScope();
 		using var stream = LoadItemAndReturnStream(index, out var item);
+		CheckItemType(item);
 		return item;
 	}
 
@@ -86,8 +86,7 @@ public class ObjectContainer : ILoadable {
 
 	internal ClusteredStream SaveItemAndReturnStream(long index, object item, ListOperationType operationType) {
 		Guard.Argument(operationType != ListOperationType.Remove, nameof(operationType), "Remove operation not supported in this method");
-		if (item != null)
-			CheckType(item.GetType());
+		CheckItemType(item);
 
 		var streamIndex = index + StreamContainer.Header.ReservedStreams;
 		// initialized and re-entrancy checks done by one of below called methods
@@ -135,6 +134,7 @@ public class ObjectContainer : ILoadable {
 			if (!stream.IsNull) {
 				using var reader = new EndianBinaryReader(EndianBitConverter.For(StreamContainer.Endianness), stream);
 				item = _packedSerializer.Deserialize(stream.Length, reader);
+				CheckItemType(item);
 			} else item = default;
 			NotifyPostItemOperation(index, item, ListOperationType.Read);
 			return stream;
@@ -154,10 +154,12 @@ public class ObjectContainer : ILoadable {
 	}
 
 	private void NotifyPreItemOperation(long index, object item, ListOperationType operationType) {
+		CheckItemType(item);
 		PreItemOperation?.Invoke(this, index, item, operationType);
 	}
 
 	private void NotifyPostItemOperation(long index, object item, ListOperationType operationType) {
+		CheckItemType(item);
 		PostItemOperation?.Invoke(this, index, item, operationType);
 	}
 
@@ -167,6 +169,11 @@ public class ObjectContainer : ILoadable {
 
 	private void NotifyCleared() {
 		Cleared?.Invoke(this);
+	}
+
+	private void CheckItemType(object item) {
+		if (item != null)
+			CheckType(item.GetType());
 	}
 
 	private void CheckType(Type type) {

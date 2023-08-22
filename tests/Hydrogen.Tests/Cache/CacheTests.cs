@@ -19,6 +19,22 @@ namespace Hydrogen.Tests;
 public class CacheTests {
 
 	[Test]
+	public void PackedEventHandlerRemovedCorrectly() {
+		var cache = new ActionCache<int, int>(x => x);
+		var handlerInvocations = 0;
+		cache.ItemFetched += Handler;
+		var val = cache[0];
+		Assert.That(handlerInvocations, Is.EqualTo(1));
+		cache.ItemFetched -= Handler;
+		val = cache[1];
+		Assert.That(handlerInvocations, Is.EqualTo(1));  // shouldnt of have been called again
+
+		void Handler(int arg1, int arg2) {
+			handlerInvocations++;
+		}
+	}
+
+	[Test]
 	public void MaxCapacity_1() {
 		var cache = new ActionCache<int, int>(x => x, sizeEstimator: x => 1, maxCapacity: 1, reapStrategy: CacheReapPolicy.LeastUsed);
 		var val = cache[0];

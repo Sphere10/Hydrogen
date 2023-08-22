@@ -20,6 +20,24 @@ namespace Hydrogen.Tests;
 public class NetFrameworkStandardBehaviour {
 
 	[Test]
+	public void DelegateEquality() {
+
+		var x = SomeFunc;
+		var y = SomeFunc;
+
+		// delegates pointers are not reference equal
+		Assert.That(ReferenceEquals(x, y), Is.False);
+
+		// delegates pointers are not reference equal
+		Assert.That(Equals(x, y), Is.True);
+
+		void SomeFunc(int x, int y) {
+		}
+	}
+
+
+
+	[Test]
 	public void MemoryStream_PositionBehaviour() {
 		// used as a basis to test BoundedStream
 		var memoryStream = new MemoryStream();

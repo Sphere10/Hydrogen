@@ -12,21 +12,22 @@ using System.Linq;
 
 namespace Hydrogen;
 
+
 public abstract class CacheBase<TKey, TValue> : CacheBase, ICache<TKey, TValue> {
 
 	public new event EventHandlerEx<TKey> ItemFetching {
-		add => ((CacheBase)this).ItemFetching += ToBaseListener(value);
-		remove => ((CacheBase)this).ItemFetching -= ToBaseListener(value);
+		add => ((CacheBase)this).ItemFetching += Tools.Object.ProjectionMemoizer.RememberProjection<EventHandlerEx<TKey>, EventHandlerEx<object>>(value, handler => (k) => handler((TKey)k));
+		remove => ((CacheBase)this).ItemFetching -= Tools.Object.ProjectionMemoizer.ForgetProjection<EventHandlerEx<TKey>, EventHandlerEx<object>>(value);
 	}
 
 	public new event EventHandlerEx<TKey, TValue> ItemFetched {
-		add => ((CacheBase)this).ItemFetched += ToBaseListener(value);
-		remove => ((CacheBase)this).ItemFetched -= ToBaseListener(value);
+		add => ((CacheBase)this).ItemFetched += Tools.Object.ProjectionMemoizer.RememberProjection<EventHandlerEx<TKey, TValue>, EventHandlerEx<object, object>>(value, handler => (k, v) => handler((TKey)k, (TValue)v));
+		remove => ((CacheBase)this).ItemFetched -= Tools.Object.ProjectionMemoizer.ForgetProjection<EventHandlerEx<TKey, TValue>, EventHandlerEx<object, object>>(value);
 	}
 
 	public new event EventHandlerEx<TKey, CachedItem<TValue>> ItemRemoved {
-		add => ((CacheBase)this).ItemRemoved += ToBaseListener(value);
-		remove => ((CacheBase)this).ItemRemoved -= ToBaseListener(value);
+		add => ((CacheBase)this).ItemRemoved += Tools.Object.ProjectionMemoizer.RememberProjection<EventHandlerEx<TKey, CachedItem<TValue>>, EventHandlerEx<object, CachedItem>>(value, handler => (k, v) => handler((TKey)k, (CachedItem<TValue>)v));
+		remove => ((CacheBase)this).ItemRemoved -= Tools.Object.ProjectionMemoizer.ForgetProjection<EventHandlerEx<TKey, CachedItem<TValue>>, EventHandlerEx<object, CachedItem>>(value);
 	}
 
 	protected CacheBase(
@@ -38,7 +39,6 @@ public abstract class CacheBase<TKey, TValue> : CacheBase, ICache<TKey, TValue> 
 		StaleValuePolicy staleValuePolicy = StaleValuePolicy.AssumeNeverStale,
 		IEqualityComparer<TKey> keyComparer = null,
 		ICacheReaper reaper = null
-	//) : base(new CastedEqualityComparer<TKey, object>(keyComparer ?? EqualityComparer<TKey>.Default), reapStrategy, expirationStrategy, maxCapacity, expirationDuration, nullValuePolicy, staleValuePolicy, reaper) {
 	) : base((keyComparer ?? EqualityComparer<TKey>.Default).AsProjection(x => (object)x, x => (TKey)x), reapStrategy, expirationStrategy, maxCapacity, expirationDuration, nullValuePolicy, staleValuePolicy, reaper) {
 	}
 
@@ -106,16 +106,6 @@ public abstract class CacheBase<TKey, TValue> : CacheBase, ICache<TKey, TValue> 
 	protected virtual void OnItemRemoved(TKey key, CachedItem<TValue> val) {
 	}
 
-	private static EventHandlerEx<object> ToBaseListener(EventHandlerEx<TKey> listener) {
-		return (k) => listener((TKey)k);
-	}
-
-	private static EventHandlerEx<object, object> ToBaseListener(EventHandlerEx<TKey, TValue> listener) {
-		return (k, v) => listener((TKey)k, (TValue)v);
-	}
-
-	private static EventHandlerEx<object, CachedItem> ToBaseListener(EventHandlerEx<TKey, CachedItem<TValue>> listener) {
-		return (k, v) => listener((TKey)k, (CachedItem<TValue>)v);
-	}
-
 }
+
+

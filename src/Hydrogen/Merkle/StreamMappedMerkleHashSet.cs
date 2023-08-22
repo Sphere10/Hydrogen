@@ -33,7 +33,7 @@ public class StreamMappedMerkleHashSet<TItem, TInner> : SetDecorator<TItem, TInn
 
 	public bool RequiresLoad => InternalSet.RequiresLoad;
 
-	public StreamContainer Streams => InternalSet.Streams;
+	public ObjectContainer ObjectContainer => InternalSet.ObjectContainer;
 
 	public IMerkleTree MerkleTree { get; }
 

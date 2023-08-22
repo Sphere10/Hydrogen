@@ -28,9 +28,9 @@ public class StreamMappedDictionarySKTests : StreamMappedDictionaryTestsBase {
 			policy: StreamContainerPolicy.BlobOptimized);
 		if (dict.RequiresLoad)
 			dict.Load();
-		Assert.That(dict.Streams.Header.ClusterSize, Is.EqualTo(21));
-		Assert.That(dict.Streams.Header.StreamDescriptorKeySize, Is.EqualTo(11));
-		Assert.That(dict.Streams.Header.ReservedStreams, Is.EqualTo(33));
+		Assert.That(dict.ObjectContainer.StreamContainer.Header.ClusterSize, Is.EqualTo(21));
+		Assert.That(dict.ObjectContainer.StreamContainer.Header.StreamDescriptorKeySize, Is.EqualTo(11));
+		Assert.That(dict.ObjectContainer.StreamContainer.Header.ReservedStreams, Is.EqualTo(33));
 	}
 
 	protected override IDisposable CreateDictionary<TKey, TValue>(int estimatedMaxByteSize, StorageType storageType, int reservedRecords, StreamContainerPolicy policy, IItemSerializer<TKey> keySerializer, IItemSerializer<TValue> valueSerializer,

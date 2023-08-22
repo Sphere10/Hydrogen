@@ -59,7 +59,7 @@ public class StreamMappedHashSet<TItem> : SetBase<TItem>, IStreamMappedHashSet<T
 	public StreamMappedHashSet(IStreamMappedDictionary<byte[], TItem> internalDictionary, IEqualityComparer<TItem> comparer, IItemHasher<TItem> hasher)
 		: base(comparer ?? EqualityComparer<TItem>.Default) {
 		Guard.ArgumentNotNull(internalDictionary, nameof(internalDictionary));
-		Guard.Argument(internalDictionary.Streams.Policy.HasFlag(StreamContainerPolicy.TrackChecksums), nameof(internalDictionary), $"Checksum tracking must be enabled in clustered dictionary implementations.");
+		Guard.Argument(internalDictionary.ObjectContainer.StreamContainer.Policy.HasFlag(StreamContainerPolicy.TrackChecksums), nameof(internalDictionary), $"Checksum tracking must be enabled in clustered dictionary implementations.");
 		InternalDictionary = internalDictionary;
 		_hasher = hasher;
 	}
@@ -70,7 +70,7 @@ public class StreamMappedHashSet<TItem> : SetBase<TItem>, IStreamMappedHashSet<T
 
 	public bool RequiresLoad => InternalDictionary.RequiresLoad;
 
-	public StreamContainer Streams => InternalDictionary.Streams;
+	public ObjectContainer ObjectContainer => InternalDictionary.ObjectContainer;
 
 	public void Load() => InternalDictionary.Load();
 

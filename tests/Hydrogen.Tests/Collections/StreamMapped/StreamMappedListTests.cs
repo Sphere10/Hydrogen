@@ -32,7 +32,7 @@ public class StreamMappedListTests : StreamPersistedCollectionTestsBase {
 	[Test]
 	public void HasReservedRecords([StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values(0, ReservedRecordsInStorage)] int reserved) {
 		using var scope = CreateList(policy, reserved, out var list);
-		Assert.That(list.Streams.Count, Is.EqualTo(reserved));
+		Assert.That(list.ObjectContainer.StreamContainer.Count, Is.EqualTo(reserved));
 	}
 
 	[Test]

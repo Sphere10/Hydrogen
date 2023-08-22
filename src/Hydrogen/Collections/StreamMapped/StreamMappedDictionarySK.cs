@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Tools;
 
 namespace Hydrogen;
 
@@ -68,8 +69,8 @@ public class StreamMappedDictionarySK<TKey, TValue> : DictionaryBase<TKey, TValu
 	                                IEqualityComparer<TKey> keyComparer = null, IEqualityComparer<TValue> valueComparer = null, Endianness endianness = Endianness.LittleEndian, bool autoLoad = false) {
 		Guard.ArgumentNotNull(keyStaticSizedSerializer, nameof(keyStaticSizedSerializer));
 		Guard.Argument(keyStaticSizedSerializer.IsStaticSize, nameof(keyStaticSizedSerializer), "Keys must be statically sized");
-		Guard.Argument(valueStore.Streams.Policy.HasFlag(StreamContainerPolicy.TrackChecksums), nameof(valueStore), $"Checksum tracking must be enabled in {nameof(StreamMappedDictionarySK<TKey, TValue>)} implementations.");
-		Guard.Argument(valueStore.Streams.Policy.HasFlag(StreamContainerPolicy.TrackKey), nameof(valueStore), $"Key tracking must be enabled in {nameof(StreamMappedDictionarySK<TKey, TValue>)} implementations.");
+		Guard.Argument(valueStore.ObjectContainer.StreamContainer.Policy.HasFlag(StreamContainerPolicy.TrackChecksums), nameof(valueStore), $"Checksum tracking must be enabled in {nameof(StreamMappedDictionarySK<TKey, TValue>)} implementations.");
+		Guard.Argument(valueStore.ObjectContainer.StreamContainer.Policy.HasFlag(StreamContainerPolicy.TrackKey), nameof(valueStore), $"Key tracking must be enabled in {nameof(StreamMappedDictionarySK<TKey, TValue>)} implementations.");
 
 		_keyComparer = keyComparer ?? EqualityComparer<TKey>.Default;
 		_valueComparer = valueComparer ?? EqualityComparer<TValue>.Default;
@@ -81,21 +82,21 @@ public class StreamMappedDictionarySK<TKey, TValue> : DictionaryBase<TKey, TValu
 		_unusedDescriptors = new();
 		_requiresLoad = true; //_valueStore.Streams.Records.Count > _valueStore.Streams.Header.ReservedStreams;
 		UnusedKeyBytes = Tools.Array.Gen<byte>(_keySerializer.StaticSize, 0);
-		_preAllocateOptimization = Streams.Policy.HasFlag(StreamContainerPolicy.FastAllocate);
+		_preAllocateOptimization = ObjectContainer.StreamContainer.Policy.HasFlag(StreamContainerPolicy.FastAllocate);
 		if (autoLoad)
 			Load();
 	}
 
-	public StreamContainer Streams => _valueStore.Streams;
+	public ObjectContainer ObjectContainer => _valueStore.ObjectContainer;
 
 	protected IEnumerable<KeyValuePair<TKey, TValue>> KeyValuePairs {
 		get {
 			for (var i = 0; i < _valueStore.Count; i++) {
 				if (IsUnusedRecord(i))
 					continue;
-				var descriptor = _valueStore.Streams.GetStreamDescriptor(_valueStore.Streams.Header.ReservedStreams + i);
+				var descriptor = _valueStore.ObjectContainer.StreamContainer.GetStreamDescriptor(ObjectContainer.StreamContainer.Header.ReservedStreams + i);
 				yield return new KeyValuePair<TKey, TValue>(
-					_keySerializer.Deserialize(descriptor.Key, Streams.Endianness),
+					_keySerializer.Deserialize(descriptor.Key, ObjectContainer.StreamContainer.Endianness),
 					!descriptor.Traits.HasFlag(ClusteredStreamTraits.Null) ? _valueStore[i] : default
 				);
 			}
@@ -130,18 +131,18 @@ public class StreamMappedDictionarySK<TKey, TValue> : DictionaryBase<TKey, TValu
 	public Task LoadAsync() => Task.Run(Load);
 
 	public TKey ReadKey(int index) {
-		using (Streams.EnterAccessScope()) {
-			if (Streams.IsNull(_valueStore.Streams.Header.ReservedStreams + index))
+		using (_valueStore.ObjectContainer.StreamContainer.EnterAccessScope()) {
+			if (_valueStore.ObjectContainer.StreamContainer.IsNull(_valueStore.ObjectContainer.StreamContainer.Header.ReservedStreams + index))
 				throw new InvalidOperationException($"Stream record {index} is null");
 	
-			var record = Streams.GetStreamDescriptor(_valueStore.Streams.Header.ReservedStreams + index);
-			return _keySerializer.Deserialize(record.Key, Streams.Endianness);
+			var record = _valueStore.ObjectContainer.StreamContainer.GetStreamDescriptor(ObjectContainer.StreamContainer.Header.ReservedStreams + index);
+			return _keySerializer.Deserialize(record.Key, ObjectContainer.StreamContainer.Endianness);
 		}
 	}
 
 	public TValue ReadValue(int index) {
-		using (Streams.EnterAccessScope()) {
-			if (Streams.IsNull(_valueStore.Streams.Header.ReservedStreams + index))
+		using (ObjectContainer.StreamContainer.EnterAccessScope()) {
+			if (ObjectContainer.StreamContainer.IsNull(ObjectContainer.StreamContainer.Header.ReservedStreams + index))
 				return default;
 
 			return _valueStore.Read(index);
@@ -151,7 +152,7 @@ public class StreamMappedDictionarySK<TKey, TValue> : DictionaryBase<TKey, TValu
 	public override void Add(TKey key, TValue value) {
 		Guard.ArgumentNotNull(key, nameof(key));
 		CheckLoaded();
-		using (Streams.EnterAccessScope()) {
+		using (ObjectContainer.StreamContainer.EnterAccessScope()) {
 			if (TryFindKey(key, out _))
 				throw new KeyNotFoundException($"An item with key '{key}' was already added");
 			AddInternal(key, value);
@@ -159,7 +160,7 @@ public class StreamMappedDictionarySK<TKey, TValue> : DictionaryBase<TKey, TValu
 	}
 
 	public override void Update(TKey key, TValue value) {
-		using (Streams.EnterAccessScope()) {
+		using (ObjectContainer.StreamContainer.EnterAccessScope()) {
 			if (!TryFindKey(key, out var index))
 				throw new KeyNotFoundException($"The key '{key}' was not found");
 			UpdateInternal(index, key, value);
@@ -169,7 +170,7 @@ public class StreamMappedDictionarySK<TKey, TValue> : DictionaryBase<TKey, TValu
 	protected override void AddOrUpdate(TKey key, TValue value) {
 		Guard.ArgumentNotNull(key, nameof(key));
 		CheckLoaded();
-		using (Streams.EnterAccessScope()) {
+		using (ObjectContainer.StreamContainer.EnterAccessScope()) {
 			if (TryFindKey(key, out var index)) {
 				UpdateInternal(index, key, value);
 			} else {
@@ -182,7 +183,7 @@ public class StreamMappedDictionarySK<TKey, TValue> : DictionaryBase<TKey, TValu
 	public override bool Remove(TKey key) {
 		Guard.ArgumentNotNull(key, nameof(key));
 		CheckLoaded();
-		using (Streams.EnterAccessScope()) {
+		using (ObjectContainer.StreamContainer.EnterAccessScope()) {
 			if (TryFindKey(key, out var index)) {
 				RemoveAt(index);
 				return true;
@@ -194,7 +195,7 @@ public class StreamMappedDictionarySK<TKey, TValue> : DictionaryBase<TKey, TValu
 	public override bool ContainsKey(TKey key) {
 		Guard.ArgumentNotNull(key, nameof(key));
 		CheckLoaded();
-		using (Streams.EnterAccessScope()) {
+		using (ObjectContainer.StreamContainer.EnterAccessScope()) {
 			return
 				_checksumToIndexLookup[_keyChecksum.CalculateChecksum(key)]
 					.Where(index => !IsUnusedRecord(index))
@@ -205,7 +206,7 @@ public class StreamMappedDictionarySK<TKey, TValue> : DictionaryBase<TKey, TValu
 
 	public override void Clear() {
 		// Load not required
-		using (Streams.EnterAccessScope()) {
+		using (ObjectContainer.StreamContainer.EnterAccessScope()) {
 			_valueStore.Clear();
 			_checksumToIndexLookup.Clear();
 			_unusedDescriptors.Clear();
@@ -215,7 +216,7 @@ public class StreamMappedDictionarySK<TKey, TValue> : DictionaryBase<TKey, TValu
 	public override bool TryGetValue(TKey key, out TValue value) {
 		Guard.ArgumentNotNull(key, nameof(key));
 		CheckLoaded();
-		using (Streams.EnterAccessScope()) {
+		using (ObjectContainer.StreamContainer.EnterAccessScope()) {
 			if (TryFindValue(key, out _, out value)) {
 				return true;
 			}
@@ -226,7 +227,7 @@ public class StreamMappedDictionarySK<TKey, TValue> : DictionaryBase<TKey, TValu
 
 	public bool TryFindKey(TKey key, out int index) {
 		Guard.ArgumentNotNull(key, nameof(key));
-		using (Streams.EnterAccessScope()) {
+		using (ObjectContainer.StreamContainer.EnterAccessScope()) {
 			foreach (var i in _checksumToIndexLookup[_keyChecksum.CalculateChecksum(key)]) {
 				var candidateKey = ReadKey(i);
 				if (_keyComparer.Equals(candidateKey, key)) {
@@ -241,7 +242,7 @@ public class StreamMappedDictionarySK<TKey, TValue> : DictionaryBase<TKey, TValu
 
 	public bool TryFindValue(TKey key, out int index, out TValue value) {
 		Guard.ArgumentNotNull(key, nameof(key));
-		using (Streams.EnterAccessScope()) {
+		using (ObjectContainer.StreamContainer.EnterAccessScope()) {
 			foreach (var i in _checksumToIndexLookup[_keyChecksum.CalculateChecksum(key)]) {
 				var candidateKey = ReadKey(i);
 				if (_keyComparer.Equals(candidateKey, key)) {
@@ -259,7 +260,7 @@ public class StreamMappedDictionarySK<TKey, TValue> : DictionaryBase<TKey, TValu
 	public override void Add(KeyValuePair<TKey, TValue> item) {
 		Guard.ArgumentNotNull(item, nameof(item)); // Key not null checked in TrueFindKey
 		CheckLoaded();
-		using (Streams.EnterAccessScope()) {
+		using (ObjectContainer.StreamContainer.EnterAccessScope()) {
 			if (TryFindKey(item.Key, out _))
 				throw new KeyNotFoundException($"An item with key '{item.Key}' was already added");
 			AddInternal(item.Key, item.Value);
@@ -269,7 +270,7 @@ public class StreamMappedDictionarySK<TKey, TValue> : DictionaryBase<TKey, TValu
 	public override bool Remove(KeyValuePair<TKey, TValue> item) {
 		Guard.ArgumentNotNull(item, nameof(item)); // Key not null checked in TryFindValue
 		CheckLoaded();
-		using (Streams.EnterAccessScope()) {
+		using (ObjectContainer.StreamContainer.EnterAccessScope()) {
 			if (TryFindValue(item.Key, out var index, out var value)) {
 				if (_valueComparer.Equals(item.Value, value)) {
 					RemoveAt(index);
@@ -325,8 +326,8 @@ public class StreamMappedDictionarySK<TKey, TValue> : DictionaryBase<TKey, TValu
 			if (_unusedDescriptors.Contains(i))
 				continue;
 			KeyValuePair<TKey, TValue> kvp;
-			using (var stream = _valueStore.Streams.LoadItemAndReturnStream(Streams.Header.ReservedStreams + i, _valueSerializer, out var value, _preAllocateOptimization))
-				kvp = new KeyValuePair<TKey, TValue>(_keySerializer.Deserialize(stream.Key, Streams.Endianness), value);
+			using (var stream = ((ObjectContainer<TValue>)ObjectContainer).LoadItemAndReturnStream(i, out var value))
+				kvp = new KeyValuePair<TKey, TValue>(_keySerializer.Deserialize(stream.Key, ObjectContainer.StreamContainer.Endianness), value);
 			yield return kvp;
 		}
 	}
@@ -368,7 +369,7 @@ public class StreamMappedDictionarySK<TKey, TValue> : DictionaryBase<TKey, TValu
 		using (stream) {
 			// Mark record as used and set key
 			Guard.Ensure(stream.IsTomb, $"Stream {index} is not available for use");
-			stream.Key = _keySerializer.Serialize(key, Streams.Endianness);
+			stream.Key = _keySerializer.Serialize(key, ObjectContainer.StreamContainer.Endianness);
 			stream.KeyChecksum = _keyChecksum.CalculateChecksum(key);
 			stream.IsTomb = false;
 			_checksumToIndexLookup.Add(stream.KeyChecksum, index);
@@ -379,7 +380,7 @@ public class StreamMappedDictionarySK<TKey, TValue> : DictionaryBase<TKey, TValu
 	private void UpdateInternal(int index, TKey key, TValue value) {
 		using var stream = _valueStore.EnterUpdateScope(index, value);
 		stream.IsTomb = false;
-		stream.Key = _keySerializer.Serialize(key, Streams.Endianness);
+		stream.Key = _keySerializer.Serialize(key, ObjectContainer.StreamContainer.Endianness);
 		stream.KeyChecksum = _keyChecksum.CalculateChecksum(key);
 		// note: scope Dispose updates record
 	}
@@ -396,8 +397,8 @@ public class StreamMappedDictionarySK<TKey, TValue> : DictionaryBase<TKey, TValu
 		_checksumToIndexLookup.Clear();
 		_unusedDescriptors.Clear();
 		for (var i = 0; i < _valueStore.Count; i++) {
-			var reservedStreamsI = Tools.Collection.CheckNotImplemented64bitAddressingLength(_valueStore.Streams.Header.ReservedStreams);
-			var descriptor = _valueStore.Streams.GetStreamDescriptor(reservedStreamsI + i);
+			var reservedStreamsI = Tools.Collection.CheckNotImplemented64bitAddressingLength(ObjectContainer.StreamContainer.Header.ReservedStreams);
+			var descriptor = ObjectContainer.StreamContainer.GetStreamDescriptor(reservedStreamsI + i);
 			if (!descriptor.Traits.HasFlag(ClusteredStreamTraits.Tomb))
 				_checksumToIndexLookup.Add(descriptor.KeyChecksum, i);
 			else

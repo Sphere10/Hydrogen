@@ -25,11 +25,11 @@ namespace Hydrogen;
 /// <remarks>The stream mapping is achieved via use of an internal <see cref="IStreamMappedList{TItem}"/></remarks>
 /// <typeparam name="TItem"></typeparam>
 public class StreamMappedMerkleList<TItem, TInner> : MerkleListAdapter<TItem, TInner>, IStreamMappedList<TItem> where TInner : IStreamMappedList<TItem> {
-	public event EventHandlerEx<object> Loading { add => Streams.Loading += value; remove => Streams.Loading -= value; }
-	public event EventHandlerEx<object> Loaded { add => Streams.Loaded += value; remove => Streams.Loaded -= value; }
+	public event EventHandlerEx<object> Loading { add => ObjectContainer.Loading += value; remove => ObjectContainer.Loading -= value; }
+	public event EventHandlerEx<object> Loaded { add => ObjectContainer.Loaded += value; remove => ObjectContainer.Loaded -= value; }
 
 	public StreamMappedMerkleList(TInner streamMappedList, IItemHasher<TItem> hasher, CHF hashAlgorithm, int merkleTreeStreamIndex)
-		: base(streamMappedList, hasher, new StreamContainerMerkleTreeStream(streamMappedList.Streams, merkleTreeStreamIndex, hashAlgorithm)) {
+		: base(streamMappedList, hasher, new StreamContainerMerkleTreeStream(streamMappedList.ObjectContainer.StreamContainer, merkleTreeStreamIndex, hashAlgorithm)) {
 		Guard.ArgumentNotNull(hasher, nameof(hasher)); 
 		try {
 			var _ = hasher.Hash(default);
@@ -38,20 +38,20 @@ public class StreamMappedMerkleList<TItem, TInner> : MerkleListAdapter<TItem, TI
 		}
 	}
 
-	public StreamContainer Streams => InternalCollection.Streams;
+	public ObjectContainer<TItem> ObjectContainer => InternalCollection.ObjectContainer;
 
 	public IItemSerializer<TItem> ItemSerializer => InternalCollection.ItemSerializer;
 
 	public IEqualityComparer<TItem> ItemComparer => InternalCollection.ItemComparer;
 
-	public bool RequiresLoad => Streams.RequiresLoad;
+	public bool RequiresLoad => ObjectContainer.RequiresLoad;
 
 	public void Load() {
-		Streams.Load();
-		Guard.Ensure(InternalCollection.Streams.Header.ReservedStreams > 0, "Clustered streams requires at least 1 reserved stream to store merkle-tree");
+		ObjectContainer.Load();
+		Guard.Ensure(InternalCollection.ObjectContainer.StreamContainer.Header.ReservedStreams > 0, "Clustered streams requires at least 1 reserved stream to store merkle-tree");
 	}
 
-	public Task LoadAsync() => Streams.LoadAsync();
+	public Task LoadAsync() => ObjectContainer.LoadAsync();
 
 	public ClusteredStream EnterAddScope(TItem item) {
 		InternalMerkleTree.Leafs.Add(ItemHasher.Hash(item));

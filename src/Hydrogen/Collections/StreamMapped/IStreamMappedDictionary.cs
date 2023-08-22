@@ -6,6 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using System;
 using System.Collections.Generic;
 
 
@@ -13,7 +14,7 @@ namespace Hydrogen;
 
 public interface IStreamMappedDictionary<TKey, TValue> : IDictionary<TKey, TValue>, ILoadable {
 
-	StreamContainer Streams { get; }
+	ObjectContainer ObjectContainer { get; }
 
 	TKey ReadKey(int index);
 

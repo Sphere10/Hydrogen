@@ -22,11 +22,10 @@ namespace Hydrogen;
 /// <typeparam name="TItem"></typeparam>
 public class StreamMappedList<TItem> : SingularListBase<TItem>, IStreamMappedList<TItem> {
 
-	public event EventHandlerEx<object> Loading { add => Streams.Loading += value; remove => Streams.Loading -= value; }
-	public event EventHandlerEx<object> Loaded { add => Streams.Loaded += value; remove => Streams.Loaded -= value; }
+	public event EventHandlerEx<object> Loading { add => ObjectContainer.Loading += value; remove => ObjectContainer.Loading -= value; }
+	public event EventHandlerEx<object> Loaded { add => ObjectContainer.Loaded += value; remove => ObjectContainer.Loaded -= value; }
 
 	private int _version;
-	private readonly bool _preAllocateOptimization;
 
 	public StreamMappedList(Stream rootStream, int clusterSize, IItemSerializer<TItem> itemSerializer = null,
 							IEqualityComparer<TItem> itemComparer = null, StreamContainerPolicy policy = StreamContainerPolicy.Default, long recordKeySize = 0,
@@ -34,32 +33,36 @@ public class StreamMappedList<TItem> : SingularListBase<TItem>, IStreamMappedLis
 		: this(new StreamContainer(rootStream, clusterSize, policy, recordKeySize, reservedRecords, endianness, autoLoad), itemSerializer, itemComparer) {
 	}
 
-	public StreamMappedList(StreamContainer streams, IItemSerializer<TItem> itemSerializer = null, IEqualityComparer<TItem> itemComparer = null) {
-		Guard.ArgumentNotNull(streams, nameof(streams));
-		Streams = streams;
+	public StreamMappedList(StreamContainer streamContainer, IItemSerializer<TItem> itemSerializer = null, IEqualityComparer<TItem> itemComparer = null) 
+		: this(new ObjectContainer<TItem>(streamContainer, itemSerializer, streamContainer.Policy.HasFlag(StreamContainerPolicy.FastAllocate)), itemSerializer, itemComparer) {
+	}
+
+
+	public StreamMappedList(ObjectContainer<TItem> objectContainer, IItemSerializer<TItem> itemSerializer = null, IEqualityComparer<TItem> itemComparer = null) {
+		Guard.ArgumentNotNull(objectContainer, nameof(objectContainer));
+		ObjectContainer = objectContainer;
 		ItemSerializer = itemSerializer ?? ItemSerializer<TItem>.Default;
 		ItemComparer = itemComparer ?? EqualityComparer<TItem>.Default;
-		_preAllocateOptimization = Streams.Policy.HasFlag(StreamContainerPolicy.FastAllocate);
 		_version = 0;
 	}
 
-	public override long Count => Streams.Count - Streams.Header.ReservedStreams;
+	public override long Count => ObjectContainer.Count;
 
-	public StreamContainer Streams { get; }
+	public ObjectContainer<TItem> ObjectContainer { get; }
 
 	public IItemSerializer<TItem> ItemSerializer { get; }
 
 	public IEqualityComparer<TItem> ItemComparer { get; }
 
-	public virtual bool RequiresLoad => Streams.RequiresLoad;
+	public virtual bool RequiresLoad => ObjectContainer.RequiresLoad;
 
-	public virtual void Load() => Streams.Load();
+	public virtual void Load() => ObjectContainer.Load();
 
-	public virtual Task LoadAsync() => Streams.LoadAsync();
+	public virtual Task LoadAsync() => ObjectContainer.LoadAsync();
 
 	public override TItem Read(long index) {
 		CheckIndex(index, true);
-		return Streams.LoadItem(Streams.Header.ReservedStreams + index, ItemSerializer, _preAllocateOptimization); // Index checking deferred to Streams
+		return ObjectContainer.LoadItem(index);
 	}
 
 	public override long IndexOfL(TItem item) {
@@ -81,7 +84,7 @@ public class StreamMappedList<TItem> : SingularListBase<TItem>, IStreamMappedLis
 	public ClusteredStream EnterAddScope(TItem item) {
 		// Index checking deferred to Streams
 		UpdateVersion();
-		return Streams.SaveItemAndReturnStream(Streams.Count, item, ItemSerializer, ListOperationType.Add, _preAllocateOptimization);
+		return ObjectContainer.SaveItemAndReturnStream(ObjectContainer.Count, item, ListOperationType.Add);
 	}
 
 	public override void Insert(long index, TItem item) {
@@ -92,7 +95,7 @@ public class StreamMappedList<TItem> : SingularListBase<TItem>, IStreamMappedLis
 	public ClusteredStream EnterInsertScope(long index, TItem item) {
 		// Index checking deferred to Streams
 		UpdateVersion();
-		return Streams.SaveItemAndReturnStream(index + Streams.Header.ReservedStreams, item, ItemSerializer, ListOperationType.Insert, _preAllocateOptimization);
+		return ObjectContainer.SaveItemAndReturnStream(index, item, ListOperationType.Insert);
 	}
 
 	public override void Update(long index, TItem item) {
@@ -103,15 +106,14 @@ public class StreamMappedList<TItem> : SingularListBase<TItem>, IStreamMappedLis
 	public ClusteredStream EnterUpdateScope(long index, TItem item) {
 		// Index checking deferred to Streams
 		UpdateVersion();
-		return Streams.SaveItemAndReturnStream(index + Streams.Header.ReservedStreams, item, ItemSerializer, ListOperationType.Update, _preAllocateOptimization);
+		return ObjectContainer.SaveItemAndReturnStream(index, item, ListOperationType.Update);
 	}
 
 	public override bool Remove(TItem item) {
 		var index = IndexOf(item);
 		if (index >= 0) {
 			UpdateVersion();
-			Streams.Remove(index + Streams.Header.ReservedStreams);
-
+			ObjectContainer.RemoveItem(index);
 			return true;
 		}
 		return false;
@@ -120,12 +122,12 @@ public class StreamMappedList<TItem> : SingularListBase<TItem>, IStreamMappedLis
 	public override void RemoveAt(long index) {
 		CheckIndex(index, false);
 		UpdateVersion();
-		Streams.Remove(Streams.Header.ReservedStreams + index);
+		ObjectContainer.RemoveItem(index);
 	}
 
 	public override void Clear() {
 		UpdateVersion();
-		Streams.Clear();
+		ObjectContainer.Clear();
 	}
 
 	public override void CopyTo(TItem[] array, int arrayIndex) {

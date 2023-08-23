@@ -32,9 +32,9 @@ public static class ILookupExtensions {
 		Func<TKey, TKeyOut> keyTransformer,
 		Func<TValue, TValueOut> valueTransformer) {
 
-		var lookupEx = new LookupEx<TKeyOut, TValueOut>();
+		var lookupEx = new ExtendedLookup<TKeyOut, TValueOut>();
 		foreach (var grouping in lookup)
-			lookupEx[keyTransformer(grouping.Key)] = grouping.Select(valueTransformer);
+			lookupEx.AddRange(keyTransformer(grouping.Key), grouping.Select(valueTransformer));
 
 		return lookupEx;
 	}

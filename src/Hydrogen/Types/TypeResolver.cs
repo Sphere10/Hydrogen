@@ -162,12 +162,12 @@ public static class TypeResolver {
 
 		public AssemblyInfo(Assembly assembly) {
 			Assembly = assembly;
-			TypesByShortName = new LookupEx<string, Type>();
+			TypesByShortName = new ExtendedLookup<string, Type>();
 			TypesByLongName = new Dictionary<string, Type>();
 			Load();
 		}
 
-		public LookupEx<string, Type> TypesByShortName { get; }
+		public ExtendedLookup<string, Type> TypesByShortName { get; }
 		public IDictionary<string, Type> TypesByLongName { get; }
 
 		public Assembly Assembly { get; }

@@ -33,7 +33,7 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 	private readonly IEqualityComparer<TKey> _keyComparer;
 	private readonly IEqualityComparer<TValue> _valueComparer;
 	private readonly IItemChecksummer<TKey> _keyChecksum;
-	private readonly LookupEx<int, int> _checksumToIndexLookup;
+	private readonly ExtendedLookup<int, int> _checksumToIndexLookup;
 	private readonly SortedList<int> _unusedDescriptors;
 	private readonly bool _preAllocateOptimization;
 	private bool _requiresLoad;
@@ -76,7 +76,7 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 		_valueComparer = valueComparer ?? EqualityComparer<TValue>.Default;
 		KVPList = kvpStore;
 		_keyChecksum = keyChecksummer ?? new ItemDigestor<TKey>(keySerializer, endianness);
-		_checksumToIndexLookup = new LookupEx<int, int>();
+		_checksumToIndexLookup = new ExtendedLookup<int, int>();
 		_unusedDescriptors = new();
 		_requiresLoad = true; //KVPList.Streams.Records.Count > KVPList.Streams.Header.ReservedStreams;
 		_preAllocateOptimization = kvpStore.ObjectContainer.StreamContainer.Policy.HasFlag(StreamContainerPolicy.FastAllocate);

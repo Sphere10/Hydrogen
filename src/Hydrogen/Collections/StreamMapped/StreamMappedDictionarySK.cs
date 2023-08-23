@@ -36,7 +36,7 @@ public class StreamMappedDictionarySK<TKey, TValue> : DictionaryBase<TKey, TValu
 	private readonly IStreamMappedList<TValue> _valueStore;
 	private readonly IEqualityComparer<TKey> _keyComparer;
 	private readonly IEqualityComparer<TValue> _valueComparer;
-	private readonly LookupEx<int, int> _checksumToIndexLookup;
+	private readonly ExtendedLookup<int, int> _checksumToIndexLookup;
 	private readonly SortedList<int> _unusedDescriptors;
 	private readonly bool _preAllocateOptimization;
 	private bool _requiresLoad;
@@ -78,7 +78,7 @@ public class StreamMappedDictionarySK<TKey, TValue> : DictionaryBase<TKey, TValu
 		_keySerializer = keyStaticSizedSerializer;
 		_valueSerializer = valueSerializer ?? ItemSerializer<TValue>.Default;
 		_keyChecksum = keyChecksummer ?? new ItemDigestor<TKey>(keyStaticSizedSerializer, endianness);
-		_checksumToIndexLookup = new LookupEx<int, int>();
+		_checksumToIndexLookup = new ExtendedLookup<int, int>();
 		_unusedDescriptors = new();
 		_requiresLoad = true; //_valueStore.Streams.Records.Count > _valueStore.Streams.Header.ReservedStreams;
 		UnusedKeyBytes = Tools.Array.Gen<byte>(_keySerializer.StaticSize, 0);

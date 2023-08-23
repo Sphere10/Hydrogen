@@ -91,7 +91,7 @@ public static class Navigator {
 		}
 
 		// NOTE: should load from plugin dll's as well
-		var dict = new LookupEx<AppMenu, Tuple<MenuLocationAttribute, Type>>();
+		var dict = new ExtendedLookup<AppMenu, Tuple<MenuLocationAttribute, Type>>();
 
 		foreach (var screenType in screenTypes) {
 			var menuLoc = screenType.GetCustomAttributeOfType<MenuLocationAttribute>(throwOnMissing: false);

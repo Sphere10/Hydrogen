@@ -247,7 +247,7 @@ public abstract class TransactionalFileMappedListBase<TItem> : FilePagedListBase
 	/// </summary>
 	public class MarkerRepository {
 		readonly HashSet<FileMarkerType> _fileMarkers;
-		readonly LookupEx<long, PageMarkerType> _pageMarkers;
+		readonly ExtendedLookup<long, PageMarkerType> _pageMarkers;
 
 		public MarkerRepository(string baseDir, Guid fileID) {
 			BaseDir = baseDir;
@@ -368,8 +368,8 @@ public abstract class TransactionalFileMappedListBase<TItem> : FilePagedListBase
 			return GeneratePageMarkerFileName(BaseDir, FileID, marker, pageNumber);
 		}
 
-		public static void ScanPersistedFileMarkers(string baseDir, Guid fileID, out LookupEx<long, PageMarkerType> pagerMarkers, out HashSet<FileMarkerType> fileMarkers) {
-			pagerMarkers = new LookupEx<long, PageMarkerType>();
+		public static void ScanPersistedFileMarkers(string baseDir, Guid fileID, out ExtendedLookup<long, PageMarkerType> pagerMarkers, out HashSet<FileMarkerType> fileMarkers) {
+			pagerMarkers = new ExtendedLookup<long, PageMarkerType>();
 			fileMarkers = new HashSet<FileMarkerType>();
 			var filenameWithoutExtension = fileID.ToStrictAlphaString().ToLowerInvariant();
 			var files = Tools.FileSystem.GetFiles(baseDir, $"{filenameWithoutExtension}.*");

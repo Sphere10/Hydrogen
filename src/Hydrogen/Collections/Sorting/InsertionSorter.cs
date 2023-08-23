@@ -10,18 +10,18 @@ using System.Collections.Generic;
 
 namespace Hydrogen;
 
-public sealed class InsertionSort<T> : SortAlgorithm<T> {
+public sealed class InsertionSorter<T> : SortAlgorithm<T> {
 
-	public override void Execute(IExtendedList<T> list, IComparer<T> comparer) {
-		for (int i = 1; i < list.Count; i++) {
-			T value = list[i];
+	public InsertionSorter(IComparer<T> comparer = null) : base(comparer) {
+	}
 
-			int j = i - 1;
-
-			bool done = false;
-
+	public override void Sort(IExtendedList<T> list) {
+		var done = false;
+		for (var i = 1; i < list.Count; i++) {
+			var value = list[i];
+			var j = i - 1;
 			do {
-				if (comparer.Compare(list[j], value) > 0) {
+				if (Comparer.Compare(list[j], value) > 0) {
 					list[j + 1] = list[j];
 					j--;
 
@@ -35,5 +35,13 @@ public sealed class InsertionSort<T> : SortAlgorithm<T> {
 
 			list[j + 1] = value;
 		}
+	}
+
+}
+
+public static class InsertionSorter {
+	public static void Sort<T>(IExtendedList<T> list, IComparer<T> comparer = null) {
+		var sorter = new InsertionSorter<T>(comparer);
+		sorter.Sort(list);
 	}
 }

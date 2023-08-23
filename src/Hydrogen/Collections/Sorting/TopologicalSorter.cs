@@ -12,6 +12,7 @@ using System.Linq;
 
 namespace Hydrogen;
 
+// TODO: needs refactoring to bring in line with other algorithms
 public static class TopologicalSorter {
 	// Tarjan's algorithm: http://en.wikipedia.org/wiki/Tarjan%27s_strongly_connected_components_algorithm
 	private class Algorithm<T> {

@@ -226,7 +226,7 @@ public class FileMappedBufferTests {
 			// first load the file and sort them
 			using (var binaryFile = new FileMappedBuffer(fileName, 8, 4 * 8, false, autoLoad: true)) {
 
-				QuickSort<byte>.Run(binaryFile, Comparer<byte>.Default);
+				QuickSorter.Sort(binaryFile, Comparer<byte>.Default);
 				for (var i = 0; i < 256; i++)
 					Assert.AreEqual(expected[i], binaryFile[i]);
 			}

@@ -11,18 +11,15 @@ using System.Collections.Generic;
 namespace Hydrogen;
 
 public abstract class SortAlgorithm<T> {
-	public abstract void Execute(IExtendedList<T> list, IComparer<T> comparer);
+	protected IComparer<T> Comparer;
+
+	protected SortAlgorithm(IComparer<T> comparer = null) {
+		Comparer = comparer ?? Comparer<T>.Default;
+	}
+
+	public abstract void Sort(IExtendedList<T> list);
 
 	protected virtual void Swap(IExtendedList<T> list, long leftIdx, long rightIdx) {
-		T temp = list[leftIdx];
-		list[leftIdx] = list[rightIdx];
-		list[rightIdx] = temp;
-	}
-}
-
-
-public static class SortAlgorithmExtensions {
-	public static void Execute<T>(this SortAlgorithm<T> algorithm, IExtendedList<T> list) {
-		algorithm.Execute(list, Comparer<T>.Default);
+		(list[leftIdx], list[rightIdx]) = (list[rightIdx], list[leftIdx]);
 	}
 }

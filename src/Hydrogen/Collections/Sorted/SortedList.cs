@@ -32,7 +32,7 @@ public class SortedList<T> : ExtendedCollectionDecorator<T>, ISortedList<T> {
 			_ => throw new ArgumentException("Must be Ascending or Descending (or null)", nameof(sortDirection))
 		};
 		if (internalList.Count > 0) {
-			QuickSort<T>.Run(InternalList, _comparer);
+			QuickSorter.Sort(InternalList, _comparer);
 		}
 	}
 

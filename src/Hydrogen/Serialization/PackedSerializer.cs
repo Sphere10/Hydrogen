@@ -9,7 +9,7 @@ public class PackedSerializer : IItemSerializer<object> {
 	private PackedSerializer(object serializer, IItemSerializer<object> projectedSerializer) {
 		Guard.ArgumentNotNull(serializer, nameof(serializer));
 		Guard.ArgumentNotNull(projectedSerializer, nameof(projectedSerializer));
-		Guard.Argument(serializer.GetType().IsSubtypeOfGenericType(typeof(ItemSerializer<>)), nameof(projectedSerializer), $"Must be an ItemSerializer<>");	
+		Guard.Argument(serializer.GetType().IsSubtypeOfGenericType(typeof(IItemSerializer<>)), nameof(projectedSerializer), $"Must be an ItemSerializer<>");	
 		Guard.Argument(projectedSerializer.GetType().IsSubtypeOfGenericType(typeof(ProjectedSerializer<,>)), nameof(projectedSerializer), "Must be an ProjectedSerializer<,>");	
 		_serializer = serializer;
 		_projectedSerializer = projectedSerializer;

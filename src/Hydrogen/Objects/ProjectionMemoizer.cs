@@ -9,7 +9,7 @@ public class ProjectionMemoizer {
 	public V RememberProjection<U, V>(U item, Func<U, V> packer) {
 		using (_projections.EnterWriteScope()) {
 			if (_projections.TryGetValue(item, out _)) {
-				throw new InvalidOperationException("Item already packed");
+				throw new InvalidOperationException("Projection has already been remembered");
 			}
 			var packedItem = packer(item);
 			_projections.Add(item, packedItem);
@@ -20,7 +20,7 @@ public class ProjectionMemoizer {
 	public V ForgetProjection<U, V>(U item) {
 		using (_projections.EnterWriteScope()) {
 			if (!_projections.TryGetValue(item, out var packedItem)) {
-				throw new InvalidOperationException("Item was not packed");
+				throw new InvalidOperationException("No projection found");
 			}
 			_projections.Remove(item);
 			var packedItemT = (V)(object)packedItem;

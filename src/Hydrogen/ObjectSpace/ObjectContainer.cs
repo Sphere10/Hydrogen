@@ -40,7 +40,7 @@ public class ObjectContainer : ILoadable {
 			Load();
 	}
 
-	public bool RequiresLoad => _loaded || StreamContainer.RequiresLoad;
+	public bool RequiresLoad => !_loaded || StreamContainer.RequiresLoad;
 
 	public StreamContainer StreamContainer { get; }
 

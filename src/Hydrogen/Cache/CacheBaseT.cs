@@ -14,20 +14,21 @@ namespace Hydrogen;
 
 
 public abstract class CacheBase<TKey, TValue> : CacheBase, ICache<TKey, TValue> {
+	private readonly ProjectionMemoizer _eventHandlerProjections = new ();
 
 	public new event EventHandlerEx<TKey> ItemFetching {
-		add => ((CacheBase)this).ItemFetching += Tools.Object.ProjectionMemoizer.RememberProjection<EventHandlerEx<TKey>, EventHandlerEx<object>>(value, handler => (k) => handler((TKey)k));
-		remove => ((CacheBase)this).ItemFetching -= Tools.Object.ProjectionMemoizer.ForgetProjection<EventHandlerEx<TKey>, EventHandlerEx<object>>(value);
+		add => ((CacheBase)this).ItemFetching += _eventHandlerProjections.RememberProjection<EventHandlerEx<TKey>, EventHandlerEx<object>>(value, handler => (k) => handler((TKey)k));
+		remove => ((CacheBase)this).ItemFetching -= _eventHandlerProjections.ForgetProjection<EventHandlerEx<TKey>, EventHandlerEx<object>>(value);
 	}
 
 	public new event EventHandlerEx<TKey, TValue> ItemFetched {
-		add => ((CacheBase)this).ItemFetched += Tools.Object.ProjectionMemoizer.RememberProjection<EventHandlerEx<TKey, TValue>, EventHandlerEx<object, object>>(value, handler => (k, v) => handler((TKey)k, (TValue)v));
-		remove => ((CacheBase)this).ItemFetched -= Tools.Object.ProjectionMemoizer.ForgetProjection<EventHandlerEx<TKey, TValue>, EventHandlerEx<object, object>>(value);
+		add => ((CacheBase)this).ItemFetched += _eventHandlerProjections.RememberProjection<EventHandlerEx<TKey, TValue>, EventHandlerEx<object, object>>(value, handler => (k, v) => handler((TKey)k, (TValue)v));
+		remove => ((CacheBase)this).ItemFetched -= _eventHandlerProjections.ForgetProjection<EventHandlerEx<TKey, TValue>, EventHandlerEx<object, object>>(value);
 	}
 
 	public new event EventHandlerEx<TKey, CachedItem<TValue>> ItemRemoved {
-		add => ((CacheBase)this).ItemRemoved += Tools.Object.ProjectionMemoizer.RememberProjection<EventHandlerEx<TKey, CachedItem<TValue>>, EventHandlerEx<object, CachedItem>>(value, handler => (k, v) => handler((TKey)k, (CachedItem<TValue>)v));
-		remove => ((CacheBase)this).ItemRemoved -= Tools.Object.ProjectionMemoizer.ForgetProjection<EventHandlerEx<TKey, CachedItem<TValue>>, EventHandlerEx<object, CachedItem>>(value);
+		add => ((CacheBase)this).ItemRemoved += _eventHandlerProjections.RememberProjection<EventHandlerEx<TKey, CachedItem<TValue>>, EventHandlerEx<object, CachedItem>>(value, handler => (k, v) => handler((TKey)k, (CachedItem<TValue>)v));
+		remove => ((CacheBase)this).ItemRemoved -= _eventHandlerProjections.ForgetProjection<EventHandlerEx<TKey, CachedItem<TValue>>, EventHandlerEx<object, CachedItem>>(value);
 	}
 
 	protected CacheBase(

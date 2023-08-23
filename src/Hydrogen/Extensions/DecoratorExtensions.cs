@@ -286,7 +286,7 @@ public static class DecoratorExtensions {
 	public static IItemSerializer<TTo> AsProjection<TFrom, TTo>(this IItemSerializer<TFrom> serializer, Func<TFrom, TTo> projection, Func<TTo, TFrom> inverseProjection) 
 		=> new ProjectedSerializer<TFrom, TTo>(serializer, projection, inverseProjection);
 
-	public static IItemSerializer<object> AsPacked<TItem>(this IItemSerializer<TItem> sourceComparer) => PackedSerializer.Pack(sourceComparer);
+	public static IItemSerializer<object> AsPacked<TItem>(this IItemSerializer<TItem> serializer) => PackedSerializer.Pack(serializer);
 
 	#endregion
 }

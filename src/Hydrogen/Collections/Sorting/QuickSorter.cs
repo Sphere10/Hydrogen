@@ -16,10 +16,12 @@ public sealed class QuickSorter<T> : SortAlgorithm<T> {
 	}
 
 	public override void Sort(IExtendedList<T> list) {
-		ExecuteRecursive(list, 0, list.Count - 1);
+		var listCount = list.Count;
+		if (listCount > 0)
+			SortRecursive(list, 0, listCount - 1);
 	}
 
-	private void ExecuteRecursive(IExtendedList<T> list, long left, long right) {
+	private void SortRecursive(IExtendedList<T> list, long left, long right) {
 		var segmentLeft = left;
 		var segmentRight = right;
 		var pivot = list[(left + right) / 2];
@@ -41,11 +43,11 @@ public sealed class QuickSorter<T> : SortAlgorithm<T> {
 		} while (segmentLeft <= segmentRight);
 
 		if (left < segmentRight) {
-			ExecuteRecursive(list, left, segmentRight);
+			SortRecursive(list, left, segmentRight);
 		}
 
 		if (segmentLeft < right) {
-			ExecuteRecursive(list, segmentLeft, right);
+			SortRecursive(list, segmentLeft, right);
 		}
 	}
 

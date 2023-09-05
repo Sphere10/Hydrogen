@@ -66,7 +66,4 @@ public class StreamMappedProperty<T> {
 		}
 	}
 
-
-	public T NullSubstitution { get; set; }
-
 }

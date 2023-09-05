@@ -86,14 +86,14 @@ public static class Guard {
 	/// Throws an exception if an argument is null
 	/// </summary>
 	/// <param name="value">The value to be tested</param>
-	/// <param name="name">The name of the argument</param>
+	/// <param name="paramName">The name of the argument</param>
 #if OMIT_GUARD
 		[Conditional("DEBUG")]
 #endif
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static void ArgumentNotNull(object value, string name) {
+	public static void ArgumentNotNull(object value, string paramName) {
 		if (value == null)
-			throw new ArgumentNullException(name, "Argument must not be null");
+			throw new ArgumentNullException(paramName, "Argument must not be null");
 	}
 
 	/// <summary>
@@ -262,19 +262,19 @@ public static class Guard {
 		[Conditional("DEBUG")]
 #endif
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static TType ArgumentCast<TType>(object @object, string parameter) {
-		ArgumentCast<TType>(@object, out var result, parameter);
+	public static TType ArgumentCast<TType>(object @object, string paramName) {
+		ArgumentCast<TType>(@object, out var result, paramName);
 		return result;
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static void ArgumentCast<TType>(object @object, out TType castedObject, string parameter)
-		=> ArgumentCast(@object, out castedObject, parameter, $"Cannot be cast to {typeof(TType)}");
+	public static void ArgumentCast<TType>(object @object, out TType castedObject, string paramName)
+		=> ArgumentCast(@object, out castedObject, paramName, $"Cannot be cast to {typeof(TType)}");
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static void ArgumentCast<TType>(object @object, out TType castedObject, string parameter, string message) {
+	public static void ArgumentCast<TType>(object @object, out TType castedObject, string paramName, string message) {
 		if (!(@object is TType cobj))
-			throw new ArgumentException(message, parameter);
+			throw new ArgumentException(message, paramName);
 		castedObject = cobj;
 	}
 
@@ -282,9 +282,20 @@ public static class Guard {
 		[Conditional("DEBUG")]
 #endif
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static void ArgumentIsAssignable<TType>(object @object, string parameter) {
-		Argument(@object.GetType().IsAssignableFrom(typeof(TType)), parameter, $"Not assignable from {typeof(TType).GetShortName()}");
+	public static void ArgumentIsAssignable<TType>(object @object, string paramName) {
+		Argument(@object.GetType().IsAssignableFrom(typeof(TType)), paramName, $"Not assignable from {typeof(TType).GetShortName()}");
 	}
+
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static void ArgumentNotThrows(Action action, string paramName, string message) {
+		try {
+			action();
+		} catch {
+			throw new ArgumentException(message, paramName);
+		}
+	}
+
 
 #if OMIT_GUARD
 		[Conditional("DEBUG")]
@@ -324,4 +335,12 @@ public static class Guard {
 		castedObject = (TType)@object;
 	}
 
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static void EnsureNotThrows(Action action, string message) {
+		try {
+			action();
+		} catch {
+			throw new InvalidOperationException(message);
+		}
+	}
 }

@@ -6,12 +6,15 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System.ComponentModel;
-using Hydrogen;
 
-namespace System.Runtime.CompilerServices;
+namespace Hydrogen;
 
 public static class HydrogenDefaults {
+
+	// Streams
+	public const int DefaultBufferOperationBlockSize = 32768; 
+	public const int TransactionalPageBufferOperationBlockSize = 262144;
+	public const int OptimalCompressWriteBlockSize = 8192;
 
 	// Paged
 	public const int MaxMemoryPerCollection = int.MaxValue; // Use all available memory
@@ -28,6 +31,4 @@ public static class HydrogenDefaults {
 	// Serialization
 	public const Endianness Endianness = Hydrogen.Endianness.LittleEndian;
 
-	// Merkleized Clustered Streams
-	public const int ClusteredStorageMerkleTreeStreamIndex = 0;     // Default stream index where merkle-trees are stored
 }

@@ -23,7 +23,7 @@ public class StreamContainerHeader {
 	internal const int PolicyLength = sizeof(uint);
 	internal const int StreamCountLength = sizeof(long);
 	internal const int StreamDescriptorsEndClusterLength = sizeof(long);
-	internal const int StreamDescriptorKeySizeLength = sizeof(ushort);
+	//internal const int StreamDescriptorKeySizeLength = sizeof(ushort);
 	internal const int ReservedStreamsLength = sizeof(long);
 	internal const int ClusterSizeLength = sizeof(int);
 	internal const int TotalClustersLength = sizeof(long);
@@ -32,10 +32,12 @@ public class StreamContainerHeader {
 	internal const int PolicyOffset = VersionOffset + VersionLength;
 	internal const int StreamCountOffset = PolicyOffset + PolicyLength;
 	internal const int StreamDescriptorsEndClusterOffset = StreamCountOffset + StreamCountLength;
-	internal const int StreamDescriptorKeySizeOffset = StreamDescriptorsEndClusterOffset + StreamDescriptorsEndClusterLength;
-	internal const int StreamDescriptorRecordsOffset = StreamDescriptorKeySizeOffset + StreamDescriptorKeySizeLength;
-	internal const int ClusterSizeOffset = StreamDescriptorRecordsOffset + ReservedStreamsLength;
+	//internal const int StreamDescriptorKeySizeOffset = StreamDescriptorsEndClusterOffset + StreamDescriptorsEndClusterLength;
+	//internal const int ReservedStreamsOffset = StreamDescriptorKeySizeOffset + StreamDescriptorKeySizeLength;
+	internal const int ReservedStreamsOffset = StreamDescriptorsEndClusterOffset + StreamDescriptorsEndClusterLength;
+	internal const int ClusterSizeOffset = ReservedStreamsOffset + ReservedStreamsLength;
 	internal const int TotalClustersOffset = ClusterSizeOffset + ClusterSizeLength;
+
 
 	private readonly Stream _headerStream;
 	private readonly Stream _extensionPropertiesStream;
@@ -63,11 +65,11 @@ public class StreamContainerHeader {
 		_policyProperty = new StreamMappedProperty<StreamContainerPolicy>(_headerStream, PolicyOffset, PolicyLength, EnumSerializer<StreamContainerPolicy>.Instance, _reader, _writer, @lock: _lock);
 		_streamCountProperty = new StreamMappedProperty<long>(_headerStream, StreamCountOffset, StreamCountLength, PrimitiveSerializer<long>.Instance, _reader, _writer, @lock: _lock);
 		_streamDescriptorsClusterProperty = new StreamMappedProperty<long>(_headerStream, StreamDescriptorsEndClusterOffset, StreamDescriptorsEndClusterLength, PrimitiveSerializer<long>.Instance, _reader, _writer, @lock: _lock);
-		_streamDescriptorKeySizeProperty = new StreamMappedProperty<ushort>(_headerStream, StreamDescriptorKeySizeOffset, StreamDescriptorKeySizeLength, PrimitiveSerializer<ushort>.Instance, _reader, _writer, @lock: _lock);
-		_reservedStreamsProperty = new StreamMappedProperty<long>(_headerStream, StreamDescriptorRecordsOffset, ReservedStreamsLength, PrimitiveSerializer<long>.Instance, _reader, _writer, @lock: _lock);
+		//_streamDescriptorKeySizeProperty = new StreamMappedProperty<ushort>(_headerStream, StreamDescriptorKeySizeOffset, StreamDescriptorKeySizeLength, PrimitiveSerializer<ushort>.Instance, _reader, _writer, @lock: _lock);
+		_reservedStreamsProperty = new StreamMappedProperty<long>(_headerStream, ReservedStreamsOffset, ReservedStreamsLength, PrimitiveSerializer<long>.Instance, _reader, _writer, @lock: _lock);
 		_clusterSizeProperty = new StreamMappedProperty<int>(_headerStream, ClusterSizeOffset, ClusterSizeLength, PrimitiveSerializer<int>.Instance, _reader, _writer, @lock: _lock);
 		_totalClustersProperty = new StreamMappedProperty<long>(_headerStream, TotalClustersOffset, TotalClustersLength, PrimitiveSerializer<long>.Instance, _reader, _writer, @lock: _lock);
-		_extensionPropertiesStream = rootStream.AsBounded(TotalClustersOffset + TotalClustersLength, ByteLength - TotalClustersLength - ClusterSizeLength - ReservedStreamsLength - StreamDescriptorKeySizeLength - StreamDescriptorsEndClusterLength - StreamCountLength - PolicyOffset - VersionLength, allowInnerResize: false, useRelativeOffset: true);
+		_extensionPropertiesStream = rootStream.AsBounded(TotalClustersOffset + TotalClustersLength, ByteLength - TotalClustersLength - ClusterSizeLength - ReservedStreamsLength /*- StreamDescriptorKeySizeLength*/ - StreamDescriptorsEndClusterLength - StreamCountLength - PolicyOffset - VersionLength, allowInnerResize: false, useRelativeOffset: true);
 	}
 
 	public byte Version { get => _versionProperty.Value; internal set => _versionProperty.Value = value; }
@@ -78,13 +80,13 @@ public class StreamContainerHeader {
 
 	public long StreamDescriptorsEndCluster { get => _streamDescriptorsClusterProperty.Value; internal set => _streamDescriptorsClusterProperty.Value = value; }
 
-	public ushort StreamDescriptorKeySize { get => _streamDescriptorKeySizeProperty.Value; internal set => _streamDescriptorKeySizeProperty.Value = value; }
+//	public ushort StreamDescriptorKeySize { get => _streamDescriptorKeySizeProperty.Value; internal set => _streamDescriptorKeySizeProperty.Value = value; }
 
 	public long ReservedStreams {
 		get => _reservedStreamsProperty.Value;
 		internal set {
-			if (value == 0 && Policy.HasFlag(StreamContainerPolicy.TrackKey))
-				throw new InvalidOperationException($"Cannot set {nameof(ReservedStreams)} to 0 as {nameof(Policy)} has {StreamContainerPolicy.TrackKey} enabled");
+			//if (value == 0 && Policy.HasFlag(StreamContainerPolicy.TrackKey))
+			//	throw new InvalidOperationException($"Cannot set {nameof(ReservedStreams)} to 0 as {nameof(Policy)} has {StreamContainerPolicy.TrackKey} enabled");
 
 			if (StreamCount > _reservedStreamsProperty.Value)
 				throw new InvalidOperationException($"Cannot set {nameof(ReservedStreams)} to {value} as records already exist with value");
@@ -112,9 +114,9 @@ public class StreamContainerHeader {
 		Guard.Ensure(_headerStream.Length >= ByteLength, "Missing or corrupt header");
 	}
 
-	public void Create(byte version, int clusterSize, long recordKeySize, long reservedRecords) {
+	public void Create(byte version, int clusterSize,/* long recordKeySize,*/ long reservedRecords) {
 		Guard.ArgumentGTE(clusterSize, 1, nameof(clusterSize));
-		Guard.ArgumentInRange(recordKeySize, 0, ushort.MaxValue, nameof(recordKeySize));
+		//Guard.ArgumentInRange(recordKeySize, 0, ushort.MaxValue, nameof(recordKeySize));
 		Guard.ArgumentGTE(reservedRecords, 0, nameof(reservedRecords));
 		
 		using var accessScope = _lock.EnterAccessScope();
@@ -124,7 +126,7 @@ public class StreamContainerHeader {
 		Policy = 0;
 		StreamCount = 0;
 		StreamDescriptorsEndCluster = Cluster.Null;
-		StreamDescriptorKeySize = (ushort)recordKeySize;
+		//StreamDescriptorKeySize = (ushort)recordKeySize;
 		ReservedStreams = reservedRecords;
 		ClusterSize = clusterSize;
 		TotalClusters = 0;
@@ -140,7 +142,7 @@ public class StreamContainerHeader {
 		Guard.Ensure(ReservedStreams >= 0, $"Corrupt header property {nameof(ReservedStreams)} value was {ReservedStreams} bytes");
 		Guard.Ensure(StreamCount >= 0, $"Corrupt header property {nameof(StreamCount)} value was {StreamCount} bytes");
 		Guard.Ensure(StreamDescriptorsEndCluster >= Cluster.Null, $"Corrupt header property {nameof(StreamDescriptorsEndCluster)} value was {StreamDescriptorsEndCluster} bytes");
-		Guard.Against(Policy.HasFlag(StreamContainerPolicy.TrackKey) && StreamDescriptorKeySize <= 0, $"Corrupt header property {nameof(StreamDescriptorKeySize)} value was {StreamDescriptorKeySize} but {nameof(Policy)} property value was {StreamDescriptorKeySize}");
+		//Guard.Against(Policy.HasFlag(StreamContainerPolicy.TrackKey) && StreamDescriptorKeySize <= 0, $"Corrupt header property {nameof(StreamDescriptorKeySize)} value was {StreamDescriptorKeySize} but {nameof(Policy)} property value was {StreamDescriptorKeySize}");
 	}
 
 

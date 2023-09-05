@@ -18,12 +18,13 @@ namespace Hydrogen;
 
 public interface IMerkleTree {
 	CHF HashAlgorithm { get; }
+
 	byte[] Root { get; }
+
 	MerkleSize Size { get; }
 
 	ReadOnlySpan<byte> GetValue(MerkleCoordinate coordinate);
 }
-
 
 public static class IMerkleTreeExtensions {
 
@@ -33,6 +34,10 @@ public static class IMerkleTreeExtensions {
 
 	public static MerkleNode GetRootNode(this IMerkleTree tree) {
 		return tree.GetNodeAt(MerkleCoordinate.Root(tree.Size));
+	}
+
+	public static IEnumerable<byte[]> GetLeafs(this IMerkleTree tree) {
+		return Tools.Collection.RangeL(0, tree.Size.LeafCount).Select(i => tree.GetValue(MerkleCoordinate.LeafAt(i)).ToArray());
 	}
 
 	public static byte[] CalculateOldRoot(this IMerkleTree tree, int priorLeafCount)

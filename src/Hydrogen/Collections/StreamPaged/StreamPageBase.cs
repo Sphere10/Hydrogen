@@ -18,7 +18,7 @@ internal abstract class StreamPageBase<TItem> : PageBase<TItem> {
 
 	public long StartPosition { get; protected set; }
 
-	public abstract long ReadItemBytes(long itemIndex, long byteOffset, long byteLength, out byte[] bytes);
+	public abstract long ReadItemBytes(long itemIndex, long byteOffset, long? byteLength, out byte[] bytes);
 
 	public abstract void WriteItemBytes(long itemIndex, long byteOffset, ReadOnlySpan<byte> bytes);
 

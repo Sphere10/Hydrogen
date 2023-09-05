@@ -20,6 +20,21 @@ namespace Hydrogen.Tests;
 public class StreamPagedListTests {
 
 	[Test]
+	public void EmptyString_Bug() {
+		using var stream = new MemoryStream();
+		using var streamContainer = new StreamContainer(stream, reservedStreams: 1, autoLoad: true);
+		using var clusteredStream = streamContainer.OpenWrite(0);
+		streamContainer.AddBytes(new byte[256]);
+		var serializer = new StringSerializer(Encoding.UTF8).AsNullable().AsConstantLengthSerializer(256, SizeDescriptorStrategy.UseVarInt);
+		var size = serializer.StaticSize;
+		var list = new StreamPagedList<string>(serializer, clusteredStream, includeListHeader: false, autoLoad: true);
+		list.Add("");
+		Assert.AreEqual(1, list.Count);
+		var item = list.Read(0);
+		Assert.That(item, Is.EqualTo(string.Empty));
+	}
+
+	[Test]
 	public void Add_1([Values(1, 111)] int pageSize) {
 		using var stream = new MemoryStream();
 		var list = new StreamPagedList<string>(new StringSerializer(Encoding.UTF8), stream, pageSize);

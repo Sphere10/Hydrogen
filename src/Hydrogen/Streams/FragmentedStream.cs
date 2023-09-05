@@ -82,9 +82,15 @@ public class FragmentedStream : Stream {
 		return Position;
 	}
 
+	public override int ReadByte() {
+		if (Position >= Length)
+			return -1;
+		return base.ReadByte();
+	}
+
 	public override int Read(byte[] buffer, int offset, int count) {
 		Guard.ArgumentNotNull(buffer, nameof(buffer));
-		Guard.ArgumentInRange(offset, 0, buffer.Length - 1, nameof(offset));
+		Guard.ArgumentInRange(offset, 0, Math.Max(0, buffer.Length - 1), nameof(offset));
 		Guard.ArgumentInRange(count, 0, int.MaxValue, nameof(count));
 
 		if (Length == 0)

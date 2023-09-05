@@ -26,7 +26,16 @@ public sealed class TransactionalDictionaryTests : TransactionalDictionaryTestsB
 		var fn = file;
 		var disposable1 = Tools.Scope.ExecuteOnDispose(() => Tools.Lambda.ActionIgnoringExceptions(() => File.Delete(fn)));
 		var disposable2 = Tools.Scope.ExecuteOnDispose(() => Tools.Lambda.ActionIgnoringExceptions(() => Tools.FileSystem.DeleteDirectory(dir)));
-		clustered = new TransactionalDictionary<TKey, TValue>(file, dir, keySerializer, valueSerializer, null, keyComparer, valueComparer, policy: policy | StreamContainerPolicy.TrackChecksums);
+		clustered = new TransactionalDictionary<TKey, TValue>(
+			file, 
+			dir, 
+			keySerializer, 
+			valueSerializer,
+			new ItemDigestor<TKey>(CHF.Blake2b_128, keySerializer, Endianness.LittleEndian), 
+			keyComparer, 
+			valueComparer, 
+			policy: policy, 
+			implementation: StreamMappedDictionaryImplementation.KeyValueListBased);
 		return new Disposables(disposable1, disposable2, clustered);
 	}
 

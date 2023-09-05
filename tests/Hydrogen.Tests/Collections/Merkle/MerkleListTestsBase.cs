@@ -28,6 +28,7 @@ public abstract class MerkleListTestsBase {
 	[Test]
 	public void TestSimple_1([Values(CHF.SHA2_256, CHF.Blake2b_128)] CHF chf) {
 		using (CreateMerkleList(chf, out var merkleList)) {
+			Assert.That(merkleList.MerkleTree.Root, Is.Null);
 			merkleList.AddRange(new[] { "Alpha", "Beta", "Gamma" });
 			merkleList.Remove("Beta");
 			merkleList.RemoveAt(0);
@@ -43,6 +44,8 @@ public abstract class MerkleListTestsBase {
 		var memStream = new MemoryStream();
 		var clusteredList = new StreamMappedMerkleList<string>(memStream, 256, chf);
 		clusteredList.Load();
+
+		Assert.That(clusteredList.MerkleTree.Root, Is.Null);
 		clusteredList.Add("beta");
 		clusteredList.Insert(0, "alpha");
 		clusteredList.Insert(2, "gammaa");
@@ -56,6 +59,8 @@ public abstract class MerkleListTestsBase {
 	[Test]
 	public void TestSimple_3([Values(CHF.SHA2_256, CHF.Blake2b_128)] CHF chf) {
 		using (CreateMerkleList(chf, out var merkleList)) {
+			Assert.That(merkleList.MerkleTree.Root, Is.Null);
+
 			merkleList.AddRange(new[] { "Alpha", "Beta", "Gamma" });
 			Assert.That(merkleList.MerkleTree.Root, Is.EqualTo(MerkleTree.ComputeMerkleRoot(new[] { "Alpha", "Beta", "Gamma" }, chf)));
 
@@ -78,9 +83,37 @@ public abstract class MerkleListTestsBase {
 	}
 
 	[Test]
+	public void TestSimple_5([Values(CHF.SHA2_256, CHF.Blake2b_128)] CHF chf) {
+		using (CreateMerkleList(chf, out var merkleList)) {
+			Assert.That(merkleList.MerkleTree.Root, Is.Null);
+
+			merkleList.AddRange(new[] { "Alpha", "Beta", "Gamma" });
+			Assert.That(merkleList.MerkleTree.Root, Is.EqualTo(MerkleTree.ComputeMerkleRoot(new[] { "Alpha", "Beta", "Gamma" }, chf)));
+
+			merkleList.Clear();
+			Assert.That(merkleList.MerkleTree.Root, Is.Null);
+
+		}
+	}
+
+	[Test]
+	public void TestSimple_6([Values(CHF.SHA2_256, CHF.Blake2b_128)] CHF chf) {
+		using (CreateMerkleList(chf, out var merkleList)) {
+			Assert.That(merkleList.MerkleTree.Root, Is.Null);
+
+			merkleList.AddRange(new[] { "Alpha", "Beta", "Gamma" });
+			Assert.That(merkleList.MerkleTree.Root, Is.EqualTo(MerkleTree.ComputeMerkleRoot(new[] { "Alpha", "Beta", "Gamma" }, chf)));
+
+			merkleList.RemoveRange(0, 3);
+			Assert.That(merkleList.MerkleTree.Root, Is.Null);
+
+		}
+	}
+
+	[Test]
 	public void SupportsNullItems([Values(CHF.SHA2_256, CHF.Blake2b_128)] CHF chf) {
 		using (CreateMerkleList(chf, out var merkleList)) {
-			var nullHashValue = Tools.Array.Gen<byte>(Hashers.GetDigestSizeBytes(chf), 0);
+			var nullHashValue = Hashers.ZeroHash(chf);
 			Assert.That(() => merkleList.Add(null), Throws.Nothing);
 			Assert.That(merkleList.MerkleTree.Root, Is.EqualTo(nullHashValue));
 
@@ -96,6 +129,19 @@ public abstract class MerkleListTestsBase {
 			merkleList.Clear();
 			Assert.That(merkleList.MerkleTree.Root, Is.Null);
 		}
+	}
+
+	
+	[Test]
+	public void NullAndEmptyNotSame([Values(CHF.SHA2_256, CHF.Blake2b_128)] CHF chf) {
+		using var _ = CreateMerkleList(chf, out var merkleList1);
+		using var __ = CreateMerkleList(chf, out var merkleList2);
+
+		merkleList1.Add(null);
+		Assert.That(merkleList1.MerkleTree.Root, Is.EqualTo(Hashers.ZeroHash(chf)));
+
+		merkleList2.Add("");
+		Assert.That(merkleList2.MerkleTree.Root, Is.EqualTo(MerkleTree.ComputeMerkleRoot(new [] { string.Empty }, chf)));
 	}
 
 	[Test]

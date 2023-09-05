@@ -23,9 +23,9 @@ public enum ClusteredStreamTraits : byte {
 	Null = 1 << 0,
 
 	/// <summary>
-	/// Represents a stream which is deleted but whose index can be resurrected for a value.
+	/// Stream should be interpreted as reaped (an empty and available slot)
 	/// </summary>
-	Tomb = 1 << 1,
+	Reaped = 1 << 1,
 
 	/// <summary>
 	/// Default tran for a clustered stream

@@ -10,5 +10,5 @@ using System;
 
 namespace Hydrogen;
 
-public interface ITransactionalDictionary<TKey, TValue> : IStreamMappedDictionary<TKey, TValue>, ITransactionalObject, IDisposable {
+public interface ITransactionalDictionary<TKey, TValue> : IStreamMappedDictionary<TKey, TValue>, ITransactionalObject {
 }

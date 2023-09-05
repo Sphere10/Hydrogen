@@ -17,6 +17,18 @@ public class FragmentedStreamTests {
 
 	private Random Random { get; } = new();
 
+
+	[Test]
+	public void ReadByteAndEndReturnsNegOne() {
+		var fragments = new ByteArrayStreamFragmentProvider();
+		var stream = new FragmentedStream(fragments);
+		var expected = new MemoryStream();
+
+		stream.Seek(0, SeekOrigin.End);
+		var read = stream.ReadByte();
+		Assert.That(read, Is.EqualTo(-1));
+	}
+
 	[Test]
 	public void Empty() {
 		var fragments = new ByteArrayStreamFragmentProvider();

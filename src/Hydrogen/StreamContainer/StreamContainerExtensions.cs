@@ -13,14 +13,21 @@ namespace Hydrogen;
 
 internal static class StreamContainerExtensions {
 
-	public static bool IsNull(this StreamContainer streams, long index) {
-		using var _ = streams.EnterAccessScope();
-		return streams.GetStreamDescriptor(index).Traits.HasFlag(ClusteredStreamTraits.Null);
-	}
+	//public static bool IsTraits(this StreamContainer streams, long index) {
+	//	using var _ = streams.EnterAccessScope();
+	//	return streams.GetStreamDescriptor(index).Traits.HasFlag(ClusteredStreamTraits.Null);
+	//}
+
+	//public static bool IsReaped(this StreamContainer streams, long index) {
+	//	using var _ = streams.EnterAccessScope();
+	//	return streams.GetStreamDescriptor(index).Traits.HasFlag(ClusteredStreamTraits.Reaped);
+	//}
 
 	public static byte[] ReadAll(this StreamContainer streams, long index) {
 		using var _ = streams.EnterAccessScope();
-		using var stream = streams.OpenWrite(index);
+		using var stream = streams.OpenRead(index);
+		if (stream.IsNull)
+			return null;
 		return stream.ReadAll();
 	}
 

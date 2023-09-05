@@ -20,15 +20,15 @@ public class StreamMappedMerkleListTests : MerkleListTestsBase {
 	[Test]
 	public void TestAdaptedScopes([Values(CHF.SHA2_256, CHF.Blake2b_128)] CHF chf) {
 		var memStream = new MemoryStream();
-		var clusteredList = new StreamMappedMerkleList<string>(memStream, 256, chf, autoLoad: true);
-		using (clusteredList.EnterAddScope("beta")) ;
-		using (clusteredList.EnterInsertScope(0, "alpha")) ;
-		using (clusteredList.EnterAddScope("alphaa")) ;
+		using var clusteredList = new StreamMappedMerkleList<string>(memStream, 256, chf, autoLoad: true);
+		clusteredList.Add("beta");
+		clusteredList.Insert(0, "alpha");
+		clusteredList.Add("alphaa");
 		clusteredList.RemoveAt(2);
-		using (clusteredList.EnterInsertScope(2, "gammaa")) ;
-		using (clusteredList.EnterAddScope("delta")) ;
-		using (clusteredList.EnterUpdateScope(2, "gamma")) ;
-		using (clusteredList.EnterAddScope("epsilon")) ;
+		clusteredList.Insert(2, "gammaa");
+		clusteredList.Add("delta");
+		clusteredList.Update(2, "gamma");
+		clusteredList.Add("epsilon");
 		Assert.That(clusteredList.MerkleTree.Root, Is.EqualTo(MerkleTree.ComputeMerkleRoot(new[] { "alpha", "beta", "gamma", "delta", "epsilon" }, chf)));
 	}
 
@@ -36,7 +36,7 @@ public class StreamMappedMerkleListTests : MerkleListTestsBase {
 		var memStream = new MemoryStream();
 		var clusteredList = new StreamMappedMerkleList<string>(memStream, DefaultClusterSize, chf, autoLoad: true);
 		merkleList = clusteredList;
-		return memStream;
+		return new Disposables(memStream, clusteredList);
 	}
 
 }

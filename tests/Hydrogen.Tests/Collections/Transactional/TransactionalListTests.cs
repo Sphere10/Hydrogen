@@ -18,6 +18,20 @@ namespace Hydrogen.Tests;
 public class TransactionalListTests {
 
 	[Test]
+	public void LoadWhenNotRequiredDoesntBreak_BugCase([StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
+		var file = Tools.FileSystem.GenerateTempFilename();
+		var dir = Tools.FileSystem.GetTempEmptyDirectory(true);
+		using (Tools.Scope.ExecuteOnDispose(() => Tools.Lambda.ActionIgnoringExceptions(() => File.Delete(file))))
+		using (Tools.Scope.ExecuteOnDispose(() => Tools.Lambda.ActionIgnoringExceptions(() => Tools.FileSystem.DeleteDirectory(dir))))
+		using (var txnFile = new TransactionalList<string>(file, dir, new StringSerializer(Encoding.UTF8), policy: policy)) {
+			Assert.That(txnFile.RequiresLoad, Is.True);
+			txnFile.Load();
+			Assert.That(txnFile.RequiresLoad, Is.False);
+			Assert.That( () => txnFile.Load(), Throws.Nothing);
+		}
+	}
+
+	[Test]
 	public void AddOne([StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
 		var file = Tools.FileSystem.GenerateTempFilename();
 		var dir = Tools.FileSystem.GetTempEmptyDirectory(true);

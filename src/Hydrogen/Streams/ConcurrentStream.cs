@@ -122,7 +122,8 @@ public class ConcurrentStream : StreamDecorator, ICriticalObject {
 	}
 
 	public override void Close() {
-		CheckLocked();
+		//CheckLocked();
+		using var scope = IsLocked ? EnterAccessScope() : new NoOpScope();
 		InnerStream.Close();
 	}
 

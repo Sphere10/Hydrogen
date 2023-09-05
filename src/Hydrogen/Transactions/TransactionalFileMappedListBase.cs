@@ -68,7 +68,7 @@ public abstract class TransactionalFileMappedListBase<TItem> : FilePagedListBase
 						if (pageFileStream.Length > 0) {
 							var page = InternalPages[pageMarkers.Key];
 							Stream.Seek(page.StartIndex, SeekOrigin.Begin);
-							Tools.Streams.RouteStream(pageFileStream, Stream, pageFileStream.Length, blockSizeInBytes: 262144);
+							Tools.Streams.RouteStream(pageFileStream, Stream, pageFileStream.Length, blockSizeInBytes: HydrogenDefaults.TransactionalPageBufferOperationBlockSize);
 						}
 					}
 				}

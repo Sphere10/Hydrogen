@@ -31,3 +31,8 @@ public abstract class MerkleTreeDecorator<TMerkleTree> : IMerkleTree where TMerk
 
 	public virtual ReadOnlySpan<byte> GetValue(MerkleCoordinate coordinate) => InternalMerkleTree.GetValue(coordinate);
 }
+
+public abstract class MerkleTreeDecorator : MerkleTreeDecorator<IMerkleTree> {
+	protected MerkleTreeDecorator(IMerkleTree internalMerkleTree) : base(internalMerkleTree) {
+	}
+}

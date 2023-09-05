@@ -8,10 +8,11 @@
 
 namespace Hydrogen;
 
-public enum ListOperationType {
+public enum ObjectContainerOperationType {
 	Read,
 	Add,
 	Insert,
 	Update,
-	Remove
+	Remove,
+	Reap
 }

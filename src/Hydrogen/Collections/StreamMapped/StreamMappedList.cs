@@ -12,7 +12,7 @@ using System.IO;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Tools;
+using Hydrogen.ObjectSpace.MetaData;
 
 namespace Hydrogen;
 
@@ -21,29 +21,98 @@ namespace Hydrogen;
 /// </summary>
 /// <typeparam name="TItem"></typeparam>
 public class StreamMappedList<TItem> : SingularListBase<TItem>, IStreamMappedList<TItem> {
-
 	public event EventHandlerEx<object> Loading { add => ObjectContainer.Loading += value; remove => ObjectContainer.Loading -= value; }
 	public event EventHandlerEx<object> Loaded { add => ObjectContainer.Loaded += value; remove => ObjectContainer.Loaded -= value; }
 
 	private int _version;
+	private readonly ObjectContainerIndex<TItem, int> _checksumIndex;  // null checksum means item at index
 
-	public StreamMappedList(Stream rootStream, int clusterSize, IItemSerializer<TItem> itemSerializer = null,
-							IEqualityComparer<TItem> itemComparer = null, StreamContainerPolicy policy = StreamContainerPolicy.Default, long recordKeySize = 0,
-							long reservedRecords = 0, Endianness endianness = Endianness.LittleEndian, bool autoLoad = false)
-		: this(new StreamContainer(rootStream, clusterSize, policy, recordKeySize, reservedRecords, endianness, autoLoad), itemSerializer, itemComparer) {
+	public StreamMappedList(
+		Stream rootStream,
+		int clusterSize,
+		IItemSerializer<TItem> itemSerializer = null,
+		IEqualityComparer<TItem> itemComparer = null,
+		IItemChecksummer<TItem> itemChecksummer = null,
+		StreamContainerPolicy policy = StreamContainerPolicy.Default,
+		long reservedStreams = 0,
+		long checksumIndexStreamIndex = 0,
+		Endianness endianness = Endianness.LittleEndian, 
+		bool autoLoad = false
+	) : this(
+		new StreamContainer(
+			rootStream, 
+			clusterSize,
+			policy,
+			reservedStreams,
+			endianness, 
+			false
+		),
+		itemSerializer, 
+		itemComparer, 
+		itemChecksummer,
+		checksumIndexStreamIndex,
+		autoLoad
+	)  {
+		if (itemChecksummer != null)
+			Guard.Ensure(reservedStreams > checksumIndexStreamIndex, $"No reserved stream available for checksum index {checksumIndexStreamIndex}");
+
+		ObjectContainer.OwnsStreamContainer = true;
 	}
 
-	public StreamMappedList(StreamContainer streamContainer, IItemSerializer<TItem> itemSerializer = null, IEqualityComparer<TItem> itemComparer = null) 
-		: this(new ObjectContainer<TItem>(streamContainer, itemSerializer, streamContainer.Policy.HasFlag(StreamContainerPolicy.FastAllocate)), itemSerializer, itemComparer) {
+	public StreamMappedList(
+		StreamContainer streamContainer,
+		IItemSerializer<TItem> itemSerializer = null,
+		IEqualityComparer<TItem> itemComparer = null,
+		IItemChecksummer<TItem> itemChecksummer = null,
+		long checksumIndexStreamIndex = 0, 
+		bool autoLoad = false
+	) : this(
+		new ObjectContainer<TItem>(
+			streamContainer, 
+			itemSerializer, 
+			streamContainer.Policy.HasFlag(StreamContainerPolicy.FastAllocate)
+		), 
+		itemSerializer, 
+		itemComparer, 
+		itemChecksummer, 
+		checksumIndexStreamIndex,
+		autoLoad
+	) {
+		OwnsContainer = true;
 	}
 
-
-	public StreamMappedList(ObjectContainer<TItem> objectContainer, IItemSerializer<TItem> itemSerializer = null, IEqualityComparer<TItem> itemComparer = null) {
+	public StreamMappedList(
+		ObjectContainer<TItem> objectContainer,
+		IItemSerializer<TItem> itemSerializer = null,
+		IEqualityComparer<TItem> itemComparer = null,
+		IItemChecksummer<TItem> itemChecksummer = null,
+		long checksumIndexStreamIndex = 0,
+		bool autoLoad = false
+	) {
 		Guard.ArgumentNotNull(objectContainer, nameof(objectContainer));
 		ObjectContainer = objectContainer;
 		ItemSerializer = itemSerializer ?? ItemSerializer<TItem>.Default;
 		ItemComparer = itemComparer ?? EqualityComparer<TItem>.Default;
+		if (itemChecksummer != null) {
+			ObjectContainer.StreamContainer.RegisterInitAction( () => Guard.Ensure(objectContainer.StreamContainer.Header.ReservedStreams > checksumIndexStreamIndex, $"No reserved stream {checksumIndexStreamIndex} available for checksum index"));
+			Guard.EnsureNotThrows(()=> itemChecksummer.CalculateChecksum(default), $"ItemChecksummer cannot calculate checksum for default values of {typeof(TItem).Name}");
+			// ensure that default integer values are substituted with 1, since 0 is reserved for "no checksum"
+			ItemChecksummer = itemChecksummer.WithSubstitution(default, 1); 
+		}
 		_version = 0;
+
+		_checksumIndex =
+			itemChecksummer != null ?
+			new ObjectContainerIndex<TItem, int>(
+				ObjectContainer,
+				checksumIndexStreamIndex,
+				ItemChecksummer.CalculateChecksum,
+				EqualityComparer<int>.Default,
+				PrimitiveSerializer<int>.Instance) : 
+			null;
+
+		if (autoLoad && RequiresLoad)
+			Load();
 	}
 
 	public override long Count => ObjectContainer.Count;
@@ -54,11 +123,21 @@ public class StreamMappedList<TItem> : SingularListBase<TItem>, IStreamMappedLis
 
 	public IEqualityComparer<TItem> ItemComparer { get; }
 
+	public IItemChecksummer<TItem> ItemChecksummer { get; }
+
+	public bool OwnsContainer { get; set; }
+
 	public virtual bool RequiresLoad => ObjectContainer.RequiresLoad;
 
 	public virtual void Load() => ObjectContainer.Load();
 
 	public virtual Task LoadAsync() => ObjectContainer.LoadAsync();
+
+	public virtual void Dispose() {
+		_checksumIndex?.Dispose();
+		if (OwnsContainer)
+			ObjectContainer.Dispose();
+	}
 
 	public override TItem Read(long index) {
 		CheckIndex(index, true);
@@ -66,11 +145,14 @@ public class StreamMappedList<TItem> : SingularListBase<TItem>, IStreamMappedLis
 	}
 
 	public override long IndexOfL(TItem item) {
-		// TODO: if _streams keeps checksums, use that to quickly filter
-		var listRecords = Count;
-		for (var i = 0; i < listRecords; i++) {
-			if (ItemComparer.Equals(item, Read(i)))
-				return i;
+		var indicesToCheck =
+			_checksumIndex != null ?
+			_checksumIndex.Lookup[ItemChecksummer.CalculateChecksum(item)] :
+			Tools.Collection.RangeL(0L, Count);
+
+		foreach (var index in indicesToCheck) {
+			if (ItemComparer.Equals(item, Read(index)))
+				return index;
 		}
 		return -1L;
 	}
@@ -81,32 +163,14 @@ public class StreamMappedList<TItem> : SingularListBase<TItem>, IStreamMappedLis
 		using var _ = EnterAddScope(item);
 	}
 
-	public ClusteredStream EnterAddScope(TItem item) {
-		// Index checking deferred to Streams
-		UpdateVersion();
-		return ObjectContainer.SaveItemAndReturnStream(ObjectContainer.Count, item, ListOperationType.Add);
-	}
-
 	public override void Insert(long index, TItem item) {
 		CheckIndex(index, true);
 		using var _ = EnterInsertScope(index, item);
 	}
 
-	public ClusteredStream EnterInsertScope(long index, TItem item) {
-		// Index checking deferred to Streams
-		UpdateVersion();
-		return ObjectContainer.SaveItemAndReturnStream(index, item, ListOperationType.Insert);
-	}
-
 	public override void Update(long index, TItem item) {
 		CheckIndex(index, false);
 		using var _ = EnterUpdateScope(index, item);
-	}
-
-	public ClusteredStream EnterUpdateScope(long index, TItem item) {
-		// Index checking deferred to Streams
-		UpdateVersion();
-		return ObjectContainer.SaveItemAndReturnStream(index, item, ListOperationType.Update);
 	}
 
 	public override bool Remove(TItem item) {
@@ -146,6 +210,24 @@ public class StreamMappedList<TItem> : SingularListBase<TItem>, IStreamMappedLis
 				throw new InvalidOperationException("Collection was mutated during enumeration");
 			yield return Read(i);
 		}
+	}
+
+	protected ClusteredStream EnterAddScope(TItem item) {
+		// Index checking deferred to Streams
+		UpdateVersion();
+		return ObjectContainer.SaveItemAndReturnStream(ObjectContainer.Count, item, ObjectContainerOperationType.Add);
+	}
+
+	protected ClusteredStream EnterInsertScope(long index, TItem item) {
+		// Index checking deferred to Streams
+		UpdateVersion();
+		return ObjectContainer.SaveItemAndReturnStream(index, item, ObjectContainerOperationType.Insert);
+	}
+
+	protected ClusteredStream EnterUpdateScope(long index, TItem item) {
+		// Index checking deferred to Streams
+		UpdateVersion();
+		return ObjectContainer.SaveItemAndReturnStream(index, item, ObjectContainerOperationType.Update);
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]

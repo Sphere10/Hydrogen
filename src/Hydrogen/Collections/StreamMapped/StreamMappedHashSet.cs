@@ -31,35 +31,54 @@ public class StreamMappedHashSet<TItem> : SetBase<TItem>, IStreamMappedHashSet<T
 	internal readonly IStreamMappedDictionary<byte[], TItem> InternalDictionary;
 	private readonly IItemHasher<TItem> _hasher;
 
-	public StreamMappedHashSet(Stream rootStream, int clusterSize, IItemSerializer<TItem> serializer, CHF chf, IEqualityComparer<TItem> comparer = null, StreamContainerPolicy policy = StreamContainerPolicy.DictionaryDefault,
-	                           int reservedRecords = 0, Endianness endianness = Endianness.LittleEndian)
-		: this(rootStream, clusterSize, serializer, new ItemDigestor<TItem>(chf, serializer), comparer, policy, reservedRecords, endianness) {
+	public StreamMappedHashSet(
+		Stream rootStream,
+		int clusterSize,
+		IItemSerializer<TItem> serializer,
+		CHF chf,
+		IEqualityComparer<TItem> comparer = null,
+		StreamContainerPolicy policy = StreamContainerPolicy.Default,
+		Endianness endianness = Endianness.LittleEndian)
+		: this(
+			  rootStream,
+			  clusterSize,
+			  serializer,
+			  new ItemDigestor<TItem>(chf, serializer),
+			  comparer,
+			  policy,
+			  endianness
+		) {
 	}
 
-	public StreamMappedHashSet(Stream rootStream, int clusterSize, IItemSerializer<TItem> serializer, IItemHasher<TItem> hasher, IEqualityComparer<TItem> comparer = null, StreamContainerPolicy policy = StreamContainerPolicy.DictionaryDefault,
-	                           int reservedRecords = 0, Endianness endianness = Endianness.LittleEndian)
-		: this(
-			new StreamMappedDictionarySK<byte[], TItem>(
+	public StreamMappedHashSet(
+		Stream rootStream,
+		int clusterSize,
+		IItemSerializer<TItem> serializer,
+		IItemHasher<TItem> hasher,
+		IEqualityComparer<TItem> comparer = null,
+		StreamContainerPolicy policy = StreamContainerPolicy.Default,
+		Endianness endianness = Endianness.LittleEndian
+	) : this(
+			new StreamMappedDictionaryCLK<byte[], TItem>(
 				rootStream,
 				clusterSize,
-				new StaticSizeByteArraySerializer(hasher.DigestLength),
+				new StaticSizeByteArraySerializer(hasher.DigestLength).AsNullable(),
 				serializer,
-				new HashChecksummer(),
 				new ByteArrayEqualityComparer(),
 				comparer,
 				policy,
-				reservedRecords,
-				endianness
-			),
+				endianness),
 			comparer,
 			hasher
 		) {
 	}
 
-	public StreamMappedHashSet(IStreamMappedDictionary<byte[], TItem> internalDictionary, IEqualityComparer<TItem> comparer, IItemHasher<TItem> hasher)
-		: base(comparer ?? EqualityComparer<TItem>.Default) {
+	public StreamMappedHashSet(
+		IStreamMappedDictionary<byte[], TItem> internalDictionary,
+		IEqualityComparer<TItem> comparer,
+		IItemHasher<TItem> hasher
+	) : base(comparer ?? EqualityComparer<TItem>.Default) {
 		Guard.ArgumentNotNull(internalDictionary, nameof(internalDictionary));
-		Guard.Argument(internalDictionary.ObjectContainer.StreamContainer.Policy.HasFlag(StreamContainerPolicy.TrackChecksums), nameof(internalDictionary), $"Checksum tracking must be enabled in clustered dictionary implementations.");
 		InternalDictionary = internalDictionary;
 		_hasher = hasher;
 	}

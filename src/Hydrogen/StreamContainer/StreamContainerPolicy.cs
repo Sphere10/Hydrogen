@@ -34,22 +34,6 @@ public enum StreamContainerPolicy : uint {
 	IntegrityChecks = 1 << 3,
 
 	///// <summary>
-	///// Tracks a UInt32 checksum of streams in the stream record (used by dictionaries).
-	///// </summary>
-	TrackChecksums = 1 << 4,
-
-
-	///// <summary>
-	///// Tracks a constant byte[] key in the stream record (used by dictionaries).
-	///// </summary>
-	TrackKey = 1 << 6,
-
-	///// <summary>
-	///// Builds a merkle-tree from the streams, stores the root in the header (used for blockchain). 
-	///// </summary>
-	//Merkleized = 1 << 5,
-
-	///// <summary>
 	///// Encrypts the underlying data
 	///// </summary>
 	//Encrypted,
@@ -57,11 +41,9 @@ public enum StreamContainerPolicy : uint {
 	/// <summary>
 	/// Default policy suitable for most use-cases
 	/// </summary>
-	Default = FastAllocate | CacheDescriptors | CacheClusterHeaders,
+	Default = CacheDescriptors | CacheClusterHeaders | IntegrityChecks,
 
-	DictionaryDefault = Default | TrackChecksums,
-
-	BlobOptimized = FastAllocate | CacheDescriptors | IntegrityChecks,
+	Performance = FastAllocate | CacheDescriptors | CacheClusterHeaders,
 
 	Debug = IntegrityChecks
 

@@ -142,12 +142,11 @@ public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollecti
 
 	[Test]
 	public void LoadWhenNotRequiredDoesntBreak_BugCase() {
-
 		using (Create<int, int>(new PrimitiveSerializer<int>(), new PrimitiveSerializer<int>(), EqualityComparer<int>.Default, EqualityComparer<int>.Default, StreamContainerPolicy.Default, out var dictionary, out _)) {
+			Assert.That(dictionary.RequiresLoad, Is.True);
 			dictionary.Load();
 			Assert.That(dictionary.RequiresLoad, Is.False);
-			dictionary.Load();
-			Assert.That(() => dictionary.Add(1, 1), Throws.Nothing);
+			Assert.That(() => dictionary.Load(), Throws.Nothing);
 		}
 	}
 
@@ -166,7 +165,7 @@ public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollecti
 			       null,
 			       EqualityComparer<int>.Default,
 			       EqualityComparer<int>.Default,
-			       policy: StreamContainerPolicy.Default | StreamContainerPolicy.TrackChecksums)) {
+			       policy: StreamContainerPolicy.Default)) {
 			dictionary.Load();
 			dictionary.Add(1, 11);
 			Assert.That(dictionary.Count, Is.EqualTo(1));
@@ -184,7 +183,7 @@ public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollecti
 			       null,
 			       EqualityComparer<int>.Default,
 			       EqualityComparer<int>.Default,
-			       policy: StreamContainerPolicy.Default | StreamContainerPolicy.TrackChecksums)) {
+			       policy: StreamContainerPolicy.Default)) {
 			dictionary.Load();
 			Assert.That(dictionary.RequiresLoad, Is.False);
 			Assert.That(dictionary.Count, Is.EqualTo(1));
@@ -208,7 +207,7 @@ public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollecti
 			       null,
 			       EqualityComparer<int>.Default,
 			       EqualityComparer<int>.Default,
-			       policy: StreamContainerPolicy.Default | StreamContainerPolicy.TrackChecksums)) {
+			       policy: StreamContainerPolicy.Default)) {
 			dictionary.Load();
 			dictionary.Add(1, 11);
 			dictionary.Commit();
@@ -225,7 +224,7 @@ public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollecti
 			       null,
 			       EqualityComparer<int>.Default,
 			       EqualityComparer<int>.Default,
-			       policy: StreamContainerPolicy.Default | StreamContainerPolicy.TrackChecksums)) {
+			       policy: StreamContainerPolicy.Default)) {
 			dictionary.Load();
 			Assert.That(dictionary.RequiresLoad, Is.False);
 			Assert.That(dictionary.Count, Is.EqualTo(1));
@@ -239,7 +238,7 @@ public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollecti
 			       null,
 			       EqualityComparer<int>.Default,
 			       EqualityComparer<int>.Default,
-			       policy: StreamContainerPolicy.Default | StreamContainerPolicy.TrackChecksums)) {
+			       policy: StreamContainerPolicy.Default)) {
 			dictionary.Load();
 			dictionary[2] = 22;
 			dictionary.Commit();
@@ -252,7 +251,7 @@ public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollecti
 			       null,
 			       EqualityComparer<int>.Default,
 			       EqualityComparer<int>.Default,
-			       policy: StreamContainerPolicy.Default | StreamContainerPolicy.TrackChecksums)) {
+			       policy: StreamContainerPolicy.Default)) {
 			dictionary.Load();
 			Assert.That(dictionary.RequiresLoad, Is.False);
 			Assert.That(dictionary.Count, Is.EqualTo(2));
@@ -276,7 +275,7 @@ public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollecti
 			       null,
 			       EqualityComparer<int>.Default,
 			       EqualityComparer<int>.Default,
-			       policy: StreamContainerPolicy.Default | StreamContainerPolicy.TrackChecksums)) {
+			       policy: StreamContainerPolicy.Default)) {
 			dictionary.Load();
 			dictionary.Add(1, 11);
 			dictionary.Commit();
@@ -293,7 +292,7 @@ public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollecti
 			       null,
 			       EqualityComparer<int>.Default,
 			       EqualityComparer<int>.Default,
-			       policy: StreamContainerPolicy.Default | StreamContainerPolicy.TrackChecksums)) {
+			       policy: StreamContainerPolicy.Default)) {
 			dictionary.Load();
 			Assert.That(dictionary.RequiresLoad, Is.False);
 			Assert.That(dictionary.Count, Is.EqualTo(1));
@@ -307,7 +306,7 @@ public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollecti
 			       null,
 			       EqualityComparer<int>.Default,
 			       EqualityComparer<int>.Default,
-			       policy: StreamContainerPolicy.Default | StreamContainerPolicy.TrackChecksums)) {
+			       policy: StreamContainerPolicy.Default)) {
 			dictionary.Load();
 			dictionary[2] = 22;
 			dictionary.Rollback();
@@ -320,7 +319,7 @@ public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollecti
 			       null,
 			       EqualityComparer<int>.Default,
 			       EqualityComparer<int>.Default,
-			       policy: StreamContainerPolicy.Default | StreamContainerPolicy.TrackChecksums)) {
+			       policy: StreamContainerPolicy.Default)) {
 			dictionary.Load();
 			Assert.That(dictionary.RequiresLoad, Is.False);
 			Assert.That(dictionary.Count, Is.EqualTo(1));
@@ -343,7 +342,7 @@ public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollecti
 			       null,
 			       EqualityComparer<int>.Default,
 			       EqualityComparer<int>.Default,
-			       policy: StreamContainerPolicy.Default | StreamContainerPolicy.TrackChecksums)) {
+			       policy: StreamContainerPolicy.Default)) {
 			dictionary.Load();
 			dictionary.Add(1, 11);
 			dictionary.Commit();
@@ -360,7 +359,7 @@ public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollecti
 			       null,
 			       EqualityComparer<int>.Default,
 			       EqualityComparer<int>.Default,
-			       policy: StreamContainerPolicy.Default | StreamContainerPolicy.TrackChecksums)) {
+			       policy: StreamContainerPolicy.Default)) {
 			dictionary.Load();
 			Assert.That(dictionary.RequiresLoad, Is.False);
 			Assert.That(dictionary.Count, Is.EqualTo(1));
@@ -374,7 +373,7 @@ public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollecti
 			       null,
 			       EqualityComparer<int>.Default,
 			       EqualityComparer<int>.Default,
-			       policy: StreamContainerPolicy.Default | StreamContainerPolicy.TrackChecksums)) {
+			       policy: StreamContainerPolicy.Default)) {
 			dictionary.Load();
 			dictionary[2] = 22;
 
@@ -387,7 +386,7 @@ public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollecti
 			       null,
 			       EqualityComparer<int>.Default,
 			       EqualityComparer<int>.Default,
-			       policy: StreamContainerPolicy.Default | StreamContainerPolicy.TrackChecksums)) {
+			       policy: StreamContainerPolicy.Default)) {
 			dictionary.Load();
 			Assert.That(dictionary.RequiresLoad, Is.False);
 			Assert.That(dictionary.Count, Is.EqualTo(1));

@@ -1,69 +1,85 @@
-using System.Collections.Generic;
-using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
+//using System.Collections.Generic;
+//using System.Runtime.CompilerServices;
+//using System.Threading.Tasks;
 
-namespace Hydrogen;
+//namespace Hydrogen;
 
-public class TransactionalDictionarySK<TKey, TValue> : StreamMappedDictionarySK<TKey, TValue>, ITransactionalDictionary<TKey, TValue> {
+//public class TransactionalDictionaryCLK<TKey, TValue> : StreamMappedDictionaryCLK<TKey, TValue>, ITransactionalDictionary<TKey, TValue> {
 
-	public event EventHandlerEx<object> Committing { add => _valueStore.Committing += value; remove => _valueStore.Committing -= value; }
-	public event EventHandlerEx<object> Committed { add => _valueStore.Committed += value; remove => _valueStore.Committed -= value; }
-	public event EventHandlerEx<object> RollingBack { add => _valueStore.RollingBack += value; remove => _valueStore.RollingBack -= value; }
-	public event EventHandlerEx<object> RolledBack { add => _valueStore.RolledBack += value; remove => _valueStore.RolledBack -= value; }
+//	public event EventHandlerEx<object> Committing { add => TransactionalStream.Committing += value; remove => TransactionalStream.Committing -= value; }
+//	public event EventHandlerEx<object> Committed { add => TransactionalStream.Committed += value; remove => TransactionalStream.Committed -= value; }
+//	public event EventHandlerEx<object> RollingBack { add => TransactionalStream.RollingBack += value; remove => TransactionalStream.RollingBack -= value; }
+//	public event EventHandlerEx<object> RolledBack { add => TransactionalStream.RolledBack += value; remove => TransactionalStream.RolledBack -= value; }
 
-	private readonly ITransactionalList<TValue> _valueStore;
+//	public TransactionalDictionaryCLK(
+//		string filename,
+//		string uncommittedPageFileDir,
+//		IItemSerializer<TKey> constantLengthKeySerializer,
+//		IItemSerializer<TValue> valueSerializer,
+//		IItemChecksummer<TKey> keyChecksum = null,
+//		IEqualityComparer<TKey> keyComparer = null,
+//		IEqualityComparer<TValue> valueComparer = null,
+//		int transactionalPageSize = HydrogenDefaults.TransactionalPageSize,
+//		long maxMemory = HydrogenDefaults.MaxMemoryPerCollection,
+//		int clusterSize = HydrogenDefaults.ClusterSize,
+//		StreamContainerPolicy policy = StreamContainerPolicy.Default,
+//		Endianness endianness = HydrogenDefaults.Endianness,
+//		bool readOnly = false,
+//		bool autoLoad = false
+//	) : this(
+//		new TransactionalStream(
+//			filename, 
+//			uncommittedPageFileDir, 
+//			transactionalPageSize, 
+//			maxMemory, 
+//			readOnly, 
+//			autoLoad
+//		),
+//		clusterSize,
+//		constantLengthKeySerializer,
+//		valueSerializer,
+//		keyChecksum,
+//		keyComparer,
+//		valueComparer,
+//		policy,
+//		endianness,
+//		autoLoad
+//	) {
+//	}
 
-	public TransactionalDictionarySK(string filename, string uncommittedPageFileDir, IItemSerializer<TKey> keySerializer, IItemSerializer<TValue> valueSerializer, IItemChecksummer<TKey> keyChecksum = null, IEqualityComparer<TKey> keyComparer = null,
-	                                 IEqualityComparer<TValue> valueComparer = null, int transactionalPageSize = HydrogenDefaults.TransactionalPageSize, long maxMemory = HydrogenDefaults.MaxMemoryPerCollection, int clusterSize = HydrogenDefaults.ClusterSize,
-	                                 StreamContainerPolicy policy = StreamContainerPolicy.DictionaryDefault, int reservedRecords = 0, Endianness endianness = HydrogenDefaults.Endianness, bool readOnly = false, bool autoLoad = false)
-		: this(
-			new TransactionalStream(filename, uncommittedPageFileDir, transactionalPageSize, maxMemory, readOnly, autoLoad),
-			keySerializer,
-			valueSerializer,
-			keyChecksum,
-			keyComparer,
-			valueComparer,
-			clusterSize,
-			policy,
-			reservedRecords,
-			endianness
-		) {
-	}
+//	public TransactionalDictionaryCLK(
+//		TransactionalStream transactionalStream,
+//		int clusterSize,
+//		IItemSerializer<TKey> constantLengthKeySerializer,
+//		IItemSerializer<TValue> valueSerializer = null,
+//		IItemChecksummer<TKey> keyChecksum = null,
+//		IEqualityComparer<TKey> keyComparer = null,
+//		IEqualityComparer<TValue> valueComparer = null,
+//		StreamContainerPolicy policy = StreamContainerPolicy.Default,
+//		Endianness endianness = Endianness.LittleEndian,
+//		bool autoLoad = false
+//	) : base(
+//		transactionalStream,
+//		clusterSize,
+//		constantLengthKeySerializer,
+//		valueSerializer,
+//		keyComparer,
+//		valueComparer,
+//		policy,
+//		endianness,
+//		autoLoad) {
+//	}
 
-	public TransactionalDictionarySK(TransactionalStream transactionalStream, IItemSerializer<TKey> keySerializer, IItemSerializer<TValue> valueSerializer, IItemChecksummer<TKey> keyChecksum = null, IEqualityComparer<TKey> keyComparer = null,
-	                                 IEqualityComparer<TValue> valueComparer = null, int clusterSize = HydrogenDefaults.ClusterSize, StreamContainerPolicy policy = StreamContainerPolicy.DictionaryDefault, int reservedRecords = 0, Endianness endianness = HydrogenDefaults.Endianness)
-		: this(
-			new TransactionalList<TValue>(
-				transactionalStream,
-				valueSerializer,
-				valueComparer,
-				clusterSize, policy, reservedRecords, keySerializer.StaticSize, endianness
-			),
-			keySerializer,
-			valueSerializer,
-			keyChecksum,
-			keyComparer,
-			valueComparer,
-			endianness
-		) {
-	}
+//	protected TransactionalStream TransactionalStream => (TransactionalStream)ObjectContainer.StreamContainer.RootStream;
+	
+//	public void Commit() => TransactionalStream.Commit();
 
-	public TransactionalDictionarySK(ITransactionalList<TValue> valueStore, IItemSerializer<TKey> keySerializer, IItemSerializer<TValue> valueSerializer, IItemChecksummer<TKey> keyChecksummer = null, IEqualityComparer<TKey> keyComparer = null,
-									 IEqualityComparer<TValue> valueComparer = null, Endianness endianness = Endianness.LittleEndian)
-		: base(valueStore, keySerializer, valueSerializer, keyChecksummer, keyComparer, valueComparer, endianness) {
-		Guard.ArgumentNotNull(valueStore, nameof(valueStore));
-		Guard.ArgumentNotNull(keySerializer, nameof(keySerializer));
-		Guard.ArgumentNotNull(valueSerializer, nameof(valueSerializer));
-		_valueStore = valueStore;
-	}
+//	public Task CommitAsync() => TransactionalStream.CommitAsync();
 
-	public void Commit() => _valueStore.Commit();
+//	public void Rollback() => TransactionalStream.Rollback();
 
-	public Task CommitAsync() => _valueStore.CommitAsync();
+//	public Task RollbackAsync() => TransactionalStream.RollbackAsync();
 
-	public void Rollback() => _valueStore.Rollback();
+//	public void Dispose() => TransactionalStream.Dispose();
 
-	public Task RollbackAsync() => _valueStore.RollbackAsync();
-
-	public void Dispose() => _valueStore.Dispose();
-}
+//}

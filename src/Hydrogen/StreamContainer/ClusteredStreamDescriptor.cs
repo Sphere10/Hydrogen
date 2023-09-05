@@ -8,7 +8,6 @@
 
 namespace Hydrogen;
 
-//[StructLayout(LayoutKind.Sequential)]
 public struct ClusteredStreamDescriptor {
 
 	public ClusteredStreamTraits Traits { get; set; }
@@ -19,9 +18,5 @@ public struct ClusteredStreamDescriptor {
 
 	public long Size { get; set; }
 
-	public int KeyChecksum { get; set; }
-
-	public byte[] Key { get; set; }
-
-	public override string ToString() => $"[{nameof(ClusteredStreamDescriptor)}] {nameof(Size)}: {Size}, {nameof(StartCluster)}: {StartCluster}, {nameof(EndCluster)}: {EndCluster}, {nameof(Traits)}: {Traits}, {nameof(KeyChecksum)}: {KeyChecksum}, {nameof(Key)}: {Key?.ToHexString(true)}";
+	public override string ToString() => $"[{nameof(ClusteredStreamDescriptor)}] {nameof(Size)}: {Size}, {nameof(StartCluster)}: {StartCluster}, {nameof(EndCluster)}: {EndCluster}, {nameof(Traits)}: {Traits}]";
 }

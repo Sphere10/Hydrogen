@@ -13,6 +13,7 @@ using Hydrogen.NUnit;
 namespace Hydrogen.Tests;
 
 public class UpdateOnlyListTests {
+
 	[Test]
 	public void AddRange() {
 		var list = new UpdateOnlyList<int>(10, () => default);

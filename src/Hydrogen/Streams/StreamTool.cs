@@ -18,10 +18,9 @@ using Hydrogen;
 namespace Tools;
 
 public static class Streams {
-	public const int DefaultBufferReadBlockSize = 32768;
-	public const int OptimalCompressWriteBlockSize = 8192;
 
-	public static void ShiftBytes(Stream stream, long fromIndex, long count, long toIndex, int blockSize = DefaultBufferReadBlockSize) {
+
+	public static void ShiftBytes(Stream stream, long fromIndex, long count, long toIndex, int blockSize = HydrogenDefaults.DefaultBufferOperationBlockSize) {
 		Guard.ArgumentNotNull(stream, nameof(stream));
 		Guard.ArgumentGT(blockSize, 0, nameof(blockSize));
 		if (count == 0)
@@ -75,7 +74,7 @@ public static class Streams {
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static void RouteStream(Stream readStream, Stream writeStream, int blockSizeInBytes = DefaultBufferReadBlockSize, bool closeReadStream = false, bool closeWriteStream = false) {
+	public static void RouteStream(Stream readStream, Stream writeStream, int blockSizeInBytes = HydrogenDefaults.DefaultBufferOperationBlockSize, bool closeReadStream = false, bool closeWriteStream = false) {
 		Guard.Argument(writeStream != readStream, nameof(writeStream), "Cannot route to same stream");
 		// Optimized for reading a stream of unknown length
 		var buffer = new byte[blockSizeInBytes];
@@ -90,7 +89,7 @@ public static class Streams {
 			writeStream.Close();
 	}
 
-	public static void RouteStream(Stream readStream, Stream writeStream, long length, int blockSizeInBytes = DefaultBufferReadBlockSize, bool closeReadStream = false, bool closeWriteStream = false) {
+	public static void RouteStream(Stream readStream, Stream writeStream, long length, int blockSizeInBytes = HydrogenDefaults.DefaultBufferOperationBlockSize, bool closeReadStream = false, bool closeWriteStream = false) {
 		Guard.Argument(writeStream != readStream, nameof(writeStream), "Cannot route to same stream");
 		// Optimized for reading a known length of bytes
 		var buffer = new byte[blockSizeInBytes];
@@ -120,14 +119,14 @@ public static class Streams {
 			writeStream.Close();
 	}
 
-	public static byte[] ReadByteArray(Stream stream, int blockSizeInBytes = DefaultBufferReadBlockSize, bool closeStream = true) {
+	public static byte[] ReadByteArray(Stream stream, int blockSizeInBytes = HydrogenDefaults.DefaultBufferOperationBlockSize, bool closeStream = true) {
 		using (var memoryStream = new MemoryStream()) {
 			RouteStream(stream, memoryStream, blockSizeInBytes, closeStream, true);
 			return memoryStream.ToArray();
 		}
 	}
 
-	public static void WriteStreamToFile(Stream readStream, string filePath, FileMode fileMode = FileMode.Create, bool createDirectories = false, int blockSizeInBytes = DefaultBufferReadBlockSize, bool closeReadStream = true) {
+	public static void WriteStreamToFile(Stream readStream, string filePath, FileMode fileMode = FileMode.Create, bool createDirectories = false, int blockSizeInBytes = HydrogenDefaults.DefaultBufferOperationBlockSize, bool closeReadStream = true) {
 
 		#region Argument Validaton
 
@@ -219,13 +218,13 @@ public static class Streams {
 
 	public static void GZipCompress(Stream input, Stream output) {
 		using (var compressor = new GZipStream(output, CompressionMode.Compress, true))
-			RouteStream(input, compressor, blockSizeInBytes: OptimalCompressWriteBlockSize);
+			RouteStream(input, compressor, blockSizeInBytes: HydrogenDefaults.OptimalCompressWriteBlockSize);
 	}
 
 	public static void GZipDecompress(Stream input, Stream output) {
 		using (var decompressor = new GZipStream(input, CompressionMode.Decompress, true)) {
 			// WARNING: do not seek to beginnning here! Client code responsible for that
-			RouteStream(decompressor, output, blockSizeInBytes: OptimalCompressWriteBlockSize);
+			RouteStream(decompressor, output, blockSizeInBytes: HydrogenDefaults.OptimalCompressWriteBlockSize);
 		}
 	}
 

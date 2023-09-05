@@ -13,32 +13,32 @@ using System.Linq;
 using System.Text;
 using NUnit.Framework;
 using Hydrogen.NUnit;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Hydrogen.Tests;
 
 [TestFixture]
 [Parallelizable(ParallelScope.Children)]
 public class StreamMappedListTests : StreamPersistedCollectionTestsBase {
-	private const int ReservedRecordsInStorage = 11;
 
-	private IDisposable CreateList(StreamContainerPolicy policy, int reserved, out StreamMappedList<TestObject> clusteredList) {
+	private IDisposable CreateList(StreamContainerPolicy policy, bool useChecksumIndex, out StreamMappedList<TestObject> clusteredList) {
 		var stream = new MemoryStream();
-		clusteredList = new StreamMappedList<TestObject>(stream, 32, new TestObjectSerializer(), reservedRecords: reserved, policy: policy);
+		clusteredList = new StreamMappedList<TestObject>(stream, 32, new TestObjectSerializer(), itemChecksummer: useChecksumIndex ? new ObjectHashCodeChecksummer<TestObject>() : null, reservedStreams: useChecksumIndex ? 1 : 0, policy: policy);
 		if (clusteredList.RequiresLoad)
 			clusteredList.Load();
-		return stream;
+		return new Disposables(clusteredList, stream);
 	}
 
 	[Test]
-	public void HasReservedRecords([StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values(0, ReservedRecordsInStorage)] int reserved) {
-		using var scope = CreateList(policy, reserved, out var list);
-		Assert.That(list.ObjectContainer.StreamContainer.Count, Is.EqualTo(reserved));
+	public void HasReservedRecord([StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values] bool useChecksumIndex) {
+		using var scope = CreateList(policy, useChecksumIndex, out var list);
+		Assert.That(list.ObjectContainer.StreamContainer.Count, Is.EqualTo(useChecksumIndex ? 1 : 0));
 	}
 
 	[Test]
-	public void AddOneTest([StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values(0, ReservedRecordsInStorage)] int reserved) {
+	public void AddOneTest([StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values] bool useChecksumIndex) {
 		var rng = new Random(31337);
-		using (CreateList(policy, reserved, out var clusteredList)) {
+		using (CreateList(policy, useChecksumIndex, out var clusteredList)) {
 			var obj = new TestObject(rng);
 			clusteredList.Add(obj);
 			var item = clusteredList.Read(0);
@@ -48,9 +48,9 @@ public class StreamMappedListTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void AddOneRepeat([Values(100)] int iterations, [StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values(0, ReservedRecordsInStorage)] int reserved) {
+	public void AddOneRepeat([Values(100)] int iterations, [StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values] bool useChecksumIndex) {
 		var rng = new Random(31337);
-		using (CreateList(policy, reserved, out var clusteredList)) {
+		using (CreateList(policy, useChecksumIndex, out var clusteredList)) {
 			for (var i = 0; i < iterations; i++) {
 				var obj = new TestObject(rng);
 				clusteredList.Add(obj);
@@ -61,18 +61,18 @@ public class StreamMappedListTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void ConstructorArgumentsAreGuarded([StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values(0, ReservedRecordsInStorage)] int reserved) {
-		Assert.Throws<ArgumentNullException>(() => new StreamMappedList<int>(null, 1, new PrimitiveSerializer<int>(), reservedRecords: reserved, policy: policy));
-		Assert.DoesNotThrow(() => new StreamMappedList<int>(new MemoryStream(), 1, null, reservedRecords: reserved, policy: policy));
-		Assert.Throws<ArgumentOutOfRangeException>(() => new StreamMappedList<int>(new MemoryStream(), 0, null, reservedRecords: reserved, policy: policy));
+	public void ConstructorArgumentsAreGuarded([StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
+		Assert.Throws<ArgumentNullException>(() => new StreamMappedList<int>(null, 1, new PrimitiveSerializer<int>(), reservedStreams: 1, policy: policy));
+		Assert.DoesNotThrow(() => new StreamMappedList<int>(new MemoryStream(), 1, null, reservedStreams: 1, policy: policy));
+		Assert.Throws<ArgumentOutOfRangeException>(() => new StreamMappedList<int>(new MemoryStream(), 0, null, reservedStreams: 1, policy: policy));
 	}
 
 	[Test]
-	public void ReadRange([StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values(0, ReservedRecordsInStorage)] int reserved) {
+	public void ReadRange([StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values] bool useChecksumIndex) {
 		var random = new Random(31337);
 		string[] inputs = Enumerable.Range(0, random.Next(5, 10)).Select(x => random.NextString(1, 100)).ToArray();
 		using var stream = new MemoryStream();
-		var list = new StreamMappedList<string>(stream, 32, new StringSerializer(Encoding.UTF8), reservedRecords: reserved, policy: policy);
+		using var list = new StreamMappedList<string>(stream, 32, new StringSerializer(Encoding.UTF8), itemChecksummer: useChecksumIndex ? new ObjectHashCodeChecksummer<string>() : null, reservedStreams: useChecksumIndex ? 1 : 0, policy: policy);
 		if (list.RequiresLoad)
 			list.Load();
 		list.AddRange(inputs);
@@ -87,9 +87,9 @@ public class StreamMappedListTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void ReadRangeInvalidArguments([StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values(0, ReservedRecordsInStorage)] int reserved) {
+	public void ReadRangeInvalidArguments([StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values] bool useChecksumIndex) {
 		using var stream = new MemoryStream();
-		var list = new StreamMappedList<int>(stream, 1, new PrimitiveSerializer<int>(), reservedRecords: reserved, policy: policy);
+		using var list = new StreamMappedList<int>(stream, 1, new PrimitiveSerializer<int>(), itemChecksummer: useChecksumIndex ? new ObjectHashCodeChecksummer<int>() : null, reservedStreams: useChecksumIndex ? 1 : 0, policy: policy);
 		if (list.RequiresLoad)
 			list.Load();
 		list.AddRange(999, 1000, 1001, 1002);
@@ -101,9 +101,9 @@ public class StreamMappedListTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void ReadRangeEmpty([StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values(0, ReservedRecordsInStorage)] int reserved) {
+	public void ReadRangeEmpty([StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values] bool useChecksumIndex) {
 		using var stream = new MemoryStream();
-		var list = new StreamMappedList<int>(stream, 1, new PrimitiveSerializer<int>(), reservedRecords: reserved, policy: policy);
+		using var list = new StreamMappedList<int>(stream, 1, new PrimitiveSerializer<int>(), itemChecksummer: useChecksumIndex ? new ObjectHashCodeChecksummer<int>() : null, reservedStreams: useChecksumIndex ? 1 : 0, policy: policy);
 		if (list.RequiresLoad)
 			list.Load();
 
@@ -115,9 +115,9 @@ public class StreamMappedListTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void AddRangeEmptyNullStrings([StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values(0, ReservedRecordsInStorage)] int reserved) {
+	public void AddRangeEmptyNullStrings([StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values] bool useChecksumIndex) {
 		using var stream = new MemoryStream();
-		var list = new StreamMappedList<string>(stream, 32, new StringSerializer(Encoding.UTF8), reservedRecords: reserved, policy: policy);
+		using var list = new StreamMappedList<string>(stream, 32, new StringSerializer(Encoding.UTF8), itemChecksummer: useChecksumIndex ? new ObjectHashCodeChecksummer<string>() : null, reservedStreams: useChecksumIndex ? 1 : 0, policy: policy);
 		if (list.RequiresLoad)
 			list.Load();
 		string[] input = { string.Empty, null, string.Empty, null };
@@ -127,9 +127,9 @@ public class StreamMappedListTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void IndexOf_NullEmptyStrings([StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values(0, ReservedRecordsInStorage)] int reserved) {
+	public void IndexOf_NullEmptyStrings([StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values] bool useChecksumIndex) {
 		using var stream = new MemoryStream();
-		var list = new StreamMappedList<string>(stream, 32, new StringSerializer(Encoding.UTF8), reservedRecords: reserved, policy: policy);
+		using var list = new StreamMappedList<string>(stream, 32, new StringSerializer(Encoding.UTF8), itemChecksummer: useChecksumIndex ? new ObjectHashCodeChecksummer<string>() : null, reservedStreams: useChecksumIndex ? 1 : 0, policy: policy);
 		if (list.RequiresLoad)
 			list.Load();
 		string[] input = { string.Empty, null, string.Empty, null };
@@ -143,9 +143,9 @@ public class StreamMappedListTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void AddRangeNullEmptyCollections([StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values(0, ReservedRecordsInStorage)] int reserved) {
+	public void AddRangeNullEmptyCollections([StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values] bool useChecksumIndex) {
 		using var stream = new MemoryStream();
-		var list = new StreamMappedList<string>(stream, 32, new StringSerializer(Encoding.UTF8), reservedRecords: reserved, policy: policy);
+		using var list = new StreamMappedList<string>(stream, 32, new StringSerializer(Encoding.UTF8), itemChecksummer: useChecksumIndex ? new ObjectHashCodeChecksummer<string>() : null, reservedStreams: useChecksumIndex ? 1 : 0, policy: policy);
 		if (list.RequiresLoad)
 			list.Load();
 		Assert.Throws<ArgumentNullException>(() => list.AddRange(null));
@@ -153,11 +153,11 @@ public class StreamMappedListTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void UpdateRange([StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values(0, ReservedRecordsInStorage)] int reserved) {
+	public void UpdateRange([StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values] bool useChecksumIndex) {
 		var random = new Random(31337);
 		string[] inputs = Enumerable.Range(0, random.Next(1, 100)).Select(x => random.NextString(1, 100)).ToArray();
 		using var stream = new MemoryStream();
-		var list = new StreamMappedList<string>(stream, 32, new StringSerializer(Encoding.UTF8), reservedRecords: reserved, policy: policy);
+		using var list = new StreamMappedList<string>(stream, 32, new StringSerializer(Encoding.UTF8), itemChecksummer: useChecksumIndex ? new ObjectHashCodeChecksummer<string>() : null, reservedStreams: useChecksumIndex ? 1 : 0, policy: policy);
 		if (list.RequiresLoad)
 			list.Load();
 		list.AddRange(inputs);
@@ -170,9 +170,9 @@ public class StreamMappedListTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void UpdateRangeInvalidArguments([StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values(0, ReservedRecordsInStorage)] int reserved) {
+	public void UpdateRangeInvalidArguments([StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values] bool useChecksumIndex) {
 		using var stream = new MemoryStream();
-		var list = new StreamMappedList<int>(stream, 32, new PrimitiveSerializer<int>(), reservedRecords: reserved, policy: policy);
+		using var list = new StreamMappedList<int>(stream, 32, new PrimitiveSerializer<int>(), itemChecksummer: useChecksumIndex ? new ObjectHashCodeChecksummer<int>() : null, reservedStreams: useChecksumIndex ? 1 : 0, policy: policy);
 		if (list.RequiresLoad)
 			list.Load();
 
@@ -185,11 +185,11 @@ public class StreamMappedListTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void RemoveRange([StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values(0, 1, ReservedRecordsInStorage)] int reserved) {
+	public void RemoveRange([StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values] bool useChecksumIndex) {
 		var random = new Random(31337);
 		string[] inputs = Enumerable.Range(0, random.Next(1, 100)).Select(x => random.NextString(1, 100)).ToArray();
 		using var stream = new MemoryStream();
-		var list = new StreamMappedList<string>(stream, 32, new StringSerializer(Encoding.UTF8), reservedRecords: reserved, policy: policy);
+		using var list = new StreamMappedList<string>(stream, 32, new StringSerializer(Encoding.UTF8), itemChecksummer: useChecksumIndex ? new ObjectHashCodeChecksummer<string>() : null, reservedStreams: useChecksumIndex ? 1 : 0, policy: policy);
 		if (list.RequiresLoad)
 			list.Load();
 
@@ -201,9 +201,9 @@ public class StreamMappedListTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void RemoveRangeInvalidArguments([StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values(0, ReservedRecordsInStorage)] int reserved) {
+	public void RemoveRangeInvalidArguments([StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values] bool useChecksumIndex) {
 		using var stream = new MemoryStream();
-		var list = new StreamMappedList<int>(stream, 32, new PrimitiveSerializer<int>(), reservedRecords: reserved, policy: policy);
+		using var list = new StreamMappedList<int>(stream, 1, new PrimitiveSerializer<int>(), itemChecksummer: useChecksumIndex ? new ObjectHashCodeChecksummer<int>() : null, reservedStreams: useChecksumIndex ? 1 : 0, policy: policy);
 		if (list.RequiresLoad)
 			list.Load();
 
@@ -217,11 +217,11 @@ public class StreamMappedListTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void IndexOf([StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values(0, ReservedRecordsInStorage)] int reserved) {
+	public void IndexOf([StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values] bool useChecksumIndex) {
 		var random = new Random(31337);
 		string[] inputs = Enumerable.Range(1, 10).Select(x => random.NextString(1, 100)).ToArray();
 		using var stream = new MemoryStream();
-		var list = new StreamMappedList<string>(stream, 32, new StringSerializer(Encoding.UTF8), reservedRecords: reserved, policy: policy);
+		using var list = new StreamMappedList<string>(stream, 32, new StringSerializer(Encoding.UTF8), itemChecksummer: useChecksumIndex ? new ObjectHashCodeChecksummer<string>() : null, reservedStreams: useChecksumIndex ? 1 : 0, policy: policy);
 		if (list.RequiresLoad)
 			list.Load();
 		list.AddRange(inputs);
@@ -232,9 +232,20 @@ public class StreamMappedListTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void IndexOfInvalidArguments([StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values(0, ReservedRecordsInStorage)] int reserved) {
+	public void IndexOf_Bug_1() {
+		var random = new Random(31337);
+		string[] inputs = Enumerable.Range(1, 10).Select(x => random.NextString(1, 100)).ToArray();
 		using var stream = new MemoryStream();
-		var list = new StreamMappedList<int>(stream, 32, new PrimitiveSerializer<int>(), reservedRecords: reserved, policy: policy);
+		using var list = new StreamMappedList<string>(stream, 32, new StringSerializer(Encoding.UTF8),  itemChecksummer: new ObjectHashCodeChecksummer<string>(), reservedStreams: 1, autoLoad: true);
+		list.Add("1");
+		var index = list.IndexOf("1");
+		Assert.That(index, Is.EqualTo(0));
+	}
+
+	[Test]
+	public void IndexOfInvalidArguments([StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values] bool useChecksumIndex) {
+		using var stream = new MemoryStream();
+		using var list = new StreamMappedList<int>(stream, 1, new PrimitiveSerializer<int>(), itemChecksummer: useChecksumIndex ? new ObjectHashCodeChecksummer<int>() : null, reservedStreams: useChecksumIndex ? 1 : 0, policy: policy);
 		if (list.RequiresLoad)
 			list.Load();
 		list.AddRange(999, 1000, 1001, 1002);
@@ -244,11 +255,11 @@ public class StreamMappedListTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void Count([StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values(0, ReservedRecordsInStorage)] int reserved) {
+	public void Count([StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values] bool useChecksumIndex) {
 		var random = new Random(31337);
 		string[] inputs = Enumerable.Range(0, random.Next(1, 100)).Select(x => random.NextString(1, 100)).ToArray();
 		using var stream = new MemoryStream();
-		var list = new StreamMappedList<string>(stream, 32, new StringSerializer(Encoding.UTF8), reservedRecords: reserved, policy: policy);
+		using var list = new StreamMappedList<string>(stream, 32, new StringSerializer(Encoding.UTF8), itemChecksummer: useChecksumIndex ? new ObjectHashCodeChecksummer<string>() : null, reservedStreams: useChecksumIndex ? 1 : 0, policy: policy);
 		if (list.RequiresLoad)
 			list.Load();
 		Assert.AreEqual(0, list.Count);
@@ -258,11 +269,11 @@ public class StreamMappedListTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void InsertRange([StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values(0, ReservedRecordsInStorage)] int reserved) {
+	public void InsertRange([StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values] bool useChecksumIndex) {
 		var random = new Random(31337);
 		string[] inputs = Enumerable.Range(1, random.Next(1, 5)).Select(x => random.NextString(1, 5)).ToArray();
 		using var stream = new MemoryStream();
-		var list = new StreamMappedList<string>(stream, 32, new StringSerializer(Encoding.UTF8), reservedRecords: reserved, policy: policy);
+		using var list = new StreamMappedList<string>(stream, 32, new StringSerializer(Encoding.UTF8), itemChecksummer: useChecksumIndex ? new ObjectHashCodeChecksummer<string>() : null, reservedStreams: useChecksumIndex ? 1 : 0, policy: policy);
 		if (list.RequiresLoad)
 			list.Load();
 
@@ -274,9 +285,9 @@ public class StreamMappedListTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void InsertRangeInvalidArguments([StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values(0, ReservedRecordsInStorage)] int reserved) {
+	public void InsertRangeInvalidArguments([StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values] bool useChecksumIndex) {
 		using var stream = new MemoryStream();
-		var list = new StreamMappedList<int>(stream, 32, new PrimitiveSerializer<int>(), reservedRecords: reserved, policy: policy);
+		using var list = new StreamMappedList<int>(stream, 1, new PrimitiveSerializer<int>(), itemChecksummer: useChecksumIndex ? new ObjectHashCodeChecksummer<int>() : null, reservedStreams: useChecksumIndex ? 1 : 0, policy: policy);
 		if (list.RequiresLoad)
 			list.Load();
 
@@ -289,11 +300,11 @@ public class StreamMappedListTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void Clear([StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values(0, ReservedRecordsInStorage)] int reserved) {
+	public void Clear([StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values] bool useChecksumIndex) {
 		var random = new Random(31337);
 		string[] inputs = Enumerable.Range(0, random.Next(1, 100)).Select(x => random.NextString(1, 100)).ToArray();
 		using var stream = new MemoryStream();
-		var list = new StreamMappedList<string>(stream, 32, new StringSerializer(Encoding.UTF8), reservedRecords: reserved, policy: policy);
+		using var list = new StreamMappedList<string>(stream, 32, new StringSerializer(Encoding.UTF8), itemChecksummer: useChecksumIndex ? new ObjectHashCodeChecksummer<string>() : null, reservedStreams: useChecksumIndex ? 1 : 0, policy: policy);
 		if (list.RequiresLoad)
 			list.Load();
 		list.AddRange(inputs);
@@ -305,9 +316,9 @@ public class StreamMappedListTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void IntegrationTests_String([StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values(0, ReservedRecordsInStorage)] int reserved) {
+	public void IntegrationTests_String([StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values] bool useChecksumIndex) {
 		using var stream = new MemoryStream();
-		var list = new StreamMappedList<string>(stream, 32, new StringSerializer(Encoding.UTF8), reservedRecords: reserved, policy: policy);
+		using var list = new StreamMappedList<string>(stream, 32, new StringSerializer(Encoding.UTF8), itemChecksummer: useChecksumIndex ? new ObjectHashCodeChecksummer<string>() : null, reservedStreams: useChecksumIndex ? 1 : 0, policy: policy);
 		if (list.RequiresLoad)
 			list.Load();
 
@@ -319,20 +330,20 @@ public class StreamMappedListTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void LoadAndUseExistingStream([Values(1, 100)] int iterations, [StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values(0, ReservedRecordsInStorage)] int reserved) {
+	public void LoadAndUseExistingStream([Values(1, 100)] int iterations, [StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values] bool useChecksumIndex) {
 		var random = new Random(31337 + iterations);
 		var input = Enumerable.Range(0, random.Next(1, 100)).Select(x => random.NextString(0, 100)).ToArray();
 		var fileName = Tools.FileSystem.GetTempFileName(true);
 		using (Tools.Scope.ExecuteOnDispose(() => File.Delete(fileName))) {
 			using (var fileStream = new FileStream(fileName, FileMode.Open)) {
-				var list = new StreamMappedList<string>(fileStream, 32, new StringSerializer(Encoding.UTF8), reservedRecords: reserved, policy: policy);
+				using var list = new StreamMappedList<string>(fileStream, 32, new StringSerializer(Encoding.UTF8), itemChecksummer: useChecksumIndex ? new ObjectHashCodeChecksummer<string>() : null, reservedStreams: useChecksumIndex ? 1 : 0, policy: policy);
 				if (list.RequiresLoad)
 					list.Load();
 				list.AddRange(input);
 			}
 
 			using (var fileStream = new FileStream(fileName, FileMode.Open)) {
-				var list = new StreamMappedList<string>(fileStream, 32, new StringSerializer(Encoding.UTF8), reservedRecords: reserved, policy: policy);
+				using var list = new StreamMappedList<string>(fileStream, 32, new StringSerializer(Encoding.UTF8), itemChecksummer: useChecksumIndex ? new ObjectHashCodeChecksummer<string>() : null, reservedStreams: useChecksumIndex ? 1 : 0, policy: policy);
 				if (list.RequiresLoad)
 					list.Load();
 				Assert.AreEqual(input.Length, list.Count);
@@ -348,13 +359,13 @@ public class StreamMappedListTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void BugCase([Values(100)] int iterations, [Values(StreamContainerPolicy.Default)] StreamContainerPolicy policy, [Values(1)] int reserved) {
+	public void BugCase([Values(100)] int iterations, [Values(StreamContainerPolicy.Default)] StreamContainerPolicy policy, [Values] bool useChecksumIndex) {
 		var random = new Random(31337 + iterations);
 		var input = Enumerable.Range(0, random.Next(1, 100)).Select(x => random.NextString(0, 100)).ToArray();
 		var fileName = Tools.FileSystem.GetTempFileName(true);
 		using (Tools.Scope.ExecuteOnDispose(() => File.Delete(fileName))) {
 			using (var fileStream = new FileStream(fileName, FileMode.Open)) {
-				var list = new StreamMappedList<string>(fileStream, 32, new StringSerializer(Encoding.UTF8), reservedRecords: reserved, policy: policy, autoLoad: true);
+				using var list = new StreamMappedList<string>(fileStream, 32, new StringSerializer(Encoding.UTF8), itemChecksummer: useChecksumIndex ? new ObjectHashCodeChecksummer<string>() : null, reservedStreams: useChecksumIndex ? 1 : 0, policy: policy, autoLoad: true);
 				list.AddRange(input);
 				var secondInput = Enumerable.Range(0, random.Next(1, 100)).Select(x => random.NextString(1, 100)).ToArray();
 				list.AddRange(secondInput);
@@ -364,10 +375,10 @@ public class StreamMappedListTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void IntegrationTests([StreamContainerStorageTypeValues] StorageType storage, [StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values(0, ReservedRecordsInStorage)] int reserved) {
+	public void IntegrationTests([StreamContainerStorageTypeValues] StorageType storage, [StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values] bool useChecksumIndex) {
 		var rng = new Random(31337);
 		using (CreateStream(storage, 5000, out Stream stream)) {
-			var list = new StreamMappedList<TestObject>(stream, 100, new TestObjectSerializer(), new TestObjectComparer(), reservedRecords: reserved, policy: policy);
+			using var list = new StreamMappedList<TestObject>(stream, 100, new TestObjectSerializer(), new TestObjectComparer(), itemChecksummer: useChecksumIndex ? new ObjectHashCodeChecksummer<TestObject>() : null, reservedStreams: useChecksumIndex ? 1 : 0, policy: policy);
 			if (list.RequiresLoad)
 				list.Load();
 

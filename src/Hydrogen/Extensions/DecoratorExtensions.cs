@@ -1,17 +1,14 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Data;
 using System.IO;
-using System.Runtime.CompilerServices;
-using static Hydrogen.AMS;
 
 namespace Hydrogen;
 
 /// <summary>
 /// Implements various extensions for activating decorators, wrappers, adapters.
 /// </summary>
-public static class DecoratorExtensions {
+public static partial class DecoratorExtensions {
 
 	#region ICollection
 
@@ -126,13 +123,11 @@ public static class DecoratorExtensions {
 
 	#endregion
 
-	#region IStreamMappedList
+	//#region IStreamMappedList
 	
-	public static StreamMappedMerkleList<T, TInnerList> AsMerkleized<T, TInnerList>(this TInnerList list, IItemHasher<T> hasher, CHF hashAlgorithm, int merkleTreeStreamIndex) where TInnerList : IStreamMappedList<T> => new(list, hasher, hashAlgorithm, merkleTreeStreamIndex);
+	//public static StreamMappedMerkleList<T> AsMerkleized<T>(this IStreamMappedList<T> list, IItemHasher<T> hasher, CHF hashAlgorithm, int merkleTreeStreamIndex) => new(list, hasher, hashAlgorithm, merkleTreeStreamIndex);
 
-	public static StreamMappedMerkleList<T> AsMerkleized<T>(this IStreamMappedList<T> list, IItemHasher<T> hasher, CHF hashAlgorithm, int merkleTreeStreamIndex) => new(list, hasher, hashAlgorithm, merkleTreeStreamIndex);
-
-	#endregion
+	//#endregion
 
 	#region IMemoryPagedBuffer
 
@@ -280,13 +275,15 @@ public static class DecoratorExtensions {
 
 	#region Serializer
 
+	public static NullableObjectSerializer<T> AsNullable<T>(this IItemSerializer<T> serializer)
+		=> new (serializer);
+
+
 	public static IItemSerializer<T> WithNullSubstitution<T>(this IItemSerializer<T> serializer, T nullSubstitution, IEqualityComparer<T> comparer = null)
 		=> new WithNullSubstitutionSerializer<T>(serializer, nullSubstitution, comparer);
-	
-	public static IItemSerializer<TTo> AsProjection<TFrom, TTo>(this IItemSerializer<TFrom> serializer, Func<TFrom, TTo> projection, Func<TTo, TFrom> inverseProjection) 
-		=> new ProjectedSerializer<TFrom, TTo>(serializer, projection, inverseProjection);
 
-	public static IItemSerializer<object> AsPacked<TItem>(this IItemSerializer<TItem> serializer) => PackedSerializer.Pack(serializer);
+	public static PaddedSerializer<TItem> AsConstantLengthSerializer<TItem>(this IItemSerializer<TItem> serializer, int length, SizeDescriptorStrategy sizeDescriptorStrategy) 
+		=> new(length, serializer, sizeDescriptorStrategy);
 
 	#endregion
 }

@@ -12,18 +12,22 @@ using System.Collections.Generic;
 
 namespace Hydrogen;
 
-public interface IStreamMappedDictionary<TKey, TValue> : IDictionary<TKey, TValue>, ILoadable {
+public interface IStreamMappedDictionary<TKey, TValue> : IDictionary<TKey, TValue>, ILoadable, IDisposable {
 
 	ObjectContainer ObjectContainer { get; }
 
-	TKey ReadKey(int index);
+	TKey ReadKey(long index);
 
-	TValue ReadValue(int index);
+	internal byte[] ReadKeyBytes(long index);
 
-	bool TryFindKey(TKey key, out int index);
+	TValue ReadValue(long index);
 
-	bool TryFindValue(TKey key, out int index, out TValue value);
+	internal byte[] ReadValueBytes(long index);
 
-	void RemoveAt(int index);
+	bool TryFindKey(TKey key, out long index);
+
+	bool TryFindValue(TKey key, out long index, out TValue value);
+
+	void RemoveAt(long index);
 
 }

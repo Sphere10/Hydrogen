@@ -7,6 +7,7 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using NUnit.Framework;
 
@@ -18,31 +19,35 @@ public class StreamMappedMerkleDictionaryTests : StreamMappedMerkleDictionaryTes
 	private const int DefaultClusterSize = 256;
 	private const int DefaultReservedRecords = 11;
 
-	protected override IDisposable CreateDictionary(CHF chf, out StreamMappedMerkleDictionary<string, TestObject> streamMappedMerkleDictionary)
-		=> CreateDictionaryImpl(chf, out streamMappedMerkleDictionary);
+	protected override IDisposable CreateTestObjectDictionary(CHF chf, out StreamMappedMerkleDictionary<string, TestObject> streamMappedMerkleDictionary)
+		=> CreateDictionaryImpl(chf, new TestObjectSerializer(), new TestObjectComparer(), out streamMappedMerkleDictionary);
 
-	internal static IDisposable CreateDictionaryImpl(CHF chf, out StreamMappedMerkleDictionary<string, TestObject> streamMappedMerkleDictionary) {
+	protected override IDisposable CreateStringDictionary(CHF chf, out StreamMappedMerkleDictionary<string, string> merkleDictionary) 
+		=> CreateDictionaryImpl(chf, new StringSerializer(), StringComparer.InvariantCulture, out merkleDictionary);
+
+	internal static IDisposable CreateDictionaryImpl<TValue>(CHF chf, IItemSerializer<TValue> valueSerializer, IEqualityComparer<TValue> valueComparer, out StreamMappedMerkleDictionary<string, TValue> streamMappedMerkleDictionary) {
 		var memoryStream = new MemoryStream();
-		streamMappedMerkleDictionary = new StreamMappedMerkleDictionary<string, TestObject>(
+		streamMappedMerkleDictionary = new StreamMappedMerkleDictionary<string, TValue>(
 			memoryStream,
 			DefaultClusterSize,
-			chf,
-			reservedRecords: DefaultReservedRecords,
-			valueComparer: new TestObjectComparer(),
-			valueSerializer: new TestObjectSerializer()
+			new StringSerializer(),
+			valueSerializer,
+			keyChecksummer: new ObjectHashCodeChecksummer<string>(),
+			valueComparer: valueComparer,
+			hashAlgorithm: chf,
+			reservedStreams: DefaultReservedRecords,
+			implementation: StreamMappedDictionaryImplementation.KeyValueListBased
 		);
 		if (streamMappedMerkleDictionary.RequiresLoad)
 			streamMappedMerkleDictionary.Load();
-		return memoryStream;
-		;
+		return new Disposables(streamMappedMerkleDictionary, memoryStream);
 	}
 
 
 	[Test]
 	public void TestHeader() {
-		using (CreateDictionary(CHF.SHA2_256, out var streamMappedMerkleDictionary)) {
+		using (CreateTestObjectDictionary(CHF.SHA2_256, out var streamMappedMerkleDictionary)) {
 			Assert.That(streamMappedMerkleDictionary.ObjectContainer.StreamContainer.Header.ClusterSize, Is.EqualTo(DefaultClusterSize));
-			Assert.That(streamMappedMerkleDictionary.ObjectContainer.StreamContainer.Header.StreamDescriptorKeySize, Is.EqualTo(0));
 			Assert.That(streamMappedMerkleDictionary.ObjectContainer.StreamContainer.Header.ReservedStreams, Is.EqualTo(DefaultReservedRecords));
 		}
 	}

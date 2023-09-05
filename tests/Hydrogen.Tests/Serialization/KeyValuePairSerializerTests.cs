@@ -15,7 +15,7 @@ namespace Hydrogen.Tests;
 
 [TestFixture]
 [Parallelizable]
-public class KeyValuePairTests {
+public class KeyValuePairSerializerTests {
 
 	[Test]
 	public void Simple() {
@@ -27,10 +27,10 @@ public class KeyValuePairTests {
 		Assert.That(deserializedItem, Is.EqualTo(kvp).Using(comparer));
 	}
 
-	//[Test]
-	//public void EmptyValue() {
-	//	RunTest(new KeyValuePair<string, byte[]>("alpha", string.Empty));
-	//}
+	[Test]
+	public void EmptyValue() {
+		RunTest(new KeyValuePair<string, byte[]>("alpha", Array.Empty<byte>()));
+	}
 
 
 	[Test]

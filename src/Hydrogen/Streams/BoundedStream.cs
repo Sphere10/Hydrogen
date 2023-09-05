@@ -138,7 +138,7 @@ public class BoundedStream<TStream> : StreamDecorator<TStream> where TStream : S
 	}
 
 	public override int ReadByte() {
-		CheckAbsoluteRange(MaxAbsolutePosition, 1);
+		CheckAbsoluteRange(AbsolutePosition, 1);
 		return InnerStream.ReadByte();
 	}
 

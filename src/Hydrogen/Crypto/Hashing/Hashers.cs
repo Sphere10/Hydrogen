@@ -62,6 +62,13 @@ public static class Hashers {
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static byte[] HashWithNullSupport(CHF algorithm, byte[] bytes) {
+		if (bytes is null)
+			return ZeroHash(algorithm);
+		return Hash(algorithm, bytes);
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static void Hash(CHF algorithm, ReadOnlySpan<byte> bytes, Span<byte> result) {
 		var hashers = HasherStack[(int)algorithm];
 		Guard.Ensure(hashers is not null, $"No implementation for {algorithm} found");

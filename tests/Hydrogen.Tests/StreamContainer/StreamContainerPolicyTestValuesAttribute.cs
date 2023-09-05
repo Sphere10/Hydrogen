@@ -12,6 +12,6 @@ namespace Hydrogen.Tests;
 
 internal class StreamContainerPolicyTestValuesAttribute : ValuesAttribute {
 	public StreamContainerPolicyTestValuesAttribute()
-		: base(StreamContainerPolicy.Default, StreamContainerPolicy.BlobOptimized, StreamContainerPolicy.Debug) {
+		: base(StreamContainerPolicy.Default, StreamContainerPolicy.Performance, StreamContainerPolicy.Debug) {
 	}
 }

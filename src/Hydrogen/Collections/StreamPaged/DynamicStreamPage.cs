@@ -166,9 +166,10 @@ internal class DynamicStreamPage<TItem> : StreamPageBase<TItem> {
 		return ReadInternal(StartIndex, Count).GetEnumerator().OnMoveNext(CheckVersion);
 	}
 
-	public override long ReadItemBytes(long itemIndex, long byteOffset, long byteLength, out byte[] result) {
+	public override long ReadItemBytes(long itemIndex, long byteOffset, long? byteLength, out byte[] result) {
+		byteLength = byteLength ?? _itemSizes[itemIndex]; 
 		Stream.Seek(_offsets[itemIndex] + byteOffset, SeekOrigin.Begin);
-		result = Reader.ReadBytes(byteLength);
+		result = Reader.ReadBytes(byteLength.Value);
 
 		return result.Length;
 	}

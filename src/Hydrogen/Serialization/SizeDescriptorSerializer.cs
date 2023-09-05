@@ -42,10 +42,10 @@ public class SizeDescriptorSerializer : SizeDescriptorSizer, IItemSerializer<lon
 		}
 	}
 
-	public long DeserializeInternal(long byteSize, EndianBinaryReader reader) 
+	public long DeserializeInternal(long byteSize, EndianBinaryReader reader)
 		=> Deserialize(reader);
 
-	public long Deserialize(EndianBinaryReader reader) 
+	public long Deserialize(EndianBinaryReader reader)
 		=> SizeDescriptorStrategy switch {
 			SizeDescriptorStrategy.UseVarInt => unchecked((long)VarInt.Read(reader.BaseStream)),
 			SizeDescriptorStrategy.UseCVarInt => unchecked((long)CVarInt.Read(reader.BaseStream)),
@@ -56,16 +56,4 @@ public class SizeDescriptorSerializer : SizeDescriptorSizer, IItemSerializer<lon
 			_ => throw new ArgumentOutOfRangeException()
 		};
 
-	//public bool TryDeserialize(EndianBinaryReader reader, out long item) {
-	//	item = SizeDescriptorStrategy switch {
-	//		SizeDescriptorStrategy.UseVarInt => unchecked((long)VarInt.Read(reader.BaseStream)),
-	//		SizeDescriptorStrategy.UseCVarInt => unchecked((long)CVarInt.Read(reader.BaseStream)),
-	//		SizeDescriptorStrategy.UseULong => reader.ReadInt64(),
-	//		SizeDescriptorStrategy.UseUInt32 => reader.ReadUInt32(),
-	//		SizeDescriptorStrategy.UseUInt16 => reader.ReadUInt16(),
-	//		SizeDescriptorStrategy.UseByte => reader.ReadByte(),
-	//		_ => throw new ArgumentOutOfRangeException()
-	//	};
-	//	return true;
-	//}
 }

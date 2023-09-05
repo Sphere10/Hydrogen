@@ -56,7 +56,7 @@ public static class StreamExtensions {
 		stream.WriteBytes(buffer);
 	}
 
-	public static byte[] ReadAll(this Stream stream, int blockSize = Tools.Streams.DefaultBufferReadBlockSize) {
+	public static byte[] ReadAll(this Stream stream, int blockSize = HydrogenDefaults.DefaultBufferOperationBlockSize) {
 		// TODO: remove this seek resetting (anti-pattern)
 		long originalPosition = 0L;
 		if (stream.CanSeek) {
@@ -72,7 +72,7 @@ public static class StreamExtensions {
 		}
 	}
 
-	public static byte[] ReadAllAndDispose(this Stream stream, int blockSize = Tools.Streams.DefaultBufferReadBlockSize) {
+	public static byte[] ReadAllAndDispose(this Stream stream, int blockSize = HydrogenDefaults.DefaultBufferOperationBlockSize) {
 		try {
 			return stream.ReadAll(blockSize);
 		} finally {
@@ -81,7 +81,7 @@ public static class StreamExtensions {
 	}
 
 
-	public static T RouteTo<T>(this Stream stream, T writeStream, int blockSizeInBytes = Tools.Streams.DefaultBufferReadBlockSize) where T : Stream {
+	public static T RouteTo<T>(this Stream stream, T writeStream, int blockSizeInBytes = HydrogenDefaults.DefaultBufferOperationBlockSize) where T : Stream {
 		long originalPosition = 0;
 		if (stream.CanSeek) {
 			originalPosition = stream.Position;

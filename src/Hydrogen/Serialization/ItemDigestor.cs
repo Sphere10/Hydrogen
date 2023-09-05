@@ -29,7 +29,7 @@ public class ItemDigestor<TItem> : ItemSerializerDecorator<TItem>, IItemDigestor
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public byte[] Hash(TItem item) {
-		Guard.ArgumentNotNull(item, nameof(item));
+		//Guard.ArgumentNotNull(item, nameof(item));
 		return Hashers.Hash(_hashAlgorithm, item, this, _endianness);
 	}
 

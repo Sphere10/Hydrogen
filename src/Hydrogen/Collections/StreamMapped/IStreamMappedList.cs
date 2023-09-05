@@ -6,20 +6,17 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using System;
 using System.Collections.Generic;
 
 namespace Hydrogen;
 
-public interface IStreamMappedList<TItem> : IExtendedList<TItem>, ILoadable {
+public interface IStreamMappedList<TItem> : IExtendedList<TItem>, ILoadable, IDisposable {
+
 	ObjectContainer<TItem> ObjectContainer { get; }
 
 	IItemSerializer<TItem> ItemSerializer { get; }
 
 	IEqualityComparer<TItem> ItemComparer { get; }
 
-	ClusteredStream EnterAddScope(TItem item);
-
-	ClusteredStream EnterInsertScope(long index, TItem item);
-
-	ClusteredStream EnterUpdateScope(long index, TItem item);
 }

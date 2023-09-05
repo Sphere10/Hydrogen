@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace Hydrogen.Collections;
 
@@ -21,20 +22,19 @@ namespace Hydrogen.Collections;
 ///  - <see cref="IndexOfRange"/>
 /// </remarks>
 public class StreamMappedBuffer : RangedListBase<byte>, IBuffer {
-	public const int DefaultBlockSize = 1 << 18; // 256 kb
 	private readonly Stream _stream;
-	private readonly int _blockSize;
+	private readonly int _streamOperationBlockSize;
 
 	public StreamMappedBuffer(Stream stream)
-		: this(stream, DefaultBlockSize) {
+		: this(stream, HydrogenDefaults.DefaultBufferOperationBlockSize) {
 	}
 
-	public StreamMappedBuffer(Stream stream, int blockSize) {
+	public StreamMappedBuffer(Stream stream, int streamOperationBlockSize) {
 		Guard.ArgumentNotNull(stream, nameof(stream));
 		Guard.ArgumentLTE(stream.Length, int.MaxValue, nameof(stream.Length));
-		Guard.ArgumentGT(blockSize, 0, nameof(blockSize));
+		Guard.ArgumentGT(streamOperationBlockSize, 0, nameof(streamOperationBlockSize));
 		_stream = stream;
-		_blockSize = blockSize;
+		_streamOperationBlockSize = streamOperationBlockSize;
 	}
 
 	public override long Count => (int)_stream.Length;
@@ -76,7 +76,7 @@ public class StreamMappedBuffer : RangedListBase<byte>, IBuffer {
 		CheckIndex(index, true);
 		var originalCount = Count;
 		ExpandBy(items.Length);
-		Tools.Streams.ShiftBytes(_stream, index, originalCount - index, index + items.Length, _blockSize);
+		Tools.Streams.ShiftBytes(_stream, index, originalCount - index, index + items.Length, _streamOperationBlockSize);
 		_stream.Seek(index, SeekOrigin.Begin);
 		_stream.Write(items);
 	}
@@ -85,7 +85,7 @@ public class StreamMappedBuffer : RangedListBase<byte>, IBuffer {
 		CheckRange(index, count);
 		var fromIndex = index + count;
 		var shiftAmount = Count - fromIndex;
-		Tools.Streams.ShiftBytes(_stream, fromIndex, shiftAmount, index, _blockSize);
+		Tools.Streams.ShiftBytes(_stream, fromIndex, shiftAmount, index, _streamOperationBlockSize);
 		_stream.SetLength(Count - count);
 	}
 

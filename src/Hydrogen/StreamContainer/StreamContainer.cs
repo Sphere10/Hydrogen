@@ -54,7 +54,7 @@ namespace Hydrogen;
 ///  - Stream Descriptors are metadata describing a Stream, where they start/end and other info.
 ///  - Stream Descriptors are are stored in a cluster chain starting at cluster 0 having Terminal -1.
 /// </remarks>
-public class StreamContainer : SyncLoadableBase, ICriticalObject {
+public class StreamContainer : SyncLoadableBase, ICriticalObject, IDisposable {
 	public event EventHandlerEx<ClusteredStreamDescriptor> StreamCreated;
 	public event EventHandlerEx<long, ClusteredStreamDescriptor> StreamAdded;
 	public event EventHandlerEx<long, ClusteredStreamDescriptor> StreamInserted;
@@ -75,18 +75,21 @@ public class StreamContainer : SyncLoadableBase, ICriticalObject {
 	private bool _initialized;
 	private readonly ConcurrentStream _rootStream;
 	private readonly int _clusterSize;
-	private readonly long _streamDescriptorKeySize;
 	private readonly long _reservedStreams;
 	private readonly bool _integrityChecks;
 	private bool _suppressEvents;
 
-	public StreamContainer(Stream rootStream, int clusterSize = HydrogenDefaults.ClusterSize, StreamContainerPolicy policy = StreamContainerPolicy.Default, long streamDescriptorKeySize = 0, long reservedStreams = 0, Endianness endianness = Endianness.LittleEndian, bool autoLoad = false) {
+	public StreamContainer(
+		Stream rootStream,
+		int clusterSize = HydrogenDefaults.ClusterSize,
+		StreamContainerPolicy policy = StreamContainerPolicy.Default,
+		long reservedStreams = 0,
+		Endianness endianness = Endianness.LittleEndian,
+		bool autoLoad = false
+	) {
 		Guard.ArgumentNotNull(rootStream, nameof(rootStream));
 		Guard.ArgumentGTE(clusterSize, 1, nameof(clusterSize));
-		Guard.ArgumentInRange(streamDescriptorKeySize, 0, ushort.MaxValue, nameof(streamDescriptorKeySize));
 		Guard.ArgumentGTE(reservedStreams, 0, nameof(reservedStreams));
-		if (policy.HasFlag(StreamContainerPolicy.TrackKey))
-			Guard.Argument(streamDescriptorKeySize > 0, nameof(streamDescriptorKeySize), $"Must be greater than 0 when {nameof(StreamContainerPolicy.TrackKey)}");
 		Policy = policy;
 		Endianness = endianness;
 		_clusters = null;
@@ -99,12 +102,11 @@ public class StreamContainer : SyncLoadableBase, ICriticalObject {
 		_initialized = false;
 		_rootStream = rootStream.AsConcurrent();
 		_clusterSize = clusterSize;
-		_streamDescriptorKeySize = streamDescriptorKeySize;
 		_reservedStreams = reservedStreams;
 		_integrityChecks = Policy.HasFlag(StreamContainerPolicy.IntegrityChecks);
 		_suppressEvents = false;
 
-		if (autoLoad)
+		if (autoLoad && RequiresLoad)
 			Load();
 	}
 
@@ -121,16 +123,12 @@ public class StreamContainer : SyncLoadableBase, ICriticalObject {
 		rootStream.Seek(StreamContainerHeader.PolicyOffset, SeekOrigin.Begin);
 		var policy = (StreamContainerPolicy)reader.ReadUInt32();
 
-		// read descriptor key size
-		rootStream.Seek(StreamContainerHeader.StreamDescriptorKeySizeOffset, SeekOrigin.Begin);
-		var recordKeySize = reader.ReadUInt16();
-
 		// read records offset
-		rootStream.Seek(StreamContainerHeader.StreamDescriptorRecordsOffset, SeekOrigin.Begin);
+		rootStream.Seek(StreamContainerHeader.ReservedStreamsOffset, SeekOrigin.Begin);
 		var reservedStreams = reader.ReadInt64();
 
 		rootStream.Position = 0;
-		var storage = new StreamContainer(rootStream, clusterSize, policy, recordKeySize, reservedStreams, endianness, autoLoad: autoLoad);
+		var storage = new StreamContainer(rootStream, clusterSize, policy, reservedStreams, endianness, autoLoad: autoLoad);
 
 		return storage;
 	}
@@ -145,6 +143,8 @@ public class StreamContainer : SyncLoadableBase, ICriticalObject {
 		get => !_initialized || base.RequiresLoad || RootStream is ILoadable { RequiresLoad: true };
 		set => base.RequiresLoad = value;
 	}
+
+	public bool OwnsStream { get; set; }
 
 	public Stream RootStream => _rootStream;
 
@@ -188,6 +188,7 @@ public class StreamContainer : SyncLoadableBase, ICriticalObject {
 			_clusters.SuppressEvents = value;
 		}
 	}
+	
 
 	#region Streams
 
@@ -202,24 +203,25 @@ public class StreamContainer : SyncLoadableBase, ICriticalObject {
 		CheckInitialized();
 		using var accessScope = EnterAccessScope();
 		AddStreamDescriptor(out var index, NewStreamDescriptor()); // the first descriptor add will allocate cluster 0 for the records stream
-		return OpenStreamInternal(index, false);
+		return OpenStreamInternal(index, false, true);
 	}
 
-	public ClusteredStream OpenRead(long index) => Open(index, true);
+	public ClusteredStream OpenRead(long index) => Open(index, true, true);
 
-	public ClusteredStream OpenWrite(long index) => Open(index, false);
+	public ClusteredStream OpenWrite(long index) => Open(index, false, true);
 
-	public ClusteredStream Open(long index, bool readOnly) {
+	public ClusteredStream Open(long index, bool readOnly, bool acquireThreadLock) {
 		CheckInitialized();
 		using var accessScope = EnterAccessScope();
 		CheckStreamDescriptorIndex(index);
-		return OpenStreamInternal(index, readOnly);
+		return OpenStreamInternal(index, readOnly, acquireThreadLock);
 	}
 
 	public void Remove(long index) {
 		CheckInitialized();
+		CheckNotReserved(index);
 		using var accessScope = EnterAccessScope();
-		CheckNoOpenedStreams();
+		CheckNoOpenedStreams(true);
 		var countBeforeRemove = Header.StreamCount;
 		CheckStreamDescriptorIndex(index);
 		var record = GetStreamDescriptor(index);
@@ -238,11 +240,12 @@ public class StreamContainer : SyncLoadableBase, ICriticalObject {
 
 	public ClusteredStream Insert(long index) {
 		CheckInitialized();
+		CheckNotReserved(index);
 		using var accessScope = EnterAccessScope();
-		CheckNoOpenedStreams();
+		CheckNoOpenedStreams(true);
 		CheckStreamDescriptorIndex(index, allowEnd: true);
 		InsertStreamDescriptor(index, NewStreamDescriptor());
-		return OpenStreamInternal(index, false);
+		return OpenStreamInternal(index, false, true);
 	}
 
 	public void Swap(long first, long second) {
@@ -297,7 +300,7 @@ public class StreamContainer : SyncLoadableBase, ICriticalObject {
 	public void Clear() {
 		CheckInitialized();
 		using var accessScope = EnterAccessScope();
-		CheckNoOpenedStreams();
+		CheckNoOpenedStreams(false);
 		SuppressEvents = true;
 		try {
 			_streamDescriptors.Clear();
@@ -328,10 +331,10 @@ public class StreamContainer : SyncLoadableBase, ICriticalObject {
 		return Header.ToString();
 	}
 
-	private ClusteredStream OpenStreamInternal(long streamIndex, bool readOnly) {
+	private ClusteredStream OpenStreamInternal(long streamIndex, bool readOnly, bool acquireThreadLock) {
 		Guard.Ensure(!_openStreams.ContainsKey(streamIndex), $"Stream {streamIndex} is already open");
 
-		var accessScope = EnterAccessScope();
+		var accessScope = acquireThreadLock ? EnterAccessScope() : new NoOpScope();
 		try {
 			var stream = new ClusteredStream(this, streamIndex, readOnly, EndScopeCleanup);
 			if (!readOnly) {
@@ -381,9 +384,16 @@ public class StreamContainer : SyncLoadableBase, ICriticalObject {
 		record.Size = 0;
 		record.StartCluster = Cluster.Null;
 		record.EndCluster = Cluster.Null;
-		record.Key = new byte[_streamDescriptorKeySize];
 		NotifyStreamCreated(record);
 		return record;
+	}
+
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	internal ClusteredStreamTraits FastReadStreamDescriptorTraits(long index) {
+		CheckLocked();
+		_streamDescriptors.InternalCollection.ReadItemBytes(index, ClusteredStreamDescriptorSerializer.TraitsOffset, ClusteredStreamDescriptorSerializer.TraitsLength, out var traitsBytes);
+		return (ClusteredStreamTraits)traitsBytes[0];		
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -471,7 +481,7 @@ public class StreamContainer : SyncLoadableBase, ICriticalObject {
 
 	#endregion
 
-	#region Initialization & Loading
+	#region Initialization & Loading & Disposal
 
 	public void RegisterInitAction(Action action) {
 		if (_initialized)
@@ -492,7 +502,7 @@ public class StreamContainer : SyncLoadableBase, ICriticalObject {
 	}
 
 	private void Initialize() {
-		var recordSerializer = new ClusteredStreamDescriptorSerializer(Policy, _streamDescriptorKeySize);
+		var recordSerializer = new ClusteredStreamDescriptorSerializer();
 		var clusterSerializer = new ClusterSerializer(_clusterSize);
 
 		// acquire lock on root stream for entire initialize
@@ -509,7 +519,7 @@ public class StreamContainer : SyncLoadableBase, ICriticalObject {
 			_header.CheckHeaderIntegrity();
 			CheckHeaderDataIntegrity(_rootStream.Length, _header, clusterSerializer, recordSerializer);
 		} else {
-			_header.Create(1, _clusterSize, _streamDescriptorKeySize, _reservedStreams);
+			_header.Create(1, _clusterSize, _reservedStreams);
 		}
 		Guard.Ensure(_header.ClusterSize == _clusterSize, $"Inconsistent cluster size {_clusterSize} (header had '{_header.ClusterSize}')");
 
@@ -651,6 +661,13 @@ public class StreamContainer : SyncLoadableBase, ICriticalObject {
 		}
 	}
 
+	public void Dispose() {
+		CheckNoOpenedStreams(false);
+		if (OwnsStream) {
+			_rootStream.Dispose();
+		}
+	}
+
 	#endregion
 
 	#region Event methods
@@ -753,13 +770,28 @@ public class StreamContainer : SyncLoadableBase, ICriticalObject {
 	private void CheckLocked() => Guard.Ensure(IsLocked, "An access-scope is required for this operation");
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	private void CheckNoOpenedStreams(string errorMessage = "This operation cannot be executed whilst there are open scopes")
-		=> Guard.Ensure(_openStreams.Count == 0, errorMessage);
+	private void CheckNoOpenedStreams(bool allowOpenedReservedStreams, string errorMessage = "This operation cannot be executed whilst there are open scopes") {
+		//=> Guard.Ensure(_openStreams.Count == 0 || allowOpenedReservedStreams && _openStreams.All(x => x.Key < Header.ReservedStreams), errorMessage);
+		if (_openStreams.Count > 0) {
+			if (allowOpenedReservedStreams) 
+				using (EnterAccessScope())
+					if (_openStreams.All(x => x.Key < Header.ReservedStreams))
+						return;
+			throw new InvalidOperationException(errorMessage);
+		}
+	}
+		
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	private void CheckInitialized() {
 		if (!_initialized)
 			throw new InvalidOperationException("Clustered Streams not initialized");
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	private void CheckNotReserved(long index) {
+		if (index < Header.ReservedStreams)
+			throw new InvalidOperationException($"This operation cannot be performed on a reserved stream (index: {index}");
 	}
 
 	private void CheckHeaderDataIntegrity(long rootStreamLength, StreamContainerHeader header, IItemSerializer<Cluster> clusterSerializer, IItemSerializer<ClusteredStreamDescriptor> recordSerializer) {

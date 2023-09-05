@@ -10,5 +10,5 @@ using System;
 
 namespace Hydrogen;
 
-public interface ITransactionalList<T> : IStreamMappedList<T>, ITransactionalObject, IDisposable {
+public interface ITransactionalList<T> : IStreamMappedList<T>, ITransactionalObject {
 }

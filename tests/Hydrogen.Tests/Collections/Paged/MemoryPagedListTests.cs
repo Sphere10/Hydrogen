@@ -683,6 +683,48 @@ public class MemoryPagedListTests {
 
 
 	[Test]
+	public void ShuffleRightInsertTests() {
+		using (var collection = new MemoryPagedList<string>(50000, 1 * 50000, str => str.Length * sizeof(char))) {
+			collection.ShuffleRightInsert(0, "3"); // pre: []    post: [3]
+			Assert.That(collection, Is.EqualTo(new[] { "3" }));
+
+			collection.ShuffleRightInsert(0, "1"); // pre: [3]   post: [1, 3]
+			Assert.That(collection, Is.EqualTo(new[] { "1", "3" }));
+
+			collection.ShuffleRightInsert(1, "2"); // pre: [1, 3] post: [1, 2, 3]
+			Assert.That(collection, Is.EqualTo(new[] { "1", "2", "3" }));
+
+			collection.ShuffleRightInsert(3, "4"); // pre: [1, 2, 3] post: [1, 2, 3, 4]
+			Assert.That(collection, Is.EqualTo(new[] { "1", "2", "3", "4" }));
+		}
+	}
+
+
+	[Test]
+	public void ShuffleLeftRemoveTests() {
+		using (var collection = new MemoryPagedList<string>(50000, 1 * 50000, str => str.Length * sizeof(char))) {
+			
+			Assert.That(() => collection.ShuffleLeftRemoveAt(0), Throws.TypeOf<ArgumentOutOfRangeException>());
+			collection.AddRange("1", "2", "3", "4");
+			Assert.That(() => collection.ShuffleLeftRemoveAt(4), Throws.TypeOf<ArgumentOutOfRangeException>());
+
+
+			collection.ShuffleLeftRemoveAt(0); // pre: [1, 2, 3, 4]    post: [2, 3, 4]
+			Assert.That(collection, Is.EqualTo(new[] { "2", "3", "4" }));
+
+			collection.ShuffleLeftRemoveAt(1); // pre: [2, 3, 4]   post: [2, 4]
+			Assert.That(collection, Is.EqualTo(new[] { "2", "4" }));
+
+			collection.ShuffleLeftRemoveAt(1); // pre: [2, 4] post: [2]
+			Assert.That(collection, Is.EqualTo(new[] { "2" }));
+
+			collection.ShuffleLeftRemoveAt(0); // pre: [2] post: []
+			Assert.That(collection, Is.EqualTo(new string[] {}));
+		}
+	}
+
+
+	[Test]
 	[Sequential]
 	public void IntegrationTests(
 		[Values(1, 10, 57, 173, 1111)] int maxCapacity,

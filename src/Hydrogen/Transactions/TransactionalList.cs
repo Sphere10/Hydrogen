@@ -17,14 +17,14 @@ namespace Hydrogen;
 /// no restrictions on this list, items may be added, mutated and removed arbitrarily. This class is essentially a light-weight database.
 /// </summary>
 /// <typeparam name="T">Type of item</typeparam>
-public class TransactionalList<T> : StreamMappedList<T>, ITransactionalList<T> {
-	
+public class TransactionalList<T> : ExtendedListDecorator<T, IStreamMappedList<T>>, ITransactionalList<T> {
+	public event EventHandlerEx<object> Loading { add => InternalCollection.Loading += value; remove => InternalCollection.Loading -= value; }
+	public event EventHandlerEx<object> Loaded { add => InternalCollection.Loaded += value; remove => InternalCollection.Loaded -= value; }
 	public event EventHandlerEx<object> Committing { add => _transactionalObject.Committing += value; remove => _transactionalObject.Committing -= value; }
 	public event EventHandlerEx<object> Committed { add => _transactionalObject.Committed += value; remove => _transactionalObject.Committed -= value; }
 	public event EventHandlerEx<object> RollingBack { add => _transactionalObject.RollingBack += value; remove => _transactionalObject.RollingBack -= value; }
 	public event EventHandlerEx<object> RolledBack { add => _transactionalObject.RolledBack += value; remove => _transactionalObject.RolledBack -= value; }
 
-	private readonly StreamContainer _streams;
 	private readonly ITransactionalObject _transactionalObject;
 
 	public TransactionalList(
@@ -32,38 +32,116 @@ public class TransactionalList<T> : StreamMappedList<T>, ITransactionalList<T> {
 		string uncommittedPageFileDir, 
 		IItemSerializer<T> serializer = null,
 		IEqualityComparer<T> comparer = null,
+		IItemChecksummer<T> itemChecksummer = null,
 		int transactionalPageSize = HydrogenDefaults.TransactionalPageSize, 
 		long maxMemory = HydrogenDefaults.MaxMemoryPerCollection,
 		int clusterSize = HydrogenDefaults.ClusterSize, 
 		StreamContainerPolicy policy = StreamContainerPolicy.Default, 
-		int reservedRecords = 0, 
-		long recordKeySize = 0,
+		long reservedStreams = 0,
+		long checksumIndexStreamIndex = 0,
 		Endianness endianness = Endianness.LittleEndian, 
-		bool readOnly = false)
-		: this(new TransactionalStream(filename, uncommittedPageFileDir, transactionalPageSize, maxMemory, readOnly, readOnly), 
-			  serializer, comparer, clusterSize, policy, reservedRecords, recordKeySize, endianness) {
+		bool autoLoad = false,
+		bool readOnly = false
+	) : this( 
+			new TransactionalStream(
+				filename, 
+				uncommittedPageFileDir, 
+				transactionalPageSize,
+				maxMemory,
+				readOnly,
+				false
+			),
+			serializer, 
+			comparer, 
+			itemChecksummer,
+			clusterSize, 
+			policy, 
+			reservedStreams,
+			checksumIndexStreamIndex,
+			endianness,
+			autoLoad
+		) {
+		InternalCollection.ObjectContainer.StreamContainer.OwnsStream = true;
 	}
 
 	public TransactionalList(
 		TransactionalStream transactionalStream, 
 		IItemSerializer<T> serializer = null, 
 		IEqualityComparer<T> comparer = null, 
+		IItemChecksummer<T> itemChecksummer = null,
 		int clusterSize = HydrogenDefaults.ClusterSize, 
 		StreamContainerPolicy policy = StreamContainerPolicy.Default, 
-		int reservedRecords = 0,
-		long recordKeySize = 0,
-		Endianness endianness = HydrogenDefaults.Endianness) 
-		: this(new StreamContainer(transactionalStream, clusterSize, policy, recordKeySize, reservedRecords, endianness), transactionalStream, serializer, comparer) {
+		long reservedStreams = 0,
+		long checksumIndexStreamIndex = 0,
+		Endianness endianness = HydrogenDefaults.Endianness,
+		bool autoLoad = false
+	) : this(
+			new StreamContainer(
+			  transactionalStream, 
+			  clusterSize, 
+			  policy, 
+			  reservedStreams, 
+			  endianness,
+			  false
+			),
+			transactionalStream, 
+			serializer, 
+			comparer,
+			itemChecksummer,
+			checksumIndexStreamIndex,
+			autoLoad
+		) {
+		InternalCollection.ObjectContainer.OwnsStreamContainer = true;
 	}
 
-	public TransactionalList(StreamContainer streams, ITransactionalObject transactionalObject, IItemSerializer<T> serializer = null, IEqualityComparer<T> comparer = null)
-		: base(streams, serializer, comparer) {
-		Guard.ArgumentNotNull(streams, nameof(streams));
+	public TransactionalList(
+		StreamContainer streams, 
+		ITransactionalObject transactionalObject, 
+		IItemSerializer<T> serializer = null, 
+		IEqualityComparer<T> comparer = null,
+		IItemChecksummer<T> itemChecksummer = null,
+		long checksumIndexStreamIndex = 0,
+		bool autoLoad = false
+	) : this(
+			new StreamMappedList<T>(
+				streams,
+				serializer,
+				comparer,
+				itemChecksummer,
+				checksumIndexStreamIndex,
+				false
+			),
+			transactionalObject,
+			autoLoad
+		) {
 		Guard.ArgumentNotNull(transactionalObject, nameof(transactionalObject));
-		_streams = streams;
 		_transactionalObject = transactionalObject;
+		OwnsList = true;
 	}
-	
+
+	public TransactionalList(IStreamMappedList<T> streamMappedList, ITransactionalObject transactionalObject, bool autoLoad = false)
+		: base(streamMappedList) {
+		Guard.ArgumentNotNull(transactionalObject, nameof(transactionalObject));
+		_transactionalObject = transactionalObject;
+		
+		if (autoLoad && RequiresLoad)
+			Load();
+	}
+
+	public bool OwnsList { get; set; }
+
+	public bool RequiresLoad => InternalCollection.RequiresLoad;
+
+	public ObjectContainer<T> ObjectContainer => InternalCollection.ObjectContainer;
+
+	public IItemSerializer<T> ItemSerializer => InternalCollection.ItemSerializer;
+
+	public IEqualityComparer<T> ItemComparer => InternalCollection.ItemComparer;
+
+	public void Load() => InternalCollection.Load();
+
+	public Task LoadAsync() => InternalCollection.LoadAsync();
+
 	public virtual void Commit() => _transactionalObject.Commit();
 
 	public virtual Task CommitAsync() => _transactionalObject.CommitAsync();
@@ -73,8 +151,7 @@ public class TransactionalList<T> : StreamMappedList<T>, ITransactionalList<T> {
 	public virtual Task RollbackAsync() => _transactionalObject.RollbackAsync();
 
 	public virtual void Dispose() {
-		using (_streams.EnterAccessScope()) 
-			_streams.RootStream.Dispose();
+		if (OwnsList)
+			InternalCollection.Dispose();
 	}
-
 }

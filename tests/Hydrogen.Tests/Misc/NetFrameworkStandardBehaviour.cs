@@ -19,6 +19,14 @@ namespace Hydrogen.Tests;
 [Parallelizable(ParallelScope.Children)]
 public class NetFrameworkStandardBehaviour {
 
+
+	[Test] 
+	public void ReadByteAtEndOfStreamReturnsNegOne() {
+		var memoryStream = new MemoryStream();
+		var x = memoryStream.ReadByte();
+		Assert.That(x, Is.EqualTo(-1));
+	}
+
 	[Test]
 	public void DelegateEquality() {
 

@@ -11,147 +11,219 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using Hydrogen.ObjectSpace.MetaData;
+
 
 namespace Hydrogen;
 
 /// <summary>
-/// A dictionary whose keys and values are mapped over a stream as a <see cref="StreamMappedList{TItem}"/> of <see cref="KeyValuePair{TKey, TValue}"/>. A checksum of the key
-/// is kept in clustered record for fast lookup. 
-///
-/// IMPORTANT: Item deletions areWhen deleting a key, it's listing record is marked as unused and re-used later for efficiency.
+/// A dictionary whose contents are mapped onto a stream using an <see cref="ObjectContainer"/> which in turn uses a <see cref="StreamContainer"/>.
+/// This implementation persists <see cref="KeyValuePair{TKey, TValue}"/>s to a stream and uses an index on the <see cref="TKey"/> checksum to find keys
+/// in the container. This is suitable for general purpose dictionaries whose key's of arbitrary length. For keys that are constant length, a more
+/// optimized version is <see cref="StreamMappedDictionarySK{TKey,TValue}"/>. 
 /// </summary>
 /// <typeparam name="TKey">The type of key stored in the dictionary</typeparam>
 /// <typeparam name="TValue">The type of value stored in the dictionary</typeparam>
-/// <remarks>When deleting an item the underlying <see cref="ClusteredStreamDescriptor"/> is marked nullified but retained and re-used in later calls to <see cref="Add(TKey,TValue)"/>.</remarks>
-// TODO: there are some memory-blowout lookups in this class that need to be refactored out (should be safe for non-huge dictionaries).
+/// <remarks>When deleting an item the underlying slot in the <see cref="ObjectContainer"/> is marked as reaped and that index re-used in subsequent <see cref="Add(TKey,TValue)"/> operations.</remarks>
 public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>, IStreamMappedDictionary<TKey, TValue> {
-	public event EventHandlerEx<object> Loading;
-	public event EventHandlerEx<object> Loaded;
+	public event EventHandlerEx<object> Loading { add => ObjectContainer.Loading += value; remove => ObjectContainer.Loading -= value; }
+	public event EventHandlerEx<object> Loaded { add => ObjectContainer.Loaded += value; remove => ObjectContainer.Loaded -= value; }
 
-	protected readonly IStreamMappedList<KeyValuePair<TKey, TValue>> KVPList;
 	private readonly IEqualityComparer<TKey> _keyComparer;
 	private readonly IEqualityComparer<TValue> _valueComparer;
 	private readonly IItemChecksummer<TKey> _keyChecksum;
-	private readonly ExtendedLookup<int, int> _checksumToIndexLookup;
-	private readonly SortedList<int> _unusedDescriptors;
-	private readonly bool _preAllocateOptimization;
-	private bool _requiresLoad;
+	private readonly ObjectContainerIndex<KeyValuePair<TKey, TValue>, int> _keyChecksumIndex;
+	private readonly ObjectContainerFreeIndexStore _freeIndexStore;
+	private int _version;
 
-	public StreamMappedDictionary(Stream rootStream, int clusterSize, IItemSerializer<TKey> keySerializer = null, IItemSerializer<TValue> valueSerializer = null, IItemChecksummer<TKey> keyChecksummer = null,
-								  IEqualityComparer<TKey> keyComparer = null, IEqualityComparer<TValue> valueComparer = null, StreamContainerPolicy policy = StreamContainerPolicy.DictionaryDefault, int reservedRecords = 0,
-								  Endianness endianness = Endianness.LittleEndian, bool autoLoad = false)
-		: this(
-			new StreamMappedList<KeyValuePair<TKey, TValue>>(
+	public StreamMappedDictionary(
+		Stream rootStream,
+		int clusterSize,
+		IItemSerializer<TKey> keySerializer = null,
+		IItemSerializer<TValue> valueSerializer = null,
+		IEqualityComparer<TKey> keyComparer = null,
+		IEqualityComparer<TValue> valueComparer = null,
+		IItemChecksummer<TKey> keyChecksummer = null,
+		StreamContainerPolicy policy = StreamContainerPolicy.Default,
+		Endianness endianness = Endianness.LittleEndian,
+		bool autoLoad = false,
+		long reservedStreamCount = 2,
+		long freeIndexStoreStreamIndex = 0,
+		long keyChecksumIndexStreamIndex = 1
+	) : this(
+			new StreamContainer(
 				rootStream,
 				clusterSize,
-				new KeyValuePairSerializer<TKey, TValue>(
-					keySerializer ?? ItemSerializer<TKey>.Default,
-					valueSerializer ?? ItemSerializer<TValue>.Default
-				),
-				new KeyValuePairEqualityComparer<TKey, TValue>(
-					keyComparer,
-					valueComparer
-				),
 				policy,
-				0,
-				reservedRecords,
+				reservedStreamCount,
 				endianness,
-				autoLoad
+				false
 			),
 			keySerializer,
-			keyChecksummer,
+			valueSerializer,
 			keyComparer,
 			valueComparer,
-			endianness
+			keyChecksummer,
+			autoLoad,
+			freeIndexStoreStreamIndex,
+			keyChecksumIndexStreamIndex
 		) {
-		Guard.Argument(policy.HasFlag(StreamContainerPolicy.TrackChecksums), nameof(policy), $"Checksum tracking must be enabled in {nameof(StreamMappedDictionary<TKey, TValue>)} implementations.");
+		ObjectContainer.OwnsStreamContainer = true;
 	}
 
-	public StreamMappedDictionary(IStreamMappedList<KeyValuePair<TKey, TValue>> kvpStore, IItemSerializer<TKey> keySerializer, IItemChecksummer<TKey> keyChecksummer = null, IEqualityComparer<TKey> keyComparer = null,
-								  IEqualityComparer<TValue> valueComparer = null, Endianness endianness = Endianness.LittleEndian, bool autoLoad = false) {
-		Guard.ArgumentNotNull(kvpStore, nameof(kvpStore));
+	public StreamMappedDictionary(
+		StreamContainer streamContainer,
+		IItemSerializer<TKey> keySerializer = null,
+		IItemSerializer<TValue> valueSerializer = null,
+		IEqualityComparer<TKey> keyComparer = null,
+		IEqualityComparer<TValue> valueComparer = null,
+		IItemChecksummer<TKey> keyChecksummer = null,
+		bool autoLoad = false,
+		long freeIndexStoreStreamIndex = 0,
+		long keyChecksumIndexStreamIndex = 1
+	) : this(
+		new ObjectContainer<KeyValuePair<TKey, TValue>>(
+			streamContainer,
+			new KeyValuePairSerializer<TKey, TValue>(
+				keySerializer ?? ItemSerializer<TKey>.Default,
+				valueSerializer ?? ItemSerializer<TValue>.Default
+			),
+			streamContainer.Policy.HasFlag(StreamContainerPolicy.FastAllocate)
+		),
+		keySerializer,
+		keyComparer,
+		valueComparer,
+		keyChecksummer,
+		autoLoad,
+		freeIndexStoreStreamIndex,
+		keyChecksumIndexStreamIndex
+	) {
+		OwnsContainer = true;
+	}
+
+	public StreamMappedDictionary(
+		ObjectContainer objectContainer,
+		IItemSerializer<TKey> keySerializer,
+		IEqualityComparer<TKey> keyComparer = null,
+		IEqualityComparer<TValue> valueComparer = null,
+		IItemChecksummer<TKey> keyChecksummer = null,
+		bool autoLoad = false,
+		long freeIndexStoreStreamIndex = 0,
+		long keyChecksumIndexStreamIndex = 1
+	) {
+		Guard.ArgumentNotNull(objectContainer, nameof(objectContainer));
 		Guard.ArgumentNotNull(keySerializer, nameof(keySerializer));
+		Guard.ArgumentIsAssignable<ObjectContainer<KeyValuePair<TKey, TValue>>>(objectContainer, nameof(objectContainer));
+		ObjectContainer = (ObjectContainer<KeyValuePair<TKey, TValue>>)objectContainer;
 		_keyComparer = keyComparer ?? EqualityComparer<TKey>.Default;
 		_valueComparer = valueComparer ?? EqualityComparer<TValue>.Default;
-		KVPList = kvpStore;
-		_keyChecksum = keyChecksummer ?? new ItemDigestor<TKey>(keySerializer, endianness);
-		_checksumToIndexLookup = new ExtendedLookup<int, int>();
-		_unusedDescriptors = new();
-		_requiresLoad = true; //KVPList.Streams.Records.Count > KVPList.Streams.Header.ReservedStreams;
-		_preAllocateOptimization = kvpStore.ObjectContainer.StreamContainer.Policy.HasFlag(StreamContainerPolicy.FastAllocate);
-		if (autoLoad)
+		_keyChecksum = keyChecksummer ?? new ItemDigestor<TKey>(keySerializer, ObjectContainer.StreamContainer.Endianness);
+		_keyChecksum = _keyChecksum.WithSubstitution(default, 1); // ensure that item checksums are never 0 (default) since when loading index, that's interpreted to mean record is reaped
+		_freeIndexStore = new ObjectContainerFreeIndexStore(
+			ObjectContainer,
+			freeIndexStoreStreamIndex,
+			0L
+		);
+		_keyChecksumIndex = new ObjectContainerIndex<KeyValuePair<TKey, TValue>, int>(
+			ObjectContainer,
+			keyChecksumIndexStreamIndex,
+			kvp => _keyChecksum.CalculateChecksum(kvp.Key),
+			EqualityComparer<int>.Default,
+			PrimitiveSerializer<int>.Instance
+		);
+		_version = 0;
+		
+		if (autoLoad && RequiresLoad) 
 			Load();
+
 	}
 
-	public ObjectContainer ObjectContainer => KVPList.ObjectContainer;
+	ObjectContainer IStreamMappedDictionary<TKey, TValue>.ObjectContainer => ObjectContainer;
 
-	protected IEnumerable<KeyValuePair<TKey, TValue>> KeyValuePairs {
-		get {
-			for (var i = 0; i < KVPList.Count; i++) {
-				if (IsUnusedRecord(i))
-					continue;
-				var (key, value) = KVPList[i];
-				yield return new KeyValuePair<TKey, TValue>(key, value);
-			}
-		}
-	}
+	public ObjectContainer<KeyValuePair<TKey, TValue>> ObjectContainer { get; }
 
-	public bool RequiresLoad {
-		get => KVPList.RequiresLoad || _requiresLoad;
-		private set => _requiresLoad = value;
-	}
+	protected IEnumerable<KeyValuePair<TKey, TValue>> KeyValuePairs => GetEnumerator().AsEnumerable();
+
+	public bool RequiresLoad => ObjectContainer.RequiresLoad;
 
 	public override int Count {
 		get {
 			CheckLoaded();
-			var kvpListCountI = Tools.Collection.CheckNotImplemented64bitAddressingLength(KVPList.Count);
-			var unusedRecordsCountI = Tools.Collection.CheckNotImplemented64bitAddressingLength(_unusedDescriptors.Count);
-			return kvpListCountI - unusedRecordsCountI;
+			var objectContainerCountI = Tools.Collection.CheckNotImplemented64bitAddressingLength(ObjectContainer.Count);
+			var unusedRecordsCountI = Tools.Collection.CheckNotImplemented64bitAddressingLength(_freeIndexStore.Stack.Count);
+			return objectContainerCountI - unusedRecordsCountI;
 		}
 	}
 
 	public override bool IsReadOnly => false;
 
-	public void Load() {
-		NotifyLoading();
+	public bool OwnsContainer { get; set; }
 
-		if (KVPList.RequiresLoad)
-			KVPList.Load();
+	public void Load() => ObjectContainer.Load();
 
-		RefreshChecksumToIndexLookup();
-		RequiresLoad = false;
-		NotifyLoaded();
+	public Task LoadAsync() => ObjectContainer.LoadAsync();
+
+	public virtual void Dispose() {
+		_freeIndexStore?.Dispose();
+		_keyChecksumIndex?.Dispose();
+		if (OwnsContainer)
+			ObjectContainer.Dispose();
 	}
 
-	public Task LoadAsync() => Task.Run(Load);
+	public TKey ReadKey(long index) {
+		using (ObjectContainer.EnterAccessScope()) {
+			var traits = ObjectContainer.GetItemDescriptor(index).Traits;
+			if (traits.HasFlag(ClusteredStreamTraits.Reaped))
+				throw new InvalidOperationException($"Object {index} has been reaped");
 
-	public TKey ReadKey(int index) {
-		using (ObjectContainer.StreamContainer.EnterAccessScope()) {
-			if (ObjectContainer.StreamContainer.IsNull(KVPList.ObjectContainer.StreamContainer.Header.ReservedStreams + index))
-				throw new InvalidOperationException($"Stream record {index} is null");
-
-			using var stream = ObjectContainer.StreamContainer.OpenRead(KVPList.ObjectContainer.StreamContainer.Header.ReservedStreams + index);
+			using var stream = ObjectContainer.StreamContainer.OpenRead(ObjectContainer.StreamContainer.Header.ReservedStreams + index);
 			var reader = new EndianBinaryReader(EndianBitConverter.For(ObjectContainer.StreamContainer.Endianness), stream);
-			return ((KeyValuePairSerializer<TKey, TValue>)KVPList.ItemSerializer).DeserializeKey(reader);
+			return ((KeyValuePairSerializer<TKey, TValue>)ObjectContainer.ItemSerializer).DeserializeKey(reader);
 		}
 	}
 
-	public TValue ReadValue(int index) {
-		using (ObjectContainer.StreamContainer.EnterAccessScope()) {
-			if (ObjectContainer.StreamContainer.IsNull(KVPList.ObjectContainer.StreamContainer.Header.ReservedStreams + index))
-				throw new InvalidOperationException($"Stream record {index} is null");
+	public byte[] ReadKeyBytes(long index) {
+		using (ObjectContainer.EnterAccessScope()) {
+			var traits = ObjectContainer.GetItemDescriptor(index).Traits;
+			if (traits.HasFlag(ClusteredStreamTraits.Reaped))
+				throw new InvalidOperationException($"Object {index} has been reaped");
 
-			using var stream = ObjectContainer.StreamContainer.OpenRead(KVPList.ObjectContainer.StreamContainer.Header.ReservedStreams + index);
+			using var stream = ObjectContainer.StreamContainer.OpenRead(ObjectContainer.StreamContainer.Header.ReservedStreams + index);
 			var reader = new EndianBinaryReader(EndianBitConverter.For(ObjectContainer.StreamContainer.Endianness), stream);
-			return ((KeyValuePairSerializer<TKey, TValue>)KVPList.ItemSerializer).DeserializeValue(stream.Length, reader);
+			return ((KeyValuePairSerializer<TKey, TValue>)ObjectContainer.ItemSerializer).ReadKeyBytes(reader);
+		}
+	}
+
+	public TValue ReadValue(long index) {
+		using (ObjectContainer.EnterAccessScope()) {
+			var traits = ObjectContainer.GetItemDescriptor(index).Traits;
+			if (traits.HasFlag(ClusteredStreamTraits.Reaped))
+				throw new InvalidOperationException($"Object {index} has been reaped");
+			
+			using var stream = ObjectContainer.StreamContainer.OpenRead(ObjectContainer.StreamContainer.Header.ReservedStreams + index);
+			var reader = new EndianBinaryReader(EndianBitConverter.For(ObjectContainer.StreamContainer.Endianness), stream);
+			return ((KeyValuePairSerializer<TKey, TValue>)ObjectContainer.ItemSerializer).DeserializeValue(stream.Length, reader);
+		}
+	}
+
+	public byte[] ReadValueBytes(long index) {
+		using (ObjectContainer.EnterAccessScope()) {
+			var traits = ObjectContainer.GetItemDescriptor(index).Traits;
+			if (traits.HasFlag(ClusteredStreamTraits.Reaped))
+				throw new InvalidOperationException($"Object {index} has been reaped");
+
+			using var stream = ObjectContainer.StreamContainer.OpenRead(ObjectContainer.StreamContainer.Header.ReservedStreams + index);
+			var reader = new EndianBinaryReader(EndianBitConverter.For(ObjectContainer.StreamContainer.Endianness), stream);
+			return ((KeyValuePairSerializer<TKey, TValue>)ObjectContainer.ItemSerializer).ReadValueBytes(stream.Length, reader);
 		}
 	}
 
 	public override void Add(TKey key, TValue value) {
 		Guard.ArgumentNotNull(key, nameof(key));
 		CheckLoaded();
-		using (ObjectContainer.StreamContainer.EnterAccessScope()) {
+		using (ObjectContainer.EnterAccessScope()) {
 			if (TryFindKey(key, out _))
 				throw new KeyNotFoundException($"An item with key '{key}' was already added");
 			var kvp = new KeyValuePair<TKey, TValue>(key, value);
@@ -160,7 +232,7 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 	}
 
 	public override void Update(TKey key, TValue value) {
-		using (ObjectContainer.StreamContainer.EnterAccessScope()) {
+		using (ObjectContainer.EnterAccessScope()) {
 			if (!TryFindKey(key, out var index))
 				throw new KeyNotFoundException($"The key '{key}' was not found");
 			var kvp = new KeyValuePair<TKey, TValue>(key, value);
@@ -171,7 +243,7 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 	protected override void AddOrUpdate(TKey key, TValue value) {
 		Guard.ArgumentNotNull(key, nameof(key));
 		CheckLoaded();
-		using (ObjectContainer.StreamContainer.EnterAccessScope()) {
+		using (ObjectContainer.EnterAccessScope()) {
 			var kvp = new KeyValuePair<TKey, TValue>(key, value);
 			if (TryFindKey(key, out var index)) {
 				UpdateInternal(index, kvp);
@@ -184,7 +256,7 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 	public override bool Remove(TKey key) {
 		Guard.ArgumentNotNull(key, nameof(key));
 		CheckLoaded();
-		using (ObjectContainer.StreamContainer.EnterAccessScope()) {
+		using (ObjectContainer.EnterAccessScope()) {
 			if (TryFindKey(key, out var index)) {
 				RemoveAt(index);
 				return true;
@@ -196,28 +268,26 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 	public override bool ContainsKey(TKey key) {
 		Guard.ArgumentNotNull(key, nameof(key));
 		CheckLoaded();
-		using (ObjectContainer.StreamContainer.EnterAccessScope()) {
+		using (ObjectContainer.EnterAccessScope()) {
 			return
-				_checksumToIndexLookup[_keyChecksum.CalculateChecksum(key)]
-					.Where(index => !IsUnusedRecord(index))
-					.Select(ReadKey)
-					.Any(item => _keyComparer.Equals(item, key));
+				_keyChecksumIndex.Lookup[_keyChecksum.CalculateChecksum(key)]
+				.Select(ReadKey)
+				.Any(item => _keyComparer.Equals(item, key));
 		}
 	}
 
 	public override void Clear() {
 		// Load not required
-		using (ObjectContainer.StreamContainer.EnterAccessScope()) {
-			KVPList.Clear();
-			_checksumToIndexLookup.Clear();
-			_unusedDescriptors.Clear();
+		using (ObjectContainer.EnterAccessScope()) {
+			ObjectContainer.Clear();
+			UpdateVersion();
 		}
 	}
 
 	public override bool TryGetValue(TKey key, out TValue value) {
 		Guard.ArgumentNotNull(key, nameof(key));
 		CheckLoaded();
-		using (ObjectContainer.StreamContainer.EnterAccessScope()) {
+		using (ObjectContainer.EnterAccessScope()) {
 			if (TryFindValue(key, out _, out value)) {
 				return true;
 			}
@@ -226,10 +296,10 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 		}
 	}
 
-	public bool TryFindKey(TKey key, out int index) {
+	public bool TryFindKey(TKey key, out long index) {
 		Debug.Assert(key != null);
-		using (ObjectContainer.StreamContainer.EnterAccessScope()) {
-			foreach (var i in _checksumToIndexLookup[_keyChecksum.CalculateChecksum(key)]) {
+		using (ObjectContainer.EnterAccessScope()) {
+			foreach (var i in _keyChecksumIndex.Lookup[_keyChecksum.CalculateChecksum(key)]) {
 				var candidateKey = ReadKey(i);
 				if (_keyComparer.Equals(candidateKey, key)) {
 					index = i;
@@ -241,10 +311,10 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 		}
 	}
 
-	public bool TryFindValue(TKey key, out int index, out TValue value) {
+	public bool TryFindValue(TKey key, out long index, out TValue value) {
 		Debug.Assert(key != null);
-		using (ObjectContainer.StreamContainer.EnterAccessScope()) {
-			foreach (var i in _checksumToIndexLookup[_keyChecksum.CalculateChecksum(key)]) {
+		using (ObjectContainer.EnterAccessScope()) {
+			foreach (var i in _keyChecksumIndex.Lookup[_keyChecksum.CalculateChecksum(key)]) {
 				var candidateKey = ReadKey(i);
 				if (_keyComparer.Equals(candidateKey, key)) {
 					index = i;
@@ -261,8 +331,8 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 	public override void Add(KeyValuePair<TKey, TValue> item) {
 		Guard.ArgumentNotNull(item, nameof(item));
 		CheckLoaded();
-		using (ObjectContainer.StreamContainer.EnterAccessScope()) {
-			if (TryFindKey(item.Key, out _))
+		using (ObjectContainer.EnterAccessScope()) {
+			if (ContainsKey(item.Key))
 				throw new KeyNotFoundException($"An item with key '{item.Key}' was already added");
 			AddInternal(item);
 		}
@@ -271,7 +341,7 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 	public override bool Remove(KeyValuePair<TKey, TValue> item) {
 		Guard.ArgumentNotNull(item, nameof(item));
 		CheckLoaded();
-		using (ObjectContainer.StreamContainer.EnterAccessScope()) {
+		using (ObjectContainer.EnterAccessScope()) {
 			if (TryFindValue(item.Key, out var index, out var value)) {
 				if (_valueComparer.Equals(item.Value, value)) {
 					RemoveAt(index);
@@ -282,28 +352,19 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 		}
 	}
 
-	public void RemoveAt(int index) {
+	public void RemoveAt(long index) {
 		CheckLoaded();
 		// We don't delete the instance, we mark is as unused. Use Shrink to intelligently remove unused records.
-		using (ObjectContainer.StreamContainer.EnterAccessScope()) {
-			var kvp = KeyValuePair.Create(default(TKey), default(TValue));
-			using var stream = KVPList.EnterUpdateScope(index, kvp);
-
-			// Mark record as unused
-			Guard.Ensure(!stream.IsTomb, "Descriptor not in used state");
-			_checksumToIndexLookup.Remove(stream.KeyChecksum, index);
-			stream.KeyChecksum = -1;
-			stream.IsTomb = true;
-			_unusedDescriptors.Add(index);
-
-			// note: scope Dispose ends up updating the record
+		using (ObjectContainer.EnterAccessScope()) {
+			ObjectContainer.ReapItem(index);
+			UpdateVersion();
 		}
 	}
 
 	public override bool Contains(KeyValuePair<TKey, TValue> item) {
 		Guard.ArgumentNotNull(item, nameof(item));
 		CheckLoaded();
-		using (ObjectContainer.StreamContainer.EnterAccessScope()) {
+		using (ObjectContainer.EnterAccessScope()) {
 			if (!TryFindValue(item.Key, out _, out var value))
 				return false;
 			return _valueComparer.Equals(value, item.Value);
@@ -320,91 +381,67 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 		// deletes item right to left
 		// possible optimization: a connected neighbourhood of unused records can be deleted 
 		CheckLoaded();
-		for (var i = _unusedDescriptors.Count - 1; i >= 0; i--) {
-			var index = _unusedDescriptors[i];
-			KVPList.RemoveAt(index);
-			_unusedDescriptors.RemoveAt(i);
+		var sortedList = new SortedList<long>(SortDirection.Descending);
+		_freeIndexStore.Stack.ForEach(sortedList.Add);
+		foreach (var freeIndex in sortedList) {
+			ObjectContainer.RemoveItem(freeIndex);
 		}
+		_freeIndexStore.Stack.Clear();
+		UpdateVersion();
 	}
 
 	public override IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator() {
 		CheckLoaded();
-		return KVPList
-			.Where((_, i) => !_unusedDescriptors.Contains(i))
-			.Select(kvp => new KeyValuePair<TKey, TValue>(kvp.Key, kvp.Value))
-			.GetEnumerator();
+		var version = _version;
+		for (var i = 0; i < ObjectContainer.Count; i++) {
+			CheckVersion(version);
+			if (ObjectContainer.GetItemDescriptor(i).Traits.HasFlag(ClusteredStreamTraits.Reaped))
+				continue;
+			var kvp = ObjectContainer.LoadItem(i);
+			yield return kvp;
+		}
 	}
 
 	protected override IEnumerator<TKey> GetKeysEnumerator() {
 		CheckLoaded();
-		return Enumerable.Range(0, Tools.Collection.CheckNotImplemented64bitAddressingLength(KVPList.Count))
-			.Where(i => !_unusedDescriptors.Contains(i))
-			.Select(ReadKey)
-			.GetEnumerator();
+		var version = _version;
+		for (var i = 0; i < ObjectContainer.Count; i++) {
+			CheckVersion(version);
+			if (ObjectContainer.GetItemDescriptor(i).Traits.HasFlag(ClusteredStreamTraits.Reaped))
+				continue;
+			var key = ReadKey(i);
+			yield return key;
+		}
 	}
 
 	protected override IEnumerator<TValue> GetValuesEnumerator() {
 		CheckLoaded();
-		return Enumerable.Range(0, Tools.Collection.CheckNotImplemented64bitAddressingLength(KVPList.Count))
-			.Where(i => !_unusedDescriptors.Contains(i))
-			.Select(ReadValue)
-			.GetEnumerator();
-	}
-
-	protected virtual void OnLoading() {
-	}
-
-	protected virtual void OnLoaded() {
+		var version = _version;
+		for (var i = 0; i < ObjectContainer.Count; i++) {
+			CheckVersion(version);
+			if (ObjectContainer.GetItemDescriptor(i).Traits.HasFlag(ClusteredStreamTraits.Reaped))
+				continue;
+			var key = ReadValue(i);
+			yield return key;
+		}
 	}
 
 	private void AddInternal(KeyValuePair<TKey, TValue> item) {
-		int index;
-		ClusteredStream stream;
-		if (_unusedDescriptors.Any()) {
-			index = ConsumeUnusedRecord();
-			stream = KVPList.EnterUpdateScope(index, item);
+		long index;
+		if (_freeIndexStore.Stack.Any()) {
+			index = _freeIndexStore.Stack.Pop();
+			ObjectContainer.SaveItem(index, item, ObjectContainerOperationType.Update);
 		} else {
-			stream = KVPList.EnterAddScope(item);
-			stream.IsTomb = true;
-			index = Count - 1;
+			index = Count;
+			ObjectContainer.SaveItem(index, item, ObjectContainerOperationType.Add);
 		}
-
-		// Mark record as used
-		using (stream) {
-			Guard.Ensure(stream.IsTomb, $"Stream {index} is not available for use");
-			stream.KeyChecksum = _keyChecksum.CalculateChecksum(item.Key);
-			stream.IsTomb = false;
-			_checksumToIndexLookup.Add(stream.KeyChecksum, index);
-			// note: scope Dispose ends up updating the record
-		}
+		UpdateVersion();
 	}
 
-	private void UpdateInternal(int index, KeyValuePair<TKey, TValue> item) {
+	private void UpdateInternal(long index, KeyValuePair<TKey, TValue> item) {
 		// Updating value only, records (and checksum) don't change  when updating
-		using var stream = KVPList.EnterUpdateScope(index, item);
-		stream.IsTomb = false;
-		stream.KeyChecksum = _keyChecksum.CalculateChecksum(item.Key);
-	}
-
-	private bool IsUnusedRecord(int index) => _unusedDescriptors.Contains(index);
-
-	private int ConsumeUnusedRecord() {
-		var index = _unusedDescriptors[0];
-		_unusedDescriptors.RemoveAt(0);
-		return index;
-	}
-
-	private void RefreshChecksumToIndexLookup() {
-		_checksumToIndexLookup.Clear();
-		_unusedDescriptors.Clear();
-		for (var i = 0; i < KVPList.Count; i++) {
-			var reservedRecordsI = Tools.Collection.CheckNotImplemented64bitAddressingLength(KVPList.ObjectContainer.StreamContainer.Header.ReservedStreams);
-			var record = KVPList.ObjectContainer.StreamContainer.GetStreamDescriptor(reservedRecordsI + i);
-			if (!record.Traits.HasFlag(ClusteredStreamTraits.Tomb))
-				_checksumToIndexLookup.Add(record.KeyChecksum, i);
-			else
-				_unusedDescriptors.Add(i);
-		}
+		ObjectContainer.SaveItem(index, item, ObjectContainerOperationType.Update);
+		UpdateVersion();
 	}
 
 	private void CheckLoaded() {
@@ -412,14 +449,17 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 			throw new InvalidOperationException($"{nameof(StreamMappedDictionary<TKey, TValue>)} has not been loaded");
 	}
 
-	private void NotifyLoading() {
-		OnLoading();
-		Loading?.Invoke(this);
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	private void CheckVersion(long version) {
+		if (_version != version)
+			throw new InvalidOperationException("Collection was mutated during enumeration");
 	}
 
-	private void NotifyLoaded() {
-		OnLoaded();
-		Loaded?.Invoke(this);
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	private void UpdateVersion() {
+		unchecked {
+			_version++;
+		}
 	}
 
 }

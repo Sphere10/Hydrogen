@@ -47,7 +47,7 @@ public class StreamMappedBufferTests {
 
 	[Test]
 	public void IntegrationTests(
-		[Values(1, 3, 11, 111, StreamMappedBuffer.DefaultBlockSize)]
+		[Values(1, 3, 11, 111, HydrogenDefaults.DefaultBufferOperationBlockSize)]
 		int blockSize,
 		[Values(1, 2, 3, 11, 111, 1111, 11111)]
 		int maxCapacity) {

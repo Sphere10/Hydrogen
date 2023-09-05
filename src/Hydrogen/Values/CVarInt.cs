@@ -18,7 +18,9 @@ namespace Hydrogen;
 /// less efficient than other formats.
 /// </summary>
 public readonly struct CVarInt {
+	private const int MaxBytesPermitted = 256;
 	private readonly ulong _value;
+	
 
 	public CVarInt() : this(0UL) {
 	}
@@ -58,8 +60,14 @@ public readonly struct CVarInt {
 
 	public static ulong Read(Stream stream) {
 		ulong n = 0;
+		var loopProtector = 0;
 		while (true) {
-			var chData = (byte)stream.ReadByte();
+			if (loopProtector++ > MaxBytesPermitted)
+				throw new FormatException($"Reading {nameof(CVarInt)} failed (no terminating bit encountered)");
+			var readByte = stream.ReadByte();
+			if (readByte == -1)
+				throw new InvalidOperationException($"Unexpected end of stream");
+			var chData = readByte;
 			var a = n << 7;
 			var b = (byte)(chData & 0x7F);
 			n = (a | b);

@@ -121,13 +121,13 @@ internal class StaticStreamPage<TItem> : StreamPageBase<TItem> {
 	/// <param name="byteLength"></param>
 	/// <param name="result"></param>
 	/// <returns>Number of bytes actually read</returns>
-	public override long ReadItemBytes(long itemIndex, long byteOffset, long byteLength, out byte[] result) {
+	public override long ReadItemBytes(long itemIndex, long byteOffset, long? byteLength, out byte[] result) {
 		Guard.ArgumentInRange(itemIndex, 0, Count - 1, nameof(itemIndex));
-
+		byteLength ??= ItemSize;
 		var offset = itemIndex * ItemSize + _item0Offset + byteOffset;
 
 		Stream.Seek(offset, SeekOrigin.Begin);
-		result = Reader.ReadBytes(byteLength);
+		result = Reader.ReadBytes(byteLength.Value);
 		return result.Length;
 	}
 

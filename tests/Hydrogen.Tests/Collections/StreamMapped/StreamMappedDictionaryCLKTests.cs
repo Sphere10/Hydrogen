@@ -8,6 +8,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using NUnit.Framework;
 
@@ -15,39 +16,39 @@ namespace Hydrogen.Tests;
 
 [TestFixture]
 [Parallelizable(ParallelScope.Children)]
-public class StreamMappedDictionarySKTests : StreamMappedDictionaryTestsBase {
+public class StreamMappedDictionaryCLKTests : StreamMappedDictionaryTestsBase {
 	private const int DefaultClusterDataSize = 32;
 
 	[Test]
 	public void TestHeader() {
-		var dict = new StreamMappedDictionarySK<string, string>(new MemoryStream(),
+		var dict = new StreamMappedDictionaryCLK<string, string>(
+			new MemoryStream(),
 			21,
-			new StringSerializer().AsStaticSizeSerializer(11, SizeDescriptorStrategy.UseUInt32),
+			new StringSerializer().AsNullable().AsStaticSizeSerializer(11, SizeDescriptorStrategy.UseUInt32),
 			new StringSerializer(),
-			reservedRecords: 33,
-			policy: StreamContainerPolicy.BlobOptimized);
+			reservedStreamCount: 33,
+			policy: StreamContainerPolicy.Performance);
 		if (dict.RequiresLoad)
 			dict.Load();
 		Assert.That(dict.ObjectContainer.StreamContainer.Header.ClusterSize, Is.EqualTo(21));
-		Assert.That(dict.ObjectContainer.StreamContainer.Header.StreamDescriptorKeySize, Is.EqualTo(11));
 		Assert.That(dict.ObjectContainer.StreamContainer.Header.ReservedStreams, Is.EqualTo(33));
 	}
 
-	protected override IDisposable CreateDictionary<TKey, TValue>(int estimatedMaxByteSize, StorageType storageType, int reservedRecords, StreamContainerPolicy policy, IItemSerializer<TKey> keySerializer, IItemSerializer<TValue> valueSerializer,
+	protected override IDisposable CreateDictionary<TKey, TValue>(int estimatedMaxByteSize, StorageType storageType, StreamContainerPolicy policy, IItemSerializer<TKey> keySerializer, IItemSerializer<TValue> valueSerializer,
 	                                                              IEqualityComparer<TKey> keyComparer, IEqualityComparer<TValue> valueComparer, out IStreamMappedDictionary<TKey, TValue> clusteredDictionary) {
 		var disposable = base.CreateStream(storageType, estimatedMaxByteSize, out var stream);
-		clusteredDictionary = new StreamMappedDictionarySK<TKey, TValue>(stream,
+		clusteredDictionary = new StreamMappedDictionaryCLK<TKey, TValue>(stream,
 			DefaultClusterDataSize,
 			keySerializer.AsStaticSizeSerializer(256, SizeDescriptorStrategy.UseUInt32),
 			valueSerializer,
-			null,
 			keyComparer,
 			valueComparer,
-			policy | StreamContainerPolicy.TrackChecksums | StreamContainerPolicy.TrackKey,
-			reservedRecords);
+			policy
+		);
+		Debug.Assert(clusteredDictionary is StreamMappedDictionaryCLK<TKey, TValue>, "Not correct implementation");
 		if (clusteredDictionary.RequiresLoad)
 			clusteredDictionary.Load();
-		return disposable;
+		return new Disposables(clusteredDictionary, disposable);
 	}
 
 }

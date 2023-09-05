@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace Hydrogen;
 
@@ -94,7 +95,7 @@ public class UpdateOnlyList<TItem, TInner> : ExtendedListDecorator<TItem, TInner
 	}
 
 	public override void Update(long index, TItem item) {
-		CheckIndex(index);
+		CheckIndex(index, true);
 		UpdateRange(index, new[] { item });
 	}
 
@@ -104,6 +105,26 @@ public class UpdateOnlyList<TItem, TInner> : ExtendedListDecorator<TItem, TInner
 		CheckRange(index, itemsArr.Length);
 		base.UpdateRange(index, itemsArr);
 	}
+
+
+	/*
+	 public override void UpdateRange(long index, IEnumerable<T> items) {
+	// TODO: needs updating to support multiple _internalArray's and 2^64-1 addressable items
+	Guard.ArgumentNotNull(items, nameof(items));
+	var itemsArr = items as T[] ?? items.ToArray();
+	CheckRange(index, itemsArr.Length);
+
+	if (itemsArr.Length == 0)
+		return;
+
+	UpdateVersion();
+	Array.Copy(itemsArr, 0, _internalArray, index, itemsArr.Length);
+}
+ 
+ 
+ */
+
+
 
 	public override void Insert(long index, TItem item) => this.InsertRange(index, new[] { item });
 
@@ -117,12 +138,9 @@ public class UpdateOnlyList<TItem, TInner> : ExtendedListDecorator<TItem, TInner
 		var movedRegionFromStartIX = index;
 		var movedRegionFromEndIX = _count - 1;
 		var movedRegionToStartIX = movedRegionFromStartIX + itemsArr.Length;
-		var movedRegionToEndIX = movedRegionFromEndIX + itemsArr.Length;
+		//var movedRegionToEndIX = movedRegionFromEndIX + itemsArr.Length;
 
-		for (var i = movedRegionToEndIX; i >= movedRegionToStartIX; i--) {
-			var toCopy = base.Read(i - itemsArr.Length);
-			base.Update(i, toCopy);
-		}
+		ShuffleRight(InternalCollection, movedRegionFromStartIX, movedRegionToStartIX, _count - index, false);
 
 		// finally, save the new items
 		base.UpdateRange(index, itemsArr);
@@ -147,19 +165,47 @@ public class UpdateOnlyList<TItem, TInner> : ExtendedListDecorator<TItem, TInner
 		CheckRange(index, count);
 
 		var movedRegionFromStartIX = index + count;
-		var movedRegionFromEndIX = _count - 1;
+		//var movedRegionFromEndIX = _count - 1;
 		var movedRegionToStartIX = index;
-		var movedRegionToEndIX = index + (movedRegionFromEndIX - movedRegionFromStartIX);
+		//var movedRegionToEndIX = index + (movedRegionFromEndIX - movedRegionFromStartIX);
 
-		for (var i = movedRegionToStartIX; i <= movedRegionToEndIX; i++) {
-			var toCopy = base.Read(i + count);
-			base.Update(i, toCopy);
-		}
+		ShuffleLeft(InternalCollection, movedRegionFromStartIX, movedRegionToStartIX, _count - movedRegionFromStartIX, false);
+
 		_count -= count;
 		if (_preAllocationPolicy == PreAllocationPolicy.MinimumRequired)
 			ReduceExcessCapacity();
 	}
 
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static void ShuffleLeft<T>(IExtendedList<T> list, long fromIndex, long toIndex, long count, bool integrityChecks = false) {
+		if (integrityChecks) {
+			Guard.ArgumentNotNull(list, nameof(list));
+			Guard.ArgumentInRange(fromIndex, 0, list.Count, nameof(fromIndex));
+			Guard.ArgumentInRange(toIndex, 0, list.Count, nameof(toIndex));
+			Guard.ArgumentInRange(count, 0, list.Count - fromIndex, nameof(count));
+			Guard.ArgumentLTE(toIndex, fromIndex, nameof(fromIndex));
+		}
+		for (var i = 0; i < count; i++) {
+			var read = list.Read(i + fromIndex);
+			list.Update(toIndex + i, read);
+		}
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static void ShuffleRight<T>(IExtendedList<T> list, long fromIndex, long toIndex, long count, bool integrityChecks = false) {
+		if (integrityChecks) {
+			Guard.ArgumentNotNull(list, nameof(list));
+			Guard.ArgumentInRange(fromIndex, 0, list.Count, nameof(fromIndex));
+			Guard.ArgumentInRange(toIndex, 0, list.Count, nameof(toIndex));
+			Guard.ArgumentInRange(count, 0, list.Count - fromIndex, nameof(count));
+			Guard.ArgumentLTE(fromIndex, toIndex, nameof(fromIndex));
+		}
+		for (var i = count - 1; i >= 0; i--) {
+			var read = list.Read(i + fromIndex);
+			list.Update(toIndex + i, read);
+		}
+	}
+	
 	public override void Clear() {
 		_count = 0;
 		if (_preAllocationPolicy == PreAllocationPolicy.MinimumRequired)

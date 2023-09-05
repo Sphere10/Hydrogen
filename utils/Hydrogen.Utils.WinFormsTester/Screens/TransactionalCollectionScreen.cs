@@ -149,7 +149,7 @@ public partial class TransactionalCollectionScreen : ApplicationScreen {
 			Path.GetTempPath(),
 			new ByteArraySerializer(),
 			new ByteArraySerializer(),
-			policy: policy | StreamContainerPolicy.TrackChecksums,
+			policy: policy,
 			transactionalPageSize: _pageSizeIntBox.Value.GetValueOrDefault(0),
 			clusterSize: _clusterSizeIntBox.Value.GetValueOrDefault(0),
 			maxMemory: _cacheSizeIntBox.Value.GetValueOrDefault(0)

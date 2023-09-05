@@ -20,7 +20,7 @@ namespace Hydrogen;
 /// <summary>
 /// A set implementation of <see cref="IStreamMappedMerkleHashSet{T}"/>
 /// </summary>
-public class StreamMappedMerkleHashSet<TItem, TInner> : SetDecorator<TItem, TInner>, IStreamMappedMerkleHashSet<TItem> 
+public class StreamMappedMerkleHashSet<TItem, TInner> : SetDecorator<TItem, TInner>, IStreamMappedMerkleHashSet<TItem>
 	where TInner : IStreamMappedHashSet<TItem> {
 
 	public event EventHandlerEx<object> Loading { add => InternalSet.Loading += value; remove => InternalSet.Loading -= value; }
@@ -44,43 +44,84 @@ public class StreamMappedMerkleHashSet<TItem, TInner> : SetDecorator<TItem, TInn
 
 public class StreamMappedMerkleHashSet<TItem> : StreamMappedMerkleHashSet<TItem, IStreamMappedHashSet<TItem>> {
 
-	public StreamMappedMerkleHashSet(Stream rootStream, int clusterSize, IItemSerializer<TItem> serializer, CHF hashAlgorithm = CHF.SHA2_256, IEqualityComparer<TItem> comparer = null,
-	                                 StreamContainerPolicy policy = StreamContainerPolicy.DictionaryDefault, int reservedRecords = 1, int merkleTreeStreamIndex = HydrogenDefaults.ClusteredStorageMerkleTreeStreamIndex,
-									 Endianness endianness = Endianness.LittleEndian, bool autoLoad = false)
-		: this(rootStream, clusterSize, serializer, new ItemDigestor<TItem>(hashAlgorithm, serializer, endianness), hashAlgorithm, comparer, policy, reservedRecords, merkleTreeStreamIndex, endianness, autoLoad) {
+	public StreamMappedMerkleHashSet(
+		Stream rootStream,
+		int clusterSize,
+		IItemSerializer<TItem> serializer,
+		CHF hashAlgorithm = CHF.SHA2_256,
+		IEqualityComparer<TItem> comparer = null,
+		StreamContainerPolicy policy = StreamContainerPolicy.Default,
+		long reservedStreams = 3,
+		long merkleTreeStreamIndex = 0,
+		long freeIndexStoreStreamIndex = 1,
+		long keyChecksumIndexStreamIndex = 2,
+		Endianness endianness = Endianness.LittleEndian,
+		bool autoLoad = false
+	) : this(
+		rootStream,
+		clusterSize,
+		serializer,
+		new ItemDigestor<TItem>(hashAlgorithm, serializer, endianness),
+		hashAlgorithm,
+		comparer,
+		policy,
+		reservedStreams,
+		merkleTreeStreamIndex,
+		freeIndexStoreStreamIndex,
+		keyChecksumIndexStreamIndex,
+		endianness,
+		autoLoad
+	) {
 	}
 
-	public StreamMappedMerkleHashSet(Stream rootStream, int clusterSize, IItemSerializer<TItem> serializer, IItemHasher<TItem> hasher, CHF hashAlgorithm, IEqualityComparer<TItem> comparer = null,
-	                                 StreamContainerPolicy policy = StreamContainerPolicy.DictionaryDefault, int reservedRecords = 1, int merkleTreeStreamIndex = HydrogenDefaults.ClusteredStorageMerkleTreeStreamIndex,
-									 Endianness endianness = Endianness.LittleEndian, bool autoLoad = false)
-		: this(
+	public StreamMappedMerkleHashSet(
+		Stream rootStream,
+		int clusterSize,
+		IItemSerializer<TItem> serializer,
+		IItemHasher<TItem> hasher,
+		CHF hashAlgorithm,
+		IEqualityComparer<TItem> comparer = null,
+		StreamContainerPolicy policy = StreamContainerPolicy.Default,
+		long reservedStreamCount = 3,
+		long merkleTreeStreamIndex = 0,
+		long freeIndexStoreStreamIndex = 1,
+		long keyChecksumIndexStreamIndex = 2,
+		Endianness endianness = Endianness.LittleEndian,
+		bool autoLoad = false
+	) : this(
 			new StreamMappedMerkleDictionary<byte[], TItem>(
 				rootStream,
 				clusterSize,
 				new StaticSizeByteArraySerializer(hasher.DigestLength),
-				hashAlgorithm,
 				serializer,
 				new HashChecksummer(),
 				new ByteArrayEqualityComparer(),
 				comparer,
+				hashAlgorithm,
 				policy,
-				reservedRecords,
+				reservedStreamCount,
 				merkleTreeStreamIndex,
+				freeIndexStoreStreamIndex,
+				keyChecksumIndexStreamIndex,
 				endianness,
 				autoLoad
 			),
 			comparer,
 			hasher
 		) {
-		Guard.Argument(policy.HasFlag(StreamContainerPolicy.TrackChecksums), nameof(policy), $"Checksum tracking must be enabled in clustered dictionary implementations.");
 	}
 
-	public StreamMappedMerkleHashSet(StreamMappedMerkleDictionary<byte[], TItem> internalDictionary, IEqualityComparer<TItem> comparer, IItemHasher<TItem> hasher)
-		: this(new StreamMappedHashSet<TItem>(internalDictionary, comparer, hasher), internalDictionary.MerkleTree) {
+	public StreamMappedMerkleHashSet(
+		StreamMappedMerkleDictionary<byte[], TItem> internalDictionary,
+		IEqualityComparer<TItem> comparer,
+		IItemHasher<TItem> hasher
+	) : this(new StreamMappedHashSet<TItem>(internalDictionary, comparer, hasher), internalDictionary.MerkleTree) {
 	}
 
-	public StreamMappedMerkleHashSet(IStreamMappedHashSet<TItem> internalSet, IMerkleTree merkleTree)
-		: base(internalSet, merkleTree) {
+	public StreamMappedMerkleHashSet(
+		IStreamMappedHashSet<TItem> internalSet,
+		IMerkleTree merkleTree
+	) : base(internalSet, merkleTree) {
 	}
 
 }

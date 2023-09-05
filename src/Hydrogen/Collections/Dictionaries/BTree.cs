@@ -65,10 +65,6 @@ public class BTree<K, V> : IDictionary<K, V> where K : IComparable<K> {
 	public void Add(K key, V value) => Set(key, value, false);
 
 	public void Set(K key, V value, bool overwriteIfExists) {
-		Tools.Debugger.CounterA++;
-		if (Tools.Debugger.CounterA == 3) {
-			var x = 1;
-		}
 		if (_root == null) {
 			_root = new BTreeNode(_order, key, value);
 			Count++;

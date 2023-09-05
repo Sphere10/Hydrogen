@@ -16,6 +16,7 @@ public class ClusteredStream : StreamDecorator {
 	private readonly ClusteredStreamFragmentProvider _fragmentProvider;
 	private ClusteredStreamDescriptor _descriptor;
 	private readonly Action _finalizeAction;
+	private readonly Disposables  _disposables;
 
 	internal ClusteredStream(StreamContainer streamContainer, long streamIndex, bool readOnly, Action finalizeAction = null)
 		: base(CreateInternalStream(streamContainer, streamIndex, readOnly, out var streamDescriptor, out var fragmentProvider)) {
@@ -25,7 +26,7 @@ public class ClusteredStream : StreamDecorator {
 		_descriptor = streamDescriptor;
 		ReadOnly = readOnly;
 		_fragmentProvider = fragmentProvider;
-
+		_disposables = new();
 		// track when stream length changes so we can update the scope's descriptor
 		if (!readOnly) {
 			_fragmentProvider.StreamLengthChanged += (_, length) => {
@@ -41,18 +42,16 @@ public class ClusteredStream : StreamDecorator {
 
 	public ClusteredStreamTraits Traits => _descriptor.Traits;
 
-	public int KeyChecksum { get => _descriptor.KeyChecksum; set => _descriptor.KeyChecksum = value; }
-
-	public byte[] Key { get => _descriptor.Key; set => _descriptor.Key = value; }
+	public void AddFinalizer(Action action) => _disposables.Add(action);
 
 	public bool IsNull { 
 		get => _descriptor.Traits.HasFlag(ClusteredStreamTraits.Null); 
 		set => _descriptor.Traits = _descriptor.Traits.CopyAndSetFlags(ClusteredStreamTraits.Null, value);
 	}
 
-	public bool IsTomb { 
-		get => _descriptor.Traits.HasFlag(ClusteredStreamTraits.Tomb); 
-		set => _descriptor.Traits = _descriptor.Traits.CopyAndSetFlags(ClusteredStreamTraits.Tomb, value);
+	public bool IsReaped { 
+		get => _descriptor.Traits.HasFlag(ClusteredStreamTraits.Reaped); 
+		set => _descriptor.Traits = _descriptor.Traits.CopyAndSetFlags(ClusteredStreamTraits.Reaped, value);
 	}
 
 	public void ProcessClusterMapChanged(ClusterMapChangedEventArgs changedEvent) {
@@ -102,6 +101,9 @@ public class ClusteredStream : StreamDecorator {
 			_streamContainer.UpdateStreamDescriptor(StreamIndex, _descriptor);
 		}
 		_finalizeAction?.Invoke();
+		_disposables.ForEach(d => d.Dispose());
+		
+
 #if ENABLE_CLUSTER_DIAGNOSTICS
 		ClusterDiagnostics.VerifyClusters(_streamContainer.ClusterMap);
 #endif

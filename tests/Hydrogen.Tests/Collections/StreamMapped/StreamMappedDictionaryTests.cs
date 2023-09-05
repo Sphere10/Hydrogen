@@ -16,11 +16,19 @@ namespace Hydrogen.Tests;
 [Parallelizable(ParallelScope.Children)]
 public class StreamMappedDictionaryTests : StreamMappedDictionaryTestsBase {
 	private const int DefaultClusterDataSize = 32;
-	protected override IDisposable CreateDictionary<TKey, TValue>(int estimatedMaxByteSize, StorageType storageType, int reservedRecords, StreamContainerPolicy policy, IItemSerializer<TKey> keySerializer, IItemSerializer<TValue> valueSerializer,
-	                                                              IEqualityComparer<TKey> keyComparer, IEqualityComparer<TValue> valueComparer, out IStreamMappedDictionary<TKey, TValue> clusteredDictionary) {
+	protected override IDisposable CreateDictionary<TKey, TValue>(
+		int estimatedMaxByteSize,
+		StorageType storageType,
+		StreamContainerPolicy policy, 
+		IItemSerializer<TKey> keySerializer, 
+		IItemSerializer<TValue> valueSerializer,
+		IEqualityComparer<TKey> keyComparer, 
+		IEqualityComparer<TValue> valueComparer, 
+		out IStreamMappedDictionary<TKey, TValue> clusteredDictionary
+	) {
 		var disposable = base.CreateStream(storageType, estimatedMaxByteSize, out var stream);
-		clusteredDictionary = new StreamMappedDictionary<TKey, TValue>(stream, DefaultClusterDataSize, keySerializer, valueSerializer, null, keyComparer, valueComparer, policy | StreamContainerPolicy.TrackChecksums, reservedRecords);
-		return disposable;
+		clusteredDictionary = new StreamMappedDictionary<TKey, TValue>(stream, DefaultClusterDataSize, keySerializer, valueSerializer, keyComparer, valueComparer, null, policy, Endianness.LittleEndian, false);
+		return new Disposables(clusteredDictionary, disposable);
 	}
 
 }

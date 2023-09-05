@@ -24,8 +24,9 @@ namespace Hydrogen;
 /// </summary>
 /// <typeparam name="TKey">The type of key stored in the dictionary</typeparam>
 /// <typeparam name="TValue">The type of value stored in the dictionary</typeparam>
-/// <remarks>This implementation can still be used with variable-length keys so long as their serialization is transformed to a fixed-size.
-/// Use <see cref="AsConstantLengthSerializer" /> extension method to transform a key serializer.</remarks>
+/// <remarks>Whilst this implementation can still be used with variable-length keys (via a <see cref="PaddedSerializer{TItem}"/>
+/// it is strongly advised AGAINST this as key comparison does not consider the padding and this can lead
+/// to potential key collisions. This class should be use with keys that are logically constant in length.</remarks>
 public class StreamMappedDictionaryCLK<TKey, TValue> : DictionaryBase<TKey, TValue>, IStreamMappedDictionary<TKey, TValue> {
 	public event EventHandlerEx<object> Loading { add => ObjectContainer.Loading += value; remove => ObjectContainer.Loading -= value; }
 	public event EventHandlerEx<object> Loaded { add => ObjectContainer.Loaded += value; remove => ObjectContainer.Loaded -= value; }

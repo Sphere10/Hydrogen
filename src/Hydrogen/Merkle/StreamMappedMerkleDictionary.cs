@@ -160,7 +160,7 @@ public class StreamMappedMerkleDictionary<TKey, TValue> : DictionaryDecorator<TK
 		var keyDigest = Hashers.HashWithNullSupport(chf, keyBytes);
 		var valueBytes = InternalDictionary.ReadValueBytes(index);
 		var valueDigest = Hashers.HashWithNullSupport(chf, valueBytes);
-		return Hashers.JoinHash(MerkleTree.HashAlgorithm, keyDigest, valueDigest);
+		return Hashers.JoinHash(chf, keyDigest, valueDigest);
 	}
 
 }

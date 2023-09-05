@@ -102,6 +102,56 @@ public abstract class StreamMappedMerkleDictionaryTestsBase : StreamPersistedCol
 		Assert.That(merkleDict1.MerkleTree.Root, Is.Not.EqualTo(merkleDict2.MerkleTree.Root));
 	}
 	
+	[Test]
+	public void SampleWalkthroughTest([Values(CHF.SHA2_256, CHF.Blake2b_128)] CHF chf) {
+		using (CreateStringDictionary(chf, out var merkleDict)) {
+			// merkle root should be empty
+			Assert.That(merkleDict.MerkleTree.Root, Is.Null);
+			Assert.That(merkleDict.MerkleTree.Root, Is.EqualTo(MerkleTree.ComputeMerkleRoot(new byte[][] { })));
+
+			//  add alpha
+			merkleDict.Add("alpha", "");
+			var rootAlpha = merkleDict.MerkleTree.Root;
+			var alphaLeafHash = Hashers.JoinHash(chf, Hashers.Hash(chf, merkleDict.ReadKeyBytes(0)), Hashers.Hash(chf, Array.Empty<byte>())); 
+			Assert.That(alphaLeafHash, Is.EqualTo( merkleDict.MerkleTree.GetNodeAt(MerkleCoordinate.LeafAt(0)).Hash));
+			Assert.That(merkleDict.MerkleTree.Root, Is.EqualTo(MerkleTree.ComputeMerkleRoot(new [] { alphaLeafHash }, chf)));
+
+			// add beta
+			merkleDict.Add("beta", null);
+			var rootAlphaBeta = merkleDict.MerkleTree.Root;
+			var betaLeafHash = Hashers.JoinHash(chf, Hashers.Hash(chf, merkleDict.ReadKeyBytes(1)), Hashers.ZeroHash(chf)); 
+			Assert.That(betaLeafHash, Is.EqualTo( merkleDict.MerkleTree.GetNodeAt(MerkleCoordinate.LeafAt(1)).Hash));
+			Assert.That(merkleDict.MerkleTree.Root, Is.EqualTo(MerkleTree.ComputeMerkleRoot(new [] { alphaLeafHash, betaLeafHash }, chf)));
+
+			// add gamma
+			merkleDict.Add("gamma", "value");
+			var rootAlphaBetaGamma = merkleDict.MerkleTree.Root;
+			var gammaLeafHash = Hashers.JoinHash(chf, Hashers.Hash(chf, merkleDict.ReadKeyBytes(2)), Hashers.Hash(chf, merkleDict.ReadValueBytes(2))); 
+			Assert.That(gammaLeafHash, Is.EqualTo(merkleDict.MerkleTree.GetNodeAt(MerkleCoordinate.LeafAt(2)).Hash));
+			Assert.That(merkleDict.MerkleTree.Root, Is.EqualTo(MerkleTree.ComputeMerkleRoot(new [] { alphaLeafHash, betaLeafHash, gammaLeafHash }, chf)));
+		
+			merkleDict.Clear();
+			Assert.That(merkleDict.MerkleTree.Root, Is.Null);
+			
+
+			// rebuild and test consistency
+			merkleDict.Add("alpha", "");
+			Assert.That(merkleDict.MerkleTree.Root, Is.EqualTo(rootAlpha));
+
+			merkleDict.Add("beta", null);
+			Assert.That(merkleDict.MerkleTree.Root, Is.EqualTo(rootAlphaBeta));
+
+			merkleDict.Add("gamma", "value");
+			Assert.That(merkleDict.MerkleTree.Root, Is.EqualTo(rootAlphaBetaGamma));
+
+			// remove beta
+			merkleDict.Remove("beta");
+			betaLeafHash = Hashers.ZeroHash(chf);
+			Assert.That(betaLeafHash, Is.EqualTo( merkleDict.MerkleTree.GetNodeAt(MerkleCoordinate.LeafAt(1)).Hash));
+			Assert.That(merkleDict.MerkleTree.Root, Is.EqualTo(MerkleTree.ComputeMerkleRoot(new [] { alphaLeafHash, betaLeafHash, gammaLeafHash }, chf)));
+		}
+	}
+
 		
 	[Test]
 	public void ToArrayTest_100([Values(CHF.SHA2_256, CHF.Blake2b_128)] CHF chf) {

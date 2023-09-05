@@ -1,9 +1,15 @@
-﻿using Hydrogen.Collections;
-using System;
-using System.IO;
-using System.Security.Cryptography;
+﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen.ObjectSpace.Index;
+using Hydrogen.Collections;
+using System;
+
+namespace Hydrogen;
 
 /// <summary>
 /// Used to maintain a merkle-tree of an <see cref="ObjectContainer"/>'s items. The merkle-tree is stored within a reserved stream within the container.

@@ -20,7 +20,7 @@ namespace Hydrogen;
 /// A dictionary whose contents are mapped onto a stream using an <see cref="ObjectContainer"/> which in turn uses a <see cref="StreamContainer"/>.
 /// This implementation persists <see cref="KeyValuePair{TKey, TValue}"/>s to a stream and uses an index on the <see cref="TKey"/> checksum to find keys
 /// in the container. This is suitable for general purpose dictionaries whose key's of arbitrary length. For keys that are constant length, a more
-/// optimized version is <see cref="StreamMappedDictionarySK{TKey,TValue}"/>. 
+/// optimized version is <see cref="StreamMappedDictionaryCLK{TKey,TValue}"/>. 
 /// </summary>
 /// <typeparam name="TKey">The type of key stored in the dictionary</typeparam>
 /// <typeparam name="TValue">The type of value stored in the dictionary</typeparam>

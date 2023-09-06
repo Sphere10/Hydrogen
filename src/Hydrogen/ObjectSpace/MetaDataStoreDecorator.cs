@@ -13,18 +13,22 @@ namespace Hydrogen;
 internal abstract class MetaDataStoreDecorator<TData, TInner> : IMetaDataStore<TData> where TInner : IMetaDataStore<TData> {
 	public event EventHandlerEx<object> Loading { add => InnerStore.Loading += value; remove => InnerStore.Loading -= value; }
 	public event EventHandlerEx<object> Loaded { add => InnerStore.Loaded += value; remove => InnerStore.Loaded -= value; }
-	
+
 	internal TInner InnerStore;
 
 	protected MetaDataStoreDecorator(TInner innerStore) {
 		InnerStore = innerStore;
 	}
 
+	public virtual bool RequiresLoad => InnerStore.RequiresLoad;
+
 	public virtual ObjectContainer Container => InnerStore.Container;
 
-	public virtual long Count => InnerStore.Count;
+	public virtual long ReservedStreamIndex => InnerStore.ReservedStreamIndex;
+	
+	public virtual IItemSerializer<TData> DatumSerializer => InnerStore.DatumSerializer;
 
-	public virtual bool RequiresLoad => InnerStore.RequiresLoad;
+	public virtual long Count => InnerStore.Count;
 
 	public virtual void Load() => InnerStore.Load();
 
@@ -47,6 +51,7 @@ internal abstract class MetaDataStoreDecorator<TData, TInner> : IMetaDataStore<T
 	public virtual void Clear() => InnerStore.Clear();
 
 	public virtual void Dispose() => InnerStore.Dispose();
+	
 }
 
 internal abstract class MetaDataStoreDecorator<TData> : MetaDataStoreDecorator<TData, IMetaDataStore<TData>>  {

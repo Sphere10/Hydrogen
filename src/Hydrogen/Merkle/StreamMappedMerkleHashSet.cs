@@ -40,6 +40,8 @@ public class StreamMappedMerkleHashSet<TItem, TInner> : SetDecorator<TItem, TInn
 	public void Load() => InternalSet.Load();
 
 	public Task LoadAsync() => InternalSet.LoadAsync();
+
+	public void Dispose() => InternalSet.Dispose();
 }
 
 public class StreamMappedMerkleHashSet<TItem> : StreamMappedMerkleHashSet<TItem, IStreamMappedHashSet<TItem>> {
@@ -51,7 +53,6 @@ public class StreamMappedMerkleHashSet<TItem> : StreamMappedMerkleHashSet<TItem,
 		CHF hashAlgorithm = CHF.SHA2_256,
 		IEqualityComparer<TItem> comparer = null,
 		StreamContainerPolicy policy = StreamContainerPolicy.Default,
-		long reservedStreams = 3,
 		long merkleTreeStreamIndex = 0,
 		long freeIndexStoreStreamIndex = 1,
 		long keyChecksumIndexStreamIndex = 2,
@@ -65,7 +66,6 @@ public class StreamMappedMerkleHashSet<TItem> : StreamMappedMerkleHashSet<TItem,
 		hashAlgorithm,
 		comparer,
 		policy,
-		reservedStreams,
 		merkleTreeStreamIndex,
 		freeIndexStoreStreamIndex,
 		keyChecksumIndexStreamIndex,
@@ -82,7 +82,6 @@ public class StreamMappedMerkleHashSet<TItem> : StreamMappedMerkleHashSet<TItem,
 		CHF hashAlgorithm,
 		IEqualityComparer<TItem> comparer = null,
 		StreamContainerPolicy policy = StreamContainerPolicy.Default,
-		long reservedStreamCount = 3,
 		long merkleTreeStreamIndex = 0,
 		long freeIndexStoreStreamIndex = 1,
 		long keyChecksumIndexStreamIndex = 2,
@@ -95,11 +94,10 @@ public class StreamMappedMerkleHashSet<TItem> : StreamMappedMerkleHashSet<TItem,
 				new StaticSizeByteArraySerializer(hasher.DigestLength),
 				serializer,
 				new HashChecksummer(),
-				new ByteArrayEqualityComparer(),
+				ByteArrayEqualityComparer.Instance,
 				comparer,
 				hashAlgorithm,
 				policy,
-				reservedStreamCount,
 				merkleTreeStreamIndex,
 				freeIndexStoreStreamIndex,
 				keyChecksumIndexStreamIndex,

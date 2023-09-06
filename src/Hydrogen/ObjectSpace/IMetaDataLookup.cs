@@ -11,6 +11,7 @@ using System.Linq;
 
 namespace Hydrogen;
 
-public interface IMetaDataLookup<TKey> : IDisposable {
+public interface IMetaDataLookup<TKey> : IObjectContainerMetaDataProvider {
+	
 	ILookup<TKey, long> Lookup { get; }
 }

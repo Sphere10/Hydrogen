@@ -12,11 +12,14 @@ using System.Linq;
 
 namespace Hydrogen;
 
-public class ObjectContainerIndex<TItem, TKey> : IMetaDataLookup<TKey> {
+internal class ObjectContainerIndex<TItem, TKey> : IMetaDataLookup<TKey> {
 	private readonly InMemoryMetaDataLookup<TKey> _indexLookup;
 	private readonly ContainerMetaDataListener<TItem, TKey> _connector;
+	private readonly Func<TItem, TKey> _projection;
 
 	public ObjectContainerIndex(ObjectContainer container, long reservedStreamIndex, Func<TItem, TKey> projection, IEqualityComparer<TKey> keyComparer, IItemSerializer<TKey> keySerializer) {
+		ReservedStreamIndex = reservedStreamIndex;
+		_projection = projection;
 
 		_indexLookup = new InMemoryMetaDataLookup<TKey>(
 			new ListBasedMetaDataStore<TKey>(
@@ -35,8 +38,12 @@ public class ObjectContainerIndex<TItem, TKey> : IMetaDataLookup<TKey> {
 		);
 	}
 
+	public long ReservedStreamIndex { get; }
+
+	public TKey CalculateKey(TItem item) => _projection.Invoke(item);
+
 	public ILookup<TKey, long> Lookup => _indexLookup.Lookup;
 
 	public void Dispose() => _indexLookup.Dispose();
-
+	
 }

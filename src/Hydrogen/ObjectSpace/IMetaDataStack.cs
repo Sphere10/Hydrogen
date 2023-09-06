@@ -10,7 +10,7 @@ using System;
 
 namespace Hydrogen;
 
-public interface IMetaDataStack : IDisposable {
+public interface IMetaDataStack : IObjectContainerMetaDataProvider {
 	IStack<long> Stack { get; }
 	
 }

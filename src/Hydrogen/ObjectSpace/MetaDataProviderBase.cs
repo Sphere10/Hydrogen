@@ -12,20 +12,15 @@ using System.Threading.Tasks;
 
 namespace Hydrogen;
 
-internal class MetaDataStreamBase : ILoadable, IDisposable {
-
-	public event EventHandlerEx<object> Loading;
-	public event EventHandlerEx<object> Loaded;
-
-	private readonly long _reservedStreamIndex;
+internal class MetaDataProviderBase : SyncLoadableBase, IObjectContainerMetaDataProvider {
+	
 	private readonly long _streamOffset;
 	private bool _attached;
 
-
-	public MetaDataStreamBase(ObjectContainer objectContainer, long reservedStreamIndex, long offset) {
+	public MetaDataProviderBase(ObjectContainer objectContainer, long reservedStreamIndex, long offset) {
 		Container = objectContainer;
 		Guard.Ensure(objectContainer.RequiresLoad, "Object Container must not be loaded before creating index");
-		_reservedStreamIndex = reservedStreamIndex;
+		ReservedStreamIndex = reservedStreamIndex;
 		_streamOffset = offset;
 		_attached = false;
 
@@ -34,7 +29,8 @@ internal class MetaDataStreamBase : ILoadable, IDisposable {
 		objectContainer.Cleared += ObjectContainer_Cleared;
 	}
 
-	public bool RequiresLoad => Container.RequiresLoad || !_attached;
+	public long ReservedStreamIndex { get; }
+	public override bool RequiresLoad => Container.RequiresLoad || !_attached;
 
 	protected ObjectContainer Container { get; }
 
@@ -47,25 +43,18 @@ internal class MetaDataStreamBase : ILoadable, IDisposable {
 		private set => _stream = value;
 	}
 
-	public void Load() {
-		if (Container.RequiresLoad)
-			throw new InvalidOperationException("Object Container is not loaded");
-
-		if (!_attached)
-			Attach();
-	}
-
-	public Task LoadAsync() => throw new NotSupportedException();
-
 	public void Dispose() {
 		if (_attached)
 			Detach();
 	}
 
-	protected virtual void OnLoading() {
-	}
 
-	protected virtual void OnLoaded() {
+	protected override void LoadInternal() {
+		if (Container.RequiresLoad)
+			throw new InvalidOperationException("Object Container is not loaded");
+
+		if (!_attached)
+			Attach();
 	}
 
 	protected void CheckAttached() {
@@ -82,7 +71,7 @@ internal class MetaDataStreamBase : ILoadable, IDisposable {
 		CheckNotAttached();
 		NotifyLoading();
 		Guard.Ensure(Container.StreamContainer.Header.ReservedStreams > 0, "Stream Container has no reserved streams available");
-		Guard.Ensure(_reservedStreamIndex < Container.StreamContainer.Header.ReservedStreams, $"Stream at index {_reservedStreamIndex} is not reserved");
+		Guard.Ensure(ReservedStreamIndex < Container.StreamContainer.Header.ReservedStreams, $"Stream at index {ReservedStreamIndex} is not reserved");
 		using (Container.StreamContainer.EnterAccessScope()) {
 			_attached = true;
 
@@ -91,7 +80,7 @@ internal class MetaDataStreamBase : ILoadable, IDisposable {
 			Stream =
 				Container
 				.StreamContainer
-				.Open(_reservedStreamIndex, false, false)
+				.Open(ReservedStreamIndex, false, false)
 				.AsBounded(_streamOffset, long.MaxValue, allowInnerResize: true);
 
 			// Ensures the stream is at least as long as the offset (the space prior to offset can
@@ -124,15 +113,5 @@ internal class MetaDataStreamBase : ILoadable, IDisposable {
 		Stream = null;
 		_attached = false;
 	}
-
-	private void NotifyLoading() {
-		OnLoading();
-		Loading?.Invoke(this);
-	}
-
-	private void NotifyLoaded() {
-		OnLoaded();
-		Loaded?.Invoke(this);
-	}
-
+	
 }

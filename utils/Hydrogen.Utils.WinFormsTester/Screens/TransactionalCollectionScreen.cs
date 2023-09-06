@@ -211,8 +211,8 @@ public partial class TransactionalCollectionScreen : ApplicationScreen {
 				Stream stream = new ExtendedMemoryStream(new FileMappedBuffer(filename, pageSize, maxMemory: maxMemory), true);
 				var merkleList = new StreamMappedMerkleList<byte[]>(
 					stream,
-					clusterSize,
-					CHF.SHA2_256
+					CHF.SHA2_256,
+					clusterSize
 				);
 				disposables.Add(stream);
 				list = merkleList;

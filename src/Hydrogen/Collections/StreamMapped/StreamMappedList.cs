@@ -66,50 +66,33 @@ public class StreamMappedList<TItem> : SingularListBase<TItem>, IStreamMappedLis
 		long checksumIndexStreamIndex = 0, 
 		bool autoLoad = false
 	) : this(
-		new ObjectContainer<TItem>(
+		BuildContainer(
 			streamContainer, 
 			itemSerializer, 
-			streamContainer.Policy.HasFlag(StreamContainerPolicy.FastAllocate)
+			itemChecksummer,
+			checksumIndexStreamIndex,
+			out var checksumIndex
 		), 
-		itemSerializer, 
-		itemComparer, 
-		itemChecksummer, 
-		checksumIndexStreamIndex,
+		checksumIndex,
+		itemComparer,
 		autoLoad
 	) {
 		OwnsContainer = true;
 	}
 
-	public StreamMappedList(
+
+	internal StreamMappedList(
 		ObjectContainer<TItem> objectContainer,
-		IItemSerializer<TItem> itemSerializer = null,
+		ObjectContainerIndex<TItem, int> checksumIndex,
 		IEqualityComparer<TItem> itemComparer = null,
-		IItemChecksummer<TItem> itemChecksummer = null,
-		long checksumIndexStreamIndex = 0,
 		bool autoLoad = false
 	) {
 		Guard.ArgumentNotNull(objectContainer, nameof(objectContainer));
 		ObjectContainer = objectContainer;
-		ItemSerializer = itemSerializer ?? ItemSerializer<TItem>.Default;
 		ItemComparer = itemComparer ?? EqualityComparer<TItem>.Default;
-		if (itemChecksummer != null) {
-			ObjectContainer.StreamContainer.RegisterInitAction( () => Guard.Ensure(objectContainer.StreamContainer.Header.ReservedStreams > checksumIndexStreamIndex, $"No reserved stream {checksumIndexStreamIndex} available for checksum index"));
-			Guard.EnsureNotThrows(()=> itemChecksummer.CalculateChecksum(default), $"ItemChecksummer cannot calculate checksum for default values of {typeof(TItem).Name}");
-			// ensure that default integer values are substituted with 1, since 0 is reserved for "no checksum"
-			ItemChecksummer = itemChecksummer.WithSubstitution(default, 1); 
-		}
+		_checksumIndex = checksumIndex;
 		_version = 0;
-
-		_checksumIndex =
-			itemChecksummer != null ?
-			new ObjectContainerIndex<TItem, int>(
-				ObjectContainer,
-				checksumIndexStreamIndex,
-				ItemChecksummer.CalculateChecksum,
-				EqualityComparer<int>.Default,
-				PrimitiveSerializer<int>.Instance) : 
-			null;
-
+		
 		if (autoLoad && RequiresLoad)
 			Load();
 	}
@@ -118,11 +101,9 @@ public class StreamMappedList<TItem> : SingularListBase<TItem>, IStreamMappedLis
 
 	public ObjectContainer<TItem> ObjectContainer { get; }
 
-	public IItemSerializer<TItem> ItemSerializer { get; }
+	public IItemSerializer<TItem> ItemSerializer => ObjectContainer.ItemSerializer;
 
 	public IEqualityComparer<TItem> ItemComparer { get; }
-
-	public IItemChecksummer<TItem> ItemChecksummer { get; }
 
 	public bool OwnsContainer { get; set; }
 
@@ -133,7 +114,6 @@ public class StreamMappedList<TItem> : SingularListBase<TItem>, IStreamMappedLis
 	public virtual Task LoadAsync() => ObjectContainer.LoadAsync();
 
 	public virtual void Dispose() {
-		_checksumIndex?.Dispose();
 		if (OwnsContainer)
 			ObjectContainer.Dispose();
 	}
@@ -146,7 +126,7 @@ public class StreamMappedList<TItem> : SingularListBase<TItem>, IStreamMappedLis
 	public override long IndexOfL(TItem item) {
 		var indicesToCheck =
 			_checksumIndex != null ?
-			_checksumIndex.Lookup[ItemChecksummer.CalculateChecksum(item)] :
+			_checksumIndex.Lookup[_checksumIndex.CalculateKey(item)] :
 			Tools.Collection.RangeL(0L, Count);
 
 		foreach (var index in indicesToCheck) {
@@ -232,4 +212,33 @@ public class StreamMappedList<TItem> : SingularListBase<TItem>, IStreamMappedLis
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	private void UpdateVersion() => Interlocked.Increment(ref _version);
 
+	// Builds the container for independent activations
+	private static ObjectContainer<TItem> BuildContainer(
+		StreamContainer streamContainer,
+		IItemSerializer<TItem> itemSerializer,
+		IItemChecksummer<TItem> itemChecksummer,
+		long checksumIndexStreamIndex,
+		out ObjectContainerIndex<TItem, int> checksumIndex
+	) {
+		var container = new ObjectContainer<TItem>(
+			streamContainer, 
+			itemSerializer, 
+			streamContainer.Policy.HasFlag(StreamContainerPolicy.FastAllocate)
+		);
+
+		if (itemChecksummer is not null) {
+			checksumIndex = new ObjectContainerIndex<TItem, int>(
+				container,
+				checksumIndexStreamIndex,
+				itemChecksummer.CalculateChecksum,
+				EqualityComparer<int>.Default,
+				PrimitiveSerializer<int>.Instance
+			);
+			container.RegisterMetaDataProvider( checksumIndex);
+		} else {
+			checksumIndex = null;
+		}
+
+		return container;
+	}
 }

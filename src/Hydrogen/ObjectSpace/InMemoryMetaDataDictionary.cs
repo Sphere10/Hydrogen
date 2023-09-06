@@ -16,13 +16,13 @@ internal class InMemoryMetaDataDictionary<TKey> : InMemoryMetaDataStoreBase<TKey
 	
 	private readonly IReadOnlyDictionary<TKey, long> _inMemoryIndexReadOnly;
 	private readonly IDictionary<TKey, long> _inMemoryIndex;
-	private readonly IEqualityComparer<TKey> _keyComparer;
 	
+
 	public InMemoryMetaDataDictionary(IMetaDataStore<TKey> metaDataStore, IEqualityComparer<TKey> keyComparer = null) 
 		: base(metaDataStore) {
 		_inMemoryIndex = new Dictionary<TKey, long>(keyComparer);
 		_inMemoryIndexReadOnly = new ReadOnlyDictionary<TKey, long>(_inMemoryIndex);
-		_keyComparer = keyComparer;
+		KeyComparer = keyComparer;
 	}
 
 	public IReadOnlyDictionary<TKey, long> Dictionary { 
@@ -32,9 +32,13 @@ internal class InMemoryMetaDataDictionary<TKey> : InMemoryMetaDataStoreBase<TKey
 		}
 	}
 
+	public IItemSerializer<TKey> KeySerializer => InnerStore.DatumSerializer;
+
+	public IEqualityComparer<TKey> KeyComparer { get; }
+
 	protected override void ValidateMemoryAdd(TKey key, long index) => Guard.Against(Dictionary.ContainsKey(key), $"Key '{key}' already exists in index.");
 
-	protected override void ValidateMemoryUpdate(TKey oldKey, TKey newKey, long index) => Guard.Against(!_keyComparer.Equals(oldKey, newKey) && Dictionary.ContainsKey(newKey), $"Key '{newKey}' already exists in index.");
+	protected override void ValidateMemoryUpdate(TKey oldKey, TKey newKey, long index) => Guard.Against(!KeyComparer.Equals(oldKey, newKey) && Dictionary.ContainsKey(newKey), $"Key '{newKey}' already exists in index.");
 
 	protected override void ValidateMemoryInsert(TKey key, long index) => Guard.Against(Dictionary.ContainsKey(key), $"Key '{key}' already exists in index.");
 

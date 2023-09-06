@@ -7,6 +7,8 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Hydrogen;
@@ -30,6 +32,7 @@ public class ObjectContainer : ICriticalObject, ILoadable, IDisposable {
 
 	private readonly bool _preAllocateOptimization;
 	private readonly Type _objectType;
+	private readonly IDictionary<long, IObjectContainerMetaDataProvider> _metaDataProviders;
 	public PackedSerializer ItemSerializer { get; }
 
 	public ObjectContainer(Type objectType, StreamContainer streamContainer, PackedSerializer packedPackedSerializer, bool preAllocateOptimization) {
@@ -40,6 +43,7 @@ public class ObjectContainer : ICriticalObject, ILoadable, IDisposable {
 		_objectType = objectType;
 		ItemSerializer = packedPackedSerializer;
 		_preAllocateOptimization = preAllocateOptimization;
+		_metaDataProviders = new Dictionary<long, IObjectContainerMetaDataProvider>();
 	}
 
 	public ICriticalObject ParentCriticalObject { get => StreamContainer.ParentCriticalObject; set => StreamContainer.ParentCriticalObject = value; }
@@ -48,9 +52,13 @@ public class ObjectContainer : ICriticalObject, ILoadable, IDisposable {
 
 	public bool IsLocked => StreamContainer.IsLocked;
 
+	public bool Initialized => StreamContainer.Initialized;
+
 	public bool RequiresLoad => StreamContainer.RequiresLoad;
 
 	public StreamContainer StreamContainer { get; }
+
+	IEnumerable<IObjectContainerMetaDataProvider> MetaDataProviders => _metaDataProviders.Values;
 
 	public long Count => StreamContainer.Count - StreamContainer.Header.ReservedStreams;
 
@@ -65,6 +73,11 @@ public class ObjectContainer : ICriticalObject, ILoadable, IDisposable {
 	public IDisposable EnterAccessScope() => StreamContainer.EnterAccessScope();
 
 	public void Dispose() {
+		foreach(var metaDataProvider in _metaDataProviders) {
+			metaDataProvider.Value.Dispose();
+		}
+		_metaDataProviders.Clear();
+
 		if (OwnsStreamContainer)
 			StreamContainer.Dispose();
 	}
@@ -117,7 +130,6 @@ public class ObjectContainer : ICriticalObject, ILoadable, IDisposable {
 		}
 		NotifyPostItemOperation(index, null, ObjectContainerOperationType.Reap);
 	}
-
 
 
 	public void Clear() {
@@ -193,6 +205,25 @@ public class ObjectContainer : ICriticalObject, ILoadable, IDisposable {
 	}
 
 	#endregion
+
+	#region Meta-Data Management
+	
+	internal void RegisterMetaDataProvider(IObjectContainerMetaDataProvider provider) {
+		Guard.ArgumentNotNull(provider, nameof(provider));
+		Guard.Against(StreamContainer.Initialized, "Cannot register meta-data provider after container has been initialized");
+		Guard.Against(_metaDataProviders.ContainsKey(provider.ReservedStreamIndex), $"Meta-data provider for reserved stream {provider.ReservedStreamIndex} already registered");
+		StreamContainer.RegisterInitAction(() => Guard.Ensure(StreamContainer.Header.ReservedStreams > provider.ReservedStreamIndex, $"No reserved stream {provider.ReservedStreamIndex} available for index"));
+		_metaDataProviders.Add(provider.ReservedStreamIndex, provider);
+	}
+
+	internal T GetMetaDataProvider<T>(long reservedStream) where T : IObjectContainerMetaDataProvider {
+		return (T)_metaDataProviders[reservedStream];
+	}
+
+
+	#endregion
+
+
 
 	#region Event Notification
 

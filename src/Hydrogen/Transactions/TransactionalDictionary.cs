@@ -85,7 +85,7 @@ public class TransactionalDictionary<TKey, TValue> : DictionaryDecorator<TKey, T
 		bool autoLoad = false,
 		StreamMappedDictionaryImplementation implementation = StreamMappedDictionaryImplementation.Auto
 	) : this(
-		StreamMappedDictionaryFactory.Create(
+		StreamMappedFactory.CreateDictionary(
 			transactionalStream, 
 			keySerializer, 
 			valueSerializer, 

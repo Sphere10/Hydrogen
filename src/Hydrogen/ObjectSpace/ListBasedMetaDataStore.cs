@@ -15,24 +15,23 @@ namespace Hydrogen;
 /// Can be used to store anything about the items  (i.e. checksums, keys, etc).
 /// </summary>
 /// <typeparam name="TData">The type of the item meta-data being stored</typeparam>
-internal class ListBasedMetaDataStore<TData> : MetaDataStreamBase, IMetaDataStore<TData> {
+internal class ListBasedMetaDataStore<TData> : MetaDataProviderBase, IMetaDataStore<TData> {
 	
 	private StreamPagedList<TData> _inStreamIndex;
-	private readonly IItemSerializer<TData> _datumSerializer;
+	
 
 	public ListBasedMetaDataStore(ObjectContainer objectContainer, long reservedStreamIndex, long offset, IItemSerializer<TData> datumSerializer) 
 		: base(objectContainer, reservedStreamIndex, offset) {
 		Guard.ArgumentNotNull(objectContainer, nameof(objectContainer));
 		Guard.ArgumentNotNull(datumSerializer, nameof(datumSerializer));
 		Guard.Argument(datumSerializer.IsStaticSize, nameof(datumSerializer), "Datum serializer must be a constant-length serializer.");
-		//Guard.EnsureNotThrows(() => datumSerializer.SerializeLE(default), "Meta-data serializer is unable to serialize default/null values.");
-		//Guard.EnsureNotThrows(() => datumSerializer.DeserializeLE(datumSerializer.SerializeLE(default)), "Meta-data serializer is unable to deserialize default/null values.");
-		//Guard.Ensure(Equals(default(TData), datumSerializer.DeserializeLE(datumSerializer.SerializeLE(default))), "Meta-data serializer is unable to consistently serialize/deserialize default/null values.");
-		_datumSerializer = datumSerializer;
+		DatumSerializer = datumSerializer;
 	}
 
 	public new ObjectContainer Container => base.Container;
 	
+	public IItemSerializer<TData> DatumSerializer { get; }
+
 	public long Count => _inStreamIndex.Count;
 
 	public TData Read(long index) {
@@ -90,7 +89,7 @@ internal class ListBasedMetaDataStore<TData> : MetaDataStreamBase, IMetaDataStor
 	}
 
 	protected override void OnLoaded() {
-		_inStreamIndex = new StreamPagedList<TData>(_datumSerializer, Stream, Container.StreamContainer.Endianness, false, true);
+		_inStreamIndex = new StreamPagedList<TData>(DatumSerializer, Stream, Container.StreamContainer.Endianness, false, true);
 	}
 
 	protected virtual void ValidateRead(long index) {

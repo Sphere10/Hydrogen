@@ -31,8 +31,8 @@ public class StreamMappedDictionaryCLK<TKey, TValue> : DictionaryBase<TKey, TVal
 	public event EventHandlerEx<object> Loading { add => ObjectContainer.Loading += value; remove => ObjectContainer.Loading -= value; }
 	public event EventHandlerEx<object> Loaded { add => ObjectContainer.Loaded += value; remove => ObjectContainer.Loaded -= value; }
 
-	private readonly IItemSerializer<TKey> _keySerializer;
-	private readonly IEqualityComparer<TKey> _keyComparer;
+	//private readonly IItemSerializer<TKey> _keySerializer;
+	//private readonly IEqualityComparer<TKey> _keyComparer;
 	private readonly IEqualityComparer<TValue> _valueComparer;
 	private readonly ObjectContainerKeyStore<TKey> _keyStore;
 	private readonly ObjectContainerFreeIndexStore _freeIndexStore;
@@ -81,48 +81,38 @@ public class StreamMappedDictionaryCLK<TKey, TValue> : DictionaryBase<TKey, TVal
 		long freeIndexStoreStreamIndex = 0,
 		long keyStoreStreamIndex = 1
 	) : this (
-		new ObjectContainer<TValue>(
-			streamContainer, 
-			valueSerializer, 
-			streamContainer.Policy.HasFlag(StreamContainerPolicy.FastAllocate)
-		),
-		constantLengthKeySerializer,
-		keyComparer,
-		valueComparer,
-		autoLoad,
-		freeIndexStoreStreamIndex: freeIndexStoreStreamIndex,
-		keyStoreStreamIndex: keyStoreStreamIndex
-	) {
+			CreateObjectContainer(
+				streamContainer,
+				constantLengthKeySerializer,
+				valueSerializer ?? ItemSerializer<TValue>.Default,
+				keyComparer ?? EqualityComparer<TKey>.Default,
+				freeIndexStoreStreamIndex,
+				keyStoreStreamIndex,
+				out var keyStore,
+				out var freeIndexStore
+			),
+			freeIndexStore,
+			keyStore,
+			valueComparer,
+			autoLoad
+		) {
 		OwnsContainer = true;
 	}
 
-	public StreamMappedDictionaryCLK(
+	internal StreamMappedDictionaryCLK(
 		ObjectContainer objectContainer,
-		IItemSerializer<TKey> constantLengthKeySerializer,
-		IEqualityComparer<TKey> keyComparer = null,
+		ObjectContainerFreeIndexStore freeIndexStore,
+		ObjectContainerKeyStore<TKey> keyStore,
 		IEqualityComparer<TValue> valueComparer = null,
-		bool autoLoad = false,
-		long freeIndexStoreStreamIndex = 0,
-		long keyStoreStreamIndex = 1
+		bool autoLoad = false
 	) {
-		Guard.ArgumentNotNull(constantLengthKeySerializer, nameof(constantLengthKeySerializer));
-		Guard.Argument(constantLengthKeySerializer.IsStaticSize, nameof(constantLengthKeySerializer), "Keys must be statically sized");
-		Guard.ArgumentIsAssignable<ObjectContainer<TValue>>(objectContainer, nameof(objectContainer));
+		Guard.ArgumentNotNull(objectContainer, nameof(objectContainer));
+		Guard.ArgumentNotNull(freeIndexStore, nameof(freeIndexStore));
+		Guard.ArgumentNotNull(keyStore, nameof(keyStore));
 		ObjectContainer = (ObjectContainer<TValue>)objectContainer;
-		_keyComparer = keyComparer ?? EqualityComparer<TKey>.Default;
+		_freeIndexStore = freeIndexStore;
+		_keyStore = keyStore;
 		_valueComparer = valueComparer ?? EqualityComparer<TValue>.Default;
-		_keySerializer = constantLengthKeySerializer;
-		_freeIndexStore = new ObjectContainerFreeIndexStore(
-			ObjectContainer,
-			freeIndexStoreStreamIndex,
-			0L
-		);
-		_keyStore = new ObjectContainerKeyStore<TKey>(
-			ObjectContainer,
-			keyStoreStreamIndex,
-			_keyComparer,
-			_keySerializer
-		);
 		_version = 0;
 
 		if (autoLoad && RequiresLoad)
@@ -154,10 +144,7 @@ public class StreamMappedDictionaryCLK<TKey, TValue> : DictionaryBase<TKey, TVal
 
 	public Task LoadAsync() => Task.Run(Load);
 
-
 	public virtual void Dispose() {
-		_freeIndexStore?.Dispose();
-		_keyStore.Dispose();
 		if (OwnsContainer)
 			ObjectContainer.Dispose();
 	}
@@ -435,6 +422,46 @@ public class StreamMappedDictionaryCLK<TKey, TValue> : DictionaryBase<TKey, TVal
 		unchecked {
 			_version++;	
 		}
+	}
+
+	private static ObjectContainer<TValue> CreateObjectContainer(
+		StreamContainer streamContainer,
+		IItemSerializer<TKey> constantLengthKeySerializer,
+		IItemSerializer<TValue> valueSerializer,
+		IEqualityComparer<TKey> keyComparer,
+		long freeIndexStoreStreamIndex,
+		long keyStoreStreamIndex,
+		out ObjectContainerKeyStore<TKey> keyStore,
+		out ObjectContainerFreeIndexStore freeIndexStore
+	) {
+		Guard.ArgumentNotNull(streamContainer, nameof(streamContainer));
+		Guard.ArgumentNotNull(constantLengthKeySerializer, nameof(constantLengthKeySerializer));
+		Guard.Argument(constantLengthKeySerializer.IsStaticSize, nameof(constantLengthKeySerializer), "Keys must be statically sized");
+		Guard.ArgumentNotNull(valueSerializer, nameof(valueSerializer));
+		Guard.ArgumentNotNull(keyComparer, nameof(keyComparer));
+
+		var container = new ObjectContainer<TValue>(
+			streamContainer, 
+			valueSerializer,
+			streamContainer.Policy.HasFlag(StreamContainerPolicy.FastAllocate)
+		);
+
+		freeIndexStore = new ObjectContainerFreeIndexStore(
+			container,
+			freeIndexStoreStreamIndex,
+			0L
+		);
+		container.RegisterMetaDataProvider(freeIndexStore);
+
+		keyStore = new ObjectContainerKeyStore<TKey>(
+			container,
+			keyStoreStreamIndex,
+			keyComparer,
+			constantLengthKeySerializer
+		);
+		container.RegisterMetaDataProvider(keyStore);
+
+		return container;
 	}
 
 }

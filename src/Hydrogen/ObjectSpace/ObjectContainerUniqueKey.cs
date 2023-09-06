@@ -16,7 +16,7 @@ public class ObjectContainerUniqueKey<TItem, TKey> : IMetaDataDictionary<TKey> {
 	private readonly ContainerMetaDataListener<TItem, TKey> _connector;
 
 	public ObjectContainerUniqueKey(ObjectContainer container, long reservedStreamIndex, Func<TItem, TKey> projection, IEqualityComparer<TKey> keyComparer, IItemSerializer<TKey> keySerializer) {
-
+		ReservedStreamIndex = reservedStreamIndex;
 		_index = new InMemoryMetaDataDictionary<TKey>(
 			new ListBasedMetaDataStore<TKey>(
 				container,
@@ -34,8 +34,11 @@ public class ObjectContainerUniqueKey<TItem, TKey> : IMetaDataDictionary<TKey> {
 		);
 	}
 
+	public long ReservedStreamIndex { get; }
+
 	public IReadOnlyDictionary<TKey, long> Dictionary => _index.Dictionary;
 
 	public void Dispose() => _index.Dispose();
 
+	
 }

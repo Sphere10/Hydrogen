@@ -10,9 +10,11 @@ using System;
 
 namespace Hydrogen;
 
-public interface IMetaDataStore<TData> : ILoadable, IDisposable {
+public interface IMetaDataStore<TData> : IObjectContainerMetaDataProvider, ILoadable {
 
 	ObjectContainer Container { get; }
+
+	IItemSerializer<TData> DatumSerializer { get; }
 
 	long Count { get; }
 

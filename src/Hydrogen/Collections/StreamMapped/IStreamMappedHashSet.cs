@@ -6,10 +6,11 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using System;
 using System.Collections.Generic;
 
 namespace Hydrogen;
 
-public interface IStreamMappedHashSet<TItem> : ISet<TItem>, ILoadable {
+public interface IStreamMappedHashSet<TItem> : ISet<TItem>, ILoadable, IDisposable {
 	ObjectContainer ObjectContainer { get; }
 }

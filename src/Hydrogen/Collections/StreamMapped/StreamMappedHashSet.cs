@@ -127,4 +127,5 @@ public class StreamMappedHashSet<TItem> : SetBase<TItem>, IStreamMappedHashSet<T
 	public override IEnumerator<TItem> GetEnumerator()
 		=> InternalDictionary.Values.GetEnumerator();
 
+	public void Dispose() => InternalDictionary.Dispose();
 }

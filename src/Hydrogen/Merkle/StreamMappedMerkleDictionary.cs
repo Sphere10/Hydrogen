@@ -38,7 +38,6 @@ public class StreamMappedMerkleDictionary<TKey, TValue> : DictionaryDecorator<TK
 		IEqualityComparer<TValue> valueComparer = null,
 		CHF hashAlgorithm = CHF.SHA2_256,
 		StreamContainerPolicy policy = StreamContainerPolicy.Default,
-		long reservedStreams = 3,
 		long merkleTreeStreamIndex = 0,
 		long freeIndexStoreStreamIndex = 1,
 		long keyChecksumIndexStreamIndex = 2,
@@ -47,8 +46,9 @@ public class StreamMappedMerkleDictionary<TKey, TValue> : DictionaryDecorator<TK
 		bool autoLoad = false,
 		StreamMappedDictionaryImplementation implementation = StreamMappedDictionaryImplementation.Auto
 	) : this(
-		StreamMappedDictionaryFactory.Create(
+		CreateDictionary(
 			rootStream,
+			hashAlgorithm,
 			keySerializer,
 			valueSerializer,
 			keyChecksummer,
@@ -56,65 +56,27 @@ public class StreamMappedMerkleDictionary<TKey, TValue> : DictionaryDecorator<TK
 			valueComparer,
 			clusterSize,
 			policy,
-			reservedStreams,
 			keyChecksumIndexStreamIndex,
 			freeIndexStoreStreamIndex,
+			merkleTreeStreamIndex,
 			endianness,
 			readOnly,
-			false,
-			implementation
+			implementation,
+			out var merkleTreeIndex
 		),
-		hashAlgorithm,
-		autoLoad,
-		merkleTreeStreamIndex
+		merkleTreeIndex,
+		autoLoad
 	) {
 	}
 
 
-	public StreamMappedMerkleDictionary(
-		ObjectContainer objectContainer,
-		IItemSerializer<TKey> keySerializer,
-		IItemChecksummer<TKey> keyChecksum = null,
-		IEqualityComparer<TKey> keyComparer = null,
-		IEqualityComparer<TValue> valueComparer = null,
-		CHF hashAlgorithm = CHF.SHA2_256,
-		bool autoLoad = false,
-		long merkleTreeStreamIndex = 0,
-		long freeIndexStoreStreamIndex = 1,
-		long keyChecksumIndexStreamIndex = 2,
-		StreamMappedDictionaryImplementation implementation = StreamMappedDictionaryImplementation.Auto
-	) : this(
-		StreamMappedDictionaryFactory.Create(
-			objectContainer,
-			keySerializer,
-			keyComparer,
-			valueComparer,
-			keyChecksum,
-			false,
-			freeIndexStoreStreamIndex,
-			keyChecksumIndexStreamIndex,
-			implementation
-		),
-		hashAlgorithm,
-		autoLoad,
-		merkleTreeStreamIndex
-	) {
-	}
-
-	public StreamMappedMerkleDictionary(
+	internal StreamMappedMerkleDictionary(
 		IStreamMappedDictionary<TKey, TValue> innerDictionary,
-		CHF hashAlgorithm,
-		bool autoLoad = false,
-		long merkleTreeStreamIndex = 0
+		ObjectContainerMerkleTree merkleTreeIndex,
+		bool autoLoad = false
 	) : base(innerDictionary) {
-		Guard.ArgumentNotNull(innerDictionary, nameof(innerDictionary));
-		_merkleTreeIndex = new ObjectContainerMerkleTree(
-			innerDictionary.ObjectContainer,
-			DigestItem,
-			hashAlgorithm,
-			merkleTreeStreamIndex,
-			0
-		);
+		Guard.ArgumentNotNull(merkleTreeIndex, nameof(merkleTreeIndex));
+		_merkleTreeIndex = merkleTreeIndex;
 
 		if (autoLoad)
 			Load();
@@ -145,21 +107,69 @@ public class StreamMappedMerkleDictionary<TKey, TValue> : DictionaryDecorator<TK
 	public void RemoveAt(long index) => InternalDictionary.RemoveAt(index);
 
 	public void Dispose() {
-		_merkleTreeIndex.Dispose();
 		InternalDictionary.Dispose();
 	}
 
-	private byte[] DigestItem(long index) {
-		var chf = MerkleTree.HashAlgorithm;
-		var descriptor = ObjectContainer.GetItemDescriptor(index);
+
+	private static IStreamMappedDictionary<TKey, TValue> CreateDictionary(
+		Stream stream,
+		CHF hashAlgorithm,
+		IItemSerializer<TKey> keySerializer,
+		IItemSerializer<TValue> valueSerializer,
+		IItemChecksummer<TKey> keyChecksum,
+		IEqualityComparer<TKey> keyComparer,
+		IEqualityComparer<TValue> valueComparer,
+		int clusterSize,
+		StreamContainerPolicy policy,
+		long freeIndexStoreStreamIndex,
+		long keyChecksumIndexStreamIndex,
+		long merkleTreeIndexStreamIndex,
+		Endianness endianness,
+		bool readOnly,
+		StreamMappedDictionaryImplementation implementation,
+		out ObjectContainerMerkleTree merkleTreeIndex
+	) {
+		var smDict = StreamMappedFactory.CreateDictionary(
+			stream,
+			keySerializer,
+			valueSerializer,
+			keyChecksum,
+			keyComparer,
+			valueComparer,
+			clusterSize,
+			policy,
+			3L,
+			freeIndexStoreStreamIndex,
+			keyChecksumIndexStreamIndex,
+			endianness,
+			readOnly,
+			false,
+			implementation
+		);
+
+		merkleTreeIndex = new ObjectContainerMerkleTree(
+			smDict.ObjectContainer,
+			x => DigestItem(smDict, x, hashAlgorithm),
+			hashAlgorithm,
+			merkleTreeIndexStreamIndex,
+			0
+		);
+		smDict.ObjectContainer.RegisterMetaDataProvider(merkleTreeIndex);
+
+		return smDict;
+	}
+
+	private static byte[] DigestItem(IStreamMappedDictionary<TKey, TValue> dict, long index, CHF chf) {
+		var descriptor = dict.ObjectContainer.GetItemDescriptor(index);
 		if (descriptor.Traits.HasFlag(ClusteredStreamTraits.Reaped))
 			return Hashers.ZeroHash(chf);
 
-		var keyBytes = InternalDictionary.ReadKeyBytes(index);
+		var keyBytes = dict.ReadKeyBytes(index);
 		var keyDigest = Hashers.HashWithNullSupport(chf, keyBytes);
-		var valueBytes = InternalDictionary.ReadValueBytes(index);
+		var valueBytes = dict.ReadValueBytes(index);
 		var valueDigest = Hashers.HashWithNullSupport(chf, valueBytes);
 		return Hashers.JoinHash(chf, keyDigest, valueDigest);
 	}
+
 
 }

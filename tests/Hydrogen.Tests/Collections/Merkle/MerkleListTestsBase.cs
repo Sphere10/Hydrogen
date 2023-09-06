@@ -42,7 +42,7 @@ public abstract class MerkleListTestsBase {
 	[Test]
 	public void TestSimple_2([Values(CHF.SHA2_256, CHF.Blake2b_128)] CHF chf) {
 		var memStream = new MemoryStream();
-		var clusteredList = new StreamMappedMerkleList<string>(memStream, 256, chf);
+		var clusteredList = new StreamMappedMerkleList<string>(memStream, chf, 256);
 		clusteredList.Load();
 
 		Assert.That(clusteredList.MerkleTree.Root, Is.Null);

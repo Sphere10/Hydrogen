@@ -8,7 +8,7 @@
 
 namespace Hydrogen;
 
-internal class ObjectContainerFreeIndexStore : MetaDataStreamBase, IMetaDataStack {
+internal class ObjectContainerFreeIndexStore : MetaDataProviderBase, IMetaDataStack {
 	
 	private IStack<long> _freeIndexStack;
 	public ObjectContainerFreeIndexStore(ObjectContainer objectContainer, long reservedStreamIndex, long offset) 

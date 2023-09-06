@@ -31,7 +31,6 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 
 	private readonly IEqualityComparer<TKey> _keyComparer;
 	private readonly IEqualityComparer<TValue> _valueComparer;
-	private readonly IItemChecksummer<TKey> _keyChecksum;
 	private readonly ObjectContainerIndex<KeyValuePair<TKey, TValue>, int> _keyChecksumIndex;
 	private readonly ObjectContainerFreeIndexStore _freeIndexStore;
 	private int _version;
@@ -82,61 +81,49 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 		long freeIndexStoreStreamIndex = 0,
 		long keyChecksumIndexStreamIndex = 1
 	) : this(
-		new ObjectContainer<KeyValuePair<TKey, TValue>>(
-			streamContainer,
-			new KeyValuePairSerializer<TKey, TValue>(
+			CreateObjectContainer(
+				streamContainer,
 				keySerializer ?? ItemSerializer<TKey>.Default,
-				valueSerializer ?? ItemSerializer<TValue>.Default
+				valueSerializer ?? ItemSerializer<TValue>.Default,
+				keyChecksummer ?? new ItemDigestor<TKey>(keySerializer, streamContainer.Endianness),
+				freeIndexStoreStreamIndex,
+				keyChecksumIndexStreamIndex,
+				out var freeIndexStore,
+				out var keyChecksumIndex
 			),
-			streamContainer.Policy.HasFlag(StreamContainerPolicy.FastAllocate)
-		),
-		keySerializer,
-		keyComparer,
-		valueComparer,
-		keyChecksummer,
-		autoLoad,
-		freeIndexStoreStreamIndex,
-		keyChecksumIndexStreamIndex
+			freeIndexStore,
+			keyChecksumIndex,
+			keyComparer,
+			valueComparer,
+			autoLoad
 	) {
 		OwnsContainer = true;
 	}
 
-	public StreamMappedDictionary(
+
+	internal StreamMappedDictionary(
 		ObjectContainer objectContainer,
-		IItemSerializer<TKey> keySerializer,
+		ObjectContainerFreeIndexStore freeIndexStore,
+		ObjectContainerIndex<KeyValuePair<TKey, TValue>, int> keyChecksumIndex,
 		IEqualityComparer<TKey> keyComparer = null,
 		IEqualityComparer<TValue> valueComparer = null,
-		IItemChecksummer<TKey> keyChecksummer = null,
-		bool autoLoad = false,
-		long freeIndexStoreStreamIndex = 0,
-		long keyChecksumIndexStreamIndex = 1
+		bool autoLoad = false
 	) {
 		Guard.ArgumentNotNull(objectContainer, nameof(objectContainer));
-		Guard.ArgumentNotNull(keySerializer, nameof(keySerializer));
+		Guard.ArgumentNotNull(freeIndexStore, nameof(freeIndexStore));
+		Guard.ArgumentNotNull(keyChecksumIndex, nameof(keyChecksumIndex));
 		Guard.ArgumentIsAssignable<ObjectContainer<KeyValuePair<TKey, TValue>>>(objectContainer, nameof(objectContainer));
 		ObjectContainer = (ObjectContainer<KeyValuePair<TKey, TValue>>)objectContainer;
+		_freeIndexStore = freeIndexStore;
+		_keyChecksumIndex = keyChecksumIndex;
 		_keyComparer = keyComparer ?? EqualityComparer<TKey>.Default;
 		_valueComparer = valueComparer ?? EqualityComparer<TValue>.Default;
-		_keyChecksum = keyChecksummer ?? new ItemDigestor<TKey>(keySerializer, ObjectContainer.StreamContainer.Endianness);
-		_keyChecksum = _keyChecksum.WithSubstitution(default, 1); // ensure that item checksums are never 0 (default) since when loading index, that's interpreted to mean record is reaped
-		_freeIndexStore = new ObjectContainerFreeIndexStore(
-			ObjectContainer,
-			freeIndexStoreStreamIndex,
-			0L
-		);
-		_keyChecksumIndex = new ObjectContainerIndex<KeyValuePair<TKey, TValue>, int>(
-			ObjectContainer,
-			keyChecksumIndexStreamIndex,
-			kvp => _keyChecksum.CalculateChecksum(kvp.Key),
-			EqualityComparer<int>.Default,
-			PrimitiveSerializer<int>.Instance
-		);
 		_version = 0;
 		
 		if (autoLoad && RequiresLoad) 
 			Load();
-
 	}
+
 
 	ObjectContainer IStreamMappedDictionary<TKey, TValue>.ObjectContainer => ObjectContainer;
 
@@ -164,8 +151,6 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 	public Task LoadAsync() => ObjectContainer.LoadAsync();
 
 	public virtual void Dispose() {
-		_freeIndexStore?.Dispose();
-		_keyChecksumIndex?.Dispose();
 		if (OwnsContainer)
 			ObjectContainer.Dispose();
 	}
@@ -268,7 +253,7 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 		CheckLoaded();
 		using (ObjectContainer.EnterAccessScope()) {
 			return
-				_keyChecksumIndex.Lookup[_keyChecksum.CalculateChecksum(key)]
+				_keyChecksumIndex.Lookup[CalculateKeyChecksum(key)]
 				.Select(ReadKey)
 				.Any(item => _keyComparer.Equals(item, key));
 		}
@@ -297,7 +282,7 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 	public bool TryFindKey(TKey key, out long index) {
 		Debug.Assert(key != null);
 		using (ObjectContainer.EnterAccessScope()) {
-			foreach (var i in _keyChecksumIndex.Lookup[_keyChecksum.CalculateChecksum(key)]) {
+			foreach (var i in _keyChecksumIndex.Lookup[CalculateKeyChecksum(key)]) {
 				var candidateKey = ReadKey(i);
 				if (_keyComparer.Equals(candidateKey, key)) {
 					index = i;
@@ -312,7 +297,7 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 	public bool TryFindValue(TKey key, out long index, out TValue value) {
 		Debug.Assert(key != null);
 		using (ObjectContainer.EnterAccessScope()) {
-			foreach (var i in _keyChecksumIndex.Lookup[_keyChecksum.CalculateChecksum(key)]) {
+			foreach (var i in _keyChecksumIndex.Lookup[CalculateKeyChecksum(key)]) {
 				var candidateKey = ReadKey(i);
 				if (_keyComparer.Equals(candidateKey, key)) {
 					index = i;
@@ -460,4 +445,55 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 		}
 	}
 
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	private int CalculateKeyChecksum(TKey key) 
+		=> _keyChecksumIndex.CalculateKey(new KeyValuePair<TKey, TValue>(key, default));
+
+
+	private static ObjectContainer<KeyValuePair<TKey, TValue>> CreateObjectContainer(
+		StreamContainer streamContainer,
+		IItemSerializer<TKey> keySerializer,
+		IItemSerializer<TValue> valueSerializer,
+		IItemChecksummer<TKey> keyChecksummer,
+		long freeIndexStoreStreamIndex,
+		long keyChecksumIndexStreamIndex,
+		out ObjectContainerFreeIndexStore freeIndexStore,
+		out ObjectContainerIndex<KeyValuePair<TKey, TValue>, int> keyChecksumIndex
+	) {
+		Guard.ArgumentNotNull(streamContainer, nameof(streamContainer));
+		Guard.ArgumentNotNull(keySerializer, nameof(keySerializer));
+		Guard.ArgumentNotNull(valueSerializer, nameof(valueSerializer));
+		Guard.ArgumentNotNull(keyChecksummer, nameof(keyChecksummer));
+
+		// Create object container
+		var container = new ObjectContainer<KeyValuePair<TKey, TValue>>(
+			streamContainer,
+			new KeyValuePairSerializer<TKey, TValue>(
+				keySerializer ?? ItemSerializer<TKey>.Default,
+				valueSerializer ?? ItemSerializer<TValue>.Default
+			),
+			streamContainer.Policy.HasFlag(StreamContainerPolicy.FastAllocate)
+		);
+
+		// Create free-index store
+		freeIndexStore = new ObjectContainerFreeIndexStore(
+			container,
+			freeIndexStoreStreamIndex,
+			0L
+		);
+		container.RegisterMetaDataProvider(freeIndexStore);
+
+		// Create key checksum index (for fast key lookups)
+		keyChecksummer ??= new ItemDigestor<TKey>(keySerializer, container.StreamContainer.Endianness);
+		keyChecksumIndex = new ObjectContainerIndex<KeyValuePair<TKey, TValue>, int>(
+			container,
+			keyChecksumIndexStreamIndex,
+			kvp => keyChecksummer.CalculateChecksum(kvp.Key),
+			EqualityComparer<int>.Default,
+			PrimitiveSerializer<int>.Instance
+		);
+		container.RegisterMetaDataProvider(keyChecksumIndex);
+
+		return container;
+	}
 }

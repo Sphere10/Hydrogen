@@ -10,11 +10,11 @@ using System.Collections.Generic;
 
 namespace Hydrogen;
 
-public class ObjectContainerKeyStore<TKey> : IMetaDataDictionary<TKey> {
+internal class ObjectContainerKeyStore<TKey> : IMetaDataDictionary<TKey> {
 	private readonly InMemoryMetaDataDictionary<TKey> _index;
 
 	public ObjectContainerKeyStore(ObjectContainer container, long reservedStreamIndex,  IEqualityComparer<TKey> keyComparer, IItemSerializer<TKey> keySerializer) {
-
+		ReservedStreamIndex = reservedStreamIndex;
 		_index = new InMemoryMetaDataDictionary<TKey>(
 			new ListBasedMetaDataStore<TKey>(
 				container,
@@ -24,8 +24,13 @@ public class ObjectContainerKeyStore<TKey> : IMetaDataDictionary<TKey> {
 			),
 			keyComparer
 		);
-
 	}
+
+	public long ReservedStreamIndex { get; }
+	
+	public IItemSerializer<TKey> KeySerializer => _index.KeySerializer;
+	
+	public IEqualityComparer<TKey> KeyComparer => _index.KeyComparer;
 
 	public IMetaDataStore<TKey> Store => _index;
 

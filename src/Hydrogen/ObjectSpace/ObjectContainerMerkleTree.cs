@@ -15,7 +15,7 @@ namespace Hydrogen;
 /// Used to maintain a merkle-tree of an <see cref="ObjectContainer"/>'s items. The merkle-tree is stored within a reserved stream within the container.
 /// </summary>
 /// <remarks>When fetching item bytes for hashing, a key-value-pair with same key but empty/null value will result in the same digest.</remarks>
-internal class ObjectContainerMerkleTree : MetaDataStreamBase, IMetaDataMerkleTree {
+internal class ObjectContainerMerkleTree : MetaDataProviderBase, IMetaDataMerkleTree {
 
 	private readonly CHF _hashAlgorithm;
 	private IMerkleTree _readOnlyMerkleTree;

@@ -72,7 +72,6 @@ public class StreamContainer : SyncLoadableBase, ICriticalObject, IDisposable {
 	private readonly IDictionary<long, ClusteredStream> _openStreams;
 	private readonly List<Action> _initActions;
 
-	private bool _initialized;
 	private readonly ConcurrentStream _rootStream;
 	private readonly int _clusterSize;
 	private readonly long _reservedStreams;
@@ -99,7 +98,7 @@ public class StreamContainer : SyncLoadableBase, ICriticalObject, IDisposable {
 		_header = null;
 		_openStreams = new Dictionary<long, ClusteredStream>();
 		_initActions = new List<Action>();
-		_initialized = false;
+		Initialized = false;
 		_rootStream = rootStream.AsConcurrent();
 		_clusterSize = clusterSize;
 		_reservedStreams = reservedStreams;
@@ -139,8 +138,10 @@ public class StreamContainer : SyncLoadableBase, ICriticalObject, IDisposable {
 
 	public bool IsLocked => _rootStream.IsLocked;
 
+	public bool Initialized { get; private set; }	
+
 	public override bool RequiresLoad {
-		get => !_initialized || base.RequiresLoad || RootStream is ILoadable { RequiresLoad: true };
+		get => !Initialized || base.RequiresLoad || RootStream is ILoadable { RequiresLoad: true };
 		set => base.RequiresLoad = value;
 	}
 
@@ -484,7 +485,7 @@ public class StreamContainer : SyncLoadableBase, ICriticalObject, IDisposable {
 	#region Initialization & Loading & Disposal
 
 	public void RegisterInitAction(Action action) {
-		if (_initialized)
+		if (Initialized)
 			action();
 		else
 			_initActions.Add(action);
@@ -494,7 +495,7 @@ public class StreamContainer : SyncLoadableBase, ICriticalObject, IDisposable {
 		if (_rootStream is ILoadable loadableStream)
 			loadableStream.Load();
 
-		if (!_initialized)
+		if (!Initialized)
 			Initialize();
 
 		if (_clusters.RequiresLoad)
@@ -581,7 +582,7 @@ public class StreamContainer : SyncLoadableBase, ICriticalObject, IDisposable {
 			_streamDescriptorCache = null;
 		}
 
-		_initialized = true;
+		Initialized = true;
 
 		if (wasEmptyStream)
 			CreateReservedStreams();
@@ -784,7 +785,7 @@ public class StreamContainer : SyncLoadableBase, ICriticalObject, IDisposable {
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	private void CheckInitialized() {
-		if (!_initialized)
+		if (!Initialized)
 			throw new InvalidOperationException("Clustered Streams not initialized");
 	}
 

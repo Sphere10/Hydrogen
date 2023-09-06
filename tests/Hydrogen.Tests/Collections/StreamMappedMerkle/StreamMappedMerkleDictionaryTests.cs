@@ -35,7 +35,6 @@ public class StreamMappedMerkleDictionaryTests : StreamMappedMerkleDictionaryTes
 			keyChecksummer: new ObjectHashCodeChecksummer<string>(),
 			valueComparer: valueComparer,
 			hashAlgorithm: chf,
-			reservedStreams: DefaultReservedRecords,
 			implementation: StreamMappedDictionaryImplementation.KeyValueListBased
 		);
 		if (streamMappedMerkleDictionary.RequiresLoad)
@@ -48,7 +47,7 @@ public class StreamMappedMerkleDictionaryTests : StreamMappedMerkleDictionaryTes
 	public void TestHeader() {
 		using (CreateTestObjectDictionary(CHF.SHA2_256, out var streamMappedMerkleDictionary)) {
 			Assert.That(streamMappedMerkleDictionary.ObjectContainer.StreamContainer.Header.ClusterSize, Is.EqualTo(DefaultClusterSize));
-			Assert.That(streamMappedMerkleDictionary.ObjectContainer.StreamContainer.Header.ReservedStreams, Is.EqualTo(DefaultReservedRecords));
+			Assert.That(streamMappedMerkleDictionary.ObjectContainer.StreamContainer.Header.ReservedStreams, Is.EqualTo(3));
 		}
 	}
 

@@ -10,7 +10,7 @@ using System;
 
 namespace Hydrogen;
 
-public interface IMetaDataMerkleTree : IDisposable  {
+public interface IMetaDataMerkleTree : IObjectContainerMetaDataProvider  {
 
 	IMerkleTree MerkleTree { get; }
 

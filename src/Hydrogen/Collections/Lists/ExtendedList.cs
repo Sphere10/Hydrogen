@@ -18,8 +18,6 @@ namespace Hydrogen;
 /// </summary>
 /// <typeparam name="T"></typeparam>
 public class ExtendedList<T> : RangedListBase<T> {
-	// TODO: needs updating to support multiple _internalArray's and 2^64-1 addressable items.
-	// This can be achieved by using multiple _internalArray's and switching between them based on index
 	private T[] _internalArray;
 	private long _length;
 	private readonly IEqualityComparer<T> _comparer;
@@ -37,34 +35,22 @@ public class ExtendedList<T> : RangedListBase<T> {
 	}
 
 	public ExtendedList(long capacity, long capacityGrowthSize, long maxCapacity, IEqualityComparer<T> comparer = null)
-		: this(new[] { new T[capacity] }, 0, capacityGrowthSize, maxCapacity, comparer) {
+		: this(new T[capacity], 0, capacityGrowthSize, maxCapacity, comparer) {
 	}
 
-	public ExtendedList(T[] sourceArray, IEqualityComparer<T> comparer = null)
-		: this(new[] { sourceArray }, sourceArray.Length, 0, sourceArray.Length, comparer) {
-	}
-
-	public ExtendedList(T[][] sourceArrays, IEqualityComparer<T> comparer = null) {
-		Guard.ArgumentNotNull(sourceArrays, nameof(sourceArrays));
-		Guard.ArgumentGT(sourceArrays.Length, 0, nameof(sourceArrays), "Must include at least 1 array");
-		if (sourceArrays.Length != 1)
-			throw new NotImplementedException("Supporting more than 2^32-1 addressing is not currently supported in this implementation");
-		_internalArray = sourceArrays[0];
+	public ExtendedList(T[] sourceArray, IEqualityComparer<T> comparer = null) {
+		Guard.ArgumentNotNull(sourceArray, nameof(sourceArray));
+		_internalArray = sourceArray;
 		_comparer = comparer ?? EqualityComparer<T>.Default;
 	}
 
-
-	private ExtendedList(T[][] internalArrays, long currentLogicalSize, long capacityGrowthSize, long maxCapacity, IEqualityComparer<T> comparer = null) {
-		Guard.ArgumentGT(internalArrays.Length, 0, nameof(internalArrays), "Must include at least 1 array");
-		Guard.Argument(internalArrays.All(x => x is not null), nameof(internalArrays), "All component arrays must be non-null");
+	private ExtendedList(T[] internalArray, long currentLogicalSize, long capacityGrowthSize, long maxCapacity, IEqualityComparer<T> comparer = null) {
+		Guard.ArgumentNotNull(internalArray, nameof(internalArray));
 		Guard.ArgumentInRange(capacityGrowthSize, 0, long.MaxValue, nameof(capacityGrowthSize));
 		Guard.ArgumentInRange(maxCapacity, currentLogicalSize, long.MaxValue, nameof(maxCapacity));
-		Guard.ArgumentInRange(currentLogicalSize, 0, internalArrays.Sum(x => x.Length), nameof(currentLogicalSize));
+		Guard.ArgumentInRange(currentLogicalSize, 0, internalArray.LongLength, nameof(currentLogicalSize));
 
-		if (internalArrays.Length != 1)
-			throw new NotImplementedException("Supporting more than 2^32-1 addressing is not currently supported in this implementation");
-
-		_internalArray = internalArrays[0];
+		_internalArray = internalArray;
 		_length = currentLogicalSize;
 		CapacityGrowthSize = capacityGrowthSize;
 		MaxCapacity = maxCapacity;
@@ -80,7 +66,6 @@ public class ExtendedList<T> : RangedListBase<T> {
 	public override bool IsReadOnly => false;
 
 	public override IEnumerable<long> IndexOfRange(IEnumerable<T> items) {
-		// TODO: needs updating to support multiple _internalArray's and 2^64-1 addressable items
 		Guard.ArgumentNotNull(items, nameof(items));
 		var itemsArr = items as T[] ?? items.ToArray();
 		foreach (var item in itemsArr) {
@@ -96,7 +81,6 @@ public class ExtendedList<T> : RangedListBase<T> {
 	}
 
 	public override IEnumerable<T> ReadRange(long index, long count) {
-		// TODO: needs updating to support multiple _internalArray's and 2^64-1 addressable items
 		CheckRange(index, count);
 
 		// optimize for single read
@@ -117,53 +101,50 @@ public class ExtendedList<T> : RangedListBase<T> {
 		Guard.ArgumentNotNull(items, nameof(items));
 		var itemsArr = items as T[] ?? items.ToArray();
 
-		if (itemsArr.Length == 0)
+		if (itemsArr.LongLength == 0)
 			return;
 
-		GrowSpaceIfRequired(itemsArr.Length);
+		GrowSpaceIfRequired(itemsArr.LongLength);
 		UpdateVersion();
-		if (itemsArr.Length == 1)
+		if (itemsArr.LongLength == 1)
 			// single access optimization
 			_internalArray[_length] = itemsArr[0];
 		else
-			Array.Copy(itemsArr, 0, _internalArray, _length, itemsArr.Length);
-		_length += itemsArr.Length;
+			Array.Copy(itemsArr, 0, _internalArray, _length, itemsArr.LongLength);
+		_length += itemsArr.LongLength;
 	}
 
 	public override void UpdateRange(long index, IEnumerable<T> items) {
-		// TODO: needs updating to support multiple _internalArray's and 2^64-1 addressable items
 		Guard.ArgumentNotNull(items, nameof(items));
 		var itemsArr = items as T[] ?? items.ToArray();
-		CheckRange(index, itemsArr.Length);
+		CheckRange(index, itemsArr.LongLength);
 
-		if (itemsArr.Length == 0)
+		if (itemsArr.LongLength == 0)
 			return;
 
 		UpdateVersion();
-		Array.Copy(itemsArr, 0, _internalArray, index, itemsArr.Length);
+		Array.Copy(itemsArr, 0, _internalArray, index, itemsArr.LongLength);
 	}
 
 	public override void InsertRange(long index, IEnumerable<T> items) {
-		// TODO: needs updating to support multiple _internalArray's and 2^64-1 addressable items
 		Guard.ArgumentNotNull(items, nameof(items));
 		Guard.ArgumentInRange(index, 0, Math.Max(0, _length), nameof(index));
 
 		var itemsArr = items as T[] ?? items.ToArray();
-		GrowSpaceIfRequired(itemsArr.Length);
+		GrowSpaceIfRequired(itemsArr.LongLength);
 		UpdateVersion();
 
-		var capacity = _internalArray.Length - _length;
-		if (itemsArr.Length > capacity)
+		var capacity = _internalArray.LongLength - _length;
+		if (itemsArr.LongLength > capacity)
 			throw new ArgumentException("Insufficient capacity", nameof(items));
 
 		// Use Array.Copy to move original items, since handles overlap scenarios
-		Array.Copy(_internalArray, index, _internalArray, index + itemsArr.Length, _length - index);
-		Array.Copy(itemsArr, 0, _internalArray, index, itemsArr.Length);
-		_length += itemsArr.Length;
+		Array.Copy(_internalArray, index, _internalArray, index + itemsArr.LongLength, _length - index);
+		Array.Copy(itemsArr, 0, _internalArray, index, itemsArr.LongLength);
+		_length += itemsArr.LongLength;
 	}
 
 	public override void RemoveRange(long index, long count) {
-		// TODO: needs updating to support multiple _internalArray's and 2^64-1 addressable items
 		CheckRange(index, count);
 
 		if (count == 0)
@@ -176,11 +157,10 @@ public class ExtendedList<T> : RangedListBase<T> {
 	}
 
 	private void GrowSpaceIfRequired(long newItems) {
-		// TODO: needs updating to support multiple _internalArray's and 2^64-1 addressable items
 		var newCapacity = _length + newItems;
 
 		// check if don't need to grow capacity
-		if (newCapacity <= _internalArray.Length)
+		if (newCapacity <= _internalArray.LongLength)
 			return;
 
 		// check if growth exceeds max
@@ -188,16 +168,16 @@ public class ExtendedList<T> : RangedListBase<T> {
 			throw new ArgumentException("Insufficient capacity");
 
 		// determine how many new bytes are actually needed
-		var actualNewBytes = newItems - (_internalArray.Length - _length);
+		var actualNewBytes = newItems - (_internalArray.LongLength - _length);
 		Debug.Assert(actualNewBytes > 0);
 
 		// calc the new capacity (grows in blocks)
-		var remainingGrowthCapacity = MaxCapacity - _internalArray.Length;
+		var remainingGrowthCapacity = MaxCapacity - _internalArray.LongLength;
 		var growAmount = (int)Math.Min(Math.Ceiling(actualNewBytes / (double)CapacityGrowthSize) * CapacityGrowthSize, remainingGrowthCapacity);
-		Debug.Assert(_internalArray.Length + growAmount <= MaxCapacity);
+		Debug.Assert(_internalArray.LongLength + growAmount <= MaxCapacity);
 
 		// Resize store
-		Array.Resize(ref _internalArray, _internalArray.Length + growAmount);
+		Tools.Collection.ResizeArray(ref _internalArray, _internalArray.LongLength + growAmount);
 	}
 
 }

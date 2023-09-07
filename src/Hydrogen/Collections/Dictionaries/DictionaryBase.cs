@@ -16,7 +16,7 @@ namespace Hydrogen;
 /// <summary>
 /// Base class for dictionary implementation. Implements index operator and misc.
 /// </summary>
-public abstract class DictionaryBase<TKey, TValue> : IDictionary<TKey, TValue> {
+public abstract class DictionaryBase<TKey, TValue> : ExtendedCollectionBase<KeyValuePair<TKey, TValue>>, IDictionary<TKey, TValue> {
 	private readonly KeysCollection _keysCollectionProperty;
 	private readonly ValuesCollection _valuesCollectionProperty;
 
@@ -43,30 +43,13 @@ public abstract class DictionaryBase<TKey, TValue> : IDictionary<TKey, TValue> {
 
 	public abstract bool ContainsKey(TKey key);
 
-
 	public virtual TValue this[TKey key] {
 		get => Get(key);
 		set => AddOrUpdate(key, value);
 	}
 
-	public abstract void Add(KeyValuePair<TKey, TValue> item);
-
-	public abstract bool Contains(KeyValuePair<TKey, TValue> item);
-
-	public abstract void CopyTo(KeyValuePair<TKey, TValue>[] array, int arrayIndex);
-
-	public abstract bool Remove(KeyValuePair<TKey, TValue> item);
-
 	public abstract bool Remove(TKey item);
-
-	public abstract void Clear();
-
-	public abstract int Count { get; }
-
-	public abstract bool IsReadOnly { get; }
-
-	public abstract IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator();
-
+	
 	protected virtual void AddOrUpdate(TKey key, TValue value) {
 		if (ContainsKey(key))
 			Update(key, value);
@@ -78,9 +61,25 @@ public abstract class DictionaryBase<TKey, TValue> : IDictionary<TKey, TValue> {
 
 	protected virtual IEnumerator<TValue> GetValuesEnumerator() => GetEnumerator().AsEnumerable().Select(x => x.Value).GetEnumerator();
 
+	public override void AddRange(IEnumerable<KeyValuePair<TKey, TValue>> items) {
+		Guard.ArgumentNotNull(items, nameof(items));
+		foreach (var item in items)
+			Add(item);
+	}
+
+	public override IEnumerable<bool> RemoveRange(IEnumerable<KeyValuePair<TKey, TValue>> items) {
+		Guard.ArgumentNotNull(items, nameof(items));
+		foreach (var item in items)
+			yield return Remove(item);
+	}
+
+	public override IEnumerable<bool> ContainsRange(IEnumerable<KeyValuePair<TKey, TValue>> items) {
+		Guard.ArgumentNotNull(items, nameof(items));
+		return items.Select(Contains).ToArray();
+	}
+
 	IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-
-
+	
 	private class KeysCollection : ICollection<TKey> {
 
 		private readonly DictionaryBase<TKey, TValue> _parent;
@@ -108,12 +107,11 @@ public abstract class DictionaryBase<TKey, TValue> : IDictionary<TKey, TValue> {
 
 		public bool Remove(TKey item) => _parent.Remove(item);
 
-		public int Count => _parent.Count;
+		public int Count => checked((int)_parent.Count);
 
 		public bool IsReadOnly => _parent.IsReadOnly;
 	}
-
-
+	
 	private class ValuesCollection : ICollection<TValue> {
 
 		private readonly DictionaryBase<TKey, TValue> _parent;
@@ -141,7 +139,7 @@ public abstract class DictionaryBase<TKey, TValue> : IDictionary<TKey, TValue> {
 
 		public bool Remove(TValue item) => throw new NotSupportedException();
 
-		public int Count => _parent.Count;
+		public int Count => checked((int) _parent.Count);
 
 		public bool IsReadOnly => _parent.IsReadOnly;
 	}

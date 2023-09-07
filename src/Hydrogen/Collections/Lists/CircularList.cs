@@ -39,6 +39,7 @@ public class CircularList<TItem> : SingularListBase<TItem> {
 			_list[_startIndex] = item;
 			_startIndex = (_startIndex + 1) % _maxSize;
 		}
+		UpdateVersion();
 	}
 
 	public override TItem Read(long index) {
@@ -63,6 +64,7 @@ public class CircularList<TItem> : SingularListBase<TItem> {
 	public override void Update(long index, TItem item) {
 		var realIndex = (_startIndex + index) % _maxSize;
 		_list[realIndex] = item;
+		UpdateVersion();
 	}
 
 	public override bool Remove(TItem item) {

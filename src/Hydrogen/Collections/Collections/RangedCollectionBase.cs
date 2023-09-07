@@ -18,11 +18,6 @@ namespace Hydrogen;
 /// </summary>
 /// <typeparam name="T"></typeparam>
 public abstract class RangedCollectionBase<T> : ExtendedCollectionBase<T> {
-	internal volatile int Version;
-
-	protected RangedCollectionBase() {
-		Version = 0;
-	}
 
 	public override bool IsReadOnly => false;
 
@@ -44,23 +39,9 @@ public abstract class RangedCollectionBase<T> : ExtendedCollectionBase<T> {
 			array[arrayIndex++] = item;
 	}
 
-
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	protected void UpdateVersion() {
-		unchecked {
-			Version++;
-		}
-	}
-
 	protected void CheckNotReadonly() {
 		if (IsReadOnly)
 			throw new InvalidOperationException("Collection is read-only");
-	}
-
-	protected void CheckVersion(int enumeratedVersion) {
-		if (Version != enumeratedVersion) {
-			throw new InvalidOperationException("Collection was changed during enumeration");
-		}
 	}
 
 }

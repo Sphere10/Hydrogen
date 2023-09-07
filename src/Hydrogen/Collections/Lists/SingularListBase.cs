@@ -6,11 +6,9 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Threading;
+
 
 namespace Hydrogen;
 
@@ -19,13 +17,8 @@ namespace Hydrogen;
 /// </summary>
 /// <typeparam name="T"></typeparam>
 public abstract class SingularListBase<T> : ExtendedListBase<T> {
-	protected int Version;
 
 	public override bool IsReadOnly => false;
-
-	protected SingularListBase() {
-		Version = 0;
-	}
 
 	public override IEnumerable<bool> ContainsRange(IEnumerable<T> items) {
 		Guard.ArgumentNotNull(items, nameof(items));
@@ -85,13 +78,5 @@ public abstract class SingularListBase<T> : ExtendedListBase<T> {
 		Guard.ArgumentNotNull(items, nameof(items));
 		return items;
 	}
-
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	protected void CheckVersion(int enumeratedVersion) {
-		if (Version != enumeratedVersion) 
-			throw new InvalidOperationException("Collection was changed during enumeration");
-	}
-
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	protected void UpdateVersion() => Interlocked.Increment(ref Version);
+	
 }

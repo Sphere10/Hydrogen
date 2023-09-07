@@ -36,7 +36,6 @@ public class StreamMappedDictionaryCLK<TKey, TValue> : DictionaryBase<TKey, TVal
 	private readonly IEqualityComparer<TValue> _valueComparer;
 	private readonly ObjectContainerKeyStore<TKey> _keyStore;
 	private readonly ObjectContainerFreeIndexStore _freeIndexStore;
-	private int _version;
 
 	public StreamMappedDictionaryCLK(
 		Stream rootStream,
@@ -113,7 +112,6 @@ public class StreamMappedDictionaryCLK<TKey, TValue> : DictionaryBase<TKey, TVal
 		_freeIndexStore = freeIndexStore;
 		_keyStore = keyStore;
 		_valueComparer = valueComparer ?? EqualityComparer<TValue>.Default;
-		_version = 0;
 
 		if (autoLoad && RequiresLoad)
 			Load();
@@ -127,12 +125,10 @@ public class StreamMappedDictionaryCLK<TKey, TValue> : DictionaryBase<TKey, TVal
 
 	public bool RequiresLoad => ObjectContainer.RequiresLoad;
 
-	public override int Count {
+	public override long Count {
 		get {
 			CheckLoaded();
-			var valueStoreCountI = Tools.Collection.CheckNotImplemented64bitAddressingIndex(ObjectContainer.Count);
-			var unusedRecordsCountI = Tools.Collection.CheckNotImplemented64bitAddressingIndex(_freeIndexStore.Stack.Count);
-			return valueStoreCountI - unusedRecordsCountI;
+			return ObjectContainer.Count - _freeIndexStore.Stack.Count;
 		}
 	}
 
@@ -351,7 +347,7 @@ public class StreamMappedDictionaryCLK<TKey, TValue> : DictionaryBase<TKey, TVal
 
 	public override IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator() {
 		CheckLoaded();
-		var version = _version;
+		var version = Version;
 		for (var i = 0; i < ObjectContainer.Count; i++) {
 			CheckVersion(version);
 			if (ObjectContainer.GetItemDescriptor(i).Traits.HasFlag(ClusteredStreamTraits.Reaped))
@@ -363,7 +359,7 @@ public class StreamMappedDictionaryCLK<TKey, TValue> : DictionaryBase<TKey, TVal
 
 	protected override IEnumerator<TKey> GetKeysEnumerator() {
 		CheckLoaded();
-		var version = _version;
+		var version = Version;
 		for (var i = 0; i < ObjectContainer.Count; i++) {
 			CheckVersion(version);
 			if (ObjectContainer.GetItemDescriptor(i).Traits.HasFlag(ClusteredStreamTraits.Reaped))
@@ -375,7 +371,7 @@ public class StreamMappedDictionaryCLK<TKey, TValue> : DictionaryBase<TKey, TVal
 
 	protected override IEnumerator<TValue> GetValuesEnumerator() {
 		CheckLoaded();
-		var version = _version;
+		var version = Version;
 		for (var i = 0; i < ObjectContainer.Count; i++) {
 			CheckVersion(version);
 			if (ObjectContainer.GetItemDescriptor(i).Traits.HasFlag(ClusteredStreamTraits.Reaped))
@@ -409,19 +405,6 @@ public class StreamMappedDictionaryCLK<TKey, TValue> : DictionaryBase<TKey, TVal
 	private void CheckLoaded() {
 		if (RequiresLoad)
 			throw new InvalidOperationException($"{nameof(StreamMappedDictionary<TKey, TValue>)} has not been loaded");
-	}
-
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	private void CheckVersion(long version) {
-		if (_version != version)
-			throw new InvalidOperationException("Collection was mutated during enumeration");
-	}
-
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	private void UpdateVersion() {
-		unchecked {
-			_version++;	
-		}
 	}
 
 	private static ObjectContainer<TValue> CreateObjectContainer(

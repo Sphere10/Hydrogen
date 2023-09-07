@@ -108,6 +108,7 @@ public class BitVector : RangedListBase<bool> {
 		_stream.Write(buffer);
 
 		_count += itemsArray.Length;
+		UpdateVersion();
 	}
 
 	public override void InsertRange(long index, IEnumerable<bool> items) {
@@ -159,6 +160,7 @@ public class BitVector : RangedListBase<bool> {
 		var bytesToRemove = _stream.Length - (int)Math.Ceiling((decimal)(_count - count) / 8);
 		_stream.SetLength(_stream.Length - bytesToRemove);
 		_count -= count;
+		UpdateVersion();
 	}
 
 	public override void UpdateRange(long index, IEnumerable<bool> items) {
@@ -205,12 +207,14 @@ public class BitVector : RangedListBase<bool> {
 
 		_stream.Seek(byteIndex, SeekOrigin.Begin);
 		_stream.Write(buffer);
+		UpdateVersion();
 	}
 
 	public override void Clear() {
 		_count = 0;
 		_stream.SetLength(0);
 		base.Clear();
+		UpdateVersion();
 	}
 
 	/// <summary>

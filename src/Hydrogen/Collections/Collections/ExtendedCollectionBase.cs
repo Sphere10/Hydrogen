@@ -6,14 +6,24 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+using System.Threading;
 
 namespace Hydrogen;
 
 public abstract class ExtendedCollectionBase<T> : IExtendedCollection<T> {
 
+	protected volatile int Version;
+	
+	protected ExtendedCollectionBase() {
+		Version = 0;
+	}
+	
 	public abstract long Count { get; }
+
 
 	public abstract bool IsReadOnly { get; }
 
@@ -105,5 +115,14 @@ public abstract class ExtendedCollectionBase<T> : IExtendedCollection<T> {
 	}
 
 	#endregion
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	protected void CheckVersion(int enumeratedVersion) {
+		if (Version != enumeratedVersion) 
+			throw new InvalidOperationException("Collection was changed during enumeration");
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	protected void UpdateVersion() => Interlocked.Increment(ref Version);
 
 }

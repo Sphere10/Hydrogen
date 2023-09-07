@@ -9,17 +9,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
 
 namespace Hydrogen;
 
 /// <summary>
-/// A base class for batch-optimized extended lists. Much of the boiler plate code is provided, implementations only
-/// care about important methods.
+/// A base implementation of <see cref="IExtendedList{T}"/> optimized for range-based (batch) operations. Single-item operations are implemented in terms of range-based operations.
 /// </summary>
-/// <typeparam name="T"></typeparam>
 public abstract class RangedListBase<T> : ExtendedListBase<T> {
-	internal volatile int Version;
 
 	protected RangedListBase() {
 		Version = 0;
@@ -103,22 +99,9 @@ public abstract class RangedListBase<T> : ExtendedListBase<T> {
 		}
 	}
 
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	protected void UpdateVersion() {
-		unchecked {
-			Version++;
-		}
-	}
-
 	protected void CheckNotReadonly() {
 		if (IsReadOnly)
 			throw new InvalidOperationException("Collection is read-only");
-	}
-
-	protected void CheckVersion(int enumeratedVersion) {
-		if (Version != enumeratedVersion) {
-			throw new InvalidOperationException("Collection was changed during enumeration");
-		}
 	}
 
 }

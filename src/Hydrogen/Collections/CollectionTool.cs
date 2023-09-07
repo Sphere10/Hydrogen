@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using Hydrogen;
 using Void = Hydrogen.Void;
 
@@ -157,4 +158,12 @@ public static class Collection {
 	}
 
 
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static void ResizeArray<T>(ref T[] internalArray, long length) {
+		if (length <= int.MaxValue) {
+			System.Array.Resize(ref internalArray, checked((int)length));
+		} else if (length != internalArray.LongLength) {	
+			throw new NotSupportedException("Huge-arrays are not currently supported in Hydrogen");
+		}
+	}
 }

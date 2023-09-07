@@ -35,6 +35,7 @@ public class ColumnarList : RangedListBase<object[]> {
 		CheckDimension(columnarItems.Length);
 		for (var i = 0; i < columnarItems.Length; i++)
 			_columnStore[i].AddRange(columnarItems[i]);
+		UpdateVersion();
 	}
 
 	public override IEnumerable<long> IndexOfRange(IEnumerable<object[]> items) {
@@ -50,6 +51,7 @@ public class ColumnarList : RangedListBase<object[]> {
 		CheckDimension(columnarItems.Length);
 		for (var i = 0; i < columnarItems.Length; i++)
 			_columnStore[i].InsertRange(index, columnarItems[i]);
+		UpdateVersion();
 	}
 
 	public override IEnumerable<object[]> ReadRange(long index, long count) {
@@ -89,11 +91,13 @@ public class ColumnarList : RangedListBase<object[]> {
 		CheckDimension(columnarItems.Length);
 		for (var i = 0; i < columnarItems.Length; i++)
 			_columnStore[i].UpdateRange(index, columnarItems[i]);
+		UpdateVersion();
 	}
 
 	public override void Clear() {
 		foreach (var col in _columnStore)
 			col.Clear();
+		UpdateVersion();
 	}
 
 	private void CheckDimension(int dim) {

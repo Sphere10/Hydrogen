@@ -10,9 +10,7 @@
 // Web: https://sphere10.com/tech/dynamic-merkle-trees
 // e-print: https://vixra.org/abs/2305.0087
 
-using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -69,7 +67,6 @@ public class StreamMappedMerkleDictionary<TKey, TValue> : DictionaryDecorator<TK
 	) {
 	}
 
-
 	internal StreamMappedMerkleDictionary(
 		IStreamMappedDictionary<TKey, TValue> innerDictionary,
 		ObjectContainerMerkleTree merkleTreeIndex,
@@ -109,7 +106,6 @@ public class StreamMappedMerkleDictionary<TKey, TValue> : DictionaryDecorator<TK
 	public void Dispose() {
 		InternalDictionary.Dispose();
 	}
-
 
 	private static IStreamMappedDictionary<TKey, TValue> CreateDictionary(
 		Stream stream,
@@ -170,6 +166,5 @@ public class StreamMappedMerkleDictionary<TKey, TValue> : DictionaryDecorator<TK
 		var valueDigest = Hashers.HashWithNullSupport(chf, valueBytes);
 		return Hashers.JoinHash(chf, keyDigest, valueDigest);
 	}
-
-
+	
 }

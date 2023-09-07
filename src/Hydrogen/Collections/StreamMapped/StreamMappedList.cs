@@ -24,7 +24,7 @@ public class StreamMappedList<TItem> : SingularListBase<TItem>, IStreamMappedLis
 	public event EventHandlerEx<object> Loaded { add => ObjectContainer.Loaded += value; remove => ObjectContainer.Loaded -= value; }
 
 	private int _version;
-	private readonly ObjectContainerIndex<TItem, int> _checksumIndex;  // null checksum means item at index
+	private readonly ObjectContainerIndex<TItem, int> _checksumIndex;
 
 	public StreamMappedList(
 		Stream rootStream,
@@ -52,9 +52,6 @@ public class StreamMappedList<TItem> : SingularListBase<TItem>, IStreamMappedLis
 		checksumIndexStreamIndex,
 		autoLoad
 	)  {
-		if (itemChecksummer != null)
-			Guard.Ensure(reservedStreams > checksumIndexStreamIndex, $"No reserved stream available for checksum index {checksumIndexStreamIndex}");
-
 		ObjectContainer.OwnsStreamContainer = true;
 	}
 

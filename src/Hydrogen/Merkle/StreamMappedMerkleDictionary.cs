@@ -75,7 +75,7 @@ public class StreamMappedMerkleDictionary<TKey, TValue> : DictionaryDecorator<TK
 		Guard.ArgumentNotNull(merkleTreeIndex, nameof(merkleTreeIndex));
 		_merkleTreeIndex = merkleTreeIndex;
 
-		if (autoLoad)
+		if (autoLoad && RequiresLoad)
 			Load();
 	}
 

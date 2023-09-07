@@ -24,8 +24,8 @@ public class ExtendedList<T> : RangedListBase<T> {
 	private long _length;
 	private readonly IEqualityComparer<T> _comparer;
 
-	public ExtendedList()
-		: this(4096) {
+	public ExtendedList(IEqualityComparer<T> comparer = null)
+		: this(4096, comparer) {
 	}
 
 	public ExtendedList(long capacity, IEqualityComparer<T> comparer = null)

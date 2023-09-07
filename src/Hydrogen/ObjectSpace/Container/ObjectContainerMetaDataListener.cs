@@ -10,12 +10,12 @@ using System;
 
 namespace Hydrogen;
 
-internal class ContainerMetaDataListener<TItem, TKey> {
+internal class ObjectContainerMetaDataListener<TItem, TKey> {
 	private readonly ObjectContainer _container;
 	private readonly Func<object, TKey> _projection;
 	private readonly IMetaDataStore<TKey> _metaDataStoreStore;
 
-	public ContainerMetaDataListener(ObjectContainer container, IMetaDataStore<TKey> metaDataStoreStore, Func<TItem, TKey> projection) {
+	public ObjectContainerMetaDataListener(ObjectContainer container, IMetaDataStore<TKey> metaDataStoreStore, Func<TItem, TKey> projection) {
 		Guard.ArgumentNotNull(container, nameof(container));
 		Guard.ArgumentNotNull(metaDataStoreStore, nameof(metaDataStoreStore));
 		Guard.ArgumentNotNull(projection, nameof(projection));

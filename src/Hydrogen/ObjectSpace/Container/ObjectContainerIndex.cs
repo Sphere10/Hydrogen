@@ -14,7 +14,7 @@ namespace Hydrogen;
 
 internal class ObjectContainerIndex<TItem, TKey> : IMetaDataLookup<TKey> {
 	private readonly InMemoryMetaDataLookup<TKey> _indexLookup;
-	private readonly ContainerMetaDataListener<TItem, TKey> _connector;
+	private readonly ObjectContainerMetaDataListener<TItem, TKey> _connector;
 	private readonly Func<TItem, TKey> _projection;
 
 	public ObjectContainerIndex(ObjectContainer container, long reservedStreamIndex, Func<TItem, TKey> projection, IEqualityComparer<TKey> keyComparer, IItemSerializer<TKey> keySerializer) {
@@ -31,7 +31,7 @@ internal class ObjectContainerIndex<TItem, TKey> : IMetaDataLookup<TKey> {
 			keyComparer
 		);
 
-		_connector = new ContainerMetaDataListener<TItem, TKey>(
+		_connector = new ObjectContainerMetaDataListener<TItem, TKey>(
 			container,
 			_indexLookup,
 			projection

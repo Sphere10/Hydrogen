@@ -13,7 +13,7 @@ namespace Hydrogen;
 
 public class ObjectContainerUniqueKey<TItem, TKey> : IMetaDataDictionary<TKey> {
 	private readonly InMemoryMetaDataDictionary<TKey> _index;
-	private readonly ContainerMetaDataListener<TItem, TKey> _connector;
+	private readonly ObjectContainerMetaDataListener<TItem, TKey> _connector;
 
 	public ObjectContainerUniqueKey(ObjectContainer container, long reservedStreamIndex, Func<TItem, TKey> projection, IEqualityComparer<TKey> keyComparer, IItemSerializer<TKey> keySerializer) {
 		ReservedStreamIndex = reservedStreamIndex;
@@ -27,7 +27,7 @@ public class ObjectContainerUniqueKey<TItem, TKey> : IMetaDataDictionary<TKey> {
 			keyComparer
 		);
 
-		_connector = new ContainerMetaDataListener<TItem, TKey>(
+		_connector = new ObjectContainerMetaDataListener<TItem, TKey>(
 			container,
 			_index,
 			projection

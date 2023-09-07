@@ -11,8 +11,7 @@ namespace Hydrogen;
 
 /// <summary>
 /// A container that stores objects in a stream using a <see cref="StreamContainer"/>. This can also maintain
-/// object metadata such as indexes, timestamps, merkle-trees, etc. This class is used by collections which
-/// store their items in a stream.
+/// object metadata such as indexes, timestamps, merkle-trees, etc. This is like a "table" within a "database".
 /// </summary>
 /// <typeparam name="T"></typeparam>
 public class ObjectContainer<T> : ObjectContainer {

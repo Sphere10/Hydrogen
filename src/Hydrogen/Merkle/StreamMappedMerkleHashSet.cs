@@ -18,9 +18,9 @@ using System.Threading.Tasks;
 namespace Hydrogen;
 
 /// <summary>
-/// A set implementation of <see cref="IStreamMappedMerkleHashSet{T}"/>
+/// A set implementation of <see cref="IStreamMappedHashSet{TItem}" and <see cref="IMerkleSet{TItem}"/>. />
 /// </summary>
-public class StreamMappedMerkleHashSet<TItem, TInner> : SetDecorator<TItem, TInner>, IStreamMappedMerkleHashSet<TItem>
+public class StreamMappedMerkleHashSet<TItem, TInner> : SetDecorator<TItem, TInner>, IStreamMappedHashSet<TItem>, IMerkleSet<TItem>
 	where TInner : IStreamMappedHashSet<TItem> {
 
 	public event EventHandlerEx<object> Loading { add => InternalSet.Loading += value; remove => InternalSet.Loading -= value; }
@@ -44,6 +44,7 @@ public class StreamMappedMerkleHashSet<TItem, TInner> : SetDecorator<TItem, TInn
 	public void Dispose() => InternalSet.Dispose();
 }
 
+/// <inheritdoc />
 public class StreamMappedMerkleHashSet<TItem> : StreamMappedMerkleHashSet<TItem, IStreamMappedHashSet<TItem>> {
 
 	public StreamMappedMerkleHashSet(

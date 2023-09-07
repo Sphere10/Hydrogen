@@ -19,8 +19,16 @@ namespace Hydrogen.NUnit;
 public static class AssertEx {
 
 
-	public static void ListIntegrationTest<T>(IExtendedList<T> list, int maxCapacity, Func<Random, int, T[]> randomItemGenerator, bool mutateFromEndOnly = false, int iterations = 100, IList<T> expected = null, Action endOfIterTest = null,
-	                                          IEqualityComparer<T> itemComparer = null) {
+	public static void ListIntegrationTest<T>(
+		IExtendedList<T> list,
+		int maxCapacity,
+		Func<Random, int, T[]> randomItemGenerator,
+		bool mutateFromEndOnly = false,
+		int iterations = 100,
+		IList<T> expected = null,
+		Action endOfIterTest = null,
+		IEqualityComparer<T> itemComparer = null
+	) {
 		var RNG = new Random(31337);
 		expected ??= new List<T>();
 		itemComparer ??= EqualityComparer<T>.Default;
@@ -217,7 +225,13 @@ public static class AssertEx {
 	/// <param name="mutateFromEndOnly">Mutate only from end of buffer, not middle</param>
 	/// <param name="iterations">Number of internal iterations where random operations are performed </param>
 	/// <param name="expected">Buffer implementation which <see cref="buffer"/> is tested against. This is assumed to be bug-free.</param>
-	public static void BufferIntegrationTest(IBuffer buffer, int maxCapacity, bool mutateFromEndOnly = false, int iterations = 100, IBuffer expected = null) {
+	public static void BufferIntegrationTest(
+		IBuffer buffer, 
+		int maxCapacity,
+		bool mutateFromEndOnly = false, 
+		int iterations = 100, 
+		IBuffer expected = null
+	) {
 		Guard.ArgumentNotNull(buffer, nameof(buffer));
 
 		var RNG = new Random(31337);
@@ -350,8 +364,206 @@ public static class AssertEx {
 
 	}
 
-	public static void DictionaryIntegrationTest<TKey, TValue>(IDictionary<TKey, TValue> dictionary, int maxCapacity, Func<Random, (TKey, TValue)> randomItemGenerator, int iterations = 100, IDictionary<TKey, TValue> expected = null,
-	                                                           IEqualityComparer<TKey> keyComparer = null, IEqualityComparer<TValue> valueComparer = null, Action endOfIterTest = null) {
+	public static void RecyclableListIntegrationTest<T>(
+		IRecyclableList<T> list,
+		int maxCapacity,
+		Func<Random, long, T[]> randomItemGenerator,
+		bool mutateFromEndOnly = false,
+		int iterations = 100,
+		IRecyclableList<T> expected = null,
+		Action endOfIterTest = null,
+		IEqualityComparer<T> itemComparer = null
+	) {
+		throw new NotImplementedException(); // below needs to be refactored for RecyclableList
+		var RNG = new Random(31337);
+		itemComparer ??= EqualityComparer<T>.Default;
+		expected ??= new RecyclableListAdapter<T>(itemComparer);
+
+		// Test 1: Add nothing
+		expected.AddRangeSequentially(Enumerable.Empty<T>());
+		list.AddRange(Enumerable.Empty<T>());
+		Assert.That(expected, Is.EqualTo(list).Using(itemComparer));
+		Assert.That(expected.Count, Is.EqualTo(list.Count));
+
+		// Test 2: Insert nothing
+		// REMOVED
+
+		if (maxCapacity >= 1) {
+			// Test 3: Add at 0 when empty 
+			var item = randomItemGenerator(RNG, 1).Single();
+			expected.Add(item);
+			list.Add(item);
+			Assert.That(expected, Is.EqualTo(list).Using(itemComparer));
+			Assert.That(expected.Count, Is.EqualTo(list.Count));
+		}
+
+		if (maxCapacity >= 2) {
+			// Test 4: Add at end of list (same as add)
+			var item = randomItemGenerator(RNG, 1).Single();
+			expected.Add( item);
+			list.Add( item);
+			Assert.That(expected, Is.EqualTo(list).Using(itemComparer));
+			Assert.That(expected.Count, Is.EqualTo(list.Count));
+
+			// Test 5: Delete from beginning of list
+			if (!mutateFromEndOnly) {
+				expected.RemoveAt(0);
+				list.RemoveAt(0);
+				Assert.That(expected, Is.EqualTo(list).Using(itemComparer));
+				Assert.That(expected.Count, Is.EqualTo(list.Count));
+			}
+		}
+
+		if (maxCapacity >= 1) {
+			// Test 6: Delete from end of list
+			expected.RemoveAt(^1);
+			list.RemoveAt(^1);
+			Assert.That(expected, Is.EqualTo(list).Using(itemComparer));
+			Assert.That(expected.Count, Is.EqualTo(list.Count));
+		}
+
+		// Test 7: AddRange half capacity
+		T[] newItems = randomItemGenerator(RNG, maxCapacity / 2);
+		expected.AddRangeSequentially(newItems);
+		list.AddRange(newItems);
+		Assert.That(expected, Is.EqualTo(list).Using(itemComparer));
+		Assert.That(expected.Count, Is.EqualTo(list.Count));
+
+		// Test 8: Enumerator consistency
+		using (var expectedEnumerator = expected.GetEnumerator())
+		using (var enumerator = list.GetEnumerator()) {
+
+			Assert.That(expectedEnumerator.Current, Is.EqualTo(enumerator.Current).Using(itemComparer));
+			bool expectedMoveNext;
+			do {
+				expectedMoveNext = expectedEnumerator.MoveNext();
+				var moveNext = enumerator.MoveNext();
+				Assert.That(expectedMoveNext, Is.EqualTo(moveNext).Using(itemComparer));
+				if (expectedMoveNext)
+					Assert.That(expectedEnumerator.Current, Is.EqualTo(enumerator.Current).Using(itemComparer));
+			} while (expectedMoveNext);
+		}
+		Assert.That(expected.Count, Is.EqualTo(list.Count));
+
+		// Test 9: Read/Remove/Update nothing from tip
+		// First fill up
+		newItems = randomItemGenerator(RNG, maxCapacity - expected.Count);
+		expected.AddRangeSequentially(newItems);
+		list.AddRange(newItems);
+		// Read nothing from tip
+		var expectedRead = expected.ReadRangeSequentially(checked((int)expected.Count), 0);
+		var actualRead = list.ReadRange(list.Count, 0);
+		Assert.That(expectedRead, Is.EqualTo(actualRead).Using(itemComparer));
+		Assert.That(expected.Count, Is.EqualTo(list.Count));
+
+		// Remove nothing from tip
+		expected.RemoveRangeSequentially(checked((int)expected.Count), 0);
+		list.RemoveRange(list.Count, 0);
+		Assert.That(expected, Is.EqualTo(list).Using(itemComparer));
+		Assert.That(expected.Count, Is.EqualTo(list.Count));
+
+		// Update nothing from tip
+		expected.UpdateRangeSequentially(checked((int)expected.Count), Enumerable.Empty<T>());
+		list.UpdateRange(list.Count, Enumerable.Empty<T>());
+		Assert.That(expected, Is.EqualTo(list).Using(itemComparer));
+		Assert.That(expected.Count, Is.EqualTo(list.Count));
+
+		// Test 10: Read/Remove/Update range overflow throws
+		Assert.That(() => expected.ReadRangeSequentially(checked((int)expected.Count) / 2, maxCapacity + 1).ToArray(), Throws.InstanceOf<ArgumentException>());
+		Assert.That(() => list.ReadRange(list.Count / 2, maxCapacity + 1).ToArray(), Throws.InstanceOf<ArgumentException>());
+		Assert.That(() => expected.RemoveRangeSequentially(checked((int)expected.Count) / 2, maxCapacity + 1), Throws.InstanceOf<ArgumentException>());
+		Assert.That(() => list.RemoveRange(list.Count / 2, maxCapacity + 1), Throws.InstanceOf<ArgumentException>());
+		var updateItems = Tools.Array.Gen(maxCapacity + 1, randomItemGenerator(RNG, 1)[0]);
+		Assert.That(() => expected.UpdateRangeSequentially(checked((int)expected.Count) / 2, updateItems), Throws.InstanceOf<ArgumentException>());
+		Assert.That(() => list.UpdateRange(list.Count / 2, updateItems), Throws.InstanceOf<ArgumentException>());
+
+		// Clear items (note: inconsistency could arise from test 10 due to do Singular-lists detecting argument error after mutations whereas range-lists not)
+		expected.Clear();
+		list.Clear();
+
+		// Test 11: Clear
+		for (var i = 0; i < 3; i++) {
+			Assert.That(expected, Is.EqualTo(list).Using(itemComparer));
+			// add a random amount
+			var remainingCapacity = maxCapacity - expected.Count;
+			var newItemsCount = RNG.Next(0, checked((int)remainingCapacity) + 1);
+			newItems = randomItemGenerator(RNG, newItemsCount);
+			expected.AddRangeSequentially(newItems);
+			list.AddRange(newItems);
+
+			expected.Clear();
+			list.Clear();
+		}
+
+		// Test 12: Iterate with random mutations
+		for (var i = 0; i < iterations; i++) {
+
+			// add a random amount
+			var remainingCapacity = Math.Min(1, maxCapacity - expected.Count); // only one item
+			var newItemsCount = RNG.Next(0, checked((int)remainingCapacity) + 1);
+			newItems = randomItemGenerator(RNG, newItemsCount);
+			list.AddRange(newItems);
+			expected.AddRangeSequentially(newItems);
+			Assert.That(expected, Is.EqualTo(list).Using(itemComparer));
+			Assert.That(expected.Count, Is.EqualTo(list.Count));
+
+			if (expected.Count > 0) {
+				// update a random range
+				var range = RNG.NextRange(checked((int)expected.Count));
+				var rangeLen = Math.Max(0, range.End - range.Start + 1);
+				newItems = randomItemGenerator(RNG, rangeLen);
+				list.UpdateRange(range.Start, newItems);
+				expected.UpdateRangeSequentially(range.Start, newItems);
+				Assert.That(expected, Is.EqualTo(list).Using(itemComparer));
+				Assert.That(expected.Count, Is.EqualTo(list.Count));
+
+				// copy/paste a random range
+				range = RNG.NextRange(checked((int)expected.Count));
+				rangeLen = Math.Max(0, range.End - range.Start + 1);
+				newItems = list.ReadRange(range.Start, rangeLen).ToArray();
+				var expectedNewItems = expected.ReadRangeSequentially(range.Start, rangeLen).ToArray();
+
+				range = RNG.NextRange(checked((int)expected.Count), rangeLength: newItems.Length);
+				expected.UpdateRangeSequentially(range.Start, expectedNewItems);
+				list.UpdateRange(range.Start, newItems);
+				Assert.That(expected, Is.EqualTo(list).Using(itemComparer));
+				Assert.That(expected.Count, Is.EqualTo(list.Count));
+
+				// remove a random amount
+				range = RNG.NextRange(checked((int)expected.Count), fromEndOnly: mutateFromEndOnly);
+				rangeLen = Math.Max(0, range.End - range.Start + 1);
+				list.RemoveRange(range.Start, rangeLen);
+				expected.RemoveRangeSequentially(range.Start, rangeLen);
+				Assert.That(expected, Is.EqualTo(list).Using(itemComparer));
+				Assert.That(expected.Count, Is.EqualTo(list.Count));
+
+				// PagedList specific: check page index consistency
+				if (list is IPagedList<T> pagedList) {
+					for (var j = 1; j < pagedList.Pages.Count; j++)
+						Assert.That(pagedList.Pages[j].StartIndex, Is.EqualTo(pagedList.Pages[j - 1].EndIndex + 1));
+				}
+
+				// Custom user test
+				endOfIterTest?.Invoke();
+			}
+
+			// insert a random amount
+			// REMOVED
+
+		}
+	}
+
+
+	public static void DictionaryIntegrationTest<TKey, TValue>(
+		IDictionary<TKey, TValue> dictionary, 
+		int maxCapacity, 
+		Func<Random, (TKey, TValue)> randomItemGenerator, 
+		int iterations = 100, 
+		IDictionary<TKey, TValue> expected = null,
+		IEqualityComparer<TKey> keyComparer = null, 
+		IEqualityComparer<TValue> valueComparer = null, 
+		Action endOfIterTest = null
+	) {
 		var rng = new Random(31337);
 		expected ??= new Dictionary<TKey, TValue>();
 		keyComparer ??= EqualityComparer<TKey>.Default;

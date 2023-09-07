@@ -39,15 +39,15 @@ public class SortedList<T> : ExtendedCollectionDecorator<T>, ISortedList<T> {
 	protected IExtendedList<T> InternalList => (IExtendedList<T>)InternalCollection;
 
 	public override void Add(T item) {
-		var index = InternalList.BinarySearch(item, _comparer);
+		var index = IndexOfL(item);
 		var insertionPoint = index >= 0 ? index : ~index;
 		InternalList.Insert(insertionPoint, item);
 	}
 
-	public override bool Contains(T item) => InternalList.BinarySearch(item, _comparer) >= 0;
+	public override bool Contains(T item) => IndexOfL(item) >= 0;
 
 	public override bool Remove(T item) {
-		var index = InternalList.BinarySearch(item, _comparer);
+		var index = IndexOfL(item);
 		if (index < 0)
 			return false;
 		InternalList.RemoveAt(index);

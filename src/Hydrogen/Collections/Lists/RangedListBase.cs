@@ -89,6 +89,7 @@ public abstract class RangedListBase<T> : ExtendedListBase<T> {
 	}
 
 	public override void CopyTo(T[] array, int arrayIndex) {
+		// This needs to be batch optimized
 		foreach (var item in this)
 			array[arrayIndex++] = item;
 	}

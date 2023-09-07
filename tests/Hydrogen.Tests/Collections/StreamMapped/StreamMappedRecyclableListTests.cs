@@ -23,7 +23,7 @@ public class StreamMappedRecyclableListTests : RecyclableListTestsBase {
 
 	protected override IDisposable CreateList<T>(IItemSerializer<T> serializer, IEqualityComparer<T> comparer, out IRecyclableList<T> list) {
 		var stream = new MemoryStream();
-		var smrlist = new StreamMappedRecyclableList<T>(
+		var smrlist = StreamMappedFactory.CreateRecyclableList<T>(
 			stream,
 			32, 
 			serializer,

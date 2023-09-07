@@ -8,9 +8,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Runtime.CompilerServices;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace Hydrogen;
@@ -23,60 +20,7 @@ public class StreamMappedList<TItem> : SingularListBase<TItem>, IStreamMappedLis
 	public event EventHandlerEx<object> Loading { add => ObjectContainer.Loading += value; remove => ObjectContainer.Loading -= value; }
 	public event EventHandlerEx<object> Loaded { add => ObjectContainer.Loaded += value; remove => ObjectContainer.Loaded -= value; }
 
-	private int _version;
 	private readonly ObjectContainerIndex<TItem, int> _checksumIndex;
-
-	public StreamMappedList(
-		Stream rootStream,
-		int clusterSize,
-		IItemSerializer<TItem> itemSerializer = null,
-		IEqualityComparer<TItem> itemComparer = null,
-		IItemChecksummer<TItem> itemChecksummer = null,
-		StreamContainerPolicy policy = StreamContainerPolicy.Default,
-		long reservedStreams = 0,
-		long checksumIndexStreamIndex = 0,
-		Endianness endianness = Endianness.LittleEndian, 
-		bool autoLoad = false
-	) : this(
-		new StreamContainer(
-			rootStream, 
-			clusterSize,
-			policy,
-			reservedStreams,
-			endianness, 
-			false
-		),
-		itemSerializer, 
-		itemComparer, 
-		itemChecksummer,
-		checksumIndexStreamIndex,
-		autoLoad
-	)  {
-		ObjectContainer.OwnsStreamContainer = true;
-	}
-
-	public StreamMappedList(
-		StreamContainer streamContainer,
-		IItemSerializer<TItem> itemSerializer = null,
-		IEqualityComparer<TItem> itemComparer = null,
-		IItemChecksummer<TItem> itemChecksummer = null,
-		long checksumIndexStreamIndex = 0, 
-		bool autoLoad = false
-	) : this(
-		BuildContainer(
-			streamContainer, 
-			itemSerializer, 
-			itemChecksummer,
-			checksumIndexStreamIndex,
-			out var checksumIndex
-		), 
-		checksumIndex,
-		itemComparer,
-		autoLoad
-	) {
-		OwnsContainer = true;
-	}
-
 
 	internal StreamMappedList(
 		ObjectContainer<TItem> objectContainer,
@@ -88,7 +32,6 @@ public class StreamMappedList<TItem> : SingularListBase<TItem>, IStreamMappedLis
 		ObjectContainer = objectContainer;
 		ItemComparer = itemComparer ?? EqualityComparer<TItem>.Default;
 		_checksumIndex = checksumIndex;
-		_version = 0;
 		
 		if (autoLoad && RequiresLoad)
 			Load();
@@ -179,11 +122,10 @@ public class StreamMappedList<TItem> : SingularListBase<TItem>, IStreamMappedLis
 	}
 
 	public override IEnumerator<TItem> GetEnumerator() {
-		var version = _version;
+		var version = Version;
 		var count = Count;
 		for (var i = 0; i < count; i++) {
-			if (_version != version)
-				throw new InvalidOperationException("Collection was mutated during enumeration");
+			CheckVersion(version);
 			yield return Read(i);
 		}
 	}
@@ -205,37 +147,5 @@ public class StreamMappedList<TItem> : SingularListBase<TItem>, IStreamMappedLis
 		UpdateVersion();
 		return ObjectContainer.SaveItemAndReturnStream(index, item, ObjectContainerOperationType.Update);
 	}
-
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	private void UpdateVersion() => Interlocked.Increment(ref _version);
-
-	// Builds the container for independent activations
-	private static ObjectContainer<TItem> BuildContainer(
-		StreamContainer streamContainer,
-		IItemSerializer<TItem> itemSerializer,
-		IItemChecksummer<TItem> itemChecksummer,
-		long checksumIndexStreamIndex,
-		out ObjectContainerIndex<TItem, int> checksumIndex
-	) {
-		var container = new ObjectContainer<TItem>(
-			streamContainer, 
-			itemSerializer, 
-			streamContainer.Policy.HasFlag(StreamContainerPolicy.FastAllocate)
-		);
-
-		if (itemChecksummer is not null) {
-			checksumIndex = new ObjectContainerIndex<TItem, int>(
-				container,
-				checksumIndexStreamIndex,
-				itemChecksummer.CalculateChecksum,
-				EqualityComparer<int>.Default,
-				PrimitiveSerializer<int>.Instance
-			);
-			container.RegisterMetaDataProvider( checksumIndex);
-		} else {
-			checksumIndex = null;
-		}
-
-		return container;
-	}
+	
 }

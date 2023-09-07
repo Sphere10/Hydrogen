@@ -20,63 +20,6 @@ public class StreamMappedRecyclableList<TItem> :  RecyclableListBase<TItem>, ISt
 	private readonly ObjectContainerIndex<TItem, int> _checksumIndex;
 	private IDisposable _accessScope;
 
-	public StreamMappedRecyclableList(
-		Stream rootStream,
-		int clusterSize,
-		IItemSerializer<TItem> itemSerializer = null,
-		IEqualityComparer<TItem> itemComparer = null,
-		IItemChecksummer<TItem> itemChecksummer = null,
-		StreamContainerPolicy policy = StreamContainerPolicy.Default,
-		long reservedStreams = 1,
-		long freeIndexStoreStreamIndex = 0,
-		long checksumIndexStreamIndex = 1,
-		Endianness endianness = Endianness.LittleEndian, 
-		bool autoLoad = false
-	) : this(
-		new StreamContainer(
-			rootStream, 
-			clusterSize,
-			policy,
-			reservedStreams,
-			endianness, 
-			false
-		),
-		itemSerializer, 
-		itemComparer, 
-		itemChecksummer,
-		freeIndexStoreStreamIndex,
-		checksumIndexStreamIndex,
-		autoLoad
-	)  {
-		ObjectContainer.OwnsStreamContainer = true;
-	}
-
-	public StreamMappedRecyclableList(
-		StreamContainer streamContainer,
-		IItemSerializer<TItem> itemSerializer = null,
-		IEqualityComparer<TItem> itemComparer = null,
-		IItemChecksummer<TItem> itemChecksummer = null,
-		long freeIndexStoreStreamIndex = 0,
-		long checksumIndexStreamIndex = 1,
-		bool autoLoad = false
-	) : this(
-		BuildContainer(
-			streamContainer, 
-			itemSerializer, 
-			itemChecksummer,
-			freeIndexStoreStreamIndex,
-			checksumIndexStreamIndex,
-			out var freeIndexStore,
-			out var checksumIndex
-		), 
-		freeIndexStore,
-		checksumIndex,
-		itemComparer,
-		autoLoad
-	) {
-		OwnsContainer = true;
-	}
-
 	internal StreamMappedRecyclableList(
 		ObjectContainer<TItem> container, 
 		ObjectContainerFreeIndexStore freeIndexStore, 
@@ -204,45 +147,5 @@ public class StreamMappedRecyclableList<TItem> :  RecyclableListBase<TItem>, ISt
 		ObjectContainer.Clear();
 		_freeIndexStore.Stack.Clear();
 	}
-
-	private static ObjectContainer<TItem> BuildContainer(
-		StreamContainer streamContainer,
-		IItemSerializer<TItem> itemSerializer,
-		IItemChecksummer<TItem> itemChecksummer,
-		long freeIndexStoreStreamIndex,
-		long checksumIndexStreamIndex,
-		out ObjectContainerFreeIndexStore freeIndexStore,
-		out ObjectContainerIndex<TItem, int> checksumIndex
-	) {
-		var container = new ObjectContainer<TItem>(
-			streamContainer, 
-			itemSerializer, 
-			streamContainer.Policy.HasFlag(StreamContainerPolicy.FastAllocate)
-		);
-
-		// Create free-index store
-		freeIndexStore = new ObjectContainerFreeIndexStore(
-			container,
-			freeIndexStoreStreamIndex,
-			0L
-		);
-		container.RegisterMetaDataProvider(freeIndexStore);
-
-		// Create item checksum index (if applicable)
-		if (itemChecksummer is not null) {
-			checksumIndex = new ObjectContainerIndex<TItem, int>(
-				container,
-				checksumIndexStreamIndex,
-				itemChecksummer.CalculateChecksum,
-				EqualityComparer<int>.Default,
-				PrimitiveSerializer<int>.Instance
-			);
-			container.RegisterMetaDataProvider( checksumIndex);
-		} else {
-			checksumIndex = null;
-		}
-
-		return container;
-	}
-
+	
 }

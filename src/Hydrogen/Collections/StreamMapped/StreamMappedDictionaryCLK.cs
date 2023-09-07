@@ -31,72 +31,9 @@ public class StreamMappedDictionaryCLK<TKey, TValue> : DictionaryBase<TKey, TVal
 	public event EventHandlerEx<object> Loading { add => ObjectContainer.Loading += value; remove => ObjectContainer.Loading -= value; }
 	public event EventHandlerEx<object> Loaded { add => ObjectContainer.Loaded += value; remove => ObjectContainer.Loaded -= value; }
 
-	//private readonly IItemSerializer<TKey> _keySerializer;
-	//private readonly IEqualityComparer<TKey> _keyComparer;
 	private readonly IEqualityComparer<TValue> _valueComparer;
 	private readonly ObjectContainerKeyStore<TKey> _keyStore;
 	private readonly ObjectContainerFreeIndexStore _freeIndexStore;
-
-	public StreamMappedDictionaryCLK(
-		Stream rootStream,
-		int clusterSize,
-		IItemSerializer<TKey> constantLengthKeySerializer,
-		IItemSerializer<TValue> valueSerializer = null,
-		IEqualityComparer<TKey> keyComparer = null,
-		IEqualityComparer<TValue> valueComparer = null,
-		StreamContainerPolicy policy = StreamContainerPolicy.Default,
-		Endianness endianness = Endianness.LittleEndian,
-		bool autoLoad = false,
-		long reservedStreamCount = 2,
-		long freeIndexStoreStreamIndex = 0,
-		long keyChecksumIndexStreamIndex = 1
-	) : this(
-			new StreamContainer(
-				rootStream,
-				clusterSize,
-				policy,
-				reservedStreamCount,
-				endianness,
-				false
-			),
-			constantLengthKeySerializer,
-			valueSerializer,
-			keyComparer,
-			valueComparer,
-			autoLoad,
-			freeIndexStoreStreamIndex,
-			keyChecksumIndexStreamIndex
-	) {
-		ObjectContainer.OwnsStreamContainer = true;
-	}
-
-	public StreamMappedDictionaryCLK(
-		StreamContainer streamContainer,
-		IItemSerializer<TKey> constantLengthKeySerializer,
-		IItemSerializer<TValue> valueSerializer = null,
-		IEqualityComparer<TKey> keyComparer = null,
-		IEqualityComparer<TValue> valueComparer = null,
-		bool autoLoad = false,
-		long freeIndexStoreStreamIndex = 0,
-		long keyStoreStreamIndex = 1
-	) : this (
-			CreateObjectContainer(
-				streamContainer,
-				constantLengthKeySerializer,
-				valueSerializer ?? ItemSerializer<TValue>.Default,
-				keyComparer ?? EqualityComparer<TKey>.Default,
-				freeIndexStoreStreamIndex,
-				keyStoreStreamIndex,
-				out var keyStore,
-				out var freeIndexStore
-			),
-			freeIndexStore,
-			keyStore,
-			valueComparer,
-			autoLoad
-		) {
-		OwnsContainer = true;
-	}
 
 	internal StreamMappedDictionaryCLK(
 		ObjectContainer objectContainer,
@@ -405,46 +342,6 @@ public class StreamMappedDictionaryCLK<TKey, TValue> : DictionaryBase<TKey, TVal
 	private void CheckLoaded() {
 		if (RequiresLoad)
 			throw new InvalidOperationException($"{nameof(StreamMappedDictionary<TKey, TValue>)} has not been loaded");
-	}
-
-	private static ObjectContainer<TValue> CreateObjectContainer(
-		StreamContainer streamContainer,
-		IItemSerializer<TKey> constantLengthKeySerializer,
-		IItemSerializer<TValue> valueSerializer,
-		IEqualityComparer<TKey> keyComparer,
-		long freeIndexStoreStreamIndex,
-		long keyStoreStreamIndex,
-		out ObjectContainerKeyStore<TKey> keyStore,
-		out ObjectContainerFreeIndexStore freeIndexStore
-	) {
-		Guard.ArgumentNotNull(streamContainer, nameof(streamContainer));
-		Guard.ArgumentNotNull(constantLengthKeySerializer, nameof(constantLengthKeySerializer));
-		Guard.Argument(constantLengthKeySerializer.IsStaticSize, nameof(constantLengthKeySerializer), "Keys must be statically sized");
-		Guard.ArgumentNotNull(valueSerializer, nameof(valueSerializer));
-		Guard.ArgumentNotNull(keyComparer, nameof(keyComparer));
-
-		var container = new ObjectContainer<TValue>(
-			streamContainer, 
-			valueSerializer,
-			streamContainer.Policy.HasFlag(StreamContainerPolicy.FastAllocate)
-		);
-
-		freeIndexStore = new ObjectContainerFreeIndexStore(
-			container,
-			freeIndexStoreStreamIndex,
-			0L
-		);
-		container.RegisterMetaDataProvider(freeIndexStore);
-
-		keyStore = new ObjectContainerKeyStore<TKey>(
-			container,
-			keyStoreStreamIndex,
-			keyComparer,
-			constantLengthKeySerializer
-		);
-		container.RegisterMetaDataProvider(keyStore);
-
-		return container;
 	}
 
 }

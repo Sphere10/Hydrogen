@@ -27,7 +27,7 @@ public class StreamMappedDictionaryTests : StreamMappedDictionaryTestsBase {
 		out IStreamMappedDictionary<TKey, TValue> clusteredDictionary
 	) {
 		var disposable = base.CreateStream(storageType, estimatedMaxByteSize, out var stream);
-		clusteredDictionary = new StreamMappedDictionary<TKey, TValue>(stream, DefaultClusterDataSize, keySerializer, valueSerializer, keyComparer, valueComparer, null, policy, Endianness.LittleEndian, false);
+		clusteredDictionary = StreamMappedFactory.CreateDictionaryKvp<TKey, TValue>(stream, DefaultClusterDataSize, keySerializer, valueSerializer, keyComparer, valueComparer, null, policy, Endianness.LittleEndian, false);
 		return new Disposables(clusteredDictionary, disposable);
 	}
 

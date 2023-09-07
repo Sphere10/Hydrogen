@@ -103,7 +103,7 @@ public class StreamMappedMerkleRecyclableList<TItem> : RecyclableListDecorator<T
 		Endianness endianness,
 		out ObjectContainerMerkleTree merkleTreeIndex
 	) {
-		var streamMappedList = new StreamMappedRecyclableList<TItem>(
+		var streamMappedList = StreamMappedFactory.CreateRecyclableList(
 			rootStream,
 			clusterSize,
 			itemSerializer,

@@ -103,7 +103,7 @@ public class TransactionalList<T> : ExtendedListDecorator<T, IStreamMappedList<T
 		long checksumIndexStreamIndex = 0,
 		bool autoLoad = false
 	) : this(
-			new StreamMappedList<T>(
+			StreamMappedFactory.CreateList(
 				streams,
 				serializer,
 				comparer,

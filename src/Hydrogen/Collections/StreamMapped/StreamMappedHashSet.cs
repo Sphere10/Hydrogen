@@ -18,62 +18,13 @@ namespace Hydrogen;
 /// </summary>
 /// <remarks>When deleting an item the underlying <see cref="ClusteredStreamDescriptor"/> is marked nullified but retained and re-used in later calls to <see cref="Add(TItem)"/>.</remarks>
 public class StreamMappedHashSet<TItem> : SetBase<TItem>, IStreamMappedHashSet<TItem> {
-	public event EventHandlerEx<object> Loading {
-		add => InternalDictionary.Loading += value;
-		remove => InternalDictionary.Loading -= value;
-	}
-
-	public event EventHandlerEx<object> Loaded {
-		add => InternalDictionary.Loaded += value;
-		remove => InternalDictionary.Loaded -= value;
-	}
+	public event EventHandlerEx<object> Loading { add => InternalDictionary.Loading += value; remove => InternalDictionary.Loading -= value; }
+	public event EventHandlerEx<object> Loaded { add => InternalDictionary.Loaded += value; remove => InternalDictionary.Loaded -= value; }
 
 	internal readonly IStreamMappedDictionary<byte[], TItem> InternalDictionary;
 	private readonly IItemHasher<TItem> _hasher;
 
-	public StreamMappedHashSet(
-		Stream rootStream,
-		int clusterSize,
-		IItemSerializer<TItem> serializer,
-		CHF chf,
-		IEqualityComparer<TItem> comparer = null,
-		StreamContainerPolicy policy = StreamContainerPolicy.Default,
-		Endianness endianness = Endianness.LittleEndian)
-		: this(
-			  rootStream,
-			  clusterSize,
-			  serializer,
-			  new ItemDigestor<TItem>(chf, serializer),
-			  comparer,
-			  policy,
-			  endianness
-		) {
-	}
-
-	public StreamMappedHashSet(
-		Stream rootStream,
-		int clusterSize,
-		IItemSerializer<TItem> serializer,
-		IItemHasher<TItem> hasher,
-		IEqualityComparer<TItem> comparer = null,
-		StreamContainerPolicy policy = StreamContainerPolicy.Default,
-		Endianness endianness = Endianness.LittleEndian
-	) : this(
-			new StreamMappedDictionaryCLK<byte[], TItem>(
-				rootStream,
-				clusterSize,
-				new StaticSizeByteArraySerializer(hasher.DigestLength).AsNullable(),
-				serializer,
-				new ByteArrayEqualityComparer(),
-				comparer,
-				policy,
-				endianness),
-			comparer,
-			hasher
-		) {
-	}
-
-	public StreamMappedHashSet(
+	internal StreamMappedHashSet(
 		IStreamMappedDictionary<byte[], TItem> internalDictionary,
 		IEqualityComparer<TItem> comparer,
 		IItemHasher<TItem> hasher

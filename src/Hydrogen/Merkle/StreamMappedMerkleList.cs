@@ -101,7 +101,7 @@ public class StreamMappedMerkleList<TItem> : ExtendedListDecorator<TItem, IStrea
 		Endianness endianness, 
 		out ObjectContainerMerkleTree merkleTreeIndex
 	) {
-		var streamMappedList = new StreamMappedList<TItem>(
+		var streamMappedList =  StreamMappedFactory.CreateList(
 			rootStream,
 			clusterSize,
 			itemSerializer,

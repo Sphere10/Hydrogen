@@ -11,10 +11,8 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace Hydrogen.Utils.WinFormsTester
-{
-	partial class MiscTestScreen
-	{
+namespace Hydrogen.Utils.WinFormsTester {
+	partial class MiscTestScreen {
 		/// <summary>
 		/// Required designer variable.
 		/// </summary>
@@ -24,10 +22,8 @@ namespace Hydrogen.Utils.WinFormsTester
 		/// Clean up any resources being used.
 		/// </summary>
 		/// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
-		protected override void Dispose(bool disposing)
-		{
-			if (disposing && (components != null))
-			{
+		protected override void Dispose(bool disposing) {
+			if (disposing && (components != null)) {
 				components.Dispose();
 			}
 			base.Dispose(disposing);
@@ -39,8 +35,7 @@ namespace Hydrogen.Utils.WinFormsTester
 		/// Required method for Designer support - do not modify
 		/// the contents of this method with the code editor.
 		/// </summary>
-		private void InitializeComponent()
-		{
+		private void InitializeComponent() {
 			comboBox1 = new System.Windows.Forms.ComboBox();
 			button1 = new System.Windows.Forms.Button();
 			_clipTestButton = new System.Windows.Forms.Button();
@@ -56,6 +51,7 @@ namespace Hydrogen.Utils.WinFormsTester
 			button3 = new System.Windows.Forms.Button();
 			_systemPathsButton = new System.Windows.Forms.Button();
 			_macAddressesButton = new System.Windows.Forms.Button();
+			_mappingTests = new System.Windows.Forms.Button();
 			SuspendLayout();
 			// 
 			// comboBox1
@@ -230,10 +226,22 @@ namespace Hydrogen.Utils.WinFormsTester
 			_macAddressesButton.UseVisualStyleBackColor = true;
 			_macAddressesButton.Click += _macAddressesButton_Click;
 			// 
+			// _mappingTests
+			// 
+			_mappingTests.Location = new System.Drawing.Point(38, 260);
+			_mappingTests.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+			_mappingTests.Name = "_mappingTests";
+			_mappingTests.Size = new System.Drawing.Size(102, 27);
+			_mappingTests.TabIndex = 16;
+			_mappingTests.Text = "Mapping Tests";
+			_mappingTests.UseVisualStyleBackColor = true;
+			_mappingTests.Click += _mappingTests_Click;
+			// 
 			// MiscTestScreen
 			// 
 			AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
 			AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+			Controls.Add(_mappingTests);
 			Controls.Add(_macAddressesButton);
 			Controls.Add(_systemPathsButton);
 			Controls.Add(button3);
@@ -273,5 +281,6 @@ namespace Hydrogen.Utils.WinFormsTester
 		private System.Windows.Forms.Button button3;
 		private System.Windows.Forms.Button _systemPathsButton;
 		private System.Windows.Forms.Button _macAddressesButton;
+		private System.Windows.Forms.Button _mappingTests;
 	}
 }

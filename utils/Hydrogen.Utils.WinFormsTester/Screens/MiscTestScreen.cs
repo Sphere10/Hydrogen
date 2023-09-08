@@ -635,5 +635,17 @@ public partial class MiscTestScreen : ApplicationScreen {
 		}
 	}
 
+	private void _mappingTests_Click(object sender, EventArgs e) {
+		try {
 
+			var _writer = new TextBoxWriter(_outputTextBox);
+
+
+			var member = Tools.Mapping.GetMember<TestClass>(x => x.Name);
+
+			_writer.WriteLine(member);
+		} catch (Exception error) {
+			ExceptionDialog.Show(this, error);
+		}
+	}
 }

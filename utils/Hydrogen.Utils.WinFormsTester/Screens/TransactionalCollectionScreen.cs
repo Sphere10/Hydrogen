@@ -244,7 +244,7 @@ public partial class TransactionalCollectionScreen : ApplicationScreen {
 					default:
 						throw new NotSupportedException(listType.ToString());
 				}
-				var clusteredList = new StreamMappedList<byte[]>(
+				var clusteredList = StreamMappedFactory.CreateList(
 					stream,
 					clusterSize,
 					new ByteArraySerializer(),

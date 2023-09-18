@@ -19,7 +19,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hydrogen.Drawing", "Hydroge
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hydrogen.NUnit", "Hydrogen.NUnit\Hydrogen.NUnit.csproj", "{C08B47F1-BD56-4BC0-9241-214B67F91470}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hydrogen.NETCore", "Hydrogen.NETCore\Hydrogen.NETCore.csproj", "{4759DE91-C740-4C18-9E86-051C28575514}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hydrogen.NET", "Hydrogen.NETCore\Hydrogen.NET.csproj", "{4759DE91-C740-4C18-9E86-051C28575514}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hydrogen.Communications", "Hydrogen.Communications\Hydrogen.Communications.csproj", "{B9BAB6BC-4023-4689-B2F0-F15473547DA2}"
 EndProject

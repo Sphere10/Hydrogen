@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>net7.0</TargetFramework>
+		<TargetFramework>net8.0</TargetFramework>
 		<IsPackable>false</IsPackable>
 		<LangVersion>latest</LangVersion>
 	</PropertyGroup>
@@ -13,7 +13,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\..\src\Hydrogen.NETCore\Hydrogen.NETCore.csproj" />
+		<ProjectReference Include="..\..\src\Hydrogen.NETCore\Hydrogen.NET.csproj" />
 		<ProjectReference Include="..\..\src\Hydrogen.NUnit\Hydrogen.NUnit.csproj" />
 		<ProjectReference Include="..\..\src\Hydrogen\Hydrogen.csproj" />
 	</ItemGroup>

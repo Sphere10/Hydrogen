@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net7.0-windows</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
 
@@ -25,7 +25,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Hydrogen\Hydrogen.csproj" />
-    <ProjectReference Include="..\Hydrogen.NETCore\Hydrogen.NETCore.csproj" />
+    <ProjectReference Include="..\Hydrogen.NETCore\Hydrogen.NET.csproj" />
   </ItemGroup>
 
 </Project>

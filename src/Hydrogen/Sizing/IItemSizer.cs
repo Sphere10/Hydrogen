@@ -10,11 +10,11 @@ using System.Collections.Generic;
 
 namespace Hydrogen;
 
-public interface IItemSizer<T> {
+public interface IItemSizer<in T> {
 
-	bool IsStaticSize { get; }
+	bool IsConstantLength { get; }
 
-	long StaticSize { get; }
+	long ConstantLength { get; }
 
 	long CalculateTotalSize(IEnumerable<T> items, bool calculateIndividualItems, out long[] itemSizes);
 

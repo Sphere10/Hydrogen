@@ -10,7 +10,7 @@ using System;
 
 namespace Hydrogen;
 
-public class ClusteredStreamDescriptorSerializer : StaticSizeItemSerializerBase<ClusteredStreamDescriptor> {
+public class ClusteredStreamDescriptorSerializer : ConstantLengthItemSerializerBase<ClusteredStreamDescriptor> {
 
 	internal const int TraitsLength = sizeof(byte);
 	internal const int StartClusterLength = sizeof(long);

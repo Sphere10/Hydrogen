@@ -22,7 +22,7 @@ public static class HostProtocolHelper {
 				.UseOnly(BuildMessageSerializer())
 				.Build();
 
-	public static IFactorySerializer<object> BuildMessageSerializer()
+	public static FactorySerializer<object> BuildMessageSerializer()
 		=> new FactorySerializerBuilder<object>()
 			.For<PingMessage>(HostProtocolMessageType.Ping).SerializeWith(new BinaryFormattedSerializer<PingMessage>())
 			.For<PongMessage>(HostProtocolMessageType.Pong).SerializeWith(new BinaryFormattedSerializer<PongMessage>())

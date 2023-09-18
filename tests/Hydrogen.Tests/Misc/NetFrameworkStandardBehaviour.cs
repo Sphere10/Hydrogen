@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 
 namespace Hydrogen.Tests;
@@ -19,6 +20,30 @@ namespace Hydrogen.Tests;
 [Parallelizable(ParallelScope.Children)]
 public class NetFrameworkStandardBehaviour {
 
+	[Test]
+	public void ConstructedGenericTypesAreReused() {
+		var first = typeof(List<>).MakeGenericType(typeof(int));
+		var second = typeof(List<int>);
+		Assert.That(first, Is.EqualTo(second));
+	}
+	
+	[Test]
+	public void ConstructType() {
+		Type openType = typeof(KeyValuePairSerializer<,>);
+		Type[] typeArgs = { typeof(int), typeof(float) };
+		var genericTypeDefinition = openType.MakeGenericType(typeArgs);
+		var constructedGenericType = Activator.CreateInstance(genericTypeDefinition,new object[] { new PrimitiveSerializer<int>(), new PrimitiveSerializer<float>(), SizeDescriptorStrategy.UseCVarInt });
+		Assert.That(constructedGenericType, Is.TypeOf(typeof(KeyValuePairSerializer<int, float>)));
+	}
+
+	[Test]
+	public void ResolveIoC() {
+		var serviceCollection = new ServiceCollection();
+		serviceCollection.AddTransient(typeof(ICollection<>), typeof(ExtendedList<>));
+		var serviceProvider = serviceCollection.BuildServiceProvider();
+		var x = serviceProvider.GetService<ICollection<int>>();
+		Assert.That(x, Is.TypeOf<ExtendedList<int>>());
+	}
 
 	[Test] 
 	public void ReadByteAtEndOfStreamReturnsNegOne() {

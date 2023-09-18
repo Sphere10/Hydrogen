@@ -10,10 +10,10 @@ using System;
 
 namespace Hydrogen;
 
-public class DateTimeOffsetSerializer : StaticSizeItemSerializerBase<DateTimeOffset> {
+public class DateTimeOffsetSerializer : ConstantLengthItemSerializerBase<DateTimeOffset> {
 
 	public DateTimeOffsetSerializer() 
-		: base(DateTimeSerializer.Instance.StaticSize + PrimitiveSerializer<short>.Instance.StaticSize){
+		: base(DateTimeSerializer.Instance.ConstantLength + PrimitiveSerializer<short>.Instance.ConstantLength){
 	}
 
 	public override void SerializeInternal(DateTimeOffset item, EndianBinaryWriter writer) {

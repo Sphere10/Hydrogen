@@ -21,6 +21,7 @@ public interface IItemSerializer<TItem> : IItemSizer<TItem> {
 
 }
 
+
 public static class IItemSerializerExtensions {
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -123,9 +124,9 @@ public static class IItemSerializerExtensions {
 	}
 
 	public static IItemSerializer<TBase> AsBaseSerializer<TItem, TBase>(this IItemSerializer<TItem> serializer) where TItem : TBase
-		=> new CastedSerializer<TBase, TItem>(serializer);
+		=> new ProjectedSerializer<TItem,TBase>(serializer, x => (TBase)x, x => (TItem)x);
 
-	public static IItemSerializer<TItem> AsStaticSizeSerializer<TItem>(this IItemSerializer<TItem> serializer, long staticSize, SizeDescriptorStrategy sizeDescriptorStrategy)
+	public static IItemSerializer<TItem> AsConstantSizeSerializer<TItem>(this IItemSerializer<TItem> serializer, long staticSize, SizeDescriptorStrategy sizeDescriptorStrategy)
 		=> new PaddedSerializer<TItem>(staticSize, serializer, sizeDescriptorStrategy);
 
 }

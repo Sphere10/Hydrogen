@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Text;
 
 namespace Hydrogen;
 
@@ -20,6 +21,44 @@ namespace Hydrogen;
 /// </summary>
 /// <remarks></remarks>
 public static class TypeExtensions {
+
+	public static string ToStringCS(this Type type) {
+		if (!type.IsGenericType)
+			return type.Name;
+
+		var builder = new StringBuilder();
+		var name = type.Name;
+		var index = name.IndexOf('`');
+		builder.Append(name.Substring(0, index));
+		builder.Append('<');
+
+		var genericArguments = type.GetGenericArguments();
+
+		for (var i = 0; i < genericArguments.Length; i++) {
+			if (i > 0)
+				builder.Append(", ");
+
+			// If it's a generic parameter, append its name
+			if (genericArguments[i].IsGenericParameter) {
+				builder.Append(genericArguments[i].Name);
+			}
+			else {
+				builder.Append(genericArguments[i].ToStringCS());
+			}
+		}
+
+		builder.Append('>');
+		return builder.ToString();
+	}
+
+	public static ConstructorInfo FindCompatibleConstructor(this Type type, Type[] parameterTypes) 
+		=> TypeActivator.FindCompatibleConstructor(type, parameterTypes);
+
+	public static bool TryActivateWithCompatibleArgs(Type type, object[] args, out object instance) 
+		=> TypeActivator.TryActivateWithCompatibleArgs(type, args, out instance);
+
+	public static object ActivateWithCompatibleArgs(this Type type, object[] args) 
+		=> TypeActivator.ActivateWithCompatibleArgs(type, args);
 
 	public static IEnumerable<Type> GetAncestorClasses(this Type type)
 		=> type.GetAncestorTypes().Where(t => !t.IsInterface);
@@ -42,6 +81,14 @@ public static class TypeExtensions {
 			currentBaseType = currentBaseType.BaseType;
 		}
 	}
+
+	public static bool IsPartialTypeDefinition(this Type type) {
+		return type.IsConstructedGenericType && type.ContainsGenericParameters;
+	}
+
+	public static bool IsPartialOrGenericTypeDefinition(this Type type) 
+		=> type.IsGenericTypeDefinition || type.IsPartialTypeDefinition();
+
 
 	public static bool HasSubType(this Type type, Type otherType) => otherType.IsAssignableFrom(type);
 
@@ -98,6 +145,20 @@ public static class TypeExtensions {
 		return fi;
 	}
 
+	public static bool IsActivatable(this Type type) {
+		Guard.ArgumentNotNull(type, nameof(type));
+		return !type.IsAbstract &&
+		       !type.IsInterface &&
+		       !type.IsGenericTypeDefinition &&
+		       !type.ContainsGenericParameters;
+	}
+
+	public static bool IsFullyConstructed(this Type type) {
+		Guard.ArgumentNotNull(type, nameof(type));
+		return !type.IsGenericType || 
+				type.IsConstructedGenericType && !type.ContainsGenericParameters;
+	}
+
 	/// <summary>
 	/// Determines whether <paramref name="type"/> is a constructed type of <paramref name="genericTypeDefinition"/>.
 	/// </summary>
@@ -113,6 +174,33 @@ public static class TypeExtensions {
 		return type.IsConstructedGenericType && type.GetGenericTypeDefinition() == genericTypeDefinition;
 	}
 
+	/// <summary>
+	/// Determines whether the specified type is a subtype of a specified base type.
+	/// </summary>
+	public static bool IsSubTypeOf(this Type type, Type baseType) {
+		Guard.ArgumentNotNull(type, nameof(type));
+		Guard.ArgumentNotNull(baseType, nameof(baseType));
+		Guard.Argument(!baseType.IsGenericTypeDefinition, nameof(baseType), "Must not be be a generic type definition. Use IsSubTypeOfGenericType instead.");
+		
+		// A type is a subtype of itself
+		if (type == baseType)
+			return true;
+
+		// first check through the implemented interfaces.
+		if (baseType.IsInterface) 
+			if (type.GetInterfaces().Any(interfaceType => interfaceType == baseType)) 
+				return true;
+			
+		// Check base types
+		while (type != null) {
+			if (type == baseType) {
+				return true;
+			}
+			type = type.BaseType;
+		}
+		
+		return false;
+	}
 
 	/// <summary>
 	/// Determines whether the specified type is a subtype of a specified generic type definition.
@@ -159,12 +247,13 @@ public static class TypeExtensions {
 	public static bool IsSubtypeOfGenericType(this Type type, Type genericTypeDefinition, out Type matchedGenericType) {
 		Guard.ArgumentNotNull(type, nameof(type));
 		Guard.ArgumentNotNull(genericTypeDefinition, nameof(genericTypeDefinition));
-		Guard.Argument(genericTypeDefinition.IsGenericTypeDefinition, nameof(genericTypeDefinition), "Must be a generic type definition");
+		Guard.Argument(genericTypeDefinition.IsPartialOrGenericTypeDefinition(), nameof(genericTypeDefinition), "Must be a generic type definition");
 		matchedGenericType = null!;
 
 		// first check through the implemented interfaces.
 		foreach (var interfaceType in type.GetInterfaces()) {  // GetInterfaces returns flattened list
-			if (interfaceType.IsGenericType && interfaceType.GetGenericTypeDefinition() == genericTypeDefinition) {
+			if (interfaceType.IsConstructedGenericType && interfaceType.GetGenericTypeDefinition() == genericTypeDefinition ||
+				interfaceType.IsPartialOrGenericTypeDefinition() && TypeEquivalenceComparer.Instance.Equals(interfaceType, genericTypeDefinition)) {
 				matchedGenericType = interfaceType;
 				return true;
 			}

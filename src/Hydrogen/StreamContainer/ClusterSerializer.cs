@@ -10,7 +10,7 @@ using System.Diagnostics;
 
 namespace Hydrogen;
 
-public class ClusterSerializer : StaticSizeItemSerializerBase<Cluster> {
+public class ClusterSerializer : ConstantLengthItemSerializerBase<Cluster> {
 	public const int TraitsLength = sizeof(byte);
 	public const int PrevLength = sizeof(long);
 	public const int NextLength = sizeof(long);

@@ -169,7 +169,7 @@ public static class StreamMappedFactory {
 		switch (implementation) {
 			case StreamMappedDictionaryImplementation.Auto:
 				// if key serializer is static, and less than or equal to 256 bytes, use fixed length key implementation
-				if (keySerializer.IsStaticSize && keySerializer.StaticSize <= 256) {
+				if (keySerializer.IsConstantLength && keySerializer.ConstantLength <= 256) {
 					useCLK = true;
 				} else if (keyChecksum is not null) {
 					useCLK = false;
@@ -183,7 +183,7 @@ public static class StreamMappedFactory {
 				useCLK = false;
 				break;
 			case StreamMappedDictionaryImplementation.ConstantLengthKeyBased:
-				Guard.Ensure(keySerializer.IsStaticSize, $"Argument {nameof(keySerializer)} must be provided when activating implementation {implementation}");
+				Guard.Ensure(keySerializer.IsConstantLength, $"Argument {nameof(keySerializer)} must be provided when activating implementation {implementation}");
 				useCLK = true;
 				break;
 			default:
@@ -411,12 +411,13 @@ public static class StreamMappedFactory {
 		CreateDictionaryClk(
 			rootStream,
 			clusterSize,
-			new StaticSizeByteArraySerializer(hasher.DigestLength).AsNullable(),
+			new ConstantLengthByteArraySerializer(hasher.DigestLength).AsNullable(true),
 			serializer,
 			new ByteArrayEqualityComparer(),
 			comparer,
 			policy,
-			endianness),
+			endianness
+		),
 		comparer,
 		hasher
 	);
@@ -484,7 +485,7 @@ public static class StreamMappedFactory {
 	) {
 		Guard.ArgumentNotNull(streamContainer, nameof(streamContainer));
 		Guard.ArgumentNotNull(constantLengthKeySerializer, nameof(constantLengthKeySerializer));
-		Guard.Argument(constantLengthKeySerializer.IsStaticSize, nameof(constantLengthKeySerializer), "Keys must be statically sized");
+		Guard.Argument(constantLengthKeySerializer.IsConstantLength, nameof(constantLengthKeySerializer), "Keys must be statically sized");
 		Guard.ArgumentNotNull(valueSerializer, nameof(valueSerializer));
 		Guard.ArgumentNotNull(keyComparer, nameof(keyComparer));
 

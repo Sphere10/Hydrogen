@@ -21,7 +21,7 @@ public class ProductLicenseDTOSerializer : ItemSerializer<ProductLicenseDTO> {
 	public override long CalculateSize(ProductLicenseDTO item)
 		=> _stringSerializer.CalculateSize(item.Name) +
 		   _stringSerializer.CalculateSize(item.ProductKey) +
-		   _guidSerializer.StaticSize +
+		   _guidSerializer.ConstantLength +
 		   sizeof(byte) +
 		   sizeof(byte) +
 		   _nullableShortSerializer.CalculateSize(item.MajorVersionApplicable) +

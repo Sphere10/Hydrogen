@@ -10,7 +10,7 @@ using System;
 
 namespace Hydrogen.DApp.Core.Consensus.Serializers;
 
-public class NewMinerBlockSerializer : StaticSizeItemSerializerBase<NewMinerBlock> {
+public class NewMinerBlockSerializer : ConstantLengthItemSerializerBase<NewMinerBlock> {
 	public NewMinerBlockSerializer() : base(
 		4 + //Version
 		32 + //PrevMinerElectionHeader

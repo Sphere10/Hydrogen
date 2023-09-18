@@ -44,6 +44,8 @@ public static class Reflection {
 		obj.GetType().GetField(propertyName).SetValue(obj, value);
 	}
 
+
+
 	///// <summary>
 	///// Returns a _private_ Property Value from a given Object. Uses Reflection.
 	///// Throws a ArgumentOutOfRangeException if the Property is not found.

@@ -26,7 +26,7 @@ public class StreamPagedListTests {
 		using var clusteredStream = streamContainer.OpenWrite(0);
 		streamContainer.AddBytes(new byte[256]);
 		var serializer = new StringSerializer(Encoding.UTF8).AsNullable().AsConstantLengthSerializer(256, SizeDescriptorStrategy.UseVarInt);
-		var size = serializer.StaticSize;
+		var size = serializer.ConstantLength;
 		var list = new StreamPagedList<string>(serializer, clusteredStream, includeListHeader: false, autoLoad: true);
 		list.Add("");
 		Assert.AreEqual(1, list.Count);

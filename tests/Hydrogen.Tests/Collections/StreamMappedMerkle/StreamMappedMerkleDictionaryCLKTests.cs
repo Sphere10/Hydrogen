@@ -19,7 +19,7 @@ namespace Hydrogen.Tests;
 [Parallelizable(ParallelScope.Children)]
 public class StreamMappedMerkleDictionaryCLKTests : StreamMappedMerkleDictionaryTestsBase {
 	private const int DefaultClusterSize = 256;
-	private const int StaticKeySize = 200;
+	private const int ConstantKeySize = 200;
 
 	protected override IDisposable CreateTestObjectDictionary(CHF chf, out StreamMappedMerkleDictionary<string, TestObject> streamMappedMerkleDictionary)
 		=> CreateDictionaryImpl(chf, new TestObjectSerializer(), new TestObjectComparer(), out streamMappedMerkleDictionary);
@@ -32,7 +32,7 @@ public class StreamMappedMerkleDictionaryCLKTests : StreamMappedMerkleDictionary
 		streamMappedMerkleDictionary = new StreamMappedMerkleDictionary<string, TValue>(
 			memoryStream,
 			DefaultClusterSize,
-			new StringSerializer().AsStaticSizeSerializer(StaticKeySize, SizeDescriptorStrategy.UseUInt32),
+			new StringSerializer().AsConstantSizeSerializer(ConstantKeySize, SizeDescriptorStrategy.UseUInt32),
 			valueSerializer,
 			valueComparer: valueComparer,
 			hashAlgorithm: chf,
@@ -55,7 +55,7 @@ public class StreamMappedMerkleDictionaryCLKTests : StreamMappedMerkleDictionary
 		const int maxItems = 100;
 		var keyGens = 0;
 
-		var keySerializer = new StringSerializer().AsStaticSizeSerializer(StaticKeySize, SizeDescriptorStrategy.UseUInt32);
+		var keySerializer = new StringSerializer().AsConstantSizeSerializer(ConstantKeySize, SizeDescriptorStrategy.UseUInt32);
 		using var memStream1 = new MemoryStream();
 		using var clk = new StreamMappedMerkleDictionary<string, TestObject>(
 			memStream1,

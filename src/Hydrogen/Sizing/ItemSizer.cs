@@ -13,9 +13,9 @@ namespace Hydrogen;
 
 public abstract class ItemSizer<TItem> : IItemSizer<TItem> {
 
-	public virtual bool IsStaticSize => false;
+	public virtual bool IsConstantLength => false;
 
-	public virtual long StaticSize => -1;
+	public virtual long ConstantLength => -1;
 
 	public virtual long CalculateTotalSize(IEnumerable<TItem> items, bool calculateIndividualItems, out long[] itemSizes) {
 		var sizes = items.Select(item => CalculateSize(item)).ToArray();

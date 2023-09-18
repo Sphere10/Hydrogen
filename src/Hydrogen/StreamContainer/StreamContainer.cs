@@ -539,10 +539,10 @@ public class StreamContainer : SyncLoadableBase, ICriticalObject, IDisposable {
 		_streamDescriptorsFragmentProvider = new ClusteredStreamFragmentProvider(
 			_clusters,
 			-1,
-			_header.StreamCount * recordSerializer.StaticSize,
+			_header.StreamCount * recordSerializer.ConstantLength,
 			_header.StreamCount > 0 ? 0 : Cluster.Null,
 			_header.StreamCount > 0 ? _header.StreamDescriptorsEndCluster : Cluster.Null,
-			_header.StreamCount > 0 ? _clusters.CalculateClusterChainLength(_header.StreamCount * recordSerializer.StaticSize) : 0,
+			_header.StreamCount > 0 ? _clusters.CalculateClusterChainLength(_header.StreamCount * recordSerializer.ConstantLength) : 0,
 			_integrityChecks
 		);
 
@@ -551,14 +551,14 @@ public class StreamContainer : SyncLoadableBase, ICriticalObject, IDisposable {
 			if (_suppressEvents) // event generated from fragment provider
 				return;
 
-			_header.StreamCount = newLength / recordSerializer.StaticSize;
+			_header.StreamCount = newLength / recordSerializer.ConstantLength;
 		};
 
 		// The actual records collection is stored is update optimized
 		_streamDescriptors =
 			new StreamPagedList<ClusteredStreamDescriptor>(
 				recordSerializer,
-				new FragmentedStream(_streamDescriptorsFragmentProvider, _header.StreamCount * recordSerializer.StaticSize),
+				new FragmentedStream(_streamDescriptorsFragmentProvider, _header.StreamCount * recordSerializer.ConstantLength),
 				Endianness,
 				includeListHeader: false,
 				autoLoad: true
@@ -573,7 +573,7 @@ public class StreamContainer : SyncLoadableBase, ICriticalObject, IDisposable {
 		if (Policy.HasFlag(StreamContainerPolicy.CacheDescriptors)) {
 			_streamDescriptorCache = new ActionCache<long, ClusteredStreamDescriptor>(
 				FetchStreamDescriptor,
-				sizeEstimator: _ => recordSerializer.StaticSize,
+				sizeEstimator: _ => recordSerializer.ConstantLength,
 				reapStrategy: CacheReapPolicy.LeastUsed,
 				ExpirationPolicy.SinceLastAccessedTime,
 				maxCapacity: HydrogenDefaults.RecordCacheSize
@@ -796,8 +796,8 @@ public class StreamContainer : SyncLoadableBase, ICriticalObject, IDisposable {
 	}
 
 	private void CheckHeaderDataIntegrity(long rootStreamLength, StreamContainerHeader header, IItemSerializer<Cluster> clusterSerializer, IItemSerializer<ClusteredStreamDescriptor> recordSerializer) {
-		var clusterEnvelopeSize = clusterSerializer.StaticSize - header.ClusterSize;
-		var recordClusters = (long)Math.Ceiling(header.StreamCount * recordSerializer.StaticSize / (float)header.ClusterSize);
+		var clusterEnvelopeSize = clusterSerializer.ConstantLength - header.ClusterSize;
+		var recordClusters = (long)Math.Ceiling(header.StreamCount * recordSerializer.ConstantLength / (float)header.ClusterSize);
 		Guard.Ensure(header.TotalClusters >= recordClusters, $"Inconsistency in {nameof(StreamContainerHeader.TotalClusters)}/{nameof(StreamContainerHeader.StreamCount)}");
 		var minStreamSize = header.TotalClusters * (header.ClusterSize + clusterEnvelopeSize) + StreamContainerHeader.ByteLength;
 		Guard.Ensure(rootStreamLength >= minStreamSize, $"Stream too small (header gives minimum size {minStreamSize} but was {rootStreamLength})");

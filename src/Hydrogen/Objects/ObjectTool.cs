@@ -26,11 +26,11 @@ namespace Tools {
 	public static class Object {
 
 		public static object Create(string typeName, params object[] args) {
-			return TypeActivator.Create(typeName, args);
+			return TypeActivator.Activate(typeName, args);
 		}
 
 		public static object Create(Type targetType, params object[] args) {
-			return TypeActivator.Create(targetType, args);
+			return TypeActivator.Activate(targetType, args);
 		}
 
 		public static Type ResolveType(string fullName) {

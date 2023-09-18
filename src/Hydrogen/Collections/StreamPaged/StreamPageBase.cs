@@ -28,7 +28,7 @@ internal abstract class StreamPageBase<TItem> : PageBase<TItem> {
 
 	protected EndianBinaryReader Reader => Parent.Reader;
 
-	protected long ItemSize => Parent.Serializer.StaticSize;
+	protected long ItemSize => Parent.Serializer.ConstantLength;
 
 	protected IItemSerializer<TItem> Serializer => Parent.Serializer;
 

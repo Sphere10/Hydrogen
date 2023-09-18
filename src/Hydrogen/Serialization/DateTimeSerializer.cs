@@ -10,7 +10,7 @@ using System;
 
 namespace Hydrogen;
 
-public class DateTimeSerializer : StaticSizeItemSerializerBase<DateTime> {
+public class DateTimeSerializer : ConstantLengthItemSerializerBase<DateTime> {
 	private readonly PrimitiveSerializer<long> _longSerializer = new();
 
 	public static DateTimeSerializer Instance { get; } = new();

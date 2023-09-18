@@ -19,4 +19,9 @@
 		<LangVersion>latest</LangVersion>
 	</PropertyGroup>
 
+	<ItemGroup>
+	  <Folder Include="ObjectSpace\Annotations\" />
+	  <Folder Include="RecursiveDataType\" />
+	</ItemGroup>
+
 </Project>

@@ -34,7 +34,7 @@
 //	}
 
 
-//	private class ItemRecordSerializer : StaticSizeItemSizer<TestStruct>, IItemSerializer<TestStruct> {
+//	private class ItemRecordSerializer : ConstantLengthItemSizer<TestStruct>, IItemSerializer<TestStruct> {
 //		private readonly bool _simulateBug;
 
 //		public ItemRecordSerializer(bool simulateBug)

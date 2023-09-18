@@ -26,14 +26,14 @@ namespace Hydrogen;
 /// Thus unless a structure is explicitly tested and confirmed to work, it is generally recommended to avoid using this class for such structures. An un-attributed
 /// structure containing such fields will generally fail to serialize correctly otherwise.
 /// </remarks>
-public class FastMarshalStructSerializer<T> : StaticSizeItemSerializerBase<T> where T : struct {
+public class FastMarshalStructSerializer<T> : ConstantLengthItemSerializerBase<T> where T : struct {
 
 	public FastMarshalStructSerializer()
 		: base(Marshal.SizeOf(typeof(T))) {
 	}
 
 	public override void SerializeInternal(T item, EndianBinaryWriter writer) {
-		var bytes = new byte[StaticSize];
+		var bytes = new byte[ConstantLength];
 		var handle = GCHandle.Alloc(bytes, GCHandleType.Pinned);
 		try {
 			var bytesPtr = handle.AddrOfPinnedObject();
@@ -45,7 +45,7 @@ public class FastMarshalStructSerializer<T> : StaticSizeItemSerializerBase<T> wh
 	}
 
 	public override T Deserialize(EndianBinaryReader reader) {
-		var bytes = reader.ReadBytes(StaticSize);
+		var bytes = reader.ReadBytes(ConstantLength);
 		var handle = GCHandle.Alloc(bytes, GCHandleType.Pinned);
 		try {
 			var bytesPtr = handle.AddrOfPinnedObject();

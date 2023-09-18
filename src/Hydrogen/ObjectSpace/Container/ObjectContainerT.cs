@@ -7,6 +7,8 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 
+using System.Collections.Generic;
+
 namespace Hydrogen;
 
 /// <summary>

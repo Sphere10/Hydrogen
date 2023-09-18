@@ -312,7 +312,7 @@ public class FragmentedStreamTests {
 	}
 
 	[Test]
-	public void IntegrationTests_StaticSizeFragments([Values(0, 3, 111, 1371)] int maxSize, [Values(3, 11, 10000)] int fragmentSize) {
+	public void IntegrationTests_ConstantSizeFragments([Values(0, 3, 111, 1371)] int maxSize, [Values(3, 11, 10000)] int fragmentSize) {
 		var rng = new Random(31337);
 		using var stream = new FragmentedStream(new ByteArrayStreamFragmentProvider(fragmentSize));
 		AssertEx.StreamIntegrationTests(maxSize, stream, RNG: rng);

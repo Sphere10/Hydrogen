@@ -39,7 +39,7 @@ public class HydrogenFramework {
 				.GetNonFrameworkAssemblies()
 				.SelectMany(a => a.GetTypes())
 				.Where(t => t.IsClass && !t.IsAbstract && typeof(IModuleConfiguration).IsAssignableFrom(t))
-				.Select(TypeActivator.Create)
+				.Select(TypeActivator.Activate)
 				.Cast<IModuleConfiguration>()
 				.OrderByDescending(x => x.Priority)
 				.ToArray()

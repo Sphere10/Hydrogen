@@ -22,9 +22,9 @@ namespace Hydrogen;
 /// </summary>
 /// <typeparam name="T"></typeparam>
 public class GenericSerializer<T> : GenericSerializerBase, IItemSerializer<T> {
-	public bool IsStaticSize => false;
+	public bool IsConstantLength => false;
 
-	public long StaticSize => -1;
+	public long ConstantLength => -1;
 
 	/// <summary>
 	/// Initialize a new instance of <see cref="GenericSerializerBase"/>. Registers generic type param

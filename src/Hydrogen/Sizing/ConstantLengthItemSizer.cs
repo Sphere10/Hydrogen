@@ -12,27 +12,27 @@ using System.Linq;
 namespace Hydrogen;
 
 // ReSharper disable PossibleInvalidOperationException
-public class StaticSizeItemSizer<TItem> : IItemSizer<TItem> {
+public class ConstantLengthItemSizer<TItem> : IItemSizer<TItem> {
 
-	public StaticSizeItemSizer(long staticSize) {
+	public ConstantLengthItemSizer(long staticSize) {
 		Guard.ArgumentInRange(staticSize, 0, int.MaxValue, nameof(staticSize));
-		StaticSize = staticSize;
+		ConstantLength = staticSize;
 	}
 
-	public bool IsStaticSize => true;
+	public bool IsConstantLength => true;
 
-	public long StaticSize { get; }
+	public long ConstantLength { get; }
 
 	public long CalculateTotalSize(IEnumerable<TItem> items, bool calculateIndividualItems, out long[] itemSizes) {
 		return CalculateTotalSize(items.Count(), calculateIndividualItems, out itemSizes);
 	}
 
 	public long CalculateTotalSize(long itemsCount, bool calculateIndividualItems, out long[] itemSizes) {
-		var val = StaticSize;
+		var val = ConstantLength;
 		var size = itemsCount * val;
 		itemSizes = calculateIndividualItems ? Tools.Array.Gen(itemsCount, val) : null;
 		return size;
 	}
 
-	public long CalculateSize(TItem item) => StaticSize;
+	public long CalculateSize(TItem item) => ConstantLength;
 }

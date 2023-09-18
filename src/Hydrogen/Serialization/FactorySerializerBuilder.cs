@@ -13,11 +13,11 @@ public class FactorySerializerBuilder<TBase> : FactorySerializerBuilderBase<TBas
 	public FactorySerializerBuilder() : this(new FactorySerializer<TBase>()) {
 	}
 
-	internal FactorySerializerBuilder(IFactorySerializer<TBase> serializer)
+	internal FactorySerializerBuilder(FactorySerializer<TBase> serializer)
 		: base(serializer) {
 	}
 
-	public IFactorySerializer<TBase> Build() {
+	public FactorySerializer<TBase> Build() {
 		return Serializer;
 	}
 

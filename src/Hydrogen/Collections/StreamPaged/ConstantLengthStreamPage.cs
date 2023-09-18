@@ -20,13 +20,13 @@ namespace Hydrogen;
 /// <remarks>
 /// Unlike <see cref="DynamicStreamPage{TItem}"/> no header is stored for the page.
 /// </remarks>
-internal class StaticStreamPage<TItem> : StreamPageBase<TItem> {
+internal class ConstantLengthStreamPage<TItem> : StreamPageBase<TItem> {
 	private readonly long _item0Offset;
 	private volatile int _version;
 
-	public StaticStreamPage(StreamPagedList<TItem> parent) : base(parent) {
-		Guard.Argument(parent.Serializer.IsStaticSize, nameof(parent), $"Parent list's serializer is not fixed size. {nameof(StaticStreamPage<TItem>)} only supports fixed sized items.");
-		Guard.Ensure(parent.Serializer.StaticSize > 0, $"{nameof(TItem)} serialization size size is not greater than 0");
+	public ConstantLengthStreamPage(StreamPagedList<TItem> parent) : base(parent) {
+		Guard.Argument(parent.Serializer.IsConstantLength, nameof(parent), $"Parent list's serializer is not fixed size. {nameof(ConstantLengthStreamPage<TItem>)} only supports fixed sized items.");
+		Guard.Ensure(parent.Serializer.ConstantLength > 0, $"{nameof(TItem)} serialization size size is not greater than 0");
 
 		_version = 0;
 		_item0Offset = Parent.IncludeListHeader ? StreamPagedList<TItem>.ListHeaderSize : 0;
@@ -78,7 +78,7 @@ internal class StaticStreamPage<TItem> : StreamPageBase<TItem> {
 
 		foreach (var item in items) {
 			var bytesWritten = Serializer.Serialize(item, Writer);
-			Guard.Ensure(bytesWritten == Serializer.StaticSize, $"Static serializer wrote {bytesWritten} bytes expected {Serializer.StaticSize}");
+			Guard.Ensure(bytesWritten == Serializer.ConstantLength, $"Static serializer wrote {bytesWritten} bytes expected {Serializer.ConstantLength}");
 		}
 
 		newItemsSize = items.Length * ItemSize;
@@ -98,7 +98,7 @@ internal class StaticStreamPage<TItem> : StreamPageBase<TItem> {
 
 		foreach (var item in items) {
 			var bytesWritten = Serializer.Serialize(item, Writer);
-			Guard.Ensure(bytesWritten == Serializer.StaticSize, $"Static serializer wrote {bytesWritten} bytes expected {Serializer.StaticSize}");
+			Guard.Ensure(bytesWritten == Serializer.ConstantLength, $"Static serializer wrote {bytesWritten} bytes expected {Serializer.ConstantLength}");
 		}
 
 		newItemsSize = itemsSize;

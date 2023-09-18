@@ -33,7 +33,7 @@ public class ProtocolMode {
 
 	public IDictionary<Type, IMessageGenerator> MessageGenerators { get; init; }
 
-	public IFactorySerializer<object> MessageSerializer { get; init; }
+	public FactorySerializer<object> MessageSerializer { get; init; }
 
 	public Result Validate() {
 		var result = Result.Default;

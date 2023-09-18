@@ -15,7 +15,7 @@ public enum SizeDescriptorStrategy {
 
 public static class SizeDescriptorStrategyExtensions {
 
-	public static bool IsStaticSize(this SizeDescriptorStrategy sizeDescriptorStrategy) {
+	public static bool IsConstantSize(this SizeDescriptorStrategy sizeDescriptorStrategy) {
 		return sizeDescriptorStrategy switch {
 			SizeDescriptorStrategy.UseVarInt => false,
 			SizeDescriptorStrategy.UseCVarInt => false,

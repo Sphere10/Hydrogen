@@ -6,9 +6,9 @@ namespace Hydrogen;
 
 public abstract class ItemSizerBase<TItem> : IItemSizer<TItem> {
 
-	public virtual bool IsStaticSize => false;
+	public virtual bool IsConstantLength => false;
 
-	public virtual long StaticSize => throw new InvalidOperationException("Item sizer is not static");
+	public virtual long ConstantLength => throw new InvalidOperationException("Item sizer is not static");
 
 	public virtual long CalculateTotalSize(IEnumerable<TItem> items, bool calculateIndividualItems, out long[] itemSizes) {
 		var sizes = items.Select(CalculateSize).ToArray();

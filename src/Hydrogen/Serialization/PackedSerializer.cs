@@ -6,7 +6,10 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 
 namespace Hydrogen;
 
@@ -14,6 +17,8 @@ public class PackedSerializer : IItemSerializer<object> {
 	private readonly object _serializer;
 	private readonly IItemSerializer<object> _projectedSerializer;
 
+	
+	
 	private PackedSerializer(object serializer, IItemSerializer<object> projectedSerializer) {
 		Guard.ArgumentNotNull(serializer, nameof(serializer));
 		Guard.ArgumentNotNull(projectedSerializer, nameof(projectedSerializer));
@@ -23,8 +28,9 @@ public class PackedSerializer : IItemSerializer<object> {
 		_projectedSerializer = projectedSerializer;
 	}
 
-	public bool IsStaticSize => _projectedSerializer.IsStaticSize;
-	public long StaticSize => _projectedSerializer.StaticSize;
+	public bool IsConstantLength => _projectedSerializer.IsConstantLength;
+
+	public long ConstantLength => _projectedSerializer.ConstantLength;
 
 	public long CalculateTotalSize(IEnumerable<object> items, bool calculateIndividualItems, out long[] itemSizes) 
 		=> _projectedSerializer.CalculateTotalSize(items, calculateIndividualItems, out itemSizes);
@@ -37,6 +43,15 @@ public class PackedSerializer : IItemSerializer<object> {
 
 	public object DeserializeInternal(long byteSize, EndianBinaryReader reader) 
 		=> _projectedSerializer.DeserializeInternal(byteSize, reader);
+
+	public static PackedSerializer Pack(object serializer) {
+		Guard.ArgumentNotNull(serializer, nameof(serializer));
+		var serializerType = serializer.GetType();
+		Guard.Argument(serializerType.IsSubtypeOfGenericType(typeof(IItemSerializer<>), out var concreteSerializedItemtype), nameof(serializer), $"Cannot pack serializer as is not an {typeof(IItemSerializer<>).ToStringCS()}");
+		var genericPackMethod = typeof(PackedSerializer).GetMethod(nameof(PackedSerializer.Pack)).MakeGenericMethod(concreteSerializedItemtype);
+		var packedSerializer = genericPackMethod.Invoke(null, new [] { serializer });
+		return (PackedSerializer)packedSerializer;
+	}
 	
 	public static PackedSerializer Pack<TItem>(IItemSerializer<TItem> serializer) {
 		Guard.ArgumentNotNull(serializer, nameof(serializer));

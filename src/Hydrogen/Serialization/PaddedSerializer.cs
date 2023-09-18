@@ -10,7 +10,7 @@ using System;
 
 namespace Hydrogen;
 
-public class PaddedSerializer<TItem> : StaticSizeItemSerializerBase<TItem> {
+public class PaddedSerializer<TItem> : ConstantLengthItemSerializerBase<TItem> {
 	private readonly IItemSerializer<TItem> _dynamicSerializer;
 	private readonly SizeDescriptorSerializer _sizeDescriptorSerializer;
 	public PaddedSerializer(long fixedSize, IItemSerializer<TItem> dynamicSerializer, SizeDescriptorStrategy sizeDescriptorStrategy)
@@ -26,7 +26,7 @@ public class PaddedSerializer<TItem> : StaticSizeItemSerializerBase<TItem> {
 		// Write size descriptor
 		var expectedSize = _dynamicSerializer.CalculateSize(item);
 		var sizeDescriptorBytes = _sizeDescriptorSerializer.Serialize(expectedSize, writer);
-		Guard.Ensure(expectedSize + sizeDescriptorBytes <= StaticSize, $"Item is too large to fit in {StaticSize} bytes");
+		Guard.Ensure(expectedSize + sizeDescriptorBytes <= ConstantLength, $"Item is too large to fit in {ConstantLength} bytes");
 
 		// Write item
 		var itemBytes = _dynamicSerializer.Serialize(item, writer);
@@ -34,7 +34,7 @@ public class PaddedSerializer<TItem> : StaticSizeItemSerializerBase<TItem> {
 
 		// Write padding
 		// TODO: should chunk this out
-		var paddingLength = StaticSize - (itemBytes + sizeDescriptorBytes);
+		var paddingLength = ConstantLength - (itemBytes + sizeDescriptorBytes);
 	
 		Span<byte> padding = paddingLength <= StackAllocPaddingThreshold ? stackalloc byte[unchecked((int)paddingLength)] : new byte[paddingLength];
 		if (padding.Length > 0) {
@@ -46,13 +46,13 @@ public class PaddedSerializer<TItem> : StaticSizeItemSerializerBase<TItem> {
 		// read size descriptor
 		var itemSize = _sizeDescriptorSerializer.Deserialize(reader);
 		var sizeDescriptorSize = _sizeDescriptorSerializer.CalculateSize(itemSize);
-		Guard.Ensure(itemSize + sizeDescriptorSize <= StaticSize, $"Item is too large to fit in {StaticSize} bytes");
+		Guard.Ensure(itemSize + sizeDescriptorSize <= ConstantLength, $"Item is too large to fit in {ConstantLength} bytes");
 
 		// read item
 		var item = _dynamicSerializer.Deserialize(itemSize, reader);
 
 		// read padding
-		var padding = StaticSize - itemSize - sizeDescriptorSize;
+		var padding = ConstantLength - itemSize - sizeDescriptorSize;
 		if (padding > 0) {
 			var _ = reader.ReadBytes(padding);
 		}

@@ -8,17 +8,17 @@
 
 namespace Hydrogen;
 
-public class StaticSizeByteArraySerializer : StaticSizeItemSerializerBase<byte[]> {
+public class ConstantLengthByteArraySerializer : ConstantLengthItemSerializerBase<byte[]> {
 
-	public StaticSizeByteArraySerializer(int size) : base(size) {
+	public ConstantLengthByteArraySerializer(int size) : base(size) {
 	}
 
 	public override void SerializeInternal(byte[] item, EndianBinaryWriter writer) {
 		Guard.ArgumentNotNull(item, nameof(item));
-		Guard.Argument(item.Length == StaticSize, nameof(item), "Incorrectly sized");
+		Guard.Argument(item.Length == ConstantLength, nameof(item), "Incorrectly sized");
 		writer.Write(item);
 	}
 
 	public override byte[] Deserialize(EndianBinaryReader reader)
-		=> reader.ReadBytes(StaticSize);
+		=> reader.ReadBytes(ConstantLength);
 }

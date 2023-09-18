@@ -8,7 +8,7 @@
 
 namespace Hydrogen;
 
-public class AutoSizedSerializer<TItem> : ItemSerializerDecorator<TItem> {
+public class AutoSizedSerializer<TItem> : ItemSerializerDecorator<TItem>, IAutoSizedSerializer<TItem> {
 	private readonly SizeDescriptorSerializer _sizeDescriptorSerializer;
 
 	public AutoSizedSerializer(IItemSerializer<TItem> internalSerializer, SizeDescriptorStrategy sizeDescriptorStrategy)
@@ -16,7 +16,7 @@ public class AutoSizedSerializer<TItem> : ItemSerializerDecorator<TItem> {
 		_sizeDescriptorSerializer = new SizeDescriptorSerializer(sizeDescriptorStrategy);
 	}
 
-	public override bool IsStaticSize => _sizeDescriptorSerializer.IsStaticSize && base.IsStaticSize;
+	public override bool IsConstantLength => _sizeDescriptorSerializer.IsConstantLength && base.IsConstantLength;
 
 	public override long CalculateSize(TItem item) {
 		var itemSize = base.CalculateSize(item);

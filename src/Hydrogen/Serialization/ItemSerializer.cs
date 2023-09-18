@@ -6,11 +6,13 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using System;
 using System.Text;
 
 namespace Hydrogen;
 
 public abstract class ItemSerializer<TItem> : ItemSizer<TItem>, IItemSerializer<TItem> {
+	
 	public abstract void SerializeInternal(TItem item, EndianBinaryWriter writer);
 
 	public abstract TItem DeserializeInternal(long byteSize, EndianBinaryReader reader);
@@ -25,7 +27,11 @@ public abstract class ItemSerializer<TItem> : ItemSizer<TItem>, IItemSerializer<
 			if (type == typeof(string))
 				return new StringSerializer(Encoding.UTF8) as IItemSerializer<TItem>;
 
+			if (SerializerFactory.Default.HasSerializer(type))
+				return SerializerFactory.Default.GetSerializer<TItem>(type);
+
 			return new GenericSerializer<TItem>();
 		}
 	}
+
 }

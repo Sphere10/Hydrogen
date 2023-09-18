@@ -16,14 +16,14 @@ public static class DACFactory {
 		switch (dbmsType) {
 
 			case DBMSType.SQLServer:
-				return (IDAC)TypeActivator.Create("Hydrogen.Data.MSSQLDAC", "Hydrogen.Data.MSSQL", connectionString, logger);
+				return (IDAC)TypeActivator.Activate("Hydrogen.Data.MSSQLDAC", "Hydrogen.Data.MSSQL", connectionString, logger);
 
 			case DBMSType.Sqlite:
-				return (IDAC)TypeActivator.Create("Hydrogen.Data.SqliteDAC", "Hydrogen.Data.Sqlite", connectionString, logger);
+				return (IDAC)TypeActivator.Activate("Hydrogen.Data.SqliteDAC", "Hydrogen.Data.Sqlite", connectionString, logger);
 
 			case DBMSType.Firebird:
 			case DBMSType.FirebirdFile:
-				return (IDAC)TypeActivator.Create("Hydrogen.Data.FirebirdDAC", "Hydrogen.Data.Firebird", connectionString, logger);
+				return (IDAC)TypeActivator.Activate("Hydrogen.Data.FirebirdDAC", "Hydrogen.Data.Firebird", connectionString, logger);
 			default:
 				throw new NotSupportedException(dbmsType.ToString());
 		}

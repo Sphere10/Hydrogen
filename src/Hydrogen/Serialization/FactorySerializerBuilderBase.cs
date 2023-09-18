@@ -12,16 +12,17 @@ namespace Hydrogen;
 
 public class FactorySerializerBuilderBase<TBase, TFactorySerializerBuilder> where TFactorySerializerBuilder : FactorySerializerBuilderBase<TBase, TFactorySerializerBuilder> {
 
-	public FactorySerializerBuilderBase(IFactorySerializer<TBase> serializer) {
+	public FactorySerializerBuilderBase(FactorySerializer<TBase> serializer) {
 		Serializer = serializer;
 	}
 
-	public IFactorySerializer<TBase> Serializer { get; protected set; }
+	public FactorySerializer<TBase> Serializer { get; protected set; }
 
 	protected ushort TypeCode { get; private set; }
 
 	public SerializerBuilder<TConcrete> For<TConcrete>() where TConcrete : TBase
-		=> For<TConcrete>(Serializer.GenerateTypeCode());
+		//=> For<TConcrete>(Serializer.GenerateTypeCode());
+		=> throw new NotSupportedException();
 
 	public SerializerBuilder<TConcrete> For<TConcrete>(Enum value) where TConcrete : TBase
 		=> For<TConcrete>(Convert.ToUInt16(value));
@@ -42,7 +43,8 @@ public class FactorySerializerBuilderBase<TBase, TFactorySerializerBuilder> wher
 		}
 
 		public TFactorySerializerBuilder SerializeWith(IItemSerializer<TConcrete> serializer) {
-			_parentBuilder.Serializer.RegisterSerializer(_parentBuilder.TypeCode, serializer);
+			throw new NotSupportedException();
+			//_parentBuilder.Serializer.RegisterSerializer(_parentBuilder.TypeCode, serializer);
 			return _parentBuilder;
 		}
 	}

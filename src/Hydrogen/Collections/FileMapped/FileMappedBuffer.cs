@@ -123,7 +123,7 @@ public sealed class FileMappedBuffer : FilePagedListBase<byte>, IMemoryPagedBuff
 	public class PageImpl : FilePageBase<byte>, IBufferPage {
 
 		public PageImpl(Stream stream, long pageNumber, long pageSize)
-			: base(stream, new StaticSizeItemSizer<byte>(sizeof(byte)), pageNumber, pageSize, new MemoryBuffer(0, pageSize, pageSize)) {
+			: base(stream, new ConstantLengthItemSizer<byte>(sizeof(byte)), pageNumber, pageSize, new MemoryBuffer(0, pageSize, pageSize)) {
 		}
 
 		protected override void SaveInternal(IExtendedList<byte> memoryPage, Stream stream) {

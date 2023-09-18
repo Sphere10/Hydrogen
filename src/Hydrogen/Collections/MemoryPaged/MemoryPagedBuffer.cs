@@ -78,7 +78,7 @@ public class MemoryPagedBuffer : MemoryPagedListBase<byte>, IMemoryPagedBuffer {
 	public sealed class BufferPage : FileSwappedMemoryPage<byte>, IBufferPage {
 
 		public BufferPage(long pageSize)
-			: base(pageSize, new StaticSizeItemSizer<byte>(sizeof(byte)), new MemoryBuffer(0, pageSize, pageSize)) {
+			: base(pageSize, new ConstantLengthItemSizer<byte>(sizeof(byte)), new MemoryBuffer(0, pageSize, pageSize)) {
 		}
 
 		public ReadOnlySpan<byte> ReadSpan(long index, long count)

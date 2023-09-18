@@ -10,14 +10,14 @@ using System;
 
 namespace Hydrogen;
 
-public abstract class StaticSizeItemSerializerBase<TItem> : StaticSizeItemSizer<TItem>, IItemSerializer<TItem> {
-	protected StaticSizeItemSerializerBase(long fixedSize) : base(fixedSize) {
+public abstract class ConstantLengthItemSerializerBase<TItem> : ConstantLengthItemSizer<TItem>, IAutoSizedSerializer<TItem> {
+	protected ConstantLengthItemSerializerBase(long fixedSize) : base(fixedSize) {
 	}
 
 	public abstract void SerializeInternal(TItem item, EndianBinaryWriter writer);
 
 	public TItem DeserializeInternal(long byteSize, EndianBinaryReader reader) {
-		Guard.Ensure(byteSize == StaticSize, "Read overflow");
+		Guard.Ensure(byteSize == ConstantLength, "Read overflow");
 		return Deserialize(reader);
 	}
 

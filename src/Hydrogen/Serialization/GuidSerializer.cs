@@ -10,9 +10,9 @@ using System;
 
 namespace Hydrogen;
 
-public class GuidSerializer : StaticSizeItemSerializerBase<Guid> {
+public class GuidSerializer : ConstantLengthItemSerializerBase<Guid> {
 	private const int GuidByteCount = 16;
-	private readonly StaticSizeByteArraySerializer _byteArraySerializer = new(GuidByteCount);
+	private readonly ConstantLengthByteArraySerializer _byteArraySerializer = new(GuidByteCount);
 	public GuidSerializer() : base(GuidByteCount) {
 	}
 

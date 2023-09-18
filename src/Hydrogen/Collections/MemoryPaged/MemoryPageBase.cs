@@ -66,11 +66,11 @@ public abstract class MemoryPageBase<TItem> : PageBase<TItem>, IMemoryPage<TItem
 
 	protected override long AppendInternal(TItem[] items, out long newItemsSpace) {
 		TItem[] appendItems;
-		if (Sizer.IsStaticSize) {
+		if (Sizer.IsConstantLength) {
 			// Optimized for constant sized objects (primitive types like bytes)
-			var maxAppendCount = (MaxSize - Size) / Sizer.StaticSize;
+			var maxAppendCount = (MaxSize - Size) / Sizer.ConstantLength;
 			appendItems = items.TakeL(maxAppendCount).ToArray();
-			newItemsSpace = appendItems.Length * Sizer.StaticSize;
+			newItemsSpace = appendItems.Length * Sizer.ConstantLength;
 		} else {
 			// Used for variable length objects
 			var newSpace = 0L;
@@ -88,8 +88,8 @@ public abstract class MemoryPageBase<TItem> : PageBase<TItem>, IMemoryPage<TItem
 	}
 
 	protected override void UpdateInternal(long index, TItem[] items, out long oldItemsSpace, out long newItemsSpace) {
-		if (Sizer.IsStaticSize) {
-			oldItemsSpace = Sizer.StaticSize * items.Length;
+		if (Sizer.IsConstantLength) {
+			oldItemsSpace = Sizer.ConstantLength * items.Length;
 			newItemsSpace = oldItemsSpace;
 			MemoryStore.UpdateRange(index - StartIndex, items);
 		} else {
@@ -107,9 +107,9 @@ public abstract class MemoryPageBase<TItem> : PageBase<TItem>, IMemoryPage<TItem
 
 	protected virtual long MeasureConsumedSpace(long index, long count, bool fetchIndividualSizes, out long[] sizes) {
 		CheckRange(index, count);
-		if (Sizer.IsStaticSize) {
-			sizes = fetchIndividualSizes ? Tools.Array.Gen<long>(count, Sizer.StaticSize) : null;
-			return Sizer.StaticSize * count;
+		if (Sizer.IsConstantLength) {
+			sizes = fetchIndividualSizes ? Tools.Array.Gen<long>(count, Sizer.ConstantLength) : null;
+			return Sizer.ConstantLength * count;
 		} else {
 			sizes = MemoryStore.ReadRange(index - StartIndex, count).Select(x => (long)Sizer.CalculateSize(x)).ToArray();
 			var totalSize = sizes.Sum();

@@ -10,7 +10,7 @@ using System;
 
 namespace Hydrogen;
 
-public class EnumSerializer<T> : StaticSizeItemSerializerBase<T> where T : Enum {
+public class EnumSerializer<T> : ConstantLengthItemSerializerBase<T> where T : Enum {
 	private readonly Action<EndianBinaryWriter, T> _writePrimitive;
 	private readonly Func<EndianBinaryReader, T> _readPrimitive;
 
@@ -34,35 +34,35 @@ public class EnumSerializer<T> : StaticSizeItemSerializerBase<T> where T : Enum 
 			case TypeCode.Byte:
 				writer = (writer, item) => PrimitiveSerializer<byte>.Instance.Serialize((byte)(object)item, writer);
 				reader = reader => (T)(object)PrimitiveSerializer<byte>.Instance.Deserialize(reader);
-				return PrimitiveSerializer<byte>.Instance.StaticSize;
+				return PrimitiveSerializer<byte>.Instance.ConstantLength;
 			case TypeCode.SByte:
 				writer = (writer, item) => PrimitiveSerializer<sbyte>.Instance.Serialize((sbyte)(object)item, writer);
 				reader = reader => (T)(object)PrimitiveSerializer<sbyte>.Instance.Deserialize(reader);
-				return PrimitiveSerializer<sbyte>.Instance.StaticSize;
+				return PrimitiveSerializer<sbyte>.Instance.ConstantLength;
 			case TypeCode.UInt16:
 				writer = (writer, item) => PrimitiveSerializer<ushort>.Instance.Serialize((ushort)(object)item, writer);
 				reader = reader => (T)(object)PrimitiveSerializer<ushort>.Instance.Deserialize(reader);
-				return PrimitiveSerializer<ushort>.Instance.StaticSize;
+				return PrimitiveSerializer<ushort>.Instance.ConstantLength;
 			case TypeCode.UInt32:
 				writer = (writer, item) => PrimitiveSerializer<uint>.Instance.Serialize((uint)(object)item, writer);
 				reader = reader => (T)(object)PrimitiveSerializer<uint>.Instance.Deserialize(reader);
-				return PrimitiveSerializer<uint>.Instance.StaticSize;
+				return PrimitiveSerializer<uint>.Instance.ConstantLength;
 			case TypeCode.UInt64:
 				writer = (writer, item) => PrimitiveSerializer<ulong>.Instance.Serialize((ulong)(object)item, writer);
 				reader = reader => (T)(object)PrimitiveSerializer<ulong>.Instance.Deserialize(reader);
-				return PrimitiveSerializer<ulong>.Instance.StaticSize;
+				return PrimitiveSerializer<ulong>.Instance.ConstantLength;
 			case TypeCode.Int16:
 				writer = (writer, item) => PrimitiveSerializer<short>.Instance.Serialize((short)(object)item, writer);
 				reader = reader => (T)(object)PrimitiveSerializer<short>.Instance.Deserialize(reader);
-				return PrimitiveSerializer<short>.Instance.StaticSize;
+				return PrimitiveSerializer<short>.Instance.ConstantLength;
 			case TypeCode.Int32:
 				writer = (writer, item) => PrimitiveSerializer<int>.Instance.Serialize((int)(object)item, writer);
 				reader = reader => (T)(object)PrimitiveSerializer<int>.Instance.Deserialize(reader);
-				return PrimitiveSerializer<int>.Instance.StaticSize;
+				return PrimitiveSerializer<int>.Instance.ConstantLength;
 			case TypeCode.Int64:
 				writer = (writer, item) => PrimitiveSerializer<long>.Instance.Serialize((long)(object)item, writer);
 				reader = reader => (T)(object)PrimitiveSerializer<long>.Instance.Deserialize(reader);
-				return PrimitiveSerializer<long>.Instance.StaticSize;
+				return PrimitiveSerializer<long>.Instance.ConstantLength;
 			default:
 				throw new NotSupportedException($"{nameof(enumTypeCode)}");
 		}

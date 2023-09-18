@@ -63,10 +63,10 @@ public class StreamPagedList<TItem> : PagedListBase<TItem> {
 
 	public StreamPagedList(IItemSerializer<TItem> serializer, Stream stream, Endianness endianness = Endianness.LittleEndian, bool includeListHeader = true, bool autoLoad = false)
 		: this(
-			serializer.IsStaticSize ? StreamPagedListType.Static : throw new ArgumentException(nameof(serializer), $"This constructor only supports {nameof(StreamPagedListType.Static)} items"),
+			serializer.IsConstantLength ? StreamPagedListType.Static : throw new ArgumentException(nameof(serializer), $"This constructor only supports {nameof(StreamPagedListType.Static)} items"),
 			serializer,
 			stream,
-			serializer.IsStaticSize ? long.MaxValue : throw new ArgumentException(nameof(serializer), $"This constructor only supports {nameof(StreamPagedListType.Static)} items"),
+			serializer.IsConstantLength ? long.MaxValue : throw new ArgumentException(nameof(serializer), $"This constructor only supports {nameof(StreamPagedListType.Static)} items"),
 			endianness,
 			includeListHeader,
 			autoLoad
@@ -74,7 +74,7 @@ public class StreamPagedList<TItem> : PagedListBase<TItem> {
 	}
 
 	public StreamPagedList(IItemSerializer<TItem> serializer, Stream stream, long pageSize, Endianness endianness = Endianness.LittleEndian, bool includeListHeader = true, bool autoLoad = false)
-		: this(serializer.IsStaticSize ? StreamPagedListType.Static : StreamPagedListType.Dynamic, serializer, stream, pageSize, endianness, includeListHeader, autoLoad) {
+		: this(serializer.IsConstantLength ? StreamPagedListType.Static : StreamPagedListType.Dynamic, serializer, stream, pageSize, endianness, includeListHeader, autoLoad) {
 	}
 
 	public StreamPagedList(StreamPagedListType type, IItemSerializer<TItem> serializer, Stream stream, long pageSize, Endianness endianness = Endianness.LittleEndian, bool includeListHeader = true,  bool autoLoad = false) 
@@ -203,7 +203,7 @@ public class StreamPagedList<TItem> : PagedListBase<TItem> {
 		if (Type is StreamPagedListType.Dynamic) {
 			while (Stream.Position < Stream.Length)
 				pages.Add(InternalPages.Any() ? new DynamicStreamPage<TItem>(this) : new DynamicStreamPage<TItem>((DynamicStreamPage<TItem>)pages.Last()));
-		} else pages.Add(new StaticStreamPage<TItem>(this));
+		} else pages.Add(new ConstantLengthStreamPage<TItem>(this));
 
 		return pages.ToArray();
 	}
@@ -226,7 +226,7 @@ public class StreamPagedList<TItem> : PagedListBase<TItem> {
 		Type switch {
 			StreamPagedListType.Dynamic => pageNumber == 0 ? new DynamicStreamPage<TItem>(this) : new DynamicStreamPage<TItem>((DynamicStreamPage<TItem>)InternalPages.Last()),
 			StreamPagedListType.Static => pageNumber == 0
-				? new StaticStreamPage<TItem>(this)
+				? new ConstantLengthStreamPage<TItem>(this)
 				: throw new InvalidOperationException($"{nameof(StreamPagedListType.Static)} only supports a single page."),
 			_ => throw new ArgumentOutOfRangeException()
 		};

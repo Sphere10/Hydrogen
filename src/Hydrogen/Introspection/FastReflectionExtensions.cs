@@ -36,4 +36,8 @@ public static class FastReflectionExtensions {
 		return FastReflectionCaches.EnumNamesCache[type];
 	}
 
+
+	public static bool FastIsSubTypeOf(this Type type, Type other) {
+		return FastReflectionCaches.IsSubTypeCache[(type, other)];
+	}
 }

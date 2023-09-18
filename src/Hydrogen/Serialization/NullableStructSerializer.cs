@@ -16,16 +16,18 @@ public class NullableStructSerializer<T> : ItemSerializer<T?> where T : struct {
 
 	public NullableStructSerializer(IItemSerializer<T> valueSerializer) {
 		_underlyingSerializer = valueSerializer;
-		_padding = base.IsStaticSize ? new byte[base.StaticSize] : Array.Empty<byte>();
+		_padding = base.IsConstantLength ? new byte[base.ConstantLength] : Array.Empty<byte>();
 	}
 
-	public override long StaticSize => sizeof(bool) + base.StaticSize;
+	public static NullableStructSerializer<T> Instance { get; } = new(PrimitiveSerializer<T>.Instance);
+
+	public override long ConstantLength => sizeof(bool) + base.ConstantLength;
 
 	public override long CalculateSize(T? item) {
 		long size = sizeof(bool);
 		 
-		if (base.IsStaticSize)
-			size += base.StaticSize;
+		if (base.IsConstantLength)
+			size += base.ConstantLength;
 		else if (item.HasValue)
 			size += _underlyingSerializer.CalculateSize(item.Value);
 
@@ -38,7 +40,7 @@ public class NullableStructSerializer<T> : ItemSerializer<T?> where T : struct {
 			_underlyingSerializer.Serialize(item.Value, writer);
 		} else {
 			writer.Write(false);
-			if (base.IsStaticSize)
+			if (base.IsConstantLength)
 				writer.Write(_padding);
 		}
 	}
@@ -47,8 +49,8 @@ public class NullableStructSerializer<T> : ItemSerializer<T?> where T : struct {
 		var hasValue = reader.ReadBoolean();
 		if (hasValue) {
 			return _underlyingSerializer.Deserialize(byteSize - sizeof(bool), reader);
-		} else if (base.IsStaticSize)
-				reader.ReadBytes(base.StaticSize);
+		} else if (base.IsConstantLength)
+				reader.ReadBytes(base.ConstantLength);
 		return default(T?);
 	}
 
@@ -59,8 +61,8 @@ public class NullableStructSerializer<T> : ItemSerializer<T?> where T : struct {
 			return autoSerializer.Deserialize(reader);
 		}
 
-		if (_underlyingSerializer.IsStaticSize)
-			return DeserializeInternal(StaticSize, reader);
+		if (_underlyingSerializer.IsConstantLength)
+			return DeserializeInternal(ConstantLength, reader);
 
 		throw new InvalidOperationException($"This method can only be used with {nameof(AutoSizedSerializer<T>)} or a statically sized serializer");
 

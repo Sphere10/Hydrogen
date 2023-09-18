@@ -20,9 +20,9 @@ public class ActionItemSizer<T> : IItemSizer<T> {
 		_sizer = sizer;
 	}
 
-	public bool IsStaticSize => false;
+	public bool IsConstantLength => false;
 
-	public long StaticSize => -1;
+	public long ConstantLength => -1;
 
 	public long CalculateTotalSize(IEnumerable<T> items, bool calculateIndividualItems, out long[] itemSizes) {
 		var sizes = items.Select(item => CalculateSize(item)).ToArray();

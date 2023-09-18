@@ -18,6 +18,7 @@ public static class FastReflectionCaches {
 		PropertyAccessorCache = new ActionCache<PropertyInfo, PropertyAccessor>(pi => new PropertyAccessor(pi), keyComparer: new MemberInfoComparer<PropertyInfo>());
 		FieldAccessorCache = new ActionCache<FieldInfo, FieldAccessor>(fi => new FieldAccessor(fi), keyComparer: new MemberInfoComparer<FieldInfo>());
 		ConstructorInvokerCache = new ActionCache<ConstructorInfo, ConstructorInvoker>(ci => new ConstructorInvoker(ci), keyComparer: new MemberInfoComparer<ConstructorInfo>());
+		IsSubTypeCache = new ActionCache<(Type, Type), bool>(t => t.Item1.IsSubTypeOf(t.Item2));
 	}
 
 	public static ICache<Type, string[]> EnumNamesCache { get; set; }
@@ -29,5 +30,7 @@ public static class FastReflectionCaches {
 	public static ICache<FieldInfo, FieldAccessor> FieldAccessorCache { get; set; }
 
 	public static ICache<ConstructorInfo, ConstructorInvoker> ConstructorInvokerCache { get; set; }
+
+	public static ICache<(Type, Type), bool> IsSubTypeCache { get; set; }
 
 }

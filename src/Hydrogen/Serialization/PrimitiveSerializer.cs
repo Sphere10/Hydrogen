@@ -10,7 +10,7 @@ using System;
 
 namespace Hydrogen;
 
-public class PrimitiveSerializer<T> : StaticSizeItemSerializerBase<T> {
+public class PrimitiveSerializer<T> : ConstantLengthItemSerializerBase<T> {
 	private readonly Action<EndianBinaryWriter, T> _writePrimitive;
 	private readonly Func<EndianBinaryReader, T> _readPrimitive;
 

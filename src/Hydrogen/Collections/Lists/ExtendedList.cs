@@ -18,30 +18,30 @@ namespace Hydrogen;
 /// </summary>
 /// <typeparam name="T"></typeparam>
 public class ExtendedList<T> : RangedListBase<T> {
+	private const long DefaultCapacityGrowthSize = 4096;
 	private T[] _internalArray;
 	private long _length;
 	private readonly IEqualityComparer<T> _comparer;
 
+
 	public ExtendedList(IEqualityComparer<T> comparer = null)
-		: this(4096, comparer) {
+		: this(DefaultCapacityGrowthSize, comparer) {
 	}
 
 	public ExtendedList(long capacity, IEqualityComparer<T> comparer = null)
-		: this(capacity, int.MaxValue, comparer) {
+		: this(capacity, long.MaxValue, comparer) {
 	}
 
 	public ExtendedList(long capacity, long maxCapacity, IEqualityComparer<T> comparer = null)
-		: this(capacity, capacity, maxCapacity,	comparer) {
+		: this(capacity, DefaultCapacityGrowthSize, maxCapacity,	comparer) {
 	}
 
 	public ExtendedList(long capacity, long capacityGrowthSize, long maxCapacity, IEqualityComparer<T> comparer = null)
 		: this(new T[capacity], 0, capacityGrowthSize, maxCapacity, comparer) {
 	}
 
-	public ExtendedList(T[] sourceArray, IEqualityComparer<T> comparer = null) {
-		Guard.ArgumentNotNull(sourceArray, nameof(sourceArray));
-		_internalArray = sourceArray;
-		_comparer = comparer ?? EqualityComparer<T>.Default;
+	public ExtendedList(T[] sourceArray, IEqualityComparer<T> comparer = null)
+		: this(sourceArray, sourceArray.LongLength, 0L, sourceArray.LongLength, comparer) {
 	}
 
 	private ExtendedList(T[] internalArray, long currentLogicalSize, long capacityGrowthSize, long maxCapacity, IEqualityComparer<T> comparer = null) {

@@ -25,7 +25,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Hydrogen\Hydrogen.csproj" />
-    <ProjectReference Include="..\Hydrogen.NETCore\Hydrogen.NET.csproj" />
+    <ProjectReference Include="..\Hydrogen.NET\Hydrogen.NET.csproj" />
   </ItemGroup>
 
 </Project>

@@ -19,7 +19,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hydrogen.Drawing", "Hydroge
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hydrogen.NUnit", "Hydrogen.NUnit\Hydrogen.NUnit.csproj", "{C08B47F1-BD56-4BC0-9241-214B67F91470}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hydrogen.NET", "Hydrogen.NETCore\Hydrogen.NET.csproj", "{4759DE91-C740-4C18-9E86-051C28575514}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hydrogen.NET", "Hydrogen.NET\Hydrogen.NET.csproj", "{4759DE91-C740-4C18-9E86-051C28575514}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hydrogen.Communications", "Hydrogen.Communications\Hydrogen.Communications.csproj", "{B9BAB6BC-4023-4689-B2F0-F15473547DA2}"
 EndProject
@@ -45,7 +45,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hydrogen.DApp.Presentation2
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hydrogen.DApp.Presentation2.Loader", "Hydrogen.DApp.Presentation2.Loader\Hydrogen.DApp.Presentation2.Loader.csproj", "{18634CEA-B8C0-4865-8A87-9EC888456301}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hydrogen.NETCore.Tests", "..\tests\Hydrogen.NETCore.Tests\Hydrogen.NETCore.Tests.csproj", "{DC1A39A3-2156-4FE2-BA44-4551905E4795}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hydrogen.NET.Tests", "..\tests\Hydrogen.NETCore.Tests\Hydrogen.NET.Tests.csproj", "{DC1A39A3-2156-4FE2-BA44-4551905E4795}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hydrogen.DApp.Core.Tests", "..\tests\Hydrogen.DApp.Core.Tests\Hydrogen.DApp.Core.Tests.csproj", "{884F4D63-17A6-4253-A3A8-CDFC7994F1D6}"
 EndProject

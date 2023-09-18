@@ -13,7 +13,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\..\src\Hydrogen.NETCore\Hydrogen.NET.csproj" />
+		<ProjectReference Include="..\..\src\Hydrogen.NET\Hydrogen.NET.csproj" />
 		<ProjectReference Include="..\..\src\Hydrogen.NUnit\Hydrogen.NUnit.csproj" />
 		<ProjectReference Include="..\..\src\Hydrogen\Hydrogen.csproj" />
 	</ItemGroup>

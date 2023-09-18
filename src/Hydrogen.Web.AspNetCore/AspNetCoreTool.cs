@@ -13,6 +13,7 @@ using System.Reflection;
 using Hydrogen;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using IPNetwork = System.Net.IPNetwork;
 
 namespace Tools.Web;
 

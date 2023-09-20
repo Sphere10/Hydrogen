@@ -26,6 +26,7 @@ public class NewMinerBlockSerializer : ConstantLengthItemSerializerBase<NewMiner
 		Constants.MinerTagSize + //MinerTag
 		4 + //UnixTime
 		4 //Nonce
+		, false
 	) {
 	}
 

@@ -5,6 +5,7 @@
 		<IsPackable>false</IsPackable>
 		<OutputType>Library</OutputType>
 		<LangVersion>latest</LangVersion>
+		<EnableUnsafeBinaryFormatterSerialization>true</EnableUnsafeBinaryFormatterSerialization>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -30,5 +31,5 @@
 		<ProjectReference Include="..\..\src\Hydrogen.Communications\Hydrogen.Communications.csproj" />
 		<ProjectReference Include="..\..\src\Hydrogen.NUnit\Hydrogen.NUnit.csproj" />
 	</ItemGroup>
-
+	
 </Project>

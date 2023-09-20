@@ -22,7 +22,7 @@ public class ConstantLengthItemSizer<TItem> : IItemSizer<TItem> {
 	public bool IsConstantLength => true;
 
 	public long ConstantLength { get; }
-
+	
 	public long CalculateTotalSize(IEnumerable<TItem> items, bool calculateIndividualItems, out long[] itemSizes) {
 		return CalculateTotalSize(items.Count(), calculateIndividualItems, out itemSizes);
 	}

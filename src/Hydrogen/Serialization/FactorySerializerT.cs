@@ -9,6 +9,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Hydrogen.FastReflection;
 
 namespace Hydrogen;
 
@@ -65,8 +66,23 @@ public class FactorySerializer<TBase> : IItemSerializer<TBase> {
 		var from = reader.BaseStream.Position;
 		var serializerObj = _serializerSerializer.DeserializeInternal(byteSize, reader);
 		var serializerSize = reader.BaseStream.Position - from;
-		var serializer = _serializerSerializer.GetTypedSerializer<TBase>(serializerObj);
+		var serializer = GetTypedSerializer<TBase>(serializerObj);
 		return serializer.DeserializeInternal(byteSize - serializerSize, reader);
 	}
 	
+
+
+	public IItemSerializer<TSerializerDataType> GetTypedSerializer<TSerializerDataType>(IItemSerializer serializerObj) {
+		if (serializerObj is IItemSerializer<TSerializerDataType> serializer)
+			return serializer;
+
+		var actualDataType = serializerObj.ItemType;
+
+		Guard.Ensure(actualDataType.FastIsSubTypeOf(typeof(TSerializerDataType)), $"Serializer object is not an {typeof(IItemSerializer<>).ToStringCS()}<{typeof(TSerializerDataType).ToStringCS()}>");
+
+		var genericMethod = DecoratorExtensions.SerializerCastMethod.MakeGenericMethod(new [] { actualDataType,  typeof(TSerializerDataType) });
+		serializer = genericMethod.FastInvoke(null, new [] { serializerObj }) as IItemSerializer<TSerializerDataType>;;
+		return serializer;
+
+	}
 }

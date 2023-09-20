@@ -13,8 +13,6 @@ namespace Hydrogen;
 
 public abstract class ItemSerializer<TItem> : ItemSizer<TItem>, IItemSerializer<TItem> {
 
-	public virtual bool SupportsNull => false;
-	
 	public abstract void SerializeInternal(TItem item, EndianBinaryWriter writer);
 
 	public abstract TItem DeserializeInternal(long byteSize, EndianBinaryReader reader);

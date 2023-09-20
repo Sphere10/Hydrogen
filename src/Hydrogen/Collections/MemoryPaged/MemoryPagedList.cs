@@ -14,7 +14,7 @@ public class MemoryPagedList<TItem> : MemoryPagedListBase<TItem> {
 	private readonly IItemSizer<TItem> _sizer;
 
 	public MemoryPagedList(long pageSize, long maxMemory, int fixedItemSize)
-		: this(pageSize, maxMemory, new ConstantLengthItemSizer<TItem>(fixedItemSize)) {
+		: this(pageSize, maxMemory, new ConstantLengthItemSizer<TItem>(fixedItemSize, false)) {
 	}
 
 	public MemoryPagedList(long pageSize, long maxMemory, Func<TItem, long> itemSizer)

@@ -17,6 +17,8 @@ public class ItemSizerDecorator<TItem, TObjectSizer> : IItemSizer<TItem> where T
 		Internal = internalSizer;
 	}
 
+	public virtual bool SupportsNull => Internal.SupportsNull;
+
 	public virtual bool IsConstantLength => Internal.IsConstantLength;
 
 	public virtual long ConstantLength => Internal.ConstantLength;

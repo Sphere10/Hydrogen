@@ -18,8 +18,8 @@ public class SerializerFactory {
 	private readonly IDictionary<long, Registration> _registrations;
 	private readonly BijectiveDictionary<Type, long> _registrationsByType;
 	private readonly ICache<Type, RecursiveDataType<long>> _getSerializerHierarchyCache;
-	private readonly ICache<RecursiveDataType<long>, object> _fromSerializerHierarchyCache;
-	private readonly ICache<Type, object> _getSerializerCache;
+	private readonly ICache<RecursiveDataType<long>, IItemSerializer> _fromSerializerHierarchyCache;
+	private readonly ICache<Type, IItemSerializer> _getSerializerCache;
 
 	static SerializerFactory() {
 		Default = new SerializerFactory();
@@ -30,8 +30,8 @@ public class SerializerFactory {
 		_registrations = new Dictionary<long, Registration>();
 		_registrationsByType = new BijectiveDictionary<Type, long>(new TypeEquivalenceComparer(), EqualityComparer<long>.Default);
 		_getSerializerHierarchyCache = new ActionCache<Type, RecursiveDataType<long>>(GetSerializerHierarchyInternal, keyComparer: TypeEquivalenceComparer.Instance);
-		_fromSerializerHierarchyCache = new ActionCache<RecursiveDataType<long>, object>(FromSerializerHierarchyInternal);
-		_getSerializerCache = new ActionCache<Type, object>(GetSerializerInternal,  keyComparer: TypeEquivalenceComparer.Instance);
+		_fromSerializerHierarchyCache = new ActionCache<RecursiveDataType<long>, IItemSerializer>(FromSerializerHierarchyInternal);
+		_getSerializerCache = new ActionCache<Type, IItemSerializer>(GetSerializerInternal,  keyComparer: TypeEquivalenceComparer.Instance);
 	}
 
 	public IEnumerable<Type> RegisteredTypes => _registrationsByType.Keys;
@@ -43,7 +43,7 @@ public class SerializerFactory {
 	public RecursiveDataType<long> GetSerializerHierarchy(Type type) 
 		=> _getSerializerHierarchyCache[type];
 
-	public object FromSerializerHierarchy(RecursiveDataType<long> serializerHierarchy) 
+	public IItemSerializer FromSerializerHierarchy(RecursiveDataType<long> serializerHierarchy) 
 		=> _fromSerializerHierarchyCache[serializerHierarchy];
 
 	public long CountSubSerializers(long typeCode) {
@@ -70,7 +70,7 @@ public class SerializerFactory {
 		Register(GenerateTypeCode(), dataType, serializerType, null, null);
 	}
 
-	public void Register(long typeCode, Type dataType, Type serializerType, object serializerInstance, Func<Type, object> factory) {
+	public void Register(long typeCode, Type dataType, Type serializerType, IItemSerializer serializerInstance, Func<Type, IItemSerializer> factory) {
 		Guard.ArgumentNotNull(dataType, nameof(dataType));
 		Guard.ArgumentNotNull(serializerType, nameof(serializerType));
 		if (dataType.IsFullyConstructed() || serializerType.IsActivatable()) {
@@ -149,26 +149,27 @@ public class SerializerFactory {
 		var serializer = serializerObj as IItemSerializer<TSerializerDataType>;
 		if (serializer is null) {
 			var genericMethod = DecoratorExtensions.SerializerCastMethod.MakeGenericMethod(new [] { dataType,  serializerDataType });
-			serializer = genericMethod.FastInvoke(null, new [] { serializerObj }) as IItemSerializer<TSerializerDataType>;;
+			serializer = genericMethod.FastInvoke(null, new object[] { serializerObj }) as IItemSerializer<TSerializerDataType>;;
 		}
 
 		return serializer;
 	}
 
-	private object GetSerializerObject(Type dataType) 
+	private IItemSerializer GetSerializerObject(Type dataType) 
 		=> _getSerializerCache[dataType];
 
-	private object GetSerializerInternal(Type dataType) {
+	private IItemSerializer GetSerializerInternal(Type dataType) {
 		if (dataType.IsArray) {
 			var valueSerializer = GetSerializerObject(dataType.GetElementType());
-			return typeof(ArraySerializer<>).MakeGenericType(dataType).ActivateWithCompatibleArgs( new [] { valueSerializer, SizeDescriptorStrategy.UseCVarInt } );
+			if (dataType == typeof(byte[]))
+				return new ByteArraySerializer();
+			return  (IItemSerializer)typeof(ArraySerializer<>).MakeGenericType(dataType).ActivateWithCompatibleArgs( new object [] { valueSerializer, SizeDescriptorStrategy.UseCVarInt } ) ;
 		}
 		Guard.ArgumentNotNull(dataType, nameof(dataType));
 		var registration = FindCompatibleSerializer(dataType, out _);
 		return registration.Factory(dataType);
 	}
 
-	
 
 	#endregion
 
@@ -200,7 +201,7 @@ public class SerializerFactory {
 
 	public long GenerateTypeCode() => _registrations.Count > 0 ? _registrations.Keys.Max() + 1 : 0;
 
-	private object CreateSerializerInstance(Type requestedDataType, Type registeredDataType, Type registeredSerializerType) {
+	private IItemSerializer CreateSerializerInstance(Type requestedDataType, Type registeredDataType, Type registeredSerializerType) {
 		Guard.Argument(!requestedDataType.IsGenericTypeDefinition, nameof(requestedDataType), $"Requested data type {requestedDataType.Name} cannot be a generic type definition");
 		if (registeredDataType.IsGenericTypeDefinition)
 			Guard.Ensure(requestedDataType.IsConstructedGenericTypeOf(registeredDataType), $"Constructed type {requestedDataType.Name} is not a constructed generic type of {registeredDataType.Name}");
@@ -209,7 +210,7 @@ public class SerializerFactory {
 		var serializerType = registeredSerializerType;
 		if (serializerType.IsGenericTypeDefinition)
 			serializerType = serializerType.MakeGenericType(subTypes);
-		return TypeActivator.ActivateWithCompatibleArgs(serializerType, subTypeSerializers);
+		return (IItemSerializer) TypeActivator.ActivateWithCompatibleArgs(serializerType, subTypeSerializers);
 	}
 		
 	private Type ConstructType(RecursiveDataType<long> serializerHierarchy) {
@@ -232,7 +233,7 @@ public class SerializerFactory {
 		return new RecursiveDataType<long>(typeCode, childSerializers);
 	}
 
-	private object FromSerializerHierarchyInternal(RecursiveDataType<long> serializerHierarchy) {
+	private IItemSerializer FromSerializerHierarchyInternal(RecursiveDataType<long> serializerHierarchy) {
 		var registration = GetRegistration(serializerHierarchy.State);
 		var type = ConstructType(serializerHierarchy);
 		return registration.Factory(type);
@@ -244,7 +245,7 @@ public class SerializerFactory {
 		public long TypeCode { get; set; }
 		public Type DataType { get; set; }
 		public Type SerializerType { get; set; }
-		public Func<Type, object> Factory { get; set; }
+		public Func<Type, IItemSerializer> Factory { get; set; }
 	}
 
 	public static void RegisterDefaults(SerializerFactory factory) {

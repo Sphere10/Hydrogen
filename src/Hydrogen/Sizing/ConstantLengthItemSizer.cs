@@ -14,10 +14,13 @@ namespace Hydrogen;
 // ReSharper disable PossibleInvalidOperationException
 public class ConstantLengthItemSizer<TItem> : IItemSizer<TItem> {
 
-	public ConstantLengthItemSizer(long staticSize) {
+	public ConstantLengthItemSizer(long staticSize, bool supportsNull) {
 		Guard.ArgumentInRange(staticSize, 0, int.MaxValue, nameof(staticSize));
 		ConstantLength = staticSize;
+		SupportsNull = supportsNull;
 	}
+
+	public virtual bool SupportsNull { get; private set; }
 
 	public bool IsConstantLength => true;
 

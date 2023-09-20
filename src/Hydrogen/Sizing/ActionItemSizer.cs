@@ -15,10 +15,13 @@ namespace Hydrogen;
 public class ActionItemSizer<T> : IItemSizer<T> {
 	private readonly Func<T, long> _sizer;
 
-	public ActionItemSizer(Func<T, long> sizer) {
+	public ActionItemSizer(Func<T, long> sizer, bool supportsNull = false) {
 		Guard.ArgumentNotNull(sizer, nameof(sizer));
 		_sizer = sizer;
+		SupportsNull = supportsNull;
 	}
+
+	public bool SupportsNull { get; }
 
 	public bool IsConstantLength => false;
 

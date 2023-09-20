@@ -124,7 +124,7 @@ public sealed class TransactionalFileMappedBuffer : TransactionalFileMappedListB
 	private class PageImpl : TransactionalFilePageBase<byte>, IBufferPage {
 
 		public PageImpl(FileStream stream, string uncommittedPageFileName, long pageNumber, long pageSize)
-			: base(stream, new ConstantLengthItemSizer<byte>(sizeof(byte)), uncommittedPageFileName, pageNumber, pageSize, new MemoryBuffer(0, pageSize, pageSize)) {
+			: base(stream, new ConstantLengthItemSizer<byte>(sizeof(byte), false), uncommittedPageFileName, pageNumber, pageSize, new MemoryBuffer(0, pageSize, pageSize)) {
 		}
 
 		public ReadOnlySpan<byte> ReadSpan(long index, long count)

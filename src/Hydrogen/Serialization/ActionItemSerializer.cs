@@ -15,15 +15,13 @@ public class ActionItemSerializer<T> : ActionItemSizer<T>, IItemSerializer<T> {
 	private readonly Action<T, EndianBinaryWriter> _serializer;
 	private readonly Func<long, EndianBinaryReader, T> _deserializer;
 
-	public ActionItemSerializer(Func<T, long> sizer, Action<T, EndianBinaryWriter> serializer, Func<long, EndianBinaryReader, T> deserializer)
-		: base(sizer) {
+	public ActionItemSerializer(Func<T, long> sizer, Action<T, EndianBinaryWriter> serializer, Func<long, EndianBinaryReader, T> deserializer, bool supportsNull = false)
+		: base(sizer, false) {
 		Guard.ArgumentNotNull(serializer, nameof(serializer));
 		Guard.ArgumentNotNull(deserializer, nameof(deserializer));
 		_serializer = serializer;
 		_deserializer = deserializer;
 	}
-
-	public bool SupportsNull => false;
 
 	public void SerializeInternal(T item, EndianBinaryWriter writer) 
 		=> _serializer(item, writer);

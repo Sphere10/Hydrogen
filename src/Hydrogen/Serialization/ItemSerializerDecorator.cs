@@ -17,8 +17,6 @@ public class ItemSerializerDecorator<TItem, TSerializer> : ItemSizerDecorator<TI
 		: base(internalSerializer) {
 	}
 
-	public virtual bool SupportsNull => Internal.SupportsNull;
-
 	public virtual void SerializeInternal(TItem item, EndianBinaryWriter writer)
 		=> Internal.SerializeInternal(item, writer);
 

@@ -8,16 +8,37 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Hydrogen;
 
-public interface IItemSizer<in T> {
+
+public interface IItemSizer {
+	
+	Type ItemType { get; }
+
+	bool SupportsNull { get; }
 
 	bool IsConstantLength { get; }
 
 	long ConstantLength { get; }
+
+	long CalculateTotalSize(IEnumerable<object> items, bool calculateIndividualItems, out long[] itemSizes);
+
+	long CalculateSize(object item);
+}
+
+public interface IItemSizer<in T> : IItemSizer  {
+
+	Type IItemSizer.ItemType => typeof(T);
 	
 	long CalculateTotalSize(IEnumerable<T> items, bool calculateIndividualItems, out long[] itemSizes);
 
 	long CalculateSize(T item);
+
+	long IItemSizer.CalculateTotalSize(IEnumerable<object> items, bool calculateIndividualItems, out long[] itemSizes)
+		=> CalculateTotalSize(items.Cast<T>(), calculateIndividualItems, out itemSizes);
+
+	long IItemSizer.CalculateSize(object item)
+		=> CalculateSize((T)item);
 }

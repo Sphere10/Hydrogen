@@ -13,6 +13,8 @@ namespace Hydrogen;
 
 public abstract class ItemSizer<TItem> : IItemSizer<TItem> {
 
+	public virtual bool SupportsNull => false;
+
 	public virtual bool IsConstantLength => false;
 
 	public virtual long ConstantLength => -1;

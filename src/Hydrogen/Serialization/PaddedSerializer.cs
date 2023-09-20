@@ -14,7 +14,7 @@ public class PaddedSerializer<TItem> : ConstantLengthItemSerializerBase<TItem> {
 	private readonly IItemSerializer<TItem> _dynamicSerializer;
 	private readonly SizeDescriptorSerializer _sizeDescriptorSerializer;
 	public PaddedSerializer(long fixedSize, IItemSerializer<TItem> dynamicSerializer, SizeDescriptorStrategy sizeDescriptorStrategy)
-		: base(fixedSize) {
+		: base(fixedSize, dynamicSerializer.SupportsNull) {
 		Guard.ArgumentNotNull(dynamicSerializer, nameof(dynamicSerializer));
 		_dynamicSerializer = dynamicSerializer;
 		_sizeDescriptorSerializer = new SizeDescriptorSerializer(sizeDescriptorStrategy);

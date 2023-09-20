@@ -29,7 +29,7 @@ namespace Hydrogen;
 public class FastMarshalStructSerializer<T> : ConstantLengthItemSerializerBase<T> where T : struct {
 
 	public FastMarshalStructSerializer()
-		: base(Marshal.SizeOf(typeof(T))) {
+		: base(Marshal.SizeOf(typeof(T)), false) {
 	}
 
 	public override void SerializeInternal(T item, EndianBinaryWriter writer) {

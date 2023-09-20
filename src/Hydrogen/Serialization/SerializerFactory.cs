@@ -134,33 +134,41 @@ public class SerializerFactory {
 
 	#region Get Serializer
 
-	public IItemSerializer<TType> GetSerializer<TType>() => GetSerializer<TType>(typeof(TType));
+	public IItemSerializer<TType> GetSerializer<TType>() 
+		=> GetSerializer<TType>(typeof(TType));
 
-	public IItemSerializer<TBase> GetSerializer<TBase, TConcrete>() where TConcrete : TBase => GetSerializer<TBase>(typeof(TConcrete));
+	public IItemSerializer<TBase> GetSerializer<TBase, TConcrete>() where TConcrete : TBase 
+		=> GetSerializer<TBase>(typeof(TConcrete));
 	
 	public IItemSerializer<TSerializerDataType> GetSerializer<TSerializerDataType>(Type dataType) {
 		Guard.ArgumentNotNull(dataType, nameof(dataType));
 		var serializerDataType = typeof(TSerializerDataType);
 		Guard.Argument(dataType.IsSubTypeOf(serializerDataType), nameof(dataType), $"{dataType.ToStringCS()} must be a sub-type of {serializerDataType.ToStringCS()}");
-		var serializerObj = GetSerializer(dataType);
+		var serializerObj = GetSerializerObject(dataType);
 
 		var serializer = serializerObj as IItemSerializer<TSerializerDataType>;
 		if (serializer is null) {
 			var genericMethod = DecoratorExtensions.SerializerCastMethod.MakeGenericMethod(new [] { dataType,  serializerDataType });
 			serializer = genericMethod.FastInvoke(null, new [] { serializerObj }) as IItemSerializer<TSerializerDataType>;;
 		}
+
 		return serializer;
 	}
 
-	public object GetSerializer(Type dataType) 
+	private object GetSerializerObject(Type dataType) 
 		=> _getSerializerCache[dataType];
 
 	private object GetSerializerInternal(Type dataType) {
-		// Add caching here
+		if (dataType.IsArray) {
+			var valueSerializer = GetSerializerObject(dataType.GetElementType());
+			return typeof(ArraySerializer<>).MakeGenericType(dataType).ActivateWithCompatibleArgs( new [] { valueSerializer, SizeDescriptorStrategy.UseCVarInt } );
+		}
 		Guard.ArgumentNotNull(dataType, nameof(dataType));
 		var registration = FindCompatibleSerializer(dataType, out _);
 		return registration.Factory(dataType);
 	}
+
+	
 
 	#endregion
 
@@ -197,7 +205,7 @@ public class SerializerFactory {
 		if (registeredDataType.IsGenericTypeDefinition)
 			Guard.Ensure(requestedDataType.IsConstructedGenericTypeOf(registeredDataType), $"Constructed type {requestedDataType.Name} is not a constructed generic type of {registeredDataType.Name}");
 		var subTypes = requestedDataType.GetGenericArguments();
-		var subTypeSerializers = subTypes.Select(GetSerializer).ToArray();
+		var subTypeSerializers = subTypes.Select(GetSerializerObject).ToArray();
 		var serializerType = registeredSerializerType;
 		if (serializerType.IsGenericTypeDefinition)
 			serializerType = serializerType.MakeGenericType(subTypes);
@@ -281,7 +289,7 @@ public class SerializerFactory {
 		
 
 		// special collections
-		factory.Register(new ByteArraySerializer().AsNullable());
+		factory.Register(new ByteArraySerializer());
 
 		// general collections
 		factory.Register(typeof(IEnumerable<>), typeof(EnumerableSerializer<>));

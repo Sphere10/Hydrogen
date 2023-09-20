@@ -13,7 +13,7 @@ namespace Hydrogen;
 public class DateTimeOffsetSerializer : ConstantLengthItemSerializerBase<DateTimeOffset> {
 
 	public DateTimeOffsetSerializer() 
-		: base(DateTimeSerializer.Instance.ConstantLength + PrimitiveSerializer<short>.Instance.ConstantLength){
+		: base(DateTimeSerializer.Instance.ConstantLength + PrimitiveSerializer<short>.Instance.ConstantLength, false){
 	}
 
 	public override void SerializeInternal(DateTimeOffset item, EndianBinaryWriter writer) {

@@ -275,8 +275,8 @@ public static partial class DecoratorExtensions {
 
 	#region Serializer
 
-	public static NullableObjectSerializer<T> AsNullable<T>(this IItemSerializer<T> serializer, bool preserveConstantLength = false)
-		=> new (serializer, preserveConstantLength);
+	public static IItemSerializer<T> AsNullable<T>(this IItemSerializer<T> serializer, bool preserveConstantLength = false)
+		=> serializer.SupportsNull ? serializer : new NullableObjectSerializer<T>(serializer, preserveConstantLength);
 
 
 	public static IItemSerializer<T> WithNullSubstitution<T>(this IItemSerializer<T> serializer, T nullSubstitution, IEqualityComparer<T> comparer = null)

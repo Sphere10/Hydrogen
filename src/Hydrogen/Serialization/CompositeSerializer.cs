@@ -16,7 +16,10 @@ public class CompositeSerializer<TItem> : IItemSerializer<TItem> {
 		_memberBindings = memberBindings;
 	}
 
+	public bool SupportsNull => false;
+
 	public bool IsConstantLength => _memberBindings.All(x => x.Serializer.IsConstantLength);
+	
 	public long ConstantLength => _memberBindings.Sum(x => x.Serializer.ConstantLength);
 
 	public long CalculateTotalSize(IEnumerable<TItem> items, bool calculateIndividualItems, out long[] itemSizes) {
@@ -56,4 +59,5 @@ public class CompositeSerializer<TItem> : IItemSerializer<TItem> {
 		}
 		return item;
 	}
+	
 }

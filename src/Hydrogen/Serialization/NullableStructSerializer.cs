@@ -21,6 +21,8 @@ public class NullableStructSerializer<T> : ItemSerializer<T?> where T : struct {
 
 	public static NullableStructSerializer<T> Instance { get; } = new(PrimitiveSerializer<T>.Instance);
 
+	public override bool SupportsNull => true;
+
 	public override long ConstantLength => sizeof(bool) + base.ConstantLength;
 
 	public override long CalculateSize(T? item) {

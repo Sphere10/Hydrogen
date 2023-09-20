@@ -22,6 +22,9 @@ namespace Hydrogen;
 /// </summary>
 /// <typeparam name="T"></typeparam>
 public class GenericSerializer<T> : GenericSerializerBase, IItemSerializer<T> {
+	
+	public bool SupportsNull => true;
+
 	public bool IsConstantLength => false;
 
 	public long ConstantLength => -1;
@@ -591,4 +594,6 @@ public class GenericSerializer<T> : GenericSerializerBase, IItemSerializer<T> {
 
 		public bool TryGetObjectRefIndex(object obj, out int index) => _referenceDictionary.TryGetValue(Reference.For(obj), out index);
 	}
+
+	
 }

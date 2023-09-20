@@ -21,7 +21,10 @@ namespace Hydrogen;
 /// <typeparam name="TItem"></typeparam>
 public sealed class BinaryFormattedSerializer<TItem> : IItemSerializer<TItem> {
 
+	public bool SupportsNull => true;
+
 	public bool IsConstantLength => false;
+
 	public long ConstantLength => -1;
 
 	public long CalculateTotalSize(IEnumerable<TItem> items, bool calculateIndividualItems, out long[] itemSizes) {

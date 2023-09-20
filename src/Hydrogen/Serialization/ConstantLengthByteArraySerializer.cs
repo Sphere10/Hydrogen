@@ -10,7 +10,7 @@ namespace Hydrogen;
 
 public class ConstantLengthByteArraySerializer : ConstantLengthItemSerializerBase<byte[]> {
 
-	public ConstantLengthByteArraySerializer(int size) : base(size) {
+	public ConstantLengthByteArraySerializer(int size) : base(size, false) {
 	}
 
 	public override void SerializeInternal(byte[] item, EndianBinaryWriter writer) {

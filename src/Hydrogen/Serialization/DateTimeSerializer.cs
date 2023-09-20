@@ -15,7 +15,7 @@ public class DateTimeSerializer : ConstantLengthItemSerializerBase<DateTime> {
 
 	public static DateTimeSerializer Instance { get; } = new();
 
-	public DateTimeSerializer() : base(8) {
+	public DateTimeSerializer() : base(8, false) {
 	}
 
 	public override void SerializeInternal(DateTime item, EndianBinaryWriter writer)

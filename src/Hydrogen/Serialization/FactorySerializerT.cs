@@ -21,12 +21,16 @@ public class FactorySerializer<TBase> : IItemSerializer<TBase> {
 	private readonly SerializerFactory _factory;
 	private readonly SerializerSerializer _serializerSerializer;
 
-	public FactorySerializer() {
+
+	public FactorySerializer(bool supportsNull = false) {
 		_factory = new SerializerFactory();
 		_serializerSerializer = new SerializerSerializer(_factory);
+		SupportsNull = supportsNull;
 	}
 
 	public IEnumerable<Type> RegisteredTypes => _factory.RegisteredTypes;
+
+	public bool SupportsNull { get; }
 
 	public bool IsConstantLength => false;
 
@@ -64,4 +68,5 @@ public class FactorySerializer<TBase> : IItemSerializer<TBase> {
 		var serializer = _serializerSerializer.GetTypedSerializer<TBase>(serializerObj);
 		return serializer.DeserializeInternal(byteSize - serializerSize, reader);
 	}
+	
 }

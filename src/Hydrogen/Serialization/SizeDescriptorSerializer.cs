@@ -18,6 +18,8 @@ public class SizeDescriptorSerializer : SizeDescriptorSizer, IItemSerializer<lon
 	public SizeDescriptorSerializer(SizeDescriptorStrategy sizeDescriptorStrategy) : base(sizeDescriptorStrategy) {
 	}
 
+	public bool SupportsNull => false;
+
 	public void SerializeInternal(long item, EndianBinaryWriter writer) {
 		var startPos = writer.BaseStream.Position;
 		switch (SizeDescriptorStrategy) {

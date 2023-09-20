@@ -11,8 +11,13 @@ using System;
 namespace Hydrogen;
 
 public abstract class ConstantLengthItemSerializerBase<TItem> : ConstantLengthItemSizer<TItem>, IAutoSizedSerializer<TItem> {
-	protected ConstantLengthItemSerializerBase(long fixedSize) : base(fixedSize) {
+	
+	protected ConstantLengthItemSerializerBase(long fixedSize, bool supportsNull) 
+		: base(fixedSize) {
+		SupportsNull = supportsNull;
 	}
+
+	public virtual bool SupportsNull { get; private set; }
 
 	public abstract void SerializeInternal(TItem item, EndianBinaryWriter writer);
 

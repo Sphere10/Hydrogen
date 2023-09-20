@@ -13,12 +13,21 @@ using System.Runtime.CompilerServices;
 
 namespace Hydrogen;
 
-public interface IItemSerializer<TItem> : IItemSizer<TItem> {
+public interface IItemSerializer {
+
+	Type ItemType { get; }
+
+	bool SupportsNull { get; }
+
+}
+
+public interface IItemSerializer<TItem> : IItemSizer<TItem>, IItemSerializer {
 
 	internal void SerializeInternal(TItem item, EndianBinaryWriter writer);
 
 	internal TItem DeserializeInternal(long byteSize, EndianBinaryReader reader);
-
+	
+	Type IItemSerializer.ItemType => typeof(TItem);
 }
 
 

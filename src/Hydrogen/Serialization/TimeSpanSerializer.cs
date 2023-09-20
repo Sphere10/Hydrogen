@@ -15,7 +15,7 @@ public class TimeSpanSerializer : ConstantLengthItemSerializerBase<TimeSpan> {
 
 	public static TimeSpanSerializer Instance { get; } = new();
 
-	public TimeSpanSerializer() : base(8) {
+	public TimeSpanSerializer() : base(8, false) {
 	}
 
 	public override void SerializeInternal(TimeSpan item, EndianBinaryWriter writer)

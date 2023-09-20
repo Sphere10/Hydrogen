@@ -10,6 +10,7 @@ using System;
 
 namespace Hydrogen;
 
+
 public class ActionItemSerializer<T> : ActionItemSizer<T>, IItemSerializer<T> {
 	private readonly Action<T, EndianBinaryWriter> _serializer;
 	private readonly Func<long, EndianBinaryReader, T> _deserializer;
@@ -21,6 +22,8 @@ public class ActionItemSerializer<T> : ActionItemSizer<T>, IItemSerializer<T> {
 		_serializer = serializer;
 		_deserializer = deserializer;
 	}
+
+	public bool SupportsNull => false;
 
 	public void SerializeInternal(T item, EndianBinaryWriter writer) 
 		=> _serializer(item, writer);

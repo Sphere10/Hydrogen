@@ -18,11 +18,14 @@ internal sealed class BoxedNullableSerializer<T> : ItemSerializer<BoxedNullable<
 
 	public BoxedNullableSerializer(IItemSerializer<T> valueSerializer, bool preserveConstantLength = false) {
 		Guard.ArgumentNotNull(valueSerializer, nameof(valueSerializer));
+		Guard.Argument(!valueSerializer.SupportsNull, nameof(valueSerializer), "Serializer already supports null. Boxing it here is inefficient.");
 		_valueSerializer = valueSerializer;
 		_preserveConstantLength = preserveConstantLength;
 		_padding = IsConstantLength ? new byte[_valueSerializer.ConstantLength] : Array.Empty<byte>();
 		_isConstantLength =  _valueSerializer.IsConstantLength && _preserveConstantLength;
 	}
+
+	public override bool SupportsNull => true;
 
 	public override bool IsConstantLength => _isConstantLength;
 

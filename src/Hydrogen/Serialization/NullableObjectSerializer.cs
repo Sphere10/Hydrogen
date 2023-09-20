@@ -14,4 +14,5 @@ public class NullableObjectSerializer<T> : ItemSerializerDecorator<T> {
 		: base(new BoxedNullableSerializer<T>(valueSerializer,preserveConstantLength ).AsProjection(x => x.HasValue ? x.Value : default, x => x )) {
 	}
 
+	public override bool SupportsNull => true;
 }

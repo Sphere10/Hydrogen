@@ -23,6 +23,10 @@ public class ProjectedSerializer<TFrom, TTo> : IItemSerializer<TTo> {
 		_inverseProjection = inverseProjection;
 	}
 
+	
+	
+	public bool SupportsNull => _sourceSerializer.SupportsNull;
+
 	public bool IsConstantLength => _sourceSerializer.IsConstantLength;
 
 	public long ConstantLength => _sourceSerializer.ConstantLength;
@@ -38,4 +42,6 @@ public class ProjectedSerializer<TFrom, TTo> : IItemSerializer<TTo> {
 
 	public TTo DeserializeInternal(long byteSize, EndianBinaryReader reader) 
 		=> _projection(_sourceSerializer.DeserializeInternal(byteSize, reader));
+
+
 }

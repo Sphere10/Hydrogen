@@ -17,7 +17,7 @@ public class PrimitiveSerializer<T> : ConstantLengthItemSerializerBase<T> {
 	public static PrimitiveSerializer<T> Instance { get; } = new();
 
 	public PrimitiveSerializer()
-		: base(Tools.Memory.SizeOfPrimitive(typeof(T))) {
+		: base(Tools.Memory.SizeOfPrimitive(typeof(T)), false) {
 		Guard.Argument(Tools.Memory.IsSerializationPrimitive(typeof(T)), nameof(T), $"{typeof(T)} is not a primitive type");
 		var typeCode = Type.GetTypeCode(typeof(T));
 		_writePrimitive = GetPrimitiveWriter(typeCode);

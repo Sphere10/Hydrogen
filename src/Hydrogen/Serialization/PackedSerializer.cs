@@ -6,18 +6,13 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
 
 namespace Hydrogen;
 
 public class PackedSerializer : IItemSerializer<object> {
 	private readonly object _serializer;
 	private readonly IItemSerializer<object> _projectedSerializer;
-
-	
 	
 	private PackedSerializer(object serializer, IItemSerializer<object> projectedSerializer) {
 		Guard.ArgumentNotNull(serializer, nameof(serializer));
@@ -27,6 +22,8 @@ public class PackedSerializer : IItemSerializer<object> {
 		_serializer = serializer;
 		_projectedSerializer = projectedSerializer;
 	}
+
+	public bool SupportsNull => _projectedSerializer.SupportsNull;
 
 	public bool IsConstantLength => _projectedSerializer.IsConstantLength;
 

@@ -15,7 +15,7 @@ public class EnumSerializer<T> : ConstantLengthItemSerializerBase<T> where T : E
 	private readonly Func<EndianBinaryReader, T> _readPrimitive;
 
 	public EnumSerializer()
-		: base(GetEnumByteSize(typeof(T), out var writer, out var reader, out var typeCode)) {
+		: base(GetEnumByteSize(typeof(T), out var writer, out var reader, out var typeCode), false) {
 		_writePrimitive = writer;
 		_readPrimitive = reader;
 	}

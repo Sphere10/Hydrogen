@@ -21,7 +21,7 @@ public class ClusterSerializer : ConstantLengthItemSerializerBase<Cluster> {
 	public const long DataOffset = NextOffset + NextLength;
 
 	public ClusterSerializer(int clusterDataSize) 
-		: base(TraitsLength + PrevLength + NextLength + clusterDataSize) {
+		: base(TraitsLength + PrevLength + NextLength + clusterDataSize, false) {
 		// cluster has an envelope of 9 bytes
 		Guard.ArgumentInRange(clusterDataSize, 1, int.MaxValue, nameof(clusterDataSize));
 		ClusterDataSize = clusterDataSize;

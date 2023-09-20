@@ -23,7 +23,7 @@ public class ClusteredStreamDescriptorSerializer : ConstantLengthItemSerializerB
 	internal const long SizeOffset = EndClusterOffset + EndClusterLength;
 
 	public ClusteredStreamDescriptorSerializer()
-		: base(TraitsLength + StartClusterLength + EndClusterLength + SizeLength) {
+		: base(TraitsLength + StartClusterLength + EndClusterLength + SizeLength, false) {
 	}
 
 	public override void SerializeInternal(ClusteredStreamDescriptor item, EndianBinaryWriter writer) {

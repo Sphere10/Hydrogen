@@ -8,10 +8,10 @@ jobs:
       GITHUB_ACTIONS: true
     steps:
       - uses: actions/checkout@v2
-      - name: Setup .NET Core SDK
+      - name: Setup .NET 8 SDK
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: 8.x
+          dotnet-version: '8.x'
       - name: Build Hydrogen solution
         run: dotnet build "./src/Hydrogen (CrossPlatform).sln" --verbosity minimal
       - name: Run tests

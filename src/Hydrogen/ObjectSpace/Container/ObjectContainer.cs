@@ -224,7 +224,6 @@ public class ObjectContainer : ICriticalObject, ILoadable, IDisposable {
 	#endregion
 
 
-
 	#region Event Notification
 
 	private void NotifyPreItemOperation(long index, object item, ObjectContainerOperationType operationType) {

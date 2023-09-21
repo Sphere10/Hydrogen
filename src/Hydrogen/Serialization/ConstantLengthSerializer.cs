@@ -1,7 +1,7 @@
 ﻿namespace Hydrogen;
 
-internal class ConstantLengthAutoSizedSerializer<T> : ItemSerializerDecorator<T>, IAutoSizedSerializer<T> {
-	public ConstantLengthAutoSizedSerializer(IItemSerializer<T> internalSerializer) 
+internal class ConstantLengthSerializer<T> : ItemSerializerDecorator<T>, IAutoSizedSerializer<T> {
+	public ConstantLengthSerializer(IItemSerializer<T> internalSerializer) 
 		: base(internalSerializer) {
 		Guard.Argument(internalSerializer.IsConstantLength, nameof(internalSerializer), "Serializer must be constant length");
 	}

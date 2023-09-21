@@ -71,6 +71,7 @@ public class SerializerFactory {
 		factory.Register(new StringSerializer().AsNullable());
 		factory.Register(new GuidSerializer());
 		factory.Register(new NullableStructSerializer<Guid>(new GuidSerializer()));
+		factory.Register(typeof(KeyValuePair<,>), typeof(KeyValuePairSerializer<,>));
 
 		// datetime
 		factory.Register(new DateTimeSerializer());

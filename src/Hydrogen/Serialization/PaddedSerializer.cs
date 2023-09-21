@@ -10,7 +10,7 @@ using System;
 
 namespace Hydrogen;
 
-public class PaddedSerializer<TItem> : ConstantLengthItemSerializerBase<TItem> {
+internal class PaddedSerializer<TItem> : ConstantLengthItemSerializerBase<TItem> {
 	private readonly IItemSerializer<TItem> _dynamicSerializer;
 	private readonly SizeDescriptorSerializer _sizeDescriptorSerializer;
 	public PaddedSerializer(long fixedSize, IItemSerializer<TItem> dynamicSerializer, SizeDescriptorStrategy sizeDescriptorStrategy)

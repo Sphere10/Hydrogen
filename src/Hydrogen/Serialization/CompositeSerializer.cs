@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace Hydrogen;
 
-public class CompositeSerializer<TItem> : IItemSerializer<TItem> {
+internal class CompositeSerializer<TItem> : IItemSerializer<TItem> {
 
 	private readonly Func<TItem> _activator;
 	private readonly MemberSerializationBinding[] _memberBindings;
@@ -54,7 +54,7 @@ public class CompositeSerializer<TItem> : IItemSerializer<TItem> {
 	public TItem DeserializeInternal(long byteSize, EndianBinaryReader reader) {
 		var item = _activator();
 		foreach (var binding in _memberBindings) {
-			var memberValue = binding.Serializer.DeserializeInternal(byteSize, reader);
+			var memberValue = binding.Serializer.DeserializeInternal(reader);
 			binding.Member.SetValue(item, memberValue);
 		}
 		return item;

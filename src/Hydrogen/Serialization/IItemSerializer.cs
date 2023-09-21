@@ -19,6 +19,11 @@ public interface IItemSerializer : IItemSizer {
 	internal object DeserializeInternal(long byteSize, EndianBinaryReader reader);
 }
 
+public interface IAutoSizedSerializer : IItemSerializer {
+
+	internal object DeserializeInternal(EndianBinaryReader reader);
+}
+
 public interface IItemSerializer<TItem> : IItemSizer<TItem>, IItemSerializer {
 
 	internal new void SerializeInternal(TItem item, EndianBinaryWriter writer);
@@ -35,6 +40,20 @@ public interface IItemSerializer<TItem> : IItemSizer<TItem>, IItemSerializer {
 public static class IItemSerializerExtensions {
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static long Serialize(this IItemSerializer serializer, object item, EndianBinaryWriter writer) {
+		var startPos = writer.BaseStream.Position;
+		serializer.SerializeInternal(item, writer);
+		return writer.BaseStream.Position - startPos;
+
+		// NOTE: if a malicious serializer writes more than it says, and rewinds stream Position
+		// to hide its hidden data, any subsequent serializations will overwrite that hidden data.
+		// Thus there is no attack vector of meaningful consequence here. Attempting to write
+		// bloated data is responsibility of underlying Stream itself and will not result in security
+		// vulnerability.
+	}
+
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static long Serialize<TItem>(this IItemSerializer<TItem> serializer, TItem item, EndianBinaryWriter writer) {
 		var startPos = writer.BaseStream.Position;
 		serializer.SerializeInternal(item, writer);
@@ -45,6 +64,18 @@ public static class IItemSerializerExtensions {
 		// Thus there is no attack vector of meaningful consequence here. Attempting to write
 		// bloated data is responsibility of underlying Stream itself and will not result in security
 		// vulnerability.
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static object Deserialize(this IItemSerializer serializer, long byteSize, EndianBinaryReader reader) {
+		var startPos = reader.BaseStream.Position;
+		var item = serializer.DeserializeInternal(byteSize, reader);
+		Guard.Ensure(reader.BaseStream.Position - startPos == byteSize, "Read overflow");
+		return item;
+
+		// NOTE: if a malicious serializer reads more than it says, and rewinds stream Position
+		// to hide its hidden data, any subsequent reads will overwrite that hidden data.
+		// At most attacking serializer can read ahead of stream.
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]

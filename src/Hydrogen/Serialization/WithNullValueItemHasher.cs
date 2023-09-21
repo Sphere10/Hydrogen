@@ -8,7 +8,7 @@
 
 namespace Hydrogen;
 
-public sealed class WithNullValueItemHasher<TItem> : ItemHasherDecorator<TItem> {
+internal sealed class WithNullValueItemHasher<TItem> : ItemHasherDecorator<TItem> {
 
 	private readonly byte[] _nullItemHash;
 	public WithNullValueItemHasher(IItemHasher<TItem> internalHasher, byte[] nullItemHash)

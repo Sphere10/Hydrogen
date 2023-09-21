@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 
 namespace Hydrogen;
@@ -278,12 +279,14 @@ public static partial class DecoratorExtensions {
 	public static IItemSerializer<T> AsNullable<T>(this IItemSerializer<T> serializer, bool preserveConstantLength = false)
 		=> serializer.SupportsNull ? serializer : new NullableObjectSerializer<T>(serializer, preserveConstantLength);
 
-
 	public static IItemSerializer<T> WithNullSubstitution<T>(this IItemSerializer<T> serializer, T nullSubstitution, IEqualityComparer<T> comparer = null)
 		=> new WithNullSubstitutionSerializer<T>(serializer, nullSubstitution, comparer);
 
-	public static PaddedSerializer<TItem> AsConstantLengthSerializer<TItem>(this IItemSerializer<TItem> serializer, int length, SizeDescriptorStrategy sizeDescriptorStrategy) 
-		=> new(length, serializer, sizeDescriptorStrategy);
+	public static IItemSerializer<TItem> AsConstantLength<TItem>(this IItemSerializer<TItem> serializer, int length, SizeDescriptorStrategy sizeDescriptorStrategy) 
+		=> new PaddedSerializer<TItem>(length, serializer, sizeDescriptorStrategy);
+
+	public static IAutoSizedSerializer<TItem> AsAutoSized<TItem>(this IItemSerializer<TItem> serializer, SizeDescriptorStrategy sizeDescriptorStrategy = SizeDescriptorStrategy.UseCVarInt) 
+		=> new SizeSavingSerializer<TItem>(serializer, sizeDescriptorStrategy);
 
 	#endregion
 }

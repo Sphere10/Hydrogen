@@ -30,10 +30,10 @@ public class ObjectContainer<T> : ObjectContainer {
 	}
 
 	public ObjectContainer(StreamContainer streamContainer, IItemSerializer<T> serializer = null, bool preAllocateOptimization = true) 
-		: base(typeof(T), streamContainer, (serializer ?? ItemSerializer<T>.Default).AsPacked(), preAllocateOptimization) {
+		: base(typeof(T), streamContainer, (serializer ?? ItemSerializer<T>.Default), preAllocateOptimization) {
 	}
 
-	public IItemSerializer<T> ItemSerializer => base.ItemSerializer.Unpack<T>();
+	public new IItemSerializer<T> ItemSerializer => (IItemSerializer<T>) base.ItemSerializer;
 	
 	public void SaveItem(long index, T item, ObjectContainerOperationType operationType) => SaveItem(index, item as object, operationType);
 

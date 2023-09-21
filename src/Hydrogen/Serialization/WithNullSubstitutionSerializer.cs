@@ -10,7 +10,7 @@ using System.Collections.Generic;
 
 namespace Hydrogen;
 
-public sealed class WithNullSubstitutionSerializer<TItem> : ItemSerializerDecorator<TItem> {
+internal sealed class WithNullSubstitutionSerializer<TItem> : ItemSerializerDecorator<TItem> {
 
 	private readonly TItem _nullSubstitution;
 	private readonly IEqualityComparer<TItem> _equalityComparer;
@@ -20,6 +20,8 @@ public sealed class WithNullSubstitutionSerializer<TItem> : ItemSerializerDecora
 		_nullSubstitution = nullSubstitution;
 		_equalityComparer = equalityComparer ?? EqualityComparer<TItem>.Default;
 	}
+
+	public override bool SupportsNull => true;
 
 	public override long CalculateSize(TItem item) 
 		=> base.CalculateSize(item ?? _nullSubstitution);

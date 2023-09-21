@@ -13,17 +13,19 @@ namespace Hydrogen;
 public class DateTimeOffsetSerializer : ConstantLengthItemSerializerBase<DateTimeOffset> {
 
 	public DateTimeOffsetSerializer() 
-		: base(DateTimeSerializer.Instance.ConstantLength + PrimitiveSerializer<short>.Instance.ConstantLength, false){
+		: base(DateTimeSerializer.Instance.ConstantLength + TimeSpanSerializer.Instance.ConstantLength, false){
 	}
+
+	public static DateTimeOffsetSerializer Instance { get; } = new();
 
 	public override void SerializeInternal(DateTimeOffset item, EndianBinaryWriter writer) {
 		DateTimeSerializer.Instance.SerializeInternal(item.LocalDateTime, writer);
-		PrimitiveSerializer<short>.Instance.SerializeInternal((short)item.Offset.TotalMinutes, writer);
+		TimeSpanSerializer.Instance.SerializeInternal(item.Offset, writer);
 	}
 
 	public override DateTimeOffset Deserialize(EndianBinaryReader reader) {
 		var datetime = DateTimeSerializer.Instance.Deserialize(reader);
-		var offsetMinutes = PrimitiveSerializer<short>.Instance.Deserialize(reader);
-		return new DateTimeOffset(datetime, TimeSpan.FromMinutes(offsetMinutes));
+		var timespan = TimeSpanSerializer.Instance.Deserialize(reader);
+		return new DateTimeOffset(datetime, timespan);
 	}
 }

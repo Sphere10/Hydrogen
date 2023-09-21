@@ -33,9 +33,9 @@ public class ObjectContainer : ICriticalObject, ILoadable, IDisposable {
 	private readonly bool _preAllocateOptimization;
 	private readonly Type _objectType;
 	private readonly IDictionary<long, IObjectContainerMetaDataProvider> _metaDataProviders;
-	public PackedSerializer ItemSerializer { get; }
+	public IItemSerializer ItemSerializer { get; }
 
-	public ObjectContainer(Type objectType, StreamContainer streamContainer, PackedSerializer packedPackedSerializer, bool preAllocateOptimization) {
+	public ObjectContainer(Type objectType, StreamContainer streamContainer, IItemSerializer packedPackedSerializer, bool preAllocateOptimization) {
 		Guard.ArgumentNotNull(objectType, nameof(objectType));
 		Guard.ArgumentNotNull(streamContainer, nameof(streamContainer));
 		Guard.ArgumentNotNull(packedPackedSerializer, nameof(packedPackedSerializer));

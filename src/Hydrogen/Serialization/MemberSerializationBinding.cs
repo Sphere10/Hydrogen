@@ -2,4 +2,4 @@
 
 namespace Hydrogen;
 
-public record MemberSerializationBinding (Member Member, PackedSerializer Serializer);
+internal record MemberSerializationBinding (Member Member, IAutoSizedSerializer Serializer);

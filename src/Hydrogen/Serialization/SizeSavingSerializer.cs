@@ -8,10 +8,10 @@
 
 namespace Hydrogen;
 
-public class AutoSizedSerializer<TItem> : ItemSerializerDecorator<TItem>, IAutoSizedSerializer<TItem> {
+internal class SizeSavingSerializer<TItem> : ItemSerializerDecorator<TItem>, IAutoSizedSerializer<TItem> {
 	private readonly SizeDescriptorSerializer _sizeDescriptorSerializer;
 
-	public AutoSizedSerializer(IItemSerializer<TItem> internalSerializer, SizeDescriptorStrategy sizeDescriptorStrategy)
+	public SizeSavingSerializer(IItemSerializer<TItem> internalSerializer, SizeDescriptorStrategy sizeDescriptorStrategy)
 		: base(internalSerializer) {
 		_sizeDescriptorSerializer = new SizeDescriptorSerializer(sizeDescriptorStrategy);
 	}

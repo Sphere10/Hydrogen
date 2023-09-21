@@ -36,6 +36,6 @@ public static partial class DecoratorExtensions {
 	public static IItemSerializer<TTo> AsCasted<TFrom, TTo>(this IItemSerializer<TFrom> serializer) where TTo : TFrom
 		=> AsProjection(serializer, x => (TTo)x, x => x);
 
-	public static PackedSerializer AsPacked<TItem>(this IItemSerializer<TItem> serializer) => PackedSerializer.Pack(serializer);
+	public static IItemSerializer<object> AsPacked<TItem>(this IItemSerializer<TItem> serializer) => PackedSerializer.Pack(serializer);
 	
 }

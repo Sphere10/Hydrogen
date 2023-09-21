@@ -20,6 +20,9 @@ public class TestObject {
 		C = c;
 	}
 
+	public TestObject() {
+	}
+
 	public string A { get; set; }
 
 	public int B { get; set; }
@@ -32,7 +35,7 @@ public class TestObject {
 
 
 public class TestObjectSerializer : ItemSerializer<TestObject> {
-	private readonly AutoSizedSerializer<string> _stringSerializer = new(new StringSerializer(Encoding.UTF8).AsNullable(), SizeDescriptorStrategy.UseVarInt);
+	private readonly SizeSavingSerializer<string> _stringSerializer = new(new StringSerializer(Encoding.UTF8).AsNullable(), SizeDescriptorStrategy.UseVarInt);
 
 	public override long CalculateSize(TestObject item)
 		=> _stringSerializer.CalculateSize(item.A) + sizeof(int) + sizeof(bool);

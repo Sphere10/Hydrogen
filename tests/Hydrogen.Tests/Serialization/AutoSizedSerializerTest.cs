@@ -24,7 +24,7 @@ public class AutoSizedSerializerTest {
 	) {
 		var rng = new Random(31337);
 		var @string = rng.NextString(stringSize);
-		var serializer = new AutoSizedSerializer<string>(new StringSerializer(Encoding.ASCII), strategy);
+		var serializer = new SizeSavingSerializer<string>(new StringSerializer(Encoding.ASCII), strategy);
 
 		var expectThrow =
 			stringSize > byte.MaxValue && strategy == SizeDescriptorStrategy.UseByte ||
@@ -43,7 +43,7 @@ public class AutoSizedSerializerTest {
 	public void StringTooLargeForByteDescriptor() {
 		var rng = new Random(31337);
 		var @string = rng.NextString(256);
-		var serializer = new AutoSizedSerializer<string>(new StringSerializer(Encoding.ASCII), SizeDescriptorStrategy.UseByte);
+		var serializer = new SizeSavingSerializer<string>(new StringSerializer(Encoding.ASCII), SizeDescriptorStrategy.UseByte);
 		Assert.That(() => serializer.SerializeLE(@string), Throws.InstanceOf<ArgumentOutOfRangeException>());
 	}
 

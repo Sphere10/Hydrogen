@@ -10,7 +10,7 @@ using System.Collections.Generic;
 
 namespace Hydrogen;
 
-public class PackedSerializer : IItemSerializer<object> {
+internal class PackedSerializer : IItemSerializer<object> {
 	private readonly IItemSerializer _serializer;
 	
 	private PackedSerializer(IItemSerializer serializer) {

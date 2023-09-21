@@ -13,8 +13,11 @@ namespace Hydrogen;
 public class GuidSerializer : ConstantLengthItemSerializerBase<Guid> {
 	private const int GuidByteCount = 16;
 	private readonly ConstantLengthByteArraySerializer _byteArraySerializer = new(GuidByteCount);
+
 	public GuidSerializer() : base(GuidByteCount, false) {
 	}
+
+	public static GuidSerializer Instance { get; } = new();
 
 	public override void SerializeInternal(Guid item, EndianBinaryWriter writer)
 		=> _byteArraySerializer.SerializeInternal(item.ToByteArray(), writer);

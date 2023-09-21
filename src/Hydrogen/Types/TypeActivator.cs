@@ -127,7 +127,7 @@ public static class TypeActivator {
 
 	public static object ActivateWithCompatibleArgs(Type type, object[] args) {
 		if (!TryActivateWithCompatibleArgs(type, args, out var instance))
-			throw new InvalidOperationException($"No compatible constructor was found for type {type.Name} for args [{args.Select(x => x.ToString()).ToDelimittedString(", ")}].");
+			throw new InvalidOperationException($"No compatible constructor was found for type {type.ToStringCS()} for args [{args.Select(x => x.ToString()).ToDelimittedString(", ")}].");
 		return instance;
 	}
 

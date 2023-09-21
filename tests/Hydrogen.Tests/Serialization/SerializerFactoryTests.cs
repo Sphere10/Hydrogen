@@ -40,7 +40,6 @@ public class SerializerFactoryTests {
 		Assert.That(factory.GetSerializer<IList<KeyValuePair<int, float>>>(), Is.TypeOf<ListInterfaceSerializer<KeyValuePair<int, float>>>());
 	}
 
-
 	[Test]
 	public void OpenGenericSerializer_3() {
 		var factory = new SerializerFactory();
@@ -66,7 +65,6 @@ public class SerializerFactoryTests {
 		factory.Register(PrimitiveSerializer<int>.Instance);  // 1
 		CollectionAssert.AreEqual(factory.GetSerializerHierarchy(typeof(IList<int>)).Flatten(), new[] { 0, 1});
 	}
-
 
 	[Test]
 	public void GetSerializerHierarchy_Open_Complex() {
@@ -119,7 +117,6 @@ public class SerializerFactoryTests {
 		var serializer = factory.FromSerializerHierarchy(serializerHierarchy);
 		Assert.That(serializer, Is.TypeOf<ListInterfaceSerializer<int>>());
 	}
-
 
 	[Test]
 	public void FromSerializerHierarchy_Open_Complex() {
@@ -185,10 +182,46 @@ public class SerializerFactoryTests {
 	//	Assert.That(() => factory.Register(typeof(List<int>), typeof( PrimitiveSerializer<int>.Instance), Throws.InvalidOperationException);
 	}
 
-
 	[Test]
 	public void CannotRegisterNotSerializingType() {
 		var factory = new SerializerFactory();
 		Assert.That(() => factory.Register(typeof(int), typeof(PrimitiveSerializer<float>)), Throws.ArgumentException);
 	}
+
+	[Test]
+	public void Array() {
+		var factory = new SerializerFactory();
+		factory.Register(typeof(System.Array), typeof(ArraySerializer<>));
+		factory.Register(PrimitiveSerializer<int>.Instance);
+		var hierarchy = factory.GetSerializerHierarchy(typeof(int[]));
+		Assert.That(hierarchy.Flatten(), Is.EqualTo(new[] { 0, 1 }));
+		var serializer = factory.FromSerializerHierarchy(hierarchy);
+		Assert.That(serializer, Is.TypeOf<ArraySerializer<int>>());
+	}
+
+	[Test]
+	public void ResolveNotSpecializedByteArray() {
+		var factory = new SerializerFactory();
+		factory.Register(typeof(System.Array), typeof(ArraySerializer<>)); // 0
+		factory.Register(PrimitiveSerializer<int>.Instance); // 1
+		factory.Register(ByteArraySerializer.Instance); // 2 (special for byte[])
+		var hierarchy = factory.GetSerializerHierarchy(typeof(int[]));
+		Assert.That(hierarchy.Flatten(), Is.EqualTo(new[] { 0, 1 }));
+		var serializer = factory.FromSerializerHierarchy(hierarchy);
+		Assert.That(serializer, Is.TypeOf<ArraySerializer<int>>());
+	}
+
+	[Test]
+	public void ResolveSpecializedByteArray() {
+		var factory = new SerializerFactory();
+		factory.Register(typeof(System.Array), typeof(ArraySerializer<>)); // 0
+		factory.Register(PrimitiveSerializer<int>.Instance); // 1
+		factory.Register(ByteArraySerializer.Instance); // 2 (special for byte[])
+		var hierarchy = factory.GetSerializerHierarchy(typeof(byte[]));
+		Assert.That(hierarchy.Flatten(), Is.EqualTo(new[] { 2 }));
+		var serializer = factory.FromSerializerHierarchy(hierarchy);
+		Assert.That(serializer, Is.TypeOf<ByteArraySerializer>());
+	}
+
+
 }

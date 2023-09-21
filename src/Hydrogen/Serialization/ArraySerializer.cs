@@ -12,7 +12,7 @@ public class ArraySerializer<T> : ItemSerializer<T[]> {
 	private readonly IAutoSizedSerializer<T> _valueSerializer;
 	private readonly SizeDescriptorSerializer _sizeDescriptorSerializer;
 	
-	public ArraySerializer(IItemSerializer<T> valueSerializer, SizeDescriptorStrategy sizeDescriptorStrategy) {
+	public ArraySerializer(IItemSerializer<T> valueSerializer, SizeDescriptorStrategy sizeDescriptorStrategy = SizeDescriptorStrategy.UseCVarInt) {
 		Guard.ArgumentNotNull(valueSerializer, nameof(valueSerializer));
 		
 		if (valueSerializer is not IAutoSizedSerializer<T> autoSizedSerializer) {

@@ -13,10 +13,10 @@ namespace Hydrogen;
 public class TimeSpanSerializer : ConstantLengthItemSerializerBase<TimeSpan> {
 	private readonly PrimitiveSerializer<long> _longSerializer = new();
 
-	public static TimeSpanSerializer Instance { get; } = new();
-
 	public TimeSpanSerializer() : base(8, false) {
 	}
+
+	public static TimeSpanSerializer Instance { get; } = new();
 
 	public override void SerializeInternal(TimeSpan item, EndianBinaryWriter writer)
 		=> _longSerializer.SerializeInternal(item.Ticks, writer);

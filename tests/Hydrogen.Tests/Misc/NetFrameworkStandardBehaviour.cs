@@ -20,6 +20,54 @@ namespace Hydrogen.Tests;
 [Parallelizable(ParallelScope.Children)]
 public class NetFrameworkStandardBehaviour {
 
+
+	[Test]
+	public void TypedArraysAreDifferentTypes() {
+		var byteArrType = typeof(byte[]);
+		var intArrType = typeof(int[]);
+		Assert.That(byteArrType.IsArray, Is.Not.EqualTo(intArrType));
+	}
+
+
+	[Test]
+	public void TypedArrayIsArray() {
+		var type = typeof(int[]);
+		Assert.That(type.IsArray, Is.True);
+	}
+
+	[Test]
+	public void ArrayTypeIsNotArray() {
+		var arrayType = typeof(Array);
+		Assert.That(arrayType.IsArray, Is.False);
+	}
+
+	[Test]
+	public void TypedArrayIsNotArrayType() {
+		var type = typeof(int[]);
+		var arrayType = typeof(Array);
+		Assert.That(type, Is.Not.EqualTo(arrayType));
+	}
+
+	[Test]
+	public void TypedArrayHasArrayBaseType() {
+		var type = typeof(int[]);
+		var arrayType = typeof(Array);
+		Assert.That(type.BaseType, Is.EqualTo(arrayType));
+		Assert.That(arrayType.BaseType, Is.EqualTo(typeof(object)));
+	}
+
+	
+	[Test]
+	public void TypedArraysAreNotGenericTypes() {
+		var type = typeof(int[]);
+		var listType = typeof(List<int>);
+		
+
+		// Generic arrays are not generic types in .NET (unlike List<>)
+		Assert.That(type.IsGenericType, Is.False);
+		Assert.That(listType.IsGenericType, Is.True);
+	}
+	
 	[Test]
 	public void ConstructedGenericTypesAreReused() {
 		var first = typeof(List<>).MakeGenericType(typeof(int));

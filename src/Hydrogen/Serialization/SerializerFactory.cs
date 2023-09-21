@@ -200,7 +200,7 @@ public class SerializerFactory {
 		Guard.ArgumentNotNull(dataType, nameof(dataType));
 		var serializerDataType = typeof(TSerializerDataType);
 		Guard.Argument(dataType.IsSubTypeOf(serializerDataType), nameof(dataType), $"{dataType.ToStringCS()} must be a sub-type of {serializerDataType.ToStringCS()}");
-		var serializerObj = GetSerializerObject(dataType);
+		var serializerObj = _getSerializerCache[dataType];
 
 		var serializer = serializerObj as IItemSerializer<TSerializerDataType>;
 		if (serializer is null) {
@@ -211,13 +211,12 @@ public class SerializerFactory {
 		return serializer;
 	}
 
-	private IItemSerializer GetSerializerObject(Type dataType) 
-		=> _getSerializerCache[dataType];
 
+	// Called by _getSerializerCache to get serializer
 	private IItemSerializer GetSerializerInternal(Type dataType) {
 		if (dataType.IsArray) {
 			// Special Case, array serializers
-			var valueSerializer = GetSerializerObject(dataType.GetElementType());
+			var valueSerializer = _getSerializerCache[dataType.GetElementType()];
 			if (dataType == typeof(byte[]))
 				return new ByteArraySerializer();
 			return  (IItemSerializer)typeof(ArraySerializer<>).MakeGenericType(dataType).ActivateWithCompatibleArgs( new object [] { valueSerializer, SizeDescriptorStrategy.UseCVarInt } ) ;
@@ -262,7 +261,7 @@ public class SerializerFactory {
 		if (registeredDataType.IsGenericTypeDefinition)
 			Guard.Ensure(requestedDataType.IsConstructedGenericTypeOf(registeredDataType), $"Constructed type {requestedDataType.Name} is not a constructed generic type of {registeredDataType.Name}");
 		var subTypes = requestedDataType.GetGenericArguments();
-		var subTypeSerializers = subTypes.Select(GetSerializerObject).ToArray();
+		var subTypeSerializers = subTypes.Select(x => _getSerializerCache[x]).ToArray();
 		var serializerType = registeredSerializerType;
 		if (serializerType.IsGenericTypeDefinition)
 			serializerType = serializerType.MakeGenericType(subTypes);

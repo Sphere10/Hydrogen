@@ -22,7 +22,6 @@ public class FactorySerializer<TBase> : IItemSerializer<TBase> {
 	private readonly SerializerFactory _factory;
 	private readonly SerializerSerializer _serializerSerializer;
 
-
 	public FactorySerializer(bool supportsNull = false) {
 		_factory = new SerializerFactory();
 		_serializerSerializer = new SerializerSerializer(_factory);
@@ -69,8 +68,6 @@ public class FactorySerializer<TBase> : IItemSerializer<TBase> {
 		var serializer = GetTypedSerializer<TBase>(serializerObj);
 		return serializer.DeserializeInternal(byteSize - serializerSize, reader);
 	}
-	
-
 
 	public IItemSerializer<TSerializerDataType> GetTypedSerializer<TSerializerDataType>(IItemSerializer serializerObj) {
 		if (serializerObj is IItemSerializer<TSerializerDataType> serializer)

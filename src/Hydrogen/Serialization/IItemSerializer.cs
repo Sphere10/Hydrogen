@@ -8,7 +8,6 @@
 
 using System;
 using System.IO;
-using System.Linq;
 using System.Runtime.CompilerServices;
 
 namespace Hydrogen;
@@ -32,7 +31,6 @@ public interface IItemSerializer<TItem> : IItemSizer<TItem>, IItemSerializer {
 	object IItemSerializer.DeserializeInternal(long byteSize, EndianBinaryReader reader)
 		=> DeserializeInternal(byteSize, reader);
 }
-
 
 public static class IItemSerializerExtensions {
 

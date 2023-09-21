@@ -38,6 +38,62 @@ public class SerializerFactory {
 
 	public static SerializerFactory Default { get; }
 
+	public static void RegisterDefaults(SerializerFactory factory) {
+		// primitives
+		factory.Register(PrimitiveSerializer<bool>.Instance);
+		factory.Register(PrimitiveSerializer<byte>.Instance);
+		factory.Register(PrimitiveSerializer<char>.Instance);
+		factory.Register(PrimitiveSerializer<ushort>.Instance);
+		factory.Register(PrimitiveSerializer<short>.Instance);
+		factory.Register(PrimitiveSerializer<uint>.Instance);
+		factory.Register(PrimitiveSerializer<int>.Instance);
+		factory.Register(PrimitiveSerializer<ulong>.Instance);
+		factory.Register(PrimitiveSerializer<long>.Instance);
+		factory.Register(PrimitiveSerializer<float>.Instance);
+		factory.Register(PrimitiveSerializer<double>.Instance);
+		factory.Register(PrimitiveSerializer<decimal>.Instance);
+
+		// nullables
+		factory.Register(NullableStructSerializer<bool>.Instance);
+		factory.Register(NullableStructSerializer<byte>.Instance);
+		factory.Register(NullableStructSerializer<char>.Instance);
+		factory.Register(NullableStructSerializer<ushort>.Instance);
+		factory.Register(NullableStructSerializer<short>.Instance);
+		factory.Register(NullableStructSerializer<uint>.Instance);
+		factory.Register(NullableStructSerializer<int>.Instance);
+		factory.Register(NullableStructSerializer<ulong>.Instance);
+		factory.Register(NullableStructSerializer<long>.Instance);
+		factory.Register(NullableStructSerializer<float>.Instance);
+		factory.Register(NullableStructSerializer<double>.Instance);
+		factory.Register(NullableStructSerializer<decimal>.Instance);
+
+		// other base .net types
+		factory.Register(new StringSerializer().AsNullable());
+		factory.Register(new GuidSerializer());
+		factory.Register(new NullableStructSerializer<Guid>(new GuidSerializer()));
+
+		// datetime
+		factory.Register(new DateTimeSerializer());
+		factory.Register(new NullableStructSerializer<DateTime>(new DateTimeSerializer()));
+		factory.Register(new TimeSpanSerializer());
+		factory.Register(new NullableStructSerializer<TimeSpan>(new TimeSpanSerializer()));
+		
+
+		// special collections
+		factory.Register(new ByteArraySerializer());
+
+		// general collections
+		factory.Register(typeof(IEnumerable<>), typeof(EnumerableSerializer<>));
+		//factory.Register(typeof(Array<>), typeof(ArraySerializer<>));
+		factory.Register(typeof(ICollection<>), typeof(CollectionInterfaceSerializer<>));
+		factory.Register(typeof(Collection<>), typeof(CollectionSerializer<>));
+		factory.Register(typeof(IList<>), typeof(ListInterfaceSerializer<>));
+		factory.Register(typeof(List<>), typeof(ListSerializer<>));
+		factory.Register(typeof(IDictionary<,>), typeof(DictionaryInterfaceSerializer<,>));
+		factory.Register(typeof(Dictionary<,>), typeof(DictionarySerializer<,>));
+
+	}
+
 	#region Serializer hierarchy methods
 
 	public RecursiveDataType<long> GetSerializerHierarchy(Type type) 
@@ -160,6 +216,7 @@ public class SerializerFactory {
 
 	private IItemSerializer GetSerializerInternal(Type dataType) {
 		if (dataType.IsArray) {
+			// Special Case, array serializers
 			var valueSerializer = GetSerializerObject(dataType.GetElementType());
 			if (dataType == typeof(byte[]))
 				return new ByteArraySerializer();
@@ -169,7 +226,6 @@ public class SerializerFactory {
 		var registration = FindCompatibleSerializer(dataType, out _);
 		return registration.Factory(dataType);
 	}
-
 
 	#endregion
 
@@ -199,7 +255,7 @@ public class SerializerFactory {
 		return registration;
 	}
 
-	public long GenerateTypeCode() => _registrations.Count > 0 ? _registrations.Keys.Max() + 1 : 0;
+	private long GenerateTypeCode() => _registrations.Count > 0 ? _registrations.Keys.Max() + 1 : 0;
 
 	private IItemSerializer CreateSerializerInstance(Type requestedDataType, Type registeredDataType, Type registeredSerializerType) {
 		Guard.Argument(!requestedDataType.IsGenericTypeDefinition, nameof(requestedDataType), $"Requested data type {requestedDataType.Name} cannot be a generic type definition");
@@ -247,61 +303,4 @@ public class SerializerFactory {
 		public Type SerializerType { get; set; }
 		public Func<Type, IItemSerializer> Factory { get; set; }
 	}
-
-	public static void RegisterDefaults(SerializerFactory factory) {
-		// primitives
-		factory.Register(PrimitiveSerializer<bool>.Instance);
-		factory.Register(PrimitiveSerializer<byte>.Instance);
-		factory.Register(PrimitiveSerializer<char>.Instance);
-		factory.Register(PrimitiveSerializer<ushort>.Instance);
-		factory.Register(PrimitiveSerializer<short>.Instance);
-		factory.Register(PrimitiveSerializer<uint>.Instance);
-		factory.Register(PrimitiveSerializer<int>.Instance);
-		factory.Register(PrimitiveSerializer<ulong>.Instance);
-		factory.Register(PrimitiveSerializer<long>.Instance);
-		factory.Register(PrimitiveSerializer<float>.Instance);
-		factory.Register(PrimitiveSerializer<double>.Instance);
-		factory.Register(PrimitiveSerializer<decimal>.Instance);
-
-		// nullables
-		factory.Register(NullableStructSerializer<bool>.Instance);
-		factory.Register(NullableStructSerializer<byte>.Instance);
-		factory.Register(NullableStructSerializer<char>.Instance);
-		factory.Register(NullableStructSerializer<ushort>.Instance);
-		factory.Register(NullableStructSerializer<short>.Instance);
-		factory.Register(NullableStructSerializer<uint>.Instance);
-		factory.Register(NullableStructSerializer<int>.Instance);
-		factory.Register(NullableStructSerializer<ulong>.Instance);
-		factory.Register(NullableStructSerializer<long>.Instance);
-		factory.Register(NullableStructSerializer<float>.Instance);
-		factory.Register(NullableStructSerializer<double>.Instance);
-		factory.Register(NullableStructSerializer<decimal>.Instance);
-
-		// other base .net types
-		factory.Register(new StringSerializer().AsNullable());
-		factory.Register(new GuidSerializer());
-		factory.Register(new NullableStructSerializer<Guid>(new GuidSerializer()));
-
-		// datetime
-		factory.Register(new DateTimeSerializer());
-		factory.Register(new NullableStructSerializer<DateTime>(new DateTimeSerializer()));
-		factory.Register(new TimeSpanSerializer());
-		factory.Register(new NullableStructSerializer<TimeSpan>(new TimeSpanSerializer()));
-		
-
-		// special collections
-		factory.Register(new ByteArraySerializer());
-
-		// general collections
-		factory.Register(typeof(IEnumerable<>), typeof(EnumerableSerializer<>));
-		//factory.Register(typeof(Array<>), typeof(ArraySerializer<>));
-		factory.Register(typeof(ICollection<>), typeof(CollectionInterfaceSerializer<>));
-		factory.Register(typeof(Collection<>), typeof(CollectionSerializer<>));
-		factory.Register(typeof(IList<>), typeof(ListInterfaceSerializer<>));
-		factory.Register(typeof(List<>), typeof(ListSerializer<>));
-		factory.Register(typeof(IDictionary<,>), typeof(DictionaryInterfaceSerializer<,>));
-		factory.Register(typeof(Dictionary<,>), typeof(DictionarySerializer<,>));
-
-	}
-
 }

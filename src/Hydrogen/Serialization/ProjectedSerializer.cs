@@ -22,14 +22,12 @@ public class ProjectedSerializer<TFrom, TTo> : IItemSerializer<TTo> {
 		_projection = projection;
 		_inverseProjection = inverseProjection;
 	}
-
-	
 	
 	public bool SupportsNull => _sourceSerializer.SupportsNull;
 
-	public bool IsConstantLength => _sourceSerializer.IsConstantLength;
+	public bool IsConstantSize => _sourceSerializer.IsConstantSize;
 
-	public long ConstantLength => _sourceSerializer.ConstantLength;
+	public long ConstantSize => _sourceSerializer.ConstantSize;
 
 	public long CalculateTotalSize(IEnumerable<TTo> items, bool calculateIndividualItems, out long[] itemSizes) 
 		=> _sourceSerializer.CalculateTotalSize(items.Select(_inverseProjection), calculateIndividualItems, out itemSizes);
@@ -40,8 +38,7 @@ public class ProjectedSerializer<TFrom, TTo> : IItemSerializer<TTo> {
 	public void SerializeInternal(TTo item, EndianBinaryWriter writer) 
 		=> _sourceSerializer.SerializeInternal(_inverseProjection(item), writer);
 
-	public TTo DeserializeInternal(long byteSize, EndianBinaryReader reader) 
-		=> _projection(_sourceSerializer.DeserializeInternal(byteSize, reader));
-
+	public TTo DeserializeInternal(EndianBinaryReader reader) 
+		=> _projection(_sourceSerializer.DeserializeInternal(reader));
 
 }

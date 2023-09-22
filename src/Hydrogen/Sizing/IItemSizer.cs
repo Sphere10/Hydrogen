@@ -19,9 +19,9 @@ public interface IItemSizer {
 
 	bool SupportsNull { get; }
 
-	bool IsConstantLength { get; }
+	bool IsConstantSize { get; }
 
-	long ConstantLength { get; }
+	long ConstantSize { get; }
 
 	long CalculateTotalSize(IEnumerable<object> items, bool calculateIndividualItems, out long[] itemSizes);
 

@@ -23,9 +23,9 @@ public class ActionItemSizer<T> : IItemSizer<T> {
 
 	public bool SupportsNull { get; }
 
-	public bool IsConstantLength => false;
+	public bool IsConstantSize => false;
 
-	public long ConstantLength => -1;
+	public long ConstantSize => -1;
 
 	public long CalculateTotalSize(IEnumerable<T> items, bool calculateIndividualItems, out long[] itemSizes) {
 		var sizes = items.Select(item => CalculateSize(item)).ToArray();

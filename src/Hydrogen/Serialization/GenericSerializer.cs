@@ -25,9 +25,9 @@ public class GenericSerializer<T> : GenericSerializerBase, IItemSerializer<T> {
 	
 	public bool SupportsNull => true;
 
-	public bool IsConstantLength => false;
+	public bool IsConstantSize => false;
 
-	public long ConstantLength => -1;
+	public long ConstantSize => -1;
 
 	/// <summary>
 	/// Initialize a new instance of <see cref="GenericSerializerBase"/>. Registers generic type param
@@ -65,7 +65,7 @@ public class GenericSerializer<T> : GenericSerializerBase, IItemSerializer<T> {
 		SerializeInternal(typeof(T), item, context);
 	}
 
-	public T DeserializeInternal(long byteSize, EndianBinaryReader reader) {
+	public T DeserializeInternal(EndianBinaryReader reader) {
 		var context = new SerializationContext(reader);
 		return (T)DeserializeInternal(typeof(T), context);
 	}
@@ -250,8 +250,7 @@ public class GenericSerializer<T> : GenericSerializerBase, IItemSerializer<T> {
 	}
 
 	private object DeserializeCustom(IItemSerializer<object> serializer, SerializationContext context) {
-		var byteSize = (int)(ulong)context.Reader.ReadCVarInt();
-		return serializer.Deserialize(byteSize, context.Reader);
+		return serializer.Deserialize(context.Reader);
 	}
 
 	private object DeserializePrimitive(Type t, SerializationContext context) {
@@ -365,7 +364,7 @@ public class GenericSerializer<T> : GenericSerializerBase, IItemSerializer<T> {
 			return DeserializeCircularReference(context);
 
 		if (Serializers.TryGetValue(propertyType, out var serializer))
-			return serializer.Deserialize(-1, reader);
+			return serializer.Deserialize(reader);
 
 		if (propertyType.IsNullable()) {
 			propertyType = propertyType.GetField("value", BindingFlags.NonPublic | BindingFlags.Instance)!.FieldType;

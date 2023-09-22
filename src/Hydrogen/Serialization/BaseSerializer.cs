@@ -32,9 +32,9 @@ public class BaseSerializer<TBase> : IItemSerializer<TBase> {
 
 	public bool SupportsNull { get; }
 
-	public bool IsConstantLength => false;
+	public bool IsConstantSize => false;
 
-	public long ConstantLength => -1;
+	public long ConstantSize => -1;
 
 	public long CalculateTotalSize(IEnumerable<TBase> items, bool calculateIndividualItems, out long[] itemSizes) {
 		var itemSizesL = new List<long>();
@@ -61,12 +61,10 @@ public class BaseSerializer<TBase> : IItemSerializer<TBase> {
 		serializer.SerializeInternal(item, writer);
 	}
 
-	public TBase DeserializeInternal(long byteSize, EndianBinaryReader reader) {
-		var from = reader.BaseStream.Position;
-		var serializerObj = _serializerSerializer.DeserializeInternal(byteSize, reader);
-		var serializerSize = reader.BaseStream.Position - from;
+	public TBase DeserializeInternal(EndianBinaryReader reader) {
+		var serializerObj = _serializerSerializer.DeserializeInternal(reader);
 		var serializer = GetTypedSerializer<TBase>(serializerObj);
-		return serializer.DeserializeInternal(byteSize - serializerSize, reader);
+		return serializer.DeserializeInternal(reader);
 	}
 
 	public IItemSerializer<TSerializerDataType> GetTypedSerializer<TSerializerDataType>(IItemSerializer serializerObj) {

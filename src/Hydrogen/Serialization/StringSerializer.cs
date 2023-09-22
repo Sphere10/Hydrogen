@@ -6,8 +6,6 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
-using System.Diagnostics;
 using System.Text;
 
 namespace Hydrogen;
@@ -18,7 +16,8 @@ public class StringSerializer : ItemSerializer<string> {
 		: this(Encoding.UTF8) {
 	}
 
-	public StringSerializer(Encoding textEncoding) {
+	public StringSerializer(Encoding textEncoding, SizeDescriptorStrategy sizeDescriptorStrategy = SizeDescriptorStrategy.UseCVarInt) 
+		: base(sizeDescriptorStrategy) {
 		Guard.ArgumentNotNull(textEncoding, nameof(textEncoding));
 		TextEncoding = textEncoding;
 	}
@@ -38,19 +37,21 @@ public class StringSerializer : ItemSerializer<string> {
 
 	public Encoding TextEncoding { get; }
 
-	public override long CalculateSize(string item) => !string.IsNullOrEmpty(item) ? TextEncoding.GetByteCount(item) : 0;
-
-	public override void SerializeInternal(string item, EndianBinaryWriter writer) {
-		var bytes = !string.IsNullOrEmpty(item) ? TextEncoding.GetBytes(item) : System.Array.Empty<byte>();
-		Debug.Assert(bytes.Length == CalculateSize(item));
-		ByteArraySerializer.Instance.SerializeInternal(bytes, writer);
+	public override long CalculateSize(string item) {
+		var textByteCount = TextEncoding.GetByteCount(item);
+		var sizeCount = SizeSerializer.CalculateSize(textByteCount);
+		return sizeCount + textByteCount;
 	}
 
-	public override string DeserializeInternal(long byteSize, EndianBinaryReader reader) {
-		if (byteSize == 0)
-			return string.Empty;
+	public override void SerializeInternal(string item, EndianBinaryWriter writer) {
+		SizeSerializer.SerializeInternal(TextEncoding.GetByteCount(item), writer);
+		var bytes = TextEncoding.GetBytes(item);
+		writer.Write(bytes);
+	}
 
-		var bytes = ByteArraySerializer.Instance.DeserializeInternal(byteSize, reader);
+	public override string DeserializeInternal(EndianBinaryReader reader) {
+		var size = SizeSerializer.Deserialize(reader);
+		var bytes = reader.ReadBytes(size);
 		return TextEncoding.GetString(bytes);
 	}
 }

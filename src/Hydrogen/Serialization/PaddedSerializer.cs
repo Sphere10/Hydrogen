@@ -10,49 +10,45 @@ using System;
 
 namespace Hydrogen;
 
-internal class PaddedSerializer<TItem> : ConstantLengthItemSerializerBase<TItem> {
+internal class PaddedSerializer<TItem> : ConstantSizeItemSerializerBase<TItem> {
 	private readonly IItemSerializer<TItem> _dynamicSerializer;
-	private readonly SizeDescriptorSerializer _sizeDescriptorSerializer;
-	public PaddedSerializer(long fixedSize, IItemSerializer<TItem> dynamicSerializer, SizeDescriptorStrategy sizeDescriptorStrategy)
+	public PaddedSerializer(long fixedSize, IItemSerializer<TItem> dynamicSerializer)
 		: base(fixedSize, dynamicSerializer.SupportsNull) {
 		Guard.ArgumentNotNull(dynamicSerializer, nameof(dynamicSerializer));
 		_dynamicSerializer = dynamicSerializer;
-		_sizeDescriptorSerializer = new SizeDescriptorSerializer(sizeDescriptorStrategy);
 	}
 
 	public override void SerializeInternal(TItem item, EndianBinaryWriter writer) {
 		const int StackAllocPaddingThreshold = 2048;
 
-		// Write size descriptor
+		// Check
 		var expectedSize = _dynamicSerializer.CalculateSize(item);
-		var sizeDescriptorBytes = _sizeDescriptorSerializer.Serialize(expectedSize, writer);
-		Guard.Ensure(expectedSize + sizeDescriptorBytes <= ConstantLength, $"Item is too large to fit in {ConstantLength} bytes");
+		Guard.Ensure(expectedSize <= ConstantSize, $"Item is too large to fit in {ConstantSize} bytes");
 
 		// Write item
 		var itemBytes = _dynamicSerializer.Serialize(item, writer);
 		Guard.Ensure(itemBytes == expectedSize, $"Overflow detected. Expected to serialize {expectedSize} bytes, but serialized {itemBytes} bytes");
 
 		// Write padding
-		// TODO: should chunk this out
-		var paddingLength = ConstantLength - (itemBytes + sizeDescriptorBytes);
-	
-		Span<byte> padding = paddingLength <= StackAllocPaddingThreshold ? stackalloc byte[unchecked((int)paddingLength)] : new byte[paddingLength];
-		if (padding.Length > 0) {
+		var paddingLength = ConstantSize - itemBytes;
+		if (paddingLength > 0) {
+			Span<byte> padding = paddingLength <= StackAllocPaddingThreshold ? stackalloc byte[unchecked((int)paddingLength)] : new byte[paddingLength];
 			writer.Write(padding);
 		}
 	}
 
-	public override TItem Deserialize(EndianBinaryReader reader) {
+	public override TItem DeserializeInternal(EndianBinaryReader reader) {
 		// read size descriptor
-		var itemSize = _sizeDescriptorSerializer.Deserialize(reader);
-		var sizeDescriptorSize = _sizeDescriptorSerializer.CalculateSize(itemSize);
-		Guard.Ensure(itemSize + sizeDescriptorSize <= ConstantLength, $"Item is too large to fit in {ConstantLength} bytes");
+		var pos = reader.BaseStream.Position;
 
 		// read item
-		var item = _dynamicSerializer.Deserialize(itemSize, reader);
+		var item = _dynamicSerializer.Deserialize(reader);
+
+		var bytesRead = reader.BaseStream.Position - pos;
+		Guard.Ensure(bytesRead <= ConstantSize, $"Item was larger than {ConstantSize} bytes");
 
 		// read padding
-		var padding = ConstantLength - itemSize - sizeDescriptorSize;
+		var padding = ConstantSize - bytesRead;
 		if (padding > 0) {
 			var _ = reader.ReadBytes(padding);
 		}

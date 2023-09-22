@@ -10,7 +10,7 @@ using System.Diagnostics;
 
 namespace Hydrogen;
 
-public class ClusterSerializer : ConstantLengthItemSerializerBase<Cluster> {
+public class ClusterSerializer : ConstantSizeItemSerializerBase<Cluster> {
 	public const int TraitsLength = sizeof(byte);
 	public const int PrevLength = sizeof(long);
 	public const int NextLength = sizeof(long);
@@ -40,7 +40,7 @@ public class ClusterSerializer : ConstantLengthItemSerializerBase<Cluster> {
 		writer.Write(item.Data);
 	}
 
-	public override Cluster Deserialize(EndianBinaryReader reader) {
+	public override Cluster DeserializeInternal(EndianBinaryReader reader) {
 		Guard.ArgumentNotNull(reader, nameof(reader));
 		return new Cluster {
 			Traits = (ClusterTraits)reader.ReadByte(),

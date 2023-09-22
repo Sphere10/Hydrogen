@@ -117,7 +117,7 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 			
 			using var stream = ObjectContainer.StreamContainer.OpenRead(ObjectContainer.StreamContainer.Header.ReservedStreams + index);
 			var reader = new EndianBinaryReader(EndianBitConverter.For(ObjectContainer.StreamContainer.Endianness), stream);
-			return ((KeyValuePairSerializer<TKey, TValue>)ObjectContainer.ItemSerializer).DeserializeValue(stream.Length, reader);
+			return ((KeyValuePairSerializer<TKey, TValue>)ObjectContainer.ItemSerializer).DeserializeValue(reader);
 		}
 	}
 
@@ -129,7 +129,7 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 
 			using var stream = ObjectContainer.StreamContainer.OpenRead(ObjectContainer.StreamContainer.Header.ReservedStreams + index);
 			var reader = new EndianBinaryReader(EndianBitConverter.For(ObjectContainer.StreamContainer.Endianness), stream);
-			return ((KeyValuePairSerializer<TKey, TValue>)ObjectContainer.ItemSerializer).ReadValueBytes(stream.Length, reader);
+			return ((KeyValuePairSerializer<TKey, TValue>)ObjectContainer.ItemSerializer).ReadValueBytes(reader);
 		}
 	}
 

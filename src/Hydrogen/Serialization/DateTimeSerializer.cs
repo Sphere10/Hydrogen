@@ -10,7 +10,7 @@ using System;
 
 namespace Hydrogen;
 
-public class DateTimeSerializer : ConstantLengthItemSerializerBase<DateTime> {
+public class DateTimeSerializer : ConstantSizeItemSerializerBase<DateTime> {
 	private readonly PrimitiveSerializer<long> _longSerializer = new();
 
 	public static DateTimeSerializer Instance { get; } = new();
@@ -21,6 +21,6 @@ public class DateTimeSerializer : ConstantLengthItemSerializerBase<DateTime> {
 	public override void SerializeInternal(DateTime item, EndianBinaryWriter writer)
 		=> _longSerializer.SerializeInternal(item.ToBinary(), writer);
 
-	public override DateTime Deserialize(EndianBinaryReader reader) 
+	public override DateTime DeserializeInternal(EndianBinaryReader reader) 
 		=> DateTime.FromBinary(_longSerializer.Deserialize(reader));
 }

@@ -26,8 +26,8 @@ internal sealed class WithNullSubstitutionSerializer<TItem> : ItemSerializerDeco
 	public override long CalculateSize(TItem item) 
 		=> base.CalculateSize(item ?? _nullSubstitution);
 
-	public override TItem DeserializeInternal(long byteSize, EndianBinaryReader reader) {
-		var item = base.DeserializeInternal(byteSize, reader);
+	public override TItem DeserializeInternal(EndianBinaryReader reader) {
+		var item = base.DeserializeInternal(reader);
 		return _equalityComparer.Equals(item, _nullSubstitution) ? default : item;
 	}
 

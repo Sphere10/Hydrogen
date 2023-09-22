@@ -27,7 +27,7 @@ public sealed class TransactionalDictionaryCLKTests : TransactionalDictionaryTes
 		using var dictionary = new TransactionalDictionary<string, TestObject>(
 			file,
 			dir,
-			new BrokenConstantLengthSerializer<string>(new PaddedSerializer<string>(256, new StringSerializer(Encoding.UTF8), SizeDescriptorStrategy.UseUInt32)),
+			new BrokenConstantLengthSerializer<string>(new PaddedSerializer<string>(256, new StringSerializer(Encoding.UTF8, SizeDescriptorStrategy.UseUInt32))),
 			new TestObjectSerializer(),
 			null,
 			EqualityComparer<string>.Default,
@@ -48,7 +48,7 @@ public sealed class TransactionalDictionaryCLKTests : TransactionalDictionaryTes
 		var fn = file;
 		var disposable1 = Tools.Scope.ExecuteOnDispose(() => Tools.Lambda.ActionIgnoringExceptions(() => File.Delete(fn)));
 		var disposable2 = Tools.Scope.ExecuteOnDispose(() => Tools.Lambda.ActionIgnoringExceptions(() => Tools.FileSystem.DeleteDirectory(dir)));
-		clustered = new TransactionalDictionary<TKey, TValue>(file, dir, new PaddedSerializer<TKey>(256, keySerializer, SizeDescriptorStrategy.UseVarInt), valueSerializer, null, keyComparer, valueComparer, policy: policy);
+		clustered = new TransactionalDictionary<TKey, TValue>(file, dir,  keySerializer.AsConstantSize(256), valueSerializer, null, keyComparer, valueComparer, policy: policy);
 		return new Disposables(disposable1, disposable2, clustered);
 	}
 

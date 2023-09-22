@@ -10,7 +10,7 @@ using System;
 
 namespace Hydrogen;
 
-public class PrimitiveSerializer<T> : ConstantLengthItemSerializerBase<T> {
+public class PrimitiveSerializer<T> : ConstantSizeItemSerializerBase<T> where T : struct {
 	private readonly Action<EndianBinaryWriter, T> _writePrimitive;
 	private readonly Func<EndianBinaryReader, T> _readPrimitive;
 
@@ -24,13 +24,13 @@ public class PrimitiveSerializer<T> : ConstantLengthItemSerializerBase<T> {
 		_readPrimitive = GetPrimitiveReader(typeCode);
 	}
 
-	public override void SerializeInternal(T item, EndianBinaryWriter writer) 
+	public override void SerializeInternal(T item, EndianBinaryWriter writer)
 		=> _writePrimitive(writer, item);
 
-	public override T Deserialize(EndianBinaryReader reader) 
+	public override T DeserializeInternal(EndianBinaryReader reader)
 		=> _readPrimitive(reader);
 
-		public static Action<EndianBinaryWriter, T> GetPrimitiveWriter(TypeCode typeCode) => typeCode switch {
+	public static Action<EndianBinaryWriter, T> GetPrimitiveWriter(TypeCode typeCode) => typeCode switch {
 		TypeCode.Boolean => (writer, item) => writer.Write((bool)(object)item),
 		TypeCode.Byte => (writer, item) => writer.Write((byte)(object)item),
 		TypeCode.Char => (writer, item) => writer.Write((char)(object)item),
@@ -62,6 +62,6 @@ public class PrimitiveSerializer<T> : ConstantLengthItemSerializerBase<T> {
 		TypeCode.UInt32 => reader => (T)(object)reader.ReadUInt32(),
 		TypeCode.UInt64 => reader => (T)(object)reader.ReadUInt64(),
 		_ => throw new NotSupportedException($"{nameof(typeCode)}")
-	}; 
+	};
 
 }

@@ -11,7 +11,7 @@ using System.Text;
 namespace Hydrogen.Application;
 
 public class ProductLicenseCommandDTOSerializer : ItemSerializer<ProductLicenseCommandDTO> {
-	private readonly AutoSizedSerializer<string> _stringSerializer = new(new NullableObjectSerializer<string>(new StringSerializer(Encoding.ASCII)), SizeDescriptorStrategy.UseUInt32);
+	private readonly IItemSerializer<string> _stringSerializer = new StringSerializer(Encoding.ASCII, SizeDescriptorStrategy.UseUInt32).AsNullable();
 
 	public override long CalculateSize(ProductLicenseCommandDTO item)
 		=> _stringSerializer.CalculateSize(item.ProductKey) +
@@ -26,7 +26,7 @@ public class ProductLicenseCommandDTOSerializer : ItemSerializer<ProductLicenseC
 		_stringSerializer.SerializeInternal(item.BuyNowLink, writer);
 	}
 
-	public override ProductLicenseCommandDTO DeserializeInternal(long byteSize, EndianBinaryReader reader) => 
+	public override ProductLicenseCommandDTO DeserializeInternal(EndianBinaryReader reader) => 
 		new() {
 		ProductKey = _stringSerializer.Deserialize(reader),
 		Action = (ProductLicenseActionDTO)reader.ReadByte(),

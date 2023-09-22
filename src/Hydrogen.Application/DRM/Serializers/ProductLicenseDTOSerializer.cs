@@ -12,7 +12,7 @@ using System.Text;
 namespace Hydrogen.Application;
 
 public class ProductLicenseDTOSerializer : ItemSerializer<ProductLicenseDTO> {
-	private readonly AutoSizedSerializer<string> _stringSerializer = new AutoSizedSerializer<string>(new NullableObjectSerializer<string>(new StringSerializer(Encoding.ASCII)), SizeDescriptorStrategy.UseUInt32);
+	private readonly IItemSerializer<string> _stringSerializer = new StringSerializer(Encoding.ASCII, SizeDescriptorStrategy.UseUInt32).AsNullable();
 	private readonly GuidSerializer _guidSerializer = new();
 	private readonly NullableStructSerializer<short> _nullableShortSerializer = new(new PrimitiveSerializer<short>());
 	private readonly NullableStructSerializer<int> _nullableIntSerializer = new(new PrimitiveSerializer<int>());
@@ -21,7 +21,7 @@ public class ProductLicenseDTOSerializer : ItemSerializer<ProductLicenseDTO> {
 	public override long CalculateSize(ProductLicenseDTO item)
 		=> _stringSerializer.CalculateSize(item.Name) +
 		   _stringSerializer.CalculateSize(item.ProductKey) +
-		   _guidSerializer.ConstantLength +
+		   _guidSerializer.ConstantSize +
 		   sizeof(byte) +
 		   sizeof(byte) +
 		   _nullableShortSerializer.CalculateSize(item.MajorVersionApplicable) +
@@ -54,21 +54,21 @@ public class ProductLicenseDTOSerializer : ItemSerializer<ProductLicenseDTO> {
 		_nullableIntSerializer.SerializeInternal(item.LimitFeatureD, writer);
 	}
 
-	public override ProductLicenseDTO DeserializeInternal(long byteSize, EndianBinaryReader reader) => new() {
+	public override ProductLicenseDTO DeserializeInternal(EndianBinaryReader reader) => new() {
 		Name = _stringSerializer.Deserialize(reader),
 		ProductKey = _stringSerializer.Deserialize(reader),
 		ProductCode = _guidSerializer.Deserialize(reader),
 		FeatureLevel = (ProductLicenseFeatureLevelDTO)reader.ReadByte(),
 		ExpirationPolicy = (ProductLicenseExpirationPolicyDTO)reader.ReadByte(),
-		MajorVersionApplicable = _nullableShortSerializer.DeserializeInternal(sizeof(ushort), reader),
-		ExpirationDate = _nullableDateTimeSerializer.DeserializeInternal(8, reader),
-		ExpirationDays = _nullableIntSerializer.DeserializeInternal(sizeof(int), reader),
-		ExpirationLoads = _nullableIntSerializer.DeserializeInternal(sizeof(int), reader),
-		MaxConcurrentInstances = _nullableIntSerializer.DeserializeInternal(sizeof(int), reader),
-		MaxSeats = _nullableIntSerializer.DeserializeInternal(sizeof(int), reader),
-		LimitFeatureA = _nullableIntSerializer.DeserializeInternal(sizeof(int), reader),
-		LimitFeatureB = _nullableIntSerializer.DeserializeInternal(sizeof(int), reader),
-		LimitFeatureC = _nullableIntSerializer.DeserializeInternal(sizeof(int), reader),
-		LimitFeatureD = _nullableIntSerializer.DeserializeInternal(sizeof(int), reader)
+		MajorVersionApplicable = _nullableShortSerializer.DeserializeInternal(reader),
+		ExpirationDate = _nullableDateTimeSerializer.DeserializeInternal(reader),
+		ExpirationDays = _nullableIntSerializer.DeserializeInternal(reader),
+		ExpirationLoads = _nullableIntSerializer.DeserializeInternal(reader),
+		MaxConcurrentInstances = _nullableIntSerializer.DeserializeInternal(reader),
+		MaxSeats = _nullableIntSerializer.DeserializeInternal(reader),
+		LimitFeatureA = _nullableIntSerializer.DeserializeInternal(reader),
+		LimitFeatureB = _nullableIntSerializer.DeserializeInternal(reader),
+		LimitFeatureC = _nullableIntSerializer.DeserializeInternal(reader),
+		LimitFeatureD = _nullableIntSerializer.DeserializeInternal(reader)
 	};
 }

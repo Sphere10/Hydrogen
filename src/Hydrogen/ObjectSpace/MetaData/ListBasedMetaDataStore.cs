@@ -24,7 +24,7 @@ internal class ListBasedMetaDataStore<TData> : MetaDataProviderBase, IMetaDataSt
 		: base(objectContainer, reservedStreamIndex, offset) {
 		Guard.ArgumentNotNull(objectContainer, nameof(objectContainer));
 		Guard.ArgumentNotNull(datumSerializer, nameof(datumSerializer));
-		Guard.Argument(datumSerializer.IsConstantLength, nameof(datumSerializer), "Datum serializer must be a constant-length serializer.");
+		Guard.Argument(datumSerializer.IsConstantSize, nameof(datumSerializer), "Datum serializer must be a constant-length serializer.");
 		DatumSerializer = datumSerializer;
 	}
 

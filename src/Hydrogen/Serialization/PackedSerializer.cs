@@ -20,9 +20,9 @@ internal class PackedSerializer : IItemSerializer<object> {
 
 	public bool SupportsNull => _serializer.SupportsNull;
 
-	public bool IsConstantLength => _serializer.IsConstantLength;
+	public bool IsConstantSize => _serializer.IsConstantSize;
 
-	public long ConstantLength => _serializer.ConstantLength;
+	public long ConstantSize => _serializer.ConstantSize;
 
 	public long CalculateTotalSize(IEnumerable<object> items, bool calculateIndividualItems, out long[] itemSizes) 
 		=> _serializer.CalculateTotalSize(items, calculateIndividualItems, out itemSizes);
@@ -33,8 +33,8 @@ internal class PackedSerializer : IItemSerializer<object> {
 	public void SerializeInternal(object item, EndianBinaryWriter writer) 
 		=> _serializer.SerializeInternal(item, writer);
 
-	public object DeserializeInternal(long byteSize, EndianBinaryReader reader) 
-		=> _serializer.DeserializeInternal(byteSize, reader);
+	public object DeserializeInternal( EndianBinaryReader reader) 
+		=> _serializer.DeserializeInternal(reader);
 
 	public static PackedSerializer Pack(IItemSerializer serializer) {
 		Guard.ArgumentNotNull(serializer, nameof(serializer));

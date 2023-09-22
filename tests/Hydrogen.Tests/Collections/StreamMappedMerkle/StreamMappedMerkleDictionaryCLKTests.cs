@@ -32,7 +32,7 @@ public class StreamMappedMerkleDictionaryCLKTests : StreamMappedMerkleDictionary
 		streamMappedMerkleDictionary = new StreamMappedMerkleDictionary<string, TValue>(
 			memoryStream,
 			DefaultClusterSize,
-			new StringSerializer().AsConstantSizeSerializer(ConstantKeySize, SizeDescriptorStrategy.UseUInt32),
+			new StringSerializer().AsConstantSize(ConstantKeySize),
 			valueSerializer,
 			valueComparer: valueComparer,
 			hashAlgorithm: chf,
@@ -55,7 +55,7 @@ public class StreamMappedMerkleDictionaryCLKTests : StreamMappedMerkleDictionary
 		const int maxItems = 100;
 		var keyGens = 0;
 
-		var keySerializer = new StringSerializer().AsConstantSizeSerializer(ConstantKeySize, SizeDescriptorStrategy.UseUInt32);
+		var keySerializer = new StringSerializer().AsConstantSize(ConstantKeySize);
 		using var memStream1 = new MemoryStream();
 		using var clk = new StreamMappedMerkleDictionary<string, TestObject>(
 			memStream1,

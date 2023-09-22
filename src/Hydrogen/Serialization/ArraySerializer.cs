@@ -9,33 +9,25 @@
 namespace Hydrogen;
 
 public class ArraySerializer<T> : ItemSerializer<T[]> {
-	private readonly IAutoSizedSerializer<T> _valueSerializer;
-	private readonly SizeDescriptorSerializer _sizeDescriptorSerializer;
-	
-	public ArraySerializer(IItemSerializer<T> valueSerializer, SizeDescriptorStrategy sizeDescriptorStrategy = SizeDescriptorStrategy.UseCVarInt) {
+	private readonly IItemSerializer<T> _valueSerializer;
+
+	public ArraySerializer(IItemSerializer<T> valueSerializer, SizeDescriptorStrategy sizeDescriptorStrategy = SizeDescriptorStrategy.UseCVarInt)
+	: base(sizeDescriptorStrategy) {
 		Guard.ArgumentNotNull(valueSerializer, nameof(valueSerializer));
-		
-		if (valueSerializer is not IAutoSizedSerializer<T> autoSizedSerializer) {
-			if (valueSerializer.IsConstantLength)
-				autoSizedSerializer = new ConstantLengthSerializer<T>(valueSerializer);
-			else
-				autoSizedSerializer = new AutoSizedSerializer<T>(valueSerializer, sizeDescriptorStrategy);
-		}
-		_valueSerializer = autoSizedSerializer;	
-		_sizeDescriptorSerializer = new SizeDescriptorSerializer(sizeDescriptorStrategy);
+		_valueSerializer = valueSerializer;
 	}
 
-	public override long CalculateSize(T[] item) 
-		=> _sizeDescriptorSerializer.CalculateSize(item.Length) + _valueSerializer.CalculateTotalSize(item, false, out _);
+	public override long CalculateSize(T[] item)
+		=> SizeSerializer.CalculateSize(item.Length) + _valueSerializer.CalculateTotalSize(item, false, out _);
 
 	public override void SerializeInternal(T[] item, EndianBinaryWriter writer) {
-		_sizeDescriptorSerializer.SerializeInternal(item.Length, writer);
-		foreach(var element in item)
+		SizeSerializer.SerializeInternal(item.Length, writer);
+		foreach (var element in item)
 			_valueSerializer.SerializeInternal(element, writer);
 	}
 
-	public override T[] DeserializeInternal(long byteSize, EndianBinaryReader reader) {
-		var arraySize = _sizeDescriptorSerializer.Deserialize(reader);
+	public override T[] DeserializeInternal(EndianBinaryReader reader) {
+		var arraySize = SizeSerializer.Deserialize(reader);
 		var array = new T[arraySize];
 		for (var i = 0; i < arraySize; i++) {
 			array[i] = _valueSerializer.Deserialize(reader);

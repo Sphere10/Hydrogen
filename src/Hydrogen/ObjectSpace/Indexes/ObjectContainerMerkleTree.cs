@@ -44,7 +44,7 @@ internal class ObjectContainerMerkleTree : MetaDataProviderBase, IMetaDataMerkle
 			_merkleRootProperty = Container.StreamContainer.Header.CreateExtensionProperty(
 				0, 
 				hashSize, 
-				new ConstantLengthByteArraySerializer(hashSize).WithNullSubstitution(Hashers.ZeroHash(_hashAlgorithm))
+				new ConstantSizeByteArraySerializer(hashSize).WithNullSubstitution(Hashers.ZeroHash(_hashAlgorithm))
 			);
 		}
 	}

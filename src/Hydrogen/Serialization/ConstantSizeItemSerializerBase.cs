@@ -10,17 +10,14 @@ using System;
 
 namespace Hydrogen;
 
-public abstract class ConstantLengthItemSerializerBase<TItem> : ConstantLengthItemSizer<TItem>, IAutoSizedSerializer<TItem> {
+public abstract class ConstantSizeItemSerializerBase<TItem> : ConstantLengthItemSizer<TItem>, IItemSerializer<TItem> {
 	
-	protected ConstantLengthItemSerializerBase(long fixedSize, bool supportsNull) 
+	protected ConstantSizeItemSerializerBase(long fixedSize, bool supportsNull) 
 		: base(fixedSize, supportsNull) {
 	}
 
 	public abstract void SerializeInternal(TItem item, EndianBinaryWriter writer);
 
-	public TItem DeserializeInternal(long byteSize, EndianBinaryReader reader) 
-		=> Deserialize(reader);
-
-	public abstract TItem Deserialize(EndianBinaryReader reader);
+	public abstract TItem DeserializeInternal(EndianBinaryReader reader);
 
 }

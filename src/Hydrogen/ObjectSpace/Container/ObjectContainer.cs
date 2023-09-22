@@ -189,7 +189,7 @@ public class ObjectContainer : ICriticalObject, ILoadable, IDisposable {
 			NotifyPreItemOperation(index, default, ObjectContainerOperationType.Read);
 			if (!stream.IsNull) {
 				using var reader = new EndianBinaryReader(EndianBitConverter.For(StreamContainer.Endianness), stream);
-				item = ItemSerializer.Deserialize(stream.Length, reader);
+				item = ItemSerializer.Deserialize(reader);
 				CheckItemType(item);
 			} else {
 				item = default;

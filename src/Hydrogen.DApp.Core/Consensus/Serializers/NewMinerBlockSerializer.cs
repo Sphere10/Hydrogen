@@ -10,7 +10,7 @@ using System;
 
 namespace Hydrogen.DApp.Core.Consensus.Serializers;
 
-public class NewMinerBlockSerializer : ConstantLengthItemSerializerBase<NewMinerBlock> {
+public class NewMinerBlockSerializer : ConstantSizeItemSerializerBase<NewMinerBlock> {
 	public NewMinerBlockSerializer() : base(
 		4 + //Version
 		32 + //PrevMinerElectionHeader
@@ -49,7 +49,7 @@ public class NewMinerBlockSerializer : ConstantLengthItemSerializerBase<NewMiner
 	}
 
 
-	public override NewMinerBlock Deserialize(EndianBinaryReader reader) {
+	public override NewMinerBlock DeserializeInternal(EndianBinaryReader reader) {
 		var block = new NewMinerBlock();
 		block.Version = reader.ReadUInt32();
 		block.PrevMinerElectionHeader = reader.ReadBytes(32);

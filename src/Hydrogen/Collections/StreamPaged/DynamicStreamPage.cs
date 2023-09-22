@@ -185,7 +185,7 @@ internal class DynamicStreamPage<TItem> : StreamPageBase<TItem> {
 		// Transform list index into page index
 		index -= StartIndex;
 		Stream.Seek(_offsets[index], SeekOrigin.Begin);
-		yield return Serializer.Deserialize(_itemSizes[index], Reader);
+		yield return Serializer.Deserialize(Reader);
 	}
 
 	protected override long AppendInternal(TItem[] items, out long newItemsSize) {

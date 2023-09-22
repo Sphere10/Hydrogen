@@ -20,13 +20,13 @@ namespace Hydrogen;
 /// <remarks>
 /// Unlike <see cref="DynamicStreamPage{TItem}"/> no header is stored for the page.
 /// </remarks>
-internal class ConstantLengthStreamPage<TItem> : StreamPageBase<TItem> {
+internal class ConstantSizeStreamPage<TItem> : StreamPageBase<TItem> {
 	private readonly long _item0Offset;
 	private volatile int _version;
 
-	public ConstantLengthStreamPage(StreamPagedList<TItem> parent) : base(parent) {
-		Guard.Argument(parent.Serializer.IsConstantLength, nameof(parent), $"Parent list's serializer is not fixed size. {nameof(ConstantLengthStreamPage<TItem>)} only supports fixed sized items.");
-		Guard.Ensure(parent.Serializer.ConstantLength > 0, $"{nameof(TItem)} serialization size size is not greater than 0");
+	public ConstantSizeStreamPage(StreamPagedList<TItem> parent) : base(parent) {
+		Guard.Argument(parent.Serializer.IsConstantSize, nameof(parent), $"Parent list's serializer is not fixed size. {nameof(ConstantSizeStreamPage<TItem>)} only supports fixed sized items.");
+		Guard.Ensure(parent.Serializer.ConstantSize > 0, $"{nameof(TItem)} serialization size size is not greater than 0");
 
 		_version = 0;
 		_item0Offset = Parent.IncludeListHeader ? StreamPagedList<TItem>.ListHeaderSize : 0;
@@ -61,7 +61,7 @@ internal class ConstantLengthStreamPage<TItem> : StreamPageBase<TItem> {
 		for (var i = 0L; i < count; i++) {
 			Stream.Seek(startIndex + i * ItemSize, SeekOrigin.Begin);
 
-			yield return Serializer.Deserialize(ItemSize, Reader);
+			yield return Serializer.Deserialize(Reader);
 		}
 	}
 
@@ -78,7 +78,7 @@ internal class ConstantLengthStreamPage<TItem> : StreamPageBase<TItem> {
 
 		foreach (var item in items) {
 			var bytesWritten = Serializer.Serialize(item, Writer);
-			Guard.Ensure(bytesWritten == Serializer.ConstantLength, $"Static serializer wrote {bytesWritten} bytes expected {Serializer.ConstantLength}");
+			Guard.Ensure(bytesWritten == Serializer.ConstantSize, $"Static serializer wrote {bytesWritten} bytes expected {Serializer.ConstantSize}");
 		}
 
 		newItemsSize = items.Length * ItemSize;
@@ -98,7 +98,7 @@ internal class ConstantLengthStreamPage<TItem> : StreamPageBase<TItem> {
 
 		foreach (var item in items) {
 			var bytesWritten = Serializer.Serialize(item, Writer);
-			Guard.Ensure(bytesWritten == Serializer.ConstantLength, $"Static serializer wrote {bytesWritten} bytes expected {Serializer.ConstantLength}");
+			Guard.Ensure(bytesWritten == Serializer.ConstantSize, $"Static serializer wrote {bytesWritten} bytes expected {Serializer.ConstantSize}");
 		}
 
 		newItemsSize = itemsSize;

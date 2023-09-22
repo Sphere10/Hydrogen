@@ -19,9 +19,9 @@ public class ItemSizerDecorator<TItem, TObjectSizer> : IItemSizer<TItem> where T
 
 	public virtual bool SupportsNull => Internal.SupportsNull;
 
-	public virtual bool IsConstantLength => Internal.IsConstantLength;
+	public virtual bool IsConstantSize => Internal.IsConstantSize;
 
-	public virtual long ConstantLength => Internal.ConstantLength;
+	public virtual long ConstantSize => Internal.ConstantSize;
 
 	public virtual long CalculateTotalSize(IEnumerable<TItem> items, bool calculateIndividualItems, out long[] itemSizes)
 		=> Internal.CalculateTotalSize(items, calculateIndividualItems, out itemSizes);

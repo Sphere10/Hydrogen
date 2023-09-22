@@ -4,12 +4,11 @@ using System.Linq;
 
 namespace Hydrogen;
 
-public class SerializerSerializer : ItemSerializer<IItemSerializer>, IAutoSizedSerializer<IItemSerializer> {
-	private readonly SizeDescriptorSerializer _typeCodeSerializer;
+public class SerializerSerializer : ItemSerializer<IItemSerializer>{
 
-	public SerializerSerializer(SerializerFactory serializerFactory) {
+	public SerializerSerializer(SerializerFactory serializerFactory) 
+		: base(SizeDescriptorStrategy.UseCVarInt) {
 		SerializerFactory = serializerFactory;
-		_typeCodeSerializer = new SizeDescriptorSerializer(SizeDescriptorStrategy.UseCVarInt);
 	}
 
 	public SerializerFactory SerializerFactory { get; }
@@ -18,7 +17,7 @@ public class SerializerSerializer : ItemSerializer<IItemSerializer>, IAutoSizedS
 		Guard.ArgumentNotNull(item, nameof(item));
 		var serializerDataType = item.ItemType;
 		var serializerHierarchy = SerializerFactory.GetSerializerHierarchy(serializerDataType);
-		return serializerHierarchy.Flatten().Sum(_typeCodeSerializer.CalculateSize);
+		return serializerHierarchy.Flatten().Sum(SizeSerializer.CalculateSize);
 	}
 
 	public override void SerializeInternal(IItemSerializer item, EndianBinaryWriter writer) {
@@ -26,18 +25,16 @@ public class SerializerSerializer : ItemSerializer<IItemSerializer>, IAutoSizedS
 		var serializerDataType = item.ItemType;
 		var flattenedHierarchy = SerializerFactory.GetSerializerHierarchy(serializerDataType).Flatten().ToArray();
 		foreach(var serializer in flattenedHierarchy)
-			_typeCodeSerializer.SerializeInternal(serializer, writer);
+			SizeSerializer.SerializeInternal(serializer, writer);
 	}
 
-	public override IItemSerializer DeserializeInternal(long byteSize, EndianBinaryReader reader) => Deserialize(reader);
-
-	public IItemSerializer Deserialize(EndianBinaryReader reader) {
+	public override IItemSerializer DeserializeInternal(EndianBinaryReader reader) {
 		// deserialize the top-level serializer code
-		var rootSerializerCode = _typeCodeSerializer.Deserialize(reader);
+		var rootSerializerCode = SizeSerializer.Deserialize(reader);
 		var serializerHierarchy = RecursiveDataType<long>.Parse(
 			rootSerializerCode, 
 			SerializerFactory.CountSubSerializers, 
-			() => _typeCodeSerializer.Deserialize(reader)
+			() => SizeSerializer.Deserialize(reader)
 		);
 		var rootSerializer = SerializerFactory.FromSerializerHierarchy(serializerHierarchy);
 		return rootSerializer;

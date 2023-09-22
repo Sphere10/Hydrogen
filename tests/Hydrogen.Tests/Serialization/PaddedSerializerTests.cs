@@ -6,6 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using System.Text;
 using NUnit.Framework;
 
 namespace Hydrogen.Tests;
@@ -16,7 +17,7 @@ public class PaddedSerializerTests {
 
 	[Test]
 	public void TestPaddedSerializer_Empty([Values] SizeDescriptorStrategy sizeDescriptor, [Values("", "01235678910")] string @value ) {
-		var serializer = new StringSerializer().AsConstantSizeSerializer(100, sizeDescriptor);
+		var serializer = new StringSerializer(Encoding.UTF8, sizeDescriptor).AsConstantSize(100);
 		var bytes = serializer.SerializeLE(@value);
 		Assert.AreEqual(100, bytes.Length);
 	}

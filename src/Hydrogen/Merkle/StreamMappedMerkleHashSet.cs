@@ -92,7 +92,7 @@ public class StreamMappedMerkleHashSet<TItem> : StreamMappedMerkleHashSet<TItem,
 			new StreamMappedMerkleDictionary<byte[], TItem>(
 				rootStream,
 				clusterSize,
-				new ConstantLengthByteArraySerializer(hasher.DigestLength),
+				new ConstantSizeByteArraySerializer(hasher.DigestLength),
 				serializer,
 				new HashChecksummer(),
 				ByteArrayEqualityComparer.Instance,

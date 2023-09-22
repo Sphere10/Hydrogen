@@ -16,26 +16,21 @@ public interface IItemSerializer : IItemSizer {
 
 	internal void SerializeInternal(object item, EndianBinaryWriter writer);
 
-	internal object DeserializeInternal(long byteSize, EndianBinaryReader reader);
-	
-}
-
-public interface IAutoSizedSerializer : IItemSerializer {
-
 	internal object DeserializeInternal(EndianBinaryReader reader);
+	
 }
 
 public interface IItemSerializer<TItem> : IItemSizer<TItem>, IItemSerializer {
 
 	internal new void SerializeInternal(TItem item, EndianBinaryWriter writer);
 
-	internal new TItem DeserializeInternal(long byteSize, EndianBinaryReader reader);
+	internal new TItem DeserializeInternal(EndianBinaryReader reader);
 
 	void IItemSerializer.SerializeInternal(object item, EndianBinaryWriter writer)
 		=> SerializeInternal((TItem)item, writer);
 
-	object IItemSerializer.DeserializeInternal(long byteSize, EndianBinaryReader reader)
-		=> DeserializeInternal(byteSize, reader);
+	object IItemSerializer.DeserializeInternal(EndianBinaryReader reader)
+		=> DeserializeInternal(reader);
 }
 
 public static class IItemSerializerExtensions {
@@ -68,10 +63,8 @@ public static class IItemSerializerExtensions {
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static object Deserialize(this IItemSerializer serializer, long byteSize, EndianBinaryReader reader) {
-		var startPos = reader.BaseStream.Position;
-		var item = serializer.DeserializeInternal(byteSize, reader);
-		Guard.Ensure(reader.BaseStream.Position - startPos == byteSize, "Read overflow");
+	public static object Deserialize(this IItemSerializer serializer,EndianBinaryReader reader) {
+		var item = serializer.DeserializeInternal(reader);
 		return item;
 
 		// NOTE: if a malicious serializer reads more than it says, and rewinds stream Position
@@ -80,10 +73,8 @@ public static class IItemSerializerExtensions {
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static TItem Deserialize<TItem>(this IItemSerializer<TItem> serializer, long byteSize, EndianBinaryReader reader) {
-		var startPos = reader.BaseStream.Position;
-		var item = serializer.DeserializeInternal(byteSize, reader);
-		Guard.Ensure(reader.BaseStream.Position - startPos == byteSize, "Read overflow");
+	public static TItem Deserialize<TItem>(this IItemSerializer<TItem> serializer, EndianBinaryReader reader) {
+		var item = serializer.DeserializeInternal(reader);
 		return item;
 
 		// NOTE: if a malicious serializer reads more than it says, and rewinds stream Position
@@ -120,7 +111,7 @@ public static class IItemSerializerExtensions {
 	public static TItem Deserialize<TItem>(this IItemSerializer<TItem> serializer, byte[] bytes, Endianness endianness)  {
 		using var stream = new MemoryStream(bytes);
 		using var reader = new EndianBinaryReader(EndianBitConverter.For(endianness), stream);
-		return serializer.Deserialize(bytes.Length, reader);
+		return serializer.Deserialize(reader);
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -167,8 +158,5 @@ public static class IItemSerializerExtensions {
 
 	public static IItemSerializer<TBase> AsBaseSerializer<TItem, TBase>(this IItemSerializer<TItem> serializer) where TItem : TBase
 		=> new ProjectedSerializer<TItem,TBase>(serializer, x => (TBase)x, x => (TItem)x);
-
-	public static IItemSerializer<TItem> AsConstantSizeSerializer<TItem>(this IItemSerializer<TItem> serializer, long staticSize, SizeDescriptorStrategy sizeDescriptorStrategy)
-		=> new PaddedSerializer<TItem>(staticSize, serializer, sizeDescriptorStrategy);
 
 }

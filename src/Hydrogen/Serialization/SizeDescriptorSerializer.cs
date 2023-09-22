@@ -51,11 +51,7 @@ public class SizeDescriptorSerializer : SizeDescriptorSizer, IItemSerializer<lon
 				throw new ArgumentOutOfRangeException();
 		}
 	}
-
-	public long DeserializeInternal(long byteSize, EndianBinaryReader reader)
-		=> Deserialize(reader);
-
-	public long Deserialize(EndianBinaryReader reader)
+	public long DeserializeInternal(EndianBinaryReader reader)
 		=> SizeDescriptorStrategy switch {
 			SizeDescriptorStrategy.UseVarInt => unchecked((long)VarInt.Read(reader.BaseStream)),
 			SizeDescriptorStrategy.UseCVarInt => unchecked((long)CVarInt.Read(reader.BaseStream)),

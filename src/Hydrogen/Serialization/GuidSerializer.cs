@@ -10,9 +10,9 @@ using System;
 
 namespace Hydrogen;
 
-public class GuidSerializer : ConstantLengthItemSerializerBase<Guid> {
+public class GuidSerializer : ConstantSizeItemSerializerBase<Guid> {
 	private const int GuidByteCount = 16;
-	private readonly ConstantLengthByteArraySerializer _byteArraySerializer = new(GuidByteCount);
+	private readonly ConstantSizeByteArraySerializer _byteArraySerializer = new(GuidByteCount);
 
 	public GuidSerializer() : base(GuidByteCount, false) {
 	}
@@ -22,7 +22,7 @@ public class GuidSerializer : ConstantLengthItemSerializerBase<Guid> {
 	public override void SerializeInternal(Guid item, EndianBinaryWriter writer)
 		=> _byteArraySerializer.SerializeInternal(item.ToByteArray(), writer);
 
-	public override Guid Deserialize(EndianBinaryReader reader)
+	public override Guid DeserializeInternal(EndianBinaryReader reader)
 		=> new(_byteArraySerializer.Deserialize(reader));
 
 }

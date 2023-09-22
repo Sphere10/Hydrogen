@@ -19,59 +19,35 @@ namespace Hydrogen;
 /// </summary>
 /// <remarks>Due to limitations of <see cref="BinaryFormatter"/> this class performs a serialization on <see cref="CalculateSize"/>.</remarks>
 /// <typeparam name="TItem"></typeparam>
-public sealed class BinaryFormattedSerializer<TItem> : IItemSerializer<TItem> {
+public sealed class BinaryFormattedSerializer<TItem> : ItemSerializer<TItem> {
 
-	public bool SupportsNull => true;
-
-	public bool IsConstantLength => false;
-
-	public long ConstantLength => -1;
-
-	public long CalculateTotalSize(IEnumerable<TItem> items, bool calculateIndividualItems, out long[] itemSizes) {
-		var itemsArr = items as TItem[] ?? items.ToArray();
-
-		if (calculateIndividualItems) {
-			itemSizes = new long[itemsArr.Length];
-			for (int i = 0; i < itemsArr.Length; i++) {
-				itemSizes[i] = CalculateSize(itemsArr[i]);
-			}
-		}
-
-		var sum = 0L;
-		for (int i = 0; i < itemsArr.Length; i++) {
-			sum += CalculateSize(itemsArr[i]);
-		}
-		itemSizes = Array.Empty<long>();
-		return sum;
+	public BinaryFormattedSerializer() 
+		: base(SizeDescriptorStrategy.UseCVarInt) {
 	}
 
-	public long CalculateSize(TItem item) {
+	public override bool SupportsNull => true;
+
+	public override long CalculateSize(TItem item) {
 		var formatter = new BinaryFormatter();
 		using var memoryStream = new MemoryStream();
 		formatter.Serialize(memoryStream, item);
 		var objectRawBytes = memoryStream.ToArray();
-		return objectRawBytes.Length;
+		return ByteArraySerializer.Instance.CalculateSize(objectRawBytes);
 	}
 
-	public void SerializeInternal(TItem item, EndianBinaryWriter writer) {
+	public override void SerializeInternal(TItem item, EndianBinaryWriter writer) {
 		var formatter = new BinaryFormatter();
 		using var memoryStream = new MemoryStream();
 		formatter.Serialize(memoryStream, item);
 		var objectRawBytes = memoryStream.ToArray();
-		writer.Write(objectRawBytes);
+		ByteArraySerializer.Instance.SerializeInternal(objectRawBytes, writer);
 	}
 
-	public TItem DeserializeInternal(long byteSize, EndianBinaryReader reader) {
-		var bytes = reader.ReadBytes(byteSize);
+	public override TItem DeserializeInternal(EndianBinaryReader reader) {
+		var rawBytes = ByteArraySerializer.Instance.DeserializeInternal(reader);
 		var formatter = new BinaryFormatter();
-		using var memoryStream = new MemoryStream(bytes);
-		var result = formatter.Deserialize(memoryStream);
-		if (result is null)
-			throw new InvalidOperationException("Unexpected null");
-		if (result is not TItem t)
-			throw new InvalidOperationException($"Unexpected type '{result.GetType().Name}'");
-
-		return t;
+		using var memoryStream = new MemoryStream(rawBytes);
+		return (TItem)formatter.Deserialize(memoryStream);
 	}
 
 }

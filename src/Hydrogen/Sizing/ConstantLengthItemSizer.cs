@@ -16,26 +16,26 @@ public class ConstantLengthItemSizer<TItem> : IItemSizer<TItem> {
 
 	public ConstantLengthItemSizer(long staticSize, bool supportsNull) {
 		Guard.ArgumentInRange(staticSize, 0, int.MaxValue, nameof(staticSize));
-		ConstantLength = staticSize;
+		ConstantSize = staticSize;
 		SupportsNull = supportsNull;
 	}
 
 	public virtual bool SupportsNull { get; private set; }
 
-	public bool IsConstantLength => true;
+	public bool IsConstantSize => true;
 
-	public long ConstantLength { get; }
+	public long ConstantSize { get; }
 	
 	public long CalculateTotalSize(IEnumerable<TItem> items, bool calculateIndividualItems, out long[] itemSizes) {
 		return CalculateTotalSize(items.Count(), calculateIndividualItems, out itemSizes);
 	}
 
 	public long CalculateTotalSize(long itemsCount, bool calculateIndividualItems, out long[] itemSizes) {
-		var val = ConstantLength;
+		var val = ConstantSize;
 		var size = itemsCount * val;
 		itemSizes = calculateIndividualItems ? Tools.Array.Gen(itemsCount, val) : null;
 		return size;
 	}
 
-	public long CalculateSize(TItem item) => ConstantLength;
+	public long CalculateSize(TItem item) => ConstantSize;
 }

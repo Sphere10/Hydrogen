@@ -10,10 +10,10 @@ using System;
 
 namespace Hydrogen;
 
-public class DateTimeOffsetSerializer : ConstantLengthItemSerializerBase<DateTimeOffset> {
+public class DateTimeOffsetSerializer : ConstantSizeItemSerializerBase<DateTimeOffset> {
 
 	public DateTimeOffsetSerializer() 
-		: base(DateTimeSerializer.Instance.ConstantLength + TimeSpanSerializer.Instance.ConstantLength, false){
+		: base(DateTimeSerializer.Instance.ConstantSize + TimeSpanSerializer.Instance.ConstantSize, false){
 	}
 
 	public static DateTimeOffsetSerializer Instance { get; } = new();
@@ -23,7 +23,7 @@ public class DateTimeOffsetSerializer : ConstantLengthItemSerializerBase<DateTim
 		TimeSpanSerializer.Instance.SerializeInternal(item.Offset, writer);
 	}
 
-	public override DateTimeOffset Deserialize(EndianBinaryReader reader) {
+	public override DateTimeOffset DeserializeInternal(EndianBinaryReader reader) {
 		var datetime = DateTimeSerializer.Instance.Deserialize(reader);
 		var timespan = TimeSpanSerializer.Instance.Deserialize(reader);
 		return new DateTimeOffset(datetime, timespan);

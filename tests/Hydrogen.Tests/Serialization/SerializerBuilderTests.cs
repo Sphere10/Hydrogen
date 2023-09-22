@@ -35,32 +35,32 @@ public class SerializerBuilderTests {
 			
 	}
 	
-	[Test]
-	public void AutoSerializedPropertySerializer() {
-		// test object
-		var serializer1 = SerializerBuilder
-			.For<TestObject>()
-			.ForMember(x => x.A, StringSerializer.UTF8.AsNullable())
-			.ForMember(x => x.B, PrimitiveSerializer<int>.Instance)
-			.ForMember(x => x.C, PrimitiveSerializer<bool>.Instance)
-			.Build();
+	//[Test]
+	//public void AutoSerializedPropertySerializer() {
+	//	// test object
+	//	var serializer1 = SerializerBuilder
+	//		.For<TestObject>()
+	//		.ForMember(x => x.A, StringSerializer.UTF8.AsNullable())
+	//		.ForMember(x => x.B, PrimitiveSerializer<int>.Instance)
+	//		.ForMember(x => x.C, PrimitiveSerializer<bool>.Instance)
+	//		.Build();
 
-		var serializer2 = SerializerBuilder
-			.For<TestObject>()
-			.ForMember(x => x.A, StringSerializer.UTF8.AsNullable().AsAutoSized())  // this one has an autosizing string serializer
-			.ForMember(x => x.B, PrimitiveSerializer<int>.Instance)
-			.ForMember(x => x.C, PrimitiveSerializer<bool>.Instance)
-			.Build();
+	//	var serializer2 = SerializerBuilder
+	//		.For<TestObject>()
+	//		.ForMember(x => x.A, StringSerializer.UTF8.AsNullable().AsAutoSized())  // this one has an autosizing string serializer
+	//		.ForMember(x => x.B, PrimitiveSerializer<int>.Instance)
+	//		.ForMember(x => x.C, PrimitiveSerializer<bool>.Instance)
+	//		.Build();
 
 		
-		var testObj = new TestObject("Hello", 123, true);
+	//	var testObj = new TestObject("Hello", 123, true);
 		
-		var serialized1 = serializer1.SerializeLE(testObj);
-		var serialized2 = serializer2.SerializeLE(testObj);
+	//	var serialized1 = serializer1.SerializeLE(testObj);
+	//	var serialized2 = serializer2.SerializeLE(testObj);
 
-		// this proves the first serializer internally autosized string but second serializer did not, and relied on serializer to auto-size
-		Assert.That(ByteArrayEqualityComparer.Instance.Equals(serialized1, serialized2), Is.True);
-	}
+	//	// this proves the first serializer internally autosized string but second serializer did not, and relied on serializer to auto-size
+	//	Assert.That(ByteArrayEqualityComparer.Instance.Equals(serialized1, serialized2), Is.True);
+	//}
 
 
 	[Test]

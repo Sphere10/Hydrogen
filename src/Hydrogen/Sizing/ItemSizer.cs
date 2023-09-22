@@ -15,9 +15,9 @@ public abstract class ItemSizer<TItem> : IItemSizer<TItem> {
 
 	public virtual bool SupportsNull => false;
 
-	public virtual bool IsConstantLength => false;
+	public virtual bool IsConstantSize => false;
 
-	public virtual long ConstantLength => -1;
+	public virtual long ConstantSize => -1;
 
 	public virtual long CalculateTotalSize(IEnumerable<TItem> items, bool calculateIndividualItems, out long[] itemSizes) {
 		var sizes = items.Select(item => CalculateSize(item)).ToArray();

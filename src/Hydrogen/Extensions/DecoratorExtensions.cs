@@ -282,11 +282,8 @@ public static partial class DecoratorExtensions {
 	public static IItemSerializer<T> WithNullSubstitution<T>(this IItemSerializer<T> serializer, T nullSubstitution, IEqualityComparer<T> comparer = null)
 		=> new WithNullSubstitutionSerializer<T>(serializer, nullSubstitution, comparer);
 
-	public static IItemSerializer<TItem> AsConstantLength<TItem>(this IItemSerializer<TItem> serializer, int length, SizeDescriptorStrategy sizeDescriptorStrategy) 
-		=> new PaddedSerializer<TItem>(length, serializer, sizeDescriptorStrategy);
-
-	public static IAutoSizedSerializer<TItem> AsAutoSized<TItem>(this IItemSerializer<TItem> serializer, SizeDescriptorStrategy sizeDescriptorStrategy = SizeDescriptorStrategy.UseCVarInt) 
-		=> new AutoSizedSerializer<TItem>(serializer, sizeDescriptorStrategy);
+	public static IItemSerializer<TItem> AsConstantSize<TItem>(this IItemSerializer<TItem> serializer, int length) 
+		=> new PaddedSerializer<TItem>(length, serializer);
 
 	#endregion
 }

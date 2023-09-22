@@ -16,9 +16,9 @@ public class SizeDescriptorSizer : ItemSizerBase<long> {
 
 	public SizeDescriptorStrategy SizeDescriptorStrategy { get; }
 
-	public override bool IsConstantLength => SizeDescriptorStrategy == SizeDescriptorStrategy.UseULong;
+	public override bool IsConstantSize => SizeDescriptorStrategy == SizeDescriptorStrategy.UseULong;
 
-	public override long ConstantLength => IsConstantLength ? sizeof(ulong) : throw new InvalidOperationException($"Size is not statically sized for {SizeDescriptorStrategy}");
+	public override long ConstantSize => IsConstantSize ? sizeof(ulong) : throw new InvalidOperationException($"Size is not statically sized for {SizeDescriptorStrategy}");
 
 	public override long CalculateSize(long item) => SizeDescriptorStrategy switch {
 		SizeDescriptorStrategy.UseVarInt => VarInt.SizeOf(unchecked((ulong)item)),

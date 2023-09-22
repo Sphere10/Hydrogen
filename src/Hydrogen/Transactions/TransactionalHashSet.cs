@@ -112,7 +112,7 @@ public class TransactionalHashSet<TItem> : StreamMappedHashSet<TItem>, ITransact
 	) : this(
 		new TransactionalDictionary<byte[], TItem>(
 			transactionalStream,
-			new ConstantLengthByteArraySerializer(hasher.DigestLength),
+			new ConstantSizeByteArraySerializer(hasher.DigestLength),
 			serializer,
 			keyChecksum ?? new HashChecksummer(),
 			ByteArrayEqualityComparer.Instance,

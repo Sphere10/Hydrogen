@@ -11,7 +11,7 @@ namespace Hydrogen;
 public class NullableObjectSerializer<T> : ItemSerializerDecorator<T> {
 
 	public NullableObjectSerializer(IItemSerializer<T> valueSerializer, bool preserveConstantLength = false) 
-		: base(new BoxedNullableSerializer<T>(valueSerializer,preserveConstantLength ).AsProjection(x => x.HasValue ? x.Value : default, x => x )) {
+		: base(new BoxedNullableSerializer<T>(valueSerializer,preserveConstantLength ).AsProjection(x => x.HasValue ? x.Value : default, x => x is not null ? new BoxedNullable<T>(x) : new BoxedNullable<T>())) {
 	}
 
 	public override bool SupportsNull => true;

@@ -12,31 +12,29 @@ namespace Hydrogen;
 
 internal sealed class BoxedNullableSerializer<T> : ItemSerializer<BoxedNullable<T>> {
 	private readonly byte[] _padding;
-	private readonly bool _preserveConstantLength;
 	private readonly IItemSerializer<T> _valueSerializer;
-	private readonly bool _isConstantLength;
 
-	public BoxedNullableSerializer(IItemSerializer<T> valueSerializer, bool preserveConstantLength = false) {
+	public BoxedNullableSerializer(IItemSerializer<T> valueSerializer, bool preserveConstantSize = false) : base(SizeDescriptorStrategy.UseCVarInt) {
 		Guard.ArgumentNotNull(valueSerializer, nameof(valueSerializer));
 		Guard.Argument(!valueSerializer.SupportsNull, nameof(valueSerializer), "Serializer already supports null. Boxing it here is inefficient.");
 		_valueSerializer = valueSerializer;
-		_preserveConstantLength = preserveConstantLength;
-		_padding = IsConstantLength ? new byte[_valueSerializer.ConstantLength] : Array.Empty<byte>();
-		_isConstantLength =  _valueSerializer.IsConstantLength && _preserveConstantLength;
+		IsConstantSize =  _valueSerializer.IsConstantSize && preserveConstantSize;
+		ConstantSize = IsConstantSize ? sizeof(bool) + _valueSerializer.ConstantSize : -1;
+		_padding = IsConstantSize ? new byte[_valueSerializer.ConstantSize] : Array.Empty<byte>();
 	}
 
-	public override bool SupportsNull => true;
+	public override bool SupportsNull => false; // this doesn't support null values, only BoxedNullable<T>() with a null Value
 
-	public override bool IsConstantLength => _isConstantLength;
+	public override bool IsConstantSize { get; }
 
-	public override long ConstantLength => _isConstantLength ? sizeof(bool) + _valueSerializer.ConstantLength : -1;
+	public override long ConstantSize { get; } 
 
 	public override long CalculateSize(BoxedNullable<T> item) {
+		if (IsConstantSize)
+			return ConstantSize;
+		
 		long size = sizeof(bool);
-		 
-		if (_isConstantLength)
-			size += _valueSerializer.ConstantLength;
-		else if (item.HasValue)
+		if (item.HasValue)
 			size += _valueSerializer.CalculateSize(item);
 
 		return size;
@@ -48,51 +46,17 @@ internal sealed class BoxedNullableSerializer<T> : ItemSerializer<BoxedNullable<
 			_valueSerializer.SerializeInternal(item, writer);
 		} else {
 			writer.Write(false);
-			if (_isConstantLength)
+			if (IsConstantSize)
 				writer.Write(_padding);
 		}
 	}
 
-	public override BoxedNullable<T> DeserializeInternal(long byteSize, EndianBinaryReader reader) {
+	public override BoxedNullable<T> DeserializeInternal(EndianBinaryReader reader) {
 		var hasValue = reader.ReadBoolean();
-		if (hasValue) {
-			return _valueSerializer.DeserializeInternal(byteSize - sizeof(bool), reader);
-		}
-
-		if (_isConstantLength)
-			reader.ReadBytes(_valueSerializer.ConstantLength);
-
-		return default(T);
-	}
-
-
-	public BoxedNullable<T> Deserialize(EndianBinaryReader reader) {
-		var hasValue = reader.ReadBoolean();
-
-		if (_valueSerializer is AutoSizedSerializer<T> autoSerializer) {
-			if (hasValue) {
-				return autoSerializer.Deserialize(reader);
-			}
-			
-			if (_isConstantLength) {
-				reader.ReadBytes(_valueSerializer.ConstantLength);
-			} 
-			return default(T);
-		}
-		
-		if (_valueSerializer.IsConstantLength) {
-			if (hasValue) {
-				return DeserializeInternal(_valueSerializer.ConstantLength, reader);
-			}
-			
-			if (_preserveConstantLength) {
-				reader.ReadBytes(_valueSerializer.ConstantLength);
-			}
-
-			return default(T);
-		}
-
-		throw new InvalidOperationException($"This method can only be used with {nameof(AutoSizedSerializer<T>)} or a statically sized serializer");
+		var result = hasValue ? new BoxedNullable<T>(_valueSerializer.DeserializeInternal(reader)) : new BoxedNullable<T>();
+		if (IsConstantSize)
+			reader.ReadBytes(_valueSerializer.ConstantSize);
+		return result;
 	}
 
 }

@@ -13,8 +13,9 @@ namespace Hydrogen.Application;
 
 public class ProductLicenseAuthorityDTOSerializer : ItemSerializer<ProductLicenseAuthorityDTO> {
 
-	private readonly AutoSizedSerializer<string> _stringSerializer = new( new StringSerializer(Encoding.ASCII), SizeDescriptorStrategy.UseUInt32);
-	private readonly AutoSizedSerializer<byte[]> _byteArraySerializer = new( new ByteArraySerializer(), SizeDescriptorStrategy.UseUInt32 );
+	private readonly IItemSerializer<string> _stringSerializer = new StringSerializer(Encoding.ASCII, SizeDescriptorStrategy.UseUInt32);
+	private readonly IItemSerializer<byte[]> _byteArraySerializer = new ByteArraySerializer(SizeDescriptorStrategy.UseUInt32);
+	
 
 	public override long CalculateSize(ProductLicenseAuthorityDTO item)
 		=> sizeof(int) + _stringSerializer.CalculateSize(item.Name) +
@@ -27,7 +28,7 @@ public class ProductLicenseAuthorityDTOSerializer : ItemSerializer<ProductLicens
 		_byteArraySerializer.SerializeInternal(item.LicensePublicKey, writer);
 	}
 
-	public override ProductLicenseAuthorityDTO DeserializeInternal(long byteSize, EndianBinaryReader reader) 
+	public override ProductLicenseAuthorityDTO DeserializeInternal(EndianBinaryReader reader) 
 		=> new() {
 			Name = _stringSerializer.Deserialize(reader),
 			LicenseDSS = (DSS)reader.ReadByte(),

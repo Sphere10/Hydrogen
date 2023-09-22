@@ -10,7 +10,7 @@ using System;
 
 namespace Hydrogen;
 
-public class ClusteredStreamDescriptorSerializer : ConstantLengthItemSerializerBase<ClusteredStreamDescriptor> {
+public class ClusteredStreamDescriptorSerializer : ConstantSizeItemSerializerBase<ClusteredStreamDescriptor> {
 
 	internal const int TraitsLength = sizeof(byte);
 	internal const int StartClusterLength = sizeof(long);
@@ -33,7 +33,7 @@ public class ClusteredStreamDescriptorSerializer : ConstantLengthItemSerializerB
 		writer.Write((long)item.Size);
 	}
 
-	public override ClusteredStreamDescriptor Deserialize(EndianBinaryReader reader) {
+	public override ClusteredStreamDescriptor DeserializeInternal(EndianBinaryReader reader) {
 		var item = new ClusteredStreamDescriptor {
 			Traits = (ClusteredStreamTraits)reader.ReadByte(),
 			StartCluster = reader.ReadInt64(),

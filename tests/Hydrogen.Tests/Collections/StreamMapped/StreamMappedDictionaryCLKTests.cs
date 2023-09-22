@@ -24,7 +24,7 @@ public class StreamMappedDictionaryCLKTests : StreamMappedDictionaryTestsBase {
 		var dict = StreamMappedFactory.CreateDictionaryClk<string, string>(
 			new MemoryStream(),
 			21,
-			new StringSerializer().AsNullable().AsConstantSizeSerializer(11, SizeDescriptorStrategy.UseUInt32),
+			new StringSerializer().AsNullable().AsConstantSize(11),
 			new StringSerializer(),
 			reservedStreamCount: 33,
 			policy: StreamContainerPolicy.Performance);
@@ -39,7 +39,7 @@ public class StreamMappedDictionaryCLKTests : StreamMappedDictionaryTestsBase {
 		var disposable = base.CreateStream(storageType, estimatedMaxByteSize, out var stream);
 		clusteredDictionary = StreamMappedFactory.CreateDictionaryClk<TKey, TValue>(stream,
 			DefaultClusterDataSize,
-			keySerializer.AsConstantSizeSerializer(256, SizeDescriptorStrategy.UseUInt32),
+			keySerializer.AsConstantSize(256),
 			valueSerializer,
 			keyComparer,
 			valueComparer,

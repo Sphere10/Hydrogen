@@ -10,7 +10,7 @@ using System;
 
 namespace Hydrogen;
 
-public class TimeSpanSerializer : ConstantLengthItemSerializerBase<TimeSpan> {
+public class TimeSpanSerializer : ConstantSizeItemSerializerBase<TimeSpan> {
 	private readonly PrimitiveSerializer<long> _longSerializer = new();
 
 	public TimeSpanSerializer() : base(8, false) {
@@ -21,6 +21,6 @@ public class TimeSpanSerializer : ConstantLengthItemSerializerBase<TimeSpan> {
 	public override void SerializeInternal(TimeSpan item, EndianBinaryWriter writer)
 		=> _longSerializer.SerializeInternal(item.Ticks, writer);
 
-	public override TimeSpan Deserialize(EndianBinaryReader reader) 
+	public override TimeSpan DeserializeInternal(EndianBinaryReader reader) 
 		=> TimeSpan.FromTicks(_longSerializer.Deserialize(reader));
 }

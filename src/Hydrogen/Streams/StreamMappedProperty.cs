@@ -50,7 +50,7 @@ public class StreamMappedProperty<T> {
 			using var _ = _lock.EnterAccessScope();
 			if (!_hasValue) {
 				_stream.Seek(_offset, SeekOrigin.Begin);
-				_lastValue = _serializer.Deserialize(_size, _reader);
+				_lastValue = _serializer.Deserialize(_reader);
 				_hasValue = true;
 			}
 			return _lastValue;

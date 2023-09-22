@@ -35,7 +35,7 @@ public class TestObject {
 
 
 public class TestObjectSerializer : ItemSerializer<TestObject> {
-	private readonly AutoSizedSerializer<string> _stringSerializer = new(new StringSerializer(Encoding.UTF8).AsNullable(), SizeDescriptorStrategy.UseVarInt);
+	private readonly IItemSerializer<string> _stringSerializer = new StringSerializer(Encoding.UTF8, SizeDescriptorStrategy.UseVarInt).AsNullable();
 
 	public override long CalculateSize(TestObject item)
 		=> _stringSerializer.CalculateSize(item.A) + sizeof(int) + sizeof(bool);
@@ -47,7 +47,7 @@ public class TestObjectSerializer : ItemSerializer<TestObject> {
 		writer.Write(item.C);
 	}
 
-	public override TestObject DeserializeInternal(long byteSize, EndianBinaryReader reader) 
+	public override TestObject DeserializeInternal(EndianBinaryReader reader) 
 		=> new(_stringSerializer.Deserialize(reader), reader.ReadInt32(), reader.ReadBoolean());
 
 }

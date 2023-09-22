@@ -13,24 +13,32 @@ namespace Hydrogen;
 
 public abstract class ItemSerializer<TItem> : ItemSizer<TItem>, IItemSerializer<TItem> {
 
+
+	protected ItemSerializer(SizeDescriptorStrategy sizeDescriptorStrategy = SizeDescriptorStrategy.UseCVarInt) {
+		SizeSerializer = new SizeDescriptorSerializer(sizeDescriptorStrategy);
+	}
+
+	protected SizeDescriptorSerializer SizeSerializer { get; private set; }
+
 	public abstract void SerializeInternal(TItem item, EndianBinaryWriter writer);
 
-	public abstract TItem DeserializeInternal(long byteSize, EndianBinaryReader reader);
+	public abstract TItem DeserializeInternal(EndianBinaryReader reader);
 
 	public static IItemSerializer<TItem> Default {
 		get {
-			var type = typeof(TItem);
+			throw new NotImplementedException();
+			//var type = typeof(TItem);
 
-			if (Tools.Memory.IsSerializationPrimitive(type))
-				return new PrimitiveSerializer<TItem>();
+			//if (Tools.Memory.IsSerializationPrimitive(type))
+			//	return new PrimitiveSerializer<TItem>();
 
-			if (type == typeof(string))
-				return new StringSerializer(Encoding.UTF8) as IItemSerializer<TItem>;
+			//if (type == typeof(string))
+			//	return new StringSerializer(Encoding.UTF8) as IItemSerializer<TItem>;
 
-			if (SerializerFactory.Default.HasSerializer(type))
-				return SerializerFactory.Default.GetSerializer<TItem>(type);
+			//if (SerializerFactory.Default.HasSerializer(type))
+			//	return SerializerFactory.Default.GetSerializer<TItem>(type);
 
-			return new GenericSerializer<TItem>();
+			//return new GenericSerializer<TItem>();
 		}
 	}
 

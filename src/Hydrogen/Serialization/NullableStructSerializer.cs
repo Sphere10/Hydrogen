@@ -57,7 +57,7 @@ public class NullableStructSerializer<T> : ItemSerializer<T?> where T : struct {
 	}
 
 	public T? Deserialize(EndianBinaryReader reader) {
-		if (_underlyingSerializer is AutoSizedSerializer<T> autoSerializer) {
+		if (_underlyingSerializer is IAutoSizedSerializer<T> autoSerializer) {
 			if (!reader.ReadBoolean())
 				return default;
 			return autoSerializer.Deserialize(reader);
@@ -66,7 +66,7 @@ public class NullableStructSerializer<T> : ItemSerializer<T?> where T : struct {
 		if (_underlyingSerializer.IsConstantLength)
 			return DeserializeInternal(ConstantLength, reader);
 
-		throw new InvalidOperationException($"This method can only be used with {nameof(AutoSizedSerializer<T>)} or a statically sized serializer");
+		throw new InvalidOperationException($"This method can only be used with {nameof(IAutoSizedSerializer<T>)} or a statically sized serializer");
 
 	}
 

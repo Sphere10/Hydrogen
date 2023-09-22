@@ -18,10 +18,8 @@ public abstract class ConstantLengthItemSerializerBase<TItem> : ConstantLengthIt
 
 	public abstract void SerializeInternal(TItem item, EndianBinaryWriter writer);
 
-	public TItem DeserializeInternal(long byteSize, EndianBinaryReader reader) {
-		Guard.Ensure(byteSize == ConstantLength, "Read overflow");
-		return Deserialize(reader);
-	}
+	public TItem DeserializeInternal(long byteSize, EndianBinaryReader reader) 
+		=> Deserialize(reader);
 
 	public abstract TItem Deserialize(EndianBinaryReader reader);
 

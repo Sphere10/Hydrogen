@@ -4,7 +4,7 @@ public class ConstantLengthArraySerializer<T> : ItemSerializer<T[]> {
 	private readonly IAutoSizedSerializer<T> _valueSerializer;
 	private readonly long _arrayLength;
 	
-	public ConstantLengthArraySerializer(IAutoSizedSerializer<T> valueSerializer, SizeDescriptorStrategy valueSizeDescriptorStrategy,  long arrayLength) {
+	public ConstantLengthArraySerializer(IAutoSizedSerializer<T> valueSerializer, SizeDescriptorStrategy valueSizeDescriptorStrategy, long arrayLength) {
 		Guard.ArgumentNotNull(valueSerializer, nameof(valueSerializer));
 		Guard.ArgumentInRange(arrayLength, 0, long.MaxValue, nameof(arrayLength));
 		_arrayLength = arrayLength;

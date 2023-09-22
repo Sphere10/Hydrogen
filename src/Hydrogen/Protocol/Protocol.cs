@@ -41,7 +41,7 @@ public class Protocol {
 		}
 
 		// Validate Handshake
-		var supportedTypes = Modes[0].MessageSerializer.RegisteredTypes.ToHashSet(); // handshake uses Mode 0 serializers
+		var supportedTypes = Modes[0].MessageSerializer.Factory.RegisteredTypes.ToHashSet(); // handshake uses Mode 0 serializers
 		if (Handshake.MessageTypes is not null) {
 			var missingSerializers = Handshake.MessageTypes.Where(t => !supportedTypes.Contains(t));
 			if (missingSerializers.Any())

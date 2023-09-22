@@ -66,7 +66,7 @@ public class ProtocolMode {
 
 		// Check missing serializers
 		if (MessageSerializer is not null) {
-			var supportedTypes = MessageSerializer.RegisteredTypes.ToHashSet();
+			var supportedTypes = MessageSerializer.Factory.RegisteredTypes.ToHashSet();
 			var missingSerializers = Enumerable.Empty<Type>();
 
 			if (CommandHandlers is not null)

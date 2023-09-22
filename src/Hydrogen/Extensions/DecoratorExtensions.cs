@@ -286,7 +286,7 @@ public static partial class DecoratorExtensions {
 		=> new PaddedSerializer<TItem>(length, serializer, sizeDescriptorStrategy);
 
 	public static IAutoSizedSerializer<TItem> AsAutoSized<TItem>(this IItemSerializer<TItem> serializer, SizeDescriptorStrategy sizeDescriptorStrategy = SizeDescriptorStrategy.UseCVarInt) 
-		=> new SizeSavingSerializer<TItem>(serializer, sizeDescriptorStrategy);
+		=> new AutoSizedSerializer<TItem>(serializer, sizeDescriptorStrategy);
 
 	#endregion
 }

@@ -18,17 +18,17 @@ namespace Hydrogen;
 /// type-code which permits selection of correct concrete type.
 /// </summary>
 /// <typeparam name="TBase">The type of object which is serialized/deserialized</typeparam>
-public class FactorySerializer<TBase> : IItemSerializer<TBase> {
+public class BaseSerializer<TBase> : IItemSerializer<TBase> {
 	private readonly SerializerFactory _factory;
 	private readonly SerializerSerializer _serializerSerializer;
 
-	public FactorySerializer(bool supportsNull = false) {
+	public BaseSerializer(bool supportsNull = false) {
 		_factory = new SerializerFactory();
 		_serializerSerializer = new SerializerSerializer(_factory);
 		SupportsNull = supportsNull;
 	}
 
-	public IEnumerable<Type> RegisteredTypes => _factory.RegisteredTypes;
+	public SerializerFactory Factory => _factory;
 
 	public bool SupportsNull { get; }
 

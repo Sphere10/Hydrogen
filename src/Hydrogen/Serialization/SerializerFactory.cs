@@ -94,8 +94,8 @@ public class SerializerFactory {
 
 	#region Serializer hierarchy methods
 
-	public RecursiveDataType<long> GetSerializerHierarchy(Type type) 
-		=> _getSerializerHierarchyCache[type];
+	public RecursiveDataType<long> GetSerializerHierarchy(Type dataType) 
+		=> _getSerializerHierarchyCache[dataType];
 
 	public IItemSerializer FromSerializerHierarchy(RecursiveDataType<long> serializerHierarchy) 
 		=> _fromSerializerHierarchyCache[serializerHierarchy];
@@ -202,7 +202,7 @@ public class SerializerFactory {
 		Guard.ArgumentNotNull(dataType, nameof(dataType));
 		var serializerDataType = typeof(TSerializerDataType);
 		Guard.Argument(dataType.IsSubTypeOf(serializerDataType), nameof(dataType), $"{dataType.ToStringCS()} must be a sub-type of {serializerDataType.ToStringCS()}");
-		var serializerObj = _getSerializerCache[dataType];
+		var serializerObj = GetSerializer(dataType);
 
 		var serializer = serializerObj as IItemSerializer<TSerializerDataType>;
 		if (serializer is null) {
@@ -213,6 +213,8 @@ public class SerializerFactory {
 		return serializer;
 	}
 
+
+	public IItemSerializer GetSerializer(Type dataType) => _getSerializerCache[dataType];
 
 	// Called by _getSerializerCache to get serializer
 	private IItemSerializer GetSerializerInternal(Type dataType) {
@@ -257,7 +259,7 @@ public class SerializerFactory {
 		if (registeredDataType.IsGenericTypeDefinition)
 			Guard.Ensure(requestedDataType.IsConstructedGenericTypeOf(registeredDataType), $"Constructed type {requestedDataType.Name} is not a constructed generic type of {registeredDataType.Name}");
 		var subTypes = requestedDataType.IsArray ? new [] { requestedDataType.GetElementType() } : requestedDataType.GetGenericArguments();
-		var subTypeSerializers = subTypes.Select(x => _getSerializerCache[x]).ToArray();
+		var subTypeSerializers = subTypes.Select(GetSerializer).ToArray();
 		var serializerType = registeredSerializerType;
 		if (serializerType.IsGenericTypeDefinition)
 			serializerType = serializerType.MakeGenericType(subTypes);

@@ -13,7 +13,7 @@ public class ConstantLengthArraySerializer<T> : ItemSerializer<T[]> {
 			if (valueSerializer.IsConstantLength)
 				autoSizedSerializer = new ConstantLengthSerializer<T>(valueSerializer);
 			else
-				autoSizedSerializer = new SizeSavingSerializer<T>(valueSerializer, valueSizeDescriptorStrategy);
+				autoSizedSerializer = new AutoSizedSerializer<T>(valueSerializer, valueSizeDescriptorStrategy);
 		}
 		_valueSerializer = autoSizedSerializer;	
 	}

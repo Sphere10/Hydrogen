@@ -29,10 +29,7 @@ public class SerializerSerializer : ItemSerializer<IItemSerializer>, IAutoSizedS
 			_typeCodeSerializer.SerializeInternal(serializer, writer);
 	}
 
-	public override IItemSerializer DeserializeInternal(long byteSize, EndianBinaryReader reader) {
-		var serializer = Deserialize(reader);
-		return serializer;
-	}
+	public override IItemSerializer DeserializeInternal(long byteSize, EndianBinaryReader reader) => Deserialize(reader);
 
 	public IItemSerializer Deserialize(EndianBinaryReader reader) {
 		// deserialize the top-level serializer code

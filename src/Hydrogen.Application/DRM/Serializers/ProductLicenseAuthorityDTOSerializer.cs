@@ -13,8 +13,8 @@ namespace Hydrogen.Application;
 
 public class ProductLicenseAuthorityDTOSerializer : ItemSerializer<ProductLicenseAuthorityDTO> {
 
-	private readonly SizeSavingSerializer<string> _stringSerializer = new( new StringSerializer(Encoding.ASCII), SizeDescriptorStrategy.UseUInt32);
-	private readonly SizeSavingSerializer<byte[]> _byteArraySerializer = new( new ByteArraySerializer(), SizeDescriptorStrategy.UseUInt32 );
+	private readonly AutoSizedSerializer<string> _stringSerializer = new( new StringSerializer(Encoding.ASCII), SizeDescriptorStrategy.UseUInt32);
+	private readonly AutoSizedSerializer<byte[]> _byteArraySerializer = new( new ByteArraySerializer(), SizeDescriptorStrategy.UseUInt32 );
 
 	public override long CalculateSize(ProductLicenseAuthorityDTO item)
 		=> sizeof(int) + _stringSerializer.CalculateSize(item.Name) +

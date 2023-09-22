@@ -10,13 +10,13 @@ using System;
 
 namespace Hydrogen;
 
-public class FactorySerializerBuilderBase<TBase, TFactorySerializerBuilder> where TFactorySerializerBuilder : FactorySerializerBuilderBase<TBase, TFactorySerializerBuilder> {
+public class ProtocolSerializerBuilderBase<TBase, TFactorySerializerBuilder> where TFactorySerializerBuilder : ProtocolSerializerBuilderBase<TBase, TFactorySerializerBuilder> {
 
-	public FactorySerializerBuilderBase(FactorySerializer<TBase> serializer) {
+	public ProtocolSerializerBuilderBase(BaseSerializer<TBase> serializer) {
 		Serializer = serializer;
 	}
 
-	public FactorySerializer<TBase> Serializer { get; protected set; }
+	public BaseSerializer<TBase> Serializer { get; protected set; }
 
 	protected ushort TypeCode { get; private set; }
 

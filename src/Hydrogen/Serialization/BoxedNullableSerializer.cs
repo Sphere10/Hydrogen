@@ -69,7 +69,7 @@ internal sealed class BoxedNullableSerializer<T> : ItemSerializer<BoxedNullable<
 	public BoxedNullable<T> Deserialize(EndianBinaryReader reader) {
 		var hasValue = reader.ReadBoolean();
 
-		if (_valueSerializer is SizeSavingSerializer<T> autoSerializer) {
+		if (_valueSerializer is AutoSizedSerializer<T> autoSerializer) {
 			if (hasValue) {
 				return autoSerializer.Deserialize(reader);
 			}
@@ -92,7 +92,7 @@ internal sealed class BoxedNullableSerializer<T> : ItemSerializer<BoxedNullable<
 			return default(T);
 		}
 
-		throw new InvalidOperationException($"This method can only be used with {nameof(SizeSavingSerializer<T>)} or a statically sized serializer");
+		throw new InvalidOperationException($"This method can only be used with {nameof(AutoSizedSerializer<T>)} or a statically sized serializer");
 	}
 
 }

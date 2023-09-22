@@ -11,11 +11,12 @@ namespace Hydrogen;
 /// <typeparam name="TItem">The type being built.</typeparam>
 /// <remarks>
 ///		var serializer = 
-///		SerializerBuilder.For&lt;Class&gt;()
-///		.ForMember(x => x.Property1, new Type1Serializer())
-///		.ForMember(x => x.Property2, new Type2Serializer())
-///		.ForMember(x => x.Property3, new Type3Serializer())
-///		.Build();
+///			SerializerBuilder
+///				.For&lt;TypeName&gt;()
+///				.ForMember(x => x.Property1, new Type1Serializer())
+///				.ForMember(x => x.Property2, new Type2Serializer())
+///				.ForMember(x => x.Property3, new Type3Serializer())
+///				.Build();
 /// </remarks>
 public class SerializerBuilder<TItem> {
 	private readonly List<MemberSerializationBinding> _memberBindings;
@@ -38,7 +39,7 @@ public class SerializerBuilder<TItem> {
 		return this;
 	}
 
-	public SerializerBuilder<TItem> ForMember<TMember>(Expression<Func<TItem, TMember>> memberExpression, IAutoSizedSerializer<TMember> serializer) {
+	public SerializerBuilder<TItem> ForMember<TMember>(Expression<Func<TItem, TMember>> memberExpression, IItemSerializer<TMember> serializer) {
 		Guard.ArgumentNotNull(memberExpression, nameof(memberExpression));
 		Guard.ArgumentNotNull(serializer, nameof(serializer));
 		var member = memberExpression.ToMember();
@@ -66,4 +67,5 @@ public static class SerializerBuilder {
 
 	public static SerializerBuilder<TItem> For<TItem>(Func<TItem> activator)
 		=> new SerializerBuilder<TItem>().WithActivation(activator);
+
 }

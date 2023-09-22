@@ -57,7 +57,7 @@ public static class TypeExtensions {
 	public static bool TryActivateWithCompatibleArgs(Type type, object[] args, out object instance) 
 		=> TypeActivator.TryActivateWithCompatibleArgs(type, args, out instance);
 
-	public static object ActivateWithCompatibleArgs(this Type type, object[] args) 
+	public static object ActivateWithCompatibleArgs(this Type type, params object[] args) 
 		=> TypeActivator.ActivateWithCompatibleArgs(type, args);
 
 	public static IEnumerable<Type> GetAncestorClasses(this Type type)

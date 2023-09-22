@@ -8,10 +8,10 @@
 
 namespace Hydrogen.Communications;
 
-public sealed class ProtocolMessageBuilder : FactorySerializerBuilderBase<object, ProtocolMessageBuilder>, IProtocolBuilderMain {
+public sealed class ProtocolMessageBuilder : ProtocolSerializerBuilderBase<object, ProtocolMessageBuilder>, IProtocolBuilderMain {
 	private readonly ProtocolMode _mode;
 
-	public ProtocolMessageBuilder(IProtocolBuilderMain parent, ProtocolMode mode, FactorySerializer<object> serializer)
+	public ProtocolMessageBuilder(IProtocolBuilderMain parent, ProtocolMode mode, BaseSerializer<object> serializer)
 		: base(serializer) {
 		Parent = parent;
 		_mode = mode;
@@ -33,7 +33,7 @@ public sealed class ProtocolMessageBuilder : FactorySerializerBuilderBase<object
 
 	public Protocol Build() => Parent.Build();
 
-	public ProtocolMessageBuilder UseOnly(FactorySerializer<object> serializer) {
+	public ProtocolMessageBuilder UseOnly(BaseSerializer<object> serializer) {
 		Guard.ArgumentNotNull(serializer, nameof(serializer));
 		base.Serializer = serializer;
 		return this;

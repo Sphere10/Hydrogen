@@ -19,7 +19,7 @@ public class ArraySerializer<T> : ItemSerializer<T[]> {
 			if (valueSerializer.IsConstantLength)
 				autoSizedSerializer = new ConstantLengthSerializer<T>(valueSerializer);
 			else
-				autoSizedSerializer = new SizeSavingSerializer<T>(valueSerializer, sizeDescriptorStrategy);
+				autoSizedSerializer = new AutoSizedSerializer<T>(valueSerializer, sizeDescriptorStrategy);
 		}
 		_valueSerializer = autoSizedSerializer;	
 		_sizeDescriptorSerializer = new SizeDescriptorSerializer(sizeDescriptorStrategy);

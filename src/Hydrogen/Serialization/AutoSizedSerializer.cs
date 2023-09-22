@@ -8,10 +8,10 @@
 
 namespace Hydrogen;
 
-internal class SizeSavingSerializer<TItem> : ItemSerializerDecorator<TItem>, IAutoSizedSerializer<TItem> {
+internal class AutoSizedSerializer<TItem> : ItemSerializerDecorator<TItem>, IAutoSizedSerializer<TItem> {
 	private readonly SizeDescriptorSerializer _sizeDescriptorSerializer;
 
-	public SizeSavingSerializer(IItemSerializer<TItem> internalSerializer, SizeDescriptorStrategy sizeDescriptorStrategy)
+	public AutoSizedSerializer(IItemSerializer<TItem> internalSerializer, SizeDescriptorStrategy sizeDescriptorStrategy)
 		: base(internalSerializer) {
 		_sizeDescriptorSerializer = new SizeDescriptorSerializer(sizeDescriptorStrategy);
 	}
@@ -29,13 +29,16 @@ internal class SizeSavingSerializer<TItem> : ItemSerializerDecorator<TItem>, IAu
 		base.SerializeInternal(item, writer);
 	}
 
-	public override TItem DeserializeInternal(long byteSize, EndianBinaryReader reader) {
-		// Caller trying to read item passing explicit size, so check length matches
-		var itemSize = _sizeDescriptorSerializer.Deserialize(reader);
-		var sizeDescriptorSize = _sizeDescriptorSerializer.CalculateSize(itemSize);
-		Guard.Ensure(byteSize == sizeDescriptorSize + itemSize, "Read overflow");
-		return base.DeserializeInternal(itemSize, reader);
-	}
+	//public override TItem DeserializeInternal(long byteSize, EndianBinaryReader reader) {
+	//	// Caller trying to read item passing explicit size, so check length matches
+	//	var itemSize = _sizeDescriptorSerializer.Deserialize(reader);
+	//	var sizeDescriptorSize = _sizeDescriptorSerializer.CalculateSize(itemSize);
+	//	Guard.Ensure(byteSize == sizeDescriptorSize + itemSize, "Read overflow");
+	//	return base.DeserializeInternal(itemSize, reader);
+	//}
+
+	public override TItem DeserializeInternal(long byteSize, EndianBinaryReader reader) 
+		=> Deserialize(reader);
 
 	public TItem Deserialize(EndianBinaryReader reader) {
 		var itemSize = _sizeDescriptorSerializer.Deserialize(reader);

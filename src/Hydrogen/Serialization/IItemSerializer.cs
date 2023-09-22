@@ -17,6 +17,7 @@ public interface IItemSerializer : IItemSizer {
 	internal void SerializeInternal(object item, EndianBinaryWriter writer);
 
 	internal object DeserializeInternal(long byteSize, EndianBinaryReader reader);
+	
 }
 
 public interface IAutoSizedSerializer : IItemSerializer {

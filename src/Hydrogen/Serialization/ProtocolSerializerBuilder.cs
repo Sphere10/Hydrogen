@@ -8,16 +8,16 @@
 
 namespace Hydrogen;
 
-public class FactorySerializerBuilder<TBase> : FactorySerializerBuilderBase<TBase, FactorySerializerBuilder<TBase>> {
+public class ProtocolSerializerBuilder<TBase> : ProtocolSerializerBuilderBase<TBase, ProtocolSerializerBuilder<TBase>> {
 
-	public FactorySerializerBuilder() : this(new FactorySerializer<TBase>()) {
+	public ProtocolSerializerBuilder() : this(new BaseSerializer<TBase>()) {
 	}
 
-	internal FactorySerializerBuilder(FactorySerializer<TBase> serializer)
+	internal ProtocolSerializerBuilder(BaseSerializer<TBase> serializer)
 		: base(serializer) {
 	}
 
-	public FactorySerializer<TBase> Build() {
+	public BaseSerializer<TBase> Build() {
 		return Serializer;
 	}
 

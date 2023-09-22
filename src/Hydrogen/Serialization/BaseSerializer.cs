@@ -55,16 +55,16 @@ public class BaseSerializer<TBase> : IItemSerializer<TBase> {
 		return _serializerSerializer.CalculateSize(serializer) + serializer.CalculateSize(item);
 	}
 
-	public void SerializeInternal(TBase item, EndianBinaryWriter writer) {
+	public void Serialize(TBase item, EndianBinaryWriter writer) {
 		var serializer = _factory.GetSerializer<TBase>(item.GetType());
-		_serializerSerializer.SerializeInternal(serializer, writer);
-		serializer.SerializeInternal(item, writer);
+		_serializerSerializer.Serialize(serializer, writer);
+		serializer.Serialize(item, writer);
 	}
 
-	public TBase DeserializeInternal(EndianBinaryReader reader) {
-		var serializerObj = _serializerSerializer.DeserializeInternal(reader);
+	public TBase Deserialize(EndianBinaryReader reader) {
+		var serializerObj = _serializerSerializer.Deserialize(reader);
 		var serializer = GetTypedSerializer<TBase>(serializerObj);
-		return serializer.DeserializeInternal(reader);
+		return serializer.Deserialize(reader);
 	}
 
 	public IItemSerializer<TSerializerDataType> GetTypedSerializer<TSerializerDataType>(IItemSerializer serializerObj) {

@@ -37,7 +37,7 @@ public sealed class Encrypted<TObject> : Encrypted, IEncrypted<TObject> {
 	}
 
 	public void SetItem(TObject item, byte[] password) {
-		var itemBytes = _serializer.SerializeLE(item);
+		var itemBytes = _serializer.SerializeBytesLE(item);
 		//EncryptedBytes = Encryptor.EncryptBytes(password);
 	}
 

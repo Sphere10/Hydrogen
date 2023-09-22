@@ -40,10 +40,10 @@ internal sealed class BoxedNullableSerializer<T> : ItemSerializer<BoxedNullable<
 		return size;
 	}
 
-	public override void SerializeInternal(BoxedNullable<T> item, EndianBinaryWriter writer) {
+	public override void Serialize(BoxedNullable<T> item, EndianBinaryWriter writer) {
 		if (item.HasValue) {
 			writer.Write(true);
-			_valueSerializer.SerializeInternal(item, writer);
+			_valueSerializer.Serialize(item, writer);
 		} else {
 			writer.Write(false);
 			if (IsConstantSize)
@@ -51,9 +51,9 @@ internal sealed class BoxedNullableSerializer<T> : ItemSerializer<BoxedNullable<
 		}
 	}
 
-	public override BoxedNullable<T> DeserializeInternal(EndianBinaryReader reader) {
+	public override BoxedNullable<T> Deserialize(EndianBinaryReader reader) {
 		var hasValue = reader.ReadBoolean();
-		var result = hasValue ? new BoxedNullable<T>(_valueSerializer.DeserializeInternal(reader)) : new BoxedNullable<T>();
+		var result = hasValue ? new BoxedNullable<T>(_valueSerializer.Deserialize(reader)) : new BoxedNullable<T>();
 		if (IsConstantSize)
 			reader.ReadBytes(_valueSerializer.ConstantSize);
 		return result;

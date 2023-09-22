@@ -20,7 +20,7 @@ public class SizeDescriptorSerializer : SizeDescriptorSizer, IItemSerializer<lon
 
 	public bool SupportsNull => false;
 
-	public void SerializeInternal(long item, EndianBinaryWriter writer) {
+	public void Serialize(long item, EndianBinaryWriter writer) {
 		var startPos = writer.BaseStream.Position;
 		switch (SizeDescriptorStrategy) {
 			case SizeDescriptorStrategy.UseVarInt:
@@ -51,7 +51,7 @@ public class SizeDescriptorSerializer : SizeDescriptorSizer, IItemSerializer<lon
 				throw new ArgumentOutOfRangeException();
 		}
 	}
-	public long DeserializeInternal(EndianBinaryReader reader)
+	public long Deserialize(EndianBinaryReader reader)
 		=> SizeDescriptorStrategy switch {
 			SizeDescriptorStrategy.UseVarInt => unchecked((long)VarInt.Read(reader.BaseStream)),
 			SizeDescriptorStrategy.UseCVarInt => unchecked((long)CVarInt.Read(reader.BaseStream)),

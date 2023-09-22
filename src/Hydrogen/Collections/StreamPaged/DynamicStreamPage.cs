@@ -217,7 +217,7 @@ internal class DynamicStreamPage<TItem> : StreamPageBase<TItem> {
 		// Replace items
 		Stream.Seek(_offsets[index], SeekOrigin.Begin); // offset should always be set (append/update case)
 		newItemsSize = 0;
-		var itemSizes = items.Select(x => Serializer.Serialize(x, Writer)).ToArray();
+		var itemSizes = items.Select(x => Serializer.SerializeReturnSize(x, Writer)).ToArray();
 		newItemsSize = itemSizes.Sum();
 		SetItemSizes(index, itemSizes, out oldItemsSize);
 		NextPagePosition += newItemsSize - oldItemsSize;

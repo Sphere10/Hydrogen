@@ -43,19 +43,19 @@ public class KeyValuePairSerializer<TKey, TValue> : ItemSerializer<KeyValuePair<
 		return keySizeDescriptorSize + keySize + valueSizeDescriptorSize + valueSize;
 	}
 
-	public override void SerializeInternal(KeyValuePair<TKey, TValue> item, EndianBinaryWriter writer) {
+	public override void Serialize(KeyValuePair<TKey, TValue> item, EndianBinaryWriter writer) {
 		// write key 
 		var keySize = KeySerializer.CalculateSize(item.Key);
-		SizeSerializer.SerializeInternal(keySize, writer);
+		SizeSerializer.Serialize(keySize, writer);
 		KeySerializer.Serialize(item.Key, writer);
 
 		// write value
 		var valueSize = ValueSerializer.CalculateSize(item.Value);
-		SizeSerializer.SerializeInternal(valueSize, writer);
+		SizeSerializer.Serialize(valueSize, writer);
 		ValueSerializer.Serialize(item.Value, writer);
 	}
 
-	public override KeyValuePair<TKey, TValue> DeserializeInternal(EndianBinaryReader reader) {
+	public override KeyValuePair<TKey, TValue> Deserialize(EndianBinaryReader reader) {
 		// Deserialize key
 		SizeSerializer.Deserialize(reader);
 		var key = KeySerializer.Deserialize(reader);

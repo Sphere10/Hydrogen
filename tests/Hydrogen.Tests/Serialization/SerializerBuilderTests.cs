@@ -28,8 +28,8 @@ public class SerializerBuilderTests {
 		
 		var testObj = new TestObject("Hello", 123, true);
 		
-		var serialized = serializer.SerializeLE(testObj);
-		var deserialized = serializer.DeserializeLE(serialized);
+		var serialized = serializer.SerializeBytesLE(testObj);
+		var deserialized = serializer.DeserializeBytesLE(serialized);
 
 		Assert.That(deserialized, Is.EqualTo(testObj).Using(new TestObjectComparer()));
 			
@@ -76,8 +76,8 @@ public class SerializerBuilderTests {
 		
 		var testObj = new TestObject(null, 999, false);
 		
-		var serialized = serializer.SerializeLE(testObj);
-		var deserialized = serializer.DeserializeLE(serialized);
+		var serialized = serializer.SerializeBytesLE(testObj);
+		var deserialized = serializer.DeserializeBytesLE(serialized);
 
 		Assert.That(deserialized, Is.EqualTo(testObj).Using(new TestObjectComparer()));
 			
@@ -96,8 +96,8 @@ public class SerializerBuilderTests {
 		
 		var testObj = new TestObject(string.Empty, -1, false);
 		
-		var serialized = serializer.SerializeLE(testObj);
-		var deserialized = serializer.DeserializeLE(serialized);
+		var serialized = serializer.SerializeBytesLE(testObj);
+		var deserialized = serializer.DeserializeBytesLE(serialized);
 
 		Assert.That(deserialized, Is.EqualTo(testObj).Using(new TestObjectComparer()));
 			
@@ -113,7 +113,7 @@ public class SerializerBuilderTests {
 			.ForMember(x => x.C, PrimitiveSerializer<bool>.Instance)
 			.Build();
 		Assert.That(serializer.SupportsNull, Is.False);	
-		Assert.That(() => serializer.SerializeLE(null), Throws.Exception);
+		Assert.That(() => serializer.SerializeBytesLE(null), Throws.Exception);
 	}
 
 
@@ -130,8 +130,8 @@ public class SerializerBuilderTests {
 
 		Assert.That(serializer.SupportsNull, Is.True);	
 		
-		var serialized = serializer.SerializeLE(null);
-		var deserialized = serializer.DeserializeLE(serialized);
+		var serialized = serializer.SerializeBytesLE(null);
+		var deserialized = serializer.DeserializeBytesLE(serialized);
 
 		Assert.That(deserialized, Is.Null);
 			

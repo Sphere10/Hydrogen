@@ -30,11 +30,11 @@ internal class PackedSerializer : IItemSerializer<object> {
 	public long CalculateSize(object item) 
 		=> _serializer.CalculateSize(item);
 
-	public void SerializeInternal(object item, EndianBinaryWriter writer) 
-		=> _serializer.SerializeInternal(item, writer);
+	public void Serialize(object item, EndianBinaryWriter writer) 
+		=> _serializer.Serialize(item, writer);
 
-	public object DeserializeInternal( EndianBinaryReader reader) 
-		=> _serializer.DeserializeInternal(reader);
+	public object Deserialize( EndianBinaryReader reader) 
+		=> _serializer.Deserialize(reader);
 
 	public static PackedSerializer Pack(IItemSerializer serializer) {
 		Guard.ArgumentNotNull(serializer, nameof(serializer));

@@ -169,7 +169,7 @@ public class ProtocolOrchestrator {
 	}
 
 	protected bool ProcessSendMessage(ProtocolMessageEnvelope envelope) {
-		if (!EnvelopeSerializer.TrySerializeLE(envelope, out var data, out var error)) {
+		if (!Tools.Lambda.Try( () => EnvelopeSerializer.SerializeBytesLE(envelope), out var data, out var error)) {
 			Logger.Exception(error, "Failed to serialize message envelope");
 			return false;
 		}
@@ -184,7 +184,7 @@ public class ProtocolOrchestrator {
 	}
 
 	protected void ProcessReceivedBytes(ReadOnlyMemory<byte> bytes) {
-		if (!EnvelopeSerializer.TryDeserializeLE(bytes.Span, out var envelope, out var error)) {
+		if (!Tools.Lambda.Try( () => EnvelopeSerializer.DeserializeBytesLE(bytes.Span), out var envelope, out var error)) {
 			// Deal with problematic channel here (blacklist)
 			Logger.Exception(error, $"Failed to deserialize message envelope (byte length: {bytes.Length})");
 			// TODO: behaviour on error?

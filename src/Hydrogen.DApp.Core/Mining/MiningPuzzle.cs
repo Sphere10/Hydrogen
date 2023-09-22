@@ -35,7 +35,7 @@ public class MiningPuzzle {
 	public SynchronizedList<BlockChainTransaction> Transactions;
 
 	public byte[] ComputeWork()
-		=> _miningConfig.Hasher.Hash(BlockSerializer.SerializeLE(Block));
+		=> _miningConfig.Hasher.Hash(BlockSerializer.SerializeBytesLE(Block));
 
 	public uint ComputeCompactWork() {
 		var proofOfWork = ComputeWork();

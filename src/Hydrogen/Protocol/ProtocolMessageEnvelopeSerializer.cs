@@ -23,7 +23,7 @@ public class ProtocolMessageEnvelopeSerializer : ItemSerializer<ProtocolMessageE
 	public override long CalculateSize(ProtocolMessageEnvelope item)
 		=> MessageEnvelopeMarker.Length + _payloadSerializer.CalculateSize(item.Message);
 
-	public override void SerializeInternal(ProtocolMessageEnvelope item, EndianBinaryWriter writer) {
+	public override void Serialize(ProtocolMessageEnvelope item, EndianBinaryWriter writer) {
 		writer.Write(MessageEnvelopeMarker);
 		writer.Write((byte)item.DispatchType);
 		writer.Write(item.RequestID);
@@ -31,7 +31,7 @@ public class ProtocolMessageEnvelopeSerializer : ItemSerializer<ProtocolMessageE
 		_payloadSerializer.Serialize(item.Message, writer);
 	}
 
-	public override ProtocolMessageEnvelope DeserializeInternal(EndianBinaryReader reader) {
+	public override ProtocolMessageEnvelope Deserialize(EndianBinaryReader reader) {
 		if (reader.BaseStream.Length < MessageEnvelopeLength)
 			throw new ArgumentException("Stream is too short to be a message envelope");
 

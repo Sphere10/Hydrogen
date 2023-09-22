@@ -77,7 +77,7 @@ internal class ConstantSizeStreamPage<TItem> : StreamPageBase<TItem> {
 		Stream.Seek(_item0Offset + Count * ItemSize, SeekOrigin.Begin);
 
 		foreach (var item in items) {
-			var bytesWritten = Serializer.Serialize(item, Writer);
+			var bytesWritten = Serializer.SerializeReturnSize(item, Writer);
 			Guard.Ensure(bytesWritten == Serializer.ConstantSize, $"Static serializer wrote {bytesWritten} bytes expected {Serializer.ConstantSize}");
 		}
 
@@ -97,7 +97,7 @@ internal class ConstantSizeStreamPage<TItem> : StreamPageBase<TItem> {
 		Stream.Seek(index, SeekOrigin.Begin);
 
 		foreach (var item in items) {
-			var bytesWritten = Serializer.Serialize(item, Writer);
+			var bytesWritten = Serializer.SerializeReturnSize(item, Writer);
 			Guard.Ensure(bytesWritten == Serializer.ConstantSize, $"Static serializer wrote {bytesWritten} bytes expected {Serializer.ConstantSize}");
 		}
 

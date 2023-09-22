@@ -36,39 +36,39 @@ public class ProductLicenseDTOSerializer : ItemSerializer<ProductLicenseDTO> {
 		   _nullableIntSerializer.CalculateSize(item.LimitFeatureD);
 
 
-	public override void SerializeInternal(ProductLicenseDTO item, EndianBinaryWriter writer) {
-		_stringSerializer.SerializeInternal(item.Name, writer);
-		_stringSerializer.SerializeInternal(item.ProductKey, writer);
-		_guidSerializer.SerializeInternal(item.ProductCode, writer);
+	public override void Serialize(ProductLicenseDTO item, EndianBinaryWriter writer) {
+		_stringSerializer.Serialize(item.Name, writer);
+		_stringSerializer.Serialize(item.ProductKey, writer);
+		_guidSerializer.Serialize(item.ProductCode, writer);
 		writer.Write((byte)item.FeatureLevel);
 		writer.Write((byte)item.ExpirationPolicy);
-		_nullableShortSerializer.SerializeInternal(item.MajorVersionApplicable, writer);
-		_nullableDateTimeSerializer.SerializeInternal(item.ExpirationDate, writer);
-		_nullableIntSerializer.SerializeInternal(item.ExpirationDays, writer);
-		_nullableIntSerializer.SerializeInternal(item.ExpirationLoads, writer);
-		_nullableIntSerializer.SerializeInternal(item.MaxConcurrentInstances, writer);
-		_nullableIntSerializer.SerializeInternal(item.MaxSeats, writer);
-		_nullableIntSerializer.SerializeInternal(item.LimitFeatureA, writer);
-		_nullableIntSerializer.SerializeInternal(item.LimitFeatureB, writer);
-		_nullableIntSerializer.SerializeInternal(item.LimitFeatureC, writer);
-		_nullableIntSerializer.SerializeInternal(item.LimitFeatureD, writer);
+		_nullableShortSerializer.Serialize(item.MajorVersionApplicable, writer);
+		_nullableDateTimeSerializer.Serialize(item.ExpirationDate, writer);
+		_nullableIntSerializer.Serialize(item.ExpirationDays, writer);
+		_nullableIntSerializer.Serialize(item.ExpirationLoads, writer);
+		_nullableIntSerializer.Serialize(item.MaxConcurrentInstances, writer);
+		_nullableIntSerializer.Serialize(item.MaxSeats, writer);
+		_nullableIntSerializer.Serialize(item.LimitFeatureA, writer);
+		_nullableIntSerializer.Serialize(item.LimitFeatureB, writer);
+		_nullableIntSerializer.Serialize(item.LimitFeatureC, writer);
+		_nullableIntSerializer.Serialize(item.LimitFeatureD, writer);
 	}
 
-	public override ProductLicenseDTO DeserializeInternal(EndianBinaryReader reader) => new() {
+	public override ProductLicenseDTO Deserialize(EndianBinaryReader reader) => new() {
 		Name = _stringSerializer.Deserialize(reader),
 		ProductKey = _stringSerializer.Deserialize(reader),
 		ProductCode = _guidSerializer.Deserialize(reader),
 		FeatureLevel = (ProductLicenseFeatureLevelDTO)reader.ReadByte(),
 		ExpirationPolicy = (ProductLicenseExpirationPolicyDTO)reader.ReadByte(),
-		MajorVersionApplicable = _nullableShortSerializer.DeserializeInternal(reader),
-		ExpirationDate = _nullableDateTimeSerializer.DeserializeInternal(reader),
-		ExpirationDays = _nullableIntSerializer.DeserializeInternal(reader),
-		ExpirationLoads = _nullableIntSerializer.DeserializeInternal(reader),
-		MaxConcurrentInstances = _nullableIntSerializer.DeserializeInternal(reader),
-		MaxSeats = _nullableIntSerializer.DeserializeInternal(reader),
-		LimitFeatureA = _nullableIntSerializer.DeserializeInternal(reader),
-		LimitFeatureB = _nullableIntSerializer.DeserializeInternal(reader),
-		LimitFeatureC = _nullableIntSerializer.DeserializeInternal(reader),
-		LimitFeatureD = _nullableIntSerializer.DeserializeInternal(reader)
+		MajorVersionApplicable = _nullableShortSerializer.Deserialize(reader),
+		ExpirationDate = _nullableDateTimeSerializer.Deserialize(reader),
+		ExpirationDays = _nullableIntSerializer.Deserialize(reader),
+		ExpirationLoads = _nullableIntSerializer.Deserialize(reader),
+		MaxConcurrentInstances = _nullableIntSerializer.Deserialize(reader),
+		MaxSeats = _nullableIntSerializer.Deserialize(reader),
+		LimitFeatureA = _nullableIntSerializer.Deserialize(reader),
+		LimitFeatureB = _nullableIntSerializer.Deserialize(reader),
+		LimitFeatureC = _nullableIntSerializer.Deserialize(reader),
+		LimitFeatureD = _nullableIntSerializer.Deserialize(reader)
 	};
 }

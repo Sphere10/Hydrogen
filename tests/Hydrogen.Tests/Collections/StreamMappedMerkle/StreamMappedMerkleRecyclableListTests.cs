@@ -40,7 +40,7 @@ public class StreamMappedMerkleRecyclableListTests : RecyclableListTestsBase {
 		var recycledHash = Hashers.ZeroHash(CHF.SHA2_256);
 		using var disposables = CreateList(serializer, StringComparer.InvariantCultureIgnoreCase, out var rlist);
 
-		byte[] TreeHash(params string[] text) => MerkleTree.ComputeMerkleRoot(text.Select(x => x is not null ? Hashers.Hash(CHF.SHA2_256, serializer.SerializeLE(x)) : recycledHash), CHF.SHA2_256);
+		byte[] TreeHash(params string[] text) => MerkleTree.ComputeMerkleRoot(text.Select(x => x is not null ? Hashers.Hash(CHF.SHA2_256, serializer.SerializeBytesLE(x)) : recycledHash), CHF.SHA2_256);
 
 		var mlist = (StreamMappedMerkleRecyclableList<string>)rlist;
 

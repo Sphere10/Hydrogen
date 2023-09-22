@@ -28,7 +28,7 @@ public sealed class MurMur3BloomFilter<TItem> : BloomFilterBase<TItem> {
 	}
 
 	protected override int[] Hash(TItem item) {
-		var objectBytes = _objectSerializer.SerializeLE(item);
+		var objectBytes = _objectSerializer.SerializeBytesLE(item);
 		var result = new int[HashRounds];
 		for (var i = 0; i < HashRounds; i++) {
 			result[i] = Math.Abs(MURMUR3_32.Execute(objectBytes, i) % FilterLength);

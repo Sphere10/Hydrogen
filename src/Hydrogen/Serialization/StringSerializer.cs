@@ -43,13 +43,13 @@ public class StringSerializer : ItemSerializer<string> {
 		return sizeCount + textByteCount;
 	}
 
-	public override void SerializeInternal(string item, EndianBinaryWriter writer) {
-		SizeSerializer.SerializeInternal(TextEncoding.GetByteCount(item), writer);
+	public override void Serialize(string item, EndianBinaryWriter writer) {
+		SizeSerializer.Serialize(TextEncoding.GetByteCount(item), writer);
 		var bytes = TextEncoding.GetBytes(item);
 		writer.Write(bytes);
 	}
 
-	public override string DeserializeInternal(EndianBinaryReader reader) {
+	public override string Deserialize(EndianBinaryReader reader) {
 		var size = SizeSerializer.Deserialize(reader);
 		var bytes = reader.ReadBytes(size);
 		return TextEncoding.GetString(bytes);

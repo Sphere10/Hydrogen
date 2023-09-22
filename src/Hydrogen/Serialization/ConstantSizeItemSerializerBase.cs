@@ -16,8 +16,8 @@ public abstract class ConstantSizeItemSerializerBase<TItem> : ConstantLengthItem
 		: base(fixedSize, supportsNull) {
 	}
 
-	public abstract void SerializeInternal(TItem item, EndianBinaryWriter writer);
+	public abstract void Serialize(TItem item, EndianBinaryWriter writer);
 
-	public abstract TItem DeserializeInternal(EndianBinaryReader reader);
+	public abstract TItem Deserialize(EndianBinaryReader reader);
 
 }

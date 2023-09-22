@@ -13,12 +13,12 @@ public class ConstantSizeByteArraySerializer : ConstantSizeItemSerializerBase<by
 	public ConstantSizeByteArraySerializer(int size) : base(size, false) {
 	}
 
-	public override void SerializeInternal(byte[] item, EndianBinaryWriter writer) {
+	public override void Serialize(byte[] item, EndianBinaryWriter writer) {
 		Guard.ArgumentNotNull(item, nameof(item));
 		Guard.Argument(item.Length == ConstantSize, nameof(item), "Incorrectly sized");
 		writer.Write(item);
 	}
 
-	public override byte[] DeserializeInternal(EndianBinaryReader reader)
+	public override byte[] Deserialize(EndianBinaryReader reader)
 		=> reader.ReadBytes(ConstantSize);
 }

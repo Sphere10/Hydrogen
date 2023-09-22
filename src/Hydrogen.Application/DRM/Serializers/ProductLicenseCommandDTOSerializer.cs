@@ -20,13 +20,13 @@ public class ProductLicenseCommandDTOSerializer : ItemSerializer<ProductLicenseC
 		   _stringSerializer.CalculateSize(item.BuyNowLink);
 
 
-	public override void SerializeInternal(ProductLicenseCommandDTO item, EndianBinaryWriter writer) {
+	public override void Serialize(ProductLicenseCommandDTO item, EndianBinaryWriter writer) {
 		writer.Write((byte)item.Action);
-		_stringSerializer.SerializeInternal(item.NotificationMessage, writer);
-		_stringSerializer.SerializeInternal(item.BuyNowLink, writer);
+		_stringSerializer.Serialize(item.NotificationMessage, writer);
+		_stringSerializer.Serialize(item.BuyNowLink, writer);
 	}
 
-	public override ProductLicenseCommandDTO DeserializeInternal(EndianBinaryReader reader) => 
+	public override ProductLicenseCommandDTO Deserialize(EndianBinaryReader reader) => 
 		new() {
 		ProductKey = _stringSerializer.Deserialize(reader),
 		Action = (ProductLicenseActionDTO)reader.ReadByte(),

@@ -18,9 +18,9 @@ public class DateTimeSerializer : ConstantSizeItemSerializerBase<DateTime> {
 	public DateTimeSerializer() : base(8, false) {
 	}
 
-	public override void SerializeInternal(DateTime item, EndianBinaryWriter writer)
-		=> _longSerializer.SerializeInternal(item.ToBinary(), writer);
+	public override void Serialize(DateTime item, EndianBinaryWriter writer)
+		=> _longSerializer.Serialize(item.ToBinary(), writer);
 
-	public override DateTime DeserializeInternal(EndianBinaryReader reader) 
+	public override DateTime Deserialize(EndianBinaryReader reader) 
 		=> DateTime.FromBinary(_longSerializer.Deserialize(reader));
 }

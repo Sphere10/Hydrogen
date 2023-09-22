@@ -35,16 +35,16 @@ public sealed class BinaryFormattedSerializer<TItem> : ItemSerializer<TItem> {
 		return ByteArraySerializer.Instance.CalculateSize(objectRawBytes);
 	}
 
-	public override void SerializeInternal(TItem item, EndianBinaryWriter writer) {
+	public override void Serialize(TItem item, EndianBinaryWriter writer) {
 		var formatter = new BinaryFormatter();
 		using var memoryStream = new MemoryStream();
 		formatter.Serialize(memoryStream, item);
 		var objectRawBytes = memoryStream.ToArray();
-		ByteArraySerializer.Instance.SerializeInternal(objectRawBytes, writer);
+		ByteArraySerializer.Instance.Serialize(objectRawBytes, writer);
 	}
 
-	public override TItem DeserializeInternal(EndianBinaryReader reader) {
-		var rawBytes = ByteArraySerializer.Instance.DeserializeInternal(reader);
+	public override TItem Deserialize(EndianBinaryReader reader) {
+		var rawBytes = ByteArraySerializer.Instance.Deserialize(reader);
 		var formatter = new BinaryFormatter();
 		using var memoryStream = new MemoryStream(rawBytes);
 		return (TItem)formatter.Deserialize(memoryStream);

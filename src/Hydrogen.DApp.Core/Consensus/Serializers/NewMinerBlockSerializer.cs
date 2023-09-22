@@ -30,7 +30,7 @@ public class NewMinerBlockSerializer : ConstantSizeItemSerializerBase<NewMinerBl
 	) {
 	}
 
-	public override void SerializeInternal(NewMinerBlock item, EndianBinaryWriter writer) {
+	public override void Serialize(NewMinerBlock item, EndianBinaryWriter writer) {
 		writer.Write(item.Version);
 		writer.Write(item.PrevMinerElectionHeader);
 		writer.Write(item.PreviousMinerMicroBlockNumber);
@@ -49,7 +49,7 @@ public class NewMinerBlockSerializer : ConstantSizeItemSerializerBase<NewMinerBl
 	}
 
 
-	public override NewMinerBlock DeserializeInternal(EndianBinaryReader reader) {
+	public override NewMinerBlock Deserialize(EndianBinaryReader reader) {
 		var block = new NewMinerBlock();
 		block.Version = reader.ReadUInt32();
 		block.PrevMinerElectionHeader = reader.ReadBytes(32);

@@ -41,13 +41,13 @@ public class TestObjectSerializer : ItemSerializer<TestObject> {
 		=> _stringSerializer.CalculateSize(item.A) + sizeof(int) + sizeof(bool);
 
 
-	public override void SerializeInternal(TestObject item, EndianBinaryWriter writer) {
-		_stringSerializer.SerializeInternal(item.A, writer);
+	public override void Serialize(TestObject item, EndianBinaryWriter writer) {
+		_stringSerializer.Serialize(item.A, writer);
 		writer.Write(item.B);
 		writer.Write(item.C);
 	}
 
-	public override TestObject DeserializeInternal(EndianBinaryReader reader) 
+	public override TestObject Deserialize(EndianBinaryReader reader) 
 		=> new(_stringSerializer.Deserialize(reader), reader.ReadInt32(), reader.ReadBoolean());
 
 }

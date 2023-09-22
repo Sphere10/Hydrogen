@@ -60,12 +60,12 @@ public class GenericSerializer<T> : GenericSerializerBase, IItemSerializer<T> {
 		return context.SizeBytes;
 	}
 
-	public void SerializeInternal(T item, EndianBinaryWriter writer) {
+	public void Serialize(T item, EndianBinaryWriter writer) {
 		var context = new SerializationContext(writer);
 		SerializeInternal(typeof(T), item, context);
 	}
 
-	public T DeserializeInternal(EndianBinaryReader reader) {
+	public T Deserialize(EndianBinaryReader reader) {
 		var context = new SerializationContext(reader);
 		return (T)DeserializeInternal(typeof(T), context);
 	}
@@ -250,7 +250,7 @@ public class GenericSerializer<T> : GenericSerializerBase, IItemSerializer<T> {
 	}
 
 	private object DeserializeCustom(IItemSerializer<object> serializer, SerializationContext context) {
-		return serializer.Deserialize(context.Reader);
+		return ((IItemSerializer)serializer).Deserialize(context.Reader);
 	}
 
 	private object DeserializePrimitive(Type t, SerializationContext context) {
@@ -364,7 +364,7 @@ public class GenericSerializer<T> : GenericSerializerBase, IItemSerializer<T> {
 			return DeserializeCircularReference(context);
 
 		if (Serializers.TryGetValue(propertyType, out var serializer))
-			return serializer.Deserialize(reader);
+			return ((IItemSerializer)serializer).Deserialize(reader);
 
 		if (propertyType.IsNullable()) {
 			propertyType = propertyType.GetField("value", BindingFlags.NonPublic | BindingFlags.Instance)!.FieldType;

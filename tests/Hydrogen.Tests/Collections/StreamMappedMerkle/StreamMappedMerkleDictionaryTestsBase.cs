@@ -27,8 +27,8 @@ public abstract class StreamMappedMerkleDictionaryTestsBase : StreamPersistedCol
 		testObject.A = string.Empty;
 
 		var serializer = new TestObjectSerializer();
-		var bytes = serializer.SerializeLE(testObject);
-		var testObject2 = serializer.DeserializeLE(bytes);
+		var bytes = serializer.SerializeBytesLE(testObject);
+		var testObject2 = serializer.DeserializeBytesLE(bytes);
 		var comparer = new TestObjectComparer();
 		Assert.That(comparer.Equals(testObject, testObject2), Is.True);
 	}
@@ -41,8 +41,8 @@ public abstract class StreamMappedMerkleDictionaryTestsBase : StreamPersistedCol
 		testObject.A = null;
 
 		var serializer = new TestObjectSerializer();
-		var bytes = serializer.SerializeLE(testObject);
-		var testObject2 = serializer.DeserializeLE(bytes);
+		var bytes = serializer.SerializeBytesLE(testObject);
+		var testObject2 = serializer.DeserializeBytesLE(bytes);
 		var comparer = new TestObjectComparer();
 		Assert.That(comparer.Equals(testObject, testObject2), Is.True);
 	}

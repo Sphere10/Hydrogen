@@ -18,7 +18,7 @@ public class PaddedSerializerTests {
 	[Test]
 	public void TestPaddedSerializer_Empty([Values] SizeDescriptorStrategy sizeDescriptor, [Values("", "01235678910")] string @value ) {
 		var serializer = new StringSerializer(Encoding.UTF8, sizeDescriptor).AsConstantSize(100);
-		var bytes = serializer.SerializeLE(@value);
+		var bytes = serializer.SerializeBytesLE(@value);
 		Assert.AreEqual(100, bytes.Length);
 	}
 

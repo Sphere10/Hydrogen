@@ -26,11 +26,11 @@ internal sealed class WithNullSubstitutionSerializer<TItem> : ItemSerializerDeco
 	public override long CalculateSize(TItem item) 
 		=> base.CalculateSize(item ?? _nullSubstitution);
 
-	public override TItem DeserializeInternal(EndianBinaryReader reader) {
-		var item = base.DeserializeInternal(reader);
+	public override TItem Deserialize(EndianBinaryReader reader) {
+		var item = base.Deserialize(reader);
 		return _equalityComparer.Equals(item, _nullSubstitution) ? default : item;
 	}
 
-	public override void SerializeInternal(TItem item, EndianBinaryWriter writer) 
-		=> base.SerializeInternal(item ?? _nullSubstitution, writer);
+	public override void Serialize(TItem item, EndianBinaryWriter writer) 
+		=> base.Serialize(item ?? _nullSubstitution, writer);
 }

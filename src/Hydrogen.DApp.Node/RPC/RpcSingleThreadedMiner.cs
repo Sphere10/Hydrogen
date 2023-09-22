@@ -99,7 +99,7 @@ public class RpcSingleThreadedMiner : IDisposable {
 					unchecked {
 						work.Nonce++;
 					}
-					var proofOfWork = Hashers.Hash(HashAlgorithm, blockSerializer.SerializeLE(work));
+					var proofOfWork = Hashers.Hash(HashAlgorithm, blockSerializer.SerializeBytesLE(work));
 					var pow = PoWAlgorithm.FromDigest(proofOfWork);
 					if (pow > work.CompactTarget) {
 						MiningSolutionResult res = _rpcClient.RemoteCall<MiningSolutionResult>("submit", miningWork.WorkID, MinerTag, work.UnixTime, work.Nonce);

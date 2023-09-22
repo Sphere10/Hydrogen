@@ -31,10 +31,10 @@ public class AutoSizedSerializerTest {
 			stringSize > ushort.MaxValue && strategy == SizeDescriptorStrategy.UseUInt16;
 
 		if (expectThrow) {
-			Assert.That(() => serializer.SerializeLE(@string), Throws.InstanceOf<ArgumentOutOfRangeException>());
+			Assert.That(() => serializer.SerializeBytesLE(@string), Throws.InstanceOf<ArgumentOutOfRangeException>());
 		} else {
-			var serializedBytes = serializer.SerializeLE(@string);
-			var deserializedItem = serializer.DeserializeLE(serializedBytes);
+			var serializedBytes = serializer.SerializeBytesLE(@string);
+			var deserializedItem = serializer.DeserializeBytesLE(serializedBytes);
 			Assert.That(deserializedItem, Is.EqualTo(@string));
 		}
 	}
@@ -44,7 +44,7 @@ public class AutoSizedSerializerTest {
 		var rng = new Random(31337);
 		var @string = rng.NextString(256);
 		var serializer = new StringSerializer(Encoding.ASCII, SizeDescriptorStrategy.UseByte);
-		Assert.That(() => serializer.SerializeLE(@string), Throws.InstanceOf<ArgumentOutOfRangeException>());
+		Assert.That(() => serializer.SerializeBytesLE(@string), Throws.InstanceOf<ArgumentOutOfRangeException>());
 	}
 
 }

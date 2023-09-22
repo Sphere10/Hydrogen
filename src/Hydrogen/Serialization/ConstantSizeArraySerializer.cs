@@ -12,13 +12,13 @@ public class ConstantSizeArraySerializer<T> : ConstantSizeItemSerializerBase<T[]
 		_valueSerializer = valueSerializer;	
 	}
 
-	public override void SerializeInternal(T[] item, EndianBinaryWriter writer) {
+	public override void Serialize(T[] item, EndianBinaryWriter writer) {
 		Guard.Ensure(item.Length == _arrayLength, $"Array length must be {_arrayLength}");
 		foreach(var element in item)
-			_valueSerializer.SerializeInternal(element, writer);
+			_valueSerializer.Serialize(element, writer);
 	}
 
-	public override T[] DeserializeInternal(EndianBinaryReader reader) {
+	public override T[] Deserialize(EndianBinaryReader reader) {
 		var arraySize = ConstantSize;
 		var array = new T[arraySize];
 		for (var i = 0; i < arraySize; i++) 

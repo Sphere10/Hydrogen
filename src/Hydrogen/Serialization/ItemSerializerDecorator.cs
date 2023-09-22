@@ -17,11 +17,11 @@ public class ItemSerializerDecorator<TItem, TSerializer> : ItemSizerDecorator<TI
 		: base(internalSerializer) {
 	}
 
-	public virtual void SerializeInternal(TItem item, EndianBinaryWriter writer)
-		=> Internal.SerializeInternal(item, writer);
+	public virtual void Serialize(TItem item, EndianBinaryWriter writer)
+		=> Internal.Serialize(item, writer);
 
-	public virtual TItem DeserializeInternal(EndianBinaryReader reader)
-		=> Internal.DeserializeInternal(reader);
+	public virtual TItem Deserialize(EndianBinaryReader reader)
+		=> Internal.Deserialize(reader);
 
 }
 

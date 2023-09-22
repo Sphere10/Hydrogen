@@ -16,6 +16,19 @@ namespace Tools;
 
 public static class Lambda {
 
+
+	public static bool Try<T>(Func<T> func, out T result, out Exception exception) {
+		try {
+			result = func();
+			exception = null;
+			return true;
+		} catch (Exception error) {
+			exception = error;
+			result = default;
+			return false;
+		}
+	}
+
 	public static Action Action(Action action) {
 		return action;
 	}

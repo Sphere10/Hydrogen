@@ -164,7 +164,7 @@ public class ObjectContainer : ICriticalObject, ILoadable, IDisposable {
 					stream.SetLength(expectedSize);
 					ItemSerializer.Serialize(item, writer);
 				} else {
-					var byteLength = ItemSerializer.Serialize(item, writer);
+					var byteLength = ItemSerializer.SerializeReturnSize(item, writer);
 					stream.SetLength(byteLength);
 				}
 

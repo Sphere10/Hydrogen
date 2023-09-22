@@ -58,17 +58,17 @@ public class CompositeSerializer<TItem> : ItemSerializer<TItem> {
 		return size;
 	}
 		
-	public override void SerializeInternal(TItem item, EndianBinaryWriter writer) {
+	public override void Serialize(TItem item, EndianBinaryWriter writer) {
 		foreach (var binding in _memberBindings) {
 			var memberValue = binding.Member.GetValue(item);
-			binding.Serializer.SerializeInternal(memberValue, writer);
+			binding.Serializer.Serialize(memberValue, writer);
 		}
 	}
 
-	public override TItem DeserializeInternal(EndianBinaryReader reader) {
+	public override TItem Deserialize(EndianBinaryReader reader) {
 		var item = _activator();
 		foreach (var binding in _memberBindings) {
-			var memberValue = binding.Serializer.DeserializeInternal(reader);
+			var memberValue = binding.Serializer.Deserialize(reader);
 			binding.Member.SetValue(item, memberValue);
 		}
 		return item;

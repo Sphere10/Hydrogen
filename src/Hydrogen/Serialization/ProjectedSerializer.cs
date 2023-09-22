@@ -35,10 +35,10 @@ public class ProjectedSerializer<TFrom, TTo> : IItemSerializer<TTo> {
 	public long CalculateSize(TTo item) 
 		=> _sourceSerializer.CalculateSize(_inverseProjection(item));
 
-	public void SerializeInternal(TTo item, EndianBinaryWriter writer) 
-		=> _sourceSerializer.SerializeInternal(_inverseProjection(item), writer);
+	public void Serialize(TTo item, EndianBinaryWriter writer) 
+		=> _sourceSerializer.Serialize(_inverseProjection(item), writer);
 
-	public TTo DeserializeInternal(EndianBinaryReader reader) 
-		=> _projection(_sourceSerializer.DeserializeInternal(reader));
+	public TTo Deserialize(EndianBinaryReader reader) 
+		=> _projection(_sourceSerializer.Deserialize(reader));
 
 }

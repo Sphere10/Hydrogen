@@ -19,12 +19,12 @@ public class ByteArraySerializer : ItemSerializer<byte[]> {
 
 	public override long CalculateSize(byte[] item) => item.Length;
 
-	public override void SerializeInternal(byte[] item, EndianBinaryWriter writer) {
+	public override void Serialize(byte[] item, EndianBinaryWriter writer) {
 		SizeSerializer.Serialize(item.Length, writer);
 		writer.Write(item);
 	}
 
-	public override byte[] DeserializeInternal(EndianBinaryReader reader) {
+	public override byte[] Deserialize(EndianBinaryReader reader) {
 		var byteSize = SizeSerializer.Deserialize(reader);
 		 return reader.ReadBytes(byteSize);
 	}

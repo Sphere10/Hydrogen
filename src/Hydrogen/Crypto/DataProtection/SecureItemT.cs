@@ -19,9 +19,9 @@ public sealed class SecureItem<T> : ISecureItem<T> {
 		Guard.ArgumentNotNull(item, nameof(item));
 		Guard.ArgumentNotNull(serializer, nameof(serializer));
 		_serializer = serializer;
-		_secureBytes = new SecureBytes(_serializer.SerializeLE(item));
+		_secureBytes = new SecureBytes(_serializer.SerializeBytesLE(item));
 		_secureBytes.Encrypted += () => { _unencrypted = default; };
-		_secureBytes.Decrypted += () => { _unencrypted = _serializer.DeserializeLE(_secureBytes.Item); };
+		_secureBytes.Decrypted += () => { _unencrypted = _serializer.DeserializeBytesLE(_secureBytes.Item); };
 	}
 
 	public bool Protected => _secureBytes.Protected;

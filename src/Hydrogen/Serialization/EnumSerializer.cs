@@ -22,10 +22,10 @@ public class EnumSerializer<T> : ConstantSizeItemSerializerBase<T> where T : Enu
 
 	public static EnumSerializer<T> Instance { get; } = new();
 
-	public override void SerializeInternal(T item, EndianBinaryWriter writer)
+	public override void Serialize(T item, EndianBinaryWriter writer)
 		=> _writePrimitive(writer, item);
 
-	public override T DeserializeInternal(EndianBinaryReader reader)
+	public override T Deserialize(EndianBinaryReader reader)
 		=> _readPrimitive(reader);
 
 	private static long GetPrimitiveCorrectSerializer(Type type, out Action<EndianBinaryWriter, T> writer, out Func<EndianBinaryReader, T> reader, out TypeCode enumTypeCode) {

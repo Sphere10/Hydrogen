@@ -22,13 +22,13 @@ public class ProductLicenseAuthorityDTOSerializer : ItemSerializer<ProductLicens
 		   1 +
 		   sizeof(int) + item.LicensePublicKey.Length;
 
-	public override void SerializeInternal(ProductLicenseAuthorityDTO item, EndianBinaryWriter writer) {
-		_stringSerializer.SerializeInternal(item.Name, writer);
+	public override void Serialize(ProductLicenseAuthorityDTO item, EndianBinaryWriter writer) {
+		_stringSerializer.Serialize(item.Name, writer);
 		writer.Write((byte)item.LicenseDSS);
-		_byteArraySerializer.SerializeInternal(item.LicensePublicKey, writer);
+		_byteArraySerializer.Serialize(item.LicensePublicKey, writer);
 	}
 
-	public override ProductLicenseAuthorityDTO DeserializeInternal(EndianBinaryReader reader) 
+	public override ProductLicenseAuthorityDTO Deserialize(EndianBinaryReader reader) 
 		=> new() {
 			Name = _stringSerializer.Deserialize(reader),
 			LicenseDSS = (DSS)reader.ReadByte(),

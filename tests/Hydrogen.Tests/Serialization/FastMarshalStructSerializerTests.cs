@@ -28,8 +28,8 @@ public class FastMarshalStructSerializerTests {
 
 		void RunTest<T>(T item) where T : struct {
 			var serializer = new FastMarshalStructSerializer<T>();
-			var bytes = serializer.SerializeLE(item);
-			var deserialized = serializer.DeserializeLE(bytes);
+			var bytes = serializer.SerializeBytesLE(item);
+			var deserialized = serializer.DeserializeBytesLE(bytes);
 			Assert.That(deserialized, Is.EqualTo(item));
 		}
 	}

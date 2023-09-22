@@ -191,7 +191,7 @@
 //		newSerializer.RegisterType<List<int>>();
 //		newSerializer.RegisterType<ReferenceTypeObject>();
 //		newSerializer.RegisterType<bool>();
-//		var deserializedItem = newSerializer.DeserializeInternal(reader);
+//		var deserializedItem = newSerializer.Deserialize(reader);
 
 //		deserializedItem.Should().BeEquivalentTo(item);
 //	}

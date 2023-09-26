@@ -22,7 +22,7 @@ public class StreamMappedMerkleDictionaryCLKTests : StreamMappedMerkleDictionary
 	private const int ConstantKeySize = 200;
 
 	protected override IDisposable CreateTestObjectDictionary(CHF chf, out StreamMappedMerkleDictionary<string, TestObject> streamMappedMerkleDictionary)
-		=> CreateDictionaryImpl(chf, new TestObjectSerializer(), new TestObjectComparer(), out streamMappedMerkleDictionary);
+		=> CreateDictionaryImpl(chf, new TestObjectSerializer(), new TestObjectEqualityComparer(), out streamMappedMerkleDictionary);
 
 	protected override IDisposable CreateStringDictionary(CHF chf, out StreamMappedMerkleDictionary<string, string> merkleDictionary) 
 		=> CreateDictionaryImpl(chf, new StringSerializer(), StringComparer.InvariantCulture, out merkleDictionary);
@@ -62,7 +62,7 @@ public class StreamMappedMerkleDictionaryCLKTests : StreamMappedMerkleDictionary
 			DefaultClusterSize,
 			keySerializer,
 			new TestObjectSerializer(),
-			valueComparer: new TestObjectComparer(),
+			valueComparer: new TestObjectEqualityComparer(),
 			hashAlgorithm: chf,
 			implementation: StreamMappedDictionaryImplementation.ConstantLengthKeyBased,
 			autoLoad: true 
@@ -74,7 +74,7 @@ public class StreamMappedMerkleDictionaryCLKTests : StreamMappedMerkleDictionary
 			DefaultClusterSize,
 			keySerializer,  // need to use consistent key serializer for generating same merkle tree
 			new TestObjectSerializer(),
-			valueComparer: new TestObjectComparer(),
+			valueComparer: new TestObjectEqualityComparer(),
 			keyChecksummer: new ItemDigestor<string>(chf, keySerializer),
 			hashAlgorithm: chf,
 			implementation: StreamMappedDictionaryImplementation.KeyValueListBased,
@@ -93,7 +93,7 @@ public class StreamMappedMerkleDictionaryCLKTests : StreamMappedMerkleDictionary
 			maxItems,
 			(rng) => new ($"{keyGens++}_{rng.NextString(0, 100)}", new TestObject(rng)),
 			iterations: 10,
-			valueComparer: new TestObjectComparer(),
+			valueComparer: new TestObjectEqualityComparer(),
 			endOfIterTest: () => {
 				//var clkLeafs = clk.MerkleTree.GetLeafs().ToArray();
 				//var kvpLeafs = kvp.MerkleTree.GetLeafs().ToArray();

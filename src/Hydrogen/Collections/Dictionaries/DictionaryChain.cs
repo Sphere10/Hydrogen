@@ -43,6 +43,8 @@ public class DictionaryChain<TKey, TValue> : DictionaryDecorator<TKey, TValue> {
 
 	public DictionaryChain<TKey, TValue> Previous { get; private set; } = null;
 
+	public IDictionary<TKey,TValue> UnderlyingDictionary => InternalDictionary;
+
 	public override TValue this[TKey key] {
 		get {
 			if (TryGetValue(key, out var value))
@@ -51,6 +53,10 @@ public class DictionaryChain<TKey, TValue> : DictionaryDecorator<TKey, TValue> {
 		}
 		set => Add(key, value);
 	}
+
+	public override ICollection<TKey> Keys =>  Next is null ? base.Keys : new ConcatenatedCollection<TKey>(base.Keys, Next.Keys);
+
+	public override ICollection<TValue> Values => Next is null ? base.Values : new ConcatenatedCollection<TValue>(base.Values, Next.Values);
 
 	public DictionaryChain<TKey, TValue> AttachHead(IDictionary<TKey, TValue> link)
 		=> AttachHead(new DictionaryChain<TKey, TValue>(link));

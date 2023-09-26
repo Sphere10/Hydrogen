@@ -129,7 +129,13 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 
 			using var stream = ObjectContainer.StreamContainer.OpenRead(ObjectContainer.StreamContainer.Header.ReservedStreams + index);
 			var reader = new EndianBinaryReader(EndianBitConverter.For(ObjectContainer.StreamContainer.Endianness), stream);
-			return ((KeyValuePairSerializer<TKey, TValue>)ObjectContainer.ItemSerializer).ReadValueBytes(reader);
+			var bytes = ((KeyValuePairSerializer<TKey, TValue>)ObjectContainer.ItemSerializer).ReadValueBytes(reader);
+			
+			// The value is null, so it's bytes are null (null is serialized as a single byte 0)
+			if (bytes.Length == 1 && bytes[0] == 0)
+				return null;
+
+			return bytes;
 		}
 	}
 

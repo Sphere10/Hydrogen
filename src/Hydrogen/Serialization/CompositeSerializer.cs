@@ -1,28 +1,41 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 
 namespace Hydrogen;
 
 public class CompositeSerializer<TItem> : ItemSerializer<TItem> {
-	private readonly Func<TItem> _activator;
-	private readonly MemberSerializationBinding[] _memberBindings;
+	private Func<TItem> _activator;
+	private MemberSerializationBinding[] _memberBindings;
+	private bool _isConstantSize;
+	private long _constantSize;
+
+	internal CompositeSerializer() : base(SizeDescriptorStrategy.UseCVarInt) {
+		// Need for building recursive serializers (memberbindings point back to this serializer (or parent ones))
+	}
 
 	public CompositeSerializer(Func<TItem> activator, MemberSerializationBinding[] memberBindings) 
-		: base(SizeDescriptorStrategy.UseCVarInt) {
+		: this() {
+		Configure(activator, memberBindings);
+	}
+
+	internal void Configure(Func<TItem> activator, MemberSerializationBinding[] memberBindings) {
 		Guard.ArgumentNotNull(activator, nameof(activator));
 		Guard.ArgumentNotNull(memberBindings, nameof(memberBindings));
 		_activator = activator;
 		_memberBindings = memberBindings;
-		IsConstantSize = _memberBindings.All(x => x.Serializer.IsConstantSize);
-		ConstantSize =  IsConstantSize ? _memberBindings.Sum(x => x.Serializer.ConstantSize) : -1;
+		_isConstantSize = _memberBindings.All(x => x.Serializer.IsConstantSize);
+		_constantSize =  IsConstantSize ? _memberBindings.Sum(x => x.Serializer.ConstantSize) : -1;
 	}
+
+	internal void ConfigurePacked(Func<object> activator, MemberSerializationBinding[] memberBindings) => Configure(() => (TItem)activator(), memberBindings);
 
 	public override bool SupportsNull => false;
 
-	public override bool IsConstantSize { get; }
-	
-	public override long ConstantSize { get; }
+	public override bool IsConstantSize => _isConstantSize;
+
+	public override long ConstantSize => _constantSize;
 
 	public override long CalculateTotalSize(IEnumerable<TItem> items, bool calculateIndividualItems, out long[] itemSizes) {
 		var itemsArr = items as TItem[] ?? items.ToArray();

@@ -24,22 +24,7 @@ public abstract class ItemSerializer<TItem> : ItemSizer<TItem>, IItemSerializer<
 
 	public abstract TItem Deserialize(EndianBinaryReader reader);
 
-	public static IItemSerializer<TItem> Default {
-		get {
-			throw new NotImplementedException();
-			//var type = typeof(TItem);
-
-			//if (Tools.Memory.IsSerializationPrimitive(type))
-			//	return new PrimitiveSerializer<TItem>();
-
-			//if (type == typeof(string))
-			//	return new StringSerializer(Encoding.UTF8) as IItemSerializer<TItem>;
-
-			//if (SerializerFactory.Default.HasSerializer(type))
-			//	return SerializerFactory.Default.GetSerializer<TItem>(type);
-
-			//return new GenericSerializer<TItem>();
-		}
-	}
+	public static IItemSerializer<TItem> Default => SerializerFactory.Default.Assemble<TItem>();
+		
 
 }

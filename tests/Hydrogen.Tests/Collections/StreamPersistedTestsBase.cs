@@ -117,7 +117,7 @@
 
 //		}
 
-//        public class TestObjectComparer : IEqualityComparer<TestObject> {
+//        public class TestObjectEqualityComparer : IEqualityComparer<TestObject> {
 //			public bool Equals(TestObject x, TestObject y) {
 //				if (ReferenceEquals(x, y))
 //					return true;

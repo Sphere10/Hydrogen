@@ -12,11 +12,11 @@ namespace Hydrogen;
 
 public class ProtocolSerializerBuilderBase<TBase, TFactorySerializerBuilder> where TFactorySerializerBuilder : ProtocolSerializerBuilderBase<TBase, TFactorySerializerBuilder> {
 
-	public ProtocolSerializerBuilderBase(BaseSerializer<TBase> serializer) {
+	public ProtocolSerializerBuilderBase(FactorySerializer<TBase> serializer) {
 		Serializer = serializer;
 	}
 
-	public BaseSerializer<TBase> Serializer { get; protected set; }
+	public FactorySerializer<TBase> Serializer { get; protected set; }
 
 	protected ushort TypeCode { get; private set; }
 

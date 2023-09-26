@@ -29,7 +29,7 @@ public abstract class StreamMappedMerkleDictionaryTestsBase : StreamPersistedCol
 		var serializer = new TestObjectSerializer();
 		var bytes = serializer.SerializeBytesLE(testObject);
 		var testObject2 = serializer.DeserializeBytesLE(bytes);
-		var comparer = new TestObjectComparer();
+		var comparer = new TestObjectEqualityComparer();
 		Assert.That(comparer.Equals(testObject, testObject2), Is.True);
 	}
 
@@ -43,7 +43,7 @@ public abstract class StreamMappedMerkleDictionaryTestsBase : StreamPersistedCol
 		var serializer = new TestObjectSerializer();
 		var bytes = serializer.SerializeBytesLE(testObject);
 		var testObject2 = serializer.DeserializeBytesLE(bytes);
-		var comparer = new TestObjectComparer();
+		var comparer = new TestObjectEqualityComparer();
 		Assert.That(comparer.Equals(testObject, testObject2), Is.True);
 	}
 
@@ -72,7 +72,7 @@ public abstract class StreamMappedMerkleDictionaryTestsBase : StreamPersistedCol
 
 			var items2 = clusteredDictionary.ToArray();
 
-			var comparer = new TestObjectComparer();
+			var comparer = new TestObjectEqualityComparer();
 			Assert.That(items, Is.EquivalentTo(items2).Using(comparer));
 
 		}
@@ -112,7 +112,7 @@ public abstract class StreamMappedMerkleDictionaryTestsBase : StreamPersistedCol
 			//  add alpha
 			merkleDict.Add("alpha", "");
 			var rootAlpha = merkleDict.MerkleTree.Root;
-			var alphaLeafHash = Hashers.JoinHash(chf, Hashers.Hash(chf, merkleDict.ReadKeyBytes(0)), Hashers.Hash(chf, Array.Empty<byte>())); 
+			var alphaLeafHash = Hashers.JoinHash(chf, Hashers.Hash(chf, merkleDict.ReadKeyBytes(0)), Hashers.Hash(chf, merkleDict.ReadValueBytes(0))); 
 			Assert.That(alphaLeafHash, Is.EqualTo( merkleDict.MerkleTree.GetNodeAt(MerkleCoordinate.LeafAt(0)).Hash));
 			Assert.That(merkleDict.MerkleTree.Root, Is.EqualTo(MerkleTree.ComputeMerkleRoot(new [] { alphaLeafHash }, chf)));
 
@@ -171,7 +171,7 @@ public abstract class StreamMappedMerkleDictionaryTestsBase : StreamPersistedCol
 
 			var items2 = clusteredDictionary.ToArray();
 
-			var comparer = new TestObjectComparer();
+			var comparer = new TestObjectEqualityComparer();
 			Assert.That(items, Is.EquivalentTo(items2).Using(comparer));
 
 		}
@@ -291,7 +291,7 @@ public abstract class StreamMappedMerkleDictionaryTestsBase : StreamPersistedCol
 				maxItems,
 				(rng) => ($"{keyGens++}_{rng.NextString(0, 100)}", new TestObject(rng)),
 				iterations: 250,
-				valueComparer: new TestObjectComparer()
+				valueComparer: new TestObjectEqualityComparer()
 			);
 		}
 	}
@@ -307,7 +307,7 @@ public abstract class StreamMappedMerkleDictionaryTestsBase : StreamPersistedCol
 				maxItems,
 				(rng) => ($"{keyGens++}_{rng.NextString(0, 100)}", new TestObject(rng)),
 				iterations: 10,
-				valueComparer: new TestObjectComparer(),
+				valueComparer: new TestObjectEqualityComparer(),
 				endOfIterTest: () => {
 					// Manually test the merkle root
 					var itemSerializer = new TestObjectSerializer();

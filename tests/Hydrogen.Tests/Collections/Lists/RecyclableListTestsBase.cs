@@ -55,6 +55,7 @@ public abstract class RecyclableListTestsBase {
 		Assert.That(rlist.RecycledCount, Is.EqualTo(1));
 		
 		// Ensure B is not found
+		var xxx = rlist.IndexOf("B");
 		Assert.That(rlist.IndexOf("B"), Is.EqualTo(-1));
 
 		// try read recycled

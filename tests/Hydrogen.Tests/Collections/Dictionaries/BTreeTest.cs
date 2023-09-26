@@ -30,7 +30,7 @@
 //				maxItems,
 //				(rng) => ($"{keyGens++}_{rng.NextString(0, 100)}", new TestObject(rng)),
 //				iterations: iterations,
-//				valueComparer: new TestObjectComparer()
+//				valueComparer: new TestObjectEqualityComparer()
 //			);
 //		}
 //	}

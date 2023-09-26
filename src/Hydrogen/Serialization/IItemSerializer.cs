@@ -79,8 +79,9 @@ public static class IItemSerializerExtensions {
 		using var reader = new EndianBinaryReader(EndianBitConverter.For(endianness), stream);
 		return serializer.Deserialize(reader);
 	}
-
+	
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static IItemSerializer<TBase> AsBaseSerializer<TItem, TBase>(this IItemSerializer<TItem> serializer) where TItem : TBase
-		=> new ProjectedSerializer<TItem,TBase>(serializer, x => (TBase)x, x => (TItem)x);
+		=> new CastedSerializer<TBase>(serializer);
 
 }

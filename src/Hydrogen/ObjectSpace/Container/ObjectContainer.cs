@@ -184,7 +184,8 @@ public class ObjectContainer : ICriticalObject, ILoadable, IDisposable {
 	internal ClusteredStream LoadItemAndReturnStream(long index, out object item) {
 		var streamIndex = index + StreamContainer.Header.ReservedStreams;
 		// initialized and re-entrancy checks done by Open
-		var stream = StreamContainer.OpenWrite(streamIndex);
+		var stream = StreamContainer.OpenRead(streamIndex);
+		Guard.Ensure(!stream.IsReaped, $"Item at index {index} has been reaped");
 		try {
 			NotifyPreItemOperation(index, default, ObjectContainerOperationType.Read);
 			if (!stream.IsNull) {

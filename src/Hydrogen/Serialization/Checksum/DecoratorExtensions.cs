@@ -20,10 +20,10 @@ public static partial class DecoratorExtensions {
 	internal static MethodInfo SerializerCastMethod;
 
 	static DecoratorExtensions() {
-		SerializerCastMethod =
-			typeof(DecoratorExtensions)
-			.GetMethods(BindingFlags.Static | BindingFlags.Public)
-			.Single(m => m.Name == nameof(AsCasted) && m.IsGenericMethodDefinition && m.GetGenericArguments().Length == 2 && m.ReturnType.IsSubtypeOfGenericType(typeof(IItemSerializer<>)));
+		//SerializerCastMethod =
+		//	typeof(DecoratorExtensions)
+		//	.GetMethods(BindingFlags.Static | BindingFlags.Public)
+		//	.Single(m => m.Name == nameof(AsCasted) && m.IsGenericMethodDefinition && m.GetGenericArguments().Length == 2 && m.ReturnType.IsSubtypeOfGenericType(typeof(IItemSerializer<>)));
 			
 	}
 
@@ -33,8 +33,8 @@ public static partial class DecoratorExtensions {
 	public static IItemSerializer<TTo> AsProjection<TFrom, TTo>(this IItemSerializer<TFrom> serializer, Func<TFrom, TTo> projection, Func<TTo, TFrom> inverseProjection) 
 		=> new ProjectedSerializer<TFrom, TTo>(serializer, projection, inverseProjection);
 
-	public static IItemSerializer<TTo> AsCasted<TFrom, TTo>(this IItemSerializer<TFrom> serializer) where TTo : TFrom
-		=> AsProjection(serializer, x => (TTo)x, x => x);
+	//public static IItemSerializer<TTo> AsCasted<TFrom, TTo>(this IItemSerializer<TFrom> serializer) where TTo : TFrom
+	//	=> AsProjection(serializer, x => (TTo)(object)x, x => x);
 
 	public static IItemSerializer<object> AsPacked<TItem>(this IItemSerializer<TItem> serializer) => PackedSerializer.Pack(serializer);
 	

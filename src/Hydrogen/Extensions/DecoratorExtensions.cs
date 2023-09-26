@@ -279,6 +279,15 @@ public static partial class DecoratorExtensions {
 	public static IItemSerializer<T> AsNullable<T>(this IItemSerializer<T> serializer, bool preserveConstantLength = false)
 		=> serializer.SupportsNull ? serializer : new NullableObjectSerializer<T>(serializer, preserveConstantLength);
 
+	public static IItemSerializer AsNullable(this IItemSerializer serializer, bool preserveConstantLength = false)
+		=> serializer.SupportsNull ? serializer : (IItemSerializer)typeof(NullableObjectSerializer<>).MakeGenericType(serializer.ItemType).ActivateWithCompatibleArgs(serializer, preserveConstantLength);
+
+	public static IItemSerializer<TMember> AsSanitized<TMember>(this IItemSerializer<TMember> serializer) 
+		=> typeof(TMember).IsValueType ? serializer : serializer.AsNullable();
+
+	public static IItemSerializer AsSanitized(this IItemSerializer serializer) 
+		=> serializer.ItemType.IsValueType ? serializer : serializer.AsNullable();
+
 	public static IItemSerializer<T> WithNullSubstitution<T>(this IItemSerializer<T> serializer, T nullSubstitution, IEqualityComparer<T> comparer = null)
 		=> new WithNullSubstitutionSerializer<T>(serializer, nullSubstitution, comparer);
 

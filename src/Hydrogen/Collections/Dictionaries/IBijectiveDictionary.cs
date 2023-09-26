@@ -17,4 +17,6 @@ public interface IBijectiveDictionary<U, V> : IDictionary<U, V> {
 
 	bool TryGetKey(V value, out U key);
 
+	IDictionary<U, V> UnderlyingDictionary { get; }
+
 }

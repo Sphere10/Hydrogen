@@ -20,7 +20,7 @@ public class StreamMappedMerkleDictionaryTests : StreamMappedMerkleDictionaryTes
 	private const int DefaultReservedRecords = 11;
 
 	protected override IDisposable CreateTestObjectDictionary(CHF chf, out StreamMappedMerkleDictionary<string, TestObject> streamMappedMerkleDictionary)
-		=> CreateDictionaryImpl(chf, new TestObjectSerializer(), new TestObjectComparer(), out streamMappedMerkleDictionary);
+		=> CreateDictionaryImpl(chf, new TestObjectSerializer(), new TestObjectEqualityComparer(), out streamMappedMerkleDictionary);
 
 	protected override IDisposable CreateStringDictionary(CHF chf, out StreamMappedMerkleDictionary<string, string> merkleDictionary) 
 		=> CreateDictionaryImpl(chf, new StringSerializer(), StringComparer.InvariantCulture, out merkleDictionary);

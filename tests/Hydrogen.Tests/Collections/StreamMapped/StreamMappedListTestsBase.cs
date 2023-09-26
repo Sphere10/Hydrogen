@@ -20,7 +20,7 @@ public abstract class StreamMappedListTestsBase : StreamPersistedCollectionTests
 			var obj = new TestObject(rng);
 			clusteredList.Add(obj);
 			Assert.That(clusteredList.Count, Is.EqualTo(1));
-			Assert.That(clusteredList[0], Is.EqualTo(obj).Using(new TestObjectComparer()));
+			Assert.That(clusteredList[0], Is.EqualTo(obj).Using(new TestObjectEqualityComparer()));
 		}
 	}
 
@@ -32,7 +32,7 @@ public abstract class StreamMappedListTestsBase : StreamPersistedCollectionTests
 				var obj = new TestObject(rng);
 				clusteredList.Add(obj);
 				Assert.That(clusteredList.Count, Is.EqualTo(i + 1));
-				Assert.That(clusteredList[i], Is.EqualTo(obj).Using(new TestObjectComparer()));
+				Assert.That(clusteredList[i], Is.EqualTo(obj).Using(new TestObjectEqualityComparer()));
 			}
 		}
 	}

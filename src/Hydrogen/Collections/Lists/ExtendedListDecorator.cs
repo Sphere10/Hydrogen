@@ -23,7 +23,7 @@ public abstract class ExtendedListDecorator<TItem, TConcrete> : ExtendedCollecti
 	protected ExtendedListDecorator(TConcrete internalExtendedList) : base(internalExtendedList) {
 	}
 
-	public virtual long IndexOfL(TItem item) => InternalCollection.IndexOf(item);
+	public virtual long IndexOfL(TItem item) => InternalCollection.IndexOfL(item);
 
 	public virtual IEnumerable<long> IndexOfRange(IEnumerable<TItem> items) => InternalCollection.IndexOfRange(items);
 

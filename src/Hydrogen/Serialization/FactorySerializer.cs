@@ -14,23 +14,28 @@ using Hydrogen.FastReflection;
 namespace Hydrogen;
 
 /// <summary>
-/// A Serializer that works for base-level objects that delegates actual serialization to registered concrete-level serializers. Serialization is wrapped with the
-/// type-code which permits selection of correct concrete type.
+/// A serializer defined for objects of type <see cref="TBase"/> that uses a <see cref="SerializerFactory"/> to select serializers for concrete types.
+/// In addition to serializing the value, this serializer also serializes the serializer used to serialize the value. This permits it to ensure
+/// the same serializer is used for deserialization.
 /// </summary>
-/// <typeparam name="TBase">The type of object which is serialized/deserialized</typeparam>
-public class BaseSerializer<TBase> : IItemSerializer<TBase> {
+/// <remarks>Ensure that the identical factory is used for both Serialization and Deserializatin for consistent results.</remarks>
+/// <typeparam name="TBase">The base-types of objects being serialized/deserialized</typeparam>
+public class FactorySerializer<TBase> : IItemSerializer<TBase> {
 	private readonly SerializerFactory _factory;
 	private readonly SerializerSerializer _serializerSerializer;
 
-	public BaseSerializer(bool supportsNull = false) {
-		_factory = new SerializerFactory();
+	public FactorySerializer() 
+		: this(new SerializerFactory()) {
+	}
+
+	public FactorySerializer(SerializerFactory factory) {
+		_factory = factory;
 		_serializerSerializer = new SerializerSerializer(_factory);
-		SupportsNull = supportsNull;
 	}
 
 	public SerializerFactory Factory => _factory;
 
-	public bool SupportsNull { get; }
+	public bool SupportsNull => false;
 
 	public bool IsConstantSize => false;
 
@@ -72,12 +77,9 @@ public class BaseSerializer<TBase> : IItemSerializer<TBase> {
 			return serializer;
 
 		var actualDataType = serializerObj.ItemType;
-
 		Guard.Ensure(actualDataType.FastIsSubTypeOf(typeof(TSerializerDataType)), $"Serializer object is not an {typeof(IItemSerializer<>).ToStringCS()}<{typeof(TSerializerDataType).ToStringCS()}>");
 
-		var genericMethod = DecoratorExtensions.SerializerCastMethod.MakeGenericMethod(new [] { actualDataType,  typeof(TSerializerDataType) });
-		serializer = genericMethod.FastInvoke(null, new [] { serializerObj }) as IItemSerializer<TSerializerDataType>;;
-		return serializer;
+		return new CastedSerializer<TSerializerDataType>(serializerObj);
 
 	}
 }

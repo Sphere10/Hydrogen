@@ -28,7 +28,7 @@ public class KeyValuePairSerializer<TKey, TValue> : ItemSerializer<KeyValuePair<
 	public KeyValuePairSerializer(IItemSerializer<TKey> keySerializer = null, IItemSerializer<TValue> valueSerializer = null, SizeDescriptorStrategy sizeDescriptorStrategy = SizeDescriptorStrategy.UseCVarInt)
 		: base(sizeDescriptorStrategy) {
 		KeySerializer = keySerializer ?? ItemSerializer<TKey>.Default;
-		ValueSerializer = (valueSerializer ?? ItemSerializer<TValue>.Default).AsNullable();
+		ValueSerializer = (valueSerializer ?? ItemSerializer<TValue>.Default).AsSanitized();
 	}
 
 	public IItemSerializer<TKey> KeySerializer { get; }

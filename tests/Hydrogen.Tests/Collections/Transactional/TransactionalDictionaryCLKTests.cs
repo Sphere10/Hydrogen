@@ -31,7 +31,7 @@ public sealed class TransactionalDictionaryCLKTests : TransactionalDictionaryTes
 			new TestObjectSerializer(),
 			null,
 			EqualityComparer<string>.Default,
-			new TestObjectComparer(),
+			new TestObjectEqualityComparer(),
 			policy: policy,
 			implementation: StreamMappedDictionaryImplementation.ConstantLengthKeyBased
 		);

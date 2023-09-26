@@ -165,6 +165,9 @@ public static class StreamMappedFactory {
 		keyComparer ??= EqualityComparer<TKey>.Default;
 		valueComparer ??= EqualityComparer<TValue>.Default;
 
+		// ensure it can serialize null's
+		valueSerializer = valueSerializer.AsSanitized();
+
 		var useCLK = false;
 		switch (implementation) {
 			case StreamMappedDictionaryImplementation.Auto:

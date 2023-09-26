@@ -43,7 +43,7 @@ public class StreamMappedListTests : StreamPersistedCollectionTestsBase {
 			clusteredList.Add(obj);
 			var item = clusteredList.Read(0);
 			Assert.That(clusteredList.Count, Is.EqualTo(1));
-			Assert.That(clusteredList[0], Is.EqualTo(obj).Using(new TestObjectComparer()));
+			Assert.That(clusteredList[0], Is.EqualTo(obj).Using(new TestObjectEqualityComparer()));
 		}
 	}
 
@@ -55,7 +55,7 @@ public class StreamMappedListTests : StreamPersistedCollectionTestsBase {
 				var obj = new TestObject(rng);
 				clusteredList.Add(obj);
 				Assert.That(clusteredList.Count, Is.EqualTo(i + 1));
-				Assert.That(clusteredList[i], Is.EqualTo(obj).Using(new TestObjectComparer()));
+				Assert.That(clusteredList[i], Is.EqualTo(obj).Using(new TestObjectEqualityComparer()));
 			}
 		}
 	}
@@ -378,7 +378,7 @@ public class StreamMappedListTests : StreamPersistedCollectionTestsBase {
 	public void IntegrationTests([StreamContainerStorageTypeValues] StorageType storage, [StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values] bool useChecksumIndex) {
 		var rng = new Random(31337);
 		using (CreateStream(storage, 5000, out Stream stream)) {
-			using var list = StreamMappedFactory.CreateList<TestObject>(stream, 100, new TestObjectSerializer(), new TestObjectComparer(), itemChecksummer: useChecksumIndex ? new ObjectHashCodeChecksummer<TestObject>() : null, reservedStreams: useChecksumIndex ? 1 : 0, policy: policy);
+			using var list = StreamMappedFactory.CreateList<TestObject>(stream, 100, new TestObjectSerializer(), new TestObjectEqualityComparer(), itemChecksummer: useChecksumIndex ? new ObjectHashCodeChecksummer<TestObject>() : null, reservedStreams: useChecksumIndex ? 1 : 0, policy: policy);
 			if (list.RequiresLoad)
 				list.Load();
 
@@ -387,7 +387,7 @@ public class StreamMappedListTests : StreamPersistedCollectionTestsBase {
 				(rng, i) => Enumerable.Range(0, i).Select(x => new TestObject(rng)).ToArray(),
 				false,
 				10,
-				itemComparer: new TestObjectComparer()
+				itemComparer: new TestObjectEqualityComparer()
 			);
 		}
 	}

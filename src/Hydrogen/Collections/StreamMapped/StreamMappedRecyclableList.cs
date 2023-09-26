@@ -118,6 +118,8 @@ public class StreamMappedRecyclableList<TItem> :  RecyclableListBase<TItem>, ISt
 				Tools.Collection.RangeL(0L, ListCount);
 
 		foreach (var index in indicesToCheck) {
+			if (IsRecycledInternal(index))
+				continue;
 			if (ItemComparer.Equals(item, ReadInternal(index)))
 				return index;
 		}

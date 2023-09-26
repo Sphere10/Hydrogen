@@ -135,7 +135,7 @@ public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollecti
 				maxItems,
 				(rng) => ($"{keyGens++}_{rng.NextString(0, 100)}", new TestObject(rng)),
 				iterations: iterations,
-				valueComparer: new TestObjectComparer()
+				valueComparer: new TestObjectEqualityComparer()
 			);
 		}
 	}
@@ -395,7 +395,7 @@ public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollecti
 	}
 
 	protected IDisposable Create(StreamContainerPolicy policy, out ITransactionalDictionary<string, TestObject> dictionary)
-		=> Create(new StringSerializer(Encoding.UTF8), new TestObjectSerializer(), EqualityComparer<string>.Default, new TestObjectComparer(), policy, out dictionary, out _);
+		=> Create(new StringSerializer(Encoding.UTF8), new TestObjectSerializer(), EqualityComparer<string>.Default, new TestObjectEqualityComparer(), policy, out dictionary, out _);
 
 	protected abstract IDisposable Create<TKey, TValue>(IItemSerializer<TKey> keySerializer, IItemSerializer<TValue> valueSerializer, IEqualityComparer<TKey> keyComparer, IEqualityComparer<TValue> valueComparer, StreamContainerPolicy policy,
 	                                           out ITransactionalDictionary<TKey, TValue> clustered, out string file);

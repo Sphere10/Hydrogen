@@ -117,7 +117,7 @@ public abstract class StreamMappedDictionaryTestsBase : StreamPersistedCollectio
 				maxItems,
 				(rng) => ($"{keyGens++}_{rng.NextString(0, 100)}", new TestObject(rng)),
 				iterations: 250,
-				valueComparer: new TestObjectComparer()
+				valueComparer: new TestObjectEqualityComparer()
 			);
 		}
 	}
@@ -132,7 +132,7 @@ public abstract class StreamMappedDictionaryTestsBase : StreamPersistedCollectio
 				maxItems,
 				(rng) => ($"{keyGens++}_{rng.NextString(0, 100)}", new TestObject(rng)),
 				iterations: 10,
-				valueComparer: new TestObjectComparer()
+				valueComparer: new TestObjectEqualityComparer()
 			);
 		}
 	}
@@ -145,7 +145,7 @@ public abstract class StreamMappedDictionaryTestsBase : StreamPersistedCollectio
 			new StringSerializer(Encoding.UTF8).AsNullable(),
 			new TestObjectSerializer(),
 			EqualityComparer<string>.Default,
-			new TestObjectComparer(),
+			new TestObjectEqualityComparer(),
 			out clusteredDictionary
 		);
 		if (clusteredDictionary.RequiresLoad)

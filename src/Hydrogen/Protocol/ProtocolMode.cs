@@ -20,7 +20,7 @@ public class ProtocolMode {
 		RequestHandlers = new Dictionary<Type, IRequestHandler>();
 		ResponseHandlers = new MultiKeyDictionary<Type, Type, IResponseHandler>();
 		MessageGenerators = new Dictionary<Type, IMessageGenerator>();
-		MessageSerializer = new BaseSerializer<object>();
+		MessageSerializer = new FactorySerializer<object>();
 	}
 
 	public int Number { get; init; }
@@ -33,7 +33,7 @@ public class ProtocolMode {
 
 	public IDictionary<Type, IMessageGenerator> MessageGenerators { get; init; }
 
-	public BaseSerializer<object> MessageSerializer { get; init; }
+	public FactorySerializer<object> MessageSerializer { get; init; }
 
 	public Result Validate() {
 		var result = Result.Default;

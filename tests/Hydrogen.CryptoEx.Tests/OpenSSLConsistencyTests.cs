@@ -20,7 +20,6 @@ namespace Hydrogen.CryptoEx.Tests;
 
 [TestFixture]
 [Parallelizable(ParallelScope.Children)]
-[Platform("Win, Win32, Win32S, Win32Windows, Win32NT, Win95, Win98, WinMe, Win2K, WinXP, Win2003Server, Win2008Server", Reason = "PascalOpenSSL is only supported on Windows platforms")]
 public class OpenSSLConsistencyTests {
 	private string _pascalOpenSSLFolder;
 	private string _pascalOpenSslFilePath;
@@ -44,6 +43,7 @@ public class OpenSSLConsistencyTests {
 	[SetUp]
 	public void InitTest() {
 		Assume.That(Environment.GetEnvironmentVariable("GITHUB_ACTIONS"), Is.Not.EqualTo("true"), "Test skipped in GitHub Actions.");
+		Assume.That(Environment.OSVersion.Platform, Is.EqualTo(PlatformID.Win32NT), "Test skipped on non-Windows platforms.");
 	}
 
 	private string CallPascalOpenSSL(string[] args) {

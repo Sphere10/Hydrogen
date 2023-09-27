@@ -30,12 +30,6 @@ namespace HashLib4CSharp.Base
 
         private MemoryStream Buffer { get; }
 
-        ~MultipleTransformNonBlock()
-        {
-            Buffer?.Flush();
-            Buffer?.Close();
-        }
-
         private byte[] Aggregate()
         {
             var aggregate = new byte[0];
@@ -97,5 +91,11 @@ namespace HashLib4CSharp.Base
             return result;
         }
         protected abstract IHashResult ComputeAggregatedBytes(byte[] data);
-    }
+
+		protected override void FreeManagedResources() 
+		{
+			Buffer?.Flush();
+			Buffer?.Close();
+		}
+	}
 }

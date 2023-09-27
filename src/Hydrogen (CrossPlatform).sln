@@ -43,7 +43,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hydrogen.DApp.Presentation2
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hydrogen.DApp.Presentation2.Loader", "Hydrogen.DApp.Presentation2.Loader\Hydrogen.DApp.Presentation2.Loader.csproj", "{18634CEA-B8C0-4865-8A87-9EC888456301}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hydrogen.NETCore.Tests", "..\tests\Hydrogen.NETCore.Tests\Hydrogen.NETCore.Tests.csproj", "{DC1A39A3-2156-4FE2-BA44-4551905E4795}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hydrogen.NET.Tests", "..\tests\Hydrogen.NET.Tests\Hydrogen.NET.Tests.csproj", "{DC1A39A3-2156-4FE2-BA44-4551905E4795}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hydrogen.DApp.Core.Tests", "..\tests\Hydrogen.DApp.Core.Tests\Hydrogen.DApp.Core.Tests.csproj", "{884F4D63-17A6-4253-A3A8-CDFC7994F1D6}"
 EndProject
@@ -71,7 +71,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AbstractProtocol.AnonymousP
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AbstractProtocol.UDPSimple", "..\recipes\AbstractProtocol.UPDSimple\AbstractProtocol.UDPSimple.csproj", "{0A67216B-D8E4-4C72-A461-DE260E5DBF95}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hydrogen.NETCore", "Hydrogen.NETCore\Hydrogen.NETCore.csproj", "{C7E0ACD1-B692-4A16-9516-01CF2717B5B3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hydrogen.NET", "Hydrogen.NET\Hydrogen.NET.csproj", "{C7E0ACD1-B692-4A16-9516-01CF2717B5B3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

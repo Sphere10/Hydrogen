@@ -1,54 +1,37 @@
-//-----------------------------------------------------------------------
-// <copyright file="MemoryMetric.cs" company="Sphere 10 Software">
-//
-// Copyright (c) Sphere 10 Software. All rights reserved. (http://www.sphere10.com)
+// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
 // LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
 //
-// <author>Herman Schoenfeld</author>
-// <date>2018</date>
-// </copyright>
-//-----------------------------------------------------------------------
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System.ComponentModel;
 
-namespace Hydrogen {
-	public enum MemoryMetric {
-        [Description("bits")]
-        Bit = 0,
-		
-        [Description("kbits")]
-        Kilobit,
+namespace Hydrogen;
 
-		[Description("mbits")]
-        Megabit,
+public enum MemoryMetric {
+	[Description("bits")] Bit = 0,
 
-		[Description("gbits")]
-        Gigabit,
+	[Description("kbits")] Kilobit,
 
-		[Description("tbits")]
-        Terrabit,
+	[Description("mbits")] Megabit,
 
-		[Description("pbits")]
-        Petabit,
+	[Description("gbits")] Gigabit,
 
-		[Description("b")]
-        Byte,
+	[Description("tbits")] Terrabit,
 
-		[Description("kb")]
-        Kilobyte,
+	[Description("pbits")] Petabit,
 
-		[Description("mb")]
-        Megabyte,
+	[Description("b")] Byte,
 
-		[Description("gb")]
-        Gigabyte,
+	[Description("kb")] Kilobyte,
 
-		[Description("tb")]
-        Terrabyte,
+	[Description("mb")] Megabyte,
 
-        [Description("pb")] 
-        PetaByte
-    }
+	[Description("gb")] Gigabyte,
+
+	[Description("tb")] Terrabyte,
+
+	[Description("pb")] PetaByte
 }

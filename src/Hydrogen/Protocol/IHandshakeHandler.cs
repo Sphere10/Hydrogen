@@ -1,14 +1,21 @@
-﻿namespace Hydrogen.Communications {
+﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-	public interface IHandshakeHandler {
+namespace Hydrogen.Communications;
 
-		object GenerateHandshake(ProtocolOrchestrator orchestrator);
+public interface IHandshakeHandler {
 
-		HandshakeOutcome ReceiveHandshake(ProtocolOrchestrator orchestrator, object handshake, out object acknowledgement);
+	object GenerateHandshake(ProtocolOrchestrator orchestrator);
 
-		HandshakeOutcome VerifyHandshake(ProtocolOrchestrator orchestrator, object handshake, object acknowledgement, out object verifyAcknowledgement);
+	HandshakeOutcome ReceiveHandshake(ProtocolOrchestrator orchestrator, object handshake, out object acknowledgement);
 
-		bool AcknowledgeHandshake(ProtocolOrchestrator orchestrator, object handshake, object acknowledgement, object verifyAcknowledgement);
+	HandshakeOutcome VerifyHandshake(ProtocolOrchestrator orchestrator, object handshake, object acknowledgement, out object verifyAcknowledgement);
 
-	}
+	bool AcknowledgeHandshake(ProtocolOrchestrator orchestrator, object handshake, object acknowledgement, object verifyAcknowledgement);
+
 }

@@ -1,4 +1,12 @@
-﻿@using Microsoft.JSInterop
+﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Author: Hamish Rose
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
+
+@using Microsoft.JSInterop
 @using Hydrogen.DApp.Presentation2.Logic.Modal
 @inherits LayoutComponentBase
 @inject IJSRuntime JsRuntime
@@ -27,7 +35,7 @@
 
             <div class="navbar-collapse collapse">
                 <ul class="navbar-nav navbar-align">
-                    
+
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle d-none d-sm-inline-block" href="#" data-toggle="dropdown">
                             <img src="img/avatars/avatar.jpg" class="avatar img-fluid rounded-circle mr-1" alt="Chris Wood"/>
@@ -57,16 +65,15 @@
 <ModalHost @ref="_modalHost"/>
 
 @code {
-    
+
     private ModalHost _modalHost;
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
+    protected override async Task OnAfterRenderAsync(bool firstRender) {
         await JsRuntime.InvokeVoidAsync("dispatchContentLoadedEvent");
         ModalService.Initialize(_modalHost);
     }
 
     public SearchInput.SearchProviderDelegate SearchProvider { get; } = term => Task.FromResult(Enumerable.Repeat(term, 5));
 
-    
+
 }

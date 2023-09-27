@@ -52,6 +52,8 @@ function F_BeforeSubmit(formId, o) {
 
     // remove prior validation errors
     form.find(".field-validation-error").remove();
+    form.find(".is-invalid").removeClass("is-invalid");
+    form.find(".input-validation-error").removeClass("input-validation-error");
 
     // clear the results
     $('#' + formId + '_result').replaceWith(' <div id = "' + formId + '_result' + '"></div>');
@@ -60,9 +62,12 @@ function F_BeforeSubmit(formId, o) {
     form.find(".form-blocker-overlay").removeClass("invisible");
 }
 
-
 function F_Success(formId, result) {
     var form = $('#' + formId);
+
+    // Reset form (if applicable)
+    if (result.result == true && form[0].options.clearOnSuccess == true)
+        F_Reset(formId);
 
     switch (result.type) {
         case "redirect":
@@ -71,7 +76,7 @@ function F_Success(formId, result) {
 
         case "message":
             var alertType = result.result ? "success" : "danger";
-            var alertHeader = result.result ? "Okay!" : "Apologies";
+            var alertHeader = result.result ? "" : "";
             var alertIcon = result.result ? "fa fa-check" : "fa fa-exclamation";
             F_ShowError(formId, alertType, alertIcon, alertHeader, result.message);
             break;
@@ -92,22 +97,17 @@ function F_Success(formId, result) {
 
             break;
     }
-
-    if (result.result) {
-        form[0].reset();
-        form.find('input[type=text], textarea').val('');
-    }
 }
 
 function F_Error(formId, status, error) {
     var alertType = "danger";
-    var alertHeader = "Apologies";
+    var alertHeader = "";
     var alertIcon = "fa fa-exclamation";
     F_ShowError(formId, alertType, alertIcon, alertHeader, status + '-' + error);
 }
 
 function F_ShowError(formId, alertType, alertIcon, title, message) {
-    var htmlToInject = '<div id="' + formId + '_result" class="form-result alert alert-dismissible alert-' + alertType + ' fade show"><strong><i class="' + alertIcon + '"></i> ' + title + '</strong> ' + message + '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>' + '</div>';
+    var htmlToInject = '<div id="' + formId + '_result" class="form-result alert alert-dismissible alert-' + alertType + ' mb-0 mt-3 fade show"><strong><i class="' + alertIcon + '"></i> ' + title + '</strong> ' + message + '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>' + '</div>';
     var resultDiv = $('#' + formId + '_result');
     if (resultDiv.length > 0)
         resultDiv.replaceWith(htmlToInject);
@@ -130,14 +130,76 @@ function F_Completed(formId) {
 
 }
 
-function F_Init(formId) {
+function F_Init(formId, options) {
     $(document).ready(function () {
-        $('#' + formId).on("submit", function (event) {
+        var form = $('#' + formId);
+
+        // On first time initializing, we save a backup of the form for future resets
+        if ($(window).data(formId) == null)
+            $(window).data(formId, form.html())
+
+        // set form options
+        if (options == null)
+            options = {
+                clearOnSuccess: false,
+                botProtect: false
+            };
+        form[0].options = options;
+
+        // re-init choices for fetched form (choices.js)
+        form[0].querySelectorAll('[sp10-choices]').forEach((toggle) => {
+            const elementOptions = toggle.dataset.choices ? JSON.parse(toggle.dataset.choices) : {};
+
+            const defaultOptions = {
+                shouldSort: false,
+                searchEnabled: false,
+                classNames: {
+                    containerInner: toggle.className,
+                    input: 'form-control',
+                    inputCloned: 'form-control-xs',
+                    listDropdown: 'dropdown-menu',
+                    itemChoice: 'dropdown-item',
+                    activeState: 'show',
+                    selectedState: 'active',
+                },
+            };
+
+            const options = {
+                ...elementOptions,
+                ...defaultOptions,
+            };
+
+            var choices = $(toggle).data('choices');
+
+            if (choices)
+                choices.destroy();
+
+            choices = new Choices(toggle, options);
+            $(toggle).data('choices', choices);
+        });
+
+        // Init bootstrap tool-tips (WARNING: not sure if these are repeatable safe)
+        form.find('[data-bs-toggle="tooltip"]').tooltip();
+
+        // Init bootstrap pop-overs (WARNING: not sure if these are repeatable safe)
+        form.find('[data-bs-toggle="popover"]').popover();
+
+
+        // Add the AJAX handler
+        form.on("submit", function (event) {
+            // Increment submit counter
+            var submitProp = form.find('input:hidden[name="SubmitCount"]');
+            submitProp.val(parseInt(submitProp.val()) + 1);
+
             var formId = $(this).attr("id");
             event.preventDefault();
             var formValues = $(this).serialize();
+            var action = $(this).attr("action");
+            if (form[0].options.botProtect)
+                action = atob(action);
+
             $.ajax({
-                url: "/contact/form",
+                url: action,
                 type: "POST",
                 data: formValues,
                 cache: false,
@@ -157,4 +219,24 @@ function F_Init(formId) {
             });
         });
     });
+}
+
+function F_Finalize(formId) {
+    var form = $('#' + formId);
+    // destroy form event handlers
+    form.off();
+    // destroy choices objects
+    form[0].querySelectorAll('[sp10-choices]').forEach((toggle) => {
+        var choices = $(toggle).data('choices');
+        if (choices)
+            choices.destroy();
+    });
+}
+
+function F_Reset(formId) {
+    F_Finalize(formId);
+
+    // Restore form from original backup
+    var form = $('#' + formId);
+    form.html($(window).data(formId)); // this restores the original backed-up form html which contains the javascript to call F_Init
 }

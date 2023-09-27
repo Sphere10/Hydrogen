@@ -1,23 +1,29 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Hydrogen;
+﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
+
 using Hydrogen.DApp.Core.Consensus;
-using Hydrogen.DApp.Node.RPC;
 
-namespace Hydrogen.DApp.Node.RPC {
+namespace Hydrogen.DApp.Node.RPC;
 
-	public interface IMiningBlockProducer {
-		public event EventHandlerEx<SynchronizedList<BlockChainTransaction>> OnBlockAccepted;
+public interface IMiningBlockProducer {
+	public event EventHandlerEx<SynchronizedList<BlockChainTransaction>> OnBlockAccepted;
 
-		public byte[] GetPrevMinerElectionHeader();
-		public byte[] GetBlockPolicy();
-		public byte[] GetKernelID();
-		public byte[] GetSignature();
-		NewMinerBlockSurogate GenerateNewMiningBlock();
-		public void NotifyNewBlock();
+	public byte[] GetPrevMinerElectionHeader();
 
-		public void NotifyNewDiff();
-	}
+	public byte[] GetBlockPolicy();
 
+	public byte[] GetKernelID();
+
+	public byte[] GetSignature();
+
+	NewMinerBlockSurogate GenerateNewMiningBlock();
+
+	public void NotifyNewBlock();
+
+	public void NotifyNewDiff();
 }

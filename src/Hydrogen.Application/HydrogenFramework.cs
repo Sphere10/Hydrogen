@@ -1,202 +1,168 @@
-//-----------------------------------------------------------------------
-// <copyright file="ApplicationLifecycle.cs" company="Sphere 10 Software">
-//
-// Copyright (c) Sphere 10 Software. All rights reserved. (http://www.sphere10.com)
+// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
 // LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
 //
-// <author>Herman Schoenfeld</author>
-// <date>2018</date>
-// </copyright>
-//-----------------------------------------------------------------------
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Collections.Generic;
-using System.Configuration;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace Hydrogen.Application {
-	public class HydrogenFramework {
-		private readonly object _threadLock;
-		private bool _registeredConfig;
-		private bool _registeredModuleComponents;
+namespace Hydrogen.Application;
 
-		public event EventHandlerEx Initializing;
-		public event EventHandlerEx Starting;
-		public event EventHandlerEx Ending;
-		public event EventHandlerEx Finalizing;
+public class HydrogenFramework {
+	private readonly object _threadLock;
+	private bool _registeredModules;
+	private bool _frameworkOwnsServicesProvider;
 
-		static HydrogenFramework() {
-			Instance = new HydrogenFramework();
+	public event EventHandlerEx Initializing;
+	public event EventHandlerEx Initialized;
+	public event EventHandlerEx Finalizing;
+	public event EventHandlerEx Finalized;
+
+	static HydrogenFramework() {
+		Instance = new HydrogenFramework();
+	}
+
+	public HydrogenFramework() {
+		IsStarted = false;
+		_registeredModules = false;
+		_frameworkOwnsServicesProvider = false;
+		_threadLock = new object();
+		ModuleConfigurations = Tools.Values.Future.LazyLoad(() =>
+			AppDomain
+				.CurrentDomain
+				.GetNonFrameworkAssemblies()
+				.SelectMany(a => a.GetTypes())
+				.Where(t => t.IsClass && !t.IsAbstract && typeof(IModuleConfiguration).IsAssignableFrom(t))
+				.Select(TypeActivator.Activate)
+				.Cast<IModuleConfiguration>()
+				.OrderByDescending(x => x.Priority)
+				.ToArray()
+		);
+	}
+
+	public static HydrogenFramework Instance { get; }
+
+	public IServiceProvider ServiceProvider { get; private set; }
+
+	public bool IsStarted { get; private set; }
+
+	public HydrogenFrameworkOptions Options { get; private set; }
+
+	private IFuture<IModuleConfiguration[]> ModuleConfigurations { get; set; }
+
+	public IServiceCollection RegisterModules(IServiceCollection serviceCollection) {
+		CheckNotStarted();
+		Guard.Against(_registeredModules, "Modules have already been registered");
+		lock (_threadLock) {
+			ModuleConfigurations.Value.ForEach(m => m.RegisterComponents(serviceCollection));
+			_registeredModules = true;
 		}
+		return serviceCollection;
+	}
 
-		public HydrogenFramework() {
-			IsStarted = false;
-			_threadLock = new object();
-			ModuleConfigurations = Tools.Values.Future.LazyLoad(() =>
-			   AppDomain
-				   .CurrentDomain
-				   .GetNonFrameworkAssemblies()
-				   //.Apply(a => System.IO.File.AppendAllText("c:\\temp\\log.txt", a.FullName + Environment.NewLine))
-				   .SelectMany(a => a.GetTypes())
-				   .Where(t => t.IsClass && !t.IsAbstract && typeof(IModuleConfiguration).IsAssignableFrom(t))
-				   .Select(TypeActivator.Create)
-				   .Cast<IModuleConfiguration>()
-				   .OrderByDescending(x => x.Priority)
-				   .ToArray()
-			);
-		}
+	public void StartFramework(HydrogenFrameworkOptions options = HydrogenFrameworkOptions.Default)
+		=> StartFramework(_ => { }, options);
 
-		public static HydrogenFramework Instance { get; }
+	public void StartFramework(Action<IServiceCollection> configure, HydrogenFrameworkOptions options = HydrogenFrameworkOptions.Default) {
+		Options = options;
+		var serviceCollection = new ServiceCollection();
+		configure?.Invoke(serviceCollection);
+		RegisterModules(serviceCollection);
+		StartFramework(serviceCollection.BuildServiceProvider(), options);
+		_frameworkOwnsServicesProvider = true;
+	}
 
-		public bool IsStarted { get; private set; }
+	public void StartFramework(IServiceProvider serviceProvider, HydrogenFrameworkOptions options = HydrogenFrameworkOptions.Default) {
+		CheckNotStarted();
+		Guard.Ensure(_registeredModules, "Modules have not been registered");
+		Guard.Against(IsStarted, "Hydrogen framework has already been started");
+		Options = options;
+		ServiceProvider = serviceProvider;
+		Initializing?.Invoke();
+		InitializeModules(serviceProvider);
+		InitializeApplication();
+		Initialized?.Invoke();
+		IsStarted = true;
+	}
 
-		private IFuture<IModuleConfiguration[]> ModuleConfigurations { get; set; }
+	public void EndFramework() {
+		CheckStarted();
+		Finalizing?.Invoke();
+		FinalizeApplication();
+		FinalizeModules(ServiceProvider);
+		if (_frameworkOwnsServicesProvider && ServiceProvider is IDisposable disposable)
+			Tools.Exceptions.ExecuteIgnoringException(disposable.Dispose);
+		IsStarted = false;
+		Finalized?.Invoke();
+	}
 
-		public void StartFramework() {
-			CheckNotStarted();
+	private void InitializeModules(IServiceProvider serviceProvider)
+		=> ModuleConfigurations
+			.Value
+			.ForEach(moduleConfiguration => moduleConfiguration.OnInitialize(serviceProvider));
 
-			// Register App/Web Config components
+	private void InitializeApplication() {
+		Initializing?.Invoke();
 
-			if (!_registeredConfig)
-				RegisterAppConfig();
+		var initializers = ServiceProvider.GetServices<IApplicationInitializer>().ToArray();
 
-			if (!_registeredModuleComponents)
-				RegisterAllModuleComponents();
+		// Execute non-parallelizable initializers in sequence first
+		initializers
+			.Where(x => !x.Parallelizable)
+			.OrderBy(initTask => initTask.Priority)
+			.ForEach(initTask => initTask.Initialize());
 
-			// Initialize Modules
-			ModuleConfigurations.Value.Update(moduleConfiguration => Tools.Exceptions.ExecuteIgnoringException(moduleConfiguration.OnInitialize));
 
-			// Execute all the application initialization tasks synchronously and in sequence
-			ComponentRegistry
-				.Instance
-				.ResolveAll<IApplicationInitializeTask>()
-				.OrderBy(initTask => initTask.Priority)
-				.ForEach(
-					initTask => Tools.Exceptions.ExecuteIgnoringException(initTask.Initialize)
-				);
-			Initializing?.Invoke();
+		// Parallel execute all parallelizable initialzers 
+		Parallel.ForEach(initializers
+				.Where(x => x.Parallelizable)
+				.OrderBy(initTask => initTask.Priority),
+			startTask => startTask.Initialize()
+		);
 
-			// Execute all the start tasks asynchronously
-			ComponentRegistry
-				.Instance
-				.ResolveAll<IApplicationStartTask>()
-				.ForEach(
-					startTask => Tools.Lambda.ActionAsAsyncronous(startTask.Start).IgnoringExceptions().Invoke()
-				);
-			Starting?.Invoke();
+	}
 
-			IsStarted = true;
-		}
+	internal void FinalizeModules(IServiceProvider serviceProvider)
+		=> ModuleConfigurations
+			.Value
+			.Update(moduleConfiguration => moduleConfiguration.OnFinalize(serviceProvider));
 
-		public void EndFramework()
-			=> EndFramework(out _, out _);
+	private void FinalizeApplication() {
+		ServiceProvider
+			.GetServices<IApplicationFinalizer>()
+			.ForEach(f => f.Finalize());
+	}
 
-		public void EndFramework(out bool abort, out string abortReason) {
-			CheckStarted();
+	public ILogger CreateApplicationLogger(bool visibleToAllUsers = false)
+		=> CreateApplicationLogger(Tools.Text.FormatEx("{ProductName}"), visibleToAllUsers: visibleToAllUsers);
 
-			abortReason = string.Empty;
-			abort = false;
+	public ILogger CreateApplicationLogger(string fileName, bool visibleToAllUsers = false)
+		=> CreateApplicationLogger(fileName, RollingFileLogger.DefaultMaxFiles, RollingFileLogger.DefaultMaxFileSizeB, visibleToAllUsers);
 
-			var results = new List<Result>();
-			ComponentRegistry
-				.Instance
-				.ResolveAll<IApplicationEndTask>()
-				.ForEach(
-					endTask => Tools.Exceptions.Execute(endTask.End, error => results.Add(Result.Error(error.ToDisplayString())))
-				);
-			Ending?.Invoke();
-
-			if (results.Any(r => r.Failure)) {
-				var textBuilder = new ParagraphBuilder();
-				results.ForEach(
-					result => {
-						result.ErrorMessages.ForEach(
-							notification => textBuilder.AppendSentence(notification));
-						textBuilder.AppendParagraphBreak();
-					}
-				 );
-				abort = true;
-				abortReason = textBuilder.ToString();
-			}
-
-			// Finalize modules
-			ModuleConfigurations.Value.Update(moduleConfiguration => Tools.Exceptions.ExecuteIgnoringException(moduleConfiguration.OnFinalize));
-			Finalizing?.Invoke();
-
-			DeregisterAllModuleComponents();
-
-			ComponentRegistry.Instance.Dispose();
-
-			IsStarted = false;
-		}
-
-		public ILogger CreateApplicationLogger(bool visibleToAllUsers = false)
-			=> CreateApplicationLogger(Tools.Text.FormatEx("{ProductName}"), visibleToAllUsers: visibleToAllUsers);
-
-		public ILogger CreateApplicationLogger(string logName, bool visibleToAllUsers = false)
-			=> CreateApplicationLogger(logName, RollingFileLogger.DefaultMaxFiles, RollingFileLogger.DefaultMaxFileSizeB, visibleToAllUsers);
-
-		public ILogger CreateApplicationLogger(string logFileName, int maxFiles, int maxFileSize, bool visibleToAllUsers = false)
-			=> new ThreadIdLogger(
-				new TimestampLogger(
-					new RollingFileLogger(
-						Path.Combine(Tools.Text.FormatEx(visibleToAllUsers ? "{SystemDataDir}" : "{UserDataDir}"), Tools.Text.FormatEx("{ProductName}"), "logs", logFileName),
-						maxFiles,
-						maxFileSize
-					)
+	public ILogger CreateApplicationLogger(string fileName, int maxFiles, int maxFileSize, bool visibleToAllUsers = false)
+		=> new ThreadIdLogger(
+			new TimestampLogger(
+				new RollingFileLogger(
+					Path.Combine(Tools.Text.FormatEx(visibleToAllUsers ? "{SystemDataDir}" : "{UserDataDir}"), Tools.Text.FormatEx("{ProductName}"), "logs", fileName),
+					maxFiles,
+					maxFileSize
 				)
-			);
-				
+			)
+		);
 
-		public void RegisterAppConfig(string configSectionName = "ComponentRegistry") {
-			CheckNotStarted();
+	private void CheckStarted() {
+		if (!IsStarted)
+			throw new InvalidOperationException("Hydrogen Framework was not started");
+	}
 
-			if (_registeredConfig)
-				throw new SoftwareException("Components defined in App/Web config have already been registered");
-
-			lock (_threadLock) {
-				if (_registeredConfig) return;
-				if (ConfigurationManager.GetSection(configSectionName) is ComponentRegistryDefinition definition) {
-					ComponentRegistry.Instance.RegisterDefinition(definition);
-				}
-				_registeredConfig = true;
-			}
-		}
-
-		private void RegisterAllModuleComponents() {
-			CheckNotStarted();
-
-			if (_registeredModuleComponents)
-				throw new SoftwareException("All modules have already been initialized, cannot initialize again.");
-
-			lock (_threadLock) {
-				if (_registeredModuleComponents) return;
-				ModuleConfigurations.Value.Update(mconf => mconf.RegisterComponents(ComponentRegistry.Instance));
-				_registeredModuleComponents = true;
-			}
-		}
-
-		private void DeregisterAllModuleComponents() {
-			CheckStarted();
-			if (!_registeredModuleComponents) return;
-
-			lock (_threadLock) {
-				ModuleConfigurations.Value.Update(mconf => mconf.DeregisterComponents(ComponentRegistry.Instance));
-				_registeredModuleComponents = false;
-			}
-		}
-
-		private void CheckStarted() {
-			if (!IsStarted)
-				throw new InvalidOperationException("Hydrogen Framework was not started");
-		}
-
-		private void CheckNotStarted() {
-			if (IsStarted)
-				throw new InvalidOperationException("Hydrogen Framework is alraedy started");
-		}
+	private void CheckNotStarted() {
+		if (IsStarted)
+			throw new InvalidOperationException("Hydrogen Framework is already started");
 	}
 }

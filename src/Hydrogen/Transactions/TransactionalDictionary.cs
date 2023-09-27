@@ -1,136 +1,160 @@
-using System;
+// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
+
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 
-namespace Hydrogen {
+namespace Hydrogen;
 
-	/// <summary>
-	/// A dictionary whose items are stored on a file and which has ACID transactional commit/rollback capability as well as built-in memory caching for efficiency. There are
-	/// no restrictions on this dictionary, items may be added, mutated and removed arbitrarily. This class is essentially a light-weight database.
-	/// </summary>
-	public class TransactionalDictionary<TKey, TValue> : ObservableDictionary<TKey, TValue>, ITransactionalDictionary<TKey, TValue> {
-		public const int DefaultTransactionalPageSize = 1 << 18;  // 256kb
-		public const int DefaultClusterSize = 256;   // 256b
-		public const int DefaultMaxMemory = int.MaxValue; //  10 * (1 << 20);// 10mb
+public class TransactionalDictionary<TKey, TValue> : DictionaryDecorator<TKey, TValue, IStreamMappedDictionary<TKey, TValue>>, ITransactionalDictionary<TKey, TValue> {
 
-		public event EventHandlerEx<object> Loading { add => _clustered.Loading += value; remove => _clustered.Loading -= value; }
-		public event EventHandlerEx<object> Loaded { add => _clustered.Loaded += value; remove => _clustered.Loaded -= value; }
-		public event EventHandlerEx<object> Committing { add => _transactionalBuffer.Committing += value; remove => _transactionalBuffer.Committing -= value; }
-		public event EventHandlerEx<object> Committed { add => _transactionalBuffer.Committed += value; remove => _transactionalBuffer.Committed -= value; }
-		public event EventHandlerEx<object> RollingBack { add => _transactionalBuffer.RollingBack += value; remove => _transactionalBuffer.RollingBack -= value; }
-		public event EventHandlerEx<object> RolledBack { add => _transactionalBuffer.RolledBack += value; remove => _transactionalBuffer.RolledBack -= value; }
+	public event EventHandlerEx<object> Loading { add => InternalDictionary.Loading += value; remove => InternalDictionary.Loading -= value; }
+	public event EventHandlerEx<object> Loaded { add => InternalDictionary.Loaded += value; remove => InternalDictionary.Loaded -= value; }
+	public event EventHandlerEx<object> Committing { add => _transactionalObject.Committing += value; remove => _transactionalObject.Committing -= value; }
+	public event EventHandlerEx<object> Committed { add => _transactionalObject.Committed += value; remove => _transactionalObject.Committed -= value; }
+	public event EventHandlerEx<object> RollingBack { add => _transactionalObject.RollingBack += value; remove => _transactionalObject.RollingBack -= value; }
+	public event EventHandlerEx<object> RolledBack { add => _transactionalObject.RolledBack += value; remove => _transactionalObject.RolledBack -= value; }
 
-		private readonly TransactionalFileMappedBuffer _transactionalBuffer;
-		private readonly StreamMappedDictionary<TKey, TValue> _clustered;
-		private readonly SynchronizedDictionary<TKey, TValue> _dictionary;
-		private bool _disposed;
+	private readonly ITransactionalObject _transactionalObject;
 
-
-		/// <summary>
-		/// Creates a <see cref="TransactionalList{T}" />.
-		/// </summary>
-		/// <param name="filename">File which will contain the serialized objects.</param>
-		/// <param name="uncommittedPageFileDir">A working directory which stores uncommitted transactional pages. Must be the same across system restarts for transaction resumption.</param>
-		/// <param name="serializer">Serializer for the objects</param>
-		/// <param name="comparer"></param>
-		/// <param name="transactionalPageSizeBytes">Size of transactional page</param>
-		/// <param name="maxMemory">How much of the list can be kept in memory at any time</param>
-		/// <param name="clusterSize">To support random access reads/writes the file is broken into discontinuous clusters of this size (similar to how disk storage) works. <remarks>Try to fit your average object in 1 cluster for performance. However, spare space in a cluster cannot be used.</remarks> </param>
-		/// <param name="readOnly">Whether or not file is opened in readonly mode.</param>
-		public TransactionalDictionary(string filename, string uncommittedPageFileDir, IItemSerializer<TKey> keySerializer, IItemSerializer<TValue> valueSerializer, IItemChecksum<TKey> keyChecksum = null, IEqualityComparer<TKey> keyComparer = null, IEqualityComparer<TValue> valueComparer = null, int transactionalPageSizeBytes = DefaultTransactionalPageSize, long maxMemory = DefaultMaxMemory, int clusterSize = DefaultClusterSize, ClusteredStoragePolicy policy = ClusteredStoragePolicy.DictionaryDefault, int reservedRecords = 0, Endianness endianness = Endianness.LittleEndian, bool readOnly = false) {
-			Guard.ArgumentNotNull(filename, nameof(filename));
-			Guard.ArgumentNotNull(uncommittedPageFileDir, nameof(uncommittedPageFileDir));
-
-			_disposed = false;
-
-			_transactionalBuffer = new TransactionalFileMappedBuffer(filename, uncommittedPageFileDir, transactionalPageSizeBytes, maxMemory, readOnly);
-			_transactionalBuffer.Committing += _ => OnCommitting();
-			_transactionalBuffer.Committed += _ => OnCommitted();
-			_transactionalBuffer.RollingBack += _ => OnRollingBack();
-			_transactionalBuffer.RolledBack += _ => OnRolledBack();
-
-			// NOTE: needs removal
-			if (_transactionalBuffer.RequiresLoad)
-				_transactionalBuffer.Load();
-
-			_clustered = new StreamMappedDictionary<TKey, TValue>(
-				new ExtendedMemoryStream(
-					_transactionalBuffer,
-					disposeSource: true
-				),
-				clusterSize,
-				keySerializer,
-				valueSerializer,
-				keyChecksum,
-				keyComparer,
-				valueComparer,
-				policy,
-				reservedRecords,
-				endianness
-			);
-
-			_dictionary = new SynchronizedDictionary<TKey, TValue>(_clustered);
-			InternalCollection = _dictionary;
-		}
-
-		public bool RequiresLoad => _transactionalBuffer.RequiresLoad || _clustered.RequiresLoad;
-
-		public ISynchronizedObject ParentSyncObject {
-			get => _dictionary.ParentSyncObject;
-			set => _dictionary.ParentSyncObject = value;
-		}
-
-		public ReaderWriterLockSlim ThreadLock => _dictionary.ThreadLock;
-
-		public string Path => _transactionalBuffer.Path;
-
-		public TransactionalFileMappedBuffer AsBuffer => _transactionalBuffer;
-
-		public IClusteredStorage Storage => _clustered.Storage;
-
-		public void Load() {
-			_transactionalBuffer.Load();
-			_clustered.Load();
-		}
-
-		public Task LoadAsync() => Task.Run(Load);
-
-		public IDisposable EnterReadScope() => _dictionary.EnterReadScope();
-
-		public IDisposable EnterWriteScope() => _dictionary.EnterWriteScope();
-
-		public void Commit() => _transactionalBuffer.Commit();
-
-		public Task CommitAsync() => Task.Run(Commit);
-
-		public void Rollback() => _transactionalBuffer.Rollback();
-
-		public Task RollbackAsync() => Task.Run(Rollback);
-
-		public void Dispose() {
-			_transactionalBuffer?.Dispose();
-			_disposed = true;
-		}
-
-		protected override void OnAccessing(EventTraits eventType) {
-			if (_disposed)
-				throw new InvalidOperationException($"{GetType().Name} has been disposed");
-		}
-
-		protected virtual void OnCommitting() {
-		}
-
-		protected virtual void OnCommitted() {
-		}
-
-		protected virtual void OnRollingBack() {
-		}
-
-		protected virtual void OnRolledBack() {
-		}
-
+	public TransactionalDictionary(
+		string filename,
+		string uncommittedPageFileDir,
+		IItemSerializer<TKey> keySerializer = null,
+		IItemSerializer<TValue> valueSerializer = null,
+		IItemChecksummer<TKey> keyChecksum = null,
+		IEqualityComparer<TKey> keyComparer = null,
+		IEqualityComparer<TValue> valueComparer = null,
+		int transactionalPageSize = HydrogenDefaults.TransactionalPageSize,
+		long maxMemory = HydrogenDefaults.MaxMemoryPerCollection,
+		int clusterSize = HydrogenDefaults.ClusterSize,
+		StreamContainerPolicy policy = StreamContainerPolicy.Default,
+		int reservedStreamCount = 2,
+		long freeIndexStoreStreamIndex = 0,
+		long keyChecksumIndexStreamIndex = 1,
+		Endianness endianness = HydrogenDefaults.Endianness,
+		bool readOnly = false,
+		bool autoLoad = false,
+		StreamMappedDictionaryImplementation implementation = StreamMappedDictionaryImplementation.Auto
+	) : this(
+		new TransactionalStream(
+			filename, 
+			uncommittedPageFileDir, 
+			transactionalPageSize, 
+			maxMemory, 
+			readOnly,
+			autoLoad
+		),
+		keySerializer,
+		valueSerializer,
+		keyChecksum,
+		keyComparer,
+		valueComparer, 
+		clusterSize, 
+		policy,
+		reservedStreamCount,
+		freeIndexStoreStreamIndex,
+		keyChecksumIndexStreamIndex,
+		endianness,
+		readOnly,
+		autoLoad,
+		implementation
+	) {
+		InternalDictionary.ObjectContainer.StreamContainer.OwnsStream = true;
 	}
+
+	public TransactionalDictionary(
+		TransactionalStream transactionalStream, 
+		IItemSerializer<TKey> keySerializer, 
+		IItemSerializer<TValue> valueSerializer, 
+		IItemChecksummer<TKey> keyChecksum = null, 
+		IEqualityComparer<TKey> keyComparer = null,
+		IEqualityComparer<TValue> valueComparer = null, 
+		int clusterSize = HydrogenDefaults.ClusterSize,
+		StreamContainerPolicy policy = StreamContainerPolicy.Default, 
+		int reservedStreamCount = 2,
+		long freeIndexStoreStreamIndex = 0,
+		long keyChecksumIndexStreamIndex = 1,
+		Endianness endianness = HydrogenDefaults.Endianness,
+		bool readOnly = false,
+		bool autoLoad = false,
+		StreamMappedDictionaryImplementation implementation = StreamMappedDictionaryImplementation.Auto
+	) : this(
+		StreamMappedFactory.CreateDictionary(
+			transactionalStream, 
+			keySerializer, 
+			valueSerializer, 
+			keyChecksum,
+			keyComparer, 
+			valueComparer, 
+			clusterSize, 
+			policy,
+			reservedStreamCount,
+			freeIndexStoreStreamIndex,
+			keyChecksumIndexStreamIndex,
+			endianness, 
+			readOnly,
+			false,
+			implementation
+		),
+		transactionalStream,
+		autoLoad
+	) {
+		OwnsDictionary = true;
+	}
+
+	public TransactionalDictionary(
+		IStreamMappedDictionary<TKey, TValue> internalDictionary,
+		ITransactionalObject transactionalObject,
+		bool autoLoad = false
+	) : base(internalDictionary) {
+		Guard.ArgumentNotNull(transactionalObject, nameof(transactionalObject));
+		_transactionalObject = transactionalObject;
+		
+		if (autoLoad && RequiresLoad)
+			Load();
+	}
+
+	public bool OwnsDictionary { get; set; }
+
+	public ObjectContainer ObjectContainer => InternalDictionary.ObjectContainer;
+
+	public bool RequiresLoad => InternalDictionary.RequiresLoad;
+
+	public void Commit() => _transactionalObject.Commit();
+
+	public Task CommitAsync() => _transactionalObject.CommitAsync();
+
+	public void Rollback() => _transactionalObject.Rollback();
+
+	public Task RollbackAsync() => _transactionalObject.RollbackAsync();
+
+	public void Dispose() {
+		if (OwnsDictionary)
+			InternalDictionary.Dispose();
+	}
+
+	public void Load() => InternalDictionary.Load();
+
+	public Task LoadAsync() => InternalDictionary.LoadAsync();
+
+	public TKey ReadKey(long index) => InternalDictionary.ReadKey(index);
+
+	public byte[] ReadKeyBytes(long index) => InternalDictionary.ReadKeyBytes(index);
+
+	public TValue ReadValue(long index) => InternalDictionary.ReadValue(index);
+
+	public byte[] ReadValueBytes(long index) => InternalDictionary.ReadValueBytes(index);
+
+	public bool TryFindKey(TKey key, out long index) => InternalDictionary.TryFindKey(key, out index);
+
+	public bool TryFindValue(TKey key, out long index, out TValue value) => InternalDictionary.TryFindValue(key, out index, out value);
+
+	public void RemoveAt(long index) => InternalDictionary.RemoveAt(index);
+
 }

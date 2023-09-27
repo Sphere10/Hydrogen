@@ -1,4 +1,12 @@
-﻿// HS 2021-10-11: removed since implementation fixed and changed
+﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
+
+// HS 2021-10-11: removed since implementation fixed and changed
 //using System;
 //using System.Collections.Generic;
 //using System.IO;
@@ -33,7 +41,7 @@
 
 //                Action a4 = () => new RollingFileLogger(dir, string.Empty, 0, 1);
 //                a4.Should().Throw<ArgumentOutOfRangeException>("Max file counts must be greater than 0");
-                
+
 //                Action a5 = () => new RollingFileLogger(dir, new string(Path.GetInvalidFileNameChars()), 1, 1);
 //                a5.Should().Throw<ArgumentException>(
 //                    "Log file name template contains invalid file name / path characters");
@@ -137,3 +145,5 @@
 //        }
 //    }
 //}
+
+

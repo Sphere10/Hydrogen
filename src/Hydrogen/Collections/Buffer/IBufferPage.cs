@@ -1,11 +1,19 @@
-﻿using System;
+﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen {
-	public interface IBufferPage : IMemoryPage<byte> {
-        ReadOnlySpan<byte> ReadSpan(int index, int count);
-        
-		bool AppendSpan(ReadOnlySpan<byte> items, out ReadOnlySpan<byte> overflow);
+using System;
 
-        void UpdateSpan(int index, ReadOnlySpan<byte> items);
-    }
+namespace Hydrogen;
+
+public interface IBufferPage : IMemoryPage<byte> {
+	ReadOnlySpan<byte> ReadSpan(long index, long count);
+
+	bool AppendSpan(ReadOnlySpan<byte> items, out ReadOnlySpan<byte> overflow);
+
+	void UpdateSpan(long index, ReadOnlySpan<byte> items);
 }

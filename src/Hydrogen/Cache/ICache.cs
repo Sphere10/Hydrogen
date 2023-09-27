@@ -1,91 +1,84 @@
-//-----------------------------------------------------------------------
-// <copyright file="ICache.cs" company="Sphere 10 Software">
-//
-// Copyright (c) Sphere 10 Software. All rights reserved. (http://www.sphere10.com)
+// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
 // LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
 //
-// <author>Herman Schoenfeld</author>
-// <date>2018</date>
-// </copyright>
-//-----------------------------------------------------------------------
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 
-namespace Hydrogen {
+namespace Hydrogen;
 
-	// ICache is a fully functional cache of <object, object>
-	public interface ICache : ISynchronizedObject {
+// ICache is a fully functional cache of <object, object>
+public interface ICache : ISynchronizedObject {
 
-		event EventHandlerEx<object> ItemFetching;
-		event EventHandlerEx<object, object> ItemFetched;
-		event EventHandlerEx<object, CachedItem> ItemRemoved;
+	event EventHandlerEx<object> ItemFetching;
+	event EventHandlerEx<object, object> ItemFetched;
+	event EventHandlerEx<object, CachedItem> ItemRemoved;
 
-		IEnumerable<CachedItem> CachedItems { get; }
+	IEnumerable<CachedItem> CachedItems { get; }
 
-		int ItemCount { get; }
+	int ItemCount { get; }
 
-		long CurrentSize { get; }
+	long CurrentSize { get; }
 
-        long MaxCapacity { get; }
+	long MaxCapacity { get; }
 
-        DateTime LastUpdateOn { get; }
+	DateTime LastUpdateOn { get; }
 
-        DateTime LastAccessedOn { get; }
+	DateTime LastAccessedOn { get; }
 
-        long TotalAccesses { get; }
+	long TotalAccesses { get; }
 
-		TimeSpan ExpirationDuration { get; }
+	TimeSpan ExpirationDuration { get; }
 
-        ExpirationPolicy ExpirationPolicy { get; }
+	ExpirationPolicy ExpirationPolicy { get; }
 
-        CacheReapPolicy ReapPolicy { get; }
+	CacheReapPolicy ReapPolicy { get; }
 
-        NullValuePolicy NullValuePolicy { get; }
+	NullValuePolicy NullValuePolicy { get; }
 
-        bool ContainsCachedItem(object key);
+	bool ContainsCachedItem(object key);
 
-        CachedItem Get(object key);
+	CachedItem Get(object key);
 
-        void Set(object key, object value);
+	void Set(object key, object value);
 
-        void BulkLoad(IEnumerable<KeyValuePair<object, object>> bulkLoadedValues);
+	void BulkLoad(IEnumerable<KeyValuePair<object, object>> bulkLoadedValues);
 
-        void Invalidate(object key);
+	void Invalidate(object key);
 
-        void Remove(object key);
+	void Remove(object key);
 
-		void Flush();
+	void Flush();
 
-		object this[object index] { get; set; }
+	object this[object index] { get; set; }
 
-	}
+}
 
-	public interface ICache<TKey, TValue> : ICache {
 
-		new event EventHandlerEx<TKey, TValue> ItemFetched;
-		
-		new event EventHandlerEx<TKey, CachedItem<TValue>> ItemRemoved;
+public interface ICache<TKey, TValue> : ICache {
 
-		new IEnumerable<CachedItem<TValue>> CachedItems { get; }
+	new event EventHandlerEx<TKey, TValue> ItemFetched;
 
-		bool ContainsCachedItem(TKey key);
+	new event EventHandlerEx<TKey, CachedItem<TValue>> ItemRemoved;
 
-		CachedItem<TValue> Get(TKey key);
+	new IEnumerable<CachedItem<TValue>> CachedItems { get; }
 
-		void Set(TKey key, TValue value);
+	bool ContainsCachedItem(TKey key);
 
-		void BulkLoad(IEnumerable<KeyValuePair<TKey, TValue>> bulkLoadedValues);
+	CachedItem<TValue> Get(TKey key);
 
-		void Invalidate(TKey key);
+	void Set(TKey key, TValue value);
 
-		void Remove(TKey key);
+	void BulkLoad(IEnumerable<KeyValuePair<TKey, TValue>> bulkLoadedValues);
 
-		TValue this[TKey index] { get; set; }
+	void Invalidate(TKey key);
 
-	}
+	void Remove(TKey key);
+
+	TValue this[TKey index] { get; set; }
 
 }

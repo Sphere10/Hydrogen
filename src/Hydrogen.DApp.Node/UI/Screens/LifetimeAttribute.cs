@@ -1,14 +1,19 @@
-﻿using System;
-using Hydrogen.DApp.Node.Screens;
+﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen.DApp.Node.UI {
+using System;
 
-	public class LifetimeAttribute : Attribute {
-		public LifetimeAttribute(ScreenLifetime lifetime) {
-			Lifetime = lifetime;
-		}
+namespace Hydrogen.DApp.Node.UI;
 
-		public ScreenLifetime Lifetime { get; private set; }
+public class LifetimeAttribute : Attribute {
+	public LifetimeAttribute(ScreenLifetime lifetime) {
+		Lifetime = lifetime;
 	}
 
+	public ScreenLifetime Lifetime { get; private set; }
 }

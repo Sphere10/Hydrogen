@@ -1,207 +1,198 @@
-//-----------------------------------------------------------------------
-// <copyright file="LevelDBTests.cs" company="Sphere 10 Software">
-//
-// Copyright (c) Sphere 10 Software. All rights reserved. (http://www.sphere10.com)
+// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
 // LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
 //
-// <author>Herman Schoenfeld</author>
-// <date>2018</date>
-// </copyright>
-//-----------------------------------------------------------------------
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using Hydrogen.Windows.LevelDB;
 
 
 // ReSharper disable CheckNamespace
 
-namespace Hydrogen.UnitTests {
+namespace Hydrogen.UnitTests;
 
-    [TestFixture]
-    public class LevelDBTests {
-        static string testPath;
-        static string CleanTestDB() {
-            testPath = Path.GetTempPath();
-            DB.Destroy(testPath, new Options { CreateIfMissing = true });
-            return testPath;
-        }
+[TestFixture]
+public class LevelDBTests {
+	static string testPath;
+	static string CleanTestDB() {
+		testPath = Path.GetTempPath();
+		DB.Destroy(testPath, new Options { CreateIfMissing = true });
+		return testPath;
+	}
 
-            
-        [Test]
-        public void Intro() {
-            using (var database = new DB("mytestdb", new Options() { CreateIfMissing = true })) {
-                database.Put("key1", "value1");
-                Assert.AreEqual("value1", database.Get("key1"));
-                Assert.IsTrue(database.Get("key1") != null);
-                database.Delete("key1");
-                Assert.IsFalse(database.Get("key1") != null);
-                Assert.IsNull(database.Get("key1"));
-            }
-        }
 
-        [Test]
-        public void TestOpen() {
-	        Assert.That(() => {
-			        var path = CleanTestDB();
-			        using (var db = new DB(path, new Options {CreateIfMissing = true})) {
-			        }
-
-			        using (var db = new DB(path, new Options {ErrorIfExists = true})) {
-			        }
-		        },
-		        Throws.TypeOf<LevelDBException>()
-	        );
+	[Test]
+	public void Intro() {
+		using (var database = new DB("mytestdb", new Options() { CreateIfMissing = true })) {
+			database.Put("key1", "value1");
+			Assert.AreEqual("value1", database.Get("key1"));
+			Assert.IsTrue(database.Get("key1") != null);
+			database.Delete("key1");
+			Assert.IsFalse(database.Get("key1") != null);
+			Assert.IsNull(database.Get("key1"));
 		}
+	}
 
-        [Test]
-        public void TestCRUD() {
-            var path = CleanTestDB();
+	[Test]
+	public void TestOpen() {
+		Assert.That(() => {
+				var path = CleanTestDB();
+				using (var db = new DB(path, new Options { CreateIfMissing = true })) {
+				}
 
-            using (var db = new DB(path, new Options { CreateIfMissing = true })) {
-                db.Put("Tampa", "green");
-                db.Put("London", "red");
-                db.Put("New York", "blue");
+				using (var db = new DB(path, new Options { ErrorIfExists = true })) {
+				}
+			},
+			Throws.TypeOf<LevelDBException>()
+		);
+	}
 
-                Assert.AreEqual(db.Get("Tampa"), "green");
-                Assert.AreEqual(db.Get("London"), "red");
-                Assert.AreEqual(db.Get("New York"), "blue");
+	[Test]
+	public void TestCRUD() {
+		var path = CleanTestDB();
 
-                db.Delete("New York");
+		using (var db = new DB(path, new Options { CreateIfMissing = true })) {
+			db.Put("Tampa", "green");
+			db.Put("London", "red");
+			db.Put("New York", "blue");
 
-                Assert.IsNull(db.Get("New York"));
+			Assert.AreEqual(db.Get("Tampa"), "green");
+			Assert.AreEqual(db.Get("London"), "red");
+			Assert.AreEqual(db.Get("New York"), "blue");
 
-                db.Delete("New York");
-            }
-        }
+			db.Delete("New York");
 
-        [Test]
-        public void TestRepair() {
-            TestCRUD();
-            DB.Repair(testPath, new Options());
-        }
+			Assert.IsNull(db.Get("New York"));
 
-        [Test]
-        public void TestIterator() {
-            var path = CleanTestDB();
+			db.Delete("New York");
+		}
+	}
 
-            using (var db = new DB(path, new Options { CreateIfMissing = true })) {
-                db.Put("Tampa", "green");
-                db.Put("London", "red");
-                db.Put("New York", "blue");
+	[Test]
+	public void TestRepair() {
+		TestCRUD();
+		DB.Repair(testPath, new Options());
+	}
 
-                var expected = new[] { "London", "New York", "Tampa" };
+	[Test]
+	public void TestIterator() {
+		var path = CleanTestDB();
 
-                var actual = new List<string>();
-                using (var iterator = db.CreateIterator(new ReadOptions())) {
-                    iterator.SeekToFirst();
-                    while (iterator.IsValid()) {
-                        var key = iterator.GetStringKey();
-                        actual.Add(key);
-                        iterator.Next();
-                    }
-                }
+		using (var db = new DB(path, new Options { CreateIfMissing = true })) {
+			db.Put("Tampa", "green");
+			db.Put("London", "red");
+			db.Put("New York", "blue");
 
-                CollectionAssert.AreEqual(expected, actual);
+			var expected = new[] { "London", "New York", "Tampa" };
 
-            }
-        }
+			var actual = new List<string>();
+			using (var iterator = db.CreateIterator(new ReadOptions())) {
+				iterator.SeekToFirst();
+				while (iterator.IsValid()) {
+					var key = iterator.GetStringKey();
+					actual.Add(key);
+					iterator.Next();
+				}
+			}
 
-        [Test]
-        public void TestEnumerable() {
-            var path = CleanTestDB();
+			CollectionAssert.AreEqual(expected, actual);
 
-            using (var db = new DB(path, new Options { CreateIfMissing = true })) {
-                db.Put("Tampa", "green");
-                db.Put("London", "red");
-                db.Put("New York", "blue");
+		}
+	}
 
-                var expected = new[] { "London", "New York", "Tampa" };
-                var actual = from kv in db as IEnumerable<KeyValuePair<string, string>>
-                             select kv.Key;
+	[Test]
+	public void TestEnumerable() {
+		var path = CleanTestDB();
 
-                CollectionAssert.AreEqual(expected, actual.ToArray());
-            }
-        }
+		using (var db = new DB(path, new Options { CreateIfMissing = true })) {
+			db.Put("Tampa", "green");
+			db.Put("London", "red");
+			db.Put("New York", "blue");
 
-        [Test]
-        public void TestSnapshot() {
-            var path = CleanTestDB();
+			var expected = new[] { "London", "New York", "Tampa" };
+			var actual = from kv in db as IEnumerable<KeyValuePair<string, string>>
+			             select kv.Key;
 
-            using (var db = new DB(path, new Options { CreateIfMissing = true })) {
-                db.Put("Tampa", "green");
-                db.Put("London", "red");
-                db.Delete("New York");
+			CollectionAssert.AreEqual(expected, actual.ToArray());
+		}
+	}
 
-                using (var snapShot = db.CreateSnapshot()) {
-                    var readOptions = new ReadOptions { Snapshot = snapShot };
+	[Test]
+	public void TestSnapshot() {
+		var path = CleanTestDB();
 
-                    db.Put("New York", "blue");
+		using (var db = new DB(path, new Options { CreateIfMissing = true })) {
+			db.Put("Tampa", "green");
+			db.Put("London", "red");
+			db.Delete("New York");
 
-                    Assert.AreEqual(db.Get("Tampa", readOptions), "green");
-                    Assert.AreEqual(db.Get("London", readOptions), "red");
+			using (var snapShot = db.CreateSnapshot()) {
+				var readOptions = new ReadOptions { Snapshot = snapShot };
 
-                    // Snapshot taken before key was updates
-                    Assert.IsNull(db.Get("New York", readOptions));
-                }
+				db.Put("New York", "blue");
 
-                // can see the change now
-                Assert.AreEqual(db.Get("New York"), "blue");
+				Assert.AreEqual(db.Get("Tampa", readOptions), "green");
+				Assert.AreEqual(db.Get("London", readOptions), "red");
 
-            }
-        }
+				// Snapshot taken before key was updates
+				Assert.IsNull(db.Get("New York", readOptions));
+			}
 
-        [Test]
-        public void TestGetProperty() {
-            var path = CleanTestDB();
+			// can see the change now
+			Assert.AreEqual(db.Get("New York"), "blue");
 
-            using (var db = new DB(path, new Options { CreateIfMissing = true })) {
-                var r = new Random(0);
-                var data = "";
-                for (var i = 0; i < 1024; i++) {
-                    data += 'a' + r.Next(26);
-                }
+		}
+	}
 
-                for (int i = 0; i < 5 * 1024; i++) {
-                    db.Put(string.Format("row{0}", i), data);
-                }
+	[Test]
+	public void TestGetProperty() {
+		var path = CleanTestDB();
 
-                var stats = db.PropertyValue("leveldb.stats");
+		using (var db = new DB(path, new Options { CreateIfMissing = true })) {
+			var r = new Random(0);
+			var data = "";
+			for (var i = 0; i < 1024; i++) {
+				data += 'a' + r.Next(26);
+			}
 
-                Assert.IsNotNull(stats);
-                Assert.IsTrue(stats.Contains("Compactions"));
-            }
-        }
+			for (int i = 0; i < 5 * 1024; i++) {
+				db.Put(string.Format("row{0}", i), data);
+			}
 
-        [Test]
-        public void TestWriteBatch() {
-            var path = CleanTestDB();
+			var stats = db.PropertyValue("leveldb.stats");
 
-            using (var db = new DB(path, new Options { CreateIfMissing = true })) {
-                db.Put("NA", "Na");
+			Assert.IsNotNull(stats);
+			Assert.IsTrue(stats.Contains("Compactions"));
+		}
+	}
 
-                using (var batch = new WriteBatch()) {
-                    batch.Delete("NA")
-                         .Put("Tampa", "Green")
-                         .Put("London", "red")
-                         .Put("New York", "blue");
-                    db.Write(batch);
-                }
+	[Test]
+	public void TestWriteBatch() {
+		var path = CleanTestDB();
 
-                var expected = new[] { "London", "New York", "Tampa" };
-                var actual = from kv in db as IEnumerable<KeyValuePair<string, string>>
-                             select kv.Key;
+		using (var db = new DB(path, new Options { CreateIfMissing = true })) {
+			db.Put("NA", "Na");
 
-                CollectionAssert.AreEqual(expected, actual.ToArray());
-            }
-        }
-    }
+			using (var batch = new WriteBatch()) {
+				batch.Delete("NA")
+					.Put("Tampa", "Green")
+					.Put("London", "red")
+					.Put("New York", "blue");
+				db.Write(batch);
+			}
+
+			var expected = new[] { "London", "New York", "Tampa" };
+			var actual = from kv in db as IEnumerable<KeyValuePair<string, string>>
+			             select kv.Key;
+
+			CollectionAssert.AreEqual(expected, actual.ToArray());
+		}
+	}
 }

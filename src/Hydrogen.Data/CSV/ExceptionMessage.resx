@@ -121,10 +121,10 @@
     <value>Buffer size must be 1 or more.</value>
   </data>
   <data name="CannotMovePreviousRecordInForwardOnly" xml:space="preserve">
-    <value>Cannot move to a previous record in forward-only mode.</value>
+    <value>Cannot move to a previous descriptor in forward-only mode.</value>
   </data>
   <data name="CannotReadRecordAtIndex" xml:space="preserve">
-    <value>Cannot read record at index '{0}'.</value>
+    <value>Cannot read descriptor at index '{0}'.</value>
     <comment>index:int</comment>
   </data>
   <data name="EnumerationFinishedOrNotStarted" xml:space="preserve">
@@ -142,7 +142,7 @@
     <comment>index:int</comment>
   </data>
   <data name="MalformedCsvException" xml:space="preserve">
-    <value>The CSV appears to be corrupt near record '{0}' field '{1} at position '{2}'. Current raw data : '{3}'.</value>
+    <value>The CSV appears to be corrupt near descriptor '{0}' field '{1} at position '{2}'. Current raw data : '{3}'.</value>
     <comment>currentRecordIndex:int;currentFieldIndex:int;currentPosition:int;rawData:string</comment>
   </data>
   <data name="MissingFieldActionNotSupported" xml:space="preserve">
@@ -150,13 +150,13 @@
     <comment>missingFieldAction:Hydrogen.Data.Csv.MissingFieldAction</comment>
   </data>
   <data name="NoCurrentRecord" xml:space="preserve">
-    <value>No current record.</value>
+    <value>No current descriptor.</value>
   </data>
   <data name="NoHeaders" xml:space="preserve">
     <value>The CSV does not have headers (CsvReader.HasHeaders property is false).</value>
   </data>
   <data name="NotEnoughSpaceInArray" xml:space="preserve">
-    <value>The number of fields in the record is greater than the available space from index to the end of the destination array.</value>
+    <value>The number of fields in the descriptor is greater than the available space from index to the end of the destination array.</value>
   </data>
   <data name="ParseErrorActionInvalidInsideParseErrorEvent" xml:space="preserve">
     <value>'{0}' is not a valid ParseErrorAction while inside a ParseError event.</value>
@@ -170,6 +170,6 @@
     <value>This operation is invalid when the reader is closed.</value>
   </data>
   <data name="RecordIndexLessThanZero" xml:space="preserve">
-    <value>Record index must be 0 or more.</value>
+    <value>Descriptor index must be 0 or more.</value>
   </data>
 </root>

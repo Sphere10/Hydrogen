@@ -1,13 +1,28 @@
+// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
+
 using System.Threading.Tasks;
 
 namespace Hydrogen;
 
 public class LoadableDecorator<TLoadableImpl> : ILoadable where TLoadableImpl : ILoadable {
-	public event EventHandlerEx<object> Loading { add => Internal.Loading += value; remove => Internal.Loading -= value; }
-	public event EventHandlerEx<object> Loaded { add => Internal.Loaded += value; remove => Internal.Loaded -= value; }
+	public event EventHandlerEx<object> Loading {
+		add => Internal.Loading += value;
+		remove => Internal.Loading -= value;
+	}
+
+	public event EventHandlerEx<object> Loaded {
+		add => Internal.Loaded += value;
+		remove => Internal.Loaded -= value;
+	}
 
 	protected readonly TLoadableImpl Internal;
-	
+
 	public LoadableDecorator(TLoadableImpl @internal) {
 		Guard.ArgumentNotNull(@internal, nameof(@internal));
 		Internal = @internal;
@@ -21,7 +36,7 @@ public class LoadableDecorator<TLoadableImpl> : ILoadable where TLoadableImpl : 
 }
 
 
-public class LoadableDecorator : LoadableDecorator<ILoadable>  {
+public class LoadableDecorator : LoadableDecorator<ILoadable> {
 	public LoadableDecorator(ILoadable @internal) : base(@internal) {
 	}
 }

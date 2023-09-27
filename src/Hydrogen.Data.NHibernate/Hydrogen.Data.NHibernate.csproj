@@ -6,14 +6,18 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="FluentNHibernate" Version="3.1.0" />
-		<PackageReference Include="NHibernate" Version="5.3.13" />
+		<PackageReference Include="FluentNHibernate" Version="3.3.0" />
+		<PackageReference Include="NHibernate" Version="5.4.6" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<ProjectReference Include="..\Hydrogen.Data.MSSQL\Hydrogen.Data.MSSQL.csproj" />
 		<ProjectReference Include="..\Hydrogen.Data\Hydrogen.Data.csproj" />
 		<ProjectReference Include="..\Hydrogen\Hydrogen.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="Listeners\" />
 	</ItemGroup>
 
 </Project>

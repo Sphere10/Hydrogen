@@ -1,4 +1,12 @@
-﻿using System.Dynamic;
+﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
+
+using System.Dynamic;
 using System.Runtime.CompilerServices;
 
 namespace ExtensionProperties;
@@ -30,4 +38,3 @@ public static class ObjectExtensions {
 	/// <returns>A dynamic collection of properties associated with an object instance.</returns>
 	public static dynamic GetExtensionProperties(this object obj) => extendedData.GetValue(obj, _ => new ExpandoObject());
 }
-

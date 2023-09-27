@@ -1,18 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen.Utils.WinFormsTester.Wizard {
-	public class DemoWizardModel {
+namespace Hydrogen.Utils.WinFormsTester.Wizard;
 
-		public string Name { get; set; }
+public class DemoWizardModel {
 
-		public int Age { get; set; }
+	public string Name { get; set; }
+
+	public int Age { get; set; }
 
 
-		public static DemoWizardModel Default => new DemoWizardModel { Name = string.Empty, Age = 0 };
+	public static DemoWizardModel Default => new DemoWizardModel { Name = string.Empty, Age = 0 };
 
-	}
 }

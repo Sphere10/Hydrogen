@@ -1,4 +1,12 @@
-﻿using System.Threading;
+﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
+
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Hydrogen.Windows;
@@ -13,7 +21,7 @@ public class NssmSentry : ProcessSentry {
 	public NssmSentry() : base(ExecutableFileName) {
 	}
 
-	public new static Task<bool> CanRunAsync(CancellationToken cancellationToken = default)  
+	public new static Task<bool> CanRunAsync(CancellationToken cancellationToken = default)
 		=> ProcessSentry.CanRunAsync(ExecutableFileName, cancellationToken);
 
 	public Task InstallAsync(string serviceName, string appFileName, string appArgs, CancellationToken cancellationToken = default) {

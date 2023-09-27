@@ -1,29 +1,45 @@
+// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
+
 using System;
 using System.IO;
 
-namespace Hydrogen.Application {
-	public class ApplicationTokenResolver : ITokenResolver {
+namespace Hydrogen.Application;
 
-		private readonly IFuture<StandardProductInformationServices> _productInfoServices = Tools.Values.Future.LazyLoad(() => new StandardProductInformationServices());
-		
-		public bool TryResolve(string token, out object value) {
-			value = token.ToUpperInvariant() switch {
-				"USERDATADIR" => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)), 
-				"SYSTEMDATADIR" => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData)),
-				"COMPANYNAME" => _productInfoServices.Value.ProductInformation.CompanyName,
-				"COMPANYNUMBER" => _productInfoServices.Value.ProductInformation.CompanyNumber,
-				"PRODUCTNAME" => _productInfoServices.Value.ProductInformation.ProductName,
-				"PRODUCTDESCRIPTION" => _productInfoServices.Value.ProductInformation.ProductDescription,
-				"PRODUCTCODE" => _productInfoServices.Value.ProductInformation.ProductCode.ToStrictAlphaString(),
-				"PRODUCTVERSION" => _productInfoServices.Value.ProductInformation.ProductVersion,
-				"PRODUCTLONGVERSION" => _productInfoServices.Value.ProductInformation.ProductLongVersion,
-				"COPYRIGHTNOTICE" => _productInfoServices.Value.ProductInformation.CopyrightNotice,
-				"COMPANYURL" => _productInfoServices.Value.ProductInformation.CompanyUrl,
-				"PRODUCTURL" => _productInfoServices.Value.ProductInformation.ProductUrl,
-				"PRODUCTPURCHASEURL" => _productInfoServices.Value.ProductInformation.ProductPurchaseUrl,
-				_ => null
-			};
-			return value != null;
-		}
+public class ApplicationTokenResolver : ITokenResolver {
+
+	public ApplicationTokenResolver(IProductInformationProvider productInformationProvider) {
+		ProductInformationProvider = productInformationProvider;
+	}
+
+	protected IProductInformationProvider ProductInformationProvider { get; }
+
+	public bool TryResolve(string token, out object value) {
+		value = token.ToUpperInvariant() switch {
+			"USERDATADIR" => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)),
+			"SYSTEMDATADIR" => Path.Combine(Environment.GetFolderPath(Environment.OSVersion.Platform != PlatformID.Unix
+				? Environment.SpecialFolder.CommonApplicationData
+				: Environment.SpecialFolder.LocalApplicationData)), // CommonApplicationData is readonly on Linux
+			"COMPANYNAME" => ProductInformationProvider.ProductInformation.CompanyName,
+			"COMPANYNUMBER" => ProductInformationProvider.ProductInformation.CompanyNumber,
+			"PRODUCTNAME" => ProductInformationProvider.ProductInformation.ProductName,
+			"PRODUCTDESCRIPTION" => ProductInformationProvider.ProductInformation.ProductDescription,
+			"PRODUCTCODE" => ProductInformationProvider.ProductInformation.ProductCode.ToStrictAlphaString(),
+			"PRODUCTVERSION" => ProductInformationProvider.ProductInformation.ProductVersion,
+			"PRODUCTLONGVERSION" => ProductInformationProvider.ProductInformation.ProductLongVersion,
+			"COPYRIGHTNOTICE" => ProductInformationProvider.ProductInformation.CopyrightNotice,
+			"COMPANYURL" => ProductInformationProvider.ProductInformation.CompanyUrl,
+			"PRODUCTURL" => ProductInformationProvider.ProductInformation.ProductUrl,
+			"PRODUCTPURCHASEURL" => ProductInformationProvider.ProductInformation.ProductPurchaseUrl,
+			"CURRENTYEAR" => DateTime.Now.Year.ToString(),
+			"STARTPATH" => Path.GetDirectoryName(Tools.Runtime.GetExecutablePath()),
+			_ => null
+		};
+		return value != null;
 	}
 }

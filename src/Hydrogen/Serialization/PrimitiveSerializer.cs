@@ -1,29 +1,34 @@
-﻿using System;
-using System.Runtime.InteropServices;
+﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
+
+using System;
 
 namespace Hydrogen;
 
-public class PrimitiveSerializer<T> : StaticSizeItemSerializerBase<T> {
+public class PrimitiveSerializer<T> : ConstantSizeItemSerializerBase<T> where T : struct {
 	private readonly Action<EndianBinaryWriter, T> _writePrimitive;
 	private readonly Func<EndianBinaryReader, T> _readPrimitive;
 
-	public PrimitiveSerializer() 
-		: base(Tools.Memory.SizeOfPrimitive(typeof(T))) {
-		Guard.Argument(Tools.Memory.IsSerializationPrimitive(typeof(T)), nameof(T), $" {typeof(T)} is not a primitive type");
+	public static PrimitiveSerializer<T> Instance { get; } = new();
+
+	public PrimitiveSerializer()
+		: base(Tools.Memory.SizeOfPrimitive(typeof(T)), false) {
+		Guard.Argument(Tools.Memory.IsSerializationPrimitive(typeof(T)), nameof(T), $"{typeof(T)} is not a primitive type");
 		var typeCode = Type.GetTypeCode(typeof(T));
 		_writePrimitive = GetPrimitiveWriter(typeCode);
 		_readPrimitive = GetPrimitiveReader(typeCode);
 	}
 
-	public override bool TrySerialize(T item, EndianBinaryWriter writer) {
-		_writePrimitive(writer, item);
-		return true;
-	}
+	public override void Serialize(T item, EndianBinaryWriter writer)
+		=> _writePrimitive(writer, item);
 
-	public override bool TryDeserialize(EndianBinaryReader reader, out T item) {
-		item = _readPrimitive(reader);
-		return true;
-	}
+	public override T Deserialize(EndianBinaryReader reader)
+		=> _readPrimitive(reader);
 
 	public static Action<EndianBinaryWriter, T> GetPrimitiveWriter(TypeCode typeCode) => typeCode switch {
 		TypeCode.Boolean => (writer, item) => writer.Write((bool)(object)item),
@@ -41,7 +46,6 @@ public class PrimitiveSerializer<T> : StaticSizeItemSerializerBase<T> {
 		TypeCode.UInt64 => (writer, item) => writer.Write((ulong)(object)item),
 		_ => throw new NotSupportedException($"{nameof(typeCode)}")
 	};
-
 
 	public static Func<EndianBinaryReader, T> GetPrimitiveReader(TypeCode typeCode) => typeCode switch {
 		TypeCode.Boolean => reader => (T)(object)reader.ReadBoolean(),

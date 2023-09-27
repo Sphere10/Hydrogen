@@ -1,5 +1,12 @@
-﻿using System;
-using Hydrogen;
+﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Author: Hamish Rose
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
+
+using System;
 
 namespace Hydrogen.DApp.Presentation2.Logic {
 
@@ -15,7 +22,7 @@ namespace Hydrogen.DApp.Presentation2.Logic {
 			}
 		}
 
-		public static ShowScreenMenuItem For<TScreen>(string icon, string title) where TScreen : IApplicationScreen 
+		public static ShowScreenMenuItem For<TScreen>(string icon, string title) where TScreen : IApplicationScreen
 			=> new ShowScreenMenuItem { Icon = icon, Title = title, ScreenType = typeof(TScreen) };
 
 		private static bool IsValidScreenType(Type screenType) => screenType.IsAssignableTo(typeof(IApplicationScreen));

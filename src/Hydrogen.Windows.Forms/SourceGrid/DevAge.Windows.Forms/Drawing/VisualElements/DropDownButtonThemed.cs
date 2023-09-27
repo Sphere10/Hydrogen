@@ -1,145 +1,133 @@
-//-----------------------------------------------------------------------
-// <copyright file="DropDownButtonThemed.cs" company="Sphere 10 Software">
-//
-// Copyright (c) Sphere 10 Software. All rights reserved. (http://www.sphere10.com)
+// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Author: Dev Age
 //
 // Distributed under the MIT software license, see the accompanying file
 // LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
 //
-// <author>Herman Schoenfeld</author>
-// <date>2018</date>
-// </copyright>
-//-----------------------------------------------------------------------
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Drawing;
 using System.Windows.Forms;
 using System.Windows.Forms.VisualStyles;
 
-namespace DevAge.Drawing.VisualElements
-{
-    [Serializable]
-    public class DropDownButtonThemed : DropDownButtonBase
-    {
-        #region Constuctor
-        /// <summary>
-        /// Default constructor
-        /// </summary>
-        public DropDownButtonThemed()
-        {
-        }
+namespace DevAge.Drawing.VisualElements;
 
-        /// <summary>
-        /// Copy constructor
-        /// </summary>
-        /// <param name="other"></param>
-        public DropDownButtonThemed(DropDownButtonThemed other)
-            : base(other)
-        {
-        }
-        #endregion
-        /// <summary>
-        /// Clone
-        /// </summary>
-        /// <returns></returns>
-        public override object Clone()
-        {
-            return new DropDownButtonThemed(this);
-        }
+[Serializable]
+public class DropDownButtonThemed : DropDownButtonBase {
 
-        #region Properties
-        /// <summary>
-        /// Standard button used when the XP style are disabled.
-        /// </summary>
-        private DropDownButton mStandardButton = new DropDownButton();
+	#region Constuctor
 
-        public override ButtonStyle Style
-        {
-            get { return base.Style; }
-            set { base.Style = value; mStandardButton.Style = value; }
-        }
-        #endregion
+	/// <summary>
+	/// Default constructor
+	/// </summary>
+	public DropDownButtonThemed() {
+	}
 
-        #region Helper methods
-        protected VisualStyleElement GetBackgroundElement()
-        {
-            if (Style == ButtonStyle.Hot)
-                return VisualStyleElement.ComboBox.DropDownButton.Hot;
-            else if (Style == ButtonStyle.Pressed)
-                return VisualStyleElement.ComboBox.DropDownButton.Pressed;
-            else if (Style == ButtonStyle.Disabled)
-                return VisualStyleElement.ComboBox.DropDownButton.Disabled;
-            else
-                return VisualStyleElement.ComboBox.DropDownButton.Normal;
-        }
+	/// <summary>
+	/// Copy constructor
+	/// </summary>
+	/// <param name="other"></param>
+	public DropDownButtonThemed(DropDownButtonThemed other)
+		: base(other) {
+	}
 
-        /// <summary>
-        /// Gets the System.Windows.Forms.VisualStyles.VisualStyleRenderer to draw the specified element.
-        /// </summary>
-        /// <param name="element"></param>
-        /// <returns></returns>
-        protected System.Windows.Forms.VisualStyles.VisualStyleRenderer GetRenderer(VisualStyleElement element)
-        {
-            return new System.Windows.Forms.VisualStyles.VisualStyleRenderer(element);
-        }
-        #endregion
+	#endregion
 
-        protected override void OnDraw(GraphicsCache graphics, RectangleF area)
-        {
-            if (Application.RenderWithVisualStyles && VisualStyleRenderer.IsElementDefined(GetBackgroundElement()))
-            {
-                GetRenderer(GetBackgroundElement()).DrawBackground(graphics.Graphics, Rectangle.Round(area));
+	/// <summary>
+	/// Clone
+	/// </summary>
+	/// <returns></returns>
+	public override object Clone() {
+		return new DropDownButtonThemed(this);
+	}
 
-                if (Style == ButtonStyle.Focus)
-                {
-                    using (MeasureHelper measure = new MeasureHelper(graphics))
-                    {
-                        ControlPaint.DrawFocusRectangle(graphics.Graphics, Rectangle.Round(area));
-                    }
-                }
-            }
-            else
-                mStandardButton.Draw(graphics, area);
-        }
+	#region Properties
 
-        protected override SizeF OnMeasureContent(MeasureHelper measure, SizeF maxSize)
-        {
-            if (Application.RenderWithVisualStyles && VisualStyleRenderer.IsElementDefined(GetBackgroundElement()))
-            {
-                var size = GetRenderer(GetBackgroundElement()).GetPartSize(measure.Graphics, ThemeSizeType.True);
-                // in Win-7 machines size is returned as 7
-                // Increase it to 16, so it matches the standard drop-down width
-                if (size.Width < 16)
-                	size.Width = 16;
-                return size;
-            }
-            else
-                return mStandardButton.Measure(measure, Size.Empty, maxSize);
-        }
+	/// <summary>
+	/// Standard button used when the XP style are disabled.
+	/// </summary>
+	private DropDownButton mStandardButton = new DropDownButton();
 
-        //public override RectangleF GetBackgroundContentRectangle(MeasureHelper measure, RectangleF backGroundArea)
-        //{
-        //    backGroundArea = base.GetBackgroundContentRectangle(measure, backGroundArea);
+	public override ButtonStyle Style {
+		get { return base.Style; }
+		set {
+			base.Style = value;
+			mStandardButton.Style = value;
+		}
+	}
 
-        //    if (Application.RenderWithVisualStyles && VisualStyleRenderer.IsElementDefined(GetBackgroundElement()))
-        //        return GetRenderer(GetBackgroundElement()).GetBackgroundContentRectangle(measure.Graphics, Rectangle.Round(backGroundArea));
-        //    else
-        //        return mStandardButton.GetBackgroundContentRectangle(measure, backGroundArea);
-        //}
+	#endregion
 
-        //public override SizeF GetBackgroundExtent(MeasureHelper measure, SizeF contentSize)
-        //{
-        //    if (Application.RenderWithVisualStyles && VisualStyleRenderer.IsElementDefined(GetBackgroundElement()))
-        //    {
-        //        Rectangle content = new Rectangle(new Point(0, 0), Size.Ceiling(contentSize));
-        //        contentSize = GetRenderer(GetBackgroundElement()).GetBackgroundExtent(measure.Graphics, content).Size;
-        //    }
-        //    else
-        //        contentSize = mStandardButton.GetBackgroundExtent(measure, contentSize);
+	#region Helper methods
 
-        //    return base.GetBackgroundExtent(measure, contentSize);
-        //}
-    }
+	protected VisualStyleElement GetBackgroundElement() {
+		if (Style == ButtonStyle.Hot)
+			return VisualStyleElement.ComboBox.DropDownButton.Hot;
+		else if (Style == ButtonStyle.Pressed)
+			return VisualStyleElement.ComboBox.DropDownButton.Pressed;
+		else if (Style == ButtonStyle.Disabled)
+			return VisualStyleElement.ComboBox.DropDownButton.Disabled;
+		else
+			return VisualStyleElement.ComboBox.DropDownButton.Normal;
+	}
+
+	/// <summary>
+	/// Gets the System.Windows.Forms.VisualStyles.VisualStyleRenderer to draw the specified element.
+	/// </summary>
+	/// <param name="element"></param>
+	/// <returns></returns>
+	protected System.Windows.Forms.VisualStyles.VisualStyleRenderer GetRenderer(VisualStyleElement element) {
+		return new System.Windows.Forms.VisualStyles.VisualStyleRenderer(element);
+	}
+
+	#endregion
+
+	protected override void OnDraw(GraphicsCache graphics, RectangleF area) {
+		if (Application.RenderWithVisualStyles && VisualStyleRenderer.IsElementDefined(GetBackgroundElement())) {
+			GetRenderer(GetBackgroundElement()).DrawBackground(graphics.Graphics, Rectangle.Round(area));
+
+			if (Style == ButtonStyle.Focus) {
+				using (MeasureHelper measure = new MeasureHelper(graphics)) {
+					ControlPaint.DrawFocusRectangle(graphics.Graphics, Rectangle.Round(area));
+				}
+			}
+		} else
+			mStandardButton.Draw(graphics, area);
+	}
+
+	protected override SizeF OnMeasureContent(MeasureHelper measure, SizeF maxSize) {
+		if (Application.RenderWithVisualStyles && VisualStyleRenderer.IsElementDefined(GetBackgroundElement())) {
+			var size = GetRenderer(GetBackgroundElement()).GetPartSize(measure.Graphics, ThemeSizeType.True);
+			// in Win-7 machines size is returned as 7
+			// Increase it to 16, so it matches the standard drop-down width
+			if (size.Width < 16)
+				size.Width = 16;
+			return size;
+		} else
+			return mStandardButton.Measure(measure, Size.Empty, maxSize);
+	}
+
+	//public override RectangleF GetBackgroundContentRectangle(MeasureHelper measure, RectangleF backGroundArea)
+	//{
+	//    backGroundArea = base.GetBackgroundContentRectangle(measure, backGroundArea);
+
+	//    if (Application.RenderWithVisualStyles && VisualStyleRenderer.IsElementDefined(GetBackgroundElement()))
+	//        return GetRenderer(GetBackgroundElement()).GetBackgroundContentRectangle(measure.Graphics, Rectangle.Round(backGroundArea));
+	//    else
+	//        return mStandardButton.GetBackgroundContentRectangle(measure, backGroundArea);
+	//}
+
+	//public override SizeF GetBackgroundExtent(MeasureHelper measure, SizeF contentSize)
+	//{
+	//    if (Application.RenderWithVisualStyles && VisualStyleRenderer.IsElementDefined(GetBackgroundElement()))
+	//    {
+	//        Rectangle content = new Rectangle(new Point(0, 0), Size.Ceiling(contentSize));
+	//        contentSize = GetRenderer(GetBackgroundElement()).GetBackgroundExtent(measure.Graphics, content).Size;
+	//    }
+	//    else
+	//        contentSize = mStandardButton.GetBackgroundExtent(measure, contentSize);
+
+	//    return base.GetBackgroundExtent(measure, contentSize);
+	//}
 }

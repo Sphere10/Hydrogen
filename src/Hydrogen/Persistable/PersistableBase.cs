@@ -1,3 +1,11 @@
+// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
+
 using System.Threading.Tasks;
 
 namespace Hydrogen;
@@ -11,7 +19,7 @@ public abstract class PersistableBase : LoadableBase, IPersistable {
 
 	public event EventHandlerEx<object> Saving;
 	public event EventHandlerEx<object> Saved;
-	
+
 	public virtual bool RequiresSave { get; set; } = false;
 
 	public void Save() {
@@ -51,7 +59,7 @@ public abstract class PersistableBase : LoadableBase, IPersistable {
 		if (SuppressNotifications)
 			return;
 		await OnSavingAsync();
-		await Task.Run( () => Saving?.Invoke(this));
+		await Task.Run(() => Saving?.Invoke(this));
 	}
 
 	protected void NotifySaved() {
@@ -66,6 +74,6 @@ public abstract class PersistableBase : LoadableBase, IPersistable {
 		if (SuppressNotifications)
 			return;
 		await OnSavedAsync();
-		await Task.Run( () => Saved?.Invoke(this));
+		await Task.Run(() => Saved?.Invoke(this));
 	}
 }

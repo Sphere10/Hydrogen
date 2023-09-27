@@ -1,3 +1,11 @@
+// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
+
 using System;
 using System.IO;
 using System.Threading;
@@ -13,9 +21,9 @@ public sealed class HashingStream : WriteOnlyStream {
 	public HashingStream(CHF hashFunction)
 		: base(new MemoryStream()) {
 		_disposables = new Disposables();
-		_disposables.Add( Hashers.BorrowHasher(hashFunction, out _hashFunction));
+		_disposables.Add(Hashers.BorrowHasher(hashFunction, out _hashFunction));
 		_canWrite = true;
-}
+	}
 
 	public byte[] GetDigest() {
 		_canWrite = false;

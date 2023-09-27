@@ -1,23 +1,23 @@
-//-----------------------------------------------------------------------
-// <copyright file="IModuleConfiguration.cs" company="Sphere 10 Software">
-//
-// Copyright (c) Sphere 10 Software. All rights reserved. (http://www.sphere10.com)
+// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
 // LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
 //
-// <author>Herman Schoenfeld</author>
-// <date>2018</date>
-// </copyright>
-//-----------------------------------------------------------------------
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen.Application {
-	public interface IModuleConfiguration {
-		int Priority { get; }
-        void RegisterComponents(ComponentRegistry registry);
-		void DeregisterComponents(ComponentRegistry registry);
-        void OnInitialize();
-        void OnFinalize();
-        
-    }
+using System;
+using Microsoft.Extensions.DependencyInjection;
+
+namespace Hydrogen.Application;
+
+public interface IModuleConfiguration {
+	int Priority { get; }
+
+	void RegisterComponents(IServiceCollection services);
+
+	void OnInitialize(IServiceProvider serviceProvider);
+
+	void OnFinalize(IServiceProvider serviceProvider);
+
 }

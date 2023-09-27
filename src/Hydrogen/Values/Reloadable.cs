@@ -1,9 +1,17 @@
-﻿using System;
+﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
+
+using System;
 
 namespace Hydrogen;
 
 /// <summary>
-/// A future whose value is fetched lazily and which can be invalidated by client. By invalidating the value, the future re-loads the value.
+/// A future whose value is fetched lazily and which can be invalidated by client. By invalidating the value, the future re-loads the value on the subsequent request.
 /// </summary>
 /// <typeparam name="T"></typeparam>
 public class Reloadable<T> : SynchronizedObject, IFuture<T> {
@@ -56,4 +64,3 @@ public class Reloadable<T> : SynchronizedObject, IFuture<T> {
 		}
 	}
 }
-

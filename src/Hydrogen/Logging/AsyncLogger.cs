@@ -1,21 +1,14 @@
-//-----------------------------------------------------------------------
-// <copyright file="AsyncLogger.cs" company="Sphere 10 Software">
-//
-// Copyright (c) Sphere 10 Software. All rights reserved. (http://www.sphere10.com)
+// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
 // LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
 //
-// <author>Herman Schoenfeld</author>
-// <date>2018</date>
-// </copyright>
-//-----------------------------------------------------------------------
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Collections.Generic;
 
 namespace Hydrogen;
-
 
 public class AsyncLogger : LoggerDecorator {
 
@@ -41,8 +34,7 @@ public class AsyncLogger : LoggerDecorator {
 		_serialThreadPool.QueueUserWorkItem(() => base.Error(message));
 	}
 
-	public override void Exception(Exception exception) {
-		_serialThreadPool.QueueUserWorkItem(() => base.Exception(exception));
+	public override void Exception(Exception exception, string message) {
+		_serialThreadPool.QueueUserWorkItem(() => base.Exception(exception, message));
 	}
 };
-

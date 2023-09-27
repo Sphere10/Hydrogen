@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <AssemblyName>Hydrogen.Web.AspNetCore</AssemblyName>
     <RootNamespace>Hydrogen.Web.AspNetCore</RootNamespace>
     <LangVersion>preview</LangVersion>
@@ -23,13 +23,20 @@
 
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-    <PackageReference Include="System.Drawing.Common" Version="6.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\Hydrogen\src\Hydrogen.Drawing\Hydrogen.Drawing.csproj" />
     <ProjectReference Include="..\..\..\Hydrogen\src\Hydrogen\Hydrogen.csproj" />
+    <ProjectReference Include="..\Hydrogen.Application\Hydrogen.Application.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Application\" />
   </ItemGroup>
 
 </Project>

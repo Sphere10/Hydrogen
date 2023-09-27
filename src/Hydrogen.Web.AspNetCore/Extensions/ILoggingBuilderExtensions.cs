@@ -1,10 +1,21 @@
-﻿using Microsoft.Extensions.Logging;
+﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen.Web.AspNetCore;
+//using Microsoft.Extensions.DependencyInjection;
+//using Microsoft.Extensions.Logging;
 
-public static class ILoggingBuilderExtensions {
-	public static ILoggingBuilder AddHydrogenLogger(this ILoggingBuilder builder, Hydrogen.ILogger logger) {
-		builder.Services.AddHydrogenLogger(logger); 
-		return builder;
-	}
-}
+//namespace Hydrogen.Web.AspNetCore;
+
+//public static class ILoggingBuilderExtensions {
+//	public static ILoggingBuilder AddHydrogenLogger(this ILoggingBuilder builder, Hydrogen.ILogger logger) {
+//		builder.Services.AddHydrogenLogger(logger); 
+//		return builder;
+//	}
+//}
+
+

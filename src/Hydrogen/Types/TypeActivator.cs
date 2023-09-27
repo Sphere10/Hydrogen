@@ -1,60 +1,134 @@
-//-----------------------------------------------------------------------
-// <copyright file="TypeActivator.cs" company="Sphere 10 Software">
-//
-// Copyright (c) Sphere 10 Software. All rights reserved. (http://www.sphere10.com)
+// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
 // LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
 //
-// <author>Herman Schoenfeld</author>
-// <date>2018</date>
-// </copyright>
-//-----------------------------------------------------------------------
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
 using System.Linq;
+using System.Reflection;
 
+namespace Hydrogen;
 
-namespace Hydrogen {
-	public static class TypeActivator {
+public static class TypeActivator {
 
-        public static object Create(string typeName, string assemblyHint, params object[] parameters) { 
-            // resolve the type
-            var targetType = TypeResolver.Resolve(typeName, assemblyHint);
-            return Create(targetType, parameters);
-        }
+	public static object Activate(string typeName, string assemblyHint, params object[] parameters) {
+		// resolve the type
+		var targetType = TypeResolver.Resolve(typeName, assemblyHint);
+		return Activate(targetType, parameters);
+	}
 
-        public static object Create(string typeName, params object[] parameters) {
-            // resolve the type
-            var targetType = TypeResolver.Resolve(typeName);
-            return Create(targetType, parameters);
-        }
+	public static object Activate(string typeName, params object[] parameters) {
+		// resolve the type
+		var targetType = TypeResolver.Resolve(typeName);
+		return Activate(targetType, parameters);
+	}
 
-        public static object Create(Type targetType) {
-            return Create(targetType, new object[0]);
-        }
+	public static T Activate<T>() => (T)Activate(typeof(T));
 
-        public static object Create(Type targetType, params object[] parameters) {
+	public static object Activate(Type targetType) => Activate(targetType, Array.Empty<object>());
 
-            // get the default constructor and instantiate
-            var types = parameters?.Where(x => x != null).Select(x => x.GetType()).ToArray() ?? new Type[0];
-            var info = targetType.GetConstructor(types);
-            if (info == null)
-                throw new ArgumentException("Can't instantiate type " + targetType.FullName);
+	public static T Activate<T>(params object[] args) => (T)Activate(typeof(T), args);
+
+	public static object Activate(Type targetType, params object[] parameters) {
+		// get the default constructor and instantiate
+		var types = parameters?.Where(x => x != null).Select(x => x.GetType()).ToArray() ?? new Type[0];
+		var constructor = targetType.GetConstructor(types);
+		if (constructor == null)
+			throw new ArgumentException("Can't instantiate type " + targetType.FullName);
+
 #if USE_FAST_REFLECTION
-		    var targetObject = info.FastInvoke(parameters);		// using FastReflectionLib
+	    var targetObject = info.FastInvoke(parameters);		// using FastReflectionLib
 #else
-            var targetObject = info.Invoke(parameters); // using standard Reflection
+		var targetObject = constructor.Invoke(parameters); // using standard Reflection
 #endif
-            if (targetObject == null)
-                throw new ArgumentException("Can't instantiate type " + targetType.FullName);
 
-            return targetObject;
-        }
+		if (targetObject == null)
+			throw new ArgumentException("Can't instantiate type " + targetType.FullName);
+
+		return targetObject;
+	}
+
+	public static ConstructorInfo FindCompatibleConstructor(Type type, Type[] parameterTypes) {
+		Guard.ArgumentNotNull(type, nameof(type));
+		Guard.ArgumentNotNull(parameterTypes, nameof(parameterTypes));
+
+		return type
+			.GetConstructors()
+			.FirstOrDefault(constructor => {
+				var parameters = constructor.GetParameters();
+
+				// Create a list of the provided parameter types for manipulation.
+				var unmatchedTypes = parameterTypes.ToList();
+				foreach (var param in parameters) {
+					var matchingType = unmatchedTypes.FirstOrDefault(t => param.ParameterType.IsAssignableFrom(t));
+
+					if (matchingType != null) {
+						// Remove the matched type so it's not considered again.
+						unmatchedTypes.Remove(matchingType);
+					} else if (!param.HasDefaultValue) {
+						// If the parameter is not matched and does not have a default value, the constructor is not a match.
+						return false;
+					}
+				}
+
+				// If there are any unmatched provided types left, it's not a match.
+				if (unmatchedTypes.Any()) 
+					return false;
+
+				// If we've made it this far, it's a match.
+				return true;
+			});
+	}
+
+	public static bool TryActivateWithCompatibleArgs(Type type, object[] args, out object instance) {
+		Guard.ArgumentNotNull(type, nameof(type));
+		Guard.ArgumentNotNull(args, nameof(args));
+		Guard.Ensure(args.All(a => a != null), "All arguments must be non-null");
+
+		var constructor = FindCompatibleConstructor(type, args.Select(a => a.GetType()).ToArray());
+		if (constructor == null) {
+			instance = null;
+			return false;
+		}
+
+		// Determine the correct order of arguments.
+		var constructorParameters = constructor.GetParameters();
+		var orderedArgs = new object[constructorParameters.Length];
+
+		for (var i = 0; i < constructorParameters.Length; i++) {
+			// Try to find a matching argument.
+			foreach (var arg in args) {
+				if (!constructorParameters[i].ParameterType.IsInstanceOfType(arg))
+					continue;
+				orderedArgs[i] = arg;
+				break;
+			}
+
+			// If no argument is found, and the parameter has a default value, use that.
+			if (orderedArgs[i] == null && constructorParameters[i].HasDefaultValue) {
+				orderedArgs[i] = constructorParameters[i].DefaultValue;
+			}
+		}
+
+#if USE_FAST_REFLECTION
+		instance = constructor.Invoke(orderedArgs);
+#else
+		instance = constructor.Invoke(orderedArgs); // using standard Reflection
+#endif
+		return true;
+	}
 
 
+	public static T ActivateWithCompatibleArgs<T>(Type type, object[] args) 
+		=> (T)ActivateWithCompatibleArgs(type, args);
 
-    }
+	public static object ActivateWithCompatibleArgs(Type type, object[] args) {
+		if (!TryActivateWithCompatibleArgs(type, args, out var instance))
+			throw new InvalidOperationException($"No compatible constructor was found for type {type.ToStringCS()} for args [{args.Select(x => x.ToString()).ToDelimittedString(", ")}].");
+		return instance;
+	}
+
 }
-
-

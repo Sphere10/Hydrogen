@@ -1,40 +1,57 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
+﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
+
 using System.Text;
-using Tools;
 
-namespace Hydrogen {
+namespace Hydrogen;
 
-	public class StringSerializer : ItemSerializer<string> {
+public class StringSerializer : ItemSerializer<string> {
 
-		public StringSerializer()
-			: this(Encoding.UTF8) {
-		}
+	public StringSerializer()
+		: this(Encoding.UTF8) {
+	}
 
-		public StringSerializer(Encoding textEncoding) {
-			Guard.ArgumentNotNull(textEncoding, nameof(textEncoding));
-			TextEncoding = textEncoding;
-		}
+	public StringSerializer(Encoding textEncoding, SizeDescriptorStrategy sizeDescriptorStrategy = SizeDescriptorStrategy.UseCVarInt) 
+		: base(sizeDescriptorStrategy) {
+		Guard.ArgumentNotNull(textEncoding, nameof(textEncoding));
+		TextEncoding = textEncoding;
+	}
 
-		public Encoding TextEncoding { get; }
+	public static StringSerializer UTF8 { get; } = new(Encoding.UTF8);
 
-		public override int CalculateSize(string item) => TextEncoding.GetByteCount(item);
+	public static StringSerializer ASCII { get; } = new(Encoding.ASCII);
 
-		public override bool TrySerialize(string item, EndianBinaryWriter writer, out int bytesWritten) {
-			var bytes = TextEncoding.GetBytes(item);
-			Debug.Assert(bytes.Length == CalculateSize(item));
-			writer.Write(bytes);
-			bytesWritten = bytes.Length;
-			return true;
-		}
+	public static StringSerializer UTF7 { get; } = new(Encoding.UTF7);
 
-		public override bool TryDeserialize(int byteSize, EndianBinaryReader reader, out string item) {
-			var bytes = reader.ReadBytes(byteSize);
-			item = TextEncoding.GetString(bytes);
-			return true;
-		}
+	public static StringSerializer BigEndianUnicode { get; } = new(Encoding.BigEndianUnicode);
+
+	public static StringSerializer Default { get; } = new(Encoding.Default);
+
+	public static StringSerializer UTF32 { get; } = new(Encoding.UTF32);
+
+
+	public Encoding TextEncoding { get; }
+
+	public override long CalculateSize(string item) {
+		var textByteCount = TextEncoding.GetByteCount(item);
+		var sizeCount = SizeSerializer.CalculateSize(textByteCount);
+		return sizeCount + textByteCount;
+	}
+
+	public override void Serialize(string item, EndianBinaryWriter writer) {
+		SizeSerializer.Serialize(TextEncoding.GetByteCount(item), writer);
+		var bytes = TextEncoding.GetBytes(item);
+		writer.Write(bytes);
+	}
+
+	public override string Deserialize(EndianBinaryReader reader) {
+		var size = SizeSerializer.Deserialize(reader);
+		var bytes = reader.ReadBytes(size);
+		return TextEncoding.GetString(bytes);
 	}
 }

@@ -1,76 +1,63 @@
-//-----------------------------------------------------------------------
-// <copyright file="ImagePicker.cs" company="Sphere 10 Software">
-//
-// Copyright (c) Sphere 10 Software. All rights reserved. (http://www.sphere10.com)
+// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Author: Dev Age
 //
 // Distributed under the MIT software license, see the accompanying file
 // LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
 //
-// <author>Herman Schoenfeld</author>
-// <date>2018</date>
-// </copyright>
-//-----------------------------------------------------------------------
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
 using System.Windows.Forms;
-using System.ComponentModel;
-using System.Drawing.Design;
 
-namespace SourceGrid.Cells.Editors
-{
+namespace SourceGrid.Cells.Editors;
+
+/// <summary>
+///  A model that use a TextBoxButton for Image editing, allowing to select a source image file. Returns null as DisplayString. Write and read byte[] values.
+/// </summary>
+[System.ComponentModel.ToolboxItem(false)]
+public class ImagePicker : EditorControlBase {
+	public readonly static ImagePicker Default = new ImagePicker();
+
+	#region Constructor
+
 	/// <summary>
-	///  A model that use a TextBoxButton for Image editing, allowing to select a source image file. Returns null as DisplayString. Write and read byte[] values.
+	/// Construct an Editor of type ImagePicker.
 	/// </summary>
-	[System.ComponentModel.ToolboxItem(false)]
-	public class ImagePicker : EditorControlBase
-	{
-		public readonly static ImagePicker Default = new ImagePicker();
-		
-		#region Constructor
-		/// <summary>
-		/// Construct an Editor of type ImagePicker.
-		/// </summary>
-		public ImagePicker():base(typeof(byte[]))
-		{
-		}
-		#endregion
+	public ImagePicker() : base(typeof(byte[])) {
+	}
 
-		#region Edit Control
-		/// <summary>
-		/// Create the editor control
-		/// </summary>
-		/// <returns></returns>
-		protected override Control CreateControl()
-		{
-			DevAge.Windows.Forms.TextBoxUITypeEditor editor = new DevAge.Windows.Forms.TextBoxUITypeEditor();
-			editor.BorderStyle = DevAge.Drawing.BorderStyle.None;
-			editor.Validator = new DevAge.ComponentModel.Validator.ValidatorTypeConverter(typeof(System.Drawing.Image));
-			return editor;
-		}
+	#endregion
 
-		/// <summary>
-		/// Gets the control used for editing the cell.
-		/// </summary>
-		public new DevAge.Windows.Forms.TextBoxUITypeEditor Control
-		{
-			get
-			{
-				return (DevAge.Windows.Forms.TextBoxUITypeEditor)base.Control;
-			}
-		}
-		#endregion
+	#region Edit Control
 
-		public override object GetEditedValue()
-		{
-			object val = Control.Value;
-			if (val == null)
-				return null;
-			else if (val is System.Drawing.Image)
-			{
-				DevAge.ComponentModel.Validator.ValidatorTypeConverter imageValidator = new DevAge.ComponentModel.Validator.ValidatorTypeConverter(typeof(System.Drawing.Image));
-				return imageValidator.ValueToObject(val, typeof(byte[]));
+	/// <summary>
+	/// Create the editor control
+	/// </summary>
+	/// <returns></returns>
+	protected override Control CreateControl() {
+		DevAge.Windows.Forms.TextBoxUITypeEditor editor = new DevAge.Windows.Forms.TextBoxUITypeEditor();
+		editor.BorderStyle = DevAge.Drawing.BorderStyle.None;
+		editor.Validator = new DevAge.ComponentModel.Validator.ValidatorTypeConverter(typeof(System.Drawing.Image));
+		return editor;
+	}
 
-				//Stranamente questo codice in caso di ico va in eccezione!
+	/// <summary>
+	/// Gets the control used for editing the cell.
+	/// </summary>
+	public new DevAge.Windows.Forms.TextBoxUITypeEditor Control {
+		get { return (DevAge.Windows.Forms.TextBoxUITypeEditor)base.Control; }
+	}
+
+	#endregion
+
+	public override object GetEditedValue() {
+		object val = Control.Value;
+		if (val == null)
+			return null;
+		else if (val is System.Drawing.Image) {
+			DevAge.ComponentModel.Validator.ValidatorTypeConverter imageValidator = new DevAge.ComponentModel.Validator.ValidatorTypeConverter(typeof(System.Drawing.Image));
+			return imageValidator.ValueToObject(val, typeof(byte[]));
+
+			//Stranamente questo codice in caso di ico va in eccezione!
 //				System.Drawing.Image img = (System.Drawing.Image)val;
 //				using (System.IO.MemoryStream memStream = new System.IO.MemoryStream())
 //				{
@@ -78,32 +65,27 @@ namespace SourceGrid.Cells.Editors
 //
 //					return memStream.ToArray();
 //				}
-			}
-			else if (val is byte[])
-				return val;
-			else
-				throw new SourceGridException("Invalid edited value, expected byte[] or Image");
-		}
+		} else if (val is byte[])
+			return val;
+		else
+			throw new SourceGridException("Invalid edited value, expected byte[] or Image");
+	}
 
-		public override void SetEditValue(object editValue)
-		{
-			Control.Value = editValue;
-			Control.TextBox.SelectAll();
-		}
+	public override void SetEditValue(object editValue) {
+		Control.Value = editValue;
+		Control.TextBox.SelectAll();
+	}
 
-		/// <summary>
-		/// Used to returns the display string for a given value. In this case return null.
-		/// </summary>
-		/// <param name="p_Value"></param>
-		/// <returns></returns>
-		public override string ValueToDisplayString(object p_Value)
-		{
-			return null;
-		}
+	/// <summary>
+	/// Used to returns the display string for a given value. In this case return null.
+	/// </summary>
+	/// <param name="p_Value"></param>
+	/// <returns></returns>
+	public override string ValueToDisplayString(object p_Value) {
+		return null;
+	}
 
-		protected override void OnSendCharToEditor(char key)
-		{
-			//No implementation
-		}
+	protected override void OnSendCharToEditor(char key) {
+		//No implementation
 	}
 }

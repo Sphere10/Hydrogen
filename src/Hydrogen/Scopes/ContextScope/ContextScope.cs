@@ -1,17 +1,11 @@
-//-----------------------------------------------------------------------
-// <copyright file="ContextScope.cs" company="Sphere 10 Software">
-//
-// Copyright (c) Sphere 10 Software. All rights reserved. (http://www.sphere10.com)
+// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
 // LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
 //
-// <author>Herman Schoenfeld</author>
-// <date>2022</date>
-// </copyright>
-//-----------------------------------------------------------------------
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
 using System.Threading.Tasks;
 
 namespace Hydrogen;
@@ -53,10 +47,8 @@ public abstract class ContextScope : ScopeBase, IContextScope {
 
 	protected bool IsRootScope => ReferenceEquals(this, RootScope);
 
-	protected bool InException { get; set; }
 
 	protected sealed override void OnScopeEnd() {
-		InException = Tools.Runtime.IsInExceptionContext();
 		OnScopeEndInternal();
 		if (IsRootScope) {
 			CallContext.LogicalSetData(ContextID, null);
@@ -65,7 +57,6 @@ public abstract class ContextScope : ScopeBase, IContextScope {
 	}
 
 	protected sealed override async ValueTask OnScopeEndAsync() {
-		InException = Tools.Runtime.IsInExceptionContext();
 		await OnScopeEndInternalAsync();
 		if (IsRootScope) {
 			CallContext.LogicalSetData(ContextID, null);

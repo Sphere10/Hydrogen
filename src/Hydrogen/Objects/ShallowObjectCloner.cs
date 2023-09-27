@@ -1,15 +1,10 @@
-//-----------------------------------------------------------------------
-// <copyright file="ShallowObjectCloner.cs" company="Sphere 10 Software">
-//
-// Copyright (c) Sphere 10 Software. All rights reserved. (http://www.sphere10.com)
+// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
 // LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
 //
-// <author>Herman Schoenfeld</author>
-// <date>2018</date>
-// </copyright>
-//-----------------------------------------------------------------------
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 #define USE_FAST_REFLECTION
 #if __IOS__
@@ -61,7 +56,7 @@ namespace Hydrogen {
 
 			foreach (var fieldBinding in fieldBindings) {
 #if USE_FAST_REFLECTION
-				fieldBinding.DestField.SetValue(dest, fieldBinding.SourceField.FastGetValue(source));	// using FastReflection lib		
+				fieldBinding.DestField.SetValue(dest, fieldBinding.SourceField.FastGetValue(source)); // using FastReflection lib		
 #else
 				fieldBinding.DestField.SetValue(dest, fieldBinding.SourceField.GetValue(source)); // using standrad Reflection
 #endif
@@ -89,7 +84,7 @@ namespace Hydrogen {
 
 			foreach (var propertyBinding in propertyBindings) {
 #if USE_FAST_REFLECTION
-				propertyBinding.DestProperty.FastSetValue(dest, propertyBinding.SourceProperty.FastGetValue(source));  // using FastReflection lib			
+				propertyBinding.DestProperty.FastSetValue(dest, propertyBinding.SourceProperty.FastGetValue(source)); // using FastReflection lib			
 #else
 				propertyBinding.DestProperty.SetValue(dest, propertyBinding.SourceProperty.GetValue(source, null), null);  // using standard Reflection			
 #endif

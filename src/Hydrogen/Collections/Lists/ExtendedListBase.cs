@@ -1,35 +1,60 @@
+// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
+
 using System.Collections.Generic;
 
-namespace Hydrogen {
+namespace Hydrogen;
 
-	public abstract class ExtendedListBase<T> : ExtendedCollectionBase<T>, IExtendedList<T> {
+public abstract class ExtendedListBase<T> : ExtendedCollectionBase<T>, IExtendedList<T> {
 
-		public T this[int index] { get => Read(index); set => Update(index, value); }
-
-		public abstract int IndexOf(T item);
-
-		public abstract IEnumerable<int> IndexOfRange(IEnumerable<T> items);
-
-		public abstract T Read(int index);
-
-		public abstract IEnumerable<T> ReadRange(int index, int count);
-
-		public abstract void Update(int index, T item);
-
-		public abstract void UpdateRange(int index, IEnumerable<T> items);
-
-		public abstract void Insert(int index, T item);
-
-		public abstract void InsertRange(int index, IEnumerable<T> items);
-
-		public abstract void RemoveAt(int index);
-
-		public abstract void RemoveRange(int index, int count);
-
-		protected virtual void CheckIndex(int index, bool allowAtEnd = false) => Guard.CheckIndex(index, 0, Count, allowAtEnd);
-
-		protected virtual void CheckRange(int index, int count, bool rightAligned = false) => Guard.CheckRange(index, count, rightAligned, 0, Count);
-
+	public int IndexOf(T item) {
+		checked {
+			return (int)IndexOfL(item);
+		}
 	}
+
+	public abstract long IndexOfL(T item);
+
+	public abstract IEnumerable<long> IndexOfRange(IEnumerable<T> items);
+
+	public abstract T Read(long index);
+
+	public abstract IEnumerable<T> ReadRange(long index, long count);
+
+	public abstract void Update(long index, T item);
+
+	public abstract void UpdateRange(long index, IEnumerable<T> items);
+
+	public void Insert(int index, T item) => Insert((long)index, item);
+
+	public abstract void Insert(long index, T item);
+
+	public abstract void InsertRange(long index, IEnumerable<T> items);
+
+	public void RemoveAt(int index) => RemoveAt((long)index);
+
+	public abstract void RemoveAt(long index);
+
+	public abstract void RemoveRange(long index, long count);
+
+	public T this[int index] {
+		get => this[(long)index];
+		set => this[(long)index] = value;
+	}
+
+	public T this[long index] {
+		get => Read(index);
+		set => Update(index, value);
+	}
+
+	protected virtual void CheckIndex(long index, bool allowAtEnd = false) => Guard.CheckIndex(index, 0, Count, allowAtEnd);
+
+	protected virtual void CheckRange(long index, long count, bool rightAligned = false) => Guard.CheckRange(index, count, rightAligned, 0, Count);
+
 
 }

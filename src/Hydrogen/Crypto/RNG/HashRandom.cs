@@ -1,23 +1,27 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
+
+using System;
 
 namespace Hydrogen.Maths;
-
-
 
 /// <summary>
 /// A deterministic cryptographically-secure random number generator suitable for blockchain consensus. It works by extracting bytes from an iteratively hashed seed. The cryptographic security
 /// of <see cref="HashRandom"/> derives from that of the underlying <see cref="CHF"/>. It will always generate the same sequence of bytes given a seed.
 /// </summary>
-public sealed class HashRandom : ICRNG {
+public sealed class HashRandom : IRandomNumberGenerator {
 	public const int MinimumSeedLength = 16;
 	private readonly CHF _chf;
 	private byte[] _data;
 	private int _index;
 
 
-	public HashRandom(byte[] seed) 
+	public HashRandom(byte[] seed)
 		: this(CHF.SHA2_256, seed) {
 	}
 

@@ -1,137 +1,143 @@
-﻿using System;
+﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Author: David Price
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
+
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Net.WebSockets;
 using System.IO;
 using System.Text;
 
-namespace Hydrogen.Communications {
-	public class ClientWebSocketsChannel : ProtocolChannel, IDisposable {
+namespace Hydrogen.Communications;
 
-		public event EventHandlerEx<WebSocketReceiveResult> ReceivedWebSocketMessage;
-		string URI { get; }
-		bool Secure { get; }
-		ClientWebSocket ClientWebSocket { get; set; }
+public class ClientWebSocketsChannel : ProtocolChannel, IDisposable {
 
-		public string Id { get; set; }
+	public event EventHandlerEx<WebSocketReceiveResult> ReceivedWebSocketMessage;
+	string URI { get; }
+	bool Secure { get; }
+	ClientWebSocket ClientWebSocket { get; set; }
 
-		public ClientWebSocketsChannel(string uri, bool secure) {
-			URI = uri;
-			LocalRole = CommunicationRole.Client;
-			Secure = secure;
+	public string Id { get; set; }
 
-			if (Secure) {
-				throw new NotImplementedException("Secure Websockets is not available yet");
-			}
+	public ClientWebSocketsChannel(string uri, bool secure) {
+		URI = uri;
+		LocalRole = CommunicationRole.Client;
+		Secure = secure;
 
-			ClientWebSocket = new ClientWebSocket();
+		if (Secure) {
+			throw new NotImplementedException("Secure Websockets is not available yet");
 		}
 
-		public override CommunicationRole LocalRole { get; }
+		ClientWebSocket = new ClientWebSocket();
+	}
 
-		public CommunicationRole? CloseInitiator { get; set; }
+	public override CommunicationRole LocalRole { get; }
 
-		public override Task Close() {
-			CloseInitiator ??= this.LocalRole;
-			return base.Close();
+	public CommunicationRole? CloseInitiator { get; set; }
+
+	public override Task Close() {
+		CloseInitiator ??= this.LocalRole;
+		return base.Close();
+	}
+
+	async Task RespondToCloseMessage() {
+		if (ClientWebSocket.State != WebSocketState.Closed) {
+			await ClientWebSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, string.Empty, CancellationToken.None);
 		}
+	}
 
-		async Task RespondToCloseMessage() {
-			if (ClientWebSocket.State != WebSocketState.Closed) {
-				await ClientWebSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, string.Empty, CancellationToken.None);
-			}
-		}
+	protected override async Task BeginClose(CancellationToken cancellationToken) {
+		if (CloseInitiator != LocalRole)
+			return;
 
-		protected override async Task BeginClose(CancellationToken cancellationToken) {
-			if (CloseInitiator != LocalRole)
-				return;
+		var tcs = new TaskCompletionSourceEx();
 
-			var tcs = new TaskCompletionSourceEx();
+		ReceivedWebSocketMessage += async message => { tcs.SetResult(); };
+		cancellationToken.Register(() => tcs.TrySetCanceled());
 
-			ReceivedWebSocketMessage += async message => {
-				tcs.SetResult();
-			};
-			cancellationToken.Register(() => tcs.TrySetCanceled());
+		await ClientWebSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, CancellationToken.None);
+		await tcs.Task;
+	}
 
-			await ClientWebSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, CancellationToken.None);
-			await tcs.Task;
-		}
+	protected override async Task CloseInternal() {
+		ClientWebSocket = null;
+	}
 
-		protected override async Task CloseInternal() {
-			ClientWebSocket = null;
-		}
+	public override bool IsConnectionAlive() {
+		return ClientWebSocket.State == WebSocketState.Open;
+	}
 
-		public override bool IsConnectionAlive() {
-			return ClientWebSocket.State == WebSocketState.Open;
-		}
+	protected override async Task OpenInternal() {
 
-		protected override async Task OpenInternal() {
-
-			try {
-				await ClientWebSocket.ConnectAsync(new Uri(URI), CancellationToken.None);
-
-				using (var memoryStream = new MemoryStream()) {
-					var buffer = new byte[1024];
-					while (true) {
-						var received = await ClientWebSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
-						memoryStream.Write(buffer, 0, received.Count);
-						if (received.EndOfMessage) break;
-					}
-
-					Id = Encoding.ASCII.GetString(memoryStream.ToArray());
-				}
-
-				SystemLog.Info($"ID: {Id}");
-			} catch (Exception ex) {
-
-			}
-
-			// Handle the response to close
-			ReceivedWebSocketMessage += async msg => {
-				if (msg.MessageType == WebSocketMessageType.Close && CloseInitiator == null) {
-					CloseInitiator = LocalRole switch {
-						CommunicationRole.Server => CommunicationRole.Client,
-						CommunicationRole.Client => CommunicationRole.Server,
-					};
-					// handle close response
-					await RespondToCloseMessage();
-					CloseInitiator ??= this.LocalRole;
-					await CloseInternal();
-				}
-			};
-		}
-
-		protected override async Task<byte[]> ReceiveBytesInternal(CancellationToken cancellationToken) {
-
-			//SystemLog.Info($"ReceiveBytesInternal()");
-
-			var buffer = new byte[1024];
+		try {
+			await ClientWebSocket.ConnectAsync(new Uri(URI), CancellationToken.None);
 
 			using (var memoryStream = new MemoryStream()) {
-
+				var buffer = new byte[1024];
 				while (true) {
-					var received = await ClientWebSocket.ReceiveAsync(new ArraySegment<byte>(buffer), cancellationToken);
-					NotifyReceivedWebSocketMessage(received);
+					var received = await ClientWebSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
 					memoryStream.Write(buffer, 0, received.Count);
 					if (received.EndOfMessage) break;
 				}
 
-				return memoryStream.ToArray();
+				Id = Encoding.ASCII.GetString(memoryStream.ToArray());
 			}
+
+			SystemLog.Info($"ID: {Id}");
+		} catch (Exception ex) {
+
 		}
 
-		protected override async Task<bool> TrySendBytesInternal(ReadOnlyMemory<byte> bytes, CancellationToken cancellationToken) {
-			await ClientWebSocket.SendAsync(bytes, WebSocketMessageType.Text, true, cancellationToken);
+		// Handle the response to close
+		ReceivedWebSocketMessage += async msg => {
+			if (msg.MessageType == WebSocketMessageType.Close && CloseInitiator == null) {
+				CloseInitiator = LocalRole switch {
+					CommunicationRole.Server => CommunicationRole.Client,
+					CommunicationRole.Client => CommunicationRole.Server,
+				};
+				// handle close response
+				await RespondToCloseMessage();
+				CloseInitiator ??= this.LocalRole;
+				await CloseInternal();
+			}
+		};
+	}
 
-			return true;
-		}
+	protected override async Task<byte[]> ReceiveBytesInternal(CancellationToken cancellationToken) {
 
-		protected virtual void OnReceivedWebSocketMessage(WebSocketReceiveResult result) {
-		}
+		//SystemLog.Info($"ReceiveBytesInternal()");
 
-		private void NotifyReceivedWebSocketMessage(WebSocketReceiveResult result) {
-			OnReceivedWebSocketMessage(result);
-			ReceivedWebSocketMessage?.Invoke(result);
+		var buffer = new byte[1024];
+
+		using (var memoryStream = new MemoryStream()) {
+
+			while (true) {
+				var received = await ClientWebSocket.ReceiveAsync(new ArraySegment<byte>(buffer), cancellationToken);
+				NotifyReceivedWebSocketMessage(received);
+				memoryStream.Write(buffer, 0, received.Count);
+				if (received.EndOfMessage) break;
+			}
+
+			return memoryStream.ToArray();
 		}
+	}
+
+	protected override async Task<bool> TrySendBytesInternal(ReadOnlyMemory<byte> bytes, CancellationToken cancellationToken) {
+		await ClientWebSocket.SendAsync(bytes, WebSocketMessageType.Text, true, cancellationToken);
+
+		return true;
+	}
+
+	protected virtual void OnReceivedWebSocketMessage(WebSocketReceiveResult result) {
+	}
+
+	private void NotifyReceivedWebSocketMessage(WebSocketReceiveResult result) {
+		OnReceivedWebSocketMessage(result);
+		ReceivedWebSocketMessage?.Invoke(result);
 	}
 }

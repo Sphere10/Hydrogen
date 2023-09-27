@@ -1,16 +1,3 @@
-//-----------------------------------------------------------------------
-// <copyright file="MissingFieldAction.cs" company="Sphere 10 Software">
-//
-// Copyright (c) Sphere 10 Software. All rights reserved. (http://www.sphere10.com)
-//
-// Distributed under the MIT software license, see the accompanying file
-// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
-//
-// <author>Herman Schoenfeld</author>
-// <date>2018</date>
-// </copyright>
-//-----------------------------------------------------------------------
-
 //	Hydrogen.Data.Csv.MissingFieldAction
 //	Copyright (c) 2006 Sébastien Lorion
 //
@@ -32,28 +19,24 @@
 //	FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 //	ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-using System;
+namespace Hydrogen.Data.Csv;
 
-namespace Hydrogen.Data.Csv
-{
+/// <summary>
+/// Specifies the action to take when a field is missing.
+/// </summary>
+public enum MissingFieldAction {
 	/// <summary>
-	/// Specifies the action to take when a field is missing.
+	/// Treat as a parsing error.
 	/// </summary>
-	public enum MissingFieldAction
-	{
-		/// <summary>
-		/// Treat as a parsing error.
-		/// </summary>
-		ParseError = 0,
+	ParseError = 0,
 
-		/// <summary>
-		/// Replaces by an empty value.
-		/// </summary>
-		ReplaceByEmpty = 1,
+	/// <summary>
+	/// Replaces by an empty value.
+	/// </summary>
+	ReplaceByEmpty = 1,
 
-		/// <summary>
-		/// Replaces by a null value (<see langword="null"/>).
-		/// </summary>
-		ReplaceByNull = 2,
-	}
+	/// <summary>
+	/// Replaces by a null value (<see langword="null"/>).
+	/// </summary>
+	ReplaceByNull = 2,
 }

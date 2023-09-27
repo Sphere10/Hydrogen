@@ -1,15 +1,10 @@
-//-----------------------------------------------------------------------
-// <copyright file="MultiCastLogger.cs" company="Sphere 10 Software">
-//
-// Copyright (c) Sphere 10 Software. All rights reserved. (http://www.sphere10.com)
+// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
 // LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
 //
-// <author>Herman Schoenfeld</author>
-// <date>2018</date>
-// </copyright>
-//-----------------------------------------------------------------------
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
 using System.Collections.Generic;
@@ -98,14 +93,13 @@ public class MulticastLogger : ILogger {
 		}
 	}
 
-	public void Exception(Exception exception) {
+	public void Exception(Exception exception, string message = null) {
 		using (_loggers.EnterReadScope()) {
 			if (MultiThreaded)
-				Parallel.ForEach(_loggers, (logger) => Tools.Exceptions.ExecuteIgnoringException(() => logger.Exception(exception)));
+				Parallel.ForEach(_loggers, (logger) => Tools.Exceptions.ExecuteIgnoringException(() => logger.Exception(exception, message)));
 			else
-				_loggers.ForEach((logger) => Tools.Exceptions.ExecuteIgnoringException(() => logger.Exception(exception)));
+				_loggers.ForEach((logger) => Tools.Exceptions.ExecuteIgnoringException(() => logger.Exception(exception, message)));
 		}
 	}
 
 }
-

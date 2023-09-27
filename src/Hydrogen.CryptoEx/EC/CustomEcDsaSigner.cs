@@ -1,3 +1,11 @@
+// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Author: Ugochukwu Mmaduekwe, Herman Schoenfeld
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
+
 using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Crypto.Digests;
 using Org.BouncyCastle.Crypto.Parameters;
@@ -51,7 +59,7 @@ public class CustomEcDsaSigner : ECDsaSigner {
 			} while (ForceLowR && r.ToByteArrayUnsigned()[0] >= 0x80);
 			s = BigIntegers.ModOddInverse(n, k).Multiply(e.Add(d?.Multiply(r))).Mod(n);
 		} while (s.SignValue == 0);
-		
+
 		return new[] { r, s };
 	}
 

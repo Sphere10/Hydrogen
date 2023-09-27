@@ -1,18 +1,12 @@
-//-----------------------------------------------------------------------
-// <copyright file="AssemblyInfo.cs" company="Sphere 10 Software">
-//
-// Copyright (c) Sphere 10 Software. All rights reserved. (http://www.sphere10.com)
+// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
 // LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
 //
-// <author>Herman Schoenfeld</author>
-// <date>2018</date>
-// </copyright>
-//-----------------------------------------------------------------------
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Hydrogen.Application;
 
@@ -23,14 +17,10 @@ using Hydrogen.Application;
 //[assembly: AssemblyDescription("Tests Hydrogen Framework")]
 //[assembly: AssemblyConfiguration("")]
 //[assembly: AssemblyCompany("Sphere 10 Software")]
+[assembly: AssemblyProductSecret("7cb63ab9cedd8465cf5dad3417c78e5241ada42f460e65b80492fce89b10667a")]
 [assembly: AssemblyCompanyNumber("ABN 39600596316")]
 [assembly: AssemblyCompanyLink("www.sphere10.com")]
 //[assembly: AssemblyProduct("Sphere10.Application.Tester")]
-[assembly: AssemblyProductCode("00000000-0000-0000-0000-000000000000")]
-[assembly: AssemblyProductLink("www.sphere10.com")]
-[assembly: AssemblyCopyright("Copyright © Sphere 10 Software 2008 - {CurrentYear}")]
-[assembly: AssemblyProductPurchaseLink("www.sphere10.com")]
-[assembly: AssemblyDefaultProductKey("K5PS-JA9A-9R9R-2AFS")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

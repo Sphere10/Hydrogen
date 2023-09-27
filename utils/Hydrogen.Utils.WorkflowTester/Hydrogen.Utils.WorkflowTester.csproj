@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="WorkflowCore.Persistence.EntityFramework" Version="3.9.0" />
+    <PackageReference Include="WorkflowCore.Persistence.SqlServer" Version="3.9.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Hydrogen.Application\Hydrogen.Application.csproj" />
+    <ProjectReference Include="..\..\src\Hydrogen.Windows.Forms\Hydrogen.Windows.Forms.csproj" />
+    <ProjectReference Include="..\..\src\Hydrogen.Windows\Hydrogen.Windows.csproj" />
+    <ProjectReference Include="..\..\src\Hydrogen\Hydrogen.csproj" />
+  </ItemGroup>
+
+</Project>

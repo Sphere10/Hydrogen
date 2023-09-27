@@ -1,24 +1,42 @@
+// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
+
 using System;
 using System.IO;
 
-namespace Hydrogen {
+namespace Hydrogen;
 
-	public sealed class OnDisposeStream : StreamDecorator {
-		private readonly Action<Stream> _disposeAction;
+public class OnDisposeStream<TInner> : StreamDecorator<TInner> where TInner : Stream {
+	private readonly Action<TInner> _disposeAction;
 
-		public OnDisposeStream(Stream stream, Action disposeAction)
-			: this(stream, _ => disposeAction()) { 
-		}
+	public OnDisposeStream(TInner stream, Action disposeAction)
+		: this(stream, _ => disposeAction()) {
+	}
 
-		public OnDisposeStream(Stream stream, Action<Stream> disposeAction)
-			: base(stream) {
-			_disposeAction = disposeAction;
-		}
+	public OnDisposeStream(TInner stream, Action<TInner> disposeAction)
+		: base(stream) {
+		_disposeAction = disposeAction;
+	}
 
-		protected override void Dispose(bool disposing) {
-			_disposeAction?.Invoke(this);
-			base.Dispose(disposing);
-		}
+	protected override void Dispose(bool disposing) {
+		_disposeAction?.Invoke(InnerStream);
+		base.Dispose(disposing);
+	}
+}
+
+public sealed class OnDisposeStream : OnDisposeStream<Stream> {
+
+	public OnDisposeStream(Stream stream, Action disposeAction)
+		: this(stream, _ => disposeAction()) {
+	}
+
+	public OnDisposeStream(Stream stream, Action<Stream> disposeAction)
+		: base(stream, disposeAction) {
 	}
 
 }

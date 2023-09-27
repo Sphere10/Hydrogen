@@ -1,32 +1,31 @@
-# Winternitz Abstracted Merkle Signatures (WAMS)
+# WAMS - Winternitz Abstract Merkle Signature Scheme
 
 <pre>
   Author: Herman Schoenfeld <herman@sphere10.com>
-  Version: 1.0
+  Version: 1.1
   Date: 2020-07-20
-  Copyright: (c) Sphere 10 Software Pty Ltd
-  License: MIT
+  Copyright: (c) <a href="https://sphere10.com">Sphere 10 Software Pty Ltd</a>. All Rights Reserved.
 </pre>
+
+
 
 **Abstract**
 
-A quantum-resistant, many-time signature scheme combining Winternitz and Merkle signature schemes is proposed. This construction is compatible with the Abstract Merkle Signature scheme (AMS)[^1] and thus is an AMS-algorithm called "WAMS". 
+A quantum-resistant, many-time signature scheme combining Winternitz and Merkle-Signature schemes is proposed. This construction is compatible with the Abstract Merkle Signature (AMS) Scheme [^1] and thus is an AMS-algorithm called "WAMS". 
 
 ## 1. Introduction
 
-WAMS is a specialization of the AMS[^1] scheme parameterized with the standard Winternitz one-time signature scheme (W-OTS).  WAMS is the quantum-resistant cryptographic scheme used within the VelocityNET P2P platform.
+WAMS is a specialization of the AMS[^1] scheme parameterized with the standard Winternitz one-time signature scheme (W-OTS).  WAMS is a quantum-resistant cryptographic scheme suitable for blockchain-based applications.
 
-This document focuses on the OTS-layer aspect of WAMS.  Merkle-Signature Scheme aspects are performed in the AMS-layer of WAMS which is defined in the AMS document[^1]. The reader should familiarize themselves with the AMS document as it provides the background and context for AMS-algorithms of which WAMS is one. 
+This document focuses only on the OTS-layer of WAMS. The merkle signatures themselves are performed as part of the AMS-layer of WAMS which is defined in the AMS document[^1]. The reader should familiarize themselves with the AMS document as it provides the background context for AMS-algorithms of which WAMS is one. 
 
 ## 2. WAMS Scheme
 
-The Winternitz Abstracted Merkle Signature Scheme (WAMS) is a general purpose, quantum-resistant signature scheme.
+The Winternitz Abstracted Merkle Signature (WAMS) Scheme  is a general purpose, quantum-resistant digital signature scheme. WAMS is an AMS algorithm that selects the standard Winternitz OTS (W-OTS) as the OTS parameter. As part of the parameter set inherited from AMS, WAMS includes the additional parameters `H`, a cryptographic hash function and `w`, the Winternitz parameter.
 
-WAMS is an AMS algorithm that selects the standard Winternitz scheme (W-OTS)  as the underlying the OTS scheme. As part of the parameter set inherited from AMS, WAMS includes the additional parameters `H` a cryptographic hash function and `w`, the Winternitz parameter.
+The selected cryptographic hash function  `H`  is fundamental to the security of WAMS, an analysis of which is not provided in this paper. So long as the user selects a standard CHF such as `SHA2-256` or `Blake2b`, the security of WAMS is equivalent to standard W-OTS constructions. For performance, the use of W-OTS#[^4] may be used in conjunction with `Blake2b-128` in order to reduce signature sizes without introducing vulnerability to birthday-class attacks.
 
-The cryptographic hash function used is fundamental to the security of WAMS (an analysis of which is not provided in this document). So long as the user selects a standard CHF such as `SHA2-256` or `Blake2b` the security of WAMS follows that of other equivalent standard W-OTS constructions. For performance, the use of `Blake2b-128` can be used with an (acceptable) lowering of security for blockchain/DLT applications.
-
-In this construction, the Winternitz parameter `w` refers to the number of bits being simultaneously signed  as famously proposed by Merkle[^3] (who was inspired by Winternitz).  Varying the  parameter `w` changes the size/speed trade-off without affecting security. For example, the higher the value the more expensive (and slower) the computations but the shorter the signature and private key size. The lower the value the faster the computation but larger the signature and key size.  The range of values for `w` supported in WAMS is `1 <= w <= 16`.
+In the presented construction herein, the Winternitz parameter `w` refers to the number of bits being simultaneously signed as famously proposed by Merkle[^3] (who was inspired by Winternitz).  Varying the  parameter `w` changes the size/speed trade-off without affecting security. For example, the higher the value the more expensive (and slower) the computations but the shorter the signature and private key size. The lower the value the faster the computation but larger the signature and key size.  The range of values for `w` supported in WAMS is `1 <= w <= 16`.
 
 Since the WAMS scheme inherits the AMS scheme, it is required to define the following:
 
@@ -69,7 +68,7 @@ Bit-ordering within `ReadBits` and `WriteBits` are such that the
 | Parameters | Description                                                  | Bits |
 | ---------- | ------------------------------------------------------------ | ---- |
 | `h`        | Tree height (used in AMS layer)                              | 8    |
-| `w`        | Winternitz parameter, how many bits are simultaneously signed via the Winternitz process | 8    |
+| `w`        | Winternitz parameter, how many bits are simultaneously signed via the Winternitz gadget | 8    |
 | `H`        | Cryptographic hash function, and security parameter for the scheme (digest length) | 8    |
 
 Note that the Winternitz `w` and `H` are stored in the RESERVED part of the AMS private key. The cryptographic hash function is stored as a code, defined as follows:
@@ -99,7 +98,6 @@ During key generation, signing and verification the following variables are calc
 | `OTS_KeyDigits` | `SigDigits + CheckDigits`        | Number of "digit keys" in a W-OTS private key (used by AMS-layer) |
 | `OTS_SigLen`    | `OTS_KeyDigits`                  | Number of "digit signatures" in a W-OTS sig (used by AMS-layer) |
 
-
 ### 2.4 W-OTS Theory Basics 
 
 The W-OTS scheme follows the Lamport[^5] signature approach but allows a signer to sign `w`  bits of a message-digest simultaneously rather than 1. This collection of bits is a treated as a "digit" of base `2^w`.
@@ -108,13 +106,17 @@ For example, in the case of `w=8` the digits simply become bytes since each digi
 
 For example, to sign the byte `b` (for `w=8`), a signer first derives a "private digit key" as `K = H(secret)` and a "public digit key" `P = H^255(K)`. Notice that all the values of `b` map to a unique hash in that chain of hashes.  The signer advertises the "public digit key" prior to signing any digit. When signing a digit `b`, the signer provides the verifier the value `S=H^(255-b)(K)` referred to as the "signature of `b`". The verifier need only perform `b` more iterations on the signature `s` to arrive at the public key `P`, since `H^b(S) = H^b(H^(255-b)(K)) = H^255(K) = P`. 
 
-At this point, the verifier has cryptographically determined the signer had knowledge of `K` since the signature `S` was the `b'th` pre-image of `P`. This process of signing digits is repeated for each digit in the message and each digit signature concatenated to form the signature. The message being signed is always a digest of an actual logical message, and thus referred to as the "message-digest". 
+At this point, the verifier has cryptographically determined the signer had knowledge of `K` since the signature `S` was the `b'th` pre-image of `P`. This process of signing digits is repeated for each digit in the message and each digit signature is concatenated to form the signature. The message being signed is always a digest of an actual logical message, and thus referred to as the "message-digest". 
 
-In W-OTS, the individual "digit keys" and "digit signatures" are concatenated to comprise the "key" and "signatures" respectively. This results in order of magnitude larger keys and signature objects than typical elliptic-curve or discrete logarithm cryptography schemes. This is a significant down-side of OTS schemes used in post-quantum cryptography (PQC). The burden of large keys can be optimized by using the public key hash as WAMS prescribes.  The burden of large signatures can be halved by choosing shorter hash functions without impacting security, as prescribed by the W-OTS#[^4] variant. .
+In W-OTS, the individual "digit keys" and "digit signatures" are concatenated to comprise the "key" and "signatures" respectively. This results in order of magnitude larger key and signature objects when compared to traditional elliptic-curve / discrete logarithm schemes. This is a significant down-side of OTS schemes when used in post-quantum cryptography (PQC) use cases. The burden of large keys can be optimized by using the hash of a public key as WAMSD prescribes.  The burden of large signatures can be halved by choosing shorter hash functions without impacting security, as prescribed by the W-OTS#[^4] variant. .
 
 **NOTE** In order to prevent signature forgeries arising from digit signature re-use for prior messages, a checksum is calculated and appended to the message-digest and co-signed.   The checksum is calculated in such a way that any increment to a message digit necessarily decreases a checksum digit. Thus it is impossible to forge a signature since it requires the pre-image of at least one checksum digit signature. 
 
-The reader can further their understanding of  the theory and basics of W-OTS by reviewing the literature and through this succinct diagram[^2].
+The reader can further their understanding of the theory and basics of W-OTS by reviewing the literature and through the below diagram[^2].
+
+![Diagram 1: Winternitz gadget](resources\WinternitzGadget.png)
+
+
 
 #### 2.4.1 W-OTS Private Key
 
@@ -248,84 +250,386 @@ The WAMS# implementation is virtually identical to WAMS except for the following
 
 The reader is referred to the reference implementation of WAMS# which succinctly overloads WAMS with these minor changes.
 
+## 4. Object Lengths & Throughput
 
-
-## 4. Object Lengths
-
-Throughput is normalized to the throughput of configuration `W-OTS w=256, h=0` which is the standard-bearer for PQC. Thus they give a relative measure of performance and interpreted as "how many times faster than standard W-OTS". On the test machine, this base configuration signed XXX messages per second and verified YYY per second.
+A C# implementation in .NET 7 was developed and object lengths and performance metrics are measured below. All tests were performed on a single thread on an Intel Core i9-10900K CPU 3.70 GHz with 32GB RAM. The implementation was not performance tuned so the throughput metrics are useful when compared relative to each other. 
 
 | OTS    | CHF bits | Winternitz `w` | Height `h` | Public Key Length (b) | Signature Length (b) | Sign Throughput | Verify Throughput |
 | ------ | -------- | -------------- | ---------- | --------------------- | -------------------- | --------------- | ----------------- |
-| W-OTS  | 128      | 2              | 1          | 32                    | 2163                 |                 |                   |
-| W-OTS# | 128      | 2              | 1          | 32                    | 2211                 |                 |                   |
-| W-OTS  | 128      | 2              | 8          | 32                    | 2163                 |                 |                   |
-| W-OTS# | 128      | 2              | 8          | 32                    | 2211                 |                 |                   |
-| W-OTS  | 128      | 2              | 16         | 32                    | 2163                 |                 |                   |
-| W-OTS# | 128      | 2              | 16         | 32                    | 2211                 |                 |                   |
-| W-OTS  | 128      | 4              | 1          | 32                    | 1107                 |                 |                   |
-| W-OTS# | 128      | 4              | 1          | 32                    | 1155                 |                 |                   |
-| W-OTS  | 128      | 4              | 8          | 32                    | 1107                 |                 |                   |
-| W-OTS# | 128      | 4              | 8          | 32                    | 1155                 |                 |                   |
-| W-OTS  | 128      | 4              | 16         | 32                    | 1107                 |                 |                   |
-| W-OTS# | 128      | 4              | 16         | 32                    | 1155                 |                 |                   |
-| W-OTS  | 128      | 8              | 1          | 32                    | 579                  |                 |                   |
-| W-OTS# | 128      | 8              | 1          | 32                    | 627                  |                 |                   |
-| W-OTS  | 128      | 8              | 8          | 32                    | 579                  |                 |                   |
-| W-OTS# | 128      | 8              | 8          | 32                    | 627                  |                 |                   |
-| W-OTS  | 128      | 8              | 16         | 32                    | 579                  |                 |                   |
-| W-OTS# | 128      | 8              | 16         | 32                    | 627                  |                 |                   |
-| W-OTS  | 160      | 2              | 1          | 36                    | 2703                 |                 |                   |
-| W-OTS# | 160      | 2              | 1          | 36                    | 2763                 |                 |                   |
-| W-OTS  | 160      | 2              | 8          | 36                    | 2703                 |                 |                   |
-| W-OTS# | 160      | 2              | 8          | 36                    | 2763                 |                 |                   |
-| W-OTS  | 160      | 2              | 16         | 36                    | 2703                 |                 |                   |
-| W-OTS# | 160      | 2              | 16         | 36                    | 2763                 |                 |                   |
-| W-OTS  | 160      | 4              | 1          | 36                    | 1383                 |                 |                   |
-| W-OTS# | 160      | 4              | 1          | 36                    | 1443                 |                 |                   |
-| W-OTS  | 160      | 4              | 8          | 36                    | 1383                 |                 |                   |
-| W-OTS# | 160      | 4              | 8          | 36                    | 1443                 |                 |                   |
-| W-OTS  | 160      | 4              | 16         | 36                    | 1383                 |                 |                   |
-| W-OTS# | 160      | 4              | 16         | 36                    | 1443                 |                 |                   |
-| W-OTS  | 160      | 8              | 1          | 36                    | 723                  |                 |                   |
-| W-OTS# | 160      | 8              | 1          | 36                    | 783                  |                 |                   |
-| W-OTS  | 160      | 8              | 8          | 36                    | 723                  |                 |                   |
-| W-OTS# | 160      | 8              | 8          | 36                    | 783                  |                 |                   |
-| W-OTS  | 160      | 8              | 16         | 36                    | 723                  |                 |                   |
-| W-OTS# | 160      | 8              | 16         | 36                    | 783                  |                 |                   |
-| W-OTS  | 256      | 2              | 1          | 48                    | 4323                 |                 |                   |
-| W-OTS# | 256      | 2              | 1          | 48                    | 4419                 |                 |                   |
-| W-OTS  | 256      | 2              | 8          | 48                    | 4323                 |                 |                   |
-| W-OTS# | 256      | 2              | 8          | 48                    | 4419                 |                 |                   |
-| W-OTS  | 256      | 2              | 16         | 48                    | 4323                 |                 |                   |
-| W-OTS# | 256      | 2              | 16         | 48                    | 4419                 |                 |                   |
-| W-OTS  | 256      | 4              | 1          | 48                    | 2211                 |                 |                   |
-| W-OTS# | 256      | 4              | 1          | 48                    | 2307                 |                 |                   |
-| W-OTS  | 256      | 4              | 8          | 48                    | 2211                 |                 |                   |
-| W-OTS# | 256      | 4              | 8          | 48                    | 2307                 |                 |                   |
-| W-OTS  | 256      | 4              | 16         | 48                    | 2211                 |                 |                   |
-| W-OTS# | 256      | 4              | 16         | 48                    | 2307                 |                 |                   |
-| W-OTS  | 256      | 8              | 1          | 48                    | 1155                 |                 |                   |
-| W-OTS# | 256      | 8              | 1          | 48                    | 1251                 |                 |                   |
-| W-OTS  | 256      | 8              | 8          | 48                    | 1155                 |                 |                   |
-| W-OTS# | 256      | 8              | 8          | 48                    | 1251                 |                 |                   |
-| W-OTS  | 256      | 8              | 16         | 48                    | 1155                 |                 |                   |
-| W-OTS# | 256      | 8              | 16         | 48                    | 1251                 |                 |                   |
+| W-OTS | 128 | 2 | 0 | 32 | 2163 | 3620 | 18098 |
+| W-OTS# | 128 | 2 | 0 | 32 | 2211 | 3425 | 13139 |
+| W-OTS | 128 | 2 | 8 | 32 | 2163 | 3832 | 17919 |
+| W-OTS# | 128 | 2 | 8 | 32 | 2211 | 3523 | 12056 |
+| W-OTS | 128 | 2 | 16 | 32 | 2163 | 3759 | 18137 |
+| W-OTS# | 128 | 2 | 16 | 32 | 2211 | 3528 | 12111 |
+| W-OTS | 128 | 4 | 0 | 32 | 1107 | 2821 | 11479 |
+| W-OTS# | 128 | 4 | 0 | 32 | 1155 | 2619 | 10403 |
+| W-OTS | 128 | 4 | 8 | 32 | 1107 | 2803 | 13454 |
+| W-OTS# | 128 | 4 | 8 | 32 | 1155 | 2610 | 9861 |
+| W-OTS | 128 | 4 | 16 | 32 | 1107 | 2810 | 13470 |
+| W-OTS# | 128 | 4 | 16 | 32 | 1155 | 2602 | 9515 |
+| W-OTS | 128 | 8 | 0 | 32 | 579 | 432 | 2406 |
+| W-OTS# | 128 | 8 | 0 | 32 | 627 | 414 | 2079 |
+| W-OTS | 128 | 8 | 8 | 32 | 579 | 434 | 2403 |
+| W-OTS# | 128 | 8 | 8 | 32 | 627 | 419 | 2749 |
+| W-OTS | 128 | 8 | 16 | 32 | 579 | 432 | 2411 |
+| W-OTS# | 128 | 8 | 16 | 32 | 627 | 404 | 2749 |
+| W-OTS | 160 | 2 | 0 | 36 | 2703 | 3850 | 17026 |
+| W-OTS# | 160 | 2 | 0 | 36 | 2763 | 3607 | 11620 |
+| W-OTS | 160 | 2 | 8 | 36 | 2703 | 3828 | 16875 |
+| W-OTS# | 160 | 2 | 8 | 36 | 2763 | 3567 | 11800 |
+| W-OTS | 160 | 2 | 16 | 36 | 2703 | 3871 | 16969 |
+| W-OTS# | 160 | 2 | 16 | 36 | 2763 | 3551 | 11572 |
+| W-OTS | 160 | 4 | 0 | 36 | 1383 | 2864 | 12419 |
+| W-OTS# | 160 | 4 | 0 | 36 | 1443 | 2702 | 9318 |
+| W-OTS | 160 | 4 | 8 | 36 | 1383 | 2841 | 12564 |
+| W-OTS# | 160 | 4 | 8 | 36 | 1443 | 2685 | 9841 |
+| W-OTS | 160 | 4 | 16 | 36 | 1383 | 2854 | 12586 |
+| W-OTS# | 160 | 4 | 16 | 36 | 1443 | 2680 | 9120 |
+| W-OTS | 160 | 8 | 0 | 36 | 723 | 434 | 2154 |
+| W-OTS# | 160 | 8 | 0 | 36 | 783 | 417 | 2184 |
+| W-OTS | 160 | 8 | 8 | 36 | 723 | 428 | 2145 |
+| W-OTS# | 160 | 8 | 8 | 36 | 783 | 422 | 2425 |
+| W-OTS | 160 | 8 | 16 | 36 | 723 | 427 | 2156 |
+| W-OTS# | 160 | 8 | 16 | 36 | 783 | 421 | 2032 |
+| W-OTS | 256 | 2 | 0 | 48 | 4323 | 3937 | 12474 |
+| W-OTS# | 256 | 2 | 0 | 48 | 4419 | 3662 | 9235 |
+| W-OTS | 256 | 2 | 8 | 48 | 4323 | 3951 | 12275 |
+| W-OTS# | 256 | 2 | 8 | 48 | 4419 | 3620 | 8829 |
+| W-OTS | 256 | 2 | 16 | 48 | 4323 | 3905 | 12373 |
+| W-OTS# | 256 | 2 | 16 | 48 | 4419 | 3666 | 9168 |
+| W-OTS | 256 | 4 | 0 | 48 | 2211 | 3059 | 8653 |
+| W-OTS# | 256 | 4 | 0 | 48 | 2307 | 2885 | 7711 |
+| W-OTS | 256 | 4 | 8 | 48 | 2211 | 3081 | 8549 |
+| W-OTS# | 256 | 4 | 8 | 48 | 2307 | 2873 | 7151 |
+| W-OTS | 256 | 4 | 16 | 48 | 2211 | 3025 | 8527 |
+| W-OTS# | 256 | 4 | 16 | 48 | 2307 | 2865 | 7035 |
+| W-OTS | 256 | 8 | 0 | 48 | 1155 | 485 | 1299 |
+| W-OTS# | 256 | 8 | 0 | 48 | 1251 | 464 | 1849 |
+| W-OTS | 256 | 8 | 8 | 48 | 1155 | 489 | 1345 |
+| W-OTS# | 256 | 8 | 8 | 48 | 1251 | 471 | 1372 |
+| W-OTS | 256 | 8 | 16 | 48 | 1155 | 487 | 1331 |
+| W-OTS# | 256 | 8 | 16 | 48 | 1251 | 458 | 1502 |
 
+*Throughput is measured in "Signatures Per Second"*
 
+## 5. Reference Implementation
 
+This section contains snippets for the full [reference implementation](https://github.com/Sphere10/Hydrogen/tree/master/src/Hydrogen/Crypto/PQC)[^6] . The reference implementation is part of the PQC library within the [Hydrogen Framework](https://github.com/Sphere10/Hydrogen)[^7] .
 
-## 4. Reference Implementation
+### 5.1 AMS-Compatible W-OTS
 
-See [https://github.com/Sphere10/Hydrogen/tree/master/src/Hydrogen/Crypto/PQC](https://github.com/Sphere10/Hydrogen/tree/master/src/Hydrogen/Crypto/PQC).
+This implementation of W-OTS can be used as an OTS within the AMS implementation[^1].
 
-## References
+```c#
+public class WOTS : IOTSAlgorithm {
 
-[^1]: Herman Schoenfeld. "Abstracted Merkle Signatures (AMS)", 2020. 
+	public WOTS() 
+		: this(Configuration.Default) {
+	}
 
-[^2]:  Crypto4A. "Hash Chains and the Winternitz One-Time Signature Scheme". URL: https://crypto4a.com/sectorization-defunct/W-OTS/. Accessed on: 2020-07-20.
+	public WOTS(int w, bool usePublicKeyHashOptimization = false)
+		: this(w, Configuration.Default.HashFunction, usePublicKeyHashOptimization) {
+	}
+
+	public WOTS(int w, CHF hashFunction, bool usePublicKeyHashOptimization = false)
+		: this(new Configuration(w, hashFunction, usePublicKeyHashOptimization)) {
+	}
+
+	public WOTS(Configuration config) {
+		Config = (Configuration)config.Clone();
+	}
+
+	public Configuration Config { get; }
+
+	OTSConfig IOTSAlgorithm.Config => Config;
+
+	public void SerializeParameters(Span<byte> buffer) {
+		buffer[0] = (byte)Config.W;
+	}
+
+	public byte[,] GeneratePrivateKey() 
+		=> GenerateKeys().PrivateKey;
+
+	public byte[,] DerivePublicKey(byte[,] privateKey) {
+		var publicKey = new byte[Config.KeySize.Length, Config.KeySize.Width];
+		for (var i = 0; i < Config.KeySize.Length; i++) {
+			publicKey.SetRow(i,  Hashers.Iterate(Config.HashFunction, privateKey.GetRow(i), Config.ChainLength));
+		}
+		return Config.UsePublicKeyHashOptimization ? ToOptimizedPublicKey(publicKey) : publicKey;
+	}
+
+	public OTSKeyPair GenerateKeys() 
+		=> GenerateKeys(Tools.Crypto.GenerateCryptographicallyRandomBytes(Config.DigestSize - 1));
+
+	public OTSKeyPair GenerateKeys(ReadOnlySpan<byte> seed) {
+		var enumeratedSeed = new byte[seed.Length + 1];
+		seed.CopyTo(enumeratedSeed.AsSpan(1));
+		return GenerateKeys(i => {
+			enumeratedSeed[0] = (byte)i;
+			return Hashers.Iterate(Config.HashFunction, enumeratedSeed, 2);
+		});
+	}
+
+	public OTSKeyPair GenerateKeys(Func<int, byte[]> gen) {
+		var priv = new byte[Config.KeySize.Length, Config.KeySize.Width];
+		var pub = new byte[Config.KeySize.Length, Config.KeySize.Width];  // actual W-OTS pubkey is same size as priv key, we may optimize below
+		for (var i = 0; i < Config.KeySize.Length; i++) {
+			var randomBytes = gen(i);
+			priv.SetRow(i, randomBytes);
+			pub.SetRow(i, Hashers.Iterate(Config.HashFunction, randomBytes, Config.ChainLength));
+		}
+
+		IFuture<byte[]> pubKeyHash;
+		if (Config.UsePublicKeyHashOptimization) {
+			pub = ToOptimizedPublicKey(pub);
+			pubKeyHash = ExplicitFuture<byte[]>.For(pub.ToFlatArray());
+		} else {
+			pubKeyHash = LazyLoad<byte[]>.From(() => ToOptimizedPublicKey(pub).ToFlatArray());
+		}
+
+		return new OTSKeyPair(priv, pub, pubKeyHash);
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public virtual byte[,] Sign(byte[,] privateKey, ReadOnlySpan<byte> message) 
+        => SignDigest(privateKey, ComputeMessageDigest(message));
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public virtual byte[,] SignDigest(byte[,] privateKey, ReadOnlySpan<byte> digest) {
+		var signature = new byte[Config.SignatureSize.Length, Config.SignatureSize.Width];
+
+		// Sign the digest (and build the checksum in process)
+		uint checksum = 0U;
+		for (var i = 0; i < Config.SignatureDigits; i++) {
+			var signValue = (int)Bits.ReadBinaryNumber(digest, Config.W * i, Config.W, IterateDirection.LeftToRight);
+			var c = Config.ChainLength - signValue;
+			checksum += (uint)c;
+			signature.SetRow(i, Hashers.Iterate(Config.HashFunction, privateKey.GetRow(i), c));
+		}
+
+		// Sign the checksum
+		var checksumBytes = new byte[4];
+		Bits.WriteBinaryNumber(checksum, checksumBytes, 0, 32, IterateDirection.LeftToRight);
+		for (var i = 0; i < Config.ChecksumDigits; i++) {
+			var signValue = (int)Bits.ReadBinaryNumber(checksumBytes, Config.W * i, Config.W, IterateDirection.LeftToRight);
+			var c = Config.ChainLength - signValue;
+			var row = Config.SignatureDigits + i;
+			signature.SetRow(row, Hashers.Iterate(Config.HashFunction, privateKey.GetRow(row), c));
+		}
+
+		return signature;
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public bool Verify(byte[,] signature, byte[,] publicKey, ReadOnlySpan<byte> message) 
+        =>  VerifyDigest(signature, publicKey, ComputeMessageDigest(message));
+
+	public virtual bool VerifyDigest(byte[,] signature, byte[,] publicKey, ReadOnlySpan<byte> digest) {
+		var verify = new byte[Config.KeySize.Length, Config.KeySize.Width];
+
+		// Verify Digest
+		uint checksum = 0U;
+		for (var i = 0; i < Config.SignatureDigits; i++) {
+			var signValue = (int)Bits.ReadBinaryNumber(digest, Config.W * i, Config.W, IterateDirection.LeftToRight);
+			var c = Config.ChainLength - signValue;
+			checksum += (uint)c;
+			verify.SetRow(i, Hashers.Iterate(Config.HashFunction, signature.GetRow(i), signValue));
+		}
+
+		// Verify checksum
+		var checksumBytes = new byte[4];
+		Bits.WriteBinaryNumber(checksum, checksumBytes, 0, 32, IterateDirection.LeftToRight);
+		for (var i = 0; i < Config.ChecksumDigits; i++) {
+			var signValue = (int)Bits.ReadBinaryNumber(checksumBytes, Config.W * i, Config.W, IterateDirection.LeftToRight);
+			var row = Config.SignatureDigits + i;
+			verify.SetRow(row, Hashers.Iterate(Config.HashFunction, signature.GetRow(row), signValue));
+		}
+
+		return (Config.UsePublicKeyHashOptimization ? this.ComputeKeyHash(verify) : verify.AsFlatSpan()).SequenceEqual(publicKey.AsFlatSpan());
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public void ComputeKeyHash(byte[,] key, Span<byte> result) {
+		ComputeKeyHash(key.AsFlatSpan(), result);
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public void ComputeKeyHash(ReadOnlySpan<byte> key, Span<byte> result) {
+		Hashers.Hash(Config.HashFunction, key, result);
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	protected byte[,] ToOptimizedPublicKey(byte[,] publicKey) {
+		var publicKeyHash = new byte[1, Config.DigestSize];
+		ComputeKeyHash(publicKey, publicKeyHash.AsFlatSpan());
+		return publicKeyHash;
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public byte[] ComputeMessageDigest(ReadOnlySpan<byte> message)
+		=> Hashers.Hash(Config.HashFunction, message);
+
+	
+	public class Configuration : OTSConfig {
+		public static readonly Configuration Default;
+
+		static Configuration() {
+			Default = new Configuration(8, CHF.SHA2_256, false);
+		}
+
+		public Configuration() : this(Default.W, Default.HashFunction, Default.UsePublicKeyHashOptimization) {
+		}
+
+		public Configuration(int w, CHF hasher, bool usePubKeyHashOptimization) 
+			: this(
+				  w,
+				  hasher,
+				  usePubKeyHashOptimization,
+				  AMSOTS.WOTS, 
+				  Hashers.GetDigestSizeBytes(hasher), 
+				  new OTSKeySize(
+					  Hashers.GetDigestSizeBytes(hasher), 
+					  (int)Math.Ceiling(256.0 / w) + (int)Math.Floor(Math.Log(((1 << w) - 1) * (256 / w), 1 << w)) + 1
+				  ),
+  				new OTSKeySize(
+					Hashers.GetDigestSizeBytes(hasher),
+					usePubKeyHashOptimization ? 1 : (int)Math.Ceiling(256.0 / w) + (int)Math.Floor(Math.Log(((1 << w) - 1) * (256 / w), 1 << w)) + 1
+				),
+				new OTSKeySize(
+			        Hashers.GetDigestSizeBytes(hasher),
+					(int)Math.Ceiling(256.0 / w) + (int)Math.Floor(Math.Log(((1 << w) - 1) * (256 / w), 1 << w)) + 1
+				)
+			) {
+		}
+
+		protected Configuration(int w, CHF hasher, bool usePubKeyHashOptimization, AMSOTS id, int digestSize, OTSKeySize keySize, OTSKeySize publicKeySize, OTSKeySize signatureSize) 
+			: base(id, hasher, digestSize, usePubKeyHashOptimization, keySize, publicKeySize, signatureSize) {
+			Guard.ArgumentInRange(w, 1, 16, nameof(w));
+			W = (byte)w;
+			ChainLength = (1 << w) - 1; // 2^w - 1 (length of Winternitz chain)
+			SignatureDigits = (int)Math.Ceiling(256.0 / w); // how many chains required; 
+			ChecksumDigits = (int)Math.Floor(Math.Log(((1 << w) - 1) * (256 / w), 1 << w)) + 1; // floor ( log_b (2^w - 1) * (256/w) ) where b = 2^w
+		}
+
+		public int W { get; }
+
+		public int ChainLength { get; }
+
+		public int SignatureDigits { get; }
+
+		public int ChecksumDigits { get; }
+
+		public override object Clone() => new Configuration(W, HashFunction, UsePublicKeyHashOptimization, AMSID, DigestSize, KeySize, PublicKeySize, SignatureSize);
+
+	}
+
+}
+```
+
+### 5.2 AMS-Compatible W-OTS#
+
+This implementation of W-OTS# can be used as an OTS within the AMS implementation[^1].
+
+```c#
+public class WOTSSharp : WOTS {
+
+	public WOTSSharp() 
+		: this(WOTSSharp.Configuration.Default) {
+	}
+
+	public WOTSSharp(int w, bool usePublicKeyHashOptimization = false)
+		: this(w, Configuration.Default.HashFunction, usePublicKeyHashOptimization) {
+	}
+
+	public WOTSSharp(int w, CHF hashFunction, bool usePublicKeyHashOptimization = false)
+		: this(new Configuration(w, hashFunction, usePublicKeyHashOptimization)) {
+	}
+
+	public WOTSSharp(Configuration config) 
+		: base(config) {
+	}
+
+	public override byte[,] SignDigest(byte[,] privateKey, ReadOnlySpan<byte> digest)
+		=> SignDigest(privateKey, digest, Tools.Crypto.GenerateCryptographicallyRandomBytes(digest.Length));
+
+	public byte[,] SignDigest(byte[,] privateKey, ReadOnlySpan<byte> digest, ReadOnlySpan<byte> seed) {
+		Guard.Argument(seed.Length == digest.Length, nameof(seed), "Must be same size as digest");
+		var wotsSig = base.SignDigest(privateKey, HMAC(digest, seed));
+		Debug.Assert(wotsSig.Length == Config.SignatureSize.Length * Config.SignatureSize.Width);
+		seed.CopyTo(wotsSig.GetRow(Config.SignatureSize.Length - 1)); // concat seed to sig
+		return wotsSig;
+	}
+
+	public override bool VerifyDigest(byte[,] signature, byte[,] publicKey, ReadOnlySpan<byte> digest) {
+		Debug.Assert(signature.Length == Config.SignatureSize.Length * Config.SignatureSize.Width);
+		var seed = signature.GetRow(Config.SignatureSize.Length - 1);
+		return base.VerifyDigest(signature, publicKey, HMAC(digest, seed));
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	private byte[] SMAC(ReadOnlySpan<byte> message, ReadOnlySpan<byte> seed)
+		=> HMAC(ComputeMessageDigest(message), seed);
+
+	private byte[] HMAC(ReadOnlySpan<byte> digest, ReadOnlySpan<byte> seed) {
+		using (Hashers.BorrowHasher(Config.HashFunction, out var hasher)) {
+			hasher.Transform(seed);
+			hasher.Transform(digest);
+			var innerHash = hasher.GetResult();
+			hasher.Transform(seed);
+			hasher.Transform(innerHash);
+			return hasher.GetResult();
+		}
+	}
+
+	public new class Configuration : WOTS.Configuration {
+		public new static readonly Configuration Default;
+
+		static Configuration() {
+			Default = new Configuration(4, CHF.Blake2b_128, true);
+		}
+
+		public Configuration() 
+			: this(Default.W, Default.HashFunction, Default.UsePublicKeyHashOptimization) {
+		}
+
+		public Configuration(int w, CHF hasher, bool usePubKeyHashOptimization)
+			: base(
+				w,
+				hasher,
+				usePubKeyHashOptimization,
+				AMSOTS.WOTS_Sharp,
+				Hashers.GetDigestSizeBytes(hasher),
+				new OTSKeySize(
+					Hashers.GetDigestSizeBytes(hasher),
+					(int)Math.Ceiling(256.0 / w) + (int)Math.Floor(Math.Log(((1 << w) - 1) * (256 / w), 1 << w)) + 1
+				),
+				new OTSKeySize(
+					Hashers.GetDigestSizeBytes(hasher),
+					usePubKeyHashOptimization ? 1 : (int)Math.Ceiling(256.0 / w) + (int)Math.Floor(Math.Log(((1 << w) - 1) * (256 / w), 1 << w)) + 1
+				),
+				new OTSKeySize(
+					Hashers.GetDigestSizeBytes(hasher),
+					(int)Math.Ceiling(256.0 / w) + (int)Math.Floor(Math.Log(((1 << w) - 1) * (256 / w), 1 << w)) + 1  + 1 // Adds extra row for seed here
+				)
+			) {
+		}
+	}
+}
+```
+
+## 6. References
+
+[^1]: Herman Schoenfeld. "AMS - Abstract Merkle Signature Scheme", 2020. URL: https://vixra.org/abs/2212.0019   
+
+[^2]:  Sphere 10 Software. "Winternitz One-Time Signature Scheme". URL: https://sphere10.com/articles/cryptography/pqc/wots. Accessed on: 2023-05-09.
 
 [^3]: Ralph Merkle. "Secrecy, authentication and public key systems / A certified digital signature". Ph.D. dissertation, Dept. of Electrical Engineering, Stanford University, 1979. URL: http://www.merkle.com/papers/Certified1979.pdf.
 
 [^4]:  Herman Schoenfeld.  "W-OTS# - Shorter and Faster Winternitz Signatures". URL: https://vixra.org/abs/2007.0194. Accessed on: 2020-07-20.
 
 [^5]:  L. Lamport. "Constructing digital signatures from a one-way function". Technical Report SRI-CSL-98, SRI International Computer Science Laboratory, Oct. 1979.
+
+[^6]:   Sphere 10 Software. PQC Library. Url: https://github.com/Sphere10/Hydrogen/tree/master/src/Hydrogen/Crypto/PQC. Accessed 2023-05-09.
+
+[^7]:   Sphere 10 Software. Hydrogen Framework. Url: https://github.com/Sphere10/Hydrogen. Accessed 2023-05-09

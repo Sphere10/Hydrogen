@@ -1,115 +1,99 @@
-//-----------------------------------------------------------------------
-// <copyright file="RowHeader.cs" company="Sphere 10 Software">
-//
-// Copyright (c) Sphere 10 Software. All rights reserved. (http://www.sphere10.com)
+// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Author: Dev Age
 //
 // Distributed under the MIT software license, see the accompanying file
 // LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
 //
-// <author>Herman Schoenfeld</author>
-// <date>2018</date>
-// </copyright>
-//-----------------------------------------------------------------------
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Drawing;
-using System.Windows.Forms;
 
-namespace DevAge.Drawing.VisualElements
-{
-    [Serializable]
-    public class RowHeader : RowHeaderBase
-    {
-        #region Constuctor
-        /// <summary>
-        /// Default constructor
-        /// </summary>
-        public RowHeader()
-        {
-        }
+namespace DevAge.Drawing.VisualElements;
 
-        /// <summary>
-        /// Copy constructor
-        /// </summary>
-        /// <param name="other"></param>
-        public RowHeader(RowHeader other)
-            : base(other)
-        {
-            mBackground = (Header)other.mBackground.Clone();
-        }
-        #endregion
-        /// <summary>
-        /// Clone
-        /// </summary>
-        /// <returns></returns>
-        public override object Clone()
-        {
-            return new RowHeader(this);
-        }
+[Serializable]
+public class RowHeader : RowHeaderBase {
 
-        #region Properties
+	#region Constuctor
 
-        public override ControlDrawStyle Style
-        {
-            get{return base.Style;}
-            set
-            {
-                base.Style = value;
-                mBackground.Style = value;
-            }
-        }
+	/// <summary>
+	/// Default constructor
+	/// </summary>
+	public RowHeader() {
+	}
 
-        /// <summary>
-        /// Back Color
-        /// </summary>
-        public Color BackColor
-        {
-            get { return mBackground.BackColor; }
-            set { mBackground.BackColor = value; }
-        }
+	/// <summary>
+	/// Copy constructor
+	/// </summary>
+	/// <param name="other"></param>
+	public RowHeader(RowHeader other)
+		: base(other) {
+		mBackground = (Header)other.mBackground.Clone();
+	}
 
-        /// <summary>
-        /// Draw mode for the header. Default is Linear.
-        /// </summary>
-        public BackgroundColorStyle BackgroundColorStyle
-        {
-            get { return mBackground.BackgroundColorStyle; }
-            set { mBackground.BackgroundColorStyle = value; }
-        }
+	#endregion
 
-        /// <summary>
-        /// Border
-        /// </summary>
-        public RectangleBorder Border
-        {
-            get { return mBackground.Border; }
-            set { mBackground.Border = value; }
-        }
-        #endregion
+	/// <summary>
+	/// Clone
+	/// </summary>
+	/// <returns></returns>
+	public override object Clone() {
+		return new RowHeader(this);
+	}
 
-        private Header mBackground = new Header(0);
-        protected override void OnDraw(GraphicsCache graphics, RectangleF area)
-        {
-            base.OnDraw(graphics, area);
+	#region Properties
 
-            mBackground.Draw(graphics, area);
-        }
+	public override ControlDrawStyle Style {
+		get { return base.Style; }
+		set {
+			base.Style = value;
+			mBackground.Style = value;
+		}
+	}
 
-        public override RectangleF GetBackgroundContentRectangle(MeasureHelper measure, RectangleF backGroundArea)
-        {
-            backGroundArea = base.GetBackgroundContentRectangle(measure, backGroundArea);
+	/// <summary>
+	/// Back Color
+	/// </summary>
+	public Color BackColor {
+		get { return mBackground.BackColor; }
+		set { mBackground.BackColor = value; }
+	}
 
-            return mBackground.GetBackgroundContentRectangle(measure, backGroundArea);
-        }
+	/// <summary>
+	/// Draw mode for the header. Default is Linear.
+	/// </summary>
+	public BackgroundColorStyle BackgroundColorStyle {
+		get { return mBackground.BackgroundColorStyle; }
+		set { mBackground.BackgroundColorStyle = value; }
+	}
 
-        public override SizeF GetBackgroundExtent(MeasureHelper measure, SizeF contentSize)
-        {
-            contentSize = mBackground.GetBackgroundExtent(measure, contentSize);
+	/// <summary>
+	/// Border
+	/// </summary>
+	public RectangleBorder Border {
+		get { return mBackground.Border; }
+		set { mBackground.Border = value; }
+	}
 
-            return base.GetBackgroundExtent(measure, contentSize);
-        }
+	#endregion
 
-    }
+	private Header mBackground = new Header(0);
+	protected override void OnDraw(GraphicsCache graphics, RectangleF area) {
+		base.OnDraw(graphics, area);
+
+		mBackground.Draw(graphics, area);
+	}
+
+	public override RectangleF GetBackgroundContentRectangle(MeasureHelper measure, RectangleF backGroundArea) {
+		backGroundArea = base.GetBackgroundContentRectangle(measure, backGroundArea);
+
+		return mBackground.GetBackgroundContentRectangle(measure, backGroundArea);
+	}
+
+	public override SizeF GetBackgroundExtent(MeasureHelper measure, SizeF contentSize) {
+		contentSize = mBackground.GetBackgroundExtent(measure, contentSize);
+
+		return base.GetBackgroundExtent(measure, contentSize);
+	}
+
 }

@@ -1,15 +1,10 @@
-//-----------------------------------------------------------------------
-// <copyright file="FileStoreBase.cs" company="Sphere 10 Software">
-//
-// Copyright (c) Sphere 10 Software. All rights reserved. (http://www.sphere10.com)
+// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
 // LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
 //
-// <author>Herman Schoenfeld</author>
-// <date>2018</date>
-// </copyright>
-//-----------------------------------------------------------------------
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
 using System.Collections.Generic;
@@ -35,7 +30,7 @@ public class KeyTransformedFileStore<TFromKey, TToKey> : IFileStore<TToKey> {
 
 	public IEnumerable<TToKey> FileKeys => InternalFileStore.FileKeys.Select(_fromTransformer);
 
-	public TToKey RecommendFileKey(string externalFilePath)  => _fromTransformer(InternalFileStore.RecommendFileKey(externalFilePath));
+	public TToKey RecommendFileKey(string externalFilePath) => _fromTransformer(InternalFileStore.RecommendFileKey(externalFilePath));
 
 	public string GetFilePath(TToKey fileKey) => InternalFileStore.GetFilePath(_toTransformer(fileKey));
 
@@ -116,5 +111,3 @@ public class KeyTransformedFileStore<TFromKey, TToKey> : IFileStore<TToKey> {
 	public void AppendAllText(TToKey fileKey, string contents, Encoding encoding) => InternalFileStore.AppendAllText(_toTransformer(fileKey), contents, encoding);
 
 }
-
-

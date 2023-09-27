@@ -1,9 +1,15 @@
-﻿using System.Collections.Generic;
+﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Author: Hamish Rose
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
+
+using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
-using Hydrogen;
-using Hydrogen.Application;
+using System;
 
 namespace Hydrogen.DApp.Presentation2.Logic {
 
@@ -20,19 +26,18 @@ namespace Hydrogen.DApp.Presentation2.Logic {
 
 		public IApplicationBlock[] Blocks { get; init; }
 
-		public ComponentRegistry IoCContainer { get; private set; }
+		public IServiceProvider IoCContainer { get; private set; }
 
 		public virtual void Load() {
 			NotifyLoaded();
 		}
 
-		public void Load(ComponentRegistry secureComponentRegistry) {
-			IoCContainer = secureComponentRegistry;
+		public void Load(IServiceCollection serviceCollection) {
+			//IoCContainer = secureComponentRegistry;
 			NotifyLoaded();
 		}
 
 		public virtual void Unload() {
-			IoCContainer.Dispose();
 			NotifyUnloaded();
 		}
 

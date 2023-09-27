@@ -1,42 +1,31 @@
-//-----------------------------------------------------------------------
-// <copyright file="PingGridCellController.cs" company="Sphere 10 Software">
-//
-// Copyright (c) Sphere 10 Software. All rights reserved. (http://www.sphere10.com)
+// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Author: Dev Age
 //
 // Distributed under the MIT software license, see the accompanying file
 // LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
 //
-// <author>Herman Schoenfeld</author>
-// <date>2018</date>
-// </copyright>
-//-----------------------------------------------------------------------
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-
-using System;
 using System.ComponentModel;
-using DevAge.ComponentModel;
 using SourceGrid.Cells.Controllers;
-using SourceGrid.Selection;
 
-namespace SourceGrid.Extensions.PingGrids
-{
-	#region Controller
-	/// <summary>
-	/// Notify PingGrid of value editing
-	/// </summary>
-	public class PingGridCellController : ControllerBase
-	{
-		public override void OnValueChanging(CellContext sender, ValueChangeEventArgs e)
-		{
-			base.OnValueChanging (sender, e);
-	
-		}
-	
-		public override void OnEditStarting(CellContext sender, CancelEventArgs e)
-		{
-			base.OnEditStarting (sender, e);
-	
-		}
+namespace SourceGrid.Extensions.PingGrids;
+
+#region Controller
+
+/// <summary>
+/// Notify PingGrid of value editing
+/// </summary>
+public class PingGridCellController : ControllerBase {
+	public override void OnValueChanging(CellContext sender, ValueChangeEventArgs e) {
+		base.OnValueChanging(sender, e);
+
 	}
-	#endregion
+
+	public override void OnEditStarting(CellContext sender, CancelEventArgs e) {
+		base.OnEditStarting(sender, e);
+
+	}
 }
+
+#endregion

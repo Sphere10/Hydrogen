@@ -1,118 +1,97 @@
-//-----------------------------------------------------------------------
-// <copyright file="BoundList.cs" company="Sphere 10 Software">
-//
-// Copyright (c) Sphere 10 Software. All rights reserved. (http://www.sphere10.com)
+// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Author: Dev Age
 //
 // Distributed under the MIT software license, see the accompanying file
 // LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
 //
-// <author>Herman Schoenfeld</author>
-// <date>2018</date>
-// </copyright>
-//-----------------------------------------------------------------------
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.ComponentModel;
 
-namespace DevAge.ComponentModel
-{
-    /// <summary>
-    /// A class derived from BoundListBase that can be used to bind a list control (like SourceGrid) to a generic IList class.
-    /// If the IList is an instance of List class then also the Sort is supported.
-    /// Implement the IBoundList interface used for data binding.
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    [Serializable]
-    public class BoundList<T> : BoundListBase<T>
-    {
-		private IList<T> mList;
+namespace DevAge.ComponentModel;
 
-        public BoundList(IList<T> list)
-        {
-            mList = list;
+/// <summary>
+/// A class derived from BoundListBase that can be used to bind a list control (like SourceGrid) to a generic IList class.
+/// If the IList is an instance of List class then also the Sort is supported.
+/// Implement the IBoundList interface used for data binding.
+/// </summary>
+/// <typeparam name="T"></typeparam>
+[Serializable]
+public class BoundList<T> : BoundListBase<T> {
+	private IList<T> mList;
 
-            AllowNew = true;
-            AllowDelete = true;
-            AllowEdit = true;
-            AllowSort = mList is List<T>;
-        }
+	public BoundList(IList<T> list) {
+		mList = list;
 
-        protected override T OnAddNew()
-        {
-            T editItem = Activator.CreateInstance<T>();
+		AllowNew = true;
+		AllowDelete = true;
+		AllowEdit = true;
+		AllowSort = mList is List<T>;
+	}
 
-            mList.Add(editItem);
+	protected override T OnAddNew() {
+		T editItem = Activator.CreateInstance<T>();
 
-            return editItem;
-        }
+		mList.Add(editItem);
 
-        public override int IndexOf(object item)
-        {
-            return mList.IndexOf((T)item);
-        }
+		return editItem;
+	}
 
-        protected override void OnRemoveAt(int index)
-        {
-            mList.RemoveAt(index);
-        }
+	public override int IndexOf(object item) {
+		return mList.IndexOf((T)item);
+	}
 
-		protected override void OnClear ()
-		{
-			mList.Clear();
-		}
+	protected override void OnRemoveAt(int index) {
+		mList.RemoveAt(index);
+	}
 
-        public override object this[int index]
-        {
-            get { return mList[index]; }
-        }
+	protected override void OnClear() {
+		mList.Clear();
+	}
 
-        public override int Count
-        {
-            get { return mList.Count; }
-        }
+	public override object this[int index] {
+		get { return mList[index]; }
+	}
 
-        public override void ApplySort(System.ComponentModel.ListSortDescriptionCollection sorts)
-        {
-            List<T> sortableList = mList as List<T>;
+	public override int Count {
+		get { return mList.Count; }
+	}
 
-            if (sortableList == null)
-                throw new DevAgeApplicationException("Sort not supported, the list must be an instance of List<T>.");
+	public override void ApplySort(System.ComponentModel.ListSortDescriptionCollection sorts) {
+		List<T> sortableList = mList as List<T>;
 
-            sortableList.Sort(
-                delegate(T x, T y)
-                {
-                    foreach (System.ComponentModel.ListSortDescription sort in sorts)
-                    {
-                        IComparable valx = sort.PropertyDescriptor.GetValue(x) as IComparable;
-                        IComparable valy = sort.PropertyDescriptor.GetValue(y) as IComparable;
+		if (sortableList == null)
+			throw new DevAgeApplicationException("Sort not supported, the list must be an instance of List<T>.");
 
-                        //Swap the objects if the sort direction is Descending
-                        if (sort.SortDirection == ListSortDirection.Descending)
-                        {
-                            IComparable tmp = valx;
-                            valx = valy;
-                            valy = tmp;
-                        }
+		sortableList.Sort(
+			delegate(T x, T y) {
+				foreach (System.ComponentModel.ListSortDescription sort in sorts) {
+					IComparable valx = sort.PropertyDescriptor.GetValue(x) as IComparable;
+					IComparable valy = sort.PropertyDescriptor.GetValue(y) as IComparable;
 
-                        if (valx != null && valy != null)
-                        {
-                            int result = valx.CompareTo(valy);
-                            if (result != 0)
-                                return result;
-                        }
-                        else if (valx != null)
-                            return 1;
-                        else
-                            return -1;
-                    }
+					//Swap the objects if the sort direction is Descending
+					if (sort.SortDirection == ListSortDirection.Descending) {
+						IComparable tmp = valx;
+						valx = valy;
+						valy = tmp;
+					}
 
-                    return 0;
-                }
-                );
+					if (valx != null && valy != null) {
+						int result = valx.CompareTo(valy);
+						if (result != 0)
+							return result;
+					} else if (valx != null)
+						return 1;
+					else
+						return -1;
+				}
 
-            OnListChanged(new System.ComponentModel.ListChangedEventArgs(System.ComponentModel.ListChangedType.Reset, -1));
-        }
+				return 0;
+			}
+		);
+
+		OnListChanged(new System.ComponentModel.ListChangedEventArgs(System.ComponentModel.ListChangedType.Reset, -1));
 	}
 }

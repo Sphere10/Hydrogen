@@ -1,76 +1,85 @@
-﻿using System;
+﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using Hydrogen.FastReflection;
 
-namespace Hydrogen {
+namespace Hydrogen;
 
-	/// <summary>
-	/// A Serializer that works for base-level objects that delegates actual serialization to registered concrete-level serializers. Serialization is wrapped with the
-	/// type-code which permits selection of correct concrete type.
-	/// </summary>
-	/// <typeparam name="TBase">The type of object which is serialized/deserialized</typeparam>
-	public class FactorySerializer<TBase> : IItemSerializer<TBase>, IFactorySerializer<TBase> {
-		private readonly IDictionary<ushort, IItemSerializer<TBase>> _concreteLookup;
-		private readonly IBijectiveDictionary<Type, ushort> _typeCodeMap;
-		
+/// <summary>
+/// A serializer defined for objects of type <see cref="TBase"/> that uses a <see cref="SerializerFactory"/> to select serializers for concrete types.
+/// In addition to serializing the value, this serializer also serializes the serializer used to serialize the value. This permits it to ensure
+/// the same serializer is used for deserialization.
+/// </summary>
+/// <remarks>Ensure that the identical factory is used for both Serialization and Deserializatin for consistent results.</remarks>
+/// <typeparam name="TBase">The base-types of objects being serialized/deserialized</typeparam>
+public class FactorySerializer<TBase> : IItemSerializer<TBase> {
+	private readonly SerializerFactory _factory;
+	private readonly SerializerSerializer _serializerSerializer;
 
-		public FactorySerializer() {
-			_concreteLookup = new Dictionary<ushort, IItemSerializer<TBase>>();
-			_typeCodeMap = new BijectiveDictionary<Type, ushort>();
-		}
+	public FactorySerializer() 
+		: this(new SerializerFactory()) {
+	}
 
-		public IEnumerable<Type> RegisteredTypes => _typeCodeMap.Keys;
+	public FactorySerializer(SerializerFactory factory) {
+		_factory = factory;
+		_serializerSerializer = new SerializerSerializer(_factory);
+	}
 
-		public void RegisterSerializer<TConcrete>(IItemSerializer<TConcrete> concreteSerializer) where TConcrete : TBase
-			=> RegisterSerializer(GenerateTypeCode(), concreteSerializer);
+	public SerializerFactory Factory => _factory;
 
-		public void RegisterSerializer<TConcrete>(ushort typeCode, IItemSerializer<TConcrete> concreteSerializer) where TConcrete : TBase {
-			Guard.Argument(!_typeCodeMap.ContainsValue(typeCode), nameof(typeCode), $"Type code {typeCode} for type '{typeof(TConcrete).Name}' is already used for another serializer");
-			var concreteType = typeof(TConcrete);
-			Guard.Argument(!_typeCodeMap.ContainsKey(concreteType), nameof(TConcrete), "Type already registered");
-			_concreteLookup.Add(typeCode, new CastedSerializer<TBase, TConcrete>(concreteSerializer));
-			_typeCodeMap.Add(typeof(TConcrete), typeCode);
-		}
+	public bool SupportsNull => false;
 
-		public bool IsStaticSize => false;
+	public bool IsConstantSize => false;
 
-		public int StaticSize => -1;
+	public long ConstantSize => -1;
 
-		public int CalculateTotalSize(IEnumerable<TBase> items, bool calculateIndividualItems, out int[] itemSizes) {
-			var itemSizesL = new List<int>();
-			var totalSize = items.Aggregate(
-				0,
-				(i, o) => {
-					var itemSize = GetConcreteSerializer(GetTypeCode(o.GetType())).CalculateSize(o);
-					if (calculateIndividualItems)
-						itemSizesL.Add(itemSize);
-					return itemSize;
-				});
-			itemSizes = itemSizesL.ToArray();
-			return totalSize;
-		}
+	public long CalculateTotalSize(IEnumerable<TBase> items, bool calculateIndividualItems, out long[] itemSizes) {
+		var itemSizesL = new List<long>();
+		var totalSize = items.Aggregate(
+			0L,
+			(i, o) => {
+				var itemSize = _factory.GetSerializer<TBase>(o.GetType()).CalculateSize(o);
+				if (calculateIndividualItems)
+					itemSizesL.Add(itemSize);
+				return itemSize;
+			});
+		itemSizes = itemSizesL.ToArray();
+		return totalSize;
+	}
 
-		public int CalculateSize(TBase item) => GetConcreteSerializer(item).CalculateSize(item);
+	public long CalculateSize(TBase item)  {
+		var serializer = _factory.GetSerializer<TBase>(item.GetType());
+		return _serializerSerializer.CalculateSize(serializer) + serializer.CalculateSize(item);
+	}
 
-		public bool TrySerialize(TBase item, EndianBinaryWriter writer, out int bytesWritten) {
-			var typeCode = GetTypeCode(item);
-			writer.Write(typeCode);
-			return GetConcreteSerializer(typeCode).TrySerialize(item, writer, out bytesWritten);
-		}
+	public void Serialize(TBase item, EndianBinaryWriter writer) {
+		var serializer = _factory.GetSerializer<TBase>(item.GetType());
+		_serializerSerializer.Serialize(serializer, writer);
+		serializer.Serialize(item, writer);
+	}
 
-		public bool TryDeserialize(int byteSize, EndianBinaryReader reader, out TBase item) {
-			var typeCode = reader.ReadUInt16();
-			return GetConcreteSerializer(typeCode).TryDeserialize(byteSize, reader, out item);
-		}
+	public TBase Deserialize(EndianBinaryReader reader) {
+		var serializerObj = _serializerSerializer.Deserialize(reader);
+		var serializer = GetTypedSerializer<TBase>(serializerObj);
+		return serializer.Deserialize(reader);
+	}
 
-		public ushort GetTypeCode<TConcrete>(TConcrete item) where TConcrete : TBase => GetTypeCode(item.GetType());
+	public IItemSerializer<TSerializerDataType> GetTypedSerializer<TSerializerDataType>(IItemSerializer serializerObj) {
+		if (serializerObj is IItemSerializer<TSerializerDataType> serializer)
+			return serializer;
 
-		public ushort GetTypeCode(Type type) => _typeCodeMap[type];
+		var actualDataType = serializerObj.ItemType;
+		Guard.Ensure(actualDataType.FastIsSubTypeOf(typeof(TSerializerDataType)), $"Serializer object is not an {typeof(IItemSerializer<>).ToStringCS()}<{typeof(TSerializerDataType).ToStringCS()}>");
 
-		public ushort GenerateTypeCode() => _typeCodeMap.Count > 0 ? (ushort)(_typeCodeMap.Values.MaxByEx(x => x) + 1) : (ushort)0;
+		return new CastedSerializer<TSerializerDataType>(serializerObj);
 
-		private IItemSerializer<TBase> GetConcreteSerializer(TBase item) => GetConcreteSerializer(GetTypeCode(item));
-
-		private IItemSerializer<TBase> GetConcreteSerializer(ushort typeCode) => _concreteLookup[typeCode];
 	}
 }

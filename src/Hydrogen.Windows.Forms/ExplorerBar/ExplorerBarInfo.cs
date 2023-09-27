@@ -1,16 +1,3 @@
-//-----------------------------------------------------------------------
-// <copyright file="ExplorerBarInfo.cs" company="Sphere 10 Software">
-//
-// Copyright (c) Sphere 10 Software. All rights reserved. (http://www.sphere10.com)
-//
-// Distributed under the MIT software license, see the accompanying file
-// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
-//
-// <author>Herman Schoenfeld</author>
-// <date>2018</date>
-// </copyright>
-//-----------------------------------------------------------------------
-
 /*
  * Copyright © 2004-2005, Mathew Hall
  * All rights reserved.
@@ -39,186 +26,134 @@
 
 
 using System;
-using System.ComponentModel;
-using System.ComponentModel.Design.Serialization;
-using System.Drawing;
-using System.Drawing.Drawing2D;
-using System.Globalization;
-using System.Reflection;
-using System.Resources;
-using System.Runtime.InteropServices;
-using System.Runtime.Serialization;
-using System.Security.Permissions;
-using System.Windows.Forms;
-using System.Xml.Serialization;
-using System.Collections;
-using System.Collections.Generic;
-using Hydrogen;
 
-namespace Hydrogen.Windows.Forms
-{
-	
-	/// <summary>
-	/// A class that contains system defined settings for an XPExplorerBar
-	/// </summary>
-	public class ExplorerBarInfo : IDisposable
-	{
-		private static ExplorerBarInfo _default = null;
+namespace Hydrogen.Windows.Forms;
 
-		static ExplorerBarInfo() {
-            //if (Tools.DesignModeTool.IsDesignMode) {
-            //    XmlSerializer xmlSerializer = new XmlSerializer(typeof(ExplorerBarInfoSurrogate));
-            //    var surrogate = (ExplorerBarInfoSurrogate)xmlSerializer.Deserialize(new System.IO.StringReader(Resources.LunaExplorerBarTheme));
-            //    _default = surrogate.Save();
-            //} else {
-            //    _default =
-            //        XmlProvider
-            //        .ReadFromString<ExplorerBarInfoSurrogate>(Resources.LunaExplorerBarTheme)
-            //        .Save();
-            //}
-            _default = Tools.Xml.ReadFromString<ExplorerBarInfoSurrogate>(Resources.LunaExplorerBarTheme).Save();
-		}
+/// <summary>
+/// A class that contains system defined settings for an XPExplorerBar
+/// </summary>
+public class ExplorerBarInfo : IDisposable {
+	private static ExplorerBarInfo _default = null;
 
-	    public static ExplorerBarInfo Default {
-	        get {
-	            var cloner = new WinFormsCompatibleDeepObjectCloner();
-	            return (ExplorerBarInfo)cloner.Clone(_default);
-	        }
-	    }
-
-	    /// <summary>
-		/// System defined settings for a TaskPane
-		/// </summary>
-		private TaskPaneInfo taskPane;
-
-		/// <summary>
-		/// System defined settings for a TaskItem
-		/// </summary>
-		private TaskItemInfo taskItem;
-
-		/// <summary>
-		/// System defined settings for an Expando
-		/// </summary>
-		private ExpandoInfo expando;
-
-		/// <summary>
-		/// System defined settings for an Expando's header
-		/// </summary>
-		private HeaderInfo header;
-
-
-
-		
-		
-		/// <summary>
-		/// Initializes a new instance of the ExplorerBarInfo class with 
-		/// default settings
-		/// </summary>
-		public ExplorerBarInfo() {
-			this.taskPane = new TaskPaneInfo();
-			this.taskItem = new TaskItemInfo();
-			this.expando = new ExpandoInfo();
-			this.header = new HeaderInfo();
-		}
-
-		/// <summary>
-		/// Sets the arrow images for use when theming is not supported
-		/// </summary>
-		public void SetUnthemedArrowImages()
-		{
-			this.Header.SetUnthemedArrowImages();
-		}
-
-
-		/// <summary>
-		/// Force use of default values
-		/// </summary>
-		public void UseClassicTheme()
-		{
-			
-			this.TaskPane.SetDefaultValues();
-			this.Expando.SetDefaultValues();
-			this.Header.SetDefaultValues();
-			this.TaskItem.SetDefaultValues();
-
-			this.SetUnthemedArrowImages();
-		}
-
-
-		/// <summary>
-		/// Releases all resources used by the ExplorerBarInfo
-		/// </summary>
-		public void Dispose()
-		{
-			this.taskPane.Dispose();
-			this.header.Dispose();
-			this.expando.Dispose();
-		}
-
-		/// <summary>
-		/// Gets the ExplorerPane settings
-		/// </summary>
-		public TaskPaneInfo TaskPane
-		{
-			get
-			{
-				return this.taskPane;
-			}
-
-			set
-			{
-				this.taskPane = value;
-			}
-		}
-
-		/// <summary>
-		/// Gets the TaskLink settings
-		/// </summary>
-		public TaskItemInfo TaskItem
-		{
-			get
-			{
-				return this.taskItem;
-			}
-
-			set
-			{
-				this.taskItem = value;
-			}
-		}
-
-		/// <summary>
-		/// Gets the Group settings
-		/// </summary>
-		public ExpandoInfo Expando
-		{
-			get
-			{
-				return this.expando;
-			}
-
-			set
-			{
-				this.expando = value;
-			}
-		}
-
-		/// <summary>
-		/// Gets the Header settings
-		/// </summary>
-		public HeaderInfo Header
-		{
-			get
-			{
-				return this.header;
-			}
-
-			set
-			{
-				this.header = value;
-			}
-		}
-
-		
+	static ExplorerBarInfo() {
+		//if (Tools.DesignModeTool.IsDesignMode) {
+		//    XmlSerializer xmlSerializer = new XmlSerializer(typeof(ExplorerBarInfoSurrogate));
+		//    var surrogate = (ExplorerBarInfoSurrogate)xmlSerializer.Deserialize(new System.IO.StringReader(Resources.LunaExplorerBarTheme));
+		//    _default = surrogate.Save();
+		//} else {
+		//    _default =
+		//        XmlProvider
+		//        .ReadFromString<ExplorerBarInfoSurrogate>(Resources.LunaExplorerBarTheme)
+		//        .Save();
+		//}
+		_default = Tools.Xml.ReadFromString<ExplorerBarInfoSurrogate>(Resources.LunaExplorerBarTheme).Save();
 	}
+
+	public static ExplorerBarInfo Default {
+		get {
+			var cloner = new WinFormsCompatibleDeepObjectCloner();
+			return (ExplorerBarInfo)cloner.Clone(_default);
+		}
+	}
+
+	/// <summary>
+	/// System defined settings for a TaskPane
+	/// </summary>
+	private TaskPaneInfo taskPane;
+
+	/// <summary>
+	/// System defined settings for a TaskItem
+	/// </summary>
+	private TaskItemInfo taskItem;
+
+	/// <summary>
+	/// System defined settings for an Expando
+	/// </summary>
+	private ExpandoInfo expando;
+
+	/// <summary>
+	/// System defined settings for an Expando's header
+	/// </summary>
+	private HeaderInfo header;
+
+
+	/// <summary>
+	/// Initializes a new instance of the ExplorerBarInfo class with 
+	/// default settings
+	/// </summary>
+	public ExplorerBarInfo() {
+		this.taskPane = new TaskPaneInfo();
+		this.taskItem = new TaskItemInfo();
+		this.expando = new ExpandoInfo();
+		this.header = new HeaderInfo();
+	}
+
+	/// <summary>
+	/// Sets the arrow images for use when theming is not supported
+	/// </summary>
+	public void SetUnthemedArrowImages() {
+		this.Header.SetUnthemedArrowImages();
+	}
+
+
+	/// <summary>
+	/// Force use of default values
+	/// </summary>
+	public void UseClassicTheme() {
+
+		this.TaskPane.SetDefaultValues();
+		this.Expando.SetDefaultValues();
+		this.Header.SetDefaultValues();
+		this.TaskItem.SetDefaultValues();
+
+		this.SetUnthemedArrowImages();
+	}
+
+
+	/// <summary>
+	/// Releases all resources used by the ExplorerBarInfo
+	/// </summary>
+	public void Dispose() {
+		this.taskPane.Dispose();
+		this.header.Dispose();
+		this.expando.Dispose();
+	}
+
+	/// <summary>
+	/// Gets the ExplorerPane settings
+	/// </summary>
+	public TaskPaneInfo TaskPane {
+		get { return this.taskPane; }
+
+		set { this.taskPane = value; }
+	}
+
+	/// <summary>
+	/// Gets the TaskLink settings
+	/// </summary>
+	public TaskItemInfo TaskItem {
+		get { return this.taskItem; }
+
+		set { this.taskItem = value; }
+	}
+
+	/// <summary>
+	/// Gets the Group settings
+	/// </summary>
+	public ExpandoInfo Expando {
+		get { return this.expando; }
+
+		set { this.expando = value; }
+	}
+
+	/// <summary>
+	/// Gets the Header settings
+	/// </summary>
+	public HeaderInfo Header {
+		get { return this.header; }
+
+		set { this.header = value; }
+	}
+
+
 }

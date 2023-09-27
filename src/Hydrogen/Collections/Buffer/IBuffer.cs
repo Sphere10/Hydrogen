@@ -1,38 +1,47 @@
-﻿using System;
+﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen {
-	public interface IBuffer : IExtendedList<byte> {
+using System;
 
-		ReadOnlySpan<byte> ReadSpan(int index, int count);
+namespace Hydrogen;
 
-		void AddRange(ReadOnlySpan<byte> span);
+public interface IBuffer : IExtendedList<byte> {
 
-		void UpdateRange(int index, ReadOnlySpan<byte> items);
+	ReadOnlySpan<byte> ReadSpan(long index, long count);
 
-		void InsertRange(int index, ReadOnlySpan<byte> items);
+	void AddRange(ReadOnlySpan<byte> span);
 
-		Span<byte> AsSpan(int index, int count);
+	void UpdateRange(long index, ReadOnlySpan<byte> items);
 
-		void ExpandTo(int totalBytes);
+	void InsertRange(long index, ReadOnlySpan<byte> items);
 
-		void ExpandBy(int newBytes);
+	Span<byte> AsSpan(long index, long count);
+
+	void ExpandTo(long totalBytes);
+
+	void ExpandBy(long newBytes);
+}
+
+
+public static class IBufferExtensions {
+
+	public static ReadOnlySpan<byte> ReadSpan(this IBuffer memoryBuffer, Range range) {
+		var countI = Tools.Collection.CheckNotImplemented64bitAddressingLength(memoryBuffer.Count);
+		var (start, count) = range.GetOffsetAndLength(countI);
+		return memoryBuffer.ReadSpan(start, count);
 	}
 
-
-	public static class IBufferExtensions {
-
-		public static ReadOnlySpan<byte> ReadSpan(this IBuffer memoryBuffer, Range range) {
-			var (start, count) = range.GetOffsetAndLength(memoryBuffer.Count);
-			return memoryBuffer.ReadSpan(start, count);
-		}
-
-
-		public static Span<byte> AsSpan(this IBuffer memoryBuffer, Range range) {
-			var (start, count) = range.GetOffsetAndLength(memoryBuffer.Count);
-			return memoryBuffer.AsSpan(start, count);
-		}
-
-		public static Span<byte> AsSpan(this IBuffer memoryBuffer, Index startIndex)
-			=> memoryBuffer.AsSpan(Range.StartAt(startIndex));
+	public static Span<byte> AsSpan(this IBuffer memoryBuffer, Range range) {
+		var countI = Tools.Collection.CheckNotImplemented64bitAddressingLength(memoryBuffer.Count);
+		var (start, count) = range.GetOffsetAndLength(countI);
+		return memoryBuffer.AsSpan(start, count);
 	}
+
+	public static Span<byte> AsSpan(this IBuffer memoryBuffer, Index startIndex)
+		=> memoryBuffer.AsSpan(Range.StartAt(startIndex));
 }

@@ -1,66 +1,62 @@
-//-----------------------------------------------------------------------
-// <copyright file="IDAC.cs" company="Sphere 10 Software">
-//
-// Copyright (c) Sphere 10 Software. All rights reserved. (http://www.sphere10.com)
+// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
 // LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
 //
-// <author>Herman Schoenfeld</author>
-// <date>2018</date>
-// </copyright>
-//-----------------------------------------------------------------------
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
 using System.Collections.Generic;
 using System.Data;
 
-namespace Hydrogen.Data {
-	public interface IDAC {
+namespace Hydrogen.Data;
 
-	    event EventHandlerEx<IDAC, string> Executing;
-        event EventHandlerEx<IDAC, string> Executed;
-            
-        Guid InstanceID { get; }
+public interface IDAC {
 
-        bool UseScopeOsmosis { get; set; }
+	event EventHandlerEx<IDAC, string> Executing;
+	event EventHandlerEx<IDAC, string> Executed;
 
-        IsolationLevel DefaultIsolationLevel { get; set; }
+	Guid InstanceID { get; }
 
-        DBMSType DBMSType { get; }
+	bool UseScopeOsmosis { get; set; }
 
-		string ConnectionString { get; }
+	IsolationLevel DefaultIsolationLevel { get; set; }
 
-		ArtificialKeys ArtificialKeys { get; set;  }
+	DBMSType DBMSType { get; }
 
-		ILogger Log { get; set; }
+	string ConnectionString { get; }
 
-		IDbConnection CreateConnection();
+	ArtificialKeys ArtificialKeys { get; set; }
 
-		ISQLBuilder CreateSQLBuilder();
+	ILogger Log { get; set; }
 
-        void EnlistInSystemTransaction(IDbConnection connection, System.Transactions.Transaction transaction);
+	IDbConnection CreateConnection();
 
-		int ExecuteNonQuery(string query);
+	ISQLBuilder CreateSQLBuilder();
 
-		object ExecuteScalar(string query);
+	void EnlistInSystemTransaction(IDbConnection connection, System.Transactions.Transaction transaction);
 
-		DataTable[] ExecuteBatch(ISQLBuilder sqlBuilder);
+	int ExecuteNonQuery(string query);
 
-		IDataReader ExecuteReader(string query);
-	
-        // TODO: Make ext method
-		long Insert(string tableName, IEnumerable<ColumnValue> values);
+	object ExecuteScalar(string query);
 
-        // TODO: Make ext method
-        long Update(string tableName, IEnumerable<ColumnValue> setValues, IEnumerable<ColumnValue> whereValues);
+	DataTable[] ExecuteBatch(ISQLBuilder sqlBuilder);
 
-        // TODO: Make ext method
-        long Delete(string tableName, IEnumerable<ColumnValue> matchColumns);
+	IDataReader ExecuteReader(string query);
 
-	    void BulkInsert(DataTable table, BulkInsertOptions bulkInsertOptions, TimeSpan timeout);
-		DBSchema GetSchema();
+	// TODO: Make ext method
+	long Insert(string tableName, IEnumerable<ColumnValue> values);
+
+	// TODO: Make ext method
+	long Update(string tableName, IEnumerable<ColumnValue> setValues, IEnumerable<ColumnValue> whereValues);
+
+	// TODO: Make ext method
+	long Delete(string tableName, IEnumerable<ColumnValue> matchColumns);
+
+	void BulkInsert(DataTable table, BulkInsertOptions bulkInsertOptions, TimeSpan timeout);
+
+	DBSchema GetSchema();
 
 
-	}
 }

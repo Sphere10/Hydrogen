@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<IsPackable>false</IsPackable>
+		<LangVersion>latest</LangVersion>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="NUnit" Version="3.13.3" />
+		<PackageReference Include="NUnit3TestAdapter" Version="4.5.0" />
+		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.7.2" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\src\Hydrogen.NET\Hydrogen.NET.csproj" />
+		<ProjectReference Include="..\..\src\Hydrogen.NUnit\Hydrogen.NUnit.csproj" />
+		<ProjectReference Include="..\..\src\Hydrogen\Hydrogen.csproj" />
+	</ItemGroup>
+
+</Project>

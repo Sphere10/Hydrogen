@@ -1,41 +1,36 @@
-﻿//-----------------------------------------------------------------------
-// <copyright file="ISettingsProvider.cs" company="Sphere 10 Software">
-//
-// Copyright (c) Sphere 10 Software. All rights reserved. (http://www.sphere10.com)
+﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
 // LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
 //
-// <author>Herman Schoenfeld</author>
-// <date>2018</date>
-// </copyright>
-//-----------------------------------------------------------------------
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
 
-namespace Hydrogen.Application {
-    public class SettingsProviderDecorator : ISettingsProvider {
+namespace Hydrogen.Application;
 
-        public SettingsProviderDecorator(ISettingsProvider internalSettingsProvider) {
-			InternalSettingsProvider = internalSettingsProvider;
-        }
+public class SettingsProviderDecorator : ISettingsProvider {
 
-        public virtual bool AutoSaveNewSettings => InternalSettingsProvider.AutoSaveNewSettings;
+	public SettingsProviderDecorator(ISettingsProvider internalSettingsProvider) {
+		InternalSettingsProvider = internalSettingsProvider;
+	}
 
-        public virtual bool EncryptSettings => InternalSettingsProvider.EncryptSettings;
+	public virtual bool AutoSaveNewSettings => InternalSettingsProvider.AutoSaveNewSettings;
 
-        protected virtual ISettingsProvider InternalSettingsProvider { get; }
+	public virtual bool EncryptSettings => InternalSettingsProvider.EncryptSettings;
 
-        public virtual void ClearSettings() => InternalSettingsProvider.ClearSettings();
+	protected virtual ISettingsProvider InternalSettingsProvider { get; }
 
-        public virtual bool ContainsSetting(Type settingsObjectType, object id = null) => InternalSettingsProvider.ContainsSetting(settingsObjectType, id);
+	public virtual void ClearSettings() => InternalSettingsProvider.ClearSettings();
 
-        public virtual void DeleteSetting(SettingsObject settings) => InternalSettingsProvider.DeleteSetting(settings);
+	public virtual bool ContainsSetting(Type settingsObjectType, object id = null) => InternalSettingsProvider.ContainsSetting(settingsObjectType, id);
 
-        public virtual SettingsObject LoadSetting(Type settingsObjectType, object id = null) => InternalSettingsProvider.LoadSetting(settingsObjectType, id);
+	public virtual void DeleteSetting(SettingsObject settings) => InternalSettingsProvider.DeleteSetting(settings);
 
-        public virtual SettingsObject NewSetting(Type settingsObjectType, object id = null) => InternalSettingsProvider.NewSetting(settingsObjectType, id);
+	public virtual SettingsObject LoadSetting(Type settingsObjectType, object id = null) => InternalSettingsProvider.LoadSetting(settingsObjectType, id);
 
-        public virtual void SaveSetting(SettingsObject settings) => InternalSettingsProvider.SaveSetting(settings);
-    }
+	public virtual SettingsObject NewSetting(Type settingsObjectType, object id = null) => InternalSettingsProvider.NewSetting(settingsObjectType, id);
+
+	public virtual void SaveSetting(SettingsObject settings) => InternalSettingsProvider.SaveSetting(settings);
 }

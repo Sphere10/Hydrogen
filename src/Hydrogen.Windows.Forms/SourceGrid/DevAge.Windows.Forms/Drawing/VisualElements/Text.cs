@@ -1,163 +1,145 @@
-//-----------------------------------------------------------------------
-// <copyright file="Text.cs" company="Sphere 10 Software">
-//
-// Copyright (c) Sphere 10 Software. All rights reserved. (http://www.sphere10.com)
+// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Author: Dev Age
 //
 // Distributed under the MIT software license, see the accompanying file
 // LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
 //
-// <author>Herman Schoenfeld</author>
-// <date>2018</date>
-// </copyright>
-//-----------------------------------------------------------------------
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.ComponentModel;
 using System.Drawing;
 
-namespace DevAge.Drawing.VisualElements
-{
-    public interface IText : IVisualElement
-    {
-        string Value
-        {
-            get;
-            set;
-        }
+namespace DevAge.Drawing.VisualElements;
 
-        Color ForeColor
-        {
-            get;
-            set;
-        }
+public interface IText : IVisualElement {
+	string Value { get; set; }
 
-        Font Font
-        {
-            get;
-            set;
-        }
-    }
+	Color ForeColor { get; set; }
 
-    [Serializable]
-    public class Text : VisualElementBase, IText
-    {
-        #region Constructor
-        /// <summary>
-        /// Default constructor
-        /// </summary>
-        public Text()
-        {
-        }
+	Font Font { get; set; }
+}
 
-        /// <summary>
-        /// Constructor
-        /// </summary>
-        /// <param name="value"></param>
-        public Text(string value)
-        {
-            Value = value;
-        }
 
-        /// <summary>
-        /// Copy constructor.
-        /// </summary>
-        /// <param name="other"></param>
-        public Text(Text other):base(other)
-        {
-            Value = other.Value;
-            Font = other.Font;
-            ForeColor = other.ForeColor;
-            Enabled = other.Enabled;
-        }
-        #endregion
+[Serializable]
+public class Text : VisualElementBase, IText {
 
-        #region Properties
-        private Font mFont = System.Windows.Forms.Control.DefaultFont;
-        /// <summary>
-        /// Gets or sets the Font of the content. Default is System.Windows.Forms.Control.DefaultFont.
-        /// </summary>
-        public virtual Font Font
-        {
-            get { return mFont; }
-            set { mFont = value; }
-        }
-        private bool ShouldSerializeFont()
-        {
-            return Font.ToString() != System.Windows.Forms.Control.DefaultFont.ToString();
-        }
+	#region Constructor
 
-        private Color mForeColor = System.Windows.Forms.Control.DefaultForeColor;
-        /// <summary>
-        /// Gets or sets the fore color of the content. System.Windows.Forms.Control.DefaultForeColor
-        /// </summary>
-        public virtual Color ForeColor
-        {
-            get { return mForeColor; }
-            set { mForeColor = value; }
-        }
-        private bool ShouldSerializeForeColor()
-        {
-            return ForeColor != System.Windows.Forms.Control.DefaultForeColor;
-        }
+	/// <summary>
+	/// Default constructor
+	/// </summary>
+	public Text() {
+	}
 
-        private string mValue = null;
-        /// <summary>
-        /// Gets or sets the string to draw. Default is null.
-        /// </summary>
-        [DefaultValue(null)]
-        public virtual string Value
-        {
-            get { return mValue; }
-            set { mValue = value; }
-        }
+	/// <summary>
+	/// Constructor
+	/// </summary>
+	/// <param name="value"></param>
+	public Text(string value) {
+		Value = value;
+	}
 
-        private bool mEnabled = true;
-        public bool Enabled
-        {
-            get { return mEnabled; }
-            set { mEnabled = value; }
-        }
-        #endregion
+	/// <summary>
+	/// Copy constructor.
+	/// </summary>
+	/// <param name="other"></param>
+	public Text(Text other) : base(other) {
+		Value = other.Value;
+		Font = other.Font;
+		ForeColor = other.ForeColor;
+		Enabled = other.Enabled;
+	}
 
-        #region Measure
-        /// <summary>
-        /// Measure the current content of the VisualElement.
-        /// </summary>
-        /// <param name="measure"></param>
-        /// <param name="maxSize">If empty is not used.</param>
-        /// <returns></returns>
-        protected override System.Drawing.SizeF OnMeasureContent(MeasureHelper measure, System.Drawing.SizeF maxSize)
-        {
-            if (maxSize != System.Drawing.SizeF.Empty)
-                return measure.Graphics.MeasureString(Value, Font, maxSize);
-            else
-                return measure.Graphics.MeasureString(Value, Font);
-        }
-        #endregion
+	#endregion
 
-        #region Draw
-        protected override void OnDraw(GraphicsCache graphics, System.Drawing.RectangleF area)
-        {
-            SolidBrush brush;
+	#region Properties
 
-            if (Enabled)
-                brush = graphics.BrushsCache.GetBrush(ForeColor);
-            else
-                brush = graphics.BrushsCache.GetBrush(Color.FromKnownColor(KnownColor.GrayText));
+	private Font mFont = System.Windows.Forms.Control.DefaultFont;
 
-            graphics.Graphics.DrawString(Value, Font, brush, area);
-        }
-        #endregion
+	/// <summary>
+	/// Gets or sets the Font of the content. Default is System.Windows.Forms.Control.DefaultFont.
+	/// </summary>
+	public virtual Font Font {
+		get { return mFont; }
+		set { mFont = value; }
+	}
 
-        /// <summary>
-        /// Clone
-        /// </summary>
-        /// <returns></returns>
-        public override object Clone()
-        {
-            return new Text(this);
-        }
-    }
+	private bool ShouldSerializeFont() {
+		return Font.ToString() != System.Windows.Forms.Control.DefaultFont.ToString();
+	}
+
+	private Color mForeColor = System.Windows.Forms.Control.DefaultForeColor;
+
+	/// <summary>
+	/// Gets or sets the fore color of the content. System.Windows.Forms.Control.DefaultForeColor
+	/// </summary>
+	public virtual Color ForeColor {
+		get { return mForeColor; }
+		set { mForeColor = value; }
+	}
+
+	private bool ShouldSerializeForeColor() {
+		return ForeColor != System.Windows.Forms.Control.DefaultForeColor;
+	}
+
+	private string mValue = null;
+
+	/// <summary>
+	/// Gets or sets the string to draw. Default is null.
+	/// </summary>
+	[DefaultValue(null)]
+	public virtual string Value {
+		get { return mValue; }
+		set { mValue = value; }
+	}
+
+	private bool mEnabled = true;
+
+	public bool Enabled {
+		get { return mEnabled; }
+		set { mEnabled = value; }
+	}
+
+	#endregion
+
+	#region Measure
+
+	/// <summary>
+	/// Measure the current content of the VisualElement.
+	/// </summary>
+	/// <param name="measure"></param>
+	/// <param name="maxSize">If empty is not used.</param>
+	/// <returns></returns>
+	protected override System.Drawing.SizeF OnMeasureContent(MeasureHelper measure, System.Drawing.SizeF maxSize) {
+		if (maxSize != System.Drawing.SizeF.Empty)
+			return measure.Graphics.MeasureString(Value, Font, maxSize);
+		else
+			return measure.Graphics.MeasureString(Value, Font);
+	}
+
+	#endregion
+
+	#region Draw
+
+	protected override void OnDraw(GraphicsCache graphics, System.Drawing.RectangleF area) {
+		SolidBrush brush;
+
+		if (Enabled)
+			brush = graphics.BrushsCache.GetBrush(ForeColor);
+		else
+			brush = graphics.BrushsCache.GetBrush(Color.FromKnownColor(KnownColor.GrayText));
+
+		graphics.Graphics.DrawString(Value, Font, brush, area);
+	}
+
+	#endregion
+
+	/// <summary>
+	/// Clone
+	/// </summary>
+	/// <returns></returns>
+	public override object Clone() {
+		return new Text(this);
+	}
 }

@@ -2,186 +2,159 @@
 
 using System;
 
-namespace CommandLine.Core
-{
-    enum TokenType { Name, Value }
+namespace CommandLine.Core;
 
-    abstract class Token
-    {
-        private readonly TokenType tag;
-        private readonly string text;
+enum TokenType {
+	Name,
+	Value
+}
 
-        protected Token(TokenType tag, string text)
-        {
-            this.tag = tag;
-            this.text = text;
-        }
 
-        public static Token Name(string text)
-        {
-            return new Name(text);
-        }
+abstract class Token {
+	private readonly TokenType tag;
+	private readonly string text;
 
-        public static Token Value(string text)
-        {
-            return new Value(text);
-        }
+	protected Token(TokenType tag, string text) {
+		this.tag = tag;
+		this.text = text;
+	}
 
-        public static Token Value(string text, bool explicitlyAssigned)
-        {
-            return new Value(text, explicitlyAssigned);
-        }
+	public static Token Name(string text) {
+		return new Name(text);
+	}
 
-        public static Token ValueForced(string text)
-        {
-            return new Value(text, false, true, false);
-        }
+	public static Token Value(string text) {
+		return new Value(text);
+	}
 
-        public static Token ValueFromSeparator(string text)
-        {
-            return new Value(text, false, false, true);
-        }
+	public static Token Value(string text, bool explicitlyAssigned) {
+		return new Value(text, explicitlyAssigned);
+	}
 
-        public TokenType Tag
-        {
-            get { return tag; }
-        }
+	public static Token ValueForced(string text) {
+		return new Value(text, false, true, false);
+	}
 
-        public string Text
-        {
-            get { return text; }
-        }
-    }
+	public static Token ValueFromSeparator(string text) {
+		return new Value(text, false, false, true);
+	}
 
-    class Name : Token, IEquatable<Name>
-    {
-        public Name(string text)
-            : base(TokenType.Name, text)
-        {
-        }
+	public TokenType Tag {
+		get { return tag; }
+	}
 
-        public override bool Equals(object obj)
-        {
-            var other = obj as Name;
-            if (other != null)
-            {
-                return Equals(other);
-            }
+	public string Text {
+		get { return text; }
+	}
+}
 
-            return base.Equals(obj);
-        }
 
-        public override int GetHashCode()
-        {
-            return new {Tag, Text}.GetHashCode();
-        }
+class Name : Token, IEquatable<Name> {
+	public Name(string text)
+		: base(TokenType.Name, text) {
+	}
 
-        public bool Equals(Name other)
-        {
-            if (other == null)
-            {
-                return false;
-            }
+	public override bool Equals(object obj) {
+		var other = obj as Name;
+		if (other != null) {
+			return Equals(other);
+		}
 
-            return Tag.Equals(other.Tag) && Text.Equals(other.Text);
-        }
-    }
+		return base.Equals(obj);
+	}
 
-    class Value : Token, IEquatable<Value>
-    {
-        private readonly bool explicitlyAssigned;
-        private readonly bool forced;
-        private readonly bool fromSeparator;
+	public override int GetHashCode() {
+		return new { Tag, Text }.GetHashCode();
+	}
 
-        public Value(string text)
-            : this(text, false, false, false)
-        {
-        }
+	public bool Equals(Name other) {
+		if (other == null) {
+			return false;
+		}
 
-        public Value(string text, bool explicitlyAssigned)
-            : this(text, explicitlyAssigned, false, false)
-        {
-        }
+		return Tag.Equals(other.Tag) && Text.Equals(other.Text);
+	}
+}
 
-        public Value(string text, bool explicitlyAssigned, bool forced, bool fromSeparator)
-            : base(TokenType.Value, text)
-        {
-            this.explicitlyAssigned = explicitlyAssigned;
-            this.forced = forced;
-            this.fromSeparator = fromSeparator;
-        }
 
-        /// <summary>
-        /// Whether this value came from a long option with "=" separating the name from the value
-        /// </summary>
-        public bool ExplicitlyAssigned
-        {
-            get { return explicitlyAssigned; }
-        }
+class Value : Token, IEquatable<Value> {
+	private readonly bool explicitlyAssigned;
+	private readonly bool forced;
+	private readonly bool fromSeparator;
 
-        /// <summary>
-        /// Whether this value came from a sequence specified with a separator (e.g., "--files a.txt,b.txt,c.txt")
-        /// </summary>
-        public bool FromSeparator
-        {
-            get { return fromSeparator; }
-        }
+	public Value(string text)
+		: this(text, false, false, false) {
+	}
 
-        /// <summary>
-        /// Whether this value came from args after the -- separator (when EnableDashDash = true)
-        /// </summary>
-        public bool Forced
-        {
-            get { return forced; }
-        }
+	public Value(string text, bool explicitlyAssigned)
+		: this(text, explicitlyAssigned, false, false) {
+	}
 
-        public override bool Equals(object obj)
-        {
-            var other = obj as Value;
-            if (other != null)
-            {
-                return Equals(other);
-            }
+	public Value(string text, bool explicitlyAssigned, bool forced, bool fromSeparator)
+		: base(TokenType.Value, text) {
+		this.explicitlyAssigned = explicitlyAssigned;
+		this.forced = forced;
+		this.fromSeparator = fromSeparator;
+	}
 
-            return base.Equals(obj);
-        }
+	/// <summary>
+	/// Whether this value came from a long option with "=" separating the name from the value
+	/// </summary>
+	public bool ExplicitlyAssigned {
+		get { return explicitlyAssigned; }
+	}
 
-        public override int GetHashCode()
-        {
-            return new { Tag, Text }.GetHashCode();
-        }
+	/// <summary>
+	/// Whether this value came from a sequence specified with a separator (e.g., "--files a.txt,b.txt,c.txt")
+	/// </summary>
+	public bool FromSeparator {
+		get { return fromSeparator; }
+	}
 
-        public bool Equals(Value other)
-        {
-            if (other == null)
-            {
-                return false;
-            }
+	/// <summary>
+	/// Whether this value came from args after the -- separator (when EnableDashDash = true)
+	/// </summary>
+	public bool Forced {
+		get { return forced; }
+	}
 
-            return Tag.Equals(other.Tag) && Text.Equals(other.Text) && this.Forced == other.Forced;
-        }
-    }
+	public override bool Equals(object obj) {
+		var other = obj as Value;
+		if (other != null) {
+			return Equals(other);
+		}
 
-    static class TokenExtensions
-    {
-        public static bool IsName(this Token token)
-        {
-            return token.Tag == TokenType.Name;
-        }
+		return base.Equals(obj);
+	}
 
-        public static bool IsValue(this Token token)
-        {
-            return token.Tag == TokenType.Value;
-        }
+	public override int GetHashCode() {
+		return new { Tag, Text }.GetHashCode();
+	}
 
-        public static bool IsValueFromSeparator(this Token token)
-        {
-            return token.IsValue() && ((Value)token).FromSeparator;
-        }
+	public bool Equals(Value other) {
+		if (other == null) {
+			return false;
+		}
 
-        public static bool IsValueForced(this Token token)
-        {
-            return token.IsValue() && ((Value)token).Forced;
-        }
-    }
+		return Tag.Equals(other.Tag) && Text.Equals(other.Text) && this.Forced == other.Forced;
+	}
+}
+
+
+static class TokenExtensions {
+	public static bool IsName(this Token token) {
+		return token.Tag == TokenType.Name;
+	}
+
+	public static bool IsValue(this Token token) {
+		return token.Tag == TokenType.Value;
+	}
+
+	public static bool IsValueFromSeparator(this Token token) {
+		return token.IsValue() && ((Value)token).FromSeparator;
+	}
+
+	public static bool IsValueForced(this Token token) {
+		return token.IsValue() && ((Value)token).Forced;
+	}
 }

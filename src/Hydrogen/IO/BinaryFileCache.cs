@@ -1,4 +1,12 @@
-﻿using System;
+﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 
@@ -13,13 +21,13 @@ public class BinaryFileCache : FileCacheBase<byte[]> {
 		TimeSpan? expirationDuration = null,
 		IEqualityComparer<string> fileNameComparer = null,
 		ICacheReaper reaper = null
-	) : base(reapStrategy, expirationStrategy, maxCapacity, expirationDuration, fileNameComparer, reaper){
+	) : base(reapStrategy, expirationStrategy, maxCapacity, expirationDuration, fileNameComparer, reaper) {
 	}
 
-	protected override long EstimateSize(byte[] value) 
+	protected override long EstimateSize(byte[] value)
 		=> value.Length * sizeof(byte);
 
-	protected override byte[] Fetch(string key) 
+	protected override byte[] Fetch(string key)
 		=> File.ReadAllBytes(key);
-		
+
 }

@@ -1,25 +1,25 @@
-﻿using System.ComponentModel;
+﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen.DApp.Node.UI {
+using System.ComponentModel;
 
-	public enum AppMenu {
-		[Description("_File")]
-		File,
+namespace Hydrogen.DApp.Node.UI;
 
-		[Description("_Wallet")]
-		Wallet,
+public enum AppMenu {
+	[Description("_File")] File,
 
-		[Description("_Settings")]
-		Settings,
+	[Description("_Wallet")] Wallet,
 
-		[Description("_Explorer")]
-		Explorer,
+	[Description("_Settings")] Settings,
 
-		[Description("D_iagnostic")]
-		Diagnostic,
+	[Description("_Explorer")] Explorer,
 
-		[Description("_Development")]
-		Development,
-	}
+	[Description("D_iagnostic")] Diagnostic,
 
+	[Description("_Development")] Development,
 }

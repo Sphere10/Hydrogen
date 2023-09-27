@@ -1,10 +1,17 @@
-﻿using System;
+﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Author: Hamish Rose
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen.DApp.Presentation.Models {
+using System;
 
-    public class Block {
-        public int Number { get; set; }
+namespace Hydrogen.DApp.Presentation.Models;
 
-        public string Address { get; set; } = Guid.NewGuid().ToString();
-    }
+public class Block {
+	public int Number { get; set; }
+
+	public string Address { get; set; } = Guid.NewGuid().ToString();
 }

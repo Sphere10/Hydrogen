@@ -1,3 +1,11 @@
+// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Author: Ugochukwu Mmaduekwe, Herman Schoenfeld
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
+
 using System;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -12,7 +20,7 @@ using Org.BouncyCastle.Security;
 using Org.BouncyCastle.Utilities;
 using Hydrogen.CryptoEx.EC.IES;
 
-namespace Hydrogen.CryptoEx.EC;
+namespace Hydrogen.CryptoEx.EC.Schnorr;
 
 //https://github.com/bitcoin/bips/blob/master/bip-0340.mediawiki
 public class Schnorr : StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schnorr.PublicKey> {

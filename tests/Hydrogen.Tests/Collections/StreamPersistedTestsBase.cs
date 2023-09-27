@@ -1,4 +1,12 @@
-﻿//using System;
+﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
+
+//using System;
 //using System.Collections.Generic;
 //using System.IO;
 //using System.Linq;
@@ -90,7 +98,7 @@
 
 //			public override int CalculateSize(TestObject item) 
 //				=> _stringSerializer.CalculateSize(item.A) + sizeof(int) + sizeof(bool);
-			
+
 
 //			public override bool TrySerialize(TestObject item, EndianBinaryWriter writer, out int bytesWritten) {
 //				int stringBytesCount = _stringSerializer.Serialize(item.A, writer);
@@ -109,7 +117,7 @@
 
 //		}
 
-//        public class TestObjectComparer : IEqualityComparer<TestObject> {
+//        public class TestObjectEqualityComparer : IEqualityComparer<TestObject> {
 //			public bool Equals(TestObject x, TestObject y) {
 //				if (ReferenceEquals(x, y))
 //					return true;
@@ -138,3 +146,6 @@
 //		}
 //	}
 //}
+
+
+

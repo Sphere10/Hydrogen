@@ -1,95 +1,75 @@
-//-----------------------------------------------------------------------
-// <copyright file="RichTextBox.cs" company="Sphere 10 Software">
-//
-// Copyright (c) Sphere 10 Software. All rights reserved. (http://www.sphere10.com)
+// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Author: Dev Age
 //
 // Distributed under the MIT software license, see the accompanying file
 // LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
 //
-// <author>Herman Schoenfeld</author>
-// <date>2018</date>
-// </copyright>
-//-----------------------------------------------------------------------
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
 using System.Drawing;
 using System.Windows.Forms;
 
-namespace SourceGrid.Cells.Controllers
-{
-    /// <summary>
-    /// Implementation RichTextBox behavior
-    /// </summary>
-    public class RichTextBox : ControllerBase
-    {
-        /// <summary>
-        /// Default behavior RichTextBox
-        /// </summary>
-        public readonly static RichTextBox Default = new RichTextBox();
+namespace SourceGrid.Cells.Controllers;
 
-        /// <summary>
-        /// Constructor
-        /// </summary>
-        public RichTextBox()
-        {
-        }
-            
-        #region Controller Events
+/// <summary>
+/// Implementation RichTextBox behavior
+/// </summary>
+public class RichTextBox : ControllerBase {
+	/// <summary>
+	/// Default behavior RichTextBox
+	/// </summary>
+	public readonly static RichTextBox Default = new RichTextBox();
 
-        /// <summary>
-        /// If ValueEventArgs is a font, use it to change SelectionFont
-        /// If String, assign it as rtf
-        /// If Int32, assign it as offset
-        /// If HorizontalAlignment, assign as SelectionAlignment
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        public override void OnValueChanging(CellContext sender, ValueChangeEventArgs e)
-        {
-            base.OnValueChanging(sender, e);
+	/// <summary>
+	/// Constructor
+	/// </summary>
+	public RichTextBox() {
+	}
 
-            // only check if event args is of known type if event is not of type rich text
-            if (!(e.NewValue is DevAge.Windows.Forms.RichText))
-            {
-                Editors.RichTextBox richEditor = (Editors.RichTextBox)sender.Cell.Editor;
-                DevAge.Windows.Forms.DevAgeRichTextBox richTextBox = richEditor.Control;
+	#region Controller Events
 
-                // if editor is not open, assign value and select all text
-                if (sender.Cell.Editor.EditCell == null)
-                {
-                    richTextBox.Value = sender.Value as DevAge.Windows.Forms.RichText;
-                    richTextBox.SelectAll();
-                }
+	/// <summary>
+	/// If ValueEventArgs is a font, use it to change SelectionFont
+	/// If String, assign it as rtf
+	/// If Int32, assign it as offset
+	/// If HorizontalAlignment, assign as SelectionAlignment
+	/// </summary>
+	/// <param name="sender"></param>
+	/// <param name="e"></param>
+	public override void OnValueChanging(CellContext sender, ValueChangeEventArgs e) {
+		base.OnValueChanging(sender, e);
 
-                if (e.NewValue is Font)
-                {
-                    richTextBox.SelectionFont = (Font)e.NewValue;
-                }
-                else if (e.NewValue is Color)
-                {
-                    richTextBox.SelectionColor = (Color)e.NewValue;
-                }
-                else if (e.NewValue is Int32)
-                {
-                    richTextBox.SelectionCharOffset = (int)e.NewValue;
-                }
-                else if (e.NewValue is HorizontalAlignment)
-                {
-                    richTextBox.SelectionAlignment = (HorizontalAlignment)e.NewValue;
-                }
-                else if (e.NewValue is DevAge.Windows.Forms.EffectType)
-                {
-                    richTextBox.SelectionEffect = (DevAge.Windows.Forms.EffectType)e.NewValue;   
-                }
+		// only check if event args is of known type if event is not of type rich text
+		if (!(e.NewValue is DevAge.Windows.Forms.RichText)) {
+			Editors.RichTextBox richEditor = (Editors.RichTextBox)sender.Cell.Editor;
+			DevAge.Windows.Forms.DevAgeRichTextBox richTextBox = richEditor.Control;
 
-                // if editor is not open, use changed value for cell
-                if (sender.Cell.Editor.EditCell == null)
-                {
-                    sender.Value = richTextBox.Value;
-                }
-            }
-        }
+			// if editor is not open, assign value and select all text
+			if (sender.Cell.Editor.EditCell == null) {
+				richTextBox.Value = sender.Value as DevAge.Windows.Forms.RichText;
+				richTextBox.SelectAll();
+			}
 
-        #endregion
-    }
+			if (e.NewValue is Font) {
+				richTextBox.SelectionFont = (Font)e.NewValue;
+			} else if (e.NewValue is Color) {
+				richTextBox.SelectionColor = (Color)e.NewValue;
+			} else if (e.NewValue is Int32) {
+				richTextBox.SelectionCharOffset = (int)e.NewValue;
+			} else if (e.NewValue is HorizontalAlignment) {
+				richTextBox.SelectionAlignment = (HorizontalAlignment)e.NewValue;
+			} else if (e.NewValue is DevAge.Windows.Forms.EffectType) {
+				richTextBox.SelectionEffect = (DevAge.Windows.Forms.EffectType)e.NewValue;
+			}
+
+			// if editor is not open, use changed value for cell
+			if (sender.Cell.Editor.EditCell == null) {
+				sender.Value = richTextBox.Value;
+			}
+		}
+	}
+
+	#endregion
+
 }

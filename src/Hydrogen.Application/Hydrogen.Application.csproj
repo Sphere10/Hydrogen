@@ -14,19 +14,14 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<Compile Remove="Properties\**" />
-		<EmbeddedResource Remove="Properties\**" />
-		<None Remove="Properties\**" />
-	</ItemGroup>
-
-	<ItemGroup>
+		<ProjectReference Include="..\Hydrogen.CryptoEx\Hydrogen.CryptoEx.csproj" />
 		<ProjectReference Include="..\Hydrogen.Data\Hydrogen.Data.csproj" />
 		<ProjectReference Include="..\Hydrogen\Hydrogen.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="System.Configuration.ConfigurationManager" Version="6.0.1" />
-		<PackageReference Include="System.Drawing.Common" Version="6.0.0" />
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="7.0.0" />
+		<PackageReference Include="System.Configuration.ConfigurationManager" Version="7.0.0" />
 	</ItemGroup>
 
 </Project>

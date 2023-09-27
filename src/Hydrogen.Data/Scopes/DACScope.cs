@@ -1,20 +1,14 @@
-//-----------------------------------------------------------------------
-// <copyright file="DACScope.cs" company="Sphere 10 Software">
-//
-// Copyright (c) Sphere 10 Software. All rights reserved. (http://www.sphere10.com)
+// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
 // LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
 //
-// <author>Herman Schoenfeld</author>
-// <date>2018</date>
-// </copyright>
-//-----------------------------------------------------------------------
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
 using System.Collections.Generic;
 using System.Data;
-using Tools;
 
 namespace Hydrogen.Data;
 
@@ -26,9 +20,8 @@ public sealed class DACScope : SyncTransactionalScope<IDbTransaction> {
 	private bool _withinSystemTransactionScope;
 	private IsolationLevel _transactionIsolationLevel;
 
-	internal DACScope(IDAC dac, ContextScopePolicy policy, bool openConnection, string contextPrefix = DefaultContextPrefix, TransactionAction? defaultCloseAction = null)
+	internal DACScope(IDAC dac, ContextScopePolicy policy, bool openConnection, string contextPrefix = DefaultContextPrefix)
 		: base(policy, string.Format(ContextNameTemplate, contextPrefix, dac.ConnectionString)) {
-		DefaultCloseAction = defaultCloseAction;
 		DAC = dac ?? throw new ArgumentNullException(nameof(dac));
 		if (IsRootScope) {
 			_connection = new RestrictedConnection(DAC.CreateConnection());
@@ -134,4 +127,3 @@ public sealed class DACScope : SyncTransactionalScope<IDbTransaction> {
 		}
 	}
 }
-

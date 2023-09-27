@@ -61,6 +61,8 @@ namespace HashLib4CSharp.Base
 
             var buffer = Buffer.ToArray();
 
+
+
             hashInstance.Buffer.Write(buffer, 0, buffer.Length);
 
             hashInstance.Buffer.Position = Buffer.Position;

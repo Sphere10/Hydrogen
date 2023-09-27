@@ -1,13 +1,16 @@
-﻿using Hydrogen;
-using Hydrogen.Communications.RPC;
+﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Author: Polyminer
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen.DApp.Node.RPC {
+namespace Hydrogen.DApp.Node.RPC;
 
-	public class RpcServerConfig {
+public class RpcServerConfig {
 
-		public bool IsLocal { get; set; }
-		public int Port { get; set; }
-		public int MaxListeners { get; set; }
-	}
+	public bool IsLocal { get; set; }
+	public int Port { get; set; }
+	public int MaxListeners { get; set; }
 }
-

@@ -1,22 +1,33 @@
-﻿using System.Collections.Generic;
+﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
+
+using System;
+using System.Collections.Generic;
 
 
-namespace Hydrogen {
+namespace Hydrogen;
 
-	public interface IStreamMappedDictionary<TKey, TValue> : IDictionary<TKey, TValue>, ILoadable {
+public interface IStreamMappedDictionary<TKey, TValue> : IDictionary<TKey, TValue>, ILoadable, IDisposable {
 
-		IClusteredStorage Storage { get; }
+	ObjectContainer ObjectContainer { get; }
 
-		TKey ReadKey(int index);
+	TKey ReadKey(long index);
 
-		TValue ReadValue(int index);
+	internal byte[] ReadKeyBytes(long index);
 
-		bool TryFindKey(TKey key, out int index);
+	TValue ReadValue(long index);
 
-		bool TryFindValue(TKey key, out int index, out TValue value);
+	internal byte[] ReadValueBytes(long index);
 
-		void RemoveAt(int index);
+	bool TryFindKey(TKey key, out long index);
 
-	}
-	
+	bool TryFindValue(TKey key, out long index, out TValue value);
+
+	void RemoveAt(long index);
+
 }

@@ -1,6 +1,4 @@
-﻿.validation-message {
-    color: red;
-}
+﻿.validation-message { color: red; }
 
 .validation-errors {
     min-height: 50px;

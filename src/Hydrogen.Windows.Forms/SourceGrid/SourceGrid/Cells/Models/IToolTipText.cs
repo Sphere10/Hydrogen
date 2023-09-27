@@ -1,29 +1,20 @@
-//-----------------------------------------------------------------------
-// <copyright file="IToolTipText.cs" company="Sphere 10 Software">
-//
-// Copyright (c) Sphere 10 Software. All rights reserved. (http://www.sphere10.com)
+// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Author: Dev Age
 //
 // Distributed under the MIT software license, see the accompanying file
 // LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
 //
-// <author>Herman Schoenfeld</author>
-// <date>2018</date>
-// </copyright>
-//-----------------------------------------------------------------------
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
+namespace SourceGrid.Cells.Models;
 
-namespace SourceGrid.Cells.Models
-{
+/// <summary>
+/// Interface for informations about a tooltiptext
+/// </summary>
+public interface IToolTipText : IModel {
 	/// <summary>
-	/// Interface for informations about a tooltiptext
+	/// Get the tooltiptext of the specified cell
 	/// </summary>
-	public interface IToolTipText : IModel
-	{
-		/// <summary>
-		/// Get the tooltiptext of the specified cell
-		/// </summary>
-		/// <param name="cellContext"></param>
-		string GetToolTipText(CellContext cellContext);
-	}
+	/// <param name="cellContext"></param>
+	string GetToolTipText(CellContext cellContext);
 }

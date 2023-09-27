@@ -1,15 +1,10 @@
-////-----------------------------------------------------------------------
-//// <copyright file="CallQueueTest.cs" company="Sphere 10 Software">
-////
-//// Copyright (c) Sphere 10 Software. All rights reserved. (http://www.sphere10.com)
+//// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+//// Author: Herman Schoenfeld
 ////
 //// Distributed under the MIT software license, see the accompanying file
 //// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
 ////
-//// <author>Herman Schoenfeld</author>
-//// <date>2018</date>
-//// </copyright>
-////-----------------------------------------------------------------------
+//// This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 //using System;
 //using System.Collections.Generic;
@@ -53,11 +48,9 @@
 //			).Take(2).ToArray();
 
 //			await Task.WhenAll(tasks).IgnoringExceptions();
-			
+
 //			// All tasks finished, otherwise would run forever
 //		}
-
-
 
 
 //		[Test]
@@ -104,7 +97,6 @@
 //			Thread.Sleep(200);
 //			Assert.AreEqual(new int[] { 1, 2 }, result.ToArray());
 //		}
-
 
 
 //		[Test]
@@ -200,3 +192,5 @@
 //	}
 
 //}
+
+

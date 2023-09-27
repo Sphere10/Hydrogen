@@ -1,51 +1,44 @@
-//-----------------------------------------------------------------------
-// <copyright file="MultiKeyMap.cs" company="Sphere 10 Software">
-//
-// Copyright (c) Sphere 10 Software. All rights reserved. (http://www.sphere10.com)
+// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
 // LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
 //
-// <author>Herman Schoenfeld</author>
-// <date>2018</date>
-// </copyright>
-//-----------------------------------------------------------------------
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System.Collections.Generic;
 
-namespace Hydrogen {
+namespace Hydrogen;
 
+public class MultiKeyMap<K, V, C> : EnumerableKeyDictionary<K, C> where C : ICollection<V>, new() {
 
-	public class MultiKeyMap<K, V, C> : EnumerableKeyDictionary<K, C> where C : ICollection<V>, new() {
-
-		public MultiKeyMap() {
-		}
-
-		public MultiKeyMap(IEqualityComparer<K> comparer) : base(comparer) {
-		}
-
-		public void Add(IEnumerable<K> key, V value) {
-			this[key].Add(value);
-		}
-
-		public void Remove(IEnumerable<K> key, V value) {
-			C list;
-			if (base.TryGetValue(key, out list)) {
-				list.Remove(value);
-			}
-		}
-
-		public override bool TryGetValue(IEnumerable<K> key, out C value) {
-			if (!base.TryGetValue(key, out value)) {
-				base.Add(key, new C());
-				value = base[key];
-			}
-			return true;
-		}
-
+	public MultiKeyMap() {
 	}
 
-	public class MultiKeyMap<K, V> : MultiKeyMap<K, V, List<V>> {
+	public MultiKeyMap(IEqualityComparer<K> comparer) : base(comparer) {
 	}
 
+	public void Add(IEnumerable<K> key, V value) {
+		this[key].Add(value);
+	}
+
+	public void Remove(IEnumerable<K> key, V value) {
+		C list;
+		if (base.TryGetValue(key, out list)) {
+			list.Remove(value);
+		}
+	}
+
+	public override bool TryGetValue(IEnumerable<K> key, out C value) {
+		if (!base.TryGetValue(key, out value)) {
+			base.Add(key, new C());
+			value = base[key];
+		}
+		return true;
+	}
+
+}
+
+
+public class MultiKeyMap<K, V> : MultiKeyMap<K, V, List<V>> {
 }

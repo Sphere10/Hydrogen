@@ -18,3 +18,5 @@ using System.Runtime.InteropServices;
 [assembly: Guid("bc7dbc34-2fd6-468f-9850-bdba9515e1a8")]
 [assembly: InternalsVisibleTo("Hydrogen.Tests")]
 [assembly: InternalsVisibleTo("Hydrogen.NUnit")]
+[assembly: InternalsVisibleTo("Hydrogen.Application")]
+[assembly: InternalsVisibleTo("Hydrogen.Application.Tests")]

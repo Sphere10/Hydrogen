@@ -1,4 +1,10 @@
-﻿@using Hydrogen
+﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Author: Hamish Rose
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
 @using Hydrogen.DApp.Presentation2.Logic.Wizard
 @inherits WizardStep<NewWalletModel>
 
@@ -30,26 +36,20 @@
 @code {
     public override string Title { get; } = "Wallet Type";
 
-    protected override void OnParametersSet()
-    {
+    protected override void OnParametersSet() {
         IsCancellable = false;
         base.OnParametersSet();
     }
 
-    public override Task<Result> OnNextAsync()
-    {
-        if (Model.Type is WalletType.Standard)
-        {
-            Wizard.UpdateSteps(StepUpdateType.ReplaceAllNext, new[]
-            {
+    public override Task<Result> OnNextAsync() {
+        if (Model.Type is WalletType.Standard) {
+            Wizard.UpdateSteps(StepUpdateType.ReplaceAllNext, new[] {
                 typeof(PasswordStep),
                 typeof(SummaryStep)
             });
         }
-        if (Model.Type is WalletType.Restore)
-        {
-            Wizard.UpdateSteps(StepUpdateType.ReplaceAllNext, new[]
-            {
+        if (Model.Type is WalletType.Restore) {
+            Wizard.UpdateSteps(StepUpdateType.ReplaceAllNext, new[] {
                 typeof(RestoreStep),
                 typeof(SummaryStep)
             });
@@ -59,4 +59,5 @@
     }
 
     public override Task<Result> OnPreviousAsync() => Task.FromResult(Result.Valid);
+
 }

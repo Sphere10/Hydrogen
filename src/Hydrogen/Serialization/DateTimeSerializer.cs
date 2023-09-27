@@ -1,56 +1,26 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using Hydrogen.FastReflection;
+﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen {
-	public class DateTimeSerializer : IItemSerializer<DateTime> {
+using System;
 
-		public bool IsStaticSize => true;
+namespace Hydrogen;
 
-		public int StaticSize => sizeof(ulong);
+public class DateTimeSerializer : ConstantSizeItemSerializerBase<DateTime> {
+	private readonly PrimitiveSerializer<long> _longSerializer = new();
 
-		public int CalculateTotalSize(IEnumerable<DateTime> items, bool calculateIndividualItems, out int[] itemSizes) {
-			itemSizes = Array.Empty<int>();
-			var count = items.Count();
+	public static DateTimeSerializer Instance { get; } = new();
 
-			if (calculateIndividualItems)
-				itemSizes = Enumerable.Repeat(StaticSize, count).ToArray();
-
-			return StaticSize * count;
-		}
-
-		public int CalculateSize(DateTime item) {
-			return sizeof(long);
-		}
-
-		public bool TrySerialize(DateTime item, EndianBinaryWriter writer, out int bytesWritten) {
-			try {
-				var property = typeof(DateTime).GetProperty("Ticks", BindingFlags.Public | BindingFlags.Instance);
-				var dateData = (long)property.FastGetValue(item);
-				byte[] bytes = writer.BitConverter.GetBytes(dateData);
-				writer.Write(bytes);
-
-				bytesWritten = bytes.Length;
-				return true;
-			} catch (Exception) {
-				bytesWritten = 0;
-				return false;
-			}
-		}
-
-		public bool TryDeserialize(int byteSize, EndianBinaryReader reader, out DateTime item) {
-			try {
-				long ticks = reader.ReadInt64();
-				item = new DateTime(ticks);
-				return true;
-			} catch (Exception) {
-				item = default;
-				return false;
-			}
-		}
+	public DateTimeSerializer() : base(8, false) {
 	}
 
+	public override void Serialize(DateTime item, EndianBinaryWriter writer)
+		=> _longSerializer.Serialize(item.ToBinary(), writer);
 
+	public override DateTime Deserialize(EndianBinaryReader reader) 
+		=> DateTime.FromBinary(_longSerializer.Deserialize(reader));
 }

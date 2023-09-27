@@ -1,33 +1,39 @@
-﻿using System;
+﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen {
+using System;
 
-	/// <summary>
-	/// Represents a stateless digital signature scheme. One where knowledge of nonces from prior signatures are not ever needed. These
-	/// are mainly ECDSA, Schnorr and SPHINCS+.
-	/// </summary>
-	/// <typeparam name="TPrivateKey"></typeparam>
-	/// <typeparam name="TPublicKey"></typeparam>
-	public abstract class StatelessDigitalSignatureScheme<TPrivateKey, TPublicKey> : DigitalSignatureSchemeBase<TPrivateKey, TPublicKey>
-        where TPrivateKey : IPrivateKey
-        where TPublicKey : IPublicKey {
+namespace Hydrogen;
 
-        protected const int DefaultNonce = 0;
+/// <summary>
+/// Represents a stateless digital signature scheme. One where knowledge of nonces from prior signatures are not ever needed. These
+/// are mainly ECDSA, Schnorr and SPHINCS+.
+/// </summary>
+/// <typeparam name="TPrivateKey"></typeparam>
+/// <typeparam name="TPublicKey"></typeparam>
+public abstract class StatelessDigitalSignatureScheme<TPrivateKey, TPublicKey> : DigitalSignatureSchemeBase<TPrivateKey, TPublicKey>
+	where TPrivateKey : IPrivateKey
+	where TPublicKey : IPublicKey {
 
-		protected StatelessDigitalSignatureScheme(CHF messageDigestCHF) : base(messageDigestCHF) {
-            Traits = Traits & DigitalSignatureSchemeTraits.Stateless;
-        }
+	protected const int DefaultNonce = 0;
 
-        public sealed override TPublicKey DerivePublicKey(TPrivateKey privateKey, ulong signerNonce)
-            => DerivePublicKey(privateKey);
+	protected StatelessDigitalSignatureScheme(CHF messageDigestCHF) : base(messageDigestCHF) {
+		Traits = Traits & DigitalSignatureSchemeTraits.Stateless;
+	}
 
-        public abstract TPublicKey DerivePublicKey(TPrivateKey privateKey);
+	public sealed override TPublicKey DerivePublicKey(TPrivateKey privateKey, ulong signerNonce)
+		=> DerivePublicKey(privateKey);
 
-        public sealed override byte[] SignDigest(TPrivateKey privateKey, ReadOnlySpan<byte> messageDigest, ulong signerNonce)
-            => SignDigest(privateKey, messageDigest);
+	public abstract TPublicKey DerivePublicKey(TPrivateKey privateKey);
 
-        public abstract byte[] SignDigest(TPrivateKey privateKey, ReadOnlySpan<byte> messageDigest);
-        
-    }
+	public sealed override byte[] SignDigest(TPrivateKey privateKey, ReadOnlySpan<byte> messageDigest, ulong signerNonce)
+		=> SignDigest(privateKey, messageDigest);
+
+	public abstract byte[] SignDigest(TPrivateKey privateKey, ReadOnlySpan<byte> messageDigest);
 
 }

@@ -1,3 +1,11 @@
+// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
+
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -20,7 +28,7 @@ public abstract class SyncTransactionalScope<TTransaction> : TransactionalScopeB
 
 	protected sealed override async ValueTask OnContextEndAsync() => await Task.Run(OnContextEnd);
 
-	protected sealed override Task OnTransactionalScopeEndAsync(List<Exception> errors) => Task.Run(() =>OnTransactionalScopeEnd(errors));
+	protected sealed override Task OnTransactionalScopeEndAsync(List<Exception> errors) => Task.Run(() => OnTransactionalScopeEnd(errors));
 
 	protected sealed override Task OnCommittingAsync() => Task.Run(OnCommitting);
 

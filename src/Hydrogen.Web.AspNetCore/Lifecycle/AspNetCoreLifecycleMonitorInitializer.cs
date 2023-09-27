@@ -1,0 +1,25 @@
+// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
+
+using Hydrogen.Application;
+using Microsoft.Extensions.Hosting;
+
+namespace Hydrogen.Web.AspNetCore;
+
+internal class AspNetCoreLifecycleMonitorInitializer : ApplicationInitializerBase {
+
+	public AspNetCoreLifecycleMonitorInitializer(IHostApplicationLifetime hostApplicationLifetime) {
+		HostApplicationLifetime = hostApplicationLifetime;
+	}
+	protected IHostApplicationLifetime HostApplicationLifetime { get; }
+
+	public override void Initialize() {
+		HostApplicationLifetime.ApplicationStopped.Register(HydrogenFramework.Instance.EndFramework);
+	}
+
+}

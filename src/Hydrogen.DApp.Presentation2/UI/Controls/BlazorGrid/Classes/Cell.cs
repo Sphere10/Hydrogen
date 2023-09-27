@@ -1,22 +1,38 @@
-﻿using System;
+﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Author: David Price
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
+
+using System;
 using System.Reflection;
 
 namespace Hydrogen.DApp.Presentation2.UI.Controls.BlazorGrid.Classes {
-	public class Cell 
-	{
+	public class Cell {
 		public HeaderData Header { get; set; }
 		public RowData Row { get; set; }
 		public ObjectTypeInfo TypeInfo { get; set; }
 		public string Text { get; set; }
 		public object Tag { get; private set; } // this is the full row of data
 		public int DataIndex { get; set; }
-		public string Name { get { return Header.Name; } }
-		public int Width { get { return Header.Width; } }
-		public int Height { get { return Row.Height; } }
+
+		public string Name {
+			get { return Header.Name; }
+		}
+
+		public int Width {
+			get { return Header.Width; }
+		}
+
+		public int Height {
+			get { return Row.Height; }
+		}
+
 		public bool IsEnum { get; set; }
 
-		public Cell(HeaderData header, RowData row, ObjectTypeInfo typeInfo, string text, object underlyingData, int dataIndex) 
-		{ 
+		public Cell(HeaderData header, RowData row, ObjectTypeInfo typeInfo, string text, object underlyingData, int dataIndex) {
 			Header = header;
 			Row = row;
 			TypeInfo = typeInfo;
@@ -45,26 +61,22 @@ namespace Hydrogen.DApp.Presentation2.UI.Controls.BlazorGrid.Classes {
 			Text = GetText();
 		}
 */
-		public string GetInputType() 
-		{
-			switch (TypeInfo.Type.Name.ToLower()) 
-			{
-				case "datetime":	return "date";
+		public string GetInputType() {
+			switch (TypeInfo.Type.Name.ToLower()) {
+				case "datetime": return "date";
 				case "decimal":
 				case "double":
 				case "float":
 				case "long":
 				case "int32":
-				case "int64":		return "number";
-				case "bool":		return "checkbox";
-				default:			return "text";
+				case "int64": return "number";
+				case "bool": return "checkbox";
+				default: return "text";
 			}
 		}
 
-		public string GetListName() 
-		{
-			if (TypeInfo.IsEnum) 
-			{
+		public string GetListName() {
+			if (TypeInfo.IsEnum) {
 				return Name;
 			}
 
@@ -102,8 +114,7 @@ namespace Hydrogen.DApp.Presentation2.UI.Controls.BlazorGrid.Classes {
 					}
 				}
 		*/
-		public void UpdateData(string newValue) 
-		{
+		public void UpdateData(string newValue) {
 			var objectValue = Tools.Parser.Parse(TypeInfo.Type, newValue);
 			TypeInfo.PropertyInfo.SetValue(Tag, objectValue);
 /*

@@ -1,7 +1,14 @@
-﻿using System;
+﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace Hydrogen;
 
@@ -10,24 +17,24 @@ namespace Hydrogen;
 /// </summary>
 public class DictionaryChain<TKey, TValue> : DictionaryDecorator<TKey, TValue> {
 
-	public DictionaryChain(IEnumerable<IDictionary<TKey, TValue>> chain) 
-		: this(chain as IDictionary<TKey, TValue>[] ?? chain.ToArray()) { 
+	public DictionaryChain(IEnumerable<IDictionary<TKey, TValue>> chain)
+		: this(chain as IDictionary<TKey, TValue>[] ?? chain.ToArray()) {
 	}
 
-	public DictionaryChain( params IDictionary<TKey, TValue>[] chain)
-		: this(chain.Length > 0 ? Tools.Array.PopHead(ref chain) : throw new ArgumentException("No dictionaries supplied", nameof(chain)), chain){ 
+	public DictionaryChain(params IDictionary<TKey, TValue>[] chain)
+		: this(chain.Length > 0 ? Tools.Array.PopHead(ref chain) : throw new ArgumentException("No dictionaries supplied", nameof(chain)), chain) {
 	}
-	private DictionaryChain(IDictionary<TKey, TValue> link, IDictionary<TKey, TValue>[] chain) 
-		: this(link,  chain.Length > 0 ? new DictionaryChain<TKey, TValue>(chain) : null) { 
+	private DictionaryChain(IDictionary<TKey, TValue> link, IDictionary<TKey, TValue>[] chain)
+		: this(link, chain.Length > 0 ? new DictionaryChain<TKey, TValue>(chain) : null) {
 	}
 
 	public DictionaryChain(IDictionary<TKey, TValue> head, DictionaryChain<TKey, TValue> tail)
-		: base(head) { 
+		: base(head) {
 		Next = tail;
 		if (Next != null)
 			Next.Previous = this;
 	}
-	
+
 	public override int Count => base.Count + (Next?.Count ?? 0);
 
 	public override bool IsReadOnly => base.IsReadOnly || (Next?.IsReadOnly ?? false);
@@ -35,6 +42,8 @@ public class DictionaryChain<TKey, TValue> : DictionaryDecorator<TKey, TValue> {
 	public DictionaryChain<TKey, TValue> Next { get; private set; } = null;
 
 	public DictionaryChain<TKey, TValue> Previous { get; private set; } = null;
+
+	public IDictionary<TKey,TValue> UnderlyingDictionary => InternalDictionary;
 
 	public override TValue this[TKey key] {
 		get {
@@ -44,6 +53,10 @@ public class DictionaryChain<TKey, TValue> : DictionaryDecorator<TKey, TValue> {
 		}
 		set => Add(key, value);
 	}
+
+	public override ICollection<TKey> Keys =>  Next is null ? base.Keys : new ConcatenatedCollection<TKey>(base.Keys, Next.Keys);
+
+	public override ICollection<TValue> Values => Next is null ? base.Values : new ConcatenatedCollection<TValue>(base.Values, Next.Values);
 
 	public DictionaryChain<TKey, TValue> AttachHead(IDictionary<TKey, TValue> link)
 		=> AttachHead(new DictionaryChain<TKey, TValue>(link));
@@ -61,7 +74,7 @@ public class DictionaryChain<TKey, TValue> : DictionaryDecorator<TKey, TValue> {
 		nextHead.Previous = null;
 		return nextHead;
 	}
-	
+
 	public override bool ContainsKey(TKey key) => base.ContainsKey(key) || (Next?.ContainsKey(key) ?? false);
 
 	public override bool Contains(KeyValuePair<TKey, TValue> item) => base.Contains(item) || (Next?.Contains(item) ?? false);
@@ -71,11 +84,11 @@ public class DictionaryChain<TKey, TValue> : DictionaryDecorator<TKey, TValue> {
 	public override void Add(TKey key, TValue value) => AddInternal(key, value);
 
 	public override void Add(KeyValuePair<TKey, TValue> item) => AddInternal(item.Key, item.Value);
-	
+
 	public override bool Remove(TKey item) => base.Remove(item) || (Next?.Remove(item) ?? false);
 
 	public override bool Remove(KeyValuePair<TKey, TValue> item) => base.Remove(item) || (Next?.Remove(item) ?? false);
-	
+
 	public override void Clear() {
 		base.Clear();
 		Next?.Clear();

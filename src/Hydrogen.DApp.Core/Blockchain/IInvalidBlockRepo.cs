@@ -1,11 +1,19 @@
-﻿namespace Hydrogen.DApp.Core.Blockchain {
-	public interface IInvalidBlockRepo {
+﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-		bool IsInvalid(byte[] blockHash);
+namespace Hydrogen.DApp.Core.Blockchain;
 
-		void InvalidateBlock(byte[] blockHash);
+public interface IInvalidBlockRepo {
 
-		void RevokeInvalidation(byte[] blockHash);
+	bool IsInvalid(byte[] blockHash);
 
-	}
+	void InvalidateBlock(byte[] blockHash);
+
+	void RevokeInvalidation(byte[] blockHash);
+
 }

@@ -1,4 +1,12 @@
-﻿@inherits ComponentWithViewModel<WizardHostViewModel>
+﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Author: Hamish Rose
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
+
+@inherits ComponentWithViewModel<WizardHostViewModel>
 
 @if (ViewModel!.ErrorMessages.Any()) {
     <ul class="validation-errors">
@@ -25,7 +33,7 @@
             @if (ViewModel.Wizard.HasNext) {
                 <button class="@(NextButtonClass ?? "btn btn-info btn-sm")" @onclick="ViewModel.NextAsync">@ViewModel.CurrentStepInstance!.NextButtonText</button>
             } else {
-                <button class="@(FinishButtonClass?? "btn btn-info btn-sm")" @onclick="ViewModel!.FinishAsync">@ViewModel.CurrentStepInstance!.FinishButtonText</button>
+                <button class="@(FinishButtonClass ?? "btn btn-info btn-sm")" @onclick="ViewModel!.FinishAsync">@ViewModel.CurrentStepInstance!.FinishButtonText</button>
             }
         </div>
     </div>

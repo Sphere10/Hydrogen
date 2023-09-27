@@ -1,48 +1,56 @@
-﻿using System.IO;
+﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen {
-	public abstract class FilePageBase<TItem> : MemoryPageBase<TItem>, IFilePage<TItem> {
+using System.IO;
 
-		protected FilePageBase(Stream stream, IItemSizer<TItem> sizer, int pageNumber, int pageSize, IExtendedList<TItem> memoryStore)
-			: base(pageSize, sizer, memoryStore) {
-			Stream = new BoundedStream(stream, (long)pageNumber * pageSize, (long)(pageNumber + 1) * pageSize - 1);
-		}
+namespace Hydrogen;
 
-		internal BoundedStream Stream { get; }
+public abstract class FilePageBase<TItem> : MemoryPageBase<TItem>, IFilePage<TItem> {
 
-		public long StartPosition { get; set; }
+	protected FilePageBase(Stream stream, IItemSizer<TItem> sizer, long pageNumber, long pageSize, IExtendedList<TItem> memoryStore)
+		: base(pageSize, sizer, memoryStore) {
+		Stream = new BoundedStream(stream, pageNumber * pageSize, pageSize);
+	}
 
-		public long EndPosition { get; set; }
+	internal BoundedStream Stream { get; }
 
-		public override void Dispose() {
-			// Stream is managed by client		
-		}
+	public long StartPosition { get; set; }
 
-		protected override int AppendInternal(TItem[] items, out int newItemsSpace) {
-			var appendCount = base.AppendInternal(items, out newItemsSpace);
-			EndPosition += newItemsSpace;
-			return appendCount;
-		}
+	public long EndPosition { get; set; }
 
-		protected override void UpdateInternal(int index, TItem[] items, out int oldItemsSpace, out int newItemsSpace) {
-			base.UpdateInternal(index, items, out oldItemsSpace, out newItemsSpace);
-			var spaceDiff = newItemsSpace - oldItemsSpace;
-			EndPosition += spaceDiff;
-		}
+	public override void Dispose() {
+		// Stream is managed by client		
+	}
 
-		protected override void EraseFromEndInternal(int count, out int oldItemsSpace) {
-			base.EraseFromEndInternal(count, out oldItemsSpace);
-			EndPosition -= oldItemsSpace;
-		}
+	protected override long AppendInternal(TItem[] items, out long newItemsSpace) {
+		var appendCount = base.AppendInternal(items, out newItemsSpace);
+		EndPosition += newItemsSpace;
+		return appendCount;
+	}
 
-		protected override Stream OpenReadStream() {
-			Stream.Seek(Stream.MinAbsolutePosition, SeekOrigin.Begin);
-			return new NonClosingStream(Stream);
-		}
+	protected override void UpdateInternal(long index, TItem[] items, out long oldItemsSpace, out long newItemsSpace) {
+		base.UpdateInternal(index, items, out oldItemsSpace, out newItemsSpace);
+		var spaceDiff = newItemsSpace - oldItemsSpace;
+		EndPosition += spaceDiff;
+	}
 
-		protected override Stream OpenWriteStream() {
-			Stream.Seek(Stream.MinAbsolutePosition, SeekOrigin.Begin);
-			return new NonClosingStream(Stream);
-		}
+	protected override void EraseFromEndInternal(long count, out long oldItemsSpace) {
+		base.EraseFromEndInternal(count, out oldItemsSpace);
+		EndPosition -= oldItemsSpace;
+	}
+
+	protected override Stream OpenReadStream() {
+		Stream.Seek(0L, SeekOrigin.Begin);
+		return new NonClosingStream(Stream);
+	}
+
+	protected override Stream OpenWriteStream() {
+		Stream.Seek(0L, SeekOrigin.Begin);
+		return new NonClosingStream(Stream);
 	}
 }

@@ -1,32 +1,40 @@
-﻿using System.IO;
+﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen {
-	public abstract class FileSwappedMemoryPage<TItem> : MemoryPageBase<TItem> {
-		private readonly string _file;
+using System.IO;
 
-		protected FileSwappedMemoryPage(int pageSize, IItemSizer<TItem> sizer, IExtendedList<TItem> memoryStore)
-			: this(pageSize, Tools.FileSystem.GetTempFileName(false), sizer, memoryStore) {
-		}
+namespace Hydrogen;
 
-		protected FileSwappedMemoryPage(int pageSize, string fileStore, IItemSizer<TItem> sizer, IExtendedList<TItem> memoryStore)
-			: base(pageSize, sizer, memoryStore) {
-			_file = fileStore;
-		}
+public abstract class FileSwappedMemoryPage<TItem> : MemoryPageBase<TItem> {
+	private readonly string _file;
 
-		public override void Dispose() {
-			if (File.Exists(_file))
-				File.Delete(_file);
-		}
-
-		protected override Stream OpenReadStream() {
-			if (!File.Exists(_file))
-				return Stream.Null;
-			return File.OpenRead(_file);
-		}
-
-		protected override Stream OpenWriteStream() {
-			return File.Open(_file, FileMode.OpenOrCreate, FileAccess.Write);
-		}
-
+	protected FileSwappedMemoryPage(long pageSize, IItemSizer<TItem> sizer, IExtendedList<TItem> memoryStore)
+		: this(pageSize, Tools.FileSystem.GetTempFileName(false), sizer, memoryStore) {
 	}
+
+	protected FileSwappedMemoryPage(long pageSize, string fileStore, IItemSizer<TItem> sizer, IExtendedList<TItem> memoryStore)
+		: base(pageSize, sizer, memoryStore) {
+		_file = fileStore;
+	}
+
+	public override void Dispose() {
+		if (File.Exists(_file))
+			File.Delete(_file);
+	}
+
+	protected override Stream OpenReadStream() {
+		if (!File.Exists(_file))
+			return Stream.Null;
+		return File.OpenRead(_file);
+	}
+
+	protected override Stream OpenWriteStream() {
+		return File.Open(_file, FileMode.OpenOrCreate, FileAccess.Write);
+	}
+
 }

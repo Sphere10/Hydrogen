@@ -1,16 +1,3 @@
-//-----------------------------------------------------------------------
-// <copyright file="ParseErrorAction.cs" company="Sphere 10 Software">
-//
-// Copyright (c) Sphere 10 Software. All rights reserved. (http://www.sphere10.com)
-//
-// Distributed under the MIT software license, see the accompanying file
-// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
-//
-// <author>Herman Schoenfeld</author>
-// <date>2018</date>
-// </copyright>
-//-----------------------------------------------------------------------
-
 //	Hydrogen.Data.Csv.ParseErrorAction
 //	Copyright (c) 2006 Sébastien Lorion
 //
@@ -32,28 +19,24 @@
 //	FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 //	ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-using System;
+namespace Hydrogen.Data.Csv;
 
-namespace Hydrogen.Data.Csv
-{
+/// <summary>
+/// Specifies the action to take when a parsing error has occured.
+/// </summary>
+public enum ParseErrorAction {
 	/// <summary>
-	/// Specifies the action to take when a parsing error has occured.
+	/// Raises the <see cref="M:CsvReader.ParseError"/> event.
 	/// </summary>
-	public enum ParseErrorAction
-	{
-		/// <summary>
-		/// Raises the <see cref="M:CsvReader.ParseError"/> event.
-		/// </summary>
-		RaiseEvent = 0,
+	RaiseEvent = 0,
 
-		/// <summary>
-		/// Tries to advance to next line.
-		/// </summary>
-		AdvanceToNextLine = 1,
+	/// <summary>
+	/// Tries to advance to next line.
+	/// </summary>
+	AdvanceToNextLine = 1,
 
-		/// <summary>
-		/// Throws an exception.
-		/// </summary>
-		ThrowException = 2,
-	}
+	/// <summary>
+	/// Throws an exception.
+	/// </summary>
+	ThrowException = 2,
 }

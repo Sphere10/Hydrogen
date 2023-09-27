@@ -1,83 +1,73 @@
-//-----------------------------------------------------------------------
-// <copyright file="GradientPanel.cs" company="Sphere 10 Software">
-//
-// Copyright (c) Sphere 10 Software. All rights reserved. (http://www.sphere10.com)
+// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
 // LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
 //
-// <author>Herman Schoenfeld</author>
-// <date>2018</date>
-// </copyright>
-//-----------------------------------------------------------------------
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Windows.Forms;
 using System.Drawing;
 using System.Drawing.Drawing2D;
-using Hydrogen;
 
 
-namespace Hydrogen.Windows.Forms {
-    public class GradientPanel : Panel {
-    	
-    	public GradientPanel() : this(Color.RoyalBlue, Color.LightBlue, 0) {
-            this.SetStyle(ControlStyles.DoubleBuffer, true);
-            this.SetStyle(ControlStyles.AllPaintingInWmPaint, true);
-            this.SetStyle(ControlStyles.ResizeRedraw, true);
-            this.SetStyle(ControlStyles.UserPaint, true);
-            this.SetStyle(ControlStyles.SupportsTransparentBackColor, true);
-        }
+namespace Hydrogen.Windows.Forms;
 
-		public GradientPanel(Color fromColor, Color toColor, int angle)
-            : this(fromColor, toColor, angle, null) {
-        }
+public class GradientPanel : Panel {
 
-        public GradientPanel(Color fromColor, Color toColor, int angle, Blend blend) {
-            FromColor = fromColor;
-            ToColor = toColor;
-            Angle = angle;
-            Blend = blend;
-        }
+	public GradientPanel() : this(Color.RoyalBlue, Color.LightBlue, 0) {
+		this.SetStyle(ControlStyles.DoubleBuffer, true);
+		this.SetStyle(ControlStyles.AllPaintingInWmPaint, true);
+		this.SetStyle(ControlStyles.ResizeRedraw, true);
+		this.SetStyle(ControlStyles.UserPaint, true);
+		this.SetStyle(ControlStyles.SupportsTransparentBackColor, true);
+	}
 
-		public Blend Blend { get; set; }
+	public GradientPanel(Color fromColor, Color toColor, int angle)
+		: this(fromColor, toColor, angle, null) {
+	}
 
-    	public int Angle { get; set; }
+	public GradientPanel(Color fromColor, Color toColor, int angle, Blend blend) {
+		FromColor = fromColor;
+		ToColor = toColor;
+		Angle = angle;
+		Blend = blend;
+	}
 
-    	public Color FromColor { get; set; }
+	public Blend Blend { get; set; }
 
+	public int Angle { get; set; }
 
-    	public Color ToColor { get; set; }
+	public Color FromColor { get; set; }
 
 
-    	protected override void OnPaintBackground(PaintEventArgs e) {
-            //base.OnPaintBackground(e);
-            if (FromColor != Color.Empty || ToColor != Color.Empty)
-            {
-				e.Graphics.GradientFillAtAngle(this.ClientRectangle, FromColor, ToColor, Angle);
-				//if (FromColor == ToColor)
-				//{
-				//    using (Brush brush = new SolidBrush(FromColor)) {
-				//        e.Graphics.FillRectangle(brush, e.ClipRectangle);
-				//    }
-				//}
-				//else
-				//{
-				//    using (LinearGradientBrush brush = new LinearGradientBrush(this.ClientRectangle, FromColor, ToColor, Angle))
-				//    {
-				//        if (Blend != null)
-				//        {
-				//            brush.Blend = Blend;
-				//        }
-
-				//        e.Graphics.FillRectangle(brush, e.ClipRectangle);
-				//    }
-				//}
-            }
-        }
+	public Color ToColor { get; set; }
 
 
-    }
+	protected override void OnPaintBackground(PaintEventArgs e) {
+		//base.OnPaintBackground(e);
+		if (FromColor != Color.Empty || ToColor != Color.Empty) {
+			e.Graphics.GradientFillAtAngle(this.ClientRectangle, FromColor, ToColor, Angle);
+			//if (FromColor == ToColor)
+			//{
+			//    using (Brush brush = new SolidBrush(FromColor)) {
+			//        e.Graphics.FillRectangle(brush, e.ClipRectangle);
+			//    }
+			//}
+			//else
+			//{
+			//    using (LinearGradientBrush brush = new LinearGradientBrush(this.ClientRectangle, FromColor, ToColor, Angle))
+			//    {
+			//        if (Blend != null)
+			//        {
+			//            brush.Blend = Blend;
+			//        }
+
+			//        e.Graphics.FillRectangle(brush, e.ClipRectangle);
+			//    }
+			//}
+		}
+	}
+
+
 }

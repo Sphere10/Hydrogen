@@ -1,135 +1,157 @@
-using System;
+// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
+
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
-namespace Hydrogen {
+namespace Hydrogen;
 
-	/// <summary>
-	/// A list whose items are stored on a file and which has ACID transactional commit/rollback capability as well as built-in memory caching for efficiency. There are
-	/// no restrictions on this list, items may be added, mutated and removed arbitrarily. This class is essentially a light-weight database.
-	/// </summary>
-	/// <typeparam name="T">Type of item</typeparam>
-	public class TransactionalList<T> : ObservableExtendedList<T>, ITransactionalList<T> {
-		public const int DefaultTransactionalPageSize = 1 << 18;  // 256kb
-		public const int DefaultClusterSize = 256;   // 256b
-		public const int DefaultMaxMemory = int.MaxValue;// 10mb
+/// <summary>
+/// A list whose items are stored on a file and which has ACID transactional commit/rollback capability as well as built-in memory caching for efficiency. There are
+/// no restrictions on this list, items may be added, mutated and removed arbitrarily. This class is essentially a light-weight database.
+/// </summary>
+/// <typeparam name="T">Type of item</typeparam>
+public class TransactionalList<T> : ExtendedListDecorator<T, IStreamMappedList<T>>, ITransactionalList<T> {
+	public event EventHandlerEx<object> Loading { add => InternalCollection.Loading += value; remove => InternalCollection.Loading -= value; }
+	public event EventHandlerEx<object> Loaded { add => InternalCollection.Loaded += value; remove => InternalCollection.Loaded -= value; }
+	public event EventHandlerEx<object> Committing { add => _transactionalObject.Committing += value; remove => _transactionalObject.Committing -= value; }
+	public event EventHandlerEx<object> Committed { add => _transactionalObject.Committed += value; remove => _transactionalObject.Committed -= value; }
+	public event EventHandlerEx<object> RollingBack { add => _transactionalObject.RollingBack += value; remove => _transactionalObject.RollingBack -= value; }
+	public event EventHandlerEx<object> RolledBack { add => _transactionalObject.RolledBack += value; remove => _transactionalObject.RolledBack -= value; }
 
-		public event EventHandlerEx<object> Loading { add => _transactionalBuffer.Loading += value; remove => _transactionalBuffer.Loading -= value; }
-		public event EventHandlerEx<object> Loaded { add => _transactionalBuffer.Loaded += value; remove => _transactionalBuffer.Loaded -= value; }
-		public event EventHandlerEx<object> Committing { add => _transactionalBuffer.Committing += value; remove => _transactionalBuffer.Committing -= value; }
-		public event EventHandlerEx<object> Committed { add => _transactionalBuffer.Committed += value; remove => _transactionalBuffer.Committed -= value; }
-		public event EventHandlerEx<object> RollingBack { add => _transactionalBuffer.RollingBack += value; remove => _transactionalBuffer.RollingBack -= value; }
-		public event EventHandlerEx<object> RolledBack { add => _transactionalBuffer.RolledBack += value; remove => _transactionalBuffer.RolledBack -= value; }
+	private readonly ITransactionalObject _transactionalObject;
 
-		private readonly TransactionalFileMappedBuffer _transactionalBuffer;
-		private readonly StreamMappedList<T> _clustered;
-		private readonly SynchronizedExtendedList<T> _items;
-		private bool _disposed;
+	public TransactionalList(
+		string filename, 
+		string uncommittedPageFileDir, 
+		IItemSerializer<T> serializer = null,
+		IEqualityComparer<T> comparer = null,
+		IItemChecksummer<T> itemChecksummer = null,
+		int transactionalPageSize = HydrogenDefaults.TransactionalPageSize, 
+		long maxMemory = HydrogenDefaults.MaxMemoryPerCollection,
+		int clusterSize = HydrogenDefaults.ClusterSize, 
+		StreamContainerPolicy policy = StreamContainerPolicy.Default, 
+		long reservedStreams = 0,
+		long checksumIndexStreamIndex = 0,
+		Endianness endianness = Endianness.LittleEndian, 
+		bool autoLoad = false,
+		bool readOnly = false
+	) : this( 
+			new TransactionalStream(
+				filename, 
+				uncommittedPageFileDir, 
+				transactionalPageSize,
+				maxMemory,
+				readOnly,
+				false
+			),
+			serializer, 
+			comparer, 
+			itemChecksummer,
+			clusterSize, 
+			policy, 
+			reservedStreams,
+			checksumIndexStreamIndex,
+			endianness,
+			autoLoad
+		) {
+		InternalCollection.ObjectContainer.StreamContainer.OwnsStream = true;
+	}
 
+	public TransactionalList(
+		TransactionalStream transactionalStream, 
+		IItemSerializer<T> serializer = null, 
+		IEqualityComparer<T> comparer = null, 
+		IItemChecksummer<T> itemChecksummer = null,
+		int clusterSize = HydrogenDefaults.ClusterSize, 
+		StreamContainerPolicy policy = StreamContainerPolicy.Default, 
+		long reservedStreams = 0,
+		long checksumIndexStreamIndex = 0,
+		Endianness endianness = HydrogenDefaults.Endianness,
+		bool autoLoad = false
+	) : this(
+			new StreamContainer(
+			  transactionalStream, 
+			  clusterSize, 
+			  policy, 
+			  reservedStreams, 
+			  endianness,
+			  false
+			),
+			transactionalStream, 
+			serializer, 
+			comparer,
+			itemChecksummer,
+			checksumIndexStreamIndex,
+			autoLoad
+		) {
+		InternalCollection.ObjectContainer.OwnsStreamContainer = true;
+	}
 
-		/// <summary>
-		/// Creates a <see cref="TransactionalList{T}" />.
-		/// </summary>
-		/// <param name="filename">File which will contain the serialized objects.</param>
-		/// <param name="uncommittedPageFileDir">A working directory which stores uncommitted transactional pages. Must be the same across system restarts for transaction resumption.</param>
-		/// <param name="serializer">Serializer for the objects</param>
-		/// <param name="comparer"></param>
-		/// <param name="transactionalPageSizeBytes">Size of transactional page</param>
-		/// <param name="maxMemory">How much of the list can be kept in memory at any time</param>
-		/// <param name="clusterSize">To support random access reads/writes the file is broken into discontinuous clusters of this size (similar to how disk storage) works. <remarks>Try to fit your average object in 1 cluster for performance. However, spare space in a cluster cannot be used.</remarks> </param>
-		/// <param name="readOnly">Whether or not file is opened in readonly mode.</param>
-		public TransactionalList(string filename, string uncommittedPageFileDir, IItemSerializer<T> serializer, IEqualityComparer<T> comparer = null, int transactionalPageSizeBytes = DefaultTransactionalPageSize, long maxMemory = DefaultMaxMemory, int clusterSize = DefaultClusterSize, ClusteredStoragePolicy policy = ClusteredStoragePolicy.Default, int reservedRecords = 0, Endianness endianness = Endianness.LittleEndian, bool readOnly = false) {
-			Guard.ArgumentNotNull(filename, nameof(filename));
-			Guard.ArgumentNotNull(uncommittedPageFileDir, nameof(uncommittedPageFileDir));
-
-			_disposed = false;
-
-			_transactionalBuffer = new TransactionalFileMappedBuffer(filename, uncommittedPageFileDir, transactionalPageSizeBytes, maxMemory, readOnly);
-			_transactionalBuffer.Committing += _ => OnCommitting();
-			_transactionalBuffer.Committed += _ => OnCommitted();
-			_transactionalBuffer.RollingBack += _ => OnRollingBack();
-			_transactionalBuffer.RolledBack += _ => OnRolledBack();
-
-
-			// NOTE: needs removal
-			if (_transactionalBuffer.RequiresLoad)
-				_transactionalBuffer.Load();
-
-			_clustered = new StreamMappedList<T>(
-				new ExtendedMemoryStream(
-					_transactionalBuffer,
-					disposeSource: true
-				),
-				clusterSize,
+	public TransactionalList(
+		StreamContainer streams, 
+		ITransactionalObject transactionalObject, 
+		IItemSerializer<T> serializer = null, 
+		IEqualityComparer<T> comparer = null,
+		IItemChecksummer<T> itemChecksummer = null,
+		long checksumIndexStreamIndex = 0,
+		bool autoLoad = false
+	) : this(
+			StreamMappedFactory.CreateList(
+				streams,
 				serializer,
 				comparer,
-				policy,
-				0,
-				reservedRecords,
-				endianness
-			);
+				itemChecksummer,
+				checksumIndexStreamIndex,
+				false
+			),
+			transactionalObject,
+			autoLoad
+		) {
+		Guard.ArgumentNotNull(transactionalObject, nameof(transactionalObject));
+		_transactionalObject = transactionalObject;
+		OwnsList = true;
+	}
 
-			_items = new SynchronizedExtendedList<T>(_clustered);
-			InternalCollection = _items;
-		}
+	public TransactionalList(IStreamMappedList<T> streamMappedList, ITransactionalObject transactionalObject, bool autoLoad = false)
+		: base(streamMappedList) {
+		Guard.ArgumentNotNull(transactionalObject, nameof(transactionalObject));
+		_transactionalObject = transactionalObject;
+		
+		if (autoLoad && RequiresLoad)
+			Load();
+	}
 
-		public bool RequiresLoad => _transactionalBuffer.RequiresLoad;
+	public bool OwnsList { get; set; }
 
-		public ISynchronizedObject ParentSyncObject {
-			get => _items.ParentSyncObject;
-			set => _items.ParentSyncObject = value;
-		}
+	public bool RequiresLoad => InternalCollection.RequiresLoad;
 
-		public ReaderWriterLockSlim ThreadLock => _items.ThreadLock;
+	public ObjectContainer<T> ObjectContainer => InternalCollection.ObjectContainer;
 
-		public string Path => _transactionalBuffer.Path;
+	public IItemSerializer<T> ItemSerializer => InternalCollection.ItemSerializer;
 
-		public Guid FileID => _transactionalBuffer.FileID;
+	public IEqualityComparer<T> ItemComparer => InternalCollection.ItemComparer;
 
-		public TransactionalFileMappedBuffer AsBuffer => _transactionalBuffer;
+	public void Load() => InternalCollection.Load();
 
-		public IClusteredStorage Storage => _clustered.Storage;
+	public Task LoadAsync() => InternalCollection.LoadAsync();
 
-		public void Load() => _transactionalBuffer.Load();
+	public virtual void Commit() => _transactionalObject.Commit();
 
-		public Task LoadAsync() => Task.Run(Load);
+	public virtual Task CommitAsync() => _transactionalObject.CommitAsync();
 
-		public IDisposable EnterReadScope() => _items.EnterReadScope();
+	public virtual void Rollback() => _transactionalObject.Rollback();
 
-		public IDisposable EnterWriteScope() => _items.EnterWriteScope();
+	public virtual Task RollbackAsync() => _transactionalObject.RollbackAsync();
 
-		public void Commit() => _transactionalBuffer.Commit();
-
-		public async Task CommitAsync() => Commit();
-
-		public void Rollback() => _transactionalBuffer.Rollback();
-
-		public async Task RollbackAsync() => Rollback();
-
-		public void Dispose() {
-			_transactionalBuffer?.Dispose();
-			_disposed = true;
-		}
-
-		protected override void OnAccessing(EventTraits eventType) {
-			if (_disposed)
-				throw new InvalidOperationException($"{GetType().Name} has been disposed");
-		}
-
-		protected virtual void OnCommitting() {
-		}
-
-		protected virtual void OnCommitted() {
-		}
-
-		protected virtual void OnRollingBack() {
-		}
-
-		protected virtual void OnRolledBack() {
-		}
-
+	public virtual void Dispose() {
+		if (OwnsList)
+			InternalCollection.Dispose();
 	}
 }

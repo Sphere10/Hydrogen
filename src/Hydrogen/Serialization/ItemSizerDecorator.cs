@@ -1,22 +1,30 @@
-﻿using System.Collections.Generic;
+﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen {
+using System.Collections.Generic;
 
-	public class ItemSizerDecorator<TItem, TObjectSizer> : IItemSizer<TItem> where TObjectSizer : IItemSizer<TItem> {
-		protected readonly TObjectSizer Internal;
+namespace Hydrogen;
 
-		public ItemSizerDecorator(TObjectSizer internalSizer) {
-			Internal = internalSizer;
-		}
+public class ItemSizerDecorator<TItem, TObjectSizer> : IItemSizer<TItem> where TObjectSizer : IItemSizer<TItem> {
+	protected readonly TObjectSizer Internal;
 
-		public virtual bool IsStaticSize => Internal.IsStaticSize;
-
-		public virtual int StaticSize => Internal.StaticSize;
-
-		public virtual int CalculateTotalSize(IEnumerable<TItem> items, bool calculateIndividualItems, out int[] itemSizes) 
-			=> Internal.CalculateTotalSize(items, calculateIndividualItems, out itemSizes);
-
-		public virtual int CalculateSize(TItem item) => Internal.CalculateSize(item);
+	public ItemSizerDecorator(TObjectSizer internalSizer) {
+		Internal = internalSizer;
 	}
 
+	public virtual bool SupportsNull => Internal.SupportsNull;
+
+	public virtual bool IsConstantSize => Internal.IsConstantSize;
+
+	public virtual long ConstantSize => Internal.ConstantSize;
+
+	public virtual long CalculateTotalSize(IEnumerable<TItem> items, bool calculateIndividualItems, out long[] itemSizes)
+		=> Internal.CalculateTotalSize(items, calculateIndividualItems, out itemSizes);
+
+	public virtual long CalculateSize(TItem item) => Internal.CalculateSize(item);
 }

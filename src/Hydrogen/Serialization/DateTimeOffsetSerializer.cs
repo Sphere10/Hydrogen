@@ -1,58 +1,31 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using Hydrogen.FastReflection;
+﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen {
-	public class DateTimeOffsetSerializer : IItemSerializer<DateTimeOffset> {
-		public bool IsStaticSize => true;
-		public int StaticSize => _dateTimeSerializer.StaticSize + sizeof(short);
+using System;
 
-		public readonly IItemSerializer<DateTime> _dateTimeSerializer = new DateTimeSerializer();
-		public int CalculateTotalSize(IEnumerable<DateTimeOffset> items, bool calculateIndividualItems, out int[] itemSizes) {
-			itemSizes = Array.Empty<int>();
-			var count = items.Count();
+namespace Hydrogen;
 
-			if (calculateIndividualItems)
-				itemSizes = Enumerable.Repeat(StaticSize, count).ToArray();
+public class DateTimeOffsetSerializer : ConstantSizeItemSerializerBase<DateTimeOffset> {
 
-			return StaticSize * count;
-		}
+	public DateTimeOffsetSerializer() 
+		: base(DateTimeSerializer.Instance.ConstantSize + TimeSpanSerializer.Instance.ConstantSize, false){
+	}
 
-		public int CalculateSize(DateTimeOffset item) {
-			return StaticSize;
-		}
+	public static DateTimeOffsetSerializer Instance { get; } = new();
 
-		public bool TrySerialize(DateTimeOffset item, EndianBinaryWriter writer, out int bytesWritten) {
-			try {
-				var dateTimeField = typeof(DateTimeOffset).GetField("_dateTime", BindingFlags.NonPublic | BindingFlags.Instance);
-				var offsetMinutesField = typeof(DateTimeOffset).GetField("_offsetMinutes", BindingFlags.NonPublic | BindingFlags.Instance);
+	public override void Serialize(DateTimeOffset item, EndianBinaryWriter writer) {
+		DateTimeSerializer.Instance.Serialize(item.LocalDateTime, writer);
+		TimeSpanSerializer.Instance.Serialize(item.Offset, writer);
+	}
 
-				DateTime dateTime = (DateTime)dateTimeField.FastGetValue(item);
-				var offsetMinutes = (short)offsetMinutesField.FastGetValue(item);
-
-				_dateTimeSerializer.Serialize(dateTime, writer);
-				writer.Write(offsetMinutes);
-
-				bytesWritten = sizeof(short) + _dateTimeSerializer.StaticSize;
-				return true;
-			} catch (Exception e) {
-				Console.WriteLine(e);
-				throw;
-			}
-		}
-
-		public bool TryDeserialize(int byteSize, EndianBinaryReader reader, out DateTimeOffset item) {
-			try {
-				DateTime datetime = _dateTimeSerializer.Deserialize(byteSize, reader);
-				short offsetMinutes = reader.ReadInt16();
-				item = new DateTimeOffset(datetime.AddMinutes(offsetMinutes), TimeSpan.FromMinutes(offsetMinutes));
-				return true;
-			} catch (Exception) {
-				item = default;
-				return false;
-			}
-		}
+	public override DateTimeOffset Deserialize(EndianBinaryReader reader) {
+		var datetime = DateTimeSerializer.Instance.Deserialize(reader);
+		var timespan = TimeSpanSerializer.Instance.Deserialize(reader);
+		return new DateTimeOffset(datetime, timespan);
 	}
 }

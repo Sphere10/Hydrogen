@@ -1,108 +1,96 @@
-﻿using System;
+﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
+
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
-using System.Linq;
 
-namespace Hydrogen {
+namespace Hydrogen;
 
+/// <summary>
+/// Serializes a <see cref="KeyValuePair{TKey, TValue}"/> using component serializers for <see cref="TKey"/> and <see cref="TValue"/>. 
+/// </summary>
+/// <typeparam name="TKey"></typeparam>
+/// <typeparam name="TValue"></typeparam>
+/// <remarks>Serialization format: [KeySize] [KeyBytes....] [ValueSize] [ValueBytes....]
+///  - A key-size is always serialized so it can be skipped when only reading values.
+///  - Null values are supported (even if value serializer doesn't)
+///  - Null keys are not supported by default, but passing a key serializer that supports null will
+/// </remarks>
+public class KeyValuePairSerializer<TKey, TValue> : ItemSerializer<KeyValuePair<TKey, TValue>> {
 
-	/// <summary>
-	/// Serializes a <see cref="KeyValuePair{TKey, TValue}"/> using component serializers for <see cref="TKey"/> and <see cref="TValue"/>. 
-	/// </summary>
-	/// <typeparam name="TKey"></typeparam>
-	/// <typeparam name="TValue"></typeparam>
-	/// <remarks>Serialization format: [KeyLength (uint32)] [KeyBytes....] [ValueLength (uint32)] [ValueBytes....] such that if total KVP bytes excludes ValueLength, than Value is inferred null</remarks>
-	public class KeyValuePairSerializer<TKey, TValue> : ItemSerializer<KeyValuePair<TKey, TValue>> {
-		private readonly IItemSerializer<TKey> _keySerializer;
-		private readonly IItemSerializer<TValue> _valueSerializer;
+	public KeyValuePairSerializer(IItemSerializer<TKey> keySerializer = null, IItemSerializer<TValue> valueSerializer = null, SizeDescriptorStrategy sizeDescriptorStrategy = SizeDescriptorStrategy.UseCVarInt)
+		: base(sizeDescriptorStrategy) {
+		KeySerializer = keySerializer ?? ItemSerializer<TKey>.Default;
+		ValueSerializer = (valueSerializer ?? ItemSerializer<TValue>.Default).AsSanitized();
+	}
 
-		public KeyValuePairSerializer(IItemSerializer<TKey> keySerializer = null, IItemSerializer<TValue> valueSerializer = null) {
-			_keySerializer = keySerializer ?? ItemSerializer<TKey>.Default;
-			_valueSerializer = valueSerializer ?? ItemSerializer<TValue>.Default;
-		}
+	public IItemSerializer<TKey> KeySerializer { get; }
 
-		public override int CalculateSize(KeyValuePair<TKey, TValue> item) {
-			var size = sizeof(uint);
-			if (item.Key != null)
-				size += _keySerializer.CalculateSize(item.Key);
-			if (item.Value != null) {
-				size += sizeof(int);
-				size += _valueSerializer.CalculateSize(item.Value);
-			}
-			return size;
-		}
+	public IItemSerializer<TValue> ValueSerializer { get; }
 
-		public override bool TrySerialize(KeyValuePair<TKey, TValue> item, EndianBinaryWriter writer, out int bytesWritten) {
-			bytesWritten = 0;
+	public override long CalculateSize(KeyValuePair<TKey, TValue> item) {
+		var keySize = KeySerializer.CalculateSize(item.Key);
+		var keySizeDescriptorSize = SizeSerializer.CalculateSize(keySize);
+		var valueSize = ValueSerializer.CalculateSize(item.Value);
+		var valueSizeDescriptorSize = SizeSerializer.CalculateSize(valueSize);
+		return keySizeDescriptorSize + keySize + valueSizeDescriptorSize + valueSize;
+	}
 
-			var keyBytes = Array.Empty<byte>();
-			if (item.Key != null)
-				if (!_keySerializer.TrySerialize(item.Key, out keyBytes, writer.BitConverter.Endianness))
-					return false;
+	public override void Serialize(KeyValuePair<TKey, TValue> item, EndianBinaryWriter writer) {
+		// write key 
+		var keySize = KeySerializer.CalculateSize(item.Key);
+		SizeSerializer.Serialize(keySize, writer);
+		KeySerializer.Serialize(item.Key, writer);
 
-			writer.Write(keyBytes.Length);
-			writer.Write(keyBytes);
-			bytesWritten = sizeof(int) + keyBytes.Length;
-			if (item.Value != null) {
-				if (!_valueSerializer.TrySerialize(item.Value, out var valueBytes, writer.BitConverter.Endianness))
-					return false;
+		// write value
+		var valueSize = ValueSerializer.CalculateSize(item.Value);
+		SizeSerializer.Serialize(valueSize, writer);
+		ValueSerializer.Serialize(item.Value, writer);
+	}
 
-				writer.Write(valueBytes.Length);
-				writer.Write(valueBytes);
-				bytesWritten += sizeof(int) + valueBytes.Length;
-			}
-			
-			return true;
-		}
+	public override KeyValuePair<TKey, TValue> Deserialize(EndianBinaryReader reader) {
+		// Deserialize key
+		SizeSerializer.Deserialize(reader);
+		var key = KeySerializer.Deserialize(reader);
+		SizeSerializer.Deserialize(reader);
+		var value = ValueSerializer.Deserialize(reader);
+		return new KeyValuePair<TKey, TValue>(key, value);
+	}
 
-		public override bool TryDeserialize(int byteSize, EndianBinaryReader reader, out KeyValuePair<TKey, TValue> item) {
-			// TODO: add max length checks on reading byte lengths to avoid attacks with malicious kvp's
-			item = default;
-			var keyBytesLength = reader.ReadUInt32();
-			if (!_keySerializer.TryDeserialize(reader.ReadBytes((int)keyBytesLength), out var key, reader.BitConverter.Endianness))
-				return false;
-			TValue value = default;
-			if (sizeof(uint) + keyBytesLength < byteSize) {
-				var valueBytesLength = reader.ReadUInt32();
-				if (!_valueSerializer.TryDeserialize(reader.ReadBytes((int)valueBytesLength), out value, reader.BitConverter.Endianness))
-					return false;
-			}
-			item = new KeyValuePair<TKey, TValue>(key, value);
-			return true;
-		}
+	public TKey DeserializeKey(EndianBinaryReader reader) {
+		SizeSerializer.Deserialize(reader);
+		return KeySerializer.Deserialize(reader);
+	}
 
-		public bool TryDeserializeKey(int byteSize, EndianBinaryReader reader, out TKey item) {
-			// TODO: add max length checks on reading byte lengths to avoid attacks with malicious kvp's
-			var keyBytesLength = reader.ReadUInt32();
-			if (!_keySerializer.TryDeserialize(reader.ReadBytes((int)keyBytesLength), out item, reader.BitConverter.Endianness))
-				return false;
-			return true;
-		}
+	public byte[] ReadKeyBytes(EndianBinaryReader reader) {
+		var keyBytesLength = SizeSerializer.Deserialize(reader);
+		return reader.ReadBytes(keyBytesLength);
+	}
 
-		public bool TryDeserializeValue(int byteSize, EndianBinaryReader reader, out TValue item) {
-			// TODO: add max length checks on reading byte lengths to avoid attacks with malicious kvp's
-			item = default;
-			var keyBytesLength = reader.ReadUInt32();
-			reader.BaseStream.Seek(keyBytesLength, SeekOrigin.Current);
-			if (sizeof(uint) + keyBytesLength < byteSize) {
-				var valueBytesLength = reader.ReadUInt32();
-				if (!_valueSerializer.TryDeserialize(reader.ReadBytes((int)valueBytesLength), out item, reader.BitConverter.Endianness))
-					return false;
-			}
-			return true;
-		}
+	public TValue DeserializeValue(EndianBinaryReader reader) {
+		// skip key
+		var keyBytesLength = SizeSerializer.Deserialize(reader);
+		reader.BaseStream.Seek(keyBytesLength, SeekOrigin.Current);
 
-		public TKey DeserializeKey(int byteSize, EndianBinaryReader reader) {
-			if (!TryDeserializeKey(byteSize, reader, out var item))
-				throw new InvalidOperationException($"Unable to deserialize key from KVP of size {byteSize}b");
-			return item;
-		}
+		// read value 
+		SizeSerializer.Deserialize(reader);
+		return ValueSerializer.Deserialize(reader);
+	}
 
-		public TValue DeserializeValue(int byteSize, EndianBinaryReader reader) {
-			if (!TryDeserializeValue(byteSize, reader, out var item))
-				throw new InvalidOperationException($"Unable to deserialize value from KVP of size {byteSize}b");
-			return item;
-		}
+	public byte[] ReadValueBytes(EndianBinaryReader reader) {
+		// skip key
+		var keyBytesLength = SizeSerializer.Deserialize(reader);
+		reader.BaseStream.Seek(keyBytesLength, SeekOrigin.Current);
 
+		// read value (size inferred from left-over bytes)
+		var valueSize = SizeSerializer.Deserialize(reader);
+		return reader.ReadBytes(valueSize);
 	}
 }

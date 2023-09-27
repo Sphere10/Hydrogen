@@ -1,51 +1,48 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security;
-using System.Text;
+﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen {
+using System;
 
-	public sealed class SecureItem<T> : ISecureItem<T> {
-		private SecureBytes _secureBytes;
-		private IItemSerializer<T> _serializer;
-		private T _unencrypted;
+namespace Hydrogen;
 
-		public SecureItem(T item, IItemSerializer<T> serializer) {
-			Guard.ArgumentNotNull(item, nameof(item));
-			Guard.ArgumentNotNull(serializer, nameof(serializer));
-			_serializer = serializer;
-			_secureBytes = new SecureBytes(_serializer.SerializeLE(item));
-			_secureBytes.Encrypted += () => {
-				_unencrypted = default;
-			};
-			_secureBytes.Decrypted += () => {
-				_unencrypted = _serializer.DeserializeLE(_secureBytes.Item);
-			};
-		}
+public sealed class SecureItem<T> : ISecureItem<T> {
+	private SecureBytes _secureBytes;
+	private IItemSerializer<T> _serializer;
+	private T _unencrypted;
 
-		public bool Protected => _secureBytes.Protected;
-			
-		public T Item {
-			get {
-				if (Protected)
-					throw new InvalidOperationException("No open scope is present, bytes are encrypted");
-				return _unencrypted;
-			}
-		}
-
-		public IScope EnterUnprotectedScope() {
-			var scope =_secureBytes.EnterUnprotectedScope();
-			scope.ScopeEnd += () => {
-
-			};
-			return scope;
-		}
-
-		public void Dispose() {
-			_secureBytes.Dispose();
-		}
-
-	
+	public SecureItem(T item, IItemSerializer<T> serializer) {
+		Guard.ArgumentNotNull(item, nameof(item));
+		Guard.ArgumentNotNull(serializer, nameof(serializer));
+		_serializer = serializer;
+		_secureBytes = new SecureBytes(_serializer.SerializeBytesLE(item));
+		_secureBytes.Encrypted += () => { _unencrypted = default; };
+		_secureBytes.Decrypted += () => { _unencrypted = _serializer.DeserializeBytesLE(_secureBytes.Item); };
 	}
+
+	public bool Protected => _secureBytes.Protected;
+
+	public T Item {
+		get {
+			if (Protected)
+				throw new InvalidOperationException("No open scope is present, bytes are encrypted");
+			return _unencrypted;
+		}
+	}
+
+	public IScope EnterUnprotectedScope() {
+		var scope = _secureBytes.EnterUnprotectedScope();
+		scope.ScopeEnd += () => { };
+		return scope;
+	}
+
+	public void Dispose() {
+		_secureBytes.Dispose();
+	}
+
+
 }

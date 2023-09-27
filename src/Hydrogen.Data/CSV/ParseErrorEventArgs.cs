@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------
 // <copyright file="ParseErrorEventArgs.cs" company="Sphere 10 Software">
 //
-// Copyright (c) Sphere 10 Software. All rights reserved. (http://www.sphere10.com)
+// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
 //
 // Distributed under the MIT software license, see the accompanying file
 // LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
@@ -34,65 +34,62 @@
 
 using System;
 
-namespace Hydrogen.Data.Csv
-{
+namespace Hydrogen.Data.Csv;
+
+/// <summary>
+/// Provides data for the <see cref="M:CsvReader.ParseError"/> event.
+/// </summary>
+public class ParseErrorEventArgs
+	: EventArgs {
+
+	#region Fields
+
 	/// <summary>
-	/// Provides data for the <see cref="M:CsvReader.ParseError"/> event.
+	/// Contains the error that occured.
 	/// </summary>
-	public class ParseErrorEventArgs
-		: EventArgs
-	{
-		#region Fields
+	private MalformedCsvException _error;
 
-		/// <summary>
-		/// Contains the error that occured.
-		/// </summary>
-		private MalformedCsvException _error;
+	/// <summary>
+	/// Contains the action to take.
+	/// </summary>
+	private ParseErrorAction _action;
 
-		/// <summary>
-		/// Contains the action to take.
-		/// </summary>
-		private ParseErrorAction _action;
+	#endregion
 
-		#endregion
+	#region Constructors
 
-		#region Constructors
-
-		/// <summary>
-		/// Initializes a new instance of the ParseErrorEventArgs class.
-		/// </summary>
-		/// <param name="error">The error that occured.</param>
-		/// <param name="defaultAction">The default action to take.</param>
-		public ParseErrorEventArgs(MalformedCsvException error, ParseErrorAction defaultAction)
-			: base()
-		{
-			_error = error;
-			_action = defaultAction;
-		}
-
-		#endregion
-
-		#region Properties
-
-		/// <summary>
-		/// Gets the error that occured.
-		/// </summary>
-		/// <value>The error that occured.</value>
-		public MalformedCsvException Error
-		{
-			get { return _error; }
-		}
-
-		/// <summary>
-		/// Gets or sets the action to take.
-		/// </summary>
-		/// <value>The action to take.</value>
-		public ParseErrorAction Action
-		{
-			get { return _action; }
-			set { _action = value; }
-		}
-
-		#endregion
+	/// <summary>
+	/// Initializes a new instance of the ParseErrorEventArgs class.
+	/// </summary>
+	/// <param name="error">The error that occured.</param>
+	/// <param name="defaultAction">The default action to take.</param>
+	public ParseErrorEventArgs(MalformedCsvException error, ParseErrorAction defaultAction)
+		: base() {
+		_error = error;
+		_action = defaultAction;
 	}
+
+	#endregion
+
+	#region Properties
+
+	/// <summary>
+	/// Gets the error that occured.
+	/// </summary>
+	/// <value>The error that occured.</value>
+	public MalformedCsvException Error {
+		get { return _error; }
+	}
+
+	/// <summary>
+	/// Gets or sets the action to take.
+	/// </summary>
+	/// <value>The action to take.</value>
+	public ParseErrorAction Action {
+		get { return _action; }
+		set { _action = value; }
+	}
+
+	#endregion
+
 }

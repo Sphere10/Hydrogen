@@ -1,15 +1,22 @@
-﻿
+﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
+
+
 using System;
 
-namespace Hydrogen.Communications {
-    public class ProtocolBuilderException : SoftwareException {
+namespace Hydrogen.Communications;
 
-		public ProtocolBuilderException(string error) : base(error) {
-		}
+public class ProtocolBuilderException : SoftwareException {
 
-		public ProtocolBuilderException(string error, Exception innerException) : base(error, innerException) {
-		}
+	public ProtocolBuilderException(string error) : base(error) {
+	}
 
+	public ProtocolBuilderException(string error, Exception innerException) : base(error, innerException) {
 	}
 
 }

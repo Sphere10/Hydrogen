@@ -1,19 +1,26 @@
-﻿namespace Hydrogen.Communications {
+﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-	public interface IProtocolBuilderMain {
+namespace Hydrogen.Communications;
 
-		ProtocolHandshakeBuilder Handshake { get; }
+public interface IProtocolBuilderMain {
 
-		ProtocolRequestBuilder Requests { get; }
+	ProtocolHandshakeBuilder Handshake { get; }
 
-		ProtocolResponseBuilder Responses { get; }
+	ProtocolRequestBuilder Requests { get; }
 
-		ProtocolCommandBuilder Commands { get; }
+	ProtocolResponseBuilder Responses { get; }
 
-		ProtocolMessageBuilder Messages { get; }
+	ProtocolCommandBuilder Commands { get; }
 
-		ProtocolBuilder SetMode(int mode);
+	ProtocolMessageBuilder Messages { get; }
 
-		Protocol Build();
-	}
+	ProtocolBuilder SetMode(int mode);
+
+	Protocol Build();
 }

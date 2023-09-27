@@ -1,19 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Resources;
-using System.Text;
-using System.Linq;
+﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
+
+using System;
 
 namespace Hydrogen;
 
-public class StackList<T> : ExtendedListDecorator<T>, IStack<T> {
-
-	public StackList() : this(new ExtendedList<T>()) {
-	}
-
-	public StackList(IExtendedList<T> internalExtendedList) : base(internalExtendedList) {
-	}
+public class StackList<T, TInner> : ExtendedListDecorator<T, TInner>, IStack<T> where TInner : IExtendedList<T> {
 	
+	public StackList(TInner internalExtendedList) : base(internalExtendedList) {
+	}
+
 	public bool TryPeek(out T value) => TryPeek(out value, 1);
 
 	public bool TryPeek(out T value, int depth) {
@@ -39,7 +40,7 @@ public class StackList<T> : ExtendedListDecorator<T>, IStack<T> {
 		return true;
 	}
 
-	
+
 	public T Peek(int depth) {
 		if (!TryPeek(out var value, depth))
 			throw new InvalidOperationException($"Unable to peek stack at depth {depth}");
@@ -49,3 +50,12 @@ public class StackList<T> : ExtendedListDecorator<T>, IStack<T> {
 	public void Push(T item) => base.Add(item);
 }
 
+public class StackList<T> : StackList<T, IExtendedList<T>> {
+
+	public StackList() : this(new ExtendedList<T>()) {
+	}
+
+	public StackList(IExtendedList<T> list) : base(list) {
+	}
+
+}

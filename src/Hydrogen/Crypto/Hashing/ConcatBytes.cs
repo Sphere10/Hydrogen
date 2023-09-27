@@ -1,37 +1,42 @@
-﻿using System;
+﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen {
+using System;
 
-	/// <summary>
-	/// A mock hash algorithm used for primarily for testing merkle-trees.
-	/// </summary>
-	internal class ConcatBytes : HashFunctionBase {
-		private readonly ByteArrayBuilder _builder;
+namespace Hydrogen;
 
-		public ConcatBytes() {
-			_builder = new ByteArrayBuilder();
-		}
+/// <summary>
+/// A mock hash algorithm used for primarily for testing merkle-trees.
+/// </summary>
+internal class ConcatBytes : HashFunctionBase {
+	private readonly ByteArrayBuilder _builder;
 
-		public override int DigestSize => _builder.Length;
-
-		public override void Initialize() {
-			base.Initialize();
-			_builder.Clear();
-		}
-
-		public override void Transform(ReadOnlySpan<byte> data) {
-			base.Transform(data);
-			_builder.Append(data.ToArray());
-		}
-
-		protected override void Finalize(Span<byte> digest) {
-			_builder.ToArray().AsSpan().CopyTo(digest);
-		}
-
-		public override object Clone() {
-			throw new NotImplementedException();
-		}
+	public ConcatBytes() {
+		_builder = new ByteArrayBuilder();
 	}
 
-}
+	public override int DigestSize => _builder.Length;
 
+	public override void Initialize() {
+		base.Initialize();
+		_builder.Clear();
+	}
+
+	public override void Transform(ReadOnlySpan<byte> data) {
+		base.Transform(data);
+		_builder.Append(data.ToArray());
+	}
+
+	protected override void Finalize(Span<byte> digest) {
+		_builder.ToArray().AsSpan().CopyTo(digest);
+	}
+
+	public override object Clone() {
+		throw new NotImplementedException();
+	}
+}

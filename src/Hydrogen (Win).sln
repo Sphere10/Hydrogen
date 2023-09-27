@@ -19,7 +19,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hydrogen.Drawing", "Hydroge
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hydrogen.NUnit", "Hydrogen.NUnit\Hydrogen.NUnit.csproj", "{C08B47F1-BD56-4BC0-9241-214B67F91470}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hydrogen.NETCore", "Hydrogen.NETCore\Hydrogen.NETCore.csproj", "{4759DE91-C740-4C18-9E86-051C28575514}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hydrogen.NET", "Hydrogen.NET\Hydrogen.NET.csproj", "{4759DE91-C740-4C18-9E86-051C28575514}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hydrogen.Communications", "Hydrogen.Communications\Hydrogen.Communications.csproj", "{B9BAB6BC-4023-4689-B2F0-F15473547DA2}"
 EndProject
@@ -45,8 +45,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hydrogen.DApp.Presentation2
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hydrogen.DApp.Presentation2.Loader", "Hydrogen.DApp.Presentation2.Loader\Hydrogen.DApp.Presentation2.Loader.csproj", "{18634CEA-B8C0-4865-8A87-9EC888456301}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hydrogen.NETCore.Tests", "..\tests\Hydrogen.NETCore.Tests\Hydrogen.NETCore.Tests.csproj", "{DC1A39A3-2156-4FE2-BA44-4551905E4795}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hydrogen.DApp.Core.Tests", "..\tests\Hydrogen.DApp.Core.Tests\Hydrogen.DApp.Core.Tests.csproj", "{884F4D63-17A6-4253-A3A8-CDFC7994F1D6}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hydrogen.DApp.Presentation.Loader.Tests", "..\tests\Hydrogen.DApp.Presentation.Loader.Tests\Hydrogen.DApp.Presentation.Loader.Tests.csproj", "{097F5C7C-5681-44E2-B894-9717045DC452}"
@@ -56,8 +54,6 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hydrogen.Tests", "..\tests\Hydrogen.Tests\Hydrogen.Tests.csproj", "{A1206153-4D43-4A74-82FE-60B1A1C00AF9}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hydrogen.NUnit.DB", "Hydrogen.NUnit.DB\Hydrogen.NUnit.DB.csproj", "{3FE7BEA4-FB7D-4C14-ABC0-D70CAE958204}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hydrogen.Application.Tests", "..\tests\Hydrogen.Application.Tests\Hydrogen.Application.Tests.csproj", "{BAE7B0C8-0C27-4458-96E7-7692AC00A38B}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hydrogen.Communications.Tests", "..\tests\Hydrogen.Communications.Tests\Hydrogen.Communications.Tests.csproj", "{C5A86B37-47F8-4176-BE9A-4B16D58B6416}"
 EndProject
@@ -98,6 +94,10 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hydrogen.Data.NHibernate", "Hydrogen.Data.NHibernate\Hydrogen.Data.NHibernate.csproj", "{EC7676E8-5D6B-4718-9A51-2E5FEBAF4A27}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hydrogen.Web.AspNetCore", "Hydrogen.Web.AspNetCore\Hydrogen.Web.AspNetCore.csproj", "{A8332068-9A08-49D1-85CE-A6B82D7EAE35}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hydrogen.Utils.WorkflowTester", "..\utils\Hydrogen.Utils.WorkflowTester\Hydrogen.Utils.WorkflowTester.csproj", "{9D137EF7-597C-425F-A801-066213871B1E}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hydrogen.NET.Tests", "..\tests\Hydrogen.NET.Tests\Hydrogen.NET.Tests.csproj", "{56AF156F-8C1D-4D61-923F-8019F9E89AC4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -267,14 +267,6 @@ Global
 		{18634CEA-B8C0-4865-8A87-9EC888456301}.Release|Any CPU.Build.0 = Release|Any CPU
 		{18634CEA-B8C0-4865-8A87-9EC888456301}.Release|x86.ActiveCfg = Release|Any CPU
 		{18634CEA-B8C0-4865-8A87-9EC888456301}.Release|x86.Build.0 = Release|Any CPU
-		{DC1A39A3-2156-4FE2-BA44-4551905E4795}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{DC1A39A3-2156-4FE2-BA44-4551905E4795}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{DC1A39A3-2156-4FE2-BA44-4551905E4795}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{DC1A39A3-2156-4FE2-BA44-4551905E4795}.Debug|x86.Build.0 = Debug|Any CPU
-		{DC1A39A3-2156-4FE2-BA44-4551905E4795}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{DC1A39A3-2156-4FE2-BA44-4551905E4795}.Release|Any CPU.Build.0 = Release|Any CPU
-		{DC1A39A3-2156-4FE2-BA44-4551905E4795}.Release|x86.ActiveCfg = Release|Any CPU
-		{DC1A39A3-2156-4FE2-BA44-4551905E4795}.Release|x86.Build.0 = Release|Any CPU
 		{884F4D63-17A6-4253-A3A8-CDFC7994F1D6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{884F4D63-17A6-4253-A3A8-CDFC7994F1D6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{884F4D63-17A6-4253-A3A8-CDFC7994F1D6}.Debug|x86.ActiveCfg = Debug|Any CPU
@@ -315,14 +307,6 @@ Global
 		{3FE7BEA4-FB7D-4C14-ABC0-D70CAE958204}.Release|Any CPU.Build.0 = Release|Any CPU
 		{3FE7BEA4-FB7D-4C14-ABC0-D70CAE958204}.Release|x86.ActiveCfg = Release|Any CPU
 		{3FE7BEA4-FB7D-4C14-ABC0-D70CAE958204}.Release|x86.Build.0 = Release|Any CPU
-		{BAE7B0C8-0C27-4458-96E7-7692AC00A38B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{BAE7B0C8-0C27-4458-96E7-7692AC00A38B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{BAE7B0C8-0C27-4458-96E7-7692AC00A38B}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{BAE7B0C8-0C27-4458-96E7-7692AC00A38B}.Debug|x86.Build.0 = Debug|Any CPU
-		{BAE7B0C8-0C27-4458-96E7-7692AC00A38B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{BAE7B0C8-0C27-4458-96E7-7692AC00A38B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{BAE7B0C8-0C27-4458-96E7-7692AC00A38B}.Release|x86.ActiveCfg = Release|Any CPU
-		{BAE7B0C8-0C27-4458-96E7-7692AC00A38B}.Release|x86.Build.0 = Release|Any CPU
 		{C5A86B37-47F8-4176-BE9A-4B16D58B6416}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{C5A86B37-47F8-4176-BE9A-4B16D58B6416}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C5A86B37-47F8-4176-BE9A-4B16D58B6416}.Debug|x86.ActiveCfg = Debug|Any CPU
@@ -467,17 +451,31 @@ Global
 		{A8332068-9A08-49D1-85CE-A6B82D7EAE35}.Release|Any CPU.Build.0 = Release|Any CPU
 		{A8332068-9A08-49D1-85CE-A6B82D7EAE35}.Release|x86.ActiveCfg = Release|Any CPU
 		{A8332068-9A08-49D1-85CE-A6B82D7EAE35}.Release|x86.Build.0 = Release|Any CPU
+		{9D137EF7-597C-425F-A801-066213871B1E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9D137EF7-597C-425F-A801-066213871B1E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9D137EF7-597C-425F-A801-066213871B1E}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{9D137EF7-597C-425F-A801-066213871B1E}.Debug|x86.Build.0 = Debug|Any CPU
+		{9D137EF7-597C-425F-A801-066213871B1E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9D137EF7-597C-425F-A801-066213871B1E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9D137EF7-597C-425F-A801-066213871B1E}.Release|x86.ActiveCfg = Release|Any CPU
+		{9D137EF7-597C-425F-A801-066213871B1E}.Release|x86.Build.0 = Release|Any CPU
+		{56AF156F-8C1D-4D61-923F-8019F9E89AC4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{56AF156F-8C1D-4D61-923F-8019F9E89AC4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{56AF156F-8C1D-4D61-923F-8019F9E89AC4}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{56AF156F-8C1D-4D61-923F-8019F9E89AC4}.Debug|x86.Build.0 = Debug|Any CPU
+		{56AF156F-8C1D-4D61-923F-8019F9E89AC4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{56AF156F-8C1D-4D61-923F-8019F9E89AC4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{56AF156F-8C1D-4D61-923F-8019F9E89AC4}.Release|x86.ActiveCfg = Release|Any CPU
+		{56AF156F-8C1D-4D61-923F-8019F9E89AC4}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{DC1A39A3-2156-4FE2-BA44-4551905E4795} = {E7705E7B-D04B-488C-8442-149A029F34B8}
 		{884F4D63-17A6-4253-A3A8-CDFC7994F1D6} = {E7705E7B-D04B-488C-8442-149A029F34B8}
 		{097F5C7C-5681-44E2-B894-9717045DC452} = {E7705E7B-D04B-488C-8442-149A029F34B8}
 		{3F129B50-33A9-4691-8DE9-645677C4DE8F} = {E7705E7B-D04B-488C-8442-149A029F34B8}
 		{A1206153-4D43-4A74-82FE-60B1A1C00AF9} = {E7705E7B-D04B-488C-8442-149A029F34B8}
-		{BAE7B0C8-0C27-4458-96E7-7692AC00A38B} = {E7705E7B-D04B-488C-8442-149A029F34B8}
 		{C5A86B37-47F8-4176-BE9A-4B16D58B6416} = {E7705E7B-D04B-488C-8442-149A029F34B8}
 		{5EFC5E99-FD35-4F12-A9A1-966F40ED70B6} = {E7705E7B-D04B-488C-8442-149A029F34B8}
 		{D6096FDC-FF51-4402-AAE5-5C31500E4480} = {E7705E7B-D04B-488C-8442-149A029F34B8}
@@ -488,6 +486,8 @@ Global
 		{12FF48BC-3CFA-45D1-80EA-1F0D8DB74B53} = {5BA10B8B-3C32-4EE2-9C5F-AA2DD0D8BD6A}
 		{172EF8A1-9839-4ECA-9EAF-A850435D1112} = {5BA10B8B-3C32-4EE2-9C5F-AA2DD0D8BD6A}
 		{B6F7E3E8-5BE3-4BA5-B4F4-444F367EDB9D} = {5BA10B8B-3C32-4EE2-9C5F-AA2DD0D8BD6A}
+		{9D137EF7-597C-425F-A801-066213871B1E} = {9EA2842C-7248-4410-B9DB-16E3E32E2026}
+		{56AF156F-8C1D-4D61-923F-8019F9E89AC4} = {E7705E7B-D04B-488C-8442-149A029F34B8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {A6BF0BD3-FB17-4EDB-AFBF-08A34BD2E2B6}

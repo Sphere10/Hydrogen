@@ -1,56 +1,49 @@
-//-----------------------------------------------------------------------
-// <copyright file="UrlIDTests.cs" company="Sphere 10 Software">
-//
-// Copyright (c) Sphere 10 Software. All rights reserved. (http://www.sphere10.com)
+// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
 // LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
 //
-// <author>Herman Schoenfeld</author>
-// <date>2018</date>
-// </copyright>
-//-----------------------------------------------------------------------
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using NUnit.Framework;
 
-namespace Hydrogen.Tests {
+namespace Hydrogen.Tests;
 
-    [TestFixture]
-	[Parallelizable(ParallelScope.Children)]
-    public class UrlIDTests {
+[TestFixture]
+[Parallelizable(ParallelScope.Children)]
+public class UrlIDTests {
 
 
-        [Test]
-        public async Task PermiateAll() {
-            var permutes = new HashSet<uint>();
+	[Test]
+	public async Task PermiateAll() {
+		var permutes = new HashSet<uint>();
 
-            using (var queue = new ProducerConsumerQueue<uint>(uint.MaxValue)) {
-                var permuteTask = new Task(() => {
-                    for (long i = uint.MinValue; i <10000000; i++) {
-                        queue.Put(UrlID.PermuteId((uint)i));
-                        if (i%1000000 == 0)
-                            System.Console.WriteLine("Processed {0}", i);
+		using (var queue = new ProducerConsumerQueue<uint>(uint.MaxValue)) {
+			var permuteTask = new Task(() => {
+				for (long i = uint.MinValue; i < 10000000; i++) {
+					queue.Put(UrlID.PermuteId((uint)i));
+					if (i % 1000000 == 0)
+						System.Console.WriteLine("Processed {0}", i);
 
-                    }
-                    queue.FinishedProducing();                    
-                });
+				}
+				queue.FinishedProducing();
+			});
 
-                var checkTask = new Task(() => {
-                    while (!queue.HasFinishedProducing) {
-                        var toCheck = queue.Take();
-                        Assert.AreEqual(false, permutes.Contains(toCheck), "Value {0} clashed".FormatWith(toCheck));
-                        permutes.Add(toCheck);
-                    }
-                });
+			var checkTask = new Task(() => {
+				while (!queue.HasFinishedProducing) {
+					var toCheck = queue.Take();
+					Assert.AreEqual(false, permutes.Contains(toCheck), "Value {0} clashed".FormatWith(toCheck));
+					permutes.Add(toCheck);
+				}
+			});
 
-                permuteTask.Start();
-                checkTask.Start();
-                await Task.WhenAll(permuteTask, checkTask);
-            }
-        }
-
-    }
+			permuteTask.Start();
+			checkTask.Start();
+			await Task.WhenAll(permuteTask, checkTask);
+		}
+	}
 
 }

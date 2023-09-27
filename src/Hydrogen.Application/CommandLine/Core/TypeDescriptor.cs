@@ -3,49 +3,41 @@
 using System;
 using CSharpx;
 
-namespace CommandLine.Core
-{
-    struct TypeDescriptor
-    {
-        private readonly TargetType targetType;
-        private readonly Maybe<int> maxItems;
-        private readonly Maybe<TypeDescriptor> nextValue;
+namespace CommandLine.Core;
 
-        private TypeDescriptor(TargetType targetType, Maybe<int> maxItems, Maybe<TypeDescriptor> nextValue = null)
-        {
-            this.targetType = targetType;
-            this.maxItems = maxItems;
-            this.nextValue = nextValue;
-        }
+struct TypeDescriptor {
+	private readonly TargetType targetType;
+	private readonly Maybe<int> maxItems;
+	private readonly Maybe<TypeDescriptor> nextValue;
 
-        public TargetType TargetType
-        {
-            get { return targetType; }
-        }
+	private TypeDescriptor(TargetType targetType, Maybe<int> maxItems, Maybe<TypeDescriptor> nextValue = null) {
+		this.targetType = targetType;
+		this.maxItems = maxItems;
+		this.nextValue = nextValue;
+	}
 
-        public Maybe<int> MaxItems
-        {
-            get { return maxItems; }
-        }
+	public TargetType TargetType {
+		get { return targetType; }
+	}
 
-        public Maybe<TypeDescriptor> NextValue
-        {
-            get { return this.nextValue; }
-        }
+	public Maybe<int> MaxItems {
+		get { return maxItems; }
+	}
 
-        public static TypeDescriptor Create(TargetType tag, Maybe<int> maximumItems, TypeDescriptor next = default(TypeDescriptor))
-        {
-            if (maximumItems == null) throw new ArgumentNullException("maximumItems");
+	public Maybe<TypeDescriptor> NextValue {
+		get { return this.nextValue; }
+	}
 
-            return new TypeDescriptor(tag, maximumItems, next.ToMaybe());
-        }
-    }
+	public static TypeDescriptor Create(TargetType tag, Maybe<int> maximumItems, TypeDescriptor next = default(TypeDescriptor)) {
+		if (maximumItems == null) throw new ArgumentNullException("maximumItems");
 
-    static class TypeDescriptorExtensions
-    {
-        public static TypeDescriptor WithNextValue(this TypeDescriptor descriptor, Maybe<TypeDescriptor> nextValue)
-        {
-            return TypeDescriptor.Create(descriptor.TargetType, descriptor.MaxItems, nextValue.GetValueOrDefault(default(TypeDescriptor)));
-        }
-    }
+		return new TypeDescriptor(tag, maximumItems, next.ToMaybe());
+	}
+}
+
+
+static class TypeDescriptorExtensions {
+	public static TypeDescriptor WithNextValue(this TypeDescriptor descriptor, Maybe<TypeDescriptor> nextValue) {
+		return TypeDescriptor.Create(descriptor.TargetType, descriptor.MaxItems, nextValue.GetValueOrDefault(default(TypeDescriptor)));
+	}
 }

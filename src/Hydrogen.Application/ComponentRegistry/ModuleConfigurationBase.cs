@@ -1,31 +1,28 @@
-//-----------------------------------------------------------------------
-// <copyright file="ModuleConfigurationBase.cs" company="Sphere 10 Software">
-//
-// Copyright (c) Sphere 10 Software. All rights reserved. (http://www.sphere10.com)
+// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
 // LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
 //
-// <author>Herman Schoenfeld</author>
-// <date>2018</date>
-// </copyright>
-//-----------------------------------------------------------------------
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen.Application {
-	public abstract class ModuleConfigurationBase : IModuleConfiguration {
-		public virtual int Priority => 0;
+using System;
+using Microsoft.Extensions.DependencyInjection;
 
-	    public virtual void RegisterComponents(ComponentRegistry registry) {
-        }
+namespace Hydrogen.Application;
 
-		public virtual void DeregisterComponents(ComponentRegistry registry) {
-		}
+public abstract class ModuleConfigurationBase : IModuleConfiguration {
+	public virtual int Priority => 0;
 
-		public virtual void OnInitialize() {            
-        }
 
-        public virtual void OnFinalize() {
-        }
+	public virtual void RegisterComponents(IServiceCollection services) {
+	}
 
-    }
+	public virtual void OnInitialize(IServiceProvider serviceProvider) {
+	}
+
+	public virtual void OnFinalize(IServiceProvider serviceProvider) {
+	}
+
+
 }

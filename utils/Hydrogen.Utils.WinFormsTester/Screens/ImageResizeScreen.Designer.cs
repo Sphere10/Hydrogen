@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------
 // <copyright file="ImageResizeForm.Designer.cs" company="Sphere 10 Software">
 //
-// Copyright (c) Sphere 10 Software. All rights reserved. (http://www.sphere10.com)
+// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
 //
 // Distributed under the MIT software license, see the accompanying file
 // LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
@@ -123,15 +123,15 @@ namespace Hydrogen.Utils.WinFormsTester {
             // 
             // _pathSelectorControl
             // 
-            this._pathSelectorControl.Dock = System.Windows.Forms.DockStyle.Top;
-            this._pathSelectorControl.Location = new System.Drawing.Point(0, 0);
-            this._pathSelectorControl.Mode = Hydrogen.Windows.Forms.PathSelectionMode.OpenFile;
+            this._pathSelectorControl.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this._pathSelectorControl.Location = new System.Drawing.Point(23, 0);
+            this._pathSelectorControl.Margin = new System.Windows.Forms.Padding(0);
             this._pathSelectorControl.Name = "_pathSelectorControl";
             this._pathSelectorControl.Path = "";
             this._pathSelectorControl.PlaceHolderText = "Select image";
-            this._pathSelectorControl.Size = new System.Drawing.Size(993, 20);
+            this._pathSelectorControl.Size = new System.Drawing.Size(1135, 23);
             this._pathSelectorControl.TabIndex = 0;
-            this._pathSelectorControl.PathChanged += this._pathSelectorControl_FilenameSelected;
             // 
             // _panel
             // 
@@ -175,17 +175,19 @@ namespace Hydrogen.Utils.WinFormsTester {
             this._panel.Controls.Add(this._pictureBoxEx13);
             this._panel.Controls.Add(this._pictureBoxEx12);
             this._panel.Controls.Add(this._pictureBoxEx11);
-            this._panel.Location = new System.Drawing.Point(0, 52);
+            this._panel.Location = new System.Drawing.Point(0, 60);
+            this._panel.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this._panel.Name = "_panel";
-            this._panel.Size = new System.Drawing.Size(993, 474);
+            this._panel.Size = new System.Drawing.Size(1158, 547);
             this._panel.TabIndex = 1;
             // 
             // _pictureBoxEx49
             // 
             this._pictureBoxEx49.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this._pictureBoxEx49.Location = new System.Drawing.Point(1679, 649);
+            this._pictureBoxEx49.Location = new System.Drawing.Point(1959, 749);
+            this._pictureBoxEx49.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this._pictureBoxEx49.Name = "_pictureBoxEx49";
-            this._pictureBoxEx49.Size = new System.Drawing.Size(200, 200);
+            this._pictureBoxEx49.Size = new System.Drawing.Size(233, 230);
             this._pictureBoxEx49.SystemIcon = Hydrogen.Windows.Forms.SystemIconType.None;
             this._pictureBoxEx49.TabIndex = 53;
             this._pictureBoxEx49.TabStop = false;
@@ -193,9 +195,10 @@ namespace Hydrogen.Utils.WinFormsTester {
             // _pictureBoxEx39
             // 
             this._pictureBoxEx39.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this._pictureBoxEx39.Location = new System.Drawing.Point(1679, 443);
+            this._pictureBoxEx39.Location = new System.Drawing.Point(1959, 511);
+            this._pictureBoxEx39.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this._pictureBoxEx39.Name = "_pictureBoxEx39";
-            this._pictureBoxEx39.Size = new System.Drawing.Size(200, 200);
+            this._pictureBoxEx39.Size = new System.Drawing.Size(233, 230);
             this._pictureBoxEx39.SystemIcon = Hydrogen.Windows.Forms.SystemIconType.None;
             this._pictureBoxEx39.TabIndex = 52;
             this._pictureBoxEx39.TabStop = false;
@@ -203,9 +206,10 @@ namespace Hydrogen.Utils.WinFormsTester {
             // _pictureBoxEx29
             // 
             this._pictureBoxEx29.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this._pictureBoxEx29.Location = new System.Drawing.Point(1679, 237);
+            this._pictureBoxEx29.Location = new System.Drawing.Point(1959, 273);
+            this._pictureBoxEx29.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this._pictureBoxEx29.Name = "_pictureBoxEx29";
-            this._pictureBoxEx29.Size = new System.Drawing.Size(200, 200);
+            this._pictureBoxEx29.Size = new System.Drawing.Size(233, 230);
             this._pictureBoxEx29.SystemIcon = Hydrogen.Windows.Forms.SystemIconType.None;
             this._pictureBoxEx29.TabIndex = 51;
             this._pictureBoxEx29.TabStop = false;
@@ -213,9 +217,10 @@ namespace Hydrogen.Utils.WinFormsTester {
             // _pictureBoxEx19
             // 
             this._pictureBoxEx19.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this._pictureBoxEx19.Location = new System.Drawing.Point(1679, 31);
+            this._pictureBoxEx19.Location = new System.Drawing.Point(1959, 36);
+            this._pictureBoxEx19.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this._pictureBoxEx19.Name = "_pictureBoxEx19";
-            this._pictureBoxEx19.Size = new System.Drawing.Size(200, 200);
+            this._pictureBoxEx19.Size = new System.Drawing.Size(233, 230);
             this._pictureBoxEx19.SystemIcon = Hydrogen.Windows.Forms.SystemIconType.None;
             this._pictureBoxEx19.TabIndex = 50;
             this._pictureBoxEx19.TabStop = false;
@@ -223,9 +228,10 @@ namespace Hydrogen.Utils.WinFormsTester {
             // _pictureBoxEx48
             // 
             this._pictureBoxEx48.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this._pictureBoxEx48.Location = new System.Drawing.Point(1473, 649);
+            this._pictureBoxEx48.Location = new System.Drawing.Point(1718, 749);
+            this._pictureBoxEx48.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this._pictureBoxEx48.Name = "_pictureBoxEx48";
-            this._pictureBoxEx48.Size = new System.Drawing.Size(200, 200);
+            this._pictureBoxEx48.Size = new System.Drawing.Size(233, 230);
             this._pictureBoxEx48.SystemIcon = Hydrogen.Windows.Forms.SystemIconType.None;
             this._pictureBoxEx48.TabIndex = 49;
             this._pictureBoxEx48.TabStop = false;
@@ -233,9 +239,10 @@ namespace Hydrogen.Utils.WinFormsTester {
             // _pictureBoxEx47
             // 
             this._pictureBoxEx47.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this._pictureBoxEx47.Location = new System.Drawing.Point(1265, 649);
+            this._pictureBoxEx47.Location = new System.Drawing.Point(1476, 749);
+            this._pictureBoxEx47.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this._pictureBoxEx47.Name = "_pictureBoxEx47";
-            this._pictureBoxEx47.Size = new System.Drawing.Size(200, 200);
+            this._pictureBoxEx47.Size = new System.Drawing.Size(233, 230);
             this._pictureBoxEx47.SystemIcon = Hydrogen.Windows.Forms.SystemIconType.None;
             this._pictureBoxEx47.TabIndex = 48;
             this._pictureBoxEx47.TabStop = false;
@@ -243,9 +250,10 @@ namespace Hydrogen.Utils.WinFormsTester {
             // _pictureBoxEx46
             // 
             this._pictureBoxEx46.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this._pictureBoxEx46.Location = new System.Drawing.Point(1059, 649);
+            this._pictureBoxEx46.Location = new System.Drawing.Point(1236, 749);
+            this._pictureBoxEx46.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this._pictureBoxEx46.Name = "_pictureBoxEx46";
-            this._pictureBoxEx46.Size = new System.Drawing.Size(200, 200);
+            this._pictureBoxEx46.Size = new System.Drawing.Size(233, 230);
             this._pictureBoxEx46.SystemIcon = Hydrogen.Windows.Forms.SystemIconType.None;
             this._pictureBoxEx46.TabIndex = 47;
             this._pictureBoxEx46.TabStop = false;
@@ -253,9 +261,10 @@ namespace Hydrogen.Utils.WinFormsTester {
             // _pictureBoxEx45
             // 
             this._pictureBoxEx45.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this._pictureBoxEx45.Location = new System.Drawing.Point(851, 649);
+            this._pictureBoxEx45.Location = new System.Drawing.Point(993, 749);
+            this._pictureBoxEx45.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this._pictureBoxEx45.Name = "_pictureBoxEx45";
-            this._pictureBoxEx45.Size = new System.Drawing.Size(200, 200);
+            this._pictureBoxEx45.Size = new System.Drawing.Size(233, 230);
             this._pictureBoxEx45.SystemIcon = Hydrogen.Windows.Forms.SystemIconType.None;
             this._pictureBoxEx45.TabIndex = 46;
             this._pictureBoxEx45.TabStop = false;
@@ -263,9 +272,10 @@ namespace Hydrogen.Utils.WinFormsTester {
             // _pictureBoxEx38
             // 
             this._pictureBoxEx38.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this._pictureBoxEx38.Location = new System.Drawing.Point(1473, 443);
+            this._pictureBoxEx38.Location = new System.Drawing.Point(1718, 511);
+            this._pictureBoxEx38.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this._pictureBoxEx38.Name = "_pictureBoxEx38";
-            this._pictureBoxEx38.Size = new System.Drawing.Size(200, 200);
+            this._pictureBoxEx38.Size = new System.Drawing.Size(233, 230);
             this._pictureBoxEx38.SystemIcon = Hydrogen.Windows.Forms.SystemIconType.None;
             this._pictureBoxEx38.TabIndex = 45;
             this._pictureBoxEx38.TabStop = false;
@@ -273,9 +283,10 @@ namespace Hydrogen.Utils.WinFormsTester {
             // _pictureBoxEx37
             // 
             this._pictureBoxEx37.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this._pictureBoxEx37.Location = new System.Drawing.Point(1265, 443);
+            this._pictureBoxEx37.Location = new System.Drawing.Point(1476, 511);
+            this._pictureBoxEx37.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this._pictureBoxEx37.Name = "_pictureBoxEx37";
-            this._pictureBoxEx37.Size = new System.Drawing.Size(200, 200);
+            this._pictureBoxEx37.Size = new System.Drawing.Size(233, 230);
             this._pictureBoxEx37.SystemIcon = Hydrogen.Windows.Forms.SystemIconType.None;
             this._pictureBoxEx37.TabIndex = 44;
             this._pictureBoxEx37.TabStop = false;
@@ -283,9 +294,10 @@ namespace Hydrogen.Utils.WinFormsTester {
             // _pictureBoxEx36
             // 
             this._pictureBoxEx36.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this._pictureBoxEx36.Location = new System.Drawing.Point(1059, 443);
+            this._pictureBoxEx36.Location = new System.Drawing.Point(1236, 511);
+            this._pictureBoxEx36.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this._pictureBoxEx36.Name = "_pictureBoxEx36";
-            this._pictureBoxEx36.Size = new System.Drawing.Size(200, 200);
+            this._pictureBoxEx36.Size = new System.Drawing.Size(233, 230);
             this._pictureBoxEx36.SystemIcon = Hydrogen.Windows.Forms.SystemIconType.None;
             this._pictureBoxEx36.TabIndex = 43;
             this._pictureBoxEx36.TabStop = false;
@@ -293,9 +305,10 @@ namespace Hydrogen.Utils.WinFormsTester {
             // _pictureBoxEx35
             // 
             this._pictureBoxEx35.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this._pictureBoxEx35.Location = new System.Drawing.Point(851, 443);
+            this._pictureBoxEx35.Location = new System.Drawing.Point(993, 511);
+            this._pictureBoxEx35.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this._pictureBoxEx35.Name = "_pictureBoxEx35";
-            this._pictureBoxEx35.Size = new System.Drawing.Size(200, 200);
+            this._pictureBoxEx35.Size = new System.Drawing.Size(233, 230);
             this._pictureBoxEx35.SystemIcon = Hydrogen.Windows.Forms.SystemIconType.None;
             this._pictureBoxEx35.TabIndex = 42;
             this._pictureBoxEx35.TabStop = false;
@@ -303,9 +316,10 @@ namespace Hydrogen.Utils.WinFormsTester {
             // _pictureBoxEx28
             // 
             this._pictureBoxEx28.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this._pictureBoxEx28.Location = new System.Drawing.Point(1473, 237);
+            this._pictureBoxEx28.Location = new System.Drawing.Point(1718, 273);
+            this._pictureBoxEx28.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this._pictureBoxEx28.Name = "_pictureBoxEx28";
-            this._pictureBoxEx28.Size = new System.Drawing.Size(200, 200);
+            this._pictureBoxEx28.Size = new System.Drawing.Size(233, 230);
             this._pictureBoxEx28.SystemIcon = Hydrogen.Windows.Forms.SystemIconType.None;
             this._pictureBoxEx28.TabIndex = 41;
             this._pictureBoxEx28.TabStop = false;
@@ -313,9 +327,10 @@ namespace Hydrogen.Utils.WinFormsTester {
             // _pictureBoxEx27
             // 
             this._pictureBoxEx27.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this._pictureBoxEx27.Location = new System.Drawing.Point(1265, 237);
+            this._pictureBoxEx27.Location = new System.Drawing.Point(1476, 273);
+            this._pictureBoxEx27.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this._pictureBoxEx27.Name = "_pictureBoxEx27";
-            this._pictureBoxEx27.Size = new System.Drawing.Size(200, 200);
+            this._pictureBoxEx27.Size = new System.Drawing.Size(233, 230);
             this._pictureBoxEx27.SystemIcon = Hydrogen.Windows.Forms.SystemIconType.None;
             this._pictureBoxEx27.TabIndex = 40;
             this._pictureBoxEx27.TabStop = false;
@@ -323,9 +338,10 @@ namespace Hydrogen.Utils.WinFormsTester {
             // _pictureBoxEx26
             // 
             this._pictureBoxEx26.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this._pictureBoxEx26.Location = new System.Drawing.Point(1059, 237);
+            this._pictureBoxEx26.Location = new System.Drawing.Point(1236, 273);
+            this._pictureBoxEx26.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this._pictureBoxEx26.Name = "_pictureBoxEx26";
-            this._pictureBoxEx26.Size = new System.Drawing.Size(200, 200);
+            this._pictureBoxEx26.Size = new System.Drawing.Size(233, 230);
             this._pictureBoxEx26.SystemIcon = Hydrogen.Windows.Forms.SystemIconType.None;
             this._pictureBoxEx26.TabIndex = 39;
             this._pictureBoxEx26.TabStop = false;
@@ -333,9 +349,10 @@ namespace Hydrogen.Utils.WinFormsTester {
             // _pictureBoxEx25
             // 
             this._pictureBoxEx25.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this._pictureBoxEx25.Location = new System.Drawing.Point(851, 237);
+            this._pictureBoxEx25.Location = new System.Drawing.Point(993, 273);
+            this._pictureBoxEx25.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this._pictureBoxEx25.Name = "_pictureBoxEx25";
-            this._pictureBoxEx25.Size = new System.Drawing.Size(200, 200);
+            this._pictureBoxEx25.Size = new System.Drawing.Size(233, 230);
             this._pictureBoxEx25.SystemIcon = Hydrogen.Windows.Forms.SystemIconType.None;
             this._pictureBoxEx25.TabIndex = 38;
             this._pictureBoxEx25.TabStop = false;
@@ -343,9 +360,10 @@ namespace Hydrogen.Utils.WinFormsTester {
             // _pictureBoxEx18
             // 
             this._pictureBoxEx18.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this._pictureBoxEx18.Location = new System.Drawing.Point(1473, 31);
+            this._pictureBoxEx18.Location = new System.Drawing.Point(1718, 36);
+            this._pictureBoxEx18.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this._pictureBoxEx18.Name = "_pictureBoxEx18";
-            this._pictureBoxEx18.Size = new System.Drawing.Size(200, 200);
+            this._pictureBoxEx18.Size = new System.Drawing.Size(233, 230);
             this._pictureBoxEx18.SystemIcon = Hydrogen.Windows.Forms.SystemIconType.None;
             this._pictureBoxEx18.TabIndex = 37;
             this._pictureBoxEx18.TabStop = false;
@@ -353,9 +371,10 @@ namespace Hydrogen.Utils.WinFormsTester {
             // _pictureBoxEx17
             // 
             this._pictureBoxEx17.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this._pictureBoxEx17.Location = new System.Drawing.Point(1265, 31);
+            this._pictureBoxEx17.Location = new System.Drawing.Point(1476, 36);
+            this._pictureBoxEx17.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this._pictureBoxEx17.Name = "_pictureBoxEx17";
-            this._pictureBoxEx17.Size = new System.Drawing.Size(200, 200);
+            this._pictureBoxEx17.Size = new System.Drawing.Size(233, 230);
             this._pictureBoxEx17.SystemIcon = Hydrogen.Windows.Forms.SystemIconType.None;
             this._pictureBoxEx17.TabIndex = 36;
             this._pictureBoxEx17.TabStop = false;
@@ -363,9 +382,10 @@ namespace Hydrogen.Utils.WinFormsTester {
             // _pictureBoxEx16
             // 
             this._pictureBoxEx16.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this._pictureBoxEx16.Location = new System.Drawing.Point(1059, 31);
+            this._pictureBoxEx16.Location = new System.Drawing.Point(1236, 36);
+            this._pictureBoxEx16.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this._pictureBoxEx16.Name = "_pictureBoxEx16";
-            this._pictureBoxEx16.Size = new System.Drawing.Size(200, 200);
+            this._pictureBoxEx16.Size = new System.Drawing.Size(233, 230);
             this._pictureBoxEx16.SystemIcon = Hydrogen.Windows.Forms.SystemIconType.None;
             this._pictureBoxEx16.TabIndex = 35;
             this._pictureBoxEx16.TabStop = false;
@@ -373,9 +393,10 @@ namespace Hydrogen.Utils.WinFormsTester {
             // _pictureBoxEx15
             // 
             this._pictureBoxEx15.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this._pictureBoxEx15.Location = new System.Drawing.Point(851, 31);
+            this._pictureBoxEx15.Location = new System.Drawing.Point(993, 36);
+            this._pictureBoxEx15.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this._pictureBoxEx15.Name = "_pictureBoxEx15";
-            this._pictureBoxEx15.Size = new System.Drawing.Size(200, 200);
+            this._pictureBoxEx15.Size = new System.Drawing.Size(233, 230);
             this._pictureBoxEx15.SystemIcon = Hydrogen.Windows.Forms.SystemIconType.None;
             this._pictureBoxEx15.TabIndex = 34;
             this._pictureBoxEx15.TabStop = false;
@@ -383,9 +404,10 @@ namespace Hydrogen.Utils.WinFormsTester {
             // _pictureBoxEx44
             // 
             this._pictureBoxEx44.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this._pictureBoxEx44.Location = new System.Drawing.Point(645, 649);
+            this._pictureBoxEx44.Location = new System.Drawing.Point(752, 749);
+            this._pictureBoxEx44.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this._pictureBoxEx44.Name = "_pictureBoxEx44";
-            this._pictureBoxEx44.Size = new System.Drawing.Size(200, 200);
+            this._pictureBoxEx44.Size = new System.Drawing.Size(233, 230);
             this._pictureBoxEx44.SystemIcon = Hydrogen.Windows.Forms.SystemIconType.None;
             this._pictureBoxEx44.TabIndex = 33;
             this._pictureBoxEx44.TabStop = false;
@@ -393,9 +415,10 @@ namespace Hydrogen.Utils.WinFormsTester {
             // _pictureBoxEx43
             // 
             this._pictureBoxEx43.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this._pictureBoxEx43.Location = new System.Drawing.Point(437, 649);
+            this._pictureBoxEx43.Location = new System.Drawing.Point(510, 749);
+            this._pictureBoxEx43.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this._pictureBoxEx43.Name = "_pictureBoxEx43";
-            this._pictureBoxEx43.Size = new System.Drawing.Size(200, 200);
+            this._pictureBoxEx43.Size = new System.Drawing.Size(233, 230);
             this._pictureBoxEx43.SystemIcon = Hydrogen.Windows.Forms.SystemIconType.None;
             this._pictureBoxEx43.TabIndex = 32;
             this._pictureBoxEx43.TabStop = false;
@@ -403,9 +426,10 @@ namespace Hydrogen.Utils.WinFormsTester {
             // _pictureBoxEx42
             // 
             this._pictureBoxEx42.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this._pictureBoxEx42.Location = new System.Drawing.Point(231, 649);
+            this._pictureBoxEx42.Location = new System.Drawing.Point(270, 749);
+            this._pictureBoxEx42.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this._pictureBoxEx42.Name = "_pictureBoxEx42";
-            this._pictureBoxEx42.Size = new System.Drawing.Size(200, 200);
+            this._pictureBoxEx42.Size = new System.Drawing.Size(233, 230);
             this._pictureBoxEx42.SystemIcon = Hydrogen.Windows.Forms.SystemIconType.None;
             this._pictureBoxEx42.TabIndex = 31;
             this._pictureBoxEx42.TabStop = false;
@@ -413,9 +437,10 @@ namespace Hydrogen.Utils.WinFormsTester {
             // _pictureBoxEx41
             // 
             this._pictureBoxEx41.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this._pictureBoxEx41.Location = new System.Drawing.Point(23, 649);
+            this._pictureBoxEx41.Location = new System.Drawing.Point(27, 749);
+            this._pictureBoxEx41.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this._pictureBoxEx41.Name = "_pictureBoxEx41";
-            this._pictureBoxEx41.Size = new System.Drawing.Size(200, 200);
+            this._pictureBoxEx41.Size = new System.Drawing.Size(233, 230);
             this._pictureBoxEx41.SystemIcon = Hydrogen.Windows.Forms.SystemIconType.None;
             this._pictureBoxEx41.TabIndex = 30;
             this._pictureBoxEx41.TabStop = false;
@@ -423,9 +448,10 @@ namespace Hydrogen.Utils.WinFormsTester {
             // _pictureBoxEx34
             // 
             this._pictureBoxEx34.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this._pictureBoxEx34.Location = new System.Drawing.Point(645, 443);
+            this._pictureBoxEx34.Location = new System.Drawing.Point(752, 511);
+            this._pictureBoxEx34.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this._pictureBoxEx34.Name = "_pictureBoxEx34";
-            this._pictureBoxEx34.Size = new System.Drawing.Size(200, 200);
+            this._pictureBoxEx34.Size = new System.Drawing.Size(233, 230);
             this._pictureBoxEx34.SystemIcon = Hydrogen.Windows.Forms.SystemIconType.None;
             this._pictureBoxEx34.TabIndex = 29;
             this._pictureBoxEx34.TabStop = false;
@@ -433,9 +459,10 @@ namespace Hydrogen.Utils.WinFormsTester {
             // _pictureBoxEx33
             // 
             this._pictureBoxEx33.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this._pictureBoxEx33.Location = new System.Drawing.Point(437, 443);
+            this._pictureBoxEx33.Location = new System.Drawing.Point(510, 511);
+            this._pictureBoxEx33.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this._pictureBoxEx33.Name = "_pictureBoxEx33";
-            this._pictureBoxEx33.Size = new System.Drawing.Size(200, 200);
+            this._pictureBoxEx33.Size = new System.Drawing.Size(233, 230);
             this._pictureBoxEx33.SystemIcon = Hydrogen.Windows.Forms.SystemIconType.None;
             this._pictureBoxEx33.TabIndex = 28;
             this._pictureBoxEx33.TabStop = false;
@@ -443,9 +470,10 @@ namespace Hydrogen.Utils.WinFormsTester {
             // _pictureBoxEx32
             // 
             this._pictureBoxEx32.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this._pictureBoxEx32.Location = new System.Drawing.Point(231, 443);
+            this._pictureBoxEx32.Location = new System.Drawing.Point(270, 511);
+            this._pictureBoxEx32.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this._pictureBoxEx32.Name = "_pictureBoxEx32";
-            this._pictureBoxEx32.Size = new System.Drawing.Size(200, 200);
+            this._pictureBoxEx32.Size = new System.Drawing.Size(233, 230);
             this._pictureBoxEx32.SystemIcon = Hydrogen.Windows.Forms.SystemIconType.None;
             this._pictureBoxEx32.TabIndex = 27;
             this._pictureBoxEx32.TabStop = false;
@@ -453,9 +481,10 @@ namespace Hydrogen.Utils.WinFormsTester {
             // _pictureBoxEx31
             // 
             this._pictureBoxEx31.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this._pictureBoxEx31.Location = new System.Drawing.Point(23, 443);
+            this._pictureBoxEx31.Location = new System.Drawing.Point(27, 511);
+            this._pictureBoxEx31.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this._pictureBoxEx31.Name = "_pictureBoxEx31";
-            this._pictureBoxEx31.Size = new System.Drawing.Size(200, 200);
+            this._pictureBoxEx31.Size = new System.Drawing.Size(233, 230);
             this._pictureBoxEx31.SystemIcon = Hydrogen.Windows.Forms.SystemIconType.None;
             this._pictureBoxEx31.TabIndex = 26;
             this._pictureBoxEx31.TabStop = false;
@@ -463,9 +492,10 @@ namespace Hydrogen.Utils.WinFormsTester {
             // _pictureBoxEx24
             // 
             this._pictureBoxEx24.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this._pictureBoxEx24.Location = new System.Drawing.Point(645, 237);
+            this._pictureBoxEx24.Location = new System.Drawing.Point(752, 273);
+            this._pictureBoxEx24.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this._pictureBoxEx24.Name = "_pictureBoxEx24";
-            this._pictureBoxEx24.Size = new System.Drawing.Size(200, 200);
+            this._pictureBoxEx24.Size = new System.Drawing.Size(233, 230);
             this._pictureBoxEx24.SystemIcon = Hydrogen.Windows.Forms.SystemIconType.None;
             this._pictureBoxEx24.TabIndex = 25;
             this._pictureBoxEx24.TabStop = false;
@@ -473,9 +503,10 @@ namespace Hydrogen.Utils.WinFormsTester {
             // _pictureBoxEx23
             // 
             this._pictureBoxEx23.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this._pictureBoxEx23.Location = new System.Drawing.Point(437, 237);
+            this._pictureBoxEx23.Location = new System.Drawing.Point(510, 273);
+            this._pictureBoxEx23.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this._pictureBoxEx23.Name = "_pictureBoxEx23";
-            this._pictureBoxEx23.Size = new System.Drawing.Size(200, 200);
+            this._pictureBoxEx23.Size = new System.Drawing.Size(233, 230);
             this._pictureBoxEx23.SystemIcon = Hydrogen.Windows.Forms.SystemIconType.None;
             this._pictureBoxEx23.TabIndex = 24;
             this._pictureBoxEx23.TabStop = false;
@@ -483,9 +514,10 @@ namespace Hydrogen.Utils.WinFormsTester {
             // _pictureBoxEx22
             // 
             this._pictureBoxEx22.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this._pictureBoxEx22.Location = new System.Drawing.Point(231, 237);
+            this._pictureBoxEx22.Location = new System.Drawing.Point(270, 273);
+            this._pictureBoxEx22.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this._pictureBoxEx22.Name = "_pictureBoxEx22";
-            this._pictureBoxEx22.Size = new System.Drawing.Size(200, 200);
+            this._pictureBoxEx22.Size = new System.Drawing.Size(233, 230);
             this._pictureBoxEx22.SystemIcon = Hydrogen.Windows.Forms.SystemIconType.None;
             this._pictureBoxEx22.TabIndex = 23;
             this._pictureBoxEx22.TabStop = false;
@@ -493,9 +525,10 @@ namespace Hydrogen.Utils.WinFormsTester {
             // _pictureBoxEx21
             // 
             this._pictureBoxEx21.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this._pictureBoxEx21.Location = new System.Drawing.Point(23, 237);
+            this._pictureBoxEx21.Location = new System.Drawing.Point(27, 273);
+            this._pictureBoxEx21.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this._pictureBoxEx21.Name = "_pictureBoxEx21";
-            this._pictureBoxEx21.Size = new System.Drawing.Size(200, 200);
+            this._pictureBoxEx21.Size = new System.Drawing.Size(233, 230);
             this._pictureBoxEx21.SystemIcon = Hydrogen.Windows.Forms.SystemIconType.None;
             this._pictureBoxEx21.TabIndex = 22;
             this._pictureBoxEx21.TabStop = false;
@@ -503,9 +536,10 @@ namespace Hydrogen.Utils.WinFormsTester {
             // _pictureBoxEx14
             // 
             this._pictureBoxEx14.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this._pictureBoxEx14.Location = new System.Drawing.Point(645, 31);
+            this._pictureBoxEx14.Location = new System.Drawing.Point(752, 36);
+            this._pictureBoxEx14.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this._pictureBoxEx14.Name = "_pictureBoxEx14";
-            this._pictureBoxEx14.Size = new System.Drawing.Size(200, 200);
+            this._pictureBoxEx14.Size = new System.Drawing.Size(233, 230);
             this._pictureBoxEx14.SystemIcon = Hydrogen.Windows.Forms.SystemIconType.None;
             this._pictureBoxEx14.TabIndex = 21;
             this._pictureBoxEx14.TabStop = false;
@@ -513,9 +547,10 @@ namespace Hydrogen.Utils.WinFormsTester {
             // _pictureBoxEx13
             // 
             this._pictureBoxEx13.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this._pictureBoxEx13.Location = new System.Drawing.Point(437, 31);
+            this._pictureBoxEx13.Location = new System.Drawing.Point(510, 36);
+            this._pictureBoxEx13.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this._pictureBoxEx13.Name = "_pictureBoxEx13";
-            this._pictureBoxEx13.Size = new System.Drawing.Size(200, 200);
+            this._pictureBoxEx13.Size = new System.Drawing.Size(233, 230);
             this._pictureBoxEx13.SystemIcon = Hydrogen.Windows.Forms.SystemIconType.None;
             this._pictureBoxEx13.TabIndex = 20;
             this._pictureBoxEx13.TabStop = false;
@@ -523,9 +558,10 @@ namespace Hydrogen.Utils.WinFormsTester {
             // _pictureBoxEx12
             // 
             this._pictureBoxEx12.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this._pictureBoxEx12.Location = new System.Drawing.Point(231, 31);
+            this._pictureBoxEx12.Location = new System.Drawing.Point(270, 36);
+            this._pictureBoxEx12.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this._pictureBoxEx12.Name = "_pictureBoxEx12";
-            this._pictureBoxEx12.Size = new System.Drawing.Size(200, 200);
+            this._pictureBoxEx12.Size = new System.Drawing.Size(233, 230);
             this._pictureBoxEx12.SystemIcon = Hydrogen.Windows.Forms.SystemIconType.None;
             this._pictureBoxEx12.TabIndex = 19;
             this._pictureBoxEx12.TabStop = false;
@@ -533,9 +569,10 @@ namespace Hydrogen.Utils.WinFormsTester {
             // _pictureBoxEx11
             // 
             this._pictureBoxEx11.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this._pictureBoxEx11.Location = new System.Drawing.Point(23, 31);
+            this._pictureBoxEx11.Location = new System.Drawing.Point(27, 36);
+            this._pictureBoxEx11.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this._pictureBoxEx11.Name = "_pictureBoxEx11";
-            this._pictureBoxEx11.Size = new System.Drawing.Size(200, 200);
+            this._pictureBoxEx11.Size = new System.Drawing.Size(233, 230);
             this._pictureBoxEx11.SystemIcon = Hydrogen.Windows.Forms.SystemIconType.None;
             this._pictureBoxEx11.TabIndex = 18;
             this._pictureBoxEx11.TabStop = false;
@@ -547,7 +584,8 @@ namespace Hydrogen.Utils.WinFormsTester {
             0,
             0,
             0});
-            this._widthNumeric.Location = new System.Drawing.Point(64, 26);
+            this._widthNumeric.Location = new System.Drawing.Point(75, 30);
+            this._widthNumeric.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this._widthNumeric.Maximum = new decimal(new int[] {
             1000,
             0,
@@ -559,7 +597,7 @@ namespace Hydrogen.Utils.WinFormsTester {
             0,
             0});
             this._widthNumeric.Name = "_widthNumeric";
-            this._widthNumeric.Size = new System.Drawing.Size(120, 20);
+            this._widthNumeric.Size = new System.Drawing.Size(140, 23);
             this._widthNumeric.TabIndex = 2;
             this._widthNumeric.Value = new decimal(new int[] {
             200,
@@ -575,7 +613,8 @@ namespace Hydrogen.Utils.WinFormsTester {
             0,
             0,
             0});
-            this._heightNumeric.Location = new System.Drawing.Point(253, 26);
+            this._heightNumeric.Location = new System.Drawing.Point(295, 30);
+            this._heightNumeric.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this._heightNumeric.Maximum = new decimal(new int[] {
             1000,
             0,
@@ -587,7 +626,7 @@ namespace Hydrogen.Utils.WinFormsTester {
             0,
             0});
             this._heightNumeric.Name = "_heightNumeric";
-            this._heightNumeric.Size = new System.Drawing.Size(120, 20);
+            this._heightNumeric.Size = new System.Drawing.Size(140, 23);
             this._heightNumeric.TabIndex = 3;
             this._heightNumeric.Value = new decimal(new int[] {
             200,
@@ -599,34 +638,36 @@ namespace Hydrogen.Utils.WinFormsTester {
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(20, 28);
+            this.label1.Location = new System.Drawing.Point(23, 32);
+            this.label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(35, 13);
+            this.label1.Size = new System.Drawing.Size(39, 15);
             this.label1.TabIndex = 4;
             this.label1.Text = "Width";
             // 
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(209, 28);
+            this.label2.Location = new System.Drawing.Point(244, 32);
+            this.label2.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(38, 13);
+            this.label2.Size = new System.Drawing.Size(43, 15);
             this.label2.TabIndex = 5;
             this.label2.Text = "Height";
             // 
-            // ImageResizeForm
+            // ImageResizeScreen
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(993, 527);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.label1);
             this.Controls.Add(this._heightNumeric);
             this.Controls.Add(this._widthNumeric);
             this.Controls.Add(this._panel);
             this.Controls.Add(this._pathSelectorControl);
+            this.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.Name = "ImageResizeScreen";
-            this.Text = "ImageResizeForm";
+            this.Size = new System.Drawing.Size(1158, 608);
             this._panel.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this._pictureBoxEx49)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this._pictureBoxEx39)).EndInit();

@@ -1,15 +1,10 @@
-////-----------------------------------------------------------------------
-//// <copyright file="ParseTool.cs" company="Sphere 10 Software">
-////
-//// Copyright (c) Sphere 10 Software. All rights reserved. (http://www.sphere10.com)
+//// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+//// Author: Herman Schoenfeld
 ////
 //// Distributed under the MIT software license, see the accompanying file
 //// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
 ////
-//// <author>Herman Schoenfeld</author>
-//// <date>2018</date>
-//// </copyright>
-////-----------------------------------------------------------------------
+//// This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 //using System;
 //using System.Collections.Generic;
@@ -57,8 +52,7 @@
 //		//			{ typeof(IPAddress), s => }
 //		        };
 
- 
-        
+
 //        /// <summary>
 //        /// Parses the specified value. Can parse primitive types or nullable primitive types. 
 //        /// </summary>
@@ -152,8 +146,6 @@
 //            if (!enumType.IsEnum)
 //                throw new ArgumentException(string.Format("Type '{0}' is not an enum", enumType.FullName));
 
-
-            
 
 //            // Try to parse the value directly 
 //            if (System.Enum.IsDefined(enumType, value)) {
@@ -582,3 +574,6 @@
 //    }
 
 //}
+
+
+

@@ -1,3 +1,11 @@
+// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Author: Ugochukwu Mmaduekwe, Herman Schoenfeld
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
+
 using System;
 using System.Linq;
 using System.Text;
@@ -5,7 +13,7 @@ using Org.BouncyCastle.Math;
 using Org.BouncyCastle.Math.EC;
 using Org.BouncyCastle.Utilities;
 
-namespace Hydrogen.CryptoEx.EC;
+namespace Hydrogen.CryptoEx.EC.Schnorr;
 
 //https://github.com/ElementsProject/secp256k1-zkp/blob/master/doc/musig-spec.mediawiki
 public class MuSig {
@@ -59,7 +67,7 @@ public class MuSig {
 		};
 	}
 	internal MuSigNonceData GenerateNonce(byte[] sessionId, byte[] privateKey, byte[] messageDigest, byte[] aggregatePubKey,
-										  byte[] extraInput = null) {
+	                                      byte[] extraInput = null) {
 
 		Schnorr.ValidateArray(nameof(sessionId), sessionId);
 		Schnorr.ValidateArray(nameof(privateKey), privateKey);
@@ -180,7 +188,7 @@ public class MuSig {
 	}
 
 	public SignerMuSigSession InitializeSignerSession(byte[] sessionId, BigInteger privateKey, byte[] publicKey, byte[] messageDigest,
-											byte[] ell, byte[] secondPublicKey) {
+	                                                  byte[] ell, byte[] secondPublicKey) {
 		Schnorr.ValidatePrivateKeyRange(nameof(privateKey), privateKey);
 		Schnorr.ValidateArray(nameof(sessionId), sessionId);
 		Schnorr.ValidateArray(nameof(publicKey), publicKey);

@@ -1,15 +1,10 @@
-//-----------------------------------------------------------------------
-// <copyright file="RollingFileLogger.cs" company="Sphere 10 Software">
-//
-// Copyright (c) Sphere 10 Software. All rights reserved. (http://www.sphere10.com)
+// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
 // LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
 //
-// <author>Herman Schoenfeld</author>
-// <date>2018</date>
-// </copyright>
-//-----------------------------------------------------------------------
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
 
@@ -68,10 +63,11 @@ public abstract class LoggerBase : ILogger {
 	/// Logs an exception.
 	/// </summary>
 	/// <param name="exception">The exception.</param>
-	public void Exception(Exception exception) {
-		if (LoggerHelper.TryHydrateErrorMessage(exception, Options, out var message))
-			Log(LogLevel.Error, message);
-	}
+	/// <param name="message1"></param>
+	public void Exception(Exception exception, string message = null) {
+		if (LoggerHelper.TryHydrateErrorMessage(exception, Options, out var exceptionMessage))
+			Log(LogLevel.Error, !string.IsNullOrWhiteSpace(message) ? $"{message}. {exceptionMessage}" : exceptionMessage);
+		}
 
 	/// <summary>
 	/// Implemented by sub-class.
@@ -80,5 +76,3 @@ public abstract class LoggerBase : ILogger {
 	/// <param name="message">The message.</param>
 	protected abstract void Log(LogLevel logLevel, string message);
 }
-
-

@@ -2,7 +2,7 @@
 
 	<PropertyGroup>
 		<OutputType>WinExe</OutputType>
-		<TargetFramework>net6.0-windows</TargetFramework>
+		<TargetFramework>net8.0-windows</TargetFramework>
 		<UseWindowsForms>true</UseWindowsForms>
 		<AssemblyName>HydrogenTester.WinForms</AssemblyName>
 		<RootNamespace>HydrogenTester.WinForms</RootNamespace>
@@ -10,21 +10,22 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="HashLib4CSharp" Version="1.5.0" />
 		<PackageReference Include="SauceControl.Blake2Fast" Version="2.0.0" />
 		<PackageReference Include="SharpDX" Version="4.2.0" />
 		<PackageReference Include="SharpDX.DirectSound" Version="4.2.0" />
 	</ItemGroup>
 
 	<ItemGroup>
+		<ProjectReference Include="..\..\src\HashLib4CSharp\HashLib4CSharp.csproj" />
 		<ProjectReference Include="..\..\src\Hydrogen.Application\Hydrogen.Application.csproj" />
 		<ProjectReference Include="..\..\src\Hydrogen.Communications\Hydrogen.Communications.csproj" />
+		<ProjectReference Include="..\..\src\Hydrogen.CryptoEx\Hydrogen.CryptoEx.csproj" />
 		<ProjectReference Include="..\..\src\Hydrogen.Data.Firebird\Hydrogen.Data.Firebird.csproj" />
 		<ProjectReference Include="..\..\src\Hydrogen.Data.MSSQL\Hydrogen.Data.MSSQL.csproj" />
 		<ProjectReference Include="..\..\src\Hydrogen.Data.Sqlite\Hydrogen.Data.Sqlite.csproj" />
 		<ProjectReference Include="..\..\src\Hydrogen.Data\Hydrogen.Data.csproj" />
 		<ProjectReference Include="..\..\src\Hydrogen.Drawing\Hydrogen.Drawing.csproj" />
-		<ProjectReference Include="..\..\src\Hydrogen.NETCore\Hydrogen.NETCore.csproj" />
+		<ProjectReference Include="..\..\src\Hydrogen.NETCore\Hydrogen.NET.csproj" />
 		<ProjectReference Include="..\..\src\Hydrogen.Windows.Forms.Firebird\Hydrogen.Windows.Forms.Firebird.csproj" />
 		<ProjectReference Include="..\..\src\Hydrogen.Windows.Forms.MSSQL\Hydrogen.Windows.Forms.MSSQL.csproj" />
 		<ProjectReference Include="..\..\src\Hydrogen.Windows.Forms.Sqlite\Hydrogen.Windows.Forms.Sqlite.csproj" />

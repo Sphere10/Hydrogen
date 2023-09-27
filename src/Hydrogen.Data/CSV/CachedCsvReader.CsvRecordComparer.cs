@@ -1,16 +1,3 @@
-//-----------------------------------------------------------------------
-// <copyright file="CachedCsvReader.CsvRecordComparer.cs" company="Sphere 10 Software">
-//
-// Copyright (c) Sphere 10 Software. All rights reserved. (http://www.sphere10.com)
-//
-// Distributed under the MIT software license, see the accompanying file
-// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
-//
-// <author>Herman Schoenfeld</author>
-// <date>2018</date>
-// </copyright>
-//-----------------------------------------------------------------------
-
 //	Hydrogen.Data.Csv.CachedCsvReader.CsvRecordComparer
 //	Copyright (c) 2006 Sébastien Lorion
 //
@@ -38,56 +25,58 @@ using System.ComponentModel;
 using Debug = System.Diagnostics.Debug;
 using System.Globalization;
 
-namespace Hydrogen.Data.Csv {
-    public partial class CachedCsvReader
-        : CsvReader {
-        /// <summary>
-        /// Represents a CSV record comparer.
-        /// </summary>
-        private class CsvRecordComparer
-            : IComparer<string[]> {
-            #region Fields
+namespace Hydrogen.Data.Csv;
 
-            /// <summary>
-            /// Contains the field index of the values to compare.
-            /// </summary>
-            private int _field;
+public partial class CachedCsvReader
+	: CsvReader {
+	/// <summary>
+	/// Represents a CSV record comparer.
+	/// </summary>
+	private class CsvRecordComparer
+		: IComparer<string[]> {
 
-            /// <summary>
-            /// Contains the sort direction.
-            /// </summary>
-            private ListSortDirection _direction;
+		#region Fields
 
-            #endregion
+		/// <summary>
+		/// Contains the field index of the values to compare.
+		/// </summary>
+		private int _field;
 
-            #region Constructors
+		/// <summary>
+		/// Contains the sort direction.
+		/// </summary>
+		private ListSortDirection _direction;
 
-            /// <summary>
-            /// Initializes a new instance of the CsvRecordComparer class.
-            /// </summary>
-            /// <param name="field">The field index of the values to compare.</param>
-            /// <param name="direction">The sort direction.</param>
-            public CsvRecordComparer(int field, ListSortDirection direction) {
-                if (field < 0)
-                    throw new ArgumentOutOfRangeException("field", field, string.Format(CultureInfo.InvariantCulture, Resources.ExceptionMessage.FieldIndexOutOfRange, field));
+		#endregion
 
-                _field = field;
-                _direction = direction;
-            }
+		#region Constructors
 
-            #endregion
+		/// <summary>
+		/// Initializes a new instance of the CsvRecordComparer class.
+		/// </summary>
+		/// <param name="field">The field index of the values to compare.</param>
+		/// <param name="direction">The sort direction.</param>
+		public CsvRecordComparer(int field, ListSortDirection direction) {
+			if (field < 0)
+				throw new ArgumentOutOfRangeException("field", field, string.Format(CultureInfo.InvariantCulture, Resources.ExceptionMessage.FieldIndexOutOfRange, field));
 
-            #region IComparer<string[]> Members
+			_field = field;
+			_direction = direction;
+		}
 
-            public int Compare(string[] x, string[] y) {
-                Debug.Assert(x != null && y != null && x.Length == y.Length && _field < x.Length);
+		#endregion
 
-                int result = String.Compare(x[_field], y[_field], StringComparison.CurrentCulture);
+		#region IComparer<string[]> Members
 
-                return (_direction == ListSortDirection.Ascending ? result : -result);
-            }
+		public int Compare(string[] x, string[] y) {
+			Debug.Assert(x != null && y != null && x.Length == y.Length && _field < x.Length);
 
-            #endregion
-        }
-    }
+			int result = String.Compare(x[_field], y[_field], StringComparison.CurrentCulture);
+
+			return (_direction == ListSortDirection.Ascending ? result : -result);
+		}
+
+		#endregion
+
+	}
 }

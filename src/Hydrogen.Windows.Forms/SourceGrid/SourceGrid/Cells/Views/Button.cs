@@ -1,90 +1,80 @@
-//-----------------------------------------------------------------------
-// <copyright file="Button.cs" company="Sphere 10 Software">
-//
-// Copyright (c) Sphere 10 Software. All rights reserved. (http://www.sphere10.com)
+// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Author: Dev Age
 //
 // Distributed under the MIT software license, see the accompanying file
 // LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
 //
-// <author>Herman Schoenfeld</author>
-// <date>2018</date>
-// </copyright>
-//-----------------------------------------------------------------------
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Drawing;
-using System.Windows.Forms;
 
-namespace SourceGrid.Cells.Views
-{
+namespace SourceGrid.Cells.Views;
+
+/// <summary>
+/// Summary description for a 3D themed Button.
+/// </summary>
+[Serializable]
+public class Button : Cell {
 	/// <summary>
-	/// Summary description for a 3D themed Button.
+	/// Represents a Button with the ability to draw an Image. Disable also the selection border using the OwnerDrawSelectionBorder = true.
 	/// </summary>
-	[Serializable]
-	public class Button : Cell
-	{
-		/// <summary>
-		/// Represents a Button with the ability to draw an Image. Disable also the selection border using the OwnerDrawSelectionBorder = true.
-		/// </summary>
-		public new readonly static Button Default;
+	public new readonly static Button Default;
 
-		#region Constructors
+	#region Constructors
 
-		static Button()
-		{
-			Default = new Button();
-		}
-
-		/// <summary>
-		/// Use default setting
-		/// </summary>
-		public Button()
-		{
-            Background = new DevAge.Drawing.VisualElements.ButtonThemed();
-		}
-
-		/// <summary>
-		/// Copy constructor.  This method duplicate all the reference field (Image, Font, StringFormat) creating a new instance.
-		/// </summary>
-		/// <param name="p_Source"></param>
-		public Button(Button p_Source):base(p_Source)
-		{
-            Background = (DevAge.Drawing.VisualElements.IButton)p_Source.Background.Clone();
-		}
-		#endregion
-
-		#region Clone
-		/// <summary>
-		/// Clone this object. This method duplicate all the reference field (Image, Font, StringFormat) creating a new instance.
-		/// </summary>
-		/// <returns></returns>
-		public override object Clone()
-		{
-			return new Button(this);
-		}
-		#endregion
-
-        #region Visual Elements
-
-        public new DevAge.Drawing.VisualElements.IButton Background
-        {
-            get { return (DevAge.Drawing.VisualElements.IButton)base.Background; }
-            set { base.Background = value; }
-        }
-
-        protected override void PrepareView(CellContext context)
-        {
-            base.PrepareView(context);
-
-            if (context.CellRange.Contains(context.Grid.MouseDownPosition))
-                Background.Style = DevAge.Drawing.ButtonStyle.Pressed;
-            else if (context.CellRange.Contains(context.Grid.MouseCellPosition))
-                Background.Style = DevAge.Drawing.ButtonStyle.Hot;
-            else if (context.CellRange.Contains(context.Grid.Selection.ActivePosition))
-                Background.Style = DevAge.Drawing.ButtonStyle.Focus;
-            else
-                Background.Style = DevAge.Drawing.ButtonStyle.Normal;
-        }
-        #endregion
+	static Button() {
+		Default = new Button();
 	}
+
+	/// <summary>
+	/// Use default setting
+	/// </summary>
+	public Button() {
+		Background = new DevAge.Drawing.VisualElements.ButtonThemed();
+	}
+
+	/// <summary>
+	/// Copy constructor.  This method duplicate all the reference field (Image, Font, StringFormat) creating a new instance.
+	/// </summary>
+	/// <param name="p_Source"></param>
+	public Button(Button p_Source) : base(p_Source) {
+		Background = (DevAge.Drawing.VisualElements.IButton)p_Source.Background.Clone();
+	}
+
+	#endregion
+
+	#region Clone
+
+	/// <summary>
+	/// Clone this object. This method duplicate all the reference field (Image, Font, StringFormat) creating a new instance.
+	/// </summary>
+	/// <returns></returns>
+	public override object Clone() {
+		return new Button(this);
+	}
+
+	#endregion
+
+	#region Visual Elements
+
+	public new DevAge.Drawing.VisualElements.IButton Background {
+		get { return (DevAge.Drawing.VisualElements.IButton)base.Background; }
+		set { base.Background = value; }
+	}
+
+	protected override void PrepareView(CellContext context) {
+		base.PrepareView(context);
+
+		if (context.CellRange.Contains(context.Grid.MouseDownPosition))
+			Background.Style = DevAge.Drawing.ButtonStyle.Pressed;
+		else if (context.CellRange.Contains(context.Grid.MouseCellPosition))
+			Background.Style = DevAge.Drawing.ButtonStyle.Hot;
+		else if (context.CellRange.Contains(context.Grid.Selection.ActivePosition))
+			Background.Style = DevAge.Drawing.ButtonStyle.Focus;
+		else
+			Background.Style = DevAge.Drawing.ButtonStyle.Normal;
+	}
+
+	#endregion
+
 }

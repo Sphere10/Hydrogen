@@ -13,7 +13,7 @@ namespace Hydrogen;
 internal class PackedSerializer : IItemSerializer<object> {
 	private readonly IItemSerializer _serializer;
 	
-	private PackedSerializer(IItemSerializer serializer) {
+	public PackedSerializer(IItemSerializer serializer) {
 		Guard.ArgumentNotNull(serializer, nameof(serializer));
 		_serializer = serializer;
 	}
@@ -39,17 +39,7 @@ internal class PackedSerializer : IItemSerializer<object> {
 	public static PackedSerializer Pack(IItemSerializer serializer) {
 		Guard.ArgumentNotNull(serializer, nameof(serializer));
 		return new PackedSerializer(serializer);
-		//var serializerType = serializer.GetType();
-		//Guard.Argument(serializerType.IsSubtypeOfGenericType(typeof(IItemSerializer<>), out var concreteSerializedItemtype), nameof(serializer), $"Cannot pack serializer as is not an {typeof(IItemSerializer<>).ToStringCS()}");
-		//var genericPackMethod = typeof(PackedSerializer).GetMethod(nameof(PackedSerializer.Pack)).MakeGenericMethod(concreteSerializedItemtype);
-		//var packedSerializer = genericPackMethod.Invoke(null, new [] { serializer });
-		//return (PackedSerializer)packedSerializer;
 	}
-	
-	//public static PackedSerializer Pack<TItem>(IItemSerializer<TItem> serializer) {
-	//	Guard.ArgumentNotNull(serializer, nameof(serializer));
-	//	return new PackedSerializer(serializer, serializer.AsProjection(x => (object)x, x => (TItem)x));
-	//}
 
 	public IItemSerializer<TItem> Unpack<TItem>() {
 		var unpacked = _serializer as IItemSerializer<TItem>;

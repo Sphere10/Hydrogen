@@ -11,6 +11,8 @@ public class ComplexObject {
 
 	public TestObject TestProperty { get; set; }
 
+	public CrudAction? NullableEnumProperty { get; set; }
+
 	public IList<ComplexObject> ManyRecursiveProperty { get; set; }
 
 	public override string ToString() => 

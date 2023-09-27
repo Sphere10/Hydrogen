@@ -72,6 +72,7 @@ public class SerializerBuilderTests {
 		var obj = new ComplexObject {
 			TestProperty = new TestObject("Hello", 123, true),
 			ObjectProperty = new KeyValuePair<string, TestObject>("Hello", new TestObject("Hello", 123, true)),
+			NullableEnumProperty = CrudAction.Create,
 			ManyRecursiveProperty = null
 		};
 		var serialized = serializer.SerializeBytesLE(obj);

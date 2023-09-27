@@ -23,16 +23,9 @@
 //	[Test]
 //	public void PrimitiveSerializeDeserialize() {
 //		var item = _fixture.Create<PrimitiveTestObject>();
-//		var serializer = GenericSerializer<PrimitiveTestObject>.Default;
-//		using var memoryStream = new MemoryStream();
-//		var writer = new EndianBinaryWriter(EndianBitConverter.Little, memoryStream);
-//		var byteCount = serializer.Serialize(item, writer);
-
-//		Assert.AreEqual(memoryStream.Length, byteCount);
-
-//		memoryStream.Seek(0, SeekOrigin.Begin);
-//		var reader = new EndianBinaryReader(EndianBitConverter.Little, memoryStream);
-//		var deserializedItem = serializer.Deserialize(reader);
+//		var serializer = SerializerFactory.Default.Assemble<PrimitiveTestObject>();
+//		var bytes = serializer.SerializeBytesLE(item);
+//		var deserializedItem = serializer.DeserializeBytesLE(bytes);
 
 //		item.Should().BeEquivalentTo(deserializedItem);
 //	}

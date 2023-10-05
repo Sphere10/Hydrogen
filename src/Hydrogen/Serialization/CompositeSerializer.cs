@@ -12,7 +12,7 @@ public class CompositeSerializer<TItem> : ItemSerializer<TItem> {
 	private long _constantSize;
 
 	internal CompositeSerializer() : base(SizeDescriptorStrategy.UseCVarInt) {
-		// NOTE: this constructor is needed by SerializationFacotry for assembling recursive serializers
+		// NOTE: this constructor is needed by SerializationFactory for assembling recursive serializers
 		// that involve member's that use this very same serializer. The serializer is constructed and registered
 		// uninitialized, and then initialized later via ConfigurePacked method.
 	}
@@ -33,7 +33,6 @@ public class CompositeSerializer<TItem> : ItemSerializer<TItem> {
 		_isConstantSize = _memberBindings.All(x => x.Serializer.IsConstantSize);
 		_constantSize =  IsConstantSize ? _memberBindings.Sum(x => x.Serializer.ConstantSize) : -1;
 	}
-
 
 	public override bool SupportsNull => false;
 
@@ -78,9 +77,7 @@ public class CompositeSerializer<TItem> : ItemSerializer<TItem> {
 		
 	public override void Serialize(TItem item, EndianBinaryWriter writer) {
 		using var scope = EnterCompositeScope(item, SerializationTask.Serializing, out _);
-		System.Console.WriteLine($"Serializing item {item.GetType().ToStringCS()}");
 		foreach (var binding in _memberBindings) {
-			System.Console.WriteLine($"Serializing member {binding.Member.PropertyType.ToStringCS()} {binding.Member.Name}");
 			var memberValue = binding.Member.GetValue(item);
 			binding.Serializer.Serialize(memberValue, writer);
 		}
@@ -89,10 +86,8 @@ public class CompositeSerializer<TItem> : ItemSerializer<TItem> {
 	public override TItem Deserialize(EndianBinaryReader reader) {
 		var item = _activator();
 		using var scope = EnterCompositeScope(item, SerializationTask.Deserializing, out var index);
-		System.Console.WriteLine($"Deserializing item {index}");
-		
+	
 		foreach (var binding in _memberBindings) {
-			System.Console.WriteLine($"Deserializing member {binding.Member.PropertyType.ToStringCS()} {binding.Member.Name}");
 			var memberValue = binding.Serializer.Deserialize(reader);
 			if (memberValue is SerializationScope.PlaceHolder placeHolder) {
 				// Member value was a cyclic reference placeholder, so set it at the end
@@ -106,7 +101,6 @@ public class CompositeSerializer<TItem> : ItemSerializer<TItem> {
 		}
 		if (index >= 0) {
 			scope.NotifyDeserializedObject(item, index);
-			System.Console.WriteLine($"Deserialized item {index} - {item.GetType().ToStringCS()}");
 		}
 		return item;
 	}

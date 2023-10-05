@@ -12,13 +12,18 @@ public class CompositeSerializer<TItem> : ItemSerializer<TItem> {
 	private long _constantSize;
 
 	internal CompositeSerializer() : base(SizeDescriptorStrategy.UseCVarInt) {
-		// Need for building recursive serializers (memberbindings point back to this serializer (or parent ones))
+		// NOTE: this constructor is needed by SerializationFacotry for assembling recursive serializers
+		// that involve member's that use this very same serializer. The serializer is constructed and registered
+		// uninitialized, and then initialized later via ConfigurePacked method.
 	}
 
 	public CompositeSerializer(Func<TItem> activator, MemberSerializationBinding[] memberBindings) 
 		: this() {
 		Configure(activator, memberBindings);
 	}
+
+	internal void ConfigureInternal(Func<object> activator, MemberSerializationBinding[] memberBindings) 
+		=> Configure(() => (TItem)activator(), memberBindings);
 
 	internal void Configure(Func<TItem> activator, MemberSerializationBinding[] memberBindings) {
 		Guard.ArgumentNotNull(activator, nameof(activator));
@@ -29,7 +34,6 @@ public class CompositeSerializer<TItem> : ItemSerializer<TItem> {
 		_constantSize =  IsConstantSize ? _memberBindings.Sum(x => x.Serializer.ConstantSize) : -1;
 	}
 
-	internal void ConfigurePacked(Func<object> activator, MemberSerializationBinding[] memberBindings) => Configure(() => (TItem)activator(), memberBindings);
 
 	public override bool SupportsNull => false;
 

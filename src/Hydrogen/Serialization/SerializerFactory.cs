@@ -348,7 +348,7 @@ public class SerializerFactory {
 			var itemTypeLocal = itemType;
 			serializer
 				.GetType()
-				.GetMethod(nameof(CompositeSerializer<object>.ConfigurePacked), BindingFlags.Instance | BindingFlags.NonPublic)
+				.GetMethod(nameof(CompositeSerializer<object>.ConfigureInternal), BindingFlags.Instance | BindingFlags.NonPublic)
 				.FastInvoke(serializer, () => itemTypeLocal.ActivateWithCompatibleArgs(), memberBindings.ToArray());
 			
 			return serializer;

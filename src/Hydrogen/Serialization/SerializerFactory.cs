@@ -18,6 +18,8 @@ using Hydrogen.FastReflection;
 namespace Hydrogen;
 
 public class SerializerFactory {
+	internal const int RegistrationCodeStart = 10;  // 0 - 9 reserved for special types (i.e. 0 is used to indicate cyclic reference)
+
 	private IDictionary<long, Registration> _registrations;
 	private BijectiveDictionary<Type, long> _registrationsByType;
 	private readonly ICache<Type, RecursiveDataType<long>> _getSerializerHierarchyCache;
@@ -69,12 +71,9 @@ public class SerializerFactory {
 
 	public static void RegisterDefaults(SerializerFactory factory) {
 		// register self-assembling factory for object
-		//factory.Register(0, typeof(object), typeof(CompositeSerializer<>), null, (reg, requested) => reg.SerializerFactory.Assemble(requested));
 		
 		// fundamental serialization types
-		//factory.Register<CyclicReference>(typeof(CyclicReferenceSerializer<>));
 		factory.Register(typeof(Array), typeof(ArraySerializer<>));  // special general array serializer
-		factory.Register<Enum>(typeof(EnumSerializer<>));
 		factory.Register(typeof (Nullable<>), typeof (NullableStructSerializer<>));
 		
 
@@ -148,6 +147,19 @@ public class SerializerFactory {
 
 	#region Register
 
+
+	public void RegisterEnum<TEnum>() where TEnum : struct, Enum 
+		=> RegisterEnum(typeof(TEnum));
+
+	public void RegisterEnum(Type enumType) {
+		Guard.ArgumentNotNull(enumType, nameof(enumType));
+		Guard.Argument(enumType.IsEnum, nameof(enumType), $"Type {enumType.Name} is not an enum");
+		var enumSerializer = (IItemSerializer) typeof(EnumSerializer<>).MakeGenericType(enumType).ActivateWithCompatibleArgs();
+		var nullableEnumSerializer = (IItemSerializer) typeof(NullableStructSerializer<>).MakeGenericType(enumType).ActivateWithCompatibleArgs(enumSerializer);
+		Register(GenerateTypeCode(), enumType, enumSerializer.GetType(), enumSerializer, null);
+		Register(GenerateTypeCode(), typeof(Nullable<>).MakeGenericType(enumType), nullableEnumSerializer.GetType(), nullableEnumSerializer, null);
+	}
+
 	public void Register<TItem>(IItemSerializer<TItem> serializerInstance)
 		=> Register(GenerateTypeCode(), typeof(TItem), serializerInstance.GetType(), serializerInstance, null);
 
@@ -172,10 +184,6 @@ public class SerializerFactory {
 			// Special registration for array serialization
 			Guard.Ensure(serializerType.IsPartialOrGenericTypeDefinition(), $"Serializer type {serializerType.Name} must be a generic type definition for data type {dataType.Name}");
 			Guard.Argument(serializerType.IsSubtypeOfGenericType(typeof(IItemSerializer<>), out var matchedGenericType) &&  matchedGenericType.ContainsGenericParameters && matchedGenericType.GenericTypeArguments[0].IsArray, nameof(serializerType), $"Serializer type must implement IItemSerializer<T[]>");
-		} else if (dataType == typeof(Enum)) {
-			// Special registration for enum serialization
-			Guard.Ensure(serializerType.IsPartialOrGenericTypeDefinition(), $"Serializer type {serializerType.Name} must be a generic type definition for data type {dataType.Name}");
-			Guard.Argument(serializerType.IsSubtypeOfGenericType(typeof(IItemSerializer<>), out var matchedGenericType) &&  matchedGenericType.ContainsGenericParameters && matchedGenericType.GenericTypeArguments[0].IsEnum, nameof(serializerType), $"Serializer type must implement IItemSerializer<>");
 		} else if (dataType.IsFullyConstructed() || serializerType.IsActivatable()) {
 			Guard.Ensure(dataType.IsFullyConstructed(), $"Data type {dataType.Name} must be a fully constructed type for serializer type ${serializerType.Name}");
 			Guard.Ensure(serializerType.IsActivatable(), $"Serializer type {serializerType.Name} must be an instantiable type for serializer type {dataType.Name}");
@@ -255,7 +263,7 @@ public class SerializerFactory {
 	public IItemSerializer<TSerializerDataType> GetSerializer<TSerializerDataType>(Type dataType) {
 		Guard.ArgumentNotNull(dataType, nameof(dataType));
 		var serializerDataType = typeof(TSerializerDataType);
-		Guard.Argument(dataType.IsSubTypeOf(serializerDataType), nameof(dataType), $"{dataType.ToStringCS()} must be a sub-type of {serializerDataType.ToStringCS()}");
+		Guard.Argument(dataType.IsAssignableTo(serializerDataType), nameof(dataType), $"{dataType.ToStringCS()} must be assignable to {serializerDataType.ToStringCS()}");
 		var serializerObj = GetSerializer(dataType);
 
 		var serializer = serializerObj as IItemSerializer<TSerializerDataType>;
@@ -302,7 +310,15 @@ public class SerializerFactory {
 			if (factory.HasSerializer(itemType))
 				return factory.GetSerializer(itemType);
 
-			// Activate serializer now and track it. This is to support recursively serialized data-types
+			// Special Case: if we're serializing an enum (or nullable enum), we register it with the factory now and return
+			if (itemType.IsEnum || itemType.IsConstructedGenericTypeOf(typeof(Nullable<>)) && itemType.GenericTypeArguments[0].IsEnum) {
+				factory.RegisterEnum(itemType.IsEnum ? itemType : itemType.GenericTypeArguments[0]);
+				return factory.GetSerializer(itemType);
+			}
+
+			// No serializer registered so we need to assemble one. First, we need to register the
+			// serializer (before it is assembled) as it may recursively refer to itself. So we activate
+			// a CompositeSerializer with no members (we'll configure it later)
 			var serializer = 
 				(IItemSerializer) typeof(CompositeSerializer<>)
 				.MakeGenericType(itemType)
@@ -313,31 +329,19 @@ public class SerializerFactory {
 			if (itemType != typeof(object))
 				factory.Register(factory.GenerateTypeCode(), itemType, serializer.GetType(), serializer, null);
 
-			//alreadyProcessed.Add(itemType, serializer);
+			// Create the member serializers
 			var members = SerializerBuilder.GetSerializableMembers(itemType);
 			var memberBindings = new List<MemberSerializationBinding>(members.Length);
-
 			foreach (var member in members) {
 				var propertyType =  member.PropertyType;
-				if (factory.HasSerializer(propertyType)) {
-					// factory has the parent registrations if needed
-					memberBindings.Add(new(member, factory.GetSerializer(propertyType).AsSanitized()));
-				} else {
-					// No factory serializer available, need to get serializer for this the type,
-					// Case 1: the type is sealed, find a serializer for the declaring type
-					// Case 2: the type is not sealed and the value is null, use a factory null serializer
-					// Case 3: the type is not sealed and the value is not null, use a factory serializer for value's type
-					
-					// Assemble a serializer for the declaring type. This is required as it registers any
-					// embedded serializers which are referenced by FactorySerializer
-					var memberDeclaringTypeSerializer = propertyType != typeof(object) ? AssembleRecursively(factory, propertyType) : null;
-					var memberSerializer = 
-						propertyType.IsSealed ? 
-							memberDeclaringTypeSerializer :
-							(IItemSerializer) typeof(FactorySerializer<>).MakeGenericType(propertyType).ActivateWithCompatibleArgs(factory);
 				
-					memberBindings.Add(new(member, memberSerializer.AsSanitized()));
-				}
+				// Ensure we have a serializer for the member type
+				if (propertyType != typeof(object)  && !factory.HasSerializer(propertyType))
+					AssembleRecursively(factory, propertyType);
+
+				// We don't use the member type serializer but instead use a FactorySerializer to ensure cyclic/polymorphic references are handled correctly
+				var memberSerializer = (IItemSerializer) typeof(CyclicReferenceAwareSerializer<>).MakeGenericType(propertyType).ActivateWithCompatibleArgs(factory);
+				memberBindings.Add(new(member, memberSerializer.AsSanitized()));
 			}
 			
 			// Configure the serializer instance (registered already)
@@ -358,20 +362,30 @@ public class SerializerFactory {
 	#region Aux
 	
 	private bool TryFindCompatibleSerializer(Type dataType, out long typeCode, out Registration registration) {
-		if (!_registrationsByType.TryGetValue(dataType, out typeCode) && !(dataType.IsArray && _registrationsByType.TryGetValue(typeof(Array), out typeCode))) {
-			var found = false;
-			// Couldn't find a direct registration for type, following cases:
-			// 1. If enum, fund Enum serializer
-			// 2. If generic type, find generic serializer
-			if ((!dataType.IsEnum || !_registrationsByType.TryGetValue(typeof(Enum), out typeCode)) && 
-				(!dataType.IsGenericType || !_registrationsByType.TryGetValue(dataType.GetGenericTypeDefinition(), out typeCode))) {
-				typeCode = -1;
-				registration = default;
-				return false;
-			}
+		// Try direct lookup
+		if (_registrationsByType.TryGetValue(dataType, out typeCode)) {
+			registration = _registrations[typeCode];
+			return true;
 		}
-		registration = _registrations[typeCode];
-		return true;
+
+		// Special case for arrays
+		if (dataType.IsArray && _registrationsByType.TryGetValue(typeof(Array), out typeCode)) {
+			registration = _registrations[typeCode];
+			var hasArrayItemTypeSerializer = TryFindCompatibleSerializer(dataType.GetElementType(), out _, out _);
+			return hasArrayItemTypeSerializer;
+		}
+
+		// Try generic lookup
+		if (dataType.IsGenericType && _registrationsByType.TryGetValue(dataType.GetGenericTypeDefinition(), out typeCode)) {
+			registration = _registrations[typeCode];
+			var hasGenericArgumentsSerializers = dataType.GetGenericArguments().All(x => TryFindCompatibleSerializer(x, out _, out _));
+			return hasGenericArgumentsSerializers;
+		}
+	
+		// No serializer found
+		typeCode = -1;
+		registration = default;
+		return false;
 	}
 
 	private Registration FindCompatibleSerializer(Type dataType, out long typeCode) {
@@ -386,7 +400,7 @@ public class SerializerFactory {
 		return registration;
 	}
 
-	private long GenerateTypeCode() => _registrations.Count > 0 ? _registrations.Keys.Max() + 1 : 0;
+	private long GenerateTypeCode() => _registrations.Count > 0 ? _registrations.Keys.Max() + 1 : RegistrationCodeStart;
 
 	private static IItemSerializer CreateSerializerInstance(Registration registration, Type requestedDataType, Type registeredDataType, Type registeredSerializerType) {
 		Guard.Argument(!requestedDataType.IsGenericTypeDefinition, nameof(requestedDataType), $"Requested data type {requestedDataType.Name} cannot be a generic type definition");
@@ -394,13 +408,11 @@ public class SerializerFactory {
 			Guard.Ensure(requestedDataType.IsConstructedGenericTypeOf(registeredDataType), $"Constructed type {requestedDataType.Name} is not a constructed generic type of {registeredDataType.Name}");
 		//var subTypes = requestedDataType.IsArray ? new [] { requestedDataType.GetElementType() } : requestedDataType.GetGenericArguments();
 		var subTypes = requestedDataType switch {
-			{ IsEnum: true } => new [] { requestedDataType },
 			{ IsArray: true } => new [] { requestedDataType.GetElementType() },
 			{ IsConstructedGenericType: true } => requestedDataType.GetGenericArguments(),
 		};
 
 		var subTypeSerializers = requestedDataType switch {
-			{ IsEnum: true } => new object [] { },
 			_ => subTypes.Select(registration.SerializerFactory.GetSerializer).ToArray()
 		};
 		var serializerType = registeredSerializerType;
@@ -416,7 +428,11 @@ public class SerializerFactory {
 			return dataType;
 		var subTypes = serializerHierarchy.SubStates.Select(ConstructType).ToArray();
 		
-		return dataType == typeof(Array) ? subTypes[0].MakeArrayType()  :  dataType.MakeGenericType(subTypes);
+		return dataType switch {
+			_ when dataType == typeof(Array) => subTypes[0].MakeArrayType(),
+			//_ when dataType == typeof(Enum) => subTypes[0],
+			_ => dataType.MakeGenericType(subTypes)
+		};
 	}
 
 	private RecursiveDataType<long> GetSerializerHierarchyInternal(Type type) {
@@ -430,6 +446,9 @@ public class SerializerFactory {
 		if (serializerRegistration.DataType == typeof(Array)) {
 			// arrays are special case, we matched generic array serializer, so sub-serializers are for element type
 			childSerializers = new[] { GetSerializerHierarchy(type.GetElementType()) };
+		} else if (serializerRegistration.DataType == typeof(Enum)) { 
+			// enums are special case, we matched enum serializer, so sub-serializers are for enum type
+			childSerializers = new[] { GetSerializerHierarchy(type.GetEnumUnderlyingType()) };
 		} else {
 			// case (2), now get any sub-serializers required for generic serializer
 			childSerializers =

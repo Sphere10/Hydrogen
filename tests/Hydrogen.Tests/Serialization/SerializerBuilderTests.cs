@@ -8,6 +8,7 @@
 
 using System;
 using System.Collections.Generic;
+using FastSerialization;
 using NUnit.Framework;
 
 namespace Hydrogen.Tests;
@@ -15,6 +16,21 @@ namespace Hydrogen.Tests;
 [TestFixture]
 [Parallelizable]
 public class SerializerBuilderTests {
+
+	public class SingleNullableEnumPropertyClass {
+		public CrudAction? Property { get; set; }
+	}
+
+
+	public class SingleObjectPropertyClass {
+		public object Property { get; set; }
+	}
+
+	public class TwoPropertyObject {
+		public object Prop1 { get; set; }
+
+		public object Prop2 { get; set; }
+	}
 
 	[Test]
 	public void TestObject_1() {
@@ -65,9 +81,9 @@ public class SerializerBuilderTests {
 		
 	}
 
+
 	[Test]
 	public void AutoBuildComplex() {
-		// test object
 		var serializer = SerializerBuilder.AutoBuild<ComplexObject>();
 		var obj = new ComplexObject {
 			TestProperty = new TestObject("Hello", 123, true),
@@ -88,6 +104,136 @@ public class SerializerBuilderTests {
 	}
 
 
+	[Test]
+	public void AutoBuildComplex_2() {
+		var factory = new SerializerFactory(SerializerFactory.Default);
+		factory.RegisterAutoBuild<TestObject>();
+
+		var serializer = SerializerBuilder.AutoBuild<ComplexObject>(factory);
+		var obj = new ComplexObject {
+			TestProperty = null,
+			ObjectProperty = new KeyValuePair<string, TestObject>("Hello", new TestObject(null, 123, true)),
+			NullableEnumProperty = null,
+			ManyRecursiveProperty = null
+		};
+		var serialized = serializer.SerializeBytesLE(obj);
+		var deserialized = serializer.DeserializeBytesLE(serialized);
+
+	}
+
+
+	[Test]
+	public void BugCase_1() {
+		var factory = new SerializerFactory(SerializerFactory.Default);
+		factory.RegisterAutoBuild<TestObject>();
+
+		var serializer = SerializerBuilder.AutoBuild<SingleObjectPropertyClass>(factory);
+
+		var obj = new SingleObjectPropertyClass {
+			Property = new KeyValuePair<string, TestObject>("Hello", new TestObject("Hello2", 123, true))
+		};
+
+		var serialized = serializer.SerializeBytesLE(obj);
+		Assert.That(() => serializer.DeserializeBytesLE(serialized), Throws.Nothing);
+	}
+
+	[Test]
+	public void BugCase_1A() {
+		var factory = new SerializerFactory(SerializerFactory.Default);
+		var serializer = SerializerBuilder.AutoBuild<TestObject>(factory);
+
+		var obj = new TestObject("Hello2", 123, true);
+
+		var serialized = serializer.SerializeBytesLE(obj);
+		Assert.That(() => serializer.DeserializeBytesLE(serialized), Throws.Nothing);
+	}
+
+
+
+	[Test]
+	public void BugCase_2() {
+		var factory = new SerializerFactory(SerializerFactory.Default);
+		factory.RegisterAutoBuild<TwoPropertyObject>();
+		var serializer = SerializerBuilder.AutoBuild<TwoPropertyObject>(factory);
+		var obj = new TwoPropertyObject {
+			Prop1 = "Hello",
+			Prop2 = new TwoPropertyObject {
+				Prop1 = "Hello",
+				Prop2 = new List<string> { "Test1", "test2" }
+			}
+		};
+		var serialized = serializer.SerializeBytesLE(obj);
+		Assert.That(() => serializer.DeserializeBytesLE(serialized), Throws.Nothing);
+	}
+
+
+	[Test]
+	public void NullableEnum_Null() {
+		// test object
+		var serializer = SerializerBuilder.AutoBuild<CrudAction?>();
+
+		var serialized = serializer.SerializeBytesLE(null);
+		var deserialized = serializer.DeserializeBytesLE(serialized);
+
+		Assert.That(deserialized, Is.Null);
+	}
+
+	[Test]
+	public void NullableEnum_Value() {
+		// test object
+		var serializer = SerializerBuilder.AutoBuild<CrudAction?>();
+
+		var serialized = serializer.SerializeBytesLE(CrudAction.Create);
+		var deserialized = serializer.DeserializeBytesLE(serialized);
+
+		Assert.That(deserialized, Is.EqualTo(CrudAction.Create));
+	}
+
+	[Test]
+	public void NullableEnumProperty_Null() {
+		// test object
+		var serializer = SerializerBuilder.AutoBuild<SingleNullableEnumPropertyClass>();
+
+		var serialized = serializer.SerializeBytesLE(new SingleNullableEnumPropertyClass { Property = null });
+		var deserialized = serializer.DeserializeBytesLE(serialized);
+
+		Assert.That(deserialized.Property, Is.Null);
+	}
+
+	[Test]
+	public void NullableEnumProperty_Value() {
+
+		var serializer = SerializerBuilder.AutoBuild<SingleNullableEnumPropertyClass>();
+		var serialized = serializer.SerializeBytesLE(new SingleNullableEnumPropertyClass { Property = CrudAction.Create });
+		var deserialized = serializer.DeserializeBytesLE(serialized);
+
+		Assert.That(deserialized.Property, Is.EqualTo(CrudAction.Create));
+	}
+
+	[Test]
+	public void NullableEnumPropertyAsObject_Null() {
+		var factory = new SerializerFactory(SerializerFactory.Default);
+		factory.RegisterEnum<CrudAction>();
+		var serializer = SerializerBuilder.AutoBuild<SingleObjectPropertyClass>(factory);
+
+		var serialized = serializer.SerializeBytesLE(new SingleObjectPropertyClass { Property = null });
+		var deserialized = serializer.DeserializeBytesLE(serialized);
+
+		Assert.That(deserialized.Property, Is.Null);
+	}
+
+	[Test]
+	public void NullableEnumPropertyAsObject_Value() {
+		var factory = new SerializerFactory(SerializerFactory.Default);
+		factory.RegisterEnum<CrudAction>();
+		var serializer = SerializerBuilder.AutoBuild<SingleObjectPropertyClass>(factory);
+
+		var serialized = serializer.SerializeBytesLE(new SingleObjectPropertyClass { Property = CrudAction.Create });
+		var deserialized = serializer.DeserializeBytesLE(serialized);
+
+		Assert.That(deserialized.Property, Is.EqualTo(CrudAction.Create));
+	}
+	
 	[Test]
 	public void TestObject_2() {
 		// Test with null string field
@@ -161,4 +307,10 @@ public class SerializerBuilderTests {
 		Assert.That(deserialized, Is.Null);
 			
 	}
+
+	public class SinglePropertyObject {
+		public object Property { get; set; }
+	}
+
+
 }

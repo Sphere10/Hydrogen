@@ -7,6 +7,8 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 
+using System;
+
 namespace Hydrogen;
 
 public class NullableStructSerializer<T> : ItemSerializerDecorator<T?> where T : struct {
@@ -18,4 +20,6 @@ public class NullableStructSerializer<T> : ItemSerializerDecorator<T?> where T :
 	public static NullableStructSerializer<T> Instance { get; } = new(PrimitiveSerializer<T>.Instance);
 
 	public override bool SupportsNull => true;
+
+	
 }

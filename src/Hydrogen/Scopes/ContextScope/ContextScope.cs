@@ -25,6 +25,7 @@ public abstract class ContextScope : ScopeBase, IContextScope {
 			if (Policy == ContextScopePolicy.MustBeRoot)
 				throw new SoftwareException($"A scope context '{contextID}' has already been declared within the calling context");
 			RootScope = contextObject;
+			OnContextResume();
 		} else {
 			// Root
 			if (Policy == ContextScopePolicy.MustBeNested)
@@ -45,7 +46,7 @@ public abstract class ContextScope : ScopeBase, IContextScope {
 
 	public IContextScope RootScope { get; }
 
-	protected bool IsRootScope => ReferenceEquals(this, RootScope);
+	public bool IsRootScope => ReferenceEquals(this, RootScope);
 
 
 	protected sealed override void OnScopeEnd() {
@@ -71,6 +72,9 @@ public abstract class ContextScope : ScopeBase, IContextScope {
 	}
 
 	protected virtual void OnContextStart() {
+	}
+
+	protected virtual void OnContextResume() {
 	}
 
 	protected abstract void OnContextEnd();

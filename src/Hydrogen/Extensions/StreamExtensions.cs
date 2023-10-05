@@ -14,7 +14,19 @@ namespace Hydrogen;
 
 public static class StreamExtensions {
 
+	public static int PeekNextByte(this Stream stream) {
+		Guard.Argument(stream.CanSeek, nameof(stream), "Stream must be seekable");
+		var nextByte = stream.ReadByte(); // Read the next byte
+		if (nextByte != -1) { // If the end of the stream has not been reached
+			stream.Position--; // Set the position back
+		}
+		return nextByte;
+	}
+
+	public static IDisposable EnterRestorePositionScope(this Stream stream) => EnterRestorePositionSeek(stream, stream.Position, SeekOrigin.Begin);
+
 	public static IDisposable EnterRestorePositionSeek(this Stream stream, long offset, SeekOrigin origin) {
+		Guard.Argument(stream.CanSeek, nameof(stream), "Stream must be seekable");
 		var position = stream.Position;
 		stream.Seek(offset, origin);
 		return new ActionDisposable(() => stream.Position = position);

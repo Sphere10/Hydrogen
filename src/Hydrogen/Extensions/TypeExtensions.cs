@@ -9,6 +9,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -22,6 +23,7 @@ namespace Hydrogen;
 /// <remarks></remarks>
 public static class TypeExtensions {
 
+	public static bool IsAssignableTo(this Type type, [NotNullWhen(true)] Type? targetType) => targetType?.IsAssignableFrom(type) ?? false;
 	public static string ToStringCS(this Type type) {
 		if (!type.IsGenericType)
 			return type.Name;

@@ -7,6 +7,7 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System.Collections.Generic;
+using System.Linq;
 using NUnit.Framework;
 
 namespace Hydrogen.Tests;
@@ -63,7 +64,7 @@ public class SerializerFactoryTests {
 		var factory = new SerializerFactory();
 		factory.Register(typeof(IList<>), typeof(ListInterfaceSerializer<>));  // 0
 		factory.Register(PrimitiveSerializer<int>.Instance);  // 1
-		CollectionAssert.AreEqual(factory.GetSerializerHierarchy(typeof(IList<int>)).Flatten(), new[] { 0, 1});
+		CollectionAssert.AreEqual(factory.GetSerializerHierarchy(typeof(IList<int>)).Flatten(), new[] { SerializerFactory.RegistrationCodeStart + 0, SerializerFactory.RegistrationCodeStart + 1 });
 	}
 
 	[Test]
@@ -81,7 +82,7 @@ public class SerializerFactoryTests {
 		//			float, 1 
 		//			IList< 2
 		//				int>>>> 0
-		CollectionAssert.AreEqual(factory.GetSerializerHierarchy(typeof(IList<KeyValuePair<IList<int>, KeyValuePair<float, IList<int>>>>)).Flatten(), new[] { 2, 3, 2, 0, 3, 1, 2, 0 });
+		CollectionAssert.AreEqual(factory.GetSerializerHierarchy(typeof(IList<KeyValuePair<IList<int>, KeyValuePair<float, IList<int>>>>)).Flatten(), new[] { 2, 3, 2, 0, 3, 1, 2, 0 }.Select(x => SerializerFactory.RegistrationCodeStart + x));
 
 	}
 
@@ -104,7 +105,7 @@ public class SerializerFactoryTests {
 		);
 		factory.Register(instance); // 4 (closed specific instance)
 
-		CollectionAssert.AreEqual(factory.GetSerializerHierarchy(typeof(IList<KeyValuePair<IList<int>, KeyValuePair<float, IList<int>>>>)).Flatten(), new[] { 4 });
+		CollectionAssert.AreEqual(factory.GetSerializerHierarchy(typeof(IList<KeyValuePair<IList<int>, KeyValuePair<float, IList<int>>>>)).Flatten(), new[] { SerializerFactory.RegistrationCodeStart + 4 });
 
 	}
 
@@ -157,7 +158,7 @@ public class SerializerFactoryTests {
 		);
 		factory.Register(instance); // 4 (closed specific instance)
 
-		CollectionAssert.AreEqual(factory.GetSerializerHierarchy(typeof(IList<KeyValuePair<IList<int>, KeyValuePair<float, IList<int>>>>)).Flatten(), new[] { 4 });
+		CollectionAssert.AreEqual(factory.GetSerializerHierarchy(typeof(IList<KeyValuePair<IList<int>, KeyValuePair<float, IList<int>>>>)).Flatten(), new[] { SerializerFactory.RegistrationCodeStart + 4 });
 
 	}
 	
@@ -194,7 +195,7 @@ public class SerializerFactoryTests {
 		factory.Register(typeof(System.Array), typeof(ArraySerializer<>));
 		factory.Register(PrimitiveSerializer<int>.Instance);
 		var hierarchy = factory.GetSerializerHierarchy(typeof(int[]));
-		Assert.That(hierarchy.Flatten(), Is.EqualTo(new[] { 0, 1 }));
+		Assert.That(hierarchy.Flatten(), Is.EqualTo(new[] { SerializerFactory.RegistrationCodeStart + 0, SerializerFactory.RegistrationCodeStart +1 }));
 		var serializer = factory.FromSerializerHierarchy(hierarchy);
 		Assert.That(serializer, Is.TypeOf<ArraySerializer<int>>());
 	}
@@ -206,7 +207,7 @@ public class SerializerFactoryTests {
 		factory.Register(PrimitiveSerializer<int>.Instance); // 1
 		factory.Register(ByteArraySerializer.Instance); // 2 (special for byte[])
 		var hierarchy = factory.GetSerializerHierarchy(typeof(int[]));
-		Assert.That(hierarchy.Flatten(), Is.EqualTo(new[] { 0, 1 }));
+		Assert.That(hierarchy.Flatten(), Is.EqualTo(new[] { SerializerFactory.RegistrationCodeStart + 0, SerializerFactory.RegistrationCodeStart + 1 }));
 		var serializer = factory.FromSerializerHierarchy(hierarchy);
 		Assert.That(serializer, Is.TypeOf<ArraySerializer<int>>());
 	}
@@ -218,7 +219,7 @@ public class SerializerFactoryTests {
 		factory.Register(PrimitiveSerializer<int>.Instance); // 1
 		factory.Register(ByteArraySerializer.Instance); // 2 (special for byte[])
 		var hierarchy = factory.GetSerializerHierarchy(typeof(byte[]));
-		Assert.That(hierarchy.Flatten(), Is.EqualTo(new[] { 2 }));
+		Assert.That(hierarchy.Flatten(), Is.EqualTo(new[] { SerializerFactory.RegistrationCodeStart + 2 }));
 		var serializer = factory.FromSerializerHierarchy(hierarchy);
 		Assert.That(serializer, Is.TypeOf<ByteArraySerializer>());
 	}

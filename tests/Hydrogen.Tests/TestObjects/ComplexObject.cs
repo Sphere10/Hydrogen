@@ -18,7 +18,7 @@ public class ComplexObject {
 	public override string ToString() => 
 		$"""
 		[ComplexObject]
-			{nameof(ObjectProperty)}: {ObjectProperty}, 
+			{nameof(ObjectProperty)}: {(ReferenceEquals(ObjectProperty, this) ? "this" : ObjectProperty?.ToString())}, 
 			{nameof(RecursiveProperty)}: {RecursiveProperty},
 			{nameof(TestProperty)}: '{TestProperty}',
 			{nameof(ManyRecursiveProperty)}: {(ManyRecursiveProperty is not null ? ManyRecursiveProperty.Select(x => x.ToString()).ToDelimittedString(", ") : "NULL") }

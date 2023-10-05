@@ -46,7 +46,7 @@ public class FactorySerializer<TBase> : IItemSerializer<TBase> {
 		var totalSize = items.Aggregate(
 			0L,
 			(i, o) => {
-				var itemSize = _factory.GetSerializer<TBase>(o.GetType()).CalculateSize(o);
+				var itemSize = GetItemSerializer(o).CalculateSize(o);
 				if (calculateIndividualItems)
 					itemSizesL.Add(itemSize);
 				return itemSize;
@@ -56,12 +56,12 @@ public class FactorySerializer<TBase> : IItemSerializer<TBase> {
 	}
 
 	public long CalculateSize(TBase item)  {
-		var serializer = _factory.GetSerializer<TBase>(item.GetType());
+		var serializer = GetItemSerializer(item);
 		return _serializerSerializer.CalculateSize(serializer) + serializer.CalculateSize(item);
 	}
 
 	public void Serialize(TBase item, EndianBinaryWriter writer) {
-		var serializer = _factory.GetSerializer<TBase>(item.GetType());
+		var serializer = GetItemSerializer(item);
 		_serializerSerializer.Serialize(serializer, writer);
 		serializer.Serialize(item, writer);
 	}
@@ -77,9 +77,22 @@ public class FactorySerializer<TBase> : IItemSerializer<TBase> {
 			return serializer;
 
 		var actualDataType = serializerObj.ItemType;
-		Guard.Ensure(actualDataType.FastIsSubTypeOf(typeof(TSerializerDataType)), $"Serializer object is not an {typeof(IItemSerializer<>).ToStringCS()}<{typeof(TSerializerDataType).ToStringCS()}>");
+		Guard.Ensure(actualDataType.FastIsSubTypeOf(typeof(TSerializerDataType)), $"Serializer object is not an {typeof(IItemSerializer<>).ToStringCS()}");
 
 		return new CastedSerializer<TSerializerDataType>(serializerObj);
 
 	}
+
+	private IItemSerializer<TBase> GetItemSerializer(TBase item) {
+		Type itemType;
+		if (item is null || typeof(TBase).IsConstructedGenericTypeOf(typeof(Nullable<>))) {
+			itemType = typeof(TBase);
+		} else {
+			itemType = item.GetType();
+		} 
+
+		var serializer = _factory.GetSerializer<TBase>(itemType);
+		return serializer;
+	}
+
 }

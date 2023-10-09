@@ -10,11 +10,3 @@ public class ListInterfaceSerializer<T> : ItemSerializerDecorator<IList<T>> {
 	}
 
 }
-
-public class ListSerializer<T> : ItemSerializerDecorator<List<T>> {
-
-	public ListSerializer(IItemSerializer<T> valueSerializer, SizeDescriptorStrategy sizeDescriptorStrategy = SizeDescriptorStrategy.UseCVarInt) 
-		: base(new ArraySerializer<T>(valueSerializer, sizeDescriptorStrategy).AsProjection(x => x.ToList(), x => x.ToArray())) {
-	}
-
-}

@@ -2,36 +2,31 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Runtime.CompilerServices;
 
 namespace Hydrogen;
 
 public class CompositeSerializer<TItem> : ItemSerializer<TItem> {
-	private Func<TItem> _activator;
-	private MemberSerializationBinding[] _memberBindings;
-	private bool _isConstantSize;
-	private long _constantSize;
 
-	internal CompositeSerializer() : base(SizeDescriptorStrategy.UseCVarInt) {
-		// NOTE: this constructor is needed by SerializationFactory for assembling recursive serializers
-		// that involve member's that use this very same serializer. The serializer is constructed and registered
-		// uninitialized, and then initialized later via ConfigurePacked method.
-	}
+	public EventHandlerEx<TItem> ItemActivated;
+
+	private readonly Func<TItem> _activator;
+	private readonly MemberSerializationBinding[] _memberBindings;
+	private readonly bool _isConstantSize;
+	private readonly long _constantSize;
 
 	public CompositeSerializer(Func<TItem> activator, MemberSerializationBinding[] memberBindings) 
-		: this() {
-		Configure(activator, memberBindings);
-	}
-
-	internal void ConfigureInternal(Func<object> activator, MemberSerializationBinding[] memberBindings) 
-		=> Configure(() => (TItem)activator(), memberBindings);
-
-	internal void Configure(Func<TItem> activator, MemberSerializationBinding[] memberBindings) {
+		: base(SizeDescriptorStrategy.UseCVarInt) {
 		Guard.ArgumentNotNull(activator, nameof(activator));
 		Guard.ArgumentNotNull(memberBindings, nameof(memberBindings));
 		_activator = activator;
 		_memberBindings = memberBindings;
 		_isConstantSize = _memberBindings.All(x => x.Serializer.IsConstantSize);
 		_constantSize =  IsConstantSize ? _memberBindings.Sum(x => x.Serializer.ConstantSize) : -1;
+	}
+
+	internal CompositeSerializer(Func<object> activator, MemberSerializationBinding[] memberBindings) 
+		: this( () => (TItem)activator(), memberBindings ) {
 	}
 
 	public override bool SupportsNull => false;
@@ -85,6 +80,8 @@ public class CompositeSerializer<TItem> : ItemSerializer<TItem> {
 
 	public override TItem Deserialize(EndianBinaryReader reader) {
 		var item = _activator();
+		NotifyActivated(item);
+		
 		using var scope = EnterCompositeScope(item, SerializationTask.Deserializing, out var index);
 	
 		foreach (var binding in _memberBindings) {
@@ -103,6 +100,11 @@ public class CompositeSerializer<TItem> : ItemSerializer<TItem> {
 			scope.NotifyDeserializedObject(item, index);
 		}
 		return item;
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	private void NotifyActivated(TItem item) {
+		ItemActivated?.Invoke(item);
 	}
 	
 

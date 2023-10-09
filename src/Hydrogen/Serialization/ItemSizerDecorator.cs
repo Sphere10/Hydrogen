@@ -11,9 +11,16 @@ using System.Collections.Generic;
 namespace Hydrogen;
 
 public class ItemSizerDecorator<TItem, TObjectSizer> : IItemSizer<TItem> where TObjectSizer : IItemSizer<TItem> {
-	protected readonly TObjectSizer Internal;
+	protected TObjectSizer Internal;
+
+	// This is a special purpose constructor needed for late binding of internal serializer
+	// (needed by SerializerFactory when assembling serializers dynamically)
+	internal ItemSizerDecorator() {
+		Internal = default;
+	}
 
 	public ItemSizerDecorator(TObjectSizer internalSizer) {
+		Guard.ArgumentNotNull(internalSizer, nameof(internalSizer));
 		Internal = internalSizer;
 	}
 

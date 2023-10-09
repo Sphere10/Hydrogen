@@ -17,6 +17,10 @@ public class ItemSerializerDecorator<TItem, TSerializer> : ItemSizerDecorator<TI
 		: base(internalSerializer) {
 	}
 
+	internal ItemSerializerDecorator()
+		: base() {
+	}
+
 	public virtual void Serialize(TItem item, EndianBinaryWriter writer)
 		=> Internal.Serialize(item, writer);
 
@@ -26,8 +30,13 @@ public class ItemSerializerDecorator<TItem, TSerializer> : ItemSizerDecorator<TI
 }
 
 public class ItemSerializerDecorator<TItem> : ItemSerializerDecorator<TItem, IItemSerializer<TItem>> {
+
 	public ItemSerializerDecorator(IItemSerializer<TItem> internalSerializer)
 		: base(internalSerializer) {
+	}
+
+	internal ItemSerializerDecorator()
+		: base() {
 	}
 
 }

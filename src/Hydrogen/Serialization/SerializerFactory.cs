@@ -209,7 +209,6 @@ public class SerializerFactory {
 					throw new InvalidOperationException($"A serializer for generic type argument '{genericType.Name}' is required before registering the open generic serializer for '{serializerType.Name}'");
 		}
 
-		
 		// add registration (we fix up object factory after, since it requires a reference to the registration)
 		var registration = new Registration {
 			TypeCode = typeCode,
@@ -320,7 +319,7 @@ public class SerializerFactory {
 			// serializer (before it is assembled) as it may recursively refer to itself. So we activate
 			// a CompositeSerializer with no members (we'll configure it later)
 			var serializer = 
-				(IItemSerializer) typeof(CompositeSerializer<>)
+				(IItemSerializer) typeof(CyclicReferenceAwareSerializer<>)
 				.MakeGenericType(itemType)
 				.GetConstructor(BindingFlags.NonPublic | BindingFlags.Instance, null, Type.EmptyTypes, null)
 				.Invoke(null);
@@ -336,7 +335,7 @@ public class SerializerFactory {
 				var propertyType =  member.PropertyType;
 				
 				// Ensure we have a serializer for the member type
-				if (propertyType != typeof(object)  && !factory.HasSerializer(propertyType))
+				if (propertyType != typeof(object) && !factory.HasSerializer(propertyType))
 					AssembleRecursively(factory, propertyType);
 
 				// We don't use the member type serializer but instead use a FactorySerializer to ensure cyclic/polymorphic references are handled correctly
@@ -346,10 +345,16 @@ public class SerializerFactory {
 			
 			// Configure the serializer instance (registered already)
 			var itemTypeLocal = itemType;
+			var objectGraphSerializer = 
+				(IItemSerializer) typeof(CompositeSerializer<>)
+					.MakeGenericType(itemType)
+					.GetConstructor(BindingFlags.NonPublic | BindingFlags.Instance, null, new Type[] { typeof(Func<object>), typeof(MemberSerializationBinding[]) }, null)
+					.Invoke(new object[] {  () => itemTypeLocal.ActivateWithCompatibleArgs(), memberBindings.ToArray() });
+
 			serializer
 				.GetType()
-				.GetMethod(nameof(CompositeSerializer<object>.ConfigureInternal), BindingFlags.Instance | BindingFlags.NonPublic)
-				.FastInvoke(serializer, () => itemTypeLocal.ActivateWithCompatibleArgs(), memberBindings.ToArray());
+				.GetMethod(nameof(CyclicReferenceAwareSerializer<object>.SetInternalSerializer), BindingFlags.Instance | BindingFlags.NonPublic)
+				.Invoke(serializer, new [] { objectGraphSerializer });
 			
 			return serializer;
 		}
@@ -406,7 +411,7 @@ public class SerializerFactory {
 		Guard.Argument(!requestedDataType.IsGenericTypeDefinition, nameof(requestedDataType), $"Requested data type {requestedDataType.Name} cannot be a generic type definition");
 		if (registeredDataType.IsGenericTypeDefinition)
 			Guard.Ensure(requestedDataType.IsConstructedGenericTypeOf(registeredDataType), $"Constructed type {requestedDataType.Name} is not a constructed generic type of {registeredDataType.Name}");
-		//var subTypes = requestedDataType.IsArray ? new [] { requestedDataType.GetElementType() } : requestedDataType.GetGenericArguments();
+
 		var subTypes = requestedDataType switch {
 			{ IsArray: true } => new [] { requestedDataType.GetElementType() },
 			{ IsConstructedGenericType: true } => requestedDataType.GetGenericArguments(),
@@ -430,7 +435,6 @@ public class SerializerFactory {
 		
 		return dataType switch {
 			_ when dataType == typeof(Array) => subTypes[0].MakeArrayType(),
-			//_ when dataType == typeof(Enum) => subTypes[0],
 			_ => dataType.MakeGenericType(subTypes)
 		};
 	}

@@ -4,7 +4,10 @@ using System.Linq;
 
 namespace Hydrogen;
 
-public class SerializerSerializer : ItemSerializer<IItemSerializer>{
+/// <summary>
+/// Used to serialize serializers.
+/// </summary>
+internal class SerializerSerializer : ItemSerializer<IItemSerializer>{
 
 	public SerializerSerializer(SerializerFactory serializerFactory) 
 		: base(SizeDescriptorStrategy.UseCVarInt) {
@@ -42,3 +45,16 @@ public class SerializerSerializer : ItemSerializer<IItemSerializer>{
 
 }
 
+public class EnvelopedSerializer<T> : ItemSerializer<T> {
+	public override long CalculateSize(T item) {
+		throw new NotImplementedException();
+	}
+
+	public override void Serialize(T item, EndianBinaryWriter writer) {
+		throw new NotImplementedException();
+	}
+
+	public override T Deserialize(EndianBinaryReader reader) {
+		throw new NotImplementedException();
+	}
+}

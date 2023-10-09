@@ -49,6 +49,7 @@ public abstract class DictionaryDecorator<TKey, TValue, TDictionary> : IDictiona
 	public virtual void Clear() => InternalDictionary.Clear();
 
 	public virtual int Count => InternalDictionary.Count;
+
 	public virtual bool IsReadOnly => InternalDictionary.IsReadOnly;
 
 	public virtual IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator() => InternalDictionary.GetEnumerator();

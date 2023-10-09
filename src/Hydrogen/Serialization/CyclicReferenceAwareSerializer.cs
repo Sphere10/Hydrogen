@@ -3,11 +3,15 @@ using System.Collections.Generic;
 
 namespace Hydrogen;
 
+	// if sub-serializer is composite seializer, you need to listen to the on create event
+	// basically extract out the cyclic reference logic in composite ser
+	// you can now localize the scope classes, etc
+	// hooray, clean again!
 internal class CyclicReferenceAwareSerializer<T> : ItemSerializerDecorator<T> {
 	public const byte DefaultCyclicReferenceMarker = 0;
-	private readonly int _cyclicReferenceMarkerSizeBytes;
-	private readonly Func<EndianBinaryReader, bool> _peekForCyclicReferenceMarker;
-	private readonly Action<EndianBinaryWriter> _writeCyclicReferenceMarker;
+	private int _cyclicReferenceMarkerSizeBytes;
+	private Func<EndianBinaryReader, bool> _peekForCyclicReferenceMarker;
+	private Action<EndianBinaryWriter> _writeCyclicReferenceMarker;
 
 	public CyclicReferenceAwareSerializer(SerializerFactory factory, byte cyclicReferenceMarker = DefaultCyclicReferenceMarker)
 		: this(new FactorySerializer<T>(factory), cyclicReferenceMarker) {
@@ -15,7 +19,7 @@ internal class CyclicReferenceAwareSerializer<T> : ItemSerializerDecorator<T> {
 
 	// DANGEROUS since it will not work if the cyclic reference marker is a valid value for the type being serialized
 	// Kept private for now
-	private CyclicReferenceAwareSerializer(IItemSerializer<T> internalSerializer, byte cyclicReferenceMarker = DefaultCyclicReferenceMarker) 
+	private CyclicReferenceAwareSerializer(FactorySerializer<T> internalSerializer, byte cyclicReferenceMarker = DefaultCyclicReferenceMarker) 
 		: this(
 			internalSerializer,
 			CVarInt.SizeOf(cyclicReferenceMarker),
@@ -24,11 +28,23 @@ internal class CyclicReferenceAwareSerializer<T> : ItemSerializerDecorator<T> {
 		) {
 	}
 
-	public CyclicReferenceAwareSerializer(IItemSerializer<T> internalSerializer, int cyclicReferenceMarkerSizeBytes, Func<EndianBinaryReader, bool> peekForCyclicReferenceMarker, Action<EndianBinaryWriter> writeCyclicReferenceMarker) 
+	public CyclicReferenceAwareSerializer(FactorySerializer<T> internalSerializer, int cyclicReferenceMarkerSizeBytes, Func<EndianBinaryReader, bool> peekForCyclicReferenceMarker, Action<EndianBinaryWriter> writeCyclicReferenceMarker) 
 		: base(internalSerializer) {
 		_cyclicReferenceMarkerSizeBytes = cyclicReferenceMarkerSizeBytes;
 		_peekForCyclicReferenceMarker = peekForCyclicReferenceMarker;
 		_writeCyclicReferenceMarker = writeCyclicReferenceMarker;
+	}
+
+	// Used by SerializerFactory to late-bind the internal serializer
+	internal CyclicReferenceAwareSerializer() {
+		_cyclicReferenceMarkerSizeBytes = CVarInt.SizeOf(DefaultCyclicReferenceMarker);
+		_peekForCyclicReferenceMarker = reader => reader.BaseStream.PeekNextByte() == DefaultCyclicReferenceMarker;
+		_writeCyclicReferenceMarker = writer => CVarInt.Write(DefaultCyclicReferenceMarker, writer.BaseStream);
+	}
+
+	internal void SetInternalSerializer(IItemSerializer<T> internalSerializer) {
+		Guard.ArgumentNotNull(internalSerializer, nameof(internalSerializer));
+		Internal = internalSerializer;
 	}
 
 	public override bool IsConstantSize => false;

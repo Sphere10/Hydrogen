@@ -118,7 +118,67 @@ public class SerializerBuilderTests {
 		};
 		var serialized = serializer.SerializeBytesLE(obj);
 		var deserialized = serializer.DeserializeBytesLE(serialized);
+		var comparer = new ComplexObjectEqualityComparer(
+			new KeyValuePairEqualityComparer<string, TestObject>(
+					StringComparer.InvariantCulture, 
+					new TestObjectEqualityComparer()
+				)
+				.AsProjection<KeyValuePair<string, TestObject>, object>(x => x, x => (KeyValuePair<string, TestObject>)x)
+		);
+		Assert.That(deserialized, Is.EqualTo(obj).Using(comparer));
+	}
 
+	[Test]
+	public void AutoBuildComplex_Cyclic() {
+		var factory = new SerializerFactory(SerializerFactory.Default);
+		factory.RegisterAutoBuild<TestObject>();
+
+		var serializer = SerializerBuilder.AutoBuild<ComplexObject>(factory);
+		var testObj = new TestObject(null, 123, true);
+		var obj = new ComplexObject {
+			TestProperty = testObj,
+			ObjectProperty = new KeyValuePair<string, TestObject>("Hello", testObj),
+			NullableEnumProperty = null,
+			ManyRecursiveProperty = null
+		};
+		var serialized = serializer.SerializeBytesLE(obj);
+		var deserialized = serializer.DeserializeBytesLE(serialized);
+		var comparer = new ComplexObjectEqualityComparer(
+			new KeyValuePairEqualityComparer<string, TestObject>(
+					StringComparer.InvariantCulture, 
+					new TestObjectEqualityComparer()
+				)
+				.AsProjection<KeyValuePair<string, TestObject>, object>(x => x, x => (KeyValuePair<string, TestObject>)x)
+		);
+		Assert.That(deserialized, Is.EqualTo(obj).Using(comparer));
+		Assert.That(deserialized.TestProperty, Is.SameAs(((KeyValuePair<string, TestObject>)deserialized.ObjectProperty).Value));
+	}
+
+	[Test]
+	public void BugCase_Cyclic() {
+		var factory = new SerializerFactory(SerializerFactory.Default);
+		factory.RegisterAutoBuild<TwoPropertyObject>();
+		var serializer = SerializerBuilder.AutoBuild<TwoPropertyObject>(factory);
+		var obj = new TwoPropertyObject {
+			Prop1 = "Hello",
+			Prop2 = new TwoPropertyObject {
+				Prop1 = "Hello",
+				Prop2 = new List<string> { "Test1", "test2" }
+			}
+		};
+		var serialized = serializer.SerializeBytesLE(obj);
+		var deserialized = serializer.DeserializeBytesLE(serialized);
+		Assert.That(deserialized.Prop1, Is.EqualTo("Hello"));
+		Assert.That(deserialized.Prop2, Is.Not.Null);
+		Assert.That(deserialized.Prop2, Is.TypeOf<TwoPropertyObject>());
+		var deserialized2 = (TwoPropertyObject)deserialized.Prop2;
+		Assert.That(deserialized2.Prop1, Is.EqualTo("Hello"));
+		Assert.That(deserialized2.Prop2, Is.Not.Null);
+		Assert.That(deserialized2.Prop2, Is.TypeOf<List<string>>());
+		Assert.That(deserialized2.Prop1, Is.Not.SameAs(obj.Prop1));
+		var deserialized3 = (List<string>)deserialized2.Prop2;
+		Assert.That(deserialized3, Is.EqualTo(new List<string> { "Test1", "test2" }));
+		
 	}
 
 
